@@ -1,0 +1,21 @@
+schema: spec-driven
+context: |
+  语言：中文（简体）。
+  所有 OpenSpec 产出物的正文、名称和说明必须使用简体中文。
+  保留 OpenSpec 解析和严格校验所需的英文格式标记，例如 Purpose、Requirements、Requirement、Scenario、WHEN、THEN、MUST 以及 ADDED、MODIFIED、REMOVED、RENAMED。
+  需求正文统一使用 MUST，不写“必须”或“MUST（必须）”。
+  本仓维护 Repoctopus 产品源码，不属于任何具体宿主项目或组织。
+  产品源码、默认配置和文档不得包含具体宿主项目、业务仓库、本地绝对路径或个人身份信息。
+  Repoctopus 面向一个团队共享工作区协调多个平级业务仓库，核心 Runtime 不依赖特定 IDE、代码托管平台或可观测后端。
+  Comet 仅作为固定版本的源码基线；是否采用某个模块由 Repoctopus 的需求、边界和维护成本决定。
+rules:
+  proposal:
+    - 明确本次可交付垂直切片、后续切片以及不在本次实施的能力。
+    - 明确第三方源码采用范围和许可证影响。
+  design:
+    - 说明 Engine、Runtime、领域模块与平台适配器的边界。
+    - 说明多仓状态、长任务恢复、证据和 OpenTelemetry 数据的验证方式。
+    - 任何规格、设计图、接口契约或其他权威资料冲突都必须列为停止条件，不得自行选择。
+  tasks:
+    - 每项任务写出可以执行的验收命令或可观察结果。
+    - 先交付真实垂直切片，再扩展水平能力。
