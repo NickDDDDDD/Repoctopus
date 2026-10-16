@@ -1,0 +1,39 @@
+apiVersion: repoctopus/v1alpha1
+kind: Workflow
+metadata:
+  name: runtime-foundation
+  version: 1.0.0
+  description: Repoctopus Runtime 首个纵向验证工作流
+entry: inspect
+steps:
+  - id: inspect
+    action:
+      type: checkpoint
+      ref: project-inspected
+      summary: 确认多仓项目快照
+    onSuccess: execute
+    onFailure: inspect
+  - id: execute
+    action:
+      type: checkpoint
+      ref: work-executed
+      summary: 记录实施结果
+    onSuccess: verify
+    onFailure: execute
+  - id: verify
+    action:
+      type: checkpoint
+      ref: work-verified
+      summary: 记录验证结果
+    onSuccess: null
+    onFailure: execute
+guardrails:
+  allowedActionTypes:
+    - checkpoint
+  allowedRefs:
+    - project-inspected
+    - work-executed
+    - work-verified
+  confirmationRequiredFor: []
+  maxIterations: 20
+  maxRetriesPerAction: 3
