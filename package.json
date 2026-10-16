@@ -1,0 +1,65 @@
+{
+  "name": "repoctopus",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Deterministic multi-repository runtime for team agent workflows",
+  "type": "module",
+  "bin": {
+    "repoctopus": "bin/repoctopus.js"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "docs",
+    "domains",
+    "workflows",
+    "third_party/comet",
+    "README.md"
+  ],
+  "engines": {
+    "node": "^22.16.0 || >=24.0.0"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check:generated": "node scripts/build.mjs --check",
+    "check:brand": "node scripts/check-brand.mjs",
+    "check:provenance": "node scripts/check-provenance.mjs",
+    "format": "prettier --write app domains platform scripts test workflows deploy third_party docs openspec README.md package.json tsconfig.json eslint.config.js vitest.config.ts",
+    "format:check": "prettier --check app domains platform scripts test workflows deploy third_party docs openspec README.md package.json tsconfig.json eslint.config.js vitest.config.ts",
+    "lint": "eslint app domains platform scripts test",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:package-e2e": "vitest run test/e2e/package.e2e.test.ts",
+    "test:tracer-e2e": "vitest run test/e2e/runtime-tracer.e2e.test.ts",
+    "spec:validate": "openspec validate --all --strict",
+    "pretest": "npm run build",
+    "verify": "npm run typecheck && npm run lint && npm run build && npm test && npm run check:generated && npm run check:brand && npm run check:provenance && npm run spec:validate"
+  },
+  "dependencies": {
+    "@opentelemetry/api": "1.9.0",
+    "@opentelemetry/api-logs": "0.223.0",
+    "@opentelemetry/exporter-logs-otlp-http": "0.223.0",
+    "@opentelemetry/exporter-metrics-otlp-http": "0.223.0",
+    "@opentelemetry/exporter-trace-otlp-http": "0.223.0",
+    "@opentelemetry/resources": "2.12.0",
+    "@opentelemetry/sdk-logs": "0.223.0",
+    "@opentelemetry/sdk-metrics": "2.12.0",
+    "@opentelemetry/sdk-trace-base": "2.12.0",
+    "@opentelemetry/semantic-conventions": "1.43.0",
+    "yaml": "2.9.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@fission-ai/openspec": "1.14.1",
+    "@types/node": "26.4.0",
+    "esbuild": "0.28.2",
+    "eslint": "10.4.0",
+    "prettier": "3.8.3",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.59.3",
+    "vitest": "4.1.11"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true
+  }
+}

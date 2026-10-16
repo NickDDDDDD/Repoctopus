@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "upstream": {
+    "repository": "https://github.com/AbanteAI/comet",
+    "commit": "575ab0d172e8105257b3c9172b8c8a9b628960ca",
+    "version": "0.4.5",
+    "license": "MIT"
+  },
+  "files": [
+    {
+      "source": "domains/engine/loop.ts",
+      "sourceSha256": "5e3929ca7d64fef62d02675fc84288b54ccf2e398de08a9904bab60ac7010e9f",
+      "target": "domains/engine/loop.ts",
+      "sha256": "ea1630e87291bd589b180f3e598591614affe741f4996fbf945c507716ae84ef",
+      "adoption": "modified"
+    },
+    {
+      "source": "domains/engine/resolver.ts",
+      "sourceSha256": "f9829a457ad51b6798af98574d09861366828eadf8b737b685dfd0702d12c68d",
+      "target": "domains/engine/resolver.ts",
+      "sha256": "f1bf222777c58b29b90bfecd21d34ab3c99ded598352efd9da6b1bc66ee68993",
+      "adoption": "modified"
+    },
+    {
+      "source": "domains/engine/guardrails.ts",
+      "sourceSha256": "b25cc0c68491cfe5d3dda42e973010a0ff4901c417b8f2aa466846789f57a96b",
+      "target": "domains/engine/guardrails.ts",
+      "sha256": "7412107b6a91e0f52b24ef995226b09b42fefd3ffd139344a45eb37daa906091",
+      "adoption": "modified"
+    },
+    {
+      "source": "domains/engine/evals.ts",
+      "sourceSha256": "d409803c9c1ab8af94ce4ac7c8003ee05c4c1bc24dc327a37eaf700027e996e8",
+      "target": "domains/engine/evals.ts",
+      "sha256": "42dfee57b7d7292aa9ab116899e0a96f4efdbfffb8eff0b6c1e341c849e2b1c7",
+      "adoption": "modified"
+    },
+    {
+      "source": "domains/workflow-contract/hash.ts",
+      "sourceSha256": "213ba72febabc8f0c614bcc813321cf3af27d662699cfa088d08e91dc6176809",
+      "target": "domains/workflow-contract/hash.ts",
+      "sha256": "499a58e56d7364c9101428ba6145a5be081aee63f90c4d7c31305fbcbcb395f5",
+      "adoption": "modified"
+    }
+  ]
+}
