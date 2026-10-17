@@ -2,19 +2,19 @@
 
 ## 1. 配置与 Evidence 最小纵切
 
-- [ ] 1.1 定义并实现版本化 `repoctopus.yaml`、`.repoctopus/local.yaml` Schema、字段级覆盖权限和 canonical digest，运行配置单元测试验证等价键序与路径分隔符产生相同摘要、削弱门禁的覆盖被拒绝。
-- [ ] 1.2 实现 Evidence Profile 到不可变 DAG 的编译器，运行图测试验证拓扑排序、循环拒绝、独立分支继续和依赖节点阻断。
-- [ ] 1.3 定义 Attempt、Receipt、ArtifactRef、Finding、Bundle、Gate Outcome 的版本化类型与 JSON Schema，运行 schema round-trip 和未知主版本拒绝测试。
-- [ ] 1.4 实现本地内容寻址 Artifact Store 和 Bundle manifest，运行重复内容去重、摘要校验、原子写入及损坏对象拒绝测试。
-- [ ] 1.5 实现最小命令 Adapter 与 `passed|failed|incomplete|passed_with_warnings` 聚合，使一个配置命令可以生成完整 Bundle；运行纵切集成测试并核对 Artifact、Receipt 和 Outcome。
+- [x] 1.1 定义并实现版本化 `repoctopus.yaml`、`.repoctopus/local.yaml` Schema、字段级覆盖权限和 canonical digest，运行配置单元测试验证等价键序与路径分隔符产生相同摘要、削弱门禁的覆盖被拒绝。
+- [x] 1.2 实现 Evidence Profile 到不可变 DAG 的编译器，运行图测试验证拓扑排序、循环拒绝、独立分支继续和依赖节点阻断。
+- [x] 1.3 定义 Attempt、Receipt、ArtifactRef、Finding、Bundle、Gate Outcome 的版本化类型与 JSON Schema，运行 schema round-trip 和未知主版本拒绝测试。
+- [x] 1.4 实现本地内容寻址 Artifact Store 和 Bundle manifest，运行重复内容去重、摘要校验、原子写入及损坏对象拒绝测试。
+- [x] 1.5 实现最小命令 Adapter 与 `passed|failed|incomplete|passed_with_warnings` 聚合，使一个配置命令可以生成完整 Bundle；运行纵切集成测试并核对 Artifact、Receipt 和 Outcome。
 
 ## 2. Comet 机制采用与输入可信度
 
-- [ ] 2.1 对固定 Comet 基线的进程、Evidence、Fence、Retention、Journal 和 Lock 候选文件执行依赖闭包分析，提交采用清单并运行来源摘要检查确认只引用固定 commit。
-- [ ] 2.2 移植并改造命令 spawn、进程 identity 和进程树终止机制，运行 Windows 与 Linux 行为测试验证结构化 argv、超时、取消、PID 复用和仅终止自有进程。
-- [ ] 2.3 实现多仓 Fingerprint Builder，运行测试验证 HEAD、tree、dirty 文件内容、配置、lockfile、工具、Adapter、Journey 和 Artifact 变化都会使摘要失效，绝对路径不进入共享摘要。
-- [ ] 2.4 实现开始/结束 Fence 与确定性 Receipt 复用，运行集成测试验证采集期间漂移产生 `superseded`、完全相同且未过期的命令结果可标记 `reused`、服务与浏览器不会默认复用。
-- [ ] 2.5 更新 `third_party/comet` 许可证、source manifest、adoption report 和行为特征测试，运行 `npm run check:provenance` 验证每个采用文件的上游与目标摘要。
+- [x] 2.1 对固定 Comet 基线的进程、Evidence、Fence、Retention、Journal 和 Lock 候选文件执行依赖闭包分析，提交采用清单并运行来源摘要检查确认只引用固定 commit。
+- [x] 2.2 移植并改造命令 spawn、进程 identity 和进程树终止机制，运行 Windows 与 Linux 行为测试验证结构化 argv、超时、取消、PID 复用和仅终止自有进程。
+- [x] 2.3 实现多仓 Fingerprint Builder，运行测试验证 HEAD、tree、dirty 文件内容、配置、lockfile、工具、Adapter、Journey 和 Artifact 变化都会使摘要失效，绝对路径不进入共享摘要。
+- [x] 2.4 实现开始/结束 Fence 与确定性 Receipt 复用，运行集成测试验证采集期间漂移产生 `superseded`、完全相同且未过期的命令结果可标记 `reused`、服务与浏览器不会默认复用。
+- [x] 2.5 更新 `third_party/comet` 许可证、source manifest、adoption report 和行为特征测试，运行 `npm run check:provenance` 验证每个采用文件的上游与目标摘要。
 
 ## 3. Journal、恢复、保留与隐私
 

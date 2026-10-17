@@ -12,6 +12,7 @@
     "dist",
     "docs",
     "domains",
+    "platform",
     "workflows",
     "third_party/comet",
     "README.md"

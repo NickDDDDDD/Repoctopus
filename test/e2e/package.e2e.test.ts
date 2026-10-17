@@ -76,7 +76,7 @@ describe('published package', () => {
       cwd: workspace,
       args: ['doctor', '--workspace', workspace, '--run', 'run-package-e2e'],
     });
-    expect(doctor.result).toMatchObject({ healthy: true, provenanceFiles: 5 });
+    expect(doctor.result).toMatchObject({ healthy: true, provenanceFiles: 10 });
     let failure: { code?: number; stderr?: string } | undefined;
     try {
       await execFileAsync(

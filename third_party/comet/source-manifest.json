@@ -41,6 +41,41 @@
       "target": "domains/workflow-contract/hash.ts",
       "sha256": "499a58e56d7364c9101428ba6145a5be081aee63f90c4d7c31305fbcbcb395f5",
       "adoption": "modified"
+    },
+    {
+      "source": "platform/process/spawn-command.ts",
+      "sourceSha256": "38abe8359ea96afe0f0657c4008065a5f4ee8009e82a5b66b02dd0cb889eb34d",
+      "target": "platform/process/spawn-command.ts",
+      "sha256": "c7c6327c8356ab349c9d7cb2eccb230846fb7ec485424552e5c46fd4285a6beb",
+      "adoption": "modified"
+    },
+    {
+      "source": "platform/process/external-command.ts",
+      "sourceSha256": "7845cf9712c49d89b025f90a20b2becf465b59d6eaf14788733fdff6e85c2d85",
+      "target": "platform/process/external-command.ts",
+      "sha256": "b6385f2a763e048fcd7057736c81e3420b39479fe23a67691c6cee9269ad52bb",
+      "adoption": "modified"
+    },
+    {
+      "source": "platform/process/process-identity.ts",
+      "sourceSha256": "48d0db970323212f34224909d2b0fe9550d64d22d7617a4c8d172ab93c231000",
+      "target": "platform/process/process-identity.ts",
+      "sha256": "48d0db970323212f34224909d2b0fe9550d64d22d7617a4c8d172ab93c231000",
+      "adoption": "copied"
+    },
+    {
+      "source": "platform/process/windows-process-identity.ts",
+      "sourceSha256": "2e84049d58a15383567a099f837a92a11132211339632a023ca1261dcdbf8471",
+      "target": "platform/process/windows-process-identity.ts",
+      "sha256": "22ffb5524984ff9199b61340f7afd139d8c81644cfc2d60231f08b994a3a0027",
+      "adoption": "modified"
+    },
+    {
+      "source": "platform/process/terminate-process-tree.ts",
+      "sourceSha256": "efc7fe7ba70d0a430e8b226c2351c2bc83e60243d895c615b7c48908840ebfb6",
+      "target": "platform/process/terminate-process-tree.ts",
+      "sha256": "efc7fe7ba70d0a430e8b226c2351c2bc83e60243d895c615b7c48908840ebfb6",
+      "adoption": "copied"
     }
   ]
 }
