@@ -150,6 +150,7 @@ class LocalManagedServiceSession implements ManagedServiceSession {
   private status: ServiceObservation['status'] = 'failed';
   private stopped = false;
   private processFailed = false;
+  private processClosed = false;
 
   constructor(
     private readonly child: ChildProcess,
@@ -169,6 +170,27 @@ class LocalManagedServiceSession implements ManagedServiceSession {
     child.stderr?.on('data', (chunk: string) => this.stderr.append(chunk));
     child.once('error', () => {
       this.processFailed = true;
+    });
+    child.once('close', () => {
+      this.processClosed = true;
+    });
+  }
+
+  private async waitForProcessClose(timeoutMs = 5000): Promise<void> {
+    if (this.processClosed) return;
+    await new Promise<void>((resolve) => {
+      const closed = (): void => {
+        clearTimeout(timer);
+        resolve();
+      };
+      const timer = setTimeout(() => {
+        this.child.removeListener('close', closed);
+        this.child.stdin?.destroy();
+        this.child.stdout?.destroy();
+        this.child.stderr?.destroy();
+        resolve();
+      }, timeoutMs);
+      this.child.once('close', closed);
     });
   }
 
@@ -228,6 +250,7 @@ class LocalManagedServiceSession implements ManagedServiceSession {
           await terminateProcessTree(this.child);
         }
       }
+      await this.waitForProcessClose();
       try {
         for (const lease of [...this.leases].reverse()) await this.leaseManager.release(lease);
       } finally {
