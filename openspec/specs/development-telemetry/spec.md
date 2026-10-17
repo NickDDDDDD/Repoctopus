@@ -1,6 +1,7 @@
 # development-telemetry Specification
 
 ## Purpose
+
 定义 Repoctopus 用于团队内部追踪、事后排查和 AI 辅助研发效果评估的 OpenTelemetry 输出契约。
 
 ## Requirements

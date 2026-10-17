@@ -1,6 +1,7 @@
 # multi-repository-probe Specification
 
 ## Purpose
+
 定义 Repoctopus 在不修改业务仓的前提下探测平级 Git 仓库并生成可用于 Run 和恢复的稳定快照。
 
 ## Requirements

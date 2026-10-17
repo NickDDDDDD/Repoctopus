@@ -14,12 +14,18 @@ domains/runtime
   ├─ domains/engine             确定性决策、Guardrail、Eval
   ├─ domains/project            多仓快照与差异
   └─ domains/trajectory         事件、Checkpoint、Cursor 契约
+domains/delivery
+  ├─ Delivery Intent / Snapshot 多仓交付选择与批准事实
+  ├─ Human Decision             IDE/CLI 人工决定协议
+  └─ Publication Plan           可恢复的 push 与 MR 动作
         │ ports
         ▼
 platform/
   ├─ git                        只读项目探测
   ├─ runtime + filesystem       Journal、原子写入、崩溃恢复
   ├─ telemetry/opentelemetry    OTLP Trace、Log、Metric
+  ├─ delivery                   交付 Journal 与策略加载
+  ├─ github                     GitHub MR Adapter
   └─ process                    受控子进程执行
 ```
 
@@ -45,3 +51,9 @@ Runtime 负责端口编排和副作用顺序。每次转换先写 Journal，再�
 Repoctopus 借鉴并改造了上游项目的确定性 Engine 算法，但没有沿用上游产品外壳。上游 Engine 把部分文件存储和 Skill 依赖放在同一域中；Repoctopus 保留适用的 Resolver、Guardrail、Eval 与循环算法，把工作流契约和持久化分别移到独立领域与平台层。精确来源、摘要和许可证见 `third_party/comet/`。
 
 本架构允许后续加入 TDD、长任务恢复、IDE Adapter、OpenSpec/OpenWiki、人工决策、业务反馈和审计服务器，而不用让这些能力直接耦合到纯 Engine。
+
+### Delivery Domain
+
+Delivery Domain 与通用 Engine 平行。它只接受版本化交付意图、项目事实、策略、验证报告摘要和 Human Decision 事件，不直接执行 Git 或 HTTP。Runtime 通过 Git、Merge Request、Credential、Store 和 Telemetry 端口组合副作用。
+
+本地 checkpoint 与远端发布使用不同信任边界。checkpoint 由共享策略约束分支、提交格式和快速检查；push 与 MR 只在整份交付快照获得有效人工批准后执行。平台端口不暴露 merge，因此具体 Adapter 不能绕过人工合入边界。

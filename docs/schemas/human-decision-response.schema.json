@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://repoctopus.dev/schemas/human-decision-response.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["apiVersion", "kind", "requestId", "snapshotDigest", "decision"],
+  "properties": {
+    "apiVersion": { "const": "repoctopus/v1alpha1" },
+    "kind": { "const": "HumanDecisionResponse" },
+    "requestId": { "type": "string", "minLength": 1 },
+    "snapshotDigest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "decision": { "enum": ["approve", "request_changes", "reject"] },
+    "comment": { "type": "string", "maxLength": 4096 }
+  }
+}

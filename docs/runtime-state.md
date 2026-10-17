@@ -34,3 +34,16 @@
 ## 诊断
 
 `doctor` 只读检查 Run、Checkpoint、Trajectory、来源清单和遥测 Cursor 的一致性。发现未完成 Journal 时只报告并提示使用 `run resume`，不会完成转换、删除损坏轨迹或猜测正确状态。
+
+## 交付状态
+
+每个 change 的交付状态位于 `.repoctopus/deliveries/<change-id>/`：
+
+| 文件              | 含义                                     |
+| ----------------- | ---------------------------------------- |
+| `state.json`      | 当前交付快照、批准、逐动作结果和合入证据 |
+| `history.jsonl`   | 追加式交付事件                           |
+| `transition.json` | 尚未完成的交付状态转换 Journal           |
+| `transition.lock` | 跨进程交付锁；进程退出后的陈旧锁可回收   |
+
+交付状态依次经过 `development`、`awaiting_approval`、`approved`、`publishing` 和 `in_review`。动作失败进入 `partially_published`，恢复后从第一个未完成动作继续。任何批准事实漂移进入 `verification_required`；远端出现无法安全解释的变化进入 `repair_required`。所有 MR 都由人合入，Runtime 观察到全部合入证据后才进入 `merged`。

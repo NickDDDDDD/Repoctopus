@@ -1,6 +1,7 @@
 # runtime-foundation Specification
 
 ## Purpose
+
 定义 Repoctopus 首个可运行 Runtime 的 Engine 边界、工作流快照、Run、确定性解析、持久化、恢复、CLI 和第三方来源治理。
 
 ## Requirements
