@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://repoctopus.invalid/schemas/browser-journey.schema.json",
+  "title": "Repoctopus Browser Journey",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["apiVersion", "kind", "journeyId", "viewport", "timeoutMs", "actions"],
+  "properties": {
+    "apiVersion": { "const": "repoctopus/v1alpha1" },
+    "kind": { "const": "BrowserJourney" },
+    "journeyId": { "type": "string", "minLength": 1 },
+    "viewport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["width", "height"],
+      "properties": {
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 },
+        "deviceScaleFactor": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "timeoutMs": { "type": "integer", "minimum": 1 },
+    "actions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["type"],
+        "properties": {
+          "type": {
+            "enum": [
+              "navigate",
+              "waitFor",
+              "assertVisible",
+              "assertText",
+              "assertUrl",
+              "screenshot",
+              "collectConsole",
+              "collectFailedRequests"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

@@ -12,6 +12,10 @@ import { RepoctopusRuntime } from '../../domains/runtime/runtime.js';
 import type { RunStatusView } from '../../domains/runtime/types.js';
 import { parseWorkflowPackage } from '../../domains/workflow-contract/package.js';
 import { probeProject } from '../../platform/git/probe.js';
+import {
+  doctorManagedChromium,
+  installManagedChromium,
+} from '../../platform/browser/managed-browser.js';
 import { GitDeliveryAdapter } from '../../platform/git/delivery.js';
 import { loadDeliveryPolicy } from '../../platform/delivery/config.js';
 import { FileDeliveryStore } from '../../platform/delivery/file-delivery-store.js';
@@ -398,6 +402,25 @@ async function doctor(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   });
 }
 
+async function browserDoctor(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const result = await doctorManagedChromium(workspace);
+  return successEnvelope({
+    command: 'browser doctor',
+    result,
+    nextActions:
+      result.status === 'ready'
+        ? []
+        : [`${result.installCommand.executable} ${result.installCommand.args.join(' ')}`],
+  });
+}
+
+async function browserInstall(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const result = await installManagedChromium(workspace);
+  return successEnvelope({ command: 'browser install', result });
+}
+
 async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const command = parsed.command.join(' ');
   if (command === 'project probe') return projectProbe(parsed);
@@ -414,8 +437,10 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
     return deliveryPublish(parsed);
   if (command === 'delivery refresh') return deliveryRefresh(parsed);
   if (command === 'doctor') return doctor(parsed);
+  if (command === 'browser doctor') return browserDoctor(parsed);
+  if (command === 'browser install') return browserInstall(parsed);
   throw new Error(
-    'Usage: repoctopus project probe | run <start|status|next|record|resume> | delivery <checkpoint|prepare|status|publish|resume|refresh> | approval review | doctor',
+    'Usage: repoctopus project probe | run <start|status|next|record|resume> | delivery <checkpoint|prepare|status|publish|resume|refresh> | approval review | browser <doctor|install> | doctor',
   );
 }
 
