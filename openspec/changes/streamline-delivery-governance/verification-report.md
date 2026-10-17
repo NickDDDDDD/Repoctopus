@@ -5,8 +5,8 @@
 - 结论：实现与本 change 的 Proposal、Design 和 Delta Spec 一致，建议批准交付。
 - 状态：待用户通过 Human Decision 交互批准。
 - 验证日期：2026-10-17。
-- 实现基线：`cea378688b05bcacb5fc63ff6c7a178aa20fcfaa`。
-- 实现代码树：`6e2cf92a7be26e6e3772cc7be48e2bde87fe2f8b`。
+- 实现基线：`c0ffce5b91c10b520b6fbe6bda1ec3790a49a4f6`。
+- 实现代码树：`f2c0836acbc20ebe09599a9c0782b2f9c4864bae`。
 - 远端状态：尚未 push，尚未创建或更新 MR。
 
 ## 交付结果
@@ -41,13 +41,15 @@
 
 | 命令                          | 结果                                                                                               |
 | ----------------------------- | -------------------------------------------------------------------------------------------------- |
-| `npm run verify`              | 通过；类型检查、Lint、确定性构建、16 个测试文件、54 项测试、品牌、来源和 OpenSpec 严格校验全部通过 |
+| `npm run verify`              | 通过；类型检查、Lint、确定性构建、16 个测试文件、55 项测试、品牌、来源和 OpenSpec 严格校验全部通过 |
 | `npm run format:check`        | 通过                                                                                               |
 | `git diff --check`            | 通过                                                                                               |
 | `npm audit --omit=dev --json` | 通过；生产依赖漏洞 0                                                                               |
 | `npm pack --dry-run --json`   | 通过；包内包含 Delivery CLI、领域代码、文档、配置示例和 Human Decision Schema                      |
 
-测试覆盖真实临时 Git 仓和本地 bare remote、独立 CLI 进程、mock GitHub REST API、崩溃恢复、重复执行和遥测脱敏。完整验证在实现 checkpoint `cea3786` 上执行；报告加入后再次执行格式、规格和完整项目验证。
+测试覆盖真实临时 Git 仓和本地 bare remote、独立 CLI 进程、mock GitHub REST API、崩溃恢复、重复执行和遥测脱敏。完整验证在实现 checkpoint `c0ffce5` 上执行；报告加入后再次执行格式、规格和完整项目验证。
+
+自举交付还发现父目录内重复远端 identity 会在读取 Intent 前阻断扫描。修复后，Delivery 扫描会排除全部歧义副本并给出结构化诊断，同时保留其他唯一仓库；如果 Intent 选择了被排除的歧义 identity，缺失仓库门禁仍会阻断，不会任意挑选某个检出。
 
 ## Human Decision 与授权边界
 
