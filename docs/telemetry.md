@@ -1,30 +1,42 @@
-# OpenTelemetry 与 SigNoz
+# OpenTelemetry
 
-Repoctopus 使用官方 OpenTelemetry SDK 输出 OTLP/HTTP，可连接团队自部署的 SigNoz Community。遥测用于团队内部追踪、事后排查和评估 AI 辅助研发效果；领域事实仍以本地 Trajectory 与 Checkpoint 为准。
+Repoctopus 通过标准 OTLP HTTP 导出适配自部署 SigNoz 等后端。领域层只产生稳定事实，不依赖具体观测产品。
 
-## 信号
+## 配置
 
-- 每个领域事件生成一个短 Span，并复用 Run 的 Trace ID。
-- 同一事件生成结构化 Log/Event，保留 Run、Workflow、阶段和事件关联标识。
-- `repoctopus.workflow.events` Counter 统计输出事件数。
-- 交付事件生成结构化 Log，并通过 `repoctopus.delivery.events` Counter 记录 checkpoint、批准、发布、失败恢复和合入状态变化。
+设置标准环境变量后启动 CLI：
+
+```powershell
+$env:OTEL_EXPORTER_OTLP_ENDPOINT = 'http://signoz.example.internal:4318'
+$env:REPOCTOPUS_ENVIRONMENT = 'development'
+node bin/repoctopus.js evidence run --workspace . --profile verify --json
+```
+
+也可以分别使用 `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`、`OTEL_EXPORTER_OTLP_LOGS_ENDPOINT` 和 `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT`。没有配置端点时使用空实现，不影响本地 Evidence。
+
+## 先落盘，再导出
+
+Attempt、Receipt、Artifact、Bundle 和 Gate 先持久化。之后 Runtime 把允许列表事件写入 `.repoctopus/evidence/telemetry/`，导出成功才推进 cursor。后端失败时：
+
+- Evidence Run 的结果保持有效；
+- cursor 不前进；
+- `evidence resume --attempt <id>` 或后续 Runtime 恢复可以重放；
+- 稳定 event ID 和 cursor 防止同一客户端重复导出已经确认的事件。
+
+## 关联模型
+
+- Workflow Run 是根关联 ID。
+- Evidence Attempt、节点 Receipt、Artifact 引用和 Gate Outcome 使用稳定 ID 相互关联。
+- Receipt 复用通过 `sourceReceiptId` 保留来源身份。
+- Attempt 和节点映射为 Span；Artifact、恢复、漂移和 Gate 映射为固定名称 Log/Event；耗时与结果映射为低基数 Metric。
 
 ## 隐私边界
 
-普通属性采用允许列表，只发送低基数标识与结果。源码、Prompt、Summary、验证报告正文、MR 正文、绝对路径、Git remote、环境变量值、授权头、Cookie、Token 和截图正文不会进入普通属性。后续制品上传必须使用引用和独立访问控制，不能把原始内容塞入属性。
+OTel 属性只允许稳定 ID、Adapter、状态、可信等级、耗时，以及 Artifact 的类型、摘要、大小、MIME 和脱敏标记。以下内容不会进入属性：
 
-## 故障语义
+- 命令输出、服务日志与健康响应正文；
+- DOM、截图正文、视觉请求或响应；
+- 本机绝对路径；
+- token、密码、Cookie、Authorization 或其他敏感值。
 
-OTLP 端点未配置时 Runtime 使用空 exporter。端点不可用时业务转换已经落盘，命令返回 `telemetry.export-failed` warning，不回滚工作流。成功发送后才推进 `telemetry-cursor.json`；下次状态变化会从旧 Cursor 补发，保持原事件 ID。
-
-## 本地配置
-
-直接向 OTLP/HTTP Receiver 发送：
-
-```powershell
-$env:OTEL_EXPORTER_OTLP_ENDPOINT = "http://127.0.0.1:4318"
-$env:REPOCTOPUS_ENVIRONMENT = "development"
-node bin/repoctopus.js run start --workspace . --project-root .. --json
-```
-
-也可以运行 `deploy/signoz/otel-collector.dev.yaml` 中的 Collector 示例，再把其中 `signoz-otel-collector:4317` 改成团队 SigNoz Collector 的实际内网地址。配置文件不包含凭据。
+原始内容只保存在受本机保留策略管理的 Artifact Store 中。遥测失败诊断也不会被写回领域事实。

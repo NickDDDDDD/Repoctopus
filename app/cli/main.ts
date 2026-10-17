@@ -29,6 +29,7 @@ import {
   deliveryTelemetryFromEnvironment,
   telemetryFromEnvironment,
 } from '../../platform/telemetry/opentelemetry/exporter.js';
+import { evidenceTelemetryFromEnvironment } from '../../platform/telemetry/opentelemetry/evidence-exporter.js';
 import { checkProvenance } from '../../platform/provenance/check.js';
 import { execute } from '../../platform/process/execute.js';
 import {
@@ -340,7 +341,7 @@ async function projectReview(parsed: ParsedArguments): Promise<CliEnvelope<unkno
 
 function evidenceRuntime(parsed: ParsedArguments): EvidenceRuntime {
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
-  return new EvidenceRuntime(workspace);
+  return new EvidenceRuntime(workspace, evidenceTelemetryFromEnvironment(process.env));
 }
 
 async function evidencePlan(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
@@ -352,7 +353,8 @@ async function evidencePlan(parsed: ParsedArguments): Promise<CliEnvelope<unknow
 async function evidenceRun(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const profile = stringFlag(parsed, 'profile', { fallback: 'verify' })!;
   const requestedAttemptId = stringFlag(parsed, 'attempt');
-  const result = await evidenceRuntime(parsed).run(profile, requestedAttemptId);
+  const workflowRunId = stringFlag(parsed, 'workflow-run') ?? null;
+  const result = await evidenceRuntime(parsed).run(profile, requestedAttemptId, workflowRunId);
   return successEnvelope({
     command: 'evidence run',
     runId: result.attempt.attemptId,

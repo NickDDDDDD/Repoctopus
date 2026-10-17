@@ -9,6 +9,10 @@ import {
 import { projectEvidenceGate } from '../domains/evidence/gate.js';
 import { recoverEvidenceAttempt } from '../domains/evidence/recovery.js';
 import { EvidenceService, type EvidenceRunResult } from '../domains/evidence/service.js';
+import {
+  createEvidenceTelemetryBatch,
+  type EvidenceTelemetryPort,
+} from '../domains/evidence/telemetry.js';
 import type {
   EvidenceAttempt,
   EvidenceBundle,
@@ -27,12 +31,14 @@ import { LocalCommandAdapter } from '../platform/feedback/command-adapter.js';
 import { collectRepositoryFingerprint } from '../platform/git/evidence-fingerprint.js';
 import { loadProjectConfig } from '../platform/project-configuration/file-config.js';
 import { FileResourceLeaseManager } from '../platform/runtime/resource-lease.js';
+import { FileEvidenceTelemetryOutbox } from '../platform/telemetry/evidence-outbox.js';
 
 interface EvidenceRunContext {
   schemaVersion: 1;
   kind: 'EvidenceRunContext';
   attemptId: string;
   profileId: string;
+  workflowRunId: string | null;
   status: 'running' | 'completed' | 'recovered';
   plan: EvidenceExecutionPlan;
   fingerprint: EvidenceFingerprint;
@@ -45,6 +51,12 @@ export interface EvidenceStatus {
   attempt: EvidenceAttempt;
   bundle: EvidenceBundle | null;
   gate: EvidenceGateProjection | null;
+}
+
+export interface EvidenceTelemetryStatus {
+  status: 'exported' | 'pending' | 'not_ready';
+  exportedEvents: number;
+  diagnostic?: string;
 }
 
 function asContext(value: unknown): EvidenceRunContext {
@@ -72,12 +84,17 @@ export class EvidenceRuntime {
   private readonly store: FileEvidenceStore;
   private readonly journal: FileEvidenceJournal;
   private readonly leases: FileResourceLeaseManager;
+  private readonly telemetryOutbox: FileEvidenceTelemetryOutbox;
 
-  constructor(private readonly workspace: string) {
+  constructor(
+    private readonly workspace: string,
+    private readonly telemetry: EvidenceTelemetryPort = { async export() {} },
+  ) {
     this.workspace = path.resolve(workspace);
     this.store = new FileEvidenceStore(this.workspace);
     this.journal = new FileEvidenceJournal(this.workspace);
     this.leases = new FileResourceLeaseManager(this.workspace);
+    this.telemetryOutbox = new FileEvidenceTelemetryOutbox(this.workspace);
   }
 
   private contextFile(attemptId: string): string {
@@ -125,7 +142,10 @@ export class EvidenceRuntime {
   async run(
     profileId: string,
     attemptId: string = randomUUID(),
-  ): Promise<EvidenceRunResult & { gate: EvidenceGateProjection }> {
+    workflowRunId: string | null = null,
+  ): Promise<
+    EvidenceRunResult & { gate: EvidenceGateProjection; telemetry: EvidenceTelemetryStatus }
+  > {
     return this.leases.withLease(`evidence-profile:${profileId}`, async () => {
       const { plan, fingerprint } = await this.plan(profileId);
       const context: EvidenceRunContext = {
@@ -133,6 +153,7 @@ export class EvidenceRuntime {
         kind: 'EvidenceRunContext',
         attemptId,
         profileId,
+        workflowRunId,
         status: 'running',
         plan,
         fingerprint,
@@ -156,7 +177,12 @@ export class EvidenceRuntime {
         bundleId: result.bundle.bundleId,
         updatedAt: new Date().toISOString(),
       } satisfies EvidenceRunContext);
-      return { ...result, gate: projectEvidenceGate(result.bundle) };
+      const gate = projectEvidenceGate(result.bundle);
+      await this.telemetryOutbox.save(
+        createEvidenceTelemetryBatch({ workflowRunId, result, gate }),
+      );
+      const telemetry = await this.flushTelemetry(attemptId);
+      return { ...result, gate, telemetry };
     });
   }
 
@@ -172,7 +198,10 @@ export class EvidenceRuntime {
   async resume(attemptId: string): Promise<EvidenceStatus> {
     return this.leases.withLease(`evidence-profile-recovery:${attemptId}`, async () => {
       const context = await this.loadContext(attemptId);
-      if (context.status !== 'running') return this.status(attemptId);
+      if (context.status !== 'running') {
+        await this.flushTelemetry(attemptId);
+        return this.status(attemptId);
+      }
       const endingFingerprint = await this.fingerprint(context.profileId);
       const recovered = await recoverEvidenceAttempt({
         attemptId,
@@ -188,8 +217,45 @@ export class EvidenceRuntime {
         bundleId: recovered.bundle.bundleId,
         updatedAt: new Date().toISOString(),
       } satisfies EvidenceRunContext);
+      const attempt = await this.store.loadAttempt(attemptId);
+      const result: EvidenceRunResult = { attempt, ...recovered };
+      await this.telemetryOutbox.save(
+        createEvidenceTelemetryBatch({
+          workflowRunId: context.workflowRunId,
+          result,
+          gate: projectEvidenceGate(recovered.bundle),
+        }),
+      );
+      await this.flushTelemetry(attemptId);
       return this.status(attemptId);
     });
+  }
+
+  async flushTelemetry(attemptId: string): Promise<EvidenceTelemetryStatus> {
+    const [batch, cursor] = await Promise.all([
+      this.telemetryOutbox.load(attemptId),
+      this.telemetryOutbox.readCursor(attemptId),
+    ]);
+    if (!batch) return { status: 'not_ready', exportedEvents: 0 };
+    const events = batch.events.filter((event) => event.sequence > cursor.offset);
+    if (events.length === 0) return { status: 'exported', exportedEvents: 0 };
+    try {
+      await this.telemetry.export({ ...batch, events });
+      const last = events.at(-1)!;
+      await this.telemetryOutbox.writeCursor({
+        schemaVersion: 1,
+        attemptId,
+        offset: last.sequence,
+        updatedAt: new Date().toISOString(),
+      });
+      return { status: 'exported', exportedEvents: events.length };
+    } catch (error) {
+      return {
+        status: 'pending',
+        exportedEvents: 0,
+        diagnostic: error instanceof Error ? error.message : String(error),
+      };
+    }
   }
 
   async inspect(

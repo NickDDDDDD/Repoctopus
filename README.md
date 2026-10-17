@@ -54,6 +54,8 @@ node bin/repoctopus.js delivery refresh --workspace . --change example-change --
 
 - [Runtime 架构](docs/architecture.md)
 - [状态与恢复](docs/runtime-state.md)
+- [项目接入](docs/project-onboarding.md)
+- [Evidence](docs/evidence.md)
 - [OpenTelemetry 与 SigNoz](docs/telemetry.md)
 - [交付治理与失败恢复](docs/delivery.md)
 - [Human Decision 协议](docs/human-decision.md)

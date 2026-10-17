@@ -51,9 +51,9 @@
 - [x] 7.1 增加 Evidence CLI 的 `plan`、`run`、`status`、`resume`、`inspect`、`clean` 和浏览器管理 envelope，运行 CLI contract 测试核对 JSON 版本、稳定错误码、退出码和人工决定输出。
 - [x] 7.2 在 Runtime composition root 接入配置、DAG、Evidence Store、Adapter、Journal、lease 和 Engine Gate 投影，运行端到端测试验证只有当前 `verified` 必需证据可以推进 Verify。
 - [x] 7.3 实现零测试结构化识别，运行 npm/Maven fixture 验证退出码为零且执行数为零时产生 `no-tests-detected`，并按共享 Profile 得到 warning 或 blocking 结果。
-- [ ] 7.4 扩展 OTel mapping 和 Delivery Cursor 重放，运行内存 OTLP 测试验证 Run/Attempt/节点/Artifact/Gate 的稳定关联、重试身份与后端故障不回滚本地事实。
-- [ ] 7.5 运行遥测隐私测试确认命令输出、服务/浏览器日志、健康正文、DOM、截图、视觉请求/响应、绝对路径和敏感值不出现在 Trace、Log 或 Metric 属性。
-- [ ] 7.6 更新 Runtime、Evidence、Telemetry 和人工决定文档，运行文档中的完整 CLI 示例并核对架构图与实际模块边界一致。
+- [x] 7.4 扩展 OTel mapping 和 Delivery Cursor 重放，运行内存 OTLP 测试验证 Run/Attempt/节点/Artifact/Gate 的稳定关联、重试身份与后端故障不回滚本地事实。
+- [x] 7.5 运行遥测隐私测试确认命令输出、服务/浏览器日志、健康正文、DOM、截图、视觉请求/响应、绝对路径和敏感值不出现在 Trace、Log 或 Metric 属性。
+- [x] 7.6 更新 Runtime、Evidence、Telemetry 和人工决定文档，运行文档中的完整 CLI 示例并核对架构图与实际模块边界一致。
 
 ## 8. 产品级验证与分发
 
