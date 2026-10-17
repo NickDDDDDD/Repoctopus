@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://repoctopus.dev/schemas/human-decision-request.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "apiVersion",
+    "kind",
+    "requestId",
+    "decisionType",
+    "changeId",
+    "snapshotDigest",
+    "reportDigest",
+    "repositories",
+    "actions",
+    "options"
+  ],
+  "properties": {
+    "apiVersion": { "const": "repoctopus/v1alpha1" },
+    "kind": { "const": "HumanDecisionRequest" },
+    "requestId": { "type": "string", "minLength": 1 },
+    "decisionType": { "const": "delivery-approval" },
+    "changeId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{2,127}$" },
+    "snapshotDigest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "reportDigest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "repositories": { "type": "array" },
+    "actions": { "type": "array" },
+    "options": { "const": ["approve", "request_changes", "reject"] }
+  }
+}

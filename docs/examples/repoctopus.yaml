@@ -1,0 +1,17 @@
+apiVersion: repoctopus/v1alpha1
+kind: DeliveryPolicy
+checkpoint:
+  automatic: true
+  protectedBranches:
+    - main
+    - master
+    - release/*
+  commitMessagePattern: '^(feat|fix|docs|refactor|test|chore)(\([a-z0-9-]+\))?: .+'
+  quickChecks:
+    '*': []
+publication:
+  remote: origin
+  provider: github
+  githubApiBaseUrl: https://api.github.com
+  mrTitleTemplate: '{{changeId}}'
+  mrBodyTemplate: '{{verificationReport}}'

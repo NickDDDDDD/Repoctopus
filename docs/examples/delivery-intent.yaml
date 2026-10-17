@@ -1,0 +1,10 @@
+schemaVersion: 1
+changeId: example-change
+repositories:
+  - repositoryId: replace-with-project-snapshot-id
+    sourceBranch: feat/example-change
+    targetBranch: main
+    commitMessage: 'feat(example): implement change'
+    actions:
+      - push
+      - merge_request

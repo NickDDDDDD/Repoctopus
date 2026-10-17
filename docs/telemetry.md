@@ -7,10 +7,11 @@ Repoctopus 使用官方 OpenTelemetry SDK 输出 OTLP/HTTP，可连接团队自�
 - 每个领域事件生成一个短 Span，并复用 Run 的 Trace ID。
 - 同一事件生成结构化 Log/Event，保留 Run、Workflow、阶段和事件关联标识。
 - `repoctopus.workflow.events` Counter 统计输出事件数。
+- 交付事件生成结构化 Log，并通过 `repoctopus.delivery.events` Counter 记录 checkpoint、批准、发布、失败恢复和合入状态变化。
 
 ## 隐私边界
 
-普通属性采用允许列表，只发送低基数标识与结果。源码、Prompt、Summary、绝对路径、Git remote、环境变量值、授权头、Cookie、Token 和截图正文不会进入普通属性。后续制品上传必须使用引用和独立访问控制，不能把原始内容塞入属性。
+普通属性采用允许列表，只发送低基数标识与结果。源码、Prompt、Summary、验证报告正文、MR 正文、绝对路径、Git remote、环境变量值、授权头、Cookie、Token 和截图正文不会进入普通属性。后续制品上传必须使用引用和独立访问控制，不能把原始内容塞入属性。
 
 ## 故障语义
 

@@ -23,7 +23,7 @@ export interface ProjectSnapshot {
   capturedAt: string;
   repositories: RepositorySnapshot[];
   diagnostics: Array<{
-    code: 'path-unreadable' | 'path-outside-root';
+    code: 'path-unreadable' | 'path-outside-root' | 'duplicate-repository-identity';
     path: string;
     message: string;
   }>;

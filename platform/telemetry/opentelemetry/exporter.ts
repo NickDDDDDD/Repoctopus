@@ -14,6 +14,9 @@ import {
 import { createHash, randomBytes } from 'node:crypto';
 
 import type { TelemetryBatch, TelemetryPort } from '../../../domains/runtime/types.js';
+import type { DeliveryEvent, DeliveryTelemetryPort } from '../../../domains/delivery/ports.js';
+import type { DeliveryState } from '../../../domains/delivery/types.js';
+import { safeDeliveryAttributes } from '../delivery-mapping.js';
 import { eventSeverity, safeEventAttributes } from './mapping.js';
 
 function syntheticParentContext(runId: string, traceId: string): Context {
@@ -179,6 +182,54 @@ export class InMemoryTelemetryExporter implements TelemetryPort {
   }
 }
 
+export class OpenTelemetryDeliveryExporter implements DeliveryTelemetryPort {
+  constructor(private readonly options: OpenTelemetryOptions = {}) {}
+
+  async export(state: DeliveryState, event: DeliveryEvent): Promise<void> {
+    const timeoutMillis = this.options.timeoutMillis ?? 5_000;
+    const resource = resourceFromAttributes({
+      [ATTR_SERVICE_NAME]: 'repoctopus-delivery',
+      [ATTR_SERVICE_VERSION]: '0.1.0',
+      [ATTR_DEPLOYMENT_ENVIRONMENT_NAME]: this.options.environment ?? 'development',
+    });
+    const loggerProvider = new LoggerProvider({
+      resource,
+      processors: [
+        new SimpleLogRecordProcessor({ exporter: new OTLPLogExporter({ timeoutMillis }) }),
+      ],
+    });
+    const metricReader = new PeriodicExportingMetricReader({
+      exporter: new OTLPMetricExporter({ timeoutMillis }),
+      exportIntervalMillis: 60_000,
+      exportTimeoutMillis: timeoutMillis,
+    });
+    const meterProvider = new MeterProvider({ resource, readers: [metricReader] });
+    try {
+      const attributes = safeDeliveryAttributes(state, event);
+      loggerProvider.getLogger('repoctopus-delivery', '0.1.0').emit({
+        eventName: `repoctopus.${event.type}`,
+        timestamp: new Date(event.timestamp),
+        severityNumber: 9,
+        body: `Repoctopus delivery event: ${event.type}`,
+        attributes,
+      });
+      meterProvider
+        .getMeter('repoctopus-delivery', '0.1.0')
+        .createCounter('repoctopus.delivery.events', { unit: '{event}' })
+        .add(1, {
+          'repoctopus.delivery.event.type': event.type,
+          'repoctopus.delivery.state': state.status,
+        });
+      await Promise.all([
+        loggerProvider.forceFlush({ timeoutMillis }),
+        meterProvider.forceFlush({ timeoutMillis }),
+      ]);
+    } finally {
+      await Promise.allSettled([loggerProvider.shutdown(), meterProvider.shutdown()]);
+    }
+  }
+}
+
 export function telemetryFromEnvironment(
   environment: NodeJS.ProcessEnv = process.env,
 ): TelemetryPort {
@@ -195,4 +246,19 @@ export function telemetryFromEnvironment(
     options.environment = environment.REPOCTOPUS_ENVIRONMENT ?? 'development';
   }
   return new OpenTelemetryExporter(options);
+}
+
+export function deliveryTelemetryFromEnvironment(
+  environment: NodeJS.ProcessEnv = process.env,
+): DeliveryTelemetryPort {
+  const endpoint =
+    environment.OTEL_EXPORTER_OTLP_ENDPOINT ??
+    environment.OTEL_EXPORTER_OTLP_LOGS_ENDPOINT ??
+    environment.OTEL_EXPORTER_OTLP_METRICS_ENDPOINT;
+  if (!endpoint) return { async export() {} };
+  const options: OpenTelemetryOptions = {};
+  if (!environment.OTEL_RESOURCE_ATTRIBUTES?.includes('deployment.environment.name=')) {
+    options.environment = environment.REPOCTOPUS_ENVIRONMENT ?? 'development';
+  }
+  return new OpenTelemetryDeliveryExporter(options);
 }

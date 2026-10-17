@@ -114,4 +114,23 @@ describe('multi-repository project probe', () => {
     await createGitRepository(root, 'front-b', 'git@example.com:team/front.git');
     await expect(probeProject({ root })).rejects.toThrow(/duplicate repository identity/i);
   });
+
+  it('can omit every ambiguous identity while retaining unrelated repositories', async () => {
+    const root = await temporaryDirectory('repoctopus-duplicate-diagnostic-');
+    cleanup.push(root);
+    const first = await createGitRepository(root, 'first', 'https://github.com/example/shared.git');
+    const second = await createGitRepository(root, 'second', 'git@github.com:example/shared.git');
+    await createGitRepository(root, 'unique', 'https://github.com/example/unique.git');
+
+    const snapshot = await probeProject({ root, duplicateIdentity: 'omit-ambiguous' });
+
+    expect(snapshot.repositories).toHaveLength(1);
+    expect(snapshot.repositories[0]?.name).toBe('unique');
+    expect(snapshot.diagnostics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ code: 'duplicate-repository-identity', path: first }),
+        expect.objectContaining({ code: 'duplicate-repository-identity', path: second }),
+      ]),
+    );
+  });
 });
