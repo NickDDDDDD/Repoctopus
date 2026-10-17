@@ -8,6 +8,7 @@ import type { EvidenceExecutionPlan } from '../feedback/profile.js';
 import { redactEvidenceText } from './redaction.js';
 import { createEvidenceBundle } from './gate.js';
 import { canReuseReceipt, reuseReceipt } from './lifecycle.js';
+import { parseTestExecution } from './test-output.js';
 import {
   EVIDENCE_API_VERSION,
   type ArtifactRef,
@@ -25,6 +26,7 @@ export interface EvidenceRunResult {
 }
 
 export interface EvidenceRunOptions {
+  attemptId?: string;
   reusableReceipts?: readonly EvidenceReceipt[];
   captureEndingFingerprint?: () => Promise<string>;
   maxOutputBytes?: number;
@@ -66,7 +68,7 @@ export class EvidenceService {
     inputFingerprint: string,
     options: EvidenceRunOptions = {},
   ): Promise<EvidenceRunResult> {
-    const attemptId = randomUUID();
+    const attemptId = options.attemptId ?? randomUUID();
     const startedAt = this.clock.now().toISOString();
     const attempt: EvidenceAttempt = {
       apiVersion: EVIDENCE_API_VERSION,
@@ -180,6 +182,17 @@ export class EvidenceService {
           });
         }
       }
+      const testExecution =
+        result.exitCode === 0 && node.zeroTests
+          ? parseTestExecution(`${result.stdout}\n${result.stderr}`)
+          : null;
+      if (testExecution?.executed === 0 && node.zeroTests !== 'ignore') {
+        receiptFindings.push({
+          code: 'no-tests-detected',
+          severity: node.zeroTests === 'blocking' ? 'error' : 'warning',
+          summary: `${testExecution.framework} reported zero executed tests: ${testExecution.source}`,
+        });
+      }
       const artifactRefs: ArtifactRef[] = [];
       if (result.stdout.length > 0) {
         const redacted = redactEvidenceText(result.stdout, redactionOptions);
@@ -201,8 +214,12 @@ export class EvidenceService {
           }),
         );
       }
-      const status: 'passed' | 'failed' =
-        result.exitCode === 0 && !result.timedOut ? 'passed' : 'failed';
+      const status: 'passed' | 'failed' | 'incomplete' =
+        result.exitCode !== 0 || result.timedOut
+          ? 'failed'
+          : testExecution?.executed === 0 && node.zeroTests === 'blocking'
+            ? 'incomplete'
+            : 'passed';
       const receiptBase = {
         attemptId,
         nodeId,

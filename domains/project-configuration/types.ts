@@ -1,3 +1,5 @@
+import type { DeliveryPolicy } from '../delivery/types.js';
+
 export const PROJECT_CONFIG_API_VERSION = 'repoctopus/v1alpha1' as const;
 
 export interface RepositoryConfig {
@@ -17,6 +19,7 @@ export interface CommandNodeConfig {
   timeoutMs: number;
   cache: boolean;
   cacheTtlMs?: number;
+  zeroTests?: 'ignore' | 'warning' | 'blocking';
 }
 
 export type EvidenceNodeConfig = CommandNodeConfig;
@@ -38,6 +41,7 @@ export interface SharedProjectConfig {
       minRecentSuccesses?: number;
     };
   };
+  delivery?: Omit<DeliveryPolicy, 'apiVersion' | 'kind'>;
 }
 
 export interface LocalProjectConfig {

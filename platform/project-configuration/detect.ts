@@ -154,6 +154,7 @@ async function inspectDetectedRepository(input: {
         cwd: '.',
         confidence: 'confirmed',
         sources: [source(input.id, 'package.json', `scripts.${script}`)],
+        ...(script === 'test' ? { zeroTests: 'warning' as const } : {}),
       });
     }
     const devScript = typeof scripts.dev === 'string' ? scripts.dev : null;
@@ -194,6 +195,7 @@ async function inspectDetectedRepository(input: {
       cwd: '.',
       confidence: 'inferred',
       sources: [source(input.id, 'pom.xml', 'Maven project')],
+      zeroTests: 'warning',
     });
     const detected = springPort([
       { file: 'src/main/resources/application.yaml', contents: appYaml },
@@ -242,6 +244,7 @@ async function inspectDetectedRepository(input: {
       cwd: '.',
       confidence: 'inferred',
       sources: [source(input.id, gradle ? 'build.gradle' : 'build.gradle.kts', 'Gradle project')],
+      zeroTests: 'warning',
     });
   }
 
@@ -327,9 +330,11 @@ export async function detectProjectConfiguration(input: {
       cwd: command.cwd,
       timeoutMs: 10 * 60_000,
       cache: false,
+      ...(command.zeroTests ? { zeroTests: command.zeroTests } : {}),
     })),
   );
-  const candidateConfig: SharedProjectConfig | null =
+  const current = await optionalExistingConfig(workspace);
+  const detectedCandidate: SharedProjectConfig | null =
     repositories.length > 0 && commandNodes.length > 0
       ? {
           apiVersion: 'repoctopus/v1alpha1',
@@ -342,7 +347,13 @@ export async function detectProjectConfiguration(input: {
           profiles: [{ id: 'verify', nodes: commandNodes }],
         }
       : null;
-  const current = await optionalExistingConfig(workspace);
+  const candidateConfig: SharedProjectConfig | null = detectedCandidate
+    ? {
+        ...detectedCandidate,
+        ...(current?.evidence ? { evidence: structuredClone(current.evidence) } : {}),
+        ...(current?.delivery ? { delivery: structuredClone(current.delivery) } : {}),
+      }
+    : null;
   const baseConfigDigest = current ? hashProjectConfig(current) : null;
   const reconcile =
     current && candidateConfig ? reconcileProjectConfig(current, candidateConfig) : null;

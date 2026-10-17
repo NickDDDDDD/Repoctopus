@@ -12,6 +12,7 @@ export async function recoverEvidenceAttempt(input: {
   store: EvidenceStore;
   journal: EvidenceJournal;
   timestamp: string;
+  endingFingerprint?: string;
 }): Promise<{ receipts: EvidenceReceipt[]; bundle: EvidenceBundle }> {
   const attempt = await input.store.loadAttempt(input.attemptId);
   if (attempt.status !== 'running')
@@ -28,6 +29,15 @@ export async function recoverEvidenceAttempt(input: {
   const receipts: EvidenceReceipt[] = [];
   const checks = new Map<string, EvidenceCheck>();
   const findings: EvidenceFinding[] = [];
+  const superseded =
+    input.endingFingerprint !== undefined && input.endingFingerprint !== attempt.inputFingerprint;
+  if (superseded) {
+    findings.push({
+      code: 'input-drift',
+      severity: 'error',
+      summary: 'Evidence inputs changed while the interrupted attempt was being recovered',
+    });
+  }
   const nodes = new Map(input.plan.nodes.map((node) => [node.id, node]));
   for (const nodeId of input.plan.order) {
     const node = nodes.get(nodeId)!;
@@ -48,7 +58,7 @@ export async function recoverEvidenceAttempt(input: {
         required: node.required,
         status: receipt.status,
         trust: receipt.trust,
-        freshness: receipt.freshness,
+        freshness: superseded ? 'superseded' : receipt.freshness,
         receiptId,
       });
       continue;
@@ -84,7 +94,7 @@ export async function recoverEvidenceAttempt(input: {
   });
   attempt.receiptIds = bundle.receiptIds;
   attempt.completedAt = input.timestamp;
-  attempt.status = 'completed';
+  attempt.status = superseded ? 'superseded' : 'completed';
   await input.store.saveAttempt(attempt);
   await input.store.saveBundle(bundle);
   return { receipts, bundle };

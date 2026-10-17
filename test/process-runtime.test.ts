@@ -49,8 +49,9 @@ describe('process runtime', () => {
     cleanup.push(cwd);
     const child = spawnCommand(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { cwd });
     expect(child.pid).toBeTypeOf('number');
+    const closed = once(child, 'close');
     await terminateProcessTree(child);
-    await once(child, 'close');
+    await closed;
     expect(child.exitCode ?? child.signalCode).not.toBeNull();
   });
 

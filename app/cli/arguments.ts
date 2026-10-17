@@ -45,3 +45,21 @@ export function stringFlag(
 export function booleanFlag(parsed: ParsedArguments, name: string): boolean {
   return parsed.flags.get(name) === true || parsed.flags.get(name) === 'true';
 }
+
+export function integerFlag(
+  parsed: ParsedArguments,
+  name: string,
+  options: { fallback?: number; minimum?: number } = {},
+): number | undefined {
+  const value = parsed.flags.get(name);
+  if (value === undefined && options.fallback !== undefined) return options.fallback;
+  if (typeof value !== 'string' || !/^(?:0|[1-9]\d*)$/u.test(value)) {
+    if (value === undefined) return undefined;
+    throw new Error(`Option --${name} must be an integer`);
+  }
+  const parsedValue = Number(value);
+  if (!Number.isSafeInteger(parsedValue) || parsedValue < (options.minimum ?? 0)) {
+    throw new Error(`Option --${name} must be at least ${options.minimum ?? 0}`);
+  }
+  return parsedValue;
+}

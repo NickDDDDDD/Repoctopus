@@ -6,7 +6,8 @@
     { "$ref": "#/$defs/artifactRef" },
     { "$ref": "#/$defs/attempt" },
     { "$ref": "#/$defs/receipt" },
-    { "$ref": "#/$defs/bundle" }
+    { "$ref": "#/$defs/bundle" },
+    { "$ref": "#/$defs/gateProjection" }
   ],
   "$defs": {
     "base": {
@@ -103,6 +104,32 @@
             },
             "artifacts": { "type": "array", "items": { "$ref": "#/$defs/artifactRef" } },
             "findings": { "type": "array", "items": { "type": "object" } }
+          }
+        }
+      ]
+    },
+    "gateProjection": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "profileId",
+            "bundleId",
+            "inputFingerprint",
+            "outcome",
+            "status",
+            "reason"
+          ],
+          "properties": {
+            "kind": { "const": "EvidenceGateProjection" },
+            "profileId": { "type": "string", "minLength": 1 },
+            "bundleId": { "type": "string", "minLength": 1 },
+            "inputFingerprint": { "type": "string", "minLength": 1 },
+            "outcome": { "enum": ["passed", "failed", "incomplete", "passed_with_warnings"] },
+            "status": { "enum": ["satisfied", "blocked"] },
+            "reason": { "type": "string", "minLength": 1 }
           }
         }
       ]

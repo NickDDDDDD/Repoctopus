@@ -159,6 +159,18 @@ evidence:
   retention:
     maxAgeDays: 99
     minRecentSuccesses: 3
+delivery:
+  checkpoint:
+    automatic: true
+    protectedBranches: [main]
+    commitMessagePattern: '^feat: .+'
+    quickChecks: {}
+  publication:
+    remote: origin
+    provider: github
+    githubApiBaseUrl: https://api.github.com
+    mrTitleTemplate: '{{changeId}}'
+    mrBodyTemplate: '{{verificationReport}}'
 `;
     await writeFile(sharedFile, shared);
 
@@ -191,6 +203,12 @@ evidence:
         },
       ]),
     );
-    expect(draft.candidateConfig).not.toHaveProperty('evidence');
+    expect(draft.candidateConfig).toMatchObject({
+      evidence: { retention: { maxAgeDays: 99, minRecentSuccesses: 3 } },
+      delivery: {
+        checkpoint: { automatic: true },
+        publication: { remote: 'origin', provider: 'github' },
+      },
+    });
   });
 });

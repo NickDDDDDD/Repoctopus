@@ -28,7 +28,7 @@ node bin/repoctopus.js doctor --workspace C:\path\to\project\repoctopus --run <r
 
 ## 交付治理
 
-复制 [交付策略示例](docs/examples/repoctopus.yaml) 为 workspace 的 `repoctopus.yaml`，并为 change 创建 [交付意图](docs/examples/delivery-intent.yaml)。本地 checkpoint 不需要人工批准：
+通过项目接入流程生成 workspace 的 `repoctopus.yaml`，在其 `delivery` 段维护团队交付策略（完整示例见 [项目配置示例](docs/examples/repoctopus.yaml)），并为 change 创建 [交付意图](docs/examples/delivery-intent.yaml)。本地 checkpoint 不需要人工批准：
 
 ```powershell
 node bin/repoctopus.js delivery checkpoint --workspace . --project-root .. --intent docs/examples/delivery-intent.yaml --policy repoctopus.yaml --json
@@ -47,6 +47,8 @@ node bin/repoctopus.js approval review --workspace . --change example-change
 node bin/repoctopus.js delivery publish --workspace . --project-root .. --change example-change --intent docs/examples/delivery-intent.yaml --policy repoctopus.yaml --report path/to/verification-report.md --json
 node bin/repoctopus.js delivery refresh --workspace . --change example-change --policy repoctopus.yaml --json
 ```
+
+多仓项目首次接入和 Evidence 命令见 [项目接入](docs/project-onboarding.md)。
 
 ## 架构入口
 

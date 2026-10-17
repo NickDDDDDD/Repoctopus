@@ -10,6 +10,23 @@ function nonEmptyStrings(value: unknown): value is string[] {
   return Array.isArray(value) && value.every((item) => typeof item === 'string' && item.length > 0);
 }
 
+function unknownFields(
+  value: unknown,
+  path: string,
+  allowed: readonly string[],
+  findings: DeliveryFinding[],
+): void {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return;
+  const unknown = Object.keys(value).filter((key) => !allowed.includes(key));
+  if (unknown.length > 0) {
+    findings.push({
+      code: 'unknown-policy-field',
+      path,
+      message: `Unknown fields: ${unknown.sort().join(', ')}`,
+    });
+  }
+}
+
 export function validateDeliveryPolicy(value: unknown): DeliveryFinding[] {
   const findings: DeliveryFinding[] = [];
   const policy = value as Partial<DeliveryPolicy> | null;
@@ -21,6 +38,19 @@ export function validateDeliveryPolicy(value: unknown): DeliveryFinding[] {
     });
     return findings;
   }
+  unknownFields(policy, '', ['apiVersion', 'kind', 'checkpoint', 'publication'], findings);
+  unknownFields(
+    policy.checkpoint,
+    'checkpoint',
+    ['automatic', 'protectedBranches', 'commitMessagePattern', 'quickChecks'],
+    findings,
+  );
+  unknownFields(
+    policy.publication,
+    'publication',
+    ['remote', 'provider', 'githubApiBaseUrl', 'mrTitleTemplate', 'mrBodyTemplate'],
+    findings,
+  );
   if (typeof policy.checkpoint?.automatic !== 'boolean') {
     findings.push({
       code: 'missing-automatic-mode',
@@ -52,6 +82,16 @@ export function validateDeliveryPolicy(value: unknown): DeliveryFinding[] {
           path: `checkpoint.quickChecks.${repository}`,
           message: 'Each quick check requires a command and string args',
         });
+      if (Array.isArray(checks)) {
+        checks.forEach((check, index) =>
+          unknownFields(
+            check,
+            `checkpoint.quickChecks.${repository}[${index}]`,
+            ['command', 'args'],
+            findings,
+          ),
+        );
+      }
     }
   }
   if (!nonEmptyStrings(policy.checkpoint?.protectedBranches)) {

@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { aggregateGateOutcome, createEvidenceBundle } from '../domains/evidence/gate.js';
+import {
+  aggregateGateOutcome,
+  createEvidenceBundle,
+  projectEvidenceGate,
+} from '../domains/evidence/gate.js';
 import { EVIDENCE_API_VERSION, type EvidenceReceipt } from '../domains/evidence/types.js';
 import { parseEvidenceBundle, parseEvidenceReceipt } from '../domains/evidence/validation.js';
 
@@ -45,6 +49,12 @@ describe('evidence contracts', () => {
       findings: [],
     });
     expect(parseEvidenceBundle(JSON.parse(JSON.stringify(bundle)))).toEqual(bundle);
+    expect(projectEvidenceGate(bundle)).toMatchObject({
+      kind: 'EvidenceGateProjection',
+      status: 'satisfied',
+      outcome: 'passed',
+      bundleId: bundle.bundleId,
+    });
   });
 
   it('rejects an unknown major evidence version', () => {

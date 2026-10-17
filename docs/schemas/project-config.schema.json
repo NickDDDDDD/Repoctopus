@@ -57,9 +57,64 @@
           }
         }
       }
+    },
+    "delivery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["checkpoint", "publication"],
+      "properties": {
+        "checkpoint": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["automatic", "protectedBranches", "commitMessagePattern", "quickChecks"],
+          "properties": {
+            "automatic": { "type": "boolean" },
+            "protectedBranches": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "commitMessagePattern": { "type": "string", "minLength": 1 },
+            "quickChecks": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "array",
+                "items": { "$ref": "#/$defs/quickCheck" }
+              }
+            }
+          }
+        },
+        "publication": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "remote",
+            "provider",
+            "githubApiBaseUrl",
+            "mrTitleTemplate",
+            "mrBodyTemplate"
+          ],
+          "properties": {
+            "remote": { "type": "string", "minLength": 1 },
+            "provider": { "const": "github" },
+            "githubApiBaseUrl": { "type": "string", "format": "uri" },
+            "mrTitleTemplate": { "type": "string", "minLength": 1 },
+            "mrBodyTemplate": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
     }
   },
   "$defs": {
+    "quickCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["command", "args"],
+      "properties": {
+        "command": { "type": "string", "minLength": 1 },
+        "args": { "type": "array", "items": { "type": "string" } }
+      }
+    },
     "commandNode": {
       "type": "object",
       "additionalProperties": false,
@@ -75,7 +130,8 @@
         "cwd": { "type": "string" },
         "timeoutMs": { "type": "integer", "minimum": 1 },
         "cache": { "type": "boolean" },
-        "cacheTtlMs": { "type": "integer", "minimum": 1 }
+        "cacheTtlMs": { "type": "integer", "minimum": 1 },
+        "zeroTests": { "enum": ["ignore", "warning", "blocking"] }
       }
     }
   }

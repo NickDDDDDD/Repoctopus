@@ -1,4 +1,10 @@
-import type { EvidenceBundle, EvidenceCheck, EvidenceFinding, GateOutcome } from './types.js';
+import type {
+  EvidenceBundle,
+  EvidenceCheck,
+  EvidenceFinding,
+  EvidenceGateProjection,
+  GateOutcome,
+} from './types.js';
 
 export function aggregateGateOutcome(
   checks: readonly EvidenceCheck[],
@@ -31,5 +37,21 @@ export function createEvidenceBundle(
     kind: 'EvidenceBundle',
     ...input,
     outcome: aggregateGateOutcome(input.checks, input.findings),
+  };
+}
+
+export function projectEvidenceGate(bundle: EvidenceBundle): EvidenceGateProjection {
+  const satisfied = bundle.outcome === 'passed' || bundle.outcome === 'passed_with_warnings';
+  return {
+    schemaVersion: 1,
+    kind: 'EvidenceGateProjection',
+    profileId: bundle.profileId,
+    bundleId: bundle.bundleId,
+    inputFingerprint: bundle.inputFingerprint,
+    outcome: bundle.outcome,
+    status: satisfied ? 'satisfied' : 'blocked',
+    reason: satisfied
+      ? `Evidence profile ${bundle.profileId} satisfied the current input fingerprint`
+      : `Evidence profile ${bundle.profileId} is ${bundle.outcome}`,
   };
 }

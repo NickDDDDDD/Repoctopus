@@ -44,13 +44,13 @@
 - [x] 6.1 实现受作用域限制的 `project detect`，运行 fixture 测试验证 Git、Node、Maven/Gradle、常见端口和健康端点只写入带来源与不确定项的 `.repoctopus/drafts/`。
 - [x] 6.2 实现已有共享配置的 reconcile diff，运行测试验证探测不会覆盖正式配置或人工字段，并能稳定报告新增、删除、冲突和待确认项。
 - [x] 6.3 把 draft 与 Agent 补全结果接入 Human Decision，运行协议测试验证缺少可信用户确认时不能创建或更新 `repoctopus.yaml`，批准内容与最终写入摘要一致。
-- [ ] 6.4 更新项目配置与接入文档，按文档在临时多仓 fixture 完成 detect → 补全 → 确认 → 首次 Evidence Run，核对命令和结果可复现。
+- [x] 6.4 更新项目配置与接入文档，按文档在临时多仓 fixture 完成 detect → 补全 → 确认 → 首次 Evidence Run，核对命令和结果可复现。
 
 ## 7. CLI、Runtime 与 OpenTelemetry 集成
 
-- [ ] 7.1 增加 Evidence CLI 的 `plan`、`run`、`status`、`resume`、`inspect`、`clean` 和浏览器管理 envelope，运行 CLI contract 测试核对 JSON 版本、稳定错误码、退出码和人工决定输出。
-- [ ] 7.2 在 Runtime composition root 接入配置、DAG、Evidence Store、Adapter、Journal、lease 和 Engine Gate 投影，运行端到端测试验证只有当前 `verified` 必需证据可以推进 Verify。
-- [ ] 7.3 实现零测试结构化识别，运行 npm/Maven fixture 验证退出码为零且执行数为零时产生 `no-tests-detected`，并按共享 Profile 得到 warning 或 blocking 结果。
+- [x] 7.1 增加 Evidence CLI 的 `plan`、`run`、`status`、`resume`、`inspect`、`clean` 和浏览器管理 envelope，运行 CLI contract 测试核对 JSON 版本、稳定错误码、退出码和人工决定输出。
+- [x] 7.2 在 Runtime composition root 接入配置、DAG、Evidence Store、Adapter、Journal、lease 和 Engine Gate 投影，运行端到端测试验证只有当前 `verified` 必需证据可以推进 Verify。
+- [x] 7.3 实现零测试结构化识别，运行 npm/Maven fixture 验证退出码为零且执行数为零时产生 `no-tests-detected`，并按共享 Profile 得到 warning 或 blocking 结果。
 - [ ] 7.4 扩展 OTel mapping 和 Delivery Cursor 重放，运行内存 OTLP 测试验证 Run/Attempt/节点/Artifact/Gate 的稳定关联、重试身份与后端故障不回滚本地事实。
 - [ ] 7.5 运行遥测隐私测试确认命令输出、服务/浏览器日志、健康正文、DOM、截图、视觉请求/响应、绝对路径和敏感值不出现在 Trace、Log 或 Metric 属性。
 - [ ] 7.6 更新 Runtime、Evidence、Telemetry 和人工决定文档，运行文档中的完整 CLI 示例并核对架构图与实际模块边界一致。

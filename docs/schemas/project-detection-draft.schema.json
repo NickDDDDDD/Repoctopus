@@ -60,7 +60,8 @@
         "args": { "type": "array", "items": { "type": "string" } },
         "cwd": { "type": "string" },
         "confidence": { "enum": ["confirmed", "inferred"] },
-        "sources": { "type": "array", "items": { "$ref": "#/$defs/source" } }
+        "sources": { "type": "array", "items": { "$ref": "#/$defs/source" } },
+        "zeroTests": { "enum": ["warning", "blocking"] }
       }
     },
     "service": {

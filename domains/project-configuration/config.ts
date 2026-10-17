@@ -2,6 +2,8 @@ import { createHash } from 'node:crypto';
 import path from 'node:path';
 
 import { canonicalJson, canonicalValue } from '../workflow-contract/canonical.js';
+import type { DeliveryPolicy } from '../delivery/types.js';
+import { validateDeliveryPolicy } from '../delivery/validation.js';
 import {
   PROJECT_CONFIG_API_VERSION,
   type EvidenceNodeConfig,
@@ -80,6 +82,7 @@ function parseCommandNode(value: unknown, field: string): EvidenceNodeConfig {
       'timeoutMs',
       'cache',
       'cacheTtlMs',
+      'zeroTests',
     ],
     field,
   );
@@ -93,6 +96,15 @@ function parseCommandNode(value: unknown, field: string): EvidenceNodeConfig {
   const cwd = node.cwd;
   if (cwd !== undefined && typeof cwd !== 'string') {
     throw new ProjectConfigError('expected a string', `${field}.cwd`);
+  }
+  const zeroTests = node.zeroTests;
+  if (
+    zeroTests !== undefined &&
+    zeroTests !== 'ignore' &&
+    zeroTests !== 'warning' &&
+    zeroTests !== 'blocking'
+  ) {
+    throw new ProjectConfigError('expected ignore, warning, or blocking', `${field}.zeroTests`);
   }
   return {
     id: string(node.id, `${field}.id`),
@@ -110,6 +122,29 @@ function parseCommandNode(value: unknown, field: string): EvidenceNodeConfig {
           cacheTtlMs: positiveInteger(node.cacheTtlMs, `${field}.cacheTtlMs`, 60 * 60_000),
         }
       : {}),
+    ...(zeroTests !== undefined ? { zeroTests } : {}),
+  };
+}
+
+function parseDeliveryConfig(value: unknown): NonNullable<SharedProjectConfig['delivery']> {
+  const raw = object(value, 'delivery');
+  exactKeys(raw, ['checkpoint', 'publication'], 'delivery');
+  const policy: unknown = {
+    apiVersion: PROJECT_CONFIG_API_VERSION,
+    kind: 'DeliveryPolicy',
+    ...raw,
+  };
+  const findings = validateDeliveryPolicy(policy);
+  if (findings.length > 0) {
+    throw new ProjectConfigError(
+      findings.map((finding) => `${finding.path || 'delivery'}: ${finding.message}`).join('; '),
+      'delivery',
+    );
+  }
+  const validated = policy as DeliveryPolicy;
+  return {
+    checkpoint: structuredClone(validated.checkpoint),
+    publication: structuredClone(validated.publication),
   };
 }
 
@@ -117,7 +152,7 @@ export function parseSharedProjectConfig(value: unknown): SharedProjectConfig {
   const root = object(value, 'config');
   exactKeys(
     root,
-    ['apiVersion', 'kind', 'project', 'repositories', 'profiles', 'evidence'],
+    ['apiVersion', 'kind', 'project', 'repositories', 'profiles', 'evidence', 'delivery'],
     'config',
   );
   if (root.apiVersion !== PROJECT_CONFIG_API_VERSION)
@@ -187,6 +222,7 @@ export function parseSharedProjectConfig(value: unknown): SharedProjectConfig {
     }
     evidence = retention ? { retention } : {};
   }
+  const delivery = root.delivery !== undefined ? parseDeliveryConfig(root.delivery) : undefined;
 
   return {
     apiVersion: PROJECT_CONFIG_API_VERSION,
@@ -195,6 +231,7 @@ export function parseSharedProjectConfig(value: unknown): SharedProjectConfig {
     repositories,
     profiles,
     ...(evidence ? { evidence } : {}),
+    ...(delivery ? { delivery } : {}),
   };
 }
 

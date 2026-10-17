@@ -4,7 +4,7 @@ Repoctopus 将本地开发保存与团队共享发布分开。功能分支上的
 
 ## 配置边界
 
-共享策略使用 `repoctopus.yaml`，示例见 [examples/repoctopus.yaml](examples/repoctopus.yaml)。自动 checkpoint 只有在以下条件全部成立时执行：
+共享策略位于 `repoctopus.yaml` 的 `delivery` 段，示例见 [examples/repoctopus.yaml](examples/repoctopus.yaml)。自动 checkpoint 只有在以下条件全部成立时执行：
 
 - `checkpoint.automatic` 为 `true`；
 - 当前分支不匹配 `protectedBranches`；

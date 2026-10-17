@@ -119,4 +119,34 @@ describe('Git delivery adapter', () => {
       parseDeliveryPolicy(source.replace("  commitMessagePattern: '^feat: .+'\n", '')),
     ).toThrow(/commit message format/i);
   });
+
+  it('loads delivery policy from the unified project configuration', () => {
+    const source = `apiVersion: repoctopus/v1alpha1
+kind: RepoctopusProject
+project: { id: sample }
+repositories:
+  - { id: app, path: ../app }
+profiles:
+  - id: verify
+    nodes:
+      - { id: build, type: command, repository: app, executable: npm, args: [run, build] }
+delivery:
+  checkpoint:
+    automatic: true
+    protectedBranches: [main]
+    commitMessagePattern: '^feat: .+'
+    quickChecks: {}
+  publication:
+    remote: origin
+    provider: github
+    githubApiBaseUrl: https://api.github.com
+    mrTitleTemplate: title
+    mrBodyTemplate: body
+`;
+    expect(parseDeliveryPolicy(source)).toMatchObject({
+      kind: 'DeliveryPolicy',
+      checkpoint: { automatic: true },
+      publication: { remote: 'origin' },
+    });
+  });
 });

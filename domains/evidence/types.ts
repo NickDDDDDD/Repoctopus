@@ -79,3 +79,14 @@ export interface EvidenceBundle {
   artifactDigests: string[];
   findings: EvidenceFinding[];
 }
+
+export interface EvidenceGateProjection {
+  schemaVersion: 1;
+  kind: 'EvidenceGateProjection';
+  profileId: string;
+  bundleId: string;
+  inputFingerprint: string;
+  outcome: GateOutcome;
+  status: 'satisfied' | 'blocked';
+  reason: string;
+}

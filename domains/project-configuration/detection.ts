@@ -16,6 +16,7 @@ export interface DetectedCommand {
   cwd: string;
   confidence: DetectionConfidence;
   sources: DetectionSource[];
+  zeroTests?: 'warning' | 'blocking';
 }
 
 export interface DetectedService {
