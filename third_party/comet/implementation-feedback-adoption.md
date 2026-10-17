@@ -14,7 +14,7 @@
 | 候选机制                                            | 直接或关键内部依赖                                                            | 结论                                                                            |
 | --------------------------------------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
 | `spawn-command`                                     | Node child process、文件存在检查                                              | 改造采用；独立且解决 Windows npm shim 与 argv 边界                              |
-| `terminate-process-tree`                            | Node child process                                                            | 原样采用；独立且具有 Windows/Linux 明确语义                                     |
+| `terminate-process-tree`                            | Node child process                                                            | 改造采用；增加崩溃恢复时基于创建身份的保守终止                                  |
 | `process-identity`                                  | `external-command`、`windows-process-identity`                                | 连同最小闭包采用；用于识别 PID 复用                                             |
 | `external-command`                                  | `spawn-command`、Comet runtime metrics                                        | 移除指标依赖后采用；Repoctopus 由 OTel Adapter 负责指标                         |
 | `native-evidence-storage`                           | Native paths、文件 identity、verification scope/evidence/receipt              | 不复制；保留内容寻址、边界读取和写前后核对机制                                  |
@@ -31,11 +31,11 @@ Repoctopus 的进程层保留这些上游行为：
 
 - 正式命令使用可执行文件与 argv，默认不经过 shell。
 - Windows `.cmd`、`.bat` 和 `.ps1` 使用受控 shim；危险 batch 参数被拒绝。
-- Linux 子进程使用独立进程组，Windows 使用 `taskkill /t /f`，只接受已持有的 ChildProcess 句柄作为终止目标。
+- Linux 子进程使用独立进程组，Windows 使用 `taskkill /t /f`；同进程会话使用已持有的 ChildProcess 句柄，崩溃恢复必须同时核对 PID、创建 identity 与资源 lease。
 - 进程所有权由 PID 与创建 identity 共同判断；无法读取 identity 时返回 `unknown`，不把不确定状态当作死亡。
 - 外部探测具有超时、取消和缓冲区上限。
 
-行为测试位于 `test/process-runtime.test.ts`，覆盖含空格与 shell 字符的单一 argv、危险 batch 参数、当前进程 identity、错误 identity、受控进程树终止和命令超时。
+行为测试位于 `test/process-runtime.test.ts` 与 `test/service-recovery.test.ts`，覆盖含空格与 shell 字符的单一 argv、危险 batch 参数、当前进程 identity、错误 identity、受控进程树终止、命令超时、崩溃接管和 PID identity 不匹配时拒绝终止。
 
 ## 后续采用约束
 

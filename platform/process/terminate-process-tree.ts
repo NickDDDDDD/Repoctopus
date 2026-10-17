@@ -1,6 +1,8 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 import path from 'node:path';
 
+import { inspectProcessOwnership } from './process-identity.js';
+
 const WINDOWS_TASKKILL_ATTEMPT_MS = 1_000;
 const WINDOWS_TASKKILL_ATTEMPTS = 2;
 
@@ -59,4 +61,64 @@ export async function terminateProcessTree(child: ChildProcess): Promise<void> {
     if ((error as NodeJS.ErrnoException).code !== 'ESRCH') throw error;
   }
   child.kill('SIGKILL');
+}
+
+export type RecoveredTermination = 'terminated' | 'not_running' | 'identity_mismatch' | 'unknown';
+
+async function taskkillProcessTree(pid: number): Promise<boolean> {
+  const configuredSystemRoot = process.env.SystemRoot ?? process.env.WINDIR;
+  const systemRoot =
+    configuredSystemRoot && path.win32.isAbsolute(configuredSystemRoot)
+      ? path.win32.resolve(configuredSystemRoot)
+      : 'C:\\Windows';
+  const taskkill = path.win32.join(systemRoot, 'System32', 'taskkill.exe');
+  return new Promise((resolve) => {
+    let finished = false;
+    let killer: ChildProcess | null = null;
+    let timer: NodeJS.Timeout | null = null;
+    const finish = (ok: boolean): void => {
+      if (finished) return;
+      finished = true;
+      if (timer) clearTimeout(timer);
+      resolve(ok);
+    };
+    try {
+      killer = spawn(taskkill, ['/pid', String(pid), '/t', '/f'], {
+        stdio: 'ignore',
+        windowsHide: true,
+      });
+      killer.once('error', () => finish(false));
+      killer.once('close', (code) => finish(code === 0));
+      timer = setTimeout(() => {
+        killer?.kill('SIGKILL');
+        finish(false);
+      }, WINDOWS_TASKKILL_ATTEMPT_MS);
+    } catch {
+      finish(false);
+    }
+  });
+}
+
+/** Terminate a recovered process only after its creation identity still matches. */
+export async function terminateRecoveredProcessTree(
+  pid: number,
+  expectedIdentity: string,
+): Promise<RecoveredTermination> {
+  const ownership = await inspectProcessOwnership(pid, expectedIdentity);
+  if (ownership !== 'matched') return ownership;
+  if (process.platform === 'win32') {
+    for (let attempt = 0; attempt < WINDOWS_TASKKILL_ATTEMPTS; attempt += 1) {
+      if (await taskkillProcessTree(pid)) return 'terminated';
+      const after = await inspectProcessOwnership(pid, expectedIdentity);
+      if (after === 'not_running') return 'terminated';
+      if (after !== 'matched') return after;
+    }
+    return 'unknown';
+  }
+  try {
+    process.kill(-pid, 'SIGKILL');
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ESRCH') return 'unknown';
+  }
+  return 'terminated';
 }

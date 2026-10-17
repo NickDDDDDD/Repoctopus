@@ -76,6 +76,7 @@ async function inspectProcessIdentity(pid: number): Promise<string | null> {
 }
 
 export type ProcessLiveness = 'alive' | 'dead' | 'unknown';
+export type ProcessOwnership = 'matched' | 'not_running' | 'identity_mismatch' | 'unknown';
 
 // The two Windows probe sources format creation time differently; a mismatch
 // between them says which probe ran, not that the pid was reused.
@@ -118,6 +119,34 @@ export async function inspectProcessLiveness(
     return 'unknown';
   }
   return 'dead';
+}
+
+/**
+ * Stronger ownership check for destructive recovery actions. Unlike liveness,
+ * this keeps a reused PID distinct from a process that no longer exists.
+ */
+export async function inspectProcessOwnership(
+  pid: number,
+  expectedIdentity: string,
+): Promise<ProcessOwnership> {
+  if (!Number.isSafeInteger(pid) || pid <= 0 || !expectedIdentity) return 'unknown';
+  try {
+    process.kill(pid, 0);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ESRCH') return 'not_running';
+    return 'unknown';
+  }
+  const current = await readProcessIdentity(pid);
+  if (current === null) return 'unknown';
+  if (current === expectedIdentity) return 'matched';
+  if (
+    identitySource(current) !== identitySource(expectedIdentity) &&
+    INTERCHANGEABLE_IDENTITY_SOURCES.has(identitySource(current)) &&
+    INTERCHANGEABLE_IDENTITY_SOURCES.has(identitySource(expectedIdentity))
+  ) {
+    return 'unknown';
+  }
+  return 'identity_mismatch';
 }
 
 export async function processInstanceMayBeAlive(pid: number, identity?: string): Promise<boolean> {

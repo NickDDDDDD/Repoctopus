@@ -4,6 +4,7 @@ import net from 'node:net';
 import type {
   AttachedServiceRequest,
   ManagedServiceRequest,
+  ManagedServiceRecovery,
   ManagedServiceSession,
   ReadinessCondition,
   ReadinessProbe,
@@ -13,11 +14,19 @@ import type {
 } from '../../domains/feedback/service.js';
 import { inspectProcessLiveness, readProcessIdentity } from '../process/process-identity.js';
 import { spawnCommand } from '../process/spawn-command.js';
-import { terminateProcessTree } from '../process/terminate-process-tree.js';
+import {
+  terminateProcessTree,
+  terminateRecoveredProcessTree,
+} from '../process/terminate-process-tree.js';
 import type { ResourceLease } from '../runtime/resource-lease.js';
 import { FileResourceLeaseManager } from '../runtime/resource-lease.js';
 import { BoundedTextCapture } from './bounded-text-capture.js';
 import { DEFAULT_COMMAND_OUTPUT_BYTES } from './command-adapter.js';
+import {
+  managedCommandDigest,
+  ManagedServiceRegistry,
+  type ManagedServiceRegistration,
+} from './managed-service-registry.js';
 
 function wait(milliseconds: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
@@ -147,8 +156,11 @@ class LocalManagedServiceSession implements ManagedServiceSession {
     private readonly request: ManagedServiceRequest,
     private readonly leases: ResourceLease[],
     private readonly leaseManager: FileResourceLeaseManager,
+    private readonly registration: ManagedServiceRegistration,
+    private readonly registry: ManagedServiceRegistry,
   ) {
     this.serviceId = request.serviceId;
+    this.identity = registration.processIdentity;
     this.stdout = new BoundedTextCapture(request.maxOutputBytes ?? DEFAULT_COMMAND_OUTPUT_BYTES);
     this.stderr = new BoundedTextCapture(request.maxOutputBytes ?? DEFAULT_COMMAND_OUTPUT_BYTES);
     child.stdout?.setEncoding('utf8');
@@ -158,10 +170,6 @@ class LocalManagedServiceSession implements ManagedServiceSession {
     child.once('error', () => {
       this.processFailed = true;
     });
-  }
-
-  async initializeIdentity(): Promise<void> {
-    this.identity = this.child.pid ? await readProcessIdentity(this.child.pid) : null;
   }
 
   private logs(): ServiceLogs {
@@ -220,7 +228,11 @@ class LocalManagedServiceSession implements ManagedServiceSession {
           await terminateProcessTree(this.child);
         }
       }
-      for (const lease of [...this.leases].reverse()) await this.leaseManager.release(lease);
+      try {
+        for (const lease of [...this.leases].reverse()) await this.leaseManager.release(lease);
+      } finally {
+        await this.registry.remove(this.registration);
+      }
     }
     return this.snapshot();
   }
@@ -228,25 +240,112 @@ class LocalManagedServiceSession implements ManagedServiceSession {
 
 export class LocalServiceAdapter implements ServiceAdapter {
   private readonly leases: FileResourceLeaseManager;
+  private readonly registry: ManagedServiceRegistry;
 
   constructor(workspace: string) {
     this.leases = new FileResourceLeaseManager(workspace);
+    this.registry = new ManagedServiceRegistry(workspace);
   }
 
   async startManaged(request: ManagedServiceRequest): Promise<ManagedServiceSession> {
     const acquired: ResourceLease[] = [];
+    let child: ChildProcess | undefined;
+    let registration: ManagedServiceRegistration | undefined;
     try {
-      for (const resource of request.resourceKeys ?? []) {
+      const resources = new Set([`service:${request.serviceId}`, ...(request.resourceKeys ?? [])]);
+      for (const resource of resources) {
         acquired.push(await this.leases.acquire(resource));
       }
-      const child = spawnCommand(request.executable, request.args, { cwd: request.cwd });
-      const session = new LocalManagedServiceSession(child, request, acquired, this.leases);
-      await session.initializeIdentity();
-      return session;
+      child = spawnCommand(request.executable, request.args, { cwd: request.cwd });
+      if (!child.pid) throw new Error(`Managed service did not expose a pid: ${request.serviceId}`);
+      const identity = await readProcessIdentity(child.pid);
+      if (!identity) {
+        throw new Error(`Managed service process identity is unavailable: ${request.serviceId}`);
+      }
+      for (let index = 0; index < acquired.length; index += 1) {
+        acquired[index] = await this.leases.rebind(acquired[index]!, {
+          pid: child.pid,
+          processIdentity: identity,
+        });
+      }
+      registration = this.registry.create({
+        serviceId: request.serviceId,
+        pid: child.pid,
+        processIdentity: identity,
+        startedAt: new Date().toISOString(),
+        commandDigest: managedCommandDigest(request),
+        processGroup: { strategy: 'pid-tree', id: child.pid },
+        stopPolicy: 'owned-process-tree',
+        leases: [...acquired],
+        logArtifacts: [],
+      });
+      await this.registry.save(registration);
+      return new LocalManagedServiceSession(
+        child,
+        request,
+        acquired,
+        this.leases,
+        registration,
+        this.registry,
+      );
     } catch (error) {
-      for (const lease of acquired.reverse()) await this.leases.release(lease);
+      try {
+        if (child) await terminateProcessTree(child);
+      } finally {
+        for (const lease of acquired.reverse()) await this.leases.release(lease);
+        if (registration) await this.registry.remove(registration);
+      }
       throw error;
     }
+  }
+
+  async recoverManaged(serviceId: string): Promise<ManagedServiceRecovery> {
+    const registration = await this.registry.load(serviceId);
+    if (!registration) {
+      return {
+        serviceId,
+        status: 'not_found',
+        diagnostic: 'No managed service registration exists',
+      };
+    }
+    const process = { pid: registration.pid, identity: registration.processIdentity };
+    const leasesMatch = await Promise.all(
+      registration.leases.map((lease) => this.leases.isOwnedBy(lease)),
+    );
+    if (leasesMatch.some((matches) => !matches)) {
+      return {
+        serviceId,
+        status: 'orphan',
+        diagnostic: 'Managed service lease ownership could not be verified',
+        process,
+      };
+    }
+    const termination = await terminateRecoveredProcessTree(
+      registration.pid,
+      registration.processIdentity,
+    );
+    if (termination === 'identity_mismatch' || termination === 'unknown') {
+      return {
+        serviceId,
+        status: 'orphan',
+        diagnostic:
+          termination === 'identity_mismatch'
+            ? 'PID exists with a different creation identity'
+            : 'Process identity could not be verified',
+        process,
+      };
+    }
+    for (const lease of [...registration.leases].reverse()) await this.leases.release(lease);
+    await this.registry.remove(registration);
+    return {
+      serviceId,
+      status: termination === 'not_running' ? 'already_stopped' : 'terminated',
+      diagnostic:
+        termination === 'not_running'
+          ? 'Registered process was already stopped'
+          : 'Recovered managed process tree was terminated',
+      process,
+    };
   }
 
   async observeAttached(request: AttachedServiceRequest): Promise<ServiceObservation> {

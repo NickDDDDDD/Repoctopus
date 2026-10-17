@@ -59,7 +59,15 @@ export interface ManagedServiceSession {
   stop(): Promise<ServiceObservation>;
 }
 
+export interface ManagedServiceRecovery {
+  serviceId: string;
+  status: 'terminated' | 'not_found' | 'already_stopped' | 'orphan';
+  diagnostic: string;
+  process?: { pid: number; identity: string };
+}
+
 export interface ServiceAdapter {
   startManaged(request: ManagedServiceRequest): Promise<ManagedServiceSession>;
+  recoverManaged(serviceId: string): Promise<ManagedServiceRecovery>;
   observeAttached(request: AttachedServiceRequest): Promise<ServiceObservation>;
 }

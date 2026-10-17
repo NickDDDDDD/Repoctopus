@@ -125,6 +125,37 @@ export class FileResourceLeaseManager {
     await rm(quarantine, { force: true });
   }
 
+  async rebind(
+    lease: ResourceLease,
+    owner: { pid: number; processIdentity: string },
+  ): Promise<ResourceLease> {
+    const current = await readOwner(lease.file);
+    if (
+      !current ||
+      current.leaseId !== lease.owner.leaseId ||
+      current.resourceKey !== lease.owner.resourceKey
+    ) {
+      throw new Error(`Resource lease ownership changed: ${lease.owner.resourceKey}`);
+    }
+    const rebound: ResourceLeaseOwner = {
+      ...current,
+      pid: owner.pid,
+      processIdentity: owner.processIdentity,
+    };
+    await atomicWriteJson(lease.file, rebound);
+    return { file: lease.file, owner: rebound };
+  }
+
+  async isOwnedBy(lease: ResourceLease): Promise<boolean> {
+    const current = await readOwner(lease.file);
+    return (
+      current?.leaseId === lease.owner.leaseId &&
+      current.resourceKey === lease.owner.resourceKey &&
+      current.pid === lease.owner.pid &&
+      current.processIdentity === lease.owner.processIdentity
+    );
+  }
+
   async withLease<T>(resourceKey: string, work: () => Promise<T>): Promise<T> {
     const lease = await this.acquire(resourceKey);
     try {

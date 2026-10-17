@@ -60,8 +60,8 @@
       "source": "platform/process/process-identity.ts",
       "sourceSha256": "48d0db970323212f34224909d2b0fe9550d64d22d7617a4c8d172ab93c231000",
       "target": "platform/process/process-identity.ts",
-      "sha256": "48d0db970323212f34224909d2b0fe9550d64d22d7617a4c8d172ab93c231000",
-      "adoption": "copied"
+      "sha256": "f2b4d1bf4c651bcc9536f99cfb7be657d796fe43265a0ae194183064a6b6a72f",
+      "adoption": "modified"
     },
     {
       "source": "platform/process/windows-process-identity.ts",
@@ -74,8 +74,8 @@
       "source": "platform/process/terminate-process-tree.ts",
       "sourceSha256": "efc7fe7ba70d0a430e8b226c2351c2bc83e60243d895c615b7c48908840ebfb6",
       "target": "platform/process/terminate-process-tree.ts",
-      "sha256": "efc7fe7ba70d0a430e8b226c2351c2bc83e60243d895c615b7c48908840ebfb6",
-      "adoption": "copied"
+      "sha256": "de7007e4b598bff6da92fc6c95db2abd976184e0258fc3297b177943d654edd8",
+      "adoption": "modified"
     }
   ]
 }
