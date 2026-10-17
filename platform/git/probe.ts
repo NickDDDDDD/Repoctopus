@@ -111,6 +111,7 @@ async function inspectRepository(candidate: string): Promise<RepositorySnapshot 
 export async function probeProject(options: {
   root: string;
   workspaceRoot?: string;
+  duplicateIdentity?: 'error' | 'omit-ambiguous';
   now?: () => Date;
 }): Promise<ProjectSnapshot> {
   const resolvedRoot = await realpath(options.root);
@@ -149,11 +150,29 @@ export async function probeProject(options: {
   }
 
   repositories.sort((left, right) => left.id.localeCompare(right.id));
-  const duplicate = repositories.find(
-    (repository, index) => repositories.findIndex((item) => item.id === repository.id) !== index,
+  const identityCounts = new Map<string, number>();
+  for (const repository of repositories) {
+    identityCounts.set(repository.id, (identityCounts.get(repository.id) ?? 0) + 1);
+  }
+  const ambiguousIds = new Set(
+    [...identityCounts.entries()].filter(([, count]) => count > 1).map(([id]) => id),
   );
-  if (duplicate)
+  const duplicate = repositories.find((repository) => ambiguousIds.has(repository.id));
+  if (duplicate && options.duplicateIdentity !== 'omit-ambiguous') {
     throw new Error(`Duplicate repository identity: ${duplicate.remoteIdentity ?? duplicate.path}`);
+  }
+  if (duplicate) {
+    for (const repository of repositories.filter((item) => ambiguousIds.has(item.id))) {
+      diagnostics.push({
+        code: 'duplicate-repository-identity',
+        path: repository.path,
+        message: `Omitted ambiguous repository identity: ${repository.remoteIdentity ?? repository.id}`,
+      });
+    }
+  }
+  const unambiguousRepositories = repositories.filter(
+    (repository) => !ambiguousIds.has(repository.id),
+  );
 
   const projectId = createHash('sha256')
     .update(resolvedRoot.toLowerCase())
@@ -164,7 +183,7 @@ export async function probeProject(options: {
     projectId,
     root: resolvedRoot,
     capturedAt: (options.now ?? (() => new Date()))().toISOString(),
-    repositories,
+    repositories: unambiguousRepositories,
     diagnostics,
   });
 }

@@ -85,7 +85,7 @@ async function deliveryInputs(parsed: ParsedArguments): Promise<{
     stringFlag(parsed, 'policy', { fallback: path.join(workspace, 'repoctopus.yaml') })!,
   );
   const [project, intentSource, policy] = await Promise.all([
-    probeProject({ root: projectRoot }),
+    probeProject({ root: projectRoot, duplicateIdentity: 'omit-ambiguous' }),
     readFile(intentFile, 'utf8'),
     loadDeliveryPolicy(policyFile),
   ]);
