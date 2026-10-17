@@ -37,7 +37,7 @@
 - [x] 5.2 实现声明式 Journey Compiler 和 Browser Adapter，运行测试覆盖导航、等待、文本/可见性/URL 断言、桌面与移动 viewport、截图、console/page error 和失败请求。
 - [x] 5.3 实现系统 Chrome/Edge 与固定 Chromium 的来源识别，运行测试验证系统浏览器结果默认是 `observed`，固定且匹配的 managed Chromium 才能满足正式门禁。
 - [x] 5.4 定义并实现版本化 `VisualInspectionRequest/Response` 端口，运行 contract 测试验证 request、截图摘要、viewport、验收标准和 response finding 关联完整，缺少 Adapter 时必需节点为 `incomplete`。
-- [ ] 5.5 把权威资料冲突接入 Human Decision，运行场景测试验证页面符合设计图但违反 Spec 时产生 `requirements-conflict`、暂停受影响节点且不自动选择依据。
+- [x] 5.5 把权威资料冲突接入 Human Decision，运行场景测试验证页面符合设计图但违反 Spec 时产生 `requirements-conflict`、暂停受影响节点且不自动选择依据。
 
 ## 6. 项目探测与用户确认
 
