@@ -2,12 +2,12 @@
 
 ## 报告状态
 
-- 结论：实现与本 change 的 Proposal、Design 和 Delta Spec 一致，建议批准交付。
-- 状态：待用户通过 Human Decision 交互批准。
+- 结论：实现与本 change 的 Proposal、Design 和 Delta Spec 一致，已批准、发布、人工合入并完成归档复验。
+- 状态：已完成。
 - 验证日期：2026-10-17。
 - 实现基线：`c0ffce5b91c10b520b6fbe6bda1ec3790a49a4f6`。
 - 实现代码树：`f2c0836acbc20ebe09599a9c0782b2f9c4864bae`。
-- 远端状态：尚未 push，尚未创建或更新 MR。
+- 远端状态：GitHub PR #2 已人工合入，merge commit 为 `c512e6745473cff801e6d024cf9c16f4e183e307`。
 
 ## 交付结果
 
@@ -51,6 +51,14 @@
 
 自举交付还发现父目录内重复远端 identity 会在读取 Intent 前阻断扫描。修复后，Delivery 扫描会排除全部歧义副本并给出结构化诊断，同时保留其他唯一仓库；如果 Intent 选择了被排除的歧义 identity，缺失仓库门禁仍会阻断，不会任意挑选某个检出。
 
+## 合入与归档证据
+
+- 用户通过 Human Decision 批准快照 `sha256:c49f469ec34f11eab51564ebcb85e16efa2dd9d45d6a3ef9f3da2a85f0400977`。
+- Runtime 顺序完成普通 push 和 GitHub PR 创建，两个 Publication Action 均只执行一次。
+- GitHub PR #2 由人合入，Runtime 于 2026-10-17 读取到 merge commit `c512e6745473cff801e6d024cf9c16f4e183e307` 并把交付状态更新为 `merged`。
+- OpenSpec 官方归档命令把 10 条新增 Requirement 同步到主规格 `openspec/specs/delivery-governance/spec.md`，再把 change 移入 archive。
+- 归档后重新执行完整项目验证和 OpenSpec 严格校验，结果通过。
+
 ## Human Decision 与授权边界
 
 正式交付准备会在报告进入本地 checkpoint 且工作树干净后生成 `HumanDecisionRequest`。请求展示本报告、明确选择的仓库、目标分支和计划远端动作。只有用户通过可信 IDE Adapter 或交互式 CLI 选择批准后，Runtime 才能执行快照内的普通 push 与 MR create/update。
@@ -63,7 +71,7 @@
 
 ## 已知限制
 
-- 本轮使用 mock HTTP 验证 GitHub REST 行为，没有为了测试在真实 GitHub 仓库创建临时 MR。用户批准本报告后的正式发布将成为真实 GitHub 纵切。
+- 单元与 E2E 测试使用 mock HTTP 隔离 GitHub REST 边界；正式交付随后通过真实 GitHub API 创建 PR #2，并由 Runtime 读取到人工合入事实，完成真实平台纵切。
 - GitHub REST 不直接提供统一的未解决 review thread 汇总，当前 `conversationsResolved` 为未知值；不会把未知伪装为已解决。
 - 私有个人免费仓库的服务端分支保护可能返回套餐不支持。Adapter 将其记录为非阻断 `feature_unavailable` 能力诊断，不把本地检查冒充服务端保护。
 - 本 change 只实现 GitHub Adapter 和交互式 CLI 降级协议，尚未实现 CodeHub Adapter 或具体 IDE 插件。
@@ -71,7 +79,7 @@
 
 ## 回退方式
 
-当前尚未产生远端副作用。本地实现由独立 checkpoint commit 保存，可在功能分支上通过普通 revert 回退。正式发布后，代码回退仍使用后续 revert MR；Repoctopus 不自动删除已推分支、关闭已建 MR 或改写远端历史。
+实现已经合入 `main`。如需回退，应基于 merge commit `c512e67` 创建普通 revert 分支和后续 MR。Repoctopus 不自动删除已推分支、关闭已建 MR 或改写远端历史。
 
 ## 批准含义
 
