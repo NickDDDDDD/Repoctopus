@@ -27,8 +27,8 @@
 ## 4. Managed 与 Attached 服务反馈
 
 - [ ] 4.1 实现 Managed Service Adapter 的启动、日志采集、反向依赖停止和恢复，运行集成测试验证正常完成、提前退出、超时、中断恢复与 PID 复用都不会遗留或误杀进程。
-- [ ] 4.2 实现端口、HTTP 和日志正则的组合 readiness，运行测试验证端口开放但健康失败不会进入 Ready，并保留每次探测的有界诊断。
-- [ ] 4.3 实现 Attached Service Adapter 和 build identity 校验，运行测试验证无身份服务只产生 `observed`、匹配当前指纹时可按 Profile 升级、Runtime 永不停止外部进程。
+- [x] 4.2 实现端口、HTTP 和日志正则的组合 readiness，运行测试验证端口开放但健康失败不会进入 Ready，并保留每次探测的有界诊断。
+- [x] 4.3 实现 Attached Service Adapter 和 build identity 校验，运行测试验证无身份服务只产生 `observed`、匹配当前指纹时可按 Profile 升级、Runtime 永不停止外部进程。
 - [ ] 4.4 为服务 DAG 建立纵切 fixture，运行前后端并行启动、健康检查、依赖命令和清理测试，验证失败只阻断相关分支。
 
 ## 5. 浏览器与视觉反馈
