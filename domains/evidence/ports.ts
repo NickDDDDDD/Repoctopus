@@ -20,3 +20,25 @@ export interface EvidenceStore {
   saveBundle(bundle: EvidenceBundle): Promise<void>;
   loadBundle(bundleId: string): Promise<EvidenceBundle>;
 }
+
+export interface EvidenceJournalEntry {
+  schemaVersion: 1;
+  sequence: number;
+  eventId: string;
+  attemptId: string;
+  nodeId: string;
+  timestamp: string;
+  type: 'node.intent' | 'node.completed';
+  receiptId?: string;
+}
+
+export interface EvidenceJournal {
+  recordIntent(attemptId: string, nodeId: string, timestamp: string): Promise<void>;
+  recordCompletion(
+    attemptId: string,
+    nodeId: string,
+    receiptId: string,
+    timestamp: string,
+  ): Promise<void>;
+  load(attemptId: string): Promise<EvidenceJournalEntry[]>;
+}

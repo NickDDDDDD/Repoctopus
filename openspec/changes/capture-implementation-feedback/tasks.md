@@ -18,11 +18,11 @@
 
 ## 3. Journal、恢复、保留与隐私
 
-- [ ] 3.1 把 Evidence 节点执行接入 intent/completion Journal 和原子投影，运行故障注入测试验证 Receipt 落盘后中断可以恢复且不会重复已确认副作用。
-- [ ] 3.2 实现带进程 identity 的资源 lease 和 mutation lock，运行并发测试验证冲突 Profile 不会重复占用端口、服务、浏览器上下文或临时目录，陈旧 lease 仅在 owner 失效后回收。
-- [ ] 3.3 实现引用闭包 Retention 与清理命令，运行测试验证活动 Attempt、批准快照、最近成功 Bundle 和归档前失败 Evidence 不会被删除，孤立对象按期限或容量清理。
-- [ ] 3.4 在 Artifact 写入前实现允许列表、敏感模式脱敏和不可脱敏失败策略，运行凭据、Cookie、授权头、私钥、绝对路径和项目自定义模式测试确认原值不进入对象、状态或诊断。
-- [ ] 3.5 实现命令日志的字节/行/时长上限及前后摘要，运行超限测试核对截断 finding、默认 20 MiB 与前后各 200 行策略及可配置门禁影响。
+- [x] 3.1 把 Evidence 节点执行接入 intent/completion Journal 和原子投影，运行故障注入测试验证 Receipt 落盘后中断可以恢复且不会重复已确认副作用。
+- [x] 3.2 实现带进程 identity 的资源 lease 和 mutation lock，运行并发测试验证冲突 Profile 不会重复占用端口、服务、浏览器上下文或临时目录，陈旧 lease 仅在 owner 失效后回收。
+- [x] 3.3 实现引用闭包 Retention 与清理命令，运行测试验证活动 Attempt、批准快照、最近成功 Bundle 和归档前失败 Evidence 不会被删除，孤立对象按期限或容量清理。
+- [x] 3.4 在 Artifact 写入前实现允许列表、敏感模式脱敏和不可脱敏失败策略，运行凭据、Cookie、授权头、私钥、绝对路径和项目自定义模式测试确认原值不进入对象、状态或诊断。
+- [x] 3.5 实现命令日志的字节/行/时长上限及前后摘要，运行超限测试核对截断 finding、默认 20 MiB 与前后各 200 行策略及可配置门禁影响。
 
 ## 4. Managed 与 Attached 服务反馈
 

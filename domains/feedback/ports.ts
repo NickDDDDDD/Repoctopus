@@ -3,6 +3,7 @@ export interface CommandRequest {
   args: readonly string[];
   cwd: string;
   timeoutMs: number;
+  maxOutputBytes?: number;
 }
 
 export interface CommandResult {
@@ -10,6 +11,10 @@ export interface CommandResult {
   stdout: string;
   stderr: string;
   timedOut: boolean;
+  stdoutBytes: number;
+  stderrBytes: number;
+  stdoutTruncated: boolean;
+  stderrTruncated: boolean;
   error?: string;
   pid?: number;
   processIdentity?: string;

@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import path from 'node:path';
 
-import type { ArtifactStore, EvidenceStore } from './ports.js';
+import type { ArtifactStore, EvidenceJournal, EvidenceStore } from './ports.js';
 import type { CommandAdapter } from '../feedback/ports.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import type { EvidenceExecutionPlan } from '../feedback/profile.js';
@@ -27,6 +27,10 @@ export interface EvidenceRunResult {
 export interface EvidenceRunOptions {
   reusableReceipts?: readonly EvidenceReceipt[];
   captureEndingFingerprint?: () => Promise<string>;
+  maxOutputBytes?: number;
+  sensitiveValues?: readonly string[];
+  redactionPatterns?: readonly RegExp[];
+  afterNodeCommitted?: (receipt: EvidenceReceipt) => void | Promise<void>;
 }
 
 export interface EvidenceClock {
@@ -54,6 +58,7 @@ export class EvidenceService {
     private readonly store: EvidenceStore,
     private readonly commands: CommandAdapter,
     private readonly clock: EvidenceClock = systemClock,
+    private readonly journal?: EvidenceJournal,
   ) {}
 
   async run(
@@ -107,6 +112,7 @@ export class EvidenceService {
           )
         : undefined;
       if (reusable) {
+        await this.journal?.recordIntent(attemptId, nodeId, reuseStartedAt);
         const receipt = reuseReceipt({
           receipt: reusable,
           attemptId,
@@ -114,6 +120,13 @@ export class EvidenceService {
           completedAt: this.clock.now().toISOString(),
         });
         await this.store.saveReceipt(receipt);
+        await this.journal?.recordCompletion(
+          attemptId,
+          nodeId,
+          receipt.receiptId,
+          receipt.completedAt,
+        );
+        await options.afterNodeCommitted?.(receipt);
         receipts.push(receipt);
         attempt.receiptIds.push(receipt.receiptId);
         findings.push(...receipt.findings);
@@ -129,19 +142,26 @@ export class EvidenceService {
       }
 
       const commandStartedAt = this.clock.now().toISOString();
+      await this.journal?.recordIntent(attemptId, nodeId, commandStartedAt);
       const result = await this.commands.run({
         executable: node.executable,
         args: node.args,
         cwd: resolveCommandCwd(node.repositoryPath, node.cwd),
         timeoutMs: node.timeoutMs,
+        ...(options.maxOutputBytes ? { maxOutputBytes: options.maxOutputBytes } : {}),
       });
       const commandCompletedAt = this.clock.now().toISOString();
       const receiptFindings: EvidenceFinding[] = [];
+      const redactionOptions = {
+        absolutePaths: [node.repositoryPath],
+        ...(options.sensitiveValues ? { sensitiveValues: options.sensitiveValues } : {}),
+        ...(options.redactionPatterns ? { patterns: options.redactionPatterns } : {}),
+      };
       if (result.error) {
         receiptFindings.push({
           code: 'command-start-failed',
           severity: 'error',
-          summary: result.error,
+          summary: redactEvidenceText(result.error, redactionOptions).contents,
         });
       }
       if (result.timedOut) {
@@ -151,9 +171,18 @@ export class EvidenceService {
           summary: `Command exceeded ${node.timeoutMs} ms`,
         });
       }
+      for (const stream of ['stdout', 'stderr'] as const) {
+        if (result[`${stream}Truncated`]) {
+          receiptFindings.push({
+            code: 'command-output-truncated',
+            severity: 'warning',
+            summary: `${stream} exceeded the configured output limit after ${result[`${stream}Bytes`]} bytes`,
+          });
+        }
+      }
       const artifactRefs: ArtifactRef[] = [];
       if (result.stdout.length > 0) {
-        const redacted = redactEvidenceText(result.stdout);
+        const redacted = redactEvidenceText(result.stdout, redactionOptions);
         artifactRefs.push(
           await this.artifacts.put(redacted.contents, {
             artifactType: 'command-stdout',
@@ -163,7 +192,7 @@ export class EvidenceService {
         );
       }
       if (result.stderr.length > 0) {
-        const redacted = redactEvidenceText(result.stderr);
+        const redacted = redactEvidenceText(result.stderr, redactionOptions);
         artifactRefs.push(
           await this.artifacts.put(redacted.contents, {
             artifactType: 'command-stderr',
@@ -210,6 +239,13 @@ export class EvidenceService {
         ...receiptBase,
       };
       await this.store.saveReceipt(receipt);
+      await this.journal?.recordCompletion(
+        attemptId,
+        nodeId,
+        receipt.receiptId,
+        receipt.completedAt,
+      );
+      await options.afterNodeCommitted?.(receipt);
       receipts.push(receipt);
       attempt.receiptIds.push(receipt.receiptId);
       findings.push(...receiptFindings);

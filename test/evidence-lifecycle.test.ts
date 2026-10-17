@@ -58,6 +58,10 @@ describe('evidence lifecycle', () => {
       stdout: 'built',
       stderr: '',
       timedOut: false,
+      stdoutBytes: 5,
+      stderrBytes: 0,
+      stdoutTruncated: false,
+      stderrTruncated: false,
     });
     const service = new EvidenceService(
       new FileArtifactStore(workspace),
@@ -95,7 +99,17 @@ describe('evidence lifecycle', () => {
     const workspace = await temporaryDirectory('repoctopus-fence-');
     cleanup.push(workspace);
     const adapter: CommandAdapter = {
-      run: () => Promise.resolve({ exitCode: 0, stdout: '', stderr: '', timedOut: false }),
+      run: () =>
+        Promise.resolve({
+          exitCode: 0,
+          stdout: '',
+          stderr: '',
+          timedOut: false,
+          stdoutBytes: 0,
+          stderrBytes: 0,
+          stdoutTruncated: false,
+          stderrTruncated: false,
+        }),
     };
     const result = await new EvidenceService(
       new FileArtifactStore(workspace),
