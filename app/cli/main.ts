@@ -12,6 +12,7 @@ import { RepoctopusRuntime } from '../../domains/runtime/runtime.js';
 import type { RunStatusView } from '../../domains/runtime/types.js';
 import { parseWorkflowPackage } from '../../domains/workflow-contract/package.js';
 import { probeProject } from '../../platform/git/probe.js';
+import { detectProjectConfiguration } from '../../platform/project-configuration/detect.js';
 import {
   doctorManagedChromium,
   installManagedChromium,
@@ -30,10 +31,16 @@ import {
 } from '../../platform/telemetry/opentelemetry/exporter.js';
 import { checkProvenance } from '../../platform/provenance/check.js';
 import { execute } from '../../platform/process/execute.js';
+import {
+  applyProjectConfigurationDecision,
+  loadPendingProjectConfigurationDecision,
+  prepareProjectConfigurationDecision,
+} from '../../platform/project-configuration/onboarding.js';
 import { FileWorkflowSource } from '../../platform/workflow/file-source.js';
 import { booleanFlag, parseArguments, stringFlag, type ParsedArguments } from './arguments.js';
 import { failureEnvelope, successEnvelope, type CliEnvelope } from './envelope.js';
 import { reviewHumanDecision } from './human-decision.js';
+import { reviewProjectConfigurationDecision } from './project-configuration-decision.js';
 
 const DIST_DIR = path.dirname(fileURLToPath(import.meta.url));
 
@@ -258,6 +265,72 @@ async function projectProbe(parsed: ParsedArguments): Promise<CliEnvelope<unknow
   return successEnvelope({ command: 'project probe', result: snapshot });
 }
 
+async function projectDetect(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const scopeRoot = path.resolve(stringFlag(parsed, 'root', { required: true })!);
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const result = await detectProjectConfiguration({ workspace, scopeRoot });
+  return successEnvelope({
+    command: 'project detect',
+    result,
+    nextActions: [
+      'review unresolved items and let an Agent prepare a complete candidate configuration',
+      'submit the completed candidate through a trusted human decision channel',
+    ],
+  });
+}
+
+async function projectPrepare(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const draftFile = path.resolve(stringFlag(parsed, 'draft', { required: true })!);
+  const candidateFile = path.resolve(stringFlag(parsed, 'candidate', { required: true })!);
+  const completedCandidate = parse(await readFile(candidateFile, 'utf8')) as unknown;
+  const result = await prepareProjectConfigurationDecision({
+    workspace,
+    draftFile,
+    completedCandidate,
+  });
+  return successEnvelope({
+    command: 'project prepare',
+    result,
+    nextActions: [`repoctopus project review --workspace ${workspace} --request ${result.file}`],
+  });
+}
+
+async function projectReview(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  if (!process.stdin.isTTY || !process.stdout.isTTY) {
+    throw new Error(
+      'Project configuration approval requires an interactive terminal or a trusted IDE Adapter',
+    );
+  }
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const decisionFile = path.resolve(stringFlag(parsed, 'request', { required: true })!);
+  const request = await loadPendingProjectConfigurationDecision(workspace, decisionFile);
+  const selected = await reviewProjectConfigurationDecision({
+    request,
+    input: process.stdin,
+    output: process.stdout,
+  });
+  const result = await applyProjectConfigurationDecision({
+    workspace,
+    decisionFile,
+    response: {
+      apiVersion: 'repoctopus/v1alpha1',
+      kind: 'HumanDecisionResponse',
+      requestId: request.requestId,
+      snapshotDigest: request.snapshotDigest,
+      decision: selected.decision,
+      ...(selected.comment ? { comment: selected.comment } : {}),
+    },
+    actor: {
+      actorId: userInfo().username,
+      source: 'cli',
+      authenticated: true,
+    },
+    timestamp: new Date().toISOString(),
+  });
+  return successEnvelope({ command: 'project review', result });
+}
+
 async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
   const projectRoot = path.resolve(
@@ -424,6 +497,9 @@ async function browserInstall(parsed: ParsedArguments): Promise<CliEnvelope<unkn
 async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const command = parsed.command.join(' ');
   if (command === 'project probe') return projectProbe(parsed);
+  if (command === 'project detect') return projectDetect(parsed);
+  if (command === 'project prepare') return projectPrepare(parsed);
+  if (command === 'project review') return projectReview(parsed);
   if (command === 'run start') return runStart(parsed);
   if (command === 'run status') return runStatus(parsed);
   if (command === 'run next') return runNext(parsed);
@@ -440,7 +516,7 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   if (command === 'browser doctor') return browserDoctor(parsed);
   if (command === 'browser install') return browserInstall(parsed);
   throw new Error(
-    'Usage: repoctopus project probe | run <start|status|next|record|resume> | delivery <checkpoint|prepare|status|publish|resume|refresh> | approval review | browser <doctor|install> | doctor',
+    'Usage: repoctopus project <probe|detect|prepare|review> | run <start|status|next|record|resume> | delivery <checkpoint|prepare|status|publish|resume|refresh> | approval review | browser <doctor|install> | doctor',
   );
 }
 

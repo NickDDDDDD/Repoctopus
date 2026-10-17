@@ -41,9 +41,9 @@
 
 ## 6. 项目探测与用户确认
 
-- [ ] 6.1 实现受作用域限制的 `project detect`，运行 fixture 测试验证 Git、Node、Maven/Gradle、常见端口和健康端点只写入带来源与不确定项的 `.repoctopus/drafts/`。
-- [ ] 6.2 实现已有共享配置的 reconcile diff，运行测试验证探测不会覆盖正式配置或人工字段，并能稳定报告新增、删除、冲突和待确认项。
-- [ ] 6.3 把 draft 与 Agent 补全结果接入 Human Decision，运行协议测试验证缺少可信用户确认时不能创建或更新 `repoctopus.yaml`，批准内容与最终写入摘要一致。
+- [x] 6.1 实现受作用域限制的 `project detect`，运行 fixture 测试验证 Git、Node、Maven/Gradle、常见端口和健康端点只写入带来源与不确定项的 `.repoctopus/drafts/`。
+- [x] 6.2 实现已有共享配置的 reconcile diff，运行测试验证探测不会覆盖正式配置或人工字段，并能稳定报告新增、删除、冲突和待确认项。
+- [x] 6.3 把 draft 与 Agent 补全结果接入 Human Decision，运行协议测试验证缺少可信用户确认时不能创建或更新 `repoctopus.yaml`，批准内容与最终写入摘要一致。
 - [ ] 6.4 更新项目配置与接入文档，按文档在临时多仓 fixture 完成 detect → 补全 → 确认 → 首次 Evidence Run，核对命令和结果可复现。
 
 ## 7. CLI、Runtime 与 OpenTelemetry 集成

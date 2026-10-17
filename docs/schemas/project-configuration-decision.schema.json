@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://repoctopus.invalid/schemas/project-configuration-decision.schema.json",
+  "title": "Repoctopus project configuration human decision",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "apiVersion",
+        "kind",
+        "requestId",
+        "decisionType",
+        "draftId",
+        "snapshotDigest",
+        "baseConfigDigest",
+        "candidateConfigDigest",
+        "candidateConfig",
+        "reconcile",
+        "unresolved",
+        "options"
+      ],
+      "properties": {
+        "apiVersion": { "const": "repoctopus/v1alpha1" },
+        "kind": { "const": "HumanDecisionRequest" },
+        "requestId": { "type": "string", "minLength": 1 },
+        "decisionType": { "const": "project-configuration" },
+        "draftId": { "type": "string", "pattern": "^[a-f0-9]{24}$" },
+        "snapshotDigest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+        "baseConfigDigest": {
+          "anyOf": [{ "type": "string", "pattern": "^[a-f0-9]{64}$" }, { "type": "null" }]
+        },
+        "candidateConfigDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "candidateConfig": { "$ref": "project-config.schema.json" },
+        "reconcile": {
+          "anyOf": [
+            { "$ref": "project-detection-draft.schema.json#/$defs/reconcile" },
+            { "type": "null" }
+          ]
+        },
+        "unresolved": {
+          "type": "array",
+          "items": { "$ref": "project-detection-draft.schema.json#/$defs/unresolved" }
+        },
+        "options": { "const": ["approve", "request_changes", "reject"] }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["apiVersion", "kind", "requestId", "snapshotDigest", "decision"],
+      "properties": {
+        "apiVersion": { "const": "repoctopus/v1alpha1" },
+        "kind": { "const": "HumanDecisionResponse" },
+        "requestId": { "type": "string", "minLength": 1 },
+        "snapshotDigest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+        "decision": { "enum": ["approve", "request_changes", "reject"] },
+        "comment": { "type": "string" }
+      }
+    }
+  ]
+}
