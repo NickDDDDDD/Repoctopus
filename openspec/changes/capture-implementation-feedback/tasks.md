@@ -20,7 +20,7 @@
 
 - [x] 3.1 把 Evidence 节点执行接入 intent/completion Journal 和原子投影，运行故障注入测试验证 Receipt 落盘后中断可以恢复且不会重复已确认副作用。
 - [x] 3.2 实现带进程 identity 的资源 lease 和 mutation lock，运行并发测试验证冲突 Profile 不会重复占用端口、服务、浏览器上下文或临时目录，陈旧 lease 仅在 owner 失效后回收。
-- [x] 3.3 实现引用闭包 Retention 与清理命令，运行测试验证活动 Attempt、批准快照、最近成功 Bundle 和归档前失败 Evidence 不会被删除，孤立对象按期限或容量清理。
+- [x] 3.3 实现引用闭包 Retention 与清理命令，运行测试验证活动 Attempt、批准快照、每个工作流 Run 最近成功 Bundle 和归档前失败 Evidence 不会被删除，孤立对象按期限或容量清理。
 - [x] 3.4 在 Artifact 写入前实现允许列表、敏感模式脱敏和不可脱敏失败策略，运行凭据、Cookie、授权头、私钥、绝对路径和项目自定义模式测试确认原值不进入对象、状态或诊断。
 - [x] 3.5 实现命令日志的字节/行/时长上限及前后摘要，运行超限测试核对截断 finding、默认 20 MiB 与前后各 200 行策略及可配置门禁影响。
 
@@ -49,7 +49,7 @@
 ## 7. CLI、Runtime 与 OpenTelemetry 集成
 
 - [x] 7.1 增加 Evidence CLI 的 `plan`、`run`、`status`、`resume`、`inspect`、`clean` 和浏览器管理 envelope，运行 CLI contract 测试核对 JSON 版本、稳定错误码、退出码和人工决定输出。
-- [x] 7.2 在 Runtime composition root 接入配置、DAG、Evidence Store、Adapter、Journal、lease 和 Engine Gate 投影，运行端到端测试验证只有当前 `verified` 必需证据可以推进 Verify。
+- [x] 7.2 在唯一 Runtime composition root 接入配置、DAG、Evidence Store、Adapter、Journal、lease 和 Engine Gate 投影，运行端到端测试验证只有当前 `verified` 必需证据可以推进 Verify，CLI 不得通过普通成功记录绕过 Gate。
 - [x] 7.3 实现零测试结构化识别，运行 npm/Maven fixture 验证退出码为零且执行数为零时产生 `no-tests-detected`，并按共享 Profile 得到 warning 或 blocking 结果。
 - [x] 7.4 扩展 OTel mapping 和 Delivery Cursor 重放，运行内存 OTLP 测试验证 Run/Attempt/节点/Artifact/Gate 的稳定关联、重试身份与后端故障不回滚本地事实。
 - [x] 7.5 运行遥测隐私测试确认命令输出、服务/浏览器日志、健康正文、DOM、截图、视觉请求/响应、绝对路径和敏感值不出现在 Trace、Log 或 Metric 属性。
@@ -64,11 +64,21 @@
 
 ## 9. 真实多仓接入验收
 
-- [ ] 9.1 在独立 `agent-lab-workspace` 规划并提交 companion change，维护其自己的 `repoctopus.yaml`，运行 detect/reconcile 验证配置来自用户确认且 Repoctopus 产品仓不出现示例项目专有字段。
+- [x] 9.1 在独立 `agent-lab-workspace` 规划并提交 companion change，维护其自己的 `repoctopus.yaml`，运行 detect/reconcile 验证配置来自用户确认且 Repoctopus 产品仓不出现示例项目专有字段。
 - [x] 9.2 运行真实项目 Evidence Profile，验证四个前端包构建、Maven `verify`、零测试 finding、Vite、两个 Spring 服务、两个健康端点、桌面/移动 Journey 和结构化视觉响应进入同一 Bundle。
 - [x] 9.3 修改一个被指纹覆盖的输入并重跑，验证旧命令 Receipt 失效、服务与浏览器重新采集、开始/结束漂移不会被描述为通过。
 - [x] 9.4 中断并恢复一次 Managed 运行后执行清理，验证只终止 Runtime 自有进程、保留可审计失败 Evidence、四个业务仓没有非预期修改。
-- [ ] 9.5 生成 Repoctopus 产品 E2E 与真实接入验收报告，核对报告明确区分机器证据、观察结果、fixture 前端与后端尚未形成业务调用的限制，并通过用户评审后进入交付。
+- [x] 9.5 生成 Repoctopus 产品 E2E 与真实接入验收报告，核对报告明确区分机器证据、观察结果、fixture 前端与后端尚未形成业务调用的限制，并通过用户评审后进入交付。
+
+## 10. 架构复审与来源收敛
+
+- [x] 10.1 逐项复审 `app`、`domains` 和 `platform` 的生产实现，对照固定 Comet 基线与旧 `agents-workspace`，记录源码采用、算法抽取、行为重建、Repoctopus 新能力及仍需收敛的并行模型。
+- [x] 10.2 采用 Comet 的文件 identity、竞态安全读取、Windows 短暂失败重试与原子写入原语，强化 Resource Lease 和 Artifact Store 的文件替换防护，并更新来源清单与行为测试。
+- [x] 10.3 抽取 Comet Snapshot 的选择前后 Fence 与内容复核规则，强化多仓 Fingerprint，验证采集期间同一路径内容变化会被拒绝。
+- [x] 10.4 增加机器可检查的能力归属账本和旧工作流隔离检查，覆盖全部生产源码、第三方来源映射、旧 Hook/Skill/阶段/批准口令和项目专有路径，并接入 `npm run verify`。
+- [x] 10.5 把 Evidence Gate 接入唯一 Runtime 转换，将已批准 Delivery Snapshot 绑定的 Bundle 纳入 Retention root set，并通过绕过、漂移、恢复和清理 E2E。
+- [x] 10.6 评估 Delivery Transition Store 与核心 Runtime Journal 的公共事务原语，消除可以安全共享的重复写入协议，同时保留 Delivery 聚合状态和 Evidence 追加事实的领域差异。
+- [x] 10.7 重新运行完整验证、真实多仓验收和架构检查，更新正式报告后再次交给用户评审。
 
 ## Workflow follow-up
 

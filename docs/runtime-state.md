@@ -2,25 +2,25 @@
 
 每个 Run 都保存在 `.repoctopus/runs/<run-id>/`：
 
-| 文件                    | 含义                                   |
-| ----------------------- | -------------------------------------- |
-| `workflow.json`         | 启动时冻结的 Workflow Package 与摘要   |
-| `project-snapshot.json` | 启动时冻结的多仓事实                   |
-| `run.json`              | 当前 Run State                         |
-| `trajectory.jsonl`      | 按顺序追加的领域事件                   |
-| `checkpoint.json`       | 当前状态版本、轨迹偏移和关键摘要       |
-| `transition.json`       | 尚未完成转换的 Journal；正常完成后删除 |
-| `transition.lock`       | 跨进程转换锁；正常完成后删除           |
-| `telemetry-cursor.json` | 已成功发送的最后一个轨迹序号           |
+| 文件                    | 含义                                                     |
+| ----------------------- | -------------------------------------------------------- |
+| `workflow.json`         | 启动时冻结的 Workflow Package 与摘要                     |
+| `project-snapshot.json` | 启动时冻结的多仓事实                                     |
+| `run.json`              | 当前 Run State                                           |
+| `trajectory.jsonl`      | 按顺序追加的领域事件                                     |
+| `checkpoint.json`       | 当前状态版本、轨迹偏移、关键摘要和已接受 Evidence Bundle |
+| `transition.json`       | 尚未完成转换的 Journal；正常完成后删除                   |
+| `transition.lock`       | 跨进程转换锁；正常完成后删除                             |
+| `telemetry-cursor.json` | 已成功发送的最后一个轨迹序号                             |
 
 ## 转换协议
 
 1. 原子取得 `transition.lock`；仍存活的持有者使竞争写入等待，进程已经退出的陈旧锁可以回收。
-2. 校验事件属于当前 Run、事件版本等于新状态版本，并对比当前 `stateVersion`。
+2. 重新读取锁内 Run 和 Workflow，校验事件属于当前 Run、事件版本等于新状态版本，并对比当前 `stateVersion`。受 Evidence 保护的动作同时核对 Attempt 绑定和当前多仓输入指纹。
 3. 原子写入 `transition.json` 并刷盘。
 4. 写入完整且以换行结束的 `trajectory.jsonl`。
 5. 原子写入 `run.json`。
-6. 原子写入 `checkpoint.json`。
+6. 原子写入 `checkpoint.json`，包括本次状态已经接受的 Evidence Bundle ID。
 7. 删除 Journal 并释放转换锁。
 
 重启后只要 Journal 存在，Runtime 会检查已经完成的步骤并继续执行缺失步骤。相同事件不会重复追加。轨迹缺少最终换行、包含无效 JSON、序号断裂或重复事件 ID 时，Runtime 返回损坏诊断，不会静默截断证据。

@@ -3,7 +3,10 @@ import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { createEvidenceFingerprint } from '../domains/evidence/fingerprint.js';
-import { collectRepositoryFingerprint } from '../platform/git/evidence-fingerprint.js';
+import {
+  collectRepositoryFingerprint,
+  RepositoryFingerprintChangedError,
+} from '../platform/git/evidence-fingerprint.js';
 import {
   createGitRepository,
   removeTemporaryDirectory,
@@ -67,5 +70,24 @@ describe('evidence fingerprint', () => {
       expect(createEvidenceFingerprint(changed).digest).not.toBe(original.digest);
     }
     expect(JSON.stringify(original.manifest)).not.toContain(repository);
+  });
+
+  it('rejects a repository whose selected content changes during capture', async () => {
+    const root = await temporaryDirectory('repoctopus-fingerprint-race-');
+    cleanup.push(root);
+    const repository = await createGitRepository(root, 'service');
+    await writeFile(path.join(repository, 'README.md'), '# first change\n');
+
+    await expect(
+      collectRepositoryFingerprint({
+        repositoryId: 'service',
+        root: repository,
+        hooks: {
+          beforeFinalSelection: async () => {
+            await writeFile(path.join(repository, 'README.md'), '# second change\n');
+          },
+        },
+      }),
+    ).rejects.toBeInstanceOf(RepositoryFingerprintChangedError);
   });
 });

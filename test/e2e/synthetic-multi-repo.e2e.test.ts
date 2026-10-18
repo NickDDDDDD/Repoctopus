@@ -239,6 +239,7 @@ describe('synthetic multi-repository Evidence product flow', () => {
     const cleaned = await new FileEvidenceRetention(workspace).cleanup({
       roots: {
         activeAttemptIds: [],
+        acceptedBundleIds: [],
         approvedBundleIds: [],
         recentSuccessBundleIds: [],
         failureBundleIds: [],

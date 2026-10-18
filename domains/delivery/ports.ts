@@ -34,6 +34,11 @@ export interface DeliveryStorePort {
     event: DeliveryEvent;
   }): Promise<void>;
   history(changeId: string): Promise<DeliveryEvent[]>;
+  approvedEvidenceBundleIds(): Promise<string[]>;
+}
+
+export interface DeliveryEvidencePort {
+  assertSatisfied(bundleIds: readonly string[]): Promise<void>;
 }
 
 export interface DeliveryTelemetryPort {

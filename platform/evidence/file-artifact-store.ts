@@ -1,9 +1,11 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { mkdir, open, readFile, rename, rm, stat } from 'node:fs/promises';
+import { mkdir, open } from 'node:fs/promises';
 import path from 'node:path';
 
 import type { ArtifactStore, PutArtifactOptions } from '../../domains/evidence/ports.js';
 import { EVIDENCE_API_VERSION, type ArtifactRef } from '../../domains/evidence/types.js';
+import { readFileRaceSafe } from '../filesystem/race-safe-read.js';
+import { linkWithRetry, unlinkWithRetry } from '../filesystem/transient-retry.js';
 
 export class FileArtifactStore implements ArtifactStore {
   constructor(private readonly workspace: string) {}
@@ -27,7 +29,11 @@ export class FileArtifactStore implements ArtifactStore {
     const target = this.objectPath(sha256);
     await mkdir(path.dirname(target), { recursive: true });
     try {
-      const existing = await readFile(target);
+      const existing = (
+        await readFileRaceSafe(target, Math.max(1, bytes.byteLength), {
+          label: 'artifact object',
+        })
+      ).bytes;
       if (!existing.equals(bytes)) throw new Error(`Artifact digest collision: ${sha256}`);
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
@@ -40,18 +46,21 @@ export class FileArtifactStore implements ArtifactStore {
         await handle.close();
       }
       try {
-        await rename(temporary, target);
-      } catch (renameError) {
-        await rm(temporary, { force: true });
-        try {
-          const winner = await readFile(target);
-          if (!winner.equals(bytes)) {
-            throw new Error(`Artifact digest collision: ${sha256}`, { cause: renameError });
-          }
-        } catch (readError) {
-          if ((readError as NodeJS.ErrnoException).code === 'ENOENT') throw renameError;
-          throw readError;
+        await linkWithRetry(temporary, target);
+      } catch (publishError) {
+        if ((publishError as NodeJS.ErrnoException).code !== 'EEXIST') throw publishError;
+        const winner = (
+          await readFileRaceSafe(target, Math.max(1, bytes.byteLength), {
+            label: 'artifact object',
+          })
+        ).bytes;
+        if (!winner.equals(bytes)) {
+          throw new Error(`Artifact digest collision: ${sha256}`, { cause: publishError });
         }
+      } finally {
+        await unlinkWithRetry(temporary).catch((cleanupError: NodeJS.ErrnoException) => {
+          if (cleanupError.code !== 'ENOENT') throw cleanupError;
+        });
       }
     }
     return {
@@ -66,7 +75,11 @@ export class FileArtifactStore implements ArtifactStore {
   }
 
   async read(reference: ArtifactRef): Promise<Buffer> {
-    const contents = await readFile(this.objectPath(reference.sha256));
+    const contents = (
+      await readFileRaceSafe(this.objectPath(reference.sha256), Math.max(1, reference.size), {
+        label: 'artifact object',
+      })
+    ).bytes;
     const digest = createHash('sha256').update(contents).digest('hex');
     if (digest !== reference.sha256 || contents.byteLength !== reference.size) {
       throw new Error(`Artifact integrity check failed: ${reference.sha256}`);
@@ -76,8 +89,8 @@ export class FileArtifactStore implements ArtifactStore {
 
   async exists(reference: ArtifactRef): Promise<boolean> {
     try {
-      const info = await stat(this.objectPath(reference.sha256));
-      return info.isFile() && info.size === reference.size;
+      await this.read(reference);
+      return true;
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') return false;
       throw error;

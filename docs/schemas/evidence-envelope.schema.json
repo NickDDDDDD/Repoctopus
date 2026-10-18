@@ -109,30 +109,35 @@
       ]
     },
     "gateProjection": {
-      "allOf": [
-        { "$ref": "#/$defs/base" },
-        {
-          "type": "object",
-          "required": [
-            "kind",
-            "profileId",
-            "bundleId",
-            "inputFingerprint",
-            "outcome",
-            "status",
-            "reason"
-          ],
-          "properties": {
-            "kind": { "const": "EvidenceGateProjection" },
-            "profileId": { "type": "string", "minLength": 1 },
-            "bundleId": { "type": "string", "minLength": 1 },
-            "inputFingerprint": { "type": "string", "minLength": 1 },
-            "outcome": { "enum": ["passed", "failed", "incomplete", "passed_with_warnings"] },
-            "status": { "enum": ["satisfied", "blocked"] },
-            "reason": { "type": "string", "minLength": 1 }
-          }
-        }
-      ]
+      "type": "object",
+      "required": [
+        "schemaVersion",
+        "kind",
+        "workflowRunId",
+        "workflowActionId",
+        "workflowStepId",
+        "workflowStateVersion",
+        "profileId",
+        "bundleId",
+        "inputFingerprint",
+        "outcome",
+        "status",
+        "reason"
+      ],
+      "properties": {
+        "schemaVersion": { "const": 1 },
+        "kind": { "const": "EvidenceGateProjection" },
+        "workflowRunId": { "type": ["string", "null"] },
+        "workflowActionId": { "type": ["string", "null"] },
+        "workflowStepId": { "type": ["string", "null"] },
+        "workflowStateVersion": { "type": ["integer", "null"], "minimum": 0 },
+        "profileId": { "type": "string", "minLength": 1 },
+        "bundleId": { "type": "string", "minLength": 1 },
+        "inputFingerprint": { "type": "string", "minLength": 1 },
+        "outcome": { "enum": ["passed", "failed", "incomplete", "passed_with_warnings"] },
+        "status": { "enum": ["satisfied", "blocked"] },
+        "reason": { "type": "string", "minLength": 1 }
+      }
     },
     "bundle": {
       "allOf": [

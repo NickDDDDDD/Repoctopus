@@ -12,7 +12,7 @@ const cleanup: string[] = [];
 afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
 
 describe('evidence retention', () => {
-  it('protects active and approved evidence closure while deleting old orphans', async () => {
+  it('protects active and Runtime-accepted evidence closure while deleting old orphans', async () => {
     const workspace = await temporaryDirectory('repoctopus-retention-');
     cleanup.push(workspace);
     const artifacts = new FileArtifactStore(workspace);
@@ -78,7 +78,8 @@ describe('evidence retention', () => {
     const result = await new FileEvidenceRetention(workspace).cleanup({
       roots: {
         activeAttemptIds: [attempt.attemptId],
-        approvedBundleIds: [bundle.bundleId],
+        acceptedBundleIds: [bundle.bundleId],
+        approvedBundleIds: [],
         recentSuccessBundleIds: [],
         failureBundleIds: [],
       },
@@ -91,5 +92,35 @@ describe('evidence retention', () => {
     await expect(artifacts.exists(active)).resolves.toBe(true);
     await expect(artifacts.exists(approved)).resolves.toBe(true);
     await expect(artifacts.exists(orphan)).resolves.toBe(false);
+  });
+
+  it('defers every deletion while a Runtime transition requires recovery', async () => {
+    const workspace = await temporaryDirectory('repoctopus-retention-deferred-');
+    cleanup.push(workspace);
+    const artifacts = new FileArtifactStore(workspace);
+    const orphan = await artifacts.put('orphan', {
+      artifactType: 'log',
+      mediaType: 'text/plain',
+      redacted: true,
+    });
+    const old = new Date('2000-01-01T00:00:00.000Z');
+    await utimes(artifacts.objectPath(orphan.sha256), old, old);
+
+    const result = await new FileEvidenceRetention(workspace).cleanup({
+      roots: {
+        activeAttemptIds: [],
+        acceptedBundleIds: [],
+        approvedBundleIds: [],
+        recentSuccessBundleIds: [],
+        failureBundleIds: [],
+      },
+      maxAgeMs: 0,
+      maxBytes: 0,
+      now: Date.parse('2026-01-01T00:00:00.000Z'),
+      defer: true,
+    });
+
+    expect(result).toMatchObject({ deferred: true, removed: [], bytesAfter: result.bytesBefore });
+    await expect(artifacts.exists(orphan)).resolves.toBe(true);
   });
 });

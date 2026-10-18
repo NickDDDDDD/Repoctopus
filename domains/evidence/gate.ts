@@ -40,11 +40,23 @@ export function createEvidenceBundle(
   };
 }
 
-export function projectEvidenceGate(bundle: EvidenceBundle): EvidenceGateProjection {
+export function projectEvidenceGate(
+  bundle: EvidenceBundle,
+  binding: {
+    workflowRunId: string;
+    workflowActionId: string;
+    workflowStepId: string;
+    workflowStateVersion: number;
+  } | null = null,
+): EvidenceGateProjection {
   const satisfied = bundle.outcome === 'passed' || bundle.outcome === 'passed_with_warnings';
   return {
     schemaVersion: 1,
     kind: 'EvidenceGateProjection',
+    workflowRunId: binding?.workflowRunId ?? null,
+    workflowActionId: binding?.workflowActionId ?? null,
+    workflowStepId: binding?.workflowStepId ?? null,
+    workflowStateVersion: binding?.workflowStateVersion ?? null,
     profileId: bundle.profileId,
     bundleId: bundle.bundleId,
     inputFingerprint: bundle.inputFingerprint,

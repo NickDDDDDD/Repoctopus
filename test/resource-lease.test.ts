@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import os from 'node:os';
+import { readFile, rename, rm, writeFile } from 'node:fs/promises';
 
 import {
   FileResourceLeaseManager,
@@ -39,5 +40,18 @@ describe('resource lease', () => {
     const acquired = await manager.acquire('browser:managed');
     expect(acquired.owner.leaseId).not.toBe('stale-owner');
     await manager.release(acquired);
+  });
+
+  it('refuses to release a lease file replaced after acquisition', async () => {
+    const workspace = await temporaryDirectory('repoctopus-replaced-lease-');
+    cleanup.push(workspace);
+    const manager = new FileResourceLeaseManager(workspace);
+    const lease = await manager.acquire('port:8080');
+    const replacement = `${lease.file}.replacement`;
+    await writeFile(replacement, await readFile(lease.file));
+    await rm(lease.file);
+    await rename(replacement, lease.file);
+
+    await expect(manager.release(lease)).rejects.toThrow(/ownership changed/i);
   });
 });

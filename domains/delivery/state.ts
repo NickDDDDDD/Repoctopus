@@ -42,6 +42,7 @@ export function requestDeliveryApproval(
     changeId: state.changeId,
     snapshotDigest: snapshot.digest,
     reportDigest: snapshot.reportDigest,
+    evidenceBundleIds: snapshot.evidenceBundleIds,
     repositories: snapshot.repositories.map(
       ({ repositoryId, repositoryName, sourceBranch, targetBranch }) => ({
         repositoryId,

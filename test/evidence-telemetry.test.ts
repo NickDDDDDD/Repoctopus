@@ -3,6 +3,8 @@ import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { EvidenceRuntime } from '../app/evidence-runtime.js';
+import { RepoctopusRuntime } from '../domains/runtime/runtime.js';
+import { createWorkflowPackage } from '../domains/workflow-contract/package.js';
 import type {
   EvidenceTelemetryBatch,
   EvidenceTelemetryPort,
@@ -10,11 +12,14 @@ import type {
 import { createEvidenceTelemetryBatch } from '../domains/evidence/telemetry.js';
 import type { SharedProjectConfig } from '../domains/project-configuration/types.js';
 import { FileEvidenceTelemetryOutbox } from '../platform/telemetry/evidence-outbox.js';
+import { FileRuntimeStore } from '../platform/runtime/file-runtime-store.js';
 import { safeEvidenceAttributes } from '../platform/telemetry/evidence-mapping.js';
 import {
   createGitRepository,
+  projectFixture,
   removeTemporaryDirectory,
   temporaryDirectory,
+  workflowFixture,
 } from './helpers/fixtures.js';
 
 const cleanup: string[] = [];
@@ -65,6 +70,17 @@ describe('Evidence telemetry outbox', () => {
     await writeFile(path.join(workspace, 'repoctopus.yaml'), JSON.stringify(config));
     const telemetry = new RecoveringTelemetry();
     const runtime = new EvidenceRuntime(workspace, telemetry);
+    const workflowDefinition = structuredClone(workflowFixture().definition);
+    workflowDefinition.steps[0]!.action.evidenceProfile = 'verify';
+    const workflowRuntime = new RepoctopusRuntime(new FileRuntimeStore(workspace), {
+      async export() {},
+    });
+    await workflowRuntime.start({
+      workflow: createWorkflowPackage(workflowDefinition),
+      projectSnapshot: projectFixture(),
+      runId: 'workflow-run-1',
+    });
+    await workflowRuntime.next('workflow-run-1');
 
     const completed = await runtime.run('verify', 'attempt-telemetry', 'workflow-run-1');
     expect(completed.bundle.outcome).toBe('passed');

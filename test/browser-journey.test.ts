@@ -191,10 +191,7 @@ describe('browser journey', () => {
         }),
         'managed',
       ),
-      adapter.run(
-        journey([{ type: 'navigate', url: 'http://127.0.0.1/dashboard' }]),
-        'managed',
-      ),
+      adapter.run(journey([{ type: 'navigate', url: 'http://127.0.0.1/dashboard' }]), 'managed'),
     ]);
     expect([desktop.status, mobile.status]).toEqual(['passed', 'passed']);
     expect(launches).toBe(2);

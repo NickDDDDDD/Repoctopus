@@ -7,6 +7,7 @@ import { FileEvidenceStore } from './file-evidence-store.js';
 
 export interface EvidenceRetentionRoots {
   activeAttemptIds: string[];
+  acceptedBundleIds: string[];
   approvedBundleIds: string[];
   recentSuccessBundleIds: string[];
   failureBundleIds: string[];
@@ -17,6 +18,7 @@ export interface EvidenceCleanupOptions {
   maxAgeMs: number;
   maxBytes: number;
   now?: number;
+  defer?: boolean;
 }
 
 export interface EvidenceCleanupResult {
@@ -24,6 +26,7 @@ export interface EvidenceCleanupResult {
   protected: string[];
   bytesBefore: number;
   bytesAfter: number;
+  deferred: boolean;
 }
 
 async function existing<T>(operation: () => Promise<T>): Promise<T | null> {
@@ -68,6 +71,7 @@ export class FileEvidenceRetention {
       }
     }
     const bundles = [
+      ...options.acceptedBundleIds,
       ...options.approvedBundleIds,
       ...options.recentSuccessBundleIds,
       ...options.failureBundleIds,
@@ -115,6 +119,15 @@ export class FileEvidenceRetention {
       const now = options.now ?? Date.now();
       let bytes = objects.reduce((sum, item) => sum + item.size, 0);
       const bytesBefore = bytes;
+      if (options.defer) {
+        return {
+          removed: [],
+          protected: objects.map((item) => item.digest).sort(),
+          bytesBefore,
+          bytesAfter: bytesBefore,
+          deferred: true,
+        };
+      }
       const removed: string[] = [];
       const candidates = objects
         .filter((item) => !marked.has(item.digest))
@@ -133,6 +146,7 @@ export class FileEvidenceRetention {
           .sort(),
         bytesBefore,
         bytesAfter: bytes,
+        deferred: false,
       };
     });
   }

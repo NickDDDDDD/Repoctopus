@@ -14,6 +14,7 @@ const request: HumanDecisionRequest = {
   changeId: 'delivery-change',
   snapshotDigest: `sha256:${'a'.repeat(64)}`,
   reportDigest: `sha256:${'b'.repeat(64)}`,
+  evidenceBundleIds: ['bundle-verified'],
   repositories: [],
   actions: [],
   options: ['approve', 'request_changes', 'reject'],

@@ -104,9 +104,28 @@ Repoctopus MUST 为每次采集创建独立 Attempt，使用 Journal 和原子�
 - **WHEN** Agent 修复代码并显式启动新 Attempt
 - **THEN** 新 Attempt 追加到历史，旧失败结果继续可审计
 
+### Requirement: Evidence Gate 只能通过唯一 Runtime 推进工作流
+
+Repoctopus MUST 把当前 Bundle 投影为绑定工作流 Run、Action、Step、状态版本、Profile 和输入指纹的 Gate，并由唯一 Runtime 在持有 Run 转换锁时重新验证；CLI 或 Adapter 不得用普通成功文本替代 Gate。
+
+#### Scenario: Verify 步骤收到普通成功结果
+
+- **WHEN** 当前步骤要求 `verify` Profile 且记录请求没有绑定有效 Gate
+- **THEN** Runtime 拒绝推进并返回缺少或失效 Evidence 的诊断
+
+#### Scenario: 当前输入具有有效 Bundle
+
+- **WHEN** Gate 的 Run、Action、Step、状态版本、Profile、Bundle 和输入指纹与锁内重新读取的当前事实一致且状态为 `satisfied`
+- **THEN** Runtime 把 Bundle 接受事实、下一 Run State、Trajectory 和 Checkpoint 写入同一可恢复事务
+
+#### Scenario: Gate 校验后出现竞争转换
+
+- **WHEN** 另一个执行者尝试在当前 Gate 校验与状态提交之间推进同一 Run
+- **THEN** Runtime 转换锁串行化两个写入，后一个执行者必须基于新的状态版本重新校验证据
+
 ### Requirement: Artifact 保留和删除保护证据闭包
 
-Repoctopus MUST 保留当前 Run、每个 change 最近成功 Bundle 及归档前全部失败证据，并只按配置期限或容量删除未被活动状态、批准快照或保留 Bundle 引用的 Artifact。
+Repoctopus MUST 保留当前 Run 已接受 Bundle、每个 Run/Profile 最近成功 Bundle、批准交付快照及归档前全部失败证据，并只按配置期限或容量删除未被活动状态、批准快照或保留 Bundle 引用的 Artifact；存在待恢复 Runtime 转换时 MUST 整体延后清理。
 
 #### Scenario: 清理命令遇到被引用制品
 

@@ -1,4 +1,5 @@
 import type { EngineAction, RunState } from '../engine/types.js';
+import type { EvidenceGateProjection } from '../evidence/types.js';
 import type { ProjectReconciliation, ProjectSnapshot } from '../project/types.js';
 import type { Checkpoint, TrajectoryEvent } from '../trajectory/types.js';
 import type { WorkflowPackage } from '../workflow-contract/types.js';
@@ -48,4 +49,15 @@ export interface TelemetryPort {
 
 export interface WorkflowSourcePort {
   load(source: string): Promise<WorkflowPackage>;
+}
+
+export interface EvidenceGatePort {
+  evaluate(input: {
+    workflowRunId: string;
+    workflowActionId: string;
+    workflowStepId: string;
+    workflowStateVersion: number;
+    profileId: string;
+    attemptId: string;
+  }): Promise<EvidenceGateProjection>;
 }

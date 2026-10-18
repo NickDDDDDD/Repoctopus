@@ -24,6 +24,7 @@
     "build": "node scripts/build.mjs",
     "check:generated": "node scripts/build.mjs --check",
     "check:brand": "node scripts/check-brand.mjs",
+    "check:architecture": "node scripts/check-architecture.mjs",
     "check:provenance": "node scripts/check-provenance.mjs",
     "format": "prettier --write app domains platform scripts test workflows deploy third_party docs openspec README.md package.json tsconfig.json eslint.config.js vitest.config.ts",
     "format:check": "prettier --check app domains platform scripts test workflows deploy third_party docs openspec README.md package.json tsconfig.json eslint.config.js vitest.config.ts",
@@ -34,7 +35,7 @@
     "test:tracer-e2e": "vitest run test/e2e/runtime-tracer.e2e.test.ts",
     "spec:validate": "openspec validate --all --strict",
     "pretest": "npm run build",
-    "verify": "npm run typecheck && npm run lint && npm run build && npm test && npm run check:generated && npm run check:brand && npm run check:provenance && npm run spec:validate"
+    "verify": "npm run typecheck && npm run lint && npm run build && npm test && npm run check:generated && npm run check:brand && npm run check:architecture && npm run check:provenance && npm run spec:validate"
   },
   "dependencies": {
     "@opentelemetry/api": "1.9.0",

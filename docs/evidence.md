@@ -59,6 +59,6 @@ node bin/repoctopus.js evidence resume --workspace . --attempt <attempt-id> --js
 node bin/repoctopus.js evidence clean --workspace . --max-age-days 30 --max-bytes 1073741824 --json
 ```
 
-若 Evidence 属于现有工作流 Run，`evidence run` 可增加 `--workflow-run <run-id>`，遥测会用该稳定 ID 关联 Run 与 Attempt。
+若 Evidence 用于推进现有工作流 Run，`evidence run` 必须增加 `--workflow-run <run-id>`。该 Run 必须正等待一个声明相同 Profile 的动作；Attempt 会绑定当前 Action、Step 和 `stateVersion`。状态代次变化后，即使项目文件未变化，旧 Attempt 也不能推进工作流。
 
-`clean` 使用标记清扫：运行中 Attempt、失败 Bundle 和配置要求保留的近期成功 Bundle 构成保护根。它不会根据单个文件年龄删除仍被这些事实引用的 Artifact。
+`clean` 使用标记清扫：运行中 Attempt、Runtime Checkpoint 已接受 Bundle、Delivery 批准 Bundle、失败 Bundle 和配置要求保留的每个 Run/Profile 近期成功 Bundle 构成保护根。它不会根据单个文件年龄删除仍被这些事实引用的 Artifact；任何 Run 存在待恢复转换时，本次清理整体延后。

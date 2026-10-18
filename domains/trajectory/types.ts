@@ -26,6 +26,7 @@ export interface Checkpoint {
   trajectoryOffset: number;
   projectSnapshotDigest: string;
   artifactManifestDigest: string;
+  acceptedEvidenceBundleIds: string[];
   createdAt: string;
 }
 

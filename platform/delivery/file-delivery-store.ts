@@ -1,9 +1,10 @@
-import { mkdir, open, readFile, rm, stat } from 'node:fs/promises';
+import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 
 import type { DeliveryEvent, DeliveryStorePort } from '../../domains/delivery/ports.js';
 import type { DeliveryState } from '../../domains/delivery/types.js';
 import { atomicWriteJson, atomicWriteText } from '../filesystem/atomic-write.js';
+import { RecoverableFileTransition } from '../runtime/recoverable-file-transition.js';
 
 async function exists(file: string): Promise<boolean> {
   try {
@@ -70,36 +71,68 @@ export class FileDeliveryStore implements DeliveryStorePort {
       .map((line) => JSON.parse(line) as DeliveryEvent);
   }
 
+  async approvedEvidenceBundleIds(): Promise<string[]> {
+    const root = path.join(path.resolve(this.workspaceRoot), '.repoctopus', 'deliveries');
+    let entries;
+    try {
+      entries = await readdir(root, { withFileTypes: true });
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
+      throw error;
+    }
+    const protectedIds = new Set<string>();
+    for (const entry of entries) {
+      if (!entry.isDirectory() || entry.isSymbolicLink()) continue;
+      if (!/^[a-z0-9][a-z0-9-]{2,127}$/.test(entry.name)) continue;
+      const state = await this.load(entry.name);
+      if (
+        state?.snapshot &&
+        state.approval?.decision === 'approve' &&
+        state.approval.snapshotDigest === state.snapshot.digest &&
+        ['approved', 'publishing', 'partially_published', 'in_review', 'merged'].includes(
+          state.status,
+        )
+      ) {
+        for (const bundleId of state.snapshot.evidenceBundleIds) protectedIds.add(bundleId);
+      }
+    }
+    return [...protectedIds].sort();
+  }
+
   async commit(options: {
     state: DeliveryState;
     previousStateVersion: number | null;
     event: DeliveryEvent;
   }): Promise<void> {
     const paths = this.paths(options.state.changeId);
-    await this.withLock(paths, async () => {
-      await this.recoverUnlocked(paths);
-      const current = (await exists(paths.state))
-        ? await readJson<DeliveryState>(paths.state)
-        : null;
-      if (options.previousStateVersion === null) {
-        if (current) throw new Error(`Delivery already exists: ${options.state.changeId}`);
-      } else if (!current || current.stateVersion !== options.previousStateVersion)
-        throw new Error(`Stale delivery state: ${options.state.changeId}`);
-      if (
-        options.event.changeId !== options.state.changeId ||
-        options.event.stateVersion !== options.state.stateVersion
-      )
-        throw new Error('Delivery event does not match state');
-      const journal: DeliveryJournal = {
-        schemaVersion: 1,
-        previousStateVersion: options.previousStateVersion,
-        nextState: options.state,
-        event: options.event,
-      };
-      await atomicWriteJson(paths.journal, journal);
-      await this.hooks.afterJournalWritten?.(journal);
-      await this.complete(paths, journal);
-    });
+    await this.transition(paths).run(
+      (journal) => this.replay(paths, journal),
+      async (transition) => {
+        const current = (await exists(paths.state))
+          ? await readJson<DeliveryState>(paths.state)
+          : null;
+        if (options.previousStateVersion === null) {
+          if (current) throw new Error(`Delivery already exists: ${options.state.changeId}`);
+        } else if (!current || current.stateVersion !== options.previousStateVersion)
+          throw new Error(`Stale delivery state: ${options.state.changeId}`);
+        if (
+          options.event.changeId !== options.state.changeId ||
+          options.event.stateVersion !== options.state.stateVersion
+        )
+          throw new Error('Delivery event does not match state');
+        const journal: DeliveryJournal = {
+          schemaVersion: 1,
+          previousStateVersion: options.previousStateVersion,
+          nextState: options.state,
+          event: options.event,
+        };
+        await transition.commit(
+          journal,
+          (pending) => this.complete(paths, pending),
+          (pending) => this.hooks.afterJournalWritten?.(pending),
+        );
+      },
+    );
   }
 
   private async complete(
@@ -116,7 +149,6 @@ export class FileDeliveryStore implements DeliveryStorePort {
     }
     await atomicWriteJson(paths.state, journal.nextState);
     await this.hooks.afterStateWritten?.(journal);
-    await rm(paths.journal, { force: true });
   }
   private async historyUnlocked(file: string): Promise<DeliveryEvent[]> {
     const source = await readFile(file, 'utf8');
@@ -130,63 +162,19 @@ export class FileDeliveryStore implements DeliveryStorePort {
   private async recover(changeId: string): Promise<void> {
     const paths = this.paths(changeId);
     if (!(await exists(paths.journal))) return;
-    await this.withLock(paths, () => this.recoverUnlocked(paths));
+    await this.transition(paths).recover((journal) => this.replay(paths, journal));
   }
-  private async recoverUnlocked(paths: ReturnType<FileDeliveryStore['paths']>): Promise<void> {
-    if (!(await exists(paths.journal))) return;
-    const journal = await readJson<DeliveryJournal>(paths.journal);
+  private async replay(
+    paths: ReturnType<FileDeliveryStore['paths']>,
+    journal: DeliveryJournal,
+  ): Promise<void> {
     if (journal.schemaVersion !== 1) throw new Error('Invalid delivery journal');
     await this.complete(paths, journal);
   }
 
-  private async withLock<T>(
+  private transition(
     paths: ReturnType<FileDeliveryStore['paths']>,
-    operation: () => Promise<T>,
-  ): Promise<T> {
-    await mkdir(paths.root, { recursive: true });
-    let handle;
-    for (let attempt = 0; attempt < 100; attempt += 1) {
-      try {
-        handle = await open(paths.lock, 'wx', 0o600);
-        await handle.writeFile(
-          `${JSON.stringify({ schemaVersion: 1, pid: process.pid, createdAt: new Date().toISOString() })}\n`,
-          'utf8',
-        );
-        await handle.sync();
-        break;
-      } catch (error) {
-        if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
-        try {
-          const owner = await readJson<{ pid?: number; createdAt?: string }>(paths.lock);
-          const age = owner.createdAt
-            ? Date.now() - Date.parse(owner.createdAt)
-            : Number.POSITIVE_INFINITY;
-          let alive = false;
-          if (typeof owner.pid === 'number') {
-            try {
-              process.kill(owner.pid, 0);
-              alive = true;
-            } catch (processError) {
-              alive = (processError as NodeJS.ErrnoException).code === 'EPERM';
-            }
-          }
-          if (!alive || !Number.isFinite(age) || age > 5 * 60_000) {
-            await rm(paths.lock, { force: true });
-            continue;
-          }
-        } catch (readError) {
-          if ((readError as NodeJS.ErrnoException).code === 'ENOENT') continue;
-          throw readError;
-        }
-        await new Promise((resolve) => setTimeout(resolve, 20));
-      }
-    }
-    if (!handle) throw new Error(`Delivery transition is busy: ${paths.root}`);
-    try {
-      return await operation();
-    } finally {
-      await handle.close();
-      await rm(paths.lock, { force: true });
-    }
+  ): RecoverableFileTransition<DeliveryJournal> {
+    return new RecoverableFileTransition(paths.lock, paths.journal);
   }
 }

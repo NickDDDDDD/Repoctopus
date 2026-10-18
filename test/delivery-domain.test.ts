@@ -51,6 +51,7 @@ const intent: DeliveryIntent = {
     },
   ],
 };
+const evidenceBundleIds = ['bundle-verified'];
 
 function fact(repositoryId: string): DeliveryRepositoryFacts {
   return {
@@ -92,6 +93,7 @@ describe('delivery contract', () => {
       intent,
       policy,
       reportContents: 'verified',
+      evidenceBundleIds,
       repositories: [fact('repo-a'), fact('repo-b')],
       createdAt: '2026-01-01T00:00:00.000Z',
     });
@@ -99,6 +101,7 @@ describe('delivery contract', () => {
       intent: { ...intent, repositories: [...intent.repositories].reverse() },
       policy,
       reportContents: 'verified',
+      evidenceBundleIds,
       repositories: [fact('repo-b'), fact('repo-a')],
       createdAt: '2027-01-01T00:00:00.000Z',
     });
@@ -113,6 +116,7 @@ describe('delivery contract', () => {
         intent,
         policy,
         reportContents: 'verified',
+        evidenceBundleIds,
         repositories: [{ ...fact('repo-a'), clean: false }, fact('repo-b')],
         createdAt: '2026-01-01T00:00:00.000Z',
       }),
@@ -121,6 +125,7 @@ describe('delivery contract', () => {
       intent,
       policy,
       reportContents: 'verified',
+      evidenceBundleIds,
       repositories: [fact('repo-a'), fact('repo-b')],
       createdAt: '2026-01-01T00:00:00.000Z',
     });
@@ -128,10 +133,20 @@ describe('delivery contract', () => {
       intent,
       policy,
       reportContents: 'changed',
+      evidenceBundleIds,
       repositories: [fact('repo-a'), fact('repo-b')],
       createdAt: '2026-01-01T00:00:00.000Z',
     });
     expect(compareDeliverySnapshots(expected, current)).toContain('reportDigest');
+    const changedEvidence = createDeliverySnapshot({
+      intent,
+      policy,
+      reportContents: 'verified',
+      evidenceBundleIds: ['bundle-new'],
+      repositories: [fact('repo-a'), fact('repo-b')],
+      createdAt: '2026-01-01T00:00:00.000Z',
+    });
+    expect(compareDeliverySnapshots(expected, changedEvidence)).toContain('evidenceBundleIds');
   });
 
   it('records only a trusted decision for the pending snapshot', () => {
@@ -139,6 +154,7 @@ describe('delivery contract', () => {
       intent,
       policy,
       reportContents: 'verified',
+      evidenceBundleIds,
       repositories: [fact('repo-a'), fact('repo-b')],
       createdAt: '2026-01-01T00:00:00.000Z',
     });

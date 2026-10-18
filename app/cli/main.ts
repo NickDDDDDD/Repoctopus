@@ -20,6 +20,7 @@ import {
 import { GitDeliveryAdapter } from '../../platform/git/delivery.js';
 import { loadDeliveryPolicy } from '../../platform/delivery/config.js';
 import { FileDeliveryStore } from '../../platform/delivery/file-delivery-store.js';
+import { FileDeliveryEvidence } from '../../platform/delivery/file-delivery-evidence.js';
 import {
   EnvironmentCredentialProvider,
   GitHubMergeRequestAdapter,
@@ -59,8 +60,9 @@ function defaultWorkflowPath(): string {
 function nextActions(status: RunStatusView): string[] {
   if (status.state.status === 'running') return ['repoctopus run next --run <run-id>'];
   if (status.state.status === 'waiting') {
+    const evidence = status.nextAction?.evidenceProfile ? ' --evidence-attempt <attempt-id>' : '';
     return [
-      'repoctopus run record --run <run-id> --action <action-id> --status succeeded --summary <text>',
+      `repoctopus run record --run <run-id> --action <action-id> --status succeeded --summary <text>${evidence}`,
     ];
   }
   return [];
@@ -73,6 +75,7 @@ function runtimeFor(workspace: string): RepoctopusRuntime {
     undefined,
     undefined,
     new FileWorkflowSource(),
+    new EvidenceRuntime(workspace, evidenceTelemetryFromEnvironment(process.env)),
   );
 }
 
@@ -84,9 +87,19 @@ function deliveryServiceFor(workspace: string, policy?: DeliveryPolicy): Deliver
       new EnvironmentCredentialProvider(process.env),
       policy?.publication.githubApiBaseUrl,
     ),
+    new FileDeliveryEvidence(workspace),
     undefined,
     deliveryTelemetryFromEnvironment(process.env),
   );
+}
+
+function evidenceBundleIds(parsed: ParsedArguments): string[] {
+  const value = stringFlag(parsed, 'evidence-bundles', { required: true })!;
+  const ids = value.split(',').map((item) => item.trim());
+  if (ids.length === 0 || ids.some((item) => item.length === 0)) {
+    throw new Error('--evidence-bundles must contain comma-separated Bundle IDs');
+  }
+  return [...new Set(ids)].sort();
 }
 
 async function deliveryInputs(parsed: ParsedArguments): Promise<{
@@ -170,6 +183,7 @@ async function deliveryPrepare(parsed: ParsedArguments): Promise<CliEnvelope<unk
     intent: input.intent,
     policy: input.policy,
     reportContents: report,
+    evidenceBundleIds: evidenceBundleIds(parsed),
   });
   return successEnvelope({
     command: 'delivery prepare',
@@ -242,6 +256,7 @@ async function deliveryPublish(parsed: ParsedArguments): Promise<CliEnvelope<unk
     intent: input.intent,
     policy: input.policy,
     reportContents: report,
+    evidenceBundleIds: evidenceBundleIds(parsed),
   });
   return successEnvelope({
     command: 'delivery publish',
@@ -459,12 +474,14 @@ async function runRecord(parsed: ParsedArguments): Promise<CliEnvelope<unknown>>
     throw new Error('--status must be succeeded or failed');
   }
   const requestedEventId = stringFlag(parsed, 'event-id');
+  const evidenceAttemptId = stringFlag(parsed, 'evidence-attempt');
   const result = await runtimeFor(workspace).record({
     runId,
     actionId: stringFlag(parsed, 'action', { required: true })!,
     status,
     summary: stringFlag(parsed, 'summary', { required: true })!,
     ...(requestedEventId ? { eventId: requestedEventId } : {}),
+    ...(evidenceAttemptId ? { evidenceAttemptId } : {}),
   });
   return successEnvelope({
     command: 'run record',
@@ -493,6 +510,7 @@ async function runResume(parsed: ParsedArguments): Promise<CliEnvelope<unknown>>
     undefined,
     undefined,
     new FileWorkflowSource(),
+    new EvidenceRuntime(workspace, evidenceTelemetryFromEnvironment(process.env)),
   ).resume({ runId, currentProjectSnapshot });
   return successEnvelope({
     command: 'run resume',

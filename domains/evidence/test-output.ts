@@ -27,9 +27,7 @@ export function parseTestExecution(output: string): TestExecutionSummary | null 
   }
   const noTests = /(?:^|\n)\s*(No test files found|No tests found)\b/iu.exec(output);
   if (noTests) return { framework: 'generic', executed: 0, source: noTests[1]! };
-  const mavenNoTests = /(?:^|\n)\s*(?:\[INFO\]\s*)?(No tests to run\.)\s*(?:\n|$)/iu.exec(
-    output,
-  );
+  const mavenNoTests = /(?:^|\n)\s*(?:\[INFO\]\s*)?(No tests to run\.)\s*(?:\n|$)/iu.exec(output);
   if (mavenNoTests) {
     return { framework: 'maven-surefire', executed: 0, source: mavenNoTests[1]! };
   }

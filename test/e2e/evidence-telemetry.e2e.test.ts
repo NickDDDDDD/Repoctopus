@@ -60,8 +60,58 @@ describe('Evidence OTLP export', () => {
       ],
     };
     await writeFile(path.join(workspace, 'repoctopus.yaml'), JSON.stringify(config));
+    const workflowFile = path.join(workspace, 'evidence-workflow.yaml');
+    await writeFile(
+      workflowFile,
+      `apiVersion: repoctopus/v1alpha1
+kind: Workflow
+metadata:
+  name: evidence-telemetry
+  version: 1.0.0
+  description: Evidence telemetry binding fixture
+entry: verify
+steps:
+  - id: verify
+    action:
+      type: checkpoint
+      ref: verified
+      summary: Verify the fixture
+      evidenceProfile: verify
+    onSuccess: null
+guardrails:
+  allowedActionTypes: [checkpoint]
+  allowedRefs: [verified]
+  confirmationRequiredFor: []
+  maxIterations: 2
+  maxRetriesPerAction: 1
+`,
+    );
 
     try {
+      await runCli({
+        packageRoot,
+        cwd: workspace,
+        args: [
+          'run',
+          'start',
+          '--workspace',
+          workspace,
+          '--project-root',
+          root,
+          '--workflow',
+          workflowFile,
+          '--run',
+          'workflow-run-otlp',
+        ],
+      });
+      const pending = await runCli({
+        packageRoot,
+        cwd: workspace,
+        args: ['run', 'next', '--workspace', workspace, '--run', 'workflow-run-otlp'],
+      });
+      expect(pending.nextActions).toContain(
+        'repoctopus run record --run <run-id> --action <action-id> --status succeeded --summary <text> --evidence-attempt <attempt-id>',
+      );
       const result = await runCli({
         packageRoot,
         cwd: workspace,

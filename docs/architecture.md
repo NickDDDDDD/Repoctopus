@@ -51,6 +51,8 @@ Evidence Runtime 按以下顺序工作：
 
 必需节点只有同时满足 `status=passed`、`trust=verified` 且 freshness 不是 `superseded` 才能满足 Gate。系统浏览器或无法核对 build identity 的 Attached 服务产生 `observed`，可用于诊断，但不能推进正式 Verify。
 
+工作流 Evidence 还会绑定 `runId`、当前 `actionId`、`stepId`、`stateVersion` 和 Profile。核心 Runtime 持有该 Run 的转换锁后重新读取当前状态并重新计算多仓输入指纹；只有全部绑定仍一致时，才把 Bundle ID、下一状态、Trajectory 和 Checkpoint 写入同一个可恢复事务。锁外生成的 Gate Projection 是可检查事实，不是可重复使用的授权票据。
+
 ## 恢复与并发
 
 - Attempt、节点 intent/completion Journal、运行上下文和进程登记都写入 `.repoctopus/`。
@@ -59,6 +61,7 @@ Evidence Runtime 按以下顺序工作：
 - Managed 服务只在进程身份和 lease 所有权同时匹配时终止进程树。
 - 输入在中断期间变化时，已收集证据变为 `superseded`。
 - Artifact Store 允许并行节点写入相同内容：竞争写入者必须重新读取并核对目标字节，只有摘要和内容一致才视为去重成功。该规则兼容 Windows 的 `EPERM` 与 POSIX 的 `EEXIST` 差异。
+- Checkpoint 保存 Runtime 已接受的 Evidence Bundle。Retention 同时保护这些 Bundle、Delivery 批准 Bundle、活动 Attempt、每个 Run/Profile 的近期成功与失败审计证据；任一 Run 存在待恢复转换时不执行删除。
 
 ## 触手、吸盘、神经与眼睛
 

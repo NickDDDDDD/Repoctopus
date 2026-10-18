@@ -96,12 +96,7 @@ describe('visual inspection protocol', () => {
         await new Promise((resolve) => setTimeout(resolve, 10));
       }
     }
-    const responseDirectory = path.join(
-      workspace,
-      '.repoctopus',
-      'visual-exchange',
-      'responses',
-    );
+    const responseDirectory = path.join(workspace, '.repoctopus', 'visual-exchange', 'responses');
     await mkdir(responseDirectory, { recursive: true });
     await writeFile(
       path.join(responseDirectory, `${request.requestId}.json`),

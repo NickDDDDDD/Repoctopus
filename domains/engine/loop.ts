@@ -42,6 +42,7 @@ export function startRun(options: {
     stateVersion: 0,
     status: 'running',
     retries: {},
+    acceptedEvidenceBundleIds: [],
     createdAt: options.timestamp,
     updatedAt: options.timestamp,
   };

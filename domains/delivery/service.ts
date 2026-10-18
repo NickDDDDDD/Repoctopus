@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
 import type { ProjectSnapshot, RepositorySnapshot } from '../project/types.js';
+import { canonicalJson } from '../workflow-contract/canonical.js';
 import {
   createDeliverySnapshot,
   deliveryIntentDigest,
@@ -16,6 +17,7 @@ import {
 import type {
   DeliveryEvent,
   DeliveryGitPort,
+  DeliveryEvidencePort,
   DeliveryStorePort,
   DeliveryTelemetryPort,
   MergeRequestInput,
@@ -72,6 +74,7 @@ export class DeliveryService {
     private readonly store: DeliveryStorePort,
     private readonly git: DeliveryGitPort,
     private readonly mergeRequests: MergeRequestPort,
+    private readonly evidence: DeliveryEvidencePort,
     private readonly clock: () => Date = () => new Date(),
     private readonly telemetry?: DeliveryTelemetryPort,
   ) {}
@@ -95,8 +98,10 @@ export class DeliveryService {
     intent: DeliveryIntent;
     policy: DeliveryPolicy;
     reportContents: string;
+    evidenceBundleIds: string[];
   }): Promise<DeliveryState> {
     this.validate(options.intent, options.policy);
+    await this.evidence.assertSatisfied(options.evidenceBundleIds);
     const repositories = selectedRepositories(options.project, options.intent);
     const facts = [];
     for (const selected of options.intent.repositories)
@@ -108,6 +113,7 @@ export class DeliveryService {
       intent: options.intent,
       policy: options.policy,
       reportContents: options.reportContents,
+      evidenceBundleIds: options.evidenceBundleIds,
       repositories: facts,
       createdAt: timestamp,
     });
@@ -158,6 +164,7 @@ export class DeliveryService {
     intent: DeliveryIntent;
     policy: DeliveryPolicy;
     reportContents: string;
+    evidenceBundleIds: string[];
   }): Promise<DeliveryState> {
     let state = await this.requireState(options.intent.changeId);
     if (
@@ -177,6 +184,7 @@ export class DeliveryService {
       options.intent,
       options.policy,
       options.reportContents,
+      options.evidenceBundleIds,
       currentFacts,
     );
     if (drift.length > 0) {
@@ -390,6 +398,7 @@ export class DeliveryService {
     intent: DeliveryIntent,
     policy: DeliveryPolicy,
     reportContents: string,
+    evidenceBundleIds: string[],
     facts: Awaited<ReturnType<DeliveryGitPort['inspect']>>[],
   ): string[] {
     const expected = state.snapshot!;
@@ -397,6 +406,11 @@ export class DeliveryService {
     if (sha256Digest(reportContents) !== expected.reportDigest) drift.push('report');
     if (deliveryPolicyDigest(policy) !== expected.policyDigest) drift.push('policy');
     if (deliveryIntentDigest(intent) !== expected.intentDigest) drift.push('intent');
+    if (
+      canonicalJson([...new Set(evidenceBundleIds)].sort()) !==
+      canonicalJson(expected.evidenceBundleIds)
+    )
+      drift.push('evidence');
     for (const current of facts) {
       const original = expected.repositories.find(
         (item) => item.repositoryId === current.repositoryId,

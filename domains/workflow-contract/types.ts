@@ -4,6 +4,7 @@ export interface WorkflowAction {
   type: ActionType;
   ref?: string;
   summary: string;
+  evidenceProfile?: string;
 }
 
 export interface WorkflowStep {

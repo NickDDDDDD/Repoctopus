@@ -32,7 +32,10 @@ export class FileExchangeVisualInspectionAdapter implements VisualInspectionAdap
   async inspect(request: VisualInspectionRequest): Promise<VisualInspectionResponse | null> {
     const requests = path.join(this.exchangeDirectory, 'requests');
     const responses = path.join(this.exchangeDirectory, 'responses');
-    await Promise.all([mkdir(requests, { recursive: true }), mkdir(responses, { recursive: true })]);
+    await Promise.all([
+      mkdir(requests, { recursive: true }),
+      mkdir(responses, { recursive: true }),
+    ]);
     await atomicWriteJson(path.join(requests, `${request.requestId}.json`), request);
 
     const responseFile = path.join(responses, `${request.requestId}.json`);

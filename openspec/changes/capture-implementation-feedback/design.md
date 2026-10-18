@@ -245,6 +245,38 @@ Repoctopus 仓内建立合成 fixture，覆盖：
 
 每个 Browser Journey 启动独立 Chromium 实例和隔离 context。固定浏览器可执行文件是只读安装资产，不是独占运行资源，因此 Browser Adapter 不对可执行文件路径加全局 lease；Profile 外层 lease、独立进程生命周期和 `finally` 清理负责运行边界。真实 Agent Lab 验收发现并修复了这两个锁粒度问题。
 
+### 15. 全部生产源码进入能力归属账本
+
+`scripts/architecture-governance.json` 为 `app`、`domains` 和 `platform` 的每个生产文件声明唯一能力 owner、采用方式、相关 Comet 上游和保留理由。采用方式区分源码改造、行为重建和 Repoctopus 新能力；`source-manifest.json` 中每个目标必须属于源码改造能力。
+
+同一策略维护旧 `agents-workspace` 的文件和内容 denylist。检查覆盖旧 Hook、Skill、阶段常量、批准口令、IDE 项目配置、`.context`、`.rules` 及示例项目路径。未来有意增加 IDE Adapter 时必须更新账本和理由，不能通过删除检查绕过架构评审。
+
+**备选方案：**继续只依赖 `check:brand` 和人工代码评审。它只能发现 Comet 名称泄漏，无法发现未登记的行为重建、第四套 Journal 或旧工作流换名回流，因此不采用。
+
+### 16. 文件安全和仓库 Fence 采用 Comet 成熟原语
+
+Repoctopus 直接采用 Comet 的 file identity、race-safe read 和 Windows transient retry，并从 `native-atomic-file` 改造通用原子写入。Resource Lease 保留 Repoctopus resource key 和进程恢复协议，但 owner 文件的读取、接管、rebind 和 release 都同时核对内容身份与文件对象身份。Artifact CAS 使用 exclusive publish，读取和存在检查均验证完整摘要。
+
+单仓 Fingerprint 从 Comet Snapshot 抽取选择前后 Fence：第一次捕获 HEAD、tree 和 dirty path，竞态安全摘要内容，第二次重新捕获选择并再次摘要相同内容；任何选择或内容变化都拒绝本次捕获。多仓、配置、工具、Journey 和 Adapter 仍由 Repoctopus 上层 manifest 组合。
+
+**备选方案：**继续扩充第一版简化 `readFile`、`rename` 和单次 Git 选择。该方案会重复修复 Comet 已解决的文件替换、父目录替换、Windows 占用和采集竞态问题，因此不采用。
+
+### 17. Evidence Gate 必须进入唯一 Runtime 转换
+
+Workflow Step 可以声明所需 Evidence Profile。Evidence Attempt 仍由 Adapter DAG 收集事实，但启动时绑定当前 workflow Run、Action、Step 和 `stateVersion`，完成后生成不可变 Bundle 与 Gate。核心 Runtime 持有 Run transition lock 后重新读取状态，并核对 Gate 的 Run、Action、Step、状态版本、Profile、Bundle 和当前多仓输入指纹。CLI 不能用普通 `succeeded` 摘要替代 Gate。
+
+Gate 验证通过后，Bundle ID 进入下一 Run State 的 `acceptedEvidenceBundleIds`；该状态、`action.completed` Trajectory 和 Checkpoint 由同一个恢复 Journal 提交。这样 Evidence 接受事实不是锁外查询结果，也不会在状态已经变化后继续生效。
+
+Delivery Snapshot 显式绑定用户评审的 Bundle ID。发布前重新核对 Bundle 与项目输入；Retention 从活动 Attempt、Runtime Checkpoint 已接受 Bundle、有效批准快照、每个 Run/Profile 最近成功 Bundle 和失败审计集合建立 root set。任一 Run 存在待恢复 transition Journal 时，清理整体延后，避免删除即将被提交状态引用的对象。
+
+**备选方案：**让 `EvidenceRuntime` 和 Delivery 各自返回成功状态，由 Agent 按文档顺序调用。它无法强制阻止绕过，也与“唯一 Runtime”规格冲突，因此不采用。
+
+### 18. 领域状态分离，事务写入原语收敛
+
+Run、Delivery 和 Evidence 使用不同聚合：Run 保存可推进状态，Delivery 保存远端发布 Saga，Evidence Journal 保存追加事实。它们不能合并为一个巨型状态对象，但 Core Runtime Store 与 Delivery Store 重复的 intent Journal、事件追加、CAS stateVersion、原子投影和崩溃重放应抽成平台公共事务原语。
+
+Evidence JSONL Journal 保持独立，因为它允许同一 Attempt 的并行节点追加事实，恢复语义不是单状态 CAS。能力账本登记现有三类模型并阻止出现未评审的第四类。
+
 ## Risks / Trade-offs
 
 - [Evidence 状态和 Artifact 数量快速增长] → 使用内容寻址去重、引用闭包保留、容量上限和显式清理报告。
@@ -255,6 +287,8 @@ Repoctopus 仓内建立合成 fixture，覆盖：
 - [本机覆盖成为绕过入口] → Schema 使用字段级覆盖权限，合并后再次验证门禁单调性并把覆盖摘要纳入指纹。
 - [日志脱敏遗漏秘密] → 允许列表优先、内建与项目敏感规则组合；无法可靠脱敏的必需 Artifact 采集失败。
 - [Comet 代码引入隐式依赖] → 先做依赖闭包与行为测试，逐文件登记来源；不复制产品外壳或运行时全局状态。
+- [纵切各自建立 Runtime 和 Journal] → 唯一 Runtime 负责工作流转换；能力账本登记状态模型，公共事务原语只在保持聚合边界时抽取。
+- [旧工作流通过换名重新进入产品] → 对旧路径、阶段、Hook、Skill 和批准口令运行机器检查；有意新增 Adapter 必须显式修改治理账本。
 - [真实示例的工具版本或网络导致验收波动] → 产品合成 E2E 是确定性门禁，真实接入验收单独报告环境能力与 `incomplete`，不把环境缺失描述为产品成功。
 
 ## Migration Plan

@@ -59,30 +59,32 @@ export class FileEvidenceJournal implements EvidenceJournal {
     receiptId?: string,
   ): Promise<void> {
     const previous = this.appendQueues.get(attemptId) ?? Promise.resolve();
-    const queued = previous.catch(() => undefined).then(() =>
-      this.leases.withLease(`evidence-journal:${attemptId}`, async () => {
-        const entries = await this.load(attemptId);
-        const entry: EvidenceJournalEntry = {
-          schemaVersion: 1,
-          sequence: entries.length + 1,
-          eventId: randomUUID(),
-          attemptId,
-          nodeId,
-          timestamp,
-          type,
-          ...(receiptId ? { receiptId } : {}),
-        };
-        const file = this.file(attemptId);
-        await mkdir(path.dirname(file), { recursive: true });
-        const handle = await open(file, 'a', 0o600);
-        try {
-          await handle.writeFile(`${JSON.stringify(entry)}\n`, 'utf8');
-          await handle.sync();
-        } finally {
-          await handle.close();
-        }
-      }),
-    );
+    const queued = previous
+      .catch(() => undefined)
+      .then(() =>
+        this.leases.withLease(`evidence-journal:${attemptId}`, async () => {
+          const entries = await this.load(attemptId);
+          const entry: EvidenceJournalEntry = {
+            schemaVersion: 1,
+            sequence: entries.length + 1,
+            eventId: randomUUID(),
+            attemptId,
+            nodeId,
+            timestamp,
+            type,
+            ...(receiptId ? { receiptId } : {}),
+          };
+          const file = this.file(attemptId);
+          await mkdir(path.dirname(file), { recursive: true });
+          const handle = await open(file, 'a', 0o600);
+          try {
+            await handle.writeFile(`${JSON.stringify(entry)}\n`, 'utf8');
+            await handle.sync();
+          } finally {
+            await handle.close();
+          }
+        }),
+      );
     this.appendQueues.set(attemptId, queued);
     try {
       await queued;

@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { RepoctopusRuntime } from '../domains/runtime/runtime.js';
-import type { TelemetryBatch, TelemetryPort } from '../domains/runtime/types.js';
+import type { EvidenceGatePort, TelemetryBatch, TelemetryPort } from '../domains/runtime/types.js';
+import { createWorkflowPackage } from '../domains/workflow-contract/package.js';
 import { FileRuntimeStore } from '../platform/runtime/file-runtime-store.js';
 import {
   projectFixture,
@@ -26,6 +27,28 @@ class FlakyTelemetry implements TelemetryPort {
 }
 
 describe('Repoctopus runtime', () => {
+  function evidenceWorkflow() {
+    const definition = structuredClone(workflowFixture().definition);
+    definition.steps[1]!.action.evidenceProfile = 'verify';
+    return createWorkflowPackage(definition);
+  }
+
+  async function waitingAtEvidence(runtime: RepoctopusRuntime, runId: string) {
+    await runtime.start({
+      workflow: evidenceWorkflow(),
+      projectSnapshot: projectFixture(),
+      runId,
+    });
+    const inspect = await runtime.next(runId);
+    await runtime.record({
+      runId,
+      actionId: inspect.value.state.pendingActionId!,
+      status: 'succeeded',
+      summary: 'inspection complete',
+    });
+    return runtime.next(runId);
+  }
+
   it('isolates runs started from the same project snapshot', async () => {
     const workspace = await temporaryDirectory('repoctopus-run-isolation-');
     cleanup.push(workspace);
@@ -205,5 +228,131 @@ describe('Repoctopus runtime', () => {
       expectedDigest: original.digest,
       currentDigest: changed.digest,
     });
+  });
+
+  it('rejects a manually reported success for an evidence-protected step', async () => {
+    const workspace = await temporaryDirectory('repoctopus-runtime-evidence-required-');
+    cleanup.push(workspace);
+    const runtime = new RepoctopusRuntime(new FileRuntimeStore(workspace), {
+      async export() {},
+    });
+    const waiting = await waitingAtEvidence(runtime, 'run-evidence-required');
+    await expect(
+      runtime.record({
+        runId: 'run-evidence-required',
+        actionId: waiting.value.state.pendingActionId!,
+        status: 'succeeded',
+        summary: 'manual success',
+      }),
+    ).rejects.toThrow(/Runtime evidence attempt/i);
+    expect((await runtime.status('run-evidence-required')).state.status).toBe('waiting');
+  });
+
+  it('re-evaluates a bound Evidence Gate and records it in the transition', async () => {
+    const workspace = await temporaryDirectory('repoctopus-runtime-evidence-gate-');
+    cleanup.push(workspace);
+    const evaluations: Parameters<EvidenceGatePort['evaluate']>[0][] = [];
+    const gate: EvidenceGatePort = {
+      evaluate(input) {
+        evaluations.push(input);
+        return Promise.resolve({
+          schemaVersion: 1,
+          kind: 'EvidenceGateProjection',
+          workflowRunId: input.workflowRunId,
+          workflowActionId: input.workflowActionId,
+          workflowStepId: input.workflowStepId,
+          workflowStateVersion: input.workflowStateVersion,
+          profileId: input.profileId,
+          bundleId: 'bundle-verified',
+          inputFingerprint: 'fingerprint-current',
+          outcome: 'passed',
+          status: 'satisfied',
+          reason: 'current Runtime evidence passed',
+        });
+      },
+    };
+    const runtime = new RepoctopusRuntime(
+      new FileRuntimeStore(workspace),
+      { async export() {} },
+      undefined,
+      undefined,
+      undefined,
+      gate,
+    );
+    const waiting = await waitingAtEvidence(runtime, 'run-evidence-gate');
+    const completed = await runtime.record({
+      runId: 'run-evidence-gate',
+      actionId: waiting.value.state.pendingActionId!,
+      status: 'succeeded',
+      summary: 'verified by Runtime',
+      evidenceAttemptId: 'attempt-verified',
+    });
+    expect(completed.value.state.status).toBe('completed');
+    expect(evaluations).toEqual([
+      expect.objectContaining({
+        attemptId: 'attempt-verified',
+        workflowRunId: 'run-evidence-gate',
+        workflowActionId: waiting.value.state.pendingActionId,
+        workflowStepId: waiting.value.state.currentStep,
+        workflowStateVersion: waiting.value.state.stateVersion,
+        profileId: 'verify',
+      }),
+    ]);
+    const store = new FileRuntimeStore(workspace);
+    const trajectory = await store.loadTrajectory('run-evidence-gate');
+    expect(trajectory.at(-1)?.data).toMatchObject({
+      evidenceAttemptId: 'attempt-verified',
+      evidenceGate: {
+        workflowRunId: 'run-evidence-gate',
+        bundleId: 'bundle-verified',
+        status: 'satisfied',
+      },
+    });
+    expect(completed.value.state.acceptedEvidenceBundleIds).toEqual(['bundle-verified']);
+    expect((await store.loadCheckpoint('run-evidence-gate')).acceptedEvidenceBundleIds).toEqual([
+      'bundle-verified',
+    ]);
+  });
+
+  it('keeps the protected step waiting when the Evidence Gate is blocked', async () => {
+    const workspace = await temporaryDirectory('repoctopus-runtime-evidence-blocked-');
+    cleanup.push(workspace);
+    const gate: EvidenceGatePort = {
+      evaluate(input) {
+        return Promise.resolve({
+          schemaVersion: 1,
+          kind: 'EvidenceGateProjection',
+          workflowRunId: input.workflowRunId,
+          workflowActionId: input.workflowActionId,
+          workflowStepId: input.workflowStepId,
+          workflowStateVersion: input.workflowStateVersion,
+          profileId: input.profileId,
+          bundleId: 'bundle-stale',
+          inputFingerprint: 'fingerprint-stale',
+          outcome: 'incomplete',
+          status: 'blocked',
+          reason: 'inputs changed after verification',
+        });
+      },
+    };
+    const runtime = new RepoctopusRuntime(
+      new FileRuntimeStore(workspace),
+      { async export() {} },
+      undefined,
+      undefined,
+      undefined,
+      gate,
+    );
+    const waiting = await waitingAtEvidence(runtime, 'run-evidence-blocked');
+    await expect(
+      runtime.record({
+        runId: 'run-evidence-blocked',
+        actionId: waiting.value.state.pendingActionId!,
+        status: 'succeeded',
+        summary: 'stale evidence',
+        evidenceAttemptId: 'attempt-stale',
+      }),
+    ).rejects.toThrow(/inputs changed after verification/i);
+    expect((await runtime.status('run-evidence-blocked')).state.status).toBe('waiting');
   });
 });
