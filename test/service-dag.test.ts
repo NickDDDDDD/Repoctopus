@@ -44,7 +44,9 @@ function serverNode(input: {
       startupTimeoutMs: healthy ? 3000 : 100,
       probeIntervalMs: 20,
       resourceKeys: [`port:${input.port}`],
-      readiness: [{ type: 'tcp', host: '127.0.0.1', port: input.port }],
+      readiness: healthy
+        ? [{ type: 'tcp', host: '127.0.0.1', port: input.port }]
+        : [{ type: 'log', pattern: 'never-emitted' }],
     },
   };
 }

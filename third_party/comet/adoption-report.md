@@ -11,17 +11,17 @@
 
 ## 已采用并改造
 
-| 能力           | 上游来源                                                              | Repoctopus 位置                              | 主要改造                                                                |
-| -------------- | --------------------------------------------------------------------- | -------------------------------------------- | ----------------------------------------------------------------------- |
-| Run 循环       | `domains/engine/loop.ts`                                              | `domains/engine/loop.ts`                     | 使用 Repoctopus Workflow Package；增加项目核对硬阻断；保持确定性动作 ID |
-| Resolver       | `domains/engine/resolver.ts`                                          | `domains/engine/resolver.ts`                 | 通过深拷贝和冻结隔离 Resolver 输入                                      |
-| Guardrail      | `domains/engine/guardrails.ts`                                        | `domains/engine/guardrails.ts`               | 对接版本化动作类型、引用允许列表和确认输入                              |
-| Eval           | `domains/engine/evals.ts`                                             | `domains/engine/evals.ts`                    | 对接 Repoctopus Run State 与可审查证据文本                              |
-| Workflow 摘要  | `domains/workflow-contract/hash.ts`                                   | `domains/workflow-contract/hash.ts`          | 对接独立 Workflow Contract 域与规范 JSON                                |
-| 结构化进程启动 | `platform/process/spawn-command.ts`                                   | `platform/process/spawn-command.ts`          | 保留跨平台 argv 和 Windows shim 处理；替换产品环境变量命名              |
-| 外部命令探测   | `platform/process/external-command.ts`                                | `platform/process/external-command.ts`       | 移除 Comet 运行指标耦合，保留超时、取消和缓冲区边界                     |
-| 进程创建身份   | `platform/process/process-identity.ts`、`windows-process-identity.ts` | 同名平台文件                                 | 保留 PID 复用防护；替换 Windows 探测缓存与类型命名                      |
-| 进程树终止     | `platform/process/terminate-process-tree.ts`                          | `platform/process/terminate-process-tree.ts` | 原样采用受控进程树终止机制                                              |
+| 能力           | 上游来源                                                              | Repoctopus 位置                              | 主要改造                                                                                                   |
+| -------------- | --------------------------------------------------------------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Run 循环       | `domains/engine/loop.ts`                                              | `domains/engine/loop.ts`                     | 使用 Repoctopus Workflow Package；增加项目核对硬阻断；保持确定性动作 ID                                    |
+| Resolver       | `domains/engine/resolver.ts`                                          | `domains/engine/resolver.ts`                 | 通过深拷贝和冻结隔离 Resolver 输入                                                                         |
+| Guardrail      | `domains/engine/guardrails.ts`                                        | `domains/engine/guardrails.ts`               | 对接版本化动作类型、引用允许列表和确认输入                                                                 |
+| Eval           | `domains/engine/evals.ts`                                             | `domains/engine/evals.ts`                    | 对接 Repoctopus Run State 与可审查证据文本                                                                 |
+| Workflow 摘要  | `domains/workflow-contract/hash.ts`                                   | `domains/workflow-contract/hash.ts`          | 对接独立 Workflow Contract 域与规范 JSON                                                                   |
+| 结构化进程启动 | `platform/process/spawn-command.ts`                                   | `platform/process/spawn-command.ts`          | 保留跨平台 argv 和 Windows shim 处理；替换产品环境变量命名                                                 |
+| 外部命令探测   | `platform/process/external-command.ts`                                | `platform/process/external-command.ts`       | 移除 Comet 运行指标耦合，保留超时、取消和缓冲区边界                                                        |
+| 进程创建身份   | `platform/process/process-identity.ts`、`windows-process-identity.ts` | 同名平台文件                                 | 保留 PID 复用防护；替换 Windows 探测缓存与类型命名；所有权核对对瞬时探测失败执行有限重试，仍未知时拒绝终止 |
+| 进程树终止     | `platform/process/terminate-process-tree.ts`                          | `platform/process/terminate-process-tree.ts` | 原样采用受控进程树终止机制                                                                                 |
 
 机器可检查的上游和目标 SHA-256 记录在 `source-manifest.json`。
 

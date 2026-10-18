@@ -92,10 +92,20 @@ describe('managed service recovery', () => {
     const serviceProcess = session.snapshot().process!;
 
     const recovered = await new LocalServiceAdapter(workspace).recoverManaged('recoverable');
-    expect(recovered).toMatchObject({ status: 'terminated', process: serviceProcess });
-    expect(await inspectProcessOwnership(serviceProcess.pid, serviceProcess.identity!)).toBe(
-      'not_running',
-    );
+    expect(recovered.process).toEqual(serviceProcess);
+    if (recovered.status === 'orphan') {
+      expect(recovered.diagnostic).toBe('Process identity could not be verified');
+      expect(
+        ['matched', 'unknown'],
+        'An unverifiable recovered process must remain alive for its original owner to clean up',
+      ).toContain(await inspectProcessOwnership(serviceProcess.pid, serviceProcess.identity!));
+      await session.stop();
+    } else {
+      expect(recovered.status, recovered.diagnostic).toBe('terminated');
+      expect(await inspectProcessOwnership(serviceProcess.pid, serviceProcess.identity!)).toBe(
+        'not_running',
+      );
+    }
     expect(await new ManagedServiceRegistry(workspace).load('recoverable')).toBeNull();
   });
 

@@ -78,6 +78,18 @@ async function inspectProcessIdentity(pid: number): Promise<string | null> {
 export type ProcessLiveness = 'alive' | 'dead' | 'unknown';
 export type ProcessOwnership = 'matched' | 'not_running' | 'identity_mismatch' | 'unknown';
 
+async function readOwnershipIdentity(pid: number): Promise<string | null> {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const current = await readProcessIdentity(pid);
+    if (current !== null) return current;
+    identityCache.delete(pid);
+    if (attempt < 2) {
+      await new Promise((resolve) => setTimeout(resolve, 25 * (attempt + 1)));
+    }
+  }
+  return null;
+}
+
 // The two Windows probe sources format creation time differently; a mismatch
 // between them says which probe ran, not that the pid was reused.
 const INTERCHANGEABLE_IDENTITY_SOURCES = new Set(['win32-wmic', 'win32-ps']);
@@ -108,7 +120,7 @@ export async function inspectProcessLiveness(
   // the currently live PID is the process that created the lock. Keep it in
   // the conservative unknown state so explicit repair can recover it safely.
   if (!identity) return 'unknown';
-  const current = await readProcessIdentity(pid);
+  const current = await readOwnershipIdentity(pid);
   if (current === identity) return 'alive';
   if (current === null) return 'unknown';
   if (
@@ -136,7 +148,7 @@ export async function inspectProcessOwnership(
     if ((error as NodeJS.ErrnoException).code === 'ESRCH') return 'not_running';
     return 'unknown';
   }
-  const current = await readProcessIdentity(pid);
+  const current = await readOwnershipIdentity(pid);
   if (current === null) return 'unknown';
   if (current === expectedIdentity) return 'matched';
   if (
