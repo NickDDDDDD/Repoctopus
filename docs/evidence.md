@@ -24,6 +24,17 @@ zeroTests: warning # ignore | warning | blocking
 
 Repoctopus 识别 npm 测试生态、Maven Surefire 和 Gradle 的常见结构化摘要。退出码为零但执行数为零时生成 `no-tests-detected`；`warning` 产生 `passed_with_warnings`，`blocking` 产生 `incomplete`。没有可识别摘要时不会猜测测试数。
 
+## 统一反馈 DAG
+
+Profile 可以组合四类节点：
+
+- `command` 运行构建、测试和静态检查；只有确定性命令可以按相同输入指纹复用 Receipt。
+- `service` 的 `managed` 模式由 Runtime 启停，`attached` 模式只观察现有服务；Attached 只有 build identity 与当前输入指纹一致时才是 `verified`。
+- `browser` 执行版本化 Journey。固定且版本匹配的 managed Chromium 是 `verified`，系统 Chrome 或 Edge 是 `observed`。
+- `visual` 消费 Browser 节点的截图并产生结构化请求和响应。没有 Visual Adapter 时为 `incomplete`；权威资料冲突会产生 `requirements-conflict` Human Decision，Runtime 不自行选择依据。
+
+独立节点在同一 DAG 层并行执行。上游失败只阻断依赖分支，业务断言失败不会在当前 Attempt 内静默重试。Managed 服务保持运行到依赖节点完成，随后无论成功、失败还是异常都在 `finally` 边界逆序清理。
+
 ## CLI
 
 ```powershell

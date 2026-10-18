@@ -57,10 +57,10 @@
 
 ## 8. 产品级验证与分发
 
-- [ ] 8.1 建立合成多仓 E2E，运行测试覆盖并行 DAG、四种 Bundle 结果、漂移失效、Receipt 复用、崩溃恢复、lease 冲突、清理和业务失败不静默重试。
-- [ ] 8.2 建立服务与浏览器 E2E，运行 Managed/Attached、双浏览器信任等级、桌面/移动 Journey、视觉响应和 requirements-conflict 场景，核对全部临时进程、端口和浏览器上下文被安全释放。
-- [ ] 8.3 更新 npm 分发清单、默认 Schema 和 ignore 模板，运行 package E2E 验证从打包产物安装后可以完成配置、命令 Evidence 和 inspect，不包含 fixture、绝对路径或具体宿主项目信息。
-- [ ] 8.4 运行 `npm run verify`，确认 typecheck、lint、构建、全部测试、生成物、品牌、来源与 OpenSpec 严格校验通过，并清理测试产生的临时日志、服务、浏览器上下文和孤立 Artifact。
+- [x] 8.1 建立合成多仓 E2E，运行测试覆盖并行 DAG、四种 Bundle 结果、漂移失效、Receipt 复用、崩溃恢复、lease 冲突、清理和业务失败不静默重试。
+- [x] 8.2 建立服务与浏览器 E2E，运行 Managed/Attached、双浏览器信任等级、桌面/移动 Journey、视觉响应和 requirements-conflict 场景，核对全部临时进程、端口和浏览器上下文被安全释放。
+- [x] 8.3 更新 npm 分发清单、默认 Schema 和 ignore 模板，运行 package E2E 验证从打包产物安装后可以完成配置、命令 Evidence 和 inspect，不包含 fixture、绝对路径或具体宿主项目信息。
+- [x] 8.4 运行 `npm run verify`，确认 typecheck、lint、构建、全部测试、生成物、品牌、来源与 OpenSpec 严格校验通过，并清理测试产生的临时日志、服务、浏览器上下文和孤立 Artifact。
 
 ## 9. 真实多仓接入验收
 

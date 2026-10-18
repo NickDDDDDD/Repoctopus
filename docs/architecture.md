@@ -40,12 +40,12 @@ Evidence Runtime 按以下顺序工作：
 1. 加载并规范化共享配置与本机覆盖，计算各自摘要。
 2. 将 Profile 编译为不可变 DAG，在启动副作用前拒绝循环和未知依赖。
 3. 采集仓库 HEAD、tree、未提交文件内容和工具身份，形成输入指纹。
-4. 取得 Profile lease，执行 Adapter，并追加保存 Attempt、Journal、Receipt 与 Artifact。
+4. 取得 Profile lease，按 DAG 可执行层并行运行 Adapter，并追加保存 Attempt、Journal、Receipt 与 Artifact。
 5. 再次采集输入指纹。开始与结束不一致时，Evidence 标记为 `superseded`。
 6. 聚合 Bundle，并投影为只含稳定事实的 `EvidenceGateProjection`。
 7. 本地事实落盘后写入遥测 outbox，再通过 OTLP 导出允许列表元数据。
 
-目前 composition root 已执行命令节点。Managed/Attached 服务、组合 readiness、浏览器 Journey 和视觉端口位于同一边界内，并将在产品级 E2E 阶段接入统一 Profile 执行器。
+统一 Profile 执行器支持命令、Managed/Attached 服务、组合 readiness、浏览器 Journey 和结构化视觉检查。Managed 服务在依赖它的 Journey 和视觉节点结束后按逆拓扑顺序关闭；Attached 服务只观察，不接管生命周期。并行节点产生的 Receipt 按稳定拓扑序写入 Bundle，避免调度时序改变审计结果。
 
 ## Gate 边界
 
@@ -58,6 +58,7 @@ Evidence Runtime 按以下顺序工作：
 - 恢复不会静默重跑已经开始但没有 Receipt 的命令；该节点变为 `incomplete`。
 - Managed 服务只在进程身份和 lease 所有权同时匹配时终止进程树。
 - 输入在中断期间变化时，已收集证据变为 `superseded`。
+- Artifact Store 允许并行节点写入相同内容：竞争写入者必须重新读取并核对目标字节，只有摘要和内容一致才视为去重成功。该规则兼容 Windows 的 `EPERM` 与 POSIX 的 `EEXIST` 差异。
 
 ## 触手、吸盘、神经与眼睛
 
