@@ -5,10 +5,20 @@ import { canonicalJson, canonicalValue } from '../workflow-contract/canonical.js
 import type { DeliveryPolicy } from '../delivery/types.js';
 import { validateDeliveryPolicy } from '../delivery/validation.js';
 import {
+  BROWSER_JOURNEY_API_VERSION,
+  compileBrowserJourney,
+  type BrowserJourney,
+} from '../feedback/browser.js';
+import type { ReadinessCondition } from '../feedback/service.js';
+import {
   PROJECT_CONFIG_API_VERSION,
+  type BrowserNodeConfig,
+  type CommandNodeConfig,
   type EvidenceNodeConfig,
   type LocalProjectConfig,
+  type ServiceNodeConfig,
   type SharedProjectConfig,
+  type VisualNodeConfig,
 } from './types.js';
 
 export class ProjectConfigError extends Error {
@@ -66,7 +76,21 @@ function exactKeys(
   }
 }
 
-function parseCommandNode(value: unknown, field: string): EvidenceNodeConfig {
+function stringArray(value: unknown, field: string): string[] {
+  if (!Array.isArray(value)) throw new ProjectConfigError('expected an array', field);
+  return value.map((item, index) => string(item, `${field}[${index}]`));
+}
+
+function nodeBase(node: Record<string, unknown>, field: string) {
+  return {
+    id: string(node.id, `${field}.id`),
+    repository: string(node.repository, `${field}.repository`),
+    dependsOn: stringArray(node.dependsOn ?? [], `${field}.dependsOn`),
+    required: boolean(node.required, `${field}.required`, true),
+  };
+}
+
+function parseCommandNode(value: unknown, field: string): CommandNodeConfig {
   const node = object(value, field);
   exactKeys(
     node,
@@ -88,11 +112,7 @@ function parseCommandNode(value: unknown, field: string): EvidenceNodeConfig {
   );
   if (node.type !== 'command')
     throw new ProjectConfigError('unsupported node type', `${field}.type`);
-  const dependsOn = node.dependsOn ?? [];
-  const args = node.args ?? [];
-  if (!Array.isArray(dependsOn))
-    throw new ProjectConfigError('expected an array', `${field}.dependsOn`);
-  if (!Array.isArray(args)) throw new ProjectConfigError('expected an array', `${field}.args`);
+  const args = stringArray(node.args ?? [], `${field}.args`);
   const cwd = node.cwd;
   if (cwd !== undefined && typeof cwd !== 'string') {
     throw new ProjectConfigError('expected a string', `${field}.cwd`);
@@ -107,13 +127,10 @@ function parseCommandNode(value: unknown, field: string): EvidenceNodeConfig {
     throw new ProjectConfigError('expected ignore, warning, or blocking', `${field}.zeroTests`);
   }
   return {
-    id: string(node.id, `${field}.id`),
+    ...nodeBase(node, field),
     type: 'command',
-    repository: string(node.repository, `${field}.repository`),
-    dependsOn: dependsOn.map((item, index) => string(item, `${field}.dependsOn[${index}]`)),
-    required: boolean(node.required, `${field}.required`, true),
     executable: string(node.executable, `${field}.executable`),
-    args: args.map((item, index) => string(item, `${field}.args[${index}]`)),
+    args,
     ...(cwd !== undefined ? { cwd } : {}),
     timeoutMs: positiveInteger(node.timeoutMs, `${field}.timeoutMs`, 10 * 60_000),
     cache: boolean(node.cache, `${field}.cache`, false),
@@ -124,6 +141,241 @@ function parseCommandNode(value: unknown, field: string): EvidenceNodeConfig {
       : {}),
     ...(zeroTests !== undefined ? { zeroTests } : {}),
   };
+}
+
+function parseReadiness(value: unknown, field: string): ReadinessCondition[] {
+  if (!Array.isArray(value) || value.length === 0) {
+    throw new ProjectConfigError('expected at least one readiness condition', field);
+  }
+  return value.map((item, index) => {
+    const currentField = `${field}[${index}]`;
+    const condition = object(item, currentField);
+    if (condition.type === 'tcp') {
+      exactKeys(condition, ['type', 'host', 'port'], currentField);
+      return {
+        type: 'tcp',
+        host: string(condition.host, `${currentField}.host`),
+        port: portNumber(condition.port, `${currentField}.port`),
+      };
+    }
+    if (condition.type === 'http') {
+      exactKeys(condition, ['type', 'url', 'statusCodes', 'jsonPath', 'equals'], currentField);
+      const url = string(condition.url, `${currentField}.url`);
+      try {
+        new URL(url);
+      } catch {
+        throw new ProjectConfigError('expected an absolute URL', `${currentField}.url`);
+      }
+      let statusCodes: number[] | undefined;
+      if (condition.statusCodes !== undefined) {
+        if (!Array.isArray(condition.statusCodes) || condition.statusCodes.length === 0) {
+          throw new ProjectConfigError('expected a non-empty array', `${currentField}.statusCodes`);
+        }
+        statusCodes = condition.statusCodes.map((status, statusIndex) => {
+          const parsed = positiveInteger(
+            status,
+            `${currentField}.statusCodes[${statusIndex}]`,
+            200,
+          );
+          if (parsed > 599) {
+            throw new ProjectConfigError(
+              'expected an HTTP status from 100 to 599',
+              `${currentField}.statusCodes[${statusIndex}]`,
+            );
+          }
+          return parsed;
+        });
+      }
+      return {
+        type: 'http',
+        url,
+        ...(statusCodes ? { statusCodes } : {}),
+        ...(condition.jsonPath !== undefined
+          ? { jsonPath: string(condition.jsonPath, `${currentField}.jsonPath`) }
+          : {}),
+        ...(condition.equals !== undefined ? { equals: condition.equals } : {}),
+      };
+    }
+    if (condition.type === 'log') {
+      exactKeys(condition, ['type', 'pattern', 'stream'], currentField);
+      const stream = condition.stream;
+      if (
+        stream !== undefined &&
+        stream !== 'stdout' &&
+        stream !== 'stderr' &&
+        stream !== 'combined'
+      ) {
+        throw new ProjectConfigError(
+          'expected stdout, stderr, or combined',
+          `${currentField}.stream`,
+        );
+      }
+      return {
+        type: 'log',
+        pattern: string(condition.pattern, `${currentField}.pattern`),
+        ...(stream ? { stream } : {}),
+      };
+    }
+    throw new ProjectConfigError('unsupported readiness type', `${currentField}.type`);
+  });
+}
+
+function parseServiceNode(value: unknown, field: string): ServiceNodeConfig {
+  const node = object(value, field);
+  const common = [
+    'id',
+    'type',
+    'mode',
+    'repository',
+    'dependsOn',
+    'required',
+    'readiness',
+    'startupTimeoutMs',
+    'probeIntervalMs',
+  ];
+  if (node.type !== 'service') {
+    throw new ProjectConfigError('expected service', `${field}.type`);
+  }
+  const mode = node.mode;
+  if (mode === 'managed') {
+    exactKeys(node, [...common, 'executable', 'args', 'cwd', 'resourceKeys'], field);
+    const cwd = node.cwd;
+    if (cwd !== undefined && typeof cwd !== 'string') {
+      throw new ProjectConfigError('expected a string', `${field}.cwd`);
+    }
+    return {
+      ...nodeBase(node, field),
+      type: 'service',
+      mode: 'managed',
+      executable: string(node.executable, `${field}.executable`),
+      args: stringArray(node.args ?? [], `${field}.args`),
+      ...(cwd !== undefined ? { cwd } : {}),
+      readiness: parseReadiness(node.readiness, `${field}.readiness`),
+      startupTimeoutMs: positiveInteger(node.startupTimeoutMs, `${field}.startupTimeoutMs`, 60_000),
+      ...(node.probeIntervalMs !== undefined
+        ? {
+            probeIntervalMs: positiveInteger(node.probeIntervalMs, `${field}.probeIntervalMs`, 100),
+          }
+        : {}),
+      ...(node.resourceKeys !== undefined
+        ? { resourceKeys: stringArray(node.resourceKeys, `${field}.resourceKeys`) }
+        : {}),
+    };
+  }
+  if (mode === 'attached') {
+    exactKeys(node, [...common, 'buildIdentity'], field);
+    let parsedBuildIdentity: { url: string; jsonPath: string } | undefined;
+    if (node.buildIdentity !== undefined) {
+      const identity = object(node.buildIdentity, `${field}.buildIdentity`);
+      exactKeys(identity, ['url', 'jsonPath'], `${field}.buildIdentity`);
+      parsedBuildIdentity = {
+        url: string(identity.url, `${field}.buildIdentity.url`),
+        jsonPath: string(identity.jsonPath, `${field}.buildIdentity.jsonPath`),
+      };
+    }
+    return {
+      ...nodeBase(node, field),
+      type: 'service',
+      mode: 'attached',
+      readiness: parseReadiness(node.readiness, `${field}.readiness`),
+      startupTimeoutMs: positiveInteger(node.startupTimeoutMs, `${field}.startupTimeoutMs`, 60_000),
+      ...(node.probeIntervalMs !== undefined
+        ? {
+            probeIntervalMs: positiveInteger(node.probeIntervalMs, `${field}.probeIntervalMs`, 100),
+          }
+        : {}),
+      ...(parsedBuildIdentity ? { buildIdentity: parsedBuildIdentity } : {}),
+    };
+  }
+  throw new ProjectConfigError('expected managed or attached', `${field}.mode`);
+}
+
+function parseBrowserNode(value: unknown, field: string): BrowserNodeConfig {
+  const node = object(value, field);
+  exactKeys(
+    node,
+    ['id', 'type', 'repository', 'dependsOn', 'required', 'source', 'journey'],
+    field,
+  );
+  if (node.type !== 'browser') {
+    throw new ProjectConfigError('expected browser', `${field}.type`);
+  }
+  if (node.source !== 'managed' && node.source !== 'system') {
+    throw new ProjectConfigError('expected managed or system', `${field}.source`);
+  }
+  let journey: BrowserJourney;
+  try {
+    journey = compileBrowserJourney(node.journey as BrowserJourney);
+  } catch (error) {
+    throw new ProjectConfigError((error as Error).message, `${field}.journey`);
+  }
+  return {
+    ...nodeBase(node, field),
+    type: 'browser',
+    source: node.source,
+    journey: {
+      apiVersion: BROWSER_JOURNEY_API_VERSION,
+      kind: 'BrowserJourney',
+      journeyId: journey.journeyId,
+      viewport: journey.viewport,
+      timeoutMs: journey.timeoutMs,
+      actions: journey.actions,
+    },
+  };
+}
+
+function parseVisualNode(value: unknown, field: string): VisualNodeConfig {
+  const node = object(value, field);
+  exactKeys(
+    node,
+    [
+      'id',
+      'type',
+      'repository',
+      'dependsOn',
+      'required',
+      'changeId',
+      'browserNode',
+      'pageUrl',
+      'criteria',
+    ],
+    field,
+  );
+  if (node.type !== 'visual') {
+    throw new ProjectConfigError('expected visual', `${field}.type`);
+  }
+  if (!Array.isArray(node.criteria) || node.criteria.length === 0) {
+    throw new ProjectConfigError('expected at least one criterion', `${field}.criteria`);
+  }
+  return {
+    ...nodeBase(node, field),
+    type: 'visual',
+    changeId: string(node.changeId, `${field}.changeId`),
+    browserNode: string(node.browserNode, `${field}.browserNode`),
+    pageUrl: string(node.pageUrl, `${field}.pageUrl`),
+    criteria: node.criteria.map((item, index) => {
+      const criterion = object(item, `${field}.criteria[${index}]`);
+      exactKeys(criterion, ['id', 'text', 'sourceRef'], `${field}.criteria[${index}]`);
+      return {
+        id: string(criterion.id, `${field}.criteria[${index}].id`),
+        text: string(criterion.text, `${field}.criteria[${index}].text`),
+        ...(criterion.sourceRef !== undefined
+          ? {
+              sourceRef: string(criterion.sourceRef, `${field}.criteria[${index}].sourceRef`),
+            }
+          : {}),
+      };
+    }),
+  };
+}
+
+function parseEvidenceNode(value: unknown, field: string): EvidenceNodeConfig {
+  const node = object(value, field);
+  if (node.type === 'command') return parseCommandNode(node, field);
+  if (node.type === 'service') return parseServiceNode(node, field);
+  if (node.type === 'browser') return parseBrowserNode(node, field);
+  if (node.type === 'visual') return parseVisualNode(node, field);
+  throw new ProjectConfigError('unsupported node type', `${field}.type`);
 }
 
 function parseDeliveryConfig(value: unknown): NonNullable<SharedProjectConfig['delivery']> {
@@ -195,7 +447,7 @@ export function parseSharedProjectConfig(value: unknown): SharedProjectConfig {
     return {
       id: string(profile.id, `profiles[${index}].id`),
       nodes: profile.nodes.map((node, nodeIndex) =>
-        parseCommandNode(node, `profiles[${index}].nodes[${nodeIndex}]`),
+        parseEvidenceNode(node, `profiles[${index}].nodes[${nodeIndex}]`),
       ),
     };
   });
@@ -315,7 +567,7 @@ export function canonicalProjectConfig(value: SharedProjectConfig | LocalProject
     }));
     for (const profile of copy.profiles) {
       for (const node of profile.nodes) {
-        if (node.cwd !== undefined) node.cwd = normalizePathText(node.cwd);
+        if ('cwd' in node && node.cwd !== undefined) node.cwd = normalizePathText(node.cwd);
       }
     }
   } else {

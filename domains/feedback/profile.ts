@@ -1,8 +1,6 @@
 import type { EffectiveProjectConfig, EvidenceNodeConfig } from '../project-configuration/types.js';
 
-export interface PlannedEvidenceNode extends EvidenceNodeConfig {
-  repositoryPath: string;
-}
+export type PlannedEvidenceNode = EvidenceNodeConfig & { repositoryPath: string };
 
 export interface EvidenceExecutionPlan {
   schemaVersion: 1;
@@ -48,6 +46,19 @@ export function compileEvidenceProfile(
       }
       if (dependency === node.id) {
         throw new EvidenceProfileError(`Node ${node.id} cannot depend on itself`);
+      }
+    }
+    if (node.type === 'visual') {
+      const browser = nodes.get(node.browserNode);
+      if (!browser || browser.type !== 'browser') {
+        throw new EvidenceProfileError(
+          `Visual node ${node.id} references unknown browser node: ${node.browserNode}`,
+        );
+      }
+      if (!node.dependsOn.includes(node.browserNode)) {
+        throw new EvidenceProfileError(
+          `Visual node ${node.id} must depend on browser node: ${node.browserNode}`,
+        );
       }
     }
   }

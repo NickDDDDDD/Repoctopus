@@ -19,6 +19,9 @@ import type {
   EvidenceGateProjection,
 } from '../domains/evidence/types.js';
 import { compileEvidenceProfile, type EvidenceExecutionPlan } from '../domains/feedback/profile.js';
+import type { VisualInspectionAdapter } from '../domains/feedback/visual.js';
+import type { RequirementsConflictDecisionRequest } from '../domains/feedback/visual.js';
+import { LocalBrowserAdapter } from '../platform/browser/browser-adapter.js';
 import { atomicWriteJson } from '../platform/filesystem/atomic-write.js';
 import { FileArtifactStore } from '../platform/evidence/file-artifact-store.js';
 import { FileEvidenceJournal } from '../platform/evidence/file-evidence-journal.js';
@@ -28,6 +31,7 @@ import {
   type EvidenceCleanupResult,
 } from '../platform/evidence/retention.js';
 import { LocalCommandAdapter } from '../platform/feedback/command-adapter.js';
+import { LocalServiceAdapter } from '../platform/feedback/service-adapter.js';
 import { collectRepositoryFingerprint } from '../platform/git/evidence-fingerprint.js';
 import { loadProjectConfig } from '../platform/project-configuration/file-config.js';
 import { FileResourceLeaseManager } from '../platform/runtime/resource-lease.js';
@@ -43,6 +47,7 @@ interface EvidenceRunContext {
   plan: EvidenceExecutionPlan;
   fingerprint: EvidenceFingerprint;
   bundleId: string | null;
+  decisionRequests: RequirementsConflictDecisionRequest[];
   updatedAt: string;
 }
 
@@ -89,6 +94,7 @@ export class EvidenceRuntime {
   constructor(
     private readonly workspace: string,
     private readonly telemetry: EvidenceTelemetryPort = { async export() {} },
+    private readonly visual?: VisualInspectionAdapter,
   ) {
     this.workspace = path.resolve(workspace);
     this.store = new FileEvidenceStore(this.workspace);
@@ -122,7 +128,12 @@ export class EvidenceRuntime {
       localConfigDigest: config.localDigest,
       repositories,
       tools: { node: process.version },
-      adapters: { command: 'local/v1' },
+      adapters: {
+        command: 'local/v1',
+        service: 'local/v1',
+        browser: 'playwright-core/v1',
+        visual: this.visual ? 'provided/v1' : 'unavailable/v1',
+      },
       inputArtifactDigests: [],
     });
   }
@@ -148,6 +159,8 @@ export class EvidenceRuntime {
   > {
     return this.leases.withLease(`evidence-profile:${profileId}`, async () => {
       const { plan, fingerprint } = await this.plan(profileId);
+      const config = await loadProjectConfig(this.workspace);
+      const artifacts = new FileArtifactStore(this.workspace);
       const context: EvidenceRunContext = {
         schemaVersion: 1,
         kind: 'EvidenceRunContext',
@@ -158,23 +171,40 @@ export class EvidenceRuntime {
         plan,
         fingerprint,
         bundleId: null,
+        decisionRequests: [],
         updatedAt: new Date().toISOString(),
       };
       await atomicWriteJson(this.contextFile(attemptId), context);
       const result = await new EvidenceService(
-        new FileArtifactStore(this.workspace),
+        artifacts,
         this.store,
         new LocalCommandAdapter(),
         undefined,
         this.journal,
+        {
+          services: new LocalServiceAdapter(this.workspace),
+          browser: new LocalBrowserAdapter(this.workspace, artifacts, {
+            ...(config.local?.browser?.executablePath
+              ? { configuredExecutablePath: config.local.browser.executablePath }
+              : {}),
+          }),
+          ...(this.visual ? { visual: this.visual } : {}),
+        },
       ).run(plan, fingerprint.digest, {
         attemptId,
+        ...(config.local?.resources?.maxParallel
+          ? { maxParallel: config.local.resources.maxParallel }
+          : {}),
+        ...(config.local?.resources?.maxLogBytes
+          ? { maxOutputBytes: config.local.resources.maxLogBytes }
+          : {}),
         captureEndingFingerprint: async () => (await this.fingerprint(profileId)).digest,
       });
       await atomicWriteJson(this.contextFile(attemptId), {
         ...context,
         status: 'completed',
         bundleId: result.bundle.bundleId,
+        decisionRequests: result.decisionRequests,
         updatedAt: new Date().toISOString(),
       } satisfies EvidenceRunContext);
       const gate = projectEvidenceGate(result.bundle);
@@ -218,7 +248,7 @@ export class EvidenceRuntime {
         updatedAt: new Date().toISOString(),
       } satisfies EvidenceRunContext);
       const attempt = await this.store.loadAttempt(attemptId);
-      const result: EvidenceRunResult = { attempt, ...recovered };
+      const result: EvidenceRunResult = { attempt, ...recovered, decisionRequests: [] };
       await this.telemetryOutbox.save(
         createEvidenceTelemetryBatch({
           workflowRunId: context.workflowRunId,

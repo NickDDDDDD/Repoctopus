@@ -43,7 +43,15 @@ export class FileArtifactStore implements ArtifactStore {
         await rename(temporary, target);
       } catch (renameError) {
         await rm(temporary, { force: true });
-        if ((renameError as NodeJS.ErrnoException).code !== 'EEXIST') throw renameError;
+        try {
+          const winner = await readFile(target);
+          if (!winner.equals(bytes)) {
+            throw new Error(`Artifact digest collision: ${sha256}`, { cause: renameError });
+          }
+        } catch (readError) {
+          if ((readError as NodeJS.ErrnoException).code === 'ENOENT') throw renameError;
+          throw readError;
+        }
       }
     }
     return {

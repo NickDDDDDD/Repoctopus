@@ -39,7 +39,15 @@
           "nodes": {
             "type": "array",
             "minItems": 1,
-            "items": { "$ref": "#/$defs/commandNode" }
+            "items": {
+              "oneOf": [
+                { "$ref": "#/$defs/commandNode" },
+                { "$ref": "#/$defs/managedServiceNode" },
+                { "$ref": "#/$defs/attachedServiceNode" },
+                { "$ref": "#/$defs/browserNode" },
+                { "$ref": "#/$defs/visualNode" }
+              ]
+            }
           }
         }
       }
@@ -132,6 +140,165 @@
         "cache": { "type": "boolean" },
         "cacheTtlMs": { "type": "integer", "minimum": 1 },
         "zeroTests": { "enum": ["ignore", "warning", "blocking"] }
+      }
+    },
+    "nodeBase": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "repository": { "type": "string", "minLength": 1 },
+        "dependsOn": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "required": { "type": "boolean" }
+      }
+    },
+    "readiness": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "host", "port"],
+          "properties": {
+            "type": { "const": "tcp" },
+            "host": { "type": "string", "minLength": 1 },
+            "port": { "type": "integer", "minimum": 1, "maximum": 65535 }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "url"],
+          "properties": {
+            "type": { "const": "http" },
+            "url": { "type": "string", "format": "uri" },
+            "statusCodes": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "integer", "minimum": 100, "maximum": 599 }
+            },
+            "jsonPath": { "type": "string", "minLength": 1 },
+            "equals": {}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "pattern"],
+          "properties": {
+            "type": { "const": "log" },
+            "pattern": { "type": "string", "minLength": 1 },
+            "stream": { "enum": ["stdout", "stderr", "combined"] }
+          }
+        }
+      ]
+    },
+    "managedServiceNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "mode", "repository", "executable", "readiness"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "const": "service" },
+        "mode": { "const": "managed" },
+        "repository": { "type": "string", "minLength": 1 },
+        "dependsOn": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "required": { "type": "boolean" },
+        "executable": { "type": "string", "minLength": 1 },
+        "args": { "type": "array", "items": { "type": "string" } },
+        "cwd": { "type": "string" },
+        "readiness": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/readiness" } },
+        "startupTimeoutMs": { "type": "integer", "minimum": 1 },
+        "probeIntervalMs": { "type": "integer", "minimum": 1 },
+        "resourceKeys": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "attachedServiceNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "mode", "repository", "readiness"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "const": "service" },
+        "mode": { "const": "attached" },
+        "repository": { "type": "string", "minLength": 1 },
+        "dependsOn": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "required": { "type": "boolean" },
+        "readiness": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/readiness" } },
+        "startupTimeoutMs": { "type": "integer", "minimum": 1 },
+        "probeIntervalMs": { "type": "integer", "minimum": 1 },
+        "buildIdentity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["url", "jsonPath"],
+          "properties": {
+            "url": { "type": "string", "format": "uri" },
+            "jsonPath": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "browserJourney": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["apiVersion", "kind", "journeyId", "viewport", "timeoutMs", "actions"],
+      "properties": {
+        "apiVersion": { "const": "repoctopus/v1alpha1" },
+        "kind": { "const": "BrowserJourney" },
+        "journeyId": { "type": "string", "minLength": 1 },
+        "viewport": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["width", "height"],
+          "properties": {
+            "width": { "type": "integer", "minimum": 1 },
+            "height": { "type": "integer", "minimum": 1 },
+            "deviceScaleFactor": { "type": "number", "exclusiveMinimum": 0 }
+          }
+        },
+        "timeoutMs": { "type": "integer", "minimum": 1 },
+        "actions": { "type": "array", "minItems": 1, "items": { "type": "object" } }
+      }
+    },
+    "browserNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "repository", "source", "journey"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "const": "browser" },
+        "repository": { "type": "string", "minLength": 1 },
+        "dependsOn": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "required": { "type": "boolean" },
+        "source": { "enum": ["managed", "system"] },
+        "journey": { "$ref": "#/$defs/browserJourney" }
+      }
+    },
+    "visualNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "repository", "changeId", "browserNode", "pageUrl", "criteria"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "const": "visual" },
+        "repository": { "type": "string", "minLength": 1 },
+        "dependsOn": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "required": { "type": "boolean" },
+        "changeId": { "type": "string", "minLength": 1 },
+        "browserNode": { "type": "string", "minLength": 1 },
+        "pageUrl": { "type": "string", "format": "uri" },
+        "criteria": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "text"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "text": { "type": "string", "minLength": 1 },
+              "sourceRef": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
       }
     }
   }

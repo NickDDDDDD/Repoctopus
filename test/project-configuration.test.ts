@@ -38,6 +38,66 @@ function shared(pathValue = '../service'): SharedProjectConfig {
 }
 
 describe('project configuration', () => {
+  it('parses command, service, browser and visual nodes from one shared profile', () => {
+    const config = parseSharedProjectConfig({
+      apiVersion: 'repoctopus/v1alpha1',
+      kind: 'RepoctopusProject',
+      project: { id: 'full-feedback' },
+      repositories: [{ id: 'app', path: '../app' }],
+      profiles: [
+        {
+          id: 'verify',
+          nodes: [
+            { id: 'build', type: 'command', repository: 'app', executable: 'npm', args: ['test'] },
+            {
+              id: 'serve',
+              type: 'service',
+              mode: 'managed',
+              repository: 'app',
+              dependsOn: ['build'],
+              executable: 'npm',
+              args: ['run', 'dev'],
+              readiness: [
+                { type: 'http', url: 'http://127.0.0.1:4173/health', statusCodes: [200] },
+              ],
+            },
+            {
+              id: 'browser',
+              type: 'browser',
+              repository: 'app',
+              dependsOn: ['serve'],
+              source: 'managed',
+              journey: {
+                apiVersion: 'repoctopus/v1alpha1',
+                kind: 'BrowserJourney',
+                journeyId: 'desktop',
+                viewport: { width: 1280, height: 720 },
+                timeoutMs: 1000,
+                actions: [{ type: 'screenshot', name: 'dashboard' }],
+              },
+            },
+            {
+              id: 'visual',
+              type: 'visual',
+              repository: 'app',
+              dependsOn: ['browser'],
+              changeId: 'change',
+              browserNode: 'browser',
+              pageUrl: 'http://127.0.0.1:4173',
+              criteria: [{ id: 'layout', text: 'Dashboard is visible' }],
+            },
+          ],
+        },
+      ],
+    });
+    expect(config.profiles[0]?.nodes.map((node) => node.type)).toEqual([
+      'command',
+      'service',
+      'browser',
+      'visual',
+    ]);
+  });
+
   it('normalizes path separators before hashing', () => {
     expect(hashProjectConfig(shared('..\\service\\'))).toBe(
       hashProjectConfig(shared('../service/')),
