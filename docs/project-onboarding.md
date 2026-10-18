@@ -5,7 +5,7 @@ Repoctopus 使用“确定性扫描 → Agent 补全 → 用户确认”建立�
 ## 配置边界
 
 - `repoctopus.yaml` 进入 Git，保存逻辑仓库、Evidence Profile、保留规则和交付策略。
-- `.repoctopus/local.yaml` 被 Git 忽略，只保存本机仓库路径、端口、浏览器路径和资源上限。
+- `.repoctopus/local.yaml` 被 Git 忽略，只保存本机仓库路径、端口、浏览器路径、视觉反馈交换目录和资源上限。
 - `.repoctopus/drafts/` 和 `.repoctopus/decisions/` 是本机接入状态，不进入业务仓。
 
 初始化项目仓时可把 [`examples/repoctopus.gitignore`](examples/repoctopus.gitignore) 的规则加入 workspace `.gitignore`。当前规则忽略整个 `.repoctopus/`，因为该目录只包含本机覆盖、草稿、运行状态、证据对象和受管浏览器；共享事实仅写入根目录的 `repoctopus.yaml`。

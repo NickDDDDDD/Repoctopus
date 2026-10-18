@@ -32,6 +32,7 @@ import {
 } from '../platform/evidence/retention.js';
 import { LocalCommandAdapter } from '../platform/feedback/command-adapter.js';
 import { LocalServiceAdapter } from '../platform/feedback/service-adapter.js';
+import { FileExchangeVisualInspectionAdapter } from '../platform/feedback/file-exchange-visual-adapter.js';
 import { collectRepositoryFingerprint } from '../platform/git/evidence-fingerprint.js';
 import { loadProjectConfig } from '../platform/project-configuration/file-config.js';
 import { FileResourceLeaseManager } from '../platform/runtime/resource-lease.js';
@@ -113,6 +114,7 @@ export class EvidenceRuntime {
 
   private async fingerprint(profileId: string): Promise<EvidenceFingerprint> {
     const config = await loadProjectConfig(this.workspace);
+    const hasVisualAdapter = this.visual !== undefined || config.local?.visual !== undefined;
     const repositories = await Promise.all(
       config.repositories.map((repository) =>
         collectRepositoryFingerprint({
@@ -132,7 +134,7 @@ export class EvidenceRuntime {
         command: 'local/v1',
         service: 'local/v1',
         browser: 'playwright-core/v1',
-        visual: this.visual ? 'provided/v1' : 'unavailable/v1',
+        visual: hasVisualAdapter ? 'file-exchange-or-provided/v1' : 'unavailable/v1',
       },
       inputArtifactDigests: [],
     });
@@ -160,6 +162,11 @@ export class EvidenceRuntime {
     return this.leases.withLease(`evidence-profile:${profileId}`, async () => {
       const { plan, fingerprint } = await this.plan(profileId);
       const config = await loadProjectConfig(this.workspace);
+      const visual =
+        this.visual ??
+        (config.local?.visual
+          ? new FileExchangeVisualInspectionAdapter(this.workspace, config.local.visual)
+          : undefined);
       const artifacts = new FileArtifactStore(this.workspace);
       const context: EvidenceRunContext = {
         schemaVersion: 1,
@@ -188,7 +195,7 @@ export class EvidenceRuntime {
               ? { configuredExecutablePath: config.local.browser.executablePath }
               : {}),
           }),
-          ...(this.visual ? { visual: this.visual } : {}),
+          ...(visual ? { visual } : {}),
         },
       ).run(plan, fingerprint.digest, {
         attemptId,

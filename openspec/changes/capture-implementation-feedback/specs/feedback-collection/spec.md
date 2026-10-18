@@ -93,6 +93,11 @@ Repoctopus MUST 记录 Playwright 与实际浏览器身份；系统 Chrome 或 E
 
 Repoctopus MUST 生成包含截图引用、viewport、页面身份、验收标准和可选设计参考的 `VisualInspectionRequest`，并只接受引用当前请求与 Artifact 摘要的结构化 `VisualInspectionResponse`。
 
+#### Scenario: 本机 Agent 通过文件交换返回视觉结果
+
+- **WHEN** 本机配置声明视觉反馈交换目录，Runtime 写出请求且 Agent、IDE 或人工检查后写入同名响应
+- **THEN** Runtime 校验请求身份、截图摘要和 evidence 引用，并把响应与 finding 纳入当前 Bundle
+
 #### Scenario: 当前客户端没有视觉能力
 
 - **WHEN** Profile 把视觉检查设为必需且没有 Adapter 接受请求

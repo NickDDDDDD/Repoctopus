@@ -114,6 +114,22 @@ describe('project configuration', () => {
     ).toThrow(/unknown fields: required/i);
   });
 
+  it('accepts a machine-local visual exchange without adding it to shared config', () => {
+    expect(
+      parseLocalProjectConfig({
+        apiVersion: 'repoctopus/v1alpha1',
+        kind: 'RepoctopusLocal',
+        visual: {
+          exchangeDirectory: '.repoctopus/visual-exchange',
+          responseTimeoutMs: 120000,
+        },
+      }).visual,
+    ).toEqual({
+      exchangeDirectory: '.repoctopus/visual-exchange',
+      responseTimeoutMs: 120000,
+    });
+  });
+
   it('loads a local repository path without changing the shared config', async () => {
     const workspace = await temporaryDirectory('repoctopus-config-');
     cleanup.push(workspace);

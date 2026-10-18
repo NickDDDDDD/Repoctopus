@@ -179,7 +179,7 @@ Dirty worktree 不用 Git status 文本代表内容。Builder 对 Profile 选中
 
 ### 10. 配置分为共享规则与受限本机映射
 
-`repoctopus.yaml` 是版本化、Git 跟踪的共享事实，包含逻辑仓库、Profile、节点、Journey、门禁、保留和隐私规则。`.repoctopus/local.yaml` 被 Git 忽略，只能覆盖 Schema 明确标记的机器相关字段：仓库路径、端口、浏览器路径和资源上限。
+`repoctopus.yaml` 是版本化、Git 跟踪的共享事实，包含逻辑仓库、Profile、节点、Journey、门禁、保留和隐私规则。`.repoctopus/local.yaml` 被 Git 忽略，只能覆盖 Schema 明确标记的机器相关字段：仓库路径、端口、浏览器路径、视觉反馈交换目录和资源上限。
 
 加载顺序是 parse → 分别校验 → 权限化 merge → 规范化 → 分别计算摘要。共享规则不是普通深合并对象；本机覆盖触碰 `required`、trust、blocking、retention 下限或隐私规则时直接失败。
 

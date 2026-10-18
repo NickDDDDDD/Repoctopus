@@ -100,6 +100,10 @@ export interface LocalProjectConfig {
   repositoryPaths?: Record<string, string>;
   ports?: Record<string, number>;
   browser?: { executablePath?: string };
+  visual?: {
+    exchangeDirectory: string;
+    responseTimeoutMs?: number;
+  };
   resources?: {
     maxParallel?: number;
     maxLogBytes?: number;

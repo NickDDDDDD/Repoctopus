@@ -29,7 +29,7 @@ IDE / Agent / CLI
 
 ## 配置与项目接入
 
-`repoctopus.yaml` 是 Git 跟踪的团队事实，包含逻辑仓库、Evidence Profile、保留规则和 `delivery` 策略。`.repoctopus/local.yaml` 只覆盖本机路径、端口、浏览器位置和资源上限。
+`repoctopus.yaml` 是 Git 跟踪的团队事实，包含逻辑仓库、Evidence Profile、保留规则和 `delivery` 策略。`.repoctopus/local.yaml` 只覆盖本机路径、端口、浏览器位置、视觉反馈交换目录和资源上限。
 
 `project detect` 只生成本机草稿。Agent 可以补全候选，但正式配置必须经过绑定候选摘要、当前配置摘要和 reconcile diff 的 Human Decision。具体流程见 [项目接入](project-onboarding.md)。
 

@@ -44,7 +44,7 @@ export interface VisualInspectionResponse {
 }
 
 export interface VisualInspectionAdapter {
-  inspect(request: VisualInspectionRequest): Promise<VisualInspectionResponse>;
+  inspect(request: VisualInspectionRequest): Promise<VisualInspectionResponse | null>;
 }
 
 export type VisualInspectionResult =
@@ -118,6 +118,7 @@ export async function collectVisualInspection(
 ): Promise<VisualInspectionResult> {
   if (!adapter) return { status: 'incomplete', request, response: null };
   const response = await adapter.inspect(request);
+  if (!response) return { status: 'incomplete', request, response: null };
   validateVisualInspectionResponse(request, response);
   return { status: 'completed', request, response };
 }

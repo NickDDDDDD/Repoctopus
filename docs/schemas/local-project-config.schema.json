@@ -21,6 +21,15 @@
       "additionalProperties": false,
       "properties": { "executablePath": { "type": "string", "minLength": 1 } }
     },
+    "visual": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["exchangeDirectory"],
+      "properties": {
+        "exchangeDirectory": { "type": "string", "minLength": 1 },
+        "responseTimeoutMs": { "type": "integer", "minimum": 1 }
+      }
+    },
     "resources": {
       "type": "object",
       "additionalProperties": false,

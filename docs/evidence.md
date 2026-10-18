@@ -33,6 +33,19 @@ Profile 可以组合四类节点：
 - `browser` 执行版本化 Journey。固定且版本匹配的 managed Chromium 是 `verified`，系统 Chrome 或 Edge 是 `observed`。
 - `visual` 消费 Browser 节点的截图并产生结构化请求和响应。没有 Visual Adapter 时为 `incomplete`；权威资料冲突会产生 `requirements-conflict` Human Decision，Runtime 不自行选择依据。
 
+视觉能力通过本机文件交换接入，不把模型 SDK、凭据或个人路径写进共享配置：
+
+```yaml
+# .repoctopus/local.yaml
+apiVersion: repoctopus/v1alpha1
+kind: RepoctopusLocal
+visual:
+  exchangeDirectory: .repoctopus/visual-exchange
+  responseTimeoutMs: 600000
+```
+
+执行到视觉节点时，Runtime 原子写入 `requests/<request-id>.json` 并等待同名的 `responses/<request-id>.json`。IDE、Agent 或人工检查截图后写入版本化 `VisualInspectionResponse`；Runtime 再校验 request ID、截图摘要和 finding 证据引用。超时没有响应时节点保持 `incomplete`，不会把自然语言自述当作视觉证据。
+
 独立节点在同一 DAG 层并行执行。上游失败只阻断依赖分支，业务断言失败不会在当前 Attempt 内静默重试。Managed 服务保持运行到依赖节点完成，随后无论成功、失败还是异常都在 `finally` 边界逆序清理。
 
 ## CLI

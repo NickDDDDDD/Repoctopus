@@ -22,7 +22,7 @@ Repoctopus MUST 从 Git 跟踪的 `repoctopus.yaml` 加载仓库身份、Evidenc
 
 ### Requirement: 本机覆盖不得削弱团队门禁
 
-Repoctopus MUST 只允许被忽略的 `.repoctopus/local.yaml` 覆盖机器路径、端口、浏览器位置和资源限制，不得删除必需检查、改变证据可信等级或把阻断规则降级为警告。
+Repoctopus MUST 只允许被忽略的 `.repoctopus/local.yaml` 覆盖机器路径、端口、浏览器位置、视觉反馈交换目录和资源限制，不得删除必需检查、改变证据可信等级或把阻断规则降级为警告。
 
 #### Scenario: 成员手动配置仓库绝对路径
 

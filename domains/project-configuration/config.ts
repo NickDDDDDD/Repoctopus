@@ -491,7 +491,7 @@ export function parseLocalProjectConfig(value: unknown): LocalProjectConfig {
   const root = object(value, 'local');
   exactKeys(
     root,
-    ['apiVersion', 'kind', 'repositoryPaths', 'ports', 'browser', 'resources'],
+    ['apiVersion', 'kind', 'repositoryPaths', 'ports', 'browser', 'visual', 'resources'],
     'local',
   );
   if (root.apiVersion !== PROJECT_CONFIG_API_VERSION)
@@ -526,6 +526,23 @@ export function parseLocalProjectConfig(value: unknown): LocalProjectConfig {
       : {};
   }
   let resources: LocalProjectConfig['resources'];
+  let visual: LocalProjectConfig['visual'];
+  if (root.visual !== undefined) {
+    const value = object(root.visual, 'visual');
+    exactKeys(value, ['exchangeDirectory', 'responseTimeoutMs'], 'visual');
+    visual = {
+      exchangeDirectory: string(value.exchangeDirectory, 'visual.exchangeDirectory'),
+      ...(value.responseTimeoutMs !== undefined
+        ? {
+            responseTimeoutMs: positiveInteger(
+              value.responseTimeoutMs,
+              'visual.responseTimeoutMs',
+              1,
+            ),
+          }
+        : {}),
+    };
+  }
   if (root.resources !== undefined) {
     const value = object(root.resources, 'resources');
     exactKeys(value, ['maxParallel', 'maxLogBytes'], 'resources');
@@ -544,6 +561,7 @@ export function parseLocalProjectConfig(value: unknown): LocalProjectConfig {
     ...(repositoryPaths ? { repositoryPaths } : {}),
     ...(ports ? { ports } : {}),
     ...(browser ? { browser } : {}),
+    ...(visual ? { visual } : {}),
     ...(resources ? { resources } : {}),
   };
 }
