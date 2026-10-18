@@ -71,6 +71,10 @@ describe('zero test detection', () => {
       framework: 'maven-surefire',
       executed: 0,
     });
+    expect(parseTestExecution('[INFO] No tests to run.')).toMatchObject({
+      framework: 'maven-surefire',
+      executed: 0,
+    });
 
     const warning = await run('warning', 'Tests: 0 total');
     expect(warning.bundle.outcome).toBe('passed_with_warnings');

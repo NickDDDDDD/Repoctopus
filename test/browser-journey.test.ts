@@ -57,14 +57,18 @@ function fakeBrowser(input: {
   url?: string;
   html?: string;
   expectedContext?: Parameters<BrowserHandlePort['newPage']>[0];
+  skipContextCheck?: boolean;
+  navigationDelayMs?: number;
   onNavigate?: (emit: (event: string, value: unknown) => void) => void;
 }): BrowserHandlePort {
   const listeners = new Map<string, (value: never) => void>();
   const page: BrowserPagePort = {
     on: (event, listener) => listeners.set(event, listener),
-    goto: () => {
+    goto: async () => {
       input.onNavigate?.((event, value) => listeners.get(event)?.(value as never));
-      return Promise.resolve();
+      if (input.navigationDelayMs) {
+        await new Promise((resolve) => setTimeout(resolve, input.navigationDelayMs));
+      }
     },
     locator: () => ({
       waitFor: () =>
@@ -80,12 +84,14 @@ function fakeBrowser(input: {
   return {
     version: () => input.version,
     newPage: (options) => {
-      expect(options).toEqual(
-        input.expectedContext ?? {
-          viewport: { width: 390, height: 844 },
-          deviceScaleFactor: 2,
-        },
-      );
+      if (!input.skipContextCheck) {
+        expect(options).toEqual(
+          input.expectedContext ?? {
+            viewport: { width: 390, height: 844 },
+            deviceScaleFactor: 2,
+          },
+        );
+      }
       return Promise.resolve(page);
     },
     close: () => Promise.resolve(),
@@ -157,6 +163,41 @@ describe('browser journey', () => {
       'managed',
     );
     expect(desktop).toMatchObject({ status: 'passed', trust: 'verified' });
+  });
+
+  it('runs independent managed journeys concurrently with isolated browser instances', async () => {
+    const workspace = await temporaryDirectory('repoctopus-browser-parallel-');
+    cleanup.push(workspace);
+    await prepareManagedBrowser(workspace);
+    const metadata = await readManagedChromiumMetadata();
+    let launches = 0;
+    const adapter = new LocalBrowserAdapter(workspace, new FileArtifactStore(workspace), {
+      launcher: () => {
+        launches += 1;
+        return Promise.resolve(
+          fakeBrowser({
+            version: metadata.browserVersion,
+            navigationDelayMs: 50,
+            skipContextCheck: true,
+          }),
+        );
+      },
+    });
+    const [desktop, mobile] = await Promise.all([
+      adapter.run(
+        journey([{ type: 'navigate', url: 'http://127.0.0.1/dashboard' }], {
+          width: 1440,
+          height: 900,
+        }),
+        'managed',
+      ),
+      adapter.run(
+        journey([{ type: 'navigate', url: 'http://127.0.0.1/dashboard' }]),
+        'managed',
+      ),
+    ]);
+    expect([desktop.status, mobile.status]).toEqual(['passed', 'passed']);
+    expect(launches).toBe(2);
   });
 
   it('captures a failure screenshot and redacted bounded DOM when visibility fails', async () => {

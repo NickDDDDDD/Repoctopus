@@ -49,6 +49,20 @@ function plan(workspace: string) {
 }
 
 describe('evidence recovery', () => {
+  it('serializes concurrent journal appends within one Runtime process', async () => {
+    const workspace = await temporaryDirectory('repoctopus-evidence-journal-parallel-');
+    cleanup.push(workspace);
+    const journal = new FileEvidenceJournal(workspace);
+    await Promise.all([
+      journal.recordIntent('attempt-parallel', 'frontend', '2026-01-01T00:00:00.000Z'),
+      journal.recordIntent('attempt-parallel', 'backend', '2026-01-01T00:00:00.001Z'),
+    ]);
+    const entries = await journal.load('attempt-parallel');
+    expect(entries).toHaveLength(2);
+    expect(entries.map((entry) => entry.sequence)).toEqual([1, 2]);
+    expect(entries.map((entry) => entry.nodeId).sort()).toEqual(['backend', 'frontend']);
+  });
+
   it('reuses the committed receipt after a crash without repeating the command', async () => {
     const workspace = await temporaryDirectory('repoctopus-evidence-recovery-');
     cleanup.push(workspace);

@@ -65,9 +65,9 @@
 ## 9. 真实多仓接入验收
 
 - [ ] 9.1 在独立 `agent-lab-workspace` 规划并提交 companion change，维护其自己的 `repoctopus.yaml`，运行 detect/reconcile 验证配置来自用户确认且 Repoctopus 产品仓不出现示例项目专有字段。
-- [ ] 9.2 运行真实项目 Evidence Profile，验证四个前端包构建、Maven `verify`、零测试 finding、Vite、两个 Spring 服务、两个健康端点、桌面/移动 Journey 和结构化视觉响应进入同一 Bundle。
-- [ ] 9.3 修改一个被指纹覆盖的输入并重跑，验证旧命令 Receipt 失效、服务与浏览器重新采集、开始/结束漂移不会被描述为通过。
-- [ ] 9.4 中断并恢复一次 Managed 运行后执行清理，验证只终止 Runtime 自有进程、保留可审计失败 Evidence、四个业务仓没有非预期修改。
+- [x] 9.2 运行真实项目 Evidence Profile，验证四个前端包构建、Maven `verify`、零测试 finding、Vite、两个 Spring 服务、两个健康端点、桌面/移动 Journey 和结构化视觉响应进入同一 Bundle。
+- [x] 9.3 修改一个被指纹覆盖的输入并重跑，验证旧命令 Receipt 失效、服务与浏览器重新采集、开始/结束漂移不会被描述为通过。
+- [x] 9.4 中断并恢复一次 Managed 运行后执行清理，验证只终止 Runtime 自有进程、保留可审计失败 Evidence、四个业务仓没有非预期修改。
 - [ ] 9.5 生成 Repoctopus 产品 E2E 与真实接入验收报告，核对报告明确区分机器证据、观察结果、fixture 前端与后端尚未形成业务调用的限制，并通过用户评审后进入交付。
 
 ## Workflow follow-up

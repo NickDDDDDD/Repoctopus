@@ -239,6 +239,12 @@ Repoctopus 仓内建立合成 fixture，覆盖：
 
 **备选方案：**只在真实项目验证。它反馈真实，但故障面太多且难以稳定覆盖恢复和漂移；只做合成测试又无法证明多仓接入可用，因此使用两层验证。
 
+### 14. 并行节点只串行化共享写入，不锁定可并行执行资源
+
+同一 Attempt 的并行节点共享一个 JSONL Journal，因此 `FileEvidenceJournal` 先在进程内按 Attempt 排队，再用跨进程 lease 保护实际追加。这样保留稳定 sequence，同时不会把同一 Runtime 的合法并行写入误报为 lease 冲突。
+
+每个 Browser Journey 启动独立 Chromium 实例和隔离 context。固定浏览器可执行文件是只读安装资产，不是独占运行资源，因此 Browser Adapter 不对可执行文件路径加全局 lease；Profile 外层 lease、独立进程生命周期和 `finally` 清理负责运行边界。真实 Agent Lab 验收发现并修复了这两个锁粒度问题。
+
 ## Risks / Trade-offs
 
 - [Evidence 状态和 Artifact 数量快速增长] → 使用内容寻址去重、引用闭包保留、容量上限和显式清理报告。

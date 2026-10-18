@@ -11,7 +11,6 @@ import {
   type BrowserJourneyResult,
   type BrowserSourceIdentity,
 } from '../../domains/feedback/browser.js';
-import { FileResourceLeaseManager } from '../runtime/resource-lease.js';
 import { resolveBrowserSource } from './browser-source.js';
 
 export interface ConsoleMessagePort {
@@ -105,8 +104,6 @@ function matches(actual: string, expected: string, match: 'exact' | 'contains'):
 }
 
 export class LocalBrowserAdapter implements BrowserAdapter {
-  private readonly leases: FileResourceLeaseManager;
-
   constructor(
     private readonly workspace: string,
     private readonly artifacts: ArtifactStore,
@@ -115,9 +112,7 @@ export class LocalBrowserAdapter implements BrowserAdapter {
       sensitiveValues?: readonly string[];
       launcher?: BrowserLauncher;
     } = {},
-  ) {
-    this.leases = new FileResourceLeaseManager(workspace);
-  }
+  ) {}
 
   async run(
     journeyInput: BrowserJourney,
@@ -147,9 +142,6 @@ export class LocalBrowserAdapter implements BrowserAdapter {
       };
     }
 
-    const lease = await this.leases.acquire(
-      `browser:${resolution.identity.source}:${resolution.identity.executablePath}`,
-    );
     let browser: BrowserHandlePort | undefined;
     try {
       browser = await (this.options.launcher ?? defaultLauncher)({
@@ -188,7 +180,6 @@ export class LocalBrowserAdapter implements BrowserAdapter {
       return await this.executeJourney(journey, identity, browser);
     } finally {
       await browser?.close();
-      await this.leases.release(lease);
     }
   }
 

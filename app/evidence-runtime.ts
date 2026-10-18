@@ -131,9 +131,9 @@ export class EvidenceRuntime {
       repositories,
       tools: { node: process.version },
       adapters: {
-        command: 'local/v1',
+        command: 'local/v2',
         service: 'local/v1',
-        browser: 'playwright-core/v1',
+        browser: 'playwright-core/v2',
         visual: hasVisualAdapter ? 'file-exchange-or-provided/v1' : 'unavailable/v1',
       },
       inputArtifactDigests: [],

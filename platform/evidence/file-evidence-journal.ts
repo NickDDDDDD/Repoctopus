@@ -7,6 +7,7 @@ import { FileResourceLeaseManager } from '../runtime/resource-lease.js';
 
 export class FileEvidenceJournal implements EvidenceJournal {
   private readonly leases: FileResourceLeaseManager;
+  private readonly appendQueues = new Map<string, Promise<void>>();
 
   constructor(private readonly workspace: string) {
     this.leases = new FileResourceLeaseManager(workspace);
@@ -57,28 +58,37 @@ export class FileEvidenceJournal implements EvidenceJournal {
     type: EvidenceJournalEntry['type'],
     receiptId?: string,
   ): Promise<void> {
-    await this.leases.withLease(`evidence-journal:${attemptId}`, async () => {
-      const previous = await this.load(attemptId);
-      const entry: EvidenceJournalEntry = {
-        schemaVersion: 1,
-        sequence: previous.length + 1,
-        eventId: randomUUID(),
-        attemptId,
-        nodeId,
-        timestamp,
-        type,
-        ...(receiptId ? { receiptId } : {}),
-      };
-      const file = this.file(attemptId);
-      await mkdir(path.dirname(file), { recursive: true });
-      const handle = await open(file, 'a', 0o600);
-      try {
-        await handle.writeFile(`${JSON.stringify(entry)}\n`, 'utf8');
-        await handle.sync();
-      } finally {
-        await handle.close();
-      }
-    });
+    const previous = this.appendQueues.get(attemptId) ?? Promise.resolve();
+    const queued = previous.catch(() => undefined).then(() =>
+      this.leases.withLease(`evidence-journal:${attemptId}`, async () => {
+        const entries = await this.load(attemptId);
+        const entry: EvidenceJournalEntry = {
+          schemaVersion: 1,
+          sequence: entries.length + 1,
+          eventId: randomUUID(),
+          attemptId,
+          nodeId,
+          timestamp,
+          type,
+          ...(receiptId ? { receiptId } : {}),
+        };
+        const file = this.file(attemptId);
+        await mkdir(path.dirname(file), { recursive: true });
+        const handle = await open(file, 'a', 0o600);
+        try {
+          await handle.writeFile(`${JSON.stringify(entry)}\n`, 'utf8');
+          await handle.sync();
+        } finally {
+          await handle.close();
+        }
+      }),
+    );
+    this.appendQueues.set(attemptId, queued);
+    try {
+      await queued;
+    } finally {
+      if (this.appendQueues.get(attemptId) === queued) this.appendQueues.delete(attemptId);
+    }
   }
 
   async recordIntent(attemptId: string, nodeId: string, timestamp: string): Promise<void> {
