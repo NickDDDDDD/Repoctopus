@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://repoctopus.invalid/schemas/project-detection-draft.schema.json",
+  "title": "Repoctopus project detection draft",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "apiVersion",
+    "kind",
+    "draftId",
+    "status",
+    "capturedAt",
+    "scopeRoot",
+    "workspace",
+    "repositories",
+    "unresolved",
+    "candidateConfig",
+    "baseConfigDigest",
+    "reconcile"
+  ],
+  "properties": {
+    "apiVersion": { "const": "repoctopus/v1alpha1" },
+    "kind": { "const": "ProjectDetectionDraft" },
+    "draftId": { "type": "string", "pattern": "^[a-f0-9]{24}$" },
+    "status": { "enum": ["candidate", "awaiting_confirmation", "confirmed"] },
+    "capturedAt": { "type": "string", "format": "date-time" },
+    "scopeRoot": { "type": "string", "minLength": 1 },
+    "workspace": { "type": "string", "minLength": 1 },
+    "repositories": { "type": "array", "items": { "$ref": "#/$defs/repository" } },
+    "unresolved": { "type": "array", "items": { "$ref": "#/$defs/unresolved" } },
+    "candidateConfig": {
+      "anyOf": [{ "$ref": "project-config.schema.json" }, { "type": "null" }]
+    },
+    "baseConfigDigest": {
+      "anyOf": [{ "type": "string", "pattern": "^[a-f0-9]{64}$" }, { "type": "null" }]
+    },
+    "reconcile": {
+      "anyOf": [{ "$ref": "#/$defs/reconcile" }, { "type": "null" }]
+    }
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repositoryId", "file", "detail"],
+      "properties": {
+        "repositoryId": { "type": "string" },
+        "file": { "type": "string" },
+        "detail": { "type": "string" }
+      }
+    },
+    "command": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "repository", "executable", "args", "cwd", "confidence", "sources"],
+      "properties": {
+        "id": { "type": "string" },
+        "repository": { "type": "string" },
+        "executable": { "type": "string" },
+        "args": { "type": "array", "items": { "type": "string" } },
+        "cwd": { "type": "string" },
+        "confidence": { "enum": ["confirmed", "inferred"] },
+        "sources": { "type": "array", "items": { "$ref": "#/$defs/source" } },
+        "zeroTests": { "enum": ["warning", "blocking"] }
+      }
+    },
+    "service": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "repository", "confidence", "sources"],
+      "properties": {
+        "id": { "type": "string" },
+        "repository": { "type": "string" },
+        "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "healthEndpoint": { "type": "string" },
+        "confidence": { "enum": ["confirmed", "inferred"] },
+        "sources": { "type": "array", "items": { "$ref": "#/$defs/source" } }
+      }
+    },
+    "repository": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "path", "remoteIdentity", "technologies", "commands", "services"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "path": { "type": "string" },
+        "remoteIdentity": { "type": ["string", "null"] },
+        "technologies": {
+          "type": "array",
+          "items": { "enum": ["node", "maven", "gradle"] }
+        },
+        "commands": { "type": "array", "items": { "$ref": "#/$defs/command" } },
+        "services": { "type": "array", "items": { "$ref": "#/$defs/service" } }
+      }
+    },
+    "unresolved": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "repository", "message"],
+      "properties": {
+        "code": {
+          "enum": ["unknown-build", "service-port", "health-endpoint", "command-review"]
+        },
+        "repository": { "type": "string" },
+        "message": { "type": "string" },
+        "source": { "$ref": "#/$defs/source" }
+      }
+    },
+    "reconcile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "changed",
+        "addedRepositories",
+        "removedRepositories",
+        "addedNodes",
+        "removedNodes",
+        "conflicts"
+      ],
+      "properties": {
+        "changed": { "type": "boolean" },
+        "addedRepositories": { "type": "array", "items": { "type": "string" } },
+        "removedRepositories": { "type": "array", "items": { "type": "string" } },
+        "addedNodes": { "type": "array", "items": { "type": "string" } },
+        "removedNodes": { "type": "array", "items": { "type": "string" } },
+        "conflicts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["field", "current", "candidate"],
+            "properties": {
+              "field": { "type": "string" },
+              "current": true,
+              "candidate": true
+            }
+          }
+        }
+      }
+    }
+  }
+}

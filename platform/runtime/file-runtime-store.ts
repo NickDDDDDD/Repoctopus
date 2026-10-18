@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
-import { mkdir, open, readFile, rm, stat } from 'node:fs/promises';
+import { readFile, readdir, stat } from 'node:fs/promises';
+import path from 'node:path';
 
 import type { RunState } from '../../domains/engine/types.js';
 import type { ProjectSnapshot } from '../../domains/project/types.js';
@@ -12,6 +13,10 @@ import type {
 import type { WorkflowPackage } from '../../domains/workflow-contract/types.js';
 import { atomicWriteJson, atomicWriteText } from '../filesystem/atomic-write.js';
 import { runPaths, type RunPaths } from './paths.js';
+import {
+  RecoverableFileTransition,
+  type FileTransitionContext,
+} from './recoverable-file-transition.js';
 
 function emptyArtifactsDigest(): string {
   return createHash('sha256').update('{}').digest('hex');
@@ -29,19 +34,6 @@ async function exists(file: string): Promise<boolean> {
 
 async function readJson<T>(file: string): Promise<T> {
   return JSON.parse(await readFile(file, 'utf8')) as T;
-}
-
-function processIsAlive(pid: number): boolean {
-  try {
-    process.kill(pid, 0);
-    return true;
-  } catch (error) {
-    return (error as NodeJS.ErrnoException).code === 'EPERM';
-  }
-}
-
-async function wait(milliseconds: number): Promise<void> {
-  await new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
 export class TrajectoryCorruptionError extends Error {
@@ -99,6 +91,7 @@ function checkpointFor(state: RunState, event: TrajectoryEvent): Checkpoint {
     trajectoryOffset: event.sequence,
     projectSnapshotDigest: state.projectSnapshotDigest,
     artifactManifestDigest: emptyArtifactsDigest(),
+    acceptedEvidenceBundleIds: [...state.acceptedEvidenceBundleIds],
     createdAt: event.timestamp,
   };
 }
@@ -120,19 +113,21 @@ export class FileRuntimeStore {
     event: TrajectoryEvent;
   }): Promise<void> {
     const paths = this.paths(options.state.runId);
-    await this.withTransitionLock(paths, async () => {
-      await this.recoverUnlocked(paths, options.state.runId);
-      if (await exists(paths.run)) throw new Error(`Run already exists: ${options.state.runId}`);
-      await Promise.all([
-        atomicWriteJson(paths.workflow, options.workflow),
-        atomicWriteJson(paths.projectSnapshot, options.projectSnapshot),
-      ]);
-      await this.commitUnlocked(paths, {
-        state: options.state,
-        event: options.event,
-        previousStateVersion: null,
-      });
-    });
+    await this.transition(paths).run(
+      (journal) => this.replay(paths, options.state.runId, journal),
+      async (transition) => {
+        if (await exists(paths.run)) throw new Error(`Run already exists: ${options.state.runId}`);
+        await Promise.all([
+          atomicWriteJson(paths.workflow, options.workflow),
+          atomicWriteJson(paths.projectSnapshot, options.projectSnapshot),
+        ]);
+        await this.commitUnlocked(
+          paths,
+          { state: options.state, event: options.event, previousStateVersion: null },
+          transition,
+        );
+      },
+    );
   }
 
   async loadRun(runId: string): Promise<RunState> {
@@ -168,10 +163,46 @@ export class FileRuntimeStore {
     previousStateVersion: number | null;
   }): Promise<void> {
     const paths = this.paths(options.state.runId);
-    await this.withTransitionLock(paths, async () => {
-      await this.recoverUnlocked(paths, options.state.runId);
-      await this.commitUnlocked(paths, options);
-    });
+    await this.transition(paths).run(
+      (journal) => this.replay(paths, options.state.runId, journal),
+      (transition) => this.commitUnlocked(paths, options, transition),
+    );
+  }
+
+  async commitGuarded<T>(
+    runId: string,
+    operation: (current: {
+      state: RunState;
+      workflow: WorkflowPackage;
+      trajectory: TrajectoryEvent[];
+    }) => Promise<{
+      state: RunState;
+      event: TrajectoryEvent;
+      value: T;
+    }>,
+  ): Promise<T> {
+    const paths = this.paths(runId);
+    return this.transition(paths).run(
+      (journal) => this.replay(paths, runId, journal),
+      async (transition) => {
+        const [state, workflow, trajectory] = await Promise.all([
+          readJson<RunState>(paths.run),
+          readJson<WorkflowPackage>(paths.workflow),
+          readTrajectory(paths.trajectory),
+        ]);
+        const result = await operation({ state, workflow, trajectory });
+        await this.commitUnlocked(
+          paths,
+          {
+            state: result.state,
+            event: result.event,
+            previousStateVersion: state.stateVersion,
+          },
+          transition,
+        );
+        return result.value;
+      },
+    );
   }
 
   private async commitUnlocked(
@@ -181,6 +212,7 @@ export class FileRuntimeStore {
       event: TrajectoryEvent;
       previousStateVersion: number | null;
     },
+    transition: FileTransitionContext<TransitionJournal>,
   ): Promise<void> {
     if (options.event.runId !== options.state.runId) {
       throw new Error(
@@ -218,9 +250,11 @@ export class FileRuntimeStore {
       event: options.event,
       checkpoint,
     };
-    await atomicWriteJson(paths.transitionJournal, journal);
-    await this.hooks.afterJournalWritten?.(journal);
-    await this.complete(paths, journal);
+    await transition.commit(
+      journal,
+      (pending) => this.complete(paths, pending),
+      (pending) => this.hooks.afterJournalWritten?.(pending),
+    );
   }
 
   private async complete(paths: RunPaths, journal: TransitionJournal): Promise<void> {
@@ -241,67 +275,23 @@ export class FileRuntimeStore {
     await this.hooks.afterRunWritten?.(journal);
     await atomicWriteJson(paths.checkpoint, journal.checkpoint);
     await this.hooks.afterCheckpointWritten?.(journal);
-    await rm(paths.transitionJournal, { force: true });
   }
 
   async recover(runId: string): Promise<boolean> {
     const paths = this.paths(runId);
     if (!(await exists(paths.transitionJournal))) return false;
-    return this.withTransitionLock(paths, () => this.recoverUnlocked(paths, runId));
+    return this.transition(paths).recover((journal) => this.replay(paths, runId, journal));
   }
 
-  private async recoverUnlocked(paths: RunPaths, runId: string): Promise<boolean> {
-    if (!(await exists(paths.transitionJournal))) return false;
-    const journal = await readJson<TransitionJournal>(paths.transitionJournal);
+  private async replay(paths: RunPaths, runId: string, journal: TransitionJournal): Promise<void> {
     if (journal.schemaVersion !== 1 || journal.runId !== runId) {
       throw new Error(`Invalid transition journal for run: ${runId}`);
     }
     await this.complete(paths, journal);
-    return true;
   }
 
-  private async withTransitionLock<T>(paths: RunPaths, operation: () => Promise<T>): Promise<T> {
-    await mkdir(paths.root, { recursive: true });
-    let handle;
-    for (let attempt = 0; attempt < 100; attempt += 1) {
-      try {
-        handle = await open(paths.transitionLock, 'wx', 0o600);
-        await handle.writeFile(
-          `${JSON.stringify({ schemaVersion: 1, pid: process.pid, createdAt: new Date().toISOString() })}\n`,
-          'utf8',
-        );
-        await handle.sync();
-        break;
-      } catch (error) {
-        if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
-        try {
-          const owner = await readJson<{ pid?: number; createdAt?: string }>(paths.transitionLock);
-          const age = owner.createdAt
-            ? Date.now() - Date.parse(owner.createdAt)
-            : Number.POSITIVE_INFINITY;
-          if (
-            typeof owner.pid !== 'number' ||
-            !processIsAlive(owner.pid) ||
-            !Number.isFinite(age) ||
-            age > 5 * 60_000
-          ) {
-            await rm(paths.transitionLock, { force: true });
-            continue;
-          }
-        } catch (readError) {
-          if ((readError as NodeJS.ErrnoException).code === 'ENOENT') continue;
-          throw readError;
-        }
-        await wait(20);
-      }
-    }
-    if (!handle) throw new Error(`Run transition is busy: ${paths.root}`);
-    try {
-      return await operation();
-    } finally {
-      await handle.close();
-      await rm(paths.transitionLock, { force: true });
-    }
+  private transition(paths: RunPaths): RecoverableFileTransition<TransitionJournal> {
+    return new RecoverableFileTransition(paths.transitionLock, paths.transitionJournal);
   }
 
   async readTelemetryCursor(runId: string): Promise<TelemetryDeliveryCursor> {
@@ -334,5 +324,43 @@ export class FileRuntimeStore {
       exists(paths.transitionJournal),
     ]);
     return { state, checkpoint, trajectory, cursor, pendingTransition };
+  }
+
+  async evidenceRetentionState(): Promise<{
+    deferred: boolean;
+    acceptedBundleIds: string[];
+  }> {
+    const root = path.join(path.resolve(this.workspaceRoot), '.repoctopus', 'runs');
+    let entries;
+    try {
+      entries = await readdir(root, { withFileTypes: true });
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        return { deferred: false, acceptedBundleIds: [] };
+      }
+      throw error;
+    }
+    const accepted = new Set<string>();
+    for (const entry of entries) {
+      if (!entry.isDirectory() || entry.isSymbolicLink()) continue;
+      const paths = this.paths(entry.name);
+      if (await exists(paths.transitionJournal)) {
+        return { deferred: true, acceptedBundleIds: [] };
+      }
+      if (!(await exists(paths.checkpoint))) continue;
+      const checkpoint = await readJson<Checkpoint>(paths.checkpoint);
+      if (
+        checkpoint.schemaVersion !== 1 ||
+        checkpoint.runId !== entry.name ||
+        !Array.isArray(checkpoint.acceptedEvidenceBundleIds) ||
+        checkpoint.acceptedEvidenceBundleIds.some(
+          (bundleId) => typeof bundleId !== 'string' || bundleId.length === 0,
+        )
+      ) {
+        throw new Error(`Invalid Runtime checkpoint evidence roots: ${entry.name}`);
+      }
+      for (const bundleId of checkpoint.acceptedEvidenceBundleIds) accepted.add(bundleId);
+    }
+    return { deferred: false, acceptedBundleIds: [...accepted].sort() };
   }
 }

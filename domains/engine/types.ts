@@ -18,6 +18,7 @@ export interface RunState {
   stateVersion: number;
   status: RunStatus;
   retries: Record<string, number>;
+  acceptedEvidenceBundleIds: string[];
   createdAt: string;
   updatedAt: string;
 }

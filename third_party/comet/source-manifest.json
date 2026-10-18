@@ -11,7 +11,7 @@
       "source": "domains/engine/loop.ts",
       "sourceSha256": "5e3929ca7d64fef62d02675fc84288b54ccf2e398de08a9904bab60ac7010e9f",
       "target": "domains/engine/loop.ts",
-      "sha256": "ea1630e87291bd589b180f3e598591614affe741f4996fbf945c507716ae84ef",
+      "sha256": "804c0132b44e6942c4416d61e2aaea475e83eec6e5bfc2833daeb5d4e375c955",
       "adoption": "modified"
     },
     {
@@ -40,6 +40,111 @@
       "sourceSha256": "213ba72febabc8f0c614bcc813321cf3af27d662699cfa088d08e91dc6176809",
       "target": "domains/workflow-contract/hash.ts",
       "sha256": "499a58e56d7364c9101428ba6145a5be081aee63f90c4d7c31305fbcbcb395f5",
+      "adoption": "modified"
+    },
+    {
+      "source": "platform/process/spawn-command.ts",
+      "sourceSha256": "38abe8359ea96afe0f0657c4008065a5f4ee8009e82a5b66b02dd0cb889eb34d",
+      "target": "platform/process/spawn-command.ts",
+      "sha256": "c7c6327c8356ab349c9d7cb2eccb230846fb7ec485424552e5c46fd4285a6beb",
+      "adoption": "modified"
+    },
+    {
+      "source": "platform/process/external-command.ts",
+      "sourceSha256": "7845cf9712c49d89b025f90a20b2becf465b59d6eaf14788733fdff6e85c2d85",
+      "target": "platform/process/external-command.ts",
+      "sha256": "b6385f2a763e048fcd7057736c81e3420b39479fe23a67691c6cee9269ad52bb",
+      "adoption": "modified"
+    },
+    {
+      "source": "platform/process/process-identity.ts",
+      "sourceSha256": "48d0db970323212f34224909d2b0fe9550d64d22d7617a4c8d172ab93c231000",
+      "target": "platform/process/process-identity.ts",
+      "sha256": "8f7f375d7ca5302af230e03bd84a1ccb75a6e7ce7f218394052148b55c97562b",
+      "adoption": "modified"
+    },
+    {
+      "source": "platform/process/windows-process-identity.ts",
+      "sourceSha256": "2e84049d58a15383567a099f837a92a11132211339632a023ca1261dcdbf8471",
+      "target": "platform/process/windows-process-identity.ts",
+      "sha256": "22ffb5524984ff9199b61340f7afd139d8c81644cfc2d60231f08b994a3a0027",
+      "adoption": "modified"
+    },
+    {
+      "source": "platform/process/terminate-process-tree.ts",
+      "sourceSha256": "efc7fe7ba70d0a430e8b226c2351c2bc83e60243d895c615b7c48908840ebfb6",
+      "target": "platform/process/terminate-process-tree.ts",
+      "sha256": "de7007e4b598bff6da92fc6c95db2abd976184e0258fc3297b177943d654edd8",
+      "adoption": "modified"
+    },
+    {
+      "source": "platform/fs/file-identity.ts",
+      "sourceSha256": "8388bfc5889eb80bea82d3dcde675854d1a6350df94988f673218a385b134dc7",
+      "target": "platform/filesystem/file-identity.ts",
+      "sha256": "8388bfc5889eb80bea82d3dcde675854d1a6350df94988f673218a385b134dc7",
+      "adoption": "copied"
+    },
+    {
+      "source": "platform/fs/race-safe-read.ts",
+      "sourceSha256": "897cc42b6fe2656d0787f59889076e3fb248bccabd1281a953cfc256ec5947dd",
+      "target": "platform/filesystem/race-safe-read.ts",
+      "sha256": "897cc42b6fe2656d0787f59889076e3fb248bccabd1281a953cfc256ec5947dd",
+      "adoption": "copied"
+    },
+    {
+      "source": "platform/fs/transient-retry.ts",
+      "sourceSha256": "dabd75bd53d8d5b2382b4fe1224a0706766cf18ad1474b4bcf68390d552e51d2",
+      "target": "platform/filesystem/transient-retry.ts",
+      "sha256": "508c0524d3db5c3348f85d80c26f30268e757046fe59277d2024cf14d5cd6fe1",
+      "adoption": "modified"
+    },
+    {
+      "source": "domains/comet-native/native-atomic-file.ts",
+      "sourceSha256": "02f199a0587566d78dd0fd5801716d03c666f4b1c6cd2e466f66272a7a237388",
+      "target": "platform/filesystem/atomic-write.ts",
+      "sha256": "88bb919d2d1eb8579a04c9eebbf9aaba919ee4a5c96fc638ad852d503d99390f",
+      "adoption": "modified"
+    },
+    {
+      "source": "domains/comet-native/native-lock.ts",
+      "sourceSha256": "86ad1cea4cdeea8bbf86b404694821b02473aff42c44b808eca6e8a06694d400",
+      "target": "platform/runtime/resource-lease.ts",
+      "sha256": "967e202fef2302e4a8125ee44d72ac8f000a214bf7c512c66acfdc9703859672",
+      "adoption": "modified"
+    },
+    {
+      "source": "domains/comet-native/native-snapshot.ts",
+      "sourceSha256": "9dc56855f652617ee6353ac6506788051d006fdd40ea3d55bf0a6e1e5db8cf85",
+      "target": "platform/git/evidence-fingerprint.ts",
+      "sha256": "9d8600b9bab660ae497c159b1ebefb17e1b14d6f85d30db2a1f09107aca59428",
+      "adoption": "modified"
+    },
+    {
+      "source": "domains/comet-classic/classic-command-checks.ts",
+      "sourceSha256": "468bb2e66403b5a80320289ab4bb627b89e22b41584b594cd9438f32053c3878",
+      "target": "domains/runtime/evidence-guard.ts",
+      "sha256": "cc85e0434ca28a2db152393e47a05cd06269291a27863ad1d706ad0ad569facf",
+      "adoption": "modified"
+    },
+    {
+      "source": "domains/comet-classic/classic-guard.ts",
+      "sourceSha256": "9bf88ba1da12edb43f090164dac016d489ce7d15f8f58bcf4aea853ac05f9c61",
+      "target": "domains/runtime/runtime.ts",
+      "sha256": "489da1f993a5a9b119d530c582a411d8d46cd9ee44e47c9d4a5080637ec3ccc7",
+      "adoption": "modified"
+    },
+    {
+      "source": "platform/fs/plugin-store.ts",
+      "sourceSha256": "5cc2e2c7d4baf568baebb9c9c41dfa55b07b3479c111b8fd789164dccfc07c9d",
+      "target": "platform/runtime/recoverable-file-lock.ts",
+      "sha256": "5ef1c3732bfd2f43f9a22ef426f149b77c054055f21501422e09c407a16d7fc4",
+      "adoption": "modified"
+    },
+    {
+      "source": "domains/comet-classic/classic-store.ts",
+      "sourceSha256": "8ba323bf97f6f6e9c268b2b75873a29b5ef59e63c8c981f7f4d418f5083d9185",
+      "target": "platform/runtime/recoverable-file-transition.ts",
+      "sha256": "42ff6352f221f168ed3909ee9c608723a730069fbe4baad627b877efc5bc0e9f",
       "adoption": "modified"
     }
   ]

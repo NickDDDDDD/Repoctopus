@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { mkdir, readFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -36,7 +36,20 @@ describe('published package', () => {
       ['pack', '--json', '--pack-destination', packDirectory],
       repositoryRoot,
     );
-    const archives = JSON.parse(packed.stdout) as Array<{ filename: string }>;
+    const archives = JSON.parse(packed.stdout) as Array<{
+      filename: string;
+      files: Array<{ path: string }>;
+    }>;
+    const packagedPaths = archives[0]!.files.map((file) => file.path.replaceAll('\\', '/'));
+    expect(packagedPaths).toContain('docs/schemas/project-config.schema.json');
+    expect(packagedPaths).toContain('docs/examples/repoctopus.gitignore');
+    expect(packagedPaths).not.toEqual(
+      expect.arrayContaining([
+        expect.stringMatching(/(^|\/)test\//u),
+        expect.stringMatching(/(^|\/)openspec\//u),
+        expect.stringMatching(/(^|\/)\.repoctopus\//u),
+      ]),
+    );
     const archive = path.join(packDirectory, archives[0]!.filename);
     await npm(['init', '-y'], root);
     await npm(
@@ -52,31 +65,64 @@ describe('published package', () => {
     const envelope = await runCli({
       packageRoot: installedPackage,
       cwd: workspace,
-      args: ['project', 'probe', '--root', project, '--workspace', workspace],
+      args: ['project', 'detect', '--root', project, '--workspace', workspace],
     });
-    expect(envelope).toMatchObject({ protocolVersion: 1, ok: true, command: 'project probe' });
+    expect(envelope).toMatchObject({ protocolVersion: 1, ok: true, command: 'project detect' });
     expect(JSON.stringify(envelope)).toContain('service');
+    await writeFile(
+      path.join(workspace, 'repoctopus.yaml'),
+      JSON.stringify({
+        apiVersion: 'repoctopus/v1alpha1',
+        kind: 'RepoctopusProject',
+        project: { id: 'package-e2e' },
+        repositories: [{ id: 'service', path: '../service' }],
+        profiles: [
+          {
+            id: 'verify',
+            nodes: [
+              {
+                id: 'build',
+                type: 'command',
+                repository: 'service',
+                executable: process.execPath,
+                args: ['-e', "process.stdout.write('package verified')"],
+                cache: false,
+              },
+            ],
+          },
+        ],
+      }),
+    );
     const started = await runCli({
       packageRoot: installedPackage,
       cwd: workspace,
       args: [
+        'evidence',
         'run',
-        'start',
         '--workspace',
         workspace,
-        '--project-root',
-        project,
-        '--run',
-        'run-package-e2e',
+        '--profile',
+        'verify',
+        '--attempt',
+        'package-e2e-attempt',
       ],
     });
-    expect(started.ok).toBe(true);
-    const doctor = await runCli({
+    expect(started).toMatchObject({
+      ok: true,
+      result: { bundle: { outcome: 'passed' }, gate: { status: 'satisfied' } },
+    });
+    const inspected = await runCli({
       packageRoot: installedPackage,
       cwd: workspace,
-      args: ['doctor', '--workspace', workspace, '--run', 'run-package-e2e'],
+      args: ['evidence', 'inspect', '--workspace', workspace, '--attempt', 'package-e2e-attempt'],
     });
-    expect(doctor.result).toMatchObject({ healthy: true, provenanceFiles: 5 });
+    expect(inspected).toMatchObject({
+      ok: true,
+      result: {
+        bundle: { outcome: 'passed' },
+        journal: [{ type: 'node.intent' }, { type: 'node.completed' }],
+      },
+    });
     let failure: { code?: number; stderr?: string } | undefined;
     try {
       await execFileAsync(
@@ -97,5 +143,21 @@ describe('published package', () => {
     expect(
       await readFile(path.join(installedPackage, 'third_party', 'comet', 'LICENSE'), 'utf8'),
     ).toContain('MIT License');
+    const textFiles = packagedPaths.filter((file) => /\.(?:js|json|md|ts|yaml|yml)$/u.test(file));
+    const packagedText = (
+      await Promise.all(
+        textFiles.map(async (file) => {
+          try {
+            return await readFile(path.join(installedPackage, file), 'utf8');
+          } catch {
+            return '';
+          }
+        }),
+      )
+    ).join('\n');
+    expect(packagedText).not.toMatch(/agent-lab|C:\\Users\\User|\/Users\//iu);
+    expect(await readdir(path.join(installedPackage, 'docs', 'schemas'))).toContain(
+      'project-config.schema.json',
+    );
   }, 120_000);
 });

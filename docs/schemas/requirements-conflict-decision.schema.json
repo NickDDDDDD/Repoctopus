@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://repoctopus.invalid/schemas/requirements-conflict-decision.schema.json",
+  "title": "Repoctopus requirements conflict human decision",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "apiVersion",
+        "kind",
+        "requestId",
+        "decisionType",
+        "changeId",
+        "nodeId",
+        "snapshotDigest",
+        "conflict",
+        "options"
+      ],
+      "properties": {
+        "apiVersion": { "const": "repoctopus/v1alpha1" },
+        "kind": { "const": "HumanDecisionRequest" },
+        "requestId": { "type": "string", "minLength": 1 },
+        "decisionType": { "const": "requirements-conflict" },
+        "changeId": { "type": "string", "minLength": 1 },
+        "nodeId": { "type": "string", "minLength": 1 },
+        "snapshotDigest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+        "conflict": { "type": "object" },
+        "options": { "type": "array", "minItems": 2 }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["apiVersion", "kind", "requestId", "snapshotDigest", "selectedOptionId"],
+      "properties": {
+        "apiVersion": { "const": "repoctopus/v1alpha1" },
+        "kind": { "const": "HumanDecisionResponse" },
+        "requestId": { "type": "string", "minLength": 1 },
+        "snapshotDigest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+        "selectedOptionId": { "type": "string", "minLength": 1 },
+        "comment": { "type": "string", "maxLength": 4096 }
+      }
+    }
+  ]
+}

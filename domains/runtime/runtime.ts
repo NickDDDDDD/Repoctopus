@@ -14,7 +14,9 @@ import type {
   RuntimeResult,
   TelemetryPort,
   WorkflowSourcePort,
+  EvidenceGatePort,
 } from './types.js';
+import { requireSatisfiedEvidenceGate } from './evidence-guard.js';
 
 function stableEventId(...parts: string[]): string {
   return createHash('sha256').update(parts.join(':')).digest('hex');
@@ -47,6 +49,7 @@ export class RepoctopusRuntime {
     private readonly clock: () => Date = () => new Date(),
     private readonly uuid: () => string = () => randomUUID(),
     private readonly workflowSource?: WorkflowSourcePort,
+    private readonly evidenceGate?: EvidenceGatePort,
   ) {}
 
   async start(options: {
@@ -95,12 +98,19 @@ export class RepoctopusRuntime {
       this.store.loadTrajectory(runId),
     ]);
     const preview = decide(workflow, state, state.updatedAt);
+    const pendingStep = state.pendingActionId
+      ? workflow.definition.steps.find((step) => step.id === state.currentStep)
+      : undefined;
+    const pendingAction =
+      pendingStep && state.pendingActionId
+        ? { ...pendingStep.action, id: state.pendingActionId, stepId: pendingStep.id }
+        : null;
     const workflowDrift = await this.inspectWorkflowDrift(state);
     return {
       state,
       checkpoint,
       trajectoryLength: trajectory.length,
-      nextAction: preview.action,
+      nextAction: pendingAction ?? preview.action,
       workflowDrift,
       ...(preview.reason ? { reason: preview.reason } : {}),
     };
@@ -148,6 +158,7 @@ export class RepoctopusRuntime {
     status: ActionOutcome['status'];
     summary: string;
     eventId?: string;
+    evidenceAttemptId?: string;
   }): Promise<RuntimeResult<RunStatusView>> {
     const eventId = options.eventId ?? this.uuid();
     const duplicate = await this.store.findEvent(options.runId, eventId);
@@ -163,35 +174,55 @@ export class RepoctopusRuntime {
         ],
       };
     }
-    const [state, workflow, trajectory] = await Promise.all([
-      this.store.loadRun(options.runId),
-      this.store.loadWorkflow(options.runId),
-      this.store.loadTrajectory(options.runId),
-    ]);
     const timestamp = this.clock().toISOString();
-    const outcome: ActionOutcome = {
-      eventId,
-      actionId: options.actionId,
-      status: options.status,
-      summary: options.summary,
-    };
-    const nextState = recordOutcome(workflow, state, outcome, timestamp);
-    const completed = event({
-      eventId,
-      sequence: trajectory.length + 1,
-      timestamp,
-      type: 'action.completed',
-      state: nextState,
-      data: {
+    await this.store.commitGuarded(options.runId, async ({ state, workflow, trajectory }) => {
+      const step = workflow.definition.steps.find((item) => item.id === state.currentStep);
+      const requiredProfile = step?.action.evidenceProfile;
+      let evidenceGate;
+      if (options.status === 'succeeded' && requiredProfile) {
+        if (!step || !state.pendingActionId) {
+          throw new Error('Evidence-protected transition has no current pending action');
+        }
+        evidenceGate = await requireSatisfiedEvidenceGate({
+          gate: this.evidenceGate,
+          workflowRunId: options.runId,
+          workflowActionId: state.pendingActionId,
+          workflowStepId: step.id,
+          workflowStateVersion: state.stateVersion,
+          profileId: requiredProfile,
+          attemptId: options.evidenceAttemptId,
+        });
+      }
+      const outcome: ActionOutcome = {
+        eventId,
         actionId: options.actionId,
-        result: options.status,
+        status: options.status,
         summary: options.summary,
-      },
-    });
-    await this.store.commit({
-      state: nextState,
-      event: completed,
-      previousStateVersion: state.stateVersion,
+      };
+      const recordedState = recordOutcome(workflow, state, outcome, timestamp);
+      const nextState = evidenceGate
+        ? {
+            ...recordedState,
+            acceptedEvidenceBundleIds: [
+              ...new Set([...recordedState.acceptedEvidenceBundleIds, evidenceGate.bundleId]),
+            ],
+          }
+        : recordedState;
+      const completed = event({
+        eventId,
+        sequence: trajectory.length + 1,
+        timestamp,
+        type: 'action.completed',
+        state: nextState,
+        data: {
+          actionId: options.actionId,
+          result: options.status,
+          summary: options.summary,
+          ...(options.evidenceAttemptId ? { evidenceAttemptId: options.evidenceAttemptId } : {}),
+          ...(evidenceGate ? { evidenceGate } : {}),
+        },
+      });
+      return { state: nextState, event: completed, value: undefined };
     });
     const diagnostics = await this.flushTelemetry(options.runId);
     return { value: await this.status(options.runId), diagnostics };

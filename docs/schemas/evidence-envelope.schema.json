@@ -1,0 +1,180 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://repoctopus.invalid/schemas/evidence-envelope.schema.json",
+  "title": "Repoctopus Evidence envelope",
+  "oneOf": [
+    { "$ref": "#/$defs/artifactRef" },
+    { "$ref": "#/$defs/attempt" },
+    { "$ref": "#/$defs/receipt" },
+    { "$ref": "#/$defs/bundle" },
+    { "$ref": "#/$defs/gateProjection" }
+  ],
+  "$defs": {
+    "base": {
+      "type": "object",
+      "required": ["apiVersion", "kind"],
+      "properties": { "apiVersion": { "const": "repoctopus/v1alpha1" } }
+    },
+    "artifactRef": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "type": "object",
+          "required": ["kind", "sha256", "size", "mediaType", "artifactType", "redacted"],
+          "properties": {
+            "kind": { "const": "ArtifactRef" },
+            "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+            "size": { "type": "integer", "minimum": 0 },
+            "mediaType": { "type": "string", "minLength": 1 },
+            "artifactType": { "type": "string", "minLength": 1 },
+            "redacted": { "type": "boolean" }
+          }
+        }
+      ]
+    },
+    "attempt": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "attemptId",
+            "profileId",
+            "inputFingerprint",
+            "startedAt",
+            "receiptIds",
+            "status"
+          ],
+          "properties": {
+            "kind": { "const": "EvidenceAttempt" },
+            "attemptId": { "type": "string", "minLength": 1 },
+            "profileId": { "type": "string", "minLength": 1 },
+            "inputFingerprint": { "type": "string", "minLength": 1 },
+            "startedAt": { "type": "string", "format": "date-time" },
+            "completedAt": { "type": "string", "format": "date-time" },
+            "receiptIds": { "type": "array", "items": { "type": "string" } },
+            "status": { "enum": ["running", "completed", "superseded"] }
+          }
+        }
+      ]
+    },
+    "receipt": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "receiptId",
+            "attemptId",
+            "nodeId",
+            "adapter",
+            "trust",
+            "freshness",
+            "status",
+            "inputFingerprint",
+            "startedAt",
+            "completedAt",
+            "artifacts",
+            "findings"
+          ],
+          "properties": {
+            "kind": { "const": "EvidenceReceipt" },
+            "receiptId": { "type": "string", "minLength": 1 },
+            "attemptId": { "type": "string", "minLength": 1 },
+            "nodeId": { "type": "string", "minLength": 1 },
+            "adapter": { "type": "string", "minLength": 1 },
+            "trust": { "enum": ["verified", "observed"] },
+            "freshness": { "enum": ["fresh", "reused", "superseded"] },
+            "status": { "enum": ["passed", "failed", "incomplete"] },
+            "inputFingerprint": { "type": "string", "minLength": 1 },
+            "startedAt": { "type": "string", "format": "date-time" },
+            "completedAt": { "type": "string", "format": "date-time" },
+            "exitCode": { "type": "integer" },
+            "validUntil": { "type": "string", "format": "date-time" },
+            "sourceReceiptId": { "type": "string", "minLength": 1 },
+            "process": {
+              "type": "object",
+              "required": ["pid"],
+              "properties": {
+                "pid": { "type": "integer", "minimum": 1 },
+                "identity": { "type": "string", "minLength": 1 }
+              }
+            },
+            "artifacts": { "type": "array", "items": { "$ref": "#/$defs/artifactRef" } },
+            "findings": { "type": "array", "items": { "type": "object" } }
+          }
+        }
+      ]
+    },
+    "gateProjection": {
+      "type": "object",
+      "required": [
+        "schemaVersion",
+        "kind",
+        "workflowRunId",
+        "workflowActionId",
+        "workflowStepId",
+        "workflowStateVersion",
+        "profileId",
+        "bundleId",
+        "inputFingerprint",
+        "outcome",
+        "status",
+        "reason"
+      ],
+      "properties": {
+        "schemaVersion": { "const": 1 },
+        "kind": { "const": "EvidenceGateProjection" },
+        "workflowRunId": { "type": ["string", "null"] },
+        "workflowActionId": { "type": ["string", "null"] },
+        "workflowStepId": { "type": ["string", "null"] },
+        "workflowStateVersion": { "type": ["integer", "null"], "minimum": 0 },
+        "profileId": { "type": "string", "minLength": 1 },
+        "bundleId": { "type": "string", "minLength": 1 },
+        "inputFingerprint": { "type": "string", "minLength": 1 },
+        "outcome": { "enum": ["passed", "failed", "incomplete", "passed_with_warnings"] },
+        "status": { "enum": ["satisfied", "blocked"] },
+        "reason": { "type": "string", "minLength": 1 }
+      }
+    },
+    "bundle": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "bundleId",
+            "attemptId",
+            "profileId",
+            "inputFingerprint",
+            "createdAt",
+            "outcome",
+            "checks",
+            "receiptIds",
+            "artifactDigests",
+            "findings"
+          ],
+          "properties": {
+            "kind": { "const": "EvidenceBundle" },
+            "bundleId": { "type": "string", "minLength": 1 },
+            "attemptId": { "type": "string", "minLength": 1 },
+            "profileId": { "type": "string", "minLength": 1 },
+            "inputFingerprint": { "type": "string", "minLength": 1 },
+            "createdAt": { "type": "string", "format": "date-time" },
+            "outcome": { "enum": ["passed", "failed", "incomplete", "passed_with_warnings"] },
+            "checks": { "type": "array", "items": { "type": "object" } },
+            "receiptIds": { "type": "array", "items": { "type": "string" } },
+            "artifactDigests": {
+              "type": "array",
+              "items": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+            },
+            "findings": { "type": "array", "items": { "type": "object" } }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -63,6 +63,7 @@ describe.each<keyof RuntimeStoreHooks>([
       }),
     ).rejects.toThrow(`crash:${hookName}`);
     expect((await crashing.inspect(state.runId)).pendingTransition).toBe(true);
+    expect((await crashing.evidenceRetentionState()).deferred).toBe(true);
 
     const recovered = new FileRuntimeStore(workspace);
     expect(await recovered.recover(state.runId)).toBe(true);
@@ -70,6 +71,7 @@ describe.each<keyof RuntimeStoreHooks>([
     expect(await recovered.loadRun(state.runId)).toEqual(state);
     expect(await recovered.loadTrajectory(state.runId)).toHaveLength(1);
     expect((await recovered.loadCheckpoint(state.runId)).trajectoryOffset).toBe(1);
+    expect((await recovered.evidenceRetentionState()).deferred).toBe(false);
   });
 });
 
@@ -138,7 +140,12 @@ describe('runtime store corruption detection', () => {
 
     await writeFile(
       store.paths(state.runId).transitionLock,
-      `${JSON.stringify({ schemaVersion: 1, pid: 999_999, createdAt: '2000-01-01T00:00:00.000Z' })}\n`,
+      JSON.stringify({
+        pid: 999_999,
+        nonce: 'abandoned-lock',
+        createdAt: Date.parse('2000-01-01T00:00:00.000Z'),
+        processIdentity: 'dead-process',
+      }),
     );
     await store.commit({ state: nextState, event: nextEvent, previousStateVersion: 0 });
     await expect(readFile(store.paths(state.runId).transitionLock, 'utf8')).rejects.toMatchObject({

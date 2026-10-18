@@ -1,0 +1,305 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://repoctopus.invalid/schemas/project-config.schema.json",
+  "title": "Repoctopus shared project configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["apiVersion", "kind", "project", "repositories", "profiles"],
+  "properties": {
+    "apiVersion": { "const": "repoctopus/v1alpha1" },
+    "kind": { "const": "RepoctopusProject" },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id"],
+      "properties": { "id": { "type": "string", "minLength": 1 } }
+    },
+    "repositories": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "path"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "path": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "profiles": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "nodes"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "nodes": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "oneOf": [
+                { "$ref": "#/$defs/commandNode" },
+                { "$ref": "#/$defs/managedServiceNode" },
+                { "$ref": "#/$defs/attachedServiceNode" },
+                { "$ref": "#/$defs/browserNode" },
+                { "$ref": "#/$defs/visualNode" }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "retention": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "maxAgeDays": { "type": "integer", "minimum": 1 },
+            "minRecentSuccesses": { "type": "integer", "minimum": 1 }
+          }
+        }
+      }
+    },
+    "delivery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["checkpoint", "publication"],
+      "properties": {
+        "checkpoint": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["automatic", "protectedBranches", "commitMessagePattern", "quickChecks"],
+          "properties": {
+            "automatic": { "type": "boolean" },
+            "protectedBranches": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "commitMessagePattern": { "type": "string", "minLength": 1 },
+            "quickChecks": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "array",
+                "items": { "$ref": "#/$defs/quickCheck" }
+              }
+            }
+          }
+        },
+        "publication": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "remote",
+            "provider",
+            "githubApiBaseUrl",
+            "mrTitleTemplate",
+            "mrBodyTemplate"
+          ],
+          "properties": {
+            "remote": { "type": "string", "minLength": 1 },
+            "provider": { "const": "github" },
+            "githubApiBaseUrl": { "type": "string", "format": "uri" },
+            "mrTitleTemplate": { "type": "string", "minLength": 1 },
+            "mrBodyTemplate": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "quickCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["command", "args"],
+      "properties": {
+        "command": { "type": "string", "minLength": 1 },
+        "args": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "commandNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "repository", "executable"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "const": "command" },
+        "repository": { "type": "string", "minLength": 1 },
+        "dependsOn": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "required": { "type": "boolean" },
+        "executable": { "type": "string", "minLength": 1 },
+        "args": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "cwd": { "type": "string" },
+        "timeoutMs": { "type": "integer", "minimum": 1 },
+        "cache": { "type": "boolean" },
+        "cacheTtlMs": { "type": "integer", "minimum": 1 },
+        "zeroTests": { "enum": ["ignore", "warning", "blocking"] }
+      }
+    },
+    "nodeBase": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "repository": { "type": "string", "minLength": 1 },
+        "dependsOn": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "required": { "type": "boolean" }
+      }
+    },
+    "readiness": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "host", "port"],
+          "properties": {
+            "type": { "const": "tcp" },
+            "host": { "type": "string", "minLength": 1 },
+            "port": { "type": "integer", "minimum": 1, "maximum": 65535 }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "url"],
+          "properties": {
+            "type": { "const": "http" },
+            "url": { "type": "string", "format": "uri" },
+            "statusCodes": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "integer", "minimum": 100, "maximum": 599 }
+            },
+            "jsonPath": { "type": "string", "minLength": 1 },
+            "equals": {}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "pattern"],
+          "properties": {
+            "type": { "const": "log" },
+            "pattern": { "type": "string", "minLength": 1 },
+            "stream": { "enum": ["stdout", "stderr", "combined"] }
+          }
+        }
+      ]
+    },
+    "managedServiceNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "mode", "repository", "executable", "readiness"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "const": "service" },
+        "mode": { "const": "managed" },
+        "repository": { "type": "string", "minLength": 1 },
+        "dependsOn": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "required": { "type": "boolean" },
+        "executable": { "type": "string", "minLength": 1 },
+        "args": { "type": "array", "items": { "type": "string" } },
+        "cwd": { "type": "string" },
+        "readiness": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/readiness" } },
+        "startupTimeoutMs": { "type": "integer", "minimum": 1 },
+        "probeIntervalMs": { "type": "integer", "minimum": 1 },
+        "resourceKeys": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "attachedServiceNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "mode", "repository", "readiness"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "const": "service" },
+        "mode": { "const": "attached" },
+        "repository": { "type": "string", "minLength": 1 },
+        "dependsOn": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "required": { "type": "boolean" },
+        "readiness": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/readiness" } },
+        "startupTimeoutMs": { "type": "integer", "minimum": 1 },
+        "probeIntervalMs": { "type": "integer", "minimum": 1 },
+        "buildIdentity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["url", "jsonPath"],
+          "properties": {
+            "url": { "type": "string", "format": "uri" },
+            "jsonPath": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "browserJourney": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["apiVersion", "kind", "journeyId", "viewport", "timeoutMs", "actions"],
+      "properties": {
+        "apiVersion": { "const": "repoctopus/v1alpha1" },
+        "kind": { "const": "BrowserJourney" },
+        "journeyId": { "type": "string", "minLength": 1 },
+        "viewport": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["width", "height"],
+          "properties": {
+            "width": { "type": "integer", "minimum": 1 },
+            "height": { "type": "integer", "minimum": 1 },
+            "deviceScaleFactor": { "type": "number", "exclusiveMinimum": 0 }
+          }
+        },
+        "timeoutMs": { "type": "integer", "minimum": 1 },
+        "actions": { "type": "array", "minItems": 1, "items": { "type": "object" } }
+      }
+    },
+    "browserNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "repository", "source", "journey"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "const": "browser" },
+        "repository": { "type": "string", "minLength": 1 },
+        "dependsOn": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "required": { "type": "boolean" },
+        "source": { "enum": ["managed", "system"] },
+        "journey": { "$ref": "#/$defs/browserJourney" }
+      }
+    },
+    "visualNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "repository", "changeId", "browserNode", "pageUrl", "criteria"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "const": "visual" },
+        "repository": { "type": "string", "minLength": 1 },
+        "dependsOn": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "required": { "type": "boolean" },
+        "changeId": { "type": "string", "minLength": 1 },
+        "browserNode": { "type": "string", "minLength": 1 },
+        "pageUrl": { "type": "string", "format": "uri" },
+        "criteria": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "text"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "text": { "type": "string", "minLength": 1 },
+              "sourceRef": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    }
+  }
+}

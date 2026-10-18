@@ -77,9 +77,14 @@ export function createDeliverySnapshot(options: {
   intent: DeliveryIntent;
   policy: DeliveryPolicy;
   reportContents: string;
+  evidenceBundleIds: string[];
   repositories: DeliveryRepositoryFacts[];
   createdAt: string;
 }): DeliverySnapshot {
+  const evidenceBundleIds = [...new Set(options.evidenceBundleIds)].sort();
+  if (evidenceBundleIds.length === 0 || evidenceBundleIds.some((id) => id.trim().length === 0)) {
+    throw new Error('Delivery approval requires at least one Evidence Bundle');
+  }
   const repositories = [...options.repositories].sort((a, b) =>
     a.repositoryId.localeCompare(b.repositoryId),
   );
@@ -96,6 +101,7 @@ export function createDeliverySnapshot(options: {
     reportDigest,
     policyDigest,
     intentDigest,
+    evidenceBundleIds,
     repositories,
     plan,
   };
@@ -107,9 +113,16 @@ export function compareDeliverySnapshots(
   current: DeliverySnapshot,
 ): string[] {
   const fields: Array<
-    keyof Pick<DeliverySnapshot, 'changeId' | 'reportDigest' | 'policyDigest' | 'intentDigest'>
-  > = ['changeId', 'reportDigest', 'policyDigest', 'intentDigest'];
-  const drift: string[] = fields.filter((field) => expected[field] !== current[field]);
+    keyof Pick<
+      DeliverySnapshot,
+      'changeId' | 'reportDigest' | 'policyDigest' | 'intentDigest' | 'evidenceBundleIds'
+    >
+  > = ['changeId', 'reportDigest', 'policyDigest', 'intentDigest', 'evidenceBundleIds'];
+  const drift: string[] = fields.filter((field) =>
+    field === 'evidenceBundleIds'
+      ? canonicalJson(expected[field]) !== canonicalJson(current[field])
+      : expected[field] !== current[field],
+  );
   if (canonicalJson(expected.repositories) !== canonicalJson(current.repositories))
     drift.push('repositories');
   if (canonicalJson(expected.plan) !== canonicalJson(current.plan)) drift.push('plan');

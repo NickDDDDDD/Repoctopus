@@ -5,6 +5,8 @@ import { promisify } from 'node:util';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { probeProject } from '../../platform/git/probe.js';
+import { createEvidenceBundle } from '../../domains/evidence/gate.js';
+import { FileEvidenceStore } from '../../platform/evidence/file-evidence-store.js';
 import {
   createGitRepository,
   removeTemporaryDirectory,
@@ -44,6 +46,19 @@ describe('delivery CLI', () => {
     );
     await writeFile(reportFile, '# Verification\nPassed\n');
     await writeFile(path.join(app, 'feature.txt'), 'feature');
+    await new FileEvidenceStore(workspace).saveBundle(
+      createEvidenceBundle({
+        bundleId: 'bundle-cli-verified',
+        attemptId: 'attempt-cli-verified',
+        profileId: 'verify',
+        inputFingerprint: 'fingerprint-cli',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        checks: [],
+        receiptIds: [],
+        artifactDigests: [],
+        findings: [],
+      }),
+    );
     const common = [
       '--workspace',
       workspace,
@@ -67,7 +82,15 @@ describe('delivery CLI', () => {
     const prepared = await runCli({
       packageRoot,
       cwd: workspace,
-      args: ['delivery', 'prepare', ...common, '--report', reportFile],
+      args: [
+        'delivery',
+        'prepare',
+        ...common,
+        '--report',
+        reportFile,
+        '--evidence-bundles',
+        'bundle-cli-verified',
+      ],
     });
     expect(prepared).toMatchObject({
       ok: true,

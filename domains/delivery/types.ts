@@ -80,6 +80,7 @@ export interface DeliverySnapshot {
   reportDigest: string;
   policyDigest: string;
   intentDigest: string;
+  evidenceBundleIds: string[];
   repositories: DeliveryRepositoryFacts[];
   plan: PublicationAction[];
   createdAt: string;
@@ -95,6 +96,7 @@ export interface HumanDecisionRequest {
   changeId: string;
   snapshotDigest: string;
   reportDigest: string;
+  evidenceBundleIds: string[];
   repositories: Array<{
     repositoryId: string;
     repositoryName: string;

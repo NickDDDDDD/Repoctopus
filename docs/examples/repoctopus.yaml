@@ -1,17 +1,35 @@
 apiVersion: repoctopus/v1alpha1
-kind: DeliveryPolicy
-checkpoint:
-  automatic: true
-  protectedBranches:
-    - main
-    - master
-    - release/*
-  commitMessagePattern: '^(feat|fix|docs|refactor|test|chore)(\([a-z0-9-]+\))?: .+'
-  quickChecks:
-    '*': []
-publication:
-  remote: origin
-  provider: github
-  githubApiBaseUrl: https://api.github.com
-  mrTitleTemplate: '{{changeId}}'
-  mrBodyTemplate: '{{verificationReport}}'
+kind: RepoctopusProject
+project:
+  id: example-project
+repositories:
+  - id: app
+    path: ../app
+profiles:
+  - id: verify
+    nodes:
+      - id: app-build
+        type: command
+        repository: app
+        executable: npm
+        args: [run, build]
+evidence:
+  retention:
+    maxAgeDays: 30
+    minRecentSuccesses: 1
+delivery:
+  checkpoint:
+    automatic: true
+    protectedBranches:
+      - main
+      - master
+      - release/*
+    commitMessagePattern: '^(feat|fix|docs|refactor|test|chore)(\([a-z0-9-]+\))?: .+'
+    quickChecks:
+      '*': []
+  publication:
+    remote: origin
+    provider: github
+    githubApiBaseUrl: https://api.github.com
+    mrTitleTemplate: '{{changeId}}'
+    mrBodyTemplate: '{{verificationReport}}'

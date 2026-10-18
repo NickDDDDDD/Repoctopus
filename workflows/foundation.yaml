@@ -25,6 +25,7 @@ steps:
       type: checkpoint
       ref: work-verified
       summary: 记录验证结果
+      evidenceProfile: verify
     onSuccess: null
     onFailure: execute
 guardrails:

@@ -12,9 +12,15 @@ import { RepoctopusRuntime } from '../../domains/runtime/runtime.js';
 import type { RunStatusView } from '../../domains/runtime/types.js';
 import { parseWorkflowPackage } from '../../domains/workflow-contract/package.js';
 import { probeProject } from '../../platform/git/probe.js';
+import { detectProjectConfiguration } from '../../platform/project-configuration/detect.js';
+import {
+  doctorManagedChromium,
+  installManagedChromium,
+} from '../../platform/browser/managed-browser.js';
 import { GitDeliveryAdapter } from '../../platform/git/delivery.js';
 import { loadDeliveryPolicy } from '../../platform/delivery/config.js';
 import { FileDeliveryStore } from '../../platform/delivery/file-delivery-store.js';
+import { FileDeliveryEvidence } from '../../platform/delivery/file-delivery-evidence.js';
 import {
   EnvironmentCredentialProvider,
   GitHubMergeRequestAdapter,
@@ -24,12 +30,26 @@ import {
   deliveryTelemetryFromEnvironment,
   telemetryFromEnvironment,
 } from '../../platform/telemetry/opentelemetry/exporter.js';
+import { evidenceTelemetryFromEnvironment } from '../../platform/telemetry/opentelemetry/evidence-exporter.js';
 import { checkProvenance } from '../../platform/provenance/check.js';
 import { execute } from '../../platform/process/execute.js';
+import {
+  applyProjectConfigurationDecision,
+  loadPendingProjectConfigurationDecision,
+  prepareProjectConfigurationDecision,
+} from '../../platform/project-configuration/onboarding.js';
 import { FileWorkflowSource } from '../../platform/workflow/file-source.js';
-import { booleanFlag, parseArguments, stringFlag, type ParsedArguments } from './arguments.js';
+import {
+  booleanFlag,
+  integerFlag,
+  parseArguments,
+  stringFlag,
+  type ParsedArguments,
+} from './arguments.js';
 import { failureEnvelope, successEnvelope, type CliEnvelope } from './envelope.js';
+import { EvidenceRuntime } from '../evidence-runtime.js';
 import { reviewHumanDecision } from './human-decision.js';
+import { reviewProjectConfigurationDecision } from './project-configuration-decision.js';
 
 const DIST_DIR = path.dirname(fileURLToPath(import.meta.url));
 
@@ -40,8 +60,9 @@ function defaultWorkflowPath(): string {
 function nextActions(status: RunStatusView): string[] {
   if (status.state.status === 'running') return ['repoctopus run next --run <run-id>'];
   if (status.state.status === 'waiting') {
+    const evidence = status.nextAction?.evidenceProfile ? ' --evidence-attempt <attempt-id>' : '';
     return [
-      'repoctopus run record --run <run-id> --action <action-id> --status succeeded --summary <text>',
+      `repoctopus run record --run <run-id> --action <action-id> --status succeeded --summary <text>${evidence}`,
     ];
   }
   return [];
@@ -54,6 +75,7 @@ function runtimeFor(workspace: string): RepoctopusRuntime {
     undefined,
     undefined,
     new FileWorkflowSource(),
+    new EvidenceRuntime(workspace, evidenceTelemetryFromEnvironment(process.env)),
   );
 }
 
@@ -65,9 +87,19 @@ function deliveryServiceFor(workspace: string, policy?: DeliveryPolicy): Deliver
       new EnvironmentCredentialProvider(process.env),
       policy?.publication.githubApiBaseUrl,
     ),
+    new FileDeliveryEvidence(workspace),
     undefined,
     deliveryTelemetryFromEnvironment(process.env),
   );
+}
+
+function evidenceBundleIds(parsed: ParsedArguments): string[] {
+  const value = stringFlag(parsed, 'evidence-bundles', { required: true })!;
+  const ids = value.split(',').map((item) => item.trim());
+  if (ids.length === 0 || ids.some((item) => item.length === 0)) {
+    throw new Error('--evidence-bundles must contain comma-separated Bundle IDs');
+  }
+  return [...new Set(ids)].sort();
 }
 
 async function deliveryInputs(parsed: ParsedArguments): Promise<{
@@ -151,6 +183,7 @@ async function deliveryPrepare(parsed: ParsedArguments): Promise<CliEnvelope<unk
     intent: input.intent,
     policy: input.policy,
     reportContents: report,
+    evidenceBundleIds: evidenceBundleIds(parsed),
   });
   return successEnvelope({
     command: 'delivery prepare',
@@ -223,6 +256,7 @@ async function deliveryPublish(parsed: ParsedArguments): Promise<CliEnvelope<unk
     intent: input.intent,
     policy: input.policy,
     reportContents: report,
+    evidenceBundleIds: evidenceBundleIds(parsed),
   });
   return successEnvelope({
     command: 'delivery publish',
@@ -252,6 +286,131 @@ async function projectProbe(parsed: ParsedArguments): Promise<CliEnvelope<unknow
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
   const snapshot = await probeProject({ root, workspaceRoot: workspace });
   return successEnvelope({ command: 'project probe', result: snapshot });
+}
+
+async function projectDetect(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const scopeRoot = path.resolve(stringFlag(parsed, 'root', { required: true })!);
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const result = await detectProjectConfiguration({ workspace, scopeRoot });
+  return successEnvelope({
+    command: 'project detect',
+    result,
+    nextActions: [
+      'review unresolved items and let an Agent prepare a complete candidate configuration',
+      'submit the completed candidate through a trusted human decision channel',
+    ],
+  });
+}
+
+async function projectPrepare(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const draftFile = path.resolve(stringFlag(parsed, 'draft', { required: true })!);
+  const candidateFile = path.resolve(stringFlag(parsed, 'candidate', { required: true })!);
+  const completedCandidate = parse(await readFile(candidateFile, 'utf8')) as unknown;
+  const result = await prepareProjectConfigurationDecision({
+    workspace,
+    draftFile,
+    completedCandidate,
+  });
+  return successEnvelope({
+    command: 'project prepare',
+    result,
+    nextActions: [`repoctopus project review --workspace ${workspace} --request ${result.file}`],
+  });
+}
+
+async function projectReview(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  if (!process.stdin.isTTY || !process.stdout.isTTY) {
+    throw new Error(
+      'Project configuration approval requires an interactive terminal or a trusted IDE Adapter',
+    );
+  }
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const decisionFile = path.resolve(stringFlag(parsed, 'request', { required: true })!);
+  const request = await loadPendingProjectConfigurationDecision(workspace, decisionFile);
+  const selected = await reviewProjectConfigurationDecision({
+    request,
+    input: process.stdin,
+    output: process.stdout,
+  });
+  const result = await applyProjectConfigurationDecision({
+    workspace,
+    decisionFile,
+    response: {
+      apiVersion: 'repoctopus/v1alpha1',
+      kind: 'HumanDecisionResponse',
+      requestId: request.requestId,
+      snapshotDigest: request.snapshotDigest,
+      decision: selected.decision,
+      ...(selected.comment ? { comment: selected.comment } : {}),
+    },
+    actor: {
+      actorId: userInfo().username,
+      source: 'cli',
+      authenticated: true,
+    },
+    timestamp: new Date().toISOString(),
+  });
+  return successEnvelope({ command: 'project review', result });
+}
+
+function evidenceRuntime(parsed: ParsedArguments): EvidenceRuntime {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  return new EvidenceRuntime(workspace, evidenceTelemetryFromEnvironment(process.env));
+}
+
+async function evidencePlan(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const profile = stringFlag(parsed, 'profile', { fallback: 'verify' })!;
+  const result = await evidenceRuntime(parsed).plan(profile);
+  return successEnvelope({ command: 'evidence plan', result });
+}
+
+async function evidenceRun(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const profile = stringFlag(parsed, 'profile', { fallback: 'verify' })!;
+  const requestedAttemptId = stringFlag(parsed, 'attempt');
+  const workflowRunId = stringFlag(parsed, 'workflow-run') ?? null;
+  const result = await evidenceRuntime(parsed).run(profile, requestedAttemptId, workflowRunId);
+  return successEnvelope({
+    command: 'evidence run',
+    runId: result.attempt.attemptId,
+    result,
+    nextActions: [
+      `repoctopus evidence inspect --workspace ${path.resolve(
+        stringFlag(parsed, 'workspace', { fallback: process.cwd() })!,
+      )} --attempt ${result.attempt.attemptId}`,
+    ],
+  });
+}
+
+async function evidenceStatus(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const attemptId = stringFlag(parsed, 'attempt', { required: true })!;
+  const result = await evidenceRuntime(parsed).status(attemptId);
+  return successEnvelope({ command: 'evidence status', runId: attemptId, result });
+}
+
+async function evidenceResume(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const attemptId = stringFlag(parsed, 'attempt', { required: true })!;
+  const result = await evidenceRuntime(parsed).resume(attemptId);
+  return successEnvelope({ command: 'evidence resume', runId: attemptId, result });
+}
+
+async function evidenceInspect(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const attemptId = stringFlag(parsed, 'attempt', { required: true })!;
+  const result = await evidenceRuntime(parsed).inspect(attemptId);
+  return successEnvelope({ command: 'evidence inspect', runId: attemptId, result });
+}
+
+async function evidenceClean(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const maxAgeDays = integerFlag(parsed, 'max-age-days', { fallback: 30, minimum: 0 })!;
+  const maxBytes = integerFlag(parsed, 'max-bytes', {
+    fallback: 1024 * 1024 * 1024,
+    minimum: 0,
+  })!;
+  const result = await evidenceRuntime(parsed).clean({
+    maxAgeMs: maxAgeDays * 24 * 60 * 60 * 1000,
+    maxBytes,
+  });
+  return successEnvelope({ command: 'evidence clean', result });
 }
 
 async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
@@ -315,12 +474,14 @@ async function runRecord(parsed: ParsedArguments): Promise<CliEnvelope<unknown>>
     throw new Error('--status must be succeeded or failed');
   }
   const requestedEventId = stringFlag(parsed, 'event-id');
+  const evidenceAttemptId = stringFlag(parsed, 'evidence-attempt');
   const result = await runtimeFor(workspace).record({
     runId,
     actionId: stringFlag(parsed, 'action', { required: true })!,
     status,
     summary: stringFlag(parsed, 'summary', { required: true })!,
     ...(requestedEventId ? { eventId: requestedEventId } : {}),
+    ...(evidenceAttemptId ? { evidenceAttemptId } : {}),
   });
   return successEnvelope({
     command: 'run record',
@@ -349,6 +510,7 @@ async function runResume(parsed: ParsedArguments): Promise<CliEnvelope<unknown>>
     undefined,
     undefined,
     new FileWorkflowSource(),
+    new EvidenceRuntime(workspace, evidenceTelemetryFromEnvironment(process.env)),
   ).resume({ runId, currentProjectSnapshot });
   return successEnvelope({
     command: 'run resume',
@@ -398,9 +560,37 @@ async function doctor(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   });
 }
 
+async function browserDoctor(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const result = await doctorManagedChromium(workspace);
+  return successEnvelope({
+    command: 'browser doctor',
+    result,
+    nextActions:
+      result.status === 'ready'
+        ? []
+        : [`${result.installCommand.executable} ${result.installCommand.args.join(' ')}`],
+  });
+}
+
+async function browserInstall(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const result = await installManagedChromium(workspace);
+  return successEnvelope({ command: 'browser install', result });
+}
+
 async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const command = parsed.command.join(' ');
   if (command === 'project probe') return projectProbe(parsed);
+  if (command === 'project detect') return projectDetect(parsed);
+  if (command === 'project prepare') return projectPrepare(parsed);
+  if (command === 'project review') return projectReview(parsed);
+  if (command === 'evidence plan') return evidencePlan(parsed);
+  if (command === 'evidence run') return evidenceRun(parsed);
+  if (command === 'evidence status') return evidenceStatus(parsed);
+  if (command === 'evidence resume') return evidenceResume(parsed);
+  if (command === 'evidence inspect') return evidenceInspect(parsed);
+  if (command === 'evidence clean') return evidenceClean(parsed);
   if (command === 'run start') return runStart(parsed);
   if (command === 'run status') return runStatus(parsed);
   if (command === 'run next') return runNext(parsed);
@@ -414,8 +604,10 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
     return deliveryPublish(parsed);
   if (command === 'delivery refresh') return deliveryRefresh(parsed);
   if (command === 'doctor') return doctor(parsed);
+  if (command === 'browser doctor') return browserDoctor(parsed);
+  if (command === 'browser install') return browserInstall(parsed);
   throw new Error(
-    'Usage: repoctopus project probe | run <start|status|next|record|resume> | delivery <checkpoint|prepare|status|publish|resume|refresh> | approval review | doctor',
+    'Usage: repoctopus project <probe|detect|prepare|review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|record|resume> | delivery <checkpoint|prepare|status|publish|resume|refresh> | approval review | browser <doctor|install> | doctor',
   );
 }
 

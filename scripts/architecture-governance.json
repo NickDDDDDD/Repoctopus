@@ -1,0 +1,262 @@
+{
+  "schemaVersion": 1,
+  "reviewedSourceRoots": ["app", "domains", "platform"],
+  "capabilities": [
+    {
+      "id": "engine-adopted",
+      "disposition": "source-modified",
+      "targets": [
+        "domains/engine/evals.ts",
+        "domains/engine/guardrails.ts",
+        "domains/engine/loop.ts",
+        "domains/engine/resolver.ts",
+        "domains/workflow-contract/hash.ts"
+      ],
+      "upstream": ["domains/engine", "domains/workflow-contract/hash.ts"],
+      "rationale": "采用 Comet 的确定性 Engine 算法并对接 Repoctopus Workflow Contract。"
+    },
+    {
+      "id": "runtime-core",
+      "disposition": "behavior-reimplemented",
+      "targets": [
+        "domains/engine/types.ts",
+        "domains/trajectory/**",
+        "domains/workflow-contract/canonical.ts",
+        "domains/workflow-contract/package.ts",
+        "domains/workflow-contract/types.ts",
+        "domains/workflow-contract/validation.ts",
+        "platform/process/execute.ts",
+        "platform/runtime/paths.ts",
+        "platform/workflow/**"
+      ],
+      "upstream": ["domains/engine/storage-run.ts", "domains/engine/storage-layout.ts"],
+      "rationale": "保留 Run、Trajectory、Checkpoint 和恢复语义，避免引入 Comet Skill 与产品目录布局。"
+    },
+    {
+      "id": "protected-runtime-transitions",
+      "disposition": "source-modified",
+      "targets": [
+        "domains/runtime/**",
+        "platform/runtime/file-runtime-store.ts",
+        "platform/runtime/recoverable-file-lock.ts",
+        "platform/runtime/recoverable-file-transition.ts"
+      ],
+      "upstream": [
+        "domains/comet-classic/classic-command-checks.ts",
+        "domains/comet-classic/classic-guard.ts",
+        "domains/comet-classic/classic-store.ts",
+        "platform/fs/plugin-store.ts"
+      ],
+      "rationale": "整体采用 Comet 的 Runtime Evidence 复核、受保护状态转换、进程身份锁和 intent Journal 重放不变量；对接 Repoctopus 的多仓 Bundle 与 Run State。"
+    },
+    {
+      "id": "process-safety",
+      "disposition": "source-modified",
+      "targets": [
+        "platform/process/external-command.ts",
+        "platform/process/process-identity.ts",
+        "platform/process/spawn-command.ts",
+        "platform/process/terminate-process-tree.ts",
+        "platform/process/windows-process-identity.ts"
+      ],
+      "upstream": ["platform/process"],
+      "rationale": "采用 Comet 已验证的结构化进程、Windows shim、进程身份和进程树终止机制。"
+    },
+    {
+      "id": "filesystem-safety",
+      "disposition": "source-modified",
+      "targets": ["platform/filesystem/**", "platform/runtime/resource-lease.ts"],
+      "upstream": [
+        "platform/fs/file-identity.ts",
+        "platform/fs/race-safe-read.ts",
+        "platform/fs/transient-retry.ts",
+        "domains/comet-native/native-atomic-file.ts",
+        "domains/comet-native/native-lock.ts"
+      ],
+      "rationale": "采用文件身份、竞态安全读取、Windows 短暂失败重试和原子写入；Lease 保留 Repoctopus resource key 与进程恢复协议。"
+    },
+    {
+      "id": "project-model",
+      "disposition": "repoctopus-native",
+      "targets": ["domains/project/**", "platform/git/probe.ts"],
+      "upstream": ["platform/project-registry.ts"],
+      "rationale": "Repoctopus 以同级多仓为项目边界，项目发现快照只提供启发式候选与恢复核对。"
+    },
+    {
+      "id": "project-onboarding",
+      "disposition": "repoctopus-native",
+      "targets": ["domains/project-configuration/**", "platform/project-configuration/**"],
+      "upstream": [],
+      "rationale": "确定性扫描、Agent 补全和用户确认是 Repoctopus 的多仓接入能力。"
+    },
+    {
+      "id": "delivery-governance",
+      "disposition": "repoctopus-native",
+      "targets": [
+        "domains/delivery/**",
+        "platform/delivery/**",
+        "platform/git/delivery.ts",
+        "platform/github/**"
+      ],
+      "upstream": ["domains/comet-native/native-pull-request-finish.ts"],
+      "rationale": "交付聚合只负责多仓快照、Human Decision、push/MR 恢复和合入事实，不继承旧工作流 Hook 与阶段状态机。"
+    },
+    {
+      "id": "evidence-model",
+      "disposition": "behavior-reimplemented",
+      "targets": ["app/evidence-runtime.ts", "domains/evidence/**", "platform/evidence/**"],
+      "upstream": [
+        "domains/comet-native/native-evidence-storage.ts",
+        "domains/comet-native/native-verification-evidence.ts",
+        "domains/comet-native/native-verification-receipt.ts",
+        "domains/comet-native/native-snapshot.ts",
+        "domains/comet-native/native-evidence-retention.ts",
+        "domains/comet-native/native-checkpoint-journal.ts"
+      ],
+      "rationale": "按跨仓 Attempt、Receipt、Artifact、Bundle 重建领域模型；仓库选择与 Fence 算法采用 Comet 行为边界。"
+    },
+    {
+      "id": "repository-fingerprint",
+      "disposition": "source-modified",
+      "targets": ["platform/git/evidence-fingerprint.ts"],
+      "upstream": ["domains/comet-native/native-snapshot.ts"],
+      "rationale": "抽取 Comet 的选择前后 Fence、竞态安全内容摘要和输入漂移拒绝规则，并在上层组合多个仓库。"
+    },
+    {
+      "id": "feedback-adapters",
+      "disposition": "repoctopus-native",
+      "targets": ["domains/feedback/**", "platform/browser/**", "platform/feedback/**"],
+      "upstream": [],
+      "rationale": "Managed/Attached 服务、Browser Journey、视觉反馈和资料冲突决定是 Repoctopus 新能力。"
+    },
+    {
+      "id": "telemetry",
+      "disposition": "repoctopus-native",
+      "targets": ["platform/telemetry/**"],
+      "upstream": ["platform/process/runtime-metrics.ts"],
+      "rationale": "使用 OTel 允许列表导出稳定 Evidence 与交付身份，不复用 Comet 的进程内指标模型。"
+    },
+    {
+      "id": "cli",
+      "disposition": "repoctopus-native",
+      "targets": ["app/cli/**"],
+      "upstream": [],
+      "rationale": "公共 CLI 只组合领域服务并输出版本化 Repoctopus envelope。"
+    },
+    {
+      "id": "provenance",
+      "disposition": "repoctopus-native",
+      "targets": ["platform/provenance/**"],
+      "upstream": [],
+      "rationale": "机器检查固定上游、目标摘要和公共品牌边界。"
+    }
+  ],
+  "legacyWorkflow": {
+    "scanTargets": [
+      "app",
+      "bin",
+      "domains",
+      "platform",
+      "workflows",
+      "deploy",
+      "README.md",
+      "docs"
+    ],
+    "excludedTargets": ["docs/architecture-review.md"],
+    "forbiddenPaths": [
+      ".codex",
+      ".opencode",
+      ".codebuddy",
+      ".codearts",
+      ".context",
+      ".rules",
+      "skills/oh-my-workflow",
+      "scripts/workflow-hook.mjs",
+      "config/workflow-profile.yaml",
+      "workspace/client-adapters.json",
+      "workspace.yaml",
+      "project.local.yaml"
+    ],
+    "forbiddenPatterns": [
+      "agents-workspace",
+      "agent-lab",
+      "oh-my-workflow",
+      "team-delivery",
+      "workspace\\.yaml",
+      "project\\.local\\.yaml",
+      "APPROVE_DELIVERY",
+      "批准报告",
+      "批准动作",
+      "ACTION_CONFIRMATION_REQUIRED",
+      "AWAITING_CLOSE_APPROVAL",
+      "CASE:\\b(?:PLANNING|IMPLEMENTING|AWAITING_APPROVAL|DELIVERING|COMPLETED)\\b"
+    ]
+  },
+  "stateTransitionModels": [
+    {
+      "id": "runtime-transition",
+      "files": [
+        "domains/trajectory/types.ts",
+        "platform/runtime/file-runtime-store.ts",
+        "platform/runtime/paths.ts",
+        "platform/runtime/recoverable-file-lock.ts",
+        "platform/runtime/recoverable-file-transition.ts"
+      ],
+      "status": "canonical"
+    },
+    {
+      "id": "delivery-transition",
+      "files": [
+        "platform/delivery/file-delivery-store.ts",
+        "platform/runtime/recoverable-file-transition.ts"
+      ],
+      "status": "shared-coordinator"
+    },
+    {
+      "id": "evidence-fact-journal",
+      "files": ["domains/evidence/ports.ts", "platform/evidence/file-evidence-journal.ts"],
+      "status": "separate-append-only-facts"
+    }
+  ],
+  "protectedEvidenceFlow": {
+    "requiredBindings": [
+      {
+        "file": "workflows/foundation.yaml",
+        "patterns": ["evidenceProfile: verify"]
+      },
+      {
+        "file": "app/evidence-runtime.ts",
+        "patterns": [
+          "implements EvidenceGatePort",
+          "current.digest !== status.bundle.inputFingerprint",
+          "approvedEvidenceBundleIds()"
+        ]
+      },
+      {
+        "file": "domains/runtime/runtime.ts",
+        "patterns": ["requireSatisfiedEvidenceGate", "evidenceAttemptId"]
+      },
+      {
+        "file": "domains/runtime/evidence-guard.ts",
+        "patterns": [
+          "projection.workflowRunId !== options.workflowRunId",
+          "projection.status !== 'satisfied'"
+        ]
+      },
+      {
+        "file": "app/cli/main.ts",
+        "patterns": ["evidence-attempt", "evidence-bundles"]
+      },
+      {
+        "file": "domains/delivery/snapshot.ts",
+        "patterns": ["evidenceBundleIds"]
+      }
+    ],
+    "restrictedCalls": [
+      {
+        "pattern": "recordOutcome\\s*\\(",
+        "allowed": ["domains/engine/loop.ts", "domains/runtime/runtime.ts"]
+      }
+    ]
+  }
+}

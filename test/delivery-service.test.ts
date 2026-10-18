@@ -16,6 +16,8 @@ import { FileDeliveryStore } from '../platform/delivery/file-delivery-store.js';
 import { removeTemporaryDirectory, temporaryDirectory } from './helpers/fixtures.js';
 
 const cleanup: string[] = [];
+const evidenceBundleIds = ['bundle-verified'];
+const satisfiedEvidence = { assertSatisfied: () => Promise.resolve() };
 afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
 
 const policy: DeliveryPolicy = {
@@ -154,12 +156,19 @@ describe('delivery service', () => {
       new FileDeliveryStore(workspace),
       git,
       mergeRequests,
+      satisfiedEvidence,
       () => new Date(Date.UTC(2026, 0, 1) + tick++ * 1000),
     );
-    const waiting = await service.prepare({ project, intent, policy, reportContents: 'verified' });
+    const waiting = await service.prepare({
+      project,
+      intent,
+      policy,
+      reportContents: 'verified',
+      evidenceBundleIds,
+    });
     expect(waiting.status).toBe('awaiting_approval');
     await expect(
-      service.publish({ project, intent, policy, reportContents: 'verified' }),
+      service.publish({ project, intent, policy, reportContents: 'verified', evidenceBundleIds }),
     ).rejects.toThrow(/effective approval/i);
     const approved = await service.decide(
       intent.changeId,
@@ -174,11 +183,17 @@ describe('delivery service', () => {
     );
     expect(approved.status).toBe('approved');
     await expect(
-      service.publish({ project, intent, policy, reportContents: 'verified' }),
+      service.publish({ project, intent, policy, reportContents: 'verified', evidenceBundleIds }),
     ).rejects.toThrow('temporary');
     expect((await service.status(intent.changeId)).status).toBe('partially_published');
     expect(git.pushCalls).toBe(1);
-    const review = await service.publish({ project, intent, policy, reportContents: 'verified' });
+    const review = await service.publish({
+      project,
+      intent,
+      policy,
+      reportContents: 'verified',
+      evidenceBundleIds,
+    });
     expect(review.status).toBe('in_review');
     expect(git.pushCalls).toBe(1);
     expect(mergeRequests.createCalls).toBe(1);
@@ -194,9 +209,16 @@ describe('delivery service', () => {
       new FileDeliveryStore(workspace),
       new FakeGit(),
       new FakeMergeRequests(),
+      satisfiedEvidence,
       () => new Date('2026-01-01T00:00:00.000Z'),
     );
-    const waiting = await service.prepare({ project, intent, policy, reportContents: 'verified' });
+    const waiting = await service.prepare({
+      project,
+      intent,
+      policy,
+      reportContents: 'verified',
+      evidenceBundleIds,
+    });
     await service.decide(
       intent.changeId,
       {
@@ -209,7 +231,7 @@ describe('delivery service', () => {
       { subject: 'human', provider: 'test-ui', sessionId: 'session-1' },
     );
     await expect(
-      service.publish({ project, intent, policy, reportContents: 'changed' }),
+      service.publish({ project, intent, policy, reportContents: 'changed', evidenceBundleIds }),
     ).rejects.toThrow(/drifted/i);
     expect((await service.status(intent.changeId)).status).toBe('verification_required');
   });
@@ -225,9 +247,16 @@ describe('delivery service', () => {
       new FileDeliveryStore(workspace),
       git,
       new FakeMergeRequests(),
+      satisfiedEvidence,
       () => new Date('2026-01-01T00:00:00.000Z'),
     );
-    const waiting = await service.prepare({ project, intent, policy, reportContents: 'verified' });
+    const waiting = await service.prepare({
+      project,
+      intent,
+      policy,
+      reportContents: 'verified',
+      evidenceBundleIds,
+    });
     await service.decide(
       intent.changeId,
       {
@@ -241,7 +270,7 @@ describe('delivery service', () => {
     );
     dirty = true;
     await expect(
-      service.publish({ project, intent, policy, reportContents: 'verified' }),
+      service.publish({ project, intent, policy, reportContents: 'verified', evidenceBundleIds }),
     ).rejects.toThrow(/clean/i);
     expect(await service.status(intent.changeId)).toMatchObject({
       status: 'verification_required',
@@ -336,6 +365,7 @@ describe('delivery service', () => {
       new FileDeliveryStore(workspace),
       git,
       mergeRequests,
+      satisfiedEvidence,
       () => new Date('2026-01-01T00:00:00.000Z'),
     );
     const waiting = await service.prepare({
@@ -343,6 +373,7 @@ describe('delivery service', () => {
       intent: multiIntent,
       policy,
       reportContents: 'verified',
+      evidenceBundleIds,
     });
     await service.decide(
       multiIntent.changeId,
@@ -360,6 +391,7 @@ describe('delivery service', () => {
       intent: multiIntent,
       policy,
       reportContents: 'verified',
+      evidenceBundleIds,
     });
     expect(calls).toEqual(['push:repo-a', 'mr:repo-a', 'push:repo-b', 'mr:repo-b']);
   });
@@ -379,10 +411,11 @@ describe('delivery store crash recovery', () => {
       }),
       git,
       merge,
+      satisfiedEvidence,
       () => new Date('2026-01-01T00:00:00.000Z'),
     );
     await expect(
-      crashing.prepare({ project, intent, policy, reportContents: 'verified' }),
+      crashing.prepare({ project, intent, policy, reportContents: 'verified', evidenceBundleIds }),
     ).rejects.toThrow('crash');
     const recovered = new FileDeliveryStore(workspace);
     expect((await recovered.load(intent.changeId))?.status).toBe('awaiting_approval');

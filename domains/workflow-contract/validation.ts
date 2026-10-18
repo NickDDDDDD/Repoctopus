@@ -59,6 +59,13 @@ export function validateWorkflowDefinition(
         message: `Action summary is required for ${step.id}`,
       });
     }
+    if (step.action?.evidenceProfile !== undefined && !nonEmpty(step.action.evidenceProfile)) {
+      findings.push({
+        code: 'invalid-evidence-profile',
+        stepId: step.id,
+        message: `Evidence profile must be non-empty for ${step.id}`,
+      });
+    }
   }
 
   if (!byId.has(definition.entry)) {
