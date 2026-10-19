@@ -1,6 +1,7 @@
 # implementation-evidence Specification
 
 ## Purpose
+
 定义 Repoctopus 如何把命令、服务、浏览器和视觉反馈保存为可验证、可失效、可恢复且受隐私约束的实施证据，并据此计算 Verify 门禁结果。
 
 ## Requirements

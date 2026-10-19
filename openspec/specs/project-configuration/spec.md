@@ -1,6 +1,7 @@
 # project-configuration Specification
 
 ## Purpose
+
 定义 Repoctopus 如何发现、确认和加载可移植的团队项目配置，同时隔离本机路径差异并防止本地覆盖削弱共享验证策略。
 
 ## Requirements

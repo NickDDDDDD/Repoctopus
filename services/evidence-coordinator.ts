@@ -2,6 +2,8 @@ import { randomUUID } from 'node:crypto';
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
+import { Service, type Context } from '@deepseek-ai/cordis';
+
 import {
   createEvidenceFingerprint,
   type EvidenceFingerprint,
@@ -18,11 +20,8 @@ import type {
   EvidenceBundle,
   EvidenceGateProjection,
 } from '../domains/evidence/types.js';
-import type { EvidenceGatePort } from '../domains/runtime/types.js';
 import { compileEvidenceProfile, type EvidenceExecutionPlan } from '../domains/feedback/profile.js';
-import type { VisualInspectionAdapter } from '../domains/feedback/visual.js';
 import type { RequirementsConflictDecisionRequest } from '../domains/feedback/visual.js';
-import { LocalBrowserAdapter } from '../platform/browser/browser-adapter.js';
 import { atomicWriteJson } from '../platform/filesystem/atomic-write.js';
 import { FileArtifactStore } from '../platform/evidence/file-artifact-store.js';
 import { FileDeliveryStore } from '../platform/delivery/file-delivery-store.js';
@@ -32,14 +31,12 @@ import {
   FileEvidenceRetention,
   type EvidenceCleanupResult,
 } from '../platform/evidence/retention.js';
-import { LocalCommandAdapter } from '../platform/feedback/command-adapter.js';
-import { LocalServiceAdapter } from '../platform/feedback/service-adapter.js';
-import { FileExchangeVisualInspectionAdapter } from '../platform/feedback/file-exchange-visual-adapter.js';
 import { collectRepositoryFingerprint } from '../platform/git/evidence-fingerprint.js';
 import { loadProjectConfig } from '../platform/project-configuration/file-config.js';
 import { FileResourceLeaseManager } from '../platform/runtime/resource-lease.js';
-import { FileRuntimeStore } from '../platform/runtime/file-runtime-store.js';
 import { FileEvidenceTelemetryOutbox } from '../platform/telemetry/evidence-outbox.js';
+import { evidenceTelemetryFromEnvironment } from '../platform/telemetry/opentelemetry/evidence-exporter.js';
+import { bindOperationOwnership, type OperationOwnership } from './operation-ownership.js';
 
 interface WorkflowEvidenceBinding {
   workflowRunId: string;
@@ -108,18 +105,29 @@ async function optional<T>(operation: () => Promise<T>): Promise<T | null> {
   }
 }
 
-export class EvidenceRuntime implements EvidenceGatePort {
+export interface EvidenceCoordinatorConfig {
+  workspaceRoot: string;
+  environment?: NodeJS.ProcessEnv;
+  telemetry?: EvidenceTelemetryPort;
+}
+
+export class EvidenceCoordinator extends Service {
+  static inject = ['compositionIdentity', 'evidenceAdapters', 'runStore'];
+
   private readonly store: FileEvidenceStore;
   private readonly journal: FileEvidenceJournal;
   private readonly leases: FileResourceLeaseManager;
   private readonly telemetryOutbox: FileEvidenceTelemetryOutbox;
+  private readonly workspace: string;
+  private readonly telemetry: EvidenceTelemetryPort;
+  private readonly operations: OperationOwnership;
 
-  constructor(
-    private readonly workspace: string,
-    private readonly telemetry: EvidenceTelemetryPort = { async export() {} },
-    private readonly visual?: VisualInspectionAdapter,
-  ) {
-    this.workspace = path.resolve(workspace);
+  constructor(context: Context, config: EvidenceCoordinatorConfig) {
+    super(context, 'evidenceCoordinator');
+    this.operations = bindOperationOwnership(context, 'evidenceCoordinator');
+    this.workspace = path.resolve(config.workspaceRoot);
+    this.telemetry =
+      config.telemetry ?? evidenceTelemetryFromEnvironment(config.environment ?? process.env);
     this.store = new FileEvidenceStore(this.workspace);
     this.journal = new FileEvidenceJournal(this.workspace);
     this.leases = new FileResourceLeaseManager(this.workspace);
@@ -136,7 +144,7 @@ export class EvidenceRuntime implements EvidenceGatePort {
 
   private async fingerprint(profileId: string): Promise<EvidenceFingerprint> {
     const config = await loadProjectConfig(this.workspace);
-    const hasVisualAdapter = this.visual !== undefined || config.local?.visual !== undefined;
+    const hasVisualAdapter = this.ctx.evidenceAdapters.has('visual') && !!config.local?.visual;
     const repositories = await Promise.all(
       config.repositories.map((repository) =>
         collectRepositoryFingerprint({
@@ -167,11 +175,16 @@ export class EvidenceRuntime implements EvidenceGatePort {
     profileId: string,
   ): Promise<WorkflowEvidenceBinding | null> {
     if (workflowRunId === null) return null;
-    const runtimeStore = new FileRuntimeStore(this.workspace);
     const [state, workflow] = await Promise.all([
-      runtimeStore.loadRun(workflowRunId),
-      runtimeStore.loadWorkflow(workflowRunId),
+      this.ctx.runStore.loadRun(workflowRunId),
+      this.ctx.runStore.loadWorkflow(workflowRunId),
     ]);
+    const compositionDigest = this.ctx.compositionIdentity.current().compositionDigest;
+    if (state.composition.compositionDigest !== compositionDigest) {
+      throw new Error(
+        `Workflow run ${workflowRunId} requires composition ${state.composition.compositionDigest}; current composition ${compositionDigest} is migration_required`,
+      );
+    }
     if (
       state.status !== 'waiting' ||
       state.pendingActionId === null ||
@@ -210,79 +223,76 @@ export class EvidenceRuntime implements EvidenceGatePort {
     profileId: string,
     attemptId: string = randomUUID(),
     workflowRunId: string | null = null,
+    signal?: AbortSignal,
   ): Promise<
     EvidenceRunResult & { gate: EvidenceGateProjection; telemetry: EvidenceTelemetryStatus }
   > {
-    return this.leases.withLease(`evidence-profile:${profileId}`, async () => {
-      const [binding, planned] = await Promise.all([
-        this.workflowBinding(workflowRunId, profileId),
-        this.plan(profileId),
-      ]);
-      const { plan, fingerprint } = planned;
-      const config = await loadProjectConfig(this.workspace);
-      const visual =
-        this.visual ??
-        (config.local?.visual
-          ? new FileExchangeVisualInspectionAdapter(this.workspace, config.local.visual)
-          : undefined);
-      const artifacts = new FileArtifactStore(this.workspace);
-      const context: EvidenceRunContext = {
-        schemaVersion: 1,
-        kind: 'EvidenceRunContext',
-        attemptId,
-        profileId,
-        workflowBinding: binding,
-        status: 'running',
-        plan,
-        fingerprint,
-        bundleId: null,
-        decisionRequests: [],
-        updatedAt: new Date().toISOString(),
-      };
-      await atomicWriteJson(this.contextFile(attemptId), context);
-      const result = await new EvidenceService(
-        artifacts,
-        this.store,
-        new LocalCommandAdapter(),
-        undefined,
-        this.journal,
-        {
-          services: new LocalServiceAdapter(this.workspace),
-          browser: new LocalBrowserAdapter(this.workspace, artifacts, {
-            ...(config.local?.browser?.executablePath
-              ? { configuredExecutablePath: config.local.browser.executablePath }
+    return this.operations.run(
+      { cancellable: true, signal },
+      ({ signal: operationSignal, markDurableBoundary }) =>
+        this.leases.withLease(`evidence-profile:${profileId}`, async () => {
+          if (operationSignal.aborted) throw operationSignal.reason;
+          const [binding, planned] = await Promise.all([
+            this.workflowBinding(workflowRunId, profileId),
+            this.plan(profileId),
+          ]);
+          const { plan, fingerprint } = planned;
+          const config = await loadProjectConfig(this.workspace);
+          const artifacts = new FileArtifactStore(this.workspace);
+          const adapters = this.ctx.evidenceAdapters.create(config, artifacts);
+          const context: EvidenceRunContext = {
+            schemaVersion: 1,
+            kind: 'EvidenceRunContext',
+            attemptId,
+            profileId,
+            workflowBinding: binding,
+            status: 'running',
+            plan,
+            fingerprint,
+            bundleId: null,
+            decisionRequests: [],
+            updatedAt: new Date().toISOString(),
+          };
+          await atomicWriteJson(this.contextFile(attemptId), context);
+          markDurableBoundary();
+          const result = await new EvidenceService(
+            artifacts,
+            this.store,
+            adapters.command,
+            undefined,
+            this.journal,
+            adapters,
+          ).run(plan, fingerprint.digest, {
+            compositionDigest: this.ctx.compositionIdentity.current().compositionDigest,
+            attemptId,
+            signal: operationSignal,
+            ...(config.local?.resources?.maxParallel
+              ? { maxParallel: config.local.resources.maxParallel }
               : {}),
-          }),
-          ...(visual ? { visual } : {}),
-        },
-      ).run(plan, fingerprint.digest, {
-        attemptId,
-        ...(config.local?.resources?.maxParallel
-          ? { maxParallel: config.local.resources.maxParallel }
-          : {}),
-        ...(config.local?.resources?.maxLogBytes
-          ? { maxOutputBytes: config.local.resources.maxLogBytes }
-          : {}),
-        captureEndingFingerprint: async () => (await this.fingerprint(profileId)).digest,
-      });
-      await atomicWriteJson(this.contextFile(attemptId), {
-        ...context,
-        status: 'completed',
-        bundleId: result.bundle.bundleId,
-        decisionRequests: result.decisionRequests,
-        updatedAt: new Date().toISOString(),
-      } satisfies EvidenceRunContext);
-      const gate = projectEvidenceGate(result.bundle, binding);
-      await this.telemetryOutbox.save(
-        createEvidenceTelemetryBatch({
-          workflowRunId: binding?.workflowRunId ?? null,
-          result,
-          gate,
+            ...(config.local?.resources?.maxLogBytes
+              ? { maxOutputBytes: config.local.resources.maxLogBytes }
+              : {}),
+            captureEndingFingerprint: async () => (await this.fingerprint(profileId)).digest,
+          });
+          await atomicWriteJson(this.contextFile(attemptId), {
+            ...context,
+            status: 'completed',
+            bundleId: result.bundle.bundleId,
+            decisionRequests: result.decisionRequests,
+            updatedAt: new Date().toISOString(),
+          } satisfies EvidenceRunContext);
+          const gate = projectEvidenceGate(result.bundle, binding);
+          await this.telemetryOutbox.save(
+            createEvidenceTelemetryBatch({
+              workflowRunId: binding?.workflowRunId ?? null,
+              result,
+              gate,
+            }),
+          );
+          const telemetry = await this.flushTelemetry(attemptId);
+          return { ...result, gate, telemetry };
         }),
-      );
-      const telemetry = await this.flushTelemetry(attemptId);
-      return { ...result, gate, telemetry };
-    });
+    );
   }
 
   async status(attemptId: string): Promise<EvidenceStatus> {
@@ -299,40 +309,42 @@ export class EvidenceRuntime implements EvidenceGatePort {
     };
   }
 
-  async resume(attemptId: string): Promise<EvidenceStatus> {
-    return this.leases.withLease(`evidence-profile-recovery:${attemptId}`, async () => {
-      const context = await this.loadContext(attemptId);
-      if (context.status !== 'running') {
+  async resume(attemptId: string, signal?: AbortSignal): Promise<EvidenceStatus> {
+    return this.operations.run({ cancellable: false, signal }, () =>
+      this.leases.withLease(`evidence-profile-recovery:${attemptId}`, async () => {
+        const context = await this.loadContext(attemptId);
+        if (context.status !== 'running') {
+          await this.flushTelemetry(attemptId);
+          return this.status(attemptId);
+        }
+        const endingFingerprint = await this.fingerprint(context.profileId);
+        const recovered = await recoverEvidenceAttempt({
+          attemptId,
+          plan: context.plan,
+          store: this.store,
+          journal: this.journal,
+          timestamp: new Date().toISOString(),
+          endingFingerprint: endingFingerprint.digest,
+        });
+        await atomicWriteJson(this.contextFile(attemptId), {
+          ...context,
+          status: 'recovered',
+          bundleId: recovered.bundle.bundleId,
+          updatedAt: new Date().toISOString(),
+        } satisfies EvidenceRunContext);
+        const attempt = await this.store.loadAttempt(attemptId);
+        const result: EvidenceRunResult = { attempt, ...recovered, decisionRequests: [] };
+        await this.telemetryOutbox.save(
+          createEvidenceTelemetryBatch({
+            workflowRunId: context.workflowBinding?.workflowRunId ?? null,
+            result,
+            gate: projectEvidenceGate(recovered.bundle, context.workflowBinding),
+          }),
+        );
         await this.flushTelemetry(attemptId);
         return this.status(attemptId);
-      }
-      const endingFingerprint = await this.fingerprint(context.profileId);
-      const recovered = await recoverEvidenceAttempt({
-        attemptId,
-        plan: context.plan,
-        store: this.store,
-        journal: this.journal,
-        timestamp: new Date().toISOString(),
-        endingFingerprint: endingFingerprint.digest,
-      });
-      await atomicWriteJson(this.contextFile(attemptId), {
-        ...context,
-        status: 'recovered',
-        bundleId: recovered.bundle.bundleId,
-        updatedAt: new Date().toISOString(),
-      } satisfies EvidenceRunContext);
-      const attempt = await this.store.loadAttempt(attemptId);
-      const result: EvidenceRunResult = { attempt, ...recovered, decisionRequests: [] };
-      await this.telemetryOutbox.save(
-        createEvidenceTelemetryBatch({
-          workflowRunId: context.workflowBinding?.workflowRunId ?? null,
-          result,
-          gate: projectEvidenceGate(recovered.bundle, context.workflowBinding),
-        }),
-      );
-      await this.flushTelemetry(attemptId);
-      return this.status(attemptId);
-    });
+      }),
+    );
   }
 
   async evaluate(input: {
@@ -476,7 +488,7 @@ export class EvidenceRuntime implements EvidenceGatePort {
     const approvedBundleIds = await new FileDeliveryStore(
       this.workspace,
     ).approvedEvidenceBundleIds();
-    const runtimeRetention = await new FileRuntimeStore(this.workspace).evidenceRetentionState();
+    const runtimeRetention = await this.ctx.runStore.evidenceRetentionState();
     return new FileEvidenceRetention(this.workspace).cleanup({
       roots: {
         activeAttemptIds: contexts
@@ -493,5 +505,11 @@ export class EvidenceRuntime implements EvidenceGatePort {
       maxBytes: options.maxBytes,
       defer: runtimeRetention.deferred,
     });
+  }
+}
+
+declare module '@deepseek-ai/cordis' {
+  interface Context {
+    evidenceCoordinator: EvidenceCoordinator;
   }
 }

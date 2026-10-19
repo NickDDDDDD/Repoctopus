@@ -6,7 +6,8 @@ import { reconcileProjectSnapshots } from '../project/snapshot.js';
 import type { ProjectSnapshot } from '../project/types.js';
 import type { TrajectoryEvent, TrajectoryEventType } from '../trajectory/types.js';
 import type { WorkflowPackage } from '../workflow-contract/types.js';
-import type { FileRuntimeStore } from '../../platform/runtime/file-runtime-store.js';
+import type { CompositionIdentitySnapshot } from '../composition/types.js';
+import { compareCompositions } from '../composition/compatibility.js';
 import type {
   ResumeView,
   RunStatusView,
@@ -15,6 +16,7 @@ import type {
   TelemetryPort,
   WorkflowSourcePort,
   EvidenceGatePort,
+  RunStorePort,
 } from './types.js';
 import { requireSatisfiedEvidenceGate } from './evidence-guard.js';
 
@@ -38,14 +40,16 @@ function event(options: {
     type: options.type,
     runId: options.state.runId,
     stateVersion: options.state.stateVersion,
+    compositionDigest: options.state.composition.compositionDigest,
     data: options.data ?? {},
   };
 }
 
-export class RepoctopusRuntime {
+export class WorkflowRunCoordinator {
   constructor(
-    private readonly store: FileRuntimeStore,
+    private readonly store: RunStorePort,
     private readonly telemetry: TelemetryPort,
+    private readonly composition: CompositionIdentitySnapshot,
     private readonly clock: () => Date = () => new Date(),
     private readonly uuid: () => string = () => randomUUID(),
     private readonly workflowSource?: WorkflowSourcePort,
@@ -63,6 +67,7 @@ export class RepoctopusRuntime {
       workflow: options.workflow,
       runId: options.runId ?? this.uuid(),
       projectSnapshotDigest: options.projectSnapshot.digest,
+      composition: this.composition,
       timestamp,
       ...(options.workflowSource ? { workflowSource: options.workflowSource } : {}),
     });
@@ -77,6 +82,7 @@ export class RepoctopusRuntime {
         workflowVersion: state.workflowVersion,
         workflowDigest: state.workflowDigest,
         projectSnapshotDigest: state.projectSnapshotDigest,
+        compositionDigest: state.composition.compositionDigest,
         repositoryCount: options.projectSnapshot.repositories.length,
       },
     });
@@ -106,12 +112,14 @@ export class RepoctopusRuntime {
         ? { ...pendingStep.action, id: state.pendingActionId, stepId: pendingStep.id }
         : null;
     const workflowDrift = await this.inspectWorkflowDrift(state);
+    const compositionCompatibility = compareCompositions(state.composition, this.composition);
     return {
       state,
       checkpoint,
       trajectoryLength: trajectory.length,
       nextAction: pendingAction ?? preview.action,
       workflowDrift,
+      compositionCompatibility,
       ...(preview.reason ? { reason: preview.reason } : {}),
     };
   }
@@ -120,6 +128,7 @@ export class RepoctopusRuntime {
     runId: string,
     confirmations: ReadonlySet<string> = new Set(),
   ): Promise<RuntimeResult<RunStatusView>> {
+    await this.prepareWritableComposition(runId);
     const [state, workflow, trajectory] = await Promise.all([
       this.store.loadRun(runId),
       this.store.loadWorkflow(runId),
@@ -159,6 +168,7 @@ export class RepoctopusRuntime {
     summary: string;
     eventId?: string;
     evidenceAttemptId?: string;
+    actionReceiptId?: string;
   }): Promise<RuntimeResult<RunStatusView>> {
     const eventId = options.eventId ?? this.uuid();
     const duplicate = await this.store.findEvent(options.runId, eventId);
@@ -175,7 +185,9 @@ export class RepoctopusRuntime {
       };
     }
     const timestamp = this.clock().toISOString();
+    await this.prepareWritableComposition(options.runId);
     await this.store.commitGuarded(options.runId, async ({ state, workflow, trajectory }) => {
+      this.assertWritableComposition(state);
       const step = workflow.definition.steps.find((item) => item.id === state.currentStep);
       const requiredProfile = step?.action.evidenceProfile;
       let evidenceGate;
@@ -191,6 +203,7 @@ export class RepoctopusRuntime {
           workflowStateVersion: state.stateVersion,
           profileId: requiredProfile,
           attemptId: options.evidenceAttemptId,
+          compositionDigest: state.composition.compositionDigest,
         });
       }
       const outcome: ActionOutcome = {
@@ -219,6 +232,7 @@ export class RepoctopusRuntime {
           result: options.status,
           summary: options.summary,
           ...(options.evidenceAttemptId ? { evidenceAttemptId: options.evidenceAttemptId } : {}),
+          ...(options.actionReceiptId ? { actionReceiptId: options.actionReceiptId } : {}),
           ...(evidenceGate ? { evidenceGate } : {}),
         },
       });
@@ -233,11 +247,13 @@ export class RepoctopusRuntime {
     currentProjectSnapshot: ProjectSnapshot;
   }): Promise<RuntimeResult<ResumeView>> {
     const recovered = await this.store.recover(options.runId);
+    await this.prepareWritableComposition(options.runId);
     const [state, previousSnapshot, trajectory] = await Promise.all([
       this.store.loadRun(options.runId),
       this.store.loadProjectSnapshot(options.runId),
       this.store.loadTrajectory(options.runId),
     ]);
+    this.assertWritableComposition(state);
     const reconciliation = reconcileProjectSnapshots(
       previousSnapshot,
       options.currentProjectSnapshot,
@@ -277,6 +293,57 @@ export class RepoctopusRuntime {
       value: { ...(await this.status(options.runId)), reconciliation },
       diagnostics,
     };
+  }
+
+  private assertWritableComposition(state: RunState): void {
+    if (state.composition.compositionDigest !== this.composition.compositionDigest) {
+      throw new Error(
+        `Run ${state.runId} requires composition ${state.composition.compositionDigest}; current composition ${this.composition.compositionDigest} is migration_required`,
+      );
+    }
+  }
+
+  private async prepareWritableComposition(runId: string): Promise<void> {
+    const [state, trajectory] = await Promise.all([
+      this.store.loadRun(runId),
+      this.store.loadTrajectory(runId),
+    ]);
+    const compatibility = compareCompositions(state.composition, this.composition);
+    if (compatibility.status === 'same') return;
+    if (compatibility.status === 'migration_required') {
+      throw new Error(
+        `Run ${state.runId} requires composition ${state.composition.compositionDigest}; current composition ${this.composition.compositionDigest} is migration_required: ${compatibility.reason}`,
+      );
+    }
+    const timestamp = this.clock().toISOString();
+    const nextState: RunState = {
+      ...state,
+      composition: structuredClone(this.composition),
+      stateVersion: state.stateVersion + 1,
+      updatedAt: timestamp,
+    };
+    const changed = event({
+      eventId: stableEventId(
+        runId,
+        state.composition.compositionDigest,
+        this.composition.compositionDigest,
+        'composition.changed',
+      ),
+      sequence: trajectory.length + 1,
+      timestamp,
+      type: 'composition.changed',
+      state: nextState,
+      data: {
+        previousCompositionDigest: state.composition.compositionDigest,
+        compositionDigest: this.composition.compositionDigest,
+        changedPluginIds: compatibility.changedPluginIds,
+      },
+    });
+    await this.store.commit({
+      state: nextState,
+      event: changed,
+      previousStateVersion: state.stateVersion,
+    });
   }
 
   private async flushTelemetry(runId: string): Promise<RuntimeDiagnostic[]> {

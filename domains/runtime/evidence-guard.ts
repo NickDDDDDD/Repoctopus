@@ -15,6 +15,7 @@ export async function requireSatisfiedEvidenceGate(options: {
   workflowStateVersion: number;
   profileId: string;
   attemptId: string | undefined;
+  compositionDigest: string;
 }): Promise<EvidenceGateProjection> {
   if (!options.attemptId) {
     throw new Error(`Evidence profile ${options.profileId} requires a Runtime evidence attempt`);
@@ -46,6 +47,9 @@ export async function requireSatisfiedEvidenceGate(options: {
     throw new Error(
       `Evidence attempt ${options.attemptId} does not satisfy profile ${options.profileId}`,
     );
+  }
+  if (projection.compositionDigest !== options.compositionDigest) {
+    throw new Error(`Evidence attempt ${options.attemptId} was produced by another composition`);
   }
   if (projection.status !== 'satisfied') {
     throw new Error(`Evidence Gate blocked the transition: ${projection.reason}`);

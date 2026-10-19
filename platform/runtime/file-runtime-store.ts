@@ -3,6 +3,7 @@ import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 
 import type { RunState } from '../../domains/engine/types.js';
+import type { RunStoreInspection } from '../../domains/runtime/types.js';
 import type { ProjectSnapshot } from '../../domains/project/types.js';
 import type {
   Checkpoint,
@@ -88,6 +89,7 @@ function checkpointFor(state: RunState, event: TrajectoryEvent): Checkpoint {
     runId: state.runId,
     stateVersion: state.stateVersion,
     workflowDigest: state.workflowDigest,
+    compositionDigest: state.composition.compositionDigest,
     trajectoryOffset: event.sequence,
     projectSnapshotDigest: state.projectSnapshotDigest,
     artifactManifestDigest: emptyArtifactsDigest(),
@@ -306,13 +308,7 @@ export class FileRuntimeStore {
     await atomicWriteJson(this.paths(cursor.runId).telemetryCursor, cursor);
   }
 
-  async inspect(runId: string): Promise<{
-    state: RunState | null;
-    checkpoint: Checkpoint | null;
-    trajectory: TrajectoryEvent[];
-    cursor: TelemetryDeliveryCursor;
-    pendingTransition: boolean;
-  }> {
+  async inspect(runId: string): Promise<RunStoreInspection> {
     const paths = this.paths(runId);
     const [state, checkpoint, trajectory, cursor, pendingTransition] = await Promise.all([
       exists(paths.run).then((present) => (present ? readJson<RunState>(paths.run) : null)),

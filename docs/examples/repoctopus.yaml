@@ -5,6 +5,8 @@ project:
 repositories:
   - id: app
     path: ../app
+composition:
+  plugins: []
 profiles:
   - id: verify
     nodes:

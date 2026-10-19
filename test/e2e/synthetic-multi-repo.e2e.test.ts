@@ -14,7 +14,11 @@ import {
   FileResourceLeaseManager,
   ResourceLeaseConflictError,
 } from '../../platform/runtime/resource-lease.js';
-import { removeTemporaryDirectory, temporaryDirectory } from '../helpers/fixtures.js';
+import {
+  removeTemporaryDirectory,
+  temporaryDirectory,
+  TEST_COMPOSITION_DIGEST,
+} from '../helpers/fixtures.js';
 
 const cleanup: string[] = [];
 afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
@@ -104,6 +108,7 @@ describe('synthetic multi-repository Evidence product flow', () => {
         commandNode('backend', repositories[3]!),
       ]),
       'passed',
+      { compositionDigest: TEST_COMPOSITION_DIGEST },
     );
     expect(passed.bundle.outcome).toBe('passed');
     expect(maximum).toBeGreaterThan(1);
@@ -115,7 +120,7 @@ describe('synthetic multi-repository Evidence product flow', () => {
         commandNode('serial-backend', repositories[3]!),
       ]),
       'limited',
-      { maxParallel: 1 },
+      { compositionDigest: TEST_COMPOSITION_DIGEST, maxParallel: 1 },
     );
     expect(maximum).toBe(1);
 
@@ -126,6 +131,7 @@ describe('synthetic multi-repository Evidence product flow', () => {
         commandNode('independent', repositories[2]!),
       ]),
       'failed',
+      { compositionDigest: TEST_COMPOSITION_DIGEST },
     );
     expect(failed.bundle.outcome).toBe('failed');
     expect(failed.bundle.checks).toContainEqual(
@@ -142,6 +148,7 @@ describe('synthetic multi-repository Evidence product flow', () => {
         },
       ]),
       'warning',
+      { compositionDigest: TEST_COMPOSITION_DIGEST },
     );
     expect(warning.bundle.outcome).toBe('passed_with_warnings');
 
@@ -166,6 +173,7 @@ describe('synthetic multi-repository Evidence product flow', () => {
         },
       ]),
       'incomplete',
+      { compositionDigest: TEST_COMPOSITION_DIGEST },
     );
     expect(incomplete.bundle.outcome).toBe('incomplete');
   });
@@ -183,8 +191,13 @@ describe('synthetic multi-repository Evidence product flow', () => {
     const journal = new FileEvidenceJournal(workspace);
     const { service, store } = stores(workspace, adapter, journal);
     const cachedPlan = plan([commandNode('cached', workspace, { cache: true })]);
-    const first = await service.run(cachedPlan, 'same');
-    const reused = await service.run(cachedPlan, 'same', { reusableReceipts: first.receipts });
+    const first = await service.run(cachedPlan, 'same', {
+      compositionDigest: TEST_COMPOSITION_DIGEST,
+    });
+    const reused = await service.run(cachedPlan, 'same', {
+      compositionDigest: TEST_COMPOSITION_DIGEST,
+      reusableReceipts: first.receipts,
+    });
     expect(calls).toBe(1);
     expect(reused.receipts[0]).toMatchObject({
       freshness: 'reused',
@@ -192,6 +205,7 @@ describe('synthetic multi-repository Evidence product flow', () => {
     });
 
     const drifted = await service.run(cachedPlan, 'before', {
+      compositionDigest: TEST_COMPOSITION_DIGEST,
       captureEndingFingerprint: () => Promise.resolve('after'),
     });
     expect(drifted.attempt.status).toBe('superseded');
@@ -200,6 +214,7 @@ describe('synthetic multi-repository Evidence product flow', () => {
     let interruptedAttempt = '';
     await expect(
       service.run(plan([commandNode('crash', workspace)]), 'crash', {
+        compositionDigest: TEST_COMPOSITION_DIGEST,
         afterNodeCommitted: (receipt) => {
           interruptedAttempt = receipt.attemptId;
           throw new Error('power loss');

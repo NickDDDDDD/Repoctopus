@@ -20,7 +20,11 @@ import { FileArtifactStore } from '../../platform/evidence/file-artifact-store.j
 import { FileEvidenceStore } from '../../platform/evidence/file-evidence-store.js';
 import { LocalCommandAdapter } from '../../platform/feedback/command-adapter.js';
 import { LocalServiceAdapter } from '../../platform/feedback/service-adapter.js';
-import { removeTemporaryDirectory, temporaryDirectory } from '../helpers/fixtures.js';
+import {
+  removeTemporaryDirectory,
+  temporaryDirectory,
+  TEST_COMPOSITION_DIGEST,
+} from '../helpers/fixtures.js';
 
 const cleanup: string[] = [];
 afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
@@ -220,7 +224,9 @@ describe('service and browser Evidence profile', () => {
         }),
         visual,
       },
-    ).run(plan(workspace, port), 'f'.repeat(64));
+    ).run(plan(workspace, port), 'f'.repeat(64), {
+      compositionDigest: TEST_COMPOSITION_DIGEST,
+    });
 
     expect(result.bundle.outcome).toBe('passed_with_warnings');
     expect(
@@ -285,7 +291,9 @@ describe('service and browser Evidence profile', () => {
         }),
         visual: conflict,
       },
-    ).run(plan(workspace, port), 'f'.repeat(64));
+    ).run(plan(workspace, port), 'f'.repeat(64), {
+      compositionDigest: TEST_COMPOSITION_DIGEST,
+    });
 
     expect(result.bundle.outcome).toBe('incomplete');
     expect(result.bundle.checks).toContainEqual(

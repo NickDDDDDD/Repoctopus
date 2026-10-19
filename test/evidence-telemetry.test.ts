@@ -1,9 +1,18 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
+import { Context } from '@deepseek-ai/cordis';
 
-import { EvidenceRuntime } from '../app/evidence-runtime.js';
-import { RepoctopusRuntime } from '../domains/runtime/runtime.js';
+import { EvidenceCoordinator } from '../services/evidence-coordinator.js';
+import { CompositionIdentity } from '../services/composition-identity.js';
+import { FileRunStoreProvider } from '../plugins/run/file-run-store-provider.js';
+import { EvidenceAdapters } from '../services/evidence-adapters.js';
+import {
+  localBrowserContributor,
+  localCommandContributor,
+  localServiceContributor,
+} from '../plugins/evidence/local-adapter-contributors.js';
+import { WorkflowRunCoordinator } from '../domains/runtime/workflow-runs.js';
 import { createWorkflowPackage } from '../domains/workflow-contract/package.js';
 import type {
   EvidenceTelemetryBatch,
@@ -15,6 +24,7 @@ import { FileEvidenceTelemetryOutbox } from '../platform/telemetry/evidence-outb
 import { FileRuntimeStore } from '../platform/runtime/file-runtime-store.js';
 import { safeEvidenceAttributes } from '../platform/telemetry/evidence-mapping.js';
 import {
+  compositionFixture,
   createGitRepository,
   projectFixture,
   removeTemporaryDirectory,
@@ -23,7 +33,11 @@ import {
 } from './helpers/fixtures.js';
 
 const cleanup: string[] = [];
-afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
+const contexts: Context[] = [];
+afterEach(async () => {
+  await Promise.all(contexts.splice(0).map((context) => context.fiber.dispose()));
+  await Promise.all(cleanup.splice(0).map(removeTemporaryDirectory));
+});
 
 class RecoveringTelemetry implements EvidenceTelemetryPort {
   fail = true;
@@ -69,12 +83,23 @@ describe('Evidence telemetry outbox', () => {
     };
     await writeFile(path.join(workspace, 'repoctopus.yaml'), JSON.stringify(config));
     const telemetry = new RecoveringTelemetry();
-    const runtime = new EvidenceRuntime(workspace, telemetry);
+    const context = new Context();
+    contexts.push(context);
+    new CompositionIdentity(context, compositionFixture());
+    new FileRunStoreProvider(context, { workspaceRoot: workspace });
+    new EvidenceAdapters(context);
+    await context.plugin(localCommandContributor);
+    await context.plugin(localServiceContributor, { workspaceRoot: workspace });
+    await context.plugin(localBrowserContributor, { workspaceRoot: workspace });
+    await context.plugin(EvidenceCoordinator, { workspaceRoot: workspace, telemetry });
+    const runtime = context.evidenceCoordinator;
     const workflowDefinition = structuredClone(workflowFixture().definition);
     workflowDefinition.steps[0]!.action.evidenceProfile = 'verify';
-    const workflowRuntime = new RepoctopusRuntime(new FileRuntimeStore(workspace), {
-      async export() {},
-    });
+    const workflowRuntime = new WorkflowRunCoordinator(
+      new FileRuntimeStore(workspace),
+      { async export() {} },
+      compositionFixture(),
+    );
     await workflowRuntime.start({
       workflow: createWorkflowPackage(workflowDefinition),
       projectSnapshot: projectFixture(),
@@ -142,6 +167,7 @@ describe('Evidence telemetry outbox', () => {
       runId: 'run',
       attemptId: 'attempt',
       profileId: 'verify',
+      compositionDigest: compositionFixture().compositionDigest,
       events: [
         {
           schemaVersion: 1,

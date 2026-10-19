@@ -8,8 +8,21 @@ import { createProjectSnapshot } from '../../domains/project/snapshot.js';
 import type { ProjectSnapshot } from '../../domains/project/types.js';
 import { createWorkflowPackage } from '../../domains/workflow-contract/package.js';
 import type { WorkflowPackage } from '../../domains/workflow-contract/types.js';
+import type { CompositionIdentitySnapshot } from '../../domains/composition/types.js';
 
 const execFileAsync = promisify(execFile);
+export const TEST_COMPOSITION_DIGEST = `sha256:${'c'.repeat(64)}` as const;
+
+export function compositionFixture(
+  overrides: Partial<CompositionIdentitySnapshot> = {},
+): CompositionIdentitySnapshot {
+  return {
+    id: overrides.id ?? 'test-composition',
+    kind: overrides.kind ?? 'project',
+    compositionDigest: overrides.compositionDigest ?? TEST_COMPOSITION_DIGEST,
+    plugins: overrides.plugins ?? [],
+  };
+}
 
 export function workflowFixture(): WorkflowPackage {
   return createWorkflowPackage({

@@ -6,39 +6,22 @@ import { fileURLToPath } from 'node:url';
 
 import { parse } from 'yaml';
 
-import { DeliveryService } from '../../domains/delivery/service.js';
-import type { DeliveryIntent, DeliveryPolicy } from '../../domains/delivery/types.js';
-import { RepoctopusRuntime } from '../../domains/runtime/runtime.js';
-import type { RunStatusView } from '../../domains/runtime/types.js';
+import type {
+  DeliveryIntent,
+  DeliveryPolicy,
+  DeliveryState,
+} from '../../domains/delivery/types.js';
+import type { ProjectSnapshot } from '../../domains/project/types.js';
+import type {
+  ResumeView,
+  RunStatusView,
+  RunStoreInspection,
+  RuntimeResult,
+} from '../../domains/runtime/types.js';
 import { parseWorkflowPackage } from '../../domains/workflow-contract/package.js';
-import { probeProject } from '../../platform/git/probe.js';
-import { detectProjectConfiguration } from '../../platform/project-configuration/detect.js';
-import {
-  doctorManagedChromium,
-  installManagedChromium,
-} from '../../platform/browser/managed-browser.js';
-import { GitDeliveryAdapter } from '../../platform/git/delivery.js';
 import { loadDeliveryPolicy } from '../../platform/delivery/config.js';
-import { FileDeliveryStore } from '../../platform/delivery/file-delivery-store.js';
-import { FileDeliveryEvidence } from '../../platform/delivery/file-delivery-evidence.js';
-import {
-  EnvironmentCredentialProvider,
-  GitHubMergeRequestAdapter,
-} from '../../platform/github/merge-request.js';
-import { FileRuntimeStore } from '../../platform/runtime/file-runtime-store.js';
-import {
-  deliveryTelemetryFromEnvironment,
-  telemetryFromEnvironment,
-} from '../../platform/telemetry/opentelemetry/exporter.js';
-import { evidenceTelemetryFromEnvironment } from '../../platform/telemetry/opentelemetry/evidence-exporter.js';
-import { checkProvenance } from '../../platform/provenance/check.js';
 import { execute } from '../../platform/process/execute.js';
-import {
-  applyProjectConfigurationDecision,
-  loadPendingProjectConfigurationDecision,
-  prepareProjectConfigurationDecision,
-} from '../../platform/project-configuration/onboarding.js';
-import { FileWorkflowSource } from '../../platform/workflow/file-source.js';
+import type { ProvenanceCheck } from '../../platform/provenance/check.js';
 import {
   booleanFlag,
   integerFlag,
@@ -47,11 +30,17 @@ import {
   type ParsedArguments,
 } from './arguments.js';
 import { failureEnvelope, successEnvelope, type CliEnvelope } from './envelope.js';
-import { EvidenceRuntime } from '../evidence-runtime.js';
+import type { EvidenceCoordinator } from '../../services/evidence-coordinator.js';
+import type { BrowserMaintenance } from '../../services/browser-maintenance.js';
+import { bootBootstrapComposition, bootProjectComposition } from '../boot/bootstrap.js';
 import { reviewHumanDecision } from './human-decision.js';
 import { reviewProjectConfigurationDecision } from './project-configuration-decision.js';
 
 const DIST_DIR = path.dirname(fileURLToPath(import.meta.url));
+const PRODUCT_ROOT =
+  path.basename(DIST_DIR) === 'dist'
+    ? path.resolve(DIST_DIR, '..')
+    : path.resolve(DIST_DIR, '..', '..');
 
 function defaultWorkflowPath(): string {
   return path.resolve(DIST_DIR, '..', 'workflows', 'foundation.yaml');
@@ -68,31 +57,6 @@ function nextActions(status: RunStatusView): string[] {
   return [];
 }
 
-function runtimeFor(workspace: string): RepoctopusRuntime {
-  return new RepoctopusRuntime(
-    new FileRuntimeStore(workspace),
-    telemetryFromEnvironment(process.env),
-    undefined,
-    undefined,
-    new FileWorkflowSource(),
-    new EvidenceRuntime(workspace, evidenceTelemetryFromEnvironment(process.env)),
-  );
-}
-
-function deliveryServiceFor(workspace: string, policy?: DeliveryPolicy): DeliveryService {
-  return new DeliveryService(
-    new FileDeliveryStore(workspace),
-    new GitDeliveryAdapter(),
-    new GitHubMergeRequestAdapter(
-      new EnvironmentCredentialProvider(process.env),
-      policy?.publication.githubApiBaseUrl,
-    ),
-    new FileDeliveryEvidence(workspace),
-    undefined,
-    deliveryTelemetryFromEnvironment(process.env),
-  );
-}
-
 function evidenceBundleIds(parsed: ParsedArguments): string[] {
   const value = stringFlag(parsed, 'evidence-bundles', { required: true })!;
   const ids = value.split(',').map((item) => item.trim());
@@ -104,7 +68,7 @@ function evidenceBundleIds(parsed: ParsedArguments): string[] {
 
 async function deliveryInputs(parsed: ParsedArguments): Promise<{
   workspace: string;
-  project: Awaited<ReturnType<typeof probeProject>>;
+  projectRoot: string;
   intent: DeliveryIntent;
   policy: DeliveryPolicy;
 }> {
@@ -116,17 +80,16 @@ async function deliveryInputs(parsed: ParsedArguments): Promise<{
   const policyFile = path.resolve(
     stringFlag(parsed, 'policy', { fallback: path.join(workspace, 'repoctopus.yaml') })!,
   );
-  const [project, intentSource, policy] = await Promise.all([
-    probeProject({ root: projectRoot, duplicateIdentity: 'omit-ambiguous' }),
+  const [intentSource, policy] = await Promise.all([
     readFile(intentFile, 'utf8'),
     loadDeliveryPolicy(policyFile),
   ]);
-  return { workspace, project, intent: parse(intentSource) as DeliveryIntent, policy };
+  return { workspace, projectRoot, intent: parse(intentSource) as DeliveryIntent, policy };
 }
 
 async function assertCommittedReport(
   reportFile: string,
-  project: Awaited<ReturnType<typeof probeProject>>,
+  project: ProjectSnapshot,
   intent: DeliveryIntent,
 ): Promise<void> {
   const selected = new Set(intent.repositories.map((item) => item.repositoryId));
@@ -149,7 +112,17 @@ async function assertCommittedReport(
   await execute('git', ['ls-files', '--error-unmatch', '--', relative], { cwd: repository.path });
 }
 
-function deliveryNextActions(status: Awaited<ReturnType<DeliveryService['status']>>): string[] {
+async function deliveryProject(
+  app: Awaited<ReturnType<typeof bootProjectComposition>>,
+  input: { workspace: string; projectRoot: string },
+): Promise<ProjectSnapshot> {
+  return app.context.commandRouter.execute('project.probe', {
+    root: input.projectRoot,
+    workspaceRoot: input.workspace,
+  });
+}
+
+function deliveryNextActions(status: DeliveryState): string[] {
   if (status.status === 'awaiting_approval') {
     return [`repoctopus approval review --change ${status.changeId}`];
   }
@@ -165,42 +138,64 @@ function deliveryNextActions(status: Awaited<ReturnType<DeliveryService['status'
 
 async function deliveryCheckpoint(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const input = await deliveryInputs(parsed);
-  const result = await deliveryServiceFor(input.workspace, input.policy).checkpoint(
-    input.project,
-    input.intent,
-    input.policy,
-  );
-  return successEnvelope({ command: 'delivery checkpoint', result });
+  const app = await bootProjectComposition(PRODUCT_ROOT, input.workspace);
+  try {
+    const result = await app.context.commandRouter.execute('delivery.checkpoint', {
+      project: await deliveryProject(app, input),
+      intent: input.intent,
+      policy: input.policy,
+    });
+    return successEnvelope({ command: 'delivery checkpoint', result });
+  } finally {
+    await app.close();
+  }
 }
 
 async function deliveryPrepare(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const input = await deliveryInputs(parsed);
   const reportFile = path.resolve(stringFlag(parsed, 'report', { required: true })!);
-  await assertCommittedReport(reportFile, input.project, input.intent);
-  const report = await readFile(reportFile, 'utf8');
-  const result = await deliveryServiceFor(input.workspace, input.policy).prepare({
-    project: input.project,
-    intent: input.intent,
-    policy: input.policy,
-    reportContents: report,
-    evidenceBundleIds: evidenceBundleIds(parsed),
-  });
-  return successEnvelope({
-    command: 'delivery prepare',
-    result,
-    nextActions: deliveryNextActions(result),
-  });
+  const app = await bootProjectComposition(PRODUCT_ROOT, input.workspace);
+  try {
+    const project = await deliveryProject(app, input);
+    await assertCommittedReport(reportFile, project, input.intent);
+    const report = await readFile(reportFile, 'utf8');
+    const result = await app.context.commandRouter.execute<unknown, DeliveryState>(
+      'delivery.prepare',
+      {
+        project,
+        intent: input.intent,
+        policy: input.policy,
+        reportContents: report,
+        evidenceBundleIds: evidenceBundleIds(parsed),
+      },
+    );
+    return successEnvelope({
+      command: 'delivery prepare',
+      result,
+      nextActions: deliveryNextActions(result),
+    });
+  } finally {
+    await app.close();
+  }
 }
 
 async function deliveryStatus(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
   const changeId = stringFlag(parsed, 'change', { required: true })!;
-  const result = await deliveryServiceFor(workspace).status(changeId);
-  return successEnvelope({
-    command: 'delivery status',
-    result,
-    nextActions: deliveryNextActions(result),
-  });
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute<unknown, DeliveryState>(
+      'delivery.status',
+      { changeId },
+    );
+    return successEnvelope({
+      command: 'delivery status',
+      result,
+      nextActions: deliveryNextActions(result),
+    });
+  } finally {
+    await app.close();
+  }
 }
 
 async function approvalReview(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
@@ -209,37 +204,47 @@ async function approvalReview(parsed: ParsedArguments): Promise<CliEnvelope<unkn
   }
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
   const changeId = stringFlag(parsed, 'change', { required: true })!;
-  const service = deliveryServiceFor(workspace);
-  const state = await service.status(changeId);
-  if (state.status !== 'awaiting_approval' || !state.decisionRequest) {
-    throw new Error(`Delivery is not awaiting approval: ${changeId}`);
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const state = await app.context.commandRouter.execute<unknown, DeliveryState>(
+      'delivery.status',
+      { changeId },
+    );
+    if (state.status !== 'awaiting_approval' || !state.decisionRequest) {
+      throw new Error(`Delivery is not awaiting approval: ${changeId}`);
+    }
+    const selected = await reviewHumanDecision({
+      request: state.decisionRequest,
+      input: process.stdin,
+      output: process.stdout,
+    });
+    const result = await app.context.commandRouter.execute<unknown, DeliveryState>(
+      'delivery.decide',
+      {
+        changeId,
+        response: {
+          apiVersion: 'repoctopus/v1alpha1',
+          kind: 'HumanDecisionResponse',
+          requestId: state.decisionRequest.requestId,
+          snapshotDigest: state.decisionRequest.snapshotDigest,
+          decision: selected.decision,
+          ...(selected.comment ? { comment: selected.comment } : {}),
+        },
+        actor: {
+          subject: userInfo().username,
+          provider: 'interactive-cli',
+          sessionId: state.decisionRequest.requestId,
+        },
+      },
+    );
+    return successEnvelope({
+      command: 'approval review',
+      result,
+      nextActions: deliveryNextActions(result),
+    });
+  } finally {
+    await app.close();
   }
-  const selected = await reviewHumanDecision({
-    request: state.decisionRequest,
-    input: process.stdin,
-    output: process.stdout,
-  });
-  const result = await service.decide(
-    changeId,
-    {
-      apiVersion: 'repoctopus/v1alpha1',
-      kind: 'HumanDecisionResponse',
-      requestId: state.decisionRequest.requestId,
-      snapshotDigest: state.decisionRequest.snapshotDigest,
-      decision: selected.decision,
-      ...(selected.comment ? { comment: selected.comment } : {}),
-    },
-    {
-      subject: userInfo().username,
-      provider: 'interactive-cli',
-      sessionId: state.decisionRequest.requestId,
-    },
-  );
-  return successEnvelope({
-    command: 'approval review',
-    result,
-    nextActions: deliveryNextActions(result),
-  });
 }
 
 async function deliveryPublish(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
@@ -251,18 +256,26 @@ async function deliveryPublish(parsed: ParsedArguments): Promise<CliEnvelope<unk
     path.resolve(stringFlag(parsed, 'report', { required: true })!),
     'utf8',
   );
-  const result = await deliveryServiceFor(input.workspace, input.policy).publish({
-    project: input.project,
-    intent: input.intent,
-    policy: input.policy,
-    reportContents: report,
-    evidenceBundleIds: evidenceBundleIds(parsed),
-  });
-  return successEnvelope({
-    command: 'delivery publish',
-    result,
-    nextActions: deliveryNextActions(result),
-  });
+  const app = await bootProjectComposition(PRODUCT_ROOT, input.workspace);
+  try {
+    const result = await app.context.commandRouter.execute<unknown, DeliveryState>(
+      'delivery.publish',
+      {
+        project: await deliveryProject(app, input),
+        intent: input.intent,
+        policy: input.policy,
+        reportContents: report,
+        evidenceBundleIds: evidenceBundleIds(parsed),
+      },
+    );
+    return successEnvelope({
+      command: 'delivery publish',
+      result,
+      nextActions: deliveryNextActions(result),
+    });
+  } finally {
+    await app.close();
+  }
 }
 
 async function deliveryRefresh(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
@@ -273,33 +286,57 @@ async function deliveryRefresh(parsed: ParsedArguments): Promise<CliEnvelope<unk
       stringFlag(parsed, 'policy', { fallback: path.join(workspace, 'repoctopus.yaml') })!,
     ),
   );
-  const result = await deliveryServiceFor(workspace, policy).refresh(changeId);
-  return successEnvelope({
-    command: 'delivery refresh',
-    result,
-    nextActions: deliveryNextActions(result),
-  });
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute<unknown, DeliveryState>(
+      'delivery.refresh',
+      { changeId, policy },
+    );
+    return successEnvelope({
+      command: 'delivery refresh',
+      result,
+      nextActions: deliveryNextActions(result),
+    });
+  } finally {
+    await app.close();
+  }
 }
 
 async function projectProbe(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const root = path.resolve(stringFlag(parsed, 'root', { required: true })!);
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
-  const snapshot = await probeProject({ root, workspaceRoot: workspace });
-  return successEnvelope({ command: 'project probe', result: snapshot });
+  const app = await bootBootstrapComposition(PRODUCT_ROOT);
+  try {
+    const snapshot = await app.context.commandRouter.execute('project.probe', {
+      root,
+      workspaceRoot: workspace,
+    });
+    return successEnvelope({ command: 'project probe', result: snapshot });
+  } finally {
+    await app.close();
+  }
 }
 
 async function projectDetect(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const scopeRoot = path.resolve(stringFlag(parsed, 'root', { required: true })!);
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
-  const result = await detectProjectConfiguration({ workspace, scopeRoot });
-  return successEnvelope({
-    command: 'project detect',
-    result,
-    nextActions: [
-      'review unresolved items and let an Agent prepare a complete candidate configuration',
-      'submit the completed candidate through a trusted human decision channel',
-    ],
-  });
+  const app = await bootBootstrapComposition(PRODUCT_ROOT);
+  try {
+    const result = await app.context.commandRouter.execute('project.detect', {
+      workspace,
+      scopeRoot,
+    });
+    return successEnvelope({
+      command: 'project detect',
+      result,
+      nextActions: [
+        'review unresolved items and let an Agent prepare a complete candidate configuration',
+        'submit the completed candidate through a trusted human decision channel',
+      ],
+    });
+  } finally {
+    await app.close();
+  }
 }
 
 async function projectPrepare(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
@@ -307,16 +344,20 @@ async function projectPrepare(parsed: ParsedArguments): Promise<CliEnvelope<unkn
   const draftFile = path.resolve(stringFlag(parsed, 'draft', { required: true })!);
   const candidateFile = path.resolve(stringFlag(parsed, 'candidate', { required: true })!);
   const completedCandidate = parse(await readFile(candidateFile, 'utf8')) as unknown;
-  const result = await prepareProjectConfigurationDecision({
-    workspace,
-    draftFile,
-    completedCandidate,
-  });
-  return successEnvelope({
-    command: 'project prepare',
-    result,
-    nextActions: [`repoctopus project review --workspace ${workspace} --request ${result.file}`],
-  });
+  const app = await bootBootstrapComposition(PRODUCT_ROOT);
+  try {
+    const result = await app.context.commandRouter.execute<unknown, { file: string }>(
+      'project.prepare',
+      { workspace, draftFile, completedCandidate },
+    );
+    return successEnvelope({
+      command: 'project prepare',
+      result,
+      nextActions: [`repoctopus project review --workspace ${workspace} --request ${result.file}`],
+    });
+  } finally {
+    await app.close();
+  }
 }
 
 async function projectReview(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
@@ -327,90 +368,136 @@ async function projectReview(parsed: ParsedArguments): Promise<CliEnvelope<unkno
   }
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
   const decisionFile = path.resolve(stringFlag(parsed, 'request', { required: true })!);
-  const request = await loadPendingProjectConfigurationDecision(workspace, decisionFile);
-  const selected = await reviewProjectConfigurationDecision({
-    request,
-    input: process.stdin,
-    output: process.stdout,
-  });
-  const result = await applyProjectConfigurationDecision({
-    workspace,
-    decisionFile,
-    response: {
-      apiVersion: 'repoctopus/v1alpha1',
-      kind: 'HumanDecisionResponse',
-      requestId: request.requestId,
-      snapshotDigest: request.snapshotDigest,
-      decision: selected.decision,
-      ...(selected.comment ? { comment: selected.comment } : {}),
-    },
-    actor: {
-      actorId: userInfo().username,
-      source: 'cli',
-      authenticated: true,
-    },
-    timestamp: new Date().toISOString(),
-  });
-  return successEnvelope({ command: 'project review', result });
-}
-
-function evidenceRuntime(parsed: ParsedArguments): EvidenceRuntime {
-  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
-  return new EvidenceRuntime(workspace, evidenceTelemetryFromEnvironment(process.env));
+  const app = await bootBootstrapComposition(PRODUCT_ROOT);
+  try {
+    const request = await app.context.commandRouter.execute<
+      { workspace: string; decisionFile: string },
+      Parameters<typeof reviewProjectConfigurationDecision>[0]['request']
+    >('project.decision.load', { workspace, decisionFile });
+    const selected = await reviewProjectConfigurationDecision({
+      request,
+      input: process.stdin,
+      output: process.stdout,
+    });
+    const result = await app.context.commandRouter.execute('project.decision.apply', {
+      workspace,
+      decisionFile,
+      response: {
+        apiVersion: 'repoctopus/v1alpha1',
+        kind: 'HumanDecisionResponse',
+        requestId: request.requestId,
+        snapshotDigest: request.snapshotDigest,
+        decision: selected.decision,
+        ...(selected.comment ? { comment: selected.comment } : {}),
+      },
+      actor: {
+        actorId: userInfo().username,
+        source: 'cli',
+        authenticated: true,
+      },
+      timestamp: new Date().toISOString(),
+    });
+    return successEnvelope({ command: 'project review', result });
+  } finally {
+    await app.close();
+  }
 }
 
 async function evidencePlan(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
   const profile = stringFlag(parsed, 'profile', { fallback: 'verify' })!;
-  const result = await evidenceRuntime(parsed).plan(profile);
-  return successEnvelope({ command: 'evidence plan', result });
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute('evidence.plan', {
+      profileId: profile,
+    });
+    return successEnvelope({ command: 'evidence plan', result });
+  } finally {
+    await app.close();
+  }
 }
 
 async function evidenceRun(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
   const profile = stringFlag(parsed, 'profile', { fallback: 'verify' })!;
   const requestedAttemptId = stringFlag(parsed, 'attempt');
   const workflowRunId = stringFlag(parsed, 'workflow-run') ?? null;
-  const result = await evidenceRuntime(parsed).run(profile, requestedAttemptId, workflowRunId);
-  return successEnvelope({
-    command: 'evidence run',
-    runId: result.attempt.attemptId,
-    result,
-    nextActions: [
-      `repoctopus evidence inspect --workspace ${path.resolve(
-        stringFlag(parsed, 'workspace', { fallback: process.cwd() })!,
-      )} --attempt ${result.attempt.attemptId}`,
-    ],
-  });
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute<
+      { profileId: string; attemptId?: string; workflowRunId: string | null },
+      Awaited<ReturnType<EvidenceCoordinator['run']>>
+    >('evidence.run', {
+      profileId: profile,
+      ...(requestedAttemptId ? { attemptId: requestedAttemptId } : {}),
+      workflowRunId,
+    });
+    return successEnvelope({
+      command: 'evidence run',
+      runId: result.attempt.attemptId,
+      result,
+      nextActions: [
+        `repoctopus evidence inspect --workspace ${workspace} --attempt ${result.attempt.attemptId}`,
+      ],
+    });
+  } finally {
+    await app.close();
+  }
 }
 
 async function evidenceStatus(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
   const attemptId = stringFlag(parsed, 'attempt', { required: true })!;
-  const result = await evidenceRuntime(parsed).status(attemptId);
-  return successEnvelope({ command: 'evidence status', runId: attemptId, result });
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute('evidence.status', { attemptId });
+    return successEnvelope({ command: 'evidence status', runId: attemptId, result });
+  } finally {
+    await app.close();
+  }
 }
 
 async function evidenceResume(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
   const attemptId = stringFlag(parsed, 'attempt', { required: true })!;
-  const result = await evidenceRuntime(parsed).resume(attemptId);
-  return successEnvelope({ command: 'evidence resume', runId: attemptId, result });
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute('evidence.resume', { attemptId });
+    return successEnvelope({ command: 'evidence resume', runId: attemptId, result });
+  } finally {
+    await app.close();
+  }
 }
 
 async function evidenceInspect(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
   const attemptId = stringFlag(parsed, 'attempt', { required: true })!;
-  const result = await evidenceRuntime(parsed).inspect(attemptId);
-  return successEnvelope({ command: 'evidence inspect', runId: attemptId, result });
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute('evidence.inspect', { attemptId });
+    return successEnvelope({ command: 'evidence inspect', runId: attemptId, result });
+  } finally {
+    await app.close();
+  }
 }
 
 async function evidenceClean(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
   const maxAgeDays = integerFlag(parsed, 'max-age-days', { fallback: 30, minimum: 0 })!;
   const maxBytes = integerFlag(parsed, 'max-bytes', {
     fallback: 1024 * 1024 * 1024,
     minimum: 0,
   })!;
-  const result = await evidenceRuntime(parsed).clean({
-    maxAgeMs: maxAgeDays * 24 * 60 * 60 * 1000,
-    maxBytes,
-  });
-  return successEnvelope({ command: 'evidence clean', result });
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute('evidence.clean', {
+      maxAgeMs: maxAgeDays * 24 * 60 * 60 * 1000,
+      maxBytes,
+    });
+    return successEnvelope({ command: 'evidence clean', result });
+  } finally {
+    await app.close();
+  }
 }
 
 async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
@@ -421,49 +508,81 @@ async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   const workflowPath = path.resolve(
     stringFlag(parsed, 'workflow', { fallback: defaultWorkflowPath() })!,
   );
-  const [source, projectSnapshot] = await Promise.all([
-    readFile(workflowPath, 'utf8'),
-    probeProject({ root: projectRoot, workspaceRoot: workspace }),
-  ]);
-  const requestedRunId = stringFlag(parsed, 'run');
-  const result = await runtimeFor(workspace).start({
-    workflow: parseWorkflowPackage(source),
-    projectSnapshot,
-    workflowSource: workflowPath,
-    ...(requestedRunId ? { runId: requestedRunId } : {}),
-  });
-  return successEnvelope({
-    command: 'run start',
-    runId: result.value.state.runId,
-    result: result.value,
-    diagnostics: result.diagnostics,
-    nextActions: nextActions(result.value),
-  });
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const [source, projectSnapshot] = await Promise.all([
+      readFile(workflowPath, 'utf8'),
+      app.context.commandRouter.execute<{ root: string; workspaceRoot: string }, ProjectSnapshot>(
+        'project.probe',
+        { root: projectRoot, workspaceRoot: workspace },
+      ),
+    ]);
+    const requestedRunId = stringFlag(parsed, 'run');
+    const result = await app.context.commandRouter.execute<
+      {
+        workflow: ReturnType<typeof parseWorkflowPackage>;
+        projectSnapshot: ProjectSnapshot;
+        workflowSource: string;
+        runId?: string;
+      },
+      RuntimeResult<RunStatusView>
+    >('run.start', {
+      workflow: parseWorkflowPackage(source),
+      projectSnapshot,
+      workflowSource: workflowPath,
+      ...(requestedRunId ? { runId: requestedRunId } : {}),
+    });
+    return successEnvelope({
+      command: 'run start',
+      runId: result.value.state.runId,
+      result: result.value,
+      diagnostics: result.diagnostics,
+      nextActions: nextActions(result.value),
+    });
+  } finally {
+    await app.close();
+  }
 }
 
 async function runStatus(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
   const runId = stringFlag(parsed, 'run', { required: true })!;
-  const status = await runtimeFor(workspace).status(runId);
-  return successEnvelope({
-    command: 'run status',
-    runId,
-    result: status,
-    nextActions: nextActions(status),
-  });
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const status = await app.context.commandRouter.execute<{ runId: string }, RunStatusView>(
+      'run.status',
+      { runId },
+    );
+    return successEnvelope({
+      command: 'run status',
+      runId,
+      result: status,
+      nextActions: nextActions(status),
+    });
+  } finally {
+    await app.close();
+  }
 }
 
 async function runNext(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
   const runId = stringFlag(parsed, 'run', { required: true })!;
-  const result = await runtimeFor(workspace).next(runId);
-  return successEnvelope({
-    command: 'run next',
-    runId,
-    result: result.value,
-    diagnostics: result.diagnostics,
-    nextActions: nextActions(result.value),
-  });
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute<
+      { runId: string },
+      RuntimeResult<RunStatusView>
+    >('run.next', { runId });
+    return successEnvelope({
+      command: 'run next',
+      runId,
+      result: result.value,
+      diagnostics: result.diagnostics,
+      nextActions: nextActions(result.value),
+    });
+  } finally {
+    await app.close();
+  }
 }
 
 async function runRecord(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
@@ -475,108 +594,148 @@ async function runRecord(parsed: ParsedArguments): Promise<CliEnvelope<unknown>>
   }
   const requestedEventId = stringFlag(parsed, 'event-id');
   const evidenceAttemptId = stringFlag(parsed, 'evidence-attempt');
-  const result = await runtimeFor(workspace).record({
-    runId,
-    actionId: stringFlag(parsed, 'action', { required: true })!,
-    status,
-    summary: stringFlag(parsed, 'summary', { required: true })!,
-    ...(requestedEventId ? { eventId: requestedEventId } : {}),
-    ...(evidenceAttemptId ? { evidenceAttemptId } : {}),
-  });
-  return successEnvelope({
-    command: 'run record',
-    runId,
-    result: result.value,
-    diagnostics: result.diagnostics,
-    nextActions: nextActions(result.value),
-  });
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute<
+      {
+        runId: string;
+        actionId: string;
+        status: 'succeeded' | 'failed';
+        summary: string;
+        eventId?: string;
+        evidenceAttemptId?: string;
+      },
+      RuntimeResult<RunStatusView>
+    >('run.record', {
+      runId,
+      actionId: stringFlag(parsed, 'action', { required: true })!,
+      status,
+      summary: stringFlag(parsed, 'summary', { required: true })!,
+      ...(requestedEventId ? { eventId: requestedEventId } : {}),
+      ...(evidenceAttemptId ? { evidenceAttemptId } : {}),
+    });
+    return successEnvelope({
+      command: 'run record',
+      runId,
+      result: result.value,
+      diagnostics: result.diagnostics,
+      nextActions: nextActions(result.value),
+    });
+  } finally {
+    await app.close();
+  }
 }
 
 async function runResume(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
   const runId = stringFlag(parsed, 'run', { required: true })!;
-  const store = new FileRuntimeStore(workspace);
-  const previous = await store.loadProjectSnapshot(runId);
-  const projectRoot = path.resolve(
-    stringFlag(parsed, 'project-root', { fallback: previous.root })!,
-  );
-  const currentProjectSnapshot = await probeProject({
-    root: projectRoot,
-    workspaceRoot: workspace,
-  });
-  const result = await new RepoctopusRuntime(
-    store,
-    telemetryFromEnvironment(process.env),
-    undefined,
-    undefined,
-    new FileWorkflowSource(),
-    new EvidenceRuntime(workspace, evidenceTelemetryFromEnvironment(process.env)),
-  ).resume({ runId, currentProjectSnapshot });
-  return successEnvelope({
-    command: 'run resume',
-    runId,
-    result: result.value,
-    diagnostics: result.diagnostics,
-    nextActions: result.value.reconciliation.changed
-      ? ['inspect reconciliation and start a new run or restore the repository state']
-      : nextActions(result.value),
-  });
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const previous = await app.context.runStore.loadProjectSnapshot(runId);
+    const projectRoot = path.resolve(
+      stringFlag(parsed, 'project-root', { fallback: previous.root })!,
+    );
+    const currentProjectSnapshot = await app.context.commandRouter.execute<
+      { root: string; workspaceRoot: string },
+      ProjectSnapshot
+    >('project.probe', { root: projectRoot, workspaceRoot: workspace });
+    const result = await app.context.commandRouter.execute<
+      { runId: string; currentProjectSnapshot: ProjectSnapshot },
+      RuntimeResult<ResumeView>
+    >('run.resume', { runId, currentProjectSnapshot });
+    return successEnvelope({
+      command: 'run resume',
+      runId,
+      result: result.value,
+      diagnostics: result.diagnostics,
+      nextActions: result.value.reconciliation.changed
+        ? ['inspect reconciliation and start a new run or restore the repository state']
+        : nextActions(result.value),
+    });
+  } finally {
+    await app.close();
+  }
 }
 
 async function doctor(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
   const runId = stringFlag(parsed, 'run', { required: true })!;
-  const store = new FileRuntimeStore(workspace);
-  const [{ state, checkpoint, trajectory, cursor, pendingTransition }, provenance] =
-    await Promise.all([store.inspect(runId), checkProvenance(path.resolve(DIST_DIR, '..'))]);
-  if (!state || !checkpoint) {
-    throw new Error(
-      pendingTransition
-        ? 'Run has an incomplete transition; use run resume to recover it'
-        : 'Run state or checkpoint is missing',
-    );
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const [{ state, checkpoint, trajectory, cursor, pendingTransition }, provenance] =
+      await Promise.all([
+        app.context.commandRouter.execute<{ runId: string }, RunStoreInspection>('run.inspect', {
+          runId,
+        }),
+        app.context.commandRouter.execute<Record<string, never>, ProvenanceCheck>(
+          'provenance.check',
+          {},
+        ),
+      ]);
+    if (!state || !checkpoint) {
+      throw new Error(
+        pendingTransition
+          ? 'Run has an incomplete transition; use run resume to recover it'
+          : 'Run state or checkpoint is missing',
+      );
+    }
+    if (checkpoint.stateVersion !== state.stateVersion) {
+      throw new Error('Checkpoint stateVersion does not match Run state');
+    }
+    if (checkpoint.trajectoryOffset !== trajectory.length) {
+      throw new Error('Checkpoint trajectoryOffset does not match Trajectory length');
+    }
+    if (cursor.trajectoryOffset > trajectory.length) {
+      throw new Error('Telemetry cursor is beyond the Trajectory');
+    }
+    if (!provenance.valid) throw new Error(provenance.findings.join('\n'));
+    return successEnvelope({
+      command: 'doctor',
+      runId,
+      result: {
+        healthy: true,
+        pendingTransition,
+        provenanceFiles: provenance.fileCount,
+        stateVersion: state.stateVersion,
+        trajectoryLength: trajectory.length,
+        telemetryBacklog: trajectory.length - cursor.trajectoryOffset,
+      },
+    });
+  } finally {
+    await app.close();
   }
-  if (checkpoint.stateVersion !== state.stateVersion) {
-    throw new Error('Checkpoint stateVersion does not match Run state');
-  }
-  if (checkpoint.trajectoryOffset !== trajectory.length) {
-    throw new Error('Checkpoint trajectoryOffset does not match Trajectory length');
-  }
-  if (cursor.trajectoryOffset > trajectory.length) {
-    throw new Error('Telemetry cursor is beyond the Trajectory');
-  }
-  if (!provenance.valid) throw new Error(provenance.findings.join('\n'));
-  return successEnvelope({
-    command: 'doctor',
-    runId,
-    result: {
-      healthy: true,
-      pendingTransition,
-      provenanceFiles: provenance.fileCount,
-      stateVersion: state.stateVersion,
-      trajectoryLength: trajectory.length,
-      telemetryBacklog: trajectory.length - cursor.trajectoryOffset,
-    },
-  });
 }
 
 async function browserDoctor(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
-  const result = await doctorManagedChromium(workspace);
-  return successEnvelope({
-    command: 'browser doctor',
-    result,
-    nextActions:
-      result.status === 'ready'
-        ? []
-        : [`${result.installCommand.executable} ${result.installCommand.args.join(' ')}`],
-  });
+  const app = await bootBootstrapComposition(PRODUCT_ROOT);
+  try {
+    const result = await app.context.commandRouter.execute<
+      { workspace: string },
+      Awaited<ReturnType<BrowserMaintenance['doctor']>>
+    >('browser.doctor', { workspace });
+    return successEnvelope({
+      command: 'browser doctor',
+      result,
+      nextActions:
+        result.status === 'ready'
+          ? []
+          : [`${result.installCommand.executable} ${result.installCommand.args.join(' ')}`],
+    });
+  } finally {
+    await app.close();
+  }
 }
 
 async function browserInstall(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
-  const result = await installManagedChromium(workspace);
-  return successEnvelope({ command: 'browser install', result });
+  const app = await bootBootstrapComposition(PRODUCT_ROOT);
+  try {
+    const result = await app.context.commandRouter.execute('browser.install', { workspace });
+    return successEnvelope({ command: 'browser install', result });
+  } finally {
+    await app.close();
+  }
 }
 
 async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {

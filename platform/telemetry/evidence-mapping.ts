@@ -49,6 +49,7 @@ export function safeEvidenceAttributes(
     'repoctopus.evidence.event.sequence': event.sequence,
     'repoctopus.evidence.attempt.id': batch.attemptId,
     'repoctopus.evidence.profile.id': batch.profileId,
+    'repoctopus.composition.digest': batch.compositionDigest,
     ...(batch.runId ? { 'repoctopus.run.id': batch.runId } : {}),
   };
   for (const [key, value] of Object.entries(event.data)) {

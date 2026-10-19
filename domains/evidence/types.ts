@@ -26,6 +26,7 @@ export interface EvidenceReceipt {
   apiVersion: typeof EVIDENCE_API_VERSION;
   kind: 'EvidenceReceipt';
   receiptId: string;
+  compositionDigest: string;
   attemptId: string;
   nodeId: string;
   adapter: string;
@@ -47,6 +48,7 @@ export interface EvidenceAttempt {
   apiVersion: typeof EVIDENCE_API_VERSION;
   kind: 'EvidenceAttempt';
   attemptId: string;
+  compositionDigest: string;
   profileId: string;
   inputFingerprint: string;
   startedAt: string;
@@ -69,6 +71,7 @@ export interface EvidenceBundle {
   apiVersion: typeof EVIDENCE_API_VERSION;
   kind: 'EvidenceBundle';
   bundleId: string;
+  compositionDigest: string;
   attemptId: string;
   profileId: string;
   inputFingerprint: string;
@@ -87,6 +90,7 @@ export interface EvidenceGateProjection {
   workflowActionId: string | null;
   workflowStepId: string | null;
   workflowStateVersion: number | null;
+  compositionDigest: string;
   profileId: string;
   bundleId: string;
   inputFingerprint: string;

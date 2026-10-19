@@ -76,6 +76,7 @@ export async function recoverEvidenceAttempt(input: {
   }
   const bundleBase = {
     attemptId: attempt.attemptId,
+    compositionDigest: attempt.compositionDigest,
     profileId: attempt.profileId,
     inputFingerprint: attempt.inputFingerprint,
     createdAt: input.timestamp,

@@ -4,6 +4,7 @@ export interface CommandRequest {
   cwd: string;
   timeoutMs: number;
   maxOutputBytes?: number;
+  signal?: AbortSignal;
 }
 
 export interface CommandResult {

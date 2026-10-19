@@ -114,6 +114,30 @@ describe('project configuration', () => {
     ).toThrow(/unknown fields: required/i);
   });
 
+  it('accepts only declarative shared team plugin entries', () => {
+    const config = parseSharedProjectConfig({
+      ...shared(),
+      composition: {
+        plugins: [
+          {
+            id: 'team-reporter',
+            descriptor: '.repoctopus/plugins/team-reporter.json',
+            module: '.repoctopus/plugins/team-reporter.mjs',
+            config: { channel: 'audit' },
+          },
+        ],
+      },
+    });
+    expect(config.composition?.plugins[0]).toMatchObject({ id: 'team-reporter' });
+    expect(() =>
+      parseLocalProjectConfig({
+        apiVersion: 'repoctopus/v1alpha1',
+        kind: 'RepoctopusLocal',
+        composition: { plugins: [] },
+      }),
+    ).toThrow(/unknown fields: composition/i);
+  });
+
   it('accepts a machine-local visual exchange without adding it to shared config', () => {
     expect(
       parseLocalProjectConfig({

@@ -52,6 +52,27 @@
         }
       }
     },
+    "composition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["plugins"],
+      "properties": {
+        "plugins": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "descriptor", "module"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "descriptor": { "type": "string", "minLength": 1 },
+              "module": { "type": "string", "minLength": 1 },
+              "config": {}
+            }
+          }
+        }
+      }
+    },
     "evidence": {
       "type": "object",
       "additionalProperties": false,

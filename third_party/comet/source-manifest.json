@@ -11,7 +11,7 @@
       "source": "domains/engine/loop.ts",
       "sourceSha256": "5e3929ca7d64fef62d02675fc84288b54ccf2e398de08a9904bab60ac7010e9f",
       "target": "domains/engine/loop.ts",
-      "sha256": "804c0132b44e6942c4416d61e2aaea475e83eec6e5bfc2833daeb5d4e375c955",
+      "sha256": "038f8d41e5265f701c376ac4c77c903e61b42dcd687733852a5da1b8ec253177",
       "adoption": "modified"
     },
     {
@@ -123,14 +123,14 @@
       "source": "domains/comet-classic/classic-command-checks.ts",
       "sourceSha256": "468bb2e66403b5a80320289ab4bb627b89e22b41584b594cd9438f32053c3878",
       "target": "domains/runtime/evidence-guard.ts",
-      "sha256": "cc85e0434ca28a2db152393e47a05cd06269291a27863ad1d706ad0ad569facf",
+      "sha256": "bf742298d46ccd8572ed8759d8f0890c01e1c9ab0027ff519835f7f0c9b05aeb",
       "adoption": "modified"
     },
     {
       "source": "domains/comet-classic/classic-guard.ts",
       "sourceSha256": "9bf88ba1da12edb43f090164dac016d489ce7d15f8f58bcf4aea853ac05f9c61",
-      "target": "domains/runtime/runtime.ts",
-      "sha256": "489da1f993a5a9b119d530c582a411d8d46cd9ee44e47c9d4a5080637ec3ccc7",
+      "target": "domains/runtime/workflow-runs.ts",
+      "sha256": "066f870d0bbc6be2c8239e975b09bab82ea71ff6bebe5d28f82e1b87042fa078",
       "adoption": "modified"
     },
     {

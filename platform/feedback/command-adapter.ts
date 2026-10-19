@@ -36,10 +36,17 @@ export class LocalCommandAdapter implements CommandAdapter {
       }, request.timeoutMs);
       timer.unref();
 
+      const abort = (): void => {
+        void terminateProcessTree(child).catch(() => child.kill('SIGKILL'));
+      };
+      request.signal?.addEventListener('abort', abort, { once: true });
+      if (request.signal?.aborted) abort();
+
       const finish = (result: Pick<CommandResult, 'exitCode' | 'timedOut' | 'error'>): void => {
         if (settled) return;
         settled = true;
         clearTimeout(timer);
+        request.signal?.removeEventListener('abort', abort);
         void identity.then((processIdentity) => {
           const capturedStdout = stdout.finish();
           const capturedStderr = stderr.finish();

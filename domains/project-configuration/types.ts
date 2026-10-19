@@ -79,12 +79,20 @@ export interface EvidenceProfileConfig {
   nodes: EvidenceNodeConfig[];
 }
 
+export interface TeamPluginConfig {
+  id: string;
+  descriptor: string;
+  module: string;
+  config?: unknown;
+}
+
 export interface SharedProjectConfig {
   apiVersion: typeof PROJECT_CONFIG_API_VERSION;
   kind: 'RepoctopusProject';
   project: { id: string };
   repositories: RepositoryConfig[];
   profiles: EvidenceProfileConfig[];
+  composition?: { plugins: TeamPluginConfig[] };
   evidence?: {
     retention?: {
       maxAgeDays?: number;

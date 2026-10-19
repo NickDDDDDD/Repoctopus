@@ -6,7 +6,11 @@ import type { EffectiveProjectConfig } from '../domains/project-configuration/ty
 import { FileArtifactStore } from '../platform/evidence/file-artifact-store.js';
 import { FileEvidenceStore } from '../platform/evidence/file-evidence-store.js';
 import { LocalCommandAdapter } from '../platform/feedback/command-adapter.js';
-import { removeTemporaryDirectory, temporaryDirectory } from './helpers/fixtures.js';
+import {
+  removeTemporaryDirectory,
+  temporaryDirectory,
+  TEST_COMPOSITION_DIGEST,
+} from './helpers/fixtures.js';
 
 const cleanup: string[] = [];
 afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
@@ -66,7 +70,7 @@ describe('evidence command vertical slice', () => {
       new FileArtifactStore(workspace),
       store,
       new LocalCommandAdapter(),
-    ).run(plan, 'fingerprint-1');
+    ).run(plan, 'fingerprint-1', { compositionDigest: TEST_COMPOSITION_DIGEST });
 
     expect(result.bundle.outcome).toBe('failed');
     expect(result.bundle.checks).toEqual(
@@ -95,7 +99,7 @@ describe('evidence command vertical slice', () => {
       new FileArtifactStore(workspace),
       new FileEvidenceStore(workspace),
       new LocalCommandAdapter(),
-    ).run(plan, 'fingerprint-2');
+    ).run(plan, 'fingerprint-2', { compositionDigest: TEST_COMPOSITION_DIGEST });
     expect(result.bundle.outcome).toBe('passed_with_warnings');
   });
 });

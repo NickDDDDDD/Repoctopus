@@ -8,7 +8,11 @@ import { compileEvidenceProfile } from '../domains/feedback/profile.js';
 import type { EffectiveProjectConfig } from '../domains/project-configuration/types.js';
 import { FileArtifactStore } from '../platform/evidence/file-artifact-store.js';
 import { FileEvidenceStore } from '../platform/evidence/file-evidence-store.js';
-import { removeTemporaryDirectory, temporaryDirectory } from './helpers/fixtures.js';
+import {
+  removeTemporaryDirectory,
+  temporaryDirectory,
+  TEST_COMPOSITION_DIGEST,
+} from './helpers/fixtures.js';
 
 const cleanup: string[] = [];
 afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
@@ -68,8 +72,11 @@ describe('evidence lifecycle', () => {
       new FileEvidenceStore(workspace),
       { run },
     );
-    const first = await service.run(plan(workspace), 'same-fingerprint');
+    const first = await service.run(plan(workspace), 'same-fingerprint', {
+      compositionDigest: TEST_COMPOSITION_DIGEST,
+    });
     const second = await service.run(plan(workspace), 'same-fingerprint', {
+      compositionDigest: TEST_COMPOSITION_DIGEST,
       reusableReceipts: first.receipts,
     });
     expect(run).toHaveBeenCalledTimes(1);
@@ -83,6 +90,7 @@ describe('evidence lifecycle', () => {
         inputFingerprint: 'same-fingerprint',
         now: receipt.completedAt,
         adapterKind: 'service',
+        compositionDigest: TEST_COMPOSITION_DIGEST,
       }),
     ).toBe(false);
     expect(
@@ -91,6 +99,7 @@ describe('evidence lifecycle', () => {
         inputFingerprint: 'different',
         now: receipt.completedAt,
         adapterKind: 'command',
+        compositionDigest: TEST_COMPOSITION_DIGEST,
       }),
     ).toBe(false);
   });
@@ -116,6 +125,7 @@ describe('evidence lifecycle', () => {
       new FileEvidenceStore(workspace),
       adapter,
     ).run(plan(workspace), 'start-fingerprint', {
+      compositionDigest: TEST_COMPOSITION_DIGEST,
       captureEndingFingerprint: () => Promise.resolve('changed-fingerprint'),
     });
     expect(result.attempt.status).toBe('superseded');
@@ -128,6 +138,7 @@ describe('evidence lifecycle', () => {
       apiVersion: 'repoctopus/v1alpha1',
       kind: 'EvidenceReceipt',
       receiptId: 'receipt',
+      compositionDigest: TEST_COMPOSITION_DIGEST,
       attemptId: 'attempt',
       nodeId: 'build',
       adapter: 'command/local',
@@ -147,6 +158,7 @@ describe('evidence lifecycle', () => {
         inputFingerprint: 'fingerprint',
         now: '2026-01-01T00:01:00.001Z',
         adapterKind: 'command',
+        compositionDigest: TEST_COMPOSITION_DIGEST,
       }),
     ).toBe(false);
   });

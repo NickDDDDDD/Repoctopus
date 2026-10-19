@@ -6,11 +6,13 @@ import { EVIDENCE_API_VERSION, type EvidenceReceipt } from './types.js';
 export interface ReceiptReuseRequest {
   nodeId: string;
   inputFingerprint: string;
+  compositionDigest: string;
   now: string;
   adapterKind: 'command' | 'service' | 'browser' | 'attached';
 }
 
 export function canReuseReceipt(receipt: EvidenceReceipt, request: ReceiptReuseRequest): boolean {
+  if (receipt.compositionDigest !== request.compositionDigest) return false;
   if (request.adapterKind !== 'command') return false;
   if (!receipt.adapter.startsWith('command/')) return false;
   if (receipt.nodeId !== request.nodeId || receipt.inputFingerprint !== request.inputFingerprint) {

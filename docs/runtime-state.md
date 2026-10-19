@@ -25,6 +25,12 @@
 
 重启后只要 Journal 存在，Runtime 会检查已经完成的步骤并继续执行缺失步骤。相同事件不会重复追加。轨迹缺少最终换行、包含无效 JSON、序号断裂或重复事件 ID 时，Runtime 返回损坏诊断，不会静默截断证据。
 
+## Composition 兼容
+
+Run、Checkpoint 和 Trajectory 保存完整 composition 身份。写转换前，WorkflowRuns 比较当前组合：摘要相同则继续；只涉及明确兼容的无状态 Contributor 或配置摘要变化时记录 `composition.changed`；受保护 Provider、状态 Schema 或权威能力变化时返回 `migration_required`。后一种状态仍允许 `status` 和 `doctor` 读取，不允许 `next`、`record` 或 `resume` 写入。
+
+普通插件重载由 Cordis Loader 先卸载旧 Fiber，再激活新 Fiber。Run 不依赖旧 Fiber 的内存对象，恢复依据始终是 Store、Journal 与 Checkpoint。
+
 ## 恢复时的多仓核对
 
 `run resume` 会重新执行只读 Project Probe，将远端身份、路径、分支、HEAD 和工作树摘要与启动快照比较。没有变化时 Run 可继续；出现任何变化时 Run State 永久标记 `reconciliationRequired`，Engine 直接拒绝产生新动作。

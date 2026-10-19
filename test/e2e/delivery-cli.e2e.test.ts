@@ -5,8 +5,6 @@ import { promisify } from 'node:util';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { probeProject } from '../../platform/git/probe.js';
-import { createEvidenceBundle } from '../../domains/evidence/gate.js';
-import { FileEvidenceStore } from '../../platform/evidence/file-evidence-store.js';
 import {
   createGitRepository,
   removeTemporaryDirectory,
@@ -33,9 +31,32 @@ describe('delivery CLI', () => {
     await mkdir(workspace);
     const project = await probeProject({ root, workspaceRoot: workspace });
     const repository = project.repositories.find((item) => item.name === 'app')!;
-    const policyFile = path.join(workspace, 'repoctopus.yaml');
+    const policyFile = path.join(workspace, 'delivery-policy.yaml');
     const intentFile = path.join(workspace, 'intent.yaml');
     const reportFile = path.join(app, 'verification.md');
+    await writeFile(
+      path.join(workspace, 'repoctopus.yaml'),
+      JSON.stringify({
+        apiVersion: 'repoctopus/v1alpha1',
+        kind: 'RepoctopusProject',
+        project: { id: 'delivery-cli' },
+        repositories: [{ id: repository.id, path: '../app' }],
+        profiles: [
+          {
+            id: 'verify',
+            nodes: [
+              {
+                id: 'check',
+                type: 'command',
+                repository: repository.id,
+                executable: process.execPath,
+                args: ['-e', 'process.exit(0)'],
+              },
+            ],
+          },
+        ],
+      }),
+    );
     await writeFile(
       policyFile,
       `apiVersion: repoctopus/v1alpha1\nkind: DeliveryPolicy\ncheckpoint:\n  automatic: true\n  protectedBranches: [main]\n  commitMessagePattern: '^feat: .+'\n  quickChecks: {}\npublication:\n  remote: origin\n  provider: github\n  githubApiBaseUrl: https://api.github.com\n  mrTitleTemplate: '{{changeId}}'\n  mrBodyTemplate: '{{verificationReport}}'\n`,
@@ -46,19 +67,6 @@ describe('delivery CLI', () => {
     );
     await writeFile(reportFile, '# Verification\nPassed\n');
     await writeFile(path.join(app, 'feature.txt'), 'feature');
-    await new FileEvidenceStore(workspace).saveBundle(
-      createEvidenceBundle({
-        bundleId: 'bundle-cli-verified',
-        attemptId: 'attempt-cli-verified',
-        profileId: 'verify',
-        inputFingerprint: 'fingerprint-cli',
-        createdAt: '2026-01-01T00:00:00.000Z',
-        checks: [],
-        receiptIds: [],
-        artifactDigests: [],
-        findings: [],
-      }),
-    );
     const common = [
       '--workspace',
       workspace,
@@ -79,6 +87,16 @@ describe('delivery CLI', () => {
       command: 'delivery checkpoint',
       result: [{ created: true }],
     });
+    const evidence = await runCli({
+      packageRoot,
+      cwd: workspace,
+      args: ['evidence', 'run', '--workspace', workspace, '--profile', 'verify'],
+    });
+    expect(evidence).toMatchObject({
+      ok: true,
+      result: { bundle: { outcome: 'passed' } },
+    });
+    const bundleId = (evidence.result as { bundle: { bundleId: string } }).bundle.bundleId;
     const prepared = await runCli({
       packageRoot,
       cwd: workspace,
@@ -89,7 +107,7 @@ describe('delivery CLI', () => {
         '--report',
         reportFile,
         '--evidence-bundles',
-        'bundle-cli-verified',
+        bundleId,
       ],
     });
     expect(prepared).toMatchObject({

@@ -40,6 +40,8 @@ export interface EvidenceRunResult {
 }
 
 export interface EvidenceRunOptions {
+  compositionDigest: string;
+  signal?: AbortSignal;
   attemptId?: string;
   reusableReceipts?: readonly EvidenceReceipt[];
   captureEndingFingerprint?: () => Promise<string>;
@@ -100,12 +102,14 @@ export class EvidenceService {
   }
 
   private receipt(
-    base: Omit<EvidenceReceipt, 'apiVersion' | 'kind' | 'receiptId'>,
+    base: Omit<EvidenceReceipt, 'apiVersion' | 'kind' | 'receiptId' | 'compositionDigest'>,
+    compositionDigest: string,
   ): EvidenceReceipt {
     return {
       apiVersion: EVIDENCE_API_VERSION,
       kind: 'EvidenceReceipt',
-      receiptId: digest(base),
+      receiptId: digest({ ...base, compositionDigest }),
+      compositionDigest,
       ...base,
     };
   }
@@ -135,6 +139,7 @@ export class EvidenceService {
             inputFingerprint,
             now: startedAt,
             adapterKind: 'command',
+            compositionDigest: options.compositionDigest,
           }),
         )
       : undefined;
@@ -155,6 +160,7 @@ export class EvidenceService {
       args: node.args,
       cwd: resolveNodeCwd(node.repositoryPath, node.cwd),
       timeoutMs: node.timeoutMs,
+      ...(options.signal ? { signal: options.signal } : {}),
       ...(options.maxOutputBytes ? { maxOutputBytes: options.maxOutputBytes } : {}),
     });
     const completedAt = this.clock.now().toISOString();
@@ -211,35 +217,38 @@ export class EvidenceService {
         : tests?.executed === 0 && node.zeroTests === 'blocking'
           ? 'incomplete'
           : 'passed';
-    const receipt = this.receipt({
-      attemptId,
-      nodeId: node.id,
-      adapter: 'command/local',
-      trust: 'verified',
-      freshness: 'fresh',
-      status,
-      inputFingerprint,
-      startedAt,
-      completedAt,
-      ...(result.exitCode !== null ? { exitCode: result.exitCode } : {}),
-      ...(node.cache
-        ? {
-            validUntil: new Date(
-              Date.parse(completedAt) + (node.cacheTtlMs ?? 60 * 60_000),
-            ).toISOString(),
-          }
-        : {}),
-      ...(result.pid !== undefined
-        ? {
-            process: {
-              pid: result.pid,
-              ...(result.processIdentity ? { identity: result.processIdentity } : {}),
-            },
-          }
-        : {}),
-      artifacts,
-      findings,
-    });
+    const receipt = this.receipt(
+      {
+        attemptId,
+        nodeId: node.id,
+        adapter: 'command/local',
+        trust: 'verified',
+        freshness: 'fresh',
+        status,
+        inputFingerprint,
+        startedAt,
+        completedAt,
+        ...(result.exitCode !== null ? { exitCode: result.exitCode } : {}),
+        ...(node.cache
+          ? {
+              validUntil: new Date(
+                Date.parse(completedAt) + (node.cacheTtlMs ?? 60 * 60_000),
+              ).toISOString(),
+            }
+          : {}),
+        ...(result.pid !== undefined
+          ? {
+              process: {
+                pid: result.pid,
+                ...(result.processIdentity ? { identity: result.processIdentity } : {}),
+              },
+            }
+          : {}),
+        artifacts,
+        findings,
+      },
+      options.compositionDigest,
+    );
     await this.persist(receipt, options);
     return { receipt };
   }
@@ -279,25 +288,28 @@ export class EvidenceService {
     const startedAt = this.clock.now().toISOString();
     await this.journal?.recordIntent(attemptId, node.id, startedAt);
     if (!this.adapters.services) {
-      const receipt = this.receipt({
-        attemptId,
-        nodeId: node.id,
-        adapter: `service/${node.mode}`,
-        trust: 'observed',
-        freshness: 'fresh',
-        status: 'incomplete',
-        inputFingerprint,
-        startedAt,
-        completedAt: this.clock.now().toISOString(),
-        artifacts: [],
-        findings: [
-          {
-            code: 'service-adapter-unavailable',
-            severity: 'error',
-            summary: 'No service adapter is available for this Evidence run',
-          },
-        ],
-      });
+      const receipt = this.receipt(
+        {
+          attemptId,
+          nodeId: node.id,
+          adapter: `service/${node.mode}`,
+          trust: 'observed',
+          freshness: 'fresh',
+          status: 'incomplete',
+          inputFingerprint,
+          startedAt,
+          completedAt: this.clock.now().toISOString(),
+          artifacts: [],
+          findings: [
+            {
+              code: 'service-adapter-unavailable',
+              severity: 'error',
+              summary: 'No service adapter is available for this Evidence run',
+            },
+          ],
+        },
+        options.compositionDigest,
+      );
       await this.persist(receipt, options);
       return { receipt };
     }
@@ -331,28 +343,31 @@ export class EvidenceService {
       }
     } catch (error) {
       await session?.stop();
-      const receipt = this.receipt({
-        attemptId,
-        nodeId: node.id,
-        adapter: `service/${node.mode}`,
-        trust: node.mode === 'managed' ? 'verified' : 'observed',
-        freshness: 'fresh',
-        status: 'incomplete',
-        inputFingerprint,
-        startedAt,
-        completedAt: this.clock.now().toISOString(),
-        artifacts: [],
-        findings: [
-          {
-            code: 'service-start-failed',
-            severity: 'error',
-            summary: redactEvidenceText(
-              error instanceof Error ? error.message : String(error),
-              this.redactionOptions(node, options),
-            ).contents,
-          },
-        ],
-      });
+      const receipt = this.receipt(
+        {
+          attemptId,
+          nodeId: node.id,
+          adapter: `service/${node.mode}`,
+          trust: node.mode === 'managed' ? 'verified' : 'observed',
+          freshness: 'fresh',
+          status: 'incomplete',
+          inputFingerprint,
+          startedAt,
+          completedAt: this.clock.now().toISOString(),
+          artifacts: [],
+          findings: [
+            {
+              code: 'service-start-failed',
+              severity: 'error',
+              summary: redactEvidenceText(
+                error instanceof Error ? error.message : String(error),
+                this.redactionOptions(node, options),
+              ).contents,
+            },
+          ],
+        },
+        options.compositionDigest,
+      );
       await this.persist(receipt, options);
       return { receipt };
     }
@@ -372,21 +387,24 @@ export class EvidenceService {
         summary: `Service ${node.id} output exceeded the configured limit`,
       });
     }
-    const receipt = this.receipt({
-      attemptId,
-      nodeId: node.id,
-      adapter: `service/${node.mode}`,
-      trust: observation.trust,
-      freshness: 'fresh',
-      status: observation.status === 'ready' ? 'passed' : 'failed',
-      inputFingerprint,
-      startedAt,
-      completedAt: this.clock.now().toISOString(),
-      ...(observation.exitCode !== undefined ? { exitCode: observation.exitCode } : {}),
-      ...(observation.process ? { process: observation.process } : {}),
-      artifacts: await this.serviceArtifacts(node, observation, options),
-      findings,
-    });
+    const receipt = this.receipt(
+      {
+        attemptId,
+        nodeId: node.id,
+        adapter: `service/${node.mode}`,
+        trust: observation.trust,
+        freshness: 'fresh',
+        status: observation.status === 'ready' ? 'passed' : 'failed',
+        inputFingerprint,
+        startedAt,
+        completedAt: this.clock.now().toISOString(),
+        ...(observation.exitCode !== undefined ? { exitCode: observation.exitCode } : {}),
+        ...(observation.process ? { process: observation.process } : {}),
+        artifacts: await this.serviceArtifacts(node, observation, options),
+        findings,
+      },
+      options.compositionDigest,
+    );
     await this.persist(receipt, options);
     if (session && observation.status !== 'ready') await session.stop();
     return {
@@ -423,19 +441,22 @@ export class EvidenceService {
             },
           ],
         };
-    const receipt = this.receipt({
-      attemptId,
-      nodeId: node.id,
-      adapter: `browser/${node.source}`,
-      trust: result.trust ?? 'observed',
-      freshness: 'fresh',
-      status: result.status,
-      inputFingerprint,
-      startedAt,
-      completedAt: this.clock.now().toISOString(),
-      artifacts: result.artifacts,
-      findings: result.findings,
-    });
+    const receipt = this.receipt(
+      {
+        attemptId,
+        nodeId: node.id,
+        adapter: `browser/${node.source}`,
+        trust: result.trust ?? 'observed',
+        freshness: 'fresh',
+        status: result.status,
+        inputFingerprint,
+        startedAt,
+        completedAt: this.clock.now().toISOString(),
+        artifacts: result.artifacts,
+        findings: result.findings,
+      },
+      options.compositionDigest,
+    );
     await this.persist(receipt, options);
     return { receipt };
   }
@@ -517,19 +538,22 @@ export class EvidenceService {
         status = decisions.length > 0 ? 'incomplete' : 'passed';
       }
     }
-    const receipt = this.receipt({
-      attemptId,
-      nodeId: node.id,
-      adapter: 'visual/structured',
-      trust: 'verified',
-      freshness: 'fresh',
-      status,
-      inputFingerprint,
-      startedAt,
-      completedAt: this.clock.now().toISOString(),
-      artifacts,
-      findings,
-    });
+    const receipt = this.receipt(
+      {
+        attemptId,
+        nodeId: node.id,
+        adapter: 'visual/structured',
+        trust: 'verified',
+        freshness: 'fresh',
+        status,
+        inputFingerprint,
+        startedAt,
+        completedAt: this.clock.now().toISOString(),
+        artifacts,
+        findings,
+      },
+      options.compositionDigest,
+    );
     await this.persist(receipt, options);
     return { receipt, decisionRequests: decisions };
   }
@@ -551,14 +575,16 @@ export class EvidenceService {
   async run(
     plan: EvidenceExecutionPlan,
     inputFingerprint: string,
-    options: EvidenceRunOptions = {},
+    options: EvidenceRunOptions,
   ): Promise<EvidenceRunResult> {
+    if (options.signal?.aborted) throw options.signal.reason;
     const attemptId = options.attemptId ?? randomUUID();
     const startedAt = this.clock.now().toISOString();
     const attempt: EvidenceAttempt = {
       apiVersion: EVIDENCE_API_VERSION,
       kind: 'EvidenceAttempt',
       attemptId,
+      compositionDigest: options.compositionDigest,
       profileId: plan.profileId,
       inputFingerprint,
       startedAt,
@@ -576,6 +602,7 @@ export class EvidenceService {
     const pending = new Set(plan.order);
     try {
       while (pending.size > 0) {
+        if (options.signal?.aborted) throw options.signal.reason;
         for (const nodeId of [...pending]) {
           const node = nodes.get(nodeId)!;
           if (!node.dependsOn.every((dependency) => checks.has(dependency))) continue;
@@ -643,6 +670,7 @@ export class EvidenceService {
     });
     const bundleBase = {
       attemptId,
+      compositionDigest: options.compositionDigest,
       profileId: plan.profileId,
       inputFingerprint,
       createdAt: completedAt,

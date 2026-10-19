@@ -1,6 +1,7 @@
 import { createHash, randomBytes } from 'node:crypto';
 
 import type { WorkflowPackage, WorkflowStep } from '../workflow-contract/types.js';
+import type { CompositionIdentitySnapshot } from '../composition/types.js';
 import { checkAction } from './guardrails.js';
 import {
   resolveDeterministicNext,
@@ -22,6 +23,7 @@ export function startRun(options: {
   workflow: WorkflowPackage;
   runId: string;
   projectSnapshotDigest: string;
+  composition: CompositionIdentitySnapshot;
   timestamp: string;
   workflowSource?: string;
   traceId?: string;
@@ -33,6 +35,7 @@ export function startRun(options: {
     workflowVersion: options.workflow.definition.metadata.version,
     workflowDigest: options.workflow.digest,
     workflowSource: options.workflowSource ?? null,
+    composition: structuredClone(options.composition),
     projectSnapshotDigest: options.projectSnapshotDigest,
     traceId: options.traceId ?? randomBytes(16).toString('hex'),
     currentStep: options.workflow.definition.entry,

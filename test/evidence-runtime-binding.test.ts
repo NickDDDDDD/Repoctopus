@@ -2,13 +2,23 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
+import { Context } from '@deepseek-ai/cordis';
 
-import { EvidenceRuntime } from '../app/evidence-runtime.js';
-import { RepoctopusRuntime } from '../domains/runtime/runtime.js';
+import { EvidenceCoordinator } from '../services/evidence-coordinator.js';
+import { CompositionIdentity } from '../services/composition-identity.js';
+import { FileRunStoreProvider } from '../plugins/run/file-run-store-provider.js';
+import { EvidenceAdapters } from '../services/evidence-adapters.js';
+import {
+  localBrowserContributor,
+  localCommandContributor,
+  localServiceContributor,
+} from '../plugins/evidence/local-adapter-contributors.js';
+import { WorkflowRunCoordinator } from '../domains/runtime/workflow-runs.js';
 import { createWorkflowPackage } from '../domains/workflow-contract/package.js';
 import type { SharedProjectConfig } from '../domains/project-configuration/types.js';
 import { FileRuntimeStore } from '../platform/runtime/file-runtime-store.js';
 import {
+  compositionFixture,
   createGitRepository,
   projectFixture,
   removeTemporaryDirectory,
@@ -17,7 +27,11 @@ import {
 } from './helpers/fixtures.js';
 
 const cleanup: string[] = [];
-afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
+const contexts: Context[] = [];
+afterEach(async () => {
+  await Promise.all(contexts.splice(0).map((context) => context.fiber.dispose()));
+  await Promise.all(cleanup.splice(0).map(removeTemporaryDirectory));
+});
 
 async function fixture() {
   const root = await temporaryDirectory('repoctopus-evidence-binding-');
@@ -54,10 +68,20 @@ async function fixture() {
   definition.steps[0]!.action.evidenceProfile = 'verify';
   const workflow = createWorkflowPackage(definition);
   const store = new FileRuntimeStore(workspace);
-  const evidence = new EvidenceRuntime(workspace);
-  const runtime = new RepoctopusRuntime(
+  const context = new Context();
+  contexts.push(context);
+  new CompositionIdentity(context, compositionFixture());
+  new FileRunStoreProvider(context, { workspaceRoot: workspace });
+  new EvidenceAdapters(context);
+  await context.plugin(localCommandContributor);
+  await context.plugin(localServiceContributor, { workspaceRoot: workspace });
+  await context.plugin(localBrowserContributor, { workspaceRoot: workspace });
+  await context.plugin(EvidenceCoordinator, { workspaceRoot: workspace });
+  const evidence = context.evidenceCoordinator;
+  const runtime = new WorkflowRunCoordinator(
     store,
     { async export() {} },
+    compositionFixture(),
     undefined,
     undefined,
     undefined,
@@ -69,7 +93,7 @@ async function fixture() {
   return { evidence, runtime, runId, waiting };
 }
 
-describe('Evidence Runtime workflow binding', () => {
+describe('EvidenceCoordinator workflow binding', () => {
   it('binds an attempt to the exact pending action and commits its bundle with the transition', async () => {
     const { evidence, runtime, runId, waiting } = await fixture();
     const result = await evidence.run('verify', 'attempt-action-bound', runId);

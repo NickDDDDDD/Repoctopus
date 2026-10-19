@@ -4,7 +4,7 @@ import { startRun } from '../domains/engine/loop.js';
 import type { TelemetryBatch } from '../domains/runtime/types.js';
 import type { TrajectoryEvent } from '../domains/trajectory/types.js';
 import { safeEventAttributes } from '../platform/telemetry/opentelemetry/mapping.js';
-import { projectFixture, workflowFixture } from './helpers/fixtures.js';
+import { compositionFixture, projectFixture, workflowFixture } from './helpers/fixtures.js';
 
 describe('telemetry mapping', () => {
   it('exports allowlisted metadata and drops paths, summaries and credentials', () => {
@@ -14,6 +14,7 @@ describe('telemetry mapping', () => {
       workflow,
       runId: 'run-telemetry',
       projectSnapshotDigest: project.digest,
+      composition: compositionFixture(),
       timestamp: '2026-01-01T00:00:00.000Z',
       traceId: '1'.repeat(32),
     });
@@ -25,6 +26,7 @@ describe('telemetry mapping', () => {
       type: 'action.completed',
       runId: run.runId,
       stateVersion: 1,
+      compositionDigest: run.composition.compositionDigest,
       data: {
         actionId: 'action-1',
         result: 'succeeded',
@@ -48,6 +50,7 @@ describe('telemetry mapping', () => {
     };
     const attributes = safeEventAttributes(batch, event);
     expect(attributes['repoctopus.action.type']).toBe('checkpoint');
+    expect(attributes['repoctopus.composition.digest']).toBe(run.composition.compositionDigest);
     expect(attributes['repoctopus.event.actionId']).toBe('action-1');
     expect(JSON.stringify(attributes)).not.toContain('C:/secret');
     expect(JSON.stringify(attributes)).not.toContain('source code');

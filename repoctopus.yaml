@@ -1,0 +1,37 @@
+apiVersion: repoctopus/v1alpha1
+kind: RepoctopusProject
+project:
+  id: repoctopus
+repositories:
+  - id: repoctopus
+    path: .
+composition:
+  plugins: []
+profiles:
+  - id: verify
+    nodes:
+      - id: typecheck
+        type: command
+        repository: repoctopus
+        executable: npm
+        args: [run, typecheck]
+        timeoutMs: 120000
+      - id: architecture
+        type: command
+        repository: repoctopus
+        dependsOn: [typecheck]
+        executable: npm
+        args: [run, check:architecture]
+        timeoutMs: 120000
+  - id: recovery-probe
+    nodes:
+      - id: interrupted-command
+        type: command
+        repository: repoctopus
+        executable: node
+        args: [-e, "setTimeout(() => process.exit(0), 30000)"]
+        timeoutMs: 60000
+evidence:
+  retention:
+    maxAgeDays: 30
+    minRecentSuccesses: 1

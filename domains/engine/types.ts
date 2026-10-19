@@ -1,4 +1,5 @@
 import type { WorkflowAction } from '../workflow-contract/types.js';
+import type { CompositionIdentitySnapshot } from '../composition/types.js';
 
 export type RunStatus = 'running' | 'waiting' | 'completed' | 'failed';
 
@@ -9,6 +10,7 @@ export interface RunState {
   workflowVersion: string;
   workflowDigest: string;
   workflowSource: string | null;
+  composition: CompositionIdentitySnapshot;
   projectSnapshotDigest: string;
   traceId: string;
   currentStep: string | null;

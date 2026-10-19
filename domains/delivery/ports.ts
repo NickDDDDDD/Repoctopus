@@ -38,7 +38,7 @@ export interface DeliveryStorePort {
 }
 
 export interface DeliveryEvidencePort {
-  assertSatisfied(bundleIds: readonly string[]): Promise<void>;
+  assertSatisfied(bundleIds: readonly string[], compositionDigest: string): Promise<void>;
 }
 
 export interface DeliveryTelemetryPort {
