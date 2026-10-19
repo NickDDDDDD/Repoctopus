@@ -7,7 +7,11 @@ import type { EffectiveProjectConfig } from '../domains/project-configuration/ty
 import { FileArtifactStore } from '../platform/evidence/file-artifact-store.js';
 import { FileEvidenceStore } from '../platform/evidence/file-evidence-store.js';
 import { LocalCommandAdapter } from '../platform/feedback/command-adapter.js';
-import { removeTemporaryDirectory, temporaryDirectory } from './helpers/fixtures.js';
+import {
+  removeTemporaryDirectory,
+  temporaryDirectory,
+  TEST_COMPOSITION_DIGEST,
+} from './helpers/fixtures.js';
 
 const cleanup: string[] = [];
 afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
@@ -58,7 +62,9 @@ async function run(zeroTests: 'warning' | 'blocking', output: string) {
     new FileArtifactStore(workspace),
     new FileEvidenceStore(workspace),
     new LocalCommandAdapter(),
-  ).run(compileEvidenceProfile(config(workspace, zeroTests, output), 'verify'), 'fingerprint');
+  ).run(compileEvidenceProfile(config(workspace, zeroTests, output), 'verify'), 'fingerprint', {
+    compositionDigest: TEST_COMPOSITION_DIGEST,
+  });
 }
 
 describe('zero test detection', () => {

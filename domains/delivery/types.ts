@@ -76,6 +76,7 @@ export interface PublicationAction {
 export interface DeliverySnapshot {
   schemaVersion: 1;
   changeId: string;
+  compositionDigest: string;
   digest: string;
   reportDigest: string;
   policyDigest: string;

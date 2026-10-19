@@ -77,6 +77,7 @@ export class DeliveryService {
     private readonly evidence: DeliveryEvidencePort,
     private readonly clock: () => Date = () => new Date(),
     private readonly telemetry?: DeliveryTelemetryPort,
+    private readonly compositionDigest: string = `sha256:${'0'.repeat(64)}`,
   ) {}
 
   async checkpoint(project: ProjectSnapshot, intent: DeliveryIntent, policy: DeliveryPolicy) {
@@ -101,7 +102,7 @@ export class DeliveryService {
     evidenceBundleIds: string[];
   }): Promise<DeliveryState> {
     this.validate(options.intent, options.policy);
-    await this.evidence.assertSatisfied(options.evidenceBundleIds);
+    await this.evidence.assertSatisfied(options.evidenceBundleIds, this.compositionDigest);
     const repositories = selectedRepositories(options.project, options.intent);
     const facts = [];
     for (const selected of options.intent.repositories)
@@ -110,6 +111,7 @@ export class DeliveryService {
       );
     const timestamp = this.clock().toISOString();
     const snapshot = createDeliverySnapshot({
+      compositionDigest: this.compositionDigest,
       intent: options.intent,
       policy: options.policy,
       reportContents: options.reportContents,
@@ -139,6 +141,7 @@ export class DeliveryService {
     actor: TrustedActor,
   ): Promise<DeliveryState> {
     const previous = await this.requireState(changeId);
+    this.assertWritableComposition(previous);
     if (
       previous.approval?.requestId === response.requestId &&
       previous.approval.snapshotDigest === response.snapshotDigest &&
@@ -167,6 +170,7 @@ export class DeliveryService {
     evidenceBundleIds: string[];
   }): Promise<DeliveryState> {
     let state = await this.requireState(options.intent.changeId);
+    this.assertWritableComposition(state);
     if (
       !state.snapshot ||
       !state.approval ||
@@ -319,6 +323,7 @@ export class DeliveryService {
 
   async refresh(changeId: string): Promise<DeliveryState> {
     const state = await this.requireState(changeId);
+    this.assertWritableComposition(state);
     const identities = state.actionResults.flatMap((result) =>
       result.mergeRequest ? [result.mergeRequest] : [],
     );
@@ -393,6 +398,14 @@ export class DeliveryService {
     return state;
   }
 
+  private assertWritableComposition(state: DeliveryState): void {
+    if (state.snapshot && state.snapshot.compositionDigest !== this.compositionDigest) {
+      throw new Error(
+        `Delivery ${state.changeId} requires composition ${state.snapshot.compositionDigest}; current composition ${this.compositionDigest} is migration_required`,
+      );
+    }
+  }
+
   private approvalDrift(
     state: DeliveryState,
     intent: DeliveryIntent,
@@ -403,6 +416,7 @@ export class DeliveryService {
   ): string[] {
     const expected = state.snapshot!;
     const drift: string[] = [];
+    if (expected.compositionDigest !== this.compositionDigest) drift.push('composition');
     if (sha256Digest(reportContents) !== expected.reportDigest) drift.push('report');
     if (deliveryPolicyDigest(policy) !== expected.policyDigest) drift.push('policy');
     if (deliveryIntentDigest(intent) !== expected.intentDigest) drift.push('intent');

@@ -1,0 +1,67 @@
+import type { Context, Plugin } from '@deepseek-ai/cordis';
+
+import type { ActionOutcome } from '../../domains/engine/types.js';
+import type { ProjectSnapshot } from '../../domains/project/types.js';
+import type { WorkflowPackage } from '../../domains/workflow-contract/types.js';
+
+interface StartInput {
+  workflow: WorkflowPackage;
+  projectSnapshot: ProjectSnapshot;
+  runId?: string;
+  workflowSource?: string;
+}
+
+interface RecordInput {
+  runId: string;
+  actionId: string;
+  status: ActionOutcome['status'];
+  summary: string;
+  eventId?: string;
+  evidenceAttemptId?: string;
+}
+
+const plugin = ((context: Context) => {
+  context.effect(() => {
+    const disposers = [
+      context.commandRouter.register({
+        name: 'run.start',
+        execute: ({ input, signal }) => context.workflowRuns.start(input as StartInput, signal),
+      }),
+      context.commandRouter.register({
+        name: 'run.status',
+        execute: ({ input, signal }) =>
+          context.workflowRuns.status((input as { runId: string }).runId, signal),
+      }),
+      context.commandRouter.register({
+        name: 'run.next',
+        execute: ({ input, signal }) =>
+          context.workflowRuns.next((input as { runId: string }).runId, new Set(), signal),
+      }),
+      context.commandRouter.register({
+        name: 'run.record',
+        execute: ({ input, signal }) => context.workflowRuns.record(input as RecordInput, signal),
+      }),
+      context.commandRouter.register({
+        name: 'run.resume',
+        execute: ({ input, signal }) =>
+          context.workflowRuns.resume(
+            input as { runId: string; currentProjectSnapshot: ProjectSnapshot },
+            signal,
+          ),
+      }),
+      context.commandRouter.register({
+        name: 'run.inspect',
+        execute: ({ input }) => context.runStore.inspect((input as { runId: string }).runId),
+      }),
+    ];
+    return () => {
+      for (const dispose of disposers.reverse()) dispose();
+    };
+  });
+}) as Plugin;
+
+Object.assign(plugin, {
+  inject: ['commandRouter', 'runStore', 'workflowRuns'],
+});
+
+export default plugin;

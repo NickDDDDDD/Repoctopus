@@ -6,7 +6,11 @@ import type { EvidenceAttempt, EvidenceReceipt } from '../domains/evidence/types
 import { FileArtifactStore } from '../platform/evidence/file-artifact-store.js';
 import { FileEvidenceStore } from '../platform/evidence/file-evidence-store.js';
 import { FileEvidenceRetention } from '../platform/evidence/retention.js';
-import { removeTemporaryDirectory, temporaryDirectory } from './helpers/fixtures.js';
+import {
+  removeTemporaryDirectory,
+  temporaryDirectory,
+  TEST_COMPOSITION_DIGEST,
+} from './helpers/fixtures.js';
 
 const cleanup: string[] = [];
 afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
@@ -36,6 +40,7 @@ describe('evidence retention', () => {
       apiVersion: 'repoctopus/v1alpha1',
       kind: 'EvidenceReceipt',
       receiptId: 'active-receipt',
+      compositionDigest: TEST_COMPOSITION_DIGEST,
       attemptId: 'active-attempt',
       nodeId: 'build',
       adapter: 'command/local',
@@ -53,6 +58,7 @@ describe('evidence retention', () => {
       apiVersion: 'repoctopus/v1alpha1',
       kind: 'EvidenceAttempt',
       attemptId: 'active-attempt',
+      compositionDigest: TEST_COMPOSITION_DIGEST,
       profileId: 'verify',
       inputFingerprint: 'fingerprint',
       startedAt: '2026-01-01T00:00:00.000Z',
@@ -61,6 +67,7 @@ describe('evidence retention', () => {
     };
     await store.saveAttempt(attempt);
     const bundle = createEvidenceBundle({
+      compositionDigest: TEST_COMPOSITION_DIGEST,
       bundleId: 'approved-bundle',
       attemptId: 'approved-attempt',
       profileId: 'verify',

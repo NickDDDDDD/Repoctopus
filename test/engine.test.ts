@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { decide, recordOutcome, startRun } from '../domains/engine/loop.js';
-import { workflowFixture } from './helpers/fixtures.js';
+import { compositionFixture, workflowFixture } from './helpers/fixtures.js';
 
 const timestamp = '2026-01-01T00:00:00.000Z';
 
@@ -12,6 +12,7 @@ describe('deterministic engine', () => {
       workflow,
       runId: 'run-engine-1',
       projectSnapshotDigest: 'project-digest',
+      composition: compositionFixture(),
       timestamp,
       traceId: '0'.repeat(32),
     });
@@ -43,6 +44,7 @@ describe('deterministic engine', () => {
       workflow,
       runId: 'run-engine-2',
       projectSnapshotDigest: 'project-digest',
+      composition: compositionFixture(),
       timestamp,
     });
     expect(decide(workflow, state, timestamp).reason).toMatch(/confirmation/i);
@@ -59,6 +61,7 @@ describe('deterministic engine', () => {
       workflow,
       runId: 'run-engine-3',
       projectSnapshotDigest: 'project-digest',
+      composition: compositionFixture(),
       timestamp,
     });
     expect(() =>

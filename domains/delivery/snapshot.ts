@@ -74,6 +74,7 @@ export function createPublicationPlan(
 }
 
 export function createDeliverySnapshot(options: {
+  compositionDigest: string;
   intent: DeliveryIntent;
   policy: DeliveryPolicy;
   reportContents: string;
@@ -98,6 +99,7 @@ export function createDeliverySnapshot(options: {
   const stable = {
     schemaVersion: 1 as const,
     changeId: options.intent.changeId,
+    compositionDigest: options.compositionDigest,
     reportDigest,
     policyDigest,
     intentDigest,
@@ -126,5 +128,6 @@ export function compareDeliverySnapshots(
   if (canonicalJson(expected.repositories) !== canonicalJson(current.repositories))
     drift.push('repositories');
   if (canonicalJson(expected.plan) !== canonicalJson(current.plan)) drift.push('plan');
+  if (expected.compositionDigest !== current.compositionDigest) drift.push('compositionDigest');
   return drift;
 }

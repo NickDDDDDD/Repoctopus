@@ -35,6 +35,32 @@ describe('multi-process runtime and OTLP delivery', () => {
     const workspace = await createGitRepository(project, 'workspace');
     const front = await createGitRepository(project, 'front');
     await createGitRepository(project, 'backend');
+    await writeFile(
+      path.join(workspace, 'repoctopus.yaml'),
+      JSON.stringify({
+        apiVersion: 'repoctopus/v1alpha1',
+        kind: 'RepoctopusProject',
+        project: { id: 'runtime-tracer' },
+        repositories: [
+          { id: 'front', path: '../front' },
+          { id: 'backend', path: '../backend' },
+        ],
+        profiles: [
+          {
+            id: 'verify',
+            nodes: [
+              {
+                id: 'check',
+                type: 'command',
+                repository: 'front',
+                executable: process.execPath,
+                args: ['-e', 'process.exit(0)'],
+              },
+            ],
+          },
+        ],
+      }),
+    );
     const environment = {
       ...process.env,
       OTEL_EXPORTER_OTLP_ENDPOINT: `http://127.0.0.1:${address.port}`,

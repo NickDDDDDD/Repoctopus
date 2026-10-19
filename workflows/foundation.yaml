@@ -3,7 +3,7 @@ kind: Workflow
 metadata:
   name: runtime-foundation
   version: 1.0.0
-  description: Repoctopus Runtime 首个纵向验证工作流
+  description: Repoctopus Cordis 插件内核纵向验证工作流
 entry: inspect
 steps:
   - id: inspect

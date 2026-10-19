@@ -151,6 +151,16 @@ for (const restriction of policy.protectedEvidenceFlow?.restrictedCalls ?? []) {
   }
 }
 
+for (const guard of policy.compositionGuards ?? []) {
+  const expression = new RegExp(guard.pattern, 'u');
+  for (const source of productionSources) {
+    const contents = await readFile(path.join(root, source), 'utf8');
+    if (expression.test(contents) && !guard.allowed.includes(source)) {
+      findings.push(`${source}: forbidden composition root /${guard.pattern}/`);
+    }
+  }
+}
+
 if (findings.length > 0) throw new Error(findings.join('\n'));
 process.stdout.write(
   `Verified ${productionSources.length} production sources, ${policy.capabilities.length} capability owners, protected Evidence flow, and legacy workflow isolation\n`,

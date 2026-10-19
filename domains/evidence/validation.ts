@@ -19,6 +19,15 @@ function assertVersion(value: Record<string, unknown>): void {
   }
 }
 
+function assertCompositionDigest(value: Record<string, unknown>, label: string): void {
+  if (
+    typeof value.compositionDigest !== 'string' ||
+    !/^sha256:[a-f0-9]{64}$/.test(value.compositionDigest)
+  ) {
+    throw new Error(`${label}.compositionDigest must be a sha256 digest`);
+  }
+}
+
 export function parseArtifactRef(value: unknown): ArtifactRef {
   const item = record(value, 'ArtifactRef');
   assertVersion(item);
@@ -31,6 +40,7 @@ export function parseArtifactRef(value: unknown): ArtifactRef {
 export function parseEvidenceReceipt(value: unknown): EvidenceReceipt {
   const item = record(value, 'EvidenceReceipt');
   assertVersion(item);
+  assertCompositionDigest(item, 'EvidenceReceipt');
   if (item.kind !== 'EvidenceReceipt' || typeof item.receiptId !== 'string') {
     throw new Error('Invalid EvidenceReceipt');
   }
@@ -42,6 +52,7 @@ export function parseEvidenceReceipt(value: unknown): EvidenceReceipt {
 export function parseEvidenceAttempt(value: unknown): EvidenceAttempt {
   const item = record(value, 'EvidenceAttempt');
   assertVersion(item);
+  assertCompositionDigest(item, 'EvidenceAttempt');
   if (item.kind !== 'EvidenceAttempt' || typeof item.attemptId !== 'string') {
     throw new Error('Invalid EvidenceAttempt');
   }
@@ -51,6 +62,7 @@ export function parseEvidenceAttempt(value: unknown): EvidenceAttempt {
 export function parseEvidenceBundle(value: unknown): EvidenceBundle {
   const item = record(value, 'EvidenceBundle');
   assertVersion(item);
+  assertCompositionDigest(item, 'EvidenceBundle');
   if (item.kind !== 'EvidenceBundle' || typeof item.bundleId !== 'string') {
     throw new Error('Invalid EvidenceBundle');
   }

@@ -34,6 +34,7 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
     'repoctopus.workflow.name': batch.run.workflowName,
     'repoctopus.workflow.version': batch.run.workflowVersion,
     'repoctopus.workflow.digest': batch.run.workflowDigest,
+    'repoctopus.composition.digest': batch.run.composition.compositionDigest,
     'repoctopus.event.id': event.eventId,
     'repoctopus.event.sequence': event.sequence,
     'repoctopus.state.version': event.stateVersion,

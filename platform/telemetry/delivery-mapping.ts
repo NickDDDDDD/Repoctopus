@@ -25,6 +25,9 @@ export function safeDeliveryAttributes(state: DeliveryState, event: DeliveryEven
     'repoctopus.delivery.event.id': event.eventId,
     'repoctopus.delivery.event.type': event.type,
     'repoctopus.delivery.repository.count': state.snapshot?.repositories.length ?? 0,
+    ...(state.snapshot
+      ? { 'repoctopus.composition.digest': state.snapshot.compositionDigest }
+      : {}),
   };
   for (const [key, value] of Object.entries(event.data)) {
     if (!SAFE_KEYS.has(key) || SENSITIVE_KEY.test(key)) continue;

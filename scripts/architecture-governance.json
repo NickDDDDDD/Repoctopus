@@ -1,7 +1,24 @@
 {
   "schemaVersion": 1,
-  "reviewedSourceRoots": ["app", "domains", "platform"],
+  "reviewedSourceRoots": ["app", "domains", "platform", "plugins", "services"],
   "capabilities": [
+    {
+      "id": "plugin-composition",
+      "disposition": "repoctopus-native",
+      "targets": ["app/boot/**", "domains/composition/**", "plugins/**", "services/**"],
+      "upstream": ["third_party/cordis", "third_party/cordis-plugin-loader"],
+      "rationale": "App Boot 把 Repoctopus 领域配置编译为唯一 Cordis 插件树，并把生命周期交给 Cordis。"
+    },
+    {
+      "id": "action-execution",
+      "disposition": "behavior-reimplemented",
+      "targets": ["domains/action/**", "platform/action/**"],
+      "upstream": [
+        "domains/comet-native/native-check-receipt.ts",
+        "domains/comet-native/native-check-receipt-storage.ts"
+      ],
+      "rationale": "采用 Intent、幂等键和 Receipt 的可恢复副作用边界，按 Repoctopus Engine Action 与多仓 Run 模型重新实现。"
+    },
     {
       "id": "engine-adopted",
       "disposition": "source-modified",
@@ -104,7 +121,7 @@
     {
       "id": "evidence-model",
       "disposition": "behavior-reimplemented",
-      "targets": ["app/evidence-runtime.ts", "domains/evidence/**", "platform/evidence/**"],
+      "targets": ["domains/evidence/**", "platform/evidence/**"],
       "upstream": [
         "domains/comet-native/native-evidence-storage.ts",
         "domains/comet-native/native-verification-evidence.ts",
@@ -218,6 +235,24 @@
       "status": "separate-append-only-facts"
     }
   ],
+  "compositionGuards": [
+    {
+      "pattern": "class\\s+(?:RepoctopusRuntime|EvidenceRuntime)\\b|ctx\\.runtime\\b",
+      "allowed": []
+    },
+    {
+      "pattern": "new\\s+WorkflowRunCoordinator\\s*\\(",
+      "allowed": ["services/workflow-runs.ts"]
+    },
+    {
+      "pattern": "new\\s+FileRuntimeStore\\s*\\(",
+      "allowed": ["plugins/run/file-run-store-provider.ts"]
+    },
+    {
+      "pattern": "new\\s+DeliveryDomainService\\s*\\(",
+      "allowed": ["plugins/delivery/file-delivery-provider.ts"]
+    }
+  ],
   "protectedEvidenceFlow": {
     "requiredBindings": [
       {
@@ -225,15 +260,15 @@
         "patterns": ["evidenceProfile: verify"]
       },
       {
-        "file": "app/evidence-runtime.ts",
+        "file": "services/evidence-coordinator.ts",
         "patterns": [
-          "implements EvidenceGatePort",
+          "export class EvidenceCoordinator extends Service",
           "current.digest !== status.bundle.inputFingerprint",
           "approvedEvidenceBundleIds()"
         ]
       },
       {
-        "file": "domains/runtime/runtime.ts",
+        "file": "domains/runtime/workflow-runs.ts",
         "patterns": ["requireSatisfiedEvidenceGate", "evidenceAttemptId"]
       },
       {
@@ -255,7 +290,7 @@
     "restrictedCalls": [
       {
         "pattern": "recordOutcome\\s*\\(",
-        "allowed": ["domains/engine/loop.ts", "domains/runtime/runtime.ts"]
+        "allowed": ["domains/engine/loop.ts", "domains/runtime/workflow-runs.ts"]
       }
     ]
   }

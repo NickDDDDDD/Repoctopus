@@ -57,6 +57,7 @@ export function projectEvidenceGate(
     workflowActionId: binding?.workflowActionId ?? null,
     workflowStepId: binding?.workflowStepId ?? null,
     workflowStateVersion: binding?.workflowStateVersion ?? null,
+    compositionDigest: bundle.compositionDigest,
     profileId: bundle.profileId,
     bundleId: bundle.bundleId,
     inputFingerprint: bundle.inputFingerprint,

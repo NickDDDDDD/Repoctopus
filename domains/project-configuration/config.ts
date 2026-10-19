@@ -19,6 +19,7 @@ import {
   type ServiceNodeConfig,
   type SharedProjectConfig,
   type VisualNodeConfig,
+  type TeamPluginConfig,
 } from './types.js';
 
 export class ProjectConfigError extends Error {
@@ -404,7 +405,16 @@ export function parseSharedProjectConfig(value: unknown): SharedProjectConfig {
   const root = object(value, 'config');
   exactKeys(
     root,
-    ['apiVersion', 'kind', 'project', 'repositories', 'profiles', 'evidence', 'delivery'],
+    [
+      'apiVersion',
+      'kind',
+      'project',
+      'repositories',
+      'profiles',
+      'composition',
+      'evidence',
+      'delivery',
+    ],
     'config',
   );
   if (root.apiVersion !== PROJECT_CONFIG_API_VERSION)
@@ -475,6 +485,39 @@ export function parseSharedProjectConfig(value: unknown): SharedProjectConfig {
     evidence = retention ? { retention } : {};
   }
   const delivery = root.delivery !== undefined ? parseDeliveryConfig(root.delivery) : undefined;
+  let composition: SharedProjectConfig['composition'];
+  if (root.composition !== undefined) {
+    const raw = object(root.composition, 'composition');
+    exactKeys(raw, ['plugins'], 'composition');
+    if (!Array.isArray(raw.plugins)) {
+      throw new ProjectConfigError('expected an array', 'composition.plugins');
+    }
+    const plugins: TeamPluginConfig[] = raw.plugins.map((item, index) => {
+      const field = `composition.plugins[${index}]`;
+      const plugin = object(item, field);
+      exactKeys(plugin, ['id', 'descriptor', 'module', 'config'], field);
+      const descriptor = string(plugin.descriptor, `${field}.descriptor`);
+      const module = string(plugin.module, `${field}.module`);
+      if (
+        path.isAbsolute(descriptor) ||
+        path.win32.isAbsolute(descriptor) ||
+        path.isAbsolute(module) ||
+        path.win32.isAbsolute(module)
+      ) {
+        throw new ProjectConfigError('plugin paths must be relative', field);
+      }
+      return {
+        id: string(plugin.id, `${field}.id`),
+        descriptor,
+        module,
+        ...(plugin.config === undefined ? {} : { config: canonicalValue(plugin.config) }),
+      };
+    });
+    if (new Set(plugins.map((plugin) => plugin.id)).size !== plugins.length) {
+      throw new ProjectConfigError('plugin ids must be unique', 'composition.plugins');
+    }
+    composition = { plugins };
+  }
 
   return {
     apiVersion: PROJECT_CONFIG_API_VERSION,
@@ -482,6 +525,7 @@ export function parseSharedProjectConfig(value: unknown): SharedProjectConfig {
     project: { id: string(project.id, 'project.id') },
     repositories,
     profiles,
+    ...(composition ? { composition } : {}),
     ...(evidence ? { evidence } : {}),
     ...(delivery ? { delivery } : {}),
   };

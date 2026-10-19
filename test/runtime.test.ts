@@ -1,10 +1,11 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { RepoctopusRuntime } from '../domains/runtime/runtime.js';
+import { WorkflowRunCoordinator } from '../domains/runtime/workflow-runs.js';
 import type { EvidenceGatePort, TelemetryBatch, TelemetryPort } from '../domains/runtime/types.js';
 import { createWorkflowPackage } from '../domains/workflow-contract/package.js';
 import { FileRuntimeStore } from '../platform/runtime/file-runtime-store.js';
 import {
+  compositionFixture,
   projectFixture,
   removeTemporaryDirectory,
   temporaryDirectory,
@@ -33,7 +34,79 @@ describe('Repoctopus runtime', () => {
     return createWorkflowPackage(definition);
   }
 
-  async function waitingAtEvidence(runtime: RepoctopusRuntime, runId: string) {
+  it('records compatible composition changes and blocks incompatible writes while keeping reads', async () => {
+    const workspace = await temporaryDirectory('repoctopus-composition-drift-');
+    cleanup.push(workspace);
+    const telemetryBefore = compositionFixture({
+      compositionDigest: `sha256:${'1'.repeat(64)}`,
+      plugins: [
+        {
+          id: 'telemetry',
+          version: '1.0.0',
+          configDigest: `sha256:${'a'.repeat(64)}`,
+          codeDigest: `sha256:${'a'.repeat(64)}`,
+          descriptorDigest: `sha256:${'a'.repeat(64)}`,
+          authorities: [],
+          stateSchemas: {},
+        },
+      ],
+    });
+    const telemetryAfter = structuredClone(telemetryBefore);
+    telemetryAfter.compositionDigest = `sha256:${'2'.repeat(64)}`;
+    telemetryAfter.plugins[0]!.codeDigest = `sha256:${'b'.repeat(64)}`;
+    telemetryAfter.plugins[0]!.descriptorDigest = `sha256:${'b'.repeat(64)}`;
+
+    const initial = new WorkflowRunCoordinator(
+      new FileRuntimeStore(workspace),
+      { async export() {} },
+      telemetryBefore,
+    );
+    await initial.start({
+      workflow: workflowFixture(),
+      projectSnapshot: projectFixture(),
+      runId: 'run-composition-drift',
+    });
+    const compatible = new WorkflowRunCoordinator(
+      new FileRuntimeStore(workspace),
+      { async export() {} },
+      telemetryAfter,
+    );
+    const proposed = await compatible.next('run-composition-drift');
+    expect(proposed.value.state.composition.compositionDigest).toBe(
+      telemetryAfter.compositionDigest,
+    );
+    expect(
+      (await new FileRuntimeStore(workspace).loadTrajectory('run-composition-drift')).map(
+        (item) => item.type,
+      ),
+    ).toEqual(['run.started', 'composition.changed', 'action.proposed']);
+
+    const incompatibleComposition = compositionFixture({
+      compositionDigest: `sha256:${'3'.repeat(64)}`,
+      plugins: [
+        {
+          id: 'workflow-runs',
+          version: '2.0.0',
+          configDigest: `sha256:${'a'.repeat(64)}`,
+          codeDigest: `sha256:${'c'.repeat(64)}`,
+          descriptorDigest: `sha256:${'c'.repeat(64)}`,
+          authorities: ['workflow-transition'],
+          stateSchemas: { run: '2' },
+        },
+      ],
+    });
+    const incompatible = new WorkflowRunCoordinator(
+      new FileRuntimeStore(workspace),
+      { async export() {} },
+      incompatibleComposition,
+    );
+    expect(
+      (await incompatible.status('run-composition-drift')).compositionCompatibility.status,
+    ).toBe('migration_required');
+    await expect(incompatible.next('run-composition-drift')).rejects.toThrow(/migration_required/i);
+  });
+
+  async function waitingAtEvidence(runtime: WorkflowRunCoordinator, runId: string) {
     await runtime.start({
       workflow: evidenceWorkflow(),
       projectSnapshot: projectFixture(),
@@ -52,9 +125,11 @@ describe('Repoctopus runtime', () => {
   it('isolates runs started from the same project snapshot', async () => {
     const workspace = await temporaryDirectory('repoctopus-run-isolation-');
     cleanup.push(workspace);
-    const runtime = new RepoctopusRuntime(new FileRuntimeStore(workspace), {
-      async export() {},
-    });
+    const runtime = new WorkflowRunCoordinator(
+      new FileRuntimeStore(workspace),
+      { async export() {} },
+      compositionFixture(),
+    );
     const projectSnapshot = projectFixture();
     const workflow = workflowFixture();
     await runtime.start({ workflow, projectSnapshot, runId: 'run-isolated-a' });
@@ -76,9 +151,11 @@ describe('Repoctopus runtime', () => {
   it('serializes concurrent writers and rejects the stale transition', async () => {
     const workspace = await temporaryDirectory('repoctopus-concurrent-writers-');
     cleanup.push(workspace);
-    const runtime = new RepoctopusRuntime(new FileRuntimeStore(workspace), {
-      async export() {},
-    });
+    const runtime = new WorkflowRunCoordinator(
+      new FileRuntimeStore(workspace),
+      { async export() {} },
+      compositionFixture(),
+    );
     await runtime.start({
       workflow: workflowFixture(),
       projectSnapshot: projectFixture(),
@@ -110,9 +187,11 @@ describe('Repoctopus runtime', () => {
   it('allows only one concurrent initializer for the same run identity', async () => {
     const workspace = await temporaryDirectory('repoctopus-concurrent-start-');
     cleanup.push(workspace);
-    const runtime = new RepoctopusRuntime(new FileRuntimeStore(workspace), {
-      async export() {},
-    });
+    const runtime = new WorkflowRunCoordinator(
+      new FileRuntimeStore(workspace),
+      { async export() {} },
+      compositionFixture(),
+    );
     const options = {
       workflow: workflowFixture(),
       projectSnapshot: projectFixture(),
@@ -129,9 +208,10 @@ describe('Repoctopus runtime', () => {
     cleanup.push(workspace);
     const telemetry = new FlakyTelemetry();
     let tick = 0;
-    const runtime = new RepoctopusRuntime(
+    const runtime = new WorkflowRunCoordinator(
       new FileRuntimeStore(workspace),
       telemetry,
+      compositionFixture(),
       () => new Date(Date.UTC(2026, 0, 1, 0, 0, tick++)),
       () => `uuid-${tick}`,
     );
@@ -141,9 +221,10 @@ describe('Repoctopus runtime', () => {
       runId: 'run-runtime-1',
     });
     expect(started.diagnostics[0]?.code).toBe('telemetry.export-failed');
-    const resumedRuntime = new RepoctopusRuntime(
+    const resumedRuntime = new WorkflowRunCoordinator(
       new FileRuntimeStore(workspace),
       telemetry,
+      compositionFixture(),
       () => new Date(Date.UTC(2026, 0, 1, 0, 1, tick++)),
       () => `resumed-${tick}`,
     );
@@ -175,9 +256,10 @@ describe('Repoctopus runtime', () => {
   it('blocks new decisions when repositories changed after a checkpoint', async () => {
     const workspace = await temporaryDirectory('repoctopus-reconcile-');
     cleanup.push(workspace);
-    const runtime = new RepoctopusRuntime(
+    const runtime = new WorkflowRunCoordinator(
       new FileRuntimeStore(workspace),
       { async export() {} },
+      compositionFixture(),
       () => new Date('2026-01-01T00:00:00.000Z'),
       () => 'resume-event',
     );
@@ -207,9 +289,10 @@ describe('Repoctopus runtime', () => {
     const changed = workflowFixture();
     changed.definition.metadata.version = '2.0.0';
     changed.digest = 'changed-workflow-digest';
-    const runtime = new RepoctopusRuntime(
+    const runtime = new WorkflowRunCoordinator(
       new FileRuntimeStore(workspace),
       { async export() {} },
+      compositionFixture(),
       () => new Date('2026-01-01T00:00:00.000Z'),
       () => 'unused',
       { load: () => Promise.resolve(changed) },
@@ -233,9 +316,11 @@ describe('Repoctopus runtime', () => {
   it('rejects a manually reported success for an evidence-protected step', async () => {
     const workspace = await temporaryDirectory('repoctopus-runtime-evidence-required-');
     cleanup.push(workspace);
-    const runtime = new RepoctopusRuntime(new FileRuntimeStore(workspace), {
-      async export() {},
-    });
+    const runtime = new WorkflowRunCoordinator(
+      new FileRuntimeStore(workspace),
+      { async export() {} },
+      compositionFixture(),
+    );
     const waiting = await waitingAtEvidence(runtime, 'run-evidence-required');
     await expect(
       runtime.record({
@@ -262,6 +347,7 @@ describe('Repoctopus runtime', () => {
           workflowActionId: input.workflowActionId,
           workflowStepId: input.workflowStepId,
           workflowStateVersion: input.workflowStateVersion,
+          compositionDigest: compositionFixture().compositionDigest,
           profileId: input.profileId,
           bundleId: 'bundle-verified',
           inputFingerprint: 'fingerprint-current',
@@ -271,9 +357,10 @@ describe('Repoctopus runtime', () => {
         });
       },
     };
-    const runtime = new RepoctopusRuntime(
+    const runtime = new WorkflowRunCoordinator(
       new FileRuntimeStore(workspace),
       { async export() {} },
+      compositionFixture(),
       undefined,
       undefined,
       undefined,
@@ -326,6 +413,7 @@ describe('Repoctopus runtime', () => {
           workflowActionId: input.workflowActionId,
           workflowStepId: input.workflowStepId,
           workflowStateVersion: input.workflowStateVersion,
+          compositionDigest: compositionFixture().compositionDigest,
           profileId: input.profileId,
           bundleId: 'bundle-stale',
           inputFingerprint: 'fingerprint-stale',
@@ -335,9 +423,10 @@ describe('Repoctopus runtime', () => {
         });
       },
     };
-    const runtime = new RepoctopusRuntime(
+    const runtime = new WorkflowRunCoordinator(
       new FileRuntimeStore(workspace),
       { async export() {} },
+      compositionFixture(),
       undefined,
       undefined,
       undefined,

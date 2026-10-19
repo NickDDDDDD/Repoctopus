@@ -26,6 +26,7 @@ export interface EvidenceTelemetryBatch {
   runId: string | null;
   attemptId: string;
   profileId: string;
+  compositionDigest: string;
   events: EvidenceTelemetryEvent[];
 }
 
@@ -124,6 +125,7 @@ export function createEvidenceTelemetryBatch(input: {
     runId: input.workflowRunId,
     attemptId: attempt.attemptId,
     profileId: attempt.profileId,
+    compositionDigest: attempt.compositionDigest,
     events: events.map((event, index) => ({ schemaVersion: 1, sequence: index + 1, ...event })),
   };
 }

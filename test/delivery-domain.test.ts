@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { TEST_COMPOSITION_DIGEST } from './helpers/fixtures.js';
 
 import { compareDeliverySnapshots, createDeliverySnapshot } from '../domains/delivery/snapshot.js';
 import {
@@ -90,6 +91,7 @@ describe('delivery contract', () => {
 
   it('generates a stable snapshot independent of repository order', () => {
     const first = createDeliverySnapshot({
+      compositionDigest: TEST_COMPOSITION_DIGEST,
       intent,
       policy,
       reportContents: 'verified',
@@ -98,6 +100,7 @@ describe('delivery contract', () => {
       createdAt: '2026-01-01T00:00:00.000Z',
     });
     const second = createDeliverySnapshot({
+      compositionDigest: TEST_COMPOSITION_DIGEST,
       intent: { ...intent, repositories: [...intent.repositories].reverse() },
       policy,
       reportContents: 'verified',
@@ -113,6 +116,7 @@ describe('delivery contract', () => {
   it('requires a clean snapshot and reports drift', () => {
     expect(() =>
       createDeliverySnapshot({
+        compositionDigest: TEST_COMPOSITION_DIGEST,
         intent,
         policy,
         reportContents: 'verified',
@@ -122,6 +126,7 @@ describe('delivery contract', () => {
       }),
     ).toThrow(/must be clean/i);
     const expected = createDeliverySnapshot({
+      compositionDigest: TEST_COMPOSITION_DIGEST,
       intent,
       policy,
       reportContents: 'verified',
@@ -130,6 +135,7 @@ describe('delivery contract', () => {
       createdAt: '2026-01-01T00:00:00.000Z',
     });
     const current = createDeliverySnapshot({
+      compositionDigest: TEST_COMPOSITION_DIGEST,
       intent,
       policy,
       reportContents: 'changed',
@@ -139,6 +145,7 @@ describe('delivery contract', () => {
     });
     expect(compareDeliverySnapshots(expected, current)).toContain('reportDigest');
     const changedEvidence = createDeliverySnapshot({
+      compositionDigest: TEST_COMPOSITION_DIGEST,
       intent,
       policy,
       reportContents: 'verified',
@@ -151,6 +158,7 @@ describe('delivery contract', () => {
 
   it('records only a trusted decision for the pending snapshot', () => {
     const snapshot = createDeliverySnapshot({
+      compositionDigest: TEST_COMPOSITION_DIGEST,
       intent,
       policy,
       reportContents: 'verified',

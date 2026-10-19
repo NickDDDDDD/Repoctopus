@@ -19,7 +19,11 @@ import { FileDeliveryStore } from '../platform/delivery/file-delivery-store.js';
 import { FileArtifactStore } from '../platform/evidence/file-artifact-store.js';
 import { FileEvidenceStore } from '../platform/evidence/file-evidence-store.js';
 import { FileEvidenceRetention } from '../platform/evidence/retention.js';
-import { removeTemporaryDirectory, temporaryDirectory } from './helpers/fixtures.js';
+import {
+  removeTemporaryDirectory,
+  temporaryDirectory,
+  TEST_COMPOSITION_DIGEST,
+} from './helpers/fixtures.js';
 
 const cleanup: string[] = [];
 afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
@@ -100,6 +104,7 @@ describe('delivery evidence closure', () => {
       redacted: true,
     });
     const approvedBundle = createEvidenceBundle({
+      compositionDigest: TEST_COMPOSITION_DIGEST,
       bundleId: 'bundle-approved',
       attemptId: 'attempt-approved',
       profileId: 'verify',
@@ -111,6 +116,7 @@ describe('delivery evidence closure', () => {
       findings: [],
     });
     const failedBundle = createEvidenceBundle({
+      compositionDigest: TEST_COMPOSITION_DIGEST,
       bundleId: 'bundle-failed',
       attemptId: 'attempt-failed',
       profileId: 'verify',
@@ -125,13 +131,17 @@ describe('delivery evidence closure', () => {
     await evidenceStore.saveBundle(failedBundle);
     const deliveryEvidence = new FileDeliveryEvidence(workspace);
     await expect(
-      deliveryEvidence.assertSatisfied([approvedBundle.bundleId]),
+      deliveryEvidence.assertSatisfied([approvedBundle.bundleId], TEST_COMPOSITION_DIGEST),
     ).resolves.toBeUndefined();
-    await expect(deliveryEvidence.assertSatisfied([failedBundle.bundleId])).rejects.toThrow(
-      /does not satisfy/i,
-    );
+    await expect(
+      deliveryEvidence.assertSatisfied([failedBundle.bundleId], TEST_COMPOSITION_DIGEST),
+    ).rejects.toThrow(/does not satisfy/i);
+    await expect(
+      deliveryEvidence.assertSatisfied([approvedBundle.bundleId], `sha256:${'f'.repeat(64)}`),
+    ).rejects.toThrow(/belongs to composition/i);
 
     const snapshot = createDeliverySnapshot({
+      compositionDigest: TEST_COMPOSITION_DIGEST,
       intent,
       policy,
       reportContents: 'verified',

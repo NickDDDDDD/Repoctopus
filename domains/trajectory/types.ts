@@ -4,6 +4,7 @@ export type TrajectoryEventType =
   | 'run.started'
   | 'action.proposed'
   | 'action.completed'
+  | 'composition.changed'
   | 'run.resumed'
   | 'recovery.reconciled';
 
@@ -15,6 +16,7 @@ export interface TrajectoryEvent {
   type: TrajectoryEventType;
   runId: string;
   stateVersion: number;
+  compositionDigest: string;
   data: Record<string, unknown>;
 }
 
@@ -23,6 +25,7 @@ export interface Checkpoint {
   runId: string;
   stateVersion: number;
   workflowDigest: string;
+  compositionDigest: string;
   trajectoryOffset: number;
   projectSnapshotDigest: string;
   artifactManifestDigest: string;

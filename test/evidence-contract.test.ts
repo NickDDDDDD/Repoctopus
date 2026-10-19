@@ -7,11 +7,13 @@ import {
 } from '../domains/evidence/gate.js';
 import { EVIDENCE_API_VERSION, type EvidenceReceipt } from '../domains/evidence/types.js';
 import { parseEvidenceBundle, parseEvidenceReceipt } from '../domains/evidence/validation.js';
+import { TEST_COMPOSITION_DIGEST } from './helpers/fixtures.js';
 
 const receipt: EvidenceReceipt = {
   apiVersion: EVIDENCE_API_VERSION,
   kind: 'EvidenceReceipt',
   receiptId: 'receipt-1',
+  compositionDigest: TEST_COMPOSITION_DIGEST,
   attemptId: 'attempt-1',
   nodeId: 'build',
   adapter: 'command/local',
@@ -30,6 +32,7 @@ describe('evidence contracts', () => {
   it('round-trips versioned receipts and bundles', () => {
     expect(parseEvidenceReceipt(JSON.parse(JSON.stringify(receipt)))).toEqual(receipt);
     const bundle = createEvidenceBundle({
+      compositionDigest: TEST_COMPOSITION_DIGEST,
       bundleId: 'bundle-1',
       attemptId: 'attempt-1',
       profileId: 'verify',
