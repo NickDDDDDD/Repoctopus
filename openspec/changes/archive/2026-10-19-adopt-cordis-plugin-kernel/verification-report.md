@@ -47,3 +47,10 @@ Windows 跳过项是 `filesystem-safety.test.ts` 中“读取期间普通文件�
 ## 待用户决定
 
 本报告只请求确认本次实现和验证结果。确认前不执行 commit、push 或 MR 操作。
+
+## 合入后复验
+
+- 用户批准报告后，实施内容通过 PR #6 合入 `main`，merge commit 为 `f41ae91a58248a55e1c923693538aecf1701a634`。
+- 本地 `main` 快进到该提交后重新执行 `npm run verify`：57 个测试文件通过，171 个测试通过，1 个 Windows 条件测试跳过；类型检查、Lint、构建、架构、来源与 OpenSpec 校验全部通过。
+- `npm run test:package-e2e` 与 `npm run test:tracer-e2e` 在合入后的 `main` 再次通过。
+- 主分支复验通过后，delta specs 已同步到主规格，本 change 归档为 `2026-10-19-adopt-cordis-plugin-kernel`。
