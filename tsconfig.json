@@ -18,6 +18,8 @@
     "app/**/*.ts",
     "domains/**/*.ts",
     "platform/**/*.ts",
+    "plugins/**/*.ts",
+    "services/**/*.ts",
     "scripts/**/*.ts",
     "test/**/*.ts",
     "vitest.config.ts"

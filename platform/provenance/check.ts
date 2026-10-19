@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
 interface ProvenanceEntry {
@@ -14,6 +14,19 @@ interface ProvenanceManifest {
   schemaVersion: number;
   upstream?: { commit?: string };
   files?: ProvenanceEntry[];
+}
+
+interface ImmutablePackageManifest {
+  name: string;
+  version: string;
+  target: string;
+  files: Array<{ path: string; sha256: string }>;
+}
+
+interface CordisManifest {
+  schemaVersion: number;
+  upstream?: { commit?: string; license?: string };
+  packages?: ImmutablePackageManifest[];
 }
 
 export interface ProvenanceCheck {
@@ -58,5 +71,65 @@ export async function checkProvenance(
         findings.push(`Source digest mismatch: ${entry.source}`);
     }
   }
-  return { valid: findings.length === 0, fileCount: manifest.files.length, findings };
+  const cordisPath = path.join(productRoot, 'third_party', 'cordis-upstream.json');
+  const cordis = JSON.parse(await readFile(cordisPath, 'utf8')) as CordisManifest;
+  if (
+    cordis.schemaVersion !== 1 ||
+    !/^[a-f0-9]{40}$/.test(cordis.upstream?.commit ?? '') ||
+    cordis.upstream?.license !== 'MIT' ||
+    !Array.isArray(cordis.packages)
+  ) {
+    findings.push('Invalid Cordis provenance manifest header');
+    return {
+      valid: false,
+      fileCount: manifest.files.length,
+      findings,
+    };
+  }
+
+  let cordisFiles = 0;
+  for (const packageEntry of cordis.packages) {
+    const packageRoot = path.join(productRoot, packageEntry.target);
+    const expected = packageEntry.files.map((entry) => entry.path).sort();
+    const actual = await listFiles(packageRoot);
+    for (const missing of expected.filter((file) => !actual.includes(file))) {
+      findings.push(`Missing Cordis file: ${packageEntry.target}/${missing}`);
+    }
+    for (const extra of actual.filter((file) => !expected.includes(file))) {
+      findings.push(`Unregistered Cordis file: ${packageEntry.target}/${extra}`);
+    }
+    for (const entry of packageEntry.files) {
+      const contents = await readFile(path.join(packageRoot, entry.path));
+      const digest = createHash('sha256').update(contents).digest('hex');
+      if (digest !== entry.sha256) {
+        findings.push(`Cordis snapshot digest mismatch: ${packageEntry.target}/${entry.path}`);
+      }
+    }
+    const packageJson = JSON.parse(
+      await readFile(path.join(packageRoot, 'package.json'), 'utf8'),
+    ) as { name?: string; version?: string };
+    if (packageJson.name !== packageEntry.name || packageJson.version !== packageEntry.version) {
+      findings.push(
+        `Cordis package identity mismatch: ${packageEntry.name}@${packageEntry.version}`,
+      );
+    }
+    cordisFiles += packageEntry.files.length;
+  }
+
+  return {
+    valid: findings.length === 0,
+    fileCount: manifest.files.length + cordisFiles,
+    findings,
+  };
+}
+
+async function listFiles(directory: string, prefix = ''): Promise<string[]> {
+  const result: string[] = [];
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    const relative = prefix ? `${prefix}/${entry.name}` : entry.name;
+    const absolute = path.join(directory, entry.name);
+    if (entry.isDirectory()) result.push(...(await listFiles(absolute, relative)));
+    else if (entry.isFile()) result.push(relative);
+  }
+  return result.sort();
 }

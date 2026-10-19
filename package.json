@@ -2,19 +2,30 @@
   "name": "repoctopus",
   "version": "0.1.0",
   "private": true,
-  "description": "Deterministic multi-repository runtime for team agent workflows",
+  "description": "Deterministic multi-repository delivery orchestration for team agents",
   "type": "module",
+  "workspaces": [
+    "third_party/cordis",
+    "third_party/cordis-plugin-loader"
+  ],
   "bin": {
     "repoctopus": "bin/repoctopus.js"
   },
   "files": [
     "bin",
     "dist",
+    "app",
     "docs",
     "domains",
     "platform",
+    "plugins",
+    "services",
     "workflows",
     "third_party/comet",
+    "third_party/cordis",
+    "third_party/cordis-plugin-loader",
+    "third_party/cordis-upstream.json",
+    "third_party/cordis-upstream.md",
     "README.md"
   ],
   "engines": {
@@ -26,9 +37,9 @@
     "check:brand": "node scripts/check-brand.mjs",
     "check:architecture": "node scripts/check-architecture.mjs",
     "check:provenance": "node scripts/check-provenance.mjs",
-    "format": "prettier --write app domains platform scripts test workflows deploy third_party docs openspec README.md package.json tsconfig.json eslint.config.js vitest.config.ts",
-    "format:check": "prettier --check app domains platform scripts test workflows deploy third_party docs openspec README.md package.json tsconfig.json eslint.config.js vitest.config.ts",
-    "lint": "eslint app domains platform scripts test",
+    "format": "prettier --write app domains platform plugins services scripts test workflows deploy third_party docs openspec README.md package.json tsconfig.json eslint.config.js vitest.config.ts",
+    "format:check": "prettier --check app domains platform plugins services scripts test workflows deploy third_party docs openspec README.md package.json tsconfig.json eslint.config.js vitest.config.ts",
+    "lint": "eslint app domains platform plugins services scripts test",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:package-e2e": "vitest run test/e2e/package.e2e.test.ts",
@@ -38,6 +49,10 @@
     "verify": "npm run typecheck && npm run lint && npm run build && npm test && npm run check:generated && npm run check:brand && npm run check:architecture && npm run check:provenance && npm run spec:validate"
   },
   "dependencies": {
+    "@deepseek-ai/cordis": "file:third_party/cordis",
+    "@deepseek-ai/cordis-plugin-loader": "file:third_party/cordis-plugin-loader",
+    "@deepseek-ai/cosmokit": "1.8.5",
+    "@deepseek-ai/schemastery": "3.18.4",
     "@opentelemetry/api": "1.9.0",
     "@opentelemetry/api-logs": "0.223.0",
     "@opentelemetry/exporter-logs-otlp-http": "0.223.0",
@@ -48,6 +63,7 @@
     "@opentelemetry/sdk-metrics": "2.12.0",
     "@opentelemetry/sdk-trace-base": "2.12.0",
     "@opentelemetry/semantic-conventions": "1.43.0",
+    "@standard-schema/spec": "1.1.0",
     "playwright-core": "1.64.1",
     "yaml": "2.9.1"
   },
