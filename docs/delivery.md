@@ -22,8 +22,11 @@ Repoctopus 将本地开发保存与团队共享发布分开。功能分支上的
 - change 和仓库选择；
 - 每仓源分支、HEAD tree、目标分支及远端基线；
 - 验证报告、交付策略和动作计划摘要。
+- 当前 composition digest，以及每个 Evidence Bundle 的相同 composition 身份。
 
 IDE Adapter 应显示 `HumanDecisionRequest`。CLI 降级使用 `approval review`，要求交互式终端。批准以后，任何代码树、报告、策略、分支、仓库选择或目标基线变化都会让批准失效。
+
+Delivery 状态来自不兼容 composition 时仍可查询，但不能继续批准、发布或刷新。使用者必须显式迁移或重新准备交付快照，不能把旧插件语义下的批准带入新组合。
 
 ## 部分发布与恢复
 

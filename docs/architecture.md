@@ -1,75 +1,113 @@
-# Runtime 架构
+# 插件内核架构
 
-Repoctopus 把确定性领域规则与文件、进程、浏览器、Git 和遥测副作用分开。Runtime 是唯一的 composition root；Engine 不直接访问这些平台能力。
+Repoctopus 使用 Cordis 作为唯一应用 Runtime。Cordis 管理 Context、Service、依赖、Fiber、Effect 与 Loader；Repoctopus 不再建立同层的产品 Runtime 或第二套依赖容器。确定性 Engine 保持纯函数，跨进程 Run、Evidence、Action 和 Delivery 事实保存在 `.repoctopus/`。
 
 ```text
-IDE / Agent / CLI
-        │ versioned request, response and CLI envelope
-        ▼
-┌──────────────────────────────────────────────────────────┐
-│ Runtime composition roots                               │
-│                                                          │
-│ RepoctopusRuntime          EvidenceRuntime                │
-│ 工作流状态与恢复            实施反馈、恢复与 Gate 投影       │
-└──────────────┬───────────────────────┬───────────────────┘
-               │                       │
-       ┌───────▼────────┐      ┌───────▼─────────────────┐
-       │ Pure domains   │      │ Project configuration   │
-       │ Engine         │      │ Profile → immutable DAG │
-       │ Workflow       │      │ Fingerprint / Gate      │
-       │ Delivery       │      │ Human Decision          │
-       └───────┬────────┘      └───────────┬─────────────┘
-               │                           │ ports
-       ┌───────▼───────────────────────────▼─────────────┐
-       │ Platform adapters                              │
-       │ Git · process · command · service · browser    │
-       │ Artifact Store · Journal · lease · OTLP        │
-       └────────────────────────────────────────────────┘
+CLI / IDE / API Application Plugin
+                 │ versioned request / result
+                 ▼
+┌────────────────────────────────────────────────────────────┐
+│ App Boot                                                   │
+│ 领域配置 → 静态准入 → composition digest → Cordis Loader   │
+└──────────────────────────┬─────────────────────────────────┘
+                           ▼
+┌────────────────────────────────────────────────────────────┐
+│ Cordis Context / Service / Fiber / Effect                  │
+│                                                            │
+│ Project     CommandRouter     WorkflowRuns     RunStore     │
+│ ActionDispatcher  EvidenceCoordinator  Delivery  Telemetry │
+│       ▲ Provider               ▲ Contributor               │
+└───────┼────────────────────────┼────────────────────────────┘
+        │                        │
+        ▼                        ▼
+┌──────────────────┐   ┌─────────────────────────────────────┐
+│ Pure domains     │   │ Platform mechanisms                 │
+│ Engine / rules   │   │ file / Git / process / browser/OTel │
+│ state / facts    │   │ lock / Journal / atomic write       │
+└──────────────────┘   └─────────────────────────────────────┘
 ```
 
-## 配置与项目接入
+## 各层职责
 
-`repoctopus.yaml` 是 Git 跟踪的团队事实，包含逻辑仓库、Evidence Profile、保留规则和 `delivery` 策略。`.repoctopus/local.yaml` 只覆盖本机路径、端口、浏览器位置、视觉反馈交换目录和资源上限。
+- `domains/` 保存纯 Engine、Aggregate、事实类型和确定性规则，不读取 Cordis Context。
+- `services/` 定义直接继承 Cordis `Service` 的产品契约与注册表。
+- `plugins/` 提供 Service Provider、Contributor 和 Application Plugin。
+- `platform/` 实现文件、Git、进程、浏览器与 OpenTelemetry 机制。
+- `app/` 负责 App Boot 和外部协议，不拥有工作流状态转换规则。
 
-`project detect` 只生成本机草稿。Agent 可以补全候选，但正式配置必须经过绑定候选摘要、当前配置摘要和 reconcile diff 的 Human Decision。具体流程见 [项目接入](project-onboarding.md)。
+一对一能力使用 Service Provider。一对多能力使用 Contributor，通过 `ctx.effect(() => registry.register(value))` 登记；所属 Fiber 卸载时登记自动撤销。依赖等待、激活顺序与级联卸载由 Cordis 处理，composition compiler 不复制这套状态机。
 
-## Evidence Runtime
+## Bootstrap 与 Project composition
 
-Evidence Runtime 按以下顺序工作：
+`bootstrap` composition 不要求正式项目配置，只装载项目探测、配置接入、来源检查和浏览器诊断。`project` composition 在有效 `repoctopus.yaml` 存在时增加 Run、Action、Evidence、Delivery 与 Telemetry。
 
-1. 加载并规范化共享配置与本机覆盖，计算各自摘要。
-2. 将 Profile 编译为不可变 DAG，在启动副作用前拒绝循环和未知依赖。
-3. 采集仓库 HEAD、tree、未提交文件内容和工具身份，形成输入指纹。
-4. 取得 Profile lease，按 DAG 可执行层并行运行 Adapter，并追加保存 Attempt、Journal、Receipt 与 Artifact。
-5. 再次采集输入指纹。开始与结束不一致时，Evidence 标记为 `superseded`。
-6. 聚合 Bundle，并投影为只含稳定事实的 `EvidenceGateProjection`。
-7. 本地事实落盘后写入遥测 outbox，再通过 OTLP 导出允许列表元数据。
+公共入口都必须经 App Boot。当前已切换的真实调用链为：
 
-统一 Profile 执行器支持命令、Managed/Attached 服务、组合 readiness、浏览器 Journey 和结构化视觉检查。Managed 服务在依赖它的 Journey 和视觉节点结束后按逆拓扑顺序关闭；Attached 服务只观察，不接管生命周期。并行节点产生的 Receipt 按稳定拓扑序写入 Bundle，避免调度时序改变审计结果。
+```text
+project probe
+CLI → App Boot → CommandRouter → project.probe Contributor → Git Project Provider
 
-## Gate 边界
+run start/status/next/record/resume
+CLI → App Boot → CommandRouter → run.* Contributor → WorkflowRuns Service
 
-必需节点只有同时满足 `status=passed`、`trust=verified` 且 freshness 不是 `superseded` 才能满足 Gate。系统浏览器或无法核对 build identity 的 Attached 服务产生 `observed`，可用于诊断，但不能推进正式 Verify。
+evidence plan/run/status/resume/inspect/clean
+CLI → App Boot → CommandRouter → evidence.* Contributor → EvidenceCoordinator Service
 
-工作流 Evidence 还会绑定 `runId`、当前 `actionId`、`stepId`、`stateVersion` 和 Profile。核心 Runtime 持有该 Run 的转换锁后重新读取当前状态并重新计算多仓输入指纹；只有全部绑定仍一致时，才把 Bundle ID、下一状态、Trajectory 和 Checkpoint 写入同一个可恢复事务。锁外生成的 Gate Projection 是可检查事实，不是可重复使用的授权票据。
+delivery checkpoint/prepare/status/decide/publish/refresh
+CLI → App Boot → CommandRouter → delivery.* Contributor → Delivery Service
 
-## 恢复与并发
+project detect/prepare/review 与 browser/provenance 维护
+CLI → App Boot → CommandRouter → 对应 Contributor → ProjectOnboarding 或 BrowserMaintenance Service
+```
 
-- Attempt、节点 intent/completion Journal、运行上下文和进程登记都写入 `.repoctopus/`。
-- 同一 Profile 的并发运行通过带 PID 创建身份的 lease 隔离。
-- 恢复不会静默重跑已经开始但没有 Receipt 的命令；该节点变为 `incomplete`。
-- Managed 服务只在进程身份和 lease 所有权同时匹配时终止进程树。
-- 输入在中断期间变化时，已收集证据变为 `superseded`。
-- Artifact Store 允许并行节点写入相同内容：竞争写入者必须重新读取并核对目标字节，只有摘要和内容一致才视为去重成功。该规则兼容 Windows 的 `EPERM` 与 POSIX 的 `EEXIST` 差异。
-- Checkpoint 保存 Runtime 已接受的 Evidence Bundle。Retention 同时保护这些 Bundle、Delivery 批准 Bundle、活动 Attempt、每个 Run/Profile 的近期成功与失败审计证据；任一 Run 存在待恢复转换时不执行删除。
+静态 Plugin Descriptor 只用于 import 前准入、来源、权限类别、状态兼容和审计。运行期依赖仍由插件自身的 Cordis `inject` 声明。内置插件的 `codeDigest` 由其登记的实际源码文件计算。
+
+## Run、Engine 与 RunStore
+
+Run 是跨进程持久化 Aggregate，不对应一个长期 Fiber。每个命令可以创建新的 App 与 Service Fiber，再从 RunStore、Transition Journal 和 Checkpoint 恢复。
+
+Engine 只根据 Workflow、Run State 和已经核对的事实计算下一状态。RunStore 负责同一 Run 的写锁、状态版本、Journal、原子提交、Trajectory、Checkpoint、幂等和崩溃重放。WorkflowRuns 负责应用用例与 Engine 调用，不得绕过 RunStore 写入状态。
+
+## Action Intent 与 Receipt
+
+外部副作用不能占用 Run 锁。WorkflowRuns 使用两个受保护转换连接动作执行：
+
+1. 第一笔 Run 事务提交 `action.proposed`。
+2. 释放 Run 锁后，ActionDispatcher 保存 Intent 和幂等键。
+3. Contributor Adapter 执行动作或等待人工结果，并保存 Receipt。
+4. 第二笔 Run 事务核对当前待处理 Action、Receipt 和所需 Evidence，再提交 Outcome。
+
+第一条纵切提供 Manual Action Contributor。Intent 与 Receipt 独立保存在 `.repoctopus/actions/`，Trajectory 的 `action.completed` 事件记录 Receipt ID。
+
+## Evidence 与 Gate
+
+Evidence 保持 Attempt、Node Journal、Receipt、Artifact、Bundle 与 Gate Projection 的独立生命周期。Evidence Provider 不能写 Run。WorkflowRuns 在持有 RunStore 转换锁时重新核对 Gate 的 `runId`、`actionId`、`stepId`、`stateVersion`、Profile、多仓输入指纹、freshness 和 trust，然后把接受的 Bundle 与下一状态一同提交。
+
+命令、服务、浏览器和视觉采集由 Contributor 通过 Effect 登记到 EvidenceAdapters。EvidenceCoordinator 每次执行按当前 composition 创建适配器集合；Contributor 卸载会撤销登记，不存在旁路组合根。公共 Run 入口只通过 Cordis Service 访问 Gate。
+
+## 生命周期与长任务
+
+Cordis Effect 持有监听器、注册项、Timer、Watcher、进程和浏览器。WorkflowRuns、EvidenceCoordinator 与 Delivery 各自持有已经接纳的操作。Service 卸载时停止接纳新操作；安全操作通过 AbortSignal 取消；已经越过 Journal 边界的操作完成到可恢复点。异步 disposer 只进行有界排空，超时把 `OPERATION_DRAIN_TIMEOUT` 写入 App 生命周期诊断，并保留持久事实供下次启动恢复。
+
+App Boot 关闭时先把 Loader composition 更新为空并等待子 Fiber 的异步 disposer，再释放根 Context。关闭返回意味着插件资源已经释放，或已经产生明确的可恢复超时诊断。
+
+普通插件重载使用 Cordis Loader 和 Fiber，不建立产品级 Runtime Handoff。长任务的权威状态在 Store、Journal 与 Checkpoint，不在旧 Fiber 内存。
+
+## Composition 身份
+
+规范化 composition digest、共享配置摘要、本机覆盖摘要，以及影响语义的 Provider、Contributor 身份会绑定到 Run、Checkpoint、Evidence、Action Intent/Receipt、Delivery Snapshot、Trajectory 与允许列表遥测。恢复或写入时：
+
+- 摘要相同，继续执行。
+- 变化被状态契约明确声明为兼容，记录 `composition.changed`。
+- Engine、RunStore、Evidence Gate 或 Action Adapter 不兼容，Run 进入 `migration_required`；只读查询仍可使用。
 
 ## 触手、吸盘、神经与眼睛
 
-- **触手**连接并探测多个独立 Git 仓库，保存逻辑 identity，不把本机绝对路径写进共享配置。
-- **吸盘**收集命令、服务、浏览器、测试、Artifact 和 Gate 事实。
-- **神经**由版本化 CLI envelope、Human Decision、Adapter 端口和 Journal 事件组成。
-- **眼睛**由 Browser Journey、截图 Artifact 和结构化 Visual Inspection 协议组成。
+- **触手**连接并探测多个独立 Git 仓库，保存逻辑 identity。
+- **吸盘**收集 Git、命令、测试、CI、浏览器画面和运行日志等证据。
+- **神经**是 IDE Adapter、Hook、版本化协议、Cordis Service 与事件。
+- **眼睛**提供 Browser Journey、截图 Artifact 和结构化视觉检查。
 
 ## 与上游来源的关系
 
-采用的 Comet 代码保留在 `third_party/comet/` 的来源清单中。产品公开模块和命令只使用 Repoctopus 命名。来源校验用于确认许可证、固定上游提交、原始摘要和本地改造摘要，没有把上游目录结构当成产品架构。
+Cordis Core 4.0.4 与 Plugin Loader 1.0.5 的未修改快照位于 `third_party/`，来源检查固定许可证、上游提交和逐文件摘要。Comet 是 Engine、受保护转换、Evidence、Journal、Checkpoint、恢复和 Receipt 等功能语义的参考；Repoctopus 按多仓与团队交付需求决定采用、改写或重构，来源关系由机器清单与架构治理记录。

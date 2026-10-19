@@ -1,6 +1,7 @@
 # feedback-collection Specification
 
 ## Purpose
+
 定义 Repoctopus 如何按可审查的依赖图执行命令、管理或观察服务、采集浏览器与视觉反馈，并在多 Agent 环境中安全恢复和释放资源。
 
 ## Requirements

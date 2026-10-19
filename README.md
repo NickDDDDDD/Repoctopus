@@ -1,8 +1,8 @@
 # Repoctopus
 
-Repoctopus 是面向团队 Agent 开发的多仓工作流 Runtime。它把项目探测、确定性阶段推进、运行轨迹、断点恢复和 OpenTelemetry 反馈放进同一个可检查的内核，IDE 与 Agent 只通过稳定协议调用它。
+Repoctopus 是面向团队 Agent 开发的多仓交付编排器。它把项目探测、确定性阶段推进、运行轨迹、断点恢复和 OpenTelemetry 反馈放进同一个可检查的插件系统，IDE 与 Agent 只通过稳定协议调用它。Cordis 是唯一应用 Runtime；Repoctopus 的能力以 Service、Provider 和 Contributor 组成。
 
-当前版本包含 Runtime 基础和交付治理纵切：探测同级 Git 仓库，确定性推进工作流，自动创建策略允许的本地 checkpoint commit，把验证报告绑定为多仓交付快照，并在用户通过 IDE 或 CLI 交互批准后可恢复地执行 push 与 MR 动作。Repoctopus 只读取 MR 合入事实，不自动 merge。
+当前版本包含运行基础和交付治理纵切：探测同级 Git 仓库，确定性推进工作流，自动创建策略允许的本地 checkpoint commit，把验证报告绑定为多仓交付快照，并在用户通过 IDE 或 CLI 交互批准后可恢复地执行 push 与 MR 动作。Repoctopus 只读取 MR 合入事实，不自动 merge。
 
 ## 快速开始
 
@@ -70,3 +70,5 @@ npm run test:tracer-e2e
 ```
 
 完整验证还包含类型检查、Lint、确定性构建、来源摘要检查、OpenSpec 严格校验和实际 npm 打包安装。
+
+仓库自身提交了 `repoctopus.yaml`，因此可以用同一条 Project composition 执行自举验证。该配置也是团队项目配置的最小可运行参考。

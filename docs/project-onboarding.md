@@ -4,7 +4,7 @@ Repoctopus 使用“确定性扫描 → Agent 补全 → 用户确认”建立�
 
 ## 配置边界
 
-- `repoctopus.yaml` 进入 Git，保存逻辑仓库、Evidence Profile、保留规则和交付策略。
+- `repoctopus.yaml` 进入 Git，保存逻辑仓库、Evidence Profile、团队插件、保留规则和交付策略。
 - `.repoctopus/local.yaml` 被 Git 忽略，只保存本机仓库路径、端口、浏览器路径、视觉反馈交换目录和资源上限。
 - `.repoctopus/drafts/` 和 `.repoctopus/decisions/` 是本机接入状态，不进入业务仓。
 
@@ -30,6 +30,14 @@ $draft
 让 Agent 读取 `$draft`，核对各仓 README、构建文件和团队约定，将完整候选写到本机文件，例如 `.repoctopus/drafts/project-candidate.yaml`。Agent 应处理全部 `unresolved`，并保留探测无法重建的人工字段，例如 Evidence 保留规则与 `delivery` 策略。
 
 候选必须通过 [项目配置 Schema](schemas/project-config.schema.json)。共享仓库路径使用相对于 workspace 的路径；成员机器上的绝对路径写入 `.repoctopus/local.yaml`。
+
+### 团队插件可信边界
+
+团队插件只能在 `repoctopus.yaml` 的 `composition.plugins` 中声明。每项同时指定静态 Descriptor、模块入口和可选领域配置；两个路径都相对于 workspace。Repoctopus 在执行模块前核对插件 ID、契约版本、来源、能力、权限、状态 Schema 和代码摘要，任一项不符都会拒绝启动，模块求值副作用不会发生。
+
+静态 Descriptor 中的 `configSchema` 使用受限且可审计的 JSON Schema 子集：`type`、`properties`、`required`、`additionalProperties`、`items`、`enum` 和 `const`。不支持的关键字会在准入阶段直接拒绝，不能退化为导入插件后再校验。
+
+`.repoctopus/local.yaml` 不能新增插件、替换 Provider 或扩大权限。团队不直接维护 `cordis.yml`，也不在配置中表达 Loader 或 Fiber；App Boot 只把已经准入的领域插件翻译为 Loader Entry。
 
 ## 3. 准备人工决定
 
