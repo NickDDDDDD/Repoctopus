@@ -6,6 +6,7 @@
 - 版本：`0.4.5`
 - Commit：`575ab0d172e8105257b3c9172b8c8a9b628960ca`
 - 许可证：MIT，原文保存在同目录 `LICENSE`
+- 2026-10-21 复核：`master` 仍指向该源码提交，没有上游漂移；`0.4.5` 发布标签指向 `c90af44a4474662d7853aae76ce785404974fb0a`，其后只有 README 提交。机器基线分别固定两种身份。
 
 采用前在固定基线上运行 Engine 与 Workflow Contract 相关的 6 个测试文件，共 66 项测试通过。
 
@@ -30,6 +31,8 @@
 | 仓库输入 Fence | `domains/comet-native/native-snapshot.ts`                             | `platform/git/evidence-fingerprint.ts`       | 抽取选择前后 Fence、两次内容复核和竞态安全哈希；在上层组合多仓、配置和 Adapter 指纹                        |
 
 机器可检查的上游和目标 SHA-256 记录在 `source-manifest.json`。
+
+本轮全量复核还确认 `domains/agent-learning/experience-journal.ts` 的 claim、过期重领、owner/token fence 与 `renewClaim` 可作为长任务租约设计参考。Repoctopus Platform Event Runner 已实现独立定时 Heartbeat，因此不会直接复制只在协调阶段边界续租的 Comet 实现。完整能力矩阵见 `../upstream-alignment-audit.md`。
 
 ## 未直接采用
 

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "lastAuditedOn": "2026-10-21",
+  "upstreams": [
+    {
+      "id": "dsh",
+      "repository": "https://github.com/deepseek-ai/deepseek-harness.git",
+      "branch": "master",
+      "pinnedCommit": "687f282e8625c6b8d11ff58211a90524be2e4317",
+      "pinnedTag": "dsh-v0.2.1-rc.2",
+      "pinnedTagCommit": "687f282e8625c6b8d11ff58211a90524be2e4317",
+      "version": "0.2.1-rc.2",
+      "provenance": "third_party/dsh-adoption.json"
+    },
+    {
+      "id": "comet",
+      "repository": "https://github.com/rpamis/comet.git",
+      "branch": "master",
+      "pinnedCommit": "575ab0d172e8105257b3c9172b8c8a9b628960ca",
+      "pinnedTag": "0.4.5",
+      "pinnedTagCommit": "c90af44a4474662d7853aae76ce785404974fb0a",
+      "version": "0.4.5",
+      "provenance": "third_party/comet/source-manifest.json"
+    }
+  ]
+}

@@ -6,6 +6,8 @@
 - [x] 1.2 从固定 DSH commit 生成 Skill Registry、文件 Provider 和 Webhook 接入的完整源码依赖闭包，逐包记录直接采用、最小适配或排除理由；用来源报告证明没有因依赖数量跳过满足需求的成熟实现。
 - [x] 1.3 固定 Matt Skills 上游 commit、MIT 许可证和首批 Skill 文件，登记逐文件摘要与资源引用；运行来源检查验证任一快照漂移都会失败。
 - [x] 1.4 扩展 `third_party` 来源清单、架构能力账本和构建文件清单，执行 `npm install`、`npm run check:provenance` 与篡改 fixture 测试验证第三方快照不可静默修改。
+- [x] 1.5 把 DSH 固定基线升级到 `dsh-v0.2.1-rc.2`，同步 Cordis/Loader 与 npm 精确依赖；确认 Comet 主线未漂移，并移植适用的 Windows watcher 关闭修复。
+- [x] 1.6 按全部已治理和计划能力完成 DSH/Comet 对齐审计，增加机器基线、来源一致性检查与每日只读漂移 workflow；验证网络检查与离线 `verify` 相互隔离。
 
 ## 2. 交付可用的 Skill 能力纵切
 

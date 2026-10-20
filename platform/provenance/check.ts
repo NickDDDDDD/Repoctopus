@@ -42,6 +42,11 @@ interface DshAdoptionManifest {
   }>;
 }
 
+interface UpstreamBaselineManifest {
+  schemaVersion: number;
+  upstreams?: Array<{ id?: string; pinnedCommit?: string }>;
+}
+
 export interface ProvenanceCheck {
   valid: boolean;
   fileCount: number;
@@ -219,6 +224,25 @@ export async function checkProvenance(
     const contents = await readFile(path.join(productRoot, component.target));
     if (createHash('sha256').update(contents).digest('hex') !== component.targetSha256) {
       findings.push(`DSH adapted target digest mismatch: ${component.target}`);
+    }
+  }
+
+  const baselines = JSON.parse(
+    await readFile(path.join(productRoot, 'third_party', 'upstream-baselines.json'), 'utf8'),
+  ) as UpstreamBaselineManifest;
+  if (baselines.schemaVersion !== 1 || !Array.isArray(baselines.upstreams)) {
+    findings.push('Invalid upstream baseline manifest');
+  } else {
+    const dshBaseline = baselines.upstreams.find((entry) => entry.id === 'dsh');
+    const cometBaseline = baselines.upstreams.find((entry) => entry.id === 'comet');
+    if (
+      dshBaseline?.pinnedCommit !== dsh.upstream?.commit ||
+      dshBaseline?.pinnedCommit !== cordis.upstream?.commit
+    ) {
+      findings.push('DSH baseline disagrees with DSH or Cordis provenance');
+    }
+    if (cometBaseline?.pinnedCommit !== manifest.upstream?.commit) {
+      findings.push('Comet baseline disagrees with Comet provenance');
     }
   }
 

@@ -37,7 +37,7 @@ Repoctopus 已有可恢复 Run、Evidence 和多仓 Delivery，但还不能独�
 
 - 新增 Skill、Specification、Platform Event 与 Post-merge 领域、Service、Provider、Contributor、持久 Store、Runner 和命令入口。
 - 扩展 `repoctopus.yaml` 的 Skill、规格权威、代码平台事件和收尾路径允许列表配置；本机秘密仍通过 Credential Provider 读取。
-- 从固定 DeepSeek Harness commit `d0dca04e22f09fe04967090b2ee70587ecdad6cc` 采用或适配 Skill 与 Webhook 源码时，更新 MIT 许可证、来源清单、逐文件摘要和架构能力账本；不会引入 DSH Agent Loop、Session 或 Workspace 子系统。
+- 从固定 DeepSeek Harness `dsh-v0.2.1-rc.2` / commit `687f282e8625c6b8d11ff58211a90524be2e4317` 采用或适配 Skill 与 Webhook 源码时，更新 MIT 许可证、来源清单、逐文件摘要和架构能力账本；不会引入 DSH Agent Loop、Session 或 Workspace 子系统。DSH 与 Comet 默认分支每天执行只读漂移检查，发现变化后仍需人工能力审计和完整验证才能移动固定基线。
 - Matt Pocock Skills 使用其 MIT 许可固定版本接入，Skill 正文保持来源可追溯；具体 Skill 可以通过 Provider 优先级替换。
 - GitHub webhook secret、平台 Token 和机器 Git 身份由 Runner 环境提供，不写入项目配置、状态、日志或遥测。
 - 增加持久状态 Schema 和打包内容；本变更不承诺兼容未发布的旧 Repoctopus 状态格式。

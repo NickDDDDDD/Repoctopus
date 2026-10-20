@@ -92,13 +92,28 @@ describe('third-party provenance', () => {
     const lock = JSON.parse(await readFile(lockPath, 'utf8')) as {
       packages: Record<string, { version?: string }>;
     };
-    lock.packages['node_modules/@deepseek-ai/dsh-skill']!.version = '0.1.7-rc.2';
+    lock.packages['node_modules/@deepseek-ai/dsh-skill']!.version = '0.2.1-rc.1';
     await writeFile(lockPath, JSON.stringify(lock, null, 2));
 
     const result = await checkProvenance(root);
     expect(result.valid).toBe(false);
     expect(result.findings).toContain(
-      'DSH package lock mismatch: @deepseek-ai/dsh-skill@0.1.7-alpha.1',
+      'DSH package lock mismatch: @deepseek-ai/dsh-skill@0.2.1-rc.2',
     );
+  });
+
+  it('rejects a drift manifest that disagrees with adopted provenance', async () => {
+    const root = await provenanceFixture();
+    const baselinePath = path.join(root, 'third_party', 'upstream-baselines.json');
+    const baseline = JSON.parse(await readFile(baselinePath, 'utf8')) as {
+      upstreams: Array<{ id: string; pinnedCommit: string }>;
+    };
+    baseline.upstreams.find((entry) => entry.id === 'dsh')!.pinnedCommit =
+      'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+    await writeFile(baselinePath, JSON.stringify(baseline, null, 2));
+
+    const result = await checkProvenance(root);
+    expect(result.valid).toBe(false);
+    expect(result.findings).toContain('DSH baseline disagrees with DSH or Cordis provenance');
   });
 });

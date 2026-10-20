@@ -134,7 +134,7 @@
         "platform/skill/**"
       ],
       "upstream": [
-        "@deepseek-ai/dsh-skill@0.1.7-alpha.1",
+        "@deepseek-ai/dsh-skill@0.2.1-rc.2",
         "packages/skill/skill-filesystem/src/index.ts",
         "third_party/matt-skills"
       ],
@@ -156,8 +156,8 @@
       "disposition": "source-modified",
       "targets": ["domains/platform-events/**", "platform/events/**", "plugins/events/**"],
       "upstream": [
-        "packages/webhook/webhook-github/src/handler.ts",
-        "packages/webhook/webhook-github/src/body.ts"
+        "packages/experimental/webhook-github/src/handler.ts",
+        "packages/experimental/webhook-github/src/body.ts"
       ],
       "rationale": "采用 DSH GitHub Adapter 的先验签后解析、唯一 Header、Content-Type 与体积边界；用 Repoctopus 持久 Inbox 租约和 Receipt 替代 fire-and-forget Session dispatch。"
     },

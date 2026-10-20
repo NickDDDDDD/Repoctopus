@@ -197,6 +197,25 @@ for (const packageEntry of cordisManifest.packages ?? []) {
   cordisFiles += packageEntry.files.length;
 }
 
+const upstreamBaselines = JSON.parse(
+  await readFile(path.join(root, 'third_party', 'upstream-baselines.json'), 'utf8'),
+);
+if (upstreamBaselines.schemaVersion !== 1 || !Array.isArray(upstreamBaselines.upstreams)) {
+  findings.push('Invalid third_party/upstream-baselines.json');
+} else {
+  const dshBaseline = upstreamBaselines.upstreams.find((entry) => entry.id === 'dsh');
+  const cometBaseline = upstreamBaselines.upstreams.find((entry) => entry.id === 'comet');
+  if (
+    dshBaseline?.pinnedCommit !== dshAdoption.upstream.commit ||
+    dshBaseline?.pinnedCommit !== cordisManifest.upstream.commit
+  ) {
+    findings.push('DSH baseline disagrees with DSH or Cordis provenance');
+  }
+  if (cometBaseline?.pinnedCommit !== manifest.upstream.commit) {
+    findings.push('Comet baseline disagrees with Comet provenance');
+  }
+}
+
 if (findings.length > 0) throw new Error(findings.join('\n'));
 process.stdout.write(
   `Verified ${manifest.files.length} Comet-derived files, ${cordisFiles} immutable Cordis files, ${mattManifest.files.length} Matt Skill files, and ${dshAdoption.npmPackages.length} fixed DSH packages\n`,

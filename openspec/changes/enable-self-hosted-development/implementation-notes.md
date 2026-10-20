@@ -23,8 +23,8 @@
 
 ## DSH 与 Matt Skills 来源闭包
 
-- DSH 基线固定为 `d0dca04e22f09fe04967090b2ee70587ecdad6cc`。直接采用 `@deepseek-ai/dsh-skill@0.1.7-alpha.1`；精确依赖与 overrides 后的安装闭包为 14 个包，不包含 Agent、Session、Workspace 或 Webhook Runtime。
-- 普通 npm peer 解析会把 `^0.1.7-alpha.1` 漂移到较新的 RC，并连带安装 50 个 DSH 包；当前 package 与 lock 检查明确拒绝该结果。
+- DSH 基线已升级为 `dsh-v0.2.1-rc.2` / `687f282e8625c6b8d11ff58211a90524be2e4317`。直接采用 `@deepseek-ai/dsh-skill@0.2.1-rc.2`；精确依赖与 overrides 后的安装闭包为 13 个包，不包含 Agent、Session、Workspace 或 Webhook Runtime。上游已删除 `dsh-invariants`，当前闭包同步移除。
+- DSH 内部依赖仍包含版本范围，当前 package、override 与 lock 检查把 8 个 DSH 包统一固定在同一 RC，拒绝 release train 混装。
 - 文件 Provider 保留上游 Provider 契约、rank、按需加载、不完整发现、取消、失效与 Effect 撤销语义，移除 `ctx.fs`、DSH Home 和 DSH 沙箱耦合。来源与目标摘要登记在 `third_party/dsh-adoption.json`。
 - Matt Skills 固定为 `49dd158d1076134a641b33efb035946536778336`。五个入口 Skill 之外，加入 `grill-with-docs` 明确调用的 `grilling` 和 `domain-modeling` 依赖；逐文件摘要登记在 `third_party/matt-skills/source-manifest.json`。
 - 上游 `teach` 默认把学习文件写到命令执行目录；用户已经明确项目策略为 `.repoctopus/learning/<topic>/`。内置 Provider 在加载时追加 Repoctopus 状态策略，保持上游快照不可变并让实际内容摘要反映适配后的指令。
@@ -112,3 +112,13 @@
 - TDD 覆盖 Service 重启持久化、Runner 完成、重试等待与指数退避、处理完成时刻计算、重复失败死信、异常与自由文本诊断脱敏、过期 Lease 恢复、真实 Timer、活动处理卸载排空、claim-in-flight 卸载竞态、慢处理跨初始 Lease 续租，以及挂死 Processor 在排空超时后停止续租并由替代 Runner 恢复。卸载竞态、自由文本诊断、无界扫描、慢处理 Lease 和 Heartbeat 超时生命周期均先由失败测试复现再修复。
 - 双轴复审推动并确认五项收口：卸载后不再处理刚领取的 Delivery、领取与结算独立取时、Processor 诊断进入统一脱敏边界、长处理使用 Heartbeat 续租、排空超时后停止 Heartbeat 并释放恢复路径。规格与标准复审最终均无阻断或高优先级遗留；扫描索引明确记录为非阻断设计债。
 - 完整验证：66 个测试文件通过，234 个测试通过、1 个跳过；类型、lint、构建、生成物、品牌、架构、来源和严格规格检查全部通过。测试临时目录由 `afterEach` 清理，未生成临时日志、调试输出或其他需清理文件；保留自举 Run 与 Evidence 审计资料。
+
+## DSH / Comet 基线升级与全量审计（任务 1.5、1.6）
+
+- 2026-10-21 先执行远端 ref 核对：Comet `master` 仍固定在已审计源码 `575ab0d172e8105257b3c9172b8c8a9b628960ca`，`0.4.5` 发布标签固定在 `c90af44a4474662d7853aae76ce785404974fb0a`；两者之间只有发布后的 README 提交。DSH `master` 与 `dsh-v0.2.1-rc.2` 共同指向 `687f282e8625c6b8d11ff58211a90524be2e4317`。
+- DSH 依赖从 `0.1.7-alpha.1` 整列升级为 `0.2.1-rc.2`；Cordis/Loader 升为 `4.0.5/1.0.6`，Cosmokit/Schemastery 升为 `1.8.6/3.18.5`。`dsh-invariants` 已被上游删除，因此从 dependency、override 和 lock 中移除。
+- Blob 对比确认 Skill Registry 和 GitHub Handler 行为没有变化；Handler 仅移到 `packages/experimental`。文件 Skill Provider 的上游新增 Windows watcher close 迟到错误修复，已移植到 Repoctopus；Loader 的 module namespace/HMR 修复随不可修改 npm 快照进入。
+- `third_party/upstream-alignment-audit.md` 按 19 个治理能力和任务 4.5 至 7.x 计划面完成覆盖，补记了 Comet Experience Journal claim/renew 与 DSH Jobs/Session/Telemetry 的适用边界。相似代码只有在满足 Repoctopus 多仓、持久化和可恢复语义时才采用，不能因名称相似替换 authority。
+- `third_party/upstream-baselines.json` 成为 DSH/Comet 固定 ref 的单一机器索引；`check:provenance` 交叉校验它与 DSH、Cordis、Comet 来源清单。`check:upstream` 使用 `git ls-remote` 每日发现分支漂移，GitHub Actions 只报警、不自动升级；标准 `verify` 不访问网络，继续可离线重放。
+- 完整验证：67 个测试文件通过，238 个测试通过、1 个跳过；类型、lint、构建、生成物、品牌、19 个架构能力、来源和 9 个严格 OpenSpec 项全部通过。`check:upstream` 真实访问两个远端并确认 current；package E2E 与 tracer E2E 各 1 项通过。清理了审计用 DSH 临时 clone/worktree、npm tarball 和一次失败安装的精确 npm 日志，保留项目内来源与审计记录。
+- 只读生产依赖审计仍报告 4 个 high severity 项，全部来自既有 `@fission-ai/openspec@1.14.1 -> fast-glob -> micromatch -> braces` 链路；npm 建议升级到超出当前精确 pin 的 OpenSpec `1.14.3`。未使用 `--force` 自动改变 Specification Provider 基线，已在全量审计报告中登记为独立安全升级事项。

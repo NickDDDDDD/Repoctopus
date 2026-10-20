@@ -60,6 +60,7 @@ export class FileSkillProvider implements SkillProvider {
   private readonly transform: ((definition: SkillDefinition) => SkillDefinition) | undefined;
   private watcher?: FSWatcher;
   private watcherReady?: Promise<void>;
+  private watcherErrorListener?: (error: unknown) => void;
   private disposed = false;
 
   constructor(
@@ -123,7 +124,15 @@ export class FileSkillProvider implements SkillProvider {
   async dispose(): Promise<void> {
     if (this.disposed) return;
     this.disposed = true;
-    await this.watcher?.close();
+    if (!this.watcher) return;
+    const closing = this.watcher.close();
+    // Chokidar removes listeners during close(), but an already scheduled
+    // awaitWriteFinish poll can still emit a late Windows filesystem error.
+    // Keep an error sink attached until that closing work has settled.
+    if (this.watcherErrorListener) {
+      this.watcher.on('error', this.watcherErrorListener);
+    }
+    await closing;
   }
 
   private startWatcher(): void {
@@ -132,9 +141,22 @@ export class FileSkillProvider implements SkillProvider {
       { ignoreInitial: true },
     );
     this.watcher = watcher;
+    let ready = false;
     this.watcherReady = new Promise<void>((resolve, reject) => {
-      watcher.once('ready', resolve);
-      watcher.once('error', reject);
+      watcher.once('ready', () => {
+        ready = true;
+        resolve();
+      });
+      this.watcherErrorListener = (error) => {
+        if (!ready) {
+          reject(error instanceof Error ? error : new Error(String(error)));
+          return;
+        }
+        if (this.disposed || this.control.signal.aborted) return;
+        this.context.logger.warn(`skill provider "${this.name}" watcher failed: ${String(error)}`);
+        this.control.invalidate();
+      };
+      watcher.on('error', this.watcherErrorListener);
     });
     watcher.on('all', () => {
       if (!this.disposed && !this.control.signal.aborted) this.control.invalidate();

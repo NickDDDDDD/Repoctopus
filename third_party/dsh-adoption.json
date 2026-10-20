@@ -2,38 +2,38 @@
   "schemaVersion": 1,
   "upstream": {
     "repository": "https://github.com/deepseek-ai/deepseek-harness",
-    "commit": "d0dca04e22f09fe04967090b2ee70587ecdad6cc",
+    "commit": "687f282e8625c6b8d11ff58211a90524be2e4317",
+    "tag": "dsh-v0.2.1-rc.2",
     "license": "MIT"
   },
   "npmPackages": [
-    { "name": "@deepseek-ai/dsh-brand", "version": "0.1.7-alpha.1" },
-    { "name": "@deepseek-ai/dsh-invariants", "version": "0.1.7-alpha.1" },
-    { "name": "@deepseek-ai/dsh-llm", "version": "0.1.7-alpha.1" },
-    { "name": "@deepseek-ai/dsh-scope", "version": "0.1.7-alpha.1" },
-    { "name": "@deepseek-ai/dsh-skill", "version": "0.1.7-alpha.1" },
-    { "name": "@deepseek-ai/dsh-timeout", "version": "0.1.7-alpha.1" },
-    { "name": "@deepseek-ai/dsh-typert-protocol", "version": "0.1.7-alpha.1" },
-    { "name": "@deepseek-ai/dsh-util-crypto", "version": "0.1.7-alpha.1" },
-    { "name": "@deepseek-ai/dsh-util-values", "version": "0.1.7-alpha.1" }
+    { "name": "@deepseek-ai/dsh-brand", "version": "0.2.1-rc.2" },
+    { "name": "@deepseek-ai/dsh-llm", "version": "0.2.1-rc.2" },
+    { "name": "@deepseek-ai/dsh-scope", "version": "0.2.1-rc.2" },
+    { "name": "@deepseek-ai/dsh-skill", "version": "0.2.1-rc.2" },
+    { "name": "@deepseek-ai/dsh-timeout", "version": "0.2.1-rc.2" },
+    { "name": "@deepseek-ai/dsh-typert-protocol", "version": "0.2.1-rc.2" },
+    { "name": "@deepseek-ai/dsh-util-crypto", "version": "0.2.1-rc.2" },
+    { "name": "@deepseek-ai/dsh-util-values", "version": "0.2.1-rc.2" }
   ],
   "components": [
     {
       "id": "skill-registry",
       "source": "packages/skill/skill/src/index.ts",
       "disposition": "direct-package",
-      "package": "@deepseek-ai/dsh-skill@0.1.7-alpha.1"
+      "package": "@deepseek-ai/dsh-skill@0.2.1-rc.2"
     },
     {
       "id": "skill-filesystem",
       "source": "packages/skill/skill-filesystem/src/index.ts",
-      "sourceSha256": "a3fcfefcc6500f4bd7c19ba48dfa80efad312034f196f81a40d33d0d0098d315",
+      "sourceSha256": "4be3a8f4142b27e07093cff1757876a80a344dd6f664a38775069244b89f4ec4",
       "disposition": "source-modified",
       "target": "plugins/skill/file-skill-provider.ts",
-      "targetSha256": "8d73f777f2d57b8017fb35a43f4c227e00ca23feac06a9bc9ce992396f8abd6c"
+      "targetSha256": "0973217b3124dc013b280062d4ff8216b898ee5b16ad99d81cf6f1a45743f871"
     },
     {
       "id": "github-webhook-handler",
-      "source": "packages/webhook/webhook-github/src/handler.ts",
+      "source": "packages/experimental/webhook-github/src/handler.ts",
       "disposition": "source-modified",
       "sourceSha256": "84e3c1f8d185198e87fb4f621889496771071236ac6613695189e8a4f8312c47",
       "target": "platform/events/github-webhook.ts",
@@ -41,13 +41,13 @@
     },
     {
       "id": "webhook-runtime",
-      "source": "packages/webhook/webhook/src/index.ts",
+      "source": "packages/experimental/webhook/src/index.ts",
       "disposition": "excluded",
       "reason": "Its fire-and-forget Agent Session action model does not provide the durable inbox, lease, receipt, retry, or cross-process recovery required by Repoctopus."
     },
     {
       "id": "agent-session-workspace",
-      "source": "packages/agent, packages/session, packages/workspace",
+      "source": "packages/core/agent, packages/core/agent-loop, packages/session, packages/workspace",
       "disposition": "excluded",
       "reason": "Repoctopus integrates external IDE agents and keeps Cordis as its only application runtime; these packages do not add required Skill Registry behavior."
     }

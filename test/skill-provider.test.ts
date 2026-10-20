@@ -4,9 +4,10 @@ import path from 'node:path';
 
 import { Context } from '@deepseek-ai/cordis';
 import SkillRegistry from '@deepseek-ai/dsh-skill';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import skillCatalogContributor from '../plugins/command/skill-catalog-contributor.js';
+import { FileSkillProvider } from '../plugins/skill/file-skill-provider.js';
 import filesystemSkillProvider from '../plugins/skill/filesystem-skill-provider.js';
 import mattSkillProvider from '../plugins/skill/matt-skill-provider.js';
 import { CommandRouter } from '../services/command-router.js';
@@ -34,6 +35,29 @@ async function fixture() {
 }
 
 describe('Repoctopus Skill providers', () => {
+  it('contains watcher errors that arrive after Windows-style asynchronous close', async () => {
+    const root = await mkdtemp(path.join(tmpdir(), 'repoctopus-skill-watch-'));
+    temporaryRoots.push(root);
+    const controller = new AbortController();
+    const provider = new FileSkillProvider(
+      new Context(),
+      { signal: controller.signal, invalidate: vi.fn() },
+      {
+        name: 'watch-close-test',
+        roots: [{ path: root, source: 'project-agents', rank: 100 }],
+      },
+    );
+    await provider.list({});
+    await provider.dispose();
+
+    const watcher = (
+      provider as unknown as {
+        watcher?: { emit(event: 'error', error: unknown): boolean };
+      }
+    ).watcher;
+    expect(watcher?.emit('error', new Error('late watcher error'))).toBe(true);
+  });
+
   it('loads fixed Matt Skills and enforces invocation policy at the command boundary', async () => {
     const { context, workspaceRoot } = await fixture();
     const catalog = await context.commandRouter.execute<
