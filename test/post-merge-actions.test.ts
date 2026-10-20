@@ -359,7 +359,7 @@ describe('post-merge exact checkout and Evidence', () => {
         profileId: 'post-merge',
         sources: fixture.sources,
       });
-      await fixture.actions.closeSpecification(fixture.options.runId);
+      const closed = await fixture.actions.closeSpecification(fixture.options.runId);
       const audit = await fixture.actions.auditSpecificationClosure(fixture.options.runId);
       const published = await fixture.actions.publishCoordination(fixture.options.runId);
       const replay = await fixture.actions.publishCoordination(fixture.options.runId);
@@ -367,6 +367,22 @@ describe('post-merge exact checkout and Evidence', () => {
       expect(fixture.publicationRequests).toHaveLength(1);
       expect(fixture.publicationRequests[0]?.audit.digest).toBe(audit.audit.digest);
       expect(replay.receipt).toEqual(published.receipt);
+      const trajectory = await fixture.app.context.runStore.loadTrajectory(fixture.options.runId);
+      const correlations = trajectory
+        .filter((event) => event.type === 'action.completed')
+        .flatMap((event) =>
+          typeof event.data.correlationReceiptId === 'string'
+            ? [event.data.correlationReceiptId]
+            : [],
+        );
+      expect(correlations).toHaveLength(4);
+      expect(correlations).toEqual(
+        expect.arrayContaining([
+          closed.result.closureId,
+          audit.audit.digest,
+          published.receipt.digest,
+        ]),
+      );
       expect(
         (await fixture.app.context.workflowRuns.status(fixture.options.runId)).state.status,
       ).toBe('completed');

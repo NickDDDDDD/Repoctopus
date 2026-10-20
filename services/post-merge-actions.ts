@@ -295,6 +295,7 @@ export class PostMergeActions extends Service {
           status: 'succeeded',
           summary: `post-merge-specification-closed:${result.closureId}`,
           eventId: identity(runId, action.id, result.closureId),
+          correlationReceiptId: result.closureId,
         },
         signal,
       );
@@ -363,6 +364,7 @@ export class PostMergeActions extends Service {
           status: 'succeeded',
           summary: `post-merge-path-audit:${audit.digest}`,
           eventId: identity(runId, action.id, audit.digest),
+          correlationReceiptId: audit.digest,
         },
         signal,
       );
@@ -468,6 +470,7 @@ export class PostMergeActions extends Service {
           status: 'succeeded',
           summary: `post-merge-coordination-published:${receipt.digest}`,
           eventId: identity(runId, action.id, receipt.digest),
+          correlationReceiptId: receipt.digest,
         },
         signal,
       );
@@ -563,6 +566,7 @@ export class PostMergeActions extends Service {
               status: 'succeeded',
               summary: `post-merge-checkout:${manifest.digest}`,
               eventId: identity(input.runId, checkoutAction.id, manifest.digest),
+              correlationReceiptId: manifest.digest,
             },
             signal,
           )

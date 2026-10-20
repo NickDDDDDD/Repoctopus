@@ -155,6 +155,7 @@ export class WorkflowRuns extends Service {
       summary: string;
       eventId?: string;
       evidenceAttemptId?: string;
+      correlationReceiptId?: `sha256:${string}`;
     },
     signal?: AbortSignal,
   ): Promise<RuntimeResult<RunStatusView>> {

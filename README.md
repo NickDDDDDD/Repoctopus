@@ -98,6 +98,7 @@ node bin/repoctopus.js delivery refresh --workspace . --change example-change --
 - [Specification Provider](docs/specification.md)
 - [OpenTelemetry 与 SigNoz](docs/telemetry.md)
 - [交付治理与失败恢复](docs/delivery.md)
+- [观察和恢复 Post-merge 收尾](docs/post-merge.md)
 - [Human Decision 协议](docs/human-decision.md)
 - [第三方来源与采用报告](third_party/comet/adoption-report.md)
 

@@ -384,6 +384,7 @@ export class WorkflowRunCoordinator {
     eventId?: string;
     evidenceAttemptId?: string;
     actionReceiptId?: string;
+    correlationReceiptId?: `sha256:${string}`;
   }): Promise<RuntimeResult<RunStatusView>> {
     const eventId = options.eventId ?? this.uuid();
     const duplicate = await this.store.findEvent(options.runId, eventId);
@@ -400,6 +401,12 @@ export class WorkflowRunCoordinator {
       };
     }
     const timestamp = this.clock().toISOString();
+    if (
+      options.correlationReceiptId &&
+      !/^sha256:[a-f0-9]{64}$/u.test(options.correlationReceiptId)
+    ) {
+      throw new Error('Workflow correlation Receipt ID must be a sha256 digest');
+    }
     await this.prepareWritableComposition(options.runId);
     await this.store.commitGuarded(options.runId, async ({ state, workflow, trajectory }) => {
       this.assertWritableComposition(state);
@@ -448,6 +455,9 @@ export class WorkflowRunCoordinator {
           summary: options.summary,
           ...(options.evidenceAttemptId ? { evidenceAttemptId: options.evidenceAttemptId } : {}),
           ...(options.actionReceiptId ? { actionReceiptId: options.actionReceiptId } : {}),
+          ...(options.correlationReceiptId
+            ? { correlationReceiptId: options.correlationReceiptId }
+            : {}),
           ...(evidenceGate ? { evidenceGate } : {}),
         },
       });

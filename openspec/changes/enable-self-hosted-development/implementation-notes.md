@@ -194,3 +194,12 @@
 - `PostMergePublicationPolicy` 的操作集合必须精确等于 `commit + push + merge_request.update`。任何 merge、force-push、rebase、删分支或遗漏操作都会在 Git/平台副作用前 fail-closed；remote、提交消息、作者身份和 MR 内容也必须完整。普通 push 使用显式非强制 refspec，且远端在提交前必须等于审计基线、推送后必须精确等于新提交。
 - `GitDeliveryAdapter` 只对审计列出的路径执行 `git add --all -- <exact paths>`，再核对 staged diff、每个文件内容摘要以及无剩余 unstaged/untracked 变化。新提交必须是基线的单父子提交；恢复时还会核对父提交、作者、消息、diff、内容和干净工作树，不会把任意本地提交当成收尾结果。协调 remote URL 与已记录的规范化 remote identity 不一致时同样拒绝。
 - bare remote 测试覆盖正常 commit/push/原 MR 更新、Git 响应丢失后复用同一提交与远端 OID、MR update 响应丢失恢复、远端分支漂移、MR 已关闭，以及 merge/force-push/rebase/删分支意图拒绝；工作流测试另证明发布 Intent/Receipt 的落盘和完成后幂等重放。完整验证：76 个测试文件通过，286 个测试通过、1 个跳过；类型、lint、构建、生成物、品牌、179 个生产源码与 20 个能力所有者、来源及 9 项严格 OpenSpec 检查全部通过。测试临时 bare remote 由 `afterEach` 清理，未生成调试日志或其他临时残留。
+
+## Post-merge 遥测关联与运维文档（任务 5.7）
+
+- Workflow Action 完成事件新增格式受限的 `correlationReceiptId`，只接受 `sha256:<64 hex>`。Post-merge checkout、规格关闭、路径审计和远端发布分别把 Manifest/Closure/Audit/Publication Receipt 摘要写入这一字段；Runtime 自己的 Action Dispatcher Receipt 继续使用独立 `actionReceiptId`，领域 Receipt 与执行 Receipt 不再混为一谈。
+- OTel Log/Span 从可信 Run Trigger 关联 `runId + changeId + mergeFactsDigest`，并从持久 Action 事件关联 Evidence Attempt、Bundle、Gate、Action Receipt 和四类 Post-merge Receipt。Receipt kind 由固定 Action ref 推导，调用方不能注入任意标签名称。格式异常、疑似 Token、绝对路径、换行、超长值、Action summary、规格正文、MR body、commit message、仓库 URL、文件列表和 webhook payload 均不会进入关联属性。
+- Workflow Metric 映射抽成可单测的显式函数，只允许工作流名、事件类型和成功/失败结果；Evidence Metric 继续只使用事件类型、Adapter 和状态。Run、change、Attempt、Bundle、Delivery、Envelope 和 Receipt 等高基数 ID 只用于 Log/Span 关联，不进入 Metric 标签，避免时间序列数量随执行次数增长。
+- 新增 `docs/post-merge.md` 作为运维 how-to，按 Inbox、Delivery、Run、Evidence 和发布边界给出可执行状态/恢复命令、停止条件和 OTel 关联表；文档明确说明普通 project composition 的 Runner 自动装配仍属于 6.1/6.2，避免把待接线能力写成已启用功能。`docs/delivery.md` 补充受保护发布语义，`docs/telemetry.md` 补充属性与基数边界，README 增加入口。
+- 文档测试解析新增页面的本地链接，并在真实 CLI 子进程中冒烟运行 `run status/resume`、`evidence status/resume` 和 `delivery status`；既有平台事件 E2E 继续覆盖 `event status/retry`。隐私反例注入 Token 形态 change、绝对路径、自由正文和非法 Receipt，确认全部被过滤；工作流集成测试确认四个领域 Receipt 关联随 Trajectory 持久化并可重放。
+- 来源检查在首次全量验证中正确发现 Comet 派生的 `domains/runtime/workflow-runs.ts` 目标摘要变化；同步更新 `third_party/comet/source-manifest.json` 与采用报告后，来源治理和 tracer `doctor` 恢复通过。最终完整验证：77 个测试文件通过，292 个测试通过、1 个跳过；类型、lint、构建、生成物、品牌、179 个生产源码与 20 个能力所有者、20 个 Comet 派生文件、60 个不可变 Cordis 文件、24 个 Matt Skill 文件、8 个固定 DSH 包及 9 项严格 OpenSpec 检查全部通过。测试临时 workspace 和子进程由 `afterEach` 清理，未生成调试日志或其他临时残留。

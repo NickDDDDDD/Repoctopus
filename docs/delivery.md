@@ -56,6 +56,16 @@ GitHub `pull_request` webhook 只提供业务 MR 的 `provider + remoteIdentity 
 
 `mergeFactsDigest` 只绑定排序后的仓库身份、远端身份、目标分支、MR identity、merge commit 和合入时间。下一阶段使用它与 `changeId` 共同形成 Post-merge Run 的幂等身份。
 
+## 受保护的收尾发布
+
+Post-merge Run 通过同一个 Delivery 权威边界发布规格关闭结果。发布动作只读取已记录的原协调 MR，不查找或创建替代 MR；协调 MR 与业务 MR 即使位于同一物理仓库，角色边界也保持不变。
+
+策略必须精确声明 `commit`、`push` 和 `merge_request.update`。Delivery 在任何 Git 副作用前确认原 MR 仍开放，源分支、目标分支、仓库和 MR identity 未变化；Git Adapter 再确认 workspace、当前分支、remote identity 和远端源分支仍匹配审计基线。
+
+发布只暂存路径审计列出的文件，并逐文件核对内容摘要。新 commit 必须是审计基线的普通单父子提交；push 使用显式非强制 refspec，完成后远端 OID 必须精确等于本地 commit。最后只更新原协调 MR 的 title/body，不改变 head、base 或合入状态。
+
+如果 commit、push 或 MR update 已生效但响应丢失，重试会核对并复用相同事实。MR 已关闭、分支映射改变、远端漂移、提交身份不符，或策略包含 merge、force-push、rebase、删分支等操作时，发布 fail-closed。具体检查和恢复命令见 [观察和恢复 Post-merge 收尾](post-merge.md)。
+
 ## 平台能力降级
 
 GitHub Adapter 区分认证失败、权限不足、套餐功能不可用、配置错误、限流和暂时故障。私有仓库因套餐不支持服务端分支保护时，Repoctopus 记录非阻断警告；本地检查或 CI 不能被描述成服务端保护。
