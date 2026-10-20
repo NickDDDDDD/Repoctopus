@@ -21,7 +21,7 @@ export interface LifecycleTelemetryEvent {
   pluginId?: string;
   service?: string;
   remaining?: number;
-  recoverability?: 'journal_or_checkpoint';
+  recoverability?: 'journal_or_checkpoint' | 'client_retry';
 }
 
 export interface LifecycleTelemetryPort {
@@ -33,7 +33,7 @@ export type LifecycleDiagnostic =
       code: 'OPERATION_DRAIN_TIMEOUT';
       service: string;
       remaining: number;
-      recoverability: 'journal_or_checkpoint';
+      recoverability?: 'journal_or_checkpoint' | 'client_retry';
       timestamp: string;
     }
   | {

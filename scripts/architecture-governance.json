@@ -12,6 +12,7 @@
         "plugins/action/**",
         "plugins/delivery/**",
         "plugins/evidence/**",
+        "plugins/http/**",
         "plugins/project/**",
         "plugins/run/**",
         "plugins/command/delivery-contributor.ts",
@@ -20,7 +21,8 @@
         "plugins/command/project-onboarding-contributor.ts",
         "plugins/command/project-probe-contributor.ts",
         "plugins/command/workflow-run-contributor.ts",
-        "services/**"
+        "services/**",
+        "platform/http/**"
       ],
       "upstream": ["third_party/cordis", "third_party/cordis-plugin-loader"],
       "rationale": "App Boot 把 Repoctopus 领域配置编译为唯一 Cordis 插件树，并把生命周期交给 Cordis。"
@@ -152,7 +154,7 @@
     {
       "id": "platform-event-processing",
       "disposition": "source-modified",
-      "targets": ["domains/platform-events/**", "platform/events/**"],
+      "targets": ["domains/platform-events/**", "platform/events/**", "plugins/events/**"],
       "upstream": [
         "packages/webhook/webhook-github/src/handler.ts",
         "packages/webhook/webhook-github/src/body.ts"

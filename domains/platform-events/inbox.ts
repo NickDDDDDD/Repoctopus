@@ -7,6 +7,13 @@ function digest(value: unknown): `sha256:${string}` {
   return `sha256:${createHash('sha256').update(canonicalJson(value)).digest('hex')}`;
 }
 
+export class EventInboxConflictError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'EventInboxConflictError';
+  }
+}
+
 export function deliveryEnvelope(input: {
   provider: string;
   source: string;
@@ -46,13 +53,13 @@ export function acceptDelivery(
 ): { entry: EventInboxEntry; duplicate: boolean } {
   if (existing) {
     if (existing.envelope.envelopeId !== envelope.envelopeId) {
-      throw new Error('Inbox identity mismatch');
+      throw new EventInboxConflictError('Inbox identity mismatch');
     }
     if (
       existing.envelope.payloadDigest !== envelope.payloadDigest ||
       existing.envelope.eventType !== envelope.eventType
     ) {
-      throw new Error('Platform reused a Delivery ID with different payload');
+      throw new EventInboxConflictError('Platform reused a Delivery ID with different payload');
     }
     return { entry: structuredClone(existing), duplicate: true };
   }

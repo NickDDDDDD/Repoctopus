@@ -40,6 +40,8 @@ import mattSkillProvider from './skill/matt-skill-provider.js';
 import filesystemSkillProvider from './skill/filesystem-skill-provider.js';
 import skillCatalogContributor from './command/skill-catalog-contributor.js';
 import specificationContributor from './command/specification-contributor.js';
+import githubWebhookContributor from './events/github-webhook-contributor.js';
+import { NodeHttpHostProvider } from './http/node-http-host-provider.js';
 import { OpenSpecProvider } from '../platform/specification/openspec-provider.js';
 
 interface BuiltinDefinition {
@@ -174,6 +176,50 @@ const definitions: readonly BuiltinDefinition[] = [
     },
     plugin: CommandRouter,
     sourceFiles: ['services/command-router.ts'],
+  },
+  {
+    descriptor: {
+      id: 'http-host',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['http-listener'],
+      permissions: ['network'],
+      stateSchemas: {},
+    },
+    plugin: NodeHttpHostProvider,
+    sourceFiles: [
+      'services/http-host.ts',
+      'platform/http/node-http-server.ts',
+      'plugins/http/node-http-host-provider.ts',
+    ],
+  },
+  {
+    descriptor: {
+      id: 'github-webhook-route',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'contributor',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['event-inbox-write'],
+      permissions: ['filesystem'],
+      stateSchemas: { 'event-inbox': '1' },
+    },
+    plugin: githubWebhookContributor,
+    sourceFiles: [
+      'domains/platform-events/inbox.ts',
+      'domains/platform-events/ports.ts',
+      'domains/platform-events/types.ts',
+      'platform/events/file-event-inbox-store.ts',
+      'platform/events/github-webhook-route.ts',
+      'platform/events/github-webhook.ts',
+      'plugins/events/github-webhook-contributor.ts',
+    ],
   },
   {
     descriptor: {

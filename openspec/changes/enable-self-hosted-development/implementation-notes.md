@@ -54,7 +54,7 @@
 
 - 已从固定 DSH GitHub Handler 采用 POST、JSON Content-Type、体积上限、唯一 Header、HMAC 后解析和无损 JSON 对象边界，来源与目标摘要登记在 `third_party/dsh-adoption.json`。
 - 已定义 Provider 无关 Delivery Envelope 和纯 Event Inbox 状态机，覆盖稳定去重、Delivery ID 载荷碰撞拒绝、领取租约、租约过期恢复、重试等待、完成 Receipt 与死信状态。
-- 持久 Inbox Store 已完成，见下方任务 4.1 验证记录；Credential Provider、HTTP Host、Runner 与 OTel 尚未完成，任务 4.2 保持未完成。
+- 持久 Inbox Store、Credential Provider、GitHub Adapter 和 HTTP Host/Route 已完成，见下方任务 4.1 至 4.3 验证记录；Runner 与 OTel 尚未完成。
 
 ## 自举 Run 续接（2026-10-20）
 
@@ -90,3 +90,13 @@
 - TDD 先让 10 个 Adapter/Credential 用例失败，再实现最小端口与 Adapter。测试覆盖成功 Envelope、方法、Content-Type、体积、三个 Header 的缺失与重复、秘密不可用、错误脱敏、签名先于解析以及环境变量秘密原值。
 - 双轴审查发现并修复 Provider-neutral 端口缺失、裸 secret 旁路、Header Host 契约不明确、测试死分支和重复失败调用。DSH 采用报告同步更新，目标摘要登记为 `571c83004837391b5a05e1493d59c5ab0e6ddde62d91ae1039e3a2200bf6cf41`。
 - 完整验证：64 个测试文件通过，213 个测试通过、1 个跳过；类型、lint、构建、生成物、品牌、架构、来源和严格规格检查全部通过。本任务没有加入 HTTP Route、Inbox 写入或 202 响应，这些仍属于任务 4.3；未产生临时调试文件。
+
+## HTTP Host 与原子接收（任务 4.3）
+
+- HTTP 边界按三层拆分：`services/http-host.ts` 只保留产品级 Route 注册契约，`platform/http/node-http-server.ts` 负责 Node Listener、原始请求读取和有界关闭，`plugins/http/node-http-host-provider.ts` 负责 Cordis Service 生命周期。这样领域 Route 不依赖 Node API，具体监听机制也不会污染 Service 契约。
+- Host 使用 Node `headersDistinct` 保留小写、多值且不合并的 Header 视图；先检查 `Content-Length`，再按 chunk 累计字节，超过 Route 上限立即返回 413，不创建无界聚合，也不会读取 Credential。Route 只做精确 pathname 匹配。
+- `GitHubWebhookRoute` 在 Adapter 验证通过后调用 `EventInboxStore.transaction()`；只有原子事务完成才返回 202。持久化异常统一返回可重试 503，Journal 或 State 写入故障后的重投会由 Store 恢复为同一个 pending Delivery，不丢投递也不产生第二份状态。相同 Delivery ID 携带不同载荷是确定性冲突，使用领域 `EventInboxConflictError` 映射为 409，避免客户端无意义重试。
+- Route 通过 Cordis Effect 注册和撤销。Host 关闭时先停止接纳，再在配置时限内排空活动请求；超时后销毁连接并记录 `OPERATION_DRAIN_TIMEOUT`。重试语义由 Route 显式声明：GitHub webhook 因 Delivery ID 去重声明 `client_retry`，通用 Host 不替未来 Route 假设幂等性。
+- 内置 Catalog 已登记 `http-host` Provider 和 `github-webhook-route` Contributor，使生产组合编译和真实 Loopback 测试可发现它们；常规 project composition 尚未自动启用二者。任务 4.4 的 Platform Events Runner 将负责激活接收与领取循环，任务 6.2 仍负责更广的内置组合与摘要收口。
+- TDD 依次暴露并修复缺失 Host/Route、超限请求错误映射、Contributor/Catalog 缺口和冲突误报 503。测试通过真实 TCP/HTTP 覆盖持久化后 202、413 前置拒绝、重复 Header、两处提交故障恢复、409 冲突、Effect 撤销、内置 Catalog 启动以及关闭超时诊断。
+- 两轴代码审查确认规格路径完整，并推动三项架构修正：Node 机制从 Service 层下沉、Delivery 冲突类型化、关闭改为有界排空；复核无阻断项。完整验证：65 个测试文件通过，222 个测试通过、1 个跳过；类型、lint、构建、生成物、品牌、架构、来源和严格规格检查全部通过。未产生临时日志、调试输出或其他需清理的文件。
