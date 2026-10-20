@@ -85,7 +85,16 @@ describe('delivery CLI', () => {
     expect(checkpoint).toMatchObject({
       ok: true,
       command: 'delivery checkpoint',
-      result: [{ created: true }],
+      result: [
+        {
+          created: true,
+          publication: {
+            remote: 'origin',
+            branch: 'feat/change',
+            upstream: 'origin/feat/change',
+          },
+        },
+      ],
     });
     const evidence = await runCli({
       packageRoot,

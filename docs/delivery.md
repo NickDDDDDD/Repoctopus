@@ -1,6 +1,6 @@
 # 交付治理与失败恢复
 
-Repoctopus 将本地开发保存与团队共享发布分开。功能分支上的 checkpoint commit 可由策略自动创建；push 和 MR 创建或更新需要一份绑定全部受影响仓库的验证报告获得人工批准。merge 始终由人执行。
+Repoctopus 把功能分支 checkpoint 视为远端备份边界：策略允许的 commit 必须立即普通 push、建立 upstream，并在远端 OID 核对成功后才算完成。MR 创建或更新仍需要一份绑定全部受影响仓库的验证报告获得人工批准；merge 始终由人执行。
 
 ## 配置边界
 
@@ -10,6 +10,8 @@ Repoctopus 将本地开发保存与团队共享发布分开。功能分支上的
 - 当前分支不匹配 `protectedBranches`；
 - commit message 匹配 `commitMessagePattern`；
 - 全局和当前仓库的快速检查全部通过。
+
+`delivery checkpoint` 即使在新分支尚无改动时也会发布当前 HEAD。若 commit 已完成但 push 失败，命令返回失败；修复网络、凭据或远端漂移后重跑，Runtime 会直接发布现有 HEAD，不创建重复 commit。Repoctopus 只执行普通 push，绝不会用 force push 或 rebase 掩盖分歧。
 
 缺少任何必需配置时采取 fail-closed。凭据不写入 YAML；GitHub Adapter 从受控 Credential Provider 读取 `GITHUB_TOKEN`。
 
@@ -30,7 +32,7 @@ Delivery 状态来自不兼容 composition 时仍可查询，但不能继续批�
 
 ## 部分发布与恢复
 
-多仓远端不提供跨仓事务。Repoctopus 按稳定顺序执行动作，每个动作成功后立刻写入 Journal：
+多仓远端不提供跨仓事务。日常 checkpoint 已经把各仓 HEAD 备份到远端；批准后的 Delivery 仍按稳定顺序重新核对并执行动作，每个动作成功后立刻写入 Journal：
 
 1. 核对本地 HEAD、远端源分支和目标基线。
 2. 普通 push 功能分支，不执行 force push。

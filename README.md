@@ -2,7 +2,7 @@
 
 Repoctopus 是面向团队 Agent 开发的多仓交付编排器。它把项目探测、确定性阶段推进、运行轨迹、断点恢复和 OpenTelemetry 反馈放进同一个可检查的插件系统，IDE 与 Agent 只通过稳定协议调用它。Cordis 是唯一应用 Runtime；Repoctopus 的能力以 Service、Provider 和 Contributor 组成。
 
-当前版本包含运行基础和交付治理纵切：探测同级 Git 仓库，确定性推进工作流，自动创建策略允许的本地 checkpoint commit，把验证报告绑定为多仓交付快照，并在用户通过 IDE 或 CLI 交互批准后可恢复地执行 push 与 MR 动作。Repoctopus 只读取 MR 合入事实，不自动 merge。
+当前版本包含运行基础和交付治理纵切：探测同级 Git 仓库，确定性推进工作流，自动创建并立即远端备份策略允许的 checkpoint commit，把验证报告绑定为多仓交付快照，并在用户通过 IDE 或 CLI 交互批准后可恢复地创建或更新 MR。Repoctopus 只读取 MR 合入事实，不自动 merge。
 
 ## 快速开始
 
@@ -66,7 +66,7 @@ Runner、Inbox、GitHub 验签和安全边界见[平台事件处理](docs/platfo
 
 ## 交付治理
 
-通过项目接入流程生成 workspace 的 `repoctopus.yaml`，在其 `delivery` 段维护团队交付策略（完整示例见 [项目配置示例](docs/examples/repoctopus.yaml)），并为 change 创建 [交付意图](docs/examples/delivery-intent.yaml)。本地 checkpoint 不需要人工批准：
+通过项目接入流程生成 workspace 的 `repoctopus.yaml`，在其 `delivery` 段维护团队交付策略（完整示例见 [项目配置示例](docs/examples/repoctopus.yaml)），并为 change 创建 [交付意图](docs/examples/delivery-intent.yaml)。checkpoint 会普通 push 当前 HEAD、建立 upstream 并核对远端 OID，不需要逐次人工批准：
 
 ```powershell
 node bin/repoctopus.js delivery checkpoint --workspace . --project-root .. --intent docs/examples/delivery-intent.yaml --policy repoctopus.yaml --json

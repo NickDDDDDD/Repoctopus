@@ -30,6 +30,30 @@ async function remoteOid(cwd: string, remote: string, branch: string): Promise<s
   return oid || null;
 }
 
+async function publishCheckpoint(
+  cwd: string,
+  remote: string,
+  branch: string,
+  expectedHead: string,
+): Promise<CheckpointResult['publication']> {
+  await git(cwd, ['push', '--set-upstream', remote, `${branch}:refs/heads/${branch}`]);
+  const published = await remoteOid(cwd, remote, branch);
+  if (published !== expectedHead)
+    throw new Error(`Checkpoint remote verification failed for ${branch}`);
+  const upstream = await git(cwd, [
+    'rev-parse',
+    '--abbrev-ref',
+    '--symbolic-full-name',
+    '@{upstream}',
+  ]);
+  const expectedUpstream = `${remote}/${branch}`;
+  if (upstream !== expectedUpstream)
+    throw new Error(
+      `Checkpoint upstream verification failed for ${branch}: expected ${expectedUpstream}, received ${upstream}`,
+    );
+  return { remote, branch, remoteOid: published, upstream };
+}
+
 export class GitDeliveryAdapter {
   async checkpoint(
     repository: RepositorySnapshot,
@@ -62,20 +86,24 @@ export class GitDeliveryAdapter {
       '--porcelain=v1',
       '--untracked-files=all',
     ]);
-    if (!status)
-      return {
-        repositoryId: repository.id,
-        created: false,
-        head: await git(repository.path, ['rev-parse', 'HEAD']),
-        checks: results,
-      };
-    await git(repository.path, ['add', '--all']);
-    await git(repository.path, ['commit', '-m', intent.commitMessage]);
+    const created = status.length > 0;
+    if (created) {
+      await git(repository.path, ['add', '--all']);
+      await git(repository.path, ['commit', '-m', intent.commitMessage]);
+    }
+    const head = await git(repository.path, ['rev-parse', 'HEAD']);
+    const publication = await publishCheckpoint(
+      repository.path,
+      policy.publication.remote,
+      branch,
+      head,
+    );
     return {
       repositoryId: repository.id,
-      created: true,
-      head: await git(repository.path, ['rev-parse', 'HEAD']),
+      created,
+      head,
       checks: results,
+      publication,
     };
   }
 

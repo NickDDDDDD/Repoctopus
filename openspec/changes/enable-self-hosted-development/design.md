@@ -166,6 +166,12 @@ Runner 启动 App Boot project composition，等待 HTTP 和后台领取 Fiber�
 
 如果实施中 OpenSpec、固定 DSH 源码、Matt Skill 行为、代码平台契约、设计图或现有公共 CLI 出现实质冲突，停止受影响任务，列出来源位置、两个选项和影响并请求用户决定。不以较新时间、实现便利或某份资料看起来更权威为由自行选择。
 
+### 14. 开发 checkpoint 以远端精确 OID 为完成边界
+
+本地 commit 不是可靠备份。Repoctopus 管理的功能分支一经进入 `delivery checkpoint`，无论本次是否产生新 commit，都必须用策略指定 remote 普通 push 当前 HEAD、建立 upstream，并通过 `ls-remote` 核对远端分支精确 OID。只有核对成功，checkpoint 才能返回成功；MR 创建、更新与 merge 的 Human Decision 边界保持不变。
+
+Git 无法把本地 commit 与网络 push 做成一个原子事务，因此恢复语义比伪原子更重要：如果 commit 已成功但 push、响应或进程失败，工作树已经干净；再次执行相同 checkpoint 时不得创建空 commit，而是重推并核对同一个 HEAD。普通 push 的非快进保护负责 fail-closed，系统不得以 force push、rebase 或删除远端分支修复漂移。直接绕过 Repoctopus 执行的 Git commit 不在 Runtime 可强制控制范围内；团队 Agent 与 IDE 必须把 checkpoint 命令作为分支创建和每次提交的完成步骤。
+
 ## Risks / Trade-offs
 
 - [DSH Skill 完整依赖闭包可能引入 Agent 专有类型] → 先以固定 commit 生成依赖与源码采用报告；保留 Registry 行为闭包，只在来源登记的产品适配层移除无运行价值的 Agent Consumer 耦合。

@@ -204,4 +204,10 @@ export interface CheckpointResult {
   created: boolean;
   head: string;
   checks: Array<{ command: string; passed: true }>;
+  publication: {
+    remote: string;
+    branch: string;
+    remoteOid: string;
+    upstream: string;
+  };
 }

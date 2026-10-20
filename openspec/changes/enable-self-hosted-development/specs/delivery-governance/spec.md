@@ -1,5 +1,36 @@
 # Spec Delta
 
+## MODIFIED Requirements
+
+### Requirement: 自动 checkpoint commit 由策略控制
+
+Repoctopus MUST 只在项目策略显式启用自动提交、当前分支不受保护、提交格式有效且匹配改动的快速检查通过时创建 checkpoint commit；每次 checkpoint 都必须把当前精确 HEAD 普通 push 到策略指定远端、建立 upstream 并在远端 OID 核对成功后才返回成功。创建与发布该 checkpoint 不需要人工批准。
+
+#### Scenario: 功能分支满足自动提交条件
+
+- **WHEN** 选定仓库位于允许的功能分支且提交信息与快速检查满足策略
+- **THEN** Runtime 创建 commit、发布源分支、建立 upstream，并记录本地与远端相同的提交身份和检查结果
+
+#### Scenario: 新功能分支还没有改动
+
+- **WHEN** 选定仓库位于尚未发布的允许功能分支且工作树干净
+- **THEN** Runtime 不创建空 commit，但立即发布当前 HEAD、建立 upstream，并把远端核对结果作为 checkpoint receipt 返回
+
+#### Scenario: commit 后首次 push 失败
+
+- **WHEN** Runtime 已创建 commit，但网络、权限或进程中断导致远端核对没有成功
+- **THEN** checkpoint 不得报告成功；重试必须在不创建重复 commit 的情况下发布并核对现有 HEAD
+
+#### Scenario: 当前分支受到保护
+
+- **WHEN** 选定仓库当前分支匹配项目策略中的保护分支
+- **THEN** Runtime 拒绝自动提交与发布且不修改 Git 历史
+
+#### Scenario: 自动提交配置不完整
+
+- **WHEN** 项目未启用自动提交、未配置提交格式或没有有效远端
+- **THEN** Runtime 不创建 commit 并返回可操作的配置诊断
+
 ## ADDED Requirements
 
 ### Requirement: Delivery 声明 workspace MR 与业务 MR 关系

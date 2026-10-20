@@ -72,11 +72,18 @@ class FakeGit implements DeliveryGitPort {
   pushed = false;
   pushCalls = 0;
   checkpoint() {
+    this.pushed = true;
     return Promise.resolve({
       repositoryId: 'repo-a',
       created: true,
       head: 'head-a',
       checks: [],
+      publication: {
+        remote: 'origin',
+        branch: 'feat/change',
+        remoteOid: 'head-a',
+        upstream: 'origin/feat/change',
+      },
     });
   }
   inspect(): Promise<DeliveryRepositoryFacts> {
@@ -312,7 +319,18 @@ describe('delivery service', () => {
     const calls: string[] = [];
     const git: DeliveryGitPort = {
       checkpoint: (item) =>
-        Promise.resolve({ repositoryId: item.id, created: false, head: item.head, checks: [] }),
+        Promise.resolve({
+          repositoryId: item.id,
+          created: false,
+          head: item.head,
+          checks: [],
+          publication: {
+            remote: 'origin',
+            branch: 'feat/change',
+            remoteOid: item.head,
+            upstream: 'origin/feat/change',
+          },
+        }),
       inspect: (item) =>
         Promise.resolve({
           repositoryId: item.id,
