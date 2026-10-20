@@ -154,7 +154,12 @@
     {
       "id": "platform-event-processing",
       "disposition": "source-modified",
-      "targets": ["domains/platform-events/**", "platform/events/**", "plugins/events/**"],
+      "targets": [
+        "domains/platform-events/**",
+        "platform/events/**",
+        "plugins/events/**",
+        "plugins/command/platform-event-contributor.ts"
+      ],
       "upstream": [
         "packages/experimental/webhook-github/src/handler.ts",
         "packages/experimental/webhook-github/src/body.ts"

@@ -50,6 +50,18 @@ node bin/repoctopus.js spec validate --workspace . --change <change-id> --json
 
 Provider 契约、Evidence 配置与权威资料冲突规则见 [Specification Provider](docs/specification.md)。
 
+## 平台事件运维
+
+平台未能直接投递 webhook 时，可以把已经验签或通过平台 API 获得的规范化 Envelope 写入同一个持久 Inbox；查询和人工重试都只经过 `PlatformEvents` 权威 Service：
+
+```powershell
+node bin/repoctopus.js event replay --workspace . --file verified-envelope.json --json
+node bin/repoctopus.js event status --workspace . --envelope sha256:<digest> --json
+node bin/repoctopus.js event retry --workspace . --envelope sha256:<digest> --json
+```
+
+`replay` 校验 Envelope 的身份和 payload 摘要并幂等接收，不直接调用下游 Coordinator。`retry` 只接受 `dead_letter`，不能重新执行已完成事件。命令输出是脱敏状态投影，不包含原始 payload、Header、签名、Lease token 或平台 Token。
+
 ## 交付治理
 
 通过项目接入流程生成 workspace 的 `repoctopus.yaml`，在其 `delivery` 段维护团队交付策略（完整示例见 [项目配置示例](docs/examples/repoctopus.yaml)），并为 change 创建 [交付意图](docs/examples/delivery-intent.yaml)。本地 checkpoint 不需要人工批准：

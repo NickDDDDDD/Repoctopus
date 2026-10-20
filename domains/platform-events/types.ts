@@ -30,7 +30,7 @@ export interface EventInboxEntry {
   attempts: number;
   lease: { owner: string; token: string; expiresAt: string } | null;
   nextAttemptAt: string | null;
-  receiptId: string | null;
+  receiptId: `sha256:${string}` | null;
   diagnostic: string | null;
   stateVersion: number;
   updatedAt: string;
@@ -44,4 +44,32 @@ export interface EventProcessingReceipt {
   attempt: number;
   completedAt: string;
   diagnostic?: string;
+}
+
+export interface PlatformEventStatusView {
+  apiVersion: typeof PLATFORM_EVENT_API_VERSION;
+  kind: 'PlatformEventStatus';
+  envelopeId: `sha256:${string}`;
+  provider: string;
+  source: string;
+  deliveryId: string;
+  eventType: string;
+  receivedAt: string;
+  payloadDigest: `sha256:${string}`;
+  status: InboxStatus;
+  attempts: number;
+  leaseExpiresAt: string | null;
+  nextAttemptAt: string | null;
+  receiptId: string | null;
+  diagnostic: string | null;
+  stateVersion: number;
+  updatedAt: string;
+  receipts: EventProcessingReceipt[];
+}
+
+export interface PlatformEventReplayResult {
+  apiVersion: typeof PLATFORM_EVENT_API_VERSION;
+  kind: 'PlatformEventReplayResult';
+  duplicate: boolean;
+  event: PlatformEventStatusView;
 }

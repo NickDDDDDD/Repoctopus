@@ -22,6 +22,10 @@ import { parseWorkflowPackage } from '../../domains/workflow-contract/package.js
 import { loadDeliveryPolicy } from '../../platform/delivery/config.js';
 import { execute } from '../../platform/process/execute.js';
 import type { ProvenanceCheck } from '../../platform/provenance/check.js';
+import type {
+  PlatformEventReplayResult,
+  PlatformEventStatusView,
+} from '../../domains/platform-events/types.js';
 import {
   booleanFlag,
   integerFlag,
@@ -193,6 +197,56 @@ async function deliveryStatus(parsed: ParsedArguments): Promise<CliEnvelope<unkn
       result,
       nextActions: deliveryNextActions(result),
     });
+  } finally {
+    await app.close();
+  }
+}
+
+async function eventStatus(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const envelopeId = stringFlag(parsed, 'envelope', { required: true })!;
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute<
+      { envelopeId: string },
+      PlatformEventStatusView
+    >('event.status', { envelopeId });
+    return successEnvelope({ command: 'event status', result });
+  } finally {
+    await app.close();
+  }
+}
+
+async function eventReplay(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const file = path.resolve(stringFlag(parsed, 'file', { required: true })!);
+  const envelope = JSON.parse(await readFile(file, 'utf8')) as unknown;
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute<
+      { envelope: unknown },
+      PlatformEventReplayResult
+    >('event.replay', { envelope });
+    return successEnvelope({
+      command: 'event replay',
+      result,
+      nextActions: [`repoctopus event status --envelope ${result.event.envelopeId}`],
+    });
+  } finally {
+    await app.close();
+  }
+}
+
+async function eventRetry(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const envelopeId = stringFlag(parsed, 'envelope', { required: true })!;
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute<
+      { envelopeId: string },
+      PlatformEventStatusView
+    >('event.retry', { envelopeId });
+    return successEnvelope({ command: 'event retry', result });
   } finally {
     await app.close();
   }
@@ -855,11 +909,14 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   if (command === 'delivery publish' || command === 'delivery resume')
     return deliveryPublish(parsed);
   if (command === 'delivery refresh') return deliveryRefresh(parsed);
+  if (command === 'event status') return eventStatus(parsed);
+  if (command === 'event replay') return eventReplay(parsed);
+  if (command === 'event retry') return eventRetry(parsed);
   if (command === 'doctor') return doctor(parsed);
   if (command === 'browser doctor') return browserDoctor(parsed);
   if (command === 'browser install') return browserInstall(parsed);
   throw new Error(
-    'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|record|resume> | delivery <checkpoint|prepare|status|publish|resume|refresh> | approval review | browser <doctor|install> | doctor',
+    'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|record|resume> | delivery <checkpoint|prepare|status|publish|resume|refresh> | event <status|replay|retry> | approval review | browser <doctor|install> | doctor',
   );
 }
 

@@ -161,6 +161,39 @@ const envelope = deliveryEnvelope({
   payload: { number: 42 },
 });
 
+it('processes a duplicate delivery received out of order as one logical task', async () => {
+  const root = await workspace();
+  let tasks = 0;
+  const app = await bootRunner(root, {
+    id: 'logical-task-processor',
+    provider: 'github',
+    eventType: 'pull_request',
+    process() {
+      tasks += 1;
+      return Promise.resolve({ result: 'completed' });
+    },
+  });
+  await expect(app.context.platformEvents.accept(envelope, receivedAt)).resolves.toMatchObject({
+    duplicate: false,
+  });
+  const olderDuplicate = deliveryEnvelope({
+    ...envelope,
+    receivedAt: '2026-10-19T23:59:00.000Z',
+  });
+  await expect(
+    app.context.platformEvents.accept(olderDuplicate, '2026-10-20T00:00:01.000Z'),
+  ).resolves.toMatchObject({ duplicate: true });
+
+  await expect(
+    app.context.platformEventRunner.runOnce(() => new Date(receivedAt)),
+  ).resolves.toEqual({ processed: 1 });
+  await expect(
+    app.context.platformEventRunner.runOnce(() => new Date(receivedAt)),
+  ).resolves.toEqual({ processed: 0 });
+  expect(tasks).toBe(1);
+  await app.close();
+});
+
 it('persists accept, lease, and completion through the PlatformEvents service across restart', async () => {
   const root = await workspace();
   const first = await bootPlatformEvents(root);

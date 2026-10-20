@@ -46,6 +46,41 @@ export function deliveryEnvelope(input: {
   };
 }
 
+export function parseDeliveryEnvelope(value: unknown): PlatformDeliveryEnvelope {
+  try {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error();
+    const record = value as Record<string, unknown>;
+    if (
+      record.apiVersion !== 'repoctopus.platform-event/v1alpha1' ||
+      record.kind !== 'PlatformDeliveryEnvelope' ||
+      typeof record.provider !== 'string' ||
+      typeof record.source !== 'string' ||
+      typeof record.deliveryId !== 'string' ||
+      typeof record.eventType !== 'string' ||
+      typeof record.receivedAt !== 'string' ||
+      !Number.isFinite(Date.parse(record.receivedAt)) ||
+      new Date(record.receivedAt).toISOString() !== record.receivedAt ||
+      !record.payload ||
+      typeof record.payload !== 'object' ||
+      Array.isArray(record.payload)
+    ) {
+      throw new Error();
+    }
+    const normalized = deliveryEnvelope({
+      provider: record.provider,
+      source: record.source,
+      deliveryId: record.deliveryId,
+      eventType: record.eventType,
+      receivedAt: record.receivedAt,
+      payload: record.payload as PlatformDeliveryEnvelope['payload'],
+    });
+    if (canonicalJson(normalized) !== canonicalJson(value)) throw new Error();
+    return normalized;
+  } catch {
+    throw new Error('Replay input must be a canonical PlatformDeliveryEnvelope');
+  }
+}
+
 export function acceptDelivery(
   envelope: PlatformDeliveryEnvelope,
   timestamp: string,
@@ -202,6 +237,44 @@ export function settleDelivery(input: {
       nextAttemptAt: input.result === 'retry' ? input.retryAt! : null,
       receiptId: receipt.receiptId,
       diagnostic: input.diagnostic ?? null,
+      stateVersion: input.entry.stateVersion + 1,
+      updatedAt: input.timestamp,
+    },
+  };
+}
+
+export function retryDeadLetterDelivery(input: { entry: EventInboxEntry; timestamp: string }): {
+  entry: EventInboxEntry;
+  receipt: EventProcessingReceipt;
+} {
+  if (input.entry.status !== 'dead_letter') {
+    throw new Error('Only a dead-letter platform event can be retried manually');
+  }
+  const now = Date.parse(input.timestamp);
+  if (!Number.isFinite(now) || now < Date.parse(input.entry.updatedAt)) {
+    throw new Error('Valid manual retry timestamp is required');
+  }
+  const receiptBase = {
+    envelopeId: input.entry.envelope.envelopeId,
+    result: 'retry' as const,
+    attempt: input.entry.attempts,
+    completedAt: input.timestamp,
+    diagnostic: 'manual-retry-requested',
+  };
+  const receipt: EventProcessingReceipt = {
+    schemaVersion: 1,
+    receiptId: digest(receiptBase),
+    ...receiptBase,
+  };
+  return {
+    receipt,
+    entry: {
+      ...structuredClone(input.entry),
+      status: 'retry_wait',
+      lease: null,
+      nextAttemptAt: input.timestamp,
+      receiptId: receipt.receiptId,
+      diagnostic: receipt.diagnostic!,
       stateVersion: input.entry.stateVersion + 1,
       updatedAt: input.timestamp,
     },

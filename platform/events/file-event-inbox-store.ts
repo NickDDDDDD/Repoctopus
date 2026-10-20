@@ -209,6 +209,15 @@ export class FileEventInboxStore implements EventInboxStore {
     return (await this.snapshot(envelopeId))?.entry ?? null;
   }
 
+  async inspect(
+    envelopeId: string,
+  ): Promise<{ entry: EventInboxEntry; receipts: EventProcessingReceipt[] } | null> {
+    const snapshot = await this.snapshot(envelopeId);
+    return snapshot
+      ? { entry: structuredClone(snapshot.entry), receipts: structuredClone(snapshot.receipts) }
+      : null;
+  }
+
   async listClaimable(timestampValue: string): Promise<EventInboxEntry[]> {
     const now = Date.parse(timestampValue);
     if (!Number.isFinite(now)) throw new Error('Valid claim timestamp is required');

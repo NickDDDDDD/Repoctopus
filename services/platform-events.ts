@@ -3,14 +3,23 @@ import { Service, type Context } from '@deepseek-ai/cordis';
 import {
   acceptDelivery,
   claimDelivery,
+  parseDeliveryEnvelope,
   renewDelivery,
+  retryDeadLetterDelivery,
   settleDelivery,
 } from '../domains/platform-events/inbox.js';
-import type { EventInboxStore } from '../domains/platform-events/ports.js';
+import type {
+  EventInboxStore,
+  PlatformEventTelemetryEvent,
+  PlatformEventTelemetryEventType,
+  PlatformEventTelemetryPort,
+} from '../domains/platform-events/ports.js';
 import type {
   EventInboxEntry,
   EventProcessingReceipt,
   PlatformDeliveryEnvelope,
+  PlatformEventReplayResult,
+  PlatformEventStatusView,
 } from '../domains/platform-events/types.js';
 
 export interface PlatformEventClaimInput {
@@ -59,7 +68,10 @@ export abstract class PlatformEvents extends Service {
   protected abstract readonly inbox: EventInboxStore;
   private readonly processors = new Map<string, PlatformEventProcessor>();
 
-  constructor(context: Context) {
+  constructor(
+    context: Context,
+    private readonly telemetry: PlatformEventTelemetryPort = { async export() {} },
+  ) {
     super(context, 'platformEvents');
   }
 
@@ -113,12 +125,31 @@ export abstract class PlatformEvents extends Service {
     envelope: PlatformDeliveryEnvelope,
     timestamp: string,
   ): Promise<{ duplicate: boolean; envelopeId: string }> {
-    const duplicate = await this.inbox.transaction(envelope.envelopeId, (current) => {
+    const accepted = await this.inbox.transaction(envelope.envelopeId, (current) => {
       const accepted = acceptDelivery(envelope, timestamp, current ?? undefined);
-      return { entry: accepted.entry, result: accepted.duplicate };
+      return { entry: accepted.entry, result: accepted };
     });
-    if (duplicate === null) throw new Error('Event Inbox rejected the delivery');
-    return { duplicate, envelopeId: envelope.envelopeId };
+    if (accepted === null) throw new Error('Event Inbox rejected the delivery');
+    await this.emit(
+      accepted.duplicate ? 'platform_event.deduplicated' : 'platform_event.accepted',
+      accepted.entry,
+      timestamp,
+    );
+    return { duplicate: accepted.duplicate, envelopeId: envelope.envelopeId };
+  }
+
+  async replay(
+    value: unknown,
+    timestamp = new Date().toISOString(),
+  ): Promise<PlatformEventReplayResult> {
+    const envelope = parseDeliveryEnvelope(value);
+    const accepted = await this.accept(envelope, timestamp);
+    return {
+      apiVersion: 'repoctopus.platform-event/v1alpha1',
+      kind: 'PlatformEventReplayResult',
+      duplicate: accepted.duplicate,
+      event: await this.status(envelope.envelopeId),
+    };
   }
 
   async claimDue(input: PlatformEventClaimInput): Promise<EventInboxEntry | null> {
@@ -129,7 +160,10 @@ export abstract class PlatformEvents extends Service {
         const entry = claimDelivery({ entry: current, ...input });
         return entry ? { entry, result: entry } : null;
       });
-      if (claimed) return claimed;
+      if (claimed) {
+        await this.emit('platform_event.claimed', claimed, claimed.updatedAt);
+        return claimed;
+      }
     }
     return null;
   }
@@ -150,6 +184,15 @@ export abstract class PlatformEvents extends Service {
       return { ...result, result: result.entry };
     });
     if (!settled) throw new Error(`Event Inbox entry not found: ${input.envelopeId}`);
+    await this.emit(
+      input.result === 'completed'
+        ? 'platform_event.completed'
+        : input.result === 'retry'
+          ? 'platform_event.retry_scheduled'
+          : 'platform_event.dead_lettered',
+      settled,
+      input.timestamp,
+    );
     return settled;
   }
 
@@ -171,6 +214,46 @@ export abstract class PlatformEvents extends Service {
     return this.inbox.receipts(envelopeId);
   }
 
+  async status(envelopeId: string): Promise<PlatformEventStatusView> {
+    const snapshot = await this.inbox.inspect(envelopeId);
+    if (!snapshot) throw new Error(`Event Inbox entry not found: ${envelopeId}`);
+    const { entry, receipts } = snapshot;
+    return {
+      apiVersion: 'repoctopus.platform-event/v1alpha1',
+      kind: 'PlatformEventStatus',
+      envelopeId: entry.envelope.envelopeId,
+      provider: entry.envelope.provider,
+      source: entry.envelope.source,
+      deliveryId: entry.envelope.deliveryId,
+      eventType: entry.envelope.eventType,
+      receivedAt: entry.envelope.receivedAt,
+      payloadDigest: entry.envelope.payloadDigest,
+      status: entry.status,
+      attempts: entry.attempts,
+      leaseExpiresAt: entry.lease?.expiresAt ?? null,
+      nextAttemptAt: entry.nextAttemptAt,
+      receiptId: entry.receiptId,
+      diagnostic: entry.diagnostic,
+      stateVersion: entry.stateVersion,
+      updatedAt: entry.updatedAt,
+      receipts,
+    };
+  }
+
+  async retry(
+    envelopeId: string,
+    timestamp = new Date().toISOString(),
+  ): Promise<PlatformEventStatusView> {
+    const retried = await this.inbox.transaction(envelopeId, (current) => {
+      if (!current) return null;
+      const result = retryDeadLetterDelivery({ entry: current, timestamp });
+      return { ...result, result: result.entry };
+    });
+    if (!retried) throw new Error(`Event Inbox entry not found: ${envelopeId}`);
+    await this.emit('platform_event.manual_retry_requested', retried, timestamp);
+    return this.status(envelopeId);
+  }
+
   private processorKey(provider: string, eventType: string): string {
     return `${provider}\0${eventType}`;
   }
@@ -179,6 +262,33 @@ export abstract class PlatformEvents extends Service {
     return typeof value === 'string' && value.length <= 96 && DIAGNOSTIC_CODE.test(value)
       ? value
       : 'platform-event-processor-diagnostic-redacted';
+  }
+
+  private async emit(
+    type: PlatformEventTelemetryEventType,
+    entry: EventInboxEntry,
+    timestamp: string,
+  ): Promise<void> {
+    const event: PlatformEventTelemetryEvent = {
+      schemaVersion: 1,
+      type,
+      timestamp,
+      envelopeId: entry.envelope.envelopeId,
+      provider: entry.envelope.provider,
+      source: entry.envelope.source,
+      deliveryId: entry.envelope.deliveryId,
+      eventType: entry.envelope.eventType,
+      status: entry.status,
+      attempts: entry.attempts,
+      stateVersion: entry.stateVersion,
+      ...(entry.receiptId ? { receiptId: entry.receiptId } : {}),
+      ...(entry.diagnostic ? { diagnostic: entry.diagnostic } : {}),
+    };
+    try {
+      await this.telemetry.export(event);
+    } catch {
+      // Durable Inbox facts remain authoritative when observability is unavailable.
+    }
   }
 }
 

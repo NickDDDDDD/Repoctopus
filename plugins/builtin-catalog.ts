@@ -17,6 +17,7 @@ import workflowRunContributor from './command/workflow-run-contributor.js';
 import deliveryContributor from './command/delivery-contributor.js';
 import projectOnboardingContributor from './command/project-onboarding-contributor.js';
 import maintenanceContributor from './command/maintenance-contributor.js';
+import platformEventContributor from './command/platform-event-contributor.js';
 import { FileDeliveryProvider } from './delivery/file-delivery-provider.js';
 import { GitProjectProvider } from './project/git-project-provider.js';
 import { FileRunStoreProvider } from './run/file-run-store-provider.js';
@@ -209,7 +210,7 @@ const definitions: readonly BuiltinDefinition[] = [
       source: 'builtin',
       compositions: ['project'],
       authorities: ['event-inbox-write'],
-      permissions: ['filesystem'],
+      permissions: ['filesystem', 'network'],
       stateSchemas: { 'event-inbox': '1' },
     },
     plugin: FilePlatformEventsProvider,
@@ -218,9 +219,27 @@ const definitions: readonly BuiltinDefinition[] = [
       'domains/platform-events/ports.ts',
       'domains/platform-events/types.ts',
       'platform/events/file-event-inbox-store.ts',
+      'platform/telemetry/platform-event-mapping.ts',
+      'platform/telemetry/opentelemetry/platform-event-exporter.ts',
       'services/platform-events.ts',
       'plugins/events/file-platform-events-provider.ts',
     ],
+  },
+  {
+    descriptor: {
+      id: 'platform-event-command',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'contributor',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: [],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: platformEventContributor,
+    sourceFiles: ['plugins/command/platform-event-contributor.ts'],
   },
   {
     descriptor: {
