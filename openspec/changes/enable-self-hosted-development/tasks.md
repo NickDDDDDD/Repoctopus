@@ -34,7 +34,7 @@
 - [x] 4.3 实现 HTTP Host Service 与 Route Contributor，确保 Inbox 原子提交后才返回 202；以故障注入测试证明写入失败返回可重试错误且不丢投递。
 - [x] 4.4 实现 PlatformEvents Service 和 Runner 领取循环，通过 Cordis Effect 与 Operation Ownership 管理 Route、Timer 和活动操作；运行卸载排空、重启恢复、重试等待和死信测试。
 - [x] 4.5 增加 `event status/replay/retry` 管理命令与 OTel 映射，测试重复和乱序事件只产生一个逻辑任务，且输出不含签名、Token、Header 或原始 payload。
-- [ ] 4.6 编写 Runner、GitHub webhook、安全边界和失败恢复文档，并按文档使用签名 HTTP fixture 完成一次进程外收件与恢复。
+- [x] 4.6 编写 Runner、GitHub webhook、安全边界和失败恢复文档，并按文档使用签名 HTTP fixture 完成一次进程外收件与恢复。
 
 ## 5. 交付合入后自动收尾纵切
 

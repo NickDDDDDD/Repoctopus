@@ -62,6 +62,8 @@ node bin/repoctopus.js event retry --workspace . --envelope sha256:<digest> --js
 
 `replay` 校验 Envelope 的身份和 payload 摘要并幂等接收，不直接调用下游 Coordinator。`retry` 只接受 `dead_letter`，不能重新执行已完成事件。命令输出是脱敏状态投影，不包含原始 payload、Header、签名、Lease token 或平台 Token。
 
+Runner、Inbox、GitHub 验签和安全边界见[平台事件处理](docs/platform-events.md)。需要验证强制中断后的跨进程恢复时，按[平台事件故障恢复](docs/platform-event-recovery.md)运行签名 HTTP 演练。
+
 ## 交付治理
 
 通过项目接入流程生成 workspace 的 `repoctopus.yaml`，在其 `delivery` 段维护团队交付策略（完整示例见 [项目配置示例](docs/examples/repoctopus.yaml)），并为 change 创建 [交付意图](docs/examples/delivery-intent.yaml)。本地 checkpoint 不需要人工批准：

@@ -122,6 +122,13 @@
 - 测试覆盖 canonical replay、防篡改、重复/较旧重放、单逻辑处理、死信人工重试、重复重试拒绝、遥测故障隔离、原子 status、允许列表映射、真实生产 CLI 和 OTLP logs/metrics 端点。所有 CLI/Telemetry 序列化断言均注入签名、Token、Header、Cookie、Lease token 和原始 payload 标记并确认不可见。
 - 能力清单把 OTLP 所需 `network` 权限只授予 `platform-events-file`，管理命令保持零权限；差异复核纠正了误加到 Project Onboarding 的权限，维持最小权限边界。完整验证为 69 个测试文件通过，246 个测试通过、1 个跳过；Package E2E、Runtime Tracer E2E、166 个生产源码架构归属、来源检查和 9 项严格 OpenSpec 校验全部通过，生产依赖审计为 0 个漏洞。
 
+## 平台事件运维与恢复文档（任务 4.6）
+
+- 按 Diataxis 分离两个读者任务：`docs/platform-events.md` 解释 Host、Adapter、Inbox、Runner、Receipt、去重边界、安全边界和失败语义；`docs/platform-event-recovery.md` 提供可执行的跨进程恢复步骤。README 同时提供入口，避免形成孤立文档。文档明确指出 payload 会持久化在 `.repoctopus/events/`，必须按敏感数据保护；脱敏保证只适用于 CLI、Receipt、日志和 OTel 输出，不能被误读成“不落 payload”。
+- 新增真实进程 fixture 和 `test:platform-event-recovery-e2e`。入口子进程从环境读取 GitHub secret，在 `127.0.0.1` 临时端口接收带 SHA-256 HMAC 的真实 HTTP 请求；收到持久化后 `202` 随即被强制终止。独立 CLI 进程仍读取到 `pending`，新入口重投相同 Delivery 返回同一 Envelope ID 与 `duplicate: true`，独立 Runner 进程最终形成一次 `completed` Receipt；输出扫描确认 secret、签名 Header、Lease Token 和 payload 标记均不可见。
+- fixture 只组合已经登记的内置 Host、GitHub Route、文件 Inbox 与 Runner，并增加测试 Processor；它不是生产守护进程。正式平台事件配置和 Application Plugin 仍属于任务 6.1、6.2。首次测试还暴露出 fixture bundle 位于系统临时目录时无法解析仓库依赖；最终只在仓库测试目录创建临时 bundle、外置 npm 包，并在 `afterEach` 等待全部子进程退出后删除 workspace 与 bundle，避免 Windows 文件占用和调试残留。
+- 完整验证为 70 个测试文件通过，247 个测试通过、1 个跳过；Package E2E、Runtime Tracer E2E、166 个生产源码架构归属、来源检查、9 项严格 OpenSpec 校验和变更文档本地链接检查全部通过，生产依赖审计为 0 个漏洞。演练结束后没有残留临时 fixture 目录；持久自举 Run 和 Evidence 继续作为审计资料保留。
+
 ## DSH / Comet 基线升级与全量审计（任务 1.5、1.6）
 
 - 2026-10-21 先执行远端 ref 核对：Comet `master` 仍固定在已审计源码 `575ab0d172e8105257b3c9172b8c8a9b628960ca`，`0.4.5` 发布标签固定在 `c90af44a4474662d7853aae76ce785404974fb0a`；两者之间只有发布后的 README 提交。DSH `master` 与 `dsh-v0.2.1-rc.2` 共同指向 `687f282e8625c6b8d11ff58211a90524be2e4317`。

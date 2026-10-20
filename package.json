@@ -49,6 +49,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:package-e2e": "vitest run test/e2e/package.e2e.test.ts",
+    "test:platform-event-recovery-e2e": "vitest run test/e2e/platform-event-recovery.e2e.test.ts",
     "test:tracer-e2e": "vitest run test/e2e/runtime-tracer.e2e.test.ts",
     "spec:validate": "openspec validate --all --strict",
     "pretest": "npm run build",
