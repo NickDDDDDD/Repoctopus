@@ -175,3 +175,14 @@
 - `PostMergeActions.verifyMergedCode()` 依次推进 checkout 与 evidence Intent：检出 Receipt 只记录 manifest digest，Evidence 使用确定性 Attempt identity 并绑定当前 Run/Action/状态代次。满足 Gate 才把 Bundle 接受到 Run 并进入规格关闭；required check 失败或输入被命令修改时记录失败 Receipt、停留在 evidence，不调用后续规格动作。成功、失败和 superseded 路径都会清理托管检出。
 - builtin catalog 已登记 `post-merge-actions` Service Provider 及最小的 filesystem/network/process 权限，但按任务边界尚未加入常规 project composition；`postMerge` 临时根、Profile 和源仓配置以及 Runner 装配仍属于 6.1、6.2。
 - bare remote 集成测试同时创建两个业务仓，先记录 merge commit、再把 `main` 推进到新提交；实际 Evidence 命令仍读取旧 merge 内容。另覆盖 required Gate 失败、执行中产生未跟踪文件导致 Attempt `superseded`、三种路径清理，以及无 Marker 目录保留。完整验证：74 个测试文件通过，268 个测试通过、1 个跳过；类型、lint、构建、生成物、品牌、176 个生产源码与 20 个能力所有者、来源及 9 项严格 OpenSpec 检查全部通过。
+
+## 规格关闭与 workspace Guardrail（任务 5.5）
+
+- `PostMergeActions` 现在按独立 Action 推进 `close-specification` 与 `audit-paths`。关闭前必须取得干净协调 workspace 的 HEAD/tree 基线、严格验证当前 change、生成关闭计划并把计划摘要绑定到 Run；任一步失败都记录失败 Receipt 并停留在当前步骤，不会进入发布。
+- 关闭计划与基线在 `.repoctopus/post-merge/` 使用原子 Journal 持久化，并由 workspace 级可恢复锁串行化；builtin catalog 登记 `post-merge-closure: 1` 状态 Schema，架构治理也显式登记该恢复模型。这样进程若在 OpenSpec 已归档、Run Action Receipt 尚未保存时中断，重试仍能使用原计划读取 Provider 的幂等关闭 Receipt；不会尝试对已经移走的活动 change 重新生成计划。
+- OpenSpec 计划从整个 `openspec/specs/` 收窄为受影响 capability 的主规格目录、当前活动 change 和 archive 根。Guardrail 会重算计划摘要、基线摘要和关闭身份，并要求 Provider `changedFiles` 只落在受影响主规格、当前 change 旧路径及返回的精确 archive ID 下；计划通配、绝对路径、路径穿越、重复或非规范路径均 fail-closed。
+- `GitPostMergeWorkspace` 从 HEAD 同时读取 tracked rename/add/modify/delete 与未跟踪文件，核对 HEAD/tree 未变化，并把 rename 的源和目标都纳入差异集合。领域审计要求实际规格差异与 Provider 结果完全相等；额外文件只能位于明确的 verification 目录，且不得借 verification 配置覆盖业务源码根。
+- 内容边界只接受普通文本的 Markdown、JSON、YAML；二进制、符号链接、目录/特殊文件和未知扩展均被拒绝。真实 OpenSpec 集成测试证明正常关闭只能从 `audit-paths` 进入 `publish`；归档后注入 `services/runtime.ts` 会产生失败 Receipt 并保持在审计步骤。纯领域反例另覆盖未知文件、宽泛 glob、二进制、符号链接、缺失差异和伪造关闭结果。
+- 修正了 OpenSpec `1.14.3` JSON archive 回执解析：真实字段位于 `archive.archivedAs/path`，旧代码会退回合成 ID，无法与实际 archive 目录核对；失败诊断现在也会在 stderr 为空时保留结构化 stdout，便于安全排障。
+- 5.5 的审计 Receipt 证明的是该时刻的差异快照；任务 5.6 的受保护发布动作仍必须在创建 commit 前重新扫描并核对同一审计身份，关闭审计到提交之间的 TOCTOU 窗口，不能把本次通过视作后续任意修改的授权。
+- 完整验证：75 个测试文件通过，277 个测试通过、1 个跳过；类型、lint、构建、生成物、品牌、178 个生产源码与 20 个能力所有者、来源及 9 项严格 OpenSpec 检查全部通过。测试临时仓库由 `afterEach` 清理，未生成调试日志或其他临时残留。

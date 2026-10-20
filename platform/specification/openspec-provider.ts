@@ -46,6 +46,13 @@ interface ValidationResult {
   items?: Array<{ id?: unknown; valid?: unknown; issues?: unknown }>;
 }
 
+interface ArchiveResult {
+  archive?: {
+    archivedAs?: unknown;
+    path?: unknown;
+  };
+}
+
 const IDENTITY: SpecificationProviderIdentity = {
   id: 'openspec',
   version: installedOpenSpecVersion(),
@@ -140,9 +147,8 @@ export class OpenSpecProvider extends Specification {
       ...(signal ? { signal } : {}),
     });
     if (result.exitCode !== 0) {
-      throw new Error(
-        `OpenSpec ${args.join(' ')} failed: ${result.stderr.trim() || 'no diagnostic'}`,
-      );
+      const diagnostic = result.stderr.trim() || result.stdout.trim() || 'no diagnostic';
+      throw new Error(`OpenSpec ${args.join(' ')} failed: ${diagnostic}`);
     }
     return parseJson<T>(result.stdout, args.join(' '));
   }
@@ -246,7 +252,11 @@ export class OpenSpecProvider extends Specification {
       mergeFactsDigest: input.mergeFactsDigest,
       targetBaselineDigest: input.targetBaselineDigest,
       affectedCapabilities: change.affectedCapabilities,
-      allowedPathPrefixes: ['openspec/specs/', 'openspec/changes/archive/'],
+      allowedPathPrefixes: [
+        ...change.affectedCapabilities.map((capability) => `openspec/specs/${capability}/`),
+        `openspec/changes/${change.changeId}/`,
+        'openspec/changes/archive/',
+      ].sort(),
     };
     return { ...base, planDigest: sha256(base) };
   }
@@ -280,19 +290,18 @@ export class OpenSpecProvider extends Specification {
     }
     const openspecRoot = path.join(this.workspace, 'openspec');
     const before = await tree(openspecRoot);
-    const archived = await this.json<Record<string, unknown>>(
-      ['archive', plan.changeId, '--yes'],
-      signal,
-    );
+    const archived = await this.json<ArchiveResult>(['archive', plan.changeId, '--yes'], signal);
     const after = await tree(openspecRoot);
     const changedFiles = [...new Set([...before.keys(), ...after.keys()])]
       .filter((file) => before.get(file) !== after.get(file))
       .map((file) => `openspec/${file}`)
       .sort();
     const archiveId =
-      typeof archived.archivePath === 'string'
-        ? path.basename(archived.archivePath)
-        : `${plan.changeId}:${plan.planDigest.slice(7, 19)}`;
+      typeof archived.archive?.archivedAs === 'string'
+        ? archived.archive.archivedAs
+        : typeof archived.archive?.path === 'string'
+          ? path.basename(archived.archive.path)
+          : `${plan.changeId}:${plan.planDigest.slice(7, 19)}`;
     const result: SpecificationClosureResult = {
       apiVersion: SPECIFICATION_API_VERSION,
       kind: 'SpecificationClosureResult',

@@ -70,6 +70,84 @@ function profileNode(id: string, repository: string, script: string, dependsOn: 
   };
 }
 
+async function writeSpecificationFixture(workspace: string, changeId: string): Promise<void> {
+  const files = new Map([
+    [
+      'openspec/specs/post-merge-automation/spec.md',
+      `# Post-merge automation
+
+## Purpose
+Exercise guarded post-merge closure.
+
+## Requirements
+
+### Requirement: Existing closure
+The system MUST preserve an existing closure.
+
+#### Scenario: Existing closure runs
+- **WHEN** the closure runs
+- **THEN** it succeeds
+`,
+    ],
+    [
+      `openspec/changes/${changeId}/proposal.md`,
+      `# Change: ${changeId}
+
+## Why
+The fixture needs guarded closure.
+
+## What Changes
+- Add guarded closure.
+
+## Capabilities
+- \`post-merge-automation\`: extend post-merge closure.
+
+## Impact
+- Test fixture only.
+`,
+    ],
+    [
+      `openspec/changes/${changeId}/design.md`,
+      `# Design
+
+## Context
+The fixture closes one change.
+
+## Goals / Non-Goals
+
+**Goals:**
+- Exercise the real Provider.
+
+**Non-Goals:**
+- Publish a branch.
+
+## Decisions
+Use the guarded post-merge path.
+`,
+    ],
+    [`openspec/changes/${changeId}/tasks.md`, '# Tasks\n\n- [x] 1.1 Complete fixture.\n'],
+    [
+      `openspec/changes/${changeId}/specs/post-merge-automation/spec.md`,
+      `# Spec Delta
+
+## ADDED Requirements
+
+### Requirement: Guarded closure
+The system MUST audit closure paths.
+
+#### Scenario: Closure is audited
+- **WHEN** the change is archived
+- **THEN** only planned paths are present
+`,
+    ],
+  ]);
+  for (const [relative, contents] of files) {
+    const target = path.join(workspace, ...relative.split('/'));
+    await mkdir(path.dirname(target), { recursive: true });
+    await writeFile(target, contents);
+  }
+}
+
 async function harness(mode: 'pass' | 'fail' | 'drift') {
   const root = await temporaryDirectory('repoctopus-post-merge-actions-');
   cleanup.push(root);
@@ -78,6 +156,7 @@ async function harness(mode: 'pass' | 'fail' | 'drift') {
     createRemoteRepository(root, 'api'),
   ]);
   const workspace = await createGitRepository(root, 'workspace');
+  const changeId = `post-merge-${mode}`;
   const script =
     mode === 'fail'
       ? 'process.exit(7)'
@@ -109,6 +188,10 @@ async function harness(mode: 'pass' | 'fail' | 'drift') {
       ],
     }),
   );
+  await writeFile(path.join(workspace, '.gitignore'), '.repoctopus/\n');
+  await writeSpecificationFixture(workspace, changeId);
+  await execute('git', ['add', '.'], { cwd: workspace });
+  await execute('git', ['commit', '-m', 'configure post-merge fixture'], { cwd: workspace });
   const productRoot = path.resolve(import.meta.dirname, '..');
   const workflowPath = path.join(productRoot, 'workflows', 'post-merge.yaml');
   const workflow = parseWorkflowPackage(await readFile(workflowPath, 'utf8'));
@@ -117,7 +200,7 @@ async function harness(mode: 'pass' | 'fail' | 'drift') {
   const coordination: PostMergeReady = {
     status: 'ready',
     diagnostic: 'post-merge-ready',
-    changeId: `post-merge-${mode}`,
+    changeId,
     mergeFactsDigest: `sha256:${(mode === 'pass' ? 'a' : mode === 'fail' ? 'b' : 'c').repeat(64)}`,
     mergeEvidence: repositories.map((repository, index) => ({
       repositoryId: repository.id,
@@ -146,10 +229,11 @@ async function harness(mode: 'pass' | 'fail' | 'drift') {
   });
   await app.context.workflowRuns.startOrResume(options);
   const temporaryRoot = path.join(root, 'post-merge-checkouts');
-  const actions = new PostMergeActions(app.context, { temporaryRoot });
+  const actions = new PostMergeActions(app.context, { temporaryRoot, workspaceRoot: workspace });
   return {
     app,
     actions,
+    workspace,
     options,
     coordination,
     temporaryRoot,
@@ -196,6 +280,55 @@ describe('post-merge exact checkout and Evidence', () => {
       await fixture.app.close();
     }
   });
+
+  it('closes the bound Specification and advances only after the Git diff passes Guardrails', async () => {
+    const fixture = await harness('pass');
+    try {
+      await fixture.actions.verifyMergedCode({
+        runId: fixture.options.runId,
+        profileId: 'post-merge',
+        sources: fixture.sources,
+      });
+      const closed = await fixture.actions.closeSpecification(fixture.options.runId);
+      expect(closed.plan.targetBaselineDigest).toMatch(/^sha256:[a-f0-9]{64}$/u);
+      expect(closed.result.archiveId).toMatch(/^\d{4}-\d{2}-\d{2}-post-merge-pass$/u);
+      expect(
+        (await fixture.app.context.workflowRuns.status(fixture.options.runId)).state.currentStep,
+      ).toBe('audit-paths');
+
+      const audited = await fixture.actions.auditSpecificationClosure(fixture.options.runId);
+      expect(audited.audit.changedFiles).toEqual(closed.result.changedFiles);
+      expect(
+        (await fixture.app.context.workflowRuns.status(fixture.options.runId)).state.currentStep,
+      ).toBe('publish');
+    } finally {
+      await fixture.app.close();
+    }
+  }, 30_000);
+
+  it('keeps the Run before publish when business source appears in the coordination diff', async () => {
+    const fixture = await harness('pass');
+    try {
+      await fixture.actions.verifyMergedCode({
+        runId: fixture.options.runId,
+        profileId: 'post-merge',
+        sources: fixture.sources,
+      });
+      await fixture.actions.closeSpecification(fixture.options.runId);
+      const source = path.join(fixture.workspace, 'services', 'runtime.ts');
+      await mkdir(path.dirname(source), { recursive: true });
+      await writeFile(source, 'export const unsafe = true;\n');
+
+      await expect(
+        fixture.actions.auditSpecificationClosure(fixture.options.runId),
+      ).rejects.toThrow('unapproved path: services/runtime.ts');
+      expect(
+        (await fixture.app.context.workflowRuns.status(fixture.options.runId)).state.currentStep,
+      ).toBe('audit-paths');
+    } finally {
+      await fixture.app.close();
+    }
+  }, 30_000);
 
   it('keeps the Run at Evidence and cleans checkouts when a required gate fails', async () => {
     const fixture = await harness('fail');

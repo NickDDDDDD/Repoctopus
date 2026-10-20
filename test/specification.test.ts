@@ -138,6 +138,7 @@ describe('Specification authority', () => {
     const replay = await context.specification.close(plan);
     expect(replay).toEqual(first);
     expect(first.status).toBe('closed');
+    expect(first.archiveId).toMatch(/^\d{4}-\d{2}-\d{2}-sample$/u);
     expect(first.changedFiles).toEqual(
       expect.arrayContaining([
         'openspec/specs/demo/spec.md',

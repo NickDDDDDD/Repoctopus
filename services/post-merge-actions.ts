@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { Service, type Context } from '@deepseek-ai/cordis';
@@ -8,14 +9,31 @@ import type {
   PostMergeCheckoutPort,
   PostMergeRepositorySource,
 } from '../domains/post-merge/checkout.js';
+import {
+  assertPostMergeClosureAudit,
+  assertSafeClosurePlan,
+  auditPostMergeClosure,
+  type PostMergeClosureAudit,
+  type PostMergeWorkspaceBaseline,
+  type PostMergeWorkspacePort,
+} from '../domains/post-merge/closure.js';
 import { postMergeTriggerFacts } from '../domains/post-merge/run.js';
 import type { EvidenceGateProjection } from '../domains/evidence/types.js';
+import type {
+  SpecificationClosurePlan,
+  SpecificationClosureResult,
+} from '../domains/specification/types.js';
+import { atomicWriteJson } from '../platform/filesystem/atomic-write.js';
 import { GitPostMergeCheckout } from '../platform/git/post-merge-checkout.js';
+import { GitPostMergeWorkspace } from '../platform/git/post-merge-workspace.js';
 import { withRecoverableFileLock } from '../platform/runtime/recoverable-file-lock.js';
 
 export interface PostMergeActionsConfig {
   temporaryRoot: string;
+  workspaceRoot?: string;
+  verificationPathPrefixes?: string[];
   checkout?: PostMergeCheckoutPort;
+  workspace?: PostMergeWorkspacePort;
 }
 
 export interface PostMergeVerificationResult {
@@ -26,21 +44,294 @@ export interface PostMergeVerificationResult {
   status: 'succeeded' | 'failed';
 }
 
+export interface PostMergeSpecificationClosureResult {
+  runId: string;
+  plan: SpecificationClosurePlan;
+  result: SpecificationClosureResult;
+}
+
+export interface PostMergePathAuditResult {
+  runId: string;
+  audit: PostMergeClosureAudit;
+}
+
+interface PostMergeClosureJournal {
+  schemaVersion: 1;
+  runId: string;
+  baseline: PostMergeWorkspaceBaseline;
+  plan: SpecificationClosurePlan;
+  result?: SpecificationClosureResult;
+  audit?: PostMergeClosureAudit;
+}
+
+type PostMergeRunStatus = Awaited<ReturnType<Context['workflowRuns']['status']>>;
+
 function identity(...parts: string[]): string {
   return createHash('sha256').update(parts.join('\0')).digest('hex');
 }
 
 export class PostMergeActions extends Service {
-  static inject = ['evidenceCoordinator', 'workflowRuns'];
+  static inject = ['evidenceCoordinator', 'specification', 'workflowRuns'];
 
   private readonly temporaryRoot: string;
+  private readonly workspaceRoot: string;
+  private readonly verificationPathPrefixes: string[];
   private readonly checkout: PostMergeCheckoutPort;
+  private readonly workspace: PostMergeWorkspacePort;
 
   constructor(context: Context, config: PostMergeActionsConfig) {
     super(context, 'postMergeActions');
     if (!config?.temporaryRoot?.trim()) throw new Error('Post-merge temporary root is required');
     this.temporaryRoot = path.resolve(config.temporaryRoot);
+    this.workspaceRoot = path.resolve(config.workspaceRoot ?? process.cwd());
+    this.verificationPathPrefixes = [...(config.verificationPathPrefixes ?? [])];
     this.checkout = config.checkout ?? new GitPostMergeCheckout();
+    this.workspace = config.workspace ?? new GitPostMergeWorkspace();
+  }
+
+  private workspaceLock(): string {
+    return path.join(
+      this.temporaryRoot,
+      '.locks',
+      `${identity('post-merge-workspace-lock/v1', this.workspaceRoot.toLowerCase())}.lock`,
+    );
+  }
+
+  private closureJournalFile(runId: string): string {
+    return path.join(
+      this.workspaceRoot,
+      '.repoctopus',
+      'post-merge',
+      `${identity('post-merge-closure-journal/v1', runId)}.json`,
+    );
+  }
+
+  private async loadClosureJournal(runId: string): Promise<PostMergeClosureJournal | null> {
+    try {
+      const value = JSON.parse(
+        await readFile(this.closureJournalFile(runId), 'utf8'),
+      ) as Partial<PostMergeClosureJournal>;
+      if (
+        value.schemaVersion !== 1 ||
+        value.runId !== runId ||
+        value.plan?.kind !== 'SpecificationClosurePlan' ||
+        value.baseline?.schemaVersion !== 1 ||
+        (value.result && value.result.kind !== 'SpecificationClosureResult') ||
+        (value.audit && value.audit.schemaVersion !== 1)
+      ) {
+        throw new Error(`Post-merge closure Journal is invalid for Run ${runId}`);
+      }
+      return value as PostMergeClosureJournal;
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return null;
+      throw error;
+    }
+  }
+
+  private saveClosureJournal(journal: PostMergeClosureJournal): Promise<void> {
+    return atomicWriteJson(this.closureJournalFile(journal.runId), journal, {
+      containedRoot: this.workspaceRoot,
+    });
+  }
+
+  private assertClosureJournalBinding(
+    runId: string,
+    journal: PostMergeClosureJournal,
+    status: PostMergeRunStatus,
+  ): void {
+    assertSafeClosurePlan(journal.plan);
+    const facts = postMergeTriggerFacts(status.state.trigger);
+    const specification = status.state.specificationUsageSnapshot;
+    if (
+      journal.plan.changeId !== facts.changeId ||
+      journal.plan.mergeFactsDigest !== status.state.trigger?.identityDigest ||
+      journal.baseline.digest !== journal.plan.targetBaselineDigest ||
+      !specification ||
+      specification.changeId !== journal.plan.changeId ||
+      specification.provider.id !== journal.plan.provider.id ||
+      specification.provider.version !== journal.plan.provider.version ||
+      specification.provider.protocolVersion !== journal.plan.provider.protocolVersion ||
+      specification.closurePlanDigest !== journal.plan.planDigest
+    ) {
+      throw new Error(`Post-merge closure Journal is not bound to Run ${runId}`);
+    }
+    if (
+      journal.result &&
+      (journal.result.changeId !== journal.plan.changeId ||
+        journal.result.planDigest !== journal.plan.planDigest ||
+        journal.result.provider.id !== journal.plan.provider.id ||
+        journal.result.provider.version !== journal.plan.provider.version ||
+        journal.result.provider.protocolVersion !== journal.plan.provider.protocolVersion)
+    ) {
+      throw new Error(`Post-merge closure result is not bound to Run ${runId}`);
+    }
+    if (journal.audit) {
+      if (!journal.result) {
+        throw new Error(`Post-merge closure audit has no result for Run ${runId}`);
+      }
+      assertPostMergeClosureAudit(journal.audit, {
+        plan: journal.plan,
+        result: journal.result,
+        baseline: journal.baseline,
+      });
+    }
+  }
+
+  async closeSpecification(
+    runId: string,
+    signal?: AbortSignal,
+  ): Promise<PostMergeSpecificationClosureResult> {
+    return withRecoverableFileLock(this.workspaceLock(), () =>
+      this.closeSpecificationLocked(runId, signal),
+    );
+  }
+
+  private async closeSpecificationLocked(
+    runId: string,
+    signal?: AbortSignal,
+  ): Promise<PostMergeSpecificationClosureResult> {
+    let status = await this.ctx.workflowRuns.status(runId, signal);
+    if (status.state.workflowName !== 'post-merge') {
+      throw new Error(`Run is not a Post-merge workflow: ${runId}`);
+    }
+    let journal = await this.loadClosureJournal(runId);
+    if (status.state.currentStep !== 'close-specification') {
+      if (
+        journal?.result &&
+        (status.state.currentStep === 'audit-paths' || status.state.currentStep === 'publish')
+      ) {
+        this.assertClosureJournalBinding(runId, journal, status);
+        return { runId, plan: journal.plan, result: journal.result };
+      }
+      throw new Error(`Post-merge Run is not awaiting Specification closure: ${runId}`);
+    }
+    if (status.state.pendingActionId === null) {
+      status = (await this.ctx.workflowRuns.next(runId, new Set(), signal)).value;
+    }
+    const action = status.nextAction;
+    if (!action || action.ref !== 'post-merge.close-specification') {
+      throw new Error('Post-merge Specification closure action is not pending');
+    }
+    try {
+      if (journal) this.assertClosureJournalBinding(runId, journal, status);
+      if (!journal) {
+        const facts = postMergeTriggerFacts(status.state.trigger);
+        const validation = await this.ctx.specification.validate(facts.changeId, {
+          strict: true,
+          ...(signal ? { signal } : {}),
+        });
+        if (!validation.valid) {
+          throw new Error(`Specification change is not valid: ${facts.changeId}`);
+        }
+        await this.ctx.workflowRuns.bindSpecification(runId, validation, signal);
+        const baseline = await this.workspace.cleanBaseline(this.workspaceRoot);
+        const plan = await this.ctx.specification.prepareClosure({
+          changeId: facts.changeId,
+          mergeFactsDigest: status.state.trigger!.identityDigest,
+          targetBaselineDigest: baseline.digest,
+          ...(signal ? { signal } : {}),
+        });
+        assertSafeClosurePlan(plan);
+        await this.ctx.workflowRuns.bindSpecificationClosurePlan(runId, plan, signal);
+        journal = { schemaVersion: 1, runId, baseline, plan };
+        await this.saveClosureJournal(journal);
+      }
+      assertSafeClosurePlan(journal.plan);
+      const result = journal.result ?? (await this.ctx.specification.close(journal.plan, signal));
+      journal = { ...journal, result };
+      await this.saveClosureJournal(journal);
+      await this.ctx.workflowRuns.record(
+        {
+          runId,
+          actionId: action.id,
+          status: 'succeeded',
+          summary: `post-merge-specification-closed:${result.closureId}`,
+          eventId: identity(runId, action.id, result.closureId),
+        },
+        signal,
+      );
+      return { runId, plan: journal.plan, result };
+    } catch (error) {
+      await this.ctx.workflowRuns.record(
+        {
+          runId,
+          actionId: action.id,
+          status: 'failed',
+          summary: 'post-merge-specification-closure-failed',
+          eventId: identity(runId, action.id, 'specification-closure-failed'),
+        },
+        signal,
+      );
+      throw error;
+    }
+  }
+
+  async auditSpecificationClosure(
+    runId: string,
+    signal?: AbortSignal,
+  ): Promise<PostMergePathAuditResult> {
+    return withRecoverableFileLock(this.workspaceLock(), () =>
+      this.auditSpecificationClosureLocked(runId, signal),
+    );
+  }
+
+  private async auditSpecificationClosureLocked(
+    runId: string,
+    signal?: AbortSignal,
+  ): Promise<PostMergePathAuditResult> {
+    let status = await this.ctx.workflowRuns.status(runId, signal);
+    const journal = await this.loadClosureJournal(runId);
+    if (status.state.currentStep !== 'audit-paths') {
+      if (journal?.audit && status.state.currentStep === 'publish') {
+        this.assertClosureJournalBinding(runId, journal, status);
+        return { runId, audit: journal.audit };
+      }
+      throw new Error(`Post-merge Run is not awaiting path audit: ${runId}`);
+    }
+    if (status.state.pendingActionId === null) {
+      status = (await this.ctx.workflowRuns.next(runId, new Set(), signal)).value;
+    }
+    const action = status.nextAction;
+    if (!action || action.ref !== 'post-merge.audit-paths') {
+      throw new Error('Post-merge path audit action is not pending');
+    }
+    try {
+      if (!journal?.result) {
+        throw new Error(`Post-merge closure Journal has no result for Run ${runId}`);
+      }
+      this.assertClosureJournalBinding(runId, journal, status);
+      const diff = await this.workspace.diff(journal.baseline);
+      const audit = auditPostMergeClosure({
+        plan: journal.plan,
+        result: journal.result,
+        diff,
+        verificationPathPrefixes: this.verificationPathPrefixes,
+      });
+      await this.saveClosureJournal({ ...journal, audit });
+      await this.ctx.workflowRuns.record(
+        {
+          runId,
+          actionId: action.id,
+          status: 'succeeded',
+          summary: `post-merge-path-audit:${audit.digest}`,
+          eventId: identity(runId, action.id, audit.digest),
+        },
+        signal,
+      );
+      return { runId, audit };
+    } catch (error) {
+      await this.ctx.workflowRuns.record(
+        {
+          runId,
+          actionId: action.id,
+          status: 'failed',
+          summary: 'post-merge-path-audit-failed',
+          eventId: identity(runId, action.id, 'path-audit-failed'),
+        },
+        signal,
+      );
+      throw error;
+    }
   }
 
   async verifyMergedCode(
