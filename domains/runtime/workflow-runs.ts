@@ -8,6 +8,8 @@ import type { TrajectoryEvent, TrajectoryEventType } from '../trajectory/types.j
 import type { WorkflowPackage } from '../workflow-contract/types.js';
 import type { CompositionIdentitySnapshot } from '../composition/types.js';
 import { compareCompositions } from '../composition/compatibility.js';
+import { sameSkillUsageSnapshot, type SkillUsageSnapshot } from '../skill/types.js';
+import type { SpecificationUsageSnapshot } from '../specification/types.js';
 import type {
   ResumeView,
   RunStatusView,
@@ -122,6 +124,155 @@ export class WorkflowRunCoordinator {
       compositionCompatibility,
       ...(preview.reason ? { reason: preview.reason } : {}),
     };
+  }
+
+  async bindSkill(runId: string, snapshot: SkillUsageSnapshot): Promise<SkillUsageSnapshot> {
+    await this.prepareWritableComposition(runId);
+    const result = await this.store.commitGuarded(runId, ({ state, trajectory }) => {
+      this.assertWritableComposition(state);
+      const existing = (state.skillUsageSnapshots ?? []).find(
+        (item) => item.name === snapshot.name,
+      );
+      if (existing) {
+        if (!sameSkillUsageSnapshot(existing, snapshot)) {
+          throw new Error(
+            `Skill drift detected for ${snapshot.name}: Run is bound to ${existing.provider} ${existing.contentDigest}, current is ${snapshot.provider} ${snapshot.contentDigest}`,
+          );
+        }
+        return { value: existing };
+      }
+      const timestamp = this.clock().toISOString();
+      const nextState: RunState = {
+        ...state,
+        skillUsageSnapshots: [...(state.skillUsageSnapshots ?? []), structuredClone(snapshot)].sort(
+          (left, right) => left.name.localeCompare(right.name),
+        ),
+        stateVersion: state.stateVersion + 1,
+        updatedAt: timestamp,
+      };
+      const bound = event({
+        eventId: stableEventId(runId, snapshot.name, snapshot.contentDigest, 'skill.bound'),
+        sequence: trajectory.length + 1,
+        timestamp,
+        type: 'skill.bound',
+        state: nextState,
+        data: {
+          skillName: snapshot.name,
+          skillProvider: snapshot.provider,
+          contentDigest: snapshot.contentDigest,
+          resourceManifestDigest: snapshot.resourceManifestDigest,
+        },
+      });
+      return { state: nextState, event: bound, value: snapshot };
+    });
+    await this.flushTelemetry(runId);
+    return result;
+  }
+
+  async bindSpecification(
+    runId: string,
+    snapshot: SpecificationUsageSnapshot,
+  ): Promise<SpecificationUsageSnapshot> {
+    await this.prepareWritableComposition(runId);
+    const result = await this.store.commitGuarded(runId, ({ state, trajectory }) => {
+      this.assertWritableComposition(state);
+      const existing = state.specificationUsageSnapshot;
+      if (existing) {
+        if (
+          existing.changeId !== snapshot.changeId ||
+          existing.provider.id !== snapshot.provider.id ||
+          existing.provider.version !== snapshot.provider.version ||
+          existing.provider.protocolVersion !== snapshot.provider.protocolVersion ||
+          existing.validationDigest !== snapshot.validationDigest
+        ) {
+          throw new Error(`Specification drift detected for Run ${runId}`);
+        }
+        return { value: existing };
+      }
+      const timestamp = this.clock().toISOString();
+      const nextState: RunState = {
+        ...state,
+        specificationUsageSnapshot: structuredClone(snapshot),
+        stateVersion: state.stateVersion + 1,
+        updatedAt: timestamp,
+      };
+      const bound = event({
+        eventId: stableEventId(
+          runId,
+          snapshot.changeId,
+          snapshot.validationDigest,
+          'specification.bound',
+        ),
+        sequence: trajectory.length + 1,
+        timestamp,
+        type: 'specification.bound',
+        state: nextState,
+        data: {
+          changeId: snapshot.changeId,
+          providerId: snapshot.provider.id,
+          providerVersion: snapshot.provider.version,
+          validationDigest: snapshot.validationDigest,
+        },
+      });
+      return { state: nextState, event: bound, value: snapshot };
+    });
+    await this.flushTelemetry(runId);
+    return result;
+  }
+
+  async bindSpecificationClosurePlan(
+    runId: string,
+    plan: {
+      changeId: string;
+      provider: { id: string; version: string };
+      planDigest: `sha256:${string}`;
+    },
+  ): Promise<SpecificationUsageSnapshot> {
+    await this.prepareWritableComposition(runId);
+    const result = await this.store.commitGuarded(runId, ({ state, trajectory }) => {
+      this.assertWritableComposition(state);
+      const existing = state.specificationUsageSnapshot;
+      if (!existing) throw new Error(`Run ${runId} has no bound Specification validation`);
+      if (
+        existing.changeId !== plan.changeId ||
+        existing.provider.id !== plan.provider.id ||
+        existing.provider.version !== plan.provider.version
+      ) {
+        throw new Error(`Specification closure plan does not match Run ${runId}`);
+      }
+      if (existing.closurePlanDigest) {
+        if (existing.closurePlanDigest !== plan.planDigest) {
+          throw new Error(`Specification closure plan drift detected for Run ${runId}`);
+        }
+        return { value: existing };
+      }
+      const timestamp = this.clock().toISOString();
+      const snapshot = { ...existing, closurePlanDigest: plan.planDigest };
+      const nextState: RunState = {
+        ...state,
+        specificationUsageSnapshot: snapshot,
+        stateVersion: state.stateVersion + 1,
+        updatedAt: timestamp,
+      };
+      return {
+        state: nextState,
+        event: event({
+          eventId: stableEventId(runId, plan.planDigest, 'specification.closure-planned'),
+          sequence: trajectory.length + 1,
+          timestamp,
+          type: 'specification.closure-planned',
+          state: nextState,
+          data: {
+            changeId: plan.changeId,
+            providerId: plan.provider.id,
+            closurePlanDigest: plan.planDigest,
+          },
+        }),
+        value: snapshot,
+      };
+    });
+    await this.flushTelemetry(runId);
+    return result;
   }
 
   async next(

@@ -8,7 +8,7 @@ import {
   removeTemporaryDirectory,
   temporaryDirectory,
 } from '../helpers/fixtures.js';
-import { runCli, type CliResult } from './cli.js';
+import { runCli } from './cli.js';
 
 const repositoryRoot = path.resolve(import.meta.dirname, '..', '..');
 const cleanup: string[] = [];
@@ -84,12 +84,12 @@ describe('multi-process runtime and OTLP delivery', () => {
         ],
       });
       expect(started).toMatchObject({ protocolVersion: 1, ok: true, runId: 'run-e2e-runtime' });
-      const proposed = (await runCli({
+      const proposed = await runCli<{ state: { pendingActionId: string } }>({
         packageRoot: repositoryRoot,
         cwd: workspace,
         environment,
         args: ['run', 'next', '--workspace', workspace, '--run', 'run-e2e-runtime'],
-      })) as CliResult<{ state: { pendingActionId: string } }>;
+      });
       const actionId = proposed.result!.state.pendingActionId;
       const recorded = await runCli({
         packageRoot: repositoryRoot,
@@ -115,7 +115,10 @@ describe('multi-process runtime and OTLP delivery', () => {
       expect(recorded.ok).toBe(true);
 
       await writeFile(path.join(front, 'changed.txt'), 'worktree changed');
-      const resumed = (await runCli({
+      const resumed = await runCli<{
+        state: { reconciliationRequired: boolean };
+        reconciliation: { changed: boolean };
+      }>({
         packageRoot: repositoryRoot,
         cwd: workspace,
         environment,
@@ -129,10 +132,7 @@ describe('multi-process runtime and OTLP delivery', () => {
           '--run',
           'run-e2e-runtime',
         ],
-      })) as CliResult<{
-        state: { reconciliationRequired: boolean };
-        reconciliation: { changed: boolean };
-      }>;
+      });
       expect(resumed.result).toMatchObject({
         state: { reconciliationRequired: true },
         reconciliation: { changed: true },

@@ -69,7 +69,7 @@ Workflow 只编排领域动作；Engine 仍是纯函数。Skill、Specification�
 
 外部 IDE 不需要 Hook 才能看到 Skill。动态协议可用时 Adapter 直接读取目录；只能读文件时使用投影。第一纵切至少验证 Codex 与 OpenCode 的输出契约，并为 CodeBuddy、CodeArts 保留同一 Adapter 接口；不会声称尚未验证的 IDE Hook 已工作。
 
-Matt Skills 以固定 commit 的 MIT 源码快照作为内置 Provider 内容，首批只选择自举 Workflow 实际使用的 `grill-with-docs`、`tdd`、`diagnosing-bugs`、`code-review` 与 `teach`。Provider 提供上游名称、描述、调用策略、资源基底和内容摘要。项目或用户 Provider 可以用相同规范名替换，例如 `tdd`，Workflow 不感知来源。
+Matt Skills 以固定 commit 的 MIT 源码快照作为内置 Provider 内容，首批入口选择自举 Workflow 实际使用的 `grill-with-docs`、`tdd`、`diagnosing-bugs`、`code-review` 与 `teach`。快照同时包含 `grill-with-docs` 明确调用的 `grilling` 与 `domain-modeling`，避免发布一个缺少运行依赖的入口。Provider 提供上游名称、描述、调用策略、资源基底和内容摘要。项目或用户 Provider 可以用相同规范名替换，例如 `tdd`，Workflow 不感知来源。
 
 Run 不复制全部 Skill 目录，只在首次加载时追加 `SkillUsageSnapshot`：名称、Provider、版本、调用策略、内容摘要和资源清单摘要。正文继续由 Provider 管理；恢复时摘要不一致走 composition compatibility/Human Decision，而不是静默换方法。
 

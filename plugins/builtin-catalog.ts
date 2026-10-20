@@ -35,6 +35,12 @@ import {
 import { WorkflowRuns } from '../services/workflow-runs.js';
 import { ProjectOnboarding } from '../services/project-onboarding.js';
 import { BrowserMaintenance } from '../services/browser-maintenance.js';
+import { SkillRegistry } from '@deepseek-ai/dsh-skill';
+import mattSkillProvider from './skill/matt-skill-provider.js';
+import filesystemSkillProvider from './skill/filesystem-skill-provider.js';
+import skillCatalogContributor from './command/skill-catalog-contributor.js';
+import specificationContributor from './command/specification-contributor.js';
+import { OpenSpecProvider } from '../platform/specification/openspec-provider.js';
 
 interface BuiltinDefinition {
   descriptor: Omit<PluginDescriptor, 'codeDigest'>;
@@ -102,6 +108,7 @@ const definitions: readonly BuiltinDefinition[] = [
       'services/project-onboarding.ts',
       'platform/project-configuration/onboarding.ts',
       'platform/project-configuration/detect.ts',
+      'platform/project-configuration/gitignore.ts',
     ],
   },
   {
@@ -167,6 +174,114 @@ const definitions: readonly BuiltinDefinition[] = [
     },
     plugin: CommandRouter,
     sourceFiles: ['services/command-router.ts'],
+  },
+  {
+    descriptor: {
+      id: 'skill-registry',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['skill-registry'],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: SkillRegistry,
+    sourceFiles: ['third_party/dsh-adoption.json'],
+  },
+  {
+    descriptor: {
+      id: 'skill-provider-matt',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'contributor',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: [],
+      permissions: ['filesystem'],
+      stateSchemas: {},
+    },
+    plugin: mattSkillProvider,
+    sourceFiles: [
+      'plugins/skill/file-skill-provider.ts',
+      'plugins/skill/matt-skill-provider.ts',
+      'third_party/matt-skills/source-manifest.json',
+    ],
+  },
+  {
+    descriptor: {
+      id: 'skill-provider-filesystem',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'contributor',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: [],
+      permissions: ['filesystem'],
+      stateSchemas: {},
+    },
+    plugin: filesystemSkillProvider,
+    sourceFiles: [
+      'plugins/skill/file-skill-provider.ts',
+      'plugins/skill/filesystem-skill-provider.ts',
+    ],
+  },
+  {
+    descriptor: {
+      id: 'skill-command',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'contributor',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: [],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: skillCatalogContributor,
+    sourceFiles: ['plugins/command/skill-catalog-contributor.ts', 'platform/skill/projector.ts'],
+  },
+  {
+    descriptor: {
+      id: 'specification-openspec',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['specification-authority'],
+      permissions: ['filesystem', 'process'],
+      stateSchemas: { specification: '1' },
+    },
+    plugin: OpenSpecProvider,
+    sourceFiles: [
+      'services/specification.ts',
+      'domains/specification/types.ts',
+      'platform/specification/openspec-process.ts',
+      'platform/specification/openspec-provider.ts',
+    ],
+  },
+  {
+    descriptor: {
+      id: 'specification-command',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'contributor',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: [],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: specificationContributor,
+    sourceFiles: ['plugins/command/specification-contributor.ts'],
   },
   {
     descriptor: {
@@ -445,6 +560,9 @@ const definitions: readonly BuiltinDefinition[] = [
       'domains/runtime/workflow-runs.ts',
       'domains/runtime/evidence-guard.ts',
       'domains/engine/loop.ts',
+      'domains/skill/types.ts',
+      'domains/specification/types.ts',
+      'platform/skill/snapshot.ts',
     ],
   },
   {

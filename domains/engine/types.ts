@@ -1,5 +1,7 @@
 import type { WorkflowAction } from '../workflow-contract/types.js';
 import type { CompositionIdentitySnapshot } from '../composition/types.js';
+import type { SkillUsageSnapshot } from '../skill/types.js';
+import type { SpecificationUsageSnapshot } from '../specification/types.js';
 
 export type RunStatus = 'running' | 'waiting' | 'completed' | 'failed';
 
@@ -21,6 +23,8 @@ export interface RunState {
   status: RunStatus;
   retries: Record<string, number>;
   acceptedEvidenceBundleIds: string[];
+  skillUsageSnapshots?: SkillUsageSnapshot[];
+  specificationUsageSnapshot?: SpecificationUsageSnapshot;
   createdAt: string;
   updatedAt: string;
 }

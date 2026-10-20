@@ -255,13 +255,17 @@ export class EvidenceCoordinator extends Service {
           };
           await atomicWriteJson(this.contextFile(attemptId), context);
           markDurableBoundary();
+          const specification = this.ctx.get('specification');
           const result = await new EvidenceService(
             artifacts,
             this.store,
             adapters.command,
             undefined,
             this.journal,
-            adapters,
+            {
+              ...adapters,
+              ...(specification ? { specification } : {}),
+            },
           ).run(plan, fingerprint.digest, {
             compositionDigest: this.ctx.compositionIdentity.current().compositionDigest,
             attemptId,

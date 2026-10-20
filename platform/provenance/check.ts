@@ -29,6 +29,19 @@ interface CordisManifest {
   packages?: ImmutablePackageManifest[];
 }
 
+interface DshAdoptionManifest {
+  schemaVersion: number;
+  upstream?: { commit?: string; license?: string };
+  npmPackages?: Array<{ name: string; version: string }>;
+  forbiddenRuntimePackages?: string[];
+  components?: Array<{
+    id?: string;
+    target?: string;
+    sourceSha256?: string;
+    targetSha256?: string;
+  }>;
+}
+
 export interface ProvenanceCheck {
   valid: boolean;
   fileCount: number;
@@ -116,9 +129,102 @@ export async function checkProvenance(
     cordisFiles += packageEntry.files.length;
   }
 
+  const mattPath = path.join(productRoot, 'third_party', 'matt-skills', 'source-manifest.json');
+  const matt = JSON.parse(await readFile(mattPath, 'utf8')) as ProvenanceManifest & {
+    upstream?: { commit?: string; license?: string };
+  };
+  if (
+    matt.schemaVersion !== 1 ||
+    !/^[a-f0-9]{40}$/.test(matt.upstream?.commit ?? '') ||
+    matt.upstream?.license !== 'MIT' ||
+    !Array.isArray(matt.files)
+  ) {
+    findings.push('Invalid Matt Skill provenance manifest header');
+  }
+  const mattRoot = path.join(productRoot, 'third_party', 'matt-skills');
+  const expectedMattFiles = [
+    'source-manifest.json',
+    ...(matt.files ?? []).map((entry) =>
+      path.relative('third_party/matt-skills', entry.target).replaceAll('\\', '/'),
+    ),
+  ].sort();
+  const actualMattFiles = await listFiles(mattRoot);
+  for (const missing of expectedMattFiles.filter((file) => !actualMattFiles.includes(file))) {
+    findings.push(`Missing Matt Skill file: ${missing}`);
+  }
+  for (const extra of actualMattFiles.filter((file) => !expectedMattFiles.includes(file))) {
+    findings.push(`Unregistered Matt Skill file: ${extra}`);
+  }
+  for (const entry of matt.files ?? []) {
+    const contents = await readFile(path.join(productRoot, entry.target));
+    const digest = createHash('sha256').update(contents).digest('hex');
+    if (digest !== entry.sha256 || digest !== entry.sourceSha256) {
+      findings.push(`Matt Skill snapshot digest mismatch: ${entry.target}`);
+    }
+  }
+
+  const dshPath = path.join(productRoot, 'third_party', 'dsh-adoption.json');
+  const dsh = JSON.parse(await readFile(dshPath, 'utf8')) as DshAdoptionManifest;
+  if (
+    dsh.schemaVersion !== 1 ||
+    !/^[a-f0-9]{40}$/.test(dsh.upstream?.commit ?? '') ||
+    dsh.upstream?.license !== 'MIT' ||
+    !Array.isArray(dsh.npmPackages) ||
+    !Array.isArray(dsh.forbiddenRuntimePackages) ||
+    !Array.isArray(dsh.components)
+  ) {
+    findings.push('Invalid DSH adoption manifest header');
+  }
+  const packageJson = JSON.parse(
+    await readFile(path.join(productRoot, 'package.json'), 'utf8'),
+  ) as {
+    dependencies?: Record<string, string>;
+    overrides?: Record<string, string>;
+  };
+  const packageLock = JSON.parse(
+    await readFile(path.join(productRoot, 'package-lock.json'), 'utf8'),
+  ) as {
+    packages?: Record<string, { version?: string; integrity?: string }>;
+  };
+  for (const packageEntry of dsh.npmPackages ?? []) {
+    if (packageJson.dependencies?.[packageEntry.name] !== packageEntry.version) {
+      findings.push(
+        `DSH package is not an exact direct dependency: ${packageEntry.name}@${packageEntry.version}`,
+      );
+    }
+    if (packageJson.overrides?.[packageEntry.name] !== packageEntry.version) {
+      findings.push(
+        `DSH package override is not fixed: ${packageEntry.name}@${packageEntry.version}`,
+      );
+    }
+    const locked = packageLock.packages?.[`node_modules/${packageEntry.name}`];
+    if (locked?.version !== packageEntry.version || !/^sha512-/.test(locked.integrity ?? '')) {
+      findings.push(`DSH package lock mismatch: ${packageEntry.name}@${packageEntry.version}`);
+    }
+  }
+  for (const packageName of dsh.forbiddenRuntimePackages ?? []) {
+    if (packageLock.packages?.[`node_modules/${packageName}`]) {
+      findings.push(`Forbidden DSH runtime package installed: ${packageName}`);
+    }
+  }
+  for (const component of dsh.components ?? []) {
+    if (!component.target) continue;
+    if (
+      !/^[a-f0-9]{64}$/.test(component.sourceSha256 ?? '') ||
+      !/^[a-f0-9]{64}$/.test(component.targetSha256 ?? '')
+    ) {
+      findings.push(`Invalid DSH adapted component digest: ${component.id ?? '(missing id)'}`);
+      continue;
+    }
+    const contents = await readFile(path.join(productRoot, component.target));
+    if (createHash('sha256').update(contents).digest('hex') !== component.targetSha256) {
+      findings.push(`DSH adapted target digest mismatch: ${component.target}`);
+    }
+  }
+
   return {
     valid: findings.length === 0,
-    fileCount: manifest.files.length + cordisFiles,
+    fileCount: manifest.files.length + cordisFiles + (matt.files?.length ?? 0),
     findings,
   };
 }

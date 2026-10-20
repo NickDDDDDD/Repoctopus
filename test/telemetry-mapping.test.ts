@@ -38,6 +38,10 @@ describe('telemetry mapping', () => {
         environment: 'DATABASE_PASSWORD=secret',
         screenshot: 'data:image/png;base64,private',
         log: 'x'.repeat(1_000),
+        skillName: 'teach',
+        skillProvider: 'matt-builtins',
+        skillContent: 'private learning notes',
+        learningPath: 'C:/secret/project/.repoctopus/learning/runtime-design/notes.md',
         action: { type: 'checkpoint', ref: 'verified', summary: 'private prompt' },
       },
     };
@@ -58,5 +62,8 @@ describe('telemetry mapping', () => {
     expect(JSON.stringify(attributes)).not.toContain('session=secret');
     expect(JSON.stringify(attributes)).not.toContain('DATABASE_PASSWORD');
     expect(JSON.stringify(attributes)).not.toContain('data:image');
+    expect(JSON.stringify(attributes)).not.toContain('private learning notes');
+    expect(JSON.stringify(attributes)).not.toContain('.repoctopus/learning');
+    expect(JSON.stringify(attributes)).not.toContain('matt-builtins');
   });
 });

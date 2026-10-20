@@ -21,10 +21,25 @@ async function provenanceFixture(): Promise<string> {
   await cp(path.join(productRoot, 'third_party'), path.join(root, 'third_party'), {
     recursive: true,
   });
+  await Promise.all(
+    ['package.json', 'package-lock.json'].map((file) =>
+      cp(path.join(productRoot, file), path.join(root, file)),
+    ),
+  );
   const manifest = JSON.parse(
     await readFile(path.join(productRoot, 'third_party', 'comet', 'source-manifest.json'), 'utf8'),
   ) as { files: Array<{ target: string }> };
   for (const entry of manifest.files) {
+    const target = path.join(root, entry.target);
+    await mkdir(path.dirname(target), { recursive: true });
+    await cp(path.join(productRoot, entry.target), target);
+  }
+  const dsh = JSON.parse(
+    await readFile(path.join(productRoot, 'third_party', 'dsh-adoption.json'), 'utf8'),
+  ) as { components: Array<{ target?: string }> };
+  for (const entry of dsh.components.filter(
+    (component): component is { target: string } => typeof component.target === 'string',
+  )) {
     const target = path.join(root, entry.target);
     await mkdir(path.dirname(target), { recursive: true });
     await cp(path.join(productRoot, entry.target), target);
@@ -36,7 +51,7 @@ describe('third-party provenance', () => {
   it('accepts the immutable Cordis snapshot', async () => {
     const result = await checkProvenance(await provenanceFixture());
     expect(result.valid).toBe(true);
-    expect(result.fileCount).toBe(80);
+    expect(result.fileCount).toBe(104);
   });
 
   it('rejects a modified Cordis source file', async () => {
@@ -48,6 +63,42 @@ describe('third-party provenance', () => {
     expect(result.valid).toBe(false);
     expect(result.findings).toContain(
       'Cordis snapshot digest mismatch: third_party/cordis/src/context.ts',
+    );
+  });
+
+  it('rejects a modified Matt Skill snapshot', async () => {
+    const root = await provenanceFixture();
+    const target = path.join(
+      root,
+      'third_party',
+      'matt-skills',
+      'skills',
+      'engineering',
+      'tdd',
+      'SKILL.md',
+    );
+    await writeFile(target, `${await readFile(target, 'utf8')}\nmodified in test\n`);
+
+    const result = await checkProvenance(root);
+    expect(result.valid).toBe(false);
+    expect(result.findings).toContain(
+      'Matt Skill snapshot digest mismatch: third_party/matt-skills/skills/engineering/tdd/SKILL.md',
+    );
+  });
+
+  it('rejects a DSH dependency that drifts from the fixed package version', async () => {
+    const root = await provenanceFixture();
+    const lockPath = path.join(root, 'package-lock.json');
+    const lock = JSON.parse(await readFile(lockPath, 'utf8')) as {
+      packages: Record<string, { version?: string }>;
+    };
+    lock.packages['node_modules/@deepseek-ai/dsh-skill']!.version = '0.1.7-rc.2';
+    await writeFile(lockPath, JSON.stringify(lock, null, 2));
+
+    const result = await checkProvenance(root);
+    expect(result.valid).toBe(false);
+    expect(result.findings).toContain(
+      'DSH package lock mismatch: @deepseek-ai/dsh-skill@0.1.7-alpha.1',
     );
   });
 });

@@ -46,6 +46,7 @@ export function startRun(options: {
     status: 'running',
     retries: {},
     acceptedEvidenceBundleIds: [],
+    skillUsageSnapshots: [],
     createdAt: options.timestamp,
     updatedAt: options.timestamp,
   };

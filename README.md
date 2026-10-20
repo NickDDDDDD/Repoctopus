@@ -26,6 +26,30 @@ node bin/repoctopus.js doctor --workspace C:\path\to\project\repoctopus --run <r
 
 运行状态保存在 workspace 的 `.repoctopus/`，不会写入同级业务仓。OTLP 配置遵循标准 `OTEL_EXPORTER_OTLP_*` 环境变量；没有配置端点时遥测自动降级为空实现。
 
+## Skills
+
+Repoctopus 使用 DSH Skill Registry 统一解析内置、个人和项目 Skill。你可以查看有效目录、加载 Skill，或把同一目录投影到 Codex 和 OpenCode：
+
+```powershell
+node bin/repoctopus.js skill list --workspace . --audience user --json
+node bin/repoctopus.js skill get --workspace . --audience user --name tdd --json
+node bin/repoctopus.js skill project --workspace . --target codex --json
+node bin/repoctopus.js skill project --workspace . --target opencode --json
+```
+
+Provider 优先级、项目替换、Run 快照和 `teach` 本地状态规则见 [Skills 接入与投影](docs/skills.md)。
+
+## 规格权威
+
+Repoctopus 通过可替换的 Specification Provider 使用规格体系。当前 OpenSpec Provider 支持规范化检查、严格校验、Evidence 节点和幂等关闭：
+
+```powershell
+node bin/repoctopus.js spec inspect --workspace . --change <change-id> --json
+node bin/repoctopus.js spec validate --workspace . --change <change-id> --json
+```
+
+Provider 契约、Evidence 配置与权威资料冲突规则见 [Specification Provider](docs/specification.md)。
+
 ## 交付治理
 
 通过项目接入流程生成 workspace 的 `repoctopus.yaml`，在其 `delivery` 段维护团队交付策略（完整示例见 [项目配置示例](docs/examples/repoctopus.yaml)），并为 change 创建 [交付意图](docs/examples/delivery-intent.yaml)。本地 checkpoint 不需要人工批准：
@@ -56,6 +80,8 @@ node bin/repoctopus.js delivery refresh --workspace . --change example-change --
 - [状态与恢复](docs/runtime-state.md)
 - [项目接入](docs/project-onboarding.md)
 - [Evidence](docs/evidence.md)
+- [Skills 接入与投影](docs/skills.md)
+- [Specification Provider](docs/specification.md)
 - [OpenTelemetry 与 SigNoz](docs/telemetry.md)
 - [交付治理与失败恢复](docs/delivery.md)
 - [Human Decision 协议](docs/human-decision.md)

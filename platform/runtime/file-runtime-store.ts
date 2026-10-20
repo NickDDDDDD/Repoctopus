@@ -94,6 +94,10 @@ function checkpointFor(state: RunState, event: TrajectoryEvent): Checkpoint {
     projectSnapshotDigest: state.projectSnapshotDigest,
     artifactManifestDigest: emptyArtifactsDigest(),
     acceptedEvidenceBundleIds: [...state.acceptedEvidenceBundleIds],
+    skillUsageSnapshots: structuredClone(state.skillUsageSnapshots ?? []),
+    ...(state.specificationUsageSnapshot
+      ? { specificationUsageSnapshot: structuredClone(state.specificationUsageSnapshot) }
+      : {}),
     createdAt: event.timestamp,
   };
 }
@@ -177,11 +181,13 @@ export class FileRuntimeStore {
       state: RunState;
       workflow: WorkflowPackage;
       trajectory: TrajectoryEvent[];
-    }) => Promise<{
-      state: RunState;
-      event: TrajectoryEvent;
-      value: T;
-    }>,
+    }) =>
+      | Promise<
+          | { state: RunState; event: TrajectoryEvent; value: T }
+          | { state?: never; event?: never; value: T }
+        >
+      | { state: RunState; event: TrajectoryEvent; value: T }
+      | { state?: never; event?: never; value: T },
   ): Promise<T> {
     const paths = this.paths(runId);
     return this.transition(paths).run(
@@ -193,15 +199,17 @@ export class FileRuntimeStore {
           readTrajectory(paths.trajectory),
         ]);
         const result = await operation({ state, workflow, trajectory });
-        await this.commitUnlocked(
-          paths,
-          {
-            state: result.state,
-            event: result.event,
-            previousStateVersion: state.stateVersion,
-          },
-          transition,
-        );
+        if (result.state && result.event) {
+          await this.commitUnlocked(
+            paths,
+            {
+              state: result.state,
+              event: result.event,
+              previousStateVersion: state.stateVersion,
+            },
+            transition,
+          );
+        }
         return result.value;
       },
     );

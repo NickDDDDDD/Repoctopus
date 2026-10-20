@@ -45,7 +45,8 @@
                 { "$ref": "#/$defs/managedServiceNode" },
                 { "$ref": "#/$defs/attachedServiceNode" },
                 { "$ref": "#/$defs/browserNode" },
-                { "$ref": "#/$defs/visualNode" }
+                { "$ref": "#/$defs/visualNode" },
+                { "$ref": "#/$defs/specificationNode" }
               ]
             }
           }
@@ -291,6 +292,20 @@
         "required": { "type": "boolean" },
         "source": { "enum": ["managed", "system"] },
         "journey": { "$ref": "#/$defs/browserJourney" }
+      }
+    },
+    "specificationNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "repository", "changeId"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "const": "specification" },
+        "repository": { "type": "string", "minLength": 1 },
+        "dependsOn": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "required": { "type": "boolean" },
+        "changeId": { "type": "string", "minLength": 1 },
+        "strict": { "type": "boolean" }
       }
     },
     "visualNode": {

@@ -5,7 +5,23 @@
     {
       "id": "plugin-composition",
       "disposition": "repoctopus-native",
-      "targets": ["app/boot/**", "domains/composition/**", "plugins/**", "services/**"],
+      "targets": [
+        "app/boot/**",
+        "domains/composition/**",
+        "plugins/builtin-catalog.ts",
+        "plugins/action/**",
+        "plugins/delivery/**",
+        "plugins/evidence/**",
+        "plugins/project/**",
+        "plugins/run/**",
+        "plugins/command/delivery-contributor.ts",
+        "plugins/command/evidence-contributor.ts",
+        "plugins/command/maintenance-contributor.ts",
+        "plugins/command/project-onboarding-contributor.ts",
+        "plugins/command/project-probe-contributor.ts",
+        "plugins/command/workflow-run-contributor.ts",
+        "services/**"
+      ],
       "upstream": ["third_party/cordis", "third_party/cordis-plugin-loader"],
       "rationale": "App Boot 把 Repoctopus 领域配置编译为唯一 Cordis 插件树，并把生命周期交给 Cordis。"
     },
@@ -105,6 +121,33 @@
       "targets": ["domains/project-configuration/**", "platform/project-configuration/**"],
       "upstream": [],
       "rationale": "确定性扫描、Agent 补全和用户确认是 Repoctopus 的多仓接入能力。"
+    },
+    {
+      "id": "skill-integration",
+      "disposition": "source-modified",
+      "targets": [
+        "domains/skill/**",
+        "plugins/skill/**",
+        "plugins/command/skill-catalog-contributor.ts",
+        "platform/skill/**"
+      ],
+      "upstream": [
+        "@deepseek-ai/dsh-skill@0.1.7-alpha.1",
+        "packages/skill/skill-filesystem/src/index.ts",
+        "third_party/matt-skills"
+      ],
+      "rationale": "直接采用 DSH 的 ctx.skills Registry；文件 Provider 仅移除 DSH 文件沙箱和 Home 约定，Matt Skills 作为固定且可替换的内置 Provider。"
+    },
+    {
+      "id": "specification-authority",
+      "disposition": "repoctopus-native",
+      "targets": [
+        "domains/specification/**",
+        "platform/specification/**",
+        "plugins/command/specification-contributor.ts"
+      ],
+      "upstream": ["@fission-ai/openspec@1.14.1"],
+      "rationale": "Specification 是唯一 Cordis 权威 Service；OpenSpec Provider 通过受控进程端口映射官方产物生命周期，Workflow 只消费稳定领域契约。"
     },
     {
       "id": "delivery-governance",

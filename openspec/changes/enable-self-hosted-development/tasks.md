@@ -2,27 +2,27 @@
 
 ## 1. 固定第三方能力与当前基线
 
-- [ ] 1.1 在干净主线执行 `npm run verify`、`npm run test:package-e2e` 和 `npm run test:tracer-e2e`，记录当前通过结果与 Node/npm/平台版本作为重构基线。
-- [ ] 1.2 从固定 DSH commit 生成 Skill Registry、文件 Provider 和 Webhook 接入的完整源码依赖闭包，逐包记录直接采用、最小适配或排除理由；用来源报告证明没有因依赖数量跳过满足需求的成熟实现。
-- [ ] 1.3 固定 Matt Skills 上游 commit、MIT 许可证和首批 Skill 文件，登记逐文件摘要与资源引用；运行来源检查验证任一快照漂移都会失败。
-- [ ] 1.4 扩展 `third_party` 来源清单、架构能力账本和构建文件清单，执行 `npm install`、`npm run check:provenance` 与篡改 fixture 测试验证第三方快照不可静默修改。
+- [x] 1.1 在干净主线执行 `npm run verify`、`npm run test:package-e2e` 和 `npm run test:tracer-e2e`，记录当前通过结果与 Node/npm/平台版本作为重构基线。
+- [x] 1.2 从固定 DSH commit 生成 Skill Registry、文件 Provider 和 Webhook 接入的完整源码依赖闭包，逐包记录直接采用、最小适配或排除理由；用来源报告证明没有因依赖数量跳过满足需求的成熟实现。
+- [x] 1.3 固定 Matt Skills 上游 commit、MIT 许可证和首批 Skill 文件，登记逐文件摘要与资源引用；运行来源检查验证任一快照漂移都会失败。
+- [x] 1.4 扩展 `third_party` 来源清单、架构能力账本和构建文件清单，执行 `npm install`、`npm run check:provenance` 与篡改 fixture 测试验证第三方快照不可静默修改。
 
 ## 2. 交付可用的 Skill 能力纵切
 
-- [ ] 2.1 采用 DSH Skill Registry 行为闭包建立唯一 `ctx.skills` Service，并用契约测试覆盖 Provider 注册、作用域优先级、同名裁决、不完整发现、取消、失效和 Fiber 撤销。
-- [ ] 2.2 实现内置 Matt Skill Provider 与项目/用户文件 Provider，首批暴露 `grill-with-docs`、`tdd`、`diagnosing-bugs`、`code-review` 和 `teach`；运行测试验证同名 `tdd` 可替换且 Workflow 不引用 Provider。
-- [ ] 2.3 实现版本化 `skill list/get/project` Command/API 与受管文件清单，用 Codex 和 OpenCode Adapter fixture 验证相同解析结果、摘要稳定和本地编辑冲突诊断。
-- [ ] 2.4 将首次 Skill 使用快照绑定到 Run、Checkpoint、Trajectory 和 composition compatibility；运行正文漂移、未使用 Skill 改动和中断恢复测试。
-- [ ] 2.5 将 `teach` 工作目录限制为 `.repoctopus/learning/<topic>/`，更新默认忽略、Evidence 选择和遥测排除规则；运行临时 Git 仓测试证明个人学习文件不会进入待提交集合或 OTel 事件。
-- [ ] 2.6 编写 Skill Provider、IDE 投影、替换方法和 Teach 本地状态文档，并按文档从打包产物列出、加载和投影一次 Skill。
+- [x] 2.1 采用 DSH Skill Registry 行为闭包建立唯一 `ctx.skills` Service，并用契约测试覆盖 Provider 注册、作用域优先级、同名裁决、不完整发现、取消、失效和 Fiber 撤销。
+- [x] 2.2 实现内置 Matt Skill Provider 与项目/用户文件 Provider，首批暴露 `grill-with-docs`、`tdd`、`diagnosing-bugs`、`code-review` 和 `teach`；运行测试验证同名 `tdd` 可替换且 Workflow 不引用 Provider。
+- [x] 2.3 实现版本化 `skill list/get/project` Command/API 与受管文件清单，用 Codex 和 OpenCode Adapter fixture 验证相同解析结果、摘要稳定和本地编辑冲突诊断。
+- [x] 2.4 将首次 Skill 使用快照绑定到 Run、Checkpoint、Trajectory 和 composition compatibility；运行正文漂移、未使用 Skill 改动和中断恢复测试。
+- [x] 2.5 将 `teach` 工作目录限制为 `.repoctopus/learning/<topic>/`，更新默认忽略、Evidence 选择和遥测排除规则；运行临时 Git 仓测试证明个人学习文件不会进入待提交集合或 OTel 事件。
+- [x] 2.6 编写 Skill Provider、IDE 投影、替换方法和 Teach 本地状态文档，并按文档从打包产物列出、加载和投影一次 Skill。
 
 ## 3. 交付可替换的规格权威纵切
 
-- [ ] 3.1 定义唯一 `Specification` Cordis Service 和规范化 change、产物、校验、关闭计划与关闭结果类型；用 App Boot 测试验证零 Provider、一个 Provider 和多个 Provider 的诊断。
-- [ ] 3.2 实现 OpenSpec Provider，通过受控进程端口调用官方命令并解析版本化结果；用临时项目测试 inspect、严格 validate、prepareClosure、close 和重复 close。
-- [ ] 3.3 将规格校验接入 Evidence，将 Provider 身份与计划摘要绑定到 Run；运行校验失败、Provider 漂移和普通成功结果绕过测试。
-- [ ] 3.4 实现规格资料冲突到 Human Decision 的结构化转换，用 Spec 与设计 fixture 验证冲突会阻断受影响步骤且用户决定可以恢复。
-- [ ] 3.5 编写 Specification Provider 契约与 OpenSpec 接入文档，并用打包 CLI 对本 change 执行 inspect 和严格校验。
+- [x] 3.1 定义唯一 `Specification` Cordis Service 和规范化 change、产物、校验、关闭计划与关闭结果类型；用 App Boot 测试验证零 Provider、一个 Provider 和多个 Provider 的诊断。
+- [x] 3.2 实现 OpenSpec Provider，通过受控进程端口调用官方命令并解析版本化结果；用临时项目测试 inspect、严格 validate、prepareClosure、close 和重复 close。
+- [x] 3.3 将规格校验接入 Evidence，将 Provider 身份与计划摘要绑定到 Run；运行校验失败、Provider 漂移和普通成功结果绕过测试。
+- [x] 3.4 实现规格资料冲突到 Human Decision 的结构化转换，用 Spec 与设计 fixture 验证冲突会阻断受影响步骤且用户决定可以恢复。
+- [x] 3.5 编写 Specification Provider 契约与 OpenSpec 接入文档，并用打包 CLI 对本 change 执行 inspect 和严格校验。
 
 ## 4. 交付可信且可恢复的平台事件入口
 

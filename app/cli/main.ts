@@ -317,6 +317,94 @@ async function projectProbe(parsed: ParsedArguments): Promise<CliEnvelope<unknow
   }
 }
 
+function skillAudience(parsed: ParsedArguments): 'model' | 'user' {
+  const audience = stringFlag(parsed, 'audience', { fallback: 'user' });
+  if (audience !== 'model' && audience !== 'user') {
+    throw new Error('--audience must be model or user');
+  }
+  return audience;
+}
+
+async function skillList(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute('skill.list', {
+      cwd: workspace,
+      audience: skillAudience(parsed),
+    });
+    return successEnvelope({ command: 'skill list', result });
+  } finally {
+    await app.close();
+  }
+}
+
+async function skillGet(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute('skill.get', {
+      cwd: workspace,
+      audience: skillAudience(parsed),
+      name: stringFlag(parsed, 'name', { required: true })!,
+      ...(stringFlag(parsed, 'run') ? { runId: stringFlag(parsed, 'run') } : {}),
+    });
+    return successEnvelope({ command: 'skill get', result });
+  } finally {
+    await app.close();
+  }
+}
+
+async function skillProject(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const target = stringFlag(parsed, 'target', { required: true });
+  if (target !== 'codex' && target !== 'opencode') {
+    throw new Error('--target must be codex or opencode');
+  }
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute('skill.project', {
+      cwd: workspace,
+      target,
+    });
+    return successEnvelope({ command: 'skill project', result });
+  } finally {
+    await app.close();
+  }
+}
+
+async function specificationInspect(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const changeId = stringFlag(parsed, 'change', { required: true })!;
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute('specification.inspect', { changeId });
+    return successEnvelope({ command: 'spec inspect', result });
+  } finally {
+    await app.close();
+  }
+}
+
+async function specificationValidate(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const changeId = stringFlag(parsed, 'change', { required: true })!;
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute<
+      { changeId: string; strict: boolean },
+      { valid: boolean }
+    >('specification.validate', {
+      changeId,
+      strict: true,
+      ...(stringFlag(parsed, 'run') ? { runId: stringFlag(parsed, 'run') } : {}),
+    });
+    if (!result.valid) throw new Error(`Specification validation failed: ${changeId}`);
+    return successEnvelope({ command: 'spec validate', result });
+  } finally {
+    await app.close();
+  }
+}
+
 async function projectDetect(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const scopeRoot = path.resolve(stringFlag(parsed, 'root', { required: true })!);
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
@@ -744,6 +832,11 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   if (command === 'project detect') return projectDetect(parsed);
   if (command === 'project prepare') return projectPrepare(parsed);
   if (command === 'project review') return projectReview(parsed);
+  if (command === 'skill list') return skillList(parsed);
+  if (command === 'skill get') return skillGet(parsed);
+  if (command === 'skill project') return skillProject(parsed);
+  if (command === 'spec inspect') return specificationInspect(parsed);
+  if (command === 'spec validate') return specificationValidate(parsed);
   if (command === 'evidence plan') return evidencePlan(parsed);
   if (command === 'evidence run') return evidenceRun(parsed);
   if (command === 'evidence status') return evidenceStatus(parsed);
@@ -766,7 +859,7 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   if (command === 'browser doctor') return browserDoctor(parsed);
   if (command === 'browser install') return browserInstall(parsed);
   throw new Error(
-    'Usage: repoctopus project <probe|detect|prepare|review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|record|resume> | delivery <checkpoint|prepare|status|publish|resume|refresh> | approval review | browser <doctor|install> | doctor',
+    'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|record|resume> | delivery <checkpoint|prepare|status|publish|resume|refresh> | approval review | browser <doctor|install> | doctor',
   );
 }
 

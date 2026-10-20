@@ -68,11 +68,18 @@ export interface VisualNodeConfig extends EvidenceNodeBase {
   criteria: Array<{ id: string; text: string; sourceRef?: string }>;
 }
 
+export interface SpecificationNodeConfig extends EvidenceNodeBase {
+  type: 'specification';
+  changeId: string;
+  strict: boolean;
+}
+
 export type EvidenceNodeConfig =
   | CommandNodeConfig
   | ServiceNodeConfig
   | BrowserNodeConfig
-  | VisualNodeConfig;
+  | VisualNodeConfig
+  | SpecificationNodeConfig;
 
 export interface EvidenceProfileConfig {
   id: string;

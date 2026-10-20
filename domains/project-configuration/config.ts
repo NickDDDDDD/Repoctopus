@@ -18,6 +18,7 @@ import {
   type LocalProjectConfig,
   type ServiceNodeConfig,
   type SharedProjectConfig,
+  type SpecificationNodeConfig,
   type VisualNodeConfig,
   type TeamPluginConfig,
 } from './types.js';
@@ -370,12 +371,31 @@ function parseVisualNode(value: unknown, field: string): VisualNodeConfig {
   };
 }
 
+function parseSpecificationNode(value: unknown, field: string): SpecificationNodeConfig {
+  const node = object(value, field);
+  exactKeys(
+    node,
+    ['id', 'type', 'repository', 'dependsOn', 'required', 'changeId', 'strict'],
+    field,
+  );
+  if (node.type !== 'specification') {
+    throw new ProjectConfigError('expected specification', `${field}.type`);
+  }
+  return {
+    ...nodeBase(node, field),
+    type: 'specification',
+    changeId: string(node.changeId, `${field}.changeId`),
+    strict: boolean(node.strict, `${field}.strict`, true),
+  };
+}
+
 function parseEvidenceNode(value: unknown, field: string): EvidenceNodeConfig {
   const node = object(value, field);
   if (node.type === 'command') return parseCommandNode(node, field);
   if (node.type === 'service') return parseServiceNode(node, field);
   if (node.type === 'browser') return parseBrowserNode(node, field);
   if (node.type === 'visual') return parseVisualNode(node, field);
+  if (node.type === 'specification') return parseSpecificationNode(node, field);
   throw new ProjectConfigError('unsupported node type', `${field}.type`);
 }
 
