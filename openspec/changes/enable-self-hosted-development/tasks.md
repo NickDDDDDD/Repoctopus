@@ -26,7 +26,7 @@
 
 ## 4. 交付可信且可恢复的平台事件入口
 
-- [ ] 4.1 定义 Provider 无关 Delivery Envelope、Event Inbox Aggregate、Store 事务、租约、Receipt 和状态转换；运行确定性摘要、重复写、并发领取、租约过期和损坏 Journal 测试。
+- [x] 4.1 定义 Provider 无关 Delivery Envelope、Event Inbox Aggregate、Store 事务、租约、Receipt 和状态转换；运行确定性摘要、重复写、并发领取、租约过期和损坏 Journal 测试。
 - [ ] 4.2 采用 DSH GitHub Webhook 的请求约束、HMAC 和无损载荷语义实现 GitHub Adapter，并接入 Credential Provider；运行方法、Content-Type、体积、Header、秘密缺失、签名失败和成功 fixture 测试。
 - [ ] 4.3 实现 HTTP Host Service 与 Route Contributor，确保 Inbox 原子提交后才返回 202；以故障注入测试证明写入失败返回可重试错误且不丢投递。
 - [ ] 4.4 实现 PlatformEvents Service 和 Runner 领取循环，通过 Cordis Effect 与 Operation Ownership 管理 Route、Timer 和活动操作；运行卸载排空、重启恢复、重试等待和死信测试。
@@ -52,7 +52,7 @@
 
 ## 7. 使用 Repoctopus 自身完成真实闭环
 
-- [ ] 7.1 用打包后的 Repoctopus 对本 change 启动生产 composition Run，加载实际 Skill、调用 OpenSpec Provider、执行实现 Evidence 并保存 Skill/规格/composition 快照；检查 Trajectory 不含测试旁路。
+- [x] 7.1 用打包后的 Repoctopus 对本 change 启动生产 composition Run，加载实际 Skill、调用 OpenSpec Provider、执行实现 Evidence 并保存 Skill/规格/composition 快照；检查 Trajectory 不含测试旁路。
 - [ ] 7.2 在临时多仓与 mock 平台中完成签名 webhook → Inbox → 全部 MR 合入核对 → Post-merge Run → Evidence → OpenSpec 同步/归档 → workspace commit/push/MR update 的独立进程 E2E，并强制中断至少一次后恢复。
 - [ ] 7.3 执行 `npm run verify`、`npm run test:package-e2e` 和 `npm run test:tracer-e2e`，生成包含架构约束、第三方来源、恢复实验、已知限制和清理结果的验证报告。
 

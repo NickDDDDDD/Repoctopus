@@ -15,7 +15,8 @@ export function deliveryEnvelope(input: {
   receivedAt: string;
   payload: PlatformDeliveryEnvelope['payload'];
 }): PlatformDeliveryEnvelope {
-  for (const [name, value] of Object.entries(input).slice(0, 4)) {
+  for (const name of ['provider', 'source', 'deliveryId', 'eventType'] as const) {
+    const value = input[name];
     if (typeof value !== 'string' || value.trim() === '') throw new Error(`${name} is required`);
   }
   const payload = structuredClone(input.payload);
@@ -47,7 +48,10 @@ export function acceptDelivery(
     if (existing.envelope.envelopeId !== envelope.envelopeId) {
       throw new Error('Inbox identity mismatch');
     }
-    if (existing.envelope.payloadDigest !== envelope.payloadDigest) {
+    if (
+      existing.envelope.payloadDigest !== envelope.payloadDigest ||
+      existing.envelope.eventType !== envelope.eventType
+    ) {
       throw new Error('Platform reused a Delivery ID with different payload');
     }
     return { entry: structuredClone(existing), duplicate: true };
@@ -121,7 +125,20 @@ export function settleDelivery(input: {
   diagnostic?: string;
 }): { entry: EventInboxEntry; receipt: EventProcessingReceipt } {
   assertLease(input.entry, input.leaseToken);
+  const now = Date.parse(input.timestamp);
+  if (!Number.isFinite(now) || now < Date.parse(input.entry.updatedAt)) {
+    throw new Error('Valid settlement timestamp is required');
+  }
+  if (now >= Date.parse(input.entry.lease!.expiresAt)) {
+    throw new Error('Event processing lease has expired');
+  }
   if (input.result === 'retry' && !input.retryAt) throw new Error('Retry settlement needs retryAt');
+  if (
+    input.result === 'retry' &&
+    (!Number.isFinite(Date.parse(input.retryAt!)) || Date.parse(input.retryAt!) <= now)
+  ) {
+    throw new Error('Retry must be scheduled after settlement');
+  }
   const receiptBase = {
     envelopeId: input.entry.envelope.envelopeId,
     result: input.result,

@@ -54,4 +54,28 @@
 
 - 已从固定 DSH GitHub Handler 采用 POST、JSON Content-Type、体积上限、唯一 Header、HMAC 后解析和无损 JSON 对象边界，来源与目标摘要登记在 `third_party/dsh-adoption.json`。
 - 已定义 Provider 无关 Delivery Envelope 和纯 Event Inbox 状态机，覆盖稳定去重、Delivery ID 载荷碰撞拒绝、领取租约、租约过期恢复、重试等待、完成 Receipt 与死信状态。
-- 当前尚未完成持久 Inbox Store、Credential Provider、HTTP Host、Runner 与 OTel，因此任务 4.1 和 4.2 保持未完成。
+- 持久 Inbox Store 已完成，见下方任务 4.1 验证记录；Credential Provider、HTTP Host、Runner 与 OTel 尚未完成，任务 4.2 保持未完成。
+
+## 自举 Run 续接（2026-10-20）
+
+- 通过生产 CLI 恢复既有 `self-enable-self-hosted-development`，没有创建重复 Run。`run resume` 确认 composition、Workflow、Skill 和 Specification Provider 兼容；`doctor` 返回 healthy，无待恢复事务。Run 保持 `execute`，待处理 Action 为 `6c1f8d7b2ceecfeb54fa97ff`。
+- 通过 `skill get --name tdd --audience model --run self-enable-self-hosted-development` 加载实际 `matt-builtins` Skill；通过 `spec validate --change enable-self-hosted-development --run self-enable-self-hosted-development` 严格校验并核对绑定。
+- 通过生产 Evidence 执行 `verify` 基线，Attempt 为 `a4ab2f2a-df49-45a0-9172-0c1e7e8db93e`。结果为 failed：尚未完成的 `file-event-inbox-store.ts` 存在 Schema 推导的 `string` 与领域 `sha256` 模板类型不兼容；architecture 节点被依赖阻断。失败 Receipt 和命令输出已保存在本地 Evidence Store。
+- 此 Attempt 是实施阶段的独立诊断，未绑定 Workflow Action，也未推进 Run。完成实施后，应先记录实施动作，再在 `verify` 阶段使用 `evidence run --profile verify --workflow-run self-enable-self-hosted-development` 取得可用于门禁的 Evidence，不能复用独立诊断冒充门禁通过。
+- 失败 Attempt 保留为诊断事实；后续没有复用它推进 Run。当前 `verify` Profile 仅覆盖类型检查与架构检查，不代表完整验收，完整测试与最终交付验收仍由任务 7.3 负责。
+
+## 自举 Run 完成（2026-10-20）
+
+- 生产 Evidence Attempt `7a3a8bae-1c0c-4945-92b4-81f33108a25c` 绑定 Run `self-enable-self-hosted-development`、验证 Action `2ceeada7acd3837e95011c2e` 和状态代次 10；`typecheck` 与 `architecture` Receipt 均为 `verified`、`fresh`、`passed`。
+- Evidence Bundle `7b3d8e253512af71582b97f0b3c471d1628e801b1f01beb1d4d4c378ff1bb2db` 满足 Gate 后由 `run record` 接受。Run 进入 `completed`，状态代次 11，无待处理 Action；`doctor` 返回 healthy、无未完成事务且遥测积压为 0。
+- Trajectory 共 12 个事件，包含生产 composition、实际 `tdd` 与 `code-review` Skill、OpenSpec Provider、实施 Action 和 Evidence Gate；未出现 fixture、mock、test-only 或直接篡改状态的旁路。因此任务 7.1 完成，任务 7.2 的独立进程 E2E 与任务 7.3 的最终完整验证仍保持未完成。
+
+## Event Inbox 持久化（任务 4.1）
+
+- `EventInboxStore.transaction()` 在每条 Delivery 的跨进程可恢复锁内读取最新状态、执行同步状态计算并写 Journal。调用方不得在回调中执行外部操作。文件实现复用现有 `RecoverableFileTransition`，已登记为 `shared-coordinator` 架构模型。
+- 状态和累积 Receipt 使用同一个原子 JSON 快照，避免两文件之间的部分提交。Journal 保存前态和后态摘要：前态匹配时完成提交，后态已匹配时仅清理 Journal；截断、摘要损坏或前态冲突均拒绝继续并保留现场。
+- Lease Token 拒绝被重新领取前的旧持有者提交；状态版本阻止旧快照覆盖新状态；到期的租约即使尚未被别人领取也不能提交。重试时间必须晚于结算时间。同一投递身份的事件类型或载荷变化均拒绝作为重复事件接受。
+- 修复 Schema 校验结果与领域 SHA-256 模板类型不一致的问题，并规范化可选诊断字段。持久化校验要求终态和重试状态拥有匹配的 Receipt。
+- 新增 13 个 Store/领域边界测试，使用真实临时目录覆盖重复收件、重开、并发领取、租约过期及旧令牌、重试/死信、两处提交故障注入、损坏 Journal、旧快照和回调异常。到期结算和缺失 Receipt 两个漏洞均先通过失败测试复现，再修复。
+- 完整测试：64 个文件通过，208 个测试通过、1 个跳过。类型、lint、构建、生成物、品牌检查通过；架构检查首次发现模型登记遗漏，补充登记后通过；来源和严格规格检查通过。故障恢复使用抛异常模拟提交中断，本轮未新增独立进程强杀实验，完整 Runner E2E 仍属于任务 7.2。
+- 测试临时目录由 `afterEach` 清理；保留自举 Run 与 Evidence 审计资料。当前文件 Store 尚未接入 HTTP/Runner，因此不代表平台事件入口已可部署。

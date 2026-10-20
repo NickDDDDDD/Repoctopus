@@ -283,6 +283,14 @@
       "status": "shared-coordinator"
     },
     {
+      "id": "event-inbox-transition",
+      "files": [
+        "platform/events/file-event-inbox-store.ts",
+        "platform/runtime/recoverable-file-transition.ts"
+      ],
+      "status": "shared-coordinator"
+    },
+    {
       "id": "evidence-fact-journal",
       "files": ["domains/evidence/ports.ts", "platform/evidence/file-evidence-journal.ts"],
       "status": "separate-append-only-facts"
