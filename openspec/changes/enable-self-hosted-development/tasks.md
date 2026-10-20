@@ -26,6 +26,7 @@
 - [x] 3.3 将规格校验接入 Evidence，将 Provider 身份与计划摘要绑定到 Run；运行校验失败、Provider 漂移和普通成功结果绕过测试。
 - [x] 3.4 实现规格资料冲突到 Human Decision 的结构化转换，用 Spec 与设计 fixture 验证冲突会阻断受影响步骤且用户决定可以恢复。
 - [x] 3.5 编写 Specification Provider 契约与 OpenSpec 接入文档，并用打包 CLI 对本 change 执行 inspect 和严格校验。
+- [x] 3.6 移除非标准 `implementation-notes` 产物及 OpenSpec Provider 特殊识别；把普通决定归入 Design、验证事实归入 Evidence/验证报告，并建立由 Agent 提议、用户确认的 ADR 决策规则与反向契约测试。
 
 ## 4. 交付可信且可恢复的平台事件入口
 

@@ -76,7 +76,7 @@ function artifactKind(id: string): SpecificationArtifact['kind'] | undefined {
   if (id === 'design') return 'design';
   if (id === 'specs') return 'delta-specs';
   if (id === 'tasks') return 'tasks';
-  if (id === 'verification' || id === 'implementation-notes') return 'verification';
+  if (id === 'verification') return 'verification';
   return undefined;
 }
 

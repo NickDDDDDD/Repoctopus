@@ -8,6 +8,7 @@ context: |
   产品源码、默认配置和文档不得包含具体宿主项目、业务仓库、本地绝对路径或个人身份信息。
   Repoctopus 面向一个团队共享工作区协调多个平级业务仓库，Cordis 应用 Runtime 与产品 Service 不依赖特定 IDE、代码托管平台或可观测后端。
   Comet 仅作为固定版本的源码基线；是否采用某个模块由 Repoctopus 的需求、边界和维护成本决定。
+  OpenSpec 的标准规划产物是 Proposal、Delta Specs、Design 和 Tasks；不得自行增加 implementation-notes 等影子权威。
 rules:
   proposal:
     - 明确本次可交付垂直切片、后续切片以及不在本次实施的能力。
@@ -16,6 +17,8 @@ rules:
     - 说明 Engine、Cordis Service、领域模块与平台适配器的边界。
     - 说明多仓状态、长任务恢复、证据和 OpenTelemetry 数据的验证方式。
     - 任何规格、设计图、接口契约或其他权威资料冲突都必须列为停止条件，不得自行选择。
+    - 当前 change 内的普通设计决定、实施约束和偏差直接更新 design.md；测试过程与结果进入 Evidence 和正式验证报告。
+    - 按 docs/adr/README.md 评估跨 change、长期、难回退或高风险决定；Agent 必须先说明触发信号并取得用户确认，才能创建 ADR，并从 design.md 链接已接受 ADR。
   tasks:
     - 每项任务写出可以执行的验收命令或可观察结果。
     - 先交付真实垂直切片，再扩展水平能力。

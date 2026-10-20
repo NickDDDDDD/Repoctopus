@@ -9,6 +9,7 @@ import { compileComposition } from '../app/boot/composition.js';
 import { PLUGIN_CONTRACT_VERSION, type BuiltinPluginRegistration } from '../app/boot/descriptor.js';
 import { createRepoctopusBuiltinCatalog } from '../plugins/builtin-catalog.js';
 import { OpenSpecProvider } from '../platform/specification/openspec-provider.js';
+import type { SpecificationProcessPort } from '../platform/specification/openspec-process.js';
 import { Specification } from '../services/specification.js';
 import { removeTemporaryDirectory, temporaryDirectory } from './helpers/fixtures.js';
 
@@ -103,6 +104,45 @@ The system MUST add behavior.
 }
 
 describe('Specification authority', () => {
+  it('ignores undeclared implementation notes instead of inventing a fifth OpenSpec artifact', async () => {
+    const process: SpecificationProcessPort = {
+      execute(args) {
+        if (args[0] === 'show') {
+          return Promise.resolve({
+            exitCode: 0,
+            stdout: JSON.stringify({ id: 'sample', title: 'Sample', deltas: [] }),
+            stderr: '',
+          });
+        }
+        if (args[0] === 'status') {
+          return Promise.resolve({
+            exitCode: 0,
+            stdout: JSON.stringify({
+              isPlanningComplete: true,
+              artifactPaths: {
+                proposal: { existingOutputPaths: ['proposal.md'] },
+                'implementation-notes': { existingOutputPaths: ['implementation-notes.md'] },
+                verification: { existingOutputPaths: ['verification-report.md'] },
+              },
+            }),
+            stderr: '',
+          });
+        }
+        return Promise.reject(new Error(`Unexpected OpenSpec command: ${args.join(' ')}`));
+      },
+    };
+    const context = new Context();
+    const fiber = context.plugin(OpenSpecProvider, { workspaceRoot: productRoot, process });
+    await fiber;
+
+    const inspected = await context.specification.inspect('sample');
+    expect(inspected.artifacts.map((artifact) => artifact.id)).toEqual([
+      'proposal',
+      'verification',
+    ]);
+    await context.fiber.dispose();
+  });
+
   it('maps the official OpenSpec lifecycle to stable inspect, validate, and idempotent close results', async () => {
     const workspace = await openSpecFixture();
     const context = new Context();

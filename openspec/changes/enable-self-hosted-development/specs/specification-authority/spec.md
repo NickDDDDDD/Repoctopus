@@ -58,9 +58,28 @@ Repoctopus MUST 让 Specification Provider 对同一 change、同一合入事实
 
 ### Requirement: OpenSpec Provider 遵循官方产物生命周期
 
-OpenSpec Provider MUST 使用 OpenSpec 官方命令和状态模型创建、校验、同步与归档产物，并保留 Proposal、Design、Delta Specs、Tasks 和验证记录之间的可追溯关系。
+OpenSpec Provider MUST 使用 OpenSpec 官方命令和状态模型创建、校验、同步与归档产物，并保留 Proposal、Design、Delta Specs、Tasks 和验证记录之间的可追溯关系；Provider 不得把 schema 未声明的实施笔记推断成额外规划产物。
 
 #### Scenario: Change 满足关闭条件
 
 - **WHEN** 合入后验证通过且 delta specs 可以同步到主规格
 - **THEN** Provider 使用官方生命周期同步主规格并归档 change，再返回变更文件清单和归档身份
+
+#### Scenario: Change 目录包含非 schema 文档
+
+- **WHEN** OpenSpec 状态没有把某个 Markdown 文件声明为产物
+- **THEN** Provider 不把该文件映射成额外的规格或验证产物
+
+### Requirement: 设计决定按影响范围分层记录
+
+Repoctopus 开发工作流 MUST 把当前 change 内的普通设计决定、实施约束和偏差记录到 `design.md`，把测试事实记录到 Evidence 和正式验证报告；只有 Agent 识别出长期架构影响并由用户确认后，才建立独立 ADR。
+
+#### Scenario: 局部实现约束不跨越当前 change
+
+- **WHEN** 实施发现只影响当前 change 且可在同一设计边界内回退的约束
+- **THEN** Agent 更新当前 `design.md`，不创建额外实施笔记或 ADR
+
+#### Scenario: 决定具有长期架构影响
+
+- **WHEN** 决定跨越 change、难以回退或影响公共契约、持久数据、安全或团队边界
+- **THEN** Agent 向用户说明 ADR 候选信号和备选方案，并只在用户确认后创建 ADR

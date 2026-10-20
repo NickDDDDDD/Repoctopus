@@ -2,6 +2,12 @@
 
 Repoctopus 通过唯一的 Cordis `specification` Service 读取、校验和关闭规格变更。Workflow 使用稳定领域契约，不读取 `openspec/` 路径，也不解析 OpenSpec CLI 输出。当前内置 Provider 使用 OpenSpec `1.14.3`。
 
+## 规划产物与决策记录
+
+OpenSpec 的 spec-driven schema 使用 Proposal、Delta Specs、Design 和 Tasks 四类规划产物。Repoctopus 只读取 Provider 状态明确声明的产物，不根据目录中出现的其他 Markdown 文件推断第五类产物。
+
+普通设计决定、实施约束和偏差写入当前 change 的 `design.md`。测试结果进入 Evidence 和正式验证报告。跨 change、长期、难回退或影响公共契约、持久数据、安全及团队边界的决定，按 [ADR 决策规则](adr/README.md)由 Agent 提议并由用户确认后记录。
+
 ## 检查与校验变更
 
 在 Repoctopus workspace 中运行：

@@ -172,6 +172,12 @@ Runner 启动 App Boot project composition，等待 HTTP 和后台领取 Fiber�
 
 Git 无法把本地 commit 与网络 push 做成一个原子事务，因此恢复语义比伪原子更重要：如果 commit 已成功但 push、响应或进程失败，工作树已经干净；再次执行相同 checkpoint 时不得创建空 commit，而是重推并核对同一个 HEAD。普通 push 的非快进保护负责 fail-closed，系统不得以 force push、rebase 或删除远端分支修复漂移。直接绕过 Repoctopus 执行的 Git commit 不在 Runtime 可强制控制范围内；团队 Agent 与 IDE 必须把 checkpoint 命令作为分支创建和每次提交的完成步骤。
 
+### 15. 决策记录使用 OpenSpec Design 与人工确认的 ADR
+
+OpenSpec change 只把 Proposal、Delta Specs、Design 和 Tasks 作为规划权威。当前 change 内的普通设计决定、实施约束和偏差直接写入本文件；测试过程、结果与恢复事实进入 Evidence 和任务 7.3 的正式验证报告。项目不创建或识别 `implementation-notes.md`。
+
+跨越单个 change、长期约束多个组件、回退需要迁移或跨团队协调，或者影响公共契约、持久数据、安全与信任边界的决定是 ADR 候选。Agent 按 [ADR 决策规则](../../../docs/adr/README.md)列出触发信号、备选方案和错误决定的后果，再由用户确认是否升级为 ADR；评分或 Agent 判断本身不构成批准。已接受 ADR 使用独立文件并由相关 `design.md` 链接，后续改变通过新的替代 ADR 完成。
+
 ## Risks / Trade-offs
 
 - [DSH Skill 完整依赖闭包可能引入 Agent 专有类型] → 先以固定 commit 生成依赖与源码采用报告；保留 Registry 行为闭包，只在来源登记的产品适配层移除无运行价值的 Agent Consumer 耦合。
@@ -181,6 +187,7 @@ Git 无法把本地 commit 与网络 push 做成一个原子事务，因此恢�
 - [Skill 正文变化影响可重复性] → 首次使用时绑定正文摘要，恢复比较，发布包与来源清单固定内置集合。
 - [OpenSpec CLI 行为变化] → 固定兼容版本并通过 Provider 契约测试隔离；升级走独立变更。
 - [真实 webhook 无法到达开发机] → Runner 面向团队可达环境；本地仅用于签名 E2E和事件回放，不把本机在线作为生产前提。
+- [ADR 过多或过少都会损害协作] → 普通决定默认留在当前 Design；只有命中长期影响信号且经 Agent 与用户共同确认后才创建 ADR。
 
 ## Migration Plan
 
