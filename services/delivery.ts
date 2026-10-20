@@ -3,7 +3,7 @@ import { Service, type Context } from '@deepseek-ai/cordis';
 import type { ProjectSnapshot } from '../domains/project/types.js';
 import type {
   DeliveryIntent,
-  DeliveryMergeRequestMatch,
+  DeliveryMergeRequestRefresh,
   DeliveryPolicy,
   DeliveryState,
   HumanDecisionResponse,
@@ -48,10 +48,7 @@ export abstract class Delivery extends Service {
     reference: MergeRequestReference,
     policy: DeliveryPolicy,
     signal?: AbortSignal,
-  ): Promise<{
-    match: DeliveryMergeRequestMatch;
-    state: DeliveryState | null;
-  }>;
+  ): Promise<DeliveryMergeRequestRefresh>;
 }
 
 declare module '@deepseek-ai/cordis' {

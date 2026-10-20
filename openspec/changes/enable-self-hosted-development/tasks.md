@@ -40,7 +40,7 @@
 
 - [x] 5.0 把日常 Delivery checkpoint 改为 commit 后立即普通 push、建立 upstream 并核对远端精确 OID；用 bare remote 验证新建空分支发布、每次 commit 发布和首次 push 失败后的无重复 commit 恢复。
 - [x] 5.1 扩展 Delivery Intent/State 记录协调 MR 与完整业务 MR 集合，并用无需迁移的新状态 Schema 测试事件唯一映射、零匹配、多匹配和主动 refresh 等价行为。
-- [ ] 5.2 实现 PostMergeCoordinator，收到唤醒后经 `MergeRequestPort` 重新读取所有 MR 权威状态；用 mock GitHub 测试部分合入、关闭未合入、最后合入、重复事件和乱序事件。
+- [x] 5.2 实现 PostMergeCoordinator，收到唤醒后经 `MergeRequestPort` 重新读取所有 MR 权威状态；用 mock GitHub 测试部分合入、关闭未合入、最后合入、重复事件和乱序事件。
 - [ ] 5.3 增加 Post-merge Workflow 与幂等 Run 启动，把检出、Evidence、规格关闭、路径审计和发布表示为 Action Intent/Receipt；运行并发启动与进程中断测试证明只有一个逻辑 Run。
 - [ ] 5.4 实现精确 merge commit 的隔离临时检出和合入后 Evidence，测试目标分支继续前进、多个业务仓、失败 Gate、输入漂移与清理行为。
 - [ ] 5.5 实现收尾路径与语义 Guardrail，测试只允许主规格、change 归档和验证记录，任何业务源码、未知文件、宽泛通配或与关闭计划不一致的差异均 fail-closed。

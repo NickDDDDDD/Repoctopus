@@ -299,15 +299,20 @@ it('persists retry waiting and does not reclaim the delivery before it is due', 
 
 it('schedules retry from processing completion rather than lease acquisition', async () => {
   const root = await workspace();
-  const app = await bootRunner(root, {
-    id: 'delayed-retry',
-    provider: 'github',
-    eventType: 'pull_request',
-    async process() {
-      await new Promise((resolve) => setTimeout(resolve, 30));
-      return { result: 'retry' };
+  const retryDelayMs = 10_000;
+  const app = await bootRunner(
+    root,
+    {
+      id: 'delayed-retry',
+      provider: 'github',
+      eventType: 'pull_request',
+      async process() {
+        await new Promise((resolve) => setTimeout(resolve, 30));
+        return { result: 'retry' };
+      },
     },
-  });
+    { retryDelayMs },
+  );
   await app.context.platformEvents.accept(envelope, receivedAt);
   const startedAt = Date.now();
 
@@ -315,12 +320,13 @@ it('schedules retry from processing completion rather than lease acquisition', a
 
   const entry = (await app.context.platformEvents.load(envelope.envelopeId))!;
   expect(Date.parse(entry.updatedAt)).toBeGreaterThanOrEqual(startedAt + 20);
-  expect(Date.parse(entry.nextAttemptAt!) - Date.parse(entry.updatedAt)).toBe(100);
+  expect(Date.parse(entry.nextAttemptAt!) - Date.parse(entry.updatedAt)).toBe(retryDelayMs);
   await app.close();
 });
 
 it('renews its lease while a processor runs longer than the initial lease', async () => {
   const root = await workspace();
+  const leaseMs = 1_000;
   let processed = 0;
   const app = await bootRunner(
     root,
@@ -330,11 +336,11 @@ it('renews its lease while a processor runs longer than the initial lease', asyn
       eventType: 'pull_request',
       async process() {
         processed += 1;
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, leaseMs + 500));
         return { result: 'completed' };
       },
     },
-    { leaseMs: 200 },
+    { leaseMs },
   );
   await app.context.platformEvents.accept(envelope, new Date().toISOString());
 
@@ -493,6 +499,7 @@ it('starts from its timer and drains an active durable operation before unload',
 
 it('stops renewing after drain timeout so a replacement Runner can recover', async () => {
   const root = await workspace();
+  const leaseMs = 1_000;
   let entered!: () => void;
   const processorEntered = new Promise<void>((resolve) => {
     entered = resolve;
@@ -513,7 +520,7 @@ it('stops renewing after drain timeout so a replacement Runner can recover', asy
         return Promise.resolve({ result: 'completed' });
       },
     },
-    { leaseMs: 200, shutdownTimeoutMs: 20 },
+    { leaseMs, shutdownTimeoutMs: 20 },
   );
   await app.context.platformEvents.accept(envelope, new Date().toISOString());
   void app.context.platformEventRunner.runOnce();
@@ -529,7 +536,7 @@ it('stops renewing after drain timeout so a replacement Runner can recover', asy
   );
   await app.context.loader.await();
   const leaseAfterDispose = (await app.context.platformEvents.load(envelope.envelopeId))!.lease!;
-  await new Promise((resolve) => setTimeout(resolve, 250));
+  await new Promise((resolve) => setTimeout(resolve, leaseMs + 250));
   const expiredLease = (await app.context.platformEvents.load(envelope.envelopeId))!.lease!;
   expect(expiredLease.expiresAt).toBe(leaseAfterDispose.expiresAt);
 

@@ -64,6 +64,16 @@
 - `refreshForMergeRequest()` 只负责唯一解析，然后复用与显式 `delivery refresh` 完全相同的权威 MR 查询和状态转换。测试用两个独立 Store 证明事件入口与主动入口产生相同 Delivery State。
 - builtin Delivery state schema 从 `1` 升为 `2`。proposal 已声明不兼容未发布的旧状态，因此文件 Store 对 v1 返回 `migration_required`，不做字段猜测或静默迁移；测试状态可清理后重新生成。
 
+## PostMergeCoordinator 权威刷新（任务 5.2）
+
+- `PostMergeCoordinator` 是只依赖 Delivery Service 的 Cordis Service；GitHub Contributor 只从已验签 Envelope 提取 `provider + remoteIdentity + number` 并注册 `pull_request` Processor。Contributor 不读取 webhook 的 `merged`、`state` 或 commit 字段作为事实，也不直接写 Delivery、Run 或 Store。
+- `Delivery.refreshForMergeRequest()` 唯一映射活动业务 MR 后，复用主动 refresh 的同一事务刷新完整业务 MR 集合，并额外返回本次 `MergeRequestPort.status()` 权威观察。观察用于区分仍打开、关闭未合入和事实不完整，不扩展 Delivery State v2 Schema。
+- 全部业务 MR 合入且都具备 merge commit 与合入时间后，Coordinator 返回 `changeId + mergeFactsDigest`。摘要绑定排序后的仓库、远端、目标分支、MR identity、merge commit 和合入时间，但排除 `observedAt` 与 webhook 到达顺序，因此重复和乱序事件得到同一个逻辑收尾身份。
+- Delivery 进入 `merged` 后不再参与活动 MR 映射；后续重复或较旧事件返回 `delivery-event-no-match` 并完成为 no-op。关闭未合入返回 `post-merge-business-merge-request-closed`；部分合入保持 `in_review`，不启动收尾。
+- builtin catalog 已登记 `post-merge-coordinator` Service Provider 与 `github-post-merge-events` Contributor。按任务边界，它们尚未加入常规 project composition；`postMerge` 配置 Schema、Runner 装配和启停恢复测试属于任务 6.1、6.2。
+- 架构治理新增 `post-merge-automation` 领域能力所有者；共享远端 URL 规范化仍归 `project-model`。Coordinator Service 归组合层、GitHub Processor 归平台事件层，保持每个生产源码只有一个明确所有者。
+- 全量并行验证连续暴露 Runner 的亚秒级真实时钟测试存在调度抖动：200ms 租约可能在续租 timer 获得调度前过期，100ms retry 也可能在同一 `runOnce()` 下一轮领取前已经到期。测试保持“处理时间超过初始租约”“drain 后等待租约过期”和“retry 从处理完成时间计算”的原不变量，只把租约裕量放大到 1s、retry 窗口放大到 10s；生产默认值和 Runner 实现未改变。
+
 ## 自举 Run 续接（2026-10-20）
 
 - 通过生产 CLI 恢复既有 `self-enable-self-hosted-development`，没有创建重复 Run。`run resume` 确认 composition、Workflow、Skill 和 Specification Provider 兼容；`doctor` 返回 healthy，无待恢复事务。Run 保持 `execute`，待处理 Action 为 `6c1f8d7b2ceecfeb54fa97ff`。

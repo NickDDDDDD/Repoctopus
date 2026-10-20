@@ -221,6 +221,12 @@ export interface MergeRequestStatus extends MergeRequestIdentity {
   mergedAt: string | null;
 }
 
+export interface DeliveryMergeRequestRefresh {
+  match: DeliveryMergeRequestMatch;
+  state: DeliveryState | null;
+  mergeRequestStatuses: MergeRequestStatus[];
+}
+
 export interface MergeEvidence {
   repositoryId: string;
   mergeRequest: MergeRequestIdentity;

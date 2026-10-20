@@ -5,6 +5,9 @@ import path from 'node:path';
 import { createProjectSnapshot } from '../../domains/project/snapshot.js';
 import type { ProjectSnapshot, RepositorySnapshot } from '../../domains/project/types.js';
 import { execute } from '../process/execute.js';
+import { normalizeRemoteIdentity } from './remote-identity.js';
+
+export { normalizeRemoteIdentity } from './remote-identity.js';
 
 function contained(root: string, candidate: string): boolean {
   const relative = path.relative(root, candidate);
@@ -14,28 +17,6 @@ function contained(root: string, candidate: string): boolean {
     relative !== '..' &&
     !path.isAbsolute(relative)
   );
-}
-
-function stripGitSuffix(value: string): string {
-  return value.replace(/\.git\/?$/i, '').replace(/\/$/, '');
-}
-
-export function normalizeRemoteIdentity(remote: string): string {
-  const trimmed = remote.trim();
-  if (/^[^/@\s]+@[^:\s]+:.+$/.test(trimmed)) {
-    const match = /^[^@]+@([^:]+):(.+)$/.exec(trimmed);
-    if (match) return stripGitSuffix(`${match[1]}/${match[2]}`).toLowerCase();
-  }
-  try {
-    const url = new URL(trimmed);
-    url.username = '';
-    url.password = '';
-    url.search = '';
-    url.hash = '';
-    return stripGitSuffix(`${url.hostname}${url.pathname}`).toLowerCase();
-  } catch {
-    return stripGitSuffix(trimmed).replaceAll('\\', '/');
-  }
 }
 
 function repositoryId(remoteIdentity: string | null, resolvedPath: string): string {

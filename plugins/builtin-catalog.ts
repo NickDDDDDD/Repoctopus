@@ -42,10 +42,12 @@ import filesystemSkillProvider from './skill/filesystem-skill-provider.js';
 import skillCatalogContributor from './command/skill-catalog-contributor.js';
 import specificationContributor from './command/specification-contributor.js';
 import githubWebhookContributor from './events/github-webhook-contributor.js';
+import githubPostMergeContributor from './events/github-post-merge-contributor.js';
 import { FilePlatformEventsProvider } from './events/file-platform-events-provider.js';
 import { NodeHttpHostProvider } from './http/node-http-host-provider.js';
 import { OpenSpecProvider } from '../platform/specification/openspec-provider.js';
 import { PlatformEventRunner } from '../services/platform-event-runner.js';
+import { PostMergeCoordinator } from '../services/post-merge-coordinator.js';
 
 interface BuiltinDefinition {
   descriptor: Omit<PluginDescriptor, 'codeDigest'>;
@@ -286,6 +288,42 @@ const definitions: readonly BuiltinDefinition[] = [
   },
   {
     descriptor: {
+      id: 'post-merge-coordinator',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['post-merge-coordinate'],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: PostMergeCoordinator,
+    sourceFiles: ['domains/post-merge/coordinator.ts', 'services/post-merge-coordinator.ts'],
+  },
+  {
+    descriptor: {
+      id: 'github-post-merge-events',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'contributor',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: [],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: githubPostMergeContributor,
+    sourceFiles: [
+      'platform/git/remote-identity.ts',
+      'platform/github/pull-request-event.ts',
+      'plugins/events/github-post-merge-contributor.ts',
+    ],
+  },
+  {
+    descriptor: {
       id: 'skill-registry',
       version: VERSION,
       contractVersion: PLUGIN_CONTRACT_VERSION,
@@ -409,6 +447,7 @@ const definitions: readonly BuiltinDefinition[] = [
     sourceFiles: [
       'services/project.ts',
       'plugins/project/git-project-provider.ts',
+      'platform/git/remote-identity.ts',
       'platform/git/probe.ts',
     ],
   },

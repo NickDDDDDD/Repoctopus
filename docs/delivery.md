@@ -45,6 +45,17 @@ Delivery 状态来自不兼容 composition 时仍可查询，但不能继续批�
 
 如果已完成动作对应的远端事实发生无法解释的变化，应停止自动恢复并人工检查托管平台。恢复过程中不得用 force push 掩盖差异。
 
+## 合入事件协调
+
+GitHub `pull_request` webhook 只提供业务 MR 的 `provider + remoteIdentity + number` 作为唤醒键。`PostMergeCoordinator` 不读取 payload 中的 `merged`、`state` 或 commit 字段来推进 Delivery，而是通过 `MergeRequestPort` 重新查询该 change 的全部业务 MR：
+
+- 任一 MR 仍打开时记录当前合入证据并继续等待；
+- 任一 MR 关闭但未合入时返回稳定阻断诊断，不启动收尾；
+- 全部 MR 合入且每个都有权威 merge commit 时，生成不包含观察时间的稳定 `mergeFactsDigest`；
+- 重复或乱序事件在 Delivery 已进入 `merged` 终态后成为无副作用的 no-op。
+
+`mergeFactsDigest` 只绑定排序后的仓库身份、远端身份、目标分支、MR identity、merge commit 和合入时间。下一阶段使用它与 `changeId` 共同形成 Post-merge Run 的幂等身份。
+
 ## 平台能力降级
 
 GitHub Adapter 区分认证失败、权限不足、套餐功能不可用、配置错误、限流和暂时故障。私有仓库因套餐不支持服务端分支保护时，Repoctopus 记录非阻断警告；本地检查或 CI 不能被描述成服务端保护。

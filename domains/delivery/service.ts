@@ -32,6 +32,7 @@ import type {
   MergeEvidence,
   MergeRequestIdentity,
   MergeRequestReference,
+  MergeRequestStatus,
   TrustedActor,
 } from './types.js';
 import { validateDeliveryIntent, validateDeliveryPolicy } from './validation.js';
@@ -327,6 +328,13 @@ export class DeliveryService {
   }
 
   async refresh(changeId: string): Promise<DeliveryState> {
+    return (await this.refreshWithMergeRequestStatuses(changeId)).state;
+  }
+
+  private async refreshWithMergeRequestStatuses(changeId: string): Promise<{
+    state: DeliveryState;
+    mergeRequestStatuses: MergeRequestStatus[];
+  }> {
     const state = await this.requireState(changeId);
     this.assertWritableComposition(state);
     const businessMergeRequests = state.mergeRequests?.business ?? [];
@@ -334,9 +342,11 @@ export class DeliveryService {
       item.mergeRequest ? [item.mergeRequest] : [],
     );
     const evidence: MergeEvidence[] = [];
+    const mergeRequestStatuses: MergeRequestStatus[] = [];
     const platformCapabilities = [];
     for (const identity of identities) {
       const status = await this.mergeRequests.status(identity);
+      mergeRequestStatuses.push(status);
       const repository = state.snapshot?.repositories.find(
         (item) => item.repositoryId === identity.repositoryId,
       );
@@ -375,16 +385,13 @@ export class DeliveryService {
         mergedCount: evidence.length,
       }),
     );
-    return next;
+    return { state: next, mergeRequestStatuses };
   }
 
-  async refreshForMergeRequest(reference: MergeRequestReference): Promise<{
-    match: ReturnType<typeof matchActiveDeliveryMergeRequest>;
-    state: DeliveryState | null;
-  }> {
+  async refreshForMergeRequest(reference: MergeRequestReference) {
     const match = matchActiveDeliveryMergeRequest(await this.store.list(), reference);
-    if (match.status !== 'matched') return { match, state: null };
-    return { match, state: await this.refresh(match.changeIds[0]) };
+    if (match.status !== 'matched') return { match, state: null, mergeRequestStatuses: [] };
+    return { match, ...(await this.refreshWithMergeRequestStatuses(match.changeIds[0])) };
   }
 
   status(changeId: string) {

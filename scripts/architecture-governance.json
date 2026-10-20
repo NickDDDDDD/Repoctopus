@@ -113,7 +113,7 @@
     {
       "id": "project-model",
       "disposition": "repoctopus-native",
-      "targets": ["domains/project/**", "platform/git/probe.ts"],
+      "targets": ["domains/project/**", "platform/git/probe.ts", "platform/git/remote-identity.ts"],
       "upstream": ["platform/project-registry.ts"],
       "rationale": "Repoctopus 以同级多仓为项目边界，项目发现快照只提供启发式候选与恢复核对。"
     },
@@ -177,6 +177,13 @@
       ],
       "upstream": ["domains/comet-native/native-pull-request-finish.ts"],
       "rationale": "交付聚合只负责多仓快照、Human Decision、push/MR 恢复和合入事实，不继承旧工作流 Hook 与阶段状态机。"
+    },
+    {
+      "id": "post-merge-automation",
+      "disposition": "repoctopus-native",
+      "targets": ["domains/post-merge/**"],
+      "upstream": [],
+      "rationale": "合入事件只唤醒协调；纯领域判定基于 Delivery 的平台权威刷新结果生成稳定合入事实身份，不直接写 Run、Evidence 或规格状态。"
     },
     {
       "id": "evidence-model",

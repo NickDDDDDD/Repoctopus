@@ -187,6 +187,9 @@ describe('delivery merge request mapping', () => {
       diagnostic: null,
     });
     expect(eventRefresh.state).toEqual(explicit);
+    expect(eventRefresh.mergeRequestStatuses).toEqual([
+      expect.objectContaining({ repositoryId: 'app', state: 'merged' }),
+    ]);
   });
 
   it('rejects unpublished v1 state instead of silently migrating it', async () => {
