@@ -27,7 +27,7 @@
 ## 4. 交付可信且可恢复的平台事件入口
 
 - [x] 4.1 定义 Provider 无关 Delivery Envelope、Event Inbox Aggregate、Store 事务、租约、Receipt 和状态转换；运行确定性摘要、重复写、并发领取、租约过期和损坏 Journal 测试。
-- [ ] 4.2 采用 DSH GitHub Webhook 的请求约束、HMAC 和无损载荷语义实现 GitHub Adapter，并接入 Credential Provider；运行方法、Content-Type、体积、Header、秘密缺失、签名失败和成功 fixture 测试。
+- [x] 4.2 采用 DSH GitHub Webhook 的请求约束、HMAC 和无损载荷语义实现 GitHub Adapter，并接入 Credential Provider；运行方法、Content-Type、体积、Header、秘密缺失、签名失败和成功 fixture 测试。
 - [ ] 4.3 实现 HTTP Host Service 与 Route Contributor，确保 Inbox 原子提交后才返回 202；以故障注入测试证明写入失败返回可重试错误且不丢投递。
 - [ ] 4.4 实现 PlatformEvents Service 和 Runner 领取循环，通过 Cordis Effect 与 Operation Ownership 管理 Route、Timer 和活动操作；运行卸载排空、重启恢复、重试等待和死信测试。
 - [ ] 4.5 增加 `event status/replay/retry` 管理命令与 OTel 映射，测试重复和乱序事件只产生一个逻辑任务，且输出不含签名、Token、Header 或原始 payload。

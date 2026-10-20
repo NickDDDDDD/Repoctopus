@@ -79,3 +79,14 @@
 - 新增 13 个 Store/领域边界测试，使用真实临时目录覆盖重复收件、重开、并发领取、租约过期及旧令牌、重试/死信、两处提交故障注入、损坏 Journal、旧快照和回调异常。到期结算和缺失 Receipt 两个漏洞均先通过失败测试复现，再修复。
 - 完整测试：64 个文件通过，208 个测试通过、1 个跳过。类型、lint、构建、生成物、品牌检查通过；架构检查首次发现模型登记遗漏，补充登记后通过；来源和严格规格检查通过。故障恢复使用抛异常模拟提交中断，本轮未新增独立进程强杀实验，完整 Runner E2E 仍属于任务 7.2。
 - 测试临时目录由 `afterEach` 清理；保留自举 Run 与 Evidence 审计资料。当前文件 Store 尚未接入 HTTP/Runner，因此不代表平台事件入口已可部署。
+
+## GitHub Webhook Adapter（任务 4.2）
+
+- 新增 Provider 无关 `PlatformWebhookRequest` 与 `PlatformWebhookAdapter` 端口；GitHub Adapter 是唯一接受原始 webhook 请求并产生共享 Delivery Envelope 的公共实现。删除了接受裸 secret 的旧公共验证入口，调用方不能绕过 Credential Provider。
+- `WebhookCredentialProvider` 是 Route 作用域的窄端口，与代码平台 API Token 的 `CredentialProvider.token()` 分离。`EnvironmentWebhookCredentialProvider` 每次请求读取配置的环境变量，保留秘密原值；缺失或 Provider 异常统一映射为不含底层原因的 503。
+- 请求顺序固定为方法、Content-Type、体积和唯一 Header 检查，再读取秘密、验证原始字节 HMAC，最后执行 UTF-8 JSON 解析与对象快照。无效请求不会触碰 Credential Provider，签名失败时不会解析载荷。
+- Provider 无关请求契约显式要求与 Node `headersDistinct` 等价的小写、多值不合并视图；任务 4.3 的 HTTP Host 必须在有界读取原始请求体时提供该视图，不能用逗号拼接后的普通 Header 映射替代。
+- 对固定 DSH `handler.ts` 再核对确认其“无损 JSON”语义同样是 `JSON.parse` 后执行 `snapshotJsonValue`，不是保留数字词法或引入 BigInt。Repoctopus 保持现有 `JsonValue` 协议并用 detached clone 固定解析结果，没有发明与上游不同的载荷表示。
+- TDD 先让 10 个 Adapter/Credential 用例失败，再实现最小端口与 Adapter。测试覆盖成功 Envelope、方法、Content-Type、体积、三个 Header 的缺失与重复、秘密不可用、错误脱敏、签名先于解析以及环境变量秘密原值。
+- 双轴审查发现并修复 Provider-neutral 端口缺失、裸 secret 旁路、Header Host 契约不明确、测试死分支和重复失败调用。DSH 采用报告同步更新，目标摘要登记为 `571c83004837391b5a05e1493d59c5ab0e6ddde62d91ae1039e3a2200bf6cf41`。
+- 完整验证：64 个测试文件通过，213 个测试通过、1 个跳过；类型、lint、构建、生成物、品牌、架构、来源和严格规格检查全部通过。本任务没有加入 HTTP Route、Inbox 写入或 202 响应，这些仍属于任务 4.3；未产生临时调试文件。

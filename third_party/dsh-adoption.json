@@ -37,7 +37,7 @@
       "disposition": "source-modified",
       "sourceSha256": "84e3c1f8d185198e87fb4f621889496771071236ac6613695189e8a4f8312c47",
       "target": "platform/events/github-webhook.ts",
-      "targetSha256": "ba9eceeeafdaf57e0693d49fddc634055a0a992b246781ec114ed8faab58799d"
+      "targetSha256": "571c83004837391b5a05e1493d59c5ab0e6ddde62d91ae1039e3a2200bf6cf41"
     },
     {
       "id": "webhook-runtime",

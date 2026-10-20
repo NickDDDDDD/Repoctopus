@@ -1,6 +1,11 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 
 import { deliveryEnvelope } from '../../domains/platform-events/inbox.js';
+import type {
+  PlatformWebhookAdapter,
+  PlatformWebhookRequest,
+  WebhookCredentialProvider,
+} from '../../domains/platform-events/ports.js';
 import type { PlatformDeliveryEnvelope } from '../../domains/platform-events/types.js';
 
 export class WebhookRequestError extends Error {
@@ -13,16 +18,21 @@ export class WebhookRequestError extends Error {
   }
 }
 
-export interface GitHubWebhookRequest {
-  method: string;
-  contentType?: string;
-  headers: Readonly<Record<string, string | readonly string[] | undefined>>;
-  body: Uint8Array;
+export type GitHubWebhookRequest = PlatformWebhookRequest;
+
+export interface GitHubWebhookAdapterOptions {
+  source: string;
+  maxBodyBytes: number;
+}
+
+interface GitHubWebhookHeaders {
+  signature: string;
+  deliveryId: string;
+  eventType: string;
 }
 
 function oneHeader(request: GitHubWebhookRequest, name: string): string {
-  const raw = request.headers[name];
-  const values = typeof raw === 'string' ? [raw] : raw;
+  const values = request.headersDistinct[name];
   if (!values || values.length !== 1 || !values[0]?.trim()) {
     throw new WebhookRequestError(400, `missing ${name} header`);
   }
@@ -52,26 +62,33 @@ function parsePayload(body: Uint8Array): PlatformDeliveryEnvelope['payload'] {
   return structuredClone(value) as PlatformDeliveryEnvelope['payload'];
 }
 
-export function verifyGitHubWebhook(input: {
-  request: GitHubWebhookRequest;
-  source: string;
-  secret: string | undefined;
-  maxBodyBytes: number;
-  receivedAt: string;
-}): PlatformDeliveryEnvelope {
-  if (input.request.method !== 'POST') throw new WebhookRequestError(405, 'method not allowed');
-  if (!jsonContentType(input.request.contentType)) {
+function inspectRequest(
+  request: GitHubWebhookRequest,
+  maxBodyBytes: number,
+): GitHubWebhookHeaders {
+  if (request.method !== 'POST') throw new WebhookRequestError(405, 'method not allowed');
+  if (!jsonContentType(request.contentType)) {
     throw new WebhookRequestError(415, 'content type must be application/json');
   }
-  if (input.request.body.byteLength > input.maxBodyBytes) {
+  if (request.body.byteLength > maxBodyBytes) {
     throw new WebhookRequestError(413, 'request body is too large');
   }
-  const signature = oneHeader(input.request, 'x-hub-signature-256');
-  const deliveryId = oneHeader(input.request, 'x-github-delivery');
-  const eventType = oneHeader(input.request, 'x-github-event');
-  if (!input.secret) throw new WebhookRequestError(503, 'GitHub webhook secret is unavailable');
+  return {
+    signature: oneHeader(request, 'x-hub-signature-256'),
+    deliveryId: oneHeader(request, 'x-github-delivery'),
+    eventType: oneHeader(request, 'x-github-event'),
+  };
+}
+
+function authenticatedEnvelope(input: {
+  request: GitHubWebhookRequest;
+  headers: GitHubWebhookHeaders;
+  source: string;
+  secret: string;
+  receivedAt: string;
+}): PlatformDeliveryEnvelope {
   const expected = `sha256=${createHmac('sha256', input.secret).update(input.request.body).digest('hex')}`;
-  const receivedBytes = Buffer.from(signature);
+  const receivedBytes = Buffer.from(input.headers.signature);
   const expectedBytes = Buffer.from(expected);
   if (
     receivedBytes.length !== expectedBytes.length ||
@@ -82,9 +99,51 @@ export function verifyGitHubWebhook(input: {
   return deliveryEnvelope({
     provider: 'github',
     source: input.source,
-    deliveryId,
-    eventType,
+    deliveryId: input.headers.deliveryId,
+    eventType: input.headers.eventType,
     receivedAt: input.receivedAt,
     payload: parsePayload(input.request.body),
   });
+}
+
+export class GitHubWebhookAdapter implements PlatformWebhookAdapter {
+  constructor(
+    private readonly credentials: WebhookCredentialProvider,
+    private readonly options: GitHubWebhookAdapterOptions,
+  ) {}
+
+  async verify(
+    request: GitHubWebhookRequest,
+    receivedAt: string,
+  ): Promise<PlatformDeliveryEnvelope> {
+    const headers = inspectRequest(request, this.options.maxBodyBytes);
+    let secret: string;
+    try {
+      secret = await this.credentials.secret();
+    } catch {
+      throw new WebhookRequestError(503, 'GitHub webhook secret is unavailable');
+    }
+    if (!secret) throw new WebhookRequestError(503, 'GitHub webhook secret is unavailable');
+    return authenticatedEnvelope({
+      request,
+      headers,
+      source: this.options.source,
+      secret,
+      receivedAt,
+    });
+  }
+}
+
+export class EnvironmentWebhookCredentialProvider implements WebhookCredentialProvider {
+  constructor(
+    private readonly environment: Readonly<Record<string, string | undefined>>,
+    private readonly variable = 'GITHUB_WEBHOOK_SECRET',
+  ) {}
+
+  secret(): Promise<string> {
+    const value = this.environment[this.variable];
+    return value
+      ? Promise.resolve(value)
+      : Promise.reject(new Error('GitHub webhook secret is unavailable'));
+  }
 }
