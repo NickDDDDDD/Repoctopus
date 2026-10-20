@@ -165,3 +165,13 @@
 - `PostMergeCoordinator.startRun()` 是 5.3 提供给 Runner 组合层的启动边界。它尚未被常规 project composition 自动启用，因为 Runner 的 `postMerge` 配置、工作区快照来源与 Application Plugin 装配属于任务 6.1、6.2；这一边界避免当前代码虚构尚不存在的临时检出配置。
 - 测试以两个独立 FileRuntimeStore 实例并发启动同一事实，两个调用都得到同一 Run 且 Trajectory 只有一个 `run.started`；另在初始 Journal 落盘后注入进程中断，使用新实例恢复并确认仍只有一个逻辑 Run。完整工作流测试逐步推进五个 Action，核对每一步都有可加载的 Intent、Receipt 和 `action.completed` 事实；不同 Trigger 使用相同 Run ID 时 fail-closed。
 - 完整验证：73 个测试文件通过，264 个测试通过、1 个跳过；类型、lint、构建、生成物、品牌、173 个生产源码与 20 个能力所有者、来源和严格 OpenSpec 检查全部通过。测试临时目录由 `afterEach` 清理，未产生临时日志或调试残留。
+
+## 精确合入检出与 Evidence（任务 5.4）
+
+- Post-merge Trigger 在原 `changeId + mergeFactsDigest + mergeEvidence` 基础上固化每个业务仓的 `remoteIdentity`、目标分支和精确 merge commit。运行时解析会核对仓库集合唯一性以及 repository/commit 与 merge evidence 一致性，损坏或漂移的 Trigger 无法进入检出。
+- `GitPostMergeCheckout` 为每个 Run 在配置的临时根下创建带所有权 Marker 的隔离目录，从 Runner 已配置仓库读取并核对 origin 身份，再获取目标分支对象但始终 detached checkout 到 Trigger 中的精确 merge commit。目标分支随后前进不会改变验证输入；缺失 commit、远端身份不符、脏工作树和既有目录冲突均 fail-closed。
+- 临时目录名由 Run 和仓库身份确定，Action 重放可复核并复用完全一致的检出。清理前再次核对目录不是符号链接、真实路径仍位于临时根、Marker 的 Run 与合入摘要未改变；无 Marker 的同名目录不会被复用或递归删除。整个 checkout-to-Evidence 区间另由可恢复文件锁串行化，避免两个 Runner 同时修改同一隔离工作树。
+- EvidenceCoordinator 新增显式仓库路径覆盖，但配置、Artifact、Attempt、Bundle、Journal 和 Telemetry 仍使用原 Runner workspace 的唯一 Evidence Runtime。覆盖必须完整匹配项目仓库集合；初始指纹同时要求每个 HEAD 等于 merge commit 且工作树干净，结束指纹继续使用现有 Fence 捕获执行期间漂移。没有引入第二套 Evidence Service 或 Store。
+- `PostMergeActions.verifyMergedCode()` 依次推进 checkout 与 evidence Intent：检出 Receipt 只记录 manifest digest，Evidence 使用确定性 Attempt identity 并绑定当前 Run/Action/状态代次。满足 Gate 才把 Bundle 接受到 Run 并进入规格关闭；required check 失败或输入被命令修改时记录失败 Receipt、停留在 evidence，不调用后续规格动作。成功、失败和 superseded 路径都会清理托管检出。
+- builtin catalog 已登记 `post-merge-actions` Service Provider 及最小的 filesystem/network/process 权限，但按任务边界尚未加入常规 project composition；`postMerge` 临时根、Profile 和源仓配置以及 Runner 装配仍属于 6.1、6.2。
+- bare remote 集成测试同时创建两个业务仓，先记录 merge commit、再把 `main` 推进到新提交；实际 Evidence 命令仍读取旧 merge 内容。另覆盖 required Gate 失败、执行中产生未跟踪文件导致 Attempt `superseded`、三种路径清理，以及无 Marker 目录保留。完整验证：74 个测试文件通过，268 个测试通过、1 个跳过；类型、lint、构建、生成物、品牌、176 个生产源码与 20 个能力所有者、来源及 9 项严格 OpenSpec 检查全部通过。

@@ -18,6 +18,7 @@ steps:
       type: call_tool
       ref: post-merge.collect-evidence
       summary: 对精确合入代码运行合入后 Evidence Profile
+      evidenceProfile: post-merge
     onSuccess: close-specification
     onFailure: evidence
   - id: close-specification

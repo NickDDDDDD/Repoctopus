@@ -181,9 +181,9 @@
     {
       "id": "post-merge-automation",
       "disposition": "repoctopus-native",
-      "targets": ["domains/post-merge/**"],
+      "targets": ["domains/post-merge/**", "platform/git/post-merge-checkout.ts"],
       "upstream": [],
-      "rationale": "合入事件只唤醒协调；纯领域判定基于 Delivery 的平台权威刷新结果生成稳定合入事实身份，不直接写 Run、Evidence 或规格状态。"
+      "rationale": "合入事件只唤醒协调；领域判定基于 Delivery 的平台权威刷新结果生成稳定合入事实身份，平台检出只使用固化的精确 merge commit，不直接写 Evidence 或规格状态。"
     },
     {
       "id": "evidence-model",

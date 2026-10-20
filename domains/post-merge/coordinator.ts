@@ -35,7 +35,15 @@ export type PostMergeCoordinationResult =
       changeId: string;
       mergeFactsDigest: `sha256:${string}`;
       mergeEvidence: MergeEvidence[];
+      repositories: PostMergeRepositoryFact[];
     };
+
+export interface PostMergeRepositoryFact {
+  repositoryId: string;
+  remoteIdentity: string;
+  targetBranch: string;
+  mergeCommit: string;
+}
 
 function identityKey(identity: { provider: string; repositoryId: string; number: number }): string {
   return `${identity.provider}\0${identity.repositoryId}\0${identity.number}`;
@@ -135,11 +143,11 @@ export function coordinatePostMerge(
     };
   }
 
-  const evidenceIdentities = new Set(
-    state.mergeEvidence.map((item) => identityKey(item.mergeRequest)),
+  const evidenceByIdentity = new Map(
+    state.mergeEvidence.map((item) => [identityKey(item.mergeRequest), item] as const),
   );
   const incompleteFacts = mergeRequests.business
-    .filter((item) => !item.mergeRequest || !evidenceIdentities.has(identityKey(item.mergeRequest)))
+    .filter((item) => !item.mergeRequest || !evidenceByIdentity.has(identityKey(item.mergeRequest)))
     .map((item) => item.repositoryId)
     .sort();
   if (incompleteFacts.length > 0 || state.status !== 'merged') {
@@ -157,5 +165,13 @@ export function coordinatePostMerge(
     changeId: state.changeId,
     mergeFactsDigest: mergeFactsDigest(refresh),
     mergeEvidence: structuredClone(state.mergeEvidence),
+    repositories: mergeRequests.business
+      .map((item) => ({
+        repositoryId: item.repositoryId,
+        remoteIdentity: item.remoteIdentity,
+        targetBranch: item.targetBranch,
+        mergeCommit: evidenceByIdentity.get(identityKey(item.mergeRequest!))!.mergeCommit,
+      }))
+      .sort((left, right) => left.repositoryId.localeCompare(right.repositoryId)),
   };
 }

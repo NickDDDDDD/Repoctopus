@@ -22,6 +22,7 @@ import type {
 } from '../domains/evidence/types.js';
 import { compileEvidenceProfile, type EvidenceExecutionPlan } from '../domains/feedback/profile.js';
 import type { RequirementsConflictDecisionRequest } from '../domains/feedback/visual.js';
+import type { EffectiveProjectConfig } from '../domains/project-configuration/types.js';
 import { atomicWriteJson } from '../platform/filesystem/atomic-write.js';
 import { FileArtifactStore } from '../platform/evidence/file-artifact-store.js';
 import { FileDeliveryStore } from '../platform/delivery/file-delivery-store.js';
@@ -50,6 +51,7 @@ interface EvidenceRunContext {
   kind: 'EvidenceRunContext';
   attemptId: string;
   profileId: string;
+  repositoryOverrides: EvidenceRepositoryOverride[] | null;
   workflowBinding: WorkflowEvidenceBinding | null;
   status: 'running' | 'completed' | 'recovered';
   plan: EvidenceExecutionPlan;
@@ -57,6 +59,12 @@ interface EvidenceRunContext {
   bundleId: string | null;
   decisionRequests: RequirementsConflictDecisionRequest[];
   updatedAt: string;
+}
+
+export interface EvidenceRepositoryOverride {
+  repositoryId: string;
+  root: string;
+  head?: string;
 }
 
 export interface EvidenceStatus {
@@ -82,6 +90,17 @@ function asContext(value: unknown): EvidenceRunContext {
     record.kind !== 'EvidenceRunContext' ||
     typeof record.attemptId !== 'string' ||
     typeof record.profileId !== 'string' ||
+    (record.repositoryOverrides !== undefined &&
+      record.repositoryOverrides !== null &&
+      (!Array.isArray(record.repositoryOverrides) ||
+        record.repositoryOverrides.some(
+          (item) =>
+            !item ||
+            typeof item !== 'object' ||
+            typeof item.repositoryId !== 'string' ||
+            typeof item.root !== 'string' ||
+            (item.head !== undefined && typeof item.head !== 'string'),
+        ))) ||
     !['running', 'completed', 'recovered'].includes(record.status ?? '') ||
     (binding !== null &&
       (!binding ||
@@ -93,7 +112,10 @@ function asContext(value: unknown): EvidenceRunContext {
   ) {
     throw new Error('Invalid EvidenceRunContext');
   }
-  return record as EvidenceRunContext;
+  return {
+    ...(record as EvidenceRunContext),
+    repositoryOverrides: record.repositoryOverrides ?? null,
+  };
 }
 
 async function optional<T>(operation: () => Promise<T>): Promise<T | null> {
@@ -142,8 +164,38 @@ export class EvidenceCoordinator extends Service {
     return asContext(JSON.parse(await readFile(this.contextFile(attemptId), 'utf8')) as unknown);
   }
 
-  private async fingerprint(profileId: string): Promise<EvidenceFingerprint> {
+  private async effectiveConfig(
+    repositoryOverrides: readonly EvidenceRepositoryOverride[] | null,
+  ): Promise<EffectiveProjectConfig> {
     const config = await loadProjectConfig(this.workspace);
+    if (repositoryOverrides === null) return config;
+    const overrides = new Map<string, string>();
+    for (const item of repositoryOverrides) {
+      if (!item.repositoryId.trim() || overrides.has(item.repositoryId)) {
+        throw new Error('Evidence repository overrides contain duplicate or empty identities');
+      }
+      overrides.set(item.repositoryId, path.resolve(item.root));
+    }
+    const expected = config.repositories.map((repository) => repository.id).sort();
+    const received = [...overrides.keys()].sort();
+    if (JSON.stringify(expected) !== JSON.stringify(received)) {
+      throw new Error(
+        'Evidence repository overrides must cover the complete project repository set',
+      );
+    }
+    return {
+      ...config,
+      repositories: config.repositories.map((repository) => ({
+        ...repository,
+        resolvedPath: overrides.get(repository.id)!,
+      })),
+    };
+  }
+
+  private async fingerprint(
+    profileId: string,
+    config: EffectiveProjectConfig,
+  ): Promise<EvidenceFingerprint> {
     const hasVisualAdapter = this.ctx.evidenceAdapters.has('visual') && !!config.local?.visual;
     const repositories = await Promise.all(
       config.repositories.map((repository) =>
@@ -211,12 +263,41 @@ export class EvidenceCoordinator extends Service {
     plan: EvidenceExecutionPlan;
     fingerprint: EvidenceFingerprint;
   }> {
-    const config = await loadProjectConfig(this.workspace);
+    return this.planWithRepositories(profileId, null);
+  }
+
+  private async planWithRepositories(
+    profileId: string,
+    repositoryOverrides: readonly EvidenceRepositoryOverride[] | null,
+  ): Promise<{
+    config: EffectiveProjectConfig;
+    plan: EvidenceExecutionPlan;
+    fingerprint: EvidenceFingerprint;
+  }> {
+    const config = await this.effectiveConfig(repositoryOverrides);
     const [fingerprint, plan] = await Promise.all([
-      this.fingerprint(profileId),
+      this.fingerprint(profileId, config),
       Promise.resolve(compileEvidenceProfile(config, profileId)),
     ]);
-    return { plan, fingerprint };
+    if (repositoryOverrides !== null) {
+      const expectedHeads = new Map(
+        repositoryOverrides.flatMap((repository) =>
+          repository.head ? [[repository.repositoryId, repository.head] as const] : [],
+        ),
+      );
+      for (const repository of fingerprint.manifest.repositories) {
+        const expectedHead = expectedHeads.get(repository.repositoryId);
+        if (
+          (expectedHead && repository.head.toLowerCase() !== expectedHead.toLowerCase()) ||
+          repository.dirtyFiles.length > 0
+        ) {
+          throw new Error(
+            `Evidence repository override changed before execution: ${repository.repositoryId}`,
+          );
+        }
+      }
+    }
+    return { config, plan, fingerprint };
   }
 
   async run(
@@ -227,6 +308,38 @@ export class EvidenceCoordinator extends Service {
   ): Promise<
     EvidenceRunResult & { gate: EvidenceGateProjection; telemetry: EvidenceTelemetryStatus }
   > {
+    return this.runWithRepositories(profileId, [], attemptId, workflowRunId, signal, false);
+  }
+
+  async runForRepositories(
+    profileId: string,
+    repositories: EvidenceRepositoryOverride[],
+    attemptId: string = randomUUID(),
+    workflowRunId: string | null = null,
+    signal?: AbortSignal,
+  ): Promise<
+    EvidenceRunResult & { gate: EvidenceGateProjection; telemetry: EvidenceTelemetryStatus }
+  > {
+    return this.runWithRepositories(
+      profileId,
+      repositories,
+      attemptId,
+      workflowRunId,
+      signal,
+      true,
+    );
+  }
+
+  private async runWithRepositories(
+    profileId: string,
+    repositories: EvidenceRepositoryOverride[],
+    attemptId: string,
+    workflowRunId: string | null,
+    signal: AbortSignal | undefined,
+    useOverrides: boolean,
+  ): Promise<
+    EvidenceRunResult & { gate: EvidenceGateProjection; telemetry: EvidenceTelemetryStatus }
+  > {
     return this.operations.run(
       { cancellable: true, signal },
       ({ signal: operationSignal, markDurableBoundary }) =>
@@ -234,10 +347,9 @@ export class EvidenceCoordinator extends Service {
           if (operationSignal.aborted) throw operationSignal.reason;
           const [binding, planned] = await Promise.all([
             this.workflowBinding(workflowRunId, profileId),
-            this.plan(profileId),
+            this.planWithRepositories(profileId, useOverrides ? repositories : null),
           ]);
-          const { plan, fingerprint } = planned;
-          const config = await loadProjectConfig(this.workspace);
+          const { config, plan, fingerprint } = planned;
           const artifacts = new FileArtifactStore(this.workspace);
           const adapters = this.ctx.evidenceAdapters.create(config, artifacts);
           const context: EvidenceRunContext = {
@@ -245,6 +357,7 @@ export class EvidenceCoordinator extends Service {
             kind: 'EvidenceRunContext',
             attemptId,
             profileId,
+            repositoryOverrides: useOverrides ? structuredClone(repositories) : null,
             workflowBinding: binding,
             status: 'running',
             plan,
@@ -276,7 +389,8 @@ export class EvidenceCoordinator extends Service {
             ...(config.local?.resources?.maxLogBytes
               ? { maxOutputBytes: config.local.resources.maxLogBytes }
               : {}),
-            captureEndingFingerprint: async () => (await this.fingerprint(profileId)).digest,
+            captureEndingFingerprint: async () =>
+              (await this.fingerprint(profileId, config)).digest,
           });
           await atomicWriteJson(this.contextFile(attemptId), {
             ...context,
@@ -321,7 +435,8 @@ export class EvidenceCoordinator extends Service {
           await this.flushTelemetry(attemptId);
           return this.status(attemptId);
         }
-        const endingFingerprint = await this.fingerprint(context.profileId);
+        const config = await this.effectiveConfig(context.repositoryOverrides);
+        const endingFingerprint = await this.fingerprint(context.profileId, config);
         const recovered = await recoverEvidenceAttempt({
           attemptId,
           plan: context.plan,
@@ -400,7 +515,8 @@ export class EvidenceCoordinator extends Service {
         reason: `Evidence attempt ${input.attemptId} uses profile ${status.context.profileId}`,
       };
     }
-    const current = await this.fingerprint(input.profileId);
+    const config = await this.effectiveConfig(status.context.repositoryOverrides);
+    const current = await this.fingerprint(input.profileId, config);
     if (current.digest !== status.bundle.inputFingerprint) {
       return {
         ...gate,

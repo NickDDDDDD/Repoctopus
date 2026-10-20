@@ -44,6 +44,14 @@ function readyCoordination() {
         observedAt: '2026-10-21T01:00:01.000Z',
       },
     ],
+    repositories: [
+      {
+        repositoryId: 'app',
+        remoteIdentity: 'github.com/team/app',
+        targetBranch: 'main',
+        mergeCommit: 'a'.repeat(40),
+      },
+    ],
   };
 }
 
@@ -185,7 +193,7 @@ describe('post-merge workflow', () => {
         repositories: [{ id: 'app', path: '../app' }],
         profiles: [
           {
-            id: 'verify',
+            id: 'post-merge',
             nodes: [
               {
                 id: 'check',
@@ -219,12 +227,20 @@ describe('post-merge workflow', () => {
         const action = proposed.value.nextAction!;
         refs.push(action.ref!);
         const intent = await app.context.actionStore.loadIntent(options.runId, action.id);
+        const evidence = action.evidenceProfile
+          ? await app.context.evidenceCoordinator.run(
+              action.evidenceProfile,
+              `attempt-${action.stepId}`,
+              options.runId,
+            )
+          : null;
         const recorded = await app.context.workflowRuns.record({
           runId: options.runId,
           actionId: action.id,
           status: 'succeeded',
           summary: `completed ${action.ref}`,
           eventId: `run-${action.stepId}`,
+          ...(evidence ? { evidenceAttemptId: evidence.attempt.attemptId } : {}),
         });
         status = recorded.value;
         const trajectory = await app.context.runStore.loadTrajectory(options.runId);

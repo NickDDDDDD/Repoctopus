@@ -48,6 +48,7 @@ import { NodeHttpHostProvider } from './http/node-http-host-provider.js';
 import { OpenSpecProvider } from '../platform/specification/openspec-provider.js';
 import { PlatformEventRunner } from '../services/platform-event-runner.js';
 import { PostMergeCoordinator } from '../services/post-merge-coordinator.js';
+import { PostMergeActions } from '../services/post-merge-actions.js';
 
 interface BuiltinDefinition {
   descriptor: Omit<PluginDescriptor, 'codeDigest'>;
@@ -324,6 +325,26 @@ const definitions: readonly BuiltinDefinition[] = [
       'platform/git/remote-identity.ts',
       'platform/github/pull-request-event.ts',
       'plugins/events/github-post-merge-contributor.ts',
+    ],
+  },
+  {
+    descriptor: {
+      id: 'post-merge-actions',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['post-merge-execute'],
+      permissions: ['filesystem', 'network', 'process'],
+      stateSchemas: {},
+    },
+    plugin: PostMergeActions,
+    sourceFiles: [
+      'domains/post-merge/checkout.ts',
+      'platform/git/post-merge-checkout.ts',
+      'services/post-merge-actions.ts',
     ],
   },
   {

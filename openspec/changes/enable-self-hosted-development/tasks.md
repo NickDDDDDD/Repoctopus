@@ -42,7 +42,7 @@
 - [x] 5.1 扩展 Delivery Intent/State 记录协调 MR 与完整业务 MR 集合，并用无需迁移的新状态 Schema 测试事件唯一映射、零匹配、多匹配和主动 refresh 等价行为。
 - [x] 5.2 实现 PostMergeCoordinator，收到唤醒后经 `MergeRequestPort` 重新读取所有 MR 权威状态；用 mock GitHub 测试部分合入、关闭未合入、最后合入、重复事件和乱序事件。
 - [x] 5.3 增加 Post-merge Workflow 与幂等 Run 启动，把检出、Evidence、规格关闭、路径审计和发布表示为 Action Intent/Receipt；运行并发启动与进程中断测试证明只有一个逻辑 Run。
-- [ ] 5.4 实现精确 merge commit 的隔离临时检出和合入后 Evidence，测试目标分支继续前进、多个业务仓、失败 Gate、输入漂移与清理行为。
+- [x] 5.4 实现精确 merge commit 的隔离临时检出和合入后 Evidence，测试目标分支继续前进、多个业务仓、失败 Gate、输入漂移与清理行为。
 - [ ] 5.5 实现收尾路径与语义 Guardrail，测试只允许主规格、change 归档和验证记录，任何业务源码、未知文件、宽泛通配或与关闭计划不一致的差异均 fail-closed。
 - [ ] 5.6 扩展受保护 Delivery Action，在策略完整时自动创建普通收尾 commit、推送并更新原协调 MR；用 bare remote 测试成功、响应丢失恢复、远端漂移、MR 已关闭以及 merge/force-push/rebase/删分支拒绝。
 - [ ] 5.7 为合入事实、Evidence、规格关闭和远端 Receipt 增加低基数 OTel 关联，并更新交付与收尾文档；运行隐私断言和文档命令冒烟测试。
