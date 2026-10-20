@@ -6,7 +6,7 @@ Repoctopus 通过唯一的 Cordis `specification` Service 读取、校验和关�
 
 OpenSpec 的 spec-driven schema 使用 Proposal、Delta Specs、Design 和 Tasks 四类规划产物。Repoctopus 只读取 Provider 状态明确声明的产物，不根据目录中出现的其他 Markdown 文件推断第五类产物。
 
-普通设计决定、实施约束和偏差写入当前 change 的 `design.md`。测试结果进入 Evidence 和正式验证报告。跨 change、长期、难回退或影响公共契约、持久数据、安全及团队边界的决定，按 [ADR 决策规则](adr/README.md)由 Agent 提议并由用户确认后记录。
+普通设计决定、实施约束和偏差写入当前 change 的 `design.md`，测试结果进入 Evidence 和正式验证报告。需要长期约束多个组件、难以回退或影响公共契约、持久数据、安全及团队边界的架构变更，必须建立专门的 Specification change；该 change 的 Design 记录背景、备选方案、取舍、迁移与回退方式，并通过正常评审确认。归档后的 change 保留决策历史，`docs/architecture.md` 只描述当前架构，不再维护独立 ADR 或实施日志权威。
 
 ## 检查与校验变更
 
@@ -60,7 +60,7 @@ Specification 节点直接调用当前 Provider。验证失败会生成 `verifie
 
 一个 project composition 必须恰好提供一个 `specification` Service。零个 Provider 会触发缺少服务诊断；两个 Provider 会触发权威冲突。兼容 Provider 必须实现 `inspect`、`validate`、`prepareClosure` 和 `close`，并返回 `repoctopus.specification/v1alpha1` 类型。
 
-Provider 可以使用不同的规格工具，但不能把专有目录和 CLI 输出变成 Workflow 分支条件。更换 Provider 只影响新 Run；已有 Run 保留原 Provider 快照。
+OpenSpec 是首个内置 Provider，不是 Workflow 写死的规格体系。Provider 可以使用不同的规格工具，并把自己的产物规范化为稳定领域契约；专有目录、文件名和 CLI 输出不得成为 Workflow 分支条件。更换 Provider 只影响新 Run，已有 Run 保留原 Provider 快照；如果新 Provider 无法兼容旧快照，Runtime 必须停止并进入迁移诊断。
 
 ## 权威资料冲突
 

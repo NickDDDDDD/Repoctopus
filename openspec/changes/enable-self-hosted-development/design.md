@@ -77,7 +77,7 @@ Run 不复制全部 Skill 目录，只在首次加载时追加 `SkillUsageSnapsh
 
 `teach` Skill 定义由内置 Provider 或项目 Provider 共享。它创建的 `MISSION.md`、`RESOURCES.md`、课程、参考资料、学习记录和笔记统一写到 `.repoctopus/learning/<topic>/`。初始化确保 `.repoctopus/learning/` 被 Git 忽略，Evidence 默认选择器与 OTel 允许列表同时排除该路径。
 
-成员要把结论升级为团队资产时，必须显式走文档、ADR、OpenWiki 或 Specification Provider 的普通评审路径。系统不把整个个人目录“发布”为知识，避免把个人草稿和隐私带进共享历史。
+成员要把结论升级为团队资产时，必须显式走项目文档、知识库或 Specification Provider 的普通评审路径。系统不把整个个人目录“发布”为知识，避免把个人草稿和隐私带进共享历史。
 
 ### 4. Specification 是单一权威 Service，OpenSpec 是首个 Provider
 
@@ -172,11 +172,13 @@ Runner 启动 App Boot project composition，等待 HTTP 和后台领取 Fiber�
 
 Git 无法把本地 commit 与网络 push 做成一个原子事务，因此恢复语义比伪原子更重要：如果 commit 已成功但 push、响应或进程失败，工作树已经干净；再次执行相同 checkpoint 时不得创建空 commit，而是重推并核对同一个 HEAD。普通 push 的非快进保护负责 fail-closed，系统不得以 force push、rebase 或删除远端分支修复漂移。直接绕过 Repoctopus 执行的 Git commit 不在 Runtime 可强制控制范围内；团队 Agent 与 IDE 必须把 checkpoint 命令作为分支创建和每次提交的完成步骤。
 
-### 15. 决策记录使用 OpenSpec Design 与人工确认的 ADR
+### 15. 架构决定由 Specification change 的 Design 记录
 
 OpenSpec change 只把 Proposal、Delta Specs、Design 和 Tasks 作为规划权威。当前 change 内的普通设计决定、实施约束和偏差直接写入本文件；测试过程、结果与恢复事实进入 Evidence 和任务 7.3 的正式验证报告。项目不创建或识别 `implementation-notes.md`。
 
-跨越单个 change、长期约束多个组件、回退需要迁移或跨团队协调，或者影响公共契约、持久数据、安全与信任边界的决定是 ADR 候选。Agent 按 [ADR 决策规则](../../../docs/adr/README.md)列出触发信号、备选方案和错误决定的后果，再由用户确认是否升级为 ADR；评分或 Agent 判断本身不构成批准。已接受 ADR 使用独立文件并由相关 `design.md` 链接，后续改变通过新的替代 ADR 完成。
+跨越单个 change、长期约束多个组件、回退需要迁移或跨团队协调，或者影响公共契约、持久数据、安全与信任边界的架构变更，必须建立专门的 Specification change。该 change 的 Design 记录上下文、备选方案、选择理由、取舍、迁移与回退方式，并通过正常评审取得确认；归档后的 change 保留决策历史。`docs/architecture.md` 只描述当前架构，需要时与实现 change 一起更新，不建立第二套独立决策台账。
+
+这条规则属于稳定的 Specification 领域语义，不依赖 OpenSpec 文件路径。OpenSpec Provider 当前把它映射到 `design.md`；未来替换 Provider 时，由新 Provider 声明等价的设计产物和生命周期，Workflow Consumer 不需要理解其专有目录或文件名。
 
 ## Risks / Trade-offs
 
@@ -187,7 +189,7 @@ OpenSpec change 只把 Proposal、Delta Specs、Design 和 Tasks 作为规划权
 - [Skill 正文变化影响可重复性] → 首次使用时绑定正文摘要，恢复比较，发布包与来源清单固定内置集合。
 - [OpenSpec CLI 行为变化] → 固定兼容版本并通过 Provider 契约测试隔离；升级走独立变更。
 - [真实 webhook 无法到达开发机] → Runner 面向团队可达环境；本地仅用于签名 E2E和事件回放，不把本机在线作为生产前提。
-- [ADR 过多或过少都会损害协作] → 普通决定默认留在当前 Design；只有命中长期影响信号且经 Agent 与用户共同确认后才创建 ADR。
+- [决策历史与当前架构说明可能漂移] → change 的 Design 保留原因与取舍，`docs/architecture.md` 只描述当前状态；架构 change 在需要时同时更新两者，不建立第二套决策台账。
 
 ## Migration Plan
 

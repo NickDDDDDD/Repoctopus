@@ -70,16 +70,21 @@ OpenSpec Provider MUST 使用 OpenSpec 官方命令和状态模型创建、校�
 - **WHEN** OpenSpec 状态没有把某个 Markdown 文件声明为产物
 - **THEN** Provider 不把该文件映射成额外的规格或验证产物
 
-### Requirement: 设计决定按影响范围分层记录
+### Requirement: 架构决定由规格 change 的设计产物记录
 
-Repoctopus 开发工作流 MUST 把当前 change 内的普通设计决定、实施约束和偏差记录到 `design.md`，把测试事实记录到 Evidence 和正式验证报告；只有 Agent 识别出长期架构影响并由用户确认后，才建立独立 ADR。
+Repoctopus 开发工作流 MUST 把当前 change 内的普通设计决定、实施约束和偏差记录到当前 Provider 声明的设计产物，把测试事实记录到 Evidence 和正式验证报告；长期、难回退或跨边界的架构变更必须建立专门的 Specification change，并由其设计产物保留背景、备选方案、取舍、迁移与回退方式。工作流不得建立独立 ADR 或实施日志作为第二套决策权威。
 
 #### Scenario: 局部实现约束不跨越当前 change
 
 - **WHEN** 实施发现只影响当前 change 且可在同一设计边界内回退的约束
-- **THEN** Agent 更新当前 `design.md`，不创建额外实施笔记或 ADR
+- **THEN** Agent 更新当前 Provider 声明的设计产物，不创建额外实施笔记或独立决策台账
 
 #### Scenario: 决定具有长期架构影响
 
 - **WHEN** 决定跨越 change、难以回退或影响公共契约、持久数据、安全或团队边界
-- **THEN** Agent 向用户说明 ADR 候选信号和备选方案，并只在用户确认后创建 ADR
+- **THEN** Agent 建立专门的 Specification change，在其设计产物中说明背景、备选方案、取舍、迁移与回退方式，并通过正常评审取得确认
+
+#### Scenario: 项目替换 Specification Provider
+
+- **WHEN** 新 Run 选择实现稳定 Specification 契约的另一个 Provider
+- **THEN** 工作流使用该 Provider 声明的设计产物和生命周期，不依赖 OpenSpec 的路径、文件名或独立 ADR
