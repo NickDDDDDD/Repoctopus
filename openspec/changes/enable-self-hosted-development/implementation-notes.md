@@ -49,3 +49,9 @@
 - Run 首次严格校验后保存 Provider 身份与验证摘要，收尾计划生成后追加 closure plan 摘要；Run、Checkpoint 和 Trajectory 均保存事实，重复绑定幂等、摘要漂移被拒绝。
 - 规格与设计 fixture 证明冲突请求没有默认选择，只暂停受影响步骤；用户响应必须同时携带已同步权威资料的摘要才能形成恢复事实。
 - `docs/specification.md` 记录 Provider 契约、CLI、Evidence 配置、关闭协议和冲突边界。打包 E2E 使用安装后的生产包对本 change 执行 inspect 与严格 validate。
+
+## Platform Events 实施中
+
+- 已从固定 DSH GitHub Handler 采用 POST、JSON Content-Type、体积上限、唯一 Header、HMAC 后解析和无损 JSON 对象边界，来源与目标摘要登记在 `third_party/dsh-adoption.json`。
+- 已定义 Provider 无关 Delivery Envelope 和纯 Event Inbox 状态机，覆盖稳定去重、Delivery ID 载荷碰撞拒绝、领取租约、租约过期恢复、重试等待、完成 Receipt 与死信状态。
+- 当前尚未完成持久 Inbox Store、Credential Provider、HTTP Host、Runner 与 OTel，因此任务 4.1 和 4.2 保持未完成。

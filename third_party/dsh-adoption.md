@@ -18,7 +18,9 @@
 
 ## GitHub Webhook
 
-固定提交中的 GitHub Handler 提供 POST、严格 JSON Content-Type、请求体上限、唯一 Header、Credential 查找、HMAC 后解析和无损 JSON 快照语义。Repoctopus 会在 `platform/events/github-webhook.ts` 中采用这些边界，再把已验证投递写入持久 Inbox。
+固定提交中的 GitHub Handler 提供 POST、严格 JSON Content-Type、请求体上限、唯一 Header、Credential 查找、HMAC 后解析和无损 JSON 快照语义。Repoctopus 已在 `platform/events/github-webhook.ts` 中采用这些边界，并把输出规范化为 Provider、Source、Delivery ID、事件类型和无损载荷组成的 Delivery Envelope。HTTP Host 与 Credential Provider 在后续组合层接入；Adapter 本身不持久化秘密或 Header。
+
+Repoctopus 的 Event Inbox 使用稳定的 Provider、Source 与 Delivery ID 摘要去重，并以持久状态表达领取租约、租约过期恢复、重试等待、完成 Receipt 和死信。该状态机不依赖 DSH Session。
 
 没有采用 DSH Webhook Runtime。该 Runtime 把事件 fire-and-forget 地映射为 Agent Session，不含 Repoctopus 要求的持久收件、去重、租约、重试、Receipt 与跨进程恢复。即使连同 Agent、Session 和 Workspace 全部引入，也不能替代这些产品能力。
 
