@@ -123,6 +123,36 @@ function assertLease(entry: EventInboxEntry, token: string): void {
   }
 }
 
+export function renewDelivery(input: {
+  entry: EventInboxEntry;
+  leaseToken: string;
+  timestamp: string;
+  leaseMs: number;
+}): EventInboxEntry {
+  assertLease(input.entry, input.leaseToken);
+  const now = Date.parse(input.timestamp);
+  if (
+    !Number.isFinite(now) ||
+    now < Date.parse(input.entry.updatedAt) ||
+    !Number.isSafeInteger(input.leaseMs) ||
+    input.leaseMs < 1
+  ) {
+    throw new Error('Valid lease renewal timestamp and duration are required');
+  }
+  if (now >= Date.parse(input.entry.lease!.expiresAt)) {
+    throw new Error('Event processing lease has expired');
+  }
+  return {
+    ...structuredClone(input.entry),
+    lease: {
+      ...input.entry.lease!,
+      expiresAt: new Date(now + input.leaseMs).toISOString(),
+    },
+    stateVersion: input.entry.stateVersion + 1,
+    updatedAt: input.timestamp,
+  };
+}
+
 export function settleDelivery(input: {
   entry: EventInboxEntry;
   leaseToken: string;

@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { z } from 'zod';
@@ -85,6 +85,9 @@ const journalSchema = z
   })
   .strict();
 type Journal = z.infer<typeof journalSchema>;
+
+const CLAIM_SCAN_CONCURRENCY = 16;
+const CLAIMABLE_BATCH_SIZE = 64;
 
 function digest(value: unknown): `sha256:${string}` {
   return `sha256:${createHash('sha256').update(canonicalJson(value)).digest('hex')}`;
@@ -204,6 +207,46 @@ export class FileEventInboxStore implements EventInboxStore {
 
   async load(envelopeId: string): Promise<EventInboxEntry | null> {
     return (await this.snapshot(envelopeId))?.entry ?? null;
+  }
+
+  async listClaimable(timestampValue: string): Promise<EventInboxEntry[]> {
+    const now = Date.parse(timestampValue);
+    if (!Number.isFinite(now)) throw new Error('Valid claim timestamp is required');
+    const root = path.join(this.workspaceRoot, '.repoctopus', 'events');
+    let directories;
+    try {
+      directories = await readdir(root, { withFileTypes: true });
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
+      throw error;
+    }
+    const envelopeIds = directories
+      .filter((entry) => entry.isDirectory() && /^[a-f0-9]{64}$/.test(entry.name))
+      .map((entry) => `sha256:${entry.name}`)
+      .sort();
+    const entries: Array<EventInboxEntry | null> = [];
+    for (let offset = 0; offset < envelopeIds.length; offset += CLAIM_SCAN_CONCURRENCY) {
+      entries.push(
+        ...(await Promise.all(
+          envelopeIds
+            .slice(offset, offset + CLAIM_SCAN_CONCURRENCY)
+            .map((envelopeId) => this.load(envelopeId)),
+        )),
+      );
+    }
+    return entries
+      .filter((entry): entry is EventInboxEntry => {
+        if (!entry || entry.status === 'completed' || entry.status === 'dead_letter') return false;
+        if (entry.status === 'leased') return Date.parse(entry.lease!.expiresAt) <= now;
+        if (entry.status === 'retry_wait') return Date.parse(entry.nextAttemptAt!) <= now;
+        return true;
+      })
+      .sort(
+        (left, right) =>
+          left.envelope.receivedAt.localeCompare(right.envelope.receivedAt) ||
+          left.envelope.envelopeId.localeCompare(right.envelope.envelopeId),
+      )
+      .slice(0, CLAIMABLE_BATCH_SIZE);
   }
 
   async receipts(envelopeId: string): Promise<EventProcessingReceipt[]> {

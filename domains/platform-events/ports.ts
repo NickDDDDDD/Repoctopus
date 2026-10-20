@@ -1,8 +1,4 @@
-import type {
-  EventInboxEntry,
-  EventProcessingReceipt,
-  PlatformDeliveryEnvelope,
-} from './types.js';
+import type { EventInboxEntry, EventProcessingReceipt, PlatformDeliveryEnvelope } from './types.js';
 
 export interface PlatformWebhookRequest {
   method: string;
@@ -31,6 +27,7 @@ export interface EventInboxMutation<T> {
 /** Callbacks only compute state; external operations run outside the transaction. */
 export interface EventInboxStore {
   load(envelopeId: string): Promise<EventInboxEntry | null>;
+  listClaimable(timestamp: string): Promise<EventInboxEntry[]>;
   receipts(envelopeId: string): Promise<EventProcessingReceipt[]>;
   transaction<T>(
     envelopeId: string,

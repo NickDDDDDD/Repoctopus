@@ -54,7 +54,7 @@
 
 - 已从固定 DSH GitHub Handler 采用 POST、JSON Content-Type、体积上限、唯一 Header、HMAC 后解析和无损 JSON 对象边界，来源与目标摘要登记在 `third_party/dsh-adoption.json`。
 - 已定义 Provider 无关 Delivery Envelope 和纯 Event Inbox 状态机，覆盖稳定去重、Delivery ID 载荷碰撞拒绝、领取租约、租约过期恢复、重试等待、完成 Receipt 与死信状态。
-- 持久 Inbox Store、Credential Provider、GitHub Adapter 和 HTTP Host/Route 已完成，见下方任务 4.1 至 4.3 验证记录；Runner 与 OTel 尚未完成。
+- 持久 Inbox Store、Credential Provider、GitHub Adapter、HTTP Host/Route、PlatformEvents Service 和 Runner 已完成，见下方任务 4.1 至 4.4 验证记录；管理命令与 OTel 尚未完成。
 
 ## 自举 Run 续接（2026-10-20）
 
@@ -100,3 +100,15 @@
 - 内置 Catalog 已登记 `http-host` Provider 和 `github-webhook-route` Contributor，使生产组合编译和真实 Loopback 测试可发现它们；常规 project composition 尚未自动启用二者。任务 4.4 的 Platform Events Runner 将负责激活接收与领取循环，任务 6.2 仍负责更广的内置组合与摘要收口。
 - TDD 依次暴露并修复缺失 Host/Route、超限请求错误映射、Contributor/Catalog 缺口和冲突误报 503。测试通过真实 TCP/HTTP 覆盖持久化后 202、413 前置拒绝、重复 Header、两处提交故障恢复、409 冲突、Effect 撤销、内置 Catalog 启动以及关闭超时诊断。
 - 两轴代码审查确认规格路径完整，并推动三项架构修正：Node 机制从 Service 层下沉、Delivery 冲突类型化、关闭改为有界排空；复核无阻断项。完整验证：65 个测试文件通过，222 个测试通过、1 个跳过；类型、lint、构建、生成物、品牌、架构、来源和严格规格检查全部通过。未产生临时日志、调试输出或其他需清理的文件。
+
+## PlatformEvents 与 Runner 领取循环（任务 4.4）
+
+- `PlatformEvents` 成为平台事件唯一 Cordis Service 边界，统一持有 Processor 注册、持久接收、候选领取、Lease 续租、结算和查询；文件能力由 `FilePlatformEventsProvider` 提供。GitHub Route 不再直接构造或调用文件 Store，Provider/Contributor 依赖保持可替换。
+- `PlatformEventRunner` 通过 Cordis Effect 持有轮询 Timer，通过 `OperationOwnership` 管理每次领取与处理。领取事务一旦写入 Lease 就标记持久边界；若卸载信号在 claim 返回前到达，Runner 不启动 Processor，保留 Lease 给后续实例在到期后恢复。已进入 Processor 的操作在卸载时排空到结算或可恢复失败点。
+- Runner 在每次领取和结算时分别读取时钟，并在处理期间按 Lease 时长的三分之一执行 token-fenced 事务续租。续租失败会中止传给 Processor 的组合 Signal，且不会用失效 Lease 提交结果；完成处理后先等待在途续租结束再结算，避免续租与终态事务交错。排空超时后 `OperationOwnership` 会中止仍未结束的可取消操作，Heartbeat 同步停止，Lease 随后自然过期供新实例恢复；文件 Store 和领域状态机仍会拒绝过期 Lease 或旧 Token。
+- Processor 返回值在 Service 边界执行运行时校验。只允许稳定、低基数的 kebab-case 诊断代码进入 Inbox；自由文本、异常消息、Token 或载荷片段会被替换为固定脱敏代码。异常本身统一形成 `platform-event-processing-failed`，不会持久化底层消息。
+- 文件 Store 的首版候选扫描把并发文件读取限制为 16，并把单轮返回限制为 64 条，避免历史目录增长时形成无界文件句柄洪峰。当前逐条领取仍会重复扫描目录；claimable 索引或原子 `claimNext` 作为后续性能优化，不改变本任务的存储无关 Service 契约。
+- 内置 Catalog 登记 `platform-events-file` 与 `platform-event-runner` 两个 Service Provider；GitHub Route 只保留 Contributor 身份，不再声明 Store authority 或文件权限。常规 project composition 尚未自动启用这些插件，配置与完整应用组合仍属于任务 6.1、6.2，`runner start` Application Plugin 属于后续部署入口，不由本任务冒充完成。
+- TDD 覆盖 Service 重启持久化、Runner 完成、重试等待与指数退避、处理完成时刻计算、重复失败死信、异常与自由文本诊断脱敏、过期 Lease 恢复、真实 Timer、活动处理卸载排空、claim-in-flight 卸载竞态、慢处理跨初始 Lease 续租，以及挂死 Processor 在排空超时后停止续租并由替代 Runner 恢复。卸载竞态、自由文本诊断、无界扫描、慢处理 Lease 和 Heartbeat 超时生命周期均先由失败测试复现再修复。
+- 双轴复审推动并确认五项收口：卸载后不再处理刚领取的 Delivery、领取与结算独立取时、Processor 诊断进入统一脱敏边界、长处理使用 Heartbeat 续租、排空超时后停止 Heartbeat 并释放恢复路径。规格与标准复审最终均无阻断或高优先级遗留；扫描索引明确记录为非阻断设计债。
+- 完整验证：66 个测试文件通过，234 个测试通过、1 个跳过；类型、lint、构建、生成物、品牌、架构、来源和严格规格检查全部通过。测试临时目录由 `afterEach` 清理，未生成临时日志、调试输出或其他需清理文件；保留自举 Run 与 Evidence 审计资料。

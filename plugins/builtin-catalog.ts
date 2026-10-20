@@ -41,8 +41,10 @@ import filesystemSkillProvider from './skill/filesystem-skill-provider.js';
 import skillCatalogContributor from './command/skill-catalog-contributor.js';
 import specificationContributor from './command/specification-contributor.js';
 import githubWebhookContributor from './events/github-webhook-contributor.js';
+import { FilePlatformEventsProvider } from './events/file-platform-events-provider.js';
 import { NodeHttpHostProvider } from './http/node-http-host-provider.js';
 import { OpenSpecProvider } from '../platform/specification/openspec-provider.js';
+import { PlatformEventRunner } from '../services/platform-event-runner.js';
 
 interface BuiltinDefinition {
   descriptor: Omit<PluginDescriptor, 'codeDigest'>;
@@ -199,6 +201,49 @@ const definitions: readonly BuiltinDefinition[] = [
   },
   {
     descriptor: {
+      id: 'platform-events-file',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['event-inbox-write'],
+      permissions: ['filesystem'],
+      stateSchemas: { 'event-inbox': '1' },
+    },
+    plugin: FilePlatformEventsProvider,
+    sourceFiles: [
+      'domains/platform-events/inbox.ts',
+      'domains/platform-events/ports.ts',
+      'domains/platform-events/types.ts',
+      'platform/events/file-event-inbox-store.ts',
+      'services/platform-events.ts',
+      'plugins/events/file-platform-events-provider.ts',
+    ],
+  },
+  {
+    descriptor: {
+      id: 'platform-event-runner',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['event-inbox-runner'],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: PlatformEventRunner,
+    sourceFiles: [
+      'services/operation-ownership.ts',
+      'services/platform-event-runner.ts',
+      'services/platform-events.ts',
+    ],
+  },
+  {
+    descriptor: {
       id: 'github-webhook-route',
       version: VERSION,
       contractVersion: PLUGIN_CONTRACT_VERSION,
@@ -206,19 +251,18 @@ const definitions: readonly BuiltinDefinition[] = [
       kind: 'contributor',
       source: 'builtin',
       compositions: ['project'],
-      authorities: ['event-inbox-write'],
-      permissions: ['filesystem'],
-      stateSchemas: { 'event-inbox': '1' },
+      authorities: [],
+      permissions: [],
+      stateSchemas: {},
     },
     plugin: githubWebhookContributor,
     sourceFiles: [
-      'domains/platform-events/inbox.ts',
       'domains/platform-events/ports.ts',
       'domains/platform-events/types.ts',
-      'platform/events/file-event-inbox-store.ts',
       'platform/events/github-webhook-route.ts',
       'platform/events/github-webhook.ts',
       'plugins/events/github-webhook-contributor.ts',
+      'services/platform-events.ts',
     ],
   },
   {

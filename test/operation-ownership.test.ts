@@ -28,7 +28,7 @@ describe('operation ownership', () => {
     ).rejects.toBeInstanceOf(ServiceDrainingError);
   });
 
-  it('does not abort an operation after its durable boundary', async () => {
+  it('lets a durable operation drain until timeout and then aborts it for recovery', async () => {
     const ownership = new OperationOwnership();
     let release!: () => void;
     let observedAbort = false;
@@ -47,7 +47,7 @@ describe('operation ownership', () => {
 
     const firstDrain = await ownership.drain(5);
     expect(firstDrain).toEqual({ drained: false, remaining: 1 });
-    expect(observedAbort).toBe(false);
+    expect(observedAbort).toBe(true);
     release();
     await running;
     expect(await ownership.drain(5)).toEqual({ drained: true, remaining: 0 });

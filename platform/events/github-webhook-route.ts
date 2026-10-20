@@ -1,14 +1,12 @@
-import {
-  acceptDelivery,
-  EventInboxConflictError,
-} from '../../domains/platform-events/inbox.js';
-import type { EventInboxStore, PlatformWebhookAdapter } from '../../domains/platform-events/ports.js';
+import { EventInboxConflictError } from '../../domains/platform-events/inbox.js';
+import type { PlatformWebhookAdapter } from '../../domains/platform-events/ports.js';
 import type { HttpRequest, HttpResponse, HttpRoute } from '../../services/http-host.js';
+import type { PlatformEvents } from '../../services/platform-events.js';
 import { WebhookRequestError } from './github-webhook.js';
 
 export interface GitHubWebhookRouteOptions {
   adapter: PlatformWebhookAdapter;
-  inbox: EventInboxStore;
+  events: PlatformEvents;
   maxBodyBytes: number;
   path?: string;
   now?: () => Date;
@@ -39,14 +37,10 @@ export class GitHubWebhookRoute implements HttpRoute {
         },
         receivedAt,
       );
-      const duplicate = await this.options.inbox.transaction(envelope.envelopeId, (current) => {
-        const accepted = acceptDelivery(envelope, receivedAt, current ?? undefined);
-        return { entry: accepted.entry, result: accepted.duplicate };
-      });
-      if (duplicate === null) throw new Error('Event Inbox rejected the delivery');
+      const accepted = await this.options.events.accept(envelope, receivedAt);
       return {
         status: 202,
-        body: { accepted: true, duplicate, envelopeId: envelope.envelopeId },
+        body: { accepted: true, ...accepted },
       };
     } catch (error) {
       if (error instanceof WebhookRequestError) {

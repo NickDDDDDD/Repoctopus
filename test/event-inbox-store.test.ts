@@ -49,6 +49,50 @@ it('persists one delivery across duplicate submissions and store reopen', async 
   });
 });
 
+it('bounds concurrent file reads and the claimable batch size', async () => {
+  const root = await workspace();
+  const store = new FileEventInboxStore(root);
+  const envelopes = Array.from({ length: 80 }, (_, index) =>
+    deliveryEnvelope({
+      provider: 'github',
+      source: 'primary',
+      deliveryId: `scan-${index}`,
+      eventType: 'pull_request',
+      receivedAt: timestamp,
+      payload: { index },
+    }),
+  );
+  await Promise.all(
+    envelopes.map((item) =>
+      store.transaction(item.envelopeId, () => ({
+        entry: acceptDelivery(item, timestamp).entry,
+        result: true,
+      })),
+    ),
+  );
+
+  class ObservedFileEventInboxStore extends FileEventInboxStore {
+    activeReads = 0;
+    maxActiveReads = 0;
+
+    override async load(envelopeId: string) {
+      this.activeReads += 1;
+      this.maxActiveReads = Math.max(this.maxActiveReads, this.activeReads);
+      await new Promise((resolve) => setImmediate(resolve));
+      try {
+        return await super.load(envelopeId);
+      } finally {
+        this.activeReads -= 1;
+      }
+    }
+  }
+
+  const observed = new ObservedFileEventInboxStore(root);
+  const claimable = await observed.listClaimable(timestamp);
+  expect(claimable).toHaveLength(64);
+  expect(observed.maxActiveReads).toBeLessThanOrEqual(16);
+});
+
 async function seed(root: string) {
   const store = new FileEventInboxStore(root);
   await store.transaction(envelope.envelopeId, () => ({

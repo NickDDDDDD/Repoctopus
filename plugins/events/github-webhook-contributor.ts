@@ -1,6 +1,5 @@
 import type { Context, Plugin } from '@deepseek-ai/cordis';
 
-import { FileEventInboxStore } from '../../platform/events/file-event-inbox-store.js';
 import {
   EnvironmentWebhookCredentialProvider,
   GitHubWebhookAdapter,
@@ -8,7 +7,6 @@ import {
 import { GitHubWebhookRoute } from '../../platform/events/github-webhook-route.js';
 
 export interface GitHubWebhookContributorConfig {
-  workspaceRoot: string;
   environment?: Readonly<Record<string, string | undefined>>;
   source?: string;
   path?: string;
@@ -23,7 +21,7 @@ const plugin = ((context: Context, config: GitHubWebhookContributorConfig) => {
       new EnvironmentWebhookCredentialProvider(config.environment ?? process.env),
       { source: config.source ?? 'primary', maxBodyBytes },
     ),
-    inbox: new FileEventInboxStore(config.workspaceRoot),
+    events: context.platformEvents,
     maxBodyBytes,
     ...(config.path === undefined ? {} : { path: config.path }),
     ...(config.now === undefined ? {} : { now: config.now }),
@@ -31,6 +29,6 @@ const plugin = ((context: Context, config: GitHubWebhookContributorConfig) => {
   context.effect(() => context.httpHost.register(route), 'repoctopus.github-webhook-route');
 }) as Plugin;
 
-Object.assign(plugin, { inject: ['httpHost'] });
+Object.assign(plugin, { inject: ['httpHost', 'platformEvents'] });
 
 export default plugin;

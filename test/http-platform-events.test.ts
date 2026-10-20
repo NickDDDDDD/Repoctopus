@@ -17,11 +17,22 @@ import { FileEventInboxStore } from '../platform/events/file-event-inbox-store.j
 import { GitHubWebhookAdapter } from '../platform/events/github-webhook.js';
 import { GitHubWebhookRoute } from '../platform/events/github-webhook-route.js';
 import githubWebhookContributor from '../plugins/events/github-webhook-contributor.js';
+import { FilePlatformEventsProvider } from '../plugins/events/file-platform-events-provider.js';
 import { NodeHttpHostProvider } from '../plugins/http/node-http-host-provider.js';
 import { createRepoctopusBuiltinCatalog } from '../plugins/builtin-catalog.js';
+import { PlatformEvents } from '../services/platform-events.js';
 
 const workspaces: string[] = [];
 const contexts: Context[] = [];
+
+class TestPlatformEvents extends PlatformEvents {
+  constructor(
+    context: Context,
+    protected readonly inbox: EventInboxStore,
+  ) {
+    super(context);
+  }
+}
 
 afterEach(async () => {
   await Promise.all(contexts.splice(0).map((context) => context.fiber.dispose()));
@@ -78,6 +89,7 @@ async function ingress(
   const context = new Context();
   contexts.push(context);
   const host = new NodeHttpHostProvider(context, { hostname: '127.0.0.1', port: 0 });
+  const events = new TestPlatformEvents(context, options.inbox ?? new FileEventInboxStore(root));
   const maxBodyBytes = options.maxBodyBytes ?? 1024;
   host.register(
     new GitHubWebhookRoute({
@@ -85,7 +97,7 @@ async function ingress(
         { secret: options.secret ?? (() => Promise.resolve('secret')) },
         { source: 'primary', maxBodyBytes },
       ),
-      inbox: options.inbox ?? new FileEventInboxStore(root),
+      events,
       maxBodyBytes,
       now: () => new Date('2026-10-20T00:00:00.000Z'),
     }),
@@ -231,8 +243,8 @@ describe('HTTP platform event ingress', () => {
     const context = new Context();
     contexts.push(context);
     const host = new NodeHttpHostProvider(context, { hostname: '127.0.0.1', port: 0 });
+    new FilePlatformEventsProvider(context, { workspaceRoot: root });
     const contributor = context.plugin(githubWebhookContributor, {
-      workspaceRoot: root,
       environment: { GITHUB_WEBHOOK_SECRET: 'secret' },
       source: 'primary',
       maxBodyBytes: 1024,
@@ -263,17 +275,17 @@ describe('HTTP platform event ingress', () => {
         kind: 'project',
         plugins: [
           { id: 'http-host', config: { hostname: '127.0.0.1', port: 0 } },
+          { id: 'platform-events-file', config: { workspaceRoot: root } },
           {
             id: 'github-webhook-route',
             config: {
-              workspaceRoot: root,
               environment: { GITHUB_WEBHOOK_SECRET: 'secret' },
               source: 'primary',
               maxBodyBytes: 1024,
             },
           },
         ],
-        requiredServices: ['httpHost'],
+        requiredServices: ['httpHost', 'platformEvents'],
       },
       catalog,
     );
@@ -288,6 +300,12 @@ describe('HTTP platform event ingress', () => {
           body,
         }),
       ).resolves.toMatchObject({ status: 202 });
+      const accepted = await app.context.platformEvents.claimDue({
+        owner: 'catalog-test',
+        timestamp: new Date(Date.now() + 1).toISOString(),
+        leaseMs: 1_000,
+      });
+      expect(accepted).toMatchObject({ envelope: { deliveryId: 'catalog-delivery' } });
     } finally {
       await app.close();
     }
