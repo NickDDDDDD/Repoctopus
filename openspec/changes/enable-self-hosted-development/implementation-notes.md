@@ -156,3 +156,12 @@
 - `third_party/upstream-baselines.json` 成为 DSH/Comet 固定 ref 的单一机器索引；`check:provenance` 交叉校验它与 DSH、Cordis、Comet 来源清单。`check:upstream` 使用 `git ls-remote` 每日发现分支漂移，GitHub Actions 只报警、不自动升级；标准 `verify` 不访问网络，继续可离线重放。
 - 完整验证：67 个测试文件通过，238 个测试通过、1 个跳过；类型、lint、构建、生成物、品牌、19 个架构能力、来源和 9 个严格 OpenSpec 项全部通过。`check:upstream` 真实访问两个远端并确认 current；package E2E 与 tracer E2E 各 1 项通过。清理了审计用 DSH 临时 clone/worktree、npm tarball 和一次失败安装的精确 npm 日志，保留项目内来源与审计记录。
 - 2026-10-21 的独立安全升级把 OpenSpec 精确固定到 `1.14.3`（tag commit `c794978f4f8845ce59693373c9dd882ee776588c`）。上游以 `tinyglobby`、`picomatch` 和 `brace-expansion` 替代 `fast-glob`，移除了 `micromatch -> braces` 漏洞链；没有使用 `npm audit fix --force`。Provider 身份改为从已安装包清单读取，依赖精确 pin 成为版本的单一事实源，旧 Run 仍会通过现有 Provider 漂移保护 fail-closed。升级后真实 inspect、严格 validate、prepareClosure/幂等 close、打包 CLI、tracer E2E 与完整 `verify` 全部通过（67 个测试文件、238 个测试通过、1 个跳过）；完整审计和 `--omit=dev` 审计均为 0 个已知漏洞，`repoctopus.specification/v1alpha1` 领域契约不变。
+
+## Post-merge Workflow 与幂等 Run（任务 5.3）
+
+- 新增 `workflows/post-merge.yaml`，按 `checkout -> evidence -> close-specification -> audit-paths -> publish` 固定五个收尾边界。每个边界都是既有 Runtime 的 `call_tool` Action，因此提案先形成稳定 Intent，完成后形成 Receipt，再由 Receipt 身份推进 Run；真实 Git、Evidence、Specification 和发布执行仍分别属于任务 5.4 至 5.6。
+- Run 增加可选、向后兼容的 Trigger Snapshot。Post-merge Trigger 固化 `changeId`、`mergeFactsDigest` 和权威 `mergeEvidence`；Trajectory 只投影低基数 kind 与 digest，不复制完整平台事实。后续精确检出不需要信任 webhook，也不需要从不可逆 Run ID 猜回 change。
+- `postMergeRunId()` 以版本化域、change 和合入事实摘要生成稳定 SHA-256 身份。`WorkflowRunCoordinator.startOrResume()` 仍让 RunStore 的可恢复锁决定唯一写入者；并发 loser 或重启实例在底层恢复 Journal 后读取既有 Run。只有工作流摘要、项目快照、工作流来源与 Trigger 全部一致才视为幂等重放，任一变化都抛出 `RunIdentityConflictError`，不会错误复用同名 Run。
+- `PostMergeCoordinator.startRun()` 是 5.3 提供给 Runner 组合层的启动边界。它尚未被常规 project composition 自动启用，因为 Runner 的 `postMerge` 配置、工作区快照来源与 Application Plugin 装配属于任务 6.1、6.2；这一边界避免当前代码虚构尚不存在的临时检出配置。
+- 测试以两个独立 FileRuntimeStore 实例并发启动同一事实，两个调用都得到同一 Run 且 Trajectory 只有一个 `run.started`；另在初始 Journal 落盘后注入进程中断，使用新实例恢复并确认仍只有一个逻辑 Run。完整工作流测试逐步推进五个 Action，核对每一步都有可加载的 Intent、Receipt 和 `action.completed` 事实；不同 Trigger 使用相同 Run ID 时 fail-closed。
+- 完整验证：73 个测试文件通过，264 个测试通过、1 个跳过；类型、lint、构建、生成物、品牌、173 个生产源码与 20 个能力所有者、来源和严格 OpenSpec 检查全部通过。测试临时目录由 `afterEach` 清理，未产生临时日志或调试残留。

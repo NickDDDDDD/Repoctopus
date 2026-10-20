@@ -300,7 +300,11 @@ const definitions: readonly BuiltinDefinition[] = [
       stateSchemas: {},
     },
     plugin: PostMergeCoordinator,
-    sourceFiles: ['domains/post-merge/coordinator.ts', 'services/post-merge-coordinator.ts'],
+    sourceFiles: [
+      'domains/post-merge/coordinator.ts',
+      'domains/post-merge/run.ts',
+      'services/post-merge-coordinator.ts',
+    ],
   },
   {
     descriptor: {
@@ -708,6 +712,7 @@ const definitions: readonly BuiltinDefinition[] = [
       'domains/runtime/workflow-runs.ts',
       'domains/runtime/evidence-guard.ts',
       'domains/engine/loop.ts',
+      'domains/engine/types.ts',
       'domains/skill/types.ts',
       'domains/specification/types.ts',
       'platform/skill/snapshot.ts',

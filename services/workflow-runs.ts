@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { Service, type Context } from '@deepseek-ai/cordis';
 import type { SkillDefinition } from '@deepseek-ai/dsh-skill';
 
-import type { ActionOutcome } from '../domains/engine/types.js';
+import type { ActionOutcome, RunTriggerSnapshot } from '../domains/engine/types.js';
 import type { ProjectSnapshot } from '../domains/project/types.js';
 import { WorkflowRunCoordinator } from '../domains/runtime/workflow-runs.js';
 import type { ResumeView, RunStatusView, RuntimeResult } from '../domains/runtime/types.js';
@@ -59,11 +59,27 @@ export class WorkflowRuns extends Service {
       projectSnapshot: ProjectSnapshot;
       runId?: string;
       workflowSource?: string;
+      trigger?: RunTriggerSnapshot;
     },
     signal?: AbortSignal,
   ): Promise<RuntimeResult<RunStatusView>> {
     return this.operations.run({ cancellable: false, signal }, () =>
       this.coordinator.start(options),
+    );
+  }
+
+  startOrResume(
+    options: {
+      workflow: WorkflowPackage;
+      projectSnapshot: ProjectSnapshot;
+      runId: string;
+      workflowSource?: string;
+      trigger?: RunTriggerSnapshot;
+    },
+    signal?: AbortSignal,
+  ): Promise<RuntimeResult<RunStatusView>> {
+    return this.operations.run({ cancellable: false, signal }, () =>
+      this.coordinator.startOrResume(options),
     );
   }
 

@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 
 import { decide, recordOutcome, startRun } from '../engine/loop.js';
-import type { ActionOutcome, EngineAction, RunState } from '../engine/types.js';
+import type { ActionOutcome, EngineAction, RunState, RunTriggerSnapshot } from '../engine/types.js';
 import { reconcileProjectSnapshots } from '../project/snapshot.js';
 import type { ProjectSnapshot } from '../project/types.js';
 import type { TrajectoryEvent, TrajectoryEventType } from '../trajectory/types.js';
@@ -21,6 +21,24 @@ import type {
   RunStorePort,
 } from './types.js';
 import { requireSatisfiedEvidenceGate } from './evidence-guard.js';
+import { canonicalJson } from '../workflow-contract/canonical.js';
+
+export interface StartWorkflowRunOptions {
+  workflow: WorkflowPackage;
+  projectSnapshot: ProjectSnapshot;
+  runId?: string;
+  workflowSource?: string;
+  trigger?: RunTriggerSnapshot;
+}
+
+export type IdempotentStartWorkflowRunOptions = StartWorkflowRunOptions & { runId: string };
+
+export class RunIdentityConflictError extends Error {
+  constructor(runId: string, field: string) {
+    super(`Run identity conflict for ${runId}: ${field} changed`);
+    this.name = 'RunIdentityConflictError';
+  }
+}
 
 function stableEventId(...parts: string[]): string {
   return createHash('sha256').update(parts.join(':')).digest('hex');
@@ -58,12 +76,7 @@ export class WorkflowRunCoordinator {
     private readonly evidenceGate?: EvidenceGatePort,
   ) {}
 
-  async start(options: {
-    workflow: WorkflowPackage;
-    projectSnapshot: ProjectSnapshot;
-    runId?: string;
-    workflowSource?: string;
-  }): Promise<RuntimeResult<RunStatusView>> {
+  async start(options: StartWorkflowRunOptions): Promise<RuntimeResult<RunStatusView>> {
     const timestamp = this.clock().toISOString();
     const state = startRun({
       workflow: options.workflow,
@@ -72,6 +85,7 @@ export class WorkflowRunCoordinator {
       composition: this.composition,
       timestamp,
       ...(options.workflowSource ? { workflowSource: options.workflowSource } : {}),
+      ...(options.trigger ? { trigger: options.trigger } : {}),
     });
     const started = event({
       eventId: stableEventId(state.runId, 'run.started'),
@@ -86,6 +100,12 @@ export class WorkflowRunCoordinator {
         projectSnapshotDigest: state.projectSnapshotDigest,
         compositionDigest: state.composition.compositionDigest,
         repositoryCount: options.projectSnapshot.repositories.length,
+        ...(state.trigger
+          ? {
+              triggerKind: state.trigger.kind,
+              triggerIdentityDigest: state.trigger.identityDigest,
+            }
+          : {}),
       },
     });
     await this.store.initialize({
@@ -96,6 +116,32 @@ export class WorkflowRunCoordinator {
     });
     const diagnostics = await this.flushTelemetry(state.runId);
     return { value: await this.status(state.runId), diagnostics };
+  }
+
+  async startOrResume(
+    options: IdempotentStartWorkflowRunOptions,
+  ): Promise<RuntimeResult<RunStatusView>> {
+    try {
+      return await this.start(options);
+    } catch (startError) {
+      let existing: RunStatusView;
+      try {
+        existing = await this.status(options.runId);
+      } catch {
+        throw startError;
+      }
+      this.assertSameStartIdentity(existing.state, options);
+      return {
+        value: existing,
+        diagnostics: [
+          {
+            level: 'info',
+            code: 'runtime.idempotent-start',
+            message: `Run already exists and was resumed: ${options.runId}`,
+          },
+        ],
+      };
+    }
   }
 
   async status(runId: string): Promise<RunStatusView> {
@@ -124,6 +170,24 @@ export class WorkflowRunCoordinator {
       compositionCompatibility,
       ...(preview.reason ? { reason: preview.reason } : {}),
     };
+  }
+
+  private assertSameStartIdentity(
+    state: RunState,
+    options: IdempotentStartWorkflowRunOptions,
+  ): void {
+    if (state.workflowDigest !== options.workflow.digest) {
+      throw new RunIdentityConflictError(options.runId, 'workflow digest');
+    }
+    if (state.projectSnapshotDigest !== options.projectSnapshot.digest) {
+      throw new RunIdentityConflictError(options.runId, 'project snapshot digest');
+    }
+    if (state.workflowSource !== (options.workflowSource ?? null)) {
+      throw new RunIdentityConflictError(options.runId, 'workflow source');
+    }
+    if (canonicalJson(state.trigger ?? null) !== canonicalJson(options.trigger ?? null)) {
+      throw new RunIdentityConflictError(options.runId, 'trigger facts');
+    }
   }
 
   async bindSkill(runId: string, snapshot: SkillUsageSnapshot): Promise<SkillUsageSnapshot> {

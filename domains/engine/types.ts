@@ -5,6 +5,13 @@ import type { SpecificationUsageSnapshot } from '../specification/types.js';
 
 export type RunStatus = 'running' | 'waiting' | 'completed' | 'failed';
 
+export interface RunTriggerSnapshot {
+  schemaVersion: 1;
+  kind: string;
+  identityDigest: `sha256:${string}`;
+  facts: Record<string, unknown>;
+}
+
 export interface RunState {
   schemaVersion: 1;
   runId: string;
@@ -14,6 +21,7 @@ export interface RunState {
   workflowSource: string | null;
   composition: CompositionIdentitySnapshot;
   projectSnapshotDigest: string;
+  trigger?: RunTriggerSnapshot;
   traceId: string;
   currentStep: string | null;
   iteration: number;
