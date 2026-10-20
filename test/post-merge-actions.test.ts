@@ -6,6 +6,11 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { bootProjectComposition } from '../app/boot/bootstrap.js';
 import type { PostMergeReady } from '../domains/post-merge/run.js';
 import { postMergeRunOptions } from '../domains/post-merge/run.js';
+import {
+  createPostMergePublicationReceipt,
+  type PostMergePublicationPolicy,
+  type PostMergePublicationRequest,
+} from '../domains/delivery/post-merge.js';
 import { parseWorkflowPackage } from '../domains/workflow-contract/package.js';
 import { normalizeRemoteIdentity } from '../platform/git/remote-identity.js';
 import { GitPostMergeCheckout } from '../platform/git/post-merge-checkout.js';
@@ -20,6 +25,19 @@ import {
 
 const cleanup: string[] = [];
 afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
+
+const publicationPolicy: PostMergePublicationPolicy = {
+  apiVersion: 'repoctopus/v1alpha1',
+  kind: 'PostMergePublicationPolicy',
+  operations: ['commit', 'push', 'merge_request.update'],
+  remote: 'origin',
+  commit: {
+    message: 'chore(spec): close verified change',
+    authorName: 'Repoctopus',
+    authorEmail: 'repoctopus@example.invalid',
+  },
+  mergeRequest: { title: 'Specification closure', body: 'Verified and closed.' },
+};
 
 async function exists(target: string): Promise<boolean> {
   try {
@@ -196,6 +214,28 @@ async function harness(mode: 'pass' | 'fail' | 'drift') {
   const workflowPath = path.join(productRoot, 'workflows', 'post-merge.yaml');
   const workflow = parseWorkflowPackage(await readFile(workflowPath, 'utf8'));
   const app = await bootProjectComposition(productRoot, workspace);
+  const publicationRequests: PostMergePublicationRequest[] = [];
+  app.context.delivery.publishPostMerge = (request: PostMergePublicationRequest) => {
+    publicationRequests.push(structuredClone(request));
+    return Promise.resolve(
+      createPostMergePublicationReceipt({
+        request,
+        git: {
+          commitOid: 'a'.repeat(40),
+          remoteOid: 'a'.repeat(40),
+          commitRecovered: false,
+          pushRecovered: false,
+        },
+        mergeRequest: {
+          provider: 'github',
+          repositoryId: 'coordination',
+          number: 8,
+          url: 'https://github.example/coordination/pull/8',
+        },
+        mergeRequestRecovered: false,
+      }),
+    );
+  };
   const repositories = [appRepository, apiRepository];
   const coordination: PostMergeReady = {
     status: 'ready',
@@ -229,7 +269,11 @@ async function harness(mode: 'pass' | 'fail' | 'drift') {
   });
   await app.context.workflowRuns.startOrResume(options);
   const temporaryRoot = path.join(root, 'post-merge-checkouts');
-  const actions = new PostMergeActions(app.context, { temporaryRoot, workspaceRoot: workspace });
+  const actions = new PostMergeActions(app.context, {
+    temporaryRoot,
+    workspaceRoot: workspace,
+    publicationPolicy,
+  });
   return {
     app,
     actions,
@@ -242,6 +286,7 @@ async function harness(mode: 'pass' | 'fail' | 'drift') {
       repositoryId: repository.id,
       path: repository.source,
     })),
+    publicationRequests,
   };
 }
 
@@ -301,6 +346,30 @@ describe('post-merge exact checkout and Evidence', () => {
       expect(
         (await fixture.app.context.workflowRuns.status(fixture.options.runId)).state.currentStep,
       ).toBe('publish');
+    } finally {
+      await fixture.app.close();
+    }
+  }, 30_000);
+
+  it('persists publication intent and receipt before completing the Run', async () => {
+    const fixture = await harness('pass');
+    try {
+      await fixture.actions.verifyMergedCode({
+        runId: fixture.options.runId,
+        profileId: 'post-merge',
+        sources: fixture.sources,
+      });
+      await fixture.actions.closeSpecification(fixture.options.runId);
+      const audit = await fixture.actions.auditSpecificationClosure(fixture.options.runId);
+      const published = await fixture.actions.publishCoordination(fixture.options.runId);
+      const replay = await fixture.actions.publishCoordination(fixture.options.runId);
+
+      expect(fixture.publicationRequests).toHaveLength(1);
+      expect(fixture.publicationRequests[0]?.audit.digest).toBe(audit.audit.digest);
+      expect(replay.receipt).toEqual(published.receipt);
+      expect(
+        (await fixture.app.context.workflowRuns.status(fixture.options.runId)).state.status,
+      ).toBe('completed');
     } finally {
       await fixture.app.close();
     }

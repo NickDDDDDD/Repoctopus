@@ -66,7 +66,7 @@ function change(
   status: PostMergeWorkspaceChange['status'] = 'modified',
   contentType: PostMergeWorkspaceChange['contentType'] = 'text',
 ): PostMergeWorkspaceChange {
-  return { path, status, contentType };
+  return { path, status, contentType, contentDigest: digest({ path, status, contentType }) };
 }
 
 function audit(

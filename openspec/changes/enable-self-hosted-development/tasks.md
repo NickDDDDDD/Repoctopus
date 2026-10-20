@@ -44,7 +44,7 @@
 - [x] 5.3 增加 Post-merge Workflow 与幂等 Run 启动，把检出、Evidence、规格关闭、路径审计和发布表示为 Action Intent/Receipt；运行并发启动与进程中断测试证明只有一个逻辑 Run。
 - [x] 5.4 实现精确 merge commit 的隔离临时检出和合入后 Evidence，测试目标分支继续前进、多个业务仓、失败 Gate、输入漂移与清理行为。
 - [x] 5.5 实现收尾路径与语义 Guardrail，测试只允许主规格、change 归档和验证记录，任何业务源码、未知文件、宽泛通配或与关闭计划不一致的差异均 fail-closed。
-- [ ] 5.6 扩展受保护 Delivery Action，在策略完整时自动创建普通收尾 commit、推送并更新原协调 MR；用 bare remote 测试成功、响应丢失恢复、远端漂移、MR 已关闭以及 merge/force-push/rebase/删分支拒绝。
+- [x] 5.6 扩展受保护 Delivery Action，在策略完整时自动创建普通收尾 commit、推送并更新原协调 MR；用 bare remote 测试成功、响应丢失恢复、远端漂移、MR 已关闭以及 merge/force-push/rebase/删分支拒绝。
 - [ ] 5.7 为合入事实、Evidence、规格关闭和远端 Receipt 增加低基数 OTel 关联，并更新交付与收尾文档；运行隐私断言和文档命令冒烟测试。
 
 ## 6. 完成项目配置、组合和架构治理

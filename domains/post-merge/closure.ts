@@ -22,7 +22,9 @@ export interface PostMergeWorkspaceChange {
   path: string;
   status: PostMergeWorkspaceChangeStatus;
   contentType: PostMergeWorkspaceContentType;
+  contentDigest: `sha256:${string}`;
   previousPath?: string;
+  previousContentDigest?: `sha256:${string}`;
 }
 
 export interface PostMergeWorkspaceDiff {
@@ -43,6 +45,7 @@ export interface PostMergeClosureAudit {
   closureId: `sha256:${string}`;
   baselineDigest: `sha256:${string}`;
   changedFiles: string[];
+  contentDigests: Record<string, `sha256:${string}`>;
   digest: `sha256:${string}`;
 }
 
@@ -239,10 +242,12 @@ export function auditPostMergeClosure(input: {
     throw new Error('Post-merge workspace baseline digest is invalid');
   }
   const actual = new Set<string>();
+  const contentDigests: Record<string, `sha256:${string}`> = {};
   for (const change of input.diff.changes) {
     const file = normalizeRelativePath(change.path, 'Post-merge changed file', false);
     if (actual.has(file)) throw new Error(`Post-merge diff contains a duplicate path: ${file}`);
     actual.add(file);
+    contentDigests[file] = change.contentDigest;
     if (change.previousPath) {
       const previous = normalizeRelativePath(
         change.previousPath,
@@ -256,6 +261,10 @@ export function auditPostMergeClosure(input: {
         throw new Error(`Post-merge rename originates outside the closure plan: ${previous}`);
       }
       actual.add(previous);
+      if (!change.previousContentDigest) {
+        throw new Error(`Post-merge rename has no source content identity: ${previous}`);
+      }
+      contentDigests[previous] = change.previousContentDigest;
     }
     if (!planned.has(file) && !verification.some((root) => prefix(file, root))) {
       throw new Error(`Post-merge diff contains an unapproved path: ${file}`);
@@ -272,6 +281,9 @@ export function auditPostMergeClosure(input: {
     closureId: input.result.closureId,
     baselineDigest: input.diff.baseline.digest,
     changedFiles: [...actual].sort(),
+    contentDigests: Object.fromEntries(
+      [...actual].sort().map((file) => [file, contentDigests[file]!] as const),
+    ),
   };
   return { ...base, digest: sha256(base) };
 }

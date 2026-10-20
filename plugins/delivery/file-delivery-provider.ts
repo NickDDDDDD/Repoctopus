@@ -9,6 +9,10 @@ import type {
   MergeRequestReference,
   TrustedActor,
 } from '../../domains/delivery/types.js';
+import type {
+  PostMergePublicationReceipt,
+  PostMergePublicationRequest,
+} from '../../domains/delivery/post-merge.js';
 import type { ProjectSnapshot } from '../../domains/project/types.js';
 import { FileDeliveryEvidence } from '../../platform/delivery/file-delivery-evidence.js';
 import { FileDeliveryStore } from '../../platform/delivery/file-delivery-store.js';
@@ -43,9 +47,10 @@ export class FileDeliveryProvider extends Delivery {
 
   private domain(policy?: DeliveryPolicy): DeliveryDomainService {
     const environment = this.config.environment ?? process.env;
+    const git = new GitDeliveryAdapter();
     return new DeliveryDomainService(
       new FileDeliveryStore(this.config.workspaceRoot),
-      new GitDeliveryAdapter(),
+      git,
       new GitHubMergeRequestAdapter(
         new EnvironmentCredentialProvider(environment),
         policy?.publication.githubApiBaseUrl,
@@ -54,6 +59,7 @@ export class FileDeliveryProvider extends Delivery {
       undefined,
       deliveryTelemetryFromEnvironment(environment),
       this.ctx.compositionIdentity.current().compositionDigest,
+      git,
     );
   }
 
@@ -92,6 +98,15 @@ export class FileDeliveryProvider extends Delivery {
   publish(options: DeliveryPreparation, signal?: AbortSignal): Promise<DeliveryState> {
     return this.operations.run({ cancellable: false, signal }, () =>
       this.domain(options.policy).publish(options),
+    );
+  }
+
+  override publishPostMerge(
+    request: PostMergePublicationRequest,
+    signal?: AbortSignal,
+  ): Promise<PostMergePublicationReceipt> {
+    return this.operations.run({ cancellable: false, signal }, () =>
+      this.domain().publishPostMerge(request),
     );
   }
 

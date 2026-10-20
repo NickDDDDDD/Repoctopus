@@ -186,3 +186,11 @@
 - 修正了 OpenSpec `1.14.3` JSON archive 回执解析：真实字段位于 `archive.archivedAs/path`，旧代码会退回合成 ID，无法与实际 archive 目录核对；失败诊断现在也会在 stderr 为空时保留结构化 stdout，便于安全排障。
 - 5.5 的审计 Receipt 证明的是该时刻的差异快照；任务 5.6 的受保护发布动作仍必须在创建 commit 前重新扫描并核对同一审计身份，关闭审计到提交之间的 TOCTOU 窗口，不能把本次通过视作后续任意修改的授权。
 - 完整验证：75 个测试文件通过，277 个测试通过、1 个跳过；类型、lint、构建、生成物、品牌、178 个生产源码与 20 个能力所有者、来源及 9 项严格 OpenSpec 检查全部通过。测试临时仓库由 `afterEach` 清理，未生成调试日志或其他临时残留。
+
+## 受保护的收尾发布（任务 5.6）
+
+- `PostMergeActions.publishCoordination()` 把发布策略、workspace 基线和路径审计固化为持久 Intent，并在远端副作用全部验证后才保存不可变 Receipt、推进 `publish` Action。第一次发布会在持久 Intent 前重新扫描 closure diff；重试若已有 Intent，则由 Git Adapter 对暂存区或既有提交逐路径、逐内容摘要复核，避免 audit-to-commit TOCTOU，也允许在 commit/push 响应丢失后继续恢复。Receipt 已落盘而 Run 记账响应丢失时，重放只复用 Receipt。
+- Delivery 领域只从已合入的 Delivery State 读取原协调 MR，发布前后都要求 MR 仍开放、编号/URL/仓库身份以及源分支和目标分支未变化，并要求平台报告的 head 等于已核对的远端提交。收尾路径只调用该 MR 的 `update`；不调用 `find` 或 `create`，也不改变 base/head。若 update 已生效但响应丢失，重试通过权威 title/body 状态恢复同一 MR。
+- `PostMergePublicationPolicy` 的操作集合必须精确等于 `commit + push + merge_request.update`。任何 merge、force-push、rebase、删分支或遗漏操作都会在 Git/平台副作用前 fail-closed；remote、提交消息、作者身份和 MR 内容也必须完整。普通 push 使用显式非强制 refspec，且远端在提交前必须等于审计基线、推送后必须精确等于新提交。
+- `GitDeliveryAdapter` 只对审计列出的路径执行 `git add --all -- <exact paths>`，再核对 staged diff、每个文件内容摘要以及无剩余 unstaged/untracked 变化。新提交必须是基线的单父子提交；恢复时还会核对父提交、作者、消息、diff、内容和干净工作树，不会把任意本地提交当成收尾结果。协调 remote URL 与已记录的规范化 remote identity 不一致时同样拒绝。
+- bare remote 测试覆盖正常 commit/push/原 MR 更新、Git 响应丢失后复用同一提交与远端 OID、MR update 响应丢失恢复、远端分支漂移、MR 已关闭，以及 merge/force-push/rebase/删分支意图拒绝；工作流测试另证明发布 Intent/Receipt 的落盘和完成后幂等重放。完整验证：76 个测试文件通过，286 个测试通过、1 个跳过；类型、lint、构建、生成物、品牌、179 个生产源码与 20 个能力所有者、来源及 9 项严格 OpenSpec 检查全部通过。测试临时 bare remote 由 `afterEach` 清理，未生成调试日志或其他临时残留。

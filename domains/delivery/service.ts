@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import path from 'node:path';
 
 import type { ProjectSnapshot, RepositorySnapshot } from '../project/types.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
@@ -36,6 +37,13 @@ import type {
   TrustedActor,
 } from './types.js';
 import { validateDeliveryIntent, validateDeliveryPolicy } from './validation.js';
+import {
+  assertPostMergePublicationRequest,
+  createPostMergePublicationReceipt,
+  type PostMergeDeliveryGitPort,
+  type PostMergePublicationReceipt,
+  type PostMergePublicationRequest,
+} from './post-merge.js';
 
 function selectedRepositories(
   project: ProjectSnapshot,
@@ -81,6 +89,7 @@ export class DeliveryService {
     private readonly clock: () => Date = () => new Date(),
     private readonly telemetry?: DeliveryTelemetryPort,
     private readonly compositionDigest: string = `sha256:${'0'.repeat(64)}`,
+    private readonly postMergeGit?: PostMergeDeliveryGitPort,
   ) {}
 
   async checkpoint(project: ProjectSnapshot, intent: DeliveryIntent, policy: DeliveryPolicy) {
@@ -331,6 +340,65 @@ export class DeliveryService {
     return (await this.refreshWithMergeRequestStatuses(changeId)).state;
   }
 
+  async publishPostMerge(
+    request: PostMergePublicationRequest,
+  ): Promise<PostMergePublicationReceipt> {
+    assertPostMergePublicationRequest(request);
+    const state = await this.requireState(request.changeId);
+    this.assertWritableComposition(state);
+    if (state.status !== 'merged') {
+      throw new Error(`Post-merge publication requires merged Delivery state: ${state.status}`);
+    }
+    const coordination = state.mergeRequests?.coordination;
+    if (!coordination) throw new Error('Delivery has no original coordination MR');
+    if (!this.postMergeGit) throw new Error('Post-merge Git publication is unavailable');
+    if (path.resolve(request.workspaceRoot) !== path.resolve(request.baseline.root)) {
+      throw new Error('Post-merge publication root is not bound to its audited baseline');
+    }
+
+    const current = await this.mergeRequests.status(coordination.mergeRequest);
+    this.assertCoordinationStatus(current, coordination);
+    const git = await this.postMergeGit.publishPostMerge({
+      workspaceRoot: request.workspaceRoot,
+      coordination,
+      baseline: request.baseline,
+      audit: request.audit,
+      policy: request.policy,
+    });
+
+    let afterPush = await this.mergeRequests.status(coordination.mergeRequest);
+    this.assertCoordinationStatus(afterPush, coordination, git.commitOid);
+    let mergeRequestRecovered =
+      afterPush.title === request.policy.mergeRequest.title &&
+      afterPush.body === request.policy.mergeRequest.body;
+    if (!mergeRequestRecovered) {
+      const updated = await this.mergeRequests.update(coordination.mergeRequest, {
+        repositoryId: coordination.repositoryId,
+        remoteIdentity: coordination.remoteIdentity,
+        sourceBranch: coordination.sourceBranch,
+        targetBranch: coordination.targetBranch,
+        title: request.policy.mergeRequest.title,
+        body: request.policy.mergeRequest.body,
+      });
+      this.assertSameMergeRequest(updated, coordination.mergeRequest);
+      afterPush = await this.mergeRequests.status(coordination.mergeRequest);
+      this.assertCoordinationStatus(afterPush, coordination, git.commitOid);
+      if (
+        afterPush.title !== request.policy.mergeRequest.title ||
+        afterPush.body !== request.policy.mergeRequest.body
+      ) {
+        throw new Error('Original coordination MR update could not be verified');
+      }
+      mergeRequestRecovered = false;
+    }
+    return createPostMergePublicationReceipt({
+      request,
+      git,
+      mergeRequest: coordination.mergeRequest,
+      mergeRequestRecovered,
+    });
+  }
+
   private async refreshWithMergeRequestStatuses(changeId: string): Promise<{
     state: DeliveryState;
     mergeRequestStatuses: MergeRequestStatus[];
@@ -428,6 +496,46 @@ export class DeliveryService {
       throw new Error(
         `Delivery ${state.changeId} requires composition ${state.snapshot.compositionDigest}; current composition ${this.compositionDigest} is migration_required`,
       );
+    }
+  }
+
+  private assertSameMergeRequest(
+    actual: MergeRequestIdentity,
+    expected: MergeRequestIdentity,
+  ): void {
+    if (
+      actual.provider !== expected.provider ||
+      actual.repositoryId !== expected.repositoryId ||
+      actual.number !== expected.number ||
+      actual.url !== expected.url
+    ) {
+      throw new Error('Post-merge publication attempted to replace the original coordination MR');
+    }
+  }
+
+  private assertCoordinationStatus(
+    status: MergeRequestStatus,
+    coordination: NonNullable<DeliveryState['mergeRequests']>['coordination'],
+    expectedHead?: string,
+  ): void {
+    this.assertSameMergeRequest(status, coordination.mergeRequest);
+    if (status.state !== 'open') {
+      throw new Error(`Original coordination MR is not open: ${status.state}`);
+    }
+    if (
+      status.sourceBranch !== coordination.sourceBranch ||
+      status.targetBranch !== coordination.targetBranch
+    ) {
+      throw new Error('Original coordination MR branch mapping drifted');
+    }
+    if (!status.headCommit) {
+      throw new Error('Original coordination MR did not report its head commit');
+    }
+    if (expectedHead && status.headCommit !== expectedHead) {
+      throw new Error('Original coordination MR head commit drifted');
+    }
+    if (status.title === undefined || status.body === undefined) {
+      throw new Error('Original coordination MR did not report editable metadata');
     }
   }
 

@@ -33,22 +33,30 @@ async function trackedContent(root: string, file: string): Promise<string> {
   return git(root, ['show', `HEAD:${file}`]);
 }
 
-async function contentType(
+function contentDigest(value: string | Uint8Array): `sha256:${string}` {
+  return `sha256:${createHash('sha256').update(value).digest('hex')}`;
+}
+
+async function content(
   root: string,
   file: string,
   status: PostMergeWorkspaceChange['status'],
-): Promise<PostMergeWorkspaceContentType> {
+): Promise<{ type: PostMergeWorkspaceContentType; digest: `sha256:${string}` }> {
   if (status !== 'deleted') {
     const target = path.join(root, ...file.split('/'));
     const fileStat = await lstat(target);
-    if (fileStat.isSymbolicLink()) return 'symlink';
-    if (!fileStat.isFile()) return 'unsupported';
-    return (await readFile(target)).includes(0) ? 'binary' : 'text';
+    if (fileStat.isSymbolicLink()) return { type: 'symlink', digest: contentDigest('symlink') };
+    if (!fileStat.isFile()) return { type: 'unsupported', digest: contentDigest('unsupported') };
+    const bytes = await readFile(target);
+    return { type: bytes.includes(0) ? 'binary' : 'text', digest: contentDigest(bytes) };
   }
   const mode = (await git(root, ['ls-tree', 'HEAD', '--', file])).split(/\s/u)[0];
-  if (mode === '120000') return 'symlink';
-  if (mode !== '100644' && mode !== '100755') return 'unsupported';
-  return (await trackedContent(root, file)).includes('\0') ? 'binary' : 'text';
+  if (mode === '120000') return { type: 'symlink', digest: contentDigest('symlink') };
+  if (mode !== '100644' && mode !== '100755') {
+    return { type: 'unsupported', digest: contentDigest('unsupported') };
+  }
+  const value = await trackedContent(root, file);
+  return { type: value.includes('\0') ? 'binary' : 'text', digest: contentDigest(value) };
 }
 
 function parseTracked(stdout: string): Array<{
@@ -116,12 +124,18 @@ export class GitPostMergeWorkspace implements PostMergeWorkspacePort {
     }
     records.sort((left, right) => left.path.localeCompare(right.path));
     const changes = await Promise.all(
-      records.map(
-        async (record): Promise<PostMergeWorkspaceChange> => ({
+      records.map(async (record): Promise<PostMergeWorkspaceChange> => {
+        const inspected = await content(resolved, record.path, record.status);
+        const previousContentDigest = record.previousPath
+          ? contentDigest(await trackedContent(resolved, record.previousPath))
+          : undefined;
+        return {
           ...record,
-          contentType: await contentType(resolved, record.path, record.status),
-        }),
-      ),
+          contentType: inspected.type,
+          contentDigest: inspected.digest,
+          ...(previousContentDigest ? { previousContentDigest } : {}),
+        };
+      }),
     );
     return { baseline: structuredClone(baseline), head, tree, changes };
   }

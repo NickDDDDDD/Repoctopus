@@ -214,6 +214,11 @@ export interface MergeRequestIdentity {
 
 export interface MergeRequestStatus extends MergeRequestIdentity {
   state: 'open' | 'closed' | 'merged';
+  sourceBranch?: string;
+  targetBranch?: string;
+  headCommit?: string;
+  title?: string;
+  body?: string;
   ci: 'pending' | 'passed' | 'failed' | 'unknown';
   review: 'pending' | 'approved' | 'changes_requested' | 'unknown';
   conversationsResolved: boolean | null;
