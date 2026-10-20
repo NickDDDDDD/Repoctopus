@@ -85,7 +85,7 @@ describe('Repoctopus runtime', () => {
       changeId: 'change-one',
       provider: {
         id: 'openspec',
-        version: '1.14.1',
+        version: '1.14.3',
         protocolVersion: 'repoctopus.specification/v1alpha1' as const,
       },
       validationDigest: `sha256:${'d'.repeat(64)}` as const,

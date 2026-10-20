@@ -136,7 +136,7 @@ describe('evidence command vertical slice', () => {
               changeId: 'invalid-change',
               provider: {
                 id: 'openspec',
-                version: '1.14.1',
+                version: '1.14.3',
                 protocolVersion: 'repoctopus.specification/v1alpha1',
               },
               strict: true,
@@ -166,7 +166,7 @@ describe('evidence command vertical slice', () => {
       }),
     ]);
     expect(result.receipts[0]).toMatchObject({
-      adapter: 'specification:openspec@1.14.1',
+      adapter: 'specification:openspec@1.14.3',
       findings: [{ code: 'delta.invalid', summary: 'Delta spec is invalid' }],
     });
   });

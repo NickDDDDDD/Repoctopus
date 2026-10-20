@@ -113,6 +113,7 @@ describe('Specification authority', () => {
     expect(inspected).toMatchObject({
       apiVersion: 'repoctopus.specification/v1alpha1',
       changeId: 'sample',
+      provider: { id: 'openspec', version: '1.14.3' },
       planningComplete: true,
       affectedCapabilities: ['demo'],
     });

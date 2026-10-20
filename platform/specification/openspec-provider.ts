@@ -20,7 +20,11 @@ import {
   Specification,
   type PrepareSpecificationClosureInput,
 } from '../../services/specification.js';
-import { OpenSpecProcess, type SpecificationProcessPort } from './openspec-process.js';
+import {
+  installedOpenSpecVersion,
+  OpenSpecProcess,
+  type SpecificationProcessPort,
+} from './openspec-process.js';
 
 interface OpenSpecProviderConfig {
   workspaceRoot: string;
@@ -44,7 +48,7 @@ interface ValidationResult {
 
 const IDENTITY: SpecificationProviderIdentity = {
   id: 'openspec',
-  version: '1.14.1',
+  version: installedOpenSpecVersion(),
   protocolVersion: SPECIFICATION_API_VERSION,
 };
 

@@ -8,6 +8,7 @@
 - [x] 1.4 扩展 `third_party` 来源清单、架构能力账本和构建文件清单，执行 `npm install`、`npm run check:provenance` 与篡改 fixture 测试验证第三方快照不可静默修改。
 - [x] 1.5 把 DSH 固定基线升级到 `dsh-v0.2.1-rc.2`，同步 Cordis/Loader 与 npm 精确依赖；确认 Comet 主线未漂移，并移植适用的 Windows watcher 关闭修复。
 - [x] 1.6 按全部已治理和计划能力完成 DSH/Comet 对齐审计，增加机器基线、来源一致性检查与每日只读漂移 workflow；验证网络检查与离线 `verify` 相互隔离。
+- [x] 1.7 将 OpenSpec 精确升级到 `1.14.3`，移除 `fast-glob -> micromatch -> braces` 高危漏洞链，并重新验证 Specification Provider 的 inspect、严格 validate、关闭与打包契约。
 
 ## 2. 交付可用的 Skill 能力纵切
 

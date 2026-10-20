@@ -148,7 +148,7 @@
         "platform/specification/**",
         "plugins/command/specification-contributor.ts"
       ],
-      "upstream": ["@fission-ai/openspec@1.14.1"],
+      "upstream": ["@fission-ai/openspec@1.14.3"],
       "rationale": "Specification 是唯一 Cordis 权威 Service；OpenSpec Provider 通过受控进程端口映射官方产物生命周期，Workflow 只消费稳定领域契约。"
     },
     {

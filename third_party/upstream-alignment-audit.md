@@ -80,4 +80,4 @@ Comet 没有提交漂移，但本轮重新检查了此前未充分利用的 `dom
 
 ## 非 DSH / Comet 发现
 
-只读 `npm audit --omit=dev` 报告 4 个 high severity 项，链路为 `@fission-ai/openspec@1.14.1 -> fast-glob -> micromatch -> braces`，对应 `GHSA-vfj7-8cjw-p6xm`。npm 给出的修复目标是 OpenSpec `1.14.3`，超出当前精确固定版本。本轮没有执行 `npm audit fix --force`，因为这不是 DSH/Comet 基线的一部分，并且 Specification Provider 升级需要独立兼容性验证；该项应作为下一轮依赖安全升级处理。
+该发现已在独立原子升级中处理：OpenSpec 从 `1.14.1` 精确升级到 `1.14.3`（tag commit `c794978f4f8845ce59693373c9dd882ee776588c`）。上游用 `tinyglobby`、`picomatch` 和 `brace-expansion` 替代 `fast-glob`，移除了 `micromatch -> braces` 与 `GHSA-vfj7-8cjw-p6xm` 链路；Repoctopus 没有使用 `npm audit fix --force`。升级后的 Specification Provider 重新覆盖 inspect、严格 validate、prepareClosure、幂等 close 与打包 CLI 契约，生产依赖审计恢复为 0 个已知漏洞。

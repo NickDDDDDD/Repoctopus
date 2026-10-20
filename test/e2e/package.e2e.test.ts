@@ -79,7 +79,7 @@ describe('published package', () => {
     });
     expect(inspectedSpecification.result).toMatchObject({
       changeId: 'enable-self-hosted-development',
-      provider: { id: 'openspec', version: '1.14.1' },
+      provider: { id: 'openspec', version: '1.14.3' },
     });
     const validatedSpecification = await runCli<{ valid: boolean; strict: boolean }>({
       packageRoot: installedPackage,

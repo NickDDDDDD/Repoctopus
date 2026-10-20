@@ -1,4 +1,5 @@
 import { execFile } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
@@ -15,9 +16,22 @@ export interface SpecificationProcessPort {
   ): Promise<SpecificationProcessResult>;
 }
 
-export function installedOpenSpecEntry(): string {
+function installedOpenSpecRoot(): string {
   const entry = fileURLToPath(import.meta.resolve('@fission-ai/openspec'));
-  return path.join(path.dirname(path.dirname(entry)), 'bin', 'openspec.js');
+  return path.dirname(path.dirname(entry));
+}
+
+export function installedOpenSpecEntry(): string {
+  return path.join(installedOpenSpecRoot(), 'bin', 'openspec.js');
+}
+
+export function installedOpenSpecVersion(): string {
+  const manifestFile = path.join(installedOpenSpecRoot(), 'package.json');
+  const manifest = JSON.parse(readFileSync(manifestFile, 'utf8')) as { version?: unknown };
+  if (typeof manifest.version !== 'string' || manifest.version.length === 0) {
+    throw new Error('Installed OpenSpec package has no valid version');
+  }
+  return manifest.version;
 }
 
 export class OpenSpecProcess implements SpecificationProcessPort {

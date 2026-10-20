@@ -43,7 +43,7 @@
 ## Specification 纵切验证
 
 - `Specification` 是唯一 Cordis Service。Project composition 把它列为必需服务；零 Provider 产生缺少服务诊断，两个拥有 `specification-authority` 的 Provider 在组合编译时被拒绝。
-- OpenSpec Provider 固定使用 `@fission-ai/openspec@1.14.1`，通过有超时、输出上限和 AbortSignal 的受控 Node 子进程调用官方 JSON 命令。领域结果不包含 OpenSpec 绝对路径或原始 CLI 输出。
+- OpenSpec Provider 当前固定使用 `@fission-ai/openspec@1.14.3`，通过有超时、输出上限和 AbortSignal 的受控 Node 子进程调用官方 JSON 命令。领域结果不包含 OpenSpec 绝对路径或原始 CLI 输出。
 - 临时 OpenSpec 项目测试覆盖 inspect、严格 validate、prepareClosure、官方 archive close 和重复 close；重复关闭从本地 Receipt 返回同一逻辑结果，不再次归档。
 - Evidence 新增 `specification` 节点并直接调用活动 Provider。无效 delta 生成 `verified` 失败 Receipt，依赖实现节点保持 blocked，不能用调用方自述成功绕过。
 - Run 首次严格校验后保存 Provider 身份与验证摘要，收尾计划生成后追加 closure plan 摘要；Run、Checkpoint 和 Trajectory 均保存事实，重复绑定幂等、摘要漂移被拒绝。
@@ -121,4 +121,4 @@
 - `third_party/upstream-alignment-audit.md` 按 19 个治理能力和任务 4.5 至 7.x 计划面完成覆盖，补记了 Comet Experience Journal claim/renew 与 DSH Jobs/Session/Telemetry 的适用边界。相似代码只有在满足 Repoctopus 多仓、持久化和可恢复语义时才采用，不能因名称相似替换 authority。
 - `third_party/upstream-baselines.json` 成为 DSH/Comet 固定 ref 的单一机器索引；`check:provenance` 交叉校验它与 DSH、Cordis、Comet 来源清单。`check:upstream` 使用 `git ls-remote` 每日发现分支漂移，GitHub Actions 只报警、不自动升级；标准 `verify` 不访问网络，继续可离线重放。
 - 完整验证：67 个测试文件通过，238 个测试通过、1 个跳过；类型、lint、构建、生成物、品牌、19 个架构能力、来源和 9 个严格 OpenSpec 项全部通过。`check:upstream` 真实访问两个远端并确认 current；package E2E 与 tracer E2E 各 1 项通过。清理了审计用 DSH 临时 clone/worktree、npm tarball 和一次失败安装的精确 npm 日志，保留项目内来源与审计记录。
-- 只读生产依赖审计仍报告 4 个 high severity 项，全部来自既有 `@fission-ai/openspec@1.14.1 -> fast-glob -> micromatch -> braces` 链路；npm 建议升级到超出当前精确 pin 的 OpenSpec `1.14.3`。未使用 `--force` 自动改变 Specification Provider 基线，已在全量审计报告中登记为独立安全升级事项。
+- 2026-10-21 的独立安全升级把 OpenSpec 精确固定到 `1.14.3`（tag commit `c794978f4f8845ce59693373c9dd882ee776588c`）。上游以 `tinyglobby`、`picomatch` 和 `brace-expansion` 替代 `fast-glob`，移除了 `micromatch -> braces` 漏洞链；没有使用 `npm audit fix --force`。Provider 身份改为从已安装包清单读取，依赖精确 pin 成为版本的单一事实源，旧 Run 仍会通过现有 Provider 漂移保护 fail-closed。升级后真实 inspect、严格 validate、prepareClosure/幂等 close、打包 CLI、tracer E2E 与完整 `verify` 全部通过（67 个测试文件、238 个测试通过、1 个跳过）；完整审计和 `--omit=dev` 审计均为 0 个已知漏洞，`repoctopus.specification/v1alpha1` 领域契约不变。
