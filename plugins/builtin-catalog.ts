@@ -622,7 +622,7 @@ const definitions: readonly BuiltinDefinition[] = [
       compositions: ['project'],
       authorities: ['delivery-state-write'],
       permissions: ['filesystem', 'process', 'network'],
-      stateSchemas: { delivery: '1' },
+      stateSchemas: { delivery: '2' },
     },
     plugin: FileDeliveryProvider,
     sourceFiles: [

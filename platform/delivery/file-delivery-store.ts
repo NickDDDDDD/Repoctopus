@@ -19,6 +19,18 @@ async function readJson<T>(file: string): Promise<T> {
   return JSON.parse(await readFile(file, 'utf8')) as T;
 }
 
+function deliveryState(value: unknown): DeliveryState {
+  if (
+    !value ||
+    typeof value !== 'object' ||
+    Array.isArray(value) ||
+    (value as { schemaVersion?: unknown }).schemaVersion !== 2
+  ) {
+    throw new Error('Unsupported Delivery state schema: migration_required');
+  }
+  return value as DeliveryState;
+}
+
 interface DeliveryJournal {
   schemaVersion: 1;
   previousStateVersion: number | null;
@@ -56,7 +68,29 @@ export class FileDeliveryStore implements DeliveryStorePort {
   async load(changeId: string): Promise<DeliveryState | null> {
     await this.recover(changeId);
     const file = this.paths(changeId).state;
-    return (await exists(file)) ? readJson<DeliveryState>(file) : null;
+    return (await exists(file)) ? deliveryState(await readJson<unknown>(file)) : null;
+  }
+  async list(): Promise<DeliveryState[]> {
+    const root = path.join(path.resolve(this.workspaceRoot), '.repoctopus', 'deliveries');
+    let entries;
+    try {
+      entries = await readdir(root, { withFileTypes: true });
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
+      throw error;
+    }
+    const states: DeliveryState[] = [];
+    for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name))) {
+      if (
+        !entry.isDirectory() ||
+        entry.isSymbolicLink() ||
+        !/^[a-z0-9][a-z0-9-]{2,127}$/.test(entry.name)
+      )
+        continue;
+      const state = await this.load(entry.name);
+      if (state) states.push(state);
+    }
+    return states;
   }
   async history(changeId: string): Promise<DeliveryEvent[]> {
     await this.recover(changeId);
@@ -72,21 +106,10 @@ export class FileDeliveryStore implements DeliveryStorePort {
   }
 
   async approvedEvidenceBundleIds(): Promise<string[]> {
-    const root = path.join(path.resolve(this.workspaceRoot), '.repoctopus', 'deliveries');
-    let entries;
-    try {
-      entries = await readdir(root, { withFileTypes: true });
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
-      throw error;
-    }
     const protectedIds = new Set<string>();
-    for (const entry of entries) {
-      if (!entry.isDirectory() || entry.isSymbolicLink()) continue;
-      if (!/^[a-z0-9][a-z0-9-]{2,127}$/.test(entry.name)) continue;
-      const state = await this.load(entry.name);
+    for (const state of await this.list()) {
       if (
-        state?.snapshot &&
+        state.snapshot &&
         state.approval?.decision === 'approve' &&
         state.approval.snapshotDigest === state.snapshot.digest &&
         ['approved', 'publishing', 'partially_published', 'in_review', 'merged'].includes(
@@ -109,7 +132,7 @@ export class FileDeliveryStore implements DeliveryStorePort {
       (journal) => this.replay(paths, journal),
       async (transition) => {
         const current = (await exists(paths.state))
-          ? await readJson<DeliveryState>(paths.state)
+          ? deliveryState(await readJson<unknown>(paths.state))
           : null;
         if (options.previousStateVersion === null) {
           if (current) throw new Error(`Delivery already exists: ${options.state.changeId}`);
@@ -168,6 +191,7 @@ export class FileDeliveryStore implements DeliveryStorePort {
     paths: ReturnType<FileDeliveryStore['paths']>,
     journal: DeliveryJournal,
   ): Promise<void> {
+    deliveryState(journal.nextState);
     if (journal.schemaVersion !== 1) throw new Error('Invalid delivery journal');
     await this.complete(paths, journal);
   }

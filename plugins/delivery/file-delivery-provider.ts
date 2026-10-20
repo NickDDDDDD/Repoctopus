@@ -6,6 +6,7 @@ import type {
   DeliveryPolicy,
   DeliveryState,
   HumanDecisionResponse,
+  MergeRequestReference,
   TrustedActor,
 } from '../../domains/delivery/types.js';
 import type { ProjectSnapshot } from '../../domains/project/types.js';
@@ -97,6 +98,16 @@ export class FileDeliveryProvider extends Delivery {
   refresh(changeId: string, policy: DeliveryPolicy, signal?: AbortSignal): Promise<DeliveryState> {
     return this.operations.run({ cancellable: false, signal }, () =>
       this.domain(policy).refresh(changeId),
+    );
+  }
+
+  refreshForMergeRequest(
+    reference: MergeRequestReference,
+    policy: DeliveryPolicy,
+    signal?: AbortSignal,
+  ) {
+    return this.operations.run({ cancellable: false, signal }, () =>
+      this.domain(policy).refreshForMergeRequest(reference),
     );
   }
 }

@@ -43,11 +43,52 @@ export interface DeliveryRepositoryIntent {
   actions: Array<'push' | 'merge_request'>;
 }
 
+export interface DeliveryCoordinationMergeRequestIntent {
+  repositoryId: string;
+  remoteIdentity: string;
+  sourceBranch: string;
+  targetBranch: string;
+  mergeRequest: MergeRequestIdentity;
+}
+
 export interface DeliveryIntent {
-  schemaVersion: 1;
+  schemaVersion: 2;
   changeId: string;
+  coordinationMergeRequest: DeliveryCoordinationMergeRequestIntent;
   repositories: DeliveryRepositoryIntent[];
 }
+
+export interface DeliveryMergeRequestRecord {
+  role: 'coordination' | 'business';
+  repositoryId: string;
+  remoteIdentity: string;
+  sourceBranch: string;
+  targetBranch: string;
+  mergeRequest: MergeRequestIdentity | null;
+}
+
+export interface DeliveryMergeRequestSet {
+  coordination: DeliveryMergeRequestRecord & {
+    role: 'coordination';
+    mergeRequest: MergeRequestIdentity;
+  };
+  business: DeliveryMergeRequestRecord[];
+}
+
+export interface MergeRequestReference {
+  provider: string;
+  remoteIdentity: string;
+  number: number;
+}
+
+export type DeliveryMergeRequestMatch =
+  | { status: 'matched'; changeIds: [string]; diagnostic: null }
+  | { status: 'not_found'; changeIds: []; diagnostic: 'delivery-event-no-match' }
+  | {
+      status: 'ambiguous';
+      changeIds: string[];
+      diagnostic: 'delivery-event-ambiguous-match';
+    };
 
 export interface DeliveryRepositoryFacts {
   repositoryId: string;
@@ -74,7 +115,7 @@ export interface PublicationAction {
 }
 
 export interface DeliverySnapshot {
-  schemaVersion: 1;
+  schemaVersion: 2;
   changeId: string;
   compositionDigest: string;
   digest: string;
@@ -83,6 +124,7 @@ export interface DeliverySnapshot {
   intentDigest: string;
   evidenceBundleIds: string[];
   repositories: DeliveryRepositoryFacts[];
+  mergeRequests: DeliveryMergeRequestSet;
   plan: PublicationAction[];
   createdAt: string;
 }
@@ -104,6 +146,7 @@ export interface HumanDecisionRequest {
     sourceBranch: string;
     targetBranch: string;
   }>;
+  coordinationMergeRequest: DeliveryMergeRequestSet['coordination'];
   actions: Array<{ actionId: string; type: PublicationActionType; repositoryId: string }>;
   options: HumanDecision[];
 }
@@ -148,7 +191,7 @@ export interface PublicationActionResult {
 }
 
 export interface DeliveryState {
-  schemaVersion: 1;
+  schemaVersion: 2;
   changeId: string;
   stateVersion: number;
   status: DeliveryStatus;
@@ -157,6 +200,7 @@ export interface DeliveryState {
   approval: ApprovalRecord | null;
   actionResults: PublicationActionResult[];
   mergeEvidence: MergeEvidence[];
+  mergeRequests: DeliveryMergeRequestSet | null;
   platformCapabilities: PlatformCapability[];
   updatedAt: string;
 }

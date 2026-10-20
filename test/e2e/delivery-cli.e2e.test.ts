@@ -63,7 +63,7 @@ describe('delivery CLI', () => {
     );
     await writeFile(
       intentFile,
-      `schemaVersion: 1\nchangeId: delivery-cli-change\nrepositories:\n  - repositoryId: ${repository.id}\n    sourceBranch: feat/change\n    targetBranch: main\n    commitMessage: 'feat: checkpoint change'\n    actions: [push, merge_request]\n`,
+      `schemaVersion: 2\nchangeId: delivery-cli-change\ncoordinationMergeRequest:\n  repositoryId: coordination-repository\n  remoteIdentity: github.com/team/coordination-repository\n  sourceBranch: feat/delivery-cli-change\n  targetBranch: main\n  mergeRequest:\n    provider: github\n    repositoryId: coordination-repository\n    number: 1\n    url: https://github.com/team/coordination-repository/pull/1\nrepositories:\n  - repositoryId: ${repository.id}\n    sourceBranch: feat/change\n    targetBranch: main\n    commitMessage: 'feat: checkpoint change'\n    actions: [push, merge_request]\n`,
     );
     await writeFile(reportFile, '# Verification\nPassed\n');
     await writeFile(path.join(app, 'feature.txt'), 'feature');

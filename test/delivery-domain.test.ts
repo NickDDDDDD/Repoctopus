@@ -33,8 +33,20 @@ const policy: DeliveryPolicy = {
 };
 
 const intent: DeliveryIntent = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   changeId: 'delivery-change',
+  coordinationMergeRequest: {
+    repositoryId: 'coordination-repository',
+    remoteIdentity: 'example/coordination-repository',
+    sourceBranch: 'feat/delivery-change',
+    targetBranch: 'main',
+    mergeRequest: {
+      provider: 'github',
+      repositoryId: 'coordination-repository',
+      number: 10,
+      url: 'https://example.test/coordination-repository/pull/10',
+    },
+  },
   repositories: [
     {
       repositoryId: 'repo-b',
@@ -48,7 +60,7 @@ const intent: DeliveryIntent = {
       sourceBranch: 'feat/change',
       targetBranch: 'main',
       commitMessage: 'feat: change a',
-      actions: ['push'],
+      actions: ['push', 'merge_request'],
     },
   ],
 };
@@ -81,9 +93,17 @@ describe('delivery contract', () => {
     ).toEqual(
       expect.arrayContaining(['missing-automatic-mode', 'missing-commit-format', 'missing-remote']),
     );
-    expect(validateDeliveryIntent({ schemaVersion: 1, changeId: 'x', repositories: [] })).toEqual(
+    expect(
+      validateDeliveryIntent({
+        schemaVersion: 1,
+        changeId: 'x',
+        repositories: [],
+      } as unknown as DeliveryIntent),
+    ).toEqual(
       expect.arrayContaining([
+        expect.objectContaining({ code: 'unsupported-intent-version' }),
         expect.objectContaining({ code: 'invalid-change-id' }),
+        expect.objectContaining({ code: 'missing-coordination-merge-request' }),
         expect.objectContaining({ code: 'missing-repositories' }),
       ]),
     );
@@ -109,8 +129,50 @@ describe('delivery contract', () => {
       createdAt: '2027-01-01T00:00:00.000Z',
     });
     expect(first.digest).toBe(second.digest);
-    expect(first.plan.map((action) => action.repositoryId)).toEqual(['repo-a', 'repo-b', 'repo-b']);
+    expect(first.plan.map((action) => action.repositoryId)).toEqual([
+      'repo-a',
+      'repo-a',
+      'repo-b',
+      'repo-b',
+    ]);
     expect(compareDeliverySnapshots(first, second)).toEqual([]);
+  });
+
+  it('allows the coordination and a business MR to share one physical repository', () => {
+    const sameRepositoryIntent: DeliveryIntent = {
+      ...intent,
+      coordinationMergeRequest: {
+        ...intent.coordinationMergeRequest,
+        repositoryId: 'repo-a',
+        remoteIdentity: 'example/repo-a',
+        mergeRequest: {
+          ...intent.coordinationMergeRequest.mergeRequest,
+          repositoryId: 'repo-a',
+          number: 99,
+        },
+      },
+    };
+    expect(validateDeliveryIntent(sameRepositoryIntent)).toEqual([]);
+    const snapshot = createDeliverySnapshot({
+      compositionDigest: TEST_COMPOSITION_DIGEST,
+      intent: sameRepositoryIntent,
+      policy,
+      reportContents: 'verified',
+      evidenceBundleIds,
+      repositories: [fact('repo-a'), fact('repo-b')],
+      createdAt: '2026-01-01T00:00:00.000Z',
+    });
+    expect(snapshot.mergeRequests).toMatchObject({
+      coordination: {
+        role: 'coordination',
+        repositoryId: 'repo-a',
+        mergeRequest: { number: 99 },
+      },
+      business: [
+        { role: 'business', repositoryId: 'repo-a', mergeRequest: null },
+        { role: 'business', repositoryId: 'repo-b', mergeRequest: null },
+      ],
+    });
   });
 
   it('requires a clean snapshot and reports drift', () => {

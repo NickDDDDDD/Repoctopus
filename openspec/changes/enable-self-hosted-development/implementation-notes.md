@@ -18,7 +18,7 @@
 - OpenSpec、固定 DSH 源码、Matt Skill 行为、代码平台契约、设计图或现有公共协议存在实质冲突。
 - DSH Skill 行为闭包无法在不引入第二个 Runtime 或 DSH Agent Loop 的情况下接入，且没有保持原语义的最小适配方案。
 - 合入后机器动作无法限制在配置的 workspace 路径，或需要 merge、force push、rebase、删除分支或修改业务代码才能完成。
-- 真实平台事实无法唯一映射 change、workspace MR 和业务 MR 集合。
+- 真实平台事实无法唯一映射 change、协调 MR 和业务 MR 集合。
 - 实现需要把凭据、webhook 原始秘密、Skill 正文或个人学习内容写入日志、Git 或 OpenTelemetry。
 
 ## DSH 与 Matt Skills 来源闭包
@@ -55,6 +55,14 @@
 - 已从固定 DSH GitHub Handler 采用 POST、JSON Content-Type、体积上限、唯一 Header、HMAC 后解析和无损 JSON 对象边界，来源与目标摘要登记在 `third_party/dsh-adoption.json`。
 - 已定义 Provider 无关 Delivery Envelope 和纯 Event Inbox 状态机，覆盖稳定去重、Delivery ID 载荷碰撞拒绝、领取租约、租约过期恢复、重试等待、完成 Receipt 与死信状态。
 - 持久 Inbox Store、Credential Provider、GitHub Adapter、HTTP Host/Route、PlatformEvents Service 和 Runner 已完成，见下方任务 4.1 至 4.4 验证记录；管理命令与 OTel 尚未完成。
+
+## Delivery MR 集合状态（任务 5.1）
+
+- `workspace MR` 更名为 `coordinationMergeRequest`。这是承载规格、验证与最终收尾的职责角色，不是旧 Agent Workspace 产品名，也不要求独立物理仓库；协调 MR 与业务 MR 可以拥有相同 `repositoryId`，但必须以各自平台 MR 编号和角色保持身份独立。
+- Delivery Intent、Snapshot、Human Decision Request 与持久 State 升级到 v2。Intent 必须声明一个已有协调 MR 和完整业务仓集合；每个业务仓必须计划 `merge_request`，发布成功后把平台返回的 MR identity 写回对应业务记录。
+- 平台事件匹配使用 `provider + remoteIdentity + number`，且只搜索 `publishing`、`partially_published`、`in_review` 状态中的业务 MR。协调 MR 和终态 Delivery 不参与匹配；零匹配与多匹配分别返回稳定诊断，不能猜测 change。
+- `refreshForMergeRequest()` 只负责唯一解析，然后复用与显式 `delivery refresh` 完全相同的权威 MR 查询和状态转换。测试用两个独立 Store 证明事件入口与主动入口产生相同 Delivery State。
+- builtin Delivery state schema 从 `1` 升为 `2`。proposal 已声明不兼容未发布的旧状态，因此文件 Store 对 v1 返回 `migration_required`，不做字段猜测或静默迁移；测试状态可清理后重新生成。
 
 ## 自举 Run 续接（2026-10-20）
 

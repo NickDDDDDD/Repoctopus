@@ -8,6 +8,7 @@ import {
   deliveryPolicyDigest,
   sha256Digest,
 } from './snapshot.js';
+import { matchActiveDeliveryMergeRequest, recordBusinessMergeRequest } from './merge-requests.js';
 import {
   initialDeliveryState,
   invalidateApproval,
@@ -30,6 +31,7 @@ import type {
   HumanDecisionResponse,
   MergeEvidence,
   MergeRequestIdentity,
+  MergeRequestReference,
   TrustedActor,
 } from './types.js';
 import { validateDeliveryIntent, validateDeliveryPolicy } from './validation.js';
@@ -264,6 +266,9 @@ export class DeliveryService {
                 }
               : item,
           ),
+          mergeRequests: mergeRequest
+            ? recordBusinessMergeRequest(state.mergeRequests!, action.repositoryId, mergeRequest)
+            : state.mergeRequests,
           updatedAt: completedAt,
         };
         await this.commit(
@@ -324,8 +329,9 @@ export class DeliveryService {
   async refresh(changeId: string): Promise<DeliveryState> {
     const state = await this.requireState(changeId);
     this.assertWritableComposition(state);
-    const identities = state.actionResults.flatMap((result) =>
-      result.mergeRequest ? [result.mergeRequest] : [],
+    const businessMergeRequests = state.mergeRequests?.business ?? [];
+    const identities = businessMergeRequests.flatMap((item) =>
+      item.mergeRequest ? [item.mergeRequest] : [],
     );
     const evidence: MergeEvidence[] = [];
     const platformCapabilities = [];
@@ -349,7 +355,10 @@ export class DeliveryService {
         });
     }
     const timestamp = this.clock().toISOString();
-    const allMerged = identities.length > 0 && evidence.length === identities.length;
+    const allMerged =
+      businessMergeRequests.length > 0 &&
+      identities.length === businessMergeRequests.length &&
+      evidence.length === businessMergeRequests.length;
     const next: DeliveryState = {
       ...state,
       stateVersion: state.stateVersion + 1,
@@ -367,6 +376,15 @@ export class DeliveryService {
       }),
     );
     return next;
+  }
+
+  async refreshForMergeRequest(reference: MergeRequestReference): Promise<{
+    match: ReturnType<typeof matchActiveDeliveryMergeRequest>;
+    state: DeliveryState | null;
+  }> {
+    const match = matchActiveDeliveryMergeRequest(await this.store.list(), reference);
+    if (match.status !== 'matched') return { match, state: null };
+    return { match, state: await this.refresh(match.changeIds[0]) };
   }
 
   status(changeId: string) {

@@ -47,15 +47,27 @@ const policy: DeliveryPolicy = {
 };
 
 const intent: DeliveryIntent = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   changeId: 'delivery-evidence',
+  coordinationMergeRequest: {
+    repositoryId: 'coordination-repository',
+    remoteIdentity: 'example/coordination-repository',
+    sourceBranch: 'feat/delivery-evidence',
+    targetBranch: 'main',
+    mergeRequest: {
+      provider: 'github',
+      repositoryId: 'coordination-repository',
+      number: 11,
+      url: 'https://example.test/coordination-repository/pull/11',
+    },
+  },
   repositories: [
     {
       repositoryId: 'repo-a',
       sourceBranch: 'feat/change',
       targetBranch: 'main',
       commitMessage: 'feat: change',
-      actions: ['push'],
+      actions: ['push', 'merge_request'],
     },
   ],
 };

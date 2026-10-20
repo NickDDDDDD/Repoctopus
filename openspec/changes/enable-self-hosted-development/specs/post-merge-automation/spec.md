@@ -2,7 +2,7 @@
 
 ## Purpose
 
-定义 Repoctopus 在多仓业务 MR 合入后如何自动启动可恢复收尾 Run，基于精确合入代码生成证据、同步规格并更新共享工作区 MR，同时控制机器修改范围。
+定义 Repoctopus 在多仓业务 MR 合入后如何自动启动可恢复收尾 Run，基于精确合入代码生成证据、同步规格并更新协调 MR，同时控制机器修改范围。
 
 ## ADDED Requirements
 
@@ -55,18 +55,18 @@ Repoctopus MUST 只允许 Post-merge Run 修改项目配置允许的规格基线
 #### Scenario: 收尾差异只含允许内容
 
 - **WHEN** 变更只包含同步后的主规格、归档 change 和合入后验证记录
-- **THEN** 系统可以使用配置的机器身份创建普通 commit 并推送 workspace 分支
+- **THEN** 系统可以使用配置的机器身份创建普通 commit 并推送协调分支
 
-### Requirement: 收尾持续更新原 workspace MR
+### Requirement: 收尾持续更新原协调 MR
 
-Repoctopus MUST 把规划和最终收尾保存在同一个 workspace 分支与 MR 上；机器可以在受控路径内提交、推送并更新该 MR，但不得执行 merge、force push、隐式 rebase、删除分支或改变目标分支。
+Repoctopus MUST 把规划和最终收尾保存在同一个协调分支与 MR 上；机器可以在受控路径内提交、推送并更新该 MR，但不得执行 merge、force push、隐式 rebase、删除分支或改变目标分支。
 
-#### Scenario: Workspace MR 在业务开发期间保持打开
+#### Scenario: 协调 MR 在业务开发期间保持打开
 
-- **WHEN** 业务 MR 全部合入且 workspace MR 仍然打开
+- **WHEN** 业务 MR 全部合入且协调 MR 仍然打开
 - **THEN** 系统把收尾 commit 推送到原源分支并更新原 MR 描述或状态
 
-#### Scenario: Workspace MR 已关闭或源分支被改写
+#### Scenario: 协调 MR 已关闭或源分支被改写
 
 - **WHEN** 收尾前发现原 MR 不再可更新或远端源分支与记录基线冲突
 - **THEN** 系统停止远端动作并请求人工决定，不创建未声明的新 MR

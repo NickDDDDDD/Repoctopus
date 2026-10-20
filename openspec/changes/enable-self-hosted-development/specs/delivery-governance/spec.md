@@ -33,9 +33,9 @@ Repoctopus MUST 只在项目策略显式启用自动提交、当前分支不受�
 
 ## ADDED Requirements
 
-### Requirement: Delivery 声明 workspace MR 与业务 MR 关系
+### Requirement: Delivery 声明协调 MR 与业务 MR 关系
 
-Repoctopus MUST 在交付状态中记录一个 change 的 workspace MR、全部业务 MR、各自仓库身份和目标分支，使平台事件能够确定性映射到唯一交付集合。
+Repoctopus MUST 在交付状态中记录一个 change 的协调 MR、全部业务 MR、各自仓库身份和目标分支，使平台事件能够确定性映射到唯一交付集合。协调 MR 是承载规格、验证与收尾的职责角色，不代表旧产品名称或必须独立存在的物理仓库；协调 MR 与业务 MR MAY 位于同一仓库。
 
 #### Scenario: 合入事件属于已登记业务 MR
 

@@ -8,6 +8,7 @@ import type {
   DeliverySnapshot,
   PublicationAction,
 } from './types.js';
+import { createDeliveryMergeRequestSet } from './merge-requests.js';
 
 export function sha256(value: string): string {
   return createHash('sha256').update(value).digest('hex');
@@ -96,8 +97,9 @@ export function createDeliverySnapshot(options: {
   const reportDigest = sha256Digest(options.reportContents);
   const policyDigest = deliveryPolicyDigest(options.policy);
   const intentDigest = deliveryIntentDigest(normalizedIntent);
+  const mergeRequests = createDeliveryMergeRequestSet(normalizedIntent, repositories);
   const stable = {
-    schemaVersion: 1 as const,
+    schemaVersion: 2 as const,
     changeId: options.intent.changeId,
     compositionDigest: options.compositionDigest,
     reportDigest,
@@ -105,6 +107,7 @@ export function createDeliverySnapshot(options: {
     intentDigest,
     evidenceBundleIds,
     repositories,
+    mergeRequests,
     plan,
   };
   return { ...stable, digest: sha256Digest(canonicalJson(stable)), createdAt: options.createdAt };
@@ -127,6 +130,8 @@ export function compareDeliverySnapshots(
   );
   if (canonicalJson(expected.repositories) !== canonicalJson(current.repositories))
     drift.push('repositories');
+  if (canonicalJson(expected.mergeRequests) !== canonicalJson(current.mergeRequests))
+    drift.push('mergeRequests');
   if (canonicalJson(expected.plan) !== canonicalJson(current.plan)) drift.push('plan');
   if (expected.compositionDigest !== current.compositionDigest) drift.push('compositionDigest');
   return drift;

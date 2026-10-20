@@ -16,6 +16,19 @@ const request: HumanDecisionRequest = {
   reportDigest: `sha256:${'b'.repeat(64)}`,
   evidenceBundleIds: ['bundle-verified'],
   repositories: [],
+  coordinationMergeRequest: {
+    role: 'coordination',
+    repositoryId: 'coordination-repository',
+    remoteIdentity: 'github.com/team/coordination-repository',
+    sourceBranch: 'feat/delivery-change',
+    targetBranch: 'main',
+    mergeRequest: {
+      provider: 'github',
+      repositoryId: 'coordination-repository',
+      number: 1,
+      url: 'https://github.com/team/coordination-repository/pull/1',
+    },
+  },
   actions: [],
   options: ['approve', 'request_changes', 'reject'],
 };

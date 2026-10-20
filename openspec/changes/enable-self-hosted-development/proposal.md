@@ -12,10 +12,10 @@ Repoctopus 已有可恢复 Run、Evidence 和多仓 Delivery，但还不能独�
 - 保留 `teach` Skill 的团队共享定义，同时把每个成员的课程、笔记和学习记录放在 `.repoctopus/learning/` 本机目录；默认不提交 Git，也不导出正文到遥测。
 - 采用固定 DSH 基线的 Webhook 验签、请求体上限、标准化 Delivery Envelope 和 Effect 生命周期；不采用其进程内 fire-and-forget Session 动作。
 - 增加持久 Event Inbox 与 Post-merge Coordinator。代码平台发送 MR 合入事件后，Repoctopus 先持久化、去重并快速响应，再重新读取平台权威状态，待 change 的全部业务 MR 合入后启动可恢复 Post-merge Run。
-- Post-merge Run 检出精确 merge commit，执行合入后 Evidence，调用当前 Specification Provider 同步主规格并关闭 change，然后只在允许的工作区路径中创建、提交并推送收尾变更，持续更新原 workspace MR。
+- Post-merge Run 检出精确 merge commit，执行合入后 Evidence，调用当前 Specification Provider 同步主规格并关闭 change，然后只在允许的工作区路径中创建、提交并推送收尾变更，持续更新原协调 MR。
 - 合入事件只触发协调，不作为权威合入证据；重复、乱序、服务重启和部分失败不得重复归档或产生不同的逻辑收尾动作。
 - 本次使用 GitHub Adapter 与可测试 Runner 完成 Repoctopus 自举；代码平台 Adapter 保持可替换，为后续 CodeHub 接入保留同一标准化事件协议。
-- 本次只接入完成自举所需的 Matt Skills、OpenSpec Provider、GitHub 合入事件和收尾动作。Skill 管理 UI、远程 Skill 市场、多个同时生效的规格权威、CodeHub Adapter、生产级高可用部署和自动合入 workspace MR 留给后续切片。
+- 本次只接入完成自举所需的 Matt Skills、OpenSpec Provider、GitHub 合入事件和收尾动作。Skill 管理 UI、远程 Skill 市场、多个同时生效的规格权威、CodeHub Adapter、生产级高可用部署和自动合入协调 MR 留给后续切片。
 
 ## Capabilities
 

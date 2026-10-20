@@ -82,8 +82,20 @@ describe('Git delivery adapter', () => {
       remoteSourceOid: checkpoint.head,
     });
     const intent: DeliveryIntent = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       changeId: 'deliver-change',
+      coordinationMergeRequest: {
+        repositoryId: 'coordination-repository',
+        remoteIdentity: 'example/coordination-repository',
+        sourceBranch: 'feat/deliver-change',
+        targetBranch: 'main',
+        mergeRequest: {
+          provider: 'github',
+          repositoryId: 'coordination-repository',
+          number: 12,
+          url: 'https://example.test/coordination-repository/pull/12',
+        },
+      },
       repositories: [{ ...setup.selected, actions: [...setup.selected.actions] }],
     };
     const push = createPublicationPlan(intent, [facts]).find(

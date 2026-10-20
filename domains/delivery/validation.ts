@@ -161,11 +161,11 @@ export function validateDeliveryPolicy(value: unknown): DeliveryFinding[] {
 
 export function validateDeliveryIntent(intent: DeliveryIntent): DeliveryFinding[] {
   const findings: DeliveryFinding[] = [];
-  if (intent.schemaVersion !== 1)
+  if (intent.schemaVersion !== 2)
     findings.push({
       code: 'unsupported-intent-version',
       path: 'schemaVersion',
-      message: 'Only schemaVersion 1 is supported',
+      message: 'Only schemaVersion 2 is supported',
     });
   if (!/^[a-z0-9][a-z0-9-]{2,127}$/.test(intent.changeId))
     findings.push({
@@ -179,6 +179,54 @@ export function validateDeliveryIntent(intent: DeliveryIntent): DeliveryFinding[
       path: 'repositories',
       message: 'At least one repository must be selected',
     });
+  const coordination = intent.coordinationMergeRequest;
+  if (!coordination || typeof coordination !== 'object') {
+    findings.push({
+      code: 'missing-coordination-merge-request',
+      path: 'coordinationMergeRequest',
+      message: 'Coordination merge request is required',
+    });
+  } else {
+    for (const field of [
+      'repositoryId',
+      'remoteIdentity',
+      'sourceBranch',
+      'targetBranch',
+    ] as const) {
+      if (!coordination[field])
+        findings.push({
+          code: `missing-coordination-${field}`,
+          path: `coordinationMergeRequest.${field}`,
+          message: `${field} is required`,
+        });
+    }
+    if (coordination.sourceBranch && coordination.sourceBranch === coordination.targetBranch)
+      findings.push({
+        code: 'coordination-source-target-equal',
+        path: 'coordinationMergeRequest',
+        message: 'Coordination sourceBranch and targetBranch must differ',
+      });
+    const mergeRequest = coordination.mergeRequest;
+    if (
+      !mergeRequest ||
+      !mergeRequest.provider ||
+      !mergeRequest.repositoryId ||
+      !Number.isSafeInteger(mergeRequest.number) ||
+      mergeRequest.number < 1 ||
+      !mergeRequest.url
+    )
+      findings.push({
+        code: 'invalid-coordination-merge-request',
+        path: 'coordinationMergeRequest.mergeRequest',
+        message: 'Coordination merge request identity is incomplete',
+      });
+    else if (mergeRequest.repositoryId !== coordination.repositoryId)
+      findings.push({
+        code: 'coordination-repository-mismatch',
+        path: 'coordinationMergeRequest.mergeRequest.repositoryId',
+        message: 'Coordination merge request repositoryId must match its declared repositoryId',
+      });
+  }
   const seen = new Set<string>();
   for (const [index, repository] of intent.repositories.entries()) {
     const root = `repositories[${index}]`;
@@ -224,6 +272,12 @@ export function validateDeliveryIntent(intent: DeliveryIntent): DeliveryFinding[
         code: 'missing-actions',
         path: `${root}.actions`,
         message: 'At least one action is required',
+      });
+    if (!repository.actions.includes('merge_request'))
+      findings.push({
+        code: 'missing-business-merge-request',
+        path: `${root}.actions`,
+        message: 'Every business repository must declare a merge_request action',
       });
     if (repository.actions.some((action) => action !== 'push' && action !== 'merge_request'))
       findings.push({

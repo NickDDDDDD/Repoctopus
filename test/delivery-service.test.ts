@@ -38,8 +38,20 @@ const policy: DeliveryPolicy = {
   },
 };
 const intent: DeliveryIntent = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   changeId: 'cross-repo-change',
+  coordinationMergeRequest: {
+    repositoryId: 'coordination-repository',
+    remoteIdentity: 'github.com/team/coordination-repository',
+    sourceBranch: 'feat/cross-repo-change',
+    targetBranch: 'main',
+    mergeRequest: {
+      provider: 'github',
+      repositoryId: 'coordination-repository',
+      number: 99,
+      url: 'https://github.com/team/coordination-repository/pull/99',
+    },
+  },
   repositories: [
     {
       repositoryId: 'repo-a',
@@ -306,8 +318,20 @@ describe('delivery service', () => {
       diagnostics: [],
     });
     const multiIntent: DeliveryIntent = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       changeId: 'multi-repo-change',
+      coordinationMergeRequest: {
+        repositoryId: 'coordination-repository',
+        remoteIdentity: 'github.com/team/coordination-repository',
+        sourceBranch: 'feat/multi-repo-change',
+        targetBranch: 'main',
+        mergeRequest: {
+          provider: 'github',
+          repositoryId: 'coordination-repository',
+          number: 100,
+          url: 'https://github.com/team/coordination-repository/pull/100',
+        },
+      },
       repositories: orderedRepositories.map((item) => ({
         repositoryId: item.id,
         sourceBranch: 'feat/change',

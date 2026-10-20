@@ -11,7 +11,7 @@ import type {
 
 export function initialDeliveryState(changeId: string, timestamp: string): DeliveryState {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     changeId,
     stateVersion: 0,
     status: 'development',
@@ -20,6 +20,7 @@ export function initialDeliveryState(changeId: string, timestamp: string): Deliv
     approval: null,
     actionResults: [],
     mergeEvidence: [],
+    mergeRequests: null,
     platformCapabilities: [],
     updatedAt: timestamp,
   };
@@ -51,6 +52,7 @@ export function requestDeliveryApproval(
         targetBranch,
       }),
     ),
+    coordinationMergeRequest: structuredClone(snapshot.mergeRequests.coordination),
     actions: snapshot.plan.map(({ actionId, type, repositoryId }) => ({
       actionId,
       type,
@@ -70,6 +72,7 @@ export function requestDeliveryApproval(
       status: 'pending',
       attempts: 0,
     })),
+    mergeRequests: structuredClone(snapshot.mergeRequests),
     platformCapabilities: [],
     updatedAt: timestamp,
   };

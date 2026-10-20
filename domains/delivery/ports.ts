@@ -28,6 +28,7 @@ export interface DeliveryEvent {
 
 export interface DeliveryStorePort {
   load(changeId: string): Promise<DeliveryState | null>;
+  list(): Promise<DeliveryState[]>;
   commit(options: {
     state: DeliveryState;
     previousStateVersion: number | null;

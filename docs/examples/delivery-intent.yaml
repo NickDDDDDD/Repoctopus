@@ -1,5 +1,15 @@
-schemaVersion: 1
+schemaVersion: 2
 changeId: example-change
+coordinationMergeRequest:
+  repositoryId: replace-with-coordination-repository-id
+  remoteIdentity: github.com/example/coordination-repository
+  sourceBranch: feat/example-change
+  targetBranch: main
+  mergeRequest:
+    provider: github
+    repositoryId: replace-with-coordination-repository-id
+    number: 123
+    url: https://github.com/example/coordination-repository/pull/123
 repositories:
   - repositoryId: replace-with-project-snapshot-id
     sourceBranch: feat/example-change

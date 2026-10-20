@@ -28,7 +28,7 @@ Repoctopus 当前以 Cordis 作为唯一应用 Runtime，`WorkflowRuns`、Eviden
 - 不引入 DSH Agent Loop、Session、Workspace、模型工具或完整 WebhookRuntime 依赖闭包。
 - 不建立通用 Capability Resolver、第二套插件容器或第二个 Runtime。
 - 不在第一纵切实现 Skill 市场、管理 UI、远程 Provider、多规格权威合并或 CodeHub Adapter。
-- 不让 Runner 自动修改业务代码、自动解决规格冲突或自动合入 workspace MR。
+- 不让 Runner 自动修改业务代码、自动解决规格冲突或自动合入协调 MR。
 - 不把个人学习目录、Skill 正文或 webhook 原始载荷导出到 SigNoz。
 
 ## Decisions
@@ -56,7 +56,7 @@ Cordis project composition
 
 Workflow 只编排领域动作；Engine 仍是纯函数。Skill、Specification、PlatformEvents 和 PostMergeCoordinator 是平级 Cordis Service，不进入一个新的“开发 Runtime”。等待用户、等待 MR 与等待重试都持久化为 Run 或 Inbox 状态，不用长生命周期 Fiber 表示业务进度。
 
-第一条自举 Workflow 覆盖：澄清与规格校验、实施、Evidence、用户交付批准、Delivery 发布、等待合入、平台事件唤醒、合入后 Evidence、规格关闭和 workspace MR 更新。各阶段调用已有 Service 或新增 Service 的稳定方法，不能在 Workflow YAML 中嵌入 shell、OpenSpec 路径或 GitHub JSON 解析。
+第一条自举 Workflow 覆盖：澄清与规格校验、实施、Evidence、用户交付批准、Delivery 发布、等待合入、平台事件唤醒、合入后 Evidence、规格关闭和协调 MR 更新。各阶段调用已有 Service 或新增 Service 的稳定方法，不能在 Workflow YAML 中嵌入 shell、OpenSpec 路径或 GitHub JSON 解析。
 
 ### 2. Skill 采用 DSH Service Definition，消费者改为 Repoctopus 协议
 
@@ -119,16 +119,16 @@ Post-merge Workflow 使用 Action Intent/Receipt 完成：
 3. 调用 `Specification.prepareClosure()` 并核对路径计划；
 4. 调用 `Specification.close()`；
 5. 重新扫描 Git diff，执行路径与内容类型双重允许检查；
-6. 创建普通收尾 commit，推送原 workspace 分支并更新原 MR；
+6. 创建普通收尾 commit，推送原协调分支并更新原 MR；
 7. 保存远端核对 Receipt 并进入等待人工 merge 状态。
 
 每一步都经过既有 RunStore 两阶段 Action 模型。网络、Git、OpenSpec CLI 和测试不在 Run 锁内执行。Push 响应丢失时先按 commit/tree/远端分支核对；归档响应丢失时按 Provider 的关闭身份核对。
 
 ### 8. 收尾权限按用途隔离
 
-`repoctopus.yaml` 增加 `postMerge` 配置：Runner 身份引用、临时检出根、Evidence Profile、允许修改的 workspace 路径、提交格式、远端和原 workspace MR 策略。允许路径至少具体到主规格、活动 change/归档和验证记录，不能使用项目根通配。
+`repoctopus.yaml` 增加 `postMerge` 配置：Runner 身份引用、临时检出根、Evidence Profile、允许修改的 workspace 路径、提交格式、远端和原协调 MR 策略。允许路径至少具体到主规格、活动 change/归档和验证记录，不能使用项目根通配。
 
-机器可以自动 commit、push 和更新原 workspace MR，因为这些动作的输入由已合入事实、满足的 Evidence Gate 和确定的关闭计划约束。它仍不能 merge、force push、rebase、删除分支、换目标分支、创建未声明 MR 或修改业务仓代码。workspace MR 最终合入保留给代码平台与团队策略。
+机器可以自动 commit、push 和更新原协调 MR，因为这些动作的输入由已合入事实、满足的 Evidence Gate 和确定的关闭计划约束。它仍不能 merge、force push、rebase、删除分支、换目标分支、创建未声明 MR 或修改业务仓代码。协调 MR 最终合入保留给代码平台与团队策略。
 
 ### 9. Runner 是可部署 Application Plugin
 
@@ -138,7 +138,7 @@ Runner 启动 App Boot project composition，等待 HTTP 和后台领取 Fiber�
 
 ### 10. 自举验收必须穿过生产入口
 
-本 change 的规划文件先位于当前分支。实现后用新 Skill Catalog 读取至少一个 Matt Skill，用 OpenSpec Provider 严格校验本 change，用 Repoctopus Evidence 验证源码，再通过 Delivery 创建或更新 workspace MR。测试中模拟签名 GitHub 合入事件和多仓状态，真实 MR 合入后由 Runner 的主动恢复或 webhook 触发 Post-merge Run，最终同步主规格并归档 change。
+本 change 的规划文件先位于当前分支。实现后用新 Skill Catalog 读取至少一个 Matt Skill，用 OpenSpec Provider 严格校验本 change，用 Repoctopus Evidence 验证源码，再通过 Delivery 创建或更新协调 MR。测试中模拟签名 GitHub 合入事件和多仓状态，真实 MR 合入后由 Runner 的主动恢复或 webhook 触发 Post-merge Run，最终同步主规格并归档 change。
 
 如果当前托管环境不能向本地 Runner 投递公网 webhook，真实自举可以由平台事件回放命令把已经验证或通过 API 主动获取的事件写入同一 Inbox；回放不是直接调用 Coordinator 的旁路。
 
@@ -189,7 +189,7 @@ Git 无法把本地 commit 与网络 push 做成一个原子事务，因此恢�
 3. 接入 Specification Service 与 OpenSpec Provider，用其校验本 change。
 4. 接入 HTTP Host、GitHub Adapter、Event Inbox 与 Runner，使用签名 fixture 验证持久化、去重和恢复。
 5. 接入 PostMergeCoordinator 与 Post-merge Workflow，使用临时 Git remote 和 mock 平台完成全链路 E2E。
-6. 在真实 Repoctopus change 上执行自举交付；用户批准验证报告后发布 workspace MR。
+6. 在真实 Repoctopus change 上执行自举交付；用户批准验证报告后发布协调 MR。
 7. MR 合入后由新路径完成主规格同步和归档，验证完成前保留显式 `delivery refresh` 作为恢复入口。
 
 回滚通过普通 revert MR 完成。已经持久化的 Inbox、Run、Evidence 和 Receipt 保持只读可诊断；回滚版本不得把未知新状态伪装为成功，必要时返回 `migration_required`。
