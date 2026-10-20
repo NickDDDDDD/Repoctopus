@@ -1,6 +1,7 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
+import { parse } from 'yaml';
 
 import {
   hashProjectConfig,
@@ -13,6 +14,28 @@ import { removeTemporaryDirectory, temporaryDirectory } from './helpers/fixtures
 
 const cleanup: string[] = [];
 afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
+
+async function configurationFixture(name: string): Promise<unknown> {
+  return parse(
+    await readFile(path.join(import.meta.dirname, 'fixtures', 'project-config', name), 'utf8'),
+  ) as unknown;
+}
+
+interface SelfHostedFixture {
+  postMerge: {
+    runnerIdentity: string;
+    evidenceProfile: string;
+    allowedWorkspacePaths: { verificationPathPrefixes: string[] };
+    publication: {
+      operations: string[];
+      commit: { authorNameCredential: unknown; authorEmailCredential: unknown };
+    };
+  };
+  platformEvents: {
+    github: { webhookCredential: unknown; apiCredential: unknown };
+    runner: { identity: string };
+  };
+}
 
 function shared(pathValue = '../service'): SharedProjectConfig {
   return parseSharedProjectConfig({
@@ -38,6 +61,104 @@ function shared(pathValue = '../service'): SharedProjectConfig {
 }
 
 describe('project configuration', () => {
+  it('accepts self-hosted Provider, event Runner, Credential, and post-merge references', async () => {
+    const config = parseSharedProjectConfig(await configurationFixture('self-hosted-valid.yaml'));
+
+    expect(config.skillProviders?.map((provider) => provider.id)).toEqual([
+      'skill-provider-matt',
+      'skill-provider-filesystem',
+    ]);
+    expect(config.specificationProvider?.id).toBe('specification-openspec');
+    expect(config.platformEvents?.github.webhookCredential).toEqual({
+      provider: 'environment',
+      variable: 'REPOCTOPUS_GITHUB_WEBHOOK_SECRET',
+    });
+    expect(config.postMerge?.allowedWorkspacePaths).toEqual({
+      specificationClosure: true,
+      verificationPathPrefixes: ['verification/post-merge/'],
+    });
+  });
+
+  it('rejects raw platform secrets instead of treating them as Credential references', async () => {
+    const fixture = await configurationFixture('self-hosted-raw-secret.yaml');
+    expect(() => parseSharedProjectConfig(fixture)).toThrow(
+      /platformEvents\.github\.webhookCredential: expected an object/i,
+    );
+  });
+
+  it('requires every platform and machine identity value to use a Credential reference', async () => {
+    const platform = (await configurationFixture('self-hosted-valid.yaml')) as SelfHostedFixture;
+    platform.platformEvents.github.apiCredential = 'raw-platform-token';
+    expect(() => parseSharedProjectConfig(platform)).toThrow(
+      /platformEvents\.github\.apiCredential: expected an object/i,
+    );
+
+    const author = (await configurationFixture('self-hosted-valid.yaml')) as SelfHostedFixture;
+    author.postMerge.publication.commit.authorEmailCredential = 'bot@example.test';
+    expect(() => parseSharedProjectConfig(author)).toThrow(
+      /postMerge\.publication\.commit\.authorEmailCredential: expected an object/i,
+    );
+  });
+
+  it('rejects post-merge allowlists that collapse to the project root', async () => {
+    const fixture = await configurationFixture('self-hosted-root-allowlist.yaml');
+    expect(() => parseSharedProjectConfig(fixture)).toThrow(
+      /concrete project-relative directory below the project root/i,
+    );
+  });
+
+  it.each(['/', './', '**/', 'verification/', 'C:\\workspace\\'])(
+    'rejects unsafe post-merge verification prefix %s',
+    async (prefix) => {
+      const fixture = (await configurationFixture('self-hosted-valid.yaml')) as SelfHostedFixture;
+      fixture.postMerge.allowedWorkspacePaths.verificationPathPrefixes = [prefix];
+      expect(() => parseSharedProjectConfig(fixture)).toThrow(
+        /concrete project-relative directory below the project root/i,
+      );
+    },
+  );
+
+  it('rejects verification allowlists nested below a business source root', async () => {
+    const fixture = (await configurationFixture('self-hosted-valid.yaml')) as SelfHostedFixture;
+    fixture.postMerge.allowedWorkspacePaths.verificationPathPrefixes = ['services/verification/'];
+    expect(() => parseSharedProjectConfig(fixture)).toThrow(
+      /Verification path prefixes must identify a verification directory/i,
+    );
+  });
+
+  it('rejects post-merge publication capabilities beyond the fixed protected set', async () => {
+    const fixture = (await configurationFixture('self-hosted-valid.yaml')) as SelfHostedFixture;
+    fixture.postMerge.publication.operations.push('merge');
+    expect(() => parseSharedProjectConfig(fixture)).toThrow(
+      /must contain only commit, push, and merge_request\.update/i,
+    );
+  });
+
+  it('requires post-merge to reference the configured Runner and Evidence profile', async () => {
+    const fixture = (await configurationFixture('self-hosted-valid.yaml')) as SelfHostedFixture;
+    fixture.postMerge.runnerIdentity = 'different-runner';
+    expect(() => parseSharedProjectConfig(fixture)).toThrow(
+      /postMerge\.runnerIdentity: must reference platformEvents\.runner\.identity/i,
+    );
+
+    fixture.postMerge.runnerIdentity = fixture.platformEvents.runner.identity;
+    fixture.postMerge.evidenceProfile = 'missing-profile';
+    expect(() => parseSharedProjectConfig(fixture)).toThrow(
+      /postMerge\.evidenceProfile: must reference an existing Evidence profile/i,
+    );
+  });
+
+  it('rejects a post-merge Runner reference when platform events are not configured', async () => {
+    const fixture = (await configurationFixture('self-hosted-valid.yaml')) as Record<
+      string,
+      unknown
+    >;
+    delete fixture.platformEvents;
+    expect(() => parseSharedProjectConfig(fixture)).toThrow(
+      /postMerge\.runnerIdentity: requires platformEvents Runner configuration/i,
+    );
+  });
+
   it('parses command, service, browser and visual nodes from one shared profile', () => {
     const config = parseSharedProjectConfig({
       apiVersion: 'repoctopus/v1alpha1',

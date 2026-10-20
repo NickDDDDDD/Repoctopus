@@ -138,7 +138,7 @@ export function assertSafeClosurePlan(plan: SpecificationClosurePlan): void {
   }
 }
 
-function safeVerificationPrefixes(values: readonly string[]): string[] {
+export function normalizePostMergeVerificationPathPrefixes(values: readonly string[]): string[] {
   const result = values.map((item) =>
     normalizeRelativePath(item, 'Verification path prefix', true),
   );
@@ -229,7 +229,9 @@ export function auditPostMergeClosure(input: {
   verificationPathPrefixes?: readonly string[];
 }): PostMergeClosureAudit {
   const planned = semanticClosurePaths(input.plan, input.result);
-  const verification = safeVerificationPrefixes(input.verificationPathPrefixes ?? []);
+  const verification = normalizePostMergeVerificationPathPrefixes(
+    input.verificationPathPrefixes ?? [],
+  );
   if (
     input.diff.head !== input.diff.baseline.head ||
     input.diff.tree !== input.diff.baseline.tree ||

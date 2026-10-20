@@ -93,6 +93,63 @@ export interface TeamPluginConfig {
   config?: unknown;
 }
 
+export interface CredentialReference {
+  provider: 'environment';
+  variable: string;
+}
+
+export interface CapabilityProviderReference {
+  id: string;
+}
+
+export interface PlatformEventsConfig {
+  storeProvider: CapabilityProviderReference;
+  http: {
+    hostname: string;
+    port: number;
+    shutdownTimeoutMs: number;
+  };
+  github: {
+    source: string;
+    path: string;
+    maxBodyBytes: number;
+    webhookCredential: CredentialReference;
+    apiCredential: CredentialReference;
+  };
+  runner: {
+    identity: string;
+    leaseMs: number;
+    pollIntervalMs: number;
+    retryDelayMs: number;
+    maxAttempts: number;
+    shutdownTimeoutMs: number;
+  };
+}
+
+export interface PostMergeConfig {
+  runnerIdentity: string;
+  temporaryRoot: string;
+  evidenceProfile: string;
+  allowedWorkspacePaths: {
+    specificationClosure: true;
+    verificationPathPrefixes: string[];
+  };
+  publication: {
+    operations: ['commit', 'push', 'merge_request.update'];
+    remote: string;
+    commit: {
+      message: string;
+      authorNameCredential: CredentialReference;
+      authorEmailCredential: CredentialReference;
+    };
+    coordinationMergeRequest: {
+      mode: 'update-existing';
+      title: string;
+      body: string;
+    };
+  };
+}
+
 export interface SharedProjectConfig {
   apiVersion: typeof PROJECT_CONFIG_API_VERSION;
   kind: 'RepoctopusProject';
@@ -107,6 +164,10 @@ export interface SharedProjectConfig {
     };
   };
   delivery?: Omit<DeliveryPolicy, 'apiVersion' | 'kind'>;
+  skillProviders?: CapabilityProviderReference[];
+  specificationProvider?: CapabilityProviderReference;
+  platformEvents?: PlatformEventsConfig;
+  postMerge?: PostMergeConfig;
 }
 
 export interface LocalProjectConfig {

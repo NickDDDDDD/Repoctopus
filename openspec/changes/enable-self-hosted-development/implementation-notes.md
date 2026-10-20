@@ -203,3 +203,12 @@
 - 新增 `docs/post-merge.md` 作为运维 how-to，按 Inbox、Delivery、Run、Evidence 和发布边界给出可执行状态/恢复命令、停止条件和 OTel 关联表；文档明确说明普通 project composition 的 Runner 自动装配仍属于 6.1/6.2，避免把待接线能力写成已启用功能。`docs/delivery.md` 补充受保护发布语义，`docs/telemetry.md` 补充属性与基数边界，README 增加入口。
 - 文档测试解析新增页面的本地链接，并在真实 CLI 子进程中冒烟运行 `run status/resume`、`evidence status/resume` 和 `delivery status`；既有平台事件 E2E 继续覆盖 `event status/retry`。隐私反例注入 Token 形态 change、绝对路径、自由正文和非法 Receipt，确认全部被过滤；工作流集成测试确认四个领域 Receipt 关联随 Trajectory 持久化并可重放。
 - 来源检查在首次全量验证中正确发现 Comet 派生的 `domains/runtime/workflow-runs.ts` 目标摘要变化；同步更新 `third_party/comet/source-manifest.json` 与采用报告后，来源治理和 tracer `doctor` 恢复通过。最终完整验证：77 个测试文件通过，292 个测试通过、1 个跳过；类型、lint、构建、生成物、品牌、179 个生产源码与 20 个能力所有者、20 个 Comet 派生文件、60 个不可变 Cordis 文件、24 个 Matt Skill 文件、8 个固定 DSH 包及 9 项严格 OpenSpec 检查全部通过。测试临时 workspace 和子进程由 `afterEach` 清理，未生成调试日志或其他临时残留。
+
+## 自举项目配置契约（任务 6.1）
+
+- `repoctopus.yaml` 增加 `skillProviders`、单一 `specificationProvider`、`platformEvents` 和 `postMerge` 四组配置。Skill 保留多 Provider 的 DSH 注册语义，Specification 只允许一个权威引用；引用只保存稳定插件 ID，实际 Catalog 解析和组合摘要接线留给 6.2，配置层不引入第二个容器或 Capability Resolver。
+- 平台事件配置显式声明 Inbox Store Provider、HTTP 监听、GitHub Route、Runner 身份与租约/重试边界。Webhook Secret 和 GitHub API Token 只能写成 `{ provider: environment, variable: NAME }` Credential 引用；合入后 commit 的机器作者姓名和邮箱同样只接受 Credential 引用。未知字段、原始字符串、非环境 Provider 和非法环境变量名均在读取配置时 fail-closed，秘密值不会进入共享配置或配置摘要。
+- `postMerge.runnerIdentity` 必须引用 `platformEvents.runner.identity`，`evidenceProfile` 必须引用现有 Profile。临时检出根只接受项目相对目录；规格路径授权使用 `specificationClosure: true` 委托给活动 Specification Provider 的动态关闭计划，不能在配置中用宽泛 `openspec/` 替代。额外验证目录复用 5.5 的领域级规范化规则，拒绝项目根、绝对路径、路径穿越、glob、重复项、单段宽泛目录和业务源码根。
+- 收尾发布策略在 Schema 层即固定为 `commit + push + merge_request.update`，协调 MR 模式只能是 `update-existing`；配置无法加入 merge、force-push、rebase、删分支或创建其他 MR。运行时 5.6 Guardrail 仍会在副作用前二次验证同一安全集合，Schema 验证不是唯一信任边界。
+- 新增一个完整正向 YAML fixture，以及原始 Secret 和项目根 allowlist 两个反向 fixture；配置测试另覆盖原始平台 Token/作者身份、路径通配、Windows/绝对路径、业务源码验证目录、额外 merge 权限、Runner 悬空引用和 Profile 悬空引用。`docs/schemas/project-config.schema.json` 与 TypeScript 解析契约同步更新并验证为有效 JSON。
+- 完整验证：77 个测试文件通过，305 个测试通过、1 个跳过；类型、lint、构建、生成物、品牌、179 个生产源码与 20 个能力所有者、来源及 9 项严格 OpenSpec 检查全部通过。Fixture 只从仓库读取，没有创建临时 workspace、调试日志或需额外清理的输出。

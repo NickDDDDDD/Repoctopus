@@ -133,9 +133,145 @@
           }
         }
       }
+    },
+    "skillProviders": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/providerReference" }
+    },
+    "specificationProvider": { "$ref": "#/$defs/providerReference" },
+    "platformEvents": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["storeProvider", "http", "github", "runner"],
+      "properties": {
+        "storeProvider": { "$ref": "#/$defs/providerReference" },
+        "http": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["hostname", "port"],
+          "properties": {
+            "hostname": { "type": "string", "minLength": 1 },
+            "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
+            "shutdownTimeoutMs": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "github": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["source", "path", "webhookCredential", "apiCredential"],
+          "properties": {
+            "source": { "$ref": "#/$defs/stableIdentifier" },
+            "path": { "type": "string", "pattern": "^/[^?#]*$" },
+            "maxBodyBytes": { "type": "integer", "minimum": 1 },
+            "webhookCredential": { "$ref": "#/$defs/credentialReference" },
+            "apiCredential": { "$ref": "#/$defs/credentialReference" }
+          }
+        },
+        "runner": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["identity"],
+          "properties": {
+            "identity": { "$ref": "#/$defs/stableIdentifier" },
+            "leaseMs": { "type": "integer", "minimum": 1 },
+            "pollIntervalMs": { "type": "integer", "minimum": 1 },
+            "retryDelayMs": { "type": "integer", "minimum": 1 },
+            "maxAttempts": { "type": "integer", "minimum": 1 },
+            "shutdownTimeoutMs": { "type": "integer", "minimum": 1 }
+          }
+        }
+      }
+    },
+    "postMerge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runnerIdentity",
+        "temporaryRoot",
+        "evidenceProfile",
+        "allowedWorkspacePaths",
+        "publication"
+      ],
+      "properties": {
+        "runnerIdentity": { "$ref": "#/$defs/stableIdentifier" },
+        "temporaryRoot": { "type": "string", "minLength": 1 },
+        "evidenceProfile": { "$ref": "#/$defs/stableIdentifier" },
+        "allowedWorkspacePaths": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["specificationClosure", "verificationPathPrefixes"],
+          "properties": {
+            "specificationClosure": { "const": true },
+            "verificationPathPrefixes": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "pattern": "^[^/\\\\*?\\[\\]{}!]+/[^/\\\\*?\\[\\]{}!]+(?:/[^/\\\\*?\\[\\]{}!]+)*/$"
+              }
+            }
+          }
+        },
+        "publication": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["operations", "remote", "commit", "coordinationMergeRequest"],
+          "properties": {
+            "operations": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "uniqueItems": true,
+              "items": { "enum": ["commit", "push", "merge_request.update"] }
+            },
+            "remote": { "$ref": "#/$defs/stableIdentifier" },
+            "commit": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["message", "authorNameCredential", "authorEmailCredential"],
+              "properties": {
+                "message": { "type": "string", "minLength": 1, "pattern": "^[^\\r\\n]+$" },
+                "authorNameCredential": { "$ref": "#/$defs/credentialReference" },
+                "authorEmailCredential": { "$ref": "#/$defs/credentialReference" }
+              }
+            },
+            "coordinationMergeRequest": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["mode", "title", "body"],
+              "properties": {
+                "mode": { "const": "update-existing" },
+                "title": { "type": "string", "minLength": 1 },
+                "body": { "type": "string", "minLength": 1 }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "$defs": {
+    "stableIdentifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "providerReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id"],
+      "properties": { "id": { "$ref": "#/$defs/stableIdentifier" } }
+    },
+    "credentialReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "variable"],
+      "properties": {
+        "provider": { "const": "environment" },
+        "variable": { "type": "string", "pattern": "^[A-Z_][A-Z0-9_]*$" }
+      }
+    },
     "quickCheck": {
       "type": "object",
       "additionalProperties": false,
