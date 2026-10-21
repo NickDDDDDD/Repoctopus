@@ -2,7 +2,7 @@
 
 ## 1. 建立分支优先的规划批准契约
 
-- [ ] 1.1 增加版本化 `ChangeBranchReference`、`PlanningSnapshot`、`specification-approval` Human Decision 与稳定摘要，更新 JSON Schema，并运行对应领域与 schema 测试证明 change、四类产物、Provider、目标分支和远端 OID 漂移都会使批准失效。
+- [x] 1.1 增加版本化 `ChangeBranchReference`、`PlanningSnapshot`、`specification-approval` Human Decision 与稳定摘要，更新 JSON Schema，并运行对应领域与 schema 测试证明 change、四类产物、Provider、目标分支和远端 OID 漂移都会使批准失效。
 - [ ] 1.2 通过 Specification Service 与命令入口生成、记录和恢复规划批准，接入现有可信 Human Decision Adapter；运行服务与 CLI 测试证明没有可信响应、Provider 严格校验失败或 Change 分支未公开时不能进入实施。
 - [ ] 1.3 更新规格权威与自举文档，说明公开分支、规划批准和最终 MR 的不同授权边界，并执行文档命令冒烟测试证明示例不要求提前存在 Change MR。
 
