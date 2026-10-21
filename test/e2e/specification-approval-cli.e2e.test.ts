@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
@@ -76,7 +76,22 @@ async function runFailure(
 }
 
 describe('specification approval CLI', () => {
-  it('persists a four-artifact approval request and fails closed without trusted input', async () => {
+  it('runs the documented branch-first flow and fails closed without trusted input', async () => {
+    const documentation = await readFile(
+      path.join(packageRoot, 'docs', 'specification.md'),
+      'utf8',
+    );
+    expect(documentation).toContain(
+      'spec approval prepare --workspace . --change <change-id> --branch spec/<change-id> --target main --json',
+    );
+    expect(documentation).toContain(
+      'spec approval status --workspace . --change <change-id> --json',
+    );
+    const selfHosting = await readFile(path.join(packageRoot, 'docs', 'self-hosting.md'), 'utf8');
+    expect(selfHosting).toContain(
+      '规划阶段只公开分支并取得绑定精确 OID 的规划批准，不创建 Change MR',
+    );
+
     const root = await temporaryDirectory('repoctopus-specification-approval-cli-');
     cleanup.push(root);
     const remote = path.join(root, 'remote.git');

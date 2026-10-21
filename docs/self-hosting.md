@@ -6,13 +6,19 @@ Repoctopus 用自己的 Project composition 执行日常开发命令和一次性
 
 ```text
 开发者或 Agent
-  │ OpenSpec change + implementation + Evidence
+  │ OpenSpec 四份规划产物
   ▼
-Delivery checkpoint ── commit + push + remote OID verification
+公开 Change 分支 ── 普通 push + 远端 OID 核对，不创建 MR
+  │
+  ▼ 可信规划批准（只授权实施）
+实现 + Evidence + Delivery approval
   │
   ▼
-业务 MR + Change MR ── 人工评审与合入
-  │ signed webhook (wake-up only)       下一次 run start / 显式 reconcile
+Business MR（默认一个；有明确理由时可显式多个）
+  │ 全部由人合入
+  ▼
+Post-merge 候选
+  │ signed webhook（只负责唤醒）        下一次 run start / 显式 reconcile
   ├──────────────────────────────┐       │
   ▼                              ▼       ▼
 Runner → durable Inbox ─────────────→ authoritative MR refresh
@@ -23,10 +29,15 @@ stable Post-merge Run identity
   ├─ execute Evidence and recheck input fence
   ├─ close change through Specification Provider
   ├─ audit changed paths and content digests
-  └─ commit + push + update the existing Change MR
+  └─ commit + push + create-or-recover final Change MR
+                                         │
+                                         ▼ 人工合入
+                                      目标分支
 ```
 
-Change MR 始终位于配置指定的 Workspace Repository。Dedicated Workspace 将它放在独立 Workspace 仓库，业务 MR 位于相邻业务仓；Embedded Workspace 允许 Change MR 与业务 MR 位于同一物理仓库，但必须是两个不同的 MR。业务 MR 合入后关闭；Change MR 保持开放，供 Post-merge Run 写入验证、主规格同步和 change 归档结果。Repoctopus 会同时拒绝 Change MR 指向其他登记仓库、同仓同源/目标分支配置，以及平台返回的重复 MR 身份。
+Change 分支始终位于配置指定的 Workspace Repository。Dedicated Workspace 将它放在独立 Workspace 仓库，业务 MR 位于相邻业务仓；Embedded Workspace 允许 Change 分支与业务实现位于同一物理仓库。规划阶段只公开分支并取得绑定精确 OID 的规划批准，不创建 Change MR。全部 Business MR 合入后，Post-merge Run 才把验证记录、主规格同步和 change 归档结果提交到该分支，并创建或恢复唯一的最终 Change MR。
+
+公开分支、规划批准、Delivery approval 和最终 Change MR 是四个不同边界：公开分支只保证团队可见和可恢复；规划批准只允许开始实施；Delivery approval 只授权已验证的 Business MR 发布动作；最终 Change MR 只呈现已经收尾的完整 Change，且仍需人工合入。任何一个边界都不能推导另一个边界的授权。
 
 Webhook 不是合入证据，MR 作者也不是 Change owner。Change 是团队共享工作单元；任一成员或 Agent 都可以继续修复和实现，Runner identity 只用于租约与审计。权威事实位于 Delivery、Run、Evidence、Action Receipt、Specification Closure Receipt 和 Event Inbox，因此原开发者离开后，其他 Runner 仍能从持久边界继续。
 
@@ -40,7 +51,7 @@ Webhook 不是合入证据，MR 作者也不是 Change owner。Change 是团队�
 - `postMerge.runnerIdentity` 等于 `platformEvents.runner.identity`；
 - `postMerge.evidenceProfile` 存在，并验证收尾所需的全部仓库；
 - `verificationPathPrefixes` 是项目根以下的专用验证目录，不能是根目录、业务源码目录或宽泛 glob；
-- 发布操作严格等于 `commit`、`push`、`merge_request.update`，不授予 merge、force-push、rebase 或删分支能力。
+- Post-merge 发布只允许把目标分支普通合入 Change 分支、提交允许路径、普通 push，并创建或恢复最终 Change MR；它不授予 MR merge、force-push、rebase 或删分支能力。
 
 `repoctopus.yaml` 可以提交 Git。它只保存 Credential Provider 和环境变量名，不保存值。
 
@@ -77,7 +88,7 @@ node bin/repoctopus.js runner start --workspace . --json
 - 在升级或重启时发送 `SIGINT` 或 `SIGTERM`，等待进程正常退出；
 - 保留同一 workspace 的持久目录，不把容器临时文件系统当作权威存储。
 
-团队可以运行多个 Runner。共享同一状态卷的进程用 Inbox Lease 避免重复领取；使用独立状态卷的 Runner 可能重复查询和验证，但收尾发布以原 Change MR 分支精确 OID 与普通非强制 push 为最终并发栅栏。先完成发布的 Runner 胜出，其他 Runner 只在远端 parent、tree、message 与 author 等价时收敛为 no-op，否则 fail-closed。该语义保证远端结果安全收敛，但不承诺共享数据库调度、自动扩缩容或无重复计算。
+团队可以运行多个 Runner。共享同一状态卷的进程用 Inbox Lease 避免重复领取；使用独立状态卷的 Runner 可能重复查询和验证，但收尾发布以公开 Change 分支的精确远端 OID 与普通非强制 push 为最终并发栅栏。先完成发布的 Runner 胜出，其他 Runner 只在远端 parent、tree、message 与 author 等价时收敛为 no-op，否则 fail-closed。该语义保证远端结果安全收敛，但不承诺共享数据库调度、自动扩缩容或无重复计算。
 
 ## 4. 数据边界
 
@@ -115,7 +126,7 @@ node bin/repoctopus.js run status --workspace . --run <run-id> --json
 node bin/repoctopus.js evidence status --workspace . --attempt <attempt-id> --json
 ```
 
-`post-merge reconcile` 是一次性命令：它枚举当前 workspace 已登记且可能等待收尾的 Delivery，重新查询全部业务 MR，并在命令结束后关闭 composition。日常 `run start` 会先调用相同入口。候选不按 MR 作者、Git 作者或 Runner identity 过滤；Change MR 的提交者不因此获得或承担独占 Change 所有权。
+`post-merge reconcile` 是一次性命令：它枚举当前 workspace 已登记且可能等待收尾的 Delivery，重新查询全部业务 MR，并在命令结束后关闭 composition。日常 `run start` 会先调用相同入口。候选不按 MR 作者、Git 作者或 Runner identity 过滤；Change 分支或最终 Change MR 的提交者不因此获得或承担独占 Change 所有权。
 
 第一版候选发现仍依赖当前 workspace 的 `.repoctopus/deliveries/`。新 clone 如果没有复制或共享该持久状态，不能声称已经发现全部历史 change；这与多个已经发现同一 change 的 Runner 能否安全竞争是两个不同问题。
 
