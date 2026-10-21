@@ -3,7 +3,7 @@
 ## 报告状态
 
 - 结论：实现与本 change 的 Proposal、Design、Delta Specs 和 Tasks 一致，48 项任务已完成。
-- 状态：本轮实现验证通过；业务 MR 与协调 MR 已拆分，等待正式 Delivery 绑定最终快照，当前报告尚不请求批准。
+- 状态：业务 MR 与协调 MR 已拆分并登记到正式 Delivery，等待用户批准最终快照；批准不授权 merge。
 - 验证日期：2026-10-21。
 - 分支：`feat/enable-self-hosted-development`。
 - 业务 MR：Draft PR #8；协调 MR：Draft PR #9。
@@ -135,6 +135,6 @@ DSH 与 Comet 的网络漂移检查独立于离线 `verify`，每天由 workflow
 
 ## 批准含义
 
-本报告当前记录实现验证事实，不构成 Delivery 批准请求。建立独立协调 MR、生成正式 Delivery Intent 并重新绑定最终快照后，批准才表示接受届时的实现、验证结论、第三方固定来源和已知限制，并授权 Repoctopus Delivery 发布或更新业务 MR。批准始终不授权 merge、force push、rebase、删除分支、改变目标分支或扩大仓库集合。任何代码树、报告、策略、仓库选择、远端基线或动作计划变化都会使批准失效并要求重新验证。
+批准本报告表示接受当前实现、验证结论、第三方固定来源和上述已知限制，并授权 Repoctopus Delivery 按已登记的业务 PR #8 与协调 PR #9 发布最终快照。批准不授权 merge、force push、rebase、删除分支、改变目标分支或扩大仓库集合。任何代码树、报告、策略、仓库选择、远端基线或动作计划变化都会使批准失效并要求重新验证。
 
 协调 PR #9 与业务 PR #8 写入正式 Delivery 并绑定批准快照后，业务 PR #8 才能进入人工合入。合入后，平台事件与 Post-merge Run 应再次执行精确合入代码验证、主规格同步、change 归档、收尾 commit/push 和原协调 MR 更新；该合入后证据将作为本报告的后续复验记录。
