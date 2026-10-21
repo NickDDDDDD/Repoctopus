@@ -16,7 +16,7 @@
 
 - [x] 3.1 扩展 Post-merge Checkout 和 Closure Journal，在 Change 分支上把锁定目标 OID 作为普通 merge 合入；使用干净、冲突、目标漂移和中断恢复测试证明不执行 rebase、force push 或文件复制旁路。
 - [x] 3.2 把发布策略改为 `merge_target + commit + push + merge_request.create_or_recover`，扩展平台端口和 Receipt；运行响应丢失、唯一 MR 复用、多个匹配、head/base 漂移和越权路径测试证明最终 MR 只在关闭分支发布成功后出现。
-- [ ] 3.3 更新 PostMergeCoordinator 与 Actions 的状态推进，运行默认单 Business MR 进程外 E2E，证明精确 merge commit 验证、Provider 归档、Change 分支普通 push 和最终 MR 创建可以从中断点幂等完成。
+- [x] 3.3 更新 PostMergeCoordinator 与 Actions 的状态推进，运行默认单 Business MR 进程外 E2E，证明精确 merge commit 验证、Provider 归档、Change 分支普通 push 和最终 MR 创建可以从中断点幂等完成。
 - [ ] 3.4 更新 Post-merge 操作与恢复文档，并执行文档命令冒烟测试，证明维护者能够区分等待业务合入、规划漂移、目标合并冲突、关闭发布失败和最终 MR 恢复。
 
 ## 4. 扩展显式多 Business MR 集合
