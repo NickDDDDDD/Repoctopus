@@ -76,17 +76,17 @@ function activeState(changeId = 'post-merge-change'): DeliveryState {
     stateVersion: 1,
     status: 'in_review',
     mergeRequests: {
-      coordination: {
-        role: 'coordination',
-        repositoryId: 'coordination-repository',
-        remoteIdentity: 'github.com/team/coordination-repository',
+      change: {
+        role: 'change',
+        repositoryId: 'workspace-repository',
+        remoteIdentity: 'github.com/team/workspace-repository',
         sourceBranch: `feat/${changeId}`,
         targetBranch: 'main',
         mergeRequest: {
           provider: 'github',
-          repositoryId: 'coordination-repository',
+          repositoryId: 'workspace-repository',
           number: 8,
-          url: 'https://github.com/team/coordination-repository/pull/8',
+          url: 'https://github.com/team/workspace-repository/pull/8',
         },
       },
       business: [

@@ -95,9 +95,7 @@ export class GitPostMergeWorkspace implements PostMergeWorkspacePort {
     const resolved = await assertRepositoryRoot(root);
     const status = await git(resolved, ['status', '--porcelain=v2', '-z', '--untracked-files=all']);
     if (status.length > 0) {
-      throw new Error(
-        'Post-merge coordination workspace must be clean before Specification closure',
-      );
+      throw new Error('Post-merge Workspace must be clean before Specification closure');
     }
     const [head, tree] = await Promise.all([
       git(resolved, ['rev-parse', 'HEAD']).then((value) => value.trim()),

@@ -2,6 +2,8 @@
 
 Repoctopus 是面向团队 Agent 开发的多仓交付编排器。它把项目探测、确定性阶段推进、运行轨迹、断点恢复和 OpenTelemetry 反馈放进同一个可检查的插件系统，IDE 与 Agent 只通过稳定协议调用它。Cordis 是唯一应用 Runtime；Repoctopus 的能力以 Service、Provider 和 Contributor 组成。
 
+团队从一个版本化 Workspace 进入这条工作流：单仓可将 Workspace 嵌入业务仓，多仓可使用独立的 Workspace Repository。每个 change 的 Change MR 固定属于 Workspace Repository，业务 MR 则属于显式选择的业务仓。
+
 当前版本包含运行基础和交付治理纵切：探测同级 Git 仓库，确定性推进工作流，自动创建并立即远端备份策略允许的 checkpoint commit，把验证报告绑定为多仓交付快照，并在用户通过 IDE 或 CLI 交互批准后可恢复地创建或更新 MR。Repoctopus 只读取 MR 合入事实，不自动 merge。
 
 ## 快速开始
@@ -82,7 +84,7 @@ Webhook 不可达或 Runner 曾离线时，可以执行一次短生命周期补�
 node bin/repoctopus.js post-merge reconcile --workspace . --json
 ```
 
-补偿按 Repoctopus 已登记的团队 Change 和业务 MR role 查询，不按 MR 作者划分所有权。协调 MR 与业务 MR 可以同仓，但不能复用同一个 MR。多个 Runner 可以重复验证同一 change，远端发布以协调分支精确 OID、非强制 push 和结果核对安全收敛。
+补偿按 Repoctopus 已登记的团队 Change 和业务 MR role 查询，不按 MR 作者划分所有权。Change MR 与业务 MR 可以同仓，但不能复用同一个 MR。多个 Runner 可以重复验证同一 change，远端发布以 Change MR 分支精确 OID、非强制 push 和结果核对安全收敛。
 
 ## 交付治理
 

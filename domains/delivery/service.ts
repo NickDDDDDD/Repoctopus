@@ -50,6 +50,21 @@ function selectedRepositories(
   intent: DeliveryIntent,
 ): Map<string, RepositorySnapshot> {
   const available = new Map(project.repositories.map((repository) => [repository.id, repository]));
+  const workspaceRepository = project.repositories.find(
+    (repository) => path.resolve(repository.path) === path.resolve(project.root),
+  );
+  if (!workspaceRepository) {
+    throw new Error('Workspace snapshot does not identify its Workspace Repository');
+  }
+  if (intent.changeMergeRequest.repositoryId !== workspaceRepository.id) {
+    throw new Error(`Change MR must belong to the Workspace Repository: ${workspaceRepository.id}`);
+  }
+  if (!workspaceRepository.remoteIdentity) {
+    throw new Error('Workspace Repository has no remote identity for its Change MR');
+  }
+  if (intent.changeMergeRequest.remoteIdentity !== workspaceRepository.remoteIdentity) {
+    throw new Error('Change MR remote identity does not match the Workspace Repository');
+  }
   const selected = new Map<string, RepositorySnapshot>();
   for (const item of intent.repositories) {
     const repository = available.get(item.repositoryId);
@@ -369,52 +384,52 @@ export class DeliveryService {
     if (state.status !== 'merged') {
       throw new Error(`Post-merge publication requires merged Delivery state: ${state.status}`);
     }
-    const coordination = state.mergeRequests?.coordination;
-    if (!coordination) throw new Error('Delivery has no original coordination MR');
+    const changeMergeRequest = state.mergeRequests?.change;
+    if (!changeMergeRequest) throw new Error('Delivery has no original Change MR');
     if (!this.postMergeGit) throw new Error('Post-merge Git publication is unavailable');
     if (path.resolve(request.workspaceRoot) !== path.resolve(request.baseline.root)) {
       throw new Error('Post-merge publication root is not bound to its audited baseline');
     }
 
-    const current = await this.mergeRequests.status(coordination.mergeRequest);
-    this.assertCoordinationStatus(current, coordination);
+    const current = await this.mergeRequests.status(changeMergeRequest.mergeRequest);
+    this.assertChangeMergeRequestStatus(current, changeMergeRequest);
     const git = await this.postMergeGit.publishPostMerge({
       workspaceRoot: request.workspaceRoot,
-      coordination,
+      changeMergeRequest,
       baseline: request.baseline,
       audit: request.audit,
       policy: request.policy,
     });
 
-    let afterPush = await this.mergeRequests.status(coordination.mergeRequest);
-    this.assertCoordinationStatus(afterPush, coordination, git.commitOid);
+    let afterPush = await this.mergeRequests.status(changeMergeRequest.mergeRequest);
+    this.assertChangeMergeRequestStatus(afterPush, changeMergeRequest, git.commitOid);
     let mergeRequestRecovered =
       afterPush.title === request.policy.mergeRequest.title &&
       afterPush.body === request.policy.mergeRequest.body;
     if (!mergeRequestRecovered) {
-      const updated = await this.mergeRequests.update(coordination.mergeRequest, {
-        repositoryId: coordination.repositoryId,
-        remoteIdentity: coordination.remoteIdentity,
-        sourceBranch: coordination.sourceBranch,
-        targetBranch: coordination.targetBranch,
+      const updated = await this.mergeRequests.update(changeMergeRequest.mergeRequest, {
+        repositoryId: changeMergeRequest.repositoryId,
+        remoteIdentity: changeMergeRequest.remoteIdentity,
+        sourceBranch: changeMergeRequest.sourceBranch,
+        targetBranch: changeMergeRequest.targetBranch,
         title: request.policy.mergeRequest.title,
         body: request.policy.mergeRequest.body,
       });
-      this.assertSameMergeRequest(updated, coordination.mergeRequest);
-      afterPush = await this.mergeRequests.status(coordination.mergeRequest);
-      this.assertCoordinationStatus(afterPush, coordination, git.commitOid);
+      this.assertSameMergeRequest(updated, changeMergeRequest.mergeRequest);
+      afterPush = await this.mergeRequests.status(changeMergeRequest.mergeRequest);
+      this.assertChangeMergeRequestStatus(afterPush, changeMergeRequest, git.commitOid);
       if (
         afterPush.title !== request.policy.mergeRequest.title ||
         afterPush.body !== request.policy.mergeRequest.body
       ) {
-        throw new Error('Original coordination MR update could not be verified');
+        throw new Error('Original Change MR update could not be verified');
       }
       mergeRequestRecovered = false;
     }
     return createPostMergePublicationReceipt({
       request,
       git,
-      mergeRequest: coordination.mergeRequest,
+      mergeRequest: changeMergeRequest.mergeRequest,
       mergeRequestRecovered,
     });
   }
@@ -564,33 +579,33 @@ export class DeliveryService {
       actual.number !== expected.number ||
       actual.url !== expected.url
     ) {
-      throw new Error('Post-merge publication attempted to replace the original coordination MR');
+      throw new Error('Post-merge publication attempted to replace the original Change MR');
     }
   }
 
-  private assertCoordinationStatus(
+  private assertChangeMergeRequestStatus(
     status: MergeRequestStatus,
-    coordination: NonNullable<DeliveryState['mergeRequests']>['coordination'],
+    changeMergeRequest: NonNullable<DeliveryState['mergeRequests']>['change'],
     expectedHead?: string,
   ): void {
-    this.assertSameMergeRequest(status, coordination.mergeRequest);
+    this.assertSameMergeRequest(status, changeMergeRequest.mergeRequest);
     if (status.state !== 'open') {
-      throw new Error(`Original coordination MR is not open: ${status.state}`);
+      throw new Error(`Original Change MR is not open: ${status.state}`);
     }
     if (
-      status.sourceBranch !== coordination.sourceBranch ||
-      status.targetBranch !== coordination.targetBranch
+      status.sourceBranch !== changeMergeRequest.sourceBranch ||
+      status.targetBranch !== changeMergeRequest.targetBranch
     ) {
-      throw new Error('Original coordination MR branch mapping drifted');
+      throw new Error('Original Change MR branch mapping drifted');
     }
     if (!status.headCommit) {
-      throw new Error('Original coordination MR did not report its head commit');
+      throw new Error('Original Change MR did not report its head commit');
     }
     if (expectedHead && status.headCommit !== expectedHead) {
-      throw new Error('Original coordination MR head commit drifted');
+      throw new Error('Original Change MR head commit drifted');
     }
     if (status.title === undefined || status.body === undefined) {
-      throw new Error('Original coordination MR did not report editable metadata');
+      throw new Error('Original Change MR did not report editable metadata');
     }
   }
 

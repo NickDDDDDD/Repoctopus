@@ -59,7 +59,7 @@ export function requestDeliveryApproval(
         targetBranch,
       }),
     ),
-    coordinationMergeRequest: structuredClone(snapshot.mergeRequests.coordination),
+    changeMergeRequest: structuredClone(snapshot.mergeRequests.change),
     actions: snapshot.plan.map(({ actionId, type, repositoryId }) => ({
       actionId,
       type,

@@ -220,7 +220,7 @@
         "publication": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["operations", "remote", "commit", "coordinationMergeRequest"],
+          "required": ["operations", "remote", "commit", "changeMergeRequest"],
           "properties": {
             "operations": {
               "type": "array",
@@ -240,7 +240,7 @@
                 "authorEmailCredential": { "$ref": "#/$defs/credentialReference" }
               }
             },
-            "coordinationMergeRequest": {
+            "changeMergeRequest": {
               "type": "object",
               "additionalProperties": false,
               "required": ["mode", "title", "body"],

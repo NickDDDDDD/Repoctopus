@@ -40,16 +40,16 @@ const policy: DeliveryPolicy = {
 const intent: DeliveryIntent = {
   schemaVersion: 2,
   changeId: 'cross-repo-change',
-  coordinationMergeRequest: {
-    repositoryId: 'coordination-repository',
-    remoteIdentity: 'github.com/team/coordination-repository',
+  changeMergeRequest: {
+    repositoryId: 'workspace-repository',
+    remoteIdentity: 'github.com/team/workspace-repository',
     sourceBranch: 'feat/cross-repo-change',
     targetBranch: 'main',
     mergeRequest: {
       provider: 'github',
-      repositoryId: 'coordination-repository',
+      repositoryId: 'workspace-repository',
       number: 99,
-      url: 'https://github.com/team/coordination-repository/pull/99',
+      url: 'https://github.com/team/workspace-repository/pull/99',
     },
   },
   repositories: [
@@ -65,10 +65,19 @@ const intent: DeliveryIntent = {
 const repository: RepositorySnapshot = {
   id: 'repo-a',
   name: 'app',
-  path: '/unused',
+  path: '/project/repo-a',
   remoteIdentity: 'github.com/team/app',
   branch: 'feat/change',
   head: 'head-a',
+  worktree: { dirty: false, digest: 'clean', staged: 0, unstaged: 0, untracked: 0 },
+};
+const workspaceRepository: RepositorySnapshot = {
+  id: 'workspace-repository',
+  name: 'workspace',
+  path: '/project',
+  remoteIdentity: 'github.com/team/workspace-repository',
+  branch: 'feat/cross-repo-change',
+  head: 'workspace-head',
   worktree: { dirty: false, digest: 'clean', staged: 0, unstaged: 0, untracked: 0 },
 };
 const project = createProjectSnapshot({
@@ -76,7 +85,7 @@ const project = createProjectSnapshot({
   projectId: 'project',
   root: '/project',
   capturedAt: '2026-01-01T00:00:00.000Z',
-  repositories: [repository],
+  repositories: [workspaceRepository, repository],
   diagnostics: [],
 });
 
@@ -165,6 +174,30 @@ class FakeMergeRequests implements MergeRequestPort {
 }
 
 describe('delivery service', () => {
+  it('requires the Change MR to belong to the Workspace Repository', async () => {
+    const workspace = await temporaryDirectory('repoctopus-delivery-workspace-role-');
+    cleanup.push(workspace);
+    const service = new DeliveryService(
+      new FileDeliveryStore(workspace),
+      new FakeGit(),
+      new FakeMergeRequests(),
+      satisfiedEvidence,
+    );
+    const misplaced: DeliveryIntent = {
+      ...intent,
+      changeMergeRequest: {
+        ...intent.changeMergeRequest,
+        repositoryId: 'repo-a',
+        remoteIdentity: 'github.com/team/app',
+        mergeRequest: { ...intent.changeMergeRequest.mergeRequest, repositoryId: 'repo-a' },
+      },
+    };
+
+    await expect(service.checkpoint(project, misplaced, policy)).rejects.toThrow(
+      /Change MR must belong to the Workspace Repository/u,
+    );
+  });
+
   it('requires one trusted approval, resumes partial publication, and only observes merge', async () => {
     const workspace = await temporaryDirectory('repoctopus-delivery-service-');
     cleanup.push(workspace);
@@ -367,7 +400,7 @@ describe('delivery service', () => {
     });
   });
 
-  it('fails publication when the platform returns the coordination MR as a business MR', async () => {
+  it('fails publication when the platform returns the Change MR as a business MR', async () => {
     const workspace = await temporaryDirectory('repoctopus-delivery-role-collision-');
     cleanup.push(workspace);
     const mergeRequests = new FakeMergeRequests();
@@ -381,7 +414,7 @@ describe('delivery service', () => {
     const roleSeparatedIntent: DeliveryIntent = {
       ...intent,
       changeId: 'role-separated-change',
-      coordinationMergeRequest: {
+      changeMergeRequest: {
         repositoryId: 'repo-a',
         remoteIdentity: 'github.com/team/app',
         sourceBranch: 'spec/role-separated-change',
@@ -396,8 +429,16 @@ describe('delivery service', () => {
       satisfiedEvidence,
       () => new Date('2026-01-01T00:00:00.000Z'),
     );
+    const embeddedProject = createProjectSnapshot({
+      schemaVersion: 1,
+      projectId: 'embedded',
+      root: repository.path,
+      capturedAt: '2026-01-01T00:00:00.000Z',
+      repositories: [repository],
+      diagnostics: [],
+    });
     const waiting = await service.prepare({
-      project,
+      project: embeddedProject,
       intent: roleSeparatedIntent,
       policy,
       reportContents: 'verified',
@@ -417,7 +458,7 @@ describe('delivery service', () => {
 
     await expect(
       service.publish({
-        project,
+        project: embeddedProject,
         intent: roleSeparatedIntent,
         policy,
         reportContents: 'verified',
@@ -427,7 +468,7 @@ describe('delivery service', () => {
     expect(await service.status(roleSeparatedIntent.changeId)).toMatchObject({
       status: 'partially_published',
       mergeRequests: {
-        coordination: { mergeRequest: { number: 99 } },
+        change: { mergeRequest: { number: 99 } },
         business: [{ mergeRequest: null }],
       },
     });
@@ -450,22 +491,22 @@ describe('delivery service', () => {
       projectId: 'multi',
       root: '/project',
       capturedAt: '2026-01-01T00:00:00.000Z',
-      repositories: orderedRepositories,
+      repositories: [workspaceRepository, ...orderedRepositories],
       diagnostics: [],
     });
     const multiIntent: DeliveryIntent = {
       schemaVersion: 2,
       changeId: 'multi-repo-change',
-      coordinationMergeRequest: {
-        repositoryId: 'coordination-repository',
-        remoteIdentity: 'github.com/team/coordination-repository',
+      changeMergeRequest: {
+        repositoryId: 'workspace-repository',
+        remoteIdentity: 'github.com/team/workspace-repository',
         sourceBranch: 'feat/multi-repo-change',
         targetBranch: 'main',
         mergeRequest: {
           provider: 'github',
-          repositoryId: 'coordination-repository',
+          repositoryId: 'workspace-repository',
           number: 100,
-          url: 'https://github.com/team/coordination-repository/pull/100',
+          url: 'https://github.com/team/workspace-repository/pull/100',
         },
       },
       repositories: orderedRepositories.map((item) => ({

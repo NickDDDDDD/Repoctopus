@@ -2,16 +2,16 @@ apiVersion: repoctopus/v1alpha1
 kind: RepoctopusWorkspace
 workspace:
   id: self-hosted-fixture
-  repositoryId: coordination
+  repositoryId: workspace
 repositories:
-  - id: coordination
+  - id: workspace
     path: .
 profiles:
   - id: post-merge
     nodes:
       - id: verify
         type: command
-        repository: coordination
+        repository: workspace
         executable: npm
         args: [run, verify]
 delivery:
@@ -75,7 +75,7 @@ postMerge:
       authorEmailCredential:
         provider: environment
         variable: REPOCTOPUS_GIT_AUTHOR_EMAIL
-    coordinationMergeRequest:
+    changeMergeRequest:
       mode: update-existing
       title: 'Close verified specification'
       body: 'Post-merge verification and specification closure completed.'

@@ -24,7 +24,7 @@ const POST_MERGE_RECEIPT_KINDS = new Map([
   ['post-merge.checkout-exact-commits', 'checkout-manifest'],
   ['post-merge.close-specification', 'specification-closure'],
   ['post-merge.audit-paths', 'path-audit'],
-  ['post-merge.publish-coordination', 'publication'],
+  ['post-merge.publish-change', 'publication'],
 ]);
 
 function scalar(value: unknown): string | number | boolean | undefined {

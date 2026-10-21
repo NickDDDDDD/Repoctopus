@@ -84,16 +84,16 @@ describe('Git delivery adapter', () => {
     const intent: DeliveryIntent = {
       schemaVersion: 2,
       changeId: 'deliver-change',
-      coordinationMergeRequest: {
-        repositoryId: 'coordination-repository',
-        remoteIdentity: 'example/coordination-repository',
+      changeMergeRequest: {
+        repositoryId: 'workspace-repository',
+        remoteIdentity: 'example/workspace-repository',
         sourceBranch: 'feat/deliver-change',
         targetBranch: 'main',
         mergeRequest: {
           provider: 'github',
-          repositoryId: 'coordination-repository',
+          repositoryId: 'workspace-repository',
           number: 12,
-          url: 'https://example.test/coordination-repository/pull/12',
+          url: 'https://example.test/workspace-repository/pull/12',
         },
       },
       repositories: [{ ...setup.selected, actions: [...setup.selected.actions] }],

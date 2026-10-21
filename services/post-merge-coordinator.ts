@@ -137,7 +137,7 @@ export class PostMergeCoordinator extends Service {
       status = await this.ctx.workflowRuns.status(runId, signal);
     }
     if (status.state.currentStep === 'publish') {
-      await this.ctx.postMergeActions.publishCoordination(runId, signal);
+      await this.ctx.postMergeActions.publishChange(runId, signal);
       status = await this.ctx.workflowRuns.status(runId, signal);
     }
     if (status.state.status !== 'completed') {

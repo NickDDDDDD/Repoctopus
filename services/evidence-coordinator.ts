@@ -165,6 +165,7 @@ export class EvidenceCoordinator extends Service {
   }
 
   private async effectiveConfig(
+    profileId: string,
     repositoryOverrides: readonly EvidenceRepositoryOverride[] | null,
   ): Promise<EffectiveProjectConfig> {
     const config = await loadProjectConfig(this.workspace);
@@ -176,19 +177,23 @@ export class EvidenceCoordinator extends Service {
       }
       overrides.set(item.repositoryId, path.resolve(item.root));
     }
-    const expected = config.repositories.map((repository) => repository.id).sort();
+    const profile = config.shared.profiles.find((candidate) => candidate.id === profileId);
+    if (!profile) throw new Error(`Evidence profile not found: ${profileId}`);
+    const expected = [...new Set(profile.nodes.map((node) => node.repository))].sort();
     const received = [...overrides.keys()].sort();
     if (JSON.stringify(expected) !== JSON.stringify(received)) {
       throw new Error(
-        'Evidence repository overrides must cover the complete project repository set',
+        'Evidence repository overrides must exactly cover the selected profile repository set',
       );
     }
     return {
       ...config,
-      repositories: config.repositories.map((repository) => ({
-        ...repository,
-        resolvedPath: overrides.get(repository.id)!,
-      })),
+      repositories: config.repositories
+        .filter((repository) => overrides.has(repository.id))
+        .map((repository) => ({
+          ...repository,
+          resolvedPath: overrides.get(repository.id)!,
+        })),
     };
   }
 
@@ -274,7 +279,7 @@ export class EvidenceCoordinator extends Service {
     plan: EvidenceExecutionPlan;
     fingerprint: EvidenceFingerprint;
   }> {
-    const config = await this.effectiveConfig(repositoryOverrides);
+    const config = await this.effectiveConfig(profileId, repositoryOverrides);
     const [fingerprint, plan] = await Promise.all([
       this.fingerprint(profileId, config),
       Promise.resolve(compileEvidenceProfile(config, profileId)),
@@ -435,7 +440,7 @@ export class EvidenceCoordinator extends Service {
           await this.flushTelemetry(attemptId);
           return this.status(attemptId);
         }
-        const config = await this.effectiveConfig(context.repositoryOverrides);
+        const config = await this.effectiveConfig(context.profileId, context.repositoryOverrides);
         const endingFingerprint = await this.fingerprint(context.profileId, config);
         const recovered = await recoverEvidenceAttempt({
           attemptId,
@@ -515,7 +520,10 @@ export class EvidenceCoordinator extends Service {
         reason: `Evidence attempt ${input.attemptId} uses profile ${status.context.profileId}`,
       };
     }
-    const config = await this.effectiveConfig(status.context.repositoryOverrides);
+    const config = await this.effectiveConfig(
+      status.context.profileId,
+      status.context.repositoryOverrides,
+    );
     const current = await this.fingerprint(input.profileId, config);
     if (current.digest !== status.bundle.inputFingerprint) {
       return {

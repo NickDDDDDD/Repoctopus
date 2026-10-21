@@ -26,7 +26,11 @@ describe('delivery CLI', () => {
     const app = await createGitRepository(root, 'app', remote);
     await execFileAsync('git', ['push', '-u', 'origin', 'main'], { cwd: app });
     await execFileAsync('git', ['switch', '-c', 'feat/change'], { cwd: app });
-    const workspace = await createGitRepository(root, 'workspace');
+    const workspace = await createGitRepository(
+      root,
+      'workspace',
+      'https://github.com/team/workspace.git',
+    );
     const repositoryId = 'app';
     const policyFile = path.join(workspace, 'delivery-policy.yaml');
     const intentFile = path.join(workspace, 'intent.yaml');
@@ -63,7 +67,7 @@ describe('delivery CLI', () => {
     );
     await writeFile(
       intentFile,
-      `schemaVersion: 2\nchangeId: delivery-cli-change\ncoordinationMergeRequest:\n  repositoryId: coordination-repository\n  remoteIdentity: github.com/team/coordination-repository\n  sourceBranch: feat/delivery-cli-change\n  targetBranch: main\n  mergeRequest:\n    provider: github\n    repositoryId: coordination-repository\n    number: 1\n    url: https://github.com/team/coordination-repository/pull/1\nrepositories:\n  - repositoryId: ${repositoryId}\n    sourceBranch: feat/change\n    targetBranch: main\n    commitMessage: 'feat: checkpoint change'\n    actions: [push, merge_request]\n`,
+      `schemaVersion: 2\nchangeId: delivery-cli-change\nchangeMergeRequest:\n  repositoryId: workspace\n  remoteIdentity: github.com/team/workspace\n  sourceBranch: feat/delivery-cli-change\n  targetBranch: main\n  mergeRequest:\n    provider: github\n    repositoryId: workspace\n    number: 1\n    url: https://github.com/team/workspace/pull/1\nrepositories:\n  - repositoryId: ${repositoryId}\n    sourceBranch: feat/change\n    targetBranch: main\n    commitMessage: 'feat: checkpoint change'\n    actions: [push, merge_request]\n`,
     );
     await writeFile(path.join(workspace, '.gitignore'), '.repoctopus/\n');
     await execFileAsync(

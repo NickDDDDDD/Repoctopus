@@ -179,12 +179,12 @@ export function validateDeliveryIntent(intent: DeliveryIntent): DeliveryFinding[
       path: 'repositories',
       message: 'At least one repository must be selected',
     });
-  const coordination = intent.coordinationMergeRequest;
-  if (!coordination || typeof coordination !== 'object') {
+  const changeMergeRequest = intent.changeMergeRequest;
+  if (!changeMergeRequest || typeof changeMergeRequest !== 'object') {
     findings.push({
-      code: 'missing-coordination-merge-request',
-      path: 'coordinationMergeRequest',
-      message: 'Coordination merge request is required',
+      code: 'missing-change-merge-request',
+      path: 'changeMergeRequest',
+      message: 'Change merge request is required',
     });
   } else {
     for (const field of [
@@ -193,20 +193,23 @@ export function validateDeliveryIntent(intent: DeliveryIntent): DeliveryFinding[
       'sourceBranch',
       'targetBranch',
     ] as const) {
-      if (!coordination[field])
+      if (!changeMergeRequest[field])
         findings.push({
-          code: `missing-coordination-${field}`,
-          path: `coordinationMergeRequest.${field}`,
+          code: `missing-change-merge-request-${field}`,
+          path: `changeMergeRequest.${field}`,
           message: `${field} is required`,
         });
     }
-    if (coordination.sourceBranch && coordination.sourceBranch === coordination.targetBranch)
+    if (
+      changeMergeRequest.sourceBranch &&
+      changeMergeRequest.sourceBranch === changeMergeRequest.targetBranch
+    )
       findings.push({
-        code: 'coordination-source-target-equal',
-        path: 'coordinationMergeRequest',
-        message: 'Coordination sourceBranch and targetBranch must differ',
+        code: 'change-merge-request-source-target-equal',
+        path: 'changeMergeRequest',
+        message: 'Change MR sourceBranch and targetBranch must differ',
       });
-    const mergeRequest = coordination.mergeRequest;
+    const mergeRequest = changeMergeRequest.mergeRequest;
     if (
       !mergeRequest ||
       !mergeRequest.provider ||
@@ -216,15 +219,15 @@ export function validateDeliveryIntent(intent: DeliveryIntent): DeliveryFinding[
       !mergeRequest.url
     )
       findings.push({
-        code: 'invalid-coordination-merge-request',
-        path: 'coordinationMergeRequest.mergeRequest',
-        message: 'Coordination merge request identity is incomplete',
+        code: 'invalid-change-merge-request',
+        path: 'changeMergeRequest.mergeRequest',
+        message: 'Change merge request identity is incomplete',
       });
-    else if (mergeRequest.repositoryId !== coordination.repositoryId)
+    else if (mergeRequest.repositoryId !== changeMergeRequest.repositoryId)
       findings.push({
-        code: 'coordination-repository-mismatch',
-        path: 'coordinationMergeRequest.mergeRequest.repositoryId',
-        message: 'Coordination merge request repositoryId must match its declared repositoryId',
+        code: 'change-merge-request-repository-mismatch',
+        path: 'changeMergeRequest.mergeRequest.repositoryId',
+        message: 'Change merge request repositoryId must match its declared repositoryId',
       });
   }
   const seen = new Set<string>();
@@ -262,16 +265,16 @@ export function validateDeliveryIntent(intent: DeliveryIntent): DeliveryFinding[
         message: 'sourceBranch and targetBranch must differ',
       });
     if (
-      coordination &&
-      repository.repositoryId === coordination.repositoryId &&
-      repository.sourceBranch === coordination.sourceBranch &&
-      repository.targetBranch === coordination.targetBranch
+      changeMergeRequest &&
+      repository.repositoryId === changeMergeRequest.repositoryId &&
+      repository.sourceBranch === changeMergeRequest.sourceBranch &&
+      repository.targetBranch === changeMergeRequest.targetBranch
     ) {
       findings.push({
-        code: 'coordination-business-branch-collision',
+        code: 'change-business-branch-collision',
         path: root,
         message:
-          'Coordination and business roles in one repository must use different source or target branches',
+          'Change and business roles in one repository must use different source or target branches',
       });
     }
     if (!repository.commitMessage)

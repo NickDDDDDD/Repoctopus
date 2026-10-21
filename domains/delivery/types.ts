@@ -43,7 +43,7 @@ export interface DeliveryRepositoryIntent {
   actions: Array<'push' | 'merge_request'>;
 }
 
-export interface DeliveryCoordinationMergeRequestIntent {
+export interface DeliveryChangeMergeRequestIntent {
   repositoryId: string;
   remoteIdentity: string;
   sourceBranch: string;
@@ -54,12 +54,12 @@ export interface DeliveryCoordinationMergeRequestIntent {
 export interface DeliveryIntent {
   schemaVersion: 2;
   changeId: string;
-  coordinationMergeRequest: DeliveryCoordinationMergeRequestIntent;
+  changeMergeRequest: DeliveryChangeMergeRequestIntent;
   repositories: DeliveryRepositoryIntent[];
 }
 
 export interface DeliveryMergeRequestRecord {
-  role: 'coordination' | 'business';
+  role: 'change' | 'business';
   repositoryId: string;
   remoteIdentity: string;
   sourceBranch: string;
@@ -68,8 +68,8 @@ export interface DeliveryMergeRequestRecord {
 }
 
 export interface DeliveryMergeRequestSet {
-  coordination: DeliveryMergeRequestRecord & {
-    role: 'coordination';
+  change: DeliveryMergeRequestRecord & {
+    role: 'change';
     mergeRequest: MergeRequestIdentity;
   };
   business: DeliveryMergeRequestRecord[];
@@ -151,7 +151,7 @@ export interface HumanDecisionRequest {
     sourceBranch: string;
     targetBranch: string;
   }>;
-  coordinationMergeRequest: DeliveryMergeRequestSet['coordination'];
+  changeMergeRequest: DeliveryMergeRequestSet['change'];
   actions: Array<{ actionId: string; type: PublicationActionType; repositoryId: string }>;
   options: HumanDecision[];
 }

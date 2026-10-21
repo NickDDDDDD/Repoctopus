@@ -365,8 +365,8 @@ describe('post-merge exact checkout and Evidence', () => {
       });
       const closed = await fixture.actions.closeSpecification(fixture.options.runId);
       const audit = await fixture.actions.auditSpecificationClosure(fixture.options.runId);
-      const published = await fixture.actions.publishCoordination(fixture.options.runId);
-      const replay = await fixture.actions.publishCoordination(fixture.options.runId);
+      const published = await fixture.actions.publishChange(fixture.options.runId);
+      const replay = await fixture.actions.publishChange(fixture.options.runId);
 
       expect(fixture.publicationRequests).toHaveLength(1);
       expect(fixture.publicationRequests[0]?.audit.digest).toBe(audit.audit.digest);
@@ -395,7 +395,7 @@ describe('post-merge exact checkout and Evidence', () => {
     }
   }, 30_000);
 
-  it('keeps the Run before publish when business source appears in the coordination diff', async () => {
+  it('keeps the Run before publish when business source appears in the Workspace diff', async () => {
     const fixture = await harness('pass');
     try {
       await fixture.actions.verifyMergedCode({

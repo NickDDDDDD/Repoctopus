@@ -281,7 +281,7 @@ function parsePostMerge(value: unknown): PostMergeConfig {
   const publication = object(config.publication, 'postMerge.publication');
   exactKeys(
     publication,
-    ['operations', 'remote', 'commit', 'coordinationMergeRequest'],
+    ['operations', 'remote', 'commit', 'changeMergeRequest'],
     'postMerge.publication',
   );
   const operations = stringArray(publication.operations, 'postMerge.publication.operations');
@@ -305,18 +305,14 @@ function parsePostMerge(value: unknown): PostMergeConfig {
     throw new ProjectConfigError('must be one line', 'postMerge.publication.commit.message');
   }
   const mergeRequest = object(
-    publication.coordinationMergeRequest,
-    'postMerge.publication.coordinationMergeRequest',
+    publication.changeMergeRequest,
+    'postMerge.publication.changeMergeRequest',
   );
-  exactKeys(
-    mergeRequest,
-    ['mode', 'title', 'body'],
-    'postMerge.publication.coordinationMergeRequest',
-  );
+  exactKeys(mergeRequest, ['mode', 'title', 'body'], 'postMerge.publication.changeMergeRequest');
   if (mergeRequest.mode !== 'update-existing') {
     throw new ProjectConfigError(
-      'must update the existing coordination merge request',
-      'postMerge.publication.coordinationMergeRequest.mode',
+      'must update the existing Change merge request',
+      'postMerge.publication.changeMergeRequest.mode',
     );
   }
   const remote = identifier(publication.remote, 'postMerge.publication.remote');
@@ -339,10 +335,10 @@ function parsePostMerge(value: unknown): PostMergeConfig {
           'postMerge.publication.commit.authorEmailCredential',
         ),
       },
-      coordinationMergeRequest: {
+      changeMergeRequest: {
         mode: 'update-existing',
-        title: string(mergeRequest.title, 'postMerge.publication.coordinationMergeRequest.title'),
-        body: string(mergeRequest.body, 'postMerge.publication.coordinationMergeRequest.body'),
+        title: string(mergeRequest.title, 'postMerge.publication.changeMergeRequest.title'),
+        body: string(mergeRequest.body, 'postMerge.publication.changeMergeRequest.body'),
       },
     },
   };

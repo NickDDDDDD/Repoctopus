@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 
 import type { PostMergeClosureAudit, PostMergeWorkspaceBaseline } from '../post-merge/closure.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
-import type { DeliveryCoordinationMergeRequestIntent, MergeRequestIdentity } from './types.js';
+import type { DeliveryChangeMergeRequestIntent, MergeRequestIdentity } from './types.js';
 
 export const POST_MERGE_PUBLICATION_OPERATIONS = [
   'commit',
@@ -38,7 +38,7 @@ export interface PostMergePublicationRequest {
 
 export interface PostMergeGitPublicationInput {
   workspaceRoot: string;
-  coordination: DeliveryCoordinationMergeRequestIntent;
+  changeMergeRequest: DeliveryChangeMergeRequestIntent;
   baseline: PostMergeWorkspaceBaseline;
   audit: PostMergeClosureAudit;
   policy: PostMergePublicationPolicy;

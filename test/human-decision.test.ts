@@ -16,17 +16,17 @@ const request: HumanDecisionRequest = {
   reportDigest: `sha256:${'b'.repeat(64)}`,
   evidenceBundleIds: ['bundle-verified'],
   repositories: [],
-  coordinationMergeRequest: {
-    role: 'coordination',
-    repositoryId: 'coordination-repository',
-    remoteIdentity: 'github.com/team/coordination-repository',
+  changeMergeRequest: {
+    role: 'change',
+    repositoryId: 'workspace-repository',
+    remoteIdentity: 'github.com/team/workspace-repository',
     sourceBranch: 'feat/delivery-change',
     targetBranch: 'main',
     mergeRequest: {
       provider: 'github',
-      repositoryId: 'coordination-repository',
+      repositoryId: 'workspace-repository',
       number: 1,
-      url: 'https://github.com/team/coordination-repository/pull/1',
+      url: 'https://github.com/team/workspace-repository/pull/1',
     },
   },
   actions: [],

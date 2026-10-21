@@ -142,7 +142,7 @@ export interface PostMergeConfig {
       authorNameCredential: CredentialReference;
       authorEmailCredential: CredentialReference;
     };
-    coordinationMergeRequest: {
+    changeMergeRequest: {
       mode: 'update-existing';
       title: string;
       body: string;

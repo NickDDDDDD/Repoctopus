@@ -165,8 +165,8 @@ async function fixture() {
   roots.push(root, buildRoot);
   const app = await createRepository(root, 'app');
   const api = await createRepository(root, 'api');
-  const coordination = await createRepository(root, 'coordination');
-  const workspace = coordination.source;
+  const workspaceRepository = await createRepository(root, 'workspace');
+  const workspace = workspaceRepository.source;
   const changeId = 'self-hosted-post-merge';
   const sourceBranch = 'feat/self-hosted-post-merge';
   await git(workspace, ['checkout', '-b', sourceBranch]);
@@ -276,7 +276,7 @@ async function fixture() {
                 variable: 'REPOCTOPUS_E2E_AUTHOR_EMAIL',
               },
             },
-            coordinationMergeRequest: {
+            changeMergeRequest: {
               mode: 'update-existing',
               title: 'Closed self-hosted specification',
               body: 'Post-merge verification completed.',
@@ -307,20 +307,20 @@ async function fixture() {
       url: `https://mock.invalid/${repository.id}/pull/${11 + index}`,
     },
   }));
-  const coordinationIdentity = {
+  const changeMergeRequestIdentity = {
     provider: 'github',
-    repositoryId: 'coordination',
+    repositoryId: 'workspace',
     number: 8,
-    url: 'https://mock.invalid/coordination/pull/8',
+    url: 'https://mock.invalid/workspace/pull/8',
   };
   const mergeRequests: DeliveryMergeRequestSet = {
-    coordination: {
-      role: 'coordination',
-      repositoryId: 'coordination',
-      remoteIdentity: coordination.remoteIdentity,
+    change: {
+      role: 'change',
+      repositoryId: 'workspace',
+      remoteIdentity: workspaceRepository.remoteIdentity,
       sourceBranch,
       targetBranch: 'main',
-      mergeRequest: coordinationIdentity,
+      mergeRequest: changeMergeRequestIdentity,
     },
     business: businessRecords,
   };
@@ -399,7 +399,7 @@ async function fixture() {
       mergedAt: '2026-10-21T01:00:00.000Z',
     })),
     {
-      ...coordinationIdentity,
+      ...changeMergeRequestIdentity,
       state: 'open',
       sourceBranch,
       targetBranch: 'main',
@@ -419,7 +419,9 @@ async function fixture() {
       {
         updates: 0,
         mergeRequests: mockMergeRequests.map((item) =>
-          item.repositoryId === 'coordination' ? { ...item, remote: coordination.remote } : item,
+          item.repositoryId === 'workspace'
+            ? { ...item, remote: workspaceRepository.remote }
+            : item,
         ),
       },
       null,
@@ -444,7 +446,7 @@ async function fixture() {
     executable,
     mockStateFile,
     business,
-    coordination,
+    workspaceRepository,
     changeId,
     sourceBranch,
     baselineHead,
@@ -567,7 +569,7 @@ async function waitForCompletion(input: {
   throw new Error(`Post-merge event did not complete: ${JSON.stringify(last)}\n${input.output()}`);
 }
 
-it('recovers a signed multi-repository Post-merge run and publishes the coordination branch', async () => {
+it('recovers a signed multi-repository Post-merge run and publishes the Change MR branch', async () => {
   const setup = await fixture();
   const secret = 'self-hosted-e2e-secret';
   const first = startRunner({
@@ -640,7 +642,7 @@ it('recovers a signed multi-repository Post-merge run and publishes the coordina
     ),
   ).toContain('Independent-process closure');
   const head = await git(setup.workspace, ['rev-parse', 'HEAD']);
-  const remoteHead = await git(setup.coordination.remote, [
+  const remoteHead = await git(setup.workspaceRepository.remote, [
     'rev-parse',
     `refs/heads/${setup.sourceBranch}`,
   ]);
@@ -653,9 +655,7 @@ it('recovers a signed multi-repository Post-merge run and publishes the coordina
     mergeRequests: MergeRequestStatus[];
   };
   expect(mockState.updates).toBe(1);
-  expect(
-    mockState.mergeRequests.find((item) => item.repositoryId === 'coordination'),
-  ).toMatchObject({
+  expect(mockState.mergeRequests.find((item) => item.repositoryId === 'workspace')).toMatchObject({
     title: 'Closed self-hosted specification',
     body: 'Post-merge verification completed.',
   });

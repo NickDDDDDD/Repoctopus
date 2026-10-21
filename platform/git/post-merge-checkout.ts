@@ -72,7 +72,7 @@ function assertInputs(
     repositories.length === 0 ||
     new Set(repositoryIds).size !== repositoryIds.length ||
     new Set(sourceIds).size !== sourceIds.length ||
-    [...repositoryIds].sort().join('\0') !== [...sourceIds].sort().join('\0')
+    repositoryIds.some((repositoryId) => !sourceIds.includes(repositoryId))
   ) {
     throw new PostMergeCheckoutError('invalid-input');
   }

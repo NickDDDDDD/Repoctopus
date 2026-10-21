@@ -79,6 +79,6 @@ Inbox 不按 `receivedAt` 回退已有条目。不同 Delivery ID 仍代表不�
 node bin/repoctopus.js runner start --workspace . --json
 ```
 
-就绪 envelope 的 `origin` 与配置的 GitHub `path` 组成 webhook URL。Runner 可以由开发者前台启动，也可以由操作系统服务或进程管理器托管；健康判定以 `ready` 输出和 HTTP 可达性为准。使用 `SIGINT`/`SIGTERM` 正常关闭，不要通过删除 `.repoctopus/events/` 来停止或重试任务。多个 Runner 可以并存：同一 Inbox 的 Lease 防止重复领取，独立状态卷之间允许重复计算并由协调分支远端 OID 栅栏收敛；当前版本不承诺共享数据库调度或生产级自动扩缩容。
+就绪 envelope 的 `origin` 与配置的 GitHub `path` 组成 webhook URL。Runner 可以由开发者前台启动，也可以由操作系统服务或进程管理器托管；健康判定以 `ready` 输出和 HTTP 可达性为准。使用 `SIGINT`/`SIGTERM` 正常关闭，不要通过删除 `.repoctopus/events/` 来停止或重试任务。多个 Runner 可以并存：同一 Inbox 的 Lease 防止重复领取，独立状态卷之间允许重复计算并由 Change MR 分支远端 OID 栅栏收敛；当前版本不承诺共享数据库调度或生产级自动扩缩容。
 
 Runner 装配、Credential、目录权限和自举流程见[自举与 Runner 部署](self-hosting.md)。测试 fixture 仍只用于恢复演练，不是生产守护进程。

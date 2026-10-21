@@ -384,16 +384,13 @@ export class PostMergeActions extends Service {
     }
   }
 
-  async publishCoordination(
-    runId: string,
-    signal?: AbortSignal,
-  ): Promise<PostMergePublicationResult> {
+  async publishChange(runId: string, signal?: AbortSignal): Promise<PostMergePublicationResult> {
     return withRecoverableFileLock(this.workspaceLock(), () =>
-      this.publishCoordinationLocked(runId, signal),
+      this.publishChangeLocked(runId, signal),
     );
   }
 
-  private async publishCoordinationLocked(
+  private async publishChangeLocked(
     runId: string,
     signal?: AbortSignal,
   ): Promise<PostMergePublicationResult> {
@@ -404,14 +401,14 @@ export class PostMergeActions extends Service {
       return { runId, receipt: journal.publication.receipt };
     }
     if (status.state.currentStep !== 'publish') {
-      throw new Error(`Post-merge Run is not awaiting coordination publication: ${runId}`);
+      throw new Error(`Post-merge Run is not awaiting Change MR publication: ${runId}`);
     }
     if (status.state.pendingActionId === null) {
       status = (await this.ctx.workflowRuns.next(runId, new Set(), signal)).value;
     }
     const action = status.nextAction;
-    if (!action || action.ref !== 'post-merge.publish-coordination') {
-      throw new Error('Post-merge coordination publication action is not pending');
+    if (!action || action.ref !== 'post-merge.publish-change') {
+      throw new Error('Post-merge Change MR publication action is not pending');
     }
     try {
       if (!journal?.result || !journal.audit) {
@@ -472,7 +469,7 @@ export class PostMergeActions extends Service {
           runId,
           actionId: action.id,
           status: 'succeeded',
-          summary: `post-merge-coordination-published:${receipt.digest}`,
+          summary: `post-merge-change-published:${receipt.digest}`,
           eventId: identity(runId, action.id, receipt.digest),
           correlationReceiptId: receipt.digest,
         },
@@ -485,8 +482,8 @@ export class PostMergeActions extends Service {
           runId,
           actionId: action.id,
           status: 'failed',
-          summary: 'post-merge-coordination-publication-failed',
-          eventId: identity(runId, action.id, 'coordination-publication-failed'),
+          summary: 'post-merge-change-publication-failed',
+          eventId: identity(runId, action.id, 'change-publication-failed'),
         },
         signal,
       );

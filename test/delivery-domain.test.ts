@@ -36,16 +36,16 @@ const policy: DeliveryPolicy = {
 const intent: DeliveryIntent = {
   schemaVersion: 2,
   changeId: 'delivery-change',
-  coordinationMergeRequest: {
-    repositoryId: 'coordination-repository',
-    remoteIdentity: 'example/coordination-repository',
+  changeMergeRequest: {
+    repositoryId: 'workspace-repository',
+    remoteIdentity: 'example/workspace-repository',
     sourceBranch: 'feat/delivery-change',
     targetBranch: 'main',
     mergeRequest: {
       provider: 'github',
-      repositoryId: 'coordination-repository',
+      repositoryId: 'workspace-repository',
       number: 10,
-      url: 'https://example.test/coordination-repository/pull/10',
+      url: 'https://example.test/workspace-repository/pull/10',
     },
   },
   repositories: [
@@ -104,7 +104,7 @@ describe('delivery contract', () => {
       expect.arrayContaining([
         expect.objectContaining({ code: 'unsupported-intent-version' }),
         expect.objectContaining({ code: 'invalid-change-id' }),
-        expect.objectContaining({ code: 'missing-coordination-merge-request' }),
+        expect.objectContaining({ code: 'missing-change-merge-request' }),
         expect.objectContaining({ code: 'missing-repositories' }),
       ]),
     );
@@ -139,15 +139,15 @@ describe('delivery contract', () => {
     expect(compareDeliverySnapshots(first, second)).toEqual([]);
   });
 
-  it('allows the coordination and a business MR to share one physical repository', () => {
+  it('allows the Change MR and a business MR to share one physical repository', () => {
     const sameRepositoryIntent: DeliveryIntent = {
       ...intent,
-      coordinationMergeRequest: {
-        ...intent.coordinationMergeRequest,
+      changeMergeRequest: {
+        ...intent.changeMergeRequest,
         repositoryId: 'repo-a',
         remoteIdentity: 'example/repo-a',
         mergeRequest: {
-          ...intent.coordinationMergeRequest.mergeRequest,
+          ...intent.changeMergeRequest.mergeRequest,
           repositoryId: 'repo-a',
           number: 99,
         },
@@ -164,8 +164,8 @@ describe('delivery contract', () => {
       createdAt: '2026-01-01T00:00:00.000Z',
     });
     expect(snapshot.mergeRequests).toMatchObject({
-      coordination: {
-        role: 'coordination',
+      change: {
+        role: 'change',
         repositoryId: 'repo-a',
         mergeRequest: { number: 99 },
       },
@@ -176,24 +176,24 @@ describe('delivery contract', () => {
     });
   });
 
-  it('rejects a coordination and business role that resolve to the same merge request', () => {
+  it('rejects a Change and business role that resolve to the same merge request', () => {
     const collidingBranches: DeliveryIntent = {
       ...intent,
-      coordinationMergeRequest: {
-        ...intent.coordinationMergeRequest,
+      changeMergeRequest: {
+        ...intent.changeMergeRequest,
         repositoryId: 'repo-a',
         remoteIdentity: 'example/repo-a',
         sourceBranch: 'feat/change',
         targetBranch: 'main',
         mergeRequest: {
-          ...intent.coordinationMergeRequest.mergeRequest,
+          ...intent.changeMergeRequest.mergeRequest,
           repositoryId: 'repo-a',
           number: 99,
         },
       },
     };
     expect(validateDeliveryIntent(collidingBranches)).toContainEqual(
-      expect.objectContaining({ code: 'coordination-business-branch-collision' }),
+      expect.objectContaining({ code: 'change-business-branch-collision' }),
     );
     expect(() =>
       createDeliverySnapshot({
@@ -211,8 +211,8 @@ describe('delivery contract', () => {
       compositionDigest: TEST_COMPOSITION_DIGEST,
       intent: {
         ...collidingBranches,
-        coordinationMergeRequest: {
-          ...collidingBranches.coordinationMergeRequest,
+        changeMergeRequest: {
+          ...collidingBranches.changeMergeRequest,
           sourceBranch: 'spec/coordinate-change',
         },
       },

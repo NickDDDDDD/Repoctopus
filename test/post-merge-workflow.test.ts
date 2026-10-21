@@ -12,6 +12,7 @@ import {
 import { parseWorkflowPackage } from '../domains/workflow-contract/package.js';
 import { FileRuntimeStore } from '../platform/runtime/file-runtime-store.js';
 import {
+  commitGitRepository,
   compositionFixture,
   createGitRepository,
   projectFixture,
@@ -222,6 +223,8 @@ describe('post-merge workflow', () => {
         ],
       }),
     );
+    await writeFile(path.join(workspace, '.gitignore'), '.repoctopus/\n');
+    await commitGitRepository(workspace, 'chore: configure post-merge workflow');
     const productRoot = path.resolve(import.meta.dirname, '..');
     const { workflow, workflowPath } = await postMergeWorkflow();
     const app = await bootProjectComposition(productRoot, workspace);
@@ -272,7 +275,7 @@ describe('post-merge workflow', () => {
         'post-merge.collect-evidence',
         'post-merge.close-specification',
         'post-merge.audit-paths',
-        'post-merge.publish-coordination',
+        'post-merge.publish-change',
       ]);
       expect(new Set(receipts)).toHaveLength(5);
       expect(

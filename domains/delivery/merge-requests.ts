@@ -28,12 +28,12 @@ export function createDeliveryMergeRequestSet(
       if (!fact.remoteIdentity)
         throw new Error(`Business repository has no remote identity: ${repository.repositoryId}`);
       if (
-        fact.remoteIdentity === intent.coordinationMergeRequest.remoteIdentity &&
-        repository.sourceBranch === intent.coordinationMergeRequest.sourceBranch &&
-        repository.targetBranch === intent.coordinationMergeRequest.targetBranch
+        fact.remoteIdentity === intent.changeMergeRequest.remoteIdentity &&
+        repository.sourceBranch === intent.changeMergeRequest.sourceBranch &&
+        repository.targetBranch === intent.changeMergeRequest.targetBranch
       ) {
         throw new Error(
-          `Coordination and business roles cannot use the same source and target branches: ${repository.repositoryId}`,
+          `Change and business roles cannot use the same source and target branches: ${repository.repositoryId}`,
         );
       }
       return {
@@ -46,13 +46,13 @@ export function createDeliveryMergeRequestSet(
       };
     });
   return {
-    coordination: {
-      role: 'coordination',
-      repositoryId: intent.coordinationMergeRequest.repositoryId,
-      remoteIdentity: intent.coordinationMergeRequest.remoteIdentity,
-      sourceBranch: intent.coordinationMergeRequest.sourceBranch,
-      targetBranch: intent.coordinationMergeRequest.targetBranch,
-      mergeRequest: structuredClone(intent.coordinationMergeRequest.mergeRequest),
+    change: {
+      role: 'change',
+      repositoryId: intent.changeMergeRequest.repositoryId,
+      remoteIdentity: intent.changeMergeRequest.remoteIdentity,
+      sourceBranch: intent.changeMergeRequest.sourceBranch,
+      targetBranch: intent.changeMergeRequest.targetBranch,
+      mergeRequest: structuredClone(intent.changeMergeRequest.mergeRequest),
     },
     business,
   };
@@ -67,15 +67,13 @@ export function recordBusinessMergeRequest(
   if (!selected) throw new Error(`Business merge request is not declared: ${repositoryId}`);
   if (mergeRequest.repositoryId !== repositoryId)
     throw new Error(`Merge request repository mismatch: ${repositoryId}`);
-  const coordinationMergeRequest = current.coordination.mergeRequest;
+  const changeMergeRequest = current.change.mergeRequest;
   if (
-    coordinationMergeRequest.provider === mergeRequest.provider &&
-    coordinationMergeRequest.repositoryId === mergeRequest.repositoryId &&
-    coordinationMergeRequest.number === mergeRequest.number
+    changeMergeRequest.provider === mergeRequest.provider &&
+    changeMergeRequest.repositoryId === mergeRequest.repositoryId &&
+    changeMergeRequest.number === mergeRequest.number
   ) {
-    throw new Error(
-      `Coordination and business roles cannot use the same merge request: ${repositoryId}`,
-    );
+    throw new Error(`Change and business roles cannot use the same merge request: ${repositoryId}`);
   }
   if (
     selected.mergeRequest &&
@@ -86,7 +84,7 @@ export function recordBusinessMergeRequest(
     throw new Error(`Business merge request identity drifted: ${repositoryId}`);
   }
   return {
-    coordination: structuredClone(current.coordination),
+    change: structuredClone(current.change),
     business: current.business.map((item) =>
       item.repositoryId === repositoryId
         ? { ...item, mergeRequest: structuredClone(mergeRequest) }

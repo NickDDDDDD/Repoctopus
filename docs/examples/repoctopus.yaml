@@ -93,7 +93,7 @@ postMerge:
       authorEmailCredential:
         provider: environment
         variable: REPOCTOPUS_GIT_AUTHOR_EMAIL
-    coordinationMergeRequest:
+    changeMergeRequest:
       mode: update-existing
       title: 'Close verified specification'
       body: 'Post-merge verification and specification closure completed.'

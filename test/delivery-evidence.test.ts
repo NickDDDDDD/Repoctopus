@@ -49,16 +49,16 @@ const policy: DeliveryPolicy = {
 const intent: DeliveryIntent = {
   schemaVersion: 2,
   changeId: 'delivery-evidence',
-  coordinationMergeRequest: {
-    repositoryId: 'coordination-repository',
-    remoteIdentity: 'example/coordination-repository',
+  changeMergeRequest: {
+    repositoryId: 'workspace-repository',
+    remoteIdentity: 'example/workspace-repository',
     sourceBranch: 'feat/delivery-evidence',
     targetBranch: 'main',
     mergeRequest: {
       provider: 'github',
-      repositoryId: 'coordination-repository',
+      repositoryId: 'workspace-repository',
       number: 11,
-      url: 'https://example.test/coordination-repository/pull/11',
+      url: 'https://example.test/workspace-repository/pull/11',
     },
   },
   repositories: [

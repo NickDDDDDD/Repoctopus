@@ -30,8 +30,8 @@ const reference: MergeRequestReference = {
 
 function mergeRequests(changeId: string): DeliveryMergeRequestSet {
   return {
-    coordination: {
-      role: 'coordination',
+    change: {
+      role: 'change',
       repositoryId: 'repoctopus',
       remoteIdentity: 'github.com/team/repoctopus',
       sourceBranch: `feat/${changeId}`,
@@ -116,7 +116,7 @@ const mergedRequests: MergeRequestPort = {
 };
 
 describe('delivery merge request mapping', () => {
-  it('prefers one active business MR over merged recovery candidates and excludes coordination', () => {
+  it('prefers one active business MR over merged recovery candidates and excludes the Change MR', () => {
     const matching = activeState('matching-change');
     const terminal = { ...activeState('terminal-change'), status: 'merged' as const };
     expect(matchActiveDeliveryMergeRequest([matching, terminal], reference)).toEqual({

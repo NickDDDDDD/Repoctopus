@@ -4,11 +4,11 @@
 
 配置 `platformEvents` 和 `postMerge` 后，`runner start` 会把 Post-merge Coordinator、Action Provider 与 Application Plugin 加入专用 Runner composition。普通 project composition 也装配一次性 Coordinator 与 Action Provider，但保持短生命周期，不会启动 HTTP 或后台轮询；`run start` 前置检查和 `post-merge reconcile` 使用这条路径。本指南用于所有入口产生的同一套持久事实。
 
-Change 是团队共享工作单元，不存在从 MR 作者推断出的独占 owner。协调 MR 的提交者、业务 MR 的作者、Git 作者和 Runner identity 分别只说明远端动作或审计身份；任何成员都可以继续实现或修复同一 change，任何 Runner 都可以尝试完成满足条件的收尾。
+Change 是团队共享工作单元，不存在从 MR 作者推断出的独占 owner。Change MR 的提交者、业务 MR 的作者、Git 作者和 Runner identity 分别只说明远端动作或审计身份；任何成员都可以继续实现或修复同一 change，任何 Runner 都可以尝试完成满足条件的收尾。
 
 ## 准备关联 ID
 
-在协调 workspace 中运行命令。开始前准备 change ID 和 Post-merge Run ID；如果需要检查平台唤醒或 Evidence，再准备 Envelope ID 和 Attempt ID。
+在 Workspace 中运行命令。开始前准备 change ID 和 Post-merge Run ID；如果需要检查平台唤醒或 Evidence，再准备 Envelope ID 和 Attempt ID。
 
 ```powershell
 $workspace = Resolve-Path .
@@ -52,7 +52,7 @@ node bin/repoctopus.js post-merge reconcile --workspace $workspace --json
 node bin/repoctopus.js delivery status --workspace $workspace --change $changeId --json
 ```
 
-只有 Delivery 状态为 `merged`，且原协调 MR 仍开放、源分支和目标分支未变化时，Runner 才能进入收尾发布。不要用 force-push、rebase、新建 MR 或修改目标分支绕过漂移诊断。
+只有 Delivery 状态为 `merged`，且原 Change MR 仍开放、源分支和目标分支未变化时，Runner 才能进入收尾发布。不要用 force-push、rebase、新建 MR 或修改目标分支绕过漂移诊断。
 
 ## 3. 检查 Post-merge Run
 
@@ -62,7 +62,7 @@ node bin/repoctopus.js delivery status --workspace $workspace --change $changeId
 node bin/repoctopus.js run status --workspace $workspace --run $runId --json
 ```
 
-如果进程在持久事务之间退出，先确认协调 workspace 和项目仓库没有未解释的改动，再恢复 Run：
+如果进程在持久事务之间退出，先确认 Workspace Repository 和业务仓库没有未解释的改动，再恢复 Run：
 
 ```powershell
 node bin/repoctopus.js run resume --workspace $workspace --run $runId --json
@@ -118,7 +118,7 @@ Receipt ID 和摘要只用于 Log/Span 关联。Metric 标签只包含工作流�
 
 完成状态定位后，根据故障所在边界继续阅读对应说明：
 
-- [交付治理与失败恢复](delivery.md)：理解 Delivery 快照、人工批准和原协调 MR 边界。
+- [交付治理与失败恢复](delivery.md)：理解 Delivery 快照、人工批准和原 Change MR 边界。
 - [平台事件](platform-events.md)：检查 webhook 持久化、去重、Lease 和死信语义。
 - [Evidence](evidence.md)：解释 Attempt、Receipt、Artifact、Bundle 和 Gate 的关系。
 - [OpenTelemetry](telemetry.md)：查看属性允许列表、导出恢复和隐私边界。

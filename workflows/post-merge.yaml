@@ -3,7 +3,7 @@ kind: Workflow
 metadata:
   name: post-merge
   version: 1.0.0
-  description: 基于权威合入事实执行可恢复的规格收尾与协调分支发布
+  description: 基于权威合入事实执行可恢复的规格收尾与 Change MR 发布
 entry: checkout
 steps:
   - id: checkout
@@ -38,8 +38,8 @@ steps:
   - id: publish
     action:
       type: call_tool
-      ref: post-merge.publish-coordination
-      summary: 创建普通收尾 commit 并更新原协调分支与 MR
+      ref: post-merge.publish-change
+      summary: 创建普通收尾 commit 并更新原 Change MR 分支与元数据
     onSuccess: null
     onFailure: publish
 guardrails:
@@ -50,7 +50,7 @@ guardrails:
     - post-merge.collect-evidence
     - post-merge.close-specification
     - post-merge.audit-paths
-    - post-merge.publish-coordination
+    - post-merge.publish-change
   confirmationRequiredFor: []
   maxIterations: 10
   maxRetriesPerAction: 3

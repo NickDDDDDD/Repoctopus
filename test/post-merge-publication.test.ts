@@ -63,7 +63,7 @@ interface Fixture {
   repository: string;
   remote: string;
   request: PostMergePublicationRequest;
-  coordination: NonNullable<DeliveryState['mergeRequests']>['coordination'];
+  changeMergeRequest: NonNullable<DeliveryState['mergeRequests']>['change'];
 }
 
 async function fixture(): Promise<Fixture> {
@@ -101,13 +101,13 @@ async function fixture(): Promise<Fixture> {
   const audit: PostMergeClosureAudit = { ...auditBase, digest: sha256(auditBase) };
   const identity: MergeRequestIdentity = {
     provider: 'github',
-    repositoryId: 'coordination',
+    repositoryId: 'workspace',
     number: 8,
-    url: 'https://github.test/team/coordination/pull/8',
+    url: 'https://github.test/team/workspace/pull/8',
   };
-  const coordination = {
-    role: 'coordination' as const,
-    repositoryId: 'coordination',
+  const changeMergeRequest = {
+    role: 'change' as const,
+    repositoryId: 'workspace',
     remoteIdentity: normalizeRemoteIdentity(remote),
     sourceBranch: 'feat/change',
     targetBranch: 'main',
@@ -117,7 +117,7 @@ async function fixture(): Promise<Fixture> {
     root,
     repository,
     remote,
-    coordination,
+    changeMergeRequest,
     request: {
       schemaVersion: 1,
       runId: 'run-1',
@@ -181,7 +181,7 @@ class MemoryStore implements DeliveryStorePort {
   }
 }
 
-class CoordinationMergeRequests implements MergeRequestPort {
+class ChangeMergeRequests implements MergeRequestPort {
   updateCalls = 0;
   state: MergeRequestStatus['state'] = 'open';
   targetBranch = 'main';
@@ -245,7 +245,7 @@ const satisfiedEvidence: DeliveryEvidencePort = {
 
 function service(
   fx: Fixture,
-  mergeRequests: CoordinationMergeRequests,
+  mergeRequests: ChangeMergeRequests,
   gitAdapter = new GitDeliveryAdapter(),
 ) {
   const state: DeliveryState = {
@@ -258,7 +258,7 @@ function service(
     approval: null,
     actionResults: [],
     mergeEvidence: [],
-    mergeRequests: { coordination: fx.coordination, business: [] },
+    mergeRequests: { change: fx.changeMergeRequest, business: [] },
     platformCapabilities: [],
     updatedAt: '2026-01-01T00:00:00.000Z',
   };
@@ -275,9 +275,9 @@ function service(
 }
 
 describe('protected post-merge publication', () => {
-  it('creates one ordinary commit, pushes it, and updates only the original coordination MR', async () => {
+  it('creates one ordinary commit, pushes it, and updates only the original Change MR', async () => {
     const fx = await fixture();
-    const mergeRequests = new CoordinationMergeRequests(fx.coordination.mergeRequest, fx.remote);
+    const mergeRequests = new ChangeMergeRequests(fx.changeMergeRequest.mergeRequest, fx.remote);
     const receipt = await service(fx, mergeRequests).publishPostMerge(fx.request);
     expect(receipt.commitOid).toBe(await git(fx.repository, 'rev-parse', 'HEAD'));
     expect(receipt.remoteOid).toBe(receipt.commitOid);
@@ -293,7 +293,7 @@ describe('protected post-merge publication', () => {
 
   it('recovers the same commit and push after a lost Git response without duplicating either', async () => {
     const fx = await fixture();
-    const mergeRequests = new CoordinationMergeRequests(fx.coordination.mergeRequest, fx.remote);
+    const mergeRequests = new ChangeMergeRequests(fx.changeMergeRequest.mergeRequest, fx.remote);
     class LostResponseGit extends GitDeliveryAdapter {
       override async publishPostMerge(
         input: PostMergeGitPublicationInput,
@@ -316,7 +316,7 @@ describe('protected post-merge publication', () => {
 
   it('recovers an applied MR update when its response was lost', async () => {
     const fx = await fixture();
-    const mergeRequests = new CoordinationMergeRequests(fx.coordination.mergeRequest, fx.remote);
+    const mergeRequests = new ChangeMergeRequests(fx.changeMergeRequest.mergeRequest, fx.remote);
     mergeRequests.failUpdateAfterApply = true;
     await expect(service(fx, mergeRequests).publishPostMerge(fx.request)).rejects.toThrow(
       'MR update response lost',
@@ -329,7 +329,7 @@ describe('protected post-merge publication', () => {
   it('converges an independent Runner to an equivalent remote closure commit', async () => {
     const fx = await fixture();
     const competing = await competingRequest(fx);
-    const mergeRequests = new CoordinationMergeRequests(fx.coordination.mergeRequest, fx.remote);
+    const mergeRequests = new ChangeMergeRequests(fx.changeMergeRequest.mergeRequest, fx.remote);
 
     const winner = await service(fx, mergeRequests).publishPostMerge(fx.request);
     const converged = await service(fx, mergeRequests).publishPostMerge(competing.request);
@@ -346,8 +346,8 @@ describe('protected post-merge publication', () => {
 
   it('stops before local Git side effects when the MR is closed or the remote source drifted', async () => {
     const closed = await fixture();
-    const closedMergeRequests = new CoordinationMergeRequests(
-      closed.coordination.mergeRequest,
+    const closedMergeRequests = new ChangeMergeRequests(
+      closed.changeMergeRequest.mergeRequest,
       closed.remote,
     );
     closedMergeRequests.state = 'closed';
@@ -366,8 +366,8 @@ describe('protected post-merge publication', () => {
     await git(other, 'add', '--all');
     await git(other, 'commit', '-m', 'chore: remote drift');
     await git(other, 'push', 'origin', 'feat/change');
-    const driftedMergeRequests = new CoordinationMergeRequests(
-      drifted.coordination.mergeRequest,
+    const driftedMergeRequests = new ChangeMergeRequests(
+      drifted.changeMergeRequest.mergeRequest,
       drifted.remote,
     );
     await expect(
@@ -382,7 +382,7 @@ describe('protected post-merge publication', () => {
     async (operation) => {
       const fx = await fixture();
       fx.request.policy.operations = ['commit', 'push', operation];
-      const mergeRequests = new CoordinationMergeRequests(fx.coordination.mergeRequest, fx.remote);
+      const mergeRequests = new ChangeMergeRequests(fx.changeMergeRequest.mergeRequest, fx.remote);
       await expect(service(fx, mergeRequests).publishPostMerge(fx.request)).rejects.toThrow(
         'forbidden-or-incomplete-operations',
       );

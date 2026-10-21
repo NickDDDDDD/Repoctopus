@@ -33,13 +33,13 @@ Repoctopus MUST 只在项目策略显式启用自动提交、当前分支不受�
 
 ## ADDED Requirements
 
-### Requirement: Delivery 声明协调 MR 与业务 MR 关系
+### Requirement: Delivery 声明 Change MR 与业务 MR 关系
 
 Repoctopus MUST 在交付状态中记录一个 change 的 Change MR、全部 Business MR、各自仓库身份和目标分支，使平台事件能够确定性映射到唯一交付集合。Change MR MUST 位于配置显式登记的 Workspace Repository，并承载规格、验证与收尾；它与 Business MR MAY 位于同一仓库，但 MUST 使用不同的 MR 身份。同仓角色使用相同源分支与目标分支，或平台返回相同 `provider + repositoryId + number` 时，系统 MUST 在完成发布前 fail-closed。
 
-#### Scenario: 协调与业务角色位于同一仓库
+#### Scenario: Change MR 与业务 MR 位于同一仓库
 
-- **WHEN** 一个 change 在同一物理仓库声明协调 MR 与业务 MR
+- **WHEN** 一个 change 在同一物理仓库声明 Change MR 与业务 MR
 - **THEN** 两个角色使用可区分的分支拓扑和不同 MR 身份，系统分别跟踪其生命周期
 
 #### Scenario: Change MR 不在 Workspace Repository
@@ -47,15 +47,15 @@ Repoctopus MUST 在交付状态中记录一个 change 的 Change MR、全部 Bus
 - **WHEN** Delivery Intent 把 Change MR 声明到其他已登记业务仓
 - **THEN** 系统拒绝准备交付，并指出 Change MR repository ID 与 Workspace Repository 不一致
 
-#### Scenario: 协调与业务角色解析为同一 MR
+#### Scenario: Change MR 与业务角色解析为同一 MR
 
-- **WHEN** Delivery Intent 使用相同的同仓源分支与目标分支，或平台为业务角色返回已经登记的协调 MR 身份
-- **THEN** 系统拒绝准备或发布，不把一个 MR 同时登记为协调角色和业务角色
+- **WHEN** Delivery Intent 使用相同的同仓源分支与目标分支，或平台为业务角色返回已经登记的 Change MR 身份
+- **THEN** 系统拒绝准备或发布，不把一个 MR 同时登记为 Change MR 和业务 MR
 
 #### Scenario: 合入事件属于已登记业务 MR
 
 - **WHEN** 平台事件携带的仓库与 MR 身份匹配一个活动 Delivery
-- **THEN** 系统唤醒该 change 的协调流程并刷新完整 MR 集合
+- **THEN** 系统唤醒该 change 的 Post-merge 流程并刷新完整 MR 集合
 
 #### Scenario: 合入事件无法唯一映射
 
@@ -87,12 +87,12 @@ Repoctopus MUST 支持平台事件唤醒与显式刷新使用同一 Delivery 状
 
 ### Requirement: Change 协作不由 MR 作者独占
 
-Repoctopus MUST 把 change 视为团队共享工作单元，允许不同成员或 Agent 继续实现、修复、验证与收尾；系统不得从协调 MR 作者、业务 MR 作者、Git 作者、Bot 身份或 Runner 身份推导独占 Change owner。动作身份只用于授权、审计和诊断。
+Repoctopus MUST 把 change 视为团队共享工作单元，允许不同成员或 Agent 继续实现、修复、验证与收尾；系统不得从 Change MR 作者、业务 MR 作者、Git 作者、Bot 身份或 Runner 身份推导独占 Change owner。动作身份只用于授权、审计和诊断。
 
-#### Scenario: 成员代为提交协调 MR
+#### Scenario: 成员代为提交 Change MR
 
-- **WHEN** 一个成员提交规格或协调 MR，但业务特性由其他成员实现
-- **THEN** 系统仍按 change 与 MR role 建立关系，不把协调 MR 提交者视为特性所有者或个人补偿筛选条件
+- **WHEN** 一个成员提交规格或 Change MR，但业务特性由其他成员实现
+- **THEN** 系统仍按 change 与 MR role 建立关系，不把 Change MR 提交者视为特性所有者或个人补偿筛选条件
 
 #### Scenario: 其他成员修复已有 Change
 

@@ -20,7 +20,7 @@ Repoctopus 当前以 Cordis 作为唯一应用 Runtime，`WorkflowRuns`、Eviden
 - 交付一个可以用来开发 Repoctopus 自身的真实纵向闭环，而不是继续增加不可独立使用的水平模块。
 - 让 Skill、规格权威、代码平台事件和合入后协调遵循现有 Cordis 能力缝。
 - 让 MR 合入后的验证、规格同步和 change 关闭不依赖原开发者本机在线。
-- 允许多个开发者、Agent 或 CI Runner 处理同一团队 change，不建立独占 Change owner，也不把协调 MR 提交者误当成功能责任人。
+- 允许多个开发者、Agent 或 CI Runner 处理同一团队 change，不建立独占 Change owner，也不把 Change MR 提交者误当成功能责任人。
 - 保持所有远端副作用可恢复、幂等、可审计，并继续禁止 Repoctopus 自动 merge。
 - 以来源清单和行为测试约束从 DSH 与 Matt Skills 采用的能力。
 
@@ -29,7 +29,7 @@ Repoctopus 当前以 Cordis 作为唯一应用 Runtime，`WorkflowRuns`、Eviden
 - 不引入 DSH Agent Loop、Session、Workspace、模型工具或完整 WebhookRuntime 依赖闭包。
 - 不建立通用 Capability Resolver、第二套插件容器或第二个 Runtime。
 - 不在第一纵切实现 Skill 市场、管理 UI、远程 Provider、多规格权威合并或 CodeHub Adapter。
-- 不让 Runner 自动修改业务代码、自动解决规格冲突或自动合入协调 MR。
+- 不让 Runner 自动修改业务代码、自动解决规格冲突或自动合入 Change MR。
 - 不把个人学习目录、Skill 正文或 webhook 原始载荷导出到 SigNoz。
 
 ## Decisions
@@ -57,7 +57,7 @@ Cordis project composition
 
 Workflow 只编排领域动作；Engine 仍是纯函数。Skill、Specification、PlatformEvents 和 PostMergeCoordinator 是平级 Cordis Service，不进入一个新的“开发 Runtime”。等待用户、等待 MR 与等待重试都持久化为 Run 或 Inbox 状态，不用长生命周期 Fiber 表示业务进度。
 
-第一条自举 Workflow 覆盖：澄清与规格校验、实施、Evidence、用户交付批准、Delivery 发布、等待合入、平台事件唤醒、合入后 Evidence、规格关闭和协调 MR 更新。各阶段调用已有 Service 或新增 Service 的稳定方法，不能在 Workflow YAML 中嵌入 shell、OpenSpec 路径或 GitHub JSON 解析。
+第一条自举 Workflow 覆盖：澄清与规格校验、实施、Evidence、用户交付批准、Delivery 发布、等待合入、平台事件唤醒、合入后 Evidence、规格关闭和 Change MR 更新。各阶段调用已有 Service 或新增 Service 的稳定方法，不能在 Workflow YAML 中嵌入 shell、OpenSpec 路径或 GitHub JSON 解析。
 
 ### 2. Skill 采用 DSH Service Definition，消费者改为 Repoctopus 协议
 
@@ -107,7 +107,7 @@ HTTP Host 是独立 Service，Route Contributor 通过 Effect 注册。验签与
 
 Runner 使用可恢复 Lease 领取工作，处理后比较状态版本提交。进程崩溃后租约过期可重领；重复 Delivery 返回既有记录；乱序事件只起唤醒作用。Webhook 载荷不得直接更新 Delivery 状态，Coordinator 必须调用 `MergeRequestPort.status()` 重新读取权威事实。
 
-第一版文件 Store 复用现有原子写、进程身份、可恢复锁和 Journal；状态放在 `.repoctopus/events/`。同一状态卷上的并发 Runner 通过租约避免重复领取；使用各自本地状态卷的 Runner 不把本地 Lease 当成分布式锁，最终远端副作用由第 17 节的协调分支 OID 栅栏收敛。接口保持存储无关，生产部署可换数据库 Provider。
+第一版文件 Store 复用现有原子写、进程身份、可恢复锁和 Journal；状态放在 `.repoctopus/events/`。同一状态卷上的并发 Runner 通过租约避免重复领取；使用各自本地状态卷的 Runner 不把本地 Lease 当成分布式锁，最终远端副作用由第 17 节的 Change MR 分支 OID 栅栏收敛。接口保持存储无关，生产部署可换数据库 Provider。
 
 ### 7. PostMergeCoordinator 只唤醒或恢复一个收尾 Run
 
@@ -120,7 +120,7 @@ Post-merge Workflow 使用 Action Intent/Receipt 完成：
 3. 调用 `Specification.prepareClosure()` 并核对路径计划；
 4. 调用 `Specification.close()`；
 5. 重新扫描 Git diff，执行路径与内容类型双重允许检查；
-6. 创建普通收尾 commit，推送原协调分支并更新原 MR；
+6. 创建普通收尾 commit，推送原 Change MR 分支并更新原 MR；
 7. 保存远端核对 Receipt 并进入等待人工 merge 状态。
 
 每一步都经过既有 RunStore 两阶段 Action 模型。网络、Git、OpenSpec CLI 和测试不在 Run 锁内执行。Push 响应丢失时先按 commit/tree/远端分支核对；归档响应丢失时按 Provider 的关闭身份核对。
@@ -131,9 +131,9 @@ Post-merge Workflow 使用 Action Intent/Receipt 完成：
 
 ### 8. 收尾权限按用途隔离
 
-`repoctopus.yaml` 增加 `postMerge` 配置：Runner 身份引用、临时检出根、Evidence Profile、允许修改的 workspace 路径、提交格式、远端和原协调 MR 策略。允许路径至少具体到主规格、活动 change/归档和验证记录，不能使用项目根通配。
+`repoctopus.yaml` 增加 `postMerge` 配置：Runner 身份引用、临时检出根、Evidence Profile、允许修改的 workspace 路径、提交格式、远端和原 Change MR 策略。允许路径至少具体到主规格、活动 change/归档和验证记录，不能使用项目根通配。
 
-机器可以自动 commit、push 和更新原协调 MR，因为这些动作的输入由已合入事实、满足的 Evidence Gate 和确定的关闭计划约束。它仍不能 merge、force push、rebase、删除分支、换目标分支、创建未声明 MR 或修改业务仓代码。协调 MR 最终合入保留给代码平台与团队策略。
+机器可以自动 commit、push 和更新原 Change MR，因为这些动作的输入由已合入事实、满足的 Evidence Gate 和确定的关闭计划约束。它仍不能 merge、force push、rebase、删除分支、换目标分支、创建未声明 MR 或修改业务仓代码。Change MR 最终合入保留给代码平台与团队策略。
 
 ### 9. Runner 是可部署 Application Plugin，实例不是 Change 所有者
 
@@ -143,7 +143,7 @@ Runner 启动 App Boot project composition，等待 HTTP 和后台领取 Fiber�
 
 ### 10. 自举验收必须穿过生产入口
 
-本 change 的规划文件先位于当前分支。实现后用新 Skill Catalog 读取至少一个 Matt Skill，用 OpenSpec Provider 严格校验本 change，用 Repoctopus Evidence 验证源码，再通过 Delivery 创建或更新协调 MR。测试中模拟签名 GitHub 合入事件和多仓状态，真实 MR 合入后由 Runner 的主动恢复或 webhook 触发 Post-merge Run，最终同步主规格并归档 change。
+本 change 的规划文件先位于当前分支。实现后用新 Skill Catalog 读取至少一个 Matt Skill，用 OpenSpec Provider 严格校验本 change，用 Repoctopus Evidence 验证源码，再通过 Delivery 创建或更新 Change MR。测试中模拟签名 GitHub 合入事件和多仓状态，真实 MR 合入后由 Runner 的主动恢复或 webhook 触发 Post-merge Run，最终同步主规格并归档 change。
 
 如果当前托管环境不能向本地 Runner 投递公网 webhook，真实自举可以由平台事件回放命令把已经验证或通过 API 主动获取的事件写入同一 Inbox；回放不是直接调用 Coordinator 的旁路。
 
@@ -191,15 +191,15 @@ OpenSpec change 只把 Proposal、Delta Specs、Design 和 Tasks 作为规划权
 
 Repoctopus 不建立独占 Change owner。任一成员或 Agent 都可以在同一 change 中继续实现、修复 Bug、补充测试、更新规格或完成评审。系统分别记录业务改动、审批、规格关闭和发布动作的实际 actor；MR author、Git author、Bot Token 对应账号、Runner identity 和临时 Session 都不是 Change 所有权来源。
 
-协调 MR 与业务 MR 的 `role` 决定它们在工作流中的用途，而不是人员归属。协调 MR 的提交者即使不是特性实现者，也不会因此被选为补偿责任人；一次性补偿按项目中 Repoctopus 已登记的未完成 Delivery 发现候选项，不按人员过滤。
+Change MR 与业务 MR 的 `role` 决定它们在工作流中的用途，而不是人员归属。Change MR 的提交者即使不是特性实现者，也不会因此被选为补偿责任人；一次性补偿按项目中 Repoctopus 已登记的未完成 Delivery 发现候选项，不按人员过滤。
 
-两个角色可以位于同一物理仓库，但不能复用同一个 MR。原因是业务 MR 合入后必须关闭，而协调 MR 需要继续保持开放以接收合入后 Evidence、主规格同步和 change 归档。Delivery 在准备快照时拒绝同一远端上的相同源/目标分支拓扑，并在平台返回 MR 后再次按 `provider + repositoryId + number` 核对；前者尽早阻止必然复用，后者保护 Adapter 边界。URL 不是稳定身份的一部分，不能用 URL 表面差异绕过角色隔离。
+两个角色可以位于同一物理仓库，但不能复用同一个 MR。原因是业务 MR 合入后必须关闭，而 Change MR 需要继续保持开放以接收合入后 Evidence、主规格同步和 change 归档。Delivery 在准备快照时拒绝同一远端上的相同源/目标分支拓扑，并在平台返回 MR 后再次按 `provider + repositoryId + number` 核对；前者尽早阻止必然复用，后者保护 Adapter 边界。URL 不是稳定身份的一部分，不能用 URL 表面差异绕过角色隔离。
 
-### 17. 多 Runner 以远端协调分支 OID 作为最终并发栅栏
+### 17. 多 Runner 以远端 Change MR 分支 OID 作为最终并发栅栏
 
-多个 Runner MAY 同时读取同一 change、查询平台事实并执行无远端副作用的验证。Post-merge 发布前，每个 Runner 必须绑定协调 MR 当前源分支的精确 head OID 和审计后的 workspace 基线；普通非强制 push 只有在该远端基线未变化时才能成功。
+多个 Runner MAY 同时读取同一 change、查询平台事实并执行无远端副作用的验证。Post-merge 发布前，每个 Runner 必须绑定 Change MR 当前源分支的精确 head OID 和审计后的 workspace 基线；普通非强制 push 只有在该远端基线未变化时才能成功。
 
-若竞争 Runner 已推进远端分支，失败者必须重新读取原协调 MR：远端已经包含相同 change 的等价规格关闭结果时返回稳定 no-op；远端内容、分支映射或关闭身份不等价时 fail-closed 并保留诊断。系统不得以 force push、隐式 rebase、删除分支或“最后写入者获胜”解决竞争。测试、检出和本地 Run 可以至少执行一次，远端结果必须最终收敛一次。
+若竞争 Runner 已推进远端分支，失败者必须重新读取原 Change MR：远端已经包含相同 change 的等价规格关闭结果时返回稳定 no-op；远端内容、分支映射或关闭身份不等价时 fail-closed 并保留诊断。系统不得以 force push、隐式 rebase、删除分支或“最后写入者获胜”解决竞争。测试、检出和本地 Run 可以至少执行一次，远端结果必须最终收敛一次。
 
 当前文件 Store 只为单个状态卷提供原子状态转换，不伪装成跨机器锁。未来加入共享数据库 Store 时可以减少重复计算，但不得改变远端 OID 栅栏和结果核对语义，因为外部副作用仍需要自己的幂等边界。
 
@@ -209,7 +209,7 @@ Repoctopus 不建立独占 Change owner。任一成员或 Agent 都可以在同�
 
 `run start` 在创建新的日常开发 Run 之前调用同一补偿入口。业务 MR 仍打开时只记录等待结果；全部合入时同步完成或恢复 Post-merge Run；关闭未合入、权限错误、远端竞争和验证失败返回结构化诊断，不得被新 Run 静默覆盖。维护者可以显式执行一次 `post-merge reconcile --workspace <path>`，命令完成后退出，不留下 HTTP Listener 或 Timer。
 
-第一版候选枚举使用当前 coordination workspace 的 Delivery Store；全新 clone 没有该持久状态时不能声称已经发现全部历史 change。跨无共享状态卷的自动发现需要后续引入受验证的远端索引或共享 Store，但不同 Runner 在已经发现同一 change 后的远端收敛属于本次范围。
+第一版候选枚举使用当前 Workspace 的 Delivery Store；全新 clone 没有该持久状态时不能声称已经发现全部历史 change。跨无共享状态卷的自动发现需要后续引入受验证的远端索引或共享 Store，但不同 Runner 在已经发现同一 change 后的远端收敛属于本次范围。
 
 ### 19. 未决定的批准请求是可替换指针，决定与动作事实不可覆盖
 
@@ -230,7 +230,7 @@ Workspace 只有一套领域语义，但允许两种物理拓扑：单仓项目�
 ## Risks / Trade-offs
 
 - [DSH Skill 完整依赖闭包可能引入 Agent 专有类型] → 先以固定 commit 生成依赖与源码采用报告；保留 Registry 行为闭包，只在来源登记的产品适配层移除无运行价值的 Agent Consumer 耦合。
-- [文件 Store 不能为不同机器提供全局 Lease] → 明确允许重复计算，以协调分支精确 OID、非强制 push 和发布后权威核对收敛远端结果；共享数据库只作为后续调度优化，不能替代副作用幂等。
+- [文件 Store 不能为不同机器提供全局 Lease] → 明确允许重复计算，以 Change MR 分支精确 OID、非强制 push 和发布后权威核对收敛远端结果；共享数据库只作为后续调度优化，不能替代副作用幂等。
 - [Webhook 已返回 202 但后台随后失败] → 202 只表示持久收件成功；处理状态、重试与死信通过查询命令和遥测暴露。
 - [机器收尾修改范围过宽] → 配置具体允许路径，提交前同时比较关闭计划和实际 Git diff，任何额外文件 fail-closed。
 - [Skill 正文变化影响可重复性] → 首次使用时绑定正文摘要，恢复比较，发布包与来源清单固定内置集合。
@@ -245,8 +245,8 @@ Workspace 只有一套领域语义，但允许两种物理拓扑：单仓项目�
 3. 接入 Specification Service 与 OpenSpec Provider，用其校验本 change。
 4. 接入 HTTP Host、GitHub Adapter、Event Inbox 与 Runner，使用签名 fixture 验证持久化、去重和恢复。
 5. 接入 PostMergeCoordinator 与 Post-merge Workflow，使用临时 Git remote 和 mock 平台完成全链路 E2E。
-6. 在真实 Repoctopus change 上执行自举交付；用户批准验证报告后发布协调 MR。
+6. 在真实 Repoctopus change 上执行自举交付；用户批准验证报告后发布 Change MR。
 7. MR 合入后由新路径完成主规格同步和归档，验证完成前保留显式 `delivery refresh` 作为恢复入口。
-8. 增加一次性 `post-merge reconcile` 与 `run start` 前置补偿，使用两个独立 Runner 竞争同一协调分支的故障注入测试验证一个发布成功、另一个等价收敛或安全停止。
+8. 增加一次性 `post-merge reconcile` 与 `run start` 前置补偿，使用两个独立 Runner 竞争同一 Change MR 分支的故障注入测试验证一个发布成功、另一个等价收敛或安全停止。
 
 回滚通过普通 revert MR 完成。已经持久化的 Inbox、Run、Evidence 和 Receipt 保持只读可诊断；回滚版本不得把未知新状态伪装为成功，必要时返回 `migration_required`。

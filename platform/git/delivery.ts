@@ -131,11 +131,11 @@ async function adoptEquivalentPostMergeCommit(
     'fetch',
     '--no-tags',
     input.policy.remote,
-    `refs/heads/${input.coordination.sourceBranch}`,
+    `refs/heads/${input.changeMergeRequest.sourceBranch}`,
   ]);
   const fetched = await git(cwd, ['rev-parse', 'FETCH_HEAD']);
   if (fetched !== remoteCommit) {
-    throw new Error('Post-merge coordination remote source drifted during recovery');
+    throw new Error('Post-merge Change MR remote source drifted during recovery');
   }
   const parents = (await git(cwd, ['rev-list', '--parents', '-n', '1', fetched])).split(/\s+/u);
   const [tree, message, authorName, authorEmail] = await Promise.all([
@@ -333,20 +333,20 @@ export class GitDeliveryAdapter implements PostMergeDeliveryGitPort {
     ) {
       throw new Error('Post-merge publication workspace does not match its audited Git root');
     }
-    await git(cwd, ['check-ref-format', '--branch', input.coordination.sourceBranch]);
-    await git(cwd, ['check-ref-format', '--branch', input.coordination.targetBranch]);
+    await git(cwd, ['check-ref-format', '--branch', input.changeMergeRequest.sourceBranch]);
+    await git(cwd, ['check-ref-format', '--branch', input.changeMergeRequest.targetBranch]);
     const branch = await git(cwd, ['symbolic-ref', '--quiet', '--short', 'HEAD']);
-    if (branch !== input.coordination.sourceBranch) {
+    if (branch !== input.changeMergeRequest.sourceBranch) {
       throw new Error(
-        `Post-merge publication source branch drifted: expected ${input.coordination.sourceBranch}, received ${branch}`,
+        `Post-merge publication source branch drifted: expected ${input.changeMergeRequest.sourceBranch}, received ${branch}`,
       );
     }
     const configuredRemote = await git(cwd, ['remote', 'get-url', input.policy.remote]);
-    if (normalizeRemoteIdentity(configuredRemote) !== input.coordination.remoteIdentity) {
-      throw new Error('Post-merge publication remote does not match the coordination MR');
+    if (normalizeRemoteIdentity(configuredRemote) !== input.changeMergeRequest.remoteIdentity) {
+      throw new Error('Post-merge publication remote does not match the Change MR');
     }
 
-    const before = await remoteOid(cwd, input.policy.remote, input.coordination.sourceBranch);
+    const before = await remoteOid(cwd, input.policy.remote, input.changeMergeRequest.sourceBranch);
     let head = await git(cwd, ['rev-parse', 'HEAD']);
     let commitRecovered = false;
     if (head === input.baseline.head) {
@@ -370,7 +370,7 @@ export class GitDeliveryAdapter implements PostMergeDeliveryGitPort {
             pushRecovered: true,
           };
         }
-        throw new Error('Post-merge coordination remote source drifted before commit');
+        throw new Error('Post-merge Change MR remote source drifted before commit');
       }
       await git(cwd, [
         '-c',
@@ -408,7 +408,7 @@ export class GitDeliveryAdapter implements PostMergeDeliveryGitPort {
     const remoteBeforePush = await remoteOid(
       cwd,
       input.policy.remote,
-      input.coordination.sourceBranch,
+      input.changeMergeRequest.sourceBranch,
     );
     let pushRecovered = remoteBeforePush === head;
     if (!pushRecovered) {
@@ -425,16 +425,20 @@ export class GitDeliveryAdapter implements PostMergeDeliveryGitPort {
             pushRecovered: true,
           };
         }
-        throw new Error('Post-merge coordination remote source drifted before push');
+        throw new Error('Post-merge Change MR remote source drifted before push');
       }
       try {
         await git(cwd, [
           'push',
           input.policy.remote,
-          `${input.coordination.sourceBranch}:refs/heads/${input.coordination.sourceBranch}`,
+          `${input.changeMergeRequest.sourceBranch}:refs/heads/${input.changeMergeRequest.sourceBranch}`,
         ]);
       } catch (error) {
-        const raced = await remoteOid(cwd, input.policy.remote, input.coordination.sourceBranch);
+        const raced = await remoteOid(
+          cwd,
+          input.policy.remote,
+          input.changeMergeRequest.sourceBranch,
+        );
         const expectedTree = await git(cwd, ['rev-parse', 'HEAD^{tree}']);
         if (
           raced &&
@@ -451,9 +455,13 @@ export class GitDeliveryAdapter implements PostMergeDeliveryGitPort {
         throw error;
       }
     }
-    const published = await remoteOid(cwd, input.policy.remote, input.coordination.sourceBranch);
+    const published = await remoteOid(
+      cwd,
+      input.policy.remote,
+      input.changeMergeRequest.sourceBranch,
+    );
     if (published !== head) {
-      throw new Error('Post-merge coordination push could not be verified');
+      throw new Error('Post-merge Change MR push could not be verified');
     }
     pushRecovered ||= before === head;
     return { commitOid: head, remoteOid: published, commitRecovered, pushRecovered };

@@ -121,7 +121,7 @@ export function postMergeProjectSnapshot(input: {
     !input.projectId.trim() ||
     !input.root.trim() ||
     sources.size !== input.sources.length ||
-    sources.size !== input.coordination.repositories.length
+    input.coordination.repositories.some((repository) => !sources.has(repository.repositoryId))
   ) {
     throw new Error('Post-merge project snapshot sources are incomplete');
   }

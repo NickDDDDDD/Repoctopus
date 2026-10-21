@@ -17,7 +17,7 @@ Repoctopus 把功能分支 checkpoint 视为远端备份边界：策略允许的
 
 每个 change 通过 Delivery Intent 显式选择仓库，示例见 [examples/delivery-intent.yaml](examples/delivery-intent.yaml)。扫描到但没有选择的脏仓库只产生警告，不会被自动提交或发布。
 
-Delivery Intent v2 使用 `coordinationMergeRequest` 记录承载规格、验证与最终收尾的协调 MR，`repositories` 则完整声明业务 MR 集合。“协调”是职责而不是物理位置：协调 MR 与业务 MR 可以位于同一个仓库，但不能是同一个 MR。同仓时必须使用不同的源分支或目标分支；平台返回业务 MR 后，Delivery 还会按 `provider + repositoryId + number` 核对它没有复用协调 MR。平台合入事件只映射业务 MR；协调 MR 的更新和最终合入遵循独立的收尾与人工决策边界。
+Delivery Intent v2 使用 `changeMergeRequest` 记录承载规格、验证与最终收尾的 Change MR，`repositories` 则完整声明业务 MR 集合。Change MR 必须属于 `workspace.repositoryId` 指定的 Workspace Repository；在 Dedicated Workspace 中它通常与业务仓分离，在 Embedded Workspace 中它可以与某个业务 MR 位于同一物理仓库，但仍不能是同一个 MR。同仓时必须使用不同的源分支或目标分支；平台返回业务 MR 后，Delivery 还会按 `provider + repositoryId + number` 核对它没有复用 Change MR。平台合入事件只映射业务 MR；Change MR 的更新和最终合入遵循独立的收尾与人工决策边界。
 
 ## 批准快照
 
@@ -60,11 +60,11 @@ GitHub `pull_request` webhook 只提供业务 MR 的 `provider + remoteIdentity 
 
 ## 受保护的收尾发布
 
-Post-merge Run 通过同一个 Delivery 权威边界发布规格关闭结果。发布动作只读取已记录的原协调 MR，不查找或创建替代 MR；协调 MR 与业务 MR 即使位于同一物理仓库，角色边界也保持不变。
+Post-merge Run 通过同一个 Delivery 权威边界发布规格关闭结果。发布动作只读取已记录的原 Change MR，不查找或创建替代 MR；Change MR 与业务 MR 即使位于同一物理仓库，角色边界也保持不变。
 
 策略必须精确声明 `commit`、`push` 和 `merge_request.update`。Delivery 在任何 Git 副作用前确认原 MR 仍开放，源分支、目标分支、仓库和 MR identity 未变化；Git Adapter 再确认 workspace、当前分支、remote identity 和远端源分支仍匹配审计基线。
 
-发布只暂存路径审计列出的文件，并逐文件核对内容摘要。新 commit 必须是审计基线的普通单父子提交；push 使用显式非强制 refspec，完成后远端 OID 必须精确等于本地 commit。最后只更新原协调 MR 的 title/body，不改变 head、base 或合入状态。
+发布只暂存路径审计列出的文件，并逐文件核对内容摘要。新 commit 必须是审计基线的普通单父子提交；push 使用显式非强制 refspec，完成后远端 OID 必须精确等于本地 commit。最后只更新原 Change MR 的 title/body，不改变 head、base 或合入状态。
 
 如果 commit、push 或 MR update 已生效但响应丢失，重试会核对并复用相同事实。MR 已关闭、分支映射改变、远端漂移、提交身份不符，或策略包含 merge、force-push、rebase、删分支等操作时，发布 fail-closed。具体检查和恢复命令见 [观察和恢复 Post-merge 收尾](post-merge.md)。
 

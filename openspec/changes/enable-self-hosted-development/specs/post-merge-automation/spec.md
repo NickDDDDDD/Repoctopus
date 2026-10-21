@@ -2,7 +2,7 @@
 
 ## Purpose
 
-定义 Repoctopus 在多仓业务 MR 合入后如何自动启动可恢复收尾 Run，基于精确合入代码生成证据、同步规格并更新协调 MR，同时控制机器修改范围。
+定义 Repoctopus 在多仓业务 MR 合入后如何自动启动可恢复收尾 Run，基于精确合入代码生成证据、同步规格并更新 Change MR，同时控制机器修改范围。
 
 ## ADDED Requirements
 
@@ -55,18 +55,18 @@ Repoctopus MUST 只允许 Post-merge Run 修改项目配置允许的规格基线
 #### Scenario: 收尾差异只含允许内容
 
 - **WHEN** 变更只包含同步后的主规格、归档 change 和合入后验证记录
-- **THEN** 系统可以使用配置的机器身份创建普通 commit 并推送协调分支
+- **THEN** 系统可以使用配置的机器身份创建普通 commit 并推送 Change MR 分支
 
-### Requirement: 收尾持续更新原协调 MR
+### Requirement: 收尾持续更新原 Change MR
 
-Repoctopus MUST 把规划和最终收尾保存在同一个协调分支与 MR 上；机器可以在受控路径内提交、推送并更新该 MR，但不得执行 merge、force push、隐式 rebase、删除分支或改变目标分支。
+Repoctopus MUST 把规划和最终收尾保存在同一个 Change MR 分支与 MR 上；机器可以在受控路径内提交、推送并更新该 MR，但不得执行 merge、force push、隐式 rebase、删除分支或改变目标分支。
 
-#### Scenario: 协调 MR 在业务开发期间保持打开
+#### Scenario: Change MR 在业务开发期间保持打开
 
-- **WHEN** 业务 MR 全部合入且协调 MR 仍然打开
+- **WHEN** 业务 MR 全部合入且 Change MR 仍然打开
 - **THEN** 系统把收尾 commit 推送到原源分支并更新原 MR 描述或状态
 
-#### Scenario: 协调 MR 已关闭或源分支被改写
+#### Scenario: Change MR 已关闭或源分支被改写
 
 - **WHEN** 收尾前发现原 MR 不再可更新或远端源分支与记录基线冲突
 - **THEN** 系统停止远端动作并请求人工决定，不创建未声明的新 MR
@@ -91,7 +91,7 @@ Repoctopus MUST 支持由团队可达的 Runner 在代码平台事件后完成�
 
 ### Requirement: 开发 Run 启动前执行一次性补偿
 
-Repoctopus MUST 在启动新的日常开发 Run 前检查当前 coordination workspace 已登记但尚未完成收尾的 Delivery，并允许维护者显式执行相同的一次性补偿；候选发现不得按 MR 作者或独占 Change owner 过滤，命令结束后不得留下 HTTP Listener 或后台轮询。
+Repoctopus MUST 在启动新的日常开发 Run 前检查当前 Workspace 已登记但尚未完成收尾的 Delivery，并允许维护者显式执行相同的一次性补偿；候选发现不得按 MR 作者或独占 Change owner 过滤，命令结束后不得留下 HTTP Listener 或后台轮询。
 
 #### Scenario: Webhook 在 Runner 离线期间丢失
 
@@ -105,14 +105,14 @@ Repoctopus MUST 在启动新的日常开发 Run 前检查当前 coordination wor
 
 ### Requirement: 多个 Runner 的远端结果安全收敛
 
-Repoctopus MUST 允许多个 Runner 对同一 change 进行至少一次查询和验证，并以原协调分支精确远端 OID、普通非强制 push 和发布后权威核对约束远端收尾；Runner identity 只用于执行审计，不代表 Change 所有权。
+Repoctopus MUST 允许多个 Runner 对同一 change 进行至少一次查询和验证，并以原 Change MR 分支精确远端 OID、普通非强制 push 和发布后权威核对约束远端收尾；Runner identity 只用于执行审计，不代表 Change 所有权。
 
 #### Scenario: 两个 Runner 同时收尾同一 Change
 
-- **WHEN** 两个 Runner 从相同协调分支基线开始执行且其中一个先完成远端发布
+- **WHEN** 两个 Runner 从相同 Change MR 分支基线开始执行且其中一个先完成远端发布
 - **THEN** 另一个 Runner 重新读取远端，等价关闭结果返回 no-op，不等价变化 fail-closed，且不得 force push 或覆盖胜出结果
 
 #### Scenario: Runner 使用独立本地状态卷
 
 - **WHEN** 两个 Runner 没有共享本地 Lease 或 Run Store 但发现了同一 change
-- **THEN** 系统允许重复本地计算，并仍通过远端并发栅栏保证只有可核对的协调分支结果生效
+- **THEN** 系统允许重复本地计算，并仍通过远端并发栅栏保证只有可核对的 Change MR 分支结果生效
