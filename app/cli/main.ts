@@ -43,6 +43,9 @@ import { reviewHumanDecision } from './human-decision.js';
 import { reviewProjectConfigurationDecision } from './project-configuration-decision.js';
 import { startRunnerApplication } from '../runner/application.js';
 import type { PostMergeReconciliationResult } from '../../services/post-merge-coordinator.js';
+import type { SpecificationApprovalState } from '../../domains/specification/types.js';
+import { inspectPublishedChangeBranch } from '../../platform/git/change-branch.js';
+import { reviewSpecificationApproval } from './specification-approval-decision.js';
 
 const DIST_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PRODUCT_ROOT =
@@ -453,6 +456,117 @@ async function specificationValidate(parsed: ParsedArguments): Promise<CliEnvelo
     });
     if (!result.valid) throw new Error(`Specification validation failed: ${changeId}`);
     return successEnvelope({ command: 'spec validate', result });
+  } finally {
+    await app.close();
+  }
+}
+
+function qualifiedSha256(value: string, label: string): `sha256:${string}` {
+  const qualified = value.startsWith('sha256:') ? value : `sha256:${value}`;
+  if (!/^sha256:[a-f0-9]{64}$/u.test(qualified)) {
+    throw new Error(`${label} is not a SHA-256 digest`);
+  }
+  return qualified as `sha256:${string}`;
+}
+
+async function specificationApprovalPrepare(
+  parsed: ParsedArguments,
+): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const changeId = stringFlag(parsed, 'change', { required: true })!;
+  const sourceBranch = stringFlag(parsed, 'branch', { required: true })!;
+  const targetBranch = stringFlag(parsed, 'target', { required: true })!;
+  const remote = stringFlag(parsed, 'remote', { fallback: 'origin' })!;
+  const config = await loadProjectConfig(workspace);
+  const workspaceRepository = config.repositories.find(
+    (repository) => repository.id === config.shared.workspace.repositoryId,
+  );
+  if (!workspaceRepository) throw new Error('Workspace Repository is not configured');
+  const changeBranch = await inspectPublishedChangeBranch({
+    repositoryPath: workspaceRepository.resolvedPath,
+    repositoryId: workspaceRepository.id,
+    remote,
+    sourceBranch,
+    targetBranch,
+  });
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute<unknown, SpecificationApprovalState>(
+      'specification.approval.prepare',
+      {
+        changeId,
+        changeBranch,
+        compositionDigest: app.composition.compositionDigest,
+        projectConfigDigest: qualifiedSha256(config.effectiveDigest, 'Project configuration'),
+      },
+    );
+    return successEnvelope({
+      command: 'spec approval prepare',
+      result,
+      nextActions:
+        result.status === 'awaiting_approval'
+          ? [`repoctopus spec approval review --change ${changeId}`]
+          : [],
+    });
+  } finally {
+    await app.close();
+  }
+}
+
+async function specificationApprovalStatus(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const changeId = stringFlag(parsed, 'change', { required: true })!;
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute('specification.approval.status', {
+      changeId,
+    });
+    return successEnvelope({ command: 'spec approval status', result });
+  } finally {
+    await app.close();
+  }
+}
+
+async function specificationApprovalReview(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  if (!process.stdin.isTTY || !process.stdout.isTTY) {
+    throw new Error('Human approval requires an interactive terminal or a trusted IDE Adapter');
+  }
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const changeId = stringFlag(parsed, 'change', { required: true })!;
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const state = await app.context.commandRouter.execute<
+      unknown,
+      SpecificationApprovalState | null
+    >('specification.approval.status', { changeId });
+    if (!state || state.status !== 'awaiting_approval') {
+      throw new Error(`Specification is not awaiting approval: ${changeId}`);
+    }
+    const selected = await reviewSpecificationApproval({
+      request: state.decisionRequest,
+      input: process.stdin,
+      output: process.stdout,
+    });
+    const result = await app.context.commandRouter.execute<unknown, SpecificationApprovalState>(
+      'specification.approval.decide',
+      {
+        changeId,
+        response: {
+          apiVersion: 'repoctopus/v1alpha1',
+          kind: 'HumanDecisionResponse',
+          requestId: state.decisionRequest.requestId,
+          snapshotDigest: state.decisionRequest.snapshotDigest,
+          decision: selected.decision,
+          ...(selected.comment ? { comment: selected.comment } : {}),
+        },
+        actor: {
+          actorId: userInfo().username,
+          source: 'cli',
+          authenticated: true,
+        },
+      },
+    );
+    return successEnvelope({ command: 'spec approval review', result });
   } finally {
     await app.close();
   }
@@ -958,6 +1072,9 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   if (command === 'skill project') return skillProject(parsed);
   if (command === 'spec inspect') return specificationInspect(parsed);
   if (command === 'spec validate') return specificationValidate(parsed);
+  if (command === 'spec approval prepare') return specificationApprovalPrepare(parsed);
+  if (command === 'spec approval status') return specificationApprovalStatus(parsed);
+  if (command === 'spec approval review') return specificationApprovalReview(parsed);
   if (command === 'evidence plan') return evidencePlan(parsed);
   if (command === 'evidence run') return evidenceRun(parsed);
   if (command === 'evidence status') return evidenceStatus(parsed);
@@ -984,7 +1101,7 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   if (command === 'browser doctor') return browserDoctor(parsed);
   if (command === 'browser install') return browserInstall(parsed);
   throw new Error(
-    'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|record|resume> | runner start | post-merge reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh> | event <status|replay|retry> | approval review | browser <doctor|install> | doctor',
+    'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|record|resume> | runner start | post-merge reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh> | event <status|replay|retry> | approval review | browser <doctor|install> | doctor',
   );
 }
 

@@ -5,7 +5,11 @@ import type {
   ChangeBranchReference,
   PlanningArtifactSnapshot,
   PlanningSnapshot,
+  SpecificationApprovalActor,
   SpecificationApprovalDecisionRequest,
+  SpecificationApprovalDecisionResponse,
+  SpecificationApprovalRecord,
+  SpecificationApprovalState,
   SpecificationChange,
   SpecificationValidation,
 } from './types.js';
@@ -130,4 +134,82 @@ export function createSpecificationApprovalRequest(
     changeBranch: structuredClone(snapshot.changeBranch),
     options: ['approve', 'request_changes', 'reject'],
   };
+}
+
+export function requestSpecificationApproval(input: {
+  current: SpecificationApprovalState | null;
+  snapshot: PlanningSnapshot;
+  timestamp: string;
+  requestId?: string;
+}): SpecificationApprovalState {
+  assertPlanningSnapshot(input.snapshot);
+  const current = input.current;
+  if (current && current.changeId !== input.snapshot.changeId) {
+    throw new Error('Specification approval state belongs to another change');
+  }
+  if (current?.snapshot.digest === input.snapshot.digest) return structuredClone(current);
+  return {
+    schemaVersion: 1,
+    changeId: input.snapshot.changeId,
+    stateVersion: (current?.stateVersion ?? -1) + 1,
+    status: 'awaiting_approval',
+    snapshot: structuredClone(input.snapshot),
+    decisionRequest: createSpecificationApprovalRequest(input.snapshot, input.requestId),
+    decision: null,
+    updatedAt: input.timestamp,
+  };
+}
+
+export function recordSpecificationApprovalDecision(input: {
+  state: SpecificationApprovalState;
+  response: SpecificationApprovalDecisionResponse;
+  actor: SpecificationApprovalActor;
+  timestamp: string;
+}): SpecificationApprovalState {
+  if (!input.actor.authenticated || !input.actor.actorId.trim()) {
+    throw new Error('Specification approval decision is not trusted');
+  }
+  if (input.state.status !== 'awaiting_approval') {
+    throw new Error(`Specification approval is not awaiting a decision: ${input.state.status}`);
+  }
+  assertPlanningSnapshot(input.state.snapshot);
+  const request = input.state.decisionRequest;
+  const response = input.response;
+  if (
+    response.apiVersion !== 'repoctopus/v1alpha1' ||
+    response.kind !== 'HumanDecisionResponse' ||
+    response.requestId !== request.requestId ||
+    response.snapshotDigest !== request.snapshotDigest ||
+    !request.options.includes(response.decision)
+  ) {
+    throw new Error('Specification approval response does not match the pending request');
+  }
+  const decision: SpecificationApprovalRecord = {
+    schemaVersion: 1,
+    requestId: request.requestId,
+    changeId: input.state.changeId,
+    snapshotDigest: input.state.snapshot.digest,
+    decision: response.decision,
+    actorId: input.actor.actorId,
+    source: input.actor.source,
+    decidedAt: input.timestamp,
+    ...(response.comment ? { comment: response.comment } : {}),
+  };
+  return {
+    ...input.state,
+    stateVersion: input.state.stateVersion + 1,
+    status:
+      response.decision === 'approve'
+        ? 'approved'
+        : response.decision === 'request_changes'
+          ? 'changes_requested'
+          : 'rejected',
+    decision,
+    updatedAt: input.timestamp,
+  };
+}
+
+export interface SpecificationApprovalStorePort {
+  load(changeId: string): Promise<SpecificationApprovalState | null>;
+  commit(state: SpecificationApprovalState, previousStateVersion: number | null): Promise<void>;
 }

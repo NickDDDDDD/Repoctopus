@@ -80,6 +80,36 @@ function artifactKind(id: string): SpecificationArtifact['kind'] | undefined {
   return undefined;
 }
 
+async function artifactDigest(
+  workspace: string,
+  value: unknown,
+): Promise<`sha256:${string}` | undefined> {
+  if (!Array.isArray(value) || value.length === 0) return undefined;
+  const files = await Promise.all(
+    value.map(async (candidate) => {
+      if (typeof candidate !== 'string')
+        throw new Error('OpenSpec returned an invalid artifact path');
+      const absolute = path.resolve(workspace, candidate);
+      const relative = path.relative(workspace, absolute);
+      if (
+        relative === '' ||
+        relative === '..' ||
+        relative.startsWith(`..${path.sep}`) ||
+        path.isAbsolute(relative)
+      ) {
+        throw new Error('OpenSpec artifact path escapes the workspace');
+      }
+      return {
+        path: relative.split(path.sep).join('/'),
+        digest: createHash('sha256')
+          .update(await readFile(absolute))
+          .digest('hex'),
+      };
+    }),
+  );
+  return sha256(files.sort((left, right) => left.path.localeCompare(right.path)));
+}
+
 function diagnostics(value: unknown): SpecificationDiagnostic[] {
   if (!Array.isArray(value)) return [];
   return value.map((issue, index) => {
@@ -160,14 +190,23 @@ export class OpenSpecProvider extends Specification {
       this.json<ShowResult>(['show', id, '--type', 'change', '--no-interactive'], signal),
       this.json<StatusResult>(['status', '--change', id], signal),
     ]);
-    const artifacts = Object.entries(status.artifactPaths ?? {})
-      .map(([artifactId, artifact]): SpecificationArtifact | undefined => {
-        const kind = artifactKind(artifactId);
-        if (!kind) return undefined;
-        const ready =
-          Array.isArray(artifact.existingOutputPaths) && artifact.existingOutputPaths.length > 0;
-        return { id: artifactId, kind, status: ready ? 'ready' : 'missing' };
-      })
+    const artifacts = (
+      await Promise.all(
+        Object.entries(status.artifactPaths ?? {}).map(
+          async ([artifactId, artifact]): Promise<SpecificationArtifact | undefined> => {
+            const kind = artifactKind(artifactId);
+            if (!kind) return undefined;
+            const digest = await artifactDigest(this.workspace, artifact.existingOutputPaths);
+            return {
+              id: artifactId,
+              kind,
+              status: digest ? 'ready' : 'missing',
+              ...(digest ? { digest } : {}),
+            };
+          },
+        ),
+      )
+    )
       .filter((artifact): artifact is SpecificationArtifact => artifact !== undefined)
       .sort((left, right) => left.id.localeCompare(right.id));
     const affectedCapabilities = [

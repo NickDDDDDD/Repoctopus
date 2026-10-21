@@ -53,6 +53,7 @@ import postMergeActionsProvider from './post-merge/post-merge-actions-provider.j
 import runnerApplication from './application/runner-application.js';
 import desktopApplication from './application/desktop-application.js';
 import { DesktopApplication } from '../services/desktop-application.js';
+import { SpecificationPlanning } from '../services/specification-planning.js';
 
 interface BuiltinDefinition {
   descriptor: Omit<PluginDescriptor, 'codeDigest'>;
@@ -508,10 +509,29 @@ const definitions: readonly BuiltinDefinition[] = [
     plugin: OpenSpecProvider,
     sourceFiles: [
       'services/specification.ts',
-      'domains/specification/planning-approval.ts',
       'domains/specification/types.ts',
       'platform/specification/openspec-process.ts',
       'platform/specification/openspec-provider.ts',
+    ],
+  },
+  {
+    descriptor: {
+      id: 'specification-planning',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: [],
+      permissions: ['filesystem'],
+      stateSchemas: { 'specification-approval': '1' },
+    },
+    plugin: SpecificationPlanning,
+    sourceFiles: [
+      'services/specification-planning.ts',
+      'domains/specification/planning-approval.ts',
+      'platform/specification/file-planning-approval-store.ts',
     ],
   },
   {
@@ -547,6 +567,7 @@ const definitions: readonly BuiltinDefinition[] = [
     sourceFiles: [
       'services/project.ts',
       'plugins/project/git-project-provider.ts',
+      'platform/git/change-branch.ts',
       'platform/git/remote-identity.ts',
       'platform/git/probe.ts',
     ],

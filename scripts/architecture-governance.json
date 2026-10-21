@@ -172,6 +172,7 @@
       "targets": [
         "domains/specification/**",
         "platform/specification/**",
+        "platform/git/change-branch.ts",
         "plugins/command/specification-contributor.ts"
       ],
       "upstream": ["@fission-ai/openspec@1.14.3"],
@@ -332,6 +333,14 @@
       "id": "event-inbox-transition",
       "files": [
         "platform/events/file-event-inbox-store.ts",
+        "platform/runtime/recoverable-file-transition.ts"
+      ],
+      "status": "shared-coordinator"
+    },
+    {
+      "id": "specification-approval-transition",
+      "files": [
+        "platform/specification/file-planning-approval-store.ts",
         "platform/runtime/recoverable-file-transition.ts"
       ],
       "status": "shared-coordinator"

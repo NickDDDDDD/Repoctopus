@@ -129,6 +129,23 @@ export interface SpecificationApprovalRecord {
   comment?: string;
 }
 
+export type SpecificationApprovalStatus =
+  | 'awaiting_approval'
+  | 'approved'
+  | 'changes_requested'
+  | 'rejected';
+
+export interface SpecificationApprovalState {
+  schemaVersion: 1;
+  changeId: string;
+  stateVersion: number;
+  status: SpecificationApprovalStatus;
+  snapshot: PlanningSnapshot;
+  decisionRequest: SpecificationApprovalDecisionRequest;
+  decision: SpecificationApprovalRecord | null;
+  updatedAt: string;
+}
+
 export interface SpecificationCompatibility {
   status: 'same' | 'drifted';
   reason: string;
