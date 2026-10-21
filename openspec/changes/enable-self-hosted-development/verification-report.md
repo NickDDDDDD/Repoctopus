@@ -3,7 +3,7 @@
 ## 报告状态
 
 - 结论：实现与本 change 的 Proposal、Design、Delta Specs 和 Tasks 一致，54 项任务已完成。
-- 状态：业务 MR 与 Workspace 中的 Change MR 已拆分并登记到正式 Delivery，最新快照等待用户批准；批准不授权 merge。
+- 状态：业务发布计划与 Workspace 中的 Change MR 已拆分并登记到正式 Delivery，最新快照等待用户批准；批准不授权 merge。
 - 验证日期：2026-10-21。
 - 分支：`feat/enable-self-hosted-development`。
 - 业务 MR：Draft PR #8；Change MR：Draft PR #9。
@@ -126,7 +126,7 @@ DSH 与 Comet 的网络漂移检查独立于离线 `verify`，每天由 workflow
 - 文件 Event Inbox 的 Lease 只协调共享同一状态卷的 Runner；独立状态卷允许重复计算，并由 Change MR 分支远端 OID 栅栏收敛发布结果。这不是共享数据库调度、自动扩缩容或零重复计算意义上的生产级 HA。
 - 当前只有 GitHub Adapter；CodeHub Adapter、远程 Skill 市场、Skill 管理 UI、多规格权威合并和生产级 HA 不在本 change 范围内。
 - Dedicated Workspace 要求团队为 Workspace Repository 单独提供远端；Embedded Workspace 允许与业务代码共享远端，但 Change MR 与业务 MR 仍须使用可区分的分支和 MR 身份。
-- 独立进程 Post-merge E2E 使用 mock 平台 API 和本地 bare remote。真实业务 PR #8 尚未合入；Change PR #9 已作为 Workspace Change MR 绑定到待审批 Delivery，真实 GitHub 合入回调、主规格同步与 change 归档留待业务 MR 人工合入后复验。
+- 独立进程 Post-merge E2E 使用 mock 平台 API 和本地 bare remote。真实业务 PR #8 尚未合入；Change PR #9 已作为 Workspace Change MR 绑定到待审批 Delivery，业务发布计划绑定 `feat/enable-self-hosted-development` 分支并将在获批执行 `mr.create_or_update` 后记录平台返回的稳定业务 MR 身份。真实 GitHub 合入回调、主规格同步与 change 归档留待业务 MR 人工合入后复验。
 - Runner 要实时接收 Webhook 仍必须位于平台可达环境；开发机无法接收公网 webhook 时，可以使用 Inbox replay/retry，或由短生命周期 `post-merge reconcile` 经公开 Coordinator 重新读取权威平台状态。
 - 第一版一次性候选发现依赖当前 Workspace 的 `.repoctopus/deliveries/`；没有复制或共享持久状态的全新 clone 不能自动发现全部历史 change。受验证的远端索引或共享 Store 留给后续 change。
 - 未发布的 Delivery state v1 不做静默迁移，返回 `migration_required`。组合、Provider 或状态 Schema 不兼容时同样只允许只读诊断。
@@ -141,4 +141,4 @@ DSH 与 Comet 的网络漂移检查独立于离线 `verify`，每天由 workflow
 
 批准本报告表示接受当前实现、验证结论、第三方固定来源和上述已知限制，并授权 Repoctopus Delivery 按已登记的业务 PR #8 与 Change PR #9 发布最终快照。批准不授权 merge、force push、rebase、删除分支、改变目标分支或扩大仓库集合。任何代码树、报告、策略、仓库选择、远端基线或动作计划变化都会使批准失效并要求重新验证。
 
-Change PR #9 与业务 PR #8 已写入正式 Delivery 并绑定待审批快照；只有用户明确批准当前快照后，业务 PR #8 才能进入人工合入。合入后，平台事件与 Post-merge Run 应再次执行精确合入代码验证、主规格同步、change 归档、收尾 commit/push 和原 Change MR 更新；该合入后证据将作为本报告的后续复验记录。
+Change PR #9 与业务发布分支已写入正式 Delivery 并绑定待审批快照；只有用户明确批准当前快照并让 `mr.create_or_update` 核对现有业务 PR #8 后，业务 PR #8 才能进入人工合入。合入后，平台事件与 Post-merge Run 应再次执行精确合入代码验证、主规格同步、change 归档、收尾 commit/push 和原 Change MR 更新；该合入后证据将作为本报告的后续复验记录。
