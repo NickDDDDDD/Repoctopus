@@ -32,7 +32,7 @@ describe('documented project onboarding flow', () => {
     const detection = await runCli({
       packageRoot,
       cwd: workspace,
-      args: ['project', 'detect', '--root', root, '--workspace', workspace],
+      args: ['project', 'detect', '--scan-root', root, '--workspace', workspace],
     });
     const detected = detection.result as { draft: ProjectDetectionDraft; file: string };
     expect(detection).toMatchObject({ ok: true, command: 'project detect' });

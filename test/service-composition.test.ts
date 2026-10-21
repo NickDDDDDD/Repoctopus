@@ -72,15 +72,16 @@ describe('Cordis product Service composition', () => {
     );
 
     const app = await bootApp({ composition, catalog });
-    expect(app.context.commandRouter.list()).toEqual(['project.probe']);
+    expect(app.context.commandRouter.list()).toEqual(['project.probe', 'workspace.snapshot']);
     const result = await app.context.commandRouter.execute<
-      { root: string; workspaceRoot: string },
+      { root: string },
       { repositories: { name: string }[] }
-    >('project.probe', { root, workspaceRoot: workspace });
+    >('project.probe', { root });
 
     expect(result.repositories.map((repository) => repository.name).sort()).toEqual([
       'backend',
       'front',
+      'workspace',
     ]);
     await app.close();
     expect(app.context.get('commandRouter')).toBeUndefined();
@@ -95,11 +96,14 @@ describe('Cordis product Service composition', () => {
 
     const app = await bootBootstrapComposition(path.resolve(import.meta.dirname, '..'));
     const result = await app.context.commandRouter.execute<
-      { root: string; workspaceRoot: string },
+      { root: string },
       { repositories: { name: string }[] }
-    >('project.probe', { root, workspaceRoot: workspace });
+    >('project.probe', { root });
 
-    expect(result.repositories.map((repository) => repository.name)).toEqual(['front']);
+    expect(result.repositories.map((repository) => repository.name)).toEqual([
+      'front',
+      'workspace',
+    ]);
     expect(app.composition.compositionDigest).toMatch(/^sha256:[a-f0-9]{64}$/);
     await app.close();
   });

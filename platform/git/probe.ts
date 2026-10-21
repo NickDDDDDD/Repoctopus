@@ -57,7 +57,7 @@ async function optionalGit(cwd: string, args: string[]): Promise<string | null> 
   return value.length > 0 ? value : null;
 }
 
-async function inspectRepository(candidate: string): Promise<RepositorySnapshot | null> {
+export async function inspectRepository(candidate: string): Promise<RepositorySnapshot | null> {
   const inside = await optionalGit(candidate, ['rev-parse', '--is-inside-work-tree']);
   if (inside !== 'true') return null;
   const topLevel = await optionalGit(candidate, ['rev-parse', '--show-toplevel']);
@@ -89,14 +89,72 @@ async function inspectRepository(candidate: string): Promise<RepositorySnapshot 
   };
 }
 
+export async function snapshotWorkspaceRepositories(options: {
+  workspaceId: string;
+  workspaceRoot: string;
+  workspaceRepositoryId: string;
+  repositories: ReadonlyArray<{ id: string; path: string }>;
+  now?: () => Date;
+}): Promise<ProjectSnapshot> {
+  const workspaceRoot = await realpath(options.workspaceRoot);
+  const repositories: RepositorySnapshot[] = [];
+  for (const configured of [...options.repositories].sort((left, right) =>
+    left.id.localeCompare(right.id),
+  )) {
+    let resolved: string;
+    try {
+      resolved = await realpath(configured.path);
+    } catch (error) {
+      throw new Error(
+        `Configured repository is unreadable: ${configured.id}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+    const repository = await inspectRepository(resolved);
+    if (!repository) {
+      throw new Error(
+        `Configured repository is not a Git repository root: ${configured.id}: ${resolved}`,
+      );
+    }
+    repositories.push({ ...repository, id: configured.id });
+  }
+  const workspaceRepository = repositories.find(
+    (repository) => repository.id === options.workspaceRepositoryId,
+  );
+  if (!workspaceRepository) {
+    throw new Error(`Workspace Repository is not registered: ${options.workspaceRepositoryId}`);
+  }
+  if (workspaceRepository.path.toLowerCase() !== workspaceRoot.toLowerCase()) {
+    throw new Error(
+      `Workspace Repository must resolve to the Workspace root: ${workspaceRepository.path}`,
+    );
+  }
+  const identities = new Map<string, string>();
+  for (const repository of repositories) {
+    const identity = repository.remoteIdentity ?? repository.path.toLowerCase();
+    const existing = identities.get(identity);
+    if (existing) {
+      throw new Error(
+        `Configured repositories share one Git identity: ${existing}, ${repository.id}: ${identity}`,
+      );
+    }
+    identities.set(identity, repository.id);
+  }
+  return createProjectSnapshot({
+    schemaVersion: 1,
+    projectId: options.workspaceId,
+    root: workspaceRoot,
+    capturedAt: (options.now ?? (() => new Date()))().toISOString(),
+    repositories,
+    diagnostics: [],
+  });
+}
+
 export async function probeProject(options: {
   root: string;
-  workspaceRoot?: string;
   duplicateIdentity?: 'error' | 'omit-ambiguous';
   now?: () => Date;
 }): Promise<ProjectSnapshot> {
   const resolvedRoot = await realpath(options.root);
-  const workspaceRoot = options.workspaceRoot ? await realpath(options.workspaceRoot) : null;
   const entries = await readdir(resolvedRoot, { withFileTypes: true });
   const repositories: RepositorySnapshot[] = [];
   const diagnostics: ProjectSnapshot['diagnostics'] = [];
@@ -125,12 +183,13 @@ export async function probeProject(options: {
       });
       continue;
     }
-    if (workspaceRoot && resolved.toLowerCase() === workspaceRoot.toLowerCase()) continue;
     const repository = await inspectRepository(resolved);
     if (repository) repositories.push(repository);
   }
 
-  repositories.sort((left, right) => left.id.localeCompare(right.id));
+  // Detection is presented to people and hashed into an approval draft. Keep its
+  // order tied to the visible scan path instead of an opaque identity hash.
+  repositories.sort((left, right) => left.path.localeCompare(right.path));
   const identityCounts = new Map<string, number>();
   for (const repository of repositories) {
     identityCounts.set(repository.id, (identityCounts.get(repository.id) ?? 0) + 1);

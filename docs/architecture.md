@@ -45,9 +45,6 @@ CLI / IDE / API Application Plugin
 公共入口都必须经 App Boot。当前已切换的真实调用链为：
 
 ```text
-project probe
-CLI → App Boot → CommandRouter → project.probe Contributor → Git Project Provider
-
 run start/status/next/record/resume
 CLI → App Boot → CommandRouter → run.* Contributor → WorkflowRuns Service
 
@@ -59,6 +56,7 @@ CLI → App Boot → CommandRouter → delivery.* Contributor → Delivery Servi
 
 project detect/prepare/review 与 browser/provenance 维护
 CLI → App Boot → CommandRouter → 对应 Contributor → ProjectOnboarding 或 BrowserMaintenance Service
+                   detect → 显式 scan root → Git Project Provider
 
 runner start
 CLI → Runner Application → HTTP Host + Webhook Route → PlatformEvents → durable Inbox

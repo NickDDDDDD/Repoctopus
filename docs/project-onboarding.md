@@ -10,7 +10,7 @@ Repoctopus 使用“确定性扫描 → Agent 补全 → 用户确认”建立�
 
 初始化项目仓时可把 [`examples/repoctopus.gitignore`](examples/repoctopus.gitignore) 的规则加入 workspace `.gitignore`。当前规则忽略整个 `.repoctopus/`，因为该目录只包含本机覆盖、草稿、运行状态、证据对象和受管浏览器；共享事实仅写入根目录的 `repoctopus.yaml`。
 
-- `project detect` 只扫描 `--root` 指定目录中的直接子 Git 仓库，并排除 `--workspace` 自身。
+- `project detect` 只在首次接入或显式重新探测时扫描 `--scan-root` 指定目录中的直接子 Git 仓库，并把 `--workspace` 所在 Git 仓库一同纳入候选。日常 Run、Evidence、Delivery 与恢复不扫描目录，只使用正式配置中登记的仓库。
 
 ## 1. 生成探测草稿
 
@@ -18,7 +18,7 @@ Repoctopus 使用“确定性扫描 → Agent 补全 → 用户确认”建立�
 
 ```powershell
 npm run build
-$detected = node bin/repoctopus.js project detect --root .. --workspace . --json | ConvertFrom-Json
+$detected = node bin/repoctopus.js project detect --scan-root .. --workspace . --json | ConvertFrom-Json
 $draft = $detected.result.file
 $draft
 ```

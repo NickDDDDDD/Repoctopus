@@ -12,7 +12,6 @@ Change 是团队共享工作单元，不存在从 MR 作者推断出的独占 ow
 
 ```powershell
 $workspace = Resolve-Path .
-$projectRoot = Resolve-Path ..
 $changeId = 'enable-self-hosted-development'
 $runId = 'post-merge-<sha256>'
 $envelopeId = '<envelope-id>'
@@ -66,7 +65,7 @@ node bin/repoctopus.js run status --workspace $workspace --run $runId --json
 如果进程在持久事务之间退出，先确认协调 workspace 和项目仓库没有未解释的改动，再恢复 Run：
 
 ```powershell
-node bin/repoctopus.js run resume --workspace $workspace --project-root $projectRoot --run $runId --json
+node bin/repoctopus.js run resume --workspace $workspace --run $runId --json
 ```
 
 恢复只对账已经持久化的 Checkpoint、Action Receipt 和当前项目快照。它不会跳过 Evidence Gate，也不会把漂移的本地或远端提交改写成预期状态。

@@ -97,7 +97,7 @@ describe('published package', () => {
     const envelope = await runCli({
       packageRoot: installedPackage,
       cwd: workspace,
-      args: ['project', 'detect', '--root', project, '--workspace', workspace],
+      args: ['project', 'detect', '--scan-root', project, '--workspace', workspace],
     });
     expect(envelope).toMatchObject({ protocolVersion: 1, ok: true, command: 'project detect' });
     expect(JSON.stringify(envelope)).toContain('service');

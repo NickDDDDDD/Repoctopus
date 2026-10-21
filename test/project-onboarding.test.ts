@@ -47,7 +47,7 @@ describe('project configuration onboarding', () => {
     );
     const detected = await detectProjectConfiguration({
       workspace,
-      scopeRoot: root,
+      scanRoot: root,
       now: () => new Date('2026-01-01T00:00:00.000Z'),
     });
     const completedCandidate = {
@@ -148,7 +148,7 @@ profiles:
         args: [run, old-build]
 `;
     await writeFile(configFile, initial);
-    const detected = await detectProjectConfiguration({ workspace, scopeRoot: root });
+    const detected = await detectProjectConfiguration({ workspace, scanRoot: root });
     const prepared = await prepareProjectConfigurationDecision({
       workspace,
       draftFile: detected.file,

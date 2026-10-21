@@ -12,6 +12,7 @@ import type {
   DeliveryState,
 } from '../../domains/delivery/types.js';
 import type { ProjectSnapshot } from '../../domains/project/types.js';
+import type { EffectiveProjectConfig } from '../../domains/project-configuration/types.js';
 import type {
   ResumeView,
   RunStatusView,
@@ -20,6 +21,7 @@ import type {
 } from '../../domains/runtime/types.js';
 import { parseWorkflowPackage } from '../../domains/workflow-contract/package.js';
 import { loadDeliveryPolicy } from '../../platform/delivery/config.js';
+import { loadProjectConfig } from '../../platform/project-configuration/file-config.js';
 import { execute } from '../../platform/process/execute.js';
 import type { ProvenanceCheck } from '../../platform/provenance/check.js';
 import type {
@@ -74,23 +76,21 @@ function evidenceBundleIds(parsed: ParsedArguments): string[] {
 
 async function deliveryInputs(parsed: ParsedArguments): Promise<{
   workspace: string;
-  projectRoot: string;
+  config: EffectiveProjectConfig;
   intent: DeliveryIntent;
   policy: DeliveryPolicy;
 }> {
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
-  const projectRoot = path.resolve(
-    stringFlag(parsed, 'project-root', { fallback: path.dirname(workspace) })!,
-  );
   const intentFile = path.resolve(stringFlag(parsed, 'intent', { required: true })!);
   const policyFile = path.resolve(
     stringFlag(parsed, 'policy', { fallback: path.join(workspace, 'repoctopus.yaml') })!,
   );
-  const [intentSource, policy] = await Promise.all([
+  const [config, intentSource, policy] = await Promise.all([
+    loadProjectConfig(workspace),
     readFile(intentFile, 'utf8'),
     loadDeliveryPolicy(policyFile),
   ]);
-  return { workspace, projectRoot, intent: parse(intentSource) as DeliveryIntent, policy };
+  return { workspace, config, intent: parse(intentSource) as DeliveryIntent, policy };
 }
 
 async function assertCommittedReport(
@@ -120,12 +120,24 @@ async function assertCommittedReport(
 
 async function deliveryProject(
   app: Awaited<ReturnType<typeof bootProjectComposition>>,
-  input: { workspace: string; projectRoot: string },
+  input: { workspace: string; config: EffectiveProjectConfig },
 ): Promise<ProjectSnapshot> {
-  return app.context.commandRouter.execute('project.probe', {
-    root: input.projectRoot,
+  return app.context.commandRouter.execute('workspace.snapshot', {
+    workspaceId: input.config.shared.workspace.id,
     workspaceRoot: input.workspace,
+    workspaceRepositoryId: input.config.shared.workspace.repositoryId,
+    repositories: input.config.repositories.map((repository) => ({
+      id: repository.id,
+      path: repository.resolvedPath,
+    })),
   });
+}
+
+async function currentWorkspaceSnapshot(
+  app: Awaited<ReturnType<typeof bootProjectComposition>>,
+  workspace: string,
+): Promise<ProjectSnapshot> {
+  return deliveryProject(app, { workspace, config: await loadProjectConfig(workspace) });
 }
 
 function deliveryNextActions(status: DeliveryState): string[] {
@@ -358,21 +370,6 @@ async function deliveryRefresh(parsed: ParsedArguments): Promise<CliEnvelope<unk
   }
 }
 
-async function projectProbe(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
-  const root = path.resolve(stringFlag(parsed, 'root', { required: true })!);
-  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
-  const app = await bootBootstrapComposition(PRODUCT_ROOT);
-  try {
-    const snapshot = await app.context.commandRouter.execute('project.probe', {
-      root,
-      workspaceRoot: workspace,
-    });
-    return successEnvelope({ command: 'project probe', result: snapshot });
-  } finally {
-    await app.close();
-  }
-}
-
 function skillAudience(parsed: ParsedArguments): 'model' | 'user' {
   const audience = stringFlag(parsed, 'audience', { fallback: 'user' });
   if (audience !== 'model' && audience !== 'user') {
@@ -462,13 +459,13 @@ async function specificationValidate(parsed: ParsedArguments): Promise<CliEnvelo
 }
 
 async function projectDetect(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
-  const scopeRoot = path.resolve(stringFlag(parsed, 'root', { required: true })!);
+  const scanRoot = path.resolve(stringFlag(parsed, 'scan-root', { required: true })!);
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
   const app = await bootBootstrapComposition(PRODUCT_ROOT);
   try {
     const result = await app.context.commandRouter.execute('project.detect', {
       workspace,
-      scopeRoot,
+      scanRoot,
     });
     return successEnvelope({
       command: 'project detect',
@@ -646,9 +643,6 @@ async function evidenceClean(parsed: ParsedArguments): Promise<CliEnvelope<unkno
 
 async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
-  const projectRoot = path.resolve(
-    stringFlag(parsed, 'project-root', { fallback: path.dirname(workspace) })!,
-  );
   const workflowPath = path.resolve(
     stringFlag(parsed, 'workflow', { fallback: defaultWorkflowPath() })!,
   );
@@ -664,10 +658,7 @@ async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
       : null;
     const [source, projectSnapshot] = await Promise.all([
       readFile(workflowPath, 'utf8'),
-      app.context.commandRouter.execute<{ root: string; workspaceRoot: string }, ProjectSnapshot>(
-        'project.probe',
-        { root: projectRoot, workspaceRoot: workspace },
-      ),
+      currentWorkspaceSnapshot(app, workspace),
     ]);
     const requestedRunId = stringFlag(parsed, 'run');
     const result = await app.context.commandRouter.execute<
@@ -827,14 +818,7 @@ async function runResume(parsed: ParsedArguments): Promise<CliEnvelope<unknown>>
   const runId = stringFlag(parsed, 'run', { required: true })!;
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
-    const previous = await app.context.runStore.loadProjectSnapshot(runId);
-    const projectRoot = path.resolve(
-      stringFlag(parsed, 'project-root', { fallback: previous.root })!,
-    );
-    const currentProjectSnapshot = await app.context.commandRouter.execute<
-      { root: string; workspaceRoot: string },
-      ProjectSnapshot
-    >('project.probe', { root: projectRoot, workspaceRoot: workspace });
+    const currentProjectSnapshot = await currentWorkspaceSnapshot(app, workspace);
     const result = await app.context.commandRouter.execute<
       { runId: string; currentProjectSnapshot: ProjectSnapshot },
       RuntimeResult<ResumeView>
@@ -966,7 +950,6 @@ async function runnerStart(parsed: ParsedArguments, asJson: boolean): Promise<nu
 
 async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const command = parsed.command.join(' ');
-  if (command === 'project probe') return projectProbe(parsed);
   if (command === 'project detect') return projectDetect(parsed);
   if (command === 'project prepare') return projectPrepare(parsed);
   if (command === 'project review') return projectReview(parsed);

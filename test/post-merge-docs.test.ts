@@ -7,6 +7,7 @@ import type { DeliveryEvent } from '../domains/delivery/ports.js';
 import { initialDeliveryState } from '../domains/delivery/state.js';
 import { FileDeliveryStore } from '../platform/delivery/file-delivery-store.js';
 import {
+  commitGitRepository,
   createGitRepository,
   removeTemporaryDirectory,
   temporaryDirectory,
@@ -73,12 +74,14 @@ describe('Post-merge operator documentation', () => {
         ],
       }),
     );
+    await writeFile(path.join(workspace, '.gitignore'), '.repoctopus/\n');
+    await commitGitRepository(workspace, 'chore: configure post-merge workspace');
 
     const runId = 'post-merge-docs-run';
     await runCli({
       packageRoot: repositoryRoot,
       cwd: workspace,
-      args: ['run', 'start', '--workspace', workspace, '--project-root', project, '--run', runId],
+      args: ['run', 'start', '--workspace', workspace, '--run', runId],
     });
     const runStatus = await runCli<{ state: { runId: string } }>({
       packageRoot: repositoryRoot,
@@ -89,7 +92,7 @@ describe('Post-merge operator documentation', () => {
     const resumedRun = await runCli<{ state: { runId: string } }>({
       packageRoot: repositoryRoot,
       cwd: workspace,
-      args: ['run', 'resume', '--workspace', workspace, '--project-root', project, '--run', runId],
+      args: ['run', 'resume', '--workspace', workspace, '--run', runId],
     });
     expect(resumedRun.result?.state.runId).toBe(runId);
 

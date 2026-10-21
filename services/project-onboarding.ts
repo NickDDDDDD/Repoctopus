@@ -25,7 +25,7 @@ export class ProjectOnboarding extends Service {
     super(context, 'projectOnboarding');
   }
 
-  detect(input: { workspace: string; scopeRoot: string }) {
+  detect(input: { workspace: string; scanRoot: string }) {
     return detectProjectConfiguration(input);
   }
 

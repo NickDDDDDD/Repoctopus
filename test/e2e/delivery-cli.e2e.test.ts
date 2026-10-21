@@ -4,7 +4,6 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { probeProject } from '../../platform/git/probe.js';
 import {
   createGitRepository,
   removeTemporaryDirectory,
@@ -27,10 +26,8 @@ describe('delivery CLI', () => {
     const app = await createGitRepository(root, 'app', remote);
     await execFileAsync('git', ['push', '-u', 'origin', 'main'], { cwd: app });
     await execFileAsync('git', ['switch', '-c', 'feat/change'], { cwd: app });
-    const workspace = path.join(root, 'workspace');
-    await mkdir(workspace);
-    const project = await probeProject({ root, workspaceRoot: workspace });
-    const repository = project.repositories.find((item) => item.name === 'app')!;
+    const workspace = await createGitRepository(root, 'workspace');
+    const repositoryId = 'app';
     const policyFile = path.join(workspace, 'delivery-policy.yaml');
     const intentFile = path.join(workspace, 'intent.yaml');
     const reportFile = path.join(app, 'verification.md');
@@ -42,7 +39,7 @@ describe('delivery CLI', () => {
         workspace: { id: 'delivery-cli', repositoryId: 'workspace' },
         repositories: [
           { id: 'workspace', path: '.' },
-          { id: repository.id, path: '../app' },
+          { id: repositoryId, path: '../app' },
         ],
         profiles: [
           {
@@ -51,7 +48,7 @@ describe('delivery CLI', () => {
               {
                 id: 'check',
                 type: 'command',
-                repository: repository.id,
+                repository: repositoryId,
                 executable: process.execPath,
                 args: ['-e', 'process.exit(0)'],
               },
@@ -66,20 +63,20 @@ describe('delivery CLI', () => {
     );
     await writeFile(
       intentFile,
-      `schemaVersion: 2\nchangeId: delivery-cli-change\ncoordinationMergeRequest:\n  repositoryId: coordination-repository\n  remoteIdentity: github.com/team/coordination-repository\n  sourceBranch: feat/delivery-cli-change\n  targetBranch: main\n  mergeRequest:\n    provider: github\n    repositoryId: coordination-repository\n    number: 1\n    url: https://github.com/team/coordination-repository/pull/1\nrepositories:\n  - repositoryId: ${repository.id}\n    sourceBranch: feat/change\n    targetBranch: main\n    commitMessage: 'feat: checkpoint change'\n    actions: [push, merge_request]\n`,
+      `schemaVersion: 2\nchangeId: delivery-cli-change\ncoordinationMergeRequest:\n  repositoryId: coordination-repository\n  remoteIdentity: github.com/team/coordination-repository\n  sourceBranch: feat/delivery-cli-change\n  targetBranch: main\n  mergeRequest:\n    provider: github\n    repositoryId: coordination-repository\n    number: 1\n    url: https://github.com/team/coordination-repository/pull/1\nrepositories:\n  - repositoryId: ${repositoryId}\n    sourceBranch: feat/change\n    targetBranch: main\n    commitMessage: 'feat: checkpoint change'\n    actions: [push, merge_request]\n`,
     );
+    await writeFile(path.join(workspace, '.gitignore'), '.repoctopus/\n');
+    await execFileAsync(
+      'git',
+      ['add', 'repoctopus.yaml', 'delivery-policy.yaml', 'intent.yaml', '.gitignore'],
+      { cwd: workspace },
+    );
+    await execFileAsync('git', ['commit', '-m', 'chore: configure delivery workspace'], {
+      cwd: workspace,
+    });
     await writeFile(reportFile, '# Verification\nPassed\n');
     await writeFile(path.join(app, 'feature.txt'), 'feature');
-    const common = [
-      '--workspace',
-      workspace,
-      '--project-root',
-      root,
-      '--intent',
-      intentFile,
-      '--policy',
-      policyFile,
-    ];
+    const common = ['--workspace', workspace, '--intent', intentFile, '--policy', policyFile];
     const checkpoint = await runCli({
       packageRoot,
       cwd: workspace,

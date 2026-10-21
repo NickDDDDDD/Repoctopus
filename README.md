@@ -11,8 +11,8 @@ Repoctopus 是面向团队 Agent 开发的多仓交付编排器。它把项目�
 ```powershell
 npm install
 npm run build
-node bin/repoctopus.js project probe --root C:\path\to\project --workspace C:\path\to\project\repoctopus --json
-node bin/repoctopus.js run start --workspace C:\path\to\project\repoctopus --project-root C:\path\to\project --json
+node bin/repoctopus.js project detect --scan-root C:\path\to\project --workspace C:\path\to\project\repoctopus --json
+node bin/repoctopus.js run start --workspace C:\path\to\project\repoctopus --json
 ```
 
 `run start` 返回 `runId`，随后使用：
@@ -89,20 +89,20 @@ node bin/repoctopus.js post-merge reconcile --workspace . --json
 通过项目接入流程生成 workspace 的 `repoctopus.yaml`，在其 `delivery` 段维护团队交付策略（完整示例见 [项目配置示例](docs/examples/repoctopus.yaml)），并为 change 创建 [交付意图](docs/examples/delivery-intent.yaml)。checkpoint 会普通 push 当前 HEAD、建立 upstream 并核对远端 OID，不需要逐次人工批准：
 
 ```powershell
-node bin/repoctopus.js delivery checkpoint --workspace . --project-root .. --intent docs/examples/delivery-intent.yaml --policy repoctopus.yaml --json
+node bin/repoctopus.js delivery checkpoint --workspace . --intent docs/examples/delivery-intent.yaml --policy repoctopus.yaml --json
 ```
 
 实现和验证报告都进入本地 commit 后，生成一次待批准快照：
 
 ```powershell
-node bin/repoctopus.js delivery prepare --workspace . --project-root .. --intent docs/examples/delivery-intent.yaml --policy repoctopus.yaml --report path/to/verification-report.md --json
+node bin/repoctopus.js delivery prepare --workspace . --intent docs/examples/delivery-intent.yaml --policy repoctopus.yaml --report path/to/verification-report.md --json
 node bin/repoctopus.js approval review --workspace . --change example-change
 ```
 
 `approval review` 只在交互式终端中运行；IDE Adapter 可以把同一 `HumanDecisionRequest` 显示为原生确认卡片。批准后执行发布，失败时使用相同参数执行 `delivery resume`：
 
 ```powershell
-node bin/repoctopus.js delivery publish --workspace . --project-root .. --change example-change --intent docs/examples/delivery-intent.yaml --policy repoctopus.yaml --report path/to/verification-report.md --json
+node bin/repoctopus.js delivery publish --workspace . --change example-change --intent docs/examples/delivery-intent.yaml --policy repoctopus.yaml --report path/to/verification-report.md --json
 node bin/repoctopus.js delivery refresh --workspace . --change example-change --policy repoctopus.yaml --json
 ```
 

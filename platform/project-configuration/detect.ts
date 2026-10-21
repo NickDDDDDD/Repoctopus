@@ -289,13 +289,13 @@ async function optionalExistingConfig(workspace: string): Promise<SharedProjectC
 
 export async function detectProjectConfiguration(input: {
   workspace: string;
-  scopeRoot: string;
+  scanRoot: string;
   now?: () => Date;
 }): Promise<{ draft: ProjectDetectionDraft; file: string }> {
   const workspace = path.resolve(input.workspace);
-  const scopeRoot = path.resolve(input.scopeRoot);
+  const scanRoot = path.resolve(input.scanRoot);
   const snapshot = await probeProject({
-    root: scopeRoot,
+    root: scanRoot,
     duplicateIdentity: 'omit-ambiguous',
     ...(input.now ? { now: input.now } : {}),
   });
@@ -369,7 +369,7 @@ export async function detectProjectConfiguration(input: {
     draftId,
     status: 'candidate',
     capturedAt,
-    scopeRoot,
+    scanRoot,
     workspace,
     ...content,
   };

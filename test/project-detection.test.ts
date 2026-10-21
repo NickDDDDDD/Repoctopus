@@ -62,7 +62,7 @@ describe('project configuration detection', () => {
 
     const { draft, file } = await detectProjectConfiguration({
       workspace,
-      scopeRoot: root,
+      scanRoot: root,
       now: () => new Date('2026-01-01T00:00:00.000Z'),
     });
 
@@ -180,7 +180,7 @@ delivery:
 
     const { draft } = await detectProjectConfiguration({
       workspace,
-      scopeRoot: root,
+      scanRoot: root,
       now: () => new Date('2026-01-01T00:00:00.000Z'),
     });
 
