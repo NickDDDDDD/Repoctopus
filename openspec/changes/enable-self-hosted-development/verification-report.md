@@ -7,8 +7,8 @@
 - 验证日期：2026-10-21。
 - 分支：`feat/enable-self-hosted-development`。
 - 业务 MR：Draft PR #8；协调 MR：Draft PR #9。
-- 实现基线：`6ba8a98004e55938f17828ac0a5496c278894394`。
-- 实现代码树：`018f58a9df27fe320753514a6dcfe6cfe4009a76`。
+- 实现基线：`bdcf6f43a311c16220d23352bc2cd439ef6c5adb`。
+- 实现代码树：`f68681ab88b95cb38c574111bbb4c6ecd3cb3681`。
 
 ## 结论
 
