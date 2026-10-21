@@ -59,7 +59,7 @@
 
 - [x] 7.1 用打包后的 Repoctopus 对本 change 启动生产 composition Run，加载实际 Skill、调用 OpenSpec Provider、执行实现 Evidence 并保存 Skill/规格/composition 快照；检查 Trajectory 不含测试旁路。
 - [x] 7.2 在临时多仓与 mock 平台中完成签名 webhook → Inbox → 全部 MR 合入核对 → Post-merge Run → Evidence → OpenSpec 同步/归档 → workspace commit/push/MR update 的独立进程 E2E，并强制中断至少一次后恢复。
-- [ ] 7.3 执行 `npm run verify`、`npm run test:package-e2e` 和 `npm run test:tracer-e2e`，生成包含架构约束、第三方来源、恢复实验、已知限制和清理结果的验证报告。
+- [x] 7.3 执行 `npm run verify`、`npm run test:package-e2e` 和 `npm run test:tracer-e2e`，生成包含架构约束、第三方来源、恢复实验、已知限制和清理结果的验证报告。
 
 ## Workflow follow-up
 
