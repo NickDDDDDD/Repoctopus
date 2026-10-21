@@ -83,6 +83,10 @@ if (
   !/^[a-f0-9]{40}$/.test(dshAdoption.upstream?.commit ?? '') ||
   dshAdoption.upstream?.license !== 'MIT' ||
   !Array.isArray(dshAdoption.npmPackages) ||
+  !Array.isArray(dshAdoption.desktopDependencies) ||
+  typeof dshAdoption.desktopBinaryPreparation !== 'object' ||
+  !Array.isArray(dshAdoption.desktopReferenceSurface) ||
+  !Array.isArray(dshAdoption.desktopInstallScripts) ||
   !Array.isArray(dshAdoption.components) ||
   !Array.isArray(dshAdoption.forbiddenRuntimePackages)
 ) {
@@ -109,6 +113,82 @@ for (const entry of dshAdoption.npmPackages ?? []) {
 for (const packageName of dshAdoption.forbiddenRuntimePackages ?? []) {
   if (packageLock.packages?.[`node_modules/${packageName}`]) {
     findings.push(`Forbidden DSH runtime package installed: ${packageName}`);
+  }
+}
+for (const entry of dshAdoption.desktopDependencies ?? []) {
+  if (
+    typeof entry.name !== 'string' ||
+    typeof entry.version !== 'string' ||
+    entry.license !== 'MIT'
+  ) {
+    findings.push(`Invalid DSH desktop dependency entry: ${entry.name ?? '(missing name)'}`);
+    continue;
+  }
+  if (packageJson.devDependencies?.[entry.name] !== entry.version) {
+    findings.push(
+      `DSH desktop dependency is not an exact devDependency: ${entry.name}@${entry.version}`,
+    );
+  }
+  const locked = packageLock.packages?.[`node_modules/${entry.name}`];
+  if (
+    locked?.version !== entry.version ||
+    locked?.license !== entry.license ||
+    !/^sha512-/.test(locked.integrity ?? '')
+  ) {
+    findings.push(`DSH desktop dependency lock mismatch: ${entry.name}@${entry.version}`);
+  }
+}
+const desktopBinary = dshAdoption.desktopBinaryPreparation;
+const electronDependency = (dshAdoption.desktopDependencies ?? []).find(
+  (entry) => entry.name === 'electron',
+);
+if (
+  desktopBinary?.package !== 'electron' ||
+  desktopBinary?.version !== electronDependency?.version ||
+  desktopBinary?.acquisition !== 'lazy-package-resolution' ||
+  desktopBinary?.command !== 'npm run desktop:prepare' ||
+  packageJson.scripts?.['desktop:prepare'] !== 'node scripts/prepare-desktop.mjs'
+) {
+  findings.push('Invalid Electron binary preparation policy');
+}
+await readFile(path.join(root, 'scripts', 'prepare-desktop.mjs')).catch(() => {
+  findings.push('Missing Electron binary preparation command');
+});
+const electronScriptKey = `electron@${electronDependency?.version ?? '(missing version)'}`;
+if (Object.hasOwn(packageJson.allowScripts ?? {}, electronScriptKey)) {
+  findings.push(
+    `Electron binary acquisition must not be modeled as an install script: ${electronScriptKey}`,
+  );
+}
+for (const reference of dshAdoption.desktopReferenceSurface ?? []) {
+  if (
+    typeof reference.source !== 'string' ||
+    !/^[a-f0-9]{64}$/.test(reference.sourceSha256 ?? '') ||
+    typeof reference.role !== 'string' ||
+    reference.role.length === 0
+  ) {
+    findings.push(`Invalid DSH desktop reference: ${reference.source ?? '(missing source)'}`);
+    continue;
+  }
+  if (process.env.DSH_UPSTREAM_ROOT) {
+    const source = await readFile(path.join(process.env.DSH_UPSTREAM_ROOT, reference.source));
+    if (createHash('sha256').update(source).digest('hex') !== reference.sourceSha256) {
+      findings.push(`DSH desktop reference digest mismatch: ${reference.source}`);
+    }
+  }
+}
+for (const entry of dshAdoption.desktopInstallScripts ?? []) {
+  if (
+    typeof entry.name !== 'string' ||
+    typeof entry.version !== 'string' ||
+    typeof entry.allowed !== 'boolean'
+  ) {
+    findings.push(`Invalid desktop install script policy: ${entry.name ?? '(missing name)'}`);
+    continue;
+  }
+  const key = `${entry.name}@${entry.version}`;
+  if (packageJson.allowScripts?.[key] !== entry.allowed) {
+    findings.push(`Desktop install script policy mismatch: ${key}`);
   }
 }
 for (const component of dshAdoption.components ?? []) {
@@ -218,5 +298,5 @@ if (upstreamBaselines.schemaVersion !== 1 || !Array.isArray(upstreamBaselines.up
 
 if (findings.length > 0) throw new Error(findings.join('\n'));
 process.stdout.write(
-  `Verified ${manifest.files.length} Comet-derived files, ${cordisFiles} immutable Cordis files, ${mattManifest.files.length} Matt Skill files, and ${dshAdoption.npmPackages.length} fixed DSH packages\n`,
+  `Verified ${manifest.files.length} Comet-derived files, ${cordisFiles} immutable Cordis files, ${mattManifest.files.length} Matt Skill files, ${dshAdoption.npmPackages.length} fixed DSH packages, and ${dshAdoption.desktopReferenceSurface.length} DSH desktop references\n`,
 );

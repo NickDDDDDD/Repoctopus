@@ -16,6 +16,7 @@ interface Fixtures {
   coordinatorStoreWrite: SourceFixture[];
   nonProviderClosure: SourceFixture[];
   unprotectedPublication: SourceFixture[];
+  desktopIsolation: SourceFixture[];
 }
 
 interface Rule {
@@ -131,6 +132,22 @@ describe('architecture source boundaries', () => {
         expect.stringContaining(
           'platform/github/rogue-publisher.ts: protected-merge-request-publication',
         ),
+      ]),
+    );
+  });
+
+  it('keeps the Desktop Renderer and Electron Shell outside the Cordis process boundary', () => {
+    expect(
+      evaluateSourceBoundaries(
+        fixtures.desktopIsolation,
+        rules('desktop-renderer-process-isolation', 'desktop-shell-cordis-isolation'),
+      ),
+    ).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining(
+          'app/desktop/renderer/src/rogue.tsx: desktop-renderer-process-isolation',
+        ),
+        expect.stringContaining('app/desktop/main/rogue.ts: desktop-shell-cordis-isolation'),
       ]),
     );
   });

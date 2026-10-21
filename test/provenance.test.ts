@@ -21,8 +21,9 @@ async function provenanceFixture(): Promise<string> {
   await cp(path.join(productRoot, 'third_party'), path.join(root, 'third_party'), {
     recursive: true,
   });
+  await mkdir(path.join(root, 'scripts'), { recursive: true });
   await Promise.all(
-    ['package.json', 'package-lock.json'].map((file) =>
+    ['package.json', 'package-lock.json', 'scripts/prepare-desktop.mjs'].map((file) =>
       cp(path.join(productRoot, file), path.join(root, file)),
     ),
   );
@@ -99,6 +100,22 @@ describe('third-party provenance', () => {
     expect(result.valid).toBe(false);
     expect(result.findings).toContain(
       'DSH package lock mismatch: @deepseek-ai/dsh-skill@0.2.1-rc.2',
+    );
+  });
+
+  it('rejects modeling Electron lazy binary acquisition as an install script', async () => {
+    const root = await provenanceFixture();
+    const packagePath = path.join(root, 'package.json');
+    const packageJson = JSON.parse(await readFile(packagePath, 'utf8')) as {
+      allowScripts?: Record<string, boolean>;
+    };
+    packageJson.allowScripts = { ...packageJson.allowScripts, 'electron@44.7.0': true };
+    await writeFile(packagePath, JSON.stringify(packageJson, null, 2));
+
+    const result = await checkProvenance(root);
+    expect(result.valid).toBe(false);
+    expect(result.findings).toContain(
+      'Electron binary acquisition must not be modeled as an install script: electron@44.7.0',
     );
   });
 

@@ -33,6 +33,15 @@ interface DshAdoptionManifest {
   schemaVersion: number;
   upstream?: { commit?: string; license?: string };
   npmPackages?: Array<{ name: string; version: string }>;
+  desktopDependencies?: Array<{ name: string; version: string }>;
+  desktopBinaryPreparation?: {
+    package?: string;
+    version?: string;
+    acquisition?: string;
+    command?: string;
+  };
+  desktopReferenceSurface?: Array<{ source?: string; sourceSha256?: string; role?: string }>;
+  desktopInstallScripts?: Array<{ name?: string; version?: string; allowed?: boolean }>;
   forbiddenRuntimePackages?: string[];
   components?: Array<{
     id?: string;
@@ -175,6 +184,10 @@ export async function checkProvenance(
     !/^[a-f0-9]{40}$/.test(dsh.upstream?.commit ?? '') ||
     dsh.upstream?.license !== 'MIT' ||
     !Array.isArray(dsh.npmPackages) ||
+    !Array.isArray(dsh.desktopDependencies) ||
+    typeof dsh.desktopBinaryPreparation !== 'object' ||
+    !Array.isArray(dsh.desktopReferenceSurface) ||
+    !Array.isArray(dsh.desktopInstallScripts) ||
     !Array.isArray(dsh.forbiddenRuntimePackages) ||
     !Array.isArray(dsh.components)
   ) {
@@ -184,7 +197,10 @@ export async function checkProvenance(
     await readFile(path.join(productRoot, 'package.json'), 'utf8'),
   ) as {
     dependencies?: Record<string, string>;
+    devDependencies?: Record<string, string>;
     overrides?: Record<string, string>;
+    scripts?: Record<string, string>;
+    allowScripts?: Record<string, boolean>;
   };
   const packageLock = JSON.parse(
     await readFile(path.join(productRoot, 'package-lock.json'), 'utf8'),
@@ -210,6 +226,36 @@ export async function checkProvenance(
   for (const packageName of dsh.forbiddenRuntimePackages ?? []) {
     if (packageLock.packages?.[`node_modules/${packageName}`]) {
       findings.push(`Forbidden DSH runtime package installed: ${packageName}`);
+    }
+  }
+  const electronDependency = dsh.desktopDependencies?.find((entry) => entry.name === 'electron');
+  const desktopBinary = dsh.desktopBinaryPreparation;
+  if (
+    desktopBinary?.package !== 'electron' ||
+    desktopBinary.version !== electronDependency?.version ||
+    desktopBinary.acquisition !== 'lazy-package-resolution' ||
+    desktopBinary.command !== 'npm run desktop:prepare' ||
+    packageJson.scripts?.['desktop:prepare'] !== 'node scripts/prepare-desktop.mjs'
+  ) {
+    findings.push('Invalid Electron binary preparation policy');
+  }
+  await readFile(path.join(productRoot, 'scripts', 'prepare-desktop.mjs')).catch(() => {
+    findings.push('Missing Electron binary preparation command');
+  });
+  const electronScriptKey = `electron@${electronDependency?.version ?? '(missing version)'}`;
+  if (Object.hasOwn(packageJson.allowScripts ?? {}, electronScriptKey)) {
+    findings.push(
+      `Electron binary acquisition must not be modeled as an install script: ${electronScriptKey}`,
+    );
+  }
+  for (const reference of dsh.desktopReferenceSurface ?? []) {
+    if (
+      typeof reference.source !== 'string' ||
+      !/^[a-f0-9]{64}$/.test(reference.sourceSha256 ?? '') ||
+      typeof reference.role !== 'string' ||
+      reference.role.length === 0
+    ) {
+      findings.push(`Invalid DSH desktop reference: ${reference.source ?? '(missing source)'}`);
     }
   }
   for (const component of dsh.components ?? []) {

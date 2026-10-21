@@ -51,6 +51,8 @@ import { PlatformEventRunner } from '../services/platform-event-runner.js';
 import { PostMergeCoordinator } from '../services/post-merge-coordinator.js';
 import postMergeActionsProvider from './post-merge/post-merge-actions-provider.js';
 import runnerApplication from './application/runner-application.js';
+import desktopApplication from './application/desktop-application.js';
+import { DesktopApplication } from '../services/desktop-application.js';
 
 interface BuiltinDefinition {
   descriptor: Omit<PluginDescriptor, 'codeDigest'>;
@@ -100,6 +102,38 @@ const evidenceAdapterDefinitions: readonly EvidenceAdapterDefinition[] = [
 ];
 
 const definitions: readonly BuiltinDefinition[] = [
+  {
+    descriptor: {
+      id: 'desktop-application-service',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['desktop'],
+      authorities: [],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: DesktopApplication,
+    sourceFiles: ['services/desktop-application.ts'],
+  },
+  {
+    descriptor: {
+      id: 'desktop-application',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'application',
+      source: 'builtin',
+      compositions: ['desktop'],
+      authorities: [],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: desktopApplication,
+    sourceFiles: ['plugins/application/desktop-application.ts'],
+  },
   {
     descriptor: {
       id: 'project-onboarding',

@@ -38,7 +38,7 @@ const productionSources = (
   await Promise.all(policy.reviewedSourceRoots.map((directory) => filesUnder(directory)))
 )
   .flat()
-  .filter((file) => file.endsWith('.ts'))
+  .filter((file) => /\.tsx?$/u.test(file))
   .sort();
 const productionSourceContents = await Promise.all(
   productionSources.map(async (source) => ({
