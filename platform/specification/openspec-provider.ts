@@ -19,6 +19,7 @@ import { atomicWriteJson } from '../filesystem/atomic-write.js';
 import {
   Specification,
   type PrepareSpecificationClosureInput,
+  type SpecificationWorkspace,
 } from '../../services/specification.js';
 import {
   installedOpenSpecVersion,
@@ -171,9 +172,9 @@ export class OpenSpecProvider extends Specification {
     return structuredClone(IDENTITY);
   }
 
-  private async json<T>(args: string[], signal?: AbortSignal): Promise<T> {
+  private async json<T>(workspace: string, args: string[], signal?: AbortSignal): Promise<T> {
     const result = await this.process.execute([...args, '--json'], {
-      cwd: this.workspace,
+      cwd: workspace,
       ...(signal ? { signal } : {}),
     });
     if (result.exitCode !== 0) {
@@ -184,11 +185,23 @@ export class OpenSpecProvider extends Specification {
   }
 
   async inspect(changeId: string, signal?: AbortSignal): Promise<SpecificationChange> {
+    return this.inspectAt(this.workspace, changeId, signal);
+  }
+
+  private async inspectAt(
+    workspace: string,
+    changeId: string,
+    signal?: AbortSignal,
+  ): Promise<SpecificationChange> {
     const id = changeId.trim();
     if (!id) throw new Error('Specification change id is required');
     const [shown, status] = await Promise.all([
-      this.json<ShowResult>(['show', id, '--type', 'change', '--no-interactive'], signal),
-      this.json<StatusResult>(['status', '--change', id], signal),
+      this.json<ShowResult>(
+        workspace,
+        ['show', id, '--type', 'change', '--no-interactive'],
+        signal,
+      ),
+      this.json<StatusResult>(workspace, ['status', '--change', id], signal),
     ]);
     const artifacts = (
       await Promise.all(
@@ -196,7 +209,7 @@ export class OpenSpecProvider extends Specification {
           async ([artifactId, artifact]): Promise<SpecificationArtifact | undefined> => {
             const kind = artifactKind(artifactId);
             if (!kind) return undefined;
-            const digest = await artifactDigest(this.workspace, artifact.existingOutputPaths);
+            const digest = await artifactDigest(workspace, artifact.existingOutputPaths);
             return {
               id: artifactId,
               kind,
@@ -241,10 +254,18 @@ export class OpenSpecProvider extends Specification {
     changeId: string,
     options: { strict?: boolean; signal?: AbortSignal } = {},
   ): Promise<SpecificationValidation> {
+    return this.validateAt(this.workspace, changeId, options);
+  }
+
+  private async validateAt(
+    workspace: string,
+    changeId: string,
+    options: { strict?: boolean; signal?: AbortSignal } = {},
+  ): Promise<SpecificationValidation> {
     const args = ['validate', changeId, '--type', 'change', '--no-interactive'];
     if (options.strict !== false) args.push('--strict');
     const result = await this.process.execute([...args, '--json'], {
-      cwd: this.workspace,
+      cwd: workspace,
       ...(options.signal ? { signal: options.signal } : {}),
     });
     const parsed = parseJson<ValidationResult>(result.stdout, args.join(' '));
@@ -272,9 +293,16 @@ export class OpenSpecProvider extends Specification {
   }
 
   async prepareClosure(input: PrepareSpecificationClosureInput): Promise<SpecificationClosurePlan> {
+    return this.prepareClosureAt(this.workspace, input);
+  }
+
+  private async prepareClosureAt(
+    workspace: string,
+    input: PrepareSpecificationClosureInput,
+  ): Promise<SpecificationClosurePlan> {
     const [change, validation] = await Promise.all([
-      this.inspect(input.changeId, input.signal),
-      this.validate(input.changeId, {
+      this.inspectAt(workspace, input.changeId, input.signal),
+      this.validateAt(workspace, input.changeId, {
         strict: true,
         ...(input.signal ? { signal: input.signal } : {}),
       }),
@@ -300,9 +328,9 @@ export class OpenSpecProvider extends Specification {
     return { ...base, planDigest: sha256(base) };
   }
 
-  private receiptFile(planDigest: string): string {
+  private receiptFile(workspace: string, planDigest: string): string {
     return path.join(
-      this.workspace,
+      workspace,
       '.repoctopus',
       'specification',
       'closures',
@@ -314,11 +342,19 @@ export class OpenSpecProvider extends Specification {
     plan: SpecificationClosurePlan,
     signal?: AbortSignal,
   ): Promise<SpecificationClosureResult> {
-    const receipt = this.receiptFile(plan.planDigest);
+    return this.closeAt(this.workspace, plan, signal);
+  }
+
+  private async closeAt(
+    workspace: string,
+    plan: SpecificationClosurePlan,
+    signal?: AbortSignal,
+  ): Promise<SpecificationClosureResult> {
+    const receipt = this.receiptFile(workspace, plan.planDigest);
     if (await exists(receipt)) {
       return JSON.parse(await readFile(receipt, 'utf8')) as SpecificationClosureResult;
     }
-    const current = await this.prepareClosure({
+    const current = await this.prepareClosureAt(workspace, {
       changeId: plan.changeId,
       mergeFactsDigest: plan.mergeFactsDigest,
       targetBaselineDigest: plan.targetBaselineDigest,
@@ -327,9 +363,13 @@ export class OpenSpecProvider extends Specification {
     if (current.planDigest !== plan.planDigest) {
       throw new Error('Specification closure plan drifted before execution');
     }
-    const openspecRoot = path.join(this.workspace, 'openspec');
+    const openspecRoot = path.join(workspace, 'openspec');
     const before = await tree(openspecRoot);
-    const archived = await this.json<ArchiveResult>(['archive', plan.changeId, '--yes'], signal);
+    const archived = await this.json<ArchiveResult>(
+      workspace,
+      ['archive', plan.changeId, '--yes'],
+      signal,
+    );
     const after = await tree(openspecRoot);
     const changedFiles = [...new Set([...before.keys(), ...after.keys()])]
       .filter((file) => before.get(file) !== after.get(file))
@@ -352,7 +392,18 @@ export class OpenSpecProvider extends Specification {
       archiveId,
       changedFiles,
     };
-    await atomicWriteJson(receipt, result, { containedRoot: this.workspace });
+    await atomicWriteJson(receipt, result, { containedRoot: workspace });
     return result;
+  }
+
+  override atWorkspace(workspaceRoot: string): SpecificationWorkspace {
+    const workspace = path.resolve(workspaceRoot);
+    return {
+      identity: () => this.identity(),
+      inspect: (changeId, signal) => this.inspectAt(workspace, changeId, signal),
+      validate: (changeId, options) => this.validateAt(workspace, changeId, options),
+      prepareClosure: (input) => this.prepareClosureAt(workspace, input),
+      close: (plan, signal) => this.closeAt(workspace, plan, signal),
+    };
   }
 }

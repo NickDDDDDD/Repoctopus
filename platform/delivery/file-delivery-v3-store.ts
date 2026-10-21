@@ -1,4 +1,4 @@
-import { readFile, stat } from 'node:fs/promises';
+import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 
 import type { DeliveryEvent, DeliveryV3StorePort } from '../../domains/delivery/ports.js';
@@ -56,6 +56,25 @@ export class FileDeliveryV3Store implements DeliveryV3StorePort {
     await this.transition(paths).recover((journal) => this.replay(paths, journal));
     if (!(await exists(paths.state))) return null;
     return deliveryStateV3(JSON.parse(await readFile(paths.state, 'utf8')) as unknown);
+  }
+
+  async list(): Promise<DeliveryStateV3[]> {
+    const root = path.join(path.resolve(this.workspaceRoot), '.repoctopus', 'deliveries');
+    let entries;
+    try {
+      entries = await readdir(root, { withFileTypes: true });
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
+      throw error;
+    }
+    const states: DeliveryStateV3[] = [];
+    for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name))) {
+      if (!entry.isDirectory() || !/^[a-z0-9][a-z0-9-]{2,127}$/u.test(entry.name)) continue;
+      if ((await deliveryStateSchemaVersion(this.workspaceRoot, entry.name)) !== 3) continue;
+      const state = await this.load(entry.name);
+      if (state) states.push(state);
+    }
+    return states;
   }
 
   async commit(options: {

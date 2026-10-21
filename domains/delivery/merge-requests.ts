@@ -5,6 +5,7 @@ import type {
   DeliveryMergeRequestSet,
   DeliveryRepositoryFacts,
   DeliveryState,
+  DeliveryStateV3,
   MergeRequestIdentity,
   MergeRequestReference,
 } from './types.js';
@@ -154,5 +155,42 @@ export function matchActiveDeliveryMergeRequest(
       changeIds,
       diagnostic: 'delivery-event-ambiguous-match',
     };
+  return { status: 'matched', changeIds: [changeIds[0]!], diagnostic: null };
+}
+
+function matchesV3(
+  state: DeliveryStateV3,
+  reference: MergeRequestReference,
+  statuses: ReadonlySet<DeliveryStateV3['status']>,
+): boolean {
+  if (!statuses.has(state.status)) return false;
+  return state.businessMergeRequests.some(
+    (item) =>
+      item.remoteIdentity === reference.remoteIdentity &&
+      item.mergeRequest?.provider === reference.provider &&
+      item.mergeRequest.number === reference.number,
+  );
+}
+
+export function matchActiveDeliveryMergeRequestV3(
+  states: readonly DeliveryStateV3[],
+  reference: MergeRequestReference,
+): DeliveryMergeRequestMatch {
+  const active = states.filter((state) => matchesV3(state, reference, ACTIVE_STATUSES));
+  const candidates =
+    active.length > 0
+      ? active
+      : states.filter((state) => matchesV3(state, reference, RECOVERY_STATUSES));
+  const changeIds = candidates.map((state) => state.changeId).sort();
+  if (changeIds.length === 0) {
+    return { status: 'not_found', changeIds: [], diagnostic: 'delivery-event-no-match' };
+  }
+  if (changeIds.length > 1) {
+    return {
+      status: 'ambiguous',
+      changeIds,
+      diagnostic: 'delivery-event-ambiguous-match',
+    };
+  }
   return { status: 'matched', changeIds: [changeIds[0]!], diagnostic: null };
 }

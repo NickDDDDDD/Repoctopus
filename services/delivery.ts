@@ -3,12 +3,15 @@ import { Service, type Context } from '@deepseek-ai/cordis';
 import type { ProjectSnapshot } from '../domains/project/types.js';
 import type {
   PostMergePublicationReceipt,
+  PostMergePublicationReceiptV2,
   PostMergePublicationRequest,
+  PostMergePublicationRequestV2,
 } from '../domains/delivery/post-merge.js';
 import type {
   DeliveryIntent,
   DeliveryIntentV3,
   DeliveryMergeRequestRefresh,
+  DeliveryMergeRequestRefreshV3,
   DeliveryPolicy,
   DeliveryReconciliationCandidate,
   DeliveryState,
@@ -61,6 +64,15 @@ export abstract class Delivery extends Service {
       new Error(`Delivery provider cannot publish post-merge closure for ${request.changeId}`),
     );
   }
+  publishFinalChange(
+    request: PostMergePublicationRequestV2,
+    signal?: AbortSignal,
+  ): Promise<PostMergePublicationReceiptV2> {
+    void signal;
+    return Promise.reject(
+      new Error(`Delivery provider cannot publish final Change for ${request.changeId}`),
+    );
+  }
   abstract refresh(
     changeId: string,
     policy: DeliveryPolicy,
@@ -70,7 +82,7 @@ export abstract class Delivery extends Service {
     reference: MergeRequestReference,
     policy: DeliveryPolicy,
     signal?: AbortSignal,
-  ): Promise<DeliveryMergeRequestRefresh>;
+  ): Promise<DeliveryMergeRequestRefresh | DeliveryMergeRequestRefreshV3>;
   reconciliationCandidates(signal?: AbortSignal): Promise<DeliveryReconciliationCandidate[]> {
     void signal;
     return Promise.resolve([]);

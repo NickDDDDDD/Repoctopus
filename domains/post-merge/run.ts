@@ -8,6 +8,7 @@ import type { WorkflowPackage } from '../workflow-contract/types.js';
 import type { PostMergeCoordinationResult } from './coordinator.js';
 import type { PostMergeRepositoryFact } from './coordinator.js';
 import type { MergeEvidence } from '../delivery/types.js';
+import type { ChangeBranchReference } from '../specification/types.js';
 
 export type PostMergeReady = Extract<PostMergeCoordinationResult, { status: 'ready' }>;
 
@@ -27,8 +28,28 @@ export type PostMergeTriggerEvidence = Omit<MergeEvidence, 'observedAt'>;
 
 export interface PostMergeTriggerFacts {
   changeId: string;
+  changeBranch?: ChangeBranchReference;
   mergeEvidence: PostMergeTriggerEvidence[];
   repositories: PostMergeRepositoryFact[];
+}
+
+function isChangeBranchReference(value: unknown): value is ChangeBranchReference {
+  const item = value as Partial<ChangeBranchReference> | null;
+  return (
+    !!item &&
+    typeof item === 'object' &&
+    typeof item.repositoryId === 'string' &&
+    item.repositoryId.length > 0 &&
+    typeof item.remoteIdentity === 'string' &&
+    item.remoteIdentity.length > 0 &&
+    typeof item.sourceBranch === 'string' &&
+    item.sourceBranch.length > 0 &&
+    typeof item.targetBranch === 'string' &&
+    item.targetBranch.length > 0 &&
+    item.sourceBranch !== item.targetBranch &&
+    typeof item.remoteOid === 'string' &&
+    /^[a-f0-9]{40}(?:[a-f0-9]{24})?$/u.test(item.remoteOid)
+  );
 }
 
 function isRepositoryFact(value: unknown): value is PostMergeRepositoryFact {
@@ -73,6 +94,7 @@ export function postMergeTriggerFacts(
     !/^sha256:[a-f0-9]{64}$/.test(trigger.identityDigest) ||
     !facts ||
     typeof facts.changeId !== 'string' ||
+    (facts.changeBranch !== undefined && !isChangeBranchReference(facts.changeBranch)) ||
     !Array.isArray(facts.mergeEvidence) ||
     !facts.mergeEvidence.every(isMergeEvidence) ||
     !Array.isArray(facts.repositories) ||
@@ -172,6 +194,9 @@ export function postMergeRunOptions(input: PostMergeRunInput): IdempotentStartWo
     identityDigest: input.coordination.mergeFactsDigest,
     facts: {
       changeId: input.coordination.changeId,
+      ...(input.coordination.changeBranch
+        ? { changeBranch: structuredClone(input.coordination.changeBranch) }
+        : {}),
       // Observation time describes a poll, not an authoritative merge fact. Keeping it out of
       // the durable Run identity lets a replay resume the same Run after a process interruption.
       mergeEvidence: input.coordination.mergeEvidence.map((evidence) =>

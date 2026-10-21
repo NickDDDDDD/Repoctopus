@@ -1,6 +1,11 @@
 import { createHash } from 'node:crypto';
 
-import type { DeliveryMergeRequestRefresh, MergeEvidence } from '../delivery/types.js';
+import type {
+  DeliveryMergeRequestRefresh,
+  DeliveryMergeRequestRefreshV3,
+  MergeEvidence,
+} from '../delivery/types.js';
+import type { ChangeBranchReference } from '../specification/types.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
 
 export type PostMergeCoordinationResult =
@@ -34,6 +39,7 @@ export type PostMergeCoordinationResult =
       diagnostic: 'post-merge-ready';
       changeId: string;
       mergeFactsDigest: `sha256:${string}`;
+      changeBranch?: ChangeBranchReference;
       mergeEvidence: MergeEvidence[];
       repositories: PostMergeRepositoryFact[];
     };
@@ -71,8 +77,105 @@ function mergeFactsDigest(refresh: DeliveryMergeRequestRefresh): `sha256:${strin
   return `sha256:${createHash('sha256').update(canonicalJson(facts)).digest('hex')}`;
 }
 
+function coordinatePostMergeV3(
+  refresh: DeliveryMergeRequestRefreshV3,
+): PostMergeCoordinationResult {
+  const state = refresh.state!;
+  const totalCount = state.businessMergeRequests.length;
+  const declaredIdentities = state.businessMergeRequests.flatMap((item) =>
+    item.mergeRequest ? [item.mergeRequest] : [],
+  );
+  const statuses = new Map(
+    refresh.mergeRequestStatuses.map((item) => [identityKey(item), item] as const),
+  );
+  const closed = declaredIdentities
+    .filter((item) => statuses.get(identityKey(item))?.state === 'closed')
+    .map((item) => item.repositoryId)
+    .sort();
+  if (closed.length > 0) {
+    return {
+      status: 'blocked',
+      diagnostic: 'post-merge-business-merge-request-closed',
+      changeId: state.changeId,
+      repositoryIds: closed,
+    };
+  }
+  const mergedCount = declaredIdentities.filter(
+    (item) => statuses.get(identityKey(item))?.state === 'merged',
+  ).length;
+  if (
+    declaredIdentities.length !== totalCount ||
+    statuses.size !== totalCount ||
+    declaredIdentities.some((identity) => !statuses.has(identityKey(identity)))
+  ) {
+    return {
+      status: 'waiting',
+      diagnostic: 'post-merge-business-merge-requests-incomplete',
+      changeId: state.changeId,
+      mergedCount,
+      totalCount,
+    };
+  }
+  if (mergedCount !== totalCount) {
+    return {
+      status: 'waiting',
+      diagnostic: 'post-merge-business-merge-requests-open',
+      changeId: state.changeId,
+      mergedCount,
+      totalCount,
+    };
+  }
+  const evidenceByIdentity = new Map(
+    state.mergeEvidence.map((item) => [identityKey(item.mergeRequest), item] as const),
+  );
+  const incomplete = state.businessMergeRequests
+    .filter((item) => !item.mergeRequest || !evidenceByIdentity.has(identityKey(item.mergeRequest)))
+    .map((item) => item.repositoryId)
+    .sort();
+  if (incomplete.length > 0 || state.status !== 'merged' || !state.snapshot) {
+    return {
+      status: 'blocked',
+      diagnostic: 'post-merge-merge-facts-incomplete',
+      changeId: state.changeId,
+      repositoryIds: incomplete,
+    };
+  }
+  const facts = state.businessMergeRequests
+    .map((item) => {
+      const mergeRequest = item.mergeRequest!;
+      const evidence = evidenceByIdentity.get(identityKey(mergeRequest))!;
+      return {
+        deliveryId: item.deliveryId,
+        repositoryId: item.repositoryId,
+        remoteIdentity: item.remoteIdentity,
+        targetBranch: item.targetBranch,
+        mergeRequest,
+        mergeCommit: evidence.mergeCommit,
+        mergedAt: evidence.mergedAt,
+      };
+    })
+    .sort((left, right) => left.deliveryId.localeCompare(right.deliveryId));
+  const digest: `sha256:${string}` = `sha256:${createHash('sha256')
+    .update(canonicalJson({ changeBranch: state.snapshot.changeBranch, facts }))
+    .digest('hex')}`;
+  return {
+    status: 'ready',
+    diagnostic: 'post-merge-ready',
+    changeId: state.changeId,
+    mergeFactsDigest: digest,
+    changeBranch: structuredClone(state.snapshot.changeBranch),
+    mergeEvidence: structuredClone(state.mergeEvidence),
+    repositories: facts.map((item) => ({
+      repositoryId: item.repositoryId,
+      remoteIdentity: item.remoteIdentity,
+      targetBranch: item.targetBranch,
+      mergeCommit: item.mergeCommit,
+    })),
+  };
+}
+
 export function coordinatePostMerge(
-  refresh: DeliveryMergeRequestRefresh,
+  refresh: DeliveryMergeRequestRefresh | DeliveryMergeRequestRefreshV3,
 ): PostMergeCoordinationResult {
   if (refresh.match.status === 'not_found') {
     return {
@@ -90,6 +193,9 @@ export function coordinatePostMerge(
   }
   if (!refresh.state) {
     throw new Error('Matched Delivery has no state');
+  }
+  if (refresh.state.schemaVersion === 3) {
+    return coordinatePostMergeV3(refresh as DeliveryMergeRequestRefreshV3);
   }
   const state = refresh.state;
   if (!state.mergeRequests) {
@@ -163,7 +269,7 @@ export function coordinatePostMerge(
     status: 'ready',
     diagnostic: 'post-merge-ready',
     changeId: state.changeId,
-    mergeFactsDigest: mergeFactsDigest(refresh),
+    mergeFactsDigest: mergeFactsDigest(refresh as DeliveryMergeRequestRefresh),
     mergeEvidence: structuredClone(state.mergeEvidence),
     repositories: mergeRequests.business
       .map((item) => ({

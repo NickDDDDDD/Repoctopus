@@ -413,6 +413,12 @@ export class GitPostMergeCheckout
         checkoutPath,
       ]);
     }
+    // Managed closure worktrees must have byte-stable text content. In particular, a Windows
+    // system-wide core.autocrlf=true would otherwise make the audited worktree bytes differ from
+    // the blob bytes produced by `git add`, invalidating the closure content digest.
+    await execute('git', ['config', 'core.autocrlf', 'false'], { cwd: checkoutPath });
+    await execute('git', ['config', 'core.eol', 'lf'], { cwd: checkoutPath });
+    await execute('git', ['config', 'core.longpaths', 'true'], { cwd: checkoutPath });
     const checkoutRemoteUrl = await git(checkoutPath, ['remote', 'get-url', input.intent.remote]);
     if (normalizeRemoteIdentity(checkoutRemoteUrl) !== input.intent.changeBranch.remoteIdentity) {
       throw new PostMergeCheckoutError('source-mismatch', input.intent.changeBranch.repositoryId);

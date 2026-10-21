@@ -138,6 +138,7 @@ async function fixture(): Promise<Fixture> {
       schemaVersion: 2,
       runId: 'final-change-run',
       changeId: 'final-change',
+      evidenceBundleId: 'bundle-final-change',
       workspaceRoot: targetMergeReceipt.checkoutPath,
       targetMerge: { intent: targetMergeIntent, receipt: targetMergeReceipt },
       baseline,

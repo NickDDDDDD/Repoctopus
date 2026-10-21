@@ -2,6 +2,7 @@ import type { Context } from '@deepseek-ai/cordis';
 
 import { DeliveryService as DeliveryDomainService } from '../../domains/delivery/service.js';
 import { DeliveryServiceV3 } from '../../domains/delivery/service-v3.js';
+import { FinalChangePublicationService } from '../../domains/delivery/final-change-publication.js';
 import type {
   DeliveryIntent,
   DeliveryIntentV3,
@@ -14,7 +15,9 @@ import type {
 } from '../../domains/delivery/types.js';
 import type {
   PostMergePublicationReceipt,
+  PostMergePublicationReceiptV2,
   PostMergePublicationRequest,
+  PostMergePublicationRequestV2,
 } from '../../domains/delivery/post-merge.js';
 import type { ProjectSnapshot } from '../../domains/project/types.js';
 import { canonicalJson } from '../../domains/workflow-contract/canonical.js';
@@ -77,15 +80,18 @@ export class FileDeliveryProvider extends Delivery {
   private domainV3(policy?: DeliveryPolicy): DeliveryServiceV3 {
     const environment = this.config.environment ?? process.env;
     const git = new GitDeliveryAdapter();
+    const mergeRequests = new GitHubMergeRequestAdapter(
+      new EnvironmentCredentialProvider(environment, this.config.githubTokenVariable),
+      policy?.publication.githubApiBaseUrl,
+    );
     return new DeliveryServiceV3(
       new FileDeliveryV3Store(this.config.workspaceRoot),
       git,
-      new GitHubMergeRequestAdapter(
-        new EnvironmentCredentialProvider(environment, this.config.githubTokenVariable),
-        policy?.publication.githubApiBaseUrl,
-      ),
+      mergeRequests,
       new FileDeliveryEvidence(this.config.workspaceRoot),
       this.ctx.compositionIdentity.current().compositionDigest,
+      undefined,
+      new FinalChangePublicationService(git, mergeRequests),
     );
   }
 
@@ -187,6 +193,15 @@ export class FileDeliveryProvider extends Delivery {
     );
   }
 
+  override publishFinalChange(
+    request: PostMergePublicationRequestV2,
+    signal?: AbortSignal,
+  ): Promise<PostMergePublicationReceiptV2> {
+    return this.operations.run({ cancellable: false, signal }, () =>
+      this.domainV3().publishFinalChange(request),
+    );
+  }
+
   refresh(changeId: string, policy: DeliveryPolicy, signal?: AbortSignal): Promise<DeliveryState> {
     return this.operations.run({ cancellable: false, signal }, () =>
       this.domain(policy).refresh(changeId),
@@ -198,9 +213,12 @@ export class FileDeliveryProvider extends Delivery {
     policy: DeliveryPolicy,
     signal?: AbortSignal,
   ) {
-    return this.operations.run({ cancellable: false, signal }, () =>
-      this.domain(policy).refreshForMergeRequest(reference),
-    );
+    return this.operations.run({ cancellable: false, signal }, async () => {
+      const current = await this.domainV3(policy).refreshForMergeRequest(reference);
+      return current.match.status === 'not_found'
+        ? this.domain(policy).refreshForMergeRequest(reference)
+        : current;
+    });
   }
 
   override reconciliationCandidates(signal?: AbortSignal) {

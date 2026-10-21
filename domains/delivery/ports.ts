@@ -41,6 +41,7 @@ export interface DeliveryStorePort {
 
 export interface DeliveryV3StorePort {
   load(changeId: string): Promise<DeliveryStateV3 | null>;
+  list(): Promise<DeliveryStateV3[]>;
   commit(options: {
     state: DeliveryStateV3;
     previousStateVersion: number | null;

@@ -239,6 +239,12 @@ export interface DeliveryMergeRequestRefresh {
   mergeRequestStatuses: MergeRequestStatus[];
 }
 
+export interface DeliveryMergeRequestRefreshV3 {
+  match: DeliveryMergeRequestMatch;
+  state: DeliveryStateV3 | null;
+  mergeRequestStatuses: MergeRequestStatus[];
+}
+
 export interface MergeEvidence {
   repositoryId: string;
   mergeRequest: MergeRequestIdentity;

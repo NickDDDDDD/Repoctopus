@@ -3,7 +3,10 @@ import path from 'node:path';
 
 import type { ProjectSnapshot, RepositorySnapshot } from '../project/types.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
-import { recordBusinessMergeRequestV3 } from './merge-requests.js';
+import {
+  matchActiveDeliveryMergeRequestV3,
+  recordBusinessMergeRequestV3,
+} from './merge-requests.js';
 import type {
   DeliveryEvent,
   DeliveryEvidencePort,
@@ -20,6 +23,7 @@ import type {
   DeliveryStateV3,
   HumanDecisionResponse,
   MergeRequestIdentity,
+  MergeRequestReference,
   TrustedActor,
 } from './types.js';
 import {
@@ -32,6 +36,12 @@ import {
   requestDeliveryApprovalV3,
 } from './v3.js';
 import { validateDeliveryPolicy } from './validation.js';
+import type { FinalChangePublicationService } from './final-change-publication.js';
+import {
+  assertPostMergePublicationRequestV2,
+  type PostMergePublicationReceiptV2,
+  type PostMergePublicationRequestV2,
+} from './post-merge.js';
 
 export interface DeliveryV3Preparation {
   project: ProjectSnapshot;
@@ -112,6 +122,7 @@ export class DeliveryServiceV3 {
     private readonly evidence: DeliveryEvidencePort,
     private readonly compositionDigest: string,
     private readonly clock: () => Date = () => new Date(),
+    private readonly finalPublication?: Pick<FinalChangePublicationService, 'publish'>,
   ) {}
 
   async checkpoint(project: ProjectSnapshot, intent: DeliveryIntentV3, policy: DeliveryPolicy) {
@@ -292,6 +303,195 @@ export class DeliveryServiceV3 {
 
   status(changeId: string): Promise<DeliveryStateV3> {
     return this.requireState(changeId);
+  }
+
+  async refreshForMergeRequest(reference: MergeRequestReference) {
+    const match = matchActiveDeliveryMergeRequestV3(await this.store.list(), reference);
+    if (match.status !== 'matched') {
+      return { match, state: null, mergeRequestStatuses: [] };
+    }
+    return { match, ...(await this.refreshMergeRequests(match.changeIds[0])) };
+  }
+
+  private async refreshMergeRequests(changeId: string) {
+    const state = await this.requireState(changeId);
+    const identities = state.businessMergeRequests.flatMap((item) =>
+      item.mergeRequest ? [item.mergeRequest] : [],
+    );
+    const mergeRequestStatuses = await Promise.all(
+      identities.map((identity) => this.mergeRequests.status(identity)),
+    );
+    const previousEvidence = new Map(
+      state.mergeEvidence.map((item) => [
+        `${item.mergeRequest.provider}\0${item.mergeRequest.repositoryId}\0${item.mergeRequest.number}`,
+        item,
+      ]),
+    );
+    const evidence = mergeRequestStatuses.flatMap((status) => {
+      if (status.state !== 'merged' || !status.mergeCommit || !status.mergedAt) return [];
+      const delivery = state.businessMergeRequests.find(
+        (item) =>
+          item.mergeRequest?.provider === status.provider &&
+          item.mergeRequest.repositoryId === status.repositoryId &&
+          item.mergeRequest.number === status.number,
+      );
+      if (!delivery) throw new Error('Authoritative Business MR is not declared');
+      const key = `${status.provider}\0${status.repositoryId}\0${status.number}`;
+      const prior = previousEvidence.get(key);
+      return [
+        {
+          deliveryId: delivery.deliveryId,
+          repositoryId: status.repositoryId,
+          mergeRequest: {
+            provider: status.provider,
+            repositoryId: status.repositoryId,
+            number: status.number,
+            url: status.url,
+          },
+          mergeCommit: status.mergeCommit,
+          mergedAt: status.mergedAt,
+          observedAt:
+            prior?.mergeCommit === status.mergeCommit && prior.mergedAt === status.mergedAt
+              ? prior.observedAt
+              : this.clock().toISOString(),
+        },
+      ];
+    });
+    const platformCapabilities = await Promise.all(
+      state.businessMergeRequests.map((item) =>
+        this.mergeRequests.capability(item.remoteIdentity, item.targetBranch),
+      ),
+    );
+    const allMerged =
+      state.businessMergeRequests.length > 0 &&
+      identities.length === state.businessMergeRequests.length &&
+      evidence.length === state.businessMergeRequests.length;
+    const timestamp = this.clock().toISOString();
+    const next: DeliveryStateV3 = {
+      ...state,
+      stateVersion: state.stateVersion + 1,
+      status: allMerged ? 'merged' : state.status,
+      mergeEvidence: evidence,
+      platformCapabilities,
+      updatedAt: timestamp,
+    };
+    await this.store.commit({
+      state: next,
+      previousStateVersion: state.stateVersion,
+      event: deliveryEvent(next, 'delivery.refreshed', timestamp, {
+        mergeRequestCount: identities.length,
+        mergedCount: evidence.length,
+      }),
+    });
+    return { state: next, mergeRequestStatuses };
+  }
+
+  async publishFinalChange(
+    request: PostMergePublicationRequestV2,
+  ): Promise<PostMergePublicationReceiptV2> {
+    assertPostMergePublicationRequestV2(request);
+    const state = await this.requireState(request.changeId);
+    if (!state.snapshot || state.status !== 'merged') {
+      throw new Error(`Final Change publication requires merged Business delivery state`);
+    }
+    if (
+      canonicalJson(state.snapshot.changeBranch) !==
+      canonicalJson(request.targetMerge.intent.changeBranch)
+    ) {
+      throw new Error('Final Change publication branch drifted from the approved Delivery');
+    }
+    if (!this.finalPublication) {
+      throw new Error('Final Change publication is unavailable');
+    }
+
+    const startedAt = this.clock().toISOString();
+    const starting: DeliveryStateV3 = {
+      ...state,
+      stateVersion: state.stateVersion + 1,
+      closure: {
+        status: 'running',
+        evidenceBundleId: request.evidenceBundleId,
+        specificationClosureId: request.audit.closureId,
+        publishedOid: null,
+        errorCode: null,
+      },
+      finalChangeMergeRequest: { status: 'creating', mergeRequest: null, errorCode: null },
+      updatedAt: startedAt,
+    };
+    await this.store.commit({
+      state: starting,
+      previousStateVersion: state.stateVersion,
+      event: deliveryEvent(starting, 'delivery.action', startedAt, {
+        result: 'final-change-publication-started',
+        runId: request.runId,
+      }),
+    });
+
+    try {
+      const receipt = await this.finalPublication.publish(request);
+      const existing = state.finalChangeMergeRequest?.mergeRequest;
+      if (
+        existing &&
+        (existing.provider !== receipt.mergeRequest.provider ||
+          existing.repositoryId !== receipt.mergeRequest.repositoryId ||
+          existing.number !== receipt.mergeRequest.number ||
+          existing.url !== receipt.mergeRequest.url)
+      ) {
+        throw new Error('Final Change MR identity drifted from Delivery state');
+      }
+      const completedAt = this.clock().toISOString();
+      const completed: DeliveryStateV3 = {
+        ...starting,
+        stateVersion: starting.stateVersion + 1,
+        closure: {
+          status: 'succeeded',
+          evidenceBundleId: request.evidenceBundleId,
+          specificationClosureId: request.audit.closureId,
+          publishedOid: receipt.remoteOid,
+          errorCode: null,
+        },
+        finalChangeMergeRequest: {
+          status: 'open',
+          mergeRequest: structuredClone(receipt.mergeRequest),
+          errorCode: null,
+        },
+        updatedAt: completedAt,
+      };
+      await this.store.commit({
+        state: completed,
+        previousStateVersion: starting.stateVersion,
+        event: deliveryEvent(completed, 'delivery.action', completedAt, {
+          result: 'final-change-published',
+          receiptDigest: receipt.digest,
+        }),
+      });
+      return receipt;
+    } catch (error) {
+      const failedAt = this.clock().toISOString();
+      const failed: DeliveryStateV3 = {
+        ...starting,
+        stateVersion: starting.stateVersion + 1,
+        closure: {
+          ...starting.closure!,
+          status: 'failed',
+          errorCode: 'final-change-publication-failed',
+        },
+        finalChangeMergeRequest: {
+          status: 'failed',
+          mergeRequest: state.finalChangeMergeRequest?.mergeRequest ?? null,
+          errorCode: 'final-change-publication-failed',
+        },
+        updatedAt: failedAt,
+      };
+      await this.store.commit({
+        state: failed,
+        previousStateVersion: starting.stateVersion,
+        event: deliveryEvent(failed, 'delivery.action', failedAt, {
+          result: 'final-change-publication-failed',
+        }),
+      });
+      throw error;
+    }
   }
 
   private async recordAction(

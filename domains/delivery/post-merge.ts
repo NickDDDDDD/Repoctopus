@@ -84,6 +84,7 @@ export interface PostMergePublicationRequestV2 {
   schemaVersion: 2;
   runId: string;
   changeId: string;
+  evidenceBundleId: string;
   workspaceRoot: string;
   targetMerge: {
     intent: PostMergeTargetMergeIntent;
@@ -108,6 +109,7 @@ export interface PostMergePublicationReceiptV2 extends PostMergeGitPublicationRe
   schemaVersion: 2;
   runId: string;
   changeId: string;
+  evidenceBundleId: string;
   auditDigest: `sha256:${string}`;
   targetMergeReceiptDigest: `sha256:${string}`;
   mergeRequest: MergeRequestIdentity;
@@ -219,6 +221,7 @@ export function assertPostMergePublicationRequestV2(request: PostMergePublicatio
     request.schemaVersion !== 2 ||
     !request.runId.trim() ||
     !request.changeId.trim() ||
+    !request.evidenceBundleId.trim() ||
     !request.workspaceRoot.trim() ||
     request.workspaceRoot !== request.baseline.root ||
     request.targetMerge.intent.runId !== request.runId ||
@@ -296,6 +299,7 @@ export function createPostMergePublicationReceiptV2(input: {
     schemaVersion: 2 as const,
     runId: input.request.runId,
     changeId: input.request.changeId,
+    evidenceBundleId: input.request.evidenceBundleId,
     auditDigest: input.request.audit.digest,
     targetMergeReceiptDigest: input.request.targetMerge.receipt.digest,
     commitOid: input.git.commitOid,
@@ -318,6 +322,7 @@ export function assertPostMergePublicationReceiptV2(
     receipt.schemaVersion !== 2 ||
     receipt.runId !== request.runId ||
     receipt.changeId !== request.changeId ||
+    receipt.evidenceBundleId !== request.evidenceBundleId ||
     receipt.auditDigest !== request.audit.digest ||
     receipt.targetMergeReceiptDigest !== request.targetMerge.receipt.digest ||
     receipt.commitOid !== receipt.remoteOid ||

@@ -394,7 +394,7 @@ const definitions: readonly BuiltinDefinition[] = [
       compositions: ['project'],
       authorities: ['post-merge-execute'],
       permissions: ['filesystem', 'network', 'process'],
-      stateSchemas: { 'post-merge-closure': '1' },
+      stateSchemas: { 'post-merge-closure': '2' },
     },
     plugin: postMergeActionsProvider,
     sourceFiles: [
