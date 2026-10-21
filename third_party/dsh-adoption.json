@@ -16,6 +16,66 @@
     { "name": "@deepseek-ai/dsh-util-crypto", "version": "0.2.1-rc.2" },
     { "name": "@deepseek-ai/dsh-util-values", "version": "0.2.1-rc.2" }
   ],
+  "desktopDependencies": [
+    {
+      "name": "electron",
+      "version": "44.7.0",
+      "license": "MIT",
+      "source": "apps/desktop/package.json"
+    },
+    {
+      "name": "electron-builder",
+      "version": "26.15.3",
+      "license": "MIT",
+      "source": "apps/desktop/package.json",
+      "note": "Uses the current stable patched release instead of DSH's newer vulnerable prerelease line."
+    },
+    {
+      "name": "vite",
+      "version": "6.4.5",
+      "license": "MIT",
+      "source": "apps/desktop/package.json",
+      "note": "Patches the Windows launch-editor advisories affecting 6.4.3."
+    },
+    {
+      "name": "react",
+      "version": "18.2.0",
+      "license": "MIT",
+      "source": "apps/desktop/package.json"
+    },
+    {
+      "name": "react-dom",
+      "version": "18.2.0",
+      "license": "MIT",
+      "source": "apps/desktop/package.json"
+    },
+    {
+      "name": "@types/react",
+      "version": "18.3.31",
+      "license": "MIT",
+      "source": "npm"
+    },
+    {
+      "name": "@types/react-dom",
+      "version": "18.3.7",
+      "license": "MIT",
+      "source": "npm"
+    }
+  ],
+  "desktopInstallScripts": [
+    {
+      "name": "esbuild",
+      "version": "0.25.12",
+      "allowed": true,
+      "reason": "Vite requires the platform-specific esbuild binary verification step."
+    },
+    {
+      "name": "electron-winstaller",
+      "version": "5.4.0",
+      "allowed": false,
+      "reason": "Repoctopus targets NSIS and does not use the transitive Squirrel installer helper."
+    }
+  ],
   "components": [
     {
       "id": "skill-registry",

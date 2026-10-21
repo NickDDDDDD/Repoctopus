@@ -83,6 +83,8 @@ if (
   !/^[a-f0-9]{40}$/.test(dshAdoption.upstream?.commit ?? '') ||
   dshAdoption.upstream?.license !== 'MIT' ||
   !Array.isArray(dshAdoption.npmPackages) ||
+  !Array.isArray(dshAdoption.desktopDependencies) ||
+  !Array.isArray(dshAdoption.desktopInstallScripts) ||
   !Array.isArray(dshAdoption.components) ||
   !Array.isArray(dshAdoption.forbiddenRuntimePackages)
 ) {
@@ -109,6 +111,43 @@ for (const entry of dshAdoption.npmPackages ?? []) {
 for (const packageName of dshAdoption.forbiddenRuntimePackages ?? []) {
   if (packageLock.packages?.[`node_modules/${packageName}`]) {
     findings.push(`Forbidden DSH runtime package installed: ${packageName}`);
+  }
+}
+for (const entry of dshAdoption.desktopDependencies ?? []) {
+  if (
+    typeof entry.name !== 'string' ||
+    typeof entry.version !== 'string' ||
+    entry.license !== 'MIT'
+  ) {
+    findings.push(`Invalid DSH desktop dependency entry: ${entry.name ?? '(missing name)'}`);
+    continue;
+  }
+  if (packageJson.devDependencies?.[entry.name] !== entry.version) {
+    findings.push(
+      `DSH desktop dependency is not an exact devDependency: ${entry.name}@${entry.version}`,
+    );
+  }
+  const locked = packageLock.packages?.[`node_modules/${entry.name}`];
+  if (
+    locked?.version !== entry.version ||
+    locked?.license !== entry.license ||
+    !/^sha512-/.test(locked.integrity ?? '')
+  ) {
+    findings.push(`DSH desktop dependency lock mismatch: ${entry.name}@${entry.version}`);
+  }
+}
+for (const entry of dshAdoption.desktopInstallScripts ?? []) {
+  if (
+    typeof entry.name !== 'string' ||
+    typeof entry.version !== 'string' ||
+    typeof entry.allowed !== 'boolean'
+  ) {
+    findings.push(`Invalid desktop install script policy: ${entry.name ?? '(missing name)'}`);
+    continue;
+  }
+  const key = `${entry.name}@${entry.version}`;
+  if (packageJson.allowScripts?.[key] !== entry.allowed) {
+    findings.push(`Desktop install script policy mismatch: ${key}`);
   }
 }
 for (const component of dshAdoption.components ?? []) {
