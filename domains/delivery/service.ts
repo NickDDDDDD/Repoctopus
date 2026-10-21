@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import path from 'node:path';
 
 import type { ProjectSnapshot, RepositorySnapshot } from '../project/types.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
@@ -8,6 +9,7 @@ import {
   deliveryPolicyDigest,
   sha256Digest,
 } from './snapshot.js';
+import { matchActiveDeliveryMergeRequest, recordBusinessMergeRequest } from './merge-requests.js';
 import {
   initialDeliveryState,
   invalidateApproval,
@@ -30,15 +32,39 @@ import type {
   HumanDecisionResponse,
   MergeEvidence,
   MergeRequestIdentity,
+  MergeRequestReference,
+  MergeRequestStatus,
   TrustedActor,
 } from './types.js';
 import { validateDeliveryIntent, validateDeliveryPolicy } from './validation.js';
+import {
+  assertPostMergePublicationRequest,
+  createPostMergePublicationReceipt,
+  type PostMergeDeliveryGitPort,
+  type PostMergePublicationReceipt,
+  type PostMergePublicationRequest,
+} from './post-merge.js';
 
 function selectedRepositories(
   project: ProjectSnapshot,
   intent: DeliveryIntent,
 ): Map<string, RepositorySnapshot> {
   const available = new Map(project.repositories.map((repository) => [repository.id, repository]));
+  const workspaceRepository = project.repositories.find(
+    (repository) => path.resolve(repository.path) === path.resolve(project.root),
+  );
+  if (!workspaceRepository) {
+    throw new Error('Workspace snapshot does not identify its Workspace Repository');
+  }
+  if (intent.changeMergeRequest.repositoryId !== workspaceRepository.id) {
+    throw new Error(`Change MR must belong to the Workspace Repository: ${workspaceRepository.id}`);
+  }
+  if (!workspaceRepository.remoteIdentity) {
+    throw new Error('Workspace Repository has no remote identity for its Change MR');
+  }
+  if (intent.changeMergeRequest.remoteIdentity !== workspaceRepository.remoteIdentity) {
+    throw new Error('Change MR remote identity does not match the Workspace Repository');
+  }
   const selected = new Map<string, RepositorySnapshot>();
   for (const item of intent.repositories) {
     const repository = available.get(item.repositoryId);
@@ -78,6 +104,7 @@ export class DeliveryService {
     private readonly clock: () => Date = () => new Date(),
     private readonly telemetry?: DeliveryTelemetryPort,
     private readonly compositionDigest: string = `sha256:${'0'.repeat(64)}`,
+    private readonly postMergeGit?: PostMergeDeliveryGitPort,
   ) {}
 
   async checkpoint(project: ProjectSnapshot, intent: DeliveryIntent, policy: DeliveryPolicy) {
@@ -121,8 +148,22 @@ export class DeliveryService {
     });
     const previous = await this.store.load(options.intent.changeId);
     const base = previous ?? initialDeliveryState(options.intent.changeId, timestamp);
-    if (previous && !['development', 'verification_required', 'rejected'].includes(previous.status))
+    if (previous?.status === 'awaiting_approval') {
+      if (previous.snapshot?.digest === snapshot.digest) return previous;
+      if (
+        previous.approval !== null ||
+        previous.actionResults.some(
+          (result) => result.status !== 'pending' || result.attempts !== 0,
+        )
+      ) {
+        throw new Error('Pending approval cannot be superseded after a decision or action');
+      }
+    } else if (
+      previous &&
+      !['development', 'verification_required', 'rejected'].includes(previous.status)
+    ) {
       throw new Error(`Delivery cannot be prepared from ${previous.status}`);
+    }
     const next = requestDeliveryApproval(base, snapshot, timestamp);
     await this.commit(
       next,
@@ -130,6 +171,12 @@ export class DeliveryService {
       event(next, 'delivery.prepared', timestamp, {
         snapshotDigest: snapshot.digest,
         repositoryCount: snapshot.repositories.length,
+        ...(previous?.status === 'awaiting_approval'
+          ? {
+              supersededRequestId: previous.decisionRequest?.requestId,
+              previousSnapshotDigest: previous.snapshot?.digest,
+            }
+          : {}),
       }),
     );
     return next;
@@ -264,6 +311,9 @@ export class DeliveryService {
                 }
               : item,
           ),
+          mergeRequests: mergeRequest
+            ? recordBusinessMergeRequest(state.mergeRequests!, action.repositoryId, mergeRequest)
+            : state.mergeRequests,
           updatedAt: completedAt,
         };
         await this.commit(
@@ -322,15 +372,90 @@ export class DeliveryService {
   }
 
   async refresh(changeId: string): Promise<DeliveryState> {
+    return (await this.refreshWithMergeRequestStatuses(changeId)).state;
+  }
+
+  async publishPostMerge(
+    request: PostMergePublicationRequest,
+  ): Promise<PostMergePublicationReceipt> {
+    assertPostMergePublicationRequest(request);
+    const state = await this.requireState(request.changeId);
+    this.assertWritableComposition(state);
+    if (state.status !== 'merged') {
+      throw new Error(`Post-merge publication requires merged Delivery state: ${state.status}`);
+    }
+    const changeMergeRequest = state.mergeRequests?.change;
+    if (!changeMergeRequest) throw new Error('Delivery has no original Change MR');
+    if (!this.postMergeGit) throw new Error('Post-merge Git publication is unavailable');
+    if (path.resolve(request.workspaceRoot) !== path.resolve(request.baseline.root)) {
+      throw new Error('Post-merge publication root is not bound to its audited baseline');
+    }
+
+    const current = await this.mergeRequests.status(changeMergeRequest.mergeRequest);
+    this.assertChangeMergeRequestStatus(current, changeMergeRequest);
+    const git = await this.postMergeGit.publishPostMerge({
+      workspaceRoot: request.workspaceRoot,
+      changeMergeRequest,
+      baseline: request.baseline,
+      audit: request.audit,
+      policy: request.policy,
+    });
+
+    let afterPush = await this.mergeRequests.status(changeMergeRequest.mergeRequest);
+    this.assertChangeMergeRequestStatus(afterPush, changeMergeRequest, git.commitOid);
+    let mergeRequestRecovered =
+      afterPush.title === request.policy.mergeRequest.title &&
+      afterPush.body === request.policy.mergeRequest.body;
+    if (!mergeRequestRecovered) {
+      const updated = await this.mergeRequests.update(changeMergeRequest.mergeRequest, {
+        repositoryId: changeMergeRequest.repositoryId,
+        remoteIdentity: changeMergeRequest.remoteIdentity,
+        sourceBranch: changeMergeRequest.sourceBranch,
+        targetBranch: changeMergeRequest.targetBranch,
+        title: request.policy.mergeRequest.title,
+        body: request.policy.mergeRequest.body,
+      });
+      this.assertSameMergeRequest(updated, changeMergeRequest.mergeRequest);
+      afterPush = await this.mergeRequests.status(changeMergeRequest.mergeRequest);
+      this.assertChangeMergeRequestStatus(afterPush, changeMergeRequest, git.commitOid);
+      if (
+        afterPush.title !== request.policy.mergeRequest.title ||
+        afterPush.body !== request.policy.mergeRequest.body
+      ) {
+        throw new Error('Original Change MR update could not be verified');
+      }
+      mergeRequestRecovered = false;
+    }
+    return createPostMergePublicationReceipt({
+      request,
+      git,
+      mergeRequest: changeMergeRequest.mergeRequest,
+      mergeRequestRecovered,
+    });
+  }
+
+  private async refreshWithMergeRequestStatuses(changeId: string): Promise<{
+    state: DeliveryState;
+    mergeRequestStatuses: MergeRequestStatus[];
+  }> {
     const state = await this.requireState(changeId);
     this.assertWritableComposition(state);
-    const identities = state.actionResults.flatMap((result) =>
-      result.mergeRequest ? [result.mergeRequest] : [],
+    const previousEvidence = new Map(
+      state.mergeEvidence.map((item) => [
+        `${item.mergeRequest.provider}\0${item.mergeRequest.repositoryId}\0${item.mergeRequest.number}`,
+        item,
+      ]),
+    );
+    const businessMergeRequests = state.mergeRequests?.business ?? [];
+    const identities = businessMergeRequests.flatMap((item) =>
+      item.mergeRequest ? [item.mergeRequest] : [],
     );
     const evidence: MergeEvidence[] = [];
+    const mergeRequestStatuses: MergeRequestStatus[] = [];
     const platformCapabilities = [];
     for (const identity of identities) {
       const status = await this.mergeRequests.status(identity);
+      mergeRequestStatuses.push(status);
       const repository = state.snapshot?.repositories.find(
         (item) => item.repositoryId === identity.repositoryId,
       );
@@ -339,17 +464,29 @@ export class DeliveryService {
           await this.mergeRequests.capability(repository.remoteIdentity, repository.targetBranch),
         );
       }
-      if (status.state === 'merged' && status.mergeCommit && status.mergedAt)
+      if (status.state === 'merged' && status.mergeCommit && status.mergedAt) {
+        const prior = previousEvidence.get(
+          `${identity.provider}\0${identity.repositoryId}\0${identity.number}`,
+        );
         evidence.push({
           repositoryId: status.repositoryId,
           mergeRequest: identity,
           mergeCommit: status.mergeCommit,
           mergedAt: status.mergedAt,
-          observedAt: this.clock().toISOString(),
+          observedAt:
+            prior?.repositoryId === status.repositoryId &&
+            prior.mergeCommit === status.mergeCommit &&
+            prior.mergedAt === status.mergedAt
+              ? prior.observedAt
+              : this.clock().toISOString(),
         });
+      }
     }
     const timestamp = this.clock().toISOString();
-    const allMerged = identities.length > 0 && evidence.length === identities.length;
+    const allMerged =
+      businessMergeRequests.length > 0 &&
+      identities.length === businessMergeRequests.length &&
+      evidence.length === businessMergeRequests.length;
     const next: DeliveryState = {
       ...state,
       stateVersion: state.stateVersion + 1,
@@ -366,7 +503,33 @@ export class DeliveryService {
         mergedCount: evidence.length,
       }),
     );
-    return next;
+    return { state: next, mergeRequestStatuses };
+  }
+
+  async refreshForMergeRequest(reference: MergeRequestReference) {
+    const match = matchActiveDeliveryMergeRequest(await this.store.list(), reference);
+    if (match.status !== 'matched') return { match, state: null, mergeRequestStatuses: [] };
+    return { match, ...(await this.refreshWithMergeRequestStatuses(match.changeIds[0])) };
+  }
+
+  async reconciliationCandidates() {
+    return (await this.store.list())
+      .filter((state) => state.status === 'in_review' || state.status === 'merged')
+      .flatMap((state) => {
+        const business = state.mergeRequests?.business.find((item) => item.mergeRequest);
+        if (!business?.mergeRequest) return [];
+        return [
+          {
+            changeId: state.changeId,
+            reference: {
+              provider: business.mergeRequest.provider,
+              remoteIdentity: business.remoteIdentity,
+              number: business.mergeRequest.number,
+            },
+          },
+        ];
+      })
+      .sort((left, right) => left.changeId.localeCompare(right.changeId));
   }
 
   status(changeId: string) {
@@ -403,6 +566,46 @@ export class DeliveryService {
       throw new Error(
         `Delivery ${state.changeId} requires composition ${state.snapshot.compositionDigest}; current composition ${this.compositionDigest} is migration_required`,
       );
+    }
+  }
+
+  private assertSameMergeRequest(
+    actual: MergeRequestIdentity,
+    expected: MergeRequestIdentity,
+  ): void {
+    if (
+      actual.provider !== expected.provider ||
+      actual.repositoryId !== expected.repositoryId ||
+      actual.number !== expected.number ||
+      actual.url !== expected.url
+    ) {
+      throw new Error('Post-merge publication attempted to replace the original Change MR');
+    }
+  }
+
+  private assertChangeMergeRequestStatus(
+    status: MergeRequestStatus,
+    changeMergeRequest: NonNullable<DeliveryState['mergeRequests']>['change'],
+    expectedHead?: string,
+  ): void {
+    this.assertSameMergeRequest(status, changeMergeRequest.mergeRequest);
+    if (status.state !== 'open') {
+      throw new Error(`Original Change MR is not open: ${status.state}`);
+    }
+    if (
+      status.sourceBranch !== changeMergeRequest.sourceBranch ||
+      status.targetBranch !== changeMergeRequest.targetBranch
+    ) {
+      throw new Error('Original Change MR branch mapping drifted');
+    }
+    if (!status.headCommit) {
+      throw new Error('Original Change MR did not report its head commit');
+    }
+    if (expectedHead && status.headCommit !== expectedHead) {
+      throw new Error('Original Change MR head commit drifted');
+    }
+    if (status.title === undefined || status.body === undefined) {
+      throw new Error('Original Change MR did not report editable metadata');
     }
   }
 

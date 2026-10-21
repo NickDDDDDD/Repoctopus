@@ -63,21 +63,39 @@ async function fixture() {
 }
 
 describe('Git delivery adapter', () => {
-  it('creates a local checkpoint and publishes with remote drift protection', async () => {
+  it('creates and immediately publishes a checkpoint before later delivery publication', async () => {
     const setup = await fixture();
     await writeFile(path.join(setup.repositoryPath, 'feature.txt'), 'content');
     const adapter = new GitDeliveryAdapter();
     const checkpoint = await adapter.checkpoint(setup.repository, setup.selected, policy);
     expect(checkpoint.created).toBe(true);
+    expect(checkpoint.publication).toEqual({
+      remote: 'origin',
+      branch: 'feat/change',
+      remoteOid: checkpoint.head,
+      upstream: 'origin/feat/change',
+    });
     const facts = await adapter.inspect(setup.repository, setup.selected, policy);
     expect(facts).toMatchObject({
       clean: true,
       sourceBranch: 'feat/change',
-      remoteSourceOid: null,
+      remoteSourceOid: checkpoint.head,
     });
     const intent: DeliveryIntent = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       changeId: 'deliver-change',
+      changeMergeRequest: {
+        repositoryId: 'workspace-repository',
+        remoteIdentity: 'example/workspace-repository',
+        sourceBranch: 'feat/deliver-change',
+        targetBranch: 'main',
+        mergeRequest: {
+          provider: 'github',
+          repositoryId: 'workspace-repository',
+          number: 12,
+          url: 'https://example.test/workspace-repository/pull/12',
+        },
+      },
       repositories: [{ ...setup.selected, actions: [...setup.selected.actions] }],
     };
     const push = createPublicationPlan(intent, [facts]).find(
@@ -85,6 +103,56 @@ describe('Git delivery adapter', () => {
     )!;
     expect(await adapter.push(setup.repository, push, policy)).toBe(facts.head);
     expect(await adapter.push(setup.repository, push, policy)).toBe(facts.head);
+  });
+
+  it('publishes a newly created clean branch and establishes its upstream', async () => {
+    const setup = await fixture();
+    const adapter = new GitDeliveryAdapter();
+    const checkpoint = await adapter.checkpoint(setup.repository, setup.selected, policy);
+    expect(checkpoint).toMatchObject({
+      created: false,
+      publication: {
+        remote: 'origin',
+        branch: 'feat/change',
+        remoteOid: checkpoint.head,
+        upstream: 'origin/feat/change',
+      },
+    });
+    expect(
+      (
+        await execFileAsync(
+          'git',
+          ['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{upstream}'],
+          { cwd: setup.repositoryPath },
+        )
+      ).stdout.trim(),
+    ).toBe('origin/feat/change');
+  });
+
+  it('recovers a commit whose first push failed by publishing the existing HEAD on retry', async () => {
+    const setup = await fixture();
+    await writeFile(path.join(setup.repositoryPath, 'feature.txt'), 'content');
+    const adapter = new GitDeliveryAdapter();
+    const unavailable = {
+      ...policy,
+      publication: { ...policy.publication, remote: 'missing' },
+    };
+    await expect(
+      adapter.checkpoint(setup.repository, setup.selected, unavailable),
+    ).rejects.toThrow();
+    const committedHead = (
+      await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: setup.repositoryPath })
+    ).stdout.trim();
+    expect(
+      (await execFileAsync('git', ['status', '--porcelain'], { cwd: setup.repositoryPath })).stdout,
+    ).toBe('');
+
+    const recovered = await adapter.checkpoint(setup.repository, setup.selected, policy);
+    expect(recovered).toMatchObject({
+      created: false,
+      head: committedHead,
+      publication: { remoteOid: committedHead, upstream: 'origin/feat/change' },
+    });
   });
 
   it('rejects protected branches and invalid commit messages without committing', async () => {
@@ -122,9 +190,10 @@ describe('Git delivery adapter', () => {
 
   it('loads delivery policy from the unified project configuration', () => {
     const source = `apiVersion: repoctopus/v1alpha1
-kind: RepoctopusProject
-project: { id: sample }
+kind: RepoctopusWorkspace
+workspace: { id: sample, repositoryId: workspace }
 repositories:
+  - { id: workspace, path: . }
   - { id: app, path: ../app }
 profiles:
   - id: verify

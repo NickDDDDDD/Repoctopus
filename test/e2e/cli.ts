@@ -14,17 +14,17 @@ export interface CliResult<T = unknown> {
   nextActions: string[];
 }
 
-export async function runCli(options: {
+export async function runCli<T = unknown>(options: {
   packageRoot: string;
   args: string[];
   cwd: string;
   environment?: NodeJS.ProcessEnv;
-}): Promise<CliResult> {
+}): Promise<CliResult<T>> {
   const entry = path.join(options.packageRoot, 'bin', 'repoctopus.js');
   const result = await execFileAsync(process.execPath, [entry, ...options.args, '--json'], {
     cwd: options.cwd,
     env: options.environment ?? process.env,
     maxBuffer: 16 * 1024 * 1024,
   });
-  return JSON.parse(result.stdout) as CliResult;
+  return JSON.parse(result.stdout) as CliResult<T>;
 }

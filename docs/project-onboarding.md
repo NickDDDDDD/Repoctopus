@@ -4,13 +4,15 @@ Repoctopus 使用“确定性扫描 → Agent 补全 → 用户确认”建立�
 
 ## 配置边界
 
+- Workspace 是团队共享、版本化的 Repoctopus 工作流入口。单仓项目可将它嵌入业务仓（Embedded Workspace）；多仓项目通常使用与业务仓同级的独立 Workspace Repository（Dedicated Workspace）。两种拓扑使用同一配置与运行模型。
+- `workspace.repositoryId` 必须指向路径为 `.` 的登记仓库。每个 change 的 Change MR 位于这个 Workspace Repository；业务 MR 位于 Delivery Intent 选定的业务仓。Embedded Workspace 可以让两类 MR 同仓，但必须使用不同分支拓扑与 MR 身份。
 - `repoctopus.yaml` 进入 Git，保存逻辑仓库、Evidence Profile、团队插件、保留规则和交付策略。
 - `.repoctopus/local.yaml` 被 Git 忽略，只保存本机仓库路径、端口、浏览器路径、视觉反馈交换目录和资源上限。
 - `.repoctopus/drafts/` 和 `.repoctopus/decisions/` 是本机接入状态，不进入业务仓。
 
 初始化项目仓时可把 [`examples/repoctopus.gitignore`](examples/repoctopus.gitignore) 的规则加入 workspace `.gitignore`。当前规则忽略整个 `.repoctopus/`，因为该目录只包含本机覆盖、草稿、运行状态、证据对象和受管浏览器；共享事实仅写入根目录的 `repoctopus.yaml`。
 
-- `project detect` 只扫描 `--root` 指定目录中的直接子 Git 仓库，并排除 `--workspace` 自身。
+- `project detect` 只在首次接入或显式重新探测时扫描 `--scan-root` 指定目录中的直接子 Git 仓库，并把 `--workspace` 所在 Git 仓库一同纳入候选。日常 Run、Evidence、Delivery 与恢复不扫描目录，只使用正式配置中登记的仓库。
 
 ## 1. 生成探测草稿
 
@@ -18,7 +20,7 @@ Repoctopus 使用“确定性扫描 → Agent 补全 → 用户确认”建立�
 
 ```powershell
 npm run build
-$detected = node bin/repoctopus.js project detect --root .. --workspace . --json | ConvertFrom-Json
+$detected = node bin/repoctopus.js project detect --scan-root .. --workspace . --json | ConvertFrom-Json
 $draft = $detected.result.file
 $draft
 ```

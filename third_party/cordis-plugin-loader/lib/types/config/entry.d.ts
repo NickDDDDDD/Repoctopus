@@ -23,6 +23,8 @@ export declare class Entry {
     static readonly key: unique symbol;
     ctx: Context;
     fiber?: Fiber;
+    /** Raw import result before export normalization; HMR updates it after a successful reload. */
+    moduleNamespace: unknown;
     parent: EntryGroup;
     options: EntryOptions;
     subgroup?: EntryGroup;

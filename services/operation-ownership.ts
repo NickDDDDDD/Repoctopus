@@ -79,6 +79,13 @@ export class OperationOwnership {
       }),
     ]);
     if (timeout) clearTimeout(timeout);
+    if (this.active.size > 0) {
+      for (const operation of this.active) {
+        if (operation.cancellable) {
+          operation.controller.abort(new Error('Service drain timed out'));
+        }
+      }
+    }
     return { drained: this.active.size === 0, remaining: this.active.size };
   }
 }

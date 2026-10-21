@@ -81,6 +81,8 @@ Runtime 负责组合 Engine、工作流包、Run Store、Trajectory、Checkpoint
 
 复制的实质源码必须在 `third_party/comet/source-manifest.json` 记录上游 commit、原路径、目标路径、内容摘要和采用方式。产品公共名称、命令和状态路径统一映射为 Repoctopus，来源归属通过许可证和清单表达。
 
+最终采用范围只包含 Engine Loop、Resolver、Guardrail、Eval 和 Workflow Hash。上游文件存储、Skill 依赖、产品 CLI、TUI 和模板不进入产品；工作流类型位于 `domains/workflow-contract`，文件持久化位于 `platform/runtime`，以保持 Engine 的纯领域边界。
+
 ### 3. 第一个 tracer slice 穿过真实边界
 
 E2E 在临时父目录创建两个独立 Git 仓库，执行：
@@ -100,6 +102,8 @@ project probe
 ### 4. 工作流快照在 Run 内不可变
 
 启动 Run 时对规范化工作流包计算摘要并保存快照。运行期间磁盘上的工作流定义变化不得静默改变已有 Run；Runtime 返回漂移诊断，并要求继续使用原快照或显式启动新 Run。
+
+Run State 同时保存本地 `workflowSource`，Runtime 通过 `WorkflowSourcePort` 读取当前定义并只比较摘要。Engine 始终使用冻结快照；来源不可读或摘要变化只产生 `workflowDrift`，不改变运行中的工作流。
 
 首个默认工作流只需要足够证明多步转换、证据等待、失败和恢复。完整 Open、Design、Build、Verify、Archive 宏观阶段及精确团队步骤在后续工作流 change 中实现。
 
@@ -150,6 +154,12 @@ OTel Adapter 异步发送到本机或内网 Collector，并用持久化 Delivery
 公共命令返回稳定退出码。`--json` 输出使用版本化 envelope，包含 `ok`、`command`、`runId`、`result`、`diagnostics` 和 `nextActions`；普通文本由同一结果对象渲染。
 
 状态改变命令必须通过 Runtime 完成，直接编辑 `.repoctopus/` 文件不会获得有效转换。后续 IDE Adapter 和 Skill 只调用公共 Runtime API 或 CLI。
+
+`doctor` 只使用只读投影检查状态、Trajectory、Checkpoint、来源和遥测队列。它发现未完成 Journal 时报告恢复入口，但不重放或完成转换；只有 `run resume` 执行恢复。
+
+### 10. 分发包保留锁定的生产依赖
+
+CLI 构建为 ESM，但 npm package 依赖不内联进单文件 bundle。分发包通过 lockfile 和 package metadata 安装锁定的生产依赖，避免 CommonJS 依赖在 ESM bundle 中依赖动态 `require` 兼容垫片；package E2E 必须从打包产物安装生产依赖后运行。
 
 ## Failure and Recovery
 

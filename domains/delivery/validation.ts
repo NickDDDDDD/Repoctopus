@@ -161,11 +161,11 @@ export function validateDeliveryPolicy(value: unknown): DeliveryFinding[] {
 
 export function validateDeliveryIntent(intent: DeliveryIntent): DeliveryFinding[] {
   const findings: DeliveryFinding[] = [];
-  if (intent.schemaVersion !== 1)
+  if (intent.schemaVersion !== 2)
     findings.push({
       code: 'unsupported-intent-version',
       path: 'schemaVersion',
-      message: 'Only schemaVersion 1 is supported',
+      message: 'Only schemaVersion 2 is supported',
     });
   if (!/^[a-z0-9][a-z0-9-]{2,127}$/.test(intent.changeId))
     findings.push({
@@ -179,6 +179,57 @@ export function validateDeliveryIntent(intent: DeliveryIntent): DeliveryFinding[
       path: 'repositories',
       message: 'At least one repository must be selected',
     });
+  const changeMergeRequest = intent.changeMergeRequest;
+  if (!changeMergeRequest || typeof changeMergeRequest !== 'object') {
+    findings.push({
+      code: 'missing-change-merge-request',
+      path: 'changeMergeRequest',
+      message: 'Change merge request is required',
+    });
+  } else {
+    for (const field of [
+      'repositoryId',
+      'remoteIdentity',
+      'sourceBranch',
+      'targetBranch',
+    ] as const) {
+      if (!changeMergeRequest[field])
+        findings.push({
+          code: `missing-change-merge-request-${field}`,
+          path: `changeMergeRequest.${field}`,
+          message: `${field} is required`,
+        });
+    }
+    if (
+      changeMergeRequest.sourceBranch &&
+      changeMergeRequest.sourceBranch === changeMergeRequest.targetBranch
+    )
+      findings.push({
+        code: 'change-merge-request-source-target-equal',
+        path: 'changeMergeRequest',
+        message: 'Change MR sourceBranch and targetBranch must differ',
+      });
+    const mergeRequest = changeMergeRequest.mergeRequest;
+    if (
+      !mergeRequest ||
+      !mergeRequest.provider ||
+      !mergeRequest.repositoryId ||
+      !Number.isSafeInteger(mergeRequest.number) ||
+      mergeRequest.number < 1 ||
+      !mergeRequest.url
+    )
+      findings.push({
+        code: 'invalid-change-merge-request',
+        path: 'changeMergeRequest.mergeRequest',
+        message: 'Change merge request identity is incomplete',
+      });
+    else if (mergeRequest.repositoryId !== changeMergeRequest.repositoryId)
+      findings.push({
+        code: 'change-merge-request-repository-mismatch',
+        path: 'changeMergeRequest.mergeRequest.repositoryId',
+        message: 'Change merge request repositoryId must match its declared repositoryId',
+      });
+  }
   const seen = new Set<string>();
   for (const [index, repository] of intent.repositories.entries()) {
     const root = `repositories[${index}]`;
@@ -213,6 +264,19 @@ export function validateDeliveryIntent(intent: DeliveryIntent): DeliveryFinding[
         path: root,
         message: 'sourceBranch and targetBranch must differ',
       });
+    if (
+      changeMergeRequest &&
+      repository.repositoryId === changeMergeRequest.repositoryId &&
+      repository.sourceBranch === changeMergeRequest.sourceBranch &&
+      repository.targetBranch === changeMergeRequest.targetBranch
+    ) {
+      findings.push({
+        code: 'change-business-branch-collision',
+        path: root,
+        message:
+          'Change and business roles in one repository must use different source or target branches',
+      });
+    }
     if (!repository.commitMessage)
       findings.push({
         code: 'missing-commit-message',
@@ -224,6 +288,12 @@ export function validateDeliveryIntent(intent: DeliveryIntent): DeliveryFinding[
         code: 'missing-actions',
         path: `${root}.actions`,
         message: 'At least one action is required',
+      });
+    if (!repository.actions.includes('merge_request'))
+      findings.push({
+        code: 'missing-business-merge-request',
+        path: `${root}.actions`,
+        message: 'Every business repository must declare a merge_request action',
       });
     if (repository.actions.some((action) => action !== 'push' && action !== 'merge_request'))
       findings.push({

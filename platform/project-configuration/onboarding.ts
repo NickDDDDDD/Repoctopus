@@ -15,6 +15,7 @@ import {
 import type { SharedProjectConfig } from '../../domains/project-configuration/types.js';
 import { atomicWriteJson, atomicWriteText } from '../filesystem/atomic-write.js';
 import { loadProjectConfig } from './file-config.js';
+import { ensureRepoctopusGitignore } from './gitignore.js';
 
 interface StoredProjectConfigurationDecision {
   schemaVersion: 1;
@@ -179,6 +180,7 @@ export async function applyProjectConfigurationDecision(input: {
   );
   const draft = asDraft(JSON.parse(await readFile(draftFile, 'utf8')) as unknown);
   await atomicWriteText(configFile, stringify(state.request.candidateConfig, { lineWidth: 0 }));
+  await ensureRepoctopusGitignore(workspace);
   const written = await loadProjectConfig(workspace);
   if (written.sharedDigest !== candidateDigest) {
     throw new Error('Written project configuration does not match the approved digest');

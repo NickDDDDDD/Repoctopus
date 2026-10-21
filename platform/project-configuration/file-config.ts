@@ -41,6 +41,9 @@ export async function loadProjectConfig(workspace: string): Promise<EffectivePro
     if (unknown.length > 0) {
       throw new Error(`Local config references unknown repositories: ${unknown.sort().join(', ')}`);
     }
+    if (local.repositoryPaths[shared.workspace.repositoryId] !== undefined) {
+      throw new Error('Local config cannot override the Workspace Repository path');
+    }
   }
   const sharedDigest = hashProjectConfig(shared);
   const localDigest = local ? hashProjectConfig(local) : null;

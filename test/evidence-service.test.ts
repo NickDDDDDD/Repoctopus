@@ -22,8 +22,8 @@ function config(
   return {
     shared: {
       apiVersion: 'repoctopus/v1alpha1',
-      kind: 'RepoctopusProject',
-      project: { id: 'sample' },
+      kind: 'RepoctopusWorkspace',
+      workspace: { id: 'sample', repositoryId: 'workspace' },
       repositories: [{ id: 'workspace', path: '.' }],
       profiles: [{ id: 'verify', nodes }],
     },
@@ -101,5 +101,73 @@ describe('evidence command vertical slice', () => {
       new LocalCommandAdapter(),
     ).run(plan, 'fingerprint-2', { compositionDigest: TEST_COMPOSITION_DIGEST });
     expect(result.bundle.outcome).toBe('passed_with_warnings');
+  });
+
+  it('uses the active Specification Provider as verified Evidence and blocks an invalid change', async () => {
+    const workspace = await temporaryDirectory('repoctopus-evidence-specification-');
+    cleanup.push(workspace);
+    const plan = compileEvidenceProfile(
+      config(workspace, [
+        {
+          id: 'specification',
+          type: 'specification',
+          repository: 'workspace',
+          dependsOn: [],
+          required: true,
+          changeId: 'invalid-change',
+          strict: true,
+        },
+        command('implementation', 'process.exit(0)', { dependsOn: ['specification'] }),
+      ]),
+      'verify',
+    );
+    const result = await new EvidenceService(
+      new FileArtifactStore(workspace),
+      new FileEvidenceStore(workspace),
+      new LocalCommandAdapter(),
+      undefined,
+      undefined,
+      {
+        specification: {
+          validate: () =>
+            Promise.resolve({
+              apiVersion: 'repoctopus.specification/v1alpha1',
+              kind: 'SpecificationValidation',
+              changeId: 'invalid-change',
+              provider: {
+                id: 'openspec',
+                version: '1.14.3',
+                protocolVersion: 'repoctopus.specification/v1alpha1',
+              },
+              strict: true,
+              valid: false,
+              validationDigest: `sha256:${'a'.repeat(64)}`,
+              diagnostics: [
+                {
+                  code: 'delta.invalid',
+                  severity: 'error',
+                  message: 'Delta spec is invalid',
+                },
+              ],
+            }),
+        },
+      },
+    ).run(plan, 'fingerprint-specification', {
+      compositionDigest: TEST_COMPOSITION_DIGEST,
+    });
+
+    expect(result.bundle.outcome).toBe('failed');
+    expect(result.bundle.checks).toEqual([
+      expect.objectContaining({ nodeId: 'specification', status: 'failed', trust: 'verified' }),
+      expect.objectContaining({
+        nodeId: 'implementation',
+        status: 'blocked',
+        blockedBy: ['specification'],
+      }),
+    ]);
+    expect(result.receipts[0]).toMatchObject({
+      adapter: 'specification:openspec@1.14.3',
+      findings: [{ code: 'delta.invalid', summary: 'Delta spec is invalid' }],
+    });
   });
 });

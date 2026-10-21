@@ -39,10 +39,13 @@ describe('GitHub merge request adapter', () => {
             {
               number: 7,
               html_url: 'https://github.com/team/app/pull/7',
+              title: 'change',
+              body: 'verified',
               state: 'open',
               merged_at: null,
               merge_commit_sha: null,
-              head: { sha: 'head' },
+              head: { sha: 'head', ref: 'feat/change' },
+              base: { ref: 'main' },
             },
           ]),
         );
@@ -50,10 +53,13 @@ describe('GitHub merge request adapter', () => {
         response(200, {
           number: 7,
           html_url: 'https://github.com/team/app/pull/7',
+          title: 'change',
+          body: 'verified',
           state: 'open',
           merged_at: null,
           merge_commit_sha: null,
-          head: { sha: 'head' },
+          head: { sha: 'head', ref: 'feat/change' },
+          base: { ref: 'main' },
         }),
       );
     };
@@ -78,10 +84,13 @@ describe('GitHub merge request adapter', () => {
         response(200, {
           number: 7,
           html_url: 'https://github.com/team/app/pull/7',
+          title: 'change',
+          body: 'verified',
           state: 'closed',
           merged_at: '2026-01-01T00:00:00Z',
           merge_commit_sha: 'merge-head',
-          head: { sha: 'head' },
+          head: { sha: 'head', ref: 'feat/change' },
+          base: { ref: 'main' },
         }),
       );
     };

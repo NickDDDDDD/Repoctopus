@@ -12,6 +12,7 @@ import type {
   DeliveryState,
 } from '../../domains/delivery/types.js';
 import type { ProjectSnapshot } from '../../domains/project/types.js';
+import type { EffectiveProjectConfig } from '../../domains/project-configuration/types.js';
 import type {
   ResumeView,
   RunStatusView,
@@ -20,8 +21,13 @@ import type {
 } from '../../domains/runtime/types.js';
 import { parseWorkflowPackage } from '../../domains/workflow-contract/package.js';
 import { loadDeliveryPolicy } from '../../platform/delivery/config.js';
+import { loadProjectConfig } from '../../platform/project-configuration/file-config.js';
 import { execute } from '../../platform/process/execute.js';
 import type { ProvenanceCheck } from '../../platform/provenance/check.js';
+import type {
+  PlatformEventReplayResult,
+  PlatformEventStatusView,
+} from '../../domains/platform-events/types.js';
 import {
   booleanFlag,
   integerFlag,
@@ -35,6 +41,8 @@ import type { BrowserMaintenance } from '../../services/browser-maintenance.js';
 import { bootBootstrapComposition, bootProjectComposition } from '../boot/bootstrap.js';
 import { reviewHumanDecision } from './human-decision.js';
 import { reviewProjectConfigurationDecision } from './project-configuration-decision.js';
+import { startRunnerApplication } from '../runner/application.js';
+import type { PostMergeReconciliationResult } from '../../services/post-merge-coordinator.js';
 
 const DIST_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PRODUCT_ROOT =
@@ -68,23 +76,21 @@ function evidenceBundleIds(parsed: ParsedArguments): string[] {
 
 async function deliveryInputs(parsed: ParsedArguments): Promise<{
   workspace: string;
-  projectRoot: string;
+  config: EffectiveProjectConfig;
   intent: DeliveryIntent;
   policy: DeliveryPolicy;
 }> {
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
-  const projectRoot = path.resolve(
-    stringFlag(parsed, 'project-root', { fallback: path.dirname(workspace) })!,
-  );
   const intentFile = path.resolve(stringFlag(parsed, 'intent', { required: true })!);
   const policyFile = path.resolve(
     stringFlag(parsed, 'policy', { fallback: path.join(workspace, 'repoctopus.yaml') })!,
   );
-  const [intentSource, policy] = await Promise.all([
+  const [config, intentSource, policy] = await Promise.all([
+    loadProjectConfig(workspace),
     readFile(intentFile, 'utf8'),
     loadDeliveryPolicy(policyFile),
   ]);
-  return { workspace, projectRoot, intent: parse(intentSource) as DeliveryIntent, policy };
+  return { workspace, config, intent: parse(intentSource) as DeliveryIntent, policy };
 }
 
 async function assertCommittedReport(
@@ -114,12 +120,24 @@ async function assertCommittedReport(
 
 async function deliveryProject(
   app: Awaited<ReturnType<typeof bootProjectComposition>>,
-  input: { workspace: string; projectRoot: string },
+  input: { workspace: string; config: EffectiveProjectConfig },
 ): Promise<ProjectSnapshot> {
-  return app.context.commandRouter.execute('project.probe', {
-    root: input.projectRoot,
+  return app.context.commandRouter.execute('workspace.snapshot', {
+    workspaceId: input.config.shared.workspace.id,
     workspaceRoot: input.workspace,
+    workspaceRepositoryId: input.config.shared.workspace.repositoryId,
+    repositories: input.config.repositories.map((repository) => ({
+      id: repository.id,
+      path: repository.resolvedPath,
+    })),
   });
+}
+
+async function currentWorkspaceSnapshot(
+  app: Awaited<ReturnType<typeof bootProjectComposition>>,
+  workspace: string,
+): Promise<ProjectSnapshot> {
+  return deliveryProject(app, { workspace, config: await loadProjectConfig(workspace) });
 }
 
 function deliveryNextActions(status: DeliveryState): string[] {
@@ -193,6 +211,56 @@ async function deliveryStatus(parsed: ParsedArguments): Promise<CliEnvelope<unkn
       result,
       nextActions: deliveryNextActions(result),
     });
+  } finally {
+    await app.close();
+  }
+}
+
+async function eventStatus(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const envelopeId = stringFlag(parsed, 'envelope', { required: true })!;
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute<
+      { envelopeId: string },
+      PlatformEventStatusView
+    >('event.status', { envelopeId });
+    return successEnvelope({ command: 'event status', result });
+  } finally {
+    await app.close();
+  }
+}
+
+async function eventReplay(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const file = path.resolve(stringFlag(parsed, 'file', { required: true })!);
+  const envelope = JSON.parse(await readFile(file, 'utf8')) as unknown;
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute<
+      { envelope: unknown },
+      PlatformEventReplayResult
+    >('event.replay', { envelope });
+    return successEnvelope({
+      command: 'event replay',
+      result,
+      nextActions: [`repoctopus event status --envelope ${result.event.envelopeId}`],
+    });
+  } finally {
+    await app.close();
+  }
+}
+
+async function eventRetry(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const envelopeId = stringFlag(parsed, 'envelope', { required: true })!;
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute<
+      { envelopeId: string },
+      PlatformEventStatusView
+    >('event.retry', { envelopeId });
+    return successEnvelope({ command: 'event retry', result });
   } finally {
     await app.close();
   }
@@ -302,29 +370,102 @@ async function deliveryRefresh(parsed: ParsedArguments): Promise<CliEnvelope<unk
   }
 }
 
-async function projectProbe(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
-  const root = path.resolve(stringFlag(parsed, 'root', { required: true })!);
+function skillAudience(parsed: ParsedArguments): 'model' | 'user' {
+  const audience = stringFlag(parsed, 'audience', { fallback: 'user' });
+  if (audience !== 'model' && audience !== 'user') {
+    throw new Error('--audience must be model or user');
+  }
+  return audience;
+}
+
+async function skillList(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
-  const app = await bootBootstrapComposition(PRODUCT_ROOT);
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
-    const snapshot = await app.context.commandRouter.execute('project.probe', {
-      root,
-      workspaceRoot: workspace,
+    const result = await app.context.commandRouter.execute('skill.list', {
+      cwd: workspace,
+      audience: skillAudience(parsed),
     });
-    return successEnvelope({ command: 'project probe', result: snapshot });
+    return successEnvelope({ command: 'skill list', result });
+  } finally {
+    await app.close();
+  }
+}
+
+async function skillGet(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute('skill.get', {
+      cwd: workspace,
+      audience: skillAudience(parsed),
+      name: stringFlag(parsed, 'name', { required: true })!,
+      ...(stringFlag(parsed, 'run') ? { runId: stringFlag(parsed, 'run') } : {}),
+    });
+    return successEnvelope({ command: 'skill get', result });
+  } finally {
+    await app.close();
+  }
+}
+
+async function skillProject(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const target = stringFlag(parsed, 'target', { required: true });
+  if (target !== 'codex' && target !== 'opencode') {
+    throw new Error('--target must be codex or opencode');
+  }
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute('skill.project', {
+      cwd: workspace,
+      target,
+    });
+    return successEnvelope({ command: 'skill project', result });
+  } finally {
+    await app.close();
+  }
+}
+
+async function specificationInspect(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const changeId = stringFlag(parsed, 'change', { required: true })!;
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute('specification.inspect', { changeId });
+    return successEnvelope({ command: 'spec inspect', result });
+  } finally {
+    await app.close();
+  }
+}
+
+async function specificationValidate(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const changeId = stringFlag(parsed, 'change', { required: true })!;
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute<
+      { changeId: string; strict: boolean },
+      { valid: boolean }
+    >('specification.validate', {
+      changeId,
+      strict: true,
+      ...(stringFlag(parsed, 'run') ? { runId: stringFlag(parsed, 'run') } : {}),
+    });
+    if (!result.valid) throw new Error(`Specification validation failed: ${changeId}`);
+    return successEnvelope({ command: 'spec validate', result });
   } finally {
     await app.close();
   }
 }
 
 async function projectDetect(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
-  const scopeRoot = path.resolve(stringFlag(parsed, 'root', { required: true })!);
+  const scanRoot = path.resolve(stringFlag(parsed, 'scan-root', { required: true })!);
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
   const app = await bootBootstrapComposition(PRODUCT_ROOT);
   try {
     const result = await app.context.commandRouter.execute('project.detect', {
       workspace,
-      scopeRoot,
+      scanRoot,
     });
     return successEnvelope({
       command: 'project detect',
@@ -502,20 +643,22 @@ async function evidenceClean(parsed: ParsedArguments): Promise<CliEnvelope<unkno
 
 async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
-  const projectRoot = path.resolve(
-    stringFlag(parsed, 'project-root', { fallback: path.dirname(workspace) })!,
-  );
   const workflowPath = path.resolve(
     stringFlag(parsed, 'workflow', { fallback: defaultWorkflowPath() })!,
   );
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
+    const reconciliation = app.composition.entries.some(
+      (entry) => entry.id === 'post-merge-command',
+    )
+      ? await app.context.commandRouter.execute<
+          Record<string, never>,
+          PostMergeReconciliationResult
+        >('post-merge.reconcile', {})
+      : null;
     const [source, projectSnapshot] = await Promise.all([
       readFile(workflowPath, 'utf8'),
-      app.context.commandRouter.execute<{ root: string; workspaceRoot: string }, ProjectSnapshot>(
-        'project.probe',
-        { root: projectRoot, workspaceRoot: workspace },
-      ),
+      currentWorkspaceSnapshot(app, workspace),
     ]);
     const requestedRunId = stringFlag(parsed, 'run');
     const result = await app.context.commandRouter.execute<
@@ -536,8 +679,52 @@ async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
       command: 'run start',
       runId: result.value.state.runId,
       result: result.value,
-      diagnostics: result.diagnostics,
+      diagnostics: [
+        ...result.diagnostics,
+        ...(reconciliation && reconciliation.checked > 0
+          ? [
+              {
+                level:
+                  reconciliation.failed > 0 || reconciliation.blocked > 0
+                    ? ('warning' as const)
+                    : ('info' as const),
+                code: 'post-merge.reconciliation',
+                message: `启动前补偿检查 ${reconciliation.checked} 个 change：完成 ${reconciliation.completed}，等待 ${reconciliation.waiting}，阻断 ${reconciliation.blocked}，失败 ${reconciliation.failed}`,
+              },
+            ]
+          : []),
+      ],
       nextActions: nextActions(result.value),
+    });
+  } finally {
+    await app.close();
+  }
+}
+
+async function postMergeReconcile(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    if (!app.composition.entries.some((entry) => entry.id === 'post-merge-command')) {
+      throw new Error('Post-merge reconciliation requires postMerge project configuration');
+    }
+    const result = await app.context.commandRouter.execute<
+      Record<string, never>,
+      PostMergeReconciliationResult
+    >('post-merge.reconcile', {});
+    return successEnvelope({
+      command: 'post-merge reconcile',
+      result,
+      diagnostics:
+        result.failed > 0 || result.blocked > 0
+          ? [
+              {
+                level: 'warning',
+                code: 'post-merge.reconciliation-incomplete',
+                message: `补偿检查存在未收敛结果：阻断 ${result.blocked}，失败 ${result.failed}`,
+              },
+            ]
+          : [],
     });
   } finally {
     await app.close();
@@ -631,14 +818,7 @@ async function runResume(parsed: ParsedArguments): Promise<CliEnvelope<unknown>>
   const runId = stringFlag(parsed, 'run', { required: true })!;
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
-    const previous = await app.context.runStore.loadProjectSnapshot(runId);
-    const projectRoot = path.resolve(
-      stringFlag(parsed, 'project-root', { fallback: previous.root })!,
-    );
-    const currentProjectSnapshot = await app.context.commandRouter.execute<
-      { root: string; workspaceRoot: string },
-      ProjectSnapshot
-    >('project.probe', { root: projectRoot, workspaceRoot: workspace });
+    const currentProjectSnapshot = await currentWorkspaceSnapshot(app, workspace);
     const result = await app.context.commandRouter.execute<
       { runId: string; currentProjectSnapshot: ProjectSnapshot },
       RuntimeResult<ResumeView>
@@ -738,12 +918,46 @@ async function browserInstall(parsed: ParsedArguments): Promise<CliEnvelope<unkn
   }
 }
 
+async function runnerStart(parsed: ParsedArguments, asJson: boolean): Promise<number> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const runner = await startRunnerApplication(PRODUCT_ROOT, workspace);
+  const envelope = successEnvelope({
+    command: 'runner start',
+    result: {
+      status: 'ready',
+      origin: runner.origin,
+      compositionDigest: runner.compositionDigest,
+    },
+  });
+  process.stdout.write(`${asJson ? JSON.stringify(envelope) : renderHuman(envelope)}\n`);
+
+  let stop!: () => void;
+  const stopped = new Promise<void>((resolve) => {
+    stop = resolve;
+  });
+  const onSignal = () => stop();
+  process.once('SIGINT', onSignal);
+  process.once('SIGTERM', onSignal);
+  try {
+    await stopped;
+    return 0;
+  } finally {
+    process.off('SIGINT', onSignal);
+    process.off('SIGTERM', onSignal);
+    await runner.close();
+  }
+}
+
 async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const command = parsed.command.join(' ');
-  if (command === 'project probe') return projectProbe(parsed);
   if (command === 'project detect') return projectDetect(parsed);
   if (command === 'project prepare') return projectPrepare(parsed);
   if (command === 'project review') return projectReview(parsed);
+  if (command === 'skill list') return skillList(parsed);
+  if (command === 'skill get') return skillGet(parsed);
+  if (command === 'skill project') return skillProject(parsed);
+  if (command === 'spec inspect') return specificationInspect(parsed);
+  if (command === 'spec validate') return specificationValidate(parsed);
   if (command === 'evidence plan') return evidencePlan(parsed);
   if (command === 'evidence run') return evidenceRun(parsed);
   if (command === 'evidence status') return evidenceStatus(parsed);
@@ -762,11 +976,15 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   if (command === 'delivery publish' || command === 'delivery resume')
     return deliveryPublish(parsed);
   if (command === 'delivery refresh') return deliveryRefresh(parsed);
+  if (command === 'event status') return eventStatus(parsed);
+  if (command === 'event replay') return eventReplay(parsed);
+  if (command === 'event retry') return eventRetry(parsed);
+  if (command === 'post-merge reconcile') return postMergeReconcile(parsed);
   if (command === 'doctor') return doctor(parsed);
   if (command === 'browser doctor') return browserDoctor(parsed);
   if (command === 'browser install') return browserInstall(parsed);
   throw new Error(
-    'Usage: repoctopus project <probe|detect|prepare|review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|record|resume> | delivery <checkpoint|prepare|status|publish|resume|refresh> | approval review | browser <doctor|install> | doctor',
+    'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|record|resume> | runner start | post-merge reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh> | event <status|replay|retry> | approval review | browser <doctor|install> | doctor',
   );
 }
 
@@ -788,6 +1006,7 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
   const asJson = booleanFlag(parsed, 'json');
   const command = parsed.command.join(' ') || 'help';
   try {
+    if (command === 'runner start') return await runnerStart(parsed, asJson);
     const envelope = await dispatch(parsed);
     process.stdout.write(`${asJson ? JSON.stringify(envelope) : renderHuman(envelope)}\n`);
     return 0;

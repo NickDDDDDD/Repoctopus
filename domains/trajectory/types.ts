@@ -1,10 +1,15 @@
 import type { RunState } from '../engine/types.js';
+import type { SkillUsageSnapshot } from '../skill/types.js';
+import type { SpecificationUsageSnapshot } from '../specification/types.js';
 
 export type TrajectoryEventType =
   | 'run.started'
   | 'action.proposed'
   | 'action.completed'
   | 'composition.changed'
+  | 'skill.bound'
+  | 'specification.bound'
+  | 'specification.closure-planned'
   | 'run.resumed'
   | 'recovery.reconciled';
 
@@ -30,6 +35,8 @@ export interface Checkpoint {
   projectSnapshotDigest: string;
   artifactManifestDigest: string;
   acceptedEvidenceBundleIds: string[];
+  skillUsageSnapshots?: SkillUsageSnapshot[];
+  specificationUsageSnapshot?: SpecificationUsageSnapshot;
   createdAt: string;
 }
 

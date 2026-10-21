@@ -17,7 +17,12 @@ import type { TelemetryBatch, TelemetryPort } from '../../../domains/runtime/typ
 import type { DeliveryEvent, DeliveryTelemetryPort } from '../../../domains/delivery/ports.js';
 import type { DeliveryState } from '../../../domains/delivery/types.js';
 import { safeDeliveryAttributes } from '../delivery-mapping.js';
-import { eventSeverity, safeEventAttributes } from './mapping.js';
+import {
+  eventSeverity,
+  safeEventAttributes,
+  workflowEventMetricAttributes,
+  workflowStepMetricAttributes,
+} from './mapping.js';
 import type {
   LifecycleTelemetryEvent,
   LifecycleTelemetryPort,
@@ -142,11 +147,7 @@ export class OpenTelemetryExporter implements TelemetryPort {
             code: item.data.result === 'failed' ? SpanStatusCode.ERROR : SpanStatusCode.OK,
           });
           span.end(endedAt);
-          stepDuration.record(duration, {
-            'repoctopus.workflow.name': batch.run.workflowName,
-            'repoctopus.event.result':
-              typeof item.data.result === 'string' ? item.data.result : 'unknown',
-          });
+          stepDuration.record(duration, workflowStepMetricAttributes(batch, item));
         }
 
         logger.emit({
@@ -157,10 +158,7 @@ export class OpenTelemetryExporter implements TelemetryPort {
           attributes,
           context: parentContext,
         });
-        eventCounter.add(1, {
-          'repoctopus.event.type': item.type,
-          'repoctopus.workflow.name': batch.run.workflowName,
-        });
+        eventCounter.add(1, workflowEventMetricAttributes(batch, item));
       }
       await Promise.all([
         traceProvider.forceFlush({ timeoutMillis }),

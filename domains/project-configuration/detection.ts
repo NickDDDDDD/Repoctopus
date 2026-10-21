@@ -60,7 +60,7 @@ export interface ProjectDetectionDraft {
   draftId: string;
   status: 'candidate' | 'awaiting_confirmation' | 'confirmed';
   capturedAt: string;
-  scopeRoot: string;
+  scanRoot: string;
   workspace: string;
   repositories: DetectedRepository[];
   unresolved: DetectionUnresolvedItem[];

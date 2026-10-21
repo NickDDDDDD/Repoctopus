@@ -34,6 +34,89 @@ describe('Repoctopus runtime', () => {
     return createWorkflowPackage(definition);
   }
 
+  it('binds the first Skill use to Run, Checkpoint, and Trajectory idempotently', async () => {
+    const workspace = await temporaryDirectory('repoctopus-skill-binding-');
+    cleanup.push(workspace);
+    const store = new FileRuntimeStore(workspace);
+    const runtime = new WorkflowRunCoordinator(store, { async export() {} }, compositionFixture());
+    await runtime.start({
+      workflow: workflowFixture(),
+      projectSnapshot: projectFixture(),
+      runId: 'run-skill-binding',
+    });
+    const snapshot = {
+      schemaVersion: 1 as const,
+      name: 'tdd',
+      provider: 'matt-builtins',
+      invocation: { modelInvocable: true, userInvocable: true },
+      contentDigest: `sha256:${'a'.repeat(64)}` as const,
+      resourceManifestDigest: `sha256:${'b'.repeat(64)}` as const,
+    };
+    await runtime.bindSkill('run-skill-binding', snapshot);
+    await runtime.bindSkill('run-skill-binding', snapshot);
+    expect((await store.loadRun('run-skill-binding')).skillUsageSnapshots).toEqual([snapshot]);
+    expect((await store.loadCheckpoint('run-skill-binding')).skillUsageSnapshots).toEqual([
+      snapshot,
+    ]);
+    const trajectory = await store.loadTrajectory('run-skill-binding');
+    expect(trajectory.map((item) => item.type)).toEqual(['run.started', 'skill.bound']);
+    expect(JSON.stringify(trajectory)).not.toContain('SKILL.md');
+    expect(JSON.stringify(trajectory)).not.toContain('.repoctopus/learning');
+    await expect(
+      runtime.bindSkill('run-skill-binding', {
+        ...snapshot,
+        contentDigest: `sha256:${'c'.repeat(64)}`,
+      }),
+    ).rejects.toThrow('Skill drift detected');
+  });
+
+  it('binds one Specification authority and rejects a changed validation snapshot', async () => {
+    const workspace = await temporaryDirectory('repoctopus-specification-binding-');
+    cleanup.push(workspace);
+    const store = new FileRuntimeStore(workspace);
+    const runtime = new WorkflowRunCoordinator(store, { async export() {} }, compositionFixture());
+    await runtime.start({
+      workflow: workflowFixture(),
+      projectSnapshot: projectFixture(),
+      runId: 'run-specification-binding',
+    });
+    const snapshot = {
+      schemaVersion: 1 as const,
+      changeId: 'change-one',
+      provider: {
+        id: 'openspec',
+        version: '1.14.3',
+        protocolVersion: 'repoctopus.specification/v1alpha1' as const,
+      },
+      validationDigest: `sha256:${'d'.repeat(64)}` as const,
+    };
+    await runtime.bindSpecification('run-specification-binding', snapshot);
+    await runtime.bindSpecification('run-specification-binding', snapshot);
+    const closure = {
+      changeId: snapshot.changeId,
+      provider: snapshot.provider,
+      planDigest: `sha256:${'f'.repeat(64)}` as const,
+    };
+    await runtime.bindSpecificationClosurePlan('run-specification-binding', closure);
+    await runtime.bindSpecificationClosurePlan('run-specification-binding', closure);
+    expect((await store.loadRun('run-specification-binding')).specificationUsageSnapshot).toEqual({
+      ...snapshot,
+      closurePlanDigest: closure.planDigest,
+    });
+    expect(
+      (await store.loadCheckpoint('run-specification-binding')).specificationUsageSnapshot,
+    ).toEqual({ ...snapshot, closurePlanDigest: closure.planDigest });
+    expect(
+      (await store.loadTrajectory('run-specification-binding')).map((event) => event.type),
+    ).toEqual(['run.started', 'specification.bound', 'specification.closure-planned']);
+    await expect(
+      runtime.bindSpecification('run-specification-binding', {
+        ...snapshot,
+        validationDigest: `sha256:${'e'.repeat(64)}`,
+      }),
+    ).rejects.toThrow('Specification drift detected');
+  });
+
   it('records compatible composition changes and blocks incompatible writes while keeping reads', async () => {
     const workspace = await temporaryDirectory('repoctopus-composition-drift-');
     cleanup.push(workspace);

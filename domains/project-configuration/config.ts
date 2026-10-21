@@ -10,14 +10,20 @@ import {
   type BrowserJourney,
 } from '../feedback/browser.js';
 import type { ReadinessCondition } from '../feedback/service.js';
+import { normalizePostMergeVerificationPathPrefixes } from '../post-merge/closure.js';
 import {
   PROJECT_CONFIG_API_VERSION,
   type BrowserNodeConfig,
+  type CapabilityProviderReference,
   type CommandNodeConfig,
+  type CredentialReference,
   type EvidenceNodeConfig,
   type LocalProjectConfig,
+  type PlatformEventsConfig,
+  type PostMergeConfig,
   type ServiceNodeConfig,
   type SharedProjectConfig,
+  type SpecificationNodeConfig,
   type VisualNodeConfig,
   type TeamPluginConfig,
 } from './types.js';
@@ -80,6 +86,262 @@ function exactKeys(
 function stringArray(value: unknown, field: string): string[] {
   if (!Array.isArray(value)) throw new ProjectConfigError('expected an array', field);
   return value.map((item, index) => string(item, `${field}[${index}]`));
+}
+
+function identifier(value: unknown, field: string): string {
+  const parsed = string(value, field);
+  if (!/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/u.test(parsed)) {
+    throw new ProjectConfigError('expected a stable identifier', field);
+  }
+  return parsed;
+}
+
+function credentialReference(value: unknown, field: string): CredentialReference {
+  const reference = object(value, field);
+  exactKeys(reference, ['provider', 'variable'], field);
+  if (reference.provider !== 'environment') {
+    throw new ProjectConfigError('expected environment Credential Provider', `${field}.provider`);
+  }
+  const variable = string(reference.variable, `${field}.variable`);
+  if (!/^[A-Z_][A-Z0-9_]*$/u.test(variable)) {
+    throw new ProjectConfigError('expected an environment variable name', `${field}.variable`);
+  }
+  return { provider: 'environment', variable };
+}
+
+function providerReference(value: unknown, field: string): CapabilityProviderReference {
+  const reference = object(value, field);
+  exactKeys(reference, ['id'], field);
+  return { id: identifier(reference.id, `${field}.id`) };
+}
+
+function concreteDirectory(value: unknown, field: string): string {
+  const configured = string(value, field);
+  const normalized = configured.replaceAll('\\', '/');
+  const segments = normalized.split('/').filter(Boolean);
+  if (
+    configured !== normalized ||
+    normalized !== `${segments.join('/')}/` ||
+    normalized.startsWith('/') ||
+    path.posix.isAbsolute(normalized) ||
+    path.win32.isAbsolute(normalized) ||
+    segments.length < 2 ||
+    segments.some((segment) => segment === '.' || segment === '..') ||
+    /[*?[\]{}!]/u.test(normalized) ||
+    [...normalized].some((character) => {
+      const code = character.codePointAt(0)!;
+      return code <= 0x1f || code === 0x7f;
+    })
+  ) {
+    throw new ProjectConfigError(
+      'expected a concrete project-relative directory below the project root',
+      field,
+    );
+  }
+  return normalized;
+}
+
+function projectRelativeDirectory(value: unknown, field: string): string {
+  const configured = string(value, field);
+  const normalized = configured.replaceAll('\\', '/');
+  const segments = normalized.split('/').filter(Boolean);
+  const canonical = segments.join('/');
+  if (
+    configured !== canonical ||
+    normalized.startsWith('/') ||
+    path.posix.isAbsolute(normalized) ||
+    path.win32.isAbsolute(normalized) ||
+    segments.length === 0 ||
+    segments.some((segment) => segment === '.' || segment === '..') ||
+    /[*?[\]{}!]/u.test(normalized) ||
+    [...normalized].some((character) => {
+      const code = character.codePointAt(0)!;
+      return code <= 0x1f || code === 0x7f;
+    })
+  ) {
+    throw new ProjectConfigError('expected a project-relative directory', field);
+  }
+  return normalized;
+}
+
+function parsePlatformEvents(value: unknown): PlatformEventsConfig {
+  const config = object(value, 'platformEvents');
+  exactKeys(config, ['storeProvider', 'http', 'github', 'runner'], 'platformEvents');
+
+  const http = object(config.http, 'platformEvents.http');
+  exactKeys(http, ['hostname', 'port', 'shutdownTimeoutMs'], 'platformEvents.http');
+  const github = object(config.github, 'platformEvents.github');
+  exactKeys(
+    github,
+    ['source', 'path', 'maxBodyBytes', 'webhookCredential', 'apiCredential'],
+    'platformEvents.github',
+  );
+  const routePath = string(github.path, 'platformEvents.github.path');
+  if (!routePath.startsWith('/') || routePath.includes('?') || routePath.includes('#')) {
+    throw new ProjectConfigError(
+      'expected an absolute HTTP route path',
+      'platformEvents.github.path',
+    );
+  }
+  const runner = object(config.runner, 'platformEvents.runner');
+  exactKeys(
+    runner,
+    ['identity', 'leaseMs', 'pollIntervalMs', 'retryDelayMs', 'maxAttempts', 'shutdownTimeoutMs'],
+    'platformEvents.runner',
+  );
+  return {
+    storeProvider: providerReference(config.storeProvider, 'platformEvents.storeProvider'),
+    http: {
+      hostname: string(http.hostname, 'platformEvents.http.hostname'),
+      port: portNumber(http.port, 'platformEvents.http.port'),
+      shutdownTimeoutMs: positiveInteger(
+        http.shutdownTimeoutMs,
+        'platformEvents.http.shutdownTimeoutMs',
+        5_000,
+      ),
+    },
+    github: {
+      source: identifier(github.source, 'platformEvents.github.source'),
+      path: routePath,
+      maxBodyBytes: positiveInteger(
+        github.maxBodyBytes,
+        'platformEvents.github.maxBodyBytes',
+        1024 * 1024,
+      ),
+      webhookCredential: credentialReference(
+        github.webhookCredential,
+        'platformEvents.github.webhookCredential',
+      ),
+      apiCredential: credentialReference(
+        github.apiCredential,
+        'platformEvents.github.apiCredential',
+      ),
+    },
+    runner: {
+      identity: identifier(runner.identity, 'platformEvents.runner.identity'),
+      leaseMs: positiveInteger(runner.leaseMs, 'platformEvents.runner.leaseMs', 30_000),
+      pollIntervalMs: positiveInteger(
+        runner.pollIntervalMs,
+        'platformEvents.runner.pollIntervalMs',
+        1_000,
+      ),
+      retryDelayMs: positiveInteger(
+        runner.retryDelayMs,
+        'platformEvents.runner.retryDelayMs',
+        1_000,
+      ),
+      maxAttempts: positiveInteger(runner.maxAttempts, 'platformEvents.runner.maxAttempts', 5),
+      shutdownTimeoutMs: positiveInteger(
+        runner.shutdownTimeoutMs,
+        'platformEvents.runner.shutdownTimeoutMs',
+        5_000,
+      ),
+    },
+  };
+}
+
+function parsePostMerge(value: unknown): PostMergeConfig {
+  const config = object(value, 'postMerge');
+  exactKeys(
+    config,
+    ['runnerIdentity', 'temporaryRoot', 'evidenceProfile', 'allowedWorkspacePaths', 'publication'],
+    'postMerge',
+  );
+  const allowed = object(config.allowedWorkspacePaths, 'postMerge.allowedWorkspacePaths');
+  exactKeys(
+    allowed,
+    ['specificationClosure', 'verificationPathPrefixes'],
+    'postMerge.allowedWorkspacePaths',
+  );
+  if (allowed.specificationClosure !== true) {
+    throw new ProjectConfigError(
+      'must delegate specification paths to the active Specification Provider',
+      'postMerge.allowedWorkspacePaths.specificationClosure',
+    );
+  }
+  if (!Array.isArray(allowed.verificationPathPrefixes)) {
+    throw new ProjectConfigError(
+      'expected an array',
+      'postMerge.allowedWorkspacePaths.verificationPathPrefixes',
+    );
+  }
+  const concretePrefixes = allowed.verificationPathPrefixes.map((item, index) =>
+    concreteDirectory(item, `postMerge.allowedWorkspacePaths.verificationPathPrefixes[${index}]`),
+  );
+  let verificationPathPrefixes: string[];
+  try {
+    verificationPathPrefixes = normalizePostMergeVerificationPathPrefixes(concretePrefixes);
+  } catch (error) {
+    throw new ProjectConfigError(
+      error instanceof Error ? error.message : 'invalid verification path prefix',
+      'postMerge.allowedWorkspacePaths.verificationPathPrefixes',
+    );
+  }
+
+  const publication = object(config.publication, 'postMerge.publication');
+  exactKeys(
+    publication,
+    ['operations', 'remote', 'commit', 'changeMergeRequest'],
+    'postMerge.publication',
+  );
+  const operations = stringArray(publication.operations, 'postMerge.publication.operations');
+  if (
+    canonicalJson([...operations].sort()) !==
+    canonicalJson(['commit', 'merge_request.update', 'push'])
+  ) {
+    throw new ProjectConfigError(
+      'must contain only commit, push, and merge_request.update',
+      'postMerge.publication.operations',
+    );
+  }
+  const commit = object(publication.commit, 'postMerge.publication.commit');
+  exactKeys(
+    commit,
+    ['message', 'authorNameCredential', 'authorEmailCredential'],
+    'postMerge.publication.commit',
+  );
+  const message = string(commit.message, 'postMerge.publication.commit.message');
+  if (message.includes('\n') || message.includes('\r')) {
+    throw new ProjectConfigError('must be one line', 'postMerge.publication.commit.message');
+  }
+  const mergeRequest = object(
+    publication.changeMergeRequest,
+    'postMerge.publication.changeMergeRequest',
+  );
+  exactKeys(mergeRequest, ['mode', 'title', 'body'], 'postMerge.publication.changeMergeRequest');
+  if (mergeRequest.mode !== 'update-existing') {
+    throw new ProjectConfigError(
+      'must update the existing Change merge request',
+      'postMerge.publication.changeMergeRequest.mode',
+    );
+  }
+  const remote = identifier(publication.remote, 'postMerge.publication.remote');
+  return {
+    runnerIdentity: identifier(config.runnerIdentity, 'postMerge.runnerIdentity'),
+    temporaryRoot: projectRelativeDirectory(config.temporaryRoot, 'postMerge.temporaryRoot'),
+    evidenceProfile: identifier(config.evidenceProfile, 'postMerge.evidenceProfile'),
+    allowedWorkspacePaths: { specificationClosure: true, verificationPathPrefixes },
+    publication: {
+      operations: ['commit', 'push', 'merge_request.update'],
+      remote,
+      commit: {
+        message,
+        authorNameCredential: credentialReference(
+          commit.authorNameCredential,
+          'postMerge.publication.commit.authorNameCredential',
+        ),
+        authorEmailCredential: credentialReference(
+          commit.authorEmailCredential,
+          'postMerge.publication.commit.authorEmailCredential',
+        ),
+      },
+      changeMergeRequest: {
+        mode: 'update-existing',
+        title: string(mergeRequest.title, 'postMerge.publication.changeMergeRequest.title'),
+        body: string(mergeRequest.body, 'postMerge.publication.changeMergeRequest.body'),
+      },
+    },
+  };
 }
 
 function nodeBase(node: Record<string, unknown>, field: string) {
@@ -370,12 +632,31 @@ function parseVisualNode(value: unknown, field: string): VisualNodeConfig {
   };
 }
 
+function parseSpecificationNode(value: unknown, field: string): SpecificationNodeConfig {
+  const node = object(value, field);
+  exactKeys(
+    node,
+    ['id', 'type', 'repository', 'dependsOn', 'required', 'changeId', 'strict'],
+    field,
+  );
+  if (node.type !== 'specification') {
+    throw new ProjectConfigError('expected specification', `${field}.type`);
+  }
+  return {
+    ...nodeBase(node, field),
+    type: 'specification',
+    changeId: string(node.changeId, `${field}.changeId`),
+    strict: boolean(node.strict, `${field}.strict`, true),
+  };
+}
+
 function parseEvidenceNode(value: unknown, field: string): EvidenceNodeConfig {
   const node = object(value, field);
   if (node.type === 'command') return parseCommandNode(node, field);
   if (node.type === 'service') return parseServiceNode(node, field);
   if (node.type === 'browser') return parseBrowserNode(node, field);
   if (node.type === 'visual') return parseVisualNode(node, field);
+  if (node.type === 'specification') return parseSpecificationNode(node, field);
   throw new ProjectConfigError('unsupported node type', `${field}.type`);
 }
 
@@ -408,22 +689,26 @@ export function parseSharedProjectConfig(value: unknown): SharedProjectConfig {
     [
       'apiVersion',
       'kind',
-      'project',
+      'workspace',
       'repositories',
       'profiles',
       'composition',
       'evidence',
       'delivery',
+      'skillProviders',
+      'specificationProvider',
+      'platformEvents',
+      'postMerge',
     ],
     'config',
   );
   if (root.apiVersion !== PROJECT_CONFIG_API_VERSION)
     throw new ProjectConfigError('unsupported apiVersion', 'apiVersion');
-  if (root.kind !== 'RepoctopusProject')
-    throw new ProjectConfigError('expected RepoctopusProject', 'kind');
+  if (root.kind !== 'RepoctopusWorkspace')
+    throw new ProjectConfigError('expected RepoctopusWorkspace', 'kind');
 
-  const project = object(root.project, 'project');
-  exactKeys(project, ['id'], 'project');
+  const workspace = object(root.workspace, 'workspace');
+  exactKeys(workspace, ['id', 'repositoryId'], 'workspace');
   if (!Array.isArray(root.repositories) || root.repositories.length === 0) {
     throw new ProjectConfigError('expected at least one repository', 'repositories');
   }
@@ -444,6 +729,22 @@ export function parseSharedProjectConfig(value: unknown): SharedProjectConfig {
   });
   if (new Set(repositories.map((repository) => repository.id)).size !== repositories.length) {
     throw new ProjectConfigError('repository ids must be unique', 'repositories');
+  }
+  const workspaceRepositoryId = identifier(workspace.repositoryId, 'workspace.repositoryId');
+  const workspaceRepository = repositories.find(
+    (repository) => repository.id === workspaceRepositoryId,
+  );
+  if (!workspaceRepository) {
+    throw new ProjectConfigError(
+      'must reference a registered repository',
+      'workspace.repositoryId',
+    );
+  }
+  if (workspaceRepository.path !== '.') {
+    throw new ProjectConfigError(
+      'Workspace Repository path must be . so it contains repoctopus.yaml and shared workflow artifacts',
+      `repositories.${workspaceRepositoryId}.path`,
+    );
   }
   if (!Array.isArray(root.profiles) || root.profiles.length === 0) {
     throw new ProjectConfigError('expected at least one profile', 'profiles');
@@ -485,6 +786,46 @@ export function parseSharedProjectConfig(value: unknown): SharedProjectConfig {
     evidence = retention ? { retention } : {};
   }
   const delivery = root.delivery !== undefined ? parseDeliveryConfig(root.delivery) : undefined;
+  let skillProviders: SharedProjectConfig['skillProviders'];
+  if (root.skillProviders !== undefined) {
+    if (!Array.isArray(root.skillProviders) || root.skillProviders.length === 0) {
+      throw new ProjectConfigError('expected at least one Provider reference', 'skillProviders');
+    }
+    skillProviders = root.skillProviders.map((provider, index) =>
+      providerReference(provider, `skillProviders[${index}]`),
+    );
+    if (new Set(skillProviders.map((provider) => provider.id)).size !== skillProviders.length) {
+      throw new ProjectConfigError('Provider ids must be unique', 'skillProviders');
+    }
+  }
+  const specificationProvider =
+    root.specificationProvider === undefined
+      ? undefined
+      : providerReference(root.specificationProvider, 'specificationProvider');
+  const platformEvents =
+    root.platformEvents === undefined ? undefined : parsePlatformEvents(root.platformEvents);
+  const postMerge = root.postMerge === undefined ? undefined : parsePostMerge(root.postMerge);
+  if (postMerge && !platformEvents) {
+    throw new ProjectConfigError(
+      'requires platformEvents Runner configuration',
+      'postMerge.runnerIdentity',
+    );
+  }
+  if (postMerge && !delivery) {
+    throw new ProjectConfigError('requires a shared Delivery policy', 'postMerge.publication');
+  }
+  if (platformEvents && postMerge && platformEvents.runner.identity !== postMerge.runnerIdentity) {
+    throw new ProjectConfigError(
+      'must reference platformEvents.runner.identity',
+      'postMerge.runnerIdentity',
+    );
+  }
+  if (postMerge && !profiles.some((profile) => profile.id === postMerge.evidenceProfile)) {
+    throw new ProjectConfigError(
+      'must reference an existing Evidence profile',
+      'postMerge.evidenceProfile',
+    );
+  }
   let composition: SharedProjectConfig['composition'];
   if (root.composition !== undefined) {
     const raw = object(root.composition, 'composition');
@@ -521,13 +862,20 @@ export function parseSharedProjectConfig(value: unknown): SharedProjectConfig {
 
   return {
     apiVersion: PROJECT_CONFIG_API_VERSION,
-    kind: 'RepoctopusProject',
-    project: { id: string(project.id, 'project.id') },
+    kind: 'RepoctopusWorkspace',
+    workspace: {
+      id: identifier(workspace.id, 'workspace.id'),
+      repositoryId: workspaceRepositoryId,
+    },
     repositories,
     profiles,
     ...(composition ? { composition } : {}),
     ...(evidence ? { evidence } : {}),
     ...(delivery ? { delivery } : {}),
+    ...(skillProviders ? { skillProviders } : {}),
+    ...(specificationProvider ? { specificationProvider } : {}),
+    ...(platformEvents ? { platformEvents } : {}),
+    ...(postMerge ? { postMerge } : {}),
   };
 }
 
@@ -622,7 +970,7 @@ function normalizePathText(value: string): string {
 
 export function canonicalProjectConfig(value: SharedProjectConfig | LocalProjectConfig): unknown {
   const copy = structuredClone(value);
-  if (copy.kind === 'RepoctopusProject') {
+  if (copy.kind === 'RepoctopusWorkspace') {
     copy.repositories = copy.repositories.map((repository) => ({
       ...repository,
       path: normalizePathText(repository.path),
@@ -631,6 +979,11 @@ export function canonicalProjectConfig(value: SharedProjectConfig | LocalProject
       for (const node of profile.nodes) {
         if ('cwd' in node && node.cwd !== undefined) node.cwd = normalizePathText(node.cwd);
       }
+    }
+    if (copy.postMerge) {
+      copy.postMerge.temporaryRoot = normalizePathText(copy.postMerge.temporaryRoot);
+      copy.postMerge.allowedWorkspacePaths.verificationPathPrefixes =
+        copy.postMerge.allowedWorkspacePaths.verificationPathPrefixes.map(normalizePathText);
     }
   } else {
     if (copy.repositoryPaths) {

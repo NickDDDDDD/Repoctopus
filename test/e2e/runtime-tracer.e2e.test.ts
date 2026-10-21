@@ -4,11 +4,12 @@ import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import {
+  commitGitRepository,
   createGitRepository,
   removeTemporaryDirectory,
   temporaryDirectory,
 } from '../helpers/fixtures.js';
-import { runCli, type CliResult } from './cli.js';
+import { runCli } from './cli.js';
 
 const repositoryRoot = path.resolve(import.meta.dirname, '..', '..');
 const cleanup: string[] = [];
@@ -39,9 +40,10 @@ describe('multi-process runtime and OTLP delivery', () => {
       path.join(workspace, 'repoctopus.yaml'),
       JSON.stringify({
         apiVersion: 'repoctopus/v1alpha1',
-        kind: 'RepoctopusProject',
-        project: { id: 'runtime-tracer' },
+        kind: 'RepoctopusWorkspace',
+        workspace: { id: 'runtime-tracer', repositoryId: 'workspace' },
         repositories: [
+          { id: 'workspace', path: '.' },
           { id: 'front', path: '../front' },
           { id: 'backend', path: '../backend' },
         ],
@@ -61,6 +63,8 @@ describe('multi-process runtime and OTLP delivery', () => {
         ],
       }),
     );
+    await writeFile(path.join(workspace, '.gitignore'), '.repoctopus/\n');
+    await commitGitRepository(workspace, 'chore: configure runtime workspace');
     const environment = {
       ...process.env,
       OTEL_EXPORTER_OTLP_ENDPOINT: `http://127.0.0.1:${address.port}`,
@@ -72,24 +76,15 @@ describe('multi-process runtime and OTLP delivery', () => {
         packageRoot: repositoryRoot,
         cwd: workspace,
         environment,
-        args: [
-          'run',
-          'start',
-          '--workspace',
-          workspace,
-          '--project-root',
-          project,
-          '--run',
-          'run-e2e-runtime',
-        ],
+        args: ['run', 'start', '--workspace', workspace, '--run', 'run-e2e-runtime'],
       });
       expect(started).toMatchObject({ protocolVersion: 1, ok: true, runId: 'run-e2e-runtime' });
-      const proposed = (await runCli({
+      const proposed = await runCli<{ state: { pendingActionId: string } }>({
         packageRoot: repositoryRoot,
         cwd: workspace,
         environment,
         args: ['run', 'next', '--workspace', workspace, '--run', 'run-e2e-runtime'],
-      })) as CliResult<{ state: { pendingActionId: string } }>;
+      });
       const actionId = proposed.result!.state.pendingActionId;
       const recorded = await runCli({
         packageRoot: repositoryRoot,
@@ -115,24 +110,15 @@ describe('multi-process runtime and OTLP delivery', () => {
       expect(recorded.ok).toBe(true);
 
       await writeFile(path.join(front, 'changed.txt'), 'worktree changed');
-      const resumed = (await runCli({
+      const resumed = await runCli<{
+        state: { reconciliationRequired: boolean };
+        reconciliation: { changed: boolean };
+      }>({
         packageRoot: repositoryRoot,
         cwd: workspace,
         environment,
-        args: [
-          'run',
-          'resume',
-          '--workspace',
-          workspace,
-          '--project-root',
-          project,
-          '--run',
-          'run-e2e-runtime',
-        ],
-      })) as CliResult<{
-        state: { reconciliationRequired: boolean };
-        reconciliation: { changed: boolean };
-      }>;
+        args: ['run', 'resume', '--workspace', workspace, '--run', 'run-e2e-runtime'],
+      });
       expect(resumed.result).toMatchObject({
         state: { reconciliationRequired: true },
         reconciliation: { changed: true },

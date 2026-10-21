@@ -38,8 +38,20 @@ const policy: DeliveryPolicy = {
   },
 };
 const intent: DeliveryIntent = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   changeId: 'cross-repo-change',
+  changeMergeRequest: {
+    repositoryId: 'workspace-repository',
+    remoteIdentity: 'github.com/team/workspace-repository',
+    sourceBranch: 'feat/cross-repo-change',
+    targetBranch: 'main',
+    mergeRequest: {
+      provider: 'github',
+      repositoryId: 'workspace-repository',
+      number: 99,
+      url: 'https://github.com/team/workspace-repository/pull/99',
+    },
+  },
   repositories: [
     {
       repositoryId: 'repo-a',
@@ -53,10 +65,19 @@ const intent: DeliveryIntent = {
 const repository: RepositorySnapshot = {
   id: 'repo-a',
   name: 'app',
-  path: '/unused',
+  path: '/project/repo-a',
   remoteIdentity: 'github.com/team/app',
   branch: 'feat/change',
   head: 'head-a',
+  worktree: { dirty: false, digest: 'clean', staged: 0, unstaged: 0, untracked: 0 },
+};
+const workspaceRepository: RepositorySnapshot = {
+  id: 'workspace-repository',
+  name: 'workspace',
+  path: '/project',
+  remoteIdentity: 'github.com/team/workspace-repository',
+  branch: 'feat/cross-repo-change',
+  head: 'workspace-head',
   worktree: { dirty: false, digest: 'clean', staged: 0, unstaged: 0, untracked: 0 },
 };
 const project = createProjectSnapshot({
@@ -64,7 +85,7 @@ const project = createProjectSnapshot({
   projectId: 'project',
   root: '/project',
   capturedAt: '2026-01-01T00:00:00.000Z',
-  repositories: [repository],
+  repositories: [workspaceRepository, repository],
   diagnostics: [],
 });
 
@@ -72,11 +93,18 @@ class FakeGit implements DeliveryGitPort {
   pushed = false;
   pushCalls = 0;
   checkpoint() {
+    this.pushed = true;
     return Promise.resolve({
       repositoryId: 'repo-a',
       created: true,
       head: 'head-a',
       checks: [],
+      publication: {
+        remote: 'origin',
+        branch: 'feat/change',
+        remoteOid: 'head-a',
+        upstream: 'origin/feat/change',
+      },
     });
   }
   inspect(): Promise<DeliveryRepositoryFacts> {
@@ -146,6 +174,30 @@ class FakeMergeRequests implements MergeRequestPort {
 }
 
 describe('delivery service', () => {
+  it('requires the Change MR to belong to the Workspace Repository', async () => {
+    const workspace = await temporaryDirectory('repoctopus-delivery-workspace-role-');
+    cleanup.push(workspace);
+    const service = new DeliveryService(
+      new FileDeliveryStore(workspace),
+      new FakeGit(),
+      new FakeMergeRequests(),
+      satisfiedEvidence,
+    );
+    const misplaced: DeliveryIntent = {
+      ...intent,
+      changeMergeRequest: {
+        ...intent.changeMergeRequest,
+        repositoryId: 'repo-a',
+        remoteIdentity: 'github.com/team/app',
+        mergeRequest: { ...intent.changeMergeRequest.mergeRequest, repositoryId: 'repo-a' },
+      },
+    };
+
+    await expect(service.checkpoint(project, misplaced, policy)).rejects.toThrow(
+      /Change MR must belong to the Workspace Repository/u,
+    );
+  });
+
   it('requires one trusted approval, resumes partial publication, and only observes merge', async () => {
     const workspace = await temporaryDirectory('repoctopus-delivery-service-');
     cleanup.push(workspace);
@@ -200,6 +252,9 @@ describe('delivery service', () => {
     mergeRequests.merged = true;
     const merged = await service.refresh(intent.changeId);
     expect(merged).toMatchObject({ status: 'merged', mergeEvidence: [{ mergeCommit: 'merge-a' }] });
+    const observedAt = merged.mergeEvidence[0]!.observedAt;
+    const replayed = await service.refresh(intent.changeId);
+    expect(replayed.mergeEvidence[0]!.observedAt).toBe(observedAt);
   });
 
   it('invalidates approval when report content changes', async () => {
@@ -234,6 +289,73 @@ describe('delivery service', () => {
       service.publish({ project, intent, policy, reportContents: 'changed', evidenceBundleIds }),
     ).rejects.toThrow(/drifted/i);
     expect((await service.status(intent.changeId)).status).toBe('verification_required');
+  });
+
+  it('idempotently reuses or supersedes a pending approval before any human decision', async () => {
+    const workspace = await temporaryDirectory('repoctopus-delivery-reprepare-');
+    cleanup.push(workspace);
+    const store = new FileDeliveryStore(workspace);
+    let tick = 0;
+    const service = new DeliveryService(
+      store,
+      new FakeGit(),
+      new FakeMergeRequests(),
+      satisfiedEvidence,
+      () => new Date(Date.UTC(2026, 0, 1) + tick++ * 1000),
+    );
+    const first = await service.prepare({
+      project,
+      intent,
+      policy,
+      reportContents: 'verified',
+      evidenceBundleIds,
+    });
+    const replayed = await service.prepare({
+      project,
+      intent,
+      policy,
+      reportContents: 'verified',
+      evidenceBundleIds,
+    });
+    expect(replayed).toEqual(first);
+    expect(await store.history(intent.changeId)).toHaveLength(1);
+
+    const replacement = await service.prepare({
+      project,
+      intent,
+      policy,
+      reportContents: 'verified with corrected approval wording',
+      evidenceBundleIds: ['bundle-replacement'],
+    });
+    expect(replacement).toMatchObject({
+      status: 'awaiting_approval',
+      stateVersion: first.stateVersion + 1,
+      approval: null,
+    });
+    expect(
+      replacement.actionResults.every(
+        (result) => result.status === 'pending' && result.attempts === 0,
+      ),
+    ).toBe(true);
+    expect(replacement.decisionRequest?.requestId).not.toBe(first.decisionRequest?.requestId);
+    expect(replacement.snapshot?.digest).not.toBe(first.snapshot?.digest);
+    const history = await store.history(intent.changeId);
+    expect(history.map((entry) => entry.type)).toEqual(['delivery.prepared', 'delivery.prepared']);
+    expect(history[1]?.data.supersededRequestId).toBe(first.decisionRequest?.requestId);
+    expect(history[1]?.data.previousSnapshotDigest).toBe(first.snapshot?.digest);
+    await expect(
+      service.decide(
+        intent.changeId,
+        {
+          apiVersion: 'repoctopus/v1alpha1',
+          kind: 'HumanDecisionResponse',
+          requestId: first.decisionRequest!.requestId,
+          snapshotDigest: first.snapshot!.digest,
+          decision: 'approve',
+        },
+        { subject: 'human', provider: 'test-ui', sessionId: 'session-1' },
+      ),
+    ).rejects.toThrow(/pending snapshot/i);
   });
 
   it('invalidates approval when a selected worktree becomes dirty', async () => {
@@ -278,6 +400,80 @@ describe('delivery service', () => {
     });
   });
 
+  it('fails publication when the platform returns the Change MR as a business MR', async () => {
+    const workspace = await temporaryDirectory('repoctopus-delivery-role-collision-');
+    cleanup.push(workspace);
+    const mergeRequests = new FakeMergeRequests();
+    mergeRequests.failOnce = false;
+    mergeRequests.identity = {
+      provider: 'github',
+      repositoryId: 'repo-a',
+      number: 99,
+      url: 'https://github.com/team/app/pull/99',
+    };
+    const roleSeparatedIntent: DeliveryIntent = {
+      ...intent,
+      changeId: 'role-separated-change',
+      changeMergeRequest: {
+        repositoryId: 'repo-a',
+        remoteIdentity: 'github.com/team/app',
+        sourceBranch: 'spec/role-separated-change',
+        targetBranch: 'main',
+        mergeRequest: { ...mergeRequests.identity },
+      },
+    };
+    const service = new DeliveryService(
+      new FileDeliveryStore(workspace),
+      new FakeGit(),
+      mergeRequests,
+      satisfiedEvidence,
+      () => new Date('2026-01-01T00:00:00.000Z'),
+    );
+    const embeddedProject = createProjectSnapshot({
+      schemaVersion: 1,
+      projectId: 'embedded',
+      root: repository.path,
+      capturedAt: '2026-01-01T00:00:00.000Z',
+      repositories: [repository],
+      diagnostics: [],
+    });
+    const waiting = await service.prepare({
+      project: embeddedProject,
+      intent: roleSeparatedIntent,
+      policy,
+      reportContents: 'verified',
+      evidenceBundleIds,
+    });
+    await service.decide(
+      roleSeparatedIntent.changeId,
+      {
+        apiVersion: 'repoctopus/v1alpha1',
+        kind: 'HumanDecisionResponse',
+        requestId: waiting.decisionRequest!.requestId,
+        snapshotDigest: waiting.snapshot!.digest,
+        decision: 'approve',
+      },
+      { subject: 'human', provider: 'test-ui', sessionId: 'session-1' },
+    );
+
+    await expect(
+      service.publish({
+        project: embeddedProject,
+        intent: roleSeparatedIntent,
+        policy,
+        reportContents: 'verified',
+        evidenceBundleIds,
+      }),
+    ).rejects.toThrow(/same merge request/i);
+    expect(await service.status(roleSeparatedIntent.changeId)).toMatchObject({
+      status: 'partially_published',
+      mergeRequests: {
+        change: { mergeRequest: { number: 99 } },
+        business: [{ mergeRequest: null }],
+      },
+    });
+  });
+
   it('publishes multiple repositories in stable order', async () => {
     const workspace = await temporaryDirectory('repoctopus-delivery-multi-');
     cleanup.push(workspace);
@@ -295,12 +491,24 @@ describe('delivery service', () => {
       projectId: 'multi',
       root: '/project',
       capturedAt: '2026-01-01T00:00:00.000Z',
-      repositories: orderedRepositories,
+      repositories: [workspaceRepository, ...orderedRepositories],
       diagnostics: [],
     });
     const multiIntent: DeliveryIntent = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       changeId: 'multi-repo-change',
+      changeMergeRequest: {
+        repositoryId: 'workspace-repository',
+        remoteIdentity: 'github.com/team/workspace-repository',
+        sourceBranch: 'feat/multi-repo-change',
+        targetBranch: 'main',
+        mergeRequest: {
+          provider: 'github',
+          repositoryId: 'workspace-repository',
+          number: 100,
+          url: 'https://github.com/team/workspace-repository/pull/100',
+        },
+      },
       repositories: orderedRepositories.map((item) => ({
         repositoryId: item.id,
         sourceBranch: 'feat/change',
@@ -312,7 +520,18 @@ describe('delivery service', () => {
     const calls: string[] = [];
     const git: DeliveryGitPort = {
       checkpoint: (item) =>
-        Promise.resolve({ repositoryId: item.id, created: false, head: item.head, checks: [] }),
+        Promise.resolve({
+          repositoryId: item.id,
+          created: false,
+          head: item.head,
+          checks: [],
+          publication: {
+            remote: 'origin',
+            branch: 'feat/change',
+            remoteOid: item.head,
+            upstream: 'origin/feat/change',
+          },
+        }),
       inspect: (item) =>
         Promise.resolve({
           repositoryId: item.id,

@@ -40,12 +40,12 @@
 ## 5. 交付合入后自动收尾纵切
 
 - [x] 5.0 把日常 Delivery checkpoint 改为 commit 后立即普通 push、建立 upstream 并核对远端精确 OID；用 bare remote 验证新建空分支发布、每次 commit 发布和首次 push 失败后的无重复 commit 恢复。
-- [x] 5.1 扩展 Delivery Intent/State 记录协调 MR 与完整业务 MR 集合，并用无需迁移的新状态 Schema 测试事件唯一映射、零匹配、多匹配和主动 refresh 等价行为。
+- [x] 5.1 扩展 Delivery Intent/State 记录 Change MR 与完整业务 MR 集合，并用无需迁移的新状态 Schema 测试事件唯一映射、零匹配、多匹配和主动 refresh 等价行为。
 - [x] 5.2 实现 PostMergeCoordinator，收到唤醒后经 `MergeRequestPort` 重新读取所有 MR 权威状态；用 mock GitHub 测试部分合入、关闭未合入、最后合入、重复事件和乱序事件。
 - [x] 5.3 增加 Post-merge Workflow 与幂等 Run 启动，把检出、Evidence、规格关闭、路径审计和发布表示为 Action Intent/Receipt；运行并发启动与进程中断测试证明只有一个逻辑 Run。
 - [x] 5.4 实现精确 merge commit 的隔离临时检出和合入后 Evidence，测试目标分支继续前进、多个业务仓、失败 Gate、输入漂移与清理行为。
 - [x] 5.5 实现收尾路径与语义 Guardrail，测试只允许主规格、change 归档和验证记录，任何业务源码、未知文件、宽泛通配或与关闭计划不一致的差异均 fail-closed。
-- [x] 5.6 扩展受保护 Delivery Action，在策略完整时自动创建普通收尾 commit、推送并更新原协调 MR；用 bare remote 测试成功、响应丢失恢复、远端漂移、MR 已关闭以及 merge/force-push/rebase/删分支拒绝。
+- [x] 5.6 扩展受保护 Delivery Action，在策略完整时自动创建普通收尾 commit、推送并更新原 Change MR；用 bare remote 测试成功、响应丢失恢复、远端漂移、MR 已关闭以及 merge/force-push/rebase/删分支拒绝。
 - [x] 5.7 为合入事实、Evidence、规格关闭和远端 Receipt 增加低基数 OTel 关联，并更新交付与收尾文档；运行隐私断言和文档命令冒烟测试。
 
 ## 6. 完成项目配置、组合和架构治理
@@ -63,18 +63,26 @@
 
 ## Workflow follow-up
 
-- 用户批准最终验证报告后，按 Repoctopus Delivery 发布当前协调 MR；批准不授权自动 merge。
+- 用户批准最终验证报告后，按 Repoctopus Delivery 发布当前 Change MR；批准不授权自动 merge。
 - 当前 MR 合入后，由本 change 新增的平台事件与 Post-merge Run 完成合入后复验、主规格同步、归档、收尾 commit/push 和原 MR 更新；如果平台无法回调，使用 Inbox 回放或主动 refresh 唤醒同一路径。
-- 协调 MR 最终由团队或代码平台策略合入，Repoctopus 只记录合入事实。
+- Change MR 最终由团队或代码平台策略合入，Repoctopus 只记录合入事实。
 
 ## 8. 支持多 Runner 与启动时补偿
 
-- [x] 8.1 修订 Change 协作身份模型，明确 MR author、Git author、Runner identity 与动作 actor 不构成独占 owner；用领域测试覆盖代交协调 MR和其他成员继续修复的行为。
+- [x] 8.1 修订 Change 协作身份模型，明确 MR author、Git author、Runner identity 与动作 actor 不构成独占 owner；用领域测试覆盖代交 Change MR和其他成员继续修复的行为。
 - [x] 8.2 为 Delivery Service 暴露确定性待补偿候选枚举，并实现 `PostMergeCoordinator.reconcile()`；测试打开、关闭未合入、全部合入、已完成与单项失败隔离。
 - [x] 8.3 增加不含 HTTP Host、Webhook Route 和后台 Timer 的一次性 Post-merge composition 与 `post-merge reconcile` CLI，并在日常 `run start` 前调用同一入口。
 - [x] 8.4 强化 Post-merge 发布的远端 OID 并发栅栏与竞争恢复；用两个独立 Runner/状态目录模拟相同基线竞争，验证一个发布成功后另一个等价 no-op 或对不等价差异 fail-closed。
 - [x] 8.5 更新 Runner、自举、架构和恢复文档，明确多 Runner、状态卷发现边界、Webhook 实时路径与启动补偿路径；增加文档契约测试。
 - [x] 8.6 执行定向测试、`npm run verify`、包 E2E 和 tracer E2E，更新正式验证报告、清理临时产物，并在每次 commit 后核对远端分支精确 OID。
-- [x] 8.7 禁止协调角色与业务角色复用同一个 MR；准备阶段拒绝同仓相同分支拓扑，平台返回后按稳定 MR 身份再次核对，并修订自举交付说明。
+- [x] 8.7 禁止 Change MR 与业务 MR 复用同一个 MR；准备阶段拒绝同仓相同分支拓扑，平台返回后按稳定 MR 身份再次核对，并修订自举交付说明。
 - [x] 8.8 隔离平台事件恢复 E2E 的临时 bundle，避免并行 `self-bootstrap` 将测试产物生命周期误判为真实仓库输入漂移。
 - [x] 8.9 允许尚未决定且未开始发布的 Delivery 用新快照取代待批准请求；相同快照幂等复用，历史记录被取代身份，旧响应与已形成的决定或动作继续 fail-closed。
+
+## 9. 明确 Workspace 入口与仓库拓扑
+
+- [x] 9.1 在 Design 与 Delta Specs 中定义 Workspace 为版本化团队工作流入口，区分旧 `agents-workspace` 与 DSH Workspace，并规定 Embedded/Dedicated 两种拓扑共用同一运行模型。
+- [x] 9.2 扩展共享配置以显式标识 Workspace Repository，校验它属于登记仓库且解析到配置所在 Git 根；迁移自举配置、示例、Schema 与正反测试。
+- [x] 9.3 让日常 Run、Evidence、Delivery 和恢复按配置登记的仓库构造稳定快照；把 scan root 限定到接入探测，并移除 Workspace Repository 的无条件排除。
+- [x] 9.4 将 Change MR 的产品语义收敛为 Workspace 中的 Change MR，验证 Dedicated Workspace 与 Embedded Workspace 同仓双 MR，并更新 CLI、README、接入和自举文档。
+- [x] 9.5 重新执行定向测试、OpenSpec 严格校验、`npm run verify`、包 E2E 与 tracer E2E，更新正式验证报告、清理临时产物并重新准备 Delivery 审批快照。

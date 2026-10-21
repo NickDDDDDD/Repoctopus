@@ -9,7 +9,13 @@ import {
   staticDeterministicResolver,
   type DeterministicResolver,
 } from './resolver.js';
-import type { ActionOutcome, EngineAction, EngineDecision, RunState } from './types.js';
+import type {
+  ActionOutcome,
+  EngineAction,
+  EngineDecision,
+  RunState,
+  RunTriggerSnapshot,
+} from './types.js';
 
 function actionId(runId: string, iteration: number, stepId: string): string {
   return createHash('sha256').update(`${runId}:${iteration}:${stepId}`).digest('hex').slice(0, 24);
@@ -26,6 +32,7 @@ export function startRun(options: {
   composition: CompositionIdentitySnapshot;
   timestamp: string;
   workflowSource?: string;
+  trigger?: RunTriggerSnapshot;
   traceId?: string;
 }): RunState {
   return {
@@ -37,6 +44,7 @@ export function startRun(options: {
     workflowSource: options.workflowSource ?? null,
     composition: structuredClone(options.composition),
     projectSnapshotDigest: options.projectSnapshotDigest,
+    ...(options.trigger ? { trigger: structuredClone(options.trigger) } : {}),
     traceId: options.traceId ?? randomBytes(16).toString('hex'),
     currentStep: options.workflow.definition.entry,
     iteration: 0,
@@ -46,6 +54,7 @@ export function startRun(options: {
     status: 'running',
     retries: {},
     acceptedEvidenceBundleIds: [],
+    skillUsageSnapshots: [],
     createdAt: options.timestamp,
     updatedAt: options.timestamp,
   };

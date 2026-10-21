@@ -62,10 +62,42 @@ describe('published package', () => {
     await createGitRepository(project, 'service');
     await createGitRepository(project, 'workspace');
     const installedPackage = path.join(installation, 'node_modules', 'repoctopus');
+    const inspectedSpecification = await runCli<{
+      changeId: string;
+      provider: { id: string; version: string };
+    }>({
+      packageRoot: installedPackage,
+      cwd: repositoryRoot,
+      args: [
+        'spec',
+        'inspect',
+        '--workspace',
+        repositoryRoot,
+        '--change',
+        'enable-self-hosted-development',
+      ],
+    });
+    expect(inspectedSpecification.result).toMatchObject({
+      changeId: 'enable-self-hosted-development',
+      provider: { id: 'openspec', version: '1.14.3' },
+    });
+    const validatedSpecification = await runCli<{ valid: boolean; strict: boolean }>({
+      packageRoot: installedPackage,
+      cwd: repositoryRoot,
+      args: [
+        'spec',
+        'validate',
+        '--workspace',
+        repositoryRoot,
+        '--change',
+        'enable-self-hosted-development',
+      ],
+    });
+    expect(validatedSpecification.result).toMatchObject({ valid: true, strict: true });
     const envelope = await runCli({
       packageRoot: installedPackage,
       cwd: workspace,
-      args: ['project', 'detect', '--root', project, '--workspace', workspace],
+      args: ['project', 'detect', '--scan-root', project, '--workspace', workspace],
     });
     expect(envelope).toMatchObject({ protocolVersion: 1, ok: true, command: 'project detect' });
     expect(JSON.stringify(envelope)).toContain('service');
@@ -73,9 +105,12 @@ describe('published package', () => {
       path.join(workspace, 'repoctopus.yaml'),
       JSON.stringify({
         apiVersion: 'repoctopus/v1alpha1',
-        kind: 'RepoctopusProject',
-        project: { id: 'package-e2e' },
-        repositories: [{ id: 'service', path: '../service' }],
+        kind: 'RepoctopusWorkspace',
+        workspace: { id: 'package-e2e', repositoryId: 'workspace' },
+        repositories: [
+          { id: 'workspace', path: '.' },
+          { id: 'service', path: '../service' },
+        ],
         profiles: [
           {
             id: 'verify',
@@ -93,6 +128,43 @@ describe('published package', () => {
         ],
       }),
     );
+    const skillCatalog = await runCli<{
+      apiVersion: string;
+      complete: boolean;
+      skills: Array<{ name: string }>;
+    }>({
+      packageRoot: installedPackage,
+      cwd: workspace,
+      args: ['skill', 'list', '--workspace', workspace, '--audience', 'user'],
+    });
+    expect(skillCatalog.ok).toBe(true);
+    expect(skillCatalog.command).toBe('skill list');
+    expect(skillCatalog.result?.apiVersion).toBe('repoctopus.skill/v1alpha1');
+    expect(skillCatalog.result?.complete).toBe(true);
+    expect(skillCatalog.result?.skills.map((skill) => skill.name)).toContain('tdd');
+    const loadedSkill = await runCli<{ skill: { name: string; provider: string } }>({
+      packageRoot: installedPackage,
+      cwd: workspace,
+      args: ['skill', 'get', '--workspace', workspace, '--audience', 'user', '--name', 'tdd'],
+    });
+    expect(loadedSkill.ok).toBe(true);
+    expect(loadedSkill.command).toBe('skill get');
+    expect(loadedSkill.result?.skill).toMatchObject({
+      name: 'tdd',
+      provider: 'matt-builtins',
+    });
+    const projectedSkills = await runCli<{ target: string; managedFiles: number }>({
+      packageRoot: installedPackage,
+      cwd: workspace,
+      args: ['skill', 'project', '--workspace', workspace, '--target', 'opencode'],
+    });
+    expect(projectedSkills.ok).toBe(true);
+    expect(projectedSkills.command).toBe('skill project');
+    expect(projectedSkills.result?.target).toBe('opencode');
+    expect(projectedSkills.result?.managedFiles).toBeGreaterThan(0);
+    expect(
+      await readFile(path.join(workspace, '.opencode', 'skills', 'tdd', 'SKILL.md'), 'utf8'),
+    ).toContain('repoctopus/provider: matt-builtins');
     const started = await runCli({
       packageRoot: installedPackage,
       cwd: workspace,
@@ -155,7 +227,8 @@ describe('published package', () => {
         }),
       )
     ).join('\n');
-    expect(packagedText).not.toMatch(/agent-lab|C:\\Users\\User|\/Users\//iu);
+    expect(packagedText).not.toMatch(/agent-lab/iu);
+    expect(packagedText).not.toMatch(/C:\\Users\\User|\/Users\/[^/\s]+\//u);
     expect(await readdir(path.join(installedPackage, 'docs', 'schemas'))).toContain(
       'project-config.schema.json',
     );

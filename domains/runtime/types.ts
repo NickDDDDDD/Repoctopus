@@ -5,6 +5,8 @@ import type { Checkpoint, TrajectoryEvent } from '../trajectory/types.js';
 import type { TelemetryDeliveryCursor } from '../trajectory/types.js';
 import type { WorkflowPackage } from '../workflow-contract/types.js';
 import type { CompositionCompatibility } from '../composition/types.js';
+import type { SkillCompatibility } from '../skill/types.js';
+import type { SpecificationCompatibility } from '../specification/types.js';
 
 export interface RuntimeDiagnostic {
   level: 'info' | 'warning' | 'error';
@@ -30,6 +32,8 @@ export interface RunStatusView {
     message?: string;
   };
   compositionCompatibility: CompositionCompatibility;
+  skillCompatibility?: SkillCompatibility;
+  specificationCompatibility?: SpecificationCompatibility;
   reason?: string;
 }
 
@@ -97,7 +101,13 @@ export interface RunStorePort {
       state: RunState;
       workflow: WorkflowPackage;
       trajectory: TrajectoryEvent[];
-    }) => Promise<{ state: RunState; event: TrajectoryEvent; value: T }>,
+    }) =>
+      | Promise<
+          | { state: RunState; event: TrajectoryEvent; value: T }
+          | { state?: never; event?: never; value: T }
+        >
+      | { state: RunState; event: TrajectoryEvent; value: T }
+      | { state?: never; event?: never; value: T },
   ): Promise<T>;
   recover(runId: string): Promise<boolean>;
   readTelemetryCursor(runId: string): Promise<TelemetryDeliveryCursor>;

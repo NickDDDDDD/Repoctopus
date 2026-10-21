@@ -47,12 +47,15 @@ describe('project configuration onboarding', () => {
     );
     const detected = await detectProjectConfiguration({
       workspace,
-      scopeRoot: root,
+      scanRoot: root,
       now: () => new Date('2026-01-01T00:00:00.000Z'),
     });
     const completedCandidate = {
       ...detected.draft.candidateConfig!,
-      project: { id: 'user-confirmed-project' },
+      workspace: {
+        ...detected.draft.candidateConfig!.workspace,
+        id: 'user-confirmed-workspace',
+      },
       evidence: { retention: { maxAgeDays: 45, minRecentSuccesses: 2 } },
     };
     const prepared = await prepareProjectConfigurationDecision({
@@ -68,7 +71,7 @@ describe('project configuration onboarding', () => {
       decisionType: 'project-configuration',
       draftId: detected.draft.draftId,
       baseConfigDigest: null,
-      candidateConfig: { project: { id: 'user-confirmed-project' } },
+      candidateConfig: { workspace: { id: 'user-confirmed-workspace' } },
       options: ['approve', 'request_changes', 'reject'],
     });
     expect(prepared.request.snapshotDigest).toMatch(/^sha256:[0-9a-f]{64}$/u);
@@ -130,9 +133,10 @@ describe('project configuration onboarding', () => {
     );
     const configFile = path.join(workspace, 'repoctopus.yaml');
     const initial = `apiVersion: repoctopus/v1alpha1
-kind: RepoctopusProject
-project: { id: existing }
+kind: RepoctopusWorkspace
+workspace: { id: existing, repositoryId: workspace }
 repositories:
+  - { id: workspace, path: . }
   - { id: web-front, path: ../web-front }
 profiles:
   - id: verify
@@ -144,7 +148,7 @@ profiles:
         args: [run, old-build]
 `;
     await writeFile(configFile, initial);
-    const detected = await detectProjectConfiguration({ workspace, scopeRoot: root });
+    const detected = await detectProjectConfiguration({ workspace, scanRoot: root });
     const prepared = await prepareProjectConfigurationDecision({
       workspace,
       draftFile: detected.file,
@@ -152,9 +156,9 @@ profiles:
       requestId: 'project-config-request-drift',
     });
     const changed = parse(await readFile(configFile, 'utf8')) as {
-      project: { id: string };
+      workspace: { id: string };
     };
-    changed.project.id = 'changed-after-review';
+    changed.workspace.id = 'changed-after-review';
     await writeFile(configFile, JSON.stringify(changed));
 
     await expect(
@@ -167,7 +171,7 @@ profiles:
       }),
     ).rejects.toThrow(/changed while awaiting confirmation/i);
     expect(
-      (parse(await readFile(configFile, 'utf8')) as { project: { id: string } }).project.id,
+      (parse(await readFile(configFile, 'utf8')) as { workspace: { id: string } }).workspace.id,
     ).toBe('changed-after-review');
   });
 });

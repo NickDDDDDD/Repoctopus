@@ -64,7 +64,13 @@ export abstract class RunStore extends Service implements RunStorePort {
       state: RunState;
       workflow: WorkflowPackage;
       trajectory: TrajectoryEvent[];
-    }) => Promise<{ state: RunState; event: TrajectoryEvent; value: T }>,
+    }) =>
+      | Promise<
+          | { state: RunState; event: TrajectoryEvent; value: T }
+          | { state?: never; event?: never; value: T }
+        >
+      | { state: RunState; event: TrajectoryEvent; value: T }
+      | { state?: never; event?: never; value: T },
   ): Promise<T> {
     return this.port.commitGuarded(runId, operation);
   }
