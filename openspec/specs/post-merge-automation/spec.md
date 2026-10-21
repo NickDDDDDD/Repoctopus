@@ -1,6 +1,7 @@
 # post-merge-automation Specification
 
 ## Purpose
+
 定义 Repoctopus 在多仓业务 MR 合入后如何自动启动可恢复收尾 Run，基于精确合入代码生成证据、同步规格并更新 Change MR，同时控制机器修改范围。
 
 ## Requirements

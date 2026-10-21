@@ -1,6 +1,7 @@
 # specification-authority Specification
 
 ## Purpose
+
 定义 Repoctopus 如何通过单一、可替换的规格权威读取变更事实、执行验证并完成基线同步，使工作流不依赖某个规格工具的目录、命令或产物格式。
 
 ## Requirements
