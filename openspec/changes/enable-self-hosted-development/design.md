@@ -176,7 +176,7 @@ Git 无法把本地 commit 与网络 push 做成一个原子事务，因此恢�
 
 OpenSpec change 只把 Proposal、Delta Specs、Design 和 Tasks 作为规划权威。当前 change 内的普通设计决定、实施约束和偏差直接写入本文件；测试过程、结果与恢复事实进入 Evidence 和任务 7.3 的正式验证报告。项目不创建或识别 `implementation-notes.md`。
 
-跨越单个 change、长期约束多个组件、回退需要迁移或跨团队协调，或者影响公共契约、持久数据、安全与信任边界的架构变更，必须建立专门的 Specification change。该 change 的 Design 记录上下文、备选方案、选择理由、取舍、迁移与回退方式，并通过正常评审取得确认；归档后的 change 保留决策历史。`docs/architecture.md` 只描述当前架构，需要时与实现 change 一起更新，不建立第二套独立决策台账。
+跨越单个 change、长期约束多个组件、回退需要迁移或跨团队协调，或者影响公共契约、持久数据、安全与信任边界的架构变更，应为该工作单独建立一个普通 change，而不是引入特殊的“架构 change”类型。该 change 的 Design 记录上下文、备选方案、选择理由、取舍、迁移与回退方式，并通过正常评审取得确认。纯内部架构调整没有改变可观察行为时，OpenSpec 使用 `skip_specs: true`；行为契约改变时才同时提供 delta specs。归档后的 change 保留决策历史。`docs/architecture.md` 只描述当前架构，需要时与实现 change 一起更新，不建立第二套独立决策台账。
 
 这条规则属于稳定的 Specification 领域语义，不依赖 OpenSpec 文件路径。OpenSpec Provider 当前把它映射到 `design.md`；未来替换 Provider 时，由新 Provider 声明等价的设计产物和生命周期，Workflow Consumer 不需要理解其专有目录或文件名。
 

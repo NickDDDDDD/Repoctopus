@@ -72,7 +72,7 @@ OpenSpec Provider MUST 使用 OpenSpec 官方命令和状态模型创建、校�
 
 ### Requirement: 架构决定由规格 change 的设计产物记录
 
-Repoctopus 开发工作流 MUST 把当前 change 内的普通设计决定、实施约束和偏差记录到当前 Provider 声明的设计产物，把测试事实记录到 Evidence 和正式验证报告；长期、难回退或跨边界的架构变更必须建立专门的 Specification change，并由其设计产物保留背景、备选方案、取舍、迁移与回退方式。工作流不得建立独立 ADR 或实施日志作为第二套决策权威。
+Repoctopus 开发工作流 MUST 把当前 change 内的普通设计决定、实施约束和偏差记录到当前 Provider 声明的设计产物，把测试事实记录到 Evidence 和正式验证报告；长期、难回退或跨边界的架构变更必须为该工作单独建立一个普通 change，并由其设计产物保留背景、备选方案、取舍、迁移与回退方式。工作流不得建立特殊的架构 change 类型、独立 ADR 或实施日志作为第二套决策权威。
 
 #### Scenario: 局部实现约束不跨越当前 change
 
@@ -82,7 +82,12 @@ Repoctopus 开发工作流 MUST 把当前 change 内的普通设计决定、实�
 #### Scenario: 决定具有长期架构影响
 
 - **WHEN** 决定跨越 change、难以回退或影响公共契约、持久数据、安全或团队边界
-- **THEN** Agent 建立专门的 Specification change，在其设计产物中说明背景、备选方案、取舍、迁移与回退方式，并通过正常评审取得确认
+- **THEN** Agent 为该工作单独建立一个普通 change，在其设计产物中说明背景、备选方案、取舍、迁移与回退方式，并通过正常评审取得确认
+
+#### Scenario: 纯内部架构调整不改变行为契约
+
+- **WHEN** OpenSpec change 只改变内部架构且没有规格级行为变化
+- **THEN** change 使用 `skip_specs: true` 并在 `design.md` 记录决定，不为满足流程而虚构 delta spec
 
 #### Scenario: 项目替换 Specification Provider
 
