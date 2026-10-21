@@ -84,7 +84,7 @@ Webhook 不可达或 Runner 曾离线时，可以执行一次短生命周期补�
 node bin/repoctopus.js post-merge reconcile --workspace . --json
 ```
 
-补偿按 Repoctopus 已登记的团队 Change 和业务 MR role 查询，不按 MR 作者划分所有权。Change MR 与业务 MR 可以同仓，但不能复用同一个 MR。多个 Runner 可以重复验证同一 change，远端发布以 Change MR 分支精确 OID、非强制 push 和结果核对安全收敛。
+补偿按 Repoctopus 已登记的 Change 分支和 Business MR 集合查询，不按 MR 作者划分所有权。最终 Change MR 与 Business MR 可以位于同一仓库，但不是同一个 MR；前者只在后者全部合入并完成规格关闭后创建。多个 Runner 可以重复验证同一 change，远端发布以 Change 分支精确 OID、非强制 push 和结果核对安全收敛。
 
 ## 交付治理
 
@@ -120,7 +120,7 @@ node bin/repoctopus.js delivery refresh --workspace . --change example-change --
 - [Specification Provider](docs/specification.md)
 - [OpenTelemetry 与 SigNoz](docs/telemetry.md)
 - [交付治理与失败恢复](docs/delivery.md)
-- [观察和恢复 Post-merge 收尾](docs/post-merge.md)
+- [运维和恢复 Post-merge 收尾](docs/post-merge.md)
 - [自举与 Runner 部署](docs/self-hosting.md)
 - [Human Decision 协议](docs/human-decision.md)
 - [第三方来源与采用报告](third_party/comet/adoption-report.md)

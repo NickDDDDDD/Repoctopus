@@ -78,11 +78,11 @@ GitHub `pull_request` webhook 只提供业务 MR 的 `provider + remoteIdentity 
 
 Post-merge Run 通过同一个 Delivery 权威边界发布规格关闭结果。它先记录完整 Business MR 集合的权威 merge commit，再生成 Evidence、同步主规格并归档 Change。只有这些步骤成功后，Repoctopus 才为已批准的 Change 分支创建或恢复一个最终 Change MR。
 
-策略必须精确声明 `commit`、`push` 和最终 MR 创建。Delivery 在任何 Git 副作用前确认 Change 分支、目标分支、仓库和锁定的远端 OID 未变化；Git Adapter 再确认 Workspace、remote identity 和审计基线一致。
+策略必须精确声明 `merge_target`、`commit`、`push` 和 `merge_request.create_or_recover`。Delivery 在任何 Git 副作用前确认 Change 分支、目标分支、仓库和锁定的远端 OID 未变化；Git Adapter 再确认 Workspace、remote identity 和审计基线一致。
 
 发布只暂存路径审计列出的文件，并逐文件核对内容摘要。新 commit 必须来自受控的目标分支同步；push 使用显式非强制 refspec，完成后远端 OID 必须精确等于本地 commit。最终 MR 使用 create-or-recover 语义，Runtime 不执行 merge。
 
-如果 commit、push 或最终 MR 创建已生效但响应丢失，重试会核对并复用相同事实。分支映射改变、远端漂移、提交身份不符，或策略包含 merge、force-push、rebase、删分支等操作时，发布 fail-closed。具体检查和恢复命令见 [观察和恢复 Post-merge 收尾](post-merge.md)。
+如果 commit、push 或最终 MR 创建已生效但响应丢失，重试会核对并复用相同事实。分支映射改变、远端漂移、提交身份不符，或策略包含自动合入最终 MR、force-push、rebase、删分支等操作时，发布 fail-closed。具体检查和恢复命令见 [运维和恢复 Post-merge 收尾](post-merge.md)。
 
 ## 平台能力降级
 
