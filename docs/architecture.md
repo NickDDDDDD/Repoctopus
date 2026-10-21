@@ -40,7 +40,7 @@ CLI / IDE / API Application Plugin
 
 ## Bootstrap 与 Project composition
 
-`bootstrap` composition 不要求正式项目配置，只装载项目探测、配置接入、来源检查和浏览器诊断。`project` composition 在有效 `repoctopus.yaml` 存在时增加 Run、Action、Evidence、Delivery、Skill、Specification 与 Telemetry，但不启动监听端口或后台轮询。`runner` composition 在相同项目配置之上增加 HTTP Host、Webhook Route、Event Inbox Runner、Post-merge 服务和 Application Plugin；只有 `runner start` 使用这条长驻组合。
+`bootstrap` composition 不要求正式项目配置，只装载项目探测、配置接入、来源检查和浏览器诊断。`project` composition 在有效 `repoctopus.yaml` 存在时增加 Run、Action、Evidence、Delivery、Skill、Specification 与 Telemetry；配置 `postMerge` 时还增加一次性 Coordinator、受保护 Action Provider 和命令 Contributor，但不启动监听端口或后台轮询。`runner` composition 在相同项目配置之上增加 HTTP Host、Webhook Route、Event Inbox Runner 和 Application Plugin；只有 `runner start` 使用这条长驻组合。
 
 公共入口都必须经 App Boot。当前已切换的真实调用链为：
 
@@ -63,6 +63,9 @@ CLI → App Boot → CommandRouter → 对应 Contributor → ProjectOnboarding 
 runner start
 CLI → Runner Application → HTTP Host + Webhook Route → PlatformEvents → durable Inbox
                                                 Inbox Runner → PostMergeCoordinator → WorkflowRuns
+
+post-merge reconcile / run start preflight
+CLI → short-lived Project composition → Delivery candidates → PostMergeCoordinator → WorkflowRuns
 ```
 
 静态 Plugin Descriptor 只用于 import 前准入、来源、权限类别、状态兼容和审计。运行期依赖仍由插件自身的 Cordis `inject` 声明。内置插件的 `codeDigest` 由其登记的实际源码文件计算。
@@ -112,6 +115,7 @@ App Boot 关闭时先把 Loader composition 更新为空并等待子 Fiber 的�
 
 - `repoctopus.yaml` 是可提交的团队配置，只保存仓库逻辑身份、Provider 选择、策略和环境变量名，不保存 Token、Webhook secret 或机器作者身份。
 - `.repoctopus/` 是工作区本机的持久权威，包含 Run、Journal、Evidence、Action、Delivery、Inbox 和规格关闭 Receipt；其中 Inbox payload 与租约状态属于敏感数据，应限制访问、备份并按保留策略清理。
+- Change 是团队共享工作单元，不由 MR author、Git author、Bot 或 Runner identity 独占。不同 Runner 可以重复计算；原协调分支的精确远端 OID、非强制 push 和发布后核对是跨本地状态卷的最终副作用栅栏。
 - 业务仓只由受保护 Adapter 在已核对的精确提交和允许路径上读取或写入。PostMergeCoordinator 不直接写 RunStore、Evidence Store、规格文件或 Git。
 - OpenSpec Provider 是唯一执行规格工具关闭命令的边界；Delivery Action Adapter 是唯一执行 commit、push 与 MR 创建/更新的边界。
 - 遥测只导出允许列表中的稳定身份和低基数结果；秘密、原始 Header、payload、绝对路径、自由文本与规格正文不进入 OTel。

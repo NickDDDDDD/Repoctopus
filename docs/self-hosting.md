@@ -1,6 +1,6 @@
 # 自举与 Runner 部署
 
-Repoctopus 用自己的 Project composition 执行日常开发命令，并用专用 Runner composition 接收合入事件和完成规格收尾。两者读取同一份 `repoctopus.yaml`，但生命周期不同：普通命令执行后立即关闭；Runner 持续持有 HTTP、Inbox 领取和 Post-merge Fiber。
+Repoctopus 用自己的 Project composition 执行日常开发命令和一次性 Post-merge 补偿，并用专用 Runner composition 接收合入事件。两者读取同一份 `repoctopus.yaml`，但生命周期不同：普通命令可以装配 Coordinator 与受保护 Action Provider，执行后立即关闭且不持有 HTTP 或后台 Timer；Runner 持续持有 HTTP、Inbox 领取和 Post-merge Fiber。
 
 ## 自举闭环
 
@@ -12,12 +12,13 @@ Delivery checkpoint ── commit + push + remote OID verification
   │
   ▼
 业务 MR + 协调 MR ── 人工评审与合入
-  │ signed webhook (wake-up only)
-  ▼
-Runner → durable Inbox → authoritative MR refresh
+  │ signed webhook (wake-up only)       下一次 run start / 显式 reconcile
+  ├──────────────────────────────┐       │
+  ▼                              ▼       ▼
+Runner → durable Inbox ─────────────→ authoritative MR refresh
   │ all business MRs merged
   ▼
-unique Post-merge Run
+stable Post-merge Run identity
   ├─ checkout exact merge commits
   ├─ execute Evidence and recheck input fence
   ├─ close change through Specification Provider
@@ -25,7 +26,7 @@ unique Post-merge Run
   └─ commit + push + update the existing coordination MR
 ```
 
-Webhook 不是合入证据，开发者进程也不是收尾状态的持有者。权威事实位于 Delivery、Run、Evidence、Action Receipt、Specification Closure Receipt 和 Event Inbox，因此原开发者离开后，Runner 仍能从持久边界继续。
+Webhook 不是合入证据，MR 作者也不是 Change owner。Change 是团队共享工作单元；任一成员或 Agent 都可以继续修复和实现，Runner identity 只用于租约与审计。权威事实位于 Delivery、Run、Evidence、Action Receipt、Specification Closure Receipt 和 Event Inbox，因此原开发者离开后，其他 Runner 仍能从持久边界继续。
 
 ## 1. 准备共享配置
 
@@ -74,7 +75,7 @@ node bin/repoctopus.js runner start --workspace . --json
 - 在升级或重启时发送 `SIGINT` 或 `SIGTERM`，等待进程正常退出；
 - 保留同一 workspace 的持久目录，不把容器临时文件系统当作权威存储。
 
-当前版本面向单工作区 Runner。租约支持崩溃恢复和旧 Token fence，但不等同于生产级多节点高可用承诺。
+团队可以运行多个 Runner。共享同一状态卷的进程用 Inbox Lease 避免重复领取；使用独立状态卷的 Runner 可能重复查询和验证，但收尾发布以原协调分支精确 OID 与普通非强制 push 为最终并发栅栏。先完成发布的 Runner 胜出，其他 Runner 只在远端 parent、tree、message 与 author 等价时收敛为 no-op，否则 fail-closed。该语义保证远端结果安全收敛，但不承诺共享数据库调度、自动扩缩容或无重复计算。
 
 ## 4. 数据边界
 
@@ -105,10 +106,15 @@ node bin/repoctopus.js runner start --workspace . --json
 日常诊断从持久事实开始：
 
 ```powershell
+node bin/repoctopus.js post-merge reconcile --workspace . --json
 node bin/repoctopus.js event status --workspace . --envelope <envelope-id> --json
 node bin/repoctopus.js delivery status --workspace . --change <change-id> --json
 node bin/repoctopus.js run status --workspace . --run <run-id> --json
 node bin/repoctopus.js evidence status --workspace . --attempt <attempt-id> --json
 ```
+
+`post-merge reconcile` 是一次性命令：它枚举当前 workspace 已登记且可能等待收尾的 Delivery，重新查询全部业务 MR，并在命令结束后关闭 composition。日常 `run start` 会先调用相同入口。候选不按 MR 作者、Git 作者或 Runner identity 过滤；协调 MR 的提交者不因此获得或承担独占 Change 所有权。
+
+第一版候选发现仍依赖当前 workspace 的 `.repoctopus/deliveries/`。新 clone 如果没有复制或共享该持久状态，不能声称已经发现全部历史 change；这与多个已经发现同一 change 的 Runner 能否安全竞争是两个不同问题。
 
 分阶段恢复步骤见[观察和恢复 Post-merge 收尾](post-merge.md)，Inbox 语义见[平台事件处理](platform-events.md)，composition 和数据所有权见[插件内核架构](architecture.md)。

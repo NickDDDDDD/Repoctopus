@@ -76,6 +76,14 @@ node bin/repoctopus.js runner start --workspace . --json
 
 Runner 输出一次 `ready` envelope 后保持前台运行；由进程管理器发送 `SIGINT` 或 `SIGTERM` 时，它会停止接收新请求、排空有界操作并释放 HTTP 与后台 Fiber。完整配置、部署方式、数据边界和自举闭环见[自举与 Runner 部署](docs/self-hosting.md)。
 
+Webhook 不可达或 Runner 曾离线时，可以执行一次短生命周期补偿；日常 `run start` 也会在创建新 Run 前调用相同入口：
+
+```powershell
+node bin/repoctopus.js post-merge reconcile --workspace . --json
+```
+
+补偿按 Repoctopus 已登记的团队 Change 和业务 MR role 查询，不按 MR 作者划分所有权。多个 Runner 可以重复验证同一 change，远端发布以协调分支精确 OID、非强制 push 和结果核对安全收敛。
+
 ## 交付治理
 
 通过项目接入流程生成 workspace 的 `repoctopus.yaml`，在其 `delivery` 段维护团队交付策略（完整示例见 [项目配置示例](docs/examples/repoctopus.yaml)），并为 change 创建 [交付意图](docs/examples/delivery-intent.yaml)。checkpoint 会普通 push 当前 HEAD、建立 upstream 并核对远端 OID，不需要逐次人工批准：

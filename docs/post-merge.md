@@ -2,7 +2,9 @@
 
 本指南帮助团队 Runner 运维者定位 Post-merge Run 停在哪个持久边界，并从该边界安全恢复。你可以只依赖平台事件、Delivery、Run、Evidence 和 Receipt 身份排障，不需要原开发者的本机工作区。
 
-配置 `platformEvents` 和 `postMerge` 后，`runner start` 会把 Post-merge Coordinator、Action Provider 与 Application Plugin 加入专用 Runner composition。普通 project composition 仍保持短生命周期，不会启动 HTTP 或后台轮询。本指南用于正式 Runner 和恢复演练产生的同一套持久状态。
+配置 `platformEvents` 和 `postMerge` 后，`runner start` 会把 Post-merge Coordinator、Action Provider 与 Application Plugin 加入专用 Runner composition。普通 project composition 也装配一次性 Coordinator 与 Action Provider，但保持短生命周期，不会启动 HTTP 或后台轮询；`run start` 前置检查和 `post-merge reconcile` 使用这条路径。本指南用于所有入口产生的同一套持久事实。
+
+Change 是团队共享工作单元，不存在从 MR 作者推断出的独占 owner。协调 MR 的提交者、业务 MR 的作者、Git 作者和 Runner identity 分别只说明远端动作或审计身份；任何成员都可以继续实现或修复同一 change，任何 Runner 都可以尝试完成满足条件的收尾。
 
 ## 准备关联 ID
 
@@ -34,6 +36,14 @@ node bin/repoctopus.js event retry --workspace $workspace --envelope $envelopeId
 ```
 
 `event retry` 不接受 `completed`、活动 Lease、`pending` 或已经处于 `retry_wait` 的投递。它保留原 Envelope 和 Receipt 历史，不创建第二条逻辑投递。
+
+Webhook 没有进入 Inbox，或希望立即检查当前 workspace 的所有候选项时，执行一次性补偿：
+
+```powershell
+node bin/repoctopus.js post-merge reconcile --workspace $workspace --json
+```
+
+命令从 Delivery Store 发现候选项，通过平台 API 重新核对业务 MR，并在完成后退出。它不扫描“当前用户提交的 MR”，也不启动 HTTP Listener 或后台 Timer。第一版只能发现当前持久 workspace 已登记的 Delivery；全新 clone 没有这份状态时不能替代共享 Store 或远端索引。
 
 ## 2. 检查 Delivery 合入事实
 
@@ -89,7 +99,7 @@ node bin/repoctopus.js evidence resume --workspace $workspace --attempt $attempt
 | `audit-paths`         | diff 与路径及内容摘要完全一致                               | 业务源码、未知文件、符号链接或额外规格路径出现      |
 | `publish`             | 既有提交是基线的唯一直接子提交，远端 OID 和原 MR 元数据一致 | MR 已关闭、分支映射改变、远端被改写或出现未授权操作 |
 
-在 `publish` 恢复中，Git 响应丢失会复用同一 commit；push 响应丢失会核对远端精确 OID；MR update 响应丢失会重新读取原 MR 的 title/body。任何核对失败都会停止，不会自动 merge、force-push、rebase、删除分支或创建新 MR。
+在 `publish` 恢复中，Git 响应丢失会复用同一 commit；push 响应丢失会核对远端精确 OID；MR update 响应丢失会重新读取原 MR 的 title/body。多个 Runner 从同一基线竞争时，失败者只有在远端提交是该基线的直接子提交，并且 tree、message 与 author 都和本地审计结果等价时才收敛到远端提交；其他变化全部停止。系统不会自动 merge、force-push、rebase、删除分支或创建新 MR。
 
 ## 6. 使用 OTel 关联持久事实
 

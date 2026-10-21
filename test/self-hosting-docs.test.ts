@@ -8,6 +8,7 @@ import { parse } from 'yaml';
 
 import { parseSharedProjectConfig } from '../domains/project-configuration/config.js';
 import { removeTemporaryDirectory, temporaryDirectory } from './helpers/fixtures.js';
+import { runCli } from './e2e/cli.js';
 
 const repositoryRoot = path.resolve(import.meta.dirname, '..');
 const cleanup: string[] = [];
@@ -84,6 +85,37 @@ describe('self-hosting documentation', () => {
     const postMerge = await readFile(path.join(repositoryRoot, 'docs', 'post-merge.md'), 'utf8');
     expect(platformEvents).not.toContain('长期运行入口仍属于后续组合任务');
     expect(postMerge).not.toContain('尚未把 Post-merge Runner');
+    expect(postMerge).toContain('post-merge reconcile');
+  });
+
+  it('runs the documented one-shot reconciliation without an HTTP listener', async () => {
+    const workspace = await temporaryDirectory('repoctopus-reconcile-docs-');
+    cleanup.push(workspace);
+    const example = await readFile(
+      path.join(repositoryRoot, 'docs', 'examples', 'repoctopus.yaml'),
+      'utf8',
+    );
+    await writeFile(
+      path.join(workspace, 'repoctopus.yaml'),
+      example.replace('path: ../app', 'path: .'),
+    );
+
+    const result = await runCli<{
+      checked: number;
+      completed: number;
+      waiting: number;
+      blocked: number;
+      failed: number;
+    }>({
+      packageRoot: repositoryRoot,
+      cwd: workspace,
+      args: ['post-merge', 'reconcile', '--workspace', workspace],
+    });
+    expect(result).toMatchObject({
+      ok: true,
+      command: 'post-merge reconcile',
+      result: { checked: 0, completed: 0, waiting: 0, blocked: 0, failed: 0 },
+    });
   });
 
   it('starts the documented Runner command and emits a ready envelope', async () => {
