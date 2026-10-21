@@ -307,10 +307,7 @@ describe('delivery service', () => {
     expect(replacement.decisionRequest?.requestId).not.toBe(first.decisionRequest?.requestId);
     expect(replacement.snapshot?.digest).not.toBe(first.snapshot?.digest);
     const history = await store.history(intent.changeId);
-    expect(history.map((entry) => entry.type)).toEqual([
-      'delivery.prepared',
-      'delivery.prepared',
-    ]);
+    expect(history.map((entry) => entry.type)).toEqual(['delivery.prepared', 'delivery.prepared']);
     expect(history[1]?.data.supersededRequestId).toBe(first.decisionRequest?.requestId);
     expect(history[1]?.data.previousSnapshotDigest).toBe(first.snapshot?.digest);
     await expect(
