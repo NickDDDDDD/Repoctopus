@@ -8,7 +8,7 @@
 
 ## 2. 交付默认单 Business MR 的真实纵切
 
-- [ ] 2.1 实现 `DeliveryIntent`、`DeliverySnapshot` 和 `DeliveryState` v3，以 `changeBranch` 和稳定 `businessDeliveries[]` 取代 `changeMergeRequest`；运行规范化、摘要、漂移与状态转换测试证明默认计划只生成一个 Business MR。
+- [x] 2.1 实现 `DeliveryIntent`、`DeliverySnapshot` 和 `DeliveryState` v3，以 `changeBranch` 和稳定 `businessDeliveries[]` 取代 `changeMergeRequest`；运行规范化、摘要、漂移与状态转换测试证明默认计划只生成一个 Business MR。
 - [ ] 2.2 重构 Delivery Service、平台 MR 映射和批准请求，使业务发布不读取或创建 Change MR；运行领域、Service、GitHub Adapter 与 CLI E2E，证明 Change 分支已核对后可以独立创建一个 Business MR，且 Runtime 仍不执行 merge。
 - [ ] 2.3 同步 Delivery Intent 示例、schema 和交付文档到 v3，执行 schema fixture 与示例 CLI 测试，证明旧 `changeMergeRequest` 输入返回可操作迁移诊断而不是被静默解释。
 
