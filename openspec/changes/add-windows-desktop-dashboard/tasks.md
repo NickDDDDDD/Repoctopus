@@ -4,7 +4,7 @@
 
 - [ ] 1.1 在干净主线记录 Node、npm、Windows、现有遥测测试和构建基线，执行 `npm run check:upstream`、`npm run verify` 与 `npm run test:tracer-e2e` 并确认全部通过。
 - [ ] 1.2 选择并精确锁定 Electron、React、Vite 和 Windows 打包工具版本，登记许可证、来源、安装脚本与采用理由；执行 `npm install`、`npm run check:provenance` 和许可证检查证明没有未登记依赖或 Comet 源码复制。
-- [ ] 1.3 在 `app/desktop` 建立 main、preload、renderer 和共享契约边界，接入现有 TypeScript、ESLint、Prettier 与构建流程；执行桌面 typecheck、lint 和开发构建证明空壳应用可以启动且 Renderer 没有 Node 权限。
+- [ ] 1.3 在 `app/desktop` 建立 main、preload、renderer 和共享契约边界，并为 Electron 主进程建立统一 App Boot 与 desktop composition；执行桌面 typecheck、lint、composition 契约测试和开发构建证明 Application Plugin 只在必需 Service 就绪后激活且 Renderer 没有 Node/Cordis 权限。
 
 ## 2. 交付首个真实 OTLP 到桌面纵切
 
@@ -14,6 +14,7 @@
 - [ ] 2.4 实现最小 change projection reducer 与稳定事件去重，用乱序、重复和缺失 fixture 验证 active change、Run、阶段、新鲜度和 gap 状态确定性收敛。
 - [ ] 2.5 把 receiver、projection、类型化 preload IPC 和最小 Renderer 接入 Electron，运行桌面集成测试证明一个真实 OTLP Run 事件无需轮询即可在窗口显示。
 - [ ] 2.6 接入最小 Desktop Launcher，在 Windows 开发 Run 开始前启动或激活 Dashboard 并唤醒本地目的地重放；运行进程外纵切测试验证 Dashboard 启动失败只产生 warning，远端 mock 仍收到同一 envelope。
+- [ ] 2.7 把 Runtime 侧 Desktop Launcher 与本地目的地作为内置 Service/Contributor 加入 builtin catalog 和 project composition，把 Receiver、Projection、生命周期与 Desktop Application Plugin 加入 desktop composition；运行零桌面、正常桌面、依赖缺失和插件卸载测试证明没有旁路构造或第二套容器。
 
 ## 3. 收敛完整遥测映射与多目的地恢复
 
@@ -39,7 +40,7 @@
 - [ ] 5.1 实现随机端口、会话凭据、Windows 用户级 discovery 文件和所有者/freshness/进程验证，运行伪造 discovery、过期进程、端口劫持和错误凭据测试证明本地状态不能被未授权请求改变。
 - [ ] 5.2 实现 Electron 单实例锁、第二实例上下文转交和有界 ready 等待，运行两个并发 Run 的进程测试证明只有一个主进程和 Receiver，两个 change 都可达。
 - [ ] 5.3 实现 `quit`、`tray`、`ask` 用户级关闭偏好和托盘“完全退出”，运行 Windows 自动化测试验证隐藏、重新打开、保存偏好、会话退出和完全退出语义。
-- [ ] 5.4 强化 Renderer sandbox、`contextIsolation`、CSP 和版本化 IPC allowlist，以负向测试证明任意 channel、文件读取、进程执行、导航和未声明外部资源都被拒绝。
+- [ ] 5.4 强化 Renderer sandbox、`contextIsolation`、CSP 和版本化 IPC allowlist，并扩展架构检查拒绝 Renderer 访问 Cordis/Node、入口绕过 Application Plugin 和桌面代码进入 Engine；以负向 fixture 证明每条边界都会失败。
 - [ ] 5.5 实现投影 journal、原子 snapshot、重复收敛和阈值压缩，以高事件量基准验证重启恢复、内存上限、启动时间和 journal 损坏诊断满足记录的性能预算。
 - [ ] 5.6 更新桌面安全、数据保留、关闭行为和恢复文档，执行卸载/重装 fixture 证明默认不误删 Workspace 事实并明确用户级 Dashboard 数据处理方式。
 

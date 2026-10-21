@@ -28,31 +28,36 @@ Comet 固定源码基线提供 change explorer、阶段进度、任务、验证�
 
 ## Decisions
 
-### 1. 桌面观测是独立应用主机，不进入 Engine
+### 1. 桌面观测通过两个 Cordis composition 接入，不进入 Engine
 
-新增桌面应用主机，内部划分四个边界：
+物理上存在 Runtime 与 Electron 两个进程；逻辑上都使用现有 App Boot、builtin catalog、Cordis Service、Contributor、Fiber 与 Effect，不建立第二套依赖容器：
 
 ```text
-Repoctopus Runtime
-  └─ Telemetry Provider
+Runtime App Boot / project composition
+  ├─ Telemetry Service + Provider
+  ├─ Desktop Launcher Service/Contributor
+  └─ Desktop OTLP Destination Contributor
        └─ durable envelope store + per-destination cursor
-            ├─ remote OTLP destination
-            └─ desktop OTLP destination
-                    │ loopback OTLP/HTTP
-Electron main process
-  ├─ receiver + authentication
-  ├─ observation decoder
-  ├─ change projection + local journal
-  ├─ lifecycle/settings/tray adapters
-  └─ versioned IPC boundary
-                    │ snapshot + ordered delta
-Electron renderer
-  └─ read-only desktop UI
+              ├─ remote OTLP destination
+              └─ desktop OTLP destination
+                       │ loopback OTLP/HTTP
+Electron App Boot / desktop composition
+  ├─ Receiver Service Provider + authentication
+  ├─ Projection Store Service Provider
+  ├─ Desktop Lifecycle/IPC Services
+  └─ Desktop Application Plugin
+                       │ versioned snapshot + ordered delta
+Sandboxed Renderer
+  └─ read-only UI client; no Cordis or Node access
 ```
 
-Engine 和 Workflow 只产生现有领域事实。Telemetry Provider 位于平台边界，桌面 launcher 是 App composition 使用的平台适配器；两者都不得让领域模块依赖 Electron、SigNoZ 或 UI 类型。桌面主进程是独立产品主机，不接入运行中 CLI 的内存容器。
+Runtime 侧的内置插件只通过稳定应用 Service/Contributor 发现、启动和投递，不直接构造 Electron 对象。Electron 主进程使用专用 desktop composition；Receiver、Projection、生命周期和 Application Plugin 依赖由 Inject 管理，端口、窗口、托盘、IPC 与 Timer 由 Effect 撤销。它与 Runtime 使用相同 Cordis 架构，但不共享 Context、Fiber 或内存 Service。
 
-备选方案是在 CLI 内嵌 HTTP UI 或让 Engine 直接发布 UI 状态。前者仍是浏览器体验，后者会建立第二套旁路状态协议并破坏后端中立，因此拒绝。
+Renderer 不是 Cordis 插件：把插件系统或 Node 暴露给不可信展示上下文会破坏最小权限。它是 Desktop Application Plugin 的版本化 IPC 客户端，只消费 snapshot/delta 和少量有界动作。
+
+Engine 和 Workflow 只产生现有领域事实。Runtime 的 Desktop Contributor 与 Electron 的 Desktop Application Plugin 身份分别进入各自 composition 快照；桌面进程启停不改写既有 Run 的领域结果，目的地可用性通过遥测健康状态表达。
+
+备选方案一是把整个 Electron 主进程当成无法组合的特殊入口，会绕过现有 Service 生命周期。备选方案二是把 Electron 加载进每个 CLI Context，会把窗口生命周期和大体积依赖耦合到短命令。备选方案三是在 CLI 内嵌 HTTP UI 或让 Engine 直接发布 UI 状态。三者分别破坏插件治理、进程边界或后端中立，因此拒绝。
 
 ### 2. 规范观测 envelope 是不可变投递单元
 
