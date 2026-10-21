@@ -187,6 +187,7 @@
         "domains/post-merge/**",
         "platform/git/post-merge-checkout.ts",
         "platform/git/post-merge-workspace.ts",
+        "plugins/command/post-merge-contributor.ts",
         "plugins/post-merge/**"
       ],
       "upstream": [],
