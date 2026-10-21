@@ -26,6 +26,11 @@
     "third_party/cordis-plugin-loader",
     "third_party/cordis-upstream.json",
     "third_party/cordis-upstream.md",
+    "third_party/dsh-adoption.json",
+    "third_party/dsh-adoption.md",
+    "third_party/upstream-baselines.json",
+    "third_party/upstream-alignment-audit.md",
+    "third_party/matt-skills",
     "README.md"
   ],
   "engines": {
@@ -37,12 +42,14 @@
     "check:brand": "node scripts/check-brand.mjs",
     "check:architecture": "node scripts/check-architecture.mjs",
     "check:provenance": "node scripts/check-provenance.mjs",
+    "check:upstream": "node scripts/check-upstream-drift.mjs",
     "format": "prettier --write app domains platform plugins services scripts test workflows deploy third_party docs openspec README.md package.json tsconfig.json eslint.config.js vitest.config.ts",
     "format:check": "prettier --check app domains platform plugins services scripts test workflows deploy third_party docs openspec README.md package.json tsconfig.json eslint.config.js vitest.config.ts",
     "lint": "eslint app domains platform plugins services scripts test",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:package-e2e": "vitest run test/e2e/package.e2e.test.ts",
+    "test:platform-event-recovery-e2e": "vitest run test/e2e/platform-event-recovery.e2e.test.ts",
     "test:tracer-e2e": "vitest run test/e2e/runtime-tracer.e2e.test.ts",
     "spec:validate": "openspec validate --all --strict",
     "pretest": "npm run build",
@@ -51,8 +58,17 @@
   "dependencies": {
     "@deepseek-ai/cordis": "file:third_party/cordis",
     "@deepseek-ai/cordis-plugin-loader": "file:third_party/cordis-plugin-loader",
-    "@deepseek-ai/cosmokit": "1.8.5",
-    "@deepseek-ai/schemastery": "3.18.4",
+    "@deepseek-ai/cosmokit": "1.8.6",
+    "@deepseek-ai/dsh-brand": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-llm": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-scope": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-skill": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-timeout": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-typert-protocol": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-util-crypto": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-util-values": "0.2.1-rc.2",
+    "@deepseek-ai/schemastery": "3.18.5",
+    "@fission-ai/openspec": "1.14.3",
     "@opentelemetry/api": "1.9.0",
     "@opentelemetry/api-logs": "0.223.0",
     "@opentelemetry/exporter-logs-otlp-http": "0.223.0",
@@ -64,12 +80,13 @@
     "@opentelemetry/sdk-trace-base": "2.12.0",
     "@opentelemetry/semantic-conventions": "1.43.0",
     "@standard-schema/spec": "1.1.0",
+    "chokidar": "5.0.0",
     "playwright-core": "1.64.1",
-    "yaml": "2.9.1"
+    "yaml": "2.9.1",
+    "zod": "4.4.3"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
-    "@fission-ai/openspec": "1.14.1",
     "@types/node": "26.4.0",
     "esbuild": "0.28.2",
     "eslint": "10.4.0",
@@ -80,5 +97,16 @@
   },
   "allowScripts": {
     "esbuild@0.28.2": true
+  },
+  "overrides": {
+    "@deepseek-ai/dsh-brand": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-llm": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-scope": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-skill": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-timeout": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-typert-protocol": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-util-crypto": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-util-values": "0.2.1-rc.2",
+    "@deepseek-ai/schemastery": "3.18.5"
   }
 }

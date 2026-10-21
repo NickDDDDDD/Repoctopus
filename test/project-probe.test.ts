@@ -4,7 +4,11 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { probeProject, normalizeRemoteIdentity } from '../platform/git/probe.js';
+import {
+  probeProject,
+  normalizeRemoteIdentity,
+  snapshotWorkspaceRepositories,
+} from '../platform/git/probe.js';
 import {
   createGitRepository,
   removeTemporaryDirectory,
@@ -19,7 +23,7 @@ describe('multi-repository project probe', () => {
   it('discovers only direct sibling repositories without writing to them', async () => {
     const root = await temporaryDirectory('repoctopus-probe-');
     cleanup.push(root);
-    const workspace = await createGitRepository(root, 'repoctopus-workspace');
+    await createGitRepository(root, 'repoctopus-workspace');
     const first = await createGitRepository(
       root,
       'front',
@@ -41,18 +45,17 @@ describe('multi-repository project probe', () => {
 
     const snapshot = await probeProject({
       root,
-      workspaceRoot: workspace,
       now: () => new Date('2026-01-01T00:00:00.000Z'),
     });
     const later = await probeProject({
       root,
-      workspaceRoot: workspace,
       now: () => new Date('2027-01-01T00:00:00.000Z'),
     });
 
     expect(snapshot.repositories.map((repository) => repository.name).sort()).toEqual([
       'backend',
       'front',
+      'repoctopus-workspace',
     ]);
     expect(
       snapshot.repositories.find((repository) => repository.name === 'front')?.remoteIdentity,
@@ -132,5 +135,47 @@ describe('multi-repository project probe', () => {
         expect.objectContaining({ code: 'duplicate-repository-identity', path: second }),
       ]),
     );
+  });
+
+  it('snapshots only registered repositories with stable Workspace ids', async () => {
+    const root = await temporaryDirectory('repoctopus-workspace-snapshot-');
+    cleanup.push(root);
+    const workspace = await createGitRepository(root, 'workspace');
+    const app = await createGitRepository(root, 'app');
+    await createGitRepository(root, 'unregistered');
+
+    const snapshot = await snapshotWorkspaceRepositories({
+      workspaceId: 'team-workspace',
+      workspaceRoot: workspace,
+      workspaceRepositoryId: 'workflow',
+      repositories: [
+        { id: 'workflow', path: workspace },
+        { id: 'application', path: app },
+      ],
+      now: () => new Date('2026-01-01T00:00:00.000Z'),
+    });
+
+    expect(snapshot.projectId).toBe('team-workspace');
+    expect(snapshot.root).toBe(workspace);
+    expect(snapshot.repositories.map((repository) => repository.id)).toEqual([
+      'application',
+      'workflow',
+    ]);
+  });
+
+  it('fails closed when the Workspace Repository does not resolve to the Workspace root', async () => {
+    const root = await temporaryDirectory('repoctopus-workspace-mismatch-');
+    cleanup.push(root);
+    const workspace = await createGitRepository(root, 'workspace');
+    const other = await createGitRepository(root, 'other');
+
+    await expect(
+      snapshotWorkspaceRepositories({
+        workspaceId: 'team-workspace',
+        workspaceRoot: workspace,
+        workspaceRepositoryId: 'workflow',
+        repositories: [{ id: 'workflow', path: other }],
+      }),
+    ).rejects.toThrow(/must resolve to the Workspace root/i);
   });
 });

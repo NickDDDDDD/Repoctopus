@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
@@ -19,6 +19,7 @@ import type { SharedProjectConfig } from '../domains/project-configuration/types
 import { FileRuntimeStore } from '../platform/runtime/file-runtime-store.js';
 import {
   compositionFixture,
+  commitGitRepository,
   createGitRepository,
   projectFixture,
   removeTemporaryDirectory,
@@ -37,13 +38,15 @@ async function fixture() {
   const root = await temporaryDirectory('repoctopus-evidence-binding-');
   cleanup.push(root);
   await createGitRepository(root, 'app');
-  const workspace = path.join(root, 'workspace');
-  await mkdir(workspace);
+  const workspace = await createGitRepository(root, 'workspace');
   const config: SharedProjectConfig = {
     apiVersion: 'repoctopus/v1alpha1',
-    kind: 'RepoctopusProject',
-    project: { id: 'binding' },
-    repositories: [{ id: 'app', path: '../app' }],
+    kind: 'RepoctopusWorkspace',
+    workspace: { id: 'binding', repositoryId: 'workspace' },
+    repositories: [
+      { id: 'workspace', path: '.' },
+      { id: 'app', path: '../app' },
+    ],
     profiles: [
       {
         id: 'verify',
@@ -64,6 +67,8 @@ async function fixture() {
     ],
   };
   await writeFile(path.join(workspace, 'repoctopus.yaml'), JSON.stringify(config));
+  await writeFile(path.join(workspace, '.gitignore'), '.repoctopus/\n');
+  await commitGitRepository(workspace, 'configure workspace');
   const definition = structuredClone(workflowFixture().definition);
   definition.steps[0]!.action.evidenceProfile = 'verify';
   const workflow = createWorkflowPackage(definition);

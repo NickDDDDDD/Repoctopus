@@ -2,10 +2,17 @@ import { Service, type Context } from '@deepseek-ai/cordis';
 
 import type { ProjectSnapshot } from '../domains/project/types.js';
 import type {
+  PostMergePublicationReceipt,
+  PostMergePublicationRequest,
+} from '../domains/delivery/post-merge.js';
+import type {
   DeliveryIntent,
+  DeliveryMergeRequestRefresh,
   DeliveryPolicy,
+  DeliveryReconciliationCandidate,
   DeliveryState,
   HumanDecisionResponse,
+  MergeRequestReference,
   TrustedActor,
 } from '../domains/delivery/types.js';
 
@@ -37,11 +44,29 @@ export abstract class Delivery extends Service {
     signal?: AbortSignal,
   ): Promise<DeliveryState>;
   abstract publish(options: DeliveryPreparation, signal?: AbortSignal): Promise<DeliveryState>;
+  publishPostMerge(
+    request: PostMergePublicationRequest,
+    signal?: AbortSignal,
+  ): Promise<PostMergePublicationReceipt> {
+    void signal;
+    return Promise.reject(
+      new Error(`Delivery provider cannot publish post-merge closure for ${request.changeId}`),
+    );
+  }
   abstract refresh(
     changeId: string,
     policy: DeliveryPolicy,
     signal?: AbortSignal,
   ): Promise<DeliveryState>;
+  abstract refreshForMergeRequest(
+    reference: MergeRequestReference,
+    policy: DeliveryPolicy,
+    signal?: AbortSignal,
+  ): Promise<DeliveryMergeRequestRefresh>;
+  reconciliationCandidates(signal?: AbortSignal): Promise<DeliveryReconciliationCandidate[]> {
+    void signal;
+    return Promise.resolve([]);
+  }
 }
 
 declare module '@deepseek-ai/cordis' {

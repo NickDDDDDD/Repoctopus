@@ -6,8 +6,13 @@ import type {
   DeliveryPolicy,
   DeliveryState,
   HumanDecisionResponse,
+  MergeRequestReference,
   TrustedActor,
 } from '../../domains/delivery/types.js';
+import type {
+  PostMergePublicationReceipt,
+  PostMergePublicationRequest,
+} from '../../domains/delivery/post-merge.js';
 import type { ProjectSnapshot } from '../../domains/project/types.js';
 import { FileDeliveryEvidence } from '../../platform/delivery/file-delivery-evidence.js';
 import { FileDeliveryStore } from '../../platform/delivery/file-delivery-store.js';
@@ -26,6 +31,7 @@ import {
 export interface FileDeliveryConfig {
   workspaceRoot: string;
   environment?: NodeJS.ProcessEnv;
+  githubTokenVariable?: string;
 }
 
 export class FileDeliveryProvider extends Delivery {
@@ -42,17 +48,19 @@ export class FileDeliveryProvider extends Delivery {
 
   private domain(policy?: DeliveryPolicy): DeliveryDomainService {
     const environment = this.config.environment ?? process.env;
+    const git = new GitDeliveryAdapter();
     return new DeliveryDomainService(
       new FileDeliveryStore(this.config.workspaceRoot),
-      new GitDeliveryAdapter(),
+      git,
       new GitHubMergeRequestAdapter(
-        new EnvironmentCredentialProvider(environment),
+        new EnvironmentCredentialProvider(environment, this.config.githubTokenVariable),
         policy?.publication.githubApiBaseUrl,
       ),
       new FileDeliveryEvidence(this.config.workspaceRoot),
       undefined,
       deliveryTelemetryFromEnvironment(environment),
       this.ctx.compositionIdentity.current().compositionDigest,
+      git,
     );
   }
 
@@ -94,9 +102,34 @@ export class FileDeliveryProvider extends Delivery {
     );
   }
 
+  override publishPostMerge(
+    request: PostMergePublicationRequest,
+    signal?: AbortSignal,
+  ): Promise<PostMergePublicationReceipt> {
+    return this.operations.run({ cancellable: false, signal }, () =>
+      this.domain().publishPostMerge(request),
+    );
+  }
+
   refresh(changeId: string, policy: DeliveryPolicy, signal?: AbortSignal): Promise<DeliveryState> {
     return this.operations.run({ cancellable: false, signal }, () =>
       this.domain(policy).refresh(changeId),
+    );
+  }
+
+  refreshForMergeRequest(
+    reference: MergeRequestReference,
+    policy: DeliveryPolicy,
+    signal?: AbortSignal,
+  ) {
+    return this.operations.run({ cancellable: false, signal }, () =>
+      this.domain(policy).refreshForMergeRequest(reference),
+    );
+  }
+
+  override reconciliationCandidates(signal?: AbortSignal) {
+    return this.operations.run({ cancellable: true, signal }, () =>
+      this.domain().reconciliationCandidates(),
     );
   }
 }

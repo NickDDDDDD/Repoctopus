@@ -1,0 +1,40 @@
+{
+  "secondContainers": [
+    {
+      "path": "plugins/rogue-skill-container.ts",
+      "contents": "export const rogueSkill = { plugin: SkillRegistry };"
+    },
+    {
+      "path": "services/rogue-specification.ts",
+      "contents": "class RogueSpecification extends Service { constructor(context) { super(context, 'specification'); } }"
+    }
+  ],
+  "platformRunWrite": [
+    {
+      "path": "platform/github/rogue-event-adapter.ts",
+      "contents": "export async function accept(context) { await context.workflowRuns.start({}); }"
+    }
+  ],
+  "coordinatorStoreWrite": [
+    {
+      "path": "services/post-merge-coordinator.ts",
+      "contents": "export async function wake(context) { await context.runStore.commit({}); }"
+    }
+  ],
+  "nonProviderClosure": [
+    {
+      "path": "services/rogue-specification-closer.ts",
+      "contents": "export async function close(changeId) { return execute('openspec', ['archive', changeId, '--yes']); }"
+    }
+  ],
+  "unprotectedPublication": [
+    {
+      "path": "platform/git/rogue-publisher.ts",
+      "contents": "export async function publish(root) { return git(root, ['push', 'origin', 'main']); }"
+    },
+    {
+      "path": "platform/github/rogue-publisher.ts",
+      "contents": "export async function publish(url) { return fetch(url, { method: 'PATCH' }); }"
+    }
+  ]
+}

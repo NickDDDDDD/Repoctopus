@@ -1,13 +1,15 @@
 import { createHash, randomUUID } from 'node:crypto';
 
 import { decide, recordOutcome, startRun } from '../engine/loop.js';
-import type { ActionOutcome, EngineAction, RunState } from '../engine/types.js';
+import type { ActionOutcome, EngineAction, RunState, RunTriggerSnapshot } from '../engine/types.js';
 import { reconcileProjectSnapshots } from '../project/snapshot.js';
 import type { ProjectSnapshot } from '../project/types.js';
 import type { TrajectoryEvent, TrajectoryEventType } from '../trajectory/types.js';
 import type { WorkflowPackage } from '../workflow-contract/types.js';
 import type { CompositionIdentitySnapshot } from '../composition/types.js';
 import { compareCompositions } from '../composition/compatibility.js';
+import { sameSkillUsageSnapshot, type SkillUsageSnapshot } from '../skill/types.js';
+import type { SpecificationUsageSnapshot } from '../specification/types.js';
 import type {
   ResumeView,
   RunStatusView,
@@ -19,6 +21,24 @@ import type {
   RunStorePort,
 } from './types.js';
 import { requireSatisfiedEvidenceGate } from './evidence-guard.js';
+import { canonicalJson } from '../workflow-contract/canonical.js';
+
+export interface StartWorkflowRunOptions {
+  workflow: WorkflowPackage;
+  projectSnapshot: ProjectSnapshot;
+  runId?: string;
+  workflowSource?: string;
+  trigger?: RunTriggerSnapshot;
+}
+
+export type IdempotentStartWorkflowRunOptions = StartWorkflowRunOptions & { runId: string };
+
+export class RunIdentityConflictError extends Error {
+  constructor(runId: string, field: string) {
+    super(`Run identity conflict for ${runId}: ${field} changed`);
+    this.name = 'RunIdentityConflictError';
+  }
+}
 
 function stableEventId(...parts: string[]): string {
   return createHash('sha256').update(parts.join(':')).digest('hex');
@@ -56,12 +76,7 @@ export class WorkflowRunCoordinator {
     private readonly evidenceGate?: EvidenceGatePort,
   ) {}
 
-  async start(options: {
-    workflow: WorkflowPackage;
-    projectSnapshot: ProjectSnapshot;
-    runId?: string;
-    workflowSource?: string;
-  }): Promise<RuntimeResult<RunStatusView>> {
+  async start(options: StartWorkflowRunOptions): Promise<RuntimeResult<RunStatusView>> {
     const timestamp = this.clock().toISOString();
     const state = startRun({
       workflow: options.workflow,
@@ -70,6 +85,7 @@ export class WorkflowRunCoordinator {
       composition: this.composition,
       timestamp,
       ...(options.workflowSource ? { workflowSource: options.workflowSource } : {}),
+      ...(options.trigger ? { trigger: options.trigger } : {}),
     });
     const started = event({
       eventId: stableEventId(state.runId, 'run.started'),
@@ -84,6 +100,12 @@ export class WorkflowRunCoordinator {
         projectSnapshotDigest: state.projectSnapshotDigest,
         compositionDigest: state.composition.compositionDigest,
         repositoryCount: options.projectSnapshot.repositories.length,
+        ...(state.trigger
+          ? {
+              triggerKind: state.trigger.kind,
+              triggerIdentityDigest: state.trigger.identityDigest,
+            }
+          : {}),
       },
     });
     await this.store.initialize({
@@ -94,6 +116,32 @@ export class WorkflowRunCoordinator {
     });
     const diagnostics = await this.flushTelemetry(state.runId);
     return { value: await this.status(state.runId), diagnostics };
+  }
+
+  async startOrResume(
+    options: IdempotentStartWorkflowRunOptions,
+  ): Promise<RuntimeResult<RunStatusView>> {
+    try {
+      return await this.start(options);
+    } catch (startError) {
+      let existing: RunStatusView;
+      try {
+        existing = await this.status(options.runId);
+      } catch {
+        throw startError;
+      }
+      this.assertSameStartIdentity(existing.state, options);
+      return {
+        value: existing,
+        diagnostics: [
+          {
+            level: 'info',
+            code: 'runtime.idempotent-start',
+            message: `Run already exists and was resumed: ${options.runId}`,
+          },
+        ],
+      };
+    }
   }
 
   async status(runId: string): Promise<RunStatusView> {
@@ -122,6 +170,173 @@ export class WorkflowRunCoordinator {
       compositionCompatibility,
       ...(preview.reason ? { reason: preview.reason } : {}),
     };
+  }
+
+  private assertSameStartIdentity(
+    state: RunState,
+    options: IdempotentStartWorkflowRunOptions,
+  ): void {
+    if (state.workflowDigest !== options.workflow.digest) {
+      throw new RunIdentityConflictError(options.runId, 'workflow digest');
+    }
+    if (state.projectSnapshotDigest !== options.projectSnapshot.digest) {
+      throw new RunIdentityConflictError(options.runId, 'project snapshot digest');
+    }
+    if (state.workflowSource !== (options.workflowSource ?? null)) {
+      throw new RunIdentityConflictError(options.runId, 'workflow source');
+    }
+    if (canonicalJson(state.trigger ?? null) !== canonicalJson(options.trigger ?? null)) {
+      throw new RunIdentityConflictError(options.runId, 'trigger facts');
+    }
+  }
+
+  async bindSkill(runId: string, snapshot: SkillUsageSnapshot): Promise<SkillUsageSnapshot> {
+    await this.prepareWritableComposition(runId);
+    const result = await this.store.commitGuarded(runId, ({ state, trajectory }) => {
+      this.assertWritableComposition(state);
+      const existing = (state.skillUsageSnapshots ?? []).find(
+        (item) => item.name === snapshot.name,
+      );
+      if (existing) {
+        if (!sameSkillUsageSnapshot(existing, snapshot)) {
+          throw new Error(
+            `Skill drift detected for ${snapshot.name}: Run is bound to ${existing.provider} ${existing.contentDigest}, current is ${snapshot.provider} ${snapshot.contentDigest}`,
+          );
+        }
+        return { value: existing };
+      }
+      const timestamp = this.clock().toISOString();
+      const nextState: RunState = {
+        ...state,
+        skillUsageSnapshots: [...(state.skillUsageSnapshots ?? []), structuredClone(snapshot)].sort(
+          (left, right) => left.name.localeCompare(right.name),
+        ),
+        stateVersion: state.stateVersion + 1,
+        updatedAt: timestamp,
+      };
+      const bound = event({
+        eventId: stableEventId(runId, snapshot.name, snapshot.contentDigest, 'skill.bound'),
+        sequence: trajectory.length + 1,
+        timestamp,
+        type: 'skill.bound',
+        state: nextState,
+        data: {
+          skillName: snapshot.name,
+          skillProvider: snapshot.provider,
+          contentDigest: snapshot.contentDigest,
+          resourceManifestDigest: snapshot.resourceManifestDigest,
+        },
+      });
+      return { state: nextState, event: bound, value: snapshot };
+    });
+    await this.flushTelemetry(runId);
+    return result;
+  }
+
+  async bindSpecification(
+    runId: string,
+    snapshot: SpecificationUsageSnapshot,
+  ): Promise<SpecificationUsageSnapshot> {
+    await this.prepareWritableComposition(runId);
+    const result = await this.store.commitGuarded(runId, ({ state, trajectory }) => {
+      this.assertWritableComposition(state);
+      const existing = state.specificationUsageSnapshot;
+      if (existing) {
+        if (
+          existing.changeId !== snapshot.changeId ||
+          existing.provider.id !== snapshot.provider.id ||
+          existing.provider.version !== snapshot.provider.version ||
+          existing.provider.protocolVersion !== snapshot.provider.protocolVersion ||
+          existing.validationDigest !== snapshot.validationDigest
+        ) {
+          throw new Error(`Specification drift detected for Run ${runId}`);
+        }
+        return { value: existing };
+      }
+      const timestamp = this.clock().toISOString();
+      const nextState: RunState = {
+        ...state,
+        specificationUsageSnapshot: structuredClone(snapshot),
+        stateVersion: state.stateVersion + 1,
+        updatedAt: timestamp,
+      };
+      const bound = event({
+        eventId: stableEventId(
+          runId,
+          snapshot.changeId,
+          snapshot.validationDigest,
+          'specification.bound',
+        ),
+        sequence: trajectory.length + 1,
+        timestamp,
+        type: 'specification.bound',
+        state: nextState,
+        data: {
+          changeId: snapshot.changeId,
+          providerId: snapshot.provider.id,
+          providerVersion: snapshot.provider.version,
+          validationDigest: snapshot.validationDigest,
+        },
+      });
+      return { state: nextState, event: bound, value: snapshot };
+    });
+    await this.flushTelemetry(runId);
+    return result;
+  }
+
+  async bindSpecificationClosurePlan(
+    runId: string,
+    plan: {
+      changeId: string;
+      provider: { id: string; version: string };
+      planDigest: `sha256:${string}`;
+    },
+  ): Promise<SpecificationUsageSnapshot> {
+    await this.prepareWritableComposition(runId);
+    const result = await this.store.commitGuarded(runId, ({ state, trajectory }) => {
+      this.assertWritableComposition(state);
+      const existing = state.specificationUsageSnapshot;
+      if (!existing) throw new Error(`Run ${runId} has no bound Specification validation`);
+      if (
+        existing.changeId !== plan.changeId ||
+        existing.provider.id !== plan.provider.id ||
+        existing.provider.version !== plan.provider.version
+      ) {
+        throw new Error(`Specification closure plan does not match Run ${runId}`);
+      }
+      if (existing.closurePlanDigest) {
+        if (existing.closurePlanDigest !== plan.planDigest) {
+          throw new Error(`Specification closure plan drift detected for Run ${runId}`);
+        }
+        return { value: existing };
+      }
+      const timestamp = this.clock().toISOString();
+      const snapshot = { ...existing, closurePlanDigest: plan.planDigest };
+      const nextState: RunState = {
+        ...state,
+        specificationUsageSnapshot: snapshot,
+        stateVersion: state.stateVersion + 1,
+        updatedAt: timestamp,
+      };
+      return {
+        state: nextState,
+        event: event({
+          eventId: stableEventId(runId, plan.planDigest, 'specification.closure-planned'),
+          sequence: trajectory.length + 1,
+          timestamp,
+          type: 'specification.closure-planned',
+          state: nextState,
+          data: {
+            changeId: plan.changeId,
+            providerId: plan.provider.id,
+            closurePlanDigest: plan.planDigest,
+          },
+        }),
+        value: snapshot,
+      };
+    });
+    await this.flushTelemetry(runId);
+    return result;
   }
 
   async next(
@@ -169,6 +384,7 @@ export class WorkflowRunCoordinator {
     eventId?: string;
     evidenceAttemptId?: string;
     actionReceiptId?: string;
+    correlationReceiptId?: `sha256:${string}`;
   }): Promise<RuntimeResult<RunStatusView>> {
     const eventId = options.eventId ?? this.uuid();
     const duplicate = await this.store.findEvent(options.runId, eventId);
@@ -185,6 +401,12 @@ export class WorkflowRunCoordinator {
       };
     }
     const timestamp = this.clock().toISOString();
+    if (
+      options.correlationReceiptId &&
+      !/^sha256:[a-f0-9]{64}$/u.test(options.correlationReceiptId)
+    ) {
+      throw new Error('Workflow correlation Receipt ID must be a sha256 digest');
+    }
     await this.prepareWritableComposition(options.runId);
     await this.store.commitGuarded(options.runId, async ({ state, workflow, trajectory }) => {
       this.assertWritableComposition(state);
@@ -233,6 +455,9 @@ export class WorkflowRunCoordinator {
           summary: options.summary,
           ...(options.evidenceAttemptId ? { evidenceAttemptId: options.evidenceAttemptId } : {}),
           ...(options.actionReceiptId ? { actionReceiptId: options.actionReceiptId } : {}),
+          ...(options.correlationReceiptId
+            ? { correlationReceiptId: options.correlationReceiptId }
+            : {}),
           ...(evidenceGate ? { evidenceGate } : {}),
         },
       });

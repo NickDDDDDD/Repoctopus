@@ -31,6 +31,7 @@ import {
   type EvidenceFinding,
   type EvidenceReceipt,
 } from './types.js';
+import type { SpecificationValidation } from '../specification/types.js';
 
 export interface EvidenceRunResult {
   attempt: EvidenceAttempt;
@@ -60,6 +61,12 @@ export interface EvidenceAdapters {
   services?: ServiceAdapter;
   browser?: BrowserAdapter;
   visual?: VisualInspectionAdapter;
+  specification?: {
+    validate(
+      changeId: string,
+      options?: { strict?: boolean; signal?: AbortSignal },
+    ): Promise<SpecificationValidation>;
+  };
 }
 
 interface NodeExecution {
@@ -558,6 +565,68 @@ export class EvidenceService {
     return { receipt, decisionRequests: decisions };
   }
 
+  private async specification(
+    node: Extract<PlannedEvidenceNode, { type: 'specification' }>,
+    attemptId: string,
+    inputFingerprint: string,
+    options: EvidenceRunOptions,
+  ): Promise<NodeExecution> {
+    const startedAt = this.clock.now().toISOString();
+    await this.journal?.recordIntent(attemptId, node.id, startedAt);
+    if (!this.adapters.specification) {
+      const receipt = this.receipt(
+        {
+          attemptId,
+          nodeId: node.id,
+          adapter: 'specification',
+          trust: 'verified',
+          freshness: 'fresh',
+          status: 'incomplete',
+          inputFingerprint,
+          startedAt,
+          completedAt: this.clock.now().toISOString(),
+          artifacts: [],
+          findings: [
+            {
+              code: 'specification-provider-missing',
+              severity: 'error',
+              summary: 'Specification Provider is not active',
+            },
+          ],
+        },
+        options.compositionDigest,
+      );
+      await this.persist(receipt, options);
+      return { receipt };
+    }
+    const validation = await this.adapters.specification.validate(node.changeId, {
+      strict: node.strict,
+      ...(options.signal ? { signal: options.signal } : {}),
+    });
+    const receipt = this.receipt(
+      {
+        attemptId,
+        nodeId: node.id,
+        adapter: `specification:${validation.provider.id}@${validation.provider.version}`,
+        trust: 'verified',
+        freshness: 'fresh',
+        status: validation.valid ? 'passed' : 'failed',
+        inputFingerprint,
+        startedAt,
+        completedAt: this.clock.now().toISOString(),
+        artifacts: [],
+        findings: validation.diagnostics.map((diagnostic) => ({
+          code: diagnostic.code,
+          severity: diagnostic.severity,
+          summary: diagnostic.message,
+        })),
+      },
+      options.compositionDigest,
+    );
+    await this.persist(receipt, options);
+    return { receipt };
+  }
+
   private execute(
     node: PlannedEvidenceNode,
     plan: EvidenceExecutionPlan,
@@ -569,7 +638,10 @@ export class EvidenceService {
     if (node.type === 'command') return this.command(node, attemptId, inputFingerprint, options);
     if (node.type === 'service') return this.service(node, attemptId, inputFingerprint, options);
     if (node.type === 'browser') return this.browser(node, attemptId, inputFingerprint, options);
-    return this.visual(node, plan, receipts, attemptId, inputFingerprint, options);
+    if (node.type === 'visual') {
+      return this.visual(node, plan, receipts, attemptId, inputFingerprint, options);
+    }
+    return this.specification(node, attemptId, inputFingerprint, options);
   }
 
   async run(

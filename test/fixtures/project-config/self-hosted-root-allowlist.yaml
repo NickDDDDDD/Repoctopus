@@ -1,0 +1,39 @@
+apiVersion: repoctopus/v1alpha1
+kind: RepoctopusWorkspace
+workspace:
+  id: unsafe-root-fixture
+  repositoryId: workspace
+repositories:
+  - id: workspace
+    path: .
+profiles:
+  - id: post-merge
+    nodes:
+      - id: verify
+        type: command
+        repository: workspace
+        executable: npm
+        args: [run, verify]
+postMerge:
+  runnerIdentity: primary-runner
+  temporaryRoot: .repoctopus/post-merge-checkouts
+  evidenceProfile: post-merge
+  allowedWorkspacePaths:
+    specificationClosure: true
+    verificationPathPrefixes:
+      - ./
+  publication:
+    operations: [commit, push, merge_request.update]
+    remote: origin
+    commit:
+      message: 'chore(spec): close verified change'
+      authorNameCredential:
+        provider: environment
+        variable: REPOCTOPUS_GIT_AUTHOR_NAME
+      authorEmailCredential:
+        provider: environment
+        variable: REPOCTOPUS_GIT_AUTHOR_EMAIL
+    changeMergeRequest:
+      mode: update-existing
+      title: 'Close verified specification'
+      body: 'Post-merge verification and specification closure completed.'

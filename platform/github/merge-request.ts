@@ -12,10 +12,13 @@ import type {
 interface GitHubPull {
   number: number;
   html_url: string;
+  title: string;
+  body: string | null;
   state: 'open' | 'closed';
   merged_at: string | null;
   merge_commit_sha: string | null;
-  head: { sha: string };
+  head: { sha: string; ref: string };
+  base: { ref: string };
 }
 
 export class PlatformRequestError extends Error {
@@ -146,6 +149,11 @@ export class GitHubMergeRequestAdapter implements MergeRequestPort {
     return {
       ...current,
       state: pull.merged_at ? 'merged' : pull.state,
+      sourceBranch: pull.head.ref,
+      targetBranch: pull.base.ref,
+      headCommit: pull.head.sha,
+      title: pull.title,
+      body: pull.body ?? '',
       ci,
       review,
       conversationsResolved: null,

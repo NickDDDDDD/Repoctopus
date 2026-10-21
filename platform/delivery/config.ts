@@ -22,7 +22,7 @@ export function parseDeliveryPolicy(source: string): DeliveryPolicy {
     value &&
     typeof value === 'object' &&
     !Array.isArray(value) &&
-    (value as { kind?: unknown }).kind === 'RepoctopusProject'
+    (value as { kind?: unknown }).kind === 'RepoctopusWorkspace'
   ) {
     const delivery = parseSharedProjectConfig(value).delivery;
     if (!delivery) throw new Error('Project configuration does not define delivery policy');

@@ -4,7 +4,7 @@
 
 - [x] 1.1 建立 Node.js、TypeScript、Vitest、ESLint 和 esbuild 的最小维护环境，使用 npm 锁定依赖；运行 `npm install`、`npm run build` 和一个 smoke test，确认构建产物能由受支持的纯 Node.js 环境执行。
 - [x] 1.2 在 `third_party/comet/` 保存 MIT 许可证、固定 commit、机器可检查的来源清单和采用报告；运行 `npm run check:provenance`，确认每个复制文件都有原路径、目标路径、摘要和采用方式。
-- [x] 1.3 为 Comet Engine 与 Workflow Contract 候选模块生成依赖闭包，先运行适用的上游测试，再完成最小编译 spike；若闭包跨入无需求模块，按 Stop Conditions 暂停对应采用并记录到 `implementation-notes.md`。
+- [x] 1.3 为 Comet Engine 与 Workflow Contract 候选模块生成依赖闭包，先运行适用的上游测试，再完成最小编译 spike；若闭包跨入无需求模块，按 Stop Conditions 暂停对应采用，并把设计影响写入 `design.md`、验证事实写入正式验证报告。
 
 ## 2. Engine、工作流契约与 Runtime
 
@@ -42,7 +42,7 @@
 ## 7. 文档与最终验证
 
 - [x] 7.1 编写 Runtime 架构、状态模型、恢复语义、遥测字段和本地开发说明；从干净检出按文档执行一次 tracer E2E。
-- [x] 7.2 更新 `implementation-notes.md`，记录每个采用模块、偏差、未采用原因、验证证据和是否影响规格；确认所有外部行为偏差都已获得用户决定。
+- [x] 7.2 更新 `design.md` 与正式验证报告，分别记录采用边界和设计偏差，以及验证证据与未采用原因；确认所有外部行为偏差都已获得用户决定。
 - [x] 7.3 运行 `npm test`、`npm run lint`、`npm run build`、`npm run check:generated`、`npm run check:provenance`、`npm run test:package-e2e`、`npm run test:tracer-e2e`、`npm run spec:validate` 和 `git diff --check`。
 - [x] 7.4 生成正式验证报告，列出需求映射、测试结果、未执行项、上游采用范围、许可证、遥测脱敏结果、已知限制和回退方式；只有用户批准报告后才允许 commit、push 或创建 MR。
 

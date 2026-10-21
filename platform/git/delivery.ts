@@ -1,3 +1,11 @@
+import { createHash } from 'node:crypto';
+import { realpath } from 'node:fs/promises';
+
+import type {
+  PostMergeDeliveryGitPort,
+  PostMergeGitPublicationInput,
+  PostMergeGitPublicationResult,
+} from '../../domains/delivery/post-merge.js';
 import type {
   CheckpointResult,
   DeliveryPolicy,
@@ -7,6 +15,7 @@ import type {
 } from '../../domains/delivery/types.js';
 import type { RepositorySnapshot } from '../../domains/project/types.js';
 import { execute } from '../process/execute.js';
+import { normalizeRemoteIdentity } from './remote-identity.js';
 
 function globPattern(pattern: string): RegExp {
   const escaped = pattern
@@ -24,13 +33,157 @@ async function git(cwd: string, args: string[]): Promise<string> {
   return (await execute('git', args, { cwd })).stdout.trim();
 }
 
+async function gitRaw(cwd: string, args: string[]): Promise<string> {
+  return (await execute('git', args, { cwd })).stdout;
+}
+
+function contentDigest(value: string): `sha256:${string}` {
+  return `sha256:${createHash('sha256').update(value).digest('hex')}`;
+}
+
+function parsedChangedPaths(output: string): string[] {
+  const tokens = output.split('\0').filter(Boolean);
+  const paths: string[] = [];
+  for (let index = 0; index < tokens.length; ) {
+    const status = tokens[index++]!;
+    if (status.startsWith('R') || status.startsWith('C')) {
+      const previous = tokens[index++];
+      const current = tokens[index++];
+      if (!previous || !current) throw new Error('Git returned an incomplete rename record');
+      paths.push(previous, current);
+      continue;
+    }
+    const file = tokens[index++];
+    if (!file) throw new Error('Git returned an incomplete path change record');
+    if (!['A', 'M', 'D', 'T'].includes(status[0]!)) {
+      throw new Error(`Git returned an unsupported post-merge path status: ${status}`);
+    }
+    paths.push(file);
+  }
+  return [...new Set(paths)].sort();
+}
+
+function equalPaths(left: readonly string[], right: readonly string[]): boolean {
+  return (
+    left.length === right.length &&
+    [...left].sort().every((value, index) => value === [...right].sort()[index])
+  );
+}
+
+async function treeContains(cwd: string, treeish: string, file: string): Promise<boolean> {
+  if (treeish === ':') return (await git(cwd, ['ls-files', '--stage', '--', file])).length > 0;
+  return (await git(cwd, ['ls-tree', treeish, '--', file])).length > 0;
+}
+
+async function assertPublicationContent(
+  cwd: string,
+  input: PostMergeGitPublicationInput,
+  treeish: ':' | 'HEAD',
+): Promise<void> {
+  for (const file of input.audit.changedFiles) {
+    const source = (await treeContains(cwd, treeish, file))
+      ? treeish === ':'
+        ? `:${file}`
+        : `HEAD:${file}`
+      : `${input.baseline.head}:${file}`;
+    const actual = contentDigest(await gitRaw(cwd, ['show', source]));
+    if (actual !== input.audit.contentDigests[file]) {
+      throw new Error(`Post-merge content drifted after path audit: ${file}`);
+    }
+  }
+}
+
+async function assertPublicationDiff(
+  cwd: string,
+  input: PostMergeGitPublicationInput,
+  mode: 'cached' | 'committed',
+): Promise<void> {
+  const args =
+    mode === 'cached'
+      ? ['diff', '--cached', '--name-status', '-z', '--find-renames', input.baseline.head, '--']
+      : ['diff', '--name-status', '-z', '--find-renames', input.baseline.head, 'HEAD', '--'];
+  const actual = parsedChangedPaths(await gitRaw(cwd, args));
+  if (!equalPaths(actual, input.audit.changedFiles)) {
+    throw new Error('Post-merge staged paths do not match the audited closure paths');
+  }
+  await assertPublicationContent(cwd, input, mode === 'cached' ? ':' : 'HEAD');
+}
+
+async function assertClean(cwd: string): Promise<void> {
+  const status = await gitRaw(cwd, ['status', '--porcelain=v2', '-z', '--untracked-files=all']);
+  if (status.length > 0) throw new Error('Post-merge workspace drifted during publication');
+}
+
 async function remoteOid(cwd: string, remote: string, branch: string): Promise<string | null> {
   const output = await git(cwd, ['ls-remote', '--heads', remote, `refs/heads/${branch}`]);
   const [oid] = output.split(/\s+/);
   return oid || null;
 }
 
-export class GitDeliveryAdapter {
+async function adoptEquivalentPostMergeCommit(
+  cwd: string,
+  input: PostMergeGitPublicationInput,
+  remoteCommit: string,
+  expectedTree: string,
+  localHead: string,
+): Promise<boolean> {
+  await git(cwd, [
+    'fetch',
+    '--no-tags',
+    input.policy.remote,
+    `refs/heads/${input.changeMergeRequest.sourceBranch}`,
+  ]);
+  const fetched = await git(cwd, ['rev-parse', 'FETCH_HEAD']);
+  if (fetched !== remoteCommit) {
+    throw new Error('Post-merge Change MR remote source drifted during recovery');
+  }
+  const parents = (await git(cwd, ['rev-list', '--parents', '-n', '1', fetched])).split(/\s+/u);
+  const [tree, message, authorName, authorEmail] = await Promise.all([
+    git(cwd, ['rev-parse', `${fetched}^{tree}`]),
+    git(cwd, ['show', '-s', '--format=%B', fetched]),
+    git(cwd, ['show', '-s', '--format=%an', fetched]),
+    git(cwd, ['show', '-s', '--format=%ae', fetched]),
+  ]);
+  if (
+    parents.length !== 2 ||
+    parents[1] !== input.baseline.head ||
+    tree !== expectedTree ||
+    message !== input.policy.commit.message.trim() ||
+    authorName !== input.policy.commit.authorName.trim() ||
+    authorEmail !== input.policy.commit.authorEmail.trim()
+  ) {
+    return false;
+  }
+  await git(cwd, ['update-ref', 'HEAD', fetched, localHead]);
+  await assertClean(cwd);
+  return true;
+}
+
+async function publishCheckpoint(
+  cwd: string,
+  remote: string,
+  branch: string,
+  expectedHead: string,
+): Promise<CheckpointResult['publication']> {
+  await git(cwd, ['push', '--set-upstream', remote, `${branch}:refs/heads/${branch}`]);
+  const published = await remoteOid(cwd, remote, branch);
+  if (published !== expectedHead)
+    throw new Error(`Checkpoint remote verification failed for ${branch}`);
+  const upstream = await git(cwd, [
+    'rev-parse',
+    '--abbrev-ref',
+    '--symbolic-full-name',
+    '@{upstream}',
+  ]);
+  const expectedUpstream = `${remote}/${branch}`;
+  if (upstream !== expectedUpstream)
+    throw new Error(
+      `Checkpoint upstream verification failed for ${branch}: expected ${expectedUpstream}, received ${upstream}`,
+    );
+  return { remote, branch, remoteOid: published, upstream };
+}
+
+export class GitDeliveryAdapter implements PostMergeDeliveryGitPort {
   async checkpoint(
     repository: RepositorySnapshot,
     intent: DeliveryRepositoryIntent,
@@ -62,20 +215,24 @@ export class GitDeliveryAdapter {
       '--porcelain=v1',
       '--untracked-files=all',
     ]);
-    if (!status)
-      return {
-        repositoryId: repository.id,
-        created: false,
-        head: await git(repository.path, ['rev-parse', 'HEAD']),
-        checks: results,
-      };
-    await git(repository.path, ['add', '--all']);
-    await git(repository.path, ['commit', '-m', intent.commitMessage]);
+    const created = status.length > 0;
+    if (created) {
+      await git(repository.path, ['add', '--all']);
+      await git(repository.path, ['commit', '-m', intent.commitMessage]);
+    }
+    const head = await git(repository.path, ['rev-parse', 'HEAD']);
+    const publication = await publishCheckpoint(
+      repository.path,
+      policy.publication.remote,
+      branch,
+      head,
+    );
     return {
       repositoryId: repository.id,
-      created: true,
-      head: await git(repository.path, ['rev-parse', 'HEAD']),
+      created,
+      head,
       checks: results,
+      publication,
     };
   }
 
@@ -162,5 +319,151 @@ export class GitDeliveryAdapter {
     if (published !== facts.head)
       throw new Error(`Remote source verification failed for ${repository.id}`);
     return published;
+  }
+
+  async publishPostMerge(
+    input: PostMergeGitPublicationInput,
+  ): Promise<PostMergeGitPublicationResult> {
+    const cwd = await realpath(input.workspaceRoot);
+    const repositoryRoot = await realpath(await git(cwd, ['rev-parse', '--show-toplevel']));
+    const baselineRoot = await realpath(input.baseline.root);
+    if (
+      cwd.toLowerCase() !== repositoryRoot.toLowerCase() ||
+      cwd.toLowerCase() !== baselineRoot.toLowerCase()
+    ) {
+      throw new Error('Post-merge publication workspace does not match its audited Git root');
+    }
+    await git(cwd, ['check-ref-format', '--branch', input.changeMergeRequest.sourceBranch]);
+    await git(cwd, ['check-ref-format', '--branch', input.changeMergeRequest.targetBranch]);
+    const branch = await git(cwd, ['symbolic-ref', '--quiet', '--short', 'HEAD']);
+    if (branch !== input.changeMergeRequest.sourceBranch) {
+      throw new Error(
+        `Post-merge publication source branch drifted: expected ${input.changeMergeRequest.sourceBranch}, received ${branch}`,
+      );
+    }
+    const configuredRemote = await git(cwd, ['remote', 'get-url', input.policy.remote]);
+    if (normalizeRemoteIdentity(configuredRemote) !== input.changeMergeRequest.remoteIdentity) {
+      throw new Error('Post-merge publication remote does not match the Change MR');
+    }
+
+    const before = await remoteOid(cwd, input.policy.remote, input.changeMergeRequest.sourceBranch);
+    let head = await git(cwd, ['rev-parse', 'HEAD']);
+    let commitRecovered = false;
+    if (head === input.baseline.head) {
+      await git(cwd, ['add', '--all', '--', ...input.audit.changedFiles]);
+      await assertPublicationDiff(cwd, input, 'cached');
+      const unstaged = await gitRaw(cwd, ['diff', '--name-only', '-z', '--']);
+      const untracked = await gitRaw(cwd, ['ls-files', '--others', '--exclude-standard', '-z']);
+      if (unstaged.length > 0 || untracked.length > 0) {
+        throw new Error('Post-merge workspace changed after audited paths were staged');
+      }
+      const stagedTree = await git(cwd, ['write-tree']);
+      if (before !== input.baseline.head) {
+        if (
+          before &&
+          (await adoptEquivalentPostMergeCommit(cwd, input, before, stagedTree, head))
+        ) {
+          return {
+            commitOid: before,
+            remoteOid: before,
+            commitRecovered: true,
+            pushRecovered: true,
+          };
+        }
+        throw new Error('Post-merge Change MR remote source drifted before commit');
+      }
+      await git(cwd, [
+        '-c',
+        `user.name=${input.policy.commit.authorName}`,
+        '-c',
+        `user.email=${input.policy.commit.authorEmail}`,
+        'commit',
+        '-m',
+        input.policy.commit.message,
+      ]);
+      head = await git(cwd, ['rev-parse', 'HEAD']);
+      await assertPublicationDiff(cwd, input, 'committed');
+      await assertClean(cwd);
+    } else {
+      const parents = (await git(cwd, ['rev-list', '--parents', '-n', '1', 'HEAD'])).split(/\s+/u);
+      const [message, authorName, authorEmail] = await Promise.all([
+        git(cwd, ['show', '-s', '--format=%B', 'HEAD']),
+        git(cwd, ['show', '-s', '--format=%an', 'HEAD']),
+        git(cwd, ['show', '-s', '--format=%ae', 'HEAD']),
+      ]);
+      if (
+        parents.length !== 2 ||
+        parents[1] !== input.baseline.head ||
+        message !== input.policy.commit.message.trim() ||
+        authorName !== input.policy.commit.authorName.trim() ||
+        authorEmail !== input.policy.commit.authorEmail.trim()
+      ) {
+        throw new Error('Local HEAD is not the recoverable post-merge closure commit');
+      }
+      await assertPublicationDiff(cwd, input, 'committed');
+      await assertClean(cwd);
+      commitRecovered = true;
+    }
+
+    const remoteBeforePush = await remoteOid(
+      cwd,
+      input.policy.remote,
+      input.changeMergeRequest.sourceBranch,
+    );
+    let pushRecovered = remoteBeforePush === head;
+    if (!pushRecovered) {
+      if (remoteBeforePush !== input.baseline.head) {
+        const expectedTree = await git(cwd, ['rev-parse', 'HEAD^{tree}']);
+        if (
+          remoteBeforePush &&
+          (await adoptEquivalentPostMergeCommit(cwd, input, remoteBeforePush, expectedTree, head))
+        ) {
+          return {
+            commitOid: remoteBeforePush,
+            remoteOid: remoteBeforePush,
+            commitRecovered: true,
+            pushRecovered: true,
+          };
+        }
+        throw new Error('Post-merge Change MR remote source drifted before push');
+      }
+      try {
+        await git(cwd, [
+          'push',
+          input.policy.remote,
+          `${input.changeMergeRequest.sourceBranch}:refs/heads/${input.changeMergeRequest.sourceBranch}`,
+        ]);
+      } catch (error) {
+        const raced = await remoteOid(
+          cwd,
+          input.policy.remote,
+          input.changeMergeRequest.sourceBranch,
+        );
+        const expectedTree = await git(cwd, ['rev-parse', 'HEAD^{tree}']);
+        if (
+          raced &&
+          raced !== input.baseline.head &&
+          (await adoptEquivalentPostMergeCommit(cwd, input, raced, expectedTree, head))
+        ) {
+          return {
+            commitOid: raced,
+            remoteOid: raced,
+            commitRecovered: true,
+            pushRecovered: true,
+          };
+        }
+        throw error;
+      }
+    }
+    const published = await remoteOid(
+      cwd,
+      input.policy.remote,
+      input.changeMergeRequest.sourceBranch,
+    );
+    if (published !== head) {
+      throw new Error('Post-merge Change MR push could not be verified');
+    }
+    pushRecovered ||= before === head;
+    return { commitOid: head, remoteOid: published, commitRecovered, pushRecovered };
   }
 }

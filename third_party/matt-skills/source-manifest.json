@@ -1,0 +1,178 @@
+{
+  "schemaVersion": 1,
+  "upstream": {
+    "repository": "https://github.com/mattpocock/skills",
+    "commit": "49dd158d1076134a641b33efb035946536778336",
+    "license": "MIT"
+  },
+  "files": [
+    {
+      "source": "LICENSE",
+      "sourceSha256": "4981c5f6a90eb3a969dacabb9350f5a75695ff3910b39b6534952908dfdc5ff7",
+      "target": "third_party/matt-skills/LICENSE",
+      "sha256": "4981c5f6a90eb3a969dacabb9350f5a75695ff3910b39b6534952908dfdc5ff7",
+      "adoption": "copied"
+    },
+    {
+      "source": "skills/engineering/code-review/agents/openai.yaml",
+      "sourceSha256": "3f72329747a916ac8ab2b4004490c79e1be6774a8a83e5b258d6ddc7e866abfe",
+      "target": "third_party/matt-skills/skills/engineering/code-review/agents/openai.yaml",
+      "sha256": "3f72329747a916ac8ab2b4004490c79e1be6774a8a83e5b258d6ddc7e866abfe",
+      "adoption": "copied"
+    },
+    {
+      "source": "skills/engineering/code-review/SKILL.md",
+      "sourceSha256": "9e6d1b00c31e10a002ac3e5fb49014c9589166f668c62996e80a36d23ca21e70",
+      "target": "third_party/matt-skills/skills/engineering/code-review/SKILL.md",
+      "sha256": "9e6d1b00c31e10a002ac3e5fb49014c9589166f668c62996e80a36d23ca21e70",
+      "adoption": "copied"
+    },
+    {
+      "source": "skills/engineering/diagnosing-bugs/agents/openai.yaml",
+      "sourceSha256": "167ab1659754b8c53706ecca7502ccc7fb219ff14f0c36bfb1db05ae31a8ac58",
+      "target": "third_party/matt-skills/skills/engineering/diagnosing-bugs/agents/openai.yaml",
+      "sha256": "167ab1659754b8c53706ecca7502ccc7fb219ff14f0c36bfb1db05ae31a8ac58",
+      "adoption": "copied"
+    },
+    {
+      "source": "skills/engineering/diagnosing-bugs/scripts/hitl-loop.template.sh",
+      "sourceSha256": "063ef14e7212113c7778258172e7c76e963926963e448934048f505d6e576e8f",
+      "target": "third_party/matt-skills/skills/engineering/diagnosing-bugs/scripts/hitl-loop.template.sh",
+      "sha256": "063ef14e7212113c7778258172e7c76e963926963e448934048f505d6e576e8f",
+      "adoption": "copied"
+    },
+    {
+      "source": "skills/engineering/diagnosing-bugs/SKILL.md",
+      "sourceSha256": "aa87b0ac245c6d1b203c4678eb34dc101af02291448780c55c5e58ccc1619bd7",
+      "target": "third_party/matt-skills/skills/engineering/diagnosing-bugs/SKILL.md",
+      "sha256": "aa87b0ac245c6d1b203c4678eb34dc101af02291448780c55c5e58ccc1619bd7",
+      "adoption": "copied"
+    },
+    {
+      "source": "skills/engineering/domain-modeling/ADR-FORMAT.md",
+      "sourceSha256": "b7021c31a1c2485b07356a8110fd1fd1ae4facbab3e210983789f425f867d95b",
+      "target": "third_party/matt-skills/skills/engineering/domain-modeling/ADR-FORMAT.md",
+      "sha256": "b7021c31a1c2485b07356a8110fd1fd1ae4facbab3e210983789f425f867d95b",
+      "adoption": "copied"
+    },
+    {
+      "source": "skills/engineering/domain-modeling/agents/openai.yaml",
+      "sourceSha256": "ce496c77c77a090877bff10f198c9770fb52e23088351350ea0826380f948ff8",
+      "target": "third_party/matt-skills/skills/engineering/domain-modeling/agents/openai.yaml",
+      "sha256": "ce496c77c77a090877bff10f198c9770fb52e23088351350ea0826380f948ff8",
+      "adoption": "copied"
+    },
+    {
+      "source": "skills/engineering/domain-modeling/GLOSSARY-FORMAT.md",
+      "sourceSha256": "61fa9f6f9231070461dd4f7d4cfad377c33013c1e5668e1e6c0a8e4500944b3b",
+      "target": "third_party/matt-skills/skills/engineering/domain-modeling/GLOSSARY-FORMAT.md",
+      "sha256": "61fa9f6f9231070461dd4f7d4cfad377c33013c1e5668e1e6c0a8e4500944b3b",
+      "adoption": "copied"
+    },
+    {
+      "source": "skills/engineering/domain-modeling/SKILL.md",
+      "sourceSha256": "b62d997256cc073e123d4303da8e9db00db0e28de9739660ca3e55ab76e09cdb",
+      "target": "third_party/matt-skills/skills/engineering/domain-modeling/SKILL.md",
+      "sha256": "b62d997256cc073e123d4303da8e9db00db0e28de9739660ca3e55ab76e09cdb",
+      "adoption": "copied"
+    },
+    {
+      "source": "skills/engineering/grill-with-docs/agents/openai.yaml",
+      "sourceSha256": "81e6af95559517a292767439da8f46a468b4d88a6773a3316d511a428eb16ff3",
+      "target": "third_party/matt-skills/skills/engineering/grill-with-docs/agents/openai.yaml",
+      "sha256": "81e6af95559517a292767439da8f46a468b4d88a6773a3316d511a428eb16ff3",
+      "adoption": "copied"
+    },
+    {
+      "source": "skills/engineering/grill-with-docs/SKILL.md",
+      "sourceSha256": "abc0fa7948db18b5fb0e1cc1c522ac5ff47d874e2da1e5df60619d79be11f38b",
+      "target": "third_party/matt-skills/skills/engineering/grill-with-docs/SKILL.md",
+      "sha256": "abc0fa7948db18b5fb0e1cc1c522ac5ff47d874e2da1e5df60619d79be11f38b",
+      "adoption": "copied"
+    },
+    {
+      "source": "skills/engineering/tdd/agents/openai.yaml",
+      "sourceSha256": "f8e2afc1fbcd6a6e1178c30f290ca9f2286c949a0b74b8b68fd14f198b78ebac",
+      "target": "third_party/matt-skills/skills/engineering/tdd/agents/openai.yaml",
+      "sha256": "f8e2afc1fbcd6a6e1178c30f290ca9f2286c949a0b74b8b68fd14f198b78ebac",
+      "adoption": "copied"
+    },
+    {
+      "source": "skills/engineering/tdd/mocking.md",
+      "sourceSha256": "73a10b6a26b56197c738a764c1e4205af98c74553f4a713795997f6bc35b917d",
+      "target": "third_party/matt-skills/skills/engineering/tdd/mocking.md",
+      "sha256": "73a10b6a26b56197c738a764c1e4205af98c74553f4a713795997f6bc35b917d",
+      "adoption": "copied"
+    },
+    {
+      "source": "skills/engineering/tdd/SKILL.md",
+      "sourceSha256": "969583080caf842ae86a53501a0091eced13fd89cad65d3aa75c09112318ff33",
+      "target": "third_party/matt-skills/skills/engineering/tdd/SKILL.md",
+      "sha256": "969583080caf842ae86a53501a0091eced13fd89cad65d3aa75c09112318ff33",
+      "adoption": "copied"
+    },
+    {
+      "source": "skills/engineering/tdd/tests.md",
+      "sourceSha256": "0b401f98bd3684d2fea6440d6946afcf8f5f68ac6a65599dd7a2b90dd9f02eb5",
+      "target": "third_party/matt-skills/skills/engineering/tdd/tests.md",
+      "sha256": "0b401f98bd3684d2fea6440d6946afcf8f5f68ac6a65599dd7a2b90dd9f02eb5",
+      "adoption": "copied"
+    },
+    {
+      "source": "skills/productivity/grilling/agents/openai.yaml",
+      "sourceSha256": "ad75163922ff8263acdd25ebc37420e8fcf1fccb93483fd5742e9bd26f5c45f6",
+      "target": "third_party/matt-skills/skills/productivity/grilling/agents/openai.yaml",
+      "sha256": "ad75163922ff8263acdd25ebc37420e8fcf1fccb93483fd5742e9bd26f5c45f6",
+      "adoption": "copied"
+    },
+    {
+      "source": "skills/productivity/grilling/SKILL.md",
+      "sourceSha256": "26d225ea8a36f4acacbe267e789cfb97d73964412f4243dd4b65b6cb806ddebc",
+      "target": "third_party/matt-skills/skills/productivity/grilling/SKILL.md",
+      "sha256": "26d225ea8a36f4acacbe267e789cfb97d73964412f4243dd4b65b6cb806ddebc",
+      "adoption": "copied"
+    },
+    {
+      "source": "skills/productivity/teach/agents/openai.yaml",
+      "sourceSha256": "80e96a4d492ad8538e609672361e8543b69e7b22ce83be0efc2e5532472ede69",
+      "target": "third_party/matt-skills/skills/productivity/teach/agents/openai.yaml",
+      "sha256": "80e96a4d492ad8538e609672361e8543b69e7b22ce83be0efc2e5532472ede69",
+      "adoption": "copied"
+    },
+    {
+      "source": "skills/productivity/teach/GLOSSARY-FORMAT.md",
+      "sourceSha256": "22f851b265a3bec5a333937cc7ff1250136c9b6512787ae2eb51a2a14e35c341",
+      "target": "third_party/matt-skills/skills/productivity/teach/GLOSSARY-FORMAT.md",
+      "sha256": "22f851b265a3bec5a333937cc7ff1250136c9b6512787ae2eb51a2a14e35c341",
+      "adoption": "copied"
+    },
+    {
+      "source": "skills/productivity/teach/LEARNING-RECORD-FORMAT.md",
+      "sourceSha256": "d49c754ea416a075534d0ba1428a0beba1327ae527c2d1af0333908d08e25d05",
+      "target": "third_party/matt-skills/skills/productivity/teach/LEARNING-RECORD-FORMAT.md",
+      "sha256": "d49c754ea416a075534d0ba1428a0beba1327ae527c2d1af0333908d08e25d05",
+      "adoption": "copied"
+    },
+    {
+      "source": "skills/productivity/teach/MISSION-FORMAT.md",
+      "sourceSha256": "44ea82d5f57a626086bde99c70cd229cdef67998e8502c1cbcd50504f57f989a",
+      "target": "third_party/matt-skills/skills/productivity/teach/MISSION-FORMAT.md",
+      "sha256": "44ea82d5f57a626086bde99c70cd229cdef67998e8502c1cbcd50504f57f989a",
+      "adoption": "copied"
+    },
+    {
+      "source": "skills/productivity/teach/RESOURCES-FORMAT.md",
+      "sourceSha256": "377e70f83d41fdc2623037410600194655a2f7df41000925c24cc437da074ab5",
+      "target": "third_party/matt-skills/skills/productivity/teach/RESOURCES-FORMAT.md",
+      "sha256": "377e70f83d41fdc2623037410600194655a2f7df41000925c24cc437da074ab5",
+      "adoption": "copied"
+    },
+    {
+      "source": "skills/productivity/teach/SKILL.md",
+      "sourceSha256": "d9480a846c88bb1151947eb484bab1a8c9a84af4d9ddf1ea0f6fb7fe639cf9b3",
+      "target": "third_party/matt-skills/skills/productivity/teach/SKILL.md",
+      "sha256": "d9480a846c88bb1151947eb484bab1a8c9a84af4d9ddf1ea0f6fb7fe639cf9b3",
+      "adoption": "copied"
+    }
+  ]
+}

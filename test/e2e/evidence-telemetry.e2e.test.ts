@@ -1,10 +1,11 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { writeFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import type { SharedProjectConfig } from '../../domains/project-configuration/types.js';
 import {
+  commitGitRepository,
   createGitRepository,
   removeTemporaryDirectory,
   temporaryDirectory,
@@ -33,13 +34,15 @@ describe('Evidence OTLP export', () => {
     const root = await temporaryDirectory('repoctopus-evidence-otlp-');
     cleanup.push(root);
     await createGitRepository(root, 'app');
-    const workspace = path.join(root, 'workspace');
-    await mkdir(workspace);
+    const workspace = await createGitRepository(root, 'workspace');
     const config: SharedProjectConfig = {
       apiVersion: 'repoctopus/v1alpha1',
-      kind: 'RepoctopusProject',
-      project: { id: 'otlp-evidence' },
-      repositories: [{ id: 'app', path: '../app' }],
+      kind: 'RepoctopusWorkspace',
+      workspace: { id: 'otlp-evidence', repositoryId: 'workspace' },
+      repositories: [
+        { id: 'workspace', path: '.' },
+        { id: 'app', path: '../app' },
+      ],
       profiles: [
         {
           id: 'verify',
@@ -86,6 +89,8 @@ guardrails:
   maxRetriesPerAction: 1
 `,
     );
+    await writeFile(path.join(workspace, '.gitignore'), '.repoctopus/\n');
+    await commitGitRepository(workspace, 'chore: configure evidence workspace');
 
     try {
       await runCli({
@@ -96,8 +101,6 @@ guardrails:
           'start',
           '--workspace',
           workspace,
-          '--project-root',
-          root,
           '--workflow',
           workflowFile,
           '--run',

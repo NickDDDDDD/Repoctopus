@@ -5,7 +5,27 @@
     {
       "id": "plugin-composition",
       "disposition": "repoctopus-native",
-      "targets": ["app/boot/**", "domains/composition/**", "plugins/**", "services/**"],
+      "targets": [
+        "app/boot/**",
+        "app/runner/**",
+        "domains/composition/**",
+        "plugins/builtin-catalog.ts",
+        "plugins/action/**",
+        "plugins/application/**",
+        "plugins/delivery/**",
+        "plugins/evidence/**",
+        "plugins/http/**",
+        "plugins/project/**",
+        "plugins/run/**",
+        "plugins/command/delivery-contributor.ts",
+        "plugins/command/evidence-contributor.ts",
+        "plugins/command/maintenance-contributor.ts",
+        "plugins/command/project-onboarding-contributor.ts",
+        "plugins/command/project-probe-contributor.ts",
+        "plugins/command/workflow-run-contributor.ts",
+        "services/**",
+        "platform/http/**"
+      ],
       "upstream": ["third_party/cordis", "third_party/cordis-plugin-loader"],
       "rationale": "App Boot 把 Repoctopus 领域配置编译为唯一 Cordis 插件树，并把生命周期交给 Cordis。"
     },
@@ -95,7 +115,7 @@
     {
       "id": "project-model",
       "disposition": "repoctopus-native",
-      "targets": ["domains/project/**", "platform/git/probe.ts"],
+      "targets": ["domains/project/**", "platform/git/probe.ts", "platform/git/remote-identity.ts"],
       "upstream": ["platform/project-registry.ts"],
       "rationale": "Repoctopus 以同级多仓为项目边界，项目发现快照只提供启发式候选与恢复核对。"
     },
@@ -105,6 +125,48 @@
       "targets": ["domains/project-configuration/**", "platform/project-configuration/**"],
       "upstream": [],
       "rationale": "确定性扫描、Agent 补全和用户确认是 Repoctopus 的多仓接入能力。"
+    },
+    {
+      "id": "skill-integration",
+      "disposition": "source-modified",
+      "targets": [
+        "domains/skill/**",
+        "plugins/skill/**",
+        "plugins/command/skill-catalog-contributor.ts",
+        "platform/skill/**"
+      ],
+      "upstream": [
+        "@deepseek-ai/dsh-skill@0.2.1-rc.2",
+        "packages/skill/skill-filesystem/src/index.ts",
+        "third_party/matt-skills"
+      ],
+      "rationale": "直接采用 DSH 的 ctx.skills Registry；文件 Provider 仅移除 DSH 文件沙箱和 Home 约定，Matt Skills 作为固定且可替换的内置 Provider。"
+    },
+    {
+      "id": "specification-authority",
+      "disposition": "repoctopus-native",
+      "targets": [
+        "domains/specification/**",
+        "platform/specification/**",
+        "plugins/command/specification-contributor.ts"
+      ],
+      "upstream": ["@fission-ai/openspec@1.14.3"],
+      "rationale": "Specification 是唯一 Cordis 权威 Service；OpenSpec Provider 通过受控进程端口映射官方产物生命周期，Workflow 只消费稳定领域契约。"
+    },
+    {
+      "id": "platform-event-processing",
+      "disposition": "source-modified",
+      "targets": [
+        "domains/platform-events/**",
+        "platform/events/**",
+        "plugins/events/**",
+        "plugins/command/platform-event-contributor.ts"
+      ],
+      "upstream": [
+        "packages/experimental/webhook-github/src/handler.ts",
+        "packages/experimental/webhook-github/src/body.ts"
+      ],
+      "rationale": "采用 DSH GitHub Adapter 的先验签后解析、唯一 Header、Content-Type 与体积边界；用 Repoctopus 持久 Inbox 租约和 Receipt 替代 fire-and-forget Session dispatch。"
     },
     {
       "id": "delivery-governance",
@@ -117,6 +179,19 @@
       ],
       "upstream": ["domains/comet-native/native-pull-request-finish.ts"],
       "rationale": "交付聚合只负责多仓快照、Human Decision、push/MR 恢复和合入事实，不继承旧工作流 Hook 与阶段状态机。"
+    },
+    {
+      "id": "post-merge-automation",
+      "disposition": "repoctopus-native",
+      "targets": [
+        "domains/post-merge/**",
+        "platform/git/post-merge-checkout.ts",
+        "platform/git/post-merge-workspace.ts",
+        "plugins/command/post-merge-contributor.ts",
+        "plugins/post-merge/**"
+      ],
+      "upstream": [],
+      "rationale": "合入事件只唤醒协调；领域判定基于 Delivery 的平台权威刷新结果生成稳定合入事实身份，平台检出只使用固化的精确 merge commit；协调 workspace 的 Git 差异由独立端口读取，领域 Guardrail 再与规格关闭计划和结果交叉核对。"
     },
     {
       "id": "evidence-model",
@@ -230,9 +305,22 @@
       "status": "shared-coordinator"
     },
     {
+      "id": "event-inbox-transition",
+      "files": [
+        "platform/events/file-event-inbox-store.ts",
+        "platform/runtime/recoverable-file-transition.ts"
+      ],
+      "status": "shared-coordinator"
+    },
+    {
       "id": "evidence-fact-journal",
       "files": ["domains/evidence/ports.ts", "platform/evidence/file-evidence-journal.ts"],
       "status": "separate-append-only-facts"
+    },
+    {
+      "id": "post-merge-closure-journal",
+      "files": ["services/post-merge-actions.ts"],
+      "status": "recoverable-action-journal"
     }
   ],
   "compositionGuards": [
@@ -251,6 +339,59 @@
     {
       "pattern": "new\\s+DeliveryDomainService\\s*\\(",
       "allowed": ["plugins/delivery/file-delivery-provider.ts"]
+    }
+  ],
+  "sourceBoundaries": [
+    {
+      "id": "single-skill-container",
+      "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
+      "pattern": "(?:plugin\\s*:\\s*SkillRegistry\\b|new\\s+SkillRegistry\\s*\\(|\\.plugin\\s*\\(\\s*SkillRegistry\\b)",
+      "allowed": ["plugins/builtin-catalog.ts"],
+      "exactMatches": 1,
+      "message": "Skill providers must contribute through the single registered SkillRegistry container"
+    },
+    {
+      "id": "single-specification-container",
+      "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
+      "pattern": "super\\s*\\(\\s*context\\s*,\\s*['\"]specification['\"]\\s*\\)",
+      "allowed": ["services/specification.ts"],
+      "exactMatches": 1,
+      "message": "Specification providers must extend the single Specification service container"
+    },
+    {
+      "id": "platform-adapter-run-write",
+      "targets": ["platform/**"],
+      "pattern": "\\b(?:ctx|context)\\.(?:workflowRuns|runStore)\\b|from\\s+['\"][^'\"]*services/(?:workflow-runs|run-store)\\.js['\"]",
+      "allowed": [],
+      "message": "Platform adapters must emit verified facts instead of calling WorkflowRuns or RunStore"
+    },
+    {
+      "id": "coordinator-domain-store-write",
+      "targets": ["services/post-merge-coordinator.ts"],
+      "pattern": "\\b(?:ctx|context)\\.(?:runStore|evidenceCoordinator)\\b|\\b(?:new\\s+)?(?:File)?(?:Runtime|Evidence|Delivery|EventInbox)Store\\b|from\\s+['\"][^'\"]*(?:platform|domains)/[^'\"]*store[^'\"]*['\"]|\\b(?:writeFile|appendFile|rename|rm)\\s*\\(",
+      "allowed": [],
+      "message": "PostMergeCoordinator must coordinate through services and must not write domain stores or files"
+    },
+    {
+      "id": "specification-provider-closure",
+      "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
+      "pattern": "\\b(?:execute|spawn|json)\\s*(?:<[^>]+>)?\\s*\\([^)]*\\[\\s*['\"]archive['\"]",
+      "allowed": ["platform/specification/openspec-provider.ts"],
+      "message": "Specification closure commands may only be executed by a Specification Provider"
+    },
+    {
+      "id": "protected-git-publication",
+      "targets": ["platform/**"],
+      "pattern": "(?:\\bgit\\s*\\([^,]+,\\s*|\\bexecute\\s*\\(\\s*['\"]git['\"]\\s*,\\s*)\\[[^\\]]{0,700}['\"](?:commit|push)['\"]",
+      "allowed": ["platform/git/delivery.ts"],
+      "message": "Git commit and push may only be executed by the protected Delivery Action adapter"
+    },
+    {
+      "id": "protected-merge-request-publication",
+      "targets": ["platform/**"],
+      "pattern": "method\\s*:\\s*['\"](?:POST|PATCH)['\"]",
+      "allowed": ["platform/github/merge-request.ts"],
+      "message": "Merge request creation and updates may only be executed by a protected Delivery Action adapter"
     }
   ],
   "protectedEvidenceFlow": {

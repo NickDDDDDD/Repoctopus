@@ -1,4 +1,4 @@
-import { writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -7,6 +7,7 @@ import {
   collectRepositoryFingerprint,
   RepositoryFingerprintChangedError,
 } from '../platform/git/evidence-fingerprint.js';
+import { ensureRepoctopusGitignore } from '../platform/project-configuration/gitignore.js';
 import {
   createGitRepository,
   removeTemporaryDirectory,
@@ -89,5 +90,28 @@ describe('evidence fingerprint', () => {
         },
       }),
     ).rejects.toBeInstanceOf(RepositoryFingerprintChangedError);
+  });
+
+  it('excludes personal learning state from the Git-backed Evidence selection', async () => {
+    const root = await temporaryDirectory('repoctopus-fingerprint-learning-');
+    cleanup.push(root);
+    const repository = await createGitRepository(root, 'service');
+    await ensureRepoctopusGitignore(repository);
+    const learning = path.join(repository, '.repoctopus', 'learning', 'runtime-design');
+    await mkdir(learning, { recursive: true });
+    await writeFile(path.join(learning, 'notes.md'), 'private learning notes');
+    await writeFile(path.join(repository, 'review-me.txt'), 'selected by Evidence');
+
+    const fingerprint = await collectRepositoryFingerprint({
+      repositoryId: 'service',
+      root: repository,
+    });
+
+    expect(fingerprint.dirtyFiles.map((file) => file.path)).toEqual([
+      '.gitignore',
+      'review-me.txt',
+    ]);
+    expect(JSON.stringify(fingerprint)).not.toContain('private learning notes');
+    expect(JSON.stringify(fingerprint)).not.toContain('.repoctopus/learning');
   });
 });

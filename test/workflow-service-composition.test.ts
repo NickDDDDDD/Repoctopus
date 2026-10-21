@@ -25,9 +25,12 @@ describe('WorkflowRuns Cordis composition', () => {
       path.join(workspace, 'repoctopus.yaml'),
       JSON.stringify({
         apiVersion: 'repoctopus/v1alpha1',
-        kind: 'RepoctopusProject',
-        project: { id: 'workflow-service' },
-        repositories: [{ id: 'front', path: '../front' }],
+        kind: 'RepoctopusWorkspace',
+        workspace: { id: 'workflow-service', repositoryId: 'workspace' },
+        repositories: [
+          { id: 'workspace', path: '.' },
+          { id: 'front', path: '../front' },
+        ],
         profiles: [
           {
             id: 'verify',
@@ -51,9 +54,22 @@ describe('WorkflowRuns Cordis composition', () => {
 
     try {
       const projectSnapshot = await app.context.commandRouter.execute<
-        { root: string; workspaceRoot: string },
+        {
+          workspaceId: string;
+          workspaceRoot: string;
+          workspaceRepositoryId: string;
+          repositories: Array<{ id: string; path: string }>;
+        },
         ProjectSnapshot
-      >('project.probe', { root: projectRoot, workspaceRoot: workspace });
+      >('workspace.snapshot', {
+        workspaceId: 'workflow-service',
+        workspaceRoot: workspace,
+        workspaceRepositoryId: 'workspace',
+        repositories: [
+          { id: 'workspace', path: workspace },
+          { id: 'front', path: path.join(projectRoot, 'front') },
+        ],
+      });
       const started = await app.context.commandRouter.execute<
         {
           workflow: typeof workflow;

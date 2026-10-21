@@ -7,7 +7,7 @@ const plugin = ((context: Context) => {
       context.commandRouter.register({
         name: 'project.detect',
         execute: ({ input }) =>
-          context.projectOnboarding.detect(input as { workspace: string; scopeRoot: string }),
+          context.projectOnboarding.detect(input as { workspace: string; scanRoot: string }),
       }),
       context.commandRouter.register({
         name: 'project.prepare',

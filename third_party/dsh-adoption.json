@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "upstream": {
+    "repository": "https://github.com/deepseek-ai/deepseek-harness",
+    "commit": "687f282e8625c6b8d11ff58211a90524be2e4317",
+    "tag": "dsh-v0.2.1-rc.2",
+    "license": "MIT"
+  },
+  "npmPackages": [
+    { "name": "@deepseek-ai/dsh-brand", "version": "0.2.1-rc.2" },
+    { "name": "@deepseek-ai/dsh-llm", "version": "0.2.1-rc.2" },
+    { "name": "@deepseek-ai/dsh-scope", "version": "0.2.1-rc.2" },
+    { "name": "@deepseek-ai/dsh-skill", "version": "0.2.1-rc.2" },
+    { "name": "@deepseek-ai/dsh-timeout", "version": "0.2.1-rc.2" },
+    { "name": "@deepseek-ai/dsh-typert-protocol", "version": "0.2.1-rc.2" },
+    { "name": "@deepseek-ai/dsh-util-crypto", "version": "0.2.1-rc.2" },
+    { "name": "@deepseek-ai/dsh-util-values", "version": "0.2.1-rc.2" }
+  ],
+  "components": [
+    {
+      "id": "skill-registry",
+      "source": "packages/skill/skill/src/index.ts",
+      "disposition": "direct-package",
+      "package": "@deepseek-ai/dsh-skill@0.2.1-rc.2"
+    },
+    {
+      "id": "skill-filesystem",
+      "source": "packages/skill/skill-filesystem/src/index.ts",
+      "sourceSha256": "4be3a8f4142b27e07093cff1757876a80a344dd6f664a38775069244b89f4ec4",
+      "disposition": "source-modified",
+      "target": "plugins/skill/file-skill-provider.ts",
+      "targetSha256": "0973217b3124dc013b280062d4ff8216b898ee5b16ad99d81cf6f1a45743f871"
+    },
+    {
+      "id": "github-webhook-handler",
+      "source": "packages/experimental/webhook-github/src/handler.ts",
+      "disposition": "source-modified",
+      "sourceSha256": "84e3c1f8d185198e87fb4f621889496771071236ac6613695189e8a4f8312c47",
+      "target": "platform/events/github-webhook.ts",
+      "targetSha256": "7f8a361e8ac19daf6c2ca06dc18be6069f9f06018698d184180caf193ae5db8e"
+    },
+    {
+      "id": "webhook-runtime",
+      "source": "packages/experimental/webhook/src/index.ts",
+      "disposition": "excluded",
+      "reason": "Its fire-and-forget Agent Session action model does not provide the durable inbox, lease, receipt, retry, or cross-process recovery required by Repoctopus."
+    },
+    {
+      "id": "agent-session-workspace",
+      "source": "packages/core/agent, packages/core/agent-loop, packages/session, packages/workspace",
+      "disposition": "excluded",
+      "reason": "Repoctopus integrates external IDE agents and keeps Cordis as its only application runtime; these packages do not add required Skill Registry behavior."
+    }
+  ],
+  "forbiddenRuntimePackages": [
+    "@deepseek-ai/dsh-agent",
+    "@deepseek-ai/dsh-session",
+    "@deepseek-ai/dsh-workspace",
+    "@deepseek-ai/dsh-webhook"
+  ]
+}

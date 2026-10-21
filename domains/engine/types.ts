@@ -1,7 +1,16 @@
 import type { WorkflowAction } from '../workflow-contract/types.js';
 import type { CompositionIdentitySnapshot } from '../composition/types.js';
+import type { SkillUsageSnapshot } from '../skill/types.js';
+import type { SpecificationUsageSnapshot } from '../specification/types.js';
 
 export type RunStatus = 'running' | 'waiting' | 'completed' | 'failed';
+
+export interface RunTriggerSnapshot {
+  schemaVersion: 1;
+  kind: string;
+  identityDigest: `sha256:${string}`;
+  facts: Record<string, unknown>;
+}
 
 export interface RunState {
   schemaVersion: 1;
@@ -12,6 +21,7 @@ export interface RunState {
   workflowSource: string | null;
   composition: CompositionIdentitySnapshot;
   projectSnapshotDigest: string;
+  trigger?: RunTriggerSnapshot;
   traceId: string;
   currentStep: string | null;
   iteration: number;
@@ -21,6 +31,8 @@ export interface RunState {
   status: RunStatus;
   retries: Record<string, number>;
   acceptedEvidenceBundleIds: string[];
+  skillUsageSnapshots?: SkillUsageSnapshot[];
+  specificationUsageSnapshot?: SpecificationUsageSnapshot;
   createdAt: string;
   updatedAt: string;
 }

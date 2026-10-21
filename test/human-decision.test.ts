@@ -16,6 +16,19 @@ const request: HumanDecisionRequest = {
   reportDigest: `sha256:${'b'.repeat(64)}`,
   evidenceBundleIds: ['bundle-verified'],
   repositories: [],
+  changeMergeRequest: {
+    role: 'change',
+    repositoryId: 'workspace-repository',
+    remoteIdentity: 'github.com/team/workspace-repository',
+    sourceBranch: 'feat/delivery-change',
+    targetBranch: 'main',
+    mergeRequest: {
+      provider: 'github',
+      repositoryId: 'workspace-repository',
+      number: 1,
+      url: 'https://github.com/team/workspace-repository/pull/1',
+    },
+  },
   actions: [],
   options: ['approve', 'request_changes', 'reject'],
 };

@@ -11,7 +11,9 @@
     "changeId",
     "snapshotDigest",
     "reportDigest",
+    "evidenceBundleIds",
     "repositories",
+    "changeMergeRequest",
     "actions",
     "options"
   ],
@@ -23,7 +25,43 @@
     "changeId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{2,127}$" },
     "snapshotDigest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
     "reportDigest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "evidenceBundleIds": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
     "repositories": { "type": "array" },
+    "changeMergeRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "repositoryId",
+        "remoteIdentity",
+        "sourceBranch",
+        "targetBranch",
+        "mergeRequest"
+      ],
+      "properties": {
+        "role": { "const": "change" },
+        "repositoryId": { "type": "string", "minLength": 1 },
+        "remoteIdentity": { "type": "string", "minLength": 1 },
+        "sourceBranch": { "type": "string", "minLength": 1 },
+        "targetBranch": { "type": "string", "minLength": 1 },
+        "mergeRequest": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["provider", "repositoryId", "number", "url"],
+          "properties": {
+            "provider": { "type": "string", "minLength": 1 },
+            "repositoryId": { "type": "string", "minLength": 1 },
+            "number": { "type": "integer", "minimum": 1 },
+            "url": { "type": "string", "format": "uri" }
+          }
+        }
+      }
+    },
     "actions": { "type": "array" },
     "options": { "const": ["approve", "request_changes", "reject"] }
   }

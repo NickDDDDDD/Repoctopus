@@ -47,15 +47,27 @@ const policy: DeliveryPolicy = {
 };
 
 const intent: DeliveryIntent = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   changeId: 'delivery-evidence',
+  changeMergeRequest: {
+    repositoryId: 'workspace-repository',
+    remoteIdentity: 'example/workspace-repository',
+    sourceBranch: 'feat/delivery-evidence',
+    targetBranch: 'main',
+    mergeRequest: {
+      provider: 'github',
+      repositoryId: 'workspace-repository',
+      number: 11,
+      url: 'https://example.test/workspace-repository/pull/11',
+    },
+  },
   repositories: [
     {
       repositoryId: 'repo-a',
       sourceBranch: 'feat/change',
       targetBranch: 'main',
       commitMessage: 'feat: change',
-      actions: ['push'],
+      actions: ['push', 'merge_request'],
     },
   ],
 };

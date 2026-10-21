@@ -21,8 +21,8 @@ function plan(workspace: string) {
   const config: EffectiveProjectConfig = {
     shared: {
       apiVersion: 'repoctopus/v1alpha1',
-      kind: 'RepoctopusProject',
-      project: { id: 'sample' },
+      kind: 'RepoctopusWorkspace',
+      workspace: { id: 'sample', repositoryId: 'repo' },
       repositories: [{ id: 'repo', path: '.' }],
       profiles: [
         {

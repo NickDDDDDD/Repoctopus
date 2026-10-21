@@ -18,7 +18,7 @@ node bin/repoctopus.js project review --workspace . --request <request-file>
 
 ## 交付发布
 
-本地 checkpoint commit 是可回退的开发检查点。push 和 MR 创建或更新属于对外发布，必须先提交绑定当前多仓快照的验证报告，并通过交互式审批。merge 始终由人执行。详情见 [交付治理](delivery.md)。
+开发 checkpoint 会立即把当前 HEAD 普通 push 到策略远端并核对精确 OID，这项备份动作不需要逐次人工批准。创建或更新 MR 仍必须先提交绑定当前多仓快照的验证报告，并通过交互式审批；merge 始终由人执行。详情见 [交付治理](delivery.md)。
 
 ```powershell
 node bin/repoctopus.js approval review --workspace . --change <change-id>

@@ -91,3 +91,8 @@ export async function createGitRepository(
   if (remote) await execFileAsync('git', ['remote', 'add', 'origin', remote], { cwd: repository });
   return repository;
 }
+
+export async function commitGitRepository(repository: string, message: string): Promise<void> {
+  await execFileAsync('git', ['add', '.'], { cwd: repository });
+  await execFileAsync('git', ['commit', '-m', message], { cwd: repository });
+}

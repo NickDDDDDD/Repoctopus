@@ -1,7 +1,8 @@
 apiVersion: repoctopus/v1alpha1
-kind: RepoctopusProject
-project:
+kind: RepoctopusWorkspace
+workspace:
   id: repoctopus
+  repositoryId: repoctopus
 repositories:
   - id: repoctopus
     path: .
@@ -29,7 +30,7 @@ profiles:
         type: command
         repository: repoctopus
         executable: node
-        args: [-e, "setTimeout(() => process.exit(0), 30000)"]
+        args: [-e, 'setTimeout(() => process.exit(0), 30000)']
         timeoutMs: 60000
 evidence:
   retention:
