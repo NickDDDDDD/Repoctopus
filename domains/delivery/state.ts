@@ -33,7 +33,14 @@ export function requestDeliveryApproval(
   requestId: string = randomUUID(),
 ): DeliveryState {
   if (state.changeId !== snapshot.changeId) throw new Error('Cross-change snapshot rejected');
-  if (!['development', 'verification_required', 'rejected'].includes(state.status))
+  const replacePendingRequest =
+    state.status === 'awaiting_approval' &&
+    state.approval === null &&
+    state.actionResults.every((result) => result.status === 'pending' && result.attempts === 0);
+  if (
+    !replacePendingRequest &&
+    !['development', 'verification_required', 'rejected'].includes(state.status)
+  )
     throw new Error(`Approval cannot be requested from ${state.status}`);
   const request: HumanDecisionRequest = {
     apiVersion: 'repoctopus/v1alpha1',

@@ -258,6 +258,76 @@ describe('delivery service', () => {
     expect((await service.status(intent.changeId)).status).toBe('verification_required');
   });
 
+  it('idempotently reuses or supersedes a pending approval before any human decision', async () => {
+    const workspace = await temporaryDirectory('repoctopus-delivery-reprepare-');
+    cleanup.push(workspace);
+    const store = new FileDeliveryStore(workspace);
+    let tick = 0;
+    const service = new DeliveryService(
+      store,
+      new FakeGit(),
+      new FakeMergeRequests(),
+      satisfiedEvidence,
+      () => new Date(Date.UTC(2026, 0, 1) + tick++ * 1000),
+    );
+    const first = await service.prepare({
+      project,
+      intent,
+      policy,
+      reportContents: 'verified',
+      evidenceBundleIds,
+    });
+    const replayed = await service.prepare({
+      project,
+      intent,
+      policy,
+      reportContents: 'verified',
+      evidenceBundleIds,
+    });
+    expect(replayed).toEqual(first);
+    expect(await store.history(intent.changeId)).toHaveLength(1);
+
+    const replacement = await service.prepare({
+      project,
+      intent,
+      policy,
+      reportContents: 'verified with corrected approval wording',
+      evidenceBundleIds: ['bundle-replacement'],
+    });
+    expect(replacement).toMatchObject({
+      status: 'awaiting_approval',
+      stateVersion: first.stateVersion + 1,
+      approval: null,
+    });
+    expect(
+      replacement.actionResults.every(
+        (result) => result.status === 'pending' && result.attempts === 0,
+      ),
+    ).toBe(true);
+    expect(replacement.decisionRequest?.requestId).not.toBe(first.decisionRequest?.requestId);
+    expect(replacement.snapshot?.digest).not.toBe(first.snapshot?.digest);
+    const history = await store.history(intent.changeId);
+    expect(history.map((entry) => entry.type)).toEqual([
+      'delivery.prepared',
+      'delivery.prepared',
+    ]);
+    expect(history[1]?.data.supersededRequestId).toBe(first.decisionRequest?.requestId);
+    expect(history[1]?.data.previousSnapshotDigest).toBe(first.snapshot?.digest);
+    await expect(
+      service.decide(
+        intent.changeId,
+        {
+          apiVersion: 'repoctopus/v1alpha1',
+          kind: 'HumanDecisionResponse',
+          requestId: first.decisionRequest!.requestId,
+          snapshotDigest: first.snapshot!.digest,
+          decision: 'approve',
+        },
+        { subject: 'human', provider: 'test-ui', sessionId: 'session-1' },
+      ),
+    ).rejects.toThrow(/pending snapshot/i);
+  });
+
   it('invalidates approval when a selected worktree becomes dirty', async () => {
     const workspace = await temporaryDirectory('repoctopus-delivery-dirty-');
     cleanup.push(workspace);

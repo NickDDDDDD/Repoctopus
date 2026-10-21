@@ -30,6 +30,8 @@ Delivery Intent v2 使用 `coordinationMergeRequest` 记录承载规格、验证
 
 IDE Adapter 应显示 `HumanDecisionRequest`。CLI 降级使用 `approval review`，要求交互式终端。批准以后，任何代码树、报告、策略、分支、仓库选择或目标基线变化都会让批准失效。
 
+如果尚未产生人工决定且所有远端动作仍是零次尝试的 `pending`，可以重新执行 `delivery prepare`。相同快照幂等返回原请求；新快照会生成新的 `requestId`，并在 Delivery 历史中记录被取代的请求和快照摘要。迟到的旧响应会因身份不匹配被拒绝。已经批准、拒绝或开始发布后，重新准备不能覆盖既有事实。
+
 Delivery 状态来自不兼容 composition 时仍可查询，但不能继续批准、发布或刷新。使用者必须显式迁移或重新准备交付快照，不能把旧插件语义下的批准带入新组合。
 
 ## 部分发布与恢复

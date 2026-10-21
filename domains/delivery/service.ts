@@ -133,8 +133,22 @@ export class DeliveryService {
     });
     const previous = await this.store.load(options.intent.changeId);
     const base = previous ?? initialDeliveryState(options.intent.changeId, timestamp);
-    if (previous && !['development', 'verification_required', 'rejected'].includes(previous.status))
+    if (previous?.status === 'awaiting_approval') {
+      if (previous.snapshot?.digest === snapshot.digest) return previous;
+      if (
+        previous.approval !== null ||
+        previous.actionResults.some(
+          (result) => result.status !== 'pending' || result.attempts !== 0,
+        )
+      ) {
+        throw new Error('Pending approval cannot be superseded after a decision or action');
+      }
+    } else if (
+      previous &&
+      !['development', 'verification_required', 'rejected'].includes(previous.status)
+    ) {
       throw new Error(`Delivery cannot be prepared from ${previous.status}`);
+    }
     const next = requestDeliveryApproval(base, snapshot, timestamp);
     await this.commit(
       next,
@@ -142,6 +156,12 @@ export class DeliveryService {
       event(next, 'delivery.prepared', timestamp, {
         snapshotDigest: snapshot.digest,
         repositoryCount: snapshot.repositories.length,
+        ...(previous?.status === 'awaiting_approval'
+          ? {
+              supersededRequestId: previous.decisionRequest?.requestId,
+              previousSnapshotDigest: previous.snapshot?.digest,
+            }
+          : {}),
       }),
     );
     return next;
