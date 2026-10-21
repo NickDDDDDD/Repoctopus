@@ -4,9 +4,9 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { reviewHumanDecision } from '../app/cli/human-decision.js';
-import type { HumanDecisionRequest } from '../domains/delivery/types.js';
+import type { HumanDecisionRequestV3 } from '../domains/delivery/types.js';
 
-const request: HumanDecisionRequest = {
+const request: HumanDecisionRequestV3 = {
   apiVersion: 'repoctopus/v1alpha1',
   kind: 'HumanDecisionRequest',
   requestId: 'request',
@@ -15,20 +15,23 @@ const request: HumanDecisionRequest = {
   snapshotDigest: `sha256:${'a'.repeat(64)}`,
   reportDigest: `sha256:${'b'.repeat(64)}`,
   evidenceBundleIds: ['bundle-verified'],
-  repositories: [],
-  changeMergeRequest: {
-    role: 'change',
+  changeBranch: {
     repositoryId: 'workspace-repository',
     remoteIdentity: 'github.com/team/workspace-repository',
-    sourceBranch: 'feat/delivery-change',
+    sourceBranch: 'spec/delivery-change',
     targetBranch: 'main',
-    mergeRequest: {
-      provider: 'github',
-      repositoryId: 'workspace-repository',
-      number: 1,
-      url: 'https://github.com/team/workspace-repository/pull/1',
-    },
+    remoteOid: '1'.repeat(40),
   },
+  businessDeliveries: [
+    {
+      deliveryId: 'primary',
+      repositoryId: 'app',
+      repositoryName: 'app',
+      sourceBranch: 'feat/delivery-change',
+      targetBranch: 'main',
+    },
+  ],
+  businessSplitReason: null,
   actions: [],
   options: ['approve', 'request_changes', 'reject'],
 };

@@ -1,9 +1,10 @@
 import { execFile } from 'node:child_process';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { afterEach, describe, expect, it } from 'vitest';
+import { parse, stringify } from 'yaml';
 
 import {
   createPlanningSnapshot,
@@ -14,6 +15,7 @@ import type {
   SpecificationChange,
   SpecificationValidation,
 } from '../../domains/specification/types.js';
+import type { DeliveryIntentV3 } from '../../domains/delivery/types.js';
 import { FilePlanningApprovalStore } from '../../platform/specification/file-planning-approval-store.js';
 import { normalizeRemoteIdentity } from '../../platform/git/remote-identity.js';
 import { loadProjectConfig } from '../../platform/project-configuration/file-config.js';
@@ -190,10 +192,22 @@ describe('Delivery v3 CLI', () => {
       remoteOid: workspaceOid,
     };
     const intentFile = path.join(root, 'delivery-v3.yaml');
-    await writeFile(
-      intentFile,
-      `schemaVersion: 3\nchangeId: delivery-v3-cli\nchangeBranch:\n  repositoryId: workspace\n  remoteIdentity: ${changeBranch.remoteIdentity}\n  sourceBranch: spec/delivery-v3-cli\n  targetBranch: main\n  remoteOid: ${workspaceOid}\nbusinessDeliveries:\n  - deliveryId: primary\n    repositoryId: app\n    sourceBranch: feat/delivery-v3-cli\n    targetBranch: main\n    commitMessage: 'feat: implement delivery v3'\n    actions: [push, merge_request]\n`,
-    );
+    const intent = parse(
+      await readFile(path.join(packageRoot, 'docs', 'examples', 'delivery-intent.yaml'), 'utf8'),
+    ) as DeliveryIntentV3;
+    intent.changeId = 'delivery-v3-cli';
+    intent.changeBranch = changeBranch;
+    intent.businessDeliveries = [
+      {
+        deliveryId: 'primary',
+        repositoryId: 'app',
+        sourceBranch: 'feat/delivery-v3-cli',
+        targetBranch: 'main',
+        commitMessage: 'feat: implement delivery v3',
+        actions: ['push', 'merge_request'],
+      },
+    ];
+    await writeFile(intentFile, stringify(intent));
 
     const evidence = await runCli<{ bundle: { bundleId: string } }>({
       packageRoot,

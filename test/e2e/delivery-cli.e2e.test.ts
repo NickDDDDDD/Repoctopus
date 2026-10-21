@@ -9,7 +9,6 @@ import {
   removeTemporaryDirectory,
   temporaryDirectory,
 } from '../helpers/fixtures.js';
-import { runCli } from './cli.js';
 
 const execFileAsync = promisify(execFile);
 const packageRoot = path.resolve(import.meta.dirname, '..', '..');
@@ -17,7 +16,7 @@ const cleanup: string[] = [];
 afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
 
 describe('delivery CLI', () => {
-  it('checkpoints and prepares an approval request without accepting non-interactive approval', async () => {
+  it('rejects a v2 intent with an actionable migration diagnostic', async () => {
     const root = await temporaryDirectory('repoctopus-delivery-cli-');
     cleanup.push(root);
     const remote = path.join(root, 'remote.git');
@@ -34,7 +33,6 @@ describe('delivery CLI', () => {
     const repositoryId = 'app';
     const policyFile = path.join(workspace, 'delivery-policy.yaml');
     const intentFile = path.join(workspace, 'intent.yaml');
-    const reportFile = path.join(app, 'verification.md');
     await writeFile(
       path.join(workspace, 'repoctopus.yaml'),
       JSON.stringify({
@@ -78,74 +76,16 @@ describe('delivery CLI', () => {
     await execFileAsync('git', ['commit', '-m', 'chore: configure delivery workspace'], {
       cwd: workspace,
     });
-    await writeFile(reportFile, '# Verification\nPassed\n');
-    await writeFile(path.join(app, 'feature.txt'), 'feature');
     const common = ['--workspace', workspace, '--intent', intentFile, '--policy', policyFile];
-    const checkpoint = await runCli({
-      packageRoot,
-      cwd: workspace,
-      args: ['delivery', 'checkpoint', ...common],
-    });
-    expect(checkpoint).toMatchObject({
-      ok: true,
-      command: 'delivery checkpoint',
-      result: [
-        {
-          created: true,
-          publication: {
-            remote: 'origin',
-            branch: 'feat/change',
-            upstream: 'origin/feat/change',
-          },
-        },
-      ],
-    });
-    const evidence = await runCli({
-      packageRoot,
-      cwd: workspace,
-      args: ['evidence', 'run', '--workspace', workspace, '--profile', 'verify'],
-    });
-    expect(evidence).toMatchObject({
-      ok: true,
-      result: { bundle: { outcome: 'passed' } },
-    });
-    const bundleId = (evidence.result as { bundle: { bundleId: string } }).bundle.bundleId;
-    const prepared = await runCli({
-      packageRoot,
-      cwd: workspace,
-      args: [
-        'delivery',
-        'prepare',
-        ...common,
-        '--report',
-        reportFile,
-        '--evidence-bundles',
-        bundleId,
-      ],
-    });
-    expect(prepared).toMatchObject({
-      ok: true,
-      command: 'delivery prepare',
-      result: { status: 'awaiting_approval', decisionRequest: { kind: 'HumanDecisionRequest' } },
-    });
-    const status = await runCli({
-      packageRoot,
-      cwd: workspace,
-      args: ['delivery', 'status', '--workspace', workspace, '--change', 'delivery-cli-change'],
-    });
-    expect(status).toMatchObject({ result: { status: 'awaiting_approval' } });
     let failure: { code?: number; stderr?: string } | undefined;
     try {
       await execFileAsync(
         process.execPath,
         [
           path.join(packageRoot, 'bin', 'repoctopus.js'),
-          'approval',
-          'review',
-          '--workspace',
-          workspace,
-          '--change',
-          'delivery-cli-change',
+          'delivery',
+          'checkpoint',
+          ...common,
           '--json',
         ],
         { cwd: workspace },
@@ -157,6 +97,9 @@ describe('delivery CLI', () => {
     const errorEnvelope = JSON.parse(failure?.stderr ?? '{}') as {
       diagnostics?: Array<{ message?: string }>;
     };
-    expect(errorEnvelope.diagnostics?.[0]?.message).toMatch(/interactive terminal/i);
+    expect(errorEnvelope.diagnostics?.[0]?.message).toMatch(/Delivery Intent v2 is read-only/i);
+    expect(errorEnvelope.diagnostics?.[0]?.message).toMatch(/changeBranch.*remoteOid/i);
+    expect(errorEnvelope.diagnostics?.[0]?.message).toMatch(/businessDeliveries.*deliveryId/i);
+    expect(errorEnvelope.diagnostics?.[0]?.message).toMatch(/new planning approval/i);
   }, 30_000);
 });

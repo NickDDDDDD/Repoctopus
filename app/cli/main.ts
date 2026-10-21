@@ -7,12 +7,12 @@ import { fileURLToPath } from 'node:url';
 import { parse } from 'yaml';
 
 import type {
-  DeliveryIntent,
   DeliveryIntentV3,
   DeliveryPolicy,
   DeliveryState,
   DeliveryStateV3,
 } from '../../domains/delivery/types.js';
+import { parseDeliveryIntentV3 } from '../../domains/delivery/v3.js';
 import type { ProjectSnapshot } from '../../domains/project/types.js';
 import type { EffectiveProjectConfig } from '../../domains/project-configuration/types.js';
 import type {
@@ -82,7 +82,7 @@ function evidenceBundleIds(parsed: ParsedArguments): string[] {
 async function deliveryInputs(parsed: ParsedArguments): Promise<{
   workspace: string;
   config: EffectiveProjectConfig;
-  intent: DeliveryIntent | DeliveryIntentV3;
+  intent: DeliveryIntentV3;
   policy: DeliveryPolicy;
 }> {
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
@@ -98,7 +98,7 @@ async function deliveryInputs(parsed: ParsedArguments): Promise<{
   return {
     workspace,
     config,
-    intent: parse(intentSource) as DeliveryIntent | DeliveryIntentV3,
+    intent: parseDeliveryIntentV3(parse(intentSource)),
     policy,
   };
 }
@@ -106,13 +106,9 @@ async function deliveryInputs(parsed: ParsedArguments): Promise<{
 async function assertCommittedReport(
   reportFile: string,
   project: ProjectSnapshot,
-  intent: DeliveryIntent | DeliveryIntentV3,
+  intent: DeliveryIntentV3,
 ): Promise<void> {
-  const selected = new Set(
-    (intent.schemaVersion === 3 ? intent.businessDeliveries : intent.repositories).map(
-      (item) => item.repositoryId,
-    ),
-  );
+  const selected = new Set(intent.businessDeliveries.map((item) => item.repositoryId));
   const repository = project.repositories.find((item) => {
     if (!selected.has(item.id)) return false;
     const relative = path.relative(item.path, reportFile);

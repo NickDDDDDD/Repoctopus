@@ -112,6 +112,30 @@ export function assertDeliveryIntentV3(intent: DeliveryIntentV3): void {
   }
 }
 
+export function parseDeliveryIntentV3(value: unknown): DeliveryIntentV3 {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('Delivery Intent must be an object using schemaVersion 3');
+  }
+  const candidate = value as Record<string, unknown>;
+  if (candidate.schemaVersion === 2 || 'changeMergeRequest' in candidate) {
+    throw new Error(
+      'Delivery Intent v2 is read-only. Migrate changeMergeRequest to changeBranch with its published remoteOid, rename repositories to businessDeliveries with a stable deliveryId, remove the old MR identity, and obtain a new planning approval.',
+    );
+  }
+  if (candidate.schemaVersion !== 3) {
+    throw new Error('Unsupported Delivery Intent schemaVersion; schemaVersion 3 is required');
+  }
+  try {
+    assertDeliveryIntentV3(candidate as unknown as DeliveryIntentV3);
+    return normalizeDeliveryIntentV3(candidate as unknown as DeliveryIntentV3);
+  } catch (error) {
+    throw new Error(
+      `Invalid Delivery Intent v3: ${error instanceof Error ? error.message : String(error)}`,
+      { cause: error },
+    );
+  }
+}
+
 export function createDefaultDeliveryIntentV3(input: {
   changeId: string;
   changeBranch: DeliveryIntentV3['changeBranch'];
