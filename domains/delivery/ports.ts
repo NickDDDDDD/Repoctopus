@@ -5,6 +5,7 @@ import type {
   DeliveryRepositoryFacts,
   DeliveryRepositoryIntent,
   DeliveryState,
+  DeliveryStateV3,
   MergeRequestIdentity,
   MergeRequestStatus,
   PlatformCapability,
@@ -36,6 +37,15 @@ export interface DeliveryStorePort {
   }): Promise<void>;
   history(changeId: string): Promise<DeliveryEvent[]>;
   approvedEvidenceBundleIds(): Promise<string[]>;
+}
+
+export interface DeliveryV3StorePort {
+  load(changeId: string): Promise<DeliveryStateV3 | null>;
+  commit(options: {
+    state: DeliveryStateV3;
+    previousStateVersion: number | null;
+    event: DeliveryEvent;
+  }): Promise<void>;
 }
 
 export interface DeliveryEvidencePort {

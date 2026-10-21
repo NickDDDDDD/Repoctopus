@@ -782,7 +782,7 @@ const definitions: readonly BuiltinDefinition[] = [
       compositions: ['project'],
       authorities: ['delivery-state-write'],
       permissions: ['filesystem', 'process', 'network'],
-      stateSchemas: { delivery: '2' },
+      stateSchemas: { delivery: '2|3' },
     },
     plugin: FileDeliveryProvider,
     sourceFiles: [
@@ -790,7 +790,9 @@ const definitions: readonly BuiltinDefinition[] = [
       'services/operation-ownership.ts',
       'plugins/delivery/file-delivery-provider.ts',
       'domains/delivery/service.ts',
+      'domains/delivery/service-v3.ts',
       'platform/delivery/file-delivery-store.ts',
+      'platform/delivery/file-delivery-v3-store.ts',
     ],
   },
   {

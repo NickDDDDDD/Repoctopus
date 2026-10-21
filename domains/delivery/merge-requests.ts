@@ -1,4 +1,5 @@
 import type {
+  BusinessMergeRequestRecordV3,
   DeliveryIntent,
   DeliveryMergeRequestMatch,
   DeliveryMergeRequestSet,
@@ -7,6 +8,32 @@ import type {
   MergeRequestIdentity,
   MergeRequestReference,
 } from './types.js';
+
+export function recordBusinessMergeRequestV3(
+  current: readonly BusinessMergeRequestRecordV3[],
+  deliveryId: string,
+  mergeRequest: MergeRequestIdentity,
+): BusinessMergeRequestRecordV3[] {
+  const selected = current.find((item) => item.deliveryId === deliveryId);
+  if (!selected) throw new Error(`Business merge request is not declared: ${deliveryId}`);
+  if (selected.repositoryId !== mergeRequest.repositoryId) {
+    throw new Error(`Business merge request repository drifted: ${deliveryId}`);
+  }
+  if (
+    selected.mergeRequest &&
+    (selected.mergeRequest.provider !== mergeRequest.provider ||
+      selected.mergeRequest.repositoryId !== mergeRequest.repositoryId ||
+      selected.mergeRequest.number !== mergeRequest.number ||
+      selected.mergeRequest.url !== mergeRequest.url)
+  ) {
+    throw new Error(`Business merge request identity drifted: ${deliveryId}`);
+  }
+  return current.map((item) =>
+    item.deliveryId === deliveryId
+      ? { ...item, mergeRequest: structuredClone(mergeRequest) }
+      : structuredClone(item),
+  );
+}
 
 const ACTIVE_STATUSES = new Set<DeliveryState['status']>([
   'publishing',

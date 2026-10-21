@@ -8,8 +8,10 @@ import { parse } from 'yaml';
 
 import type {
   DeliveryIntent,
+  DeliveryIntentV3,
   DeliveryPolicy,
   DeliveryState,
+  DeliveryStateV3,
 } from '../../domains/delivery/types.js';
 import type { ProjectSnapshot } from '../../domains/project/types.js';
 import type { EffectiveProjectConfig } from '../../domains/project-configuration/types.js';
@@ -80,7 +82,7 @@ function evidenceBundleIds(parsed: ParsedArguments): string[] {
 async function deliveryInputs(parsed: ParsedArguments): Promise<{
   workspace: string;
   config: EffectiveProjectConfig;
-  intent: DeliveryIntent;
+  intent: DeliveryIntent | DeliveryIntentV3;
   policy: DeliveryPolicy;
 }> {
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
@@ -93,15 +95,24 @@ async function deliveryInputs(parsed: ParsedArguments): Promise<{
     readFile(intentFile, 'utf8'),
     loadDeliveryPolicy(policyFile),
   ]);
-  return { workspace, config, intent: parse(intentSource) as DeliveryIntent, policy };
+  return {
+    workspace,
+    config,
+    intent: parse(intentSource) as DeliveryIntent | DeliveryIntentV3,
+    policy,
+  };
 }
 
 async function assertCommittedReport(
   reportFile: string,
   project: ProjectSnapshot,
-  intent: DeliveryIntent,
+  intent: DeliveryIntent | DeliveryIntentV3,
 ): Promise<void> {
-  const selected = new Set(intent.repositories.map((item) => item.repositoryId));
+  const selected = new Set(
+    (intent.schemaVersion === 3 ? intent.businessDeliveries : intent.repositories).map(
+      (item) => item.repositoryId,
+    ),
+  );
   const repository = project.repositories.find((item) => {
     if (!selected.has(item.id)) return false;
     const relative = path.relative(item.path, reportFile);
@@ -143,7 +154,7 @@ async function currentWorkspaceSnapshot(
   return deliveryProject(app, { workspace, config: await loadProjectConfig(workspace) });
 }
 
-function deliveryNextActions(status: DeliveryState): string[] {
+function deliveryNextActions(status: DeliveryState | DeliveryStateV3): string[] {
   if (status.status === 'awaiting_approval') {
     return [`repoctopus approval review --change ${status.changeId}`];
   }
@@ -152,7 +163,7 @@ function deliveryNextActions(status: DeliveryState): string[] {
       `repoctopus delivery publish --change ${status.changeId} --intent <file> --policy <file> --report <file>`,
     ];
   }
-  if (status.status === 'in_review')
+  if (status.status === 'in_review' && status.schemaVersion === 2)
     return [`repoctopus delivery refresh --change ${status.changeId}`];
   return [];
 }
@@ -180,16 +191,16 @@ async function deliveryPrepare(parsed: ParsedArguments): Promise<CliEnvelope<unk
     const project = await deliveryProject(app, input);
     await assertCommittedReport(reportFile, project, input.intent);
     const report = await readFile(reportFile, 'utf8');
-    const result = await app.context.commandRouter.execute<unknown, DeliveryState>(
-      'delivery.prepare',
-      {
-        project,
-        intent: input.intent,
-        policy: input.policy,
-        reportContents: report,
-        evidenceBundleIds: evidenceBundleIds(parsed),
-      },
-    );
+    const result = await app.context.commandRouter.execute<
+      unknown,
+      DeliveryState | DeliveryStateV3
+    >('delivery.prepare', {
+      project,
+      intent: input.intent,
+      policy: input.policy,
+      reportContents: report,
+      evidenceBundleIds: evidenceBundleIds(parsed),
+    });
     return successEnvelope({
       command: 'delivery prepare',
       result,
@@ -205,10 +216,10 @@ async function deliveryStatus(parsed: ParsedArguments): Promise<CliEnvelope<unkn
   const changeId = stringFlag(parsed, 'change', { required: true })!;
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
-    const result = await app.context.commandRouter.execute<unknown, DeliveryState>(
-      'delivery.status',
-      { changeId },
-    );
+    const result = await app.context.commandRouter.execute<
+      unknown,
+      DeliveryState | DeliveryStateV3
+    >('delivery.status', { changeId });
     return successEnvelope({
       command: 'delivery status',
       result,
@@ -277,7 +288,7 @@ async function approvalReview(parsed: ParsedArguments): Promise<CliEnvelope<unkn
   const changeId = stringFlag(parsed, 'change', { required: true })!;
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
-    const state = await app.context.commandRouter.execute<unknown, DeliveryState>(
+    const state = await app.context.commandRouter.execute<unknown, DeliveryState | DeliveryStateV3>(
       'delivery.status',
       { changeId },
     );
@@ -289,25 +300,25 @@ async function approvalReview(parsed: ParsedArguments): Promise<CliEnvelope<unkn
       input: process.stdin,
       output: process.stdout,
     });
-    const result = await app.context.commandRouter.execute<unknown, DeliveryState>(
-      'delivery.decide',
-      {
-        changeId,
-        response: {
-          apiVersion: 'repoctopus/v1alpha1',
-          kind: 'HumanDecisionResponse',
-          requestId: state.decisionRequest.requestId,
-          snapshotDigest: state.decisionRequest.snapshotDigest,
-          decision: selected.decision,
-          ...(selected.comment ? { comment: selected.comment } : {}),
-        },
-        actor: {
-          subject: userInfo().username,
-          provider: 'interactive-cli',
-          sessionId: state.decisionRequest.requestId,
-        },
+    const result = await app.context.commandRouter.execute<
+      unknown,
+      DeliveryState | DeliveryStateV3
+    >('delivery.decide', {
+      changeId,
+      response: {
+        apiVersion: 'repoctopus/v1alpha1',
+        kind: 'HumanDecisionResponse',
+        requestId: state.decisionRequest.requestId,
+        snapshotDigest: state.decisionRequest.snapshotDigest,
+        decision: selected.decision,
+        ...(selected.comment ? { comment: selected.comment } : {}),
       },
-    );
+      actor: {
+        subject: userInfo().username,
+        provider: 'interactive-cli',
+        sessionId: state.decisionRequest.requestId,
+      },
+    });
     return successEnvelope({
       command: 'approval review',
       result,
@@ -329,16 +340,16 @@ async function deliveryPublish(parsed: ParsedArguments): Promise<CliEnvelope<unk
   );
   const app = await bootProjectComposition(PRODUCT_ROOT, input.workspace);
   try {
-    const result = await app.context.commandRouter.execute<unknown, DeliveryState>(
-      'delivery.publish',
-      {
-        project: await deliveryProject(app, input),
-        intent: input.intent,
-        policy: input.policy,
-        reportContents: report,
-        evidenceBundleIds: evidenceBundleIds(parsed),
-      },
-    );
+    const result = await app.context.commandRouter.execute<
+      unknown,
+      DeliveryState | DeliveryStateV3
+    >('delivery.publish', {
+      project: await deliveryProject(app, input),
+      intent: input.intent,
+      policy: input.policy,
+      reportContents: report,
+      evidenceBundleIds: evidenceBundleIds(parsed),
+    });
     return successEnvelope({
       command: 'delivery publish',
       result,

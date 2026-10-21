@@ -99,6 +99,7 @@ function projectSelections(
       id: 'delivery-file',
       config: {
         workspaceRoot,
+        projectConfigDigest: `sha256:${config.effectiveDigest}`,
         ...(config.shared.platformEvents
           ? { githubTokenVariable: config.shared.platformEvents.github.apiCredential.variable }
           : {}),

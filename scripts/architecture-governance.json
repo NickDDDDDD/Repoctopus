@@ -325,6 +325,7 @@
       "id": "delivery-transition",
       "files": [
         "platform/delivery/file-delivery-store.ts",
+        "platform/delivery/file-delivery-v3-store.ts",
         "platform/runtime/recoverable-file-transition.ts"
       ],
       "status": "shared-coordinator"

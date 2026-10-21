@@ -7,10 +7,12 @@ import type {
 } from '../domains/delivery/post-merge.js';
 import type {
   DeliveryIntent,
+  DeliveryIntentV3,
   DeliveryMergeRequestRefresh,
   DeliveryPolicy,
   DeliveryReconciliationCandidate,
   DeliveryState,
+  DeliveryStateV3,
   HumanDecisionResponse,
   MergeRequestReference,
   TrustedActor,
@@ -18,7 +20,7 @@ import type {
 
 export interface DeliveryPreparation {
   project: ProjectSnapshot;
-  intent: DeliveryIntent;
+  intent: DeliveryIntent | DeliveryIntentV3;
   policy: DeliveryPolicy;
   reportContents: string;
   evidenceBundleIds: string[];
@@ -31,19 +33,25 @@ export abstract class Delivery extends Service {
 
   abstract checkpoint(
     project: ProjectSnapshot,
-    intent: DeliveryIntent,
+    intent: DeliveryIntent | DeliveryIntentV3,
     policy: DeliveryPolicy,
     signal?: AbortSignal,
   ): Promise<unknown>;
-  abstract prepare(options: DeliveryPreparation, signal?: AbortSignal): Promise<DeliveryState>;
-  abstract status(changeId: string, signal?: AbortSignal): Promise<DeliveryState>;
+  abstract prepare(
+    options: DeliveryPreparation,
+    signal?: AbortSignal,
+  ): Promise<DeliveryState | DeliveryStateV3>;
+  abstract status(changeId: string, signal?: AbortSignal): Promise<DeliveryState | DeliveryStateV3>;
   abstract decide(
     changeId: string,
     response: HumanDecisionResponse,
     actor: TrustedActor,
     signal?: AbortSignal,
-  ): Promise<DeliveryState>;
-  abstract publish(options: DeliveryPreparation, signal?: AbortSignal): Promise<DeliveryState>;
+  ): Promise<DeliveryState | DeliveryStateV3>;
+  abstract publish(
+    options: DeliveryPreparation,
+    signal?: AbortSignal,
+  ): Promise<DeliveryState | DeliveryStateV3>;
   publishPostMerge(
     request: PostMergePublicationRequest,
     signal?: AbortSignal,

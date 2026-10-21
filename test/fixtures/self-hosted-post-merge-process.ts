@@ -146,7 +146,10 @@ class MockDeliveryProvider extends Delivery {
   }
 
   prepare(options: DeliveryPreparation): Promise<DeliveryState> {
-    return this.domain().prepare(options);
+    if (options.intent.schemaVersion === 3) {
+      return Promise.reject(new Error('Mock Delivery provider only supports v2 fixtures'));
+    }
+    return this.domain().prepare({ ...options, intent: options.intent });
   }
 
   status(changeId: string): Promise<DeliveryState> {
@@ -162,7 +165,10 @@ class MockDeliveryProvider extends Delivery {
   }
 
   publish(options: DeliveryPreparation): Promise<DeliveryState> {
-    return this.domain().publish(options);
+    if (options.intent.schemaVersion === 3) {
+      return Promise.reject(new Error('Mock Delivery provider only supports v2 fixtures'));
+    }
+    return this.domain().publish({ ...options, intent: options.intent });
   }
 
   override publishPostMerge(
