@@ -88,3 +88,31 @@ Repoctopus MUST 支持由团队可达的 Runner 在代码平台事件后完成�
 
 - **WHEN** 最后一个业务 MR 在原开发者离线时合入
 - **THEN** 团队 Runner 仍可取得必要凭据、临时检出和持久状态并推进 Post-merge Run
+
+### Requirement: 开发 Run 启动前执行一次性补偿
+
+Repoctopus MUST 在启动新的日常开发 Run 前检查当前 coordination workspace 已登记但尚未完成收尾的 Delivery，并允许维护者显式执行相同的一次性补偿；候选发现不得按 MR 作者或独占 Change owner 过滤，命令结束后不得留下 HTTP Listener 或后台轮询。
+
+#### Scenario: Webhook 在 Runner 离线期间丢失
+
+- **WHEN** 业务 MR 已全部合入、没有 Inbox 事件且任一成员随后启动新的开发 Run
+- **THEN** Repoctopus 通过平台权威状态发现该 change 并调用同一个 PostMergeCoordinator 完成或恢复收尾
+
+#### Scenario: 未完成业务 MR 仍然打开
+
+- **WHEN** 一次性补偿检查到 change 的部分业务 MR 仍然打开
+- **THEN** 系统报告等待结果且不执行规格关闭，不把 MR 作者作为跳过或处理依据
+
+### Requirement: 多个 Runner 的远端结果安全收敛
+
+Repoctopus MUST 允许多个 Runner 对同一 change 进行至少一次查询和验证，并以原协调分支精确远端 OID、普通非强制 push 和发布后权威核对约束远端收尾；Runner identity 只用于执行审计，不代表 Change 所有权。
+
+#### Scenario: 两个 Runner 同时收尾同一 Change
+
+- **WHEN** 两个 Runner 从相同协调分支基线开始执行且其中一个先完成远端发布
+- **THEN** 另一个 Runner 重新读取远端，等价关闭结果返回 no-op，不等价变化 fail-closed，且不得 force push 或覆盖胜出结果
+
+#### Scenario: Runner 使用独立本地状态卷
+
+- **WHEN** 两个 Runner 没有共享本地 Lease 或 Run Store 但发现了同一 change
+- **THEN** 系统允许重复本地计算，并仍通过远端并发栅栏保证只有可核对的协调分支结果生效

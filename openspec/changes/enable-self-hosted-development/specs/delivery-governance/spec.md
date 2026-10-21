@@ -69,3 +69,17 @@ Repoctopus MUST 支持平台事件唤醒与显式刷新使用同一 Delivery 状
 
 - **WHEN** 平台未能投递 webhook 但用户或定时恢复任务执行刷新
 - **THEN** 系统仍可根据平台权威事实发现全部 MR 已合入并启动同一后续流程
+
+### Requirement: Change 协作不由 MR 作者独占
+
+Repoctopus MUST 把 change 视为团队共享工作单元，允许不同成员或 Agent 继续实现、修复、验证与收尾；系统不得从协调 MR 作者、业务 MR 作者、Git 作者、Bot 身份或 Runner 身份推导独占 Change owner。动作身份只用于授权、审计和诊断。
+
+#### Scenario: 成员代为提交协调 MR
+
+- **WHEN** 一个成员提交规格或协调 MR，但业务特性由其他成员实现
+- **THEN** 系统仍按 change 与 MR role 建立关系，不把协调 MR 提交者视为特性所有者或个人补偿筛选条件
+
+#### Scenario: 其他成员修复已有 Change
+
+- **WHEN** 另一成员在已经登记的 change 中修复 Bug、补测试或更新规格
+- **THEN** Repoctopus 接受该成员产生的受审计动作，不因 change 最初由其他人创建而拒绝

@@ -14,8 +14,10 @@ Repoctopus 已有可恢复 Run、Evidence 和多仓 Delivery，但还不能独�
 - 增加持久 Event Inbox 与 Post-merge Coordinator。代码平台发送 MR 合入事件后，Repoctopus 先持久化、去重并快速响应，再重新读取平台权威状态，待 change 的全部业务 MR 合入后启动可恢复 Post-merge Run。
 - Post-merge Run 检出精确 merge commit，执行合入后 Evidence，调用当前 Specification Provider 同步主规格并关闭 change，然后只在允许的工作区路径中创建、提交并推送收尾变更，持续更新原协调 MR。
 - 合入事件只触发协调，不作为权威合入证据；重复、乱序、服务重启和部分失败不得重复归档或产生不同的逻辑收尾动作。
+- 增加项目级一次性 Post-merge 补偿：开始新的开发 Run 前以及维护者显式请求时，重新发现 Repoctopus 管理但尚未收尾的 change；补偿不按 MR 作者或独占 owner 筛选，任一团队 Runner 都可以推进任一满足条件的 change。
+- 支持多个 Runner 对同一 change 进行至少一次处理。Runner 可以重复查询和验证，但远端收尾发布必须以协调分支精确 OID 为并发栅栏；竞争失败者重新读取远端，等价结果收敛为 no-op，不可解释差异 fail-closed。
 - 本次使用 GitHub Adapter 与可测试 Runner 完成 Repoctopus 自举；代码平台 Adapter 保持可替换，为后续 CodeHub 接入保留同一标准化事件协议。
-- 本次只接入完成自举所需的 Matt Skills、OpenSpec Provider、GitHub 合入事件和收尾动作。Skill 管理 UI、远程 Skill 市场、多个同时生效的规格权威、CodeHub Adapter、生产级高可用部署和自动合入协调 MR 留给后续切片。
+- 本次只接入完成自举所需的 Matt Skills、OpenSpec Provider、GitHub 合入事件和收尾动作。Skill 管理 UI、远程 Skill 市场、多个同时生效的规格权威、CodeHub Adapter、共享数据库调度、生产级自动扩缩容和自动合入协调 MR 留给后续切片；多 Runner 的远端副作用收敛不等同于高可用调度。
 
 ## Capabilities
 
@@ -41,3 +43,4 @@ Repoctopus 已有可恢复 Run、Evidence 和多仓 Delivery，但还不能独�
 - Matt Pocock Skills 使用其 MIT 许可固定版本接入，Skill 正文保持来源可追溯；具体 Skill 可以通过 Provider 优先级替换。
 - GitHub webhook secret、平台 Token 和机器 Git 身份由 Runner 环境提供，不写入项目配置、状态、日志或遥测。
 - 增加持久状态 Schema 和打包内容；本变更不承诺兼容未发布的旧 Repoctopus 状态格式。
+- Change 是团队共享工作单元；动作审计记录实际 actor 与 Runner，但不得从 MR 作者、Git 作者、Bot 身份或本机身份推导 Change 所有权，也不得用这些身份限制其他成员修复或继续实现。

@@ -66,3 +66,12 @@
 - 用户批准最终验证报告后，按 Repoctopus Delivery 发布当前协调 MR；批准不授权自动 merge。
 - 当前 MR 合入后，由本 change 新增的平台事件与 Post-merge Run 完成合入后复验、主规格同步、归档、收尾 commit/push 和原 MR 更新；如果平台无法回调，使用 Inbox 回放或主动 refresh 唤醒同一路径。
 - 协调 MR 最终由团队或代码平台策略合入，Repoctopus 只记录合入事实。
+
+## 8. 支持多 Runner 与启动时补偿
+
+- [ ] 8.1 修订 Change 协作身份模型，明确 MR author、Git author、Runner identity 与动作 actor 不构成独占 owner；用领域测试覆盖代交协调 MR和其他成员继续修复的行为。
+- [ ] 8.2 为 Delivery Service 暴露确定性待补偿候选枚举，并实现 `PostMergeCoordinator.reconcile()`；测试打开、关闭未合入、全部合入、已完成与单项失败隔离。
+- [ ] 8.3 增加不含 HTTP Host、Webhook Route 和后台 Timer 的一次性 Post-merge composition 与 `post-merge reconcile` CLI，并在日常 `run start` 前调用同一入口。
+- [ ] 8.4 强化 Post-merge 发布的远端 OID 并发栅栏与竞争恢复；用两个独立 Runner/状态目录模拟相同基线竞争，验证一个发布成功后另一个等价 no-op 或对不等价差异 fail-closed。
+- [ ] 8.5 更新 Runner、自举、架构和恢复文档，明确多 Runner、状态卷发现边界、Webhook 实时路径与启动补偿路径；增加文档契约测试。
+- [ ] 8.6 执行定向测试、`npm run verify`、包 E2E 和 tracer E2E，更新正式验证报告、清理临时产物，并在每次 commit 后核对远端分支精确 OID。
