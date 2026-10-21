@@ -3,18 +3,18 @@
 ## 1. 固定基线与桌面依赖
 
 - [ ] 1.1 在干净主线记录 Node、npm、Windows、现有遥测测试和构建基线，执行 `npm run check:upstream`、`npm run verify` 与 `npm run test:tracer-e2e` 并确认全部通过。
-- [ ] 1.2 选择并精确锁定 Electron、React、Vite 和 Windows 打包工具版本，登记许可证、来源、安装脚本与采用理由；执行 `npm install`、`npm run check:provenance` 和许可证检查证明没有未登记依赖或 Comet 源码复制。
-- [ ] 1.3 在 `app/desktop` 建立 main、preload、renderer 和共享契约边界，并为 Electron 主进程建立统一 App Boot 与 desktop composition；执行桌面 typecheck、lint、composition 契约测试和开发构建证明 Application Plugin 只在必需 Service 就绪后激活且 Renderer 没有 Node/Cordis 权限。
+- [ ] 1.2 选择并精确锁定 Electron、React、Vite 和 `electron-builder` 版本，审计固定 DSH Desktop 基线并登记许可证、来源、安装脚本、采用文件、修改方式与排除范围；更新 `third_party/dsh-adoption.json` 后执行 `npm install`、`npm run check:provenance` 和许可证检查，证明没有未登记依赖或 Comet 源码复制。
+- [ ] 1.3 在 `app/desktop` 建立 thin-main、preload、renderer、desktop-host 和共享契约边界；只在 Node-mode Desktop Host 子进程建立统一 App Boot 与 desktop composition。执行桌面 typecheck、lint、composition/进程契约测试和开发构建，证明 Application Plugin 只在必需 Service 就绪后激活，Electron Main 不承载 Cordis 产品 composition，Renderer 没有 Node/Cordis 权限。
 
 ## 2. 交付首个真实 OTLP 到桌面纵切
 
 - [ ] 2.1 定义版本化 `ObservationEnvelope`、稳定身份、规范摘要和纯领域映射，用 golden fixture 验证同一事件重复映射结果一致且不包含凭据、绝对路径、正文或命令输出。
 - [ ] 2.2 实现原子 Envelope Store 与每目的地独立 Cursor，使用故障注入测试覆盖远端成功/本地失败、本地成功/远端失败、进程退出和重放，并证明一个目的地不能推进另一个目的地。
-- [ ] 2.3 实现仅绑定回环地址的 headless OTLP/HTTP Trace、Log、Metric receiver 和会话认证，以协议测试验证合法请求、未授权、错误方法、错误 content type、超限、畸形请求和无正文诊断。
+- [ ] 2.3 在可独立运行的 Desktop Host 中实现仅绑定回环地址的 headless OTLP/HTTP Trace、Log、Metric receiver 和会话认证，以协议测试验证合法请求、未授权、错误方法、错误 content type、超限、畸形请求和无正文诊断。
 - [ ] 2.4 实现最小 change projection reducer 与稳定事件去重，用乱序、重复和缺失 fixture 验证 active change、Run、阶段、新鲜度和 gap 状态确定性收敛。
-- [ ] 2.5 把 receiver、projection、类型化 preload IPC 和最小 Renderer 接入 Electron，运行桌面集成测试证明一个真实 OTLP Run 事件无需轮询即可在窗口显示。
+- [ ] 2.5 由 Electron Main 启动 Desktop Host，把 Host 的 receiver/projection snapshot 与 delta 通过私有 Node IPC、Main 和类型化 Preload 桥接到最小 Renderer；运行桌面集成测试证明一个真实 OTLP Run 事件无需轮询即可在窗口显示，Host 崩溃时 Shell 保持错误/重试能力。
 - [ ] 2.6 接入最小 Desktop Launcher，在 Windows 开发 Run 开始前启动或激活 Dashboard 并唤醒本地目的地重放；运行进程外纵切测试验证 Dashboard 启动失败只产生 warning，远端 mock 仍收到同一 envelope。
-- [ ] 2.7 把 Runtime 侧 Desktop Launcher 与本地目的地作为内置 Service/Contributor 加入 builtin catalog 和 project composition，把 Receiver、Projection、生命周期与 Desktop Application Plugin 加入 desktop composition；运行零桌面、正常桌面、依赖缺失和插件卸载测试证明没有旁路构造或第二套容器。
+- [ ] 2.7 把 Runtime 侧 Desktop Launcher 与本地目的地作为内置 Service/Contributor 加入 builtin catalog 和 project composition，把 Receiver、Projection 与 Desktop Application Plugin 加入 Desktop Host composition；Electron Main 只使用显式 Shell owner 管理原生资源。运行零桌面、正常桌面、依赖缺失、Host 重启和插件卸载测试，证明没有旁路构造或第二套产品容器。
 
 ## 3. 收敛完整遥测映射与多目的地恢复
 
@@ -38,15 +38,15 @@
 ## 5. 完成 Windows 生命周期、安全与本地恢复
 
 - [ ] 5.1 实现随机端口、会话凭据、Windows 用户级 discovery 文件和所有者/freshness/进程验证，运行伪造 discovery、过期进程、端口劫持和错误凭据测试证明本地状态不能被未授权请求改变。
-- [ ] 5.2 实现 Electron 单实例锁、第二实例上下文转交和有界 ready 等待，运行两个并发 Run 的进程测试证明只有一个主进程和 Receiver，两个 change 都可达。
-- [ ] 5.3 实现 `quit`、`tray`、`ask` 用户级关闭偏好和托盘“完全退出”，运行 Windows 自动化测试验证隐藏、重新打开、保存偏好、会话退出和完全退出语义。
-- [ ] 5.4 强化 Renderer sandbox、`contextIsolation`、CSP 和版本化 IPC allowlist，并扩展架构检查拒绝 Renderer 访问 Cordis/Node、入口绕过 Application Plugin 和桌面代码进入 Engine；以负向 fixture 证明每条边界都会失败。
+- [ ] 5.2 基于固定 DSH 的 Host process/backend controller、Node-mode 环境与 single-instance 模式实现 Electron 单实例锁、第二实例上下文转交、串行 start/retry/stop、有界 ready、优雅停止和强制终止升级；运行两个并发 Run 与 Host 崩溃恢复测试，证明只有一个 Shell 和一个有效 Receiver，两个 change 都可达且孤儿 Host 不会残留。
+- [ ] 5.3 基于固定 DSH 的 Tray 与 Shell settings ownership 模式实现 `quit`、`tray`、`ask` 用户级关闭偏好和托盘“完全退出”，运行 Windows 自动化测试验证隐藏、重新打开、保存偏好、会话退出、Host 关闭和完全退出语义。
+- [ ] 5.4 强化 Renderer sandbox、`contextIsolation`、CSP、IPC sender/origin 校验和版本化 allowlist，并扩展架构检查拒绝 Renderer 访问 Cordis/Node、Electron Main 承载产品 composition、入口绕过 Application Plugin 和桌面代码进入 Engine；以负向 fixture 证明每条边界都会失败。
 - [ ] 5.5 实现投影 journal、原子 snapshot、重复收敛和阈值压缩，以高事件量基准验证重启恢复、内存上限、启动时间和 journal 损坏诊断满足记录的性能预算。
 - [ ] 5.6 更新桌面安全、数据保留、关闭行为和恢复文档，执行卸载/重装 fixture 证明默认不误删 Workspace 事实并明确用户级 Dashboard 数据处理方式。
 
 ## 6. 生成并验证 Windows x64 安装产物
 
-- [ ] 6.1 配置 Windows x64 桌面打包、产品元数据、图标和确定性资源清单，执行打包命令生成可安装产物并通过品牌、来源和 package contents 检查。
+- [ ] 6.1 使用精确锁定的 `electron-builder` 配置 Windows x64 桌面打包、产品元数据、图标和确定性资源清单，把 Desktop Host 与 Renderer 作为显式资源打包；执行打包命令生成可安装产物并通过品牌、来源和 package contents 检查。
 - [ ] 6.2 在干净 Windows 用户环境安装候选，运行启动、Run 自动激活、OTLP 接收、单实例、托盘、直接退出和卸载端到端测试并保存 Evidence。
 - [ ] 6.3 为 macOS、Linux 和 Windows ARM64 返回明确 unsupported/experimental 状态，用平台矩阵测试证明构建能力不会被文档、CLI 或 UI 误报为正式支持。
 - [ ] 6.4 测量安装体积、冷启动、空闲内存、活动内存和 receiver 吞吐，把预算与实测结果写入正式验证报告；超出预算时先消除非必要依赖和后台工作再重新验证。

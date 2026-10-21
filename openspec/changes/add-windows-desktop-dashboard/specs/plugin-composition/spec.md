@@ -4,7 +4,7 @@
 
 ### Requirement: 外部入口作为 Application Plugin 接入
 
-CLI、IDE、API 与 Desktop 主进程 MUST 作为 Application Plugin 通过版本化应用服务调用产品能力；命令能力插件通过 Effect 注册 Handler，协议入口只负责协议解析、结果渲染和进程退出语义，Desktop Renderer 只能通过版本化 IPC 使用主进程公开的有界能力。
+CLI、IDE、API 与 Desktop Host MUST 作为 Application Plugin 通过版本化应用服务调用产品能力；命令能力插件通过 Effect 注册 Handler，协议入口只负责协议解析、结果渲染和进程退出语义，薄 Electron Shell 只能通过私有、有界的进程间契约桥接 Desktop Host 与 Renderer。
 
 #### Scenario: CLI 与 IDE 查询同一 Run
 
@@ -19,23 +19,23 @@ CLI、IDE、API 与 Desktop 主进程 MUST 作为 Application Plugin 通过版�
 #### Scenario: Desktop Renderer 请求观测快照
 
 - **WHEN** Renderer 通过声明的 IPC 契约请求当前 change 投影
-- **THEN** Desktop Application Plugin 调用同一主进程应用服务返回版本化快照，Renderer 不直接访问 Cordis Context、文件系统或 Receiver
+- **THEN** Desktop Host 中的 Desktop Application Plugin 调用版本化应用服务返回快照，经 Electron Main 与 Preload 的声明式契约桥接给 Renderer；Renderer 不直接访问 Cordis Context、文件系统或 Receiver
 
 ## ADDED Requirements
 
 ### Requirement: 桌面能力使用跨进程 Cordis composition
 
-Repoctopus MUST 在 Runtime 进程通过内置插件贡献桌面 Launcher 与本地遥测目的地，并在 Electron 主进程通过统一 App Boot 启动专用 Cordis composition，组合 OTLP Receiver、Projection Store、生命周期适配器和 Desktop Application Plugin；两个进程不得共享内存容器或建立 Cordis 之外的产品级依赖容器。
+Repoctopus MUST 在 Runtime 进程通过内置插件贡献桌面 Launcher 与本地遥测目的地，由薄 Electron Shell 启动独立 Node-mode Desktop Host 子进程，并在该 Host 中通过统一 App Boot 启动专用 Cordis composition，组合 OTLP Receiver、Projection Store 和 Desktop Application Plugin；Runtime 与 Desktop Host 不得共享内存容器，Electron Shell 不得成为产品级依赖容器。
 
 #### Scenario: 开发 Run 启动桌面应用
 
 - **WHEN** project composition 开始开发 Run 且本机桌面能力可用
-- **THEN** Runtime 中的内置 Contributor 通过稳定应用端口启动或激活 Electron 主进程，并把本地目的地交给现有 Telemetry Service
+- **THEN** Runtime 中的内置 Contributor 通过稳定应用端口启动或激活 Electron Shell，并把 Desktop Host 发布的本地目的地交给现有 Telemetry Service
 
-#### Scenario: Electron 主进程启动
+#### Scenario: Electron Shell 启动 Desktop Host
 
 - **WHEN** Desktop Application 启动
-- **THEN** 它通过 App Boot 激活专用 composition，所需 Service 未就绪前 Application Plugin 保持未激活且不创建可用窗口
+- **THEN** Electron Main 立即创建受限窗口并启动 Node-mode Desktop Host 子进程，Host 通过 App Boot 激活专用 composition；所需 Service 未就绪前窗口显示明确启动状态，Application Plugin 不发布 ready
 
 #### Scenario: 桌面应用没有安装
 
@@ -44,12 +44,12 @@ Repoctopus MUST 在 Runtime 进程通过内置插件贡献桌面 Launcher 与本
 
 ### Requirement: 桌面插件资源遵循 Cordis 生命周期
 
-Desktop Receiver、Projection、IPC、窗口、托盘、进程监听器和 Timer MUST 由所属 Cordis Fiber 与 Effect 持有；卸载或应用退出时先停止接纳新操作，再有界排空并撤销资源，已持久化 envelope 与 projection journal 保持可恢复。
+Desktop Host 内的 Receiver、Projection、Application Service、进程内订阅和 Timer MUST 由所属 Cordis Fiber 与 Effect 持有；Electron Main 的窗口、托盘、子进程控制器、私有 IPC 和原生监听器 MUST 由显式基础设施 owner 持有并按确定顺序释放。卸载、Host 重启或应用退出时先停止接纳新操作，再有界排空并撤销资源，已持久化 envelope 与 projection journal 保持可恢复。
 
 #### Scenario: Desktop Application Plugin 卸载
 
 - **WHEN** Desktop Application Plugin 所属 Fiber 开始卸载
-- **THEN** 新窗口与 IPC 请求停止接纳，既有请求有界排空，窗口、托盘和监听器按依赖顺序撤销
+- **THEN** Host 停止接纳新应用请求并有界排空 Receiver 与 Projection 订阅；Electron Shell 保持可恢复错误界面，并可启动新的 Host 实例
 
 #### Scenario: Receiver Provider 重新加载
 
@@ -59,4 +59,4 @@ Desktop Receiver、Projection、IPC、窗口、托盘、进程监听器和 Timer
 #### Scenario: Renderer 重新加载
 
 - **WHEN** Renderer 窗口重新加载或崩溃恢复
-- **THEN** Electron 主进程的 Cordis composition、Receiver 和 Projection 保持有效，新的 Renderer 重新取得版本化快照和后续增量
+- **THEN** Desktop Host 的 Cordis composition、Receiver 和 Projection 保持有效，新的 Renderer 经 Electron Main 重新取得版本化快照和后续增量

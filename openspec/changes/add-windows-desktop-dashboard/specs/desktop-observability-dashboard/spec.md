@@ -8,7 +8,7 @@
 
 ### Requirement: Windows 开发 Run 自动激活单实例桌面应用
 
-Repoctopus MUST 在受支持的 Windows 环境开始开发 Run 时启动或激活一个桌面应用实例，并把对应 Workspace、change 与 Run 上下文交给该实例；同一用户会话不得因并发 Run 启动重复桌面进程或接收器。
+Repoctopus MUST 在受支持的 Windows 环境开始开发 Run 时启动或激活一个桌面应用实例，并把对应 Workspace、change 与 Run 上下文交给该实例；同一用户会话不得因并发 Run 启动重复 Electron Shell、有效 Desktop Host 或接收器。
 
 #### Scenario: 首个开发 Run 启动
 
@@ -18,7 +18,7 @@ Repoctopus MUST 在受支持的 Windows 环境开始开发 Run 时启动或激�
 #### Scenario: 第二个 change 开始运行
 
 - **WHEN** 桌面应用已经运行且另一个开发 Run 开始
-- **THEN** 既有实例接纳新的 change 上下文且不创建第二个接收器
+- **THEN** 既有 Shell 把新的 change 上下文交给当前 Desktop Host，且不创建第二个有效 Host 或接收器
 
 #### Scenario: 未正式支持的平台启动 Run
 
@@ -74,7 +74,7 @@ Repoctopus MUST 在受支持的 Windows 环境开始开发 Run 时启动或激�
 
 #### Scenario: 界面进程重新加载
 
-- **WHEN** 桌面主进程仍在运行但界面重新加载或重新打开
+- **WHEN** Desktop Host 仍在运行但 Renderer 重新加载或窗口重新打开
 - **THEN** 界面先得到同一投影版本的一致快照，再从后续序列继续接收增量
 
 ### Requirement: 重放和重复投递收敛为一致投影
@@ -98,7 +98,7 @@ Repoctopus MUST 在受支持的 Windows 环境开始开发 Run 时启动或激�
 
 ### Requirement: 用户可以选择窗口关闭行为
 
-桌面应用 MUST 提供直接退出、最小化到系统托盘和每次询问三种关闭偏好，并把选择保存为用户级设置；托盘菜单中的完全退出动作必须终止桌面进程，本地接收停止不得影响远端遥测。
+桌面应用 MUST 提供直接退出、最小化到系统托盘和每次询问三种关闭偏好，并把选择保存为用户级设置；托盘菜单中的完全退出动作必须终止 Electron Shell 与 Desktop Host，本地接收停止不得影响远端遥测。
 
 #### Scenario: 用户选择最小化到托盘
 
@@ -108,7 +108,7 @@ Repoctopus MUST 在受支持的 Windows 环境开始开发 Run 时启动或激�
 #### Scenario: 用户选择直接退出
 
 - **WHEN** 关闭偏好为直接退出且用户关闭最后一个窗口
-- **THEN** 桌面进程与本地接收器退出，其他遥测目的地和开发 Run 不受影响
+- **THEN** Electron Shell、Desktop Host 与本地接收器退出，其他遥测目的地和开发 Run 不受影响
 
 #### Scenario: 用户尚未保存偏好
 
@@ -122,7 +122,7 @@ Repoctopus MUST 在受支持的 Windows 环境开始开发 Run 时启动或激�
 
 ### Requirement: 桌面界面保持最小权限边界
 
-桌面应用 MUST 隔离具有本机能力的主进程与展示界面，只向界面公开版本化的只读投影和有界用户动作；普通遥测属性的脱敏规则同样适用于本地投影、诊断和系统通知。
+桌面应用 MUST 隔离具有本机能力的 Electron Main、承载产品服务的 Desktop Host 与展示界面，只通过经校验的私有 IPC 和 Preload 向界面公开版本化只读投影与有界用户动作；普通遥测属性的脱敏规则同样适用于本地投影、诊断和系统通知。
 
 #### Scenario: 界面请求未声明的本机能力
 
