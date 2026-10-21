@@ -2,6 +2,8 @@ import { lstat, readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 
+import { evaluateSourceBoundaries } from './architecture-source-boundaries.mjs';
+
 const root = path.resolve(import.meta.dirname, '..');
 const policy = JSON.parse(
   await readFile(path.join(root, 'scripts', 'architecture-governance.json'), 'utf8'),
@@ -38,6 +40,12 @@ const productionSources = (
   .flat()
   .filter((file) => file.endsWith('.ts'))
   .sort();
+const productionSourceContents = await Promise.all(
+  productionSources.map(async (source) => ({
+    path: source,
+    contents: await readFile(path.join(root, source), 'utf8'),
+  })),
+);
 
 for (const source of productionSources) {
   const owners = policy.capabilities.filter((capability) =>
@@ -161,7 +169,9 @@ for (const guard of policy.compositionGuards ?? []) {
   }
 }
 
+findings.push(...evaluateSourceBoundaries(productionSourceContents, policy.sourceBoundaries));
+
 if (findings.length > 0) throw new Error(findings.join('\n'));
 process.stdout.write(
-  `Verified ${productionSources.length} production sources, ${policy.capabilities.length} capability owners, protected Evidence flow, and legacy workflow isolation\n`,
+  `Verified ${productionSources.length} production sources, ${policy.capabilities.length} capability owners, protected source boundaries, Evidence flow, and legacy workflow isolation\n`,
 );

@@ -340,6 +340,59 @@
       "allowed": ["plugins/delivery/file-delivery-provider.ts"]
     }
   ],
+  "sourceBoundaries": [
+    {
+      "id": "single-skill-container",
+      "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
+      "pattern": "(?:plugin\\s*:\\s*SkillRegistry\\b|new\\s+SkillRegistry\\s*\\(|\\.plugin\\s*\\(\\s*SkillRegistry\\b)",
+      "allowed": ["plugins/builtin-catalog.ts"],
+      "exactMatches": 1,
+      "message": "Skill providers must contribute through the single registered SkillRegistry container"
+    },
+    {
+      "id": "single-specification-container",
+      "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
+      "pattern": "super\\s*\\(\\s*context\\s*,\\s*['\"]specification['\"]\\s*\\)",
+      "allowed": ["services/specification.ts"],
+      "exactMatches": 1,
+      "message": "Specification providers must extend the single Specification service container"
+    },
+    {
+      "id": "platform-adapter-run-write",
+      "targets": ["platform/**"],
+      "pattern": "\\b(?:ctx|context)\\.(?:workflowRuns|runStore)\\b|from\\s+['\"][^'\"]*services/(?:workflow-runs|run-store)\\.js['\"]",
+      "allowed": [],
+      "message": "Platform adapters must emit verified facts instead of calling WorkflowRuns or RunStore"
+    },
+    {
+      "id": "coordinator-domain-store-write",
+      "targets": ["services/post-merge-coordinator.ts"],
+      "pattern": "\\b(?:ctx|context)\\.(?:runStore|evidenceCoordinator|postMergeActions)\\b|\\b(?:new\\s+)?(?:File)?(?:Runtime|Evidence|Delivery|EventInbox)Store\\b|from\\s+['\"][^'\"]*(?:platform|domains)/[^'\"]*store[^'\"]*['\"]|\\b(?:writeFile|appendFile|rename|rm)\\s*\\(",
+      "allowed": [],
+      "message": "PostMergeCoordinator must coordinate through services and must not write domain stores or files"
+    },
+    {
+      "id": "specification-provider-closure",
+      "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
+      "pattern": "\\b(?:execute|spawn|json)\\s*(?:<[^>]+>)?\\s*\\([^)]*\\[\\s*['\"]archive['\"]",
+      "allowed": ["platform/specification/openspec-provider.ts"],
+      "message": "Specification closure commands may only be executed by a Specification Provider"
+    },
+    {
+      "id": "protected-git-publication",
+      "targets": ["platform/**"],
+      "pattern": "(?:\\bgit\\s*\\([^,]+,\\s*|\\bexecute\\s*\\(\\s*['\"]git['\"]\\s*,\\s*)\\[[^\\]]{0,700}['\"](?:commit|push)['\"]",
+      "allowed": ["platform/git/delivery.ts"],
+      "message": "Git commit and push may only be executed by the protected Delivery Action adapter"
+    },
+    {
+      "id": "protected-merge-request-publication",
+      "targets": ["platform/**"],
+      "pattern": "method\\s*:\\s*['\"](?:POST|PATCH)['\"]",
+      "allowed": ["platform/github/merge-request.ts"],
+      "message": "Merge request creation and updates may only be executed by a protected Delivery Action adapter"
+    }
+  ],
   "protectedEvidenceFlow": {
     "requiredBindings": [
       {

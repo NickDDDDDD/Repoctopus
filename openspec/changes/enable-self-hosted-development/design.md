@@ -156,6 +156,8 @@ Runner 启动 App Boot project composition，等待 HTTP 和后台领取 Fiber�
 - 只有受保护 Action Adapter 可以 commit、push 或更新 MR；
 - 生产代码不得重新引入旧 `oh-my-workflow`、IDE Hook 状态机或项目专有路径。
 
+这里的“唯一容器”约束服务定义和注册根，而不是把 Provider 实现写死为一个：多个 Skill 或 Specification Provider 可以同时存在于 catalog，项目 composition 只选择其中一个规格权威；静态检查拒绝第二个 `SkillRegistry` 注册或 `Specification` Service 根，启动期 authority 检查再拒绝同一 composition 中的多个活动权威。其余副作用边界以路径限定的机器规则登记，并由逐条违规 fixture 验证，避免仅靠代码评审约定。
+
 ### 12. OpenTelemetry 只输出关联事实
 
 新增事件覆盖 Skill 选择、目录投影、规格校验、Webhook 接收、Inbox 去重、领取、重试、死信、MR 核对、Post-merge 阶段和规格关闭。允许属性使用现有 change/run/composition/bundle/receipt 标识，加 Provider、Source、Delivery ID、Skill 名称与摘要。
