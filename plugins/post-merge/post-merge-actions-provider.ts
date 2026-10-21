@@ -24,7 +24,7 @@ const plugin = ((context: Context, config: PostMergeActionsProviderConfig) => {
     workspaceRoot: config.workspaceRoot,
     temporaryRoot: config.temporaryRoot,
     verificationPathPrefixes: config.verificationPathPrefixes,
-    publicationPolicy: {
+    publicationPolicy: () => ({
       apiVersion: 'repoctopus/v1alpha1',
       kind: 'PostMergePublicationPolicy',
       operations: [...config.publication.operations],
@@ -44,7 +44,7 @@ const plugin = ((context: Context, config: PostMergeActionsProviderConfig) => {
         title: config.publication.coordinationMergeRequest.title,
         body: config.publication.coordinationMergeRequest.body,
       },
-    },
+    }),
   });
 }) as Plugin;
 

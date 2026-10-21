@@ -106,12 +106,50 @@ function projectSelections(
     { id: 'delivery-command' },
     { id: 'workflow-runs', config: { workspaceRoot } },
     { id: 'workflow-run-command' },
+    ...postMergeSelections(productRoot, workspaceRoot, config),
     ...(config.shared.composition?.plugins
       .filter((plugin) => !selectedIds.has(plugin.id))
       .map((plugin) => ({
         id: plugin.id,
         ...(plugin.config === undefined ? {} : { config: plugin.config }),
       })) ?? []),
+  ];
+}
+
+function postMergeSelections(
+  productRoot: string,
+  workspaceRoot: string,
+  config: EffectiveProjectConfig,
+): CompositionPluginSelection[] {
+  const postMerge = config.shared.postMerge;
+  if (!postMerge) return [];
+  return [
+    {
+      id: 'post-merge-coordinator',
+      config: {
+        policy: deliveryPolicy(config),
+        execution: {
+          projectId: config.shared.project.id,
+          workspaceRoot,
+          workflowSource: path.join(productRoot, 'workflows', 'post-merge.yaml'),
+          evidenceProfile: postMerge.evidenceProfile,
+          repositories: config.shared.repositories.map((repository) => ({
+            repositoryId: repository.id,
+            path: path.resolve(workspaceRoot, repository.path),
+          })),
+        },
+      },
+    },
+    {
+      id: 'post-merge-actions',
+      config: {
+        workspaceRoot,
+        temporaryRoot: path.resolve(workspaceRoot, postMerge.temporaryRoot),
+        verificationPathPrefixes: postMerge.allowedWorkspacePaths.verificationPathPrefixes,
+        publication: postMerge.publication,
+      },
+    },
+    { id: 'post-merge-command' },
   ];
 }
 
@@ -124,7 +162,6 @@ function runnerSelections(
   if (!platformEvents) {
     throw new Error('Runner application requires platformEvents configuration');
   }
-  const postMerge = config.shared.postMerge;
   return [
     ...projectSelections(productRoot, workspaceRoot, config),
     {
@@ -155,36 +192,7 @@ function runnerSelections(
         shutdownTimeoutMs: platformEvents.runner.shutdownTimeoutMs,
       },
     },
-    ...(postMerge
-      ? [
-          {
-            id: 'post-merge-coordinator',
-            config: {
-              policy: deliveryPolicy(config),
-              execution: {
-                projectId: config.shared.project.id,
-                workspaceRoot,
-                workflowSource: path.join(productRoot, 'workflows', 'post-merge.yaml'),
-                evidenceProfile: postMerge.evidenceProfile,
-                repositories: config.shared.repositories.map((repository) => ({
-                  repositoryId: repository.id,
-                  path: path.resolve(workspaceRoot, repository.path),
-                })),
-              },
-            },
-          },
-          { id: 'github-post-merge-events' },
-          {
-            id: 'post-merge-actions',
-            config: {
-              workspaceRoot,
-              temporaryRoot: path.resolve(workspaceRoot, postMerge.temporaryRoot),
-              verificationPathPrefixes: postMerge.allowedWorkspacePaths.verificationPathPrefixes,
-              publication: postMerge.publication,
-            },
-          },
-        ]
-      : []),
+    ...(config.shared.postMerge ? [{ id: 'github-post-merge-events' }] : []),
     { id: 'runner-application' },
   ];
 }

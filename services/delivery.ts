@@ -9,6 +9,7 @@ import type {
   DeliveryIntent,
   DeliveryMergeRequestRefresh,
   DeliveryPolicy,
+  DeliveryReconciliationCandidate,
   DeliveryState,
   HumanDecisionResponse,
   MergeRequestReference,
@@ -62,6 +63,10 @@ export abstract class Delivery extends Service {
     policy: DeliveryPolicy,
     signal?: AbortSignal,
   ): Promise<DeliveryMergeRequestRefresh>;
+  reconciliationCandidates(signal?: AbortSignal): Promise<DeliveryReconciliationCandidate[]> {
+    void signal;
+    return Promise.resolve([]);
+  }
 }
 
 declare module '@deepseek-ai/cordis' {

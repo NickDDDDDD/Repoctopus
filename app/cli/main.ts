@@ -40,6 +40,7 @@ import { bootBootstrapComposition, bootProjectComposition } from '../boot/bootst
 import { reviewHumanDecision } from './human-decision.js';
 import { reviewProjectConfigurationDecision } from './project-configuration-decision.js';
 import { startRunnerApplication } from '../runner/application.js';
+import type { PostMergeReconciliationResult } from '../../services/post-merge-coordinator.js';
 
 const DIST_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PRODUCT_ROOT =
@@ -653,6 +654,14 @@ async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   );
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
+    const reconciliation = app.composition.entries.some(
+      (entry) => entry.id === 'post-merge-command',
+    )
+      ? await app.context.commandRouter.execute<
+          Record<string, never>,
+          PostMergeReconciliationResult
+        >('post-merge.reconcile', {})
+      : null;
     const [source, projectSnapshot] = await Promise.all([
       readFile(workflowPath, 'utf8'),
       app.context.commandRouter.execute<{ root: string; workspaceRoot: string }, ProjectSnapshot>(
@@ -679,8 +688,52 @@ async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
       command: 'run start',
       runId: result.value.state.runId,
       result: result.value,
-      diagnostics: result.diagnostics,
+      diagnostics: [
+        ...result.diagnostics,
+        ...(reconciliation && reconciliation.checked > 0
+          ? [
+              {
+                level:
+                  reconciliation.failed > 0 || reconciliation.blocked > 0
+                    ? ('warning' as const)
+                    : ('info' as const),
+                code: 'post-merge.reconciliation',
+                message: `启动前补偿检查 ${reconciliation.checked} 个 change：完成 ${reconciliation.completed}，等待 ${reconciliation.waiting}，阻断 ${reconciliation.blocked}，失败 ${reconciliation.failed}`,
+              },
+            ]
+          : []),
+      ],
       nextActions: nextActions(result.value),
+    });
+  } finally {
+    await app.close();
+  }
+}
+
+async function postMergeReconcile(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    if (!app.composition.entries.some((entry) => entry.id === 'post-merge-command')) {
+      throw new Error('Post-merge reconciliation requires postMerge project configuration');
+    }
+    const result = await app.context.commandRouter.execute<
+      Record<string, never>,
+      PostMergeReconciliationResult
+    >('post-merge.reconcile', {});
+    return successEnvelope({
+      command: 'post-merge reconcile',
+      result,
+      diagnostics:
+        result.failed > 0 || result.blocked > 0
+          ? [
+              {
+                level: 'warning',
+                code: 'post-merge.reconciliation-incomplete',
+                message: `补偿检查存在未收敛结果：阻断 ${result.blocked}，失败 ${result.failed}`,
+              },
+            ]
+          : [],
     });
   } finally {
     await app.close();
@@ -943,11 +996,12 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   if (command === 'event status') return eventStatus(parsed);
   if (command === 'event replay') return eventReplay(parsed);
   if (command === 'event retry') return eventRetry(parsed);
+  if (command === 'post-merge reconcile') return postMergeReconcile(parsed);
   if (command === 'doctor') return doctor(parsed);
   if (command === 'browser doctor') return browserDoctor(parsed);
   if (command === 'browser install') return browserInstall(parsed);
   throw new Error(
-    'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|record|resume> | runner start | delivery <checkpoint|prepare|status|publish|resume|refresh> | event <status|replay|retry> | approval review | browser <doctor|install> | doctor',
+    'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|record|resume> | runner start | post-merge reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh> | event <status|replay|retry> | approval review | browser <doctor|install> | doctor',
   );
 }
 

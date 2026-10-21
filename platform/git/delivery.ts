@@ -120,6 +120,45 @@ async function remoteOid(cwd: string, remote: string, branch: string): Promise<s
   return oid || null;
 }
 
+async function adoptEquivalentPostMergeCommit(
+  cwd: string,
+  input: PostMergeGitPublicationInput,
+  remoteCommit: string,
+  expectedTree: string,
+  localHead: string,
+): Promise<boolean> {
+  await git(cwd, [
+    'fetch',
+    '--no-tags',
+    input.policy.remote,
+    `refs/heads/${input.coordination.sourceBranch}`,
+  ]);
+  const fetched = await git(cwd, ['rev-parse', 'FETCH_HEAD']);
+  if (fetched !== remoteCommit) {
+    throw new Error('Post-merge coordination remote source drifted during recovery');
+  }
+  const parents = (await git(cwd, ['rev-list', '--parents', '-n', '1', fetched])).split(/\s+/u);
+  const [tree, message, authorName, authorEmail] = await Promise.all([
+    git(cwd, ['rev-parse', `${fetched}^{tree}`]),
+    git(cwd, ['show', '-s', '--format=%B', fetched]),
+    git(cwd, ['show', '-s', '--format=%an', fetched]),
+    git(cwd, ['show', '-s', '--format=%ae', fetched]),
+  ]);
+  if (
+    parents.length !== 2 ||
+    parents[1] !== input.baseline.head ||
+    tree !== expectedTree ||
+    message !== input.policy.commit.message.trim() ||
+    authorName !== input.policy.commit.authorName.trim() ||
+    authorEmail !== input.policy.commit.authorEmail.trim()
+  ) {
+    return false;
+  }
+  await git(cwd, ['update-ref', 'HEAD', fetched, localHead]);
+  await assertClean(cwd);
+  return true;
+}
+
 async function publishCheckpoint(
   cwd: string,
   remote: string,
@@ -311,15 +350,27 @@ export class GitDeliveryAdapter implements PostMergeDeliveryGitPort {
     let head = await git(cwd, ['rev-parse', 'HEAD']);
     let commitRecovered = false;
     if (head === input.baseline.head) {
-      if (before !== input.baseline.head) {
-        throw new Error('Post-merge coordination remote source drifted before commit');
-      }
       await git(cwd, ['add', '--all', '--', ...input.audit.changedFiles]);
       await assertPublicationDiff(cwd, input, 'cached');
       const unstaged = await gitRaw(cwd, ['diff', '--name-only', '-z', '--']);
       const untracked = await gitRaw(cwd, ['ls-files', '--others', '--exclude-standard', '-z']);
       if (unstaged.length > 0 || untracked.length > 0) {
         throw new Error('Post-merge workspace changed after audited paths were staged');
+      }
+      const stagedTree = await git(cwd, ['write-tree']);
+      if (before !== input.baseline.head) {
+        if (
+          before &&
+          (await adoptEquivalentPostMergeCommit(cwd, input, before, stagedTree, head))
+        ) {
+          return {
+            commitOid: before,
+            remoteOid: before,
+            commitRecovered: true,
+            pushRecovered: true,
+          };
+        }
+        throw new Error('Post-merge coordination remote source drifted before commit');
       }
       await git(cwd, [
         '-c',
@@ -362,13 +413,43 @@ export class GitDeliveryAdapter implements PostMergeDeliveryGitPort {
     let pushRecovered = remoteBeforePush === head;
     if (!pushRecovered) {
       if (remoteBeforePush !== input.baseline.head) {
+        const expectedTree = await git(cwd, ['rev-parse', 'HEAD^{tree}']);
+        if (
+          remoteBeforePush &&
+          (await adoptEquivalentPostMergeCommit(cwd, input, remoteBeforePush, expectedTree, head))
+        ) {
+          return {
+            commitOid: remoteBeforePush,
+            remoteOid: remoteBeforePush,
+            commitRecovered: true,
+            pushRecovered: true,
+          };
+        }
         throw new Error('Post-merge coordination remote source drifted before push');
       }
-      await git(cwd, [
-        'push',
-        input.policy.remote,
-        `${input.coordination.sourceBranch}:refs/heads/${input.coordination.sourceBranch}`,
-      ]);
+      try {
+        await git(cwd, [
+          'push',
+          input.policy.remote,
+          `${input.coordination.sourceBranch}:refs/heads/${input.coordination.sourceBranch}`,
+        ]);
+      } catch (error) {
+        const raced = await remoteOid(cwd, input.policy.remote, input.coordination.sourceBranch);
+        const expectedTree = await git(cwd, ['rev-parse', 'HEAD^{tree}']);
+        if (
+          raced &&
+          raced !== input.baseline.head &&
+          (await adoptEquivalentPostMergeCommit(cwd, input, raced, expectedTree, head))
+        ) {
+          return {
+            commitOid: raced,
+            remoteOid: raced,
+            commitRecovered: true,
+            pushRecovered: true,
+          };
+        }
+        throw error;
+      }
     }
     const published = await remoteOid(cwd, input.policy.remote, input.coordination.sourceBranch);
     if (published !== head) {

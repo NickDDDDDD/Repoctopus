@@ -61,9 +61,14 @@ describe('project composition assembly', () => {
         'skill-provider-filesystem',
         'specification-openspec',
         'platform-events-file',
+        'post-merge-coordinator',
+        'post-merge-actions',
+        'post-merge-command',
       ]),
     );
     expect(projectIds).not.toContain('http-host');
+    expect(projectIds).not.toContain('github-webhook-route');
+    expect(projectIds).not.toContain('platform-event-runner');
     expect(projectIds).not.toContain('runner-application');
     expect(runnerIds).toEqual(
       expect.arrayContaining([

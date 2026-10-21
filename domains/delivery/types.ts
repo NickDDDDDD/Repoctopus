@@ -81,6 +81,11 @@ export interface MergeRequestReference {
   number: number;
 }
 
+export interface DeliveryReconciliationCandidate {
+  changeId: string;
+  reference: MergeRequestReference;
+}
+
 export type DeliveryMergeRequestMatch =
   | { status: 'matched'; changeIds: [string]; diagnostic: null }
   | { status: 'not_found'; changeIds: []; diagnostic: 'delivery-event-no-match' }

@@ -43,7 +43,7 @@ export interface PostMergeActionsConfig {
   verificationPathPrefixes?: string[];
   checkout?: PostMergeCheckoutPort;
   workspace?: PostMergeWorkspacePort;
-  publicationPolicy?: PostMergePublicationPolicy;
+  publicationPolicy?: PostMergePublicationPolicy | (() => PostMergePublicationPolicy);
 }
 
 export interface PostMergeVerificationResult {
@@ -97,7 +97,7 @@ export class PostMergeActions extends Service {
   private readonly verificationPathPrefixes: string[];
   private readonly checkout: PostMergeCheckoutPort;
   private readonly workspace: PostMergeWorkspacePort;
-  private readonly publicationPolicy: PostMergePublicationPolicy | undefined;
+  private readonly publicationPolicy: (() => PostMergePublicationPolicy) | undefined;
 
   constructor(context: Context, config: PostMergeActionsConfig) {
     super(context, 'postMergeActions');
@@ -107,14 +107,14 @@ export class PostMergeActions extends Service {
     this.verificationPathPrefixes = [...(config.verificationPathPrefixes ?? [])];
     this.checkout = config.checkout ?? new GitPostMergeCheckout();
     this.workspace = config.workspace ?? new GitPostMergeWorkspace();
-    this.publicationPolicy = config.publicationPolicy
-      ? structuredClone(config.publicationPolicy)
-      : undefined;
-    if (
-      this.publicationPolicy &&
-      postMergePublicationPolicyFindings(this.publicationPolicy).length > 0
-    ) {
-      throw new Error('Post-merge publication policy is invalid');
+    if (typeof config.publicationPolicy === 'function') {
+      this.publicationPolicy = config.publicationPolicy;
+    } else if (config.publicationPolicy) {
+      const policy = structuredClone(config.publicationPolicy);
+      if (postMergePublicationPolicyFindings(policy).length > 0) {
+        throw new Error('Post-merge publication policy is invalid');
+      }
+      this.publicationPolicy = () => structuredClone(policy);
     }
   }
 
@@ -421,9 +421,13 @@ export class PostMergeActions extends Service {
       if (!this.publicationPolicy) {
         throw new Error('Post-merge publication policy is not configured');
       }
+      const publicationPolicy = this.publicationPolicy();
+      if (postMergePublicationPolicyFindings(publicationPolicy).length > 0) {
+        throw new Error('Post-merge publication policy is invalid');
+      }
       if (
         journal.publication &&
-        canonicalJson(journal.publication.request.policy) !== canonicalJson(this.publicationPolicy)
+        canonicalJson(journal.publication.request.policy) !== canonicalJson(publicationPolicy)
       ) {
         throw new Error('Post-merge publication policy drifted after intent persistence');
       }
@@ -444,7 +448,7 @@ export class PostMergeActions extends Service {
           workspaceRoot: this.workspaceRoot,
           baseline: structuredClone(journal.baseline),
           audit: structuredClone(freshAudit),
-          policy: structuredClone(this.publicationPolicy),
+          policy: structuredClone(publicationPolicy),
         };
         assertPostMergePublicationRequest(request);
         journal = { ...journal, publication: { request } };

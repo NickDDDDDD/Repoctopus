@@ -195,6 +195,10 @@ class TestDelivery extends Delivery {
   refreshForMergeRequest(reference: MergeRequestReference) {
     return this.domain.refreshForMergeRequest(reference);
   }
+
+  override reconciliationCandidates() {
+    return this.domain.reconciliationCandidates();
+  }
 }
 
 async function harness(states: Record<string, AuthoritativeState>, changeId = 'post-merge-change') {
@@ -266,6 +270,53 @@ describe('post-merge coordinator', () => {
     });
     expect(ready.github.calls).toEqual(['app', 'api', 'app', 'api', 'app', 'api']);
     await ready.context.fiber.dispose();
+  });
+
+  it('enumerates project candidates without using MR authors and isolates reconciliation failures', async () => {
+    const first = await harness({ app: 'merged', api: 'open' }, 'alpha-change');
+    const secondState = activeState('beta-change');
+    secondState.mergeRequests!.business[0]!.mergeRequest!.number = 21;
+    secondState.mergeRequests!.business[1]!.mergeRequest!.number = 22;
+    await first.store.commit({
+      state: secondState,
+      previousStateVersion: null,
+      event: event(secondState),
+    });
+
+    await expect(first.context.delivery.reconciliationCandidates()).resolves.toEqual([
+      { changeId: 'alpha-change', reference: references.app },
+      {
+        changeId: 'beta-change',
+        reference: { ...references.app, number: 21 },
+      },
+    ]);
+
+    let attempts = 0;
+    const original = first.coordinator.execute.bind(first.coordinator);
+    first.coordinator.execute = async (reference, signal) => {
+      attempts += 1;
+      if (attempts === 2) throw new Error('isolated failure');
+      return original(reference, signal);
+    };
+    await expect(first.coordinator.reconcile()).resolves.toEqual({
+      checked: 2,
+      completed: 0,
+      waiting: 1,
+      blocked: 0,
+      failed: 1,
+      items: [
+        expect.objectContaining({
+          status: 'waiting',
+          candidateChangeId: 'alpha-change',
+        }),
+        {
+          status: 'failed',
+          diagnostic: 'post-merge-reconciliation-failed',
+          candidateChangeId: 'beta-change',
+        },
+      ],
+    });
+    await first.context.fiber.dispose();
   });
 
   it('uses authoritative state for out-of-order events and produces one stable facts digest', async () => {

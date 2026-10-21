@@ -126,4 +126,10 @@ export class FileDeliveryProvider extends Delivery {
       this.domain(policy).refreshForMergeRequest(reference),
     );
   }
+
+  override reconciliationCandidates(signal?: AbortSignal) {
+    return this.operations.run({ cancellable: true, signal }, () =>
+      this.domain().reconciliationCandidates(),
+    );
+  }
 }

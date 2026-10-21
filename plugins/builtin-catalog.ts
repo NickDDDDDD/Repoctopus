@@ -18,6 +18,7 @@ import deliveryContributor from './command/delivery-contributor.js';
 import projectOnboardingContributor from './command/project-onboarding-contributor.js';
 import maintenanceContributor from './command/maintenance-contributor.js';
 import platformEventContributor from './command/platform-event-contributor.js';
+import postMergeContributor from './command/post-merge-contributor.js';
 import { FileDeliveryProvider } from './delivery/file-delivery-provider.js';
 import { GitProjectProvider } from './project/git-project-provider.js';
 import { FileRunStoreProvider } from './run/file-run-store-provider.js';
@@ -326,6 +327,25 @@ const definitions: readonly BuiltinDefinition[] = [
       'platform/git/remote-identity.ts',
       'platform/github/pull-request-event.ts',
       'plugins/events/github-post-merge-contributor.ts',
+    ],
+  },
+  {
+    descriptor: {
+      id: 'post-merge-command',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'contributor',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: [],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: postMergeContributor,
+    sourceFiles: [
+      'plugins/command/post-merge-contributor.ts',
+      'services/post-merge-coordinator.ts',
     ],
   },
   {

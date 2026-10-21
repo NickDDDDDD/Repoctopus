@@ -477,6 +477,26 @@ export class DeliveryService {
     return { match, ...(await this.refreshWithMergeRequestStatuses(match.changeIds[0])) };
   }
 
+  async reconciliationCandidates() {
+    return (await this.store.list())
+      .filter((state) => state.status === 'in_review' || state.status === 'merged')
+      .flatMap((state) => {
+        const business = state.mergeRequests?.business.find((item) => item.mergeRequest);
+        if (!business?.mergeRequest) return [];
+        return [
+          {
+            changeId: state.changeId,
+            reference: {
+              provider: business.mergeRequest.provider,
+              remoteIdentity: business.remoteIdentity,
+              number: business.mergeRequest.number,
+            },
+          },
+        ];
+      })
+      .sort((left, right) => left.changeId.localeCompare(right.changeId));
+  }
+
   status(changeId: string) {
     return this.requireState(changeId);
   }

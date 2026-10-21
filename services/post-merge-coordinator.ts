@@ -30,6 +30,23 @@ export type PostMergeExecutionResult =
       runId: string;
     };
 
+export type PostMergeReconciliationItem =
+  | (PostMergeExecutionResult & { candidateChangeId: string })
+  | {
+      status: 'failed';
+      diagnostic: 'post-merge-reconciliation-failed';
+      candidateChangeId: string;
+    };
+
+export interface PostMergeReconciliationResult {
+  checked: number;
+  completed: number;
+  waiting: number;
+  blocked: number;
+  failed: number;
+  items: PostMergeReconciliationItem[];
+}
+
 export class PostMergeCoordinator extends Service {
   static inject = ['delivery', 'postMergeActions', 'workflowRuns', 'workflowSource'];
   private readonly policy: DeliveryPolicy;
@@ -131,6 +148,36 @@ export class PostMergeCoordinator extends Service {
       diagnostic: 'post-merge-completed',
       changeId: coordination.changeId,
       runId,
+    };
+  }
+
+  async reconcile(signal?: AbortSignal): Promise<PostMergeReconciliationResult> {
+    const candidates = await this.ctx.delivery.reconciliationCandidates(signal);
+    const items: PostMergeReconciliationItem[] = [];
+    for (const candidate of candidates) {
+      try {
+        items.push({
+          ...(await this.execute(candidate.reference, signal)),
+          candidateChangeId: candidate.changeId,
+        });
+      } catch {
+        items.push({
+          status: 'failed',
+          diagnostic: 'post-merge-reconciliation-failed',
+          candidateChangeId: candidate.changeId,
+        });
+      }
+    }
+    return {
+      checked: candidates.length,
+      completed: items.filter((item) => item.status === 'executed').length,
+      waiting: items.filter((item) => item.status === 'waiting').length,
+      blocked: items.filter(
+        (item) =>
+          item.status === 'blocked' || item.status === 'ambiguous' || item.status === 'ignored',
+      ).length,
+      failed: items.filter((item) => item.status === 'failed').length,
+      items,
     };
   }
 }

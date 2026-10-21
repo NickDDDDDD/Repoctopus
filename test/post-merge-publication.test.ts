@@ -130,6 +130,38 @@ async function fixture(): Promise<Fixture> {
   };
 }
 
+async function competingRequest(
+  fx: Fixture,
+): Promise<{ repository: string; request: PostMergePublicationRequest }> {
+  const repository = path.join(fx.root, 'competing-work');
+  await git(fx.root, 'clone', fx.remote, repository);
+  await git(repository, 'checkout', 'feat/change');
+  const workspace = new GitPostMergeWorkspace();
+  const baseline = await workspace.cleanBaseline(repository);
+  await writeFile(path.join(repository, 'openspec', 'specs', 'demo', 'spec.md'), 'closed\n');
+  const diff = await workspace.diff(baseline);
+  const contentDigests = Object.fromEntries(
+    diff.changes.map((change) => [change.path, change.contentDigest]),
+  );
+  const auditBase = {
+    schemaVersion: 1 as const,
+    planDigest: `sha256:${'1'.repeat(64)}` as const,
+    closureId: `sha256:${'2'.repeat(64)}` as const,
+    baselineDigest: baseline.digest,
+    changedFiles: Object.keys(contentDigests).sort(),
+    contentDigests,
+  };
+  return {
+    repository,
+    request: {
+      ...structuredClone(fx.request),
+      workspaceRoot: repository,
+      baseline,
+      audit: { ...auditBase, digest: sha256(auditBase) },
+    },
+  };
+}
+
 class MemoryStore implements DeliveryStorePort {
   constructor(private readonly value: DeliveryState) {}
   load(changeId: string) {
@@ -291,6 +323,24 @@ describe('protected post-merge publication', () => {
     );
     const receipt = await service(fx, mergeRequests).publishPostMerge(fx.request);
     expect(receipt.mergeRequestRecovered).toBe(true);
+    expect(mergeRequests.updateCalls).toBe(1);
+  });
+
+  it('converges an independent Runner to an equivalent remote closure commit', async () => {
+    const fx = await fixture();
+    const competing = await competingRequest(fx);
+    const mergeRequests = new CoordinationMergeRequests(fx.coordination.mergeRequest, fx.remote);
+
+    const winner = await service(fx, mergeRequests).publishPostMerge(fx.request);
+    const converged = await service(fx, mergeRequests).publishPostMerge(competing.request);
+
+    expect(converged.commitOid).toBe(winner.commitOid);
+    expect(converged.remoteOid).toBe(winner.remoteOid);
+    expect(converged.commitRecovered).toBe(true);
+    expect(converged.pushRecovered).toBe(true);
+    expect(converged.mergeRequestRecovered).toBe(true);
+    expect(await git(competing.repository, 'rev-parse', 'HEAD')).toBe(winner.commitOid);
+    expect(await git(competing.repository, 'status', '--porcelain')).toBe('');
     expect(mergeRequests.updateCalls).toBe(1);
   });
 
