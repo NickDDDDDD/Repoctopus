@@ -8,6 +8,12 @@ import type {
   PostMergeCheckoutManifest,
   PostMergeCheckoutPort,
   PostMergeRepositorySource,
+  PostMergeTargetMergeIntent,
+  PostMergeTargetMergeReceipt,
+} from '../domains/post-merge/checkout.js';
+import {
+  assertPostMergeTargetMergeIntent,
+  assertPostMergeTargetMergeReceipt,
 } from '../domains/post-merge/checkout.js';
 import {
   assertPostMergeClosureAudit,
@@ -73,6 +79,10 @@ export interface PostMergePublicationResult {
 interface PostMergeClosureJournal {
   schemaVersion: 1;
   runId: string;
+  targetMerge?: {
+    intent: PostMergeTargetMergeIntent;
+    receipt?: PostMergeTargetMergeReceipt;
+  };
   baseline: PostMergeWorkspaceBaseline;
   plan: SpecificationClosurePlan;
   result?: SpecificationClosureResult;
@@ -145,6 +155,8 @@ export class PostMergeActions extends Service {
         value.runId !== runId ||
         value.plan?.kind !== 'SpecificationClosurePlan' ||
         value.baseline?.schemaVersion !== 1 ||
+        (value.targetMerge && value.targetMerge.intent?.schemaVersion !== 1) ||
+        (value.targetMerge?.receipt && value.targetMerge.receipt.schemaVersion !== 1) ||
         (value.result && value.result.kind !== 'SpecificationClosureResult') ||
         (value.audit && value.audit.schemaVersion !== 1) ||
         (value.publication && value.publication.request?.schemaVersion !== 1) ||
@@ -171,6 +183,12 @@ export class PostMergeActions extends Service {
     status: PostMergeRunStatus,
   ): void {
     assertSafeClosurePlan(journal.plan);
+    if (journal.targetMerge) {
+      assertPostMergeTargetMergeIntent(journal.targetMerge.intent);
+      if (journal.targetMerge.receipt) {
+        assertPostMergeTargetMergeReceipt(journal.targetMerge.receipt, journal.targetMerge.intent);
+      }
+    }
     const facts = postMergeTriggerFacts(status.state.trigger);
     const specification = status.state.specificationUsageSnapshot;
     if (
