@@ -46,6 +46,10 @@ await buildRenderer({
   configFile: false,
   root: path.join(desktopRoot, 'renderer'),
   base: './',
+  mode: 'production',
+  define: {
+    'process.env.NODE_ENV': JSON.stringify('production'),
+  },
   build: {
     emptyOutDir: false,
     outDir: path.join(outputRoot, 'renderer'),

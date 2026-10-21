@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
-import { beforeAll, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { isDesktopHostEvent } from '../app/desktop/shared/host-protocol.js';
 
@@ -24,16 +24,6 @@ function nextMessage(child: ChildProcess): Promise<unknown> {
 }
 
 describe('Desktop Host process', () => {
-  beforeAll(async () => {
-    await execFileAsync(
-      process.execPath,
-      [path.join(productRoot, 'scripts', 'build-desktop.mjs')],
-      {
-        cwd: productRoot,
-      },
-    );
-  });
-
   it('boots the Cordis desktop composition and acknowledges graceful shutdown', async () => {
     const child = fork(hostEntry, [productRoot], {
       cwd: productRoot,

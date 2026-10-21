@@ -9,6 +9,8 @@
         "app/boot/**",
         "app/desktop/host/**",
         "app/desktop/main/main.ts",
+        "app/desktop/main/product-root.ts",
+        "app/desktop/main/startup.ts",
         "app/desktop/preload/**",
         "app/desktop/renderer/**",
         "app/desktop/shared/**",

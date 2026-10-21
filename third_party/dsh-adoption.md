@@ -30,7 +30,9 @@ Repoctopus 的 Event Inbox 使用稳定的 Provider、Source 与 Delivery ID 摘
 
 桌面直接依赖全部固定为精确版本并作为开发依赖安装，使普通 CLI 生产安装不携带 Electron。Electron `44.7.0`、React `18.2.0` 与 DSH 固定基线一致。Vite 从上游声明的 `^6.4.3` 选择修复 Windows `launch-editor` 公告的 `6.4.5`；`electron-builder` 使用当前稳定的 `26.15.3`，不采用固定 DSH 清单中的 `26.17.0` 预发布线。生产依赖审计保持零已知漏洞；构建链的剩余开发期公告必须在发布验证报告中重新审计。
 
-安装脚本按包和版本显式准入：允许 `electron@44.7.0` 安装固定的 Windows 运行时，允许 Vite 闭包中的 `esbuild@0.25.12` 校验平台二进制；拒绝未使用的 `electron-winstaller@5.4.0` Squirrel 辅助脚本。Repoctopus 首版只生成 NSIS Windows x64 安装包。
+Electron `44.7.0` 没有 lifecycle install script；它在首次解析包且本机二进制缺失时惰性下载固定平台产物。`npm run desktop:prepare` 把这一步显式化，便于干净机器、缓存和离线构建在启动窗口前失败。它不能登记为 `allowScripts`。真正的安装脚本仍按包和版本显式准入：允许 Vite 闭包中的 `esbuild@0.25.12` 校验平台二进制；拒绝未使用的 `electron-winstaller@5.4.0` Squirrel 辅助脚本。Repoctopus 首版只生成 NSIS Windows x64 安装包。
+
+桌面采用面不仅登记被修改的四个生命周期文件，还固定 `main.ts`、应用 `package.json`、development launcher 及其相邻启动测试。上游的 `app.whenReady().then(main)`、`main: lib/main.js` 与开发态 `app.getAppPath()` 必须作为一个行为切片审计；Repoctopus 使用不同的 `dist/desktop` 入口，因此用独立产品根解析器和回归测试补偿这个布局差异。
 
 ## 漂移控制
 

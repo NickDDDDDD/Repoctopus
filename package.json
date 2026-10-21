@@ -39,7 +39,8 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "build:desktop": "node scripts/build-desktop.mjs",
-    "desktop:smoke": "npm run build:desktop && electron scripts/smoke-desktop.mjs",
+    "desktop:prepare": "node scripts/prepare-desktop.mjs",
+    "desktop:smoke": "npm run desktop:prepare && npm run build:desktop && electron scripts/smoke-desktop.mjs",
     "check:generated": "node scripts/build.mjs --check",
     "check:brand": "node scripts/check-brand.mjs",
     "check:architecture": "node scripts/check-architecture.mjs",
@@ -51,12 +52,13 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:package-e2e": "vitest run test/e2e/package.e2e.test.ts",
+    "test:desktop-e2e": "npm run build:desktop && vitest run test/desktop-host.e2e.test.ts",
     "test:platform-event-recovery-e2e": "vitest run test/e2e/platform-event-recovery.e2e.test.ts",
     "test:tracer-e2e": "vitest run test/e2e/runtime-tracer.e2e.test.ts",
     "typecheck:desktop": "tsc --noEmit -p app/desktop/renderer/tsconfig.json",
-    "desktop:start": "npm run build:desktop && electron dist/desktop/main.js",
+    "desktop:start": "npm run desktop:prepare && npm run build:desktop && electron dist/desktop/main.js",
     "spec:validate": "openspec validate --all --strict",
-    "pretest": "npm run build",
+    "pretest": "npm run build && npm run build:desktop",
     "verify": "npm run typecheck && npm run typecheck:desktop && npm run lint && npm run build && npm test && npm run check:generated && npm run check:brand && npm run check:architecture && npm run check:provenance && npm run spec:validate"
   },
   "dependencies": {
@@ -107,7 +109,6 @@
     "vitest": "4.1.11"
   },
   "allowScripts": {
-    "electron@44.7.0": true,
     "electron-winstaller@5.4.0": false,
     "esbuild@0.25.12": true,
     "esbuild@0.28.2": true

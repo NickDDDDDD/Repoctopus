@@ -10,13 +10,19 @@ import {
 } from '../shared/renderer-contract.js';
 import { DesktopBackendController, type DesktopBackendState } from './backend-controller.js';
 import { DesktopHostProcess, type DesktopHostReady } from './host-process.js';
+import { resolveDesktopProductRoot } from './product-root.js';
 import { claimDesktopSingleInstance } from './single-instance.js';
+import { scheduleDesktopStartup } from './startup.js';
 
 const moduleDirectory = path.dirname(fileURLToPath(import.meta.url));
 const hostEntry = path.join(moduleDirectory, 'host.mjs');
 const preloadEntry = path.join(moduleDirectory, 'preload.cjs');
 const rendererEntry = path.join(moduleDirectory, 'renderer', 'index.html');
-const productRoot = app.isPackaged ? app.getAppPath() : path.resolve(moduleDirectory, '..', '..');
+const productRoot = resolveDesktopProductRoot({
+  appPath: app.getAppPath(),
+  isPackaged: app.isPackaged,
+  moduleDirectory,
+});
 
 let mainWindow: BrowserWindow | undefined;
 let hostReady: DesktopHostReady | undefined;
@@ -147,11 +153,7 @@ if (ownsInstance) {
     event.preventDefault();
     void quit();
   });
-  void app
-    .whenReady()
-    .then(createWindow)
-    .catch((error: unknown) => {
-      console.error('desktop shell startup failed', error);
-      app.exit(1);
-    });
+  scheduleDesktopStartup(app, createWindow, (error) => {
+    console.error('desktop shell startup failed', error);
+  });
 }

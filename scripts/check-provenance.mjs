@@ -84,6 +84,8 @@ if (
   dshAdoption.upstream?.license !== 'MIT' ||
   !Array.isArray(dshAdoption.npmPackages) ||
   !Array.isArray(dshAdoption.desktopDependencies) ||
+  typeof dshAdoption.desktopBinaryPreparation !== 'object' ||
+  !Array.isArray(dshAdoption.desktopReferenceSurface) ||
   !Array.isArray(dshAdoption.desktopInstallScripts) ||
   !Array.isArray(dshAdoption.components) ||
   !Array.isArray(dshAdoption.forbiddenRuntimePackages)
@@ -134,6 +136,45 @@ for (const entry of dshAdoption.desktopDependencies ?? []) {
     !/^sha512-/.test(locked.integrity ?? '')
   ) {
     findings.push(`DSH desktop dependency lock mismatch: ${entry.name}@${entry.version}`);
+  }
+}
+const desktopBinary = dshAdoption.desktopBinaryPreparation;
+const electronDependency = (dshAdoption.desktopDependencies ?? []).find(
+  (entry) => entry.name === 'electron',
+);
+if (
+  desktopBinary?.package !== 'electron' ||
+  desktopBinary?.version !== electronDependency?.version ||
+  desktopBinary?.acquisition !== 'lazy-package-resolution' ||
+  desktopBinary?.command !== 'npm run desktop:prepare' ||
+  packageJson.scripts?.['desktop:prepare'] !== 'node scripts/prepare-desktop.mjs'
+) {
+  findings.push('Invalid Electron binary preparation policy');
+}
+await readFile(path.join(root, 'scripts', 'prepare-desktop.mjs')).catch(() => {
+  findings.push('Missing Electron binary preparation command');
+});
+const electronScriptKey = `electron@${electronDependency?.version ?? '(missing version)'}`;
+if (Object.hasOwn(packageJson.allowScripts ?? {}, electronScriptKey)) {
+  findings.push(
+    `Electron binary acquisition must not be modeled as an install script: ${electronScriptKey}`,
+  );
+}
+for (const reference of dshAdoption.desktopReferenceSurface ?? []) {
+  if (
+    typeof reference.source !== 'string' ||
+    !/^[a-f0-9]{64}$/.test(reference.sourceSha256 ?? '') ||
+    typeof reference.role !== 'string' ||
+    reference.role.length === 0
+  ) {
+    findings.push(`Invalid DSH desktop reference: ${reference.source ?? '(missing source)'}`);
+    continue;
+  }
+  if (process.env.DSH_UPSTREAM_ROOT) {
+    const source = await readFile(path.join(process.env.DSH_UPSTREAM_ROOT, reference.source));
+    if (createHash('sha256').update(source).digest('hex') !== reference.sourceSha256) {
+      findings.push(`DSH desktop reference digest mismatch: ${reference.source}`);
+    }
   }
 }
 for (const entry of dshAdoption.desktopInstallScripts ?? []) {
@@ -257,5 +298,5 @@ if (upstreamBaselines.schemaVersion !== 1 || !Array.isArray(upstreamBaselines.up
 
 if (findings.length > 0) throw new Error(findings.join('\n'));
 process.stdout.write(
-  `Verified ${manifest.files.length} Comet-derived files, ${cordisFiles} immutable Cordis files, ${mattManifest.files.length} Matt Skill files, and ${dshAdoption.npmPackages.length} fixed DSH packages\n`,
+  `Verified ${manifest.files.length} Comet-derived files, ${cordisFiles} immutable Cordis files, ${mattManifest.files.length} Matt Skill files, ${dshAdoption.npmPackages.length} fixed DSH packages, and ${dshAdoption.desktopReferenceSurface.length} DSH desktop references\n`,
 );

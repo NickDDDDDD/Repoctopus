@@ -62,13 +62,41 @@
       "source": "npm"
     }
   ],
-  "desktopInstallScripts": [
+  "desktopBinaryPreparation": {
+    "package": "electron",
+    "version": "44.7.0",
+    "acquisition": "lazy-package-resolution",
+    "command": "npm run desktop:prepare",
+    "reason": "Electron 44 has no lifecycle install script; requiring the package downloads the pinned platform binary only when it is absent."
+  },
+  "desktopReferenceSurface": [
     {
-      "name": "electron",
-      "version": "44.7.0",
-      "allowed": true,
-      "reason": "The desktop development and packaging workflow requires Electron's pinned Windows binary installation step."
+      "source": "apps/desktop/src/main.ts",
+      "sourceSha256": "e345eda0425f2df795d20413bb87bb9a3ddc46e71ceb1cec0755ad1cca3fb847",
+      "role": "Electron readiness scheduling, Shell ownership, Host creation, and packaged/development branching"
     },
+    {
+      "source": "apps/desktop/package.json",
+      "sourceSha256": "913095d3048ad424335acccf8e3193bb9523961604709062a430f57c4ac22479",
+      "role": "Electron application entry and desktop dependency topology"
+    },
+    {
+      "source": "apps/desktop/scripts/development-app.ts",
+      "sourceSha256": "9c2c8fad9979baf099d14d2fa43476f0845ad8202c7fbbdffc50eecf0403b1ef",
+      "role": "Development application path, user-data, and inspector launch semantics"
+    },
+    {
+      "source": "apps/desktop/tests/main-startup.spec.ts",
+      "sourceSha256": "ef37e6257004ae386093afa73e63d16f10ead3421ba9d9982a6286437182fd3f",
+      "role": "Adjacent startup, resource layout, IPC ownership, and failure recovery contract tests"
+    },
+    {
+      "source": "apps/desktop/tests/development-app.spec.ts",
+      "sourceSha256": "ab33bf93b0f6d1d64ac5cc0a2feb9c7c3eaf683a9efc2b3f35636cf04be6e62f",
+      "role": "Development launcher contract tests"
+    }
+  ],
+  "desktopInstallScripts": [
     {
       "name": "esbuild",
       "version": "0.25.12",
