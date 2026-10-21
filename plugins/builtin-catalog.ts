@@ -508,6 +508,7 @@ const definitions: readonly BuiltinDefinition[] = [
     plugin: OpenSpecProvider,
     sourceFiles: [
       'services/specification.ts',
+      'domains/specification/planning-approval.ts',
       'domains/specification/types.ts',
       'platform/specification/openspec-process.ts',
       'platform/specification/openspec-provider.ts',
