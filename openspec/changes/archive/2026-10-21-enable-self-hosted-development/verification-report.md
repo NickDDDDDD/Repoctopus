@@ -3,10 +3,10 @@
 ## 报告状态
 
 - 结论：实现与本 change 的 Proposal、Design、Delta Specs 和 Tasks 一致，54 项任务已完成。
-- 状态：业务发布计划与 Workspace 中的 Change MR 已拆分并登记到正式 Delivery，最新快照等待用户批准；批准不授权 merge。
+- 状态：业务 PR #8 已于 2026-10-21 合入 `0fc73e63c5da4fb4eb6bb3f6ac1fceea60fe7b1f`；Change PR #9 已同步 `main`、补齐真实自举配置并通过复验，等待规格关闭与最终合入。
 - 验证日期：2026-10-21。
 - 分支：`feat/enable-self-hosted-development`。
-- 业务 MR：Draft PR #8；Change MR：Draft PR #9。
+- 业务 MR：已合入 PR #8；Change MR：PR #9。
 - 已验证实现基线：`9486ace914937b65872fb5fe5cc36227c31c7e88`。
 - 已验证实现代码树：`b831d99e523f803bf03e64b141fdaa002d94fc0d`。
 
@@ -88,6 +88,16 @@ DSH 与 Comet 的网络漂移检查独立于离线 `verify`，每天由 workflow
 - Run 首次使用时绑定了 Matt Provider 的 `code-review` 与 `tdd` 内容/资源摘要，并接受 Evidence Bundle `7b3d8e253512af71582b97f0b3c471d1628e801b1f01beb1d4d4c378ff1bb2db`。
 - Run 当时绑定 OpenSpec 1.14.1 的规格快照；随后安全升级到 1.14.3，并由当前 Provider 契约、打包 E2E 和本报告中的 9 项严格校验重新验证。旧快照不被静默改写。
 
+### 实际合入与首次自举恢复
+
+- 用户批准的 Delivery request 为 `ba5565f1-6bbb-4c9d-a200-0248e08a1847`，快照摘要为 `sha256:a3431bdd1dc980574088819223eff16d2a53fd7ace56984d13cd172bb07c3e24`，Evidence Bundle 为 `a9137f5e2800c10f47f47ff62a826e7918a2480c3fc7ff718650e464026f3d`。
+- 首次发布因进程未注入 `GITHUB_TOKEN` 安全停止；恢复时只把现有 GitHub CLI 凭据注入当前进程，未把秘密写入配置或状态。Delivery 从已记录的 push 事实继续执行 `mr.create_or_update`，未重复发布。
+- 业务 PR #8 以 `--match-head-commit` 核对 `b155f07711442c4d5fa637b0caf4a45d633b1f3f` 后合入，merge commit 为 `0fc73e63c5da4fb4eb6bb3f6ac1fceea60fe7b1f`；权威刷新将 Delivery 更新为 `merged`。
+- 首次 `post-merge reconcile` 随后发现真实 `repoctopus.yaml` 未声明 `postMerge`，因此在任何规格修改前安全停止。Change PR #9 已补齐短生命周期 Coordinator、凭据环境引用和 `post-merge` Evidence profile，并由自举测试断言生产 composition 实际装配这些能力。
+- 新工作树复验还发现 Git 的 LF 规范化会改变 Matt 固定来源的原始字节。`.gitattributes` 现将该不可变目录标记为 `-text`；24 个文件均从已通过来源清单的精确快照恢复，后续 clone/worktree 不再产生来源漂移。
+- 业务 merge commit `0fc73e6` 与 Change 分支 `6737f0b` 分别执行完整 `npm run verify`，两者均为 81 个测试文件、334 个测试通过、1 个 Windows 条件测试跳过；架构、来源和 9 项 OpenSpec 严格校验全部通过。
+- 补齐 `postMerge` 会改变 composition 摘要，既有 Delivery 不允许静默迁移。因此首次自举仅对规格关闭采用一次性恢复：仍调用同一个 OpenSpec Provider、同一个 closure plan 和同一个路径审计，再以普通 commit/push 更新原 Change PR #9。后续 change 从创建 Delivery 起即使用自动 Post-merge 路径。
+
 ### 独立进程 Post-merge E2E
 
 `test/e2e/self-hosted-post-merge.e2e.test.ts` 在临时 Dedicated Workspace、两个业务仓、三个 bare remote 和 mock 平台中执行以下真实链路；Embedded Workspace 的同仓双 MR 由 Delivery 领域与 CLI 测试覆盖：
@@ -126,7 +136,7 @@ DSH 与 Comet 的网络漂移检查独立于离线 `verify`，每天由 workflow
 - 文件 Event Inbox 的 Lease 只协调共享同一状态卷的 Runner；独立状态卷允许重复计算，并由 Change MR 分支远端 OID 栅栏收敛发布结果。这不是共享数据库调度、自动扩缩容或零重复计算意义上的生产级 HA。
 - 当前只有 GitHub Adapter；CodeHub Adapter、远程 Skill 市场、Skill 管理 UI、多规格权威合并和生产级 HA 不在本 change 范围内。
 - Dedicated Workspace 要求团队为 Workspace Repository 单独提供远端；Embedded Workspace 允许与业务代码共享远端，但 Change MR 与业务 MR 仍须使用可区分的分支和 MR 身份。
-- 独立进程 Post-merge E2E 使用 mock 平台 API 和本地 bare remote。真实业务 PR #8 尚未合入；Change PR #9 已作为 Workspace Change MR 绑定到待审批 Delivery，业务发布计划绑定 `feat/enable-self-hosted-development` 分支并将在获批执行 `mr.create_or_update` 后记录平台返回的稳定业务 MR 身份。真实 GitHub 合入回调、主规格同步与 change 归档留待业务 MR 人工合入后复验。
+- 独立进程 Post-merge E2E 使用 mock 平台 API 和本地 bare remote；真实业务 PR #8 已合入并由权威刷新记录精确 merge commit。由于首次自举配置遗漏改变了修复后的 composition 摘要，本次规格关闭使用上文记录的一次性受审计恢复；真实公网 webhook 接收仍未在本机复验。
 - Runner 要实时接收 Webhook 仍必须位于平台可达环境；开发机无法接收公网 webhook 时，可以使用 Inbox replay/retry，或由短生命周期 `post-merge reconcile` 经公开 Coordinator 重新读取权威平台状态。
 - 第一版一次性候选发现依赖当前 Workspace 的 `.repoctopus/deliveries/`；没有复制或共享持久状态的全新 clone 不能自动发现全部历史 change。受验证的远端索引或共享 Store 留给后续 change。
 - 未发布的 Delivery state v1 不做静默迁移，返回 `migration_required`。组合、Provider 或状态 Schema 不兼容时同样只允许只读诊断。
@@ -139,6 +149,6 @@ DSH 与 Comet 的网络漂移检查独立于离线 `verify`，每天由 workflow
 
 ## 批准含义
 
-批准本报告表示接受当前实现、验证结论、第三方固定来源和上述已知限制，并授权 Repoctopus Delivery 按已登记的业务 PR #8 与 Change PR #9 发布最终快照。批准不授权 merge、force push、rebase、删除分支、改变目标分支或扩大仓库集合。任何代码树、报告、策略、仓库选择、远端基线或动作计划变化都会使批准失效并要求重新验证。
+用户已批准 request `ba5565f1-6bbb-4c9d-a200-0248e08a1847` 对应的最终快照，并在后续对话中明确授权合入。业务 PR #8 已按精确 head 合入；没有执行 force push、rebase、删除分支、改变目标分支或扩大仓库集合。
 
-Change PR #9 与业务发布分支已写入正式 Delivery 并绑定待审批快照；只有用户明确批准当前快照并让 `mr.create_or_update` 核对现有业务 PR #8 后，业务 PR #8 才能进入人工合入。合入后，平台事件与 Post-merge Run 应再次执行精确合入代码验证、主规格同步、change 归档、收尾 commit/push 和原 Change MR 更新；该合入后证据将作为本报告的后续复验记录。
+Change PR #9 已合并业务主线并承载首次自举修复。下一步仅允许在上述复验基线上调用 OpenSpec Provider 同步主规格与归档 change，经路径审计后普通 commit/push，并以精确 head 合入原 Change PR #9。

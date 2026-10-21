@@ -29,6 +29,10 @@ describe('Repoctopus self bootstrap', () => {
         { profileId: string },
         { plan: { profileId: string; nodes: readonly unknown[] } }
       >('evidence.plan', { profileId: 'verify' });
+      const postMerge = await app.context.commandRouter.execute<
+        { profileId: string },
+        { plan: { profileId: string; nodes: readonly unknown[] } }
+      >('evidence.plan', { profileId: 'post-merge' });
 
       expect(before).toBeDefined();
       expect(after).toBeDefined();
@@ -49,6 +53,10 @@ describe('Repoctopus self bootstrap', () => {
       );
       expect(result.plan).toMatchObject({ profileId: 'verify' });
       expect(result.plan.nodes.length).toBeGreaterThan(0);
+      expect(postMerge.plan).toMatchObject({ profileId: 'post-merge' });
+      expect(postMerge.plan.nodes.length).toBeGreaterThan(0);
+      expect(app.context.get('postMergeCoordinator')).toBeDefined();
+      expect(app.context.get('postMergeActions')).toBeDefined();
     } finally {
       await app.close();
     }
