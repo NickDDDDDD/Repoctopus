@@ -211,6 +211,12 @@ Repoctopus 不建立独占 Change owner。任一成员或 Agent 都可以在同�
 
 第一版候选枚举使用当前 coordination workspace 的 Delivery Store；全新 clone 没有该持久状态时不能声称已经发现全部历史 change。跨无共享状态卷的自动发现需要后续引入受验证的远端索引或共享 Store，但不同 Runner 在已经发现同一 change 后的远端收敛属于本次范围。
 
+### 19. 未决定的批准请求是可替换指针，决定与动作事实不可覆盖
+
+`awaiting_approval` 表示系统已经提出请求，但人尚未作出可信决定。此时若报告措辞、Evidence、代码或远端基线变化，强迫人先拒绝一个已知过期请求只会制造无意义操作；Delivery 允许重新准备，并用新快照和新 `requestId` 原子取代旧请求。`delivery.prepared` 历史保留被取代的请求和快照摘要，迟到的旧响应因身份不匹配被拒绝。对相同快照的重复准备直接返回既有状态，不增加版本或事件。
+
+一旦存在人工决定，或任何发布动作不再是零次尝试的 `pending`，重新准备不得覆盖状态。批准后的漂移继续进入 `verification_required`，部分发布继续使用原计划恢复。这样把“尚未形成事实的请求”与“已经形成的决定或副作用”分开，避免为了方便重试而破坏审计历史。
+
 ## Risks / Trade-offs
 
 - [DSH Skill 完整依赖闭包可能引入 Agent 专有类型] → 先以固定 commit 生成依赖与源码采用报告；保留 Registry 行为闭包，只在来源登记的产品适配层移除无运行价值的 Agent Consumer 耦合。

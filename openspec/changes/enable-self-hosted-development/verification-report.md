@@ -2,13 +2,13 @@
 
 ## 报告状态
 
-- 结论：实现与本 change 的 Proposal、Design、Delta Specs 和 Tasks 一致，48 项任务已完成。
+- 结论：实现与本 change 的 Proposal、Design、Delta Specs 和 Tasks 一致，49 项任务已完成。
 - 状态：业务 MR 与协调 MR 已拆分并登记到正式 Delivery，等待用户批准最终快照；批准不授权 merge。
 - 验证日期：2026-10-21。
 - 分支：`feat/enable-self-hosted-development`。
 - 业务 MR：Draft PR #8；协调 MR：Draft PR #9。
-- 实现基线：`42f9becb4abaa85f18f997b5ea0ded51215bf9c9`。
-- 实现代码树：`da96b2dce5ba97d830202d5b6e47cea51e8db7bf`。
+- 实现基线：`bdcf6f43a311c16220d23352bc2cd439ef6c5adb`。
+- 实现代码树：`f68681ab88b95cb38c574111bbb4c6ecd3cb3681`。
 
 ## 结论
 
@@ -35,7 +35,7 @@ Change 是团队共享工作单元，不建立由 MR author、Git author、Bot �
 
 | 验证                         | 结果                                                                                             |
 | ---------------------------- | ------------------------------------------------------------------------------------------------ |
-| `npm run verify`             | 通过；TypeScript、ESLint、构建、81 个测试文件、328 个测试通过，1 个 Windows 条件测试跳过         |
+| `npm run verify`             | 通过；TypeScript、ESLint、构建、81 个测试文件、329 个测试通过，1 个 Windows 条件测试跳过         |
 | `npm run format:check`       | 通过；产品代码、测试、文档与 OpenSpec 文件符合统一格式                                           |
 | `npm run check:generated`    | 通过；生成物无漂移                                                                               |
 | `npm run check:brand`        | 通过；公共产品面命名一致                                                                         |
@@ -63,6 +63,7 @@ Change 是团队共享工作单元，不建立由 MR author、Git author、Bot �
 - 普通 project composition 在配置 `postMerge` 时装配一次性 Coordinator、Action Provider 与命令 Contributor，但不装配 HTTP Host、Webhook Route 或后台 Timer；CLI 子进程完成补偿后正常退出。
 - 多 Runner 不依赖人员归属或本地全局锁。远端竞争恢复要求胜出提交是同一审计基线的直接子提交，并逐项核对 tree、message、author 和原协调 MR；不等价结果停止而不是覆盖。
 - Delivery 允许协调角色与业务角色同仓，但要求分支拓扑可区分，并在 Adapter 返回后按 `provider + repositoryId + number` 拒绝同一 MR 身份；URL 不作为绕过稳定身份核对的依据。
+- 尚无人工决定且所有动作仍为零次尝试的 `pending` 时，重复准备相同快照幂等返回；新快照以新请求取代旧请求并保留被取代身份。旧响应、已批准状态和已开始动作不能被覆盖。
 
 ## 第三方来源
 
@@ -108,6 +109,7 @@ DSH 与 Comet 的网络漂移检查独立于离线 `verify`，每天由 workflow
 - `run start` 在创建新日常 Run 前调用同一命令入口，并把完成、等待、阻断和失败计数作为结构化 CLI diagnostic 返回，不把旧收尾结果静默隐藏。
 - 两个独立 Git 工作区从同一协调分支基线生成相同关闭 tree：第一个 Runner 普通 push 成功；第二个 Runner读取远端提交并核对 parent、tree、message 与 author 后，通过原子 `update-ref` 收敛到胜出 OID，工作树保持干净且不产生第二次 MR 更新。
 - 非等价远端提交仍由既有漂移测试证明 fail-closed；实现没有引入 force push、rebase、分支删除或最后写入者覆盖。
+- 真实自举准备阶段发现报告状态措辞修正后旧 `awaiting_approval` 无法安全替换。新增状态机测试证明相同快照不增加事件，新快照记录被取代请求，旧响应失败；已经决定或开始发布的状态仍拒绝覆盖。
 
 本 E2E 在实施期间实际发现并修复了五类集成问题：生产 webhook processor 只唤醒却不执行 Run、`merged` Delivery 无法在 Run 建立前崩溃后重新定位、`observedAt` 导致 Trigger 漂移、完整 Run ID 导致 Windows Git 深路径超限，以及两个 E2E bundle 位置一度污染并行仓库指纹。最终实现分别用完整执行入口、分层恢复匹配、权威 Trigger 投影、marker 保护的短物理目录和忽略目录内隔离 bundle 解决。
 
