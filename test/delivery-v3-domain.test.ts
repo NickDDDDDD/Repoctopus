@@ -142,13 +142,49 @@ describe('Delivery v3 domain', () => {
     ).not.toBe(deliveryIntentDigestV3(multiple));
   });
 
+  it('models independent source branches in one repository as separate deliveries', () => {
+    const sameRepository: DeliveryIntentV3 = {
+      ...intent,
+      businessDeliveries: [
+        intent.businessDeliveries[0]!,
+        {
+          ...intent.businessDeliveries[0]!,
+          deliveryId: 'supplemental',
+          sourceBranch: 'fix/delivery-v3-follow-up',
+          commitMessage: 'feat: add the approved supplemental fix',
+        },
+      ],
+      businessSplitReason: {
+        kind: 'supplemental_fix',
+        summary: 'The approved follow-up must retain independent review and merge evidence.',
+      },
+    };
+
+    expect(normalizeDeliveryIntentV3(sameRepository).businessDeliveries).toHaveLength(2);
+    expect(() => deliveryIntentDigestV3(sameRepository)).not.toThrow();
+    expect(() =>
+      deliveryIntentDigestV3({
+        ...sameRepository,
+        businessDeliveries: sameRepository.businessDeliveries.map((delivery) =>
+          delivery.deliveryId === 'supplemental'
+            ? { ...delivery, sourceBranch: 'feat/delivery-v3' }
+            : delivery,
+        ),
+      }),
+    ).toThrow(/duplicates another merge request mapping/i);
+  });
+
   it('rejects implicit multi-MR plans and mismatched or dirty facts', () => {
     expect(() =>
       deliveryIntentDigestV3({
         ...intent,
         businessDeliveries: [
           intent.businessDeliveries[0]!,
-          { ...intent.businessDeliveries[0]!, deliveryId: 'secondary' },
+          {
+            ...intent.businessDeliveries[0]!,
+            deliveryId: 'secondary',
+            sourceBranch: 'feat/delivery-v3-secondary',
+          },
         ],
       }),
     ).toThrow(/split reason/i);

@@ -9,6 +9,7 @@ import type {
 } from '../domains/delivery/ports.js';
 import { DeliveryServiceV3 } from '../domains/delivery/service-v3.js';
 import type {
+  DeliveryRepositoryIntent,
   DeliveryPolicy,
   DeliveryRepositoryFacts,
   DeliveryStateV3,
@@ -65,24 +66,28 @@ class FakeGit implements DeliveryGitPort {
     });
   }
 
-  inspect(): Promise<DeliveryRepositoryFacts> {
+  inspect(
+    _repository: RepositorySnapshot,
+    delivery: DeliveryRepositoryIntent,
+  ): Promise<DeliveryRepositoryFacts> {
+    const supplemental = delivery.sourceBranch === 'fix/delivery-v3-follow-up';
     return Promise.resolve({
       repositoryId: 'app',
       repositoryName: 'app',
       remoteIdentity: 'github.com/team/app',
-      sourceBranch: 'feat/delivery-v3',
-      targetBranch: 'main',
-      head: '2'.repeat(40),
-      tree: '3'.repeat(40),
-      remoteSourceOid: this.pushed ? '2'.repeat(40) : null,
+      sourceBranch: delivery.sourceBranch,
+      targetBranch: delivery.targetBranch,
+      head: (supplemental ? '6' : '2').repeat(40),
+      tree: (supplemental ? '7' : '3').repeat(40),
+      remoteSourceOid: this.pushed ? (supplemental ? '6' : '2').repeat(40) : null,
       remoteTargetOid: '4'.repeat(40),
       clean: true,
     });
   }
 
-  push(): Promise<string> {
+  push(_repository: RepositorySnapshot, action: { expectedHead: string }): Promise<string> {
     this.pushed = true;
-    return Promise.resolve('2'.repeat(40));
+    return Promise.resolve(action.expectedHead);
   }
 }
 
@@ -112,7 +117,11 @@ class FakeMergeRequests implements MergeRequestPort {
 
   create(input: MergeRequestInput): Promise<MergeRequestIdentity> {
     this.inputs.push(structuredClone(input));
-    return Promise.resolve(this.identity);
+    return Promise.resolve({
+      ...this.identity,
+      number: input.sourceBranch === 'fix/delivery-v3-follow-up' ? 8 : 7,
+      url: `https://github.com/team/app/pull/${input.sourceBranch === 'fix/delivery-v3-follow-up' ? 8 : 7}`,
+    });
   }
 
   update(): Promise<MergeRequestIdentity> {
@@ -284,6 +293,68 @@ describe('DeliveryServiceV3', () => {
         evidenceBundleIds: ['bundle-verified'],
       }),
     ).resolves.toMatchObject({ schemaVersion: 3, status: 'awaiting_approval' });
+  });
+
+  it('publishes two explicitly approved source branches from one repository', async () => {
+    const store = new MemoryStore();
+    const mergeRequests = new FakeMergeRequests();
+    const service = new DeliveryServiceV3(
+      store,
+      new FakeGit(),
+      mergeRequests,
+      { assertSatisfied: () => Promise.resolve() },
+      TEST_COMPOSITION_DIGEST,
+      () => new Date('2026-10-22T00:20:00.000Z'),
+    );
+    const multiple = {
+      ...intent,
+      businessDeliveries: [
+        intent.businessDeliveries[0]!,
+        {
+          ...intent.businessDeliveries[0]!,
+          deliveryId: 'supplemental',
+          sourceBranch: 'fix/delivery-v3-follow-up',
+          commitMessage: 'feat: add the approved supplemental fix',
+        },
+      ],
+      businessSplitReason: {
+        kind: 'supplemental_fix' as const,
+        summary: 'The follow-up needs independent review and merge evidence.',
+      },
+    };
+    const preparation = {
+      project,
+      intent: multiple,
+      policy,
+      reportContents: 'verified',
+      evidenceBundleIds: ['bundle-verified'],
+    };
+    const waiting = await service.prepare(preparation);
+    await service.decide(
+      multiple.changeId,
+      {
+        apiVersion: 'repoctopus/v1alpha1',
+        kind: 'HumanDecisionResponse',
+        requestId: waiting.decisionRequest!.requestId,
+        snapshotDigest: waiting.snapshot!.digest,
+        decision: 'approve',
+      },
+      { subject: 'user', provider: 'test', sessionId: 'session' },
+    );
+
+    await expect(service.publish(preparation)).resolves.toMatchObject({
+      status: 'in_review',
+      businessMergeRequests: [
+        { deliveryId: 'primary', repositoryId: 'app', mergeRequest: { number: 7 } },
+        { deliveryId: 'supplemental', repositoryId: 'app', mergeRequest: { number: 8 } },
+      ],
+    });
+    expect(
+      mergeRequests.inputs.filter((input) => input.sourceBranch === 'feat/delivery-v3'),
+    ).toHaveLength(2);
+    expect(
+      mergeRequests.inputs.filter((input) => input.sourceBranch === 'fix/delivery-v3-follow-up'),
+    ).toHaveLength(2);
   });
 
   it('verifies the default Business MR merge commit and exposes the approved Change branch', async () => {

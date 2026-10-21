@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { realpath } from 'node:fs/promises';
+import path from 'node:path';
 
 import type {
   PostMergeDeliveryGitPort,
@@ -42,6 +43,41 @@ async function git(cwd: string, args: string[]): Promise<string> {
 
 async function gitRaw(cwd: string, args: string[]): Promise<string> {
   return (await execute('git', args, { cwd })).stdout;
+}
+
+interface GitWorktree {
+  path: string;
+  branch: string | null;
+}
+
+function parseGitWorktrees(output: string): GitWorktree[] {
+  const worktrees: GitWorktree[] = [];
+  let current: GitWorktree | null = null;
+  for (const line of output.split(/\r?\n/u)) {
+    if (line.startsWith('worktree ')) {
+      if (current) worktrees.push(current);
+      current = { path: line.slice('worktree '.length), branch: null };
+    } else if (current && line.startsWith('branch refs/heads/')) {
+      current.branch = line.slice('branch refs/heads/'.length);
+    }
+  }
+  if (current) worktrees.push(current);
+  return worktrees;
+}
+
+async function deliveryWorktree(repositoryPath: string, sourceBranch: string): Promise<string> {
+  await git(repositoryPath, ['check-ref-format', '--branch', sourceBranch]);
+  const worktrees = parseGitWorktrees(
+    await git(repositoryPath, ['worktree', 'list', '--porcelain']),
+  ).filter((worktree) => worktree.branch === sourceBranch);
+  if (worktrees.length !== 1) {
+    throw new Error(
+      worktrees.length === 0
+        ? `Source branch requires a checked-out Git worktree: ${sourceBranch}`
+        : `Source branch has ambiguous Git worktrees: ${sourceBranch}`,
+    );
+  }
+  return realpath(path.resolve(worktrees[0]!.path));
 }
 
 function contentDigest(value: string): `sha256:${string}` {
@@ -211,7 +247,8 @@ export class GitDeliveryAdapter implements PostMergeDeliveryGitPort, PostMergeDe
     policy: DeliveryPolicy,
   ): Promise<CheckpointResult> {
     if (!policy.checkpoint.automatic) throw new Error('Automatic checkpoint commits are disabled');
-    const branch = await git(repository.path, ['symbolic-ref', '--quiet', '--short', 'HEAD']);
+    const cwd = await deliveryWorktree(repository.path, intent.sourceBranch);
+    const branch = await git(cwd, ['symbolic-ref', '--quiet', '--short', 'HEAD']);
     if (!branch) throw new Error(`Detached HEAD cannot be checkpointed: ${repository.id}`);
     if (branch !== intent.sourceBranch)
       throw new Error(
@@ -228,26 +265,17 @@ export class GitDeliveryAdapter implements PostMergeDeliveryGitPort, PostMergeDe
     ];
     const results: CheckpointResult['checks'] = [];
     for (const check of checks) {
-      await execute(check.command, check.args, { cwd: repository.path });
+      await execute(check.command, check.args, { cwd });
       results.push({ command: check.command, passed: true });
     }
-    const status = await git(repository.path, [
-      'status',
-      '--porcelain=v1',
-      '--untracked-files=all',
-    ]);
+    const status = await git(cwd, ['status', '--porcelain=v1', '--untracked-files=all']);
     const created = status.length > 0;
     if (created) {
-      await git(repository.path, ['add', '--all']);
-      await git(repository.path, ['commit', '-m', intent.commitMessage]);
+      await git(cwd, ['add', '--all']);
+      await git(cwd, ['commit', '-m', intent.commitMessage]);
     }
-    const head = await git(repository.path, ['rev-parse', 'HEAD']);
-    const publication = await publishCheckpoint(
-      repository.path,
-      policy.publication.remote,
-      branch,
-      head,
-    );
+    const head = await git(cwd, ['rev-parse', 'HEAD']);
+    const publication = await publishCheckpoint(cwd, policy.publication.remote, branch, head);
     return {
       repositoryId: repository.id,
       created,
@@ -262,30 +290,18 @@ export class GitDeliveryAdapter implements PostMergeDeliveryGitPort, PostMergeDe
     intent: DeliveryRepositoryIntent,
     policy: DeliveryPolicy,
   ): Promise<DeliveryRepositoryFacts> {
-    const branch = await git(repository.path, ['symbolic-ref', '--quiet', '--short', 'HEAD']);
+    const cwd = await deliveryWorktree(repository.path, intent.sourceBranch);
+    const branch = await git(cwd, ['symbolic-ref', '--quiet', '--short', 'HEAD']);
     if (!branch) throw new Error(`Detached HEAD cannot be delivered: ${repository.id}`);
     if (branch !== intent.sourceBranch)
       throw new Error(
         `Source branch mismatch for ${repository.id}: expected ${intent.sourceBranch}, received ${branch}`,
       );
-    const head = await git(repository.path, ['rev-parse', 'HEAD']);
-    const tree = await git(repository.path, ['rev-parse', 'HEAD^{tree}']);
-    const status = await git(repository.path, [
-      'status',
-      '--porcelain=v2',
-      '-z',
-      '--untracked-files=all',
-    ]);
-    const remoteSourceOid = await remoteOid(
-      repository.path,
-      policy.publication.remote,
-      intent.sourceBranch,
-    );
-    const remoteTargetOid = await remoteOid(
-      repository.path,
-      policy.publication.remote,
-      intent.targetBranch,
-    );
+    const head = await git(cwd, ['rev-parse', 'HEAD']);
+    const tree = await git(cwd, ['rev-parse', 'HEAD^{tree}']);
+    const status = await git(cwd, ['status', '--porcelain=v2', '-z', '--untracked-files=all']);
+    const remoteSourceOid = await remoteOid(cwd, policy.publication.remote, intent.sourceBranch);
+    const remoteTargetOid = await remoteOid(cwd, policy.publication.remote, intent.targetBranch);
     if (!remoteTargetOid)
       throw new Error(
         `Remote target branch is missing for ${repository.id}: ${intent.targetBranch}`,
@@ -318,6 +334,7 @@ export class GitDeliveryAdapter implements PostMergeDeliveryGitPort, PostMergeDe
       actions: ['push'],
     };
     const facts = await this.inspect(repository, intent, policy);
+    const cwd = await deliveryWorktree(repository.path, intent.sourceBranch);
     if (facts.head !== action.expectedHead)
       throw new Error(`Local HEAD drifted for ${repository.id}`);
     if (facts.remoteTargetOid !== action.expectedRemoteTargetOid)
@@ -327,16 +344,12 @@ export class GitDeliveryAdapter implements PostMergeDeliveryGitPort, PostMergeDe
       throw new Error(`Remote source drifted for ${repository.id}`);
     }
     if (facts.remoteSourceOid === facts.head) return facts.head;
-    await git(repository.path, [
+    await git(cwd, [
       'push',
       policy.publication.remote,
       `${action.sourceBranch}:refs/heads/${action.sourceBranch}`,
     ]);
-    const published = await remoteOid(
-      repository.path,
-      policy.publication.remote,
-      action.sourceBranch,
-    );
+    const published = await remoteOid(cwd, policy.publication.remote, action.sourceBranch);
     if (published !== facts.head)
       throw new Error(`Remote source verification failed for ${repository.id}`);
     return published;

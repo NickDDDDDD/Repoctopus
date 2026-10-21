@@ -94,11 +94,6 @@ function selectedRepositories(
     }
     const repository = available.get(delivery.repositoryId);
     if (!repository) throw new Error(`Selected repository is missing: ${delivery.repositoryId}`);
-    if ([...selected.values()].some((item) => item.id === repository.id)) {
-      throw new Error(
-        'Multiple Business deliveries in one repository require explicit v3.1 support',
-      );
-    }
     selected.set(delivery.deliveryId, repository);
   }
   return selected;

@@ -69,6 +69,7 @@ export function assertDeliveryIntentV3(intent: DeliveryIntentV3): void {
     throw new Error('Delivery intent requires at least one Business delivery');
   }
   const deliveryIds = new Set<string>();
+  const mergeRequestMappings = new Set<string>();
   for (const delivery of intent.businessDeliveries) {
     if (!DELIVERY_ID.test(delivery.deliveryId)) {
       throw new Error(`Business delivery id is invalid: ${delivery.deliveryId}`);
@@ -84,6 +85,17 @@ export function assertDeliveryIntentV3(intent: DeliveryIntentV3): void {
     if (delivery.sourceBranch === delivery.targetBranch) {
       throw new Error(`Business delivery ${delivery.deliveryId} source and target branches match`);
     }
+    const mergeRequestMapping = [
+      delivery.repositoryId,
+      delivery.sourceBranch,
+      delivery.targetBranch,
+    ].join('\0');
+    if (mergeRequestMappings.has(mergeRequestMapping)) {
+      throw new Error(
+        `Business delivery ${delivery.deliveryId} duplicates another merge request mapping`,
+      );
+    }
+    mergeRequestMappings.add(mergeRequestMapping);
     if (
       delivery.actions.length !== 2 ||
       new Set(delivery.actions).size !== delivery.actions.length ||

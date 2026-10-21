@@ -155,6 +155,51 @@ describe('Git delivery adapter', () => {
     });
   });
 
+  it('targets the source branch worktree for same-repository deliveries', async () => {
+    const setup = await fixture();
+    const supplementalPath = path.join(setup.root, 'app-supplemental');
+    await execFileAsync(
+      'git',
+      ['worktree', 'add', '-b', 'fix/change-follow-up', supplementalPath, 'main'],
+      { cwd: setup.repositoryPath },
+    );
+    await writeFile(path.join(supplementalPath, 'follow-up.txt'), 'follow-up');
+    const supplemental: DeliveryRepositoryIntent = {
+      ...setup.selected,
+      sourceBranch: 'fix/change-follow-up',
+      commitMessage: 'feat: deliver approved follow-up',
+    };
+
+    const checkpoint = await new GitDeliveryAdapter().checkpoint(
+      setup.repository,
+      supplemental,
+      policy,
+    );
+
+    expect(checkpoint).toMatchObject({
+      created: true,
+      publication: {
+        branch: 'fix/change-follow-up',
+        remoteOid: checkpoint.head,
+        upstream: 'origin/fix/change-follow-up',
+      },
+    });
+    expect(
+      (
+        await execFileAsync('git', ['symbolic-ref', '--short', 'HEAD'], {
+          cwd: setup.repositoryPath,
+        })
+      ).stdout.trim(),
+    ).toBe('feat/change');
+    await expect(
+      new GitDeliveryAdapter().inspect(setup.repository, supplemental, policy),
+    ).resolves.toMatchObject({
+      sourceBranch: 'fix/change-follow-up',
+      head: checkpoint.head,
+      clean: true,
+    });
+  });
+
   it('rejects protected branches and invalid commit messages without committing', async () => {
     const setup = await fixture();
     await execFileAsync('git', ['switch', 'main'], { cwd: setup.repositoryPath });
