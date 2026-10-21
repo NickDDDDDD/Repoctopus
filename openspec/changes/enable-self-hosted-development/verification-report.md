@@ -2,19 +2,21 @@
 
 ## 报告状态
 
-- 结论：实现与本 change 的 Proposal、Design、Delta Specs 和 Tasks 一致，46 项任务已完成。
-- 状态：等待用户批准正式 Delivery；批准不授权 merge。
+- 结论：实现与本 change 的 Proposal、Design、Delta Specs 和 Tasks 一致，48 项任务已完成。
+- 状态：本轮实现验证通过；真实自举 Delivery 必须先拆分业务 MR 与协调 MR，当前报告尚不请求批准。
 - 验证日期：2026-10-21。
 - 分支：`feat/enable-self-hosted-development`。
-- 协调 MR：Draft PR #8。
-- 实现基线：`63a1db55e3da323ba3e1745be422ebf19cb9e958`。
-- 实现代码树：`6d3ff03530299f283d302ff6022eb9154d1bdf12`。
+- 当前业务 MR：Draft PR #8；尚未建立独立协调 MR。
+- 实现基线：`42f9becb4abaa85f18f997b5ea0ded51215bf9c9`。
+- 实现代码树：`da96b2dce5ba97d830202d5b6e47cea51e8db7bf`。
 
 ## 结论
 
 Repoctopus 现在可以用一个 Cordis project composition 组合可替换的 Skill 与 Specification Provider、持久 Platform Event Inbox、长期 Runner、一次性补偿和受保护的 Post-merge 动作。签名平台事件只负责实时唤醒；`post-merge reconcile` 与日常 `run start` 前置检查在 Webhook 缺失时调用同一个 Coordinator。Coordinator 必须重新读取全部业务 MR 的权威状态，随后以确定的合入事实创建或恢复稳定身份的 Post-merge Run。精确检出、Evidence、OpenSpec 同步/归档、路径审计、普通 commit/push 和原协调 MR 更新都由可恢复 Intent/Receipt 边界保护。
 
 Change 是团队共享工作单元，不建立由 MR author、Git author、Bot 或 Runner identity 推导的独占 owner。多个 Runner 可以重复查询和验证同一 change；共享状态卷使用 Inbox Lease，独立状态卷使用协调分支精确 OID、普通非强制 push 和等价结果核对收敛远端副作用。
+
+协调 MR 与业务 MR 可以位于同一物理仓库，但不能复用同一个 MR。准备快照时，相同远端、源分支和目标分支的角色冲突会被拒绝；平台返回业务 MR 后，Delivery 再按稳定 MR 身份核对。业务 MR 合入关闭后，独立协调 MR 才能继续接收合入后 Evidence、主规格同步和 change 归档。
 
 开发 checkpoint 已把本地 commit 后立即普通 push、建立 upstream、远端精确 OID 核对作为完成条件。Post-merge 路径继续禁止自动 merge、force push、rebase、删除分支、替换协调 MR 或修改业务源码。
 
@@ -33,7 +35,7 @@ Change 是团队共享工作单元，不建立由 MR author、Git author、Bot �
 
 | 验证                         | 结果                                                                                             |
 | ---------------------------- | ------------------------------------------------------------------------------------------------ |
-| `npm run verify`             | 通过；TypeScript、ESLint、构建、81 个测试文件、326 个测试通过，1 个 Windows 条件测试跳过         |
+| `npm run verify`             | 通过；TypeScript、ESLint、构建、81 个测试文件、328 个测试通过，1 个 Windows 条件测试跳过         |
 | `npm run format:check`       | 通过；产品代码、测试、文档与 OpenSpec 文件符合统一格式                                           |
 | `npm run check:generated`    | 通过；生成物无漂移                                                                               |
 | `npm run check:brand`        | 通过；公共产品面命名一致                                                                         |
@@ -48,6 +50,8 @@ Change 是团队共享工作单元，不建立由 MR author、Git author、Bot �
 
 唯一跳过项是 `filesystem-safety.test.ts` 中普通文件在读取期间被替换的竞态夹具。Windows 对已打开文件的替换语义无法稳定制造该 POSIX 场景；同文件中的临时文件篡改与父目录 Junction 逃逸仍在 Windows 执行，POSIX 替换场景由 Linux CI 承担。
 
+本轮完整验证最初两次在 `self-bootstrap.test.ts` 检测到仓库输入选择变化。定向复现确认生产指纹保护正确，根因是并行的 `platform-event-recovery` E2E 在未忽略的 `test/` 子目录创建和删除临时 bundle。测试改为在已忽略且可解析依赖的 `node_modules/.repoctopus-platform-event-recovery-build-*` 中构建后，`self-bootstrap` 与恢复 E2E 并发组合连续 3 次通过，随后完整 `npm run verify` 通过。修复没有放宽指纹一致性检查。
+
 ## 架构约束证据
 
 - Cordis 是唯一应用 Runtime；Engine 保持纯函数，Skill、Specification、PlatformEvents、WorkflowRuns、Evidence、Delivery 和 PostMergeCoordinator 通过 Service、Provider 与 Contributor 组合。
@@ -58,6 +62,7 @@ Change 是团队共享工作单元，不建立由 MR author、Git author、Bot �
 - 临时检出的逻辑身份仍由完整 Run ID 与 marker 核对，磁盘目录使用固定长度摘要，避免 Windows Git object/pack 深路径超限；无正确 marker 的目录不会被复用或删除。
 - 普通 project composition 在配置 `postMerge` 时装配一次性 Coordinator、Action Provider 与命令 Contributor，但不装配 HTTP Host、Webhook Route 或后台 Timer；CLI 子进程完成补偿后正常退出。
 - 多 Runner 不依赖人员归属或本地全局锁。远端竞争恢复要求胜出提交是同一审计基线的直接子提交，并逐项核对 tree、message、author 和原协调 MR；不等价结果停止而不是覆盖。
+- Delivery 允许协调角色与业务角色同仓，但要求分支拓扑可区分，并在 Adapter 返回后按 `provider + repositoryId + number` 拒绝同一 MR 身份；URL 不作为绕过稳定身份核对的依据。
 
 ## 第三方来源
 
@@ -104,7 +109,7 @@ DSH 与 Comet 的网络漂移检查独立于离线 `verify`，每天由 workflow
 - 两个独立 Git 工作区从同一协调分支基线生成相同关闭 tree：第一个 Runner 普通 push 成功；第二个 Runner读取远端提交并核对 parent、tree、message 与 author 后，通过原子 `update-ref` 收敛到胜出 OID，工作树保持干净且不产生第二次 MR 更新。
 - 非等价远端提交仍由既有漂移测试证明 fail-closed；实现没有引入 force push、rebase、分支删除或最后写入者覆盖。
 
-本 E2E 在实施期间实际发现并修复了五个集成问题：生产 webhook processor 只唤醒却不执行 Run、`merged` Delivery 无法在 Run 建立前崩溃后重新定位、`observedAt` 导致 Trigger 漂移、完整 Run ID 导致 Windows Git 深路径超限，以及 E2E bundle 一度污染并行仓库指纹。最终实现分别用完整执行入口、分层恢复匹配、权威 Trigger 投影、marker 保护的短物理目录和忽略目录内隔离 bundle 解决。
+本 E2E 在实施期间实际发现并修复了五类集成问题：生产 webhook processor 只唤醒却不执行 Run、`merged` Delivery 无法在 Run 建立前崩溃后重新定位、`observedAt` 导致 Trigger 漂移、完整 Run ID 导致 Windows Git 深路径超限，以及两个 E2E bundle 位置一度污染并行仓库指纹。最终实现分别用完整执行入口、分层恢复匹配、权威 Trigger 投影、marker 保护的短物理目录和忽略目录内隔离 bundle 解决。
 
 ## 安全、隐私与清理
 
@@ -117,7 +122,7 @@ DSH 与 Comet 的网络漂移检查独立于离线 `verify`，每天由 workflow
 
 - 文件 Event Inbox 的 Lease 只协调共享同一状态卷的 Runner；独立状态卷允许重复计算，并由协调分支远端 OID 栅栏收敛发布结果。这不是共享数据库调度、自动扩缩容或零重复计算意义上的生产级 HA。
 - 当前只有 GitHub Adapter；CodeHub Adapter、远程 Skill 市场、Skill 管理 UI、多规格权威合并和生产级 HA 不在本 change 范围内。
-- 独立进程 Post-merge E2E 使用 mock 平台 API 和本地 bare remote，真实 PR #8 尚未合入，因此真实 GitHub 合入回调、主规格同步与 change 归档必须等 PR 人工合入后由同一路径复验。
+- 独立进程 Post-merge E2E 使用 mock 平台 API 和本地 bare remote。真实 PR #8 尚未合入，且必须先建立独立协调 MR 和正式 Delivery，因此真实 GitHub 合入回调、主规格同步与 change 归档留待拓扑拆分后复验。
 - Runner 要实时接收 Webhook 仍必须位于平台可达环境；开发机无法接收公网 webhook 时，可以使用 Inbox replay/retry，或由短生命周期 `post-merge reconcile` 经公开 Coordinator 重新读取权威平台状态。
 - 第一版一次性候选发现依赖当前 coordination workspace 的 `.repoctopus/deliveries/`；没有复制或共享持久状态的全新 clone 不能自动发现全部历史 change。受验证的远端索引或共享 Store 留给后续 change。
 - 未发布的 Delivery state v1 不做静默迁移，返回 `migration_required`。组合、Provider 或状态 Schema 不兼容时同样只允许只读诊断。
@@ -130,6 +135,6 @@ DSH 与 Comet 的网络漂移检查独立于离线 `verify`，每天由 workflow
 
 ## 批准含义
 
-批准本报告表示接受当前实现、验证结论、第三方固定来源和上述已知限制，并授权 Repoctopus Delivery 为当前确定快照完成协调 MR 的正式发布或更新。批准不授权 merge、force push、rebase、删除分支、改变目标分支或扩大仓库集合。任何代码树、报告、策略、仓库选择、远端基线或动作计划变化都会使批准失效并要求重新验证。
+本报告当前记录实现验证事实，不构成 Delivery 批准请求。建立独立协调 MR、生成正式 Delivery Intent 并重新绑定最终快照后，批准才表示接受届时的实现、验证结论、第三方固定来源和已知限制，并授权 Repoctopus Delivery 发布或更新业务 MR。批准始终不授权 merge、force push、rebase、删除分支、改变目标分支或扩大仓库集合。任何代码树、报告、策略、仓库选择、远端基线或动作计划变化都会使批准失效并要求重新验证。
 
-PR #8 合入后，平台事件与 Post-merge Run 应再次执行精确合入代码验证、主规格同步、change 归档、收尾 commit/push 和原 MR 更新；该合入后证据将作为本报告的后续复验记录。
+独立协调 MR 建立并登记后，业务 PR #8 才能进入人工合入。合入后，平台事件与 Post-merge Run 应再次执行精确合入代码验证、主规格同步、change 归档、收尾 commit/push 和原协调 MR 更新；该合入后证据将作为本报告的后续复验记录。
