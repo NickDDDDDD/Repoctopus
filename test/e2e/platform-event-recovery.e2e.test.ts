@@ -24,7 +24,9 @@ afterEach(async () => {
 
 async function createWorkspace(): Promise<{ root: string; fixture: string }> {
   const root = await mkdtemp(path.join(os.tmpdir(), 'repoctopus-event-recovery-'));
-  const buildRoot = await mkdtemp(path.join(productRoot, 'test', '.platform-event-recovery-'));
+  const buildRoot = await mkdtemp(
+    path.join(productRoot, 'node_modules', '.repoctopus-platform-event-recovery-build-'),
+  );
   roots.push(root, buildRoot);
   await writeFile(
     path.join(root, 'repoctopus.yaml'),
