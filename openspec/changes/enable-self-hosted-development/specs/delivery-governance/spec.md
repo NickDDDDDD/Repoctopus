@@ -35,7 +35,17 @@ Repoctopus MUST 只在项目策略显式启用自动提交、当前分支不受�
 
 ### Requirement: Delivery 声明协调 MR 与业务 MR 关系
 
-Repoctopus MUST 在交付状态中记录一个 change 的协调 MR、全部业务 MR、各自仓库身份和目标分支，使平台事件能够确定性映射到唯一交付集合。协调 MR 是承载规格、验证与收尾的职责角色，不代表旧产品名称或必须独立存在的物理仓库；协调 MR 与业务 MR MAY 位于同一仓库。
+Repoctopus MUST 在交付状态中记录一个 change 的协调 MR、全部业务 MR、各自仓库身份和目标分支，使平台事件能够确定性映射到唯一交付集合。协调 MR 是承载规格、验证与收尾的职责角色，不代表旧产品名称或必须独立存在的物理仓库；协调 MR 与业务 MR MAY 位于同一仓库，但 MUST 使用不同的 MR 身份。同仓角色使用相同源分支与目标分支，或平台返回相同 `provider + repositoryId + number` 时，系统 MUST 在完成发布前 fail-closed。
+
+#### Scenario: 协调与业务角色位于同一仓库
+
+- **WHEN** 一个 change 在同一物理仓库声明协调 MR 与业务 MR
+- **THEN** 两个角色使用可区分的分支拓扑和不同 MR 身份，系统分别跟踪其生命周期
+
+#### Scenario: 协调与业务角色解析为同一 MR
+
+- **WHEN** Delivery Intent 使用相同的同仓源分支与目标分支，或平台为业务角色返回已经登记的协调 MR 身份
+- **THEN** 系统拒绝准备或发布，不把一个 MR 同时登记为协调角色和业务角色
 
 #### Scenario: 合入事件属于已登记业务 MR
 

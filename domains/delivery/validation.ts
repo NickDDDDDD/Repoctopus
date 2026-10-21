@@ -261,6 +261,19 @@ export function validateDeliveryIntent(intent: DeliveryIntent): DeliveryFinding[
         path: root,
         message: 'sourceBranch and targetBranch must differ',
       });
+    if (
+      coordination &&
+      repository.repositoryId === coordination.repositoryId &&
+      repository.sourceBranch === coordination.sourceBranch &&
+      repository.targetBranch === coordination.targetBranch
+    ) {
+      findings.push({
+        code: 'coordination-business-branch-collision',
+        path: root,
+        message:
+          'Coordination and business roles in one repository must use different source or target branches',
+      });
+    }
     if (!repository.commitMessage)
       findings.push({
         code: 'missing-commit-message',

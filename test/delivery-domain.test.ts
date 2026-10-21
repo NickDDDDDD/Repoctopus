@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { TEST_COMPOSITION_DIGEST } from './helpers/fixtures.js';
 
+import { recordBusinessMergeRequest } from '../domains/delivery/merge-requests.js';
 import { compareDeliverySnapshots, createDeliverySnapshot } from '../domains/delivery/snapshot.js';
 import {
   initialDeliveryState,
@@ -173,6 +174,62 @@ describe('delivery contract', () => {
         { role: 'business', repositoryId: 'repo-b', mergeRequest: null },
       ],
     });
+  });
+
+  it('rejects a coordination and business role that resolve to the same merge request', () => {
+    const collidingBranches: DeliveryIntent = {
+      ...intent,
+      coordinationMergeRequest: {
+        ...intent.coordinationMergeRequest,
+        repositoryId: 'repo-a',
+        remoteIdentity: 'example/repo-a',
+        sourceBranch: 'feat/change',
+        targetBranch: 'main',
+        mergeRequest: {
+          ...intent.coordinationMergeRequest.mergeRequest,
+          repositoryId: 'repo-a',
+          number: 99,
+        },
+      },
+    };
+    expect(validateDeliveryIntent(collidingBranches)).toContainEqual(
+      expect.objectContaining({ code: 'coordination-business-branch-collision' }),
+    );
+    expect(() =>
+      createDeliverySnapshot({
+        compositionDigest: TEST_COMPOSITION_DIGEST,
+        intent: collidingBranches,
+        policy,
+        reportContents: 'verified',
+        evidenceBundleIds,
+        repositories: [fact('repo-a'), fact('repo-b')],
+        createdAt: '2026-01-01T00:00:00.000Z',
+      }),
+    ).toThrow(/same source and target branches/i);
+
+    const validSnapshot = createDeliverySnapshot({
+      compositionDigest: TEST_COMPOSITION_DIGEST,
+      intent: {
+        ...collidingBranches,
+        coordinationMergeRequest: {
+          ...collidingBranches.coordinationMergeRequest,
+          sourceBranch: 'spec/coordinate-change',
+        },
+      },
+      policy,
+      reportContents: 'verified',
+      evidenceBundleIds,
+      repositories: [fact('repo-a'), fact('repo-b')],
+      createdAt: '2026-01-01T00:00:00.000Z',
+    });
+    expect(() =>
+      recordBusinessMergeRequest(validSnapshot.mergeRequests, 'repo-a', {
+        provider: 'github',
+        repositoryId: 'repo-a',
+        number: 99,
+        url: 'https://example.test/repo-a/pull/99',
+      }),
+    ).toThrow(/same merge request/i);
   });
 
   it('requires a clean snapshot and reports drift', () => {

@@ -82,7 +82,7 @@ Webhook 不可达或 Runner 曾离线时，可以执行一次短生命周期补�
 node bin/repoctopus.js post-merge reconcile --workspace . --json
 ```
 
-补偿按 Repoctopus 已登记的团队 Change 和业务 MR role 查询，不按 MR 作者划分所有权。多个 Runner 可以重复验证同一 change，远端发布以协调分支精确 OID、非强制 push 和结果核对安全收敛。
+补偿按 Repoctopus 已登记的团队 Change 和业务 MR role 查询，不按 MR 作者划分所有权。协调 MR 与业务 MR 可以同仓，但不能复用同一个 MR。多个 Runner 可以重复验证同一 change，远端发布以协调分支精确 OID、非强制 push 和结果核对安全收敛。
 
 ## 交付治理
 

@@ -193,6 +193,8 @@ Repoctopus 不建立独占 Change owner。任一成员或 Agent 都可以在同�
 
 协调 MR 与业务 MR 的 `role` 决定它们在工作流中的用途，而不是人员归属。协调 MR 的提交者即使不是特性实现者，也不会因此被选为补偿责任人；一次性补偿按项目中 Repoctopus 已登记的未完成 Delivery 发现候选项，不按人员过滤。
 
+两个角色可以位于同一物理仓库，但不能复用同一个 MR。原因是业务 MR 合入后必须关闭，而协调 MR 需要继续保持开放以接收合入后 Evidence、主规格同步和 change 归档。Delivery 在准备快照时拒绝同一远端上的相同源/目标分支拓扑，并在平台返回 MR 后再次按 `provider + repositoryId + number` 核对；前者尽早阻止必然复用，后者保护 Adapter 边界。URL 不是稳定身份的一部分，不能用 URL 表面差异绕过角色隔离。
+
 ### 17. 多 Runner 以远端协调分支 OID 作为最终并发栅栏
 
 多个 Runner MAY 同时读取同一 change、查询平台事实并执行无远端副作用的验证。Post-merge 发布前，每个 Runner 必须绑定协调 MR 当前源分支的精确 head OID 和审计后的 workspace 基线；普通非强制 push 只有在该远端基线未变化时才能成功。

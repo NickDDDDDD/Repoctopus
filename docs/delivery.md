@@ -17,7 +17,7 @@ Repoctopus 把功能分支 checkpoint 视为远端备份边界：策略允许的
 
 每个 change 通过 Delivery Intent 显式选择仓库，示例见 [examples/delivery-intent.yaml](examples/delivery-intent.yaml)。扫描到但没有选择的脏仓库只产生警告，不会被自动提交或发布。
 
-Delivery Intent v2 使用 `coordinationMergeRequest` 记录承载规格、验证与最终收尾的协调 MR，`repositories` 则完整声明业务 MR 集合。“协调”是职责而不是物理位置：协调 MR 与业务 MR 可以位于同一个仓库。平台合入事件只映射业务 MR；协调 MR 的更新和最终合入遵循独立的收尾与人工决策边界。
+Delivery Intent v2 使用 `coordinationMergeRequest` 记录承载规格、验证与最终收尾的协调 MR，`repositories` 则完整声明业务 MR 集合。“协调”是职责而不是物理位置：协调 MR 与业务 MR 可以位于同一个仓库，但不能是同一个 MR。同仓时必须使用不同的源分支或目标分支；平台返回业务 MR 后，Delivery 还会按 `provider + repositoryId + number` 核对它没有复用协调 MR。平台合入事件只映射业务 MR；协调 MR 的更新和最终合入遵循独立的收尾与人工决策边界。
 
 ## 批准快照
 

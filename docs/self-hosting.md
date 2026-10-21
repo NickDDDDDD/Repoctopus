@@ -26,6 +26,8 @@ stable Post-merge Run identity
   └─ commit + push + update the existing coordination MR
 ```
 
+业务 MR 与协调 MR 可以位于同一物理仓库，但必须是两个不同的 MR。业务 MR 合入后关闭；协调 MR 保持开放，供 Post-merge Run 写入验证、主规格同步和 change 归档结果。Repoctopus 会同时拒绝同仓同源/目标分支配置，以及平台返回的重复 MR 身份。
+
 Webhook 不是合入证据，MR 作者也不是 Change owner。Change 是团队共享工作单元；任一成员或 Agent 都可以继续修复和实现，Runner identity 只用于租约与审计。权威事实位于 Delivery、Run、Evidence、Action Receipt、Specification Closure Receipt 和 Event Inbox，因此原开发者离开后，其他 Runner 仍能从持久边界继续。
 
 ## 1. 准备共享配置

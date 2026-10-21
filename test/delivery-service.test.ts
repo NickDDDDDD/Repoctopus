@@ -300,6 +300,72 @@ describe('delivery service', () => {
     });
   });
 
+  it('fails publication when the platform returns the coordination MR as a business MR', async () => {
+    const workspace = await temporaryDirectory('repoctopus-delivery-role-collision-');
+    cleanup.push(workspace);
+    const mergeRequests = new FakeMergeRequests();
+    mergeRequests.failOnce = false;
+    mergeRequests.identity = {
+      provider: 'github',
+      repositoryId: 'repo-a',
+      number: 99,
+      url: 'https://github.com/team/app/pull/99',
+    };
+    const roleSeparatedIntent: DeliveryIntent = {
+      ...intent,
+      changeId: 'role-separated-change',
+      coordinationMergeRequest: {
+        repositoryId: 'repo-a',
+        remoteIdentity: 'github.com/team/app',
+        sourceBranch: 'spec/role-separated-change',
+        targetBranch: 'main',
+        mergeRequest: { ...mergeRequests.identity },
+      },
+    };
+    const service = new DeliveryService(
+      new FileDeliveryStore(workspace),
+      new FakeGit(),
+      mergeRequests,
+      satisfiedEvidence,
+      () => new Date('2026-01-01T00:00:00.000Z'),
+    );
+    const waiting = await service.prepare({
+      project,
+      intent: roleSeparatedIntent,
+      policy,
+      reportContents: 'verified',
+      evidenceBundleIds,
+    });
+    await service.decide(
+      roleSeparatedIntent.changeId,
+      {
+        apiVersion: 'repoctopus/v1alpha1',
+        kind: 'HumanDecisionResponse',
+        requestId: waiting.decisionRequest!.requestId,
+        snapshotDigest: waiting.snapshot!.digest,
+        decision: 'approve',
+      },
+      { subject: 'human', provider: 'test-ui', sessionId: 'session-1' },
+    );
+
+    await expect(
+      service.publish({
+        project,
+        intent: roleSeparatedIntent,
+        policy,
+        reportContents: 'verified',
+        evidenceBundleIds,
+      }),
+    ).rejects.toThrow(/same merge request/i);
+    expect(await service.status(roleSeparatedIntent.changeId)).toMatchObject({
+      status: 'partially_published',
+      mergeRequests: {
+        coordination: { mergeRequest: { number: 99 } },
+        business: [{ mergeRequest: null }],
+      },
+    });
+  });
+
   it('publishes multiple repositories in stable order', async () => {
     const workspace = await temporaryDirectory('repoctopus-delivery-multi-');
     cleanup.push(workspace);

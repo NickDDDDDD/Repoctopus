@@ -27,6 +27,15 @@ export function createDeliveryMergeRequestSet(
       if (!fact) throw new Error(`Selected repository is missing: ${repository.repositoryId}`);
       if (!fact.remoteIdentity)
         throw new Error(`Business repository has no remote identity: ${repository.repositoryId}`);
+      if (
+        fact.remoteIdentity === intent.coordinationMergeRequest.remoteIdentity &&
+        repository.sourceBranch === intent.coordinationMergeRequest.sourceBranch &&
+        repository.targetBranch === intent.coordinationMergeRequest.targetBranch
+      ) {
+        throw new Error(
+          `Coordination and business roles cannot use the same source and target branches: ${repository.repositoryId}`,
+        );
+      }
       return {
         role: 'business' as const,
         repositoryId: repository.repositoryId,
@@ -58,6 +67,16 @@ export function recordBusinessMergeRequest(
   if (!selected) throw new Error(`Business merge request is not declared: ${repositoryId}`);
   if (mergeRequest.repositoryId !== repositoryId)
     throw new Error(`Merge request repository mismatch: ${repositoryId}`);
+  const coordinationMergeRequest = current.coordination.mergeRequest;
+  if (
+    coordinationMergeRequest.provider === mergeRequest.provider &&
+    coordinationMergeRequest.repositoryId === mergeRequest.repositoryId &&
+    coordinationMergeRequest.number === mergeRequest.number
+  ) {
+    throw new Error(
+      `Coordination and business roles cannot use the same merge request: ${repositoryId}`,
+    );
+  }
   if (
     selected.mergeRequest &&
     (selected.mergeRequest.provider !== mergeRequest.provider ||
