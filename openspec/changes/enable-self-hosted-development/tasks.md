@@ -74,4 +74,4 @@
 - [x] 8.3 增加不含 HTTP Host、Webhook Route 和后台 Timer 的一次性 Post-merge composition 与 `post-merge reconcile` CLI，并在日常 `run start` 前调用同一入口。
 - [x] 8.4 强化 Post-merge 发布的远端 OID 并发栅栏与竞争恢复；用两个独立 Runner/状态目录模拟相同基线竞争，验证一个发布成功后另一个等价 no-op 或对不等价差异 fail-closed。
 - [x] 8.5 更新 Runner、自举、架构和恢复文档，明确多 Runner、状态卷发现边界、Webhook 实时路径与启动补偿路径；增加文档契约测试。
-- [ ] 8.6 执行定向测试、`npm run verify`、包 E2E 和 tracer E2E，更新正式验证报告、清理临时产物，并在每次 commit 后核对远端分支精确 OID。
+- [x] 8.6 执行定向测试、`npm run verify`、包 E2E 和 tracer E2E，更新正式验证报告、清理临时产物，并在每次 commit 后核对远端分支精确 OID。
