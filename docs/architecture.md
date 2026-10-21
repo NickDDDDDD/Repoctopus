@@ -15,7 +15,8 @@ CLI / IDE / API Application Plugin
 │ Cordis Context / Service / Fiber / Effect                  │
 │                                                            │
 │ Project     CommandRouter     WorkflowRuns     RunStore     │
-│ ActionDispatcher  EvidenceCoordinator  Delivery  Telemetry │
+│ Evidence   Delivery   Specification   PlatformEvents       │
+│ HTTP Host  Event Runner  PostMergeCoordinator  Telemetry   │
 │       ▲ Provider               ▲ Contributor               │
 └───────┼────────────────────────┼────────────────────────────┘
         │                        │
@@ -39,7 +40,7 @@ CLI / IDE / API Application Plugin
 
 ## Bootstrap 与 Project composition
 
-`bootstrap` composition 不要求正式项目配置，只装载项目探测、配置接入、来源检查和浏览器诊断。`project` composition 在有效 `repoctopus.yaml` 存在时增加 Run、Action、Evidence、Delivery 与 Telemetry。
+`bootstrap` composition 不要求正式项目配置，只装载项目探测、配置接入、来源检查和浏览器诊断。`project` composition 在有效 `repoctopus.yaml` 存在时增加 Run、Action、Evidence、Delivery、Skill、Specification 与 Telemetry，但不启动监听端口或后台轮询。`runner` composition 在相同项目配置之上增加 HTTP Host、Webhook Route、Event Inbox Runner、Post-merge 服务和 Application Plugin；只有 `runner start` 使用这条长驻组合。
 
 公共入口都必须经 App Boot。当前已切换的真实调用链为：
 
@@ -58,9 +59,15 @@ CLI → App Boot → CommandRouter → delivery.* Contributor → Delivery Servi
 
 project detect/prepare/review 与 browser/provenance 维护
 CLI → App Boot → CommandRouter → 对应 Contributor → ProjectOnboarding 或 BrowserMaintenance Service
+
+runner start
+CLI → Runner Application → HTTP Host + Webhook Route → PlatformEvents → durable Inbox
+                                                Inbox Runner → PostMergeCoordinator → WorkflowRuns
 ```
 
 静态 Plugin Descriptor 只用于 import 前准入、来源、权限类别、状态兼容和审计。运行期依赖仍由插件自身的 Cordis `inject` 声明。内置插件的 `codeDigest` 由其登记的实际源码文件计算。
+
+项目配置只选择 Provider 身份和 Credential 变量名。composition digest 会绑定选择与非秘密配置，但不会读取或散列 Credential 值。普通命令按需创建并关闭短生命周期 App；Runner 由进程管理器持有，收到终止信号后通过相同 Cordis 生命周期有界关闭。
 
 ## Run、Engine 与 RunStore
 
@@ -101,6 +108,16 @@ App Boot 关闭时先把 Loader composition 更新为空并等待子 Fiber 的�
 - 变化被状态契约明确声明为兼容，记录 `composition.changed`。
 - Engine、RunStore、Evidence Gate 或 Action Adapter 不兼容，Run 进入 `migration_required`；只读查询仍可使用。
 
+## 数据与副作用边界
+
+- `repoctopus.yaml` 是可提交的团队配置，只保存仓库逻辑身份、Provider 选择、策略和环境变量名，不保存 Token、Webhook secret 或机器作者身份。
+- `.repoctopus/` 是工作区本机的持久权威，包含 Run、Journal、Evidence、Action、Delivery、Inbox 和规格关闭 Receipt；其中 Inbox payload 与租约状态属于敏感数据，应限制访问、备份并按保留策略清理。
+- 业务仓只由受保护 Adapter 在已核对的精确提交和允许路径上读取或写入。PostMergeCoordinator 不直接写 RunStore、Evidence Store、规格文件或 Git。
+- OpenSpec Provider 是唯一执行规格工具关闭命令的边界；Delivery Action Adapter 是唯一执行 commit、push 与 MR 创建/更新的边界。
+- 遥测只导出允许列表中的稳定身份和低基数结果；秘密、原始 Header、payload、绝对路径、自由文本与规格正文不进入 OTel。
+
+这些约束同时由 composition authority、路径限定的架构检查和违规 fixture 保护。部署与目录权限建议见[自举与 Runner 部署](self-hosting.md)。
+
 ## 触手、吸盘、神经与眼睛
 
 - **触手**连接并探测多个独立 Git 仓库，保存逻辑 identity。
@@ -110,4 +127,6 @@ App Boot 关闭时先把 Loader composition 更新为空并等待子 Fiber 的�
 
 ## 与上游来源的关系
 
-Cordis Core 4.0.4 与 Plugin Loader 1.0.5 的未修改快照位于 `third_party/`，来源检查固定许可证、上游提交和逐文件摘要。Comet 是 Engine、受保护转换、Evidence、Journal、Checkpoint、恢复和 Receipt 等功能语义的参考；Repoctopus 按多仓与团队交付需求决定采用、改写或重构，来源关系由机器清单与架构治理记录。
+Cordis Core 4.0.5 与 Plugin Loader 1.0.6 的未修改发布快照位于 `third_party/`，固定在 DSH `dsh-v0.2.1-rc.2` 对应提交。DSH 的 Skill Registry 作为精确版本依赖使用，Filesystem Skill 与 GitHub Webhook 边界按来源登记后适配；DSH Agent、Session、Workspace 和 fire-and-forget Webhook Runtime 不进入产品运行时。
+
+Comet `0.4.5` / 固定 `master` 提交是纯 Engine、受保护转换、文件安全、Evidence、Journal、Checkpoint、恢复和 Receipt 的源码或行为来源，不是 Repoctopus 的运行时父应用。Repoctopus 按多仓、持久 Inbox 和团队交付边界选择采用、改写或原生实现。OpenSpec 是可替换 Specification Provider 的当前实现；Matt Skills 是固定内容来源。机器身份、逐文件摘要和采用方式分别记录在 `third_party/cordis-upstream.json`、`third_party/dsh-adoption.json`、`third_party/comet/source-manifest.json` 与 Matt Skills manifest；完整能力判断见[上游对齐审计](../third_party/upstream-alignment-audit.md)。

@@ -2,7 +2,7 @@
 
 本指南帮助团队 Runner 运维者定位 Post-merge Run 停在哪个持久边界，并从该边界安全恢复。你可以只依赖平台事件、Delivery、Run、Evidence 和 Receipt 身份排障，不需要原开发者的本机工作区。
 
-当前发布包尚未把 Post-merge Runner 自动加入普通 project composition。完成 Runner 配置和生产装配后使用本指南；在此之前，相同命令可检查集成 Host 已经创建的持久状态。
+配置 `platformEvents` 和 `postMerge` 后，`runner start` 会把 Post-merge Coordinator、Action Provider 与 Application Plugin 加入专用 Runner composition。普通 project composition 仍保持短生命周期，不会启动 HTTP 或后台轮询。本指南用于正式 Runner 和恢复演练产生的同一套持久状态。
 
 ## 准备关联 ID
 

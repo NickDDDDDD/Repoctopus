@@ -64,6 +64,18 @@ node bin/repoctopus.js event retry --workspace . --envelope sha256:<digest> --js
 
 Runner、Inbox、GitHub 验签和安全边界见[平台事件处理](docs/platform-events.md)。需要验证强制中断后的跨进程恢复时，按[平台事件故障恢复](docs/platform-event-recovery.md)运行签名 HTTP 演练。
 
+正式工作区在 `repoctopus.yaml` 中选择 Provider、HTTP 入口、Inbox Runner 与可选的 Post-merge 策略后，可以启动常驻 Application：
+
+```powershell
+$env:REPOCTOPUS_GITHUB_WEBHOOK_SECRET = '<webhook-secret>'
+$env:REPOCTOPUS_GITHUB_TOKEN = '<github-token>'
+$env:REPOCTOPUS_GIT_AUTHOR_NAME = 'Repoctopus Bot'
+$env:REPOCTOPUS_GIT_AUTHOR_EMAIL = 'repoctopus@example.invalid'
+node bin/repoctopus.js runner start --workspace . --json
+```
+
+Runner 输出一次 `ready` envelope 后保持前台运行；由进程管理器发送 `SIGINT` 或 `SIGTERM` 时，它会停止接收新请求、排空有界操作并释放 HTTP 与后台 Fiber。完整配置、部署方式、数据边界和自举闭环见[自举与 Runner 部署](docs/self-hosting.md)。
+
 ## 交付治理
 
 通过项目接入流程生成 workspace 的 `repoctopus.yaml`，在其 `delivery` 段维护团队交付策略（完整示例见 [项目配置示例](docs/examples/repoctopus.yaml)），并为 change 创建 [交付意图](docs/examples/delivery-intent.yaml)。checkpoint 会普通 push 当前 HEAD、建立 upstream 并核对远端 OID，不需要逐次人工批准：
@@ -99,6 +111,7 @@ node bin/repoctopus.js delivery refresh --workspace . --change example-change --
 - [OpenTelemetry 与 SigNoz](docs/telemetry.md)
 - [交付治理与失败恢复](docs/delivery.md)
 - [观察和恢复 Post-merge 收尾](docs/post-merge.md)
+- [自举与 Runner 部署](docs/self-hosting.md)
 - [Human Decision 协议](docs/human-decision.md)
 - [第三方来源与采用报告](third_party/comet/adoption-report.md)
 
@@ -112,4 +125,4 @@ npm run test:tracer-e2e
 
 完整验证还包含类型检查、Lint、确定性构建、来源摘要检查、OpenSpec 严格校验和实际 npm 打包安装。
 
-仓库自身提交了 `repoctopus.yaml`，因此可以用同一条 Project composition 执行自举验证。该配置也是团队项目配置的最小可运行参考。
+仓库自身提交了最小 `repoctopus.yaml`，因此普通开发命令可以用同一条 Project composition 执行自举验证。生产 Runner 还需要平台事件、Credential 引用与 Post-merge 策略；可运行结构见[完整项目配置示例](docs/examples/repoctopus.yaml)，不要把秘密写入 YAML。

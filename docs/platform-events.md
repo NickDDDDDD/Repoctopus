@@ -25,7 +25,7 @@ HTTP Host → GitHub Adapter → PlatformEvents → Event Inbox
 - Runner 使用带 Token 的持久租约领取事件。长任务在租约到期前续租，旧 Token 不能提交结果。
 - Processor 返回 `completed`、`retry` 或 `dead_letter`。Inbox 把结果和 Receipt 保存在同一个原子快照中。
 
-Webhook 只负责唤醒处理链。未来的 PostMergeCoordinator 必须重新读取代码平台上的 MR、CI、评审和 merge commit，不得把 webhook payload 当作最终交付事实。
+Webhook 只负责唤醒处理链。PostMergeCoordinator 会重新读取代码平台上的 MR、CI、评审和 merge commit，不把 webhook payload 当作最终交付事实；全部业务 MR 满足条件后，它才通过 WorkflowRuns 启动或恢复唯一 Post-merge Run。
 
 ## Inbox 状态
 
@@ -71,4 +71,14 @@ Inbox 不按 `receivedAt` 回退已有条目。不同 Delivery ID 仍代表不�
 | Runner 在租约期间退出             | 条目暂时保持 `leased`            | 租约到期后由新 Runner 领取；旧 Token 不能提交结果 |
 | OTel 端点不可用                   | Inbox 状态不变                   | 恢复端点后观察后续事件；Inbox 始终是权威事实      |
 
-当前版本已经提供 Host、Route、Runner、Inbox 和管理命令的插件能力，但正式 `repoctopus.yaml` 平台事件配置和长期运行入口仍属于后续组合任务。不要把测试 fixture 当作生产守护进程。
+## 启动生产 Runner
+
+正式 `repoctopus.yaml` 必须配置 `platformEvents.storeProvider`、HTTP 地址、GitHub Credential 引用和 Runner 租约策略；需要自动收尾时再配置引用同一 Runner 的 `postMerge`。完整示例见[项目配置](examples/repoctopus.yaml)。设置配置中引用的环境变量后启动：
+
+```powershell
+node bin/repoctopus.js runner start --workspace . --json
+```
+
+就绪 envelope 的 `origin` 与配置的 GitHub `path` 组成 webhook URL。Runner 应由操作系统服务或进程管理器以前台进程托管；健康判定以 `ready` 输出和 HTTP 可达性为准。使用 `SIGINT`/`SIGTERM` 正常关闭，不要通过删除 `.repoctopus/events/` 来停止或重试任务。当前版本目标是单工作区可靠运行，不承诺生产级高可用调度。
+
+Runner 装配、Credential、目录权限和自举流程见[自举与 Runner 部署](self-hosting.md)。测试 fixture 仍只用于恢复演练，不是生产守护进程。
