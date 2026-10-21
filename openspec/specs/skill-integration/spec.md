@@ -1,6 +1,7 @@
 # skill-integration Specification
 
 ## Purpose
+
 定义 Repoctopus 如何发现、选择和加载可替换的 Agent Skill，并把实际使用的方法指令绑定到可恢复 Run，同时隔离团队共享能力与成员个人学习状态。
 
 ## Requirements

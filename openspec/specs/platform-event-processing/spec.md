@@ -1,6 +1,7 @@
 # platform-event-processing Specification
 
 ## Purpose
+
 定义 Repoctopus 如何安全接收代码平台事件、形成平台无关投递事实并持久化处理进度，使重复、乱序、重启和暂时故障不会丢失或重复执行交付动作。
 
 ## Requirements
