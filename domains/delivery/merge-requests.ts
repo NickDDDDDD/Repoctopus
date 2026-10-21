@@ -101,9 +101,7 @@ export function matchActiveDeliveryMergeRequest(
     active.length > 0
       ? active
       : states.filter((state) => matches(state, reference, RECOVERY_STATUSES));
-  const changeIds = candidates
-    .map((state) => state.changeId)
-    .sort();
+  const changeIds = candidates.map((state) => state.changeId).sort();
   if (changeIds.length === 0)
     return { status: 'not_found', changeIds: [], diagnostic: 'delivery-event-no-match' };
   if (changeIds.length > 1)

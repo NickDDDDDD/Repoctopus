@@ -106,7 +106,10 @@ export class NodeHttpServer {
         method: request.method ?? '',
         path: pathname,
         headersDistinct: Object.fromEntries(
-          Object.entries(request.headersDistinct).map(([name, values]) => [name.toLowerCase(), values]),
+          Object.entries(request.headersDistinct).map(([name, values]) => [
+            name.toLowerCase(),
+            values,
+          ]),
         ),
         body: await this.body(request, route.maxBodyBytes),
       });

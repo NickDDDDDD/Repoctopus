@@ -62,10 +62,7 @@ function parsePayload(body: Uint8Array): PlatformDeliveryEnvelope['payload'] {
   return structuredClone(value) as PlatformDeliveryEnvelope['payload'];
 }
 
-function inspectRequest(
-  request: GitHubWebhookRequest,
-  maxBodyBytes: number,
-): GitHubWebhookHeaders {
+function inspectRequest(request: GitHubWebhookRequest, maxBodyBytes: number): GitHubWebhookHeaders {
   if (request.method !== 'POST') throw new WebhookRequestError(405, 'method not allowed');
   if (!jsonContentType(request.contentType)) {
     throw new WebhookRequestError(415, 'content type must be application/json');

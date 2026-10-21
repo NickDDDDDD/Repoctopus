@@ -34,7 +34,8 @@ export abstract class HttpHost extends Service {
     if (!Number.isSafeInteger(route.maxBodyBytes) || route.maxBodyBytes < 0) {
       throw new Error('HTTP route body limit must be a non-negative safe integer');
     }
-    if (this.routes.has(route.path)) throw new Error(`HTTP route already registered: ${route.path}`);
+    if (this.routes.has(route.path))
+      throw new Error(`HTTP route already registered: ${route.path}`);
     this.routes.set(route.path, route);
     return () => {
       if (this.routes.get(route.path) === route) this.routes.delete(route.path);

@@ -20,9 +20,7 @@ function request(body: Uint8Array, secret = 'secret'): GitHubWebhookRequest {
     method: 'POST',
     contentType: 'application/json; charset=utf-8',
     headersDistinct: {
-      'x-hub-signature-256': [
-        `sha256=${createHmac('sha256', secret).update(body).digest('hex')}`,
-      ],
+      'x-hub-signature-256': [`sha256=${createHmac('sha256', secret).update(body).digest('hex')}`],
       'x-github-delivery': ['delivery-1'],
       'x-github-event': ['pull_request'],
     },
@@ -34,10 +32,7 @@ function adapter(
   secret: () => Promise<string> = () => Promise.resolve('secret'),
   maxBodyBytes = 1024,
 ) {
-  return new GitHubWebhookAdapter(
-    { secret },
-    { source: 'primary', maxBodyBytes },
-  );
+  return new GitHubWebhookAdapter({ secret }, { source: 'primary', maxBodyBytes });
 }
 
 describe('platform event ingress and inbox', () => {
@@ -70,10 +65,7 @@ describe('platform event ingress and inbox', () => {
       adapter(() => {
         credentialCalls.push('secret');
         return Promise.resolve('secret');
-      }, 10).verify(
-        { ...base, ...override },
-        '2026-10-20T00:00:00.000Z',
-      ),
+      }, 10).verify({ ...base, ...override }, '2026-10-20T00:00:00.000Z'),
     ).rejects.toEqual(expect.objectContaining({ status }) as WebhookRequestError);
     expect(credentialCalls).toEqual([]);
   });
