@@ -28,6 +28,39 @@ function requestUrl(resource: Parameters<typeof fetch>[0]): string {
 }
 
 describe('GitHub merge request adapter', () => {
+  it('returns every open or closed MR for ambiguity-aware final publication recovery', async () => {
+    const calls: string[] = [];
+    const adapter = new GitHubMergeRequestAdapter(
+      { token: () => Promise.resolve('secret') },
+      'https://api.github.test',
+      (resource) => {
+        calls.push(requestUrl(resource));
+        return Promise.resolve(
+          response(
+            200,
+            [7, 8].map((number) => ({
+              number,
+              html_url: `https://github.com/team/app/pull/${number}`,
+              title: 'change',
+              body: 'verified',
+              state: number === 7 ? 'open' : 'closed',
+              merged_at: null,
+              merge_commit_sha: null,
+              head: { sha: 'head', ref: 'feat/change' },
+              base: { ref: 'main' },
+            })),
+          ),
+        );
+      },
+    );
+
+    await expect(adapter.findAll(input)).resolves.toMatchObject([{ number: 7 }, { number: 8 }]);
+    expect(calls[0]).toContain('state=all');
+    expect(calls[0]).toContain('head=team%3Afeat%2Fchange');
+    expect(calls[0]).toContain('base=main');
+    expect(calls[0]).toContain('per_page=100');
+  });
+
   it('reuses an existing MR and never exposes credentials', async () => {
     const calls: Array<{ url: string; authorization: string | null }> = [];
     const request: typeof fetch = (resource, init) => {
