@@ -3,10 +3,10 @@
 ## 报告状态
 
 - 结论：实现与本 change 的 Proposal、Design、Delta Specs 和 Tasks 一致，48 项任务已完成。
-- 状态：本轮实现验证通过；真实自举 Delivery 必须先拆分业务 MR 与协调 MR，当前报告尚不请求批准。
+- 状态：本轮实现验证通过；业务 MR 与协调 MR 已拆分，等待正式 Delivery 绑定最终快照，当前报告尚不请求批准。
 - 验证日期：2026-10-21。
 - 分支：`feat/enable-self-hosted-development`。
-- 当前业务 MR：Draft PR #8；尚未建立独立协调 MR。
+- 业务 MR：Draft PR #8；协调 MR：Draft PR #9。
 - 实现基线：`42f9becb4abaa85f18f997b5ea0ded51215bf9c9`。
 - 实现代码树：`da96b2dce5ba97d830202d5b6e47cea51e8db7bf`。
 
@@ -122,7 +122,7 @@ DSH 与 Comet 的网络漂移检查独立于离线 `verify`，每天由 workflow
 
 - 文件 Event Inbox 的 Lease 只协调共享同一状态卷的 Runner；独立状态卷允许重复计算，并由协调分支远端 OID 栅栏收敛发布结果。这不是共享数据库调度、自动扩缩容或零重复计算意义上的生产级 HA。
 - 当前只有 GitHub Adapter；CodeHub Adapter、远程 Skill 市场、Skill 管理 UI、多规格权威合并和生产级 HA 不在本 change 范围内。
-- 独立进程 Post-merge E2E 使用 mock 平台 API 和本地 bare remote。真实 PR #8 尚未合入，且必须先建立独立协调 MR 和正式 Delivery，因此真实 GitHub 合入回调、主规格同步与 change 归档留待拓扑拆分后复验。
+- 独立进程 Post-merge E2E 使用 mock 平台 API 和本地 bare remote。真实业务 PR #8 尚未合入，协调 PR #9 尚未登记到正式 Delivery，因此真实 GitHub 合入回调、主规格同步与 change 归档留待批准快照建立后复验。
 - Runner 要实时接收 Webhook 仍必须位于平台可达环境；开发机无法接收公网 webhook 时，可以使用 Inbox replay/retry，或由短生命周期 `post-merge reconcile` 经公开 Coordinator 重新读取权威平台状态。
 - 第一版一次性候选发现依赖当前 coordination workspace 的 `.repoctopus/deliveries/`；没有复制或共享持久状态的全新 clone 不能自动发现全部历史 change。受验证的远端索引或共享 Store 留给后续 change。
 - 未发布的 Delivery state v1 不做静默迁移，返回 `migration_required`。组合、Provider 或状态 Schema 不兼容时同样只允许只读诊断。
@@ -137,4 +137,4 @@ DSH 与 Comet 的网络漂移检查独立于离线 `verify`，每天由 workflow
 
 本报告当前记录实现验证事实，不构成 Delivery 批准请求。建立独立协调 MR、生成正式 Delivery Intent 并重新绑定最终快照后，批准才表示接受届时的实现、验证结论、第三方固定来源和已知限制，并授权 Repoctopus Delivery 发布或更新业务 MR。批准始终不授权 merge、force push、rebase、删除分支、改变目标分支或扩大仓库集合。任何代码树、报告、策略、仓库选择、远端基线或动作计划变化都会使批准失效并要求重新验证。
 
-独立协调 MR 建立并登记后，业务 PR #8 才能进入人工合入。合入后，平台事件与 Post-merge Run 应再次执行精确合入代码验证、主规格同步、change 归档、收尾 commit/push 和原协调 MR 更新；该合入后证据将作为本报告的后续复验记录。
+协调 PR #9 与业务 PR #8 写入正式 Delivery 并绑定批准快照后，业务 PR #8 才能进入人工合入。合入后，平台事件与 Post-merge Run 应再次执行精确合入代码验证、主规格同步、change 归档、收尾 commit/push 和原协调 MR 更新；该合入后证据将作为本报告的后续复验记录。
