@@ -241,7 +241,7 @@ describe('post-merge coordinator', () => {
     await closed.context.fiber.dispose();
   });
 
-  it('becomes ready on the final merge and treats a duplicate event as a no-op', async () => {
+  it('becomes ready on the final merge and reproduces stable facts for recovery', async () => {
     const ready = await harness({ app: 'merged', api: 'open' }, 'ready-change');
     await expect(ready.coordinator.wake(references.app)).resolves.toMatchObject({
       status: 'waiting',
@@ -258,12 +258,13 @@ describe('post-merge coordinator', () => {
     });
     expect(final.status === 'ready' && final.mergeFactsDigest).toMatch(/^sha256:[a-f0-9]{64}$/);
     expect((await ready.store.load('ready-change'))?.status).toBe('merged');
-    await expect(ready.coordinator.wake(references.api)).resolves.toEqual({
-      status: 'ignored',
-      diagnostic: 'delivery-event-no-match',
-      changeIds: [],
+    await expect(ready.coordinator.wake(references.api)).resolves.toMatchObject({
+      status: 'ready',
+      diagnostic: 'post-merge-ready',
+      changeId: 'ready-change',
+      mergeFactsDigest: final.status === 'ready' ? final.mergeFactsDigest : undefined,
     });
-    expect(ready.github.calls).toEqual(['app', 'api', 'app', 'api']);
+    expect(ready.github.calls).toEqual(['app', 'api', 'app', 'api', 'app', 'api']);
     await ready.context.fiber.dispose();
   });
 
@@ -271,7 +272,8 @@ describe('post-merge coordinator', () => {
     const laterFirst = await harness({ app: 'merged', api: 'merged' }, 'ordered-change');
     const laterResult = await laterFirst.coordinator.wake(references.api);
     await expect(laterFirst.coordinator.wake(references.app)).resolves.toMatchObject({
-      status: 'ignored',
+      status: 'ready',
+      mergeFactsDigest: laterResult.status === 'ready' ? laterResult.mergeFactsDigest : undefined,
     });
     await laterFirst.context.fiber.dispose();
 
@@ -315,7 +317,7 @@ describe('post-merge coordinator', () => {
     });
     const seen: MergeRequestReference[] = [];
     const processor = createGitHubPostMergeProcessor({
-      wake(reference) {
+      execute(reference) {
         seen.push(reference);
         return Promise.resolve({
           status: 'waiting',
@@ -343,14 +345,14 @@ describe('post-merge coordinator', () => {
     });
 
     const retrying = createGitHubPostMergeProcessor({
-      wake: () => Promise.reject(new Error('temporary platform failure')),
+      execute: () => Promise.reject(new Error('temporary platform failure')),
     });
     await expect(
       retrying.process({ envelope, attempt: 1, signal: new AbortController().signal }),
-    ).resolves.toEqual({ result: 'retry', diagnostic: 'post-merge-refresh-failed' });
+    ).resolves.toEqual({ result: 'retry', diagnostic: 'post-merge-execution-failed' });
 
     const ambiguous = createGitHubPostMergeProcessor({
-      wake: () =>
+      execute: () =>
         Promise.resolve({
           status: 'ambiguous',
           diagnostic: 'delivery-event-ambiguous-match',

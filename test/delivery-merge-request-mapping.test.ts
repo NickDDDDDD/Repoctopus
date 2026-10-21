@@ -116,7 +116,7 @@ const mergedRequests: MergeRequestPort = {
 };
 
 describe('delivery merge request mapping', () => {
-  it('maps one active business MR and excludes the coordination MR and terminal deliveries', () => {
+  it('prefers one active business MR over merged recovery candidates and excludes coordination', () => {
     const matching = activeState('matching-change');
     const terminal = { ...activeState('terminal-change'), status: 'merged' as const };
     expect(matchActiveDeliveryMergeRequest([matching, terminal], reference)).toEqual({
@@ -134,6 +134,15 @@ describe('delivery merge request mapping', () => {
       status: 'not_found',
       changeIds: [],
       diagnostic: 'delivery-event-no-match',
+    });
+  });
+
+  it('falls back to a merged Delivery so an interrupted Post-merge Run can recover', () => {
+    const merged = { ...activeState('merged-change'), status: 'merged' as const };
+    expect(matchActiveDeliveryMergeRequest([merged], reference)).toEqual({
+      status: 'matched',
+      changeIds: ['merged-change'],
+      diagnostic: null,
     });
   });
 

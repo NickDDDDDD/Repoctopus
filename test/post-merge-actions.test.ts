@@ -13,7 +13,10 @@ import {
 } from '../domains/delivery/post-merge.js';
 import { parseWorkflowPackage } from '../domains/workflow-contract/package.js';
 import { normalizeRemoteIdentity } from '../platform/git/remote-identity.js';
-import { GitPostMergeCheckout } from '../platform/git/post-merge-checkout.js';
+import {
+  GitPostMergeCheckout,
+  postMergeCheckoutDirectory,
+} from '../platform/git/post-merge-checkout.js';
 import { execute } from '../platform/process/execute.js';
 import { PostMergeActions } from '../services/post-merge-actions.js';
 import {
@@ -463,7 +466,10 @@ describe('post-merge exact checkout and Evidence', () => {
 
   it('refuses to reuse or delete an unowned checkout directory', async () => {
     const fixture = await harness('pass');
-    const occupied = path.join(fixture.temporaryRoot, fixture.options.runId);
+    const occupied = path.join(
+      fixture.temporaryRoot,
+      postMergeCheckoutDirectory(fixture.options.runId),
+    );
     const sentinel = path.join(occupied, 'keep.txt');
     await mkdir(occupied, { recursive: true });
     await writeFile(sentinel, 'user-owned');

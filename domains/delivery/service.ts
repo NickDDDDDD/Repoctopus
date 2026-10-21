@@ -405,6 +405,12 @@ export class DeliveryService {
   }> {
     const state = await this.requireState(changeId);
     this.assertWritableComposition(state);
+    const previousEvidence = new Map(
+      state.mergeEvidence.map((item) => [
+        `${item.mergeRequest.provider}\0${item.mergeRequest.repositoryId}\0${item.mergeRequest.number}`,
+        item,
+      ]),
+    );
     const businessMergeRequests = state.mergeRequests?.business ?? [];
     const identities = businessMergeRequests.flatMap((item) =>
       item.mergeRequest ? [item.mergeRequest] : [],
@@ -423,14 +429,23 @@ export class DeliveryService {
           await this.mergeRequests.capability(repository.remoteIdentity, repository.targetBranch),
         );
       }
-      if (status.state === 'merged' && status.mergeCommit && status.mergedAt)
+      if (status.state === 'merged' && status.mergeCommit && status.mergedAt) {
+        const prior = previousEvidence.get(
+          `${identity.provider}\0${identity.repositoryId}\0${identity.number}`,
+        );
         evidence.push({
           repositoryId: status.repositoryId,
           mergeRequest: identity,
           mergeCommit: status.mergeCommit,
           mergedAt: status.mergedAt,
-          observedAt: this.clock().toISOString(),
+          observedAt:
+            prior?.repositoryId === status.repositoryId &&
+            prior.mergeCommit === status.mergeCommit &&
+            prior.mergedAt === status.mergedAt
+              ? prior.observedAt
+              : this.clock().toISOString(),
         });
+      }
     }
     const timestamp = this.clock().toISOString();
     const allMerged =

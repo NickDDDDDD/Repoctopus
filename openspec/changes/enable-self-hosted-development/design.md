@@ -124,6 +124,10 @@ Post-merge Workflow 使用 Action Intent/Receipt 完成：
 
 每一步都经过既有 RunStore 两阶段 Action 模型。网络、Git、OpenSpec CLI 和测试不在 Run 锁内执行。Push 响应丢失时先按 commit/tree/远端分支核对；归档响应丢失时按 Provider 的关闭身份核对。
 
+进程可能在 Delivery 已持久化 `merged`、但 Post-merge Run 尚未建立或尚未完成时退出，因此 `merged` Delivery 仍属于可由 MR 事件定位的恢复集合；重复唤醒依靠 `changeId + mergeFactsDigest` 恢复同一个 Run。Run Trigger 只绑定 MR 身份、merge commit、mergedAt 等权威合入事实，不绑定每次轮询产生的 `observedAt`；Delivery 对相同合入事实也保留首次观察时间，避免观测元数据制造身份漂移。
+
+临时检出的逻辑所有权仍由完整 Run ID 与 merge facts marker 约束，但物理目录名使用固定长度摘要。这样既保留碰撞时 fail-closed 的所有权核对，也避免 Windows 上 Git object/pack 深层路径超过宿主路径限制。重启后的 Runner 可以清理或复用受管目录，不能复用或删除缺少正确 marker 的用户目录。
+
 ### 8. 收尾权限按用途隔离
 
 `repoctopus.yaml` 增加 `postMerge` 配置：Runner 身份引用、临时检出根、Evidence Profile、允许修改的 workspace 路径、提交格式、远端和原协调 MR 策略。允许路径至少具体到主规格、活动 change/归档和验证记录，不能使用项目根通配。

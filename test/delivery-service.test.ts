@@ -219,6 +219,9 @@ describe('delivery service', () => {
     mergeRequests.merged = true;
     const merged = await service.refresh(intent.changeId);
     expect(merged).toMatchObject({ status: 'merged', mergeEvidence: [{ mergeCommit: 'merge-a' }] });
+    const observedAt = merged.mergeEvidence[0]!.observedAt;
+    const replayed = await service.refresh(intent.changeId);
+    expect(replayed.mergeEvidence[0]!.observedAt).toBe(observedAt);
   });
 
   it('invalidates approval when report content changes', async () => {

@@ -96,6 +96,18 @@ describe('post-merge workflow', () => {
       identityDigest: mergeFactsDigest,
       facts: { changeId: 'finish-self-hosting' },
     });
+    expect(first.trigger?.facts).not.toHaveProperty('mergeEvidence.0.observedAt');
+
+    const laterObservation = readyCoordination();
+    laterObservation.mergeEvidence[0]!.observedAt = '2026-10-21T01:00:09.000Z';
+    expect(
+      postMergeRunOptions({
+        coordination: laterObservation,
+        workflow,
+        projectSnapshot: projectFixture(),
+        workflowSource: workflowPath,
+      }).trigger,
+    ).toEqual(first.trigger);
   });
 
   it('coalesces concurrent starts into one durable logical Run', async () => {

@@ -13,6 +13,7 @@ const ACTIVE_STATUSES = new Set<DeliveryState['status']>([
   'partially_published',
   'in_review',
 ]);
+const RECOVERY_STATUSES = new Set<DeliveryState['status']>(['merged']);
 
 export function createDeliveryMergeRequestSet(
   intent: DeliveryIntent,
@@ -75,8 +76,12 @@ export function recordBusinessMergeRequest(
   };
 }
 
-function matches(state: DeliveryState, reference: MergeRequestReference): boolean {
-  if (!ACTIVE_STATUSES.has(state.status) || !state.mergeRequests) return false;
+function matches(
+  state: DeliveryState,
+  reference: MergeRequestReference,
+  statuses: ReadonlySet<DeliveryState['status']>,
+): boolean {
+  if (!statuses.has(state.status) || !state.mergeRequests) return false;
   return state.mergeRequests.business.some(
     (item) =>
       item.remoteIdentity === reference.remoteIdentity &&
@@ -89,8 +94,14 @@ export function matchActiveDeliveryMergeRequest(
   states: readonly DeliveryState[],
   reference: MergeRequestReference,
 ): DeliveryMergeRequestMatch {
-  const changeIds = states
-    .filter((state) => matches(state, reference))
+  const active = states.filter((state) => matches(state, reference, ACTIVE_STATUSES));
+  // A merged Delivery remains recoverable if the process stopped between recording merge facts
+  // and starting/completing its Post-merge Run. It must not compete with a newer active Delivery.
+  const candidates =
+    active.length > 0
+      ? active
+      : states.filter((state) => matches(state, reference, RECOVERY_STATUSES));
+  const changeIds = candidates
     .map((state) => state.changeId)
     .sort();
   if (changeIds.length === 0)

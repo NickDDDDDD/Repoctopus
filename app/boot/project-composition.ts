@@ -157,7 +157,22 @@ function runnerSelections(
     },
     ...(postMerge
       ? [
-          { id: 'post-merge-coordinator', config: { policy: deliveryPolicy(config) } },
+          {
+            id: 'post-merge-coordinator',
+            config: {
+              policy: deliveryPolicy(config),
+              execution: {
+                projectId: config.shared.project.id,
+                workspaceRoot,
+                workflowSource: path.join(productRoot, 'workflows', 'post-merge.yaml'),
+                evidenceProfile: postMerge.evidenceProfile,
+                repositories: config.shared.repositories.map((repository) => ({
+                  repositoryId: repository.id,
+                  path: path.resolve(workspaceRoot, repository.path),
+                })),
+              },
+            },
+          },
           { id: 'github-post-merge-events' },
           {
             id: 'post-merge-actions',

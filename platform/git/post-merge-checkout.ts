@@ -55,6 +55,13 @@ function repositoryDirectory(repositoryId: string): string {
   return createHash('sha256').update(repositoryId).digest('hex').slice(0, 24);
 }
 
+export function postMergeCheckoutDirectory(runId: string): string {
+  return `run-${createHash('sha256')
+    .update(['post-merge-checkout/v1', runId].join('\0'))
+    .digest('hex')
+    .slice(0, 24)}`;
+}
+
 function assertInputs(
   repositories: readonly PostMergeRepositoryFact[],
   sources: readonly PostMergeRepositorySource[],
@@ -180,7 +187,9 @@ export class GitPostMergeCheckout implements PostMergeCheckoutPort {
     const temporaryRoot = path.resolve(input.temporaryRoot);
     await mkdir(temporaryRoot, { recursive: true });
     const resolvedTemporaryRoot = await realpath(temporaryRoot);
-    const runRoot = path.join(resolvedTemporaryRoot, input.runId);
+    // Git creates deeply nested object and pack paths. A bounded physical directory keeps the
+    // checkout portable on Windows while the marker below retains the complete logical Run id.
+    const runRoot = path.join(resolvedTemporaryRoot, postMergeCheckoutDirectory(input.runId));
     if (!inside(resolvedTemporaryRoot, runRoot)) throw new PostMergeCheckoutError('invalid-input');
     const marker: CheckoutMarker = {
       schemaVersion: 1,

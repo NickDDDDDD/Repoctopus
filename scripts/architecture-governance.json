@@ -367,7 +367,7 @@
     {
       "id": "coordinator-domain-store-write",
       "targets": ["services/post-merge-coordinator.ts"],
-      "pattern": "\\b(?:ctx|context)\\.(?:runStore|evidenceCoordinator|postMergeActions)\\b|\\b(?:new\\s+)?(?:File)?(?:Runtime|Evidence|Delivery|EventInbox)Store\\b|from\\s+['\"][^'\"]*(?:platform|domains)/[^'\"]*store[^'\"]*['\"]|\\b(?:writeFile|appendFile|rename|rm)\\s*\\(",
+      "pattern": "\\b(?:ctx|context)\\.(?:runStore|evidenceCoordinator)\\b|\\b(?:new\\s+)?(?:File)?(?:Runtime|Evidence|Delivery|EventInbox)Store\\b|from\\s+['\"][^'\"]*(?:platform|domains)/[^'\"]*store[^'\"]*['\"]|\\b(?:writeFile|appendFile|rename|rm)\\s*\\(",
       "allowed": [],
       "message": "PostMergeCoordinator must coordinate through services and must not write domain stores or files"
     },
