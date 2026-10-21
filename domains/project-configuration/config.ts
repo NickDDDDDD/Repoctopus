@@ -799,6 +799,9 @@ export function parseSharedProjectConfig(value: unknown): SharedProjectConfig {
       'postMerge.runnerIdentity',
     );
   }
+  if (postMerge && !delivery) {
+    throw new ProjectConfigError('requires a shared Delivery policy', 'postMerge.publication');
+  }
   if (platformEvents && postMerge && platformEvents.runner.identity !== postMerge.runnerIdentity) {
     throw new ProjectConfigError(
       'must reference platformEvents.runner.identity',

@@ -31,6 +31,7 @@ import {
 export interface FileDeliveryConfig {
   workspaceRoot: string;
   environment?: NodeJS.ProcessEnv;
+  githubTokenVariable?: string;
 }
 
 export class FileDeliveryProvider extends Delivery {
@@ -52,7 +53,7 @@ export class FileDeliveryProvider extends Delivery {
       new FileDeliveryStore(this.config.workspaceRoot),
       git,
       new GitHubMergeRequestAdapter(
-        new EnvironmentCredentialProvider(environment),
+        new EnvironmentCredentialProvider(environment, this.config.githubTokenVariable),
         policy?.publication.githubApiBaseUrl,
       ),
       new FileDeliveryEvidence(this.config.workspaceRoot),

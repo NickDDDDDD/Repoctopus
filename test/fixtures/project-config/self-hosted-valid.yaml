@@ -13,6 +13,19 @@ profiles:
         repository: coordination
         executable: npm
         args: [run, verify]
+delivery:
+  checkpoint:
+    automatic: true
+    protectedBranches: [main]
+    commitMessagePattern: '^(feat|fix|docs|refactor|test|chore)(\([a-z0-9-]+\))?: .+'
+    quickChecks:
+      '*': []
+  publication:
+    remote: origin
+    provider: github
+    githubApiBaseUrl: https://api.github.com
+    mrTitleTemplate: '{{changeId}}'
+    mrBodyTemplate: '{{verificationReport}}'
 skillProviders:
   - id: skill-provider-matt
   - id: skill-provider-filesystem

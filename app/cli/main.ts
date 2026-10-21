@@ -39,6 +39,7 @@ import type { BrowserMaintenance } from '../../services/browser-maintenance.js';
 import { bootBootstrapComposition, bootProjectComposition } from '../boot/bootstrap.js';
 import { reviewHumanDecision } from './human-decision.js';
 import { reviewProjectConfigurationDecision } from './project-configuration-decision.js';
+import { startRunnerApplication } from '../runner/application.js';
 
 const DIST_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PRODUCT_ROOT =
@@ -880,6 +881,36 @@ async function browserInstall(parsed: ParsedArguments): Promise<CliEnvelope<unkn
   }
 }
 
+async function runnerStart(parsed: ParsedArguments, asJson: boolean): Promise<number> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const runner = await startRunnerApplication(PRODUCT_ROOT, workspace);
+  const envelope = successEnvelope({
+    command: 'runner start',
+    result: {
+      status: 'ready',
+      origin: runner.origin,
+      compositionDigest: runner.compositionDigest,
+    },
+  });
+  process.stdout.write(`${asJson ? JSON.stringify(envelope) : renderHuman(envelope)}\n`);
+
+  let stop!: () => void;
+  const stopped = new Promise<void>((resolve) => {
+    stop = resolve;
+  });
+  const onSignal = () => stop();
+  process.once('SIGINT', onSignal);
+  process.once('SIGTERM', onSignal);
+  try {
+    await stopped;
+    return 0;
+  } finally {
+    process.off('SIGINT', onSignal);
+    process.off('SIGTERM', onSignal);
+    await runner.close();
+  }
+}
+
 async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const command = parsed.command.join(' ');
   if (command === 'project probe') return projectProbe(parsed);
@@ -916,7 +947,7 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   if (command === 'browser doctor') return browserDoctor(parsed);
   if (command === 'browser install') return browserInstall(parsed);
   throw new Error(
-    'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|record|resume> | delivery <checkpoint|prepare|status|publish|resume|refresh> | event <status|replay|retry> | approval review | browser <doctor|install> | doctor',
+    'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|record|resume> | runner start | delivery <checkpoint|prepare|status|publish|resume|refresh> | event <status|replay|retry> | approval review | browser <doctor|install> | doctor',
   );
 }
 
@@ -938,6 +969,7 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
   const asJson = booleanFlag(parsed, 'json');
   const command = parsed.command.join(' ') || 'help';
   try {
+    if (command === 'runner start') return await runnerStart(parsed, asJson);
     const envelope = await dispatch(parsed);
     process.stdout.write(`${asJson ? JSON.stringify(envelope) : renderHuman(envelope)}\n`);
     return 0;

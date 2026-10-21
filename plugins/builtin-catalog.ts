@@ -48,7 +48,8 @@ import { NodeHttpHostProvider } from './http/node-http-host-provider.js';
 import { OpenSpecProvider } from '../platform/specification/openspec-provider.js';
 import { PlatformEventRunner } from '../services/platform-event-runner.js';
 import { PostMergeCoordinator } from '../services/post-merge-coordinator.js';
-import { PostMergeActions } from '../services/post-merge-actions.js';
+import postMergeActionsProvider from './post-merge/post-merge-actions-provider.js';
+import runnerApplication from './application/runner-application.js';
 
 interface BuiltinDefinition {
   descriptor: Omit<PluginDescriptor, 'codeDigest'>;
@@ -340,14 +341,31 @@ const definitions: readonly BuiltinDefinition[] = [
       permissions: ['filesystem', 'network', 'process'],
       stateSchemas: { 'post-merge-closure': '1' },
     },
-    plugin: PostMergeActions,
+    plugin: postMergeActionsProvider,
     sourceFiles: [
       'domains/post-merge/checkout.ts',
       'domains/post-merge/closure.ts',
       'platform/git/post-merge-checkout.ts',
       'platform/git/post-merge-workspace.ts',
+      'plugins/post-merge/post-merge-actions-provider.ts',
       'services/post-merge-actions.ts',
     ],
+  },
+  {
+    descriptor: {
+      id: 'runner-application',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'application',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: [],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: runnerApplication,
+    sourceFiles: ['app/runner/application.ts', 'plugins/application/runner-application.ts'],
   },
   {
     descriptor: {

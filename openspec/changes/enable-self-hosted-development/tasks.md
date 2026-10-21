@@ -51,7 +51,7 @@
 ## 6. 完成项目配置、组合和架构治理
 
 - [x] 6.1 扩展 `repoctopus.yaml` Schema 以配置 Skill Provider、Specification Provider、平台事件和 `postMerge` 策略，并用正反 fixture 验证秘密只能引用 Credential、允许路径不能退化为项目根。
-- [ ] 6.2 把新增 Service、Provider、Contributor 与 Application Plugin 加入 builtin catalog 和 composition digest；运行 bootstrap/project、依赖缺失、卸载重载和不兼容恢复测试。
+- [x] 6.2 把新增 Service、Provider、Contributor 与 Application Plugin 加入 builtin catalog 和 composition digest；运行 bootstrap/project、依赖缺失、卸载重载和不兼容恢复测试。
 - [ ] 6.3 扩展架构检查，拒绝第二个 Skill/Specification 容器、平台 Adapter 直写 Run、Coordinator 直写领域 Store、非 Provider 关闭规格和未受保护 Git 发布；以违规 fixture 证明每条约束有效。
 - [ ] 6.4 更新 README 与架构文档的自举链路、Runner 部署、数据边界和来源关系，执行品牌扫描确保公共产品面没有旧工作流入口或具体宿主项目字段。
 

@@ -7,8 +7,13 @@ import type {
 const PROTECTED_AUTHORITIES = new Set([
   'action-store-write',
   'delivery-state-write',
+  'event-inbox-runner',
+  'event-inbox-write',
   'evidence-gate',
+  'post-merge-coordinate',
+  'post-merge-execute',
   'run-store-write',
+  'specification-authority',
   'workflow-transition',
 ]);
 

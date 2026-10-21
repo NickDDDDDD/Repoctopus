@@ -8,6 +8,7 @@ import { GitHubWebhookRoute } from '../../platform/events/github-webhook-route.j
 
 export interface GitHubWebhookContributorConfig {
   environment?: Readonly<Record<string, string | undefined>>;
+  credentialVariable?: string;
   source?: string;
   path?: string;
   maxBodyBytes?: number;
@@ -18,7 +19,10 @@ const plugin = ((context: Context, config: GitHubWebhookContributorConfig) => {
   const maxBodyBytes = config.maxBodyBytes ?? 1024 * 1024;
   const route = new GitHubWebhookRoute({
     adapter: new GitHubWebhookAdapter(
-      new EnvironmentWebhookCredentialProvider(config.environment ?? process.env),
+      new EnvironmentWebhookCredentialProvider(
+        config.environment ?? process.env,
+        config.credentialVariable,
+      ),
       { source: config.source ?? 'primary', maxBodyBytes },
     ),
     events: context.platformEvents,

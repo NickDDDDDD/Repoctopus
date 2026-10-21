@@ -7,9 +7,11 @@
       "disposition": "repoctopus-native",
       "targets": [
         "app/boot/**",
+        "app/runner/**",
         "domains/composition/**",
         "plugins/builtin-catalog.ts",
         "plugins/action/**",
+        "plugins/application/**",
         "plugins/delivery/**",
         "plugins/evidence/**",
         "plugins/http/**",
@@ -184,7 +186,8 @@
       "targets": [
         "domains/post-merge/**",
         "platform/git/post-merge-checkout.ts",
-        "platform/git/post-merge-workspace.ts"
+        "platform/git/post-merge-workspace.ts",
+        "plugins/post-merge/**"
       ],
       "upstream": [],
       "rationale": "合入事件只唤醒协调；领域判定基于 Delivery 的平台权威刷新结果生成稳定合入事实身份，平台检出只使用固化的精确 merge commit；协调 workspace 的 Git 差异由独立端口读取，领域 Guardrail 再与规格关闭计划和结果交叉核对。"

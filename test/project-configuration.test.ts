@@ -159,6 +159,17 @@ describe('project configuration', () => {
     );
   });
 
+  it('rejects post-merge publication without a shared Delivery policy', async () => {
+    const fixture = (await configurationFixture('self-hosted-valid.yaml')) as Record<
+      string,
+      unknown
+    >;
+    delete fixture.delivery;
+    expect(() => parseSharedProjectConfig(fixture)).toThrow(
+      /postMerge\.publication: requires a shared Delivery policy/i,
+    );
+  });
+
   it('parses command, service, browser and visual nodes from one shared profile', () => {
     const config = parseSharedProjectConfig({
       apiVersion: 'repoctopus/v1alpha1',
