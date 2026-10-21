@@ -1,4 +1,4 @@
-export type CompositionKind = 'bootstrap' | 'project';
+export type CompositionKind = 'bootstrap' | 'desktop' | 'project';
 
 export interface PluginImplementationIdentity {
   id: string;

@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process';
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 
 export interface SpecificationProcessResult {
@@ -16,8 +16,10 @@ export interface SpecificationProcessPort {
   ): Promise<SpecificationProcessResult>;
 }
 
+const require = createRequire(import.meta.url);
+
 function installedOpenSpecRoot(): string {
-  const entry = fileURLToPath(import.meta.resolve('@fission-ai/openspec'));
+  const entry = require.resolve('@fission-ai/openspec');
   return path.dirname(path.dirname(entry));
 }
 

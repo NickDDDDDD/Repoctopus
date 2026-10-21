@@ -39,7 +39,7 @@ const VERSION = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
 const DIGEST = /^sha256:[a-f0-9]{64}$/;
 const KINDS = new Set<PluginKind>(['service-provider', 'contributor', 'application']);
 const SOURCES = new Set<PluginSource>(['builtin', 'team']);
-const COMPOSITIONS = new Set<CompositionKind>(['bootstrap', 'project']);
+const COMPOSITIONS = new Set<CompositionKind>(['bootstrap', 'desktop', 'project']);
 const PERMISSIONS = new Set<PluginPermission>(['filesystem', 'process', 'network', 'browser']);
 
 function sortedUnique<T extends string>(

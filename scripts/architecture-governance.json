@@ -7,6 +7,11 @@
       "disposition": "repoctopus-native",
       "targets": [
         "app/boot/**",
+        "app/desktop/host/**",
+        "app/desktop/main/main.ts",
+        "app/desktop/preload/**",
+        "app/desktop/renderer/**",
+        "app/desktop/shared/**",
         "app/runner/**",
         "domains/composition/**",
         "plugins/builtin-catalog.ts",
@@ -28,6 +33,23 @@
       ],
       "upstream": ["third_party/cordis", "third_party/cordis-plugin-loader"],
       "rationale": "App Boot 把 Repoctopus 领域配置编译为唯一 Cordis 插件树，并把生命周期交给 Cordis。"
+    },
+    {
+      "id": "desktop-shell-lifecycle",
+      "disposition": "source-modified",
+      "targets": [
+        "app/desktop/main/backend-controller.ts",
+        "app/desktop/main/host-process.ts",
+        "app/desktop/main/node-environment.ts",
+        "app/desktop/main/single-instance.ts"
+      ],
+      "upstream": [
+        "apps/desktop/src/backend-controller.ts",
+        "apps/desktop/src/host-process.ts",
+        "apps/desktop/src/node-environment.ts",
+        "apps/desktop/src/single-instance.ts"
+      ],
+      "rationale": "采用固定 DSH Desktop 的薄 Shell、Node-mode Host、串行恢复、单实例和有界退出模式，并收窄为 Repoctopus OTLP Dashboard 所需契约。"
     },
     {
       "id": "action-execution",
@@ -392,6 +414,20 @@
       "pattern": "method\\s*:\\s*['\"](?:POST|PATCH)['\"]",
       "allowed": ["platform/github/merge-request.ts"],
       "message": "Merge request creation and updates may only be executed by a protected Delivery Action adapter"
+    },
+    {
+      "id": "desktop-renderer-process-isolation",
+      "targets": ["app/desktop/renderer/**"],
+      "pattern": "from\\s+['\"](?:node:|electron(?:/|['\"])|@deepseek-ai/cordis(?:/|['\"]))",
+      "allowed": [],
+      "message": "Desktop Renderer must use the preload bridge and must not import Node, Electron, or Cordis"
+    },
+    {
+      "id": "desktop-shell-cordis-isolation",
+      "targets": ["app/desktop/main/**", "app/desktop/preload/**"],
+      "pattern": "from\\s+['\"]@deepseek-ai/cordis(?:/|['\"])",
+      "allowed": [],
+      "message": "Electron Shell and preload must not host or import the Cordis application runtime"
     }
   ],
   "protectedEvidenceFlow": {

@@ -36,5 +36,15 @@
       "path": "platform/github/rogue-publisher.ts",
       "contents": "export async function publish(url) { return fetch(url, { method: 'PATCH' }); }"
     }
+  ],
+  "desktopIsolation": [
+    {
+      "path": "app/desktop/renderer/src/rogue.tsx",
+      "contents": "import { ipcRenderer } from 'electron'; export const value = ipcRenderer;"
+    },
+    {
+      "path": "app/desktop/main/rogue.ts",
+      "contents": "import { Context } from '@deepseek-ai/cordis'; export const value = Context;"
+    }
   ]
 }
