@@ -16,6 +16,81 @@ const repositoryRoot = path.resolve(import.meta.dirname, '..', '..');
 const cleanup: string[] = [];
 afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
 
+const specificationFixtureId = 'package-contract-fixture';
+
+async function createSpecificationFixture(workspace: string): Promise<void> {
+  const openspecRoot = path.join(workspace, 'openspec');
+  const changeRoot = path.join(openspecRoot, 'changes', specificationFixtureId);
+  const capabilityRoot = path.join(changeRoot, 'specs', 'package-contract');
+  await mkdir(capabilityRoot, { recursive: true });
+  await Promise.all([
+    writeFile(path.join(openspecRoot, 'config.yaml'), 'schema: spec-driven\n'),
+    writeFile(
+      path.join(changeRoot, '.openspec.yaml'),
+      'schema: spec-driven\ncreated: 2026-10-22\n',
+    ),
+    writeFile(
+      path.join(changeRoot, 'proposal.md'),
+      `# Proposal
+
+## Why
+
+Verify the installed package against a self-contained OpenSpec change.
+
+## What Changes
+
+- Add a package contract fixture.
+
+## Capabilities
+
+### New Capabilities
+
+- \`package-contract\`: Verify the packaged Specification Provider.
+
+## Impact
+
+- Test fixtures only.
+`,
+    ),
+    writeFile(
+      path.join(changeRoot, 'design.md'),
+      `# Design
+
+## Context
+
+The package test must not depend on a repository change that may later be archived.
+
+## Decisions
+
+Use a change owned by the temporary test workspace.
+`,
+    ),
+    writeFile(
+      path.join(changeRoot, 'tasks.md'),
+      `# Tasks
+
+- [ ] Validate the installed package.
+`,
+    ),
+    writeFile(
+      path.join(capabilityRoot, 'spec.md'),
+      `# Spec Delta
+
+## ADDED Requirements
+
+### Requirement: Installed package exposes the Specification Provider
+
+The installed package MUST inspect and validate a workspace-owned OpenSpec change.
+
+#### Scenario: Package contract fixture is inspected
+
+- **WHEN** the package test inspects its fixture
+- **THEN** the Specification Provider returns the fixture identity
+`,
+    ),
+  ]);
+}
+
 async function npm(args: string[], cwd: string) {
   const npmCli = process.env.npm_execpath;
   if (!npmCli) throw new Error('npm_execpath is unavailable');
@@ -61,46 +136,7 @@ describe('published package', () => {
     const workspace = path.join(project, 'workspace');
     await createGitRepository(project, 'service');
     await createGitRepository(project, 'workspace');
-    const installedPackage = path.join(installation, 'node_modules', 'repoctopus');
-    const inspectedSpecification = await runCli<{
-      changeId: string;
-      provider: { id: string; version: string };
-    }>({
-      packageRoot: installedPackage,
-      cwd: repositoryRoot,
-      args: [
-        'spec',
-        'inspect',
-        '--workspace',
-        repositoryRoot,
-        '--change',
-        'enable-self-hosted-development',
-      ],
-    });
-    expect(inspectedSpecification.result).toMatchObject({
-      changeId: 'enable-self-hosted-development',
-      provider: { id: 'openspec', version: '1.14.3' },
-    });
-    const validatedSpecification = await runCli<{ valid: boolean; strict: boolean }>({
-      packageRoot: installedPackage,
-      cwd: repositoryRoot,
-      args: [
-        'spec',
-        'validate',
-        '--workspace',
-        repositoryRoot,
-        '--change',
-        'enable-self-hosted-development',
-      ],
-    });
-    expect(validatedSpecification.result).toMatchObject({ valid: true, strict: true });
-    const envelope = await runCli({
-      packageRoot: installedPackage,
-      cwd: workspace,
-      args: ['project', 'detect', '--scan-root', project, '--workspace', workspace],
-    });
-    expect(envelope).toMatchObject({ protocolVersion: 1, ok: true, command: 'project detect' });
-    expect(JSON.stringify(envelope)).toContain('service');
+    await createSpecificationFixture(workspace);
     await writeFile(
       path.join(workspace, 'repoctopus.yaml'),
       JSON.stringify({
@@ -128,6 +164,32 @@ describe('published package', () => {
         ],
       }),
     );
+    const installedPackage = path.join(installation, 'node_modules', 'repoctopus');
+    const inspectedSpecification = await runCli<{
+      changeId: string;
+      provider: { id: string; version: string };
+    }>({
+      packageRoot: installedPackage,
+      cwd: workspace,
+      args: ['spec', 'inspect', '--workspace', workspace, '--change', specificationFixtureId],
+    });
+    expect(inspectedSpecification.result).toMatchObject({
+      changeId: specificationFixtureId,
+      provider: { id: 'openspec', version: '1.14.3' },
+    });
+    const validatedSpecification = await runCli<{ valid: boolean; strict: boolean }>({
+      packageRoot: installedPackage,
+      cwd: workspace,
+      args: ['spec', 'validate', '--workspace', workspace, '--change', specificationFixtureId],
+    });
+    expect(validatedSpecification.result).toMatchObject({ valid: true, strict: true });
+    const envelope = await runCli({
+      packageRoot: installedPackage,
+      cwd: workspace,
+      args: ['project', 'detect', '--scan-root', project, '--workspace', workspace],
+    });
+    expect(envelope).toMatchObject({ protocolVersion: 1, ok: true, command: 'project detect' });
+    expect(JSON.stringify(envelope)).toContain('service');
     const skillCatalog = await runCli<{
       apiVersion: string;
       complete: boolean;
