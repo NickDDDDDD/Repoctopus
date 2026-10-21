@@ -78,3 +78,11 @@
 - [x] 8.7 禁止协调角色与业务角色复用同一个 MR；准备阶段拒绝同仓相同分支拓扑，平台返回后按稳定 MR 身份再次核对，并修订自举交付说明。
 - [x] 8.8 隔离平台事件恢复 E2E 的临时 bundle，避免并行 `self-bootstrap` 将测试产物生命周期误判为真实仓库输入漂移。
 - [x] 8.9 允许尚未决定且未开始发布的 Delivery 用新快照取代待批准请求；相同快照幂等复用，历史记录被取代身份，旧响应与已形成的决定或动作继续 fail-closed。
+
+## 9. 明确 Workspace 入口与仓库拓扑
+
+- [x] 9.1 在 Design 与 Delta Specs 中定义 Workspace 为版本化团队工作流入口，区分旧 `agents-workspace` 与 DSH Workspace，并规定 Embedded/Dedicated 两种拓扑共用同一运行模型。
+- [ ] 9.2 扩展共享配置以显式标识 Workspace Repository，校验它属于登记仓库且解析到配置所在 Git 根；迁移自举配置、示例、Schema 与正反测试。
+- [ ] 9.3 让日常 Run、Evidence、Delivery 和恢复按配置登记的仓库构造稳定快照；把 scan root 限定到接入探测，并移除 Workspace Repository 的无条件排除。
+- [ ] 9.4 将协调 MR 的产品语义收敛为 Workspace 中的 Change MR，验证 Dedicated Workspace 与 Embedded Workspace 同仓双 MR，并更新 CLI、README、接入和自举文档。
+- [ ] 9.5 重新执行定向测试、OpenSpec 严格校验、`npm run verify`、包 E2E 与 tracer E2E，更新正式验证报告、清理临时产物并重新准备 Delivery 审批快照。

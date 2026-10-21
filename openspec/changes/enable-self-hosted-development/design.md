@@ -217,6 +217,16 @@ Repoctopus 不建立独占 Change owner。任一成员或 Agent 都可以在同�
 
 一旦存在人工决定，或任何发布动作不再是零次尝试的 `pending`，重新准备不得覆盖状态。批准后的漂移继续进入 `verification_required`，部分发布继续使用原计划恢复。这样把“尚未形成事实的请求”与“已经形成的决定或副作用”分开，避免为了方便重试而破坏审计历史。
 
+### 20. Workspace 是版本化的团队工作流入口
+
+Repoctopus Workspace 是团队接入产品后的共享、版本化工作流入口，不是旧 `agents-workspace` 产品，也不是 DSH Agent/Session/Workspace 子系统。Workspace Repository 保存 `repoctopus.yaml`、当前 Specification Provider 的权威产物、Workflow、团队配置、Delivery Intent、正式验证报告和其他长期文档；`.repoctopus/` 中的事件队列、租约、原始 Evidence 对象、浏览器缓存和临时检出属于本地或可替换的运行状态，不进入 Git。
+
+Workspace 只有一套领域语义，但允许两种物理拓扑：单仓项目把 Workspace 嵌入业务仓；多仓项目使用与业务仓同级的独立 Workspace Repository。配置必须显式登记 Workspace Repository；当其仓库路径为 `.` 且同一 repository ID 被 Delivery 选为业务角色时，它同时承担 Workspace 与业务职责。系统不得仅因一个仓库承载 Workspace 就把它从业务仓清单排除。
+
+目录扫描只服务首次接入与显式重新探测，输入称为 scan root。日常 Run、Evidence 和 Delivery 必须按 `repoctopus.yaml` 中登记的 repository ID 与解析路径构造快照，不得依赖扫描父目录推断当前交付集合。这样本地目录布局可以变化，团队共享身份仍由版本化配置保持稳定。
+
+每个 change 的 Change MR 位于 Workspace Repository，承载规划规格和合入后收尾；Business MR 位于该 Delivery 选定的业务仓。Embedded Workspace 允许两种角色位于同一物理仓库，但仍必须使用不同分支拓扑与 MR 身份。配置文件所在位置、MR 作者和 Runner identity 都不产生独占 Change owner。
+
 ## Risks / Trade-offs
 
 - [DSH Skill 完整依赖闭包可能引入 Agent 专有类型] → 先以固定 commit 生成依赖与源码采用报告；保留 Registry 行为闭包，只在来源登记的产品适配层移除无运行价值的 Agent Consumer 耦合。

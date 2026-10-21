@@ -37,3 +37,26 @@ WorkflowRuns MUST 把等待用户决定、等待 MR 合入和等待重试时间�
 
 - **WHEN** Runner 在等待状态退出并于后续平台事件到来时重新启动
 - **THEN** 系统从 Store 恢复等待条件并继续同一 Run，不依赖旧内存回调
+
+### Requirement: Workspace 是版本化的团队工作流入口
+
+Repoctopus MUST 把 Workspace 定义为承载共享配置、规格、Workflow 和长期交付文档的版本化入口，并显式登记 Workspace Repository。Workspace MAY 嵌入单个业务仓，也 MAY 在多仓开发中使用独立仓库；两种拓扑 MUST 使用同一运行模型。旧 `agents-workspace` 产品语义与 DSH Agent/Session/Workspace 子系统不得因此进入产品运行时。
+
+#### Scenario: 单仓使用 Embedded Workspace
+
+- **WHEN** `repoctopus.yaml` 所在 Git 仓同时被登记并选为业务仓
+- **THEN** 系统允许该仓同时承担 Workspace 与业务角色，不因其路径为 Workspace 根而排除它
+
+#### Scenario: 多仓使用 Dedicated Workspace
+
+- **WHEN** Workspace Repository 与多个业务仓位于同级目录
+- **THEN** 规格和工作流产物保存在 Workspace Repository，业务命令按配置登记路径访问各业务仓
+
+### Requirement: 运行时仓库快照来自版本化登记
+
+Repoctopus MUST 在日常 Run、Evidence、Delivery 和恢复中按 Workspace 配置登记的 repository ID 与有效路径构造仓库快照。目录扫描 MUST 只用于首次接入或显式重新探测，并不得在运行时静默增加、删除或重命名仓库。
+
+#### Scenario: 同级目录出现未登记仓库
+
+- **WHEN** Workspace 同级目录新增一个 Git 仓但配置尚未登记它
+- **THEN** 日常 Run 和 Delivery 不把该仓加入快照，只有显式重新探测才把它作为候选交给用户确认
