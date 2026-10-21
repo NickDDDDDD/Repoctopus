@@ -349,7 +349,22 @@ it('runs one-Business-MR closure out of process before creating the final Change
   for (const key of Object.keys(environment)) {
     if (key.startsWith('OTEL_EXPORTER_OTLP')) delete environment[key];
   }
-  const executed = await execFileAsync(process.execPath, [executable, inputFile], {
+  const interrupted = await execFileAsync(
+    process.execPath,
+    [executable, inputFile, 'interrupt-before-publish'],
+    {
+      cwd: productRoot,
+      env: environment,
+      timeout: 45_000,
+    },
+  );
+  expect(JSON.parse(interrupted.stdout.trim().split(/\r?\n/u).at(-1)!)).toEqual({
+    status: 'interrupted',
+  });
+  expect(await git(workspace.remote, 'rev-parse', `refs/heads/${sourceBranch}`)).toBe(sourceOid);
+  expect(JSON.parse(await readFile(mergeRequestStateFile, 'utf8'))).toMatchObject({ created: 0 });
+
+  const executed = await execFileAsync(process.execPath, [executable, inputFile, 'resume'], {
     cwd: productRoot,
     env: environment,
     timeout: 45_000,

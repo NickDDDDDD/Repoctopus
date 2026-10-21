@@ -158,6 +158,7 @@ class FileFinalMergeRequests implements FinalMergeRequestPort {
 
 async function main(): Promise<void> {
   const inputFile = process.argv[2];
+  const mode = process.argv[3] ?? 'resume';
   if (!inputFile) throw new Error('Final Change Post-merge fixture input is required');
   const input = JSON.parse(await readFile(inputFile, 'utf8')) as Input;
   const config = await loadProjectConfig(input.workspaceRoot);
@@ -205,12 +206,27 @@ async function main(): Promise<void> {
     const publisher = new FinalChangePublicationService(new GitDeliveryAdapter(), mergeRequests);
     app.context.delivery.publishFinalChange = (request) => publisher.publish(request);
     app.context.postMergeCoordinator.wake = () => Promise.resolve(input.coordination);
-    const result = await app.context.postMergeCoordinator.execute({
-      provider: 'github',
-      remoteIdentity: input.coordination.repositories[0]!.remoteIdentity,
-      number: 11,
-    });
-    process.stdout.write(`${JSON.stringify(result)}\n`);
+    if (mode === 'interrupt-before-publish') {
+      app.context.postMergeActions.publishChange = () =>
+        Promise.reject(new Error('simulated-process-interruption-before-publish'));
+    }
+    try {
+      const result = await app.context.postMergeCoordinator.execute({
+        provider: 'github',
+        remoteIdentity: input.coordination.repositories[0]!.remoteIdentity,
+        number: 11,
+      });
+      process.stdout.write(`${JSON.stringify(result)}\n`);
+    } catch (error) {
+      if (
+        mode !== 'interrupt-before-publish' ||
+        !(error instanceof Error) ||
+        error.message !== 'simulated-process-interruption-before-publish'
+      ) {
+        throw error;
+      }
+      process.stdout.write(`${JSON.stringify({ status: 'interrupted' })}\n`);
+    }
   } finally {
     await app.close();
   }
