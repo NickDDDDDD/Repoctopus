@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { Context } from '@deepseek-ai/cordis';
@@ -25,6 +25,7 @@ import { FileRuntimeStore } from '../platform/runtime/file-runtime-store.js';
 import { safeEvidenceAttributes } from '../platform/telemetry/evidence-mapping.js';
 import {
   compositionFixture,
+  commitGitRepository,
   createGitRepository,
   projectFixture,
   removeTemporaryDirectory,
@@ -55,8 +56,7 @@ describe('Evidence telemetry outbox', () => {
     const root = await temporaryDirectory('repoctopus-evidence-telemetry-');
     cleanup.push(root);
     await createGitRepository(root, 'app');
-    const workspace = path.join(root, 'workspace');
-    await mkdir(workspace);
+    const workspace = await createGitRepository(root, 'workspace');
     const config: SharedProjectConfig = {
       apiVersion: 'repoctopus/v1alpha1',
       kind: 'RepoctopusWorkspace',
@@ -85,6 +85,8 @@ describe('Evidence telemetry outbox', () => {
       ],
     };
     await writeFile(path.join(workspace, 'repoctopus.yaml'), JSON.stringify(config));
+    await writeFile(path.join(workspace, '.gitignore'), '.repoctopus/\n');
+    await commitGitRepository(workspace, 'configure workspace');
     const telemetry = new RecoveringTelemetry();
     const context = new Context();
     contexts.push(context);

@@ -1,4 +1,6 @@
 import net from 'node:net';
+import { writeFile } from 'node:fs/promises';
+import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import type { ManagedServiceSession } from '../domains/feedback/service.js';
@@ -29,16 +31,21 @@ describe('managed service recovery', () => {
     const workspace = await temporaryDirectory('repoctopus-service-exit-');
     cleanup.push(workspace);
     const adapter = new LocalServiceAdapter(workspace);
+    const exitSignal = path.join(workspace, 'exit.signal');
     const session = await adapter.startManaged({
       serviceId: 'early-exit',
       executable: process.execPath,
-      args: ['-e', "setTimeout(() => process.exit(7), 150); console.log('STARTED')"],
+      args: [
+        '-e',
+        `const fs = require('node:fs'); const timer = setInterval(() => { if (fs.existsSync(${JSON.stringify(exitSignal)})) { clearInterval(timer); process.exit(7); } }, 25); console.log('STARTED')`,
+      ],
       cwd: workspace,
       startupTimeoutMs: 2000,
       probeIntervalMs: 25,
       readiness: [{ type: 'log', pattern: 'NEVER_READY' }],
     });
     sessions.push(session);
+    await writeFile(exitSignal, 'exit');
     const observation = await session.waitUntilReady();
     expect(observation.status).toBe('failed');
     expect(observation.exitCode).toBe(7);

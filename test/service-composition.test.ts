@@ -52,7 +52,7 @@ describe('Cordis product Service composition', () => {
   it('runs the real multi-repository probe through Provider, Contributor, Router, and App Boot', async () => {
     const root = await temporaryDirectory('repoctopus-service-composition-');
     cleanup.push(root);
-    const workspace = await createGitRepository(root, 'workspace');
+    await createGitRepository(root, 'workspace');
     await createGitRepository(root, 'front');
     await createGitRepository(root, 'backend');
 
@@ -91,7 +91,7 @@ describe('Cordis product Service composition', () => {
   it('boots the shipped bootstrap composition with source-derived plugin identities', async () => {
     const root = await temporaryDirectory('repoctopus-bootstrap-composition-');
     cleanup.push(root);
-    const workspace = await createGitRepository(root, 'workspace');
+    await createGitRepository(root, 'workspace');
     await createGitRepository(root, 'front');
 
     const app = await bootBootstrapComposition(path.resolve(import.meta.dirname, '..'));

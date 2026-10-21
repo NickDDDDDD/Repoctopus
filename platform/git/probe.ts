@@ -107,6 +107,7 @@ export async function snapshotWorkspaceRepositories(options: {
     } catch (error) {
       throw new Error(
         `Configured repository is unreadable: ${configured.id}: ${error instanceof Error ? error.message : String(error)}`,
+        { cause: error },
       );
     }
     const repository = await inspectRepository(resolved);

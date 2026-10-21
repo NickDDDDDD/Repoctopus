@@ -23,7 +23,7 @@ describe('multi-repository project probe', () => {
   it('discovers only direct sibling repositories without writing to them', async () => {
     const root = await temporaryDirectory('repoctopus-probe-');
     cleanup.push(root);
-    const workspace = await createGitRepository(root, 'repoctopus-workspace');
+    await createGitRepository(root, 'repoctopus-workspace');
     const first = await createGitRepository(
       root,
       'front',

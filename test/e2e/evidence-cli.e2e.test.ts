@@ -1,11 +1,12 @@
 import { execFile } from 'node:child_process';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import type { SharedProjectConfig } from '../../domains/project-configuration/types.js';
 import {
+  commitGitRepository,
   createGitRepository,
   removeTemporaryDirectory,
   temporaryDirectory,
@@ -23,8 +24,7 @@ describe('evidence CLI', () => {
     const root = await temporaryDirectory('repoctopus-evidence-cli-');
     cleanup.push(root);
     const repository = await createGitRepository(root, 'app');
-    const workspace = path.join(root, 'workspace');
-    await mkdir(workspace);
+    const workspace = await createGitRepository(root, 'workspace');
     const config: SharedProjectConfig = {
       apiVersion: 'repoctopus/v1alpha1',
       kind: 'RepoctopusWorkspace',
@@ -53,6 +53,8 @@ describe('evidence CLI', () => {
       ],
     };
     await writeFile(path.join(workspace, 'repoctopus.yaml'), JSON.stringify(config));
+    await writeFile(path.join(workspace, '.gitignore'), '.repoctopus/\n');
+    await commitGitRepository(workspace, 'configure workspace');
 
     const planned = await runCli({
       packageRoot,
