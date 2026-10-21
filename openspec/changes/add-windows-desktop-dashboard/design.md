@@ -171,6 +171,8 @@ Renderer 首版包含 change 列表、概览、阶段/任务、验证与阻塞�
 - **行为级适配**：窗口先于 Host ready 显示、Host 崩溃恢复、有界优雅退出、Renderer sandbox 和 `electron-builder` Windows 资源打包。Repoctopus 按自己的契约重写，不保留 DSH 的 Web app 假设。
 - **明确排除**：DSH Web Host HTTP/WebSocket 代理、完整 DSH profile/plugin/agent/session/workspace 模型、账户/浏览器能力、自动更新系统、打包的 Python/Node/pnpm 运行时和平台安装器链。
 
+上游采用单元必须是可执行行为切片，而不是孤立文件清单。每个切片同时审计实现、应用入口、开发/打包布局和相邻契约测试，并在机器清单中记录行为、来源、成立前提、Repoctopus 差异和补偿测试。若 Repoctopus 改变 DSH 的入口或目录布局，就不能直接继承 `app.getAppPath()` 等路径结论；必须先把差异封装为可测试端口。Electron 二进制解析同样与 lifecycle install script 分开治理，干净环境通过显式准备命令验证惰性下载或缓存，而不登记不存在的安装脚本。
+
 Repoctopus 的 Renderer 是本地 OTLP 投影客户端，不需要 DSH 的共享 Web App 和鉴权反向代理；Desktop Host 也只包含桌面观测 composition，不加载 DSH 产品插件。这样采用的是被验证的进程与生命周期模式，而不是引入另一个产品内核。
 
 ### 10. SigNoZ 与本地 Docker Compose 不进入首个验证门槛
