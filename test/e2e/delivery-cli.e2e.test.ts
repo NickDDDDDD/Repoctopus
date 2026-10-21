@@ -38,9 +38,12 @@ describe('delivery CLI', () => {
       path.join(workspace, 'repoctopus.yaml'),
       JSON.stringify({
         apiVersion: 'repoctopus/v1alpha1',
-        kind: 'RepoctopusProject',
-        project: { id: 'delivery-cli' },
-        repositories: [{ id: repository.id, path: '../app' }],
+        kind: 'RepoctopusWorkspace',
+        workspace: { id: 'delivery-cli', repositoryId: 'workspace' },
+        repositories: [
+          { id: 'workspace', path: '.' },
+          { id: repository.id, path: '../app' },
+        ],
         profiles: [
           {
             id: 'verify',

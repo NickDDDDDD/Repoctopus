@@ -32,11 +32,18 @@ export function reconcileProjectConfig(
       });
     }
   }
-  if (current.project.id !== candidate.project.id) {
+  if (current.workspace.id !== candidate.workspace.id) {
     conflicts.push({
-      field: 'project.id',
-      current: current.project.id,
-      candidate: candidate.project.id,
+      field: 'workspace.id',
+      current: current.workspace.id,
+      candidate: candidate.workspace.id,
+    });
+  }
+  if (current.workspace.repositoryId !== candidate.workspace.repositoryId) {
+    conflicts.push({
+      field: 'workspace.repositoryId',
+      current: current.workspace.repositoryId,
+      candidate: candidate.workspace.repositoryId,
     });
   }
   const addedNodes = [...candidateNodes].filter((id) => !currentNodes.has(id)).sort();

@@ -27,9 +27,12 @@ describe('evidence CLI', () => {
     await mkdir(workspace);
     const config: SharedProjectConfig = {
       apiVersion: 'repoctopus/v1alpha1',
-      kind: 'RepoctopusProject',
-      project: { id: 'evidence-cli' },
-      repositories: [{ id: 'app', path: '../app' }],
+      kind: 'RepoctopusWorkspace',
+      workspace: { id: 'evidence-cli', repositoryId: 'workspace' },
+      repositories: [
+        { id: 'workspace', path: '.' },
+        { id: 'app', path: '../app' },
+      ],
       profiles: [
         {
           id: 'verify',

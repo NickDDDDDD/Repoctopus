@@ -296,7 +296,6 @@ export async function detectProjectConfiguration(input: {
   const scopeRoot = path.resolve(input.scopeRoot);
   const snapshot = await probeProject({
     root: scopeRoot,
-    workspaceRoot: workspace,
     duplicateIdentity: 'omit-ambiguous',
     ...(input.now ? { now: input.now } : {}),
   });
@@ -311,7 +310,7 @@ export async function detectProjectConfiguration(input: {
         id,
         name: repository.name,
         absolutePath: repository.path,
-        configuredPath: path.relative(workspace, repository.path).replaceAll('\\', '/'),
+        configuredPath: path.relative(workspace, repository.path).replaceAll('\\', '/') || '.',
         remoteIdentity: repository.remoteIdentity,
       });
     }),
@@ -334,12 +333,16 @@ export async function detectProjectConfiguration(input: {
     })),
   );
   const current = await optionalExistingConfig(workspace);
+  const workspaceRepository = repositories.find((repository) => repository.path === '.');
   const detectedCandidate: SharedProjectConfig | null =
-    repositories.length > 0 && commandNodes.length > 0
+    workspaceRepository && commandNodes.length > 0
       ? {
           apiVersion: 'repoctopus/v1alpha1',
-          kind: 'RepoctopusProject',
-          project: { id: slug(path.basename(scopeRoot)) },
+          kind: 'RepoctopusWorkspace',
+          workspace: {
+            id: slug(path.basename(workspace)),
+            repositoryId: workspaceRepository.id,
+          },
           repositories: repositories.map((repository) => ({
             id: repository.id,
             path: repository.path,

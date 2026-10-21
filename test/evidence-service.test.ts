@@ -22,8 +22,8 @@ function config(
   return {
     shared: {
       apiVersion: 'repoctopus/v1alpha1',
-      kind: 'RepoctopusProject',
-      project: { id: 'sample' },
+      kind: 'RepoctopusWorkspace',
+      workspace: { id: 'sample', repositoryId: 'workspace' },
       repositories: [{ id: 'workspace', path: '.' }],
       profiles: [{ id: 'verify', nodes }],
     },

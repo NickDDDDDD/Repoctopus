@@ -200,9 +200,12 @@ describe('post-merge workflow', () => {
       path.join(workspace, 'repoctopus.yaml'),
       JSON.stringify({
         apiVersion: 'repoctopus/v1alpha1',
-        kind: 'RepoctopusProject',
-        project: { id: 'post-merge-actions' },
-        repositories: [{ id: 'app', path: '../app' }],
+        kind: 'RepoctopusWorkspace',
+        workspace: { id: 'post-merge-actions', repositoryId: 'workspace' },
+        repositories: [
+          { id: 'workspace', path: '.' },
+          { id: 'app', path: '../app' },
+        ],
         profiles: [
           {
             id: 'post-merge',

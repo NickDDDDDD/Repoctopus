@@ -190,9 +190,10 @@ describe('Git delivery adapter', () => {
 
   it('loads delivery policy from the unified project configuration', () => {
     const source = `apiVersion: repoctopus/v1alpha1
-kind: RepoctopusProject
-project: { id: sample }
+kind: RepoctopusWorkspace
+workspace: { id: sample, repositoryId: workspace }
 repositories:
+  - { id: workspace, path: . }
   - { id: app, path: ../app }
 profiles:
   - id: verify

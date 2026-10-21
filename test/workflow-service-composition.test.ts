@@ -25,9 +25,12 @@ describe('WorkflowRuns Cordis composition', () => {
       path.join(workspace, 'repoctopus.yaml'),
       JSON.stringify({
         apiVersion: 'repoctopus/v1alpha1',
-        kind: 'RepoctopusProject',
-        project: { id: 'workflow-service' },
-        repositories: [{ id: 'front', path: '../front' }],
+        kind: 'RepoctopusWorkspace',
+        workspace: { id: 'workflow-service', repositoryId: 'workspace' },
+        repositories: [
+          { id: 'workspace', path: '.' },
+          { id: 'front', path: '../front' },
+        ],
         profiles: [
           {
             id: 'verify',

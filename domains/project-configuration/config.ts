@@ -693,7 +693,7 @@ export function parseSharedProjectConfig(value: unknown): SharedProjectConfig {
     [
       'apiVersion',
       'kind',
-      'project',
+      'workspace',
       'repositories',
       'profiles',
       'composition',
@@ -708,11 +708,11 @@ export function parseSharedProjectConfig(value: unknown): SharedProjectConfig {
   );
   if (root.apiVersion !== PROJECT_CONFIG_API_VERSION)
     throw new ProjectConfigError('unsupported apiVersion', 'apiVersion');
-  if (root.kind !== 'RepoctopusProject')
-    throw new ProjectConfigError('expected RepoctopusProject', 'kind');
+  if (root.kind !== 'RepoctopusWorkspace')
+    throw new ProjectConfigError('expected RepoctopusWorkspace', 'kind');
 
-  const project = object(root.project, 'project');
-  exactKeys(project, ['id'], 'project');
+  const workspace = object(root.workspace, 'workspace');
+  exactKeys(workspace, ['id', 'repositoryId'], 'workspace');
   if (!Array.isArray(root.repositories) || root.repositories.length === 0) {
     throw new ProjectConfigError('expected at least one repository', 'repositories');
   }
@@ -733,6 +733,22 @@ export function parseSharedProjectConfig(value: unknown): SharedProjectConfig {
   });
   if (new Set(repositories.map((repository) => repository.id)).size !== repositories.length) {
     throw new ProjectConfigError('repository ids must be unique', 'repositories');
+  }
+  const workspaceRepositoryId = identifier(workspace.repositoryId, 'workspace.repositoryId');
+  const workspaceRepository = repositories.find(
+    (repository) => repository.id === workspaceRepositoryId,
+  );
+  if (!workspaceRepository) {
+    throw new ProjectConfigError(
+      'must reference a registered repository',
+      'workspace.repositoryId',
+    );
+  }
+  if (workspaceRepository.path !== '.') {
+    throw new ProjectConfigError(
+      'Workspace Repository path must be . so it contains repoctopus.yaml and shared workflow artifacts',
+      `repositories.${workspaceRepositoryId}.path`,
+    );
   }
   if (!Array.isArray(root.profiles) || root.profiles.length === 0) {
     throw new ProjectConfigError('expected at least one profile', 'profiles');
@@ -850,8 +866,11 @@ export function parseSharedProjectConfig(value: unknown): SharedProjectConfig {
 
   return {
     apiVersion: PROJECT_CONFIG_API_VERSION,
-    kind: 'RepoctopusProject',
-    project: { id: string(project.id, 'project.id') },
+    kind: 'RepoctopusWorkspace',
+    workspace: {
+      id: identifier(workspace.id, 'workspace.id'),
+      repositoryId: workspaceRepositoryId,
+    },
     repositories,
     profiles,
     ...(composition ? { composition } : {}),
@@ -955,7 +974,7 @@ function normalizePathText(value: string): string {
 
 export function canonicalProjectConfig(value: SharedProjectConfig | LocalProjectConfig): unknown {
   const copy = structuredClone(value);
-  if (copy.kind === 'RepoctopusProject') {
+  if (copy.kind === 'RepoctopusWorkspace') {
     copy.repositories = copy.repositories.map((repository) => ({
       ...repository,
       path: normalizePathText(repository.path),

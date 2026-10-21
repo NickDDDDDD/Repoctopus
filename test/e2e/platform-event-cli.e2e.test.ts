@@ -30,9 +30,10 @@ async function workspace(): Promise<string> {
   await writeFile(
     path.join(root, 'repoctopus.yaml'),
     `apiVersion: repoctopus/v1alpha1
-kind: RepoctopusProject
-project:
+kind: RepoctopusWorkspace
+workspace:
   id: event-cli-test
+  repositoryId: workspace
 repositories:
   - id: workspace
     path: .

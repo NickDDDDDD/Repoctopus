@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -27,8 +27,7 @@ describe('documented project onboarding flow', () => {
       path.join(app, 'package.json'),
       JSON.stringify({ scripts: { build: 'placeholder-build' } }),
     );
-    const workspace = path.join(root, 'workspace');
-    await mkdir(workspace);
+    const workspace = await createGitRepository(root, 'workspace');
 
     const detection = await runCli({
       packageRoot,
@@ -41,7 +40,7 @@ describe('documented project onboarding flow', () => {
 
     const candidate: SharedProjectConfig = {
       ...detected.draft.candidateConfig!,
-      project: { id: 'onboarding-flow' },
+      workspace: { ...detected.draft.candidateConfig!.workspace, id: 'onboarding-flow' },
       profiles: [
         {
           id: 'verify',

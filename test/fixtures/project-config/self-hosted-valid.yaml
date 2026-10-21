@@ -1,7 +1,8 @@
 apiVersion: repoctopus/v1alpha1
-kind: RepoctopusProject
-project:
+kind: RepoctopusWorkspace
+workspace:
   id: self-hosted-fixture
+  repositoryId: coordination
 repositories:
   - id: coordination
     path: .

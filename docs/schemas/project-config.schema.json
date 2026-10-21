@@ -1,18 +1,21 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://repoctopus.invalid/schemas/project-config.schema.json",
-  "title": "Repoctopus shared project configuration",
+  "title": "Repoctopus shared Workspace configuration",
   "type": "object",
   "additionalProperties": false,
-  "required": ["apiVersion", "kind", "project", "repositories", "profiles"],
+  "required": ["apiVersion", "kind", "workspace", "repositories", "profiles"],
   "properties": {
     "apiVersion": { "const": "repoctopus/v1alpha1" },
-    "kind": { "const": "RepoctopusProject" },
-    "project": {
+    "kind": { "const": "RepoctopusWorkspace" },
+    "workspace": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id"],
-      "properties": { "id": { "type": "string", "minLength": 1 } }
+      "required": ["id", "repositoryId"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "repositoryId": { "type": "string", "minLength": 1 }
+      }
     },
     "repositories": {
       "type": "array",

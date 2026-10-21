@@ -59,9 +59,12 @@ describe('Evidence telemetry outbox', () => {
     await mkdir(workspace);
     const config: SharedProjectConfig = {
       apiVersion: 'repoctopus/v1alpha1',
-      kind: 'RepoctopusProject',
-      project: { id: 'telemetry' },
-      repositories: [{ id: 'app', path: '../app' }],
+      kind: 'RepoctopusWorkspace',
+      workspace: { id: 'telemetry', repositoryId: 'workspace' },
+      repositories: [
+        { id: 'workspace', path: '.' },
+        { id: 'app', path: '../app' },
+      ],
       profiles: [
         {
           id: 'verify',

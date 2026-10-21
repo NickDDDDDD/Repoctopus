@@ -105,9 +105,12 @@ describe('published package', () => {
       path.join(workspace, 'repoctopus.yaml'),
       JSON.stringify({
         apiVersion: 'repoctopus/v1alpha1',
-        kind: 'RepoctopusProject',
-        project: { id: 'package-e2e' },
-        repositories: [{ id: 'service', path: '../service' }],
+        kind: 'RepoctopusWorkspace',
+        workspace: { id: 'package-e2e', repositoryId: 'workspace' },
+        repositories: [
+          { id: 'workspace', path: '.' },
+          { id: 'service', path: '../service' },
+        ],
         profiles: [
           {
             id: 'verify',

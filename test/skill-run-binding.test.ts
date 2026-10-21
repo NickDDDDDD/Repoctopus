@@ -23,8 +23,8 @@ async function workspaceFixture(): Promise<string> {
     path.join(workspace, 'repoctopus.yaml'),
     JSON.stringify({
       apiVersion: 'repoctopus/v1alpha1',
-      kind: 'RepoctopusProject',
-      project: { id: 'skill-run' },
+      kind: 'RepoctopusWorkspace',
+      workspace: { id: 'skill-run', repositoryId: 'workspace' },
       repositories: [{ id: 'workspace', path: '.' }],
       profiles: [
         {

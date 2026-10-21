@@ -39,9 +39,10 @@ describe('multi-process runtime and OTLP delivery', () => {
       path.join(workspace, 'repoctopus.yaml'),
       JSON.stringify({
         apiVersion: 'repoctopus/v1alpha1',
-        kind: 'RepoctopusProject',
-        project: { id: 'runtime-tracer' },
+        kind: 'RepoctopusWorkspace',
+        workspace: { id: 'runtime-tracer', repositoryId: 'workspace' },
         repositories: [
+          { id: 'workspace', path: '.' },
           { id: 'front', path: '../front' },
           { id: 'backend', path: '../backend' },
         ],

@@ -82,7 +82,7 @@
 ## 9. 明确 Workspace 入口与仓库拓扑
 
 - [x] 9.1 在 Design 与 Delta Specs 中定义 Workspace 为版本化团队工作流入口，区分旧 `agents-workspace` 与 DSH Workspace，并规定 Embedded/Dedicated 两种拓扑共用同一运行模型。
-- [ ] 9.2 扩展共享配置以显式标识 Workspace Repository，校验它属于登记仓库且解析到配置所在 Git 根；迁移自举配置、示例、Schema 与正反测试。
+- [x] 9.2 扩展共享配置以显式标识 Workspace Repository，校验它属于登记仓库且解析到配置所在 Git 根；迁移自举配置、示例、Schema 与正反测试。
 - [ ] 9.3 让日常 Run、Evidence、Delivery 和恢复按配置登记的仓库构造稳定快照；把 scan root 限定到接入探测，并移除 Workspace Repository 的无条件排除。
 - [ ] 9.4 将协调 MR 的产品语义收敛为 Workspace 中的 Change MR，验证 Dedicated Workspace 与 Embedded Workspace 同仓双 MR，并更新 CLI、README、接入和自举文档。
 - [ ] 9.5 重新执行定向测试、OpenSpec 严格校验、`npm run verify`、包 E2E 与 tracer E2E，更新正式验证报告、清理临时产物并重新准备 Delivery 审批快照。

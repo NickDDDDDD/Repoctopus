@@ -188,9 +188,10 @@ async function harness(mode: 'pass' | 'fail' | 'drift') {
     path.join(workspace, 'repoctopus.yaml'),
     JSON.stringify({
       apiVersion: 'repoctopus/v1alpha1',
-      kind: 'RepoctopusProject',
-      project: { id: 'post-merge-verification' },
+      kind: 'RepoctopusWorkspace',
+      workspace: { id: 'post-merge-verification', repositoryId: 'workspace' },
       repositories: [
+        { id: 'workspace', path: '.' },
         { id: 'app', path: '../app-source' },
         { id: 'api', path: '../api-source' },
       ],

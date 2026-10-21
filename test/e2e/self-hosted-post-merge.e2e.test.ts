@@ -178,9 +178,10 @@ async function fixture() {
     `${JSON.stringify(
       {
         apiVersion: 'repoctopus/v1alpha1',
-        kind: 'RepoctopusProject',
-        project: { id: 'self-hosted-e2e' },
+        kind: 'RepoctopusWorkspace',
+        workspace: { id: 'self-hosted-e2e', repositoryId: 'workspace' },
         repositories: [
+          { id: 'workspace', path: '.' },
           { id: 'app', path: '../app' },
           { id: 'api', path: '../api' },
         ],

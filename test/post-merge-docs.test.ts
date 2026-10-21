@@ -51,9 +51,12 @@ describe('Post-merge operator documentation', () => {
       path.join(workspace, 'repoctopus.yaml'),
       JSON.stringify({
         apiVersion: 'repoctopus/v1alpha1',
-        kind: 'RepoctopusProject',
-        project: { id: 'post-merge-docs' },
-        repositories: [{ id: 'service', path: '../service' }],
+        kind: 'RepoctopusWorkspace',
+        workspace: { id: 'post-merge-docs', repositoryId: 'workspace' },
+        repositories: [
+          { id: 'workspace', path: '.' },
+          { id: 'service', path: '../service' },
+        ],
         profiles: [
           {
             id: 'verify',

@@ -74,7 +74,8 @@ describe('project configuration detection', () => {
       ),
     );
     expect(JSON.parse(await readFile(file, 'utf8'))).toEqual(draft);
-    expect(draft.candidateConfig?.repositories).toHaveLength(4);
+    expect(draft.candidateConfig?.repositories).toHaveLength(5);
+    expect(draft.candidateConfig?.workspace.repositoryId).toBe('workspace');
     expect(draft.candidateConfig?.repositories.every((item) => !path.isAbsolute(item.path))).toBe(
       true,
     );
@@ -139,10 +140,13 @@ describe('project configuration detection', () => {
     );
     const sharedFile = path.join(workspace, 'repoctopus.yaml');
     const shared = `apiVersion: repoctopus/v1alpha1
-kind: RepoctopusProject
-project:
+kind: RepoctopusWorkspace
+workspace:
   id: hand-authored-project
+  repositoryId: workspace
 repositories:
+  - id: workspace
+    path: .
   - id: web-front
     path: ../manual-web-front
   - id: legacy
@@ -197,9 +201,9 @@ delivery:
           candidate: '../web-front',
         },
         {
-          field: 'project.id',
+          field: 'workspace.id',
           current: 'hand-authored-project',
-          candidate: path.basename(root).toLowerCase(),
+          candidate: 'workspace',
         },
       ]),
     );

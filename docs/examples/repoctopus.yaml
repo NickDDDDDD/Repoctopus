@@ -1,8 +1,11 @@
 apiVersion: repoctopus/v1alpha1
-kind: RepoctopusProject
-project:
+kind: RepoctopusWorkspace
+workspace:
   id: example-project
+  repositoryId: workspace
 repositories:
+  - id: workspace
+    path: .
   - id: app
     path: ../app
 composition:

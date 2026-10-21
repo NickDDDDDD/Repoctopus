@@ -129,7 +129,7 @@ function postMergeSelections(
       config: {
         policy: deliveryPolicy(config),
         execution: {
-          projectId: config.shared.project.id,
+          projectId: config.shared.workspace.id,
           workspaceRoot,
           workflowSource: path.join(productRoot, 'workflows', 'post-merge.yaml'),
           evidenceProfile: postMerge.evidenceProfile,

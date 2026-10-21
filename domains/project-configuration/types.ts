@@ -152,8 +152,8 @@ export interface PostMergeConfig {
 
 export interface SharedProjectConfig {
   apiVersion: typeof PROJECT_CONFIG_API_VERSION;
-  kind: 'RepoctopusProject';
-  project: { id: string };
+  kind: 'RepoctopusWorkspace';
+  workspace: { id: string; repositoryId: string };
   repositories: RepositoryConfig[];
   profiles: EvidenceProfileConfig[];
   composition?: { plugins: TeamPluginConfig[] };

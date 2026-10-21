@@ -41,9 +41,12 @@ async function fixture() {
   await mkdir(workspace);
   const config: SharedProjectConfig = {
     apiVersion: 'repoctopus/v1alpha1',
-    kind: 'RepoctopusProject',
-    project: { id: 'binding' },
-    repositories: [{ id: 'app', path: '../app' }],
+    kind: 'RepoctopusWorkspace',
+    workspace: { id: 'binding', repositoryId: 'workspace' },
+    repositories: [
+      { id: 'workspace', path: '.' },
+      { id: 'app', path: '../app' },
+    ],
     profiles: [
       {
         id: 'verify',

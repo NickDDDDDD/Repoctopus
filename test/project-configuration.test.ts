@@ -40,9 +40,12 @@ interface SelfHostedFixture {
 function shared(pathValue = '../service'): SharedProjectConfig {
   return parseSharedProjectConfig({
     apiVersion: 'repoctopus/v1alpha1',
-    kind: 'RepoctopusProject',
-    project: { id: 'sample' },
-    repositories: [{ id: 'service', path: pathValue }],
+    kind: 'RepoctopusWorkspace',
+    workspace: { id: 'sample', repositoryId: 'workspace' },
+    repositories: [
+      { id: 'workspace', path: '.' },
+      { id: 'service', path: pathValue },
+    ],
     profiles: [
       {
         id: 'verify',
@@ -61,6 +64,24 @@ function shared(pathValue = '../service'): SharedProjectConfig {
 }
 
 describe('project configuration', () => {
+  it('requires the Workspace Repository to be registered at the config root', () => {
+    const missing = structuredClone(shared()) as unknown as Record<string, unknown>;
+    missing.workspace = { id: 'sample', repositoryId: 'missing' };
+    expect(() => parseSharedProjectConfig(missing)).toThrow(
+      /workspace\.repositoryId: must reference a registered repository/i,
+    );
+
+    const outside = structuredClone(shared());
+    outside.repositories = outside.repositories.map((repository) =>
+      repository.id === outside.workspace.repositoryId
+        ? { ...repository, path: '../workspace' }
+        : repository,
+    );
+    expect(() => parseSharedProjectConfig(outside)).toThrow(
+      /Workspace Repository path must be \./i,
+    );
+  });
+
   it('accepts self-hosted Provider, event Runner, Credential, and post-merge references', async () => {
     const config = parseSharedProjectConfig(await configurationFixture('self-hosted-valid.yaml'));
 
@@ -173,9 +194,12 @@ describe('project configuration', () => {
   it('parses command, service, browser and visual nodes from one shared profile', () => {
     const config = parseSharedProjectConfig({
       apiVersion: 'repoctopus/v1alpha1',
-      kind: 'RepoctopusProject',
-      project: { id: 'full-feedback' },
-      repositories: [{ id: 'app', path: '../app' }],
+      kind: 'RepoctopusWorkspace',
+      workspace: { id: 'full-feedback', repositoryId: 'workspace' },
+      repositories: [
+        { id: 'workspace', path: '.' },
+        { id: 'app', path: '../app' },
+      ],
       profiles: [
         {
           id: 'verify',
@@ -293,10 +317,13 @@ describe('project configuration', () => {
     await writeFile(
       path.join(workspace, 'repoctopus.yaml'),
       `apiVersion: repoctopus/v1alpha1
-kind: RepoctopusProject
-project:
+kind: RepoctopusWorkspace
+workspace:
   id: sample
+  repositoryId: workspace
 repositories:
+  - id: workspace
+    path: .
   - id: service
     path: ../service
 profiles:
@@ -319,10 +346,33 @@ repositoryPaths:
     );
 
     const loaded = await loadProjectConfig(workspace);
-    expect(loaded.shared.repositories[0]?.path).toBe('../service');
-    expect(loaded.repositories[0]?.resolvedPath).toBe(path.join(workspace, 'local-service'));
+    expect(loaded.shared.repositories.find((item) => item.id === 'service')?.path).toBe(
+      '../service',
+    );
+    expect(loaded.repositories.find((item) => item.id === 'service')?.resolvedPath).toBe(
+      path.join(workspace, 'local-service'),
+    );
     expect(loaded.sharedDigest).toMatch(/^[0-9a-f]{64}$/);
     expect(loaded.localDigest).toMatch(/^[0-9a-f]{64}$/);
     expect(loaded.effectiveDigest).toMatch(/^[0-9a-f]{64}$/);
+  });
+
+  it('rejects a local override for the Workspace Repository', async () => {
+    const workspace = await temporaryDirectory('repoctopus-workspace-override-');
+    cleanup.push(workspace);
+    await mkdir(path.join(workspace, '.repoctopus'), { recursive: true });
+    await writeFile(path.join(workspace, 'repoctopus.yaml'), JSON.stringify(shared()));
+    await writeFile(
+      path.join(workspace, '.repoctopus', 'local.yaml'),
+      `apiVersion: repoctopus/v1alpha1
+kind: RepoctopusLocal
+repositoryPaths:
+  workspace: ../other
+`,
+    );
+
+    await expect(loadProjectConfig(workspace)).rejects.toThrow(
+      /cannot override the Workspace Repository path/i,
+    );
   });
 });
