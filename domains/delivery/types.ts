@@ -1,3 +1,5 @@
+import type { ChangeBranchReference } from '../specification/types.js';
+
 export type DeliveryStatus =
   | 'development'
   | 'verification_required'
@@ -270,4 +272,124 @@ export interface CheckpointResult {
     remoteOid: string;
     upstream: string;
   };
+}
+
+export type BusinessDeliveryAction = 'push' | 'merge_request';
+
+export interface BusinessDeliveryIntentV3 {
+  deliveryId: string;
+  repositoryId: string;
+  sourceBranch: string;
+  targetBranch: string;
+  commitMessage: string;
+  actions: BusinessDeliveryAction[];
+}
+
+export interface BusinessSplitReasonV3 {
+  kind: 'multi_repository' | 'ordered_delivery' | 'supplemental_fix';
+  summary: string;
+}
+
+export type ChangeBranchReferenceV3 = ChangeBranchReference;
+
+export interface DeliveryIntentV3 {
+  schemaVersion: 3;
+  changeId: string;
+  changeBranch: ChangeBranchReferenceV3;
+  businessDeliveries: BusinessDeliveryIntentV3[];
+  businessSplitReason?: BusinessSplitReasonV3;
+}
+
+export interface BusinessDeliveryFactsV3 extends DeliveryRepositoryFacts {
+  deliveryId: string;
+}
+
+export interface PublicationActionV3 extends PublicationAction {
+  deliveryId: string;
+}
+
+export interface BusinessMergeRequestRecordV3 {
+  deliveryId: string;
+  repositoryId: string;
+  remoteIdentity: string;
+  sourceBranch: string;
+  targetBranch: string;
+  mergeRequest: MergeRequestIdentity | null;
+}
+
+export interface DeliverySnapshotV3 {
+  schemaVersion: 3;
+  changeId: string;
+  compositionDigest: string;
+  digest: string;
+  reportDigest: string;
+  policyDigest: string;
+  intentDigest: string;
+  evidenceBundleIds: string[];
+  changeBranch: ChangeBranchReferenceV3;
+  businessDeliveries: BusinessDeliveryFactsV3[];
+  businessSplitReason: BusinessSplitReasonV3 | null;
+  plan: PublicationActionV3[];
+  createdAt: string;
+}
+
+export interface HumanDecisionRequestV3 {
+  apiVersion: 'repoctopus/v1alpha1';
+  kind: 'HumanDecisionRequest';
+  requestId: string;
+  decisionType: 'delivery-approval';
+  changeId: string;
+  snapshotDigest: string;
+  reportDigest: string;
+  evidenceBundleIds: string[];
+  changeBranch: ChangeBranchReferenceV3;
+  businessDeliveries: Array<{
+    deliveryId: string;
+    repositoryId: string;
+    repositoryName: string;
+    sourceBranch: string;
+    targetBranch: string;
+  }>;
+  businessSplitReason: BusinessSplitReasonV3 | null;
+  actions: Array<{
+    actionId: string;
+    type: PublicationActionType;
+    deliveryId: string;
+    repositoryId: string;
+  }>;
+  options: HumanDecision[];
+}
+
+export interface BusinessMergeEvidenceV3 extends MergeEvidence {
+  deliveryId: string;
+}
+
+export interface DeliveryClosureStateV3 {
+  status: 'pending' | 'running' | 'succeeded' | 'failed';
+  evidenceBundleId: string | null;
+  specificationClosureId: string | null;
+  publishedOid: string | null;
+  errorCode: string | null;
+}
+
+export type FinalChangeMergeRequestStateV3 =
+  | { status: 'creating'; mergeRequest: null; errorCode: null }
+  | { status: 'open' | 'merged'; mergeRequest: MergeRequestIdentity; errorCode: null }
+  | { status: 'failed'; mergeRequest: MergeRequestIdentity | null; errorCode: string };
+
+export interface DeliveryStateV3 {
+  schemaVersion: 3;
+  changeId: string;
+  stateVersion: number;
+  status: DeliveryStatus;
+  snapshot: DeliverySnapshotV3 | null;
+  decisionRequest: HumanDecisionRequestV3 | null;
+  approval: ApprovalRecord | null;
+  actionResults: PublicationActionResult[];
+  businessMergeRequests: BusinessMergeRequestRecordV3[];
+  mergeEvidence: BusinessMergeEvidenceV3[];
+  closure: DeliveryClosureStateV3 | null;
+  finalChangeMergeRequest: FinalChangeMergeRequestStateV3 | null;
+  platformCapabilities: PlatformCapability[];
+  updatedAt: string;
 }
