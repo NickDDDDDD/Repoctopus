@@ -1,0 +1,102 @@
+# Spec Delta
+
+## ADDED Requirements
+
+### Requirement: 规格关闭发布后创建最终 Change MR
+
+Repoctopus MUST 在受控收尾差异普通提交并推送到 Change 分支、远端 OID 核对成功后，创建或恢复唯一最终 Change MR；MR 身份和 head OID 必须进入 Receipt，MR 创建不得先于规格关闭发布。
+
+#### Scenario: 收尾分支发布完成
+
+- **WHEN** Change 分支包含经过路径审计的验证记录、主规格同步和归档结果，且远端 OID 精确等于本地收尾提交
+- **THEN** Runtime 以该分支和登记目标分支创建最终 Change MR，并在发布后重新读取平台权威状态
+
+#### Scenario: Change 分支发布失败
+
+- **WHEN** 收尾 commit 尚未成功普通 push 或远端 OID 无法核对
+- **THEN** Runtime 不创建最终 Change MR，并从可恢复发布边界重试
+
+#### Scenario: 最终 Change MR 已存在
+
+- **WHEN** 重试发现同一仓库、Change 分支和目标分支已经存在唯一开放 MR
+- **THEN** Runtime 核对其 head OID 与目标分支后复用并更新该 MR，不创建替代 MR
+
+### Requirement: 已登记 Business MR 集合在收尾期间冻结
+
+Repoctopus MUST 在 Post-merge Run 的稳定身份中绑定已批准的完整 Business MR 集合；收尾开始后集合发生增删、替换或 merge commit 漂移时，Run 必须停止并要求重新准备交付，不得基于部分集合关闭 Change。
+
+#### Scenario: 收尾发现未登记的补充 MR
+
+- **WHEN** 维护者把补充实现加入当前 Change，但它不在已批准 Business MR 集合中
+- **THEN** Runtime 停止当前收尾并要求把补充 MR 加入新的完整集合后重新验证和批准
+
+#### Scenario: 完整集合保持不变
+
+- **WHEN** 所有已登记 Business MR 身份与权威 merge commit 均和 Run 输入一致
+- **THEN** Post-merge Run 可以继续执行 Evidence、规格关闭和最终 Change MR 发布
+
+## MODIFIED Requirements
+
+### Requirement: 全部相关业务 MR 合入后才启动收尾
+
+Repoctopus MUST 把 change 已批准的完整 Business MR 集合作为交付边界；集合默认包含一个 MR，显式多 MR 交付中的任一 MR 尚未合入、已关闭未合入或无法核对时，不得开始规格同步和关闭。
+
+#### Scenario: 三个业务 MR 中只有两个已合入
+
+- **WHEN** 任一合入事件唤醒 Coordinator 且已批准交付集合仍有一个 MR 处于打开状态
+- **THEN** 系统刷新合入事实并保持等待，不启动 Post-merge Run
+
+#### Scenario: 最后一个业务 MR 合入
+
+- **WHEN** 平台核对确认已批准交付集合中全部 Business MR 已合入
+- **THEN** 系统以 change、完整 MR 集合和合入事实摘要为幂等键创建或恢复唯一 Post-merge Run
+
+### Requirement: 机器收尾修改受路径和语义双重限制
+
+Repoctopus MUST 只允许 Post-merge Run 修改项目配置允许的规格基线、change 归档、验证和关闭状态路径，并在提交前拒绝超出允许列表或含业务代码的差异。
+
+#### Scenario: 规格工具修改业务源码
+
+- **WHEN** 收尾工作树出现允许列表之外的业务源码变更
+- **THEN** 系统停止提交、保存诊断并请求人工处理
+
+#### Scenario: 收尾差异只含允许内容
+
+- **WHEN** 变更只包含同步后的主规格、归档 change 和合入后验证记录
+- **THEN** 系统可以使用配置的机器身份创建普通 commit 并推送已登记 Change 分支
+
+### Requirement: Post-merge Run 可以幂等恢复
+
+Repoctopus MUST 为检出、Evidence、规格同步、文件核对、commit、Change 分支 push、最终 MR 创建和 MR 更新保存 Intent、Receipt 与 Checkpoint；中断后从最后一个可确认边界继续，不重复已完成副作用。
+
+#### Scenario: Push 成功后响应丢失
+
+- **WHEN** 远端 Change 分支已包含预期收尾 commit 但本地尚未保存成功 Receipt
+- **THEN** 恢复流程先核对远端事实并复用既有 commit，不再次生成不同提交
+
+#### Scenario: 最终 MR 创建成功后响应丢失
+
+- **WHEN** 平台已存在符合已发布 Change 分支和目标分支的最终 MR，但本地尚未保存成功 Receipt
+- **THEN** 恢复流程查询并复用该 MR，核对平台状态后补写 Receipt
+
+### Requirement: 多个 Runner 的远端结果安全收敛
+
+Repoctopus MUST 允许多个 Runner 对同一 change 进行至少一次查询和验证，并以 Change 分支精确远端 OID、普通非强制 push 和发布后权威核对约束远端收尾；Runner identity 只用于执行审计，不代表 Change 所有权。
+
+#### Scenario: 两个 Runner 同时收尾同一 Change
+
+- **WHEN** 两个 Runner 从相同 Change 分支远端 OID 开始执行且其中一个先完成远端发布
+- **THEN** 另一个 Runner 重新读取远端，等价关闭结果返回 no-op，不等价变化 fail-closed，且不得 force push 或覆盖胜出结果
+
+#### Scenario: Runner 使用独立本地状态卷
+
+- **WHEN** 两个 Runner 没有共享本地 Lease 或 Run Store 但发现了同一 change
+- **THEN** 系统允许重复本地计算，并仍通过远端 Change 分支并发栅栏保证只有可核对的收尾结果生效
+
+## REMOVED Requirements
+
+### Requirement: 收尾持续更新原 Change MR
+
+**Reason**: Change MR 改为规格关闭后的最终交付产物，实施与收尾期间不存在需要持续更新的原 MR。
+
+**Migration**: 使用已登记 Change 分支和精确远端 OID 承载规划与收尾；旧 Delivery 若已有开放 Change MR，必须通过显式人工迁移决定保留旧模式或关闭后转为分支优先模式，Runtime 不自动改变现有 MR 状态。
