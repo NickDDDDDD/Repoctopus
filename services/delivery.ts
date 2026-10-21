@@ -77,7 +77,7 @@ export abstract class Delivery extends Service {
     changeId: string,
     policy: DeliveryPolicy,
     signal?: AbortSignal,
-  ): Promise<DeliveryState>;
+  ): Promise<DeliveryState | DeliveryStateV3>;
   abstract refreshForMergeRequest(
     reference: MergeRequestReference,
     policy: DeliveryPolicy,

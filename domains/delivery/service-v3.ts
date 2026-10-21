@@ -20,6 +20,7 @@ import type {
   BusinessDeliveryIntentV3,
   DeliveryIntentV3,
   DeliveryPolicy,
+  DeliveryReconciliationCandidate,
   DeliveryStateV3,
   HumanDecisionResponse,
   MergeRequestIdentity,
@@ -308,6 +309,32 @@ export class DeliveryServiceV3 {
     return { match, ...(await this.refreshMergeRequests(match.changeIds[0])) };
   }
 
+  async refresh(changeId: string) {
+    return this.refreshMergeRequests(changeId);
+  }
+
+  async reconciliationCandidates(): Promise<DeliveryReconciliationCandidate[]> {
+    return (await this.store.list())
+      .filter((state) => state.status === 'in_review' || state.status === 'merged')
+      .flatMap((state) => {
+        const business = [...state.businessMergeRequests]
+          .sort((left, right) => left.deliveryId.localeCompare(right.deliveryId))
+          .find((item) => item.mergeRequest);
+        if (!business?.mergeRequest) return [];
+        return [
+          {
+            changeId: state.changeId,
+            reference: {
+              provider: business.mergeRequest.provider,
+              remoteIdentity: business.remoteIdentity,
+              number: business.mergeRequest.number,
+            },
+          },
+        ];
+      })
+      .sort((left, right) => left.changeId.localeCompare(right.changeId));
+  }
+
   private async refreshMergeRequests(changeId: string) {
     const state = await this.requireState(changeId);
     const identities = state.businessMergeRequests.flatMap((item) =>
@@ -323,7 +350,6 @@ export class DeliveryServiceV3 {
       ]),
     );
     const evidence = mergeRequestStatuses.flatMap((status) => {
-      if (status.state !== 'merged' || !status.mergeCommit || !status.mergedAt) return [];
       const delivery = state.businessMergeRequests.find(
         (item) =>
           item.mergeRequest?.provider === status.provider &&
@@ -331,6 +357,18 @@ export class DeliveryServiceV3 {
           item.mergeRequest.number === status.number,
       );
       if (!delivery) throw new Error('Authoritative Business MR is not declared');
+      const expected = state.snapshot?.businessDeliveries.find(
+        (item) => item.deliveryId === delivery.deliveryId,
+      );
+      if (
+        !expected ||
+        status.sourceBranch !== delivery.sourceBranch ||
+        status.targetBranch !== delivery.targetBranch ||
+        status.headCommit !== expected.head
+      ) {
+        throw new Error(`Business merge request mapping drifted: ${delivery.deliveryId}`);
+      }
+      if (status.state !== 'merged' || !status.mergeCommit || !status.mergedAt) return [];
       const key = `${status.provider}\0${status.repositoryId}\0${status.number}`;
       const prior = previousEvidence.get(key);
       return [

@@ -366,10 +366,10 @@ async function deliveryRefresh(parsed: ParsedArguments): Promise<CliEnvelope<unk
   );
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
-    const result = await app.context.commandRouter.execute<unknown, DeliveryState>(
-      'delivery.refresh',
-      { changeId, policy },
-    );
+    const result = await app.context.commandRouter.execute<
+      unknown,
+      DeliveryState | DeliveryStateV3
+    >('delivery.refresh', { changeId, policy });
     return successEnvelope({
       command: 'delivery refresh',
       result,

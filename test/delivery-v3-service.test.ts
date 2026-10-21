@@ -13,6 +13,7 @@ import type {
   DeliveryPolicy,
   DeliveryRepositoryFacts,
   DeliveryStateV3,
+  DeliveryIntentV3,
   MergeRequestIdentity,
   MergeRequestStatus,
   PlatformCapability,
@@ -100,6 +101,7 @@ class FakeMergeRequests implements MergeRequestPort {
     url: 'https://github.com/team/app/pull/7',
   };
   authoritativeState: MergeRequestStatus['state'] = 'open';
+  readonly authoritativeStates = new Map<number, MergeRequestStatus['state']>();
 
   capability(): Promise<PlatformCapability> {
     return Promise.resolve({
@@ -128,20 +130,22 @@ class FakeMergeRequests implements MergeRequestPort {
     throw new Error('not used');
   }
 
-  status(): Promise<MergeRequestStatus> {
-    const merged = this.authoritativeState === 'merged';
+  status(identity: MergeRequestIdentity): Promise<MergeRequestStatus> {
+    const state = this.authoritativeStates.get(identity.number) ?? this.authoritativeState;
+    const supplemental = identity.number === 8;
+    const merged = state === 'merged';
     return Promise.resolve({
-      ...this.identity,
-      state: this.authoritativeState,
-      sourceBranch: 'feat/delivery-v3',
+      ...identity,
+      state,
+      sourceBranch: supplemental ? 'fix/delivery-v3-follow-up' : 'feat/delivery-v3',
       targetBranch: 'main',
-      headCommit: '2'.repeat(40),
+      headCommit: (supplemental ? '6' : '2').repeat(40),
       title: 'delivery-v3-service',
       body: 'verified',
       ci: 'passed',
       review: 'approved',
       conversationsResolved: true,
-      mergeCommit: merged ? '5'.repeat(40) : null,
+      mergeCommit: merged ? (supplemental ? '8' : '5').repeat(40) : null,
       mergedAt: merged ? '2026-10-22T00:30:00.000Z' : null,
     });
   }
@@ -182,6 +186,25 @@ const intent = createDefaultDeliveryIntentV3({
     actions: ['push', 'merge_request'],
   },
 });
+
+function multipleIntent(): DeliveryIntentV3 {
+  return {
+    ...intent,
+    businessDeliveries: [
+      intent.businessDeliveries[0]!,
+      {
+        ...intent.businessDeliveries[0]!,
+        deliveryId: 'supplemental',
+        sourceBranch: 'fix/delivery-v3-follow-up',
+        commitMessage: 'feat: add the approved supplemental fix',
+      },
+    ],
+    businessSplitReason: {
+      kind: 'supplemental_fix',
+      summary: 'The follow-up needs independent review and merge evidence.',
+    },
+  };
+}
 
 const project = createProjectSnapshot({
   schemaVersion: 1,
@@ -306,22 +329,7 @@ describe('DeliveryServiceV3', () => {
       TEST_COMPOSITION_DIGEST,
       () => new Date('2026-10-22T00:20:00.000Z'),
     );
-    const multiple = {
-      ...intent,
-      businessDeliveries: [
-        intent.businessDeliveries[0]!,
-        {
-          ...intent.businessDeliveries[0]!,
-          deliveryId: 'supplemental',
-          sourceBranch: 'fix/delivery-v3-follow-up',
-          commitMessage: 'feat: add the approved supplemental fix',
-        },
-      ],
-      businessSplitReason: {
-        kind: 'supplemental_fix' as const,
-        summary: 'The follow-up needs independent review and merge evidence.',
-      },
-    };
+    const multiple = multipleIntent();
     const preparation = {
       project,
       intent: multiple,
@@ -355,6 +363,133 @@ describe('DeliveryServiceV3', () => {
     expect(
       mergeRequests.inputs.filter((input) => input.sourceBranch === 'fix/delivery-v3-follow-up'),
     ).toHaveLength(2);
+  });
+
+  it('invalidates approval when a supplemental Business delivery is added later', async () => {
+    const store = new MemoryStore();
+    const mergeRequests = new FakeMergeRequests();
+    const service = new DeliveryServiceV3(
+      store,
+      new FakeGit(),
+      mergeRequests,
+      { assertSatisfied: () => Promise.resolve() },
+      TEST_COMPOSITION_DIGEST,
+      () => new Date('2026-10-22T00:25:00.000Z'),
+    );
+    const approvedPreparation = {
+      project,
+      intent,
+      policy,
+      reportContents: 'verified',
+      evidenceBundleIds: ['bundle-verified'],
+    };
+    const waiting = await service.prepare(approvedPreparation);
+    await service.decide(
+      intent.changeId,
+      {
+        apiVersion: 'repoctopus/v1alpha1',
+        kind: 'HumanDecisionResponse',
+        requestId: waiting.decisionRequest!.requestId,
+        snapshotDigest: waiting.snapshot!.digest,
+        decision: 'approve',
+      },
+      { subject: 'user', provider: 'test', sessionId: 'session' },
+    );
+
+    await expect(
+      service.publish({ ...approvedPreparation, intent: multipleIntent() }),
+    ).rejects.toThrow(/snapshot drifted.*intent/i);
+    expect(store.state).toMatchObject({ status: 'verification_required', approval: null });
+    expect(mergeRequests.inputs).toHaveLength(0);
+  });
+
+  it('refreshes the full approved collection until the final Business MR merges', async () => {
+    const store = new MemoryStore();
+    const mergeRequests = new FakeMergeRequests();
+    const service = new DeliveryServiceV3(
+      store,
+      new FakeGit(),
+      mergeRequests,
+      { assertSatisfied: () => Promise.resolve() },
+      TEST_COMPOSITION_DIGEST,
+      () => new Date('2026-10-22T00:30:00.000Z'),
+    );
+    const multiple = multipleIntent();
+    const preparation = {
+      project,
+      intent: multiple,
+      policy,
+      reportContents: 'verified',
+      evidenceBundleIds: ['bundle-verified'],
+    };
+    const waiting = await service.prepare(preparation);
+    await service.decide(
+      multiple.changeId,
+      {
+        apiVersion: 'repoctopus/v1alpha1',
+        kind: 'HumanDecisionResponse',
+        requestId: waiting.decisionRequest!.requestId,
+        snapshotDigest: waiting.snapshot!.digest,
+        decision: 'approve',
+      },
+      { subject: 'user', provider: 'test', sessionId: 'session' },
+    );
+    await service.publish(preparation);
+    await expect(service.reconciliationCandidates()).resolves.toEqual([
+      {
+        changeId: multiple.changeId,
+        reference: {
+          provider: 'github',
+          remoteIdentity: 'github.com/team/app',
+          number: 7,
+        },
+      },
+    ]);
+
+    mergeRequests.authoritativeStates.set(7, 'merged');
+    mergeRequests.authoritativeStates.set(8, 'open');
+    const partial = await service.refresh(multiple.changeId);
+    expect(
+      coordinatePostMerge({
+        match: { status: 'matched', changeIds: [multiple.changeId], diagnostic: null },
+        ...partial,
+      }),
+    ).toMatchObject({
+      status: 'waiting',
+      diagnostic: 'post-merge-business-merge-requests-open',
+      mergedCount: 1,
+      totalCount: 2,
+    });
+
+    mergeRequests.authoritativeStates.set(8, 'closed');
+    const closed = await service.refreshForMergeRequest({
+      provider: 'github',
+      remoteIdentity: 'github.com/team/app',
+      number: 8,
+    });
+    expect(coordinatePostMerge(closed)).toMatchObject({
+      status: 'blocked',
+      diagnostic: 'post-merge-business-merge-request-closed',
+    });
+
+    mergeRequests.authoritativeStates.set(8, 'merged');
+    const complete = await service.refreshForMergeRequest({
+      provider: 'github',
+      remoteIdentity: 'github.com/team/app',
+      number: 8,
+    });
+    expect(complete.state).toMatchObject({
+      status: 'merged',
+      mergeEvidence: [
+        { deliveryId: 'primary', mergeCommit: '5'.repeat(40) },
+        { deliveryId: 'supplemental', mergeCommit: '8'.repeat(40) },
+      ],
+    });
+    expect(coordinatePostMerge(complete)).toMatchObject({
+      status: 'ready',
+      diagnostic: 'post-merge-ready',
+      mergeEvidence: [{ deliveryId: 'primary' }, { deliveryId: 'supplemental' }],
+    });
   });
 
   it('verifies the default Business MR merge commit and exposes the approved Change branch', async () => {

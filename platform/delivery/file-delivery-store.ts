@@ -5,6 +5,7 @@ import type { DeliveryEvent, DeliveryStorePort } from '../../domains/delivery/po
 import type { DeliveryState } from '../../domains/delivery/types.js';
 import { atomicWriteJson, atomicWriteText } from '../filesystem/atomic-write.js';
 import { RecoverableFileTransition } from '../runtime/recoverable-file-transition.js';
+import { deliveryStateSchemaVersion, FileDeliveryV3Store } from './file-delivery-v3-store.js';
 
 async function exists(file: string): Promise<boolean> {
   try {
@@ -87,6 +88,7 @@ export class FileDeliveryStore implements DeliveryStorePort {
         !/^[a-z0-9][a-z0-9-]{2,127}$/.test(entry.name)
       )
         continue;
+      if ((await deliveryStateSchemaVersion(this.workspaceRoot, entry.name)) !== 2) continue;
       const state = await this.load(entry.name);
       if (state) states.push(state);
     }
@@ -107,7 +109,11 @@ export class FileDeliveryStore implements DeliveryStorePort {
 
   async approvedEvidenceBundleIds(): Promise<string[]> {
     const protectedIds = new Set<string>();
-    for (const state of await this.list()) {
+    const states = [
+      ...(await this.list()),
+      ...(await new FileDeliveryV3Store(this.workspaceRoot).list()),
+    ];
+    for (const state of states) {
       if (
         state.snapshot &&
         state.approval?.decision === 'approve' &&

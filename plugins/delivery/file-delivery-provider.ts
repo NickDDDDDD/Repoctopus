@@ -202,10 +202,17 @@ export class FileDeliveryProvider extends Delivery {
     );
   }
 
-  refresh(changeId: string, policy: DeliveryPolicy, signal?: AbortSignal): Promise<DeliveryState> {
-    return this.operations.run({ cancellable: false, signal }, () =>
-      this.domain(policy).refresh(changeId),
-    );
+  refresh(
+    changeId: string,
+    policy: DeliveryPolicy,
+    signal?: AbortSignal,
+  ): Promise<DeliveryState | DeliveryStateV3> {
+    return this.operations.run({ cancellable: false, signal }, async () => {
+      const version = await deliveryStateSchemaVersion(this.config.workspaceRoot, changeId);
+      return version === 3
+        ? (await this.domainV3(policy).refresh(changeId)).state
+        : this.domain(policy).refresh(changeId);
+    });
   }
 
   refreshForMergeRequest(
@@ -222,8 +229,12 @@ export class FileDeliveryProvider extends Delivery {
   }
 
   override reconciliationCandidates(signal?: AbortSignal) {
-    return this.operations.run({ cancellable: true, signal }, () =>
-      this.domain().reconciliationCandidates(),
-    );
+    return this.operations.run({ cancellable: true, signal }, async () => {
+      const [v2, v3] = await Promise.all([
+        this.domain().reconciliationCandidates(),
+        this.domainV3().reconciliationCandidates(),
+      ]);
+      return [...v2, ...v3].sort((left, right) => left.changeId.localeCompare(right.changeId));
+    });
   }
 }

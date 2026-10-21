@@ -21,6 +21,19 @@ export function recordBusinessMergeRequestV3(
     throw new Error(`Business merge request repository drifted: ${deliveryId}`);
   }
   if (
+    current.some(
+      (item) =>
+        item.deliveryId !== deliveryId &&
+        item.mergeRequest?.provider === mergeRequest.provider &&
+        item.mergeRequest.repositoryId === mergeRequest.repositoryId &&
+        item.mergeRequest.number === mergeRequest.number,
+    )
+  ) {
+    throw new Error(
+      `Business merge request is already assigned to another delivery: ${deliveryId}`,
+    );
+  }
+  if (
     selected.mergeRequest &&
     (selected.mergeRequest.provider !== mergeRequest.provider ||
       selected.mergeRequest.repositoryId !== mergeRequest.repositoryId ||
