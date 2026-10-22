@@ -22,6 +22,7 @@ import type {
   PublicationAction,
 } from '../../domains/delivery/types.js';
 import type { RepositorySnapshot } from '../../domains/project/types.js';
+import { canonicalJson } from '../../domains/workflow-contract/canonical.js';
 import { execute } from '../process/execute.js';
 import { normalizeRemoteIdentity } from './remote-identity.js';
 
@@ -100,6 +101,79 @@ interface ClosureBranchBinding {
   remoteIdentity: string;
   remoteBaseOid: string;
   label: string;
+  targetMerge?: {
+    sourceOid: string;
+    targetOid: string;
+  };
+}
+
+interface CommitSemantics {
+  parents: string[];
+  tree: string;
+  message: string;
+  authorName: string;
+  authorEmail: string;
+}
+
+function closureAuditSemanticDigest(audit: PostMergeClosureAudit): `sha256:${string}` {
+  return `sha256:${createHash('sha256')
+    .update(
+      canonicalJson({
+        schemaVersion: audit.schemaVersion,
+        planDigest: audit.planDigest,
+        closureId: audit.closureId,
+        changedFiles: audit.changedFiles,
+        contentDigests: audit.contentDigests,
+      }),
+    )
+    .digest('hex')}`;
+}
+
+function expectedClosureMessage(input: ClosureGitInput, binding: ClosureBranchBinding): string {
+  const message = input.policy.commit.message.trim();
+  return binding.targetMerge
+    ? `${message}\n\nRepoctopus-Closure-Audit: ${closureAuditSemanticDigest(input.audit)}`
+    : message;
+}
+
+async function commitSemantics(cwd: string, commit: string): Promise<CommitSemantics> {
+  const parentLine = (await git(cwd, ['rev-list', '--parents', '-n', '1', commit])).split(/\s+/u);
+  const [tree, message, authorName, authorEmail] = await Promise.all([
+    git(cwd, ['rev-parse', `${commit}^{tree}`]),
+    git(cwd, ['show', '-s', '--format=%B', commit]),
+    git(cwd, ['show', '-s', '--format=%an', commit]),
+    git(cwd, ['show', '-s', '--format=%ae', commit]),
+  ]);
+  return {
+    parents: parentLine.slice(1),
+    tree,
+    message,
+    authorName,
+    authorEmail,
+  };
+}
+
+async function equivalentTargetMergeParent(
+  cwd: string,
+  remoteParent: string,
+  localParent: string,
+  targetMerge: NonNullable<ClosureBranchBinding['targetMerge']>,
+): Promise<boolean> {
+  const [remote, local] = await Promise.all([
+    commitSemantics(cwd, remoteParent),
+    commitSemantics(cwd, localParent),
+  ]);
+  const expectedParents = [targetMerge.sourceOid, targetMerge.targetOid];
+  return (
+    remote.parents.length === 2 &&
+    local.parents.length === 2 &&
+    remote.parents.every((parent, index) => parent === expectedParents[index]) &&
+    local.parents.every((parent, index) => parent === expectedParents[index]) &&
+    remote.tree === local.tree &&
+    remote.message === local.message &&
+    remote.authorName === local.authorName &&
+    remote.authorEmail === local.authorEmail
+  );
 }
 
 function parsedChangedPaths(output: string): string[] {
@@ -184,30 +258,40 @@ async function remoteOid(cwd: string, remote: string, branch: string): Promise<s
 async function adoptEquivalentPostMergeCommit(
   cwd: string,
   input: ClosureGitInput,
-  sourceBranch: string,
+  binding: ClosureBranchBinding,
   remoteCommit: string,
   expectedTree: string,
   localHead: string,
 ): Promise<boolean> {
-  await git(cwd, ['fetch', '--no-tags', input.policy.remote, `refs/heads/${sourceBranch}`]);
+  await git(cwd, [
+    'fetch',
+    '--no-tags',
+    input.policy.remote,
+    `refs/heads/${binding.sourceBranch}`,
+  ]);
   const fetched = await git(cwd, ['rev-parse', 'FETCH_HEAD']);
   if (fetched !== remoteCommit) {
     throw new Error('Post-merge Change MR remote source drifted during recovery');
   }
-  const parents = (await git(cwd, ['rev-list', '--parents', '-n', '1', fetched])).split(/\s+/u);
-  const [tree, message, authorName, authorEmail] = await Promise.all([
-    git(cwd, ['rev-parse', `${fetched}^{tree}`]),
-    git(cwd, ['show', '-s', '--format=%B', fetched]),
-    git(cwd, ['show', '-s', '--format=%an', fetched]),
-    git(cwd, ['show', '-s', '--format=%ae', fetched]),
-  ]);
+  const remote = await commitSemantics(cwd, fetched);
+  const parent = remote.parents[0];
+  const equivalentParent =
+    parent === input.baseline.head ||
+    (parent !== undefined &&
+      binding.targetMerge !== undefined &&
+      (await equivalentTargetMergeParent(
+        cwd,
+        parent,
+        input.baseline.head,
+        binding.targetMerge,
+      )));
   if (
-    parents.length !== 2 ||
-    parents[1] !== input.baseline.head ||
-    tree !== expectedTree ||
-    message !== input.policy.commit.message.trim() ||
-    authorName !== input.policy.commit.authorName.trim() ||
-    authorEmail !== input.policy.commit.authorEmail.trim()
+    remote.parents.length !== 1 ||
+    !equivalentParent ||
+    remote.tree !== expectedTree ||
+    remote.message !== expectedClosureMessage(input, binding) ||
+    remote.authorName !== input.policy.commit.authorName.trim() ||
+    remote.authorEmail !== input.policy.commit.authorEmail.trim()
   ) {
     return false;
   }
@@ -388,6 +472,10 @@ export class GitDeliveryAdapter implements PostMergeDeliveryGitPort, PostMergeDe
       remoteIdentity: input.changeBranch.remoteIdentity,
       remoteBaseOid: input.targetMergeReceipt.sourceOid,
       label: 'final Change branch',
+      targetMerge: {
+        sourceOid: input.targetMergeReceipt.sourceOid,
+        targetOid: input.targetMergeReceipt.targetOid,
+      },
     });
   }
 
@@ -435,7 +523,7 @@ export class GitDeliveryAdapter implements PostMergeDeliveryGitPort, PostMergeDe
           (await adoptEquivalentPostMergeCommit(
             cwd,
             input,
-            binding.sourceBranch,
+            binding,
             before,
             stagedTree,
             head,
@@ -450,7 +538,7 @@ export class GitDeliveryAdapter implements PostMergeDeliveryGitPort, PostMergeDe
         }
         throw new Error(`Post-merge ${binding.label} remote source drifted before commit`);
       }
-      await git(cwd, [
+      const commitArguments = [
         '-c',
         `user.name=${input.policy.commit.authorName}`,
         '-c',
@@ -458,7 +546,14 @@ export class GitDeliveryAdapter implements PostMergeDeliveryGitPort, PostMergeDe
         'commit',
         '-m',
         input.policy.commit.message,
-      ]);
+      ];
+      if (binding.targetMerge) {
+        commitArguments.push(
+          '-m',
+          `Repoctopus-Closure-Audit: ${closureAuditSemanticDigest(input.audit)}`,
+        );
+      }
+      await git(cwd, commitArguments);
       head = await git(cwd, ['rev-parse', 'HEAD']);
       await assertPublicationDiff(cwd, input, 'committed');
       await assertClean(cwd);
@@ -472,7 +567,7 @@ export class GitDeliveryAdapter implements PostMergeDeliveryGitPort, PostMergeDe
       if (
         parents.length !== 2 ||
         parents[1] !== input.baseline.head ||
-        message !== input.policy.commit.message.trim() ||
+        message !== expectedClosureMessage(input, binding) ||
         authorName !== input.policy.commit.authorName.trim() ||
         authorEmail !== input.policy.commit.authorEmail.trim()
       ) {
@@ -493,7 +588,7 @@ export class GitDeliveryAdapter implements PostMergeDeliveryGitPort, PostMergeDe
           (await adoptEquivalentPostMergeCommit(
             cwd,
             input,
-            binding.sourceBranch,
+            binding,
             remoteBeforePush,
             expectedTree,
             head,
@@ -523,7 +618,7 @@ export class GitDeliveryAdapter implements PostMergeDeliveryGitPort, PostMergeDe
           (await adoptEquivalentPostMergeCommit(
             cwd,
             input,
-            binding.sourceBranch,
+            binding,
             raced,
             expectedTree,
             head,

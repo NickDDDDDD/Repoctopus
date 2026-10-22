@@ -82,8 +82,26 @@ export class FinalChangePublicationService {
       throw new Error('Multiple final Change MRs match the approved head/base mapping');
     }
 
-    const recovered = matches.length === 1;
-    let mergeRequest = matches[0] ?? (await this.mergeRequests.create(input));
+    let recovered = matches.length === 1;
+    let mergeRequest = matches[0];
+    if (!mergeRequest) {
+      try {
+        mergeRequest = await this.mergeRequests.create(input);
+      } catch (error) {
+        // Another Runner may have created the same head/base MR after our lookup, or the
+        // platform may have applied the create while losing its response. In both cases the
+        // authoritative tuple lookup is the only safe recovery source.
+        const raced = await this.mergeRequests.findAll(input);
+        if (raced.length > 1) {
+          throw new Error('Multiple final Change MRs match the approved head/base mapping', {
+            cause: error,
+          });
+        }
+        if (raced.length === 0) throw error;
+        mergeRequest = raced[0]!;
+        recovered = true;
+      }
+    }
     if (mergeRequest.repositoryId !== changeBranch.repositoryId) {
       throw new Error('Final Change MR belongs to another repository');
     }

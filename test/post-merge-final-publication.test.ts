@@ -62,6 +62,63 @@ interface Fixture {
   request: PostMergePublicationRequestV2;
 }
 
+async function competingRequest(
+  fx: Fixture,
+  options: { content?: string; planDigest?: `sha256:${string}` } = {},
+): Promise<PostMergePublicationRequestV2> {
+  const source = path.join(fx.root, `runner-two-source-${Math.random().toString(16).slice(2)}`);
+  await execute('git', ['clone', fx.remote, source], { cwd: fx.root });
+
+  // Git merge commits include timestamps. Waiting across a second boundary guarantees that this
+  // Runner has a different merge OID while retaining the same merge semantics.
+  await new Promise((resolve) => setTimeout(resolve, 1_100));
+  const checkout = new GitPostMergeCheckout();
+  const intent = await checkout.prepareTargetMerge({
+    runId: `final-change-run-${Math.random().toString(16).slice(2)}`,
+    mergeFactsDigest: fx.request.targetMerge.intent.mergeFactsDigest,
+    remote: 'origin',
+    changeBranch: fx.request.targetMerge.intent.changeBranch,
+    source: { repositoryId: 'workspace', path: source },
+  });
+  const receipt = await checkout.mergeTarget({
+    temporaryRoot: path.join(fx.root, `runner-two-state-${Math.random().toString(16).slice(2)}`),
+    source: { repositoryId: 'workspace', path: source },
+    intent,
+  });
+  const workspace = new GitPostMergeWorkspace();
+  const baseline = await workspace.cleanBaseline(receipt.checkoutPath);
+  const closurePath = path.join(
+    receipt.checkoutPath,
+    'openspec',
+    'changes',
+    'archive',
+    '2026-10-22-final-change',
+    'spec.md',
+  );
+  await mkdir(path.dirname(closurePath), { recursive: true });
+  await writeFile(closurePath, options.content ?? '# Closed specification\n');
+  const diff = await workspace.diff(baseline);
+  const contentDigests = Object.fromEntries(
+    diff.changes.map((change) => [change.path, change.contentDigest]),
+  );
+  const auditBase = {
+    schemaVersion: 1 as const,
+    planDigest: options.planDigest ?? fx.request.audit.planDigest,
+    closureId: fx.request.audit.closureId,
+    baselineDigest: baseline.digest,
+    changedFiles: Object.keys(contentDigests).sort(),
+    contentDigests,
+  };
+  return {
+    ...structuredClone(fx.request),
+    runId: intent.runId,
+    workspaceRoot: receipt.checkoutPath,
+    targetMerge: { intent, receipt },
+    baseline,
+    audit: { ...auditBase, digest: sha256(auditBase) },
+  };
+}
+
 async function fixture(): Promise<Fixture> {
   const root = await temporaryDirectory('repoctopus-final-change-publication-');
   cleanup.push(root);
@@ -177,9 +234,12 @@ class FinalMergeRequests implements FinalMergeRequestPort {
   }
 
   async create(): Promise<MergeRequestIdentity> {
-    this.createCalls += 1;
     const remoteHead = await this.remoteHead();
     expect(remoteHead).not.toBeNull();
+    if (this.identities.length > 0) {
+      throw new Error('a final MR already exists for this head/base tuple');
+    }
+    this.createCalls += 1;
     const created = this.identity(this.identities.length + 1);
     this.identities.push(created);
     if (this.loseNextCreateResponse) {
@@ -269,21 +329,69 @@ describe('final Change publication', () => {
     );
   });
 
-  it('recovers one final MR after its create response is lost', async () => {
+  it('recovers one final MR in the same attempt after its create response is lost', async () => {
     const fx = await fixture();
     const mergeRequests = new FinalMergeRequests(fx.remote);
     mergeRequests.loseNextCreateResponse = true;
 
-    await expect(service(mergeRequests).publish(fx.request)).rejects.toThrow(
-      'create response lost',
-    );
     const receipt = await service(mergeRequests).publish(fx.request);
 
     expect(receipt.mergeRequestRecovered).toBe(true);
-    expect(receipt.commitRecovered).toBe(true);
-    expect(receipt.pushRecovered).toBe(true);
+    expect(receipt.commitRecovered).toBe(false);
+    expect(receipt.pushRecovered).toBe(false);
     expect(mergeRequests.createCalls).toBe(1);
     expect(mergeRequests.identities).toHaveLength(1);
+  });
+
+  it('converges independent Runner state volumes to one equivalent closure and final MR', async () => {
+    const fx = await fixture();
+    const competing = await competingRequest(fx);
+    expect(competing.workspaceRoot).not.toBe(fx.request.workspaceRoot);
+    expect(competing.targetMerge.receipt.mergeCommitOid).not.toBe(
+      fx.request.targetMerge.receipt.mergeCommitOid,
+    );
+    const mergeRequests = new FinalMergeRequests(fx.remote);
+
+    const receipts = await Promise.all([
+      service(mergeRequests).publish(fx.request),
+      service(mergeRequests).publish(competing),
+    ]);
+
+    expect(new Set(receipts.map((receipt) => receipt.commitOid)).size).toBe(1);
+    expect(new Set(receipts.map((receipt) => receipt.mergeRequest.number))).toEqual(new Set([1]));
+    expect(receipts.some((receipt) => receipt.commitRecovered && receipt.pushRecovered)).toBe(true);
+    expect(receipts.some((receipt) => receipt.mergeRequestRecovered)).toBe(true);
+    expect(mergeRequests.createCalls).toBe(1);
+    expect(mergeRequests.identities).toHaveLength(1);
+  });
+
+  it.each([
+    {
+      name: 'closure content',
+      options: { content: '# Different closure result\n' },
+    },
+    {
+      name: 'closure audit semantics',
+      options: { planDigest: `sha256:${'9'.repeat(64)}` as const },
+    },
+  ])('fails closed when an independent Runner has non-equivalent $name', async ({ options }) => {
+    const fx = await fixture();
+    const competing = await competingRequest(fx, options);
+    const mergeRequests = new FinalMergeRequests(fx.remote);
+    const winner = await service(mergeRequests).publish(fx.request);
+
+    await expect(service(mergeRequests).publish(competing)).rejects.toThrow(
+      'remote source drifted before commit',
+    );
+    expect(mergeRequests.createCalls).toBe(1);
+    expect(mergeRequests.identities).toHaveLength(1);
+    expect(await git(competing.workspaceRoot, 'rev-parse', 'HEAD')).toBe(
+      competing.targetMerge.receipt.mergeCommitOid,
+    );
+    expect(await git(competing.workspaceRoot, 'status', '--porcelain')).toContain(
+      'openspec/changes/archive/2026-10-22-final-change/spec.md',
+    );
+    expect(await git(fx.request.workspaceRoot, 'rev-parse', 'HEAD')).toBe(winner.commitOid);
   });
 
   it('reuses the unique matching MR and repairs metadata without replacing it', async () => {
