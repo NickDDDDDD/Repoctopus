@@ -33,7 +33,7 @@
 
 ## 6. 自举集成与交付准备
 
-- [ ] 6.1 更新项目配置 schema、默认配置、内置插件目录和架构治理，运行 typecheck、lint、架构检查及配置 E2E，证明旧 `update-existing` 策略不能进入新 v3 发布路径。
+- [x] 6.1 更新项目配置 schema、默认配置、内置插件目录和架构治理，运行 typecheck、lint、架构检查及配置 E2E，证明旧 `update-existing` 策略不能进入新 v3 发布路径。
 - [ ] 6.2 使用本仓公开 Change 分支执行一次无 Change MR 的规划批准和默认单 Business MR 自举演练，保存正式 Evidence，运行 `npm run verify`、包 E2E 与 Post-merge E2E，并确认精确分支/MR事实与验证报告一致。
 - [ ] 6.3 清理自举测试的临时检出、日志、模拟平台状态和 scratch Artifact，复查 Git 状态、运行进程和远端分支，证明没有遗留调试产物或未发布提交。
 

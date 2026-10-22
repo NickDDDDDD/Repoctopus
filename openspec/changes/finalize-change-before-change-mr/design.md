@@ -114,6 +114,8 @@ MR Adapter 必须先按 `provider + repository + sourceBranch + targetBranch` �
 
 机器可以创建或更新最终 MR 的标题和正文，但不能 merge、改变 head/base、删除分支或强推。
 
+共享项目配置同步切换到这一个语义：`postMerge.publication.operations` 必须精确包含四个 v3 操作，最终 MR 文案放在 `finalChangeMergeRequest`，不再保留与操作集合重复的 mode 字段。出现旧 `changeMergeRequest`、`merge_request.update` 或 `update-existing` 时，解析器在 Cordis 组合启动前返回迁移诊断，不得把旧字段静默映射为最终 MR 创建。已持久化的 schema-v1 Closure Journal 仍可由显式旧策略恢复，但当前项目配置不能再生成该策略；这把历史恢复兼容与新运行入口分开。
+
 ### 7. 多 Runner 以 Change 分支 compare-and-push 收敛
 
 每个 Runner 从同一远端 Change OID、目标 OID、Business MR 集合和关闭计划摘要开始。提交前再次读取远端：

@@ -21,6 +21,20 @@ Repoctopus MUST 在受控收尾差异普通提交并推送到 Change 分支、�
 - **WHEN** 重试发现同一仓库、Change 分支和目标分支已经存在唯一开放 MR
 - **THEN** Runtime 核对其 head OID 与目标分支后复用并更新该 MR，不创建替代 MR
 
+### Requirement: 新项目配置只生成 v3 收尾发布策略
+
+Repoctopus MUST 要求共享项目配置精确声明 `merge_target`、`commit`、`push` 和 `merge_request.create_or_recover`，并从 `finalChangeMergeRequest` 读取最终 MR 文案；旧 `changeMergeRequest`、`merge_request.update` 或 `update-existing` 不得进入新 Cordis 组合或被静默解释。
+
+#### Scenario: 团队继续使用旧 update-existing 配置
+
+- **WHEN** 配置包含旧 Change MR 字段或更新操作
+- **THEN** 项目配置解析在 Runner 启动前失败，并返回包含新操作集合和 `finalChangeMergeRequest` 的迁移诊断
+
+#### Scenario: 恢复迁移前已持久化的 v1 Journal
+
+- **WHEN** 恢复入口显式加载与 schema-v1 Journal 绑定的旧发布策略
+- **THEN** Runtime 可以继续既有恢复协议，但不得从当前共享项目配置合成该旧策略
+
 ### Requirement: 已登记 Business MR 集合在收尾期间冻结
 
 Repoctopus MUST 在 Post-merge Run 的稳定身份中绑定已批准的完整 Business MR 集合；收尾开始后集合发生增删、替换或 merge commit 漂移时，Run 必须停止并要求重新准备交付，不得基于部分集合关闭 Change。
