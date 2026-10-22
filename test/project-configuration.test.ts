@@ -151,7 +151,27 @@ describe('project configuration', () => {
     const fixture = (await configurationFixture('self-hosted-valid.yaml')) as SelfHostedFixture;
     fixture.postMerge.publication.operations.push('merge');
     expect(() => parseSharedProjectConfig(fixture)).toThrow(
-      /must contain only commit, push, and merge_request\.update/i,
+      /must contain only merge_target, commit, push, and merge_request\.create_or_recover/i,
+    );
+  });
+
+  it('rejects the legacy update-existing policy before it can enter Delivery v3', async () => {
+    const fixture = (await configurationFixture('self-hosted-valid.yaml')) as Record<
+      string,
+      unknown
+    >;
+    const postMerge = fixture.postMerge as Record<string, unknown>;
+    const publication = postMerge.publication as Record<string, unknown>;
+    publication.operations = ['commit', 'push', 'merge_request.update'];
+    delete publication.finalChangeMergeRequest;
+    publication.changeMergeRequest = {
+      mode: 'update-existing',
+      title: 'Legacy Change MR',
+      body: 'Must not be reinterpreted as final publication.',
+    };
+
+    expect(() => parseSharedProjectConfig(fixture)).toThrow(
+      /postMerge\.publication: legacy update-existing publication is read-only; configure merge_target, commit, push, merge_request\.create_or_recover, and finalChangeMergeRequest/i,
     );
   });
 

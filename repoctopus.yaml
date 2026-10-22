@@ -89,7 +89,7 @@ postMerge:
     specificationClosure: true
     verificationPathPrefixes: []
   publication:
-    operations: [commit, push, merge_request.update]
+    operations: [merge_target, commit, push, merge_request.create_or_recover]
     remote: origin
     commit:
       message: 'chore(spec): close verified change'
@@ -99,7 +99,6 @@ postMerge:
       authorEmailCredential:
         provider: environment
         variable: REPOCTOPUS_GIT_AUTHOR_EMAIL
-    changeMergeRequest:
-      mode: update-existing
+    finalChangeMergeRequest:
       title: 'Close verified specification'
       body: 'Post-merge verification and specification closure completed.'

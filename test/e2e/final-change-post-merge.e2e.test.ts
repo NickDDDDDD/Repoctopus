@@ -228,7 +228,7 @@ it('runs one-Business-MR closure out of process before creating the final Change
             verificationPathPrefixes: [],
           },
           publication: {
-            operations: ['commit', 'push', 'merge_request.update'],
+            operations: ['merge_target', 'commit', 'push', 'merge_request.create_or_recover'],
             remote: 'origin',
             commit: {
               message: 'chore(spec): close verified change',
@@ -241,8 +241,7 @@ it('runs one-Business-MR closure out of process before creating the final Change
                 variable: 'REPOCTOPUS_E2E_AUTHOR_EMAIL',
               },
             },
-            changeMergeRequest: {
-              mode: 'update-existing',
+            finalChangeMergeRequest: {
               title: 'legacy bootstrap policy',
               body: 'replaced by the v2 action fixture',
             },

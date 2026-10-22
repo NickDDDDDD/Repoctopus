@@ -84,6 +84,18 @@ describe('project composition assembly', () => {
     expect(runner.entries.find((entry) => entry.id === 'runner-application')?.descriptor.kind).toBe(
       'application',
     );
+    const postMergeActions = runner.entries.find((entry) => entry.id === 'post-merge-actions');
+    expect(postMergeActions?.descriptor.configSchemaVersion).toBe('2');
+    expect(postMergeActions?.config).toMatchObject({
+      publication: {
+        operations: ['merge_target', 'commit', 'push', 'merge_request.create_or_recover'],
+        finalChangeMergeRequest: {
+          title: 'Close verified specification',
+          body: 'Post-merge verification and specification closure completed.',
+        },
+      },
+    });
+    expect(postMergeActions?.config).not.toHaveProperty('publication.changeMergeRequest');
     expect(runner.compositionDigest).not.toBe(project.compositionDigest);
   });
 

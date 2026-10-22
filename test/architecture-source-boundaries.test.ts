@@ -12,6 +12,7 @@ interface SourceFixture {
 
 interface Fixtures {
   secondContainers: SourceFixture[];
+  legacyPostMergeConfig: SourceFixture[];
   platformRunWrite: SourceFixture[];
   coordinatorStoreWrite: SourceFixture[];
   nonProviderClosure: SourceFixture[];
@@ -93,6 +94,19 @@ describe('architecture source boundaries', () => {
       evaluateSourceBoundaries(fixtures.platformRunWrite, rules('platform-adapter-run-write')),
     ).toEqual([
       expect.stringContaining('platform/github/rogue-event-adapter.ts: platform-adapter-run-write'),
+    ]);
+  });
+
+  it('keeps legacy update-existing configuration out of Delivery v3 composition', () => {
+    expect(
+      evaluateSourceBoundaries(
+        fixtures.legacyPostMergeConfig,
+        rules('v3-post-merge-configuration'),
+      ),
+    ).toEqual([
+      expect.stringContaining(
+        'plugins/post-merge/rogue-actions-provider.ts: v3-post-merge-configuration',
+      ),
     ]);
   });
 

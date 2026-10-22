@@ -388,7 +388,7 @@ const definitions: readonly BuiltinDefinition[] = [
       id: 'post-merge-actions',
       version: VERSION,
       contractVersion: PLUGIN_CONTRACT_VERSION,
-      configSchemaVersion: '1',
+      configSchemaVersion: '2',
       kind: 'service-provider',
       source: 'builtin',
       compositions: ['project'],
@@ -398,6 +398,7 @@ const definitions: readonly BuiltinDefinition[] = [
     },
     plugin: postMergeActionsProvider,
     sourceFiles: [
+      'domains/delivery/post-merge.ts',
       'domains/post-merge/checkout.ts',
       'domains/post-merge/closure.ts',
       'platform/git/post-merge-checkout.ts',
@@ -791,8 +792,11 @@ const definitions: readonly BuiltinDefinition[] = [
       'plugins/delivery/file-delivery-provider.ts',
       'domains/delivery/service.ts',
       'domains/delivery/service-v3.ts',
+      'domains/delivery/final-change-publication.ts',
+      'domains/delivery/post-merge.ts',
       'platform/delivery/file-delivery-store.ts',
       'platform/delivery/file-delivery-v3-store.ts',
+      'platform/git/delivery.ts',
     ],
   },
   {

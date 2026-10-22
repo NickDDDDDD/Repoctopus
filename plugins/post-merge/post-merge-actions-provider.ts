@@ -41,8 +41,8 @@ const plugin = ((context: Context, config: PostMergeActionsProviderConfig) => {
         ),
       },
       mergeRequest: {
-        title: config.publication.changeMergeRequest.title,
-        body: config.publication.changeMergeRequest.body,
+        title: config.publication.finalChangeMergeRequest.title,
+        body: config.publication.finalChangeMergeRequest.body,
       },
     }),
   });

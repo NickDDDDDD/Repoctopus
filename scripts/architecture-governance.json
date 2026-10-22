@@ -393,6 +393,13 @@
       "message": "Specification providers must extend the single Specification service container"
     },
     {
+      "id": "v3-post-merge-configuration",
+      "targets": ["app/boot/**", "domains/project-configuration/**", "plugins/post-merge/**"],
+      "pattern": "merge_request\\.update|update-existing|changeMergeRequest",
+      "allowed": ["domains/project-configuration/config.ts"],
+      "message": "Delivery v3 composition must reject, not emit, legacy update-existing Change MR configuration"
+    },
+    {
       "id": "platform-adapter-run-write",
       "targets": ["platform/**"],
       "pattern": "\\b(?:ctx|context)\\.(?:workflowRuns|runStore)\\b|from\\s+['\"][^'\"]*services/(?:workflow-runs|run-store)\\.js['\"]",
