@@ -98,6 +98,16 @@ Repoctopus MUST 允许多个 Runner 对同一 change 进行至少一次查询和
 - **WHEN** 两个 Runner 没有共享本地 Lease 或 Run Store 但发现了同一 change
 - **THEN** 系统允许重复本地计算，并仍通过远端 Change 分支并发栅栏保证只有可核对的收尾结果生效
 
+#### Scenario: 独立 Runner 产生不同目标同步 commit OID
+
+- **WHEN** 两个 Runner 从相同 Change 与目标 OID 计算出 tree、双 parent、message 和 author 相同但 commit OID 不同的目标同步结果
+- **THEN** 竞争失败者继续核对关闭 tree、message、author 和语义审计摘要，全部等价时收敛到远端结果，否则 fail-closed
+
+#### Scenario: 两个 Runner 竞争创建最终 MR
+
+- **WHEN** 两个 Runner 已收敛到同一远端关闭 OID，且创建前查询都尚未发现最终 MR
+- **THEN** 平台只接受一个相同 head/base 的最终 MR，失败者通过全状态查询恢复相同 MR identity，零个或多个匹配时 fail-closed
+
 ## REMOVED Requirements
 
 ### Requirement: 收尾持续更新原 Change MR

@@ -28,7 +28,7 @@
 ## 5. 迁移旧 Delivery 并验证多 Runner 收敛
 
 - [x] 5.1 增加 v2 只读解析和 v3 迁移计划，覆盖无远端动作、开放旧 Change MR、已关闭/已合入旧 Change MR 三类状态；运行迁移 fixture 证明不复用旧批准、不自动改变平台 MR 状态并对不可迁移状态返回 `repair_required`。
-- [ ] 5.2 将多 Runner 并发栅栏改为 Change 分支远端 OID 与关闭语义核对，运行独立状态卷竞态测试证明等价结果收敛为 no-op、不等价结果 fail-closed 且最多恢复一个最终 MR。
+- [x] 5.2 将多 Runner 并发栅栏改为 Change 分支远端 OID 与关闭语义核对，运行独立状态卷竞态测试证明等价结果收敛为 no-op、不等价结果 fail-closed 且最多恢复一个最终 MR。
 - [ ] 5.3 更新迁移、团队协作和 Runner 文档，执行文档示例与负向配置测试，证明 MR 作者、分支作者和 Runner identity 都不会成为独占 Change owner。
 
 ## 6. 自举集成与交付准备

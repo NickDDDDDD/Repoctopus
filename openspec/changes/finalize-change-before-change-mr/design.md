@@ -110,7 +110,7 @@ commit, push, merge_request.update
 merge_target, commit, push, merge_request.create_or_recover
 ```
 
-MR Adapter 必须先按 `provider + repository + sourceBranch + targetBranch` 查询。如果存在唯一开放 MR，则核对 head OID 后复用；不存在才创建；多个匹配、分支映射漂移或已存在不等价关闭 MR 时 fail-closed。创建响应丢失通过相同查询恢复。
+MR Adapter 必须先按 `provider + repository + sourceBranch + targetBranch` 查询。如果存在唯一开放 MR，则核对 head OID 后复用；不存在才创建；多个匹配、分支映射漂移或已存在不等价关闭 MR 时 fail-closed。平台以相同 head/base 的唯一开放 MR 约束串行化并发创建；创建返回错误或响应丢失时，调用方重新执行全状态查询，只有恰好得到一个可核对 MR 才按恢复成功处理。
 
 机器可以创建或更新最终 MR 的标题和正文，但不能 merge、改变 head/base、删除分支或强推。
 
@@ -122,7 +122,11 @@ MR Adapter 必须先按 `provider + repository + sourceBranch + targetBranch` �
 - 已出现语义等价的目标同步与关闭提交：核对 tree、parent、message、author 和审计摘要后返回 no-op；
 - 任何不等价变化：fail-closed 并请求重新协调。
 
-最终 MR 创建使用 Adapter 的 create-or-recover 语义，因此独立状态卷允许重复计算，但最多产生一个可核对 MR。
+两个 Runner 的目标同步 merge commit 可能因为 Git 时间戳不同而具有不同 OID，因此恢复不能把临时 merge OID 相等误当成语义相等。恢复路径分别核对两个目标同步提交都具有锁定的 Change/目标 parent，并比较其 tree、message 与 author；随后核对关闭提交只有一个语义等价的目标同步 parent，且 tree、message 与 author 相同。
+
+最终关闭 commit 增加 `Repoctopus-Closure-Audit` trailer。该摘要绑定关闭计划、关闭身份、排序后的变更路径及内容摘要，但排除包含临时 merge OID 的 baseline digest，使独立 Runner 对相同关闭语义得到同一摘要，而文件相同但计划或关闭身份不同的结果仍然 fail-closed。此 trailer 只用于竞争恢复证明，不取代完整 Closure Audit 与 Receipt。
+
+最终 MR 创建使用 Adapter 的 create-or-recover 语义，因此独立状态卷允许重复计算。竞争创建失败或创建响应丢失时重新查询同一 head/base tuple；只有唯一且 head OID 可核对的 MR 会被恢复，多个或零个匹配继续 fail-closed。
 
 ### 8. 旧状态只读迁移，禁止静默改变既有 MR
 
