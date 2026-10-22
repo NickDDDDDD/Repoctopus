@@ -109,6 +109,8 @@ Envelope 先以原子写入进入 Workspace 的本地遥测 outbox，再由目�
 
 Host 停止、重启或桌面退出后 discovery 文件被删除或失效。Runtime 无法连接时保留本地 cursor 并继续远端发送，不把桌面启动失败升级成领域失败。
 
+首个 Receiver 切片明确使用标准 OTLP/HTTP JSON 编码：只注册 `/v1/traces`、`/v1/logs`、`/v1/metrics`，要求 `POST`、`application/json` 和 256-bit base64url Bearer 会话凭据，并以 constant-time 比较认证值；Protobuf 或其他 content type 返回 415，不做内容猜测。监听地址硬编码为 `127.0.0.1`、端口由系统分配，请求体和并发数有界。解析只确认对应 OTLP 顶层 resource 数组，完整属性语义验证和状态收敛由任务 2.4 的 Projection Reducer 负责；错误响应和 diagnostic 只含固定 code，不回显请求正文、凭据或内部异常。Receiver 已作为可独立启动/停止的 Desktop Host 组件实现，加入 Cordis Desktop composition 的 Provider/Contributor 所有权仍由任务 2.7 完成。
+
 备选方案是固定端口且无凭据。任何本机进程都能伪造 change 状态或读取错误细节，因此拒绝。Windows named pipe 虽然权限更自然，但不是标准 OTLP/HTTP 端点，首版不采用。
 
 ### 5. OTLP 解码后进入确定性 change 投影
