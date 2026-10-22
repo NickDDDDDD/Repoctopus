@@ -126,6 +126,10 @@ Receiver 先验证 OTLP 和 Repoctopus schema version，再把 Span、Log 和 Me
 
 Projection 不读取仓库、OpenSpec、Git 或领域 Store，不从文本猜测 Agent、完成度和下一步动作。Metric 仅用于聚合摘要；具有稳定身份的 UI 状态主要来自 Span 与 Log，避免从低基数 Metric 反推实体。
 
+最小 Reducer 只接受版本化、无正文的 `ObservationRecord`：稳定 envelope/event/stream 身份、规范摘要、序列、观测时间，以及显式 Workspace、change、Run、status 和 stage 字段。它按 event identity 幂等去重，同 identity 不同内容或同 stream/sequence 不同 event 都作为冲突拒绝；内部保留事件集合并按观测时间、序列和 event id 规范排序，所以到达顺序不改变最终快照。当前 active change、Run 和 stage 只由显式字段投影，缺字段显示 unknown/null，不从 event name 或文本推断。
+
+Gap 以当前 Run 的稳定 stream sequence 从 1 开始压缩为缺失区间；迟到事件可以缩小或消除 gap。Freshness 由调用方提供的规范 `now` 与最后观测时间、批准阈值纯计算，Reducer 不读取系统时钟。首版内存状态用于验证收敛契约，任务 2.5 把 OTLP 解码后的 Record 接入 Receiver 与 IPC，任务 5.5 再负责 journal、snapshot、压缩和重启恢复。
+
 Desktop Host 把已接受记录写入追加式本地 journal，并周期生成原子 snapshot。启动时加载 snapshot 后重放 journal，重复 `event.id` 收敛为 no-op。该 journal 只保存经过遥测允许列表的数据，不复制 Artifact 正文。使用现有文件持久化模式可以避免 Windows 原生 SQLite addon 的构建和 ABI 风险；如果性能证据表明不足，数据库替换走后续 change。
 
 ### 6. Renderer 通过类型化 IPC 接收 snapshot 与有序 delta
