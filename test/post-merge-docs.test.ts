@@ -32,6 +32,9 @@ describe('Post-merge operator documentation', () => {
     }
 
     for (const command of [
+      'post-merge reconcile',
+      'spec approval status',
+      'spec approval prepare',
       'event status',
       'event retry',
       'delivery status',
@@ -41,6 +44,18 @@ describe('Post-merge operator documentation', () => {
       'evidence resume',
     ]) {
       expect(documentation).toContain(`node bin/repoctopus.js ${command}`);
+    }
+
+    for (const operationalSignal of [
+      'post-merge-business-merge-requests-open',
+      'changeBranch.remoteOid',
+      'target-merge-conflict',
+      'final-change-publication-failed',
+      'merge_request.create_or_recover',
+      'Repoctopus-Closure-Audit',
+      '分支作者',
+    ]) {
+      expect(documentation).toContain(operationalSignal);
     }
 
     const root = await temporaryDirectory('repoctopus-post-merge-docs-');
@@ -76,6 +91,13 @@ describe('Post-merge operator documentation', () => {
     );
     await writeFile(path.join(workspace, '.gitignore'), '.repoctopus/\n');
     await commitGitRepository(workspace, 'chore: configure post-merge workspace');
+
+    const approvalStatus = await runCli<{ status?: string } | null>({
+      packageRoot: repositoryRoot,
+      cwd: workspace,
+      args: ['spec', 'approval', 'status', '--workspace', workspace, '--change', 'post-merge-docs'],
+    });
+    expect(approvalStatus.result).toBeNull();
 
     const runId = 'post-merge-docs-run';
     await runCli({

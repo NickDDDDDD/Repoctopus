@@ -11,6 +11,7 @@ import type { BuiltinPluginRegistration, CompositionKind, PluginDescriptor } fro
 export interface CompositionPluginSelection {
   id: string;
   config?: unknown;
+  identityConfig?: unknown;
 }
 
 export interface CompositionDefinition {
@@ -25,6 +26,7 @@ export interface CompiledPluginEntry {
   id: string;
   name: `cordis:${string}`;
   config?: unknown;
+  identityConfig?: unknown;
   descriptor: PluginDescriptor;
 }
 
@@ -43,10 +45,10 @@ function digest(value: unknown): `sha256:${string}` {
 
 export function compositionIdentity(composition: CompiledComposition): CompositionIdentitySnapshot {
   const plugins: PluginImplementationIdentity[] = composition.entries.map(
-    ({ descriptor, config }) => ({
+    ({ descriptor, config, identityConfig }) => ({
       id: descriptor.id,
       version: descriptor.version,
-      configDigest: digest(config ?? null),
+      configDigest: digest(identityConfig ?? config ?? null),
       codeDigest: descriptor.codeDigest,
       descriptorDigest: descriptorDigest(descriptor),
       authorities: [...descriptor.authorities],
@@ -70,6 +72,9 @@ function normalizedSelection(selection: CompositionPluginSelection): Composition
   return {
     id,
     ...(selection.config === undefined ? {} : { config: canonicalValue(selection.config) }),
+    ...(selection.identityConfig === undefined
+      ? {}
+      : { identityConfig: canonicalValue(selection.identityConfig) }),
   };
 }
 
@@ -112,6 +117,9 @@ export function compileComposition(
         id: descriptor.id,
         name: `cordis:${descriptor.id}` as const,
         ...(config === undefined ? {} : { config }),
+        ...(selection.identityConfig === undefined
+          ? {}
+          : { identityConfig: selection.identityConfig }),
         descriptor,
       };
     })
@@ -138,9 +146,13 @@ export function compileComposition(
     id,
     kind: definition.kind,
     requiredServices,
-    plugins: entries.map(({ descriptor, config }) => ({
+    plugins: entries.map(({ descriptor, config, identityConfig }) => ({
       descriptor,
-      ...(config === undefined ? {} : { config }),
+      ...(identityConfig === undefined
+        ? config === undefined
+          ? {}
+          : { config }
+        : { config: identityConfig }),
     })),
     ...(definition.configuration
       ? { configuration: canonicalValue(definition.configuration) }

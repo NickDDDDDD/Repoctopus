@@ -1,0 +1,17 @@
+schemaVersion: 3
+changeId: finalize-change-before-change-mr
+changeBranch:
+  repositoryId: repoctopus
+  remoteIdentity: github.com/nickdddddd/repoctopus
+  sourceBranch: spec/finalize-change-before-change-mr
+  targetBranch: main
+  remoteOid: 'bd87931b2453f0187254ccb9c39e641c6886cab1'
+businessDeliveries:
+  - deliveryId: primary
+    repositoryId: repoctopus
+    sourceBranch: feat/finalize-change-before-change-mr
+    targetBranch: main
+    commitMessage: 'docs: record finalize change verification'
+    actions:
+      - push
+      - merge_request

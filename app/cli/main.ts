@@ -7,10 +7,13 @@ import { fileURLToPath } from 'node:url';
 import { parse } from 'yaml';
 
 import type {
-  DeliveryIntent,
+  DeliveryIntentV3,
   DeliveryPolicy,
   DeliveryState,
+  DeliveryStateV3,
 } from '../../domains/delivery/types.js';
+import { parseDeliveryIntentV3 } from '../../domains/delivery/v3.js';
+import type { DeliveryV2MigrationPlan } from '../../domains/delivery/migration.js';
 import type { ProjectSnapshot } from '../../domains/project/types.js';
 import type { EffectiveProjectConfig } from '../../domains/project-configuration/types.js';
 import type {
@@ -43,6 +46,9 @@ import { reviewHumanDecision } from './human-decision.js';
 import { reviewProjectConfigurationDecision } from './project-configuration-decision.js';
 import { startRunnerApplication } from '../runner/application.js';
 import type { PostMergeReconciliationResult } from '../../services/post-merge-coordinator.js';
+import type { SpecificationApprovalState } from '../../domains/specification/types.js';
+import { inspectPublishedChangeBranch } from '../../platform/git/change-branch.js';
+import { reviewSpecificationApproval } from './specification-approval-decision.js';
 
 const DIST_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PRODUCT_ROOT =
@@ -77,7 +83,7 @@ function evidenceBundleIds(parsed: ParsedArguments): string[] {
 async function deliveryInputs(parsed: ParsedArguments): Promise<{
   workspace: string;
   config: EffectiveProjectConfig;
-  intent: DeliveryIntent;
+  intent: DeliveryIntentV3;
   policy: DeliveryPolicy;
 }> {
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
@@ -90,15 +96,20 @@ async function deliveryInputs(parsed: ParsedArguments): Promise<{
     readFile(intentFile, 'utf8'),
     loadDeliveryPolicy(policyFile),
   ]);
-  return { workspace, config, intent: parse(intentSource) as DeliveryIntent, policy };
+  return {
+    workspace,
+    config,
+    intent: parseDeliveryIntentV3(parse(intentSource)),
+    policy,
+  };
 }
 
 async function assertCommittedReport(
   reportFile: string,
   project: ProjectSnapshot,
-  intent: DeliveryIntent,
+  intent: DeliveryIntentV3,
 ): Promise<void> {
-  const selected = new Set(intent.repositories.map((item) => item.repositoryId));
+  const selected = new Set(intent.businessDeliveries.map((item) => item.repositoryId));
   const repository = project.repositories.find((item) => {
     if (!selected.has(item.id)) return false;
     const relative = path.relative(item.path, reportFile);
@@ -140,7 +151,7 @@ async function currentWorkspaceSnapshot(
   return deliveryProject(app, { workspace, config: await loadProjectConfig(workspace) });
 }
 
-function deliveryNextActions(status: DeliveryState): string[] {
+function deliveryNextActions(status: DeliveryState | DeliveryStateV3): string[] {
   if (status.status === 'awaiting_approval') {
     return [`repoctopus approval review --change ${status.changeId}`];
   }
@@ -149,7 +160,7 @@ function deliveryNextActions(status: DeliveryState): string[] {
       `repoctopus delivery publish --change ${status.changeId} --intent <file> --policy <file> --report <file>`,
     ];
   }
-  if (status.status === 'in_review')
+  if (status.status === 'in_review' && status.schemaVersion === 2)
     return [`repoctopus delivery refresh --change ${status.changeId}`];
   return [];
 }
@@ -177,16 +188,16 @@ async function deliveryPrepare(parsed: ParsedArguments): Promise<CliEnvelope<unk
     const project = await deliveryProject(app, input);
     await assertCommittedReport(reportFile, project, input.intent);
     const report = await readFile(reportFile, 'utf8');
-    const result = await app.context.commandRouter.execute<unknown, DeliveryState>(
-      'delivery.prepare',
-      {
-        project,
-        intent: input.intent,
-        policy: input.policy,
-        reportContents: report,
-        evidenceBundleIds: evidenceBundleIds(parsed),
-      },
-    );
+    const result = await app.context.commandRouter.execute<
+      unknown,
+      DeliveryState | DeliveryStateV3
+    >('delivery.prepare', {
+      project,
+      intent: input.intent,
+      policy: input.policy,
+      reportContents: report,
+      evidenceBundleIds: evidenceBundleIds(parsed),
+    });
     return successEnvelope({
       command: 'delivery prepare',
       result,
@@ -202,10 +213,10 @@ async function deliveryStatus(parsed: ParsedArguments): Promise<CliEnvelope<unkn
   const changeId = stringFlag(parsed, 'change', { required: true })!;
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
-    const result = await app.context.commandRouter.execute<unknown, DeliveryState>(
-      'delivery.status',
-      { changeId },
-    );
+    const result = await app.context.commandRouter.execute<
+      unknown,
+      DeliveryState | DeliveryStateV3
+    >('delivery.status', { changeId });
     return successEnvelope({
       command: 'delivery status',
       result,
@@ -274,7 +285,7 @@ async function approvalReview(parsed: ParsedArguments): Promise<CliEnvelope<unkn
   const changeId = stringFlag(parsed, 'change', { required: true })!;
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
-    const state = await app.context.commandRouter.execute<unknown, DeliveryState>(
+    const state = await app.context.commandRouter.execute<unknown, DeliveryState | DeliveryStateV3>(
       'delivery.status',
       { changeId },
     );
@@ -286,25 +297,25 @@ async function approvalReview(parsed: ParsedArguments): Promise<CliEnvelope<unkn
       input: process.stdin,
       output: process.stdout,
     });
-    const result = await app.context.commandRouter.execute<unknown, DeliveryState>(
-      'delivery.decide',
-      {
-        changeId,
-        response: {
-          apiVersion: 'repoctopus/v1alpha1',
-          kind: 'HumanDecisionResponse',
-          requestId: state.decisionRequest.requestId,
-          snapshotDigest: state.decisionRequest.snapshotDigest,
-          decision: selected.decision,
-          ...(selected.comment ? { comment: selected.comment } : {}),
-        },
-        actor: {
-          subject: userInfo().username,
-          provider: 'interactive-cli',
-          sessionId: state.decisionRequest.requestId,
-        },
+    const result = await app.context.commandRouter.execute<
+      unknown,
+      DeliveryState | DeliveryStateV3
+    >('delivery.decide', {
+      changeId,
+      response: {
+        apiVersion: 'repoctopus/v1alpha1',
+        kind: 'HumanDecisionResponse',
+        requestId: state.decisionRequest.requestId,
+        snapshotDigest: state.decisionRequest.snapshotDigest,
+        decision: selected.decision,
+        ...(selected.comment ? { comment: selected.comment } : {}),
       },
-    );
+      actor: {
+        subject: userInfo().username,
+        provider: 'interactive-cli',
+        sessionId: state.decisionRequest.requestId,
+      },
+    });
     return successEnvelope({
       command: 'approval review',
       result,
@@ -326,16 +337,16 @@ async function deliveryPublish(parsed: ParsedArguments): Promise<CliEnvelope<unk
   );
   const app = await bootProjectComposition(PRODUCT_ROOT, input.workspace);
   try {
-    const result = await app.context.commandRouter.execute<unknown, DeliveryState>(
-      'delivery.publish',
-      {
-        project: await deliveryProject(app, input),
-        intent: input.intent,
-        policy: input.policy,
-        reportContents: report,
-        evidenceBundleIds: evidenceBundleIds(parsed),
-      },
-    );
+    const result = await app.context.commandRouter.execute<
+      unknown,
+      DeliveryState | DeliveryStateV3
+    >('delivery.publish', {
+      project: await deliveryProject(app, input),
+      intent: input.intent,
+      policy: input.policy,
+      reportContents: report,
+      evidenceBundleIds: evidenceBundleIds(parsed),
+    });
     return successEnvelope({
       command: 'delivery publish',
       result,
@@ -356,15 +367,35 @@ async function deliveryRefresh(parsed: ParsedArguments): Promise<CliEnvelope<unk
   );
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
-    const result = await app.context.commandRouter.execute<unknown, DeliveryState>(
-      'delivery.refresh',
-      { changeId, policy },
-    );
+    const result = await app.context.commandRouter.execute<
+      unknown,
+      DeliveryState | DeliveryStateV3
+    >('delivery.refresh', { changeId, policy });
     return successEnvelope({
       command: 'delivery refresh',
       result,
       nextActions: deliveryNextActions(result),
     });
+  } finally {
+    await app.close();
+  }
+}
+
+async function deliveryMigrationPlan(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const changeId = stringFlag(parsed, 'change', { required: true })!;
+  const policy = await loadDeliveryPolicy(
+    path.resolve(
+      stringFlag(parsed, 'policy', { fallback: path.join(workspace, 'repoctopus.yaml') })!,
+    ),
+  );
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute<unknown, DeliveryV2MigrationPlan>(
+      'delivery.migration-plan',
+      { changeId, policy },
+    );
+    return successEnvelope({ command: 'delivery migration-plan', result });
   } finally {
     await app.close();
   }
@@ -453,6 +484,117 @@ async function specificationValidate(parsed: ParsedArguments): Promise<CliEnvelo
     });
     if (!result.valid) throw new Error(`Specification validation failed: ${changeId}`);
     return successEnvelope({ command: 'spec validate', result });
+  } finally {
+    await app.close();
+  }
+}
+
+function qualifiedSha256(value: string, label: string): `sha256:${string}` {
+  const qualified = value.startsWith('sha256:') ? value : `sha256:${value}`;
+  if (!/^sha256:[a-f0-9]{64}$/u.test(qualified)) {
+    throw new Error(`${label} is not a SHA-256 digest`);
+  }
+  return qualified as `sha256:${string}`;
+}
+
+async function specificationApprovalPrepare(
+  parsed: ParsedArguments,
+): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const changeId = stringFlag(parsed, 'change', { required: true })!;
+  const sourceBranch = stringFlag(parsed, 'branch', { required: true })!;
+  const targetBranch = stringFlag(parsed, 'target', { required: true })!;
+  const remote = stringFlag(parsed, 'remote', { fallback: 'origin' })!;
+  const config = await loadProjectConfig(workspace);
+  const workspaceRepository = config.repositories.find(
+    (repository) => repository.id === config.shared.workspace.repositoryId,
+  );
+  if (!workspaceRepository) throw new Error('Workspace Repository is not configured');
+  const changeBranch = await inspectPublishedChangeBranch({
+    repositoryPath: workspaceRepository.resolvedPath,
+    repositoryId: workspaceRepository.id,
+    remote,
+    sourceBranch,
+    targetBranch,
+  });
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute<unknown, SpecificationApprovalState>(
+      'specification.approval.prepare',
+      {
+        changeId,
+        changeBranch,
+        compositionDigest: app.composition.compositionDigest,
+        projectConfigDigest: qualifiedSha256(config.effectiveDigest, 'Project configuration'),
+      },
+    );
+    return successEnvelope({
+      command: 'spec approval prepare',
+      result,
+      nextActions:
+        result.status === 'awaiting_approval'
+          ? [`repoctopus spec approval review --change ${changeId}`]
+          : [],
+    });
+  } finally {
+    await app.close();
+  }
+}
+
+async function specificationApprovalStatus(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const changeId = stringFlag(parsed, 'change', { required: true })!;
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute('specification.approval.status', {
+      changeId,
+    });
+    return successEnvelope({ command: 'spec approval status', result });
+  } finally {
+    await app.close();
+  }
+}
+
+async function specificationApprovalReview(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  if (!process.stdin.isTTY || !process.stdout.isTTY) {
+    throw new Error('Human approval requires an interactive terminal or a trusted IDE Adapter');
+  }
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const changeId = stringFlag(parsed, 'change', { required: true })!;
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const state = await app.context.commandRouter.execute<
+      unknown,
+      SpecificationApprovalState | null
+    >('specification.approval.status', { changeId });
+    if (!state || state.status !== 'awaiting_approval') {
+      throw new Error(`Specification is not awaiting approval: ${changeId}`);
+    }
+    const selected = await reviewSpecificationApproval({
+      request: state.decisionRequest,
+      input: process.stdin,
+      output: process.stdout,
+    });
+    const result = await app.context.commandRouter.execute<unknown, SpecificationApprovalState>(
+      'specification.approval.decide',
+      {
+        changeId,
+        response: {
+          apiVersion: 'repoctopus/v1alpha1',
+          kind: 'HumanDecisionResponse',
+          requestId: state.decisionRequest.requestId,
+          snapshotDigest: state.decisionRequest.snapshotDigest,
+          decision: selected.decision,
+          ...(selected.comment ? { comment: selected.comment } : {}),
+        },
+        actor: {
+          actorId: userInfo().username,
+          source: 'cli',
+          authenticated: true,
+        },
+      },
+    );
+    return successEnvelope({ command: 'spec approval review', result });
   } finally {
     await app.close();
   }
@@ -958,6 +1100,9 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   if (command === 'skill project') return skillProject(parsed);
   if (command === 'spec inspect') return specificationInspect(parsed);
   if (command === 'spec validate') return specificationValidate(parsed);
+  if (command === 'spec approval prepare') return specificationApprovalPrepare(parsed);
+  if (command === 'spec approval status') return specificationApprovalStatus(parsed);
+  if (command === 'spec approval review') return specificationApprovalReview(parsed);
   if (command === 'evidence plan') return evidencePlan(parsed);
   if (command === 'evidence run') return evidenceRun(parsed);
   if (command === 'evidence status') return evidenceStatus(parsed);
@@ -976,6 +1121,7 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   if (command === 'delivery publish' || command === 'delivery resume')
     return deliveryPublish(parsed);
   if (command === 'delivery refresh') return deliveryRefresh(parsed);
+  if (command === 'delivery migration-plan') return deliveryMigrationPlan(parsed);
   if (command === 'event status') return eventStatus(parsed);
   if (command === 'event replay') return eventReplay(parsed);
   if (command === 'event retry') return eventRetry(parsed);
@@ -984,7 +1130,7 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   if (command === 'browser doctor') return browserDoctor(parsed);
   if (command === 'browser install') return browserInstall(parsed);
   throw new Error(
-    'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|record|resume> | runner start | post-merge reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh> | event <status|replay|retry> | approval review | browser <doctor|install> | doctor',
+    'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|record|resume> | runner start | post-merge reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | event <status|replay|retry> | approval review | browser <doctor|install> | doctor',
   );
 }
 

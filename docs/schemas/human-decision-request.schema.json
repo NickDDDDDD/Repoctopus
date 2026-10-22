@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://repoctopus.dev/schemas/human-decision-request.schema.json",
+  "title": "Repoctopus Delivery Approval Request v3",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -12,8 +13,9 @@
     "snapshotDigest",
     "reportDigest",
     "evidenceBundleIds",
-    "repositories",
-    "changeMergeRequest",
+    "changeBranch",
+    "businessDeliveries",
+    "businessSplitReason",
     "actions",
     "options"
   ],
@@ -31,38 +33,68 @@
       "uniqueItems": true,
       "items": { "type": "string", "minLength": 1 }
     },
-    "repositories": { "type": "array" },
-    "changeMergeRequest": {
+    "changeBranch": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "role",
-        "repositoryId",
-        "remoteIdentity",
-        "sourceBranch",
-        "targetBranch",
-        "mergeRequest"
-      ],
+      "required": ["repositoryId", "remoteIdentity", "sourceBranch", "targetBranch", "remoteOid"],
       "properties": {
-        "role": { "const": "change" },
         "repositoryId": { "type": "string", "minLength": 1 },
         "remoteIdentity": { "type": "string", "minLength": 1 },
         "sourceBranch": { "type": "string", "minLength": 1 },
         "targetBranch": { "type": "string", "minLength": 1 },
-        "mergeRequest": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["provider", "repositoryId", "number", "url"],
-          "properties": {
-            "provider": { "type": "string", "minLength": 1 },
-            "repositoryId": { "type": "string", "minLength": 1 },
-            "number": { "type": "integer", "minimum": 1 },
-            "url": { "type": "string", "format": "uri" }
-          }
+        "remoteOid": { "type": "string", "pattern": "^[a-f0-9]{40}([a-f0-9]{24})?$" }
+      }
+    },
+    "businessDeliveries": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "deliveryId",
+          "repositoryId",
+          "repositoryName",
+          "sourceBranch",
+          "targetBranch"
+        ],
+        "properties": {
+          "deliveryId": { "type": "string", "minLength": 1 },
+          "repositoryId": { "type": "string", "minLength": 1 },
+          "repositoryName": { "type": "string", "minLength": 1 },
+          "sourceBranch": { "type": "string", "minLength": 1 },
+          "targetBranch": { "type": "string", "minLength": 1 }
         }
       }
     },
-    "actions": { "type": "array" },
+    "businessSplitReason": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "summary"],
+          "properties": {
+            "kind": { "enum": ["multi_repository", "ordered_delivery", "supplemental_fix"] },
+            "summary": { "type": "string", "minLength": 1 }
+          }
+        }
+      ]
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["actionId", "type", "deliveryId", "repositoryId"],
+        "properties": {
+          "actionId": { "type": "string", "minLength": 1 },
+          "type": { "enum": ["git.push", "mr.create_or_update"] },
+          "deliveryId": { "type": "string", "minLength": 1 },
+          "repositoryId": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
     "options": { "const": ["approve", "request_changes", "reject"] }
   }
 }

@@ -5,6 +5,7 @@ import type {
   DeliveryRepositoryFacts,
   DeliveryRepositoryIntent,
   DeliveryState,
+  DeliveryStateV3,
   MergeRequestIdentity,
   MergeRequestStatus,
   PlatformCapability,
@@ -36,6 +37,16 @@ export interface DeliveryStorePort {
   }): Promise<void>;
   history(changeId: string): Promise<DeliveryEvent[]>;
   approvedEvidenceBundleIds(): Promise<string[]>;
+}
+
+export interface DeliveryV3StorePort {
+  load(changeId: string): Promise<DeliveryStateV3 | null>;
+  list(): Promise<DeliveryStateV3[]>;
+  commit(options: {
+    state: DeliveryStateV3;
+    previousStateVersion: number | null;
+    event: DeliveryEvent;
+  }): Promise<void>;
 }
 
 export interface DeliveryEvidencePort {
@@ -79,6 +90,15 @@ export interface MergeRequestPort {
   create(input: MergeRequestInput): Promise<MergeRequestIdentity>;
   update(identity: MergeRequestIdentity, input: MergeRequestInput): Promise<MergeRequestIdentity>;
   status(identity: MergeRequestIdentity): Promise<MergeRequestStatus>;
+}
+
+/**
+ * Final Change publication needs every MR with the same repository/head/base tuple,
+ * including closed MRs. A single-result lookup cannot distinguish safe recovery from
+ * an ambiguous or previously closed publication attempt.
+ */
+export interface FinalMergeRequestPort extends MergeRequestPort {
+  findAll(input: MergeRequestInput): Promise<MergeRequestIdentity[]>;
 }
 
 export interface CredentialProvider {

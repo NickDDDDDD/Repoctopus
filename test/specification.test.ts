@@ -120,9 +120,9 @@ describe('Specification authority', () => {
             stdout: JSON.stringify({
               isPlanningComplete: true,
               artifactPaths: {
-                proposal: { existingOutputPaths: ['proposal.md'] },
+                proposal: { existingOutputPaths: ['README.md'] },
                 'implementation-notes': { existingOutputPaths: ['implementation-notes.md'] },
-                verification: { existingOutputPaths: ['verification-report.md'] },
+                verification: { existingOutputPaths: ['package.json'] },
               },
             }),
             stderr: '',
@@ -163,6 +163,9 @@ describe('Specification authority', () => {
       'delta-specs',
       'tasks',
     ]);
+    expect(inspected.artifacts.every((artifact) => artifact.digest?.startsWith('sha256:'))).toBe(
+      true,
+    );
     expect(await context.specification.validate('sample', { strict: true })).toMatchObject({
       valid: true,
       strict: true,

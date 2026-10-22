@@ -117,6 +117,7 @@ describe('published package', () => {
     }>;
     const packagedPaths = archives[0]!.files.map((file) => file.path.replaceAll('\\', '/'));
     expect(packagedPaths).toContain('docs/schemas/project-config.schema.json');
+    expect(packagedPaths).toContain('docs/schemas/delivery-intent.schema.json');
     expect(packagedPaths).toContain('docs/examples/repoctopus.gitignore');
     expect(packagedPaths).not.toEqual(
       expect.arrayContaining([

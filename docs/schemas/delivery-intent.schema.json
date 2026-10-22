@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://repoctopus.dev/schemas/delivery-intent.schema.json",
+  "title": "Repoctopus Delivery Intent v3",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "changeId", "changeBranch", "businessDeliveries"],
+  "allOf": [
+    {
+      "if": {
+        "properties": { "businessDeliveries": { "minItems": 2 } },
+        "required": ["businessDeliveries"]
+      },
+      "then": { "required": ["businessSplitReason"] }
+    },
+    {
+      "if": { "required": ["businessSplitReason"] },
+      "then": { "properties": { "businessDeliveries": { "minItems": 2 } } }
+    }
+  ],
+  "properties": {
+    "schemaVersion": { "const": 3 },
+    "changeId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{2,127}$" },
+    "changeBranch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repositoryId", "remoteIdentity", "sourceBranch", "targetBranch", "remoteOid"],
+      "properties": {
+        "repositoryId": { "type": "string", "minLength": 1 },
+        "remoteIdentity": { "type": "string", "minLength": 1 },
+        "sourceBranch": { "type": "string", "minLength": 1 },
+        "targetBranch": { "type": "string", "minLength": 1 },
+        "remoteOid": { "type": "string", "pattern": "^[a-f0-9]{40}([a-f0-9]{24})?$" }
+      }
+    },
+    "businessDeliveries": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "deliveryId",
+          "repositoryId",
+          "sourceBranch",
+          "targetBranch",
+          "commitMessage",
+          "actions"
+        ],
+        "properties": {
+          "deliveryId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,63}$" },
+          "repositoryId": { "type": "string", "minLength": 1 },
+          "sourceBranch": { "type": "string", "minLength": 1 },
+          "targetBranch": { "type": "string", "minLength": 1 },
+          "commitMessage": { "type": "string", "minLength": 1 },
+          "actions": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "uniqueItems": true,
+            "items": { "enum": ["push", "merge_request"] },
+            "allOf": [
+              { "contains": { "const": "push" } },
+              { "contains": { "const": "merge_request" } }
+            ]
+          }
+        }
+      }
+    },
+    "businessSplitReason": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "summary"],
+      "properties": {
+        "kind": { "enum": ["multi_repository", "ordered_delivery", "supplemental_fix"] },
+        "summary": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

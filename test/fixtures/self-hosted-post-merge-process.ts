@@ -29,6 +29,7 @@ import { loadProjectConfig } from '../../platform/project-configuration/file-con
 import { execute } from '../../platform/process/execute.js';
 import { createRepoctopusBuiltinCatalog } from '../../plugins/builtin-catalog.js';
 import { Delivery, type DeliveryPreparation } from '../../services/delivery.js';
+import { PostMergeActions } from '../../services/post-merge-actions.js';
 
 interface MockMergeRequest extends MergeRequestStatus {
   remote?: string;
@@ -146,7 +147,10 @@ class MockDeliveryProvider extends Delivery {
   }
 
   prepare(options: DeliveryPreparation): Promise<DeliveryState> {
-    return this.domain().prepare(options);
+    if (options.intent.schemaVersion === 3) {
+      return Promise.reject(new Error('Mock Delivery provider only supports v2 fixtures'));
+    }
+    return this.domain().prepare({ ...options, intent: options.intent });
   }
 
   status(changeId: string): Promise<DeliveryState> {
@@ -162,7 +166,10 @@ class MockDeliveryProvider extends Delivery {
   }
 
   publish(options: DeliveryPreparation): Promise<DeliveryState> {
-    return this.domain().publish(options);
+    if (options.intent.schemaVersion === 3) {
+      return Promise.reject(new Error('Mock Delivery provider only supports v2 fixtures'));
+    }
+    return this.domain().publish({ ...options, intent: options.intent });
   }
 
   override publishPostMerge(
@@ -200,6 +207,49 @@ async function main(): Promise<void> {
   }) as Plugin;
   Object.assign(plugin, { inject: MockDeliveryProvider.inject, provide: 'delivery' });
   catalog.set('delivery-file', { ...registration, plugin });
+  const actionsRegistration = catalog.get('post-merge-actions');
+  if (!actionsRegistration) throw new Error('Post-merge actions plugin is missing');
+  const legacyActionsPlugin = ((
+    context: Context,
+    pluginConfig: {
+      workspaceRoot: string;
+      temporaryRoot: string;
+      verificationPathPrefixes: string[];
+      publication: {
+        remote: string;
+        commit: { message: string };
+        finalChangeMergeRequest: { title: string; body: string };
+      };
+    },
+  ) => {
+    // This fixture resumes a schema-v1 Journal created before the v3 configuration cutover.
+    // Production composition never synthesizes this legacy policy from current project config.
+    new PostMergeActions(context, {
+      workspaceRoot: pluginConfig.workspaceRoot,
+      temporaryRoot: pluginConfig.temporaryRoot,
+      verificationPathPrefixes: pluginConfig.verificationPathPrefixes,
+      publicationPolicy: {
+        apiVersion: 'repoctopus/v1alpha1',
+        kind: 'PostMergePublicationPolicy',
+        operations: ['commit', 'push', 'merge_request.update'],
+        remote: pluginConfig.publication.remote,
+        commit: {
+          message: pluginConfig.publication.commit.message,
+          authorName: 'Repoctopus E2E',
+          authorEmail: 'repoctopus-e2e@example.invalid',
+        },
+        mergeRequest: {
+          title: pluginConfig.publication.finalChangeMergeRequest.title,
+          body: pluginConfig.publication.finalChangeMergeRequest.body,
+        },
+      },
+    });
+  }) as Plugin;
+  Object.assign(legacyActionsPlugin, {
+    inject: PostMergeActions.inject,
+    provide: 'postMergeActions',
+  });
+  catalog.set('post-merge-actions', { ...actionsRegistration, plugin: legacyActionsPlugin });
   const composition = compileRunnerComposition(productRoot, workspaceRoot, config, catalog);
   const app = await bootApp({ composition, catalog });
   const executePostMerge = app.context.postMergeCoordinator.execute.bind(

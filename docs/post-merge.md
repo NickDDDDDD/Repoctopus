@@ -1,14 +1,12 @@
-# 观察和恢复 Post-merge 收尾
+# 运维和恢复 Post-merge 收尾
 
-本指南帮助团队 Runner 运维者定位 Post-merge Run 停在哪个持久边界，并从该边界安全恢复。你可以只依赖平台事件、Delivery、Run、Evidence 和 Receipt 身份排障，不需要原开发者的本机工作区。
+本指南帮助团队 Runner 维护者判断 Change 为什么尚未生成最终 Change MR，并从最后一个可确认边界安全恢复。最短排障路径是先运行 `post-merge reconcile`，再同时检查 Delivery 和 Run；不要提前手工创建最终 MR，也不要通过 rebase、force-push、删除分支或修改持久状态文件绕过失败。
 
-配置 `platformEvents` 和 `postMerge` 后，`runner start` 会把 Post-merge Coordinator、Action Provider 与 Application Plugin 加入专用 Runner composition。普通 project composition 也装配一次性 Coordinator 与 Action Provider，但保持短生命周期，不会启动 HTTP 或后台轮询；`run start` 前置检查和 `post-merge reconcile` 使用这条路径。本指南用于所有入口产生的同一套持久事实。
-
-Change 是团队共享工作单元，不存在从 MR 作者推断出的独占 owner。Change MR 的提交者、业务 MR 的作者、Git 作者和 Runner identity 分别只说明远端动作或审计身份；任何成员都可以继续实现或修复同一 change，任何 Runner 都可以尝试完成满足条件的收尾。
+Delivery v3 把三个阶段分开记录：Business MR 集合是否全部合入、规格关闭分支是否发布成功、最终 Change MR 是否创建。最终 MR 只在前两项完成后出现。
 
 ## 准备关联 ID
 
-在 Workspace 中运行命令。开始前准备 change ID 和 Post-merge Run ID；如果需要检查平台唤醒或 Evidence，再准备 Envelope ID 和 Attempt ID。
+在 Workspace 中运行命令，并准备 change ID。只有已经创建 Post-merge Run 时才需要 run ID；检查平台投递或 Evidence 时再准备 Envelope ID 和 Attempt ID。
 
 ```powershell
 $workspace = Resolve-Path .
@@ -18,107 +16,155 @@ $envelopeId = '<envelope-id>'
 $attemptId = '<attempt-id>'
 ```
 
-这些值是关联身份，不是授权。不要把 webhook payload、Token、Header、命令输出或规格正文复制到遥测标签或 MR 评论中。
+这些值用于关联持久事实，不代表授权。不要把 webhook payload、Token、Header、命令输出或规格正文复制到遥测标签或 MR 评论中。
 
-## 1. 检查平台投递
+## 接手其他成员发起的 Change
 
-如果收尾 Run 没有出现，先检查持久 Inbox，而不是重新发送未经核对的 webhook payload。
+Change 是团队共享工作单元。MR 作者、Change 分支的 Git 作者、最终 MR 提交者和 Runner identity 都不是独占 owner；它们只提供平台身份、提交来源、租约或审计信息。
+
+1. 在保存该 change Delivery 状态的 Workspace 中运行 `delivery status`。
+2. 核对 change ID、`changeBranch`、完整 `businessMergeRequests` 集合和已有 `mergeEvidence`。
+3. 运行一次 `post-merge reconcile`，让当前 Runner 重新读取平台权威状态。
+4. 根据稳定诊断码继续本指南对应的恢复步骤，不要按作者身份跳过或领取 Change。
+
+如果当前机器是没有 `.repoctopus/deliveries/` 的新 clone，它还不能发现全部历史 Change。先恢复或挂载团队持久状态，再执行补偿；不要根据当前 Git 作者或平台 MR 作者猜测 Delivery。多个已经发现同一 Change、但使用独立状态卷的 Runner 可以重复计算，最终发布由远端 Change 分支 OID 和关闭语义核对收敛。
+
+## 先判定当前状态
+
+先执行一次补偿检查，然后读取 Delivery；存在 Run 时再读取 Run。
 
 ```powershell
-node bin/repoctopus.js event status --workspace $workspace --envelope $envelopeId --json
+node bin/repoctopus.js post-merge reconcile --workspace $workspace --json
+node bin/repoctopus.js delivery status --workspace $workspace --change $changeId --json
+node bin/repoctopus.js run status --workspace $workspace --run $runId --json
 ```
 
-当状态为 `dead_letter` 且你已经修复权限、配置或暂时故障时，显式请求一次重试：
+用下表判定下一步。表中的字段都来自命令 JSON 或 Runner 的稳定诊断码。
+
+| 状态                  | 可观察信号                                                                                                                                                                    | 下一步                                                                                                                              |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| 等待 Business MR 合入 | Reconcile 返回 `post-merge-business-merge-requests-open` 或 `post-merge-business-merge-requests-incomplete`；Delivery 的 `mergeEvidence` 尚未覆盖全部 `businessMergeRequests` | 等待或修复对应 Business MR。不要启动关闭，也不要创建最终 MR。最后一个 MR 合入后重新执行 Reconcile。                                 |
+| 规划漂移              | 规划批准仍绑定旧 `changeBranch.remoteOid`，而远端 Change 分支已经变化；Delivery 准备报告缺少有效 planning approval                                                            | 在业务发布前重新生成规划批准并人工确认。不要复用旧批准，也不要直接改 Delivery 状态。                                                |
+| 目标合并冲突          | Run 停在 `close-specification`，Runner 报告 `target-merge-conflict`；托管检出中存在 `MERGE_HEAD` 和未合并路径                                                                 | 人工审查并解决托管检出中的冲突，创建保留两个锁定 parent 的普通 merge commit，再执行 Reconcile。不要 rebase、squash 或推送临时检出。 |
+| 关闭发布失败          | Run 停在 `publish`；Delivery 的 `closure.status` 和 `finalChangeMergeRequest.status` 为 `failed`，错误码为 `final-change-publication-failed`                                  | 保留 Journal 和远端分支，修复凭据、权限或暂时故障，然后执行 Reconcile。发布成功前不会创建最终 MR。                                  |
+| 最终 MR 恢复          | Change 分支已经是预期收尾 OID，但本地没有发布 Receipt，或平台已存在同 head/base 的唯一开放 MR                                                                                 | 执行 Reconcile。系统查询并复用唯一 MR、核对 head OID 后补写 Receipt；不要手工创建第二个 MR。                                        |
+
+如果 Reconcile 返回 `post-merge-business-merge-request-closed`、`post-merge-merge-facts-incomplete`，或最终 MR 存在多个匹配、已关闭但未合入、head/base 漂移，请停止自动恢复并人工修复权威事实。这些情况不能通过重复命令安全收敛。
+
+## 恢复等待中的 Business MR
+
+如果完整 Business MR 集合尚未合入，按权威 MR 状态恢复协调：
+
+1. 运行 `delivery status`，确认每个 `businessMergeRequests[].mergeRequest` 都是已批准集合中的身份。
+2. 在代码平台处理仍开放的 MR，或修复“关闭但未合入”的阻断状态。
+3. 合入最后一个 Business MR 后重新运行 Reconcile。
+4. 确认 Reconcile 从 `waiting` 进入 `post-merge-ready` 或 `post-merge-completed`。
+
+Webhook 只负责唤醒。Reconcile 会重新查询平台权威状态，不依赖原 webhook payload，也不按 MR 作者、分支作者、Git 作者或 Runner identity 过滤候选项。
+
+## 恢复规划漂移
+
+规划批准绑定四类 OpenSpec 规划产物、Provider、配置、Change 分支映射和精确远端 OID。先读取批准快照：
 
 ```powershell
-node bin/repoctopus.js event retry --workspace $workspace --envelope $envelopeId --json
+node bin/repoctopus.js spec approval status --workspace $workspace --change $changeId --json
 ```
 
-`event retry` 不接受 `completed`、活动 Lease、`pending` 或已经处于 `retry_wait` 的投递。它保留原 Envelope 和 Receipt 历史，不创建第二条逻辑投递。
+如果 Change 分支在批准后发生了普通 push，原批准必须失效。业务发布尚未开始时，使用当前公开分支重新准备批准：
 
-Webhook 没有进入 Inbox，或希望立即检查当前 workspace 的所有候选项时，执行一次性补偿：
+```powershell
+node bin/repoctopus.js spec approval prepare --workspace $workspace --change $changeId --branch spec/$changeId --target main --remote origin --json
+```
+
+由可信的人机入口重新批准，再重新准备 Delivery。若 Business MR 已经发布或合入，不要用新 OID 覆盖现有 Delivery；保留现状并进入显式 repair 流程，因为已批准集合和 Post-merge Run 身份也绑定旧快照。
+
+## 恢复目标合并冲突
+
+Post-merge 会在托管临时检出中，把锁定的目标分支 OID 以普通 merge 合入 Change 分支。冲突不会修改远端 Change 分支。
+
+1. 运行 `run status`，确认 `currentStep` 是 `close-specification`。
+2. 在配置项 `postMerge.temporaryRoot` 下找到 `.repoctopus-post-merge-checkout.json` 中 `runId` 等于当前 Run 的目录。
+3. 在该目录的 `change-*` 仓库中运行 `git status` 和 `git diff --name-only --diff-filter=U`，审查每个冲突。
+4. 解决冲突后使用标准 Git 流程暂存文件，并以 `git commit --no-edit` 完成当前 merge。不要改变两个 parent，不要 rebase、squash、force-push，也不要直接推送这个临时检出。
+5. 重新运行 Reconcile。Runner 会核对 merge commit 的两个 parent、干净工作树、锁定远端 OID，再继续 Provider 关闭。
+
+不要删除 Closure Journal。Journal 保存已经锁定的 Change OID 和目标 OID；删除它会丢失恢复依据，而不是重置 Change。
+
+## 恢复关闭发布或最终 MR
+
+先同时读取 Run 和 Delivery：
+
+```powershell
+node bin/repoctopus.js run status --workspace $workspace --run $runId --json
+node bin/repoctopus.js delivery status --workspace $workspace --change $changeId --json
+```
+
+按以下顺序判断：
+
+1. `currentStep` 仍是 `close-specification` 或 `audit-paths`：先修复 Provider 校验、关闭计划或路径审计问题。不要进入发布。
+2. `currentStep` 是 `publish` 且 `closure.status` 为 `failed`：修复 Git 或平台访问问题，保留 Journal，然后运行 Reconcile。
+3. 远端 Change 分支已包含预期收尾 commit，但 `finalChangeMergeRequest.status` 为 `creating` 或 `failed`：直接运行 Reconcile，让 create-or-recover 查询平台。
+4. `closure.status` 为 `succeeded` 且 `finalChangeMergeRequest.status` 为 `open`：恢复已完成，等待人类评审和合入最终 MR。
 
 ```powershell
 node bin/repoctopus.js post-merge reconcile --workspace $workspace --json
 ```
 
-命令从 Delivery Store 发现候选项，通过平台 API 重新核对业务 MR，并在完成后退出。它不扫描“当前用户提交的 MR”，也不启动 HTTP Listener 或后台 Timer。第一版只能发现当前持久 workspace 已登记的 Delivery；全新 clone 没有这份状态时不能替代共享 Store 或远端索引。
+恢复顺序固定为 `merge_target → commit → push → merge_request.create_or_recover`。Git commit 响应丢失时复用同一 commit；push 响应丢失或另一 Runner 先完成时，系统核对目标同步提交的双 parent、tree、message 和 author，再核对关闭提交及 `Repoctopus-Closure-Audit` 摘要。MR 创建失败或响应丢失时，系统按仓库、source 和 target 查询唯一开放 MR。多个匹配、关闭 MR、分支映射漂移、审计语义变化或 head OID 不一致都会 fail-closed。
 
-## 2. 检查 Delivery 合入事实
+## 只恢复 Run Store 事务
 
-当平台投递已经完成但 Run 尚未启动时，检查 Delivery 是否已经观察到全部业务 MR 的权威 merge commit。
-
-```powershell
-node bin/repoctopus.js delivery status --workspace $workspace --change $changeId --json
-```
-
-只有 Delivery 状态为 `merged`，且原 Change MR 仍开放、源分支和目标分支未变化时，Runner 才能进入收尾发布。不要用 force-push、rebase、新建 MR 或修改目标分支绕过漂移诊断。
-
-## 3. 检查 Post-merge Run
-
-使用 Run 状态确定当前持久边界。固定步骤依次为 `checkout`、`evidence`、`close-specification`、`audit-paths` 和 `publish`。
-
-```powershell
-node bin/repoctopus.js run status --workspace $workspace --run $runId --json
-```
-
-如果进程在持久事务之间退出，先确认 Workspace Repository 和业务仓库没有未解释的改动，再恢复 Run：
+`run resume` 只对账 Run Store 的 Checkpoint、Trajectory 和未完成的本地持久事务。它不会重新查询 Business MR，也不会重新执行 Post-merge 的 Git、Provider 或平台副作用。
 
 ```powershell
 node bin/repoctopus.js run resume --workspace $workspace --run $runId --json
 ```
 
-恢复只对账已经持久化的 Checkpoint、Action Receipt 和当前项目快照。它不会跳过 Evidence Gate，也不会把漂移的本地或远端提交改写成预期状态。
+只有 `run status`、`doctor` 或 Runner 日志表明 Run Store 转换在提交期间中断时才使用它。事务恢复完成后，仍然通过 Reconcile 驱动 Post-merge。
 
-## 4. 检查 Evidence
+## 检查平台事件和 Evidence
 
-当 Run 停在 `evidence` 时，读取 Attempt、节点 Receipt、Artifact 引用和 Gate Projection：
+如果 Delivery 已经登记但没有出现 Reconcile 候选或 Run，检查持久 Inbox：
+
+```powershell
+node bin/repoctopus.js event status --workspace $workspace --envelope $envelopeId --json
+```
+
+只有状态为 `dead_letter`，且权限、配置或暂时故障已经修复时，才显式重试：
+
+```powershell
+node bin/repoctopus.js event retry --workspace $workspace --envelope $envelopeId --json
+```
+
+当 Run 停在 `evidence` 时，读取 Attempt、节点 Receipt、Artifact 和 Gate：
 
 ```powershell
 node bin/repoctopus.js evidence status --workspace $workspace --attempt $attemptId --json
-```
-
-如果 Evidence 已落盘但 OTLP 导出或进程响应中断，使用同一 Attempt ID 恢复：
-
-```powershell
 node bin/repoctopus.js evidence resume --workspace $workspace --attempt $attemptId --json
 ```
 
-`failed` Gate 表示验证真实失败；修复业务问题后需要新的验证代次。`superseded` 表示输入指纹在执行期间变化；先确认仓库状态，再启动新的 Attempt。
+`failed` Gate 表示验证真实失败，修复后需要新的验证代次。`superseded` 表示执行期间输入变化，确认仓库状态后再创建新 Attempt。Evidence 恢复完成后执行 Reconcile，不能靠 `run resume` 跳过 Evidence Gate。
 
-## 5. 根据收尾边界处理故障
+## 使用 OTel 关联持久事实
 
-每个阶段只接受与其持久 Receipt 一致的恢复路径。
-
-| 当前边界              | 可安全恢复的事实                                            | 必须停止并人工处理的情况                            |
-| --------------------- | ----------------------------------------------------------- | --------------------------------------------------- |
-| `checkout`            | Manifest 与精确 merge commit 一致                           | remote 身份、merge commit 或托管目录所有权变化      |
-| `evidence`            | 同一 Attempt、Receipt、Bundle 和 Gate                       | 输入漂移、required check 失败、composition 不兼容   |
-| `close-specification` | 同一关闭计划返回同一 Closure Receipt                        | Provider、计划摘要或规格权威变化                    |
-| `audit-paths`         | diff 与路径及内容摘要完全一致                               | 业务源码、未知文件、符号链接或额外规格路径出现      |
-| `publish`             | 既有提交是基线的唯一直接子提交，远端 OID 和原 MR 元数据一致 | MR 已关闭、分支映射改变、远端被改写或出现未授权操作 |
-
-在 `publish` 恢复中，Git 响应丢失会复用同一 commit；push 响应丢失会核对远端精确 OID；MR update 响应丢失会重新读取原 MR 的 title/body。多个 Runner 从同一基线竞争时，失败者只有在远端提交是该基线的直接子提交，并且 tree、message 与 author 都和本地审计结果等价时才收敛到远端提交；其他变化全部停止。系统不会自动 merge、force-push、rebase、删除分支或创建新 MR。
-
-## 6. 使用 OTel 关联持久事实
-
-在 OTLP Log 或 Span 中先按 `repoctopus.run.id` 查找 Run，再用以下属性连接各系统：
+在 OTLP Log 或 Span 中先按 `repoctopus.run.id` 查找 Run，再使用以下属性连接各系统：
 
 | 事实                                       | 关联属性                                                                 |
 | ------------------------------------------ | ------------------------------------------------------------------------ |
-| 合入事实                                   | `repoctopus.post_merge.merge_facts.digest`                               |
-| change                                     | `repoctopus.post_merge.change.id`                                        |
+| Business MR 合入事实                       | `repoctopus.post_merge.merge_facts.digest`                               |
+| Change                                     | `repoctopus.post_merge.change.id`                                        |
 | Evidence                                   | `repoctopus.evidence.attempt.id`、`repoctopus.evidence.bundle.id`        |
 | Action Receipt                             | `repoctopus.action.receipt.id`                                           |
 | 检出、规格关闭、路径审计或远端发布 Receipt | `repoctopus.post_merge.receipt.kind`、`repoctopus.post_merge.receipt.id` |
 
-Receipt ID 和摘要只用于 Log/Span 关联。Metric 标签只包含工作流名、事件类型、结果、Evidence Adapter 和状态等低基数值，不包含 Run、change、Attempt、Bundle、Delivery 或 Receipt ID。
+Receipt ID 和摘要只用于 Log/Span 关联。Metric 标签只包含工作流名、事件类型、结果、Evidence Adapter 和状态等低基数值，不包含 Run、Change、Attempt、Bundle、Delivery 或 Receipt ID。
 
 ## 后续阅读
 
-完成状态定位后，根据故障所在边界继续阅读对应说明：
+根据当前阻断阶段继续阅读相关指南：
 
-- [交付治理与失败恢复](delivery.md)：理解 Delivery 快照、人工批准和原 Change MR 边界。
+- [交付治理与失败恢复](delivery.md)：理解 Delivery v3、批准边界和最终 MR 状态。
+- [Delivery v2 到 v3 迁移](delivery-v2-migration.md)：生成只读迁移计划并重新取得授权。
 - [平台事件](platform-events.md)：检查 webhook 持久化、去重、Lease 和死信语义。
-- [Evidence](evidence.md)：解释 Attempt、Receipt、Artifact、Bundle 和 Gate 的关系。
+- [Evidence](evidence.md)：解释 Attempt、Receipt、Artifact、Bundle 和 Gate。
 - [OpenTelemetry](telemetry.md)：查看属性允许列表、导出恢复和隐私边界。

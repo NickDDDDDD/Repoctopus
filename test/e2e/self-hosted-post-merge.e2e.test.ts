@@ -263,7 +263,7 @@ async function fixture() {
             verificationPathPrefixes: [],
           },
           publication: {
-            operations: ['commit', 'push', 'merge_request.update'],
+            operations: ['merge_target', 'commit', 'push', 'merge_request.create_or_recover'],
             remote: 'origin',
             commit: {
               message: 'chore(spec): close verified change',
@@ -276,8 +276,7 @@ async function fixture() {
                 variable: 'REPOCTOPUS_E2E_AUTHOR_EMAIL',
               },
             },
-            changeMergeRequest: {
-              mode: 'update-existing',
+            finalChangeMergeRequest: {
               title: 'Closed self-hosted specification',
               body: 'Post-merge verification completed.',
             },

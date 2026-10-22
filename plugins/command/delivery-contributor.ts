@@ -3,6 +3,7 @@ import type { Context, Plugin } from '@deepseek-ai/cordis';
 import type { DeliveryPreparation } from '../../services/delivery.js';
 import type {
   DeliveryIntent,
+  DeliveryIntentV3,
   DeliveryPolicy,
   HumanDecisionResponse,
   TrustedActor,
@@ -17,7 +18,7 @@ const plugin = ((context: Context) => {
         execute: ({ input, signal }) => {
           const request = input as {
             project: ProjectSnapshot;
-            intent: DeliveryIntent;
+            intent: DeliveryIntent | DeliveryIntentV3;
             policy: DeliveryPolicy;
           };
           return context.delivery.checkpoint(
@@ -59,6 +60,13 @@ const plugin = ((context: Context) => {
         execute: ({ input, signal }) => {
           const request = input as { changeId: string; policy: DeliveryPolicy };
           return context.delivery.refresh(request.changeId, request.policy, signal);
+        },
+      }),
+      context.commandRouter.register({
+        name: 'delivery.migration-plan',
+        execute: ({ input, signal }) => {
+          const request = input as { changeId: string; policy: DeliveryPolicy };
+          return context.delivery.migrationPlan(request.changeId, request.policy, signal);
         },
       }),
     ];

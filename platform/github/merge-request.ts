@@ -1,7 +1,7 @@
 import type {
   CredentialProvider,
+  FinalMergeRequestPort,
   MergeRequestInput,
-  MergeRequestPort,
 } from '../../domains/delivery/ports.js';
 import type {
   MergeRequestIdentity,
@@ -50,7 +50,7 @@ function identity(repositoryId: string, pull: GitHubPull): MergeRequestIdentity 
   return { provider: 'github', repositoryId, number: pull.number, url: pull.html_url };
 }
 
-export class GitHubMergeRequestAdapter implements MergeRequestPort {
+export class GitHubMergeRequestAdapter implements FinalMergeRequestPort {
   constructor(
     private readonly credentials: CredentialProvider,
     private readonly apiBaseUrl = 'https://api.github.com',
@@ -90,13 +90,22 @@ export class GitHubMergeRequestAdapter implements MergeRequestPort {
   }
 
   async find(input: MergeRequestInput): Promise<MergeRequestIdentity | null> {
-    const repository = repositoryPath(input.remoteIdentity);
-    const owner = repository.split('/')[0]!;
-    const pulls = await this.call<GitHubPull[]>(
-      `/repos/${repository}/pulls?state=open&head=${encodeURIComponent(`${owner}:${input.sourceBranch}`)}&base=${encodeURIComponent(input.targetBranch)}`,
-    );
+    const pulls = await this.findPulls(input, 'open');
     const pull = pulls[0];
     return pull ? identity(input.repositoryId, pull) : null;
+  }
+
+  async findAll(input: MergeRequestInput): Promise<MergeRequestIdentity[]> {
+    const pulls = await this.findPulls(input, 'all');
+    return pulls.map((pull) => identity(input.repositoryId, pull));
+  }
+
+  private findPulls(input: MergeRequestInput, state: 'open' | 'all'): Promise<GitHubPull[]> {
+    const repository = repositoryPath(input.remoteIdentity);
+    const owner = repository.split('/')[0]!;
+    return this.call<GitHubPull[]>(
+      `/repos/${repository}/pulls?state=${state}&head=${encodeURIComponent(`${owner}:${input.sourceBranch}`)}&base=${encodeURIComponent(input.targetBranch)}&per_page=100`,
+    );
   }
 
   async create(input: MergeRequestInput): Promise<MergeRequestIdentity> {

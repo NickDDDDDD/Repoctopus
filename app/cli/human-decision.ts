@@ -1,17 +1,24 @@
 import { createInterface } from 'node:readline/promises';
 
-import type { DeliveryService } from '../../domains/delivery/service.js';
-import type { HumanDecision } from '../../domains/delivery/types.js';
+import type {
+  HumanDecision,
+  HumanDecisionRequest,
+  HumanDecisionRequestV3,
+} from '../../domains/delivery/types.js';
 
 export async function reviewHumanDecision(options: {
-  request: NonNullable<Awaited<ReturnType<DeliveryService['status']>>['decisionRequest']>;
+  request: HumanDecisionRequest | HumanDecisionRequestV3;
   input: NodeJS.ReadableStream;
   output: NodeJS.WritableStream;
 }): Promise<{ decision: HumanDecision; comment?: string }> {
   const terminal = createInterface({ input: options.input, output: options.output });
   try {
+    const deliveryCount =
+      'businessDeliveries' in options.request
+        ? options.request.businessDeliveries.length
+        : options.request.repositories.length;
     options.output.write(
-      `\nDelivery approval: ${options.request.changeId}\nSnapshot: ${options.request.snapshotDigest}\nRepositories: ${options.request.repositories.length}\nActions: ${options.request.actions.length}\n\n1) Approve\n2) Request changes\n3) Reject\n`,
+      `\nDelivery approval: ${options.request.changeId}\nSnapshot: ${options.request.snapshotDigest}\nBusiness deliveries: ${deliveryCount}\nActions: ${options.request.actions.length}\n\n1) Approve\n2) Request changes\n3) Reject\n`,
     );
     const answer = (await terminal.question('Decision [1-3]: ')).trim();
     const decision: HumanDecision =

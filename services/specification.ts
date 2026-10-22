@@ -15,7 +15,18 @@ export interface PrepareSpecificationClosureInput {
   signal?: AbortSignal;
 }
 
-export abstract class Specification extends Service {
+export interface SpecificationWorkspace {
+  identity(): SpecificationProviderIdentity;
+  inspect(changeId: string, signal?: AbortSignal): Promise<SpecificationChange>;
+  validate(
+    changeId: string,
+    options?: { strict?: boolean; signal?: AbortSignal },
+  ): Promise<SpecificationValidation>;
+  prepareClosure(input: PrepareSpecificationClosureInput): Promise<SpecificationClosurePlan>;
+  close(plan: SpecificationClosurePlan, signal?: AbortSignal): Promise<SpecificationClosureResult>;
+}
+
+export abstract class Specification extends Service implements SpecificationWorkspace {
   constructor(context: Context) {
     super(context, 'specification');
   }
@@ -33,6 +44,12 @@ export abstract class Specification extends Service {
     plan: SpecificationClosurePlan,
     signal?: AbortSignal,
   ): Promise<SpecificationClosureResult>;
+
+  atWorkspace(workspaceRoot: string): SpecificationWorkspace {
+    throw new Error(
+      `Specification provider ${this.identity().id} cannot bind workspace: ${workspaceRoot}`,
+    );
+  }
 }
 
 declare module '@deepseek-ai/cordis' {

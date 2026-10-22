@@ -86,6 +86,9 @@ describe('self-hosting documentation', () => {
     expect(platformEvents).not.toContain('长期运行入口仍属于后续组合任务');
     expect(postMerge).not.toContain('尚未把 Post-merge Runner');
     expect(postMerge).toContain('post-merge reconcile');
+    for (const unsupportedOwnerField of ['changeOwner', 'mrAuthor', 'branchAuthor']) {
+      expect(documentation).toContain(unsupportedOwnerField);
+    }
   });
 
   it('runs the documented one-shot reconciliation without an HTTP listener', async () => {

@@ -220,14 +220,16 @@
         "publication": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["operations", "remote", "commit", "changeMergeRequest"],
+          "required": ["operations", "remote", "commit", "finalChangeMergeRequest"],
           "properties": {
             "operations": {
               "type": "array",
-              "minItems": 3,
-              "maxItems": 3,
+              "minItems": 4,
+              "maxItems": 4,
               "uniqueItems": true,
-              "items": { "enum": ["commit", "push", "merge_request.update"] }
+              "items": {
+                "enum": ["merge_target", "commit", "push", "merge_request.create_or_recover"]
+              }
             },
             "remote": { "$ref": "#/$defs/stableIdentifier" },
             "commit": {
@@ -240,12 +242,11 @@
                 "authorEmailCredential": { "$ref": "#/$defs/credentialReference" }
               }
             },
-            "changeMergeRequest": {
+            "finalChangeMergeRequest": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["mode", "title", "body"],
+              "required": ["title", "body"],
               "properties": {
-                "mode": { "const": "update-existing" },
                 "title": { "type": "string", "minLength": 1 },
                 "body": { "type": "string", "minLength": 1 }
               }

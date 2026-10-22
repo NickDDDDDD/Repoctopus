@@ -84,7 +84,48 @@ describe('project composition assembly', () => {
     expect(runner.entries.find((entry) => entry.id === 'runner-application')?.descriptor.kind).toBe(
       'application',
     );
+    const postMergeActions = runner.entries.find((entry) => entry.id === 'post-merge-actions');
+    expect(postMergeActions?.descriptor.configSchemaVersion).toBe('2');
+    expect(postMergeActions?.config).toMatchObject({
+      publication: {
+        operations: ['merge_target', 'commit', 'push', 'merge_request.create_or_recover'],
+        finalChangeMergeRequest: {
+          title: 'Close verified specification',
+          body: 'Post-merge verification and specification closure completed.',
+        },
+      },
+    });
+    expect(postMergeActions?.config).not.toHaveProperty('publication.changeMergeRequest');
     expect(runner.compositionDigest).not.toBe(project.compositionDigest);
+  });
+
+  it('keeps composition identity stable across equivalent product and Workspace locations', async () => {
+    const first = await selfHostedProject();
+    const second = await selfHostedProject();
+    const catalog = await createRepoctopusBuiltinCatalog(productRoot);
+    const firstComposition = compileProjectComposition(
+      productRoot,
+      first.workspaceRoot,
+      first.config,
+      catalog,
+    );
+    const secondComposition = compileProjectComposition(
+      path.join(productRoot, 'alternate-install-location'),
+      second.workspaceRoot,
+      second.config,
+      catalog,
+    );
+
+    expect(secondComposition.compositionDigest).toBe(firstComposition.compositionDigest);
+    expect(compositionIdentity(secondComposition).plugins).toEqual(
+      compositionIdentity(firstComposition).plugins,
+    );
+    expect(
+      secondComposition.entries.find((entry) => entry.id === 'specification-openspec')?.config,
+    ).toEqual({ workspaceRoot: second.workspaceRoot });
+    expect(
+      secondComposition.entries.find((entry) => entry.id === 'maintenance-command')?.config,
+    ).toEqual({ productRoot: path.join(productRoot, 'alternate-install-location') });
   });
 
   it('fails closed when a configured Provider is not in the admitted catalog', async () => {

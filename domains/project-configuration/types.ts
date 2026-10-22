@@ -135,15 +135,14 @@ export interface PostMergeConfig {
     verificationPathPrefixes: string[];
   };
   publication: {
-    operations: ['commit', 'push', 'merge_request.update'];
+    operations: ['merge_target', 'commit', 'push', 'merge_request.create_or_recover'];
     remote: string;
     commit: {
       message: string;
       authorNameCredential: CredentialReference;
       authorEmailCredential: CredentialReference;
     };
-    changeMergeRequest: {
-      mode: 'update-existing';
+    finalChangeMergeRequest: {
       title: string;
       body: string;
     };

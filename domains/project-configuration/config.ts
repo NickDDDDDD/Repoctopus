@@ -279,18 +279,28 @@ function parsePostMerge(value: unknown): PostMergeConfig {
   }
 
   const publication = object(config.publication, 'postMerge.publication');
+  if (
+    'changeMergeRequest' in publication ||
+    (Array.isArray(publication.operations) &&
+      publication.operations.includes('merge_request.update'))
+  ) {
+    throw new ProjectConfigError(
+      'legacy update-existing publication is read-only; configure merge_target, commit, push, merge_request.create_or_recover, and finalChangeMergeRequest',
+      'postMerge.publication',
+    );
+  }
   exactKeys(
     publication,
-    ['operations', 'remote', 'commit', 'changeMergeRequest'],
+    ['operations', 'remote', 'commit', 'finalChangeMergeRequest'],
     'postMerge.publication',
   );
   const operations = stringArray(publication.operations, 'postMerge.publication.operations');
   if (
     canonicalJson([...operations].sort()) !==
-    canonicalJson(['commit', 'merge_request.update', 'push'])
+    canonicalJson(['commit', 'merge_request.create_or_recover', 'merge_target', 'push'])
   ) {
     throw new ProjectConfigError(
-      'must contain only commit, push, and merge_request.update',
+      'must contain only merge_target, commit, push, and merge_request.create_or_recover',
       'postMerge.publication.operations',
     );
   }
@@ -305,16 +315,10 @@ function parsePostMerge(value: unknown): PostMergeConfig {
     throw new ProjectConfigError('must be one line', 'postMerge.publication.commit.message');
   }
   const mergeRequest = object(
-    publication.changeMergeRequest,
-    'postMerge.publication.changeMergeRequest',
+    publication.finalChangeMergeRequest,
+    'postMerge.publication.finalChangeMergeRequest',
   );
-  exactKeys(mergeRequest, ['mode', 'title', 'body'], 'postMerge.publication.changeMergeRequest');
-  if (mergeRequest.mode !== 'update-existing') {
-    throw new ProjectConfigError(
-      'must update the existing Change merge request',
-      'postMerge.publication.changeMergeRequest.mode',
-    );
-  }
+  exactKeys(mergeRequest, ['title', 'body'], 'postMerge.publication.finalChangeMergeRequest');
   const remote = identifier(publication.remote, 'postMerge.publication.remote');
   return {
     runnerIdentity: identifier(config.runnerIdentity, 'postMerge.runnerIdentity'),
@@ -322,7 +326,7 @@ function parsePostMerge(value: unknown): PostMergeConfig {
     evidenceProfile: identifier(config.evidenceProfile, 'postMerge.evidenceProfile'),
     allowedWorkspacePaths: { specificationClosure: true, verificationPathPrefixes },
     publication: {
-      operations: ['commit', 'push', 'merge_request.update'],
+      operations: ['merge_target', 'commit', 'push', 'merge_request.create_or_recover'],
       remote,
       commit: {
         message,
@@ -335,10 +339,9 @@ function parsePostMerge(value: unknown): PostMergeConfig {
           'postMerge.publication.commit.authorEmailCredential',
         ),
       },
-      changeMergeRequest: {
-        mode: 'update-existing',
-        title: string(mergeRequest.title, 'postMerge.publication.changeMergeRequest.title'),
-        body: string(mergeRequest.body, 'postMerge.publication.changeMergeRequest.body'),
+      finalChangeMergeRequest: {
+        title: string(mergeRequest.title, 'postMerge.publication.finalChangeMergeRequest.title'),
+        body: string(mergeRequest.body, 'postMerge.publication.finalChangeMergeRequest.body'),
       },
     },
   };
