@@ -35,6 +35,11 @@ Repoctopus MUST 在 Post-merge Run 的稳定身份中绑定已批准的完整 Bu
 - **WHEN** 所有已登记 Business MR 身份与权威 merge commit 均和 Run 输入一致
 - **THEN** Post-merge Run 可以继续执行 Evidence、规格关闭和最终 Change MR 发布
 
+#### Scenario: 同一仓库包含多个已批准 Business MR
+
+- **WHEN** 同一仓库的多个 Business MR 指向同一目标分支且全部取得权威 merge commit
+- **THEN** Post-merge Run 保留每个 MR 的 merge evidence，并以最后合入的 commit 作为该仓库唯一的最终检出状态
+
 ## MODIFIED Requirements
 
 ### Requirement: 全部相关业务 MR 合入后才启动收尾

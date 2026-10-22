@@ -62,6 +62,8 @@ businessSplitReason?
 
 `businessDeliveries` 非空，默认生成一个成员。成员使用 `deliveryId` 而不是 `repositoryId` 作为集合主键，因此既支持多仓，也支持同仓必要补充 MR。超过一个成员时必须提供结构化拆分理由；集合以稳定顺序进入 intent digest、批准快照和 Post-merge Run 身份。
 
+同仓多个成员必须使用不同源分支并指向同一个目标分支。Post-merge Trigger 将完整 MR 集合与仓库检出视为两个层次：`mergeEvidence` 保留每个已批准 MR 的权威 merge commit，`repositories` 则为每个仓库保留一次最终检出；同仓场景选择最后合入的 commit 作为包含较早合入结果的目标分支状态。这样不会因为 Project Snapshot 的仓库唯一性丢失 MR 证据，也不会为同一仓库创建两个互相冲突的检出。
+
 业务 MR 集合不是开放列表。批准后增删、替换成员或改变分支映射都使批准失效；Post-merge 开始后发现集合漂移则 fail-closed。
 
 备选方案是继续让 `repositories[]` 一项等于一个 MR。这无法表达同仓多个独立源分支，并把仓库身份错误地当成交付单元身份，因此不采用。
