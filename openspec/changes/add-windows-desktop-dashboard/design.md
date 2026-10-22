@@ -194,6 +194,16 @@ Repoctopus 的 Renderer 是本地 OTLP 投影客户端，不需要 DSH 的共享
 
 普通实现决定、约束和经批准偏差继续记录在本 `design.md`；测试事实进入 Evidence 和正式验证报告，不新增 implementation notes 或 ADR。
 
+### 12. 旧流程基础切片按新交付契约续作
+
+本 Change 的旧流程 Spec MR #11 和基础实现 MR #12 已进入主线，但 #12 的批准正文明确把它限定为第一个桌面基础切片；OTLP receiver、统一 envelope、投影、完整界面、托盘和 Windows 打包仍未交付。因此 MR 合入事实不能被解释为 Change 已完成，也不能直接归档当前四类规划产物。
+
+续作从包含两个旧 MR 和 `finalize-change-before-change-mr` 的最新干净主线重新建立基线。2026-10-22 的恢复验证中，DSH `687f282e8625c6b8d11ff58211a90524be2e4317` 与 Comet `575ab0d172e8105257b3c9172b8c8a9b628960ca` 均未漂移；`npm run verify` 通过 99 个测试文件、420 项测试并保留 1 项既有 Windows 条件跳过，`npm run test:tracer-e2e` 1/1 通过，桌面 smoke、来源与架构检查也通过。这些事实完成任务 1.1 和 1.3，但不为剩余能力提供完成证明。
+
+依赖恢复同时发现 10 个 moderate、0 个 high/critical 的 npm advisory。Vitest 可用补丁版本修复；Electron Builder 链给出的自动建议会把固定的 DSH 基线 `26.15.3` 降到 `26.5.0`，不能用 `npm audit fix --force` 绕过来源和上游采用审计。任务 1.2 保持未完成，直到 Vitest 补丁升级通过完整验证，并对 Electron Builder 的固定版本、可达性和替代版本形成显式结论。
+
+恢复后的 Change 分支遵循 v3 边界：先公开分支并取得 Planning Approval，剩余实现默认汇入一个 Business MR；最终 Change MR 只能由 Post-merge 在业务合入、Evidence、主规格同步和归档完成后创建。旧 MR #11/#12 是历史事实，不是复用旧批准或提前创建最终 MR 的授权。
+
 ## Risks / Trade-offs
 
 - [Electron 安装体积和常驻内存高于原生轻客户端] → 这是换取成熟跨平台窗口、托盘和前端生态的成本；首版限制窗口数量、后台任务和 UI 依赖，并测量 idle/active 资源。

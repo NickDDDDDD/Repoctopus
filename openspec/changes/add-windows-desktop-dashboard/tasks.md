@@ -2,9 +2,9 @@
 
 ## 1. 固定基线与桌面依赖
 
-- [ ] 1.1 在干净主线记录 Node、npm、Windows、现有遥测测试和构建基线，执行 `npm run check:upstream`、`npm run verify` 与 `npm run test:tracer-e2e` 并确认全部通过。
+- [x] 1.1 在干净主线记录 Node、npm、Windows、现有遥测测试和构建基线，执行 `npm run check:upstream`、`npm run verify` 与 `npm run test:tracer-e2e` 并确认全部通过。
 - [ ] 1.2 选择并精确锁定 Electron、React、Vite 和 `electron-builder` 版本，审计固定 DSH Desktop 基线并登记许可证、来源、安装脚本、采用文件、修改方式与排除范围；更新 `third_party/dsh-adoption.json` 后执行 `npm install`、`npm run check:provenance` 和许可证检查，证明没有未登记依赖或 Comet 源码复制。
-- [ ] 1.3 在 `app/desktop` 建立 thin-main、preload、renderer、desktop-host 和共享契约边界；只在 Node-mode Desktop Host 子进程建立统一 App Boot 与 desktop composition。执行桌面 typecheck、lint、composition/进程契约测试和开发构建，证明 Application Plugin 只在必需 Service 就绪后激活，Electron Main 不承载 Cordis 产品 composition，Renderer 没有 Node/Cordis 权限。
+- [x] 1.3 在 `app/desktop` 建立 thin-main、preload、renderer、desktop-host 和共享契约边界；只在 Node-mode Desktop Host 子进程建立统一 App Boot 与 desktop composition。执行桌面 typecheck、lint、composition/进程契约测试和开发构建，证明 Application Plugin 只在必需 Service 就绪后激活，Electron Main 不承载 Cordis 产品 composition，Renderer 没有 Node/Cordis 权限。
 
 ## 2. 交付首个真实 OTLP 到桌面纵切
 
@@ -60,6 +60,7 @@
 
 ## Workflow follow-up
 
-- 规划产物获批后使用独立业务分支和 Business MR 实现；Change MR 与 Business MR 不得复用同一分支或 MR。
-- Business MR 合入并完成 Post-merge Evidence 后，由 OpenSpec Provider 同步主规格、归档 change，并通过原 Change MR 提交收尾结果。
+- 规划产物通过严格校验后先公开 Change 分支，并取得绑定精确远端 OID 的 Planning Approval；规划阶段不创建 Change MR。
+- 剩余实现默认使用一个 Business MR；既有已合入的基础切片只作为目标分支历史，不替代本次批准，也不作为继续拆分 MR 的理由。
+- Business MR 合入并完成 Post-merge Evidence 后，由 OpenSpec Provider 合入锁定目标、同步主规格并归档 change；关闭分支发布成功后才创建最终 Change MR。
 - 桌面纵切稳定后，在能够访问团队服务的环境中把远端 OTLP endpoint 指向已部署 SigNoZ，验证查询结果与固定 envelope；该验证不部署本地 Docker Compose，也不阻塞本 change 的首个实现 MR。
