@@ -21,6 +21,19 @@ Repoctopus 把功能分支 checkpoint 视为远端备份边界：策略允许的
 
 `businessDeliveries` 使用稳定的 `deliveryId` 声明完整 Business MR 集合。默认只有 `primary` 一个交付。多个交付必须显式提供 `businessSplitReason`，不能根据 Tasks 自动拆分 MR。平台合入事件只映射 Business MR；Repoctopus 完成全部 Post-merge 工作后才创建最终 Change MR。
 
+## 显式声明多个 Business MR
+
+默认使用 [单 Business MR 示例](examples/delivery-intent.yaml)。只有一个 Change 跨越多个仓库、需要独立可验证的有序交付，或必须增加补充修复时，才复制[多 Business MR 示例](examples/delivery-intent-multiple.yaml)并声明完整集合。
+
+编辑多 MR Intent 时：
+
+1. 为每个 MR 设置稳定且唯一的 `deliveryId`。
+2. 为每个 MR 设置独立的源分支，并明确其目标分支。
+3. 设置 `businessSplitReason.kind` 和具体的 `summary`，说明为什么不能使用默认单 MR。
+4. 在批准前列出完整集合。批准后增删或替换任何成员都会使批准失效。
+
+同一仓库可以有多个源分支，但这些 MR 必须指向同一个目标分支。Post-merge Run 保留每个 MR 的权威 merge commit；执行验证时，每个仓库只检出该集合中最后合入的 commit，作为包含该仓较早合入结果的最终目标分支状态。
+
 ## 从 Delivery Intent v2 迁移
 
 v2 状态仍可读取和诊断，但不能再用来发起 `delivery checkpoint`、`delivery prepare` 或 `delivery publish`。CLI 检测到 `schemaVersion: 2` 或 `changeMergeRequest` 时会停止，不会把旧字段静默解释成 v3。

@@ -75,13 +75,31 @@ function isMergeEvidence(value: unknown): value is PostMergeTriggerEvidence {
     typeof item === 'object' &&
     typeof item.repositoryId === 'string' &&
     item.repositoryId.length > 0 &&
+    !!item.mergeRequest &&
+    typeof item.mergeRequest.provider === 'string' &&
+    item.mergeRequest.provider.length > 0 &&
+    item.mergeRequest.repositoryId === item.repositoryId &&
+    Number.isInteger(item.mergeRequest.number) &&
+    item.mergeRequest.number > 0 &&
+    typeof item.mergeRequest.url === 'string' &&
+    item.mergeRequest.url.length > 0 &&
     typeof item.mergeCommit === 'string' &&
-    /^[a-f0-9]{40,64}$/i.test(item.mergeCommit)
+    /^[a-f0-9]{40,64}$/i.test(item.mergeCommit) &&
+    typeof item.mergedAt === 'string' &&
+    item.mergedAt.length > 0
   );
 }
 
 function mergeEvidenceIdentity(value: PostMergeTriggerEvidence): string {
   return `${value.repositoryId}\0${value.mergeCommit.toLowerCase()}`;
+}
+
+function mergeRequestIdentity(value: PostMergeTriggerEvidence): string {
+  return [
+    value.mergeRequest.provider,
+    value.mergeRequest.repositoryId,
+    value.mergeRequest.number,
+  ].join('\0');
 }
 
 export function postMergeTriggerFacts(
@@ -102,14 +120,15 @@ export function postMergeTriggerFacts(
     !facts.repositories.every(isRepositoryFact) ||
     new Set(facts.repositories.map((repository) => repository.repositoryId)).size !==
       facts.repositories.length ||
-    new Set(facts.mergeEvidence.map((evidence) => evidence.repositoryId)).size !==
-      facts.mergeEvidence.length
+    new Set(facts.mergeEvidence.map(mergeRequestIdentity)).size !== facts.mergeEvidence.length
   ) {
     throw new Error('Run has no valid Post-merge Trigger facts');
   }
   const evidence = new Set(facts.mergeEvidence.map(mergeEvidenceIdentity));
+  const repositoryIds = new Set(facts.repositories.map((repository) => repository.repositoryId));
   if (
-    evidence.size !== facts.repositories.length ||
+    facts.mergeEvidence.length === 0 ||
+    facts.mergeEvidence.some((item) => !repositoryIds.has(item.repositoryId)) ||
     facts.repositories.some(
       (repository) =>
         !evidence.has(`${repository.repositoryId}\0${repository.mergeCommit.toLowerCase()}`),

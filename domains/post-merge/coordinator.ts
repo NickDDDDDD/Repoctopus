@@ -158,6 +158,35 @@ function coordinatePostMergeV3(
   const digest: `sha256:${string}` = `sha256:${createHash('sha256')
     .update(canonicalJson({ changeBranch: state.snapshot.changeBranch, facts }))
     .digest('hex')}`;
+  const repositories = new Map<string, PostMergeRepositoryFact>();
+  for (const fact of [...facts].sort(
+    (left, right) =>
+      left.mergedAt.localeCompare(right.mergedAt) ||
+      left.deliveryId.localeCompare(right.deliveryId),
+  )) {
+    const existing = repositories.get(fact.repositoryId);
+    if (
+      existing &&
+      (existing.remoteIdentity !== fact.remoteIdentity ||
+        existing.targetBranch !== fact.targetBranch)
+    ) {
+      return {
+        status: 'blocked',
+        diagnostic: 'post-merge-merge-facts-incomplete',
+        changeId: state.changeId,
+        repositoryIds: [fact.repositoryId],
+      };
+    }
+    // A Run keeps evidence for every approved MR, but checks out one final commit per
+    // repository. For same-repository deliveries, the most recently merged MR is the
+    // target-branch state that contains the earlier merges.
+    repositories.set(fact.repositoryId, {
+      repositoryId: fact.repositoryId,
+      remoteIdentity: fact.remoteIdentity,
+      targetBranch: fact.targetBranch,
+      mergeCommit: fact.mergeCommit,
+    });
+  }
   return {
     status: 'ready',
     diagnostic: 'post-merge-ready',
@@ -165,12 +194,9 @@ function coordinatePostMergeV3(
     mergeFactsDigest: digest,
     changeBranch: structuredClone(state.snapshot.changeBranch),
     mergeEvidence: structuredClone(state.mergeEvidence),
-    repositories: facts.map((item) => ({
-      repositoryId: item.repositoryId,
-      remoteIdentity: item.remoteIdentity,
-      targetBranch: item.targetBranch,
-      mergeCommit: item.mergeCommit,
-    })),
+    repositories: [...repositories.values()].sort((left, right) =>
+      left.repositoryId.localeCompare(right.repositoryId),
+    ),
   };
 }
 

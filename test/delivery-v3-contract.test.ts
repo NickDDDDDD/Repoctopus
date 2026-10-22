@@ -107,7 +107,7 @@ function assertSchema(schema: JsonSchema, value: unknown, location: string): voi
 const repositoryRoot = path.resolve(import.meta.dirname, '..');
 
 describe('Delivery Intent v3 contract', () => {
-  it('keeps the published example valid against both runtime parsing and JSON Schema', async () => {
+  it('keeps the default published path to one Business MR', async () => {
     const [exampleSource, schemaSource] = await Promise.all([
       readFile(path.join(repositoryRoot, 'docs', 'examples', 'delivery-intent.yaml'), 'utf8'),
       readFile(path.join(repositoryRoot, 'docs', 'schemas', 'delivery-intent.schema.json'), 'utf8'),
@@ -120,6 +120,7 @@ describe('Delivery Intent v3 contract', () => {
       schemaVersion: 3,
       businessDeliveries: [{ deliveryId: 'primary' }],
     });
+    expect(example).not.toHaveProperty('businessSplitReason');
 
     const multiple = structuredClone(example) as {
       businessDeliveries: Array<Record<string, unknown>>;
@@ -135,6 +136,25 @@ describe('Delivery Intent v3 contract', () => {
       businessSplitReason: { kind: 'multi_repository', summary: 'not needed for one MR' },
     };
     expect(() => assertSchema(schema, unnecessaryReason, '$')).toThrow(/too few items/);
+  });
+
+  it('keeps the explicit multi-Business-MR example valid and intentional', async () => {
+    const [exampleSource, schemaSource] = await Promise.all([
+      readFile(
+        path.join(repositoryRoot, 'docs', 'examples', 'delivery-intent-multiple.yaml'),
+        'utf8',
+      ),
+      readFile(path.join(repositoryRoot, 'docs', 'schemas', 'delivery-intent.schema.json'), 'utf8'),
+    ]);
+    const example = parse(exampleSource) as unknown;
+    const schema = JSON.parse(schemaSource) as JsonSchema;
+
+    expect(() => assertSchema(schema, example, '$')).not.toThrow();
+    expect(parseDeliveryIntentV3(example)).toMatchObject({
+      schemaVersion: 3,
+      businessDeliveries: [{ deliveryId: 'api' }, { deliveryId: 'app' }],
+      businessSplitReason: { kind: 'multi_repository' },
+    });
   });
 
   it('documents the v3 approval request without the former Change MR fields', async () => {

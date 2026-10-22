@@ -172,6 +172,16 @@ describe('Delivery v3 domain', () => {
         ),
       }),
     ).toThrow(/duplicates another merge request mapping/i);
+    expect(() =>
+      deliveryIntentDigestV3({
+        ...sameRepository,
+        businessDeliveries: sameRepository.businessDeliveries.map((delivery) =>
+          delivery.deliveryId === 'supplemental'
+            ? { ...delivery, targetBranch: 'release' }
+            : delivery,
+        ),
+      }),
+    ).toThrow(/must use one target branch/i);
   });
 
   it('rejects implicit multi-MR plans and mismatched or dirty facts', () => {
