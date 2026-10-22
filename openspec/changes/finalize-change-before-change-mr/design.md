@@ -132,6 +132,8 @@ v2 Delivery 读取后分三类：
 - 已有开放 Change MR：默认继续旧状态只读诊断，必须由用户决定保留旧流程还是关闭旧 MR 后迁移；
 - Change MR 已关闭或合入但 Change 未关闭：标记 `repair_required`，输出 Change 分支、业务集合和目标基线的显式修复计划。
 
+迁移查询返回 `DeliveryV2MigrationPlan`，不直接生成可执行 `DeliveryIntentV3`。v2 快照没有持久化业务 commit message，且旧批准、Evidence Bundle 和平台状态都不能成为新授权；因此计划只提供 Change 分支事实、旧 Business MR identity、已记录目标 OID、待补字段与人工动作。Built-in File Provider 对 v2 只保留 `status` 和 `migration-plan` 查询，不再执行 decide、refresh、reconciliation、publish 或 Post-merge 发布。
+
 新写入只产生 v3。迁移不得自动关闭、重开或替换 MR，不复用旧批准，也不执行 force push。
 
 ## Risks / Trade-offs

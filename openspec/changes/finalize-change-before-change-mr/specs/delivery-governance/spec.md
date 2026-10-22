@@ -83,6 +83,25 @@ Repoctopus MUST 把 change 视为团队共享工作单元，允许不同成员�
 - **WHEN** 另一成员在已经登记的 change 中修复 Bug、补测试或更新规格
 - **THEN** Repoctopus 接受该成员产生的受审计动作，不因 change 最初由其他人创建而拒绝
 
+### Requirement: 旧 Delivery 只能生成显式只读迁移计划
+
+Repoctopus MUST 允许查询 v2 Delivery 状态和权威旧 Change MR 事实，但 MUST NOT 复用旧批准、Evidence Bundle 或平台副作用直接写成 v3 状态；Built-in Provider 必须拒绝 v2 的决定、刷新、协调、发布和 Post-merge 写操作。
+
+#### Scenario: 尚未尝试远端交付动作
+
+- **WHEN** v2 Delivery 仍处于发布前状态且全部动作尝试次数为零
+- **THEN** Runtime 返回 `reprepare_required` 计划，列出 v3 草案缺失字段和新的规划、验证与交付批准，不修改 Delivery Store 或平台 MR
+
+#### Scenario: 旧 Change MR 仍开放
+
+- **WHEN** v2 Delivery 已产生远端交付事实且权威查询确认旧 Change MR 仍开放
+- **THEN** Runtime 返回 `manual_decision_required`，要求人决定保留旧流程还是人工关闭后迁移，不自动关闭、更新或替换该 MR
+
+#### Scenario: 旧 Change MR 已关闭、已合入或映射漂移
+
+- **WHEN** 权威查询发现旧 Change MR 已关闭、已合入、head 无法核对或源目标分支不匹配
+- **THEN** Runtime 返回 `repair_required`，保留旧 Change 分支、Business MR identity 和目标 OID 供人工修复，不生成可直接执行的 v3 Intent
+
 ## REMOVED Requirements
 
 ### Requirement: Delivery 声明 Change MR 与业务 MR 关系
