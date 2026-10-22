@@ -95,6 +95,10 @@ Envelope 先以原子写入进入 Workspace 的本地遥测 outbox，再由目�
 
 第一版复用仓库现有原子文件 Store、Journal 和 cursor 模式，不引入共享数据库。未来可以把 Store Provider 替换为 SQLite 或远端队列，但不得改变 per-destination 确认语义。
 
+首个基础切片把身份和内容完整性分开：`envelopeId` 只对 schema version 与规范化来源身份（domain、event type、event id、可选 source sequence）计算 SHA-256，因此同一领域事实的身份不随传输目的地变化；`digest` 则覆盖除自身以外的完整规范 envelope，用于发现持久内容被修改。映射器显式重建 source 和三类 signal，不透传额外字段；属性必须同时通过调用方白名单与全局敏感 key/value、绝对路径、换行和长度边界。危险字段即使误入白名单也会使映射失败，危险值则不会进入 envelope。
+
+文件 Store 以 `envelopeId` 为不可变键，用 exclusive 原子发布保证重复保存幂等、同身份不同内容冲突；读取时重新计算身份和摘要。由于多个领域来源不存在一条天然共享连续序列，基础 Cursor 不伪造全局 offset，而是为每个稳定 `destinationId` 保存已确认的 `envelopeId → digest` 集合和有界健康状态。确认、失败和进程中断只原子更新该目的地文件；未成功提交的确认在重启后仍进入 replay。保留上限、连续序列、积压摘要和 gap 策略仍由任务 3.5 补齐，不能从当前集合实现推导 exactly-once 承诺。
+
 备选方案一是把一份数据同时直接 `Promise.all` 发往两个端点；进程退出后无法确定各目的地是否确认。备选方案二是让 Electron 接收后再转发 SigNoZ；Electron 关闭会切断团队遥测并使桌面成为单点，因此拒绝。
 
 ### 4. Desktop Host 子进程实现受保护的本地 OTLP 接收器
