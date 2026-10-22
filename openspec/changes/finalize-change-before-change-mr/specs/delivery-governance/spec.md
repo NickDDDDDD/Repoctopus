@@ -83,6 +83,16 @@ Repoctopus MUST 把 change 视为团队共享工作单元，允许不同成员�
 - **WHEN** 另一成员在已经登记的 change 中修复 Bug、补测试或更新规格
 - **THEN** Repoctopus 接受该成员产生的受审计动作，不因 change 最初由其他人创建而拒绝
 
+#### Scenario: 配置尝试按动作身份独占 Change
+
+- **WHEN** 团队配置声明 `changeOwner`、`mrAuthor`、`branchAuthor`、`runnerOwner` 或等价候选过滤字段
+- **THEN** 配置校验拒绝未知所有权字段，不把动作身份升级为 Change 发现或执行权限
+
+#### Scenario: 团队替换 Runner identity
+
+- **WHEN** 团队替换部署中的 Runner identity，且新 Runner 读取同一持久 Delivery 与平台权威事实
+- **THEN** Repoctopus 允许新 Runner 继续查询和恢复，不因执行身份变化转移或丢失 Change 所有权
+
 ### Requirement: 旧 Delivery 只能生成显式只读迁移计划
 
 Repoctopus MUST 允许查询 v2 Delivery 状态和权威旧 Change MR 事实，但 MUST NOT 复用旧批准、Evidence Bundle 或平台副作用直接写成 v3 状态；Built-in Provider 必须拒绝 v2 的决定、刷新、协调、发布和 Post-merge 写操作。

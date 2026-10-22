@@ -98,6 +98,11 @@ Repoctopus MUST 允许多个 Runner 对同一 change 进行至少一次查询和
 - **WHEN** 两个 Runner 没有共享本地 Lease 或 Run Store 但发现了同一 change
 - **THEN** 系统允许重复本地计算，并仍通过远端 Change 分支并发栅栏保证只有可核对的收尾结果生效
 
+#### Scenario: 全新状态卷尚未发现历史 Change
+
+- **WHEN** Runner 使用不含该 Delivery 的全新状态卷启动
+- **THEN** 系统不得根据 MR 作者、分支作者或 Runner identity 猜测历史 Change，维护者必须先恢复或挂载持久 Delivery 状态
+
 #### Scenario: 独立 Runner 产生不同目标同步 commit OID
 
 - **WHEN** 两个 Runner 从相同 Change 与目标 OID 计算出 tree、双 parent、message 和 author 相同但 commit OID 不同的目标同步结果

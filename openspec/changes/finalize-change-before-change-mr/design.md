@@ -128,6 +128,8 @@ MR Adapter 必须先按 `provider + repository + sourceBranch + targetBranch` �
 
 最终 MR 创建使用 Adapter 的 create-or-recover 语义，因此独立状态卷允许重复计算。竞争创建失败或创建响应丢失时重新查询同一 head/base tuple；只有唯一且 head OID 可核对的 MR 会被恢复，多个或零个匹配继续 fail-closed。
 
+协作恢复不增加个人 owner 配置。共享配置继续严格拒绝 `changeOwner`、`mrAuthor`、`branchAuthor`、`runnerOwner` 等候选过滤字段；`runnerIdentity` 只连接同一 composition 的 Lease 与执行审计，可以随部署替换。第一版候选发现仍依赖本地或挂载的 Delivery Store：独立状态卷只有在都已发现同一 Delivery 后才能安全竞争，全新状态卷不得根据 Git 或 MR 作者猜测历史 Change。
+
 ### 8. 旧状态只读迁移，禁止静默改变既有 MR
 
 v2 Delivery 读取后分三类：
