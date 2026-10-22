@@ -19,6 +19,7 @@ import type {
   PostMergePublicationRequest,
   PostMergePublicationRequestV2,
 } from '../../domains/delivery/post-merge.js';
+import type { DeliveryV2MigrationPlan } from '../../domains/delivery/migration.js';
 import type { ProjectSnapshot } from '../../domains/project/types.js';
 import { canonicalJson } from '../../domains/workflow-contract/canonical.js';
 import { FileDeliveryEvidence } from '../../platform/delivery/file-delivery-evidence.js';
@@ -121,6 +122,12 @@ export class FileDeliveryProvider extends Delivery {
     }
   }
 
+  private legacyReadOnly(operation: string): never {
+    throw new Error(
+      `Delivery v2 is read-only and cannot ${operation}; inspect status and create a v3 migration plan`,
+    );
+  }
+
   checkpoint(
     project: ProjectSnapshot,
     intent: DeliveryIntent | DeliveryIntentV3,
@@ -132,7 +139,7 @@ export class FileDeliveryProvider extends Delivery {
         await this.assertPlanningApproval(intent, policy.publication.remote);
         return this.domainV3(policy).checkpoint(project, intent, policy);
       }
-      return this.domain(policy).checkpoint(project, intent, policy);
+      return this.legacyReadOnly('checkpoint');
     });
   }
 
@@ -145,7 +152,7 @@ export class FileDeliveryProvider extends Delivery {
         await this.assertPlanningApproval(options.intent, options.policy.publication.remote);
         return this.domainV3(options.policy).prepare({ ...options, intent: options.intent });
       }
-      return this.domain(options.policy).prepare({ ...options, intent: options.intent });
+      return this.legacyReadOnly('prepare');
     });
   }
 
@@ -165,9 +172,8 @@ export class FileDeliveryProvider extends Delivery {
   ): Promise<DeliveryState | DeliveryStateV3> {
     return this.operations.run({ cancellable: false, signal }, async () => {
       const version = await deliveryStateSchemaVersion(this.config.workspaceRoot, changeId);
-      return version === 3
-        ? this.domainV3().decide(changeId, response, actor)
-        : this.domain().decide(changeId, response, actor);
+      if (version !== 3) return this.legacyReadOnly('record a decision');
+      return this.domainV3().decide(changeId, response, actor);
     });
   }
 
@@ -180,7 +186,7 @@ export class FileDeliveryProvider extends Delivery {
         await this.assertPlanningApproval(options.intent, options.policy.publication.remote);
         return this.domainV3(options.policy).publish({ ...options, intent: options.intent });
       }
-      return this.domain(options.policy).publish({ ...options, intent: options.intent });
+      return this.legacyReadOnly('publish');
     });
   }
 
@@ -189,7 +195,11 @@ export class FileDeliveryProvider extends Delivery {
     signal?: AbortSignal,
   ): Promise<PostMergePublicationReceipt> {
     return this.operations.run({ cancellable: false, signal }, () =>
-      this.domain().publishPostMerge(request),
+      Promise.reject(
+        new Error(
+          `Delivery v2 is read-only and cannot publish post-merge closure for ${request.changeId}`,
+        ),
+      ),
     );
   }
 
@@ -209,9 +219,8 @@ export class FileDeliveryProvider extends Delivery {
   ): Promise<DeliveryState | DeliveryStateV3> {
     return this.operations.run({ cancellable: false, signal }, async () => {
       const version = await deliveryStateSchemaVersion(this.config.workspaceRoot, changeId);
-      return version === 3
-        ? (await this.domainV3(policy).refresh(changeId)).state
-        : this.domain(policy).refresh(changeId);
+      if (version !== 3) return this.legacyReadOnly('refresh');
+      return (await this.domainV3(policy).refresh(changeId)).state;
     });
   }
 
@@ -221,20 +230,27 @@ export class FileDeliveryProvider extends Delivery {
     signal?: AbortSignal,
   ) {
     return this.operations.run({ cancellable: false, signal }, async () => {
-      const current = await this.domainV3(policy).refreshForMergeRequest(reference);
-      return current.match.status === 'not_found'
-        ? this.domain(policy).refreshForMergeRequest(reference)
-        : current;
+      return this.domainV3(policy).refreshForMergeRequest(reference);
     });
   }
 
   override reconciliationCandidates(signal?: AbortSignal) {
+    return this.operations.run({ cancellable: true, signal }, () =>
+      this.domainV3().reconciliationCandidates(),
+    );
+  }
+
+  override migrationPlan(
+    changeId: string,
+    policy: DeliveryPolicy,
+    signal?: AbortSignal,
+  ): Promise<DeliveryV2MigrationPlan> {
     return this.operations.run({ cancellable: true, signal }, async () => {
-      const [v2, v3] = await Promise.all([
-        this.domain().reconciliationCandidates(),
-        this.domainV3().reconciliationCandidates(),
-      ]);
-      return [...v2, ...v3].sort((left, right) => left.changeId.localeCompare(right.changeId));
+      const version = await deliveryStateSchemaVersion(this.config.workspaceRoot, changeId);
+      if (version !== 2) {
+        throw new Error(`Delivery migration plan requires a v2 state: ${changeId}`);
+      }
+      return this.domain(policy).migrationPlan(changeId);
     });
   }
 }

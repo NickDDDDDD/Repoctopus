@@ -10,6 +10,7 @@ import {
   sha256Digest,
 } from './snapshot.js';
 import { matchActiveDeliveryMergeRequest, recordBusinessMergeRequest } from './merge-requests.js';
+import { createDeliveryV2MigrationPlan, type DeliveryV2MigrationPlan } from './migration.js';
 import {
   initialDeliveryState,
   invalidateApproval,
@@ -534,6 +535,15 @@ export class DeliveryService {
 
   status(changeId: string) {
     return this.requireState(changeId);
+  }
+
+  async migrationPlan(changeId: string): Promise<DeliveryV2MigrationPlan> {
+    const state = await this.requireState(changeId);
+    const changeMergeRequest = state.mergeRequests?.change;
+    const status = changeMergeRequest
+      ? await this.mergeRequests.status(changeMergeRequest.mergeRequest)
+      : null;
+    return createDeliveryV2MigrationPlan(state, status);
   }
 
   private async commit(

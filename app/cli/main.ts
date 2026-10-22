@@ -13,6 +13,7 @@ import type {
   DeliveryStateV3,
 } from '../../domains/delivery/types.js';
 import { parseDeliveryIntentV3 } from '../../domains/delivery/v3.js';
+import type { DeliveryV2MigrationPlan } from '../../domains/delivery/migration.js';
 import type { ProjectSnapshot } from '../../domains/project/types.js';
 import type { EffectiveProjectConfig } from '../../domains/project-configuration/types.js';
 import type {
@@ -375,6 +376,26 @@ async function deliveryRefresh(parsed: ParsedArguments): Promise<CliEnvelope<unk
       result,
       nextActions: deliveryNextActions(result),
     });
+  } finally {
+    await app.close();
+  }
+}
+
+async function deliveryMigrationPlan(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const changeId = stringFlag(parsed, 'change', { required: true })!;
+  const policy = await loadDeliveryPolicy(
+    path.resolve(
+      stringFlag(parsed, 'policy', { fallback: path.join(workspace, 'repoctopus.yaml') })!,
+    ),
+  );
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute<unknown, DeliveryV2MigrationPlan>(
+      'delivery.migration-plan',
+      { changeId, policy },
+    );
+    return successEnvelope({ command: 'delivery migration-plan', result });
   } finally {
     await app.close();
   }
@@ -1100,6 +1121,7 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   if (command === 'delivery publish' || command === 'delivery resume')
     return deliveryPublish(parsed);
   if (command === 'delivery refresh') return deliveryRefresh(parsed);
+  if (command === 'delivery migration-plan') return deliveryMigrationPlan(parsed);
   if (command === 'event status') return eventStatus(parsed);
   if (command === 'event replay') return eventReplay(parsed);
   if (command === 'event retry') return eventRetry(parsed);
@@ -1108,7 +1130,7 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   if (command === 'browser doctor') return browserDoctor(parsed);
   if (command === 'browser install') return browserInstall(parsed);
   throw new Error(
-    'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|record|resume> | runner start | post-merge reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh> | event <status|replay|retry> | approval review | browser <doctor|install> | doctor',
+    'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|record|resume> | runner start | post-merge reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | event <status|replay|retry> | approval review | browser <doctor|install> | doctor',
   );
 }
 

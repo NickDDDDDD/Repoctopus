@@ -62,6 +62,13 @@ const plugin = ((context: Context) => {
           return context.delivery.refresh(request.changeId, request.policy, signal);
         },
       }),
+      context.commandRouter.register({
+        name: 'delivery.migration-plan',
+        execute: ({ input, signal }) => {
+          const request = input as { changeId: string; policy: DeliveryPolicy };
+          return context.delivery.migrationPlan(request.changeId, request.policy, signal);
+        },
+      }),
     ];
     return () => {
       for (const dispose of disposers.reverse()) dispose();

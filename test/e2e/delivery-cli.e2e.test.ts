@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -9,6 +9,7 @@ import {
   removeTemporaryDirectory,
   temporaryDirectory,
 } from '../helpers/fixtures.js';
+import { initialDeliveryState } from '../../domains/delivery/state.js';
 
 const execFileAsync = promisify(execFile);
 const packageRoot = path.resolve(import.meta.dirname, '..', '..');
@@ -101,5 +102,66 @@ describe('delivery CLI', () => {
     expect(errorEnvelope.diagnostics?.[0]?.message).toMatch(/changeBranch.*remoteOid/i);
     expect(errorEnvelope.diagnostics?.[0]?.message).toMatch(/businessDeliveries.*deliveryId/i);
     expect(errorEnvelope.diagnostics?.[0]?.message).toMatch(/new planning approval/i);
+
+    const legacyState = initialDeliveryState('legacy-pristine', '2026-10-22T00:00:00.000Z');
+    const legacyRoot = path.join(workspace, '.repoctopus', 'deliveries', legacyState.changeId);
+    await mkdir(legacyRoot, { recursive: true });
+    const legacyStateFile = path.join(legacyRoot, 'state.json');
+    await writeFile(legacyStateFile, `${JSON.stringify(legacyState, null, 2)}\n`);
+    const before = await readFile(legacyStateFile, 'utf8');
+    const migration = await execFileAsync(
+      process.execPath,
+      [
+        path.join(packageRoot, 'bin', 'repoctopus.js'),
+        'delivery',
+        'migration-plan',
+        '--workspace',
+        workspace,
+        '--change',
+        legacyState.changeId,
+        '--policy',
+        policyFile,
+        '--json',
+      ],
+      { cwd: workspace },
+    );
+    expect(JSON.parse(migration.stdout)).toMatchObject({
+      ok: true,
+      command: 'delivery migration-plan',
+      result: {
+        status: 'reprepare_required',
+        platformMutations: [],
+        approval: {
+          reuseLegacyApproval: false,
+          reuseLegacyEvidenceBundles: false,
+        },
+      },
+    });
+    expect(await readFile(legacyStateFile, 'utf8')).toBe(before);
+
+    let refreshFailure: { code?: number; stderr?: string } | undefined;
+    try {
+      await execFileAsync(
+        process.execPath,
+        [
+          path.join(packageRoot, 'bin', 'repoctopus.js'),
+          'delivery',
+          'refresh',
+          '--workspace',
+          workspace,
+          '--change',
+          legacyState.changeId,
+          '--policy',
+          policyFile,
+          '--json',
+        ],
+        { cwd: workspace },
+      );
+    } catch (error) {
+      refreshFailure = error as { code?: number; stderr?: string };
+    }
+    expect(refreshFailure?.code).toBe(1);
+    expect(refreshFailure?.stderr).toMatch(/Delivery v2 is read-only and cannot refresh/i);
+    expect(await readFile(legacyStateFile, 'utf8')).toBe(before);
   }, 30_000);
 });

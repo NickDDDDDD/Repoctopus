@@ -20,6 +20,7 @@ import type {
   MergeRequestReference,
   TrustedActor,
 } from '../domains/delivery/types.js';
+import type { DeliveryV2MigrationPlan } from '../domains/delivery/migration.js';
 
 export interface DeliveryPreparation {
   project: ProjectSnapshot;
@@ -86,6 +87,15 @@ export abstract class Delivery extends Service {
   reconciliationCandidates(signal?: AbortSignal): Promise<DeliveryReconciliationCandidate[]> {
     void signal;
     return Promise.resolve([]);
+  }
+  migrationPlan(
+    changeId: string,
+    policy: DeliveryPolicy,
+    signal?: AbortSignal,
+  ): Promise<DeliveryV2MigrationPlan> {
+    void policy;
+    void signal;
+    return Promise.reject(new Error(`Delivery provider cannot plan v2 migration for ${changeId}`));
   }
 }
 
