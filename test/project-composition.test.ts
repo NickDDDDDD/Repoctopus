@@ -99,6 +99,35 @@ describe('project composition assembly', () => {
     expect(runner.compositionDigest).not.toBe(project.compositionDigest);
   });
 
+  it('keeps composition identity stable across equivalent product and Workspace locations', async () => {
+    const first = await selfHostedProject();
+    const second = await selfHostedProject();
+    const catalog = await createRepoctopusBuiltinCatalog(productRoot);
+    const firstComposition = compileProjectComposition(
+      productRoot,
+      first.workspaceRoot,
+      first.config,
+      catalog,
+    );
+    const secondComposition = compileProjectComposition(
+      path.join(productRoot, 'alternate-install-location'),
+      second.workspaceRoot,
+      second.config,
+      catalog,
+    );
+
+    expect(secondComposition.compositionDigest).toBe(firstComposition.compositionDigest);
+    expect(compositionIdentity(secondComposition).plugins).toEqual(
+      compositionIdentity(firstComposition).plugins,
+    );
+    expect(
+      secondComposition.entries.find((entry) => entry.id === 'specification-openspec')?.config,
+    ).toEqual({ workspaceRoot: second.workspaceRoot });
+    expect(
+      secondComposition.entries.find((entry) => entry.id === 'maintenance-command')?.config,
+    ).toEqual({ productRoot: path.join(productRoot, 'alternate-install-location') });
+  });
+
   it('fails closed when a configured Provider is not in the admitted catalog', async () => {
     const { workspaceRoot, config } = await selfHostedProject();
     const catalog = await createRepoctopusBuiltinCatalog(productRoot);

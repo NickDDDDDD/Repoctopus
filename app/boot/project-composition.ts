@@ -18,15 +18,31 @@ const DEFAULT_SKILL_PROVIDERS = [
 ] as const;
 const DEFAULT_SPECIFICATION_PROVIDER = { id: 'specification-openspec' } as const;
 const DEFAULT_PLATFORM_EVENTS_PROVIDER = { id: 'platform-events-file' } as const;
+const PRODUCT_ROOT_IDENTITY = '@repoctopus/product-root';
+const WORKSPACE_ROOT_IDENTITY = '@repoctopus/workspace-root';
+
+interface BuiltinRuntimeConfig {
+  config: unknown;
+  identityConfig: unknown;
+}
+
+function runtimeSelection(
+  id: string,
+  config: unknown,
+  identityConfig: unknown,
+): CompositionPluginSelection {
+  return { id, config, identityConfig };
+}
 
 function configuredSelection(
   id: string,
-  builtinConfig: Readonly<Record<string, unknown>>,
+  builtinConfig: Readonly<Record<string, BuiltinRuntimeConfig>>,
   teamPlugins: ReadonlyMap<string, TeamPluginConfig>,
 ): CompositionPluginSelection {
   const team = teamPlugins.get(id);
-  const config = team?.config ?? builtinConfig[id];
-  return { id, ...(config === undefined ? {} : { config }) };
+  if (team?.config !== undefined) return { id, config: team.config };
+  const builtin = builtinConfig[id];
+  return builtin ? runtimeSelection(id, builtin.config, builtin.identityConfig) : { id };
 }
 
 function deliveryPolicy(config: EffectiveProjectConfig): DeliveryPolicy {
@@ -48,11 +64,23 @@ function projectSelections(
   const teamPlugins = new Map(
     (config.shared.composition?.plugins ?? []).map((plugin) => [plugin.id, plugin] as const),
   );
-  const builtinConfig: Readonly<Record<string, unknown>> = {
-    'skill-provider-matt': { productRoot },
-    'skill-provider-filesystem': { workspaceRoot },
-    'specification-openspec': { workspaceRoot },
-    'platform-events-file': { workspaceRoot },
+  const builtinConfig: Readonly<Record<string, BuiltinRuntimeConfig>> = {
+    'skill-provider-matt': {
+      config: { productRoot },
+      identityConfig: { productRoot: PRODUCT_ROOT_IDENTITY },
+    },
+    'skill-provider-filesystem': {
+      config: { workspaceRoot },
+      identityConfig: { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
+    },
+    'specification-openspec': {
+      config: { workspaceRoot },
+      identityConfig: { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
+    },
+    'platform-events-file': {
+      config: { workspaceRoot },
+      identityConfig: { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
+    },
   };
   const skillProviders = config.shared.skillProviders ?? DEFAULT_SKILL_PROVIDERS;
   const specificationProvider =
@@ -73,40 +101,83 @@ function projectSelections(
     { id: 'skill-registry' },
     ...selectedProviders,
     { id: 'skill-command' },
-    { id: 'specification-planning', config: { workspaceRoot } },
+    runtimeSelection(
+      'specification-planning',
+      { workspaceRoot },
+      { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
+    ),
     { id: 'specification-command' },
     { id: 'project-git' },
     { id: 'project-probe-command' },
     { id: 'project-onboarding' },
     { id: 'project-onboarding-command' },
     { id: 'browser-maintenance' },
-    { id: 'maintenance-command', config: { productRoot } },
+    runtimeSelection(
+      'maintenance-command',
+      { productRoot },
+      { productRoot: PRODUCT_ROOT_IDENTITY },
+    ),
     { id: 'platform-event-command' },
-    { id: 'action-store-file', config: { workspaceRoot } },
+    runtimeSelection(
+      'action-store-file',
+      { workspaceRoot },
+      { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
+    ),
     { id: 'action-dispatcher' },
     { id: 'action-manual' },
-    { id: 'run-store-file', config: { workspaceRoot } },
+    runtimeSelection(
+      'run-store-file',
+      { workspaceRoot },
+      { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
+    ),
     { id: 'workflow-source-file' },
     { id: 'workflow-telemetry-otel' },
     { id: 'evidence-adapters' },
     { id: 'evidence-command-local' },
-    { id: 'evidence-service-local', config: { workspaceRoot } },
-    { id: 'evidence-browser-local', config: { workspaceRoot } },
-    { id: 'evidence-visual-file', config: { workspaceRoot } },
-    { id: 'evidence-coordinator', config: { workspaceRoot } },
+    runtimeSelection(
+      'evidence-service-local',
+      { workspaceRoot },
+      { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
+    ),
+    runtimeSelection(
+      'evidence-browser-local',
+      { workspaceRoot },
+      { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
+    ),
+    runtimeSelection(
+      'evidence-visual-file',
+      { workspaceRoot },
+      { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
+    ),
+    runtimeSelection(
+      'evidence-coordinator',
+      { workspaceRoot },
+      { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
+    ),
     { id: 'evidence-command' },
-    {
-      id: 'delivery-file',
-      config: {
+    runtimeSelection(
+      'delivery-file',
+      {
         workspaceRoot,
         projectConfigDigest: `sha256:${config.effectiveDigest}`,
         ...(config.shared.platformEvents
           ? { githubTokenVariable: config.shared.platformEvents.github.apiCredential.variable }
           : {}),
       },
-    },
+      {
+        workspaceRoot: WORKSPACE_ROOT_IDENTITY,
+        projectConfigDigest: `sha256:${config.effectiveDigest}`,
+        ...(config.shared.platformEvents
+          ? { githubTokenVariable: config.shared.platformEvents.github.apiCredential.variable }
+          : {}),
+      },
+    ),
     { id: 'delivery-command' },
-    { id: 'workflow-runs', config: { workspaceRoot } },
+    runtimeSelection(
+      'workflow-runs',
+      { workspaceRoot },
+      { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
+    ),
     { id: 'workflow-run-command' },
     ...postMergeSelections(productRoot, workspaceRoot, config),
     ...(config.shared.composition?.plugins
@@ -126,9 +197,9 @@ function postMergeSelections(
   const postMerge = config.shared.postMerge;
   if (!postMerge) return [];
   return [
-    {
-      id: 'post-merge-coordinator',
-      config: {
+    runtimeSelection(
+      'post-merge-coordinator',
+      {
         policy: deliveryPolicy(config),
         execution: {
           projectId: config.shared.workspace.id,
@@ -141,16 +212,35 @@ function postMergeSelections(
           })),
         },
       },
-    },
-    {
-      id: 'post-merge-actions',
-      config: {
+      {
+        policy: deliveryPolicy(config),
+        execution: {
+          projectId: config.shared.workspace.id,
+          workspaceRoot: WORKSPACE_ROOT_IDENTITY,
+          workflowSource: `${PRODUCT_ROOT_IDENTITY}/workflows/post-merge.yaml`,
+          evidenceProfile: postMerge.evidenceProfile,
+          repositories: config.shared.repositories.map((repository) => ({
+            repositoryId: repository.id,
+            path: `${WORKSPACE_ROOT_IDENTITY}/${repository.path.replaceAll('\\', '/')}`,
+          })),
+        },
+      },
+    ),
+    runtimeSelection(
+      'post-merge-actions',
+      {
         workspaceRoot,
         temporaryRoot: path.resolve(workspaceRoot, postMerge.temporaryRoot),
         verificationPathPrefixes: postMerge.allowedWorkspacePaths.verificationPathPrefixes,
         publication: postMerge.publication,
       },
-    },
+      {
+        workspaceRoot: WORKSPACE_ROOT_IDENTITY,
+        temporaryRoot: `${WORKSPACE_ROOT_IDENTITY}/${postMerge.temporaryRoot.replaceAll('\\', '/')}`,
+        verificationPathPrefixes: postMerge.allowedWorkspacePaths.verificationPathPrefixes,
+        publication: postMerge.publication,
+      },
+    ),
     { id: 'post-merge-command' },
   ];
 }
