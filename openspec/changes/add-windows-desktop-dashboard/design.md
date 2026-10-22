@@ -200,7 +200,9 @@ Repoctopus 的 Renderer 是本地 OTLP 投影客户端，不需要 DSH 的共享
 
 续作从包含两个旧 MR 和 `finalize-change-before-change-mr` 的最新干净主线重新建立基线。2026-10-22 的恢复验证中，DSH `687f282e8625c6b8d11ff58211a90524be2e4317` 与 Comet `575ab0d172e8105257b3c9172b8c8a9b628960ca` 均未漂移；`npm run verify` 通过 99 个测试文件、420 项测试并保留 1 项既有 Windows 条件跳过，`npm run test:tracer-e2e` 1/1 通过，桌面 smoke、来源与架构检查也通过。这些事实完成任务 1.1 和 1.3，但不为剩余能力提供完成证明。
 
-依赖恢复同时发现 10 个 moderate、0 个 high/critical 的 npm advisory。Vitest 可用补丁版本修复；Electron Builder 链给出的自动建议会把固定的 DSH 基线 `26.15.3` 降到 `26.5.0`，不能用 `npm audit fix --force` 绕过来源和上游采用审计。任务 1.2 保持未完成，直到 Vitest 补丁升级通过完整验证，并对 Electron Builder 的固定版本、可达性和替代版本形成显式结论。
+依赖恢复同时发现 10 个 moderate、0 个 high/critical 的 npm advisory。Vitest 已从 `4.1.11` 补丁升级到 `4.1.12`，两条测试工具 advisory 随之消失，完整验证继续通过；`npm audit --omit=dev` 为 0。其余 8 条全部收敛到仅在构建期使用的 Electron Builder 传递链，其中根 advisory `GHSA-hp3w-g68c-fv3c` 没有已发布修复版本。npm 的自动建议会把固定的 DSH 基线 `26.15.3` 降到 `26.5.0`，而 Electron Builder 上游已继续发布 `26.18.0`，因此该建议不能证明安全升级，也不能用 `npm audit fix --force` 绕过来源和上游采用审计。
+
+任务 1.2 的结论是保留已审计的 DSH 固定版本，把现有 moderate 视为不进入生产依赖、且没有不可信 format string 输入面的构建工具风险；任何升级继续走上游基线、provenance、Windows 打包和完整验证。此结论不把 advisory 宣称为已修复，也不允许未来的 high/critical 或生产依赖 advisory 通过同一理由放行。
 
 恢复后的 Change 分支遵循 v3 边界：先公开分支并取得 Planning Approval，剩余实现默认汇入一个 Business MR；最终 Change MR 只能由 Post-merge 在业务合入、Evidence、主规格同步和归档完成后创建。旧 MR #11/#12 是历史事实，不是复用旧批准或提前创建最终 MR 的授权。
 
