@@ -1,17 +1,14 @@
-schemaVersion: 2
+schemaVersion: 3
 changeId: example-change
-changeMergeRequest:
+changeBranch:
   repositoryId: replace-with-workspace-repository-id
   remoteIdentity: github.com/example/workspace-repository
-  sourceBranch: feat/example-change
+  sourceBranch: spec/example-change
   targetBranch: main
-  mergeRequest:
-    provider: github
-    repositoryId: replace-with-workspace-repository-id
-    number: 123
-    url: https://github.com/example/workspace-repository/pull/123
-repositories:
-  - repositoryId: replace-with-project-snapshot-id
+  remoteOid: '0000000000000000000000000000000000000000'
+businessDeliveries:
+  - deliveryId: primary
+    repositoryId: replace-with-project-snapshot-id
     sourceBranch: feat/example-change
     targetBranch: main
     commitMessage: 'feat(example): implement change'

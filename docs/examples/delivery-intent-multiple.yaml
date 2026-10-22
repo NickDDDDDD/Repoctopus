@@ -1,0 +1,28 @@
+schemaVersion: 3
+changeId: example-multi-repository-change
+changeBranch:
+  repositoryId: replace-with-workspace-repository-id
+  remoteIdentity: github.com/example/workspace-repository
+  sourceBranch: spec/example-multi-repository-change
+  targetBranch: main
+  remoteOid: '0000000000000000000000000000000000000000'
+businessDeliveries:
+  - deliveryId: app
+    repositoryId: replace-with-app-snapshot-id
+    sourceBranch: feat/example-multi-repository-change
+    targetBranch: main
+    commitMessage: 'feat(app): implement multi-repository change'
+    actions:
+      - push
+      - merge_request
+  - deliveryId: api
+    repositoryId: replace-with-api-snapshot-id
+    sourceBranch: feat/example-multi-repository-change
+    targetBranch: main
+    commitMessage: 'feat(api): implement multi-repository change'
+    actions:
+      - push
+      - merge_request
+businessSplitReason:
+  kind: multi_repository
+  summary: 'The app and API use separate repositories and require independent review.'

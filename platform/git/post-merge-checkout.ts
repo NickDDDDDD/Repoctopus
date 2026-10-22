@@ -3,11 +3,20 @@ import { lstat, mkdir, readFile, realpath, rm } from 'node:fs/promises';
 import path from 'node:path';
 
 import type {
+  PostMergeChangeBranchCheckoutPort,
   PostMergeCheckoutManifest,
   PostMergeCheckoutPort,
   PostMergeRepositorySource,
+  PostMergeTargetMergeIntent,
+  PostMergeTargetMergeReceipt,
 } from '../../domains/post-merge/checkout.js';
-import { createPostMergeCheckoutManifest } from '../../domains/post-merge/checkout.js';
+import {
+  assertPostMergeTargetMergeIntent,
+  assertPostMergeTargetMergeReceipt,
+  createPostMergeCheckoutManifest,
+  createPostMergeTargetMergeIntent,
+  createPostMergeTargetMergeReceipt,
+} from '../../domains/post-merge/checkout.js';
 import type { PostMergeRepositoryFact } from '../../domains/post-merge/coordinator.js';
 import { atomicWriteJson } from '../filesystem/atomic-write.js';
 import { execute } from '../process/execute.js';
@@ -29,6 +38,10 @@ export class PostMergeCheckoutError extends Error {
       | 'checkout-conflict'
       | 'commit-unavailable'
       | 'checkout-drift'
+      | 'change-branch-drift'
+      | 'target-branch-drift'
+      | 'target-merge-conflict'
+      | 'target-merge-invalid'
       | 'cleanup-refused',
     readonly repositoryId?: string,
   ) {
@@ -81,6 +94,16 @@ function assertInputs(
 
 async function git(cwd: string, args: string[]): Promise<string> {
   return (await execute('git', args, { cwd })).stdout.trim();
+}
+
+async function remoteBranchOid(
+  cwd: string,
+  remote: string,
+  branch: string,
+): Promise<string | null> {
+  const output = await git(cwd, ['ls-remote', '--heads', remote, `refs/heads/${branch}`]);
+  const [oid] = output.split(/\s+/u);
+  return oid || null;
 }
 
 async function assertSource(
@@ -173,7 +196,15 @@ async function verifyRepository(
   }
 }
 
-export class GitPostMergeCheckout implements PostMergeCheckoutPort {
+export interface GitPostMergeCheckoutHooks {
+  afterTargetMergeCreated?(receipt: PostMergeTargetMergeReceipt): Promise<void> | void;
+}
+
+export class GitPostMergeCheckout
+  implements PostMergeCheckoutPort, PostMergeChangeBranchCheckoutPort
+{
+  constructor(private readonly hooks: GitPostMergeCheckoutHooks = {}) {}
+
   async checkout(input: {
     runId: string;
     mergeFactsDigest: `sha256:${string}`;
@@ -290,6 +321,292 @@ export class GitPostMergeCheckout implements PostMergeCheckoutPort {
       runId: manifest.runId,
       mergeFactsDigest: manifest.mergeFactsDigest,
     });
+  }
+
+  async prepareTargetMerge(input: {
+    runId: string;
+    mergeFactsDigest: `sha256:${string}`;
+    remote: string;
+    changeBranch: PostMergeTargetMergeIntent['changeBranch'];
+    source: PostMergeRepositorySource;
+  }): Promise<PostMergeTargetMergeIntent> {
+    if (
+      input.source.repositoryId !== input.changeBranch.repositoryId ||
+      !/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/u.test(input.remote)
+    ) {
+      throw new PostMergeCheckoutError('invalid-input', input.changeBranch.repositoryId);
+    }
+    const sourceRoot = path.resolve(input.source.path);
+    const remoteUrl = await git(sourceRoot, ['remote', 'get-url', input.remote]);
+    if (normalizeRemoteIdentity(remoteUrl) !== input.changeBranch.remoteIdentity) {
+      throw new PostMergeCheckoutError('source-mismatch', input.changeBranch.repositoryId);
+    }
+    const [sourceOid, targetOid] = await Promise.all([
+      remoteBranchOid(sourceRoot, input.remote, input.changeBranch.sourceBranch),
+      remoteBranchOid(sourceRoot, input.remote, input.changeBranch.targetBranch),
+    ]);
+    if (sourceOid !== input.changeBranch.remoteOid) {
+      throw new PostMergeCheckoutError('change-branch-drift', input.changeBranch.repositoryId);
+    }
+    if (!targetOid) {
+      throw new PostMergeCheckoutError('target-branch-drift', input.changeBranch.repositoryId);
+    }
+    return createPostMergeTargetMergeIntent({
+      schemaVersion: 1,
+      runId: input.runId,
+      mergeFactsDigest: input.mergeFactsDigest,
+      remote: input.remote,
+      changeBranch: input.changeBranch,
+      targetOid,
+    });
+  }
+
+  async mergeTarget(input: {
+    temporaryRoot: string;
+    source: PostMergeRepositorySource;
+    intent: PostMergeTargetMergeIntent;
+    signal?: AbortSignal;
+  }): Promise<PostMergeTargetMergeReceipt> {
+    if (input.signal?.aborted) throw input.signal.reason;
+    assertPostMergeTargetMergeIntent(input.intent);
+    if (input.source.repositoryId !== input.intent.changeBranch.repositoryId) {
+      throw new PostMergeCheckoutError('invalid-input', input.intent.changeBranch.repositoryId);
+    }
+    const temporaryRoot = path.resolve(input.temporaryRoot);
+    await mkdir(temporaryRoot, { recursive: true });
+    const resolvedTemporaryRoot = await realpath(temporaryRoot);
+    const runRoot = path.join(
+      resolvedTemporaryRoot,
+      postMergeCheckoutDirectory(input.intent.runId),
+    );
+    const marker: CheckoutMarker = {
+      schemaVersion: 1,
+      runId: input.intent.runId,
+      mergeFactsDigest: input.intent.mergeFactsDigest,
+    };
+    try {
+      await mkdir(runRoot);
+      await atomicWriteJson(path.join(runRoot, MARKER), marker);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
+      await assertManagedRunRoot(resolvedTemporaryRoot, runRoot, marker);
+    }
+    const sourceRoot = path.resolve(input.source.path);
+    const remoteUrl = await git(sourceRoot, ['remote', 'get-url', input.intent.remote]);
+    if (normalizeRemoteIdentity(remoteUrl) !== input.intent.changeBranch.remoteIdentity) {
+      throw new PostMergeCheckoutError('source-mismatch', input.intent.changeBranch.repositoryId);
+    }
+    await this.assertLockedRemote(sourceRoot, input.intent);
+
+    const checkoutPath = path.join(
+      runRoot,
+      `change-${repositoryDirectory(input.intent.changeBranch.repositoryId)}`,
+    );
+    const freshCheckout = !(await exists(checkoutPath));
+    if (freshCheckout) {
+      await execute('git', [
+        'clone',
+        '--no-checkout',
+        '--origin',
+        input.intent.remote,
+        remoteUrl,
+        checkoutPath,
+      ]);
+    }
+    // Managed closure worktrees must have byte-stable text content. In particular, a Windows
+    // system-wide core.autocrlf=true would otherwise make the audited worktree bytes differ from
+    // the blob bytes produced by `git add`, invalidating the closure content digest.
+    await execute('git', ['config', 'core.autocrlf', 'false'], { cwd: checkoutPath });
+    await execute('git', ['config', 'core.eol', 'lf'], { cwd: checkoutPath });
+    await execute('git', ['config', 'core.longpaths', 'true'], { cwd: checkoutPath });
+    const checkoutRemoteUrl = await git(checkoutPath, ['remote', 'get-url', input.intent.remote]);
+    if (normalizeRemoteIdentity(checkoutRemoteUrl) !== input.intent.changeBranch.remoteIdentity) {
+      throw new PostMergeCheckoutError('source-mismatch', input.intent.changeBranch.repositoryId);
+    }
+    await execute(
+      'git',
+      [
+        'fetch',
+        '--no-tags',
+        input.intent.remote,
+        `refs/heads/${input.intent.changeBranch.sourceBranch}`,
+        `refs/heads/${input.intent.changeBranch.targetBranch}`,
+      ],
+      { cwd: checkoutPath },
+    );
+    if (freshCheckout) {
+      await execute(
+        'git',
+        [
+          'checkout',
+          '-B',
+          input.intent.changeBranch.sourceBranch,
+          input.intent.changeBranch.remoteOid,
+        ],
+        { cwd: checkoutPath },
+      );
+    }
+
+    const mergeHead = await execute('git', ['rev-parse', '-q', '--verify', 'MERGE_HEAD'], {
+      cwd: checkoutPath,
+      allowFailure: true,
+    });
+    if (mergeHead.stdout.trim()) {
+      throw new PostMergeCheckoutError(
+        'target-merge-conflict',
+        input.intent.changeBranch.repositoryId,
+      );
+    }
+    let head = (
+      await execute('git', ['rev-parse', '-q', '--verify', 'HEAD'], {
+        cwd: checkoutPath,
+        allowFailure: true,
+      })
+    ).stdout.trim();
+    if (head && head !== input.intent.changeBranch.remoteOid) {
+      const existingParents = (
+        await execute('git', ['rev-list', '--parents', '-n', '1', head], {
+          cwd: checkoutPath,
+          allowFailure: true,
+        })
+      ).stdout
+        .trim()
+        .split(/\s+/u)
+        .slice(1);
+      const status = await git(checkoutPath, ['status', '--porcelain=v1', '--untracked-files=all']);
+      const recoveredMerge =
+        existingParents.length === 2 &&
+        existingParents[0] === input.intent.changeBranch.remoteOid &&
+        existingParents[1] === input.intent.targetOid;
+      if (!recoveredMerge) {
+        if (status) {
+          throw new PostMergeCheckoutError(
+            'target-merge-invalid',
+            input.intent.changeBranch.repositoryId,
+          );
+        }
+        await execute(
+          'git',
+          [
+            'checkout',
+            '-B',
+            input.intent.changeBranch.sourceBranch,
+            input.intent.changeBranch.remoteOid,
+          ],
+          { cwd: checkoutPath },
+        );
+        head = input.intent.changeBranch.remoteOid;
+      }
+    }
+    if (!head) {
+      await execute(
+        'git',
+        [
+          'checkout',
+          '-B',
+          input.intent.changeBranch.sourceBranch,
+          input.intent.changeBranch.remoteOid,
+        ],
+        { cwd: checkoutPath },
+      );
+      head = input.intent.changeBranch.remoteOid;
+    }
+    if (head === input.intent.changeBranch.remoteOid) {
+      const status = await git(checkoutPath, ['status', '--porcelain=v1', '--untracked-files=all']);
+      if (status) {
+        throw new PostMergeCheckoutError(
+          'target-merge-invalid',
+          input.intent.changeBranch.repositoryId,
+        );
+      }
+      await execute('git', ['config', 'user.name', 'Repoctopus'], { cwd: checkoutPath });
+      await execute('git', ['config', 'user.email', 'repoctopus@example.invalid'], {
+        cwd: checkoutPath,
+      });
+      await execute('git', ['merge', '--no-ff', '--no-edit', input.intent.targetOid], {
+        cwd: checkoutPath,
+        allowFailure: true,
+      });
+      const conflict = await execute('git', ['rev-parse', '-q', '--verify', 'MERGE_HEAD'], {
+        cwd: checkoutPath,
+        allowFailure: true,
+      });
+      if (conflict.stdout.trim()) {
+        throw new PostMergeCheckoutError(
+          'target-merge-conflict',
+          input.intent.changeBranch.repositoryId,
+        );
+      }
+      head = await git(checkoutPath, ['rev-parse', 'HEAD']);
+    }
+    const parentLine = await git(checkoutPath, ['rev-list', '--parents', '-n', '1', head]);
+    const [commit, ...parents] = parentLine.split(/\s+/u);
+    const status = await git(checkoutPath, ['status', '--porcelain=v1', '--untracked-files=all']);
+    if (
+      commit !== head ||
+      parents.length !== 2 ||
+      parents[0] !== input.intent.changeBranch.remoteOid ||
+      parents[1] !== input.intent.targetOid ||
+      status
+    ) {
+      throw new PostMergeCheckoutError(
+        'target-merge-invalid',
+        input.intent.changeBranch.repositoryId,
+      );
+    }
+    await this.assertLockedRemote(checkoutPath, input.intent);
+    const receipt = createPostMergeTargetMergeReceipt({
+      schemaVersion: 1,
+      intentDigest: input.intent.digest,
+      repositoryId: input.intent.changeBranch.repositoryId,
+      sourceOid: input.intent.changeBranch.remoteOid,
+      targetOid: input.intent.targetOid,
+      mergeCommitOid: head,
+      parents: [parents[0], parents[1]],
+      checkoutPath,
+    });
+    await this.hooks.afterTargetMergeCreated?.(structuredClone(receipt));
+    return receipt;
+  }
+
+  async verifyTargetMerge(
+    intent: PostMergeTargetMergeIntent,
+    receipt: PostMergeTargetMergeReceipt,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    if (signal?.aborted) throw signal.reason;
+    assertPostMergeTargetMergeReceipt(receipt, intent);
+    const [head, parentLine, status, remoteUrl] = await Promise.all([
+      git(receipt.checkoutPath, ['rev-parse', 'HEAD']),
+      git(receipt.checkoutPath, ['rev-list', '--parents', '-n', '1', 'HEAD']),
+      git(receipt.checkoutPath, ['status', '--porcelain=v1', '--untracked-files=all']),
+      git(receipt.checkoutPath, ['remote', 'get-url', intent.remote]),
+    ]);
+    if (
+      head !== receipt.mergeCommitOid ||
+      parentLine !== [receipt.mergeCommitOid, ...receipt.parents].join(' ') ||
+      status ||
+      normalizeRemoteIdentity(remoteUrl) !== intent.changeBranch.remoteIdentity
+    ) {
+      throw new PostMergeCheckoutError('checkout-drift', intent.changeBranch.repositoryId);
+    }
+    await this.assertLockedRemote(receipt.checkoutPath, intent);
+  }
+
+  private async assertLockedRemote(
+    repositoryRoot: string,
+    intent: PostMergeTargetMergeIntent,
+  ): Promise<void> {
+    const [sourceOid, targetOid] = await Promise.all([
+      remoteBranchOid(repositoryRoot, intent.remote, intent.changeBranch.sourceBranch),
+      remoteBranchOid(repositoryRoot, intent.remote, intent.changeBranch.targetBranch),
+    ]);
+    if (sourceOid !== intent.changeBranch.remoteOid) {
+      throw new PostMergeCheckoutError('change-branch-drift', intent.changeBranch.repositoryId);
+    }
+    if (targetOid !== intent.targetOid) {
+      throw new PostMergeCheckoutError('target-branch-drift', intent.changeBranch.repositoryId);
+    }
   }
 
   private async cleanupRoot(

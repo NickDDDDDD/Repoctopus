@@ -11,12 +11,14 @@ import type {
 } from '../domains/delivery/ports.js';
 import { DeliveryService } from '../domains/delivery/service.js';
 import { initialDeliveryState } from '../domains/delivery/state.js';
+import { initialDeliveryStateV3 } from '../domains/delivery/v3.js';
 import type {
   DeliveryMergeRequestSet,
   DeliveryState,
   MergeRequestReference,
 } from '../domains/delivery/types.js';
 import { FileDeliveryStore } from '../platform/delivery/file-delivery-store.js';
+import { FileDeliveryV3Store } from '../platform/delivery/file-delivery-v3-store.js';
 import { removeTemporaryDirectory, temporaryDirectory } from './helpers/fixtures.js';
 
 const cleanup: string[] = [];
@@ -213,5 +215,27 @@ describe('delivery merge request mapping', () => {
     await expect(new FileDeliveryStore(root).load('legacy-change')).rejects.toThrow(
       /migration_required/i,
     );
+  });
+
+  it('keeps v2 and v3 reconciliation listings isolated in a shared store root', async () => {
+    const root = await temporaryDirectory('repoctopus-delivery-mixed-versions-');
+    cleanup.push(root);
+    const state = initialDeliveryStateV3('v3-change', '2026-01-01T00:00:00.000Z');
+    await new FileDeliveryV3Store(root).commit({
+      state,
+      previousStateVersion: null,
+      event: {
+        schemaVersion: 1,
+        eventId: 'v3-created',
+        changeId: state.changeId,
+        stateVersion: state.stateVersion,
+        timestamp: state.updatedAt,
+        type: 'delivery.prepared',
+        data: {},
+      },
+    });
+
+    await expect(new FileDeliveryStore(root).list()).resolves.toEqual([]);
+    await expect(new FileDeliveryV3Store(root).list()).resolves.toEqual([state]);
   });
 });

@@ -53,6 +53,7 @@ import postMergeActionsProvider from './post-merge/post-merge-actions-provider.j
 import runnerApplication from './application/runner-application.js';
 import desktopApplication from './application/desktop-application.js';
 import { DesktopApplication } from '../services/desktop-application.js';
+import { SpecificationPlanning } from '../services/specification-planning.js';
 
 interface BuiltinDefinition {
   descriptor: Omit<PluginDescriptor, 'codeDigest'>;
@@ -387,16 +388,17 @@ const definitions: readonly BuiltinDefinition[] = [
       id: 'post-merge-actions',
       version: VERSION,
       contractVersion: PLUGIN_CONTRACT_VERSION,
-      configSchemaVersion: '1',
+      configSchemaVersion: '2',
       kind: 'service-provider',
       source: 'builtin',
       compositions: ['project'],
       authorities: ['post-merge-execute'],
       permissions: ['filesystem', 'network', 'process'],
-      stateSchemas: { 'post-merge-closure': '1' },
+      stateSchemas: { 'post-merge-closure': '2' },
     },
     plugin: postMergeActionsProvider,
     sourceFiles: [
+      'domains/delivery/post-merge.ts',
       'domains/post-merge/checkout.ts',
       'domains/post-merge/closure.ts',
       'platform/git/post-merge-checkout.ts',
@@ -515,6 +517,26 @@ const definitions: readonly BuiltinDefinition[] = [
   },
   {
     descriptor: {
+      id: 'specification-planning',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: [],
+      permissions: ['filesystem'],
+      stateSchemas: { 'specification-approval': '1' },
+    },
+    plugin: SpecificationPlanning,
+    sourceFiles: [
+      'services/specification-planning.ts',
+      'domains/specification/planning-approval.ts',
+      'platform/specification/file-planning-approval-store.ts',
+    ],
+  },
+  {
+    descriptor: {
       id: 'specification-command',
       version: VERSION,
       contractVersion: PLUGIN_CONTRACT_VERSION,
@@ -546,6 +568,7 @@ const definitions: readonly BuiltinDefinition[] = [
     sourceFiles: [
       'services/project.ts',
       'plugins/project/git-project-provider.ts',
+      'platform/git/change-branch.ts',
       'platform/git/remote-identity.ts',
       'platform/git/probe.ts',
     ],
@@ -760,7 +783,7 @@ const definitions: readonly BuiltinDefinition[] = [
       compositions: ['project'],
       authorities: ['delivery-state-write'],
       permissions: ['filesystem', 'process', 'network'],
-      stateSchemas: { delivery: '2' },
+      stateSchemas: { delivery: '2|3' },
     },
     plugin: FileDeliveryProvider,
     sourceFiles: [
@@ -768,7 +791,12 @@ const definitions: readonly BuiltinDefinition[] = [
       'services/operation-ownership.ts',
       'plugins/delivery/file-delivery-provider.ts',
       'domains/delivery/service.ts',
+      'domains/delivery/service-v3.ts',
+      'domains/delivery/final-change-publication.ts',
+      'domains/delivery/post-merge.ts',
       'platform/delivery/file-delivery-store.ts',
+      'platform/delivery/file-delivery-v3-store.ts',
+      'platform/git/delivery.ts',
     ],
   },
   {

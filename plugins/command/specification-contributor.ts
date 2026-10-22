@@ -1,5 +1,11 @@
 import type { Context, Plugin } from '@deepseek-ai/cordis';
 
+import type {
+  ChangeBranchReference,
+  SpecificationApprovalActor,
+  SpecificationApprovalDecisionResponse,
+} from '../../domains/specification/types.js';
+
 interface Input {
   changeId?: string;
   strict?: boolean;
@@ -7,9 +13,54 @@ interface Input {
   targetBaselineDigest?: `sha256:${string}`;
   plan?: unknown;
   runId?: string;
+  changeBranch?: ChangeBranchReference;
+  compositionDigest?: `sha256:${string}`;
+  projectConfigDigest?: `sha256:${string}`;
+  response?: SpecificationApprovalDecisionResponse;
+  actor?: SpecificationApprovalActor;
 }
 
 const plugin = ((context: Context) => {
+  context.effect(() =>
+    context.commandRouter.register({
+      name: 'specification.approval.prepare',
+      execute({ input, signal }) {
+        const { changeId, changeBranch, compositionDigest, projectConfigDigest } = input as Input;
+        if (!changeId?.trim() || !changeBranch || !compositionDigest || !projectConfigDigest) {
+          throw new Error('Specification approval preparation requires change and branch facts');
+        }
+        return context.specificationPlanning.prepare({
+          changeId,
+          changeBranch,
+          compositionDigest,
+          projectConfigDigest,
+          signal,
+        });
+      },
+    }),
+  );
+  context.effect(() =>
+    context.commandRouter.register({
+      name: 'specification.approval.status',
+      execute({ input }) {
+        const { changeId } = input as Input;
+        if (!changeId?.trim()) throw new Error('Specification change id is required');
+        return context.specificationPlanning.status(changeId);
+      },
+    }),
+  );
+  context.effect(() =>
+    context.commandRouter.register({
+      name: 'specification.approval.decide',
+      execute({ input }) {
+        const { changeId, response, actor } = input as Input;
+        if (!changeId?.trim() || !response || !actor) {
+          throw new Error('Specification approval decision requires change, response, and actor');
+        }
+        return context.specificationPlanning.decide({ changeId, response, actor });
+      },
+    }),
+  );
   context.effect(() =>
     context.commandRouter.register({
       name: 'specification.inspect',
@@ -84,6 +135,6 @@ const plugin = ((context: Context) => {
   );
 }) as Plugin;
 
-Object.assign(plugin, { inject: ['commandRouter', 'specification'] });
+Object.assign(plugin, { inject: ['commandRouter', 'specification', 'specificationPlanning'] });
 
 export default plugin;

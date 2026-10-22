@@ -8,6 +8,7 @@ import type { WorkflowPackage } from '../workflow-contract/types.js';
 import type { PostMergeCoordinationResult } from './coordinator.js';
 import type { PostMergeRepositoryFact } from './coordinator.js';
 import type { MergeEvidence } from '../delivery/types.js';
+import type { ChangeBranchReference } from '../specification/types.js';
 
 export type PostMergeReady = Extract<PostMergeCoordinationResult, { status: 'ready' }>;
 
@@ -27,8 +28,28 @@ export type PostMergeTriggerEvidence = Omit<MergeEvidence, 'observedAt'>;
 
 export interface PostMergeTriggerFacts {
   changeId: string;
+  changeBranch?: ChangeBranchReference;
   mergeEvidence: PostMergeTriggerEvidence[];
   repositories: PostMergeRepositoryFact[];
+}
+
+function isChangeBranchReference(value: unknown): value is ChangeBranchReference {
+  const item = value as Partial<ChangeBranchReference> | null;
+  return (
+    !!item &&
+    typeof item === 'object' &&
+    typeof item.repositoryId === 'string' &&
+    item.repositoryId.length > 0 &&
+    typeof item.remoteIdentity === 'string' &&
+    item.remoteIdentity.length > 0 &&
+    typeof item.sourceBranch === 'string' &&
+    item.sourceBranch.length > 0 &&
+    typeof item.targetBranch === 'string' &&
+    item.targetBranch.length > 0 &&
+    item.sourceBranch !== item.targetBranch &&
+    typeof item.remoteOid === 'string' &&
+    /^[a-f0-9]{40}(?:[a-f0-9]{24})?$/u.test(item.remoteOid)
+  );
 }
 
 function isRepositoryFact(value: unknown): value is PostMergeRepositoryFact {
@@ -54,13 +75,31 @@ function isMergeEvidence(value: unknown): value is PostMergeTriggerEvidence {
     typeof item === 'object' &&
     typeof item.repositoryId === 'string' &&
     item.repositoryId.length > 0 &&
+    !!item.mergeRequest &&
+    typeof item.mergeRequest.provider === 'string' &&
+    item.mergeRequest.provider.length > 0 &&
+    item.mergeRequest.repositoryId === item.repositoryId &&
+    Number.isInteger(item.mergeRequest.number) &&
+    item.mergeRequest.number > 0 &&
+    typeof item.mergeRequest.url === 'string' &&
+    item.mergeRequest.url.length > 0 &&
     typeof item.mergeCommit === 'string' &&
-    /^[a-f0-9]{40,64}$/i.test(item.mergeCommit)
+    /^[a-f0-9]{40,64}$/i.test(item.mergeCommit) &&
+    typeof item.mergedAt === 'string' &&
+    item.mergedAt.length > 0
   );
 }
 
 function mergeEvidenceIdentity(value: PostMergeTriggerEvidence): string {
   return `${value.repositoryId}\0${value.mergeCommit.toLowerCase()}`;
+}
+
+function mergeRequestIdentity(value: PostMergeTriggerEvidence): string {
+  return [
+    value.mergeRequest.provider,
+    value.mergeRequest.repositoryId,
+    value.mergeRequest.number,
+  ].join('\0');
 }
 
 export function postMergeTriggerFacts(
@@ -73,6 +112,7 @@ export function postMergeTriggerFacts(
     !/^sha256:[a-f0-9]{64}$/.test(trigger.identityDigest) ||
     !facts ||
     typeof facts.changeId !== 'string' ||
+    (facts.changeBranch !== undefined && !isChangeBranchReference(facts.changeBranch)) ||
     !Array.isArray(facts.mergeEvidence) ||
     !facts.mergeEvidence.every(isMergeEvidence) ||
     !Array.isArray(facts.repositories) ||
@@ -80,14 +120,15 @@ export function postMergeTriggerFacts(
     !facts.repositories.every(isRepositoryFact) ||
     new Set(facts.repositories.map((repository) => repository.repositoryId)).size !==
       facts.repositories.length ||
-    new Set(facts.mergeEvidence.map((evidence) => evidence.repositoryId)).size !==
-      facts.mergeEvidence.length
+    new Set(facts.mergeEvidence.map(mergeRequestIdentity)).size !== facts.mergeEvidence.length
   ) {
     throw new Error('Run has no valid Post-merge Trigger facts');
   }
   const evidence = new Set(facts.mergeEvidence.map(mergeEvidenceIdentity));
+  const repositoryIds = new Set(facts.repositories.map((repository) => repository.repositoryId));
   if (
-    evidence.size !== facts.repositories.length ||
+    facts.mergeEvidence.length === 0 ||
+    facts.mergeEvidence.some((item) => !repositoryIds.has(item.repositoryId)) ||
     facts.repositories.some(
       (repository) =>
         !evidence.has(`${repository.repositoryId}\0${repository.mergeCommit.toLowerCase()}`),
@@ -172,6 +213,9 @@ export function postMergeRunOptions(input: PostMergeRunInput): IdempotentStartWo
     identityDigest: input.coordination.mergeFactsDigest,
     facts: {
       changeId: input.coordination.changeId,
+      ...(input.coordination.changeBranch
+        ? { changeBranch: structuredClone(input.coordination.changeBranch) }
+        : {}),
       // Observation time describes a poll, not an authoritative merge fact. Keeping it out of
       // the durable Run identity lets a replay resume the same Run after a process interruption.
       mergeEvidence: input.coordination.mergeEvidence.map((evidence) =>

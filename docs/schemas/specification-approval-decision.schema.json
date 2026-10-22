@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://repoctopus.invalid/schemas/specification-approval-decision.schema.json",
+  "title": "Repoctopus specification approval human decision",
+  "$defs": {
+    "digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "provider": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "protocolVersion"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 },
+        "protocolVersion": { "const": "repoctopus.specification/v1alpha1" }
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "digest"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "kind": { "enum": ["proposal", "design", "delta-specs", "tasks"] },
+        "digest": { "$ref": "#/$defs/digest" }
+      }
+    },
+    "changeBranch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repositoryId", "remoteIdentity", "sourceBranch", "targetBranch", "remoteOid"],
+      "properties": {
+        "repositoryId": { "type": "string", "minLength": 1 },
+        "remoteIdentity": { "type": "string", "minLength": 1 },
+        "sourceBranch": { "type": "string", "minLength": 1 },
+        "targetBranch": { "type": "string", "minLength": 1 },
+        "remoteOid": { "type": "string", "pattern": "^[a-f0-9]{40}([a-f0-9]{24})?$" }
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "apiVersion",
+        "kind",
+        "decisionType",
+        "requestId",
+        "changeId",
+        "snapshotDigest",
+        "provider",
+        "artifacts",
+        "affectedCapabilities",
+        "changeBranch",
+        "options"
+      ],
+      "properties": {
+        "apiVersion": { "const": "repoctopus/v1alpha1" },
+        "kind": { "const": "HumanDecisionRequest" },
+        "decisionType": { "const": "specification-approval" },
+        "requestId": { "type": "string", "minLength": 1 },
+        "changeId": { "type": "string", "minLength": 1 },
+        "snapshotDigest": { "$ref": "#/$defs/digest" },
+        "provider": { "$ref": "#/$defs/provider" },
+        "artifacts": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": { "$ref": "#/$defs/artifact" }
+        },
+        "affectedCapabilities": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "changeBranch": { "$ref": "#/$defs/changeBranch" },
+        "options": { "const": ["approve", "request_changes", "reject"] }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["apiVersion", "kind", "requestId", "snapshotDigest", "decision"],
+      "properties": {
+        "apiVersion": { "const": "repoctopus/v1alpha1" },
+        "kind": { "const": "HumanDecisionResponse" },
+        "requestId": { "type": "string", "minLength": 1 },
+        "snapshotDigest": { "$ref": "#/$defs/digest" },
+        "decision": { "enum": ["approve", "request_changes", "reject"] },
+        "comment": { "type": "string", "maxLength": 4096 }
+      }
+    }
+  ]
+}

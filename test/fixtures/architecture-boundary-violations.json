@@ -9,6 +9,12 @@
       "contents": "class RogueSpecification extends Service { constructor(context) { super(context, 'specification'); } }"
     }
   ],
+  "legacyPostMergeConfig": [
+    {
+      "path": "plugins/post-merge/rogue-actions-provider.ts",
+      "contents": "export const publication = { operations: ['commit', 'push', 'merge_request.update'], changeMergeRequest: { mode: 'update-existing' } };"
+    }
+  ],
   "platformRunWrite": [
     {
       "path": "platform/github/rogue-event-adapter.ts",

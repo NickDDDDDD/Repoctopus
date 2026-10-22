@@ -1,22 +1,35 @@
 import type { Context } from '@deepseek-ai/cordis';
 
 import { DeliveryService as DeliveryDomainService } from '../../domains/delivery/service.js';
+import { DeliveryServiceV3 } from '../../domains/delivery/service-v3.js';
+import { FinalChangePublicationService } from '../../domains/delivery/final-change-publication.js';
 import type {
   DeliveryIntent,
+  DeliveryIntentV3,
   DeliveryPolicy,
   DeliveryState,
+  DeliveryStateV3,
   HumanDecisionResponse,
   MergeRequestReference,
   TrustedActor,
 } from '../../domains/delivery/types.js';
 import type {
   PostMergePublicationReceipt,
+  PostMergePublicationReceiptV2,
   PostMergePublicationRequest,
+  PostMergePublicationRequestV2,
 } from '../../domains/delivery/post-merge.js';
+import type { DeliveryV2MigrationPlan } from '../../domains/delivery/migration.js';
 import type { ProjectSnapshot } from '../../domains/project/types.js';
+import { canonicalJson } from '../../domains/workflow-contract/canonical.js';
 import { FileDeliveryEvidence } from '../../platform/delivery/file-delivery-evidence.js';
 import { FileDeliveryStore } from '../../platform/delivery/file-delivery-store.js';
+import {
+  deliveryStateSchemaVersion,
+  FileDeliveryV3Store,
+} from '../../platform/delivery/file-delivery-v3-store.js';
 import { GitDeliveryAdapter } from '../../platform/git/delivery.js';
+import { inspectRemoteChangeBranch } from '../../platform/git/change-branch.js';
 import {
   EnvironmentCredentialProvider,
   GitHubMergeRequestAdapter,
@@ -30,12 +43,13 @@ import {
 
 export interface FileDeliveryConfig {
   workspaceRoot: string;
+  projectConfigDigest: `sha256:${string}`;
   environment?: NodeJS.ProcessEnv;
   githubTokenVariable?: string;
 }
 
 export class FileDeliveryProvider extends Delivery {
-  static inject = ['compositionIdentity'];
+  static inject = ['compositionIdentity', 'specificationPlanning'];
   private readonly operations: OperationOwnership;
 
   constructor(
@@ -64,25 +78,90 @@ export class FileDeliveryProvider extends Delivery {
     );
   }
 
+  private domainV3(policy?: DeliveryPolicy): DeliveryServiceV3 {
+    const environment = this.config.environment ?? process.env;
+    const git = new GitDeliveryAdapter();
+    const mergeRequests = new GitHubMergeRequestAdapter(
+      new EnvironmentCredentialProvider(environment, this.config.githubTokenVariable),
+      policy?.publication.githubApiBaseUrl,
+    );
+    return new DeliveryServiceV3(
+      new FileDeliveryV3Store(this.config.workspaceRoot),
+      git,
+      mergeRequests,
+      new FileDeliveryEvidence(this.config.workspaceRoot),
+      this.ctx.compositionIdentity.current().compositionDigest,
+      undefined,
+      new FinalChangePublicationService(git, mergeRequests),
+    );
+  }
+
+  private async assertPlanningApproval(intent: DeliveryIntentV3, remote: string): Promise<void> {
+    const approval = await this.ctx.specificationPlanning.status(intent.changeId);
+    const currentChangeBranch = await inspectRemoteChangeBranch({
+      repositoryPath: this.config.workspaceRoot,
+      repositoryId: intent.changeBranch.repositoryId,
+      remote,
+      sourceBranch: intent.changeBranch.sourceBranch,
+      targetBranch: intent.changeBranch.targetBranch,
+    });
+    if (
+      !approval ||
+      approval.status !== 'approved' ||
+      approval.decision?.decision !== 'approve' ||
+      approval.snapshot.changeId !== intent.changeId ||
+      approval.snapshot.compositionDigest !==
+        this.ctx.compositionIdentity.current().compositionDigest ||
+      approval.snapshot.projectConfigDigest !== this.config.projectConfigDigest ||
+      canonicalJson(approval.snapshot.changeBranch) !== canonicalJson(intent.changeBranch) ||
+      canonicalJson(currentChangeBranch) !== canonicalJson(intent.changeBranch)
+    ) {
+      throw new Error(
+        `Delivery v3 requires an effective planning approval for Change branch: ${intent.changeId}`,
+      );
+    }
+  }
+
+  private legacyReadOnly(operation: string): never {
+    throw new Error(
+      `Delivery v2 is read-only and cannot ${operation}; inspect status and create a v3 migration plan`,
+    );
+  }
+
   checkpoint(
     project: ProjectSnapshot,
-    intent: DeliveryIntent,
+    intent: DeliveryIntent | DeliveryIntentV3,
     policy: DeliveryPolicy,
     signal?: AbortSignal,
   ) {
-    return this.operations.run({ cancellable: false, signal }, () =>
-      this.domain(policy).checkpoint(project, intent, policy),
-    );
+    return this.operations.run({ cancellable: false, signal }, async () => {
+      if (intent.schemaVersion === 3) {
+        await this.assertPlanningApproval(intent, policy.publication.remote);
+        return this.domainV3(policy).checkpoint(project, intent, policy);
+      }
+      return this.legacyReadOnly('checkpoint');
+    });
   }
 
-  prepare(options: DeliveryPreparation, signal?: AbortSignal): Promise<DeliveryState> {
-    return this.operations.run({ cancellable: false, signal }, () =>
-      this.domain(options.policy).prepare(options),
-    );
+  prepare(
+    options: DeliveryPreparation,
+    signal?: AbortSignal,
+  ): Promise<DeliveryState | DeliveryStateV3> {
+    return this.operations.run({ cancellable: false, signal }, async () => {
+      if (options.intent.schemaVersion === 3) {
+        await this.assertPlanningApproval(options.intent, options.policy.publication.remote);
+        return this.domainV3(options.policy).prepare({ ...options, intent: options.intent });
+      }
+      return this.legacyReadOnly('prepare');
+    });
   }
 
-  status(changeId: string, signal?: AbortSignal): Promise<DeliveryState> {
-    return this.operations.run({ cancellable: true, signal }, () => this.domain().status(changeId));
+  status(changeId: string, signal?: AbortSignal): Promise<DeliveryState | DeliveryStateV3> {
+    return this.operations.run({ cancellable: true, signal }, async () => {
+      const version = await deliveryStateSchemaVersion(this.config.workspaceRoot, changeId);
+      if (version === 3) return this.domainV3().status(changeId);
+      return this.domain().status(changeId);
+    });
   }
 
   decide(
@@ -90,16 +169,25 @@ export class FileDeliveryProvider extends Delivery {
     response: HumanDecisionResponse,
     actor: TrustedActor,
     signal?: AbortSignal,
-  ): Promise<DeliveryState> {
-    return this.operations.run({ cancellable: false, signal }, () =>
-      this.domain().decide(changeId, response, actor),
-    );
+  ): Promise<DeliveryState | DeliveryStateV3> {
+    return this.operations.run({ cancellable: false, signal }, async () => {
+      const version = await deliveryStateSchemaVersion(this.config.workspaceRoot, changeId);
+      if (version !== 3) return this.legacyReadOnly('record a decision');
+      return this.domainV3().decide(changeId, response, actor);
+    });
   }
 
-  publish(options: DeliveryPreparation, signal?: AbortSignal): Promise<DeliveryState> {
-    return this.operations.run({ cancellable: false, signal }, () =>
-      this.domain(options.policy).publish(options),
-    );
+  publish(
+    options: DeliveryPreparation,
+    signal?: AbortSignal,
+  ): Promise<DeliveryState | DeliveryStateV3> {
+    return this.operations.run({ cancellable: false, signal }, async () => {
+      if (options.intent.schemaVersion === 3) {
+        await this.assertPlanningApproval(options.intent, options.policy.publication.remote);
+        return this.domainV3(options.policy).publish({ ...options, intent: options.intent });
+      }
+      return this.legacyReadOnly('publish');
+    });
   }
 
   override publishPostMerge(
@@ -107,14 +195,33 @@ export class FileDeliveryProvider extends Delivery {
     signal?: AbortSignal,
   ): Promise<PostMergePublicationReceipt> {
     return this.operations.run({ cancellable: false, signal }, () =>
-      this.domain().publishPostMerge(request),
+      Promise.reject(
+        new Error(
+          `Delivery v2 is read-only and cannot publish post-merge closure for ${request.changeId}`,
+        ),
+      ),
     );
   }
 
-  refresh(changeId: string, policy: DeliveryPolicy, signal?: AbortSignal): Promise<DeliveryState> {
+  override publishFinalChange(
+    request: PostMergePublicationRequestV2,
+    signal?: AbortSignal,
+  ): Promise<PostMergePublicationReceiptV2> {
     return this.operations.run({ cancellable: false, signal }, () =>
-      this.domain(policy).refresh(changeId),
+      this.domainV3().publishFinalChange(request),
     );
+  }
+
+  refresh(
+    changeId: string,
+    policy: DeliveryPolicy,
+    signal?: AbortSignal,
+  ): Promise<DeliveryState | DeliveryStateV3> {
+    return this.operations.run({ cancellable: false, signal }, async () => {
+      const version = await deliveryStateSchemaVersion(this.config.workspaceRoot, changeId);
+      if (version !== 3) return this.legacyReadOnly('refresh');
+      return (await this.domainV3(policy).refresh(changeId)).state;
+    });
   }
 
   refreshForMergeRequest(
@@ -122,14 +229,28 @@ export class FileDeliveryProvider extends Delivery {
     policy: DeliveryPolicy,
     signal?: AbortSignal,
   ) {
-    return this.operations.run({ cancellable: false, signal }, () =>
-      this.domain(policy).refreshForMergeRequest(reference),
-    );
+    return this.operations.run({ cancellable: false, signal }, async () => {
+      return this.domainV3(policy).refreshForMergeRequest(reference);
+    });
   }
 
   override reconciliationCandidates(signal?: AbortSignal) {
     return this.operations.run({ cancellable: true, signal }, () =>
-      this.domain().reconciliationCandidates(),
+      this.domainV3().reconciliationCandidates(),
     );
+  }
+
+  override migrationPlan(
+    changeId: string,
+    policy: DeliveryPolicy,
+    signal?: AbortSignal,
+  ): Promise<DeliveryV2MigrationPlan> {
+    return this.operations.run({ cancellable: true, signal }, async () => {
+      const version = await deliveryStateSchemaVersion(this.config.workspaceRoot, changeId);
+      if (version !== 2) {
+        throw new Error(`Delivery migration plan requires a v2 state: ${changeId}`);
+      }
+      return this.domain(policy).migrationPlan(changeId);
+    });
   }
 }

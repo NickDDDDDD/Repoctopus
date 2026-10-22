@@ -58,6 +58,94 @@ export interface SpecificationUsageSnapshot {
   closurePlanDigest?: `sha256:${string}`;
 }
 
+export interface ChangeBranchReference {
+  repositoryId: string;
+  remoteIdentity: string;
+  sourceBranch: string;
+  targetBranch: string;
+  remoteOid: string;
+}
+
+export interface PlanningArtifactSnapshot {
+  id: string;
+  kind: Exclude<SpecificationArtifactKind, 'verification'>;
+  digest: `sha256:${string}`;
+}
+
+export interface PlanningSnapshot {
+  schemaVersion: 1;
+  changeId: string;
+  provider: SpecificationProviderIdentity;
+  changeDigest: `sha256:${string}`;
+  validationDigest: `sha256:${string}`;
+  artifacts: PlanningArtifactSnapshot[];
+  affectedCapabilities: string[];
+  changeBranch: ChangeBranchReference;
+  compositionDigest: `sha256:${string}`;
+  projectConfigDigest: `sha256:${string}`;
+  digest: `sha256:${string}`;
+}
+
+export type SpecificationApprovalDecision = 'approve' | 'request_changes' | 'reject';
+
+export interface SpecificationApprovalDecisionRequest {
+  apiVersion: 'repoctopus/v1alpha1';
+  kind: 'HumanDecisionRequest';
+  decisionType: 'specification-approval';
+  requestId: string;
+  changeId: string;
+  snapshotDigest: `sha256:${string}`;
+  provider: SpecificationProviderIdentity;
+  artifacts: PlanningArtifactSnapshot[];
+  affectedCapabilities: string[];
+  changeBranch: ChangeBranchReference;
+  options: SpecificationApprovalDecision[];
+}
+
+export interface SpecificationApprovalDecisionResponse {
+  apiVersion: 'repoctopus/v1alpha1';
+  kind: 'HumanDecisionResponse';
+  requestId: string;
+  snapshotDigest: `sha256:${string}`;
+  decision: SpecificationApprovalDecision;
+  comment?: string;
+}
+
+export interface SpecificationApprovalActor {
+  actorId: string;
+  source: 'ide' | 'cli';
+  authenticated: boolean;
+}
+
+export interface SpecificationApprovalRecord {
+  schemaVersion: 1;
+  requestId: string;
+  changeId: string;
+  snapshotDigest: `sha256:${string}`;
+  decision: SpecificationApprovalDecision;
+  actorId: string;
+  source: SpecificationApprovalActor['source'];
+  decidedAt: string;
+  comment?: string;
+}
+
+export type SpecificationApprovalStatus =
+  | 'awaiting_approval'
+  | 'approved'
+  | 'changes_requested'
+  | 'rejected';
+
+export interface SpecificationApprovalState {
+  schemaVersion: 1;
+  changeId: string;
+  stateVersion: number;
+  status: SpecificationApprovalStatus;
+  snapshot: PlanningSnapshot;
+  decisionRequest: SpecificationApprovalDecisionRequest;
+  decision: SpecificationApprovalRecord | null;
+  updatedAt: string;
+}
+
 export interface SpecificationCompatibility {
   status: 'same' | 'drifted';
   reason: string;

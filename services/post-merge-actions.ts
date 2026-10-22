@@ -6,8 +6,15 @@ import { Service, type Context } from '@deepseek-ai/cordis';
 
 import type {
   PostMergeCheckoutManifest,
+  PostMergeChangeBranchCheckoutPort,
   PostMergeCheckoutPort,
   PostMergeRepositorySource,
+  PostMergeTargetMergeIntent,
+  PostMergeTargetMergeReceipt,
+} from '../domains/post-merge/checkout.js';
+import {
+  assertPostMergeTargetMergeIntent,
+  assertPostMergeTargetMergeReceipt,
 } from '../domains/post-merge/checkout.js';
 import {
   assertPostMergeClosureAudit,
@@ -20,11 +27,16 @@ import {
 import { postMergeTriggerFacts } from '../domains/post-merge/run.js';
 import {
   assertPostMergePublicationReceipt,
+  assertPostMergePublicationReceiptV2,
   assertPostMergePublicationRequest,
+  assertPostMergePublicationRequestV2,
   postMergePublicationPolicyFindings,
+  postMergePublicationPolicyV2Findings,
   type PostMergePublicationPolicy,
   type PostMergePublicationReceipt,
+  type PostMergePublicationReceiptV2,
   type PostMergePublicationRequest,
+  type PostMergePublicationRequestV2,
 } from '../domains/delivery/post-merge.js';
 import { canonicalJson } from '../domains/workflow-contract/canonical.js';
 import type { EvidenceGateProjection } from '../domains/evidence/types.js';
@@ -36,12 +48,14 @@ import { atomicWriteJson } from '../platform/filesystem/atomic-write.js';
 import { GitPostMergeCheckout } from '../platform/git/post-merge-checkout.js';
 import { GitPostMergeWorkspace } from '../platform/git/post-merge-workspace.js';
 import { withRecoverableFileLock } from '../platform/runtime/recoverable-file-lock.js';
+import type { SpecificationWorkspace } from './specification.js';
 
 export interface PostMergeActionsConfig {
   temporaryRoot: string;
   workspaceRoot?: string;
   verificationPathPrefixes?: string[];
   checkout?: PostMergeCheckoutPort;
+  changeBranchCheckout?: PostMergeChangeBranchCheckoutPort;
   workspace?: PostMergeWorkspacePort;
   publicationPolicy?: PostMergePublicationPolicy | (() => PostMergePublicationPolicy);
 }
@@ -67,19 +81,23 @@ export interface PostMergePathAuditResult {
 
 export interface PostMergePublicationResult {
   runId: string;
-  receipt: PostMergePublicationReceipt;
+  receipt: PostMergePublicationReceipt | PostMergePublicationReceiptV2;
 }
 
 interface PostMergeClosureJournal {
-  schemaVersion: 1;
+  schemaVersion: 1 | 2;
   runId: string;
-  baseline: PostMergeWorkspaceBaseline;
-  plan: SpecificationClosurePlan;
+  targetMerge?: {
+    intent: PostMergeTargetMergeIntent;
+    receipt?: PostMergeTargetMergeReceipt;
+  };
+  baseline?: PostMergeWorkspaceBaseline;
+  plan?: SpecificationClosurePlan;
   result?: SpecificationClosureResult;
   audit?: PostMergeClosureAudit;
   publication?: {
-    request: PostMergePublicationRequest;
-    receipt?: PostMergePublicationReceipt;
+    request: PostMergePublicationRequest | PostMergePublicationRequestV2;
+    receipt?: PostMergePublicationReceipt | PostMergePublicationReceiptV2;
   };
 }
 
@@ -96,6 +114,7 @@ export class PostMergeActions extends Service {
   private readonly workspaceRoot: string;
   private readonly verificationPathPrefixes: string[];
   private readonly checkout: PostMergeCheckoutPort;
+  private readonly changeBranchCheckout: PostMergeChangeBranchCheckoutPort;
   private readonly workspace: PostMergeWorkspacePort;
   private readonly publicationPolicy: (() => PostMergePublicationPolicy) | undefined;
 
@@ -106,12 +125,16 @@ export class PostMergeActions extends Service {
     this.workspaceRoot = path.resolve(config.workspaceRoot ?? process.cwd());
     this.verificationPathPrefixes = [...(config.verificationPathPrefixes ?? [])];
     this.checkout = config.checkout ?? new GitPostMergeCheckout();
+    this.changeBranchCheckout = config.changeBranchCheckout ?? new GitPostMergeCheckout();
     this.workspace = config.workspace ?? new GitPostMergeWorkspace();
     if (typeof config.publicationPolicy === 'function') {
       this.publicationPolicy = config.publicationPolicy;
     } else if (config.publicationPolicy) {
       const policy = structuredClone(config.publicationPolicy);
-      if (postMergePublicationPolicyFindings(policy).length > 0) {
+      if (
+        postMergePublicationPolicyFindings(policy).length > 0 &&
+        postMergePublicationPolicyV2Findings(policy).length > 0
+      ) {
         throw new Error('Post-merge publication policy is invalid');
       }
       this.publicationPolicy = () => structuredClone(policy);
@@ -141,14 +164,23 @@ export class PostMergeActions extends Service {
         await readFile(this.closureJournalFile(runId), 'utf8'),
       ) as Partial<PostMergeClosureJournal>;
       if (
-        value.schemaVersion !== 1 ||
+        (value.schemaVersion !== 1 && value.schemaVersion !== 2) ||
         value.runId !== runId ||
-        value.plan?.kind !== 'SpecificationClosurePlan' ||
-        value.baseline?.schemaVersion !== 1 ||
+        (value.schemaVersion === 1 && (!value.plan || !value.baseline || value.targetMerge)) ||
+        (value.schemaVersion === 2 && !value.targetMerge) ||
+        (value.plan && value.plan.kind !== 'SpecificationClosurePlan') ||
+        (value.baseline && value.baseline.schemaVersion !== 1) ||
+        (value.targetMerge && value.targetMerge.intent?.schemaVersion !== 1) ||
+        (value.targetMerge?.receipt && value.targetMerge.receipt.schemaVersion !== 1) ||
         (value.result && value.result.kind !== 'SpecificationClosureResult') ||
         (value.audit && value.audit.schemaVersion !== 1) ||
-        (value.publication && value.publication.request?.schemaVersion !== 1) ||
-        (value.publication?.receipt && value.publication.receipt.schemaVersion !== 1)
+        (value.plan && !value.baseline) ||
+        (value.result && !value.plan) ||
+        (value.audit && !value.result) ||
+        (value.publication && !value.audit) ||
+        (value.publication && value.publication.request?.schemaVersion !== value.schemaVersion) ||
+        (value.publication?.receipt &&
+          value.publication.receipt.schemaVersion !== value.schemaVersion)
       ) {
         throw new Error(`Post-merge closure Journal is invalid for Run ${runId}`);
       }
@@ -170,8 +202,38 @@ export class PostMergeActions extends Service {
     journal: PostMergeClosureJournal,
     status: PostMergeRunStatus,
   ): void {
-    assertSafeClosurePlan(journal.plan);
     const facts = postMergeTriggerFacts(status.state.trigger);
+    if (journal.targetMerge) {
+      assertPostMergeTargetMergeIntent(journal.targetMerge.intent);
+      if (
+        !facts.changeBranch ||
+        journal.schemaVersion !== 2 ||
+        journal.targetMerge.intent.runId !== runId ||
+        journal.targetMerge.intent.mergeFactsDigest !== status.state.trigger?.identityDigest ||
+        canonicalJson(journal.targetMerge.intent.changeBranch) !== canonicalJson(facts.changeBranch)
+      ) {
+        throw new Error(`Post-merge target merge Journal is not bound to Run ${runId}`);
+      }
+      if (journal.targetMerge.receipt) {
+        assertPostMergeTargetMergeReceipt(journal.targetMerge.receipt, journal.targetMerge.intent);
+      }
+    } else if (journal.schemaVersion !== 1 || facts.changeBranch) {
+      throw new Error(`Post-merge closure Journal version is not bound to Run ${runId}`);
+    }
+    if (!journal.plan || !journal.baseline) {
+      if (journal.result || journal.audit || journal.publication) {
+        throw new Error(`Post-merge closure Journal order is invalid for Run ${runId}`);
+      }
+      return;
+    }
+    assertSafeClosurePlan(journal.plan);
+    if (
+      journal.targetMerge?.receipt &&
+      (journal.baseline.root !== journal.targetMerge.receipt.checkoutPath ||
+        journal.baseline.head !== journal.targetMerge.receipt.mergeCommitOid)
+    ) {
+      throw new Error(`Post-merge target merge baseline is not bound to Run ${runId}`);
+    }
     const specification = status.state.specificationUsageSnapshot;
     if (
       journal.plan.changeId !== facts.changeId ||
@@ -210,7 +272,11 @@ export class PostMergeActions extends Service {
       if (!journal.audit) {
         throw new Error(`Post-merge publication has no path audit for Run ${runId}`);
       }
-      assertPostMergePublicationRequest(journal.publication.request);
+      if (journal.publication.request.schemaVersion === 1) {
+        assertPostMergePublicationRequest(journal.publication.request);
+      } else {
+        assertPostMergePublicationRequestV2(journal.publication.request);
+      }
       if (
         journal.publication.request.runId !== runId ||
         journal.publication.request.changeId !== journal.plan.changeId ||
@@ -220,7 +286,25 @@ export class PostMergeActions extends Service {
         throw new Error(`Post-merge publication request is not bound to Run ${runId}`);
       }
       if (journal.publication.receipt) {
-        assertPostMergePublicationReceipt(journal.publication.receipt, journal.publication.request);
+        if (
+          journal.publication.request.schemaVersion === 1 &&
+          journal.publication.receipt.schemaVersion === 1
+        ) {
+          assertPostMergePublicationReceipt(
+            journal.publication.receipt,
+            journal.publication.request,
+          );
+        } else if (
+          journal.publication.request.schemaVersion === 2 &&
+          journal.publication.receipt.schemaVersion === 2
+        ) {
+          assertPostMergePublicationReceiptV2(
+            journal.publication.receipt,
+            journal.publication.request,
+          );
+        } else {
+          throw new Error(`Post-merge publication version drifted for Run ${runId}`);
+        }
       }
     }
   }
@@ -246,6 +330,7 @@ export class PostMergeActions extends Service {
     if (status.state.currentStep !== 'close-specification') {
       if (
         journal?.result &&
+        journal.plan &&
         (status.state.currentStep === 'audit-paths' || status.state.currentStep === 'publish')
       ) {
         this.assertClosureJournalBinding(runId, journal, status);
@@ -262,9 +347,54 @@ export class PostMergeActions extends Service {
     }
     try {
       if (journal) this.assertClosureJournalBinding(runId, journal, status);
-      if (!journal) {
-        const facts = postMergeTriggerFacts(status.state.trigger);
-        const validation = await this.ctx.specification.validate(facts.changeId, {
+      const facts = postMergeTriggerFacts(status.state.trigger);
+      let specification: SpecificationWorkspace = this.ctx.specification;
+      let closureRoot = this.workspaceRoot;
+      if (facts.changeBranch) {
+        if (!this.publicationPolicy) {
+          throw new Error('Post-merge publication policy is not configured');
+        }
+        const policy = this.publicationPolicy();
+        if (postMergePublicationPolicyV2Findings(policy).length > 0) {
+          throw new Error('Final Change publication policy is invalid');
+        }
+        if (!journal) {
+          const intent = await this.changeBranchCheckout.prepareTargetMerge({
+            runId,
+            mergeFactsDigest: status.state.trigger!.identityDigest,
+            remote: policy.remote,
+            changeBranch: facts.changeBranch,
+            source: { repositoryId: facts.changeBranch.repositoryId, path: this.workspaceRoot },
+          });
+          journal = { schemaVersion: 2, runId, targetMerge: { intent } };
+          await this.saveClosureJournal(journal);
+        }
+        if (journal.schemaVersion !== 2 || !journal.targetMerge) {
+          throw new Error(`Post-merge target merge Journal is missing for Run ${runId}`);
+        }
+        if (journal.targetMerge.intent.remote !== policy.remote) {
+          throw new Error('Post-merge target merge remote drifted after Intent persistence');
+        }
+        if (!journal.targetMerge.receipt) {
+          const receipt = await this.changeBranchCheckout.mergeTarget({
+            temporaryRoot: this.temporaryRoot,
+            source: { repositoryId: facts.changeBranch.repositoryId, path: this.workspaceRoot },
+            intent: journal.targetMerge.intent,
+            ...(signal ? { signal } : {}),
+          });
+          journal = { ...journal, targetMerge: { ...journal.targetMerge, receipt } };
+          await this.saveClosureJournal(journal);
+        }
+        const targetMergeReceipt = journal.targetMerge?.receipt;
+        if (!targetMergeReceipt) {
+          throw new Error(`Post-merge target merge Receipt is missing for Run ${runId}`);
+        }
+        closureRoot = targetMergeReceipt.checkoutPath;
+        specification = this.ctx.specification.atWorkspace(closureRoot);
+      }
+      if (!journal?.baseline || !journal.plan) {
+        const baseline = await this.workspace.cleanBaseline(closureRoot);
+        const validation = await specification.validate(facts.changeId, {
           strict: true,
           ...(signal ? { signal } : {}),
         });
@@ -272,8 +402,7 @@ export class PostMergeActions extends Service {
           throw new Error(`Specification change is not valid: ${facts.changeId}`);
         }
         await this.ctx.workflowRuns.bindSpecification(runId, validation, signal);
-        const baseline = await this.workspace.cleanBaseline(this.workspaceRoot);
-        const plan = await this.ctx.specification.prepareClosure({
+        const plan = await specification.prepareClosure({
           changeId: facts.changeId,
           mergeFactsDigest: status.state.trigger!.identityDigest,
           targetBaselineDigest: baseline.digest,
@@ -281,11 +410,19 @@ export class PostMergeActions extends Service {
         });
         assertSafeClosurePlan(plan);
         await this.ctx.workflowRuns.bindSpecificationClosurePlan(runId, plan, signal);
-        journal = { schemaVersion: 1, runId, baseline, plan };
+        journal = journal
+          ? { ...journal, baseline, plan }
+          : { schemaVersion: 1, runId, baseline, plan };
         await this.saveClosureJournal(journal);
+        status = await this.ctx.workflowRuns.status(runId, signal);
       }
-      assertSafeClosurePlan(journal.plan);
-      const result = journal.result ?? (await this.ctx.specification.close(journal.plan, signal));
+      if (!journal.plan || !journal.baseline) {
+        throw new Error(`Post-merge closure plan is incomplete for Run ${runId}`);
+      }
+      this.assertClosureJournalBinding(runId, journal, status);
+      const plan = journal.plan;
+      assertSafeClosurePlan(plan);
+      const result = journal.result ?? (await specification.close(plan, signal));
       journal = { ...journal, result };
       await this.saveClosureJournal(journal);
       await this.ctx.workflowRuns.record(
@@ -299,7 +436,7 @@ export class PostMergeActions extends Service {
         },
         signal,
       );
-      return { runId, plan: journal.plan, result };
+      return { runId, plan, result };
     } catch (error) {
       await this.ctx.workflowRuns.record(
         {
@@ -345,7 +482,7 @@ export class PostMergeActions extends Service {
       throw new Error('Post-merge path audit action is not pending');
     }
     try {
-      if (!journal?.result) {
+      if (!journal?.result || !journal.plan || !journal.baseline) {
         throw new Error(`Post-merge closure Journal has no result for Run ${runId}`);
       }
       this.assertClosureJournalBinding(runId, journal, status);
@@ -411,7 +548,7 @@ export class PostMergeActions extends Service {
       throw new Error('Post-merge Change MR publication action is not pending');
     }
     try {
-      if (!journal?.result || !journal.audit) {
+      if (!journal?.result || !journal.audit || !journal.plan || !journal.baseline) {
         throw new Error(`Post-merge closure audit is incomplete for Run ${runId}`);
       }
       this.assertClosureJournalBinding(runId, journal, status);
@@ -419,7 +556,11 @@ export class PostMergeActions extends Service {
         throw new Error('Post-merge publication policy is not configured');
       }
       const publicationPolicy = this.publicationPolicy();
-      if (postMergePublicationPolicyFindings(publicationPolicy).length > 0) {
+      const policyFindings =
+        journal.schemaVersion === 2
+          ? postMergePublicationPolicyV2Findings(publicationPolicy)
+          : postMergePublicationPolicyFindings(publicationPolicy);
+      if (policyFindings.length > 0) {
         throw new Error('Post-merge publication policy is invalid');
       }
       if (
@@ -438,25 +579,61 @@ export class PostMergeActions extends Service {
         if (freshAudit.digest !== journal.audit.digest) {
           throw new Error('Post-merge closure changed after its path audit');
         }
-        const request: PostMergePublicationRequest = {
-          schemaVersion: 1,
-          runId,
-          changeId: journal.plan.changeId,
-          workspaceRoot: this.workspaceRoot,
-          baseline: structuredClone(journal.baseline),
-          audit: structuredClone(freshAudit),
-          policy: structuredClone(publicationPolicy),
-        };
-        assertPostMergePublicationRequest(request);
+        let request: PostMergePublicationRequest | PostMergePublicationRequestV2;
+        if (journal.schemaVersion === 2) {
+          if (!journal.targetMerge?.receipt) {
+            throw new Error(`Post-merge target merge is incomplete for Run ${runId}`);
+          }
+          const evidenceBundleIds = status.state.acceptedEvidenceBundleIds;
+          if (evidenceBundleIds.length !== 1) {
+            throw new Error('Final Change publication requires one accepted Evidence bundle');
+          }
+          request = {
+            schemaVersion: 2,
+            runId,
+            changeId: journal.plan.changeId,
+            evidenceBundleId: evidenceBundleIds[0]!,
+            workspaceRoot: journal.baseline.root,
+            targetMerge: {
+              intent: structuredClone(journal.targetMerge.intent),
+              receipt: structuredClone(journal.targetMerge.receipt),
+            },
+            baseline: structuredClone(journal.baseline),
+            audit: structuredClone(freshAudit),
+            policy: structuredClone(publicationPolicy),
+          };
+          assertPostMergePublicationRequestV2(request);
+        } else {
+          request = {
+            schemaVersion: 1,
+            runId,
+            changeId: journal.plan.changeId,
+            workspaceRoot: this.workspaceRoot,
+            baseline: structuredClone(journal.baseline),
+            audit: structuredClone(freshAudit),
+            policy: structuredClone(publicationPolicy),
+          };
+          assertPostMergePublicationRequest(request);
+        }
         journal = { ...journal, publication: { request } };
         await this.saveClosureJournal(journal);
       }
       const publication = journal.publication;
       if (!publication) throw new Error('Post-merge publication intent was not persisted');
-      const receipt =
-        publication.receipt ??
-        (await this.ctx.delivery.publishPostMerge(publication.request, signal));
-      assertPostMergePublicationReceipt(receipt, publication.request);
+      let receipt = publication.receipt;
+      if (!receipt) {
+        receipt =
+          publication.request.schemaVersion === 2
+            ? await this.ctx.delivery.publishFinalChange(publication.request, signal)
+            : await this.ctx.delivery.publishPostMerge(publication.request, signal);
+      }
+      if (publication.request.schemaVersion === 2 && receipt.schemaVersion === 2) {
+        assertPostMergePublicationReceiptV2(receipt, publication.request);
+      } else if (publication.request.schemaVersion === 1 && receipt.schemaVersion === 1) {
+        assertPostMergePublicationReceipt(receipt, publication.request);
+      } else {
+        throw new Error('Post-merge publication Receipt version drifted');
+      }
       if (!publication.receipt) {
         journal = {
           ...journal,
