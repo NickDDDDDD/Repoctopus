@@ -124,6 +124,8 @@ MR Adapter 必须先按 `provider + repository + sourceBranch + targetBranch` �
 - 已出现语义等价的目标同步与关闭提交：核对 tree、parent、message、author 和审计摘要后返回 no-op；
 - 任何不等价变化：fail-closed 并请求重新协调。
 
+Composition 身份只绑定插件实现、版本化状态契约和共享/本地配置语义，不绑定某台机器的绝对安装目录或 worktree 路径。Cordis Provider 仍接收真实 `productRoot`、`workspaceRoot` 和临时目录作为运行配置，但身份摘要使用稳定逻辑根；因此不同 Runner 或规划/业务 worktree 在代码、插件和项目配置相同时必须得到相同 composition 与插件 config digest。路径变化不能伪装成受保护插件迁移，真实插件代码、配置或状态 schema 变化仍必须使摘要改变并触发既有迁移门禁。
+
 两个 Runner 的目标同步 merge commit 可能因为 Git 时间戳不同而具有不同 OID，因此恢复不能把临时 merge OID 相等误当成语义相等。恢复路径分别核对两个目标同步提交都具有锁定的 Change/目标 parent，并比较其 tree、message 与 author；随后核对关闭提交只有一个语义等价的目标同步 parent，且 tree、message 与 author 相同。
 
 最终关闭 commit 增加 `Repoctopus-Closure-Audit` trailer。该摘要绑定关闭计划、关闭身份、排序后的变更路径及内容摘要，但排除包含临时 merge OID 的 baseline digest，使独立 Runner 对相同关闭语义得到同一摘要，而文件相同但计划或关闭身份不同的结果仍然 fail-closed。此 trailer 只用于竞争恢复证明，不取代完整 Closure Audit 与 Receipt。
