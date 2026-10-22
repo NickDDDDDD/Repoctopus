@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "envelopeId": "sha256:26bbeed56be23261222c82563639651e8f5f4fabb0c65923903a001f69e25a8f",
+  "source": {
+    "domain": "workflow",
+    "eventId": "event-telemetry-1",
+    "eventType": "action.completed",
+    "sequence": 7
+  },
+  "observedAt": "2026-10-23T08:15:30.000Z",
+  "attributes": {
+    "repoctopus.project.id": "repoctopus",
+    "repoctopus.run.id": "run-42",
+    "repoctopus.workflow.name": "self-hosted-development"
+  },
+  "signals": [
+    {
+      "kind": "trace",
+      "name": "repoctopus.workflow.event"
+    },
+    {
+      "kind": "log",
+      "name": "repoctopus.workflow.event",
+      "severity": "info"
+    },
+    {
+      "kind": "metric",
+      "name": "repoctopus.workflow.events",
+      "value": 1,
+      "unit": "event"
+    }
+  ],
+  "digest": "sha256:bb5efabc10dcd403918c862e6d59f41c9936fcf76e5a2fc6c7f7ef3c63bbcde0"
+}

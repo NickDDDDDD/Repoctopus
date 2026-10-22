@@ -249,7 +249,7 @@
     {
       "id": "telemetry",
       "disposition": "repoctopus-native",
-      "targets": ["platform/telemetry/**"],
+      "targets": ["domains/telemetry/**", "platform/telemetry/**"],
       "upstream": ["platform/process/runtime-metrics.ts"],
       "rationale": "使用 OTel 允许列表导出稳定 Evidence 与交付身份，不复用 Comet 的进程内指标模型。"
     },
