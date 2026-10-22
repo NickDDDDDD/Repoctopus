@@ -169,6 +169,31 @@ describe('project configuration', () => {
     );
   });
 
+  it.each(['changeOwner', 'mrAuthor', 'branchAuthor', 'runnerOwner'])(
+    'rejects unsupported post-merge ownership filter %s',
+    async (field) => {
+      const fixture = (await configurationFixture('self-hosted-valid.yaml')) as Record<
+        string,
+        unknown
+      >;
+      const postMerge = fixture.postMerge as Record<string, unknown>;
+      postMerge[field] = 'exclusive-user';
+      expect(() => parseSharedProjectConfig(fixture)).toThrow(
+        new RegExp(`postMerge: unknown fields: ${field}`, 'i'),
+      );
+    },
+  );
+
+  it('treats Runner identity as replaceable execution metadata', async () => {
+    const fixture = (await configurationFixture('self-hosted-valid.yaml')) as SelfHostedFixture;
+    fixture.platformEvents.runner.identity = 'replacement-runner';
+    fixture.postMerge.runnerIdentity = 'replacement-runner';
+
+    const parsed = parseSharedProjectConfig(fixture);
+    expect(parsed.platformEvents?.runner.identity).toBe('replacement-runner');
+    expect(parsed.postMerge?.runnerIdentity).toBe('replacement-runner');
+  });
+
   it('rejects a post-merge Runner reference when platform events are not configured', async () => {
     const fixture = (await configurationFixture('self-hosted-valid.yaml')) as Record<
       string,

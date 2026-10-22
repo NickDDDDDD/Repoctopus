@@ -38,15 +38,7 @@ Repoctopus 把功能分支 checkpoint 视为远端备份边界：策略允许的
 
 v2 状态仍可读取和诊断，但不能再用来发起 `delivery checkpoint`、`delivery prepare` 或 `delivery publish`。CLI 检测到 `schemaVersion: 2` 或 `changeMergeRequest` 时会停止，不会把旧字段静默解释成 v3。
 
-迁移旧 Intent 时执行以下转换：
-
-1. 将 `schemaVersion` 改为 `3`。
-2. 用原 Change MR 的仓库、源分支和目标分支创建 `changeBranch`，并写入该公开分支当前的 `remoteOid`。
-3. 将 `repositories` 改为 `businessDeliveries`，为每项增加稳定的 `deliveryId`。默认单项使用 `primary`。
-4. 删除旧 `mergeRequest` identity。Repoctopus 不会自动关闭、复用或替换旧 Change MR。
-5. 重新执行规格验证和规划批准。v2 批准不能复用。
-
-如果旧 Change MR 已存在，你需要先决定继续旧流程，还是人工关闭旧 MR 后迁移。Repoctopus 不代替你执行这个不可逆的平台操作。
+按照 [Delivery v2 到 v3 迁移指南](delivery-v2-migration.md)运行只读 `delivery migration-plan`，处理 `reprepare_required`、`manual_decision_required` 或 `repair_required`。迁移不会自动关闭、重开或替换旧 MR，也不会复用旧批准或 Evidence。
 
 ## 批准快照
 

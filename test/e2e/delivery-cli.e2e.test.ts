@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -18,6 +18,19 @@ afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory
 
 describe('delivery CLI', () => {
   it('rejects a v2 intent with an actionable migration diagnostic', async () => {
+    const migrationDocumentationPath = path.join(packageRoot, 'docs', 'delivery-v2-migration.md');
+    const migrationDocumentation = await readFile(migrationDocumentationPath, 'utf8');
+    expect(migrationDocumentation).toContain(
+      'node bin/repoctopus.js delivery migration-plan --workspace $workspace --change $changeId --policy $policyFile --json',
+    );
+    for (const target of [...migrationDocumentation.matchAll(/\[[^\]]+\]\(([^)]+)\)/gu)].map(
+      (match) => match[1]!,
+    )) {
+      await expect(
+        access(path.resolve(path.dirname(migrationDocumentationPath), target)),
+      ).resolves.toBe(undefined);
+    }
+
     const root = await temporaryDirectory('repoctopus-delivery-cli-');
     cleanup.push(root);
     const remote = path.join(root, 'remote.git');

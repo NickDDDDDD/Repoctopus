@@ -18,6 +18,17 @@ $attemptId = '<attempt-id>'
 
 这些值用于关联持久事实，不代表授权。不要把 webhook payload、Token、Header、命令输出或规格正文复制到遥测标签或 MR 评论中。
 
+## 接手其他成员发起的 Change
+
+Change 是团队共享工作单元。MR 作者、Change 分支的 Git 作者、最终 MR 提交者和 Runner identity 都不是独占 owner；它们只提供平台身份、提交来源、租约或审计信息。
+
+1. 在保存该 change Delivery 状态的 Workspace 中运行 `delivery status`。
+2. 核对 change ID、`changeBranch`、完整 `businessMergeRequests` 集合和已有 `mergeEvidence`。
+3. 运行一次 `post-merge reconcile`，让当前 Runner 重新读取平台权威状态。
+4. 根据稳定诊断码继续本指南对应的恢复步骤，不要按作者身份跳过或领取 Change。
+
+如果当前机器是没有 `.repoctopus/deliveries/` 的新 clone，它还不能发现全部历史 Change。先恢复或挂载团队持久状态，再执行补偿；不要根据当前 Git 作者或平台 MR 作者猜测 Delivery。多个已经发现同一 Change、但使用独立状态卷的 Runner 可以重复计算，最终发布由远端 Change 分支 OID 和关闭语义核对收敛。
+
 ## 先判定当前状态
 
 先执行一次补偿检查，然后读取 Delivery；存在 Run 时再读取 Run。
@@ -42,12 +53,14 @@ node bin/repoctopus.js run status --workspace $workspace --run $runId --json
 
 ## 恢复等待中的 Business MR
 
+如果完整 Business MR 集合尚未合入，按权威 MR 状态恢复协调：
+
 1. 运行 `delivery status`，确认每个 `businessMergeRequests[].mergeRequest` 都是已批准集合中的身份。
 2. 在代码平台处理仍开放的 MR，或修复“关闭但未合入”的阻断状态。
 3. 合入最后一个 Business MR 后重新运行 Reconcile。
 4. 确认 Reconcile 从 `waiting` 进入 `post-merge-ready` 或 `post-merge-completed`。
 
-Webhook 只负责唤醒。Reconcile 会重新查询平台权威状态，不依赖原 webhook payload，也不按 MR 作者、Git 作者或 Runner identity 过滤候选项。
+Webhook 只负责唤醒。Reconcile 会重新查询平台权威状态，不依赖原 webhook payload，也不按 MR 作者、分支作者、Git 作者或 Runner identity 过滤候选项。
 
 ## 恢复规划漂移
 
@@ -97,7 +110,7 @@ node bin/repoctopus.js delivery status --workspace $workspace --change $changeId
 node bin/repoctopus.js post-merge reconcile --workspace $workspace --json
 ```
 
-恢复顺序固定为 `merge_target → commit → push → merge_request.create_or_recover`。Git commit 响应丢失时复用同一 commit；push 响应丢失时核对远端精确 OID；MR 创建响应丢失时按仓库、source 和 target 查询唯一开放 MR。多个匹配、关闭 MR、分支映射漂移或 head OID 不一致都会 fail-closed。
+恢复顺序固定为 `merge_target → commit → push → merge_request.create_or_recover`。Git commit 响应丢失时复用同一 commit；push 响应丢失或另一 Runner 先完成时，系统核对目标同步提交的双 parent、tree、message 和 author，再核对关闭提交及 `Repoctopus-Closure-Audit` 摘要。MR 创建失败或响应丢失时，系统按仓库、source 和 target 查询唯一开放 MR。多个匹配、关闭 MR、分支映射漂移、审计语义变化或 head OID 不一致都会 fail-closed。
 
 ## 只恢复 Run Store 事务
 
@@ -148,7 +161,10 @@ Receipt ID 和摘要只用于 Log/Span 关联。Metric 标签只包含工作流�
 
 ## 后续阅读
 
+根据当前阻断阶段继续阅读相关指南：
+
 - [交付治理与失败恢复](delivery.md)：理解 Delivery v3、批准边界和最终 MR 状态。
+- [Delivery v2 到 v3 迁移](delivery-v2-migration.md)：生成只读迁移计划并重新取得授权。
 - [平台事件](platform-events.md)：检查 webhook 持久化、去重、Lease 和死信语义。
 - [Evidence](evidence.md)：解释 Attempt、Receipt、Artifact、Bundle 和 Gate。
 - [OpenTelemetry](telemetry.md)：查看属性允许列表、导出恢复和隐私边界。

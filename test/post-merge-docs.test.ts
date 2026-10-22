@@ -52,6 +52,8 @@ describe('Post-merge operator documentation', () => {
       'target-merge-conflict',
       'final-change-publication-failed',
       'merge_request.create_or_recover',
+      'Repoctopus-Closure-Audit',
+      '分支作者',
     ]) {
       expect(documentation).toContain(operationalSignal);
     }
