@@ -109,7 +109,7 @@ Envelope 先以原子写入进入 Workspace 的本地遥测 outbox，再由目�
 
 Host 停止、重启或桌面退出后 discovery 文件被删除或失效。Runtime 无法连接时保留本地 cursor 并继续远端发送，不把桌面启动失败升级成领域失败。
 
-首个 Receiver 切片明确使用标准 OTLP/HTTP JSON 编码：只注册 `/v1/traces`、`/v1/logs`、`/v1/metrics`，要求 `POST`、`application/json` 和 256-bit base64url Bearer 会话凭据，并以 constant-time 比较认证值；Protobuf 或其他 content type 返回 415，不做内容猜测。监听地址硬编码为 `127.0.0.1`、端口由系统分配，请求体和并发数有界。解析只确认对应 OTLP 顶层 resource 数组，完整属性语义验证和状态收敛由任务 2.4 的 Projection Reducer 负责；错误响应和 diagnostic 只含固定 code，不回显请求正文、凭据或内部异常。Receiver 已作为可独立启动/停止的 Desktop Host 组件实现，加入 Cordis Desktop composition 的 Provider/Contributor 所有权仍由任务 2.7 完成。
+首个 Receiver 切片明确使用标准 OTLP/HTTP JSON 编码：只注册 `/v1/traces`、`/v1/logs`、`/v1/metrics`，要求 `POST`、`application/json` 和 256-bit base64url Bearer 会话凭据，并以 constant-time 比较认证值；Protobuf 或其他 content type 返回 415，不做内容猜测。监听地址硬编码为 `127.0.0.1`、端口由系统分配，请求体和并发数有界。解析只确认对应 OTLP 顶层 resource 数组，完整属性语义验证和状态收敛由任务 2.4 的 Projection Reducer 负责；错误响应和 diagnostic 只含固定 code，不回显请求正文、凭据或内部异常。任务 2.5 已把 Receiver 封装为正式 Cordis Service Provider，并与 Projection 和 Desktop Application 一起进入 Desktop Host composition；Runtime 侧 Launcher、本地目的地 Contributor 和完整启停/卸载组合验证仍由任务 2.6、2.7 完成。
 
 备选方案是固定端口且无凭据。任何本机进程都能伪造 change 状态或读取错误细节，因此拒绝。Windows named pipe 虽然权限更自然，但不是标准 OTLP/HTTP 端点，首版不采用。
 
@@ -143,6 +143,10 @@ Electron 启用 `contextIsolation`、renderer sandbox，并关闭 `nodeIntegrati
 - 请求显示窗口或完全退出等有界桌面动作。
 
 Renderer 不直接监听端口、不读取 discovery/journal、不访问文件系统或执行任意 IPC channel。订阅建立时，Desktop Host 生成一致 snapshot 与版本，经 Main/Preload 转交后只发送更高序列 delta；发现序列缺口时 Renderer 丢弃局部状态并经相同桥接请求新 snapshot，不轮询。Main 不解释或二次投影业务状态，只校验、关联和转发有界消息。
+
+任务 2.5 采用单一版本链实现这条边界：Desktop Application Service 拥有 Reducer，并在记录成功收敛后发布带 `baseVersion`、`version` 和完整 projection 的 delta；Host ready 同时携带初始 snapshot 与仅供 Runtime 投递使用的回环 receiver endpoint。Host、Main 与 Preload 在各自边界校验固定 channel 和 payload，Renderer 只在 delta 的 `baseVersion` 与本地版本不一致时一次性调用 `currentState()` 重新取得 snapshot，不建立 timer 或轮询循环。Main 保留最近一次已校验 snapshot，但不重算 change 状态。
+
+OTLP JSON decoder 只从 Trace/Log 的 Repoctopus 属性允许列表构造 `ObservationRecord`，忽略 Log body、Span event 正文、未知属性和凭据；Metric 在尚无低基数聚合投影契约前不生成实体记录，避免从高基数标签反推 change。真实 Electron smoke 通过 Host ready 返回的随机回环端点和会话 Bearer token 发送一个 OTLP Log，随后验证窗口无需刷新即可显示 change、Run 和 stage；同一测试同时验证 Renderer 没有 `process`/`require`、Preload 桥存在，以及默认和窄窗口无水平溢出。既有 backend controller 契约测试继续证明 ready 后 Host 退出只把 Shell 转入 error，并保留 retry，而不是关闭窗口。
 
 浏览器 SSE/WebSocket 需要额外 HTTP surface、Origin 防护和端口，不为同进程桌面窗口提供价值，因此选择 IPC。
 
