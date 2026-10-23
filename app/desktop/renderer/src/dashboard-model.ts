@@ -1,4 +1,6 @@
 import type { DesktopShellState } from '../../shared/renderer-contract.js';
+import type { DesktopRunContext } from '../../shared/activation-protocol.js';
+import type { ChangeProjectionContext } from '../../../../domains/telemetry/change-projection.js';
 
 export const DASHBOARD_STATES = [
   'starting',
@@ -17,8 +19,22 @@ export type DashboardState = (typeof DASHBOARD_STATES)[number];
 export type StatusTone = 'neutral' | 'accent' | 'success' | 'warning' | 'danger';
 
 export interface DashboardContext {
+  id: string | null;
   workspaceId: string | null;
   changeId: string | null;
+}
+
+export interface DashboardNavigationChange {
+  id: string;
+  changeId: string;
+  status: string;
+  tone: StatusTone;
+  lastObservedAt: string;
+}
+
+export interface DashboardNavigationWorkspace {
+  workspaceId: string;
+  changes: readonly DashboardNavigationChange[];
 }
 
 export interface DashboardSummaryItem {
@@ -36,28 +52,84 @@ export interface DashboardViewModel {
   statusLabel: string;
   statusDetail: string;
   context: DashboardContext;
+  navigation: readonly DashboardNavigationWorkspace[];
+  selectedContextId: string | null;
   summary: readonly DashboardSummaryItem[];
   lastObservedAt: string | null;
   ariaBusy: boolean;
   canRetry: boolean;
 }
 
-const noContext: DashboardContext = { workspaceId: null, changeId: null };
+const noContext: DashboardContext = { id: null, workspaceId: null, changeId: null };
 
 function shellModel(
   state: DashboardState,
-  values: Omit<DashboardViewModel, 'state' | 'context' | 'summary' | 'lastObservedAt'>,
+  values: Omit<
+    DashboardViewModel,
+    'state' | 'context' | 'navigation' | 'selectedContextId' | 'summary' | 'lastObservedAt'
+  >,
 ): DashboardViewModel {
   return {
     state,
     context: noContext,
+    navigation: [],
+    selectedContextId: null,
     summary: [],
     lastObservedAt: null,
     ...values,
   };
 }
 
-export function dashboardModelFromShell(state: DesktopShellState): DashboardViewModel {
+export function dashboardContextId(workspaceId: string, changeId: string): string {
+  return `${encodeURIComponent(workspaceId)}/${encodeURIComponent(changeId)}`;
+}
+
+export function reconcileDashboardSelection(
+  current: string | null,
+  contexts: readonly ChangeProjectionContext[],
+  activation: DesktopRunContext | null = null,
+): string | null {
+  const ids = new Set(
+    contexts.map((context) => dashboardContextId(context.workspaceId, context.change.id)),
+  );
+  if (current !== null && ids.has(current)) return current;
+  if (activation?.changeId !== undefined) {
+    const requested = dashboardContextId(activation.workspaceId, activation.changeId);
+    if (ids.has(requested)) return requested;
+  }
+  const first = contexts[0];
+  return first === undefined ? null : dashboardContextId(first.workspaceId, first.change.id);
+}
+
+function navigationTone(status: ChangeProjectionContext['change']['status']): StatusTone {
+  if (status === 'failed') return 'danger';
+  if (status === 'active') return 'success';
+  return 'neutral';
+}
+
+function dashboardNavigation(
+  contexts: readonly ChangeProjectionContext[],
+): DashboardNavigationWorkspace[] {
+  const workspaces = new Map<string, DashboardNavigationChange[]>();
+  for (const context of contexts) {
+    const changes = workspaces.get(context.workspaceId) ?? [];
+    changes.push({
+      id: dashboardContextId(context.workspaceId, context.change.id),
+      changeId: context.change.id,
+      status: context.change.status,
+      tone: navigationTone(context.change.status),
+      lastObservedAt: context.lastObservedAt,
+    });
+    workspaces.set(context.workspaceId, changes);
+  }
+  return [...workspaces].map(([workspaceId, changes]) => ({ workspaceId, changes }));
+}
+
+export function dashboardModelFromShell(
+  state: DesktopShellState,
+  selectedContextId: string | null = null,
+  activation: DesktopRunContext | null = null,
+): DashboardViewModel {
   if (state.phase === 'starting') {
     return shellModel('starting', {
       tone: 'accent',
@@ -85,8 +157,7 @@ export function dashboardModelFromShell(state: DesktopShellState): DashboardView
   }
 
   const projection = state.snapshot.projection;
-  const change = projection.change;
-  if (change === null) {
+  if (projection.contexts.length === 0) {
     return shellModel('empty', {
       tone: 'neutral',
       eyebrow: '等待数据',
@@ -100,30 +171,43 @@ export function dashboardModelFromShell(state: DesktopShellState): DashboardView
     });
   }
 
+  const selectedId = reconcileDashboardSelection(
+    selectedContextId,
+    projection.contexts,
+    activation,
+  );
+  const selected = projection.contexts.find(
+    (context) => dashboardContextId(context.workspaceId, context.change.id) === selectedId,
+  );
+  if (selected === undefined) throw new Error('Dashboard selection did not resolve');
+  const change = selected.change;
   const context: DashboardContext = {
-    workspaceId: projection.workspaceId,
+    id: selectedId,
+    workspaceId: selected.workspaceId,
     changeId: change.id,
   };
   const summary: DashboardSummaryItem[] = [
     { label: 'Change 状态', value: change.status === 'unknown' ? '尚未上报' : change.status },
-    { label: 'Run', value: projection.run?.id ?? '尚未上报' },
-    { label: '阶段', value: projection.stage?.name ?? '尚未上报' },
+    { label: 'Run', value: selected.run.id },
+    { label: '阶段', value: selected.stage?.name ?? '尚未上报' },
     {
       label: '事件序列',
-      value: projection.latestSequence === null ? '尚未上报' : String(projection.latestSequence),
-      numeric: projection.latestSequence !== null,
+      value: String(selected.latestSequence),
+      numeric: true,
     },
   ];
   const common = {
     context,
+    navigation: dashboardNavigation(projection.contexts),
+    selectedContextId: selectedId,
     summary,
-    lastObservedAt: projection.lastObservedAt,
+    lastObservedAt: selected.lastObservedAt,
     ariaBusy: false,
     canRetry: false,
   } as const;
 
-  if (projection.gap.detected) {
-    const ranges = projection.gap.ranges
+  if (selected.gap.detected) {
+    const ranges = selected.gap.ranges
       .map((range) => (range.from === range.to ? String(range.from) : `${range.from}–${range.to}`))
       .join('、');
     return {
@@ -138,7 +222,7 @@ export function dashboardModelFromShell(state: DesktopShellState): DashboardView
     };
   }
 
-  if (change.status === 'completed' || projection.run?.status === 'completed') {
+  if (change.status === 'completed' || selected.run.status === 'completed') {
     return {
       state: 'completed',
       tone: 'success',
@@ -151,7 +235,7 @@ export function dashboardModelFromShell(state: DesktopShellState): DashboardView
     };
   }
 
-  if (change.status === 'failed' || projection.run?.status === 'failed') {
+  if (change.status === 'failed' || selected.run.status === 'failed') {
     return {
       state: 'failed',
       tone: 'danger',
@@ -164,7 +248,7 @@ export function dashboardModelFromShell(state: DesktopShellState): DashboardView
     };
   }
 
-  if (projection.freshness === 'stale') {
+  if (selected.freshness === 'stale') {
     return {
       state: 'stale',
       tone: 'warning',
@@ -177,11 +261,7 @@ export function dashboardModelFromShell(state: DesktopShellState): DashboardView
     };
   }
 
-  if (
-    change.status === 'unknown' ||
-    projection.run?.status === 'unknown' ||
-    projection.stage === null
-  ) {
+  if (change.status === 'unknown' || selected.run.status === 'unknown' || selected.stage === null) {
     return {
       state: 'sparse',
       tone: 'neutral',

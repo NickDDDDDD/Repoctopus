@@ -1,6 +1,26 @@
-import type { DashboardState, DashboardViewModel } from './dashboard-model.js';
+import {
+  dashboardContextId,
+  type DashboardNavigationWorkspace,
+  type DashboardState,
+  type DashboardViewModel,
+} from './dashboard-model.js';
 
 const observedAt = '2026-10-23T08:15:42.000Z';
+const primaryContextId = dashboardContextId('repoctopus', 'add-windows-desktop-dashboard');
+const primaryNavigation: DashboardNavigationWorkspace[] = [
+  {
+    workspaceId: 'repoctopus',
+    changes: [
+      {
+        id: primaryContextId,
+        changeId: 'add-windows-desktop-dashboard',
+        status: 'active',
+        tone: 'success',
+        lastObservedAt: observedAt,
+      },
+    ],
+  },
+];
 
 function observed(
   state: DashboardState,
@@ -15,9 +35,12 @@ function observed(
     statusLabel: '实时',
     statusDetail: 'Receiver 正在接收上报',
     context: {
+      id: primaryContextId,
       workspaceId: 'repoctopus',
       changeId: 'add-windows-desktop-dashboard',
     },
+    navigation: primaryNavigation,
+    selectedContextId: primaryContextId,
     summary: [
       { label: 'Change 状态', value: 'active' },
       { label: 'Run', value: 'run-desktop-dashboard' },
@@ -40,7 +63,9 @@ export const desktopDashboardFixtures: Readonly<Record<DashboardState, Dashboard
     description: 'Repoctopus 正在启动隔离的 Desktop Host，并检查 OTLP Receiver 是否就绪。',
     statusLabel: '启动中',
     statusDetail: 'Desktop Host 尚未就绪',
-    context: { workspaceId: null, changeId: null },
+    context: { id: null, workspaceId: null, changeId: null },
+    navigation: [],
+    selectedContextId: null,
     summary: [],
     lastObservedAt: null,
     ariaBusy: true,
@@ -55,7 +80,9 @@ export const desktopDashboardFixtures: Readonly<Record<DashboardState, Dashboard
       'Desktop Host 与 Receiver 已就绪。首个 Repoctopus OTLP 上报到达后，这里会自动更新。',
     statusLabel: '已连接',
     statusDetail: 'Receiver 已就绪，尚未收到观测事实',
-    context: { workspaceId: null, changeId: null },
+    context: { id: null, workspaceId: null, changeId: null },
+    navigation: [],
+    selectedContextId: null,
     summary: [],
     lastObservedAt: null,
     ariaBusy: false,
@@ -106,7 +133,9 @@ export const desktopDashboardFixtures: Readonly<Record<DashboardState, Dashboard
     description: 'Receiver 端口初始化失败。',
     statusLabel: '需要处理',
     statusDetail: '本地 Receiver 不可用；工作流与远端遥测不受阻塞',
-    context: { workspaceId: null, changeId: null },
+    context: { id: null, workspaceId: null, changeId: null },
+    navigation: [],
+    selectedContextId: null,
     summary: [],
     lastObservedAt: null,
     ariaBusy: false,
@@ -139,6 +168,82 @@ export const desktopDashboardFixtures: Readonly<Record<DashboardState, Dashboard
   }),
 };
 
+const multiNavigation: DashboardNavigationWorkspace[] = [
+  {
+    workspaceId: 'platform-services',
+    changes: [
+      {
+        id: dashboardContextId('platform-services', 'rotate-deploy-credentials'),
+        changeId: 'rotate-deploy-credentials',
+        status: 'active',
+        tone: 'success',
+        lastObservedAt: '2026-10-23T08:17:10.000Z',
+      },
+      {
+        id: dashboardContextId('platform-services', 'retire-legacy-runner'),
+        changeId: 'retire-legacy-runner',
+        status: 'completed',
+        tone: 'neutral',
+        lastObservedAt: '2026-10-23T08:03:27.000Z',
+      },
+    ],
+  },
+  {
+    workspaceId: 'repoctopus',
+    changes: [
+      {
+        id: primaryContextId,
+        changeId: 'add-windows-desktop-dashboard',
+        status: 'active',
+        tone: 'success',
+        lastObservedAt: observedAt,
+      },
+      {
+        id: dashboardContextId('repoctopus', 'harden-evidence-retention'),
+        changeId: 'harden-evidence-retention',
+        status: 'failed',
+        tone: 'danger',
+        lastObservedAt: '2026-10-23T07:58:04.000Z',
+      },
+    ],
+  },
+];
+
+function multiContextModel(selectedContextId: string | null): DashboardViewModel {
+  const changes = multiNavigation.flatMap((workspace) =>
+    workspace.changes.map((change) => ({ workspaceId: workspace.workspaceId, change })),
+  );
+  const selected = changes.find(({ change }) => change.id === selectedContextId) ?? changes[0];
+  if (selected === undefined) throw new Error('Multi-context fixture is empty');
+  const state = selected.change.status === 'failed' ? 'failed' : 'live';
+  const tone = state === 'failed' ? 'danger' : 'success';
+  return observed(state, {
+    tone,
+    eyebrow: state === 'failed' ? 'Run 已失败' : '实时接收',
+    title: selected.change.changeId,
+    description:
+      state === 'failed'
+        ? '已收到明确的失败事实。查看阻塞与最近事件以定位下一步。'
+        : '当前选择保持不变；其他 Change 的新上报只更新导航状态。',
+    statusLabel: state === 'failed' ? '失败' : '实时',
+    statusDetail: state === 'failed' ? 'Run 已进入失败终态' : 'Receiver 正在接收上报',
+    context: {
+      id: selected.change.id,
+      workspaceId: selected.workspaceId,
+      changeId: selected.change.changeId,
+    },
+    navigation: multiNavigation,
+    selectedContextId: selected.change.id,
+    lastObservedAt: selected.change.lastObservedAt,
+    summary: [
+      { label: 'Change 状态', value: selected.change.status },
+      { label: 'Run', value: `run-${selected.change.changeId}` },
+      { label: '阶段', value: state === 'failed' ? 'verification' : 'implementation' },
+      { label: '事件序列', value: state === 'failed' ? '19' : '43', numeric: true },
+    ],
+  });
+}
+
 export interface DashboardFixtureLocation {
   protocol: string;
   search: string;
@@ -146,9 +251,11 @@ export interface DashboardFixtureLocation {
 
 export function dashboardFixtureFromLocation(
   location: DashboardFixtureLocation,
+  selectedContextId: string | null = null,
 ): DashboardViewModel | null {
   if (location.protocol !== 'http:' && location.protocol !== 'https:') return null;
   const fixture = new URLSearchParams(location.search).get('fixture');
+  if (fixture === 'multi-context') return multiContextModel(selectedContextId);
   if (fixture === null || !(fixture in desktopDashboardFixtures)) {
     return desktopDashboardFixtures.live;
   }

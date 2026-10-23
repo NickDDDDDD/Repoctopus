@@ -25,6 +25,7 @@ function isProjection(value: unknown): boolean {
   return (
     projection.schemaVersion === 1 &&
     Number.isSafeInteger(projection.version) &&
+    Array.isArray(projection.contexts) &&
     typeof projection.gap === 'object' &&
     projection.gap !== null &&
     ['empty', 'live', 'stale'].includes(String(projection.freshness))

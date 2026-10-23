@@ -55,9 +55,17 @@ function EmptyRegion({ children }: { children: ReactNode }) {
 export interface DashboardProps {
   model: DashboardViewModel;
   onRetry?: () => void;
+  onSelectContext: (contextId: string) => void;
 }
 
-export function Dashboard({ model, onRetry }: DashboardProps) {
+const navigationStatusLabel: Readonly<Record<string, string>> = {
+  active: '进行中',
+  completed: '已完成',
+  failed: '失败',
+  unknown: '未知',
+};
+
+export function Dashboard({ model, onRetry, onSelectContext }: DashboardProps) {
   const hasContext = model.context.changeId !== null;
   return (
     <div className="app-shell" data-dashboard-state={model.state}>
@@ -76,13 +84,42 @@ export function Dashboard({ model, onRetry }: DashboardProps) {
 
       <div className="workspace-layout">
         <aside className="context-rail" aria-label="当前观测上下文">
-          <div className="context-group">
-            <p className="rail-label">Workspace</p>
-            <p className="context-value">{model.context.workspaceId ?? '尚未上报'}</p>
-          </div>
-          <div className="context-group">
-            <p className="rail-label">Change</p>
-            <p className="context-value">{model.context.changeId ?? '尚未上报'}</p>
+          <div className="context-browser">
+            <p className="rail-heading">Workspaces</p>
+            {model.navigation.length === 0 ? (
+              <p className="context-empty">尚无 Change</p>
+            ) : (
+              <div className="workspace-groups">
+                {model.navigation.map((workspace) => (
+                  <section className="workspace-group" key={workspace.workspaceId}>
+                    <p className="workspace-name">{workspace.workspaceId}</p>
+                    <ul role="list" className="change-list">
+                      {workspace.changes.map((change) => {
+                        const selected = change.id === model.selectedContextId;
+                        return (
+                          <li key={change.id}>
+                            <button
+                              className="change-selector"
+                              type="button"
+                              aria-current={selected ? 'page' : undefined}
+                              onClick={() => onSelectContext(change.id)}
+                            >
+                              <span className="change-selector__name">{change.changeId}</span>
+                              <span
+                                className={`change-selector__status change-selector__status--${change.tone}`}
+                              >
+                                <span aria-hidden="true" />
+                                {navigationStatusLabel[change.status] ?? '未知'}
+                              </span>
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </section>
+                ))}
+              </div>
+            )}
           </div>
           <nav className="section-navigation" aria-label="Dashboard 区域">
             <a href="#overview">运行概览</a>

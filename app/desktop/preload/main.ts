@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
 import {
+  DESKTOP_ACTIVATION_CONTEXT_CHANNEL,
   DESKTOP_BACKEND_STATE_CHANNEL,
   DESKTOP_PROJECTION_DELTA_CHANNEL,
   DESKTOP_RETRY_CHANNEL,
@@ -29,6 +30,18 @@ const bridge: RepoctopusDesktopBridge = {
     ipcRenderer.on(DESKTOP_PROJECTION_DELTA_CHANNEL, handler);
     return () => {
       ipcRenderer.removeListener(DESKTOP_PROJECTION_DELTA_CHANNEL, handler);
+    };
+  },
+  onActivation: (listener) => {
+    const handler = (
+      _event: Electron.IpcRendererEvent,
+      context: Parameters<typeof listener>[0],
+    ) => {
+      listener(context);
+    };
+    ipcRenderer.on(DESKTOP_ACTIVATION_CONTEXT_CHANNEL, handler);
+    return () => {
+      ipcRenderer.removeListener(DESKTOP_ACTIVATION_CONTEXT_CHANNEL, handler);
     };
   },
 };

@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { app, BrowserWindow, ipcMain, type IpcMainEvent, type IpcMainInvokeEvent } from 'electron';
 
 import {
+  DESKTOP_ACTIVATION_CONTEXT_CHANNEL,
   DESKTOP_BACKEND_STATE_CHANNEL,
   DESKTOP_PROJECTION_DELTA_CHANNEL,
   DESKTOP_RETRY_CHANNEL,
@@ -129,6 +130,10 @@ async function respondToActivation(requestFile: string): Promise<void> {
     throw new Error('Desktop Host did not become ready for activation');
   }
   host.activate(request.context);
+  const window = mainWindow;
+  if (window !== undefined && !window.isDestroyed()) {
+    window.webContents.send(DESKTOP_ACTIVATION_CONTEXT_CHANNEL, request.context);
+  }
   await writeDesktopActivationResponse(requestFile, {
     apiVersion: 'repoctopus.desktop.activation/v1alpha1',
     requestId: request.requestId,

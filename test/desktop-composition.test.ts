@@ -55,6 +55,7 @@ describe('desktop composition', () => {
         projection: {
           schemaVersion: 1,
           version: 0,
+          contexts: [],
           workspaceId: null,
           change: null,
           activeChangeId: null,

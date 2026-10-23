@@ -25,9 +25,21 @@ export interface ProjectionGapRange {
   to: number;
 }
 
+export interface ChangeProjectionContext {
+  workspaceId: string;
+  change: { id: string; status: ProjectionChangeStatus | 'unknown' };
+  run: { id: string; status: ProjectionRunStatus | 'unknown' };
+  stage: { name: string; sequence: number } | null;
+  latestSequence: number;
+  lastObservedAt: string;
+  freshness: 'live' | 'stale';
+  gap: { detected: boolean; ranges: ProjectionGapRange[] };
+}
+
 export interface ChangeProjectionSnapshot {
   schemaVersion: 1;
   version: number;
+  contexts: ChangeProjectionContext[];
   workspaceId: string | null;
   change: { id: string; status: ProjectionChangeStatus | 'unknown' } | null;
   activeChangeId: string | null;
@@ -131,6 +143,34 @@ function gapRanges(records: readonly ObservationRecord[]): ProjectionGapRange[] 
   return ranges;
 }
 
+function projectContext(
+  records: readonly ObservationRecord[],
+  now: number,
+  staleAfterMs: number,
+): ChangeProjectionContext {
+  const latest = records.at(-1);
+  if (!latest) throw new Error('Cannot project an empty change context');
+  const runRecords = records.filter((record) => record.runId === latest.runId);
+  const streamRecords = runRecords.filter((record) => record.streamId === latest.streamId);
+  const changeStatus = latestWith(records, (record) => record.changeStatus)?.value;
+  const runStatus = latestWith(runRecords, (record) => record.runStatus)?.value;
+  const stage = latestWith(runRecords, (record) => record.stageName);
+  const ranges = gapRanges(streamRecords);
+  return {
+    workspaceId: latest.workspaceId,
+    change: { id: latest.changeId, status: changeStatus ?? 'unknown' },
+    run: { id: latest.runId, status: runStatus ?? 'unknown' },
+    stage: stage ? { name: stage.value, sequence: stage.record.sequence } : null,
+    latestSequence: Math.max(...streamRecords.map((record) => record.sequence)),
+    lastObservedAt: latest.observedAt,
+    freshness:
+      now - assertTimestamp(latest.observedAt, 'latest observation time') > staleAfterMs
+        ? 'stale'
+        : 'live',
+    gap: { detected: ranges.length > 0, ranges },
+  };
+}
+
 /** Incremental, order-independent projection over trusted ObservationRecord metadata. */
 export class ChangeProjectionReducer {
   private readonly records = new Map<string, ObservationRecord>();
@@ -166,6 +206,7 @@ export class ChangeProjectionReducer {
       return {
         schemaVersion: 1,
         version: 0,
+        contexts: [],
         workspaceId: null,
         change: null,
         activeChangeId: null,
@@ -178,32 +219,37 @@ export class ChangeProjectionReducer {
       };
     }
 
-    const changeRecords = allRecords.filter(
-      (record) => record.workspaceId === latest.workspaceId && record.changeId === latest.changeId,
-    );
-    const runRecords = changeRecords.filter((record) => record.runId === latest.runId);
-    const streamRecords = runRecords.filter((record) => record.streamId === latest.streamId);
-    const changeStatus = latestWith(changeRecords, (record) => record.changeStatus)?.value;
-    const runStatus = latestWith(runRecords, (record) => record.runStatus)?.value;
-    const stage = latestWith(runRecords, (record) => record.stageName);
-    const lastObservedAt = latest.observedAt;
-    const ranges = gapRanges(streamRecords);
+    const grouped = new Map<string, ObservationRecord[]>();
+    for (const record of allRecords) {
+      const key = `${record.workspaceId}\u0000${record.changeId}`;
+      const records = grouped.get(key);
+      if (records === undefined) grouped.set(key, [record]);
+      else records.push(record);
+    }
+    const contexts = [...grouped.values()]
+      .map((records) => projectContext(records, now, options.staleAfterMs))
+      .sort(
+        (left, right) =>
+          right.lastObservedAt.localeCompare(left.lastObservedAt) ||
+          left.workspaceId.localeCompare(right.workspaceId) ||
+          left.change.id.localeCompare(right.change.id),
+      );
+    const current = contexts[0];
+    if (!current) throw new Error('Projection context disappeared');
 
     return {
       schemaVersion: 1,
       version: this.records.size,
-      workspaceId: latest.workspaceId,
-      change: { id: latest.changeId, status: changeStatus ?? 'unknown' },
-      activeChangeId: changeStatus === 'active' ? latest.changeId : null,
-      run: { id: latest.runId, status: runStatus ?? 'unknown' },
-      stage: stage ? { name: stage.value, sequence: stage.record.sequence } : null,
-      latestSequence: Math.max(...streamRecords.map((record) => record.sequence)),
-      lastObservedAt,
-      freshness:
-        now - assertTimestamp(lastObservedAt, 'latest observation time') > options.staleAfterMs
-          ? 'stale'
-          : 'live',
-      gap: { detected: ranges.length > 0, ranges },
+      contexts,
+      workspaceId: current.workspaceId,
+      change: current.change,
+      activeChangeId: current.change.status === 'active' ? current.change.id : null,
+      run: current.run,
+      stage: current.stage,
+      latestSequence: current.latestSequence,
+      lastObservedAt: current.lastObservedAt,
+      freshness: current.freshness,
+      gap: current.gap,
     };
   }
 }

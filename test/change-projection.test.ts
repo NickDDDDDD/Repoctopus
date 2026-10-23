@@ -47,6 +47,14 @@ describe('ChangeProjectionReducer', () => {
     expect(second.snapshot(liveOptions)).toEqual(first.snapshot(liveOptions));
     expect(first.snapshot(liveOptions)).toMatchObject({
       version: 3,
+      contexts: [
+        {
+          workspaceId: 'team-workspace',
+          change: { id: 'add-windows-desktop-dashboard', status: 'active' },
+          run: { id: 'run-dashboard', status: 'active' },
+          stage: { name: 'verification', sequence: 3 },
+        },
+      ],
       workspaceId: 'team-workspace',
       change: { id: 'add-windows-desktop-dashboard', status: 'active' },
       activeChangeId: 'add-windows-desktop-dashboard',
@@ -98,6 +106,54 @@ describe('ChangeProjectionReducer', () => {
     });
   });
 
+  it('retains independently selectable contexts across workspaces and changes', () => {
+    const reducer = new ChangeProjectionReducer();
+    reducer.accept(record(1, { stageName: 'implementation' }));
+    reducer.accept(
+      record(1, {
+        envelopeId: `sha256:${'a'.repeat(64)}`,
+        digest: `sha256:${'b'.repeat(64)}`,
+        streamId: 'run-api-change',
+        eventId: 'event-api-change-1',
+        observedAt: '2026-10-23T08:15:04.000Z',
+        workspaceId: 'api-platform',
+        changeId: 'rotate-credentials',
+        runId: 'run-api-change',
+        stageName: 'planning',
+      }),
+    );
+    reducer.accept(
+      record(2, {
+        envelopeId: `sha256:${'c'.repeat(64)}`,
+        digest: `sha256:${'d'.repeat(64)}`,
+        streamId: 'run-dashboard-second',
+        eventId: 'event-dashboard-second-2',
+        observedAt: '2026-10-23T08:15:06.000Z',
+        changeId: 'harden-dashboard-navigation',
+        runId: 'run-dashboard-second',
+        stageName: 'verification',
+      }),
+    );
+
+    expect(reducer.snapshot(liveOptions).contexts).toMatchObject([
+      {
+        workspaceId: 'team-workspace',
+        change: { id: 'harden-dashboard-navigation' },
+        run: { id: 'run-dashboard-second' },
+      },
+      {
+        workspaceId: 'api-platform',
+        change: { id: 'rotate-credentials' },
+        run: { id: 'run-api-change' },
+      },
+      {
+        workspaceId: 'team-workspace',
+        change: { id: 'add-windows-desktop-dashboard' },
+        run: { id: 'run-dashboard' },
+      },
+    ]);
+  });
+
   it('rejects conflicting duplicate identities and sequence ownership', () => {
     const reducer = new ChangeProjectionReducer();
     reducer.accept(record(1));
@@ -113,6 +169,7 @@ describe('ChangeProjectionReducer', () => {
     expect(new ChangeProjectionReducer().snapshot(liveOptions)).toEqual({
       schemaVersion: 1,
       version: 0,
+      contexts: [],
       workspaceId: null,
       change: null,
       activeChangeId: null,
