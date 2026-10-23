@@ -18,6 +18,7 @@
         "candidateConfig",
         "reconcile",
         "unresolved",
+        "storeBinding",
         "options"
       ],
       "properties": {
@@ -41,6 +42,12 @@
         "unresolved": {
           "type": "array",
           "items": { "$ref": "project-detection-draft.schema.json#/$defs/unresolved" }
+        },
+        "storeBinding": {
+          "anyOf": [
+            { "$ref": "project-detection-draft.schema.json#/$defs/storeBinding" },
+            { "type": "null" }
+          ]
         },
         "options": { "const": ["approve", "request_changes", "reject"] }
       }

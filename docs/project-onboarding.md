@@ -64,6 +64,8 @@ node bin/repoctopus.js project review --workspace . --request $request
 
 `project review` 只接受交互式终端。IDE Adapter 可以展示同一版本化请求，但必须提供经过认证且绑定当前 `snapshotDigest` 的响应。选择批准后，Runtime 才原子写入 `repoctopus.yaml`；请求修改或拒绝不会写入正式配置。
 
+审批摘要同时绑定完整 Store binding proposal，不能在等待期间替换 Store ID、Workspace 根、仓库选择或 pointer diff。批准后的 apply 先用 OpenSpec `store register` 核对或登记当前 Workspace checkout，绝不调用会删除目录的 `store remove`。随后为每个选择安装的业务仓分别保存 Intent、重新比较 `openspec/config.yaml` 的 `before` 内容、原子写入并保存 Receipt；一个仓的操作不伪装成跨仓事务。进程若在写入与 Receipt 之间退出，重试会识别完全相同的 `after` 内容并补记 `recovered`，其他内容则作为输入漂移拒绝且不覆盖。生成的 Workspace 配置、Store metadata 和业务仓 pointer 仍是各仓普通 Git 变化，必须走后续正常 Change/Delivery 发布流程，接入 apply 本身不 commit、push 或创建 MR。
+
 ## 5. 运行首次 Evidence
 
 ```powershell

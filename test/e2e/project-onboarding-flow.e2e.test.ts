@@ -125,6 +125,12 @@ describe('documented project onboarding flow', () => {
       },
       actor: { actorId: 'fixture-user', source: 'ide', authenticated: true },
       timestamp: '2026-01-01T00:00:00.000Z',
+    }, {
+      ensureRegistered: () =>
+        Promise.resolve({
+          status: 'registered',
+          registrationDigest: `sha256:${'a'.repeat(64)}` as const,
+        }),
     });
 
     const evidence = await runCli({

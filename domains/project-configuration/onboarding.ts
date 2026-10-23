@@ -6,6 +6,7 @@ import type {
   DetectionUnresolvedItem,
   ProjectConfigReconcileDiff,
   ProjectDetectionDraft,
+  OpenSpecStoreBindingProposal,
 } from './detection.js';
 import { reconcileProjectConfig } from './reconcile.js';
 import type { SharedProjectConfig } from './types.js';
@@ -24,6 +25,7 @@ export interface ProjectConfigurationDecisionRequest {
   candidateConfig: SharedProjectConfig;
   reconcile: ProjectConfigReconcileDiff | null;
   unresolved: DetectionUnresolvedItem[];
+  storeBinding: OpenSpecStoreBindingProposal | null;
   options: ProjectConfigurationDecision[];
 }
 
@@ -61,6 +63,7 @@ function projectConfigurationSnapshotDigest(input: {
   candidateConfig: SharedProjectConfig;
   reconcile: ProjectConfigReconcileDiff | null;
   unresolved: DetectionUnresolvedItem[];
+  storeBinding: OpenSpecStoreBindingProposal | null;
 }): string {
   return `sha256:${createHash('sha256').update(canonicalJson(input)).digest('hex')}`;
 }
@@ -72,6 +75,16 @@ export function createProjectConfigurationDecision(input: {
   requestId?: string;
 }): ProjectConfigurationDecisionRequest {
   const candidateConfig = parseSharedProjectConfig(input.completedCandidate);
+  if (input.draft.storeBinding) {
+    const configured = candidateConfig.specificationProvider?.store;
+    if (
+      !configured ||
+      configured.id !== input.draft.storeBinding.storeId ||
+      configured.repositoryId !== input.draft.storeBinding.workspaceRepositoryId
+    ) {
+      throw new Error('Candidate Specification Store does not match the detected binding proposal');
+    }
+  }
   const currentDigest = input.currentConfig ? hashProjectConfig(input.currentConfig) : null;
   if (currentDigest !== input.draft.baseConfigDigest) {
     throw new Error(
@@ -89,6 +102,7 @@ export function createProjectConfigurationDecision(input: {
     candidateConfig,
     reconcile,
     unresolved: input.draft.unresolved,
+    storeBinding: input.draft.storeBinding,
   });
   return {
     apiVersion: 'repoctopus/v1alpha1',
@@ -102,6 +116,7 @@ export function createProjectConfigurationDecision(input: {
     candidateConfig,
     reconcile,
     unresolved: input.draft.unresolved,
+    storeBinding: structuredClone(input.draft.storeBinding),
     options: ['approve', 'request_changes', 'reject'],
   };
 }
@@ -122,6 +137,7 @@ export function recordProjectConfigurationDecision(input: {
     candidateConfig,
     reconcile: input.request.reconcile,
     unresolved: input.request.unresolved,
+    storeBinding: input.request.storeBinding,
   });
   if (
     candidateConfigDigest !== input.request.candidateConfigDigest ||
