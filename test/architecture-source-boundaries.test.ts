@@ -184,6 +184,17 @@ describe('architecture source boundaries', () => {
     ).toEqual([]);
     expect(
       evaluateSourceBoundaries(
+        [
+          {
+            path: 'domains/change-lifecycle/definition.ts',
+            contents: "import { type ChangePhase } from './transition.js';",
+          },
+        ],
+        rules('single-change-lifecycle-transition-owner'),
+      ),
+    ).toEqual([]);
+    expect(
+      evaluateSourceBoundaries(
         fixtures.lifecyclePhaseOwner,
         rules('single-change-lifecycle-transition-owner'),
       ),

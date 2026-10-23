@@ -461,7 +461,7 @@
     {
       "id": "single-change-lifecycle-transition-owner",
       "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
-      "pattern": "(?:type|enum)\\s+ChangePhase\\b|\\b(?:decide|apply|transition)ChangeLifecycle(?:Transition)?\\s*[=(]",
+      "pattern": "type\\s+ChangePhase\\s*=|enum\\s+ChangePhase\\s*\\{|\\b(?:decide|apply|transition)ChangeLifecycle(?:Transition)?\\s*[=(]",
       "allowed": ["domains/change-lifecycle/transition.ts"],
       "message": "Change lifecycle phases and transition decisions belong only to the canonical transition module"
     },
