@@ -466,6 +466,13 @@
       "message": "Change lifecycle phases and transition decisions belong only to the canonical transition module"
     },
     {
+      "id": "change-lifecycle-host-delegation",
+      "targets": ["app/**", "plugins/command/**"],
+      "pattern": "from\\s+['\"][^'\"]*change-lifecycle/(?:definition|transition|host-workflow)(?:\\.js)?['\"]",
+      "allowed": [],
+      "message": "CLI and command hosts must delegate Change lifecycle behavior to WorkflowRuns"
+    },
+    {
       "id": "direct-run-state-write",
       "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
       "pattern": "\\b(?:ctx|context)\\.runStore\\.(?:commit|commitGuarded)\\s*\\(",

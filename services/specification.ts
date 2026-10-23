@@ -25,6 +25,7 @@ export interface PrepareSpecificationClosureInput {
 export interface SpecificationWorkspace {
   identity(): SpecificationProviderIdentity;
   root(): SpecificationRoot;
+  verifyRoot(signal?: AbortSignal): Promise<SpecificationRoot>;
   inspect(changeId: string, signal?: AbortSignal): Promise<SpecificationChange>;
   validate(
     changeId: string,
@@ -42,6 +43,12 @@ export abstract class Specification extends Service implements SpecificationWork
   abstract identity(): SpecificationProviderIdentity;
   root(): SpecificationRoot {
     throw new Error(`Specification provider ${this.identity().id} has no configured root`);
+  }
+  verifyRoot(signal?: AbortSignal): Promise<SpecificationRoot> {
+    void signal;
+    return Promise.reject(
+      new Error(`Specification provider ${this.identity().id} cannot verify its root`),
+    );
   }
   abstract inspect(changeId: string, signal?: AbortSignal): Promise<SpecificationChange>;
   abstract validate(

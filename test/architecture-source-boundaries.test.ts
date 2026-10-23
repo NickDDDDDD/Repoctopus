@@ -205,6 +205,33 @@ describe('architecture source boundaries', () => {
     ]);
   });
 
+  it('keeps Change phase definitions out of CLI and command hosts', () => {
+    const delegated = [
+      {
+        path: 'app/cli/main.ts',
+        contents: "await application.commands.execute('run.change.start', input);",
+      },
+      {
+        path: 'plugins/command/workflow-run-contributor.ts',
+        contents: 'return workflowRuns.startChange(input);',
+      },
+    ];
+    const rogue = [
+      {
+        path: 'app/cli/rogue-lifecycle.ts',
+        contents:
+          "import { createChangeLifecycleSnapshot } from '../../domains/change-lifecycle/definition.js';",
+      },
+    ];
+
+    expect(evaluateSourceBoundaries(delegated, rules('change-lifecycle-host-delegation'))).toEqual(
+      [],
+    );
+    expect(evaluateSourceBoundaries(rogue, rules('change-lifecycle-host-delegation'))).toEqual([
+      expect.stringContaining('app/cli/rogue-lifecycle.ts: change-lifecycle-host-delegation'),
+    ]);
+  });
+
   it('rejects direct Run state writes outside WorkflowRuns', () => {
     expect(
       evaluateSourceBoundaries(

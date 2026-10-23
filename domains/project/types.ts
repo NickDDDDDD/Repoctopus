@@ -30,6 +30,14 @@ export interface ProjectSnapshot {
   digest: string;
 }
 
+export interface TargetBranchSnapshot {
+  repositoryId: string;
+  remote: string;
+  remoteIdentity: string;
+  targetBranch: string;
+  remoteOid: string;
+}
+
 export interface RepositoryDifference {
   repositoryId: string;
   repositoryName: string;

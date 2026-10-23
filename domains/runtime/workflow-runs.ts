@@ -22,6 +22,15 @@ import type {
 } from './types.js';
 import { requireSatisfiedEvidenceGate } from './evidence-guard.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
+import {
+  BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+  recoverChangeLifecycleSnapshot,
+} from '../change-lifecycle/definition.js';
+import {
+  projectChangeRun,
+  type ChangeLifecycleSnapshot,
+  type ChangeLifecycleState,
+} from '../change-lifecycle/transition.js';
 
 export interface StartWorkflowRunOptions {
   workflow: WorkflowPackage;
@@ -29,6 +38,7 @@ export interface StartWorkflowRunOptions {
   runId?: string;
   workflowSource?: string;
   trigger?: RunTriggerSnapshot;
+  changeLifecycle?: ChangeLifecycleSnapshot;
 }
 
 export type IdempotentStartWorkflowRunOptions = StartWorkflowRunOptions & { runId: string };
@@ -42,6 +52,19 @@ export class RunIdentityConflictError extends Error {
 
 function stableEventId(...parts: string[]): string {
   return createHash('sha256').update(parts.join(':')).digest('hex');
+}
+
+function lifecycleState(snapshot: ChangeLifecycleSnapshot): ChangeLifecycleState {
+  return {
+    schemaVersion: snapshot.schemaVersion,
+    identity: structuredClone(snapshot.identity),
+    definition: structuredClone(snapshot.definition),
+    revision: snapshot.revision,
+    phase: snapshot.phase,
+    currentWork: structuredClone(snapshot.currentWork),
+    waitCondition: structuredClone(snapshot.waitCondition),
+    blocker: structuredClone(snapshot.blocker),
+  };
 }
 
 function event(options: {
@@ -78,7 +101,7 @@ export class WorkflowRunCoordinator {
 
   async start(options: StartWorkflowRunOptions): Promise<RuntimeResult<RunStatusView>> {
     const timestamp = this.clock().toISOString();
-    const state = startRun({
+    const initial = startRun({
       workflow: options.workflow,
       runId: options.runId ?? this.uuid(),
       projectSnapshotDigest: options.projectSnapshot.digest,
@@ -87,6 +110,13 @@ export class WorkflowRunCoordinator {
       ...(options.workflowSource ? { workflowSource: options.workflowSource } : {}),
       ...(options.trigger ? { trigger: options.trigger } : {}),
     });
+    const state: RunState = options.changeLifecycle
+      ? {
+          ...initial,
+          status: options.changeLifecycle.status,
+          changeLifecycle: lifecycleState(options.changeLifecycle),
+        }
+      : initial;
     const started = event({
       eventId: stableEventId(state.runId, 'run.started'),
       sequence: 1,
@@ -104,6 +134,14 @@ export class WorkflowRunCoordinator {
           ? {
               triggerKind: state.trigger.kind,
               triggerIdentityDigest: state.trigger.identityDigest,
+            }
+          : {}),
+        ...(state.changeLifecycle
+          ? {
+              changeId: state.changeLifecycle.identity.changeId,
+              generation: state.changeLifecycle.identity.generation,
+              phase: state.changeLifecycle.phase,
+              definition: state.changeLifecycle.definition,
             }
           : {}),
       },
@@ -131,8 +169,10 @@ export class WorkflowRunCoordinator {
         throw startError;
       }
       this.assertSameStartIdentity(existing.state, options);
+      if (existing.state.changeLifecycle)
+        await this.recoverChangeLifecycleDefinition(options.runId);
       return {
-        value: existing,
+        value: await this.status(options.runId),
         diagnostics: [
           {
             level: 'info',
@@ -151,7 +191,7 @@ export class WorkflowRunCoordinator {
       this.store.loadCheckpoint(runId),
       this.store.loadTrajectory(runId),
     ]);
-    const preview = decide(workflow, state, state.updatedAt);
+    const preview = state.changeLifecycle ? null : decide(workflow, state, state.updatedAt);
     const pendingStep = state.pendingActionId
       ? workflow.definition.steps.find((step) => step.id === state.currentStep)
       : undefined;
@@ -161,15 +201,73 @@ export class WorkflowRunCoordinator {
         : null;
     const workflowDrift = await this.inspectWorkflowDrift(state);
     const compositionCompatibility = compareCompositions(state.composition, this.composition);
+    const changeLifecycle = state.changeLifecycle
+      ? projectChangeRun(
+          { ...structuredClone(state.changeLifecycle), status: state.status },
+          {
+            taskProgress: { total: 0, completed: 0, currentTaskId: null },
+            evidence: {
+              gateStatus: 'not-evaluated',
+              acceptedBundleIds: [...state.acceptedEvidenceBundleIds],
+              latestAttemptId: null,
+            },
+            nextActions: [],
+            freshness: {
+              stateVersion: state.stateVersion,
+              trajectoryOffset: trajectory.length,
+              observedAt: state.updatedAt,
+            },
+          },
+        )
+      : undefined;
     return {
       state,
       checkpoint,
       trajectoryLength: trajectory.length,
-      nextAction: pendingAction ?? preview.action,
+      nextAction: state.changeLifecycle ? null : (pendingAction ?? preview?.action ?? null),
       workflowDrift,
       compositionCompatibility,
-      ...(preview.reason ? { reason: preview.reason } : {}),
+      ...(changeLifecycle ? { changeLifecycle } : {}),
+      ...(preview?.reason ? { reason: preview.reason } : {}),
     };
+  }
+
+  private async recoverChangeLifecycleDefinition(runId: string): Promise<void> {
+    await this.store.commitGuarded(runId, ({ state, trajectory }) => {
+      if (!state.changeLifecycle) return { value: undefined };
+      const recovered = recoverChangeLifecycleSnapshot({
+        persisted: { ...structuredClone(state.changeLifecycle), status: state.status },
+        currentDefinition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      });
+      if (!recovered.changed) return { value: undefined };
+      const timestamp = this.clock().toISOString();
+      const { status, ...changeLifecycle } = recovered.snapshot;
+      const nextState: RunState = {
+        ...state,
+        status,
+        changeLifecycle,
+        stateVersion: state.stateVersion + 1,
+        updatedAt: timestamp,
+      };
+      return {
+        state: nextState,
+        event: event({
+          eventId: stableEventId(runId, recovered.current.digest, 'definition-drift'),
+          sequence: trajectory.length + 1,
+          timestamp,
+          type: 'change.lifecycle.transitioned',
+          state: nextState,
+          data: {
+            reason: 'definition-drift',
+            expectedDefinition: recovered.expected,
+            currentDefinition: recovered.current,
+            phase: changeLifecycle.phase,
+            status,
+          },
+        }),
+        value: undefined,
+      };
+    });
   }
 
   private assertSameStartIdentity(

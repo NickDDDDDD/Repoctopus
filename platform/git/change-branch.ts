@@ -1,4 +1,5 @@
 import type { ChangeBranchReference } from '../../domains/specification/types.js';
+import type { TargetBranchSnapshot } from '../../domains/project/types.js';
 import { execute } from '../process/execute.js';
 import { normalizeRemoteIdentity } from './remote-identity.js';
 
@@ -10,6 +11,26 @@ async function remoteOid(cwd: string, remote: string, branch: string): Promise<s
   const output = await git(cwd, ['ls-remote', '--heads', remote, `refs/heads/${branch}`]);
   const [oid] = output.split(/\s+/u);
   return oid || null;
+}
+
+export async function inspectRemoteTargetBranch(input: {
+  repositoryPath: string;
+  repositoryId: string;
+  remote: string;
+  targetBranch: string;
+}): Promise<TargetBranchSnapshot> {
+  if (!input.repositoryId.trim()) throw new Error('Workspace Repository ID is required');
+  await git(input.repositoryPath, ['check-ref-format', '--branch', input.targetBranch]);
+  const remoteUrl = await git(input.repositoryPath, ['remote', 'get-url', input.remote]);
+  const targetOid = await remoteOid(input.repositoryPath, input.remote, input.targetBranch);
+  if (!targetOid) throw new Error(`Change target branch is not published: ${input.targetBranch}`);
+  return {
+    repositoryId: input.repositoryId,
+    remote: input.remote,
+    remoteIdentity: normalizeRemoteIdentity(remoteUrl),
+    targetBranch: input.targetBranch,
+    remoteOid: targetOid,
+  };
 }
 
 export async function inspectPublishedChangeBranch(input: {

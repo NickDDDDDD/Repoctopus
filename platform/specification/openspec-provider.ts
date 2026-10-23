@@ -189,6 +189,11 @@ export class OpenSpecProvider extends Specification {
     return structuredClone(this.specificationRoot);
   }
 
+  override async verifyRoot(signal?: AbortSignal): Promise<SpecificationRoot> {
+    await this.assertRoot(this.workspace, signal);
+    return this.root();
+  }
+
   private async assertRoot(workspace: string, signal?: AbortSignal): Promise<void> {
     const result = await this.process.execute(
       ['context', '--json', '--store', this.specificationRoot.storeId],
@@ -467,6 +472,10 @@ export class OpenSpecProvider extends Specification {
     return {
       identity: () => this.identity(),
       root: () => this.root(),
+      verifyRoot: async (signal) => {
+        await this.assertRoot(workspace, signal);
+        return this.root();
+      },
       inspect: (changeId, signal) => this.inspectAt(workspace, changeId, signal),
       validate: (changeId, options) => this.validateAt(workspace, changeId, options),
       prepareClosure: (input) => this.prepareClosureAt(workspace, input),

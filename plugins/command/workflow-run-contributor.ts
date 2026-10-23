@@ -3,6 +3,7 @@ import type { Context, Plugin } from '@deepseek-ai/cordis';
 import type { ActionOutcome } from '../../domains/engine/types.js';
 import type { ProjectSnapshot } from '../../domains/project/types.js';
 import type { WorkflowPackage } from '../../domains/workflow-contract/types.js';
+import type { StartChangeRunInput } from '../../services/workflow-runs.js';
 
 interface StartInput {
   workflow: WorkflowPackage;
@@ -26,6 +27,11 @@ const plugin = ((context: Context) => {
       context.commandRouter.register({
         name: 'run.start',
         execute: ({ input, signal }) => context.workflowRuns.start(input as StartInput, signal),
+      }),
+      context.commandRouter.register({
+        name: 'run.change.start',
+        execute: ({ input, signal }) =>
+          context.workflowRuns.startChange(input as StartChangeRunInput, signal),
       }),
       context.commandRouter.register({
         name: 'run.status',

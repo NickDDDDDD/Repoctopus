@@ -785,9 +785,6 @@ async function evidenceClean(parsed: ParsedArguments): Promise<CliEnvelope<unkno
 
 async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
-  const workflowPath = path.resolve(
-    stringFlag(parsed, 'workflow', { fallback: defaultWorkflowPath() })!,
-  );
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
     const reconciliation = app.composition.entries.some(
@@ -798,6 +795,43 @@ async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
           PostMergeReconciliationResult
         >('post-merge.reconcile', {})
       : null;
+    const changeId = stringFlag(parsed, 'change');
+    if (changeId) {
+      const config = await loadProjectConfig(workspace);
+      const projectSnapshot = await deliveryProject(app, { workspace, config });
+      const result = await app.context.commandRouter.execute<
+        {
+          workspaceId: string;
+          workspaceRepositoryId: string;
+          repositoryIds: string[];
+          changeId: string;
+          generation: number;
+          targetBranch: string;
+          remote: string;
+          projectSnapshot: ProjectSnapshot;
+        },
+        RuntimeResult<RunStatusView>
+      >('run.change.start', {
+        workspaceId: config.shared.workspace.id,
+        workspaceRepositoryId: config.shared.workspace.repositoryId,
+        repositoryIds: config.shared.repositories.map((repository) => repository.id),
+        changeId,
+        generation: integerFlag(parsed, 'generation', { fallback: 1, minimum: 1 })!,
+        targetBranch: stringFlag(parsed, 'target', { required: true })!,
+        remote: stringFlag(parsed, 'remote', { fallback: 'origin' })!,
+        projectSnapshot,
+      });
+      return successEnvelope({
+        command: 'run start',
+        runId: result.value.state.runId,
+        result: result.value,
+        diagnostics: result.diagnostics,
+        nextActions: nextActions(result.value),
+      });
+    }
+    const workflowPath = path.resolve(
+      stringFlag(parsed, 'workflow', { fallback: defaultWorkflowPath() })!,
+    );
     const [source, projectSnapshot] = await Promise.all([
       readFile(workflowPath, 'utf8'),
       currentWorkspaceSnapshot(app, workspace),
