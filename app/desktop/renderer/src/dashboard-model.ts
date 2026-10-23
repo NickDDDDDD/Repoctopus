@@ -43,6 +43,36 @@ export interface DashboardSummaryItem {
   numeric?: boolean;
 }
 
+export interface DashboardExecutionSubject {
+  kind: string;
+  id: string;
+  provider: string | null;
+}
+
+export interface DashboardTaskProgress {
+  total: number;
+  completed: number;
+  failed: number;
+  unknown: number;
+  active: number;
+}
+
+export interface DashboardActiveTask {
+  id: string;
+  label: string;
+  type: string | null;
+  status: 'pending' | 'blocked';
+  stageName: string | null;
+  subject: DashboardExecutionSubject | null;
+}
+
+export interface DashboardExecutionModel {
+  stageName: string | null;
+  subjects: readonly DashboardExecutionSubject[];
+  taskProgress: DashboardTaskProgress | null;
+  activeTasks: readonly DashboardActiveTask[];
+}
+
 export interface DashboardViewModel {
   state: DashboardState;
   tone: StatusTone;
@@ -55,18 +85,31 @@ export interface DashboardViewModel {
   navigation: readonly DashboardNavigationWorkspace[];
   selectedContextId: string | null;
   summary: readonly DashboardSummaryItem[];
+  execution: DashboardExecutionModel;
   lastObservedAt: string | null;
   ariaBusy: boolean;
   canRetry: boolean;
 }
 
 const noContext: DashboardContext = { id: null, workspaceId: null, changeId: null };
+const noExecution: DashboardExecutionModel = {
+  stageName: null,
+  subjects: [],
+  taskProgress: null,
+  activeTasks: [],
+};
 
 function shellModel(
   state: DashboardState,
   values: Omit<
     DashboardViewModel,
-    'state' | 'context' | 'navigation' | 'selectedContextId' | 'summary' | 'lastObservedAt'
+    | 'state'
+    | 'context'
+    | 'navigation'
+    | 'selectedContextId'
+    | 'summary'
+    | 'execution'
+    | 'lastObservedAt'
   >,
 ): DashboardViewModel {
   return {
@@ -75,6 +118,7 @@ function shellModel(
     navigation: [],
     selectedContextId: null,
     summary: [],
+    execution: noExecution,
     lastObservedAt: null,
     ...values,
   };
@@ -187,20 +231,46 @@ export function dashboardModelFromShell(
     changeId: change.id,
   };
   const summary: DashboardSummaryItem[] = [
-    { label: 'Change 状态', value: change.status === 'unknown' ? '尚未上报' : change.status },
     { label: 'Run', value: selected.run.id },
-    { label: '阶段', value: selected.stage?.name ?? '尚未上报' },
+    {
+      label: 'Run 状态',
+      value: selected.run.status === 'unknown' ? '尚未上报' : selected.run.status,
+    },
+    { label: 'Workflow', value: selected.workflow?.name ?? '尚未上报' },
     {
       label: '事件序列',
       value: String(selected.latestSequence),
       numeric: true,
     },
   ];
+  const execution: DashboardExecutionModel = {
+    stageName: selected.stage?.name ?? null,
+    subjects: selected.executionSubjects,
+    taskProgress:
+      selected.tasks === null
+        ? null
+        : {
+            total: selected.tasks.total,
+            completed: selected.tasks.completed,
+            failed: selected.tasks.failed,
+            unknown: selected.tasks.unknown,
+            active: selected.tasks.active.length,
+          },
+    activeTasks: (selected.tasks?.active ?? []).map((task) => ({
+      id: task.id,
+      label: task.ref ?? task.id,
+      type: task.type,
+      status: task.status === 'blocked' ? 'blocked' : 'pending',
+      stageName: task.stageName,
+      subject: task.subject,
+    })),
+  };
   const common = {
     context,
     navigation: dashboardNavigation(projection.contexts),
     selectedContextId: selectedId,
     summary,
+    execution,
     lastObservedAt: selected.lastObservedAt,
     ariaBusy: false,
     canRetry: false,

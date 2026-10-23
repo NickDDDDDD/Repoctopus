@@ -6,6 +6,12 @@ import {
 } from './dashboard-model.js';
 
 const observedAt = '2026-10-23T08:15:42.000Z';
+const noExecution = {
+  stageName: null,
+  subjects: [],
+  taskProgress: null,
+  activeTasks: [],
+} as const;
 const primaryContextId = dashboardContextId('repoctopus', 'add-windows-desktop-dashboard');
 const primaryNavigation: DashboardNavigationWorkspace[] = [
   {
@@ -42,11 +48,34 @@ function observed(
     navigation: primaryNavigation,
     selectedContextId: primaryContextId,
     summary: [
-      { label: 'Change 状态', value: 'active' },
       { label: 'Run', value: 'run-desktop-dashboard' },
-      { label: '阶段', value: 'implementation' },
+      { label: 'Run 状态', value: 'active' },
+      { label: 'Workflow', value: 'self-hosted-development' },
       { label: '事件序列', value: '42', numeric: true },
     ],
+    execution: {
+      stageName: 'implementation',
+      subjects: [{ kind: 'agent', id: 'codex-primary', provider: 'openai' }],
+      taskProgress: { total: 6, completed: 4, failed: 0, unknown: 0, active: 2 },
+      activeTasks: [
+        {
+          id: 'task-render-run-view',
+          label: 'desktop.render-run-view',
+          type: 'call_tool',
+          status: 'pending',
+          stageName: 'implementation',
+          subject: { kind: 'agent', id: 'codex-primary', provider: 'openai' },
+        },
+        {
+          id: 'task-review-layout',
+          label: 'desktop.review-layout',
+          type: 'checkpoint',
+          status: 'blocked',
+          stageName: 'implementation',
+          subject: null,
+        },
+      ],
+    },
     lastObservedAt: observedAt,
     ariaBusy: false,
     canRetry: false,
@@ -67,6 +96,7 @@ export const desktopDashboardFixtures: Readonly<Record<DashboardState, Dashboard
     navigation: [],
     selectedContextId: null,
     summary: [],
+    execution: noExecution,
     lastObservedAt: null,
     ariaBusy: true,
     canRetry: false,
@@ -84,6 +114,7 @@ export const desktopDashboardFixtures: Readonly<Record<DashboardState, Dashboard
     navigation: [],
     selectedContextId: null,
     summary: [],
+    execution: noExecution,
     lastObservedAt: null,
     ariaBusy: false,
     canRetry: false,
@@ -95,11 +126,12 @@ export const desktopDashboardFixtures: Readonly<Record<DashboardState, Dashboard
     statusLabel: '稀疏数据',
     statusDetail: '等待更多观测事实',
     summary: [
-      { label: 'Change 状态', value: '尚未上报' },
       { label: 'Run', value: 'run-desktop-dashboard' },
-      { label: '阶段', value: '尚未上报' },
+      { label: 'Run 状态', value: '尚未上报' },
+      { label: 'Workflow', value: '尚未上报' },
       { label: '事件序列', value: '1', numeric: true },
     ],
+    execution: noExecution,
   }),
   live: observed('live', {}),
   'catching-up': observed('catching-up', {
@@ -137,6 +169,7 @@ export const desktopDashboardFixtures: Readonly<Record<DashboardState, Dashboard
     navigation: [],
     selectedContextId: null,
     summary: [],
+    execution: noExecution,
     lastObservedAt: null,
     ariaBusy: false,
     canRetry: true,
@@ -147,11 +180,17 @@ export const desktopDashboardFixtures: Readonly<Record<DashboardState, Dashboard
     statusLabel: '已完成',
     statusDetail: 'Run 已进入终态',
     summary: [
-      { label: 'Change 状态', value: 'completed' },
       { label: 'Run', value: 'run-desktop-dashboard' },
-      { label: '阶段', value: 'verification' },
+      { label: 'Run 状态', value: 'completed' },
+      { label: 'Workflow', value: 'self-hosted-development' },
       { label: '事件序列', value: '96', numeric: true },
     ],
+    execution: {
+      stageName: 'verification',
+      subjects: [{ kind: 'agent', id: 'codex-primary', provider: 'openai' }],
+      taskProgress: { total: 6, completed: 6, failed: 0, unknown: 0, active: 0 },
+      activeTasks: [],
+    },
   }),
   failed: observed('failed', {
     tone: 'danger',
@@ -160,11 +199,26 @@ export const desktopDashboardFixtures: Readonly<Record<DashboardState, Dashboard
     statusLabel: '失败',
     statusDetail: 'Run 已进入失败终态',
     summary: [
-      { label: 'Change 状态', value: 'failed' },
       { label: 'Run', value: 'run-desktop-dashboard' },
-      { label: '阶段', value: 'verification' },
+      { label: 'Run 状态', value: 'failed' },
+      { label: 'Workflow', value: 'self-hosted-development' },
       { label: '事件序列', value: '67', numeric: true },
     ],
+    execution: {
+      stageName: 'verification',
+      subjects: [{ kind: 'agent', id: 'codex-primary', provider: 'openai' }],
+      taskProgress: { total: 6, completed: 4, failed: 1, unknown: 0, active: 1 },
+      activeTasks: [
+        {
+          id: 'task-diagnose-failure',
+          label: 'desktop.diagnose-failure',
+          type: 'checkpoint',
+          status: 'pending',
+          stageName: 'verification',
+          subject: null,
+        },
+      ],
+    },
   }),
 };
 
@@ -236,11 +290,15 @@ function multiContextModel(selectedContextId: string | null): DashboardViewModel
     selectedContextId: selected.change.id,
     lastObservedAt: selected.change.lastObservedAt,
     summary: [
-      { label: 'Change 状态', value: selected.change.status },
       { label: 'Run', value: `run-${selected.change.changeId}` },
-      { label: '阶段', value: state === 'failed' ? 'verification' : 'implementation' },
+      { label: 'Run 状态', value: selected.change.status },
+      { label: 'Workflow', value: 'self-hosted-development' },
       { label: '事件序列', value: state === 'failed' ? '19' : '43', numeric: true },
     ],
+    execution: {
+      ...desktopDashboardFixtures[state].execution,
+      stageName: state === 'failed' ? 'verification' : 'implementation',
+    },
   });
 }
 

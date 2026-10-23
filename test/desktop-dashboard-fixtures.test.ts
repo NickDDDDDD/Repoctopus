@@ -60,7 +60,10 @@ describe('desktop dashboard state matrix', () => {
       workspaceId,
       change: { id: changeId, status: 'active' },
       run: { id: `run-${changeId}`, status: 'active' },
+      workflow: { name: 'self-hosted-development', version: '1.0.0' },
       stage: { name: 'implementation', sequence: 1 },
+      executionSubjects: [],
+      tasks: null,
       latestSequence: 1,
       lastObservedAt,
       freshness: 'live',
@@ -104,7 +107,10 @@ describe('desktop dashboard state matrix', () => {
                 workspaceId: 'repoctopus',
                 change: { id: 'desktop-dashboard', status: 'unknown' },
                 run: { id: 'run-1', status: 'unknown' },
+                workflow: null,
                 stage: null,
+                executionSubjects: [],
+                tasks: null,
                 latestSequence: 1,
                 lastObservedAt: '2026-10-23T08:15:42.000Z',
                 freshness: 'live',
@@ -126,11 +132,17 @@ describe('desktop dashboard state matrix', () => {
     ).toMatchObject({
       state: 'sparse',
       summary: [
-        { label: 'Change 状态', value: '尚未上报' },
         { label: 'Run', value: 'run-1' },
-        { label: '阶段', value: '尚未上报' },
+        { label: 'Run 状态', value: '尚未上报' },
+        { label: 'Workflow', value: '尚未上报' },
         { label: '事件序列', value: '1', numeric: true },
       ],
+      execution: {
+        stageName: null,
+        subjects: [],
+        taskProgress: null,
+        activeTasks: [],
+      },
     });
   });
 });

@@ -71,6 +71,22 @@ async function sendObservation(ready, context, sequence, stageName) {
                     attribute('repoctopus.run.id', context.runId),
                     attribute('repoctopus.run.status', 'active'),
                     attribute('repoctopus.stage.name', stageName),
+                    ...(context === primaryContext && sequence === 1
+                      ? [
+                          attribute('repoctopus.workflow.name', 'self-hosted-development'),
+                          attribute('repoctopus.workflow.version', '1.0.0'),
+                          attribute('repoctopus.execution.id', 'task-desktop-smoke'),
+                          attribute('repoctopus.execution.parent.id', context.runId),
+                          attribute('repoctopus.execution.kind', 'workflow-action'),
+                          attribute('repoctopus.execution.subject.kind', 'agent'),
+                          attribute('repoctopus.execution.subject.id', 'agent-desktop-smoke'),
+                          attribute('repoctopus.execution.subject.provider', 'smoke-provider'),
+                          attribute('repoctopus.task.id', 'task-desktop-smoke'),
+                          attribute('repoctopus.task.ref', 'desktop.smoke-renderer'),
+                          attribute('repoctopus.task.type', 'checkpoint'),
+                          attribute('repoctopus.task.status', 'pending'),
+                        ]
+                      : []),
                   ],
                 },
               ],
@@ -129,6 +145,8 @@ async function inspect(window) {
     !state.body.includes('实时接收') ||
     !state.body.includes(primaryContext.runId) ||
     !state.body.includes('implementation') ||
+    !state.body.includes('agent-desktop-smoke') ||
+    !state.body.includes('desktop.smoke-renderer') ||
     !state.body.includes('阶段与任务') ||
     !state.body.includes('验证与阻塞') ||
     !state.body.includes('最近事件')

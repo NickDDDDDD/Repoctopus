@@ -2,6 +2,33 @@ import { canonicalJson } from '../workflow-contract/canonical.js';
 
 export type ProjectionChangeStatus = 'active' | 'completed' | 'failed';
 export type ProjectionRunStatus = 'active' | 'completed' | 'failed';
+export type ProjectionTaskStatus = 'pending' | 'blocked' | 'completed' | 'failed';
+
+export interface ProjectionExecutionSubject {
+  kind: string;
+  id: string;
+  provider: string | null;
+}
+
+export interface ProjectionTask {
+  id: string;
+  ref: string | null;
+  type: string | null;
+  status: ProjectionTaskStatus | 'unknown';
+  stageName: string | null;
+  executionId: string | null;
+  parentExecutionId: string | null;
+  subject: ProjectionExecutionSubject | null;
+  lastObservedAt: string;
+}
+
+export interface ProjectionTaskState {
+  total: number;
+  completed: number;
+  failed: number;
+  unknown: number;
+  active: ProjectionTask[];
+}
 
 export interface ObservationRecord {
   schemaVersion: 1;
@@ -18,6 +45,18 @@ export interface ObservationRecord {
   changeStatus?: ProjectionChangeStatus;
   runStatus?: ProjectionRunStatus;
   stageName?: string;
+  workflowName?: string;
+  workflowVersion?: string;
+  executionId?: string;
+  parentExecutionId?: string;
+  executionKind?: string;
+  subjectKind?: string;
+  subjectId?: string;
+  subjectProvider?: string;
+  taskId?: string;
+  taskRef?: string;
+  taskType?: string;
+  taskStatus?: ProjectionTaskStatus;
 }
 
 export interface ProjectionGapRange {
@@ -29,7 +68,10 @@ export interface ChangeProjectionContext {
   workspaceId: string;
   change: { id: string; status: ProjectionChangeStatus | 'unknown' };
   run: { id: string; status: ProjectionRunStatus | 'unknown' };
+  workflow: { name: string; version: string | null } | null;
   stage: { name: string; sequence: number } | null;
+  executionSubjects: ProjectionExecutionSubject[];
+  tasks: ProjectionTaskState | null;
   latestSequence: number;
   lastObservedAt: string;
   freshness: 'live' | 'stale';
@@ -58,12 +100,25 @@ export interface ChangeProjectionSnapshotOptions {
 
 const DIGEST = /^sha256:[a-f0-9]{64}$/u;
 const SAFE_ID = /^[a-zA-Z0-9][a-zA-Z0-9._:@-]{0,255}$/u;
+const SAFE_REFERENCE = /^[a-zA-Z0-9][a-zA-Z0-9._:@/-]{0,255}$/u;
 const SAFE_NAME = /^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$/u;
+const ABSOLUTE_PATH = /^(?:[a-z]:[\\/]|\\\\|\/)/iu;
 const CHANGE_STATUSES = new Set<ProjectionChangeStatus>(['active', 'completed', 'failed']);
 const RUN_STATUSES = new Set<ProjectionRunStatus>(['active', 'completed', 'failed']);
+const TASK_STATUSES = new Set<ProjectionTaskStatus>(['pending', 'blocked', 'completed', 'failed']);
 
 function assertId(value: string, label: string): void {
   if (typeof value !== 'string' || !SAFE_ID.test(value)) throw new Error(`Invalid ${label}`);
+}
+
+function assertReference(value: string, label: string): void {
+  if (typeof value !== 'string' || !SAFE_REFERENCE.test(value) || ABSOLUTE_PATH.test(value)) {
+    throw new Error(`Invalid ${label}`);
+  }
+}
+
+function assertName(value: string, label: string): void {
+  if (typeof value !== 'string' || !SAFE_NAME.test(value)) throw new Error(`Invalid ${label}`);
 }
 
 function assertTimestamp(value: string, label: string): number {
@@ -107,6 +162,45 @@ export function validateObservationRecord(value: unknown): asserts value is Obse
   ) {
     throw new Error('Invalid observation stage name');
   }
+  if (record.workflowName !== undefined)
+    assertName(record.workflowName, 'observation workflow name');
+  if (record.workflowVersion !== undefined) {
+    assertReference(record.workflowVersion, 'observation workflow version');
+  }
+  if (record.executionId !== undefined) assertId(record.executionId, 'observation execution id');
+  if (record.parentExecutionId !== undefined) {
+    assertId(record.parentExecutionId, 'observation parent execution id');
+  }
+  if (record.executionKind !== undefined) {
+    assertName(record.executionKind, 'observation execution kind');
+  }
+  const hasSubjectKind = record.subjectKind !== undefined;
+  const hasSubjectId = record.subjectId !== undefined;
+  if (hasSubjectKind !== hasSubjectId) throw new Error('Incomplete observation execution subject');
+  if (record.subjectKind !== undefined) {
+    assertName(record.subjectKind, 'observation execution subject kind');
+  }
+  if (record.subjectId !== undefined) {
+    assertReference(record.subjectId, 'observation execution subject id');
+  }
+  if (record.subjectProvider !== undefined) {
+    if (!hasSubjectId) throw new Error('Observation subject provider requires a subject');
+    assertReference(record.subjectProvider, 'observation execution subject provider');
+  }
+  if (record.taskId !== undefined) assertId(record.taskId, 'observation task id');
+  if (record.taskRef !== undefined) assertReference(record.taskRef, 'observation task ref');
+  if (record.taskType !== undefined) assertName(record.taskType, 'observation task type');
+  if (record.taskStatus !== undefined && !TASK_STATUSES.has(record.taskStatus)) {
+    throw new Error('Invalid observation task status');
+  }
+  if (
+    record.taskId === undefined &&
+    (record.taskRef !== undefined ||
+      record.taskType !== undefined ||
+      record.taskStatus !== undefined)
+  ) {
+    throw new Error('Observation task metadata requires a task id');
+  }
 }
 
 function compareRecords(left: ObservationRecord, right: ObservationRecord): number {
@@ -143,6 +237,73 @@ function gapRanges(records: readonly ObservationRecord[]): ProjectionGapRange[] 
   return ranges;
 }
 
+function subjectFromRecord(record: ObservationRecord): ProjectionExecutionSubject | undefined {
+  if (record.subjectKind === undefined || record.subjectId === undefined) return undefined;
+  return {
+    kind: record.subjectKind,
+    id: record.subjectId,
+    provider: record.subjectProvider ?? null,
+  };
+}
+
+function projectTask(records: readonly ObservationRecord[]): ProjectionTask {
+  const latest = records.at(-1);
+  if (!latest?.taskId) throw new Error('Cannot project a task without identity');
+  const status = latestWith(records, (record) => record.taskStatus)?.value ?? 'unknown';
+  const subject = latestWith(records, subjectFromRecord)?.value ?? null;
+  return {
+    id: latest.taskId,
+    ref: latestWith(records, (record) => record.taskRef)?.value ?? null,
+    type: latestWith(records, (record) => record.taskType)?.value ?? null,
+    status,
+    stageName: latestWith(records, (record) => record.stageName)?.value ?? null,
+    executionId: latestWith(records, (record) => record.executionId)?.value ?? null,
+    parentExecutionId: latestWith(records, (record) => record.parentExecutionId)?.value ?? null,
+    subject,
+    lastObservedAt: latest.observedAt,
+  };
+}
+
+function projectTasks(records: readonly ObservationRecord[]): ProjectionTaskState | null {
+  const grouped = new Map<string, ObservationRecord[]>();
+  for (const record of records) {
+    if (record.taskId === undefined) continue;
+    const taskRecords = grouped.get(record.taskId);
+    if (taskRecords === undefined) grouped.set(record.taskId, [record]);
+    else taskRecords.push(record);
+  }
+  if (grouped.size === 0) return null;
+  const tasks = [...grouped.values()].map(projectTask);
+  const active = tasks
+    .filter((task) => task.status === 'pending' || task.status === 'blocked')
+    .sort(
+      (left, right) =>
+        right.lastObservedAt.localeCompare(left.lastObservedAt) || left.id.localeCompare(right.id),
+    );
+  return {
+    total: tasks.length,
+    completed: tasks.filter((task) => task.status === 'completed').length,
+    failed: tasks.filter((task) => task.status === 'failed').length,
+    unknown: tasks.filter((task) => task.status === 'unknown').length,
+    active,
+  };
+}
+
+function projectSubjects(records: readonly ObservationRecord[]): ProjectionExecutionSubject[] {
+  const subjects = new Map<string, ProjectionExecutionSubject>();
+  for (const record of records) {
+    const subject = subjectFromRecord(record);
+    if (subject === undefined) continue;
+    subjects.set(`${subject.kind}\u0000${subject.id}\u0000${subject.provider ?? ''}`, subject);
+  }
+  return [...subjects.values()].sort(
+    (left, right) =>
+      left.kind.localeCompare(right.kind) ||
+      left.id.localeCompare(right.id) ||
+      (left.provider ?? '').localeCompare(right.provider ?? ''),
+  );
+}
+
 function projectContext(
   records: readonly ObservationRecord[],
   now: number,
@@ -154,13 +315,19 @@ function projectContext(
   const streamRecords = runRecords.filter((record) => record.streamId === latest.streamId);
   const changeStatus = latestWith(records, (record) => record.changeStatus)?.value;
   const runStatus = latestWith(runRecords, (record) => record.runStatus)?.value;
+  const workflowName = latestWith(runRecords, (record) => record.workflowName)?.value;
+  const workflowVersion = latestWith(runRecords, (record) => record.workflowVersion)?.value;
   const stage = latestWith(runRecords, (record) => record.stageName);
   const ranges = gapRanges(streamRecords);
   return {
     workspaceId: latest.workspaceId,
     change: { id: latest.changeId, status: changeStatus ?? 'unknown' },
     run: { id: latest.runId, status: runStatus ?? 'unknown' },
+    workflow:
+      workflowName === undefined ? null : { name: workflowName, version: workflowVersion ?? null },
     stage: stage ? { name: stage.value, sequence: stage.record.sequence } : null,
+    executionSubjects: projectSubjects(runRecords),
+    tasks: projectTasks(runRecords),
     latestSequence: Math.max(...streamRecords.map((record) => record.sequence)),
     lastObservedAt: latest.observedAt,
     freshness:

@@ -3,6 +3,7 @@ import {
   type ObservationRecord,
   type ProjectionChangeStatus,
   type ProjectionRunStatus,
+  type ProjectionTaskStatus,
 } from '../../domains/telemetry/change-projection.js';
 import type { DesktopOtlpBatch } from './desktop-otlp-receiver.js';
 
@@ -70,6 +71,7 @@ function status<T extends string>(
 
 const CHANGE_STATUSES = new Set<ProjectionChangeStatus>(['active', 'completed', 'failed']);
 const RUN_STATUSES = new Set<ProjectionRunStatus>(['active', 'completed', 'failed']);
+const TASK_STATUSES = new Set<ProjectionTaskStatus>(['pending', 'blocked', 'completed', 'failed']);
 
 function recordFromAttributes(values: OtlpAttributes): ObservationRecord | null {
   const schemaVersion = values['repoctopus.telemetry.schema.version'];
@@ -91,6 +93,22 @@ function recordFromAttributes(values: OtlpAttributes): ObservationRecord | null 
     'run status',
   );
   const stageName = stringAttribute(values, 'repoctopus.stage.name');
+  const workflowName = stringAttribute(values, 'repoctopus.workflow.name');
+  const workflowVersion = stringAttribute(values, 'repoctopus.workflow.version');
+  const executionId = stringAttribute(values, 'repoctopus.execution.id');
+  const parentExecutionId = stringAttribute(values, 'repoctopus.execution.parent.id');
+  const executionKind = stringAttribute(values, 'repoctopus.execution.kind');
+  const subjectKind = stringAttribute(values, 'repoctopus.execution.subject.kind');
+  const subjectId = stringAttribute(values, 'repoctopus.execution.subject.id');
+  const subjectProvider = stringAttribute(values, 'repoctopus.execution.subject.provider');
+  const taskId = stringAttribute(values, 'repoctopus.task.id');
+  const taskRef = stringAttribute(values, 'repoctopus.task.ref');
+  const taskType = stringAttribute(values, 'repoctopus.task.type');
+  const taskStatus = status(
+    stringAttribute(values, 'repoctopus.task.status'),
+    TASK_STATUSES,
+    'task status',
+  );
   const record: ObservationRecord = {
     schemaVersion: 1,
     envelopeId: requiredString(values, 'repoctopus.envelope.id'),
@@ -106,6 +124,18 @@ function recordFromAttributes(values: OtlpAttributes): ObservationRecord | null 
     ...(changeStatus === undefined ? {} : { changeStatus }),
     ...(runStatus === undefined ? {} : { runStatus }),
     ...(stageName === undefined ? {} : { stageName }),
+    ...(workflowName === undefined ? {} : { workflowName }),
+    ...(workflowVersion === undefined ? {} : { workflowVersion }),
+    ...(executionId === undefined ? {} : { executionId }),
+    ...(parentExecutionId === undefined ? {} : { parentExecutionId }),
+    ...(executionKind === undefined ? {} : { executionKind }),
+    ...(subjectKind === undefined ? {} : { subjectKind }),
+    ...(subjectId === undefined ? {} : { subjectId }),
+    ...(subjectProvider === undefined ? {} : { subjectProvider }),
+    ...(taskId === undefined ? {} : { taskId }),
+    ...(taskRef === undefined ? {} : { taskRef }),
+    ...(taskType === undefined ? {} : { taskType }),
+    ...(taskStatus === undefined ? {} : { taskStatus }),
   };
   validateObservationRecord(record);
   return record;

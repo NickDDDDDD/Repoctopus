@@ -18,6 +18,7 @@ interface Fixtures {
   nonProviderClosure: SourceFixture[];
   unprotectedPublication: SourceFixture[];
   desktopIsolation: SourceFixture[];
+  desktopProjectionBypass: SourceFixture[];
   desktopOwnership: SourceFixture[];
   workflowTelemetryBypass: SourceFixture[];
   evidenceTelemetryBypass: SourceFixture[];
@@ -168,6 +169,19 @@ describe('architecture source boundaries', () => {
         expect.stringContaining('app/desktop/main/rogue.ts: desktop-shell-cordis-isolation'),
       ]),
     );
+  });
+
+  it('keeps the Desktop projection on OTLP facts instead of local project sources', () => {
+    expect(
+      evaluateSourceBoundaries(
+        fixtures.desktopProjectionBypass,
+        rules('desktop-projection-observation-only'),
+      ),
+    ).toEqual([
+      expect.stringContaining(
+        'domains/telemetry/change-projection.ts: desktop-projection-observation-only',
+      ),
+    ]);
   });
 
   it('keeps product composition and native desktop adapters behind their explicit owners', () => {

@@ -52,6 +52,113 @@ function EmptyRegion({ children }: { children: ReactNode }) {
   return <p className="empty-region">{children}</p>;
 }
 
+const taskStatusLabel = {
+  pending: '进行中',
+  blocked: '已阻塞',
+} as const;
+
+function ExecutionOverview({ model }: { model: DashboardViewModel }) {
+  const progress = model.execution.taskProgress;
+  const progressKnown = progress !== null && progress.unknown === 0;
+  return (
+    <div className="execution-stack">
+      <div className="execution-overview">
+        <div className="execution-detail">
+          <p className="detail-label">当前阶段</p>
+          <p className="detail-value">{model.execution.stageName ?? '尚未上报'}</p>
+        </div>
+        <div className="execution-detail">
+          <p className="detail-label">执行主体</p>
+          {model.execution.subjects.length === 0 ? (
+            <p className="detail-value detail-value--unknown">尚未上报</p>
+          ) : (
+            <ul role="list" className="subject-list">
+              {model.execution.subjects.map((subject) => (
+                <li key={`${subject.kind}:${subject.id}:${subject.provider ?? ''}`}>
+                  <span>{subject.id}</span>
+                  <small>
+                    {subject.kind}
+                    {subject.provider === null ? '' : ` · ${subject.provider}`}
+                  </small>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <div className="execution-detail">
+          <div className="task-progress__heading">
+            <p className="detail-label">任务进度</p>
+            <p className="task-progress__value numeric-value">
+              {progressKnown ? `${progress.completed} / ${progress.total}` : '尚未上报'}
+            </p>
+          </div>
+          {progressKnown ? (
+            <>
+              <progress
+                className="task-progress__bar"
+                max={Math.max(progress.total, 1)}
+                value={progress.completed}
+                aria-label="已完成任务"
+              />
+              <p className="task-progress__meta numeric-value">
+                活动 {progress.active} · 失败 {progress.failed}
+              </p>
+            </>
+          ) : progress === null ? (
+            <p className="task-progress__meta">等待任务事实。</p>
+          ) : (
+            <p className="task-progress__meta">
+              已识别 {progress.total} 个任务，其中 {progress.unknown} 个状态尚未上报。
+            </p>
+          )}
+        </div>
+      </div>
+
+      <div className="active-tasks">
+        <div className="active-tasks__heading">
+          <h3>活动任务</h3>
+          {progress === null ? null : (
+            <span className="numeric-value">{model.execution.activeTasks.length}</span>
+          )}
+        </div>
+        {progress === null ? (
+          <EmptyRegion>活动任务尚未上报。</EmptyRegion>
+        ) : model.execution.activeTasks.length === 0 ? (
+          <EmptyRegion>
+            {progress.unknown > 0 ? '部分任务状态尚未上报。' : '当前没有活动任务。'}
+          </EmptyRegion>
+        ) : (
+          <ul role="list" className="task-list">
+            {model.execution.activeTasks.map((task) => (
+              <li key={task.id}>
+                <div className="task-list__identity">
+                  <p>{task.label}</p>
+                  <span>{task.type ?? '类型尚未上报'}</span>
+                </div>
+                <dl className="task-list__metadata">
+                  <div>
+                    <dt>阶段</dt>
+                    <dd>{task.stageName ?? '尚未上报'}</dd>
+                  </div>
+                  <div>
+                    <dt>执行主体</dt>
+                    <dd>{task.subject?.id ?? '尚未上报'}</dd>
+                  </div>
+                </dl>
+                <span
+                  className={`task-status task-status--${task.status === 'blocked' ? 'warning' : 'accent'}`}
+                >
+                  {taskStatusLabel[task.status]}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export interface DashboardProps {
   model: DashboardViewModel;
   onRetry?: () => void;
@@ -155,7 +262,7 @@ export function Dashboard({ model, onRetry, onSelectContext }: DashboardProps) {
             <DashboardSection
               id="overview"
               title="运行概览"
-              description="Change、Run 与当前观测位置"
+              description="Run 身份、Workflow 与当前观测序列"
             >
               {hasContext ? (
                 <SummaryGrid items={model.summary} />
@@ -164,18 +271,22 @@ export function Dashboard({ model, onRetry, onSelectContext }: DashboardProps) {
               )}
             </DashboardSection>
 
-            <div className="section-grid">
-              <DashboardSection id="execution" title="阶段与任务">
-                <EmptyRegion>
-                  {hasContext ? '等待阶段、执行主体和任务事实。' : '当前没有可关联的运行。'}
-                </EmptyRegion>
-              </DashboardSection>
-              <DashboardSection id="assurance" title="验证与阻塞">
-                <EmptyRegion>
-                  {hasContext ? '等待 Evidence、Gate 或 blocker 事实。' : '当前没有可关联的验证。'}
-                </EmptyRegion>
-              </DashboardSection>
-            </div>
+            <DashboardSection
+              id="execution"
+              title="阶段与任务"
+              description="当前 Run 的执行位置、主体和活动任务"
+            >
+              {hasContext ? (
+                <ExecutionOverview model={model} />
+              ) : (
+                <EmptyRegion>收到 Run 事实后显示阶段与任务。</EmptyRegion>
+              )}
+            </DashboardSection>
+            <DashboardSection id="assurance" title="验证与阻塞">
+              <EmptyRegion>
+                {hasContext ? '等待 Evidence、Gate 或 blocker 事实。' : '收到验证事实后显示结果。'}
+              </EmptyRegion>
+            </DashboardSection>
 
             <DashboardSection id="activity" title="最近事件">
               <EmptyRegion>

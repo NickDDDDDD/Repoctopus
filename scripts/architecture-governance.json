@@ -447,6 +447,17 @@
       "message": "Desktop Renderer must use the preload bridge and must not import Node, Electron, or Cordis"
     },
     {
+      "id": "desktop-projection-observation-only",
+      "targets": [
+        "app/desktop/renderer/**",
+        "domains/telemetry/change-projection.ts",
+        "platform/telemetry/desktop-otlp-decoder.ts"
+      ],
+      "pattern": "from\\s+['\"][^'\"]*(?:node:fs|/specification/|/git/|store)",
+      "allowed": [],
+      "message": "Desktop projection must consume OTLP facts and must not scan OpenSpec, Git, or domain stores"
+    },
+    {
       "id": "desktop-shell-cordis-isolation",
       "targets": ["app/desktop/main/**", "app/desktop/preload/**"],
       "pattern": "from\\s+['\"]@deepseek-ai/cordis(?:/|['\"])",

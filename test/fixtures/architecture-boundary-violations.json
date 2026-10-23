@@ -53,6 +53,12 @@
       "contents": "import { Context } from '@deepseek-ai/cordis'; export const value = Context;"
     }
   ],
+  "desktopProjectionBypass": [
+    {
+      "path": "domains/telemetry/change-projection.ts",
+      "contents": "import { readFile } from 'node:fs/promises'; export const projection = readFile('openspec/change.md');"
+    }
+  ],
   "desktopOwnership": [
     {
       "path": "app/desktop/main/rogue-composition.ts",
