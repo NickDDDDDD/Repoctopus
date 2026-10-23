@@ -163,9 +163,13 @@ OTLP JSON decoder 只从 Trace/Log 的 Repoctopus 属性允许列表构造 `Obse
 
 自举开发在 product root 与 Workspace 重合且桌面构建存在时解析固定 Electron 依赖；已安装场景可以提供明确的 Desktop executable。未支持平台、未安装桌面端、启动超时、握手失败和本地重放失败统一返回固定 warning，不能抛出到 Run 领域转换。`run start --change <change-id>` 把显式 change 身份写入 Run；没有可信 change 输入时不为 Dashboard 伪造关联。
 
-Launcher 在 Run 持久化前先激活 Receiver 并重放已有积压，Run 的首个 Trajectory 与规范 envelope 持久化后再唤醒一次本地目的地，因此首次 Run 也无需等到下一条命令。最小 Workflow 映射先覆盖显式绑定 change 的 Trajectory：envelope 在远端导出前写入共享 Store，远端 Trace/Log 携带与本地重放相同的 envelope ID、digest、事件身份和允许列表属性；Metric 仍只携带低基数维度。映射只使用事件自身和不可变 Run 身份，不用后续“当前 Run 状态”重算旧事件，从而保证失败重试不会让同一 event ID 产生新 digest。
+Launcher 在 Run 持久化前先激活 Receiver 并重放已有积压，Run 的首个 Trajectory 与规范 envelope 持久化后再唤醒一次本地目的地，因此首次 Run 也无需等到下一条命令。任务 2.6 的最小映射先覆盖显式绑定 change 的 Trajectory；映射只使用事件自身和不可变 Run 身份，不用后续“当前 Run 状态”重算旧事件，从而保证失败重试不会让同一 event ID 产生新 digest。进程外测试证明首次启动与第二次激活收敛到同一个 Shell PID 和 Receiver、本地 pending envelope 被确认且临时凭据文件被删除；另一个真实 CLI/远端 mock 纵切证明桌面不可用只增加 warning，Run 仍成功。
 
-进程外测试证明首次启动与第二次激活收敛到同一个 Shell PID 和 Receiver、本地 pending envelope 被确认且临时凭据文件被删除；另一个真实 CLI/远端 mock 纵切证明桌面不可用只增加 warning，Run 仍成功，远端 payload 含持久化 envelope 的同一 ID 与 digest。任务 3.1 仍负责把所有 Workflow Run Trace、Log、Metric 完整迁移到共享 encoder 与多目的地 worker；本切片没有把现有远端 SDK exporter 或全部事件状态映射宣称为迁移完成。
+任务 3.1 将所有 Workflow Trajectory 迁移到同一映射，不再要求 Run 必须绑定 change 才能进入团队遥测；没有可信 change 的记录仍进入远端目的地，但 Desktop decoder 将其视为非投影记录并忽略，不伪造 change。Envelope signal 固化稳定 Trace/Span 父子身份、Log severity/context，以及事件 Counter 和步骤耗时 Histogram；步骤 duration 与 retry count 从该事件之前的持久 Trajectory 推导，避免用后续 Run 当前状态重算旧事件。Metric signal 只包含 workflow、event type 和 result 等低基数维度，不携带 Run、change、event 或 envelope 身份。
+
+远端与桌面现在都调用同一个 OTLP/HTTP JSON encoder；旧 Workflow OpenTelemetry SDK exporter 和独立 mapping 已删除。远端目的地使用稳定 `remote-otlp` cursor，失败只记录该 cursor 的有界健康状态，恢复时重放未确认 envelope；桌面继续使用独立 `desktop-local` cursor。`OTEL_EXPORTER_OTLP_ENDPOINT` 生成完整三信号端点，或要求同时提供三条 signal-specific endpoint，拒绝只配置部分信号后却确认整个 envelope。架构门禁规定 `TelemetryBatch` 只能由共享 Workflow envelope mapper 解释，阻止重新引入第二套 exporter 语义。
+
+双目的地测试把同一批 envelope 同时发送到远端 mock 与 Desktop mock，逐对象确认 Trace、Log、Metric payload 完全一致而仅认证 Header 不同，并验证稳定 envelope ID/digest、Trace 关系、Histogram 和 Metric 低基数边界。远端 503 故障测试证明远端 cursor 保持 pending/degraded、桌面 cursor 不变，恢复后只推进远端；独立 tracer E2E 与完整验证通过 108 个测试文件、450 项测试并保留 1 项既有条件跳过。Evidence、App lifecycle、平台事件、Delivery 和 Post-merge 仍使用旧 exporter，分别留给任务 3.2、3.3，不能从本切片推导它们已经迁移。
 
 任务 2.7 把这条纵切的进程边界收敛为可执行 composition 生命周期。Runtime 的 Launcher 与本地目的地只由 builtin catalog 注册的 Service Provider 构造，project composition 只持有稳定应用端口；Desktop Host composition 显式包含 Application Service、OTLP Receiver Provider 和依赖两者的 Application Plugin。Application Fiber 获取 Receiver 的接纳租约，卸载时先归还租约，使既有端口对新遥测返回可重试的 unavailable；重新加载 Fiber 可以恢复接纳。Receiver Provider 自己的 Effect 仍唯一拥有并最终关闭回环监听器，因此应用可用性和原生端口所有权不会混为一体。
 
