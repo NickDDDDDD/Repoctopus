@@ -41,6 +41,7 @@
     "build:desktop": "node scripts/build-desktop.mjs",
     "desktop:prepare": "node scripts/prepare-desktop.mjs",
     "desktop:smoke": "npm run desktop:prepare && npm run build:desktop && electron scripts/smoke-desktop.mjs",
+    "desktop:fixtures": "vite app/desktop/renderer --host 127.0.0.1",
     "check:generated": "node scripts/build.mjs --check",
     "check:brand": "node scripts/check-brand.mjs",
     "check:architecture": "node scripts/check-architecture.mjs",

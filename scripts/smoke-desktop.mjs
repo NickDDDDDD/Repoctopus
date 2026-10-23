@@ -25,6 +25,7 @@ async function inspect(window) {
     state = await window.webContents.executeJavaScript(`(() => ({
       heading: document.querySelector('h1')?.textContent,
       body: document.body.innerText,
+      dashboardState: document.querySelector('[data-dashboard-state]')?.dataset.dashboardState,
       processType: typeof globalThis.process,
       requireType: typeof globalThis.require,
       bridgeType: typeof window.repoctopusDesktop,
@@ -37,9 +38,13 @@ async function inspect(window) {
 
   if (
     state?.heading !== expectedHeading ||
+    state.dashboardState !== 'live' ||
     !state.body.includes('实时接收') ||
     !state.body.includes('run-desktop-smoke') ||
-    !state.body.includes('implementation')
+    !state.body.includes('implementation') ||
+    !state.body.includes('阶段与任务') ||
+    !state.body.includes('验证与阻塞') ||
+    !state.body.includes('最近事件')
   ) {
     throw new Error(`Desktop did not render the OTLP projection: ${JSON.stringify(state)}`);
   }
