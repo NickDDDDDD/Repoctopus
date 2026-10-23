@@ -291,6 +291,12 @@ Renderer 先把 `DesktopShellState` 与投影事实转换成只读 `DashboardVie
 
 `npm run desktop:fixtures` 提供 HTTP 开发表面，`?fixture=<state>` 可执行十种确定性 fixture。打包应用通过 `file:` 加载，显式拒绝 URL fixture，因此测试状态不会覆盖真实 IPC 数据。状态矩阵单元测试验证每种 fixture 都有标题、说明和可访问状态标签；Desktop smoke 使用真实 OTLP 上报验证生产 Renderer 进入 `live` 状态、四个信息区域存在，并在默认窗口与 680×480 下没有横向溢出。
 
+任务 4.2 把投影从“只返回最近 Change”扩展为保留所有 `(workspaceId, changeId)` 上下文。每个上下文独立计算当前 Run、阶段、新鲜度和 gap，列表按最近观测时间稳定排序；旧的单上下文字段暂时保留为最近上下文视图，避免同一 Change 内的既有 IPC 消费方被一次性破坏。Renderer 使用编码后的 Workspace/change 复合身份选择详情，避免不同 Workspace 中同名 Change 冲突。
+
+显式选择属于 Renderer 会话状态，不写回领域投影或 Desktop Host。Renderer 把用户选择保存在 `sessionStorage`，因此同一窗口重载后保持选择，完全退出后不会产生新的用户级持久设置。Runtime 激活上下文通过独立、类型化的 Preload 事件到达 Renderer；只有当前没有有效选择时，激活来源才成为首选项。用户已经选择 Change 后，新的激活或 OTLP delta 只更新导航数据，不抢占当前详情。
+
+Workspace/change 列表使用原生按钮切换本地详情，并以 `aria-current`、文本状态和语义颜色共同表达当前项；它不伪装成会改变 URL 或浏览历史的链接。窄窗口把 Workspace 分组移动到详情上方，保持每个 Change 的完整可访问名称和键盘焦点。`?fixture=multi-context` 提供两个 Workspace、四个 Change 和多个终态的可执行 fixture，用于验证切换、重载保持和紧凑布局。
+
 ## Risks / Trade-offs
 
 - [Electron 安装体积和常驻内存高于原生轻客户端] → 这是换取成熟跨平台窗口、托盘和前端生态的成本；首版限制窗口数量、后台任务和 UI 依赖，并测量 idle/active 资源。
