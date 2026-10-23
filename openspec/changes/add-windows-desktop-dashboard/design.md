@@ -187,6 +187,12 @@ Post-merge 不建立第四个 exporter。Workflow mapper 从持久 `RunTriggerSn
 
 业务提交 `6eb0bf2` 完成迁移。完整 `npm run verify` 通过 109 个测试文件、457 项测试，保留 1 项条件跳过；生成物、品牌、架构、provenance 和 13 项严格 OpenSpec 校验全部通过。验证产生的临时 Workspace telemetry envelope 已清理，未保留调试日志或 scratch 产物。
 
+任务 3.4 把桌面状态关联限定为可追溯的持久事实。Workflow mapper 从固定 Project Snapshot、Run 身份和 Trajectory Action 建立 Workspace、change、Run、阶段、Run→Action 父子执行、任务和权威下一步动作；Evidence mapper 从 Attempt、Receipt、Adapter 与 Gate 建立 Run→Attempt、Attempt→Node、执行主体、验证和阻塞；Delivery mapper 只在事件与 State 的 change 和 state version 精确匹配时读取 Human Decision Request 或可信 Actor。旧 Delivery 事件与较新 State 一起重放时只保留事件自身的 change、版本和允许列表数据，不把新请求或状态嫁接到旧事件。
+
+执行主体遵循“缺失即未知”。当前 Run State 没有持久化 Agent 身份，因此 Workflow Action 不从 summary、自定义 trigger facts 或 action 附加字段猜测 Agent；只有持久 Evidence Adapter 和 Delivery Approval Actor 才导出执行主体。`action.proposed` 是 Workflow 下一步动作的权威来源，等待中的 Human Decision Request 是 Delivery 下一步动作的权威来源；Evidence Gate 没有持久化处理动作时只导出 blocker，不补造建议。OTLP `repoctopus.observed_at` 与信号时间直接使用领域事件 timestamp，不用接收时间或最新状态更新时间。
+
+正向 fixture 覆盖 Human Decision、Evidence Gate、父子执行、执行主体、任务与验证；反向 fixture 注入伪造的 `parentRunId`、`agentId`、`nextAction`、change 和较新 Delivery State，确认这些值不进入 envelope。跨领域 Metric 检查拒绝 Workspace、change、Run、execution、task、verification、blocker、Attempt、Bundle、Delivery、Envelope、Event 或 Receipt 身份，只保留 workflow、event type、result、adapter、status 和 freshness 等有界维度。业务提交 `3e83033` 完成实现；完整 `npm run verify` 两次通过 109 个测试文件、463 项测试并保留 1 项条件跳过，生成物、品牌、架构、provenance 和 13 项严格 OpenSpec 校验全部通过。每轮验证生成的 150 个临时 telemetry envelope 已清理。
+
 任务 2.7 把这条纵切的进程边界收敛为可执行 composition 生命周期。Runtime 的 Launcher 与本地目的地只由 builtin catalog 注册的 Service Provider 构造，project composition 只持有稳定应用端口；Desktop Host composition 显式包含 Application Service、OTLP Receiver Provider 和依赖两者的 Application Plugin。Application Fiber 获取 Receiver 的接纳租约，卸载时先归还租约，使既有端口对新遥测返回可重试的 unavailable；重新加载 Fiber 可以恢复接纳。Receiver Provider 自己的 Effect 仍唯一拥有并最终关闭回环监听器，因此应用可用性和原生端口所有权不会混为一体。
 
 架构门禁额外拒绝 Electron Main/Preload 调用 App Boot、composition compiler 或 builtin catalog，并拒绝在显式 Service Provider/Shell owner 之外直接构造 Windows Launcher、OTLP Receiver 或 Host controller。零桌面能力测试证明 Runtime 返回固定 unavailable 诊断而不启动进程；正常 Desktop Host、缺失依赖 fail-closed、Host 失败后串行替换、Application Fiber 卸载/重载和 Provider 关闭端口均有自动化证明。完整验证通过 105 个测试文件、445 项测试并保留 1 项既有条件跳过，桌面进程外 E2E 2/2 通过；这完成 composition ownership，不提前宣称任务 5.1 的 discovery 安全或 5.2 的全部并发单实例恢复已完成。
