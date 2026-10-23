@@ -23,6 +23,7 @@ import { FileDeliveryStore } from '../../platform/delivery/file-delivery-store.j
 import { normalizeRemoteIdentity } from '../../platform/git/remote-identity.js';
 import { loadProjectConfig } from '../../platform/project-configuration/file-config.js';
 import { createRepoctopusBuiltinCatalog } from '../../plugins/builtin-catalog.js';
+import { createOpenSpecStoreEnvironment } from '../helpers/fixtures.js';
 import { runCli } from './cli.js';
 
 const execFileAsync = promisify(execFile);
@@ -172,6 +173,7 @@ async function fixture() {
   await git(workspace, ['checkout', '-b', sourceBranch]);
   await writeFile(path.join(workspace, '.gitignore'), '.repoctopus/\n');
   await writeSpecification(workspace, changeId);
+  const storeEnvironment = await createOpenSpecStoreEnvironment(root, workspace, 'self-hosted-e2e');
   const port = await availablePort();
   await writeFile(
     path.join(workspace, 'repoctopus.yaml'),
@@ -228,7 +230,10 @@ async function fixture() {
           },
         },
         skillProviders: [{ id: 'skill-provider-matt' }],
-        specificationProvider: { id: 'specification-openspec' },
+        specificationProvider: {
+          id: 'specification-openspec',
+          store: { id: 'self-hosted-e2e', repositoryId: 'workspace' },
+        },
         platformEvents: {
           storeProvider: { id: 'platform-events-file' },
           http: { hostname: '127.0.0.1', port, shutdownTimeoutMs: 1000 },
@@ -449,12 +454,17 @@ async function fixture() {
     changeId,
     sourceBranch,
     baselineHead,
+    storeEnvironment,
   };
 }
 
-function environment(mockStateFile: string, secret: string): NodeJS.ProcessEnv {
+function environment(
+  mockStateFile: string,
+  secret: string,
+  storeEnvironment: NodeJS.ProcessEnv,
+): NodeJS.ProcessEnv {
   const result: NodeJS.ProcessEnv = {
-    ...process.env,
+    ...storeEnvironment,
     REPOCTOPUS_MOCK_PLATFORM_STATE: mockStateFile,
     REPOCTOPUS_E2E_WEBHOOK_SECRET: secret,
     REPOCTOPUS_E2E_GITHUB_TOKEN: 'mock-token',
@@ -472,10 +482,11 @@ function startRunner(input: {
   workspace: string;
   mockStateFile: string;
   secret: string;
+  storeEnvironment: NodeJS.ProcessEnv;
 }) {
   const child = spawn(process.execPath, [input.executable, productRoot, input.workspace], {
     cwd: productRoot,
-    env: environment(input.mockStateFile, input.secret),
+    env: environment(input.mockStateFile, input.secret, input.storeEnvironment),
   });
   processes.push(child);
   let output = '';
@@ -576,6 +587,7 @@ it('recovers a signed multi-repository Post-merge run and publishes the Change M
     workspace: setup.workspace,
     mockStateFile: setup.mockStateFile,
     secret,
+    storeEnvironment: setup.storeEnvironment,
   });
   const body = Buffer.from(
     JSON.stringify({
@@ -598,7 +610,7 @@ it('recovers a signed multi-repository Post-merge run and publishes the Change M
     packageRoot: productRoot,
     cwd: setup.workspace,
     args: ['event', 'status', '--workspace', setup.workspace, '--envelope', envelopeId],
-    environment: environment(setup.mockStateFile, secret),
+    environment: environment(setup.mockStateFile, secret, setup.storeEnvironment),
   });
   expect(['pending', 'leased']).toContain(pending.result?.status);
 
@@ -607,12 +619,13 @@ it('recovers a signed multi-repository Post-merge run and publishes the Change M
     workspace: setup.workspace,
     mockStateFile: setup.mockStateFile,
     secret,
+    storeEnvironment: setup.storeEnvironment,
   });
   await restarted.ready;
   const completed = await waitForCompletion({
     workspace: setup.workspace,
     envelopeId,
-    environment: environment(setup.mockStateFile, secret),
+    environment: environment(setup.mockStateFile, secret, setup.storeEnvironment),
     output: restarted.output,
   });
   expect(completed).toMatchObject({ status: 'completed', diagnostic: 'post-merge-completed' });
@@ -625,7 +638,7 @@ it('recovers a signed multi-repository Post-merge run and publishes the Change M
     packageRoot: productRoot,
     cwd: setup.workspace,
     args: ['run', 'status', '--workspace', setup.workspace, '--run', runIds[0]!],
-    environment: environment(setup.mockStateFile, secret),
+    environment: environment(setup.mockStateFile, secret, setup.storeEnvironment),
   });
   expect(run.result?.state.status).toBe('completed');
   expect(run.result?.state.acceptedEvidenceBundleIds).toHaveLength(1);

@@ -32,6 +32,9 @@ skillProviders:
   - id: skill-provider-filesystem
 specificationProvider:
   id: specification-openspec
+  store:
+    id: self-hosted-fixture
+    repositoryId: workspace
 platformEvents:
   storeProvider:
     id: platform-events-file

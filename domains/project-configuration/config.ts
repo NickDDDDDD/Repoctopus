@@ -115,6 +115,14 @@ function providerReference(value: unknown, field: string): CapabilityProviderRef
   return { id: identifier(reference.id, `${field}.id`) };
 }
 
+function storeIdentifier(value: unknown, field: string): string {
+  const parsed = string(value, field);
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(parsed)) {
+    throw new ProjectConfigError('expected a lowercase kebab-case Store id', field);
+  }
+  return parsed;
+}
+
 function concreteDirectory(value: unknown, field: string): string {
   const configured = string(value, field);
   const normalized = configured.replaceAll('\\', '/');
@@ -801,10 +809,38 @@ export function parseSharedProjectConfig(value: unknown): SharedProjectConfig {
       throw new ProjectConfigError('Provider ids must be unique', 'skillProviders');
     }
   }
-  const specificationProvider =
-    root.specificationProvider === undefined
-      ? undefined
-      : providerReference(root.specificationProvider, 'specificationProvider');
+  let specificationProvider: SharedProjectConfig['specificationProvider'];
+  if (root.specificationProvider !== undefined) {
+    const reference = object(root.specificationProvider, 'specificationProvider');
+    exactKeys(reference, ['id', 'store'], 'specificationProvider');
+    const store =
+      reference.store === undefined
+        ? { id: storeIdentifier(workspace.id, 'workspace.id'), repositoryId: workspaceRepositoryId }
+        : object(reference.store, 'specificationProvider.store');
+    if (reference.store !== undefined) {
+      exactKeys(store, ['id', 'repositoryId'], 'specificationProvider.store');
+    }
+    const repositoryId = identifier(store.repositoryId, 'specificationProvider.store.repositoryId');
+    if (!repositories.some((repository) => repository.id === repositoryId)) {
+      throw new ProjectConfigError(
+        'must reference a registered repository',
+        'specificationProvider.store.repositoryId',
+      );
+    }
+    if (repositoryId !== workspaceRepositoryId) {
+      throw new ProjectConfigError(
+        'must reference the Workspace Repository',
+        'specificationProvider.store.repositoryId',
+      );
+    }
+    specificationProvider = {
+      id: identifier(reference.id, 'specificationProvider.id'),
+      store: {
+        id: storeIdentifier(store.id, 'specificationProvider.store.id'),
+        repositoryId,
+      },
+    };
+  }
   const platformEvents =
     root.platformEvents === undefined ? undefined : parsePlatformEvents(root.platformEvents);
   const postMerge = root.postMerge === undefined ? undefined : parsePostMerge(root.postMerge);

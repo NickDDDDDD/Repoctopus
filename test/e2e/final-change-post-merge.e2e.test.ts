@@ -10,6 +10,7 @@ import { build } from 'esbuild';
 import { afterEach, expect, it } from 'vitest';
 
 import { normalizeRemoteIdentity } from '../../platform/git/remote-identity.js';
+import { createOpenSpecStoreEnvironment } from '../helpers/fixtures.js';
 
 const execFileAsync = promisify(execFile);
 const productRoot = path.resolve(import.meta.dirname, '..', '..');
@@ -151,6 +152,11 @@ it('runs one-Business-MR closure out of process before creating the final Change
   await git(workspace.source, 'switch', '-c', sourceBranch);
   await writeFile(path.join(workspace.source, '.gitignore'), '.repoctopus/\n');
   await writeSpecification(workspace.source, changeId);
+  const storeEnvironment = await createOpenSpecStoreEnvironment(
+    root,
+    workspace.source,
+    'final-change-e2e',
+  );
   const port = await availablePort();
   await writeFile(
     path.join(workspace.source, 'repoctopus.yaml'),
@@ -193,7 +199,10 @@ it('runs one-Business-MR closure out of process before creating the final Change
           },
         },
         skillProviders: [{ id: 'skill-provider-matt' }],
-        specificationProvider: { id: 'specification-openspec' },
+        specificationProvider: {
+          id: 'specification-openspec',
+          store: { id: 'final-change-e2e', repositoryId: 'workspace' },
+        },
         platformEvents: {
           storeProvider: { id: 'platform-events-file' },
           http: { hostname: '127.0.0.1', port, shutdownTimeoutMs: 1000 },
@@ -339,7 +348,7 @@ it('runs one-Business-MR closure out of process before creating the final Change
     logLevel: 'silent',
   });
   const environment: NodeJS.ProcessEnv = {
-    ...process.env,
+    ...storeEnvironment,
     REPOCTOPUS_E2E_WEBHOOK_SECRET: 'secret',
     REPOCTOPUS_E2E_GITHUB_TOKEN: 'token',
     REPOCTOPUS_E2E_AUTHOR_NAME: 'Repoctopus E2E',

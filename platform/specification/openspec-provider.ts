@@ -19,6 +19,7 @@ import { atomicWriteJson } from '../filesystem/atomic-write.js';
 import {
   Specification,
   type PrepareSpecificationClosureInput,
+  type SpecificationRoot,
   type SpecificationWorkspace,
 } from '../../services/specification.js';
 import {
@@ -29,7 +30,17 @@ import {
 
 interface OpenSpecProviderConfig {
   workspaceRoot: string;
+  specificationRoot: SpecificationRoot;
   process?: SpecificationProcessPort;
+}
+
+interface ContextResult {
+  root?: {
+    path?: unknown;
+    source?: unknown;
+    store_id?: unknown;
+  } | null;
+  status?: unknown;
 }
 
 interface ShowResult {
@@ -160,11 +171,13 @@ async function tree(root: string, prefix = ''): Promise<Map<string, string>> {
 
 export class OpenSpecProvider extends Specification {
   private readonly workspace: string;
+  private readonly specificationRoot: SpecificationRoot;
   private readonly process: SpecificationProcessPort;
 
   constructor(context: Context, config: OpenSpecProviderConfig) {
     super(context);
     this.workspace = path.resolve(config.workspaceRoot);
+    this.specificationRoot = structuredClone(config.specificationRoot);
     this.process = config.process ?? new OpenSpecProcess();
   }
 
@@ -172,11 +185,59 @@ export class OpenSpecProvider extends Specification {
     return structuredClone(IDENTITY);
   }
 
+  override root(): SpecificationRoot {
+    return structuredClone(this.specificationRoot);
+  }
+
+  private async assertRoot(workspace: string, signal?: AbortSignal): Promise<void> {
+    const result = await this.process.execute(
+      ['context', '--json', '--store', this.specificationRoot.storeId],
+      {
+        cwd: workspace,
+        ...(signal ? { signal } : {}),
+      },
+    );
+    const parsed = parseJson<ContextResult>(result.stdout, 'context');
+    if (result.exitCode !== 0 || !parsed.root) {
+      const status = Array.isArray(parsed.status)
+        ? parsed.status
+            .map((entry) =>
+              entry && typeof entry === 'object' && 'message' in entry
+                ? String((entry as { message: unknown }).message)
+                : '',
+            )
+            .filter(Boolean)
+            .join('; ')
+        : '';
+      throw new Error(
+        `OpenSpec Store ${this.specificationRoot.storeId} is unavailable: ${status || result.stderr.trim() || 'context resolution failed'}`,
+      );
+    }
+    if (parsed.root.store_id !== this.specificationRoot.storeId) {
+      throw new Error(
+        `OpenSpec Store identity mismatch: expected ${this.specificationRoot.storeId}`,
+      );
+    }
+    if (typeof parsed.root.path !== 'string') {
+      throw new Error(`OpenSpec Store ${this.specificationRoot.storeId} returned no root path`);
+    }
+    if (path.resolve(parsed.root.path) !== path.resolve(workspace)) {
+      throw new Error(
+        `OpenSpec Store ${this.specificationRoot.storeId} is registered to a different checkout`,
+      );
+    }
+  }
+
   private async json<T>(workspace: string, args: string[], signal?: AbortSignal): Promise<T> {
-    const result = await this.process.execute([...args, '--json'], {
-      cwd: workspace,
-      ...(signal ? { signal } : {}),
-    });
+    const primaryRoot = path.resolve(workspace) === this.workspace;
+    if (primaryRoot) await this.assertRoot(workspace, signal);
+    const result = await this.process.execute(
+      [...args, ...(primaryRoot ? ['--store', this.specificationRoot.storeId] : []), '--json'],
+      {
+        cwd: workspace,
+        ...(signal ? { signal } : {}),
+      },
+    );
     if (result.exitCode !== 0) {
       const diagnostic = result.stderr.trim() || result.stdout.trim() || 'no diagnostic';
       throw new Error(`OpenSpec ${args.join(' ')} failed: ${diagnostic}`);
@@ -264,10 +325,15 @@ export class OpenSpecProvider extends Specification {
   ): Promise<SpecificationValidation> {
     const args = ['validate', changeId, '--type', 'change', '--no-interactive'];
     if (options.strict !== false) args.push('--strict');
-    const result = await this.process.execute([...args, '--json'], {
-      cwd: workspace,
-      ...(options.signal ? { signal: options.signal } : {}),
-    });
+    const primaryRoot = path.resolve(workspace) === this.workspace;
+    if (primaryRoot) await this.assertRoot(workspace, options.signal);
+    const result = await this.process.execute(
+      [...args, ...(primaryRoot ? ['--store', this.specificationRoot.storeId] : []), '--json'],
+      {
+        cwd: workspace,
+        ...(options.signal ? { signal: options.signal } : {}),
+      },
+    );
     const parsed = parseJson<ValidationResult>(result.stdout, args.join(' '));
     const item = parsed.items?.find((candidate) => candidate.id === changeId) ?? parsed.items?.[0];
     const findings = diagnostics(item?.issues);
@@ -400,6 +466,7 @@ export class OpenSpecProvider extends Specification {
     const workspace = path.resolve(workspaceRoot);
     return {
       identity: () => this.identity(),
+      root: () => this.root(),
       inspect: (changeId, signal) => this.inspectAt(workspace, changeId, signal),
       validate: (changeId, options) => this.validateAt(workspace, changeId, options),
       prepareClosure: (input) => this.prepareClosureAt(workspace, input),

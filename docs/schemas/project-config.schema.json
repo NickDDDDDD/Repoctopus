@@ -143,7 +143,7 @@
       "uniqueItems": true,
       "items": { "$ref": "#/$defs/providerReference" }
     },
-    "specificationProvider": { "$ref": "#/$defs/providerReference" },
+    "specificationProvider": { "$ref": "#/$defs/specificationProviderReference" },
     "platformEvents": {
       "type": "object",
       "additionalProperties": false,
@@ -266,6 +266,23 @@
       "additionalProperties": false,
       "required": ["id"],
       "properties": { "id": { "$ref": "#/$defs/stableIdentifier" } }
+    },
+    "specificationProviderReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id"],
+      "properties": {
+        "id": { "$ref": "#/$defs/stableIdentifier" },
+        "store": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "repositoryId"],
+          "properties": {
+            "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+            "repositoryId": { "$ref": "#/$defs/stableIdentifier" }
+          }
+        }
+      }
     },
     "credentialReference": {
       "type": "object",

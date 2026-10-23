@@ -102,6 +102,13 @@ export interface CapabilityProviderReference {
   id: string;
 }
 
+export interface SpecificationProviderReference extends CapabilityProviderReference {
+  store: {
+    id: string;
+    repositoryId: string;
+  };
+}
+
 export interface PlatformEventsConfig {
   storeProvider: CapabilityProviderReference;
   http: {
@@ -164,7 +171,7 @@ export interface SharedProjectConfig {
   };
   delivery?: Omit<DeliveryPolicy, 'apiVersion' | 'kind'>;
   skillProviders?: CapabilityProviderReference[];
-  specificationProvider?: CapabilityProviderReference;
+  specificationProvider?: SpecificationProviderReference;
   platformEvents?: PlatformEventsConfig;
   postMerge?: PostMergeConfig;
 }

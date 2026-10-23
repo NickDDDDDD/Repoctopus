@@ -11,7 +11,7 @@
 
 - [x] 1.1 定义版本化 `ChangeLifecycleDefinition`、`ChangePhase`、`RunStatus`、`WorkDescriptor`、`WaitCondition` 和 `ChangeRunProjection`，扩展现有 Run snapshot/trajectory schema；用纯领域测试覆盖合法转换、非法跳阶段、phase/status 正交组合和相同输入的确定性结果。
 - [x] 1.2 实现内置五阶段 definition 的规范化、静态验证和 digest，并在 Change Run 创建时固定 id/version/content digest；用恢复测试证明同版本内容漂移进入 `migration_required`，键顺序等非语义差异不漂移。
-- [ ] 1.3 为专用 `specificationProvider.store { id, repositoryId }` 扩展共享配置 Schema，并在 Specification Service 定义稳定 `SpecificationRoot`，让现有 Workspace Repository 兼任 OpenSpec Store；Runtime 显式传 `--store` 并校验本机 registry/metadata，不保存绝对路径；用配置与进程外测试覆盖自定义 ID、自举同仓、未知 repository、未登记、错指 checkout 和 default/nearest Store 干扰。
+- [x] 1.3 为专用 `specificationProvider.store { id, repositoryId }` 扩展共享配置 Schema，并在 Specification Service 定义稳定 `SpecificationRoot`，让现有 Workspace Repository 兼任 OpenSpec Store；Runtime 显式传 `--store` 并校验本机 registry/metadata，不保存绝对路径；用配置与进程外测试覆盖自定义 ID、自举同仓、未知 repository、未登记、错指 checkout 和 default/nearest Store 干扰。
 - [ ] 1.4 在 production `WorkflowRuns` 和公共 CLI 中增加按 Workspace/change create-or-resume 的 Change Run 入口，Open 阶段核对 Specification Root、目标分支和登记仓库；运行 CLI 进程外测试证明同一 generation 只产生一个活动 Run，Host/CLI 不拥有 phase 规则。
 - [ ] 1.5 将当前 Specification Provider 的官方 schema instructions/template、planning manifest 和 strict validation 接入 Design，未完成四类产物、校验失败或没有可信 Human Decision 时只产生 `design/waiting|blocked`；运行真实 OpenSpec fixture 证明普通 `succeeded`、分支状态、Agent 声明或额外文档都不能进入 Build。
 - [ ] 1.6 实现 approval proposal hash / approval hash，并通过公共决策入口记录 approve、revise、reject；用篡改测试证明 decision 只适用于对应 change、Store/Provider/schema、semantic digest、能力集合和目标分支。

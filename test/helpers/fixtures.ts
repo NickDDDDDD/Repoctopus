@@ -1,8 +1,9 @@
 import { execFile } from 'node:child_process';
-import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { access, mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
+import { stringify } from 'yaml';
 
 import { createProjectSnapshot } from '../../domains/project/snapshot.js';
 import type { ProjectSnapshot } from '../../domains/project/types.js';
@@ -70,7 +71,53 @@ export async function temporaryDirectory(prefix = 'repoctopus-test-'): Promise<s
 }
 
 export async function removeTemporaryDirectory(root: string): Promise<void> {
-  await rm(root, { recursive: true, force: true });
+  await rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 });
+}
+
+export async function createOpenSpecStoreEnvironment(
+  fixtureRoot: string,
+  storeRoot: string,
+  storeId: string,
+): Promise<NodeJS.ProcessEnv> {
+  const dataRoot = path.join(fixtureRoot, '.openspec-test-data');
+  const configRoot = path.join(fixtureRoot, '.openspec-test-config');
+  await Promise.all([
+    mkdir(path.join(storeRoot, 'openspec', 'specs'), { recursive: true }),
+    mkdir(path.join(storeRoot, 'openspec', 'changes', 'archive'), { recursive: true }),
+    mkdir(path.join(storeRoot, '.openspec-store'), { recursive: true }),
+    mkdir(path.join(dataRoot, 'openspec', 'stores'), { recursive: true }),
+    mkdir(path.join(configRoot, 'openspec'), { recursive: true }),
+  ]);
+  const openspecConfig = path.join(storeRoot, 'openspec', 'config.yaml');
+  const configExists = await access(openspecConfig).then(
+    () => true,
+    () => false,
+  );
+  await Promise.all([
+    ...(configExists ? [] : [writeFile(openspecConfig, 'schema: spec-driven\n')]),
+    writeFile(
+      path.join(storeRoot, '.openspec-store', 'store.yaml'),
+      stringify({ version: 1, id: storeId }),
+    ),
+    writeFile(
+      path.join(dataRoot, 'openspec', 'stores', 'registry.yaml'),
+      stringify({
+        version: 1,
+        stores: { [storeId]: { backend: { type: 'git', local_path: storeRoot } } },
+      }),
+    ),
+    writeFile(
+      path.join(configRoot, 'openspec', 'config.json'),
+      `${JSON.stringify({ defaultStore: 'must-not-override-explicit-store' })}\n`,
+    ),
+  ]);
+  return {
+    ...process.env,
+    XDG_DATA_HOME: dataRoot,
+    XDG_CONFIG_HOME: configRoot,
+    OPENSPEC_NO_UPDATE_CHECK: '1',
+    OPENSPEC_TELEMETRY: '0',
+  };
 }
 
 export async function createGitRepository(

@@ -8,6 +8,13 @@ import type {
   SpecificationValidation,
 } from '../domains/specification/types.js';
 
+export interface SpecificationRoot {
+  schemaVersion: 1;
+  kind: 'SpecificationRoot';
+  storeId: string;
+  repositoryId: string;
+}
+
 export interface PrepareSpecificationClosureInput {
   changeId: string;
   mergeFactsDigest: `sha256:${string}`;
@@ -17,6 +24,7 @@ export interface PrepareSpecificationClosureInput {
 
 export interface SpecificationWorkspace {
   identity(): SpecificationProviderIdentity;
+  root(): SpecificationRoot;
   inspect(changeId: string, signal?: AbortSignal): Promise<SpecificationChange>;
   validate(
     changeId: string,
@@ -32,6 +40,9 @@ export abstract class Specification extends Service implements SpecificationWork
   }
 
   abstract identity(): SpecificationProviderIdentity;
+  root(): SpecificationRoot {
+    throw new Error(`Specification provider ${this.identity().id} has no configured root`);
+  }
   abstract inspect(changeId: string, signal?: AbortSignal): Promise<SpecificationChange>;
   abstract validate(
     changeId: string,
