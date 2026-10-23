@@ -452,6 +452,24 @@
       "pattern": "from\\s+['\"]@deepseek-ai/cordis(?:/|['\"])",
       "allowed": [],
       "message": "Electron Shell and preload must not host or import the Cordis application runtime"
+    },
+    {
+      "id": "desktop-shell-composition-isolation",
+      "targets": ["app/desktop/main/**", "app/desktop/preload/**"],
+      "pattern": "\\b(?:bootDesktopComposition|bootApp|compileComposition|createRepoctopusBuiltinCatalog)\\b|new\\s+Context\\s*\\(",
+      "allowed": [],
+      "message": "Electron Shell and preload must not construct or boot a product composition"
+    },
+    {
+      "id": "desktop-native-owner-closure",
+      "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
+      "pattern": "new\\s+(?:WindowsDesktopLauncher|DesktopOtlpReceiver|DesktopBackendController)\\s*\\(",
+      "allowed": [
+        "app/desktop/main/main.ts",
+        "plugins/desktop/windows-desktop-launcher-provider.ts",
+        "plugins/telemetry/desktop-otlp-receiver-provider.ts"
+      ],
+      "message": "Desktop native adapters must be constructed only by their explicit Service Provider or Shell owner"
     }
   ],
   "protectedEvidenceFlow": {

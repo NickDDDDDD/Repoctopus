@@ -62,6 +62,34 @@ describe('DesktopBackendController', () => {
     expect(states.map((state) => state.phase)).toEqual(['starting', 'ready', 'error']);
   });
 
+  it('serializes a retry after a ready Host fails and exposes only the replacement', async () => {
+    const stops = [vi.fn(() => Promise.resolve()), vi.fn(() => Promise.resolve())];
+    const failures: Array<(error: Error) => void> = [];
+    const hosts: DesktopBackendHost[] = stops.map((stop) => ({
+      start: () => Promise.resolve(),
+      stop,
+    }));
+    let created = 0;
+    const controller = new DesktopBackendController((onFailure) => {
+      failures.push(onFailure);
+      return hosts[created++]!;
+    }, () => undefined);
+
+    await controller.start(() => Promise.resolve());
+    expect(controller.host).toBe(hosts[0]);
+    failures[0]!(new Error('first Host failed'));
+    await vi.waitFor(() => expect(controller.state.phase).toBe('error'));
+
+    await controller.stop();
+    await controller.start(() => Promise.resolve());
+    expect(controller.host).toBe(hosts[1]);
+    expect(stops[0]).toHaveBeenCalledOnce();
+    expect(stops[1]).not.toHaveBeenCalled();
+
+    await controller.close();
+    expect(stops[1]).toHaveBeenCalledOnce();
+  });
+
   it('does not spawn a Host after close cancels pending preparation', async () => {
     const preparation = deferred<void>();
     const createHost = vi.fn(() => ({

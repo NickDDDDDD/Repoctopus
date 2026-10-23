@@ -52,5 +52,15 @@
       "path": "app/desktop/main/rogue.ts",
       "contents": "import { Context } from '@deepseek-ai/cordis'; export const value = Context;"
     }
+  ],
+  "desktopOwnership": [
+    {
+      "path": "app/desktop/main/rogue-composition.ts",
+      "contents": "import { bootDesktopComposition } from '../../boot/bootstrap.js'; export const app = bootDesktopComposition('.');"
+    },
+    {
+      "path": "services/rogue-desktop-launcher.ts",
+      "contents": "export const launcher = new WindowsDesktopLauncher({});"
+    }
   ]
 }

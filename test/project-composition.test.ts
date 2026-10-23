@@ -57,6 +57,8 @@ describe('project composition assembly', () => {
 
     expect(projectIds).toEqual(
       expect.arrayContaining([
+        'desktop-launcher-windows',
+        'desktop-observation-destination',
         'skill-provider-matt',
         'skill-provider-filesystem',
         'specification-openspec',
@@ -70,6 +72,8 @@ describe('project composition assembly', () => {
     expect(projectIds).not.toContain('github-webhook-route');
     expect(projectIds).not.toContain('platform-event-runner');
     expect(projectIds).not.toContain('runner-application');
+    expect(projectIds).not.toContain('desktop-application');
+    expect(projectIds).not.toContain('desktop-otlp-receiver');
     expect(runnerIds).toEqual(
       expect.arrayContaining([
         'http-host',

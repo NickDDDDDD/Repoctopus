@@ -18,6 +18,7 @@ interface Fixtures {
   nonProviderClosure: SourceFixture[];
   unprotectedPublication: SourceFixture[];
   desktopIsolation: SourceFixture[];
+  desktopOwnership: SourceFixture[];
 }
 
 interface Rule {
@@ -162,6 +163,24 @@ describe('architecture source boundaries', () => {
           'app/desktop/renderer/src/rogue.tsx: desktop-renderer-process-isolation',
         ),
         expect.stringContaining('app/desktop/main/rogue.ts: desktop-shell-cordis-isolation'),
+      ]),
+    );
+  });
+
+  it('keeps product composition and native desktop adapters behind their explicit owners', () => {
+    expect(
+      evaluateSourceBoundaries(
+        fixtures.desktopOwnership,
+        rules('desktop-shell-composition-isolation', 'desktop-native-owner-closure'),
+      ),
+    ).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining(
+          'app/desktop/main/rogue-composition.ts: desktop-shell-composition-isolation',
+        ),
+        expect.stringContaining(
+          'services/rogue-desktop-launcher.ts: desktop-native-owner-closure',
+        ),
       ]),
     );
   });

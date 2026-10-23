@@ -12,6 +12,12 @@ export abstract class DesktopTelemetryReceiver extends Service {
 
   abstract ready(): Promise<void>;
   abstract endpoint(): DesktopTelemetryEndpoint;
+
+  /**
+   * Lets the Desktop Application Fiber own ingress availability without taking
+   * ownership of the Receiver Provider's native listener.
+   */
+  abstract acquireApplicationLease(): () => void;
 }
 
 declare module '@deepseek-ai/cordis' {

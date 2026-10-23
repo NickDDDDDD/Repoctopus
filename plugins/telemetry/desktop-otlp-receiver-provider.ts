@@ -20,6 +20,7 @@ export class DesktopOtlpReceiverProvider extends DesktopTelemetryReceiver {
 
   private readonly receiver: DesktopOtlpReceiver;
   private readonly sessionToken = createDesktopOtlpSessionToken();
+  private applicationLeases = 0;
 
   constructor(context: Context, config: DesktopOtlpReceiverProviderConfig = {}) {
     super(context);
@@ -30,6 +31,9 @@ export class DesktopOtlpReceiverProvider extends DesktopTelemetryReceiver {
         ? {}
         : { maxConcurrentRequests: config.maxConcurrentRequests }),
       accept: (batch) => {
+        if (this.applicationLeases === 0) {
+          throw new Error('Desktop Application is not accepting telemetry');
+        }
         for (const record of decodeDesktopOtlpBatch(batch)) {
           context.desktopApplication.accept(record);
         }
@@ -58,6 +62,16 @@ export class DesktopOtlpReceiverProvider extends DesktopTelemetryReceiver {
     return {
       origin: this.receiver.origin(),
       authorization: `Bearer ${this.sessionToken}`,
+    };
+  }
+
+  acquireApplicationLease(): () => void {
+    this.applicationLeases += 1;
+    let released = false;
+    return () => {
+      if (released) return;
+      released = true;
+      this.applicationLeases -= 1;
     };
   }
 }
