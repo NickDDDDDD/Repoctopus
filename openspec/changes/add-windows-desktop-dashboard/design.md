@@ -105,6 +105,10 @@ Cursor schema v2 增加 `enabled`、`paused`、`removed` 三态、投递健康�
 
 业务提交 `b7b9845` 完成该边界。小容量故障测试覆盖三态转换、目的地隔离、数量/字节/时间超限、gap 历史上限、gap 提交中断恢复和 v1 Cursor 迁移；完整 `npm run verify` 通过 109 个测试文件、469 项测试并保留 1 项既有跳过，完整测试阶段耗时 103.23 秒。
 
+遥测开发文档把操作步骤与数据契约分开：`docs/telemetry.md` 只说明如何配置、降级、恢复和执行验证，`docs/telemetry-reference.md` 集中记录身份、Cursor、保留、关联与隐私语义。仅远端不是另一套产品模式或私有开关；在新 Workspace 中，如果 Dashboard Receiver 尚未激活，Runtime 只建立 `remote-otlp` Cursor。Dashboard 首次激活后建立 `desktop-local` Cursor；关闭 Receiver 时远端继续确认，本地保留积压，下一次 `run start` 重新激活并先重放本地数据。
+
+业务提交 `5d2532b` 增加 `npm run test:telemetry-docs`，用真实 Observation Provider、Desktop Destination 和 OTLP HTTP Receiver 执行仅远端、双目的地、桌面离线和恢复四个场景。测试同时校验三类 OTLP 路径、SigNoZ Header、本地会话认证、相同 envelope identity、远端 Cursor 不变、文档链接、命令、稳定目的地 ID 和默认保留预算；旧文档中未被实现读取的 `REPOCTOPUS_ENVIRONMENT` 已移除。完整 `npm run verify` 通过 110 个测试文件、471 项测试并保留 1 项既有跳过，完整测试阶段耗时 105.48 秒。
+
 备选方案一是把一份数据同时直接 `Promise.all` 发往两个端点；进程退出后无法确定各目的地是否确认。备选方案二是让 Electron 接收后再转发 SigNoZ；Electron 关闭会切断团队遥测并使桌面成为单点，因此拒绝。
 
 ### 4. Desktop Host 子进程实现受保护的本地 OTLP 接收器
