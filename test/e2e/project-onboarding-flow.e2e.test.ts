@@ -32,11 +32,35 @@ describe('documented project onboarding flow', () => {
     const detection = await runCli({
       packageRoot,
       cwd: workspace,
-      args: ['project', 'detect', '--scan-root', root, '--workspace', workspace],
+      args: [
+        'project',
+        'detect',
+        '--scan-root',
+        root,
+        '--workspace',
+        workspace,
+        '--store',
+        'onboarding-store',
+        '--skip-pointer',
+        'app',
+      ],
     });
     const detected = detection.result as { draft: ProjectDetectionDraft; file: string };
     expect(detection).toMatchObject({ ok: true, command: 'project detect' });
     expect(detected.draft.status).toBe('candidate');
+    expect(detected.draft.storeBinding).toMatchObject({
+      storeId: 'onboarding-store',
+      workspaceRepositoryId: 'workspace',
+    });
+    expect(
+      detected.draft.storeBinding?.repositories.find(
+        (repository) => repository.repositoryId === 'app',
+      ),
+    ).toMatchObject({
+      repositoryId: 'app',
+      classification: 'unconfigured',
+      selection: 'skip',
+    });
 
     const candidate: SharedProjectConfig = {
       ...detected.draft.candidateConfig!,

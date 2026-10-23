@@ -20,12 +20,14 @@ Repoctopus 使用“确定性扫描 → Agent 补全 → 用户确认”建立�
 
 ```powershell
 npm run build
-$detected = node bin/repoctopus.js project detect --scan-root .. --workspace . --json | ConvertFrom-Json
+$detected = node bin/repoctopus.js project detect --scan-root .. --workspace . --store team-platform --json | ConvertFrom-Json
 $draft = $detected.result.file
 $draft
 ```
 
 草稿为每条结论保存 `sources` 和 `confidence`。`unresolved` 列出探测无法确认的命令、端口、健康端点或未知构建系统。命令不会创建或覆盖 `repoctopus.yaml`，也不会写入业务仓。
+
+`--store` 是可编辑的 lowercase kebab-case OpenSpec Store ID；省略时优先沿用已有共享配置，否则从 Workspace 名称派生。草稿的 `storeBinding` 明确记录 Workspace 根与逐业务仓分类：未配置、已指向同一 Store、指向其他 Store、本地规格权威、配置损坏或只读。只有安全的未配置仓会得到 `openspec/config.yaml` 的精确 `before/after` pointer diff；冲突不会生成覆盖操作。用户不希望为某个仓安装 pointer 时，可以在候选中把 selection 改为 `skip`，或重新探测时传 `--skip-pointer repo-a,repo-b`。Runtime 仍通过显式 `--store` 使用权威 Store，不依赖业务仓 pointer。
 
 ## 2. 由 Agent 补全候选
 

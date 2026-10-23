@@ -606,11 +606,19 @@ async function specificationApprovalReview(parsed: ParsedArguments): Promise<Cli
 async function projectDetect(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const scanRoot = path.resolve(stringFlag(parsed, 'scan-root', { required: true })!);
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const skippedPointerRepositoryIds = stringFlag(parsed, 'skip-pointer')
+    ?.split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
   const app = await bootBootstrapComposition(PRODUCT_ROOT);
   try {
     const result = await app.context.commandRouter.execute('project.detect', {
       workspace,
       scanRoot,
+      ...(stringFlag(parsed, 'store') ? { storeId: stringFlag(parsed, 'store') } : {}),
+      ...(skippedPointerRepositoryIds && skippedPointerRepositoryIds.length > 0
+        ? { skippedPointerRepositoryIds }
+        : {}),
     });
     return successEnvelope({
       command: 'project detect',

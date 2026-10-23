@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
-import { lstat, readFile } from 'node:fs/promises';
+import { access, constants, lstat, readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { parse } from 'yaml';
 
 import type {
   DetectedCommand,
@@ -9,6 +10,7 @@ import type {
   DetectionSource,
   DetectionUnresolvedItem,
   ProjectDetectionDraft,
+  OpenSpecRepositoryBinding,
 } from '../../domains/project-configuration/detection.js';
 import { hashProjectConfig } from '../../domains/project-configuration/config.js';
 import { reconcileProjectConfig } from '../../domains/project-configuration/reconcile.js';
@@ -49,6 +51,144 @@ async function optionalText(file: string): Promise<string | null> {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') return null;
     throw error;
   }
+}
+
+async function exists(file: string): Promise<boolean> {
+  try {
+    await access(file);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function writable(directory: string): Promise<boolean> {
+  try {
+    const metadata = await lstat(directory);
+    if ((metadata.mode & 0o222) === 0) return false;
+    await access(directory, constants.W_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function inspectOpenSpecBinding(input: {
+  repositoryId: string;
+  absolutePath: string;
+  storeId: string;
+  workspaceRepositoryId: string;
+  skipped: boolean;
+}): Promise<OpenSpecRepositoryBinding> {
+  const pointerPath = path.join(input.absolutePath, 'openspec', 'config.yaml');
+  const pointer = await optionalText(pointerPath);
+  const desired = `store: ${input.storeId}\n`;
+  if (input.repositoryId === input.workspaceRepositoryId) {
+    return {
+      repositoryId: input.repositoryId,
+      classification: 'workspace-store',
+      selection: 'keep',
+      configuredStoreId: input.storeId,
+      pointerDiff: null,
+      diagnostic: null,
+    };
+  }
+  const [hasSpecs, hasChanges, canWrite] = await Promise.all([
+    exists(path.join(input.absolutePath, 'openspec', 'specs')),
+    exists(path.join(input.absolutePath, 'openspec', 'changes')),
+    writable(input.absolutePath),
+  ]);
+  if (hasSpecs || hasChanges) {
+    return {
+      repositoryId: input.repositoryId,
+      classification: 'local-authority',
+      selection: 'blocked',
+      configuredStoreId: null,
+      pointerDiff: null,
+      diagnostic: 'Repository contains local OpenSpec specs or changes',
+    };
+  }
+  let configuredStoreId: string | null = null;
+  let localSchema = false;
+  if (pointer !== null) {
+    try {
+      const parsed = parse(pointer) as unknown;
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        throw new Error('OpenSpec config must be an object');
+      }
+      const record = parsed as Record<string, unknown>;
+      if (typeof record.store === 'string' && record.store.trim()) {
+        configuredStoreId = record.store.trim();
+      } else if (typeof record.schema === 'string' && record.schema.trim()) {
+        localSchema = true;
+      } else {
+        throw new Error('OpenSpec config has no Store pointer or local schema');
+      }
+    } catch {
+      return {
+        repositoryId: input.repositoryId,
+        classification: 'damaged',
+        selection: 'blocked',
+        configuredStoreId: null,
+        pointerDiff: null,
+        diagnostic: 'OpenSpec config cannot be interpreted safely',
+      };
+    }
+  }
+  if (localSchema) {
+    return {
+      repositoryId: input.repositoryId,
+      classification: 'local-authority',
+      selection: 'blocked',
+      configuredStoreId: null,
+      pointerDiff: null,
+      diagnostic: 'Repository declares a local OpenSpec schema',
+    };
+  }
+  if (!canWrite) {
+    return {
+      repositoryId: input.repositoryId,
+      classification: 'read-only',
+      selection: 'blocked',
+      configuredStoreId,
+      pointerDiff: {
+        path: 'openspec/config.yaml',
+        before: pointer,
+        after: configuredStoreId === input.storeId ? pointer : desired,
+      },
+      diagnostic: 'Repository is not writable by the current Runner',
+    };
+  }
+  if (configuredStoreId === input.storeId) {
+    return {
+      repositoryId: input.repositoryId,
+      classification: 'same-store',
+      selection: input.skipped ? 'skip' : 'keep',
+      configuredStoreId,
+      pointerDiff: null,
+      diagnostic: null,
+    };
+  }
+  if (configuredStoreId !== null) {
+    return {
+      repositoryId: input.repositoryId,
+      classification: 'other-store',
+      selection: 'blocked',
+      configuredStoreId,
+      pointerDiff: null,
+      diagnostic: `Repository points to another OpenSpec Store: ${configuredStoreId}`,
+    };
+  }
+  return {
+    repositoryId: input.repositoryId,
+    classification: 'unconfigured',
+    selection: input.skipped ? 'skip' : 'install',
+    configuredStoreId: null,
+    pointerDiff: input.skipped
+      ? null
+      : { path: 'openspec/config.yaml', before: null, after: desired },
+    diagnostic: null,
+  };
 }
 
 function source(repositoryId: string, file: string, detail: string): DetectionSource {
@@ -101,6 +241,7 @@ async function inspectDetectedRepository(input: {
   absolutePath: string;
   configuredPath: string;
   remoteIdentity: string | null;
+  openSpec: OpenSpecRepositoryBinding;
 }): Promise<{ repository: DetectedRepository; unresolved: DetectionUnresolvedItem[] }> {
   const read = (file: string) => optionalText(path.join(input.absolutePath, file));
   const [
@@ -273,6 +414,7 @@ async function inspectDetectedRepository(input: {
       technologies,
       commands,
       services,
+      openSpec: structuredClone(input.openSpec),
     },
     unresolved,
   };
@@ -290,6 +432,8 @@ async function optionalExistingConfig(workspace: string): Promise<SharedProjectC
 export async function detectProjectConfiguration(input: {
   workspace: string;
   scanRoot: string;
+  storeId?: string;
+  skippedPointerRepositoryIds?: readonly string[];
   now?: () => Date;
 }): Promise<{ draft: ProjectDetectionDraft; file: string }> {
   const workspace = path.resolve(input.workspace);
@@ -299,19 +443,40 @@ export async function detectProjectConfiguration(input: {
     duplicateIdentity: 'omit-ambiguous',
     ...(input.now ? { now: input.now } : {}),
   });
+  const current = await optionalExistingConfig(workspace);
+  const storeId =
+    input.storeId ??
+    current?.specificationProvider?.store.id ??
+    slug(path.basename(workspace));
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(storeId)) {
+    throw new Error('OpenSpec Store id must be lowercase kebab-case');
+  }
+  const skipped = new Set(input.skippedPointerRepositoryIds ?? []);
   const ids = new Map<string, number>();
+  const identified = snapshot.repositories.map((repository) => {
+    const base = slug(repository.name);
+    const count = (ids.get(base) ?? 0) + 1;
+    ids.set(base, count);
+    return { repository, id: count === 1 ? base : `${base}-${count}` };
+  });
+  const workspaceRepositoryId =
+    identified.find(({ repository }) => path.resolve(repository.path) === workspace)?.id ?? null;
   const inspected = await Promise.all(
-    snapshot.repositories.map(async (repository) => {
-      const base = slug(repository.name);
-      const count = (ids.get(base) ?? 0) + 1;
-      ids.set(base, count);
-      const id = count === 1 ? base : `${base}-${count}`;
+    identified.map(async ({ repository, id }) => {
+      const openSpec = await inspectOpenSpecBinding({
+        repositoryId: id,
+        absolutePath: repository.path,
+        storeId,
+        workspaceRepositoryId: workspaceRepositoryId ?? '',
+        skipped: skipped.has(id),
+      });
       return inspectDetectedRepository({
         id,
         name: repository.name,
         absolutePath: repository.path,
         configuredPath: path.relative(workspace, repository.path).replaceAll('\\', '/') || '.',
         remoteIdentity: repository.remoteIdentity,
+        openSpec,
       });
     }),
   );
@@ -332,7 +497,6 @@ export async function detectProjectConfiguration(input: {
       ...(command.zeroTests ? { zeroTests: command.zeroTests } : {}),
     })),
   );
-  const current = await optionalExistingConfig(workspace);
   const workspaceRepository = repositories.find((repository) => repository.path === '.');
   const detectedCandidate: SharedProjectConfig | null =
     workspaceRepository && commandNodes.length > 0
@@ -348,6 +512,10 @@ export async function detectProjectConfiguration(input: {
             path: repository.path,
           })),
           profiles: [{ id: 'verify', nodes: commandNodes }],
+          specificationProvider: {
+            id: current?.specificationProvider?.id ?? 'specification-openspec',
+            store: { id: storeId, repositoryId: workspaceRepository.id },
+          },
         }
       : null;
   const candidateConfig: SharedProjectConfig | null = detectedCandidate
@@ -361,7 +529,22 @@ export async function detectProjectConfiguration(input: {
   const reconcile =
     current && candidateConfig ? reconcileProjectConfig(current, candidateConfig) : null;
   const capturedAt = (input.now ?? (() => new Date()))().toISOString();
-  const content = { repositories, unresolved, candidateConfig, baseConfigDigest, reconcile };
+  const storeBinding = workspaceRepository
+    ? {
+        storeId,
+        workspaceRepositoryId: workspaceRepository.id,
+        workspaceRoot: workspace,
+        repositories: repositories.map((repository) => structuredClone(repository.openSpec)),
+      }
+    : null;
+  const content = {
+    repositories,
+    unresolved,
+    candidateConfig,
+    baseConfigDigest,
+    reconcile,
+    storeBinding,
+  };
   const draftId = createHash('sha256').update(canonicalJson(content)).digest('hex').slice(0, 24);
   const draft: ProjectDetectionDraft = {
     apiVersion: 'repoctopus/v1alpha1',
