@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 import { Service, type Context } from '@deepseek-ai/cordis';
 
 export type LifecyclePhase =
@@ -12,6 +14,9 @@ export type LifecyclePhase =
   | 'closed';
 
 export interface LifecycleTelemetryEvent {
+  schemaVersion: 1;
+  sequence: number;
+  eventId: string;
   type: 'app.lifecycle' | 'plugin.lifecycle' | 'operation.drain';
   bootId: string;
   compositionDigest: string;
@@ -66,11 +71,27 @@ export class LifecycleDiagnostics extends Service {
     return this.entries.map((entry) => ({ ...entry }));
   }
 
-  event(event: Omit<LifecycleTelemetryEvent, 'bootId' | 'compositionDigest' | 'timestamp'>): void {
+  event(
+    event: Omit<
+      LifecycleTelemetryEvent,
+      'schemaVersion' | 'sequence' | 'eventId' | 'bootId' | 'compositionDigest' | 'timestamp'
+    >,
+  ): void {
+    const sequence = this.events.length + 1;
+    const timestamp = new Date().toISOString();
     this.events.push({
+      schemaVersion: 1,
+      sequence,
+      eventId: createHash('sha256')
+        .update(
+          [this.identity.bootId, String(sequence), event.type, event.phase, event.result].join(
+            '\0',
+          ),
+        )
+        .digest('hex'),
       ...event,
       ...this.identity,
-      timestamp: new Date().toISOString(),
+      timestamp,
     });
   }
 

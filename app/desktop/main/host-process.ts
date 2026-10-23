@@ -35,6 +35,7 @@ export interface DesktopHostProcessOptions {
   executable: string;
   entry: string;
   productRoot: string;
+  dataRoot: string;
   environment?: NodeJS.ProcessEnv;
   onReady?: (ready: DesktopHostReady) => void;
   onProjectionDelta?: (delta: DesktopProjectionDelta) => void;
@@ -60,12 +61,16 @@ export class DesktopHostProcess {
 
   async start(): Promise<DesktopHostReady> {
     if (this.child !== undefined) return this.readyPromise;
-    const child = spawn(this.options.executable, [this.options.entry, this.options.productRoot], {
-      cwd: this.options.productRoot,
-      env: desktopNodeEnvironment(this.options.environment),
-      stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
-      windowsHide: true,
-    });
+    const child = spawn(
+      this.options.executable,
+      [this.options.entry, this.options.productRoot, this.options.dataRoot],
+      {
+        cwd: this.options.productRoot,
+        env: desktopNodeEnvironment(this.options.environment),
+        stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
+        windowsHide: true,
+      },
+    );
     this.child = child;
     child.stdout?.pipe(process.stdout);
     child.stderr?.setEncoding('utf8');

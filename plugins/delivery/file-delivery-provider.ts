@@ -34,7 +34,7 @@ import {
   EnvironmentCredentialProvider,
   GitHubMergeRequestAdapter,
 } from '../../platform/github/merge-request.js';
-import { deliveryTelemetryFromEnvironment } from '../../platform/telemetry/opentelemetry/exporter.js';
+import { mapDeliveryObservationEnvelope } from '../../platform/telemetry/observation-delivery-mapping.js';
 import { Delivery, type DeliveryPreparation } from '../../services/delivery.js';
 import {
   bindOperationOwnership,
@@ -49,7 +49,7 @@ export interface FileDeliveryConfig {
 }
 
 export class FileDeliveryProvider extends Delivery {
-  static inject = ['compositionIdentity', 'specificationPlanning'];
+  static inject = ['compositionIdentity', 'observationTelemetry', 'specificationPlanning'];
   private readonly operations: OperationOwnership;
 
   constructor(
@@ -72,7 +72,10 @@ export class FileDeliveryProvider extends Delivery {
       ),
       new FileDeliveryEvidence(this.config.workspaceRoot),
       undefined,
-      deliveryTelemetryFromEnvironment(environment),
+      {
+        export: (state, event) =>
+          this.ctx.observationTelemetry.publish([mapDeliveryObservationEnvelope(state, event)]),
+      },
       this.ctx.compositionIdentity.current().compositionDigest,
       git,
     );
@@ -93,6 +96,10 @@ export class FileDeliveryProvider extends Delivery {
       this.ctx.compositionIdentity.current().compositionDigest,
       undefined,
       new FinalChangePublicationService(git, mergeRequests),
+      {
+        export: (state, event) =>
+          this.ctx.observationTelemetry.publish([mapDeliveryObservationEnvelope(state, event)]),
+      },
     );
   }
 

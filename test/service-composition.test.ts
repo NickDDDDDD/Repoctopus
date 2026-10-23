@@ -94,7 +94,7 @@ describe('Cordis product Service composition', () => {
     await createGitRepository(root, 'workspace');
     await createGitRepository(root, 'front');
 
-    const app = await bootBootstrapComposition(path.resolve(import.meta.dirname, '..'));
+    const app = await bootBootstrapComposition(path.resolve(import.meta.dirname, '..'), root);
     const result = await app.context.commandRouter.execute<
       { root: string },
       { repositories: { name: string }[] }

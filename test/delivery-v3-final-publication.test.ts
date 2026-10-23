@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import type {
   DeliveryEvent,
   DeliveryGitPort,
+  DeliveryTelemetryPort,
   DeliveryV3StorePort,
   MergeRequestPort,
 } from '../domains/delivery/ports.js';
@@ -13,7 +14,7 @@ import {
   type PostMergePublicationRequestV2,
 } from '../domains/delivery/post-merge.js';
 import { DeliveryServiceV3 } from '../domains/delivery/service-v3.js';
-import type { DeliveryPolicy, DeliveryStateV3 } from '../domains/delivery/types.js';
+import type { DeliveryPolicy, DeliveryState, DeliveryStateV3 } from '../domains/delivery/types.js';
 import {
   createDefaultDeliveryIntentV3,
   createDeliverySnapshotV3,
@@ -24,6 +25,7 @@ import {
   createPostMergeTargetMergeReceipt,
 } from '../domains/post-merge/checkout.js';
 import { canonicalJson } from '../domains/workflow-contract/canonical.js';
+import { mapDeliveryObservationEnvelope } from '../platform/telemetry/observation-delivery-mapping.js';
 import { TEST_COMPOSITION_DIGEST } from './helpers/fixtures.js';
 
 function sha256(value: unknown): `sha256:${string}` {
@@ -51,6 +53,15 @@ class MemoryStore implements DeliveryV3StorePort {
     expect(options.previousStateVersion).toBe(this.state.stateVersion);
     this.state = structuredClone(options.state);
     this.events.push(structuredClone(options.event));
+    return Promise.resolve();
+  }
+}
+
+class CapturingTelemetry implements DeliveryTelemetryPort {
+  readonly events: Array<{ state: DeliveryState | DeliveryStateV3; event: DeliveryEvent }> = [];
+
+  export(state: DeliveryState | DeliveryStateV3, event: DeliveryEvent): Promise<void> {
+    this.events.push({ state: structuredClone(state), event: structuredClone(event) });
     return Promise.resolve();
   }
 }
@@ -215,6 +226,7 @@ describe('Delivery v3 final Change publication state', () => {
   it('persists closure and final MR state around the recoverable publisher', async () => {
     const fx = fixture();
     const store = new MemoryStore(fx.state);
+    const telemetry = new CapturingTelemetry();
     const finalPublication = {
       publish: (request: PostMergePublicationRequestV2) =>
         Promise.resolve(
@@ -244,6 +256,7 @@ describe('Delivery v3 final Change publication state', () => {
       TEST_COMPOSITION_DIGEST,
       () => new Date('2026-10-22T01:00:00.000Z'),
       finalPublication,
+      telemetry,
     );
 
     const receipt = await service.publishFinalChange(fx.request);
@@ -266,5 +279,17 @@ describe('Delivery v3 final Change publication state', () => {
       'final-change-publication-started',
       'final-change-published',
     ]);
+    expect(telemetry.events.map(({ event }) => event.data.result)).toEqual([
+      'final-change-publication-started',
+      'final-change-published',
+    ]);
+    const published = telemetry.events.at(-1)!;
+    expect(mapDeliveryObservationEnvelope(published.state, published.event)).toMatchObject({
+      source: { domain: 'delivery', eventType: 'delivery.action' },
+      attributes: {
+        'repoctopus.delivery.result': 'final-change-published',
+        'repoctopus.delivery.receiptDigest': receipt.digest,
+      },
+    });
   });
 });

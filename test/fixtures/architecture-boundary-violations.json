@@ -74,5 +74,19 @@
       "path": "platform/telemetry/opentelemetry/rogue-evidence-exporter.ts",
       "contents": "export function exportEvidence(batch: EvidenceTelemetryBatch) { return batch.events; }"
     }
+  ],
+  "remainingDomainTelemetryBypass": [
+    {
+      "path": "platform/telemetry/opentelemetry/rogue-lifecycle-exporter.ts",
+      "contents": "export function exportLifecycle(event: LifecycleTelemetryEvent) { return event.phase; }"
+    },
+    {
+      "path": "platform/telemetry/opentelemetry/rogue-platform-event-exporter.ts",
+      "contents": "export function exportPlatformEvent(event: PlatformEventTelemetryEvent) { return event.status; }"
+    },
+    {
+      "path": "platform/telemetry/opentelemetry/rogue-delivery-exporter.ts",
+      "contents": "export function exportDelivery(event: DeliveryEvent) { return event.type; }"
+    }
   ]
 }

@@ -154,18 +154,23 @@ describe('multi-process runtime and OTLP delivery', () => {
       });
       expect(doctor.result).toMatchObject({ healthy: true, telemetryBacklog: 0 });
       expect(new Set(paths)).toEqual(new Set(['/v1/traces', '/v1/logs', '/v1/metrics']));
-      const envelopeRoot = path.join(
-        workspace,
-        '.repoctopus',
-        'telemetry',
-        'v1',
-        'envelopes',
-      );
+      const envelopeRoot = path.join(workspace, '.repoctopus', 'telemetry', 'v1', 'envelopes');
       const envelopeFiles = await readdir(envelopeRoot);
       expect(envelopeFiles.length).toBeGreaterThan(0);
-      const envelope = JSON.parse(
-        await readFile(path.join(envelopeRoot, envelopeFiles[0]!), 'utf8'),
-      ) as { envelopeId: string; digest: string; attributes: Record<string, unknown> };
+      const envelopes = await Promise.all(
+        envelopeFiles.map(
+          async (file) =>
+            JSON.parse(await readFile(path.join(envelopeRoot, file), 'utf8')) as {
+              envelopeId: string;
+              digest: string;
+              attributes: Record<string, unknown>;
+            },
+        ),
+      );
+      const envelope = envelopes.find(
+        (candidate) => candidate.attributes['repoctopus.run.id'] === 'run-e2e-runtime',
+      );
+      if (!envelope) throw new Error('Workflow observation envelope was not persisted');
       expect(envelope.attributes).toMatchObject({
         'repoctopus.change.id': 'runtime-tracer-change',
         'repoctopus.run.id': 'run-e2e-runtime',

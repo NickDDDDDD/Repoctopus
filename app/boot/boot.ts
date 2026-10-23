@@ -14,6 +14,9 @@ import {
   type LifecycleTelemetryEvent,
   type LifecycleTelemetryPort,
 } from '../../services/lifecycle-diagnostics.js';
+import { mapLifecycleObservationEnvelope } from '../../platform/telemetry/observation-lifecycle-mapping.js';
+
+const OBSERVATION_TELEMETRY_PLUGIN_ID = 'observation-telemetry-otlp';
 
 export interface BootDiagnostic {
   code:
@@ -58,13 +61,41 @@ const CORDIS_FIBER_STATE = {
   unloading: 5,
 } as const;
 
-async function disposeRoot(context: Context): Promise<void> {
+function loaderEntries(composition: CompiledComposition, predicate: (id: string) => boolean) {
+  return composition.entries
+    .filter((entry) => predicate(entry.id))
+    .map((entry) => ({
+      id: entry.id,
+      name: entry.name,
+      ...(entry.config === undefined ? {} : { config: entry.config }),
+    }));
+}
+
+async function updateRoot(
+  context: Context,
+  entries: ReturnType<typeof loaderEntries>,
+): Promise<void> {
   const loader = context.get('loader');
   if (loader) {
-    await loader.root.update([]);
+    await loader.root.update(entries);
     await loader.await();
   }
+}
+
+async function disposeRoot(context: Context): Promise<void> {
+  await updateRoot(context, []);
   await context.fiber.dispose();
+}
+
+async function retainObservationTelemetry(
+  context: Context,
+  composition: CompiledComposition,
+): Promise<boolean> {
+  if (context.get('observationTelemetry') === undefined) return false;
+  const entries = loaderEntries(composition, (id) => id === OBSERVATION_TELEMETRY_PLUGIN_ID);
+  if (entries.length !== 1) return false;
+  await updateRoot(context, entries);
+  return context.get('observationTelemetry') !== undefined;
 }
 
 export async function bootApp(options: BootOptions): Promise<RunningApp> {
@@ -76,7 +107,14 @@ export async function bootApp(options: BootOptions): Promise<RunningApp> {
   const lifecycleDiagnostics = new LifecycleDiagnostics(
     context,
     { bootId: randomUUID(), compositionDigest: options.composition.compositionDigest },
-    options.lifecycleTelemetry,
+    options.lifecycleTelemetry ?? {
+      export: (events) => {
+        const telemetry = context.get('observationTelemetry');
+        return telemetry
+          ? telemetry.publish(events.map((event) => mapLifecycleObservationEnvelope(event)))
+          : Promise.resolve();
+      },
+    },
   );
   lifecycleDiagnostics.event({
     type: 'app.lifecycle',
@@ -91,19 +129,25 @@ export async function bootApp(options: BootOptions): Promise<RunningApp> {
     [CORDIS_FIBER_STATE.disposed]: 'disposed',
     [CORDIS_FIBER_STATE.unloading]: 'unloading',
   };
-  const pluginId = (fiber: Fiber): string | undefined =>
-    options.composition.entries.find((entry) => {
+  const pluginIds = new WeakMap<Fiber, string>();
+  const pluginId = (fiber: Fiber): string | undefined => {
+    const known = pluginIds.get(fiber);
+    if (known) return known;
+    const discovered = options.composition.entries.find((entry) => {
       try {
         return context.loader.resolve(entry.id).fiber === fiber;
       } catch {
         return false;
       }
     })?.id;
+    if (discovered) pluginIds.set(fiber, discovered);
+    return discovered;
+  };
   context.on(
     'internal/status',
     (fiber) => {
       const id = pluginId(fiber);
-      if (!id) return;
+      if (!id || id === OBSERVATION_TELEMETRY_PLUGIN_ID) return;
       const state = Number(fiber.state);
       lifecycleDiagnostics.event({
         type: 'plugin.lifecycle',
@@ -184,8 +228,16 @@ export async function bootApp(options: BootOptions): Promise<RunningApp> {
       phase: 'failed',
       result: 'failed',
     });
-    await disposeRoot(context);
-    await lifecycleDiagnostics.flush();
+    const retained = await retainObservationTelemetry(context, options.composition).catch(
+      () => false,
+    );
+    if (retained) {
+      await lifecycleDiagnostics.flush();
+      await disposeRoot(context);
+    } else {
+      await disposeRoot(context);
+      await lifecycleDiagnostics.flush();
+    }
     throw new AppBootError(diagnostics);
   }
 
@@ -213,13 +265,21 @@ export async function bootApp(options: BootOptions): Promise<RunningApp> {
         phase: 'unloading',
         result: 'started',
       });
-      await disposeRoot(context);
+      const retained = await retainObservationTelemetry(context, options.composition).catch(
+        () => false,
+      );
       lifecycleDiagnostics.event({
         type: 'app.lifecycle',
         phase: 'closed',
         result: 'succeeded',
       });
-      await lifecycleDiagnostics.flush();
+      if (retained) {
+        await lifecycleDiagnostics.flush();
+        await disposeRoot(context);
+      } else {
+        await disposeRoot(context);
+        await lifecycleDiagnostics.flush();
+      }
     },
   };
 }

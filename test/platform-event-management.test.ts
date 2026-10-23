@@ -18,7 +18,7 @@ import type {
   PlatformEventStatusView,
 } from '../domains/platform-events/types.js';
 import { FileEventInboxStore } from '../platform/events/file-event-inbox-store.js';
-import { safePlatformEventAttributes } from '../platform/telemetry/platform-event-mapping.js';
+import { platformEventObservationAttributes } from '../platform/telemetry/observation-platform-event-mapping.js';
 import { createRepoctopusBuiltinCatalog } from '../plugins/builtin-catalog.js';
 import { PlatformEvents } from '../services/platform-events.js';
 
@@ -238,7 +238,7 @@ it('maps only allow-listed platform event fields to OpenTelemetry attributes', (
     payload: { authorization: 'Bearer ghp_must_not_leak_1234567890' },
     headers: { cookie: 'session=must-not-leak' },
   } as PlatformEventTelemetryEvent & Record<string, unknown>;
-  const attributes = safePlatformEventAttributes(event);
+  const attributes = platformEventObservationAttributes(event);
   expect(attributes).toMatchObject({
     'repoctopus.platform_event.provider': 'github',
     'repoctopus.platform_event.status': 'dead_letter',

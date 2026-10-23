@@ -1,0 +1,205 @@
+{
+  "lifecycle": {
+    "schemaVersion": 1,
+    "envelopeId": "sha256:26e3b1bb6149f091c88e079894d56829b575cf69e2b9ead341ca32e69a0a7ae5",
+    "source": {
+      "domain": "lifecycle",
+      "eventId": "1111111111111111111111111111111111111111111111111111111111111111",
+      "eventType": "plugin.lifecycle",
+      "sequence": 12
+    },
+    "observedAt": "2026-10-23T10:00:00.000Z",
+    "attributes": {
+      "repoctopus.boot.id": "golden-boot",
+      "repoctopus.composition.digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "repoctopus.lifecycle.phase": "disposed",
+      "repoctopus.lifecycle.result": "succeeded",
+      "repoctopus.lifecycle.type": "plugin.lifecycle",
+      "repoctopus.plugin.id": "delivery-file"
+    },
+    "signals": [
+      {
+        "kind": "log",
+        "name": "repoctopus.plugin.lifecycle",
+        "severity": "info"
+      },
+      {
+        "kind": "metric",
+        "name": "repoctopus.lifecycle.events",
+        "value": 1,
+        "unit": "event",
+        "aggregation": "counter",
+        "attributes": {
+          "repoctopus.lifecycle.phase": "disposed",
+          "repoctopus.lifecycle.result": "succeeded",
+          "repoctopus.lifecycle.type": "plugin.lifecycle"
+        }
+      }
+    ],
+    "digest": "sha256:a464444b67f849e12655368088e6c8f6966641ef98850ec5b2353a810f7cee78"
+  },
+  "platformEvent": {
+    "schemaVersion": 1,
+    "envelopeId": "sha256:ff106b73a9b394040a5367169695a860b4db48cc15d317055de77751152287de",
+    "source": {
+      "domain": "platform_event",
+      "eventId": "b968b1816aa3c279352c09794242a39f78db0800b9828cc9e4813ec84b90791c",
+      "eventType": "platform_event.dead_lettered",
+      "sequence": 6
+    },
+    "observedAt": "2026-10-23T10:01:00.000Z",
+    "attributes": {
+      "repoctopus.platform_event.attempts": 3,
+      "repoctopus.platform_event.delivery.id": "golden-delivery",
+      "repoctopus.platform_event.diagnostic": "repository-not-mapped",
+      "repoctopus.platform_event.envelope.id": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "repoctopus.platform_event.event.type": "platform_event.dead_lettered",
+      "repoctopus.platform_event.provider": "github",
+      "repoctopus.platform_event.receipt.id": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "repoctopus.platform_event.source": "primary",
+      "repoctopus.platform_event.state.version": 6,
+      "repoctopus.platform_event.status": "dead_letter",
+      "repoctopus.platform_event.type": "pull_request"
+    },
+    "signals": [
+      {
+        "kind": "log",
+        "name": "repoctopus.platform_event.dead_lettered",
+        "severity": "warn"
+      },
+      {
+        "kind": "metric",
+        "name": "repoctopus.platform_event.events",
+        "value": 1,
+        "unit": "event",
+        "aggregation": "counter",
+        "attributes": {
+          "repoctopus.platform_event.event.type": "platform_event.dead_lettered",
+          "repoctopus.platform_event.provider": "github",
+          "repoctopus.platform_event.status": "dead_letter",
+          "repoctopus.platform_event.type": "pull_request"
+        }
+      }
+    ],
+    "digest": "sha256:c4bcd1bb8bb76dde1f85efb1ddcf9cc4cedf5247b390ebcd7b5dd0f4422f6a28"
+  },
+  "delivery": {
+    "schemaVersion": 1,
+    "envelopeId": "sha256:095eb34d6ffb8c1277d9f1953c18d91eb33f6d095ca8077233012edafc3098c1",
+    "source": {
+      "domain": "delivery",
+      "eventId": "golden-delivery-event",
+      "eventType": "delivery.action",
+      "sequence": 0
+    },
+    "observedAt": "2026-10-23T10:02:00.000Z",
+    "attributes": {
+      "repoctopus.delivery.change.id": "golden-change",
+      "repoctopus.delivery.event.id": "golden-delivery-event",
+      "repoctopus.delivery.event.type": "delivery.action",
+      "repoctopus.delivery.receiptDigest": "sha256:9999999999999999999999999999999999999999999999999999999999999999",
+      "repoctopus.delivery.repository.count": 0,
+      "repoctopus.delivery.result": "final-change-published",
+      "repoctopus.delivery.state": "development",
+      "repoctopus.delivery.state.version": 0
+    },
+    "signals": [
+      {
+        "kind": "log",
+        "name": "repoctopus.delivery.action",
+        "severity": "info"
+      },
+      {
+        "kind": "metric",
+        "name": "repoctopus.delivery.events",
+        "value": 1,
+        "unit": "event",
+        "aggregation": "counter",
+        "attributes": {
+          "repoctopus.delivery.event.type": "delivery.action",
+          "repoctopus.delivery.state": "development"
+        }
+      }
+    ],
+    "digest": "sha256:13c3cc30a2001d39c84dafd1aa7eb9815eee362871d62599eb1be2c86300fceb"
+  },
+  "postMerge": {
+    "schemaVersion": 1,
+    "envelopeId": "sha256:58486302ad0cee70aca923c0401c5a8178f0f2e9c06008cfec90d95d66692190",
+    "source": {
+      "domain": "workflow",
+      "eventId": "golden-post-merge-completed",
+      "eventType": "action.completed",
+      "sequence": 9
+    },
+    "observedAt": "2026-10-23T10:03:01.250Z",
+    "attributes": {
+      "repoctopus.action.duration_ms": 1250,
+      "repoctopus.action.receipt.id": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "repoctopus.action.ref": "post-merge.publish-change",
+      "repoctopus.action.retry_count": 0,
+      "repoctopus.action.type": "call_tool",
+      "repoctopus.change.id": "golden-change",
+      "repoctopus.composition.digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "repoctopus.event.actionId": "golden-post-merge-action",
+      "repoctopus.event.id": "golden-post-merge-completed",
+      "repoctopus.event.result": "succeeded",
+      "repoctopus.event.sequence": 9,
+      "repoctopus.post_merge.change.id": "golden-change",
+      "repoctopus.post_merge.merge_facts.digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "repoctopus.post_merge.receipt.id": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "repoctopus.post_merge.receipt.kind": "publication",
+      "repoctopus.project.id": "golden-project",
+      "repoctopus.repository.count": 0,
+      "repoctopus.run.id": "golden-post-merge-run",
+      "repoctopus.stage.name": "publish",
+      "repoctopus.state.version": 8,
+      "repoctopus.workflow.digest": "ee4f4e53b5c0529864861eaff5437b2061501bf97ed5b34ab24e817205a440e2",
+      "repoctopus.workflow.name": "test-flow",
+      "repoctopus.workflow.version": "1.0.0",
+      "repoctopus.workspace.id": "golden-project"
+    },
+    "signals": [
+      {
+        "kind": "trace",
+        "name": "repoctopus.step",
+        "traceId": "44444444444444444444444444444444",
+        "spanId": "f7cd63f723a63690",
+        "parentSpanId": "d670ec826b0ba91e",
+        "startedAt": "2026-10-23T10:03:00.000Z",
+        "endedAt": "2026-10-23T10:03:01.250Z",
+        "status": "ok"
+      },
+      {
+        "kind": "metric",
+        "name": "repoctopus.workflow.step.duration",
+        "value": 1250,
+        "unit": "ms",
+        "aggregation": "histogram",
+        "attributes": {
+          "repoctopus.event.result": "succeeded",
+          "repoctopus.workflow.name": "test-flow"
+        }
+      },
+      {
+        "kind": "log",
+        "name": "repoctopus.action.completed",
+        "severity": "info",
+        "traceId": "44444444444444444444444444444444",
+        "spanId": "d670ec826b0ba91e"
+      },
+      {
+        "kind": "metric",
+        "name": "repoctopus.workflow.events",
+        "value": 1,
+        "unit": "event",
+        "aggregation": "counter",
+        "attributes": {
+          "repoctopus.event.type": "action.completed",
+          "repoctopus.workflow.name": "test-flow"
+        }
+      }
+    ],
+    "digest": "sha256:aef9a296d46e7c39a9cbe17aa4b3a75e7792851b18a4b9214e83c30fd213373c"
+  }
+}

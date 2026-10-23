@@ -37,7 +37,7 @@ async function selfHostedProject() {
 describe('project composition assembly', () => {
   it('boots the production bootstrap and command project compositions', async () => {
     const { workspaceRoot } = await selfHostedProject();
-    const bootstrap = await bootBootstrapComposition(productRoot);
+    const bootstrap = await bootBootstrapComposition(productRoot, workspaceRoot);
     expect(bootstrap.composition.id).toBe('repoctopus-bootstrap');
     await bootstrap.close();
 

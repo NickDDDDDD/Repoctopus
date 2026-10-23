@@ -47,9 +47,10 @@ process.once('disconnect', () => {
 });
 
 const productRoot = path.resolve(process.argv[2] ?? process.cwd());
+const dataRoot = path.resolve(process.argv[3] ?? productRoot);
 
 try {
-  running = await bootDesktopComposition(productRoot);
+  running = await bootDesktopComposition(productRoot, dataRoot);
   await running.context.desktopTelemetryReceiver.ready();
   unsubscribeProjection = running.context.desktopApplication.subscribe((delta) => {
     send({ type: 'projection.delta', delta });

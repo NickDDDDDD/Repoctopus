@@ -1,10 +1,12 @@
 import { createServer } from 'node:http';
+import { readFile } from 'node:fs/promises';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { startRun } from '../domains/engine/loop.js';
 import type { TelemetryBatch } from '../domains/runtime/types.js';
 import type { EvidenceTelemetryBatch } from '../domains/evidence/telemetry.js';
+import type { ObservationEnvelope } from '../domains/telemetry/observation-envelope.js';
 import type { TrajectoryEvent } from '../domains/trajectory/types.js';
 import {
   ObservationOtlpJsonDestination,
@@ -224,6 +226,42 @@ describe('shared Observation OTLP JSON encoder', () => {
     expect(payload).toContain('receipt-original');
     expect(payload).toContain('reused');
     expect(payload).toContain('repoctopus.evidence.node.duration');
+  });
+
+  it('encodes lifecycle, platform event, Delivery and Post-merge envelopes identically for both destinations', async () => {
+    const remote = await receiver();
+    const desktop = await receiver();
+    const golden = JSON.parse(
+      await readFile(
+        new URL('./fixtures/telemetry/remaining-domain-envelopes.v1.json', import.meta.url),
+        'utf8',
+      ),
+    ) as Record<string, ObservationEnvelope>;
+    const envelopes = Object.values(golden);
+    const remoteConfig = observationOtlpJsonConfigFromEnvironment({
+      OTEL_EXPORTER_OTLP_ENDPOINT: remote.origin,
+    });
+    if (!remoteConfig) throw new Error('Remote config was not created');
+
+    await Promise.all([
+      new ObservationOtlpJsonDestination(remoteConfig).deliver(envelopes),
+      new ObservationOtlpJsonDestination({
+        origin: desktop.origin,
+        authorization: 'Bearer desktop-session',
+      }).deliver(envelopes),
+    ]);
+
+    const remoteByPath = byPath(remote.requests);
+    const desktopByPath = byPath(desktop.requests);
+    expect([...remoteByPath.keys()].sort()).toEqual(['/v1/logs', '/v1/metrics', '/v1/traces']);
+    for (const path of remoteByPath.keys()) {
+      expect(desktopByPath.get(path)?.body).toEqual(remoteByPath.get(path)?.body);
+    }
+    const payload = JSON.stringify(remote.requests.map((request) => request.body));
+    expect(payload).toContain('repoctopus.lifecycle.events');
+    expect(payload).toContain('repoctopus.platform_event.events');
+    expect(payload).toContain('repoctopus.delivery.events');
+    expect(payload).toContain('repoctopus.post_merge.receipt.kind');
   });
 
   it('honors complete signal-specific endpoints and rejects partial delivery configuration', () => {

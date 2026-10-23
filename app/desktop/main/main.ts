@@ -66,6 +66,7 @@ const controller = new DesktopBackendController(
       executable: process.execPath,
       entry: hostEntry,
       productRoot,
+      dataRoot: app.getPath('userData'),
       onReady: (ready) => {
         hostReady = ready;
         resolveFirstHostReady(ready);

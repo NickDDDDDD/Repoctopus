@@ -11,6 +11,7 @@ import type {
   DeliveryEvent,
   DeliveryEvidencePort,
   DeliveryGitPort,
+  DeliveryTelemetryPort,
   DeliveryV3StorePort,
   MergeRequestPort,
 } from './ports.js';
@@ -119,6 +120,7 @@ export class DeliveryServiceV3 {
     private readonly compositionDigest: string,
     private readonly clock: () => Date = () => new Date(),
     private readonly finalPublication?: Pick<FinalChangePublicationService, 'publish'>,
+    private readonly telemetry?: DeliveryTelemetryPort,
   ) {}
 
   async checkpoint(project: ProjectSnapshot, intent: DeliveryIntentV3, policy: DeliveryPolicy) {
@@ -168,7 +170,7 @@ export class DeliveryServiceV3 {
     }
     const base = previous ?? initialDeliveryStateV3(options.intent.changeId, timestamp);
     const next = requestDeliveryApprovalV3(base, snapshot, timestamp);
-    await this.store.commit({
+    await this.commit({
       state: next,
       previousStateVersion: previous?.stateVersion ?? null,
       event: deliveryEvent(next, 'delivery.prepared', timestamp, {
@@ -194,7 +196,7 @@ export class DeliveryServiceV3 {
     }
     const timestamp = this.clock().toISOString();
     const next = recordHumanDecisionV3(previous, response, actor, timestamp);
-    await this.store.commit({
+    await this.commit({
       state: next,
       previousStateVersion: previous.stateVersion,
       event: deliveryEvent(next, 'delivery.decided', timestamp, {
@@ -229,7 +231,7 @@ export class DeliveryServiceV3 {
     if (drift.length > 0) {
       const timestamp = this.clock().toISOString();
       const invalid = invalidateDeliveryApprovalV3(state, timestamp);
-      await this.store.commit({
+      await this.commit({
         state: invalid,
         previousStateVersion: state.stateVersion,
         event: deliveryEvent(invalid, 'delivery.invalidated', timestamp, { drift }),
@@ -287,7 +289,7 @@ export class DeliveryServiceV3 {
       status: 'in_review',
       updatedAt: timestamp,
     };
-    await this.store.commit({
+    await this.commit({
       state: complete,
       previousStateVersion: state.stateVersion,
       event: deliveryEvent(complete, 'delivery.action', timestamp, {
@@ -408,7 +410,7 @@ export class DeliveryServiceV3 {
       platformCapabilities,
       updatedAt: timestamp,
     };
-    await this.store.commit({
+    await this.commit({
       state: next,
       previousStateVersion: state.stateVersion,
       event: deliveryEvent(next, 'delivery.refreshed', timestamp, {
@@ -451,7 +453,7 @@ export class DeliveryServiceV3 {
       finalChangeMergeRequest: { status: 'creating', mergeRequest: null, errorCode: null },
       updatedAt: startedAt,
     };
-    await this.store.commit({
+    await this.commit({
       state: starting,
       previousStateVersion: state.stateVersion,
       event: deliveryEvent(starting, 'delivery.action', startedAt, {
@@ -490,7 +492,7 @@ export class DeliveryServiceV3 {
         },
         updatedAt: completedAt,
       };
-      await this.store.commit({
+      await this.commit({
         state: completed,
         previousStateVersion: starting.stateVersion,
         event: deliveryEvent(completed, 'delivery.action', completedAt, {
@@ -516,7 +518,7 @@ export class DeliveryServiceV3 {
         },
         updatedAt: failedAt,
       };
-      await this.store.commit({
+      await this.commit({
         state: failed,
         previousStateVersion: starting.stateVersion,
         event: deliveryEvent(failed, 'delivery.action', failedAt, {
@@ -565,7 +567,7 @@ export class DeliveryServiceV3 {
           : state.businessMergeRequests,
       updatedAt: timestamp,
     };
-    await this.store.commit({
+    await this.commit({
       state: next,
       previousStateVersion: state.stateVersion,
       event: deliveryEvent(next, 'delivery.action', timestamp, {
@@ -574,6 +576,15 @@ export class DeliveryServiceV3 {
       }),
     });
     return next;
+  }
+
+  private async commit(options: Parameters<DeliveryV3StorePort['commit']>[0]): Promise<void> {
+    await this.store.commit(options);
+    try {
+      await this.telemetry?.export(options.state, options.event);
+    } catch {
+      // Delivery facts are durable before telemetry; observability remains non-blocking.
+    }
   }
 
   private approvalDrift(

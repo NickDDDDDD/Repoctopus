@@ -21,6 +21,7 @@ interface Fixtures {
   desktopOwnership: SourceFixture[];
   workflowTelemetryBypass: SourceFixture[];
   evidenceTelemetryBypass: SourceFixture[];
+  remainingDomainTelemetryBypass: SourceFixture[];
 }
 
 interface Rule {
@@ -209,5 +210,30 @@ describe('architecture source boundaries', () => {
         'platform/telemetry/opentelemetry/rogue-evidence-exporter.ts: evidence-telemetry-single-mapping',
       ),
     ]);
+  });
+
+  it('keeps lifecycle, platform event and Delivery interpretation inside shared envelope mappings', () => {
+    expect(
+      evaluateSourceBoundaries(
+        fixtures.remainingDomainTelemetryBypass,
+        rules(
+          'lifecycle-telemetry-single-mapping',
+          'platform-event-telemetry-single-mapping',
+          'delivery-telemetry-single-mapping',
+        ),
+      ),
+    ).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining(
+          'platform/telemetry/opentelemetry/rogue-lifecycle-exporter.ts: lifecycle-telemetry-single-mapping',
+        ),
+        expect.stringContaining(
+          'platform/telemetry/opentelemetry/rogue-platform-event-exporter.ts: platform-event-telemetry-single-mapping',
+        ),
+        expect.stringContaining(
+          'platform/telemetry/opentelemetry/rogue-delivery-exporter.ts: delivery-telemetry-single-mapping',
+        ),
+      ]),
+    );
   });
 });

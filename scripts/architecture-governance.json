@@ -487,6 +487,27 @@
         "platform/telemetry/observation-evidence-mapping.ts"
       ],
       "message": "Evidence telemetry domain batches must be persisted by the outbox or interpreted by the shared ObservationEnvelope mapping"
+    },
+    {
+      "id": "lifecycle-telemetry-single-mapping",
+      "targets": ["platform/telemetry/**"],
+      "pattern": "\\bLifecycleTelemetryEvent\\b",
+      "allowed": ["platform/telemetry/observation-lifecycle-mapping.ts"],
+      "message": "App lifecycle facts must be interpreted only by the shared ObservationEnvelope mapping"
+    },
+    {
+      "id": "platform-event-telemetry-single-mapping",
+      "targets": ["platform/telemetry/**"],
+      "pattern": "\\bPlatformEventTelemetryEvent\\b",
+      "allowed": ["platform/telemetry/observation-platform-event-mapping.ts"],
+      "message": "Platform event facts must be interpreted only by the shared ObservationEnvelope mapping"
+    },
+    {
+      "id": "delivery-telemetry-single-mapping",
+      "targets": ["platform/telemetry/**"],
+      "pattern": "\\bDeliveryEvent\\b",
+      "allowed": ["platform/telemetry/observation-delivery-mapping.ts"],
+      "message": "Delivery and final Change publication facts must be interpreted only by the shared ObservationEnvelope mapping"
     }
   ],
   "protectedEvidenceFlow": {

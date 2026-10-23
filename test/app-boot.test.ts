@@ -12,7 +12,19 @@ import {
   bindOperationOwnership,
   type OperationOwnership,
 } from '../services/operation-ownership.js';
-import { InMemoryLifecycleTelemetryExporter } from '../platform/telemetry/opentelemetry/exporter.js';
+import type {
+  LifecycleTelemetryEvent,
+  LifecycleTelemetryPort,
+} from '../services/lifecycle-diagnostics.js';
+
+class InMemoryLifecycleTelemetryExporter implements LifecycleTelemetryPort {
+  readonly events: LifecycleTelemetryEvent[] = [];
+
+  export(events: readonly LifecycleTelemetryEvent[]): Promise<void> {
+    this.events.push(...events.map((event) => structuredClone(event)));
+    return Promise.resolve();
+  }
+}
 
 const digest = (character: string): `sha256:${string}` => `sha256:${character.repeat(64)}`;
 

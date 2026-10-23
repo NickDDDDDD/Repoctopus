@@ -54,7 +54,7 @@ export interface DeliveryEvidencePort {
 }
 
 export interface DeliveryTelemetryPort {
-  export(state: DeliveryState, event: DeliveryEvent): Promise<void>;
+  export(state: DeliveryState | DeliveryStateV3, event: DeliveryEvent): Promise<void>;
 }
 
 export interface DeliveryGitPort {
