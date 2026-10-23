@@ -54,6 +54,7 @@ import runnerApplication from './application/runner-application.js';
 import desktopApplication from './application/desktop-application.js';
 import { DesktopApplication } from '../services/desktop-application.js';
 import { SpecificationPlanning } from '../services/specification-planning.js';
+import { DesktopOtlpReceiverProvider } from './telemetry/desktop-otlp-receiver-provider.js';
 
 interface BuiltinDefinition {
   descriptor: Omit<PluginDescriptor, 'codeDigest'>;
@@ -103,6 +104,27 @@ const evidenceAdapterDefinitions: readonly EvidenceAdapterDefinition[] = [
 ];
 
 const definitions: readonly BuiltinDefinition[] = [
+  {
+    descriptor: {
+      id: 'desktop-otlp-receiver',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['desktop'],
+      authorities: ['desktop-telemetry-ingress'],
+      permissions: ['network'],
+      stateSchemas: {},
+    },
+    plugin: DesktopOtlpReceiverProvider,
+    sourceFiles: [
+      'services/desktop-telemetry-receiver.ts',
+      'platform/telemetry/desktop-otlp-decoder.ts',
+      'platform/telemetry/desktop-otlp-receiver.ts',
+      'plugins/telemetry/desktop-otlp-receiver-provider.ts',
+    ],
+  },
   {
     descriptor: {
       id: 'desktop-application-service',

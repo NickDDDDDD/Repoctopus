@@ -1,6 +1,8 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 
 import type { DesktopApplicationSnapshot } from '../../../services/desktop-application.js';
+import type { DesktopProjectionDelta } from '../../../services/desktop-application.js';
+import type { DesktopTelemetryEndpoint } from '../../../services/desktop-telemetry-receiver.js';
 import { isDesktopHostEvent } from '../shared/host-protocol.js';
 import { desktopNodeEnvironment } from './node-environment.js';
 
@@ -25,6 +27,7 @@ async function exitsWithin(exit: Promise<void>, milliseconds: number): Promise<b
 
 export interface DesktopHostReady {
   snapshot: DesktopApplicationSnapshot;
+  receiver: DesktopTelemetryEndpoint;
 }
 
 export interface DesktopHostProcessOptions {
@@ -33,6 +36,7 @@ export interface DesktopHostProcessOptions {
   productRoot: string;
   environment?: NodeJS.ProcessEnv;
   onReady?: (ready: DesktopHostReady) => void;
+  onProjectionDelta?: (delta: DesktopProjectionDelta) => void;
   onFailure?: (error: Error) => void;
 }
 
@@ -74,13 +78,23 @@ export class DesktopHostProcess {
         return;
       }
       if (message.type === 'ready') {
-        const ready = { snapshot: message.snapshot };
+        const ready = { snapshot: message.snapshot, receiver: message.receiver };
         try {
           this.options.onReady?.(ready);
           this.readyResolve(ready);
         } catch (error) {
           this.fail(
             error instanceof Error ? error : new Error('Desktop Host ready listener failed'),
+          );
+          child.kill('SIGTERM');
+        }
+      } else if (message.type === 'projection.delta') {
+        if (this.stopping) return;
+        try {
+          this.options.onProjectionDelta?.(message.delta);
+        } catch (error) {
+          this.fail(
+            error instanceof Error ? error : new Error('Desktop Host projection listener failed'),
           );
           child.kill('SIGTERM');
         }

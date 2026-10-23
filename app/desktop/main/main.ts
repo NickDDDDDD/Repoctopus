@@ -5,6 +5,7 @@ import { app, BrowserWindow, ipcMain, type IpcMainEvent, type IpcMainInvokeEvent
 
 import {
   DESKTOP_BACKEND_STATE_CHANNEL,
+  DESKTOP_PROJECTION_DELTA_CHANNEL,
   DESKTOP_RETRY_CHANNEL,
   type DesktopShellState,
 } from '../shared/renderer-contract.js';
@@ -27,6 +28,15 @@ const productRoot = resolveDesktopProductRoot({
 let mainWindow: BrowserWindow | undefined;
 let hostReady: DesktopHostReady | undefined;
 let quitting = false;
+let resolveFirstHostReady!: (ready: DesktopHostReady) => void;
+const firstHostReady = new Promise<DesktopHostReady>((resolve) => {
+  resolveFirstHostReady = resolve;
+});
+
+/** Main-process inspection hook used by the packaged-candidate smoke test. */
+export function waitForDesktopHostReady(): Promise<DesktopHostReady> {
+  return firstHostReady;
+}
 
 app.setName('Repoctopus');
 app.setAppUserModelId('com.repoctopus.desktop');
@@ -53,6 +63,23 @@ const controller = new DesktopBackendController(
       productRoot,
       onReady: (ready) => {
         hostReady = ready;
+        resolveFirstHostReady(ready);
+      },
+      onProjectionDelta: (delta) => {
+        if (
+          hostReady === undefined ||
+          delta.baseVersion !== hostReady.snapshot.projection.version
+        ) {
+          return;
+        }
+        hostReady = {
+          ...hostReady,
+          snapshot: { ...hostReady.snapshot, projection: delta.projection },
+        };
+        const window = mainWindow;
+        if (window !== undefined && !window.isDestroyed()) {
+          window.webContents.send(DESKTOP_PROJECTION_DELTA_CHANNEL, delta);
+        }
       },
       onFailure,
     }),

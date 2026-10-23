@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron';
 
 import {
   DESKTOP_BACKEND_STATE_CHANNEL,
+  DESKTOP_PROJECTION_DELTA_CHANNEL,
   DESKTOP_RETRY_CHANNEL,
   type DesktopShellState,
   type RepoctopusDesktopBridge,
@@ -19,6 +20,15 @@ const bridge: RepoctopusDesktopBridge = {
     ipcRenderer.on(DESKTOP_BACKEND_STATE_CHANNEL, handler);
     return () => {
       ipcRenderer.removeListener(DESKTOP_BACKEND_STATE_CHANNEL, handler);
+    };
+  },
+  onProjectionDelta: (listener) => {
+    const handler = (_event: Electron.IpcRendererEvent, delta: Parameters<typeof listener>[0]) => {
+      listener(delta);
+    };
+    ipcRenderer.on(DESKTOP_PROJECTION_DELTA_CHANNEL, handler);
+    return () => {
+      ipcRenderer.removeListener(DESKTOP_PROJECTION_DELTA_CHANNEL, handler);
     };
   },
 };

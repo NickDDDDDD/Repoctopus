@@ -34,7 +34,82 @@ describe('Desktop Host process', () => {
       expect(isDesktopHostEvent(ready)).toBe(true);
       expect(ready).toMatchObject({
         type: 'ready',
-        snapshot: { apiVersion: 'repoctopus.desktop/v1alpha1', phase: 'ready' },
+        snapshot: {
+          apiVersion: 'repoctopus.desktop/v1alpha1',
+          phase: 'ready',
+          projection: { version: 0, freshness: 'empty' },
+        },
+      });
+      if (!isDesktopHostEvent(ready) || ready.type !== 'ready') {
+        throw new Error('Desktop Host did not provide a ready endpoint');
+      }
+      expect(ready.receiver.origin).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/u);
+      expect(ready.receiver.authorization).toMatch(/^Bearer /u);
+
+      const response = await fetch(new URL('/v1/logs', ready.receiver.origin), {
+        method: 'POST',
+        headers: {
+          authorization: ready.receiver.authorization,
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          resourceLogs: [
+            {
+              scopeLogs: [
+                {
+                  logRecords: [
+                    {
+                      body: { stringValue: 'private body must not drive projection' },
+                      attributes: [
+                        { key: 'repoctopus.telemetry.schema.version', value: { intValue: '1' } },
+                        {
+                          key: 'repoctopus.envelope.id',
+                          value: { stringValue: `sha256:${'a'.repeat(64)}` },
+                        },
+                        {
+                          key: 'repoctopus.envelope.digest',
+                          value: { stringValue: `sha256:${'b'.repeat(64)}` },
+                        },
+                        { key: 'repoctopus.stream.id', value: { stringValue: 'run-desktop-e2e' } },
+                        { key: 'repoctopus.event.id', value: { stringValue: 'event-desktop-e2e' } },
+                        { key: 'repoctopus.event.type', value: { stringValue: 'run.progressed' } },
+                        { key: 'repoctopus.event.sequence', value: { intValue: '1' } },
+                        {
+                          key: 'repoctopus.observed_at',
+                          value: { stringValue: new Date().toISOString() },
+                        },
+                        { key: 'repoctopus.workspace.id', value: { stringValue: 'workspace-e2e' } },
+                        {
+                          key: 'repoctopus.change.id',
+                          value: { stringValue: 'desktop-dashboard-e2e' },
+                        },
+                        { key: 'repoctopus.change.status', value: { stringValue: 'active' } },
+                        { key: 'repoctopus.run.id', value: { stringValue: 'run-desktop-e2e' } },
+                        { key: 'repoctopus.run.status', value: { stringValue: 'active' } },
+                        { key: 'repoctopus.stage.name', value: { stringValue: 'implementation' } },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        }),
+      });
+      expect(response.status).toBe(200);
+      const delta = await nextMessage(child);
+      expect(isDesktopHostEvent(delta)).toBe(true);
+      expect(delta).toMatchObject({
+        type: 'projection.delta',
+        delta: {
+          baseVersion: 0,
+          version: 1,
+          projection: {
+            change: { id: 'desktop-dashboard-e2e', status: 'active' },
+            run: { id: 'run-desktop-e2e', status: 'active' },
+            stage: { name: 'implementation', sequence: 1 },
+          },
+        },
       });
 
       const exited = new Promise<void>((resolve) => {

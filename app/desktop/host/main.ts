@@ -15,11 +15,14 @@ function failureMessage(error: unknown): string {
 
 let running: RunningApp | undefined;
 let shutdown: Promise<void> | undefined;
+let unsubscribeProjection: (() => void) | undefined;
 
 function close(): Promise<void> {
   if (shutdown !== undefined) return shutdown;
   shutdown = Promise.resolve()
     .then(async () => {
+      unsubscribeProjection?.();
+      unsubscribeProjection = undefined;
       await running?.close();
       send({ type: 'shutdown-complete' });
       process.disconnect?.();
@@ -42,7 +45,15 @@ const productRoot = path.resolve(process.argv[2] ?? process.cwd());
 
 try {
   running = await bootDesktopComposition(productRoot);
-  send({ type: 'ready', snapshot: running.context.desktopApplication.snapshot() });
+  await running.context.desktopTelemetryReceiver.ready();
+  unsubscribeProjection = running.context.desktopApplication.subscribe((delta) => {
+    send({ type: 'projection.delta', delta });
+  });
+  send({
+    type: 'ready',
+    snapshot: running.context.desktopApplication.snapshot(),
+    receiver: running.context.desktopTelemetryReceiver.endpoint(),
+  });
 } catch (error) {
   send({ type: 'fatal', message: failureMessage(error) });
   process.exitCode = 1;
