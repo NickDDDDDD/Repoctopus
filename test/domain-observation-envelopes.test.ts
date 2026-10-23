@@ -146,4 +146,17 @@ describe('remaining domain ObservationEnvelope mappings', () => {
   it('never carries a private body into a shared envelope', () => {
     expect(JSON.stringify(envelopes())).not.toContain('private specification body');
   });
+
+  it('keeps Metric dimensions free of stable entity identities across every domain', () => {
+    const highCardinalityIdentity =
+      /(?:^|\.)(?:boot|workspace|change|run|execution|task|verification|blocker|next_action|attempt|bundle|receipt|delivery|envelope|event)\.id$/u;
+    for (const envelope of Object.values(envelopes())) {
+      for (const signal of envelope.signals) {
+        if (signal.kind !== 'metric') continue;
+        expect(Object.keys(signal.attributes ?? {})).not.toEqual(
+          expect.arrayContaining([expect.stringMatching(highCardinalityIdentity)]),
+        );
+      }
+    }
+  });
 });

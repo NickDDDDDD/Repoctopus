@@ -34,6 +34,7 @@ const ALLOWED_DATA = new Set([
 const SENSITIVE_VALUE =
   /(?:bearer\s+[a-z0-9._~+/-]+=*|gh[opusr]_[a-z0-9]{20,}|api[-_]?key|password|secret|token|-----BEGIN [A-Z ]+PRIVATE KEY-----)/iu;
 const ABSOLUTE_PATH = /^(?:[a-z]:[\\/]|\\\\|\/)/iu;
+const SAFE_ID = /^[a-zA-Z0-9][a-zA-Z0-9._:@/-]{0,255}$/u;
 
 function scalar(value: unknown): ObservationAttributeValue | undefined {
   if (typeof value === 'number') return Number.isFinite(value) ? value : undefined;
@@ -49,6 +50,76 @@ function scalar(value: unknown): ObservationAttributeValue | undefined {
     return value;
   }
   return undefined;
+}
+
+function safeId(value: unknown): string | undefined {
+  return typeof value === 'string' && SAFE_ID.test(value) && !SENSITIVE_VALUE.test(value)
+    ? value
+    : undefined;
+}
+
+function addTrustedStateAttributes(
+  attributes: Record<string, ObservationAttributeValue>,
+  batch: EvidenceTelemetryBatch,
+  event: EvidenceTelemetryEvent,
+): void {
+  const runId = safeId(batch.runId);
+  const attemptId = safeId(batch.attemptId);
+  if (attemptId) {
+    attributes['repoctopus.verification.id'] = attemptId;
+    attributes['repoctopus.execution.id'] = attemptId;
+    attributes['repoctopus.execution.kind'] = 'evidence-attempt';
+    if (runId) attributes['repoctopus.execution.parent.id'] = runId;
+  }
+  if (event.type === 'evidence.attempt.started') {
+    attributes['repoctopus.verification.status'] = 'running';
+    return;
+  }
+  if (event.type === 'evidence.attempt.completed') {
+    const status = scalar(event.data.status);
+    if (status !== undefined) attributes['repoctopus.verification.status'] = status;
+    return;
+  }
+  if (event.type === 'evidence.gate.evaluated') {
+    const gateStatus = event.data.gateStatus;
+    const outcome = event.data.outcome;
+    if (gateStatus === 'satisfied' || gateStatus === 'blocked') {
+      attributes['repoctopus.verification.status'] = gateStatus;
+    }
+    if (
+      outcome === 'passed' ||
+      outcome === 'failed' ||
+      outcome === 'incomplete' ||
+      outcome === 'passed_with_warnings'
+    ) {
+      attributes['repoctopus.verification.outcome'] = outcome;
+    }
+    if (gateStatus === 'blocked') {
+      attributes['repoctopus.blocker.category'] = 'evidence-gate';
+      const bundleId = safeId(event.data.bundleId);
+      if (bundleId) attributes['repoctopus.blocker.request.id'] = bundleId;
+    }
+    return;
+  }
+  if (event.type !== 'evidence.node.completed') return;
+  const receiptId = safeId(event.data.receiptId);
+  const nodeId = safeId(event.data.nodeId);
+  const adapter = safeId(event.data.adapter);
+  if (receiptId) {
+    attributes['repoctopus.execution.id'] = receiptId;
+    if (attemptId) attributes['repoctopus.execution.parent.id'] = attemptId;
+    attributes['repoctopus.execution.kind'] = 'evidence-node';
+    attributes['repoctopus.task.id'] = receiptId;
+  }
+  if (nodeId) attributes['repoctopus.task.ref'] = nodeId;
+  const status = event.data.status;
+  if (status === 'passed') attributes['repoctopus.task.status'] = 'completed';
+  if (status === 'failed' || status === 'incomplete')
+    attributes['repoctopus.task.status'] = 'failed';
+  if (adapter) {
+    attributes['repoctopus.execution.subject.kind'] = 'evidence-adapter';
+    attributes['repoctopus.execution.subject.id'] = adapter;
+  }
 }
 
 /** Stable allowlisted attributes derived only from a durable Evidence event. */
@@ -70,6 +141,7 @@ export function evidenceObservationAttributes(
     const safe = scalar(value);
     if (safe !== undefined) attributes[`repoctopus.evidence.${key}`] = safe;
   }
+  addTrustedStateAttributes(attributes, batch, event);
   return attributes;
 }
 

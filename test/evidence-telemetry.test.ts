@@ -208,6 +208,8 @@ describe('Evidence telemetry outbox', () => {
       'repoctopus.evidence.attempt.id': 'attempt',
       'repoctopus.evidence.nodeId': 'build',
       'repoctopus.evidence.status': 'passed',
+      'repoctopus.verification.id': 'attempt',
+      'repoctopus.execution.kind': 'evidence-attempt',
     });
     expect(JSON.stringify(attributes)).not.toMatch(
       /private|secret command output|bearer|password|raw-png|visual request|visual response/iu,
@@ -264,6 +266,13 @@ describe('Evidence telemetry outbox', () => {
     expect(first[0]?.attributes).toMatchObject({
       'repoctopus.evidence.freshness': 'reused',
       'repoctopus.evidence.sourceReceiptId': 'receipt-source',
+      'repoctopus.execution.id': 'receipt-current',
+      'repoctopus.execution.parent.id': 'attempt-evidence-stability',
+      'repoctopus.execution.subject.kind': 'evidence-adapter',
+      'repoctopus.execution.subject.id': 'command/local',
+      'repoctopus.task.id': 'receipt-current',
+      'repoctopus.task.ref': 'build',
+      'repoctopus.task.status': 'completed',
     });
     expect(first[1]?.attributes).toMatchObject({
       'repoctopus.evidence.status': 'superseded',
@@ -271,5 +280,53 @@ describe('Evidence telemetry outbox', () => {
     expect(first[1]?.signals).toEqual(
       expect.arrayContaining([expect.objectContaining({ kind: 'log', severity: 'warn' })]),
     );
+  });
+
+  it('exports persisted verification blockers but no inferred next action or change identity', () => {
+    const batch: EvidenceTelemetryBatch = {
+      schemaVersion: 1,
+      runId: 'run-blocked-verification',
+      attemptId: 'attempt-blocked-verification',
+      profileId: 'verify',
+      compositionDigest: compositionFixture().compositionDigest,
+      events: [
+        {
+          schemaVersion: 1,
+          sequence: 4,
+          eventId: 'event-blocked-verification',
+          type: 'evidence.gate.evaluated',
+          timestamp: '2026-10-23T12:00:00.000Z',
+          runId: 'run-blocked-verification',
+          attemptId: 'attempt-blocked-verification',
+          data: {
+            bundleId: 'bundle-blocked-verification',
+            gateStatus: 'blocked',
+            outcome: 'incomplete',
+            changeId: 'fabricated-change',
+            nextAction: 'fabricated-next-action',
+          },
+        },
+      ],
+    };
+    const envelope = mapEvidenceObservationEnvelope(batch, batch.events[0]!);
+    expect(envelope.observedAt).toBe('2026-10-23T12:00:00.000Z');
+    expect(envelope.attributes).toMatchObject({
+      'repoctopus.verification.id': 'attempt-blocked-verification',
+      'repoctopus.verification.status': 'blocked',
+      'repoctopus.verification.outcome': 'incomplete',
+      'repoctopus.blocker.category': 'evidence-gate',
+      'repoctopus.blocker.request.id': 'bundle-blocked-verification',
+    });
+    expect(envelope.attributes).not.toHaveProperty('repoctopus.change.id');
+    expect(envelope.attributes).not.toHaveProperty('repoctopus.next_action.type');
+    expect(JSON.stringify(envelope.attributes)).not.toMatch(
+      /fabricated-change|fabricated-next-action/u,
+    );
+    for (const signal of envelope.signals) {
+      if (signal.kind !== 'metric') continue;
+      expect(JSON.stringify(signal.attributes ?? {})).not.toMatch(
+        /run-blocked|attempt-blocked|bundle-blocked/u,
+      );
+    }
   });
 });

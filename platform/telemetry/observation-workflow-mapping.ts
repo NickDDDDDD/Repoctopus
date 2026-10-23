@@ -22,7 +22,7 @@ const SENSITIVE_VALUE =
 const ABSOLUTE_PATH = /^(?:[a-z]:[\\/]|\\\\|\/)/iu;
 const SHA256_DIGEST = /^sha256:[a-f0-9]{64}$/u;
 const ACTION_RECEIPT_ID = /^[a-f0-9]{64}$/u;
-const SAFE_DOMAIN_ID = /^[a-zA-Z0-9][a-zA-Z0-9._-]{0,127}$/u;
+const SAFE_DOMAIN_ID = /^[a-zA-Z0-9][a-zA-Z0-9._:@-]{0,255}$/u;
 
 const POST_MERGE_RECEIPT_KINDS = new Map([
   ['post-merge.checkout-exact-commits', 'checkout-manifest'],
@@ -84,6 +84,52 @@ function eventStage(batch: TelemetryBatch, event: TrajectoryEvent): string | und
   return typeof stepId === 'string' ? stepId : undefined;
 }
 
+function safeId(value: unknown): string | undefined {
+  return typeof value === 'string' && SAFE_DOMAIN_ID.test(value) && !SENSITIVE_VALUE.test(value)
+    ? value
+    : undefined;
+}
+
+function addExecutionAndTaskCorrelation(
+  attributes: Record<string, ObservationAttributeValue>,
+  batch: TelemetryBatch,
+  event: TrajectoryEvent,
+): void {
+  if (event.type === 'run.started') {
+    attributes['repoctopus.execution.id'] = batch.run.runId;
+    attributes['repoctopus.execution.kind'] = 'workflow-run';
+    return;
+  }
+
+  const action = eventAction(batch, event);
+  const taskId = safeId(action?.id ?? event.data.actionId);
+  if (!taskId) return;
+  attributes['repoctopus.execution.id'] = taskId;
+  attributes['repoctopus.execution.parent.id'] = batch.run.runId;
+  attributes['repoctopus.execution.kind'] = 'workflow-action';
+  attributes['repoctopus.task.id'] = taskId;
+
+  const taskType = scalar(action?.type);
+  const taskRef = scalar(action?.ref);
+  if (taskType !== undefined) attributes['repoctopus.task.type'] = taskType;
+  if (taskRef !== undefined) attributes['repoctopus.task.ref'] = taskRef;
+  if (event.type === 'action.proposed') {
+    attributes['repoctopus.task.status'] = 'pending';
+    attributes['repoctopus.next_action.id'] = taskId;
+    if (taskType !== undefined) attributes['repoctopus.next_action.type'] = taskType;
+    if (taskRef !== undefined) attributes['repoctopus.next_action.ref'] = taskRef;
+    const stage = eventStage(batch, event);
+    if (stage) attributes['repoctopus.next_action.stage'] = stage;
+    if (action?.type === 'ask_user') {
+      attributes['repoctopus.blocker.category'] = 'human-decision';
+      attributes['repoctopus.blocker.request.id'] = taskId;
+    }
+  } else if (event.type === 'action.completed') {
+    if (event.data.result === 'succeeded') attributes['repoctopus.task.status'] = 'completed';
+    if (event.data.result === 'failed') attributes['repoctopus.task.status'] = 'failed';
+  }
+}
+
 function addEvidenceCorrelation(
   attributes: Record<string, ObservationAttributeValue>,
   event: TrajectoryEvent,
@@ -92,6 +138,7 @@ function addEvidenceCorrelation(
   const attemptId = event.data.evidenceAttemptId;
   if (typeof attemptId === 'string' && SAFE_DOMAIN_ID.test(attemptId)) {
     attributes['repoctopus.evidence.attempt.id'] = attemptId;
+    attributes['repoctopus.verification.id'] = attemptId;
   }
   const gate = event.data.evidenceGate;
   if (!gate || typeof gate !== 'object') return;
@@ -101,9 +148,17 @@ function addEvidenceCorrelation(
   }
   if (record.status === 'satisfied' || record.status === 'blocked') {
     attributes['repoctopus.evidence.gate.status'] = record.status;
+    attributes['repoctopus.verification.status'] = record.status;
   }
   if (record.outcome === 'passed' || record.outcome === 'failed') {
     attributes['repoctopus.evidence.outcome'] = record.outcome;
+    attributes['repoctopus.verification.outcome'] = record.outcome;
+  }
+  if (record.status === 'blocked') {
+    attributes['repoctopus.blocker.category'] = 'evidence-gate';
+    if (typeof record.bundleId === 'string' && SAFE_DOMAIN_ID.test(record.bundleId)) {
+      attributes['repoctopus.blocker.request.id'] = record.bundleId;
+    }
   }
 }
 
@@ -164,6 +219,7 @@ export function workflowObservationAttributes(
   const actionRef = scalar(action?.ref);
   if (actionType !== undefined) attributes['repoctopus.action.type'] = actionType;
   if (actionRef !== undefined) attributes['repoctopus.action.ref'] = actionRef;
+  addExecutionAndTaskCorrelation(attributes, batch, event);
   for (const [key, value] of Object.entries(event.data)) {
     if (!SAFE_DATA_KEYS.has(key)) continue;
     const safe = scalar(value);

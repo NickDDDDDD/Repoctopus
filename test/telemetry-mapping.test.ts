@@ -254,4 +254,127 @@ describe('telemetry mapping', () => {
       /ghp_|Bearer private|C:\/private|secret bundle|specification body/u,
     );
   });
+
+  it('maps persisted Run, task, parent execution, blocker and authoritative next action facts', () => {
+    const workflow = workflowFixture();
+    const project = projectFixture({ projectId: 'workspace-trusted' });
+    const run = startRun({
+      workflow,
+      runId: 'run-trusted',
+      changeId: 'change-trusted',
+      projectSnapshotDigest: project.digest,
+      composition: compositionFixture(),
+      timestamp: '2026-10-23T11:00:00.000Z',
+      trigger: {
+        schemaVersion: 1,
+        kind: 'untrusted-extension',
+        identityDigest: `sha256:${'a'.repeat(64)}`,
+        facts: {
+          parentRunId: 'fabricated-parent',
+          agentId: 'fabricated-agent',
+          nextAction: 'fabricated-next-action',
+        },
+      },
+    });
+    const proposed: TrajectoryEvent = {
+      schemaVersion: 1,
+      sequence: 2,
+      eventId: 'event-trusted-proposed',
+      timestamp: '2026-10-23T11:00:01.000Z',
+      type: 'action.proposed',
+      runId: run.runId,
+      stateVersion: 1,
+      compositionDigest: run.composition.compositionDigest,
+      data: {
+        action: {
+          id: 'task-human-review',
+          stepId: 'inspect',
+          type: 'ask_user',
+          ref: 'approve-plan',
+        },
+        executionSubject: 'fabricated-agent',
+      },
+    };
+    const batch: TelemetryBatch = {
+      run,
+      workflow,
+      projectSnapshot: project,
+      events: [proposed],
+      trajectory: [proposed],
+    };
+
+    const envelope = mapWorkflowObservationEnvelope(batch, proposed);
+    expect(envelope.observedAt).toBe(proposed.timestamp);
+    expect(envelope.attributes).toMatchObject({
+      'repoctopus.workspace.id': 'workspace-trusted',
+      'repoctopus.change.id': 'change-trusted',
+      'repoctopus.run.id': 'run-trusted',
+      'repoctopus.stage.name': 'inspect',
+      'repoctopus.execution.id': 'task-human-review',
+      'repoctopus.execution.parent.id': 'run-trusted',
+      'repoctopus.execution.kind': 'workflow-action',
+      'repoctopus.task.id': 'task-human-review',
+      'repoctopus.task.status': 'pending',
+      'repoctopus.next_action.id': 'task-human-review',
+      'repoctopus.next_action.type': 'ask_user',
+      'repoctopus.blocker.category': 'human-decision',
+      'repoctopus.blocker.request.id': 'task-human-review',
+    });
+    expect(envelope.attributes).not.toHaveProperty('repoctopus.execution.subject.id');
+    expect(JSON.stringify(envelope.attributes)).not.toMatch(
+      /fabricated-parent|fabricated-agent|fabricated-next-action/u,
+    );
+  });
+
+  it('keeps every workflow Metric free of entity identities', () => {
+    const workflow = workflowFixture();
+    const project = projectFixture();
+    const run = startRun({
+      workflow,
+      runId: 'run-metric-cardinality',
+      changeId: 'change-metric-cardinality',
+      projectSnapshotDigest: project.digest,
+      composition: compositionFixture(),
+      timestamp: '2026-10-23T11:10:00.000Z',
+    });
+    const proposed: TrajectoryEvent = {
+      schemaVersion: 1,
+      sequence: 1,
+      eventId: 'event-metric-proposed',
+      timestamp: run.createdAt,
+      type: 'action.proposed',
+      runId: run.runId,
+      stateVersion: 1,
+      compositionDigest: run.composition.compositionDigest,
+      data: {
+        action: { id: 'task-metric', stepId: 'inspect', type: 'checkpoint', ref: 'done' },
+      },
+    };
+    const completed: TrajectoryEvent = {
+      ...proposed,
+      sequence: 2,
+      eventId: 'event-metric-completed',
+      type: 'action.completed',
+      timestamp: '2026-10-23T11:10:00.100Z',
+      data: { actionId: 'task-metric', result: 'succeeded' },
+    };
+    const batch: TelemetryBatch = {
+      run,
+      workflow,
+      projectSnapshot: project,
+      events: [proposed, completed],
+      trajectory: [proposed, completed],
+    };
+    const forbidden =
+      /(?:^|\.)(?:workspace|change|run|execution|task|verification|blocker|next_action|evidence|envelope)(?:\.|$)/u;
+    for (const event of batch.events) {
+      const envelope = mapWorkflowObservationEnvelope(batch, event);
+      for (const signal of envelope.signals) {
+        if (signal.kind !== 'metric') continue;
+        expect(Object.keys(signal.attributes ?? {})).not.toEqual(
+          expect.arrayContaining([expect.stringMatching(forbidden)]),
+        );
+      }
+    }
+  });
 });

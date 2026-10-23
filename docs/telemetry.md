@@ -25,6 +25,8 @@ Attempt、Receipt、Artifact、Bundle 和 Gate 先持久化。之后 Runtime 把
 
 ## 关联模型
 
+Repoctopus 只从当前 envelope 对应的持久事件或同版本状态建立关联。消费者必须把缺失属性解释为“尚未上报”，不能根据文本、最新 Run 状态或自定义 trigger facts 补造值。
+
 - Workflow Run 是根关联 ID。
 - Evidence Attempt、节点 Receipt、Artifact 引用和 Gate Outcome 使用稳定 ID 相互关联。
 - Receipt 复用通过 `sourceReceiptId` 保留来源身份。
@@ -32,6 +34,26 @@ Attempt、Receipt、Artifact、Bundle 和 Gate 先持久化。之后 Runtime 把
 - Workflow、Evidence 与 Delivery 事件都携带当前 composition digest，便于把团队审计结果关联到实际生效的 Provider、Contributor 和配置身份。
 - App 生命周期记录插件激活、重载与操作排空结果；排空超时只上报服务名、剩余数量和恢复分类，不上报 Journal 或错误正文。
 - App 生命周期批次最多导出两次；仍失败时记录 `LIFECYCLE_TELEMETRY_EXPORT_FAILED` 和 `dropped_after_retry`，不保留 OTLP 错误正文，也不改变领域结果。
+
+### 可信状态属性
+
+非 Metric 的 Span 和 Log 使用以下公共属性重建桌面状态。表中的来源是唯一可信来源；来源不存在时，映射省略对应属性。
+
+| 状态       | 属性                                                                                     | 持久事实来源                                                                   |
+| ---------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Workspace  | `repoctopus.workspace.id`                                                                | Run 固定的 Project Snapshot `projectId`                                        |
+| change     | `repoctopus.change.id`                                                                   | Run 的固定 `changeId` 或 Delivery State `changeId`                             |
+| Run        | `repoctopus.run.id`                                                                      | Run State `runId`                                                              |
+| 父子执行   | `repoctopus.execution.id`、`repoctopus.execution.parent.id`、`repoctopus.execution.kind` | Run→Action、Run→Evidence Attempt、Attempt→Evidence Node 的持久关系             |
+| 阶段       | `repoctopus.stage.name`                                                                  | `run.started` 的工作流入口、已持久化 Action `stepId` 或 Delivery Approval 状态 |
+| 执行主体   | `repoctopus.execution.subject.kind`、`.id`、`.provider`                                  | Evidence Receipt 的 Adapter 或 Delivery Approval 的可信 Actor                  |
+| 任务       | `repoctopus.task.id`、`.type`、`.ref`、`.status`                                         | 已持久化 Action、Evidence Receipt 或 Human Decision Request                    |
+| 验证       | `repoctopus.verification.id`、`.status`、`.outcome`                                      | Evidence Attempt 与 Gate 事件                                                  |
+| 阻塞       | `repoctopus.blocker.category`、`.request.id`                                             | `ask_user` Action、阻塞的 Evidence Gate 或 Human Decision Request              |
+| 下一步动作 | `repoctopus.next_action.id`、`.type`、`.ref`、`.stage`                                   | `action.proposed` 或仍处于等待状态的 Human Decision Request                    |
+| 观测时间   | `repoctopus.observed_at` 和 OTLP 时间字段                                                | 领域事件 `timestamp`；不使用接收时间或最新状态更新时间                         |
+
+当前 Run State 没有持久化 Agent 身份。因此 Workflow Action 不导出推断的 Agent；只有 Evidence Adapter 和可信人工决策 Actor 能作为执行主体。任意 `trigger.facts.agentId`、`parentRunId` 或事件附带的自由文本 `nextAction` 都不会进入公共属性。
 
 ### Post-merge 关联
 

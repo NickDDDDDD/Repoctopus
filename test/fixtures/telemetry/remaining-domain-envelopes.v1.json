@@ -94,6 +94,7 @@
     },
     "observedAt": "2026-10-23T10:02:00.000Z",
     "attributes": {
+      "repoctopus.change.id": "golden-change",
       "repoctopus.delivery.change.id": "golden-change",
       "repoctopus.delivery.event.id": "golden-delivery-event",
       "repoctopus.delivery.event.type": "delivery.action",
@@ -121,7 +122,7 @@
         }
       }
     ],
-    "digest": "sha256:13c3cc30a2001d39c84dafd1aa7eb9815eee362871d62599eb1be2c86300fceb"
+    "digest": "sha256:12d18cecf773ddeb8ee075afebc12a1c42c81bcd6a9589750c5cb25b7096b4a2"
   },
   "postMerge": {
     "schemaVersion": 1,
@@ -145,6 +146,9 @@
       "repoctopus.event.id": "golden-post-merge-completed",
       "repoctopus.event.result": "succeeded",
       "repoctopus.event.sequence": 9,
+      "repoctopus.execution.id": "golden-post-merge-action",
+      "repoctopus.execution.kind": "workflow-action",
+      "repoctopus.execution.parent.id": "golden-post-merge-run",
       "repoctopus.post_merge.change.id": "golden-change",
       "repoctopus.post_merge.merge_facts.digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "repoctopus.post_merge.receipt.id": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
@@ -154,6 +158,10 @@
       "repoctopus.run.id": "golden-post-merge-run",
       "repoctopus.stage.name": "publish",
       "repoctopus.state.version": 8,
+      "repoctopus.task.id": "golden-post-merge-action",
+      "repoctopus.task.ref": "post-merge.publish-change",
+      "repoctopus.task.status": "completed",
+      "repoctopus.task.type": "call_tool",
       "repoctopus.workflow.digest": "ee4f4e53b5c0529864861eaff5437b2061501bf97ed5b34ab24e817205a440e2",
       "repoctopus.workflow.name": "test-flow",
       "repoctopus.workflow.version": "1.0.0",
@@ -200,6 +208,6 @@
         }
       }
     ],
-    "digest": "sha256:aef9a296d46e7c39a9cbe17aa4b3a75e7792851b18a4b9214e83c30fd213373c"
+    "digest": "sha256:cae57fd6bf894fb4e10c6cc3a97342ee3b9adc3e460fabc694e3cd24e67ea2aa"
   }
 }
