@@ -14,7 +14,7 @@
 - [x] 2.4 实现最小 change projection reducer 与稳定事件去重，用乱序、重复和缺失 fixture 验证 active change、Run、阶段、新鲜度和 gap 状态确定性收敛。
 - [x] 2.5 由 Electron Main 启动 Desktop Host，把 Host 的 receiver/projection snapshot 与 delta 通过私有 Node IPC、Main 和类型化 Preload 桥接到最小 Renderer；运行桌面集成测试证明一个真实 OTLP Run 事件无需轮询即可在窗口显示，Host 崩溃时 Shell 保持错误/重试能力。
 - [x] 2.6 在 Runtime 的开发 Run preflight 接入最小 Desktop Launcher，在 Windows 开发 Run 持久化前启动或激活 Dashboard 并唤醒本地目的地重放；运行进程外纵切测试验证 Dashboard 启动失败只产生 warning，远端 mock 仍收到同一 envelope。
-- [ ] 2.7 把 Runtime 侧 Desktop Launcher 与本地目的地作为内置 Service/Contributor 加入 builtin catalog 和 project composition，把 Receiver、Projection 与 Desktop Application Plugin 加入 Desktop Host composition；Electron Main 只使用显式 Shell owner 管理原生资源。运行零桌面、正常桌面、依赖缺失、Host 重启和插件卸载测试，证明没有旁路构造或第二套产品容器。
+- [x] 2.7 把 Runtime 侧 Desktop Launcher 与本地目的地作为内置 Service/Contributor 加入 builtin catalog 和 project composition，把 Receiver、Projection 与 Desktop Application Plugin 加入 Desktop Host composition；Electron Main 只使用显式 Shell owner 管理原生资源。运行零桌面、正常桌面、依赖缺失、Host 重启和插件卸载测试，证明没有旁路构造或第二套产品容器。
 
 ## 3. 收敛完整遥测映射与多目的地恢复
 

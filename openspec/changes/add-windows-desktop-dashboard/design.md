@@ -167,6 +167,10 @@ Launcher 在 Run 持久化前先激活 Receiver 并重放已有积压，Run 的�
 
 进程外测试证明首次启动与第二次激活收敛到同一个 Shell PID 和 Receiver、本地 pending envelope 被确认且临时凭据文件被删除；另一个真实 CLI/远端 mock 纵切证明桌面不可用只增加 warning，Run 仍成功，远端 payload 含持久化 envelope 的同一 ID 与 digest。任务 3.1 仍负责把所有 Workflow Run Trace、Log、Metric 完整迁移到共享 encoder 与多目的地 worker；本切片没有把现有远端 SDK exporter 或全部事件状态映射宣称为迁移完成。
 
+任务 2.7 把这条纵切的进程边界收敛为可执行 composition 生命周期。Runtime 的 Launcher 与本地目的地只由 builtin catalog 注册的 Service Provider 构造，project composition 只持有稳定应用端口；Desktop Host composition 显式包含 Application Service、OTLP Receiver Provider 和依赖两者的 Application Plugin。Application Fiber 获取 Receiver 的接纳租约，卸载时先归还租约，使既有端口对新遥测返回可重试的 unavailable；重新加载 Fiber 可以恢复接纳。Receiver Provider 自己的 Effect 仍唯一拥有并最终关闭回环监听器，因此应用可用性和原生端口所有权不会混为一体。
+
+架构门禁额外拒绝 Electron Main/Preload 调用 App Boot、composition compiler 或 builtin catalog，并拒绝在显式 Service Provider/Shell owner 之外直接构造 Windows Launcher、OTLP Receiver 或 Host controller。零桌面能力测试证明 Runtime 返回固定 unavailable 诊断而不启动进程；正常 Desktop Host、缺失依赖 fail-closed、Host 失败后串行替换、Application Fiber 卸载/重载和 Provider 关闭端口均有自动化证明。完整验证通过 105 个测试文件、445 项测试并保留 1 项既有条件跳过，桌面进程外 E2E 2/2 通过；这完成 composition ownership，不提前宣称任务 5.1 的 discovery 安全或 5.2 的全部并发单实例恢复已完成。
+
 Electron Main 使用单实例锁，后续启动只把上下文交给主实例；Main 再把已校验的启动上下文发给当前 Desktop Host。新 change 加入列表但不强制抢走用户正在查看的 change；首次启动或当前没有选择时自动显示启动来源。
 
 关闭偏好存放在 Electron 用户级配置目录，不进入 Workspace：
