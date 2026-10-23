@@ -1,0 +1,585 @@
+{
+  "schemaVersion": 1,
+  "fixtures": [
+    {
+      "id": "generic-run-waiting",
+      "kind": "generic-run",
+      "authority": "runtime-run-store",
+      "identity": {
+        "runId": "legacy-generic-run",
+        "workflow": "default@1.0.0"
+      },
+      "inputs": ["workflowDigest", "compositionDigest", "projectSnapshotDigest", "currentStep"],
+      "nextAction": "inspect the pending generic checkpoint before choosing a lifecycle phase",
+      "externalSideEffects": [],
+      "state": {
+        "schemaVersion": 1,
+        "runId": "legacy-generic-run",
+        "workflowName": "default",
+        "workflowVersion": "1.0.0",
+        "workflowDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "workflowSource": "workflows/default.yaml",
+        "composition": {
+          "id": "legacy-project",
+          "kind": "project",
+          "compositionDigest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "plugins": []
+        },
+        "projectSnapshotDigest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "traceId": "legacy-generic-trace",
+        "currentStep": "verify",
+        "iteration": 2,
+        "pendingActionId": null,
+        "reconciliationRequired": false,
+        "stateVersion": 3,
+        "status": "waiting",
+        "retries": {},
+        "acceptedEvidenceBundleIds": [],
+        "createdAt": "2026-10-20T00:00:00.000Z",
+        "updatedAt": "2026-10-20T00:03:00.000Z"
+      }
+    },
+    {
+      "id": "planning-approval-approved",
+      "kind": "planning-approval",
+      "authority": "specification-planning-approval-store",
+      "identity": {
+        "changeId": "legacy-planning",
+        "snapshotDigest": "sha256:c35b96c7c31ee1ff3a97b361ea62d28679c9e79811c77e475ff183ee2a465600"
+      },
+      "inputs": [
+        "provider",
+        "four planning artifact digests",
+        "change branch",
+        "compositionDigest",
+        "projectConfigDigest"
+      ],
+      "nextAction": "recompute the semantic planning manifest and request a trusted migration decision",
+      "externalSideEffects": ["published change branch"],
+      "state": {
+        "schemaVersion": 1,
+        "changeId": "legacy-planning",
+        "stateVersion": 1,
+        "status": "approved",
+        "snapshot": {
+          "schemaVersion": 1,
+          "changeId": "legacy-planning",
+          "provider": {
+            "id": "openspec",
+            "version": "1.14.3",
+            "protocolVersion": "repoctopus.specification/v1alpha1"
+          },
+          "changeDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "validationDigest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "artifacts": [
+            {
+              "id": "design",
+              "kind": "design",
+              "digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+            },
+            {
+              "id": "proposal",
+              "kind": "proposal",
+              "digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+            },
+            {
+              "id": "specs",
+              "kind": "delta-specs",
+              "digest": "sha256:3333333333333333333333333333333333333333333333333333333333333333"
+            },
+            {
+              "id": "tasks",
+              "kind": "tasks",
+              "digest": "sha256:4444444444444444444444444444444444444444444444444444444444444444"
+            }
+          ],
+          "affectedCapabilities": ["change-lifecycle"],
+          "changeBranch": {
+            "repositoryId": "workspace",
+            "remoteIdentity": "github.com/team/workspace",
+            "sourceBranch": "spec/legacy-planning",
+            "targetBranch": "main",
+            "remoteOid": "1111111111111111111111111111111111111111"
+          },
+          "compositionDigest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "projectConfigDigest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          "digest": "sha256:c35b96c7c31ee1ff3a97b361ea62d28679c9e79811c77e475ff183ee2a465600"
+        },
+        "decisionRequest": {
+          "apiVersion": "repoctopus/v1alpha1",
+          "kind": "HumanDecisionRequest",
+          "decisionType": "specification-approval",
+          "requestId": "legacy-planning-approval",
+          "changeId": "legacy-planning",
+          "snapshotDigest": "sha256:c35b96c7c31ee1ff3a97b361ea62d28679c9e79811c77e475ff183ee2a465600",
+          "provider": {
+            "id": "openspec",
+            "version": "1.14.3",
+            "protocolVersion": "repoctopus.specification/v1alpha1"
+          },
+          "artifacts": [
+            {
+              "id": "design",
+              "kind": "design",
+              "digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+            },
+            {
+              "id": "proposal",
+              "kind": "proposal",
+              "digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+            },
+            {
+              "id": "specs",
+              "kind": "delta-specs",
+              "digest": "sha256:3333333333333333333333333333333333333333333333333333333333333333"
+            },
+            {
+              "id": "tasks",
+              "kind": "tasks",
+              "digest": "sha256:4444444444444444444444444444444444444444444444444444444444444444"
+            }
+          ],
+          "affectedCapabilities": ["change-lifecycle"],
+          "changeBranch": {
+            "repositoryId": "workspace",
+            "remoteIdentity": "github.com/team/workspace",
+            "sourceBranch": "spec/legacy-planning",
+            "targetBranch": "main",
+            "remoteOid": "1111111111111111111111111111111111111111"
+          },
+          "options": ["approve", "request_changes", "reject"]
+        },
+        "decision": {
+          "schemaVersion": 1,
+          "requestId": "legacy-planning-approval",
+          "changeId": "legacy-planning",
+          "snapshotDigest": "sha256:c35b96c7c31ee1ff3a97b361ea62d28679c9e79811c77e475ff183ee2a465600",
+          "decision": "approve",
+          "actorId": "legacy-user",
+          "source": "cli",
+          "decidedAt": "2026-10-22T00:01:00.000Z"
+        },
+        "updatedAt": "2026-10-22T00:01:00.000Z"
+      }
+    },
+    {
+      "id": "delivery-v2-in-review",
+      "kind": "delivery-v2",
+      "authority": "delivery-v2-store",
+      "identity": {
+        "changeId": "legacy-delivery-v2",
+        "snapshotDigest": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+      },
+      "inputs": ["delivery snapshot", "legacy approval", "publication action results"],
+      "nextAction": "inspect the authoritative Change MR and require a migration decision",
+      "externalSideEffects": ["business branch pushed", "business MR created", "Change MR open"],
+      "state": {
+        "schemaVersion": 2,
+        "changeId": "legacy-delivery-v2",
+        "stateVersion": 5,
+        "status": "in_review",
+        "snapshot": {
+          "schemaVersion": 2,
+          "changeId": "legacy-delivery-v2",
+          "compositionDigest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+          "digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+          "reportDigest": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+          "policyDigest": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+          "intentDigest": "sha256:5555555555555555555555555555555555555555555555555555555555555555",
+          "evidenceBundleIds": ["legacy-delivery-v2-evidence"],
+          "repositories": [
+            {
+              "repositoryId": "app",
+              "repositoryName": "app",
+              "remoteIdentity": "github.com/team/app",
+              "sourceBranch": "feat/legacy-delivery-v2",
+              "targetBranch": "main",
+              "head": "6666666666666666666666666666666666666666",
+              "tree": "7777777777777777777777777777777777777777",
+              "remoteSourceOid": "6666666666666666666666666666666666666666",
+              "remoteTargetOid": "8888888888888888888888888888888888888888",
+              "clean": true
+            }
+          ],
+          "mergeRequests": {
+            "change": {
+              "role": "change",
+              "repositoryId": "workspace",
+              "remoteIdentity": "github.com/team/workspace",
+              "sourceBranch": "spec/legacy-delivery-v2",
+              "targetBranch": "main",
+              "mergeRequest": {
+                "provider": "github",
+                "repositoryId": "workspace",
+                "number": 17,
+                "url": "https://github.com/team/workspace/pull/17"
+              }
+            },
+            "business": [
+              {
+                "role": "business",
+                "repositoryId": "app",
+                "remoteIdentity": "github.com/team/app",
+                "sourceBranch": "feat/legacy-delivery-v2",
+                "targetBranch": "main",
+                "mergeRequest": {
+                  "provider": "github",
+                  "repositoryId": "app",
+                  "number": 23,
+                  "url": "https://github.com/team/app/pull/23"
+                }
+              }
+            ]
+          },
+          "plan": [
+            {
+              "actionId": "push-app",
+              "type": "git.push",
+              "repositoryId": "app",
+              "sourceBranch": "feat/legacy-delivery-v2",
+              "targetBranch": "main",
+              "expectedHead": "6666666666666666666666666666666666666666",
+              "expectedRemoteSourceOid": "6666666666666666666666666666666666666666",
+              "expectedRemoteTargetOid": "8888888888888888888888888888888888888888"
+            },
+            {
+              "actionId": "mr-app",
+              "type": "mr.create_or_update",
+              "repositoryId": "app",
+              "sourceBranch": "feat/legacy-delivery-v2",
+              "targetBranch": "main",
+              "expectedHead": "6666666666666666666666666666666666666666",
+              "expectedRemoteSourceOid": "6666666666666666666666666666666666666666",
+              "expectedRemoteTargetOid": "8888888888888888888888888888888888888888"
+            }
+          ],
+          "createdAt": "2026-10-22T00:00:00.000Z"
+        },
+        "decisionRequest": null,
+        "approval": {
+          "schemaVersion": 1,
+          "requestId": "legacy-delivery-v2-approval",
+          "changeId": "legacy-delivery-v2",
+          "snapshotDigest": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+          "decision": "approve",
+          "actor": {
+            "subject": "legacy-user",
+            "provider": "fixture",
+            "sessionId": "legacy-session"
+          },
+          "decidedAt": "2026-10-22T00:01:00.000Z"
+        },
+        "actionResults": [
+          { "actionId": "push-app", "status": "succeeded", "attempts": 1 },
+          {
+            "actionId": "mr-app",
+            "status": "succeeded",
+            "attempts": 1,
+            "mergeRequest": {
+              "provider": "github",
+              "repositoryId": "app",
+              "number": 23,
+              "url": "https://github.com/team/app/pull/23"
+            }
+          }
+        ],
+        "mergeEvidence": [],
+        "mergeRequests": {
+          "change": {
+            "role": "change",
+            "repositoryId": "workspace",
+            "remoteIdentity": "github.com/team/workspace",
+            "sourceBranch": "spec/legacy-delivery-v2",
+            "targetBranch": "main",
+            "mergeRequest": {
+              "provider": "github",
+              "repositoryId": "workspace",
+              "number": 17,
+              "url": "https://github.com/team/workspace/pull/17"
+            }
+          },
+          "business": [
+            {
+              "role": "business",
+              "repositoryId": "app",
+              "remoteIdentity": "github.com/team/app",
+              "sourceBranch": "feat/legacy-delivery-v2",
+              "targetBranch": "main",
+              "mergeRequest": {
+                "provider": "github",
+                "repositoryId": "app",
+                "number": 23,
+                "url": "https://github.com/team/app/pull/23"
+              }
+            }
+          ]
+        },
+        "platformCapabilities": [],
+        "updatedAt": "2026-10-22T00:02:00.000Z"
+      }
+    },
+    {
+      "id": "delivery-v3-in-review",
+      "kind": "delivery-v3",
+      "authority": "delivery-v3-store",
+      "identity": {
+        "changeId": "legacy-delivery-v3",
+        "snapshotDigest": "sha256:9999999999999999999999999999999999999999999999999999999999999999"
+      },
+      "inputs": ["delivery snapshot", "approval", "business MR collection"],
+      "nextAction": "freeze and reconcile the complete Business MR collection",
+      "externalSideEffects": ["business branch pushed", "business MR created"],
+      "state": {
+        "schemaVersion": 3,
+        "changeId": "legacy-delivery-v3",
+        "stateVersion": 4,
+        "status": "in_review",
+        "snapshot": {
+          "schemaVersion": 3,
+          "changeId": "legacy-delivery-v3",
+          "compositionDigest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+          "digest": "sha256:9999999999999999999999999999999999999999999999999999999999999999",
+          "reportDigest": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+          "policyDigest": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+          "intentDigest": "sha256:5555555555555555555555555555555555555555555555555555555555555555",
+          "evidenceBundleIds": ["legacy-delivery-v3-evidence"],
+          "changeBranch": {
+            "repositoryId": "workspace",
+            "remoteIdentity": "github.com/team/workspace",
+            "sourceBranch": "spec/legacy-delivery-v3",
+            "targetBranch": "main",
+            "remoteOid": "1111111111111111111111111111111111111111"
+          },
+          "businessDeliveries": [
+            {
+              "deliveryId": "primary",
+              "repositoryId": "app",
+              "repositoryName": "app",
+              "remoteIdentity": "github.com/team/app",
+              "sourceBranch": "feat/legacy-delivery-v3",
+              "targetBranch": "main",
+              "head": "2222222222222222222222222222222222222222",
+              "tree": "3333333333333333333333333333333333333333",
+              "remoteSourceOid": "2222222222222222222222222222222222222222",
+              "remoteTargetOid": "4444444444444444444444444444444444444444",
+              "clean": true
+            }
+          ],
+          "businessSplitReason": null,
+          "plan": [
+            {
+              "actionId": "push-primary",
+              "type": "git.push",
+              "deliveryId": "primary",
+              "repositoryId": "app",
+              "sourceBranch": "feat/legacy-delivery-v3",
+              "targetBranch": "main",
+              "expectedHead": "2222222222222222222222222222222222222222",
+              "expectedRemoteSourceOid": "2222222222222222222222222222222222222222",
+              "expectedRemoteTargetOid": "4444444444444444444444444444444444444444"
+            },
+            {
+              "actionId": "mr-primary",
+              "type": "mr.create_or_update",
+              "deliveryId": "primary",
+              "repositoryId": "app",
+              "sourceBranch": "feat/legacy-delivery-v3",
+              "targetBranch": "main",
+              "expectedHead": "2222222222222222222222222222222222222222",
+              "expectedRemoteSourceOid": "2222222222222222222222222222222222222222",
+              "expectedRemoteTargetOid": "4444444444444444444444444444444444444444"
+            }
+          ],
+          "createdAt": "2026-10-22T01:00:00.000Z"
+        },
+        "decisionRequest": null,
+        "approval": {
+          "schemaVersion": 1,
+          "requestId": "legacy-delivery-v3-approval",
+          "changeId": "legacy-delivery-v3",
+          "snapshotDigest": "sha256:9999999999999999999999999999999999999999999999999999999999999999",
+          "decision": "approve",
+          "actor": {
+            "subject": "legacy-user",
+            "provider": "fixture",
+            "sessionId": "legacy-session"
+          },
+          "decidedAt": "2026-10-22T01:01:00.000Z"
+        },
+        "actionResults": [
+          { "actionId": "push-primary", "status": "succeeded", "attempts": 1 },
+          {
+            "actionId": "mr-primary",
+            "status": "succeeded",
+            "attempts": 1,
+            "mergeRequest": {
+              "provider": "github",
+              "repositoryId": "app",
+              "number": 31,
+              "url": "https://github.com/team/app/pull/31"
+            }
+          }
+        ],
+        "businessMergeRequests": [
+          {
+            "deliveryId": "primary",
+            "repositoryId": "app",
+            "remoteIdentity": "github.com/team/app",
+            "sourceBranch": "feat/legacy-delivery-v3",
+            "targetBranch": "main",
+            "mergeRequest": {
+              "provider": "github",
+              "repositoryId": "app",
+              "number": 31,
+              "url": "https://github.com/team/app/pull/31"
+            }
+          }
+        ],
+        "mergeEvidence": [],
+        "closure": null,
+        "finalChangeMergeRequest": null,
+        "platformCapabilities": [],
+        "updatedAt": "2026-10-22T01:02:00.000Z"
+      }
+    },
+    {
+      "id": "post-merge-active",
+      "kind": "post-merge-run",
+      "authority": "runtime-run-store",
+      "identity": {
+        "runId": "legacy-post-merge-active",
+        "changeId": "legacy-post-merge"
+      },
+      "inputs": ["merge facts digest", "exact merge commits", "post-merge workflow digest"],
+      "nextAction": "map the exact merge facts to Archive without creating a second Run",
+      "externalSideEffects": ["Business MR merged"],
+      "state": {
+        "schemaVersion": 1,
+        "runId": "legacy-post-merge-active",
+        "workflowName": "post-merge",
+        "workflowVersion": "1.0.0",
+        "workflowDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "workflowSource": "workflows/post-merge.yaml",
+        "composition": {
+          "id": "legacy-runner",
+          "kind": "runner",
+          "compositionDigest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "plugins": []
+        },
+        "projectSnapshotDigest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "trigger": {
+          "schemaVersion": 1,
+          "kind": "post-merge",
+          "identityDigest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          "facts": {
+            "changeId": "legacy-post-merge",
+            "mergeEvidence": [
+              {
+                "repositoryId": "app",
+                "mergeRequest": {
+                  "provider": "github",
+                  "repositoryId": "app",
+                  "number": 31,
+                  "url": "https://github.com/team/app/pull/31"
+                },
+                "mergeCommit": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+                "mergedAt": "2026-10-22T02:00:00.000Z"
+              }
+            ],
+            "repositories": [
+              {
+                "repositoryId": "app",
+                "remoteIdentity": "github.com/team/app",
+                "targetBranch": "main",
+                "mergeCommit": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+              }
+            ]
+          }
+        },
+        "traceId": "legacy-post-merge-active-trace",
+        "currentStep": "verify",
+        "iteration": 2,
+        "pendingActionId": null,
+        "reconciliationRequired": false,
+        "stateVersion": 2,
+        "status": "waiting",
+        "retries": {},
+        "acceptedEvidenceBundleIds": [],
+        "createdAt": "2026-10-22T02:00:01.000Z",
+        "updatedAt": "2026-10-22T02:00:03.000Z"
+      }
+    },
+    {
+      "id": "post-merge-completed",
+      "kind": "post-merge-run",
+      "authority": "runtime-run-store",
+      "identity": {
+        "runId": "legacy-post-merge-completed",
+        "changeId": "legacy-post-merge-completed"
+      },
+      "inputs": ["merge facts digest", "accepted evidence", "closure publication receipt"],
+      "nextAction": "retain as completed history and do not replay side effects",
+      "externalSideEffects": [
+        "Business MR merged",
+        "specification archived",
+        "closure commit pushed",
+        "final Change MR created"
+      ],
+      "state": {
+        "schemaVersion": 1,
+        "runId": "legacy-post-merge-completed",
+        "workflowName": "post-merge",
+        "workflowVersion": "1.0.0",
+        "workflowDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "workflowSource": "workflows/post-merge.yaml",
+        "composition": {
+          "id": "legacy-runner",
+          "kind": "runner",
+          "compositionDigest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "plugins": []
+        },
+        "projectSnapshotDigest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "trigger": {
+          "schemaVersion": 1,
+          "kind": "post-merge",
+          "identityDigest": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+          "facts": {
+            "changeId": "legacy-post-merge-completed",
+            "mergeEvidence": [
+              {
+                "repositoryId": "app",
+                "mergeRequest": {
+                  "provider": "github",
+                  "repositoryId": "app",
+                  "number": 32,
+                  "url": "https://github.com/team/app/pull/32"
+                },
+                "mergeCommit": "9999999999999999999999999999999999999999",
+                "mergedAt": "2026-10-22T03:00:00.000Z"
+              }
+            ],
+            "repositories": [
+              {
+                "repositoryId": "app",
+                "remoteIdentity": "github.com/team/app",
+                "targetBranch": "main",
+                "mergeCommit": "9999999999999999999999999999999999999999"
+              }
+            ]
+          }
+        },
+        "traceId": "legacy-post-merge-completed-trace",
+        "currentStep": null,
+        "iteration": 6,
+        "pendingActionId": null,
+        "reconciliationRequired": false,
+        "stateVersion": 6,
+        "status": "completed",
+        "retries": {},
+        "acceptedEvidenceBundleIds": ["legacy-post-merge-evidence"],
+        "createdAt": "2026-10-22T03:00:01.000Z",
+        "updatedAt": "2026-10-22T03:10:00.000Z"
+      }
+    }
+  ]
+}

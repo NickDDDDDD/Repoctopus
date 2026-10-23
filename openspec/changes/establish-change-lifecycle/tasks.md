@@ -3,7 +3,7 @@
 ## 0. 固定基线与迁移边界
 
 - [x] 0.1 同步并审计 Comet 0.5.0 `aeb1a6598034e28ce46b8422d4dbd8785e607bd7` 与 DSH `dsh-v0.2.1-rc.3` `1f81c047fc48fa190a683e469daa699857e9afe8`，记录采用、拒绝和延后项；执行 `npm run check:upstream`、`npm run check:provenance`、`npm run verify` 与生产依赖审计并推送固定基线。
-- [ ] 0.2 为 generic Run、planning approval、Delivery v2/v3 与 Post-merge 状态建立只读 fixture 清单，记录每种状态的 authority、identity、输入、下一动作和外部副作用；用 golden test 证明迁移代码未启用前不会改写 fixture。
+- [x] 0.2 为 generic Run、planning approval、Delivery v2/v3 与 Post-merge 状态建立只读 fixture 清单，记录每种状态的 authority、identity、输入、下一动作和外部副作用；用 golden test 证明迁移代码未启用前不会改写 fixture。
 - [ ] 0.3 增加架构规则，列出允许拥有 lifecycle transition 的唯一模块，并拒绝新增 phase owner、直接 Run State 写入、独立 Post-merge Run 创建和 caller-selected lifecycle Skill；运行正反 fixture 证明每条规则可定位失败。
 - [ ] 0.4 固定 Matt 上游 `49dd158d1076134a641b33efb035946536778336` 的 `codebase-design`、`pr` 及 `tdd` 传递关系；把 `to-spec`/`to-tickets` 原文保存在 Provider roots 之外的非执行 provenance reference，并记录 source digest、adopted rule IDs、拒绝的 tracker 行为及其他方法的条件采用/延后决定；运行来源、许可证、内容摘要、物理隔离和依赖完整性检查。
 
