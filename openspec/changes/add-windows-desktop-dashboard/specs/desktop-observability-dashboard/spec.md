@@ -46,12 +46,17 @@ Repoctopus MUST 在受支持的 Windows 环境开始开发 Run 时启动或激�
 
 ### Requirement: 桌面状态只由接收到的观测数据投影
 
-桌面应用 MUST 从接收到的 OTLP 观测记录投影 Workspace、change、Run、阶段、执行主体、任务进度、验证、阻塞和下一步动作；不得通过扫描 OpenSpec、Git、领域 Store 或查询 SigNoZ 补造状态，缺失信息必须显示为未知或尚未上报。
+桌面应用 MUST 从接收到的 OTLP 观测记录投影 Workspace、change、Run、阶段、执行主体、任务进度、验证、Artifact 安全元数据、阻塞和下一步动作；不得通过扫描 OpenSpec、Git、领域 Store 或查询 SigNoZ 补造状态，缺失信息必须显示为未知或尚未上报。
 
 #### Scenario: 当前 change 具有完整状态事件
 
 - **WHEN** 接收器收到可关联的 change、Run、阶段、任务、验证和阻塞观测记录
 - **THEN** 桌面应用按稳定身份显示当前状态、最近更新时间和下一步动作
+
+#### Scenario: 当前验证包含 Artifact 和人工阻塞
+
+- **WHEN** 接收器收到可关联的 Evidence Attempt、Bundle、Gate、Artifact 与 Human Decision 元数据
+- **THEN** 桌面应用显示验证状态、Gate 结果、Artifact 的摘要、类型、MIME、大小、脱敏标记以及已上报的 blocker 和下一步动作，但不显示正文、绝对路径、Prompt、回复或命令输出
 
 #### Scenario: Agent 或下一步动作未上报
 

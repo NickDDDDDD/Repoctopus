@@ -75,6 +75,11 @@ Telemetry Adapter MUST 在事实真实可用时为非 Metric 记录提供 Worksp
 - **WHEN** Runtime 没有持久化权威下一步动作
 - **THEN** Telemetry 不导出推断的下一步属性，桌面或远端消费者可以明确表示缺失
 
+#### Scenario: Workflow 与 Evidence 使用独立序列
+
+- **WHEN** 同一 Run 的 Workflow 事件和 Evidence Attempt 都从各自的序列 1 开始上报
+- **THEN** Telemetry 为两者提供不同的稳定 stream identity，同时保留相同的 Workspace、change 和 Run 关联，消费者不得把独立序列误判为冲突
+
 ### Requirement: 本地实时消费不改变远端 OTLP 契约
 
 本地桌面目的地 MUST 消费与远端后端相同的标准 OTLP 信号和 Repoctopus 属性契约；领域层不得为桌面 UI 创建旁路状态协议，远端后端也不得成为桌面实时更新的查询依赖。

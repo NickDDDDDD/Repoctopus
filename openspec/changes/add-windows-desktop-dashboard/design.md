@@ -140,6 +140,12 @@ Projection 不读取仓库、OpenSpec、Git 或领域 Store，不从文本猜测
 
 Run 执行视图只在当前 Run 内按稳定 `task.id` 收敛任务，使用每个任务最后一条显式 status、stage、type、ref 和 execution subject 事实。只有明确处于 `pending` 或 `blocked` 的任务进入活动任务列表；任务总数已知但任一任务 status 缺失时，进度显示“尚未上报”，不得把未知状态算作未完成或把缺失任务集合解释为零。执行主体同样只来自成对出现的 kind/id 允许列表属性，provider 可缺省；Renderer 只格式化 Projection，不补读 OpenSpec、Git 或领域 Store。
 
+Evidence 遥测只有在 Evidence Attempt 绑定已持久化 Workflow Run 时，才携带该 Run 的 Project Snapshot `projectId` 和 `changeId`。Evidence Attempt 使用由 Run 与 Attempt 身份摘要生成的独立 stream；它不复用 Workflow stream，因为两个领域各自从序列 1 开始，合并后会产生虚假的 sequence 冲突。独立 stream 仍保留相同 Workspace、change 和 Run 关联，使本地 Dashboard 与远端 OTLP 后端可以按同一属性契约关联事实。
+
+验证视图按最新 `verification.id` 投影当前 Evidence Attempt、Bundle、Gate 与 outcome，并只展示 Artifact 的 SHA-256、类型、MIME、大小和脱敏标记。Human Decision 与下一步动作只保留尚未进入终态的任务；Evidence Gate blocker 只在当前 Gate 明确为 `blocked` 时保留。没有任何验证属性时，界面显示“尚未上报”；已经收到验证事实但 blocker 或下一步集合为空时，界面只声明“当前没有已上报”的对应事实，避免把未知解释为权威空集合。
+
+OTLP Decoder 是 Renderer 前的隐私边界。它只复制固定属性允许列表，忽略 Log body、Span event、未知属性、Artifact 正文、绝对路径、Prompt、回复和命令输出。即使本机进程绕过规范 Envelope Mapper 直接向 Receiver 夹带这些字段，它们也不能进入 `ObservationRecord`、Projection 或 ViewModel。
+
 Gap 以当前 Run 的稳定 stream sequence 从 1 开始压缩为缺失区间；迟到事件可以缩小或消除 gap。Freshness 由调用方提供的规范 `now` 与最后观测时间、批准阈值纯计算，Reducer 不读取系统时钟。首版内存状态用于验证收敛契约，任务 2.5 把 OTLP 解码后的 Record 接入 Receiver 与 IPC，任务 5.5 再负责 journal、snapshot、压缩和重启恢复。
 
 Desktop Host 把已接受记录写入追加式本地 journal，并周期生成原子 snapshot。启动时加载 snapshot 后重放 journal，重复 `event.id` 收敛为 no-op。该 journal 只保存经过遥测允许列表的数据，不复制 Artifact 正文。使用现有文件持久化模式可以避免 Windows 原生 SQLite addon 的构建和 ABI 风险；如果性能证据表明不足，数据库替换走后续 change。
