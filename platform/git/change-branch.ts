@@ -62,6 +62,17 @@ export async function inspectPublishedChangeBranch(input: {
   return published;
 }
 
+export async function inspectCurrentPublishedChangeBranch(input: {
+  repositoryPath: string;
+  repositoryId: string;
+  remote: string;
+  targetBranch: string;
+}): Promise<ChangeBranchReference> {
+  const sourceBranch = await git(input.repositoryPath, ['branch', '--show-current']);
+  if (!sourceBranch) throw new Error('Specification workspace must be on a named Change branch');
+  return inspectPublishedChangeBranch({ ...input, sourceBranch });
+}
+
 export async function inspectRemoteChangeBranch(input: {
   repositoryPath: string;
   repositoryId: string;

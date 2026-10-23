@@ -28,7 +28,7 @@ const terminalStatuses = new Set<RunStatus>(['completed', 'failed', 'migration_r
 export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
   schemaVersion: 1,
   id: 'repoctopus-change',
-  version: '1.0.0',
+  version: '1.1.0',
   phases: [
     {
       phase: 'open',
@@ -77,10 +77,26 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
     {
       id: 'design.approved',
       kind: 'advance',
-      from: { phase: 'design', statuses: ['running', 'waiting'] },
+      from: { phase: 'design', statuses: ['running', 'waiting', 'blocked'] },
       to: { phase: 'build', status: 'running' },
       trigger: 'planning-valid-and-approved',
       requiredValidatorProfile: 'design.approval-valid',
+    },
+    {
+      id: 'design.await-approval',
+      kind: 'self',
+      from: { phase: 'design', statuses: ['running', 'waiting', 'blocked'] },
+      to: { phase: 'design', status: 'waiting' },
+      trigger: 'planning-valid-awaiting-trusted-decision',
+      requiredValidatorProfile: 'design.artifacts-valid',
+    },
+    {
+      id: 'design.invalid',
+      kind: 'self',
+      from: { phase: 'design', statuses: ['running', 'waiting', 'blocked'] },
+      to: { phase: 'design', status: 'blocked' },
+      trigger: 'planning-incomplete-or-invalid',
+      requiredValidatorProfile: 'design.artifacts-valid',
     },
     {
       id: 'build.validated',

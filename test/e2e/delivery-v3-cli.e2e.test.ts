@@ -23,6 +23,7 @@ import { bootProjectComposition } from '../../app/boot/bootstrap.js';
 import {
   createGitRepository,
   removeTemporaryDirectory,
+  specificationSchemaFixture,
   temporaryDirectory,
 } from '../helpers/fixtures.js';
 import { runCli } from './cli.js';
@@ -88,6 +89,7 @@ async function approvePlanning(
   const snapshot = createPlanningSnapshot({
     change,
     validation,
+    schema: specificationSchemaFixture(provider),
     changeBranch,
     compositionDigest,
     projectConfigDigest,

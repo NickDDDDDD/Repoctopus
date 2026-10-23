@@ -218,6 +218,23 @@ export interface ChangeLifecycleTransitionFact {
   waitId: string | null;
 }
 
+export type ChangeLifecycleObservation =
+  | { kind: 'open-intake-ready' }
+  | {
+      kind: 'design-gate';
+      result: 'blocked' | 'waiting' | 'approved';
+      reason: string;
+      evidenceIds: readonly string[];
+      inputDigest: `sha256:${string}`;
+      requestId?: string;
+      proposalDigest?: `sha256:${string}`;
+    };
+
+export interface ChangeLifecycleReduction {
+  snapshot: ChangeLifecycleSnapshot;
+  fact: ChangeLifecycleTransitionFact | null;
+}
+
 const phaseSet = new Set<string>(CHANGE_PHASES);
 const statusSet = new Set<string>(CHANGE_RUN_STATUSES);
 const blockerStatuses = new Set<RunStatus>(['blocked', 'failed', 'migration_required']);
@@ -315,6 +332,84 @@ export function applyChangeLifecycleTransition(options: {
       waitId: snapshot.waitCondition?.waitId ?? null,
     },
   };
+}
+
+export function evolveChangeLifecycle(options: {
+  definition: ChangeLifecycleDefinition;
+  current: ChangeLifecycleSnapshot;
+  observation: ChangeLifecycleObservation;
+}): ChangeLifecycleReduction {
+  const { current, observation } = options;
+  if (observation.kind === 'open-intake-ready') {
+    if (current.phase !== 'open' || current.status !== 'running') {
+      throw new Error(`Open intake is not valid from ${current.phase}/${current.status}`);
+    }
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'open.intake-ready',
+      next: { currentWork: null, waitCondition: null, blocker: null },
+    });
+  }
+  if (current.phase !== 'design') {
+    throw new Error(`Design gate is not valid from ${current.phase}/${current.status}`);
+  }
+  if (observation.result === 'approved') {
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'design.approved',
+      next: { currentWork: null, waitCondition: null, blocker: null },
+    });
+  }
+  if (observation.result === 'waiting') {
+    if (!observation.requestId?.trim() || !observation.proposalDigest) {
+      throw new Error('Waiting Design gate requires a Human Decision request identity');
+    }
+    const waitCondition: HumanDecisionWaitCondition = {
+      schemaVersion: 1,
+      waitId: `design-approval:${observation.requestId}`,
+      kind: 'human-decision',
+      reason: observation.reason,
+      inputDigest: observation.inputDigest,
+      requestId: observation.requestId,
+      proposalDigest: observation.proposalDigest,
+    };
+    if (
+      current.status === 'waiting' &&
+      current.waitCondition?.kind === 'human-decision' &&
+      current.waitCondition.waitId === waitCondition.waitId &&
+      current.waitCondition.inputDigest === waitCondition.inputDigest
+    ) {
+      return { snapshot: structuredClone(current), fact: null };
+    }
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'design.await-approval',
+      next: { currentWork: null, waitCondition, blocker: null },
+    });
+  }
+  const blocker: ChangeRunBlocker = {
+    code: 'design.planning-invalid',
+    message: observation.reason,
+    evidenceIds: [...observation.evidenceIds],
+    sinceRevision: current.revision + 1,
+  };
+  if (
+    current.status === 'blocked' &&
+    current.blocker?.code === blocker.code &&
+    current.blocker.message === blocker.message &&
+    current.blocker.evidenceIds.join('\u0000') === blocker.evidenceIds.join('\u0000')
+  ) {
+    return { snapshot: structuredClone(current), fact: null };
+  }
+  return applyChangeLifecycleTransition({
+    definition: options.definition,
+    current,
+    transitionId: 'design.invalid',
+    next: { currentWork: null, waitCondition: null, blocker },
+  });
 }
 
 export function projectChangeRun(

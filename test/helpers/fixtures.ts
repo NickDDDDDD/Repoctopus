@@ -1,4 +1,5 @@
 import { execFile } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { access, mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -10,9 +11,42 @@ import type { ProjectSnapshot } from '../../domains/project/types.js';
 import { createWorkflowPackage } from '../../domains/workflow-contract/package.js';
 import type { WorkflowPackage } from '../../domains/workflow-contract/types.js';
 import type { CompositionIdentitySnapshot } from '../../domains/composition/types.js';
+import type {
+  SpecificationProviderIdentity,
+  SpecificationSchemaInstructions,
+} from '../../domains/specification/types.js';
+import { canonicalJson } from '../../domains/workflow-contract/canonical.js';
 
 const execFileAsync = promisify(execFile);
 export const TEST_COMPOSITION_DIGEST = `sha256:${'c'.repeat(64)}` as const;
+
+export function specificationSchemaFixture(
+  provider: SpecificationProviderIdentity = {
+    id: 'openspec',
+    version: '1.14.3',
+    protocolVersion: 'repoctopus.specification/v1alpha1',
+  },
+): SpecificationSchemaInstructions {
+  const stable = {
+    schemaVersion: 1 as const,
+    schemaName: 'spec-driven',
+    provider: structuredClone(provider),
+    artifacts: [
+      { id: 'proposal', kind: 'proposal' as const },
+      { id: 'specs', kind: 'delta-specs' as const },
+      { id: 'design', kind: 'design' as const },
+      { id: 'tasks', kind: 'tasks' as const },
+    ].map((artifact, index) => ({
+      ...artifact,
+      instructionDigest: `sha256:${String(index + 1).repeat(64)}` as const,
+      templateDigest: `sha256:${String(index + 5).repeat(64)}` as const,
+    })),
+  };
+  return {
+    ...stable,
+    digest: `sha256:${createHash('sha256').update(canonicalJson(stable)).digest('hex')}`,
+  };
+}
 
 export function compositionFixture(
   overrides: Partial<CompositionIdentitySnapshot> = {},

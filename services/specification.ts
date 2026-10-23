@@ -5,6 +5,7 @@ import type {
   SpecificationClosurePlan,
   SpecificationClosureResult,
   SpecificationProviderIdentity,
+  SpecificationSchemaInstructions,
   SpecificationValidation,
 } from '../domains/specification/types.js';
 
@@ -26,6 +27,10 @@ export interface SpecificationWorkspace {
   identity(): SpecificationProviderIdentity;
   root(): SpecificationRoot;
   verifyRoot(signal?: AbortSignal): Promise<SpecificationRoot>;
+  planningInstructions(
+    changeId: string,
+    signal?: AbortSignal,
+  ): Promise<SpecificationSchemaInstructions>;
   inspect(changeId: string, signal?: AbortSignal): Promise<SpecificationChange>;
   validate(
     changeId: string,
@@ -48,6 +53,16 @@ export abstract class Specification extends Service implements SpecificationWork
     void signal;
     return Promise.reject(
       new Error(`Specification provider ${this.identity().id} cannot verify its root`),
+    );
+  }
+  planningInstructions(
+    changeId: string,
+    signal?: AbortSignal,
+  ): Promise<SpecificationSchemaInstructions> {
+    void changeId;
+    void signal;
+    return Promise.reject(
+      new Error(`Specification provider ${this.identity().id} has no planning instructions`),
     );
   }
   abstract inspect(changeId: string, signal?: AbortSignal): Promise<SpecificationChange>;

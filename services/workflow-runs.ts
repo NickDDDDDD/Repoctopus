@@ -27,6 +27,7 @@ import {
   changeRunId,
   createChangeRunHostWorkflow,
 } from '../domains/change-lifecycle/host-workflow.js';
+import type { DesignGateAssessment } from './specification-planning.js';
 
 export interface StartChangeRunInput {
   workspaceId: string;
@@ -37,6 +38,7 @@ export interface StartChangeRunInput {
   targetBranch: string;
   remote: string;
   projectSnapshot: ProjectSnapshot;
+  projectConfigDigest: `sha256:${string}`;
 }
 
 export class WorkflowRuns extends Service {
@@ -48,6 +50,7 @@ export class WorkflowRuns extends Service {
     'runStore',
     'skills',
     'specification',
+    'specificationPlanning',
     'workflowTelemetry',
     'workflowSource',
   ];
@@ -113,6 +116,9 @@ export class WorkflowRuns extends Service {
       if (!Number.isSafeInteger(input.generation) || input.generation < 1) {
         throw new Error('Change Run generation must be a positive safe integer');
       }
+      if (!/^sha256:[a-f0-9]{64}$/u.test(input.projectConfigDigest)) {
+        throw new Error('Change Run project configuration digest is invalid');
+      }
       if (input.projectSnapshot.projectId !== workspaceId) {
         throw new Error('Change Run project snapshot belongs to another Workspace');
       }
@@ -163,6 +169,7 @@ export class WorkflowRuns extends Service {
         specificationRoot,
         targetBranch,
         repositoryIds,
+        projectConfigDigest: input.projectConfigDigest,
       };
       return this.coordinator.startOrResume({
         workflow: createChangeRunHostWorkflow(),
@@ -233,7 +240,98 @@ export class WorkflowRuns extends Service {
     return this.operations.run({ cancellable: false, signal }, async () => {
       const state = await this.ctx.runStore.loadRun(runId);
       if (state.changeLifecycle) {
-        throw new Error('Change Run next Work is not available before lifecycle Work dispatch');
+        const diagnostics = [];
+        let current = state;
+        if (state.changeLifecycle.phase === 'open') {
+          const opened = await this.coordinator.acceptChangeObservation(runId, {
+            kind: 'open-intake-ready',
+          });
+          diagnostics.push(...opened.diagnostics);
+          current = opened.value.state;
+        }
+        if (current.changeLifecycle?.phase !== 'design') {
+          throw new Error('Change Run next Work is not available before lifecycle Work dispatch');
+        }
+        const lifecycle = current.changeLifecycle;
+        const triggerFacts = current.trigger?.facts;
+        const target = triggerFacts?.targetBranch;
+        const projectConfigDigest = triggerFacts?.projectConfigDigest;
+        if (
+          !target ||
+          typeof target !== 'object' ||
+          typeof (target as { repositoryId?: unknown }).repositoryId !== 'string' ||
+          typeof (target as { remote?: unknown }).remote !== 'string' ||
+          typeof (target as { targetBranch?: unknown }).targetBranch !== 'string' ||
+          typeof projectConfigDigest !== 'string' ||
+          !/^sha256:[a-f0-9]{64}$/u.test(projectConfigDigest)
+        ) {
+          throw new Error('Change Run is missing its stable Design input facts');
+        }
+        const targetBranch = target as {
+          repositoryId: string;
+          remote: string;
+          targetBranch: string;
+        };
+        const projectSnapshot = await this.ctx.runStore.loadProjectSnapshot(runId);
+        const workspaceRepository = projectSnapshot.repositories.find(
+          (repository) => repository.id === targetBranch.repositoryId,
+        );
+        if (!workspaceRepository) {
+          throw new Error('Change Run Workspace Repository is no longer available');
+        }
+        let assessment: DesignGateAssessment;
+        try {
+          const changeBranch = await this.ctx.project.changeBranch({
+            repositoryId: targetBranch.repositoryId,
+            repositoryPath: workspaceRepository.path,
+            remote: targetBranch.remote,
+            targetBranch: targetBranch.targetBranch,
+          });
+          assessment = await this.ctx.specificationPlanning.assess({
+            changeId: lifecycle.identity.changeId,
+            changeBranch,
+            compositionDigest: current.composition.compositionDigest,
+            projectConfigDigest: projectConfigDigest as `sha256:${string}`,
+            ...(signal ? { signal } : {}),
+          });
+        } catch (error) {
+          assessment = {
+            status: 'blocked',
+            reason: error instanceof Error ? error.message : 'Design gate assessment failed',
+            evidenceDigests: [],
+          };
+        }
+        if (assessment.status === 'approved' && assessment.validation) {
+          await this.coordinator.bindSpecification(runId, {
+            schemaVersion: 1,
+            changeId: assessment.validation.changeId,
+            provider: structuredClone(assessment.validation.provider),
+            validationDigest: assessment.validation.validationDigest,
+          });
+        }
+        const inputDigest =
+          assessment.snapshot?.digest ??
+          assessment.validation?.validationDigest ??
+          (`sha256:${createHash('sha256')
+            .update(canonicalJson({ reason: assessment.reason }))
+            .digest('hex')}` as const);
+        const advanced = await this.coordinator.acceptChangeObservation(runId, {
+          kind: 'design-gate',
+          result: assessment.status,
+          reason: assessment.reason,
+          evidenceIds: assessment.evidenceDigests,
+          inputDigest,
+          ...(assessment.status === 'waiting' && assessment.approval
+            ? {
+                requestId: assessment.approval.decisionRequest.requestId,
+                proposalDigest: assessment.approval.snapshot.digest,
+              }
+            : {}),
+        });
+        return {
+          ...advanced,
+          diagnostics: [...diagnostics, ...advanced.diagnostics],
+        };
       }
       const skillCompatibility = await this.assertSkillCompatibility(runId, signal);
       const specificationCompatibility = await this.assertSpecificationCompatibility(runId);
@@ -262,6 +360,10 @@ export class WorkflowRuns extends Service {
     signal?: AbortSignal,
   ): Promise<RuntimeResult<RunStatusView>> {
     return this.operations.run({ cancellable: false, signal }, async () => {
+      const state = await this.ctx.runStore.loadRun(options.runId);
+      if (state.changeLifecycle) {
+        throw new Error('Generic Action outcomes cannot advance a Change Run lifecycle');
+      }
       const skillCompatibility = await this.assertSkillCompatibility(options.runId, signal);
       const specificationCompatibility = await this.assertSpecificationCompatibility(options.runId);
       const eventId = options.eventId ?? randomUUID();

@@ -6,11 +6,16 @@ import type {
   SpecificationClosurePlan,
   SpecificationClosureResult,
   SpecificationProviderIdentity,
+  SpecificationSchemaInstructions,
   SpecificationValidation,
 } from '../domains/specification/types.js';
 import { SpecificationPlanning } from '../services/specification-planning.js';
 import { Specification } from '../services/specification.js';
-import { removeTemporaryDirectory, temporaryDirectory } from './helpers/fixtures.js';
+import {
+  removeTemporaryDirectory,
+  specificationSchemaFixture,
+  temporaryDirectory,
+} from './helpers/fixtures.js';
 
 const cleanup: string[] = [];
 afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
@@ -27,6 +32,10 @@ class TestSpecification extends Specification {
 
   identity(): SpecificationProviderIdentity {
     return this.provider;
+  }
+
+  override planningInstructions(): Promise<SpecificationSchemaInstructions> {
+    return Promise.resolve(specificationSchemaFixture(this.provider));
   }
 
   inspect(changeId: string): Promise<SpecificationChange> {

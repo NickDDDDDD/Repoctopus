@@ -11,6 +11,7 @@ import type {
   SpecificationApprovalRecord,
   SpecificationApprovalState,
   SpecificationChange,
+  SpecificationSchemaInstructions,
   SpecificationValidation,
 } from './types.js';
 
@@ -60,9 +61,30 @@ function normalizePlanningArtifacts(change: SpecificationChange): PlanningArtifa
   }).sort((left, right) => left.id.localeCompare(right.id));
 }
 
+function assertSchemaInstructions(schema: SpecificationSchemaInstructions): void {
+  assertDigest(schema.digest, 'Specification schema instructions');
+  const { digest, ...stable } = schema;
+  if (sha256(stable) !== digest) {
+    throw new Error('Specification schema instructions digest is invalid');
+  }
+  if (!schema.schemaName.trim()) throw new Error('Specification schema name is required');
+  if (
+    schema.artifacts.length !== REQUIRED_PLANNING_ARTIFACTS.length ||
+    new Set(schema.artifacts.map((artifact) => artifact.kind)).size !==
+      REQUIRED_PLANNING_ARTIFACTS.length
+  ) {
+    throw new Error('Specification schema must contain four official artifact instructions');
+  }
+  for (const artifact of schema.artifacts) {
+    assertDigest(artifact.instructionDigest, `Specification ${artifact.kind} instructions`);
+    assertDigest(artifact.templateDigest, `Specification ${artifact.kind} template`);
+  }
+}
+
 export function createPlanningSnapshot(input: {
   change: SpecificationChange;
   validation: SpecificationValidation;
+  schema: SpecificationSchemaInstructions;
   changeBranch: ChangeBranchReference;
   compositionDigest: `sha256:${string}`;
   projectConfigDigest: `sha256:${string}`;
@@ -76,6 +98,9 @@ export function createPlanningSnapshot(input: {
   ) {
     throw new Error('Specification validation does not match the inspected change');
   }
+  if (canonicalJson(input.schema.provider) !== canonicalJson(input.change.provider)) {
+    throw new Error('Specification schema instructions do not match the inspected change');
+  }
   if (!input.validation.strict || !input.validation.valid) {
     throw new Error('Specification planning requires successful strict validation');
   }
@@ -83,10 +108,12 @@ export function createPlanningSnapshot(input: {
   assertDigest(input.validation.validationDigest, 'Specification validation');
   assertDigest(input.compositionDigest, 'Composition');
   assertDigest(input.projectConfigDigest, 'Project configuration');
+  assertSchemaInstructions(input.schema);
   const stable = {
     schemaVersion: 1 as const,
     changeId: input.change.changeId,
     provider: structuredClone(input.change.provider),
+    schema: structuredClone(input.schema),
     changeDigest: input.change.changeDigest,
     validationDigest: input.validation.validationDigest,
     artifacts: normalizePlanningArtifacts(input.change),
@@ -102,6 +129,7 @@ export function assertPlanningSnapshot(snapshot: PlanningSnapshot): void {
   const { digest, ...stable } = snapshot;
   assertDigest(digest, 'Planning snapshot');
   if (sha256(stable) !== digest) throw new Error('Planning snapshot digest is invalid');
+  if (snapshot.schema) assertSchemaInstructions(snapshot.schema);
   normalizeBranch(snapshot.changeBranch);
   if (
     snapshot.artifacts.length !== REQUIRED_PLANNING_ARTIFACTS.length ||
@@ -120,6 +148,9 @@ export function createSpecificationApprovalRequest(
   requestId: string = randomUUID(),
 ): SpecificationApprovalDecisionRequest {
   assertPlanningSnapshot(snapshot);
+  if (!snapshot.schema) {
+    throw new Error('Legacy planning snapshot requires schema instructions migration');
+  }
   if (!requestId.trim()) throw new Error('Specification approval request ID is required');
   return {
     apiVersion: 'repoctopus/v1alpha1',
@@ -129,6 +160,7 @@ export function createSpecificationApprovalRequest(
     changeId: snapshot.changeId,
     snapshotDigest: snapshot.digest,
     provider: structuredClone(snapshot.provider),
+    schema: structuredClone(snapshot.schema),
     artifacts: structuredClone(snapshot.artifacts),
     affectedCapabilities: [...snapshot.affectedCapabilities],
     changeBranch: structuredClone(snapshot.changeBranch),

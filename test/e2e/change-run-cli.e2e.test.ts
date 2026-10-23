@@ -101,7 +101,7 @@ describe('Change Run CLI', () => {
       },
       phase: 'open',
       status: 'running',
-      definition: { id: 'repoctopus-change', version: '1.0.0' },
+      definition: { id: 'repoctopus-change', version: '1.1.0' },
     });
     expect(second.result?.changeLifecycle).toEqual(first.result?.changeLifecycle);
 

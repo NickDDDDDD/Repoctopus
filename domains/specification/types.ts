@@ -50,6 +50,21 @@ export interface SpecificationValidation {
   diagnostics: SpecificationDiagnostic[];
 }
 
+export interface SpecificationArtifactInstructions {
+  id: string;
+  kind: Exclude<SpecificationArtifactKind, 'verification'>;
+  instructionDigest: `sha256:${string}`;
+  templateDigest: `sha256:${string}`;
+}
+
+export interface SpecificationSchemaInstructions {
+  schemaVersion: 1;
+  schemaName: string;
+  provider: SpecificationProviderIdentity;
+  artifacts: SpecificationArtifactInstructions[];
+  digest: `sha256:${string}`;
+}
+
 export interface SpecificationUsageSnapshot {
   schemaVersion: 1;
   changeId: string;
@@ -76,6 +91,7 @@ export interface PlanningSnapshot {
   schemaVersion: 1;
   changeId: string;
   provider: SpecificationProviderIdentity;
+  schema?: SpecificationSchemaInstructions;
   changeDigest: `sha256:${string}`;
   validationDigest: `sha256:${string}`;
   artifacts: PlanningArtifactSnapshot[];
@@ -96,6 +112,7 @@ export interface SpecificationApprovalDecisionRequest {
   changeId: string;
   snapshotDigest: `sha256:${string}`;
   provider: SpecificationProviderIdentity;
+  schema: SpecificationSchemaInstructions;
   artifacts: PlanningArtifactSnapshot[];
   affectedCapabilities: string[];
   changeBranch: ChangeBranchReference;

@@ -223,6 +223,7 @@ describe('Specification authority', () => {
     await fiber;
 
     const inspected = await context.specification.inspect('sample');
+    const instructions = await context.specification.planningInstructions('sample');
     expect(context.specification.root()).toEqual({
       schemaVersion: 1,
       kind: 'SpecificationRoot',
@@ -245,6 +246,17 @@ describe('Specification authority', () => {
     expect(inspected.artifacts.every((artifact) => artifact.digest?.startsWith('sha256:'))).toBe(
       true,
     );
+    expect(instructions).toMatchObject({
+      schemaName: 'spec-driven',
+      provider: { id: 'openspec', version: '1.14.3' },
+    });
+    expect(instructions.artifacts.map((artifact) => artifact.kind)).toEqual([
+      'proposal',
+      'delta-specs',
+      'design',
+      'tasks',
+    ]);
+    expect(instructions.digest).toMatch(/^sha256:[a-f0-9]{64}$/u);
     expect(await context.specification.validate('sample', { strict: true })).toMatchObject({
       valid: true,
       strict: true,

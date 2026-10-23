@@ -1,7 +1,11 @@
 import type { Context } from '@deepseek-ai/cordis';
 
 import type { ProjectSnapshot, TargetBranchSnapshot } from '../../domains/project/types.js';
-import { inspectRemoteTargetBranch } from '../../platform/git/change-branch.js';
+import type { ChangeBranchReference } from '../../domains/specification/types.js';
+import {
+  inspectCurrentPublishedChangeBranch,
+  inspectRemoteTargetBranch,
+} from '../../platform/git/change-branch.js';
 import { probeProject, snapshotWorkspaceRepositories } from '../../platform/git/probe.js';
 import {
   ProjectService,
@@ -25,5 +29,9 @@ export class GitProjectProvider extends ProjectService {
 
   async targetBranch(input: TargetBranchInput): Promise<TargetBranchSnapshot> {
     return inspectRemoteTargetBranch(input);
+  }
+
+  async changeBranch(input: TargetBranchInput): Promise<ChangeBranchReference> {
+    return inspectCurrentPublishedChangeBranch(input);
   }
 }

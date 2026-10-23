@@ -13,6 +13,7 @@ import type {
   SpecificationChange,
   SpecificationValidation,
 } from '../domains/specification/types.js';
+import { specificationSchemaFixture } from './helpers/fixtures.js';
 
 const digest = (character: string): `sha256:${string}` => `sha256:${character.repeat(64)}`;
 
@@ -60,6 +61,7 @@ function planningInput() {
   return {
     change: structuredClone(change),
     validation: structuredClone(validation),
+    schema: specificationSchemaFixture(change.provider),
     changeBranch: structuredClone(branch),
     compositionDigest: digest('c'),
     projectConfigDigest: digest('d'),
@@ -124,6 +126,7 @@ describe('specification planning approval', () => {
       (input: ReturnType<typeof planningInput>) => {
         input.change.provider.version = '1.15.0';
         input.validation.provider.version = '1.15.0';
+        input.schema = specificationSchemaFixture(input.change.provider);
       },
     ],
     [
@@ -170,6 +173,7 @@ describe('specification planning approval', () => {
       decisionType: 'specification-approval',
       requestId: 'approval-request',
       snapshotDigest: snapshot.digest,
+      schema: { digest: snapshot.schema!.digest },
       changeBranch: branch,
       options: ['approve', 'request_changes', 'reject'],
     });

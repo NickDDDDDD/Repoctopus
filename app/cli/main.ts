@@ -809,6 +809,7 @@ async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
           targetBranch: string;
           remote: string;
           projectSnapshot: ProjectSnapshot;
+          projectConfigDigest: `sha256:${string}`;
         },
         RuntimeResult<RunStatusView>
       >('run.change.start', {
@@ -820,6 +821,7 @@ async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
         targetBranch: stringFlag(parsed, 'target', { required: true })!,
         remote: stringFlag(parsed, 'remote', { fallback: 'origin' })!,
         projectSnapshot,
+        projectConfigDigest: qualifiedSha256(config.effectiveDigest, 'Project configuration'),
       });
       return successEnvelope({
         command: 'run start',

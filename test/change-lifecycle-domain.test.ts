@@ -4,6 +4,7 @@ import {
   CHANGE_PHASES,
   applyChangeLifecycleTransition,
   assertChangeLifecycleSnapshot,
+  evolveChangeLifecycle,
   projectChangeRun,
   type ChangeLifecycleDefinition,
   type ChangeLifecycleSnapshot,
@@ -11,6 +12,10 @@ import {
   type RunStatus,
   type WaitCondition,
 } from '../domains/change-lifecycle/transition.js';
+import {
+  BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+  createChangeLifecycleSnapshot,
+} from '../domains/change-lifecycle/definition.js';
 
 const digest = (value: string): `sha256:${string}` => `sha256:${value.repeat(64).slice(0, 64)}`;
 
@@ -159,6 +164,79 @@ function blocker(status: RunStatus): ChangeRunBlocker {
 const cleared = { currentWork: null, waitCondition: null, blocker: null } as const;
 
 describe('Change lifecycle domain', () => {
+  it('owns Open and Design gate decisions in the canonical reducer', () => {
+    const opened = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current: createChangeLifecycleSnapshot({ identity: initialSnapshot().identity }),
+      observation: { kind: 'open-intake-ready' },
+    });
+    expect(opened.snapshot).toMatchObject({ phase: 'design', status: 'running' });
+
+    const waiting = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current: opened.snapshot,
+      observation: {
+        kind: 'design-gate',
+        result: 'waiting',
+        reason: 'Trusted Human Decision required',
+        evidenceIds: [digest('e')],
+        inputDigest: digest('i'),
+        requestId: 'decision-1',
+        proposalDigest: digest('p'),
+      },
+    });
+    expect(waiting.snapshot).toMatchObject({
+      phase: 'design',
+      status: 'waiting',
+      waitCondition: { kind: 'human-decision', requestId: 'decision-1' },
+    });
+    expect(
+      evolveChangeLifecycle({
+        definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+        current: waiting.snapshot,
+        observation: {
+          kind: 'design-gate',
+          result: 'waiting',
+          reason: 'Trusted Human Decision required',
+          evidenceIds: [digest('e')],
+          inputDigest: digest('i'),
+          requestId: 'decision-1',
+          proposalDigest: digest('p'),
+        },
+      }).fact,
+    ).toBeNull();
+
+    const approved = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current: waiting.snapshot,
+      observation: {
+        kind: 'design-gate',
+        result: 'approved',
+        reason: 'Trusted decision accepted',
+        evidenceIds: [digest('e')],
+        inputDigest: digest('i'),
+      },
+    });
+    expect(approved.snapshot).toMatchObject({ phase: 'build', status: 'running' });
+
+    const blocked = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current: opened.snapshot,
+      observation: {
+        kind: 'design-gate',
+        result: 'blocked',
+        reason: 'Strict validation failed',
+        evidenceIds: [digest('v')],
+        inputDigest: digest('v'),
+      },
+    });
+    expect(blocked.snapshot).toMatchObject({
+      phase: 'design',
+      status: 'blocked',
+      blocker: { code: 'design.planning-invalid' },
+    });
+  });
+
   it('advances only through declared phases and completes inside Archive', () => {
     let state = initialSnapshot();
     state = applyChangeLifecycleTransition({

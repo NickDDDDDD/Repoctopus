@@ -11,6 +11,8 @@ import type {
   SpecificationApprovalActor,
   SpecificationApprovalDecisionResponse,
   SpecificationApprovalState,
+  SpecificationValidation,
+  PlanningSnapshot,
 } from '../domains/specification/types.js';
 import { FilePlanningApprovalStore } from '../platform/specification/file-planning-approval-store.js';
 
@@ -26,6 +28,15 @@ export interface PrepareSpecificationApprovalInput {
   requestId?: string;
   now?: () => Date;
   signal?: AbortSignal;
+}
+
+export interface DesignGateAssessment {
+  status: 'blocked' | 'waiting' | 'approved';
+  reason: string;
+  evidenceDigests: `sha256:${string}`[];
+  validation?: SpecificationValidation;
+  snapshot?: PlanningSnapshot;
+  approval?: SpecificationApprovalState;
 }
 
 export class SpecificationPlanning extends Service {
@@ -46,7 +57,107 @@ export class SpecificationPlanning extends Service {
   }
 
   async prepare(input: PrepareSpecificationApprovalInput): Promise<SpecificationApprovalState> {
-    const [change, validation, current] = await Promise.all([
+    const assessment = await this.assess(input);
+    if (!assessment.approval) throw new Error(assessment.reason);
+    return assessment.approval;
+  }
+
+  async assess(input: PrepareSpecificationApprovalInput): Promise<DesignGateAssessment> {
+    let collected: Awaited<ReturnType<SpecificationPlanning['collect']>>;
+    try {
+      collected = await this.collect(input);
+    } catch (error) {
+      return {
+        status: 'blocked',
+        reason: error instanceof Error ? error.message : 'Specification planning assessment failed',
+        evidenceDigests: [],
+      };
+    }
+    const { change, validation, schema, current } = collected;
+    const evidenceDigests = [schema.digest, change.changeDigest, validation.validationDigest];
+    if (!change.planningComplete) {
+      return {
+        status: 'blocked',
+        reason: 'Specification planning is incomplete',
+        evidenceDigests,
+        validation,
+      };
+    }
+    if (!validation.strict || !validation.valid) {
+      return {
+        status: 'blocked',
+        reason: 'Specification planning requires successful strict validation',
+        evidenceDigests,
+        validation,
+      };
+    }
+    let snapshot: PlanningSnapshot;
+    try {
+      snapshot = createPlanningSnapshot({
+        change,
+        validation,
+        schema,
+        changeBranch: input.changeBranch,
+        compositionDigest: input.compositionDigest,
+        projectConfigDigest: input.projectConfigDigest,
+      });
+    } catch (error) {
+      return {
+        status: 'blocked',
+        reason: error instanceof Error ? error.message : 'Specification planning manifest failed',
+        evidenceDigests,
+        validation,
+      };
+    }
+    const next = requestSpecificationApproval({
+      current,
+      snapshot,
+      timestamp: (input.now ?? (() => new Date()))().toISOString(),
+      ...(input.requestId ? { requestId: input.requestId } : {}),
+    });
+    if (current?.stateVersion !== next.stateVersion) {
+      await this.store.commit(next, current?.stateVersion ?? null);
+    }
+    if (
+      next.status === 'approved' &&
+      next.decision?.decision === 'approve' &&
+      next.decision.snapshotDigest === snapshot.digest
+    ) {
+      return {
+        status: 'approved',
+        reason: 'Specification planning is strictly valid and has a trusted Human Decision',
+        evidenceDigests: [...evidenceDigests, snapshot.digest],
+        validation,
+        snapshot,
+        approval: next,
+      };
+    }
+    if (next.status === 'changes_requested' || next.status === 'rejected') {
+      return {
+        status: 'blocked',
+        reason:
+          next.status === 'changes_requested'
+            ? 'Specification planning changes were requested'
+            : 'Specification planning was rejected',
+        evidenceDigests: [...evidenceDigests, snapshot.digest],
+        validation,
+        snapshot,
+        approval: next,
+      };
+    }
+    return {
+      status: 'waiting',
+      reason: 'Specification planning is waiting for a trusted Human Decision',
+      evidenceDigests: [...evidenceDigests, snapshot.digest],
+      validation,
+      snapshot,
+      approval: next,
+    };
+  }
+
+  private async collect(input: PrepareSpecificationApprovalInput) {
+    const [schema, change, validation, current] = await Promise.all([
+      this.ctx.specification.planningInstructions(input.changeId, input.signal),
       this.ctx.specification.inspect(input.changeId, input.signal),
       this.ctx.specification.validate(input.changeId, {
         strict: true,
@@ -54,22 +165,7 @@ export class SpecificationPlanning extends Service {
       }),
       this.store.load(input.changeId),
     ]);
-    const snapshot = createPlanningSnapshot({
-      change,
-      validation,
-      changeBranch: input.changeBranch,
-      compositionDigest: input.compositionDigest,
-      projectConfigDigest: input.projectConfigDigest,
-    });
-    const next = requestSpecificationApproval({
-      current,
-      snapshot,
-      timestamp: (input.now ?? (() => new Date()))().toISOString(),
-      ...(input.requestId ? { requestId: input.requestId } : {}),
-    });
-    if (current?.stateVersion === next.stateVersion) return next;
-    await this.store.commit(next, current?.stateVersion ?? null);
-    return next;
+    return { schema, change, validation, current };
   }
 
   async decide(input: {

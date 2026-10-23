@@ -13,6 +13,7 @@ import {
   type SpecificationClosureResult,
   type SpecificationDiagnostic,
   type SpecificationProviderIdentity,
+  type SpecificationSchemaInstructions,
   type SpecificationValidation,
 } from '../../domains/specification/types.js';
 import { atomicWriteJson } from '../filesystem/atomic-write.js';
@@ -56,6 +57,13 @@ interface StatusResult {
 
 interface ValidationResult {
   items?: Array<{ id?: unknown; valid?: unknown; issues?: unknown }>;
+}
+
+interface InstructionsResult {
+  artifactId?: unknown;
+  schemaName?: unknown;
+  instruction?: unknown;
+  template?: unknown;
 }
 
 interface ArchiveResult {
@@ -252,6 +260,67 @@ export class OpenSpecProvider extends Specification {
 
   async inspect(changeId: string, signal?: AbortSignal): Promise<SpecificationChange> {
     return this.inspectAt(this.workspace, changeId, signal);
+  }
+
+  override async planningInstructions(
+    changeId: string,
+    signal?: AbortSignal,
+  ): Promise<SpecificationSchemaInstructions> {
+    return this.planningInstructionsAt(this.workspace, changeId, signal);
+  }
+
+  private async planningInstructionsAt(
+    workspace: string,
+    changeId: string,
+    signal?: AbortSignal,
+  ): Promise<SpecificationSchemaInstructions> {
+    const id = changeId.trim();
+    if (!id) throw new Error('Specification change id is required');
+    const artifactIds = ['proposal', 'specs', 'design', 'tasks'] as const;
+    const results = await Promise.all(
+      artifactIds.map((artifactId) =>
+        this.json<InstructionsResult>(
+          workspace,
+          ['instructions', artifactId, '--change', id],
+          signal,
+        ),
+      ),
+    );
+    const schemaNames = new Set<string>();
+    const artifacts = results.map((result, index) => {
+      const expectedId = artifactIds[index]!;
+      const kind = artifactKind(expectedId);
+      if (
+        result.artifactId !== expectedId ||
+        !kind ||
+        kind === 'verification' ||
+        typeof result.schemaName !== 'string' ||
+        !result.schemaName.trim() ||
+        typeof result.instruction !== 'string' ||
+        !result.instruction.trim() ||
+        typeof result.template !== 'string' ||
+        !result.template.trim()
+      ) {
+        throw new Error(`OpenSpec returned invalid official instructions for ${expectedId}`);
+      }
+      schemaNames.add(result.schemaName);
+      return {
+        id: expectedId,
+        kind,
+        instructionDigest: sha256(result.instruction),
+        templateDigest: sha256(result.template),
+      };
+    });
+    if (schemaNames.size !== 1) {
+      throw new Error('OpenSpec planning artifacts resolved to different schemas');
+    }
+    const stable = {
+      schemaVersion: 1 as const,
+      schemaName: [...schemaNames][0]!,
+      provider: this.identity(),
+      artifacts,
+    };
+    return { ...stable, digest: sha256(stable) };
   }
 
   private async inspectAt(
@@ -476,6 +545,8 @@ export class OpenSpecProvider extends Specification {
         await this.assertRoot(workspace, signal);
         return this.root();
       },
+      planningInstructions: (changeId, signal) =>
+        this.planningInstructionsAt(workspace, changeId, signal),
       inspect: (changeId, signal) => this.inspectAt(workspace, changeId, signal),
       validate: (changeId, options) => this.validateAt(workspace, changeId, options),
       prepareClosure: (input) => this.prepareClosureAt(workspace, input),

@@ -27,7 +27,9 @@ import {
   recoverChangeLifecycleSnapshot,
 } from '../change-lifecycle/definition.js';
 import {
+  evolveChangeLifecycle,
   projectChangeRun,
+  type ChangeLifecycleObservation,
   type ChangeLifecycleSnapshot,
   type ChangeLifecycleState,
 } from '../change-lifecycle/transition.js';
@@ -65,6 +67,22 @@ function lifecycleState(snapshot: ChangeLifecycleSnapshot): ChangeLifecycleState
     waitCondition: structuredClone(snapshot.waitCondition),
     blocker: structuredClone(snapshot.blocker),
   };
+}
+
+function lifecycleNextActions(snapshot: ChangeLifecycleSnapshot) {
+  if (snapshot.phase === 'open') {
+    return [{ id: 'change.continue', kind: 'work' as const, label: 'Validate Open intake' }];
+  }
+  if (snapshot.phase === 'design' && snapshot.status === 'waiting') {
+    return [{ id: 'design.review', kind: 'decision' as const, label: 'Review planning decision' }];
+  }
+  if (snapshot.phase === 'design' && snapshot.status === 'blocked') {
+    return [{ id: 'design.repair', kind: 'repair' as const, label: 'Repair planning artifacts' }];
+  }
+  if (snapshot.phase === 'design') {
+    return [{ id: 'design.evaluate', kind: 'work' as const, label: 'Evaluate Design gate' }];
+  }
+  return [];
 }
 
 function event(options: {
@@ -211,7 +229,10 @@ export class WorkflowRunCoordinator {
               acceptedBundleIds: [...state.acceptedEvidenceBundleIds],
               latestAttemptId: null,
             },
-            nextActions: [],
+            nextActions: lifecycleNextActions({
+              ...structuredClone(state.changeLifecycle),
+              status: state.status,
+            }),
             freshness: {
               stateVersion: state.stateVersion,
               trajectoryOffset: trajectory.length,
@@ -268,6 +289,57 @@ export class WorkflowRunCoordinator {
         value: undefined,
       };
     });
+  }
+
+  async acceptChangeObservation(
+    runId: string,
+    observation: ChangeLifecycleObservation,
+  ): Promise<RuntimeResult<RunStatusView>> {
+    await this.recoverChangeLifecycleDefinition(runId);
+    await this.store.commitGuarded(runId, ({ state, trajectory }) => {
+      if (!state.changeLifecycle) throw new Error(`Run is not a Change Run: ${runId}`);
+      const current: ChangeLifecycleSnapshot = {
+        ...structuredClone(state.changeLifecycle),
+        status: state.status,
+      };
+      const reduced = evolveChangeLifecycle({
+        definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+        current,
+        observation,
+      });
+      if (!reduced.fact) return { value: undefined };
+      const timestamp = this.clock().toISOString();
+      const { status, ...changeLifecycle } = reduced.snapshot;
+      const nextState: RunState = {
+        ...state,
+        status,
+        changeLifecycle,
+        stateVersion: state.stateVersion + 1,
+        updatedAt: timestamp,
+      };
+      return {
+        state: nextState,
+        event: event({
+          eventId: stableEventId(
+            runId,
+            String(reduced.fact.revision),
+            createHash('sha256').update(canonicalJson(observation)).digest('hex'),
+          ),
+          sequence: trajectory.length + 1,
+          timestamp,
+          type: 'change.lifecycle.transitioned',
+          state: nextState,
+          data: {
+            changeLifecycleTransition: reduced.fact,
+            observationKind: observation.kind,
+            observation: structuredClone(observation),
+          },
+        }),
+        value: undefined,
+      };
+    });
+    const diagnostics = await this.flushTelemetry(runId);
+    return { value: await this.status(runId), diagnostics };
   }
 
   private assertSameStartIdentity(
