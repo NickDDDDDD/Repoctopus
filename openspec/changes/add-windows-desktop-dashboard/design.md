@@ -159,6 +159,14 @@ OTLP JSON decoder 只从 Trace/Log 的 Repoctopus 属性允许列表构造 `Obse
 3. 未运行时启动已安装应用并有界等待 ready；
 4. 成功后唤醒本地目的地 worker 重放，失败则记录 warning 并继续 Run。
 
+任务 2.6 把这个“启动”限定为 Runtime Run preflight，而不是 Electron 进程内部已经完成的 Shell → Host 启动。Launcher 使用版本化的一次性激活请求传递 Workspace、change 和 Run 身份；Windows 上首次调用启动 Electron，后续调用由单实例 owner 接收并返回同一个 Shell PID 与 Receiver。激活交换只在用户临时目录的固定 Repoctopus 子目录中创建随机身份 request/response，响应包含短期 Receiver 凭据，Runtime 读取后立即删除两份文件；所有路径和 payload 都经过固定 schema 校验，等待时间有界。正式的用户所有权、freshness、进程身份验证和长期 discovery 仍由任务 5.1 完成，当前握手不能被解释为已经满足该安全门槛。
+
+自举开发在 product root 与 Workspace 重合且桌面构建存在时解析固定 Electron 依赖；已安装场景可以提供明确的 Desktop executable。未支持平台、未安装桌面端、启动超时、握手失败和本地重放失败统一返回固定 warning，不能抛出到 Run 领域转换。`run start --change <change-id>` 把显式 change 身份写入 Run；没有可信 change 输入时不为 Dashboard 伪造关联。
+
+Launcher 在 Run 持久化前先激活 Receiver 并重放已有积压，Run 的首个 Trajectory 与规范 envelope 持久化后再唤醒一次本地目的地，因此首次 Run 也无需等到下一条命令。最小 Workflow 映射先覆盖显式绑定 change 的 Trajectory：envelope 在远端导出前写入共享 Store，远端 Trace/Log 携带与本地重放相同的 envelope ID、digest、事件身份和允许列表属性；Metric 仍只携带低基数维度。映射只使用事件自身和不可变 Run 身份，不用后续“当前 Run 状态”重算旧事件，从而保证失败重试不会让同一 event ID 产生新 digest。
+
+进程外测试证明首次启动与第二次激活收敛到同一个 Shell PID 和 Receiver、本地 pending envelope 被确认且临时凭据文件被删除；另一个真实 CLI/远端 mock 纵切证明桌面不可用只增加 warning，Run 仍成功，远端 payload 含持久化 envelope 的同一 ID 与 digest。任务 3.1 仍负责把所有 Workflow Run Trace、Log、Metric 完整迁移到共享 encoder 与多目的地 worker；本切片没有把现有远端 SDK exporter 或全部事件状态映射宣称为迁移完成。
+
 Electron Main 使用单实例锁，后续启动只把上下文交给主实例；Main 再把已校验的启动上下文发给当前 Desktop Host。新 change 加入列表但不强制抢走用户正在查看的 change；首次启动或当前没有选择时自动显示启动来源。
 
 关闭偏好存放在 Electron 用户级配置目录，不进入 Workspace：
