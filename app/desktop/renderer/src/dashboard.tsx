@@ -322,6 +322,61 @@ function AssuranceOverview({ model }: { model: DashboardViewModel }) {
   );
 }
 
+function ActivityOverview({ model }: { model: DashboardViewModel }) {
+  return (
+    <div className="activity-stack">
+      <dl className="diagnostic-grid">
+        {model.diagnostics.map((item) => (
+          <div key={item.label}>
+            <dt>{item.label}</dt>
+            <dd>
+              <StatusIndicator label={item.value} tone={item.tone} />
+            </dd>
+            <small>{item.detail}</small>
+          </div>
+        ))}
+      </dl>
+
+      <div className="activity-region">
+        <div className="activity-region__heading">
+          <h3>最近事件</h3>
+          <span className="numeric-value">{model.recentEvents.length}</span>
+        </div>
+        {model.recentEvents.length === 0 ? (
+          <EmptyRegion>尚未收到可关联的观测事件。新事件到达后会自动显示。</EmptyRegion>
+        ) : (
+          <ol role="list" className="event-list">
+            {model.recentEvents.map((event) => (
+              <li key={event.id}>
+                <div className="event-list__identity">
+                  <p>{event.type}</p>
+                  <span>{event.detail}</span>
+                </div>
+                <dl className="event-list__metadata">
+                  <div>
+                    <dt>Stream</dt>
+                    <dd>{event.streamId}</dd>
+                  </div>
+                  <div>
+                    <dt>序列</dt>
+                    <dd className="numeric-value">{event.sequence}</dd>
+                  </div>
+                  <div>
+                    <dt>观测时间</dt>
+                    <dd>
+                      <time dateTime={event.observedAt}>{event.observedAt}</time>
+                    </dd>
+                  </div>
+                </dl>
+              </li>
+            ))}
+          </ol>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export interface DashboardProps {
   model: DashboardViewModel;
   onRetry?: () => void;
@@ -395,7 +450,7 @@ export function Dashboard({ model, onRetry, onSelectContext }: DashboardProps) {
             <a href="#overview">运行概览</a>
             <a href="#execution">阶段与任务</a>
             <a href="#assurance">验证与阻塞</a>
-            <a href="#activity">最近事件</a>
+            <a href="#activity">接收与事件</a>
           </nav>
           <div className="source-note">
             <p className="rail-label">数据来源</p>
@@ -457,12 +512,12 @@ export function Dashboard({ model, onRetry, onSelectContext }: DashboardProps) {
               )}
             </DashboardSection>
 
-            <DashboardSection id="activity" title="最近事件">
-              <EmptyRegion>
-                {model.lastObservedAt === null
-                  ? '尚未收到观测事件。'
-                  : `最后观测：${model.lastObservedAt}`}
-              </EmptyRegion>
+            <DashboardSection
+              id="activity"
+              title="接收与事件"
+              description="Receiver、目的地、重放、新鲜度与序列完整性"
+            >
+              <ActivityOverview model={model} />
             </DashboardSection>
           </div>
         </main>

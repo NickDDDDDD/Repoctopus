@@ -9,6 +9,30 @@ import { mapEvidenceObservationEnvelope } from '../platform/telemetry/observatio
 import { encodeObservationOtlpJson } from '../platform/telemetry/observation-otlp-json.js';
 import { DESKTOP_APPLICATION_CONTRACT } from '../services/desktop-application.js';
 
+const ingress = {
+  receiver: {
+    status: 'ready' as const,
+    acceptedBatches: 1,
+    acceptedRecords: 1,
+    rejectedRequests: 0,
+    lastReceivedAt: '2026-10-23T09:30:10.000Z',
+    lastDiagnosticCode: null,
+    lastSignal: 'logs' as const,
+  },
+  destination: {
+    id: 'desktop-local' as const,
+    health: 'healthy' as const,
+    deliveryGuarantee: 'at-least-once' as const,
+  },
+  replay: {
+    status: 'idle' as const,
+    receivedRecords: 1,
+    totalRecords: 1,
+    startedAt: null,
+    lastCompletedAt: '2026-10-23T09:30:10.000Z',
+  },
+};
+
 function dashboardEnvelope(
   sequence: number,
   attributes: Readonly<Record<string, string | number | boolean>>,
@@ -49,6 +73,7 @@ function modelFromEnvelopes(envelopes: ReturnType<typeof dashboardEnvelope>[]) {
     snapshot: {
       apiVersion: DESKTOP_APPLICATION_CONTRACT,
       phase: 'ready',
+      ingress,
       projection: reducer.snapshot({
         now: '2026-10-23T09:30:10.000Z',
         staleAfterMs: 30_000,
@@ -300,6 +325,7 @@ describe('Desktop OTLP decoder routing', () => {
       snapshot: {
         apiVersion: DESKTOP_APPLICATION_CONTRACT,
         phase: 'ready',
+        ingress,
         projection: reducer.snapshot({
           now: '2026-10-23T09:30:10.000Z',
           staleAfterMs: 30_000,

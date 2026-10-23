@@ -12,6 +12,25 @@ const noExecution = {
   taskProgress: null,
   activeTasks: [],
 } as const;
+const waitingDiagnostics = [
+  { label: 'Receiver', value: '尚未就绪', detail: '等待 Desktop Host', tone: 'neutral' },
+  { label: '本地目的地', value: '尚未就绪', detail: '等待 Receiver', tone: 'neutral' },
+  { label: '新鲜度', value: '尚无数据', detail: '等待首个观测事实', tone: 'neutral' },
+  { label: '重放', value: '空闲', detail: '尚无重放批次', tone: 'neutral' },
+  { label: '序列', value: '尚无数据', detail: '等待首个事件序列', tone: 'neutral' },
+] as const;
+const liveDiagnostics = [
+  { label: 'Receiver', value: '已就绪', detail: '已接收 8 批、42 条记录', tone: 'success' },
+  {
+    label: '本地目的地',
+    value: '健康',
+    detail: 'desktop-local · at-least-once',
+    tone: 'success',
+  },
+  { label: '新鲜度', value: '实时', detail: `最后观测 ${observedAt}`, tone: 'success' },
+  { label: '重放', value: '空闲', detail: `最近完成 ${observedAt}`, tone: 'neutral' },
+  { label: '序列', value: '完整', detail: '已确认至 42', tone: 'success' },
+] as const;
 const primaryContextId = dashboardContextId('repoctopus', 'add-windows-desktop-dashboard');
 const primaryNavigation: DashboardNavigationWorkspace[] = [
   {
@@ -111,6 +130,25 @@ function observed(
         },
       ],
     },
+    diagnostics: liveDiagnostics,
+    recentEvents: [
+      {
+        id: 'event-42',
+        type: 'action.progressed',
+        detail: 'desktop.review-layout',
+        streamId: 'run-desktop-dashboard',
+        sequence: 42,
+        observedAt,
+      },
+      {
+        id: 'event-41',
+        type: 'evidence.gate.evaluated',
+        detail: 'satisfied',
+        streamId: 'evidence-desktop-dashboard',
+        sequence: 7,
+        observedAt: '2026-10-23T08:15:39.000Z',
+      },
+    ],
     lastObservedAt: observedAt,
     ariaBusy: false,
     canRetry: false,
@@ -133,6 +171,8 @@ export const desktopDashboardFixtures: Readonly<Record<DashboardState, Dashboard
     summary: [],
     execution: noExecution,
     assurance: null,
+    diagnostics: waitingDiagnostics,
+    recentEvents: [],
     lastObservedAt: null,
     ariaBusy: true,
     canRetry: false,
@@ -152,6 +192,19 @@ export const desktopDashboardFixtures: Readonly<Record<DashboardState, Dashboard
     summary: [],
     execution: noExecution,
     assurance: null,
+    diagnostics: [
+      { label: 'Receiver', value: '已就绪', detail: '尚未收到 OTLP 批次', tone: 'success' },
+      {
+        label: '本地目的地',
+        value: '等待首批确认',
+        detail: 'desktop-local · at-least-once',
+        tone: 'neutral',
+      },
+      { label: '新鲜度', value: '尚无数据', detail: '等待首个观测事实', tone: 'neutral' },
+      { label: '重放', value: '空闲', detail: '尚无重放批次', tone: 'neutral' },
+      { label: '序列', value: '尚无数据', detail: '等待首个事件序列', tone: 'neutral' },
+    ],
+    recentEvents: [],
     lastObservedAt: null,
     ariaBusy: false,
     canRetry: false,
@@ -179,6 +232,16 @@ export const desktopDashboardFixtures: Readonly<Record<DashboardState, Dashboard
     statusLabel: '追平中',
     statusDetail: '正在重放 18 条积压上报',
     ariaBusy: true,
+    diagnostics: liveDiagnostics.map((item) =>
+      item.label === '重放'
+        ? {
+            ...item,
+            value: '追平中',
+            detail: '本批次 12 / 18 条',
+            tone: 'accent' as const,
+          }
+        : item,
+    ),
   }),
   stale: observed('stale', {
     tone: 'warning',
@@ -187,6 +250,16 @@ export const desktopDashboardFixtures: Readonly<Record<DashboardState, Dashboard
     statusLabel: '已过期',
     statusDetail: '等待新的 OTLP 上报',
     lastObservedAt: '2026-10-23T07:52:11.000Z',
+    diagnostics: liveDiagnostics.map((item) =>
+      item.label === '新鲜度'
+        ? {
+            ...item,
+            value: '已过期',
+            detail: '最后观测 2026-10-23T07:52:11.000Z',
+            tone: 'warning' as const,
+          }
+        : item,
+    ),
   }),
   gap: observed('gap', {
     tone: 'warning',
@@ -194,6 +267,11 @@ export const desktopDashboardFixtures: Readonly<Record<DashboardState, Dashboard
     description: '缺少事件序列 18–20。界面只保留已确认事实，等待重放补齐。',
     statusLabel: '存在缺口',
     statusDetail: '缺少序列 18–20',
+    diagnostics: liveDiagnostics.map((item) =>
+      item.label === '序列'
+        ? { ...item, value: '存在缺口', detail: '缺少序列 18–20', tone: 'warning' as const }
+        : item,
+    ),
   }),
   error: {
     state: 'error',
@@ -209,6 +287,16 @@ export const desktopDashboardFixtures: Readonly<Record<DashboardState, Dashboard
     summary: [],
     execution: noExecution,
     assurance: null,
+    diagnostics: [
+      {
+        label: 'Receiver',
+        value: '不可用',
+        detail: 'Receiver 端口初始化失败',
+        tone: 'danger',
+      },
+      ...waitingDiagnostics.slice(1),
+    ],
+    recentEvents: [],
     lastObservedAt: null,
     ariaBusy: false,
     canRetry: true,

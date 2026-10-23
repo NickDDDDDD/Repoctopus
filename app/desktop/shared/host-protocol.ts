@@ -32,13 +32,36 @@ function isProjection(value: unknown): boolean {
   );
 }
 
+function isIngress(value: unknown): boolean {
+  if (!value || typeof value !== 'object') return false;
+  const ingress = value as Record<string, unknown>;
+  const receiver = ingress.receiver as Record<string, unknown> | undefined;
+  const destination = ingress.destination as Record<string, unknown> | undefined;
+  const replay = ingress.replay as Record<string, unknown> | undefined;
+  return (
+    receiver !== undefined &&
+    ['ready', 'receiving', 'degraded'].includes(String(receiver.status)) &&
+    Number.isSafeInteger(receiver.acceptedBatches) &&
+    Number.isSafeInteger(receiver.acceptedRecords) &&
+    Number.isSafeInteger(receiver.rejectedRequests) &&
+    destination?.id === 'desktop-local' &&
+    ['unknown', 'healthy', 'degraded'].includes(String(destination.health)) &&
+    destination.deliveryGuarantee === 'at-least-once' &&
+    replay !== undefined &&
+    ['idle', 'catching-up'].includes(String(replay.status)) &&
+    Number.isSafeInteger(replay.receivedRecords) &&
+    Number.isSafeInteger(replay.totalRecords)
+  );
+}
+
 function isSnapshot(value: unknown): value is DesktopApplicationSnapshot {
   if (!value || typeof value !== 'object') return false;
   const snapshot = value as Record<string, unknown>;
   return (
     snapshot.apiVersion === 'repoctopus.desktop/v1alpha1' &&
     snapshot.phase === 'ready' &&
-    isProjection(snapshot.projection)
+    isProjection(snapshot.projection) &&
+    isIngress(snapshot.ingress)
   );
 }
 
@@ -50,7 +73,8 @@ function isDelta(value: unknown): value is DesktopProjectionDelta {
     Number.isSafeInteger(delta.baseVersion) &&
     Number.isSafeInteger(delta.version) &&
     delta.version === (delta.projection as Record<string, unknown> | undefined)?.version &&
-    isProjection(delta.projection)
+    isProjection(delta.projection) &&
+    isIngress(delta.ingress)
   );
 }
 

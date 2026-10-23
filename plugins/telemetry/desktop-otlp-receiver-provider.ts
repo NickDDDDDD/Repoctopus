@@ -34,11 +34,13 @@ export class DesktopOtlpReceiverProvider extends DesktopTelemetryReceiver {
         if (this.applicationLeases === 0) {
           throw new Error('Desktop Application is not accepting telemetry');
         }
-        for (const record of decodeDesktopOtlpBatch(batch)) {
-          context.desktopApplication.accept(record);
-        }
+        context.desktopApplication.acceptBatch(decodeDesktopOtlpBatch(batch), {
+          signal: batch.signal,
+          replay: batch.delivery?.mode === 'replay',
+        });
       },
       diagnostic: (diagnostic) => {
+        context.desktopApplication.reportReceiverDiagnostic(diagnostic);
         context.logger.warn(
           'Desktop OTLP request rejected: %s (%s)',
           diagnostic.code,

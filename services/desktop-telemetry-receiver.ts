@@ -5,6 +5,20 @@ export interface DesktopTelemetryEndpoint {
   authorization: string;
 }
 
+export type DesktopTelemetrySignal = 'traces' | 'logs' | 'metrics';
+
+export interface DesktopTelemetryDiagnostic {
+  code:
+    | 'unauthorized'
+    | 'method-not-allowed'
+    | 'unsupported-content-type'
+    | 'invalid-json'
+    | 'invalid-otlp-payload'
+    | 'receiver-busy'
+    | 'receiver-unavailable';
+  signal: DesktopTelemetrySignal;
+}
+
 export abstract class DesktopTelemetryReceiver extends Service {
   constructor(context: Context) {
     super(context, 'desktopTelemetryReceiver');

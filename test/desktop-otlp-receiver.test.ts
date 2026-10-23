@@ -93,7 +93,32 @@ describe('Desktop OTLP/HTTP receiver', () => {
       ).resolves.toMatchObject({ status: 200, body: {} });
     }
     expect(target.accepted.map((batch) => batch.signal)).toEqual(['traces', 'logs', 'metrics']);
+    expect(target.accepted.map((batch) => batch.delivery)).toEqual([null, null, null]);
     expect(target.diagnostics).toEqual([]);
+  });
+
+  it('recognizes bounded local replay metadata without changing the OTLP payload', async () => {
+    const target = await fixture();
+    await expect(
+      send({
+        receiver: target.receiver,
+        signal: 'logs',
+        headers: {
+          ...target.headers,
+          'x-repoctopus-destination-id': 'desktop-local',
+          'x-repoctopus-delivery-mode': 'replay',
+        },
+        body: JSON.stringify({ resourceLogs: [] }),
+      }),
+    ).resolves.toMatchObject({ status: 200 });
+
+    expect(target.accepted).toEqual([
+      {
+        signal: 'logs',
+        payload: { resourceLogs: [] },
+        delivery: { destinationId: 'desktop-local', mode: 'replay' },
+      },
+    ]);
   });
 
   it('rejects missing and incorrect session authorization', async () => {

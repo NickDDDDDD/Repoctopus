@@ -38,6 +38,11 @@ export interface EncodedObservationOtlpRequest {
   payload: Readonly<Record<string, unknown>>;
 }
 
+export interface ObservationOtlpDeliveryOptions {
+  destinationId: 'desktop-local';
+  mode: 'replay';
+}
+
 function attribute(key: string, value: ObservationAttributeValue): OtlpAttribute {
   if (typeof value === 'string') return { key, value: { stringValue: value } };
   if (typeof value === 'boolean') return { key, value: { boolValue: value } };
@@ -298,7 +303,10 @@ export class ObservationOtlpJsonDestination {
     this.config = timeoutMs === undefined ? normalized : { ...normalized, timeoutMs };
   }
 
-  async deliver(envelopes: readonly ObservationEnvelope[]): Promise<void> {
+  async deliver(
+    envelopes: readonly ObservationEnvelope[],
+    delivery?: ObservationOtlpDeliveryOptions,
+  ): Promise<void> {
     const requests = encodeObservationOtlpJson(envelopes).filter(
       (request) => this.config.targets[request.signal] !== undefined,
     );
@@ -310,6 +318,12 @@ export class ObservationOtlpJsonDestination {
           headers: {
             ...target.headers,
             'content-type': 'application/json',
+            ...(delivery === undefined
+              ? {}
+              : {
+                  'x-repoctopus-destination-id': delivery.destinationId,
+                  'x-repoctopus-delivery-mode': delivery.mode,
+                }),
           },
           body: JSON.stringify(request.payload),
           signal: AbortSignal.timeout(this.config.timeoutMs ?? 5_000),

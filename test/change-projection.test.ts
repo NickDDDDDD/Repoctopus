@@ -85,6 +85,41 @@ describe('ChangeProjectionReducer', () => {
     expect(reducer.snapshot(liveOptions).stage).toEqual({ name: 'verification', sequence: 4 });
   });
 
+  it('keeps a bounded newest-first event history with safe projection metadata only', () => {
+    const reducer = new ChangeProjectionReducer();
+    for (let sequence = 1; sequence <= 24; sequence += 1) {
+      reducer.accept(
+        record(sequence, {
+          observedAt: new Date(Date.UTC(2026, 9, 23, 8, 15, sequence)).toISOString(),
+          eventType: sequence === 24 ? 'action.progressed' : 'run.progressed',
+          stageName: 'implementation',
+          taskId: `task-${sequence}`,
+          taskRef: `desktop.task-${sequence}`,
+          taskStatus: sequence === 24 ? 'blocked' : 'completed',
+        }),
+      );
+    }
+
+    const events = reducer.snapshot({
+      now: '2026-10-23T08:15:30.000Z',
+      staleAfterMs: 10_000,
+    }).contexts[0]?.recentEvents;
+    expect(events).toHaveLength(20);
+    expect(events?.[0]).toEqual({
+      eventId: 'event-24',
+      eventType: 'action.progressed',
+      streamId: 'run-dashboard',
+      sequence: 24,
+      observedAt: '2026-10-23T08:15:24.000Z',
+      stageName: 'implementation',
+      taskRef: 'desktop.task-24',
+      taskStatus: 'blocked',
+      verificationStatus: null,
+    });
+    expect(events?.at(-1)?.sequence).toBe(5);
+    expect(JSON.stringify(events)).not.toMatch(/body|prompt|reply|command\.output/iu);
+  });
+
   it('projects terminal Run/change status and freshness only from explicit facts and time', () => {
     const reducer = new ChangeProjectionReducer();
     reducer.accept(record(1, { stageName: 'implementation' }));

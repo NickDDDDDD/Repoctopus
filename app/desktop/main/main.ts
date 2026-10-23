@@ -81,7 +81,11 @@ const controller = new DesktopBackendController(
         }
         hostReady = {
           ...hostReady,
-          snapshot: { ...hostReady.snapshot, projection: delta.projection },
+          snapshot: {
+            ...hostReady.snapshot,
+            projection: delta.projection,
+            ingress: delta.ingress,
+          },
         };
         const window = mainWindow;
         if (window !== undefined && !window.isDestroyed()) {

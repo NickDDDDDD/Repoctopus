@@ -76,6 +76,18 @@ export interface ProjectionNextAction {
   lastObservedAt: string;
 }
 
+export interface ProjectionRecentEvent {
+  eventId: string;
+  eventType: string;
+  streamId: string;
+  sequence: number;
+  observedAt: string;
+  stageName: string | null;
+  taskRef: string | null;
+  taskStatus: ProjectionTaskStatus | null;
+  verificationStatus: ProjectionVerificationStatus | null;
+}
+
 export interface ProjectionAssuranceState {
   verification: ProjectionVerification | null;
   artifacts: ProjectionArtifact[];
@@ -143,6 +155,7 @@ export interface ChangeProjectionContext {
   executionSubjects: ProjectionExecutionSubject[];
   tasks: ProjectionTaskState | null;
   assurance: ProjectionAssuranceState | null;
+  recentEvents: ProjectionRecentEvent[];
   latestSequence: number;
   lastObservedAt: string;
   freshness: 'live' | 'stale';
@@ -193,6 +206,7 @@ const VERIFICATION_OUTCOMES = new Set<ProjectionVerificationOutcome>([
 const GATE_STATUSES = new Set<ProjectionGateStatus>(['satisfied', 'blocked']);
 const MEDIA_TYPE =
   /^[a-z0-9][a-z0-9!#$&^_.+-]*\/[a-z0-9][a-z0-9!#$&^_.+-]*(?:;\s*[a-z0-9!#$&^_.+-]+=[a-z0-9!#$&^_.+:-]+)*$/iu;
+const RECENT_EVENT_LIMIT = 20;
 
 function assertId(value: string, label: string): void {
   if (typeof value !== 'string' || !SAFE_ID.test(value)) throw new Error(`Invalid ${label}`);
@@ -605,6 +619,23 @@ function projectAssurance(records: readonly ObservationRecord[]): ProjectionAssu
   return { verification, artifacts, blockers, nextActions };
 }
 
+function projectRecentEvents(records: readonly ObservationRecord[]): ProjectionRecentEvent[] {
+  return [...records]
+    .sort((left, right) => compareRecords(right, left))
+    .slice(0, RECENT_EVENT_LIMIT)
+    .map((record) => ({
+      eventId: record.eventId,
+      eventType: record.eventType,
+      streamId: record.streamId,
+      sequence: record.sequence,
+      observedAt: record.observedAt,
+      stageName: record.stageName ?? null,
+      taskRef: record.taskRef ?? null,
+      taskStatus: record.taskStatus ?? null,
+      verificationStatus: record.verificationStatus ?? null,
+    }));
+}
+
 function projectContext(
   records: readonly ObservationRecord[],
   now: number,
@@ -630,6 +661,7 @@ function projectContext(
     executionSubjects: projectSubjects(runRecords),
     tasks: projectTasks(runRecords),
     assurance: projectAssurance(runRecords),
+    recentEvents: projectRecentEvents(runRecords),
     latestSequence: Math.max(...streamRecords.map((record) => record.sequence)),
     lastObservedAt: latest.observedAt,
     freshness:

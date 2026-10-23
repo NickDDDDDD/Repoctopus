@@ -5,6 +5,7 @@ import type { DesktopShellState } from '../../shared/renderer-contract.js';
 import { Dashboard } from './dashboard.js';
 import { dashboardFixtureFromLocation } from './dashboard-fixtures.js';
 import { dashboardModelFromShell } from './dashboard-model.js';
+import { DesktopProjectionStream } from './projection-stream.js';
 
 const initialState: DesktopShellState = { phase: 'starting' };
 const SELECTION_STORAGE_KEY = 'repoctopus.desktop.selected-context';
@@ -29,45 +30,34 @@ export function App() {
   const [state, setState] = useState<DesktopShellState>(initialState);
   const [activation, setActivation] = useState<DesktopRunContext | null>(null);
   const [selectedContextId, setSelectedContextId] = useState(storedSelection);
-  const projectionVersion = useRef(-1);
+  const projectionStream = useRef<DesktopProjectionStream | null>(null);
   const fixtureSurface = ['http:', 'https:'].includes(window.location.protocol);
   const fixture = dashboardFixtureFromLocation(window.location, selectedContextId);
 
   useEffect(() => {
     if (fixtureSurface) return;
     let active = true;
-    const applyState = (next: DesktopShellState) => {
-      if (!active) return;
-      projectionVersion.current = next.phase === 'ready' ? next.snapshot.projection.version : -1;
-      setState(next);
-    };
-    void window.repoctopusDesktop.currentState().then((next) => {
-      applyState(next);
+    const stream = new DesktopProjectionStream({
+      currentState: () => window.repoctopusDesktop.currentState(),
+      publish: (next) => {
+        if (active) setState(next);
+      },
     });
+    projectionStream.current = stream;
+    stream.start();
     const unsubscribe = window.repoctopusDesktop.onState((next) => {
-      applyState(next);
+      stream.acceptState(next);
     });
     const unsubscribeProjection = window.repoctopusDesktop.onProjectionDelta((delta) => {
-      if (!active || delta.version <= projectionVersion.current) return;
-      if (delta.baseVersion !== projectionVersion.current) {
-        void window.repoctopusDesktop.currentState().then(applyState);
-        return;
-      }
-      projectionVersion.current = delta.version;
-      setState((current) =>
-        current.phase === 'ready'
-          ? {
-              ...current,
-              snapshot: { ...current.snapshot, projection: delta.projection },
-            }
-          : current,
-      );
+      stream.acceptDelta(delta);
     });
     const unsubscribeActivation = window.repoctopusDesktop.onActivation((context) => {
       if (active) setActivation(context);
     });
     return () => {
       active = false;
+      stream.close();
+      if (projectionStream.current === stream) projectionStream.current = null;
       unsubscribe();
       unsubscribeProjection();
       unsubscribeActivation();

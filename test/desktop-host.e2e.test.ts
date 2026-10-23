@@ -23,6 +23,26 @@ function nextMessage(child: ChildProcess): Promise<unknown> {
   });
 }
 
+function nextProjectionDeltas(child: ChildProcess, count: number): Promise<unknown[]> {
+  return new Promise((resolve, reject) => {
+    const messages: unknown[] = [];
+    const onError = (error: Error) => {
+      child.off('message', onMessage);
+      reject(error);
+    };
+    const onMessage = (message: unknown) => {
+      if (!isDesktopHostEvent(message) || message.type !== 'projection.delta') return;
+      messages.push(message);
+      if (messages.length !== count) return;
+      child.off('error', onError);
+      child.off('message', onMessage);
+      resolve(messages);
+    };
+    child.once('error', onError);
+    child.on('message', onMessage);
+  });
+}
+
 describe('Desktop Host process', () => {
   it('boots the Cordis desktop composition and acknowledges graceful shutdown', async () => {
     const child = fork(hostEntry, [productRoot], {
@@ -46,6 +66,7 @@ describe('Desktop Host process', () => {
       expect(ready.receiver.origin).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/u);
       expect(ready.receiver.authorization).toMatch(/^Bearer /u);
 
+      const receivedDeltas = nextProjectionDeltas(child, 3);
       const response = await fetch(new URL('/v1/logs', ready.receiver.origin), {
         method: 'POST',
         headers: {
@@ -97,13 +118,24 @@ describe('Desktop Host process', () => {
         }),
       });
       expect(response.status).toBe(200);
-      const delta = await nextMessage(child);
-      expect(isDesktopHostEvent(delta)).toBe(true);
-      expect(delta).toMatchObject({
+      const deltas = await receivedDeltas;
+      expect(deltas.every(isDesktopHostEvent)).toBe(true);
+      expect(
+        deltas.map((event) =>
+          isDesktopHostEvent(event) && event.type === 'projection.delta'
+            ? event.delta.ingress.receiver.status
+            : null,
+        ),
+      ).toEqual(['receiving', 'receiving', 'ready']);
+      expect(deltas[2]).toMatchObject({
         type: 'projection.delta',
         delta: {
-          baseVersion: 0,
-          version: 1,
+          baseVersion: 2,
+          version: 3,
+          ingress: {
+            receiver: { acceptedBatches: 1, acceptedRecords: 1 },
+            destination: { id: 'desktop-local', health: 'healthy' },
+          },
           projection: {
             change: { id: 'desktop-dashboard-e2e', status: 'active' },
             run: { id: 'run-desktop-e2e', status: 'active' },

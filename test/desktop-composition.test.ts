@@ -21,10 +21,19 @@ async function dataRoot(): Promise<string> {
   return root;
 }
 
-async function postTrace(origin: string, authorization: string): Promise<Response> {
+async function postTrace(origin: string, authorization: string, replay = false): Promise<Response> {
   return fetch(new URL('/v1/traces', origin), {
     method: 'POST',
-    headers: { authorization, 'content-type': 'application/json' },
+    headers: {
+      authorization,
+      'content-type': 'application/json',
+      ...(replay
+        ? {
+            'x-repoctopus-destination-id': 'desktop-local',
+            'x-repoctopus-delivery-mode': 'replay',
+          }
+        : {}),
+    },
     body: JSON.stringify({ resourceSpans: [] }),
   });
 }
@@ -52,6 +61,29 @@ describe('desktop composition', () => {
       expect(app.context.desktopApplication.snapshot()).toEqual({
         apiVersion: DESKTOP_APPLICATION_CONTRACT,
         phase: 'ready',
+        ingress: {
+          receiver: {
+            status: 'ready',
+            acceptedBatches: 0,
+            acceptedRecords: 0,
+            rejectedRequests: 0,
+            lastReceivedAt: null,
+            lastDiagnosticCode: null,
+            lastSignal: null,
+          },
+          destination: {
+            id: 'desktop-local',
+            health: 'unknown',
+            deliveryGuarantee: 'at-least-once',
+          },
+          replay: {
+            status: 'idle',
+            receivedRecords: 0,
+            totalRecords: 0,
+            startedAt: null,
+            lastCompletedAt: null,
+          },
+        },
         projection: {
           schemaVersion: 1,
           version: 0,
@@ -71,6 +103,23 @@ describe('desktop composition', () => {
       const endpoint = app.context.desktopTelemetryReceiver.endpoint();
       expect(endpoint.origin).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/u);
       expect(endpoint.authorization).toMatch(/^Bearer [A-Za-z0-9_-]{43}$/u);
+
+      const replayStates: string[] = [];
+      const unsubscribe = app.context.desktopApplication.subscribe((delta) => {
+        replayStates.push(delta.ingress.replay.status);
+      });
+      await expect(postTrace(endpoint.origin, endpoint.authorization, true)).resolves.toMatchObject(
+        {
+          status: 200,
+        },
+      );
+      unsubscribe();
+      expect(replayStates).toEqual(['catching-up', 'idle']);
+      expect(app.context.desktopApplication.snapshot().ingress).toMatchObject({
+        receiver: { status: 'ready', acceptedBatches: 1, acceptedRecords: 0 },
+        destination: { id: 'desktop-local', health: 'healthy' },
+        replay: { status: 'idle', totalRecords: 0 },
+      });
     } finally {
       await app.close();
     }

@@ -13,6 +13,30 @@ import {
 import type { ChangeProjectionContext } from '../domains/telemetry/change-projection.js';
 import { DESKTOP_APPLICATION_CONTRACT } from '../services/desktop-application.js';
 
+const ingress = {
+  receiver: {
+    status: 'ready' as const,
+    acceptedBatches: 1,
+    acceptedRecords: 1,
+    rejectedRequests: 0,
+    lastReceivedAt: '2026-10-23T08:15:42.000Z',
+    lastDiagnosticCode: null,
+    lastSignal: 'logs' as const,
+  },
+  destination: {
+    id: 'desktop-local' as const,
+    health: 'healthy' as const,
+    deliveryGuarantee: 'at-least-once' as const,
+  },
+  replay: {
+    status: 'idle' as const,
+    receivedRecords: 1,
+    totalRecords: 1,
+    startedAt: null,
+    lastCompletedAt: '2026-10-23T08:15:42.000Z',
+  },
+};
+
 describe('desktop dashboard state matrix', () => {
   it('provides an executable fixture for every designed state', () => {
     expect(Object.keys(desktopDashboardFixtures)).toEqual(DASHBOARD_STATES);
@@ -65,6 +89,7 @@ describe('desktop dashboard state matrix', () => {
       executionSubjects: [],
       tasks: null,
       assurance: null,
+      recentEvents: [],
       latestSequence: 1,
       lastObservedAt,
       freshness: 'live',
@@ -100,6 +125,7 @@ describe('desktop dashboard state matrix', () => {
         snapshot: {
           apiVersion: DESKTOP_APPLICATION_CONTRACT,
           phase: 'ready',
+          ingress,
           projection: {
             schemaVersion: 1,
             version: 1,
@@ -113,6 +139,19 @@ describe('desktop dashboard state matrix', () => {
                 executionSubjects: [],
                 tasks: null,
                 assurance: null,
+                recentEvents: [
+                  {
+                    eventId: 'event-1',
+                    eventType: 'run.progressed',
+                    streamId: 'run-1',
+                    sequence: 1,
+                    observedAt: '2026-10-23T08:15:42.000Z',
+                    stageName: null,
+                    taskRef: null,
+                    taskStatus: null,
+                    verificationStatus: null,
+                  },
+                ],
                 latestSequence: 1,
                 lastObservedAt: '2026-10-23T08:15:42.000Z',
                 freshness: 'live',
@@ -146,6 +185,21 @@ describe('desktop dashboard state matrix', () => {
         activeTasks: [],
       },
       assurance: null,
+      diagnostics: [
+        { label: 'Receiver', value: '已就绪', tone: 'success' },
+        { label: '本地目的地', value: '健康', tone: 'success' },
+        { label: '新鲜度', value: '实时', tone: 'success' },
+        { label: '重放', value: '空闲', tone: 'neutral' },
+        { label: '序列', value: '完整', tone: 'success' },
+      ],
+      recentEvents: [
+        {
+          id: 'event-1',
+          type: 'run.progressed',
+          streamId: 'run-1',
+          sequence: 1,
+        },
+      ],
     });
   });
 });

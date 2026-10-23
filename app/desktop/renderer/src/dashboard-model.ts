@@ -109,6 +109,22 @@ export interface DashboardAssuranceModel {
   nextActions: readonly DashboardNextAction[];
 }
 
+export interface DashboardDiagnosticItem {
+  label: string;
+  value: string;
+  detail: string;
+  tone: StatusTone;
+}
+
+export interface DashboardRecentEvent {
+  id: string;
+  type: string;
+  detail: string;
+  streamId: string;
+  sequence: number;
+  observedAt: string;
+}
+
 export interface DashboardViewModel {
   state: DashboardState;
   tone: StatusTone;
@@ -123,6 +139,8 @@ export interface DashboardViewModel {
   summary: readonly DashboardSummaryItem[];
   execution: DashboardExecutionModel;
   assurance: DashboardAssuranceModel | null;
+  diagnostics: readonly DashboardDiagnosticItem[];
+  recentEvents: readonly DashboardRecentEvent[];
   lastObservedAt: string | null;
   ariaBusy: boolean;
   canRetry: boolean;
@@ -135,6 +153,13 @@ const noExecution: DashboardExecutionModel = {
   taskProgress: null,
   activeTasks: [],
 };
+const noDiagnostics: readonly DashboardDiagnosticItem[] = [
+  { label: 'Receiver', value: '尚未就绪', detail: '等待 Desktop Host', tone: 'neutral' },
+  { label: '本地目的地', value: '尚未就绪', detail: '等待 Receiver', tone: 'neutral' },
+  { label: '新鲜度', value: '尚无数据', detail: '等待首个观测事实', tone: 'neutral' },
+  { label: '重放', value: '空闲', detail: '尚无重放批次', tone: 'neutral' },
+  { label: '序列', value: '尚无数据', detail: '等待首个事件序列', tone: 'neutral' },
+];
 
 function shellModel(
   state: DashboardState,
@@ -147,6 +172,8 @@ function shellModel(
     | 'summary'
     | 'execution'
     | 'assurance'
+    | 'diagnostics'
+    | 'recentEvents'
     | 'lastObservedAt'
   >,
 ): DashboardViewModel {
@@ -158,9 +185,110 @@ function shellModel(
     summary: [],
     execution: noExecution,
     assurance: null,
+    diagnostics: noDiagnostics,
+    recentEvents: [],
     lastObservedAt: null,
     ...values,
   };
+}
+
+function gapText(context: ChangeProjectionContext): string {
+  return context.gap.ranges
+    .map((range) => (range.from === range.to ? String(range.from) : `${range.from}–${range.to}`))
+    .join('、');
+}
+
+const receiverDiagnosticDetail = {
+  unauthorized: '请求凭据无效；该批次已拒绝',
+  'method-not-allowed': '请求方法不受支持；该批次已拒绝',
+  'unsupported-content-type': '请求格式不受支持；该批次已拒绝',
+  'invalid-json': '请求不是有效 JSON；该批次已拒绝',
+  'invalid-otlp-payload': 'OTLP 结构无效；该批次已拒绝',
+  'receiver-busy': 'Receiver 正忙；发送端可以重试',
+  'receiver-unavailable': '投影暂不可用；发送端可以重试',
+} as const;
+
+function dashboardDiagnostics(
+  state: Extract<DesktopShellState, { phase: 'ready' }>,
+  context: ChangeProjectionContext | null,
+): DashboardDiagnosticItem[] {
+  const { ingress } = state.snapshot;
+  const receiverValue = {
+    ready: '已就绪',
+    receiving: '接收中',
+    degraded: '已降级',
+  }[ingress.receiver.status];
+  const receiverTone: StatusTone =
+    ingress.receiver.status === 'degraded'
+      ? 'danger'
+      : ingress.receiver.status === 'receiving'
+        ? 'accent'
+        : 'success';
+  const destinationValue = {
+    unknown: '等待首批确认',
+    healthy: '健康',
+    degraded: '降级',
+  }[ingress.destination.health];
+  const destinationTone: StatusTone =
+    ingress.destination.health === 'degraded'
+      ? 'danger'
+      : ingress.destination.health === 'healthy'
+        ? 'success'
+        : 'neutral';
+  const replaying = ingress.replay.status === 'catching-up';
+  const ranges = context === null ? '' : gapText(context);
+  return [
+    {
+      label: 'Receiver',
+      value: receiverValue,
+      detail:
+        ingress.receiver.status === 'degraded' && ingress.receiver.lastDiagnosticCode !== null
+          ? `${receiverDiagnosticDetail[ingress.receiver.lastDiagnosticCode]} · ${
+              ingress.receiver.lastSignal ?? '未知信号'
+            }`
+          : ingress.receiver.lastReceivedAt === null
+            ? '尚未收到 OTLP 批次'
+            : `已接收 ${ingress.receiver.acceptedBatches} 批、投影 ${ingress.receiver.acceptedRecords} 条${
+                ingress.receiver.rejectedRequests === 0
+                  ? ''
+                  : `；拒绝 ${ingress.receiver.rejectedRequests} 次`
+              }`,
+      tone: receiverTone,
+    },
+    {
+      label: '本地目的地',
+      value: destinationValue,
+      detail: `${ingress.destination.id} · ${ingress.destination.deliveryGuarantee}`,
+      tone: destinationTone,
+    },
+    {
+      label: '新鲜度',
+      value: context === null ? '尚无数据' : context.freshness === 'live' ? '实时' : '已过期',
+      detail: context === null ? '等待首个观测事实' : `最后观测 ${context.lastObservedAt}`,
+      tone: context === null ? 'neutral' : context.freshness === 'live' ? 'success' : 'warning',
+    },
+    {
+      label: '重放',
+      value: replaying ? '追平中' : '空闲',
+      detail: replaying
+        ? `本批次 ${ingress.replay.receivedRecords} / ${ingress.replay.totalRecords} 条`
+        : ingress.replay.lastCompletedAt === null
+          ? '尚无重放批次'
+          : `最近完成 ${ingress.replay.lastCompletedAt}`,
+      tone: replaying ? 'accent' : 'neutral',
+    },
+    {
+      label: '序列',
+      value: context === null ? '尚无数据' : context.gap.detected ? '存在缺口' : '完整',
+      detail:
+        context === null
+          ? '等待首个事件序列'
+          : context.gap.detected
+            ? `缺少序列 ${ranges}`
+            : `已确认至 ${context.latestSequence}`,
+      tone: context?.gap.detected === true ? 'warning' : context === null ? 'neutral' : 'success',
+    },
+  ];
 }
 
 export function dashboardContextId(workspaceId: string, changeId: string): string {
@@ -227,31 +355,42 @@ export function dashboardModelFromShell(
   }
 
   if (state.phase === 'error') {
-    return shellModel('error', {
-      tone: 'danger',
-      eyebrow: '接收端错误',
-      title: 'Desktop Host 无法启动',
-      description: state.message,
-      statusLabel: '需要处理',
-      statusDetail: '本地 Receiver 不可用；工作流与远端遥测不受阻塞',
-      ariaBusy: false,
-      canRetry: true,
-    });
+    return {
+      ...shellModel('error', {
+        tone: 'danger',
+        eyebrow: '接收端错误',
+        title: 'Desktop Host 无法启动',
+        description: state.message,
+        statusLabel: '需要处理',
+        statusDetail: '本地 Receiver 不可用；工作流与远端遥测不受阻塞',
+        ariaBusy: false,
+        canRetry: true,
+      }),
+      diagnostics: [
+        { label: 'Receiver', value: '不可用', detail: state.message, tone: 'danger' },
+        ...noDiagnostics.slice(1),
+      ],
+    };
   }
 
   const projection = state.snapshot.projection;
   if (projection.contexts.length === 0) {
-    return shellModel('empty', {
-      tone: 'neutral',
-      eyebrow: '等待数据',
-      title: '还没有可显示的 Change',
-      description:
-        'Desktop Host 与 Receiver 已就绪。首个 Repoctopus OTLP 上报到达后，这里会自动更新。',
-      statusLabel: '已连接',
-      statusDetail: 'Receiver 已就绪，尚未收到观测事实',
-      ariaBusy: false,
-      canRetry: false,
-    });
+    const replaying = state.snapshot.ingress.replay.status === 'catching-up';
+    return {
+      ...shellModel(replaying ? 'catching-up' : 'empty', {
+        tone: replaying ? 'accent' : 'neutral',
+        eyebrow: replaying ? '正在追平' : '等待数据',
+        title: replaying ? '正在接收重放批次' : '还没有可显示的 Change',
+        description: replaying
+          ? '本地目的地正在重放积压的 OTLP envelope；首个可信 Change 事实到达后会自动显示。'
+          : 'Desktop Host 与 Receiver 已就绪。首个 Repoctopus OTLP 上报到达后，这里会自动更新。',
+        statusLabel: replaying ? '追平中' : '已连接',
+        statusDetail: replaying ? '本地目的地正在重放' : 'Receiver 已就绪，尚未收到观测事实',
+        ariaBusy: replaying,
+        canRetry: false,
+      }),
+      diagnostics: dashboardDiagnostics(state, null),
+    };
   }
 
   const selectedId = reconcileDashboardSelection(
@@ -313,6 +452,20 @@ export function dashboardModelFromShell(
           blockers: selected.assurance.blockers,
           nextActions: selected.assurance.nextActions,
         };
+  const diagnostics = dashboardDiagnostics(state, selected);
+  const recentEvents: DashboardRecentEvent[] = selected.recentEvents.map((event) => ({
+    id: event.eventId,
+    type: event.eventType,
+    detail:
+      event.taskRef ??
+      event.stageName ??
+      event.verificationStatus ??
+      event.taskStatus ??
+      event.eventId,
+    streamId: event.streamId,
+    sequence: event.sequence,
+    observedAt: event.observedAt,
+  }));
   const common = {
     context,
     navigation: dashboardNavigation(projection.contexts),
@@ -320,15 +473,15 @@ export function dashboardModelFromShell(
     summary,
     execution,
     assurance,
+    diagnostics,
+    recentEvents,
     lastObservedAt: selected.lastObservedAt,
     ariaBusy: false,
     canRetry: false,
   } as const;
 
   if (selected.gap.detected) {
-    const ranges = selected.gap.ranges
-      .map((range) => (range.from === range.to ? String(range.from) : `${range.from}–${range.to}`))
-      .join('、');
+    const ranges = gapText(selected);
     return {
       state: 'gap',
       tone: 'warning',
@@ -338,6 +491,20 @@ export function dashboardModelFromShell(
       statusLabel: '存在缺口',
       statusDetail: `缺少序列 ${ranges}`,
       ...common,
+    };
+  }
+
+  if (state.snapshot.ingress.replay.status === 'catching-up') {
+    return {
+      state: 'catching-up',
+      tone: 'accent',
+      eyebrow: '正在追平',
+      title: change.id,
+      description: '本地目的地正在重放积压的 OTLP envelope；已确认事实会持续更新。',
+      statusLabel: '追平中',
+      statusDetail: `正在处理 ${state.snapshot.ingress.replay.totalRecords} 条重放记录`,
+      ...common,
+      ariaBusy: true,
     };
   }
 
@@ -400,7 +567,7 @@ export function dashboardModelFromShell(
     title: change.id,
     description: '当前状态由 Desktop Host 接收的标准 OTLP 上报驱动，不读取 Workspace 文件。',
     statusLabel: '实时',
-    statusDetail: 'Receiver 正在接收上报',
+    statusDetail: 'Receiver 已就绪，等待或接收 OTLP 上报',
     ...common,
   };
 }

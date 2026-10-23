@@ -1,26 +1,21 @@
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 
+import type {
+  DesktopTelemetryDiagnostic,
+  DesktopTelemetrySignal,
+} from '../../services/desktop-telemetry-receiver.js';
 import type { HttpRequest, HttpResponse, HttpRoute } from '../../services/http-host.js';
 import { NodeHttpServer, type NodeHttpServerCloseResult } from '../http/node-http-server.js';
 
-export type DesktopOtlpSignal = 'traces' | 'logs' | 'metrics';
+export type DesktopOtlpSignal = DesktopTelemetrySignal;
 
 export interface DesktopOtlpBatch {
   signal: DesktopOtlpSignal;
   payload: Readonly<Record<string, unknown>>;
+  delivery?: { destinationId: 'desktop-local'; mode: 'replay' } | null;
 }
 
-export interface DesktopOtlpDiagnostic {
-  code:
-    | 'unauthorized'
-    | 'method-not-allowed'
-    | 'unsupported-content-type'
-    | 'invalid-json'
-    | 'invalid-otlp-payload'
-    | 'receiver-busy'
-    | 'receiver-unavailable';
-  signal: DesktopOtlpSignal;
-}
+export type DesktopOtlpDiagnostic = DesktopTelemetryDiagnostic;
 
 export interface DesktopOtlpReceiverOptions {
   sessionToken: string;
@@ -60,6 +55,15 @@ function authorized(request: HttpRequest, expectedToken: string): boolean {
 
 function contentType(request: HttpRequest): string | undefined {
   return singleHeader(request, 'content-type')?.split(';', 1)[0]?.trim().toLowerCase();
+}
+
+function deliveryMetadata(
+  request: HttpRequest,
+): { destinationId: 'desktop-local'; mode: 'replay' } | null {
+  return singleHeader(request, 'x-repoctopus-destination-id') === 'desktop-local' &&
+    singleHeader(request, 'x-repoctopus-delivery-mode') === 'replay'
+    ? { destinationId: 'desktop-local', mode: 'replay' }
+    : null;
 }
 
 function decodeJson(body: Uint8Array): unknown {
@@ -182,7 +186,7 @@ export class DesktopOtlpReceiver {
         return response(400, 'invalid-otlp-payload');
       }
       try {
-        await this.options.accept({ signal, payload });
+        await this.options.accept({ signal, payload, delivery: deliveryMetadata(request) });
       } catch {
         this.diagnose('receiver-unavailable', signal);
         return response(503, 'receiver-unavailable');

@@ -31,7 +31,10 @@ export class DesktopObservationDestinationProvider extends DesktopTelemetryDesti
     const pending = await this.store.pending(DESKTOP_LOCAL_DESTINATION_ID);
     if (pending.length === 0) return { delivered: 0, pending: 0 };
     try {
-      await new ObservationOtlpJsonDestination(endpoint).deliver(pending);
+      await new ObservationOtlpJsonDestination(endpoint).deliver(pending, {
+        destinationId: DESKTOP_LOCAL_DESTINATION_ID,
+        mode: 'replay',
+      });
       for (const envelope of pending) {
         await this.store.acknowledge(DESKTOP_LOCAL_DESTINATION_ID, envelope);
       }

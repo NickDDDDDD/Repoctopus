@@ -191,6 +191,10 @@ async function inspect(window) {
     !state.body.includes('下一步动作') ||
     !state.body.includes('阶段与任务') ||
     !state.body.includes('验证与阻塞') ||
+    !state.body.includes('接收与事件') ||
+    !state.body.includes('本地目的地') ||
+    !state.body.includes('desktop-local') ||
+    !state.body.includes('run.progressed') ||
     !state.body.includes('最近事件')
   ) {
     throw new Error(`Desktop did not render the OTLP projection: ${JSON.stringify(state)}`);
