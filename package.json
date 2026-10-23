@@ -54,6 +54,7 @@
     "test:package-e2e": "vitest run test/e2e/package.e2e.test.ts",
     "test:desktop-e2e": "npm run build:desktop && vitest run test/desktop-host.e2e.test.ts",
     "test:platform-event-recovery-e2e": "vitest run test/e2e/platform-event-recovery.e2e.test.ts",
+    "test:telemetry-docs": "vitest run test/telemetry-docs.test.ts",
     "test:tracer-e2e": "vitest run test/e2e/runtime-tracer.e2e.test.ts",
     "typecheck:desktop": "tsc --noEmit -p app/desktop/renderer/tsconfig.json",
     "desktop:start": "npm run desktop:prepare && npm run build:desktop && electron dist/desktop/main.js",

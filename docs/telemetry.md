@@ -1,87 +1,100 @@
-# OpenTelemetry
+# 配置 OpenTelemetry 与桌面 Dashboard
 
-Repoctopus 通过标准 OTLP HTTP 导出适配自部署 SigNoz 等后端。领域层只产生稳定事实，不依赖具体观测产品。
+你可以把同一批 Repoctopus 观测 envelope 同时发送到团队 OTLP 后端和本地桌面 Dashboard。两个目的地分别确认；任一目的地不可用时，开发 Run 和另一个目的地继续运行。
 
-## 配置
+本指南面向在 Windows 上开发 Repoctopus 的工程师。开始前，请安装 Node.js `22.16+` 或 `24+`，执行 `npm install` 和 `npm run build`，并准备一个含 `repoctopus.yaml` 的 Workspace。
 
-设置标准环境变量后启动 CLI：
+## 选择运行方式
+
+| 方式       | 前提                                       | 预期结果                                                    |
+| ---------- | ------------------------------------------ | ----------------------------------------------------------- |
+| 仅远端     | 新 Workspace，Dashboard 不可用             | `remote-otlp` 确认数据；Run 返回非阻塞桌面 warning          |
+| 远端和桌面 | 远端端点可达，开发版 Dashboard 已构建      | 两个目的地收到相同 envelope 身份并分别确认                  |
+| 桌面关闭   | `desktop-local` 已建立，随后关闭 Dashboard | 远端继续确认；本地 Cursor 保留积压和失败健康状态            |
+| 桌面恢复   | 再次执行 `run start`，Dashboard 可以启动   | Runtime 先重放本地积压，再显示当前 change；远端 Cursor 不变 |
+
+Repoctopus 不使用 SigNoZ 查询刷新桌面。Runtime 为两个目的地编码相同的标准 OTLP Trace、Log 和 Metric；本地 Receiver 接受上报后通过 IPC 推送投影更新。
+
+## 配置仅远端上报
+
+在从未激活 Dashboard 的新 Workspace 中，设置标准 OTLP/HTTP 环境变量并启动 Run：
 
 ```powershell
 $env:OTEL_EXPORTER_OTLP_ENDPOINT = 'http://signoz.example.internal:4318'
-$env:REPOCTOPUS_ENVIRONMENT = 'development'
-node bin/repoctopus.js evidence run --workspace . --profile verify --json
+$env:OTEL_EXPORTER_OTLP_HEADERS = 'signoz-ingestion-key=<credential>'
+node bin/repoctopus.js run start --workspace . --change <change-id> --json
 ```
 
-也可以分别使用 `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`、`OTEL_EXPORTER_OTLP_LOGS_ENDPOINT` 和 `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT`。没有配置端点时使用空实现，不影响本地 Evidence。
+公共端点必须是 OTLP HTTP 根地址。Repoctopus 会追加 `/v1/traces`、`/v1/logs` 和 `/v1/metrics`。不要把凭据写入 `repoctopus.yaml` 或提交到 Git。
 
-## 先落盘，再导出
+如果后端为三类信号提供不同 URL，请一次配置全部三个端点：
 
-Attempt、Receipt、Artifact、Bundle 和 Gate 先持久化。之后 Runtime 把允许列表事件写入 `.repoctopus/evidence/telemetry/`，导出成功才推进 cursor。后端失败时：
+```powershell
+$env:OTEL_EXPORTER_OTLP_TRACES_ENDPOINT = 'https://otel.example.internal/v1/traces'
+$env:OTEL_EXPORTER_OTLP_LOGS_ENDPOINT = 'https://otel.example.internal/v1/logs'
+$env:OTEL_EXPORTER_OTLP_METRICS_ENDPOINT = 'https://otel.example.internal/v1/metrics'
+node bin/repoctopus.js run start --workspace . --change <change-id> --json
+```
 
-- Evidence Run 的结果保持有效；
-- cursor 不前进；
-- `evidence resume --attempt <id>` 或后续 Runtime 恢复可以重放；
-- 稳定 event ID 和 cursor 防止同一客户端重复导出已经确认的事件。
+只配置一个或两个信号端点会失败，因为那会让团队端看到不完整的工作流状态。没有配置任何远端端点时，Repoctopus 仍持久化本地 envelope，但不会建立 `remote-otlp` Cursor。
 
-## 关联模型
+## 同时启用桌面 Dashboard
 
-Repoctopus 只从当前 envelope 对应的持久事件或同版本状态建立关联。消费者必须把缺失属性解释为“尚未上报”，不能根据文本、最新 Run 状态或自定义 trigger facts 补造值。
+在 Repoctopus 源码 Workspace 中，先准备 Electron，再构建桌面应用：
 
-- Workflow Run 是根关联 ID。
-- Evidence Attempt、节点 Receipt、Artifact 引用和 Gate Outcome 使用稳定 ID 相互关联。
-- Receipt 复用通过 `sourceReceiptId` 保留来源身份。
-- Attempt 和节点映射为 Span；Artifact、恢复、漂移和 Gate 映射为固定名称 Log/Event；耗时与结果映射为低基数 Metric。
-- Workflow、Evidence 与 Delivery 事件都携带当前 composition digest，便于把团队审计结果关联到实际生效的 Provider、Contributor 和配置身份。
-- App 生命周期记录插件激活、重载与操作排空结果；排空超时只上报服务名、剩余数量和恢复分类，不上报 Journal 或错误正文。
-- App 生命周期批次最多导出两次；仍失败时记录 `LIFECYCLE_TELEMETRY_EXPORT_FAILED` 和 `dropped_after_retry`，不保留 OTLP 错误正文，也不改变领域结果。
+```powershell
+npm run desktop:prepare
+npm run build:desktop
+```
 
-### 可信状态属性
+保留上一节的 OTLP 环境变量，然后启动 Run：
 
-非 Metric 的 Span 和 Log 使用以下公共属性重建桌面状态。表中的来源是唯一可信来源；来源不存在时，映射省略对应属性。
+```powershell
+node bin/repoctopus.js run start --workspace . --change <change-id> --json
+```
 
-| 状态       | 属性                                                                                     | 持久事实来源                                                                   |
-| ---------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Workspace  | `repoctopus.workspace.id`                                                                | Run 固定的 Project Snapshot `projectId`                                        |
-| change     | `repoctopus.change.id`                                                                   | Run 的固定 `changeId` 或 Delivery State `changeId`                             |
-| Run        | `repoctopus.run.id`                                                                      | Run State `runId`                                                              |
-| 父子执行   | `repoctopus.execution.id`、`repoctopus.execution.parent.id`、`repoctopus.execution.kind` | Run→Action、Run→Evidence Attempt、Attempt→Evidence Node 的持久关系             |
-| 阶段       | `repoctopus.stage.name`                                                                  | `run.started` 的工作流入口、已持久化 Action `stepId` 或 Delivery Approval 状态 |
-| 执行主体   | `repoctopus.execution.subject.kind`、`.id`、`.provider`                                  | Evidence Receipt 的 Adapter 或 Delivery Approval 的可信 Actor                  |
-| 任务       | `repoctopus.task.id`、`.type`、`.ref`、`.status`                                         | 已持久化 Action、Evidence Receipt 或 Human Decision Request                    |
-| 验证       | `repoctopus.verification.id`、`.status`、`.outcome`                                      | Evidence Attempt 与 Gate 事件                                                  |
-| 阻塞       | `repoctopus.blocker.category`、`.request.id`                                             | `ask_user` Action、阻塞的 Evidence Gate 或 Human Decision Request              |
-| 下一步动作 | `repoctopus.next_action.id`、`.type`、`.ref`、`.stage`                                   | `action.proposed` 或仍处于等待状态的 Human Decision Request                    |
-| 观测时间   | `repoctopus.observed_at` 和 OTLP 时间字段                                                | 领域事件 `timestamp`；不使用接收时间或最新状态更新时间                         |
+`run start` 会启动或激活单实例 Dashboard，取得临时回环 Receiver 端点，并重放 `desktop-local` 的未确认 envelope。临时端口和会话凭据不是目的地身份，也不会写入远端配置。
 
-当前 Run State 没有持久化 Agent 身份。因此 Workflow Action 不导出推断的 Agent；只有 Evidence Adapter 和可信人工决策 Actor 能作为执行主体。任意 `trigger.facts.agentId`、`parentRunId` 或事件附带的自由文本 `nextAction` 都不会进入公共属性。
+## 验证桌面关闭时的降级
 
-### Post-merge 关联
+先成功运行一次远端加桌面场景，再关闭 Dashboard 窗口。当前开发版在最后一个窗口关闭时退出 Desktop Host 和本地 Receiver。
 
-Post-merge Workflow Log 和 Span 使用持久身份连接平台合入、Evidence、规格关闭和远端发布，不复制对应内容。
+正在运行的 Repoctopus 仍会持久化新 envelope 并向 `remote-otlp` 投递。Runtime 尝试本地重放且失败时，只产生 `desktop-telemetry-replay-failed` warning；它不会回滚领域事实、远端确认或 Evidence 结果。
 
-| 属性                                       | 含义                                                                        |
-| ------------------------------------------ | --------------------------------------------------------------------------- |
-| `repoctopus.run.id`                        | Post-merge Run 根关联 ID                                                    |
-| `repoctopus.post_merge.change.id`          | 通过安全格式检查的 change ID                                                |
-| `repoctopus.post_merge.merge_facts.digest` | 排序后权威合入事实的摘要                                                    |
-| `repoctopus.evidence.attempt.id`           | 当前 Evidence Attempt                                                       |
-| `repoctopus.evidence.bundle.id`            | Gate 使用的 Evidence Bundle                                                 |
-| `repoctopus.evidence.gate.status`          | `satisfied` 或 `blocked`                                                    |
-| `repoctopus.action.receipt.id`             | Runtime Action Dispatcher Receipt                                           |
-| `repoctopus.post_merge.receipt.kind`       | `checkout-manifest`、`specification-closure`、`path-audit` 或 `publication` |
-| `repoctopus.post_merge.receipt.id`         | 对应领域 Receipt 或 Manifest 摘要                                           |
+如果你在 Dashboard 不可用时启动新 Run，命令可能返回以下非阻塞 warning：
 
-Log 和 Span 可以携带这些高基数关联 ID。Metric 只使用工作流名、事件类型、动作结果、Evidence Adapter、状态等有界维度；它们不使用 Run、change、Attempt、Bundle、Delivery、Envelope 或 Receipt ID，避免时间序列数量随执行次数增长。
+- `desktop-application-unavailable`：没有可启动的桌面应用；先执行桌面准备和构建命令。
+- `desktop-platform-unsupported`：当前平台不是首发支持的 Windows；继续使用远端 OTLP。
+- `desktop-activation-timeout`：Shell 没有在截止时间内发布 Receiver；结束残留桌面进程后重试。
+- `desktop-activation-failed`：启动或激活失败；检查桌面构建和进程日志。
+- `desktop-telemetry-replay-failed`：Receiver 已发布但本地重放失败；恢复 Dashboard 后启动下一个 Run。
 
-## 隐私边界
+这些 warning 不包含 OTLP 响应正文、凭据或 envelope 内容。
 
-OTel 属性只允许稳定 ID、Adapter、状态、可信等级、耗时，以及 Artifact 的类型、摘要、大小、MIME 和脱敏标记。以下内容不会进入属性：
+## 恢复桌面并重放积压
 
-- 命令输出、服务日志与健康响应正文；
-- DOM、截图正文、视觉请求或响应；
-- 本机绝对路径；
-- token、密码、Cookie、Authorization 或其他敏感值。
+确认桌面构建仍然存在，然后启动下一个 Run：
 
-原始内容只保存在受本机保留策略管理的 Artifact Store 中。遥测失败诊断也不会被写回领域事实。
+```powershell
+node bin/repoctopus.js run start --workspace . --change <change-id> --json
+```
 
-Post-merge 属性映射还会拒绝格式异常、疑似 Token、绝对路径、换行和超长值。Action summary、规格正文、MR body、commit message、仓库 URL、文件列表和 webhook payload 不进入关联属性。
+Runtime 在持久化新 Run 前激活 Dashboard，并用新的会话端点重放 `desktop-local` 积压。桌面确认只推进本地 Cursor；它不会重置或重放已经确认的 `remote-otlp` 数据。
+
+投递采用 at-least-once。桌面投影通过稳定事件身份收敛重复记录；Repoctopus 不宣称多目的地 exactly-once。
+
+## 运行四场景冒烟测试
+
+执行文档契约测试：
+
+```powershell
+npm run test:telemetry-docs
+```
+
+测试使用远端和本地两个真实 OTLP HTTP 目的地，并在恢复时重建本地 Receiver。它覆盖仅远端、远端加桌面、桌面关闭和桌面恢复，还验证本页链接、命令、默认保留预算、目的地身份和环境变量名称与实现一致。
+
+## 下一步
+
+- 阅读[遥测数据与恢复契约](telemetry-reference.md)，了解 envelope 身份、Cursor、保留上限、可信关联和隐私边界。
+- 阅读[Runtime 状态与恢复](runtime-state.md)，区分领域状态、轨迹和遥测投递状态。
+- 运行 `npm run desktop:smoke`；[smoke 实现](../scripts/smoke-desktop.mjs)会验证 Electron Shell、Desktop Host、Receiver 和 Renderer 的完整纵切。

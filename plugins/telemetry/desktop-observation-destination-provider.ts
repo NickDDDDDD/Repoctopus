@@ -8,7 +8,7 @@ import {
   type DesktopReplayResult,
 } from '../../services/desktop-runtime.js';
 
-const DESTINATION_ID = 'desktop-local';
+export const DESKTOP_LOCAL_DESTINATION_ID = 'desktop-local';
 
 export interface DesktopObservationDestinationConfig {
   workspaceRoot: string;
@@ -23,19 +23,21 @@ export class DesktopObservationDestinationProvider extends DesktopTelemetryDesti
   }
 
   async replay(endpoint: DesktopTelemetryEndpoint): Promise<DesktopReplayResult> {
-    await this.store.ensureDestination(DESTINATION_ID);
-    const before = await this.store.inspectDestination(DESTINATION_ID);
+    await this.store.ensureDestination(DESKTOP_LOCAL_DESTINATION_ID);
+    const before = await this.store.inspectDestination(DESKTOP_LOCAL_DESTINATION_ID);
     if (before.state !== 'enabled') {
       return { delivered: 0, pending: before.backlog.envelopeCount };
     }
-    const pending = await this.store.pending(DESTINATION_ID);
+    const pending = await this.store.pending(DESKTOP_LOCAL_DESTINATION_ID);
     if (pending.length === 0) return { delivered: 0, pending: 0 };
     try {
       await new ObservationOtlpJsonDestination(endpoint).deliver(pending);
-      for (const envelope of pending) await this.store.acknowledge(DESTINATION_ID, envelope);
+      for (const envelope of pending) {
+        await this.store.acknowledge(DESKTOP_LOCAL_DESTINATION_ID, envelope);
+      }
       return { delivered: pending.length, pending: 0 };
     } catch (error) {
-      await this.store.recordFailure(DESTINATION_ID, 'desktop-delivery-failed');
+      await this.store.recordFailure(DESKTOP_LOCAL_DESTINATION_ID, 'desktop-delivery-failed');
       throw new Error('Desktop telemetry replay failed', { cause: error });
     }
   }
