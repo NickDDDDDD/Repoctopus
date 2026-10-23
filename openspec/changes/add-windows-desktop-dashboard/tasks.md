@@ -29,7 +29,7 @@
 
 - [x] 4.1 建立 Repoctopus Desktop 的语义组件、设计 token、窗口信息架构和完整状态矩阵，用可执行 Story/fixture 覆盖启动、空、稀疏、实时、追平、过期、gap、错误、完成和失败状态。
 - [x] 4.2 实现 Workspace/change 导航与选择保持，用多 Workspace、多 change fixture 验证新上报不会抢占用户当前视图，首次无选择时才聚焦启动来源。
-- [ ] 4.3 实现 Run 概览、阶段、执行主体、任务进度和活动任务界面，用 OTLP fixture 验证字段缺失显示“尚未上报”且不扫描 OpenSpec、Git 或领域 Store。
+- [x] 4.3 实现 Run 概览、阶段、执行主体、任务进度和活动任务界面，用 OTLP fixture 验证字段缺失显示“尚未上报”且不扫描 OpenSpec、Git 或领域 Store。
 - [ ] 4.4 实现 Evidence、Gate、Artifact 元数据、blocker/Human Decision 和下一步动作界面，用脱敏 fixture 验证不显示正文、绝对路径、Prompt、回复或命令输出。
 - [ ] 4.5 实现最近事件、接收状态、目的地健康、新鲜度、重放和 gap 诊断，用 IPC 序列测试证明 snapshot 之后只应用更高版本 delta，序列缺口会重新取得 snapshot 而非开始轮询。
 - [ ] 4.6 完成键盘导航、可见焦点、可访问名称、长文本、大数值和高 DPI Windows 布局验证；运行 Renderer 组件测试、自动化可访问性检查和关键状态截图审查并修复发现。
