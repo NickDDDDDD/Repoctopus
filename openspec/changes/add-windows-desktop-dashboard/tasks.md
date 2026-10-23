@@ -27,7 +27,7 @@
 
 ## 4. 完成桌面状态投影与开发者界面
 
-- [ ] 4.1 建立 Repoctopus Desktop 的语义组件、设计 token、窗口信息架构和完整状态矩阵，用可执行 Story/fixture 覆盖启动、空、稀疏、实时、追平、过期、gap、错误、完成和失败状态。
+- [x] 4.1 建立 Repoctopus Desktop 的语义组件、设计 token、窗口信息架构和完整状态矩阵，用可执行 Story/fixture 覆盖启动、空、稀疏、实时、追平、过期、gap、错误、完成和失败状态。
 - [ ] 4.2 实现 Workspace/change 导航与选择保持，用多 Workspace、多 change fixture 验证新上报不会抢占用户当前视图，首次无选择时才聚焦启动来源。
 - [ ] 4.3 实现 Run 概览、阶段、执行主体、任务进度和活动任务界面，用 OTLP fixture 验证字段缺失显示“尚未上报”且不扫描 OpenSpec、Git 或领域 Store。
 - [ ] 4.4 实现 Evidence、Gate、Artifact 元数据、blocker/Human Decision 和下一步动作界面，用脱敏 fixture 验证不显示正文、绝对路径、Prompt、回复或命令输出。
