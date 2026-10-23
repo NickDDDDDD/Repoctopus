@@ -7,6 +7,7 @@ import { Context } from '@deepseek-ai/cordis';
 import { EvidenceCoordinator } from '../services/evidence-coordinator.js';
 import { CompositionIdentity } from '../services/composition-identity.js';
 import { FileRunStoreProvider } from '../plugins/run/file-run-store-provider.js';
+import { ObservationTelemetryProvider } from '../plugins/telemetry/observation-telemetry-provider.js';
 import { EvidenceAdapters } from '../services/evidence-adapters.js';
 import {
   localBrowserContributor,
@@ -77,6 +78,7 @@ async function fixture() {
   contexts.push(context);
   new CompositionIdentity(context, compositionFixture());
   new FileRunStoreProvider(context, { workspaceRoot: workspace });
+  new ObservationTelemetryProvider(context, { workspaceRoot: workspace, environment: {} });
   new EvidenceAdapters(context);
   await context.plugin(localCommandContributor);
   await context.plugin(localServiceContributor, { workspaceRoot: workspace });

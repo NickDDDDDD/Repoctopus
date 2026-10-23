@@ -68,5 +68,11 @@
       "path": "platform/telemetry/opentelemetry/rogue-workflow-exporter.ts",
       "contents": "export function exportWorkflow(batch: TelemetryBatch) { return batch.events; }"
     }
+  ],
+  "evidenceTelemetryBypass": [
+    {
+      "path": "platform/telemetry/opentelemetry/rogue-evidence-exporter.ts",
+      "contents": "export function exportEvidence(batch: EvidenceTelemetryBatch) { return batch.events; }"
+    }
   ]
 }

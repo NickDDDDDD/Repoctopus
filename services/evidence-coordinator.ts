@@ -36,7 +36,7 @@ import { collectRepositoryFingerprint } from '../platform/git/evidence-fingerpri
 import { loadProjectConfig } from '../platform/project-configuration/file-config.js';
 import { FileResourceLeaseManager } from '../platform/runtime/resource-lease.js';
 import { FileEvidenceTelemetryOutbox } from '../platform/telemetry/evidence-outbox.js';
-import { evidenceTelemetryFromEnvironment } from '../platform/telemetry/opentelemetry/evidence-exporter.js';
+import { mapEvidenceObservationEnvelope } from '../platform/telemetry/observation-evidence-mapping.js';
 import { bindOperationOwnership, type OperationOwnership } from './operation-ownership.js';
 
 interface WorkflowEvidenceBinding {
@@ -129,12 +129,11 @@ async function optional<T>(operation: () => Promise<T>): Promise<T | null> {
 
 export interface EvidenceCoordinatorConfig {
   workspaceRoot: string;
-  environment?: NodeJS.ProcessEnv;
   telemetry?: EvidenceTelemetryPort;
 }
 
 export class EvidenceCoordinator extends Service {
-  static inject = ['compositionIdentity', 'evidenceAdapters', 'runStore'];
+  static inject = ['compositionIdentity', 'evidenceAdapters', 'observationTelemetry', 'runStore'];
 
   private readonly store: FileEvidenceStore;
   private readonly journal: FileEvidenceJournal;
@@ -149,7 +148,13 @@ export class EvidenceCoordinator extends Service {
     this.operations = bindOperationOwnership(context, 'evidenceCoordinator');
     this.workspace = path.resolve(config.workspaceRoot);
     this.telemetry =
-      config.telemetry ?? evidenceTelemetryFromEnvironment(config.environment ?? process.env);
+      config.telemetry ??
+      ({
+        export: (batch) =>
+          context.observationTelemetry.publish(
+            batch.events.map((event) => mapEvidenceObservationEnvelope(batch, event)),
+          ),
+      } satisfies EvidenceTelemetryPort);
     this.store = new FileEvidenceStore(this.workspace);
     this.journal = new FileEvidenceJournal(this.workspace);
     this.leases = new FileResourceLeaseManager(this.workspace);

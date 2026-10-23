@@ -59,6 +59,7 @@ describe('project composition assembly', () => {
       expect.arrayContaining([
         'desktop-launcher-windows',
         'desktop-observation-destination',
+        'observation-telemetry-otlp',
         'skill-provider-matt',
         'skill-provider-filesystem',
         'specification-openspec',

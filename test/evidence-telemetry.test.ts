@@ -21,8 +21,12 @@ import type {
 import { createEvidenceTelemetryBatch } from '../domains/evidence/telemetry.js';
 import type { SharedProjectConfig } from '../domains/project-configuration/types.js';
 import { FileEvidenceTelemetryOutbox } from '../platform/telemetry/evidence-outbox.js';
+import { ObservationTelemetryProvider } from '../plugins/telemetry/observation-telemetry-provider.js';
 import { FileRuntimeStore } from '../platform/runtime/file-runtime-store.js';
-import { safeEvidenceAttributes } from '../platform/telemetry/evidence-mapping.js';
+import {
+  evidenceObservationAttributes,
+  mapEvidenceObservationEnvelope,
+} from '../platform/telemetry/observation-evidence-mapping.js';
 import {
   compositionFixture,
   commitGitRepository,
@@ -92,6 +96,7 @@ describe('Evidence telemetry outbox', () => {
     contexts.push(context);
     new CompositionIdentity(context, compositionFixture());
     new FileRunStoreProvider(context, { workspaceRoot: workspace });
+    new ObservationTelemetryProvider(context, { workspaceRoot: workspace, environment: {} });
     new EvidenceAdapters(context);
     await context.plugin(localCommandContributor);
     await context.plugin(localServiceContributor, { workspaceRoot: workspace });
@@ -197,7 +202,7 @@ describe('Evidence telemetry outbox', () => {
         },
       ],
     };
-    const attributes = safeEvidenceAttributes(batch, batch.events[0]!);
+    const attributes = evidenceObservationAttributes(batch, batch.events[0]!);
     expect(attributes).toMatchObject({
       'repoctopus.run.id': 'run',
       'repoctopus.evidence.attempt.id': 'attempt',
@@ -206,6 +211,65 @@ describe('Evidence telemetry outbox', () => {
     });
     expect(JSON.stringify(attributes)).not.toMatch(
       /private|secret command output|bearer|password|raw-png|visual request|visual response/iu,
+    );
+    const envelope = mapEvidenceObservationEnvelope(batch, batch.events[0]!);
+    expect(JSON.stringify(envelope)).not.toMatch(
+      /private|secret command output|bearer|password|raw-png|visual request|visual response/iu,
+    );
+  });
+
+  it('maps replay, superseded attempts and reused receipts to stable envelopes', () => {
+    const batch: EvidenceTelemetryBatch = {
+      schemaVersion: 1,
+      runId: 'run-evidence-stability',
+      attemptId: 'attempt-evidence-stability',
+      profileId: 'verify',
+      compositionDigest: compositionFixture().compositionDigest,
+      events: [
+        {
+          schemaVersion: 1,
+          sequence: 1,
+          eventId: 'event-reused-receipt',
+          type: 'evidence.node.completed',
+          timestamp: '2026-10-23T10:00:00.000Z',
+          runId: 'run-evidence-stability',
+          attemptId: 'attempt-evidence-stability',
+          data: {
+            nodeId: 'build',
+            receiptId: 'receipt-current',
+            sourceReceiptId: 'receipt-source',
+            adapter: 'command/local',
+            trust: 'verified',
+            freshness: 'reused',
+            status: 'passed',
+            durationMs: 10,
+          },
+        },
+        {
+          schemaVersion: 1,
+          sequence: 2,
+          eventId: 'event-superseded-attempt',
+          type: 'evidence.attempt.completed',
+          timestamp: '2026-10-23T10:00:01.000Z',
+          runId: 'run-evidence-stability',
+          attemptId: 'attempt-evidence-stability',
+          data: { status: 'superseded' },
+        },
+      ],
+    };
+
+    const first = batch.events.map((event) => mapEvidenceObservationEnvelope(batch, event));
+    const replay = batch.events.map((event) => mapEvidenceObservationEnvelope(batch, event));
+    expect(replay).toEqual(first);
+    expect(first[0]?.attributes).toMatchObject({
+      'repoctopus.evidence.freshness': 'reused',
+      'repoctopus.evidence.sourceReceiptId': 'receipt-source',
+    });
+    expect(first[1]?.attributes).toMatchObject({
+      'repoctopus.evidence.status': 'superseded',
+    });
+    expect(first[1]?.signals).toEqual(
+      expect.arrayContaining([expect.objectContaining({ kind: 'log', severity: 'warn' })]),
     );
   });
 });

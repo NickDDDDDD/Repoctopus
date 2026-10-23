@@ -7,9 +7,12 @@ import { startRun } from '../domains/engine/loop.js';
 import type { TelemetryBatch } from '../domains/runtime/types.js';
 import type { TrajectoryEvent } from '../domains/trajectory/types.js';
 import {
-  REMOTE_OTLP_DESTINATION_ID,
   WorkflowTelemetryProvider,
 } from '../plugins/run/workflow-telemetry-provider.js';
+import {
+  ObservationTelemetryProvider,
+  REMOTE_OTLP_DESTINATION_ID,
+} from '../plugins/telemetry/observation-telemetry-provider.js';
 import { FileObservationEnvelopeStore } from '../platform/telemetry/observation-envelope-store.js';
 import {
   compositionFixture,
@@ -77,12 +80,13 @@ describe('WorkflowTelemetryProvider remote replay', () => {
     cleanup.push(workspace);
     const context = new Context();
     contexts.push(context);
-    const telemetry = new WorkflowTelemetryProvider(context, {
+    new ObservationTelemetryProvider(context, {
       workspaceRoot: workspace,
       environment: {
         OTEL_EXPORTER_OTLP_ENDPOINT: `http://127.0.0.1:${address.port}`,
       },
     });
+    const telemetry = new WorkflowTelemetryProvider(context);
     const store = new FileObservationEnvelopeStore(workspace);
     const input = batch();
 

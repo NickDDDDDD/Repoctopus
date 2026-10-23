@@ -4,12 +4,14 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { startRun } from '../domains/engine/loop.js';
 import type { TelemetryBatch } from '../domains/runtime/types.js';
+import type { EvidenceTelemetryBatch } from '../domains/evidence/telemetry.js';
 import type { TrajectoryEvent } from '../domains/trajectory/types.js';
 import {
   ObservationOtlpJsonDestination,
   observationOtlpJsonConfigFromEnvironment,
 } from '../platform/telemetry/observation-otlp-json.js';
 import { mapWorkflowObservationEnvelope } from '../platform/telemetry/observation-workflow-mapping.js';
+import { mapEvidenceObservationEnvelope } from '../platform/telemetry/observation-evidence-mapping.js';
 import { compositionFixture, projectFixture, workflowFixture } from './helpers/fixtures.js';
 
 interface CapturedRequest {
@@ -103,6 +105,47 @@ function workflowBatch(): TelemetryBatch {
   };
 }
 
+function evidenceBatch(): EvidenceTelemetryBatch {
+  return {
+    schemaVersion: 1,
+    runId: 'run-shared-evidence',
+    attemptId: 'attempt-shared-evidence',
+    profileId: 'verify',
+    compositionDigest: `sha256:${'a'.repeat(64)}`,
+    events: [
+      {
+        schemaVersion: 1,
+        sequence: 1,
+        eventId: 'evidence-node-shared-encoder',
+        type: 'evidence.node.completed',
+        timestamp: '2026-10-23T09:01:00.000Z',
+        runId: 'run-shared-evidence',
+        attemptId: 'attempt-shared-evidence',
+        data: {
+          nodeId: 'build',
+          receiptId: 'receipt-reused',
+          sourceReceiptId: 'receipt-original',
+          adapter: 'command/local',
+          trust: 'verified',
+          freshness: 'reused',
+          status: 'passed',
+          durationMs: 25,
+        },
+      },
+      {
+        schemaVersion: 1,
+        sequence: 2,
+        eventId: 'evidence-gate-shared-encoder',
+        type: 'evidence.gate.evaluated',
+        timestamp: '2026-10-23T09:01:01.000Z',
+        runId: 'run-shared-evidence',
+        attemptId: 'attempt-shared-evidence',
+        data: { bundleId: 'bundle-1', outcome: 'passed', gateStatus: 'satisfied' },
+      },
+    ],
+  };
+}
+
 function byPath(requests: readonly CapturedRequest[]): Map<string, CapturedRequest> {
   return new Map(requests.map((request) => [request.path, request]));
 }
@@ -151,6 +194,36 @@ describe('shared Observation OTLP JSON encoder', () => {
     expect(metrics).not.toContain('repoctopus.run.id');
     expect(metrics).not.toContain('repoctopus.change.id');
     expect(metrics).not.toContain('repoctopus.envelope.id');
+  });
+
+  it('sends the same Evidence projection to remote and Desktop targets', async () => {
+    const remote = await receiver();
+    const desktop = await receiver();
+    const batch = evidenceBatch();
+    const envelopes = batch.events.map((event) => mapEvidenceObservationEnvelope(batch, event));
+    const remoteConfig = observationOtlpJsonConfigFromEnvironment({
+      OTEL_EXPORTER_OTLP_ENDPOINT: remote.origin,
+    });
+    if (!remoteConfig) throw new Error('Remote config was not created');
+
+    await Promise.all([
+      new ObservationOtlpJsonDestination(remoteConfig).deliver(envelopes),
+      new ObservationOtlpJsonDestination({
+        origin: desktop.origin,
+        authorization: 'Bearer desktop-session',
+      }).deliver(envelopes),
+    ]);
+
+    const remoteByPath = byPath(remote.requests);
+    const desktopByPath = byPath(desktop.requests);
+    expect([...remoteByPath.keys()].sort()).toEqual(['/v1/logs', '/v1/metrics', '/v1/traces']);
+    for (const path of remoteByPath.keys()) {
+      expect(desktopByPath.get(path)?.body).toEqual(remoteByPath.get(path)?.body);
+    }
+    const payload = JSON.stringify(remote.requests.map((request) => request.body));
+    expect(payload).toContain('receipt-original');
+    expect(payload).toContain('reused');
+    expect(payload).toContain('repoctopus.evidence.node.duration');
   });
 
   it('honors complete signal-specific endpoints and rejects partial delivery configuration', () => {

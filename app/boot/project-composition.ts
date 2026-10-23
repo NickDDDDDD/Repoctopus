@@ -132,10 +132,11 @@ function projectSelections(
     ),
     { id: 'workflow-source-file' },
     runtimeSelection(
-      'workflow-telemetry-otel',
+      'observation-telemetry-otlp',
       { workspaceRoot },
       { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
     ),
+    { id: 'workflow-telemetry-otel' },
     runtimeSelection(
       'desktop-launcher-windows',
       { productRoot, workspaceRoot },
@@ -316,6 +317,7 @@ const BASE_REQUIRED_SERVICES = [
   'desktopTelemetryDestination',
   'evidenceAdapters',
   'evidenceCoordinator',
+  'observationTelemetry',
   'project',
   'projectOnboarding',
   'platformEvents',

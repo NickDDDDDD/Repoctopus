@@ -57,6 +57,7 @@ import { SpecificationPlanning } from '../services/specification-planning.js';
 import { DesktopOtlpReceiverProvider } from './telemetry/desktop-otlp-receiver-provider.js';
 import { WindowsDesktopLauncherProvider } from './desktop/windows-desktop-launcher-provider.js';
 import { DesktopObservationDestinationProvider } from './telemetry/desktop-observation-destination-provider.js';
+import { ObservationTelemetryProvider } from './telemetry/observation-telemetry-provider.js';
 
 interface BuiltinDefinition {
   descriptor: Omit<PluginDescriptor, 'codeDigest'>;
@@ -770,6 +771,28 @@ const definitions: readonly BuiltinDefinition[] = [
   },
   {
     descriptor: {
+      id: 'observation-telemetry-otlp',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['observation-envelope-write', 'remote-telemetry-egress'],
+      permissions: ['filesystem', 'network'],
+      stateSchemas: { observation: '1' },
+    },
+    plugin: ObservationTelemetryProvider,
+    sourceFiles: [
+      'services/observation-telemetry.ts',
+      'domains/telemetry/observation-envelope.ts',
+      'platform/telemetry/observation-envelope-store.ts',
+      'platform/telemetry/observation-otlp-json.ts',
+      'plugins/telemetry/observation-telemetry-provider.ts',
+    ],
+  },
+  {
+    descriptor: {
       id: 'workflow-telemetry-otel',
       version: VERSION,
       contractVersion: PLUGIN_CONTRACT_VERSION,
@@ -778,17 +801,14 @@ const definitions: readonly BuiltinDefinition[] = [
       source: 'builtin',
       compositions: ['project'],
       authorities: [],
-      permissions: ['network'],
+      permissions: [],
       stateSchemas: {},
     },
     plugin: WorkflowTelemetryProvider,
     sourceFiles: [
       'services/workflow-support.ts',
       'plugins/run/workflow-telemetry-provider.ts',
-      'domains/telemetry/observation-envelope.ts',
       'platform/telemetry/observation-workflow-mapping.ts',
-      'platform/telemetry/observation-envelope-store.ts',
-      'platform/telemetry/observation-otlp-json.ts',
     ],
   },
   {
@@ -842,6 +862,9 @@ const definitions: readonly BuiltinDefinition[] = [
       'services/operation-ownership.ts',
       'domains/evidence/service.ts',
       'domains/evidence/recovery.ts',
+      'domains/evidence/telemetry.ts',
+      'platform/telemetry/evidence-outbox.ts',
+      'platform/telemetry/observation-evidence-mapping.ts',
     ],
   },
   {

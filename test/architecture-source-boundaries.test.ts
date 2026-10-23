@@ -20,6 +20,7 @@ interface Fixtures {
   desktopIsolation: SourceFixture[];
   desktopOwnership: SourceFixture[];
   workflowTelemetryBypass: SourceFixture[];
+  evidenceTelemetryBypass: SourceFixture[];
 }
 
 interface Rule {
@@ -193,6 +194,19 @@ describe('architecture source boundaries', () => {
     ).toEqual([
       expect.stringContaining(
         'platform/telemetry/opentelemetry/rogue-workflow-exporter.ts: workflow-telemetry-single-mapping',
+      ),
+    ]);
+  });
+
+  it('keeps Evidence domain interpretation inside the shared envelope mapping', () => {
+    expect(
+      evaluateSourceBoundaries(
+        fixtures.evidenceTelemetryBypass,
+        rules('evidence-telemetry-single-mapping'),
+      ),
+    ).toEqual([
+      expect.stringContaining(
+        'platform/telemetry/opentelemetry/rogue-evidence-exporter.ts: evidence-telemetry-single-mapping',
       ),
     ]);
   });

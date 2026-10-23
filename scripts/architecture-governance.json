@@ -477,6 +477,16 @@
       "pattern": "\\bTelemetryBatch\\b",
       "allowed": ["platform/telemetry/observation-workflow-mapping.ts"],
       "message": "Workflow telemetry domain batches must be interpreted only by the shared ObservationEnvelope mapping"
+    },
+    {
+      "id": "evidence-telemetry-single-mapping",
+      "targets": ["platform/telemetry/**"],
+      "pattern": "\\bEvidenceTelemetryBatch\\b",
+      "allowed": [
+        "platform/telemetry/evidence-outbox.ts",
+        "platform/telemetry/observation-evidence-mapping.ts"
+      ],
+      "message": "Evidence telemetry domain batches must be persisted by the outbox or interpreted by the shared ObservationEnvelope mapping"
     }
   ],
   "protectedEvidenceFlow": {
