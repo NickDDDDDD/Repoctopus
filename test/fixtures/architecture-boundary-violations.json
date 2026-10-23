@@ -62,5 +62,11 @@
       "path": "services/rogue-desktop-launcher.ts",
       "contents": "export const launcher = new WindowsDesktopLauncher({});"
     }
+  ],
+  "workflowTelemetryBypass": [
+    {
+      "path": "platform/telemetry/opentelemetry/rogue-workflow-exporter.ts",
+      "contents": "export function exportWorkflow(batch: TelemetryBatch) { return batch.events; }"
+    }
   ]
 }

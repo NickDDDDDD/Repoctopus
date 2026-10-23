@@ -19,6 +19,7 @@ interface Fixtures {
   unprotectedPublication: SourceFixture[];
   desktopIsolation: SourceFixture[];
   desktopOwnership: SourceFixture[];
+  workflowTelemetryBypass: SourceFixture[];
 }
 
 interface Rule {
@@ -178,10 +179,21 @@ describe('architecture source boundaries', () => {
         expect.stringContaining(
           'app/desktop/main/rogue-composition.ts: desktop-shell-composition-isolation',
         ),
-        expect.stringContaining(
-          'services/rogue-desktop-launcher.ts: desktop-native-owner-closure',
-        ),
+        expect.stringContaining('services/rogue-desktop-launcher.ts: desktop-native-owner-closure'),
       ]),
     );
+  });
+
+  it('keeps Workflow domain interpretation inside the shared envelope mapping', () => {
+    expect(
+      evaluateSourceBoundaries(
+        fixtures.workflowTelemetryBypass,
+        rules('workflow-telemetry-single-mapping'),
+      ),
+    ).toEqual([
+      expect.stringContaining(
+        'platform/telemetry/opentelemetry/rogue-workflow-exporter.ts: workflow-telemetry-single-mapping',
+      ),
+    ]);
   });
 });

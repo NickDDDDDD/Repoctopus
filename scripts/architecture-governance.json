@@ -470,6 +470,13 @@
         "plugins/telemetry/desktop-otlp-receiver-provider.ts"
       ],
       "message": "Desktop native adapters must be constructed only by their explicit Service Provider or Shell owner"
+    },
+    {
+      "id": "workflow-telemetry-single-mapping",
+      "targets": ["platform/telemetry/**"],
+      "pattern": "\\bTelemetryBatch\\b",
+      "allowed": ["platform/telemetry/observation-workflow-mapping.ts"],
+      "message": "Workflow telemetry domain batches must be interpreted only by the shared ObservationEnvelope mapping"
     }
   ],
   "protectedEvidenceFlow": {

@@ -9,14 +9,34 @@ import type { DesktopTelemetryEndpoint } from '../../services/desktop-telemetry-
 
 interface OtlpAttribute {
   key: string;
-  value: { stringValue: string } | { boolValue: boolean } | { intValue: string } | {
-    doubleValue: number;
-  };
+  value:
+    | { stringValue: string }
+    | { boolValue: boolean }
+    | { intValue: string }
+    | {
+        doubleValue: number;
+      };
 }
 
 type TraceSignal = Extract<ObservationSignal, { kind: 'trace' }>;
 type LogSignal = Extract<ObservationSignal, { kind: 'log' }>;
 type MetricSignal = Extract<ObservationSignal, { kind: 'metric' }>;
+export type ObservationOtlpSignal = 'traces' | 'logs' | 'metrics';
+
+export interface ObservationOtlpTarget {
+  url: string;
+  headers?: Readonly<Record<string, string>>;
+}
+
+export interface ObservationOtlpJsonConfig {
+  targets: Partial<Record<ObservationOtlpSignal, ObservationOtlpTarget>>;
+  timeoutMs?: number;
+}
+
+export interface EncodedObservationOtlpRequest {
+  signal: ObservationOtlpSignal;
+  payload: Readonly<Record<string, unknown>>;
+}
 
 function attribute(key: string, value: ObservationAttributeValue): OtlpAttribute {
   if (typeof value === 'string') return { key, value: { stringValue: value } };
@@ -26,8 +46,14 @@ function attribute(key: string, value: ObservationAttributeValue): OtlpAttribute
     : { key, value: { doubleValue: value } };
 }
 
+function attributes(values: Readonly<Record<string, ObservationAttributeValue>>): OtlpAttribute[] {
+  return Object.entries(values)
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([key, value]) => attribute(key, value));
+}
+
 function recordAttributes(envelope: ObservationEnvelope): OtlpAttribute[] {
-  const values: Record<string, ObservationAttributeValue> = {
+  return attributes({
     ...envelope.attributes,
     'repoctopus.telemetry.schema.version': envelope.schemaVersion,
     'repoctopus.envelope.id': envelope.envelopeId,
@@ -40,10 +66,7 @@ function recordAttributes(envelope: ObservationEnvelope): OtlpAttribute[] {
     'repoctopus.event.type': envelope.source.eventType,
     'repoctopus.event.sequence': envelope.source.sequence ?? 0,
     'repoctopus.observed_at': envelope.observedAt,
-  };
-  return Object.entries(values)
-    .sort(([left], [right]) => left.localeCompare(right))
-    .map(([key, value]) => attribute(key, value));
+  });
 }
 
 function unixNano(timestamp: string): string {
@@ -62,18 +85,26 @@ function signalGroups(envelope: ObservationEnvelope): {
   };
 }
 
-function tracePayload(envelopes: readonly ObservationEnvelope[]): unknown {
+function fallbackIds(envelope: ObservationEnvelope): { traceId: string; spanId: string } {
+  const digest = createHash('sha256').update(envelope.envelopeId).digest('hex');
+  return { traceId: digest.slice(0, 32), spanId: digest.slice(32, 48) };
+}
+
+function tracePayload(
+  envelopes: readonly ObservationEnvelope[],
+): Readonly<Record<string, unknown>> {
   const spans = envelopes.flatMap((envelope) => {
-    const digest = createHash('sha256').update(envelope.envelopeId).digest('hex');
+    const fallback = fallbackIds(envelope);
     return signalGroups(envelope).traces.map((signal) => ({
-      traceId: digest.slice(0, 32),
-      spanId: digest.slice(32, 48),
+      traceId: signal.traceId ?? fallback.traceId,
+      spanId: signal.spanId ?? fallback.spanId,
+      ...(signal.parentSpanId === undefined ? {} : { parentSpanId: signal.parentSpanId }),
       name: signal.name,
       kind: 1,
-      startTimeUnixNano: unixNano(envelope.observedAt),
-      endTimeUnixNano: unixNano(envelope.observedAt),
+      startTimeUnixNano: unixNano(signal.startedAt ?? envelope.observedAt),
+      endTimeUnixNano: unixNano(signal.endedAt ?? envelope.observedAt),
       attributes: recordAttributes(envelope),
-      status: { code: 1 },
+      status: { code: signal.status === 'error' ? 2 : 1 },
     }));
   });
   return {
@@ -86,17 +117,21 @@ function tracePayload(envelopes: readonly ObservationEnvelope[]): unknown {
   };
 }
 
-function logPayload(envelopes: readonly ObservationEnvelope[]): unknown {
-  const logRecords = envelopes.flatMap((envelope) =>
-    signalGroups(envelope).logs.map((signal) => ({
+function logPayload(envelopes: readonly ObservationEnvelope[]): Readonly<Record<string, unknown>> {
+  const severity = { debug: 5, info: 9, warn: 13, error: 17 } as const;
+  const logRecords = envelopes.flatMap((envelope) => {
+    const fallback = fallbackIds(envelope);
+    return signalGroups(envelope).logs.map((signal) => ({
       timeUnixNano: unixNano(envelope.observedAt),
       observedTimeUnixNano: unixNano(envelope.observedAt),
-      severityNumber: signal.severity === 'error' ? 17 : signal.severity === 'warn' ? 13 : 9,
+      severityNumber: severity[signal.severity],
       eventName: signal.name,
-      body: { stringValue: `Repoctopus event: ${envelope.source.eventType}` },
+      body: { stringValue: `Repoctopus workflow event: ${envelope.source.eventType}` },
       attributes: recordAttributes(envelope),
-    })),
-  );
+      traceId: signal.traceId ?? fallback.traceId,
+      spanId: signal.spanId ?? fallback.spanId,
+    }));
+  });
   return {
     resourceLogs: [
       {
@@ -107,20 +142,47 @@ function logPayload(envelopes: readonly ObservationEnvelope[]): unknown {
   };
 }
 
-function metricPayload(envelopes: readonly ObservationEnvelope[]): unknown {
+function metricData(signal: MetricSignal, envelope: ObservationEnvelope): Record<string, unknown> {
+  const point = {
+    timeUnixNano: unixNano(envelope.observedAt),
+    asDouble: signal.value,
+    attributes: attributes(signal.attributes ?? {}),
+  };
+  if (signal.aggregation === 'counter') {
+    return {
+      sum: { aggregationTemporality: 1, isMonotonic: true, dataPoints: [point] },
+    };
+  }
+  if (signal.aggregation === 'histogram') {
+    return {
+      histogram: {
+        aggregationTemporality: 1,
+        dataPoints: [
+          {
+            timeUnixNano: point.timeUnixNano,
+            count: '1',
+            sum: signal.value,
+            min: signal.value,
+            max: signal.value,
+            bucketCounts: ['1'],
+            explicitBounds: [],
+            attributes: point.attributes,
+          },
+        ],
+      },
+    };
+  }
+  return { gauge: { dataPoints: [point] } };
+}
+
+function metricPayload(
+  envelopes: readonly ObservationEnvelope[],
+): Readonly<Record<string, unknown>> {
   const metrics = envelopes.flatMap((envelope) =>
     signalGroups(envelope).metrics.map((signal) => ({
       name: signal.name,
       unit: signal.unit,
-      gauge: {
-        dataPoints: [
-          {
-            timeUnixNano: unixNano(envelope.observedAt),
-            asDouble: signal.value,
-            attributes: [attribute('repoctopus.event.type', envelope.source.eventType)],
-          },
-        ],
-      },
+      ...metricData(signal, envelope),
     })),
   );
   return {
@@ -133,42 +195,124 @@ function metricPayload(envelopes: readonly ObservationEnvelope[]): unknown {
   };
 }
 
+export function encodeObservationOtlpJson(
+  envelopes: readonly ObservationEnvelope[],
+): EncodedObservationOtlpRequest[] {
+  const requests: EncodedObservationOtlpRequest[] = [];
+  if (envelopes.some((envelope) => signalGroups(envelope).traces.length > 0)) {
+    requests.push({ signal: 'traces', payload: tracePayload(envelopes) });
+  }
+  if (envelopes.some((envelope) => signalGroups(envelope).logs.length > 0)) {
+    requests.push({ signal: 'logs', payload: logPayload(envelopes) });
+  }
+  if (envelopes.some((envelope) => signalGroups(envelope).metrics.length > 0)) {
+    requests.push({ signal: 'metrics', payload: metricPayload(envelopes) });
+  }
+  return requests;
+}
+
+function endpointUrl(origin: string, signal: ObservationOtlpSignal): string {
+  const base = origin.endsWith('/') ? origin : `${origin}/`;
+  return new URL(`v1/${signal}`, base).href;
+}
+
+function desktopConfig(endpoint: DesktopTelemetryEndpoint): ObservationOtlpJsonConfig {
+  const target = (signal: ObservationOtlpSignal): ObservationOtlpTarget => ({
+    url: endpointUrl(endpoint.origin, signal),
+    headers: { authorization: endpoint.authorization },
+  });
+  return {
+    targets: { traces: target('traces'), logs: target('logs'), metrics: target('metrics') },
+  };
+}
+
+function parseHeaders(value: string | undefined): Record<string, string> {
+  const headers: Record<string, string> = {};
+  if (!value) return headers;
+  for (const entry of value.split(',')) {
+    const separator = entry.indexOf('=');
+    if (separator < 1) throw new Error('Invalid OTLP header configuration');
+    const key = entry.slice(0, separator).trim().toLowerCase();
+    const headerValue = entry.slice(separator + 1).trim();
+    if (!/^[a-z0-9!#$%&'*+.^_`|~-]+$/u.test(key) || !headerValue) {
+      throw new Error('Invalid OTLP header configuration');
+    }
+    headers[key] = headerValue;
+  }
+  return headers;
+}
+
+export function observationOtlpJsonConfigFromEnvironment(
+  environment: NodeJS.ProcessEnv = process.env,
+): ObservationOtlpJsonConfig | null {
+  const common = environment.OTEL_EXPORTER_OTLP_ENDPOINT;
+  const commonHeaders = parseHeaders(environment.OTEL_EXPORTER_OTLP_HEADERS);
+  const configured = (
+    signal: ObservationOtlpSignal,
+    variable: string,
+    headerVariable: string,
+  ): ObservationOtlpTarget | undefined => {
+    const explicit = environment[variable];
+    const url = explicit ?? (common ? endpointUrl(common, signal) : undefined);
+    if (!url) return undefined;
+    return {
+      url: new URL(url).href,
+      headers: { ...commonHeaders, ...parseHeaders(environment[headerVariable]) },
+    };
+  };
+  const targets: Partial<Record<ObservationOtlpSignal, ObservationOtlpTarget>> = {};
+  const traces = configured(
+    'traces',
+    'OTEL_EXPORTER_OTLP_TRACES_ENDPOINT',
+    'OTEL_EXPORTER_OTLP_TRACES_HEADERS',
+  );
+  const logs = configured(
+    'logs',
+    'OTEL_EXPORTER_OTLP_LOGS_ENDPOINT',
+    'OTEL_EXPORTER_OTLP_LOGS_HEADERS',
+  );
+  const metrics = configured(
+    'metrics',
+    'OTEL_EXPORTER_OTLP_METRICS_ENDPOINT',
+    'OTEL_EXPORTER_OTLP_METRICS_HEADERS',
+  );
+  if (traces) targets.traces = traces;
+  if (logs) targets.logs = logs;
+  if (metrics) targets.metrics = metrics;
+  if (!targets.traces && !targets.logs && !targets.metrics) return null;
+  if (!targets.traces || !targets.logs || !targets.metrics) {
+    throw new Error(
+      'Workflow OTLP export requires a common endpoint or explicit endpoints for all signals',
+    );
+  }
+  return { targets };
+}
+
 export class ObservationOtlpJsonDestination {
-  constructor(
-    private readonly endpoint: DesktopTelemetryEndpoint,
-    private readonly timeoutMs = 5_000,
-  ) {}
+  private readonly config: ObservationOtlpJsonConfig;
+
+  constructor(config: ObservationOtlpJsonConfig | DesktopTelemetryEndpoint, timeoutMs?: number) {
+    const normalized = 'origin' in config ? desktopConfig(config) : config;
+    this.config = timeoutMs === undefined ? normalized : { ...normalized, timeoutMs };
+  }
 
   async deliver(envelopes: readonly ObservationEnvelope[]): Promise<void> {
-    const groups = [
-      {
-        path: '/v1/traces',
-        active: envelopes.some((envelope) => signalGroups(envelope).traces.length > 0),
-        payload: () => tracePayload(envelopes),
-      },
-      {
-        path: '/v1/logs',
-        active: envelopes.some((envelope) => signalGroups(envelope).logs.length > 0),
-        payload: () => logPayload(envelopes),
-      },
-      {
-        path: '/v1/metrics',
-        active: envelopes.some((envelope) => signalGroups(envelope).metrics.length > 0),
-        payload: () => metricPayload(envelopes),
-      },
-    ].filter((group) => group.active);
+    const requests = encodeObservationOtlpJson(envelopes).filter(
+      (request) => this.config.targets[request.signal] !== undefined,
+    );
     await Promise.all(
-      groups.map(async (group) => {
-        const response = await fetch(new URL(group.path, this.endpoint.origin), {
+      requests.map(async (request) => {
+        const target = this.config.targets[request.signal]!;
+        const response = await fetch(target.url, {
           method: 'POST',
           headers: {
-            authorization: this.endpoint.authorization,
+            ...target.headers,
             'content-type': 'application/json',
           },
-          body: JSON.stringify(group.payload()),
-          signal: AbortSignal.timeout(this.timeoutMs),
+          body: JSON.stringify(request.payload),
+          signal: AbortSignal.timeout(this.config.timeoutMs ?? 5_000),
         });
-        if (!response.ok) throw new Error(`OTLP destination rejected ${group.path}`);
+        if (!response.ok) throw new Error(`OTLP destination rejected ${request.signal}`);
       }),
     );
   }

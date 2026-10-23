@@ -4,11 +4,10 @@ import { startRun } from '../domains/engine/loop.js';
 import type { TelemetryBatch } from '../domains/runtime/types.js';
 import type { TrajectoryEvent } from '../domains/trajectory/types.js';
 import {
-  safeEventAttributes,
-  workflowEventMetricAttributes,
-  workflowStepMetricAttributes,
-} from '../platform/telemetry/opentelemetry/mapping.js';
-import { mapWorkflowObservationEnvelope } from '../platform/telemetry/observation-workflow-mapping.js';
+  mapWorkflowObservationEnvelope,
+  workflowMetricAttributes,
+  workflowObservationAttributes,
+} from '../platform/telemetry/observation-workflow-mapping.js';
 import { compositionFixture, projectFixture, workflowFixture } from './helpers/fixtures.js';
 
 describe('telemetry mapping', () => {
@@ -34,20 +33,26 @@ describe('telemetry mapping', () => {
       compositionDigest: run.composition.compositionDigest,
       data: {},
     };
-    const initial = mapWorkflowObservationEnvelope({
-      run,
-      workflow,
-      projectSnapshot: project,
-      events: [event],
-      trajectory: [event],
-    }, event);
-    const replayed = mapWorkflowObservationEnvelope({
-      run: { ...run, status: 'completed', currentStep: null, stateVersion: 4 },
-      workflow,
-      projectSnapshot: project,
-      events: [event],
-      trajectory: [event],
-    }, event);
+    const initial = mapWorkflowObservationEnvelope(
+      {
+        run,
+        workflow,
+        projectSnapshot: project,
+        events: [event],
+        trajectory: [event],
+      },
+      event,
+    );
+    const replayed = mapWorkflowObservationEnvelope(
+      {
+        run: { ...run, status: 'completed', currentStep: null, stateVersion: 4 },
+        workflow,
+        projectSnapshot: project,
+        events: [event],
+        trajectory: [event],
+      },
+      event,
+    );
 
     expect(replayed).toEqual(initial);
     expect(initial?.attributes).toMatchObject({
@@ -102,7 +107,7 @@ describe('telemetry mapping', () => {
       events: [event],
       trajectory: [event],
     };
-    const attributes = safeEventAttributes(batch, event);
+    const attributes = workflowObservationAttributes(batch, event);
     expect(attributes['repoctopus.action.type']).toBe('checkpoint');
     expect(attributes['repoctopus.composition.digest']).toBe(run.composition.compositionDigest);
     expect(attributes['repoctopus.event.actionId']).toBe('action-1');
@@ -175,7 +180,7 @@ describe('telemetry mapping', () => {
       events: [completed],
       trajectory: [proposed, completed],
     };
-    expect(safeEventAttributes(batch, completed)).toMatchObject({
+    expect(workflowObservationAttributes(batch, completed)).toMatchObject({
       'repoctopus.post_merge.change.id': 'enable-self-hosted-development',
       'repoctopus.post_merge.merge_facts.digest': `sha256:${'a'.repeat(64)}`,
       'repoctopus.post_merge.receipt.kind': receiptKind,
@@ -186,10 +191,8 @@ describe('telemetry mapping', () => {
       'repoctopus.evidence.gate.status': 'satisfied',
       'repoctopus.evidence.outcome': 'passed',
     });
-    const metrics = {
-      ...workflowEventMetricAttributes(batch, completed),
-      ...workflowStepMetricAttributes(batch, completed),
-    };
+    const mappedMetrics = workflowMetricAttributes(batch, completed);
+    const metrics = { ...mappedMetrics.event, ...mappedMetrics.step };
     expect(metrics).toEqual({
       'repoctopus.event.type': 'action.completed',
       'repoctopus.workflow.name': run.workflowName,
@@ -237,7 +240,7 @@ describe('telemetry mapping', () => {
         token: 'ghp_12345678901234567890',
       },
     };
-    const attributes = safeEventAttributes(
+    const attributes = workflowObservationAttributes(
       {
         run,
         workflow,

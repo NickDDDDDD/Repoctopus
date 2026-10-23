@@ -75,6 +75,9 @@ function recordFromAttributes(values: OtlpAttributes): ObservationRecord | null 
   const schemaVersion = values['repoctopus.telemetry.schema.version'];
   if (schemaVersion === undefined) return null;
   if (schemaVersion !== 1) throw new Error('Unsupported Repoctopus OTLP schema version');
+  // Workflow telemetry without a trusted Change binding is valid for remote
+  // observability but does not describe a Desktop change projection.
+  if (stringAttribute(values, 'repoctopus.change.id') === undefined) return null;
   const sequence = values['repoctopus.event.sequence'];
   if (typeof sequence !== 'number') throw new Error('Missing Repoctopus OTLP event sequence');
   const changeStatus = status(

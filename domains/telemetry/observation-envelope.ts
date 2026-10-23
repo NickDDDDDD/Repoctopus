@@ -12,9 +12,31 @@ export interface ObservationSource {
 }
 
 export type ObservationSignal =
-  | { kind: 'trace'; name: string }
-  | { kind: 'log'; name: string; severity: 'debug' | 'info' | 'warn' | 'error' }
-  | { kind: 'metric'; name: string; value: number; unit: string };
+  | {
+      kind: 'trace';
+      name: string;
+      traceId?: string;
+      spanId?: string;
+      parentSpanId?: string;
+      startedAt?: string;
+      endedAt?: string;
+      status?: 'ok' | 'error';
+    }
+  | {
+      kind: 'log';
+      name: string;
+      severity: 'debug' | 'info' | 'warn' | 'error';
+      traceId?: string;
+      spanId?: string;
+    }
+  | {
+      kind: 'metric';
+      name: string;
+      value: number;
+      unit: string;
+      aggregation?: 'counter' | 'histogram';
+      attributes?: Record<string, ObservationAttributeValue>;
+    };
 
 export interface ObservationEnvelope {
   schemaVersion: 1;
@@ -38,6 +60,7 @@ export interface ObservationMapping {
 }
 
 const SAFE_NAME = /^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$/u;
+const SAFE_ATTRIBUTE_NAME = /^[a-z][a-zA-Z0-9]*(?:[._-][a-zA-Z0-9]+)*$/u;
 const SAFE_ID = /^[a-zA-Z0-9][a-zA-Z0-9._:@-]{0,255}$/u;
 const DIGEST = /^sha256:[a-f0-9]{64}$/u;
 const FORBIDDEN_ATTRIBUTE_KEY =
@@ -53,6 +76,12 @@ function sha256(value: unknown): string {
 function assertName(value: string, label: string): void {
   if (typeof value !== 'string' || !SAFE_NAME.test(value) || value.length > 128) {
     throw new Error(`Invalid ${label}`);
+  }
+}
+
+function assertAttributeName(value: string): void {
+  if (!SAFE_ATTRIBUTE_NAME.test(value) || value.length > 128) {
+    throw new Error('Invalid observation attribute name');
   }
 }
 
@@ -84,7 +113,7 @@ function normalizeAttributes(
 ): Record<string, ObservationAttributeValue> {
   const normalized: Record<string, ObservationAttributeValue> = {};
   for (const key of [...new Set(allowedAttributes)].sort()) {
-    assertName(key, 'observation attribute name');
+    assertAttributeName(key);
     if (FORBIDDEN_ATTRIBUTE_KEY.test(key)) {
       throw new Error(`Unsafe observation attribute allowlist entry: ${key}`);
     }
@@ -98,21 +127,75 @@ function normalizeSignals(signals: readonly ObservationSignal[]): ObservationSig
   return signals.map((signal) => {
     if (!signal || typeof signal !== 'object') throw new Error('Invalid observation signal');
     assertName(signal.name, 'observation signal name');
-    if (signal.kind === 'trace') return { kind: signal.kind, name: signal.name };
+    if (signal.kind === 'trace') {
+      for (const [value, label, pattern] of [
+        [signal.traceId, 'trace id', /^[a-f0-9]{32}$/u],
+        [signal.spanId, 'span id', /^[a-f0-9]{16}$/u],
+        [signal.parentSpanId, 'parent span id', /^[a-f0-9]{16}$/u],
+      ] as const) {
+        if (value !== undefined && !pattern.test(value)) throw new Error(`Invalid ${label}`);
+      }
+      for (const timestamp of [signal.startedAt, signal.endedAt]) {
+        if (timestamp !== undefined && Number.isNaN(Date.parse(timestamp))) {
+          throw new Error('Invalid observation signal timestamp');
+        }
+      }
+      if (signal.status !== undefined && !['ok', 'error'].includes(signal.status)) {
+        throw new Error('Invalid observation trace status');
+      }
+      return {
+        kind: signal.kind,
+        name: signal.name,
+        ...(signal.traceId === undefined ? {} : { traceId: signal.traceId }),
+        ...(signal.spanId === undefined ? {} : { spanId: signal.spanId }),
+        ...(signal.parentSpanId === undefined ? {} : { parentSpanId: signal.parentSpanId }),
+        ...(signal.startedAt === undefined
+          ? {}
+          : { startedAt: new Date(signal.startedAt).toISOString() }),
+        ...(signal.endedAt === undefined
+          ? {}
+          : { endedAt: new Date(signal.endedAt).toISOString() }),
+        ...(signal.status === undefined ? {} : { status: signal.status }),
+      };
+    }
     if (signal.kind === 'log') {
       if (!['debug', 'info', 'warn', 'error'].includes(signal.severity)) {
         throw new Error('Invalid observation log severity');
       }
-      return { kind: signal.kind, name: signal.name, severity: signal.severity };
+      if (signal.traceId !== undefined && !/^[a-f0-9]{32}$/u.test(signal.traceId)) {
+        throw new Error('Invalid trace id');
+      }
+      if (signal.spanId !== undefined && !/^[a-f0-9]{16}$/u.test(signal.spanId)) {
+        throw new Error('Invalid span id');
+      }
+      return {
+        kind: signal.kind,
+        name: signal.name,
+        severity: signal.severity,
+        ...(signal.traceId === undefined ? {} : { traceId: signal.traceId }),
+        ...(signal.spanId === undefined ? {} : { spanId: signal.spanId }),
+      };
     }
     if (signal.kind === 'metric') {
       if (!Number.isFinite(signal.value)) throw new Error('Metric value must be finite');
       assertName(signal.unit, 'metric unit');
+      if (
+        signal.aggregation !== undefined &&
+        !['counter', 'histogram'].includes(signal.aggregation)
+      ) {
+        throw new Error('Invalid observation metric aggregation');
+      }
       return {
         kind: signal.kind,
         name: signal.name,
         value: signal.value,
         unit: signal.unit,
+        ...(signal.aggregation === undefined ? {} : { aggregation: signal.aggregation }),
+        ...(signal.attributes === undefined
+          ? {}
+          : {
+              attributes: normalizeAttributes(signal.attributes, Object.keys(signal.attributes)),
+            }),
       };
     }
     throw new Error('Invalid observation signal kind');

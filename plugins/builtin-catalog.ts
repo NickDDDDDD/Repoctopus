@@ -785,9 +785,10 @@ const definitions: readonly BuiltinDefinition[] = [
     sourceFiles: [
       'services/workflow-support.ts',
       'plugins/run/workflow-telemetry-provider.ts',
-      'platform/telemetry/opentelemetry/exporter.ts',
+      'domains/telemetry/observation-envelope.ts',
       'platform/telemetry/observation-workflow-mapping.ts',
       'platform/telemetry/observation-envelope-store.ts',
+      'platform/telemetry/observation-otlp-json.ts',
     ],
   },
   {
