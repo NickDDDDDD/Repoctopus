@@ -6,9 +6,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { startRun } from '../domains/engine/loop.js';
 import type { TelemetryBatch } from '../domains/runtime/types.js';
 import type { TrajectoryEvent } from '../domains/trajectory/types.js';
-import {
-  WorkflowTelemetryProvider,
-} from '../plugins/run/workflow-telemetry-provider.js';
+import { WorkflowTelemetryProvider } from '../plugins/run/workflow-telemetry-provider.js';
 import {
   ObservationTelemetryProvider,
   REMOTE_OTLP_DESTINATION_ID,
@@ -102,7 +100,17 @@ describe('WorkflowTelemetryProvider remote replay', () => {
       consecutiveFailures: 0,
     });
 
+    await context.observationTelemetry.setDestinationState(REMOTE_OTLP_DESTINATION_ID, 'paused');
     available = true;
+    await expect(telemetry.export(input)).resolves.toBeUndefined();
+    expect(
+      await context.observationTelemetry.destinationStatus(REMOTE_OTLP_DESTINATION_ID),
+    ).toMatchObject({
+      state: 'paused',
+      backlog: { envelopeCount: 1 },
+      deliveryGuarantee: 'at-least-once',
+    });
+    await context.observationTelemetry.setDestinationState(REMOTE_OTLP_DESTINATION_ID, 'enabled');
     await expect(telemetry.export(input)).resolves.toBeUndefined();
     expect(await store.pending(REMOTE_OTLP_DESTINATION_ID)).toEqual([]);
     expect(await store.pending('desktop-local')).toHaveLength(1);

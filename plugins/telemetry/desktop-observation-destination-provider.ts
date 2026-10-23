@@ -23,6 +23,11 @@ export class DesktopObservationDestinationProvider extends DesktopTelemetryDesti
   }
 
   async replay(endpoint: DesktopTelemetryEndpoint): Promise<DesktopReplayResult> {
+    await this.store.ensureDestination(DESTINATION_ID);
+    const before = await this.store.inspectDestination(DESTINATION_ID);
+    if (before.state !== 'enabled') {
+      return { delivered: 0, pending: before.backlog.envelopeCount };
+    }
     const pending = await this.store.pending(DESTINATION_ID);
     if (pending.length === 0) return { delivered: 0, pending: 0 };
     try {
