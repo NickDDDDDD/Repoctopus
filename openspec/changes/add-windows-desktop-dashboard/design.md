@@ -169,7 +169,13 @@ Launcher 在 Run 持久化前先激活 Receiver 并重放已有积压，Run 的�
 
 远端与桌面现在都调用同一个 OTLP/HTTP JSON encoder；旧 Workflow OpenTelemetry SDK exporter 和独立 mapping 已删除。远端目的地使用稳定 `remote-otlp` cursor，失败只记录该 cursor 的有界健康状态，恢复时重放未确认 envelope；桌面继续使用独立 `desktop-local` cursor。`OTEL_EXPORTER_OTLP_ENDPOINT` 生成完整三信号端点，或要求同时提供三条 signal-specific endpoint，拒绝只配置部分信号后却确认整个 envelope。架构门禁规定 `TelemetryBatch` 只能由共享 Workflow envelope mapper 解释，阻止重新引入第二套 exporter 语义。
 
-双目的地测试把同一批 envelope 同时发送到远端 mock 与 Desktop mock，逐对象确认 Trace、Log、Metric payload 完全一致而仅认证 Header 不同，并验证稳定 envelope ID/digest、Trace 关系、Histogram 和 Metric 低基数边界。远端 503 故障测试证明远端 cursor 保持 pending/degraded、桌面 cursor 不变，恢复后只推进远端；独立 tracer E2E 与完整验证通过 108 个测试文件、450 项测试并保留 1 项既有条件跳过。Evidence、App lifecycle、平台事件、Delivery 和 Post-merge 仍使用旧 exporter，分别留给任务 3.2、3.3，不能从本切片推导它们已经迁移。
+双目的地测试把同一批 envelope 同时发送到远端 mock 与 Desktop mock，逐对象确认 Trace、Log、Metric payload 完全一致而仅认证 Header 不同，并验证稳定 envelope ID/digest、Trace 关系、Histogram 和 Metric 低基数边界。远端 503 故障测试证明远端 cursor 保持 pending/degraded、桌面 cursor 不变，恢复后只推进远端；独立 tracer E2E 与完整验证通过 108 个测试文件、450 项测试并保留 1 项既有条件跳过。
+
+任务 3.2 把目的地中立的 `ObservationTelemetry` 提升为独立 Cordis Service。该 Service 是 envelope 持久化和远端重放的唯一 owner；Workflow 与 Evidence Provider 只把各自已持久化的领域事件映射为 envelope，再调用同一入口。这样避免两个领域 Provider 分别创建 Store worker，并发改写同一个 `remote-otlp` cursor。Builtin catalog 分别声明共享 Service 的文件系统、网络权限和 Workflow 映射 Provider 的无副作用权限，composition 也把共享 Service 作为显式必需依赖。
+
+Evidence 保留自己的领域 outbox 与顺序 offset，因为它回答“哪些 Evidence 事实尚未成功交给遥测层”；共享 Envelope Store 的 per-destination cursor 则回答“哪些规范 envelope 已被某个目的地确认”。远端失败时，Evidence offset 不推进，已写入 Envelope Store 的内容保持幂等；重试再次映射同一 event ID 会得到相同 envelope ID 和 digest。远端已确认但 Evidence cursor 写入中断时，下一次重放只完成幂等保存并推进 Evidence offset，不重复改变远端逻辑状态。两层 cursor 因此不互相代替，也不产生 exactly-once 承诺。
+
+Evidence mapper 只解释 Attempt、节点、Artifact 与 Gate 的持久事件。Attempt 和节点生成稳定 Trace，所有事件生成关联 Log，Counter 与节点耗时 Histogram 只使用 event type、adapter、status 和 freshness 等低基数维度。允许列表保留 superseded 状态、Receipt 复用的 freshness 与 `sourceReceiptId`、Artifact 摘要元数据和 Gate 结果，同时拒绝绝对路径、正文、命令输出、凭据及任意未声明字段。远端与桌面继续调用同一 OTLP encoder；架构门禁只允许 Evidence outbox 持久化批次，并只允许共享 Evidence mapper 解释批次。App lifecycle、平台事件、Delivery 和 Post-merge 仍留给任务 3.3。
 
 任务 2.7 把这条纵切的进程边界收敛为可执行 composition 生命周期。Runtime 的 Launcher 与本地目的地只由 builtin catalog 注册的 Service Provider 构造，project composition 只持有稳定应用端口；Desktop Host composition 显式包含 Application Service、OTLP Receiver Provider 和依赖两者的 Application Plugin。Application Fiber 获取 Receiver 的接纳租约，卸载时先归还租约，使既有端口对新遥测返回可重试的 unavailable；重新加载 Fiber 可以恢复接纳。Receiver Provider 自己的 Effect 仍唯一拥有并最终关闭回环监听器，因此应用可用性和原生端口所有权不会混为一体。
 
