@@ -286,8 +286,8 @@ if (upstreamBaselines.schemaVersion !== 1 || !Array.isArray(upstreamBaselines.up
   const dshBaseline = upstreamBaselines.upstreams.find((entry) => entry.id === 'dsh');
   const cometBaseline = upstreamBaselines.upstreams.find((entry) => entry.id === 'comet');
   if (
-    dshBaseline?.pinnedCommit !== dshAdoption.upstream.commit ||
-    dshBaseline?.pinnedCommit !== cordisManifest.upstream.commit
+    dshBaseline?.pinnedTagCommit !== dshAdoption.upstream.commit ||
+    dshBaseline?.pinnedTagCommit !== cordisManifest.upstream.commit
   ) {
     findings.push('DSH baseline disagrees with DSH or Cordis provenance');
   }

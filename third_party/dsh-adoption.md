@@ -1,10 +1,10 @@
 # DSH 能力采用报告
 
-本报告固定 DeepSeek Harness `dsh-v0.2.1-rc.2`、提交 `687f282e8625c6b8d11ff58211a90524be2e4317`，把上游事实、依赖闭包和 Repoctopus 产品决定分开记录。机器可检查数据见 `dsh-adoption.json`，跨能力审计见 `upstream-alignment-audit.md`。
+本报告固定 DeepSeek Harness 发布 `dsh-v0.2.1-rc.3`、提交 `1f81c047fc48fa190a683e469daa699857e9afe8`，并已审计 2026-10-24 的 `master` 提交 `22ddee3792402c3e70ec5f86a63c3e3e895a2f60`。发布依赖与默认分支审计身份分开记录，避免把未发布源码冒充 npm 版本。机器可检查数据见 `dsh-adoption.json`，跨能力审计见 `upstream-alignment-audit.md`。
 
 ## Skill Registry
 
-固定提交中的 `packages/skill/skill/src/index.ts` 已发布为 `@deepseek-ai/dsh-skill@0.2.1-rc.2`。Repoctopus 直接使用该包，保留 `ctx.skills`、Provider 注册、作用域覆盖、rank 裁决、不完整发现、取消、缓存失效和 Cordis Effect 撤销语义。它与旧固定提交的 Registry blob 相同，因此升级不改变公共 Skill 行为。
+固定提交中的 `packages/skill/skill/src/index.ts` 已发布为 `@deepseek-ai/dsh-skill@0.2.1-rc.3`。Repoctopus 直接使用该包，保留 `ctx.skills`、Provider 注册、作用域覆盖、rank 裁决、不完整发现、取消、缓存失效和 Cordis Effect 撤销语义。rc.2→rc.3 在已采用 Skill、Filesystem Skill、Webhook Handler、Cordis 和 Loader 源码面没有行为变化，发布差异只有包版本元数据。
 
 使用精确版本和 npm overrides 后，闭包包含 13 个安装项：Repoctopus 已固定的 Cordis、Loader、Cosmokit、Schemastery，8 个 DSH 包和 Zod。闭包不含 Agent、Session、Workspace 或 Webhook Runtime。上游已经删除 `dsh-invariants`，Repoctopus 同步移除该包，而不是保留幽灵依赖。没有因为闭包较深而重写 Registry。
 
@@ -36,7 +36,11 @@ Electron `44.7.0` 没有 lifecycle install script；它在首次解析包且本�
 
 ## 漂移控制
 
-- `package.json` 固定所有 DSH 包的精确 `0.2.1-rc.2` 版本，并用 overrides 阻止内部范围漂移。
+- `package.json` 固定所有 DSH 包的精确 `0.2.1-rc.3` 版本，并用 overrides 阻止内部范围漂移。
+
+## 2026-10-24 默认分支增量
+
+`master` 在 rc.3 之后继续前进。Skill Registry、Filesystem Skill 和 GitHub Webhook Handler 的行为源码没有变化；Desktop 增加 Windows Runner 网络进程监督、打包缓存、安装器本地化与文件拖放等能力。Cordis `fiber.ts` 和 Loader resolver 也有未发布变化。Repoctopus 本轮不把这些未发布改动写入标记为官方 npm 快照的 `third_party/cordis*`，待对应发布版本出现后再升级；桌面变化作为后续打包与恢复审计输入，不混入 Change 生命周期设计。
 - `package-lock.json` 固定 npm tarball integrity。
 - `check:provenance` 校验固定 commit、包版本、锁文件完整性、禁止包和适配目标。
 - `check:upstream` 每天比较默认分支、固定标签与当前审计提交；只报告漂移，不自动改变可复现基线。

@@ -99,7 +99,7 @@ describe('third-party provenance', () => {
     const result = await checkProvenance(root);
     expect(result.valid).toBe(false);
     expect(result.findings).toContain(
-      'DSH package lock mismatch: @deepseek-ai/dsh-skill@0.2.1-rc.2',
+      'DSH package lock mismatch: @deepseek-ai/dsh-skill@0.2.1-rc.3',
     );
   });
 
@@ -123,9 +123,9 @@ describe('third-party provenance', () => {
     const root = await provenanceFixture();
     const baselinePath = path.join(root, 'third_party', 'upstream-baselines.json');
     const baseline = JSON.parse(await readFile(baselinePath, 'utf8')) as {
-      upstreams: Array<{ id: string; pinnedCommit: string }>;
+      upstreams: Array<{ id: string; pinnedCommit: string; pinnedTagCommit: string }>;
     };
-    baseline.upstreams.find((entry) => entry.id === 'dsh')!.pinnedCommit =
+    baseline.upstreams.find((entry) => entry.id === 'dsh')!.pinnedTagCommit =
       'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
     await writeFile(baselinePath, JSON.stringify(baseline, null, 2));
 

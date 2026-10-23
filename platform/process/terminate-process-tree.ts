@@ -5,14 +5,39 @@ import { inspectProcessOwnership } from './process-identity.js';
 
 const WINDOWS_TASKKILL_ATTEMPT_MS = 1_000;
 const WINDOWS_TASKKILL_ATTEMPTS = 2;
+const POSIX_GROUP_EXIT_WAIT_MS = 1_000;
 
+async function waitForPosixGroupExit(pid: number): Promise<boolean> {
+  const deadline = Date.now() + POSIX_GROUP_EXIT_WAIT_MS;
+  for (;;) {
+    try {
+      process.kill(-pid, 0);
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code === 'ESRCH') return true;
+      if (code !== 'EPERM') return false;
+    }
+    if (Date.now() >= deadline) return false;
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+}
+
+/** Best-effort compatibility wrapper. Callers needing proof use the confirmed variant. */
 export async function terminateProcessTree(child: ChildProcess): Promise<void> {
+  await terminateProcessTreeConfirmed(child);
+}
+
+/** Returns whether terminating the complete child process tree was confirmed. */
+export async function terminateProcessTreeConfirmed(child: ChildProcess): Promise<boolean> {
   const pid = child.pid;
   if (pid === undefined) {
     child.kill('SIGKILL');
-    return;
+    return false;
   }
   if (process.platform === 'win32') {
+    const exited = () => typeof child.exitCode === 'number' || child.signalCode !== null;
+    // An exited child handle must not authorize killing a possibly reused raw PID.
+    if (exited()) return false;
     const configuredSystemRoot = process.env.SystemRoot ?? process.env.WINDIR;
     const systemRoot =
       configuredSystemRoot && path.win32.isAbsolute(configuredSystemRoot)
@@ -44,23 +69,31 @@ export async function terminateProcessTree(child: ChildProcess): Promise<void> {
         }
       });
     for (let attempt = 0; attempt < WINDOWS_TASKKILL_ATTEMPTS; attempt += 1) {
+      if (exited()) return false;
       if (await runTaskkillAttempt()) {
         child.kill('SIGKILL');
-        return;
+        return true;
       }
     }
     child.kill('SIGKILL');
     child.stdin?.destroy();
     child.stdout?.destroy();
     child.stderr?.destroy();
-    return;
+    return false;
   }
   try {
     process.kill(-pid, 'SIGKILL');
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'ESRCH') throw error;
+    const code = (error as NodeJS.ErrnoException).code;
+    if (
+      code !== 'ESRCH' &&
+      !(process.platform === 'darwin' && code === 'EPERM' && (await waitForPosixGroupExit(pid)))
+    ) {
+      throw error;
+    }
   }
   child.kill('SIGKILL');
+  return true;
 }
 
 export type RecoveredTermination = 'terminated' | 'not_running' | 'identity_mismatch' | 'unknown';

@@ -53,7 +53,7 @@ interface DshAdoptionManifest {
 
 interface UpstreamBaselineManifest {
   schemaVersion: number;
-  upstreams?: Array<{ id?: string; pinnedCommit?: string }>;
+  upstreams?: Array<{ id?: string; pinnedCommit?: string; pinnedTagCommit?: string }>;
 }
 
 export interface ProvenanceCheck {
@@ -282,8 +282,8 @@ export async function checkProvenance(
     const dshBaseline = baselines.upstreams.find((entry) => entry.id === 'dsh');
     const cometBaseline = baselines.upstreams.find((entry) => entry.id === 'comet');
     if (
-      dshBaseline?.pinnedCommit !== dsh.upstream?.commit ||
-      dshBaseline?.pinnedCommit !== cordis.upstream?.commit
+      dshBaseline?.pinnedTagCommit !== dsh.upstream?.commit ||
+      dshBaseline?.pinnedTagCommit !== cordis.upstream?.commit
     ) {
       findings.push('DSH baseline disagrees with DSH or Cordis provenance');
     }

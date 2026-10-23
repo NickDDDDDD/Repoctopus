@@ -2,19 +2,19 @@
   "schemaVersion": 1,
   "upstream": {
     "repository": "https://github.com/deepseek-ai/deepseek-harness",
-    "commit": "687f282e8625c6b8d11ff58211a90524be2e4317",
-    "tag": "dsh-v0.2.1-rc.2",
+    "commit": "1f81c047fc48fa190a683e469daa699857e9afe8",
+    "tag": "dsh-v0.2.1-rc.3",
     "license": "MIT"
   },
   "npmPackages": [
-    { "name": "@deepseek-ai/dsh-brand", "version": "0.2.1-rc.2" },
-    { "name": "@deepseek-ai/dsh-llm", "version": "0.2.1-rc.2" },
-    { "name": "@deepseek-ai/dsh-scope", "version": "0.2.1-rc.2" },
-    { "name": "@deepseek-ai/dsh-skill", "version": "0.2.1-rc.2" },
-    { "name": "@deepseek-ai/dsh-timeout", "version": "0.2.1-rc.2" },
-    { "name": "@deepseek-ai/dsh-typert-protocol", "version": "0.2.1-rc.2" },
-    { "name": "@deepseek-ai/dsh-util-crypto", "version": "0.2.1-rc.2" },
-    { "name": "@deepseek-ai/dsh-util-values", "version": "0.2.1-rc.2" }
+    { "name": "@deepseek-ai/dsh-brand", "version": "0.2.1-rc.3" },
+    { "name": "@deepseek-ai/dsh-llm", "version": "0.2.1-rc.3" },
+    { "name": "@deepseek-ai/dsh-scope", "version": "0.2.1-rc.3" },
+    { "name": "@deepseek-ai/dsh-skill", "version": "0.2.1-rc.3" },
+    { "name": "@deepseek-ai/dsh-timeout", "version": "0.2.1-rc.3" },
+    { "name": "@deepseek-ai/dsh-typert-protocol", "version": "0.2.1-rc.3" },
+    { "name": "@deepseek-ai/dsh-util-crypto", "version": "0.2.1-rc.3" },
+    { "name": "@deepseek-ai/dsh-util-values", "version": "0.2.1-rc.3" }
   ],
   "desktopDependencies": [
     {
@@ -77,7 +77,7 @@
     },
     {
       "source": "apps/desktop/package.json",
-      "sourceSha256": "913095d3048ad424335acccf8e3193bb9523961604709062a430f57c4ac22479",
+      "sourceSha256": "4648b0248d3f2de2abce7d19ff83bccef1b642f7dedb024fbed1467a7d8c5c20",
       "role": "Electron application entry and desktop dependency topology"
     },
     {
@@ -147,7 +147,7 @@
       "id": "skill-registry",
       "source": "packages/skill/skill/src/index.ts",
       "disposition": "direct-package",
-      "package": "@deepseek-ai/dsh-skill@0.2.1-rc.2"
+      "package": "@deepseek-ai/dsh-skill@0.2.1-rc.3"
     },
     {
       "id": "skill-filesystem",

@@ -11,6 +11,10 @@ import {
   spawnCommand,
 } from '../platform/process/spawn-command.js';
 import { terminateProcessTree } from '../platform/process/terminate-process-tree.js';
+import {
+  ExternalCommandError,
+  runExternalCommandAsync,
+} from '../platform/process/external-command.js';
 import { removeTemporaryDirectory, temporaryDirectory } from './helpers/fixtures.js';
 
 const cleanup: string[] = [];
@@ -66,5 +70,22 @@ describe('process runtime', () => {
     });
     expect(result.timedOut).toBe(true);
     expect(result.exitCode).not.toBe(0);
+  });
+
+  it('uses the managed process-tree path when an external command is cancelled', async () => {
+    const cwd = await temporaryDirectory('repoctopus-external-command-');
+    cleanup.push(cwd);
+    const controller = new AbortController();
+    const result = runExternalCommandAsync(
+      process.execPath,
+      ['-e', 'setInterval(() => {}, 1000)'],
+      { cwd, signal: controller.signal },
+    );
+    controller.abort();
+    await expect(result).rejects.toMatchObject({
+      name: ExternalCommandError.name,
+      stderr: 'Execution cancelled',
+      timedOut: false,
+    });
   });
 });
