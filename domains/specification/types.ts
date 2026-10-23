@@ -87,11 +87,19 @@ export interface PlanningArtifactSnapshot {
   digest: `sha256:${string}`;
 }
 
+export interface PlanningSpecificationRoot {
+  schemaVersion: 1;
+  kind: 'SpecificationRoot';
+  storeId: string;
+  repositoryId: string;
+}
+
 export interface PlanningSnapshot {
   schemaVersion: 1;
   changeId: string;
   provider: SpecificationProviderIdentity;
   schema?: SpecificationSchemaInstructions;
+  specificationRoot?: PlanningSpecificationRoot;
   changeDigest: `sha256:${string}`;
   validationDigest: `sha256:${string}`;
   artifacts: PlanningArtifactSnapshot[];
@@ -102,7 +110,19 @@ export interface PlanningSnapshot {
   digest: `sha256:${string}`;
 }
 
-export type SpecificationApprovalDecision = 'approve' | 'request_changes' | 'reject';
+export type SpecificationApprovalDecision = 'approve' | 'revise' | 'reject';
+
+export interface SpecificationApprovalProposal {
+  schemaVersion: 1;
+  kind: 'SpecificationApprovalProposal';
+  changeId: string;
+  specificationRoot: PlanningSpecificationRoot;
+  provider: SpecificationProviderIdentity;
+  schema: { name: string; digest: `sha256:${string}` };
+  semanticDigest: `sha256:${string}`;
+  affectedCapabilities: string[];
+  targetBranch: string;
+}
 
 export interface SpecificationApprovalDecisionRequest {
   apiVersion: 'repoctopus/v1alpha1';
@@ -111,6 +131,8 @@ export interface SpecificationApprovalDecisionRequest {
   requestId: string;
   changeId: string;
   snapshotDigest: `sha256:${string}`;
+  proposal: SpecificationApprovalProposal;
+  proposalHash: `sha256:${string}`;
   provider: SpecificationProviderIdentity;
   schema: SpecificationSchemaInstructions;
   artifacts: PlanningArtifactSnapshot[];
@@ -123,7 +145,7 @@ export interface SpecificationApprovalDecisionResponse {
   apiVersion: 'repoctopus/v1alpha1';
   kind: 'HumanDecisionResponse';
   requestId: string;
-  snapshotDigest: `sha256:${string}`;
+  proposalHash: `sha256:${string}`;
   decision: SpecificationApprovalDecision;
   comment?: string;
 }
@@ -139,6 +161,8 @@ export interface SpecificationApprovalRecord {
   requestId: string;
   changeId: string;
   snapshotDigest: `sha256:${string}`;
+  proposalHash: `sha256:${string}`;
+  approvalHash: `sha256:${string}` | null;
   decision: SpecificationApprovalDecision;
   actorId: string;
   source: SpecificationApprovalActor['source'];

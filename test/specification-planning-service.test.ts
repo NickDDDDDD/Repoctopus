@@ -10,7 +10,7 @@ import type {
   SpecificationValidation,
 } from '../domains/specification/types.js';
 import { SpecificationPlanning } from '../services/specification-planning.js';
-import { Specification } from '../services/specification.js';
+import { Specification, type SpecificationRoot } from '../services/specification.js';
 import {
   removeTemporaryDirectory,
   specificationSchemaFixture,
@@ -36,6 +36,19 @@ class TestSpecification extends Specification {
 
   override planningInstructions(): Promise<SpecificationSchemaInstructions> {
     return Promise.resolve(specificationSchemaFixture(this.provider));
+  }
+
+  override root(): SpecificationRoot {
+    return {
+      schemaVersion: 1,
+      kind: 'SpecificationRoot',
+      storeId: 'planning-service',
+      repositoryId: 'workspace',
+    };
+  }
+
+  override verifyRoot(): Promise<SpecificationRoot> {
+    return Promise.resolve(this.root());
   }
 
   inspect(changeId: string): Promise<SpecificationChange> {
@@ -133,7 +146,7 @@ describe('SpecificationPlanning service', () => {
       apiVersion: 'repoctopus/v1alpha1' as const,
       kind: 'HumanDecisionResponse' as const,
       requestId: prepared.decisionRequest.requestId,
-      snapshotDigest: prepared.snapshot.digest,
+      proposalHash: prepared.decisionRequest.proposalHash,
       decision: 'approve' as const,
     };
     await expect(

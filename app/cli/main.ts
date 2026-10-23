@@ -63,6 +63,9 @@ function defaultWorkflowPath(): string {
 function nextActions(status: RunStatusView): string[] {
   if (status.state.status === 'running') return ['repoctopus run next --run <run-id>'];
   if (status.state.status === 'waiting') {
+    if (status.changeLifecycle?.waitCondition?.kind === 'human-decision') {
+      return ['repoctopus run decide --run <run-id>'];
+    }
     const evidence = status.nextAction?.evidenceProfile ? ' --evidence-attempt <attempt-id>' : '';
     return [
       `repoctopus run record --run <run-id> --action <action-id> --status succeeded --summary <text>${evidence}`,
@@ -583,7 +586,7 @@ async function specificationApprovalReview(parsed: ParsedArguments): Promise<Cli
           apiVersion: 'repoctopus/v1alpha1',
           kind: 'HumanDecisionResponse',
           requestId: state.decisionRequest.requestId,
-          snapshotDigest: state.decisionRequest.snapshotDigest,
+          proposalHash: state.decisionRequest.proposalHash,
           decision: selected.decision,
           ...(selected.comment ? { comment: selected.comment } : {}),
         },
@@ -950,6 +953,74 @@ async function runNext(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   }
 }
 
+async function runDecide(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  if (!process.stdin.isTTY || !process.stdout.isTTY) {
+    throw new Error('Human approval requires an interactive terminal or a trusted IDE Adapter');
+  }
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const runId = stringFlag(parsed, 'run', { required: true })!;
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const status = await app.context.commandRouter.execute<{ runId: string }, RunStatusView>(
+      'run.status',
+      { runId },
+    );
+    const lifecycle = status.changeLifecycle;
+    if (
+      !lifecycle ||
+      lifecycle.phase !== 'design' ||
+      lifecycle.status !== 'waiting' ||
+      lifecycle.waitCondition?.kind !== 'human-decision'
+    ) {
+      throw new Error('Change Run is not waiting for a Design Human Decision');
+    }
+    const approval = await app.context.commandRouter.execute<
+      { changeId: string },
+      SpecificationApprovalState | null
+    >('specification.approval.status', { changeId: lifecycle.identity.changeId });
+    if (
+      !approval ||
+      approval.status !== 'awaiting_approval' ||
+      approval.decisionRequest.requestId !== lifecycle.waitCondition.requestId ||
+      approval.decisionRequest.proposalHash !== lifecycle.waitCondition.proposalDigest
+    ) {
+      throw new Error('Change Run Design proposal is stale or unavailable');
+    }
+    const selected = await reviewSpecificationApproval({
+      request: approval.decisionRequest,
+      input: process.stdin,
+      output: process.stdout,
+    });
+    const result = await app.context.commandRouter.execute<unknown, SpecificationApprovalState>(
+      'run.change.decide',
+      {
+        runId,
+        response: {
+          apiVersion: 'repoctopus/v1alpha1',
+          kind: 'HumanDecisionResponse',
+          requestId: approval.decisionRequest.requestId,
+          proposalHash: approval.decisionRequest.proposalHash,
+          decision: selected.decision,
+          ...(selected.comment ? { comment: selected.comment } : {}),
+        },
+        actor: {
+          actorId: userInfo().username,
+          source: 'cli',
+          authenticated: true,
+        },
+      },
+    );
+    return successEnvelope({
+      command: 'run decide',
+      runId,
+      result,
+      nextActions: [`repoctopus run next --run ${runId}`],
+    });
+  } finally {
+    await app.close();
+  }
+}
+
 async function runRecord(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
   const runId = stringFlag(parsed, 'run', { required: true })!;
@@ -1148,6 +1219,7 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   if (command === 'run start') return runStart(parsed);
   if (command === 'run status') return runStatus(parsed);
   if (command === 'run next') return runNext(parsed);
+  if (command === 'run decide') return runDecide(parsed);
   if (command === 'run record') return runRecord(parsed);
   if (command === 'run resume') return runResume(parsed);
   if (command === 'delivery checkpoint') return deliveryCheckpoint(parsed);
@@ -1166,7 +1238,7 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   if (command === 'browser doctor') return browserDoctor(parsed);
   if (command === 'browser install') return browserInstall(parsed);
   throw new Error(
-    'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|record|resume> | runner start | post-merge reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | event <status|replay|retry> | approval review | browser <doctor|install> | doctor',
+    'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|decide|record|resume> | runner start | post-merge reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | event <status|replay|retry> | approval review | browser <doctor|install> | doctor',
   );
 }
 

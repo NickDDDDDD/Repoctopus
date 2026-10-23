@@ -52,6 +52,55 @@
         "digest": { "$ref": "#/$defs/digest" }
       }
     },
+    "specificationRoot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "kind", "storeId", "repositoryId"],
+      "properties": {
+        "schemaVersion": { "const": 1 },
+        "kind": { "const": "SpecificationRoot" },
+        "storeId": { "type": "string", "minLength": 1 },
+        "repositoryId": { "type": "string", "minLength": 1 }
+      }
+    },
+    "approvalProposal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "changeId",
+        "specificationRoot",
+        "provider",
+        "schema",
+        "semanticDigest",
+        "affectedCapabilities",
+        "targetBranch"
+      ],
+      "properties": {
+        "schemaVersion": { "const": 1 },
+        "kind": { "const": "SpecificationApprovalProposal" },
+        "changeId": { "type": "string", "minLength": 1 },
+        "specificationRoot": { "$ref": "#/$defs/specificationRoot" },
+        "provider": { "$ref": "#/$defs/provider" },
+        "schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "digest"],
+          "properties": {
+            "name": { "type": "string", "minLength": 1 },
+            "digest": { "$ref": "#/$defs/digest" }
+          }
+        },
+        "semanticDigest": { "$ref": "#/$defs/digest" },
+        "affectedCapabilities": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "targetBranch": { "type": "string", "minLength": 1 }
+      }
+    },
     "changeBranch": {
       "type": "object",
       "additionalProperties": false,
@@ -76,6 +125,8 @@
         "requestId",
         "changeId",
         "snapshotDigest",
+        "proposal",
+        "proposalHash",
         "provider",
         "schema",
         "artifacts",
@@ -90,6 +141,8 @@
         "requestId": { "type": "string", "minLength": 1 },
         "changeId": { "type": "string", "minLength": 1 },
         "snapshotDigest": { "$ref": "#/$defs/digest" },
+        "proposal": { "$ref": "#/$defs/approvalProposal" },
+        "proposalHash": { "$ref": "#/$defs/digest" },
         "provider": { "$ref": "#/$defs/provider" },
         "schema": { "$ref": "#/$defs/schemaInstructions" },
         "artifacts": {
@@ -104,19 +157,19 @@
           "items": { "type": "string", "minLength": 1 }
         },
         "changeBranch": { "$ref": "#/$defs/changeBranch" },
-        "options": { "const": ["approve", "request_changes", "reject"] }
+        "options": { "const": ["approve", "revise", "reject"] }
       }
     },
     {
       "type": "object",
       "additionalProperties": false,
-      "required": ["apiVersion", "kind", "requestId", "snapshotDigest", "decision"],
+      "required": ["apiVersion", "kind", "requestId", "proposalHash", "decision"],
       "properties": {
         "apiVersion": { "const": "repoctopus/v1alpha1" },
         "kind": { "const": "HumanDecisionResponse" },
         "requestId": { "type": "string", "minLength": 1 },
-        "snapshotDigest": { "$ref": "#/$defs/digest" },
-        "decision": { "enum": ["approve", "request_changes", "reject"] },
+        "proposalHash": { "$ref": "#/$defs/digest" },
+        "decision": { "enum": ["approve", "revise", "reject"] },
         "comment": { "type": "string", "maxLength": 4096 }
       }
     }

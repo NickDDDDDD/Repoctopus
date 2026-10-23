@@ -73,7 +73,7 @@ export class SpecificationPlanning extends Service {
         evidenceDigests: [],
       };
     }
-    const { change, validation, schema, current } = collected;
+    const { change, validation, schema, specificationRoot, current } = collected;
     const evidenceDigests = [schema.digest, change.changeDigest, validation.validationDigest];
     if (!change.planningComplete) {
       return {
@@ -97,6 +97,7 @@ export class SpecificationPlanning extends Service {
         change,
         validation,
         schema,
+        specificationRoot,
         changeBranch: input.changeBranch,
         compositionDigest: input.compositionDigest,
         projectConfigDigest: input.projectConfigDigest,
@@ -121,12 +122,13 @@ export class SpecificationPlanning extends Service {
     if (
       next.status === 'approved' &&
       next.decision?.decision === 'approve' &&
+      next.decision.approvalHash !== null &&
       next.decision.snapshotDigest === snapshot.digest
     ) {
       return {
         status: 'approved',
         reason: 'Specification planning is strictly valid and has a trusted Human Decision',
-        evidenceDigests: [...evidenceDigests, snapshot.digest],
+        evidenceDigests: [...evidenceDigests, snapshot.digest, next.decision.approvalHash],
         validation,
         snapshot,
         approval: next,
@@ -156,7 +158,8 @@ export class SpecificationPlanning extends Service {
   }
 
   private async collect(input: PrepareSpecificationApprovalInput) {
-    const [schema, change, validation, current] = await Promise.all([
+    const [specificationRoot, schema, change, validation, current] = await Promise.all([
+      this.ctx.specification.verifyRoot(input.signal),
       this.ctx.specification.planningInstructions(input.changeId, input.signal),
       this.ctx.specification.inspect(input.changeId, input.signal),
       this.ctx.specification.validate(input.changeId, {
@@ -165,7 +168,7 @@ export class SpecificationPlanning extends Service {
       }),
       this.store.load(input.changeId),
     ]);
-    return { schema, change, validation, current };
+    return { specificationRoot, schema, change, validation, current };
   }
 
   async decide(input: {

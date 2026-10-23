@@ -16,6 +16,9 @@ import {
 import { snapshotSkillDefinition } from '../platform/skill/snapshot.js';
 import type {
   SpecificationCompatibility,
+  SpecificationApprovalActor,
+  SpecificationApprovalDecisionResponse,
+  SpecificationApprovalState,
   SpecificationClosurePlan,
   SpecificationUsageSnapshot,
   SpecificationValidation,
@@ -39,6 +42,12 @@ export interface StartChangeRunInput {
   remote: string;
   projectSnapshot: ProjectSnapshot;
   projectConfigDigest: `sha256:${string}`;
+}
+
+export interface DecideChangeRunInput {
+  runId: string;
+  response: SpecificationApprovalDecisionResponse;
+  actor: SpecificationApprovalActor;
 }
 
 export class WorkflowRuns extends Service {
@@ -196,6 +205,39 @@ export class WorkflowRuns extends Service {
     }));
   }
 
+  decideChange(
+    input: DecideChangeRunInput,
+    signal?: AbortSignal,
+  ): Promise<SpecificationApprovalState> {
+    return this.operations.run({ cancellable: false, signal }, async () => {
+      const state = await this.ctx.runStore.loadRun(input.runId);
+      const lifecycle = state.changeLifecycle;
+      if (
+        !lifecycle ||
+        lifecycle.phase !== 'design' ||
+        state.status !== 'waiting' ||
+        lifecycle.waitCondition?.kind !== 'human-decision'
+      ) {
+        throw new Error('Change Run is not waiting for a Design Human Decision');
+      }
+      if (
+        input.response.requestId !== lifecycle.waitCondition.requestId ||
+        input.response.proposalHash !== lifecycle.waitCondition.proposalDigest
+      ) {
+        throw new Error('Human Decision does not match the current Change Run proposal');
+      }
+      const decided = await this.ctx.specificationPlanning.decide({
+        changeId: lifecycle.identity.changeId,
+        response: input.response,
+        actor: input.actor,
+      });
+      if (decided.decision?.proposalHash !== lifecycle.waitCondition.proposalDigest) {
+        throw new Error('Recorded Human Decision does not match the current Change Run proposal');
+      }
+      return decided;
+    });
+  }
+
   bindSkill(
     runId: string,
     definition: SkillDefinition,
@@ -324,7 +366,7 @@ export class WorkflowRuns extends Service {
           ...(assessment.status === 'waiting' && assessment.approval
             ? {
                 requestId: assessment.approval.decisionRequest.requestId,
-                proposalDigest: assessment.approval.snapshot.digest,
+                proposalDigest: assessment.approval.decisionRequest.proposalHash,
               }
             : {}),
         });

@@ -6,15 +6,11 @@ import type {
   SpecificationClosureResult,
   SpecificationProviderIdentity,
   SpecificationSchemaInstructions,
+  PlanningSpecificationRoot,
   SpecificationValidation,
 } from '../domains/specification/types.js';
 
-export interface SpecificationRoot {
-  schemaVersion: 1;
-  kind: 'SpecificationRoot';
-  storeId: string;
-  repositoryId: string;
-}
+export type SpecificationRoot = PlanningSpecificationRoot;
 
 export interface PrepareSpecificationClosureInput {
   changeId: string;

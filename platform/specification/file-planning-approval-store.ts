@@ -2,7 +2,7 @@ import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 
 import {
-  assertPlanningSnapshot,
+  assertSpecificationApprovalState,
   type SpecificationApprovalStorePort,
 } from '../../domains/specification/planning-approval.js';
 import type { SpecificationApprovalState } from '../../domains/specification/types.js';
@@ -45,7 +45,7 @@ function planningApprovalState(value: unknown): SpecificationApprovalState {
   ) {
     throw new Error('Invalid specification approval state');
   }
-  assertPlanningSnapshot(state.snapshot);
+  assertSpecificationApprovalState(state, { allowLegacy: true });
   return state;
 }
 

@@ -67,19 +67,24 @@ async function failure(
   }
 }
 
-async function trustPendingDecision(workspace: string, changeId: string): Promise<void> {
+async function decidePending(
+  workspace: string,
+  changeId: string,
+  runId: string,
+  decision: 'approve' | 'revise' | 'reject',
+): Promise<SpecificationApprovalState> {
   const app = await bootProjectComposition(packageRoot, workspace);
   try {
     const state = await app.context.specificationPlanning.status(changeId);
     if (!state || state.status !== 'awaiting_approval') throw new Error('missing pending approval');
-    await app.context.specificationPlanning.decide({
-      changeId,
+    return app.context.commandRouter.execute('run.change.decide', {
+      runId,
       response: {
         apiVersion: 'repoctopus/v1alpha1',
         kind: 'HumanDecisionResponse',
         requestId: state.decisionRequest.requestId,
-        snapshotDigest: state.decisionRequest.snapshotDigest,
-        decision: 'approve',
+        proposalHash: state.decisionRequest.proposalHash,
+        decision,
       },
       actor: { actorId: 'trusted-e2e-user', source: 'cli', authenticated: true },
     });
@@ -134,6 +139,8 @@ describe('Change Run Design gate CLI', () => {
       '# Demo\n\n## Purpose\n\nTest capability.\n\n## Requirements\n\n### Requirement: Existing behavior\n\nThe system MUST preserve behavior.\n\n#### Scenario: Existing\n\n- **WHEN** it runs\n- **THEN** it succeeds\n',
     );
     await writeChange(workspace, 'valid-plan', 'valid');
+    await writeChange(workspace, 'revise-plan', 'valid');
+    await writeChange(workspace, 'reject-plan', 'valid');
     await writeChange(workspace, 'invalid-plan', 'invalid');
     await writeChange(workspace, 'incomplete-plan', 'incomplete');
     await write(
@@ -214,7 +221,26 @@ describe('Change Run Design gate CLI', () => {
       status: 'waiting',
     });
 
-    await trustPendingDecision(workspace, 'valid-plan');
+    const wrongProposalApp = await bootProjectComposition(packageRoot, workspace);
+    try {
+      const pending = await wrongProposalApp.context.specificationPlanning.status('valid-plan');
+      await expect(
+        wrongProposalApp.context.commandRouter.execute('run.change.decide', {
+          runId: validRun.runId!,
+          response: {
+            apiVersion: 'repoctopus/v1alpha1',
+            kind: 'HumanDecisionResponse',
+            requestId: pending!.decisionRequest.requestId,
+            proposalHash: `sha256:${'f'.repeat(64)}`,
+            decision: 'approve',
+          },
+          actor: { actorId: 'trusted-e2e-user', source: 'cli', authenticated: true },
+        }),
+      ).rejects.toThrow(/does not match the current Change Run proposal/u);
+    } finally {
+      await wrongProposalApp.close();
+    }
+    await decidePending(workspace, 'valid-plan', validRun.runId!, 'approve');
     const approved = await runCli<RunStatusView>({
       packageRoot,
       cwd: workspace,
@@ -226,6 +252,31 @@ describe('Change Run Design gate CLI', () => {
       changeId: 'valid-plan',
       provider: { id: 'openspec' },
     });
+
+    for (const [changeId, decision, expectedStatus] of [
+      ['revise-plan', 'revise', 'changes_requested'],
+      ['reject-plan', 'reject', 'rejected'],
+    ] as const) {
+      const run = await start(changeId);
+      await runCli<RunStatusView>({
+        packageRoot,
+        cwd: workspace,
+        args: ['run', 'next', '--workspace', workspace, '--run', run.runId!],
+        environment,
+      });
+      const result = await decidePending(workspace, changeId, run.runId!, decision);
+      expect(result.status).toBe(expectedStatus);
+      const blocked = await runCli<RunStatusView>({
+        packageRoot,
+        cwd: workspace,
+        args: ['run', 'next', '--workspace', workspace, '--run', run.runId!],
+        environment,
+      });
+      expect(blocked.result?.changeLifecycle).toMatchObject({
+        phase: 'design',
+        status: 'blocked',
+      });
+    }
 
     for (const changeId of ['invalid-plan', 'incomplete-plan']) {
       const run = await start(changeId);

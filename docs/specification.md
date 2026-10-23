@@ -30,9 +30,12 @@ git push -u origin spec/<change-id>
 node bin/repoctopus.js spec approval prepare --workspace . --change <change-id> --branch spec/<change-id> --target main --json
 node bin/repoctopus.js spec approval status --workspace . --change <change-id> --json
 node bin/repoctopus.js spec approval review --workspace . --change <change-id>
+node bin/repoctopus.js run decide --workspace . --run <run-id>
 ```
 
-`prepare` 通过当前 Specification Provider 严格校验 Proposal、Delta Specs、Design 和 Tasks，把四份内容摘要、Provider 身份、受影响能力、远端分支 OID、目标分支以及 composition 和配置摘要绑定为不可变请求。它只生成 `awaiting_approval` 状态，不等于批准。`review` 必须运行在可信交互终端或由可信 IDE Adapter 提交；非交互 Agent、Runner、Git 作者和 MR 状态都不能代替用户决定。
+`prepare` 通过当前 Specification Provider 严格校验 Proposal、Delta Specs、Design 和 Tasks，把四份内容摘要、Store、Provider、官方 schema instructions、受影响能力、远端分支 OID、目标分支以及 composition 和配置摘要绑定为不可变请求。它只生成 `awaiting_approval` 状态，不等于批准。Change Run 在 `design/waiting` 时用 `run decide` 展示并提交当前请求；`approve`、`revise` 和 `reject` 都通过同一个公共命令入口记录。该命令必须运行在可信交互终端，IDE 则提交同一版本化响应；非交互 Agent、Runner、Git 作者和 MR 状态都不能代替用户决定。
+
+请求中的 `proposalHash` 是用户实际审核内容的稳定身份，覆盖 change、Specification Root、Provider/schema、规划语义摘要、能力集合和目标分支。响应必须同时匹配当前 Run 的 `requestId` 与 `proposalHash`；批准记录还生成绑定主体、决定和时间的 `approvalHash`。旧请求、跨 Run 响应或任一受保护事实被篡改时都必须拒绝，不能靠重新包装响应沿用批准。
 
 批准只授权按照该快照进入实施。产物、Provider、配置、目标分支或 Change 分支 OID 任一变化，下一次准备或实施门禁都会生成新请求，旧批准不能沿用。后续 Delivery approval 单独授权 Business MR 发布；最终 Change MR 则只在全部 Business MR 合入、Post-merge Evidence 通过、主规格同步且 change 归档以后创建，并仍由人合入。因此三个事实不能互相替代：
 

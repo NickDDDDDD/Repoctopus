@@ -13,14 +13,14 @@ export async function reviewSpecificationApproval(options: {
   const terminal = createInterface({ input: options.input, output: options.output });
   try {
     options.output.write(
-      `\nSpecification approval: ${options.request.changeId}\nSnapshot: ${options.request.snapshotDigest}\nChange branch: ${options.request.changeBranch.sourceBranch}\nArtifacts: ${options.request.artifacts.length}\nCapabilities: ${options.request.affectedCapabilities.length}\n\n1) Approve\n2) Request changes\n3) Reject\n`,
+      `\nSpecification approval: ${options.request.changeId}\nProposal: ${options.request.proposalHash}\nChange branch: ${options.request.changeBranch.sourceBranch}\nArtifacts: ${options.request.artifacts.length}\nCapabilities: ${options.request.affectedCapabilities.length}\n\n1) Approve\n2) Revise\n3) Reject\n`,
     );
     const answer = (await terminal.question('Decision [1-3]: ')).trim();
     const decision: SpecificationApprovalDecision =
       answer === '1'
         ? 'approve'
         : answer === '2'
-          ? 'request_changes'
+          ? 'revise'
           : answer === '3'
             ? 'reject'
             : (() => {

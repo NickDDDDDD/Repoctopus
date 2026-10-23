@@ -4,7 +4,9 @@ import { canonicalJson } from '../workflow-contract/canonical.js';
 import type {
   ChangeBranchReference,
   PlanningArtifactSnapshot,
+  PlanningSpecificationRoot,
   PlanningSnapshot,
+  SpecificationApprovalProposal,
   SpecificationApprovalActor,
   SpecificationApprovalDecisionRequest,
   SpecificationApprovalDecisionResponse,
@@ -85,6 +87,7 @@ export function createPlanningSnapshot(input: {
   change: SpecificationChange;
   validation: SpecificationValidation;
   schema: SpecificationSchemaInstructions;
+  specificationRoot: PlanningSpecificationRoot;
   changeBranch: ChangeBranchReference;
   compositionDigest: `sha256:${string}`;
   projectConfigDigest: `sha256:${string}`;
@@ -109,11 +112,15 @@ export function createPlanningSnapshot(input: {
   assertDigest(input.compositionDigest, 'Composition');
   assertDigest(input.projectConfigDigest, 'Project configuration');
   assertSchemaInstructions(input.schema);
+  if (!input.specificationRoot.storeId.trim() || !input.specificationRoot.repositoryId.trim()) {
+    throw new Error('Specification Root identity is required');
+  }
   const stable = {
     schemaVersion: 1 as const,
     changeId: input.change.changeId,
     provider: structuredClone(input.change.provider),
     schema: structuredClone(input.schema),
+    specificationRoot: structuredClone(input.specificationRoot),
     changeDigest: input.change.changeDigest,
     validationDigest: input.validation.validationDigest,
     artifacts: normalizePlanningArtifacts(input.change),
@@ -151,7 +158,12 @@ export function createSpecificationApprovalRequest(
   if (!snapshot.schema) {
     throw new Error('Legacy planning snapshot requires schema instructions migration');
   }
+  if (!snapshot.specificationRoot) {
+    throw new Error('Legacy planning snapshot requires Specification Root migration');
+  }
   if (!requestId.trim()) throw new Error('Specification approval request ID is required');
+  const proposal = createSpecificationApprovalProposal(snapshot);
+  const proposalHash = hashApprovalProposal(proposal);
   return {
     apiVersion: 'repoctopus/v1alpha1',
     kind: 'HumanDecisionRequest',
@@ -159,13 +171,98 @@ export function createSpecificationApprovalRequest(
     requestId,
     changeId: snapshot.changeId,
     snapshotDigest: snapshot.digest,
+    proposal,
+    proposalHash,
     provider: structuredClone(snapshot.provider),
     schema: structuredClone(snapshot.schema),
     artifacts: structuredClone(snapshot.artifacts),
     affectedCapabilities: [...snapshot.affectedCapabilities],
     changeBranch: structuredClone(snapshot.changeBranch),
-    options: ['approve', 'request_changes', 'reject'],
+    options: ['approve', 'revise', 'reject'],
   };
+}
+
+export function createSpecificationApprovalProposal(
+  snapshot: PlanningSnapshot,
+): SpecificationApprovalProposal {
+  assertPlanningSnapshot(snapshot);
+  if (!snapshot.schema || !snapshot.specificationRoot) {
+    throw new Error('Current approval proposal requires schema and Specification Root identity');
+  }
+  return {
+    schemaVersion: 1,
+    kind: 'SpecificationApprovalProposal',
+    changeId: snapshot.changeId,
+    specificationRoot: structuredClone(snapshot.specificationRoot),
+    provider: structuredClone(snapshot.provider),
+    schema: { name: snapshot.schema.schemaName, digest: snapshot.schema.digest },
+    semanticDigest: snapshot.digest,
+    affectedCapabilities: [...snapshot.affectedCapabilities].sort(),
+    targetBranch: snapshot.changeBranch.targetBranch,
+  };
+}
+
+export function hashApprovalProposal(
+  proposal: SpecificationApprovalProposal,
+): `sha256:${string}` {
+  return sha256(proposal);
+}
+
+function approvalHash(record: Omit<SpecificationApprovalRecord, 'approvalHash'>) {
+  return sha256({ kind: 'SpecificationApproval', ...record });
+}
+
+export function assertSpecificationApprovalState(
+  state: SpecificationApprovalState,
+  options: { allowLegacy?: boolean } = {},
+): void {
+  assertPlanningSnapshot(state.snapshot);
+  const request = state.decisionRequest as SpecificationApprovalDecisionRequest & {
+    proposal?: SpecificationApprovalProposal;
+    proposalHash?: `sha256:${string}`;
+  };
+  if (
+    !request.proposal ||
+    !request.proposalHash ||
+    !state.snapshot.schema ||
+    !state.snapshot.specificationRoot
+  ) {
+    if (options.allowLegacy === true) return;
+    throw new Error('Legacy specification approval requires migration');
+  }
+  const expectedProposal = createSpecificationApprovalProposal(state.snapshot);
+  if (
+    canonicalJson(request.proposal) !== canonicalJson(expectedProposal) ||
+    request.proposalHash !== hashApprovalProposal(expectedProposal) ||
+    request.snapshotDigest !== state.snapshot.digest ||
+    request.changeId !== state.changeId
+  ) {
+    throw new Error('Specification approval proposal hash is invalid');
+  }
+  if (state.decision) {
+    const { approvalHash: actualApprovalHash, ...record } = state.decision;
+    if (
+      record.requestId !== request.requestId ||
+      record.changeId !== state.changeId ||
+      record.snapshotDigest !== state.snapshot.digest ||
+      record.proposalHash !== request.proposalHash ||
+      (record.decision === 'approve'
+        ? actualApprovalHash !== approvalHash(record)
+        : actualApprovalHash !== null)
+    ) {
+      throw new Error('Specification approval hash is invalid');
+    }
+  }
+  const expectedStatus = state.decision
+    ? state.decision.decision === 'approve'
+      ? 'approved'
+      : state.decision.decision === 'revise'
+        ? 'changes_requested'
+        : 'rejected'
+    : 'awaiting_approval';
+  if (state.status !== expectedStatus) {
+    throw new Error('Specification approval status does not match its Human Decision');
+  }
 }
 
 export function requestSpecificationApproval(input: {
@@ -201,31 +298,48 @@ export function recordSpecificationApprovalDecision(input: {
   if (!input.actor.authenticated || !input.actor.actorId.trim()) {
     throw new Error('Specification approval decision is not trusted');
   }
+  assertSpecificationApprovalState(input.state);
+  const request = input.state.decisionRequest;
+  const response = input.response;
+  if (input.state.decision) {
+    if (
+      input.state.decision.requestId === response.requestId &&
+      input.state.decision.proposalHash === response.proposalHash &&
+      input.state.decision.decision === response.decision &&
+      input.state.decision.actorId === input.actor.actorId &&
+      input.state.decision.source === input.actor.source
+    ) {
+      return structuredClone(input.state);
+    }
+    throw new Error('Specification approval already has a different Human Decision');
+  }
   if (input.state.status !== 'awaiting_approval') {
     throw new Error(`Specification approval is not awaiting a decision: ${input.state.status}`);
   }
-  assertPlanningSnapshot(input.state.snapshot);
-  const request = input.state.decisionRequest;
-  const response = input.response;
   if (
     response.apiVersion !== 'repoctopus/v1alpha1' ||
     response.kind !== 'HumanDecisionResponse' ||
     response.requestId !== request.requestId ||
-    response.snapshotDigest !== request.snapshotDigest ||
+    response.proposalHash !== request.proposalHash ||
     !request.options.includes(response.decision)
   ) {
     throw new Error('Specification approval response does not match the pending request');
   }
-  const decision: SpecificationApprovalRecord = {
+  const decisionBase: Omit<SpecificationApprovalRecord, 'approvalHash'> = {
     schemaVersion: 1,
     requestId: request.requestId,
     changeId: input.state.changeId,
     snapshotDigest: input.state.snapshot.digest,
+    proposalHash: request.proposalHash,
     decision: response.decision,
     actorId: input.actor.actorId,
     source: input.actor.source,
     decidedAt: input.timestamp,
     ...(response.comment ? { comment: response.comment } : {}),
+  };
+  const decision: SpecificationApprovalRecord = {
+    ...decisionBase,
+    approvalHash: response.decision === 'approve' ? approvalHash(decisionBase) : null,
   };
   return {
     ...input.state,
@@ -233,7 +347,7 @@ export function recordSpecificationApprovalDecision(input: {
     status:
       response.decision === 'approve'
         ? 'approved'
-        : response.decision === 'request_changes'
+        : response.decision === 'revise'
           ? 'changes_requested'
           : 'rejected',
     decision,
