@@ -84,7 +84,7 @@ Envelope Store 只保存不可变 envelope。目的地 Adapter 将同一 envelop
 
 ### 3. 使用共享 envelope store 与独立目的地 cursor
 
-Envelope 先以原子写入进入 Workspace 的本地遥测 outbox，再由目的地 worker 独立读取和确认。目的地状态包含稳定 `destinationId`、最后确认 envelope、连续序列、最近尝试、结果分类和积压摘要。
+Envelope 先以原子写入进入 Workspace 的本地遥测 outbox，再由目的地 worker 独立读取和确认。目的地状态包含稳定 `destinationId`、独立确认集合、启停状态、最近投递健康和有界 gap 诊断；积压摘要由当前保留集与该目的地确认集合计算，不重复持久化。
 
 - 远端目的地沿用标准 `OTEL_EXPORTER_OTLP_*` 配置。
 - 桌面目的地使用稳定的用户本机身份，不把临时端口或会话 token 作为目的地身份。
@@ -97,7 +97,13 @@ Envelope 先以原子写入进入 Workspace 的本地遥测 outbox，再由目�
 
 首个基础切片把身份和内容完整性分开：`envelopeId` 只对 schema version 与规范化来源身份（domain、event type、event id、可选 source sequence）计算 SHA-256，因此同一领域事实的身份不随传输目的地变化；`digest` 则覆盖除自身以外的完整规范 envelope，用于发现持久内容被修改。映射器显式重建 source 和三类 signal，不透传额外字段；属性必须同时通过调用方白名单与全局敏感 key/value、绝对路径、换行和长度边界。危险字段即使误入白名单也会使映射失败，危险值则不会进入 envelope。
 
-文件 Store 以 `envelopeId` 为不可变键，用 exclusive 原子发布保证重复保存幂等、同身份不同内容冲突；读取时重新计算身份和摘要。由于多个领域来源不存在一条天然共享连续序列，基础 Cursor 不伪造全局 offset，而是为每个稳定 `destinationId` 保存已确认的 `envelopeId → digest` 集合和有界健康状态。确认、失败和进程中断只原子更新该目的地文件；未成功提交的确认在重启后仍进入 replay。保留上限、连续序列、积压摘要和 gap 策略仍由任务 3.5 补齐，不能从当前集合实现推导 exactly-once 承诺。
+文件 Store 以 `envelopeId` 为不可变键，用 exclusive 原子发布保证重复保存幂等、同身份不同内容冲突；读取时重新计算身份和摘要。由于多个领域来源不存在一条天然共享连续序列，Cursor 不伪造全局 offset，而是为每个稳定 `destinationId` 保存已确认的 `envelopeId → digest` 集合。确认、失败和进程中断只原子更新该目的地文件；未成功提交的确认在重启后仍进入 replay。因此传输契约是 at-least-once，不是 exactly-once。
+
+Cursor schema v2 增加 `enabled`、`paused`、`removed` 三态、投递健康、有界 gap 历史和累计丢弃计数，并兼容读取 v1 确认集合。暂停只停止投递并保留积压；移除先为尚未确认的当前保留集记录 `destination-removed` gap，再停止该目的地积压增长。目的地从 removed 重新启用时以当时仍保留的 envelope 建立新基线，不追溯移除期间的数据，也不修改其他目的地 Cursor。
+
+默认保留策略为 10,000 个 envelope、64 MiB、7 天和 32 条 gap 历史，可通过 Telemetry Provider 配置覆盖。Store 按观测时间应用数量、字节和时间上限；删除 envelope 前，先为所有未确认该 envelope 的非 removed 目的地原子写入稳定 gap 并压缩其确认集合。若 gap 写入中断，envelope 保持可重试；稳定 gap identity 防止重启后重复累计。内存保留索引只缓存不可变元数据，每次维护仍用磁盘文件名集合检测外部进程漂移，因此优化不会把内存状态变成事实来源。
+
+业务提交 `b7b9845` 完成该边界。小容量故障测试覆盖三态转换、目的地隔离、数量/字节/时间超限、gap 历史上限、gap 提交中断恢复和 v1 Cursor 迁移；完整 `npm run verify` 通过 109 个测试文件、469 项测试并保留 1 项既有跳过，完整测试阶段耗时 103.23 秒。
 
 备选方案一是把一份数据同时直接 `Promise.all` 发往两个端点；进程退出后无法确定各目的地是否确认。备选方案二是让 Electron 接收后再转发 SigNoZ；Electron 关闭会切断团队遥测并使桌面成为单点，因此拒绝。
 
