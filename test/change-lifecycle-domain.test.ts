@@ -11,7 +11,9 @@ import {
   type ChangeRunBlocker,
   type RunStatus,
   type WaitCondition,
+  type WorkDescriptor,
 } from '../domains/change-lifecycle/transition.js';
+import type { SpecificationTask } from '../domains/specification/types.js';
 import {
   BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
   createChangeLifecycleSnapshot,
@@ -163,6 +165,44 @@ function blocker(status: RunStatus): ChangeRunBlocker {
 
 const cleared = { currentWork: null, waitCondition: null, blocker: null } as const;
 
+const buildTask: SpecificationTask = {
+  taskId: '1.1',
+  taskRevision: digest('t'),
+  title: 'Build it',
+  level: 0,
+  status: 'pending',
+  blockedBy: [],
+};
+
+const buildWork: WorkDescriptor = {
+  schemaVersion: 1,
+  workId: 'build:1.1:test',
+  phase: 'build',
+  kind: 'task.implement',
+  taskId: buildTask.taskId,
+  taskRevision: buildTask.taskRevision,
+  augmentationSkills: [],
+  methodProfile: {
+    id: 'build',
+    version: '1.0.0',
+    digest: digest('m'),
+    sourceDigests: [],
+    ruleIds: [],
+  },
+  capabilities: ['repository.write'],
+  sideEffectClass: 'repository-write',
+  writeScopes: [],
+  inputDigest: digest('i'),
+  outputContract: { artifactKinds: [], trackerPublish: false },
+  validatorProfile: { id: 'build.task-valid', version: '1.0.0', digest: digest('v') },
+  authorizationSource: {
+    kind: 'lifecycle-definition',
+    definitionId: BUILTIN_CHANGE_LIFECYCLE_DEFINITION.id,
+    definitionVersion: BUILTIN_CHANGE_LIFECYCLE_DEFINITION.version,
+  },
+  checkpoint: 'build.before-task',
+};
+
 describe('Change lifecycle domain', () => {
   it('owns Open and Design gate decisions in the canonical reducer', () => {
     const opened = evolveChangeLifecycle({
@@ -215,9 +255,15 @@ describe('Change lifecycle domain', () => {
         reason: 'Trusted decision accepted',
         evidenceIds: [digest('e')],
         inputDigest: digest('i'),
+        tasks: [buildTask],
+        work: buildWork,
       },
     });
-    expect(approved.snapshot).toMatchObject({ phase: 'build', status: 'running' });
+    expect(approved.snapshot).toMatchObject({
+      phase: 'build',
+      status: 'running',
+      currentWork: { workId: buildWork.workId, taskId: buildTask.taskId },
+    });
 
     const blocked = evolveChangeLifecycle({
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,

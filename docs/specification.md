@@ -37,6 +37,8 @@ node bin/repoctopus.js run decide --workspace . --run <run-id>
 
 请求中的 `proposalHash` 是用户实际审核内容的稳定身份，覆盖 change、Specification Root、Provider/schema、规划语义摘要、能力集合和目标分支。响应必须同时匹配当前 Run 的 `requestId` 与 `proposalHash`；批准记录还生成绑定主体、决定和时间的 `approvalHash`。旧请求、跨 Run 响应或任一受保护事实被篡改时都必须拒绝，不能靠重新包装响应沿用批准。
 
+批准生效时，Provider 从官方 `tasks.md` 解析 checkbox 任务。编号是稳定 `taskId`；任务文字、层级和 `Blocked by` 依赖共同形成 `taskRevision`，checkbox 完成状态不改变 revision。没有显式依赖时按文档顺序串行依赖前一任务。Runtime 只接受恰好一个 ready Task，并在 Design→Build 转换中持久化对应 Work；`run status` 读取该 Work，不从文件重新猜测。修改或拒绝状态不会产生 Build Work。
+
 批准只授权按照该快照进入实施。产物、Provider、配置、目标分支或 Change 分支 OID 任一变化，下一次准备或实施门禁都会生成新请求，旧批准不能沿用。后续 Delivery approval 单独授权 Business MR 发布；最终 Change MR 则只在全部 Business MR 合入、Post-merge Evidence 通过、主规格同步且 change 归档以后创建，并仍由人合入。因此三个事实不能互相替代：
 
 - **公开 Change 分支**：保存共享工作与精确远端版本，不代表人已同意方案。

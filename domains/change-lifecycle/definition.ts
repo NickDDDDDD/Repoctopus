@@ -399,6 +399,7 @@ export function createChangeLifecycleSnapshot(options: {
     currentWork: null,
     waitCondition: null,
     blocker: null,
+    tasks: [],
   };
   assertChangeLifecycleSnapshot(snapshot);
   return snapshot;

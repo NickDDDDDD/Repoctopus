@@ -248,6 +248,31 @@ describe('Change Run Design gate CLI', () => {
       environment,
     });
     expect(approved.result?.changeLifecycle).toMatchObject({ phase: 'build', status: 'running' });
+    expect(approved.result?.changeLifecycle).toMatchObject({
+      taskProgress: { total: 1, completed: 0, currentTaskId: '1.1' },
+      currentWork: {
+        phase: 'build',
+        kind: 'task.implement',
+        taskId: '1.1',
+        checkpoint: 'build.before-task',
+      },
+      nextActions: [{ kind: 'work', label: 'Implement Task 1.1' }],
+    });
+    expect(approved.result?.changeLifecycle?.currentWork?.taskRevision).toMatch(
+      /^sha256:[a-f0-9]{64}$/u,
+    );
+    const persistedBuild = await runCli<RunStatusView>({
+      packageRoot,
+      cwd: workspace,
+      args: ['run', 'status', '--workspace', workspace, '--run', validRun.runId!],
+      environment,
+    });
+    expect(persistedBuild.result?.changeLifecycle?.currentWork).toEqual(
+      approved.result?.changeLifecycle?.currentWork,
+    );
+    expect(persistedBuild.result?.changeLifecycle?.nextActions).toEqual(
+      approved.result?.changeLifecycle?.nextActions,
+    );
     expect(approved.result?.state.specificationUsageSnapshot).toMatchObject({
       changeId: 'valid-plan',
       provider: { id: 'openspec' },
@@ -258,12 +283,13 @@ describe('Change Run Design gate CLI', () => {
       ['reject-plan', 'reject', 'rejected'],
     ] as const) {
       const run = await start(changeId);
-      await runCli<RunStatusView>({
+      const unapproved = await runCli<RunStatusView>({
         packageRoot,
         cwd: workspace,
         args: ['run', 'next', '--workspace', workspace, '--run', run.runId!],
         environment,
       });
+      expect(unapproved.result?.changeLifecycle?.currentWork).toBeNull();
       const result = await decidePending(workspace, changeId, run.runId!, decision);
       expect(result.status).toBe(expectedStatus);
       const blocked = await runCli<RunStatusView>({

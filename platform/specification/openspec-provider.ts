@@ -15,7 +15,9 @@ import {
   type SpecificationProviderIdentity,
   type SpecificationSchemaInstructions,
   type SpecificationValidation,
+  type SpecificationTaskSet,
 } from '../../domains/specification/types.js';
+import { parseSpecificationTasks } from '../../domains/specification/tasks.js';
 import { atomicWriteJson } from '../filesystem/atomic-write.js';
 import {
   Specification,
@@ -260,6 +262,39 @@ export class OpenSpecProvider extends Specification {
 
   async inspect(changeId: string, signal?: AbortSignal): Promise<SpecificationChange> {
     return this.inspectAt(this.workspace, changeId, signal);
+  }
+
+  override async tasks(changeId: string, signal?: AbortSignal): Promise<SpecificationTaskSet> {
+    return this.tasksAt(this.workspace, changeId, signal);
+  }
+
+  private async tasksAt(
+    workspace: string,
+    changeId: string,
+    signal?: AbortSignal,
+  ): Promise<SpecificationTaskSet> {
+    const id = changeId.trim();
+    if (!id) throw new Error('Specification change id is required');
+    const status = await this.json<StatusResult>(
+      workspace,
+      ['status', '--change', id],
+      signal,
+    );
+    const paths = status.artifactPaths?.tasks?.existingOutputPaths;
+    if (!Array.isArray(paths) || paths.length !== 1 || typeof paths[0] !== 'string') {
+      throw new Error('OpenSpec Tasks must resolve to exactly one official document');
+    }
+    const absolute = path.resolve(workspace, paths[0]);
+    const relative = path.relative(workspace, absolute);
+    if (
+      relative === '' ||
+      relative === '..' ||
+      relative.startsWith(`..${path.sep}`) ||
+      path.isAbsolute(relative)
+    ) {
+      throw new Error('OpenSpec Tasks path escapes the workspace');
+    }
+    return parseSpecificationTasks(id, await readFile(absolute, 'utf8'));
   }
 
   override async planningInstructions(
@@ -547,6 +582,7 @@ export class OpenSpecProvider extends Specification {
       },
       planningInstructions: (changeId, signal) =>
         this.planningInstructionsAt(workspace, changeId, signal),
+      tasks: (changeId, signal) => this.tasksAt(workspace, changeId, signal),
       inspect: (changeId, signal) => this.inspectAt(workspace, changeId, signal),
       validate: (changeId, options) => this.validateAt(workspace, changeId, options),
       prepareClosure: (input) => this.prepareClosureAt(workspace, input),

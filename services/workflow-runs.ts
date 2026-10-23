@@ -31,6 +31,9 @@ import {
   createChangeRunHostWorkflow,
 } from '../domains/change-lifecycle/host-workflow.js';
 import type { DesignGateAssessment } from './specification-planning.js';
+import { createInitialBuildWork } from '../domains/change-lifecycle/build-work.js';
+import type { SpecificationTask } from '../domains/specification/types.js';
+import type { WorkDescriptor } from '../domains/change-lifecycle/transition.js';
 
 export interface StartChangeRunInput {
   workspaceId: string;
@@ -322,6 +325,9 @@ export class WorkflowRuns extends Service {
           throw new Error('Change Run Workspace Repository is no longer available');
         }
         let assessment: DesignGateAssessment;
+        let build:
+          | { tasks: SpecificationTask[]; work: WorkDescriptor }
+          | undefined;
         try {
           const changeBranch = await this.ctx.project.changeBranch({
             repositoryId: targetBranch.repositoryId,
@@ -344,6 +350,36 @@ export class WorkflowRuns extends Service {
           };
         }
         if (assessment.status === 'approved' && assessment.validation) {
+          try {
+            const approvalHash = assessment.approval?.decision?.approvalHash;
+            if (!approvalHash) throw new Error('Approved Design has no approval hash');
+            const taskSet = await this.ctx.specification.tasks(
+              lifecycle.identity.changeId,
+              signal,
+            );
+            build = createInitialBuildWork({
+              runId,
+              definition: lifecycle.definition,
+              taskSet,
+              approvalHash,
+              compositionDigest: current.composition.compositionDigest,
+              projectConfigDigest: projectConfigDigest as `sha256:${string}`,
+              projectSnapshotDigest: current.projectSnapshotDigest,
+              repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
+            });
+          } catch (error) {
+            assessment = {
+              status: 'blocked',
+              reason:
+                error instanceof Error ? error.message : 'Build Task planning failed',
+              evidenceDigests: assessment.evidenceDigests,
+              validation: assessment.validation,
+              ...(assessment.snapshot ? { snapshot: assessment.snapshot } : {}),
+              ...(assessment.approval ? { approval: assessment.approval } : {}),
+            };
+          }
+        }
+        if (assessment.status === 'approved' && assessment.validation && build) {
           await this.coordinator.bindSpecification(runId, {
             schemaVersion: 1,
             changeId: assessment.validation.changeId,
@@ -368,6 +404,9 @@ export class WorkflowRuns extends Service {
                 requestId: assessment.approval.decisionRequest.requestId,
                 proposalDigest: assessment.approval.decisionRequest.proposalHash,
               }
+            : {}),
+          ...(assessment.status === 'approved' && build
+            ? { tasks: build.tasks, work: build.work }
             : {}),
         });
         return {

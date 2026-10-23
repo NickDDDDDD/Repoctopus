@@ -66,6 +66,7 @@ function lifecycleState(snapshot: ChangeLifecycleSnapshot): ChangeLifecycleState
     currentWork: structuredClone(snapshot.currentWork),
     waitCondition: structuredClone(snapshot.waitCondition),
     blocker: structuredClone(snapshot.blocker),
+    ...(snapshot.tasks ? { tasks: structuredClone(snapshot.tasks) } : {}),
   };
 }
 
@@ -81,6 +82,15 @@ function lifecycleNextActions(snapshot: ChangeLifecycleSnapshot) {
   }
   if (snapshot.phase === 'design') {
     return [{ id: 'design.evaluate', kind: 'work' as const, label: 'Evaluate Design gate' }];
+  }
+  if (snapshot.phase === 'build' && snapshot.currentWork?.taskId) {
+    return [
+      {
+        id: snapshot.currentWork.workId,
+        kind: 'work' as const,
+        label: `Implement Task ${snapshot.currentWork.taskId}`,
+      },
+    ];
   }
   return [];
 }
@@ -223,7 +233,13 @@ export class WorkflowRunCoordinator {
       ? projectChangeRun(
           { ...structuredClone(state.changeLifecycle), status: state.status },
           {
-            taskProgress: { total: 0, completed: 0, currentTaskId: null },
+            taskProgress: {
+              total: state.changeLifecycle.tasks?.length ?? 0,
+              completed:
+                state.changeLifecycle.tasks?.filter((task) => task.status === 'completed').length ??
+                0,
+              currentTaskId: state.changeLifecycle.currentWork?.taskId ?? null,
+            },
             evidence: {
               gateStatus: 'not-evaluated',
               acceptedBundleIds: [...state.acceptedEvidenceBundleIds],

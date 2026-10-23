@@ -32,6 +32,22 @@ export interface SpecificationChange {
   affectedCapabilities: string[];
 }
 
+export interface SpecificationTask {
+  taskId: string;
+  taskRevision: `sha256:${string}`;
+  title: string;
+  level: number;
+  status: 'pending' | 'completed';
+  blockedBy: string[];
+}
+
+export interface SpecificationTaskSet {
+  schemaVersion: 1;
+  changeId: string;
+  tasks: SpecificationTask[];
+  digest: `sha256:${string}`;
+}
+
 export interface SpecificationDiagnostic {
   code: string;
   severity: 'warning' | 'error';

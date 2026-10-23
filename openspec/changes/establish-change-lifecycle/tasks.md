@@ -15,7 +15,7 @@
 - [x] 1.4 在 production `WorkflowRuns` 和公共 CLI 中增加按 Workspace/change create-or-resume 的 Change Run 入口，Open 阶段核对 Specification Root、目标分支和登记仓库；运行 CLI 进程外测试证明同一 generation 只产生一个活动 Run，Host/CLI 不拥有 phase 规则。
 - [x] 1.5 将当前 Specification Provider 的官方 schema instructions/template、planning manifest 和 strict validation 接入 Design，未完成四类产物、校验失败或没有可信 Human Decision 时只产生 `design/waiting|blocked`；运行真实 OpenSpec fixture 证明普通 `succeeded`、分支状态、Agent 声明或额外文档都不能进入 Build。
 - [x] 1.6 实现 approval proposal hash / approval hash，并通过公共决策入口记录 approve、revise、reject；用篡改测试证明 decision 只适用于对应 change、Store/Provider/schema、semantic digest、能力集合和目标分支。
-- [ ] 1.7 从 Tasks 解析稳定 `taskId`、`taskRevision` 和依赖，生成首个 Build Work；用公共 `run next/status` 验证获批 change 显示唯一 ready Task、固定 Work 和下一步，而未批准 change 没有 Build Work。
+- [x] 1.7 从 Tasks 解析稳定 `taskId`、`taskRevision` 和依赖，生成首个 Build Work；用公共 `run next/status` 验证获批 change 显示唯一 ready Task、固定 Work 和下一步，而未批准 change 没有 Build Work。
 - [ ] 1.8 扩展多仓探测的只读候选模型，生成可编辑 Store ID、Workspace 根和逐业务仓 OpenSpec 分类/精确 pointer diff；复用现有零写入测试并新增未配置、同 Store、其他 Store、本地规格、损坏、只读和退出 fixture。
 - [ ] 1.9 扩展可信 onboarding apply：先核对/登记当前 Runner 的 Workspace Store，再以逐仓 Intent/Receipt 幂等应用用户选择的 pointer；用崩溃恢复和输入漂移测试证明不宣称跨仓事务、不覆盖冲突、不调用删除 Store 根的操作，并按正常工作流发布生成的仓库变化。
 

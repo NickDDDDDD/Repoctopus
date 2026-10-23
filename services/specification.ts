@@ -6,6 +6,7 @@ import type {
   SpecificationClosureResult,
   SpecificationProviderIdentity,
   SpecificationSchemaInstructions,
+  SpecificationTaskSet,
   PlanningSpecificationRoot,
   SpecificationValidation,
 } from '../domains/specification/types.js';
@@ -27,6 +28,7 @@ export interface SpecificationWorkspace {
     changeId: string,
     signal?: AbortSignal,
   ): Promise<SpecificationSchemaInstructions>;
+  tasks(changeId: string, signal?: AbortSignal): Promise<SpecificationTaskSet>;
   inspect(changeId: string, signal?: AbortSignal): Promise<SpecificationChange>;
   validate(
     changeId: string,
@@ -59,6 +61,13 @@ export abstract class Specification extends Service implements SpecificationWork
     void signal;
     return Promise.reject(
       new Error(`Specification provider ${this.identity().id} has no planning instructions`),
+    );
+  }
+  tasks(changeId: string, signal?: AbortSignal): Promise<SpecificationTaskSet> {
+    void changeId;
+    void signal;
+    return Promise.reject(
+      new Error(`Specification provider ${this.identity().id} cannot read planning tasks`),
     );
   }
   abstract inspect(changeId: string, signal?: AbortSignal): Promise<SpecificationChange>;

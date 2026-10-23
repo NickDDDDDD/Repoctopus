@@ -1,5 +1,6 @@
 import type { SkillUsageSnapshot } from '../skill/types.js';
 import type { SpecificationArtifactKind } from '../specification/types.js';
+import type { SpecificationTask } from '../specification/types.js';
 
 export const CHANGE_PHASES = ['open', 'design', 'build', 'verify', 'archive'] as const;
 export type ChangePhase = (typeof CHANGE_PHASES)[number];
@@ -170,6 +171,7 @@ export interface ChangeLifecycleState {
   currentWork: WorkDescriptor | null;
   waitCondition: WaitCondition | null;
   blocker: ChangeRunBlocker | null;
+  tasks?: readonly SpecificationTask[];
 }
 
 export interface ChangeLifecycleSnapshot extends ChangeLifecycleState {
@@ -228,6 +230,8 @@ export type ChangeLifecycleObservation =
       inputDigest: `sha256:${string}`;
       requestId?: string;
       proposalDigest?: `sha256:${string}`;
+      tasks?: readonly SpecificationTask[];
+      work?: WorkDescriptor;
     };
 
 export interface ChangeLifecycleReduction {
@@ -253,6 +257,14 @@ export function assertChangeLifecycleSnapshot(
   }
   if (snapshot.currentWork && snapshot.currentWork.phase !== snapshot.phase) {
     throw new Error('Current Work phase does not match the Change phase');
+  }
+  if (snapshot.currentWork) {
+    const task = snapshot.tasks?.find(
+      (candidate) => candidate.taskId === snapshot.currentWork?.taskId,
+    );
+    if (!task || task.taskRevision !== snapshot.currentWork.taskRevision) {
+      throw new Error('Current Work does not match the persisted Task revision');
+    }
   }
   if (snapshot.status === 'waiting' && snapshot.waitCondition === null) {
     throw new Error('Waiting Change Run requires a durable WaitCondition');
@@ -282,6 +294,7 @@ export function applyChangeLifecycleTransition(options: {
     currentWork: WorkDescriptor | null;
     waitCondition: WaitCondition | null;
     blocker: ChangeRunBlocker | null;
+    tasks?: readonly SpecificationTask[];
   };
 }): { snapshot: ChangeLifecycleSnapshot; fact: ChangeLifecycleTransitionFact } {
   assertChangeLifecycleSnapshot(options.current);
@@ -317,6 +330,7 @@ export function applyChangeLifecycleTransition(options: {
     currentWork: structuredClone(options.next.currentWork),
     waitCondition: structuredClone(options.next.waitCondition),
     blocker: structuredClone(options.next.blocker),
+    ...(options.next.tasks ? { tasks: structuredClone(options.next.tasks) } : {}),
   };
   assertChangeLifecycleSnapshot(snapshot);
   return {
@@ -355,11 +369,19 @@ export function evolveChangeLifecycle(options: {
     throw new Error(`Design gate is not valid from ${current.phase}/${current.status}`);
   }
   if (observation.result === 'approved') {
+    if (!observation.work || !observation.tasks || observation.tasks.length === 0) {
+      throw new Error('Approved Design gate requires the first fixed Build Work');
+    }
     return applyChangeLifecycleTransition({
       definition: options.definition,
       current,
       transitionId: 'design.approved',
-      next: { currentWork: null, waitCondition: null, blocker: null },
+      next: {
+        currentWork: observation.work,
+        waitCondition: null,
+        blocker: null,
+        tasks: observation.tasks,
+      },
     });
   }
   if (observation.result === 'waiting') {
