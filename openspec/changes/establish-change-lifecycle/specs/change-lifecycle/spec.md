@@ -60,12 +60,12 @@ Repoctopus MUST 在创建 Change Run 时验证并固定 lifecycle definition 的
 
 ### Requirement: 下一项工作由 Runtime 固定
 
-Runtime MUST 从 lifecycle definition 和已接受事实生成不可变 Work，绑定 phase、Work kind、Task identity、required Skill、能力、side-effect class、write scopes、input digest、期望产物和 Validator；调用方不得替换这些字段或以普通成功结果推进 Run。
+Runtime MUST 从 lifecycle definition 和已接受事实生成不可变 Work，绑定 phase、Work kind、Task identity、有角色且有序的 Skill bindings、能力、side-effect class、write scopes、input digest、期望产物和 Validator；调用方不得替换这些字段或以普通成功结果推进 Run。
 
-#### Scenario: Agent 请求替换 Required Skill
+#### Scenario: Agent 请求替换 Skill 组合
 
-- **WHEN** 当前 Work 固定 `tdd` Skill，而 Agent 提交另一个 Skill 或无 Skill Outcome
-- **THEN** Runtime 拒绝 Outcome，保持当前 Work 并报告方法身份不匹配
+- **WHEN** 当前 Work 固定 OpenSpec action 与 `tdd` 等 augmentation，而 Agent 提交另一组合或缺少任一必需 binding 的 Outcome
+- **THEN** Runtime 拒绝 Outcome，保持当前 Work 并报告组合身份不匹配
 
 #### Scenario: Adapter 自述成功但没有验证事实
 
