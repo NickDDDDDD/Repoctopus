@@ -15,7 +15,12 @@ import type {
   SpecificationChange,
   SpecificationSchemaInstructions,
   SpecificationValidation,
+  SpecificationPlanningManifest,
 } from './types.js';
+import {
+  assertSpecificationPlanningManifest,
+  createSpecificationPlanningManifest,
+} from './planning-manifest.js';
 
 const REQUIRED_PLANNING_ARTIFACTS = ['proposal', 'design', 'delta-specs', 'tasks'] as const;
 const SHA256_DIGEST = /^sha256:[a-f0-9]{64}$/u;
@@ -91,7 +96,24 @@ export function createPlanningSnapshot(input: {
   changeBranch: ChangeBranchReference;
   compositionDigest: `sha256:${string}`;
   projectConfigDigest: `sha256:${string}`;
+  planningManifest?: SpecificationPlanningManifest;
 }): PlanningSnapshot {
+  const manifest =
+    input.planningManifest ??
+    createSpecificationPlanningManifest({
+      change: input.change,
+      specificationRoot: input.specificationRoot,
+      schema: input.schema,
+    });
+  assertSpecificationPlanningManifest(manifest);
+  const expectedManifest = createSpecificationPlanningManifest({
+    change: input.change,
+    specificationRoot: input.specificationRoot,
+    schema: input.schema,
+  });
+  if (manifest.semanticDigest !== expectedManifest.semanticDigest) {
+    throw new Error('Planning manifest does not match the Design gate inputs');
+  }
   if (!input.change.planningComplete) {
     throw new Error('Specification planning is incomplete');
   }
@@ -128,6 +150,7 @@ export function createPlanningSnapshot(input: {
     changeBranch: normalizeBranch(input.changeBranch),
     compositionDigest: input.compositionDigest,
     projectConfigDigest: input.projectConfigDigest,
+    planningManifestDigest: manifest.semanticDigest,
   };
   return { ...stable, digest: sha256(stable) };
 }

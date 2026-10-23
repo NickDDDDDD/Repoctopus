@@ -81,6 +81,15 @@ export interface SpecificationSchemaInstructions {
   digest: `sha256:${string}`;
 }
 
+export interface SpecificationPlanningManifest {
+  schemaVersion: 1;
+  kind: 'SpecificationPlanningManifest';
+  change: SpecificationChange;
+  specificationRoot: PlanningSpecificationRoot;
+  schema: SpecificationSchemaInstructions;
+  semanticDigest: `sha256:${string}`;
+}
+
 export interface SpecificationUsageSnapshot {
   schemaVersion: 1;
   changeId: string;
@@ -123,6 +132,7 @@ export interface PlanningSnapshot {
   changeBranch: ChangeBranchReference;
   compositionDigest: `sha256:${string}`;
   projectConfigDigest: `sha256:${string}`;
+  planningManifestDigest?: `sha256:${string}`;
   digest: `sha256:${string}`;
 }
 

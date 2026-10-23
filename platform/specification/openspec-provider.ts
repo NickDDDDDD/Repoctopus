@@ -18,6 +18,7 @@ import {
   type SpecificationTaskSet,
 } from '../../domains/specification/types.js';
 import { parseSpecificationTasks } from '../../domains/specification/tasks.js';
+import { createSpecificationPlanningManifest } from '../../domains/specification/planning-manifest.js';
 import { atomicWriteJson } from '../filesystem/atomic-write.js';
 import {
   Specification,
@@ -582,6 +583,19 @@ export class OpenSpecProvider extends Specification {
       },
       planningInstructions: (changeId, signal) =>
         this.planningInstructionsAt(workspace, changeId, signal),
+      planningManifest: async (changeId, signal) => {
+        const [change, specificationRoot, schema] = await Promise.all([
+          this.inspectAt(workspace, changeId, signal),
+          (async () => {
+            if (path.resolve(workspace) === this.workspace) {
+              await this.assertRoot(workspace, signal);
+            }
+            return this.root();
+          })(),
+          this.planningInstructionsAt(workspace, changeId, signal),
+        ]);
+        return createSpecificationPlanningManifest({ change, specificationRoot, schema });
+      },
       tasks: (changeId, signal) => this.tasksAt(workspace, changeId, signal),
       inspect: (changeId, signal) => this.inspectAt(workspace, changeId, signal),
       validate: (changeId, options) => this.validateAt(workspace, changeId, options),

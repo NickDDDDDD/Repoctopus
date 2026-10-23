@@ -7,9 +7,11 @@ import type {
   SpecificationProviderIdentity,
   SpecificationSchemaInstructions,
   SpecificationTaskSet,
+  SpecificationPlanningManifest,
   PlanningSpecificationRoot,
   SpecificationValidation,
 } from '../domains/specification/types.js';
+import { createSpecificationPlanningManifest } from '../domains/specification/planning-manifest.js';
 
 export type SpecificationRoot = PlanningSpecificationRoot;
 
@@ -28,6 +30,10 @@ export interface SpecificationWorkspace {
     changeId: string,
     signal?: AbortSignal,
   ): Promise<SpecificationSchemaInstructions>;
+  planningManifest(
+    changeId: string,
+    signal?: AbortSignal,
+  ): Promise<SpecificationPlanningManifest>;
   tasks(changeId: string, signal?: AbortSignal): Promise<SpecificationTaskSet>;
   inspect(changeId: string, signal?: AbortSignal): Promise<SpecificationChange>;
   validate(
@@ -69,6 +75,17 @@ export abstract class Specification extends Service implements SpecificationWork
     return Promise.reject(
       new Error(`Specification provider ${this.identity().id} cannot read planning tasks`),
     );
+  }
+  async planningManifest(
+    changeId: string,
+    signal?: AbortSignal,
+  ): Promise<SpecificationPlanningManifest> {
+    const [change, specificationRoot, schema] = await Promise.all([
+      this.inspect(changeId, signal),
+      this.verifyRoot(signal),
+      this.planningInstructions(changeId, signal),
+    ]);
+    return createSpecificationPlanningManifest({ change, specificationRoot, schema });
   }
   abstract inspect(changeId: string, signal?: AbortSignal): Promise<SpecificationChange>;
   abstract validate(

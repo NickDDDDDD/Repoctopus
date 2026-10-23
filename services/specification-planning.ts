@@ -73,7 +73,8 @@ export class SpecificationPlanning extends Service {
         evidenceDigests: [],
       };
     }
-    const { change, validation, schema, specificationRoot, current } = collected;
+    const { manifest, validation, current } = collected;
+    const { change, schema, specificationRoot } = manifest;
     const evidenceDigests = [schema.digest, change.changeDigest, validation.validationDigest];
     if (!change.planningComplete) {
       return {
@@ -101,6 +102,7 @@ export class SpecificationPlanning extends Service {
         changeBranch: input.changeBranch,
         compositionDigest: input.compositionDigest,
         projectConfigDigest: input.projectConfigDigest,
+        planningManifest: manifest,
       });
     } catch (error) {
       return {
@@ -158,17 +160,15 @@ export class SpecificationPlanning extends Service {
   }
 
   private async collect(input: PrepareSpecificationApprovalInput) {
-    const [specificationRoot, schema, change, validation, current] = await Promise.all([
-      this.ctx.specification.verifyRoot(input.signal),
-      this.ctx.specification.planningInstructions(input.changeId, input.signal),
-      this.ctx.specification.inspect(input.changeId, input.signal),
+    const [manifest, validation, current] = await Promise.all([
+      this.ctx.specification.planningManifest(input.changeId, input.signal),
       this.ctx.specification.validate(input.changeId, {
         strict: true,
         ...(input.signal ? { signal: input.signal } : {}),
       }),
       this.store.load(input.changeId),
     ]);
-    return { specificationRoot, schema, change, validation, current };
+    return { manifest, validation, current };
   }
 
   async decide(input: {

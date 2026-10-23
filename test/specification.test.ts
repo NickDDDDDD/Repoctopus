@@ -15,6 +15,7 @@ import {
   type SpecificationProcessPort,
 } from '../platform/specification/openspec-process.js';
 import { Specification, type SpecificationRoot } from '../services/specification.js';
+import { assertSpecificationPlanningManifest } from '../domains/specification/planning-manifest.js';
 import { removeTemporaryDirectory, temporaryDirectory } from './helpers/fixtures.js';
 
 const productRoot = path.resolve(import.meta.dirname, '..');
@@ -257,6 +258,28 @@ describe('Specification authority', () => {
       'tasks',
     ]);
     expect(instructions.digest).toMatch(/^sha256:[a-f0-9]{64}$/u);
+    const manifest = await context.specification.planningManifest('sample');
+    expect(manifest).toMatchObject({
+      kind: 'SpecificationPlanningManifest',
+      change: {
+        changeId: 'sample',
+        provider: { id: 'openspec', version: '1.14.3' },
+        affectedCapabilities: ['demo'],
+      },
+      specificationRoot: { storeId: 'specification-test', repositoryId: 'workspace' },
+      schema: { schemaName: 'spec-driven' },
+    });
+    expect(manifest.change.artifacts.map((artifact) => artifact.kind)).toEqual([
+      'delta-specs',
+      'design',
+      'proposal',
+      'tasks',
+    ]);
+    expect(manifest.semanticDigest).toMatch(/^sha256:[a-f0-9]{64}$/u);
+    expect(await context.specification.planningManifest('sample')).toEqual(manifest);
+    expect(() => assertSpecificationPlanningManifest(manifest)).not.toThrow();
+    expect(JSON.stringify(manifest)).not.toContain(workspace);
+    expect(JSON.stringify(manifest)).not.toContain('openspec/changes');
     expect(await context.specification.validate('sample', { strict: true })).toMatchObject({
       valid: true,
       strict: true,

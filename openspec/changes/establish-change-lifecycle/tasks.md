@@ -21,7 +21,7 @@
 
 ## 2. 收敛规划语义摘要与任务失效规则
 
-- [ ] 2.1 在 Specification Service 中定义后端中立 planning manifest 和 semantic digest 契约，由 OpenSpec Provider 映射 Store/Provider/schema identity、Proposal、Delta Specs、Design、Tasks 与受影响能力，不把 Provider 路径泄露给 Engine；执行 Provider contract tests。
+- [x] 2.1 在 Specification Service 中定义后端中立 planning manifest 和 semantic digest 契约，由 OpenSpec Provider 映射 Store/Provider/schema identity、Proposal、Delta Specs、Design、Tasks 与受影响能力，不把 Provider 路径泄露给 Engine；执行 Provider contract tests。
 - [ ] 2.2 实现 Tasks 规范化：保持官方 checkbox 格式，checkbox 状态、换行和声明的格式噪声不影响 planning digest；Task ID、文字、层级、依赖、验收或需求映射变化必须改变 revision；运行 golden fixtures 覆盖顺序依赖、可选 `Blocked by` 元数据和每个正反样例。
 - [ ] 2.3 将已审核的 Matt 规则映射到四类官方工件：公共且最少的测试缝进入 Design，tracer-bullet/验证/迁移顺序进入 Tasks，已解决决定不重复访谈；用 Provider fixture 证明不会生成额外 spec、ticket 文件或 tracker 状态。
 - [ ] 2.4 将 Change 分支 remote OID 从 Design 语义摘要移到 publication provenance，同时继续要求规划分支公开并核对；测试证明推送非规划 commit 不使 approval 失效，规划语义变化即使同一分支也会失效。
