@@ -803,12 +803,14 @@ async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
       currentWorkspaceSnapshot(app, workspace),
     ]);
     const requestedRunId = stringFlag(parsed, 'run');
+    const changeId = stringFlag(parsed, 'change');
     const result = await app.context.commandRouter.execute<
       {
         workflow: ReturnType<typeof parseWorkflowPackage>;
         projectSnapshot: ProjectSnapshot;
         workflowSource: string;
         runId?: string;
+        changeId?: string;
       },
       RuntimeResult<RunStatusView>
     >('run.start', {
@@ -816,6 +818,7 @@ async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
       projectSnapshot,
       workflowSource: workflowPath,
       ...(requestedRunId ? { runId: requestedRunId } : {}),
+      ...(changeId ? { changeId } : {}),
     });
     return successEnvelope({
       command: 'run start',

@@ -5,6 +5,7 @@ import {
   type ChangeProjectionSnapshot,
   type ObservationRecord,
 } from '../domains/telemetry/change-projection.js';
+import type { DesktopRunContext } from '../app/desktop/shared/activation-protocol.js';
 
 export const DESKTOP_APPLICATION_CONTRACT = 'repoctopus.desktop/v1alpha1' as const;
 
@@ -28,6 +29,7 @@ const STALE_AFTER_MS = 30_000;
 export class DesktopApplication extends Service {
   private readonly reducer = new ChangeProjectionReducer();
   private readonly listeners = new Set<DesktopProjectionListener>();
+  private requestedContext: DesktopRunContext | null = null;
 
   constructor(context: Context) {
     super(context, 'desktopApplication');
@@ -66,6 +68,14 @@ export class DesktopApplication extends Service {
   subscribe(listener: DesktopProjectionListener): () => void {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
+  }
+
+  activate(context: DesktopRunContext): void {
+    this.requestedContext = structuredClone(context);
+  }
+
+  activationContext(): DesktopRunContext | null {
+    return this.requestedContext === null ? null : structuredClone(this.requestedContext);
   }
 }
 

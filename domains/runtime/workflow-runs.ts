@@ -28,6 +28,7 @@ export interface StartWorkflowRunOptions {
   projectSnapshot: ProjectSnapshot;
   runId?: string;
   workflowSource?: string;
+  changeId?: string;
   trigger?: RunTriggerSnapshot;
 }
 
@@ -85,6 +86,7 @@ export class WorkflowRunCoordinator {
       composition: this.composition,
       timestamp,
       ...(options.workflowSource ? { workflowSource: options.workflowSource } : {}),
+      ...(options.changeId ? { changeId: options.changeId } : {}),
       ...(options.trigger ? { trigger: options.trigger } : {}),
     });
     const started = event({
@@ -184,6 +186,9 @@ export class WorkflowRunCoordinator {
     }
     if (state.workflowSource !== (options.workflowSource ?? null)) {
       throw new RunIdentityConflictError(options.runId, 'workflow source');
+    }
+    if (state.changeId !== options.changeId) {
+      throw new RunIdentityConflictError(options.runId, 'change id');
     }
     if (canonicalJson(state.trigger ?? null) !== canonicalJson(options.trigger ?? null)) {
       throw new RunIdentityConflictError(options.runId, 'trigger facts');

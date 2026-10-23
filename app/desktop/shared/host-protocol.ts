@@ -3,6 +3,7 @@ import type {
   DesktopProjectionDelta,
 } from '../../../services/desktop-application.js';
 import type { DesktopTelemetryEndpoint } from '../../../services/desktop-telemetry-receiver.js';
+import { isDesktopRunContext, type DesktopRunContext } from './activation-protocol.js';
 
 export type DesktopHostEvent =
   | {
@@ -14,7 +15,9 @@ export type DesktopHostEvent =
   | { type: 'fatal'; message: string }
   | { type: 'shutdown-complete' };
 
-export type DesktopShellCommand = { type: 'shutdown' };
+export type DesktopShellCommand =
+  | { type: 'shutdown' }
+  | { type: 'activate'; context: DesktopRunContext };
 
 function isProjection(value: unknown): boolean {
   if (!value || typeof value !== 'object') return false;
@@ -81,7 +84,7 @@ export function isDesktopHostEvent(value: unknown): value is DesktopHostEvent {
 }
 
 export function isDesktopShellCommand(value: unknown): value is DesktopShellCommand {
-  return (
-    typeof value === 'object' && value !== null && 'type' in value && value.type === 'shutdown'
-  );
+  if (typeof value !== 'object' || value === null || !('type' in value)) return false;
+  if (value.type === 'shutdown') return true;
+  return value.type === 'activate' && 'context' in value && isDesktopRunContext(value.context);
 }

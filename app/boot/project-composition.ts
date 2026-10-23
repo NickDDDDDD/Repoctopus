@@ -131,7 +131,24 @@ function projectSelections(
       { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
     ),
     { id: 'workflow-source-file' },
-    { id: 'workflow-telemetry-otel' },
+    runtimeSelection(
+      'workflow-telemetry-otel',
+      { workspaceRoot },
+      { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
+    ),
+    runtimeSelection(
+      'desktop-launcher-windows',
+      { productRoot, workspaceRoot },
+      {
+        productRoot: PRODUCT_ROOT_IDENTITY,
+        workspaceRoot: WORKSPACE_ROOT_IDENTITY,
+      },
+    ),
+    runtimeSelection(
+      'desktop-observation-destination',
+      { workspaceRoot },
+      { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
+    ),
     { id: 'evidence-adapters' },
     { id: 'evidence-command-local' },
     runtimeSelection(
@@ -175,8 +192,8 @@ function projectSelections(
     { id: 'delivery-command' },
     runtimeSelection(
       'workflow-runs',
-      { workspaceRoot },
-      { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
+      { workspaceRoot, workspaceId: config.shared.workspace.id },
+      { workspaceRoot: WORKSPACE_ROOT_IDENTITY, workspaceId: config.shared.workspace.id },
     ),
     { id: 'workflow-run-command' },
     ...postMergeSelections(productRoot, workspaceRoot, config),
@@ -295,6 +312,8 @@ const BASE_REQUIRED_SERVICES = [
   'browserMaintenance',
   'commandRouter',
   'delivery',
+  'desktopLauncher',
+  'desktopTelemetryDestination',
   'evidenceAdapters',
   'evidenceCoordinator',
   'project',

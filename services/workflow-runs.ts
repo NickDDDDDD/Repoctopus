@@ -6,7 +6,12 @@ import type { SkillDefinition } from '@deepseek-ai/dsh-skill';
 import type { ActionOutcome, RunTriggerSnapshot } from '../domains/engine/types.js';
 import type { ProjectSnapshot } from '../domains/project/types.js';
 import { WorkflowRunCoordinator } from '../domains/runtime/workflow-runs.js';
-import type { ResumeView, RunStatusView, RuntimeResult } from '../domains/runtime/types.js';
+import type {
+  ResumeView,
+  RunStatusView,
+  RuntimeDiagnostic,
+  RuntimeResult,
+} from '../domains/runtime/types.js';
 import type { WorkflowPackage } from '../domains/workflow-contract/types.js';
 import {
   sameSkillUsageSnapshot,
@@ -21,11 +26,15 @@ import type {
   SpecificationValidation,
 } from '../domains/specification/types.js';
 import { bindOperationOwnership, type OperationOwnership } from './operation-ownership.js';
+import type { DesktopTelemetryEndpoint } from './desktop-telemetry-receiver.js';
+import type { DesktopActivationResult } from './desktop-runtime.js';
 
 export class WorkflowRuns extends Service {
   static inject = [
     'actionDispatcher',
     'compositionIdentity',
+    'desktopLauncher',
+    'desktopTelemetryDestination',
     'evidenceCoordinator',
     'runStore',
     'skills',
@@ -37,10 +46,15 @@ export class WorkflowRuns extends Service {
   private readonly coordinator: WorkflowRunCoordinator;
   private readonly operations: OperationOwnership;
   private readonly workspaceRoot: string;
+  private readonly workspaceId: string;
 
-  constructor(context: Context, config: { workspaceRoot?: string } = {}) {
+  constructor(
+    context: Context,
+    config: { workspaceRoot?: string; workspaceId?: string } = {},
+  ) {
     super(context, 'workflowRuns');
     this.workspaceRoot = config.workspaceRoot ?? process.cwd();
+    this.workspaceId = config.workspaceId ?? 'repoctopus';
     this.operations = bindOperationOwnership(context, 'workflowRuns');
     this.coordinator = new WorkflowRunCoordinator(
       context.runStore,
@@ -53,19 +67,34 @@ export class WorkflowRuns extends Service {
     );
   }
 
-  start(
+  async start(
     options: {
       workflow: WorkflowPackage;
       projectSnapshot: ProjectSnapshot;
       runId?: string;
       workflowSource?: string;
+      changeId?: string;
       trigger?: RunTriggerSnapshot;
     },
     signal?: AbortSignal,
   ): Promise<RuntimeResult<RunStatusView>> {
-    return this.operations.run({ cancellable: false, signal }, () =>
-      this.coordinator.start(options),
-    );
+    return this.operations.run({ cancellable: false, signal }, async () => {
+      const runId = options.runId ?? randomUUID();
+      const desktop = await this.prepareDesktop({
+        schemaVersion: 1,
+        workspaceId: this.workspaceId,
+        runId,
+        ...(options.changeId ? { changeId: options.changeId } : {}),
+      });
+      const result = await this.coordinator.start({ ...options, runId });
+      const replayDiagnostics = desktop.receiver
+        ? await this.replayDesktop(desktop.receiver)
+        : [];
+      return {
+        ...result,
+        diagnostics: [...desktop.diagnostics, ...result.diagnostics, ...replayDiagnostics],
+      };
+    });
   }
 
   startOrResume(
@@ -270,6 +299,58 @@ export class WorkflowRuns extends Service {
       throw new Error(`Run ${runId} requires migration because ${compatibility.reason}`);
     }
     return compatibility;
+  }
+
+  private async prepareDesktop(context: {
+    schemaVersion: 1;
+    workspaceId: string;
+    runId: string;
+    changeId?: string;
+  }): Promise<{ diagnostics: RuntimeDiagnostic[]; receiver?: DesktopTelemetryEndpoint }> {
+    let activation: DesktopActivationResult;
+    try {
+      activation = await this.ctx.desktopLauncher.activate(context);
+    } catch {
+      return {
+        diagnostics: [
+          {
+            level: 'warning',
+            code: 'desktop-activation-failed',
+            message: 'Desktop Dashboard activation failed; the Run and remote telemetry continue.',
+          },
+        ],
+      };
+    }
+    if (activation.status === 'unavailable') {
+      return {
+        diagnostics: [
+          {
+            level: 'warning',
+            code: activation.diagnostic,
+            message: 'Desktop Dashboard is unavailable; the Run and remote telemetry continue.',
+          },
+        ],
+      };
+    }
+    const diagnostics = await this.replayDesktop(activation.receiver);
+    return { diagnostics, receiver: activation.receiver };
+  }
+
+  private async replayDesktop(
+    receiver: DesktopTelemetryEndpoint,
+  ): Promise<RuntimeDiagnostic[]> {
+    try {
+      await this.ctx.desktopTelemetryDestination.replay(receiver);
+      return [];
+    } catch {
+      return [
+        {
+          level: 'warning',
+          code: 'desktop-telemetry-replay-failed',
+          message: 'Desktop telemetry replay failed; the Run and remote telemetry continue.',
+        },
+      ];
+    }
   }
 }
 

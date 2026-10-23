@@ -14,7 +14,7 @@ Repoctopus 是面向团队 Agent 开发的多仓交付编排器。它把项目�
 npm install
 npm run build
 node bin/repoctopus.js project detect --scan-root C:\path\to\project --workspace C:\path\to\project\repoctopus --json
-node bin/repoctopus.js run start --workspace C:\path\to\project\repoctopus --json
+node bin/repoctopus.js run start --workspace C:\path\to\project\repoctopus --change <change-id> --json
 ```
 
 `run start` 返回 `runId`，随后使用：
@@ -26,7 +26,7 @@ node bin/repoctopus.js run resume --workspace C:\path\to\project\repoctopus --ru
 node bin/repoctopus.js doctor --workspace C:\path\to\project\repoctopus --run <run-id> --json
 ```
 
-运行状态保存在 workspace 的 `.repoctopus/`，不会写入同级业务仓。OTLP 配置遵循标准 `OTEL_EXPORTER_OTLP_*` 环境变量；没有配置端点时遥测自动降级为空实现。
+运行状态保存在 workspace 的 `.repoctopus/`，不会写入同级业务仓。`--change` 把开发 Run 与桌面 Dashboard 的 change 状态关联；桌面不可用只返回 warning，不阻断 Run。OTLP 配置遵循标准 `OTEL_EXPORTER_OTLP_*` 环境变量；没有配置远端端点时仍保留本地观测 envelope，只禁用远端传输。
 
 ## Skills
 

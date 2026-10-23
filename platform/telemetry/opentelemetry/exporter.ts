@@ -27,6 +27,10 @@ import type {
   LifecycleTelemetryEvent,
   LifecycleTelemetryPort,
 } from '../../../services/lifecycle-diagnostics.js';
+import {
+  mapWorkflowObservationEnvelope,
+  observationTransportAttributes,
+} from '../observation-workflow-mapping.js';
 
 function syntheticParentContext(runId: string, traceId: string): Context {
   const spanId = createHash('sha256').update(runId).digest('hex').slice(0, 16);
@@ -126,7 +130,11 @@ export class OpenTelemetryExporter implements TelemetryPort {
         rootSpan.end(new Date(started.timestamp));
       }
       for (const item of batch.events) {
-        const attributes = safeEventAttributes(batch, item);
+        const envelope = mapWorkflowObservationEnvelope(batch, item);
+        const attributes = {
+          ...safeEventAttributes(batch, item),
+          ...(envelope ? observationTransportAttributes(envelope) : {}),
+        };
         if (item.type === 'action.completed') {
           const id = actionId(item);
           const proposed = batch.trajectory.find(

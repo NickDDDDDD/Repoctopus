@@ -35,7 +35,12 @@ function close(): Promise<void> {
 }
 
 process.on('message', (message: unknown) => {
-  if (isDesktopShellCommand(message)) void close();
+  if (!isDesktopShellCommand(message)) return;
+  if (message.type === 'shutdown') {
+    void close();
+  } else {
+    running?.context.desktopApplication.activate(message.context);
+  }
 });
 process.once('disconnect', () => {
   void close();

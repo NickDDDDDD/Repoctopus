@@ -55,6 +55,8 @@ import desktopApplication from './application/desktop-application.js';
 import { DesktopApplication } from '../services/desktop-application.js';
 import { SpecificationPlanning } from '../services/specification-planning.js';
 import { DesktopOtlpReceiverProvider } from './telemetry/desktop-otlp-receiver-provider.js';
+import { WindowsDesktopLauncherProvider } from './desktop/windows-desktop-launcher-provider.js';
+import { DesktopObservationDestinationProvider } from './telemetry/desktop-observation-destination-provider.js';
 
 interface BuiltinDefinition {
   descriptor: Omit<PluginDescriptor, 'codeDigest'>;
@@ -104,6 +106,51 @@ const evidenceAdapterDefinitions: readonly EvidenceAdapterDefinition[] = [
 ];
 
 const definitions: readonly BuiltinDefinition[] = [
+  {
+    descriptor: {
+      id: 'desktop-launcher-windows',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['desktop-application-launch'],
+      permissions: ['filesystem', 'process'],
+      stateSchemas: {},
+    },
+    plugin: WindowsDesktopLauncherProvider,
+    sourceFiles: [
+      'services/desktop-runtime.ts',
+      'app/desktop/shared/activation-protocol.ts',
+      'platform/desktop/activation-files.ts',
+      'platform/desktop/windows-launcher.ts',
+      'plugins/desktop/windows-desktop-launcher-provider.ts',
+    ],
+  },
+  {
+    descriptor: {
+      id: 'desktop-observation-destination',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['desktop-telemetry-egress'],
+      permissions: ['filesystem', 'network'],
+      stateSchemas: { 'observation-destination': '1' },
+    },
+    plugin: DesktopObservationDestinationProvider,
+    sourceFiles: [
+      'services/desktop-runtime.ts',
+      'services/desktop-telemetry-receiver.ts',
+      'domains/telemetry/observation-envelope.ts',
+      'platform/telemetry/observation-envelope-store.ts',
+      'platform/telemetry/observation-otlp-json.ts',
+      'plugins/telemetry/desktop-observation-destination-provider.ts',
+    ],
+  },
   {
     descriptor: {
       id: 'desktop-otlp-receiver',
@@ -739,6 +786,8 @@ const definitions: readonly BuiltinDefinition[] = [
       'services/workflow-support.ts',
       'plugins/run/workflow-telemetry-provider.ts',
       'platform/telemetry/opentelemetry/exporter.ts',
+      'platform/telemetry/observation-workflow-mapping.ts',
+      'platform/telemetry/observation-envelope-store.ts',
     ],
   },
   {

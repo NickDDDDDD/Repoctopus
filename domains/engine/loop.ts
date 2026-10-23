@@ -32,6 +32,7 @@ export function startRun(options: {
   composition: CompositionIdentitySnapshot;
   timestamp: string;
   workflowSource?: string;
+  changeId?: string;
   trigger?: RunTriggerSnapshot;
   traceId?: string;
 }): RunState {
@@ -44,6 +45,7 @@ export function startRun(options: {
     workflowSource: options.workflowSource ?? null,
     composition: structuredClone(options.composition),
     projectSnapshotDigest: options.projectSnapshotDigest,
+    ...(options.changeId ? { changeId: options.changeId } : {}),
     ...(options.trigger ? { trigger: structuredClone(options.trigger) } : {}),
     traceId: options.traceId ?? randomBytes(16).toString('hex'),
     currentStep: options.workflow.definition.entry,

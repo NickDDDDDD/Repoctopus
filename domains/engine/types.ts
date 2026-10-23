@@ -21,6 +21,7 @@ export interface RunState {
   workflowSource: string | null;
   composition: CompositionIdentitySnapshot;
   projectSnapshotDigest: string;
+  changeId?: string;
   trigger?: RunTriggerSnapshot;
   traceId: string;
   currentStep: string | null;

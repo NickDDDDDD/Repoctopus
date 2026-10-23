@@ -3,6 +3,7 @@ import { spawn, type ChildProcess } from 'node:child_process';
 import type { DesktopApplicationSnapshot } from '../../../services/desktop-application.js';
 import type { DesktopProjectionDelta } from '../../../services/desktop-application.js';
 import type { DesktopTelemetryEndpoint } from '../../../services/desktop-telemetry-receiver.js';
+import type { DesktopRunContext } from '../shared/activation-protocol.js';
 import { isDesktopHostEvent } from '../shared/host-protocol.js';
 import { desktopNodeEnvironment } from './node-environment.js';
 
@@ -148,6 +149,16 @@ export class DesktopHostProcess {
     if (graceful && !this.shutdownCompleted) {
       throw new Error('Repoctopus Desktop Host exited without acknowledging shutdown');
     }
+  }
+
+  activate(context: DesktopRunContext): void {
+    const child = this.child;
+    if (child === undefined || !child.connected || this.stopping) {
+      throw new Error('Repoctopus Desktop Host is not ready for activation');
+    }
+    child.send({ type: 'activate', context }, (error) => {
+      if (error !== null) this.fail(error);
+    });
   }
 
   private fail(error: Error): void {

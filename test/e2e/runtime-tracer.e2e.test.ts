@@ -1,5 +1,5 @@
 import { createServer } from 'node:http';
-import { writeFile } from 'node:fs/promises';
+import { readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -18,10 +18,13 @@ afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory
 describe('multi-process runtime and OTLP delivery', () => {
   it('resumes a durable run, blocks changed repositories and exports all OTLP signals', async () => {
     const paths: string[] = [];
+    const bodies: Buffer[] = [];
     const server = createServer((request, response) => {
       paths.push(request.url ?? '');
-      request.resume();
+      const chunks: Buffer[] = [];
+      request.on('data', (chunk: Buffer) => chunks.push(chunk));
       request.on('end', () => {
+        bodies.push(Buffer.concat(chunks));
         response.writeHead(200, { 'content-type': 'application/x-protobuf' });
         response.end();
       });
@@ -76,9 +79,29 @@ describe('multi-process runtime and OTLP delivery', () => {
         packageRoot: repositoryRoot,
         cwd: workspace,
         environment,
-        args: ['run', 'start', '--workspace', workspace, '--run', 'run-e2e-runtime'],
+        args: [
+          'run',
+          'start',
+          '--workspace',
+          workspace,
+          '--change',
+          'runtime-tracer-change',
+          '--run',
+          'run-e2e-runtime',
+        ],
       });
       expect(started).toMatchObject({ protocolVersion: 1, ok: true, runId: 'run-e2e-runtime' });
+      expect(started.diagnostics).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            level: 'warning',
+            code:
+              process.platform === 'win32'
+                ? 'desktop-application-unavailable'
+                : 'desktop-platform-unsupported',
+          }),
+        ]),
+      );
       const proposed = await runCli<{ state: { pendingActionId: string } }>({
         packageRoot: repositoryRoot,
         cwd: workspace,
@@ -131,6 +154,24 @@ describe('multi-process runtime and OTLP delivery', () => {
       });
       expect(doctor.result).toMatchObject({ healthy: true, telemetryBacklog: 0 });
       expect(new Set(paths)).toEqual(new Set(['/v1/traces', '/v1/logs', '/v1/metrics']));
+      const envelopeRoot = path.join(
+        workspace,
+        '.repoctopus',
+        'telemetry',
+        'v1',
+        'envelopes',
+      );
+      const envelopeFiles = await readdir(envelopeRoot);
+      expect(envelopeFiles.length).toBeGreaterThan(0);
+      const envelope = JSON.parse(
+        await readFile(path.join(envelopeRoot, envelopeFiles[0]!), 'utf8'),
+      ) as { envelopeId: string; digest: string; attributes: Record<string, unknown> };
+      expect(envelope.attributes).toMatchObject({
+        'repoctopus.change.id': 'runtime-tracer-change',
+        'repoctopus.run.id': 'run-e2e-runtime',
+      });
+      expect(bodies.some((body) => body.includes(Buffer.from(envelope.envelopeId)))).toBe(true);
+      expect(bodies.some((body) => body.includes(Buffer.from(envelope.digest)))).toBe(true);
     } finally {
       await new Promise<void>((resolve, reject) =>
         server.close((error) => (error ? reject(error) : resolve())),

@@ -14,6 +14,11 @@ import { DesktopHostProcess, type DesktopHostReady } from './host-process.js';
 import { resolveDesktopProductRoot } from './product-root.js';
 import { claimDesktopSingleInstance } from './single-instance.js';
 import { scheduleDesktopStartup } from './startup.js';
+import { activationArgument } from '../shared/activation-protocol.js';
+import {
+  readDesktopActivationRequest,
+  writeDesktopActivationResponse,
+} from '../../../platform/desktop/activation-files.js';
 
 const moduleDirectory = path.dirname(fileURLToPath(import.meta.url));
 const hostEntry = path.join(moduleDirectory, 'host.mjs');
@@ -113,6 +118,33 @@ async function startBackend(): Promise<void> {
   }
 }
 
+async function respondToActivation(requestFile: string): Promise<void> {
+  const request = await readDesktopActivationRequest(requestFile);
+  if (mainWindow === undefined) await createWindow();
+  await controller.start(() => Promise.resolve());
+  const ready = hostReady;
+  const host = controller.host;
+  if (ready === undefined || host === undefined) {
+    throw new Error('Desktop Host did not become ready for activation');
+  }
+  host.activate(request.context);
+  await writeDesktopActivationResponse(requestFile, {
+    apiVersion: 'repoctopus.desktop.activation/v1alpha1',
+    requestId: request.requestId,
+    status: 'ready',
+    shellPid: process.pid,
+    receiver: ready.receiver,
+  });
+}
+
+function acceptActivation(commandLine: readonly string[]): void {
+  const requestFile = activationArgument(commandLine);
+  if (requestFile === null) return;
+  void respondToActivation(requestFile).catch((error: unknown) => {
+    console.error('desktop activation failed', error);
+  });
+}
+
 async function createWindow(): Promise<void> {
   const window = new BrowserWindow({
     width: 1080,
@@ -152,15 +184,16 @@ async function quit(): Promise<void> {
   }
 }
 
-const ownsInstance = claimDesktopSingleInstance(app, () => {
+const ownsInstance = claimDesktopSingleInstance(app, (commandLine) => {
   const window = mainWindow;
   if (window === undefined) {
     void createWindow();
-    return;
+  } else {
+    if (window.isMinimized()) window.restore();
+    window.show();
+    window.focus();
   }
-  if (window.isMinimized()) window.restore();
-  window.show();
-  window.focus();
+  acceptActivation(commandLine);
 });
 
 if (ownsInstance) {
@@ -183,4 +216,8 @@ if (ownsInstance) {
   scheduleDesktopStartup(app, createWindow, (error) => {
     console.error('desktop shell startup failed', error);
   });
+  const initialActivation = activationArgument(process.argv);
+  if (initialActivation !== null) {
+    void app.whenReady().then(() => respondToActivation(initialActivation));
+  }
 }

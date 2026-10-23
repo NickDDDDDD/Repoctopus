@@ -8,9 +8,55 @@ import {
   workflowEventMetricAttributes,
   workflowStepMetricAttributes,
 } from '../platform/telemetry/opentelemetry/mapping.js';
+import { mapWorkflowObservationEnvelope } from '../platform/telemetry/observation-workflow-mapping.js';
 import { compositionFixture, projectFixture, workflowFixture } from './helpers/fixtures.js';
 
 describe('telemetry mapping', () => {
+  it('keeps a persisted event envelope stable after the Run advances', () => {
+    const workflow = workflowFixture();
+    const project = projectFixture();
+    const run = startRun({
+      workflow,
+      runId: 'run-envelope-replay',
+      changeId: 'desktop-dashboard',
+      projectSnapshotDigest: project.digest,
+      composition: compositionFixture(),
+      timestamp: '2026-01-01T00:00:00.000Z',
+    });
+    const event: TrajectoryEvent = {
+      schemaVersion: 1,
+      sequence: 1,
+      eventId: 'event-envelope-replay',
+      timestamp: run.createdAt,
+      type: 'run.started',
+      runId: run.runId,
+      stateVersion: 0,
+      compositionDigest: run.composition.compositionDigest,
+      data: {},
+    };
+    const initial = mapWorkflowObservationEnvelope({
+      run,
+      workflow,
+      projectSnapshot: project,
+      events: [event],
+      trajectory: [event],
+    }, event);
+    const replayed = mapWorkflowObservationEnvelope({
+      run: { ...run, status: 'completed', currentStep: null, stateVersion: 4 },
+      workflow,
+      projectSnapshot: project,
+      events: [event],
+      trajectory: [event],
+    }, event);
+
+    expect(replayed).toEqual(initial);
+    expect(initial?.attributes).toMatchObject({
+      'repoctopus.change.status': 'active',
+      'repoctopus.run.status': 'active',
+      'repoctopus.stage.name': 'inspect',
+    });
+  });
+
   it('exports allowlisted metadata and drops paths, summaries and credentials', () => {
     const workflow = workflowFixture();
     const project = projectFixture();

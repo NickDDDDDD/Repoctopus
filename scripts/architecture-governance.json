@@ -24,6 +24,7 @@
         "plugins/http/**",
         "plugins/project/**",
         "plugins/run/**",
+        "plugins/desktop/**",
         "plugins/command/delivery-contributor.ts",
         "plugins/command/evidence-contributor.ts",
         "plugins/command/maintenance-contributor.ts",
@@ -31,7 +32,8 @@
         "plugins/command/project-probe-contributor.ts",
         "plugins/command/workflow-run-contributor.ts",
         "services/**",
-        "platform/http/**"
+        "platform/http/**",
+        "platform/desktop/**"
       ],
       "upstream": ["third_party/cordis", "third_party/cordis-plugin-loader"],
       "rationale": "App Boot 把 Repoctopus 领域配置编译为唯一 Cordis 插件树，并把生命周期交给 Cordis。"
@@ -431,7 +433,10 @@
       "id": "protected-merge-request-publication",
       "targets": ["platform/**"],
       "pattern": "method\\s*:\\s*['\"](?:POST|PATCH)['\"]",
-      "allowed": ["platform/github/merge-request.ts"],
+      "allowed": [
+        "platform/github/merge-request.ts",
+        "platform/telemetry/observation-otlp-json.ts"
+      ],
       "message": "Merge request creation and updates may only be executed by a protected Delivery Action adapter"
     },
     {

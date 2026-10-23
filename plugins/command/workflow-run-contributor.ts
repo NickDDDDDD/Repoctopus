@@ -9,6 +9,7 @@ interface StartInput {
   projectSnapshot: ProjectSnapshot;
   runId?: string;
   workflowSource?: string;
+  changeId?: string;
 }
 
 interface RecordInput {
