@@ -65,8 +65,11 @@ describe('Repoctopus Skill providers', () => {
       { complete: boolean; skills: Array<{ name: string }> }
     >('skill.list', { cwd: workspaceRoot, audience: 'model' });
     expect(catalog.complete).toBe(true);
-    expect(catalog.skills.map((skill) => skill.name)).toContain('tdd');
-    expect(catalog.skills.map((skill) => skill.name)).not.toContain('teach');
+    const names = catalog.skills.map((skill) => skill.name);
+    expect(names).toEqual(expect.arrayContaining(['codebase-design', 'pr', 'tdd']));
+    expect(names).not.toContain('teach');
+    expect(names).not.toContain('to-spec');
+    expect(names).not.toContain('to-tickets');
     await expect(
       context.commandRouter.execute('skill.get', {
         cwd: workspaceRoot,
@@ -112,6 +115,9 @@ describe('Repoctopus Skill providers', () => {
     expect(codex.managedFiles).toBeGreaterThan(0);
     expect(opencode.managedFiles).toBeGreaterThan(0);
     expect(codex.skills).toEqual(opencode.skills);
+    expect(codex.skills.map((skill) => skill.name)).not.toEqual(
+      expect.arrayContaining(['to-spec', 'to-tickets']),
+    );
 
     const codexTdd = await readFile(
       path.join(workspaceRoot, '.agents', 'skills', 'tdd', 'SKILL.md'),

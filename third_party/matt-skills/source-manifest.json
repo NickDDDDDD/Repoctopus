@@ -28,6 +28,34 @@
       "adoption": "copied"
     },
     {
+      "source": "skills/engineering/codebase-design/agents/openai.yaml",
+      "sourceSha256": "967df5c80a2a00e8fea9ce0e7914fb57114c93d16baa3b7743347a4dfeed61fc",
+      "target": "third_party/matt-skills/skills/engineering/codebase-design/agents/openai.yaml",
+      "sha256": "967df5c80a2a00e8fea9ce0e7914fb57114c93d16baa3b7743347a4dfeed61fc",
+      "adoption": "copied"
+    },
+    {
+      "source": "skills/engineering/codebase-design/DEEPENING.md",
+      "sourceSha256": "a67260cb384580b60430486edeb47a6e656ea5f8a42b7196b24461459031f00c",
+      "target": "third_party/matt-skills/skills/engineering/codebase-design/DEEPENING.md",
+      "sha256": "a67260cb384580b60430486edeb47a6e656ea5f8a42b7196b24461459031f00c",
+      "adoption": "copied"
+    },
+    {
+      "source": "skills/engineering/codebase-design/DESIGN-IT-TWICE.md",
+      "sourceSha256": "b6d23731a6feea1293cc97e08f983e9fdf48b99275d5d306c93738f06bcdce92",
+      "target": "third_party/matt-skills/skills/engineering/codebase-design/DESIGN-IT-TWICE.md",
+      "sha256": "b6d23731a6feea1293cc97e08f983e9fdf48b99275d5d306c93738f06bcdce92",
+      "adoption": "copied"
+    },
+    {
+      "source": "skills/engineering/codebase-design/SKILL.md",
+      "sourceSha256": "362b0bec828219d9f4b08ca7c466164e67253bdd817359258e60d2e9c5692a8f",
+      "target": "third_party/matt-skills/skills/engineering/codebase-design/SKILL.md",
+      "sha256": "362b0bec828219d9f4b08ca7c466164e67253bdd817359258e60d2e9c5692a8f",
+      "adoption": "copied"
+    },
+    {
       "source": "skills/engineering/diagnosing-bugs/agents/openai.yaml",
       "sourceSha256": "167ab1659754b8c53706ecca7502ccc7fb219ff14f0c36bfb1db05ae31a8ac58",
       "target": "third_party/matt-skills/skills/engineering/diagnosing-bugs/agents/openai.yaml",
@@ -91,6 +119,27 @@
       "adoption": "copied"
     },
     {
+      "source": "skills/engineering/pr/agents/openai.yaml",
+      "sourceSha256": "33b71355c3ec06963d9a276baff9e9bf89a1ac69a5b9489a368c95021a8d6cc4",
+      "target": "third_party/matt-skills/skills/engineering/pr/agents/openai.yaml",
+      "sha256": "33b71355c3ec06963d9a276baff9e9bf89a1ac69a5b9489a368c95021a8d6cc4",
+      "adoption": "copied"
+    },
+    {
+      "source": "skills/engineering/pr/CREDITS.md",
+      "sourceSha256": "f5b7f7ead794f672324eb6a2cdc6986840e452abf15d72938084b645074bd149",
+      "target": "third_party/matt-skills/skills/engineering/pr/CREDITS.md",
+      "sha256": "f5b7f7ead794f672324eb6a2cdc6986840e452abf15d72938084b645074bd149",
+      "adoption": "copied"
+    },
+    {
+      "source": "skills/engineering/pr/SKILL.md",
+      "sourceSha256": "57658baca2e50e9cf98fdb6b74a51f2afd34b71019d516f7c5d45a51a28354b0",
+      "target": "third_party/matt-skills/skills/engineering/pr/SKILL.md",
+      "sha256": "57658baca2e50e9cf98fdb6b74a51f2afd34b71019d516f7c5d45a51a28354b0",
+      "adoption": "copied"
+    },
+    {
       "source": "skills/engineering/tdd/agents/openai.yaml",
       "sourceSha256": "f8e2afc1fbcd6a6e1178c30f290ca9f2286c949a0b74b8b68fd14f198b78ebac",
       "target": "third_party/matt-skills/skills/engineering/tdd/agents/openai.yaml",
@@ -116,6 +165,20 @@
       "sourceSha256": "0b401f98bd3684d2fea6440d6946afcf8f5f68ac6a65599dd7a2b90dd9f02eb5",
       "target": "third_party/matt-skills/skills/engineering/tdd/tests.md",
       "sha256": "0b401f98bd3684d2fea6440d6946afcf8f5f68ac6a65599dd7a2b90dd9f02eb5",
+      "adoption": "copied"
+    },
+    {
+      "source": "skills/engineering/to-spec/SKILL.md",
+      "sourceSha256": "c73a2250beac0479e384f5466e834bb54ce6e30b7f8705e9999ba840d9d59b36",
+      "target": "third_party/matt-skills/references/engineering/to-spec/SKILL.md",
+      "sha256": "c73a2250beac0479e384f5466e834bb54ce6e30b7f8705e9999ba840d9d59b36",
+      "adoption": "copied"
+    },
+    {
+      "source": "skills/engineering/to-tickets/SKILL.md",
+      "sourceSha256": "b8eb6dca1085e85220b0f5990ed787ebf8a924844d090689f1073b06367e2f7a",
+      "target": "third_party/matt-skills/references/engineering/to-tickets/SKILL.md",
+      "sha256": "b8eb6dca1085e85220b0f5990ed787ebf8a924844d090689f1073b06367e2f7a",
       "adoption": "copied"
     },
     {

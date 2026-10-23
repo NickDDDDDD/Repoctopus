@@ -12,8 +12,40 @@ interface ProvenanceEntry {
 
 interface ProvenanceManifest {
   schemaVersion: number;
-  upstream?: { commit?: string };
+  upstream?: { repository?: string; commit?: string; license?: string };
   files?: ProvenanceEntry[];
+}
+
+interface MattMethodAdoptionManifest {
+  schemaVersion: number;
+  upstream?: { repository?: string; commit?: string; license?: string };
+  providerRoots?: string[];
+  executableSkills?: Array<{
+    name?: string;
+    source?: string;
+    sourceSha256?: string;
+    target?: string;
+  }>;
+  relationships?: Array<{ from?: string; to?: string; kind?: string; trigger?: string }>;
+  references?: Array<{
+    name?: string;
+    status?: string;
+    source?: string;
+    sourceSha256?: string;
+    target?: string;
+    targetSha256?: string;
+    adoptedRuleIds?: string[];
+    rejectedBehaviors?: string[];
+  }>;
+  rules?: Array<{ id?: string; sources?: string[]; statement?: string }>;
+  reviewedMethods?: Array<{
+    name?: string;
+    source?: string;
+    sourceSha256?: string;
+    decision?: string;
+    condition?: string;
+    reason?: string;
+  }>;
 }
 
 interface ImmutablePackageManifest {
@@ -144,9 +176,16 @@ export async function checkProvenance(
   }
 
   const mattPath = path.join(productRoot, 'third_party', 'matt-skills', 'source-manifest.json');
-  const matt = JSON.parse(await readFile(mattPath, 'utf8')) as ProvenanceManifest & {
-    upstream?: { commit?: string; license?: string };
-  };
+  const matt = JSON.parse(await readFile(mattPath, 'utf8')) as ProvenanceManifest;
+  const mattAdoptionPath = path.join(
+    productRoot,
+    'third_party',
+    'matt-skills',
+    'method-adoptions.json',
+  );
+  const mattAdoption = JSON.parse(
+    await readFile(mattAdoptionPath, 'utf8'),
+  ) as MattMethodAdoptionManifest;
   if (
     matt.schemaVersion !== 1 ||
     !/^[a-f0-9]{40}$/.test(matt.upstream?.commit ?? '') ||
@@ -157,6 +196,7 @@ export async function checkProvenance(
   }
   const mattRoot = path.join(productRoot, 'third_party', 'matt-skills');
   const expectedMattFiles = [
+    'method-adoptions.json',
     'source-manifest.json',
     ...(matt.files ?? []).map((entry) =>
       path.relative('third_party/matt-skills', entry.target).replaceAll('\\', '/'),
@@ -175,6 +215,171 @@ export async function checkProvenance(
     if (digest !== entry.sha256 || digest !== entry.sourceSha256) {
       findings.push(`Matt Skill snapshot digest mismatch: ${entry.target}`);
     }
+  }
+  if (
+    mattAdoption.schemaVersion !== 1 ||
+    mattAdoption.upstream?.repository !== matt.upstream?.repository ||
+    mattAdoption.upstream?.commit !== matt.upstream?.commit ||
+    mattAdoption.upstream?.license !== matt.upstream?.license ||
+    !Array.isArray(mattAdoption.providerRoots) ||
+    !Array.isArray(mattAdoption.executableSkills) ||
+    !Array.isArray(mattAdoption.relationships) ||
+    !Array.isArray(mattAdoption.references) ||
+    !Array.isArray(mattAdoption.rules) ||
+    !Array.isArray(mattAdoption.reviewedMethods)
+  ) {
+    findings.push('Invalid Matt method adoption manifest header');
+  }
+  const providerRoots = mattAdoption.providerRoots ?? [];
+  const expectedProviderRoots = [
+    'third_party/matt-skills/skills/engineering',
+    'third_party/matt-skills/skills/productivity',
+  ];
+  if (
+    JSON.stringify([...providerRoots].sort()) !== JSON.stringify([...expectedProviderRoots].sort())
+  ) {
+    findings.push('Matt method adoption Provider roots do not match the builtin Provider');
+  }
+  const mattFilesByTarget = new Map((matt.files ?? []).map((entry) => [entry.target, entry]));
+  const isInProviderRoot = (target: string): boolean =>
+    providerRoots.some((root) => target === root || target.startsWith(`${root}/`));
+  const requiredExecutableSkills = new Set(['codebase-design', 'pr', 'tdd']);
+  const executableSkillNames = new Set<string>();
+  for (const skill of mattAdoption.executableSkills ?? []) {
+    if (typeof skill.name === 'string') requiredExecutableSkills.delete(skill.name);
+    const sourceEntry =
+      typeof skill.target === 'string' ? mattFilesByTarget.get(skill.target) : undefined;
+    if (
+      typeof skill.name !== 'string' ||
+      executableSkillNames.has(skill.name) ||
+      typeof skill.source !== 'string' ||
+      !/^[a-f0-9]{64}$/.test(skill.sourceSha256 ?? '') ||
+      typeof skill.target !== 'string' ||
+      !isInProviderRoot(skill.target) ||
+      sourceEntry?.source !== skill.source ||
+      sourceEntry.sourceSha256 !== skill.sourceSha256
+    ) {
+      findings.push(`Invalid Matt executable Skill adoption: ${skill.name ?? '(missing name)'}`);
+    }
+    if (typeof skill.name === 'string') executableSkillNames.add(skill.name);
+  }
+  for (const name of requiredExecutableSkills) {
+    findings.push(`Missing Matt executable Skill adoption: ${name}`);
+  }
+  const hasTddDependency = (mattAdoption.relationships ?? []).some(
+    (entry) =>
+      entry.from === 'tdd' &&
+      entry.to === 'codebase-design' &&
+      entry.kind === 'conditional-reference' &&
+      typeof entry.trigger === 'string' &&
+      entry.trigger.length > 0,
+  );
+  if (!hasTddDependency) {
+    findings.push('Missing Matt Skill relationship: tdd -> codebase-design');
+  }
+  const rulesById = new Map<string, { sources?: string[] }>();
+  for (const rule of mattAdoption.rules ?? []) {
+    if (
+      typeof rule.id !== 'string' ||
+      rulesById.has(rule.id) ||
+      !Array.isArray(rule.sources) ||
+      rule.sources.length === 0 ||
+      typeof rule.statement !== 'string' ||
+      rule.statement.length === 0
+    ) {
+      findings.push(`Invalid Matt adopted rule: ${rule.id ?? '(missing id)'}`);
+      continue;
+    }
+    rulesById.set(rule.id, rule);
+  }
+  const requiredReferences = new Set(['to-spec', 'to-tickets']);
+  const referenceNames = new Set<string>();
+  const requiredRejectedBehaviors: Record<string, string[]> = {
+    'to-spec': ['publish-spec-to-issue-tracker', 'replace-openspec-artifact-template'],
+    'to-tickets': [
+      'write-local-ticket-files',
+      'publish-tickets-to-issue-tracker',
+      'create-secondary-ticket-authority',
+    ],
+  };
+  for (const reference of mattAdoption.references ?? []) {
+    if (typeof reference.name === 'string') requiredReferences.delete(reference.name);
+    const sourceEntry =
+      typeof reference.target === 'string' ? mattFilesByTarget.get(reference.target) : undefined;
+    if (
+      typeof reference.name !== 'string' ||
+      referenceNames.has(reference.name) ||
+      reference.status !== 'behavior-reference-only' ||
+      typeof reference.source !== 'string' ||
+      !/^[a-f0-9]{64}$/.test(reference.sourceSha256 ?? '') ||
+      typeof reference.target !== 'string' ||
+      !reference.target.startsWith('third_party/matt-skills/references/') ||
+      !/^[a-f0-9]{64}$/.test(reference.targetSha256 ?? '') ||
+      sourceEntry?.source !== reference.source ||
+      sourceEntry.sourceSha256 !== reference.sourceSha256 ||
+      sourceEntry.sha256 !== reference.targetSha256 ||
+      !Array.isArray(reference.adoptedRuleIds) ||
+      reference.adoptedRuleIds.length === 0 ||
+      !Array.isArray(reference.rejectedBehaviors) ||
+      reference.rejectedBehaviors.length === 0
+    ) {
+      findings.push(`Invalid Matt behavior reference: ${reference.name ?? '(missing name)'}`);
+      continue;
+    }
+    referenceNames.add(reference.name);
+    if (isInProviderRoot(reference.target)) {
+      findings.push(`Matt behavior reference is inside a Provider root: ${reference.name}`);
+    }
+    for (const ruleId of reference.adoptedRuleIds) {
+      const rule = rulesById.get(ruleId);
+      if (!rule) findings.push(`Unknown Matt adopted rule: ${ruleId}`);
+      else if (!rule.sources?.includes(reference.name)) {
+        findings.push(`Matt adopted rule source mismatch: ${reference.name} -> ${ruleId}`);
+      }
+    }
+    for (const behavior of requiredRejectedBehaviors[reference.name] ?? []) {
+      if (!reference.rejectedBehaviors.includes(behavior)) {
+        findings.push(`Missing rejected Matt behavior: ${reference.name} -> ${behavior}`);
+      }
+    }
+  }
+  for (const name of requiredReferences) {
+    findings.push(`Missing Matt behavior reference: ${name}`);
+  }
+  const requiredReviewedMethods = new Set([
+    'research',
+    'prototype',
+    'domain-modeling',
+    'writing-for-agents',
+    'retro',
+  ]);
+  const reviewedMethodNames = new Set<string>();
+  const expectedReviewedDecisions: Record<string, string> = {
+    research: 'deferred-executable',
+    prototype: 'deferred-executable',
+    'domain-modeling': 'conditional-executable',
+    'writing-for-agents': 'planned-method-profile',
+    retro: 'deferred-post-change',
+  };
+  for (const method of mattAdoption.reviewedMethods ?? []) {
+    if (typeof method.name === 'string') requiredReviewedMethods.delete(method.name);
+    if (
+      typeof method.name !== 'string' ||
+      reviewedMethodNames.has(method.name) ||
+      typeof method.source !== 'string' ||
+      !/^[a-f0-9]{64}$/.test(method.sourceSha256 ?? '') ||
+      method.decision !== expectedReviewedDecisions[method.name] ||
+      typeof method.condition !== 'string' ||
+      method.condition.length === 0 ||
+      typeof method.reason !== 'string' ||
+      method.reason.length === 0
+    ) {
+      findings.push(`Invalid Matt reviewed method decision: ${method.name ?? '(missing name)'}`);
+    }
+    if (typeof method.name === 'string') reviewedMethodNames.add(method.name);
+  }
+  for (const name of requiredReviewedMethods) {
+    findings.push(`Missing Matt reviewed method decision: ${name}`);
   }
 
   const dshPath = path.join(productRoot, 'third_party', 'dsh-adoption.json');

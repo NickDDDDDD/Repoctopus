@@ -456,6 +456,7 @@ const definitions: readonly BuiltinDefinition[] = [
     sourceFiles: [
       'plugins/skill/file-skill-provider.ts',
       'plugins/skill/matt-skill-provider.ts',
+      'third_party/matt-skills/method-adoptions.json',
       'third_party/matt-skills/source-manifest.json',
     ],
   },

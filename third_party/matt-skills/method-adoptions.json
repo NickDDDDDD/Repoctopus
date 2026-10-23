@@ -1,0 +1,183 @@
+{
+  "schemaVersion": 1,
+  "upstream": {
+    "repository": "https://github.com/mattpocock/skills",
+    "commit": "49dd158d1076134a641b33efb035946536778336",
+    "license": "MIT"
+  },
+  "providerRoots": [
+    "third_party/matt-skills/skills/engineering",
+    "third_party/matt-skills/skills/productivity"
+  ],
+  "executableSkills": [
+    {
+      "name": "codebase-design",
+      "source": "skills/engineering/codebase-design/SKILL.md",
+      "sourceSha256": "362b0bec828219d9f4b08ca7c466164e67253bdd817359258e60d2e9c5692a8f",
+      "target": "third_party/matt-skills/skills/engineering/codebase-design/SKILL.md"
+    },
+    {
+      "name": "pr",
+      "source": "skills/engineering/pr/SKILL.md",
+      "sourceSha256": "57658baca2e50e9cf98fdb6b74a51f2afd34b71019d516f7c5d45a51a28354b0",
+      "target": "third_party/matt-skills/skills/engineering/pr/SKILL.md"
+    },
+    {
+      "name": "tdd",
+      "source": "skills/engineering/tdd/SKILL.md",
+      "sourceSha256": "969583080caf842ae86a53501a0091eced13fd89cad65d3aa75c09112318ff33",
+      "target": "third_party/matt-skills/skills/engineering/tdd/SKILL.md"
+    }
+  ],
+  "relationships": [
+    {
+      "from": "tdd",
+      "to": "codebase-design",
+      "kind": "conditional-reference",
+      "trigger": "The public interface or test seam is unresolved before a test is written.",
+      "sourceEvidence": "When the shape of that interface is itself in question, call the Skill tool with codebase-design."
+    }
+  ],
+  "references": [
+    {
+      "name": "to-spec",
+      "status": "behavior-reference-only",
+      "source": "skills/engineering/to-spec/SKILL.md",
+      "sourceSha256": "c73a2250beac0479e384f5466e834bb54ce6e30b7f8705e9999ba840d9d59b36",
+      "target": "third_party/matt-skills/references/engineering/to-spec/SKILL.md",
+      "targetSha256": "c73a2250beac0479e384f5466e834bb54ce6e30b7f8705e9999ba840d9d59b36",
+      "adoptedRuleIds": [
+        "planning.synthesize-known-context",
+        "design.public-test-seams",
+        "planning.decision-rich-not-volatile"
+      ],
+      "rejectedBehaviors": [
+        "require-matt-tracker-setup",
+        "publish-spec-to-issue-tracker",
+        "apply-ready-for-agent-triage-tag",
+        "replace-openspec-artifact-template"
+      ]
+    },
+    {
+      "name": "to-tickets",
+      "status": "behavior-reference-only",
+      "source": "skills/engineering/to-tickets/SKILL.md",
+      "sourceSha256": "b8eb6dca1085e85220b0f5990ed787ebf8a924844d090689f1073b06367e2f7a",
+      "target": "third_party/matt-skills/references/engineering/to-tickets/SKILL.md",
+      "targetSha256": "b8eb6dca1085e85220b0f5990ed787ebf8a924844d090689f1073b06367e2f7a",
+      "adoptedRuleIds": [
+        "tasks.tracer-bullet-slices",
+        "tasks.explicit-blocking-edges",
+        "tasks.expand-contract-wide-refactors",
+        "tasks.verifiable-acceptance"
+      ],
+      "rejectedBehaviors": [
+        "require-matt-tracker-setup",
+        "write-local-ticket-files",
+        "publish-tickets-to-issue-tracker",
+        "apply-ready-for-agent-triage-tag",
+        "create-secondary-ticket-authority"
+      ]
+    }
+  ],
+  "rules": [
+    {
+      "id": "planning.synthesize-known-context",
+      "sources": ["to-spec"],
+      "phases": ["design"],
+      "artifacts": ["proposal", "delta-specs", "design", "tasks"],
+      "enforcement": "context",
+      "statement": "Synthesize decisions already established by the conversation and repository evidence; do not repeat an interview for resolved decisions."
+    },
+    {
+      "id": "design.public-test-seams",
+      "sources": ["to-spec", "tdd", "codebase-design"],
+      "phases": ["design", "build"],
+      "artifacts": ["design"],
+      "enforcement": "human-decision",
+      "statement": "Choose the fewest stable public seams that observe required behavior, and request a decision only when the seam remains materially unresolved."
+    },
+    {
+      "id": "planning.decision-rich-not-volatile",
+      "sources": ["to-spec"],
+      "phases": ["design"],
+      "artifacts": ["design", "tasks"],
+      "enforcement": "review-rubric",
+      "statement": "Record durable implementation decisions without volatile paths or full code; retain only prototype fragments that encode a decision more precisely than prose."
+    },
+    {
+      "id": "tasks.tracer-bullet-slices",
+      "sources": ["to-tickets"],
+      "phases": ["design", "build"],
+      "artifacts": ["tasks"],
+      "enforcement": "review-rubric",
+      "statement": "Each task is a narrow, complete, independently verifiable vertical slice sized for one fresh execution context."
+    },
+    {
+      "id": "tasks.explicit-blocking-edges",
+      "sources": ["to-tickets"],
+      "phases": ["design", "build"],
+      "artifacts": ["tasks"],
+      "enforcement": "deterministic-validator",
+      "statement": "Represent only genuine task blockers and derive the ready frontier from satisfied dependencies."
+    },
+    {
+      "id": "tasks.expand-contract-wide-refactors",
+      "sources": ["to-tickets"],
+      "phases": ["design", "build"],
+      "artifacts": ["tasks"],
+      "enforcement": "review-rubric",
+      "statement": "Use expand, bounded migration batches, and contract for wide mechanical changes that cannot remain green as a single vertical slice."
+    },
+    {
+      "id": "tasks.verifiable-acceptance",
+      "sources": ["to-tickets"],
+      "phases": ["design", "verify"],
+      "artifacts": ["tasks"],
+      "enforcement": "deterministic-validator",
+      "statement": "Every task declares observable acceptance criteria that can produce verification evidence."
+    }
+  ],
+  "reviewedMethods": [
+    {
+      "name": "research",
+      "source": "skills/engineering/research/SKILL.md",
+      "sourceSha256": "524b404b1ca373a8b00f63a64667ec4b0a61c3c9cf4e8f246e639be859bb6979",
+      "decision": "deferred-executable",
+      "condition": "A Design work declares a specific knowledge gap and a bounded research output contract.",
+      "reason": "Primary-source research is useful, but background-agent dispatch and note writes need explicit Work capabilities before bundling."
+    },
+    {
+      "name": "prototype",
+      "source": "skills/engineering/prototype/SKILL.md",
+      "sourceSha256": "f74ae01f4fc454d3a4ef21271920f1706e626271e715dda0559e489f45c792c3",
+      "decision": "deferred-executable",
+      "condition": "A Design work records a concrete design risk, scratch write scope, cleanup rule, and human review point.",
+      "reason": "Throwaway code must not escape the Work write scope or become an undeclared fifth planning artifact."
+    },
+    {
+      "name": "domain-modeling",
+      "source": "skills/engineering/domain-modeling/SKILL.md",
+      "sourceSha256": "b62d997256cc073e123d4303da8e9db00db0e28de9739660ca3e55ab76e09cdb",
+      "decision": "conditional-executable",
+      "condition": "A Design work changes domain vocabulary or model boundaries; reading existing vocabulary alone does not trigger it.",
+      "reason": "The fixed Skill is already bundled, but it must not create ADRs or glossary changes for every change by default."
+    },
+    {
+      "name": "writing-for-agents",
+      "source": "skills/productivity/writing-for-agents/SKILL.md",
+      "sourceSha256": "1c0c4ebf2d221917591144f0ced4fe46dae13301cb3d6d93fc88ecf0dda6aed2",
+      "decision": "planned-method-profile",
+      "condition": "Only reviewed writing rules are normalized into the planning Method Profile.",
+      "reason": "The complete Skill is not needed at runtime and must not become a second artifact protocol."
+    },
+    {
+      "name": "retro",
+      "source": "skills/engineering/retro/SKILL.md",
+      "sourceSha256": "42110f533f169026d037cf141b9f6c2752c6d914903be4758c38a68349e83e78",
+      "decision": "deferred-post-change",
+      "condition": "Archive has completed and retrospective feedback is explicitly requested or scheduled as non-blocking work.",
+      "reason": "Retrospective improvements must not block or mutate the active Change lifecycle."
+    }
+  ]
+}

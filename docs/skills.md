@@ -27,7 +27,7 @@ node bin/repoctopus.js skill get --workspace . --audience user --name tdd --json
 
 数值越小，优先级越高。项目定义因此会覆盖个人定义和内置定义。Provider 负责发现与加载，Skill 消费方不识别 Provider 名称。
 
-首批内置入口为 `grill-with-docs`、`tdd`、`diagnosing-bugs`、`code-review` 和 `teach`。`grill-with-docs` 使用的 `grilling` 与 `domain-modeling` 也随固定上游快照提供。
+内置入口为 `grill-with-docs`、`codebase-design`、`tdd`、`diagnosing-bugs`、`code-review`、`pr` 和 `teach`。`grill-with-docs` 使用的 `grilling` 与 `domain-modeling` 也随固定上游快照提供。`to-spec` 与 `to-tickets` 仅作为方法采用的固定参考保存在 Provider roots 之外，不会出现在 Skill 目录或 IDE 投影中；Repoctopus 只通过版本化 Method Profile 使用其中已审核的规则，OpenSpec 仍是规格和任务的唯一结构权威。
 
 ## 替换 Skill
 
