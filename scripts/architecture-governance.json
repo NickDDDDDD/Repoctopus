@@ -447,6 +447,34 @@
       "pattern": "from\\s+['\"]@deepseek-ai/cordis(?:/|['\"])",
       "allowed": [],
       "message": "Electron Shell and preload must not host or import the Cordis application runtime"
+    },
+    {
+      "id": "single-change-lifecycle-transition-owner",
+      "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
+      "pattern": "(?:type|enum)\\s+ChangePhase\\b|\\b(?:decide|apply|transition)ChangeLifecycle(?:Transition)?\\s*[=(]",
+      "allowed": ["domains/change-lifecycle/transition.ts"],
+      "message": "Change lifecycle phases and transition decisions belong only to the canonical transition module"
+    },
+    {
+      "id": "direct-run-state-write",
+      "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
+      "pattern": "\\b(?:ctx|context)\\.runStore\\.(?:commit|commitGuarded)\\s*\\(",
+      "allowed": [],
+      "message": "Callers must submit facts through WorkflowRuns instead of writing Run state directly"
+    },
+    {
+      "id": "independent-post-merge-run-creation",
+      "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
+      "pattern": "\\bpostMergeRun(?:Options|Id)\\s*\\(",
+      "allowed": ["domains/post-merge/run.ts", "services/post-merge-coordinator.ts"],
+      "message": "Only the registered legacy compatibility path may create a Post-merge Run until Archive migration removes it"
+    },
+    {
+      "id": "caller-selected-lifecycle-method",
+      "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
+      "pattern": "\\b(?:actionSkill|requiredSkill|augmentationSkills|methodProfile)\\s*:\\s*(?:input|options|request|commandInput)\\.",
+      "allowed": [],
+      "message": "Lifecycle methods must come from the immutable definition, not caller input"
     }
   ],
   "protectedEvidenceFlow": {

@@ -18,6 +18,10 @@ interface Fixtures {
   nonProviderClosure: SourceFixture[];
   unprotectedPublication: SourceFixture[];
   desktopIsolation: SourceFixture[];
+  lifecyclePhaseOwner: SourceFixture[];
+  directRunStateWrite: SourceFixture[];
+  independentPostMergeRun: SourceFixture[];
+  callerSelectedLifecycleSkill: SourceFixture[];
 }
 
 interface Rule {
@@ -164,5 +168,96 @@ describe('architecture source boundaries', () => {
         expect.stringContaining('app/desktop/main/rogue.ts: desktop-shell-cordis-isolation'),
       ]),
     );
+  });
+
+  it('allows only the canonical domain module to own Change phase transitions', () => {
+    const allowed = [
+      {
+        path: 'domains/change-lifecycle/transition.ts',
+        contents:
+          "export type ChangePhase = 'open' | 'design' | 'build' | 'verify' | 'archive'; export function decideChangeLifecycleTransition() { return 'open'; }",
+      },
+    ];
+
+    expect(
+      evaluateSourceBoundaries(allowed, rules('single-change-lifecycle-transition-owner')),
+    ).toEqual([]);
+    expect(
+      evaluateSourceBoundaries(
+        fixtures.lifecyclePhaseOwner,
+        rules('single-change-lifecycle-transition-owner'),
+      ),
+    ).toEqual([
+      expect.stringContaining(
+        'services/rogue-lifecycle.ts: single-change-lifecycle-transition-owner',
+      ),
+    ]);
+  });
+
+  it('rejects direct Run state writes outside WorkflowRuns', () => {
+    expect(
+      evaluateSourceBoundaries(
+        [
+          {
+            path: 'services/lifecycle-runner.ts',
+            contents: 'export async function next(context) { return context.workflowRuns.next(); }',
+          },
+        ],
+        rules('direct-run-state-write'),
+      ),
+    ).toEqual([]);
+    expect(
+      evaluateSourceBoundaries(fixtures.directRunStateWrite, rules('direct-run-state-write')),
+    ).toEqual([expect.stringContaining('services/rogue-run-writer.ts: direct-run-state-write')]);
+  });
+
+  it('contains independent Post-merge Run creation to the legacy compatibility path', () => {
+    const allowed = [
+      {
+        path: 'domains/post-merge/run.ts',
+        contents: 'export function postMergeRunOptions(input) { return input; }',
+      },
+      {
+        path: 'services/post-merge-coordinator.ts',
+        contents: 'export function start(input) { return postMergeRunOptions(input); }',
+      },
+    ];
+
+    expect(evaluateSourceBoundaries(allowed, rules('independent-post-merge-run-creation'))).toEqual(
+      [],
+    );
+    expect(
+      evaluateSourceBoundaries(
+        fixtures.independentPostMergeRun,
+        rules('independent-post-merge-run-creation'),
+      ),
+    ).toEqual([
+      expect.stringContaining(
+        'plugins/events/rogue-post-merge.ts: independent-post-merge-run-creation',
+      ),
+    ]);
+  });
+
+  it('rejects caller-selected lifecycle Skills and Method Profiles', () => {
+    expect(
+      evaluateSourceBoundaries(
+        [
+          {
+            path: 'domains/change-lifecycle/definition.ts',
+            contents:
+              "export const work = { actionSkill: { name: 'openspec-apply-change' }, methodProfile: BUILTIN_METHOD_PROFILE };",
+          },
+        ],
+        rules('caller-selected-lifecycle-method'),
+      ),
+    ).toEqual([]);
+    expect(
+      evaluateSourceBoundaries(
+        fixtures.callerSelectedLifecycleSkill,
+        rules('caller-selected-lifecycle-method'),
+      ),
+    ).toEqual([
+      expect.stringContaining('app/cli/rogue-lifecycle.ts: caller-selected-lifecycle-method'),
+    ]);
   });
 });

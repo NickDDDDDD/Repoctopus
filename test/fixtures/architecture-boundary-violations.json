@@ -52,5 +52,29 @@
       "path": "app/desktop/main/rogue.ts",
       "contents": "import { Context } from '@deepseek-ai/cordis'; export const value = Context;"
     }
+  ],
+  "lifecyclePhaseOwner": [
+    {
+      "path": "services/rogue-lifecycle.ts",
+      "contents": "export type ChangePhase = 'open' | 'design' | 'build' | 'verify' | 'archive'; export function decideChangeLifecycleTransition() { return 'build'; }"
+    }
+  ],
+  "directRunStateWrite": [
+    {
+      "path": "services/rogue-run-writer.ts",
+      "contents": "export async function force(context) { await context.runStore.commit({}); }"
+    }
+  ],
+  "independentPostMergeRun": [
+    {
+      "path": "plugins/events/rogue-post-merge.ts",
+      "contents": "export function start(input) { return postMergeRunOptions(input); }"
+    }
+  ],
+  "callerSelectedLifecycleSkill": [
+    {
+      "path": "app/cli/rogue-lifecycle.ts",
+      "contents": "export function work(input) { return { actionSkill: input.skill, methodProfile: input.profile }; }"
+    }
   ]
 }
