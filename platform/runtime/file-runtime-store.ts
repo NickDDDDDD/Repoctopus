@@ -94,6 +94,12 @@ function checkpointFor(state: RunState, event: TrajectoryEvent): Checkpoint {
     projectSnapshotDigest: state.projectSnapshotDigest,
     artifactManifestDigest: emptyArtifactsDigest(),
     acceptedEvidenceBundleIds: [...state.acceptedEvidenceBundleIds],
+    ...(state.changeLifecycle
+      ? {
+          runStatus: state.status,
+          changeLifecycle: structuredClone(state.changeLifecycle),
+        }
+      : {}),
     skillUsageSnapshots: structuredClone(state.skillUsageSnapshots ?? []),
     ...(state.specificationUsageSnapshot
       ? { specificationUsageSnapshot: structuredClone(state.specificationUsageSnapshot) }

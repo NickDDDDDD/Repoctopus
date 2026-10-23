@@ -2,6 +2,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { startRun } from '../domains/engine/loop.js';
+import type { ChangeLifecycleSnapshot } from '../domains/change-lifecycle/transition.js';
 import type { TrajectoryEvent } from '../domains/trajectory/types.js';
 import {
   FileRuntimeStore,
@@ -155,6 +156,89 @@ describe('runtime store corruption detection', () => {
     await store.commit({ state: nextState, event: nextEvent, previousStateVersion: 0 });
     await expect(readFile(store.paths(state.runId).transitionLock, 'utf8')).rejects.toMatchObject({
       code: 'ENOENT',
+    });
+  });
+});
+
+describe('Change lifecycle runtime schema', () => {
+  it('persists the same lifecycle snapshot in Run, Checkpoint, and Trajectory', async () => {
+    const workspace = await temporaryDirectory('repoctopus-change-lifecycle-store-');
+    cleanup.push(workspace);
+    const workflow = workflowFixture();
+    const project = projectFixture();
+    const base = startRun({
+      workflow,
+      runId: 'change-run-schema',
+      projectSnapshotDigest: project.digest,
+      composition: compositionFixture(),
+      timestamp: '2026-10-24T00:00:00.000Z',
+    });
+    const changeLifecycle: ChangeLifecycleSnapshot = {
+      schemaVersion: 1,
+      identity: {
+        workspaceId: 'team-platform',
+        changeId: 'establish-change-lifecycle',
+        generation: 1,
+        runId: base.runId,
+      },
+      definition: {
+        id: 'repoctopus-change',
+        version: '1.0.0',
+        digest: `sha256:${'d'.repeat(64)}`,
+      },
+      revision: 1,
+      phase: 'design',
+      status: 'waiting',
+      currentWork: null,
+      waitCondition: {
+        schemaVersion: 1,
+        waitId: 'wait-planning-approval',
+        kind: 'human-decision',
+        reason: 'Planning approval is required.',
+        inputDigest: `sha256:${'i'.repeat(64)}`,
+        requestId: 'decision-1',
+        proposalDigest: `sha256:${'p'.repeat(64)}`,
+      },
+      blocker: null,
+    };
+    const { status, ...changeLifecycleState } = changeLifecycle;
+    const state = { ...base, status, changeLifecycle: changeLifecycleState };
+    const event: TrajectoryEvent = {
+      ...startedEvent(base.runId, base.stateVersion),
+      type: 'change.lifecycle.transitioned',
+      data: {
+        changeLifecycleTransition: {
+          schemaVersion: 1,
+          transitionId: 'design.await-approval',
+          definition: changeLifecycle.definition,
+          revision: changeLifecycle.revision,
+          from: { phase: 'design', status: 'running' },
+          to: { phase: 'design', status: 'waiting' },
+          workId: null,
+          waitId: changeLifecycle.waitCondition!.waitId,
+        },
+      },
+    };
+    const store = new FileRuntimeStore(workspace);
+
+    await store.initialize({ state, workflow, projectSnapshot: project, event });
+
+    expect(await store.loadRun(base.runId)).toMatchObject({
+      status: 'waiting',
+      changeLifecycle: changeLifecycleState,
+    });
+    expect(await store.loadCheckpoint(base.runId)).toMatchObject({
+      runStatus: 'waiting',
+      changeLifecycle: changeLifecycleState,
+    });
+    expect((await store.loadTrajectory(base.runId))[0]).toMatchObject({
+      type: 'change.lifecycle.transitioned',
+      data: {
+        changeLifecycleTransition: {
+          transitionId: 'design.await-approval',
+          to: { phase: 'design', status: 'waiting' },
+        },
+      },
     });
   });
 });

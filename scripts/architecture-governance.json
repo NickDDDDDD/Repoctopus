@@ -94,6 +94,16 @@
       "rationale": "保留 Run、Trajectory、Checkpoint 和恢复语义，避免引入 Comet Skill 与产品目录布局。"
     },
     {
+      "id": "change-lifecycle",
+      "disposition": "behavior-reimplemented",
+      "targets": ["domains/change-lifecycle/**"],
+      "upstream": [
+        "domains/native-orchestration/workflow-definition.ts",
+        "domains/native-orchestration/transition.ts"
+      ],
+      "rationale": "采用固定定义、纯转换和投影分离原则，为 Repoctopus 的 Workspace、多仓、OpenSpec 与持久 Run 建立唯一 Change 生命周期。"
+    },
+    {
       "id": "protected-runtime-transitions",
       "disposition": "source-modified",
       "targets": [
