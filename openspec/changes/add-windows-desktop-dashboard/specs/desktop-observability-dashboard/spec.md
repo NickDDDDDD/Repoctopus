@@ -68,6 +68,11 @@ Repoctopus MUST 在受支持的 Windows 环境开始开发 Run 时启动或激�
 - **WHEN** 接收器收到多个 Workspace 或 change 的活动 Run
 - **THEN** 用户可以在保持当前查看上下文的同时选择其他 change，新的上报不得无条件抢占当前视图
 
+#### Scenario: 查看最近事件和接收诊断
+
+- **WHEN** 桌面应用已经接收当前 Run 的观测记录、重放批次或有界 Receiver 诊断
+- **THEN** 界面显示有界的最近事件安全元数据、Receiver 状态、本地目的地健康、新鲜度、重放和序列完整性，且不把传输健康解释为 Run 或 change 状态
+
 ### Requirement: 接收驱动桌面实时更新
 
 桌面应用 MUST 在接受观测记录后主动向可见界面发送有序增量，并在界面重新连接时先提供一致快照再继续增量；界面不得通过周期轮询本地或远端后端维持实时状态。
@@ -82,6 +87,16 @@ Repoctopus MUST 在受支持的 Windows 环境开始开发 Run 时启动或激�
 - **WHEN** Desktop Host 仍在运行但 Renderer 重新加载或窗口重新打开
 - **THEN** 界面先得到同一投影版本的一致快照，再从后续序列继续接收增量
 
+#### Scenario: 收到重复或迟到增量
+
+- **WHEN** 界面在 snapshot 之后收到版本不高于当前版本的 delta
+- **THEN** 界面忽略该 delta，且不得用旧 projection 或接收诊断回退当前状态
+
+#### Scenario: 增量版本出现缺口
+
+- **WHEN** 界面收到无法与当前版本连续衔接的更高版本 delta
+- **THEN** 界面保留最后一份已确认状态并通过同一桥接读取一次新 snapshot，且不得启动周期轮询
+
 ### Requirement: 重放和重复投递收敛为一致投影
 
 桌面应用 MUST 使用稳定事件身份和投影序列处理至少一次投递，在启动、恢复或本地目的地追平时收敛重复记录，并明确显示正在追平、数据新鲜或检测到缺口的状态。
@@ -90,6 +105,11 @@ Repoctopus MUST 在受支持的 Windows 环境开始开发 Run 时启动或激�
 
 - **WHEN** 本地目的地已经积压观测 envelope 且桌面接收器随后可用
 - **THEN** 投递器重放未确认 envelope，桌面应用显示追平状态并在完成后转为实时状态
+
+#### Scenario: 重放批次完成接收
+
+- **WHEN** Receiver 接受带有本地目的地重放标记的标准 OTLP 批次
+- **THEN** Application snapshot 在批次处理中显示追平，并在批次完成后更新 Receiver 计数与本地目的地健康而不修改 envelope 领域属性
 
 #### Scenario: 确认响应丢失导致重复发送
 

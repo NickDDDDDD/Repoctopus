@@ -146,6 +146,8 @@ Evidence 遥测只有在 Evidence Attempt 绑定已持久化 Workflow Run 时，
 
 OTLP Decoder 是 Renderer 前的隐私边界。它只复制固定属性允许列表，忽略 Log body、Span event、未知属性、Artifact 正文、绝对路径、Prompt、回复和命令输出。即使本机进程绕过规范 Envelope Mapper 直接向 Receiver 夹带这些字段，它们也不能进入 `ObservationRecord`、Projection 或 ViewModel。
 
+最近事件是当前 Run 的有界安全投影，不是日志查看器。Projection 只保留按观测时间、序列和事件身份倒序排列的最近 20 条记录，并公开 event type、stream、sequence、观测时间、阶段、任务 ref/status 和验证 status。它不保留 Log body、Span event、Artifact 正文或未列入 `ObservationRecord` 的属性；独立 Workflow 与 Evidence stream 各自显示自己的序列，避免把两个序列 1 合并成一个虚假全局顺序。
+
 Gap 以当前 Run 的稳定 stream sequence 从 1 开始压缩为缺失区间；迟到事件可以缩小或消除 gap。Freshness 由调用方提供的规范 `now` 与最后观测时间、批准阈值纯计算，Reducer 不读取系统时钟。首版内存状态用于验证收敛契约，任务 2.5 把 OTLP 解码后的 Record 接入 Receiver 与 IPC，任务 5.5 再负责 journal、snapshot、压缩和重启恢复。
 
 Desktop Host 把已接受记录写入追加式本地 journal，并周期生成原子 snapshot。启动时加载 snapshot 后重放 journal，重复 `event.id` 收敛为 no-op。该 journal 只保存经过遥测允许列表的数据，不复制 Artifact 正文。使用现有文件持久化模式可以避免 Windows 原生 SQLite addon 的构建和 ABI 风险；如果性能证据表明不足，数据库替换走后续 change。
@@ -163,6 +165,12 @@ Electron 启用 `contextIsolation`、renderer sandbox，并关闭 `nodeIntegrati
 Renderer 不直接监听端口、不读取 discovery/journal、不访问文件系统或执行任意 IPC channel。订阅建立时，Desktop Host 生成一致 snapshot 与版本，经 Main/Preload 转交后只发送更高序列 delta；发现序列缺口时 Renderer 丢弃局部状态并经相同桥接请求新 snapshot，不轮询。Main 不解释或二次投影业务状态，只校验、关联和转发有界消息。
 
 任务 2.5 采用单一版本链实现这条边界：Desktop Application Service 拥有 Reducer，并在记录成功收敛后发布带 `baseVersion`、`version` 和完整 projection 的 delta；Host ready 同时携带初始 snapshot 与仅供 Runtime 投递使用的回环 receiver endpoint。Host、Main 与 Preload 在各自边界校验固定 channel 和 payload，Renderer 只在 delta 的 `baseVersion` 与本地版本不一致时一次性调用 `currentState()` 重新取得 snapshot，不建立 timer 或轮询循环。Main 保留最近一次已校验 snapshot，但不重算 change 状态。
+
+任务 4.5 把版本链扩展为同一份 Application snapshot：每个版本同时包含 change projection 与 ingress 诊断。Receiver 在批次开始、每条唯一记录收敛和批次完成时发布连续版本；Main 只在 `baseVersion` 等于当前版本时推进缓存。Renderer 的 `DesktopProjectionStream` 丢弃小于或等于当前版本的 stale/duplicate delta，只应用 `baseVersion` 与当前版本相等的更高 delta，并最多缓存 64 个前向 delta。前向缺口触发一次 `currentState()`；snapshot 到达后继续应用可衔接的缓冲 delta，迟到的低版本 snapshot 不能回退界面。一次失败或仍不足以衔接的 snapshot 不启动重试循环，只有后续 push 事实才能再次触发恢复。
+
+Ingress 诊断区分 Receiver、`desktop-local` 接收目的地、重放、新鲜度和 stream gap。标准 OTLP payload 与远端目的地保持一致；桌面目的地只在本地请求 Header 中增加有界的 `desktop-local`/`replay` 传输标记，使 Receiver 能把当前批次标记为追平，不改变 envelope 身份或领域属性。Receiver 只累计已接受批次、唯一投影记录、固定拒绝 code 和 signal；成功接收后目的地显示 healthy，`receiver-busy` 或 `receiver-unavailable` 显示 degraded，未经首批确认时显示 unknown。该健康只描述本地接收路径，不改写 Run、Change 或远端 Cursor。
+
+Freshness 不通过周期查询刷新。Desktop Application 为仍处于 live 的上下文安排下一次阈值到期的单次 timer；到期后重算纯 projection 并发布一个新版本，然后只为下一个尚未到期的上下文重新安排 timer。新观测、诊断更新和 Fiber 关闭都会重排或撤销该 timer，因此界面可以进入 stale 状态而不轮询 Desktop Host、SigNoZ 或 Workspace 文件。
 
 OTLP JSON decoder 只从 Trace/Log 的 Repoctopus 属性允许列表构造 `ObservationRecord`，忽略 Log body、Span event 正文、未知属性和凭据；Metric 在尚无低基数聚合投影契约前不生成实体记录，避免从高基数标签反推 change。真实 Electron smoke 通过 Host ready 返回的随机回环端点和会话 Bearer token 发送一个 OTLP Log，随后验证窗口无需刷新即可显示 change、Run 和 stage；同一测试同时验证 Renderer 没有 `process`/`require`、Preload 桥存在，以及默认和窄窗口无水平溢出。既有 backend controller 契约测试继续证明 ready 后 Host 退出只把 Shell 转入 error，并保留 retry，而不是关闭窗口。
 
@@ -282,18 +290,18 @@ Renderer 先把 `DesktopShellState` 与投影事实转换成只读 `DashboardVie
 
 状态矩阵把工作流终态与观测健康分开表达，避免把“上报过期”误解为“Run 失败”。当前设计覆盖以下状态：
 
-| 状态 | 来源                                     | 呈现原则                                                   |
-| ---- | ---------------------------------------- | ---------------------------------------------------------- |
-| 启动 | Shell 生命周期                           | 标记忙碌，不显示虚构的 Change                              |
-| 空   | Receiver 已就绪但投影为空                | 说明等待首个 OTLP 上报                                     |
-| 稀疏 | 已知 Change，但状态、阶段或 Run 字段缺失 | 使用“尚未上报”，不推断                                     |
-| 实时 | 投影完整且在新鲜度阈值内                 | 显示已确认的 Change、Run、阶段和事件序列                   |
-| 追平 | 目的地正在重放积压                       | 保留已确认事实并标记忙碌；生产映射在接收健康契约加入后接通 |
-| 过期 | 最近观测超过阈值                         | 保留最后事实，并明确它不代表当前仍在运行                   |
-| gap  | 投影报告事件序列缺口                     | gap 优先于普通实时状态，列出缺失范围                       |
-| 错误 | Desktop Host 或 Receiver 失败            | 提供重试入口，并说明远端遥测与工作流不受阻塞               |
-| 完成 | Change 或 Run 上报完成终态               | 只根据明确终态显示完成                                     |
-| 失败 | Change 或 Run 上报失败终态               | 只根据明确终态显示失败                                     |
+| 状态 | 来源                                     | 呈现原则                                               |
+| ---- | ---------------------------------------- | ------------------------------------------------------ |
+| 启动 | Shell 生命周期                           | 标记忙碌，不显示虚构的 Change                          |
+| 空   | Receiver 已就绪但投影为空                | 说明等待首个 OTLP 上报                                 |
+| 稀疏 | 已知 Change，但状态、阶段或 Run 字段缺失 | 使用“尚未上报”，不推断                                 |
+| 实时 | 投影完整且在新鲜度阈值内                 | 显示已确认的 Change、Run、阶段和事件序列               |
+| 追平 | 目的地正在重放积压                       | 保留已确认事实并标记忙碌，批次完成后自动返回实时或 gap |
+| 过期 | 最近观测超过阈值                         | 保留最后事实，并明确它不代表当前仍在运行               |
+| gap  | 投影报告事件序列缺口                     | gap 优先于普通实时状态，列出缺失范围                   |
+| 错误 | Desktop Host 或 Receiver 失败            | 提供重试入口，并说明远端遥测与工作流不受阻塞           |
+| 完成 | Change 或 Run 上报完成终态               | 只根据明确终态显示完成                                 |
+| 失败 | Change 或 Run 上报失败终态               | 只根据明确终态显示失败                                 |
 
 设计 token 使用语义名称统一浅色与深色主题中的 canvas、surface、text、border、focus、accent、success、warning 和 danger 角色。布局使用轻量分隔、三档间距节奏和组件级 container query；颜色只辅助状态，文本标签始终保留。窗口变窄时，上下文栏移动到内容上方，区域导航横向滚动，概览从四列降为两列和一列。
 
@@ -304,6 +312,10 @@ Renderer 先把 `DesktopShellState` 与投影事实转换成只读 `DashboardVie
 显式选择属于 Renderer 会话状态，不写回领域投影或 Desktop Host。Renderer 把用户选择保存在 `sessionStorage`，因此同一窗口重载后保持选择，完全退出后不会产生新的用户级持久设置。Runtime 激活上下文通过独立、类型化的 Preload 事件到达 Renderer；只有当前没有有效选择时，激活来源才成为首选项。用户已经选择 Change 后，新的激活或 OTLP delta 只更新导航数据，不抢占当前详情。
 
 Workspace/change 列表使用原生按钮切换本地详情，并以 `aria-current`、文本状态和语义颜色共同表达当前项；它不伪装成会改变 URL 或浏览历史的链接。窄窗口把 Workspace 分组移动到详情上方，保持每个 Change 的完整可访问名称和键盘焦点。`?fixture=multi-context` 提供两个 Workspace、四个 Change 和多个终态的可执行 fixture，用于验证切换、重载保持和紧凑布局。
+
+任务 4.5 把“最近事件”空区替换为同一接收区中的诊断带和事件列表。诊断带使用轻量分隔而不是独立卡片，按 Receiver、目的地、新鲜度、重放和序列顺序扫描；宽窗显示五列，680 px 窗口降为两列，最窄布局降为单列。状态始终同时提供文本和值，颜色只辅助识别。事件列表显示安全元数据和独立 stream sequence；没有事件时明确说明新事件到达后自动显示，不提供无意义的手动刷新按钮。
+
+业务提交 `97315a0` 完成任务 4.5。IPC 序列测试证明 snapshot 后只接受严格连续的更高版本 delta、重复和迟到版本不会回退状态、前向缺口只读取一次 snapshot 且不会开始轮询；进程内 composition 与进程外 Host 测试证明 replay/receiver/destination 状态进入同一版本链。真实 Electron smoke 验证接收诊断、最近事件、Renderer 隔离和 1080×720、680×480 布局。完整 `npm run verify` 通过 112 个测试文件、488 项测试并保留 1 项条件跳过；生成、品牌、架构、provenance 和 13 项严格 OpenSpec 校验全部通过，验证产生的 164 个临时 telemetry envelope 与 2 张截图已清理。
 
 ## Risks / Trade-offs
 
