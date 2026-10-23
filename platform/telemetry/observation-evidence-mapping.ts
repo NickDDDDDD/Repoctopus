@@ -136,6 +136,12 @@ export function evidenceObservationAttributes(
     'repoctopus.composition.digest': batch.compositionDigest,
   };
   if (batch.runId) attributes['repoctopus.run.id'] = batch.runId;
+  if (batch.changeContext) {
+    attributes['repoctopus.workspace.id'] = batch.changeContext.workspaceId;
+    attributes['repoctopus.change.id'] = batch.changeContext.changeId;
+    attributes['repoctopus.stream.id'] =
+      `evidence:${hashId(`${batch.runId ?? 'standalone'}:${batch.attemptId}`, 32)}`;
+  }
   for (const [key, value] of Object.entries(event.data)) {
     if (!ALLOWED_DATA.has(key)) continue;
     const safe = scalar(value);

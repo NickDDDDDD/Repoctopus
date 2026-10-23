@@ -20,6 +20,9 @@ const secondaryContext = {
   streamId: 'run-delivery-gates',
 };
 const screenshot = process.env.REPOCTOPUS_DESKTOP_SMOKE_SCREENSHOT;
+const screenshotSection = process.env.REPOCTOPUS_DESKTOP_SMOKE_SCREENSHOT_SECTION;
+const screenshotWidth = Number(process.env.REPOCTOPUS_DESKTOP_SMOKE_SCREENSHOT_WIDTH ?? 0);
+const screenshotHeight = Number(process.env.REPOCTOPUS_DESKTOP_SMOKE_SCREENSHOT_HEIGHT ?? 0);
 let finished = false;
 let resolveDesktopReady;
 let rejectDesktopReady;
@@ -37,7 +40,12 @@ function fail(error) {
 
 const attribute = (key, value) => ({
   key,
-  value: typeof value === 'number' ? { intValue: String(value) } : { stringValue: value },
+  value:
+    typeof value === 'number'
+      ? { intValue: String(value) }
+      : typeof value === 'boolean'
+        ? { boolValue: value }
+        : { stringValue: value },
 });
 
 async function sendObservation(ready, context, sequence, stageName) {
@@ -85,9 +93,39 @@ async function sendObservation(ready, context, sequence, stageName) {
                           attribute('repoctopus.task.ref', 'desktop.smoke-renderer'),
                           attribute('repoctopus.task.type', 'checkpoint'),
                           attribute('repoctopus.task.status', 'pending'),
+                          attribute('repoctopus.verification.id', 'attempt-desktop-smoke'),
+                          attribute('repoctopus.verification.status', 'satisfied'),
+                          attribute('repoctopus.verification.outcome', 'passed_with_warnings'),
+                          attribute('repoctopus.evidence.attempt.id', 'attempt-desktop-smoke'),
+                          attribute('repoctopus.evidence.bundle.id', 'bundle-desktop-smoke'),
+                          attribute('repoctopus.evidence.gate.status', 'satisfied'),
+                          attribute(
+                            'repoctopus.evidence.artifactDigest',
+                            `sha256:${'8'.repeat(64)}`,
+                          ),
+                          attribute('repoctopus.evidence.artifactType', 'command-stdout'),
+                          attribute('repoctopus.evidence.mediaType', 'text/plain; charset=utf-8'),
+                          attribute('repoctopus.evidence.artifactSize', 4096),
+                          attribute('repoctopus.evidence.redacted', true),
+                          attribute('repoctopus.blocker.category', 'human-decision'),
+                          attribute('repoctopus.blocker.request.id', 'task-desktop-smoke'),
+                          attribute('repoctopus.next_action.id', 'task-desktop-smoke'),
+                          attribute('repoctopus.next_action.type', 'checkpoint'),
+                          attribute('repoctopus.next_action.ref', 'desktop.smoke-renderer'),
+                          attribute('repoctopus.next_action.stage', 'implementation'),
+                          attribute('repoctopus.prompt', 'PRIVATE_PROMPT_NEVER_RENDER'),
+                          attribute('repoctopus.reply', 'PRIVATE_REPLY_NEVER_RENDER'),
+                          attribute('repoctopus.command.output', 'PRIVATE_OUTPUT_NEVER_RENDER'),
+                          attribute(
+                            'repoctopus.artifact.path',
+                            'C:\\Users\\private\\desktop-smoke.log',
+                          ),
                         ]
                       : []),
                   ],
+                  ...(context === primaryContext && sequence === 1
+                    ? { body: { stringValue: 'PRIVATE_BODY_NEVER_RENDER' } }
+                    : {}),
                 },
               ],
             },
@@ -147,11 +185,20 @@ async function inspect(window) {
     !state.body.includes('implementation') ||
     !state.body.includes('agent-desktop-smoke') ||
     !state.body.includes('desktop.smoke-renderer') ||
+    !state.body.includes('attempt-desktop-smoke') ||
+    !state.body.includes('command-stdout') ||
+    !state.body.includes('等待人工决定') ||
+    !state.body.includes('下一步动作') ||
     !state.body.includes('阶段与任务') ||
     !state.body.includes('验证与阻塞') ||
     !state.body.includes('最近事件')
   ) {
     throw new Error(`Desktop did not render the OTLP projection: ${JSON.stringify(state)}`);
+  }
+  if (
+    /PRIVATE_BODY|PRIVATE_PROMPT|PRIVATE_REPLY|PRIVATE_OUTPUT|C:\\Users\\private/iu.test(state.body)
+  ) {
+    throw new Error(`Desktop rendered private OTLP content: ${JSON.stringify(state)}`);
   }
   if (
     state.processType !== 'undefined' ||
@@ -162,6 +209,23 @@ async function inspect(window) {
   }
   if (state.scrollWidth > state.innerWidth) {
     throw new Error(`Desktop layout overflowed at default width: ${JSON.stringify(state)}`);
+  }
+  if (screenshot) {
+    if (screenshotWidth > 0 && screenshotHeight > 0) {
+      window.setSize(screenshotWidth, screenshotHeight);
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    if (screenshotSection) {
+      await window.webContents.executeJavaScript(`(() => {
+        document.querySelector(${JSON.stringify(`#${screenshotSection}`)})?.scrollIntoView({
+          block: 'start',
+          behavior: 'instant',
+        });
+      })()`);
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    const image = await window.webContents.capturePage();
+    await writeFile(path.resolve(screenshot), image.toPNG());
   }
 
   await selectChange(primaryContext.changeId);
@@ -208,10 +272,6 @@ async function inspect(window) {
     throw new Error(`Desktop layout failed at minimum width: ${JSON.stringify(narrow)}`);
   }
 
-  if (screenshot) {
-    const image = await window.webContents.capturePage();
-    await writeFile(path.resolve(screenshot), image.toPNG());
-  }
   finished = true;
   window.close();
 }

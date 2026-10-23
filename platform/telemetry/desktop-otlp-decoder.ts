@@ -2,8 +2,11 @@ import {
   validateObservationRecord,
   type ObservationRecord,
   type ProjectionChangeStatus,
+  type ProjectionGateStatus,
   type ProjectionRunStatus,
   type ProjectionTaskStatus,
+  type ProjectionVerificationOutcome,
+  type ProjectionVerificationStatus,
 } from '../../domains/telemetry/change-projection.js';
 import type { DesktopOtlpBatch } from './desktop-otlp-receiver.js';
 
@@ -53,6 +56,24 @@ function stringAttribute(values: OtlpAttributes, key: string): string | undefine
   return typeof value === 'string' ? value : undefined;
 }
 
+function firstStringAttribute(values: OtlpAttributes, keys: readonly string[]): string | undefined {
+  for (const key of keys) {
+    const value = stringAttribute(values, key);
+    if (value !== undefined) return value;
+  }
+  return undefined;
+}
+
+function numberAttribute(values: OtlpAttributes, key: string): number | undefined {
+  const value = values[key];
+  return typeof value === 'number' ? value : undefined;
+}
+
+function booleanAttribute(values: OtlpAttributes, key: string): boolean | undefined {
+  const value = values[key];
+  return typeof value === 'boolean' ? value : undefined;
+}
+
 function requiredString(values: OtlpAttributes, key: string): string {
   const value = stringAttribute(values, key);
   if (value === undefined) throw new Error(`Missing Repoctopus OTLP attribute: ${key}`);
@@ -72,6 +93,20 @@ function status<T extends string>(
 const CHANGE_STATUSES = new Set<ProjectionChangeStatus>(['active', 'completed', 'failed']);
 const RUN_STATUSES = new Set<ProjectionRunStatus>(['active', 'completed', 'failed']);
 const TASK_STATUSES = new Set<ProjectionTaskStatus>(['pending', 'blocked', 'completed', 'failed']);
+const VERIFICATION_STATUSES = new Set<ProjectionVerificationStatus>([
+  'running',
+  'completed',
+  'superseded',
+  'satisfied',
+  'blocked',
+]);
+const VERIFICATION_OUTCOMES = new Set<ProjectionVerificationOutcome>([
+  'passed',
+  'failed',
+  'incomplete',
+  'passed_with_warnings',
+]);
+const GATE_STATUSES = new Set<ProjectionGateStatus>(['satisfied', 'blocked']);
 
 function recordFromAttributes(values: OtlpAttributes): ObservationRecord | null {
   const schemaVersion = values['repoctopus.telemetry.schema.version'];
@@ -109,6 +144,41 @@ function recordFromAttributes(values: OtlpAttributes): ObservationRecord | null 
     TASK_STATUSES,
     'task status',
   );
+  const verificationId = stringAttribute(values, 'repoctopus.verification.id');
+  const verificationStatus = status(
+    stringAttribute(values, 'repoctopus.verification.status'),
+    VERIFICATION_STATUSES,
+    'verification status',
+  );
+  const verificationOutcome = status(
+    stringAttribute(values, 'repoctopus.verification.outcome'),
+    VERIFICATION_OUTCOMES,
+    'verification outcome',
+  );
+  const evidenceAttemptId = stringAttribute(values, 'repoctopus.evidence.attempt.id');
+  const evidenceBundleId = firstStringAttribute(values, [
+    'repoctopus.evidence.bundle.id',
+    'repoctopus.evidence.bundleId',
+  ]);
+  const evidenceGateStatus = status(
+    firstStringAttribute(values, [
+      'repoctopus.evidence.gate.status',
+      'repoctopus.evidence.gateStatus',
+    ]),
+    GATE_STATUSES,
+    'evidence gate status',
+  );
+  const artifactDigest = stringAttribute(values, 'repoctopus.evidence.artifactDigest');
+  const artifactType = stringAttribute(values, 'repoctopus.evidence.artifactType');
+  const artifactMediaType = stringAttribute(values, 'repoctopus.evidence.mediaType');
+  const artifactSize = numberAttribute(values, 'repoctopus.evidence.artifactSize');
+  const artifactRedacted = booleanAttribute(values, 'repoctopus.evidence.redacted');
+  const blockerCategory = stringAttribute(values, 'repoctopus.blocker.category');
+  const blockerRequestId = stringAttribute(values, 'repoctopus.blocker.request.id');
+  const nextActionId = stringAttribute(values, 'repoctopus.next_action.id');
+  const nextActionType = stringAttribute(values, 'repoctopus.next_action.type');
+  const nextActionRef = stringAttribute(values, 'repoctopus.next_action.ref');
+  const nextActionStage = stringAttribute(values, 'repoctopus.next_action.stage');
   const record: ObservationRecord = {
     schemaVersion: 1,
     envelopeId: requiredString(values, 'repoctopus.envelope.id'),
@@ -136,6 +206,23 @@ function recordFromAttributes(values: OtlpAttributes): ObservationRecord | null 
     ...(taskRef === undefined ? {} : { taskRef }),
     ...(taskType === undefined ? {} : { taskType }),
     ...(taskStatus === undefined ? {} : { taskStatus }),
+    ...(verificationId === undefined ? {} : { verificationId }),
+    ...(verificationStatus === undefined ? {} : { verificationStatus }),
+    ...(verificationOutcome === undefined ? {} : { verificationOutcome }),
+    ...(evidenceAttemptId === undefined ? {} : { evidenceAttemptId }),
+    ...(evidenceBundleId === undefined ? {} : { evidenceBundleId }),
+    ...(evidenceGateStatus === undefined ? {} : { evidenceGateStatus }),
+    ...(artifactDigest === undefined ? {} : { artifactDigest }),
+    ...(artifactType === undefined ? {} : { artifactType }),
+    ...(artifactMediaType === undefined ? {} : { artifactMediaType }),
+    ...(artifactSize === undefined ? {} : { artifactSize }),
+    ...(artifactRedacted === undefined ? {} : { artifactRedacted }),
+    ...(blockerCategory === undefined ? {} : { blockerCategory }),
+    ...(blockerRequestId === undefined ? {} : { blockerRequestId }),
+    ...(nextActionId === undefined ? {} : { nextActionId }),
+    ...(nextActionType === undefined ? {} : { nextActionType }),
+    ...(nextActionRef === undefined ? {} : { nextActionRef }),
+    ...(nextActionStage === undefined ? {} : { nextActionStage }),
   };
   validateObservationRecord(record);
   return record;

@@ -64,6 +64,7 @@ describe('desktop dashboard state matrix', () => {
       stage: { name: 'implementation', sequence: 1 },
       executionSubjects: [],
       tasks: null,
+      assurance: null,
       latestSequence: 1,
       lastObservedAt,
       freshness: 'live',
@@ -111,6 +112,7 @@ describe('desktop dashboard state matrix', () => {
                 stage: null,
                 executionSubjects: [],
                 tasks: null,
+                assurance: null,
                 latestSequence: 1,
                 lastObservedAt: '2026-10-23T08:15:42.000Z',
                 freshness: 'live',
@@ -143,6 +145,7 @@ describe('desktop dashboard state matrix', () => {
         taskProgress: null,
         activeTasks: [],
       },
+      assurance: null,
     });
   });
 });

@@ -73,6 +73,42 @@ export interface DashboardExecutionModel {
   activeTasks: readonly DashboardActiveTask[];
 }
 
+export interface DashboardVerification {
+  id: string;
+  attemptId: string | null;
+  bundleId: string | null;
+  status: string | null;
+  gateStatus: 'satisfied' | 'blocked' | null;
+  outcome: string | null;
+}
+
+export interface DashboardArtifact {
+  digest: string;
+  type: string | null;
+  mediaType: string | null;
+  size: number | null;
+  redacted: boolean | null;
+}
+
+export interface DashboardBlocker {
+  category: string;
+  requestId: string;
+}
+
+export interface DashboardNextAction {
+  id: string;
+  type: string | null;
+  ref: string | null;
+  stageName: string | null;
+}
+
+export interface DashboardAssuranceModel {
+  verification: DashboardVerification | null;
+  artifacts: readonly DashboardArtifact[];
+  blockers: readonly DashboardBlocker[];
+  nextActions: readonly DashboardNextAction[];
+}
+
 export interface DashboardViewModel {
   state: DashboardState;
   tone: StatusTone;
@@ -86,6 +122,7 @@ export interface DashboardViewModel {
   selectedContextId: string | null;
   summary: readonly DashboardSummaryItem[];
   execution: DashboardExecutionModel;
+  assurance: DashboardAssuranceModel | null;
   lastObservedAt: string | null;
   ariaBusy: boolean;
   canRetry: boolean;
@@ -109,6 +146,7 @@ function shellModel(
     | 'selectedContextId'
     | 'summary'
     | 'execution'
+    | 'assurance'
     | 'lastObservedAt'
   >,
 ): DashboardViewModel {
@@ -119,6 +157,7 @@ function shellModel(
     selectedContextId: null,
     summary: [],
     execution: noExecution,
+    assurance: null,
     lastObservedAt: null,
     ...values,
   };
@@ -265,12 +304,22 @@ export function dashboardModelFromShell(
       subject: task.subject,
     })),
   };
+  const assurance: DashboardAssuranceModel | null =
+    selected.assurance === null
+      ? null
+      : {
+          verification: selected.assurance.verification,
+          artifacts: selected.assurance.artifacts,
+          blockers: selected.assurance.blockers,
+          nextActions: selected.assurance.nextActions,
+        };
   const common = {
     context,
     navigation: dashboardNavigation(projection.contexts),
     selectedContextId: selectedId,
     summary,
     execution,
+    assurance,
     lastObservedAt: selected.lastObservedAt,
     ariaBusy: false,
     canRetry: false,

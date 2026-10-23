@@ -3,6 +3,18 @@ import { canonicalJson } from '../workflow-contract/canonical.js';
 export type ProjectionChangeStatus = 'active' | 'completed' | 'failed';
 export type ProjectionRunStatus = 'active' | 'completed' | 'failed';
 export type ProjectionTaskStatus = 'pending' | 'blocked' | 'completed' | 'failed';
+export type ProjectionVerificationStatus =
+  | 'running'
+  | 'completed'
+  | 'superseded'
+  | 'satisfied'
+  | 'blocked';
+export type ProjectionVerificationOutcome =
+  | 'passed'
+  | 'failed'
+  | 'incomplete'
+  | 'passed_with_warnings';
+export type ProjectionGateStatus = 'satisfied' | 'blocked';
 
 export interface ProjectionExecutionSubject {
   kind: string;
@@ -28,6 +40,47 @@ export interface ProjectionTaskState {
   failed: number;
   unknown: number;
   active: ProjectionTask[];
+}
+
+export interface ProjectionVerification {
+  id: string;
+  attemptId: string | null;
+  bundleId: string | null;
+  status: ProjectionVerificationStatus | null;
+  gateStatus: ProjectionGateStatus | null;
+  outcome: ProjectionVerificationOutcome | null;
+  lastObservedAt: string;
+}
+
+export interface ProjectionArtifact {
+  digest: string;
+  type: string | null;
+  mediaType: string | null;
+  size: number | null;
+  redacted: boolean | null;
+  verificationId: string | null;
+  lastObservedAt: string;
+}
+
+export interface ProjectionBlocker {
+  category: string;
+  requestId: string;
+  lastObservedAt: string;
+}
+
+export interface ProjectionNextAction {
+  id: string;
+  type: string | null;
+  ref: string | null;
+  stageName: string | null;
+  lastObservedAt: string;
+}
+
+export interface ProjectionAssuranceState {
+  verification: ProjectionVerification | null;
+  artifacts: ProjectionArtifact[];
+  blockers: ProjectionBlocker[];
+  nextActions: ProjectionNextAction[];
 }
 
 export interface ObservationRecord {
@@ -57,6 +110,23 @@ export interface ObservationRecord {
   taskRef?: string;
   taskType?: string;
   taskStatus?: ProjectionTaskStatus;
+  verificationId?: string;
+  verificationStatus?: ProjectionVerificationStatus;
+  verificationOutcome?: ProjectionVerificationOutcome;
+  evidenceAttemptId?: string;
+  evidenceBundleId?: string;
+  evidenceGateStatus?: ProjectionGateStatus;
+  artifactDigest?: string;
+  artifactType?: string;
+  artifactMediaType?: string;
+  artifactSize?: number;
+  artifactRedacted?: boolean;
+  blockerCategory?: string;
+  blockerRequestId?: string;
+  nextActionId?: string;
+  nextActionType?: string;
+  nextActionRef?: string;
+  nextActionStage?: string;
 }
 
 export interface ProjectionGapRange {
@@ -72,6 +142,7 @@ export interface ChangeProjectionContext {
   stage: { name: string; sequence: number } | null;
   executionSubjects: ProjectionExecutionSubject[];
   tasks: ProjectionTaskState | null;
+  assurance: ProjectionAssuranceState | null;
   latestSequence: number;
   lastObservedAt: string;
   freshness: 'live' | 'stale';
@@ -106,6 +177,22 @@ const ABSOLUTE_PATH = /^(?:[a-z]:[\\/]|\\\\|\/)/iu;
 const CHANGE_STATUSES = new Set<ProjectionChangeStatus>(['active', 'completed', 'failed']);
 const RUN_STATUSES = new Set<ProjectionRunStatus>(['active', 'completed', 'failed']);
 const TASK_STATUSES = new Set<ProjectionTaskStatus>(['pending', 'blocked', 'completed', 'failed']);
+const VERIFICATION_STATUSES = new Set<ProjectionVerificationStatus>([
+  'running',
+  'completed',
+  'superseded',
+  'satisfied',
+  'blocked',
+]);
+const VERIFICATION_OUTCOMES = new Set<ProjectionVerificationOutcome>([
+  'passed',
+  'failed',
+  'incomplete',
+  'passed_with_warnings',
+]);
+const GATE_STATUSES = new Set<ProjectionGateStatus>(['satisfied', 'blocked']);
+const MEDIA_TYPE =
+  /^[a-z0-9][a-z0-9!#$&^_.+-]*\/[a-z0-9][a-z0-9!#$&^_.+-]*(?:;\s*[a-z0-9!#$&^_.+-]+=[a-z0-9!#$&^_.+:-]+)*$/iu;
 
 function assertId(value: string, label: string): void {
   if (typeof value !== 'string' || !SAFE_ID.test(value)) throw new Error(`Invalid ${label}`);
@@ -200,6 +287,86 @@ export function validateObservationRecord(value: unknown): asserts value is Obse
       record.taskStatus !== undefined)
   ) {
     throw new Error('Observation task metadata requires a task id');
+  }
+  if (record.verificationId !== undefined) {
+    assertId(record.verificationId, 'observation verification id');
+  }
+  if (
+    record.verificationStatus !== undefined &&
+    !VERIFICATION_STATUSES.has(record.verificationStatus)
+  ) {
+    throw new Error('Invalid observation verification status');
+  }
+  if (
+    record.verificationOutcome !== undefined &&
+    !VERIFICATION_OUTCOMES.has(record.verificationOutcome)
+  ) {
+    throw new Error('Invalid observation verification outcome');
+  }
+  if (record.evidenceAttemptId !== undefined) {
+    assertId(record.evidenceAttemptId, 'observation evidence attempt id');
+  }
+  if (record.evidenceBundleId !== undefined) {
+    assertId(record.evidenceBundleId, 'observation evidence bundle id');
+  }
+  if (record.evidenceGateStatus !== undefined && !GATE_STATUSES.has(record.evidenceGateStatus)) {
+    throw new Error('Invalid observation evidence gate status');
+  }
+  if (record.artifactDigest !== undefined && !DIGEST.test(record.artifactDigest)) {
+    throw new Error('Invalid observation artifact digest');
+  }
+  if (record.artifactType !== undefined) {
+    assertReference(record.artifactType, 'observation artifact type');
+  }
+  if (record.artifactMediaType !== undefined && !MEDIA_TYPE.test(record.artifactMediaType)) {
+    throw new Error('Invalid observation artifact media type');
+  }
+  if (
+    record.artifactSize !== undefined &&
+    (!Number.isSafeInteger(record.artifactSize) || record.artifactSize < 0)
+  ) {
+    throw new Error('Invalid observation artifact size');
+  }
+  if (record.artifactRedacted !== undefined && typeof record.artifactRedacted !== 'boolean') {
+    throw new Error('Invalid observation artifact redaction state');
+  }
+  if (
+    record.artifactDigest === undefined &&
+    (record.artifactType !== undefined ||
+      record.artifactMediaType !== undefined ||
+      record.artifactSize !== undefined ||
+      record.artifactRedacted !== undefined)
+  ) {
+    throw new Error('Observation artifact metadata requires a digest');
+  }
+  if (record.blockerCategory !== undefined) {
+    assertName(record.blockerCategory, 'observation blocker category');
+  }
+  if (record.blockerRequestId !== undefined) {
+    assertId(record.blockerRequestId, 'observation blocker request id');
+  }
+  if ((record.blockerCategory === undefined) !== (record.blockerRequestId === undefined)) {
+    throw new Error('Incomplete observation blocker metadata');
+  }
+  if (record.nextActionId !== undefined) {
+    assertId(record.nextActionId, 'observation next action id');
+  }
+  if (record.nextActionType !== undefined) {
+    assertName(record.nextActionType, 'observation next action type');
+  }
+  if (record.nextActionRef !== undefined) {
+    assertReference(record.nextActionRef, 'observation next action ref');
+  }
+  if (record.nextActionStage !== undefined) {
+    assertName(record.nextActionStage, 'observation next action stage');
+  }
+  if (
+    record.nextActionId === undefined &&
+    (record.nextActionType !== undefined ||
+      record.nextActionRef !== undefined ||
+      record.nextActionStage !== undefined)
+  ) {
+    throw new Error('Observation next action metadata requires an id');
   }
 }
 
@@ -304,6 +471,140 @@ function projectSubjects(records: readonly ObservationRecord[]): ProjectionExecu
   );
 }
 
+function projectAssurance(records: readonly ObservationRecord[]): ProjectionAssuranceState | null {
+  const assuranceRecords = records.filter(
+    (record) =>
+      record.verificationId !== undefined ||
+      record.evidenceAttemptId !== undefined ||
+      record.evidenceBundleId !== undefined ||
+      record.evidenceGateStatus !== undefined ||
+      record.verificationOutcome !== undefined ||
+      record.artifactDigest !== undefined ||
+      record.blockerRequestId !== undefined ||
+      record.nextActionId !== undefined,
+  );
+  if (assuranceRecords.length === 0) return null;
+
+  const latestVerificationRecord = [...assuranceRecords]
+    .reverse()
+    .find((record) => record.verificationId !== undefined);
+  let verification: ProjectionVerification | null = null;
+  if (latestVerificationRecord?.verificationId !== undefined) {
+    const verificationRecords = records.filter(
+      (record) => record.verificationId === latestVerificationRecord.verificationId,
+    );
+    const latest = verificationRecords.at(-1)!;
+    verification = {
+      id: latestVerificationRecord.verificationId,
+      attemptId:
+        latestWith(verificationRecords, (record) => record.evidenceAttemptId)?.value ?? null,
+      bundleId: latestWith(verificationRecords, (record) => record.evidenceBundleId)?.value ?? null,
+      status: latestWith(verificationRecords, (record) => record.verificationStatus)?.value ?? null,
+      gateStatus:
+        latestWith(verificationRecords, (record) => record.evidenceGateStatus)?.value ?? null,
+      outcome:
+        latestWith(verificationRecords, (record) => record.verificationOutcome)?.value ?? null,
+      lastObservedAt: latest.observedAt,
+    };
+  }
+
+  const artifactRecords = records.filter(
+    (record) =>
+      record.artifactDigest !== undefined &&
+      (verification === null ||
+        record.verificationId === undefined ||
+        record.verificationId === verification.id),
+  );
+  const artifactsByDigest = new Map<string, ObservationRecord[]>();
+  for (const record of artifactRecords) {
+    const digest = record.artifactDigest!;
+    const existing = artifactsByDigest.get(digest);
+    if (existing === undefined) artifactsByDigest.set(digest, [record]);
+    else existing.push(record);
+  }
+  const artifacts = [...artifactsByDigest.entries()]
+    .map(([digest, artifactFacts]): ProjectionArtifact => {
+      const latest = artifactFacts.at(-1)!;
+      return {
+        digest,
+        type: latestWith(artifactFacts, (record) => record.artifactType)?.value ?? null,
+        mediaType: latestWith(artifactFacts, (record) => record.artifactMediaType)?.value ?? null,
+        size: latestWith(artifactFacts, (record) => record.artifactSize)?.value ?? null,
+        redacted: latestWith(artifactFacts, (record) => record.artifactRedacted)?.value ?? null,
+        verificationId: latestWith(artifactFacts, (record) => record.verificationId)?.value ?? null,
+        lastObservedAt: latest.observedAt,
+      };
+    })
+    .sort(
+      (left, right) =>
+        right.lastObservedAt.localeCompare(left.lastObservedAt) ||
+        left.digest.localeCompare(right.digest),
+    );
+
+  const latestTaskStatus = new Map<string, ProjectionTaskStatus>();
+  for (const record of records) {
+    if (record.taskId !== undefined && record.taskStatus !== undefined) {
+      latestTaskStatus.set(record.taskId, record.taskStatus);
+    }
+  }
+  const blockerRecords = new Map<string, ObservationRecord>();
+  for (const record of records) {
+    if (record.blockerCategory !== undefined && record.blockerRequestId !== undefined) {
+      blockerRecords.set(`${record.blockerCategory}\u0000${record.blockerRequestId}`, record);
+    }
+  }
+  const blockers = [...blockerRecords.values()]
+    .filter((record) => {
+      const taskStatus = latestTaskStatus.get(record.blockerRequestId!);
+      if (taskStatus === 'completed' || taskStatus === 'failed') return false;
+      if (record.blockerCategory !== 'evidence-gate') return true;
+      return (
+        verification?.gateStatus === 'blocked' && verification.bundleId === record.blockerRequestId
+      );
+    })
+    .map(
+      (record): ProjectionBlocker => ({
+        category: record.blockerCategory!,
+        requestId: record.blockerRequestId!,
+        lastObservedAt: record.observedAt,
+      }),
+    )
+    .sort(
+      (left, right) =>
+        right.lastObservedAt.localeCompare(left.lastObservedAt) ||
+        left.requestId.localeCompare(right.requestId),
+    );
+
+  const nextActionRecords = new Map<string, ObservationRecord[]>();
+  for (const record of records) {
+    if (record.nextActionId === undefined) continue;
+    const existing = nextActionRecords.get(record.nextActionId);
+    if (existing === undefined) nextActionRecords.set(record.nextActionId, [record]);
+    else existing.push(record);
+  }
+  const nextActions = [...nextActionRecords.entries()]
+    .filter(([id]) => {
+      const taskStatus = latestTaskStatus.get(id);
+      return taskStatus !== 'completed' && taskStatus !== 'failed';
+    })
+    .map(([id, actionRecords]): ProjectionNextAction => {
+      const latest = actionRecords.at(-1)!;
+      return {
+        id,
+        type: latestWith(actionRecords, (record) => record.nextActionType)?.value ?? null,
+        ref: latestWith(actionRecords, (record) => record.nextActionRef)?.value ?? null,
+        stageName: latestWith(actionRecords, (record) => record.nextActionStage)?.value ?? null,
+        lastObservedAt: latest.observedAt,
+      };
+    })
+    .sort(
+      (left, right) =>
+        right.lastObservedAt.localeCompare(left.lastObservedAt) || left.id.localeCompare(right.id),
+    );
+
+  return { verification, artifacts, blockers, nextActions };
+}
+
 function projectContext(
   records: readonly ObservationRecord[],
   now: number,
@@ -328,6 +629,7 @@ function projectContext(
     stage: stage ? { name: stage.value, sequence: stage.record.sequence } : null,
     executionSubjects: projectSubjects(runRecords),
     tasks: projectTasks(runRecords),
+    assurance: projectAssurance(runRecords),
     latestSequence: Math.max(...streamRecords.map((record) => record.sequence)),
     lastObservedAt: latest.observedAt,
     freshness:

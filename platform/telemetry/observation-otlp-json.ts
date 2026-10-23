@@ -59,9 +59,11 @@ function recordAttributes(envelope: ObservationEnvelope): OtlpAttribute[] {
     'repoctopus.envelope.id': envelope.envelopeId,
     'repoctopus.envelope.digest': envelope.digest,
     'repoctopus.stream.id':
-      typeof envelope.attributes['repoctopus.run.id'] === 'string'
-        ? envelope.attributes['repoctopus.run.id']
-        : envelope.source.domain,
+      typeof envelope.attributes['repoctopus.stream.id'] === 'string'
+        ? envelope.attributes['repoctopus.stream.id']
+        : typeof envelope.attributes['repoctopus.run.id'] === 'string'
+          ? envelope.attributes['repoctopus.run.id']
+          : envelope.source.domain,
     'repoctopus.event.id': envelope.source.eventId,
     'repoctopus.event.type': envelope.source.eventType,
     'repoctopus.event.sequence': envelope.source.sequence ?? 0,

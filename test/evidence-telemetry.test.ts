@@ -114,6 +114,7 @@ describe('Evidence telemetry outbox', () => {
       workflow: createWorkflowPackage(workflowDefinition),
       projectSnapshot: projectFixture(),
       runId: 'workflow-run-1',
+      changeId: 'change-evidence-telemetry',
     });
     await workflowRuntime.next('workflow-run-1');
 
@@ -131,6 +132,10 @@ describe('Evidence telemetry outbox', () => {
     const batch = telemetry.batches[0]!;
     expect(batch).toMatchObject({
       runId: 'workflow-run-1',
+      changeContext: {
+        workspaceId: projectFixture().projectId,
+        changeId: 'change-evidence-telemetry',
+      },
       attemptId: 'attempt-telemetry',
       profileId: 'verify',
     });
@@ -224,6 +229,10 @@ describe('Evidence telemetry outbox', () => {
     const batch: EvidenceTelemetryBatch = {
       schemaVersion: 1,
       runId: 'run-evidence-stability',
+      changeContext: {
+        workspaceId: 'workspace-evidence-stability',
+        changeId: 'change-evidence-stability',
+      },
       attemptId: 'attempt-evidence-stability',
       profileId: 'verify',
       compositionDigest: compositionFixture().compositionDigest,
@@ -264,6 +273,8 @@ describe('Evidence telemetry outbox', () => {
     const replay = batch.events.map((event) => mapEvidenceObservationEnvelope(batch, event));
     expect(replay).toEqual(first);
     expect(first[0]?.attributes).toMatchObject({
+      'repoctopus.workspace.id': 'workspace-evidence-stability',
+      'repoctopus.change.id': 'change-evidence-stability',
       'repoctopus.evidence.freshness': 'reused',
       'repoctopus.evidence.sourceReceiptId': 'receipt-source',
       'repoctopus.execution.id': 'receipt-current',
@@ -274,6 +285,9 @@ describe('Evidence telemetry outbox', () => {
       'repoctopus.task.ref': 'build',
       'repoctopus.task.status': 'completed',
     });
+    expect(first[0]?.attributes['repoctopus.stream.id']).toMatch(
+      /^evidence:[a-f0-9]{32}$/u,
+    );
     expect(first[1]?.attributes).toMatchObject({
       'repoctopus.evidence.status': 'superseded',
     });

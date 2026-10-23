@@ -154,6 +154,105 @@ describe('ChangeProjectionReducer', () => {
     ]);
   });
 
+  it('projects current verification, safe artifacts, blockers and next actions without retaining resolved work', () => {
+    const reducer = new ChangeProjectionReducer();
+    reducer.accept(record(1, { eventType: 'run.started', stageName: 'verification' }));
+    reducer.accept(
+      record(2, {
+        eventType: 'evidence.attempt.started',
+        verificationId: 'attempt-current',
+        verificationStatus: 'running',
+        evidenceAttemptId: 'attempt-current',
+      }),
+    );
+    reducer.accept(
+      record(3, {
+        eventType: 'evidence.artifact.recorded',
+        verificationId: 'attempt-current',
+        artifactDigest: `sha256:${'a'.repeat(64)}`,
+        artifactType: 'command-stdout',
+        artifactMediaType: 'text/plain; charset=utf-8',
+        artifactSize: 2048,
+        artifactRedacted: true,
+      }),
+    );
+    reducer.accept(
+      record(4, {
+        eventType: 'evidence.gate.evaluated',
+        verificationId: 'attempt-current',
+        verificationStatus: 'satisfied',
+        verificationOutcome: 'passed_with_warnings',
+        evidenceAttemptId: 'attempt-current',
+        evidenceBundleId: 'bundle-current',
+        evidenceGateStatus: 'satisfied',
+      }),
+    );
+    reducer.accept(
+      record(5, {
+        eventType: 'action.proposed',
+        taskId: 'decision-current',
+        taskStatus: 'blocked',
+        blockerCategory: 'human-decision',
+        blockerRequestId: 'decision-current',
+        nextActionId: 'decision-current',
+        nextActionType: 'ask_user',
+        nextActionRef: 'desktop.review-layout',
+        nextActionStage: 'verification',
+      }),
+    );
+
+    expect(reducer.snapshot(liveOptions).contexts[0]?.assurance).toEqual({
+      verification: {
+        id: 'attempt-current',
+        attemptId: 'attempt-current',
+        bundleId: 'bundle-current',
+        status: 'satisfied',
+        gateStatus: 'satisfied',
+        outcome: 'passed_with_warnings',
+        lastObservedAt: '2026-10-23T08:15:04.000Z',
+      },
+      artifacts: [
+        {
+          digest: `sha256:${'a'.repeat(64)}`,
+          type: 'command-stdout',
+          mediaType: 'text/plain; charset=utf-8',
+          size: 2048,
+          redacted: true,
+          verificationId: 'attempt-current',
+          lastObservedAt: '2026-10-23T08:15:03.000Z',
+        },
+      ],
+      blockers: [
+        {
+          category: 'human-decision',
+          requestId: 'decision-current',
+          lastObservedAt: '2026-10-23T08:15:05.000Z',
+        },
+      ],
+      nextActions: [
+        {
+          id: 'decision-current',
+          type: 'ask_user',
+          ref: 'desktop.review-layout',
+          stageName: 'verification',
+          lastObservedAt: '2026-10-23T08:15:05.000Z',
+        },
+      ],
+    });
+
+    reducer.accept(
+      record(6, {
+        eventType: 'action.completed',
+        taskId: 'decision-current',
+        taskStatus: 'completed',
+      }),
+    );
+    expect(reducer.snapshot(liveOptions).contexts[0]?.assurance).toMatchObject({
+      blockers: [],
+      nextActions: [],
+    });
+  });
+
   it('rejects conflicting duplicate identities and sequence ownership', () => {
     const reducer = new ChangeProjectionReducer();
     reducer.accept(record(1));

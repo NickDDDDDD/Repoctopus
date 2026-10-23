@@ -57,6 +57,43 @@ const taskStatusLabel = {
   blocked: '已阻塞',
 } as const;
 
+const verificationStatusLabel: Readonly<Record<string, string>> = {
+  running: '验证中',
+  completed: '已完成',
+  superseded: '已取代',
+  satisfied: '已满足',
+  blocked: '已阻塞',
+};
+
+const verificationOutcomeLabel: Readonly<Record<string, string>> = {
+  passed: '通过',
+  failed: '失败',
+  incomplete: '不完整',
+  passed_with_warnings: '通过，有警告',
+};
+
+const gateStatusLabel = {
+  satisfied: '已满足',
+  blocked: '已阻塞',
+} as const;
+
+const blockerLabel: Readonly<Record<string, string>> = {
+  'human-decision': '等待人工决定',
+  'evidence-gate': 'Evidence Gate 未满足',
+};
+
+function formatBytes(value: number | null): string {
+  if (value === null) return '尚未上报';
+  if (value < 1024) return `${value} B`;
+  if (value < 1024 * 1024) return `${(value / 1024).toFixed(1)} KB`;
+  return `${(value / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function formatDigest(value: string): string {
+  if (value.length <= 32) return value;
+  return `${value.slice(0, 19)}…${value.slice(-10)}`;
+}
+
 function ExecutionOverview({ model }: { model: DashboardViewModel }) {
   const progress = model.execution.taskProgress;
   const progressKnown = progress !== null && progress.unknown === 0;
@@ -154,6 +191,132 @@ function ExecutionOverview({ model }: { model: DashboardViewModel }) {
             ))}
           </ul>
         )}
+      </div>
+    </div>
+  );
+}
+
+function AssuranceOverview({ model }: { model: DashboardViewModel }) {
+  const assurance = model.assurance;
+  if (assurance === null) {
+    return <EmptyRegion>Evidence、Gate 与阻塞事实尚未上报。</EmptyRegion>;
+  }
+  const verification = assurance.verification;
+  return (
+    <div className="assurance-stack">
+      <dl className="assurance-overview">
+        <div>
+          <dt>Evidence Attempt</dt>
+          <dd>{verification?.attemptId ?? verification?.id ?? '尚未上报'}</dd>
+          <small>
+            {verification?.status === null || verification?.status === undefined
+              ? '状态尚未上报'
+              : (verificationStatusLabel[verification.status] ?? verification.status)}
+          </small>
+        </div>
+        <div>
+          <dt>Evidence Gate</dt>
+          <dd>
+            {verification?.gateStatus === null || verification?.gateStatus === undefined
+              ? '尚未上报'
+              : gateStatusLabel[verification.gateStatus]}
+          </dd>
+          <small>{verification?.bundleId ?? 'Bundle 尚未上报'}</small>
+        </div>
+        <div>
+          <dt>验证结果</dt>
+          <dd>
+            {verification?.outcome === null || verification?.outcome === undefined
+              ? '尚未上报'
+              : (verificationOutcomeLabel[verification.outcome] ?? verification.outcome)}
+          </dd>
+          <small>仅显示 OTLP 安全元数据</small>
+        </div>
+      </dl>
+
+      <div className="assurance-region">
+        <div className="assurance-region__heading">
+          <h3>Artifact 元数据</h3>
+          <span className="numeric-value">{assurance.artifacts.length}</span>
+        </div>
+        {assurance.artifacts.length === 0 ? (
+          <EmptyRegion>Artifact 元数据尚未上报。</EmptyRegion>
+        ) : (
+          <ul role="list" className="artifact-list">
+            {assurance.artifacts.map((artifact) => (
+              <li key={artifact.digest}>
+                <div className="artifact-list__identity">
+                  <p>{artifact.type ?? '类型尚未上报'}</p>
+                  <span title={artifact.digest} aria-label={artifact.digest}>
+                    {formatDigest(artifact.digest)}
+                  </span>
+                </div>
+                <dl className="artifact-list__metadata">
+                  <div>
+                    <dt>媒体类型</dt>
+                    <dd>{artifact.mediaType ?? '尚未上报'}</dd>
+                  </div>
+                  <div>
+                    <dt>大小</dt>
+                    <dd className="numeric-value">{formatBytes(artifact.size)}</dd>
+                  </div>
+                  <div>
+                    <dt>脱敏</dt>
+                    <dd>
+                      {artifact.redacted === null
+                        ? '尚未上报'
+                        : artifact.redacted
+                          ? '已脱敏'
+                          : '未标记脱敏'}
+                    </dd>
+                  </div>
+                </dl>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <div className="assurance-columns">
+        <div className="assurance-region">
+          <div className="assurance-region__heading">
+            <h3>阻塞与 Human Decision</h3>
+            <span className="numeric-value">{assurance.blockers.length}</span>
+          </div>
+          {assurance.blockers.length === 0 ? (
+            <EmptyRegion>当前没有已上报的阻塞。</EmptyRegion>
+          ) : (
+            <ul role="list" className="assurance-list">
+              {assurance.blockers.map((blocker) => (
+                <li key={`${blocker.category}:${blocker.requestId}`}>
+                  <p>{blockerLabel[blocker.category] ?? blocker.category}</p>
+                  <span>{blocker.requestId}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div className="assurance-region">
+          <div className="assurance-region__heading">
+            <h3>下一步动作</h3>
+            <span className="numeric-value">{assurance.nextActions.length}</span>
+          </div>
+          {assurance.nextActions.length === 0 ? (
+            <EmptyRegion>当前没有已上报的下一步动作。</EmptyRegion>
+          ) : (
+            <ul role="list" className="assurance-list">
+              {assurance.nextActions.map((action) => (
+                <li key={action.id}>
+                  <p>{action.ref ?? action.id}</p>
+                  <span>
+                    {action.type ?? '类型尚未上报'} · {action.stageName ?? '阶段尚未上报'}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -282,10 +445,16 @@ export function Dashboard({ model, onRetry, onSelectContext }: DashboardProps) {
                 <EmptyRegion>收到 Run 事实后显示阶段与任务。</EmptyRegion>
               )}
             </DashboardSection>
-            <DashboardSection id="assurance" title="验证与阻塞">
-              <EmptyRegion>
-                {hasContext ? '等待 Evidence、Gate 或 blocker 事实。' : '收到验证事实后显示结果。'}
-              </EmptyRegion>
+            <DashboardSection
+              id="assurance"
+              title="验证与阻塞"
+              description="Evidence Gate、安全 Artifact 元数据与待处理事项"
+            >
+              {hasContext ? (
+                <AssuranceOverview model={model} />
+              ) : (
+                <EmptyRegion>收到验证事实后显示结果。</EmptyRegion>
+              )}
             </DashboardSection>
 
             <DashboardSection id="activity" title="最近事件">

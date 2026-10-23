@@ -44,6 +44,8 @@ interface WorkflowEvidenceBinding {
   workflowActionId: string;
   workflowStepId: string;
   workflowStateVersion: number;
+  workspaceId?: string;
+  changeId?: string;
 }
 
 interface EvidenceRunContext {
@@ -108,7 +110,10 @@ function asContext(value: unknown): EvidenceRunContext {
         typeof binding.workflowActionId !== 'string' ||
         typeof binding.workflowStepId !== 'string' ||
         !Number.isSafeInteger(binding.workflowStateVersion) ||
-        binding.workflowStateVersion < 0))
+        binding.workflowStateVersion < 0 ||
+        (binding.workspaceId !== undefined && typeof binding.workspaceId !== 'string') ||
+        (binding.changeId !== undefined && typeof binding.changeId !== 'string') ||
+        (binding.changeId !== undefined && binding.workspaceId === undefined)))
   ) {
     throw new Error('Invalid EvidenceRunContext');
   }
@@ -237,9 +242,10 @@ export class EvidenceCoordinator extends Service {
     profileId: string,
   ): Promise<WorkflowEvidenceBinding | null> {
     if (workflowRunId === null) return null;
-    const [state, workflow] = await Promise.all([
+    const [state, workflow, project] = await Promise.all([
       this.ctx.runStore.loadRun(workflowRunId),
       this.ctx.runStore.loadWorkflow(workflowRunId),
+      this.ctx.runStore.loadProjectSnapshot(workflowRunId),
     ]);
     const compositionDigest = this.ctx.compositionIdentity.current().compositionDigest;
     if (state.composition.compositionDigest !== compositionDigest) {
@@ -266,6 +272,8 @@ export class EvidenceCoordinator extends Service {
       workflowActionId: state.pendingActionId,
       workflowStepId: step.id,
       workflowStateVersion: state.stateVersion,
+      workspaceId: project.projectId,
+      ...(state.changeId === undefined ? {} : { changeId: state.changeId }),
     };
   }
 
@@ -413,6 +421,14 @@ export class EvidenceCoordinator extends Service {
           await this.telemetryOutbox.save(
             createEvidenceTelemetryBatch({
               workflowRunId: binding?.workflowRunId ?? null,
+              ...(binding?.changeId === undefined || binding.workspaceId === undefined
+                ? {}
+                : {
+                    changeContext: {
+                      workspaceId: binding.workspaceId,
+                      changeId: binding.changeId,
+                    },
+                  }),
               result,
               gate,
             }),
@@ -466,6 +482,15 @@ export class EvidenceCoordinator extends Service {
         await this.telemetryOutbox.save(
           createEvidenceTelemetryBatch({
             workflowRunId: context.workflowBinding?.workflowRunId ?? null,
+            ...(context.workflowBinding?.changeId === undefined ||
+            context.workflowBinding.workspaceId === undefined
+              ? {}
+              : {
+                  changeContext: {
+                    workspaceId: context.workflowBinding.workspaceId,
+                    changeId: context.workflowBinding.changeId,
+                  },
+                }),
             result,
             gate: projectEvidenceGate(recovered.bundle, context.workflowBinding),
           }),
