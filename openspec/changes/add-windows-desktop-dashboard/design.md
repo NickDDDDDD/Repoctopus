@@ -175,7 +175,17 @@ Launcher 在 Run 持久化前先激活 Receiver 并重放已有积压，Run 的�
 
 Evidence 保留自己的领域 outbox 与顺序 offset，因为它回答“哪些 Evidence 事实尚未成功交给遥测层”；共享 Envelope Store 的 per-destination cursor 则回答“哪些规范 envelope 已被某个目的地确认”。远端失败时，Evidence offset 不推进，已写入 Envelope Store 的内容保持幂等；重试再次映射同一 event ID 会得到相同 envelope ID 和 digest。远端已确认但 Evidence cursor 写入中断时，下一次重放只完成幂等保存并推进 Evidence offset，不重复改变远端逻辑状态。两层 cursor 因此不互相代替，也不产生 exactly-once 承诺。
 
-Evidence mapper 只解释 Attempt、节点、Artifact 与 Gate 的持久事件。Attempt 和节点生成稳定 Trace，所有事件生成关联 Log，Counter 与节点耗时 Histogram 只使用 event type、adapter、status 和 freshness 等低基数维度。允许列表保留 superseded 状态、Receipt 复用的 freshness 与 `sourceReceiptId`、Artifact 摘要元数据和 Gate 结果，同时拒绝绝对路径、正文、命令输出、凭据及任意未声明字段。远端与桌面继续调用同一 OTLP encoder；架构门禁只允许 Evidence outbox 持久化批次，并只允许共享 Evidence mapper 解释批次。App lifecycle、平台事件、Delivery 和 Post-merge 仍留给任务 3.3。
+Evidence mapper 只解释 Attempt、节点、Artifact 与 Gate 的持久事件。Attempt 和节点生成稳定 Trace，所有事件生成关联 Log，Counter 与节点耗时 Histogram 只使用 event type、adapter、status 和 freshness 等低基数维度。允许列表保留 superseded 状态、Receipt 复用的 freshness 与 `sourceReceiptId`、Artifact 摘要元数据和 Gate 结果，同时拒绝绝对路径、正文、命令输出、凭据及任意未声明字段。远端与桌面继续调用同一 OTLP encoder；架构门禁只允许 Evidence outbox 持久化批次，并只允许共享 Evidence mapper 解释批次。
+
+任务 3.3 把 App lifecycle、平台事件和 Delivery 分别收敛到一个纯 `ObservationEnvelope` mapper，并删除领域专用 OpenTelemetry SDK exporter。Lifecycle 事实增加稳定 sequence 与 event ID；App Boot 让共享遥测 Provider 最后卸载，使其他插件的 `unloading`、`disposed` 和 App `closed` 事实先进入 Envelope Store。Boot 缓存 Fiber 与插件身份，因此 Loader 移除插件后仍能记录最终 `disposed`；共享遥测 Provider 不观察自己的生命周期，避免关闭时递归发布。
+
+Desktop Host 把 Electron `userData` 作为可写数据根传给 composition。Bootstrap 允许调用方显式指定数据根，不再把安装目录当作持久化前提。
+
+平台事件仍先提交持久 Inbox mutation，再映射和发布；精简组合没有共享遥测 Service 时只跳过观测，不阻止 Inbox 与 Runner 恢复，正式 Project 和 Runner composition 继续把该 Service 列为必需依赖。Delivery v2 与 v3 都先提交 Delivery state/event，再通过相同 Service 发布；任务 3.3 补齐 v3 的 prepared、decision、action、refresh、invalidated 和最终 Change publication 事实。遥测失败发生在领域提交之后并被隔离，不能回滚交付状态。
+
+Post-merge 不建立第四个 exporter。Workflow mapper 从持久 `RunTriggerSnapshot` 和 action `correlationReceiptId` 生成 merge facts、Change 与 checkout/specification closure/path audit/publication Receipt 关联；最终 Change publication 同时由 Delivery v3 的开始、成功或失败事件表达。这样每种领域对象只有一个解释位置，OTLP destination 只接收 envelope。版本化 golden fixture 固定 Lifecycle、平台事件、Delivery 与 Post-merge 四种结果；双目的地测试证明远端和 Desktop 使用同一 encoder。架构门禁分别限制 `LifecycleTelemetryEvent`、`PlatformEventTelemetryEvent`、`DeliveryEvent` 和既有 `TelemetryBatch` 的解释位置，防止专用 exporter 回流。
+
+业务提交 `6eb0bf2` 完成迁移。完整 `npm run verify` 通过 109 个测试文件、457 项测试，保留 1 项条件跳过；生成物、品牌、架构、provenance 和 13 项严格 OpenSpec 校验全部通过。验证产生的临时 Workspace telemetry envelope 已清理，未保留调试日志或 scratch 产物。
 
 任务 2.7 把这条纵切的进程边界收敛为可执行 composition 生命周期。Runtime 的 Launcher 与本地目的地只由 builtin catalog 注册的 Service Provider 构造，project composition 只持有稳定应用端口；Desktop Host composition 显式包含 Application Service、OTLP Receiver Provider 和依赖两者的 Application Plugin。Application Fiber 获取 Receiver 的接纳租约，卸载时先归还租约，使既有端口对新遥测返回可重试的 unavailable；重新加载 Fiber 可以恢复接纳。Receiver Provider 自己的 Effect 仍唯一拥有并最终关闭回环监听器，因此应用可用性和原生端口所有权不会混为一体。
 

@@ -20,7 +20,7 @@
 
 - [x] 3.1 将 Workflow Run 的 Trace、Log 和 Metric exporter 迁移到共享 envelope 映射与 OTLP encoder，执行现有 tracer E2E 和新双目的地测试证明事件身份、允许列表属性与原语义一致。
 - [x] 3.2 将 Evidence Attempt、节点、Artifact 与 Gate 映射迁移到共享 envelope，运行 Evidence 重放、superseded、Receipt 复用和隐私测试证明本地与远端投影一致。
-- [ ] 3.3 将 App 生命周期、平台事件、Delivery 和 Post-merge 映射迁移到共享 envelope，运行各领域现有测试与 golden fixture 证明 exporter 不再分别解释领域对象。
+- [x] 3.3 将 App 生命周期、平台事件、Delivery 和 Post-merge 映射迁移到共享 envelope，运行各领域现有测试与 golden fixture 证明 exporter 不再分别解释领域对象。
 - [ ] 3.4 补齐 Workspace、change、Run、父子执行、阶段、执行主体、任务、验证、阻塞、下一步动作和观测时间的可信属性映射，以正反 fixture 证明只导出已持久化事实且 Metric 不使用高基数实体身份。
 - [ ] 3.5 实现目的地启用、暂停、移除、保留上限、积压健康与 gap 记录，使用小容量故障测试验证超限可诊断、远端 Cursor 不重置且系统不宣称 exactly-once。
 - [ ] 3.6 更新遥测开发文档和配置示例，执行文档命令冒烟测试证明单远端、远端加桌面、桌面关闭和恢复四种配置按说明工作。
