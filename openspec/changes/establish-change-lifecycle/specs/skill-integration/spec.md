@@ -2,24 +2,43 @@
 
 ## ADDED Requirements
 
-### Requirement: Work 固定有角色的 Skill 组合
+### Requirement: Work 分离可执行 Skill 与不可执行 Method Profile
 
-Repoctopus MUST 由 lifecycle definition 为每项 Work 声明有序 `skillBindings`，每项绑定包含 `action`、`augmentation`、`guidance` 或 `system` 角色、规范名称、Provider、正文摘要和调用策略；一项 Work 最多只有一个 `action` Skill 拥有产物协议，其他 Skill 不得建立第二份产物或执行未声明发布副作用。Runtime MUST 在 Work 开始前解析完整组合及其传递依赖，缺项、歧义、漂移或违反调用策略时 fail closed。
+Repoctopus MUST 由 lifecycle definition 为每项 Work 分别声明至多一个 `actionSkill`、有序 `augmentationSkills` 和一个版本化 `methodProfile`。可执行 Skill 必须记录规范名称、Provider、正文/资源摘要和调用策略；action Skill 独占产物协议，augmentation Skill 不得建立第二份产物或执行未声明发布副作用。Method Profile MUST 记录 Repoctopus-owned 规则、适用 phase/artifact、enforcement 与固定上游来源摘要，但不得作为 Skill 被发现或调用。Runtime MUST 在 Work 开始前解析完整组合及传递依赖，缺项、歧义、漂移、双产物所有者或违反调用策略时 fail closed。
 
 #### Scenario: OpenSpec action 与 Matt 方法组合
 
-- **WHEN** Design Work 使用 OpenSpec Skill 产生四类官方工件并加载 Matt 方法增强测试缝或任务质量
-- **THEN** OpenSpec action 保持唯一产物协议，Matt augmentation 的规则只作用于对应官方工件和 Validator
+- **WHEN** Design Work 使用 OpenSpec action Skill 产生四类官方工件，并使用采用自 Matt 方法的 Method Profile 增强测试缝或任务质量
+- **THEN** OpenSpec action 保持唯一产物协议，Method Profile 规则只作用于声明的官方工件、Validator、review rubric 或 Human Decision
 
 #### Scenario: 自动调用仅允许用户触发的 Skill
 
-- **WHEN** definition 或调用方尝试自动绑定标记为禁止模型调用的 `to-spec` 或 `to-tickets`
-- **THEN** Runtime 拒绝该组合，并提示使用已审核的阶段 guidance 而不是执行原始 tracker 工作流
+- **WHEN** definition、Skill catalog、projection 或调用方尝试发现、装填或绑定原始 `to-spec` 或 `to-tickets`
+- **THEN** Runtime 拒绝该路径，并提示使用已审核的 Method Profile 而不是执行原始 tracker 工作流
 
 #### Scenario: TDD Work 缺少传递方法依赖
 
 - **WHEN** Build Work 要求在首次测试或代码写入前加载 `tdd`，但固定快照缺少其 `codebase-design` 依赖
 - **THEN** Runtime 在允许写入前阻塞 Work，并返回缺少的固定 provenance identity
+
+#### Scenario: Method Profile 来源或规则发生漂移
+
+- **WHEN** Run 恢复时 Method Profile digest、采用规则或任一固定上游 source digest 与 Work 快照不同
+- **THEN** Runtime 使 Work 失效并要求兼容迁移或新 generation，不把新规则静默注入活动 Run
+
+### Requirement: 行为参考与可执行 Skill 物理隔离
+
+Repoctopus MUST 将只用于行为采用的上游文件保存在 Skill Provider roots 之外，并通过 provenance manifest 记录固定 repository、commit、path、source digest、adopted rule IDs 和采用状态；Skill discovery、`skill.get`、managed projection 与 lifecycle binding MUST NOT 返回这些原始参考。架构测试必须证明把参考误放进可发现目录或把其名称加入 Work 会失败。
+
+#### Scenario: 上游参考存在于固定快照
+
+- **WHEN** provenance 检查读取 `to-spec` 或 `to-tickets` 的固定原文以审计采用规则
+- **THEN** 它可以核对 source digest 和 rule mapping，但 Skill catalog 与 projection 中不存在该原始 Skill
+
+#### Scenario: 用户环境另行安装同名 Skill
+
+- **WHEN** 用户级 Skill Provider 发现名为 `to-spec` 或 `to-tickets` 的可调用 Skill
+- **THEN** 普通显式用户操作 MAY 按宿主策略使用它，但当前 lifecycle Work 不绑定、不自动装填，也不接受其 tracker 产物作为 OpenSpec planning fact
 
 ### Requirement: 核心阶段提供固定默认方法组合
 
@@ -49,11 +68,16 @@ Repoctopus MUST 在 Application Plugin、Command Router 和平台写入口根据
 - **WHEN** Design Work 的 write scope 只允许 Provider 规划产物而执行者请求修改业务源码
 - **THEN** 应用边界拒绝越界路径并记录 Work、capability 和目标摘要
 
+#### Scenario: Design Work 尝试发布 tracker
+
+- **WHEN** 当前 Work 的 output contract 只允许 Specification Provider artifact，而执行者请求创建 issue、写本地 ticket 目录或调用 tracker publish
+- **THEN** 应用边界在副作用前拒绝操作，并且任何未受管外部写入只能形成 drift/blocker，不能形成成功 Receipt 或推进事实
+
 ## MODIFIED Requirements
 
 ### Requirement: Run 记录实际 Skill 快照
 
-Repoctopus MUST 由 lifecycle Work 声明每项 Skill binding 的规范名称和角色，使用统一 Skill 能力解析唯一 Provider，并在领取 Work 前记录有序组合、Provider 身份、调用策略、正文内容摘要、传递依赖与适用 Work；恢复时 Skill 事实变化不得静默改变既有 Run 的方法依据，调用方不得选择替代 Skill 或改变组合绕过 definition。
+Repoctopus MUST 由 lifecycle Work 声明 action Skill 与每项 augmentation Skill 的规范名称，使用统一 Skill 能力解析唯一 Provider，并在领取 Work 前记录有序组合、Provider 身份、调用策略、正文/资源摘要、传递依赖与适用 Work；恢复时 Skill 事实变化不得静默改变既有 Run 的方法依据，调用方不得选择替代 Skill 或改变组合绕过 definition。Method Profile 使用独立 snapshot，不得伪装成 SkillUsageSnapshot。
 
 #### Scenario: Skill 正文在 Run 中断期间改变
 

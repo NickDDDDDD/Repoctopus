@@ -23,11 +23,11 @@ Repoctopus MUST 将当前 Workspace Repository 登记为 OpenSpec Store，并以
 
 ### Requirement: OpenSpec 官方 schema 和模板保持结构权威
 
-Repoctopus MUST 从固定 OpenSpec Provider 版本取得当前 schema 的 artifact instructions/template，并只承认 Proposal、Delta Specs、Design、Tasks 四类规划工件；方法 Skill MAY 增强内容质量和验证，但不得替换官方结构、创建第五类工件、发布第二套 ticket 权威或改变 Provider 的完成判定。
+Repoctopus MUST 从固定 OpenSpec Provider 版本取得当前 schema 的 artifact instructions/template，并只承认 Proposal、Delta Specs、Design、Tasks 四类规划工件；augmentation Skill 与不可执行 Method Profile MAY 增强内容质量和验证，但不得替换官方结构、创建第五类工件、发布第二套 ticket 权威或改变 Provider 的完成判定。
 
-#### Scenario: 方法 Skill 建议额外规格文档
+#### Scenario: 采用的方法建议额外规格文档
 
-- **WHEN** augmentation Skill 的原始流程会生成独立 spec、ticket 文件或外部 tracker 项
+- **WHEN** augmentation Skill 或 Method Profile 的来源流程会生成独立 spec、ticket 文件或外部 tracker 项
 - **THEN** Runtime 只采用可映射进四类工件的规则，并拒绝把额外产物纳入规划权威
 
 #### Scenario: 固定 OpenSpec 模板发生漂移

@@ -60,12 +60,17 @@ Repoctopus MUST 在创建 Change Run 时验证并固定 lifecycle definition 的
 
 ### Requirement: 下一项工作由 Runtime 固定
 
-Runtime MUST 从 lifecycle definition 和已接受事实生成不可变 Work，绑定 phase、Work kind、Task identity、有角色且有序的 Skill bindings、能力、side-effect class、write scopes、input digest、期望产物和 Validator；调用方不得替换这些字段或以普通成功结果推进 Run。
+Runtime MUST 从 lifecycle definition 和已接受事实生成不可变 Work，绑定 phase、Work kind、Task identity、唯一 action Skill、有序 augmentation Skills、不可执行 Method Profile、能力、side-effect class、write scopes、input digest、output contract 和 Validator；调用方不得替换这些字段或以普通成功结果推进 Run。
 
 #### Scenario: Agent 请求替换 Skill 组合
 
-- **WHEN** 当前 Work 固定 OpenSpec action 与 `tdd` 等 augmentation，而 Agent 提交另一组合或缺少任一必需 binding 的 Outcome
+- **WHEN** 当前 Work 固定 OpenSpec action、`tdd` 等 augmentation 和 Method Profile，而 Agent 提交另一组合、原始行为参考或缺少任一必需 snapshot 的 Outcome
 - **THEN** Runtime 拒绝 Outcome，保持当前 Work 并报告组合身份不匹配
+
+#### Scenario: Method Profile 与 action Skill 争夺产物权威
+
+- **WHEN** definition 中的方法规则或 augmentation 声称创建 OpenSpec action contract 之外的 spec、ticket 或 tracker 权威
+- **THEN** definition validation 在 Work 创建前拒绝组合，不把 Prompt 优先级作为冲突解决机制
 
 #### Scenario: Adapter 自述成功但没有验证事实
 

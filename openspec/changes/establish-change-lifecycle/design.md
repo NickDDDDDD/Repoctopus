@@ -97,12 +97,11 @@ Archive ──spec conflict──────────▶ Archive/blocked
 
 ```text
 workId, phase, kind, taskId?
-skillBindings[] {
-  role: action | augmentation | guidance | system
-  name, provider, contentDigest, invocationPolicy
-}
+actionSkill? { name, provider, contentDigest, invocationPolicy }
+augmentationSkills[] { name, provider, contentDigest, invocationPolicy }
+methodProfile { id, version, digest, sourceDigests, rules[] }
 capability, sideEffectClass, writeScopes
-inputDigest, expectedArtifacts, validatorProfile
+inputDigest, outputContract, validatorProfile
 authorizationSource, checkpoint
 ```
 
@@ -110,15 +109,30 @@ authorizationSource, checkpoint
 
 现有 Manual、Process、Git、MR、Specification 和 Evidence Adapter 继续执行外部动作。生命周期只规定它们在何时、以什么输入和验证条件运行，不把平台 I/O 放入 Engine 或 RunStore transaction。
 
-### 5. Skill 与写入权限属于当前 Work
+### 5. 可执行 Skill、Method Profile 与写入权限属于当前 Work
 
-Work 固定有序的 `skillBindings`，Skill Service 为每项解析唯一 Provider 并记录正文摘要。`action` Skill 定义本 Work 的产物协议且至多一个；`augmentation` 只能增强方法，不能拥有第二份产物或发布副作用；`guidance` 提供只读领域约束；`system` 保留给 Runtime 内建执行约束。恢复时不兼容漂移进入 `migration_required`；调用者不能通过 `skill.get()` 参数替换、增删或重排组合。
+Work 把可执行方法和行为采用分成两个领域概念。`actionSkill` 至多一个，拥有当前 Work 的产物协议；`augmentationSkills` 是可以完整装填的辅助方法，只能改善执行过程，不能建立第二份产物、改变权威 identity 或执行未声明副作用。Skill Service 为这些可执行 Skill 解析唯一 Provider，并记录正文与资源摘要。恢复时不兼容漂移进入 `migration_required`；调用者不能通过 `skill.get()` 参数替换、增删或重排组合。
+
+`MethodProfile` 不是 Skill，也不由 Skill Provider 发现。它是 lifecycle definition 固定的版本化规则集合，每条规则声明来源摘要、适用 phase、目标 artifact 和 enforcement：`context`、`deterministic-validator`、`review-rubric` 或 `human-decision`。它只携带 Repoctopus 已评审并重新表达的规则，不携带上游 Skill 的命令、产物模板或 tracker 流程。Method Profile identity/digest 与所采用的上游 source digest 一起进入 Run 和 composition snapshot。
+
+```text
+MethodRule
+  id
+  source: repository + commit + path + digest
+  appliesTo: phase + artifact kind
+  enforcement: context | deterministic-validator | review-rubric | human-decision
+  statement: Repoctopus-owned normalized rule
+```
+
+`outputContract` 使用 Specification Provider 的 artifact kind 而不是在 Engine 硬编码路径。Design Work 只允许 Proposal、Delta Specs、Design、Tasks 等 Provider 声明的 artifact write capability，并显式禁止 tracker publish；Build Work 才获得任务声明的 repository write scope。受管 Agent 应只得到当前 Work 授权的命令和写入口；不受 Repoctopus 管理的外部进程仍可能修改 Git 文件，但这些漂移不能取得 Receipt/Evidence，下一次核对必须阻塞而不能被接受为成功。Repoctopus 保证 workflow acceptance，不把应用层 Hook 宣称为操作系统安全边界。
 
 首版内置组合为：Open 使用 `openspec-explore`/`openspec-new-change` 并按需加载 `grilling`；Design 使用 `openspec-continue-change`，在存在未决策项时加载 `grilling`，涉及代码边界时加载 `codebase-design`；Build 使用 `openspec-apply-change`，并在第一次测试或实现写入前加载 `tdd`，故障路径加载 `diagnosing-bugs`；Verify 使用 `openspec-verify-change` 与 `code-review`；Archive 使用 `openspec-archive-change` 与 `pr`。组合缺项、依赖缺项或标记为仅用户调用的 Skill 被自动调用时均 fail closed。
 
-Matt `tdd` 对 `codebase-design` 的依赖必须来自同一固定上游 commit 并进入 provenance/composition snapshot。`to-spec` 与 `to-tickets` 的原始 Skill 禁止模型自动调用且包含 tracker 发布语义，因此不作为 Work binding；Repoctopus 只把经过评审的规则编码进阶段 guidance、Provider normalization 和 Validator。
+Matt `tdd` 对 `codebase-design` 的依赖必须来自同一固定上游 commit 并进入 provenance/composition snapshot。`to-spec` 与 `to-tickets` 的原始 Skill 禁止模型自动调用且包含 tracker 发布语义，因此只能作为非执行 provenance reference：不得放入 Matt Provider roots、不得进入 Skill catalog/projection、不得成为 Work binding，也不得把全文装入 Agent 上下文。Repoctopus 只把经过评审的规则编码进 Method Profile、Provider normalization 和 Validator。
 
-其他已审计方法不默认塞进每个上下文：`research`、`prototype`、`domain-modeling` 只能由 Design 中明确的知识缺口或风险事实触发；`writing-for-agents` 的可复用写作规则进入 guidance；`retro` 只能在 Change 完成后形成非阻断反馈。是否触发由 definition 规则决定并记录 binding，不能由 Agent 临时扩展范围。
+其他已审计方法不默认塞进每个上下文：`research`、`prototype`、`domain-modeling` 只能由 Design 中明确的知识缺口或风险事实触发；`writing-for-agents` 的可复用写作规则进入 Method Profile；`retro` 只能在 Change 完成后形成非阻断反馈。是否触发由 definition 规则决定并记录 snapshot，不能由 Agent 临时扩展范围。
+
+上下文装配顺序固定为 Runtime system contract、唯一 action Skill、OpenSpec 官方 instructions/template、augmentation Skills、Method Profile、当前 change 输入。低优先级内容不能覆盖高优先级的产物和权限契约；若两项完整 Skill 都声称拥有同一产物或副作用，definition validation 在 Work 创建前拒绝组合。
 
 Application Hook 在写文件、运行命令或调用平台 Adapter 前读取当前已领取 Action：
 
@@ -272,6 +286,6 @@ Telemetry 对每次 accepted transition 输出稳定 event identity、phase befo
 - **过度借鉴 Comet**：所有采用都映射到 Repoctopus 现有领域契约并记录排除项，不复制产品 shell 或用户目录假设。
 - **Hook 变成第二个 Engine**：Hook 只执行当前 Work 已声明策略；转换仍由纯领域 handler 决定。
 - **Store beta 行为或机器 registry 漂移**：固定 OpenSpec 版本，Runtime 始终显式传 Store ID 并校验 registry/metadata；共享状态只保存稳定 identity，不保存绝对路径。
-- **方法 Skill 形成第二权威**：只允许一个 action Skill 拥有工件协议；Matt 方法规则进入 guidance/normalization/validator，禁止原始 tracker 发布路径。
+- **方法来源形成第二权威**：只允许一个 action Skill 拥有工件协议；Matt 行为参考不进入 Skill Provider，采用规则进入独立 Method Profile/normalization/validator，禁止原始 tracker 发布路径。
 - **等待状态占用 Runner**：wait condition 持久化，事件和 reconciliation 只唤醒 Run，不保持 daemon/Fiber。
 - **Dashboard 与 Runtime 不一致**：投影从 accepted Run facts 产生，OTLP 只传输该投影对应事件，不反向成为权威。

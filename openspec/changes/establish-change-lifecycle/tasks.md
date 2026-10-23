@@ -5,7 +5,7 @@
 - [x] 0.1 同步并审计 Comet 0.5.0 `aeb1a6598034e28ce46b8422d4dbd8785e607bd7` 与 DSH `dsh-v0.2.1-rc.3` `1f81c047fc48fa190a683e469daa699857e9afe8`，记录采用、拒绝和延后项；执行 `npm run check:upstream`、`npm run check:provenance`、`npm run verify` 与生产依赖审计并推送固定基线。
 - [ ] 0.2 为 generic Run、planning approval、Delivery v2/v3 与 Post-merge 状态建立只读 fixture 清单，记录每种状态的 authority、identity、输入、下一动作和外部副作用；用 golden test 证明迁移代码未启用前不会改写 fixture。
 - [ ] 0.3 增加架构规则，列出允许拥有 lifecycle transition 的唯一模块，并拒绝新增 phase owner、直接 Run State 写入、独立 Post-merge Run 创建和 caller-selected lifecycle Skill；运行正反 fixture 证明每条规则可定位失败。
-- [ ] 0.4 固定 Matt 上游 `49dd158d1076134a641b33efb035946536778336` 的 `codebase-design`、`pr` 及 `tdd` 传递关系，并记录 `to-spec`/`to-tickets` 仅采用方法规则、不调用用户专属 tracker 流程，以及其他已审计方法的条件采用/延后决定；运行来源、许可证、内容摘要和依赖完整性检查。
+- [ ] 0.4 固定 Matt 上游 `49dd158d1076134a641b33efb035946536778336` 的 `codebase-design`、`pr` 及 `tdd` 传递关系；把 `to-spec`/`to-tickets` 原文保存在 Provider roots 之外的非执行 provenance reference，并记录 source digest、adopted rule IDs、拒绝的 tracker 行为及其他方法的条件采用/延后决定；运行来源、许可证、内容摘要、物理隔离和依赖完整性检查。
 
 ## 1. 交付 Store-aware Open → Design → Build 的首个真实纵切
 
@@ -31,12 +31,13 @@
 ## 3. 强制固定 Skill、Action claim 与写入边界
 
 - [ ] 3.1 扩展 Action Intent/Receipt/Outcome，使其绑定 `runId + workId + attempt + claimToken + inputDigest`；覆盖重复领取、陈旧版本、跨 Work Outcome、进程崩溃和响应丢失测试，证明副作用不在 RunStore transaction 内执行。
-- [ ] 3.2 让 lifecycle definition 为每个 Work 固定有角色且有序的 `skillBindings`、能力、side-effect class、write scopes、期望产物和 validator profile；Skill Service 解析后把 action/augmentation/guidance/system、Provider、调用策略、传递依赖与正文 digest 固定到 Run，调用方不能覆盖。
-- [ ] 3.3 在 Application Plugin/Command Router 边界增加 runtime work guard，文件、命令、Git、MR 和 Specification 写操作必须来自活动 claim 且匹配能力与范围；用负向 fixture 拒绝无 claim 写入、越仓写入、terminal artifact 改写和错误 Adapter。
-- [ ] 3.4 将现有 Manual/Process/Git/Specification Contributor 接到 Work Dispatcher；运行 production composition 纵切证明 Adapter 返回成功只形成 Outcome，缺少 Validator/Evidence 时 Task 和 phase 不推进。
-- [ ] 3.5 实现 Build Task validator 和完成投影：验证通过后由 Provider 安全更新 checkbox/任务状态，重复完成幂等；验证失败、输入漂移和任务 revision 变化分别产生可定位状态。
-- [ ] 3.6 加入团队协作测试，证明不同成员/Runner 可领取后续修复 Work，identity 仅用于授权和审计，不形成 change owner 或 MR 作者过滤。
-- [ ] 3.7 固定阶段组合并做真实装填测试：Open 的探索/创建、Design 的继续/决策、Build 写入前的 `tdd + codebase-design`、失败后的 `diagnosing-bugs`、Verify 的验证/审查和 Archive 的归档/PR；证明禁止模型调用的原始 `to-spec`/`to-tickets`、缺失依赖或第二个 action Skill 均在副作用前被拒绝。
+- [ ] 3.2 让 lifecycle definition 为每个 Work 分别固定唯一 `actionSkill`、有序 `augmentationSkills`、`methodProfile`、能力、side-effect class、write scopes、output contract 和 validator profile；Skill Service 只解析可执行 Skill，Method Profile 使用独立 snapshot，调用方不能覆盖或把二者互换。
+- [ ] 3.3 实现版本化 Method Profile registry 和上下文装配器，把每条采用规则绑定 source digest、phase、artifact kind 与 `context|deterministic-validator|review-rubric|human-decision` enforcement；架构测试证明原始 `to-spec`/`to-tickets` 不可被 builtin discovery、catalog、projection 或 Work binding 返回，用户环境同名 Skill 也不能进入 lifecycle。
+- [ ] 3.4 在 Application Plugin/Command Router 边界增加 runtime work guard，文件、命令、Git、MR、tracker 和 Specification 写操作必须来自活动 claim 且匹配能力、Provider artifact kind 与范围；用负向 fixture 拒绝无 claim 写入、越仓写入、Design tracker 发布、terminal artifact 改写和错误 Adapter，并把未受管外部修改识别为 drift 而非成功。
+- [ ] 3.5 将现有 Manual/Process/Git/Specification Contributor 接到 Work Dispatcher；运行 production composition 纵切证明 Adapter 返回成功只形成 Outcome，缺少 Validator/Evidence 时 Task 和 phase 不推进。
+- [ ] 3.6 实现 Build Task validator 和完成投影：验证通过后由 Provider 安全更新 checkbox/任务状态，重复完成幂等；验证失败、输入漂移和任务 revision 变化分别产生可定位状态。
+- [ ] 3.7 加入团队协作测试，证明不同成员/Runner 可领取后续修复 Work，identity 仅用于授权和审计，不形成 change owner 或 MR 作者过滤。
+- [ ] 3.8 固定上下文优先级和阶段组合并做真实装填测试：Runtime contract → action Skill → OpenSpec instructions/template → augmentations → Method Profile → change inputs；覆盖 Open 的探索/创建、Design 的继续/决策、Build 写入前的 `tdd + codebase-design`、失败诊断、Verify 验证/审查和 Archive 归档/PR，证明缺失依赖、第二个 action owner 或冲突产物协议均在副作用前被拒绝。
 
 ## 4. 接入 Verify Gate 与回退循环
 

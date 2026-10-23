@@ -9,7 +9,7 @@ Comet 0.5.0 已把这类问题收敛为一个持久 Change Run：`Open → Desig
 ## What Changes
 
 - 建立唯一权威的 Change Run，以 `Open → Design → Build → Verify → Archive` 表达 change 生命周期；阶段与执行状态分离，等待人工批准、等待 MR 合入或等待重试不再伪装成新阶段。
-- 让 Runtime 根据版本化 lifecycle definition 和当前事实决定下一项 Work；每项 Work 固定带角色的 Skill 组合、能力、允许副作用、写入范围、输入摘要和所需验证，Agent 不能由调用方参数任意选择或自述成功。
+- 让 Runtime 根据版本化 lifecycle definition 和当前事实决定下一项 Work；每项 Work 分别固定唯一 action Skill、可执行 augmentation Skills、不可执行 Method Profile、能力、允许副作用、写入范围、输入摘要和所需验证，Agent 不能由调用方参数任意选择或自述成功。
 - 保持 OpenSpec `spec-driven` schema 和官方四类模板为规划结构权威；只吸收 Matt `to-spec`、`to-tickets` 等方法中关于公共测试缝、纵切、阻塞关系和迁移顺序的质量规则，不调用其 tracker 发布行为，也不产生第五类规划文档。
 - 在多仓项目中让现有 Workspace Repository 同时作为 OpenSpec Store，不另建规格仓；Store ID 是可配置、稳定的 kebab-case 身份，Runtime 显式选择它，单仓/自举场景允许 Workspace、Store 与实现仓物理合一。
 - 保持多仓探测只读，并把各业务仓的 OpenSpec 状态分类为可安装 pointer、已绑定、其他 Store、已有本地规格冲突、不可写或用户退出；只有可信人工批准后的 onboarding apply 才以逐仓 Intent/Receipt 安装可选 pointer，冲突必须显式迁移而不能覆盖。
@@ -32,7 +32,7 @@ Comet 0.5.0 已把这类问题收敛为一个持久 Change Run：`Open → Desig
 
 - `runtime-foundation`: 让 WorkflowRuns 承载权威 Change Run，并让平台事件恢复同一 Run，而不是创建 Post-merge Run。
 - `specification-authority`: 把 Store-aware 四类规划产物、官方模板校验和人工决定纳入 Design 出口，并以语义摘要替代整条分支 OID 作为规划失效条件。
-- `skill-integration`: 由当前 Work 固定带角色的 Skill 组合快照、能力和调用范围，并由运行时 Hook 在受领 Action 内执行写入策略。
+- `skill-integration`: 由当前 Work 分别固定可执行 Skill 快照与不可执行 Method Profile，禁止行为参考被发现、投影或绑定成原始 Skill，并由运行时 Hook 在受领 Action 内执行写入策略。
 - `multi-repository-probe`: 探测阶段只生成 Store/pointer 绑定计划，批准后的 onboarding 以逐仓 Intent/Receipt 应用，且不覆盖已有规格权威。
 - `delivery-governance`: 把 Delivery 定位为 Archive 的交付计划和平台执行能力，不再拥有独立批准生命周期。
 - `post-merge-automation`: 平台事件、主动核对和补偿恢复同一 Change Run 的 Archive 阶段，不再创建第二个 Run。
