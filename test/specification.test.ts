@@ -280,6 +280,17 @@ describe('Specification authority', () => {
     expect(() => assertSpecificationPlanningManifest(manifest)).not.toThrow();
     expect(JSON.stringify(manifest)).not.toContain(workspace);
     expect(JSON.stringify(manifest)).not.toContain('openspec/changes');
+    const tasksFile = path.join(workspace, 'openspec', 'changes', 'sample', 'tasks.md');
+    const originalTasks = await readFile(tasksFile, 'utf8');
+    await writeFile(tasksFile, originalTasks.replace('- [x]', '- [ ]').replaceAll('\n', '\r\n'));
+    expect((await context.specification.planningManifest('sample')).semanticDigest).toBe(
+      manifest.semanticDigest,
+    );
+    await writeFile(tasksFile, originalTasks.replace('Complete fixture', 'Complete fixture safely'));
+    expect((await context.specification.planningManifest('sample')).semanticDigest).not.toBe(
+      manifest.semanticDigest,
+    );
+    await writeFile(tasksFile, originalTasks);
     expect(await context.specification.validate('sample', { strict: true })).toMatchObject({
       valid: true,
       strict: true,

@@ -172,6 +172,8 @@ const buildTask: SpecificationTask = {
   level: 0,
   status: 'pending',
   blockedBy: [],
+  acceptanceCriteria: [],
+  requirementRefs: [],
 };
 
 const buildWork: WorkDescriptor = {

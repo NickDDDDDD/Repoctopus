@@ -5,6 +5,8 @@ import type { SpecificationTask, SpecificationTaskSet } from './types.js';
 
 const TASK = /^(\s*)-\s+\[([ xX])\]\s+(\d+(?:\.\d+)*)\s+(.+?)\s*$/u;
 const BLOCKED_BY = /^\s*(?:-\s*)?(?:\*\*)?Blocked by:(?:\*\*)?\s*(.+?)\s*$/iu;
+const ACCEPTANCE = /^\s*(?:-\s*)?(?:\*\*)?Acceptance(?: criteria)?:(?:\*\*)?\s*(.+?)\s*$/iu;
+const REQUIREMENTS = /^\s*(?:-\s*)?(?:\*\*)?Requirements?(?: mappings?)?:(?:\*\*)?\s*(.+?)\s*$/iu;
 
 function sha256(value: unknown): `sha256:${string}` {
   return `sha256:${createHash('sha256').update(canonicalJson(value)).digest('hex')}`;
@@ -17,7 +19,23 @@ function parseDependencies(value: string): string[] {
     .map((entry) => entry.trim().match(/^`?(\d+(?:\.\d+)*)`?(?:\s|$)/u)?.[1])
     .filter((entry): entry is string => entry !== undefined);
   if (dependencies.length === 0) throw new Error('Task Blocked by metadata contains no task ids');
-  return [...new Set(dependencies)];
+  return [...new Set(dependencies)].sort();
+}
+
+function normalizeText(value: string): string {
+  return value
+    .replace(/`([^`]+)`/gu, '$1')
+    .replace(/\*\*([^*]+)\*\*/gu, '$1')
+    .replace(/__([^_]+)__/gu, '$1')
+    .replace(/~~([^~]+)~~/gu, '$1')
+    .replace(/\*([^*]+)\*/gu, '$1')
+    .replace(/_([^_]+)_/gu, '$1')
+    .replace(/\s+/gu, ' ')
+    .trim();
+}
+
+function semanticList(value: string, separator: RegExp): string[] {
+  return [...new Set(value.split(separator).map(normalizeText).filter(Boolean))].sort();
 }
 
 export function parseSpecificationTasks(
@@ -31,16 +49,24 @@ export function parseSpecificationTasks(
     level: number;
     status: SpecificationTask['status'];
     explicitDependencies: string[] | null;
+    acceptanceCriteria: string[];
+    requirementRefs: string[];
   }> = [];
   for (const line of document.replaceAll('\r\n', '\n').split('\n')) {
     const task = line.match(TASK);
     if (task) {
+      const indentation = task[1]!.replaceAll('\t', '  ').length;
+      if (indentation % 2 !== 0) {
+        throw new Error(`Task ${task[3]!} has ambiguous hierarchy indentation`);
+      }
       parsed.push({
         taskId: task[3]!,
-        title: task[4]!.trim(),
-        level: task[1]!.replaceAll('\t', '  ').length,
+        title: normalizeText(task[4]!),
+        level: indentation / 2,
         status: task[2]!.toLowerCase() === 'x' ? 'completed' : 'pending',
         explicitDependencies: null,
+        acceptanceCriteria: [],
+        requirementRefs: [],
       });
       continue;
     }
@@ -51,6 +77,16 @@ export function parseSpecificationTasks(
         throw new Error(`Task ${current.taskId} declares Blocked by more than once`);
       }
       current.explicitDependencies = parseDependencies(dependency[1]!);
+      continue;
+    }
+    const acceptance = line.match(ACCEPTANCE);
+    if (acceptance && parsed.length > 0) {
+      parsed.at(-1)!.acceptanceCriteria.push(...semanticList(acceptance[1]!, /;/u));
+      continue;
+    }
+    const requirements = line.match(REQUIREMENTS);
+    if (requirements && parsed.length > 0) {
+      parsed.at(-1)!.requirementRefs.push(...semanticList(requirements[1]!, /,/u));
     }
   }
   if (parsed.length === 0) throw new Error('Tasks document contains no official checkbox tasks');
@@ -69,6 +105,8 @@ export function parseSpecificationTasks(
       title: task.title,
       level: task.level,
       blockedBy,
+      acceptanceCriteria: [...new Set(task.acceptanceCriteria)].sort(),
+      requirementRefs: [...new Set(task.requirementRefs)].sort(),
     };
     return { ...stable, status: task.status, taskRevision: sha256(stable) };
   });
@@ -85,6 +123,8 @@ export function parseSpecificationTasks(
         title: task.title,
         level: task.level,
         blockedBy: task.blockedBy,
+        acceptanceCriteria: task.acceptanceCriteria,
+        requirementRefs: task.requirementRefs,
       })),
     }),
   };

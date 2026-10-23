@@ -1,3 +1,6 @@
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -6,6 +9,39 @@ import {
 } from '../domains/specification/tasks.js';
 
 describe('Specification Tasks', () => {
+  it('matches golden semantic normalization fixtures', async () => {
+    const fixture = (name: string) =>
+      readFile(
+        path.join(import.meta.dirname, 'fixtures', 'specification-tasks', `${name}.md`),
+        'utf8',
+      );
+    const baseline = parseSpecificationTasks('task-plan', await fixture('baseline'));
+    const equivalent = parseSpecificationTasks(
+      'task-plan',
+      (await fixture('equivalent-format')).replaceAll('\n', '\r\n'),
+    );
+    expect(equivalent.digest).toBe(baseline.digest);
+    expect(equivalent.tasks.map((task) => task.taskRevision)).toEqual(
+      baseline.tasks.map((task) => task.taskRevision),
+    );
+    for (const name of [
+      'changed-text',
+      'changed-hierarchy',
+      'changed-dependency',
+      'changed-acceptance',
+      'changed-requirement',
+    ]) {
+      const changed = parseSpecificationTasks('task-plan', await fixture(name));
+      expect(changed.digest, name).not.toBe(baseline.digest);
+      expect(
+        changed.tasks.some(
+          (task, index) => task.taskRevision !== baseline.tasks[index]?.taskRevision,
+        ),
+        name,
+      ).toBe(true);
+    }
+  });
+
   it('derives stable ids, revisions, serial dependencies, and one ready Task', () => {
     const pending = parseSpecificationTasks(
       'task-plan',

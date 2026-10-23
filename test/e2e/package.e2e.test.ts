@@ -70,7 +70,7 @@ Use a change owned by the temporary test workspace.
       path.join(changeRoot, 'tasks.md'),
       `# Tasks
 
-- [ ] Validate the installed package.
+- [ ] 1.1 Validate the installed package.
 `,
     ),
     writeFile(

@@ -281,7 +281,14 @@ export class OpenSpecProvider extends Specification {
       ['status', '--change', id],
       signal,
     );
-    const paths = status.artifactPaths?.tasks?.existingOutputPaths;
+    return this.taskSetFromPaths(workspace, id, status.artifactPaths?.tasks?.existingOutputPaths);
+  }
+
+  private async taskSetFromPaths(
+    workspace: string,
+    changeId: string,
+    paths: unknown,
+  ): Promise<SpecificationTaskSet> {
     if (!Array.isArray(paths) || paths.length !== 1 || typeof paths[0] !== 'string') {
       throw new Error('OpenSpec Tasks must resolve to exactly one official document');
     }
@@ -295,7 +302,7 @@ export class OpenSpecProvider extends Specification {
     ) {
       throw new Error('OpenSpec Tasks path escapes the workspace');
     }
-    return parseSpecificationTasks(id, await readFile(absolute, 'utf8'));
+    return parseSpecificationTasks(changeId, await readFile(absolute, 'utf8'));
   }
 
   override async planningInstructions(
@@ -380,7 +387,16 @@ export class OpenSpecProvider extends Specification {
           async ([artifactId, artifact]): Promise<SpecificationArtifact | undefined> => {
             const kind = artifactKind(artifactId);
             if (!kind) return undefined;
-            const digest = await artifactDigest(workspace, artifact.existingOutputPaths);
+            const digest =
+              kind === 'tasks'
+                ? (
+                    await this.taskSetFromPaths(
+                      workspace,
+                      id,
+                      artifact.existingOutputPaths,
+                    )
+                  ).digest
+                : await artifactDigest(workspace, artifact.existingOutputPaths);
             return {
               id: artifactId,
               kind,

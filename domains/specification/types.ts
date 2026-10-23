@@ -39,6 +39,8 @@ export interface SpecificationTask {
   level: number;
   status: 'pending' | 'completed';
   blockedBy: string[];
+  acceptanceCriteria: string[];
+  requirementRefs: string[];
 }
 
 export interface SpecificationTaskSet {
