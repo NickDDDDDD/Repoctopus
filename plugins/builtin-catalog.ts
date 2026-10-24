@@ -11,6 +11,7 @@ import {
 } from '../app/boot/descriptor.js';
 import { FileActionStoreProvider } from './action/file-action-store-provider.js';
 import manualActionContributor from './action/manual-action-contributor.js';
+import runtimeWorkContributors from './action/runtime-work-contributors.js';
 import projectProbeContributor from './command/project-probe-contributor.js';
 import evidenceContributor from './command/evidence-contributor.js';
 import workflowRunContributor from './command/workflow-run-contributor.js';
@@ -27,6 +28,7 @@ import { WorkflowTelemetryProvider } from './run/workflow-telemetry-provider.js'
 import { CommandRouter } from '../services/command-router.js';
 import { ActionDispatcher } from '../services/action.js';
 import { RuntimeWorkGuard } from '../services/runtime-work-guard.js';
+import { WorkDispatcher } from '../services/work-dispatcher.js';
 import { EvidenceCoordinator } from '../services/evidence-coordinator.js';
 import { EvidenceAdapters } from '../services/evidence-adapters.js';
 import {
@@ -665,6 +667,49 @@ const definitions: readonly BuiltinDefinition[] = [
   },
   {
     descriptor: {
+      id: 'work-dispatcher',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['work-dispatch'],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: WorkDispatcher,
+    sourceFiles: [
+      'domains/action/types.ts',
+      'services/action.ts',
+      'services/work-dispatcher.ts',
+    ],
+  },
+  {
+    descriptor: {
+      id: 'action-work-contributors',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'contributor',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: [
+        'action-adapter:git',
+        'action-adapter:process',
+        'action-adapter:specification',
+      ],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: runtimeWorkContributors,
+    sourceFiles: [
+      'plugins/action/runtime-work-contributors.ts',
+      'services/work-dispatcher.ts',
+    ],
+  },
+  {
+    descriptor: {
       id: 'action-manual',
       version: VERSION,
       contractVersion: PLUGIN_CONTRACT_VERSION,
@@ -677,7 +722,10 @@ const definitions: readonly BuiltinDefinition[] = [
       stateSchemas: {},
     },
     plugin: manualActionContributor,
-    sourceFiles: ['plugins/action/manual-action-contributor.ts'],
+    sourceFiles: [
+      'plugins/action/manual-action-contributor.ts',
+      'services/work-dispatcher.ts',
+    ],
   },
   {
     descriptor: {

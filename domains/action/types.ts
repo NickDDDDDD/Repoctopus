@@ -65,3 +65,17 @@ export interface ManualActionResult {
   summary: string;
   eventId: string;
 }
+
+export interface WorkClaimRequest {
+  runId: string;
+  adapter: string;
+  attempt?: number;
+}
+
+export interface WorkOutcomeAcceptance {
+  intent: ActionIntent;
+  outcome: ClaimedActionOutcome;
+  receipt: ActionReceipt;
+  validation: 'pending';
+  lifecycleAdvanced: false;
+}

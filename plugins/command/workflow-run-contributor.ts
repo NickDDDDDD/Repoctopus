@@ -1,6 +1,7 @@
 import type { Context, Plugin } from '@deepseek-ai/cordis';
 
 import type { ActionOutcome } from '../../domains/engine/types.js';
+import type { ClaimedActionOutcome, WorkClaimRequest } from '../../domains/action/types.js';
 import type { ProjectSnapshot } from '../../domains/project/types.js';
 import type { WorkflowPackage } from '../../domains/workflow-contract/types.js';
 import type {
@@ -27,6 +28,14 @@ interface RecordInput {
 const plugin = ((context: Context) => {
   context.effect(() => {
     const disposers = [
+      context.commandRouter.register({
+        name: 'run.work.claim',
+        execute: ({ input }) => context.workDispatcher.claim(input as WorkClaimRequest),
+      }),
+      context.commandRouter.register({
+        name: 'run.work.outcome',
+        execute: ({ input }) => context.workDispatcher.acceptOutcome(input as ClaimedActionOutcome),
+      }),
       context.commandRouter.register({
         name: 'run.start',
         execute: ({ input, signal }) => context.workflowRuns.start(input as StartInput, signal),
@@ -75,7 +84,7 @@ const plugin = ((context: Context) => {
 }) as Plugin;
 
 Object.assign(plugin, {
-  inject: ['commandRouter', 'runStore', 'workflowRuns'],
+  inject: ['commandRouter', 'runStore', 'workDispatcher', 'workflowRuns'],
 });
 
 export default plugin;

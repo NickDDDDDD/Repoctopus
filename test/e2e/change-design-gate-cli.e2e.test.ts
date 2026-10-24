@@ -6,6 +6,7 @@ import { promisify } from 'node:util';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import type { RunStatusView } from '../../domains/runtime/types.js';
+import type { ActionIntent, WorkOutcomeAcceptance } from '../../domains/action/types.js';
 import type { SpecificationApprovalState } from '../../domains/specification/types.js';
 import { bootProjectComposition } from '../../app/boot/bootstrap.js';
 import {
@@ -285,6 +286,45 @@ describe('Change Run Design gate CLI', () => {
       provider: { id: 'openspec' },
     });
     const approvedWorkId = approved.result?.changeLifecycle?.currentWork?.workId;
+    const outcomeApp = await bootProjectComposition(packageRoot, workspace);
+    try {
+      expect(outcomeApp.context.workDispatcher.list()).toEqual([
+        'git',
+        'manual',
+        'process',
+        'specification',
+      ]);
+      const intent = await outcomeApp.context.commandRouter.execute<
+        { runId: string; adapter: string },
+        ActionIntent
+      >('run.work.claim', { runId: validRun.runId!, adapter: 'process' });
+      const accepted = await outcomeApp.context.commandRouter.execute<
+        ReturnType<typeof outcomeApp.context.workDispatcher.outcome>,
+        WorkOutcomeAcceptance
+      >(
+        'run.work.outcome',
+        outcomeApp.context.workDispatcher.outcome(intent, 'succeeded', 'Process Adapter succeeded'),
+      );
+      expect(accepted).toMatchObject({
+        validation: 'pending',
+        lifecycleAdvanced: false,
+        receipt: { adapter: 'process', outcome: 'succeeded' },
+      });
+    } finally {
+      await outcomeApp.close();
+    }
+    const outcomeDidNotAdvance = await runCli<RunStatusView>({
+      packageRoot,
+      cwd: workspace,
+      args: ['run', 'status', '--workspace', workspace, '--run', validRun.runId!],
+      environment,
+    });
+    expect(outcomeDidNotAdvance.result?.changeLifecycle).toMatchObject({
+      phase: 'build',
+      status: 'running',
+      taskProgress: { total: 1, completed: 0, currentTaskId: '1.1' },
+      currentWork: { workId: approvedWorkId },
+    });
     const tasksFile = path.join(workspace, 'openspec', 'changes', 'valid-plan', 'tasks.md');
     await writeFile(
       tasksFile,
