@@ -59,8 +59,8 @@
 
 ## 6. 完成 Cordis 扩展和组合治理
 
-- [ ] 6.1 为 Lifecycle Definition、Work Contributor、Validator Contributor 与 Lifecycle Extension 定义独立 Cordis Service/Contributor 契约，加入 builtin catalog、依赖图和 composition snapshot；运行安装、卸载、依赖缺失与有界排空测试。
-- [ ] 6.2 实现声明式安全 checkpoint 和 extension validation，拒绝扩展移动核心 transition、绕过 Design approval/Verify Gate、提前归档或扩大未声明写入范围；用恶意 fixture 验证 fail closed。
+- [x] 6.1 为 Lifecycle Definition、Work Contributor、Validator Contributor 与 Lifecycle Extension 定义独立 Cordis Service/Contributor 契约，加入 builtin catalog、依赖图和 composition snapshot；运行安装、卸载、依赖缺失与有界排空测试。
+- [x] 6.2 实现声明式安全 checkpoint 和 extension validation，拒绝扩展移动核心 transition、绕过 Design approval/Verify Gate、提前归档或扩大未声明写入范围；用恶意 fixture 验证 fail closed。
 - [ ] 6.3 将 definition、Contributor、Validator、Extension、Skill 与 Specification 身份纳入 Run 恢复兼容检查，分别测试兼容升级、非语义排序变化和不兼容漂移。
 - [ ] 6.4 更新能力账本、架构依赖规则与第三方采用记录，证明未引入第二套容器、通用 Capability Resolver、Comet 产品 shell 或 DSH 未发布源码。
 

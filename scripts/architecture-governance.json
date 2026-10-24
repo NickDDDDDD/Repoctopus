@@ -22,6 +22,7 @@
         "plugins/delivery/**",
         "plugins/evidence/**",
         "plugins/http/**",
+        "plugins/lifecycle/**",
         "plugins/project/**",
         "plugins/run/**",
         "plugins/command/delivery-contributor.ts",

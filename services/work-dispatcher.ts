@@ -10,9 +10,14 @@ import type {
   WorkOutcomeAcceptance,
 } from '../domains/action/types.js';
 import type { WorkDescriptor } from '../domains/change-lifecycle/transition.js';
+import {
+  lifecycleContributorSnapshot,
+  type LifecycleContributorIdentity,
+} from '../domains/change-lifecycle/contributors.js';
 
 export interface WorkContributor {
   id: string;
+  identity: LifecycleContributorIdentity & { kind: 'work' };
   requiredCapabilities: readonly string[];
 }
 
@@ -72,6 +77,7 @@ export class WorkDispatcher extends Service {
     if (this.contributors.has(id)) throw new Error(`Work Contributor already registered: ${id}`);
     const normalized = {
       id,
+      identity: structuredClone(contributor.identity),
       requiredCapabilities: [...new Set(contributor.requiredCapabilities)].sort(),
     };
     this.contributors.set(id, normalized);
@@ -82,6 +88,12 @@ export class WorkDispatcher extends Service {
 
   list(): string[] {
     return [...this.contributors.keys()].sort((left, right) => left.localeCompare(right));
+  }
+
+  snapshot() {
+    return lifecycleContributorSnapshot(
+      [...this.contributors.values()].map((entry) => entry.identity),
+    );
   }
 
   async claim(request: WorkClaimRequest): Promise<ActionIntent> {

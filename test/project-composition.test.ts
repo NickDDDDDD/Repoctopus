@@ -64,6 +64,12 @@ describe('project composition assembly', () => {
         'post-merge-coordinator',
         'post-merge-actions',
         'post-merge-command',
+        'lifecycle-definition-service',
+        'lifecycle-definition-builtin',
+        'lifecycle-validator-service',
+        'lifecycle-validator-builtin',
+        'lifecycle-extension-service',
+        'lifecycle-extension-builtin',
       ]),
     );
     expect(projectIds).not.toContain('http-host');

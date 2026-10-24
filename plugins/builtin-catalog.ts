@@ -12,6 +12,9 @@ import {
 import { FileActionStoreProvider } from './action/file-action-store-provider.js';
 import manualActionContributor from './action/manual-action-contributor.js';
 import runtimeWorkContributors from './action/runtime-work-contributors.js';
+import builtinLifecycleDefinition from './lifecycle/builtin-definition-contributor.js';
+import builtinLifecycleValidators from './lifecycle/builtin-validator-contributor.js';
+import builtinLifecycleExtensions from './lifecycle/builtin-extension-contributor.js';
 import projectProbeContributor from './command/project-probe-contributor.js';
 import evidenceContributor from './command/evidence-contributor.js';
 import workflowRunContributor from './command/workflow-run-contributor.js';
@@ -30,6 +33,11 @@ import { ActionDispatcher } from '../services/action.js';
 import { RuntimeWorkGuard } from '../services/runtime-work-guard.js';
 import { WorkDispatcher } from '../services/work-dispatcher.js';
 import { WorkContextAssembler } from '../services/work-context-assembler.js';
+import {
+  LifecycleDefinitions,
+  LifecycleExtensions,
+  LifecycleValidators,
+} from '../services/lifecycle-contributors.js';
 import { EvidenceCoordinator } from '../services/evidence-coordinator.js';
 import { EvidenceAdapters } from '../services/evidence-adapters.js';
 import {
@@ -706,6 +714,120 @@ const definitions: readonly BuiltinDefinition[] = [
       'domains/action/types.ts',
       'services/action.ts',
       'services/work-dispatcher.ts',
+    ],
+  },
+  {
+    descriptor: {
+      id: 'lifecycle-definition-service',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['lifecycle-definition-registry'],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: LifecycleDefinitions,
+    sourceFiles: [
+      'domains/change-lifecycle/contributors.ts',
+      'services/lifecycle-contributors.ts',
+    ],
+  },
+  {
+    descriptor: {
+      id: 'lifecycle-definition-builtin',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'contributor',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: [],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: builtinLifecycleDefinition,
+    sourceFiles: [
+      'domains/change-lifecycle/definition.ts',
+      'plugins/lifecycle/builtin-definition-contributor.ts',
+    ],
+  },
+  {
+    descriptor: {
+      id: 'lifecycle-validator-service',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['lifecycle-validator-registry'],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: LifecycleValidators,
+    sourceFiles: [
+      'domains/change-lifecycle/contributors.ts',
+      'services/lifecycle-contributors.ts',
+    ],
+  },
+  {
+    descriptor: {
+      id: 'lifecycle-validator-builtin',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'contributor',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: [],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: builtinLifecycleValidators,
+    sourceFiles: [
+      'domains/change-lifecycle/definition.ts',
+      'plugins/lifecycle/builtin-validator-contributor.ts',
+    ],
+  },
+  {
+    descriptor: {
+      id: 'lifecycle-extension-service',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['lifecycle-extension-registry'],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: LifecycleExtensions,
+    sourceFiles: [
+      'domains/change-lifecycle/contributors.ts',
+      'services/lifecycle-contributors.ts',
+    ],
+  },
+  {
+    descriptor: {
+      id: 'lifecycle-extension-builtin',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'contributor',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: [],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: builtinLifecycleExtensions,
+    sourceFiles: [
+      'domains/change-lifecycle/definition.ts',
+      'plugins/lifecycle/builtin-extension-contributor.ts',
     ],
   },
   {
