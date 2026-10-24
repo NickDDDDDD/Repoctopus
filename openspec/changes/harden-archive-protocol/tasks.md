@@ -13,7 +13,7 @@
 
 ## 1. 建立发布即完成的最小纵切
 
-- [ ] 1.1 定义版本化 `PublicationReceipt` 与 item contract，绑定 Change/generation、Delivery snapshot、Verify evidence、规格关闭摘要及每个 repository/base/head/published OID/MR/provenance。
+- [x] 1.1 定义版本化 `PublicationReceipt` 与 item contract，绑定 Change/generation、Delivery snapshot、Verify evidence、规格关闭摘要及每个 repository/base/head/published OID/MR/provenance。
       **Blocked by:** 0.2
       **Acceptance:** schema、canonical digest、扫描顺序和隐私 contract tests 通过；任一 item 缺失或 OID 不匹配被拒绝
       **Requirements:** delivery-governance#publication-receipt
