@@ -109,7 +109,27 @@ export class ArchiveCompletionTracer {
     if (business.items.length !== input.archive.businessDeliveries.length) {
       throw new Error('Business publication did not cover the frozen Delivery collection');
     }
-    for (const publication of business.items) assertExactPublication(publication, 'business');
+    for (const delivery of input.archive.businessDeliveries) {
+      const matches = business.items.filter(
+        ({ item }) => item.role === 'business' && item.deliveryId === delivery.deliveryId,
+      );
+      if (matches.length !== 1) {
+        throw new Error(
+          `Business publication identity is missing or ambiguous: ${delivery.deliveryId}`,
+        );
+      }
+      const publication = matches[0]!;
+      if (
+        publication.item.repositoryId !== delivery.repositoryId ||
+        publication.item.sourceBranch !== delivery.sourceBranch ||
+        publication.item.targetBranch !== delivery.targetBranch
+      ) {
+        throw new Error(
+          `Business publication drifted from the Delivery snapshot: ${delivery.deliveryId}`,
+        );
+      }
+      assertExactPublication(publication, 'business');
+    }
     const specification = await this.ports.publishSpecification(input.archive, closure);
     assertExactPublication(specification, 'specification');
 

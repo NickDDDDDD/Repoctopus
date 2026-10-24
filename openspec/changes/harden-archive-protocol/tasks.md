@@ -43,7 +43,7 @@
 
 ## 3. 扩展多仓 Finish 与响应丢失恢复
 
-- [ ] 3.1 将单仓 tracer 扩展为完整 Delivery snapshot：逐仓普通 push、MR create-or-recover/create-or-adopt，并为业务项和规格项生成顺序无关的 Publication Receipt。
+- [x] 3.1 将单仓 tracer 扩展为完整 Delivery snapshot：逐仓普通 push、MR create-or-recover/create-or-adopt，并为业务项和规格项生成顺序无关的 Publication Receipt。
       **Blocked by:** 2.3
       **Acceptance:** 默认一个及显式多个 Business MR 均通过；同仓多个 MR 保留独立 item；不等待任何 MR merge
       **Requirements:** delivery-governance#publication-receipt, delivery-governance#stable-publication
