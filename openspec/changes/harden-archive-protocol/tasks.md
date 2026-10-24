@@ -21,7 +21,7 @@
       **Blocked by:** 1.1
       **Acceptance:** 纯领域测试证明 MR open/merged/closed 均不参与终态判断，Receipt 完整时 completed，缺失时 blocked，重复 observation 幂等
       **Requirements:** change-lifecycle#archive-publication-terminal
-- [ ] 1.3 建立单仓生产 composition tracer：消费当前 Verify evidence，关闭规格、普通 push、创建或复用最终 MR、核对精确 head/base/OID 并完成 Run。
+- [x] 1.3 建立单仓生产 composition tracer：消费当前 Verify evidence，关闭规格、普通 push、创建或复用最终 MR、核对精确 head/base/OID 并完成 Run。
       **Blocked by:** 1.2
       **Acceptance:** E2E 不启动监听端口、不查询 merge 状态、不依赖 Post-merge workflow；Runtime 创建和人工创建 MR 均收敛到一个 Publication Receipt
       **Requirements:** change-lifecycle#archive-publication-terminal, delivery-governance#publication-receipt
