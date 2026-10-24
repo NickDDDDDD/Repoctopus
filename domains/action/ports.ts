@@ -1,8 +1,9 @@
-import type { ActionIntent, ActionReceipt } from './types.js';
+import type { ActionIntent, ActionReceipt, ClaimedActionOutcome } from './types.js';
 
 export interface ActionStorePort {
   saveIntent(intent: ActionIntent): Promise<ActionIntent>;
-  loadIntent(runId: string, actionId: string): Promise<ActionIntent>;
+  loadIntent(runId: string, workId: string, attempt?: number): Promise<ActionIntent>;
+  loadLatestIntent(runId: string, workId: string): Promise<ActionIntent>;
   saveReceipt(receipt: ActionReceipt): Promise<ActionReceipt>;
   loadReceipt(runId: string, receiptId: string): Promise<ActionReceipt>;
 }
@@ -11,10 +12,8 @@ export interface ActionAdapter {
   readonly id: string;
   complete(
     intent: ActionIntent,
-    input: {
-      status: 'succeeded' | 'failed';
-      summary: string;
-      eventId: string;
+    input: ClaimedActionOutcome & {
+      receiptId: string;
       compositionDigest: string;
     },
   ): Promise<ActionReceipt>;

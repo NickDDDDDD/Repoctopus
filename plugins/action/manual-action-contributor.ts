@@ -1,5 +1,3 @@
-import { createHash } from 'node:crypto';
-
 import type { Context, Plugin } from '@deepseek-ai/cordis';
 
 import type { ActionAdapter } from '../../domains/action/ports.js';
@@ -8,13 +6,16 @@ const manualAdapter: ActionAdapter = {
   id: 'manual',
   complete(intent, input) {
     return Promise.resolve({
-      schemaVersion: 1,
-      receiptId: createHash('sha256')
-        .update(['manual', intent.intentId, input.eventId].join('\0'))
-        .digest('hex'),
+      schemaVersion: 2,
+      receiptId: input.receiptId,
       intentId: intent.intentId,
       idempotencyKey: intent.idempotencyKey,
       runId: intent.runId,
+      workId: intent.workId,
+      attempt: intent.attempt,
+      claimToken: intent.claimToken,
+      inputDigest: intent.inputDigest,
+      outcomeId: input.outcomeId,
       compositionDigest: input.compositionDigest,
       actionId: intent.action.id,
       adapter: 'manual',

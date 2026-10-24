@@ -2,10 +2,14 @@ import type { ActionOutcome, EngineAction } from '../engine/types.js';
 import type { CompositionIdentitySnapshot } from '../composition/types.js';
 
 export interface ActionIntent {
-  schemaVersion: 1;
+  schemaVersion: 2;
   intentId: string;
   idempotencyKey: string;
   runId: string;
+  workId: string;
+  attempt: number;
+  claimToken: `sha256:${string}`;
+  inputDigest: `sha256:${string}`;
   compositionDigest: string;
   composition: CompositionIdentitySnapshot;
   action: EngineAction;
@@ -14,17 +18,44 @@ export interface ActionIntent {
 }
 
 export interface ActionReceipt {
-  schemaVersion: 1;
+  schemaVersion: 2;
   receiptId: string;
   intentId: string;
   idempotencyKey: string;
   runId: string;
+  workId: string;
+  attempt: number;
+  claimToken: `sha256:${string}`;
+  inputDigest: `sha256:${string}`;
+  outcomeId: string;
   compositionDigest: string;
   actionId: string;
   adapter: string;
   outcome: ActionOutcome['status'];
   summary: string;
   completedAt: string;
+}
+
+export interface ActionClaimInput {
+  runId: string;
+  workId: string;
+  attempt: number;
+  inputDigest: `sha256:${string}`;
+  composition: CompositionIdentitySnapshot;
+  action: EngineAction;
+  adapter?: string;
+}
+
+export interface ClaimedActionOutcome {
+  schemaVersion: 1;
+  outcomeId: string;
+  runId: string;
+  workId: string;
+  attempt: number;
+  claimToken: `sha256:${string}`;
+  inputDigest: `sha256:${string}`;
+  status: ActionOutcome['status'];
+  summary: string;
 }
 
 export interface ManualActionResult {

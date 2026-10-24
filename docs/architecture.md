@@ -81,11 +81,11 @@ Engine 只根据 Workflow、Run State 和已经核对的事实计算下一状态
 外部副作用不能占用 Run 锁。WorkflowRuns 使用两个受保护转换连接动作执行：
 
 1. 第一笔 Run 事务提交 `action.proposed`。
-2. 释放 Run 锁后，ActionDispatcher 保存 Intent 和幂等键。
-3. Contributor Adapter 执行动作或等待人工结果，并保存 Receipt。
+2. 释放 Run 锁后，ActionDispatcher 领取并保存 Intent；Intent 以 `runId + workId + attempt + claimToken + inputDigest` 形成 fencing identity 和幂等键。
+3. Contributor Adapter 执行动作或等待人工结果；Outcome 必须回传相同的五元绑定，Dispatcher 拒绝旧 attempt、跨 Work 或输入漂移的结果，并保存带有同一绑定的 Receipt。
 4. 第二笔 Run 事务核对当前待处理 Action、Receipt 和所需 Evidence，再提交 Outcome。
 
-第一条纵切提供 Manual Action Contributor。Intent 与 Receipt 独立保存在 `.repoctopus/actions/`，Trajectory 的 `action.completed` 事件记录 Receipt ID。
+第一条纵切提供 Manual Action Contributor。Intent 与 Receipt 独立保存在 `.repoctopus/actions/`，Trajectory 的 `action.completed` 事件记录 Receipt ID。同一 claim 重放返回原 Intent；已保存 Receipt 的完成调用在响应丢失后返回原 Receipt，不重复执行 Adapter。副作用始终发生在 RunStore transaction 之外。
 
 ## Evidence 与 Gate
 
