@@ -47,7 +47,7 @@
       **Blocked by:** 2.3
       **Acceptance:** 默认一个及显式多个 Business MR 均通过；同仓多个 MR 保留独立 item；不等待任何 MR merge
       **Requirements:** delivery-governance#publication-receipt, delivery-governance#stable-publication
-- [ ] 3.2 为 push 和 MR 创建的未知结果实现 observe-before-retry，采用唯一 repository/head/base/head OID 匹配并拒绝零歧义之外的远端状态。
+- [x] 3.2 为 push 和 MR 创建的未知结果实现 observe-before-retry，采用唯一 repository/head/base/head OID 匹配并拒绝零歧义之外的远端状态。
       **Blocked by:** 3.1
       **Acceptance:** 每个响应丢失点最多形成一个逻辑远端结果；人工 MR 记录 `human-created` 且不伪造 Action Intent
       **Requirements:** delivery-governance#stable-publication

@@ -87,6 +87,7 @@ export interface MergeRequestInput {
 export interface MergeRequestPort {
   capability(remoteIdentity: string, targetBranch: string): Promise<PlatformCapability>;
   find(input: MergeRequestInput): Promise<MergeRequestIdentity | null>;
+  findAll?(input: MergeRequestInput): Promise<MergeRequestIdentity[]>;
   create(input: MergeRequestInput): Promise<MergeRequestIdentity>;
   update(identity: MergeRequestIdentity, input: MergeRequestInput): Promise<MergeRequestIdentity>;
   status(identity: MergeRequestIdentity): Promise<MergeRequestStatus>;

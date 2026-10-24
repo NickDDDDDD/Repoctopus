@@ -39,6 +39,8 @@ import {
 } from './v3.js';
 import { validateDeliveryPolicy } from './validation.js';
 import type { FinalChangePublicationService } from './final-change-publication.js';
+import { observeOrCreateMergeRequest } from './stable-publication.js';
+import type { PublicationProvenance } from './publication-receipt.js';
 import {
   assertPostMergePublicationRequestV2,
   type PostMergePublicationReceiptV2,
@@ -61,6 +63,8 @@ export interface ArchivePublicationReceipt {
   recovered: boolean;
   remoteOid?: string;
   mergeRequest?: MergeRequestIdentity;
+  provenance?: PublicationProvenance;
+  verifiedStatus?: MergeRequestStatus;
 }
 
 export interface ArchivePublicationResult {
@@ -284,35 +288,37 @@ export class DeliveryServiceV3 {
         title: render(options.policy.publication.mrTitleTemplate, values),
         body: render(options.policy.publication.mrBodyTemplate, values),
       };
-      let recovered = false;
-      let mergeRequest = await this.mergeRequests.find(request);
-      if (mergeRequest) {
-        mergeRequest = await this.mergeRequests.update(mergeRequest, request);
-        recovered = true;
-      } else {
-        try {
-          mergeRequest = await this.mergeRequests.create(request);
-        } catch (error) {
-          mergeRequest = await this.mergeRequests.find(request);
-          if (!mergeRequest) throw error;
-          recovered = true;
-        }
-      }
+      const expected = snapshot.businessDeliveries.find(
+        (delivery) => delivery.deliveryId === action.deliveryId,
+      )!;
+      const observed = await observeOrCreateMergeRequest({
+        port: this.mergeRequests,
+        request,
+        identity: {
+          changeId: options.intent.changeId,
+          generation: 1,
+          repositoryId: repository.id,
+          remoteIdentity: repository.remoteIdentity,
+          sourceBranch: action.sourceBranch,
+          targetBranch: action.targetBranch,
+          publishedOid: expected.head,
+        },
+      });
       receipts.push({
         actionId: action.actionId,
         deliveryId: action.deliveryId,
         type: action.type,
         status: 'succeeded',
-        recovered,
-        mergeRequest,
+        recovered: observed.provenance !== 'runtime-created',
+        mergeRequest: observed.identity,
+        provenance: observed.provenance,
+        verifiedStatus: observed.status,
       });
     }
     return { snapshot, receipts };
   }
 
-  async refreshArchive(
-    publication: ArchivePublicationResult,
-  ): Promise<ArchiveMergeRefreshResult> {
+  async refreshArchive(publication: ArchivePublicationResult): Promise<ArchiveMergeRefreshResult> {
     const identities = publication.receipts.flatMap((receipt) =>
       receipt.mergeRequest ? [receipt.mergeRequest] : [],
     );
