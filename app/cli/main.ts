@@ -1038,11 +1038,13 @@ async function runArchivePrepare(parsed: ParsedArguments): Promise<CliEnvelope<u
 async function runArchivePublish(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const { workspace, config, policy } = await archiveRuntimeInputs(parsed);
   const runId = stringFlag(parsed, 'run', { required: true })!;
+  const attempt = integerFlag(parsed, 'attempt', { fallback: 1, minimum: 1 })!;
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
     const project = await deliveryProject(app, { workspace, config });
     const result = await app.context.commandRouter.execute('run.archive.publish', {
       runId,
+      attempt,
       project,
       policy,
       executor: {
