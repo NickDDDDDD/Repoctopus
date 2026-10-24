@@ -84,6 +84,9 @@ function lifecycleState(snapshot: ChangeLifecycleSnapshot): ChangeLifecycleState
     ...(snapshot.postMergeVerification
       ? { postMergeVerification: structuredClone(snapshot.postMergeVerification) }
       : {}),
+    ...(snapshot.archiveClosure
+      ? { archiveClosure: structuredClone(snapshot.archiveClosure) }
+      : {}),
   };
 }
 

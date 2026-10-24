@@ -5,6 +5,7 @@ import {
   createArchiveDeliveryWork,
   createAwaitMergeWork,
   createPostMergeVerifyWork,
+  createSpecificationArchiveWork,
 } from '../domains/change-lifecycle/archive-input.js';
 import { BUILTIN_CHANGE_LIFECYCLE_DEFINITION, createChangeLifecycleSnapshot } from '../domains/change-lifecycle/definition.js';
 import { evolveChangeLifecycle } from '../domains/change-lifecycle/transition.js';
@@ -259,6 +260,27 @@ describe('Archive Delivery input', () => {
       waitCondition: null,
       archiveMerge: { source: 'run-start', allMerged: true },
     });
+    expect(() =>
+      evolveChangeLifecycle({
+        definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+        current: merged.snapshot,
+        observation: {
+          kind: 'archive-completed',
+          workId: merged.snapshot.currentWork!.workId,
+          inputDigest: merged.snapshot.currentWork!.inputDigest,
+          closureId: digest('c'),
+          planDigest: digest('p'),
+          auditDigest: digest('u'),
+          publicationReceiptDigest: digest('f'),
+          finalMergeRequest: {
+            provider: 'github',
+            repositoryId: 'workspace',
+            number: 7,
+            url: 'https://github.com/team/workspace/pull/7',
+          },
+        },
+      }),
+    ).toThrow(/does not match the active Archive Work/u);
     const postMergeVerified = evolveChangeLifecycle({
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
       current: merged.snapshot,
@@ -272,16 +294,53 @@ describe('Archive Delivery input', () => {
         checkoutManifestDigest: digest('m'),
         evidenceInputFingerprint: 'fingerprint-post-merge',
         workflowStateVersion: 12,
+        work: createSpecificationArchiveWork({
+          definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+          archive,
+          postMergeBundleId: 'bundle-post-merge',
+          checkoutManifestDigest: digest('m'),
+          workspaceRepositoryId: 'workspace',
+          repositoryIds: ['workspace', 'app'],
+        }),
       },
     });
     expect(postMergeVerified.snapshot).toMatchObject({
       phase: 'archive',
       status: 'running',
-      currentWork: null,
+      currentWork: { kind: 'specification.archive' },
       postMergeVerification: {
         status: 'satisfied',
         attemptId: 'attempt-post-merge',
         bundleId: 'bundle-post-merge',
+      },
+    });
+    const completed = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current: postMergeVerified.snapshot,
+      observation: {
+        kind: 'archive-completed',
+        workId: postMergeVerified.snapshot.currentWork!.workId,
+        inputDigest: postMergeVerified.snapshot.currentWork!.inputDigest,
+        closureId: digest('c'),
+        planDigest: digest('p'),
+        auditDigest: digest('u'),
+        publicationReceiptDigest: digest('f'),
+        finalMergeRequest: {
+          provider: 'github',
+          repositoryId: 'workspace',
+          number: 7,
+          url: 'https://github.com/team/workspace/pull/7',
+        },
+      },
+    });
+    expect(completed.snapshot).toMatchObject({
+      phase: 'archive',
+      status: 'completed',
+      currentWork: null,
+      archiveClosure: {
+        planDigest: digest('p'),
+        auditDigest: digest('u'),
+        finalMergeRequest: { number: 7 },
       },
     });
   });

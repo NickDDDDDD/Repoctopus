@@ -8,6 +8,7 @@ import type {
   ArchiveMergeRefreshResult,
   ArchivePublicationResult,
 } from '../delivery/service-v3.js';
+import type { MergeRequestIdentity } from '../delivery/types.js';
 
 export const CHANGE_PHASES = ['open', 'design', 'build', 'verify', 'archive'] as const;
 export type ChangePhase = (typeof CHANGE_PHASES)[number];
@@ -217,6 +218,13 @@ export interface ChangeLifecycleState {
     inputFingerprint: string;
     status: 'satisfied';
   };
+  archiveClosure?: {
+    closureId: `sha256:${string}`;
+    planDigest: `sha256:${string}`;
+    auditDigest: `sha256:${string}`;
+    publicationReceiptDigest: `sha256:${string}`;
+    finalMergeRequest: MergeRequestIdentity;
+  };
 }
 
 export type ArchiveMergeRefreshSource = 'webhook' | 'inbox' | 'active-check' | 'run-start';
@@ -336,6 +344,7 @@ export type ChangeLifecycleObservation =
       bundleId: string;
       evidenceInputFingerprint: string;
       workflowStateVersion: number;
+      work?: WorkDescriptor;
     }
   | {
       kind: 'verify-gate-rejected';
@@ -376,6 +385,17 @@ export type ChangeLifecycleObservation =
       checkoutManifestDigest: `sha256:${string}`;
       evidenceInputFingerprint: string;
       workflowStateVersion: number;
+      work?: WorkDescriptor;
+    }
+  | {
+      kind: 'archive-completed';
+      workId: string;
+      inputDigest: `sha256:${string}`;
+      closureId: `sha256:${string}`;
+      planDigest: `sha256:${string}`;
+      auditDigest: `sha256:${string}`;
+      publicationReceiptDigest: `sha256:${string}`;
+      finalMergeRequest: MergeRequestIdentity;
     };
 
 export interface ChangeLifecycleReduction {
@@ -462,6 +482,7 @@ export function applyChangeLifecycleTransition(options: {
     archivePublication?: ArchivePublicationResult | null;
     archiveMerge?: (ArchiveMergeRefreshResult & { source: ArchiveMergeRefreshSource }) | null;
     postMergeVerification?: ChangeLifecycleState['postMergeVerification'] | null;
+    archiveClosure?: ChangeLifecycleState['archiveClosure'] | null;
   };
 }): { snapshot: ChangeLifecycleSnapshot; fact: ChangeLifecycleTransitionFact } {
   assertChangeLifecycleSnapshot(options.current);
@@ -522,6 +543,10 @@ export function applyChangeLifecycleTransition(options: {
   if (options.next.postMergeVerification === null) delete snapshot.postMergeVerification;
   else if (options.next.postMergeVerification) {
     snapshot.postMergeVerification = structuredClone(options.next.postMergeVerification);
+  }
+  if (options.next.archiveClosure === null) delete snapshot.archiveClosure;
+  else if (options.next.archiveClosure) {
+    snapshot.archiveClosure = structuredClone(options.next.archiveClosure);
   }
   assertChangeLifecycleSnapshot(snapshot);
   return {
@@ -999,12 +1024,19 @@ export function evolveChangeLifecycle(options: {
         },
       });
     }
+    if (
+      !observation.work ||
+      observation.work.phase !== 'archive' ||
+      observation.work.kind !== 'specification.archive'
+    ) {
+      throw new Error('Satisfied post-merge Evidence requires Specification Archive Work');
+    }
     return applyChangeLifecycleTransition({
       definition: options.definition,
       current,
       transitionId: 'archive.post-merge-verified',
       next: {
-        currentWork: null,
+        currentWork: observation.work,
         waitCondition: null,
         blocker: null,
         postMergeVerification: {
@@ -1013,6 +1045,36 @@ export function evolveChangeLifecycle(options: {
           checkoutManifestDigest: observation.checkoutManifestDigest,
           inputFingerprint: observation.evidenceInputFingerprint,
           status: 'satisfied',
+        },
+      },
+    });
+  }
+  if (observation.kind === 'archive-completed') {
+    const work = current.currentWork;
+    if (
+      current.phase !== 'archive' ||
+      current.status !== 'running' ||
+      work?.kind !== 'specification.archive' ||
+      work.workId !== observation.workId ||
+      work.inputDigest !== observation.inputDigest ||
+      current.postMergeVerification?.status !== 'satisfied'
+    ) {
+      throw new Error('Specification closure does not match the active Archive Work');
+    }
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'archive.completed',
+      next: {
+        currentWork: null,
+        waitCondition: null,
+        blocker: null,
+        archiveClosure: {
+          closureId: observation.closureId,
+          planDigest: observation.planDigest,
+          auditDigest: observation.auditDigest,
+          publicationReceiptDigest: observation.publicationReceiptDigest,
+          finalMergeRequest: structuredClone(observation.finalMergeRequest),
         },
       },
     });

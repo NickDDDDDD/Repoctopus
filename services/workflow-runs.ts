@@ -52,12 +52,14 @@ import {
   createArchiveDeliveryWork,
   createAwaitMergeWork,
   createPostMergeVerifyWork,
+  createSpecificationArchiveWork,
 } from '../domains/change-lifecycle/archive-input.js';
 import type { DeliveryIntentV3, DeliveryPolicy } from '../domains/delivery/types.js';
 import { deliveryPolicyDigest } from '../domains/delivery/snapshot.js';
 import type { WorkExecutorIdentity } from '../domains/action/types.js';
 import type { ArchivePublicationResult } from '../domains/delivery/service-v3.js';
 import type { EvidenceGateProjection } from '../domains/evidence/types.js';
+import type { MergeRequestIdentity } from '../domains/delivery/types.js';
 
 export interface StartChangeRunInput {
   workspaceId: string;
@@ -132,6 +134,17 @@ export interface AcceptArchivePostMergeVerificationInput {
   attemptId: string;
   checkoutManifestDigest: `sha256:${string}`;
   gate: EvidenceGateProjection;
+}
+
+export interface CompleteArchiveInput {
+  runId: string;
+  workId: string;
+  inputDigest: `sha256:${string}`;
+  closureId: `sha256:${string}`;
+  planDigest: `sha256:${string}`;
+  auditDigest: `sha256:${string}`;
+  publicationReceiptDigest: `sha256:${string}`;
+  finalMergeRequest: MergeRequestIdentity;
 }
 
 export class WorkflowRuns extends Service {
@@ -1161,6 +1174,22 @@ export class WorkflowRuns extends Service {
       ) {
         throw new Error('Post-merge Evidence Gate is stale or belongs to another Archive Work');
       }
+      const nextWork =
+        input.gate.status === 'satisfied' && lifecycle.archiveDeliveryInput
+          ? createSpecificationArchiveWork({
+              definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+              archive: lifecycle.archiveDeliveryInput,
+              postMergeBundleId: input.gate.bundleId,
+              checkoutManifestDigest: input.checkoutManifestDigest,
+              workspaceRepositoryId: lifecycle.archiveDeliveryInput.changeBranch.repositoryId,
+              repositoryIds: [
+                lifecycle.archiveDeliveryInput.changeBranch.repositoryId,
+                ...lifecycle.archiveDeliveryInput.businessDeliveries.map(
+                  (delivery) => delivery.repositoryId,
+                ),
+              ],
+            })
+          : undefined;
       return this.coordinator.acceptChangeObservation(input.runId, {
         kind: 'archive-post-merge-verified',
         result: input.gate.status === 'satisfied' ? 'satisfied' : 'failed',
@@ -1171,6 +1200,32 @@ export class WorkflowRuns extends Service {
         checkoutManifestDigest: input.checkoutManifestDigest,
         evidenceInputFingerprint: input.gate.inputFingerprint,
         workflowStateVersion: state.stateVersion,
+        ...(nextWork ? { work: nextWork } : {}),
+      });
+    });
+  }
+
+  completeArchive(input: CompleteArchiveInput): Promise<RuntimeResult<RunStatusView>> {
+    return this.operations.run({ cancellable: false }, async () => {
+      const state = await this.ctx.runStore.loadRun(input.runId);
+      const lifecycle = state.changeLifecycle;
+      if (
+        !lifecycle ||
+        state.status !== 'running' ||
+        lifecycle.phase !== 'archive' ||
+        lifecycle.currentWork?.kind !== 'specification.archive'
+      ) {
+        throw new Error(`Change Run has no active Specification Archive Work: ${input.runId}`);
+      }
+      return this.coordinator.acceptChangeObservation(input.runId, {
+        kind: 'archive-completed',
+        workId: input.workId,
+        inputDigest: input.inputDigest,
+        closureId: input.closureId,
+        planDigest: input.planDigest,
+        auditDigest: input.auditDigest,
+        publicationReceiptDigest: input.publicationReceiptDigest,
+        finalMergeRequest: structuredClone(input.finalMergeRequest),
       });
     });
   }

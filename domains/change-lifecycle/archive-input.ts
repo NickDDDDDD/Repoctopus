@@ -155,3 +155,32 @@ export function createPostMergeVerifyWork(facts: {
     inputDigest,
   };
 }
+
+export function createSpecificationArchiveWork(facts: {
+  definition: ChangeLifecycleDefinition;
+  archive: ArchiveDeliveryInput;
+  postMergeBundleId: string;
+  checkoutManifestDigest: `sha256:${string}`;
+  workspaceRepositoryId: string;
+  repositoryIds: readonly string[];
+}): WorkDescriptor {
+  const binding = materializeLifecycleWorkBinding({
+    definition: facts.definition,
+    kind: 'specification.archive',
+    augmentationSkills: [],
+    workspaceRepositoryId: facts.workspaceRepositoryId,
+    repositoryIds: facts.repositoryIds,
+  });
+  const inputDigest = sha256({
+    archiveInputDigest: facts.archive.digest,
+    postMergeBundleId: facts.postMergeBundleId,
+    checkoutManifestDigest: facts.checkoutManifestDigest,
+    binding,
+  });
+  return {
+    schemaVersion: 1,
+    workId: `archive:specification:${inputDigest.slice('sha256:'.length, 19)}`,
+    ...binding,
+    inputDigest,
+  };
+}
