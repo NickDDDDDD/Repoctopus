@@ -47,6 +47,8 @@ export interface DeliveryV3Preparation {
   policy: DeliveryPolicy;
   reportContents: string;
   evidenceBundleIds: string[];
+  /** Exact, Closure-receipted paths that may coexist with a Business delivery. */
+  allowedDirtyPathsByDeliveryId?: Readonly<Record<string, readonly string[]>>;
 }
 
 export interface ArchivePublicationReceipt {
@@ -204,13 +206,23 @@ export class DeliveryServiceV3 {
     this.validate(options.intent, options.policy);
     await this.evidence.assertSatisfied(options.evidenceBundleIds, this.compositionDigest);
     const repositories = selectedRepositories(options.project, options.intent);
+    const deliveryIds = new Set(
+      options.intent.businessDeliveries.map((delivery) => delivery.deliveryId),
+    );
+    for (const deliveryId of Object.keys(options.allowedDirtyPathsByDeliveryId ?? {})) {
+      if (!deliveryIds.has(deliveryId)) {
+        throw new Error(`Archive cleanliness scope references an unknown delivery: ${deliveryId}`);
+      }
+    }
     const facts: BusinessDeliveryFactsV3[] = [];
     for (const delivery of options.intent.businessDeliveries) {
+      const allowedDirtyPaths = options.allowedDirtyPathsByDeliveryId?.[delivery.deliveryId];
       facts.push({
         ...(await this.git.inspect(
           repositories.get(delivery.deliveryId)!,
           businessIntent(delivery),
           options.policy,
+          allowedDirtyPaths ? { allowedDirtyPaths } : undefined,
         )),
         deliveryId: delivery.deliveryId,
       });

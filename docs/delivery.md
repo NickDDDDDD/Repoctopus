@@ -26,6 +26,8 @@ node bin/repoctopus.js run archive-prepare --workspace . --run <run-id> --attemp
 node bin/repoctopus.js approval review --workspace . --change <change-id>
 ```
 
+Archive 关闭规格后可能在同一个 source-branch worktree 中出现尚未提交的规格关闭 diff。该 diff 不属于 Business MR：Runtime 只在 repository 与 source branch 同时匹配时采用 Closure Receipt 的 `changedFiles` 作为一次性清洁范围，并要求 staged、unstaged、untracked 的实际路径集合与其完全相等。任何额外修改、缺失关闭文件或越界路径仍会阻断发布；普通 Delivery 不接受此例外。
+
 准备快照绑定 Change 分支、完整业务交付集合、每仓 HEAD tree 与目标基线、验证报告、策略、动作计划、composition digest 和 Evidence Bundle。任一代码树、报告、策略、分支、仓库选择或目标基线变化都会使批准失效。
 
 在所有远端动作仍是 `pending` 且尚未产生决定时，相同输入重试幂等返回原请求；新输入生成新 request，迟到旧响应被身份检查拒绝。批准、拒绝或开始发布后，重新 prepare 不能覆盖既有事实。

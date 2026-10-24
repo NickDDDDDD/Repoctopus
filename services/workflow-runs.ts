@@ -1056,6 +1056,17 @@ export class WorkflowRuns extends Service {
       });
       let publication: ArchivePublicationResult;
       try {
+        const closureDelivery = archive.businessDeliveries.filter(
+          (delivery) =>
+            delivery.repositoryId === archive.changeBranch.repositoryId &&
+            delivery.sourceBranch === archive.changeBranch.sourceBranch,
+        );
+        if (closureDelivery.length > 1) {
+          throw new Error('Specification closure maps to multiple Business deliveries');
+        }
+        const allowedDirtyPathsByDeliveryId = closureDelivery[0]
+          ? { [closureDelivery[0].deliveryId]: closure.changedFiles }
+          : undefined;
         publication = await this.ctx.delivery.publishArchive(
           {
             project: input.project,
@@ -1063,6 +1074,7 @@ export class WorkflowRuns extends Service {
             policy: input.policy,
             reportContents: `verification-report:sha256:${archive.verificationReport.sha256}`,
             evidenceBundleIds: [archive.evidenceBundleId],
+            ...(allowedDirtyPathsByDeliveryId ? { allowedDirtyPathsByDeliveryId } : {}),
           },
           signal,
         );

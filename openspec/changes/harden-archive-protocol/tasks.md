@@ -108,6 +108,10 @@
       **Blocked by:** 6.2
       **Acceptance:** `openspec validate harden-archive-protocol --strict --no-interactive`、Repoctopus Provider validation、`npm run check:provenance`、`npm run verify`、`npm run test:package-e2e`、`npm run test:tracer-e2e` 与生产依赖审计全部通过
       **Requirements:** change-lifecycle#archive-publication-terminal, delivery-governance#publication-receipt, consistency-reconciliation#pull-reconcile
+- [x] 6.4 让同仓 Archive 业务发布只排除 Closure Receipt 精确声明的工作树 diff，同时继续拒绝缺失、额外和越界修改。
+      **Blocked by:** 6.3
+      **Acceptance:** 真实 Git worktree 与公共 Archive publication service 测试证明精确 allowlist 可通过，额外/缺失/越界路径 fail-closed，普通 Delivery 清洁规则不变
+      **Requirements:** delivery-governance#stable-publication, specification-authority#closure-candidate
 
 ## Workflow follow-up
 

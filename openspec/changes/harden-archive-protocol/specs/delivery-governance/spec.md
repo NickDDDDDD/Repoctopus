@@ -16,6 +16,11 @@ Repoctopus MUST 按稳定顺序执行逐仓普通 push 和 MR create-or-recover/
 - **WHEN** 失败原因解决后恢复同一交付计划
 - **THEN** Runtime 核对已完成动作并从第一个未确认发布项继续
 
+#### Scenario: 规格关闭与业务发布使用同一工作树
+
+- **WHEN** 已验证的 Specification Closure 把 Receipt 中的精确允许 diff 同步到同时承载业务源分支的工作树
+- **THEN** Delivery 只把与 Closure Receipt 完全相等的路径集合排除在业务清洁范围之外；任一缺失路径、额外修改或越界路径都必须阻断发布
+
 #### Scenario: MR 创建响应丢失
 
 - **WHEN** 托管平台已经创建 MR 但 Runtime 未持久化成功响应

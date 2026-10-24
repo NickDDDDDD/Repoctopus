@@ -200,6 +200,42 @@ describe('Git delivery adapter', () => {
     });
   });
 
+  it('treats only the exact receipted Archive closure paths as clean for Business publication', async () => {
+    const setup = await fixture();
+    const closurePath = 'openspec/changes/archive/example/proposal.md';
+    await mkdir(path.join(setup.repositoryPath, 'openspec', 'changes', 'archive', 'example'), {
+      recursive: true,
+    });
+    await writeFile(path.join(setup.repositoryPath, ...closurePath.split('/')), 'archived');
+    const adapter = new GitDeliveryAdapter();
+
+    await expect(adapter.inspect(setup.repository, setup.selected, policy)).resolves.toMatchObject({
+      clean: false,
+    });
+    await expect(
+      adapter.inspect(setup.repository, setup.selected, policy, {
+        allowedDirtyPaths: [closurePath],
+      }),
+    ).resolves.toMatchObject({ clean: true });
+    await expect(
+      adapter.inspect(setup.repository, setup.selected, policy, {
+        allowedDirtyPaths: [closurePath, 'openspec/specs/missing/spec.md'],
+      }),
+    ).resolves.toMatchObject({ clean: false });
+
+    await writeFile(path.join(setup.repositoryPath, 'unexpected.txt'), 'not part of closure');
+    await expect(
+      adapter.inspect(setup.repository, setup.selected, policy, {
+        allowedDirtyPaths: [closurePath],
+      }),
+    ).resolves.toMatchObject({ clean: false });
+    await expect(
+      adapter.inspect(setup.repository, setup.selected, policy, {
+        allowedDirtyPaths: [closurePath, '../escape.txt'],
+      }),
+    ).rejects.toThrow(/invalid repository path/i);
+  });
+
   it('rejects protected branches and invalid commit messages without committing', async () => {
     const setup = await fixture();
     await execFileAsync('git', ['switch', 'main'], { cwd: setup.repositoryPath });
