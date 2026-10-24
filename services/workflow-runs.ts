@@ -38,6 +38,8 @@ import {
 } from '../domains/change-lifecycle/host-workflow.js';
 import type { DesignGateAssessment } from './specification-planning.js';
 import { createInitialBuildWork } from '../domains/change-lifecycle/build-work.js';
+import { createVerificationInput } from '../domains/change-lifecycle/verification-input.js';
+import { createVerifyWork } from '../domains/change-lifecycle/verify-work.js';
 import type { SpecificationTask } from '../domains/specification/types.js';
 import type {
   ChangeLifecycleState,
@@ -54,6 +56,7 @@ export interface StartChangeRunInput {
   remote: string;
   projectSnapshot: ProjectSnapshot;
   projectConfigDigest: `sha256:${string}`;
+  verificationProfileId: string;
 }
 
 export interface DecideChangeRunInput {
@@ -151,6 +154,9 @@ export class WorkflowRuns extends Service {
       if (!/^sha256:[a-f0-9]{64}$/u.test(input.projectConfigDigest)) {
         throw new Error('Change Run project configuration digest is invalid');
       }
+      if (!input.verificationProfileId.trim()) {
+        throw new Error('Change Run verification Evidence Profile is required');
+      }
       if (input.projectSnapshot.projectId !== workspaceId) {
         throw new Error('Change Run project snapshot belongs to another Workspace');
       }
@@ -202,6 +208,7 @@ export class WorkflowRuns extends Service {
         targetBranch,
         repositoryIds,
         projectConfigDigest: input.projectConfigDigest,
+        verificationProfileId: input.verificationProfileId,
       };
       return this.coordinator.startOrResume({
         workflow: createChangeRunHostWorkflow(),
@@ -439,17 +446,110 @@ export class WorkflowRuns extends Service {
               inputDigest: observedDigest,
             });
           }
-          return {
-            value: await this.coordinator.status(runId),
-            diagnostics: [
-              ...diagnostics,
-              {
-                level: 'info',
-                code: 'change.work-current',
-                message: 'Current lifecycle Work remains valid',
-              },
-            ],
-          };
+          if (lifecycle.phase === 'verify' || lifecycle.currentWork) {
+            return {
+              value: await this.coordinator.status(runId),
+              diagnostics: [
+                ...diagnostics,
+                {
+                  level: 'info',
+                  code: 'change.work-current',
+                  message: 'Current lifecycle Work remains valid',
+                },
+              ],
+            };
+          }
+          const tasks = lifecycle.tasks ?? [];
+          if (tasks.some((task) => task.status !== 'completed')) {
+            try {
+              const approvalHash = assessment.approval?.decision?.approvalHash;
+              if (!approvalHash) throw new Error('Approved Design has no approval hash');
+              const taskSet = await this.ctx.specification.tasks(
+                lifecycle.identity.changeId,
+                signal,
+              );
+              const skills = await this.resolveLifecycleWorkSkills('task.implement', signal);
+              const nextBuild = createInitialBuildWork({
+                runId,
+                definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+                actionSkill: skills.actionSkill,
+                augmentationSkills: skills.augmentationSkills,
+                taskSet,
+                approvalHash,
+                compositionDigest: current.composition.compositionDigest,
+                projectConfigDigest,
+                projectSnapshotDigest: current.projectSnapshotDigest,
+                workspaceRepositoryId,
+                repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
+              });
+              for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
+                await this.coordinator.bindSkill(runId, skill);
+              }
+              return this.coordinator.acceptChangeObservation(runId, {
+                kind: 'build-task-ready',
+                work: nextBuild.work,
+                tasks: nextBuild.tasks,
+              });
+            } catch (error) {
+              throw new Error(
+                error instanceof Error ? error.message : 'Next Build Task planning failed',
+                { cause: error },
+              );
+            }
+          }
+          try {
+            const profileId = current.trigger?.facts.verificationProfileId;
+            if (typeof profileId !== 'string' || !profileId.trim()) {
+              throw new Error('Verification Evidence Profile identity is missing');
+            }
+            const planned = await this.ctx.evidenceCoordinator.plan(profileId);
+            const skills = await this.resolveLifecycleWorkSkills('evidence.verify', signal);
+            const boundSkills = [
+              ...(current.skillUsageSnapshots ?? []),
+              skills.actionSkill,
+              ...skills.augmentationSkills,
+            ].filter(
+              (skill, index, all) =>
+                all.findIndex(
+                  (candidate) =>
+                    candidate.name === skill.name && candidate.provider === skill.provider,
+                ) === index,
+            );
+            const verificationInput = createVerificationInput({
+              runId,
+              tasks,
+              fingerprint: planned.fingerprint,
+              plan: planned.plan,
+              projectConfigDigest,
+              compositionDigest: current.composition.compositionDigest,
+              skills: boundSkills,
+            });
+            const verifyWork = createVerifyWork({
+              definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+              verification: verificationInput,
+              actionSkill: skills.actionSkill,
+              augmentationSkills: skills.augmentationSkills,
+              workspaceRepositoryId,
+              repositoryIds: planned.fingerprint.manifest.repositories.map(
+                (repository) => repository.repositoryId,
+              ),
+            });
+            for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
+              await this.coordinator.bindSkill(runId, skill);
+            }
+            return this.coordinator.acceptChangeObservation(runId, {
+              kind: 'build-verification-ready',
+              verificationInput,
+              work: verifyWork,
+            });
+          } catch (error) {
+            return this.coordinator.acceptChangeObservation(runId, {
+              kind: 'build-verification-blocked',
+              reason:
+                error instanceof Error ? error.message : 'Verification input preparation failed',
+              evidenceIds: [],
+            });
+          }
         }
         if (assessment.status === 'approved' && assessment.validation) {
           try {

@@ -243,6 +243,14 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       requiredValidatorProfile: 'design.artifacts-valid',
     },
     {
+      id: 'build.task-ready',
+      kind: 'self',
+      from: { phase: 'build', statuses: ['running'] },
+      to: { phase: 'build', status: 'running' },
+      trigger: 'next-task-ready',
+      requiredValidatorProfile: 'build.plan-current',
+    },
+    {
       id: 'build.task-completed',
       kind: 'self',
       from: { phase: 'build', statuses: ['running'] },
@@ -251,9 +259,17 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       requiredValidatorProfile: 'build.task-valid',
     },
     {
+      id: 'build.verification-blocked',
+      kind: 'self',
+      from: { phase: 'build', statuses: ['running', 'blocked'] },
+      to: { phase: 'build', status: 'blocked' },
+      trigger: 'verification-input-incomplete',
+      requiredValidatorProfile: 'build.plan-current',
+    },
+    {
       id: 'build.validated',
       kind: 'advance',
-      from: { phase: 'build', statuses: ['running'] },
+      from: { phase: 'build', statuses: ['running', 'blocked'] },
       to: { phase: 'verify', status: 'running' },
       trigger: 'all-tasks-validated',
       requiredValidatorProfile: 'build.task-valid',

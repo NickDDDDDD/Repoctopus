@@ -1,6 +1,8 @@
 import type { SkillUsageSnapshot } from '../skill/types.js';
 import type { SpecificationArtifactKind } from '../specification/types.js';
 import type { SpecificationTask } from '../specification/types.js';
+import { canonicalJson } from '../workflow-contract/canonical.js';
+import type { VerificationInput } from './verification-input.js';
 
 export const CHANGE_PHASES = ['open', 'design', 'build', 'verify', 'archive'] as const;
 export type ChangePhase = (typeof CHANGE_PHASES)[number];
@@ -198,6 +200,7 @@ export interface ChangeLifecycleState {
   blocker: ChangeRunBlocker | null;
   tasks?: readonly SpecificationTask[];
   planningDigest?: `sha256:${string}`;
+  verificationInput?: VerificationInput;
 }
 
 export interface ChangeLifecycleSnapshot extends ChangeLifecycleState {
@@ -281,6 +284,21 @@ export type ChangeLifecycleObservation =
       inputDigest: `sha256:${string}`;
       receiptId: string;
       tasks: readonly SpecificationTask[];
+    }
+  | {
+      kind: 'build-task-ready';
+      work: WorkDescriptor;
+      tasks: readonly SpecificationTask[];
+    }
+  | {
+      kind: 'build-verification-ready';
+      verificationInput: VerificationInput;
+      work: WorkDescriptor;
+    }
+  | {
+      kind: 'build-verification-blocked';
+      reason: string;
+      evidenceIds: readonly string[];
     };
 
 export interface ChangeLifecycleReduction {
@@ -307,13 +325,23 @@ export function assertChangeLifecycleSnapshot(
   if (snapshot.currentWork && snapshot.currentWork.phase !== snapshot.phase) {
     throw new Error('Current Work phase does not match the Change phase');
   }
-  if (snapshot.currentWork) {
+  if (snapshot.currentWork?.taskId) {
     const task = snapshot.tasks?.find(
       (candidate) => candidate.taskId === snapshot.currentWork?.taskId,
     );
     if (!task || task.taskRevision !== snapshot.currentWork.taskRevision) {
       throw new Error('Current Work does not match the persisted Task revision');
     }
+  }
+  if (
+    snapshot.phase === 'verify' &&
+    ((snapshot.verificationInput && !snapshot.currentWork) ||
+      (!snapshot.verificationInput && snapshot.currentWork) ||
+      (snapshot.verificationInput &&
+        snapshot.currentWork &&
+        snapshot.currentWork.inputDigest !== snapshot.verificationInput.digest))
+  ) {
+    throw new Error('Verify phase requires a Work bound to the immutable verification input');
   }
   if (snapshot.status === 'waiting' && snapshot.waitCondition === null) {
     throw new Error('Waiting Change Run requires a durable WaitCondition');
@@ -345,6 +373,7 @@ export function applyChangeLifecycleTransition(options: {
     blocker: ChangeRunBlocker | null;
     tasks?: readonly SpecificationTask[];
     planningDigest?: `sha256:${string}` | null;
+    verificationInput?: VerificationInput | null;
   };
 }): { snapshot: ChangeLifecycleSnapshot; fact: ChangeLifecycleTransitionFact } {
   assertChangeLifecycleSnapshot(options.current);
@@ -384,6 +413,10 @@ export function applyChangeLifecycleTransition(options: {
   };
   if (options.next.planningDigest === null) delete snapshot.planningDigest;
   else if (options.next.planningDigest) snapshot.planningDigest = options.next.planningDigest;
+  if (options.next.verificationInput === null) delete snapshot.verificationInput;
+  else if (options.next.verificationInput) {
+    snapshot.verificationInput = structuredClone(options.next.verificationInput);
+  }
   assertChangeLifecycleSnapshot(snapshot);
   return {
     snapshot,
@@ -444,6 +477,7 @@ export function evolveChangeLifecycle(options: {
         blocker: null,
         tasks: [],
         planningDigest: null,
+        verificationInput: null,
       },
     });
     reduced.fact.invalidation = {
@@ -506,6 +540,122 @@ export function evolveChangeLifecycle(options: {
         waitCondition: null,
         blocker: null,
         tasks: observation.tasks,
+      },
+    });
+  }
+  if (observation.kind === 'build-task-ready') {
+    if (
+      current.phase !== 'build' ||
+      current.status !== 'running' ||
+      current.currentWork !== null
+    ) {
+      throw new Error(`Build Task dispatch is not valid from ${current.phase}/${current.status}`);
+    }
+    const currentTasks = current.tasks ?? [];
+    if (
+      currentTasks.length !== observation.tasks.length ||
+      currentTasks.some((task, index) => {
+        const observed = observation.tasks[index];
+        return (
+          !observed ||
+          observed.taskId !== task.taskId ||
+          observed.taskRevision !== task.taskRevision ||
+          observed.status !== task.status
+        );
+      })
+    ) {
+      throw new Error('Next Build Work changed the approved Task projection');
+    }
+    const task = observation.tasks.find((candidate) => candidate.taskId === observation.work.taskId);
+    if (
+      observation.work.phase !== 'build' ||
+      observation.work.kind !== 'task.implement' ||
+      task?.status !== 'pending' ||
+      task.taskRevision !== observation.work.taskRevision
+    ) {
+      throw new Error('Next Build Work does not bind a pending Task revision');
+    }
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'build.task-ready',
+      next: {
+        currentWork: observation.work,
+        waitCondition: null,
+        blocker: null,
+        tasks: observation.tasks,
+      },
+    });
+  }
+  if (observation.kind === 'build-verification-blocked') {
+    if (current.phase !== 'build' || !['running', 'blocked'].includes(current.status)) {
+      throw new Error(
+        `Build verification blocking is not valid from ${current.phase}/${current.status}`,
+      );
+    }
+    if ((current.tasks ?? []).some((task) => task.status !== 'completed')) {
+      throw new Error('Build verification input may not be prepared before all Tasks complete');
+    }
+    const blocker: ChangeRunBlocker = {
+      code: 'build.verification-input-incomplete',
+      message: observation.reason,
+      evidenceIds: [...observation.evidenceIds],
+      sinceRevision: current.revision + 1,
+    };
+    if (
+      current.status === 'blocked' &&
+      current.blocker?.code === blocker.code &&
+      current.blocker.message === blocker.message
+    ) {
+      return { snapshot: structuredClone(current), fact: null };
+    }
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'build.verification-blocked',
+      next: {
+        currentWork: null,
+        waitCondition: null,
+        blocker,
+        verificationInput: null,
+      },
+    });
+  }
+  if (observation.kind === 'build-verification-ready') {
+    if (current.phase !== 'build' || !['running', 'blocked'].includes(current.status)) {
+      throw new Error(
+        `Build verification input is not valid from ${current.phase}/${current.status}`,
+      );
+    }
+    if (
+      current.currentWork !== null ||
+      (current.tasks ?? []).length === 0 ||
+      (current.tasks ?? []).some((task) => task.status !== 'completed')
+    ) {
+      throw new Error('Build verification input requires all Tasks complete and no active Work');
+    }
+    if (
+      observation.work.phase !== 'verify' ||
+      observation.work.kind !== 'evidence.verify' ||
+      observation.work.inputDigest !== observation.verificationInput.digest
+    ) {
+      throw new Error('Verify Work does not bind the immutable verification input');
+    }
+    const taskRevisions = (current.tasks ?? [])
+      .map(({ taskId, taskRevision }) => ({ taskId, taskRevision }))
+      .sort((left, right) => left.taskId.localeCompare(right.taskId));
+    if (canonicalJson(taskRevisions) !== canonicalJson(observation.verificationInput.taskRevisions)) {
+      throw new Error('Verification input Task revisions do not match the completed Task set');
+    }
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'build.validated',
+      next: {
+        currentWork: observation.work,
+        waitCondition: null,
+        blocker: null,
+        verificationInput: observation.verificationInput,
       },
     });
   }

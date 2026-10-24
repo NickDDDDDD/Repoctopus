@@ -931,6 +931,8 @@ const definitions: readonly BuiltinDefinition[] = [
       'domains/change-lifecycle/build-validator.ts',
       'domains/change-lifecycle/host-workflow.ts',
       'domains/change-lifecycle/transition.ts',
+      'domains/change-lifecycle/verification-input.ts',
+      'domains/change-lifecycle/verify-work.ts',
       'domains/engine/loop.ts',
       'domains/engine/types.ts',
       'domains/skill/types.ts',

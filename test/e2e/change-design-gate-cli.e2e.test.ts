@@ -447,18 +447,44 @@ describe('Change Run Design gate CLI', () => {
       cwd: workspace,
     });
     await execFileAsync('git', ['push'], { cwd: workspace });
-    const checkboxOnly = await runCli<RunStatusView>({
+    const verificationReady = await runCli<RunStatusView>({
       packageRoot,
       cwd: workspace,
       args: ['run', 'next', '--workspace', workspace, '--run', validRun.runId!],
       environment,
     });
-    expect(checkboxOnly.result?.changeLifecycle).toMatchObject({
-      phase: 'build',
+    expect(verificationReady.result?.changeLifecycle).toMatchObject({
+      phase: 'verify',
       status: 'running',
       taskProgress: { total: 1, completed: 1, currentTaskId: null },
-      currentWork: null,
+      currentWork: {
+        kind: 'evidence.verify',
+        actionSkill: { name: 'code-review', provider: 'matt-builtins' },
+      },
+      verificationInput: {
+        taskRevisions: [{ taskId: '1.1' }],
+        repositories: [
+          {
+            repositoryId: 'workspace',
+          },
+        ],
+        evidenceProfile: { id: 'verify' },
+        skills: [
+          { name: 'code-review' },
+          { name: 'codebase-design' },
+          { name: 'tdd' },
+        ],
+      },
     });
+    const frozenVerification = verificationReady.result?.changeLifecycle?.verificationInput;
+    expect(frozenVerification?.repositories[0]?.commit).toMatch(/^[a-f0-9]{40,64}$/u);
+    expect(frozenVerification?.repositories[0]?.tree).toMatch(/^[a-f0-9]{40,64}$/u);
+    expect(frozenVerification?.projectConfigDigest).toMatch(/^sha256:[a-f0-9]{64}$/u);
+    expect(frozenVerification?.compositionDigest).toMatch(/^sha256:[a-f0-9]{64}$/u);
+    expect(verificationReady.result?.changeLifecycle?.currentWork?.inputDigest).toBe(
+      verificationReady.result?.changeLifecycle?.verificationInput?.digest,
+    );
+    const verifyWorkId = verificationReady.result?.changeLifecycle?.currentWork?.workId;
 
     const designFile = path.join(workspace, 'openspec', 'changes', 'valid-plan', 'design.md');
     await writeFile(
@@ -490,10 +516,10 @@ describe('Change Run Design gate CLI', () => {
       expect(trajectory.at(-1)?.data).toMatchObject({
         observationKind: 'planning-semantic-drift',
         changeLifecycleTransition: {
-          transitionId: 'build.semantic-plan-drift',
+          transitionId: 'verify.semantic-plan-drift',
           invalidation: {
             kind: 'planning-semantic-drift',
-            supersededWorkId: null,
+            supersededWorkId: verifyWorkId,
           },
         },
       });

@@ -41,7 +41,7 @@
 
 ## 4. 接入 Verify Gate 与回退循环
 
-- [ ] 4.1 在全部 Task 有有效完成事实时生成不可变 verification input，绑定任务 revisions、仓库 commit/tree、配置、composition、Skill 和 Evidence Profile；任一输入缺失时保持 `build/blocked`。
+- [x] 4.1 在全部 Task 有有效完成事实时生成不可变 verification input，绑定任务 revisions、仓库 commit/tree、配置、composition、Skill 和 Evidence Profile；任一输入缺失时保持 `build/blocked`。
 - [ ] 4.2 复用 Evidence Attempt、Artifact、Gate 和 outbox 执行 Verify Work，只有相同 input digest 下 `satisfied` Gate 才进入 Archive；测试普通成功、旧 Gate 和跨 Run Artifact 均被拒绝。
 - [ ] 4.3 实现正式验证报告 artifact 与隐私/大小限制，报告引用命令、结果和证据身份而不嵌入无限输出；运行失败、超时、取消、重试和 supersede 测试。
 - [ ] 4.4 实现 Verify 失败或实现漂移返回 Build 的追加式 invalidation，保留旧 Evidence；用恢复测试证明进程中断后不会错误进入 Archive 或重复有效副作用。

@@ -25,9 +25,7 @@ export function createInitialBuildWork(facts: {
   repositoryIds: readonly string[];
 }): { tasks: SpecificationTask[]; work: WorkDescriptor } {
   const ready = readySpecificationTasks(facts.taskSet.tasks);
-  if (ready.length !== 1) {
-    throw new Error(`Build requires exactly one ready Task; found ${ready.length}`);
-  }
+  if (ready.length === 0) throw new Error('Build has no ready Task');
   const task = ready[0]!;
   const binding = materializeLifecycleWorkBinding({
     definition: facts.definition,

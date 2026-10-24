@@ -821,6 +821,7 @@ async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
           remote: string;
           projectSnapshot: ProjectSnapshot;
           projectConfigDigest: `sha256:${string}`;
+          verificationProfileId: string;
         },
         RuntimeResult<RunStatusView>
       >('run.change.start', {
@@ -833,6 +834,7 @@ async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
         remote: stringFlag(parsed, 'remote', { fallback: 'origin' })!,
         projectSnapshot,
         projectConfigDigest: qualifiedSha256(config.effectiveDigest, 'Project configuration'),
+        verificationProfileId: stringFlag(parsed, 'profile', { fallback: 'verify' })!,
       });
       return successEnvelope({
         command: 'run start',
