@@ -32,7 +32,7 @@
       **Blocked by:** 1.3
       **Acceptance:** schema/golden tests 拒绝未知版本、倒退状态、跨 Change 输入和 checkout 外路径
       **Requirements:** specification-authority#closure-journal
-- [ ] 2.2 在官方 `openspec archive --yes --json` 前持久化 prepared Journal，并在隔离 checkout 中执行；不以退出码或目录移动单独签发 Closure Receipt。
+- [x] 2.2 在官方 `openspec archive --yes --json` 前持久化 prepared Journal，并在隔离 checkout 中执行；不以退出码或目录移动单独签发 Closure Receipt。
       **Blocked by:** 2.1
       **Acceptance:** 命令前、目录移动后和 Receipt 前故障注入均留下可解释状态，开发者工作树摘要不变
       **Requirements:** specification-authority#closure-journal, specification-authority#closure-candidate
