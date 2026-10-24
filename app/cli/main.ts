@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises';
+import { randomUUID } from 'node:crypto';
 import { userInfo } from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
@@ -1105,6 +1106,77 @@ async function runArchiveComplete(parsed: ParsedArguments): Promise<CliEnvelope<
   }
 }
 
+async function runWorkClaim(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const runId = stringFlag(parsed, 'run', { required: true })!;
+  const adapter = stringFlag(parsed, 'adapter', { fallback: 'process' })!;
+  const attempt = integerFlag(parsed, 'attempt', { fallback: 1, minimum: 1 })!;
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute('run.work.claim', {
+      runId,
+      adapter,
+      attempt,
+      executor: {
+        actorId: userInfo().username,
+        runnerId: stringFlag(parsed, 'runner', { fallback: `cli:${process.pid}` })!,
+        source: 'cli',
+        authenticated: true,
+      },
+    });
+    return successEnvelope({ command: 'run work-claim', runId, result });
+  } finally {
+    await app.close();
+  }
+}
+
+async function runWorkOutcome(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const runId = stringFlag(parsed, 'run', { required: true })!;
+  const status = stringFlag(parsed, 'status', { required: true });
+  if (status !== 'succeeded' && status !== 'failed') {
+    throw new Error('--status must be succeeded or failed');
+  }
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute('run.work.outcome', {
+      schemaVersion: 1,
+      outcomeId: randomUUID(),
+      runId,
+      workId: stringFlag(parsed, 'work', { required: true })!,
+      attempt: integerFlag(parsed, 'attempt', { required: true, minimum: 1 })!,
+      claimToken: qualifiedSha256(
+        stringFlag(parsed, 'claim-token', { required: true })!,
+        'Claim token',
+      ),
+      inputDigest: qualifiedSha256(
+        stringFlag(parsed, 'input-digest', { required: true })!,
+        'Work input digest',
+      ),
+      status,
+      summary: stringFlag(parsed, 'summary', { required: true })!,
+    });
+    return successEnvelope({ command: 'run work-outcome', runId, result });
+  } finally {
+    await app.close();
+  }
+}
+
+async function runWorkValidate(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const runId = stringFlag(parsed, 'run', { required: true })!;
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute('run.work.validate', {
+      runId,
+      receiptId: stringFlag(parsed, 'receipt', { required: true })!,
+    });
+    return successEnvelope({ command: 'run work-validate', runId, result });
+  } finally {
+    await app.close();
+  }
+}
+
 async function runDecide(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   if (!process.stdin.isTTY || !process.stdout.isTTY) {
     throw new Error('Human approval requires an interactive terminal or a trusted IDE Adapter');
@@ -1377,6 +1449,9 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   if (command === 'run archive-refresh') return runArchiveRefresh(parsed);
   if (command === 'run archive-verify') return runArchiveVerify(parsed);
   if (command === 'run archive-complete') return runArchiveComplete(parsed);
+  if (command === 'run work-claim') return runWorkClaim(parsed);
+  if (command === 'run work-outcome') return runWorkOutcome(parsed);
+  if (command === 'run work-validate') return runWorkValidate(parsed);
   if (command === 'run decide') return runDecide(parsed);
   if (command === 'run record') return runRecord(parsed);
   if (command === 'run resume') return runResume(parsed);
@@ -1396,7 +1471,7 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   if (command === 'browser doctor') return browserDoctor(parsed);
   if (command === 'browser install') return browserInstall(parsed);
   throw new Error(
-    'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decide|record|resume|archive-prepare|archive-publish|archive-refresh|archive-verify|archive-complete> | runner start | post-merge reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | event <status|replay|retry> | approval review | browser <doctor|install> | doctor',
+    'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decide|record|resume|work-claim|work-outcome|work-validate|archive-prepare|archive-publish|archive-refresh|archive-verify|archive-complete> | runner start | post-merge reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | event <status|replay|retry> | approval review | browser <doctor|install> | doctor',
   );
 }
 

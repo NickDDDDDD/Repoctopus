@@ -292,7 +292,6 @@ describe('Change Run Design gate CLI', () => {
       provider: { id: 'openspec' },
     });
     const approvedWorkId = approved.result?.changeLifecycle?.currentWork?.workId;
-    let failedReceiptId: string;
     const outcomeApp = await bootProjectComposition(packageRoot, workspace);
     try {
       expect(outcomeApp.context.workDispatcher.list()).toEqual([
@@ -301,46 +300,68 @@ describe('Change Run Design gate CLI', () => {
         'process',
         'specification',
       ]);
-      const intent = await outcomeApp.context.commandRouter.execute<
-        WorkClaimRequest,
-        ActionIntent
-      >('run.work.claim', {
-        runId: validRun.runId!,
-        adapter: 'process',
-        executor: {
-          actorId: 'alice',
-          runnerId: 'runner-a',
-          source: 'cli',
-          authenticated: true,
-        },
-      });
-      expect(intent.executionContext?.layers.map((entry) => entry.source)).toEqual([
-        'repoctopus-runtime',
-        'tdd',
-        'codebase-design',
-        'repoctopus.build@1.0.0',
-        approvedWorkId,
-      ]);
-      const accepted = await outcomeApp.context.commandRouter.execute<
-        ReturnType<typeof outcomeApp.context.workDispatcher.outcome>,
-        WorkOutcomeAcceptance
-      >(
-        'run.work.outcome',
-        outcomeApp.context.workDispatcher.outcome(intent, 'failed', 'Process Adapter failed'),
-      );
-      expect(accepted).toMatchObject({
-        validation: 'pending',
-        lifecycleAdvanced: false,
-        receipt: {
-          adapter: 'process',
-          outcome: 'failed',
-          executor: { actorId: 'alice', runnerId: 'runner-a' },
-        },
-      });
-      failedReceiptId = accepted.receipt.receiptId;
     } finally {
       await outcomeApp.close();
     }
+    const claim = await runCli<ActionIntent>({
+      packageRoot,
+      cwd: workspace,
+      args: [
+        'run',
+        'work-claim',
+        '--workspace',
+        workspace,
+        '--run',
+        validRun.runId!,
+        '--adapter',
+        'process',
+        '--runner',
+        'runner-a',
+      ],
+      environment,
+    });
+    expect(claim.result?.executionContext?.layers.map((entry) => entry.source)).toEqual([
+      'repoctopus-runtime',
+      'tdd',
+      'codebase-design',
+      'repoctopus.build@1.0.0',
+      approvedWorkId,
+    ]);
+    const accepted = await runCli<WorkOutcomeAcceptance>({
+      packageRoot,
+      cwd: workspace,
+      args: [
+        'run',
+        'work-outcome',
+        '--workspace',
+        workspace,
+        '--run',
+        validRun.runId!,
+        '--work',
+        claim.result!.workId,
+        '--attempt',
+        String(claim.result!.attempt),
+        '--claim-token',
+        claim.result!.claimToken,
+        '--input-digest',
+        claim.result!.inputDigest,
+        '--status',
+        'failed',
+        '--summary',
+        'Process Adapter failed',
+      ],
+      environment,
+    });
+    expect(accepted.result).toMatchObject({
+      validation: 'pending',
+      lifecycleAdvanced: false,
+      receipt: {
+        adapter: 'process',
+        outcome: 'failed',
+        executor: { runnerId: 'runner-a', source: 'cli', authenticated: true },
+      },
+    });
+    const failedReceiptId = accepted.result!.receipt.receiptId;
     const outcomeDidNotAdvance = await runCli<RunStatusView>({
       packageRoot,
       cwd: workspace,
@@ -353,6 +374,22 @@ describe('Change Run Design gate CLI', () => {
       taskProgress: { total: 1, completed: 0, currentTaskId: '1.1' },
       currentWork: { workId: approvedWorkId },
     });
+    const failedValidation = await runCli<RuntimeResult<{ validation: { status: string } }>>({
+      packageRoot,
+      cwd: workspace,
+      args: [
+        'run',
+        'work-validate',
+        '--workspace',
+        workspace,
+        '--run',
+        validRun.runId!,
+        '--receipt',
+        failedReceiptId,
+      ],
+      environment,
+    });
+    expect(failedValidation.result?.value.validation.status).toBe('failed');
     const openSpecEnvironmentKeys = [
       'XDG_DATA_HOME',
       'XDG_CONFIG_HOME',
