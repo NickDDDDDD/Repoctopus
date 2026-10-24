@@ -10,6 +10,23 @@ import {
 } from '../domains/specification/tasks.js';
 
 describe('Specification Tasks', () => {
+  it.each([
+    '- [ ] 1.1 Wait for the MR merge before finishing.\n',
+    '- [ ] 1.1 Finalize.\n  **Acceptance:** after Verify completes, record the result\n',
+    '- [ ] 1.1 等待一致性审查结果完成后再处理。\n',
+  ])('rejects a checkbox that depends on a future Runtime fact', (document) => {
+    expect(() => parseSpecificationTasks('future-fact', document)).toThrow(/not Build-scoped/u);
+  });
+
+  it('allows Build work that implements Archive behavior', () => {
+    expect(() =>
+      parseSpecificationTasks(
+        'archive-build',
+        '- [ ] 1.1 Implement Archive receipt validation.\n  **Acceptance:** unit tests cover exact OID matching\n',
+      ),
+    ).not.toThrow();
+  });
+
   it('matches golden semantic normalization fixtures', async () => {
     const fixture = (name: string) =>
       readFile(

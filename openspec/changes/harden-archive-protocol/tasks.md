@@ -96,7 +96,7 @@
 
 ## 6. 前置流程门禁与完整验证
 
-- [ ] 6.1 在 Design validator 拒绝依赖 Verify、Archive、MR 合入或一致性审查结果的 tracked checkbox，并在规划投影展示 Build scope、验收与 Requirement mappings。
+- [x] 6.1 在 Design validator 拒绝依赖 Verify、Archive、MR 合入或一致性审查结果的 tracked checkbox，并在规划投影展示 Build scope、验收与 Requirement mappings。
       **Blocked by:** 5.4
       **Acceptance:** 正反 Tasks fixture 覆盖 Build 内验收和 future-phase 事实；proposal hash 对语义变化敏感、对 checkbox 状态噪声稳定
       **Requirements:** change-lifecycle#build-only-tasks
