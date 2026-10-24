@@ -97,6 +97,57 @@ export function createArchiveDeliveryWork(facts: {
   };
 }
 
+export function createSpecificationCloseWork(facts: {
+  definition: ChangeLifecycleDefinition;
+  archive: ArchiveDeliveryInput;
+  workspaceRepositoryId: string;
+  repositoryIds: readonly string[];
+}): WorkDescriptor {
+  const binding = materializeLifecycleWorkBinding({
+    definition: facts.definition,
+    kind: 'specification.close',
+    augmentationSkills: [],
+    workspaceRepositoryId: facts.workspaceRepositoryId,
+    repositoryIds: facts.repositoryIds,
+  });
+  return {
+    schemaVersion: 1,
+    workId: `archive:specification-close:${facts.archive.digest.slice('sha256:'.length, 19)}`,
+    ...binding,
+    inputDigest: facts.archive.digest,
+  };
+}
+
+export function createDeliveryPublishWork(facts: {
+  definition: ChangeLifecycleDefinition;
+  archive: ArchiveDeliveryInput;
+  closure: { closureId: `sha256:${string}`; planDigest: `sha256:${string}` };
+  actionSkill: SkillUsageSnapshot;
+  workspaceRepositoryId: string;
+  repositoryIds: readonly string[];
+}): WorkDescriptor {
+  const binding = materializeLifecycleWorkBinding({
+    definition: facts.definition,
+    kind: 'delivery.publish',
+    actionSkill: facts.actionSkill,
+    augmentationSkills: [],
+    workspaceRepositoryId: facts.workspaceRepositoryId,
+    repositoryIds: facts.repositoryIds,
+  });
+  const inputDigest = sha256({
+    archiveInputDigest: facts.archive.digest,
+    closureId: facts.closure.closureId,
+    closurePlanDigest: facts.closure.planDigest,
+    binding,
+  });
+  return {
+    schemaVersion: 1,
+    workId: `archive:delivery-publish:${inputDigest.slice('sha256:'.length, 19)}`,
+    ...binding,
+    inputDigest,
+  };
+}
+
 export function createAwaitMergeWork(facts: {
   definition: ChangeLifecycleDefinition;
   archive: ArchiveDeliveryInput;

@@ -9,6 +9,9 @@ import type {
   ArchivePublicationResult,
 } from '../delivery/service-v3.js';
 import type { MergeRequestIdentity } from '../delivery/types.js';
+import type { PublicationReceipt } from '../delivery/publication-receipt.js';
+import { assertPublicationReceipt } from '../delivery/publication-receipt.js';
+import type { SpecificationClosureResult } from '../specification/types.js';
 
 export const CHANGE_PHASES = ['open', 'design', 'build', 'verify', 'archive'] as const;
 export type ChangePhase = (typeof CHANGE_PHASES)[number];
@@ -225,6 +228,8 @@ export interface ChangeLifecycleState {
     publicationReceiptDigest: `sha256:${string}`;
     finalMergeRequest: MergeRequestIdentity;
   };
+  specificationClosure?: SpecificationClosureResult;
+  publicationReceipt?: PublicationReceipt;
 }
 
 export type ArchiveMergeRefreshSource = 'webhook' | 'inbox' | 'active-check' | 'run-start';
@@ -360,6 +365,25 @@ export type ChangeLifecycleObservation =
       workflowStateVersion: number;
     }
   | {
+      kind: 'archive-preflight-ready';
+      archiveInput: ArchiveDeliveryInput;
+      work: WorkDescriptor;
+    }
+  | {
+      kind: 'archive-specification-closed';
+      closure: SpecificationClosureResult;
+      work: WorkDescriptor;
+    }
+  | {
+      kind: 'archive-publication-receipt-accepted';
+      receipt: PublicationReceipt;
+    }
+  | {
+      kind: 'archive-publication-blocked';
+      reason: string;
+      evidenceIds: readonly string[];
+    }
+  | {
       kind: 'archive-delivery-ready';
       archiveInput: ArchiveDeliveryInput;
       work: WorkDescriptor;
@@ -485,6 +509,8 @@ export function applyChangeLifecycleTransition(options: {
     archiveMerge?: (ArchiveMergeRefreshResult & { source: ArchiveMergeRefreshSource }) | null;
     postMergeVerification?: ChangeLifecycleState['postMergeVerification'] | null;
     archiveClosure?: ChangeLifecycleState['archiveClosure'] | null;
+    specificationClosure?: SpecificationClosureResult | null;
+    publicationReceipt?: PublicationReceipt | null;
   };
 }): { snapshot: ChangeLifecycleSnapshot; fact: ChangeLifecycleTransitionFact } {
   assertChangeLifecycleSnapshot(options.current);
@@ -550,6 +576,14 @@ export function applyChangeLifecycleTransition(options: {
   if (options.next.archiveClosure === null) delete snapshot.archiveClosure;
   else if (options.next.archiveClosure) {
     snapshot.archiveClosure = structuredClone(options.next.archiveClosure);
+  }
+  if (options.next.specificationClosure === null) delete snapshot.specificationClosure;
+  else if (options.next.specificationClosure) {
+    snapshot.specificationClosure = structuredClone(options.next.specificationClosure);
+  }
+  if (options.next.publicationReceipt === null) delete snapshot.publicationReceipt;
+  else if (options.next.publicationReceipt) {
+    snapshot.publicationReceipt = structuredClone(options.next.publicationReceipt);
   }
   assertChangeLifecycleSnapshot(snapshot);
   return {
@@ -872,6 +906,133 @@ export function evolveChangeLifecycle(options: {
           attemptId: observation.attemptId,
           bundleId: observation.bundleId,
           reason: observation.reason,
+        },
+      },
+    });
+  }
+  if (observation.kind === 'archive-preflight-ready') {
+    if (
+      current.phase !== 'archive' ||
+      current.status !== 'running' ||
+      current.currentWork !== null
+    ) {
+      throw new Error(`Archive preflight is not valid from ${current.phase}/${current.status}`);
+    }
+    if (
+      observation.work.phase !== 'archive' ||
+      observation.work.kind !== 'specification.close' ||
+      observation.work.inputDigest !== observation.archiveInput.digest ||
+      observation.archiveInput.runId !== current.identity.runId ||
+      observation.archiveInput.changeId !== current.identity.changeId
+    ) {
+      throw new Error('Archive preflight Work does not match its immutable input');
+    }
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'archive.preflight-ready',
+      next: {
+        currentWork: observation.work,
+        waitCondition: null,
+        blocker: null,
+        archiveDeliveryInput: observation.archiveInput,
+      },
+    });
+  }
+  if (observation.kind === 'archive-specification-closed') {
+    if (
+      current.phase !== 'archive' ||
+      current.status !== 'running' ||
+      current.currentWork?.kind !== 'specification.close' ||
+      !current.archiveDeliveryInput
+    ) {
+      throw new Error(`Specification closure is not valid from ${current.phase}/${current.status}`);
+    }
+    if (
+      observation.closure.changeId !== current.identity.changeId ||
+      observation.closure.status !== 'closed' ||
+      observation.work.phase !== 'archive' ||
+      observation.work.kind !== 'delivery.publish'
+    ) {
+      throw new Error('Specification Closure Receipt does not match the active Archive');
+    }
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'archive.specification-closed',
+      next: {
+        currentWork: observation.work,
+        waitCondition: null,
+        blocker: null,
+        specificationClosure: observation.closure,
+      },
+    });
+  }
+  if (observation.kind === 'archive-publication-receipt-accepted') {
+    if (
+      current.phase === 'archive' &&
+      current.status === 'completed' &&
+      current.publicationReceipt?.digest === observation.receipt.digest
+    ) {
+      return { snapshot: structuredClone(current), fact: null };
+    }
+    if (
+      current.phase !== 'archive' ||
+      current.status !== 'running' ||
+      current.currentWork?.kind !== 'delivery.publish' ||
+      !current.verificationInput ||
+      !current.specificationClosure
+    ) {
+      throw new Error(
+        `Publication completion is not valid from ${current.phase}/${current.status}`,
+      );
+    }
+    assertPublicationReceipt(observation.receipt);
+    if (
+      observation.receipt.changeId !== current.identity.changeId ||
+      observation.receipt.generation !== current.identity.generation ||
+      observation.receipt.runId !== current.identity.runId ||
+      observation.receipt.verificationInputDigest !== current.verificationInput.digest ||
+      observation.receipt.specificationClosure.closureId !==
+        current.specificationClosure.closureId ||
+      observation.receipt.specificationClosure.planDigest !==
+        current.specificationClosure.planDigest
+    ) {
+      throw new Error('Publication Receipt does not match the active Archive inputs');
+    }
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'archive.completed',
+      next: {
+        currentWork: null,
+        waitCondition: null,
+        blocker: null,
+        publicationReceipt: observation.receipt,
+      },
+    });
+  }
+  if (observation.kind === 'archive-publication-blocked') {
+    if (
+      current.phase !== 'archive' ||
+      !['running', 'blocked'].includes(current.status) ||
+      current.currentWork?.kind !== 'delivery.publish' ||
+      !observation.reason.trim()
+    ) {
+      throw new Error(`Publication blocking is not valid from ${current.phase}/${current.status}`);
+    }
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'archive.publication-blocked',
+      next: {
+        currentWork: current.currentWork,
+        waitCondition: null,
+        blocker: {
+          code: 'publication-receipt-incomplete',
+          message: observation.reason,
+          evidenceIds: [...observation.evidenceIds],
+          sinceRevision: current.revision,
         },
       },
     });
