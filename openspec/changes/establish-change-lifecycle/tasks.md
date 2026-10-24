@@ -75,7 +75,7 @@
 ## 8. 全量验证与自举交付
 
 - [x] 8.1 执行领域、contract、Provider、Store/onboarding、process、platform、migration、architecture 和 telemetry 套件，修复 flaky/竞态后运行 `npm run verify`、`npm run test:package-e2e` 与 `npm run test:tracer-e2e`。
-- [ ] 8.2 使用新 lifecycle 从公开 Change 分支完成本 change 的 Build、Verify 和 Archive，自举核对同一 Run 经 Business MR 合入、精确 merge commit 验证、规格同步、归档和最终 Change MR 后才 completed。
+- [x] 8.2 使用新 lifecycle 从公开 Change 分支完成本 change 的 Build、Verify 和 Archive，自举核对同一 Run 经 Business MR 合入、精确 merge commit 验证、规格同步、归档和最终 Change MR 后才 completed。
 - [ ] 8.3 生成正式验证报告，记录 definition/composition 摘要、迁移矩阵、并发恢复实验、Evidence、平台 Receipt、已采用上游原则和明确排除项。
 - [ ] 8.4 清理临时检出、审计 clone、日志、mock server、端口监听、scratch Artifact 和测试状态卷；复查 Git 状态、运行进程、公开分支与远端 OID，证明没有遗留调试产物或未推送 commit。
 
