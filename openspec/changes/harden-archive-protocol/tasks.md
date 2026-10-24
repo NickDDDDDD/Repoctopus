@@ -62,7 +62,7 @@
       **Blocked by:** 3.3
       **Acceptance:** contract tests 证明结果不改原 Run/Receipt，不包含 MR body、完整 diff、凭据或绝对路径，并可关联后续 Change
       **Requirements:** consistency-reconciliation#pull-reconcile, consistency-reconciliation#impact-review
-- [ ] 4.2 实现显式 `change reconcile [--change]` 与 `run start` 参数解析后的有界 Workspace reconcile；平台故障只产生诊断，不阻断新任务。
+- [x] 4.2 实现显式 `change reconcile [--change]` 与 `run start` 参数解析后的有界 Workspace reconcile；平台故障只产生诊断，不阻断新任务。
       **Blocked by:** 4.1
       **Acceptance:** head 未变为 no-op；命令执行后退出且无 Timer/端口；`--help` 不 boot composition；网络失败不创建等待 Run
       **Requirements:** consistency-reconciliation#pull-reconcile, runtime-foundation#readonly-cli

@@ -177,7 +177,7 @@ describe('single-repository Archive production tracer', () => {
         definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
         current,
         archive,
-        actionSkill: {
+        prSkill: {
           schemaVersion: 1,
           name: 'pr',
           provider: 'matt-builtins',

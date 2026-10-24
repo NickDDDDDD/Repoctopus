@@ -35,7 +35,7 @@ export interface TraceArchiveInput {
   definition: ChangeLifecycleDefinition;
   current: ChangeLifecycleSnapshot;
   archive: ArchiveDeliveryInput;
-  actionSkill: SkillUsageSnapshot;
+  prSkill: SkillUsageSnapshot;
   workspaceRepositoryId: string;
   repositoryIds: readonly string[];
 }
@@ -91,11 +91,12 @@ export class ArchiveCompletionTracer {
     });
 
     const closure = await this.ports.closeSpecification(input.archive);
+    const resolvedPrSkill = input.prSkill;
     const publishWork = createDeliveryPublishWork({
       definition: input.definition,
       archive: input.archive,
       closure,
-      actionSkill: input.actionSkill,
+      actionSkill: resolvedPrSkill,
       workspaceRepositoryId: input.workspaceRepositoryId,
       repositoryIds: input.repositoryIds,
     });

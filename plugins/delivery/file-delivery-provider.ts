@@ -12,7 +12,9 @@ import type {
   HumanDecisionResponse,
   MergeRequestReference,
   TrustedActor,
+  MergeRequestStatus,
 } from '../../domains/delivery/types.js';
+import type { PublicationReceiptItem } from '../../domains/delivery/publication-receipt.js';
 import type {
   PostMergePublicationReceipt,
   PostMergePublicationReceiptV2,
@@ -99,6 +101,27 @@ export class FileDeliveryProvider extends Delivery {
       undefined,
       new FinalChangePublicationService(git, mergeRequests),
     );
+  }
+
+  override observePublication(
+    item: PublicationReceiptItem,
+    signal?: AbortSignal,
+  ): Promise<MergeRequestStatus> {
+    return this.operations.run({ cancellable: true, signal }, async () => {
+      const environment = this.config.environment ?? process.env;
+      const adapter = new GitHubMergeRequestAdapter(
+        new EnvironmentCredentialProvider(environment, this.config.githubTokenVariable),
+      );
+      const status = await adapter.status(item.mergeRequest);
+      if (
+        status.repositoryId !== item.repositoryId ||
+        status.sourceBranch !== item.sourceBranch ||
+        status.targetBranch !== item.targetBranch
+      ) {
+        throw new Error(`Observed publication identity drifted: ${item.publicationId}`);
+      }
+      return status;
+    });
   }
 
   private async assertPlanningApproval(intent: DeliveryIntentV3, remote: string): Promise<void> {

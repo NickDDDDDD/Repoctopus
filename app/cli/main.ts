@@ -51,12 +51,15 @@ import type { SpecificationApprovalState } from '../../domains/specification/typ
 import { inspectPublishedChangeBranch } from '../../platform/git/change-branch.js';
 import { reviewSpecificationApproval } from './specification-approval-decision.js';
 import { changeProjection, renderChangeProjection } from './change-run-view.js';
+import type { ConsistencyReconciliationResult } from '../../services/consistency-reconciler.js';
 
 const DIST_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PRODUCT_ROOT =
   path.basename(DIST_DIR) === 'dist'
     ? path.resolve(DIST_DIR, '..')
     : path.resolve(DIST_DIR, '..', '..');
+const USAGE =
+  'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decide|record|resume|work-claim|work-outcome|work-validate|archive-prepare|archive-publish|archive-refresh|archive-verify|archive-complete> | change reconcile | runner start | post-merge reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | event <status|replay|retry> | approval review | browser <doctor|install> | doctor';
 
 function defaultWorkflowPath(): string {
   return path.resolve(DIST_DIR, '..', 'workflows', 'foundation.yaml');
@@ -817,14 +820,10 @@ async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
-    const reconciliation = app.composition.entries.some(
-      (entry) => entry.id === 'post-merge-command',
-    )
-      ? await app.context.commandRouter.execute<
-          Record<string, never>,
-          PostMergeReconciliationResult
-        >('post-merge.reconcile', {})
-      : null;
+    const reconciliation = await app.context.commandRouter.execute<
+      Record<string, never>,
+      ConsistencyReconciliationResult
+    >('change.reconcile', {});
     const changeId = stringFlag(parsed, 'change');
     if (changeId) {
       const config = await loadProjectConfig(workspace);
@@ -859,7 +858,7 @@ async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
         command: 'run start',
         runId: result.value.state.runId,
         result: result.value,
-        diagnostics: result.diagnostics,
+        diagnostics: [...result.diagnostics, ...reconciliation.diagnostics],
         nextActions: nextActions(result.value),
       });
     }
@@ -891,20 +890,40 @@ async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
       result: result.value,
       diagnostics: [
         ...result.diagnostics,
-        ...(reconciliation && reconciliation.checked > 0
+        ...(reconciliation.checked > 0
           ? [
               {
                 level:
-                  reconciliation.failed > 0 || reconciliation.blocked > 0
-                    ? ('warning' as const)
-                    : ('info' as const),
-                code: 'post-merge.reconciliation',
-                message: `启动前补偿检查 ${reconciliation.checked} 个 change：完成 ${reconciliation.completed}，等待 ${reconciliation.waiting}，阻断 ${reconciliation.blocked}，失败 ${reconciliation.failed}`,
+                  reconciliation.diagnostics.length > 0 ? ('warning' as const) : ('info' as const),
+                code: 'consistency.reconciliation',
+                message: `启动前一致性检查 ${reconciliation.checked} 个 change：无变化 ${reconciliation.unchanged}，待语义审查 ${reconciliation.reviewRequests.length}`,
               },
             ]
           : []),
+        ...reconciliation.diagnostics,
       ],
       nextActions: nextActions(result.value),
+    });
+  } finally {
+    await app.close();
+  }
+}
+
+async function changeReconcile(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const changeId = stringFlag(parsed, 'change');
+    const result = await app.context.commandRouter.execute<
+      { changeId?: string },
+      ConsistencyReconciliationResult
+    >('change.reconcile', {
+      ...(changeId ? { changeId } : {}),
+    });
+    return successEnvelope({
+      command: 'change reconcile',
+      result,
+      diagnostics: result.diagnostics,
     });
   } finally {
     await app.close();
@@ -1457,6 +1476,7 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   if (command === 'run decide') return runDecide(parsed);
   if (command === 'run record') return runRecord(parsed);
   if (command === 'run resume') return runResume(parsed);
+  if (command === 'change reconcile') return changeReconcile(parsed);
   if (command === 'delivery checkpoint') return deliveryCheckpoint(parsed);
   if (command === 'delivery prepare') return deliveryPrepare(parsed);
   if (command === 'delivery status') return deliveryStatus(parsed);
@@ -1472,9 +1492,7 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   if (command === 'doctor') return doctor(parsed);
   if (command === 'browser doctor') return browserDoctor(parsed);
   if (command === 'browser install') return browserInstall(parsed);
-  throw new Error(
-    'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decide|record|resume|work-claim|work-outcome|work-validate|archive-prepare|archive-publish|archive-refresh|archive-verify|archive-complete> | runner start | post-merge reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | event <status|replay|retry> | approval review | browser <doctor|install> | doctor',
-  );
+  throw new Error(USAGE);
 }
 
 export function renderHuman(envelope: CliEnvelope<unknown>): string {
@@ -1497,6 +1515,10 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
   const asJson = booleanFlag(parsed, 'json');
   const command = parsed.command.join(' ') || 'help';
   try {
+    if (command === 'help' || booleanFlag(parsed, 'help')) {
+      process.stdout.write(`${USAGE}\n`);
+      return 0;
+    }
     if (command === 'runner start') return await runnerStart(parsed, asJson);
     const envelope = await dispatch(parsed);
     process.stdout.write(`${asJson ? JSON.stringify(envelope) : renderHuman(envelope)}\n`);

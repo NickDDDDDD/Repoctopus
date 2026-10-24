@@ -19,7 +19,9 @@ import type {
   HumanDecisionResponse,
   MergeRequestReference,
   TrustedActor,
+  MergeRequestStatus,
 } from '../domains/delivery/types.js';
+import type { PublicationReceiptItem } from '../domains/delivery/publication-receipt.js';
 import type { DeliveryV2MigrationPlan } from '../domains/delivery/migration.js';
 import type {
   ArchiveFinalPublicationProof,
@@ -67,7 +69,9 @@ export abstract class Delivery extends Service {
   ): Promise<ArchivePublicationResult> {
     void signal;
     return Promise.reject(
-      new Error(`Delivery provider cannot publish lifecycle Archive for ${options.intent.changeId}`),
+      new Error(
+        `Delivery provider cannot publish lifecycle Archive for ${options.intent.changeId}`,
+      ),
     );
   }
   refreshArchive(
@@ -125,6 +129,15 @@ export abstract class Delivery extends Service {
   reconciliationCandidates(signal?: AbortSignal): Promise<DeliveryReconciliationCandidate[]> {
     void signal;
     return Promise.resolve([]);
+  }
+  observePublication(
+    item: PublicationReceiptItem,
+    signal?: AbortSignal,
+  ): Promise<MergeRequestStatus> {
+    void signal;
+    return Promise.reject(
+      new Error(`Delivery provider cannot observe publication: ${item.publicationId}`),
+    );
   }
   migrationPlan(
     changeId: string,

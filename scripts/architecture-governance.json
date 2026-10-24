@@ -33,6 +33,7 @@
         "plugins/command/project-probe-contributor.ts",
         "plugins/command/workflow-run-contributor.ts",
         "plugins/command/archive-contributor.ts",
+        "plugins/command/consistency-contributor.ts",
         "services/**",
         "platform/http/**"
       ],
@@ -188,6 +189,7 @@
         "domains/specification/**",
         "platform/specification/**",
         "platform/git/change-branch.ts",
+        "platform/git/specification-checkout.ts",
         "plugins/command/specification-contributor.ts"
       ],
       "upstream": ["@fission-ai/openspec@1.14.3"],
@@ -219,6 +221,13 @@
       ],
       "upstream": ["domains/comet-native/native-pull-request-finish.ts"],
       "rationale": "交付聚合只负责多仓快照、Human Decision、push/MR 恢复和合入事实，不继承旧工作流 Hook 与阶段状态机。"
+    },
+    {
+      "id": "consistency-review",
+      "disposition": "repoctopus-native",
+      "targets": ["domains/consistency/**", "platform/consistency/**"],
+      "upstream": ["domains/comet-native/native-pull-request-finish.ts"],
+      "rationale": "发布后的短生命周期拉取只形成有界语义审查事实，不扩展 Change 生命周期或等待远端合入。"
     },
     {
       "id": "post-merge-automation",
@@ -378,6 +387,22 @@
         "platform/runtime/file-change-lifecycle-migration-store.ts"
       ],
       "status": "recoverable-migration-journal"
+    },
+    {
+      "id": "specification-closure-journal",
+      "files": [
+        "domains/specification/closure-journal.ts",
+        "platform/specification/file-closure-journal-store.ts"
+      ],
+      "status": "isolated-local-transaction"
+    },
+    {
+      "id": "delivery-publication-journal",
+      "files": [
+        "domains/delivery/publication-journal.ts",
+        "platform/delivery/file-publication-journal-store.ts"
+      ],
+      "status": "resumable-external-publication"
     }
   ],
   "compositionGuards": [

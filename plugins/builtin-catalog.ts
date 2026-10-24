@@ -69,6 +69,8 @@ import runnerApplication from './application/runner-application.js';
 import desktopApplication from './application/desktop-application.js';
 import { DesktopApplication } from '../services/desktop-application.js';
 import { SpecificationPlanning } from '../services/specification-planning.js';
+import { ConsistencyReconciler } from '../services/consistency-reconciler.js';
+import consistencyContributor from './command/consistency-contributor.js';
 
 interface BuiltinDefinition {
   descriptor: Omit<PluginDescriptor, 'codeDigest'>;
@@ -1041,6 +1043,42 @@ const definitions: readonly BuiltinDefinition[] = [
       'domains/specification/types.ts',
       'platform/skill/snapshot.ts',
     ],
+  },
+  {
+    descriptor: {
+      id: 'consistency-reconciler',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['consistency-review-write'],
+      permissions: ['filesystem', 'network'],
+      stateSchemas: { consistency: '1' },
+    },
+    plugin: ConsistencyReconciler,
+    sourceFiles: [
+      'services/consistency-reconciler.ts',
+      'domains/consistency/review.ts',
+      'platform/consistency/file-consistency-store.ts',
+    ],
+  },
+  {
+    descriptor: {
+      id: 'consistency-command',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'contributor',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: [],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: consistencyContributor,
+    sourceFiles: ['plugins/command/consistency-contributor.ts'],
   },
   {
     descriptor: {

@@ -218,6 +218,12 @@ function projectSelections(
     ),
     { id: 'delivery-command' },
     runtimeSelection(
+      'consistency-reconciler',
+      { workspaceRoot },
+      { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
+    ),
+    { id: 'consistency-command' },
+    runtimeSelection(
       'workflow-runs',
       { workspaceRoot },
       { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
@@ -345,6 +351,7 @@ const BASE_REQUIRED_SERVICES = [
   'actionStore',
   'browserMaintenance',
   'changeLifecycleMigration',
+  'consistencyReconciler',
   'commandRouter',
   'delivery',
   'evidenceAdapters',
