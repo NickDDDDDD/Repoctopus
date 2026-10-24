@@ -212,6 +212,12 @@ function projectSelections(
       { workspaceRoot },
       { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
     ),
+    runtimeSelection(
+      'change-lifecycle-migration',
+      { workspaceRoot },
+      { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
+    ),
+    { id: 'change-lifecycle-migration-command' },
     { id: 'workflow-run-command' },
     ...postMergeSelections(productRoot, workspaceRoot, config),
     ...(config.shared.composition?.plugins
@@ -327,6 +333,7 @@ const BASE_REQUIRED_SERVICES = [
   'actionDispatcher',
   'actionStore',
   'browserMaintenance',
+  'changeLifecycleMigration',
   'commandRouter',
   'delivery',
   'evidenceAdapters',

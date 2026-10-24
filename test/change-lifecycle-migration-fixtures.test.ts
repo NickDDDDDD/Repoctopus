@@ -5,12 +5,21 @@ import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import type { RunState } from '../domains/engine/types.js';
+import {
+  planChangeLifecycleMigration,
+  type LegacyLifecycleRecord,
+} from '../domains/change-lifecycle/migration.js';
+import {
+  applyChangeLifecycleMigration,
+  type ChangeLifecycleMigrationIntent,
+} from '../domains/change-lifecycle/migration-transaction.js';
 import { postMergeTriggerFacts } from '../domains/post-merge/run.js';
 import type { SpecificationApprovalState } from '../domains/specification/types.js';
 import { createSpecificationApprovalMigrationPlan } from '../domains/specification/planning-approval.js';
 import { FileDeliveryStore } from '../platform/delivery/file-delivery-store.js';
 import { FileDeliveryV3Store } from '../platform/delivery/file-delivery-v3-store.js';
 import { FileRuntimeStore } from '../platform/runtime/file-runtime-store.js';
+import { FileChangeLifecycleMigrationStore } from '../platform/runtime/file-change-lifecycle-migration-store.js';
 import { FilePlanningApprovalStore } from '../platform/specification/file-planning-approval-store.js';
 import { removeTemporaryDirectory, temporaryDirectory } from './helpers/fixtures.js';
 
@@ -252,5 +261,102 @@ describe('change lifecycle migration fixture baseline', () => {
       externalSideEffects: [],
     });
     expect(await fileManifest(workspace)).toEqual(before);
+  });
+
+  it('plans every legacy authority read-only with explicit migration outcomes', async () => {
+    const catalog = await inventory();
+    const workspace = await temporaryDirectory('repoctopus-lifecycle-migration-planner-');
+    cleanup.push(workspace);
+    for (const fixture of catalog.fixtures) await writeState(workspace, fixture);
+    const before = await fileManifest(workspace);
+
+    const plans = catalog.fixtures.map((fixture) =>
+      planChangeLifecycleMigration(fixture as LegacyLifecycleRecord),
+    );
+    expect(plans.map((plan) => [plan.fixtureId, plan.status, plan.targetPhase])).toEqual([
+      ['generic-run-waiting', 'manual_decision_required', null],
+      ['planning-approval-approved', 'manual_decision_required', 'design'],
+      ['delivery-v2-in-review', 'migration_required', null],
+      ['delivery-v3-in-review', 'migratable', 'archive'],
+      ['post-merge-active', 'migratable', 'archive'],
+      ['post-merge-completed', 'completed_history', null],
+    ]);
+    expect(plans.every((plan) => plan.storeWrites.length === 0)).toBe(true);
+    expect(plans.every((plan) => plan.platformCalls.length === 0)).toBe(true);
+    expect(plans.every((plan) => /^sha256:[a-f0-9]{64}$/u.test(plan.digest))).toBe(true);
+    expect(await fileManifest(workspace)).toEqual(before);
+  });
+
+  it('recovers a controlled migration after target creation without double-coordinator progress', async () => {
+    const catalog = await inventory();
+    const fixture = catalog.fixtures.find((candidate) => candidate.id === 'delivery-v3-in-review')!;
+    const plan = planChangeLifecycleMigration(fixture);
+    const workspace = await temporaryDirectory('repoctopus-lifecycle-migration-apply-');
+    cleanup.push(workspace);
+    await writeState(workspace, fixture);
+    const legacyFile = path.join(
+      workspace,
+      '.repoctopus',
+      'deliveries',
+      fixture.identity.changeId!,
+      'state.json',
+    );
+    const legacyDigest = createHash('sha256').update(await readFile(legacyFile)).digest('hex');
+    const request = {
+      schemaVersion: 1 as const,
+      plan,
+      target: {
+        workspaceId: 'team-platform',
+        changeId: fixture.identity.changeId!,
+        generation: 2,
+      },
+      auditReferences: [`legacy:${fixture.authority}:${fixture.id}`],
+    };
+    let interrupt = true;
+    const interruptedStore = new FileChangeLifecycleMigrationStore(workspace, {
+      beforeReceiptWrite() {
+        if (interrupt) {
+          interrupt = false;
+          throw new Error('simulated-migration-receipt-interruption');
+        }
+      },
+    });
+    const logicalRuns = new Set<string>();
+    let coordinatorAttempts = 0;
+    const startOrResumeTargetRun = (intent: ChangeLifecycleMigrationIntent) => {
+      coordinatorAttempts += 1;
+      logicalRuns.add(intent.targetRunId);
+      return Promise.resolve({ runId: intent.targetRunId });
+    };
+    await expect(
+      applyChangeLifecycleMigration({
+        request,
+        store: interruptedStore,
+        startOrResumeTargetRun,
+      }),
+    ).rejects.toThrow('simulated-migration-receipt-interruption');
+
+    const receipt = await applyChangeLifecycleMigration({
+      request,
+      store: new FileChangeLifecycleMigrationStore(workspace),
+      startOrResumeTargetRun,
+    });
+    expect(receipt).toMatchObject({
+      status: 'applied',
+      legacyIdentity: fixture.identity,
+      targetGeneration: 2,
+      auditReferences: [`legacy:${fixture.authority}:${fixture.id}`],
+    });
+    expect(coordinatorAttempts).toBe(2);
+    expect(logicalRuns).toEqual(new Set([receipt.targetRunId]));
+    await expect(
+      applyChangeLifecycleMigration({
+        request,
+        store: new FileChangeLifecycleMigrationStore(workspace),
+        startOrResumeTargetRun,
+      }),
+    ).resolves.toEqual(receipt);
+    expect(coordinatorAttempts).toBe(2);
+    expect(createHash('sha256').update(await readFile(legacyFile)).digest('hex')).toBe(legacyDigest);
   });
 });

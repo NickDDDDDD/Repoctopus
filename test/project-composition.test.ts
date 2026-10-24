@@ -70,6 +70,8 @@ describe('project composition assembly', () => {
         'lifecycle-validator-builtin',
         'lifecycle-extension-service',
         'lifecycle-extension-builtin',
+        'change-lifecycle-migration',
+        'change-lifecycle-migration-command',
       ]),
     );
     expect(projectIds).not.toContain('http-host');
