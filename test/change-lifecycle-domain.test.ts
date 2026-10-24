@@ -269,6 +269,26 @@ describe('Change lifecycle domain', () => {
       planningDigest: digest('i'),
     });
 
+    const resumedCompleted = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current: opened.snapshot,
+      observation: {
+        kind: 'design-gate',
+        result: 'approved',
+        reason: 'Trusted decision accepted for a completed Task projection',
+        evidenceIds: [digest('e')],
+        inputDigest: digest('i'),
+        tasks: [{ ...buildTask, status: 'completed' }],
+      },
+    });
+    expect(resumedCompleted.snapshot).toMatchObject({
+      phase: 'build',
+      status: 'running',
+      currentWork: null,
+      tasks: [{ taskId: buildTask.taskId, status: 'completed' }],
+      planningDigest: digest('i'),
+    });
+
     const invalidated = evolveChangeLifecycle({
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
       current: approved.snapshot,

@@ -1092,15 +1092,19 @@ export function evolveChangeLifecycle(options: {
     throw new Error(`Design gate is not valid from ${current.phase}/${current.status}`);
   }
   if (observation.result === 'approved') {
-    if (!observation.work || !observation.tasks || observation.tasks.length === 0) {
-      throw new Error('Approved Design gate requires the first fixed Build Work');
+    if (!observation.tasks || observation.tasks.length === 0) {
+      throw new Error('Approved Design gate requires a fixed Task projection');
+    }
+    const hasPendingTask = observation.tasks.some((task) => task.status !== 'completed');
+    if ((hasPendingTask && !observation.work) || (!hasPendingTask && observation.work)) {
+      throw new Error('Approved Design gate Build Work does not match the Task projection');
     }
     return applyChangeLifecycleTransition({
       definition: options.definition,
       current,
       transitionId: 'design.approved',
       next: {
-        currentWork: observation.work,
+        currentWork: observation.work ?? null,
         waitCondition: null,
         blocker: null,
         tasks: observation.tasks,

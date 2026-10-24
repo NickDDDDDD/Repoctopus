@@ -513,7 +513,7 @@ export class WorkflowRuns extends Service {
         if (!['design', 'build', 'verify'].includes(lifecycle.phase)) {
           throw new Error('Change Run next Work is not available before lifecycle Work dispatch');
         }
-        let build: { tasks: SpecificationTask[]; work: WorkDescriptor } | undefined;
+        let build: { tasks: SpecificationTask[]; work: WorkDescriptor | null } | undefined;
         const evaluated = await this.assessChangeDesign(current, lifecycle, signal);
         let assessment = evaluated.assessment;
         const { projectSnapshot, projectConfigDigest, workspaceRepositoryId } = evaluated;
@@ -664,22 +664,26 @@ export class WorkflowRuns extends Service {
             const approvalHash = assessment.approval?.decision?.approvalHash;
             if (!approvalHash) throw new Error('Approved Design has no approval hash');
             const taskSet = await this.ctx.specification.tasks(lifecycle.identity.changeId, signal);
-            const skills = await this.resolveLifecycleWorkSkills('task.implement', signal);
-            build = createInitialBuildWork({
-              runId,
-              definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-              actionSkill: skills.actionSkill,
-              augmentationSkills: skills.augmentationSkills,
-              taskSet,
-              approvalHash,
-              compositionDigest: current.composition.compositionDigest,
-              projectConfigDigest,
-              projectSnapshotDigest: current.projectSnapshotDigest,
-              workspaceRepositoryId,
-              repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
-            });
-            for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
-              await this.coordinator.bindSkill(runId, skill);
+            if (taskSet.tasks.every((task) => task.status === 'completed')) {
+              build = { tasks: structuredClone(taskSet.tasks), work: null };
+            } else {
+              const skills = await this.resolveLifecycleWorkSkills('task.implement', signal);
+              build = createInitialBuildWork({
+                runId,
+                definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+                actionSkill: skills.actionSkill,
+                augmentationSkills: skills.augmentationSkills,
+                taskSet,
+                approvalHash,
+                compositionDigest: current.composition.compositionDigest,
+                projectConfigDigest,
+                projectSnapshotDigest: current.projectSnapshotDigest,
+                workspaceRepositoryId,
+                repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
+              });
+              for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
+                await this.coordinator.bindSkill(runId, skill);
+              }
             }
           } catch (error) {
             assessment = {
@@ -719,7 +723,7 @@ export class WorkflowRuns extends Service {
               }
             : {}),
           ...(assessment.status === 'approved' && build
-            ? { tasks: build.tasks, work: build.work }
+            ? { tasks: build.tasks, ...(build.work ? { work: build.work } : {}) }
             : {}),
         });
         return {
