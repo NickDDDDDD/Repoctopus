@@ -87,6 +87,10 @@ export interface SpecificationMethodRule {
   id: string;
   statement: string;
   sources: readonly string[];
+  sourceDigests: readonly `sha256:${string}`[];
+  phases: readonly string[];
+  artifactKinds: readonly Exclude<SpecificationArtifactKind, 'verification'>[];
+  enforcement: 'context' | 'deterministic-validator' | 'review-rubric' | 'human-decision';
 }
 
 export interface SpecificationArtifactMethodGuidance {

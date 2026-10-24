@@ -14,6 +14,7 @@ import {
   type ChangeRunIdentity,
   type RunStatus,
 } from './transition.js';
+import { BUILTIN_METHOD_PROFILE_REGISTRY } from './method-profile.js';
 
 const phaseOrder = new Map<ChangePhase, number>(
   CHANGE_PHASES.map((phase, index) => [phase, index]),
@@ -32,14 +33,10 @@ const sideEffectClasses = new Set([
   'git-publish',
   'platform-mutation',
 ]);
+const behaviorReferenceOnlySkills = new Set(['to-spec', 'to-tickets']);
 
 function profileDigest(value: unknown): `sha256:${string}` {
   return `sha256:${createHash('sha256').update(canonicalJson(value)).digest('hex')}`;
-}
-
-function methodProfile(id: string) {
-  const stable = { id, version: '1.0.0', sourceDigests: [], ruleIds: [] } as const;
-  return { ...stable, digest: profileDigest(stable) };
 }
 
 function validatorProfile(id: string) {
@@ -92,7 +89,7 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       kind: 'change.intake',
       phase: 'open',
       augmentationSkills: [],
-      methodProfile: methodProfile('repoctopus.open'),
+      methodProfile: BUILTIN_METHOD_PROFILE_REGISTRY.snapshot('repoctopus.open', '1.0.0'),
       capabilities: ['repository.read', 'specification.read'],
       sideEffectClass: 'none',
       writeScopes: [],
@@ -104,7 +101,7 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       kind: 'specification.decision',
       phase: 'design',
       augmentationSkills: [],
-      methodProfile: methodProfile('repoctopus.design'),
+      methodProfile: BUILTIN_METHOD_PROFILE_REGISTRY.snapshot('repoctopus.design', '1.0.0'),
       capabilities: ['repository.read', 'specification.read'],
       sideEffectClass: 'none',
       writeScopes: [],
@@ -119,7 +116,7 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       kind: 'specification.plan',
       phase: 'design',
       augmentationSkills: [{ name: 'codebase-design' }],
-      methodProfile: methodProfile('repoctopus.design'),
+      methodProfile: BUILTIN_METHOD_PROFILE_REGISTRY.snapshot('repoctopus.design', '1.0.0'),
       capabilities: ['repository.read', 'specification.read', 'specification.write'],
       sideEffectClass: 'specification-write',
       writeScopes: [
@@ -141,7 +138,7 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       phase: 'build',
       actionSkill: { name: 'tdd' },
       augmentationSkills: [{ name: 'codebase-design' }],
-      methodProfile: methodProfile('repoctopus.build'),
+      methodProfile: BUILTIN_METHOD_PROFILE_REGISTRY.snapshot('repoctopus.build', '1.0.0'),
       capabilities: ['process.execute', 'repository.read', 'repository.write'],
       sideEffectClass: 'repository-write',
       writeScopes: [
@@ -160,7 +157,7 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       phase: 'verify',
       actionSkill: { name: 'code-review' },
       augmentationSkills: [],
-      methodProfile: methodProfile('repoctopus.verify'),
+      methodProfile: BUILTIN_METHOD_PROFILE_REGISTRY.snapshot('repoctopus.verify', '1.0.0'),
       capabilities: ['evidence.write', 'process.execute', 'repository.read'],
       sideEffectClass: 'process',
       writeScopes: [],
@@ -172,7 +169,7 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       kind: 'delivery.await-merge',
       phase: 'archive',
       augmentationSkills: [],
-      methodProfile: methodProfile('repoctopus.archive'),
+      methodProfile: BUILTIN_METHOD_PROFILE_REGISTRY.snapshot('repoctopus.archive', '1.0.0'),
       capabilities: ['platform.read'],
       sideEffectClass: 'none',
       writeScopes: [],
@@ -185,7 +182,7 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       phase: 'archive',
       actionSkill: { name: 'pr' },
       augmentationSkills: [],
-      methodProfile: methodProfile('repoctopus.archive'),
+      methodProfile: BUILTIN_METHOD_PROFILE_REGISTRY.snapshot('repoctopus.archive', '1.0.0'),
       capabilities: ['git.publish', 'platform.mutate', 'repository.read'],
       sideEffectClass: 'platform-mutation',
       writeScopes: [],
@@ -197,7 +194,7 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       kind: 'specification.archive',
       phase: 'archive',
       augmentationSkills: [],
-      methodProfile: methodProfile('repoctopus.archive'),
+      methodProfile: BUILTIN_METHOD_PROFILE_REGISTRY.snapshot('repoctopus.archive', '1.0.0'),
       capabilities: ['git.publish', 'specification.write'],
       sideEffectClass: 'specification-write',
       writeScopes: [
@@ -404,16 +401,25 @@ export function assertChangeLifecycleDefinition(
       throw new Error(`Lifecycle Work ${work.kind} repeats an executable Skill`);
     }
     for (const name of skillNames) assertNonEmpty(name, `Lifecycle Work ${work.kind} Skill`);
+    for (const name of skillNames) {
+      if (behaviorReferenceOnlySkills.has(name)) {
+        throw new Error(
+          `Lifecycle Work ${work.kind} cannot execute behavior-only reference: ${name}`,
+        );
+      }
+    }
     assertNonEmpty(work.methodProfile.id, `Lifecycle Work ${work.kind} Method Profile`);
     assertNonEmpty(work.methodProfile.version, `Lifecycle Work ${work.kind} Method Profile version`);
-    if (
-      profileDigest({
-        id: work.methodProfile.id,
-        version: work.methodProfile.version,
-        sourceDigests: work.methodProfile.sourceDigests,
-        ruleIds: work.methodProfile.ruleIds,
-      }) !== work.methodProfile.digest
-    ) {
+    let registeredMethodProfile;
+    try {
+      registeredMethodProfile = BUILTIN_METHOD_PROFILE_REGISTRY.snapshot(
+        work.methodProfile.id,
+        work.methodProfile.version,
+      );
+    } catch {
+      throw new Error(`Lifecycle Work ${work.kind} Method Profile is not registered`);
+    }
+    if (canonicalJson(registeredMethodProfile) !== canonicalJson(work.methodProfile)) {
       throw new Error(`Lifecycle Work ${work.kind} Method Profile digest is invalid`);
     }
     if (
