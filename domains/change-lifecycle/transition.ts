@@ -3,6 +3,7 @@ import type { SpecificationArtifactKind } from '../specification/types.js';
 import type { SpecificationTask } from '../specification/types.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import type { VerificationInput } from './verification-input.js';
+import type { ArchiveDeliveryInput } from './archive-input.js';
 
 export const CHANGE_PHASES = ['open', 'design', 'build', 'verify', 'archive'] as const;
 export type ChangePhase = (typeof CHANGE_PHASES)[number];
@@ -202,6 +203,7 @@ export interface ChangeLifecycleState {
   planningDigest?: `sha256:${string}`;
   verificationInput?: VerificationInput;
   verificationInvalidation?: VerificationInvalidation;
+  archiveDeliveryInput?: ArchiveDeliveryInput;
 }
 
 export interface VerificationInvalidation {
@@ -330,6 +332,11 @@ export type ChangeLifecycleObservation =
       reason: string;
       result: 'failed' | 'implementation-drift';
       workflowStateVersion: number;
+    }
+  | {
+      kind: 'archive-delivery-ready';
+      archiveInput: ArchiveDeliveryInput;
+      work: WorkDescriptor;
     };
 
 export interface ChangeLifecycleReduction {
@@ -412,6 +419,7 @@ export function applyChangeLifecycleTransition(options: {
     planningDigest?: `sha256:${string}` | null;
     verificationInput?: VerificationInput | null;
     verificationInvalidation?: VerificationInvalidation | null;
+    archiveDeliveryInput?: ArchiveDeliveryInput | null;
   };
 }): { snapshot: ChangeLifecycleSnapshot; fact: ChangeLifecycleTransitionFact } {
   assertChangeLifecycleSnapshot(options.current);
@@ -458,6 +466,10 @@ export function applyChangeLifecycleTransition(options: {
   if (options.next.verificationInvalidation === null) delete snapshot.verificationInvalidation;
   else if (options.next.verificationInvalidation) {
     snapshot.verificationInvalidation = structuredClone(options.next.verificationInvalidation);
+  }
+  if (options.next.archiveDeliveryInput === null) delete snapshot.archiveDeliveryInput;
+  else if (options.next.archiveDeliveryInput) {
+    snapshot.archiveDeliveryInput = structuredClone(options.next.archiveDeliveryInput);
   }
   assertChangeLifecycleSnapshot(snapshot);
   return {
@@ -774,6 +786,35 @@ export function evolveChangeLifecycle(options: {
           bundleId: observation.bundleId,
           reason: observation.reason,
         },
+      },
+    });
+  }
+  if (observation.kind === 'archive-delivery-ready') {
+    if (
+      current.phase !== 'archive' ||
+      current.status !== 'running' ||
+      current.currentWork !== null
+    ) {
+      throw new Error(`Archive Delivery planning is not valid from ${current.phase}/${current.status}`);
+    }
+    if (
+      observation.work.phase !== 'archive' ||
+      observation.work.kind !== 'delivery.prepare' ||
+      observation.work.inputDigest !== observation.archiveInput.digest ||
+      observation.archiveInput.runId !== current.identity.runId ||
+      observation.archiveInput.changeId !== current.identity.changeId
+    ) {
+      throw new Error('Archive Delivery Work does not match its immutable input');
+    }
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'archive.delivery-planned',
+      next: {
+        currentWork: observation.work,
+        waitCondition: null,
+        blocker: null,
+        archiveDeliveryInput: observation.archiveInput,
       },
     });
   }

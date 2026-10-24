@@ -46,6 +46,11 @@ import type {
   ChangeLifecycleState,
   WorkDescriptor,
 } from '../domains/change-lifecycle/transition.js';
+import {
+  createArchiveDeliveryInput,
+  createArchiveDeliveryWork,
+} from '../domains/change-lifecycle/archive-input.js';
+import type { DeliveryIntentV3, DeliveryPolicy } from '../domains/delivery/types.js';
 
 export interface StartChangeRunInput {
   workspaceId: string;
@@ -86,6 +91,13 @@ export interface VerifyChangeRunResult {
   bundleId: string | null;
   gate: 'satisfied' | 'blocked';
   run: RunStatusView;
+}
+
+export interface PrepareArchiveDeliveryInput {
+  runId: string;
+  attemptId: string;
+  intent: DeliveryIntentV3;
+  policy: DeliveryPolicy;
 }
 
 export class WorkflowRuns extends Service {
@@ -890,6 +902,60 @@ export class WorkflowRuns extends Service {
         },
         diagnostics: advanced.diagnostics,
       };
+    });
+  }
+
+  prepareArchiveDelivery(
+    input: PrepareArchiveDeliveryInput,
+    signal?: AbortSignal,
+  ): Promise<RuntimeResult<RunStatusView>> {
+    return this.operations.run({ cancellable: false, signal }, async () => {
+      const [state, evidence] = await Promise.all([
+        this.ctx.runStore.loadRun(input.runId),
+        this.ctx.evidenceCoordinator.status(input.attemptId),
+      ]);
+      const lifecycle = state.changeLifecycle;
+      if (
+        !lifecycle ||
+        state.status !== 'running' ||
+        lifecycle.phase !== 'archive' ||
+        lifecycle.currentWork !== null ||
+        !lifecycle.verificationInput
+      ) {
+        throw new Error(`Change Run is not ready to plan Archive Delivery: ${input.runId}`);
+      }
+      if (!evidence.bundle || !evidence.bundle.verificationReport) {
+        throw new Error('Archive Delivery requires a completed formal verification report');
+      }
+      const archiveInput = createArchiveDeliveryInput({
+        runId: input.runId,
+        changeId: lifecycle.identity.changeId,
+        verificationInputDigest: lifecycle.verificationInput.digest,
+        acceptedEvidenceBundleIds: state.acceptedEvidenceBundleIds,
+        evidenceBundleId: evidence.bundle.bundleId,
+        verificationReport: evidence.bundle.verificationReport,
+        intent: input.intent,
+        policy: input.policy,
+      });
+      const skills = await this.resolveLifecycleWorkSkills('delivery.prepare', signal);
+      const repositoryIds = Array.isArray(state.trigger?.facts.repositoryIds)
+        ? state.trigger.facts.repositoryIds.filter(
+            (repositoryId): repositoryId is string => typeof repositoryId === 'string',
+          )
+        : [];
+      const work = createArchiveDeliveryWork({
+        definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+        archive: archiveInput,
+        actionSkill: skills.actionSkill,
+        workspaceRepositoryId: input.intent.changeBranch.repositoryId,
+        repositoryIds,
+      });
+      await this.coordinator.bindSkill(input.runId, skills.actionSkill);
+      return this.coordinator.acceptChangeObservation(input.runId, {
+        kind: 'archive-delivery-ready',
+        archiveInput,
+        work,
+      });
     });
   }
 

@@ -283,6 +283,14 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       requiredValidatorProfile: 'verify.evidence-gate',
     },
     {
+      id: 'archive.delivery-planned',
+      kind: 'self',
+      from: { phase: 'archive', statuses: ['running'] },
+      to: { phase: 'archive', status: 'running' },
+      trigger: 'archive-delivery-input-frozen',
+      requiredValidatorProfile: 'archive.delivery-ready',
+    },
+    {
       id: 'archive.completed',
       kind: 'complete',
       from: { phase: 'archive', statuses: ['running'] },

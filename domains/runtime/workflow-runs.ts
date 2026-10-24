@@ -74,6 +74,9 @@ function lifecycleState(snapshot: ChangeLifecycleSnapshot): ChangeLifecycleState
     ...(snapshot.verificationInvalidation
       ? { verificationInvalidation: structuredClone(snapshot.verificationInvalidation) }
       : {}),
+    ...(snapshot.archiveDeliveryInput
+      ? { archiveDeliveryInput: structuredClone(snapshot.archiveDeliveryInput) }
+      : {}),
   };
 }
 
