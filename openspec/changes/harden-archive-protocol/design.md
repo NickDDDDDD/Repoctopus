@@ -194,3 +194,5 @@ CLI 在 boot composition 前处理 `--help`、版本、未知参数和缺失必�
 ## Plan Review Notes
 
 2026-10-24 review：旧计划因远端等待、Webhook、通用 Saga/GC/attempt/migration 混合而在 Scope 上不合格；重写后以单仓 tracer 开始，扩展多仓发布，再加入一致性审查，最后删除旧链。Completeness、Feasibility、Scope、Testability、Risk 和 Assumptions 均以本设计的边界、故障路径、验证矩阵与 STOP conditions 收敛到 5/5。规划不创建 implementation-notes 文件；实施偏差必须回写本 Change 的 `design.md`，重大语义变化重新经过 Design approval。
+
+2026-10-25 self-host review：第一次真实 Archive 暴露出“领域组件完成但生产组合未闭合”的偏差。`SpecificationClosureJournal`、隔离 checkout 和候选校验已有独立测试，但 `OpenSpecProvider.close()` 仍在开发者工作树直接执行官方 archive；同时 planning manifest 未绑定 `.openspec.yaml`，导致 `retire_capabilities` 改变关闭语义后旧 Design approval 仍被复用。修正决定是：公共 Provider 关闭入口必须经过隔离事务并在候选验证后才同步精确允许 diff；中断恢复从 Journal 的 before/expected 文件身份重建同一 Receipt；Change-local Provider 元数据加入 planning semantic digest；回归测试必须调用生产 Provider 公共入口，并证明失败候选不污染开发者工作树。此偏差说明 task checkbox 只能表示实现声明，不能替代 production-composition tracer 与 self-host Archive 验收。

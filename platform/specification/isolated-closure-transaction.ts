@@ -6,8 +6,10 @@ import {
   advanceSpecificationClosureJournal,
   createSpecificationClosureJournal,
   recordSpecificationClosureExpectedManifest,
+  type SpecificationClosureJournal,
   type SpecificationFileIdentity,
 } from '../../domains/specification/closure-journal.js';
+import { decideSpecificationClosureRecovery } from '../../domains/specification/closure-candidate.js';
 import type {
   SpecificationClosurePlan,
   SpecificationClosureResult,
@@ -68,6 +70,17 @@ function checkoutId(plan: SpecificationClosurePlan): string {
   return `closure-${plan.planDigest.slice('sha256:'.length, 23)}`;
 }
 
+function changedFiles(
+  before: readonly SpecificationFileIdentity[],
+  after: readonly SpecificationFileIdentity[],
+): string[] {
+  const previous = new Map(before.map((file) => [file.path, file.contentDigest]));
+  const current = new Map(after.map((file) => [file.path, file.contentDigest]));
+  return [...new Set([...previous.keys(), ...current.keys()])]
+    .filter((file) => previous.get(file) !== current.get(file))
+    .sort();
+}
+
 /** Local transaction boundary around the official OpenSpec archive command. */
 export class IsolatedSpecificationClosureTransaction {
   constructor(
@@ -85,6 +98,13 @@ export class IsolatedSpecificationClosureTransaction {
       signal?: AbortSignal,
     ) => Promise<SpecificationClosureResult>,
     private readonly injectFault?: (point: SpecificationClosureFaultPoint) => void,
+    private readonly recoverOfficialArchive?: (
+      checkoutRoot: string,
+      plan: SpecificationClosurePlan,
+      before: readonly SpecificationFileIdentity[],
+      changedFiles: readonly string[],
+      signal?: AbortSignal,
+    ) => Promise<SpecificationClosureResult>,
   ) {}
 
   async execute(
@@ -96,17 +116,7 @@ export class IsolatedSpecificationClosureTransaction {
       if (existing.changeId !== plan.changeId || existing.plan.planDigest !== plan.planDigest) {
         throw new Error('Specification closure Journal belongs to another plan');
       }
-      const priorReceipt = await this.journals.loadReceipt(plan.planDigest);
-      if (existing.state === 'committed' && priorReceipt) {
-        const priorCheckout = await this.checkouts.find(existing.checkoutId);
-        if (!priorCheckout) throw new Error('Committed Specification closure checkout is missing');
-        const current = await manifest(priorCheckout.root);
-        if (canonicalJson(current) !== canonicalJson(existing.expected)) {
-          throw new Error('Committed Specification closure checkout requires manual repair');
-        }
-        return { checkout: priorCheckout, result: priorReceipt };
-      }
-      throw new Error('Specification closure already has a Journal and requires recovery');
+      return this.recover(existing, signal);
     }
     const checkout = await this.checkouts.create(checkoutId(plan));
     const prepared = createSpecificationClosureJournal({
@@ -119,10 +129,88 @@ export class IsolatedSpecificationClosureTransaction {
     await this.journals.create(prepared);
     this.injectFault?.('after-prepared');
 
-    const applying = advanceSpecificationClosureJournal(prepared, 'applying');
-    await this.journals.compareAndSet(applying, prepared.digest);
+    return this.apply(prepared, checkout, signal);
+  }
+
+  private async recover(
+    journal: SpecificationClosureJournal,
+    signal?: AbortSignal,
+  ): Promise<IsolatedClosureExecution> {
+    const checkout = await this.checkouts.find(journal.checkoutId);
+    if (!checkout) throw new Error('Specification closure checkout is missing and requires repair');
+    const current = await manifest(checkout.root);
+    const priorReceipt = await this.journals.loadReceipt(journal.plan.planDigest);
+
+    if (journal.state === 'committed') {
+      const decision = decideSpecificationClosureRecovery({
+        journal,
+        current,
+        candidateValid: priorReceipt !== null,
+      });
+      if (decision !== 'return-committed' || !priorReceipt) {
+        throw new Error('Committed Specification closure checkout requires manual repair');
+      }
+      return { checkout, result: priorReceipt };
+    }
+
+    const initialDecision = decideSpecificationClosureRecovery({
+      journal,
+      current,
+      candidateValid: false,
+    });
+    if (initialDecision === 'continue-apply') return this.apply(journal, checkout, signal);
+    if (journal.state !== 'applying' || !this.recoverOfficialArchive) {
+      throw new Error('Specification closure Journal requires manual repair');
+    }
+
+    const recovered = await this.recoverOfficialArchive(
+      checkout.root,
+      journal.plan,
+      journal.before,
+      changedFiles(journal.before, current),
+      signal,
+    );
+    if (priorReceipt && canonicalJson(priorReceipt) !== canonicalJson(recovered)) {
+      throw new Error('Specification closure Receipt conflicts with the recovered candidate');
+    }
+    const observed =
+      journal.expected.length === 0
+        ? recordSpecificationClosureExpectedManifest(journal, current)
+        : journal;
+    if (observed !== journal) await this.journals.compareAndSet(observed, journal.digest);
+    const decision = decideSpecificationClosureRecovery({
+      journal: observed,
+      current,
+      candidateValid: true,
+    });
+    if (decision !== 'continue-commit') {
+      throw new Error('Specification closure candidate requires manual repair');
+    }
+    await this.journals.saveReceipt(recovered);
+    const committed = advanceSpecificationClosureJournal(observed, 'committed', {
+      expected: current,
+      resultClosureId: recovered.closureId,
+    });
+    await this.journals.compareAndSet(committed, observed.digest);
+    return { checkout, result: recovered };
+  }
+
+  private async apply(
+    journal: SpecificationClosureJournal,
+    checkout: IsolatedSpecificationCheckout,
+    signal?: AbortSignal,
+  ): Promise<IsolatedClosureExecution> {
+    const applying =
+      journal.state === 'prepared'
+        ? advanceSpecificationClosureJournal(journal, 'applying')
+        : journal;
+    if (applying !== journal) await this.journals.compareAndSet(applying, journal.digest);
+    if (applying.state !== 'applying' || applying.expected.length > 0) {
+      throw new Error('Specification closure Journal cannot execute the archive command');
+    }
+
     this.injectFault?.('after-applying');
-    const result = await this.executeOfficialArchive(checkout.root, plan, signal);
+    const result = await this.executeOfficialArchive(checkout.root, applying.plan, signal);
     this.injectFault?.('after-command');
 
     const expected = await manifest(checkout.root);

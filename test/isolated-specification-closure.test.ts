@@ -76,6 +76,11 @@ async function officialArchive(checkoutRoot: string) {
     '# Archive\n\n## Requirements\n',
     'utf8',
   );
+  return closureResult();
+}
+
+function closureResult() {
+  const archiveId = '2026-10-24-isolated-close';
   return {
     apiVersion: 'repoctopus.specification/v1alpha1' as const,
     kind: 'SpecificationClosureResult' as const,
@@ -132,6 +137,37 @@ describe('isolated Specification closure transaction', () => {
       ).toBe('# Proposal\n');
       const statusAfter = (await exec('git', ['status', '--porcelain=v1'], { cwd: root })).stdout;
       expect(statusAfter).toBe(statusBefore);
+      const recovery = new IsolatedSpecificationClosureTransaction(
+        store,
+        manager,
+        async (candidate) => {
+          ran = true;
+          return officialArchive(candidate);
+        },
+        undefined,
+        async (candidate) => {
+          expect(
+            (
+              await readFile(
+                path.join(
+                  candidate,
+                  'openspec',
+                  'changes',
+                  'archive',
+                  closureResult().archiveId,
+                  'proposal.md',
+                ),
+                'utf8',
+              )
+            ).replaceAll('\r\n', '\n'),
+          ).toBe('# Proposal\n');
+          return closureResult();
+        },
+      );
+      await expect(recovery.execute(plan)).resolves.toMatchObject({
+        result: { closureId: digest('5') },
+      });
+      expect(await store.load(plan.planDigest)).toMatchObject({ state: 'committed' });
       await manager.cleanup(checkout!);
     },
   );

@@ -34,7 +34,7 @@ node bin/repoctopus.js spec validate --workspace . --change <change-id> --json
 
 `spec inspect` 返回规范化的 change 身份、规划产物状态、受影响能力和语义摘要。结果不暴露 Provider 的绝对路径。
 
-Design gate 不直接拼接 `inspect`、目录或 CLI 输出，而只消费版本化 `SpecificationPlanningManifest`。该契约由 Provider 映射 change、Specification Root、Provider/schema identity、Proposal、Delta Specs、Design、Tasks 与受影响能力，并计算稳定 `semanticDigest`；OpenSpec 的文件路径和命令结果不会进入 Engine 或持久 Run。Provider contract test 会验证四类工件完整、摘要可重算且序列化结果不泄露 checkout 路径。
+Design gate 不直接拼接 `inspect`、目录或 CLI 输出，而只消费版本化 `SpecificationPlanningManifest`。该契约由 Provider 映射 change、Specification Root、Provider/schema identity、Proposal、Delta Specs、Design、Tasks、会影响 Provider 行为的 Change-local 元数据与受影响能力，并计算稳定 `semanticDigest`；OpenSpec 的文件路径和命令结果不会进入 Engine 或持久 Run。Provider contract test 会验证四类工件完整、元数据语义变化会改变摘要、摘要可重算且序列化结果不泄露 checkout 路径。
 
 `spec validate` 始终执行严格校验。传入 `--run <run-id>` 时，Repoctopus 把 Provider 身份和验证摘要绑定到 Run；恢复前如果 Provider 身份变化，Runtime 会进入迁移诊断，不会换用新 Provider 继续推进。
 

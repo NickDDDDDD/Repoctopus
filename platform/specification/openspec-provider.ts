@@ -1,10 +1,12 @@
 import { createHash } from 'node:crypto';
-import { access, readFile, readdir } from 'node:fs/promises';
+import { access, readFile, readdir, rm } from 'node:fs/promises';
 import path from 'node:path';
 
 import type { Context } from '@deepseek-ai/cordis';
+import { parse as parseYaml } from 'yaml';
 
 import { canonicalJson } from '../../domains/workflow-contract/canonical.js';
+import type { SpecificationFileIdentity } from '../../domains/specification/closure-journal.js';
 import {
   SPECIFICATION_API_VERSION,
   type SpecificationArtifact,
@@ -28,7 +30,9 @@ import {
 } from '../../domains/specification/tasks.js';
 import { createSpecificationPlanningManifest } from '../../domains/specification/planning-manifest.js';
 import { createSpecificationPlanningGuidance } from '../../domains/specification/planning-guidance.js';
-import { atomicWriteJson, atomicWriteText } from '../filesystem/atomic-write.js';
+import { atomicWriteBytes, atomicWriteText } from '../filesystem/atomic-write.js';
+import { GitSpecificationCheckoutManager } from '../git/specification-checkout.js';
+import { execute } from '../process/execute.js';
 import {
   Specification,
   type PrepareSpecificationClosureInput,
@@ -40,6 +44,8 @@ import {
   OpenSpecProcess,
   type SpecificationProcessPort,
 } from './openspec-process.js';
+import { FileSpecificationClosureJournalStore } from './file-closure-journal-store.js';
+import { IsolatedSpecificationClosureTransaction } from './isolated-closure-transaction.js';
 
 interface OpenSpecProviderConfig {
   workspaceRoot: string;
@@ -184,6 +190,19 @@ function proposalCapabilityDescriptions(source: string): Map<string, string> {
   return descriptions;
 }
 
+function specificationPurpose(source: string): string | null {
+  const lines = source.replaceAll('\r\n', '\n').split('\n');
+  const start = lines.findIndex((line) => /^##\s+Purpose\s*$/iu.test(line));
+  if (start < 0) return null;
+  const body: string[] = [];
+  for (const line of lines.slice(start + 1)) {
+    if (/^##\s+/u.test(line)) break;
+    body.push(line);
+  }
+  const purpose = body.join('\n').trim();
+  return purpose || null;
+}
+
 async function exists(file: string): Promise<boolean> {
   try {
     await access(file);
@@ -206,6 +225,28 @@ async function tree(root: string, prefix = ''): Promise<Map<string, string>> {
         relative,
         createHash('sha256')
           .update(await readFile(absolute))
+          .digest('hex'),
+      );
+    }
+  }
+  return output;
+}
+
+async function normalizedTextTree(root: string, prefix = ''): Promise<Map<string, string>> {
+  const output = new Map<string, string>();
+  if (!(await exists(root))) return output;
+  for (const entry of await readdir(root, { withFileTypes: true })) {
+    const relative = prefix ? `${prefix}/${entry.name}` : entry.name;
+    const absolute = path.join(root, entry.name);
+    if (entry.isDirectory()) {
+      for (const [file, digest] of await normalizedTextTree(absolute, relative)) {
+        output.set(file, digest);
+      }
+    } else if (entry.isFile()) {
+      output.set(
+        relative,
+        createHash('sha256')
+          .update((await readFile(absolute, 'utf8')).replaceAll('\r\n', '\n'))
           .digest('hex'),
       );
     }
@@ -524,13 +565,17 @@ export class OpenSpecProvider extends Specification {
           .filter((spec): spec is string => typeof spec === 'string' && spec.length > 0),
       ),
     ].sort();
+    const metadataFile = path.join(workspace, 'openspec', 'changes', id, '.openspec.yaml');
+    const metadataDigest = (await exists(metadataFile))
+      ? sha256(parseYaml(await readFile(metadataFile, 'utf8')) as unknown)
+      : null;
     const semantic = {
       id: typeof shown.id === 'string' ? shown.id : id,
       title: typeof shown.title === 'string' ? shown.title : id,
       planningComplete: status.isPlanningComplete === true,
       artifacts,
       affectedCapabilities,
-      deltas: shown.deltas ?? [],
+      metadataDigest,
     };
     return {
       apiVersion: SPECIFICATION_API_VERSION,
@@ -611,12 +656,20 @@ export class OpenSpecProvider extends Specification {
       throw new Error(`Specification change is not valid: ${input.changeId}`);
     }
     await this.newCapabilityPurposesAt(workspace, change.changeId, change.affectedCapabilities);
+    const changeFiles = await normalizedTextTree(
+      path.join(workspace, 'openspec', 'changes', change.changeId),
+    );
+    const closureChangeDigest = sha256(
+      [...changeFiles.entries()]
+        .map(([file, digest]) => ({ file, digest }))
+        .sort((left, right) => left.file.localeCompare(right.file)),
+    );
     const base = {
       apiVersion: SPECIFICATION_API_VERSION,
       kind: 'SpecificationClosurePlan' as const,
       changeId: change.changeId,
       provider: this.identity(),
-      changeDigest: change.changeDigest,
+      changeDigest: closureChangeDigest,
       mergeFactsDigest: input.mergeFactsDigest,
       targetBaselineDigest: input.targetBaselineDigest,
       affectedCapabilities: change.affectedCapabilities,
@@ -634,16 +687,32 @@ export class OpenSpecProvider extends Specification {
     changeId: string,
     affectedCapabilities: readonly string[],
   ): Promise<Map<string, string>> {
-    const proposal = await readFile(
-      path.join(workspace, 'openspec', 'changes', changeId, 'proposal.md'),
-      'utf8',
+    const changeRoot = path.join(workspace, 'openspec', 'changes', changeId);
+    return this.newCapabilityPurposesFromChangeAt(
+      workspace,
+      changeRoot,
+      affectedCapabilities,
+      async (capability) =>
+        exists(path.join(workspace, 'openspec', 'specs', capability, 'spec.md')),
     );
+  }
+
+  private async newCapabilityPurposesFromChangeAt(
+    workspace: string,
+    changeRoot: string,
+    affectedCapabilities: readonly string[],
+    capabilityExisted: (capability: string) => boolean | Promise<boolean>,
+  ): Promise<Map<string, string>> {
+    const proposal = await readFile(path.join(changeRoot, 'proposal.md'), 'utf8');
     const descriptions = proposalCapabilityDescriptions(proposal);
     const purposes = new Map<string, string>();
     for (const capability of affectedCapabilities) {
-      const mainSpec = path.join(workspace, 'openspec', 'specs', capability, 'spec.md');
-      if (await exists(mainSpec)) continue;
-      const purpose = descriptions.get(capability)?.trim();
+      if (await capabilityExisted(capability)) continue;
+      const deltaSpec = path.join(changeRoot, 'specs', capability, 'spec.md');
+      const explicitPurpose = (await exists(deltaSpec))
+        ? specificationPurpose(await readFile(deltaSpec, 'utf8'))
+        : null;
+      const purpose = explicitPurpose ?? descriptions.get(capability)?.trim();
       if (!purpose) {
         throw new Error(
           `New capability ${capability} requires a Proposal capability description before Archive`,
@@ -675,6 +744,8 @@ export class OpenSpecProvider extends Specification {
     capabilities: readonly string[],
     signal?: AbortSignal,
   ): Promise<void> {
+    const storeArgs =
+      path.resolve(workspace) === this.workspace ? ['--store', this.specificationRoot.storeId] : [];
     for (const capability of capabilities) {
       const args = [
         'validate',
@@ -683,8 +754,7 @@ export class OpenSpecProvider extends Specification {
         'spec',
         '--no-interactive',
         '--strict',
-        '--store',
-        this.specificationRoot.storeId,
+        ...storeArgs,
         '--json',
       ];
       const result = await this.process.execute(args, {
@@ -711,8 +781,9 @@ export class OpenSpecProvider extends Specification {
       '--all',
       '--strict',
       '--no-interactive',
-      '--store',
-      this.specificationRoot.storeId,
+      ...(path.resolve(workspace) === this.workspace
+        ? ['--store', this.specificationRoot.storeId]
+        : []),
       '--json',
     ];
     const result = await this.process.execute(args, {
@@ -773,16 +844,6 @@ export class OpenSpecProvider extends Specification {
         `Archived Specification changed paths outside the closure plan: ${outside.join(', ')}`,
       );
     }
-  }
-
-  private receiptFile(workspace: string, planDigest: string): string {
-    return path.join(
-      workspace,
-      '.repoctopus',
-      'specification',
-      'closures',
-      `${planDigest.replace('sha256:', '')}.json`,
-    );
   }
 
   async close(
@@ -867,9 +928,14 @@ ${references}
     plan: SpecificationClosurePlan,
     signal?: AbortSignal,
   ): Promise<SpecificationClosureResult> {
-    const receipt = this.receiptFile(workspace, plan.planDigest);
-    if (await exists(receipt)) {
-      return JSON.parse(await readFile(receipt, 'utf8')) as SpecificationClosureResult;
+    const journals = new FileSpecificationClosureJournalStore(workspace);
+    const priorReceipt = await journals.loadReceipt(plan.planDigest);
+    if (
+      priorReceipt &&
+      !(await exists(path.join(workspace, 'openspec', 'changes', plan.changeId))) &&
+      (await exists(path.join(workspace, 'openspec', 'changes', 'archive', priorReceipt.archiveId)))
+    ) {
+      return priorReceipt;
     }
     const current = await this.prepareClosureAt(workspace, {
       changeId: plan.changeId,
@@ -879,6 +945,92 @@ ${references}
     });
     if (current.planDigest !== plan.planDigest) {
       throw new Error('Specification closure plan drifted before execution');
+    }
+    const status = await execute('git', ['status', '--porcelain=v1', '--', 'openspec'], {
+      cwd: workspace,
+      ...(signal ? { signal } : {}),
+    });
+    if (status.stdout.trim()) {
+      throw new Error('Specification closure requires a clean OpenSpec working tree');
+    }
+    const newCapabilityPurposes = await this.newCapabilityPurposesAt(
+      workspace,
+      plan.changeId,
+      plan.affectedCapabilities,
+    );
+    const checkouts = new GitSpecificationCheckoutManager(workspace);
+    const transaction = new IsolatedSpecificationClosureTransaction(
+      journals,
+      checkouts,
+      (checkoutRoot, closurePlan, transactionSignal) =>
+        this.executeOfficialClosureAt(checkoutRoot, closurePlan, transactionSignal),
+      undefined,
+      (checkoutRoot, closurePlan, before, changedFiles, transactionSignal) =>
+        this.recoverOfficialClosureAt(
+          checkoutRoot,
+          closurePlan,
+          before,
+          changedFiles,
+          transactionSignal,
+        ),
+    );
+    const execution = await transaction.execute(plan, signal);
+    const currentHead = (
+      await execute('git', ['rev-parse', 'HEAD'], {
+        cwd: workspace,
+        ...(signal ? { signal } : {}),
+      })
+    ).stdout.trim();
+    if (currentHead !== execution.checkout.head) {
+      throw new Error('Specification closure source HEAD changed after isolated validation');
+    }
+    for (const file of execution.result.changedFiles) {
+      const relative = file.replaceAll('\\', '/');
+      if (!relative.startsWith('openspec/')) {
+        throw new Error(`Specification closure returned an unmanaged path: ${relative}`);
+      }
+      const source = path.join(execution.checkout.root, ...relative.split('/'));
+      const target = path.join(workspace, ...relative.split('/'));
+      if (await exists(source)) {
+        await atomicWriteBytes(target, await readFile(source), { containedRoot: workspace });
+      } else {
+        await rm(target, { force: true });
+      }
+    }
+    await rm(path.join(workspace, 'openspec', 'changes', plan.changeId), {
+      recursive: true,
+      force: true,
+    });
+    await this.assertClosurePostconditionsAt({
+      workspace,
+      plan,
+      archiveId: execution.result.archiveId,
+      changedFiles: execution.result.changedFiles,
+      purposes: newCapabilityPurposes,
+      ...(signal ? { signal } : {}),
+    });
+    await checkouts.cleanup(execution.checkout);
+    return execution.result;
+  }
+
+  private async executeOfficialClosureAt(
+    workspace: string,
+    plan: SpecificationClosurePlan,
+    signal?: AbortSignal,
+  ): Promise<SpecificationClosureResult> {
+    const current = await this.prepareClosureAt(workspace, {
+      changeId: plan.changeId,
+      mergeFactsDigest: plan.mergeFactsDigest,
+      targetBaselineDigest: plan.targetBaselineDigest,
+      ...(signal ? { signal } : {}),
+    });
+    if (current.planDigest !== plan.planDigest) {
+      const drift = (Object.keys(plan) as Array<keyof SpecificationClosurePlan>).filter(
+        (field) => canonicalJson(current[field]) !== canonicalJson(plan[field]),
+      );
+      throw new Error(
+        `Specification closure plan drifted inside the isolated checkout: ${drift.join(', ')}`,
+      );
     }
     const newCapabilityPurposes = await this.newCapabilityPurposesAt(
       workspace,
@@ -923,8 +1075,54 @@ ${references}
       archiveId,
       changedFiles,
     };
-    await atomicWriteJson(receipt, result, { containedRoot: workspace });
     return result;
+  }
+
+  private async recoverOfficialClosureAt(
+    workspace: string,
+    plan: SpecificationClosurePlan,
+    before: readonly SpecificationFileIdentity[],
+    changedFiles: readonly string[],
+    signal?: AbortSignal,
+  ): Promise<SpecificationClosureResult> {
+    const archiveRoot = path.join(workspace, 'openspec', 'changes', 'archive');
+    const candidates = (await readdir(archiveRoot, { withFileTypes: true }))
+      .filter(
+        (entry) =>
+          entry.isDirectory() &&
+          changedFiles.some((file) => file.startsWith(`openspec/changes/archive/${entry.name}/`)),
+      )
+      .map((entry) => entry.name);
+    if (candidates.length !== 1) {
+      throw new Error('Interrupted Specification closure does not have one recoverable archive');
+    }
+    const archiveId = candidates[0]!;
+    const beforePaths = new Set(before.map((file) => file.path));
+    const purposes = await this.newCapabilityPurposesFromChangeAt(
+      workspace,
+      path.join(archiveRoot, archiveId),
+      plan.affectedCapabilities,
+      (capability) => beforePaths.has(`openspec/specs/${capability}/spec.md`),
+    );
+    await this.assertClosurePostconditionsAt({
+      workspace,
+      plan,
+      archiveId,
+      changedFiles,
+      purposes,
+      ...(signal ? { signal } : {}),
+    });
+    return {
+      apiVersion: SPECIFICATION_API_VERSION,
+      kind: 'SpecificationClosureResult',
+      changeId: plan.changeId,
+      provider: this.identity(),
+      planDigest: plan.planDigest,
+      closureId: sha256({ planDigest: plan.planDigest, archiveId }),
+      status: 'closed',
+      archiveId,
+      changedFiles: [...changedFiles].sort(),
+    };
   }
 
   override atWorkspace(workspaceRoot: string): SpecificationWorkspace {

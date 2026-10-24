@@ -1,5 +1,7 @@
-import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { promisify } from 'node:util';
 
 import { Context } from '@deepseek-ai/cordis';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -19,6 +21,7 @@ import { assertSpecificationPlanningManifest } from '../domains/specification/pl
 import { removeTemporaryDirectory, temporaryDirectory } from './helpers/fixtures.js';
 
 const productRoot = path.resolve(import.meta.dirname, '..');
+const execFileAsync = promisify(execFile);
 const cleanup: string[] = [];
 afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
 
@@ -26,6 +29,20 @@ async function write(relative: string, contents: string, root: string): Promise<
   const file = path.join(root, ...relative.split('/'));
   await mkdir(path.dirname(file), { recursive: true });
   await writeFile(file, contents);
+}
+
+async function commitFixture(root: string, message: string): Promise<void> {
+  try {
+    await execFileAsync('git', ['rev-parse', '--git-dir'], { cwd: root });
+  } catch {
+    await execFileAsync('git', ['init', '--initial-branch=main'], { cwd: root });
+    await execFileAsync('git', ['config', 'user.name', 'Repoctopus Test'], { cwd: root });
+    await execFileAsync('git', ['config', 'user.email', 'repoctopus@example.invalid'], {
+      cwd: root,
+    });
+  }
+  await execFileAsync('git', ['add', '.'], { cwd: root });
+  await execFileAsync('git', ['commit', '-m', message], { cwd: root });
 }
 
 interface OpenSpecFixture {
@@ -43,6 +60,7 @@ async function openSpecFixture(valid = true): Promise<OpenSpecFixture> {
   cleanup.push(config);
   await write('openspec/config.yaml', 'schema: spec-driven\n', root);
   await mkdir(path.join(root, 'openspec', 'changes', 'archive'), { recursive: true });
+  await write('openspec/changes/sample/.openspec.yaml', 'schema: spec-driven\n', root);
   await write('.openspec-store/store.yaml', 'version: 1\nid: specification-test\n', root);
   await write(
     'openspec/stores/registry.yaml',
@@ -133,6 +151,7 @@ The system MUST add behavior.
       : '# Spec Delta\n\n## ADDED Requirements\n\nMissing requirement structure.\n',
     root,
   );
+  await commitFixture(root, 'fixture');
   return {
     workspace: root,
     process: new OpenSpecProcess(undefined, 60_000, 16 * 1024 * 1024, {
@@ -284,6 +303,16 @@ describe('Specification authority', () => {
     expect(() => assertSpecificationPlanningManifest(manifest)).not.toThrow();
     expect(JSON.stringify(manifest)).not.toContain(workspace);
     expect(JSON.stringify(manifest)).not.toContain('openspec/changes');
+    const metadataFile = path.join(workspace, 'openspec', 'changes', 'sample', '.openspec.yaml');
+    await writeFile(metadataFile, '# formatting noise\nschema: spec-driven\n');
+    expect((await context.specification.planningManifest('sample')).semanticDigest).toBe(
+      manifest.semanticDigest,
+    );
+    await writeFile(metadataFile, 'schema: spec-driven\nretire_capabilities: true\n');
+    expect((await context.specification.planningManifest('sample')).semanticDigest).not.toBe(
+      manifest.semanticDigest,
+    );
+    await writeFile(metadataFile, 'schema: spec-driven\n');
     const filesBeforeGuidance = (await readdir(workspace, { recursive: true })).sort();
     const guidance = await context.specification.planningGuidance('sample');
     expect(guidance.artifacts.map((artifact) => artifact.artifactKind)).toEqual([
@@ -300,9 +329,7 @@ describe('Specification authority', () => {
         expect.objectContaining({ id: 'planning.synthesize-known-context' }),
       ]),
     );
-    expect(
-      guidance.artifacts.find((artifact) => artifact.artifactKind === 'tasks')?.rules,
-    ).toEqual(
+    expect(guidance.artifacts.find((artifact) => artifact.artifactKind === 'tasks')?.rules).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ id: 'tasks.tracer-bullet-slices' }),
         expect.objectContaining({ id: 'tasks.verifiable-acceptance' }),
@@ -336,7 +363,10 @@ describe('Specification authority', () => {
     expect(firstCompletion).toMatchObject({ updated: true, taskId: '1.1' });
     expect(replayCompletion).toMatchObject({ updated: false, taskId: '1.1' });
     expect(await readFile(tasksFile, 'utf8')).toContain('- [x] 1.1 Complete fixture.');
-    await writeFile(tasksFile, originalTasks.replace('Complete fixture', 'Complete fixture safely'));
+    await writeFile(
+      tasksFile,
+      originalTasks.replace('Complete fixture', 'Complete fixture safely'),
+    );
     expect((await context.specification.planningManifest('sample')).semanticDigest).not.toBe(
       manifest.semanticDigest,
     );
@@ -366,6 +396,79 @@ describe('Specification authority', () => {
     expect(
       await readFile(path.join(workspace, 'openspec', 'specs', 'demo', 'spec.md'), 'utf8'),
     ).toContain('Added behavior');
+    expect(
+      JSON.parse(
+        await readFile(
+          path.join(
+            workspace,
+            '.repoctopus',
+            'specification',
+            'closure-journals',
+            `${plan.planDigest.slice('sha256:'.length)}.json`,
+          ),
+          'utf8',
+        ),
+      ),
+    ).toMatchObject({ state: 'committed', resultClosureId: first.closureId });
+    expect(
+      await readdir(path.join(workspace, '.repoctopus', 'archive-checkouts')).catch(() => []),
+    ).toEqual([]);
+    await context.fiber.dispose();
+  }, 30_000);
+
+  it('keeps a failed official archive candidate out of the developer working tree', async () => {
+    const fixture = await openSpecFixture();
+    const faultingProcess: SpecificationProcessPort = {
+      async execute(args, options) {
+        const result = await fixture.process.execute(args, options);
+        if (args[0] === 'archive' && result.exitCode === 0) {
+          await rm(path.join(options.cwd, 'openspec', 'specs', 'demo', 'spec.md'), {
+            force: true,
+          });
+        }
+        return result;
+      },
+    };
+    const context = new Context();
+    const fiber = context.plugin(OpenSpecProvider, {
+      workspaceRoot: fixture.workspace,
+      specificationRoot: fixture.specificationRoot,
+      process: faultingProcess,
+    });
+    await fiber;
+    const plan = await context.specification.prepareClosure({
+      changeId: 'sample',
+      mergeFactsDigest: `sha256:${'e'.repeat(64)}`,
+      targetBaselineDigest: `sha256:${'f'.repeat(64)}`,
+    });
+
+    await expect(context.specification.close(plan)).rejects.toThrow(
+      /Archived Specification is not valid/u,
+    );
+    expect(
+      (
+        await execFileAsync('git', ['status', '--porcelain=v1', '--', 'openspec'], {
+          cwd: fixture.workspace,
+        })
+      ).stdout,
+    ).toBe('');
+    expect(
+      JSON.parse(
+        await readFile(
+          path.join(
+            fixture.workspace,
+            '.repoctopus',
+            'specification',
+            'closure-journals',
+            `${plan.planDigest.slice('sha256:'.length)}.json`,
+          ),
+          'utf8',
+        ),
+      ),
+    ).toMatchObject({ state: 'applying', resultClosureId: null });
+    expect(
+      await readdir(path.join(fixture.workspace, '.repoctopus', 'archive-checkouts')),
+    ).toHaveLength(1);
     await context.fiber.dispose();
   }, 30_000);
 
@@ -431,6 +534,7 @@ The system MUST provide fresh behavior.
 `,
       fixture.workspace,
     );
+    await commitFixture(fixture.workspace, 'add fresh capability');
     const context = new Context();
     const fiber = context.plugin(OpenSpecProvider, {
       workspaceRoot: fixture.workspace,
@@ -447,13 +551,7 @@ The system MUST provide fresh behavior.
     await expect(context.specification.close(plan)).resolves.toMatchObject({ status: 'closed' });
     expect(
       await readFile(
-        path.join(
-          fixture.workspace,
-          'openspec',
-          'specs',
-          'fresh-capability',
-          'spec.md',
-        ),
+        path.join(fixture.workspace, 'openspec', 'specs', 'fresh-capability', 'spec.md'),
         'utf8',
       ),
     ).toContain(

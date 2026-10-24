@@ -2,6 +2,20 @@
 
 ## ADDED Requirements
 
+### Requirement: Change 元数据参与规划语义身份
+
+Specification Provider MUST 把会改变验证、关闭或能力退役行为的 Change-local 元数据纳入规范化规划语义摘要；仅修改实现、测试或其他非规划文件不得改变该摘要。
+
+#### Scenario: Archive 元数据在批准后变化
+
+- **WHEN** `.openspec.yaml` 的 `retire_capabilities` 或其他 Provider 语义字段在 Design approval 后变化
+- **THEN** Runtime 检测到新的 planning semantic digest，使旧批准失效并返回 Design
+
+#### Scenario: 非规划提交只更新发布来源
+
+- **WHEN** Change 分支新增实现或测试提交但四类规划工件、Change 元数据、Provider/schema、能力集合和目标分支均未变化
+- **THEN** Runtime 只更新 publication provenance，不撤销相同语义快照的 Design approval
+
 ### Requirement: 规格关闭先形成隔离候选再签发 Receipt
 
 Specification Provider MUST 在隔离的 Workspace checkout 中把关闭计划应用为候选结果，并在签发 Closure Receipt 前核对活动 change 已移除、恰好新增一个预期归档目录、全部受影响主规格已同步、允许路径差异成立且全局严格校验通过；任一后置条件失败时不得把目录移动或命令退出码解释为完整关闭。
