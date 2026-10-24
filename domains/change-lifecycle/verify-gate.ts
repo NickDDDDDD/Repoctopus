@@ -11,6 +11,17 @@ export interface AcceptedVerifyGate {
   workflowStateVersion: number;
 }
 
+export interface RejectedVerifyGate {
+  workId: string;
+  inputDigest: `sha256:${string}`;
+  evidenceInputFingerprint: string;
+  attemptId: string;
+  bundleId: string | null;
+  reason: string;
+  result: 'failed' | 'implementation-drift';
+  workflowStateVersion: number;
+}
+
 export function acceptVerifyGate(input: {
   runId: string;
   lifecycle: ChangeLifecycleSnapshot;
@@ -67,6 +78,59 @@ export function acceptVerifyGate(input: {
     attemptId: input.attemptId,
     bundleId: gate.bundleId,
     evidenceInputFingerprint: gate.inputFingerprint,
+    workflowStateVersion: input.workflowStateVersion,
+  };
+}
+
+export function rejectVerifyGate(input: {
+  runId: string;
+  lifecycle: ChangeLifecycleSnapshot;
+  gate: EvidenceGateProjection;
+  attemptId: string;
+  workflowStateVersion: number;
+}): RejectedVerifyGate {
+  const { lifecycle, gate } = input;
+  const work = lifecycle.currentWork;
+  const verification = lifecycle.verificationInput;
+  if (
+    lifecycle.phase !== 'verify' ||
+    lifecycle.status !== 'running' ||
+    !work ||
+    work.kind !== 'evidence.verify' ||
+    !verification
+  ) {
+    throw new Error('Change Run has no active Verify Work');
+  }
+  if (
+    gate.workflowRunId !== input.runId ||
+    gate.workflowActionId !== work.workId ||
+    gate.workflowStepId !== 'verify'
+  ) {
+    throw new Error(`Evidence attempt ${input.attemptId} is bound to another Run or Verify Work`);
+  }
+  if (gate.workflowStateVersion !== input.workflowStateVersion) {
+    throw new Error(`Evidence attempt ${input.attemptId} is bound to a stale workflow state`);
+  }
+  if (
+    gate.profileId !== verification.evidenceProfile.id ||
+    gate.compositionDigest !== verification.compositionDigest
+  ) {
+    throw new Error(`Evidence attempt ${input.attemptId} has an incompatible verification identity`);
+  }
+  if (gate.status !== 'blocked') {
+    throw new Error(`Evidence attempt ${input.attemptId} is not a rejected Gate`);
+  }
+  return {
+    workId: work.workId,
+    inputDigest: verification.digest,
+    evidenceInputFingerprint: gate.inputFingerprint,
+    attemptId: input.attemptId,
+    bundleId: gate.bundleId,
+    reason: gate.reason,
+    result:
+      gate.inputFingerprint === verification.evidenceProfile.fingerprintDigest
+        ? 'failed'
+        : 'implementation-drift',
     workflowStateVersion: input.workflowStateVersion,
   };
 }

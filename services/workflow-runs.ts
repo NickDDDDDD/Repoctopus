@@ -40,7 +40,7 @@ import type { DesignGateAssessment } from './specification-planning.js';
 import { createInitialBuildWork } from '../domains/change-lifecycle/build-work.js';
 import { createVerificationInput } from '../domains/change-lifecycle/verification-input.js';
 import { createVerifyWork } from '../domains/change-lifecycle/verify-work.js';
-import { acceptVerifyGate } from '../domains/change-lifecycle/verify-gate.js';
+import { acceptVerifyGate, rejectVerifyGate } from '../domains/change-lifecycle/verify-gate.js';
 import type { SpecificationTask } from '../domains/specification/types.js';
 import type {
   ChangeLifecycleState,
@@ -83,8 +83,8 @@ export interface VerifyChangeRunInput {
 
 export interface VerifyChangeRunResult {
   attemptId: string;
-  bundleId: string;
-  gate: 'satisfied';
+  bundleId: string | null;
+  gate: 'satisfied' | 'blocked';
   run: RunStatusView;
 }
 
@@ -459,6 +459,29 @@ export class WorkflowRuns extends Service {
               inputDigest: observedDigest,
             });
           }
+          if (lifecycle.phase === 'build' && lifecycle.verificationInvalidation) {
+            const profileId = current.trigger?.facts.verificationProfileId;
+            if (typeof profileId !== 'string' || !profileId.trim()) {
+              throw new Error('Verification Evidence Profile identity is missing');
+            }
+            const refreshed = await this.ctx.evidenceCoordinator.plan(profileId);
+            if (
+              refreshed.fingerprint.digest ===
+              lifecycle.verificationInvalidation.evidenceInputFingerprint
+            ) {
+              return {
+                value: await this.coordinator.status(runId),
+                diagnostics: [
+                  ...diagnostics,
+                  {
+                    level: 'warning',
+                    code: 'change.verify-repair-required',
+                    message: lifecycle.verificationInvalidation.reason,
+                  },
+                ],
+              };
+            }
+          }
           if (lifecycle.phase === 'verify' || lifecycle.currentWork) {
             return {
               value: await this.coordinator.status(runId),
@@ -782,14 +805,35 @@ export class WorkflowRuns extends Service {
         throw new Error(`Change Run has no active Verify Work: ${input.runId}`);
       }
       const attemptId = input.attemptId ?? randomUUID();
-      const result = input.attemptId
-        ? await this.ctx.evidenceCoordinator.status(attemptId)
-        : await this.ctx.evidenceCoordinator.run(
-            current.verificationInput.evidenceProfile.id,
-            attemptId,
-            input.runId,
-            signal,
-          );
+      let result;
+      try {
+        result = input.attemptId
+          ? await this.ctx.evidenceCoordinator.status(attemptId)
+          : await this.ctx.evidenceCoordinator.run(
+              current.verificationInput.evidenceProfile.id,
+              attemptId,
+              input.runId,
+              signal,
+            );
+      } catch (error) {
+        const reason = error instanceof Error ? error.message : String(error);
+        if (!reason.includes('input fingerprint changed before Evidence execution')) throw error;
+        const fallback = await this.coordinator.acceptChangeObservation(input.runId, {
+          kind: 'verify-gate-rejected',
+          workId: current.currentWork.workId,
+          inputDigest: current.verificationInput.digest,
+          evidenceInputFingerprint: current.verificationInput.evidenceProfile.fingerprintDigest,
+          attemptId,
+          bundleId: null,
+          reason,
+          result: 'implementation-drift',
+          workflowStateVersion: state.stateVersion,
+        });
+        return {
+          value: { attemptId, bundleId: null, gate: 'blocked', run: fallback.value },
+          diagnostics: fallback.diagnostics,
+        };
+      }
       if (!result.bundle) {
         throw new Error(`Evidence attempt has no completed bundle: ${attemptId}`);
       }
@@ -801,6 +845,31 @@ export class WorkflowRuns extends Service {
         profileId: current.verificationInput.evidenceProfile.id,
         attemptId,
       });
+      if (gate.status === 'blocked') {
+        const rejected = rejectVerifyGate({
+          runId: input.runId,
+          lifecycle: current,
+          gate,
+          attemptId,
+          workflowStateVersion: state.stateVersion,
+        });
+        const fallback = await this.coordinator.acceptChangeObservation(input.runId, {
+          kind: 'verify-gate-rejected',
+          ...rejected,
+          ...(result.attempt.status === 'superseded'
+            ? { result: 'implementation-drift' as const }
+            : {}),
+        });
+        return {
+          value: {
+            attemptId,
+            bundleId: gate.bundleId,
+            gate: 'blocked',
+            run: fallback.value,
+          },
+          diagnostics: fallback.diagnostics,
+        };
+      }
       const accepted = acceptVerifyGate({
         runId: input.runId,
         lifecycle: current,

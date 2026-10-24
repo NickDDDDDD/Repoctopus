@@ -67,6 +67,13 @@ function lifecycleState(snapshot: ChangeLifecycleSnapshot): ChangeLifecycleState
     waitCondition: structuredClone(snapshot.waitCondition),
     blocker: structuredClone(snapshot.blocker),
     ...(snapshot.tasks ? { tasks: structuredClone(snapshot.tasks) } : {}),
+    ...(snapshot.planningDigest ? { planningDigest: snapshot.planningDigest } : {}),
+    ...(snapshot.verificationInput
+      ? { verificationInput: structuredClone(snapshot.verificationInput) }
+      : {}),
+    ...(snapshot.verificationInvalidation
+      ? { verificationInvalidation: structuredClone(snapshot.verificationInvalidation) }
+      : {}),
   };
 }
 
@@ -89,6 +96,15 @@ function lifecycleNextActions(snapshot: ChangeLifecycleSnapshot) {
         id: snapshot.currentWork.workId,
         kind: 'work' as const,
         label: `Implement Task ${snapshot.currentWork.taskId}`,
+      },
+    ];
+  }
+  if (snapshot.phase === 'build' && snapshot.verificationInvalidation) {
+    return [
+      {
+        id: 'verify.repair',
+        kind: 'repair' as const,
+        label: 'Repair implementation after failed verification',
       },
     ];
   }
@@ -315,7 +331,8 @@ export class WorkflowRunCoordinator {
     await this.store.commitGuarded(runId, ({ state, trajectory }) => {
       if (!state.changeLifecycle) throw new Error(`Run is not a Change Run: ${runId}`);
       if (
-        observation.kind === 'verify-gate-satisfied' &&
+        (observation.kind === 'verify-gate-satisfied' ||
+          observation.kind === 'verify-gate-rejected') &&
         observation.workflowStateVersion !== state.stateVersion
       ) {
         throw new Error('Satisfied Verify Gate is bound to a stale workflow state');

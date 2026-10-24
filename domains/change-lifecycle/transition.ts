@@ -201,6 +201,17 @@ export interface ChangeLifecycleState {
   tasks?: readonly SpecificationTask[];
   planningDigest?: `sha256:${string}`;
   verificationInput?: VerificationInput;
+  verificationInvalidation?: VerificationInvalidation;
+}
+
+export interface VerificationInvalidation {
+  schemaVersion: 1;
+  kind: 'evidence-gate-blocked' | 'implementation-drift';
+  priorInputDigest: `sha256:${string}`;
+  evidenceInputFingerprint: string;
+  attemptId: string;
+  bundleId: string | null;
+  reason: string;
 }
 
 export interface ChangeLifecycleSnapshot extends ChangeLifecycleState {
@@ -308,6 +319,17 @@ export type ChangeLifecycleObservation =
       bundleId: string;
       evidenceInputFingerprint: string;
       workflowStateVersion: number;
+    }
+  | {
+      kind: 'verify-gate-rejected';
+      workId: string;
+      inputDigest: `sha256:${string}`;
+      evidenceInputFingerprint: string;
+      attemptId: string;
+      bundleId: string | null;
+      reason: string;
+      result: 'failed' | 'implementation-drift';
+      workflowStateVersion: number;
     };
 
 export interface ChangeLifecycleReduction {
@@ -352,6 +374,12 @@ export function assertChangeLifecycleSnapshot(
   ) {
     throw new Error('Verify phase requires a Work bound to the immutable verification input');
   }
+  if (
+    snapshot.verificationInvalidation &&
+    (snapshot.phase !== 'build' || snapshot.currentWork !== null || snapshot.verificationInput)
+  ) {
+    throw new Error('Verification invalidation requires Build repair without active Work or input');
+  }
   if (snapshot.status === 'waiting' && snapshot.waitCondition === null) {
     throw new Error('Waiting Change Run requires a durable WaitCondition');
   }
@@ -383,6 +411,7 @@ export function applyChangeLifecycleTransition(options: {
     tasks?: readonly SpecificationTask[];
     planningDigest?: `sha256:${string}` | null;
     verificationInput?: VerificationInput | null;
+    verificationInvalidation?: VerificationInvalidation | null;
   };
 }): { snapshot: ChangeLifecycleSnapshot; fact: ChangeLifecycleTransitionFact } {
   assertChangeLifecycleSnapshot(options.current);
@@ -425,6 +454,10 @@ export function applyChangeLifecycleTransition(options: {
   if (options.next.verificationInput === null) delete snapshot.verificationInput;
   else if (options.next.verificationInput) {
     snapshot.verificationInput = structuredClone(options.next.verificationInput);
+  }
+  if (options.next.verificationInvalidation === null) delete snapshot.verificationInvalidation;
+  else if (options.next.verificationInvalidation) {
+    snapshot.verificationInvalidation = structuredClone(options.next.verificationInvalidation);
   }
   assertChangeLifecycleSnapshot(snapshot);
   return {
@@ -487,6 +520,7 @@ export function evolveChangeLifecycle(options: {
         tasks: [],
         planningDigest: null,
         verificationInput: null,
+        verificationInvalidation: null,
       },
     });
     reduced.fact.invalidation = {
@@ -665,6 +699,7 @@ export function evolveChangeLifecycle(options: {
         waitCondition: null,
         blocker: null,
         verificationInput: observation.verificationInput,
+        verificationInvalidation: null,
       },
     });
   }
@@ -696,6 +731,49 @@ export function evolveChangeLifecycle(options: {
         currentWork: null,
         waitCondition: null,
         blocker: null,
+      },
+    });
+  }
+  if (observation.kind === 'verify-gate-rejected') {
+    if (current.phase !== 'verify' || !['running', 'blocked'].includes(current.status)) {
+      throw new Error(`Verify rejection is not valid from ${current.phase}/${current.status}`);
+    }
+    const work = current.currentWork;
+    const verification = current.verificationInput;
+    if (
+      !work ||
+      work.kind !== 'evidence.verify' ||
+      work.workId !== observation.workId ||
+      work.inputDigest !== observation.inputDigest ||
+      !verification ||
+      verification.digest !== observation.inputDigest
+    ) {
+      throw new Error('Verify rejection does not match the active verification input');
+    }
+    if (!observation.attemptId.trim() || !observation.reason.trim()) {
+      throw new Error('Verify rejection requires Attempt identity and reason');
+    }
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'verify.failed',
+      next: {
+        currentWork: null,
+        waitCondition: null,
+        blocker: null,
+        verificationInput: null,
+        verificationInvalidation: {
+          schemaVersion: 1,
+          kind:
+            observation.result === 'implementation-drift'
+              ? 'implementation-drift'
+              : 'evidence-gate-blocked',
+          priorInputDigest: observation.inputDigest,
+          evidenceInputFingerprint: observation.evidenceInputFingerprint,
+          attemptId: observation.attemptId,
+          bundleId: observation.bundleId,
+          reason: observation.reason,
+        },
       },
     });
   }

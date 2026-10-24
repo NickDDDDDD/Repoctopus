@@ -44,7 +44,7 @@
 - [x] 4.1 在全部 Task 有有效完成事实时生成不可变 verification input，绑定任务 revisions、仓库 commit/tree、配置、composition、Skill 和 Evidence Profile；任一输入缺失时保持 `build/blocked`。
 - [x] 4.2 复用 Evidence Attempt、Artifact、Gate 和 outbox 执行 Verify Work，只有相同 input digest 下 `satisfied` Gate 才进入 Archive；测试普通成功、旧 Gate 和跨 Run Artifact 均被拒绝。
 - [x] 4.3 实现正式验证报告 artifact 与隐私/大小限制，报告引用命令、结果和证据身份而不嵌入无限输出；运行失败、超时、取消、重试和 supersede 测试。
-- [ ] 4.4 实现 Verify 失败或实现漂移返回 Build 的追加式 invalidation，保留旧 Evidence；用恢复测试证明进程中断后不会错误进入 Archive 或重复有效副作用。
+- [x] 4.4 实现 Verify 失败或实现漂移返回 Build 的追加式 invalidation，保留旧 Evidence；用恢复测试证明进程中断后不会错误进入 Archive 或重复有效副作用。
 - [ ] 4.5 通过真实自举 change 运行 Open→Design→Build→Verify 纵切，核对 CLI projection、Trajectory、Task 和 Evidence 的单一答案，并清理临时日志、scratch artifact 和测试进程。
 
 ## 5. 把 Delivery 与 Post-merge 收敛进 Archive
