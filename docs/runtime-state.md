@@ -1,5 +1,15 @@
 # 状态、轨迹与恢复
 
+## Change Run 是唯一生命周期权威
+
+一个 Workspace、change 和 generation 最多有一个未终结 Change Run。它按 `Open → Design → Build → Verify → Archive` 推进，`phase`、`status`、当前 Work、Task progress、wait、blocker、Evidence 和 next actions 都来自同一条 accepted trajectory。Specification、Delivery、Webhook、CLI、Desktop 与 OTLP 只能提交事实或读取 `ChangeRunProjection`，不能维护另一套阶段状态。
+
+```powershell
+node bin/repoctopus.js run status --workspace . --run <run-id> --json
+```
+
+文本和 JSON 输出使用同一投影。`freshness.stateVersion` 与 `freshness.trajectoryOffset` 表示投影对应的持久版本；看到等待或阻断时应处理投影给出的 next action，不能通过编辑 `.repoctopus/`、分支名或 MR 状态跳过转换。
+
 每个 Run 都保存在 `.repoctopus/runs/<run-id>/`：
 
 | 文件                    | 含义                                                     |
@@ -31,6 +41,8 @@ Run、Checkpoint 和 Trajectory 保存完整 composition 身份。写转换前�
 
 普通插件重载由 Cordis Loader 先卸载旧 Fiber，再激活新 Fiber。Run 不依赖旧 Fiber 的内存对象，恢复依据始终是 Store、Journal 与 Checkpoint。
 
+Change Run 还冻结 Lifecycle Definition、Work Contributor、Validator、Extension、Skill 与 Specification Provider 身份。只改变顺序或声明为向后兼容的 Contributor 升级可更新快照；核心 transition、Validator 或写入范围漂移会进入 `migration_required`。使用 `change-lifecycle migration-plan` 先做只读判断，再执行受控迁移；规划阶段不会写 Store 或调用平台。
+
 ## 恢复时的多仓核对
 
 `run resume` 会重新执行只读 Project Probe，将远端身份、路径、分支、HEAD 和工作树摘要与启动快照比较。没有变化时 Run 可继续；出现任何变化时 Run State 永久标记 `reconciliationRequired`，Engine 直接拒绝产生新动作。
@@ -52,4 +64,4 @@ Run、Checkpoint 和 Trajectory 保存完整 composition 身份。写转换前�
 | `transition.json` | 尚未完成的交付状态转换 Journal           |
 | `transition.lock` | 跨进程交付锁；进程退出后的陈旧锁可回收   |
 
-交付状态依次经过 `development`、`awaiting_approval`、`approved`、`publishing` 和 `in_review`。动作失败进入 `partially_published`，恢复后从第一个未完成动作继续。任何批准事实漂移进入 `verification_required`；远端出现无法安全解释的变化进入 `repair_required`。所有 MR 都由人合入，Runtime 观察到全部合入证据后才进入 `merged`。
+旧 Delivery 状态仍可只读诊断和迁移，但新写入已经并入同一 Change Run 的 Archive phase。发布 Business MR、等待合入、核对精确 merge commit、关闭规格和创建最终 Change MR 都是持久 Work；只有最后一步 Receipt 被同一 Run 接受后才进入 `completed`。所有 MR 都由人合入，Runtime 不执行 merge。

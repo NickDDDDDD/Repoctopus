@@ -94,18 +94,18 @@ node bin/repoctopus.js post-merge reconcile --workspace . --json
 node bin/repoctopus.js delivery checkpoint --workspace . --intent docs/examples/delivery-intent.yaml --policy repoctopus.yaml --json
 ```
 
-实现和验证报告都进入本地 commit 后，生成一次待批准快照：
+实现完成并由同一 Change Run 的 Verify Gate 接受后，在 Archive phase 冻结交付输入：
 
 ```powershell
-node bin/repoctopus.js delivery prepare --workspace . --intent docs/examples/delivery-intent.yaml --policy repoctopus.yaml --report path/to/verification-report.md --json
+node bin/repoctopus.js run archive-prepare --workspace . --run <run-id> --attempt <attempt-id> --intent docs/examples/delivery-intent.yaml --policy repoctopus.yaml --json
 node bin/repoctopus.js approval review --workspace . --change example-change
 ```
 
-`approval review` 只在交互式终端中运行；IDE Adapter 可以把同一 `HumanDecisionRequest` 显示为原生确认卡片。批准后执行发布，失败时使用相同参数执行 `delivery resume`：
+`approval review` 只在交互式终端中运行；IDE Adapter 可以把同一 `HumanDecisionRequest` 显示为原生确认卡片。批准后由原 Change Run 发布并等待 Business MR；失败时对同一 Run 重试对应命令，Receipt 会防止重复副作用：
 
 ```powershell
-node bin/repoctopus.js delivery publish --workspace . --change example-change --intent docs/examples/delivery-intent.yaml --policy repoctopus.yaml --report path/to/verification-report.md --json
-node bin/repoctopus.js delivery refresh --workspace . --change example-change --policy repoctopus.yaml --json
+node bin/repoctopus.js run archive-publish --workspace . --run <run-id> --json
+node bin/repoctopus.js run archive-refresh --workspace . --run <run-id> --json
 ```
 
 多仓项目首次接入和 Evidence 命令见 [项目接入](docs/project-onboarding.md)。
@@ -113,6 +113,7 @@ node bin/repoctopus.js delivery refresh --workspace . --change example-change --
 ## 架构入口
 
 - [Runtime 架构](docs/architecture.md)
+- [Plugin 与 lifecycle 扩展](docs/plugins.md)
 - [状态与恢复](docs/runtime-state.md)
 - [项目接入](docs/project-onboarding.md)
 - [Evidence](docs/evidence.md)

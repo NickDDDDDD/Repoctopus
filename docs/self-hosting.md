@@ -26,7 +26,7 @@ Post-merge 候选
 Runner → durable Inbox ─────────────→ authoritative MR refresh
   │ all business MRs merged
   ▼
-stable Post-merge Run identity
+same Change Run / archive phase
   ├─ checkout exact merge commits
   ├─ execute Evidence and recheck input fence
   ├─ close change through Specification Provider
@@ -37,7 +37,7 @@ stable Post-merge Run identity
                                       目标分支
 ```
 
-Change 分支始终位于配置指定的 Workspace Repository。Dedicated Workspace 将它放在独立 Workspace 仓库，业务 MR 位于相邻业务仓；Embedded Workspace 允许 Change 分支与业务实现位于同一物理仓库。规划阶段只公开分支并取得绑定精确 OID 的规划批准，不创建 Change MR。全部 Business MR 合入后，Post-merge Run 才把验证记录、主规格同步和 change 归档结果提交到该分支，并创建或恢复唯一的最终 Change MR。
+Change 分支始终位于配置指定的 Workspace Repository。Dedicated Workspace 将它放在独立 Workspace 仓库，业务 MR 位于相邻业务仓；Embedded Workspace 允许 Change 分支与业务实现位于同一物理仓库。规划阶段只公开分支并取得绑定精确 OID 的规划批准，不创建 Change MR。全部 Business MR 合入后，原 Change Run 的 Archive phase 才把验证记录、主规格同步和 change 归档结果提交到该分支，并创建或恢复唯一的最终 Change MR。
 
 公开分支、规划批准、Delivery approval 和最终 Change MR 是四个不同边界：公开分支只保证团队可见和可恢复；规划批准只允许开始实施；Delivery approval 只授权已验证的 Business MR 发布动作；最终 Change MR 只呈现已经收尾的完整 Change，且仍需人工合入。任何一个边界都不能推导另一个边界的授权。
 
@@ -110,7 +110,7 @@ node bin/repoctopus.js runner start --workspace . --json
 | 规格关闭和验证记录                       | Guardrail 允许的规格及验证路径 | 发布前核对路径集合和内容摘要                |
 | Token、secret、Git 作者身份              | Credential Provider / 进程环境 | 不落配置、digest、持久状态或 OTel           |
 
-删除 `.repoctopus/` 会丢失恢复和幂等事实，不能作为重试手段。使用 `event retry`、`run resume`、`evidence resume` 和 `delivery resume` 从对应权威边界恢复。
+删除 `.repoctopus/` 会丢失恢复和幂等事实，不能作为重试手段。使用 `event retry`、`run resume`、`evidence resume` 和对应的 `run archive-*` 命令从权威边界恢复。
 
 ## 5. 上游关系
 

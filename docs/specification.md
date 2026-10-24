@@ -2,6 +2,21 @@
 
 Repoctopus 通过唯一的 Cordis `specification` Service 读取、校验和关闭规格变更。Workflow 使用稳定领域契约，不读取 `openspec/` 路径，也不解析 OpenSpec CLI 输出。当前内置 Provider 使用 OpenSpec `1.14.3`。
 
+## Workspace、Store 与实现仓
+
+- **Workspace Repository** 是 Repoctopus 的团队入口，保存 `repoctopus.yaml`、四类 change 产物、工作流文档和最终 Change MR。单仓项目可以把它嵌入实现仓；多仓项目通常把它作为与实现仓同级的独立仓库。
+- **OpenSpec Store** 是 Workspace 中规格树的逻辑身份，不要求再建立第二个 Git 仓。`store: team-platform` 这类 ID 由团队自定义，但必须是 lowercase kebab-case。
+- **实现仓** 保存产品代码并产生 Business MR。它们的 `openspec/config.yaml` 只是可选 pointer，方便人在该目录直接运行 OpenSpec；Repoctopus Runtime 始终使用 Workspace 配置中的显式 Store identity，不依赖 pointer 猜测权威根。
+
+Store registration 是每台机器的本地登记，不随 Git clone 同步。首次接入由 `project review` 通过 `openspec store register` 幂等登记当前 Workspace checkout；团队成员和 Runner 的每台机器都要各自登记，并用下面的只读命令核对路径：
+
+```powershell
+npx openspec context --store <store-id> --json
+npx openspec store doctor <store-id> --json
+```
+
+废弃某台机器上的 checkout 时，先停止使用该 Workspace 的 CLI、Runner 和 Desktop Host，确认 `context` 指向准备注销的精确目录，再执行 `npx openspec store unregister <store-id> --json`。`unregister` 只忘记本机登记，不删除文件；不要使用会删除 Store 目录的 `store remove`。业务仓 pointer 是普通受版本控制文件，需要通过 change 删除或调整，注销登记不会代替 Git 变更。
+
 ## 规划产物与决策记录
 
 OpenSpec 的 spec-driven schema 使用 Proposal、Delta Specs、Design 和 Tasks 四类规划产物。Repoctopus 只读取 Provider 状态明确声明的产物，不根据目录中出现的其他 Markdown 文件推断第五类产物。
