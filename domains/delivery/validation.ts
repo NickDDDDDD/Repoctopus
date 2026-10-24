@@ -48,7 +48,7 @@ export function validateDeliveryPolicy(value: unknown): DeliveryFinding[] {
   unknownFields(
     policy.publication,
     'publication',
-    ['remote', 'provider', 'githubApiBaseUrl', 'mrTitleTemplate', 'mrBodyTemplate'],
+    ['remote', 'provider', 'githubApiBaseUrl', 'mrTitleTemplate', 'mrBodyTemplate', 'apiCredential'],
     findings,
   );
   if (typeof policy.checkpoint?.automatic !== 'boolean') {
@@ -156,6 +156,21 @@ export function validateDeliveryPolicy(value: unknown): DeliveryFinding[] {
       path: 'publication.mrBodyTemplate',
       message: 'MR body template is required',
     });
+  const credential = policy.publication?.apiCredential;
+  if (credential !== undefined) {
+    unknownFields(credential, 'publication.apiCredential', ['provider', 'variable'], findings);
+    if (
+      credential.provider !== 'environment' ||
+      typeof credential.variable !== 'string' ||
+      !/^[A-Z_][A-Z0-9_]*$/u.test(credential.variable)
+    ) {
+      findings.push({
+        code: 'invalid-api-credential',
+        path: 'publication.apiCredential',
+        message: 'GitHub credential must reference an environment variable',
+      });
+    }
+  }
   return findings;
 }
 

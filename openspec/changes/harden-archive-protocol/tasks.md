@@ -77,7 +77,7 @@
 
 ## 5. 删除 Webhook、Event Inbox、Runner 和 Post-merge 产品链
 
-- [ ] 5.1 删除 `platformEvents`、webhook secret、Inbox Runner 与 `postMerge.runnerIdentity` 配置，保留 GitHub API 凭据于 Delivery Provider，并提供旧字段的明确删除诊断。
+- [x] 5.1 删除 `platformEvents`、webhook secret、Inbox Runner 与 `postMerge.runnerIdentity` 配置，保留 GitHub API 凭据于 Delivery Provider，并提供旧字段的明确删除诊断。
       **Blocked by:** 4.4
       **Acceptance:** 新示例和自举配置无监听/lease/poll 参数；旧配置 fail-fast 指向替代的 `change reconcile`，不静默忽略
       **Requirements:** platform-event-processing#retirement, plugin-composition#event-stack-retirement

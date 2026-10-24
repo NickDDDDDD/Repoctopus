@@ -109,53 +109,6 @@ export interface SpecificationProviderReference extends CapabilityProviderRefere
   };
 }
 
-export interface PlatformEventsConfig {
-  storeProvider: CapabilityProviderReference;
-  http: {
-    hostname: string;
-    port: number;
-    shutdownTimeoutMs: number;
-  };
-  github: {
-    source: string;
-    path: string;
-    maxBodyBytes: number;
-    webhookCredential: CredentialReference;
-    apiCredential: CredentialReference;
-  };
-  runner: {
-    identity: string;
-    leaseMs: number;
-    pollIntervalMs: number;
-    retryDelayMs: number;
-    maxAttempts: number;
-    shutdownTimeoutMs: number;
-  };
-}
-
-export interface PostMergeConfig {
-  runnerIdentity: string;
-  temporaryRoot: string;
-  evidenceProfile: string;
-  allowedWorkspacePaths: {
-    specificationClosure: true;
-    verificationPathPrefixes: string[];
-  };
-  publication: {
-    operations: ['merge_target', 'commit', 'push', 'merge_request.create_or_recover'];
-    remote: string;
-    commit: {
-      message: string;
-      authorNameCredential: CredentialReference;
-      authorEmailCredential: CredentialReference;
-    };
-    finalChangeMergeRequest: {
-      title: string;
-      body: string;
-    };
-  };
-}
-
 export interface SharedProjectConfig {
   apiVersion: typeof PROJECT_CONFIG_API_VERSION;
   kind: 'RepoctopusWorkspace';
@@ -172,8 +125,6 @@ export interface SharedProjectConfig {
   delivery?: Omit<DeliveryPolicy, 'apiVersion' | 'kind'>;
   skillProviders?: CapabilityProviderReference[];
   specificationProvider?: SpecificationProviderReference;
-  platformEvents?: PlatformEventsConfig;
-  postMerge?: PostMergeConfig;
 }
 
 export interface LocalProjectConfig {

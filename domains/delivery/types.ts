@@ -34,6 +34,10 @@ export interface DeliveryPolicy {
     githubApiBaseUrl: string;
     mrTitleTemplate: string;
     mrBodyTemplate: string;
+    apiCredential?: {
+      provider: 'environment';
+      variable: string;
+    };
   };
 }
 
