@@ -19,9 +19,10 @@
   "desktopDependencies": [
     {
       "name": "electron",
-      "version": "44.7.0",
+      "version": "44.9.3",
       "license": "MIT",
-      "source": "apps/desktop/package.json"
+      "source": "apps/desktop/package.json",
+      "note": "Keeps DSH's Electron 44 line while patching the eMudhra certificate advisory."
     },
     {
       "name": "electron-builder",
@@ -64,7 +65,7 @@
   ],
   "desktopBinaryPreparation": {
     "package": "electron",
-    "version": "44.7.0",
+    "version": "44.9.3",
     "acquisition": "lazy-package-resolution",
     "command": "npm run desktop:prepare",
     "reason": "Electron 44 has no lifecycle install script; requiring the package downloads the pinned platform binary only when it is absent."

@@ -170,16 +170,20 @@ describe('third-party provenance', () => {
   it('rejects modeling Electron lazy binary acquisition as an install script', async () => {
     const root = await provenanceFixture();
     const packagePath = path.join(root, 'package.json');
+    const adoption = JSON.parse(
+      await readFile(path.join(root, 'third_party', 'dsh-adoption.json'), 'utf8'),
+    ) as { desktopBinaryPreparation: { version: string } };
+    const electronScriptKey = `electron@${adoption.desktopBinaryPreparation.version}`;
     const packageJson = JSON.parse(await readFile(packagePath, 'utf8')) as {
       allowScripts?: Record<string, boolean>;
     };
-    packageJson.allowScripts = { ...packageJson.allowScripts, 'electron@44.7.0': true };
+    packageJson.allowScripts = { ...packageJson.allowScripts, [electronScriptKey]: true };
     await writeFile(packagePath, JSON.stringify(packageJson, null, 2));
 
     const result = await checkProvenance(root);
     expect(result.valid).toBe(false);
     expect(result.findings).toContain(
-      'Electron binary acquisition must not be modeled as an install script: electron@44.7.0',
+      `Electron binary acquisition must not be modeled as an install script: ${electronScriptKey}`,
     );
   });
 
