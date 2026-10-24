@@ -299,6 +299,15 @@ export type ChangeLifecycleObservation =
       kind: 'build-verification-blocked';
       reason: string;
       evidenceIds: readonly string[];
+    }
+  | {
+      kind: 'verify-gate-satisfied';
+      workId: string;
+      inputDigest: `sha256:${string}`;
+      attemptId: string;
+      bundleId: string;
+      evidenceInputFingerprint: string;
+      workflowStateVersion: number;
     };
 
 export interface ChangeLifecycleReduction {
@@ -656,6 +665,37 @@ export function evolveChangeLifecycle(options: {
         waitCondition: null,
         blocker: null,
         verificationInput: observation.verificationInput,
+      },
+    });
+  }
+  if (observation.kind === 'verify-gate-satisfied') {
+    if (current.phase !== 'verify' || current.status !== 'running') {
+      throw new Error(`Verify Gate is not valid from ${current.phase}/${current.status}`);
+    }
+    const work = current.currentWork;
+    const verification = current.verificationInput;
+    if (
+      !work ||
+      work.kind !== 'evidence.verify' ||
+      work.workId !== observation.workId ||
+      work.inputDigest !== observation.inputDigest ||
+      !verification ||
+      verification.digest !== observation.inputDigest ||
+      verification.evidenceProfile.fingerprintDigest !== observation.evidenceInputFingerprint
+    ) {
+      throw new Error('Satisfied Verify Gate does not match the active verification input');
+    }
+    if (!observation.attemptId.trim() || !observation.bundleId.trim()) {
+      throw new Error('Satisfied Verify Gate requires Evidence attempt and Bundle identities');
+    }
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'verify.satisfied',
+      next: {
+        currentWork: null,
+        waitCondition: null,
+        blocker: null,
       },
     });
   }

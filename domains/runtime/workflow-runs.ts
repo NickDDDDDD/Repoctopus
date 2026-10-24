@@ -314,6 +314,12 @@ export class WorkflowRunCoordinator {
     await this.recoverChangeLifecycleDefinition(runId);
     await this.store.commitGuarded(runId, ({ state, trajectory }) => {
       if (!state.changeLifecycle) throw new Error(`Run is not a Change Run: ${runId}`);
+      if (
+        observation.kind === 'verify-gate-satisfied' &&
+        observation.workflowStateVersion !== state.stateVersion
+      ) {
+        throw new Error('Satisfied Verify Gate is bound to a stale workflow state');
+      }
       const current: ChangeLifecycleSnapshot = {
         ...structuredClone(state.changeLifecycle),
         status: state.status,
@@ -330,6 +336,10 @@ export class WorkflowRunCoordinator {
         ...state,
         status,
         changeLifecycle,
+        acceptedEvidenceBundleIds:
+          observation.kind === 'verify-gate-satisfied'
+            ? [...new Set([...state.acceptedEvidenceBundleIds, observation.bundleId])]
+            : state.acceptedEvidenceBundleIds,
         stateVersion: state.stateVersion + 1,
         updatedAt: timestamp,
       };

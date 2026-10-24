@@ -144,6 +144,7 @@ describe('Change Run Design gate CLI', () => {
       '# Demo\n\n## Purpose\n\nTest capability.\n\n## Requirements\n\n### Requirement: Existing behavior\n\nThe system MUST preserve behavior.\n\n#### Scenario: Existing\n\n- **WHEN** it runs\n- **THEN** it succeeds\n',
     );
     await writeChange(workspace, 'valid-plan', 'valid');
+    await writeChange(workspace, 'verify-success', 'valid');
     await writeChange(workspace, 'revise-plan', 'valid');
     await writeChange(workspace, 'reject-plan', 'valid');
     await writeChange(workspace, 'invalid-plan', 'invalid');
@@ -528,6 +529,87 @@ describe('Change Run Design gate CLI', () => {
       ).toBe('awaiting_approval');
     } finally {
       await invalidationApp.close();
+    }
+
+    const verifySuccessRun = await start('verify-success');
+    await runCli<RunStatusView>({
+      packageRoot,
+      cwd: workspace,
+      args: ['run', 'next', '--workspace', workspace, '--run', verifySuccessRun.runId!],
+      environment,
+    });
+    await decidePending(workspace, 'verify-success', verifySuccessRun.runId!, 'approve');
+    await runCli<RunStatusView>({
+      packageRoot,
+      cwd: workspace,
+      args: ['run', 'next', '--workspace', workspace, '--run', verifySuccessRun.runId!],
+      environment,
+    });
+    for (const key of openSpecEnvironmentKeys) process.env[key] = environment[key];
+    const verifyApp = await bootProjectComposition(packageRoot, workspace);
+    try {
+      const intent = await verifyApp.context.workDispatcher.claim({
+        runId: verifySuccessRun.runId!,
+        adapter: 'process',
+        executor: {
+          actorId: 'verify-user',
+          runnerId: 'verify-runner',
+          source: 'runner',
+          authenticated: true,
+        },
+      });
+      const outcome = await verifyApp.context.workDispatcher.acceptOutcome(
+        verifyApp.context.workDispatcher.outcome(intent, 'succeeded', 'Build completed'),
+      );
+      await verifyApp.context.workflowRuns.validateBuildTask({
+        runId: verifySuccessRun.runId!,
+        receiptId: outcome.receipt.receiptId,
+      });
+    } finally {
+      await verifyApp.close();
+      for (const key of openSpecEnvironmentKeys) {
+        const previous = previousOpenSpecEnvironment[key];
+        if (previous === undefined) delete process.env[key];
+        else process.env[key] = previous;
+      }
+    }
+    await execFileAsync('git', ['add', 'openspec/changes/verify-success/tasks.md'], {
+      cwd: workspace,
+    });
+    await execFileAsync('git', ['commit', '-m', 'test: complete verification success task'], {
+      cwd: workspace,
+    });
+    await execFileAsync('git', ['push'], { cwd: workspace });
+    await runCli<RunStatusView>({
+      packageRoot,
+      cwd: workspace,
+      args: ['run', 'next', '--workspace', workspace, '--run', verifySuccessRun.runId!],
+      environment,
+    });
+    const gateApp = await bootProjectComposition(packageRoot, workspace);
+    try {
+      const verified = await gateApp.context.workflowRuns.verifyChange({
+        runId: verifySuccessRun.runId!,
+      });
+      expect(verified.value).toMatchObject({
+        gate: 'satisfied',
+        run: {
+          changeLifecycle: { phase: 'archive', status: 'running', currentWork: null },
+        },
+      });
+      expect(verified.value.run.state.acceptedEvidenceBundleIds).toEqual([
+        verified.value.bundleId,
+      ]);
+      const evidence = await gateApp.context.evidenceCoordinator.status(
+        verified.value.attemptId,
+      );
+      expect(evidence).toMatchObject({
+        context: { status: 'completed', workflowBinding: { workflowRunId: verifySuccessRun.runId } },
+        bundle: { bundleId: verified.value.bundleId },
+        gate: { status: 'satisfied' },
+      });
+    } finally {
+      await gateApp.close();
     }
 
     for (const [changeId, decision, expectedStatus] of [

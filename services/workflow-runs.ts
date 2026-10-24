@@ -40,6 +40,7 @@ import type { DesignGateAssessment } from './specification-planning.js';
 import { createInitialBuildWork } from '../domains/change-lifecycle/build-work.js';
 import { createVerificationInput } from '../domains/change-lifecycle/verification-input.js';
 import { createVerifyWork } from '../domains/change-lifecycle/verify-work.js';
+import { acceptVerifyGate } from '../domains/change-lifecycle/verify-gate.js';
 import type { SpecificationTask } from '../domains/specification/types.js';
 import type {
   ChangeLifecycleState,
@@ -72,6 +73,18 @@ export interface ValidateBuildTaskInput {
 
 export interface ValidateBuildTaskResult {
   validation: BuildTaskValidation;
+  run: RunStatusView;
+}
+
+export interface VerifyChangeRunInput {
+  runId: string;
+  attemptId?: string;
+}
+
+export interface VerifyChangeRunResult {
+  attemptId: string;
+  bundleId: string;
+  gate: 'satisfied';
   run: RunStatusView;
 }
 
@@ -746,6 +759,66 @@ export class WorkflowRuns extends Service {
       });
       return {
         value: { validation, run: advanced.value },
+        diagnostics: advanced.diagnostics,
+      };
+    });
+  }
+
+  verifyChange(
+    input: VerifyChangeRunInput,
+    signal?: AbortSignal,
+  ): Promise<RuntimeResult<VerifyChangeRunResult>> {
+    return this.operations.run({ cancellable: false, signal }, async () => {
+      const state = await this.ctx.runStore.loadRun(input.runId);
+      const lifecycle = state.changeLifecycle;
+      if (!lifecycle) throw new Error(`Run is not a Change Run: ${input.runId}`);
+      const current = { ...structuredClone(lifecycle), status: state.status };
+      if (
+        current.phase !== 'verify' ||
+        current.status !== 'running' ||
+        current.currentWork?.kind !== 'evidence.verify' ||
+        !current.verificationInput
+      ) {
+        throw new Error(`Change Run has no active Verify Work: ${input.runId}`);
+      }
+      const attemptId = input.attemptId ?? randomUUID();
+      const result = input.attemptId
+        ? await this.ctx.evidenceCoordinator.status(attemptId)
+        : await this.ctx.evidenceCoordinator.run(
+            current.verificationInput.evidenceProfile.id,
+            attemptId,
+            input.runId,
+            signal,
+          );
+      if (!result.bundle) {
+        throw new Error(`Evidence attempt has no completed bundle: ${attemptId}`);
+      }
+      const gate = await this.ctx.evidenceCoordinator.evaluate({
+        workflowRunId: input.runId,
+        workflowActionId: current.currentWork.workId,
+        workflowStepId: 'verify',
+        workflowStateVersion: state.stateVersion,
+        profileId: current.verificationInput.evidenceProfile.id,
+        attemptId,
+      });
+      const accepted = acceptVerifyGate({
+        runId: input.runId,
+        lifecycle: current,
+        gate,
+        attemptId,
+        workflowStateVersion: state.stateVersion,
+      });
+      const advanced = await this.coordinator.acceptChangeObservation(input.runId, {
+        kind: 'verify-gate-satisfied',
+        ...accepted,
+      });
+      return {
+        value: {
+          attemptId,
+          bundleId: accepted.bundleId,
+          gate: 'satisfied',
+          run: advanced.value,
+        },
         diagnostics: advanced.diagnostics,
       };
     });

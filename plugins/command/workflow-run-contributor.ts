@@ -8,6 +8,7 @@ import type {
   DecideChangeRunInput,
   StartChangeRunInput,
   ValidateBuildTaskInput,
+  VerifyChangeRunInput,
 } from '../../services/workflow-runs.js';
 
 interface StartInput {
@@ -41,6 +42,11 @@ const plugin = ((context: Context) => {
         name: 'run.work.validate',
         execute: ({ input, signal }) =>
           context.workflowRuns.validateBuildTask(input as ValidateBuildTaskInput, signal),
+      }),
+      context.commandRouter.register({
+        name: 'run.work.verify',
+        execute: ({ input, signal }) =>
+          context.workflowRuns.verifyChange(input as VerifyChangeRunInput, signal),
       }),
       context.commandRouter.register({
         name: 'run.start',

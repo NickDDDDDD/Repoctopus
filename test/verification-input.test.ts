@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
 import { createVerificationInput } from '../domains/change-lifecycle/verification-input.js';
+import { acceptVerifyGate } from '../domains/change-lifecycle/verify-gate.js';
+import { createVerifyWork } from '../domains/change-lifecycle/verify-work.js';
+import type { EvidenceGateProjection } from '../domains/evidence/types.js';
 import { evolveChangeLifecycle } from '../domains/change-lifecycle/transition.js';
 import {
   BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
@@ -21,6 +24,7 @@ const skill: SkillUsageSnapshot = {
   contentDigest: digest('s'),
   resourceManifestDigest: digest('r'),
 };
+const reviewSkill: SkillUsageSnapshot = { ...skill, name: 'code-review' };
 const plan: EvidenceExecutionPlan = {
   schemaVersion: 1,
   profileId: 'verify',
@@ -93,6 +97,91 @@ describe('Verification input', () => {
     });
     expect(input.digest).toMatch(/^sha256:[a-f0-9]{64}$/u);
     expect(create().digest).toBe(input.digest);
+  });
+
+  it('accepts only a satisfied Gate bound to the same Run, Work, state, and input', () => {
+    const verification = create();
+    const work = createVerifyWork({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      verification,
+      actionSkill: reviewSkill,
+      augmentationSkills: [],
+      workspaceRepositoryId: 'workspace',
+      repositoryIds: ['workspace'],
+    });
+    const lifecycle = {
+      ...createChangeLifecycleSnapshot({
+        identity: { workspaceId: 'team', changeId: 'verify-input', generation: 1, runId: 'run-1' },
+      }),
+      phase: 'verify' as const,
+      status: 'running' as const,
+      currentWork: work,
+      tasks,
+      planningDigest: digest('p'),
+      verificationInput: verification,
+    };
+    const gate: EvidenceGateProjection = {
+      schemaVersion: 1,
+      kind: 'EvidenceGateProjection',
+      workflowRunId: 'run-1',
+      workflowActionId: work.workId,
+      workflowStepId: 'verify',
+      workflowStateVersion: 7,
+      compositionDigest: verification.compositionDigest,
+      profileId: 'verify',
+      bundleId: 'bundle-1',
+      inputFingerprint: verification.evidenceProfile.fingerprintDigest,
+      outcome: 'passed',
+      status: 'satisfied',
+      reason: 'passed',
+    };
+    const accepted = acceptVerifyGate({
+      runId: 'run-1',
+      lifecycle,
+      gate,
+      attemptId: 'attempt-1',
+      workflowStateVersion: 7,
+    });
+    expect(accepted).toMatchObject({
+      runId: 'run-1',
+      workId: work.workId,
+      inputDigest: verification.digest,
+      bundleId: 'bundle-1',
+    });
+    const archived = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current: lifecycle,
+      observation: { kind: 'verify-gate-satisfied', ...accepted },
+    });
+    expect(archived.snapshot).toMatchObject({ phase: 'archive', status: 'running' });
+
+    expect(() =>
+      acceptVerifyGate({
+        runId: 'run-1',
+        lifecycle,
+        gate: { ...gate, workflowStateVersion: 6 },
+        attemptId: 'attempt-old',
+        workflowStateVersion: 7,
+      }),
+    ).toThrow(/stale workflow state/u);
+    expect(() =>
+      acceptVerifyGate({
+        runId: 'run-1',
+        lifecycle,
+        gate: { ...gate, workflowRunId: 'run-2' },
+        attemptId: 'attempt-other-run',
+        workflowStateVersion: 7,
+      }),
+    ).toThrow(/another workflow run/u);
+    expect(() =>
+      acceptVerifyGate({
+        runId: 'run-1',
+        lifecycle,
+        gate: { ...gate, inputFingerprint: 'fingerprint-old' },
+        attemptId: 'attempt-old-input',
+        workflowStateVersion: 7,
+      }),
+    ).toThrow(/stale verification inputs/u);
   });
 
   it('fails closed when any required verification identity is missing or mismatched', () => {
