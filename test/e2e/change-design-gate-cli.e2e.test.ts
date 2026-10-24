@@ -6,7 +6,11 @@ import { promisify } from 'node:util';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import type { RunStatusView } from '../../domains/runtime/types.js';
-import type { ActionIntent, WorkOutcomeAcceptance } from '../../domains/action/types.js';
+import type {
+  ActionIntent,
+  WorkClaimRequest,
+  WorkOutcomeAcceptance,
+} from '../../domains/action/types.js';
 import type { SpecificationApprovalState } from '../../domains/specification/types.js';
 import { bootProjectComposition } from '../../app/boot/bootstrap.js';
 import {
@@ -286,7 +290,7 @@ describe('Change Run Design gate CLI', () => {
       provider: { id: 'openspec' },
     });
     const approvedWorkId = approved.result?.changeLifecycle?.currentWork?.workId;
-    let acceptedReceiptId: string;
+    let failedReceiptId: string;
     const outcomeApp = await bootProjectComposition(packageRoot, workspace);
     try {
       expect(outcomeApp.context.workDispatcher.list()).toEqual([
@@ -296,22 +300,35 @@ describe('Change Run Design gate CLI', () => {
         'specification',
       ]);
       const intent = await outcomeApp.context.commandRouter.execute<
-        { runId: string; adapter: string },
+        WorkClaimRequest,
         ActionIntent
-      >('run.work.claim', { runId: validRun.runId!, adapter: 'process' });
+      >('run.work.claim', {
+        runId: validRun.runId!,
+        adapter: 'process',
+        executor: {
+          actorId: 'alice',
+          runnerId: 'runner-a',
+          source: 'cli',
+          authenticated: true,
+        },
+      });
       const accepted = await outcomeApp.context.commandRouter.execute<
         ReturnType<typeof outcomeApp.context.workDispatcher.outcome>,
         WorkOutcomeAcceptance
       >(
         'run.work.outcome',
-        outcomeApp.context.workDispatcher.outcome(intent, 'succeeded', 'Process Adapter succeeded'),
+        outcomeApp.context.workDispatcher.outcome(intent, 'failed', 'Process Adapter failed'),
       );
       expect(accepted).toMatchObject({
         validation: 'pending',
         lifecycleAdvanced: false,
-        receipt: { adapter: 'process', outcome: 'succeeded' },
+        receipt: {
+          adapter: 'process',
+          outcome: 'failed',
+          executor: { actorId: 'alice', runnerId: 'runner-a' },
+        },
       });
-      acceptedReceiptId = accepted.receipt.receiptId;
+      failedReceiptId = accepted.receipt.receiptId;
     } finally {
       await outcomeApp.close();
     }
@@ -339,9 +356,49 @@ describe('Change Run Design gate CLI', () => {
     for (const key of openSpecEnvironmentKeys) process.env[key] = environment[key];
     const validationApp = await bootProjectComposition(packageRoot, workspace);
     try {
+      const failed = await validationApp.context.workflowRuns.validateBuildTask({
+        runId: validRun.runId!,
+        receiptId: failedReceiptId,
+      });
+      expect(failed.value.validation.status).toBe('failed');
+      expect(failed.value.run.changeLifecycle).toMatchObject({
+        phase: 'build',
+        taskProgress: { completed: 0, currentTaskId: '1.1' },
+      });
+      const repairIntent = await validationApp.context.commandRouter.execute<
+        WorkClaimRequest,
+        ActionIntent
+      >('run.work.claim', {
+        runId: validRun.runId!,
+        adapter: 'process',
+        attempt: 2,
+        executor: {
+          actorId: 'bob',
+          runnerId: 'runner-b',
+          source: 'runner',
+          authenticated: true,
+        },
+      });
+      expect(repairIntent.executor).toMatchObject({ actorId: 'bob', runnerId: 'runner-b' });
+      const repaired = await validationApp.context.workDispatcher.acceptOutcome(
+        validationApp.context.workDispatcher.outcome(
+          repairIntent,
+          'succeeded',
+          'Repair Process Adapter succeeded',
+        ),
+      );
+      expect(repaired).toMatchObject({
+        lifecycleAdvanced: false,
+        receipt: { executor: { actorId: 'bob', runnerId: 'runner-b' } },
+      });
+      const beforeValidation = await validationApp.context.workflowRuns.status(validRun.runId!);
+      expect(beforeValidation.changeLifecycle).toMatchObject({
+        phase: 'build',
+        taskProgress: { completed: 0, currentTaskId: '1.1' },
+      });
       const validated = await validationApp.context.workflowRuns.validateBuildTask({
         runId: validRun.runId!,
-        receiptId: acceptedReceiptId,
+        receiptId: repaired.receipt.receiptId,
       });
       expect(validated.value).toMatchObject({
         validation: { status: 'validated', taskId: '1.1' },
@@ -355,7 +412,7 @@ describe('Change Run Design gate CLI', () => {
       });
       const replay = await validationApp.context.workflowRuns.validateBuildTask({
         runId: validRun.runId!,
-        receiptId: acceptedReceiptId,
+        receiptId: repaired.receipt.receiptId,
       });
       expect(replay.value.validation.status).toBe('already-completed');
     } finally {

@@ -14,6 +14,7 @@ export interface ActionIntent {
   composition: CompositionIdentitySnapshot;
   action: EngineAction;
   adapter: string;
+  executor?: WorkExecutorIdentity;
   createdAt: string;
 }
 
@@ -31,6 +32,7 @@ export interface ActionReceipt {
   compositionDigest: string;
   actionId: string;
   adapter: string;
+  executor?: WorkExecutorIdentity;
   outcome: ActionOutcome['status'];
   summary: string;
   completedAt: string;
@@ -44,6 +46,7 @@ export interface ActionClaimInput {
   composition: CompositionIdentitySnapshot;
   action: EngineAction;
   adapter?: string;
+  executor?: WorkExecutorIdentity;
 }
 
 export interface ClaimedActionOutcome {
@@ -70,6 +73,14 @@ export interface WorkClaimRequest {
   runId: string;
   adapter: string;
   attempt?: number;
+  executor: WorkExecutorIdentity;
+}
+
+export interface WorkExecutorIdentity {
+  actorId: string;
+  runnerId: string;
+  source: 'cli' | 'desktop' | 'runner' | 'api';
+  authenticated: boolean;
 }
 
 export interface WorkOutcomeAcceptance {

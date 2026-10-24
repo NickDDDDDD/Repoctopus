@@ -123,6 +123,7 @@ export class ActionDispatcher extends Service {
       composition: structuredClone(input.composition),
       action: structuredClone(input.action),
       adapter,
+      ...(input.executor ? { executor: structuredClone(input.executor) } : {}),
       createdAt: new Date().toISOString(),
     });
   }

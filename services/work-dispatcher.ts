@@ -48,6 +48,7 @@ export function outcomeReceiptAdapter(id: string): ActionAdapter {
         compositionDigest: input.compositionDigest,
         actionId: intent.action.id,
         adapter: id,
+        ...(intent.executor ? { executor: structuredClone(intent.executor) } : {}),
         outcome: input.status,
         summary: input.summary,
         completedAt: new Date().toISOString(),
@@ -91,6 +92,13 @@ export class WorkDispatcher extends Service {
     }
     const contributor = this.contributors.get(request.adapter);
     if (!contributor) throw new Error(`Work Contributor is not active: ${request.adapter}`);
+    if (
+      !request.executor.authenticated ||
+      !request.executor.actorId.trim() ||
+      !request.executor.runnerId.trim()
+    ) {
+      throw new Error('Work claim requires an authenticated actor and Runner identity');
+    }
     assertContributorSupportsWork(contributor, work);
     return this.ctx.actionDispatcher.claim({
       runId: request.runId,
@@ -106,6 +114,7 @@ export class WorkDispatcher extends Service {
         summary: `Execute ${work.kind}`,
       },
       adapter: contributor.id,
+      executor: structuredClone(request.executor),
     });
   }
 
