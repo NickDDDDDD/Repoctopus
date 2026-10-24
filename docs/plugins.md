@@ -16,8 +16,8 @@ Contributor 通过 `ctx.effect(() => registry.register(value))` 登记；所属 
 ## Composition 选择
 
 - Bootstrap composition 只提供探测、接入和维护能力。
-- Project composition 提供 Runtime、Specification、Skill、Evidence、Delivery 与公共 CLI；配置 `postMerge` 时才加载 Archive/Post-merge Adapter 和命令。
-- Runner composition 在 Project 之上增加 HTTP Host、Webhook 与 Inbox Runner。
+- Project composition 提供 Runtime、Specification、Skill、Evidence、Delivery、Archive Publication、Consistency Reconciliation 与公共 CLI。
+- 所有公共命令都是短生命周期 composition；核心产品不注册 HTTP listener、Webhook、Inbox Runner 或 daemon。
 - Desktop composition 是隔离的观测入口，消费 OTLP，不拥有 Change transition。
 
 公共命令必须通过 `App Boot → CommandRouter → Service`。测试应运行相同 production composition 和 `bin/repoctopus.js`，不能直接构造一个绕过权限、Contributor 或 Store compatibility 的测试 Runtime 来证明文档命令有效。

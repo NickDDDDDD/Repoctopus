@@ -4,11 +4,6 @@ import type { SpecificationTask } from '../specification/types.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import type { VerificationInput } from './verification-input.js';
 import type { ArchiveDeliveryInput } from './archive-input.js';
-import type {
-  ArchiveMergeRefreshResult,
-  ArchivePublicationResult,
-} from '../delivery/service-v3.js';
-import type { MergeRequestIdentity } from '../delivery/types.js';
 import type { PublicationReceipt } from '../delivery/publication-receipt.js';
 import { assertPublicationReceipt } from '../delivery/publication-receipt.js';
 import type { SpecificationClosureResult } from '../specification/types.js';
@@ -167,12 +162,6 @@ export interface HumanDecisionWaitCondition extends WaitConditionBase {
   proposalDigest: `sha256:${string}`;
 }
 
-export interface PlatformEventWaitCondition extends WaitConditionBase {
-  kind: 'platform-event';
-  eventType: string;
-  subjectDigest: `sha256:${string}`;
-}
-
 export interface RetryWaitCondition extends WaitConditionBase {
   kind: 'retry';
   notBefore: string;
@@ -187,7 +176,6 @@ export interface ExternalFactWaitCondition extends WaitConditionBase {
 
 export type WaitCondition =
   | HumanDecisionWaitCondition
-  | PlatformEventWaitCondition
   | RetryWaitCondition
   | ExternalFactWaitCondition;
 
@@ -212,27 +200,9 @@ export interface ChangeLifecycleState {
   verificationInput?: VerificationInput;
   verificationInvalidation?: VerificationInvalidation;
   archiveDeliveryInput?: ArchiveDeliveryInput;
-  archivePublication?: ArchivePublicationResult;
-  archiveMerge?: ArchiveMergeRefreshResult & { source: ArchiveMergeRefreshSource };
-  postMergeVerification?: {
-    attemptId: string;
-    bundleId: string;
-    checkoutManifestDigest: `sha256:${string}`;
-    inputFingerprint: string;
-    status: 'satisfied';
-  };
-  archiveClosure?: {
-    closureId: `sha256:${string}`;
-    planDigest: `sha256:${string}`;
-    auditDigest: `sha256:${string}`;
-    publicationReceiptDigest: `sha256:${string}`;
-    finalMergeRequest: MergeRequestIdentity;
-  };
   specificationClosure?: SpecificationClosureResult;
   publicationReceipt?: PublicationReceipt;
 }
-
-export type ArchiveMergeRefreshSource = 'webhook' | 'inbox' | 'active-check' | 'run-start';
 
 export interface VerificationInvalidation {
   schemaVersion: 1;
@@ -382,46 +352,6 @@ export type ChangeLifecycleObservation =
       kind: 'archive-publication-blocked';
       reason: string;
       evidenceIds: readonly string[];
-    }
-  | {
-      kind: 'archive-delivery-ready';
-      archiveInput: ArchiveDeliveryInput;
-      work: WorkDescriptor;
-    }
-  | {
-      kind: 'archive-publication-completed';
-      archiveInputDigest: `sha256:${string}`;
-      actionReceiptId: string;
-      publication: ArchivePublicationResult;
-      work: WorkDescriptor;
-    }
-  | {
-      kind: 'archive-merge-refreshed';
-      source: ArchiveMergeRefreshSource;
-      refresh: ArchiveMergeRefreshResult;
-      work?: WorkDescriptor;
-    }
-  | {
-      kind: 'archive-post-merge-verified';
-      result: 'satisfied' | 'failed';
-      workId: string;
-      inputDigest: `sha256:${string}`;
-      attemptId: string;
-      bundleId: string;
-      checkoutManifestDigest: `sha256:${string}`;
-      evidenceInputFingerprint: string;
-      workflowStateVersion: number;
-      work?: WorkDescriptor;
-    }
-  | {
-      kind: 'archive-completed';
-      workId: string;
-      inputDigest: `sha256:${string}`;
-      closureId: `sha256:${string}`;
-      planDigest: `sha256:${string}`;
-      auditDigest: `sha256:${string}`;
-      publicationReceiptDigest: `sha256:${string}`;
-      finalMergeRequest: MergeRequestIdentity;
     };
 
 export interface ChangeLifecycleReduction {
@@ -505,10 +435,6 @@ export function applyChangeLifecycleTransition(options: {
     verificationInput?: VerificationInput | null;
     verificationInvalidation?: VerificationInvalidation | null;
     archiveDeliveryInput?: ArchiveDeliveryInput | null;
-    archivePublication?: ArchivePublicationResult | null;
-    archiveMerge?: (ArchiveMergeRefreshResult & { source: ArchiveMergeRefreshSource }) | null;
-    postMergeVerification?: ChangeLifecycleState['postMergeVerification'] | null;
-    archiveClosure?: ChangeLifecycleState['archiveClosure'] | null;
     specificationClosure?: SpecificationClosureResult | null;
     publicationReceipt?: PublicationReceipt | null;
   };
@@ -561,21 +487,6 @@ export function applyChangeLifecycleTransition(options: {
   if (options.next.archiveDeliveryInput === null) delete snapshot.archiveDeliveryInput;
   else if (options.next.archiveDeliveryInput) {
     snapshot.archiveDeliveryInput = structuredClone(options.next.archiveDeliveryInput);
-  }
-  if (options.next.archivePublication === null) delete snapshot.archivePublication;
-  else if (options.next.archivePublication) {
-    snapshot.archivePublication = structuredClone(options.next.archivePublication);
-  }
-  if (options.next.archiveMerge === null) delete snapshot.archiveMerge;
-  else if (options.next.archiveMerge)
-    snapshot.archiveMerge = structuredClone(options.next.archiveMerge);
-  if (options.next.postMergeVerification === null) delete snapshot.postMergeVerification;
-  else if (options.next.postMergeVerification) {
-    snapshot.postMergeVerification = structuredClone(options.next.postMergeVerification);
-  }
-  if (options.next.archiveClosure === null) delete snapshot.archiveClosure;
-  else if (options.next.archiveClosure) {
-    snapshot.archiveClosure = structuredClone(options.next.archiveClosure);
   }
   if (options.next.specificationClosure === null) delete snapshot.specificationClosure;
   else if (options.next.specificationClosure) {
@@ -1033,218 +944,6 @@ export function evolveChangeLifecycle(options: {
           message: observation.reason,
           evidenceIds: [...observation.evidenceIds],
           sinceRevision: current.revision,
-        },
-      },
-    });
-  }
-  if (observation.kind === 'archive-delivery-ready') {
-    if (
-      current.phase !== 'archive' ||
-      current.status !== 'running' ||
-      current.currentWork !== null
-    ) {
-      throw new Error(
-        `Archive Delivery planning is not valid from ${current.phase}/${current.status}`,
-      );
-    }
-    if (
-      observation.work.phase !== 'archive' ||
-      observation.work.kind !== 'delivery.prepare' ||
-      observation.work.inputDigest !== observation.archiveInput.digest ||
-      observation.archiveInput.runId !== current.identity.runId ||
-      observation.archiveInput.changeId !== current.identity.changeId
-    ) {
-      throw new Error('Archive Delivery Work does not match its immutable input');
-    }
-    return applyChangeLifecycleTransition({
-      definition: options.definition,
-      current,
-      transitionId: 'archive.delivery-planned',
-      next: {
-        currentWork: observation.work,
-        waitCondition: null,
-        blocker: null,
-        archiveDeliveryInput: observation.archiveInput,
-      },
-    });
-  }
-  if (observation.kind === 'archive-publication-completed') {
-    const archive = current.archiveDeliveryInput;
-    if (
-      current.phase !== 'archive' ||
-      current.status !== 'running' ||
-      current.currentWork?.kind !== 'delivery.prepare' ||
-      !archive
-    ) {
-      throw new Error(`Archive publication is not valid from ${current.phase}/${current.status}`);
-    }
-    const expectedActions = archive.businessDeliveries.length * 2;
-    if (
-      archive.digest !== observation.archiveInputDigest ||
-      current.currentWork.inputDigest !== archive.digest ||
-      observation.publication.receipts.length !== expectedActions ||
-      new Set(observation.publication.receipts.map((receipt) => receipt.actionId)).size !==
-        expectedActions ||
-      observation.publication.receipts.some((receipt) => receipt.status !== 'succeeded') ||
-      !observation.actionReceiptId.trim()
-    ) {
-      throw new Error('Archive publication receipts do not cover the frozen Delivery plan');
-    }
-    if (observation.work.phase !== 'archive' || observation.work.kind !== 'delivery.await-merge') {
-      throw new Error('Archive publication did not create the fixed merge wait Work');
-    }
-    const waitCondition: PlatformEventWaitCondition = {
-      schemaVersion: 1,
-      waitId: `archive:business-merge:${observation.work.inputDigest}`,
-      kind: 'platform-event',
-      reason: 'Waiting for every frozen Business merge request to merge',
-      inputDigest: observation.work.inputDigest,
-      eventType: 'business-merge-request.updated',
-      subjectDigest: observation.work.inputDigest,
-    };
-    return applyChangeLifecycleTransition({
-      definition: options.definition,
-      current,
-      transitionId: 'archive.publication-completed',
-      next: {
-        currentWork: observation.work,
-        waitCondition,
-        blocker: null,
-        archivePublication: observation.publication,
-      },
-    });
-  }
-  if (observation.kind === 'archive-merge-refreshed') {
-    if (
-      current.phase !== 'archive' ||
-      current.status !== 'waiting' ||
-      current.currentWork?.kind !== 'delivery.await-merge' ||
-      current.waitCondition?.kind !== 'platform-event' ||
-      !current.archivePublication
-    ) {
-      throw new Error(`Archive merge refresh is not valid from ${current.phase}/${current.status}`);
-    }
-    const expected = current.archiveDeliveryInput?.businessDeliveries.length ?? 0;
-    if (
-      observation.refresh.mergeRequestStatuses.length !== expected ||
-      observation.refresh.mergeEvidence.length > expected
-    ) {
-      throw new Error('Archive merge refresh does not cover the frozen Business MR collection');
-    }
-    if (!observation.refresh.allMerged) {
-      return applyChangeLifecycleTransition({
-        definition: options.definition,
-        current,
-        transitionId: 'archive.merge-pending',
-        next: {
-          currentWork: current.currentWork,
-          waitCondition: current.waitCondition,
-          blocker: null,
-          archiveMerge: { ...observation.refresh, source: observation.source },
-        },
-      });
-    }
-    if (observation.refresh.mergeEvidence.length !== expected) {
-      throw new Error('Archive merge completion is missing exact merge evidence');
-    }
-    if (
-      !observation.work ||
-      observation.work.phase !== 'archive' ||
-      observation.work.kind !== 'delivery.verify-merged'
-    ) {
-      throw new Error('Archive merge completion requires the fixed post-merge Verify Work');
-    }
-    return applyChangeLifecycleTransition({
-      definition: options.definition,
-      current,
-      transitionId: 'archive.business-merged',
-      next: {
-        currentWork: observation.work,
-        waitCondition: null,
-        blocker: null,
-        archiveMerge: { ...observation.refresh, source: observation.source },
-      },
-    });
-  }
-  if (observation.kind === 'archive-post-merge-verified') {
-    const work = current.currentWork;
-    if (
-      current.phase !== 'archive' ||
-      current.status !== 'running' ||
-      work?.kind !== 'delivery.verify-merged' ||
-      work.workId !== observation.workId ||
-      work.inputDigest !== observation.inputDigest
-    ) {
-      throw new Error('Post-merge Evidence does not match the active Archive Work');
-    }
-    if (observation.result === 'failed') {
-      return applyChangeLifecycleTransition({
-        definition: options.definition,
-        current,
-        transitionId: 'archive.implementation-drift',
-        next: {
-          currentWork: null,
-          waitCondition: null,
-          blocker: null,
-          verificationInput: null,
-          archiveDeliveryInput: null,
-          archivePublication: null,
-          archiveMerge: null,
-          postMergeVerification: null,
-        },
-      });
-    }
-    if (
-      !observation.work ||
-      observation.work.phase !== 'archive' ||
-      observation.work.kind !== 'specification.archive'
-    ) {
-      throw new Error('Satisfied post-merge Evidence requires Specification Archive Work');
-    }
-    return applyChangeLifecycleTransition({
-      definition: options.definition,
-      current,
-      transitionId: 'archive.post-merge-verified',
-      next: {
-        currentWork: observation.work,
-        waitCondition: null,
-        blocker: null,
-        postMergeVerification: {
-          attemptId: observation.attemptId,
-          bundleId: observation.bundleId,
-          checkoutManifestDigest: observation.checkoutManifestDigest,
-          inputFingerprint: observation.evidenceInputFingerprint,
-          status: 'satisfied',
-        },
-      },
-    });
-  }
-  if (observation.kind === 'archive-completed') {
-    const work = current.currentWork;
-    if (
-      current.phase !== 'archive' ||
-      current.status !== 'running' ||
-      work?.kind !== 'specification.archive' ||
-      work.workId !== observation.workId ||
-      work.inputDigest !== observation.inputDigest ||
-      current.postMergeVerification?.status !== 'satisfied'
-    ) {
-      throw new Error('Specification closure does not match the active Archive Work');
-    }
-    return applyChangeLifecycleTransition({
-      definition: options.definition,
-      current,
-      transitionId: 'archive.completed',
-      next: {
-        currentWork: null,
-        waitCondition: null,
-        blocker: null,
-        archiveClosure: {
-          closureId: observation.closureId,
-          planDigest: observation.planDigest,
-          auditDigest: observation.auditDigest,
-          publicationReceiptDigest: observation.publicationReceiptDigest,
-          finalMergeRequest: structuredClone(observation.finalMergeRequest),
         },
       },
     });

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import {
   createArchiveDeliveryInput,
@@ -17,6 +17,18 @@ import {
 import type { DeliveryIntentV3, DeliveryPolicy } from '../domains/delivery/types.js';
 import type { SkillUsageSnapshot } from '../domains/skill/types.js';
 import type { SpecificationClosureResult } from '../domains/specification/types.js';
+import { WorkflowRunCoordinator } from '../domains/runtime/workflow-runs.js';
+import { FileRuntimeStore } from '../platform/runtime/file-runtime-store.js';
+import {
+  compositionFixture,
+  projectFixture,
+  removeTemporaryDirectory,
+  temporaryDirectory,
+  workflowFixture,
+} from './helpers/fixtures.js';
+
+const cleanup: string[] = [];
+afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
 
 const digest = (character: string) => `sha256:${character.repeat(64)}` as const;
 
@@ -211,7 +223,7 @@ function archiveState() {
 describe('Archive publication terminal lifecycle', () => {
   it.each(['open', 'merged', 'closed'] as const)(
     'completes from a full receipt without consulting an MR in %s state',
-    (_externalMrState) => {
+    () => {
       const { closed, receipt } = archiveState();
       const result = evolveChangeLifecycle({
         definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
@@ -255,5 +267,41 @@ describe('Archive publication terminal lifecycle', () => {
         items: receipt.items.filter((item) => item.role === 'business'),
       }),
     ).toThrow(/Business and Specification publications/u);
+  });
+
+  it('persists the closure and Publication Receipt as the completed Run authority', async () => {
+    const workspace = await temporaryDirectory('repoctopus-archive-receipt-');
+    cleanup.push(workspace);
+    const store = new FileRuntimeStore(workspace);
+    const runtime = new WorkflowRunCoordinator(
+      store,
+      { export: () => Promise.resolve() },
+      compositionFixture(),
+    );
+    const { closed, receipt } = archiveState();
+    await runtime.start({
+      workflow: workflowFixture(),
+      projectSnapshot: projectFixture(),
+      runId: closed.identity.runId,
+      changeLifecycle: closed,
+    });
+
+    await runtime.acceptChangeObservation(closed.identity.runId, {
+      kind: 'archive-publication-receipt-accepted',
+      receipt,
+    });
+
+    const persisted = await store.loadRun(closed.identity.runId);
+    expect(persisted).toMatchObject({
+      status: 'completed',
+      changeLifecycle: {
+        specificationClosure: { closureId: receipt.specificationClosure.closureId },
+        publicationReceipt: { digest: receipt.digest },
+      },
+    });
+    expect((await runtime.status(closed.identity.runId)).changeLifecycle).toMatchObject({
+      status: 'completed',
+      publicationReceipt: { digest: receipt.digest },
+    });
   });
 });

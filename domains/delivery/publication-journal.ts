@@ -147,9 +147,10 @@ function updated(
       item.operationId === operationId ? update(structuredClone(item)) : structuredClone(item),
     ),
   });
-  const { digest: _digest, ...withoutDigest } = unsigned as typeof unsigned & {
+  const { digest: previousDigest, ...withoutDigest } = unsigned as typeof unsigned & {
     digest?: `sha256:${string}`;
   };
+  void previousDigest;
   return { ...withoutDigest, digest: sha256(withoutDigest) };
 }
 

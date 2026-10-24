@@ -15,8 +15,8 @@ CLI / IDE / API Application Plugin
 │ Cordis Context / Service / Fiber / Effect                  │
 │                                                            │
 │ Project     CommandRouter     WorkflowRuns     RunStore     │
-│ Evidence   Delivery   Specification   PlatformEvents       │
-│ HTTP Host  Event Runner  PostMergeCoordinator  Telemetry   │
+│ Evidence   Delivery   Specification   Consistency          │
+│ Archive Publication   Human Decision   Telemetry            │
 │       ▲ Provider               ▲ Contributor               │
 └───────┼────────────────────────┼────────────────────────────┘
         │                        │
@@ -40,7 +40,7 @@ CLI / IDE / API Application Plugin
 
 ## Bootstrap 与 Project composition
 
-`bootstrap` composition 不要求正式项目配置，只装载项目探测、配置接入、来源检查和浏览器诊断。`project` composition 在有效 `repoctopus.yaml` 存在时增加 Run、Action、Evidence、Delivery、Skill、Specification 与 Telemetry；配置 `postMerge` 时还增加只读 Coordinator、受保护 Archive Action Provider 和命令 Contributor，但不启动监听端口或后台轮询。`runner` composition 在相同项目配置之上增加 HTTP Host、Webhook Route、Event Inbox Runner 和 Application Plugin；只有 `runner start` 使用这条长驻组合。
+`bootstrap` composition 不要求正式项目配置，只装载项目探测、配置接入、来源检查和浏览器诊断。`project` composition 在有效 `repoctopus.yaml` 存在时增加 Run、Action、Evidence、Delivery、Skill、Specification、Archive Publication、Consistency Reconciliation 与 Telemetry。每个公共命令都创建并关闭短生命周期 App；核心产品没有 Runner composition、监听端口、Webhook Route、Event Inbox 或后台轮询。
 
 公共入口都必须经 App Boot。当前已切换的真实调用链为：
 
@@ -58,17 +58,17 @@ project detect/prepare/review 与 browser/provenance 维护
 CLI → App Boot → CommandRouter → 对应 Contributor → ProjectOnboarding 或 BrowserMaintenance Service
                    detect → 显式 scan root → Git Project Provider
 
-runner start
-CLI → Runner Application → HTTP Host + Webhook Route → PlatformEvents → durable Inbox
-                                                Inbox Runner → PostMergeCoordinator → platform facts
+run archive-prepare / archive-publish
+CLI → App Boot → WorkflowRuns → Specification close → Delivery publication → Publication Receipt
 
-post-merge reconcile / run start preflight
-CLI → short-lived Project composition → Delivery candidates → PostMergeCoordinator → platform facts
+change reconcile / run start preflight
+CLI → short-lived Project composition → completed Publication Receipts → authoritative platform facts
+                                     → bounded impact review / optional follow-up Change
 ```
 
 静态 Plugin Descriptor 只用于 import 前准入、来源、权限类别、状态兼容和审计。运行期依赖仍由插件自身的 Cordis `inject` 声明。内置插件的 `codeDigest` 由其登记的实际源码文件计算。
 
-项目配置只选择 Provider 身份和 Credential 变量名。composition digest 会绑定选择与非秘密配置，但不会读取或散列 Credential 值。普通命令按需创建并关闭短生命周期 App；Runner 由进程管理器持有，收到终止信号后通过相同 Cordis 生命周期有界关闭。
+项目配置只选择 Provider 身份和 Credential 变量名。composition digest 会绑定选择与非秘密配置，但不会读取或散列 Credential 值。普通命令按需创建并关闭短生命周期 App。帮助、版本、未知参数和缺失参数在 composition 前处理，因此不会读取项目、访问网络或创建 `.repoctopus/`。
 
 ## Run、Engine 与 RunStore
 
@@ -112,13 +112,13 @@ App Boot 关闭时先把 Loader composition 更新为空并等待子 Fiber 的�
 ## 数据与副作用边界
 
 - `repoctopus.yaml` 是可提交的团队配置，只保存仓库逻辑身份、Provider 选择、策略和环境变量名，不保存 Token、Webhook secret 或机器作者身份。
-- `.repoctopus/` 是工作区本机的持久权威，包含 Run、Journal、Evidence、Action、Delivery、Inbox 和规格关闭 Receipt；其中 Inbox payload 与租约状态属于敏感数据，应限制访问、备份并按保留策略清理。
-- Change 是团队共享工作单元，不由 MR author、Git author、Bot 或 Runner identity 独占。不同 Runner 可以重复计算；公开 Change 分支的精确远端 OID、非强制 push 和发布后核对是跨本地状态卷的最终副作用栅栏。
-- 业务仓只由受保护 Adapter 在已核对的精确提交和允许路径上读取或写入。PostMergeCoordinator 只查询、规范化并返回平台事实，不创建或推进 Run，也不直接写 RunStore、Evidence Store、规格文件或 Git。
+- `.repoctopus/` 是工作区本机的持久权威，包含 Run、Journal、Evidence、Action、Delivery、Publication Receipt、一致性审查和规格关闭 Receipt；应限制访问、备份并按保留策略清理。
+- Change 是团队共享工作单元，不由 MR author、Git author、Bot 或某台机器独占。公开 Change 分支的精确远端 OID、非强制 push、Publication Journal 和发布后核对是最终副作用栅栏。
+- 业务仓只由受保护 Adapter 在已核对的精确提交和允许路径上读取或写入。Consistency Reconciler 只按已完成 Receipt 查询平台事实，不回退原 Run，也不直接写 RunStore、Evidence Store、规格文件或 Git。
 - OpenSpec Provider 是唯一执行规格工具关闭命令的边界；Delivery Action Adapter 是唯一执行 commit、push 与 MR 创建/更新的边界。
 - 遥测只导出允许列表中的稳定身份和低基数结果；秘密、原始 Header、payload、绝对路径、自由文本与规格正文不进入 OTel。
 
-这些约束同时由 composition authority、路径限定的架构检查和违规 fixture 保护。部署与目录权限建议见[自举与 Runner 部署](self-hosting.md)。
+这些约束同时由 composition authority、路径限定的架构检查和违规 fixture 保护。配置与目录权限建议见[短生命周期自举](self-hosting.md)。
 
 ## 触手、吸盘、神经与眼睛
 
@@ -129,8 +129,8 @@ App Boot 关闭时先把 Loader composition 更新为空并等待子 Fiber 的�
 
 ## 与上游来源的关系
 
-Cordis Core 4.0.5 与 Plugin Loader 1.0.6 的未修改发布快照位于 `third_party/`，固定在 DSH `dsh-v0.2.1-rc.3` 对应提交。DSH 的 Skill Registry 作为精确版本依赖使用，Filesystem Skill 与 GitHub Webhook 边界按来源登记后适配；DSH Agent、Session、Workspace 和 fire-and-forget Webhook Runtime 不进入产品运行时。默认分支审计身份与发布依赖身份分开固定，未发布的 Cordis/Loader 源码不会伪装成 npm 发布快照。
+Cordis Core 4.0.5 与 Plugin Loader 1.0.6 的未修改发布快照位于 `third_party/`，固定在 DSH `dsh-v0.2.1-rc.3` 对应提交。DSH 的 Skill Registry 作为精确版本依赖使用；DSH Agent、Session、Workspace 和 fire-and-forget Webhook Runtime 不进入产品运行时。默认分支审计身份与发布依赖身份分开固定，未发布的 Cordis/Loader 源码不会伪装成 npm 发布快照。
 
-Comet `0.5.0` / 固定 `master` 提交是 Engine、受保护转换、文件安全、Evidence、Journal、Checkpoint、恢复、Receipt 和 Change 生命周期的源码或行为来源，不是 Repoctopus 的运行时父应用。Repoctopus 按团队 Workspace、多仓、持久 Inbox 和 Cordis 组合边界选择采用、改写或原生实现。OpenSpec 是可替换 Specification Provider 的当前实现；Matt Skills 是固定内容来源。机器身份、逐文件摘要和采用方式分别记录在 `third_party/cordis-upstream.json`、`third_party/dsh-adoption.json`、`third_party/comet/source-manifest.json` 与 Matt Skills manifest；0.5.0 增量判断见[Comet 审计](../third_party/comet/0.5.0-audit.md)，跨上游能力判断见[上游对齐审计](../third_party/upstream-alignment-audit.md)。
+Comet `0.5.0` / 固定 `master` 提交是 Engine、受保护转换、文件安全、Evidence、Journal、Checkpoint、恢复、Receipt 和 Change 生命周期的源码或行为来源，不是 Repoctopus 的运行时父应用。Repoctopus 按团队 Workspace、多仓、Publication Receipt 和 Cordis 组合边界选择采用、改写或原生实现。OpenSpec 是可替换 Specification Provider 的当前实现；Matt Skills 是固定内容来源。机器身份、逐文件摘要和采用方式分别记录在 `third_party/cordis-upstream.json`、`third_party/dsh-adoption.json`、`third_party/comet/source-manifest.json` 与 Matt Skills manifest；0.5.0 增量判断见[Comet 审计](../third_party/comet/0.5.0-audit.md)，跨上游能力判断见[上游对齐审计](../third_party/upstream-alignment-audit.md)。
 
 Change lifecycle 的扩展面使用四类有类型的 Cordis 契约：Lifecycle Definition、Work Contributor、Validator Contributor 和 Lifecycle Extension。它们分别注册、卸载并进入 composition/Run 身份快照；Extension 只能声明 definition 已开放的 checkpoint，不能取得核心 transition 权限。这里没有另建通用 Capability Resolver，也没有把 Comet Workflow Application shell 搬进产品；DSH 仅使用已固定发布包和已登记的 Cordis 发布快照，不引用未发布的 Agent、Session 或应用源码。

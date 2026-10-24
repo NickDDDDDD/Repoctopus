@@ -44,14 +44,11 @@ import { acceptVerifyGate, rejectVerifyGate } from '../domains/change-lifecycle/
 import type { SpecificationTask } from '../domains/specification/types.js';
 import type {
   ChangeLifecycleState,
-  ArchiveMergeRefreshSource,
   ChangeRunProjection,
   WorkDescriptor,
 } from '../domains/change-lifecycle/transition.js';
 import {
   createArchiveDeliveryInput,
-  createPostMergeVerifyWork,
-  createSpecificationArchiveWork,
   createDeliveryPublishWork,
   createSpecificationCloseWork,
 } from '../domains/change-lifecycle/archive-input.js';
@@ -65,8 +62,6 @@ import {
   type PublicationReceipt,
   type PublicationReceiptItem,
 } from '../domains/delivery/publication-receipt.js';
-import type { EvidenceGateProjection } from '../domains/evidence/types.js';
-import type { MergeRequestIdentity } from '../domains/delivery/types.js';
 import { lifecycleContributorSnapshot } from '../domains/change-lifecycle/contributors.js';
 
 export interface StartChangeRunInput {
@@ -129,30 +124,6 @@ export interface ExecuteArchiveDeliveryResult {
   publication: ArchivePublicationResult;
   receipt: PublicationReceipt;
   run: RunStatusView;
-}
-
-export interface RefreshArchiveMergesInput {
-  runId: string;
-  policy: DeliveryPolicy;
-  source: ArchiveMergeRefreshSource;
-}
-
-export interface AcceptArchivePostMergeVerificationInput {
-  runId: string;
-  attemptId: string;
-  checkoutManifestDigest: `sha256:${string}`;
-  gate: EvidenceGateProjection;
-}
-
-export interface CompleteArchiveInput {
-  runId: string;
-  workId: string;
-  inputDigest: `sha256:${string}`;
-  closureId: `sha256:${string}`;
-  planDigest: `sha256:${string}`;
-  auditDigest: `sha256:${string}`;
-  publicationReceiptDigest: `sha256:${string}`;
-  finalMergeRequest: MergeRequestIdentity;
 }
 
 export class WorkflowRuns extends Service {
@@ -1126,7 +1097,10 @@ export class WorkflowRuns extends Service {
           repositoryId: delivery.repositoryId,
           remoteIdentity:
             input.project.repositories.find((repository) => repository.id === delivery.repositoryId)
-              ?.remoteIdentity ?? (() => { throw new Error(`Repository remote identity is missing: ${delivery.repositoryId}`); })(),
+              ?.remoteIdentity ??
+            (() => {
+              throw new Error(`Repository remote identity is missing: ${delivery.repositoryId}`);
+            })(),
           remote: input.policy.publication.remote,
           sourceBranch: delivery.sourceBranch,
           targetBranch: delivery.targetBranch,
@@ -1174,143 +1148,6 @@ export class WorkflowRuns extends Service {
         },
         diagnostics: advanced.diagnostics,
       };
-    });
-  }
-
-  refreshArchiveMerges(
-    input: RefreshArchiveMergesInput,
-    signal?: AbortSignal,
-  ): Promise<RuntimeResult<RunStatusView>> {
-    return this.operations.run({ cancellable: false, signal }, async () => {
-      const state = await this.ctx.runStore.loadRun(input.runId);
-      const lifecycle = state.changeLifecycle;
-      if (
-        !lifecycle ||
-        state.status !== 'waiting' ||
-        lifecycle.phase !== 'archive' ||
-        lifecycle.currentWork?.kind !== 'delivery.await-merge' ||
-        !lifecycle.archivePublication
-      ) {
-        throw new Error(`Change Run is not waiting for Business merges: ${input.runId}`);
-      }
-      if (
-        lifecycle.archiveDeliveryInput?.publicationPolicyDigest !==
-        deliveryPolicyDigest(input.policy)
-      ) {
-        throw new Error('Archive merge refresh policy does not match the frozen Delivery input');
-      }
-      const refresh = await this.ctx.delivery.refreshArchive(
-        lifecycle.archivePublication,
-        input.policy,
-        signal,
-      );
-      let work: WorkDescriptor | undefined;
-      if (refresh.allMerged) {
-        if (!lifecycle.archiveDeliveryInput) {
-          throw new Error('Archive merge completion has no frozen Delivery input');
-        }
-        const skills = await this.resolveLifecycleWorkSkills('delivery.verify-merged', signal);
-        work = createPostMergeVerifyWork({
-          definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-          archive: lifecycle.archiveDeliveryInput,
-          refresh,
-          actionSkill: skills.actionSkill,
-          workspaceRepositoryId: lifecycle.archiveDeliveryInput.changeBranch.repositoryId,
-          repositoryIds: [
-            lifecycle.archiveDeliveryInput.changeBranch.repositoryId,
-            ...lifecycle.archiveDeliveryInput.businessDeliveries.map(
-              (delivery) => delivery.repositoryId,
-            ),
-          ],
-        });
-        await this.coordinator.bindSkill(input.runId, skills.actionSkill);
-      }
-      return this.coordinator.acceptChangeObservation(input.runId, {
-        kind: 'archive-merge-refreshed',
-        source: input.source,
-        refresh,
-        ...(work ? { work } : {}),
-      });
-    });
-  }
-
-  acceptArchivePostMergeVerification(
-    input: AcceptArchivePostMergeVerificationInput,
-  ): Promise<RuntimeResult<RunStatusView>> {
-    return this.operations.run({ cancellable: false }, async () => {
-      const state = await this.ctx.runStore.loadRun(input.runId);
-      const lifecycle = state.changeLifecycle;
-      const work = lifecycle?.currentWork;
-      if (
-        !lifecycle ||
-        state.status !== 'running' ||
-        lifecycle.phase !== 'archive' ||
-        work?.kind !== 'delivery.verify-merged'
-      ) {
-        throw new Error(`Change Run has no active post-merge Verify Work: ${input.runId}`);
-      }
-      if (
-        input.gate.workflowRunId !== input.runId ||
-        input.gate.workflowActionId !== work.workId ||
-        input.gate.workflowStepId !== 'archive.verify-merged' ||
-        input.gate.workflowStateVersion !== state.stateVersion ||
-        input.gate.compositionDigest !== state.composition.compositionDigest
-      ) {
-        throw new Error('Post-merge Evidence Gate is stale or belongs to another Archive Work');
-      }
-      const nextWork =
-        input.gate.status === 'satisfied' && lifecycle.archiveDeliveryInput
-          ? createSpecificationArchiveWork({
-              definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-              archive: lifecycle.archiveDeliveryInput,
-              postMergeBundleId: input.gate.bundleId,
-              checkoutManifestDigest: input.checkoutManifestDigest,
-              workspaceRepositoryId: lifecycle.archiveDeliveryInput.changeBranch.repositoryId,
-              repositoryIds: [
-                lifecycle.archiveDeliveryInput.changeBranch.repositoryId,
-                ...lifecycle.archiveDeliveryInput.businessDeliveries.map(
-                  (delivery) => delivery.repositoryId,
-                ),
-              ],
-            })
-          : undefined;
-      return this.coordinator.acceptChangeObservation(input.runId, {
-        kind: 'archive-post-merge-verified',
-        result: input.gate.status === 'satisfied' ? 'satisfied' : 'failed',
-        workId: work.workId,
-        inputDigest: work.inputDigest,
-        attemptId: input.attemptId,
-        bundleId: input.gate.bundleId,
-        checkoutManifestDigest: input.checkoutManifestDigest,
-        evidenceInputFingerprint: input.gate.inputFingerprint,
-        workflowStateVersion: state.stateVersion,
-        ...(nextWork ? { work: nextWork } : {}),
-      });
-    });
-  }
-
-  completeArchive(input: CompleteArchiveInput): Promise<RuntimeResult<RunStatusView>> {
-    return this.operations.run({ cancellable: false }, async () => {
-      const state = await this.ctx.runStore.loadRun(input.runId);
-      const lifecycle = state.changeLifecycle;
-      if (
-        !lifecycle ||
-        state.status !== 'running' ||
-        lifecycle.phase !== 'archive' ||
-        lifecycle.currentWork?.kind !== 'specification.archive'
-      ) {
-        throw new Error(`Change Run has no active Specification Archive Work: ${input.runId}`);
-      }
-      return this.coordinator.acceptChangeObservation(input.runId, {
-        kind: 'archive-completed',
-        workId: input.workId,
-        inputDigest: input.inputDigest,
-        closureId: input.closureId,
-        planDigest: input.planDigest,
-        auditDigest: input.auditDigest,
-        publicationReceiptDigest: input.publicationReceiptDigest,
-        finalMergeRequest: structuredClone(input.finalMergeRequest),
-      });
     });
   }
 

@@ -30,7 +30,10 @@ function snapshot(name: string): SkillUsageSnapshot {
   };
 }
 
-function skill(name: string, overrides: Partial<ResolvedWorkContextSkill> = {}): ResolvedWorkContextSkill {
+function skill(
+  name: string,
+  overrides: Partial<ResolvedWorkContextSkill> = {},
+): ResolvedWorkContextSkill {
   return {
     snapshot: snapshot(name),
     content: `${name} content`,
@@ -92,8 +95,9 @@ function assemble(
     ...(descriptor.actionSkill && !omitActionSkill
       ? { actionSkill: skill(descriptor.actionSkill.name) }
       : {}),
-    specificationArtifacts:
-      descriptor.outputContract.artifactKinds.includes('proposal') ? planningArtifacts : [],
+    specificationArtifacts: descriptor.outputContract.artifactKinds.includes('proposal')
+      ? planningArtifacts
+      : [],
     augmentationSkills: descriptor.augmentationSkills.map((entry) => skill(entry.name)),
     changeInputs: { changeId: 'context-test' },
     ...overrides,
@@ -130,16 +134,10 @@ describe('Work execution context', () => {
     ],
     [
       'task.implement',
-      [
-        'runtime-contract',
-        'action-skill',
-        'augmentation-skill',
-        'method-profile',
-        'change-inputs',
-      ],
+      ['runtime-contract', 'action-skill', 'augmentation-skill', 'method-profile', 'change-inputs'],
     ],
     ['evidence.verify', ['runtime-contract', 'action-skill', 'method-profile', 'change-inputs']],
-    ['delivery.prepare', ['runtime-contract', 'action-skill', 'method-profile', 'change-inputs']],
+    ['delivery.publish', ['runtime-contract', 'action-skill', 'method-profile', 'change-inputs']],
   ])('loads the fixed %s phase composition in priority order', (kind, expected) => {
     const context = assemble(work(kind));
     expect(context.layers.map((entry) => entry.kind)).toEqual(expected);

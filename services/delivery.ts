@@ -21,10 +21,7 @@ import type {
   SpecificationPublicationResult,
 } from '../domains/delivery/specification-publication.js';
 import type { DeliveryV2MigrationPlan } from '../domains/delivery/migration.js';
-import type {
-  ArchiveMergeRefreshResult,
-  ArchivePublicationResult,
-} from '../domains/delivery/service-v3.js';
+import type { ArchivePublicationResult } from '../domains/delivery/service-v3.js';
 
 export interface DeliveryPreparation {
   project: ProjectSnapshot;
@@ -78,18 +75,6 @@ export abstract class Delivery extends Service {
     void signal;
     return Promise.reject(
       new Error(`Delivery provider cannot publish specification closure for ${request.changeId}`),
-    );
-  }
-  /** @deprecated Archive completion is receipt-driven and never waits for merge events. */
-  refreshArchive(
-    publication: ArchivePublicationResult,
-    policy: DeliveryPolicy,
-    signal?: AbortSignal,
-  ): Promise<ArchiveMergeRefreshResult> {
-    void policy;
-    void signal;
-    return Promise.reject(
-      new Error(`Archive merge waiting was removed: ${publication.snapshot.changeId}`),
     );
   }
   abstract refresh(

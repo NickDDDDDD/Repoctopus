@@ -132,7 +132,8 @@
             "provider": { "const": "github" },
             "githubApiBaseUrl": { "type": "string", "format": "uri" },
             "mrTitleTemplate": { "type": "string", "minLength": 1 },
-            "mrBodyTemplate": { "type": "string", "minLength": 1 }
+            "mrBodyTemplate": { "type": "string", "minLength": 1 },
+            "apiCredential": { "$ref": "#/$defs/credentialReference" }
           }
         }
       }
@@ -143,118 +144,7 @@
       "uniqueItems": true,
       "items": { "$ref": "#/$defs/providerReference" }
     },
-    "specificationProvider": { "$ref": "#/$defs/specificationProviderReference" },
-    "platformEvents": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["storeProvider", "http", "github", "runner"],
-      "properties": {
-        "storeProvider": { "$ref": "#/$defs/providerReference" },
-        "http": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["hostname", "port"],
-          "properties": {
-            "hostname": { "type": "string", "minLength": 1 },
-            "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
-            "shutdownTimeoutMs": { "type": "integer", "minimum": 1 }
-          }
-        },
-        "github": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["source", "path", "webhookCredential", "apiCredential"],
-          "properties": {
-            "source": { "$ref": "#/$defs/stableIdentifier" },
-            "path": { "type": "string", "pattern": "^/[^?#]*$" },
-            "maxBodyBytes": { "type": "integer", "minimum": 1 },
-            "webhookCredential": { "$ref": "#/$defs/credentialReference" },
-            "apiCredential": { "$ref": "#/$defs/credentialReference" }
-          }
-        },
-        "runner": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["identity"],
-          "properties": {
-            "identity": { "$ref": "#/$defs/stableIdentifier" },
-            "leaseMs": { "type": "integer", "minimum": 1 },
-            "pollIntervalMs": { "type": "integer", "minimum": 1 },
-            "retryDelayMs": { "type": "integer", "minimum": 1 },
-            "maxAttempts": { "type": "integer", "minimum": 1 },
-            "shutdownTimeoutMs": { "type": "integer", "minimum": 1 }
-          }
-        }
-      }
-    },
-    "postMerge": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "runnerIdentity",
-        "temporaryRoot",
-        "evidenceProfile",
-        "allowedWorkspacePaths",
-        "publication"
-      ],
-      "properties": {
-        "runnerIdentity": { "$ref": "#/$defs/stableIdentifier" },
-        "temporaryRoot": { "type": "string", "minLength": 1 },
-        "evidenceProfile": { "$ref": "#/$defs/stableIdentifier" },
-        "allowedWorkspacePaths": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["specificationClosure", "verificationPathPrefixes"],
-          "properties": {
-            "specificationClosure": { "const": true },
-            "verificationPathPrefixes": {
-              "type": "array",
-              "uniqueItems": true,
-              "items": {
-                "type": "string",
-                "pattern": "^[^/\\\\*?\\[\\]{}!]+/[^/\\\\*?\\[\\]{}!]+(?:/[^/\\\\*?\\[\\]{}!]+)*/$"
-              }
-            }
-          }
-        },
-        "publication": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["operations", "remote", "commit", "finalChangeMergeRequest"],
-          "properties": {
-            "operations": {
-              "type": "array",
-              "minItems": 4,
-              "maxItems": 4,
-              "uniqueItems": true,
-              "items": {
-                "enum": ["merge_target", "commit", "push", "merge_request.create_or_recover"]
-              }
-            },
-            "remote": { "$ref": "#/$defs/stableIdentifier" },
-            "commit": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": ["message", "authorNameCredential", "authorEmailCredential"],
-              "properties": {
-                "message": { "type": "string", "minLength": 1, "pattern": "^[^\\r\\n]+$" },
-                "authorNameCredential": { "$ref": "#/$defs/credentialReference" },
-                "authorEmailCredential": { "$ref": "#/$defs/credentialReference" }
-              }
-            },
-            "finalChangeMergeRequest": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": ["title", "body"],
-              "properties": {
-                "title": { "type": "string", "minLength": 1 },
-                "body": { "type": "string", "minLength": 1 }
-              }
-            }
-          }
-        }
-      }
-    }
+    "specificationProvider": { "$ref": "#/$defs/specificationProviderReference" }
   },
   "$defs": {
     "stableIdentifier": {

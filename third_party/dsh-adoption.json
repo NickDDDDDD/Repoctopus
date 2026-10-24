@@ -158,18 +158,10 @@
       "targetSha256": "0973217b3124dc013b280062d4ff8216b898ee5b16ad99d81cf6f1a45743f871"
     },
     {
-      "id": "github-webhook-handler",
-      "source": "packages/experimental/webhook-github/src/handler.ts",
-      "disposition": "source-modified",
-      "sourceSha256": "84e3c1f8d185198e87fb4f621889496771071236ac6613695189e8a4f8312c47",
-      "target": "platform/events/github-webhook.ts",
-      "targetSha256": "7f8a361e8ac19daf6c2ca06dc18be6069f9f06018698d184180caf193ae5db8e"
-    },
-    {
       "id": "webhook-runtime",
       "source": "packages/experimental/webhook/src/index.ts",
       "disposition": "excluded",
-      "reason": "Its fire-and-forget Agent Session action model does not provide the durable inbox, lease, receipt, retry, or cross-process recovery required by Repoctopus."
+      "reason": "Repoctopus intentionally uses bounded pull reconciliation and short-lived commands; webhook listeners and daemon ownership are outside the product boundary."
     },
     {
       "id": "agent-session-workspace",

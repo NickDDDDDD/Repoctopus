@@ -5,10 +5,6 @@ import { deliveryPolicyDigest } from '../delivery/snapshot.js';
 import type { DeliveryIntentV3, DeliveryPolicy } from '../delivery/types.js';
 import { assertDeliveryIntentV3, normalizeDeliveryIntentV3 } from '../delivery/v3.js';
 import type { SkillUsageSnapshot } from '../skill/types.js';
-import type {
-  ArchiveMergeRefreshResult,
-  ArchivePublicationResult,
-} from '../delivery/service-v3.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import type { ChangeLifecycleDefinition, WorkDescriptor } from './transition.js';
 import { materializeLifecycleWorkBinding } from './work-definition.js';
@@ -123,39 +119,4 @@ export function createDeliveryPublishWork(facts: {
     ...binding,
     inputDigest,
   };
-}
-
-/** @deprecated Archive no longer waits for Business merge events. */
-export function createAwaitMergeWork(_facts: {
-  definition: ChangeLifecycleDefinition;
-  archive: ArchiveDeliveryInput;
-  publication: ArchivePublicationResult;
-  workspaceRepositoryId: string;
-  repositoryIds: readonly string[];
-}): WorkDescriptor {
-  throw new Error('Archive merge waiting was removed; accept a Publication Receipt instead');
-}
-
-/** @deprecated Archive no longer runs a post-merge verification phase. */
-export function createPostMergeVerifyWork(_facts: {
-  definition: ChangeLifecycleDefinition;
-  archive: ArchiveDeliveryInput;
-  refresh: ArchiveMergeRefreshResult;
-  actionSkill: SkillUsageSnapshot;
-  workspaceRepositoryId: string;
-  repositoryIds: readonly string[];
-}): WorkDescriptor {
-  throw new Error('Post-merge verification was removed');
-}
-
-/** @deprecated Specification closure is performed before publication. */
-export function createSpecificationArchiveWork(_facts: {
-  definition: ChangeLifecycleDefinition;
-  archive: ArchiveDeliveryInput;
-  postMergeBundleId: string;
-  checkoutManifestDigest: `sha256:${string}`;
-  workspaceRepositoryId: string;
-  repositoryIds: readonly string[];
-}): WorkDescriptor {
-  throw new Error('Post-merge specification archive was removed');
 }

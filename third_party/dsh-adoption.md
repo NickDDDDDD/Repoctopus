@@ -4,7 +4,7 @@
 
 ## Skill Registry
 
-固定提交中的 `packages/skill/skill/src/index.ts` 已发布为 `@deepseek-ai/dsh-skill@0.2.1-rc.3`。Repoctopus 直接使用该包，保留 `ctx.skills`、Provider 注册、作用域覆盖、rank 裁决、不完整发现、取消、缓存失效和 Cordis Effect 撤销语义。rc.2→rc.3 在已采用 Skill、Filesystem Skill、Webhook Handler、Cordis 和 Loader 源码面没有行为变化，发布差异只有包版本元数据。
+固定提交中的 `packages/skill/skill/src/index.ts` 已发布为 `@deepseek-ai/dsh-skill@0.2.1-rc.3`。Repoctopus 直接使用该包，保留 `ctx.skills`、Provider 注册、作用域覆盖、rank 裁决、不完整发现、取消、缓存失效和 Cordis Effect 撤销语义。rc.2→rc.3 在已采用 Skill、Filesystem Skill、Cordis 和 Loader 源码面没有行为变化，发布差异只有包版本元数据。
 
 使用精确版本和 npm overrides 后，闭包包含 13 个安装项：Repoctopus 已固定的 Cordis、Loader、Cosmokit、Schemastery，8 个 DSH 包和 Zod。闭包不含 Agent、Session、Workspace 或 Webhook Runtime。上游已经删除 `dsh-invariants`，Repoctopus 同步移除该包，而不是保留幽灵依赖。没有因为闭包较深而重写 Registry。
 
@@ -18,11 +18,9 @@
 
 ## GitHub Webhook
 
-固定提交中的 `packages/experimental/webhook-github/src/handler.ts` 提供 POST、严格 JSON Content-Type、请求体上限、唯一 Header、Credential 查找、HMAC 后解析和无损 JSON 快照语义。它与旧固定提交中的 Handler blob 相同，只是上游把 prototype 移到 `experimental`。Repoctopus 已在 `platform/events/github-webhook.ts` 中采用这些边界，并把输出规范化为 Provider、Source、Delivery ID、事件类型和无损载荷组成的 Delivery Envelope。Adapter 通过用途隔离的 Credential Provider 按请求读取秘密；HTTP Host 负责提供与 Node `headersDistinct` 等价的小写、多值不合并 Header 视图。Adapter 本身不持久化秘密或 Header。
+固定提交中的 webhook prototype 仍作为上游证据保留，但 Repoctopus 明确不采用：当前产品以短生命周期 `change reconcile` 拉取远端事实，不拥有监听端口、验签秘密、Inbox、Lease 或常驻 Runner。
 
-Repoctopus 的 Event Inbox 使用稳定的 Provider、Source 与 Delivery ID 摘要去重，并以持久状态表达领取租约、租约过期恢复、重试等待、完成 Receipt 和死信。该状态机不依赖 DSH Session。
-
-没有采用 DSH Webhook Runtime。新版本会在规则卸载时 abort 并 drain 活动回调，但它仍把事件 fire-and-forget 地映射为 Agent Session，不含 Repoctopus 要求的持久收件、去重、租约、重试、Receipt 与跨进程恢复。即使连同 Agent、Session 和 Workspace 全部引入，也不能替代这些产品能力。
+没有采用 DSH Webhook Runtime。新版本会在规则卸载时 abort 并 drain 活动回调，但仍把事件 fire-and-forget 地映射为 Agent Session。Repoctopus 不需要这条常驻事件链：Archive 以 Publication Receipt 完成，后续远端变化由短生命周期 `change reconcile` 按需拉取。
 
 Lifecycle Contributor 继续由 Cordis Service/Effect 组合，不从 DSH 未发布源码提取 Capability Resolver 或产品级 Agent/Session 容器。Work 方法仍通过已发布的 DSH Skill Registry 解析；Definition、Validator 与 Extension 是 Repoctopus 原生契约，并由架构检查禁止导入 `third_party/dsh` 或 DSH 应用源码。
 
@@ -42,7 +40,7 @@ Electron `44.7.0` 没有 lifecycle install script；它在首次解析包且本�
 
 ## 2026-10-24 默认分支增量
 
-`master` 在 rc.3 之后继续前进。Skill Registry、Filesystem Skill 和 GitHub Webhook Handler 的行为源码没有变化；Desktop 增加 Windows Runner 网络进程监督、打包缓存、安装器本地化与文件拖放等能力。Cordis `fiber.ts` 和 Loader resolver 也有未发布变化。Repoctopus 本轮不把这些未发布改动写入标记为官方 npm 快照的 `third_party/cordis*`，待对应发布版本出现后再升级；桌面变化作为后续打包与恢复审计输入，不混入 Change 生命周期设计。
+`master` 在 rc.3 之后继续前进。Skill Registry 与 Filesystem Skill 的行为源码没有变化；Desktop 增加 Windows 网络进程监督、打包缓存、安装器本地化与文件拖放等能力。Cordis `fiber.ts` 和 Loader resolver 也有未发布变化。Repoctopus 本轮不把这些未发布改动写入标记为官方 npm 快照的 `third_party/cordis*`，待对应发布版本出现后再升级；桌面变化作为后续打包与恢复审计输入，不混入 Change 生命周期设计。
 - `package-lock.json` 固定 npm tarball integrity。
 - `check:provenance` 校验固定 commit、包版本、锁文件完整性、禁止包和适配目标。
 - `check:upstream` 每天比较默认分支、固定标签与当前审计提交；只报告漂移，不自动改变可复现基线。

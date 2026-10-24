@@ -26,10 +26,13 @@ export class FileConsistencyStore {
       entries
         .filter((entry) => entry.isFile() && entry.name.endsWith('.json'))
         .sort((left, right) => left.name.localeCompare(right.name))
-        .map(async (entry) =>
-          JSON.parse(await readFile(path.join(this.publicationRoot(), entry.name), 'utf8')),
-        ),
-    ) as Promise<PublicationReceipt[]>;
+        .map(async (entry) => {
+          const parsed: unknown = JSON.parse(
+            await readFile(path.join(this.publicationRoot(), entry.name), 'utf8'),
+          );
+          return parsed as PublicationReceipt;
+        }),
+    );
   }
 
   async savePublication(receipt: PublicationReceipt): Promise<void> {

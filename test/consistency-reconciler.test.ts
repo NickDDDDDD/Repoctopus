@@ -83,8 +83,9 @@ describe('bounded pull reconciliation', () => {
     const result = await reconcilePublicationReceipts({
       publications: [publication],
       observe: () => Promise.resolve(status('a'.repeat(40))),
-      saveRequest: async (request) => {
+      saveRequest: (request) => {
         saved.push(request);
+        return Promise.resolve();
       },
       now: () => new Date('2026-10-24T01:00:00.000Z'),
     });
@@ -97,8 +98,9 @@ describe('bounded pull reconciliation', () => {
     const drift = await reconcilePublicationReceipts({
       publications: [publication],
       observe: () => Promise.resolve(status('c'.repeat(40))),
-      saveRequest: async (request) => {
+      saveRequest: (request) => {
         saved.push(request);
+        return Promise.resolve();
       },
       now: () => new Date('2026-10-24T01:00:00.000Z'),
     });

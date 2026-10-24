@@ -18,13 +18,13 @@ DSH 两个固定提交之间有约 10,007 个路径变化，主要增长来自�
 | --- | --- | --- |
 | Skill Registry | `packages/skill/skill/src` 的 blob 未变化 | 升级发布包，不重写 Registry |
 | Filesystem Skill | watcher 关闭错误处理、Agents Home 解析和测试增强 | 移植适用于当前显式 roots 适配器的关闭错误修复；不引入 DSH Home/ctx.fs |
-| GitHub Webhook | Handler blob 未变化；路径移动到 `packages/experimental/webhook-github` | 更新来源路径和 commit；保留持久 Inbox 适配 |
-| Webhook Runtime | 移到 experimental；现在会在规则卸载时 abort 并 drain 活动回调，但仍是 fire-and-forget Session dispatch | 不采用；它仍无 durable inbox、去重、lease、receipt、retry 和跨进程恢复 |
+| GitHub Webhook | Handler blob 未变化；路径移动到 `packages/experimental/webhook-github` | 不采用；Archive 和 reconcile 均通过 GitHub API 的短命令边界 |
+| Webhook Runtime | 移到 experimental；现在会在规则卸载时 abort 并 drain 活动回调，但仍是 fire-and-forget Session dispatch | 不采用；核心产品不拥有 listener、Inbox 或 daemon |
 | Cordis / Loader | Cordis 源码只有发布版本变化；Loader Entry 新增 `moduleNamespace` 并在加载成功后记录 | 更新不可修改快照；由现有 Loader 契约测试保护 |
 | Runtime invariants | DSH 删除独立 runtime invariant plugins，把约束收回各领域 | 删除不再存在的 `dsh-invariants` 依赖；Repoctopus 继续在领域状态机和架构检查中维护自身不变量 |
 | Jobs / lifecycle | DSH 增加稳定 job id、按所有者限流、first-wins settlement、wait claim 撤销和有序 shutdown | 作为 Operation Ownership 的交叉证据；不采用其进程内 Agent-owned Registry |
 | Schedule | DSH 新增持久 Schedule 与 delivery history，但调度目标仍是 Agent Session/消息 | 不替换 Repoctopus Workflow Run；每日上游检查使用 CI schedule，不耦合产品运行时 |
-| Session JSONL | 增加写 lease、迁移拒绝、撕裂尾恢复、并发有界扫描和 teardown 顺序测试 | 记录为文件持久化参考；当前 Run/Inbox 已使用 Comet 来源的原子写、身份复核和 intent journal，不引入 Session 格式体系 |
+| Session JSONL | 增加写 lease、迁移拒绝、撕裂尾恢复、并发有界扫描和 teardown 顺序测试 | 记录为文件持久化参考；当前 Run/Publication Journal 已使用原子写、身份复核和 intent journal，不引入 Session 格式体系 |
 | Telemetry | DSH 增加可取消 HTTP export、重试和 shutdown deadline | Repoctopus exporter 已有 timeout、forceFlush、shutdown 与 durable Evidence outbox；无缺失行为需要移植 |
 
 Comet 0.5.0 是一次显著升级。新增的 Runtime SDK、Workflow Application、Classic SDK、Application Hook、静态流程定义、运行视图与 Dashboard trace 共同把产品工作流约束下沉到可恢复 Runtime。Repoctopus 立即采用异步命令的进程树清理修复；生命周期能力进入 `establish-change-lifecycle`，而 POSIX 进程组探测、有界 Plugin Store 读取和 Native Snapshot 限额竞态复核列为独立维护 change 候选。完整证据与取舍见 `comet/0.5.0-audit.md`。

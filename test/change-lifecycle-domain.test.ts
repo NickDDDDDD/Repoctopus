@@ -147,11 +147,11 @@ function mergeWait(): WaitCondition {
   return {
     schemaVersion: 1,
     waitId: 'wait-business-merges',
-    kind: 'platform-event',
+    kind: 'external-fact',
     reason: 'The complete Business MR set has not merged.',
     inputDigest: digest('i'),
-    eventType: 'merge-request.merged',
-    subjectDigest: digest('m'),
+    providerId: 'merge-request-provider',
+    factIdentityDigest: digest('m'),
   };
 }
 

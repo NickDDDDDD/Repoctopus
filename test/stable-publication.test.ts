@@ -52,7 +52,7 @@ function port(candidates: MergeRequestIdentity[]): MergeRequestPort & { creates:
     capability: () => Promise.reject(new Error('not used')),
     find: () => Promise.resolve(candidates[0] ?? null),
     findAll: () => Promise.resolve([...candidates]),
-    create(input) {
+    create() {
       this.creates += 1;
       return Promise.resolve(identity(99));
     },
@@ -77,10 +77,10 @@ describe('stable external publication recovery', () => {
     let candidates: MergeRequestIdentity[] = [];
     const adapter = port(candidates);
     adapter.findAll = () => Promise.resolve([...candidates]);
-    adapter.create = async () => {
+    adapter.create = () => {
       adapter.creates += 1;
       candidates = [identity(2)];
-      throw new Error('response lost');
+      return Promise.reject(new Error('response lost'));
     };
     const result = await observeOrCreateMergeRequest({
       port: adapter,

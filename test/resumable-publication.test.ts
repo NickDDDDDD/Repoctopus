@@ -78,11 +78,13 @@ describe('resumable multi-repository publication', () => {
     const remote = new Map<string, PublicationReceiptItem>();
     const first: PublicationItemExecutor = {
       observe: (candidate) => Promise.resolve(remote.get(candidate.publicationId) ?? null),
-      execute: async (candidate) => {
-        if (candidate.publicationId === 'backend') throw new Error('backend unavailable');
+      execute: (candidate) => {
+        if (candidate.publicationId === 'backend') {
+          return Promise.reject(new Error('backend unavailable'));
+        }
         const receipt = result(candidate);
         remote.set(candidate.publicationId, receipt);
-        return receipt;
+        return Promise.resolve(receipt);
       },
     };
     await expect(
@@ -101,12 +103,14 @@ describe('resumable multi-repository publication', () => {
     const executions: string[] = [];
     const second: PublicationItemExecutor = {
       observe: (candidate) => Promise.resolve(remote.get(candidate.publicationId) ?? null),
-      execute: async (candidate) => {
+      execute: (candidate) => {
         executions.push(candidate.publicationId);
         const receipt = result(candidate);
         remote.set(candidate.publicationId, receipt);
-        if (candidate.publicationId === 'backend') throw new Error('response lost after publish');
-        return receipt;
+        if (candidate.publicationId === 'backend') {
+          return Promise.reject(new Error('response lost after publish'));
+        }
+        return Promise.resolve(receipt);
       },
     };
     const completed = await new ResumablePublicationExecutor(store, second).publish({

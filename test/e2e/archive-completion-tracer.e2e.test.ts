@@ -87,9 +87,9 @@ function fixture(provenance: PublicationReceiptItem['provenance']) {
   const calls: string[] = [];
   const ports: ArchiveTracerPorts = {
     closeSpecification: vi.fn(
-      async (archive: ArchiveDeliveryInput): Promise<SpecificationClosureResult> => {
+      (archive: ArchiveDeliveryInput): Promise<SpecificationClosureResult> => {
         calls.push('openspec archive --yes --json');
-        return {
+        return Promise.resolve({
           apiVersion: 'repoctopus.specification/v1alpha1',
           kind: 'SpecificationClosureResult',
           changeId: archive.changeId,
@@ -103,21 +103,21 @@ function fixture(provenance: PublicationReceiptItem['provenance']) {
           status: 'closed',
           archiveId: '2026-10-24-single-tracer',
           changedFiles: ['openspec/changes/archive/2026-10-24-single-tracer/proposal.md'],
-        };
+        });
       },
     ),
-    publishBusiness: vi.fn(async () => {
+    publishBusiness: vi.fn(() => {
       calls.push('git push business; create-or-adopt business MR; verify head/base/OID');
       const item = publication('business', provenance);
-      return {
+      return Promise.resolve({
         deliverySnapshotDigest: digest('f'),
         items: [{ item, expectedPublishedOid: item.publishedOid }],
-      };
+      });
     }),
-    publishSpecification: vi.fn(async () => {
+    publishSpecification: vi.fn(() => {
       calls.push('git push specification; create-or-adopt final MR; verify head/base/OID');
       const item = publication('specification', provenance);
-      return { item, expectedPublishedOid: item.publishedOid };
+      return Promise.resolve({ item, expectedPublishedOid: item.publishedOid });
     }),
   };
   return { ports, calls };

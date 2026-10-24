@@ -104,7 +104,7 @@
       **Blocked by:** 6.1
       **Acceptance:** 公共进程外测试覆盖 `run start --help`、`change reconcile --help`、缺失 change、未知 flag 和正常启动
       **Requirements:** runtime-foundation#readonly-cli
-- [ ] 6.3 更新 Runtime、Specification、Delivery、CLI、Desktop/OTLP、自举和上游采用文档，运行 OpenSpec strict、架构、来源、单元、E2E、package、tracer 和生产依赖验证。
+- [x] 6.3 更新 Runtime、Specification、Delivery、CLI、Desktop/OTLP、自举和上游采用文档，运行 OpenSpec strict、架构、来源、单元、E2E、package、tracer 和生产依赖验证。
       **Blocked by:** 6.2
       **Acceptance:** `openspec validate harden-archive-protocol --strict --no-interactive`、Repoctopus Provider validation、`npm run check:provenance`、`npm run verify`、`npm run test:package-e2e`、`npm run test:tracer-e2e` 与生产依赖审计全部通过
       **Requirements:** change-lifecycle#archive-publication-terminal, delivery-governance#publication-receipt, consistency-reconciliation#pull-reconcile

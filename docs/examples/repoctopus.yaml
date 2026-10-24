@@ -18,13 +18,6 @@ profiles:
         repository: app
         executable: npm
         args: [run, build]
-  - id: post-merge
-    nodes:
-      - id: app-verify
-        type: command
-        repository: app
-        executable: npm
-        args: [run, verify]
 evidence:
   retention:
     maxAgeDays: 30
@@ -45,6 +38,9 @@ delivery:
     githubApiBaseUrl: https://api.github.com
     mrTitleTemplate: '{{changeId}}'
     mrBodyTemplate: '{{verificationReport}}'
+    apiCredential:
+      provider: environment
+      variable: REPOCTOPUS_GITHUB_TOKEN
 skillProviders:
   - id: skill-provider-matt
   - id: skill-provider-filesystem
@@ -53,49 +49,3 @@ specificationProvider:
   store:
     id: team-platform
     repositoryId: workspace
-platformEvents:
-  storeProvider:
-    id: platform-events-file
-  http:
-    hostname: 127.0.0.1
-    port: 7341
-    shutdownTimeoutMs: 5000
-  github:
-    source: primary
-    path: /webhooks/github
-    maxBodyBytes: 1048576
-    webhookCredential:
-      provider: environment
-      variable: REPOCTOPUS_GITHUB_WEBHOOK_SECRET
-    apiCredential:
-      provider: environment
-      variable: REPOCTOPUS_GITHUB_TOKEN
-  runner:
-    identity: primary-runner
-    leaseMs: 30000
-    pollIntervalMs: 1000
-    retryDelayMs: 1000
-    maxAttempts: 5
-    shutdownTimeoutMs: 5000
-postMerge:
-  runnerIdentity: primary-runner
-  temporaryRoot: .repoctopus/post-merge-checkouts
-  evidenceProfile: post-merge
-  allowedWorkspacePaths:
-    specificationClosure: true
-    verificationPathPrefixes:
-      - verification/post-merge/
-  publication:
-    operations: [merge_target, commit, push, merge_request.create_or_recover]
-    remote: origin
-    commit:
-      message: 'chore(spec): close verified change'
-      authorNameCredential:
-        provider: environment
-        variable: REPOCTOPUS_GIT_AUTHOR_NAME
-      authorEmailCredential:
-        provider: environment
-        variable: REPOCTOPUS_GIT_AUTHOR_EMAIL
-    finalChangeMergeRequest:
-      title: 'Close verified specification'
-      body: 'Post-merge verification and specification closure completed.'

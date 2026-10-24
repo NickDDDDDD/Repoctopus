@@ -14,14 +14,12 @@
         "app/desktop/preload/**",
         "app/desktop/renderer/**",
         "app/desktop/shared/**",
-        "app/runner/**",
         "domains/composition/**",
         "plugins/builtin-catalog.ts",
         "plugins/action/**",
         "plugins/application/**",
         "plugins/delivery/**",
         "plugins/evidence/**",
-        "plugins/http/**",
         "plugins/lifecycle/**",
         "plugins/project/**",
         "plugins/run/**",
@@ -32,10 +30,8 @@
         "plugins/command/project-onboarding-contributor.ts",
         "plugins/command/project-probe-contributor.ts",
         "plugins/command/workflow-run-contributor.ts",
-        "plugins/command/archive-contributor.ts",
         "plugins/command/consistency-contributor.ts",
-        "services/**",
-        "platform/http/**"
+        "services/**"
       ],
       "upstream": ["third_party/cordis", "third_party/cordis-plugin-loader"],
       "rationale": "App Boot 把 Repoctopus 领域配置编译为唯一 Cordis 插件树，并把生命周期交给 Cordis。"
@@ -196,21 +192,6 @@
       "rationale": "Specification 是唯一 Cordis 权威 Service；OpenSpec Provider 通过受控进程端口映射官方产物生命周期，Workflow 只消费稳定领域契约。"
     },
     {
-      "id": "platform-event-processing",
-      "disposition": "source-modified",
-      "targets": [
-        "domains/platform-events/**",
-        "platform/events/**",
-        "plugins/events/**",
-        "plugins/command/platform-event-contributor.ts"
-      ],
-      "upstream": [
-        "packages/experimental/webhook-github/src/handler.ts",
-        "packages/experimental/webhook-github/src/body.ts"
-      ],
-      "rationale": "采用 DSH GitHub Adapter 的先验签后解析、唯一 Header、Content-Type 与体积边界；用 Repoctopus 持久 Inbox 租约和 Receipt 替代 fire-and-forget Session dispatch。"
-    },
-    {
       "id": "delivery-governance",
       "disposition": "repoctopus-native",
       "targets": [
@@ -228,19 +209,6 @@
       "targets": ["domains/consistency/**", "platform/consistency/**"],
       "upstream": ["domains/comet-native/native-pull-request-finish.ts"],
       "rationale": "发布后的短生命周期拉取只形成有界语义审查事实，不扩展 Change 生命周期或等待远端合入。"
-    },
-    {
-      "id": "post-merge-automation",
-      "disposition": "repoctopus-native",
-      "targets": [
-        "domains/post-merge/**",
-        "platform/git/post-merge-checkout.ts",
-        "platform/git/post-merge-workspace.ts",
-        "plugins/command/post-merge-contributor.ts",
-        "plugins/post-merge/**"
-      ],
-      "upstream": [],
-      "rationale": "合入事件只唤醒协调；领域判定基于 Delivery 的平台权威刷新结果生成稳定合入事实身份，平台检出只使用固化的精确 merge commit；协调 workspace 的 Git 差异由独立端口读取，领域 Guardrail 再与规格关闭计划和结果交叉核对。"
     },
     {
       "id": "evidence-model",
@@ -376,11 +344,6 @@
       "status": "separate-append-only-facts"
     },
     {
-      "id": "post-merge-closure-journal",
-      "files": ["services/post-merge-actions.ts"],
-      "status": "recoverable-action-journal"
-    },
-    {
       "id": "change-lifecycle-migration-journal",
       "files": [
         "domains/change-lifecycle/migration-transaction.ts",
@@ -441,8 +404,8 @@
       "message": "Specification providers must extend the single Specification service container"
     },
     {
-      "id": "v3-post-merge-configuration",
-      "targets": ["app/boot/**", "domains/project-configuration/**", "plugins/post-merge/**"],
+      "id": "legacy-delivery-configuration",
+      "targets": ["app/boot/**", "domains/project-configuration/**"],
       "pattern": "merge_request\\.update|update-existing|changeMergeRequest",
       "allowed": ["domains/project-configuration/config.ts"],
       "message": "Delivery v3 composition must reject, not emit, legacy update-existing Change MR configuration"
@@ -455,13 +418,6 @@
       "message": "Platform adapters must emit verified facts instead of calling WorkflowRuns or RunStore"
     },
     {
-      "id": "coordinator-domain-store-write",
-      "targets": ["services/post-merge-coordinator.ts"],
-      "pattern": "\\b(?:ctx|context)\\.(?:runStore|evidenceCoordinator)\\b|\\b(?:new\\s+)?(?:File)?(?:Runtime|Evidence|Delivery|EventInbox)Store\\b|from\\s+['\"][^'\"]*(?:platform|domains)/[^'\"]*store[^'\"]*['\"]|\\b(?:writeFile|appendFile|rename|rm)\\s*\\(",
-      "allowed": [],
-      "message": "PostMergeCoordinator must coordinate through services and must not write domain stores or files"
-    },
-    {
       "id": "specification-provider-closure",
       "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
       "pattern": "\\b(?:execute|spawn|json)\\s*(?:<[^>]+>)?\\s*\\([^)]*\\[\\s*['\"]archive['\"]",
@@ -472,7 +428,7 @@
       "id": "protected-git-publication",
       "targets": ["platform/**"],
       "pattern": "(?:\\bgit\\s*\\([^,]+,\\s*|\\bexecute\\s*\\(\\s*['\"]git['\"]\\s*,\\s*)\\[[^\\]]{0,700}['\"](?:commit|push)['\"]",
-      "allowed": ["platform/git/delivery.ts"],
+      "allowed": ["platform/git/delivery.ts", "platform/delivery/specification-publication.ts"],
       "message": "Git commit and push may only be executed by the protected Delivery Action adapter"
     },
     {
@@ -516,20 +472,6 @@
       "pattern": "\\b(?:ctx|context)\\.runStore\\.(?:commit|commitGuarded)\\s*\\(",
       "allowed": [],
       "message": "Callers must submit facts through WorkflowRuns instead of writing Run state directly"
-    },
-    {
-      "id": "independent-post-merge-run-creation",
-      "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
-      "pattern": "\\bpostMergeRun(?:Options|Id)\\s*\\(",
-      "allowed": ["domains/post-merge/run.ts"],
-      "message": "Production callers must never create an independent Post-merge Run; Archive belongs to the original Change Run"
-    },
-    {
-      "id": "post-merge-coordinator-run-write",
-      "targets": ["services/post-merge-coordinator.ts"],
-      "pattern": "workflowRuns\\.(?:start|startOrResume|next|record)\\s*\\(",
-      "allowed": [],
-      "message": "The legacy PostMergeCoordinator may observe platform facts but must not create or advance Runs"
     },
     {
       "id": "legacy-delivery-command-write",

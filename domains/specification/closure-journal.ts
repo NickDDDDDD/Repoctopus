@@ -218,9 +218,10 @@ export function advanceSpecificationClosureJournal(
     expected: options.expected ? [...options.expected] : current.expected,
     resultClosureId: nextState === 'committed' ? options.resultClosureId! : null,
   });
-  const { digest: _previousDigest, ...withoutDigest } = unsigned as typeof unsigned & {
+  const { digest: previousDigest, ...withoutDigest } = unsigned as typeof unsigned & {
     digest?: `sha256:${string}`;
   };
+  void previousDigest;
   return { ...withoutDigest, digest: sha256(withoutDigest) };
 }
 
@@ -232,7 +233,8 @@ export function recordSpecificationClosureExpectedManifest(
   if (current.state !== 'applying' || current.expected.length > 0) {
     throw new Error('Expected Specification manifest can only be recorded once while applying');
   }
-  const { digest: _digest, ...unsignedCurrent } = current;
+  const { digest: previousDigest, ...unsignedCurrent } = current;
+  void previousDigest;
   const unsigned = stable({
     ...unsignedCurrent,
     stateVersion: current.stateVersion + 1,

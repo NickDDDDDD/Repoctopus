@@ -56,28 +56,101 @@ const USAGE =
   'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decide|record|resume|work-claim|work-outcome|work-validate|archive-prepare|archive-publish> | change reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | approval review | browser <doctor|install> | doctor';
 const CLI_VERSION = '0.1.0';
 const COMMANDS = new Set([
-  'project detect', 'project prepare', 'project review', 'skill list', 'skill get', 'skill project',
-  'spec inspect', 'spec validate', 'spec approval prepare', 'spec approval status', 'spec approval review',
-  'evidence plan', 'evidence run', 'evidence status', 'evidence resume', 'evidence inspect', 'evidence clean',
-  'run start', 'run status', 'run next', 'run verify', 'run archive-prepare', 'run archive-publish',
-  'run work-claim', 'run work-outcome', 'run work-validate', 'run decide', 'run record', 'run resume',
-  'change reconcile', 'delivery checkpoint', 'delivery prepare', 'delivery status', 'delivery publish',
-  'delivery resume', 'delivery refresh', 'delivery migration-plan', 'approval review',
-  'browser doctor', 'browser install', 'doctor',
+  'project detect',
+  'project prepare',
+  'project review',
+  'skill list',
+  'skill get',
+  'skill project',
+  'spec inspect',
+  'spec validate',
+  'spec approval prepare',
+  'spec approval status',
+  'spec approval review',
+  'evidence plan',
+  'evidence run',
+  'evidence status',
+  'evidence resume',
+  'evidence inspect',
+  'evidence clean',
+  'run start',
+  'run status',
+  'run next',
+  'run verify',
+  'run archive-prepare',
+  'run archive-publish',
+  'run work-claim',
+  'run work-outcome',
+  'run work-validate',
+  'run decide',
+  'run record',
+  'run resume',
+  'change reconcile',
+  'delivery checkpoint',
+  'delivery prepare',
+  'delivery status',
+  'delivery publish',
+  'delivery resume',
+  'delivery refresh',
+  'delivery migration-plan',
+  'approval review',
+  'browser doctor',
+  'browser install',
+  'doctor',
 ]);
 const CLI_FLAGS = new Set([
-  'help', 'json', 'version', 'workspace', 'change', 'target', 'remote', 'generation', 'profile',
-  'workflow', 'run', 'attempt', 'policy', 'intent', 'report', 'evidence-bundles', 'request',
-  'action', 'status', 'summary', 'event-id', 'evidence-attempt', 'work', 'adapter', 'runner',
-  'claim-token', 'receipt', 'input-digest', 'candidate', 'branch', 'draft', 'audience', 'name',
-  'store', 'scan-root', 'skip-pointer', 'workflow-run', 'max-age-days', 'max-bytes',
+  'help',
+  'json',
+  'version',
+  'workspace',
+  'change',
+  'target',
+  'remote',
+  'generation',
+  'profile',
+  'workflow',
+  'run',
+  'attempt',
+  'policy',
+  'intent',
+  'report',
+  'evidence-bundles',
+  'request',
+  'action',
+  'status',
+  'summary',
+  'event-id',
+  'evidence-attempt',
+  'work',
+  'adapter',
+  'runner',
+  'claim-token',
+  'receipt',
+  'input-digest',
+  'candidate',
+  'branch',
+  'draft',
+  'audience',
+  'name',
+  'store',
+  'scan-root',
+  'skip-pointer',
+  'workflow-run',
+  'max-age-days',
+  'max-bytes',
 ]);
 const REQUIRED_FLAGS = new Map<string, readonly string[]>([
-  ['spec inspect', ['change']], ['spec validate', ['change']],
-  ['spec approval prepare', ['change', 'target']], ['spec approval status', ['change']],
-  ['spec approval review', ['change']], ['run status', ['run']], ['run next', ['run']],
-  ['run verify', ['run']], ['run archive-prepare', ['run', 'attempt', 'intent']],
-  ['run archive-publish', ['run']], ['delivery status', ['change']],
+  ['spec inspect', ['change']],
+  ['spec validate', ['change']],
+  ['spec approval prepare', ['change', 'target']],
+  ['spec approval status', ['change']],
+  ['spec approval review', ['change']],
+  ['run status', ['run']],
+  ['run next', ['run']],
+  ['run verify', ['run']],
+  ['run archive-prepare', ['run', 'attempt', 'intent']],
+  ['run archive-publish', ['run']],
+  ['delivery status', ['change']],
 ]);
 
 function preflightCli(parsed: ParsedArguments): void {
@@ -104,13 +177,8 @@ function nextActions(status: RunStatusView): string[] {
       return ['repoctopus run decide --run <run-id>'];
     }
     if (work === 'evidence.verify') return ['repoctopus run verify --run <run-id>'];
-    if (work === 'delivery.prepare') return ['repoctopus run archive-publish --run <run-id>'];
-    if (work === 'delivery.await-merge') return ['repoctopus run archive-refresh --run <run-id>'];
-    if (work === 'delivery.verify-merged') {
-      return ['repoctopus run archive-verify --run <run-id>'];
-    }
-    if (work === 'specification.archive') {
-      return ['repoctopus run archive-complete --run <run-id>'];
+    if (work === 'specification.close' || work === 'delivery.publish') {
+      return ['repoctopus run archive-publish --run <run-id>'];
     }
     return lifecycle.nextActions.length > 0 ? ['repoctopus run next --run <run-id>'] : [];
   }

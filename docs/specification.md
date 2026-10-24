@@ -8,14 +8,14 @@ Repoctopus 通过唯一的 Cordis `specification` Service 读取、校验和关�
 - **OpenSpec Store** 是 Workspace 中规格树的逻辑身份，不要求再建立第二个 Git 仓。`store: team-platform` 这类 ID 由团队自定义，但必须是 lowercase kebab-case。
 - **实现仓** 保存产品代码并产生 Business MR。它们的 `openspec/config.yaml` 只是可选 pointer，方便人在该目录直接运行 OpenSpec；Repoctopus Runtime 始终使用 Workspace 配置中的显式 Store identity，不依赖 pointer 猜测权威根。
 
-Store registration 是每台机器的本地登记，不随 Git clone 同步。首次接入由 `project review` 通过 `openspec store register` 幂等登记当前 Workspace checkout；团队成员和 Runner 的每台机器都要各自登记，并用下面的只读命令核对路径：
+Store registration 是每台机器的本地登记，不随 Git clone 同步。首次接入由 `project review` 通过 `openspec store register` 幂等登记当前 Workspace checkout；每位团队成员、CI 节点和开发机都要各自登记，并用下面的只读命令核对路径：
 
 ```powershell
 npx openspec context --store <store-id> --json
 npx openspec store doctor <store-id> --json
 ```
 
-废弃某台机器上的 checkout 时，先停止使用该 Workspace 的 CLI、Runner 和 Desktop Host，确认 `context` 指向准备注销的精确目录，再执行 `npx openspec store unregister <store-id> --json`。`unregister` 只忘记本机登记，不删除文件；不要使用会删除 Store 目录的 `store remove`。业务仓 pointer 是普通受版本控制文件，需要通过 change 删除或调整，注销登记不会代替 Git 变更。
+废弃某台机器上的 checkout 时，先停止使用该 Workspace 的 CLI 和 Desktop Host，确认 `context` 指向准备注销的精确目录，再执行 `npx openspec store unregister <store-id> --json`。`unregister` 只忘记本机登记，不删除文件；不要使用会删除 Store 目录的 `store remove`。业务仓 pointer 是普通受版本控制文件，需要通过 change 删除或调整，注销登记不会代替 Git 变更。
 
 ## 规划产物与决策记录
 
@@ -50,7 +50,7 @@ node bin/repoctopus.js spec approval review --workspace . --change <change-id>
 node bin/repoctopus.js run decide --workspace . --run <run-id>
 ```
 
-`prepare` 通过当前 Specification Provider 严格校验 Proposal、Delta Specs、Design 和 Tasks，把四份内容摘要、Store、Provider、官方 schema instructions、受影响能力、远端分支 OID、目标分支以及 composition 和配置摘要绑定为不可变请求。它只生成 `awaiting_approval` 状态，不等于批准。Change Run 在 `design/waiting` 时用 `run decide` 展示并提交当前请求；`approve`、`revise` 和 `reject` 都通过同一个公共命令入口记录。该命令必须运行在可信交互终端，IDE 则提交同一版本化响应；非交互 Agent、Runner、Git 作者和 MR 状态都不能代替用户决定。
+`prepare` 通过当前 Specification Provider 严格校验 Proposal、Delta Specs、Design 和 Tasks，把四份内容摘要、Store、Provider、官方 schema instructions、受影响能力、远端分支 OID、目标分支以及 composition 和配置摘要绑定为不可变请求。它只生成 `awaiting_approval` 状态，不等于批准。Change Run 在 `design/waiting` 时用 `run decide` 展示并提交当前请求；`approve`、`revise` 和 `reject` 都通过同一个公共命令入口记录。该命令必须运行在可信交互终端，IDE 则提交同一版本化响应；非交互 Agent、Git 作者和 MR 状态都不能代替用户决定。
 
 请求中的 `proposalHash` 是用户实际审核内容的稳定身份，覆盖 change、Specification Root、Provider/schema、规划语义摘要、能力集合和目标分支。响应必须同时匹配当前 Run 的 `requestId` 与 `proposalHash`；批准记录还生成绑定主体、决定和时间的 `approvalHash`。旧请求、跨 Run 响应或任一受保护事实被篡改时都必须拒绝，不能靠重新包装响应沿用批准。
 
@@ -58,7 +58,7 @@ node bin/repoctopus.js run decide --workspace . --run <run-id>
 
 `planningGuidance` 把已审核的方法规则只读映射到 Provider 声明的四类官方工件：已解决上下文被综合进现有工件，最少公共测试缝进入 Design，tracer-bullet、验收验证和 expand/migrate/contract 顺序进入 Tasks。该指导明确禁止额外规划工件和 tracker 发布；它不复制 OpenSpec 模板，也不执行原始 `to-spec`/`to-tickets` Skill。
 
-批准只授权按照该语义快照进入实施。产物、Provider、配置或目标分支变化时，下一次准备或实施门禁都会生成新请求，旧批准不能沿用。Change 分支每次仍必须已公开、工作区干净且本地 HEAD 与远端 OID 一致，但 OID 单独记录为 publication provenance：只推送非规划 commit 会刷新发布来源而不撤销相同规划语义的批准，规划内容变化即使仍在同一分支也会失效。后续 Delivery approval 单独授权 Business MR 发布；最终 Change MR 则只在全部 Business MR 合入、Post-merge Evidence 通过、主规格同步且 change 归档以后创建，并仍由人合入。因此三个事实不能互相替代：
+批准只授权按照该语义快照进入实施。产物、Provider、配置或目标分支变化时，下一次准备或实施门禁都会生成新请求，旧批准不能沿用。Change 分支每次仍必须已公开、工作区干净且本地 HEAD 与远端 OID 一致，但 OID 单独记录为 publication provenance：只推送非规划 commit 会刷新发布来源而不撤销相同规划语义的批准，规划内容变化即使仍在同一分支也会失效。后续 Delivery approval 单独授权 Business MR 和最终 Change MR 的发布；全部远端身份形成完整 Publication Receipt 后原 Run 完成，所有 MR 仍由人或托管平台合入。因此三个事实不能互相替代：
 
 Build 或 Verify 每次继续前都会重新核对 planning semantic digest。发生变化时，Runtime 追加 `planning-semantic-drift` invalidation、清除当前 Work 与任务 revision 快照并返回 Design；Trajectory 保留被替代的 planning digest、Work ID、Task revisions 和证据身份。官方 Tasks checkbox 的完成状态已经从 planning digest 排除，因此有效的任务完成更新不会误触发回退。
 
@@ -91,17 +91,18 @@ profiles:
 
 Specification 节点直接调用当前 Provider。验证失败会生成 `verified` Evidence Receipt，并阻断依赖节点；调用方不能用自述成功替代该 Receipt。
 
-## 关闭协议
+## 关闭与发布协议
 
-合入后协调器先调用 `prepareClosure`，把以下事实绑定到不可变计划：
+Archive 在任何远端 MR 发布前调用 `prepareClosure`，把以下事实绑定到不可变计划：
 
-- change 语义摘要；
-- Specification Provider 身份；
-- 全部业务 MR 的合入事实摘要；
+- change 语义摘要和 Specification Provider 身份；
+- 已通过的 Verify Evidence 与 Delivery plan 摘要；
 - 目标规格基线摘要；
 - 受影响能力和允许修改的规格路径。
 
 `close` 会在执行前重新生成计划并比较摘要。OpenSpec Provider 只通过官方 `archive --yes --json` 生命周期同步主规格并归档 change。成功结果写入 `.repoctopus/specification/closures/`；相同计划重放时返回原结果，不重复归档。
+
+随后 Delivery 发布全部 Business MR 和包含关闭结果的最终 Change MR。Specification Closure identity 与全部远端 publication item 一起进入 `PublicationReceipt`；Receipt 完整且可重算时原 Change Run 才完成。Repoctopus 不等待这些 MR 合入。发布后的语义偏差通过后续 consistency review 和普通新 Change 补偿，不修改已归档 change。
 
 ## 替换 Provider
 
