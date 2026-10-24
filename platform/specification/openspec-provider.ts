@@ -16,11 +16,16 @@ import {
   type SpecificationSchemaInstructions,
   type SpecificationValidation,
   type SpecificationTaskSet,
+  type CompleteSpecificationTaskInput,
+  type CompleteSpecificationTaskResult,
 } from '../../domains/specification/types.js';
-import { parseSpecificationTasks } from '../../domains/specification/tasks.js';
+import {
+  completeSpecificationTaskDocument,
+  parseSpecificationTasks,
+} from '../../domains/specification/tasks.js';
 import { createSpecificationPlanningManifest } from '../../domains/specification/planning-manifest.js';
 import { createSpecificationPlanningGuidance } from '../../domains/specification/planning-guidance.js';
-import { atomicWriteJson } from '../filesystem/atomic-write.js';
+import { atomicWriteJson, atomicWriteText } from '../filesystem/atomic-write.js';
 import {
   Specification,
   type PrepareSpecificationClosureInput,
@@ -268,6 +273,62 @@ export class OpenSpecProvider extends Specification {
 
   override async tasks(changeId: string, signal?: AbortSignal): Promise<SpecificationTaskSet> {
     return this.tasksAt(this.workspace, changeId, signal);
+  }
+
+  override async completeTask(
+    input: CompleteSpecificationTaskInput,
+  ): Promise<CompleteSpecificationTaskResult> {
+    return this.completeTaskAt(this.workspace, input);
+  }
+
+  private async completeTaskAt(
+    workspace: string,
+    input: CompleteSpecificationTaskInput,
+  ): Promise<CompleteSpecificationTaskResult> {
+    const status = await this.json<StatusResult>(
+      workspace,
+      ['status', '--change', input.changeId],
+      input.signal,
+    );
+    const paths = status.artifactPaths?.tasks?.existingOutputPaths;
+    if (!Array.isArray(paths) || paths.length !== 1 || typeof paths[0] !== 'string') {
+      throw new Error('OpenSpec Tasks must resolve to exactly one official document');
+    }
+    const absolute = path.resolve(workspace, paths[0]);
+    const relative = path.relative(workspace, absolute);
+    if (
+      relative === '' ||
+      relative === '..' ||
+      relative.startsWith(`..${path.sep}`) ||
+      path.isAbsolute(relative)
+    ) {
+      throw new Error('OpenSpec Tasks path escapes the workspace');
+    }
+    const original = await readFile(absolute, 'utf8');
+    const completed = completeSpecificationTaskDocument({
+      changeId: input.changeId,
+      taskId: input.taskId,
+      taskRevision: input.taskRevision,
+      document: original,
+    });
+    if (completed.updated) {
+      await atomicWriteText(absolute, completed.document, {
+        containedRoot: workspace,
+        beforeCommit: async () => {
+          if ((await readFile(absolute, 'utf8')) !== original) {
+            throw new Error('OpenSpec Tasks changed while projecting completion');
+          }
+        },
+      });
+    }
+    return {
+      schemaVersion: 1,
+      changeId: input.changeId,
+      taskId: input.taskId,
+      taskRevision: input.taskRevision,
+      updated: completed.updated,
+      tasks: completed.tasks,
+    };
   }
 
   private async tasksAt(
@@ -618,6 +679,7 @@ export class OpenSpecProvider extends Specification {
         return createSpecificationPlanningManifest({ change, specificationRoot, schema });
       },
       tasks: (changeId, signal) => this.tasksAt(workspace, changeId, signal),
+      completeTask: (input) => this.completeTaskAt(workspace, input),
       inspect: (changeId, signal) => this.inspectAt(workspace, changeId, signal),
       validate: (changeId, options) => this.validateAt(workspace, changeId, options),
       prepareClosure: (input) => this.prepareClosureAt(workspace, input),

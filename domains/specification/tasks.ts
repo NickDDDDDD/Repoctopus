@@ -139,3 +139,39 @@ export function readySpecificationTasks(tasks: readonly SpecificationTask[]): Sp
       task.status === 'pending' && task.blockedBy.every((dependency) => completed.has(dependency)),
   );
 }
+
+export function completeSpecificationTaskDocument(input: {
+  changeId: string;
+  taskId: string;
+  taskRevision: `sha256:${string}`;
+  document: string;
+}): { document: string; tasks: SpecificationTaskSet; updated: boolean } {
+  const before = parseSpecificationTasks(input.changeId, input.document);
+  const task = before.tasks.find((candidate) => candidate.taskId === input.taskId);
+  if (!task) throw new Error(`Specification Task does not exist: ${input.taskId}`);
+  if (task.taskRevision !== input.taskRevision) {
+    throw new Error(`Specification Task revision changed: ${input.taskId}`);
+  }
+  if (task.status === 'completed') {
+    return { document: input.document, tasks: before, updated: false };
+  }
+  const escaped = input.taskId.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+  const pattern = new RegExp(
+    `^(\\s*-\\s+\\[)[ ](\\]\\s+${escaped}(?:\\s|$).*)$`,
+    'gmu',
+  );
+  let replacements = 0;
+  const document = input.document.replace(pattern, (_match, prefix: string, suffix: string) => {
+    replacements += 1;
+    return `${prefix}x${suffix}`;
+  });
+  if (replacements !== 1) {
+    throw new Error(`Specification Task checkbox is not uniquely writable: ${input.taskId}`);
+  }
+  const tasks = parseSpecificationTasks(input.changeId, document);
+  const completed = tasks.tasks.find((candidate) => candidate.taskId === input.taskId);
+  if (completed?.status !== 'completed' || completed.taskRevision !== input.taskRevision) {
+    throw new Error(`Specification Task completion changed its semantic revision: ${input.taskId}`);
+  }
+  return { document, tasks, updated: true };
+}

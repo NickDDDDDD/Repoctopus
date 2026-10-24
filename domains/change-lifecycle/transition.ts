@@ -272,6 +272,15 @@ export type ChangeLifecycleObservation =
       proposalDigest?: `sha256:${string}`;
       tasks?: readonly SpecificationTask[];
       work?: WorkDescriptor;
+    }
+  | {
+      kind: 'build-task-completed';
+      workId: string;
+      taskId: string;
+      taskRevision: `sha256:${string}`;
+      inputDigest: `sha256:${string}`;
+      receiptId: string;
+      tasks: readonly SpecificationTask[];
     };
 
 export interface ChangeLifecycleReduction {
@@ -446,6 +455,59 @@ export function evolveChangeLifecycle(options: {
       evidenceIds: [...observation.evidenceIds],
     };
     return reduced;
+  }
+  if (observation.kind === 'build-task-completed') {
+    if (current.phase !== 'build' || current.status !== 'running') {
+      throw new Error(`Build Task completion is not valid from ${current.phase}/${current.status}`);
+    }
+    const existing = current.tasks?.find((task) => task.taskId === observation.taskId);
+    if (
+      existing?.status === 'completed' &&
+      existing.taskRevision === observation.taskRevision &&
+      current.currentWork === null
+    ) {
+      return { snapshot: structuredClone(current), fact: null };
+    }
+    const work = current.currentWork;
+    if (
+      !work ||
+      work.workId !== observation.workId ||
+      work.taskId !== observation.taskId ||
+      work.taskRevision !== observation.taskRevision ||
+      work.inputDigest !== observation.inputDigest
+    ) {
+      throw new Error('Build Task completion does not match the active Work');
+    }
+    const currentTasks = current.tasks ?? [];
+    if (
+      currentTasks.length !== observation.tasks.length ||
+      currentTasks.some((task, index) => {
+        const observed = observation.tasks[index];
+        return (
+          !observed ||
+          observed.taskId !== task.taskId ||
+          observed.taskRevision !== task.taskRevision ||
+          (task.taskId !== observation.taskId && observed.status !== task.status)
+        );
+      })
+    ) {
+      throw new Error('Build Task completion changed the approved Task set');
+    }
+    const completed = observation.tasks.find((task) => task.taskId === observation.taskId);
+    if (completed?.status !== 'completed') {
+      throw new Error('Build Task completion projection did not mark the Task complete');
+    }
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'build.task-completed',
+      next: {
+        currentWork: null,
+        waitCondition: null,
+        blocker: null,
+        tasks: observation.tasks,
+      },
+    });
   }
   if (current.phase !== 'design') {
     throw new Error(`Design gate is not valid from ${current.phase}/${current.status}`);

@@ -7,6 +7,7 @@ import type { WorkflowPackage } from '../../domains/workflow-contract/types.js';
 import type {
   DecideChangeRunInput,
   StartChangeRunInput,
+  ValidateBuildTaskInput,
 } from '../../services/workflow-runs.js';
 
 interface StartInput {
@@ -35,6 +36,11 @@ const plugin = ((context: Context) => {
       context.commandRouter.register({
         name: 'run.work.outcome',
         execute: ({ input }) => context.workDispatcher.acceptOutcome(input as ClaimedActionOutcome),
+      }),
+      context.commandRouter.register({
+        name: 'run.work.validate',
+        execute: ({ input, signal }) =>
+          context.workflowRuns.validateBuildTask(input as ValidateBuildTaskInput, signal),
       }),
       context.commandRouter.register({
         name: 'run.start',

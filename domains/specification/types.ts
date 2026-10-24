@@ -50,6 +50,22 @@ export interface SpecificationTaskSet {
   digest: `sha256:${string}`;
 }
 
+export interface CompleteSpecificationTaskInput {
+  changeId: string;
+  taskId: string;
+  taskRevision: `sha256:${string}`;
+  signal?: AbortSignal;
+}
+
+export interface CompleteSpecificationTaskResult {
+  schemaVersion: 1;
+  changeId: string;
+  taskId: string;
+  taskRevision: `sha256:${string}`;
+  updated: boolean;
+  tasks: SpecificationTaskSet;
+}
+
 export interface SpecificationDiagnostic {
   code: string;
   severity: 'warning' | 'error';

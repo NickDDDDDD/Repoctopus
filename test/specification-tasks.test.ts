@@ -4,6 +4,7 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import {
+  completeSpecificationTaskDocument,
   parseSpecificationTasks,
   readySpecificationTasks,
 } from '../domains/specification/tasks.js';
@@ -87,5 +88,34 @@ describe('Specification Tasks', () => {
     const changed = parseSpecificationTasks('task-plan', '- [ ] 1.1 Build it safely.\n');
     expect(changed.tasks[0]?.taskRevision).not.toBe(first.tasks[0]?.taskRevision);
     expect(changed.digest).not.toBe(first.digest);
+  });
+
+  it('projects one checkbox idempotently without changing Task semantics', () => {
+    const document = '# Tasks\n\n- [ ] 1.1 Build it.\n- [ ] 1.2 Verify it.\n';
+    const before = parseSpecificationTasks('task-plan', document);
+    const first = completeSpecificationTaskDocument({
+      changeId: 'task-plan',
+      taskId: '1.1',
+      taskRevision: before.tasks[0]!.taskRevision,
+      document,
+    });
+    const replay = completeSpecificationTaskDocument({
+      changeId: 'task-plan',
+      taskId: '1.1',
+      taskRevision: before.tasks[0]!.taskRevision,
+      document: first.document,
+    });
+    expect(first.updated).toBe(true);
+    expect(first.document).toContain('- [x] 1.1 Build it.');
+    expect(first.tasks.digest).toBe(before.digest);
+    expect(replay).toMatchObject({ updated: false, document: first.document });
+    expect(() =>
+      completeSpecificationTaskDocument({
+        changeId: 'task-plan',
+        taskId: '1.1',
+        taskRevision: `sha256:${'f'.repeat(64)}`,
+        document,
+      }),
+    ).toThrow(/revision changed/u);
   });
 });

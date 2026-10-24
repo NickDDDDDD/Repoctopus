@@ -4,6 +4,8 @@ import { Service, type Context } from '@deepseek-ai/cordis';
 import { isModelInvocable, type SkillDefinition } from '@deepseek-ai/dsh-skill';
 
 import type { ActionOutcome, RunState, RunTriggerSnapshot } from '../domains/engine/types.js';
+import type { BuildTaskValidation } from '../domains/change-lifecycle/build-validator.js';
+import { validateBuildTaskOutcome } from '../domains/change-lifecycle/build-validator.js';
 import type { ProjectSnapshot } from '../domains/project/types.js';
 import { WorkflowRunCoordinator } from '../domains/runtime/workflow-runs.js';
 import type { ResumeView, RunStatusView, RuntimeResult } from '../domains/runtime/types.js';
@@ -60,9 +62,20 @@ export interface DecideChangeRunInput {
   actor: SpecificationApprovalActor;
 }
 
+export interface ValidateBuildTaskInput {
+  runId: string;
+  receiptId: string;
+}
+
+export interface ValidateBuildTaskResult {
+  validation: BuildTaskValidation;
+  run: RunStatusView;
+}
+
 export class WorkflowRuns extends Service {
   static inject = [
     'actionDispatcher',
+    'actionStore',
     'compositionIdentity',
     'evidenceCoordinator',
     'project',
@@ -559,6 +572,81 @@ export class WorkflowRuns extends Service {
       return {
         ...result,
         value: { ...result.value, skillCompatibility, specificationCompatibility },
+      };
+    });
+  }
+
+  validateBuildTask(
+    input: ValidateBuildTaskInput,
+    signal?: AbortSignal,
+  ): Promise<RuntimeResult<ValidateBuildTaskResult>> {
+    return this.operations.run({ cancellable: false, signal }, async () => {
+      const [state, receipt] = await Promise.all([
+        this.ctx.runStore.loadRun(input.runId),
+        this.ctx.actionStore.loadReceipt(input.runId, input.receiptId),
+      ]);
+      const lifecycle = state.changeLifecycle;
+      if (!lifecycle) throw new Error(`Run is not a Change Run: ${input.runId}`);
+      if (!lifecycle.currentWork) {
+        const trajectory = await this.ctx.runStore.loadTrajectory(input.runId);
+        const accepted = trajectory.find((entry) => {
+          const observation = entry.data.observation;
+          return (
+            entry.data.observationKind === 'build-task-completed' &&
+            observation !== null &&
+            typeof observation === 'object' &&
+            'receiptId' in observation &&
+            observation.receiptId === input.receiptId
+          );
+        });
+        if (!accepted) throw new Error(`Run has no active Build Task Work: ${input.runId}`);
+        const observation = accepted.data.observation as { taskId?: unknown };
+        const task = lifecycle.tasks?.find(
+          (candidate) => candidate.taskId === observation.taskId && candidate.status === 'completed',
+        );
+        if (!task) throw new Error('Accepted Build Task completion has no Task projection');
+        return {
+          value: {
+            validation: {
+              status: 'already-completed',
+              runId: input.runId,
+              workId: receipt.workId,
+              taskId: task.taskId,
+              taskRevision: task.taskRevision,
+              receiptId: receipt.receiptId,
+              diagnostic: 'Build Task completion was already accepted',
+            },
+            run: await this.coordinator.status(input.runId),
+          },
+          diagnostics: [],
+        };
+      }
+      const tasks = await this.ctx.specification.tasks(lifecycle.identity.changeId, signal);
+      const validation = validateBuildTaskOutcome({ state, receipt, tasks });
+      if (!['validated', 'already-completed'].includes(validation.status)) {
+        return {
+          value: { validation, run: await this.coordinator.status(input.runId) },
+          diagnostics: [],
+        };
+      }
+      const completed = await this.ctx.specification.completeTask({
+        changeId: lifecycle.identity.changeId,
+        taskId: validation.taskId,
+        taskRevision: validation.taskRevision,
+        ...(signal ? { signal } : {}),
+      });
+      const advanced = await this.coordinator.acceptChangeObservation(input.runId, {
+        kind: 'build-task-completed',
+        workId: validation.workId,
+        taskId: validation.taskId,
+        taskRevision: validation.taskRevision,
+        inputDigest: lifecycle.currentWork.inputDigest,
+        receiptId: receipt.receiptId,
+        tasks: completed.tasks.tasks,
+      });
+      return {
+        value: { validation, run: advanced.value },
+        diagnostics: advanced.diagnostics,
       };
     });
   }

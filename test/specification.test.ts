@@ -318,6 +318,20 @@ describe('Specification authority', () => {
     expect((await context.specification.planningManifest('sample')).semanticDigest).toBe(
       manifest.semanticDigest,
     );
+    const pendingTasks = await context.specification.tasks('sample');
+    const firstCompletion = await context.specification.completeTask({
+      changeId: 'sample',
+      taskId: '1.1',
+      taskRevision: pendingTasks.tasks[0]!.taskRevision,
+    });
+    const replayCompletion = await context.specification.completeTask({
+      changeId: 'sample',
+      taskId: '1.1',
+      taskRevision: pendingTasks.tasks[0]!.taskRevision,
+    });
+    expect(firstCompletion).toMatchObject({ updated: true, taskId: '1.1' });
+    expect(replayCompletion).toMatchObject({ updated: false, taskId: '1.1' });
+    expect(await readFile(tasksFile, 'utf8')).toContain('- [x] 1.1 Complete fixture.');
     await writeFile(tasksFile, originalTasks.replace('Complete fixture', 'Complete fixture safely'));
     expect((await context.specification.planningManifest('sample')).semanticDigest).not.toBe(
       manifest.semanticDigest,

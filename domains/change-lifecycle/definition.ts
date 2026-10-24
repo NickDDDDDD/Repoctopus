@@ -243,6 +243,14 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       requiredValidatorProfile: 'design.artifacts-valid',
     },
     {
+      id: 'build.task-completed',
+      kind: 'self',
+      from: { phase: 'build', statuses: ['running'] },
+      to: { phase: 'build', status: 'running' },
+      trigger: 'task-outcome-validated',
+      requiredValidatorProfile: 'build.task-valid',
+    },
+    {
       id: 'build.validated',
       kind: 'advance',
       from: { phase: 'build', statuses: ['running'] },

@@ -2,6 +2,8 @@ import { Service, type Context } from '@deepseek-ai/cordis';
 
 import type {
   SpecificationChange,
+  CompleteSpecificationTaskInput,
+  CompleteSpecificationTaskResult,
   SpecificationClosurePlan,
   SpecificationClosureResult,
   SpecificationProviderIdentity,
@@ -41,6 +43,7 @@ export interface SpecificationWorkspace {
     signal?: AbortSignal,
   ): Promise<SpecificationPlanningGuidance>;
   tasks(changeId: string, signal?: AbortSignal): Promise<SpecificationTaskSet>;
+  completeTask(input: CompleteSpecificationTaskInput): Promise<CompleteSpecificationTaskResult>;
   inspect(changeId: string, signal?: AbortSignal): Promise<SpecificationChange>;
   validate(
     changeId: string,
@@ -80,6 +83,12 @@ export abstract class Specification extends Service implements SpecificationWork
     void signal;
     return Promise.reject(
       new Error(`Specification provider ${this.identity().id} cannot read planning tasks`),
+    );
+  }
+  completeTask(input: CompleteSpecificationTaskInput): Promise<CompleteSpecificationTaskResult> {
+    void input;
+    return Promise.reject(
+      new Error(`Specification provider ${this.identity().id} cannot project Task completion`),
     );
   }
   async planningManifest(

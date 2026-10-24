@@ -514,6 +514,7 @@ const definitions: readonly BuiltinDefinition[] = [
     plugin: OpenSpecProvider,
     sourceFiles: [
       'services/specification.ts',
+      'domains/specification/tasks.ts',
       'domains/specification/types.ts',
       'platform/specification/openspec-process.ts',
       'platform/specification/openspec-provider.ts',
@@ -905,6 +906,7 @@ const definitions: readonly BuiltinDefinition[] = [
       'domains/runtime/workflow-runs.ts',
       'domains/runtime/evidence-guard.ts',
       'domains/change-lifecycle/definition.ts',
+      'domains/change-lifecycle/build-validator.ts',
       'domains/change-lifecycle/host-workflow.ts',
       'domains/change-lifecycle/transition.ts',
       'domains/engine/loop.ts',

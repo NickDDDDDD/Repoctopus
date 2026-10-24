@@ -286,6 +286,7 @@ describe('Change Run Design gate CLI', () => {
       provider: { id: 'openspec' },
     });
     const approvedWorkId = approved.result?.changeLifecycle?.currentWork?.workId;
+    let acceptedReceiptId: string;
     const outcomeApp = await bootProjectComposition(packageRoot, workspace);
     try {
       expect(outcomeApp.context.workDispatcher.list()).toEqual([
@@ -310,6 +311,7 @@ describe('Change Run Design gate CLI', () => {
         lifecycleAdvanced: false,
         receipt: { adapter: 'process', outcome: 'succeeded' },
       });
+      acceptedReceiptId = accepted.receipt.receiptId;
     } finally {
       await outcomeApp.close();
     }
@@ -325,11 +327,47 @@ describe('Change Run Design gate CLI', () => {
       taskProgress: { total: 1, completed: 0, currentTaskId: '1.1' },
       currentWork: { workId: approvedWorkId },
     });
-    const tasksFile = path.join(workspace, 'openspec', 'changes', 'valid-plan', 'tasks.md');
-    await writeFile(
-      tasksFile,
-      (await readFile(tasksFile, 'utf8')).replace('- [ ] 1.1', '- [x] 1.1'),
+    const openSpecEnvironmentKeys = [
+      'XDG_DATA_HOME',
+      'XDG_CONFIG_HOME',
+      'OPENSPEC_NO_UPDATE_CHECK',
+      'OPENSPEC_TELEMETRY',
+    ] as const;
+    const previousOpenSpecEnvironment = Object.fromEntries(
+      openSpecEnvironmentKeys.map((key) => [key, process.env[key]]),
     );
+    for (const key of openSpecEnvironmentKeys) process.env[key] = environment[key];
+    const validationApp = await bootProjectComposition(packageRoot, workspace);
+    try {
+      const validated = await validationApp.context.workflowRuns.validateBuildTask({
+        runId: validRun.runId!,
+        receiptId: acceptedReceiptId,
+      });
+      expect(validated.value).toMatchObject({
+        validation: { status: 'validated', taskId: '1.1' },
+        run: {
+          changeLifecycle: {
+            phase: 'build',
+            taskProgress: { total: 1, completed: 1, currentTaskId: null },
+            currentWork: null,
+          },
+        },
+      });
+      const replay = await validationApp.context.workflowRuns.validateBuildTask({
+        runId: validRun.runId!,
+        receiptId: acceptedReceiptId,
+      });
+      expect(replay.value.validation.status).toBe('already-completed');
+    } finally {
+      await validationApp.close();
+      for (const key of openSpecEnvironmentKeys) {
+        const previous = previousOpenSpecEnvironment[key];
+        if (previous === undefined) delete process.env[key];
+        else process.env[key] = previous;
+      }
+    }
+    const tasksFile = path.join(workspace, 'openspec', 'changes', 'valid-plan', 'tasks.md');
+    expect(await readFile(tasksFile, 'utf8')).toContain('- [x] 1.1 Build it.');
     await execFileAsync('git', ['add', 'openspec/changes/valid-plan/tasks.md'], {
       cwd: workspace,
     });
@@ -346,7 +384,8 @@ describe('Change Run Design gate CLI', () => {
     expect(checkboxOnly.result?.changeLifecycle).toMatchObject({
       phase: 'build',
       status: 'running',
-      currentWork: { workId: approvedWorkId },
+      taskProgress: { total: 1, completed: 1, currentTaskId: null },
+      currentWork: null,
     });
 
     const designFile = path.join(workspace, 'openspec', 'changes', 'valid-plan', 'design.md');
@@ -382,7 +421,7 @@ describe('Change Run Design gate CLI', () => {
           transitionId: 'build.semantic-plan-drift',
           invalidation: {
             kind: 'planning-semantic-drift',
-            supersededWorkId: approvedWorkId,
+            supersededWorkId: null,
           },
         },
       });
