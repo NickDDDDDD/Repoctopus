@@ -560,6 +560,96 @@ The system MUST provide fresh behavior.
     await context.fiber.dispose();
   }, 30_000);
 
+  it('validates an explicitly retired capability as absent instead of requiring its old spec', async () => {
+    const fixture = await openSpecFixture();
+    await write(
+      'openspec/changes/retire-demo/.openspec.yaml',
+      'schema: spec-driven\nretire_capabilities: true\n',
+      fixture.workspace,
+    );
+    await write(
+      'openspec/changes/retire-demo/proposal.md',
+      `# Change: retire-demo
+
+## Why
+The demo capability is no longer part of the product.
+
+## What Changes
+- Remove the demo capability.
+
+## Capabilities
+- \`demo\`: retire the demo behavior.
+
+## Impact
+- Test fixture only.
+`,
+      fixture.workspace,
+    );
+    await write(
+      'openspec/changes/retire-demo/design.md',
+      `# Design
+
+## Context
+The fixture retires one capability.
+
+## Goals / Non-Goals
+
+**Goals:**
+- Remove the capability specification.
+
+**Non-Goals:**
+- Add replacement behavior.
+
+## Decisions
+Use the official OpenSpec retirement metadata.
+`,
+      fixture.workspace,
+    );
+    await write(
+      'openspec/changes/retire-demo/tasks.md',
+      '# Tasks\n\n- [x] 1.1 Remove the demo implementation.\n',
+      fixture.workspace,
+    );
+    await write(
+      'openspec/changes/retire-demo/specs/demo/spec.md',
+      `# Demo retirement
+
+## REMOVED Requirements
+
+### Requirement: Existing behavior
+
+**Reason**: The demo capability is retired.
+
+**Migration**: No replacement is required.
+`,
+      fixture.workspace,
+    );
+    await commitFixture(fixture.workspace, 'add capability retirement');
+    const context = new Context();
+    const fiber = context.plugin(OpenSpecProvider, {
+      workspaceRoot: fixture.workspace,
+      specificationRoot: fixture.specificationRoot,
+      process: fixture.process,
+    });
+    await fiber;
+
+    expect(await context.specification.inspect('retire-demo')).toMatchObject({
+      affectedCapabilities: ['demo'],
+      retiredCapabilities: ['demo'],
+    });
+    const plan = await context.specification.prepareClosure({
+      changeId: 'retire-demo',
+      mergeFactsDigest: `sha256:${'7'.repeat(64)}`,
+      targetBaselineDigest: `sha256:${'8'.repeat(64)}`,
+    });
+    expect(plan.retiredCapabilities).toEqual(['demo']);
+    await expect(context.specification.close(plan)).resolves.toMatchObject({ status: 'closed' });
+    await expect(
+      readFile(path.join(fixture.workspace, 'openspec', 'specs', 'demo', 'spec.md'), 'utf8'),
+    ).rejects.toMatchObject({ code: 'ENOENT' });
+    await context.fiber.dispose();
+  }, 30_000);
+
   it('returns normalized diagnostics for an invalid delta instead of treating process failure as success', async () => {
     const fixture = await openSpecFixture(false);
     const context = new Context();

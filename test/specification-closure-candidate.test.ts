@@ -44,6 +44,7 @@ const plan: SpecificationClosurePlan = {
   mergeFactsDigest: digest('4'),
   targetBaselineDigest: digest('5'),
   affectedCapabilities: ['archive'],
+  retiredCapabilities: [],
   allowedPathPrefixes: ['openspec/changes', 'openspec/specs/archive'],
   planDigest: digest('6'),
 };
@@ -77,6 +78,7 @@ const candidate: SpecificationClosureCandidateObservation = {
   archiveIds: [result.archiveId],
   purposeCapabilities: ['archive'],
   validAffectedCapabilities: ['archive'],
+  retiredCapabilities: [],
   strictStoreValid: true,
   changedFiles: [...result.changedFiles],
   manifest: expected,

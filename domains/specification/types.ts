@@ -30,6 +30,7 @@ export interface SpecificationChange {
   planningComplete: boolean;
   artifacts: SpecificationArtifact[];
   affectedCapabilities: string[];
+  retiredCapabilities: string[];
 }
 
 export interface SpecificationTask {
@@ -302,6 +303,7 @@ export interface SpecificationClosurePlan {
   mergeFactsDigest: `sha256:${string}`;
   targetBaselineDigest: `sha256:${string}`;
   affectedCapabilities: string[];
+  retiredCapabilities: string[];
   allowedPathPrefixes: string[];
   planDigest: `sha256:${string}`;
 }

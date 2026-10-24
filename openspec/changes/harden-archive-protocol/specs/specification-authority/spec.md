@@ -18,16 +18,16 @@ Specification Provider MUST 把会改变验证、关闭或能力退役行为的 
 
 ### Requirement: 规格关闭先形成隔离候选再签发 Receipt
 
-Specification Provider MUST 在隔离的 Workspace checkout 中把关闭计划应用为候选结果，并在签发 Closure Receipt 前核对活动 change 已移除、恰好新增一个预期归档目录、全部受影响主规格已同步、允许路径差异成立且全局严格校验通过；任一后置条件失败时不得把目录移动或命令退出码解释为完整关闭。
+Specification Provider MUST 在隔离的 Workspace checkout 中把关闭计划应用为候选结果，并在签发 Closure Receipt 前核对活动 change 已移除、恰好新增一个预期归档目录、继续存在的受影响主规格已同步、显式退役的 capability 主规格已删除、允许路径差异成立且全局严格校验通过；任一后置条件失败时不得把目录移动或命令退出码解释为完整关闭。
 
 #### Scenario: OpenSpec 已移动目录但主规格无效
 
-- **WHEN** 官方 archive 命令已移动 change 目录，但受影响主规格或全局严格校验失败
+- **WHEN** 官方 archive 命令已移动 change 目录，但继续存在的受影响主规格、退役集合或全局严格校验失败
 - **THEN** Provider 保留可恢复 Journal 和诊断，不签发 Closure Receipt、不允许发布候选结果
 
 #### Scenario: 关闭候选满足全部后置条件
 
-- **WHEN** 预期归档唯一存在、活动 change 不再存在、Purpose、受影响主规格和允许差异均通过严格核对
+- **WHEN** 预期归档唯一存在、活动 change 不再存在、Purpose、继续存在的受影响主规格、退役能力缺席和允许差异均通过严格核对
 - **THEN** Provider 返回绑定关闭计划、文件身份和内容摘要的候选关闭结果，供 Archive 发布步骤使用
 
 ### Requirement: 规格关闭副作用只使用窄范围可恢复 Journal

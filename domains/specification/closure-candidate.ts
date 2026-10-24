@@ -8,6 +8,7 @@ export interface SpecificationClosureCandidateObservation {
   archiveIds: string[];
   purposeCapabilities: string[];
   validAffectedCapabilities: string[];
+  retiredCapabilities: string[];
   strictStoreValid: boolean;
   changedFiles: string[];
   manifest: SpecificationFileIdentity[];
@@ -62,12 +63,23 @@ export function assertSpecificationClosureCandidate(input: {
       `Specification closure candidate is missing Purpose: ${missingPurpose.join(', ')}`,
     );
   }
-  const invalidAffected = journal.postconditions.affectedCapabilities.filter(
+  const activeCapabilities = journal.postconditions.affectedCapabilities.filter(
+    (capability) => !journal.postconditions.retiredCapabilities.includes(capability),
+  );
+  const invalidAffected = activeCapabilities.filter(
     (capability) => !observation.validAffectedCapabilities.includes(capability),
   );
   if (invalidAffected.length > 0) {
     throw new Error(
       `Specification closure candidate has invalid affected Specifications: ${invalidAffected.join(', ')}`,
+    );
+  }
+  const missingRetired = journal.postconditions.retiredCapabilities.filter(
+    (capability) => !observation.retiredCapabilities.includes(capability),
+  );
+  if (missingRetired.length > 0) {
+    throw new Error(
+      `Specification closure candidate did not retire capabilities: ${missingRetired.join(', ')}`,
     );
   }
   if (!observation.strictStoreValid) {

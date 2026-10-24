@@ -50,6 +50,7 @@ const change: SpecificationChange = {
     { id: 'design', kind: 'design', status: 'ready', digest: digest('2') },
   ],
   affectedCapabilities: ['post-merge-automation', 'delivery-governance'],
+  retiredCapabilities: [],
 };
 
 const validation: SpecificationValidation = {
@@ -178,9 +179,7 @@ describe('specification planning approval', () => {
     pushed.changeBranch.remoteOid = '2'.repeat(40);
     const republished = createPlanningSnapshot(pushed);
     expect(republished.digest).toBe(baseline.digest);
-    expect(republished.publicationProvenanceDigest).not.toBe(
-      baseline.publicationProvenanceDigest,
-    );
+    expect(republished.publicationProvenanceDigest).not.toBe(baseline.publicationProvenanceDigest);
 
     const refreshed = requestSpecificationApproval({
       current: approved,
@@ -194,15 +193,12 @@ describe('specification planning approval', () => {
       snapshot: { changeBranch: { remoteOid: '2'.repeat(40) } },
       decisionRequest: { changeBranch: { remoteOid: '2'.repeat(40) } },
     });
-    expect(refreshed.decisionRequest.proposalHash).toBe(
-      approved.decisionRequest.proposalHash,
-    );
+    expect(refreshed.decisionRequest.proposalHash).toBe(approved.decisionRequest.proposalHash);
     expect(() => assertSpecificationApprovalState(refreshed)).not.toThrow();
 
     const planningChanged = planningInput();
-    planningChanged.change.artifacts.find(
-      (artifact) => artifact.kind === 'design',
-    )!.digest = digest('e');
+    planningChanged.change.artifacts.find((artifact) => artifact.kind === 'design')!.digest =
+      digest('e');
     const invalidated = requestSpecificationApproval({
       current: refreshed,
       snapshot: createPlanningSnapshot(planningChanged),
@@ -301,36 +297,57 @@ describe('specification planning approval', () => {
     );
 
     const cases: Array<[string, (input: ReturnType<typeof planningInput>) => void]> = [
-      ['change', (input) => {
-        input.change.changeId = 'another-change';
-        input.validation.changeId = 'another-change';
-      }],
-      ['Store', (input) => {
-        input.specificationRoot.storeId = 'another-store';
-      }],
-      ['Provider', (input) => {
-        input.change.provider.version = '1.15.0';
-        input.validation.provider.version = '1.15.0';
-        input.schema = specificationSchemaFixture(input.change.provider);
-      }],
-      ['schema', (input) => {
-        input.schema.artifacts[0]!.templateDigest = digest('f');
-        const stable = Object.fromEntries(
-          Object.entries(input.schema).filter(([key]) => key !== 'digest'),
-        );
-        input.schema.digest = `sha256:${createHash('sha256')
-          .update(canonicalJson(stable))
-          .digest('hex')}`;
-      }],
-      ['semantic digest', (input) => {
-        input.change.artifacts[0]!.digest = digest('f');
-      }],
-      ['capabilities', (input) => {
-        input.change.affectedCapabilities.push('another-capability');
-      }],
-      ['target branch', (input) => {
-        input.changeBranch.targetBranch = 'release';
-      }],
+      [
+        'change',
+        (input) => {
+          input.change.changeId = 'another-change';
+          input.validation.changeId = 'another-change';
+        },
+      ],
+      [
+        'Store',
+        (input) => {
+          input.specificationRoot.storeId = 'another-store';
+        },
+      ],
+      [
+        'Provider',
+        (input) => {
+          input.change.provider.version = '1.15.0';
+          input.validation.provider.version = '1.15.0';
+          input.schema = specificationSchemaFixture(input.change.provider);
+        },
+      ],
+      [
+        'schema',
+        (input) => {
+          input.schema.artifacts[0]!.templateDigest = digest('f');
+          const stable = Object.fromEntries(
+            Object.entries(input.schema).filter(([key]) => key !== 'digest'),
+          );
+          input.schema.digest = `sha256:${createHash('sha256')
+            .update(canonicalJson(stable))
+            .digest('hex')}`;
+        },
+      ],
+      [
+        'semantic digest',
+        (input) => {
+          input.change.artifacts[0]!.digest = digest('f');
+        },
+      ],
+      [
+        'capabilities',
+        (input) => {
+          input.change.affectedCapabilities.push('another-capability');
+        },
+      ],
+      [
+        'target branch',
+        (input) => {
+          input.changeBranch.targetBranch = 'release';
+        },
+      ],
     ];
     for (const [label, mutate] of cases) {
       const changed = planningInput();

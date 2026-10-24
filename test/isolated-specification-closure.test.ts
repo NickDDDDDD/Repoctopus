@@ -59,6 +59,7 @@ const plan: SpecificationClosurePlan = {
   mergeFactsDigest: digest('2'),
   targetBaselineDigest: digest('3'),
   affectedCapabilities: ['archive'],
+  retiredCapabilities: [],
   allowedPathPrefixes: ['openspec/changes', 'openspec/specs'],
   planDigest: digest('4'),
 };

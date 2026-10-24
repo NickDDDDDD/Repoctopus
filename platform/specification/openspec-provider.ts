@@ -65,7 +65,7 @@ interface ContextResult {
 interface ShowResult {
   id?: unknown;
   title?: unknown;
-  deltas?: Array<{ spec?: unknown }>;
+  deltas?: Array<{ spec?: unknown; operation?: unknown }>;
 }
 
 interface StatusResult {
@@ -566,15 +566,34 @@ export class OpenSpecProvider extends Specification {
       ),
     ].sort();
     const metadataFile = path.join(workspace, 'openspec', 'changes', id, '.openspec.yaml');
-    const metadataDigest = (await exists(metadataFile))
-      ? sha256(parseYaml(await readFile(metadataFile, 'utf8')) as unknown)
+    const metadata = (await exists(metadataFile))
+      ? (parseYaml(await readFile(metadataFile, 'utf8')) as unknown)
       : null;
+    const metadataDigest = metadata === null ? null : sha256(metadata);
+    const retirementEnabled =
+      metadata !== null &&
+      typeof metadata === 'object' &&
+      (metadata as Record<string, unknown>).retire_capabilities === true;
+    const operations = new Map<string, string[]>();
+    for (const delta of shown.deltas ?? []) {
+      if (typeof delta.spec !== 'string' || typeof delta.operation !== 'string') continue;
+      operations.set(delta.spec, [...(operations.get(delta.spec) ?? []), delta.operation]);
+    }
+    const retiredCapabilities = retirementEnabled
+      ? [...operations.entries()]
+          .filter(([, capabilityOperations]) =>
+            capabilityOperations.every((operation) => operation === 'REMOVED'),
+          )
+          .map(([capability]) => capability)
+          .sort()
+      : [];
     const semantic = {
       id: typeof shown.id === 'string' ? shown.id : id,
       title: typeof shown.title === 'string' ? shown.title : id,
       planningComplete: status.isPlanningComplete === true,
       artifacts,
       affectedCapabilities,
+      retiredCapabilities,
       metadataDigest,
     };
     return {
@@ -587,6 +606,7 @@ export class OpenSpecProvider extends Specification {
       planningComplete: semantic.planningComplete,
       artifacts,
       affectedCapabilities,
+      retiredCapabilities,
     };
   }
 
@@ -673,6 +693,7 @@ export class OpenSpecProvider extends Specification {
       mergeFactsDigest: input.mergeFactsDigest,
       targetBaselineDigest: input.targetBaselineDigest,
       affectedCapabilities: change.affectedCapabilities,
+      retiredCapabilities: change.retiredCapabilities,
       allowedPathPrefixes: [
         ...change.affectedCapabilities.map((capability) => `openspec/specs/${capability}/`),
         `openspec/changes/${change.changeId}/`,
@@ -827,11 +848,15 @@ export class OpenSpecProvider extends Specification {
         throw new Error(`Archived Specification Purpose was not synchronized: ${capability}`);
       }
     }
-    await this.assertArchivedSpecificationsAt(
-      input.workspace,
-      input.plan.affectedCapabilities,
-      input.signal,
+    for (const capability of input.plan.retiredCapabilities) {
+      if (await exists(path.join(input.workspace, 'openspec', 'specs', capability, 'spec.md'))) {
+        throw new Error(`Archived Specification capability was not retired: ${capability}`);
+      }
+    }
+    const activeCapabilities = input.plan.affectedCapabilities.filter(
+      (capability) => !input.plan.retiredCapabilities.includes(capability),
     );
+    await this.assertArchivedSpecificationsAt(input.workspace, activeCapabilities, input.signal);
     await this.assertStrictStoreAt(input.workspace, input.signal);
     const outside = input.changedFiles.filter(
       (file) =>

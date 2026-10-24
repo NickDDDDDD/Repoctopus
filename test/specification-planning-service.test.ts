@@ -67,6 +67,7 @@ class TestSpecification extends Specification {
         { id: 'tasks', kind: 'tasks', status: 'ready', digest: digest('4') },
       ],
       affectedCapabilities: ['delivery-governance'],
+      retiredCapabilities: [],
     });
   }
 

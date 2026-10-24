@@ -24,6 +24,7 @@ export interface SpecificationClosurePostconditions {
   expectedArchiveId: string;
   exactlyOneArchive: true;
   affectedCapabilities: string[];
+  retiredCapabilities: string[];
   requiredPurposeCapabilities: string[];
   strictStoreValidation: true;
   allowedPathPrefixes: string[];
@@ -101,6 +102,7 @@ function stable(journal: Omit<SpecificationClosureJournal, 'digest'>) {
     postconditions: {
       ...structuredClone(journal.postconditions),
       affectedCapabilities: [...new Set(journal.postconditions.affectedCapabilities)].sort(),
+      retiredCapabilities: [...new Set(journal.postconditions.retiredCapabilities)].sort(),
       requiredPurposeCapabilities: [
         ...new Set(journal.postconditions.requiredPurposeCapabilities),
       ].sort(),
@@ -154,8 +156,12 @@ export function createSpecificationClosureJournal(input: {
       expectedArchiveId: input.expectedArchiveId,
       exactlyOneArchive: true,
       affectedCapabilities: [...input.plan.affectedCapabilities],
+      retiredCapabilities: [...input.plan.retiredCapabilities],
       requiredPurposeCapabilities: [
-        ...(input.requiredPurposeCapabilities ?? input.plan.affectedCapabilities),
+        ...(input.requiredPurposeCapabilities ??
+          input.plan.affectedCapabilities.filter(
+            (capability) => !input.plan.retiredCapabilities.includes(capability),
+          )),
       ],
       strictStoreValidation: true,
       allowedPathPrefixes: [...input.plan.allowedPathPrefixes],
@@ -178,6 +184,13 @@ export function assertSpecificationClosureJournal(journal: SpecificationClosureJ
     journal.provider.id !== journal.plan.provider.id
   ) {
     throw new Error('Specification Closure Journal contains cross-Change or provider input');
+  }
+  if (
+    journal.postconditions.retiredCapabilities.some(
+      (capability) => !journal.postconditions.affectedCapabilities.includes(capability),
+    )
+  ) {
+    throw new Error('Retired Specification capabilities must be part of the closure plan');
   }
   if (!Number.isSafeInteger(journal.stateVersion) || journal.stateVersion < 1) {
     throw new Error('Specification Closure Journal state version is invalid');

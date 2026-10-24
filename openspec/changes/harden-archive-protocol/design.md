@@ -80,7 +80,7 @@ prepared 记录 Provider/schema、活动 change、预期归档、受影响主规
 1. 活动 change 已消失；
 2. 恰好新增一个对应归档目录；
 3. 新 capability Purpose 已进入主规格；
-4. 受影响规格及整个 Store 严格校验通过；
+4. 继续存在的受影响规格及整个 Store 严格校验通过，关闭计划中显式退役的 capability 主规格必须缺席；
 5. diff 只包含关闭计划允许的规格和验证路径。
 
 进程中断后按文件身份继续验证或回滚；并发修改导致 CAS 不匹配时保留现场并阻断。Journal 不记录 MR open/merged 状态，不承担跨仓 Saga。
@@ -196,3 +196,5 @@ CLI 在 boot composition 前处理 `--help`、版本、未知参数和缺失必�
 2026-10-24 review：旧计划因远端等待、Webhook、通用 Saga/GC/attempt/migration 混合而在 Scope 上不合格；重写后以单仓 tracer 开始，扩展多仓发布，再加入一致性审查，最后删除旧链。Completeness、Feasibility、Scope、Testability、Risk 和 Assumptions 均以本设计的边界、故障路径、验证矩阵与 STOP conditions 收敛到 5/5。规划不创建 implementation-notes 文件；实施偏差必须回写本 Change 的 `design.md`，重大语义变化重新经过 Design approval。
 
 2026-10-25 self-host review：第一次真实 Archive 暴露出“领域组件完成但生产组合未闭合”的偏差。`SpecificationClosureJournal`、隔离 checkout 和候选校验已有独立测试，但 `OpenSpecProvider.close()` 仍在开发者工作树直接执行官方 archive；同时 planning manifest 未绑定 `.openspec.yaml`，导致 `retire_capabilities` 改变关闭语义后旧 Design approval 仍被复用。修正决定是：公共 Provider 关闭入口必须经过隔离事务并在候选验证后才同步精确允许 diff；中断恢复从 Journal 的 before/expected 文件身份重建同一 Receipt；Change-local Provider 元数据加入 planning semantic digest；回归测试必须调用生产 Provider 公共入口，并证明失败候选不污染开发者工作树。此偏差说明 task checkbox 只能表示实现声明，不能替代 production-composition tracer 与 self-host Archive 验收。
+
+同日第二次 self-host review：隔离事务已正确阻止工作树污染，但候选校验把“受影响 capability”错误等同于“归档后必须存在的 capability”，因此拒绝 OpenSpec 按 `retire_capabilities: true` 正确删除的全 REMOVED capability。关闭计划现在显式绑定 `retiredCapabilities`：只有全量 REMOVED 且元数据授权退役的 capability 可进入该集合；候选必须证明这些主规格缺席，并只对其余受影响规格执行 strict spec validation。新增真实 OpenSpec 退役 fixture，避免用跳过 ENOENT 的方式削弱校验。
