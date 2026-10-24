@@ -17,7 +17,7 @@
       **Blocked by:** 0.2
       **Acceptance:** schema、canonical digest、扫描顺序和隐私 contract tests 通过；任一 item 缺失或 OID 不匹配被拒绝
       **Requirements:** delivery-governance#publication-receipt
-- [ ] 1.2 将内置 lifecycle definition 的 Archive 收敛为 `preflight → specification.close → delivery.publish → archive.complete`，以完整 Publication Receipt 接受 terminal observation。
+- [x] 1.2 将内置 lifecycle definition 的 Archive 收敛为 `preflight → specification.close → delivery.publish → archive.complete`，以完整 Publication Receipt 接受 terminal observation。
       **Blocked by:** 1.1
       **Acceptance:** 纯领域测试证明 MR open/merged/closed 均不参与终态判断，Receipt 完整时 completed，缺失时 blocked，重复 observation 幂等
       **Requirements:** change-lifecycle#archive-publication-terminal
