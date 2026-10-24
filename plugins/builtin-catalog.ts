@@ -23,7 +23,6 @@ import changeLifecycleMigrationContributor from './command/change-lifecycle-migr
 import deliveryContributor from './command/delivery-contributor.js';
 import projectOnboardingContributor from './command/project-onboarding-contributor.js';
 import maintenanceContributor from './command/maintenance-contributor.js';
-import platformEventContributor from './command/platform-event-contributor.js';
 import postMergeContributor from './command/post-merge-contributor.js';
 import { FileDeliveryProvider } from './delivery/file-delivery-provider.js';
 import { GitProjectProvider } from './project/git-project-provider.js';
@@ -57,15 +56,9 @@ import mattSkillProvider from './skill/matt-skill-provider.js';
 import filesystemSkillProvider from './skill/filesystem-skill-provider.js';
 import skillCatalogContributor from './command/skill-catalog-contributor.js';
 import specificationContributor from './command/specification-contributor.js';
-import githubWebhookContributor from './events/github-webhook-contributor.js';
-import githubPostMergeContributor from './events/github-post-merge-contributor.js';
-import { FilePlatformEventsProvider } from './events/file-platform-events-provider.js';
-import { NodeHttpHostProvider } from './http/node-http-host-provider.js';
 import { OpenSpecProvider } from '../platform/specification/openspec-provider.js';
-import { PlatformEventRunner } from '../services/platform-event-runner.js';
 import { PostMergeCoordinator } from '../services/post-merge-coordinator.js';
 import postMergeActionsProvider from './post-merge/post-merge-actions-provider.js';
-import runnerApplication from './application/runner-application.js';
 import desktopApplication from './application/desktop-application.js';
 import { DesktopApplication } from '../services/desktop-application.js';
 import { SpecificationPlanning } from '../services/specification-planning.js';
@@ -241,110 +234,6 @@ const definitions: readonly BuiltinDefinition[] = [
   },
   {
     descriptor: {
-      id: 'http-host',
-      version: VERSION,
-      contractVersion: PLUGIN_CONTRACT_VERSION,
-      configSchemaVersion: '1',
-      kind: 'service-provider',
-      source: 'builtin',
-      compositions: ['project'],
-      authorities: ['http-listener'],
-      permissions: ['network'],
-      stateSchemas: {},
-    },
-    plugin: NodeHttpHostProvider,
-    sourceFiles: [
-      'services/http-host.ts',
-      'platform/http/node-http-server.ts',
-      'plugins/http/node-http-host-provider.ts',
-    ],
-  },
-  {
-    descriptor: {
-      id: 'platform-events-file',
-      version: VERSION,
-      contractVersion: PLUGIN_CONTRACT_VERSION,
-      configSchemaVersion: '1',
-      kind: 'service-provider',
-      source: 'builtin',
-      compositions: ['project'],
-      authorities: ['event-inbox-write'],
-      permissions: ['filesystem', 'network'],
-      stateSchemas: { 'event-inbox': '1' },
-    },
-    plugin: FilePlatformEventsProvider,
-    sourceFiles: [
-      'domains/platform-events/inbox.ts',
-      'domains/platform-events/ports.ts',
-      'domains/platform-events/types.ts',
-      'platform/events/file-event-inbox-store.ts',
-      'platform/telemetry/platform-event-mapping.ts',
-      'platform/telemetry/opentelemetry/platform-event-exporter.ts',
-      'services/platform-events.ts',
-      'plugins/events/file-platform-events-provider.ts',
-    ],
-  },
-  {
-    descriptor: {
-      id: 'platform-event-command',
-      version: VERSION,
-      contractVersion: PLUGIN_CONTRACT_VERSION,
-      configSchemaVersion: '1',
-      kind: 'contributor',
-      source: 'builtin',
-      compositions: ['project'],
-      authorities: [],
-      permissions: [],
-      stateSchemas: {},
-    },
-    plugin: platformEventContributor,
-    sourceFiles: ['plugins/command/platform-event-contributor.ts'],
-  },
-  {
-    descriptor: {
-      id: 'platform-event-runner',
-      version: VERSION,
-      contractVersion: PLUGIN_CONTRACT_VERSION,
-      configSchemaVersion: '1',
-      kind: 'service-provider',
-      source: 'builtin',
-      compositions: ['project'],
-      authorities: ['event-inbox-runner'],
-      permissions: [],
-      stateSchemas: {},
-    },
-    plugin: PlatformEventRunner,
-    sourceFiles: [
-      'services/operation-ownership.ts',
-      'services/platform-event-runner.ts',
-      'services/platform-events.ts',
-    ],
-  },
-  {
-    descriptor: {
-      id: 'github-webhook-route',
-      version: VERSION,
-      contractVersion: PLUGIN_CONTRACT_VERSION,
-      configSchemaVersion: '1',
-      kind: 'contributor',
-      source: 'builtin',
-      compositions: ['project'],
-      authorities: [],
-      permissions: [],
-      stateSchemas: {},
-    },
-    plugin: githubWebhookContributor,
-    sourceFiles: [
-      'domains/platform-events/ports.ts',
-      'domains/platform-events/types.ts',
-      'platform/events/github-webhook-route.ts',
-      'platform/events/github-webhook.ts',
-      'plugins/events/github-webhook-contributor.ts',
-      'services/platform-events.ts',
-    ],
-  },
-  {
-    descriptor: {
       id: 'post-merge-coordinator',
       version: VERSION,
       contractVersion: PLUGIN_CONTRACT_VERSION,
@@ -361,26 +250,6 @@ const definitions: readonly BuiltinDefinition[] = [
       'domains/post-merge/coordinator.ts',
       'domains/post-merge/run.ts',
       'services/post-merge-coordinator.ts',
-    ],
-  },
-  {
-    descriptor: {
-      id: 'github-post-merge-events',
-      version: VERSION,
-      contractVersion: PLUGIN_CONTRACT_VERSION,
-      configSchemaVersion: '1',
-      kind: 'contributor',
-      source: 'builtin',
-      compositions: ['project'],
-      authorities: [],
-      permissions: [],
-      stateSchemas: {},
-    },
-    plugin: githubPostMergeContributor,
-    sourceFiles: [
-      'platform/git/remote-identity.ts',
-      'platform/github/pull-request-event.ts',
-      'plugins/events/github-post-merge-contributor.ts',
     ],
   },
   {
@@ -425,22 +294,6 @@ const definitions: readonly BuiltinDefinition[] = [
       'plugins/post-merge/post-merge-actions-provider.ts',
       'services/post-merge-actions.ts',
     ],
-  },
-  {
-    descriptor: {
-      id: 'runner-application',
-      version: VERSION,
-      contractVersion: PLUGIN_CONTRACT_VERSION,
-      configSchemaVersion: '1',
-      kind: 'application',
-      source: 'builtin',
-      compositions: ['project'],
-      authorities: [],
-      permissions: [],
-      stateSchemas: {},
-    },
-    plugin: runnerApplication,
-    sourceFiles: ['app/runner/application.ts', 'plugins/application/runner-application.ts'],
   },
   {
     descriptor: {

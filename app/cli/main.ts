@@ -28,10 +28,6 @@ import { loadDeliveryPolicy } from '../../platform/delivery/config.js';
 import { loadProjectConfig } from '../../platform/project-configuration/file-config.js';
 import { execute } from '../../platform/process/execute.js';
 import type { ProvenanceCheck } from '../../platform/provenance/check.js';
-import type {
-  PlatformEventReplayResult,
-  PlatformEventStatusView,
-} from '../../domains/platform-events/types.js';
 import {
   booleanFlag,
   integerFlag,
@@ -45,7 +41,6 @@ import type { BrowserMaintenance } from '../../services/browser-maintenance.js';
 import { bootBootstrapComposition, bootProjectComposition } from '../boot/bootstrap.js';
 import { reviewHumanDecision } from './human-decision.js';
 import { reviewProjectConfigurationDecision } from './project-configuration-decision.js';
-import { startRunnerApplication } from '../runner/application.js';
 import type { PostMergeReconciliationResult } from '../../services/post-merge-coordinator.js';
 import type { SpecificationApprovalState } from '../../domains/specification/types.js';
 import { inspectPublishedChangeBranch } from '../../platform/git/change-branch.js';
@@ -59,7 +54,7 @@ const PRODUCT_ROOT =
     ? path.resolve(DIST_DIR, '..')
     : path.resolve(DIST_DIR, '..', '..');
 const USAGE =
-  'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decide|record|resume|work-claim|work-outcome|work-validate|archive-prepare|archive-publish|archive-refresh|archive-verify|archive-complete> | change reconcile | runner start | post-merge reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | event <status|replay|retry> | approval review | browser <doctor|install> | doctor';
+  'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decide|record|resume|work-claim|work-outcome|work-validate|archive-prepare|archive-publish|archive-refresh|archive-verify|archive-complete> | change reconcile | post-merge reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | approval review | browser <doctor|install> | doctor';
 
 function defaultWorkflowPath(): string {
   return path.resolve(DIST_DIR, '..', 'workflows', 'foundation.yaml');
@@ -247,56 +242,6 @@ async function deliveryStatus(parsed: ParsedArguments): Promise<CliEnvelope<unkn
       result,
       nextActions: deliveryNextActions(result),
     });
-  } finally {
-    await app.close();
-  }
-}
-
-async function eventStatus(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
-  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
-  const envelopeId = stringFlag(parsed, 'envelope', { required: true })!;
-  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
-  try {
-    const result = await app.context.commandRouter.execute<
-      { envelopeId: string },
-      PlatformEventStatusView
-    >('event.status', { envelopeId });
-    return successEnvelope({ command: 'event status', result });
-  } finally {
-    await app.close();
-  }
-}
-
-async function eventReplay(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
-  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
-  const file = path.resolve(stringFlag(parsed, 'file', { required: true })!);
-  const envelope = JSON.parse(await readFile(file, 'utf8')) as unknown;
-  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
-  try {
-    const result = await app.context.commandRouter.execute<
-      { envelope: unknown },
-      PlatformEventReplayResult
-    >('event.replay', { envelope });
-    return successEnvelope({
-      command: 'event replay',
-      result,
-      nextActions: [`repoctopus event status --envelope ${result.event.envelopeId}`],
-    });
-  } finally {
-    await app.close();
-  }
-}
-
-async function eventRetry(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
-  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
-  const envelopeId = stringFlag(parsed, 'envelope', { required: true })!;
-  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
-  try {
-    const result = await app.context.commandRouter.execute<
-      { envelopeId: string },
-      PlatformEventStatusView
-    >('event.retry', { envelopeId });
-    return successEnvelope({ command: 'event retry', result });
   } finally {
     await app.close();
   }
@@ -1412,36 +1357,6 @@ async function browserInstall(parsed: ParsedArguments): Promise<CliEnvelope<unkn
   }
 }
 
-async function runnerStart(parsed: ParsedArguments, asJson: boolean): Promise<number> {
-  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
-  const runner = await startRunnerApplication(PRODUCT_ROOT, workspace);
-  const envelope = successEnvelope({
-    command: 'runner start',
-    result: {
-      status: 'ready',
-      origin: runner.origin,
-      compositionDigest: runner.compositionDigest,
-    },
-  });
-  process.stdout.write(`${asJson ? JSON.stringify(envelope) : renderHuman(envelope)}\n`);
-
-  let stop!: () => void;
-  const stopped = new Promise<void>((resolve) => {
-    stop = resolve;
-  });
-  const onSignal = () => stop();
-  process.once('SIGINT', onSignal);
-  process.once('SIGTERM', onSignal);
-  try {
-    await stopped;
-    return 0;
-  } finally {
-    process.off('SIGINT', onSignal);
-    process.off('SIGTERM', onSignal);
-    await runner.close();
-  }
-}
-
 async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const command = parsed.command.join(' ');
   if (command === 'project detect') return projectDetect(parsed);
@@ -1485,9 +1400,6 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
     return deliveryPublish(parsed);
   if (command === 'delivery refresh') return deliveryRefresh(parsed);
   if (command === 'delivery migration-plan') return deliveryMigrationPlan(parsed);
-  if (command === 'event status') return eventStatus(parsed);
-  if (command === 'event replay') return eventReplay(parsed);
-  if (command === 'event retry') return eventRetry(parsed);
   if (command === 'post-merge reconcile') return postMergeReconcile(parsed);
   if (command === 'doctor') return doctor(parsed);
   if (command === 'browser doctor') return browserDoctor(parsed);
@@ -1519,7 +1431,6 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
       process.stdout.write(`${USAGE}\n`);
       return 0;
     }
-    if (command === 'runner start') return await runnerStart(parsed, asJson);
     const envelope = await dispatch(parsed);
     process.stdout.write(`${asJson ? JSON.stringify(envelope) : renderHuman(envelope)}\n`);
     return 0;

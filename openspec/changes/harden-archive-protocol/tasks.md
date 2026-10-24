@@ -81,7 +81,7 @@
       **Blocked by:** 4.4
       **Acceptance:** 新示例和自举配置无监听/lease/poll 参数；旧配置 fail-fast 指向替代的 `change reconcile`，不静默忽略
       **Requirements:** platform-event-processing#retirement, plugin-composition#event-stack-retirement
-- [ ] 5.2 删除 `runner start`、`event status/replay/retry`、HTTP Webhook Route、验签 Adapter、Event Inbox Store/Service/Runner 及其生产插件和状态写入口。
+- [x] 5.2 删除 `runner start`、`event status/replay/retry`、HTTP Webhook Route、验签 Adapter、Event Inbox Store/Service/Runner 及其生产插件和状态写入口。
       **Blocked by:** 5.1
       **Acceptance:** 公共 CLI/production catalog 不再暴露相关入口；架构检查和依赖扫描找不到运行时引用；普通项目 composition 可启动
       **Requirements:** platform-event-processing#retirement, runtime-foundation#short-lived-runtime, plugin-composition#event-stack-retirement

@@ -5,7 +5,7 @@ import { loadProjectConfig } from '../../platform/project-configuration/file-con
 import { mergePluginCatalogs } from './descriptor.js';
 import { admitTeamPlugins, importTeamPlugins } from './team-plugins.js';
 import { lifecycleTelemetryFromEnvironment } from '../../platform/telemetry/opentelemetry/exporter.js';
-import { compileProjectComposition, compileRunnerComposition } from './project-composition.js';
+import { compileProjectComposition } from './project-composition.js';
 
 export async function bootBootstrapComposition(productRoot: string): Promise<RunningApp> {
   const catalog = await createRepoctopusBuiltinCatalog(productRoot);
@@ -52,17 +52,5 @@ export async function bootProjectComposition(
   const admitted = await admitTeamPlugins(workspaceRoot, config.shared.composition?.plugins ?? []);
   const catalog = mergePluginCatalogs(builtinCatalog, await importTeamPlugins(admitted));
   const composition = compileProjectComposition(productRoot, workspaceRoot, config, catalog);
-  return bootApp({ composition, catalog, lifecycleTelemetry: lifecycleTelemetryFromEnvironment() });
-}
-
-export async function bootRunnerComposition(
-  productRoot: string,
-  workspaceRoot: string,
-): Promise<RunningApp> {
-  const config = await loadProjectConfig(workspaceRoot);
-  const builtinCatalog = await createRepoctopusBuiltinCatalog(productRoot);
-  const admitted = await admitTeamPlugins(workspaceRoot, config.shared.composition?.plugins ?? []);
-  const catalog = mergePluginCatalogs(builtinCatalog, await importTeamPlugins(admitted));
-  const composition = compileRunnerComposition(productRoot, workspaceRoot, config, catalog);
   return bootApp({ composition, catalog, lifecycleTelemetry: lifecycleTelemetryFromEnvironment() });
 }
