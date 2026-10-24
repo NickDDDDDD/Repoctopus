@@ -107,7 +107,7 @@ async function writeSpecificationFixture(workspace: string, changeId: string): P
       `# Post-merge automation
 
 ## Purpose
-Exercise guarded post-merge closure.
+Exercise guarded post-merge closure with authoritative merge facts and audited specification paths.
 
 ## Requirements
 
