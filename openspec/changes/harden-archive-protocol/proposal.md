@@ -2,34 +2,37 @@
 
 ## Why
 
-现有 Archive 在最终 Change MR 创建后就可能把 Run 标记为完成，且规格关闭、远端发布、重试与清理之间缺少统一的事务恢复边界；这会让“文件已经归档”“远端已经发布”和“Change 已真正完成”在故障后互相矛盾。近期自举归档还暴露了 Build 任务依赖未来 Verify/Archive 事实、CLI 探测产生状态以及不同 Runner 难以无歧义接管等问题，需要在继续扩大团队使用前系统修正。
+Repoctopus 的主要价值位于 `Open → Design → Build → Verify`：把正确的规格、Skill、任务、实现方法和验证证据装配到同一 Change Run。现有收尾路径却要求等待 Business MR 合入，再通过 Webhook、Event Inbox、长驻 Runner 和 Post-merge Coordinator 恢复规格关闭；拟议方案又继续加入最终 Change MR 合入等待与远端 Saga，使 Archive 成为比开发主流程更重的子系统。
+
+固定 Comet 0.5.0 `aeb1a6598034e28ce46b8422d4dbd8785e607bd7` 已提供更合适的成熟边界：Classic 在 Archive 前重读 phase、branch、HEAD、Evidence 和授权，Native 只为本地文件变更维护 `prepared → applying → rollback|committed` 事务，finish 负责 commit、push、创建或复用精确 PR 后即完成，不等待远端合入。Repoctopus 应采用这些不变量，并以轻量最终一致性处理多仓 MR 后续变化。
 
 ## What Changes
 
-- 把 Archive 明确为五阶段状态机内部的可恢复工作协议：只读 preflight、Business MR 发布与合入核对、候选规格关闭、最终 Change MR 发布与合入等待、终态提交。
-- 最终 Change MR 可以由 Runtime 创建/恢复，也可以由人完全手工创建并合入；Runtime 必须查询全状态 MR、采用唯一匹配的精确 head/base，并且只有平台权威事实证明该版本已合入且关闭与审计摘要一致时，Run 才进入 `completed`。
-- 引入可持久恢复的 Archive Journal，记录准备、应用、核对、回滚或继续、最终化和清理状态；进程在任何边界中断后先协调外部事实，再决定重试。
-- 在产生 Action Intent 和消耗 attempt 之前执行无副作用 preflight，覆盖凭据可用性、Git 作者、Provider/Store、平台能力、Evidence profile、远端 OID、临时空间和发布策略。
-- 让 Runtime 分配单调 attempt，并使用稳定 Runner identity 领取工作；PID 只表示当前租约活性，不再成为跨进程幂等身份。
-- 保持多仓 Business MR 集合冻结并逐仓核对精确 merge commit；规格关闭仍发生在 Workspace Repository 的隔离检出中，最终 Change MR 仍由人合入。
-- 将 `tasks.md` 的 checkbox 限定为 Build 阶段可完成的工作；Verify、Archive、最终 MR 合入和工作流清理由固定 phase Work、Validator 与退出条件表达，防止通过提前勾选未来事实绕过门禁。
-- 对既有“Run 已完成但最终发布 head 后续改变”的历史记录生成追加式完整性诊断或迁移记录，不重写旧 Receipt。
-- 补齐故障注入、全新检出、跨 Runner、多个业务仓、最终 MR 响应丢失、人工创建后再发现、人工创建并合入后再发现、head 漂移、Windows 清理重试和自举闭环测试。
-- 修正 CLI 帮助等只读探测不得创建 Run 或触发补偿副作用的契约。
+- 将 Archive 收敛为 `preflight → close-specification → publish → complete`：Verify 通过后发布全部 Business MR 和最终 Change MR，核对每个远端分支及 MR 的 repository/base/head/head OID 后形成 `PublicationReceipt`，不等待任一 MR 合入。
+- 规格关闭采用 Comet 式窄事务：只为隔离 checkout 中的 OpenSpec 文件操作保存 prepared/applying/rollback/committed Journal、文件身份和后置条件，不为远端 MR 建立长期 Saga。
+- Push 或 MR 创建响应丢失时，按稳定 repository/head/base/head OID 查询并复用唯一结果；人工创建的精确匹配 MR 可以被采用，Runtime 不自动 merge、force-push、rebase 或删除分支。
+- Change Run 在完整 Publication Receipt 被验证后进入 `completed`；后续 MR 更新、合入或关闭不重开原 Run，也不改变其历史 Receipt。
+- 新增轻量 `consistency reconcile`：在下一次正常任务启动或显式命令时按 Publication Receipt 拉取远端事实；没有变化直接结束，有变化则产生 `no-spec-impact | spec-update-required | uncertain` 结构化审查结果。需要修正规格时启动一个普通的后续 OpenSpec change，而不是修改已归档 Change。
+- 删除 GitHub Webhook Route、签名配置、Platform Event Inbox、Inbox Runner、`runner start`、事件管理命令及 Post-merge 唤醒链；GitHub API Token 继续作为 Delivery Provider 凭据使用。
+- 保留 Build-only Tasks 门禁和 CLI 只读解析修复：Verify、Archive、发布与一致性审查不作为 Tasks checkbox，`--help` 等只读请求在 composition 启动前返回。
 
 ## Capabilities
 
 ### New Capabilities
 
-无。
+- `consistency-reconciliation`: 定义已完成 Change 的按需远端变化检测、规格影响审查和后续 Change 交接。
 
 ### Modified Capabilities
 
-- `change-lifecycle`: 收紧 Archive 内部工作顺序、终态条件、任务阶段边界、attempt 与 Runner identity 语义。
-- `delivery-governance`: 增加发布前无副作用 preflight、Runtime attempt 分配、最终 Change MR 精确合入证据和多仓恢复约束。
-- `specification-authority`: 让规格关闭使用可核对、可恢复的候选事务，避免“已移动目录”被误判成完整关闭。
-- `post-merge-automation`: 增加持久 Journal、跨 Runner 恢复、最终 MR 合入等待、后置核对和延迟清理语义。
+- `change-lifecycle`: 让 Archive 以精确发布完成为终态，不等待 MR 合入；后续一致性审查不重开已完成 Run。
+- `delivery-governance`: 以多仓 Publication Receipt 表达发布完成，保留 push/MR create-or-recover 幂等性并移除 merge wait。
+- `specification-authority`: 使用窄范围可恢复 OpenSpec 关闭事务，并以新的规格 Change 修正后续语义漂移。
+- `post-merge-automation`: 退役合入等待、Post-merge Run/Coordinator 与启动补偿语义。
+- `platform-event-processing`: 退役 Webhook、Event Inbox 和长驻事件 Runner 能力。
+- `runtime-foundation`: 移除平台事件唤醒权威 Run 的入口，保留短生命周期命令与同一 Change Run 权威。
+- `plugin-composition`: 移除 Webhook/Inbox/Runner 插件组合，保留 Delivery Provider 与普通项目组合。
+- `development-telemetry`: 移除平台事件遥测，增加有界的发布与一致性审查结果。
 
 ## Impact
 
-受影响范围包括 Change lifecycle definition/reducer、Workflow Run 与 Action Dispatcher、OpenSpec Provider、Delivery v3 与平台 Adapter、Post-merge Coordinator/Actions、文件状态存储、CLI、OpenTelemetry 映射、项目配置校验、迁移诊断、测试和自举文档。实现借鉴固定 Comet 基线的 archive preflight、事务 Journal、CAS 核对、未知副作用恢复和“归档不等于交付完成”原则，但不复制其单仓、本地 push/PR 或产品外壳；Repoctopus 的 Workspace Store、多业务仓/MR 集合、最终 Change MR 和团队多 Runner 仍是权威边界。第三方代码若复用只限现有已登记来源与许可证边界；本 Change 默认采用设计思想和仓内重建，不新增运行时依赖。
+受影响范围包括 Change lifecycle definition、Archive/Specification/Delivery Service、OpenSpec Provider、Git 平台 Adapter、项目配置 schema、CLI、Cordis composition、Telemetry、文档和测试。现有 `domains/post-merge`、Platform Event/Webhook/Runner 生产链和对应状态文件将被删除，不保留无调用者的兼容外壳；历史归档记录继续只读。实现默认重建 Comet 的行为不变量，不新增运行时依赖；若复制新的上游源码，必须先更新来源清单、摘要和许可证覆盖。

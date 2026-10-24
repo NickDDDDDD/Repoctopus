@@ -1,45 +1,52 @@
 # Spec Delta
 
+## MODIFIED Requirements
+
+### Requirement: Change 生命周期使用固定五阶段
+
+内置 Change lifecycle MUST 按 `Open → Design → Build → Verify → Archive` 的顺序推进，并只允许定义声明的自循环或回退；分支发布、MR 创建和规格关闭 MUST 作为 Archive 工作表达，不得增加独立 Deliver、Post-merge 或 Consistency 阶段。MR 合入状态不得成为 Archive 等待条件或 Change Run 终态前置事实。
+
+#### Scenario: Design 尚未批准
+
+- **WHEN** 当前 Change 缺少有效规划批准且调用方请求开始 Build
+- **THEN** Runtime 拒绝跨阶段并保持 Design，同时返回缺失的校验或人工决定
+
+#### Scenario: Business MR 等待合入
+
+- **WHEN** Archive 已关闭规格并取得覆盖全部业务仓和规格仓的有效 Publication Receipt，但 Business MR 仍待人工合入
+- **THEN** Change Run 进入 `completed`，不等待任一 MR 合入且不创建 Deliver、Post-merge 或 Consistency 阶段
+
 ## ADDED Requirements
 
-### Requirement: Archive 终态绑定最终 Change MR 合入证明
+### Requirement: Archive 终态绑定精确发布证明
 
-Change Run MUST 只在最终 Change MR 的平台权威状态证明其冻结 head 已合入登记目标分支，并且 merge commit、关闭摘要和审计摘要与当前 Archive input 一致后进入 `completed`；创建、更新或发现开放的最终 Change MR 只能使 Run 保持 `phase=archive` 和 `status=waiting`。
+Change Run MUST 只在 Archive 的 OpenSpec 关闭结果通过后置验证，且全部预期业务发布项和最终规格发布项都具有 repository、base、head、published head OID 与唯一 MR identity 的完整 Publication Receipt 后进入 `completed`；MR 的 open、merged 或 closed 状态不得改变该判断。
 
-#### Scenario: 最终 Change MR 已创建但尚未合入
+#### Scenario: MR 已创建但尚未合入
 
-- **WHEN** Runtime 已发布关闭提交并恢复唯一最终 Change MR，但平台报告 MR 仍然开放
-- **THEN** Run 保持 `archive/waiting`，记录稳定等待条件且不生成终态完成事实
+- **WHEN** 全部发布项都精确匹配远端，Business MR 和最终 Change MR 仍处于 open
+- **THEN** Runtime 接受 Publication Receipt 并完成同一 Change Run
 
-#### Scenario: 最终 Change MR 精确版本已合入
+#### Scenario: 发布项缺少精确远端身份
 
-- **WHEN** 平台报告最终 Change MR 已合入，且 head、目标分支、merge commit、关闭摘要和审计摘要均匹配冻结 Archive input
-- **THEN** Runtime 追加终态 Receipt 并把同一 Change Run 转换为 `completed`
+- **WHEN** 任一预期仓库没有可验证的 published head OID 或唯一匹配 MR
+- **THEN** Runtime 保持 `phase=archive` 并阻断完成，返回缺失或歧义的发布项
+
+#### Scenario: 已完成 Change 的 MR 后续变化
+
+- **WHEN** 一致性审查发现业务 MR 的 head 或 state 在 Change Run 完成后变化
+- **THEN** 系统保留原 Run 和 Publication Receipt，只创建独立审查事实或后续 Change，不重开或回退原 Run
 
 ### Requirement: Tracked Task 只表达 Build 阶段可完成工作
 
-Repoctopus MUST 只把无需未来 Verify、Archive、MR 合入或终态事实即可证明完成的官方 Tasks checkbox 映射为 Build Work；跨阶段步骤必须由 lifecycle definition 的固定 Work、Validator、等待条件或退出条件表达，不得要求 Agent 提前勾选未来事实。
+Repoctopus MUST 只把无需未来 Verify、Archive、MR 合入、发布或一致性审查事实即可证明完成的官方 Tasks checkbox 映射为 Build Work；跨阶段步骤必须由 lifecycle definition 的固定 Work、Validator 或非跟踪 Workflow follow-up 表达。
 
-#### Scenario: Tasks 包含归档后才能完成的 checkbox
+#### Scenario: Tasks 包含未来阶段 checkbox
 
-- **WHEN** 规划清单把最终 MR 合入、规格归档或 Archive 清理写成 tracked checkbox
-- **THEN** Design 校验阻断批准并要求把该步骤改为 lifecycle Work 或非跟踪的 Workflow follow-up
+- **WHEN** 规划清单把 Verify 报告、规格归档、MR 发布或后续一致性审查写成 tracked checkbox
+- **THEN** Design 校验阻断批准并要求把该步骤改为生命周期 Work 或非跟踪说明
 
-#### Scenario: Build 任务包含可立即执行的验证
+#### Scenario: Build 任务包含当前可执行验收
 
-- **WHEN** checkbox 的实现和验收命令都能在 Build 阶段当前输入上完成
-- **THEN** Runtime 将其映射为 Build Work，并由对应 Validator 决定是否完成任务
-
-### Requirement: Attempt 与执行身份由 Runtime 稳定管理
-
-Runtime MUST 为每个 Work 的新执行单调分配 attempt，并用项目配置或主机登记的稳定 Runner identity 绑定 claim；进程 PID、CLI invocation 和用户提供的 attempt 编号只能作为租约或诊断信息，不得参与幂等身份或要求用户手动递增。
-
-#### Scenario: 新进程恢复失败 Work
-
-- **WHEN** 原进程退出后同一 Runner identity 或另一受信 Runner 恢复未完成 Work
-- **THEN** Runtime 根据 Journal 与 Receipt 分配或复用合法 attempt，调用方无需提供下一个编号
-
-#### Scenario: 调用方伪造更大的 attempt
-
-- **WHEN** CLI、Agent 或 Adapter 提交未由当前 Run 分配的 attempt 编号
-- **THEN** Runtime 拒绝该 claim 或 Outcome，并保持已持久化的单调序列不变
+- **WHEN** checkbox 的实现与验收命令都能在 Build 阶段当前输入上完成
+- **THEN** Runtime 将其映射为 Build Work，并由对应 Validator 决定是否完成

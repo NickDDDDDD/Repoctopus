@@ -1,248 +1,118 @@
 # Tasks
 
-## 0. 固定问题基线与架构边界
+## 0. 固定简化边界和上游证据
 
-- [ ] 0.1 为 `run start --help` 建立进程外回归测试，证明只读帮助当前会创建 Run，并将目标断言设为零 composition、零 reconcile、零持久写入。
-  **Blocked by:** None
-  **Acceptance:** 定向测试在修复前失败且能定位新增 Run；测试不依赖已有 `.repoctopus` 状态
-  **Requirements:** post-merge-automation#readonly-cli
-- [ ] 0.2 把已发现的旧 Run Receipt head 与最终实际合入 head 不一致构造成去身份化 integrity fixture，并用只读测试证明基线不会改写旧 Receipt。
-  **Blocked by:** 0.1
-  **Acceptance:** fixture 可重现差异且测试核对原文件摘要在审计前后不变
-  **Requirements:** specification-authority#historical-integrity
-- [ ] 0.3 更新 Comet 采用映射，记录 archive preflight、transaction Journal、resume probe、portable archive 的采用与排除边界，并运行来源、摘要和许可证检查。
-  **Blocked by:** 0.2
-  **Acceptance:** `npm run check:provenance` 通过，采用记录不新增未登记运行时依赖
-  **Requirements:** change-lifecycle#archive-terminal, specification-authority#closure-journal
-- [ ] 0.4 扩展架构检查，限定 lifecycle terminal、Archive Journal、attempt 分配、Specification close 和平台 merge proof 的唯一 owner。
-  **Blocked by:** 0.3
-  **Acceptance:** 正向生产组合通过，恶意 fixture 对直接写 Run、Adapter 完成 Change、CLI 自选 attempt 和 Provider 宣称 terminal 分别失败
-  **Requirements:** change-lifecycle#runtime-attempt, post-merge-automation#archive-protocol
+- [ ] 0.1 为当前 Archive 等待 Business MR、Webhook/Inbox/Runner 组合和 `run start --help` 副作用建立去身份化基线测试，记录计划删除或修复的公共行为。
+      **Blocked by:** None
+      **Acceptance:** 测试分别证明当前 Run 会等待 merge、生产组合暴露 webhook runner、帮助请求可能装配 composition；fixture 不依赖开发机已有状态
+      **Requirements:** change-lifecycle#archive-publication-terminal, platform-event-processing#retirement, post-merge-automation#retirement, runtime-foundation#readonly-cli
+- [ ] 0.2 更新 Comet 0.5.0 采用映射，固定 Classic preflight、官方 archive 后置校验、Native 本地 Journal、finish create-or-reuse PR 和 resume probe 的采用/排除边界。
+      **Blocked by:** 0.1
+      **Acceptance:** `npm run check:provenance` 通过；映射明确不采用 merge wait、Comet 产品外壳和单仓状态根，不新增未登记运行时依赖
+      **Requirements:** specification-authority#closure-journal, delivery-governance#publication-receipt
 
-## 1. 交付最终 MR 合入才完成的最小纵切
+## 1. 建立发布即完成的最小纵切
 
-- [ ] 1.1 定义 Archive Work、FinalPublicationReceipt、FinalMergeProof 和 ArchiveCompletionReceipt 的版本化领域契约，并用序列化 golden tests 固定规范摘要。
-  **Blocked by:** 0.4
-  **Acceptance:** 类型、Schema、canonical digest 与无路径/无凭据泄露 contract tests 通过
-  **Requirements:** change-lifecycle#archive-terminal, post-merge-automation#final-head-drift
-- [ ] 1.2 发布新版内置 lifecycle definition，加入 `publish-final → await-final-merge → finalize`，移除“final MR ready 即 completed”的当前版本触发。
-  **Blocked by:** 1.1
-  **Acceptance:** 纯领域测试覆盖 open、closed-unmerged、merged-matched、merged-mismatched 和非法越级，只有 matched 可 completed
-  **Requirements:** change-lifecycle#archive-terminal, post-merge-automation#archive-protocol
-- [ ] 1.3 扩展 Change Run observation/reducer，使最终 MR 创建只进入 `archive/waiting`，FinalMergeProof 才生成 finalize Work。
-  **Blocked by:** 1.2
-  **Acceptance:** reducer 重放与重复 observation 幂等，等待状态不依赖进程或 Fiber
-  **Requirements:** change-lifecycle#archive-terminal
-- [ ] 1.4 扩展公共 ChangeRunProjection/CLI JSON，显示 Archive subwork、最终 MR 等待、冻结 head 和 completion proof freshness。
-  **Blocked by:** 1.3
-  **Acceptance:** projection golden tests 与 CLI protocol tests 对相同 Run 给出同一 phase/status/next action
-  **Requirements:** change-lifecycle#archive-terminal, post-merge-automation#archive-protocol
-- [ ] 1.5 用内存平台 Adapter 建立最小生产 composition 纵切，模拟 Runner 创建或采用人工最终 MR、人工合入和 finalize。
-  **Blocked by:** 1.4
-  **Acceptance:** 集成测试证明 Runner 创建和人工创建均在合入前未完成、精确合入后完成、Runtime 从未调用 merge
-  **Requirements:** change-lifecycle#archive-terminal, delivery-governance#stable-external-action
+- [ ] 1.1 定义版本化 `PublicationReceipt` 与 item contract，绑定 Change/generation、Delivery snapshot、Verify evidence、规格关闭摘要及每个 repository/base/head/published OID/MR/provenance。
+      **Blocked by:** 0.2
+      **Acceptance:** schema、canonical digest、扫描顺序和隐私 contract tests 通过；任一 item 缺失或 OID 不匹配被拒绝
+      **Requirements:** delivery-governance#publication-receipt
+- [ ] 1.2 将内置 lifecycle definition 的 Archive 收敛为 `preflight → specification.close → delivery.publish → archive.complete`，以完整 Publication Receipt 接受 terminal observation。
+      **Blocked by:** 1.1
+      **Acceptance:** 纯领域测试证明 MR open/merged/closed 均不参与终态判断，Receipt 完整时 completed，缺失时 blocked，重复 observation 幂等
+      **Requirements:** change-lifecycle#archive-publication-terminal
+- [ ] 1.3 建立单仓生产 composition tracer：消费当前 Verify evidence，关闭规格、普通 push、创建或复用最终 MR、核对精确 head/base/OID 并完成 Run。
+      **Blocked by:** 1.2
+      **Acceptance:** E2E 不启动监听端口、不查询 merge 状态、不依赖 Post-merge workflow；Runtime 创建和人工创建 MR 均收敛到一个 Publication Receipt
+      **Requirements:** change-lifecycle#archive-publication-terminal, delivery-governance#publication-receipt
 
-## 2. 建立 Archive Journal 与恢复核心
+## 2. 收紧 OpenSpec 本地关闭事务
 
-- [ ] 2.1 定义单一 `ArchiveJournal` schema、步骤状态、history event、version/CAS 和 input binding，并提供严格解码与迁移错误。
-  **Blocked by:** 1.5
-  **Acceptance:** schema tests 拒绝未知版本、缺失 input、倒退状态和跨 Run 数据
-  **Requirements:** post-merge-automation#archive-protocol
-- [ ] 2.2 实现原子 FileArchiveJournalStore、可恢复文件锁和 compare-and-swap 更新，复用现有受审计文件原语。
-  **Blocked by:** 2.1
-  **Acceptance:** 并发、撕裂写、锁过期、取消和重复提交测试通过，Journal 始终可解码
-  **Requirements:** post-merge-automation#archive-protocol
-- [ ] 2.3 实现纯 Journal reducer，强制 `preflight → business publication → business merge → evidence → close candidate → final publication → final merge → finalize` 单调顺序。
-  **Blocked by:** 2.2
-  **Acceptance:** 属性测试覆盖全部合法边、非法跳步、重复事件、supersede 和 blocked/reconcile 分支
-  **Requirements:** post-merge-automation#archive-protocol
-- [ ] 2.4 增加 Archive Coordinator Cordis Service，把 Journal Receipt 转换为 Change Run observation，禁止直接改写 RunStore。
-  **Blocked by:** 2.3
-  **Acceptance:** composition lifecycle 测试覆盖安装、卸载、缺失依赖、取消和有界排空
-  **Requirements:** post-merge-automation#archive-protocol
-- [ ] 2.5 将现有 PostMerge closure Journal 兼容读取映射到新 Journal view，并 fence 新流程对旧聚合状态的双写。
-  **Blocked by:** 2.4
-  **Acceptance:** 旧 fixture 可只读恢复，新 Archive 只写一个 authority，架构测试拒绝第二 owner
-  **Requirements:** post-merge-automation#archive-protocol
+- [ ] 2.1 定义窄范围 `SpecificationClosureJournal`，只包含 prepared/applying/rolling-back/rolled-back/committed、关闭计划、文件 CAS identity 和预期后置条件。
+      **Blocked by:** 1.3
+      **Acceptance:** schema/golden tests 拒绝未知版本、倒退状态、跨 Change 输入和 checkout 外路径
+      **Requirements:** specification-authority#closure-journal
+- [ ] 2.2 在官方 `openspec archive --yes --json` 前持久化 prepared Journal，并在隔离 checkout 中执行；不以退出码或目录移动单独签发 Closure Receipt。
+      **Blocked by:** 2.1
+      **Acceptance:** 命令前、目录移动后和 Receipt 前故障注入均留下可解释状态，开发者工作树摘要不变
+      **Requirements:** specification-authority#closure-journal, specification-authority#closure-candidate
+- [ ] 2.3 验证唯一归档、活动 change 消失、Purpose、受影响规格、全 Store strict 和允许 diff；按 CAS 安全继续、回滚或进入人工修复。
+      **Blocked by:** 2.2
+      **Acceptance:** 每个后置条件有独立失败 fixture；相同计划重放只产生一个逻辑归档和 Closure Receipt，并发修改不被覆盖
+      **Requirements:** specification-authority#closure-journal, specification-authority#closure-candidate
 
-## 3. 前置检查、Attempt 和 CLI 安全
+## 3. 扩展多仓 Finish 与响应丢失恢复
 
-- [ ] 3.1 定义 `ArchivePreflightRequest/Receipt` 及诊断分类，覆盖 credential presence、Git author、Store/Provider、平台能力、Evidence profile、远端 OID、临时根和发布策略。
-  **Blocked by:** 2.5
-  **Acceptance:** contract tests 证明 Receipt 不含凭据值、绝对临时路径或无限错误正文
-  **Requirements:** delivery-governance#side-effect-preflight
-- [ ] 3.2 实现只读 preflight Service 和各 Provider capability probe，并保证配置缺失时零 Action Intent、零 attempt、零外部 mutation。
-  **Blocked by:** 3.1
-  **Acceptance:** 缺 Token、缺作者、Store 错指、profile 缺失、平台不支持与暂时故障测试分别得到正确诊断
-  **Requirements:** delivery-governance#side-effect-preflight
-- [ ] 3.3 重构 CLI 命令解析，在 boot composition 前处理 help/version/未知参数/必需参数并提供每个子命令用法。
-  **Blocked by:** 3.2
-  **Acceptance:** 任务 0.1 回归转绿，并覆盖 `run start --help`、缺少 target、未知 flag 和正常 Change start
-  **Requirements:** post-merge-automation#readonly-cli
-- [ ] 3.4 在 Action Store/Dispatcher 实现 Runtime 原子 attempt 分配、已有 attempt 恢复和单调序列。
-  **Blocked by:** 3.3
-  **Acceptance:** 并发 claim、进程崩溃、Receipt 响应丢失、旧 Outcome 和伪造更大 attempt 测试通过
-  **Requirements:** change-lifecycle#runtime-attempt
-- [ ] 3.5 用配置或本机 registry 的稳定 Runner identity 替换 `cli:<PID>`，把 PID、启动时间和 lease deadline 降为 session 元数据。
-  **Blocked by:** 3.4
-  **Acceptance:** 不同 PID 的同一 Runner 可恢复，另一 Runner 可在合法 lease 边界接管，审计仍能区分执行主体
-  **Requirements:** change-lifecycle#runtime-attempt
-- [ ] 3.6 更新公共 `run work-claim`、`archive-publish` 和相关命令，使调用方不需要也不能创建任意 attempt。
-  **Blocked by:** 3.5
-  **Acceptance:** CLI process tests 证明默认自动分配、兼容参数只能引用已有 attempt、帮助文档与实现一致
-  **Requirements:** change-lifecycle#runtime-attempt, delivery-governance#stable-external-action
+- [ ] 3.1 将单仓 tracer 扩展为完整 Delivery snapshot：逐仓普通 push、MR create-or-recover/create-or-adopt，并为业务项和规格项生成顺序无关的 Publication Receipt。
+      **Blocked by:** 2.3
+      **Acceptance:** 默认一个及显式多个 Business MR 均通过；同仓多个 MR 保留独立 item；不等待任何 MR merge
+      **Requirements:** delivery-governance#publication-receipt, delivery-governance#stable-publication
+- [ ] 3.2 为 push 和 MR 创建的未知结果实现 observe-before-retry，采用唯一 repository/head/base/head OID 匹配并拒绝零歧义之外的远端状态。
+      **Blocked by:** 3.1
+      **Acceptance:** 每个响应丢失点最多形成一个逻辑远端结果；人工 MR 记录 `human-created` 且不伪造 Action Intent
+      **Requirements:** delivery-governance#stable-publication
+- [ ] 3.3 在第二仓失败、进程退出和不同短生命周期执行者恢复时从首个未确认 item 继续，保持已发布项不可回滚且禁止 force-push/rebase/delete/auto-merge。
+      **Blocked by:** 3.2
+      **Acceptance:** 多仓故障矩阵无重复逻辑副作用；失败诊断精确指向 item，恢复不依赖原开发者或 Runner identity
+      **Requirements:** delivery-governance#publication-receipt, delivery-governance#stable-publication
 
-## 4. 多仓 Business MR 发布与精确合入恢复
+## 4. 建立非阻塞最终一致性审查
 
-- [ ] 4.1 规范化 Archive input，使每个 Business MR 绑定仓库、head/base、平台身份、批准快照、发布 head、merge commit 和核对时间。
-  **Blocked by:** 3.6
-  **Acceptance:** digest tests 对扫描顺序稳定，对任一 MR 增删、替换、分支或 commit 变化敏感
-  **Requirements:** delivery-governance#multi-repo-proof
-- [ ] 4.2 把 Business push 与 MR create-or-recover 的 Intent/Receipt 逐项写入 Archive Journal，并从首个未确认动作恢复。
-  **Blocked by:** 4.1
-  **Acceptance:** 两仓发布中第二仓失败后恢复不会重复第一仓逻辑副作用，且明确不宣称跨仓回滚
-  **Requirements:** delivery-governance#stable-external-action, delivery-governance#multi-repo-proof
-- [ ] 4.3 将 `await-business-merge` 的 webhook、主动 refresh 和启动补偿统一为平台权威查询与同一 observation。
-  **Blocked by:** 4.2
-  **Acceptance:** 三种入口对相同 MR 状态产生相同 Journal/Run 投影且不创建独立 Post-merge Run
-  **Requirements:** post-merge-automation#archive-protocol, delivery-governance#multi-repo-proof
-- [ ] 4.4 让精确 merge checkout 与 post-merge Evidence 绑定逐 MR proof 和每仓最终检出 commit，并在 target drift 时保持冻结输入。
-  **Blocked by:** 4.3
-  **Acceptance:** 多仓、同仓多个 MR、目标分支继续前进和 merge commit 漂移测试通过
-  **Requirements:** delivery-governance#multi-repo-proof
-- [ ] 4.5 增加不同 Runner 的响应丢失与未知副作用恢复测试，要求先查询远端再复用、重试或 fail-closed。
-  **Blocked by:** 4.4
-  **Acceptance:** push/MR 创建在每个故障点注入中至多产生一个逻辑结果，非等价远端状态不被覆盖
-  **Requirements:** delivery-governance#stable-external-action, delivery-governance#multi-repo-proof
+- [ ] 4.1 定义 `ConsistencyReviewRequest/Receipt`，按 Publication Receipt 比较业务 MR 当前 head/state，输出 `no-spec-impact | spec-update-required | uncertain` 和有界证据。
+      **Blocked by:** 3.3
+      **Acceptance:** contract tests 证明结果不改原 Run/Receipt，不包含 MR body、完整 diff、凭据或绝对路径，并可关联后续 Change
+      **Requirements:** consistency-reconciliation#pull-reconcile, consistency-reconciliation#impact-review
+- [ ] 4.2 实现显式 `change reconcile [--change]` 与 `run start` 参数解析后的有界 Workspace reconcile；平台故障只产生诊断，不阻断新任务。
+      **Blocked by:** 4.1
+      **Acceptance:** head 未变为 no-op；命令执行后退出且无 Timer/端口；`--help` 不 boot composition；网络失败不创建等待 Run
+      **Requirements:** consistency-reconciliation#pull-reconcile, runtime-foundation#readonly-cli
+- [ ] 4.3 增加窄范围 Consistency Review Service，通过现有 Skill Registry 固定解析并快照 `to-spec`，执行语义影响审查；把 `uncertain` 或 `spec-update-required` 交给可信人工决定，不新增 lifecycle phase/Work，也不得仅按路径自动宣称无影响。
+      **Blocked by:** 4.2
+      **Acceptance:** 实现/测试/流水线变化、API/配置/权限变化及混合歧义 fixture 产生预期 verdict 和证据映射
+      **Requirements:** consistency-reconciliation#impact-review
+- [ ] 4.4 对确认需要修正的结果启动普通后续 OpenSpec change，引用原 Change、Publication Receipt 和受影响 MR；不得编辑归档目录或重开原 Run。
+      **Blocked by:** 4.3
+      **Acceptance:** 后续 Change 经过标准 Open/Design 门禁，原 Run trajectory 和归档摘要在前后保持不变
+      **Requirements:** consistency-reconciliation#follow-up-change, specification-authority#semantic-compensation
 
-## 5. OpenSpec 关闭事务与候选验证
+## 5. 删除 Webhook、Event Inbox、Runner 和 Post-merge 产品链
 
-- [ ] 5.1 定义 `SpecificationClosureJournal` 的 prepared/applying/reconciling/rollback/committed 状态、文件 CAS identity 和预期后置条件。
-  **Blocked by:** 4.5
-  **Acceptance:** schema/golden tests 证明相同 plan 可重算，未知或倒退状态被拒绝
-  **Requirements:** specification-authority#closure-journal
-- [ ] 5.2 在官方 archive 前捕获活动 change、预期归档、受影响主规格和允许文件的 before manifest，并先持久化 prepared Journal。
-  **Blocked by:** 5.1
-  **Acceptance:** 故障注入证明官方命令执行前总存在可恢复计划，输入漂移时零规格副作用
-  **Requirements:** specification-authority#closure-journal
-- [ ] 5.3 包装官方 OpenSpec `archive --yes --json`，记录 applying 结果且不以退出码或活动目录消失直接签发 Closure Result。
-  **Blocked by:** 5.2
-  **Acceptance:** 目录已移动但进程中断的 fixture 可被下一次恢复识别，不触发第二次盲 archive
-  **Requirements:** specification-authority#closure-candidate, specification-authority#closure-journal
-- [ ] 5.4 实现唯一归档、活动 change 消失、Purpose、受影响主规格、全 Store 严格校验和允许 diff 的后置 Validator。
-  **Blocked by:** 5.3
-  **Acceptance:** 每项条件各有失败 fixture，全部满足时才产生相同 planDigest 的候选 Closure Result
-  **Requirements:** specification-authority#closure-candidate
-- [ ] 5.5 实现 CAS 安全的继续/回滚/人工修复决策；并发文件变化时禁止覆盖，隔离 checkout 外不得写入。
-  **Blocked by:** 5.4
-  **Acceptance:** partial archive 可继续或回滚，CAS mismatch 返回可定位 blocker，开发者工作树摘要保持不变
-  **Requirements:** specification-authority#closure-journal
-- [ ] 5.6 把候选 Closure Result、路径 audit 和关闭 commit 接入 Archive Journal，保持 Specification Service 兼容但移除其终态含义。
-  **Blocked by:** 5.5
-  **Acceptance:** Provider contract tests 与 production composition 证明 close 只完成候选 Work，不直接 completed Run
-  **Requirements:** specification-authority#closure-candidate, post-merge-automation#archive-protocol
-- [ ] 5.7 建立 OpenSpec archive 全边界故障矩阵，覆盖响应丢失、Receipt 写入前中断和相同 plan 重放。
-  **Blocked by:** 5.6
-  **Acceptance:** 每个边界恢复后恰好一个归档目录、严格有效主规格和一个逻辑 Closure Result
-  **Requirements:** specification-authority#closure-candidate, specification-authority#closure-journal
+- [ ] 5.1 删除 `platformEvents`、webhook secret、Inbox Runner 与 `postMerge.runnerIdentity` 配置，保留 GitHub API 凭据于 Delivery Provider，并提供旧字段的明确删除诊断。
+      **Blocked by:** 4.4
+      **Acceptance:** 新示例和自举配置无监听/lease/poll 参数；旧配置 fail-fast 指向替代的 `change reconcile`，不静默忽略
+      **Requirements:** platform-event-processing#retirement, plugin-composition#event-stack-retirement
+- [ ] 5.2 删除 `runner start`、`event status/replay/retry`、HTTP Webhook Route、验签 Adapter、Event Inbox Store/Service/Runner 及其生产插件和状态写入口。
+      **Blocked by:** 5.1
+      **Acceptance:** 公共 CLI/production catalog 不再暴露相关入口；架构检查和依赖扫描找不到运行时引用；普通项目 composition 可启动
+      **Requirements:** platform-event-processing#retirement, runtime-foundation#short-lived-runtime, plugin-composition#event-stack-retirement
+- [ ] 5.3 删除 Post-merge workflow、Coordinator/Actions、exact-merge checkout、Evidence profile 和启动补偿，把仍需的 publish/closure 原语收归 Archive、Delivery 与 Specification owner。
+      **Blocked by:** 5.2
+      **Acceptance:** 生产代码不存在独立 Post-merge Run/状态机/Telemetry；Archive tracer 与多仓恢复测试继续通过
+      **Requirements:** post-merge-automation#retirement, runtime-foundation#short-lived-runtime
+- [ ] 5.4 删除平台事件与 Post-merge 专用测试、文档和 OTel 属性，新增负向架构测试防止无当前 Change 的 webhook/daemon 基础设施重新进入核心组合。
+      **Blocked by:** 5.3
+      **Acceptance:** 文档只描述短生命周期 publish/reconcile；Telemetry 仅包含有界 Publication/Consistency 字段；负向 fixture 能拒绝新监听入口
+      **Requirements:** development-telemetry#publication-consistency, plugin-composition#event-stack-retirement
 
-## 6. 最终 Change MR 发布、等待与终态证明
+## 6. 前置流程门禁与完整验证
 
-- [ ] 6.1 把关闭候选普通 push 和最终 MR create-or-recover/create-or-adopt 拆成 `publish-final` Work，并冻结 repository/head/base、closure plan 和 audit digest。
-  **Blocked by:** 5.7
-  **Acceptance:** 发布测试覆盖非强制 push、远端 OID fence、MR 响应丢失、人工创建的 open/merged MR、源分支删除和唯一 tuple 恢复
-  **Requirements:** delivery-governance#stable-external-action, post-merge-automation#final-head-drift
-- [ ] 6.2 实现 `await-final-merge` 全状态平台发现与刷新，对 open、closed-unmerged、merged 和查询故障产生稳定采用、等待或 blocker。
-  **Blocked by:** 6.1
-  **Acceptance:** Agent 创建、人工创建、人工已合入三种来源从 webhook、reconcile 和显式 refresh 得到相同 Run projection
-  **Requirements:** change-lifecycle#archive-terminal, post-merge-automation#final-head-drift
-- [ ] 6.3 实现 final head/base 漂移的 publication supersede、新 attempt 和候选归档重新严格验证。
-  **Blocked by:** 6.2
-  **Acceptance:** 等待中新增提交不会沿用旧 Receipt；等价重新验证可继续，越界差异 fail-closed
-  **Requirements:** post-merge-automation#final-head-drift, change-lifecycle#runtime-attempt
-- [ ] 6.4 实现 `FinalMergeProof`，绑定 MR identity、冻结 head、base、merge commit、closure/audit digest，并核对目标远端。
-  **Blocked by:** 6.3
-  **Acceptance:** 精确匹配、错误 head、错误 base、缺 merge commit 和目标远端不包含 commit 的测试分别通过/失败
-  **Requirements:** change-lifecycle#archive-terminal, post-merge-automation#final-head-drift
-- [ ] 6.5 实现 `archive.finalize` 和 ArchiveCompletionReceipt，只有有效 FinalMergeProof 才接受 terminal observation。
-  **Blocked by:** 6.4
-  **Acceptance:** 领域、Service 和进程外测试证明 MR ready 不能完成、精确 merged 可以完成、重复 finalize 幂等
-  **Requirements:** change-lifecycle#archive-terminal
-- [ ] 6.6 删除或 fence `completeChangeRunArchive` 中“发布 Receipt 后立即 complete”的路径，并保留旧 definition 的只读恢复。
-  **Blocked by:** 6.5
-  **Acceptance:** 架构测试找不到新生产调用，旧完成历史仍可查询且不会重放远端动作
-  **Requirements:** change-lifecycle#archive-terminal, post-merge-automation#archive-protocol
-
-## 7. Task 阶段门禁、清理与可观测性
-
-- [ ] 7.1 在 Design validator 拒绝 Workflow follow-up checkbox 和依赖未来 Verify/Archive/MR/terminal 事实的 tracked task，并输出可定位修复建议。
-  **Blocked by:** 6.6
-  **Acceptance:** 正反 Tasks fixtures 覆盖 Build 内验收、归档后事实、最终 MR 合入和自然语言歧义
-  **Requirements:** change-lifecycle#build-only-tasks
-- [ ] 7.2 在 planning review 投影中展示每个 task 的 Build scope、验收、依赖和 Requirement mappings，纳入可信 Design 决策内容。
-  **Blocked by:** 7.1
-  **Acceptance:** proposalHash 对语义变化敏感，对 checkbox 状态和格式噪声稳定
-  **Requirements:** change-lifecycle#build-only-tasks
-- [ ] 7.3 实现 managed resource registry、Windows 有界退避和 `cleanup_pending`，只登记并清理精确受管路径。
-  **Blocked by:** 7.2
-  **Acceptance:** EBUSY/共享冲突测试保留主结果、登记待清理资源且不触碰未登记目录
-  **Requirements:** post-merge-automation#managed-cleanup
-- [ ] 7.4 将精确 GC 接入 Runner 启动和显式 reconcile，并为关键/非关键资源定义 finalize 守卫。
-  **Blocked by:** 7.3
-  **Acceptance:** 过期受管资源可由另一 Runner 清理，活动租约和 Workspace/仓库根永不删除
-  **Requirements:** post-merge-automation#managed-cleanup
-- [ ] 7.5 扩展 accepted trajectory、OTLP 和 Dashboard 投影，统一报告 Archive Work、attempt、最终 MR 等待、supersede、merge proof 和 cleanup 状态。
-  **Blocked by:** 7.4
-  **Acceptance:** telemetry golden fixtures 证明本地 Desktop 与 SigNoz 接收同一事件语义且不泄露路径、正文或凭据
-  **Requirements:** post-merge-automation#archive-protocol, post-merge-automation#managed-cleanup
-
-## 8. Definition 迁移与历史完整性
-
-- [ ] 8.1 让 lifecycle registry 同时保留历史 definition snapshot 和新默认版本，禁止相同版本内容静默改变。
-  **Blocked by:** 7.5
-  **Acceptance:** 恢复测试区分 same、compatible migration、completed history 和 migration required
-  **Requirements:** change-lifecycle#archive-terminal
-- [ ] 8.2 实现按 phase 的只读迁移 planner，验证 planning/task/evidence/Archive 外部事实能否唯一映射到新协议。
-  **Blocked by:** 8.1
-  **Acceptance:** Open/Design、Build/Verify、Archive 未发布、Archive 部分发布、歧义和 completed fixtures 全部输出预期计划且零副作用
-  **Requirements:** post-merge-automation#archive-protocol, specification-authority#historical-integrity
-- [ ] 8.3 实现受控 migration apply、旧 definition 审计链接和崩溃恢复，禁止两套 coordinator 双写。
-  **Blocked by:** 8.2
-  **Acceptance:** 在每个持久化边界注入崩溃后重复 apply 幂等，只有一个活动 Archive authority
-  **Requirements:** post-merge-automation#archive-protocol
-- [ ] 8.4 实现 append-only integrity audit，识别旧 terminal Receipt 与后来发布/合入 head 不一致并记录处置状态。
-  **Blocked by:** 8.3
-  **Acceptance:** 任务 0.2 fixture 产生 finding，原 Receipt 摘要不变，相同审计不追加重复 finding
-  **Requirements:** specification-authority#historical-integrity
-- [ ] 8.5 用当前 Change Run 的去身份化 snapshot 演练从旧 definition 迁移到新协议，验证规划批准和已完成 Build facts 的保留边界。
-  **Blocked by:** 8.4
-  **Acceptance:** rehearsal 在临时状态根完成且不修改真实 Run，输出唯一迁移计划和新 Archive next action
-  **Requirements:** change-lifecycle#archive-terminal, post-merge-automation#archive-protocol
-
-## 9. 文档和完整集成验证
-
-- [ ] 9.1 更新 Runtime、Specification、Delivery、Post-merge、CLI、Runner、Telemetry 和自举文档，明确最终 MR 合入终态、preflight、attempt、Journal、恢复和清理语义。
-  **Blocked by:** 8.5
-  **Acceptance:** 文档命令冒烟测试使用公共 CLI/production composition，且全文不再把 final MR ready 描述为 completed
-  **Requirements:** change-lifecycle#archive-terminal, delivery-governance#side-effect-preflight, specification-authority#closure-journal
-- [ ] 9.2 新增 fresh clone/no `node_modules` E2E，验证显式 Store、依赖自举、公共 CLI 和 production composition 完成模拟 Archive 协议。
-  **Blocked by:** 9.1
-  **Acceptance:** 隔离 clone 中测试通过，未使用测试旁路或机器默认 Store
-  **Requirements:** specification-authority#closure-candidate, post-merge-automation#archive-protocol
-- [ ] 9.3 运行多仓、跨 Runner、平台响应丢失、OpenSpec 中断、final head drift 和 Windows cleanup 的统一故障矩阵。
-  **Blocked by:** 9.2
-  **Acceptance:** 每个边界都有 Intent/Receipt/reconcile 证明，无重复逻辑副作用、越界写入或错误 terminal
-  **Requirements:** delivery-governance#stable-external-action, delivery-governance#multi-repo-proof, post-merge-automation#managed-cleanup
-- [ ] 9.4 运行领域、contract、Provider、CLI、migration、architecture、telemetry、package 和 tracer 套件并修复发现的问题。
-  **Blocked by:** 9.3
-  **Acceptance:** `npm run verify`、`npm run test:package-e2e`、`npm run test:tracer-e2e` 和生产依赖审计全部通过
-  **Requirements:** change-lifecycle#archive-terminal, specification-authority#closure-candidate, post-merge-automation#archive-protocol
+- [ ] 6.1 在 Design validator 拒绝依赖 Verify、Archive、MR 合入或一致性审查结果的 tracked checkbox，并在规划投影展示 Build scope、验收与 Requirement mappings。
+      **Blocked by:** 5.4
+      **Acceptance:** 正反 Tasks fixture 覆盖 Build 内验收和 future-phase 事实；proposal hash 对语义变化敏感、对 checkbox 状态噪声稳定
+      **Requirements:** change-lifecycle#build-only-tasks
+- [ ] 6.2 修正 CLI boot 顺序，使 help/version/未知参数/缺失参数在 composition 前完成；将 0.1 基线转为零 reconcile、零 Run、零持久写入。
+      **Blocked by:** 6.1
+      **Acceptance:** 公共进程外测试覆盖 `run start --help`、`change reconcile --help`、缺失 change、未知 flag 和正常启动
+      **Requirements:** runtime-foundation#readonly-cli
+- [ ] 6.3 更新 Runtime、Specification、Delivery、CLI、Desktop/OTLP、自举和上游采用文档，运行 OpenSpec strict、架构、来源、单元、E2E、package、tracer 和生产依赖验证。
+      **Blocked by:** 6.2
+      **Acceptance:** `openspec validate harden-archive-protocol --strict --no-interactive`、Repoctopus Provider validation、`npm run check:provenance`、`npm run verify`、`npm run test:package-e2e`、`npm run test:tracer-e2e` 与生产依赖审计全部通过
+      **Requirements:** change-lifecycle#archive-publication-terminal, delivery-governance#publication-receipt, consistency-reconciliation#pull-reconcile
 
 ## Workflow follow-up
 
-- 四类规划产物严格校验并经可信用户批准后才进入 Build；当前 Change 分支保持公开，每次 commit 立即 push。
-- Build 完成后由 Change Run 的 Verify phase 生成正式 Evidence 与验证报告；这些不是 tracked task。
-- 原则上创建一个 Business MR；只有存在独立仓库或可验证拆分理由时登记多个，并冻结完整集合。
-- Business MR 全部由人合入后，同一 Change Run 运行新 Archive 协议并关闭规格；最终 Change MR 可以由 Runtime 创建/恢复，也可以由人手工 push、创建和合入，Runtime 只采用精确匹配的远端事实。
-- 最终 Change MR 由人合入后，Runtime 核对精确 FinalMergeProof 并 finalize；此前 Run 必须保持 `archive/waiting`。
-- 归档后只清理 registry 中的受管临时资源；保留正式 Evidence、Receipt、Journal 和历史完整性 finding。
+- 四类 OpenSpec 产物 strict 校验并经可信用户批准后才进入 Build；当前 Change 分支保持公开，每次 commit 立即 push。
+- Build 完成后由 Verify phase 生成正式 Evidence 与验证报告；这些不是 tracked task。
+- Archive 发布全部业务 MR 和最终规格 MR，完整 Publication Receipt 验证后完成 Run，不等待任何 MR 合入。
+- 后续远端变化由下一次任务或显式 `change reconcile` 拉取；需要修正规格时建立新的普通 OpenSpec change。
+- 清理只处理本次命令明确创建的隔离 checkout，并在同一命令 `finally` 中有界重试；不为此建立通用资源注册表或 daemon GC。

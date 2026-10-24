@@ -1,64 +1,69 @@
 # Spec Delta
 
-## ADDED Requirements
+## REMOVED Requirements
 
-### Requirement: Archive 使用单一持久工作协议
+### Requirement: 全部相关业务 MR 合入后才启动收尾
 
-同一 Change Run 的 Archive MUST 按 `preflight → publish-business → await-business-merge → verify-merged → close-candidate → publish-final → await-final-merge → finalize` 的受保护顺序推进，并为每项 Work 保存输入摘要、Intent、Receipt、后置核对和恢复状态；不得以旧 Delivery 聚合状态、临时目录存在或单次命令成功替代该协议。
+**Reason**: Archive 以精确发布完成为边界，不等待 Business MR 合入。
 
-#### Scenario: Runner 在任意边界重启
+**Migration**: Verify 后直接关闭规格并发布全部 MR；后续变化由 consistency reconcile 处理。
 
-- **WHEN** Archive 在某项 Work 保存 Intent 后、Receipt 前或后置核对前中断
-- **THEN** 新 Runner 从 Journal 和外部权威事实确定首个未确认边界，并继续同一 Change Run 而不重放已确认副作用
+### Requirement: 合入后验证绑定精确 merge commit
 
-#### Scenario: 步骤请求越过顺序
+**Reason**: 新流程不构造合入后 checkout 或以 merge commit 作为关闭输入。
 
-- **WHEN** 调用方在业务 MR 未全部核对合入前请求规格关闭，或在关闭候选未发布前请求最终 MR
-- **THEN** Runtime 拒绝该 Work 并保持当前 Archive 状态，返回缺失的前置事实
+**Migration**: Archive 绑定已验证的 Delivery snapshot 与 published head OID。
 
-### Requirement: 最终 Change MR head 漂移使发布证明失效
+### Requirement: 规格同步和关闭由当前 Provider 执行
 
-Repoctopus MUST 在最终 Change MR 创建、恢复或采用人工 MR 时冻结精确 head，并在等待和最终化时重新读取平台权威状态；采用操作必须查询开放、关闭和已合入状态，不得要求 MR 由 Agent 或 Runner 创建。MR head、目标分支或关闭提交发生变化时，旧 publication Receipt 必须标记为 superseded，并通过新 attempt 重新验证和发布，不得沿用旧合入授权或完成事实。
+**Reason**: 该职责移入 Specification Authority 的 Archive 关闭事务，不再属于 Post-merge 产品语义。
 
-#### Scenario: 最终 MR 等待期间分支新增提交
+**Migration**: 使用 `SpecificationClosureJournal` 和当前 Provider。
 
-- **WHEN** 平台报告最终 Change MR 当前 head 不再等于 publication Receipt 绑定的关闭提交
-- **THEN** Run 保持 `archive/blocked` 或返回可恢复验证 Work，使旧 Receipt 失效且不把后续合入误认为原候选已通过
+### Requirement: 机器收尾修改受路径和语义双重限制
 
-#### Scenario: 最终 MR 合入事实精确匹配
+**Reason**: 路径与语义 Guardrail 保留在 Archive/Specification owner，独立 Post-merge 能力退役。
 
-- **WHEN** 平台报告冻结 head 已合入登记目标分支，并返回可核对的 merge commit
-- **THEN** Runtime 绑定 MR identity、head、base、merge commit、关闭摘要和审计摘要后才允许 finalize
+**Migration**: Closure Receipt 与 Publication Receipt 继续绑定允许差异。
 
-#### Scenario: 已合入的人工 MR 被事后采用
+### Requirement: Post-merge Run 可以幂等恢复
 
-- **WHEN** Runner 首次观察最终 MR 时它已经由人创建并合入，但平台仍能返回匹配冻结 head/base 的不可变 MR 与 merge facts
-- **THEN** Runtime 记录 adopted publication 与 merge proof，完成相同核对后继续，不要求重新创建 MR 或原 Agent 在线
+**Reason**: 产品只保留同一 Change Run 的 Archive Work，不再存在 Post-merge Run 或 Coordinator。
 
-### Requirement: 临时资源清理不覆盖主结果
+**Migration**: 本地关闭由 Closure Journal 恢复，远端发布由稳定 Publication item 恢复。
 
-Archive MUST 持久化其创建的临时 checkout、目录、锁和其他受管资源；主协议成功后清理失败必须记录为 `cleanup_pending` 并由当前恢复、下一次启动或显式 reconcile 重试，不得把已证明的发布或合入结果改写为未知，也不得把未清理资源视为终态协议完成的替代证据。
+### Requirement: 无需开发者返回本机执行收尾
 
-#### Scenario: Windows 文件句柄延迟释放
+**Reason**: 收尾不再等待 merge；任一短生命周期执行者都可按持久 Run 和发布身份继续 Archive。
 
-- **WHEN** 关闭 checkout 后删除受管临时目录返回共享冲突或 `EBUSY`
-- **THEN** Runtime 使用有界退避重试，仍失败时登记 `cleanup_pending`，保留主结果并允许后续 GC 精确重试该资源
+**Migration**: 不从动作身份推导 Change owner。
 
-#### Scenario: 后续 Runner 执行 GC
+### Requirement: 开发 Run 启动前执行一次性补偿
 
-- **WHEN** 新 Runner 启动或维护者执行 reconcile，发现已登记且租约过期的 `cleanup_pending` 资源
-- **THEN** 系统只清理受管清单中的精确路径，成功后追加清理 Receipt，不扫描或删除未登记目录
+**Reason**: 不再补偿 Post-merge 等待；启动前仅执行非阻塞 consistency reconcile。
 
-### Requirement: 只读 CLI 命令不得推进生命周期
+**Migration**: 旧 `post-merge reconcile` 替换为 `change reconcile`。
 
-帮助、版本、状态、inspect、doctor 和其他声明为只读的 CLI 请求 MUST 在解析阶段阻止 Runtime 启动、副作用协调和 Run 创建；未知或缺失参数必须返回用法诊断，不得回退到默认 workflow 执行。
+### Requirement: 多个 Runner 的远端结果安全收敛
 
-#### Scenario: 请求子命令帮助
+**Reason**: 长驻 Runner 退役；远端幂等性由短生命周期 Publication Intent/Receipt 的稳定身份保证。
 
-- **WHEN** 用户执行 `run start --help`
-- **THEN** CLI 只输出该子命令的用法且不创建 Run、不执行 Post-merge reconcile、不写持久状态
+**Migration**: observe-before-retry 保留，不保留 Runner lease/ownership 语义。
 
-#### Scenario: Change 参数缺失
+### Requirement: 规格关闭发布后创建最终 Change MR
 
-- **WHEN** 用户意图启动 Change Run 但缺少受保护的必需参数
-- **THEN** CLI 在装配 Project composition 前返回参数错误，不启动默认 foundation workflow
+**Reason**: 职责转移到 Delivery Governance 的 Publication Receipt，不再属于 Post-merge capability。
+
+**Migration**: `delivery.publish` 在规格关闭后创建或采用最终 MR，并立即完成 Archive。
+
+### Requirement: 新项目配置只生成 v3 收尾发布策略
+
+**Reason**: Post-merge 配置与版本化收尾策略整体删除。
+
+**Migration**: 项目只配置普通 Delivery Provider、仓库和发布策略。
+
+### Requirement: 已登记 Business MR 集合在收尾期间冻结
+
+**Reason**: Business 发布集合继续由批准 Delivery snapshot 冻结，但没有“收尾等待期”。
+
+**Migration**: Publication Receipt 绑定 snapshot 中的完整 item 集合。
