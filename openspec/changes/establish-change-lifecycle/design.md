@@ -206,6 +206,8 @@ Build 的局部 Validator 不替代 Verify。进入 Verify 时冻结 verificatio
 
 Gate 不满足、Artifact 过期或代码输入变化时，Run 追加 invalidation 并回到 Build。通过后生成正式验证报告并将其 artifact identity 绑定到 Archive 输入。Archive 中 merge commit 验证是同一 lifecycle 的后置 Evidence，可因平台产生的新 commit 再次执行，但不能用目标分支当前 HEAD 替代权威 merge commit。
 
+Archive 的后置 Evidence Profile 来自冻结 composition 中的 `postMerge.evidenceProfile`，不得复用 Run 启动时服务于 Verify phase 的 `verificationProfileId`。精确 merge commit 检出必须先按 lockfile 自举依赖，再运行该 Profile；依赖目录和构建输出保持 Git ignored，不能改变 checkout fingerprint。受管临时检出清理在 Windows 上允许有限重试，且清理诊断不得冒充或覆盖 Evidence Gate 的业务结果。
+
 ### 11. Delivery 和 Post-merge 降为 Archive 的执行能力
 
 Archive 仍保留现有成熟能力：公开 Change 分支、默认一个且允许显式多个 Business MR、多仓发布计划、非强制 push、平台 MR create/recover、完整集合冻结、精确 merge commit、路径审计、规格同步和最终 Change MR。变化在于所有步骤都属于同一 Change Run：

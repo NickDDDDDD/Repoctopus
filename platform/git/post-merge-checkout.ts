@@ -624,6 +624,11 @@ export class GitPostMergeCheckout
       }
       throw error;
     }
-    await rm(runRoot, { recursive: true, force: false });
+    await rm(runRoot, {
+      recursive: true,
+      force: false,
+      maxRetries: process.platform === 'win32' ? 10 : 2,
+      retryDelay: 200,
+    });
   }
 }

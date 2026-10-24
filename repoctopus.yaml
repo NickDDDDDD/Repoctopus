@@ -34,9 +34,16 @@ profiles:
         timeoutMs: 60000
   - id: post-merge
     nodes:
+      - id: install-dependencies
+        type: command
+        repository: repoctopus
+        executable: npm
+        args: [ci]
+        timeoutMs: 300000
       - id: verify-merged-code
         type: command
         repository: repoctopus
+        dependsOn: [install-dependencies]
         executable: npm
         args: [run, verify]
         timeoutMs: 300000
