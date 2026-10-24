@@ -227,6 +227,8 @@ Delivery 可以保留为计划、Intent/Receipt 和兼容读取模型，但不�
 
 Change Run 的最终 Change 发布必须直接验证其冻结的 Archive publication snapshot、完整 Action Receipts 与 authoritative merge evidence，不能要求先伪造或恢复一个并行的 Delivery aggregate。旧 Delivery 状态入口仅保留给兼容读取/迁移路径；closure Journal 负责最终发布副作用的 Intent/Receipt 与幂等恢复。
 
+真实 CLI 进程与多仓 Git 隔离检出的集成测试在全套件并行、Windows 文件系统和 CI 资源竞争下使用独立且有界的较长 timeout；纯领域测试继续保留短预算。timeout 只覆盖已确认可独立快速通过、在并发负载下出现墙钟抖动的纵切，不改变失败断言或把 Gate 降级为非阻断。
+
 Webhook、Inbox Runner、启动前补偿和人工 reconcile 只持久化/刷新平台事实，然后以稳定 wake key 恢复 `archive/waiting` 的原 Run。不得创建 Post-merge Run。不同 Runner 没有共享本地卷时仍使用远端 Change 分支和平台唯一性栅栏收敛；无法取得原 Change Run 的权威状态时只能报告恢复需求，不能猜测新 Run。
 
 Archive 的中断恢复按以下矩阵验收。每一行都要求 Intent 先于外部动作持久化、Receipt 可由权威远端事实恢复、Run Checkpoint 只接受绑定当前 Work/input 的 Receipt；重试可以再次观察事实，但不能重复产生逻辑副作用：

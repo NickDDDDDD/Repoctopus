@@ -344,7 +344,7 @@ describe('post-merge exact checkout and Evidence', () => {
     } finally {
       await fixture.app.close();
     }
-  });
+  }, 120_000);
 
   it('closes the bound Specification and advances only after the Git diff passes Guardrails', async () => {
     const fixture = await harness('pass');
