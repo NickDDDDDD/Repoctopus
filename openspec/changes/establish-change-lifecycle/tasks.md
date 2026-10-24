@@ -55,7 +55,7 @@
 - [x] 5.4 将精确 merge commit 临时检出、合入后 Evidence、MR 集合冻结和多 Runner 远端收敛接到同一 Run；覆盖目标分支继续前进、多个 MR、补充 MR、独立状态卷和并发 Runner。
 - [x] 5.5 将 Specification Provider sync/archive、路径语义审计、closure commit/push 和最终 Change MR create-or-recover 接到 Archive；测试只有 Gate 满足且允许差异发布后才创建最终 MR，Runtime 不自动合入。
 - [x] 5.6 fence 旧 Delivery/PostMergeCoordinator 写入口：公共旧命令返回新 Run projection 或迁移诊断，旧 webhook handler 只能投递事实；架构测试拒绝任何生产路径创建独立 Post-merge Run。
-- [ ] 5.7 用中断矩阵验证每个 Archive 边界的 Intent、Receipt、Checkpoint 与 reconciliation，证明 push/MR/close 响应丢失不会重复产生逻辑副作用。
+- [x] 5.7 用中断矩阵验证每个 Archive 边界的 Intent、Receipt、Checkpoint 与 reconciliation，证明 push/MR/close 响应丢失不会重复产生逻辑副作用。
 
 ## 6. 完成 Cordis 扩展和组合治理
 

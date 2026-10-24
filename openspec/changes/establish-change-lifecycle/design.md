@@ -225,6 +225,19 @@ Delivery 可以保留为计划、Intent/Receipt 和兼容读取模型，但不�
 
 Webhook、Inbox Runner、启动前补偿和人工 reconcile 只持久化/刷新平台事实，然后以稳定 wake key 恢复 `archive/waiting` 的原 Run。不得创建 Post-merge Run。不同 Runner 没有共享本地卷时仍使用远端 Change 分支和平台唯一性栅栏收敛；无法取得原 Change Run 的权威状态时只能报告恢复需求，不能猜测新 Run。
 
+Archive 的中断恢复按以下矩阵验收。每一行都要求 Intent 先于外部动作持久化、Receipt 可由权威远端事实恢复、Run Checkpoint 只接受绑定当前 Work/input 的 Receipt；重试可以再次观察事实，但不能重复产生逻辑副作用：
+
+| 边界 | Intent | Receipt / Checkpoint | reconciliation 与唯一性栅栏 |
+| --- | --- | --- | --- |
+| Archive 输入 | `ArchiveDeliveryInput.digest` | `delivery.prepare` Work | 同一 Run/Work/input 重放收敛 |
+| Business push | Delivery snapshot action | remote OID / ActionReceipt | 仅普通 push；期望 OID 与远端 OID 一致才恢复 |
+| Business MR | repository/head/base tuple | MR identity / Archive publication | create 响应丢失后按唯一 tuple 找回；多条匹配 fail closed |
+| 等待合入 | 冻结的完整 MR 集合 | platform-event wait / merge evidence | webhook、Inbox、主动核对和启动补偿只刷新原 Run |
+| 精确合入验证 | merge evidence + checkout manifest | accepted Evidence bundle | 只检出冻结的 merge commit，不以目标分支 HEAD 替代 |
+| target merge | `PostMergeTargetMergeIntent` | target-merge Receipt / closure Journal | 相同父提交恢复相同语义 merge；漂移 fail closed |
+| Specification close | `SpecificationClosurePlan` | closure result / closure Journal | Provider 对同一 plan 幂等；路径审计拒绝计划外差异 |
+| closure push 与最终 MR | V2 publication request | publication Receipt / `archive.completed` | remote OID 与唯一 repository/head/base tuple 恢复；只创建，不自动合入 |
+
 ### 12. Cordis 扩展只能挂接安全 checkpoint
 
 新增独立 Cordis Service/Contributor：
