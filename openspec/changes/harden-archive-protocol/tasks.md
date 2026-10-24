@@ -100,7 +100,7 @@
       **Blocked by:** 5.4
       **Acceptance:** 正反 Tasks fixture 覆盖 Build 内验收和 future-phase 事实；proposal hash 对语义变化敏感、对 checkbox 状态噪声稳定
       **Requirements:** change-lifecycle#build-only-tasks
-- [ ] 6.2 修正 CLI boot 顺序，使 help/version/未知参数/缺失参数在 composition 前完成；将 0.1 基线转为零 reconcile、零 Run、零持久写入。
+- [x] 6.2 修正 CLI boot 顺序，使 help/version/未知参数/缺失参数在 composition 前完成；将 0.1 基线转为零 reconcile、零 Run、零持久写入。
       **Blocked by:** 6.1
       **Acceptance:** 公共进程外测试覆盖 `run start --help`、`change reconcile --help`、缺失 change、未知 flag 和正常启动
       **Requirements:** runtime-foundation#readonly-cli

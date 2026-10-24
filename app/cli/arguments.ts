@@ -3,6 +3,8 @@ export interface ParsedArguments {
   flags: Map<string, string | true>;
 }
 
+const BOOLEAN_FLAGS = new Set(['help', 'json', 'version']);
+
 export function parseArguments(argv: readonly string[]): ParsedArguments {
   const command: string[] = [];
   const flags = new Map<string, string | true>();
@@ -19,6 +21,12 @@ export function parseArguments(argv: readonly string[]): ParsedArguments {
       continue;
     }
     const name = value.slice(2);
+    if (!name) throw new Error('Option name is required after --');
+    if (flags.has(name)) throw new Error(`Duplicate option: --${name}`);
+    if (BOOLEAN_FLAGS.has(name)) {
+      flags.set(name, true);
+      continue;
+    }
     const candidate = argv[index + 1];
     if (candidate && !candidate.startsWith('--')) {
       flags.set(name, candidate);

@@ -54,6 +54,43 @@ const PRODUCT_ROOT =
     : path.resolve(DIST_DIR, '..', '..');
 const USAGE =
   'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decide|record|resume|work-claim|work-outcome|work-validate|archive-prepare|archive-publish> | change reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | approval review | browser <doctor|install> | doctor';
+const CLI_VERSION = '0.1.0';
+const COMMANDS = new Set([
+  'project detect', 'project prepare', 'project review', 'skill list', 'skill get', 'skill project',
+  'spec inspect', 'spec validate', 'spec approval prepare', 'spec approval status', 'spec approval review',
+  'evidence plan', 'evidence run', 'evidence status', 'evidence resume', 'evidence inspect', 'evidence clean',
+  'run start', 'run status', 'run next', 'run verify', 'run archive-prepare', 'run archive-publish',
+  'run work-claim', 'run work-outcome', 'run work-validate', 'run decide', 'run record', 'run resume',
+  'change reconcile', 'delivery checkpoint', 'delivery prepare', 'delivery status', 'delivery publish',
+  'delivery resume', 'delivery refresh', 'delivery migration-plan', 'approval review',
+  'browser doctor', 'browser install', 'doctor',
+]);
+const CLI_FLAGS = new Set([
+  'help', 'json', 'version', 'workspace', 'change', 'target', 'remote', 'generation', 'profile',
+  'workflow', 'run', 'attempt', 'policy', 'intent', 'report', 'evidence-bundles', 'request',
+  'action', 'status', 'summary', 'event-id', 'evidence-attempt', 'work', 'adapter', 'runner',
+  'claim-token', 'receipt', 'input-digest', 'candidate', 'branch', 'draft', 'audience', 'name',
+  'store', 'scan-root', 'skip-pointer', 'workflow-run', 'max-age-days', 'max-bytes',
+]);
+const REQUIRED_FLAGS = new Map<string, readonly string[]>([
+  ['spec inspect', ['change']], ['spec validate', ['change']],
+  ['spec approval prepare', ['change', 'target']], ['spec approval status', ['change']],
+  ['spec approval review', ['change']], ['run status', ['run']], ['run next', ['run']],
+  ['run verify', ['run']], ['run archive-prepare', ['run', 'attempt', 'intent']],
+  ['run archive-publish', ['run']], ['delivery status', ['change']],
+]);
+
+function preflightCli(parsed: ParsedArguments): void {
+  for (const flag of parsed.flags.keys()) {
+    if (!CLI_FLAGS.has(flag)) throw new Error(`Unknown option: --${flag}`);
+  }
+  if (booleanFlag(parsed, 'help') || booleanFlag(parsed, 'version')) return;
+  const command = parsed.command.join(' ');
+  if (!COMMANDS.has(command)) throw new Error(USAGE);
+  const required = [...(REQUIRED_FLAGS.get(command) ?? [])];
+  if (command === 'run start' && parsed.flags.has('change')) required.push('target');
+  for (const flag of required) stringFlag(parsed, flag, { required: true });
+}
 
 function defaultWorkflowPath(): string {
   return path.resolve(DIST_DIR, '..', 'workflows', 'foundation.yaml');
@@ -762,13 +799,14 @@ async function evidenceClean(parsed: ParsedArguments): Promise<CliEnvelope<unkno
 
 async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const changeId = stringFlag(parsed, 'change');
+  const targetBranch = changeId ? stringFlag(parsed, 'target', { required: true })! : null;
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
     const reconciliation = await app.context.commandRouter.execute<
       Record<string, never>,
       ConsistencyReconciliationResult
     >('change.reconcile', {});
-    const changeId = stringFlag(parsed, 'change');
     if (changeId) {
       const config = await loadProjectConfig(workspace);
       const projectSnapshot = await deliveryProject(app, { workspace, config });
@@ -792,7 +830,7 @@ async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
         repositoryIds: config.shared.repositories.map((repository) => repository.id),
         changeId,
         generation: integerFlag(parsed, 'generation', { fallback: 1, minimum: 1 })!,
-        targetBranch: stringFlag(parsed, 'target', { required: true })!,
+        targetBranch: targetBranch!,
         remote: stringFlag(parsed, 'remote', { fallback: 'origin' })!,
         projectSnapshot,
         projectConfigDigest: qualifiedSha256(config.effectiveDigest, 'Project configuration'),
@@ -1340,14 +1378,22 @@ export function renderHuman(envelope: CliEnvelope<unknown>): string {
 }
 
 export async function main(argv = process.argv.slice(2)): Promise<number> {
-  const parsed = parseArguments(argv);
-  const asJson = booleanFlag(parsed, 'json');
-  const command = parsed.command.join(' ') || 'help';
+  let parsed: ParsedArguments;
+  let command = 'help';
+  let asJson = false;
   try {
+    parsed = parseArguments(argv);
+    asJson = booleanFlag(parsed, 'json');
+    command = parsed.command.join(' ') || 'help';
     if (command === 'help' || booleanFlag(parsed, 'help')) {
       process.stdout.write(`${USAGE}\n`);
       return 0;
     }
+    if (booleanFlag(parsed, 'version')) {
+      process.stdout.write(`${CLI_VERSION}\n`);
+      return 0;
+    }
+    preflightCli(parsed);
     const envelope = await dispatch(parsed);
     process.stdout.write(`${asJson ? JSON.stringify(envelope) : renderHuman(envelope)}\n`);
     return 0;
