@@ -31,6 +31,7 @@ const definition: ChangeLifecycleDefinition = {
     requiredValidatorProfiles: [`${phase}.validator`],
     extensionCheckpoints: [`after-${phase}`],
   })),
+  works: structuredClone(BUILTIN_CHANGE_LIFECYCLE_DEFINITION.works),
   transitions: [
     {
       id: 'open.ready',

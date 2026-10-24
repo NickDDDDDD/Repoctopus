@@ -44,7 +44,32 @@ export interface ChangeLifecycleDefinition {
   id: string;
   version: string;
   phases: readonly ChangeLifecyclePhaseDefinition[];
+  works: readonly ChangeLifecycleWorkDefinition[];
   transitions: readonly ChangeLifecycleTransitionDefinition[];
+}
+
+export interface LifecycleSkillReference {
+  name: string;
+}
+
+export interface LifecycleWriteScopeDefinition {
+  repositorySelector: 'workspace' | 'all-repositories';
+  paths: readonly string[];
+  operations: readonly ('create' | 'update' | 'delete')[];
+}
+
+export interface ChangeLifecycleWorkDefinition {
+  kind: string;
+  phase: ChangePhase;
+  actionSkill?: LifecycleSkillReference;
+  augmentationSkills: readonly LifecycleSkillReference[];
+  methodProfile: MethodProfileSnapshot;
+  capabilities: readonly string[];
+  sideEffectClass: WorkSideEffectClass;
+  writeScopes: readonly LifecycleWriteScopeDefinition[];
+  outputContract: WorkOutputContract;
+  validatorProfile: ValidatorProfileSnapshot;
+  checkpoint: string;
 }
 
 export interface ChangeRunIdentity {

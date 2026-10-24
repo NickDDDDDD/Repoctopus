@@ -24,6 +24,28 @@ const statusOrder = new Map<RunStatus, number>(
 const declaredStatuses = new Set<string>(CHANGE_RUN_STATUSES);
 const declaredTransitionKinds = new Set<string>(['advance', 'self', 'fallback', 'complete']);
 const terminalStatuses = new Set<RunStatus>(['completed', 'failed', 'migration_required']);
+const sideEffectClasses = new Set([
+  'none',
+  'specification-write',
+  'repository-write',
+  'process',
+  'git-publish',
+  'platform-mutation',
+]);
+
+function profileDigest(value: unknown): `sha256:${string}` {
+  return `sha256:${createHash('sha256').update(canonicalJson(value)).digest('hex')}`;
+}
+
+function methodProfile(id: string) {
+  const stable = { id, version: '1.0.0', sourceDigests: [], ruleIds: [] } as const;
+  return { ...stable, digest: profileDigest(stable) };
+}
+
+function validatorProfile(id: string) {
+  const stable = { id, version: '1.0.0' } as const;
+  return { ...stable, digest: profileDigest(stable) };
+}
 
 export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
   schemaVersion: 1,
@@ -63,6 +85,131 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
         'archive.before-close',
         'archive.before-publish',
       ],
+    },
+  ],
+  works: [
+    {
+      kind: 'change.intake',
+      phase: 'open',
+      augmentationSkills: [],
+      methodProfile: methodProfile('repoctopus.open'),
+      capabilities: ['repository.read', 'specification.read'],
+      sideEffectClass: 'none',
+      writeScopes: [],
+      outputContract: { artifactKinds: [], trackerPublish: false },
+      validatorProfile: validatorProfile('open.intake-ready'),
+      checkpoint: 'open.after-intake',
+    },
+    {
+      kind: 'specification.decision',
+      phase: 'design',
+      augmentationSkills: [],
+      methodProfile: methodProfile('repoctopus.design'),
+      capabilities: ['repository.read', 'specification.read'],
+      sideEffectClass: 'none',
+      writeScopes: [],
+      outputContract: {
+        artifactKinds: ['proposal', 'delta-specs', 'design', 'tasks'],
+        trackerPublish: false,
+      },
+      validatorProfile: validatorProfile('design.approval-valid'),
+      checkpoint: 'design.after-approval',
+    },
+    {
+      kind: 'specification.plan',
+      phase: 'design',
+      augmentationSkills: [{ name: 'codebase-design' }],
+      methodProfile: methodProfile('repoctopus.design'),
+      capabilities: ['repository.read', 'specification.read', 'specification.write'],
+      sideEffectClass: 'specification-write',
+      writeScopes: [
+        {
+          repositorySelector: 'workspace',
+          paths: ['openspec/changes/**'],
+          operations: ['create', 'update'],
+        },
+      ],
+      outputContract: {
+        artifactKinds: ['proposal', 'delta-specs', 'design', 'tasks'],
+        trackerPublish: false,
+      },
+      validatorProfile: validatorProfile('design.artifacts-valid'),
+      checkpoint: 'design.after-validation',
+    },
+    {
+      kind: 'task.implement',
+      phase: 'build',
+      actionSkill: { name: 'tdd' },
+      augmentationSkills: [{ name: 'codebase-design' }],
+      methodProfile: methodProfile('repoctopus.build'),
+      capabilities: ['process.execute', 'repository.read', 'repository.write'],
+      sideEffectClass: 'repository-write',
+      writeScopes: [
+        {
+          repositorySelector: 'all-repositories',
+          paths: ['**'],
+          operations: ['create', 'update', 'delete'],
+        },
+      ],
+      outputContract: { artifactKinds: [], trackerPublish: false },
+      validatorProfile: validatorProfile('build.task-valid'),
+      checkpoint: 'build.before-task',
+    },
+    {
+      kind: 'evidence.verify',
+      phase: 'verify',
+      actionSkill: { name: 'code-review' },
+      augmentationSkills: [],
+      methodProfile: methodProfile('repoctopus.verify'),
+      capabilities: ['evidence.write', 'process.execute', 'repository.read'],
+      sideEffectClass: 'process',
+      writeScopes: [],
+      outputContract: { artifactKinds: ['verification'], trackerPublish: false },
+      validatorProfile: validatorProfile('verify.evidence-gate'),
+      checkpoint: 'verify.before-gate',
+    },
+    {
+      kind: 'delivery.await-merge',
+      phase: 'archive',
+      augmentationSkills: [],
+      methodProfile: methodProfile('repoctopus.archive'),
+      capabilities: ['platform.read'],
+      sideEffectClass: 'none',
+      writeScopes: [],
+      outputContract: { artifactKinds: [], trackerPublish: false },
+      validatorProfile: validatorProfile('archive.delivery-ready'),
+      checkpoint: 'archive.after-merge',
+    },
+    {
+      kind: 'delivery.prepare',
+      phase: 'archive',
+      actionSkill: { name: 'pr' },
+      augmentationSkills: [],
+      methodProfile: methodProfile('repoctopus.archive'),
+      capabilities: ['git.publish', 'platform.mutate', 'repository.read'],
+      sideEffectClass: 'platform-mutation',
+      writeScopes: [],
+      outputContract: { artifactKinds: [], trackerPublish: false },
+      validatorProfile: validatorProfile('archive.delivery-ready'),
+      checkpoint: 'archive.before-publish',
+    },
+    {
+      kind: 'specification.archive',
+      phase: 'archive',
+      augmentationSkills: [],
+      methodProfile: methodProfile('repoctopus.archive'),
+      capabilities: ['git.publish', 'specification.write'],
+      sideEffectClass: 'specification-write',
+      writeScopes: [
+        {
+          repositorySelector: 'workspace',
+          paths: ['openspec/**'],
+          operations: ['create', 'update', 'delete'],
+        },
+      ],
+      outputContract: { artifactKinds: [], trackerPublish: false },
+      validatorProfile: validatorProfile('archive.specification-closed'),
+      checkpoint: 'archive.before-close',
     },
   ],
   transitions: [
@@ -226,6 +373,69 @@ export function assertChangeLifecycleDefinition(
     }
   }
 
+  const declaredWorkKinds = new Set(definition.phases.flatMap((phase) => phase.workKinds));
+  if (
+    definition.works.length !== declaredWorkKinds.size ||
+    new Set(definition.works.map((work) => work.kind)).size !== definition.works.length
+  ) {
+    throw new Error('Lifecycle definition requires exactly one binding for every Work kind');
+  }
+  for (const work of definition.works) {
+    assertNonEmpty(work.kind, 'Lifecycle Work kind');
+    const phase = definition.phases.find((candidate) => candidate.phase === work.phase);
+    if (!phase?.workKinds.includes(work.kind)) {
+      throw new Error(`Lifecycle Work ${work.kind} is outside its declared phase`);
+    }
+    if (!phase.requiredValidatorProfiles.includes(work.validatorProfile.id)) {
+      throw new Error(`Lifecycle Work ${work.kind} validator is outside ${work.phase}`);
+    }
+    if (!phase.extensionCheckpoints.includes(work.checkpoint)) {
+      throw new Error(`Lifecycle Work ${work.kind} checkpoint is outside ${work.phase}`);
+    }
+    if (!sideEffectClasses.has(work.sideEffectClass)) {
+      throw new Error(`Lifecycle Work ${work.kind} uses an unknown side-effect class`);
+    }
+    assertUniqueNonEmpty(work.capabilities, `Lifecycle Work ${work.kind} capabilities`);
+    const skillNames = [
+      ...(work.actionSkill ? [work.actionSkill.name] : []),
+      ...work.augmentationSkills.map((skill) => skill.name),
+    ];
+    if (new Set(skillNames).size !== skillNames.length) {
+      throw new Error(`Lifecycle Work ${work.kind} repeats an executable Skill`);
+    }
+    for (const name of skillNames) assertNonEmpty(name, `Lifecycle Work ${work.kind} Skill`);
+    assertNonEmpty(work.methodProfile.id, `Lifecycle Work ${work.kind} Method Profile`);
+    assertNonEmpty(work.methodProfile.version, `Lifecycle Work ${work.kind} Method Profile version`);
+    if (
+      profileDigest({
+        id: work.methodProfile.id,
+        version: work.methodProfile.version,
+        sourceDigests: work.methodProfile.sourceDigests,
+        ruleIds: work.methodProfile.ruleIds,
+      }) !== work.methodProfile.digest
+    ) {
+      throw new Error(`Lifecycle Work ${work.kind} Method Profile digest is invalid`);
+    }
+    if (
+      profileDigest({ id: work.validatorProfile.id, version: work.validatorProfile.version }) !==
+      work.validatorProfile.digest
+    ) {
+      throw new Error(`Lifecycle Work ${work.kind} validator profile digest is invalid`);
+    }
+    if (work.sideEffectClass === 'none' && work.writeScopes.length > 0) {
+      throw new Error(`Lifecycle Work ${work.kind} with no side effects cannot write`);
+    }
+    for (const scope of work.writeScopes) {
+      assertUniqueNonEmpty(scope.paths, `Lifecycle Work ${work.kind} write paths`);
+      assertUniqueNonEmpty(scope.operations, `Lifecycle Work ${work.kind} write operations`);
+    }
+  }
+  for (const kind of declaredWorkKinds) {
+    if (!definition.works.some((work) => work.kind === kind)) {
+      throw new Error(`Lifecycle Work has no immutable binding: ${kind}`);
+    }
+  }
+
   if (definition.transitions.length === 0) {
     throw new Error('Lifecycle definition must declare transitions');
   }
@@ -340,6 +550,34 @@ function normalizeTransition(
   };
 }
 
+function normalizeWork(
+  work: ChangeLifecycleDefinition['works'][number],
+): ChangeLifecycleDefinition['works'][number] {
+  return {
+    kind: work.kind,
+    phase: work.phase,
+    ...(work.actionSkill ? { actionSkill: structuredClone(work.actionSkill) } : {}),
+    augmentationSkills: structuredClone(work.augmentationSkills),
+    methodProfile: structuredClone(work.methodProfile),
+    capabilities: [...work.capabilities].sort(),
+    sideEffectClass: work.sideEffectClass,
+    writeScopes: work.writeScopes.map((scope) => ({
+      repositorySelector: scope.repositorySelector,
+      paths: [...scope.paths].sort(),
+      operations: [...scope.operations].sort(),
+    })),
+    outputContract: {
+      ...(work.outputContract.providerId
+        ? { providerId: work.outputContract.providerId }
+        : {}),
+      artifactKinds: [...work.outputContract.artifactKinds].sort(),
+      trackerPublish: work.outputContract.trackerPublish,
+    },
+    validatorProfile: structuredClone(work.validatorProfile),
+    checkpoint: work.checkpoint,
+  };
+}
+
 export function normalizeChangeLifecycleDefinition(
   definition: ChangeLifecycleDefinition,
 ): ChangeLifecycleDefinition {
@@ -349,6 +587,7 @@ export function normalizeChangeLifecycleDefinition(
     id: definition.id,
     version: definition.version,
     phases: definition.phases.map(normalizePhase),
+    works: definition.works.map(normalizeWork).sort((left, right) => left.kind.localeCompare(right.kind)),
     transitions: definition.transitions
       .map(normalizeTransition)
       .sort((left, right) => left.id.localeCompare(right.id)),

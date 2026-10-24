@@ -14,6 +14,8 @@ import {
   type ChangeLifecycleDefinition,
   type ChangeRunIdentity,
 } from '../domains/change-lifecycle/transition.js';
+import { materializeLifecycleWorkBinding } from '../domains/change-lifecycle/work-definition.js';
+import type { SkillUsageSnapshot } from '../domains/skill/types.js';
 
 const identity: ChangeRunIdentity = {
   workspaceId: 'repoctopus',
@@ -21,6 +23,17 @@ const identity: ChangeRunIdentity = {
   generation: 1,
   runId: 'change-establish-change-lifecycle-1',
 };
+
+function skill(name: string): SkillUsageSnapshot {
+  return {
+    schemaVersion: 1,
+    name,
+    provider: 'test',
+    invocation: { modelInvocable: true, userInvocable: true },
+    contentDigest: `sha256:${'a'.repeat(64)}`,
+    resourceManifestDigest: `sha256:${'b'.repeat(64)}`,
+  };
+}
 
 function copyDefinition(): ChangeLifecycleDefinition {
   return structuredClone(BUILTIN_CHANGE_LIFECYCLE_DEFINITION);
@@ -62,6 +75,47 @@ describe('Change lifecycle definition', () => {
       blocker: null,
     });
     expect(snapshot.definition.digest).toMatch(/^sha256:[a-f0-9]{64}$/u);
+  });
+
+  it('owns every Work binding and keeps Method Profiles separate from executable Skills', () => {
+    const workKinds = BUILTIN_CHANGE_LIFECYCLE_DEFINITION.phases.flatMap(
+      (phase) => phase.workKinds,
+    );
+    expect(BUILTIN_CHANGE_LIFECYCLE_DEFINITION.works.map((work) => work.kind).sort()).toEqual(
+      [...workKinds].sort(),
+    );
+    const binding = materializeLifecycleWorkBinding({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      kind: 'task.implement',
+      actionSkill: skill('tdd'),
+      augmentationSkills: [skill('codebase-design')],
+      workspaceRepositoryId: 'workspace',
+      repositoryIds: ['backend', 'workspace'],
+    });
+    expect(binding).toMatchObject({
+      actionSkill: { name: 'tdd' },
+      augmentationSkills: [{ name: 'codebase-design' }],
+      methodProfile: { id: 'repoctopus.build' },
+      writeScopes: [
+        { repositoryId: 'backend', paths: ['**'] },
+        { repositoryId: 'workspace', paths: ['**'] },
+      ],
+      authorizationSource: {
+        kind: 'lifecycle-definition',
+        definitionId: BUILTIN_CHANGE_LIFECYCLE_DEFINITION.id,
+      },
+    });
+    expect(binding.actionSkill).not.toEqual(binding.methodProfile);
+    expect(() =>
+      materializeLifecycleWorkBinding({
+        definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+        kind: 'task.implement',
+        actionSkill: skill('repoctopus.build'),
+        augmentationSkills: [skill('codebase-design')],
+        workspaceRepositoryId: 'workspace',
+        repositoryIds: ['workspace'],
+      }),
+    ).toThrow(/action Skill does not match definition/u);
   });
 
   it('stops an active Run when content drifts under the same definition version', () => {
@@ -117,6 +171,19 @@ describe('Change lifecycle definition', () => {
         requiredValidatorProfiles: [...phase.requiredValidatorProfiles].reverse(),
         workKinds: [...phase.workKinds].reverse(),
         phase: phase.phase,
+      })),
+      works: [...original.works].reverse().map((work) => ({
+        ...structuredClone(work),
+        capabilities: [...work.capabilities].reverse(),
+        outputContract: {
+          ...structuredClone(work.outputContract),
+          artifactKinds: [...work.outputContract.artifactKinds].reverse(),
+        },
+        writeScopes: work.writeScopes.map((scope) => ({
+          ...structuredClone(scope),
+          paths: [...scope.paths].reverse(),
+          operations: [...scope.operations].reverse(),
+        })),
       })),
       version: original.version,
       id: original.id,

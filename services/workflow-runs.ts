@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 
 import { Service, type Context } from '@deepseek-ai/cordis';
-import type { SkillDefinition } from '@deepseek-ai/dsh-skill';
+import { isModelInvocable, type SkillDefinition } from '@deepseek-ai/dsh-skill';
 
 import type { ActionOutcome, RunState, RunTriggerSnapshot } from '../domains/engine/types.js';
 import type { ProjectSnapshot } from '../domains/project/types.js';
@@ -25,7 +25,11 @@ import type {
 } from '../domains/specification/types.js';
 import { bindOperationOwnership, type OperationOwnership } from './operation-ownership.js';
 import { canonicalJson } from '../domains/workflow-contract/canonical.js';
-import { createChangeLifecycleSnapshot } from '../domains/change-lifecycle/definition.js';
+import {
+  BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+  createChangeLifecycleSnapshot,
+} from '../domains/change-lifecycle/definition.js';
+import { lifecycleWorkDefinition } from '../domains/change-lifecycle/work-definition.js';
 import {
   changeRunId,
   createChangeRunHostWorkflow,
@@ -288,6 +292,7 @@ export class WorkflowRuns extends Service {
     assessment: DesignGateAssessment;
     projectSnapshot: ProjectSnapshot;
     projectConfigDigest: `sha256:${string}`;
+    workspaceRepositoryId: string;
   }> {
     const triggerFacts = state.trigger?.facts;
     const target = triggerFacts?.targetBranch;
@@ -343,6 +348,36 @@ export class WorkflowRuns extends Service {
       assessment,
       projectSnapshot,
       projectConfigDigest: projectConfigDigest as `sha256:${string}`,
+      workspaceRepositoryId: targetBranch.repositoryId,
+    };
+  }
+
+  private async resolveLifecycleWorkSkills(
+    kind: string,
+    signal?: AbortSignal,
+  ): Promise<{
+    actionSkill: SkillUsageSnapshot;
+    augmentationSkills: SkillUsageSnapshot[];
+  }> {
+    const work = lifecycleWorkDefinition(BUILTIN_CHANGE_LIFECYCLE_DEFINITION, kind);
+    if (!work.actionSkill) {
+      throw new Error(`Lifecycle Work has no executable action Skill: ${kind}`);
+    }
+    const resolve = async (name: string): Promise<SkillUsageSnapshot> => {
+      const definition = await this.ctx.skills.get(name, {
+        cwd: this.workspaceRoot,
+        ...(signal ? { signal } : {}),
+      });
+      if (!definition || !isModelInvocable(definition)) {
+        throw new Error(`Lifecycle executable Skill is unavailable: ${name}`);
+      }
+      return snapshotSkillDefinition(definition);
+    };
+    return {
+      actionSkill: await resolve(work.actionSkill.name),
+      augmentationSkills: await Promise.all(
+        work.augmentationSkills.map((skill) => resolve(skill.name)),
+      ),
     };
   }
 
@@ -373,7 +408,7 @@ export class WorkflowRuns extends Service {
           | undefined;
         const evaluated = await this.assessChangeDesign(current, lifecycle, signal);
         let assessment = evaluated.assessment;
-        const { projectSnapshot, projectConfigDigest } = evaluated;
+        const { projectSnapshot, projectConfigDigest, workspaceRepositoryId } = evaluated;
         if (lifecycle.phase === 'build' || lifecycle.phase === 'verify') {
           const observedDigest =
             assessment.snapshot?.digest ??
@@ -411,16 +446,23 @@ export class WorkflowRuns extends Service {
               lifecycle.identity.changeId,
               signal,
             );
+            const skills = await this.resolveLifecycleWorkSkills('task.implement', signal);
             build = createInitialBuildWork({
               runId,
-              definition: lifecycle.definition,
+              definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+              actionSkill: skills.actionSkill,
+              augmentationSkills: skills.augmentationSkills,
               taskSet,
               approvalHash,
               compositionDigest: current.composition.compositionDigest,
               projectConfigDigest,
               projectSnapshotDigest: current.projectSnapshotDigest,
+              workspaceRepositoryId,
               repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
             });
+            for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
+              await this.coordinator.bindSkill(runId, skill);
+            }
           } catch (error) {
             assessment = {
               status: 'blocked',

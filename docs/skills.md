@@ -29,6 +29,8 @@ node bin/repoctopus.js skill get --workspace . --audience user --name tdd --json
 
 内置入口为 `grill-with-docs`、`codebase-design`、`tdd`、`diagnosing-bugs`、`code-review`、`pr` 和 `teach`。`grill-with-docs` 使用的 `grilling` 与 `domain-modeling` 也随固定上游快照提供。`to-spec` 与 `to-tickets` 仅作为方法采用的固定参考保存在 Provider roots 之外，不会出现在 Skill 目录或 IDE 投影中；Repoctopus 只通过版本化 Method Profile 使用其中已审核的规则，OpenSpec 仍是规格和任务的唯一结构权威。
 
+Change lifecycle definition 为每个 Work kind 固定至多一个 action Skill、有序 augmentation Skills、独立 Method Profile、能力、side-effect class、写入范围、输出契约、Validator 和 checkpoint。Runtime 只把 action/augmentation 名称交给 `ctx.skills` 解析并冻结内容快照；Method Profile 不经过 Skill Registry，也不能由调用方参数替换或伪装成 Skill。当前 Build Work 固定 `tdd` 为 action、`codebase-design` 为 augmentation，解析后的 Provider 与内容摘要共同进入 Work input digest 和 Run Skill snapshots。
+
 ## 替换 Skill
 
 在项目中创建 `.agents/skills/tdd/SKILL.md`：
