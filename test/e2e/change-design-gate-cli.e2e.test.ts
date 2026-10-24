@@ -5,7 +5,8 @@ import { promisify } from 'node:util';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import type { RunStatusView } from '../../domains/runtime/types.js';
+import type { RunStatusView, RuntimeResult } from '../../domains/runtime/types.js';
+import type { VerifyChangeRunResult } from '../../services/workflow-runs.js';
 import type {
   ActionIntent,
   WorkClaimRequest,
@@ -586,26 +587,34 @@ describe('Change Run Design gate CLI', () => {
       args: ['run', 'next', '--workspace', workspace, '--run', verifySuccessRun.runId!],
       environment,
     });
+    const verified = await runCli<RuntimeResult<VerifyChangeRunResult>['value']>({
+      packageRoot,
+      cwd: workspace,
+      args: ['run', 'verify', '--workspace', workspace, '--run', verifySuccessRun.runId!],
+      environment,
+    });
+    expect(verified.result).toMatchObject({
+      gate: 'satisfied',
+      run: {
+        changeLifecycle: {
+          phase: 'archive',
+          status: 'running',
+          currentWork: null,
+          evidence: { gateStatus: 'satisfied' },
+        },
+      },
+    });
     const gateApp = await bootProjectComposition(packageRoot, workspace);
     try {
-      const verified = await gateApp.context.workflowRuns.verifyChange({
-        runId: verifySuccessRun.runId!,
-      });
-      expect(verified.value).toMatchObject({
-        gate: 'satisfied',
-        run: {
-          changeLifecycle: { phase: 'archive', status: 'running', currentWork: null },
-        },
-      });
-      expect(verified.value.run.state.acceptedEvidenceBundleIds).toEqual([
-        verified.value.bundleId,
+      expect(verified.result!.run.state.acceptedEvidenceBundleIds).toEqual([
+        verified.result!.bundleId,
       ]);
       const evidence = await gateApp.context.evidenceCoordinator.status(
-        verified.value.attemptId,
+        verified.result!.attemptId,
       );
       expect(evidence).toMatchObject({
         context: { status: 'completed', workflowBinding: { workflowRunId: verifySuccessRun.runId } },
-        bundle: { bundleId: verified.value.bundleId },
+        bundle: { bundleId: verified.result!.bundleId },
         gate: { status: 'satisfied' },
       });
     } finally {

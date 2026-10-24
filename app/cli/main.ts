@@ -61,6 +61,12 @@ function defaultWorkflowPath(): string {
 }
 
 function nextActions(status: RunStatusView): string[] {
+  if (
+    status.changeLifecycle?.phase === 'verify' &&
+    status.changeLifecycle.currentWork?.kind === 'evidence.verify'
+  ) {
+    return ['repoctopus run verify --run <run-id>'];
+  }
   if (status.state.status === 'running') return ['repoctopus run next --run <run-id>'];
   if (status.state.status === 'waiting') {
     if (status.changeLifecycle?.waitCondition?.kind === 'human-decision') {
@@ -963,6 +969,29 @@ async function runNext(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   }
 }
 
+async function runVerify(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const runId = stringFlag(parsed, 'run', { required: true })!;
+  const attemptId = stringFlag(parsed, 'attempt');
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute(
+      'run.work.verify',
+      { runId, ...(attemptId ? { attemptId } : {}) },
+    );
+    const value = result as RuntimeResult<{ run: RunStatusView }>;
+    return successEnvelope({
+      command: 'run verify',
+      runId,
+      result: value.value,
+      diagnostics: value.diagnostics,
+      nextActions: nextActions(value.value.run),
+    });
+  } finally {
+    await app.close();
+  }
+}
+
 async function runDecide(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   if (!process.stdin.isTTY || !process.stdout.isTTY) {
     throw new Error('Human approval requires an interactive terminal or a trusted IDE Adapter');
@@ -1229,6 +1258,7 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   if (command === 'run start') return runStart(parsed);
   if (command === 'run status') return runStatus(parsed);
   if (command === 'run next') return runNext(parsed);
+  if (command === 'run verify') return runVerify(parsed);
   if (command === 'run decide') return runDecide(parsed);
   if (command === 'run record') return runRecord(parsed);
   if (command === 'run resume') return runResume(parsed);
@@ -1248,7 +1278,7 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   if (command === 'browser doctor') return browserDoctor(parsed);
   if (command === 'browser install') return browserInstall(parsed);
   throw new Error(
-    'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|decide|record|resume> | runner start | post-merge reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | event <status|replay|retry> | approval review | browser <doctor|install> | doctor',
+    'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decide|record|resume> | runner start | post-merge reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | event <status|replay|retry> | approval review | browser <doctor|install> | doctor',
   );
 }
 

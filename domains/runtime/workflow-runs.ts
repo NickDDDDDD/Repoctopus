@@ -245,6 +245,15 @@ export class WorkflowRunCoordinator {
         : null;
     const workflowDrift = await this.inspectWorkflowDrift(state);
     const compositionCompatibility = compareCompositions(state.composition, this.composition);
+    const latestVerifyObservation = [...trajectory]
+      .reverse()
+      .find(
+        (entry) =>
+          entry.data.observationKind === 'verify-gate-satisfied' ||
+          entry.data.observationKind === 'verify-gate-rejected',
+      )?.data.observation as
+      | { kind?: string; attemptId?: string }
+      | undefined;
     const changeLifecycle = state.changeLifecycle
       ? projectChangeRun(
           { ...structuredClone(state.changeLifecycle), status: state.status },
@@ -257,9 +266,16 @@ export class WorkflowRunCoordinator {
               currentTaskId: state.changeLifecycle.currentWork?.taskId ?? null,
             },
             evidence: {
-              gateStatus: 'not-evaluated',
+              gateStatus:
+                latestVerifyObservation?.kind === 'verify-gate-satisfied'
+                  ? 'satisfied'
+                  : latestVerifyObservation?.kind === 'verify-gate-rejected'
+                    ? 'failed'
+                    : state.changeLifecycle.phase === 'verify'
+                      ? 'pending'
+                      : 'not-evaluated',
               acceptedBundleIds: [...state.acceptedEvidenceBundleIds],
-              latestAttemptId: null,
+              latestAttemptId: latestVerifyObservation?.attemptId ?? null,
             },
             nextActions: lifecycleNextActions({
               ...structuredClone(state.changeLifecycle),
