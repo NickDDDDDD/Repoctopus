@@ -49,6 +49,22 @@ function normalizeBranch(branch: ChangeBranchReference): ChangeBranchReference {
   return structuredClone(branch);
 }
 
+function publicationProvenanceDigest(
+  branch: ChangeBranchReference,
+): `sha256:${string}` {
+  return sha256({ kind: 'ChangeBranchPublication', changeBranch: branch });
+}
+
+function planningSnapshotDigest(
+  snapshot: Omit<PlanningSnapshot, 'digest'>,
+): `sha256:${string}` {
+  const { publicationProvenanceDigest: _publication, changeBranch, ...semantic } = snapshot;
+  const { remoteOid: _remoteOid, ...branchIdentity } = changeBranch;
+  void _publication;
+  void _remoteOid;
+  return sha256({ ...semantic, changeBranch: branchIdentity });
+}
+
 function normalizePlanningArtifacts(change: SpecificationChange): PlanningArtifactSnapshot[] {
   const planning = change.artifacts.filter((artifact) => artifact.kind !== 'verification');
   const byKind = new Map(planning.map((artifact) => [artifact.kind, artifact]));
@@ -137,6 +153,7 @@ export function createPlanningSnapshot(input: {
   if (!input.specificationRoot.storeId.trim() || !input.specificationRoot.repositoryId.trim()) {
     throw new Error('Specification Root identity is required');
   }
+  const changeBranch = normalizeBranch(input.changeBranch);
   const stable = {
     schemaVersion: 1 as const,
     changeId: input.change.changeId,
@@ -147,20 +164,40 @@ export function createPlanningSnapshot(input: {
     validationDigest: input.validation.validationDigest,
     artifacts: normalizePlanningArtifacts(input.change),
     affectedCapabilities: [...new Set(input.change.affectedCapabilities)].sort(),
-    changeBranch: normalizeBranch(input.changeBranch),
+    changeBranch,
+    publicationProvenanceDigest: publicationProvenanceDigest(changeBranch),
     compositionDigest: input.compositionDigest,
     projectConfigDigest: input.projectConfigDigest,
     planningManifestDigest: manifest.semanticDigest,
   };
-  return { ...stable, digest: sha256(stable) };
+  return { ...stable, digest: planningSnapshotDigest(stable) };
 }
 
-export function assertPlanningSnapshot(snapshot: PlanningSnapshot): void {
+export function assertPlanningSnapshot(
+  snapshot: PlanningSnapshot,
+  options: { allowLegacy?: boolean } = {},
+): void {
   const { digest, ...stable } = snapshot;
   assertDigest(digest, 'Planning snapshot');
-  if (sha256(stable) !== digest) throw new Error('Planning snapshot digest is invalid');
+  const legacyPublication =
+    typeof snapshot.publicationProvenanceDigest !== 'string';
+  if (
+    (legacyPublication ? sha256(stable) : planningSnapshotDigest(stable)) !== digest
+  ) {
+    throw new Error('Planning snapshot digest is invalid');
+  }
   if (snapshot.schema) assertSchemaInstructions(snapshot.schema);
-  normalizeBranch(snapshot.changeBranch);
+  const branch = normalizeBranch(snapshot.changeBranch);
+  if (legacyPublication) {
+    if (options.allowLegacy !== true) {
+      throw new Error('Legacy planning snapshot requires publication provenance migration');
+    }
+  } else {
+    assertDigest(snapshot.publicationProvenanceDigest, 'Publication provenance');
+    if (publicationProvenanceDigest(branch) !== snapshot.publicationProvenanceDigest) {
+      throw new Error('Planning snapshot publication provenance digest is invalid');
+    }
+  }
   if (
     snapshot.artifacts.length !== REQUIRED_PLANNING_ARTIFACTS.length ||
     new Set(snapshot.artifacts.map((artifact) => artifact.kind)).size !==
@@ -239,7 +276,10 @@ export function assertSpecificationApprovalState(
   state: SpecificationApprovalState,
   options: { allowLegacy?: boolean } = {},
 ): void {
-  assertPlanningSnapshot(state.snapshot);
+  assertPlanningSnapshot(
+    state.snapshot,
+    options.allowLegacy === true ? { allowLegacy: true } : {},
+  );
   const request = state.decisionRequest as SpecificationApprovalDecisionRequest & {
     proposal?: SpecificationApprovalProposal;
     proposalHash?: `sha256:${string}`;
@@ -258,7 +298,8 @@ export function assertSpecificationApprovalState(
     canonicalJson(request.proposal) !== canonicalJson(expectedProposal) ||
     request.proposalHash !== hashApprovalProposal(expectedProposal) ||
     request.snapshotDigest !== state.snapshot.digest ||
-    request.changeId !== state.changeId
+    request.changeId !== state.changeId ||
+    canonicalJson(request.changeBranch) !== canonicalJson(state.snapshot.changeBranch)
   ) {
     throw new Error('Specification approval proposal hash is invalid');
   }
@@ -299,7 +340,24 @@ export function requestSpecificationApproval(input: {
   if (current && current.changeId !== input.snapshot.changeId) {
     throw new Error('Specification approval state belongs to another change');
   }
-  if (current?.snapshot.digest === input.snapshot.digest) return structuredClone(current);
+  if (current?.snapshot.digest === input.snapshot.digest) {
+    if (
+      current.snapshot.publicationProvenanceDigest ===
+      input.snapshot.publicationProvenanceDigest
+    ) {
+      return structuredClone(current);
+    }
+    return {
+      ...structuredClone(current),
+      stateVersion: current.stateVersion + 1,
+      snapshot: structuredClone(input.snapshot),
+      decisionRequest: {
+        ...structuredClone(current.decisionRequest),
+        changeBranch: structuredClone(input.snapshot.changeBranch),
+      },
+      updatedAt: input.timestamp,
+    };
+  }
   return {
     schemaVersion: 1,
     changeId: input.snapshot.changeId,

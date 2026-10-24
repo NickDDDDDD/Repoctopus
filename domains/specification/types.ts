@@ -159,6 +159,7 @@ export interface PlanningSnapshot {
   artifacts: PlanningArtifactSnapshot[];
   affectedCapabilities: string[];
   changeBranch: ChangeBranchReference;
+  publicationProvenanceDigest: `sha256:${string}`;
   compositionDigest: `sha256:${string}`;
   projectConfigDigest: `sha256:${string}`;
   planningManifestDigest?: `sha256:${string}`;

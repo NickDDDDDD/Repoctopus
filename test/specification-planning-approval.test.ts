@@ -146,17 +146,73 @@ describe('specification planning approval', () => {
         input.changeBranch.targetBranch = 'release';
       },
     ],
-    [
-      'remote oid',
-      (input: ReturnType<typeof planningInput>): void => {
-        input.changeBranch.remoteOid = '2'.repeat(40);
-      },
-    ],
   ] as const)('changes the snapshot identity when %s drifts', (_label, mutate) => {
     const baseline = createPlanningSnapshot(planningInput());
     const changed = planningInput();
     mutate(changed);
     expect(createPlanningSnapshot(changed).digest).not.toBe(baseline.digest);
+  });
+
+  it('tracks a new published OID without invalidating the approved Design', () => {
+    const baseline = createPlanningSnapshot(planningInput());
+    const waiting = requestSpecificationApproval({
+      current: null,
+      snapshot: baseline,
+      requestId: 'published-baseline',
+      timestamp: '2026-10-24T00:00:00.000Z',
+    });
+    const approved = recordSpecificationApprovalDecision({
+      state: waiting,
+      response: {
+        apiVersion: 'repoctopus/v1alpha1',
+        kind: 'HumanDecisionResponse',
+        requestId: waiting.decisionRequest.requestId,
+        proposalHash: waiting.decisionRequest.proposalHash,
+        decision: 'approve',
+      },
+      actor: { actorId: 'trusted-user', source: 'cli', authenticated: true },
+      timestamp: '2026-10-24T00:01:00.000Z',
+    });
+    const pushed = planningInput();
+    pushed.changeBranch.remoteOid = '2'.repeat(40);
+    const republished = createPlanningSnapshot(pushed);
+    expect(republished.digest).toBe(baseline.digest);
+    expect(republished.publicationProvenanceDigest).not.toBe(
+      baseline.publicationProvenanceDigest,
+    );
+
+    const refreshed = requestSpecificationApproval({
+      current: approved,
+      snapshot: republished,
+      timestamp: '2026-10-24T00:02:00.000Z',
+    });
+    expect(refreshed).toMatchObject({
+      status: 'approved',
+      stateVersion: approved.stateVersion + 1,
+      decision: { approvalHash: approved.decision?.approvalHash },
+      snapshot: { changeBranch: { remoteOid: '2'.repeat(40) } },
+      decisionRequest: { changeBranch: { remoteOid: '2'.repeat(40) } },
+    });
+    expect(refreshed.decisionRequest.proposalHash).toBe(
+      approved.decisionRequest.proposalHash,
+    );
+    expect(() => assertSpecificationApprovalState(refreshed)).not.toThrow();
+
+    const planningChanged = planningInput();
+    planningChanged.change.artifacts.find(
+      (artifact) => artifact.kind === 'design',
+    )!.digest = digest('e');
+    const invalidated = requestSpecificationApproval({
+      current: refreshed,
+      snapshot: createPlanningSnapshot(planningChanged),
+      requestId: 'changed-planning',
+      timestamp: '2026-10-24T00:03:00.000Z',
+    });
+    expect(invalidated).toMatchObject({
+      status: 'awaiting_approval',
+      decision: null,
+      decisionRequest: { requestId: 'changed-planning' },
+    });
   });
 
   it('rejects incomplete, unvalidated, or unpublished planning facts', () => {

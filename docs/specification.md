@@ -43,7 +43,7 @@ node bin/repoctopus.js run decide --workspace . --run <run-id>
 
 `planningGuidance` 把已审核的方法规则只读映射到 Provider 声明的四类官方工件：已解决上下文被综合进现有工件，最少公共测试缝进入 Design，tracer-bullet、验收验证和 expand/migrate/contract 顺序进入 Tasks。该指导明确禁止额外规划工件和 tracker 发布；它不复制 OpenSpec 模板，也不执行原始 `to-spec`/`to-tickets` Skill。
 
-批准只授权按照该快照进入实施。产物、Provider、配置、目标分支或 Change 分支 OID 任一变化，下一次准备或实施门禁都会生成新请求，旧批准不能沿用。后续 Delivery approval 单独授权 Business MR 发布；最终 Change MR 则只在全部 Business MR 合入、Post-merge Evidence 通过、主规格同步且 change 归档以后创建，并仍由人合入。因此三个事实不能互相替代：
+批准只授权按照该语义快照进入实施。产物、Provider、配置或目标分支变化时，下一次准备或实施门禁都会生成新请求，旧批准不能沿用。Change 分支每次仍必须已公开、工作区干净且本地 HEAD 与远端 OID 一致，但 OID 单独记录为 publication provenance：只推送非规划 commit 会刷新发布来源而不撤销相同规划语义的批准，规划内容变化即使仍在同一分支也会失效。后续 Delivery approval 单独授权 Business MR 发布；最终 Change MR 则只在全部 Business MR 合入、Post-merge Evidence 通过、主规格同步且 change 归档以后创建，并仍由人合入。因此三个事实不能互相替代：
 
 - **公开 Change 分支**：保存共享工作与精确远端版本，不代表人已同意方案。
 - **规划批准**：允许开始实现当前快照，不授权发布或合入任何 MR。
