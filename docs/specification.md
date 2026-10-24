@@ -45,6 +45,8 @@ node bin/repoctopus.js run decide --workspace . --run <run-id>
 
 批准只授权按照该语义快照进入实施。产物、Provider、配置或目标分支变化时，下一次准备或实施门禁都会生成新请求，旧批准不能沿用。Change 分支每次仍必须已公开、工作区干净且本地 HEAD 与远端 OID 一致，但 OID 单独记录为 publication provenance：只推送非规划 commit 会刷新发布来源而不撤销相同规划语义的批准，规划内容变化即使仍在同一分支也会失效。后续 Delivery approval 单独授权 Business MR 发布；最终 Change MR 则只在全部 Business MR 合入、Post-merge Evidence 通过、主规格同步且 change 归档以后创建，并仍由人合入。因此三个事实不能互相替代：
 
+Build 或 Verify 每次继续前都会重新核对 planning semantic digest。发生变化时，Runtime 追加 `planning-semantic-drift` invalidation、清除当前 Work 与任务 revision 快照并返回 Design；Trajectory 保留被替代的 planning digest、Work ID、Task revisions 和证据身份。官方 Tasks checkbox 的完成状态已经从 planning digest 排除，因此有效的任务完成更新不会误触发回退。
+
 - **公开 Change 分支**：保存共享工作与精确远端版本，不代表人已同意方案。
 - **规划批准**：允许开始实现当前快照，不授权发布或合入任何 MR。
 - **最终 Change MR**：呈现已经关闭的完整 Change，供最终人工评审与合入，不是实施期间的工作区。

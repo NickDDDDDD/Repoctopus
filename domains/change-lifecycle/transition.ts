@@ -172,6 +172,7 @@ export interface ChangeLifecycleState {
   waitCondition: WaitCondition | null;
   blocker: ChangeRunBlocker | null;
   tasks?: readonly SpecificationTask[];
+  planningDigest?: `sha256:${string}`;
 }
 
 export interface ChangeLifecycleSnapshot extends ChangeLifecycleState {
@@ -218,10 +219,24 @@ export interface ChangeLifecycleTransitionFact {
   to: { phase: ChangePhase; status: RunStatus };
   workId: string | null;
   waitId: string | null;
+  invalidation?: {
+    kind: 'planning-semantic-drift';
+    supersededPlanningDigest: `sha256:${string}`;
+    observedPlanningDigest: `sha256:${string}`;
+    supersededWorkId: string | null;
+    supersededTaskRevisions: readonly `sha256:${string}`[];
+    evidenceIds: readonly string[];
+  };
 }
 
 export type ChangeLifecycleObservation =
   | { kind: 'open-intake-ready' }
+  | {
+      kind: 'planning-semantic-drift';
+      reason: string;
+      evidenceIds: readonly string[];
+      inputDigest: `sha256:${string}`;
+    }
   | {
       kind: 'design-gate';
       result: 'blocked' | 'waiting' | 'approved';
@@ -295,6 +310,7 @@ export function applyChangeLifecycleTransition(options: {
     waitCondition: WaitCondition | null;
     blocker: ChangeRunBlocker | null;
     tasks?: readonly SpecificationTask[];
+    planningDigest?: `sha256:${string}` | null;
   };
 }): { snapshot: ChangeLifecycleSnapshot; fact: ChangeLifecycleTransitionFact } {
   assertChangeLifecycleSnapshot(options.current);
@@ -332,6 +348,8 @@ export function applyChangeLifecycleTransition(options: {
     blocker: structuredClone(options.next.blocker),
     ...(options.next.tasks ? { tasks: structuredClone(options.next.tasks) } : {}),
   };
+  if (options.next.planningDigest === null) delete snapshot.planningDigest;
+  else if (options.next.planningDigest) snapshot.planningDigest = options.next.planningDigest;
   assertChangeLifecycleSnapshot(snapshot);
   return {
     snapshot,
@@ -365,6 +383,45 @@ export function evolveChangeLifecycle(options: {
       next: { currentWork: null, waitCondition: null, blocker: null },
     });
   }
+  if (observation.kind === 'planning-semantic-drift') {
+    if (current.phase !== 'build' && current.phase !== 'verify') {
+      throw new Error(
+        `Planning semantic drift is not valid from ${current.phase}/${current.status}`,
+      );
+    }
+    if (!current.planningDigest) {
+      throw new Error('Active Build or Verify Work has no approved planning digest');
+    }
+    const supersededPlanningDigest = current.planningDigest;
+    const supersededWorkId = current.currentWork?.workId ?? null;
+    const supersededTaskRevisions = (current.tasks ?? [])
+      .map((task) => task.taskRevision)
+      .sort();
+    const reduced = applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId:
+        current.phase === 'build'
+          ? 'build.semantic-plan-drift'
+          : 'verify.semantic-plan-drift',
+      next: {
+        currentWork: null,
+        waitCondition: null,
+        blocker: null,
+        tasks: [],
+        planningDigest: null,
+      },
+    });
+    reduced.fact.invalidation = {
+      kind: 'planning-semantic-drift',
+      supersededPlanningDigest,
+      observedPlanningDigest: observation.inputDigest,
+      supersededWorkId,
+      supersededTaskRevisions,
+      evidenceIds: [...observation.evidenceIds],
+    };
+    return reduced;
+  }
   if (current.phase !== 'design') {
     throw new Error(`Design gate is not valid from ${current.phase}/${current.status}`);
   }
@@ -381,6 +438,7 @@ export function evolveChangeLifecycle(options: {
         waitCondition: null,
         blocker: null,
         tasks: observation.tasks,
+        planningDigest: observation.inputDigest,
       },
     });
   }
@@ -409,7 +467,7 @@ export function evolveChangeLifecycle(options: {
       definition: options.definition,
       current,
       transitionId: 'design.await-approval',
-      next: { currentWork: null, waitCondition, blocker: null },
+      next: { currentWork: null, waitCondition, blocker: null, planningDigest: null },
     });
   }
   const blocker: ChangeRunBlocker = {
@@ -430,7 +488,12 @@ export function evolveChangeLifecycle(options: {
     definition: options.definition,
     current,
     transitionId: 'design.invalid',
-    next: { currentWork: null, waitCondition: null, blocker },
+    next: {
+      currentWork: null,
+      waitCondition: null,
+      blocker,
+      planningDigest: null,
+    },
   });
 }
 

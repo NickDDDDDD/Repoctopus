@@ -3,7 +3,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { Service, type Context } from '@deepseek-ai/cordis';
 import type { SkillDefinition } from '@deepseek-ai/dsh-skill';
 
-import type { ActionOutcome, RunTriggerSnapshot } from '../domains/engine/types.js';
+import type { ActionOutcome, RunState, RunTriggerSnapshot } from '../domains/engine/types.js';
 import type { ProjectSnapshot } from '../domains/project/types.js';
 import { WorkflowRunCoordinator } from '../domains/runtime/workflow-runs.js';
 import type { ResumeView, RunStatusView, RuntimeResult } from '../domains/runtime/types.js';
@@ -33,7 +33,10 @@ import {
 import type { DesignGateAssessment } from './specification-planning.js';
 import { createInitialBuildWork } from '../domains/change-lifecycle/build-work.js';
 import type { SpecificationTask } from '../domains/specification/types.js';
-import type { WorkDescriptor } from '../domains/change-lifecycle/transition.js';
+import type {
+  ChangeLifecycleState,
+  WorkDescriptor,
+} from '../domains/change-lifecycle/transition.js';
 
 export interface StartChangeRunInput {
   workspaceId: string;
@@ -277,6 +280,72 @@ export class WorkflowRuns extends Service {
     );
   }
 
+  private async assessChangeDesign(
+    state: RunState,
+    lifecycle: ChangeLifecycleState,
+    signal?: AbortSignal,
+  ): Promise<{
+    assessment: DesignGateAssessment;
+    projectSnapshot: ProjectSnapshot;
+    projectConfigDigest: `sha256:${string}`;
+  }> {
+    const triggerFacts = state.trigger?.facts;
+    const target = triggerFacts?.targetBranch;
+    const projectConfigDigest = triggerFacts?.projectConfigDigest;
+    if (
+      !target ||
+      typeof target !== 'object' ||
+      typeof (target as { repositoryId?: unknown }).repositoryId !== 'string' ||
+      typeof (target as { remote?: unknown }).remote !== 'string' ||
+      typeof (target as { targetBranch?: unknown }).targetBranch !== 'string' ||
+      typeof projectConfigDigest !== 'string' ||
+      !/^sha256:[a-f0-9]{64}$/u.test(projectConfigDigest)
+    ) {
+      throw new Error('Change Run is missing its stable Design input facts');
+    }
+    const targetBranch = target as {
+      repositoryId: string;
+      remote: string;
+      targetBranch: string;
+    };
+    const projectSnapshot = await this.ctx.runStore.loadProjectSnapshot(
+      lifecycle.identity.runId,
+    );
+    const workspaceRepository = projectSnapshot.repositories.find(
+      (repository) => repository.id === targetBranch.repositoryId,
+    );
+    if (!workspaceRepository) {
+      throw new Error('Change Run Workspace Repository is no longer available');
+    }
+    let assessment: DesignGateAssessment;
+    try {
+      const changeBranch = await this.ctx.project.changeBranch({
+        repositoryId: targetBranch.repositoryId,
+        repositoryPath: workspaceRepository.path,
+        remote: targetBranch.remote,
+        targetBranch: targetBranch.targetBranch,
+      });
+      assessment = await this.ctx.specificationPlanning.assess({
+        changeId: lifecycle.identity.changeId,
+        changeBranch,
+        compositionDigest: state.composition.compositionDigest,
+        projectConfigDigest: projectConfigDigest as `sha256:${string}`,
+        ...(signal ? { signal } : {}),
+      });
+    } catch (error) {
+      assessment = {
+        status: 'blocked',
+        reason: error instanceof Error ? error.message : 'Design gate assessment failed',
+        evidenceDigests: [],
+      };
+    }
+    return {
+      assessment,
+      projectSnapshot,
+      projectConfigDigest: projectConfigDigest as `sha256:${string}`,
+    };
+  }
+
   async next(
     runId: string,
     confirmations: ReadonlySet<string> = new Set(),
@@ -294,59 +363,44 @@ export class WorkflowRuns extends Service {
           diagnostics.push(...opened.diagnostics);
           current = opened.value.state;
         }
-        if (current.changeLifecycle?.phase !== 'design') {
+        const lifecycle = current.changeLifecycle;
+        if (!lifecycle) throw new Error(`Run is not a Change Run: ${runId}`);
+        if (!['design', 'build', 'verify'].includes(lifecycle.phase)) {
           throw new Error('Change Run next Work is not available before lifecycle Work dispatch');
         }
-        const lifecycle = current.changeLifecycle;
-        const triggerFacts = current.trigger?.facts;
-        const target = triggerFacts?.targetBranch;
-        const projectConfigDigest = triggerFacts?.projectConfigDigest;
-        if (
-          !target ||
-          typeof target !== 'object' ||
-          typeof (target as { repositoryId?: unknown }).repositoryId !== 'string' ||
-          typeof (target as { remote?: unknown }).remote !== 'string' ||
-          typeof (target as { targetBranch?: unknown }).targetBranch !== 'string' ||
-          typeof projectConfigDigest !== 'string' ||
-          !/^sha256:[a-f0-9]{64}$/u.test(projectConfigDigest)
-        ) {
-          throw new Error('Change Run is missing its stable Design input facts');
-        }
-        const targetBranch = target as {
-          repositoryId: string;
-          remote: string;
-          targetBranch: string;
-        };
-        const projectSnapshot = await this.ctx.runStore.loadProjectSnapshot(runId);
-        const workspaceRepository = projectSnapshot.repositories.find(
-          (repository) => repository.id === targetBranch.repositoryId,
-        );
-        if (!workspaceRepository) {
-          throw new Error('Change Run Workspace Repository is no longer available');
-        }
-        let assessment: DesignGateAssessment;
         let build:
           | { tasks: SpecificationTask[]; work: WorkDescriptor }
           | undefined;
-        try {
-          const changeBranch = await this.ctx.project.changeBranch({
-            repositoryId: targetBranch.repositoryId,
-            repositoryPath: workspaceRepository.path,
-            remote: targetBranch.remote,
-            targetBranch: targetBranch.targetBranch,
-          });
-          assessment = await this.ctx.specificationPlanning.assess({
-            changeId: lifecycle.identity.changeId,
-            changeBranch,
-            compositionDigest: current.composition.compositionDigest,
-            projectConfigDigest: projectConfigDigest as `sha256:${string}`,
-            ...(signal ? { signal } : {}),
-          });
-        } catch (error) {
-          assessment = {
-            status: 'blocked',
-            reason: error instanceof Error ? error.message : 'Design gate assessment failed',
-            evidenceDigests: [],
+        const evaluated = await this.assessChangeDesign(current, lifecycle, signal);
+        let assessment = evaluated.assessment;
+        const { projectSnapshot, projectConfigDigest } = evaluated;
+        if (lifecycle.phase === 'build' || lifecycle.phase === 'verify') {
+          const observedDigest =
+            assessment.snapshot?.digest ??
+            (`sha256:${createHash('sha256')
+              .update(canonicalJson({ reason: assessment.reason }))
+              .digest('hex')}` as const);
+          if (
+            assessment.status !== 'approved' ||
+            observedDigest !== lifecycle.planningDigest
+          ) {
+            return this.coordinator.acceptChangeObservation(runId, {
+              kind: 'planning-semantic-drift',
+              reason: assessment.reason,
+              evidenceIds: assessment.evidenceDigests,
+              inputDigest: observedDigest,
+            });
+          }
+          return {
+            value: await this.coordinator.status(runId),
+            diagnostics: [
+              ...diagnostics,
+              {
+                level: 'info',
+                code: 'change.work-current',
+                message: 'Current lifecycle Work remains valid',
+              },
+            ],
           };
         }
         if (assessment.status === 'approved' && assessment.validation) {
@@ -363,7 +417,7 @@ export class WorkflowRuns extends Service {
               taskSet,
               approvalHash,
               compositionDigest: current.composition.compositionDigest,
-              projectConfigDigest: projectConfigDigest as `sha256:${string}`,
+              projectConfigDigest,
               projectSnapshotDigest: current.projectSnapshotDigest,
               repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
             });

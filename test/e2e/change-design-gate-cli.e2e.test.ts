@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
@@ -277,6 +277,74 @@ describe('Change Run Design gate CLI', () => {
       changeId: 'valid-plan',
       provider: { id: 'openspec' },
     });
+    const approvedWorkId = approved.result?.changeLifecycle?.currentWork?.workId;
+    const tasksFile = path.join(workspace, 'openspec', 'changes', 'valid-plan', 'tasks.md');
+    await writeFile(
+      tasksFile,
+      (await readFile(tasksFile, 'utf8')).replace('- [ ] 1.1', '- [x] 1.1'),
+    );
+    await execFileAsync('git', ['add', 'openspec/changes/valid-plan/tasks.md'], {
+      cwd: workspace,
+    });
+    await execFileAsync('git', ['commit', '-m', 'test: complete task checkbox'], {
+      cwd: workspace,
+    });
+    await execFileAsync('git', ['push'], { cwd: workspace });
+    const checkboxOnly = await runCli<RunStatusView>({
+      packageRoot,
+      cwd: workspace,
+      args: ['run', 'next', '--workspace', workspace, '--run', validRun.runId!],
+      environment,
+    });
+    expect(checkboxOnly.result?.changeLifecycle).toMatchObject({
+      phase: 'build',
+      status: 'running',
+      currentWork: { workId: approvedWorkId },
+    });
+
+    const designFile = path.join(workspace, 'openspec', 'changes', 'valid-plan', 'design.md');
+    await writeFile(
+      designFile,
+      `${await readFile(designFile, 'utf8')}\n## New semantic decision\n\nUse a changed public seam.\n`,
+    );
+    await execFileAsync('git', ['add', 'openspec/changes/valid-plan/design.md'], {
+      cwd: workspace,
+    });
+    await execFileAsync('git', ['commit', '-m', 'spec: change Design semantics'], {
+      cwd: workspace,
+    });
+    await execFileAsync('git', ['push'], { cwd: workspace });
+    const invalidated = await runCli<RunStatusView>({
+      packageRoot,
+      cwd: workspace,
+      args: ['run', 'next', '--workspace', workspace, '--run', validRun.runId!],
+      environment,
+    });
+    expect(invalidated.result?.changeLifecycle).toMatchObject({
+      phase: 'design',
+      status: 'running',
+      currentWork: null,
+      taskProgress: { total: 0, completed: 0, currentTaskId: null },
+    });
+    const invalidationApp = await bootProjectComposition(packageRoot, workspace);
+    try {
+      const trajectory = await invalidationApp.context.runStore.loadTrajectory(validRun.runId!);
+      expect(trajectory.at(-1)?.data).toMatchObject({
+        observationKind: 'planning-semantic-drift',
+        changeLifecycleTransition: {
+          transitionId: 'build.semantic-plan-drift',
+          invalidation: {
+            kind: 'planning-semantic-drift',
+            supersededWorkId: approvedWorkId,
+          },
+        },
+      });
+      expect(
+        (await invalidationApp.context.specificationPlanning.status('valid-plan'))?.status,
+      ).toBe('awaiting_approval');
+    } finally {
+      await invalidationApp.close();
+    }
 
     for (const [changeId, decision, expectedStatus] of [
       ['revise-plan', 'revise', 'changes_requested'],

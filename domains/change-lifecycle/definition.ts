@@ -137,6 +137,13 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       trigger: 'semantic-plan-drift-detected',
     },
     {
+      id: 'verify.semantic-plan-drift',
+      kind: 'fallback',
+      from: { phase: 'verify', statuses: ['running', 'blocked'] },
+      to: { phase: 'design', status: 'running' },
+      trigger: 'semantic-plan-drift-detected',
+    },
+    {
       id: 'verify.failed',
       kind: 'fallback',
       from: { phase: 'verify', statuses: ['running', 'blocked'] },

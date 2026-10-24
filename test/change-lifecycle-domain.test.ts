@@ -265,6 +265,36 @@ describe('Change lifecycle domain', () => {
       phase: 'build',
       status: 'running',
       currentWork: { workId: buildWork.workId, taskId: buildTask.taskId },
+      planningDigest: digest('i'),
+    });
+
+    const invalidated = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current: approved.snapshot,
+      observation: {
+        kind: 'planning-semantic-drift',
+        reason: 'Design artifact changed',
+        evidenceIds: [digest('n')],
+        inputDigest: digest('z'),
+      },
+    });
+    expect(invalidated.snapshot).toMatchObject({
+      phase: 'design',
+      status: 'running',
+      currentWork: null,
+      tasks: [],
+    });
+    expect(invalidated.snapshot.planningDigest).toBeUndefined();
+    expect(invalidated.fact).toMatchObject({
+      transitionId: 'build.semantic-plan-drift',
+      invalidation: {
+        kind: 'planning-semantic-drift',
+        supersededPlanningDigest: digest('i'),
+        observedPlanningDigest: digest('z'),
+        supersededWorkId: buildWork.workId,
+        supersededTaskRevisions: [buildTask.taskRevision],
+        evidenceIds: [digest('n')],
+      },
     });
 
     const blocked = evolveChangeLifecycle({
