@@ -490,6 +490,7 @@ export class EvidenceCoordinator extends Service {
           journal: this.journal,
           timestamp: new Date().toISOString(),
           endingFingerprint: endingFingerprint.digest,
+          artifacts: new FileArtifactStore(this.workspace),
         });
         await atomicWriteJson(this.contextFile(attemptId), {
           ...context,

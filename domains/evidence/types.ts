@@ -80,6 +80,7 @@ export interface EvidenceBundle {
   checks: EvidenceCheck[];
   receiptIds: string[];
   artifactDigests: string[];
+  verificationReport?: ArtifactRef;
   findings: EvidenceFinding[];
 }
 

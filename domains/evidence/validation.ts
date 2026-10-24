@@ -69,5 +69,6 @@ export function parseEvidenceBundle(value: unknown): EvidenceBundle {
   if (!Array.isArray(item.checks) || !Array.isArray(item.receiptIds)) {
     throw new Error('Invalid EvidenceBundle collections');
   }
+  if (item.verificationReport !== undefined) parseArtifactRef(item.verificationReport);
   return structuredClone(item) as unknown as EvidenceBundle;
 }
