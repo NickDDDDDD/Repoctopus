@@ -135,6 +135,7 @@ async function optional<T>(operation: () => Promise<T>): Promise<T | null> {
 
 export interface EvidenceCoordinatorConfig {
   workspaceRoot: string;
+  postMergeEvidenceProfile?: string;
   environment?: NodeJS.ProcessEnv;
   telemetry?: EvidenceTelemetryPort;
 }
@@ -147,6 +148,7 @@ export class EvidenceCoordinator extends Service {
   private readonly leases: FileResourceLeaseManager;
   private readonly telemetryOutbox: FileEvidenceTelemetryOutbox;
   private readonly workspace: string;
+  private readonly postMergeEvidenceProfile: string | null;
   private readonly telemetry: EvidenceTelemetryPort;
   private readonly operations: OperationOwnership;
 
@@ -154,6 +156,7 @@ export class EvidenceCoordinator extends Service {
     super(context, 'evidenceCoordinator');
     this.operations = bindOperationOwnership(context, 'evidenceCoordinator');
     this.workspace = path.resolve(config.workspaceRoot);
+    this.postMergeEvidenceProfile = config.postMergeEvidenceProfile?.trim() || null;
     this.telemetry =
       config.telemetry ?? evidenceTelemetryFromEnvironment(config.environment ?? process.env);
     this.store = new FileEvidenceStore(this.workspace);
@@ -276,8 +279,7 @@ export class EvidenceCoordinator extends Service {
       };
     }
     if (lifecycle?.phase === 'archive' && lifecycle.currentWork?.kind === 'delivery.verify-merged') {
-      const profile = state.trigger?.facts.verificationProfileId;
-      if (state.status !== 'running' || profile !== profileId) {
+      if (state.status !== 'running' || this.postMergeEvidenceProfile !== profileId) {
         throw new Error(`Change Run ${workflowRunId} has no active post-merge Verify Work`);
       }
       return {

@@ -185,8 +185,18 @@ function projectSelections(
     ),
     runtimeSelection(
       'evidence-coordinator',
-      { workspaceRoot },
-      { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
+      {
+        workspaceRoot,
+        ...(config.shared.postMerge
+          ? { postMergeEvidenceProfile: config.shared.postMerge.evidenceProfile }
+          : {}),
+      },
+      {
+        workspaceRoot: WORKSPACE_ROOT_IDENTITY,
+        ...(config.shared.postMerge
+          ? { postMergeEvidenceProfile: config.shared.postMerge.evidenceProfile }
+          : {}),
+      },
     ),
     { id: 'evidence-command' },
     runtimeSelection(
