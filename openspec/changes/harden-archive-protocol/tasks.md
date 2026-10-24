@@ -6,7 +6,7 @@
       **Blocked by:** None
       **Acceptance:** 测试分别证明当前 Run 会等待 merge、生产组合暴露 webhook runner、帮助请求可能装配 composition；fixture 不依赖开发机已有状态
       **Requirements:** change-lifecycle#archive-publication-terminal, platform-event-processing#retirement, post-merge-automation#retirement, runtime-foundation#readonly-cli
-- [ ] 0.2 更新 Comet 0.5.0 采用映射，固定 Classic preflight、官方 archive 后置校验、Native 本地 Journal、finish create-or-reuse PR 和 resume probe 的采用/排除边界。
+- [x] 0.2 更新 Comet 0.5.0 采用映射，固定 Classic preflight、官方 archive 后置校验、Native 本地 Journal、finish create-or-reuse PR 和 resume probe 的采用/排除边界。
       **Blocked by:** 0.1
       **Acceptance:** `npm run check:provenance` 通过；映射明确不采用 merge wait、Comet 产品外壳和单仓状态根，不新增未登记运行时依赖
       **Requirements:** specification-authority#closure-journal, delivery-governance#publication-receipt
