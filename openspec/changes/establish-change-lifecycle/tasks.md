@@ -33,7 +33,7 @@
 - [x] 3.1 扩展 Action Intent/Receipt/Outcome，使其绑定 `runId + workId + attempt + claimToken + inputDigest`；覆盖重复领取、陈旧版本、跨 Work Outcome、进程崩溃和响应丢失测试，证明副作用不在 RunStore transaction 内执行。
 - [x] 3.2 让 lifecycle definition 为每个 Work 分别固定唯一 `actionSkill`、有序 `augmentationSkills`、`methodProfile`、能力、side-effect class、write scopes、output contract 和 validator profile；Skill Service 只解析可执行 Skill，Method Profile 使用独立 snapshot，调用方不能覆盖或把二者互换。
 - [x] 3.3 实现版本化 Method Profile registry 和上下文装配器，把每条采用规则绑定 source digest、phase、artifact kind 与 `context|deterministic-validator|review-rubric|human-decision` enforcement；架构测试证明原始 `to-spec`/`to-tickets` 不可被 builtin discovery、catalog、projection 或 Work binding 返回，用户环境同名 Skill 也不能进入 lifecycle。
-- [ ] 3.4 在 Application Plugin/Command Router 边界增加 runtime work guard，文件、命令、Git、MR、tracker 和 Specification 写操作必须来自活动 claim 且匹配能力、Provider artifact kind 与范围；用负向 fixture 拒绝无 claim 写入、越仓写入、Design tracker 发布、terminal artifact 改写和错误 Adapter，并把未受管外部修改识别为 drift 而非成功。
+- [x] 3.4 在 Application Plugin/Command Router 边界增加 runtime work guard，文件、命令、Git、MR、tracker 和 Specification 写操作必须来自活动 claim 且匹配能力、Provider artifact kind 与范围；用负向 fixture 拒绝无 claim 写入、越仓写入、Design tracker 发布、terminal artifact 改写和错误 Adapter，并把未受管外部修改识别为 drift 而非成功。
 - [ ] 3.5 将现有 Manual/Process/Git/Specification Contributor 接到 Work Dispatcher；运行 production composition 纵切证明 Adapter 返回成功只形成 Outcome，缺少 Validator/Evidence 时 Task 和 phase 不推进。
 - [ ] 3.6 实现 Build Task validator 和完成投影：验证通过后由 Provider 安全更新 checkbox/任务状态，重复完成幂等；验证失败、输入漂移和任务 revision 变化分别产生可定位状态。
 - [ ] 3.7 加入团队协作测试，证明不同成员/Runner 可领取后续修复 Work，identity 仅用于授权和审计，不形成 change owner 或 MR 作者过滤。

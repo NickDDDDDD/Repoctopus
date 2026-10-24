@@ -1,6 +1,8 @@
 import { Service } from '@deepseek-ai/cordis';
 import type { Context } from '@deepseek-ai/cordis';
 
+import type { RuntimeWorkOperation } from '../domains/change-lifecycle/work-guard.js';
+
 export interface CommandRequest<TInput = unknown> {
   input: TInput;
   signal: AbortSignal;
@@ -8,6 +10,7 @@ export interface CommandRequest<TInput = unknown> {
 
 export interface CommandHandler<TInput = unknown, TOutput = unknown> {
   readonly name: string;
+  readonly runtimeWork?: (input: TInput) => RuntimeWorkOperation;
   execute(request: CommandRequest<TInput>): Promise<TOutput>;
 }
 
@@ -47,6 +50,11 @@ export class CommandRouter extends Service {
     const handler = this.handlers.get(name) as CommandHandler<TInput, TOutput> | undefined;
     if (!handler) throw new CommandNotFoundError(name);
     if (signal.aborted) throw signal.reason;
+    if (handler.runtimeWork) {
+      const guard = this.ctx.get('runtimeWorkGuard');
+      if (!guard) throw new Error(`Runtime Work Guard is not active for command: ${name}`);
+      await guard.authorize(handler.runtimeWork(input));
+    }
     return handler.execute({ input, signal });
   }
 }

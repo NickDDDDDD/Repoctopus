@@ -26,6 +26,7 @@ import { FileWorkflowSourceProvider } from './run/file-workflow-source-provider.
 import { WorkflowTelemetryProvider } from './run/workflow-telemetry-provider.js';
 import { CommandRouter } from '../services/command-router.js';
 import { ActionDispatcher } from '../services/action.js';
+import { RuntimeWorkGuard } from '../services/runtime-work-guard.js';
 import { EvidenceCoordinator } from '../services/evidence-coordinator.js';
 import { EvidenceAdapters } from '../services/evidence-adapters.js';
 import {
@@ -641,6 +642,26 @@ const definitions: readonly BuiltinDefinition[] = [
     },
     plugin: ActionDispatcher,
     sourceFiles: ['services/action.ts'],
+  },
+  {
+    descriptor: {
+      id: 'runtime-work-guard',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['runtime-work-guard'],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: RuntimeWorkGuard,
+    sourceFiles: [
+      'domains/change-lifecycle/work-guard.ts',
+      'services/runtime-work-guard.ts',
+      'services/command-router.ts',
+    ],
   },
   {
     descriptor: {
