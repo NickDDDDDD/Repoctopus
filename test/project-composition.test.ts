@@ -64,6 +64,14 @@ describe('project composition assembly', () => {
         'post-merge-coordinator',
         'post-merge-actions',
         'post-merge-command',
+        'lifecycle-definition-service',
+        'lifecycle-definition-builtin',
+        'lifecycle-validator-service',
+        'lifecycle-validator-builtin',
+        'lifecycle-extension-service',
+        'lifecycle-extension-builtin',
+        'change-lifecycle-migration',
+        'change-lifecycle-migration-command',
       ]),
     );
     expect(projectIds).not.toContain('http-host');
@@ -122,7 +130,15 @@ describe('project composition assembly', () => {
     );
     expect(
       secondComposition.entries.find((entry) => entry.id === 'specification-openspec')?.config,
-    ).toEqual({ workspaceRoot: second.workspaceRoot });
+    ).toEqual({
+      workspaceRoot: second.workspaceRoot,
+      specificationRoot: {
+        schemaVersion: 1,
+        kind: 'SpecificationRoot',
+        storeId: 'self-hosted-fixture',
+        repositoryId: 'workspace',
+      },
+    });
     expect(
       secondComposition.entries.find((entry) => entry.id === 'maintenance-command')?.config,
     ).toEqual({ productRoot: path.join(productRoot, 'alternate-install-location') });
@@ -131,7 +147,10 @@ describe('project composition assembly', () => {
   it('fails closed when a configured Provider is not in the admitted catalog', async () => {
     const { workspaceRoot, config } = await selfHostedProject();
     const catalog = await createRepoctopusBuiltinCatalog(productRoot);
-    config.shared.specificationProvider = { id: 'specification-missing' };
+    config.shared.specificationProvider = {
+      id: 'specification-missing',
+      store: { id: 'self-hosted-fixture', repositoryId: 'workspace' },
+    };
 
     expect(() => compileProjectComposition(productRoot, workspaceRoot, config, catalog)).toThrow(
       'Unknown plugin: specification-missing',

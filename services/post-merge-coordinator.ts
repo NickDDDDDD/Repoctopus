@@ -1,12 +1,7 @@
 import { Service, type Context } from '@deepseek-ai/cordis';
 
 import { coordinatePostMerge } from '../domains/post-merge/coordinator.js';
-import {
-  postMergeProjectSnapshot,
-  postMergeRunOptions,
-  type PostMergeProjectSource,
-  type PostMergeRunInput,
-} from '../domains/post-merge/run.js';
+import type { PostMergeProjectSource } from '../domains/post-merge/run.js';
 import type { DeliveryPolicy, MergeRequestReference } from '../domains/delivery/types.js';
 import { validateDeliveryPolicy } from '../domains/delivery/validation.js';
 
@@ -24,10 +19,10 @@ export interface PostMergeCoordinatorConfig {
 export type PostMergeExecutionResult =
   | Awaited<ReturnType<typeof coordinatePostMerge>>
   | {
-      status: 'executed';
-      diagnostic: 'post-merge-completed' | 'post-merge-evidence-blocked';
+      status: 'migration_required';
+      diagnostic: 'change-lifecycle-run-required';
       changeId: string;
-      runId: string;
+      replacementCommand: 'run.archive.refresh';
     };
 
 export type PostMergeReconciliationItem =
@@ -48,9 +43,8 @@ export interface PostMergeReconciliationResult {
 }
 
 export class PostMergeCoordinator extends Service {
-  static inject = ['delivery', 'postMergeActions', 'workflowRuns', 'workflowSource'];
+  static inject = ['delivery'];
   private readonly policy: DeliveryPolicy;
-  private readonly execution: PostMergeCoordinatorConfig['execution'];
 
   constructor(context: Context, config: PostMergeCoordinatorConfig) {
     super(context, 'postMergeCoordinator');
@@ -61,7 +55,6 @@ export class PostMergeCoordinator extends Service {
       );
     }
     this.policy = structuredClone(config.policy);
-    this.execution = config.execution ? structuredClone(config.execution) : undefined;
   }
 
   async wake(reference: MergeRequestReference, signal?: AbortSignal) {
@@ -69,86 +62,23 @@ export class PostMergeCoordinator extends Service {
     return coordinatePostMerge(refresh);
   }
 
-  startRun(input: PostMergeRunInput, signal?: AbortSignal) {
-    return this.ctx.workflowRuns.startOrResume(postMergeRunOptions(input), signal);
-  }
-
-  async execute(
+  async observe(
     reference: MergeRequestReference,
     signal?: AbortSignal,
   ): Promise<PostMergeExecutionResult> {
     const coordination = await this.wake(reference, signal);
     if (coordination.status !== 'ready') return coordination;
-    if (!this.execution) throw new Error('Post-merge execution configuration is missing');
-
-    const workflow = await this.ctx.workflowSource.load(this.execution.workflowSource);
-    const projectSnapshot = postMergeProjectSnapshot({
-      coordination,
-      projectId: this.execution.projectId,
-      root: this.execution.workspaceRoot,
-      sources: this.execution.repositories,
-      capturedAt: new Date().toISOString(),
-    });
-    const started = await this.startRun(
-      {
-        coordination,
-        workflow,
-        projectSnapshot,
-        workflowSource: this.execution.workflowSource,
-      },
-      signal,
-    );
-    const runId = started.value.state.runId;
-    let status = started.value;
-
-    if (status.state.status === 'completed') {
-      return {
-        status: 'executed',
-        diagnostic: 'post-merge-completed',
-        changeId: coordination.changeId,
-        runId,
-      };
-    }
-    if (status.state.currentStep === 'checkout' || status.state.currentStep === 'evidence') {
-      const verification = await this.ctx.postMergeActions.verifyMergedCode(
-        {
-          runId,
-          profileId: this.execution.evidenceProfile,
-          sources: this.execution.repositories,
-        },
-        signal,
-      );
-      if (verification.status !== 'succeeded') {
-        return {
-          status: 'executed',
-          diagnostic: 'post-merge-evidence-blocked',
-          changeId: coordination.changeId,
-          runId,
-        };
-      }
-      status = await this.ctx.workflowRuns.status(runId, signal);
-    }
-    if (status.state.currentStep === 'close-specification') {
-      await this.ctx.postMergeActions.closeSpecification(runId, signal);
-      status = await this.ctx.workflowRuns.status(runId, signal);
-    }
-    if (status.state.currentStep === 'audit-paths') {
-      await this.ctx.postMergeActions.auditSpecificationClosure(runId, signal);
-      status = await this.ctx.workflowRuns.status(runId, signal);
-    }
-    if (status.state.currentStep === 'publish') {
-      await this.ctx.postMergeActions.publishChange(runId, signal);
-      status = await this.ctx.workflowRuns.status(runId, signal);
-    }
-    if (status.state.status !== 'completed') {
-      throw new Error(`Post-merge Run stopped before completion: ${runId}`);
-    }
     return {
-      status: 'executed',
-      diagnostic: 'post-merge-completed',
+      status: 'migration_required',
+      diagnostic: 'change-lifecycle-run-required',
       changeId: coordination.changeId,
-      runId,
+      replacementCommand: 'run.archive.refresh',
     };
+  }
+
+  /** @deprecated Compatibility fence. This observes facts but never starts or advances a workflow. */
+  execute(reference: MergeRequestReference, signal?: AbortSignal): Promise<PostMergeExecutionResult> {
+    return this.observe(reference, signal);
   }
 
   async reconcile(signal?: AbortSignal): Promise<PostMergeReconciliationResult> {
@@ -157,7 +87,7 @@ export class PostMergeCoordinator extends Service {
     for (const candidate of candidates) {
       try {
         items.push({
-          ...(await this.execute(candidate.reference, signal)),
+          ...(await this.observe(candidate.reference, signal)),
           candidateChangeId: candidate.changeId,
         });
       } catch {
@@ -170,11 +100,14 @@ export class PostMergeCoordinator extends Service {
     }
     return {
       checked: candidates.length,
-      completed: items.filter((item) => item.status === 'executed').length,
+      completed: 0,
       waiting: items.filter((item) => item.status === 'waiting').length,
       blocked: items.filter(
         (item) =>
-          item.status === 'blocked' || item.status === 'ambiguous' || item.status === 'ignored',
+          item.status === 'blocked' ||
+          item.status === 'ambiguous' ||
+          item.status === 'ignored' ||
+          item.status === 'migration_required',
       ).length,
       failed: items.filter((item) => item.status === 'failed').length,
       items,

@@ -25,6 +25,7 @@ import type {
   HumanDecisionResponse,
   MergeRequestIdentity,
   MergeRequestReference,
+  MergeRequestStatus,
   TrustedActor,
 } from './types.js';
 import {
@@ -50,6 +51,28 @@ export interface DeliveryV3Preparation {
   policy: DeliveryPolicy;
   reportContents: string;
   evidenceBundleIds: string[];
+}
+
+export interface ArchivePublicationReceipt {
+  actionId: string;
+  deliveryId: string;
+  type: 'git.push' | 'mr.create_or_update';
+  status: 'succeeded';
+  recovered: boolean;
+  remoteOid?: string;
+  mergeRequest?: MergeRequestIdentity;
+}
+
+export interface ArchivePublicationResult {
+  snapshot: ReturnType<typeof createDeliverySnapshotV3>;
+  receipts: ArchivePublicationReceipt[];
+}
+
+export interface ArchiveMergeRefreshResult {
+  allMerged: boolean;
+  mergeRequestStatuses: MergeRequestStatus[];
+  mergeEvidence: DeliveryStateV3['mergeEvidence'];
+  platformCapabilities: DeliveryStateV3['platformCapabilities'];
 }
 
 function deliveryEvent(
@@ -177,6 +200,169 @@ export class DeliveryServiceV3 {
       }),
     });
     return next;
+  }
+
+  async publishArchive(options: DeliveryV3Preparation): Promise<ArchivePublicationResult> {
+    this.validate(options.intent, options.policy);
+    await this.evidence.assertSatisfied(options.evidenceBundleIds, this.compositionDigest);
+    const repositories = selectedRepositories(options.project, options.intent);
+    const facts: BusinessDeliveryFactsV3[] = [];
+    for (const delivery of options.intent.businessDeliveries) {
+      facts.push({
+        ...(await this.git.inspect(
+          repositories.get(delivery.deliveryId)!,
+          businessIntent(delivery),
+          options.policy,
+        )),
+        deliveryId: delivery.deliveryId,
+      });
+    }
+    const snapshot = createDeliverySnapshotV3({
+      compositionDigest: this.compositionDigest,
+      intent: options.intent,
+      policy: options.policy,
+      reportContents: options.reportContents,
+      evidenceBundleIds: options.evidenceBundleIds,
+      businessDeliveries: facts,
+      createdAt: this.clock().toISOString(),
+    });
+    const receipts: ArchivePublicationReceipt[] = [];
+    for (const action of snapshot.plan) {
+      const repository = repositories.get(action.deliveryId)!;
+      if (action.type === 'git.push') {
+        let remoteOid: string;
+        let recovered = false;
+        try {
+          remoteOid = await this.git.push(repository, action, options.policy);
+        } catch (error) {
+          const observed = await this.git.inspect(
+            repository,
+            businessIntent(
+              options.intent.businessDeliveries.find(
+                (delivery) => delivery.deliveryId === action.deliveryId,
+              )!,
+            ),
+            options.policy,
+          );
+          if (observed.remoteSourceOid !== action.expectedHead) throw error;
+          remoteOid = observed.remoteSourceOid;
+          recovered = true;
+        }
+        if (remoteOid !== action.expectedHead) {
+          throw new Error(`Published remote OID drifted: ${action.deliveryId}`);
+        }
+        receipts.push({
+          actionId: action.actionId,
+          deliveryId: action.deliveryId,
+          type: action.type,
+          status: 'succeeded',
+          recovered,
+          remoteOid,
+        });
+        continue;
+      }
+      if (action.type !== 'mr.create_or_update') {
+        throw new Error(`Unsupported Archive publication action: ${action.type}`);
+      }
+      if (!repository.remoteIdentity) {
+        throw new Error(`Repository has no remote identity: ${repository.id}`);
+      }
+      const values = {
+        changeId: options.intent.changeId,
+        verificationReport: options.reportContents,
+      };
+      const request = {
+        repositoryId: repository.id,
+        remoteIdentity: repository.remoteIdentity,
+        sourceBranch: action.sourceBranch,
+        targetBranch: action.targetBranch,
+        title: render(options.policy.publication.mrTitleTemplate, values),
+        body: render(options.policy.publication.mrBodyTemplate, values),
+      };
+      let recovered = false;
+      let mergeRequest = await this.mergeRequests.find(request);
+      if (mergeRequest) {
+        mergeRequest = await this.mergeRequests.update(mergeRequest, request);
+        recovered = true;
+      } else {
+        try {
+          mergeRequest = await this.mergeRequests.create(request);
+        } catch (error) {
+          mergeRequest = await this.mergeRequests.find(request);
+          if (!mergeRequest) throw error;
+          recovered = true;
+        }
+      }
+      receipts.push({
+        actionId: action.actionId,
+        deliveryId: action.deliveryId,
+        type: action.type,
+        status: 'succeeded',
+        recovered,
+        mergeRequest,
+      });
+    }
+    return { snapshot, receipts };
+  }
+
+  async refreshArchive(
+    publication: ArchivePublicationResult,
+  ): Promise<ArchiveMergeRefreshResult> {
+    const identities = publication.receipts.flatMap((receipt) =>
+      receipt.mergeRequest ? [receipt.mergeRequest] : [],
+    );
+    const mergeRequestStatuses = await Promise.all(
+      identities.map((identity) => this.mergeRequests.status(identity)),
+    );
+    const mergeEvidence = mergeRequestStatuses.flatMap((status) => {
+      const expected = publication.snapshot.businessDeliveries.find(
+        (delivery) =>
+          delivery.repositoryId === status.repositoryId &&
+          delivery.sourceBranch === status.sourceBranch,
+      );
+      if (
+        !expected ||
+        status.sourceBranch !== expected.sourceBranch ||
+        status.targetBranch !== expected.targetBranch ||
+        status.headCommit !== expected.head
+      ) {
+        throw new Error(`Business merge request mapping drifted: ${status.repositoryId}`);
+      }
+      if (status.state !== 'merged' || !status.mergeCommit || !status.mergedAt) return [];
+      const delivery = publication.snapshot.businessDeliveries.find(
+        (candidate) =>
+          candidate.repositoryId === status.repositoryId &&
+          candidate.sourceBranch === status.sourceBranch,
+      )!;
+      return [
+        {
+          deliveryId: delivery.deliveryId,
+          repositoryId: status.repositoryId,
+          mergeRequest: {
+            provider: status.provider,
+            repositoryId: status.repositoryId,
+            number: status.number,
+            url: status.url,
+          },
+          mergeCommit: status.mergeCommit,
+          mergedAt: status.mergedAt,
+          observedAt: this.clock().toISOString(),
+        },
+      ];
+    });
+    const platformCapabilities = await Promise.all(
+      publication.snapshot.businessDeliveries.map((delivery) =>
+        this.mergeRequests.capability(delivery.remoteIdentity!, delivery.targetBranch),
+      ),
+    );
+    return {
+      allMerged:
+        identities.length === publication.snapshot.businessDeliveries.length &&
+        mergeEvidence.length === identities.length,
+      mergeRequestStatuses,
+      mergeEvidence,
+      platformCapabilities,
+    };
   }
 
   async decide(

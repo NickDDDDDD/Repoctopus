@@ -2,8 +2,13 @@ import type { WorkflowAction } from '../workflow-contract/types.js';
 import type { CompositionIdentitySnapshot } from '../composition/types.js';
 import type { SkillUsageSnapshot } from '../skill/types.js';
 import type { SpecificationUsageSnapshot } from '../specification/types.js';
+import type {
+  ChangeLifecycleState,
+  RunStatus as ChangeLifecycleRunStatus,
+} from '../change-lifecycle/transition.js';
+import type { LifecycleContributorSnapshot } from '../change-lifecycle/contributors.js';
 
-export type RunStatus = 'running' | 'waiting' | 'completed' | 'failed';
+export type RunStatus = ChangeLifecycleRunStatus;
 
 export interface RunTriggerSnapshot {
   schemaVersion: 1;
@@ -20,6 +25,7 @@ export interface RunState {
   workflowDigest: string;
   workflowSource: string | null;
   composition: CompositionIdentitySnapshot;
+  lifecycleContributorSnapshot?: LifecycleContributorSnapshot;
   projectSnapshotDigest: string;
   trigger?: RunTriggerSnapshot;
   traceId: string;
@@ -31,6 +37,7 @@ export interface RunState {
   status: RunStatus;
   retries: Record<string, number>;
   acceptedEvidenceBundleIds: string[];
+  changeLifecycle?: ChangeLifecycleState;
   skillUsageSnapshots?: SkillUsageSnapshot[];
   specificationUsageSnapshot?: SpecificationUsageSnapshot;
   createdAt: string;

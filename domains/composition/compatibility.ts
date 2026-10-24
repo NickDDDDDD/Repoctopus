@@ -6,10 +6,17 @@ import type {
 
 const PROTECTED_AUTHORITIES = new Set([
   'action-store-write',
+  'change-lifecycle-migration',
   'delivery-state-write',
   'event-inbox-runner',
   'event-inbox-write',
   'evidence-gate',
+  'lifecycle-definition',
+  'lifecycle-definition-registry',
+  'lifecycle-extension',
+  'lifecycle-extension-registry',
+  'lifecycle-validator',
+  'lifecycle-validator-registry',
   'post-merge-coordinate',
   'post-merge-execute',
   'run-store-write',

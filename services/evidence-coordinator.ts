@@ -44,6 +44,8 @@ interface WorkflowEvidenceBinding {
   workflowActionId: string;
   workflowStepId: string;
   workflowStateVersion: number;
+  workflowInputDigest?: `sha256:${string}`;
+  expectedEvidenceFingerprint?: string;
 }
 
 interface EvidenceRunContext {
@@ -108,7 +110,11 @@ function asContext(value: unknown): EvidenceRunContext {
         typeof binding.workflowActionId !== 'string' ||
         typeof binding.workflowStepId !== 'string' ||
         !Number.isSafeInteger(binding.workflowStateVersion) ||
-        binding.workflowStateVersion < 0))
+        binding.workflowStateVersion < 0 ||
+        (binding.workflowInputDigest !== undefined &&
+          !/^sha256:[a-f0-9]{64}$/u.test(binding.workflowInputDigest)) ||
+        (binding.expectedEvidenceFingerprint !== undefined &&
+          typeof binding.expectedEvidenceFingerprint !== 'string')))
   ) {
     throw new Error('Invalid EvidenceRunContext');
   }
@@ -242,6 +248,46 @@ export class EvidenceCoordinator extends Service {
         `Workflow run ${workflowRunId} requires composition ${state.composition.compositionDigest}; current composition ${compositionDigest} is migration_required`,
       );
     }
+    const lifecycle = state.changeLifecycle;
+    if (lifecycle?.phase === 'verify') {
+      const work = lifecycle.currentWork;
+      const verification = lifecycle.verificationInput;
+      if (
+        state.status !== 'running' ||
+        !work ||
+        work.kind !== 'evidence.verify' ||
+        !verification ||
+        work.inputDigest !== verification.digest
+      ) {
+        throw new Error(`Change Run ${workflowRunId} has no active Verify Work`);
+      }
+      if (verification.evidenceProfile.id !== profileId) {
+        throw new Error(
+          `Verify Work requires evidence profile ${verification.evidenceProfile.id}, not ${profileId}`,
+        );
+      }
+      return {
+        workflowRunId,
+        workflowActionId: work.workId,
+        workflowStepId: 'verify',
+        workflowStateVersion: state.stateVersion,
+        workflowInputDigest: verification.digest,
+        expectedEvidenceFingerprint: verification.evidenceProfile.fingerprintDigest,
+      };
+    }
+    if (lifecycle?.phase === 'archive' && lifecycle.currentWork?.kind === 'delivery.verify-merged') {
+      const profile = state.trigger?.facts.verificationProfileId;
+      if (state.status !== 'running' || profile !== profileId) {
+        throw new Error(`Change Run ${workflowRunId} has no active post-merge Verify Work`);
+      }
+      return {
+        workflowRunId,
+        workflowActionId: lifecycle.currentWork.workId,
+        workflowStepId: 'archive.verify-merged',
+        workflowStateVersion: state.stateVersion,
+        workflowInputDigest: lifecycle.currentWork.inputDigest,
+      };
+    }
     if (
       state.status !== 'waiting' ||
       state.pendingActionId === null ||
@@ -355,6 +401,14 @@ export class EvidenceCoordinator extends Service {
             this.planWithRepositories(profileId, useOverrides ? repositories : null),
           ]);
           const { config, plan, fingerprint } = planned;
+          if (
+            binding?.expectedEvidenceFingerprint &&
+            binding.expectedEvidenceFingerprint !== fingerprint.digest
+          ) {
+            throw new Error(
+              `Verify Work input fingerprint changed before Evidence execution: ${profileId}`,
+            );
+          }
           const artifacts = new FileArtifactStore(this.workspace);
           const adapters = this.ctx.evidenceAdapters.create(config, artifacts);
           const context: EvidenceRunContext = {
@@ -449,6 +503,7 @@ export class EvidenceCoordinator extends Service {
           journal: this.journal,
           timestamp: new Date().toISOString(),
           endingFingerprint: endingFingerprint.digest,
+          artifacts: new FileArtifactStore(this.workspace),
         });
         await atomicWriteJson(this.contextFile(attemptId), {
           ...context,

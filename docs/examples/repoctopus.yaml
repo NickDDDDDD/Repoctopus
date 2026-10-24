@@ -50,6 +50,9 @@ skillProviders:
   - id: skill-provider-filesystem
 specificationProvider:
   id: specification-openspec
+  store:
+    id: team-platform
+    repositoryId: workspace
 platformEvents:
   storeProvider:
     id: platform-events-file

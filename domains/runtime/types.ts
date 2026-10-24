@@ -7,6 +7,8 @@ import type { WorkflowPackage } from '../workflow-contract/types.js';
 import type { CompositionCompatibility } from '../composition/types.js';
 import type { SkillCompatibility } from '../skill/types.js';
 import type { SpecificationCompatibility } from '../specification/types.js';
+import type { ChangeRunProjection } from '../change-lifecycle/transition.js';
+import type { LifecycleContributorCompatibility } from '../change-lifecycle/contributors.js';
 
 export interface RuntimeDiagnostic {
   level: 'info' | 'warning' | 'error';
@@ -21,6 +23,7 @@ export interface RuntimeResult<T> {
 
 export interface RunStatusView {
   state: RunState;
+  changeLifecycle?: ChangeRunProjection;
   checkpoint: Checkpoint;
   trajectoryLength: number;
   nextAction: EngineAction | null;
@@ -32,6 +35,7 @@ export interface RunStatusView {
     message?: string;
   };
   compositionCompatibility: CompositionCompatibility;
+  lifecycleContributorCompatibility?: LifecycleContributorCompatibility;
   skillCompatibility?: SkillCompatibility;
   specificationCompatibility?: SpecificationCompatibility;
   reason?: string;

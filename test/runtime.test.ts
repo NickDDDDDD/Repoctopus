@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { WorkflowRunCoordinator } from '../domains/runtime/workflow-runs.js';
+import {
+  lifecycleContributorIdentity,
+  lifecycleContributorSnapshot,
+} from '../domains/change-lifecycle/contributors.js';
 import type { EvidenceGatePort, TelemetryBatch, TelemetryPort } from '../domains/runtime/types.js';
 import { createWorkflowPackage } from '../domains/workflow-contract/package.js';
 import { FileRuntimeStore } from '../platform/runtime/file-runtime-store.js';
@@ -187,6 +191,92 @@ describe('Repoctopus runtime', () => {
       (await incompatible.status('run-composition-drift')).compositionCompatibility.status,
     ).toBe('migration_required');
     await expect(incompatible.next('run-composition-drift')).rejects.toThrow(/migration_required/i);
+  });
+
+  it('upgrades compatible lifecycle Contributors and blocks incompatible recovery drift', async () => {
+    const workspace = await temporaryDirectory('repoctopus-lifecycle-contributor-drift-');
+    cleanup.push(workspace);
+    const identity = (options: {
+      id: string;
+      version: string;
+      code: string;
+      compatibleWith?: string[];
+    }) =>
+      lifecycleContributorIdentity({
+        kind: 'validator',
+        id: options.id,
+        version: options.version,
+        codeDigest: `sha256:${options.code.repeat(64)}`,
+        configDigest: `sha256:${'a'.repeat(64)}`,
+        ...(options.compatibleWith ? { compatibleWith: options.compatibleWith } : {}),
+      });
+    const before = lifecycleContributorSnapshot([
+      identity({ id: 'team.a', version: '1.0.0', code: 'a' }),
+      identity({ id: 'team.b', version: '1.0.0', code: 'b' }),
+    ]);
+    const reordered = lifecycleContributorSnapshot([...before.contributors].reverse());
+    expect(reordered.digest).toBe(before.digest);
+
+    const initial = new WorkflowRunCoordinator(
+      new FileRuntimeStore(workspace),
+      { async export() {} },
+      compositionFixture(),
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      before,
+    );
+    await initial.start({
+      workflow: workflowFixture(),
+      projectSnapshot: projectFixture(),
+      runId: 'run-lifecycle-contributor-drift',
+    });
+    const compatibleSnapshot = lifecycleContributorSnapshot([
+      identity({ id: 'team.a', version: '2.0.0', code: 'c', compatibleWith: ['1.0.0'] }),
+      identity({ id: 'team.b', version: '1.0.0', code: 'b' }),
+    ]);
+    const compatible = new WorkflowRunCoordinator(
+      new FileRuntimeStore(workspace),
+      { async export() {} },
+      compositionFixture(),
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      compatibleSnapshot,
+    );
+    expect(
+      (await compatible.status('run-lifecycle-contributor-drift'))
+        .lifecycleContributorCompatibility?.status,
+    ).toBe('compatible');
+    await compatible.next('run-lifecycle-contributor-drift');
+    expect(
+      (await new FileRuntimeStore(workspace).loadRun('run-lifecycle-contributor-drift'))
+        .lifecycleContributorSnapshot?.digest,
+    ).toBe(compatibleSnapshot.digest);
+
+    const incompatibleSnapshot = lifecycleContributorSnapshot([
+      identity({ id: 'team.a', version: '2.0.0', code: 'd' }),
+      identity({ id: 'team.b', version: '1.0.0', code: 'b' }),
+    ]);
+    const incompatible = new WorkflowRunCoordinator(
+      new FileRuntimeStore(workspace),
+      { async export() {} },
+      compositionFixture(),
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      incompatibleSnapshot,
+    );
+    expect(
+      (await incompatible.status('run-lifecycle-contributor-drift'))
+        .lifecycleContributorCompatibility?.status,
+    ).toBe('migration_required');
+    await expect(incompatible.next('run-lifecycle-contributor-drift')).rejects.toThrow(
+      /lifecycle Contributors are migration_required/u,
+    );
   });
 
   async function waitingAtEvidence(runtime: WorkflowRunCoordinator, runId: string) {

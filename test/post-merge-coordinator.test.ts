@@ -292,8 +292,8 @@ describe('post-merge coordinator', () => {
     ]);
 
     let attempts = 0;
-    const original = first.coordinator.execute.bind(first.coordinator);
-    first.coordinator.execute = async (reference, signal) => {
+    const original = first.coordinator.observe.bind(first.coordinator);
+    first.coordinator.observe = async (reference, signal) => {
       attempts += 1;
       if (attempts === 2) throw new Error('isolated failure');
       return original(reference, signal);
@@ -368,7 +368,7 @@ describe('post-merge coordinator', () => {
     });
     const seen: MergeRequestReference[] = [];
     const processor = createGitHubPostMergeProcessor({
-      execute(reference) {
+      observe(reference) {
         seen.push(reference);
         return Promise.resolve({
           status: 'waiting',
@@ -396,14 +396,14 @@ describe('post-merge coordinator', () => {
     });
 
     const retrying = createGitHubPostMergeProcessor({
-      execute: () => Promise.reject(new Error('temporary platform failure')),
+      observe: () => Promise.reject(new Error('temporary platform failure')),
     });
     await expect(
       retrying.process({ envelope, attempt: 1, signal: new AbortController().signal }),
-    ).resolves.toEqual({ result: 'retry', diagnostic: 'post-merge-execution-failed' });
+    ).resolves.toEqual({ result: 'retry', diagnostic: 'post-merge-fact-observation-failed' });
 
     const ambiguous = createGitHubPostMergeProcessor({
-      execute: () =>
+      observe: () =>
         Promise.resolve({
           status: 'ambiguous',
           diagnostic: 'delivery-event-ambiguous-match',

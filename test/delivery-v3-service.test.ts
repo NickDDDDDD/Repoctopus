@@ -235,6 +235,82 @@ const project = createProjectSnapshot({
 });
 
 describe('DeliveryServiceV3', () => {
+  it('publishes Archive actions without a second approval and recovers lost responses', async () => {
+    class ResponseLossGit extends FakeGit {
+      override push(_repository: RepositorySnapshot, action: { expectedHead: string }) {
+        this.pushed = true;
+        return Promise.reject(new Error(`push response lost after ${action.expectedHead}`));
+      }
+    }
+    class ResponseLossMergeRequests extends FakeMergeRequests {
+      created: MergeRequestIdentity | null = null;
+
+      override find(input: MergeRequestInput): Promise<MergeRequestIdentity | null> {
+        this.inputs.push(structuredClone(input));
+        return Promise.resolve(this.created);
+      }
+
+      override create(input: MergeRequestInput): Promise<MergeRequestIdentity> {
+        this.inputs.push(structuredClone(input));
+        this.created = structuredClone(this.identity);
+        return Promise.reject(new Error('MR create response lost'));
+      }
+    }
+    const service = new DeliveryServiceV3(
+      new MemoryStore(),
+      new ResponseLossGit(),
+      new ResponseLossMergeRequests(),
+      { assertSatisfied: () => Promise.resolve() },
+      TEST_COMPOSITION_DIGEST,
+    );
+    const result = await service.publishArchive({
+      project,
+      intent,
+      policy,
+      reportContents: 'verification-report:sha256',
+      evidenceBundleIds: ['bundle-verified'],
+    });
+    expect(result.receipts).toMatchObject([
+      { type: 'git.push', status: 'succeeded', recovered: true },
+      {
+        type: 'mr.create_or_update',
+        status: 'succeeded',
+        recovered: true,
+        mergeRequest: { number: 7 },
+      },
+    ]);
+    expect(result.snapshot.plan).toHaveLength(2);
+  });
+
+  it('refreshes the frozen Archive MR collection until every exact merge commit exists', async () => {
+    const mergeRequests = new FakeMergeRequests();
+    const service = new DeliveryServiceV3(
+      new MemoryStore(),
+      new FakeGit(),
+      mergeRequests,
+      { assertSatisfied: () => Promise.resolve() },
+      TEST_COMPOSITION_DIGEST,
+    );
+    const publication = await service.publishArchive({
+      project,
+      intent,
+      policy,
+      reportContents: 'verification-report:sha256',
+      evidenceBundleIds: ['bundle-verified'],
+    });
+    await expect(service.refreshArchive(publication)).resolves.toMatchObject({
+      allMerged: false,
+      mergeEvidence: [],
+      mergeRequestStatuses: [{ state: 'open' }],
+    });
+    mergeRequests.authoritativeState = 'merged';
+    await expect(service.refreshArchive(publication)).resolves.toMatchObject({
+      allMerged: true,
+      mergeEvidence: [{ deliveryId: 'primary', mergeCommit: '5'.repeat(40) }],
+      mergeRequestStatuses: [{ state: 'merged' }],
+    });
+  });
+
   it('publishes exactly the declared Business MR without reading or creating a Change MR', async () => {
     const store = new MemoryStore();
     const git = new FakeGit();

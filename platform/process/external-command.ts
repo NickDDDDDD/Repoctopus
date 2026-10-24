@@ -1,7 +1,12 @@
-import { execFile, execFileSync } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import path from 'node:path';
 
-import { assertSafeWindowsBatchArguments, resolveWindowsCommand } from './spawn-command.js';
+import {
+  assertSafeWindowsBatchArguments,
+  commandInvocation,
+  resolveWindowsCommand,
+} from './spawn-command.js';
+import { terminateProcessTree } from './terminate-process-tree.js';
 
 const DEFAULT_TIMEOUT_MS = 60_000;
 const DEFAULT_MAX_BUFFER_BYTES = 8 * 1024 * 1024;
@@ -24,56 +29,72 @@ export async function runExternalCommandAsync(
   }
   const cwd = path.resolve(options.cwd ?? process.cwd());
   const env = options.env ?? process.env;
-  const resolved =
-    process.platform === 'win32' ? resolveWindowsCommand(command, env, cwd) : command;
-  const batch = process.platform === 'win32' && /\.(?:bat|cmd)$/iu.test(resolved);
-  if (batch) assertSafeWindowsBatchArguments(args);
+  const invocation = commandInvocation(command, args, { cwd, env });
+  if (options.signal?.aborted) {
+    throw new ExternalCommandError(command, args, 'Execution cancelled');
+  }
   const execute = () =>
     new Promise<string>((resolve, reject) => {
       let settled = false;
-      const child = execFile(
-        resolved,
-        [...args],
-        {
-          cwd,
-          env,
-          encoding: 'utf8',
-          maxBuffer,
-          windowsHide: true,
-          shell: batch,
-        },
-        (error, stdout, stderr) => {
-          if (settled) return;
-          settled = true;
-          clearTimeout(timer);
-          options.signal?.removeEventListener('abort', abort);
-          if (error)
-            reject(
-              new ExternalCommandError(command, args, stderr.trim(), {
-                cause: error,
-                timedOut: commandTimedOut(error),
-              }),
-            );
-          else resolve(stdout);
-        },
-      );
-      const stop = (timedOut: boolean) => {
-        if (settled) return;
-        settled = true;
+      let bytes = 0;
+      const stdout: Buffer[] = [];
+      const stderr: Buffer[] = [];
+      const child = spawn(invocation.command, invocation.args, {
+        cwd,
+        env: invocation.env,
+        windowsHide: true,
+        detached: process.platform !== 'win32',
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
+      const cleanup = () => {
         clearTimeout(timer);
         options.signal?.removeEventListener('abort', abort);
-        child.kill('SIGKILL');
-        child.stdin?.destroy();
-        child.stdout?.destroy();
-        child.stderr?.destroy();
-        child.unref();
-        reject(new ExternalCommandError(command, args, '', { timedOut }));
       };
-      const abort = () => stop(false);
+      const stop = (timedOut: boolean, reason = '') => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        void terminateProcessTree(child)
+          .catch(() => child.kill('SIGKILL'))
+          .finally(() => {
+            child.stdin.destroy();
+            child.stdout.destroy();
+            child.stderr.destroy();
+            child.unref();
+            reject(new ExternalCommandError(command, args, reason, { timedOut }));
+          });
+      };
+      const abort = () => stop(false, 'Execution cancelled');
       const timer = setTimeout(() => stop(true), timeoutMs);
+      const collect = (chunks: Buffer[], chunk: Buffer) => {
+        bytes += chunk.length;
+        if (bytes > maxBuffer) stop(false, 'Command output exceeded the configured limit');
+        else chunks.push(chunk);
+      };
+      child.stdout.on('data', (chunk: Buffer) => collect(stdout, chunk));
+      child.stderr.on('data', (chunk: Buffer) => collect(stderr, chunk));
+      child.once('error', (error) => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        reject(new ExternalCommandError(command, args, error.message, { cause: error }));
+      });
+      child.once('close', (code, signal) => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        if (code !== 0 || signal !== null) {
+          reject(
+            new ExternalCommandError(command, args, Buffer.concat(stderr).toString('utf8').trim()),
+          );
+        } else {
+          resolve(Buffer.concat(stdout).toString('utf8'));
+        }
+      });
       options.signal?.addEventListener('abort', abort, { once: true });
       if (options.signal?.aborted) abort();
-      child.stdin?.end(options.input);
+      child.stdin.on('error', () => {});
+      child.stdin.end(options.input);
     });
   return execute();
 }

@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "upstream": {
-    "repository": "https://github.com/AbanteAI/comet",
-    "commit": "575ab0d172e8105257b3c9172b8c8a9b628960ca",
-    "version": "0.4.5",
+    "repository": "https://github.com/rpamis/comet.git",
+    "commit": "aeb1a6598034e28ce46b8422d4dbd8785e607bd7",
+    "version": "0.5.0",
     "license": "MIT"
   },
   "files": [
@@ -44,21 +44,21 @@
     },
     {
       "source": "platform/process/spawn-command.ts",
-      "sourceSha256": "38abe8359ea96afe0f0657c4008065a5f4ee8009e82a5b66b02dd0cb889eb34d",
+      "sourceSha256": "e89c4875388fa3068516377440a978095aa6fec26eb772e813eab7585e0a0337",
       "target": "platform/process/spawn-command.ts",
-      "sha256": "c7c6327c8356ab349c9d7cb2eccb230846fb7ec485424552e5c46fd4285a6beb",
+      "sha256": "a6befab55cba582b9dc14095c2b7eead8485bad7a4ee7a6d43dd6325b58af949",
       "adoption": "modified"
     },
     {
       "source": "platform/process/external-command.ts",
-      "sourceSha256": "7845cf9712c49d89b025f90a20b2becf465b59d6eaf14788733fdff6e85c2d85",
+      "sourceSha256": "261b9d5390e1482242477e424557cd489b503ea41dd1fd074706e73426f0e0c9",
       "target": "platform/process/external-command.ts",
-      "sha256": "b6385f2a763e048fcd7057736c81e3420b39479fe23a67691c6cee9269ad52bb",
+      "sha256": "99324b0ba79c457e1c150808c8ae052b619113028e483a5f89e745d1f887ff86",
       "adoption": "modified"
     },
     {
       "source": "platform/process/process-identity.ts",
-      "sourceSha256": "48d0db970323212f34224909d2b0fe9550d64d22d7617a4c8d172ab93c231000",
+      "sourceSha256": "d27644820b145645493224c5a2f133cc5b93d51f07381b02688f8a4ef192d881",
       "target": "platform/process/process-identity.ts",
       "sha256": "8f7f375d7ca5302af230e03bd84a1ccb75a6e7ce7f218394052148b55c97562b",
       "adoption": "modified"
@@ -72,9 +72,9 @@
     },
     {
       "source": "platform/process/terminate-process-tree.ts",
-      "sourceSha256": "efc7fe7ba70d0a430e8b226c2351c2bc83e60243d895c615b7c48908840ebfb6",
+      "sourceSha256": "c46845796d8aa63ba066269ba7c69a781b265c1937eac5ec96216a162c9eaab3",
       "target": "platform/process/terminate-process-tree.ts",
-      "sha256": "de7007e4b598bff6da92fc6c95db2abd976184e0258fc3297b177943d654edd8",
+      "sha256": "bd6f68010ba7fe1715c1a72d60532d822aa489f27e717bb38bb2dd88f7b0eb52",
       "adoption": "modified"
     },
     {
@@ -114,35 +114,35 @@
     },
     {
       "source": "domains/comet-native/native-snapshot.ts",
-      "sourceSha256": "9dc56855f652617ee6353ac6506788051d006fdd40ea3d55bf0a6e1e5db8cf85",
+      "sourceSha256": "865c7d16b87c6b04f96b404986b8c0bacdda6a4de5aa7e47224488b085a397bf",
       "target": "platform/git/evidence-fingerprint.ts",
       "sha256": "9d8600b9bab660ae497c159b1ebefb17e1b14d6f85d30db2a1f09107aca59428",
       "adoption": "modified"
     },
     {
       "source": "domains/comet-classic/classic-command-checks.ts",
-      "sourceSha256": "468bb2e66403b5a80320289ab4bb627b89e22b41584b594cd9438f32053c3878",
+      "sourceSha256": "dbe7f0a86ac1ce15ac7b18b402d5dffa3dfb1ae4f93787cbbbc7314cc2118b8b",
       "target": "domains/runtime/evidence-guard.ts",
       "sha256": "bf742298d46ccd8572ed8759d8f0890c01e1c9ab0027ff519835f7f0c9b05aeb",
       "adoption": "modified"
     },
     {
       "source": "domains/comet-classic/classic-guard.ts",
-      "sourceSha256": "9bf88ba1da12edb43f090164dac016d489ce7d15f8f58bcf4aea853ac05f9c61",
+      "sourceSha256": "9d34982be2edce5a1ceb067310b4e82610beb6a874cd1ddbfa0fb5898ac36108",
       "target": "domains/runtime/workflow-runs.ts",
-      "sha256": "07450c8615579fe888ff8e1d334fcd31229e54dcba77b8753bd947963709d84b",
+      "sha256": "24d4aed83bf1bdd554061515323705a813e3293a4bc9f15bb7bb61f3429b4f48",
       "adoption": "modified"
     },
     {
       "source": "platform/fs/plugin-store.ts",
-      "sourceSha256": "5cc2e2c7d4baf568baebb9c9c41dfa55b07b3479c111b8fd789164dccfc07c9d",
+      "sourceSha256": "8897b631409bc7b4f60cda8ef3b1a78d0a8019985eae80d8a2d4e06279826a8b",
       "target": "platform/runtime/recoverable-file-lock.ts",
       "sha256": "5ef1c3732bfd2f43f9a22ef426f149b77c054055f21501422e09c407a16d7fc4",
       "adoption": "modified"
     },
     {
       "source": "domains/comet-classic/classic-store.ts",
-      "sourceSha256": "8ba323bf97f6f6e9c268b2b75873a29b5ef59e63c8c981f7f4d418f5083d9185",
+      "sourceSha256": "700a7e986f13b21d8fa35c40232ba221b70122b9b83ed8f5b761338ea6476388",
       "target": "platform/runtime/recoverable-file-transition.ts",
       "sha256": "42ff6352f221f168ed3909ee9c608723a730069fbe4baad627b877efc5bc0e9f",
       "adoption": "modified"

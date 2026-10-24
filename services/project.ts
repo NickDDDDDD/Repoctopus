@@ -1,7 +1,8 @@
 import { Service } from '@deepseek-ai/cordis';
 import type { Context } from '@deepseek-ai/cordis';
 
-import type { ProjectSnapshot } from '../domains/project/types.js';
+import type { ProjectSnapshot, TargetBranchSnapshot } from '../domains/project/types.js';
+import type { ChangeBranchReference } from '../domains/specification/types.js';
 
 export interface ProjectProbeInput {
   root: string;
@@ -17,6 +18,13 @@ export interface WorkspaceSnapshotInput {
   now?: () => Date;
 }
 
+export interface TargetBranchInput {
+  repositoryId: string;
+  repositoryPath: string;
+  remote: string;
+  targetBranch: string;
+}
+
 export abstract class ProjectService extends Service {
   constructor(context: Context) {
     super(context, 'project');
@@ -24,6 +32,8 @@ export abstract class ProjectService extends Service {
 
   abstract probe(input: ProjectProbeInput): Promise<ProjectSnapshot>;
   abstract snapshot(input: WorkspaceSnapshotInput): Promise<ProjectSnapshot>;
+  abstract targetBranch(input: TargetBranchInput): Promise<TargetBranchSnapshot>;
+  abstract changeBranch(input: TargetBranchInput): Promise<ChangeBranchReference>;
 }
 
 declare module '@deepseek-ai/cordis' {

@@ -2,13 +2,13 @@
 
 ## 固定基线
 
-- 上游：`https://github.com/AbanteAI/comet`
-- 版本：`0.4.5`
-- Commit：`575ab0d172e8105257b3c9172b8c8a9b628960ca`
+- 上游：`https://github.com/rpamis/comet.git`
+- 版本：`0.5.0`
+- Commit：`aeb1a6598034e28ce46b8422d4dbd8785e607bd7`
 - 许可证：MIT，原文保存在同目录 `LICENSE`
-- 2026-10-21 复核：`master` 仍指向该源码提交，没有上游漂移；`0.4.5` 发布标签指向 `c90af44a4474662d7853aae76ce785404974fb0a`，其后只有 README 提交。机器基线分别固定两种身份。
+- 2026-10-24 复核：`master` 与 `0.5.0` 标签均指向固定提交。0.4.5→0.5.0 的完整增量审计见 `0.5.0-audit.md`。
 
-采用前在固定基线上运行 Engine 与 Workflow Contract 相关的 6 个测试文件，共 66 项测试通过。
+最初采用发生在 0.4.5 基线；当前来源摘要已经逐文件移动到 0.5.0。目标文件仍按 Repoctopus 的产品边界保持修改版，不能把来源基线移动理解为盲目覆盖本地实现。
 
 ## 已采用并改造
 
@@ -33,13 +33,13 @@
 
 机器可检查的上游和目标 SHA-256 记录在 `source-manifest.json`。
 
-本轮全量复核还确认 `domains/agent-learning/experience-journal.ts` 的 claim、过期重领、owner/token fence 与 `renewClaim` 可作为长任务租约设计参考。Repoctopus Platform Event Runner 已实现独立定时 Heartbeat，因此不会直接复制只在协调阶段边界续租的 Comet 实现。完整能力矩阵见 `../upstream-alignment-audit.md`。
+0.5.0 复核确认 Workflow Application、Classic SDK 五阶段、proposal/approval hash、稳定 Task ID、Action claim 与写作用域是 Change 生命周期的成熟参考；异步命令进程树清理已立即采用。完整增量决定见 `0.5.0-audit.md`，跨上游能力矩阵见 `../upstream-alignment-audit.md`。
 
 ## 未直接采用
 
 - 上游 Engine 内的文件存储和手动运行封装没有复制。它们依赖 Skill 和平台文件系统，会破坏 Repoctopus 的纯 Engine 边界。
-- 上游完整 CLI、TUI、Skill、模板和产品命名没有复制。当前纵切只需要 Runtime 协议和可分发 CLI。
-- Superpowers/TDD 和更高层编排保留为后续纵切，待 Repoctopus 需求明确后再评估采用边界。
+- 上游完整 CLI、Dashboard、Skill 文案、模板、用户级 Runtime 目录和产品命名没有复制。
+- Workflow Application 与 Classic SDK 不整块复制；其五阶段、固定定义、审批绑定、稳定任务身份和 Hook 写作用域进入 `establish-change-lifecycle` 的产品设计，由 Repoctopus 的 Cordis、团队 Workspace 和多仓模型实现。
 - Comet Native Evidence、Receipt、Retention 与 Checkpoint 文件没有整块复制。依赖闭包显示它们同时引用 Change、Transaction、Portable、Doctor 和 Comet Native 配置等产品域；Repoctopus 按独立 Evidence 领域重新实现。Snapshot 和 Lock 仍不整块复制，但其通用 Fence、文件身份和所有权算法已经按目标文件登记为实质改写。详细分析见 `implementation-feedback-adoption.md`。
 
 这些决定保留上游成熟算法，又避免把无关模块和耦合一并带入。后续采用新的上游文件时，必须先更新来源清单、许可证评估、采用报告和行为测试。

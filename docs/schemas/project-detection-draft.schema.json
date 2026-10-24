@@ -16,7 +16,8 @@
     "unresolved",
     "candidateConfig",
     "baseConfigDigest",
-    "reconcile"
+    "reconcile",
+    "storeBinding"
   ],
   "properties": {
     "apiVersion": { "const": "repoctopus/v1alpha1" },
@@ -36,6 +37,9 @@
     },
     "reconcile": {
       "anyOf": [{ "$ref": "#/$defs/reconcile" }, { "type": "null" }]
+    },
+    "storeBinding": {
+      "anyOf": [{ "$ref": "#/$defs/storeBinding" }, { "type": "null" }]
     }
   },
   "$defs": {
@@ -80,7 +84,7 @@
     "repository": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "name", "path", "remoteIdentity", "technologies", "commands", "services"],
+      "required": ["id", "name", "path", "remoteIdentity", "technologies", "commands", "services", "openSpec"],
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
@@ -91,7 +95,42 @@
           "items": { "enum": ["node", "maven", "gradle"] }
         },
         "commands": { "type": "array", "items": { "$ref": "#/$defs/command" } },
-        "services": { "type": "array", "items": { "$ref": "#/$defs/service" } }
+        "services": { "type": "array", "items": { "$ref": "#/$defs/service" } },
+        "openSpec": { "$ref": "#/$defs/storeRepository" }
+      }
+    },
+    "pointerDiff": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "before", "after"],
+      "properties": {
+        "path": { "const": "openspec/config.yaml" },
+        "before": { "type": ["string", "null"] },
+        "after": { "type": ["string", "null"] }
+      }
+    },
+    "storeRepository": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repositoryId", "classification", "selection", "configuredStoreId", "pointerDiff", "diagnostic"],
+      "properties": {
+        "repositoryId": { "type": "string", "minLength": 1 },
+        "classification": { "enum": ["workspace-store", "unconfigured", "same-store", "other-store", "local-authority", "damaged", "read-only"] },
+        "selection": { "enum": ["install", "keep", "skip", "blocked"] },
+        "configuredStoreId": { "type": ["string", "null"] },
+        "pointerDiff": { "anyOf": [{ "$ref": "#/$defs/pointerDiff" }, { "type": "null" }] },
+        "diagnostic": { "type": ["string", "null"] }
+      }
+    },
+    "storeBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["storeId", "workspaceRepositoryId", "workspaceRoot", "repositories"],
+      "properties": {
+        "storeId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "workspaceRepositoryId": { "type": "string", "minLength": 1 },
+        "workspaceRoot": { "type": "string", "minLength": 1 },
+        "repositories": { "type": "array", "items": { "$ref": "#/$defs/storeRepository" } }
       }
     },
     "unresolved": {

@@ -82,6 +82,56 @@ describe('project configuration', () => {
     );
   });
 
+  it('derives a Store id for the Workspace Repository and accepts an explicit custom id', () => {
+    const implicit = structuredClone(shared()) as unknown as Record<string, unknown>;
+    implicit.specificationProvider = { id: 'specification-openspec' };
+    expect(parseSharedProjectConfig(implicit).specificationProvider).toEqual({
+      id: 'specification-openspec',
+      store: { id: 'sample', repositoryId: 'workspace' },
+    });
+
+    const custom = structuredClone(shared()) as unknown as Record<string, unknown>;
+    custom.specificationProvider = {
+      id: 'specification-openspec',
+      store: { id: 'team-platform', repositoryId: 'workspace' },
+    };
+    const parsed = parseSharedProjectConfig(custom);
+    expect(parsed.specificationProvider?.store).toEqual({
+      id: 'team-platform',
+      repositoryId: 'workspace',
+    });
+    expect(JSON.stringify(parsed.specificationProvider)).not.toMatch(/[A-Z]:\\|^\//u);
+  });
+
+  it('rejects unknown, non-Workspace, and invalid Specification Store identities', () => {
+    const unknown = structuredClone(shared()) as unknown as Record<string, unknown>;
+    unknown.specificationProvider = {
+      id: 'specification-openspec',
+      store: { id: 'team-platform', repositoryId: 'missing' },
+    };
+    expect(() => parseSharedProjectConfig(unknown)).toThrow(
+      /specificationProvider\.store\.repositoryId: must reference a registered repository/u,
+    );
+
+    const business = structuredClone(shared()) as unknown as Record<string, unknown>;
+    business.specificationProvider = {
+      id: 'specification-openspec',
+      store: { id: 'team-platform', repositoryId: 'service' },
+    };
+    expect(() => parseSharedProjectConfig(business)).toThrow(
+      /specificationProvider\.store\.repositoryId: must reference the Workspace Repository/u,
+    );
+
+    const invalid = structuredClone(shared()) as unknown as Record<string, unknown>;
+    invalid.specificationProvider = {
+      id: 'specification-openspec',
+      store: { id: 'Team Platform', repositoryId: 'workspace' },
+    };
+    expect(() => parseSharedProjectConfig(invalid)).toThrow(
+      /specificationProvider\.store\.id: expected a lowercase kebab-case Store id/u,
+    );
+  });
+
   it('accepts self-hosted Provider, event Runner, Credential, and post-merge references', async () => {
     const config = parseSharedProjectConfig(await configurationFixture('self-hosted-valid.yaml'));
 

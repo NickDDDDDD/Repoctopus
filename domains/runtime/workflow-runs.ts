@@ -22,6 +22,21 @@ import type {
 } from './types.js';
 import { requireSatisfiedEvidenceGate } from './evidence-guard.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
+import {
+  BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+  recoverChangeLifecycleSnapshot,
+} from '../change-lifecycle/definition.js';
+import {
+  evolveChangeLifecycle,
+  projectChangeRun,
+  type ChangeLifecycleObservation,
+  type ChangeLifecycleSnapshot,
+  type ChangeLifecycleState,
+} from '../change-lifecycle/transition.js';
+import {
+  compareLifecycleContributorSnapshots,
+  type LifecycleContributorSnapshot,
+} from '../change-lifecycle/contributors.js';
 
 export interface StartWorkflowRunOptions {
   workflow: WorkflowPackage;
@@ -29,6 +44,7 @@ export interface StartWorkflowRunOptions {
   runId?: string;
   workflowSource?: string;
   trigger?: RunTriggerSnapshot;
+  changeLifecycle?: ChangeLifecycleSnapshot;
 }
 
 export type IdempotentStartWorkflowRunOptions = StartWorkflowRunOptions & { runId: string };
@@ -42,6 +58,133 @@ export class RunIdentityConflictError extends Error {
 
 function stableEventId(...parts: string[]): string {
   return createHash('sha256').update(parts.join(':')).digest('hex');
+}
+
+function lifecycleState(snapshot: ChangeLifecycleSnapshot): ChangeLifecycleState {
+  return {
+    schemaVersion: snapshot.schemaVersion,
+    identity: structuredClone(snapshot.identity),
+    definition: structuredClone(snapshot.definition),
+    revision: snapshot.revision,
+    phase: snapshot.phase,
+    currentWork: structuredClone(snapshot.currentWork),
+    waitCondition: structuredClone(snapshot.waitCondition),
+    blocker: structuredClone(snapshot.blocker),
+    ...(snapshot.tasks ? { tasks: structuredClone(snapshot.tasks) } : {}),
+    ...(snapshot.planningDigest ? { planningDigest: snapshot.planningDigest } : {}),
+    ...(snapshot.verificationInput
+      ? { verificationInput: structuredClone(snapshot.verificationInput) }
+      : {}),
+    ...(snapshot.verificationInvalidation
+      ? { verificationInvalidation: structuredClone(snapshot.verificationInvalidation) }
+      : {}),
+    ...(snapshot.archiveDeliveryInput
+      ? { archiveDeliveryInput: structuredClone(snapshot.archiveDeliveryInput) }
+      : {}),
+    ...(snapshot.archivePublication
+      ? { archivePublication: structuredClone(snapshot.archivePublication) }
+      : {}),
+    ...(snapshot.archiveMerge ? { archiveMerge: structuredClone(snapshot.archiveMerge) } : {}),
+    ...(snapshot.postMergeVerification
+      ? { postMergeVerification: structuredClone(snapshot.postMergeVerification) }
+      : {}),
+    ...(snapshot.archiveClosure
+      ? { archiveClosure: structuredClone(snapshot.archiveClosure) }
+      : {}),
+  };
+}
+
+function lifecycleNextActions(snapshot: ChangeLifecycleSnapshot) {
+  if (snapshot.phase === 'open') {
+    return [{ id: 'change.continue', kind: 'work' as const, label: 'Validate Open intake' }];
+  }
+  if (snapshot.phase === 'design' && snapshot.status === 'waiting') {
+    return [{ id: 'design.review', kind: 'decision' as const, label: 'Review planning decision' }];
+  }
+  if (snapshot.phase === 'design' && snapshot.status === 'blocked') {
+    return [{ id: 'design.repair', kind: 'repair' as const, label: 'Repair planning artifacts' }];
+  }
+  if (snapshot.phase === 'design') {
+    return [{ id: 'design.evaluate', kind: 'work' as const, label: 'Evaluate Design gate' }];
+  }
+  if (snapshot.phase === 'build' && snapshot.currentWork?.taskId) {
+    return [
+      {
+        id: snapshot.currentWork.workId,
+        kind: 'work' as const,
+        label: `Implement Task ${snapshot.currentWork.taskId}`,
+      },
+    ];
+  }
+  if (snapshot.phase === 'build' && snapshot.verificationInvalidation) {
+    return [
+      {
+        id: 'verify.repair',
+        kind: 'repair' as const,
+        label: 'Repair implementation after failed verification',
+      },
+    ];
+  }
+  if (snapshot.phase === 'build') {
+    return [
+      {
+        id: 'build.prepare-verification',
+        kind: 'work' as const,
+        label: 'Prepare immutable verification input',
+      },
+    ];
+  }
+  if (snapshot.phase === 'verify' && snapshot.currentWork?.kind === 'evidence.verify') {
+    return [
+      {
+        id: snapshot.currentWork.workId,
+        kind: 'work' as const,
+        label: 'Run the required Evidence profile',
+      },
+    ];
+  }
+  if (snapshot.phase === 'archive' && snapshot.currentWork?.kind === 'delivery.prepare') {
+    return [
+      {
+        id: snapshot.currentWork.workId,
+        kind: 'work' as const,
+        label: 'Publish Business deliveries',
+      },
+    ];
+  }
+  if (snapshot.phase === 'archive' && snapshot.currentWork?.kind === 'delivery.await-merge') {
+    return [
+      {
+        id: snapshot.currentWork.workId,
+        kind: 'wait' as const,
+        label: 'Refresh Business merge facts',
+      },
+    ];
+  }
+  if (snapshot.phase === 'archive' && snapshot.currentWork?.kind === 'delivery.verify-merged') {
+    return [
+      {
+        id: snapshot.currentWork.workId,
+        kind: 'work' as const,
+        label: 'Verify exact merged commits',
+      },
+    ];
+  }
+  if (snapshot.phase === 'archive' && snapshot.currentWork?.kind === 'specification.archive') {
+    return [
+      {
+        id: snapshot.currentWork.workId,
+        kind: 'work' as const,
+        label: 'Close Specification and publish final Change MR',
+      },
+    ];
+  }
+  if (snapshot.phase === 'archive' && snapshot.currentWork === null) {
+    return [
+      { id: 'archive.prepare', kind: 'work' as const, label: 'Prepare Archive Delivery input' },
+    ];
+  }
+  return [];
 }
 
 function event(options: {
@@ -74,11 +217,12 @@ export class WorkflowRunCoordinator {
     private readonly uuid: () => string = () => randomUUID(),
     private readonly workflowSource?: WorkflowSourcePort,
     private readonly evidenceGate?: EvidenceGatePort,
+    private readonly lifecycleContributors?: LifecycleContributorSnapshot,
   ) {}
 
   async start(options: StartWorkflowRunOptions): Promise<RuntimeResult<RunStatusView>> {
     const timestamp = this.clock().toISOString();
-    const state = startRun({
+    const initial = startRun({
       workflow: options.workflow,
       runId: options.runId ?? this.uuid(),
       projectSnapshotDigest: options.projectSnapshot.digest,
@@ -87,6 +231,16 @@ export class WorkflowRunCoordinator {
       ...(options.workflowSource ? { workflowSource: options.workflowSource } : {}),
       ...(options.trigger ? { trigger: options.trigger } : {}),
     });
+    const state: RunState = options.changeLifecycle
+      ? {
+          ...initial,
+          status: options.changeLifecycle.status,
+          changeLifecycle: lifecycleState(options.changeLifecycle),
+        }
+      : initial;
+    if (this.lifecycleContributors) {
+      state.lifecycleContributorSnapshot = structuredClone(this.lifecycleContributors);
+    }
     const started = event({
       eventId: stableEventId(state.runId, 'run.started'),
       sequence: 1,
@@ -104,6 +258,14 @@ export class WorkflowRunCoordinator {
           ? {
               triggerKind: state.trigger.kind,
               triggerIdentityDigest: state.trigger.identityDigest,
+            }
+          : {}),
+        ...(state.changeLifecycle
+          ? {
+              changeId: state.changeLifecycle.identity.changeId,
+              generation: state.changeLifecycle.identity.generation,
+              phase: state.changeLifecycle.phase,
+              definition: state.changeLifecycle.definition,
             }
           : {}),
       },
@@ -131,8 +293,10 @@ export class WorkflowRunCoordinator {
         throw startError;
       }
       this.assertSameStartIdentity(existing.state, options);
+      if (existing.state.changeLifecycle)
+        await this.recoverChangeLifecycleDefinition(options.runId);
       return {
-        value: existing,
+        value: await this.status(options.runId),
         diagnostics: [
           {
             level: 'info',
@@ -151,7 +315,7 @@ export class WorkflowRunCoordinator {
       this.store.loadCheckpoint(runId),
       this.store.loadTrajectory(runId),
     ]);
-    const preview = decide(workflow, state, state.updatedAt);
+    const preview = state.changeLifecycle ? null : decide(workflow, state, state.updatedAt);
     const pendingStep = state.pendingActionId
       ? workflow.definition.steps.find((step) => step.id === state.currentStep)
       : undefined;
@@ -161,15 +325,168 @@ export class WorkflowRunCoordinator {
         : null;
     const workflowDrift = await this.inspectWorkflowDrift(state);
     const compositionCompatibility = compareCompositions(state.composition, this.composition);
+    const lifecycleContributorCompatibility =
+      state.lifecycleContributorSnapshot && this.lifecycleContributors
+        ? compareLifecycleContributorSnapshots(
+            state.lifecycleContributorSnapshot,
+            this.lifecycleContributors,
+          )
+        : undefined;
+    const latestVerifyObservation = [...trajectory]
+      .reverse()
+      .find(
+        (entry) =>
+          entry.data.observationKind === 'verify-gate-satisfied' ||
+          entry.data.observationKind === 'verify-gate-rejected',
+      )?.data.observation as { kind?: string; attemptId?: string } | undefined;
+    const changeLifecycle = state.changeLifecycle
+      ? projectChangeRun(
+          { ...structuredClone(state.changeLifecycle), status: state.status },
+          {
+            taskProgress: {
+              total: state.changeLifecycle.tasks?.length ?? 0,
+              completed:
+                state.changeLifecycle.tasks?.filter((task) => task.status === 'completed').length ??
+                0,
+              currentTaskId: state.changeLifecycle.currentWork?.taskId ?? null,
+            },
+            evidence: {
+              gateStatus:
+                latestVerifyObservation?.kind === 'verify-gate-satisfied'
+                  ? 'satisfied'
+                  : latestVerifyObservation?.kind === 'verify-gate-rejected'
+                    ? 'failed'
+                    : state.changeLifecycle.phase === 'verify'
+                      ? 'pending'
+                      : 'not-evaluated',
+              acceptedBundleIds: [...state.acceptedEvidenceBundleIds],
+              latestAttemptId: latestVerifyObservation?.attemptId ?? null,
+            },
+            nextActions: lifecycleNextActions({
+              ...structuredClone(state.changeLifecycle),
+              status: state.status,
+            }),
+            freshness: {
+              stateVersion: state.stateVersion,
+              trajectoryOffset: trajectory.length,
+              observedAt: state.updatedAt,
+            },
+          },
+        )
+      : undefined;
     return {
       state,
       checkpoint,
       trajectoryLength: trajectory.length,
-      nextAction: pendingAction ?? preview.action,
+      nextAction: state.changeLifecycle ? null : (pendingAction ?? preview?.action ?? null),
       workflowDrift,
       compositionCompatibility,
-      ...(preview.reason ? { reason: preview.reason } : {}),
+      ...(lifecycleContributorCompatibility ? { lifecycleContributorCompatibility } : {}),
+      ...(changeLifecycle ? { changeLifecycle } : {}),
+      ...(preview?.reason ? { reason: preview.reason } : {}),
     };
+  }
+
+  private async recoverChangeLifecycleDefinition(runId: string): Promise<void> {
+    await this.store.commitGuarded(runId, ({ state, trajectory }) => {
+      if (!state.changeLifecycle) return { value: undefined };
+      const recovered = recoverChangeLifecycleSnapshot({
+        persisted: { ...structuredClone(state.changeLifecycle), status: state.status },
+        currentDefinition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      });
+      if (!recovered.changed) return { value: undefined };
+      const timestamp = this.clock().toISOString();
+      const { status, ...changeLifecycle } = recovered.snapshot;
+      const nextState: RunState = {
+        ...state,
+        status,
+        changeLifecycle,
+        stateVersion: state.stateVersion + 1,
+        updatedAt: timestamp,
+      };
+      return {
+        state: nextState,
+        event: event({
+          eventId: stableEventId(runId, recovered.current.digest, 'definition-drift'),
+          sequence: trajectory.length + 1,
+          timestamp,
+          type: 'change.lifecycle.transitioned',
+          state: nextState,
+          data: {
+            reason: 'definition-drift',
+            expectedDefinition: recovered.expected,
+            currentDefinition: recovered.current,
+            phase: changeLifecycle.phase,
+            status,
+          },
+        }),
+        value: undefined,
+      };
+    });
+  }
+
+  async acceptChangeObservation(
+    runId: string,
+    observation: ChangeLifecycleObservation,
+  ): Promise<RuntimeResult<RunStatusView>> {
+    await this.recoverChangeLifecycleDefinition(runId);
+    await this.store.commitGuarded(runId, ({ state, trajectory }) => {
+      if (!state.changeLifecycle) throw new Error(`Run is not a Change Run: ${runId}`);
+      if (
+        (observation.kind === 'verify-gate-satisfied' ||
+          observation.kind === 'verify-gate-rejected' ||
+          observation.kind === 'archive-post-merge-verified') &&
+        observation.workflowStateVersion !== state.stateVersion
+      ) {
+        throw new Error('Satisfied Verify Gate is bound to a stale workflow state');
+      }
+      const current: ChangeLifecycleSnapshot = {
+        ...structuredClone(state.changeLifecycle),
+        status: state.status,
+      };
+      const reduced = evolveChangeLifecycle({
+        definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+        current,
+        observation,
+      });
+      if (!reduced.fact) return { value: undefined };
+      const timestamp = this.clock().toISOString();
+      const { status, ...changeLifecycle } = reduced.snapshot;
+      const nextState: RunState = {
+        ...state,
+        status,
+        changeLifecycle,
+        acceptedEvidenceBundleIds:
+          observation.kind === 'verify-gate-satisfied' ||
+          (observation.kind === 'archive-post-merge-verified' && observation.result === 'satisfied')
+            ? [...new Set([...state.acceptedEvidenceBundleIds, observation.bundleId])]
+            : state.acceptedEvidenceBundleIds,
+        stateVersion: state.stateVersion + 1,
+        updatedAt: timestamp,
+      };
+      return {
+        state: nextState,
+        event: event({
+          eventId: stableEventId(
+            runId,
+            String(reduced.fact.revision),
+            createHash('sha256').update(canonicalJson(observation)).digest('hex'),
+          ),
+          sequence: trajectory.length + 1,
+          timestamp,
+          type: 'change.lifecycle.transitioned',
+          state: nextState,
+          data: {
+            changeLifecycleTransition: reduced.fact,
+            observationKind: observation.kind,
+            observation: structuredClone(observation),
+          },
+        }),
+        value: undefined,
+      };
+    });
+    const diagnostics = await this.flushTelemetry(runId);
+    return { value: await this.status(runId), diagnostics };
   }
 
   private assertSameStartIdentity(
@@ -526,6 +843,17 @@ export class WorkflowRunCoordinator {
         `Run ${state.runId} requires composition ${state.composition.compositionDigest}; current composition ${this.composition.compositionDigest} is migration_required`,
       );
     }
+    if (state.lifecycleContributorSnapshot && this.lifecycleContributors) {
+      const compatibility = compareLifecycleContributorSnapshots(
+        state.lifecycleContributorSnapshot,
+        this.lifecycleContributors,
+      );
+      if (compatibility.status === 'migration_required') {
+        throw new Error(
+          `Run ${state.runId} lifecycle Contributors are migration_required: ${compatibility.reason}`,
+        );
+      }
+    }
   }
 
   private async prepareWritableComposition(runId: string): Promise<void> {
@@ -534,16 +862,36 @@ export class WorkflowRunCoordinator {
       this.store.loadTrajectory(runId),
     ]);
     const compatibility = compareCompositions(state.composition, this.composition);
-    if (compatibility.status === 'same') return;
+    const contributorCompatibility =
+      state.lifecycleContributorSnapshot && this.lifecycleContributors
+        ? compareLifecycleContributorSnapshots(
+            state.lifecycleContributorSnapshot,
+            this.lifecycleContributors,
+          )
+        : undefined;
+    if (
+      compatibility.status === 'same' &&
+      (!contributorCompatibility || contributorCompatibility.status === 'same')
+    ) {
+      return;
+    }
     if (compatibility.status === 'migration_required') {
       throw new Error(
         `Run ${state.runId} requires composition ${state.composition.compositionDigest}; current composition ${this.composition.compositionDigest} is migration_required: ${compatibility.reason}`,
+      );
+    }
+    if (contributorCompatibility?.status === 'migration_required') {
+      throw new Error(
+        `Run ${state.runId} lifecycle Contributors are migration_required: ${contributorCompatibility.reason}`,
       );
     }
     const timestamp = this.clock().toISOString();
     const nextState: RunState = {
       ...state,
       composition: structuredClone(this.composition),
+      ...(this.lifecycleContributors
+        ? { lifecycleContributorSnapshot: structuredClone(this.lifecycleContributors) }
+        : {}),
       stateVersion: state.stateVersion + 1,
       updatedAt: timestamp,
     };
@@ -562,6 +910,9 @@ export class WorkflowRunCoordinator {
         previousCompositionDigest: state.composition.compositionDigest,
         compositionDigest: this.composition.compositionDigest,
         changedPluginIds: compatibility.changedPluginIds,
+        ...(contributorCompatibility
+          ? { changedContributorIds: contributorCompatibility.changedContributorIds }
+          : {}),
       },
     });
     await this.store.commit({

@@ -3,8 +3,9 @@ import { createHash } from 'node:crypto';
 import type { EvidenceExecutionPlan } from '../feedback/profile.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import { createEvidenceBundle } from './gate.js';
-import type { EvidenceJournal, EvidenceStore } from './ports.js';
+import type { ArtifactStore, EvidenceJournal, EvidenceStore } from './ports.js';
 import type { EvidenceBundle, EvidenceCheck, EvidenceFinding, EvidenceReceipt } from './types.js';
+import { createVerificationReport } from './verification-report.js';
 
 export async function recoverEvidenceAttempt(input: {
   attemptId: string;
@@ -13,6 +14,7 @@ export async function recoverEvidenceAttempt(input: {
   journal: EvidenceJournal;
   timestamp: string;
   endingFingerprint?: string;
+  artifacts?: ArtifactStore;
 }): Promise<{ receipts: EvidenceReceipt[]; bundle: EvidenceBundle }> {
   const attempt = await input.store.loadAttempt(input.attemptId);
   if (attempt.status !== 'running')
@@ -89,10 +91,27 @@ export async function recoverEvidenceAttempt(input: {
     ].sort(),
     findings,
   };
-  const bundle = createEvidenceBundle({
+  let bundle = createEvidenceBundle({
     bundleId: createHash('sha256').update(canonicalJson(bundleBase)).digest('hex'),
     ...bundleBase,
   });
+  if (input.artifacts) {
+    const report = createVerificationReport({ plan: input.plan, receipts, bundle });
+    const reportArtifact = await input.artifacts.put(report.contents, {
+      artifactType: 'verification-report',
+      mediaType: 'application/json; charset=utf-8',
+      redacted: true,
+    });
+    const finalBase = {
+      ...bundleBase,
+      artifactDigests: [...bundleBase.artifactDigests, reportArtifact.sha256].sort(),
+      verificationReport: reportArtifact,
+    };
+    bundle = createEvidenceBundle({
+      bundleId: createHash('sha256').update(canonicalJson(finalBase)).digest('hex'),
+      ...finalBase,
+    });
+  }
   attempt.receiptIds = bundle.receiptIds;
   attempt.completedAt = input.timestamp;
   attempt.status = superseded ? 'superseded' : 'completed';

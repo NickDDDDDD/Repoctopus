@@ -11,9 +11,15 @@ import {
 } from '../app/boot/descriptor.js';
 import { FileActionStoreProvider } from './action/file-action-store-provider.js';
 import manualActionContributor from './action/manual-action-contributor.js';
+import runtimeWorkContributors from './action/runtime-work-contributors.js';
+import builtinLifecycleDefinition from './lifecycle/builtin-definition-contributor.js';
+import builtinLifecycleValidators from './lifecycle/builtin-validator-contributor.js';
+import builtinLifecycleExtensions from './lifecycle/builtin-extension-contributor.js';
 import projectProbeContributor from './command/project-probe-contributor.js';
 import evidenceContributor from './command/evidence-contributor.js';
 import workflowRunContributor from './command/workflow-run-contributor.js';
+import archiveContributor from './command/archive-contributor.js';
+import changeLifecycleMigrationContributor from './command/change-lifecycle-migration-contributor.js';
 import deliveryContributor from './command/delivery-contributor.js';
 import projectOnboardingContributor from './command/project-onboarding-contributor.js';
 import maintenanceContributor from './command/maintenance-contributor.js';
@@ -26,6 +32,14 @@ import { FileWorkflowSourceProvider } from './run/file-workflow-source-provider.
 import { WorkflowTelemetryProvider } from './run/workflow-telemetry-provider.js';
 import { CommandRouter } from '../services/command-router.js';
 import { ActionDispatcher } from '../services/action.js';
+import { RuntimeWorkGuard } from '../services/runtime-work-guard.js';
+import { WorkDispatcher } from '../services/work-dispatcher.js';
+import { WorkContextAssembler } from '../services/work-context-assembler.js';
+import {
+  LifecycleDefinitions,
+  LifecycleExtensions,
+  LifecycleValidators,
+} from '../services/lifecycle-contributors.js';
 import { EvidenceCoordinator } from '../services/evidence-coordinator.js';
 import { EvidenceAdapters } from '../services/evidence-adapters.js';
 import {
@@ -35,6 +49,7 @@ import {
   localServiceContributor,
 } from './evidence/local-adapter-contributors.js';
 import { WorkflowRuns } from '../services/workflow-runs.js';
+import { ChangeLifecycleMigration } from '../services/change-lifecycle-migration.js';
 import { ProjectOnboarding } from '../services/project-onboarding.js';
 import { BrowserMaintenance } from '../services/browser-maintenance.js';
 import { SkillRegistry } from '@deepseek-ai/dsh-skill';
@@ -456,6 +471,7 @@ const definitions: readonly BuiltinDefinition[] = [
     sourceFiles: [
       'plugins/skill/file-skill-provider.ts',
       'plugins/skill/matt-skill-provider.ts',
+      'third_party/matt-skills/method-adoptions.json',
       'third_party/matt-skills/source-manifest.json',
     ],
   },
@@ -510,6 +526,7 @@ const definitions: readonly BuiltinDefinition[] = [
     plugin: OpenSpecProvider,
     sourceFiles: [
       'services/specification.ts',
+      'domains/specification/tasks.ts',
       'domains/specification/types.ts',
       'platform/specification/openspec-process.ts',
       'platform/specification/openspec-provider.ts',
@@ -643,6 +660,184 @@ const definitions: readonly BuiltinDefinition[] = [
   },
   {
     descriptor: {
+      id: 'runtime-work-guard',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['runtime-work-guard'],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: RuntimeWorkGuard,
+    sourceFiles: [
+      'domains/change-lifecycle/work-guard.ts',
+      'services/runtime-work-guard.ts',
+      'services/command-router.ts',
+    ],
+  },
+  {
+    descriptor: {
+      id: 'work-context-assembler',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['work-context'],
+      permissions: ['filesystem'],
+      stateSchemas: {},
+    },
+    plugin: WorkContextAssembler,
+    sourceFiles: [
+      'domains/change-lifecycle/method-profile.ts',
+      'domains/change-lifecycle/work-context.ts',
+      'platform/skill/snapshot.ts',
+      'services/work-context-assembler.ts',
+    ],
+  },
+  {
+    descriptor: {
+      id: 'work-dispatcher',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['work-dispatch'],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: WorkDispatcher,
+    sourceFiles: ['domains/action/types.ts', 'services/action.ts', 'services/work-dispatcher.ts'],
+  },
+  {
+    descriptor: {
+      id: 'lifecycle-definition-service',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['lifecycle-definition-registry'],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: LifecycleDefinitions,
+    sourceFiles: ['domains/change-lifecycle/contributors.ts', 'services/lifecycle-contributors.ts'],
+  },
+  {
+    descriptor: {
+      id: 'lifecycle-definition-builtin',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'contributor',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['lifecycle-definition'],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: builtinLifecycleDefinition,
+    sourceFiles: [
+      'domains/change-lifecycle/definition.ts',
+      'plugins/lifecycle/builtin-definition-contributor.ts',
+    ],
+  },
+  {
+    descriptor: {
+      id: 'lifecycle-validator-service',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['lifecycle-validator-registry'],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: LifecycleValidators,
+    sourceFiles: ['domains/change-lifecycle/contributors.ts', 'services/lifecycle-contributors.ts'],
+  },
+  {
+    descriptor: {
+      id: 'lifecycle-validator-builtin',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'contributor',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['lifecycle-validator'],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: builtinLifecycleValidators,
+    sourceFiles: [
+      'domains/change-lifecycle/definition.ts',
+      'plugins/lifecycle/builtin-validator-contributor.ts',
+    ],
+  },
+  {
+    descriptor: {
+      id: 'lifecycle-extension-service',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['lifecycle-extension-registry'],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: LifecycleExtensions,
+    sourceFiles: ['domains/change-lifecycle/contributors.ts', 'services/lifecycle-contributors.ts'],
+  },
+  {
+    descriptor: {
+      id: 'lifecycle-extension-builtin',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'contributor',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['lifecycle-extension'],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: builtinLifecycleExtensions,
+    sourceFiles: [
+      'domains/change-lifecycle/definition.ts',
+      'plugins/lifecycle/builtin-extension-contributor.ts',
+    ],
+  },
+  {
+    descriptor: {
+      id: 'action-work-contributors',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'contributor',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['action-adapter:git', 'action-adapter:process', 'action-adapter:specification'],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: runtimeWorkContributors,
+    sourceFiles: ['plugins/action/runtime-work-contributors.ts', 'services/work-dispatcher.ts'],
+  },
+  {
+    descriptor: {
       id: 'action-manual',
       version: VERSION,
       contractVersion: PLUGIN_CONTRACT_VERSION,
@@ -655,7 +850,7 @@ const definitions: readonly BuiltinDefinition[] = [
       stateSchemas: {},
     },
     plugin: manualActionContributor,
-    sourceFiles: ['plugins/action/manual-action-contributor.ts'],
+    sourceFiles: ['plugins/action/manual-action-contributor.ts', 'services/work-dispatcher.ts'],
   },
   {
     descriptor: {
@@ -834,6 +1029,12 @@ const definitions: readonly BuiltinDefinition[] = [
       'services/operation-ownership.ts',
       'domains/runtime/workflow-runs.ts',
       'domains/runtime/evidence-guard.ts',
+      'domains/change-lifecycle/definition.ts',
+      'domains/change-lifecycle/build-validator.ts',
+      'domains/change-lifecycle/host-workflow.ts',
+      'domains/change-lifecycle/transition.ts',
+      'domains/change-lifecycle/verification-input.ts',
+      'domains/change-lifecycle/verify-work.ts',
       'domains/engine/loop.ts',
       'domains/engine/types.ts',
       'domains/skill/types.ts',
@@ -856,6 +1057,59 @@ const definitions: readonly BuiltinDefinition[] = [
     },
     plugin: workflowRunContributor,
     sourceFiles: ['plugins/command/workflow-run-contributor.ts'],
+  },
+  {
+    descriptor: {
+      id: 'archive-command',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'contributor',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: [],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: archiveContributor,
+    sourceFiles: ['plugins/command/archive-contributor.ts'],
+  },
+  {
+    descriptor: {
+      id: 'change-lifecycle-migration',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['change-lifecycle-migration'],
+      permissions: ['filesystem'],
+      stateSchemas: { 'change-lifecycle-migration': '1' },
+    },
+    plugin: ChangeLifecycleMigration,
+    sourceFiles: [
+      'domains/change-lifecycle/migration.ts',
+      'domains/change-lifecycle/migration-transaction.ts',
+      'platform/runtime/file-change-lifecycle-migration-store.ts',
+      'services/change-lifecycle-migration.ts',
+    ],
+  },
+  {
+    descriptor: {
+      id: 'change-lifecycle-migration-command',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'contributor',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: [],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: changeLifecycleMigrationContributor,
+    sourceFiles: ['plugins/command/change-lifecycle-migration-contributor.ts'],
   },
 ];
 

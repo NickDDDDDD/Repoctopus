@@ -21,13 +21,22 @@ import { execute } from '../platform/process/execute.js';
 import { PostMergeActions } from '../services/post-merge-actions.js';
 import {
   createGitRepository,
+  createOpenSpecStoreEnvironment,
   projectFixture,
   removeTemporaryDirectory,
   temporaryDirectory,
 } from './helpers/fixtures.js';
 
 const cleanup: string[] = [];
-afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
+const originalXdgDataHome = process.env.XDG_DATA_HOME;
+const originalXdgConfigHome = process.env.XDG_CONFIG_HOME;
+afterEach(async () => {
+  if (originalXdgDataHome === undefined) delete process.env.XDG_DATA_HOME;
+  else process.env.XDG_DATA_HOME = originalXdgDataHome;
+  if (originalXdgConfigHome === undefined) delete process.env.XDG_CONFIG_HOME;
+  else process.env.XDG_CONFIG_HOME = originalXdgConfigHome;
+  await Promise.all(cleanup.splice(0).map(removeTemporaryDirectory));
+});
 
 const publicationPolicy: PostMergePublicationPolicy = {
   apiVersion: 'repoctopus/v1alpha1',
@@ -212,6 +221,13 @@ async function harness(mode: 'pass' | 'fail' | 'drift') {
   );
   await writeFile(path.join(workspace, '.gitignore'), '.repoctopus/\n');
   await writeSpecificationFixture(workspace, changeId);
+  const storeEnvironment = await createOpenSpecStoreEnvironment(
+    root,
+    workspace,
+    'post-merge-verification',
+  );
+  process.env.XDG_DATA_HOME = storeEnvironment.XDG_DATA_HOME;
+  process.env.XDG_CONFIG_HOME = storeEnvironment.XDG_CONFIG_HOME;
   await execute('git', ['add', '.'], { cwd: workspace });
   await execute('git', ['commit', '-m', 'configure post-merge fixture'], { cwd: workspace });
   const productRoot = path.resolve(import.meta.dirname, '..');

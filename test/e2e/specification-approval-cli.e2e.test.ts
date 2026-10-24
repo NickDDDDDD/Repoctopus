@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import {
   createGitRepository,
+  createOpenSpecStoreEnvironment,
   removeTemporaryDirectory,
   temporaryDirectory,
 } from '../helpers/fixtures.js';
@@ -52,6 +53,7 @@ async function writeChange(root: string, changeId: string, valid: boolean): Prom
 async function runFailure(
   workspace: string,
   args: string[],
+  environment: NodeJS.ProcessEnv,
 ): Promise<{
   code?: number;
   diagnostics?: Array<{ message?: string }>;
@@ -60,7 +62,7 @@ async function runFailure(
     await execFileAsync(
       process.execPath,
       [path.join(packageRoot, 'bin', 'repoctopus.js'), ...args, '--json'],
-      { cwd: workspace },
+      { cwd: workspace, env: environment },
     );
     throw new Error('Expected CLI command to fail');
   } catch (error) {
@@ -98,6 +100,7 @@ describe('specification approval CLI', () => {
     await mkdir(remote);
     await execFileAsync('git', ['init', '--bare'], { cwd: remote });
     const workspace = await createGitRepository(root, 'workspace', remote);
+    const environment = await createOpenSpecStoreEnvironment(root, workspace, 'specification-cli');
     await execFileAsync('git', ['push', '-u', 'origin', 'main'], { cwd: workspace });
     await execFileAsync('git', ['switch', '-c', 'spec/sample'], { cwd: workspace });
     await write(
@@ -122,6 +125,10 @@ describe('specification approval CLI', () => {
             ],
           },
         ],
+        specificationProvider: {
+          id: 'specification-openspec',
+          store: { id: 'specification-cli', repositoryId: 'workspace' },
+        },
       }),
     );
     await write(workspace, '.gitignore', '.repoctopus/\n');
@@ -156,6 +163,7 @@ describe('specification approval CLI', () => {
         '--target',
         'main',
       ],
+      environment,
     });
     expect(prepared).toMatchObject({
       ok: true,
@@ -172,50 +180,55 @@ describe('specification approval CLI', () => {
       packageRoot,
       cwd: workspace,
       args: ['spec', 'approval', 'status', '--workspace', workspace, '--change', 'sample'],
+      environment,
     });
     expect(status).toMatchObject({ result: { status: 'awaiting_approval', stateVersion: 0 } });
 
-    const reviewFailure = await runFailure(workspace, [
-      'spec',
-      'approval',
-      'review',
-      '--workspace',
+    const reviewFailure = await runFailure(
       workspace,
-      '--change',
-      'sample',
-    ]);
+      ['spec', 'approval', 'review', '--workspace', workspace, '--change', 'sample'],
+      environment,
+    );
     expect(reviewFailure.code).toBe(1);
     expect(reviewFailure.diagnostics?.[0]?.message).toMatch(/interactive terminal/i);
 
-    const unpublishedFailure = await runFailure(workspace, [
-      'spec',
-      'approval',
-      'prepare',
-      '--workspace',
+    const unpublishedFailure = await runFailure(
       workspace,
-      '--change',
-      'sample',
-      '--branch',
-      'spec/unpublished',
-      '--target',
-      'main',
-    ]);
+      [
+        'spec',
+        'approval',
+        'prepare',
+        '--workspace',
+        workspace,
+        '--change',
+        'sample',
+        '--branch',
+        'spec/unpublished',
+        '--target',
+        'main',
+      ],
+      environment,
+    );
     expect(unpublishedFailure.code).toBe(1);
     expect(unpublishedFailure.diagnostics?.[0]?.message).toMatch(/not published/i);
 
-    const invalidFailure = await runFailure(workspace, [
-      'spec',
-      'approval',
-      'prepare',
-      '--workspace',
+    const invalidFailure = await runFailure(
       workspace,
-      '--change',
-      'invalid',
-      '--branch',
-      'spec/sample',
-      '--target',
-      'main',
-    ]);
+      [
+        'spec',
+        'approval',
+        'prepare',
+        '--workspace',
+        workspace,
+        '--change',
+        'invalid',
+        '--branch',
+        'spec/sample',
+        '--target',
+        'main',
+      ],
+      environment,
+    );
     expect(invalidFailure.code).toBe(1);
     expect(invalidFailure.diagnostics?.[0]?.message).toMatch(/validation|strict/i);
 
@@ -224,19 +237,23 @@ describe('specification approval CLI', () => {
       'openspec/changes/sample/proposal.md',
       '# Change: sample\n\n## Why\nThis local edit has not been published.\n',
     );
-    const dirtyFailure = await runFailure(workspace, [
-      'spec',
-      'approval',
-      'prepare',
-      '--workspace',
+    const dirtyFailure = await runFailure(
       workspace,
-      '--change',
-      'sample',
-      '--branch',
-      'spec/sample',
-      '--target',
-      'main',
-    ]);
+      [
+        'spec',
+        'approval',
+        'prepare',
+        '--workspace',
+        workspace,
+        '--change',
+        'sample',
+        '--branch',
+        'spec/sample',
+        '--target',
+        'main',
+      ],
+      environment,
+    );
     expect(dirtyFailure.code).toBe(1);
     expect(dirtyFailure.diagnostics?.[0]?.message).toMatch(/must be clean/i);
   }, 30_000);

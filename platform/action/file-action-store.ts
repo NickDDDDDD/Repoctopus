@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { readFile, stat } from 'node:fs/promises';
+import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 
 import type { ActionStorePort } from '../../domains/action/ports.js';
@@ -26,6 +26,12 @@ function safeName(value: string): string {
   return createHash('sha256').update(value).digest('hex');
 }
 
+function sameIntentIdentity(left: ActionIntent, right: ActionIntent): boolean {
+  const leftStable = { ...left, createdAt: '' };
+  const rightStable = { ...right, createdAt: '' };
+  return canonicalJson(leftStable) === canonicalJson(rightStable);
+}
+
 export class FileActionStore implements ActionStorePort {
   constructor(private readonly workspaceRoot: string) {}
 
@@ -34,8 +40,12 @@ export class FileActionStore implements ActionStorePort {
     return path.join(path.resolve(this.workspaceRoot), '.repoctopus', 'actions', runId);
   }
 
-  private intentFile(runId: string, actionId: string): string {
-    return path.join(this.runRoot(runId), 'intents', `${safeName(actionId)}.json`);
+  private intentDirectory(runId: string, workId: string): string {
+    return path.join(this.runRoot(runId), 'intents', safeName(workId));
+  }
+
+  private intentFile(runId: string, workId: string, attempt: number): string {
+    return path.join(this.intentDirectory(runId, workId), `${attempt}.json`);
   }
 
   private receiptFile(runId: string, receiptId: string): string {
@@ -43,26 +53,76 @@ export class FileActionStore implements ActionStorePort {
   }
 
   async saveIntent(intent: ActionIntent): Promise<ActionIntent> {
-    const file = this.intentFile(intent.runId, intent.action.id);
+    if (!Number.isSafeInteger(intent.attempt) || intent.attempt < 1) {
+      throw new Error('Action claim attempt must be a positive safe integer');
+    }
+    const file = this.intentFile(intent.runId, intent.workId, intent.attempt);
     if (await exists(file)) {
       const current = await readJson<ActionIntent>(file);
-      if (
-        current.intentId !== intent.intentId ||
-        current.idempotencyKey !== intent.idempotencyKey ||
-        current.runId !== intent.runId ||
-        current.adapter !== intent.adapter ||
-        canonicalJson(current.action) !== canonicalJson(intent.action)
-      ) {
+      if (!sameIntentIdentity(current, intent)) {
         throw new Error(`Action intent identity changed: ${intent.action.id}`);
       }
       return current;
     }
-    await atomicWriteJson(file, intent);
-    return intent;
+    const latest = await this.optionalLatestIntent(intent.runId, intent.workId);
+    if (latest) {
+      if (latest.inputDigest !== intent.inputDigest) {
+        throw new Error(`Action Work input is stale: ${intent.workId}`);
+      }
+      if (intent.attempt !== latest.attempt + 1) {
+        throw new Error(
+          `Action claim attempt must follow ${latest.attempt}: ${intent.workId}`,
+        );
+      }
+    } else if (intent.attempt !== 1) {
+      throw new Error(`First Action claim attempt must be 1: ${intent.workId}`);
+    }
+    try {
+      await atomicWriteJson(file, intent, { exclusive: true });
+      return intent;
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
+      const winner = await readJson<ActionIntent>(file);
+      if (!sameIntentIdentity(winner, intent)) {
+        throw new Error(`Action claim was won by another identity: ${intent.workId}`, {
+          cause: error,
+        });
+      }
+      return winner;
+    }
   }
 
-  async loadIntent(runId: string, actionId: string): Promise<ActionIntent> {
-    return readJson<ActionIntent>(this.intentFile(runId, actionId));
+  async loadIntent(runId: string, workId: string, attempt = 1): Promise<ActionIntent> {
+    return readJson<ActionIntent>(this.intentFile(runId, workId, attempt));
+  }
+
+  async loadLatestIntent(runId: string, workId: string): Promise<ActionIntent> {
+    const latest = await this.optionalLatestIntent(runId, workId);
+    if (!latest) throw new Error(`Action Work has no claim: ${workId}`);
+    return latest;
+  }
+
+  private async optionalLatestIntent(
+    runId: string,
+    workId: string,
+  ): Promise<ActionIntent | null> {
+    const directory = this.intentDirectory(runId, workId);
+    let entries: string[];
+    try {
+      entries = await readdir(directory);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return null;
+      throw error;
+    }
+    const attempts = entries
+      .map((entry) => (/^(\d+)\.json$/u.exec(entry)?.[1] ?? ''))
+      .filter(Boolean)
+      .map(Number)
+      .filter((attempt) => Number.isSafeInteger(attempt) && attempt > 0)
+      .sort((left, right) => right - left);
+    return attempts[0]
+      ? readJson<ActionIntent>(this.intentFile(runId, workId, attempts[0]))
+      : null;
   }
 
   async saveReceipt(receipt: ActionReceipt): Promise<ActionReceipt> {

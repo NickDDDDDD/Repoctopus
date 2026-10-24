@@ -41,6 +41,7 @@ export class OpenSpecProcess implements SpecificationProcessPort {
     private readonly entry = installedOpenSpecEntry(),
     private readonly timeoutMs = 60_000,
     private readonly maxBufferBytes = 16 * 1024 * 1024,
+    private readonly environment: NodeJS.ProcessEnv = {},
   ) {}
 
   execute(
@@ -57,6 +58,7 @@ export class OpenSpecProcess implements SpecificationProcessPort {
           maxBuffer: this.maxBufferBytes,
           timeout: this.timeoutMs,
           windowsHide: true,
+          env: { ...process.env, ...this.environment },
           signal: options.signal,
         },
         (error, stdout, stderr) => {

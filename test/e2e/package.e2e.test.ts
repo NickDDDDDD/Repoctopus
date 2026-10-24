@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import {
   createGitRepository,
+  createOpenSpecStoreEnvironment,
   removeTemporaryDirectory,
   temporaryDirectory,
 } from '../helpers/fixtures.js';
@@ -69,7 +70,7 @@ Use a change owned by the temporary test workspace.
       path.join(changeRoot, 'tasks.md'),
       `# Tasks
 
-- [ ] Validate the installed package.
+- [ ] 1.1 Validate the installed package.
 `,
     ),
     writeFile(
@@ -138,6 +139,7 @@ describe('published package', () => {
     await createGitRepository(project, 'service');
     await createGitRepository(project, 'workspace');
     await createSpecificationFixture(workspace);
+    const environment = await createOpenSpecStoreEnvironment(root, workspace, 'package-e2e');
     await writeFile(
       path.join(workspace, 'repoctopus.yaml'),
       JSON.stringify({
@@ -163,6 +165,10 @@ describe('published package', () => {
             ],
           },
         ],
+        specificationProvider: {
+          id: 'specification-openspec',
+          store: { id: 'package-e2e', repositoryId: 'workspace' },
+        },
       }),
     );
     const installedPackage = path.join(installation, 'node_modules', 'repoctopus');
@@ -173,6 +179,7 @@ describe('published package', () => {
       packageRoot: installedPackage,
       cwd: workspace,
       args: ['spec', 'inspect', '--workspace', workspace, '--change', specificationFixtureId],
+      environment,
     });
     expect(inspectedSpecification.result).toMatchObject({
       changeId: specificationFixtureId,
@@ -182,6 +189,7 @@ describe('published package', () => {
       packageRoot: installedPackage,
       cwd: workspace,
       args: ['spec', 'validate', '--workspace', workspace, '--change', specificationFixtureId],
+      environment,
     });
     expect(validatedSpecification.result).toMatchObject({ valid: true, strict: true });
     const envelope = await runCli({

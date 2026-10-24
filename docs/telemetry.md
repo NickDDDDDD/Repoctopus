@@ -33,21 +33,25 @@ Attempt、Receipt、Artifact、Bundle 和 Gate 先持久化。之后 Runtime 把
 - App 生命周期记录插件激活、重载与操作排空结果；排空超时只上报服务名、剩余数量和恢复分类，不上报 Journal 或错误正文。
 - App 生命周期批次最多导出两次；仍失败时记录 `LIFECYCLE_TELEMETRY_EXPORT_FAILED` 和 `dropped_after_retry`，不保留 OTLP 错误正文，也不改变领域结果。
 
-### Post-merge 关联
+### Change lifecycle 关联
 
-Post-merge Workflow Log 和 Span 使用持久身份连接平台合入、Evidence、规格关闭和远端发布，不复制对应内容。
+每次 accepted `change.lifecycle.transitioned` 由一个纯映射器产生 `phase`、`status`、`work` 和 `wait` 四类 OTLP Log。它们共享 `repoctopus.event.id`，因此 Desktop Receiver 与远端 SigNoz 消费完全相同的上报事实，不扫描 Workspace、Git 或 MR 反推阶段。
 
-| 属性                                       | 含义                                                                        |
-| ------------------------------------------ | --------------------------------------------------------------------------- |
-| `repoctopus.run.id`                        | Post-merge Run 根关联 ID                                                    |
-| `repoctopus.post_merge.change.id`          | 通过安全格式检查的 change ID                                                |
-| `repoctopus.post_merge.merge_facts.digest` | 排序后权威合入事实的摘要                                                    |
-| `repoctopus.evidence.attempt.id`           | 当前 Evidence Attempt                                                       |
-| `repoctopus.evidence.bundle.id`            | Gate 使用的 Evidence Bundle                                                 |
-| `repoctopus.evidence.gate.status`          | `satisfied` 或 `blocked`                                                    |
-| `repoctopus.action.receipt.id`             | Runtime Action Dispatcher Receipt                                           |
-| `repoctopus.post_merge.receipt.kind`       | `checkout-manifest`、`specification-closure`、`path-audit` 或 `publication` |
-| `repoctopus.post_merge.receipt.id`         | 对应领域 Receipt 或 Manifest 摘要                                           |
+| 属性                                            | 含义                                 |
+| ----------------------------------------------- | ------------------------------------ |
+| `repoctopus.run.id`                             | 原 Change Run 根关联 ID              |
+| `repoctopus.change.id`                          | 通过安全格式检查的 change ID         |
+| `repoctopus.change.phase.before` / `.phase`     | accepted transition 前后的 phase     |
+| `repoctopus.change.status.before` / `.status`   | transition 前后的 Run status         |
+| `repoctopus.change.work.active/id/kind`         | 当前 Work；inactive 事件显式清除旧值 |
+| `repoctopus.change.task.id`                     | 当前 Task 的稳定 ID（若有）          |
+| `repoctopus.change.validator.id/version/digest` | 当前 Validator 的版本身份            |
+| `repoctopus.change.wait.active/id/kind`         | 当前等待；inactive 事件显式清除旧值  |
+| `repoctopus.change.wait.reason_category`        | 有界等待类别，不是自由文本 reason    |
+| `repoctopus.evidence.*`                         | Evidence Attempt、Bundle、Gate 关联  |
+| `repoctopus.action.receipt.id`                  | Runtime Action Dispatcher Receipt    |
+
+Archive 仍使用同一 Run 和相同字段；不再创建独立 Post-merge Run，也不输出 `repoctopus.post_merge.*` 平行语义。Webhook 进入 Inbox 但尚未被 Run 接受时，只能上报投递状态，不能提前把 change 标成 completed。
 
 Log 和 Span 可以携带这些高基数关联 ID。Metric 只使用工作流名、事件类型、动作结果、Evidence Adapter、状态等有界维度；它们不使用 Run、change、Attempt、Bundle、Delivery、Envelope 或 Receipt ID，避免时间序列数量随执行次数增长。
 
@@ -62,4 +66,4 @@ OTel 属性只允许稳定 ID、Adapter、状态、可信等级、耗时，以�
 
 原始内容只保存在受本机保留策略管理的 Artifact Store 中。遥测失败诊断也不会被写回领域事实。
 
-Post-merge 属性映射还会拒绝格式异常、疑似 Token、绝对路径、换行和超长值。Action summary、规格正文、MR body、commit message、仓库 URL、文件列表和 webhook payload 不进入关联属性。
+Change lifecycle 映射只读取 accepted transition fact 中的枚举、稳定 ID 和摘要；自由文本 wait reason 只映射为有界 category。格式异常、疑似 Token、绝对路径、换行和超长值都会被拒绝。Action summary、规格正文、MR body、commit message、仓库 URL、文件列表和 webhook payload 不进入关联属性。

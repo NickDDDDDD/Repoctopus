@@ -32,6 +32,40 @@ export interface SpecificationChange {
   affectedCapabilities: string[];
 }
 
+export interface SpecificationTask {
+  taskId: string;
+  taskRevision: `sha256:${string}`;
+  title: string;
+  level: number;
+  status: 'pending' | 'completed';
+  blockedBy: string[];
+  acceptanceCriteria: string[];
+  requirementRefs: string[];
+}
+
+export interface SpecificationTaskSet {
+  schemaVersion: 1;
+  changeId: string;
+  tasks: SpecificationTask[];
+  digest: `sha256:${string}`;
+}
+
+export interface CompleteSpecificationTaskInput {
+  changeId: string;
+  taskId: string;
+  taskRevision: `sha256:${string}`;
+  signal?: AbortSignal;
+}
+
+export interface CompleteSpecificationTaskResult {
+  schemaVersion: 1;
+  changeId: string;
+  taskId: string;
+  taskRevision: `sha256:${string}`;
+  updated: boolean;
+  tasks: SpecificationTaskSet;
+}
+
 export interface SpecificationDiagnostic {
   code: string;
   severity: 'warning' | 'error';
@@ -48,6 +82,74 @@ export interface SpecificationValidation {
   valid: boolean;
   validationDigest: `sha256:${string}`;
   diagnostics: SpecificationDiagnostic[];
+}
+
+export interface SpecificationArtifactInstructions {
+  id: string;
+  kind: Exclude<SpecificationArtifactKind, 'verification'>;
+  instructionDigest: `sha256:${string}`;
+  templateDigest: `sha256:${string}`;
+}
+
+export interface SpecificationArtifactContext extends SpecificationArtifactInstructions {
+  instruction: string;
+  template: string;
+}
+
+export interface SpecificationPlanningContext {
+  schemaVersion: 1;
+  schemaName: string;
+  provider: SpecificationProviderIdentity;
+  artifacts: SpecificationArtifactContext[];
+  digest: `sha256:${string}`;
+}
+
+export interface SpecificationSchemaInstructions {
+  schemaVersion: 1;
+  schemaName: string;
+  provider: SpecificationProviderIdentity;
+  artifacts: SpecificationArtifactInstructions[];
+  digest: `sha256:${string}`;
+}
+
+export interface SpecificationMethodRule {
+  id: string;
+  statement: string;
+  sources: readonly string[];
+  sourceDigests: readonly `sha256:${string}`[];
+  phases: readonly string[];
+  artifactKinds: readonly Exclude<SpecificationArtifactKind, 'verification'>[];
+  enforcement: 'context' | 'deterministic-validator' | 'review-rubric' | 'human-decision';
+}
+
+export interface SpecificationArtifactMethodGuidance {
+  artifactId: string;
+  artifactKind: Exclude<SpecificationArtifactKind, 'verification'>;
+  rules: readonly SpecificationMethodRule[];
+}
+
+export interface SpecificationPlanningGuidance {
+  schemaVersion: 1;
+  kind: 'SpecificationPlanningGuidance';
+  provider: SpecificationProviderIdentity;
+  schemaName: string;
+  schemaDigest: `sha256:${string}`;
+  artifacts: readonly SpecificationArtifactMethodGuidance[];
+  outputContract: {
+    artifactKinds: readonly Exclude<SpecificationArtifactKind, 'verification'>[];
+    allowAdditionalPlanningArtifacts: false;
+    trackerPublish: false;
+  };
+  digest: `sha256:${string}`;
+}
+
+export interface SpecificationPlanningManifest {
+  schemaVersion: 1;
+  kind: 'SpecificationPlanningManifest';
+  change: SpecificationChange;
+  specificationRoot: PlanningSpecificationRoot;
+  schema: SpecificationSchemaInstructions;
+  semanticDigest: `sha256:${string}`;
 }
 
 export interface SpecificationUsageSnapshot {
@@ -72,21 +174,44 @@ export interface PlanningArtifactSnapshot {
   digest: `sha256:${string}`;
 }
 
+export interface PlanningSpecificationRoot {
+  schemaVersion: 1;
+  kind: 'SpecificationRoot';
+  storeId: string;
+  repositoryId: string;
+}
+
 export interface PlanningSnapshot {
   schemaVersion: 1;
   changeId: string;
   provider: SpecificationProviderIdentity;
+  schema?: SpecificationSchemaInstructions;
+  specificationRoot?: PlanningSpecificationRoot;
   changeDigest: `sha256:${string}`;
   validationDigest: `sha256:${string}`;
   artifacts: PlanningArtifactSnapshot[];
   affectedCapabilities: string[];
   changeBranch: ChangeBranchReference;
+  publicationProvenanceDigest: `sha256:${string}`;
   compositionDigest: `sha256:${string}`;
   projectConfigDigest: `sha256:${string}`;
+  planningManifestDigest?: `sha256:${string}`;
   digest: `sha256:${string}`;
 }
 
-export type SpecificationApprovalDecision = 'approve' | 'request_changes' | 'reject';
+export type SpecificationApprovalDecision = 'approve' | 'revise' | 'reject';
+
+export interface SpecificationApprovalProposal {
+  schemaVersion: 1;
+  kind: 'SpecificationApprovalProposal';
+  changeId: string;
+  specificationRoot: PlanningSpecificationRoot;
+  provider: SpecificationProviderIdentity;
+  schema: { name: string; digest: `sha256:${string}` };
+  semanticDigest: `sha256:${string}`;
+  affectedCapabilities: string[];
+  targetBranch: string;
+}
 
 export interface SpecificationApprovalDecisionRequest {
   apiVersion: 'repoctopus/v1alpha1';
@@ -95,7 +220,10 @@ export interface SpecificationApprovalDecisionRequest {
   requestId: string;
   changeId: string;
   snapshotDigest: `sha256:${string}`;
+  proposal: SpecificationApprovalProposal;
+  proposalHash: `sha256:${string}`;
   provider: SpecificationProviderIdentity;
+  schema: SpecificationSchemaInstructions;
   artifacts: PlanningArtifactSnapshot[];
   affectedCapabilities: string[];
   changeBranch: ChangeBranchReference;
@@ -106,7 +234,7 @@ export interface SpecificationApprovalDecisionResponse {
   apiVersion: 'repoctopus/v1alpha1';
   kind: 'HumanDecisionResponse';
   requestId: string;
-  snapshotDigest: `sha256:${string}`;
+  proposalHash: `sha256:${string}`;
   decision: SpecificationApprovalDecision;
   comment?: string;
 }
@@ -122,6 +250,8 @@ export interface SpecificationApprovalRecord {
   requestId: string;
   changeId: string;
   snapshotDigest: `sha256:${string}`;
+  proposalHash: `sha256:${string}`;
+  approvalHash: `sha256:${string}` | null;
   decision: SpecificationApprovalDecision;
   actorId: string;
   source: SpecificationApprovalActor['source'];
@@ -144,6 +274,18 @@ export interface SpecificationApprovalState {
   decisionRequest: SpecificationApprovalDecisionRequest;
   decision: SpecificationApprovalRecord | null;
   updatedAt: string;
+}
+
+export interface SpecificationApprovalMigrationPlan {
+  schemaVersion: 1;
+  kind: 'SpecificationApprovalMigrationPlan';
+  changeId: string;
+  status: 'current' | 'migration_required';
+  persistedSnapshotDigest: `sha256:${string}`;
+  reason: string;
+  requiredActions: readonly string[];
+  externalSideEffects: readonly [];
+  planDigest: `sha256:${string}`;
 }
 
 export interface SpecificationCompatibility {

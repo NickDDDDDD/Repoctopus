@@ -1,14 +1,14 @@
 # DSH / Comet 全量上游对齐审计
 
-审计日期：2026-10-21。机器基线见 `upstream-baselines.json`；本报告覆盖 Repoctopus 能力账本中的全部 19 个能力域，以及当前 change 尚未完成的事件运维、合入后收尾、配置组合和部署验证。这里的“全量”指按 Repoctopus 产品能力逐域闭合，不等同于逐行复制两个上游仓库。
+审计日期：2026-10-24。机器基线见 `upstream-baselines.json`；本报告覆盖 Repoctopus 能力账本中的全部 19 个能力域。这里的“全量”指按 Repoctopus 产品能力逐域闭合，不等同于逐行复制两个上游仓库。Comet 0.5.0 的逐项增量决定见 `comet/0.5.0-audit.md`。
 
 ## 结论
 
-- DSH 从 `d0dca04e22f09fe04967090b2ee70587ecdad6cc` 升到 `dsh-v0.2.1-rc.2` / `687f282e8625c6b8d11ff58211a90524be2e4317`。直接依赖统一固定为 `0.2.1-rc.2`；已被上游删除的 `dsh-invariants` 从闭包移除。
+- DSH 发布依赖从 `dsh-v0.2.1-rc.2` 升到 `dsh-v0.2.1-rc.3` / `1f81c047fc48fa190a683e469daa699857e9afe8`，直接依赖统一固定为 `0.2.1-rc.3`；默认分支另行固定并审计到 `22ddee3792402c3e70ec5f86a63c3e3e895a2f60`。
 - Cordis 从 `4.0.4` 升到 `4.0.5`，Loader 从 `1.0.5` 升到 `1.0.6`；两个目录继续保存未修改 npm 发布快照。
-- Comet `master` 仍指向已审计源码提交 `575ab0d172e8105257b3c9172b8c8a9b628960ca`，因此不产生源码快照变更；`0.4.5` 发布标签固定在 `c90af44a4474662d7853aae76ce785404974fb0a`，两者之间只有发布后的文档提交。机器基线分别记录 branch commit 与 tag commit，不再把两种身份混为一谈。
+- Comet 从 0.4.5 源码基线升级到 `0.5.0` / `aeb1a6598034e28ce46b8422d4dbd8785e607bd7`；当前 `master` 与发布标签指向同一提交。来源仓库统一为 `rpamis/comet`，20 个既有派生文件的上游摘要全部在新提交复核。
 - 本轮发现并吸收两个适用修复：Loader 保存原始 module namespace 以支持安全重载；文件 Skill watcher 在 Windows 关闭阶段保留 error sink，避免迟到的 Chokidar 错误成为未捕获异常。
-- 没有发现 DSH 或 Comet 中可以整体替换 Repoctopus 持久事件 Inbox、多仓 Evidence、MR 聚合或合入后收尾的实现。上游相似模块仍然提供设计证据，但产品边界不同。
+- Comet 0.5.0 的 Workflow Application 与 Classic SDK 提供了五阶段、固定 Skill/权限、审批哈希、稳定 Task ID 和同一 Run 恢复的成熟证据；这些不变量进入新的 Change 生命周期设计，但其单仓产品外壳不能整体替换 Repoctopus 的持久事件 Inbox、多仓 Evidence、MR 聚合和团队 Workspace。
 
 ## 基线差异审查
 
@@ -27,7 +27,7 @@ DSH 两个固定提交之间有约 10,007 个路径变化，主要增长来自�
 | Session JSONL | 增加写 lease、迁移拒绝、撕裂尾恢复、并发有界扫描和 teardown 顺序测试 | 记录为文件持久化参考；当前 Run/Inbox 已使用 Comet 来源的原子写、身份复核和 intent journal，不引入 Session 格式体系 |
 | Telemetry | DSH 增加可取消 HTTP export、重试和 shutdown deadline | Repoctopus exporter 已有 timeout、forceFlush、shutdown 与 durable Evidence outbox；无缺失行为需要移植 |
 
-Comet 没有提交漂移，但本轮重新检查了此前未充分利用的 `domains/agent-learning/experience-journal.ts` 和 `coordinator.ts`。其 `claimEpisode`、过期重领、token/owner fence 与 `renewClaim` 是任务 4.4 Lease/Heartbeat 的有效参考；Repoctopus 已实现处理期续租、失效 token 拒绝结算和卸载后自然恢复。Comet 的协调器只在阶段边界续租，不提供独立定时 heartbeat，因此不能直接替换长处理 Runner。
+Comet 0.5.0 是一次显著升级。新增的 Runtime SDK、Workflow Application、Classic SDK、Application Hook、静态流程定义、运行视图与 Dashboard trace 共同把产品工作流约束下沉到可恢复 Runtime。Repoctopus 立即采用异步命令的进程树清理修复；生命周期能力进入 `establish-change-lifecycle`，而 POSIX 进程组探测、有界 Plugin Store 读取和 Native Snapshot 限额竞态复核列为独立维护 change 候选。完整证据与取舍见 `comet/0.5.0-audit.md`。
 
 ## 能力覆盖矩阵
 
@@ -38,17 +38,17 @@ Comet 没有提交漂移，但本轮重新检查了此前未充分利用的 `dom
 | Plugin composition | 无 Cordis 运行时 | `vendor/cordis`、`vendor/loader` | 采用，已升级 |
 | Action execution | Native check receipt/storage | Jobs settlement 只管理进程内工作 | 适配 Comet；DSH 不替换 durable Intent/Receipt |
 | Engine / resolver / guardrails | `domains/engine` | Agent Loop 面向模型回合 | 适配 Comet；保持纯 Engine |
-| Run / trajectory / checkpoint | Engine storage/run store | Session persistence 与迁移体系 | 适配 Comet；DSH 仅作持久化参考 |
+| Run / trajectory / checkpoint | Runtime SDK、固定 Workflow Definition、Action claim/outcome | Session persistence 与迁移体系 | 适配 Comet；统一为一个 Change Run，DSH 仅作持久化参考 |
 | Protected transitions | Classic store/guard、plugin store | Session write lease、迁移拒绝 | 适配 Comet；现有 intent journal 已覆盖产品状态 |
 | Process safety | `platform/process` | subprocess-local、win32-process | 已采用 Comet；DSH 的 Agent shell 隔离不进入当前边界 |
 | Filesystem safety | race-safe read、atomic file、lock | fs sandbox、observation、Session JSONL | 已采用 Comet；DSH 参考而不叠加第二套抽象 |
 | Multi-repository project | 单项目 registry | Workspace/Session 单工作区语义 | 参考后保留 Repoctopus 原生多仓模型 |
 | Project onboarding | 无确定性多仓确认流 | Workspace registry 不含本产品确认协议 | 无对应，保留原生 |
-| Skill integration | Comet Skill 是产品工作流包 | `ctx.skills` Registry 与 filesystem provider | 采用 Registry、适配 provider；已升级并修复 watcher |
+| Skill integration | Workflow Application 固定 Skill、能力、side effect 与 scope | `ctx.skills` Registry 与 filesystem provider | 采用 DSH Registry 与 Cordis 组合；吸收 Comet 的 Action 绑定和写权限不变量 |
 | Specification authority | OpenSpec integration 与事务写入 | 无 Specification Provider | Repoctopus 原生 Provider；Comet 继续作为事务/恢复参考 |
 | Platform event ingress | 无通用 webhook runtime | GitHub handler 与 fire-and-forget runtime | 适配 handler；持久 Inbox 保持原生 |
 | Platform event runner | Experience Journal claim/renew | Webhook drain、Jobs lifecycle | 已吸收两者不变量；Repoctopus 仍需自己的跨进程 Runner |
-| Delivery governance | Native pull-request finish | Workspace changes 记录本地改动 | 适配 Comet 边界；多仓 Human Decision 保持原生 |
+| Delivery governance | Classic Archive 在同一 Run 内执行 prepare/confirm/preflight/archive/deliver | Workspace changes 记录本地改动 | 吸收单一 Archive 阶段；多仓 Business MR、合入恢复和最终 Change MR 保持原生 |
 | Evidence / receipt / retention | Native Evidence 全套实现 | Session log 不表达跨仓 Evidence | 行为适配 Comet，不引入 DSH Session |
 | Repository fingerprint | Native snapshot/fence | 无等价多仓 fence | 适配 Comet |
 | Feedback adapters | Agent/project learning | Message/command feedback 面向聊天产品 | 语义不同，保留 Repoctopus Browser/implementation feedback |

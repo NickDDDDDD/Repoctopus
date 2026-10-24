@@ -36,6 +36,38 @@ export interface DetectedRepository {
   technologies: Array<'node' | 'maven' | 'gradle'>;
   commands: DetectedCommand[];
   services: DetectedService[];
+  openSpec: OpenSpecRepositoryBinding;
+}
+
+export type OpenSpecRepositoryClassification =
+  | 'workspace-store'
+  | 'unconfigured'
+  | 'same-store'
+  | 'other-store'
+  | 'local-authority'
+  | 'damaged'
+  | 'read-only';
+
+export interface OpenSpecPointerDiff {
+  path: 'openspec/config.yaml';
+  before: string | null;
+  after: string | null;
+}
+
+export interface OpenSpecRepositoryBinding {
+  repositoryId: string;
+  classification: OpenSpecRepositoryClassification;
+  selection: 'install' | 'keep' | 'skip' | 'blocked';
+  configuredStoreId: string | null;
+  pointerDiff: OpenSpecPointerDiff | null;
+  diagnostic: string | null;
+}
+
+export interface OpenSpecStoreBindingProposal {
+  storeId: string;
+  workspaceRepositoryId: string;
+  workspaceRoot: string;
+  repositories: OpenSpecRepositoryBinding[];
 }
 
 export interface DetectionUnresolvedItem {
@@ -67,4 +99,5 @@ export interface ProjectDetectionDraft {
   candidateConfig: SharedProjectConfig | null;
   baseConfigDigest: string | null;
   reconcile: ProjectConfigReconcileDiff | null;
+  storeBinding: OpenSpecStoreBindingProposal | null;
 }

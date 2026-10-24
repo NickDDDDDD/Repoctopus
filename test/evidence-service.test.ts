@@ -1,3 +1,5 @@
+import path from 'node:path';
+
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { EvidenceService } from '../domains/evidence/service.js';
@@ -6,6 +8,7 @@ import type { EffectiveProjectConfig } from '../domains/project-configuration/ty
 import { FileArtifactStore } from '../platform/evidence/file-artifact-store.js';
 import { FileEvidenceStore } from '../platform/evidence/file-evidence-store.js';
 import { LocalCommandAdapter } from '../platform/feedback/command-adapter.js';
+import { MAX_VERIFICATION_REPORT_BYTES } from '../domains/evidence/verification-report.js';
 import {
   removeTemporaryDirectory,
   temporaryDirectory,
@@ -39,7 +42,10 @@ function command(
   id: string,
   script: string,
   options: { dependsOn?: string[]; required?: boolean } = {},
-): EffectiveProjectConfig['shared']['profiles'][number]['nodes'][number] {
+): Extract<
+  EffectiveProjectConfig['shared']['profiles'][number]['nodes'][number],
+  { type: 'command' }
+> {
   return {
     id,
     type: 'command',
@@ -81,8 +87,111 @@ describe('evidence command vertical slice', () => {
       ]),
     );
     expect(result.receipts.map((receipt) => receipt.nodeId).sort()).toEqual(['backend', 'build']);
-    expect(result.bundle.artifactDigests).toHaveLength(2);
+    expect(result.bundle.artifactDigests).toHaveLength(3);
+    expect(result.bundle.verificationReport).toMatchObject({
+      artifactType: 'verification-report',
+      redacted: true,
+    });
     expect((await store.loadBundle(result.bundle.bundleId)).outcome).toBe('failed');
+  });
+
+  it('writes a bounded redacted report that references commands, results, and evidence identities', async () => {
+    const workspace = await temporaryDirectory('repoctopus-evidence-report-');
+    cleanup.push(workspace);
+    const plan = compileEvidenceProfile(
+      config(workspace, [
+        command(
+          'report',
+          "process.stdout.write('token=report-secret ' + 'x'.repeat(10000)); process.exit(1)",
+        ),
+      ]),
+      'verify',
+    );
+    const artifacts = new FileArtifactStore(workspace);
+    const result = await new EvidenceService(
+      artifacts,
+      new FileEvidenceStore(workspace),
+      new LocalCommandAdapter(),
+    ).run(plan, 'fingerprint-report', {
+      compositionDigest: TEST_COMPOSITION_DIGEST,
+      maxOutputBytes: 256,
+      sensitiveValues: ['report-secret'],
+    });
+
+    const reference = result.bundle.verificationReport!;
+    const contents = Buffer.from(await artifacts.read(reference)).toString('utf8');
+    const report = JSON.parse(contents) as Record<string, unknown>;
+    expect(reference.size).toBeLessThanOrEqual(MAX_VERIFICATION_REPORT_BYTES);
+    expect(contents).not.toContain('report-secret');
+    expect(contents).not.toContain('x'.repeat(1000));
+    expect(report).toMatchObject({
+      kind: 'VerificationReport',
+      attemptId: result.attempt.attemptId,
+      outcome: 'failed',
+      limits: { maxBytes: MAX_VERIFICATION_REPORT_BYTES, embeddedOutput: false },
+      nodes: [
+        {
+          nodeId: 'report',
+          command: { executable: path.basename(process.execPath) },
+          result: { status: 'failed', receiptId: result.receipts[0]!.receiptId },
+        },
+      ],
+    });
+    expect(result.bundle.artifactDigests).toContain(reference.sha256);
+  });
+
+  it('keeps failed, timed-out, cancelled, retried, and superseded Attempts distinct', async () => {
+    const workspace = await temporaryDirectory('repoctopus-evidence-report-lifecycle-');
+    cleanup.push(workspace);
+    const artifacts = new FileArtifactStore(workspace);
+    const store = new FileEvidenceStore(workspace);
+    const service = new EvidenceService(artifacts, store, new LocalCommandAdapter());
+    const timedOutPlan = compileEvidenceProfile(
+      config(workspace, [
+        { ...command('check', 'setInterval(() => {}, 1000)'), timeoutMs: 20 },
+      ]),
+      'verify',
+    );
+    const timedOut = await service.run(timedOutPlan, 'fingerprint-timeout', {
+      attemptId: 'attempt-timeout',
+      compositionDigest: TEST_COMPOSITION_DIGEST,
+    });
+    expect(timedOut.bundle).toMatchObject({
+      outcome: 'failed',
+      verificationReport: { artifactType: 'verification-report' },
+    });
+    expect(timedOut.receipts[0]?.findings).toEqual(
+      expect.arrayContaining([expect.objectContaining({ code: 'command-timeout' })]),
+    );
+
+    const retryPlan = compileEvidenceProfile(
+      config(workspace, [command('check', 'process.exit(0)')]),
+      'verify',
+    );
+    const retry = await service.run(retryPlan, 'fingerprint-retry', {
+      attemptId: 'attempt-retry',
+      compositionDigest: TEST_COMPOSITION_DIGEST,
+    });
+    expect(retry.bundle.outcome).toBe('passed');
+    expect(retry.bundle.bundleId).not.toBe(timedOut.bundle.bundleId);
+    expect((await store.loadAttempt('attempt-timeout')).status).toBe('completed');
+
+    const superseded = await service.run(retryPlan, 'fingerprint-before', {
+      attemptId: 'attempt-superseded',
+      compositionDigest: TEST_COMPOSITION_DIGEST,
+      captureEndingFingerprint: () => Promise.resolve('fingerprint-after'),
+    });
+    expect(superseded.attempt.status).toBe('superseded');
+    expect(superseded.bundle.outcome).toBe('incomplete');
+
+    await expect(
+      service.run(retryPlan, 'fingerprint-cancelled', {
+        attemptId: 'attempt-cancelled',
+        compositionDigest: TEST_COMPOSITION_DIGEST,
+        signal: AbortSignal.abort(new Error('cancelled')),
+      }),
+    ).rejects.toThrow(/cancelled/u);
+    await expect(store.loadAttempt('attempt-cancelled')).rejects.toMatchObject({ code: 'ENOENT' });
   });
 
   it('returns passed_with_warnings for an optional command failure', async () => {

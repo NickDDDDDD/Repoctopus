@@ -25,7 +25,7 @@ HTTP Host → GitHub Adapter → PlatformEvents → Event Inbox
 - Runner 使用带 Token 的持久租约领取事件。长任务在租约到期前续租，旧 Token 不能提交结果。
 - Processor 返回 `completed`、`retry` 或 `dead_letter`。Inbox 把结果和 Receipt 保存在同一个原子快照中。
 
-Webhook 只负责唤醒处理链。PostMergeCoordinator 会重新读取代码平台上的 MR、CI、评审和 merge commit，不把 webhook payload 当作最终交付事实；全部业务 MR 满足条件后，它才通过 WorkflowRuns 启动或恢复稳定身份的 Post-merge Run。Webhook 丢失时，短生命周期的 `post-merge reconcile` 和 `run start` 前置检查调用同一个 Coordinator。
+Webhook 只负责唤醒处理链。PostMergeCoordinator 会重新读取代码平台上的 MR、CI、评审和 merge commit，不把 webhook payload 当作最终交付事实；它只返回规范化平台事实，不创建或推进 Run。原 Change Run 通过 Archive 命令接受完整 Business MR 集合后继续。Webhook 丢失时，短生命周期的 `post-merge reconcile` 和 `run start` 前置检查调用同一个 Coordinator，提供最终一致兜底。
 
 ## Inbox 状态
 

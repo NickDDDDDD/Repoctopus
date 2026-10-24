@@ -52,7 +52,7 @@ describe('third-party provenance', () => {
   it('accepts the immutable Cordis snapshot', async () => {
     const result = await checkProvenance(await provenanceFixture());
     expect(result.valid).toBe(true);
-    expect(result.fileCount).toBe(104);
+    expect(result.fileCount).toBe(113);
   });
 
   it('rejects a modified Cordis source file', async () => {
@@ -87,6 +87,70 @@ describe('third-party provenance', () => {
     );
   });
 
+  it('rejects placing a behavior-only Matt reference inside a Provider root', async () => {
+    const root = await provenanceFixture();
+    const adoptionPath = path.join(root, 'third_party', 'matt-skills', 'method-adoptions.json');
+    const adoption = JSON.parse(await readFile(adoptionPath, 'utf8')) as {
+      providerRoots: string[];
+    };
+    adoption.providerRoots.push('third_party/matt-skills/references');
+    await writeFile(adoptionPath, JSON.stringify(adoption, null, 2));
+
+    const result = await checkProvenance(root);
+    expect(result.valid).toBe(false);
+    expect(result.findings).toContain('Matt behavior reference is inside a Provider root: to-spec');
+    expect(result.findings).toContain(
+      'Matt behavior reference is inside a Provider root: to-tickets',
+    );
+  });
+
+  it('rejects an adopted Matt rule that is absent from the normalized rule set', async () => {
+    const root = await provenanceFixture();
+    const adoptionPath = path.join(root, 'third_party', 'matt-skills', 'method-adoptions.json');
+    const adoption = JSON.parse(await readFile(adoptionPath, 'utf8')) as {
+      references: Array<{ adoptedRuleIds: string[] }>;
+    };
+    adoption.references[0]!.adoptedRuleIds.push('planning.unregistered-rule');
+    await writeFile(adoptionPath, JSON.stringify(adoption, null, 2));
+
+    const result = await checkProvenance(root);
+    expect(result.valid).toBe(false);
+    expect(result.findings).toContain('Unknown Matt adopted rule: planning.unregistered-rule');
+  });
+
+  it('rejects omitting an upstream tracker behavior from the explicit rejection set', async () => {
+    const root = await provenanceFixture();
+    const adoptionPath = path.join(root, 'third_party', 'matt-skills', 'method-adoptions.json');
+    const adoption = JSON.parse(await readFile(adoptionPath, 'utf8')) as {
+      references: Array<{ name: string; rejectedBehaviors: string[] }>;
+    };
+    const toTickets = adoption.references.find((entry) => entry.name === 'to-tickets')!;
+    toTickets.rejectedBehaviors = toTickets.rejectedBehaviors.filter(
+      (behavior) => behavior !== 'publish-tickets-to-issue-tracker',
+    );
+    await writeFile(adoptionPath, JSON.stringify(adoption, null, 2));
+
+    const result = await checkProvenance(root);
+    expect(result.valid).toBe(false);
+    expect(result.findings).toContain(
+      'Missing rejected Matt behavior: to-tickets -> publish-tickets-to-issue-tracker',
+    );
+  });
+
+  it('rejects a Matt TDD snapshot without its codebase-design relationship', async () => {
+    const root = await provenanceFixture();
+    const adoptionPath = path.join(root, 'third_party', 'matt-skills', 'method-adoptions.json');
+    const adoption = JSON.parse(await readFile(adoptionPath, 'utf8')) as {
+      relationships: unknown[];
+    };
+    adoption.relationships = [];
+    await writeFile(adoptionPath, JSON.stringify(adoption, null, 2));
+
+    const result = await checkProvenance(root);
+    expect(result.valid).toBe(false);
+    expect(result.findings).toContain('Missing Matt Skill relationship: tdd -> codebase-design');
+  });
+
   it('rejects a DSH dependency that drifts from the fixed package version', async () => {
     const root = await provenanceFixture();
     const lockPath = path.join(root, 'package-lock.json');
@@ -99,7 +163,7 @@ describe('third-party provenance', () => {
     const result = await checkProvenance(root);
     expect(result.valid).toBe(false);
     expect(result.findings).toContain(
-      'DSH package lock mismatch: @deepseek-ai/dsh-skill@0.2.1-rc.2',
+      'DSH package lock mismatch: @deepseek-ai/dsh-skill@0.2.1-rc.3',
     );
   });
 
@@ -123,9 +187,9 @@ describe('third-party provenance', () => {
     const root = await provenanceFixture();
     const baselinePath = path.join(root, 'third_party', 'upstream-baselines.json');
     const baseline = JSON.parse(await readFile(baselinePath, 'utf8')) as {
-      upstreams: Array<{ id: string; pinnedCommit: string }>;
+      upstreams: Array<{ id: string; pinnedCommit: string; pinnedTagCommit: string }>;
     };
-    baseline.upstreams.find((entry) => entry.id === 'dsh')!.pinnedCommit =
+    baseline.upstreams.find((entry) => entry.id === 'dsh')!.pinnedTagCommit =
       'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
     await writeFile(baselinePath, JSON.stringify(baseline, null, 2));
 

@@ -49,10 +49,13 @@ export function booleanFlag(parsed: ParsedArguments, name: string): boolean {
 export function integerFlag(
   parsed: ParsedArguments,
   name: string,
-  options: { fallback?: number; minimum?: number } = {},
+  options: { required?: boolean; fallback?: number; minimum?: number } = {},
 ): number | undefined {
   const value = parsed.flags.get(name);
   if (value === undefined && options.fallback !== undefined) return options.fallback;
+  if (value === undefined && options.required) {
+    throw new Error(`Missing required option: --${name}`);
+  }
   if (typeof value !== 'string' || !/^(?:0|[1-9]\d*)$/u.test(value)) {
     if (value === undefined) return undefined;
     throw new Error(`Option --${name} must be an integer`);

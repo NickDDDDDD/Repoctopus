@@ -22,14 +22,17 @@
         "plugins/delivery/**",
         "plugins/evidence/**",
         "plugins/http/**",
+        "plugins/lifecycle/**",
         "plugins/project/**",
         "plugins/run/**",
         "plugins/command/delivery-contributor.ts",
+        "plugins/command/change-lifecycle-migration-contributor.ts",
         "plugins/command/evidence-contributor.ts",
         "plugins/command/maintenance-contributor.ts",
         "plugins/command/project-onboarding-contributor.ts",
         "plugins/command/project-probe-contributor.ts",
         "plugins/command/workflow-run-contributor.ts",
+        "plugins/command/archive-contributor.ts",
         "services/**",
         "platform/http/**"
       ],
@@ -94,11 +97,23 @@
       "rationale": "保留 Run、Trajectory、Checkpoint 和恢复语义，避免引入 Comet Skill 与产品目录布局。"
     },
     {
+      "id": "change-lifecycle",
+      "disposition": "behavior-reimplemented",
+      "targets": ["domains/change-lifecycle/**"],
+      "upstream": [
+        "domains/native-orchestration/workflow-definition.ts",
+        "domains/native-orchestration/transition.ts",
+        "packages/runtime-sdk/src/workflow-application.ts"
+      ],
+      "rationale": "采用固定定义、纯转换、Contributor 身份和投影分离原则，为 Repoctopus 的 Workspace、多仓、OpenSpec 与持久 Run 建立唯一 Change 生命周期；Cordis 是唯一组合容器。"
+    },
+    {
       "id": "protected-runtime-transitions",
       "disposition": "source-modified",
       "targets": [
         "domains/runtime/**",
         "platform/runtime/file-runtime-store.ts",
+        "platform/runtime/file-change-lifecycle-migration-store.ts",
         "platform/runtime/recoverable-file-lock.ts",
         "platform/runtime/recoverable-file-transition.ts"
       ],
@@ -160,7 +175,7 @@
         "platform/skill/**"
       ],
       "upstream": [
-        "@deepseek-ai/dsh-skill@0.2.1-rc.2",
+        "@deepseek-ai/dsh-skill@0.2.1-rc.3",
         "packages/skill/skill-filesystem/src/index.ts",
         "third_party/matt-skills"
       ],
@@ -355,6 +370,14 @@
       "id": "post-merge-closure-journal",
       "files": ["services/post-merge-actions.ts"],
       "status": "recoverable-action-journal"
+    },
+    {
+      "id": "change-lifecycle-migration-journal",
+      "files": [
+        "domains/change-lifecycle/migration-transaction.ts",
+        "platform/runtime/file-change-lifecycle-migration-store.ts"
+      ],
+      "status": "recoverable-migration-journal"
     }
   ],
   "compositionGuards": [
@@ -447,6 +470,69 @@
       "pattern": "from\\s+['\"]@deepseek-ai/cordis(?:/|['\"])",
       "allowed": [],
       "message": "Electron Shell and preload must not host or import the Cordis application runtime"
+    },
+    {
+      "id": "single-change-lifecycle-transition-owner",
+      "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
+      "pattern": "type\\s+ChangePhase\\s*=|enum\\s+ChangePhase\\s*\\{|\\b(?:decide|apply|transition)ChangeLifecycle(?:Transition)?\\s*[=(]",
+      "allowed": ["domains/change-lifecycle/transition.ts"],
+      "message": "Change lifecycle phases and transition decisions belong only to the canonical transition module"
+    },
+    {
+      "id": "change-lifecycle-host-delegation",
+      "targets": ["app/**", "plugins/command/**"],
+      "pattern": "from\\s+['\"][^'\"]*change-lifecycle/(?:definition|transition|host-workflow)(?:\\.js)?['\"]",
+      "allowed": [],
+      "message": "CLI and command hosts must delegate Change lifecycle behavior to WorkflowRuns"
+    },
+    {
+      "id": "direct-run-state-write",
+      "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
+      "pattern": "\\b(?:ctx|context)\\.runStore\\.(?:commit|commitGuarded)\\s*\\(",
+      "allowed": [],
+      "message": "Callers must submit facts through WorkflowRuns instead of writing Run state directly"
+    },
+    {
+      "id": "independent-post-merge-run-creation",
+      "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
+      "pattern": "\\bpostMergeRun(?:Options|Id)\\s*\\(",
+      "allowed": ["domains/post-merge/run.ts"],
+      "message": "Production callers must never create an independent Post-merge Run; Archive belongs to the original Change Run"
+    },
+    {
+      "id": "post-merge-coordinator-run-write",
+      "targets": ["services/post-merge-coordinator.ts"],
+      "pattern": "workflowRuns\\.(?:start|startOrResume|next|record)\\s*\\(",
+      "allowed": [],
+      "message": "The legacy PostMergeCoordinator may observe platform facts but must not create or advance Runs"
+    },
+    {
+      "id": "legacy-delivery-command-write",
+      "targets": ["plugins/command/delivery-contributor.ts"],
+      "pattern": "context\\.delivery\\.(?:checkpoint|prepare|decide|publish|refresh)\\s*\\(",
+      "allowed": [],
+      "message": "Legacy public Delivery commands must return a migration diagnostic instead of mutating Delivery state"
+    },
+    {
+      "id": "caller-selected-lifecycle-method",
+      "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
+      "pattern": "\\b(?:actionSkill|requiredSkill|augmentationSkills|methodProfile)\\s*:\\s*(?:input|options|request|commandInput)\\.",
+      "allowed": [],
+      "message": "Lifecycle methods must come from the immutable definition, not caller input"
+    },
+    {
+      "id": "no-general-capability-resolver",
+      "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
+      "pattern": "(?:class|interface|new)\\s+[A-Za-z0-9_]*CapabilityResolver\\b",
+      "allowed": [],
+      "message": "Lifecycle composition must use typed Contributor contracts instead of a second general Capability Resolver"
+    },
+    {
+      "id": "no-upstream-product-shell-import",
+      "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
+      "pattern": "from\\s+['\"][^'\"]*(?:third_party/(?:comet|dsh)|comet/(?:apps|cli|shell)|dsh/(?:apps|agent|session))",
+      "allowed": [],
+      "message": "Repoctopus must not import Comet product shells or unpublished DSH product source"
     }
   ],
   "protectedEvidenceFlow": {

@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { access, chmod, mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -26,6 +26,110 @@ async function expectMissing(file: string): Promise<void> {
 }
 
 describe('project configuration detection', () => {
+  it('classifies OpenSpec Store pointer candidates without writing business repositories', async () => {
+    const root = await temporaryDirectory('repoctopus-store-detect-');
+    cleanup.push(root);
+    const workspace = await createGitRepository(root, 'workspace');
+    const unconfigured = await createGitRepository(root, 'unconfigured');
+    const same = await createGitRepository(root, 'same');
+    const other = await createGitRepository(root, 'other');
+    const local = await createGitRepository(root, 'local');
+    const damaged = await createGitRepository(root, 'damaged');
+    const readOnly = await createGitRepository(root, 'read-only');
+    const exit = await createGitRepository(root, 'exit');
+    await writeFile(
+      path.join(workspace, 'package.json'),
+      JSON.stringify({ scripts: { build: 'node -e "process.exit(0)"' } }),
+    );
+    await mkdir(path.join(same, 'openspec'), { recursive: true });
+    await writeFile(path.join(same, 'openspec', 'config.yaml'), 'store: custom-platform\n');
+    await mkdir(path.join(other, 'openspec'), { recursive: true });
+    await writeFile(path.join(other, 'openspec', 'config.yaml'), 'store: another-platform\n');
+    await mkdir(path.join(local, 'openspec', 'specs'), { recursive: true });
+    await mkdir(path.join(damaged, 'openspec'), { recursive: true });
+    await writeFile(path.join(damaged, 'openspec', 'config.yaml'), 'store: [broken\n');
+    await chmod(readOnly, 0o555);
+    const business = [unconfigured, same, other, local, damaged, readOnly, exit];
+    const before = await Promise.all(business.map(status));
+
+    let draft: Awaited<ReturnType<typeof detectProjectConfiguration>>['draft'];
+    try {
+      ({ draft } = await detectProjectConfiguration({
+        workspace,
+        scanRoot: root,
+        storeId: 'custom-platform',
+        skippedPointerRepositoryIds: ['exit'],
+        now: () => new Date('2026-01-01T00:00:00.000Z'),
+      }));
+    } finally {
+      await chmod(readOnly, 0o755);
+    }
+
+    expect(draft.storeBinding).toMatchObject({
+      storeId: 'custom-platform',
+      workspaceRepositoryId: 'workspace',
+      workspaceRoot: workspace,
+    });
+    expect(draft.candidateConfig?.specificationProvider).toEqual({
+      id: 'specification-openspec',
+      store: { id: 'custom-platform', repositoryId: 'workspace' },
+    });
+    const bindings = new Map(
+      draft.storeBinding?.repositories.map((binding) => [binding.repositoryId, binding]),
+    );
+    expect(bindings.get('workspace')).toMatchObject({
+      classification: 'workspace-store',
+      selection: 'keep',
+    });
+    expect(bindings.get('unconfigured')).toMatchObject({
+      classification: 'unconfigured',
+      selection: 'install',
+      pointerDiff: {
+        path: 'openspec/config.yaml',
+        before: null,
+        after: 'store: custom-platform\n',
+      },
+    });
+    expect(bindings.get('same')).toMatchObject({
+      classification: 'same-store',
+      selection: 'keep',
+      configuredStoreId: 'custom-platform',
+      pointerDiff: null,
+    });
+    expect(bindings.get('other')).toMatchObject({
+      classification: 'other-store',
+      selection: 'blocked',
+      configuredStoreId: 'another-platform',
+    });
+    expect(bindings.get('local')).toMatchObject({
+      classification: 'local-authority',
+      selection: 'blocked',
+    });
+    expect(bindings.get('damaged')).toMatchObject({
+      classification: 'damaged',
+      selection: 'blocked',
+    });
+    expect(bindings.get('read-only')).toMatchObject({
+      classification: 'read-only',
+      selection: 'blocked',
+    });
+    expect(bindings.get('exit')).toMatchObject({
+      classification: 'unconfigured',
+      selection: 'skip',
+      pointerDiff: null,
+    });
+    expect(await Promise.all(business.map(status))).toEqual(before);
+    await Promise.all(
+      business.map((repository) => expectMissing(path.join(repository, '.repoctopus'))),
+    );
+    expect(await readFile(path.join(same, 'openspec', 'config.yaml'), 'utf8')).toBe(
+      'store: custom-platform\n',
+    );
+    expect(await readFile(path.join(other, 'openspec', 'config.yaml'), 'utf8')).toBe(
+      'store: another-platform\n',
+    );
+  });
+
   it('writes sourced Node, Maven, Gradle and unresolved findings only to a workspace draft', async () => {
     const root = await temporaryDirectory('repoctopus-detect-');
     cleanup.push(root);

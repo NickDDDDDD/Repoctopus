@@ -4,7 +4,7 @@ Repoctopus 内嵌以下未修改的官方 npm 发布源码：
 
 - `@deepseek-ai/cordis` 4.0.5，对应 DeepSeek Harness `vendor/cordis`。
 - `@deepseek-ai/cordis-plugin-loader` 1.0.6，对应 DeepSeek Harness `vendor/loader`。
-- 固定上游标签：`dsh-v0.2.1-rc.2`；提交：`687f282e8625c6b8d11ff58211a90524be2e4317`。
+- 固定上游标签：`dsh-v0.2.1-rc.3`；提交：`1f81c047fc48fa190a683e469daa699857e9afe8`。
 - 上游仓库：`https://github.com/deepseek-ai/deepseek-harness`。
 - 许可证：MIT；两个包各自目录中保留原始 `LICENSE`。
 

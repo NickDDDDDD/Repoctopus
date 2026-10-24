@@ -1,16 +1,21 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { Context } from '@deepseek-ai/cordis';
 import { afterEach, describe, expect, it } from 'vitest';
+import { stringify } from 'yaml';
 
 import { bootApp, AppBootError } from '../app/boot/boot.js';
 import { compileComposition } from '../app/boot/composition.js';
 import { PLUGIN_CONTRACT_VERSION, type BuiltinPluginRegistration } from '../app/boot/descriptor.js';
 import { createRepoctopusBuiltinCatalog } from '../plugins/builtin-catalog.js';
 import { OpenSpecProvider } from '../platform/specification/openspec-provider.js';
-import type { SpecificationProcessPort } from '../platform/specification/openspec-process.js';
-import { Specification } from '../services/specification.js';
+import {
+  OpenSpecProcess,
+  type SpecificationProcessPort,
+} from '../platform/specification/openspec-process.js';
+import { Specification, type SpecificationRoot } from '../services/specification.js';
+import { assertSpecificationPlanningManifest } from '../domains/specification/planning-manifest.js';
 import { removeTemporaryDirectory, temporaryDirectory } from './helpers/fixtures.js';
 
 const productRoot = path.resolve(import.meta.dirname, '..');
@@ -23,9 +28,37 @@ async function write(relative: string, contents: string, root: string): Promise<
   await writeFile(file, contents);
 }
 
-async function openSpecFixture(valid = true): Promise<string> {
+interface OpenSpecFixture {
+  workspace: string;
+  process: OpenSpecProcess;
+  specificationRoot: SpecificationRoot;
+}
+
+async function openSpecFixture(valid = true): Promise<OpenSpecFixture> {
   const root = await temporaryDirectory('repoctopus-specification-');
+  const data = await temporaryDirectory('repoctopus-openspec-data-');
+  const config = await temporaryDirectory('repoctopus-openspec-config-');
   cleanup.push(root);
+  cleanup.push(data);
+  cleanup.push(config);
+  await write('openspec/config.yaml', 'schema: spec-driven\n', root);
+  await mkdir(path.join(root, 'openspec', 'changes', 'archive'), { recursive: true });
+  await write('.openspec-store/store.yaml', 'version: 1\nid: specification-test\n', root);
+  await write(
+    'openspec/stores/registry.yaml',
+    stringify({
+      version: 1,
+      stores: {
+        'specification-test': { backend: { type: 'git', local_path: root } },
+      },
+    }),
+    data,
+  );
+  await write(
+    'openspec/config.json',
+    JSON.stringify({ defaultStore: 'must-not-override-explicit-store' }),
+    config,
+  );
   await write(
     'openspec/specs/demo/spec.md',
     `# Demo Specification
@@ -100,13 +133,40 @@ The system MUST add behavior.
       : '# Spec Delta\n\n## ADDED Requirements\n\nMissing requirement structure.\n',
     root,
   );
-  return root;
+  return {
+    workspace: root,
+    process: new OpenSpecProcess(undefined, 60_000, 16 * 1024 * 1024, {
+      XDG_DATA_HOME: data,
+      XDG_CONFIG_HOME: config,
+      OPENSPEC_NO_UPDATE_CHECK: '1',
+      OPENSPEC_TELEMETRY: '0',
+    }),
+    specificationRoot: {
+      schemaVersion: 1,
+      kind: 'SpecificationRoot',
+      storeId: 'specification-test',
+      repositoryId: 'workspace',
+    },
+  };
 }
 
 describe('Specification authority', () => {
   it('ignores undeclared implementation notes instead of inventing a fifth OpenSpec artifact', async () => {
     const process: SpecificationProcessPort = {
       execute(args) {
+        if (args[0] === 'context') {
+          return Promise.resolve({
+            exitCode: 0,
+            stdout: JSON.stringify({
+              root: { path: productRoot, source: 'store', store_id: 'repoctopus-test' },
+              members: [],
+              status: [],
+            }),
+            stderr: '',
+          });
+        }
+        expect(args).toContain('--store');
+        expect(args).toContain('repoctopus-test');
         if (args[0] === 'show') {
           return Promise.resolve({
             exitCode: 0,
@@ -132,7 +192,16 @@ describe('Specification authority', () => {
       },
     };
     const context = new Context();
-    const fiber = context.plugin(OpenSpecProvider, { workspaceRoot: productRoot, process });
+    const fiber = context.plugin(OpenSpecProvider, {
+      workspaceRoot: productRoot,
+      specificationRoot: {
+        schemaVersion: 1,
+        kind: 'SpecificationRoot',
+        storeId: 'repoctopus-test',
+        repositoryId: 'workspace',
+      },
+      process,
+    });
     await fiber;
 
     const inspected = await context.specification.inspect('sample');
@@ -144,12 +213,25 @@ describe('Specification authority', () => {
   });
 
   it('maps the official OpenSpec lifecycle to stable inspect, validate, and idempotent close results', async () => {
-    const workspace = await openSpecFixture();
+    const fixture = await openSpecFixture();
+    const workspace = fixture.workspace;
     const context = new Context();
-    const fiber = context.plugin(OpenSpecProvider, { workspaceRoot: workspace });
+    const fiber = context.plugin(OpenSpecProvider, {
+      workspaceRoot: fixture.workspace,
+      specificationRoot: fixture.specificationRoot,
+      process: fixture.process,
+    });
     await fiber;
 
     const inspected = await context.specification.inspect('sample');
+    const instructions = await context.specification.planningInstructions('sample');
+    const planningContext = await context.specification.planningContext('sample');
+    expect(context.specification.root()).toEqual({
+      schemaVersion: 1,
+      kind: 'SpecificationRoot',
+      storeId: 'specification-test',
+      repositoryId: 'workspace',
+    });
     expect(inspected).toMatchObject({
       apiVersion: 'repoctopus.specification/v1alpha1',
       changeId: 'sample',
@@ -157,6 +239,9 @@ describe('Specification authority', () => {
       planningComplete: true,
       affectedCapabilities: ['demo'],
     });
+    expect(planningContext.artifacts).toHaveLength(4);
+    expect(typeof planningContext.artifacts[0]?.instruction).toBe('string');
+    expect(typeof planningContext.artifacts[0]?.template).toBe('string');
     expect(inspected.artifacts.map((artifact) => artifact.kind)).toEqual([
       'design',
       'proposal',
@@ -166,6 +251,96 @@ describe('Specification authority', () => {
     expect(inspected.artifacts.every((artifact) => artifact.digest?.startsWith('sha256:'))).toBe(
       true,
     );
+    expect(instructions).toMatchObject({
+      schemaName: 'spec-driven',
+      provider: { id: 'openspec', version: '1.14.3' },
+    });
+    expect(instructions.artifacts.map((artifact) => artifact.kind)).toEqual([
+      'proposal',
+      'delta-specs',
+      'design',
+      'tasks',
+    ]);
+    expect(instructions.digest).toMatch(/^sha256:[a-f0-9]{64}$/u);
+    const manifest = await context.specification.planningManifest('sample');
+    expect(manifest).toMatchObject({
+      kind: 'SpecificationPlanningManifest',
+      change: {
+        changeId: 'sample',
+        provider: { id: 'openspec', version: '1.14.3' },
+        affectedCapabilities: ['demo'],
+      },
+      specificationRoot: { storeId: 'specification-test', repositoryId: 'workspace' },
+      schema: { schemaName: 'spec-driven' },
+    });
+    expect(manifest.change.artifacts.map((artifact) => artifact.kind)).toEqual([
+      'delta-specs',
+      'design',
+      'proposal',
+      'tasks',
+    ]);
+    expect(manifest.semanticDigest).toMatch(/^sha256:[a-f0-9]{64}$/u);
+    expect(await context.specification.planningManifest('sample')).toEqual(manifest);
+    expect(() => assertSpecificationPlanningManifest(manifest)).not.toThrow();
+    expect(JSON.stringify(manifest)).not.toContain(workspace);
+    expect(JSON.stringify(manifest)).not.toContain('openspec/changes');
+    const filesBeforeGuidance = (await readdir(workspace, { recursive: true })).sort();
+    const guidance = await context.specification.planningGuidance('sample');
+    expect(guidance.artifacts.map((artifact) => artifact.artifactKind)).toEqual([
+      'proposal',
+      'delta-specs',
+      'design',
+      'tasks',
+    ]);
+    expect(
+      guidance.artifacts.find((artifact) => artifact.artifactKind === 'design')?.rules,
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: 'design.public-test-seams' }),
+        expect.objectContaining({ id: 'planning.synthesize-known-context' }),
+      ]),
+    );
+    expect(
+      guidance.artifacts.find((artifact) => artifact.artifactKind === 'tasks')?.rules,
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: 'tasks.tracer-bullet-slices' }),
+        expect.objectContaining({ id: 'tasks.verifiable-acceptance' }),
+        expect.objectContaining({ id: 'tasks.expand-contract-wide-refactors' }),
+      ]),
+    );
+    expect(guidance.outputContract).toEqual({
+      artifactKinds: ['proposal', 'delta-specs', 'design', 'tasks'],
+      allowAdditionalPlanningArtifacts: false,
+      trackerPublish: false,
+    });
+    expect((await readdir(workspace, { recursive: true })).sort()).toEqual(filesBeforeGuidance);
+    expect(filesBeforeGuidance.some((file) => /(?:ticket|tracker)/iu.test(file))).toBe(false);
+    const tasksFile = path.join(workspace, 'openspec', 'changes', 'sample', 'tasks.md');
+    const originalTasks = await readFile(tasksFile, 'utf8');
+    await writeFile(tasksFile, originalTasks.replace('- [x]', '- [ ]').replaceAll('\n', '\r\n'));
+    expect((await context.specification.planningManifest('sample')).semanticDigest).toBe(
+      manifest.semanticDigest,
+    );
+    const pendingTasks = await context.specification.tasks('sample');
+    const firstCompletion = await context.specification.completeTask({
+      changeId: 'sample',
+      taskId: '1.1',
+      taskRevision: pendingTasks.tasks[0]!.taskRevision,
+    });
+    const replayCompletion = await context.specification.completeTask({
+      changeId: 'sample',
+      taskId: '1.1',
+      taskRevision: pendingTasks.tasks[0]!.taskRevision,
+    });
+    expect(firstCompletion).toMatchObject({ updated: true, taskId: '1.1' });
+    expect(replayCompletion).toMatchObject({ updated: false, taskId: '1.1' });
+    expect(await readFile(tasksFile, 'utf8')).toContain('- [x] 1.1 Complete fixture.');
+    await writeFile(tasksFile, originalTasks.replace('Complete fixture', 'Complete fixture safely'));
+    expect((await context.specification.planningManifest('sample')).semanticDigest).not.toBe(
+      manifest.semanticDigest,
+    );
+    await writeFile(tasksFile, originalTasks);
     expect(await context.specification.validate('sample', { strict: true })).toMatchObject({
       valid: true,
       strict: true,
@@ -195,9 +370,13 @@ describe('Specification authority', () => {
   }, 30_000);
 
   it('returns normalized diagnostics for an invalid delta instead of treating process failure as success', async () => {
-    const workspace = await openSpecFixture(false);
+    const fixture = await openSpecFixture(false);
     const context = new Context();
-    const fiber = context.plugin(OpenSpecProvider, { workspaceRoot: workspace });
+    const fiber = context.plugin(OpenSpecProvider, {
+      workspaceRoot: fixture.workspace,
+      specificationRoot: fixture.specificationRoot,
+      process: fixture.process,
+    });
     await fiber;
     const result = await context.specification.validate('sample', { strict: true });
     expect(result.valid).toBe(false);
@@ -205,8 +384,67 @@ describe('Specification authority', () => {
     await context.fiber.dispose();
   });
 
+  it('fails closed for an unregistered Store instead of falling back to nearest or default roots', async () => {
+    const fixture = await openSpecFixture();
+    const context = new Context();
+    const fiber = context.plugin(OpenSpecProvider, {
+      workspaceRoot: fixture.workspace,
+      specificationRoot: {
+        ...fixture.specificationRoot,
+        storeId: 'not-registered',
+      },
+      process: fixture.process,
+    });
+    await fiber;
+
+    await expect(context.specification.inspect('sample')).rejects.toThrow(
+      /Store not-registered is unavailable.*Unknown store/u,
+    );
+    await context.fiber.dispose();
+  });
+
+  it('fails closed when registry and Store metadata identify different stores', async () => {
+    const fixture = await openSpecFixture();
+    await write(
+      '.openspec-store/store.yaml',
+      'version: 1\nid: different-store\n',
+      fixture.workspace,
+    );
+    const context = new Context();
+    const fiber = context.plugin(OpenSpecProvider, {
+      workspaceRoot: fixture.workspace,
+      specificationRoot: fixture.specificationRoot,
+      process: fixture.process,
+    });
+    await fiber;
+
+    await expect(context.specification.inspect('sample')).rejects.toThrow(
+      /Store specification-test is unavailable.*metadata id/u,
+    );
+    await context.fiber.dispose();
+  });
+
+  it('fails closed when the local registry points the Store id at another checkout', async () => {
+    const fixture = await openSpecFixture();
+    const wrongCheckout = path.join(fixture.workspace, 'wrong-checkout');
+    await mkdir(wrongCheckout);
+    const context = new Context();
+    const fiber = context.plugin(OpenSpecProvider, {
+      workspaceRoot: wrongCheckout,
+      specificationRoot: fixture.specificationRoot,
+      process: fixture.process,
+    });
+    await fiber;
+
+    await expect(context.specification.inspect('sample')).rejects.toThrow(
+      /registered to a different checkout/u,
+    );
+    await context.fiber.dispose();
+  });
+
   it('fails App Boot with zero or multiple authorities and starts with one authority', async () => {
-    const workspace = await openSpecFixture();
+    const fixture = await openSpecFixture();
+    const workspace = fixture.workspace;
     const builtin = await createRepoctopusBuiltinCatalog(productRoot);
     const zero = compileComposition(
       { id: 'zero-spec', kind: 'project', plugins: [], requiredServices: ['specification'] },
@@ -220,7 +458,16 @@ describe('Specification authority', () => {
       {
         id: 'one-spec',
         kind: 'project',
-        plugins: [{ id: 'specification-openspec', config: { workspaceRoot: workspace } }],
+        plugins: [
+          {
+            id: 'specification-openspec',
+            config: {
+              workspaceRoot: workspace,
+              specificationRoot: fixture.specificationRoot,
+              process: fixture.process,
+            },
+          },
+        ],
         requiredServices: ['specification'],
       },
       builtin,
@@ -274,7 +521,14 @@ describe('Specification authority', () => {
             id: 'multiple-spec',
             kind: 'project',
             plugins: [
-              { id: 'specification-openspec', config: { workspaceRoot: workspace } },
+              {
+                id: 'specification-openspec',
+                config: {
+                  workspaceRoot: workspace,
+                  specificationRoot: fixture.specificationRoot,
+                  process: fixture.process,
+                },
+              },
               { id: 'specification-duplicate' },
             ],
             requiredServices: ['specification'],

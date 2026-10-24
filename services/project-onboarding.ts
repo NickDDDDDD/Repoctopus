@@ -20,12 +20,19 @@ export interface ApplyProjectConfigurationDecisionInput {
   timestamp: string;
 }
 
+export interface DetectProjectConfigurationInput {
+  workspace: string;
+  scanRoot: string;
+  storeId?: string;
+  skippedPointerRepositoryIds?: readonly string[];
+}
+
 export class ProjectOnboarding extends Service {
   constructor(context: Context) {
     super(context, 'projectOnboarding');
   }
 
-  detect(input: { workspace: string; scanRoot: string }) {
+  detect(input: DetectProjectConfigurationInput) {
     return detectProjectConfiguration(input);
   }
 

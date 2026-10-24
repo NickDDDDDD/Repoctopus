@@ -6,20 +6,8 @@ import { promisify } from 'node:util';
 import { afterEach, describe, expect, it } from 'vitest';
 import { parse, stringify } from 'yaml';
 
-import {
-  createPlanningSnapshot,
-  recordSpecificationApprovalDecision,
-  requestSpecificationApproval,
-} from '../../domains/specification/planning-approval.js';
-import type {
-  SpecificationChange,
-  SpecificationValidation,
-} from '../../domains/specification/types.js';
 import type { DeliveryIntentV3 } from '../../domains/delivery/types.js';
-import { FilePlanningApprovalStore } from '../../platform/specification/file-planning-approval-store.js';
 import { normalizeRemoteIdentity } from '../../platform/git/remote-identity.js';
-import { loadProjectConfig } from '../../platform/project-configuration/file-config.js';
-import { bootProjectComposition } from '../../app/boot/bootstrap.js';
 import {
   createGitRepository,
   removeTemporaryDirectory,
@@ -30,7 +18,6 @@ import { runCli } from './cli.js';
 const execFileAsync = promisify(execFile);
 const packageRoot = path.resolve(import.meta.dirname, '..', '..');
 const cleanup: string[] = [];
-const digest = (character: string): `sha256:${string}` => `sha256:${character.repeat(64)}`;
 
 afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
 
@@ -41,80 +28,8 @@ async function bareRemote(root: string, name: string): Promise<string> {
   return remote;
 }
 
-async function approvePlanning(
-  workspace: string,
-  changeId: string,
-  changeBranch: {
-    repositoryId: string;
-    remoteIdentity: string;
-    sourceBranch: string;
-    targetBranch: string;
-    remoteOid: string;
-  },
-  compositionDigest: `sha256:${string}`,
-  projectConfigDigest: `sha256:${string}`,
-): Promise<void> {
-  const provider = {
-    id: 'openspec',
-    version: '1.14.3',
-    protocolVersion: 'repoctopus.specification/v1alpha1' as const,
-  };
-  const change: SpecificationChange = {
-    apiVersion: 'repoctopus.specification/v1alpha1',
-    kind: 'SpecificationChange',
-    changeId,
-    title: changeId,
-    provider,
-    changeDigest: digest('a'),
-    planningComplete: true,
-    artifacts: [
-      { id: 'proposal', kind: 'proposal', status: 'ready', digest: digest('1') },
-      { id: 'design', kind: 'design', status: 'ready', digest: digest('2') },
-      { id: 'specs', kind: 'delta-specs', status: 'ready', digest: digest('3') },
-      { id: 'tasks', kind: 'tasks', status: 'ready', digest: digest('4') },
-    ],
-    affectedCapabilities: ['delivery-governance'],
-  };
-  const validation: SpecificationValidation = {
-    apiVersion: 'repoctopus.specification/v1alpha1',
-    kind: 'SpecificationValidation',
-    changeId,
-    provider,
-    strict: true,
-    valid: true,
-    validationDigest: digest('b'),
-    diagnostics: [],
-  };
-  const snapshot = createPlanningSnapshot({
-    change,
-    validation,
-    changeBranch,
-    compositionDigest,
-    projectConfigDigest,
-  });
-  const waiting = requestSpecificationApproval({
-    current: null,
-    snapshot,
-    requestId: 'planning-request',
-    timestamp: '2026-10-22T00:00:00.000Z',
-  });
-  const approved = recordSpecificationApprovalDecision({
-    state: waiting,
-    response: {
-      apiVersion: 'repoctopus/v1alpha1',
-      kind: 'HumanDecisionResponse',
-      requestId: waiting.decisionRequest.requestId,
-      snapshotDigest: waiting.snapshot.digest,
-      decision: 'approve',
-    },
-    actor: { actorId: 'trusted-user', source: 'cli', authenticated: true },
-    timestamp: '2026-10-22T00:00:01.000Z',
-  });
-  await new FilePlanningApprovalStore(workspace).commit(approved, null);
-}
-
 describe('Delivery v3 CLI', () => {
-  it('prepares a default Business MR without requiring or creating a Change MR', async () => {
+  it('fences the legacy prepare command in favor of the Change Run Archive', async () => {
     const root = await temporaryDirectory('repoctopus-delivery-v3-cli-');
     cleanup.push(root);
     const workspaceRemote = await bareRemote(root, 'workspace-remote.git');
@@ -209,11 +124,6 @@ describe('Delivery v3 CLI', () => {
     ];
     await writeFile(intentFile, stringify(intent));
 
-    const evidence = await runCli<{ bundle: { bundleId: string } }>({
-      packageRoot,
-      cwd: workspace,
-      args: ['evidence', 'run', '--workspace', workspace, '--profile', 'verify'],
-    });
     const prepareArgs = [
       'delivery',
       'prepare',
@@ -226,95 +136,26 @@ describe('Delivery v3 CLI', () => {
       '--report',
       path.join(app, 'verification.md'),
       '--evidence-bundles',
-      evidence.result!.bundle.bundleId,
+      'legacy-command-fence',
     ];
-    let unapprovedFailure: { code?: number; stderr?: string } | undefined;
-    try {
-      await execFileAsync(
-        process.execPath,
-        [path.join(packageRoot, 'bin', 'repoctopus.js'), ...prepareArgs, '--json'],
-        { cwd: workspace },
-      );
-    } catch (error) {
-      unapprovedFailure = error as { code?: number; stderr?: string };
-    }
-    expect(unapprovedFailure?.code).toBe(1);
-    expect(unapprovedFailure?.stderr).toMatch(/effective planning approval/i);
-
-    const config = await loadProjectConfig(workspace);
-    const composition = await bootProjectComposition(packageRoot, workspace);
-    const compositionDigest = composition.composition.compositionDigest;
-    await composition.close();
-    await approvePlanning(
-      workspace,
-      'delivery-v3-cli',
-      changeBranch,
-      compositionDigest,
-      `sha256:${config.effectiveDigest}`,
-    );
-    const prepared = await runCli<{
-      schemaVersion: number;
-      status: string;
-      decisionRequest: Record<string, unknown>;
-      businessMergeRequests: Array<{ mergeRequest: unknown }>;
-      finalChangeMergeRequest: unknown;
+    const migrated = await runCli<{
+      schemaVersion: 1;
+      status: 'migration_required';
+      diagnostic: string;
+      replacementCommand: string;
     }>({
       packageRoot,
       cwd: workspace,
       args: prepareArgs,
     });
-    expect(prepared).toMatchObject({
+    expect(migrated).toMatchObject({
       ok: true,
       result: {
-        schemaVersion: 3,
-        status: 'awaiting_approval',
-        businessMergeRequests: [{ mergeRequest: null }],
-        finalChangeMergeRequest: null,
+        schemaVersion: 1,
+        status: 'migration_required',
+        diagnostic: 'change-lifecycle-run-required',
+        replacementCommand: 'run.archive.prepare',
       },
     });
-    expect(prepared.result?.decisionRequest).toHaveProperty('businessDeliveries');
-    expect(prepared.result?.decisionRequest).not.toHaveProperty('changeMergeRequest');
-    const status = await runCli({
-      packageRoot,
-      cwd: workspace,
-      args: ['delivery', 'status', '--workspace', workspace, '--change', 'delivery-v3-cli'],
-    });
-    expect(status).toMatchObject({ result: { schemaVersion: 3, status: 'awaiting_approval' } });
-
-    const concurrentWorkspace = path.join(root, 'workspace-concurrent');
-    await execFileAsync('git', ['clone', workspaceRemote, concurrentWorkspace], { cwd: root });
-    await execFileAsync('git', ['config', 'user.name', 'Repoctopus Test'], {
-      cwd: concurrentWorkspace,
-    });
-    await execFileAsync('git', ['config', 'user.email', 'repoctopus@example.invalid'], {
-      cwd: concurrentWorkspace,
-    });
-    await execFileAsync('git', ['switch', 'spec/delivery-v3-cli'], {
-      cwd: concurrentWorkspace,
-    });
-    await writeFile(
-      path.join(concurrentWorkspace, 'planning-drift.txt'),
-      'changed after approval\n',
-    );
-    await execFileAsync('git', ['add', 'planning-drift.txt'], { cwd: concurrentWorkspace });
-    await execFileAsync('git', ['commit', '-m', 'docs: change approved planning input'], {
-      cwd: concurrentWorkspace,
-    });
-    await execFileAsync('git', ['push', 'origin', 'spec/delivery-v3-cli'], {
-      cwd: concurrentWorkspace,
-    });
-
-    let driftFailure: { code?: number; stderr?: string } | undefined;
-    try {
-      await execFileAsync(
-        process.execPath,
-        [path.join(packageRoot, 'bin', 'repoctopus.js'), ...prepareArgs, '--json'],
-        { cwd: workspace },
-      );
-    } catch (error) {
-      driftFailure = error as { code?: number; stderr?: string };
-    }
-    expect(driftFailure?.code).toBe(1);
-    expect(driftFailure?.stderr).toMatch(/effective planning approval/i);
   }, 30_000);
 });

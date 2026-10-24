@@ -10,8 +10,9 @@ const execFileAsync = promisify(execFile);
 const productRoot = path.resolve(import.meta.dirname, '..');
 const script = path.join(productRoot, 'scripts', 'check-upstream-drift.mjs');
 const temporaryRoots: string[] = [];
-const dshCommit = '687f282e8625c6b8d11ff58211a90524be2e4317';
-const cometCommit = '575ab0d172e8105257b3c9172b8c8a9b628960ca';
+const dshBranchCommit = '22ddee3792402c3e70ec5f86a63c3e3e895a2f60';
+const dshReleaseCommit = '1f81c047fc48fa190a683e469daa699857e9afe8';
+const cometCommit = 'aeb1a6598034e28ce46b8422d4dbd8785e607bd7';
 
 afterEach(async () => {
   await Promise.all(temporaryRoots.splice(0).map((root) => rm(root, { recursive: true })));
@@ -27,28 +28,28 @@ async function fixture(overrides: Record<string, string> = {}): Promise<NodeJS.P
         id: 'dsh',
         repository: 'https://invalid.example/dsh.git',
         branch: 'master',
-        pinnedCommit: dshCommit,
-        pinnedTag: 'dsh-v0.2.1-rc.2',
-        pinnedTagCommit: dshCommit,
+        pinnedCommit: dshBranchCommit,
+        pinnedTag: 'dsh-v0.2.1-rc.3',
+        pinnedTagCommit: dshReleaseCommit,
       },
       {
         id: 'comet',
         repository: 'https://invalid.example/comet.git',
         branch: 'master',
         pinnedCommit: cometCommit,
-        pinnedTag: '0.4.5',
+        pinnedTag: '0.5.0',
         pinnedTagCommit: cometCommit,
       },
     ],
   };
   const refs = {
     dsh: {
-      'refs/heads/master': overrides.dsh ?? dshCommit,
-      'refs/tags/dsh-v0.2.1-rc.2': dshCommit,
+      'refs/heads/master': overrides.dsh ?? dshBranchCommit,
+      'refs/tags/dsh-v0.2.1-rc.3': dshReleaseCommit,
     },
     comet: {
       'refs/heads/master': overrides.comet ?? cometCommit,
-      'refs/tags/0.4.5': cometCommit,
+      'refs/tags/0.5.0': cometCommit,
     },
   };
   const manifestPath = path.join(root, 'baselines.json');

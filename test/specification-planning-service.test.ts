@@ -6,11 +6,16 @@ import type {
   SpecificationClosurePlan,
   SpecificationClosureResult,
   SpecificationProviderIdentity,
+  SpecificationSchemaInstructions,
   SpecificationValidation,
 } from '../domains/specification/types.js';
 import { SpecificationPlanning } from '../services/specification-planning.js';
-import { Specification } from '../services/specification.js';
-import { removeTemporaryDirectory, temporaryDirectory } from './helpers/fixtures.js';
+import { Specification, type SpecificationRoot } from '../services/specification.js';
+import {
+  removeTemporaryDirectory,
+  specificationSchemaFixture,
+  temporaryDirectory,
+} from './helpers/fixtures.js';
 
 const cleanup: string[] = [];
 afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
@@ -27,6 +32,23 @@ class TestSpecification extends Specification {
 
   identity(): SpecificationProviderIdentity {
     return this.provider;
+  }
+
+  override planningInstructions(): Promise<SpecificationSchemaInstructions> {
+    return Promise.resolve(specificationSchemaFixture(this.provider));
+  }
+
+  override root(): SpecificationRoot {
+    return {
+      schemaVersion: 1,
+      kind: 'SpecificationRoot',
+      storeId: 'planning-service',
+      repositoryId: 'workspace',
+    };
+  }
+
+  override verifyRoot(): Promise<SpecificationRoot> {
+    return Promise.resolve(this.root());
   }
 
   inspect(changeId: string): Promise<SpecificationChange> {
@@ -108,6 +130,11 @@ describe('SpecificationPlanning service', () => {
     expect(
       await first.planning.prepare({ ...prepareInput(), requestId: 'request-ignored' }),
     ).toEqual(prepared);
+    expect(await first.planning.migrationPlan('planning-approval')).toMatchObject({
+      status: 'current',
+      requiredActions: [],
+      externalSideEffects: [],
+    });
     await first.context.fiber.dispose();
 
     const recovered = app(workspace);
@@ -124,7 +151,7 @@ describe('SpecificationPlanning service', () => {
       apiVersion: 'repoctopus/v1alpha1' as const,
       kind: 'HumanDecisionResponse' as const,
       requestId: prepared.decisionRequest.requestId,
-      snapshotDigest: prepared.snapshot.digest,
+      proposalHash: prepared.decisionRequest.proposalHash,
       decision: 'approve' as const,
     };
     await expect(

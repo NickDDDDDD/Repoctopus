@@ -10,6 +10,7 @@ import {
   temporaryDirectory,
 } from '../helpers/fixtures.js';
 import { initialDeliveryState } from '../../domains/delivery/state.js';
+import { runCli } from './cli.js';
 
 const execFileAsync = promisify(execFile);
 const packageRoot = path.resolve(import.meta.dirname, '..', '..');
@@ -152,29 +153,30 @@ describe('delivery CLI', () => {
     });
     expect(await readFile(legacyStateFile, 'utf8')).toBe(before);
 
-    let refreshFailure: { code?: number; stderr?: string } | undefined;
-    try {
-      await execFileAsync(
-        process.execPath,
-        [
-          path.join(packageRoot, 'bin', 'repoctopus.js'),
-          'delivery',
-          'refresh',
-          '--workspace',
-          workspace,
-          '--change',
-          legacyState.changeId,
-          '--policy',
-          policyFile,
-          '--json',
-        ],
-        { cwd: workspace },
-      );
-    } catch (error) {
-      refreshFailure = error as { code?: number; stderr?: string };
-    }
-    expect(refreshFailure?.code).toBe(1);
-    expect(refreshFailure?.stderr).toMatch(/Delivery v2 is read-only and cannot refresh/i);
+    const refresh = await runCli<{
+      status: string;
+      diagnostic: string;
+      replacementCommand: string;
+    }>({
+      packageRoot,
+      cwd: workspace,
+      args: [
+        'delivery',
+        'refresh',
+        '--workspace',
+        workspace,
+        '--change',
+        legacyState.changeId,
+        '--policy',
+        policyFile,
+      ],
+    });
+    expect(refresh.result).toEqual({
+      schemaVersion: 1,
+      status: 'migration_required',
+      diagnostic: 'change-lifecycle-run-required',
+      replacementCommand: 'run.archive.refresh',
+    });
     expect(await readFile(legacyStateFile, 'utf8')).toBe(before);
   }, 30_000);
 });

@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { reviewSpecificationApproval } from '../app/cli/specification-approval-decision.js';
 import type { SpecificationApprovalDecisionRequest } from '../domains/specification/types.js';
+import { specificationSchemaFixture } from './helpers/fixtures.js';
 
 const request: SpecificationApprovalDecisionRequest = {
   apiVersion: 'repoctopus/v1alpha1',
@@ -12,11 +13,33 @@ const request: SpecificationApprovalDecisionRequest = {
   requestId: 'request',
   changeId: 'change-approval',
   snapshotDigest: `sha256:${'a'.repeat(64)}`,
+  proposal: {
+    schemaVersion: 1,
+    kind: 'SpecificationApprovalProposal',
+    changeId: 'change-approval',
+    specificationRoot: {
+      schemaVersion: 1,
+      kind: 'SpecificationRoot',
+      storeId: 'team-platform',
+      repositoryId: 'workspace',
+    },
+    provider: {
+      id: 'openspec',
+      version: '1.14.3',
+      protocolVersion: 'repoctopus.specification/v1alpha1',
+    },
+    schema: { name: 'spec-driven', digest: `sha256:${'b'.repeat(64)}` },
+    semanticDigest: `sha256:${'a'.repeat(64)}`,
+    affectedCapabilities: ['delivery-governance'],
+    targetBranch: 'main',
+  },
+  proposalHash: `sha256:${'c'.repeat(64)}`,
   provider: {
     id: 'openspec',
     version: '1.14.3',
     protocolVersion: 'repoctopus.specification/v1alpha1',
   },
+  schema: specificationSchemaFixture(),
   artifacts: [
     { id: 'proposal', kind: 'proposal', digest: `sha256:${'1'.repeat(64)}` },
     { id: 'design', kind: 'design', digest: `sha256:${'2'.repeat(64)}` },
@@ -31,13 +54,13 @@ const request: SpecificationApprovalDecisionRequest = {
     targetBranch: 'main',
     remoteOid: '1'.repeat(40),
   },
-  options: ['approve', 'request_changes', 'reject'],
+  options: ['approve', 'revise', 'reject'],
 };
 
 describe('interactive specification approval', () => {
   it.each([
     ['1', 'approved', 'approve'],
-    ['2', 'revise scope', 'request_changes'],
+    ['2', 'revise scope', 'revise'],
     ['3', 'reject scope', 'reject'],
   ] as const)('maps TTY choice %s to %s', async (choice, comment, decision) => {
     const input = new PassThrough();

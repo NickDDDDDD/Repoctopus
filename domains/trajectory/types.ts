@@ -1,6 +1,10 @@
 import type { RunState } from '../engine/types.js';
 import type { SkillUsageSnapshot } from '../skill/types.js';
 import type { SpecificationUsageSnapshot } from '../specification/types.js';
+import type {
+  ChangeLifecycleState,
+  ChangeLifecycleTransitionFact,
+} from '../change-lifecycle/transition.js';
 
 export type TrajectoryEventType =
   | 'run.started'
@@ -10,6 +14,7 @@ export type TrajectoryEventType =
   | 'skill.bound'
   | 'specification.bound'
   | 'specification.closure-planned'
+  | 'change.lifecycle.transitioned'
   | 'run.resumed'
   | 'recovery.reconciled';
 
@@ -22,7 +27,9 @@ export interface TrajectoryEvent {
   runId: string;
   stateVersion: number;
   compositionDigest: string;
-  data: Record<string, unknown>;
+  data: Record<string, unknown> & {
+    changeLifecycleTransition?: ChangeLifecycleTransitionFact;
+  };
 }
 
 export interface Checkpoint {
@@ -35,6 +42,8 @@ export interface Checkpoint {
   projectSnapshotDigest: string;
   artifactManifestDigest: string;
   acceptedEvidenceBundleIds: string[];
+  runStatus?: RunState['status'];
+  changeLifecycle?: ChangeLifecycleState;
   skillUsageSnapshots?: SkillUsageSnapshot[];
   specificationUsageSnapshot?: SpecificationUsageSnapshot;
   createdAt: string;

@@ -1,6 +1,6 @@
 # 交付治理与失败恢复
 
-Repoctopus 把功能分支 checkpoint 视为远端备份边界：策略允许的 commit 必须立即普通 push、建立 upstream，并在远端 OID 核对成功后才算完成。创建或更新 Business MR 前，你必须提交绑定全部业务交付的验证报告并获得人工批准；merge 始终由人执行。
+Repoctopus 把功能分支 checkpoint 视为远端备份边界：策略允许的 commit 必须立即普通 push、建立 upstream，并在远端 OID 核对成功后才算完成。创建或更新 Business MR 前，你必须提交绑定全部业务交付的验证报告并获得人工批准；merge 始终由人执行。新交付写入由同一 Change Run 的 Archive Work 编排，Delivery 只是受保护的 Git/平台 Adapter，不再拥有平行生命周期。
 
 ## 配置边界
 
@@ -32,17 +32,17 @@ Repoctopus 把功能分支 checkpoint 视为远端备份边界：策略允许的
 3. 设置 `businessSplitReason.kind` 和具体的 `summary`，说明为什么不能使用默认单 MR。
 4. 在批准前列出完整集合。批准后增删或替换任何成员都会使批准失效。
 
-同一仓库可以有多个源分支，但这些 MR 必须指向同一个目标分支。Post-merge Run 保留每个 MR 的权威 merge commit；执行验证时，每个仓库只检出该集合中最后合入的 commit，作为包含该仓较早合入结果的最终目标分支状态。
+同一仓库可以有多个源分支，但这些 MR 必须指向同一个目标分支。同一 Change Run 保留每个 MR 的权威 merge commit；执行 Archive 验证时，每个仓库只检出该集合中最后合入的 commit，作为包含该仓较早合入结果的最终目标分支状态。
 
 ## 从 Delivery Intent v2 迁移
 
-v2 状态仍可读取和诊断，但不能再用来发起 `delivery checkpoint`、`delivery prepare` 或 `delivery publish`。CLI 检测到 `schemaVersion: 2` 或 `changeMergeRequest` 时会停止，不会把旧字段静默解释成 v3。
+v2/v3 旧状态仍可读取和诊断，但 `delivery checkpoint`、`delivery prepare`、`delivery publish`、`delivery resume` 与 `delivery refresh` 已被写入口 fence，返回 `migration_required`，不会与 Change Run 双写。CLI 检测到 `schemaVersion: 2` 或 `changeMergeRequest` 时同样停止，不会把旧字段静默解释成当前 lifecycle。
 
 按照 [Delivery v2 到 v3 迁移指南](delivery-v2-migration.md)运行只读 `delivery migration-plan`，处理 `reprepare_required`、`manual_decision_required` 或 `repair_required`。迁移不会自动关闭、重开或替换旧 MR，也不会复用旧批准或 Evidence。
 
 ## 批准快照
 
-`delivery prepare` 只接受已经通过规划批准的 Change 分支，以及已经提交验证报告且工作树干净的业务仓库。报告文件必须位于 Delivery Intent 显式选择的某个业务仓库中，并已被 Git 跟踪；把报告放在未选择或非 Git 目录中会阻断准备。快照摘要绑定：
+`run archive-prepare` 只接受已经通过 Design 和 Verify Gate 的 Change Run、公开 Change 分支，以及已经提交验证报告且工作树干净的业务仓库。报告文件必须位于 Delivery Intent 显式选择的某个业务仓库中，并已被 Git 跟踪；把报告放在未选择或非 Git 目录中会阻断准备。快照摘要绑定：
 
 - Change 分支、业务交付集合和拆分理由；
 - 每仓源分支、HEAD tree、目标分支及远端基线；
@@ -51,7 +51,7 @@ v2 状态仍可读取和诊断，但不能再用来发起 `delivery checkpoint`�
 
 IDE Adapter 应显示 `HumanDecisionRequest`。CLI 降级使用 `approval review`，要求交互式终端。批准以后，任何代码树、报告、策略、分支、仓库选择或目标基线变化都会让批准失效。
 
-如果尚未产生人工决定且所有远端动作仍是零次尝试的 `pending`，可以重新执行 `delivery prepare`。相同快照幂等返回原请求；新快照会生成新的 `requestId`，并在 Delivery 历史中记录被取代的请求和快照摘要。迟到的旧响应会因身份不匹配被拒绝。已经批准、拒绝或开始发布后，重新准备不能覆盖既有事实。
+如果尚未产生人工决定且所有远端动作仍是零次尝试的 `pending`，可以用相同 Run、Attempt 与 Intent 重试 `run archive-prepare`。相同快照幂等返回原请求；新快照会生成新的 `requestId`，并在持久历史中记录被取代的请求和快照摘要。迟到的旧响应会因身份不匹配被拒绝。已经批准、拒绝或开始发布后，重新准备不能覆盖既有事实。
 
 Delivery 状态来自不兼容 composition 时仍可查询，但不能继续批准、发布或刷新。使用者必须显式迁移或重新准备交付快照，不能把旧插件语义下的批准带入新组合。
 
@@ -64,7 +64,15 @@ Delivery 状态来自不兼容 composition 时仍可查询，但不能继续批�
 3. 按源分支和目标分支查找已有 MR；存在则更新，不存在才创建。
 4. 持久化远端 OID 或 MR identity，再执行下一动作。
 
-中途失败后，修复网络、权限或配置，再用原参数运行 `delivery resume`。Runtime 会复核已经成功的动作，从第一个未完成动作继续。它不会自动删除已推分支、关闭已建 MR 或回滚其他仓库。
+中途失败后，修复网络、权限或配置，再对同一 Run 重试对应 Archive 命令。Runtime 会通过 Intent/Receipt 复核已经成功的动作，从第一个未完成动作继续。它不会自动删除已推分支、关闭已建 MR 或回滚其他仓库。
+
+```powershell
+node bin/repoctopus.js run archive-prepare --workspace . --run <run-id> --attempt <attempt-id> --intent <intent.yaml> --json
+node bin/repoctopus.js run archive-publish --workspace . --run <run-id> --json
+node bin/repoctopus.js run archive-refresh --workspace . --run <run-id> --json
+node bin/repoctopus.js run archive-verify --workspace . --run <run-id> --profile post-merge --json
+node bin/repoctopus.js run archive-complete --workspace . --run <run-id> --json
+```
 
 如果已完成动作对应的远端事实发生无法解释的变化，应停止自动恢复并人工检查托管平台。恢复过程中不得用 force push 掩盖差异。
 
@@ -77,11 +85,11 @@ GitHub `pull_request` webhook 只提供业务 MR 的 `provider + remoteIdentity 
 - 全部 MR 合入且每个都有权威 merge commit 时，生成不包含观察时间的稳定 `mergeFactsDigest`；
 - 重复或乱序事件在 Delivery 已进入 `merged` 终态后成为无副作用的 no-op。
 
-`mergeFactsDigest` 只绑定排序后的仓库身份、远端身份、目标分支、MR identity、merge commit 和合入时间。下一阶段使用它与 `changeId` 共同形成 Post-merge Run 的幂等身份。
+`mergeFactsDigest` 只绑定排序后的仓库身份、远端身份、目标分支、MR identity、merge commit 和合入时间。该事实被原 Change Run 的 Archive transition 接受，不生成 Post-merge Run identity。
 
 ## 受保护的收尾发布
 
-Post-merge Run 通过同一个 Delivery 权威边界发布规格关闭结果。它先记录完整 Business MR 集合的权威 merge commit，再生成 Evidence、同步主规格并归档 Change。只有这些步骤成功后，Repoctopus 才为已批准的 Change 分支创建或恢复一个最终 Change MR。
+同一 Change Run 通过 Delivery 权威边界发布规格关闭结果。它先记录完整 Business MR 集合的权威 merge commit，再生成 Evidence、同步主规格并归档 Change。只有这些步骤成功后，Repoctopus 才为已批准的 Change 分支创建或恢复一个最终 Change MR，并在 Receipt 被接受后标记 completed。
 
 策略必须精确声明 `merge_target`、`commit`、`push` 和 `merge_request.create_or_recover`。Delivery 在任何 Git 副作用前确认 Change 分支、目标分支、仓库和锁定的远端 OID 未变化；Git Adapter 再确认 Workspace、remote identity 和审计基线一致。
 

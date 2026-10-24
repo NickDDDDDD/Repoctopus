@@ -32,6 +32,7 @@ import {
   type EvidenceReceipt,
 } from './types.js';
 import type { SpecificationValidation } from '../specification/types.js';
+import { createVerificationReport } from './verification-report.js';
 
 export interface EvidenceRunResult {
   attempt: EvidenceAttempt;
@@ -740,6 +741,11 @@ export class EvidenceService {
         ? { ...check, freshness: 'superseded' as const }
         : check;
     });
+    const evidenceArtifactDigests = [
+      ...new Set(
+        receipts.flatMap((receipt) => receipt.artifacts.map((artifact) => artifact.sha256)),
+      ),
+    ].sort();
     const bundleBase = {
       attemptId,
       compositionDigest: options.compositionDigest,
@@ -748,14 +754,30 @@ export class EvidenceService {
       createdAt: completedAt,
       checks: orderedChecks,
       receiptIds: receipts.map((receipt) => receipt.receiptId),
-      artifactDigests: [
-        ...new Set(
-          receipts.flatMap((receipt) => receipt.artifacts.map((artifact) => artifact.sha256)),
-        ),
-      ].sort(),
+      artifactDigests: evidenceArtifactDigests,
       findings,
     };
-    const bundle = createEvidenceBundle({ bundleId: digest(bundleBase), ...bundleBase });
+    const preliminary = createEvidenceBundle({ bundleId: digest(bundleBase), ...bundleBase });
+    const verificationReport = createVerificationReport({
+      plan,
+      receipts,
+      bundle: preliminary,
+      redaction: {
+        ...(options.sensitiveValues ? { sensitiveValues: options.sensitiveValues } : {}),
+        ...(options.redactionPatterns ? { patterns: options.redactionPatterns } : {}),
+      },
+    });
+    const reportArtifact = await this.artifacts.put(verificationReport.contents, {
+      artifactType: 'verification-report',
+      mediaType: 'application/json; charset=utf-8',
+      redacted: true,
+    });
+    const finalBase = {
+      ...bundleBase,
+      artifactDigests: [...evidenceArtifactDigests, reportArtifact.sha256].sort(),
+      verificationReport: reportArtifact,
+    };
+    const bundle = createEvidenceBundle({ bundleId: digest(finalBase), ...finalBase });
     attempt.completedAt = completedAt;
     attempt.status = superseded ? 'superseded' : 'completed';
     await this.store.saveAttempt(attempt);

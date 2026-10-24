@@ -2,7 +2,7 @@
 
 ## 分析基线
 
-- 上游：`https://github.com/AbanteAI/comet`
+- 上游：`https://github.com/rpamis/comet.git`
 - 版本：`0.4.5`
 - Commit：`575ab0d172e8105257b3c9172b8c8a9b628960ca`
 - 分析范围：命令执行、进程身份、Evidence、Receipt、Snapshot/Fence、Retention、Checkpoint/Journal 与 Lock。

@@ -84,6 +84,14 @@ export interface PostMergePublicationResult {
   receipt: PostMergePublicationReceipt | PostMergePublicationReceiptV2;
 }
 
+export interface ChangeArchiveCompletionResult {
+  runId: string;
+  plan: SpecificationClosurePlan;
+  closure: SpecificationClosureResult;
+  audit: PostMergeClosureAudit;
+  receipt: PostMergePublicationReceiptV2;
+}
+
 interface PostMergeClosureJournal {
   schemaVersion: 1 | 2;
   runId: string;
@@ -678,6 +686,350 @@ export class PostMergeActions extends Service {
       `${identity('post-merge-verification-lock/v1', input.runId)}.lock`,
     );
     return withRecoverableFileLock(lock, () => this.verifyMergedCodeLocked(input, signal));
+  }
+
+  async verifyChangeRunMergedCode(
+    input: { runId: string; profileId: string; sources: PostMergeRepositorySource[] },
+    signal?: AbortSignal,
+  ): Promise<PostMergeVerificationResult> {
+    const lock = path.join(
+      this.temporaryRoot,
+      '.locks',
+      `${identity('change-run-post-merge-verification-lock/v1', input.runId)}.lock`,
+    );
+    return withRecoverableFileLock(lock, async () => {
+      const status = await this.ctx.workflowRuns.status(input.runId, signal);
+      const lifecycle = status.changeLifecycle;
+      if (
+        !lifecycle ||
+        lifecycle.phase !== 'archive' ||
+        lifecycle.status !== 'running' ||
+        lifecycle.currentWork?.kind !== 'delivery.verify-merged' ||
+        !lifecycle.archiveMerge?.allMerged ||
+        !lifecycle.archiveDeliveryInput
+      ) {
+        throw new Error(`Change Run is not awaiting exact merged-code Evidence: ${input.runId}`);
+      }
+      const deliveries = new Map(
+        lifecycle.archiveDeliveryInput.businessDeliveries.map((delivery) => [
+          `${delivery.deliveryId}\0${delivery.repositoryId}`,
+          delivery,
+        ]),
+      );
+      const repositories = new Map<string, {
+        repositoryId: string;
+        remoteIdentity: string;
+        targetBranch: string;
+        mergeCommit: string;
+        mergedAt: string;
+      }>();
+      for (const evidence of lifecycle.archiveMerge.mergeEvidence) {
+        const delivery = deliveries.get(`${evidence.deliveryId}\0${evidence.repositoryId}`);
+        if (!delivery) throw new Error(`Unknown frozen Business delivery: ${evidence.deliveryId}`);
+        const existing = repositories.get(evidence.repositoryId);
+        if (!existing || evidence.mergedAt > existing.mergedAt) {
+          const facts = lifecycle.archiveDeliveryInput.businessDeliveries.find(
+            (candidate) => candidate.deliveryId === evidence.deliveryId,
+          )!;
+          const snapshot = lifecycle.archivePublication!.snapshot.businessDeliveries.find(
+            (candidate) => candidate.deliveryId === evidence.deliveryId,
+          )!;
+          repositories.set(evidence.repositoryId, {
+            repositoryId: evidence.repositoryId,
+            remoteIdentity: snapshot.remoteIdentity!,
+            targetBranch: facts.targetBranch,
+            mergeCommit: evidence.mergeCommit,
+            mergedAt: evidence.mergedAt,
+          });
+        }
+      }
+      const exactRepositories = [...repositories.values()]
+        .map((repository) => ({
+          repositoryId: repository.repositoryId,
+          remoteIdentity: repository.remoteIdentity,
+          targetBranch: repository.targetBranch,
+          mergeCommit: repository.mergeCommit,
+        }))
+        .sort((left, right) => left.repositoryId.localeCompare(right.repositoryId));
+      const mergeFactsDigest = `sha256:${identity(
+        'change-run-merge-facts/v1',
+        canonicalJson(lifecycle.archiveMerge.mergeEvidence),
+      )}` as const;
+      const manifest = await this.checkout.checkout({
+        runId: input.runId,
+        mergeFactsDigest,
+        temporaryRoot: this.temporaryRoot,
+        repositories: exactRepositories,
+        sources: input.sources,
+        ...(signal ? { signal } : {}),
+      });
+      try {
+        await this.checkout.verify(manifest, signal);
+        const attemptId = identity(
+          'change-run-post-merge-evidence/v1',
+          input.runId,
+          lifecycle.currentWork.workId,
+          manifest.digest,
+        );
+        const result = await this.ctx.evidenceCoordinator.runForRepositories(
+          input.profileId,
+          manifest.repositories.map((repository) => ({
+            repositoryId: repository.repositoryId,
+            root: repository.path,
+            head: repository.mergeCommit,
+          })),
+          attemptId,
+          input.runId,
+          signal,
+        );
+        await this.ctx.workflowRuns.acceptArchivePostMergeVerification({
+          runId: input.runId,
+          attemptId,
+          checkoutManifestDigest: manifest.digest,
+          gate: result.gate,
+        });
+        return {
+          runId: input.runId,
+          checkout: manifest,
+          attemptId,
+          gate: result.gate,
+          status: result.gate.status === 'satisfied' ? 'succeeded' : 'failed',
+        };
+      } finally {
+        await this.checkout.cleanup(manifest);
+      }
+    });
+  }
+
+  async completeChangeRunArchive(
+    runId: string,
+    signal?: AbortSignal,
+  ): Promise<ChangeArchiveCompletionResult> {
+    return withRecoverableFileLock(this.workspaceLock(), async () => {
+      let status = await this.ctx.workflowRuns.status(runId, signal);
+      let lifecycle = status.changeLifecycle;
+      let journal = await this.loadClosureJournal(runId);
+      if (
+        lifecycle?.status === 'completed' &&
+        lifecycle.archiveClosure &&
+        journal?.plan &&
+        journal.result &&
+        journal.audit &&
+        journal.publication?.request.schemaVersion === 2 &&
+        journal.publication.receipt?.schemaVersion === 2
+      ) {
+        const completedPlan = journal.plan;
+        const completedClosure = journal.result;
+        const completedAudit = journal.audit;
+        const completedRequest = journal.publication.request;
+        const completedReceipt = journal.publication.receipt;
+        assertPostMergePublicationReceiptV2(
+          completedReceipt,
+          completedRequest,
+        );
+        return {
+          runId,
+          plan: completedPlan,
+          closure: completedClosure,
+          audit: completedAudit,
+          receipt: completedReceipt,
+        };
+      }
+      const work = lifecycle?.currentWork;
+      if (
+        !lifecycle ||
+        lifecycle.phase !== 'archive' ||
+        lifecycle.status !== 'running' ||
+        work?.kind !== 'specification.archive' ||
+        lifecycle.postMergeVerification?.status !== 'satisfied' ||
+        !lifecycle.archiveDeliveryInput ||
+        !lifecycle.archiveMerge?.allMerged
+      ) {
+        throw new Error(`Change Run is not awaiting Specification Archive Work: ${runId}`);
+      }
+      if (!this.publicationPolicy) {
+        throw new Error('Post-merge publication policy is not configured');
+      }
+      const publicationPolicy = this.publicationPolicy();
+      if (postMergePublicationPolicyV2Findings(publicationPolicy).length > 0) {
+        throw new Error('Final Change publication policy is invalid');
+      }
+      const changeBranch = lifecycle.archiveDeliveryInput.changeBranch;
+      const mergeFactsDigest = `sha256:${identity(
+        'change-run-archive-merge-facts/v1',
+        lifecycle.archiveDeliveryInput.digest,
+        canonicalJson(lifecycle.archiveMerge.mergeEvidence),
+        lifecycle.postMergeVerification.bundleId,
+      )}` as const;
+
+      if (!journal) {
+        const intent = await this.changeBranchCheckout.prepareTargetMerge({
+          runId,
+          mergeFactsDigest,
+          remote: publicationPolicy.remote,
+          changeBranch,
+          source: { repositoryId: changeBranch.repositoryId, path: this.workspaceRoot },
+        });
+        journal = { schemaVersion: 2, runId, targetMerge: { intent } };
+        await this.saveClosureJournal(journal);
+      }
+      if (
+        journal.schemaVersion !== 2 ||
+        !journal.targetMerge ||
+        journal.targetMerge.intent.runId !== runId ||
+        journal.targetMerge.intent.mergeFactsDigest !== mergeFactsDigest ||
+        journal.targetMerge.intent.remote !== publicationPolicy.remote ||
+        canonicalJson(journal.targetMerge.intent.changeBranch) !== canonicalJson(changeBranch)
+      ) {
+        throw new Error(`Change Archive closure Journal is not bound to Run ${runId}`);
+      }
+      let targetMerge = journal.targetMerge;
+      assertPostMergeTargetMergeIntent(targetMerge.intent);
+      if (!targetMerge.receipt) {
+        const receipt = await this.changeBranchCheckout.mergeTarget({
+          temporaryRoot: this.temporaryRoot,
+          source: { repositoryId: changeBranch.repositoryId, path: this.workspaceRoot },
+          intent: targetMerge.intent,
+          ...(signal ? { signal } : {}),
+        });
+        targetMerge = { ...targetMerge, receipt };
+        journal = { ...journal, targetMerge };
+        await this.saveClosureJournal(journal);
+      }
+      const targetMergeReceipt = targetMerge.receipt;
+      if (!targetMergeReceipt) {
+        throw new Error(`Change Archive target merge Receipt is missing for Run ${runId}`);
+      }
+      assertPostMergeTargetMergeReceipt(targetMergeReceipt, targetMerge.intent);
+      const specification = this.ctx.specification.atWorkspace(targetMergeReceipt.checkoutPath);
+
+      if (!journal.baseline || !journal.plan) {
+        const baseline = await this.workspace.cleanBaseline(targetMergeReceipt.checkoutPath);
+        const validation = await specification.validate(lifecycle.identity.changeId, {
+          strict: true,
+          ...(signal ? { signal } : {}),
+        });
+        if (!validation.valid) {
+          throw new Error(`Specification change is not valid: ${lifecycle.identity.changeId}`);
+        }
+        await this.ctx.workflowRuns.bindSpecification(runId, validation, signal);
+        const plan = await specification.prepareClosure({
+          changeId: lifecycle.identity.changeId,
+          mergeFactsDigest,
+          targetBaselineDigest: baseline.digest,
+          ...(signal ? { signal } : {}),
+        });
+        assertSafeClosurePlan(plan);
+        await this.ctx.workflowRuns.bindSpecificationClosurePlan(runId, plan, signal);
+        journal = { ...journal, baseline, plan };
+        await this.saveClosureJournal(journal);
+      }
+      if (!journal.baseline || !journal.plan) {
+        throw new Error(`Change Archive closure plan is incomplete for Run ${runId}`);
+      }
+      const baseline = journal.baseline;
+      const plan = journal.plan;
+      if (
+        plan.changeId !== lifecycle.identity.changeId ||
+        plan.mergeFactsDigest !== mergeFactsDigest ||
+        plan.targetBaselineDigest !== baseline.digest ||
+        baseline.root !== targetMergeReceipt.checkoutPath ||
+        baseline.head !== targetMergeReceipt.mergeCommitOid
+      ) {
+        throw new Error(`Change Archive closure plan is not bound to Run ${runId}`);
+      }
+      assertSafeClosurePlan(plan);
+      if (!journal.result) {
+        journal = { ...journal, result: await specification.close(plan, signal) };
+        await this.saveClosureJournal(journal);
+      }
+      const closure = journal.result;
+      if (!closure || closure.planDigest !== plan.planDigest) {
+        throw new Error(`Change Archive closure result is not bound to Run ${runId}`);
+      }
+      if (!journal.audit) {
+        const audit = auditPostMergeClosure({
+          plan,
+          result: closure,
+          diff: await this.workspace.diff(baseline),
+          verificationPathPrefixes: this.verificationPathPrefixes,
+        });
+        journal = { ...journal, audit };
+        await this.saveClosureJournal(journal);
+      }
+      const audit = journal.audit;
+      if (!audit) throw new Error(`Change Archive path audit is missing for Run ${runId}`);
+      assertPostMergeClosureAudit(audit, {
+        plan,
+        result: closure,
+        baseline,
+      });
+      if (
+        journal.publication &&
+        canonicalJson(journal.publication.request.policy) !== canonicalJson(publicationPolicy)
+      ) {
+        throw new Error('Final Change publication policy drifted after intent persistence');
+      }
+      if (!journal.publication) {
+        const freshAudit = auditPostMergeClosure({
+          plan,
+          result: closure,
+          diff: await this.workspace.diff(baseline),
+          verificationPathPrefixes: this.verificationPathPrefixes,
+        });
+        if (freshAudit.digest !== audit.digest) {
+          throw new Error('Change Archive closure changed after its path audit');
+        }
+        const request: PostMergePublicationRequestV2 = {
+          schemaVersion: 2,
+          runId,
+          changeId: lifecycle.identity.changeId,
+          evidenceBundleId: lifecycle.postMergeVerification.bundleId,
+          workspaceRoot: baseline.root,
+          targetMerge: {
+            intent: structuredClone(targetMerge.intent),
+            receipt: structuredClone(targetMergeReceipt),
+          },
+          baseline: structuredClone(baseline),
+          audit: structuredClone(freshAudit),
+          policy: structuredClone(publicationPolicy),
+        };
+        assertPostMergePublicationRequestV2(request);
+        journal = { ...journal, publication: { request } };
+        await this.saveClosureJournal(journal);
+      }
+      const publication = journal.publication;
+      if (!publication || publication.request.schemaVersion !== 2) {
+        throw new Error(`Change Archive publication Journal version drifted for Run ${runId}`);
+      }
+      const request = publication.request;
+      let receipt = publication.receipt;
+      if (!receipt) {
+        receipt = await this.ctx.delivery.publishFinalChange(request, signal);
+        assertPostMergePublicationReceiptV2(receipt, request);
+        journal = { ...journal, publication: { request, receipt } };
+        await this.saveClosureJournal(journal);
+      }
+      if (receipt.schemaVersion !== 2) {
+        throw new Error('Final Change publication Receipt version drifted');
+      }
+      assertPostMergePublicationReceiptV2(receipt, request);
+      status = await this.ctx.workflowRuns.status(runId, signal);
+      lifecycle = status.changeLifecycle;
+      if (lifecycle?.status !== 'completed') {
+        await this.ctx.workflowRuns.completeArchive({
+          runId,
+          workId: work.workId,
+          inputDigest: work.inputDigest,
+          closureId: closure.closureId,
+          planDigest: plan.planDigest,
+          auditDigest: audit.digest,
+          publicationReceiptDigest: receipt.digest,
+          finalMergeRequest: receipt.mergeRequest,
+        });
+      }
+      return { runId, plan, closure, audit, receipt };
+    });
   }
 
   private async verifyMergedCodeLocked(

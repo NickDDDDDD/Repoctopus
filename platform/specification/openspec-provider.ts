@@ -13,12 +13,24 @@ import {
   type SpecificationClosureResult,
   type SpecificationDiagnostic,
   type SpecificationProviderIdentity,
+  type SpecificationSchemaInstructions,
+  type SpecificationPlanningContext,
   type SpecificationValidation,
+  type SpecificationTaskSet,
+  type CompleteSpecificationTaskInput,
+  type CompleteSpecificationTaskResult,
 } from '../../domains/specification/types.js';
-import { atomicWriteJson } from '../filesystem/atomic-write.js';
+import {
+  completeSpecificationTaskDocument,
+  parseSpecificationTasks,
+} from '../../domains/specification/tasks.js';
+import { createSpecificationPlanningManifest } from '../../domains/specification/planning-manifest.js';
+import { createSpecificationPlanningGuidance } from '../../domains/specification/planning-guidance.js';
+import { atomicWriteJson, atomicWriteText } from '../filesystem/atomic-write.js';
 import {
   Specification,
   type PrepareSpecificationClosureInput,
+  type SpecificationRoot,
   type SpecificationWorkspace,
 } from '../../services/specification.js';
 import {
@@ -29,7 +41,17 @@ import {
 
 interface OpenSpecProviderConfig {
   workspaceRoot: string;
+  specificationRoot: SpecificationRoot;
   process?: SpecificationProcessPort;
+}
+
+interface ContextResult {
+  root?: {
+    path?: unknown;
+    source?: unknown;
+    store_id?: unknown;
+  } | null;
+  status?: unknown;
 }
 
 interface ShowResult {
@@ -45,6 +67,13 @@ interface StatusResult {
 
 interface ValidationResult {
   items?: Array<{ id?: unknown; valid?: unknown; issues?: unknown }>;
+}
+
+interface InstructionsResult {
+  artifactId?: unknown;
+  schemaName?: unknown;
+  instruction?: unknown;
+  template?: unknown;
 }
 
 interface ArchiveResult {
@@ -160,11 +189,13 @@ async function tree(root: string, prefix = ''): Promise<Map<string, string>> {
 
 export class OpenSpecProvider extends Specification {
   private readonly workspace: string;
+  private readonly specificationRoot: SpecificationRoot;
   private readonly process: SpecificationProcessPort;
 
   constructor(context: Context, config: OpenSpecProviderConfig) {
     super(context);
     this.workspace = path.resolve(config.workspaceRoot);
+    this.specificationRoot = structuredClone(config.specificationRoot);
     this.process = config.process ?? new OpenSpecProcess();
   }
 
@@ -172,11 +203,64 @@ export class OpenSpecProvider extends Specification {
     return structuredClone(IDENTITY);
   }
 
+  override root(): SpecificationRoot {
+    return structuredClone(this.specificationRoot);
+  }
+
+  override async verifyRoot(signal?: AbortSignal): Promise<SpecificationRoot> {
+    await this.assertRoot(this.workspace, signal);
+    return this.root();
+  }
+
+  private async assertRoot(workspace: string, signal?: AbortSignal): Promise<void> {
+    const result = await this.process.execute(
+      ['context', '--json', '--store', this.specificationRoot.storeId],
+      {
+        cwd: workspace,
+        ...(signal ? { signal } : {}),
+      },
+    );
+    const parsed = parseJson<ContextResult>(result.stdout, 'context');
+    if (result.exitCode !== 0 || !parsed.root) {
+      const status = Array.isArray(parsed.status)
+        ? parsed.status
+            .map((entry) =>
+              entry && typeof entry === 'object' && 'message' in entry
+                ? String((entry as { message: unknown }).message)
+                : '',
+            )
+            .filter(Boolean)
+            .join('; ')
+        : '';
+      throw new Error(
+        `OpenSpec Store ${this.specificationRoot.storeId} is unavailable: ${status || result.stderr.trim() || 'context resolution failed'}`,
+      );
+    }
+    if (parsed.root.store_id !== this.specificationRoot.storeId) {
+      throw new Error(
+        `OpenSpec Store identity mismatch: expected ${this.specificationRoot.storeId}`,
+      );
+    }
+    if (typeof parsed.root.path !== 'string') {
+      throw new Error(`OpenSpec Store ${this.specificationRoot.storeId} returned no root path`);
+    }
+    if (path.resolve(parsed.root.path) !== path.resolve(workspace)) {
+      throw new Error(
+        `OpenSpec Store ${this.specificationRoot.storeId} is registered to a different checkout`,
+      );
+    }
+  }
+
   private async json<T>(workspace: string, args: string[], signal?: AbortSignal): Promise<T> {
-    const result = await this.process.execute([...args, '--json'], {
-      cwd: workspace,
-      ...(signal ? { signal } : {}),
-    });
+    const primaryRoot = path.resolve(workspace) === this.workspace;
+    if (primaryRoot) await this.assertRoot(workspace, signal);
+    const result = await this.process.execute(
+      [...args, ...(primaryRoot ? ['--store', this.specificationRoot.storeId] : []), '--json'],
+      {
+        cwd: workspace,
+        ...(signal ? { signal } : {}),
+      },
+    );
     if (result.exitCode !== 0) {
       const diagnostic = result.stderr.trim() || result.stdout.trim() || 'no diagnostic';
       throw new Error(`OpenSpec ${args.join(' ')} failed: ${diagnostic}`);
@@ -186,6 +270,192 @@ export class OpenSpecProvider extends Specification {
 
   async inspect(changeId: string, signal?: AbortSignal): Promise<SpecificationChange> {
     return this.inspectAt(this.workspace, changeId, signal);
+  }
+
+  override async tasks(changeId: string, signal?: AbortSignal): Promise<SpecificationTaskSet> {
+    return this.tasksAt(this.workspace, changeId, signal);
+  }
+
+  override async completeTask(
+    input: CompleteSpecificationTaskInput,
+  ): Promise<CompleteSpecificationTaskResult> {
+    return this.completeTaskAt(this.workspace, input);
+  }
+
+  private async completeTaskAt(
+    workspace: string,
+    input: CompleteSpecificationTaskInput,
+  ): Promise<CompleteSpecificationTaskResult> {
+    const status = await this.json<StatusResult>(
+      workspace,
+      ['status', '--change', input.changeId],
+      input.signal,
+    );
+    const paths = status.artifactPaths?.tasks?.existingOutputPaths;
+    if (!Array.isArray(paths) || paths.length !== 1 || typeof paths[0] !== 'string') {
+      throw new Error('OpenSpec Tasks must resolve to exactly one official document');
+    }
+    const absolute = path.resolve(workspace, paths[0]);
+    const relative = path.relative(workspace, absolute);
+    if (
+      relative === '' ||
+      relative === '..' ||
+      relative.startsWith(`..${path.sep}`) ||
+      path.isAbsolute(relative)
+    ) {
+      throw new Error('OpenSpec Tasks path escapes the workspace');
+    }
+    const original = await readFile(absolute, 'utf8');
+    const completed = completeSpecificationTaskDocument({
+      changeId: input.changeId,
+      taskId: input.taskId,
+      taskRevision: input.taskRevision,
+      document: original,
+    });
+    if (completed.updated) {
+      await atomicWriteText(absolute, completed.document, {
+        containedRoot: workspace,
+        beforeCommit: async () => {
+          if ((await readFile(absolute, 'utf8')) !== original) {
+            throw new Error('OpenSpec Tasks changed while projecting completion');
+          }
+        },
+      });
+    }
+    return {
+      schemaVersion: 1,
+      changeId: input.changeId,
+      taskId: input.taskId,
+      taskRevision: input.taskRevision,
+      updated: completed.updated,
+      tasks: completed.tasks,
+    };
+  }
+
+  private async tasksAt(
+    workspace: string,
+    changeId: string,
+    signal?: AbortSignal,
+  ): Promise<SpecificationTaskSet> {
+    const id = changeId.trim();
+    if (!id) throw new Error('Specification change id is required');
+    const status = await this.json<StatusResult>(
+      workspace,
+      ['status', '--change', id],
+      signal,
+    );
+    return this.taskSetFromPaths(workspace, id, status.artifactPaths?.tasks?.existingOutputPaths);
+  }
+
+  private async taskSetFromPaths(
+    workspace: string,
+    changeId: string,
+    paths: unknown,
+  ): Promise<SpecificationTaskSet> {
+    if (!Array.isArray(paths) || paths.length !== 1 || typeof paths[0] !== 'string') {
+      throw new Error('OpenSpec Tasks must resolve to exactly one official document');
+    }
+    const absolute = path.resolve(workspace, paths[0]);
+    const relative = path.relative(workspace, absolute);
+    if (
+      relative === '' ||
+      relative === '..' ||
+      relative.startsWith(`..${path.sep}`) ||
+      path.isAbsolute(relative)
+    ) {
+      throw new Error('OpenSpec Tasks path escapes the workspace');
+    }
+    return parseSpecificationTasks(changeId, await readFile(absolute, 'utf8'));
+  }
+
+  override async planningInstructions(
+    changeId: string,
+    signal?: AbortSignal,
+  ): Promise<SpecificationSchemaInstructions> {
+    return this.planningInstructionsAt(this.workspace, changeId, signal);
+  }
+
+  override async planningContext(
+    changeId: string,
+    signal?: AbortSignal,
+  ): Promise<SpecificationPlanningContext> {
+    return this.planningContextAt(this.workspace, changeId, signal);
+  }
+
+  private async planningInstructionsAt(
+    workspace: string,
+    changeId: string,
+    signal?: AbortSignal,
+  ): Promise<SpecificationSchemaInstructions> {
+    const context = await this.planningContextAt(workspace, changeId, signal);
+    const stable = {
+      schemaVersion: 1 as const,
+      schemaName: context.schemaName,
+      provider: structuredClone(context.provider),
+      artifacts: context.artifacts.map((artifact) => ({
+        id: artifact.id,
+        kind: artifact.kind,
+        instructionDigest: artifact.instructionDigest,
+        templateDigest: artifact.templateDigest,
+      })),
+    };
+    return { ...stable, digest: sha256(stable) };
+  }
+
+  private async planningContextAt(
+    workspace: string,
+    changeId: string,
+    signal?: AbortSignal,
+  ): Promise<SpecificationPlanningContext> {
+    const id = changeId.trim();
+    if (!id) throw new Error('Specification change id is required');
+    const artifactIds = ['proposal', 'specs', 'design', 'tasks'] as const;
+    const results = await Promise.all(
+      artifactIds.map((artifactId) =>
+        this.json<InstructionsResult>(
+          workspace,
+          ['instructions', artifactId, '--change', id],
+          signal,
+        ),
+      ),
+    );
+    const schemaNames = new Set<string>();
+    const artifacts = results.map((result, index) => {
+      const expectedId = artifactIds[index]!;
+      const kind = artifactKind(expectedId);
+      if (
+        result.artifactId !== expectedId ||
+        !kind ||
+        kind === 'verification' ||
+        typeof result.schemaName !== 'string' ||
+        !result.schemaName.trim() ||
+        typeof result.instruction !== 'string' ||
+        !result.instruction.trim() ||
+        typeof result.template !== 'string' ||
+        !result.template.trim()
+      ) {
+        throw new Error(`OpenSpec returned invalid official instructions for ${expectedId}`);
+      }
+      schemaNames.add(result.schemaName);
+      return {
+        id: expectedId,
+        kind,
+        instruction: result.instruction,
+        template: result.template,
+        instructionDigest: sha256(result.instruction),
+        templateDigest: sha256(result.template),
+      };
+    });
+    if (schemaNames.size !== 1) {
+      throw new Error('OpenSpec planning artifacts resolved to different schemas');
+    }
+    const stable = {
+      schemaVersion: 1 as const,
+      schemaName: [...schemaNames][0]!,
+      provider: this.identity(),
+      artifacts,
+    };
+    return { ...stable, digest: sha256(stable) };
   }
 
   private async inspectAt(
@@ -209,7 +479,16 @@ export class OpenSpecProvider extends Specification {
           async ([artifactId, artifact]): Promise<SpecificationArtifact | undefined> => {
             const kind = artifactKind(artifactId);
             if (!kind) return undefined;
-            const digest = await artifactDigest(workspace, artifact.existingOutputPaths);
+            const digest =
+              kind === 'tasks'
+                ? (
+                    await this.taskSetFromPaths(
+                      workspace,
+                      id,
+                      artifact.existingOutputPaths,
+                    )
+                  ).digest
+                : await artifactDigest(workspace, artifact.existingOutputPaths);
             return {
               id: artifactId,
               kind,
@@ -264,10 +543,15 @@ export class OpenSpecProvider extends Specification {
   ): Promise<SpecificationValidation> {
     const args = ['validate', changeId, '--type', 'change', '--no-interactive'];
     if (options.strict !== false) args.push('--strict');
-    const result = await this.process.execute([...args, '--json'], {
-      cwd: workspace,
-      ...(options.signal ? { signal: options.signal } : {}),
-    });
+    const primaryRoot = path.resolve(workspace) === this.workspace;
+    if (primaryRoot) await this.assertRoot(workspace, options.signal);
+    const result = await this.process.execute(
+      [...args, ...(primaryRoot ? ['--store', this.specificationRoot.storeId] : []), '--json'],
+      {
+        cwd: workspace,
+        ...(options.signal ? { signal: options.signal } : {}),
+      },
+    );
     const parsed = parseJson<ValidationResult>(result.stdout, args.join(' '));
     const item = parsed.items?.find((candidate) => candidate.id === changeId) ?? parsed.items?.[0];
     const findings = diagnostics(item?.issues);
@@ -400,6 +684,33 @@ export class OpenSpecProvider extends Specification {
     const workspace = path.resolve(workspaceRoot);
     return {
       identity: () => this.identity(),
+      root: () => this.root(),
+      verifyRoot: async (signal) => {
+        await this.assertRoot(workspace, signal);
+        return this.root();
+      },
+      planningInstructions: (changeId, signal) =>
+        this.planningInstructionsAt(workspace, changeId, signal),
+      planningContext: (changeId, signal) => this.planningContextAt(workspace, changeId, signal),
+      planningGuidance: async (changeId, signal) =>
+        createSpecificationPlanningGuidance(
+          await this.planningInstructionsAt(workspace, changeId, signal),
+        ),
+      planningManifest: async (changeId, signal) => {
+        const [change, specificationRoot, schema] = await Promise.all([
+          this.inspectAt(workspace, changeId, signal),
+          (async () => {
+            if (path.resolve(workspace) === this.workspace) {
+              await this.assertRoot(workspace, signal);
+            }
+            return this.root();
+          })(),
+          this.planningInstructionsAt(workspace, changeId, signal),
+        ]);
+        return createSpecificationPlanningManifest({ change, specificationRoot, schema });
+      },
+      tasks: (changeId, signal) => this.tasksAt(workspace, changeId, signal),
+      completeTask: (input) => this.completeTaskAt(workspace, input),
       inspect: (changeId, signal) => this.inspectAt(workspace, changeId, signal),
       validate: (changeId, options) => this.validateAt(workspace, changeId, options),
       prepareClosure: (input) => this.prepareClosureAt(workspace, input),

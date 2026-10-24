@@ -1,5 +1,8 @@
 import type { Context, Plugin } from '@deepseek-ai/cordis';
-import type { ApplyProjectConfigurationDecisionInput } from '../../services/project-onboarding.js';
+import type {
+  ApplyProjectConfigurationDecisionInput,
+  DetectProjectConfigurationInput,
+} from '../../services/project-onboarding.js';
 
 const plugin = ((context: Context) => {
   context.effect(() => {
@@ -7,7 +10,7 @@ const plugin = ((context: Context) => {
       context.commandRouter.register({
         name: 'project.detect',
         execute: ({ input }) =>
-          context.projectOnboarding.detect(input as { workspace: string; scanRoot: string }),
+          context.projectOnboarding.detect(input as DetectProjectConfigurationInput),
       }),
       context.commandRouter.register({
         name: 'project.prepare',

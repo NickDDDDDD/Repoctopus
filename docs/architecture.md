@@ -40,19 +40,19 @@ CLI / IDE / API Application Plugin
 
 ## Bootstrap 与 Project composition
 
-`bootstrap` composition 不要求正式项目配置，只装载项目探测、配置接入、来源检查和浏览器诊断。`project` composition 在有效 `repoctopus.yaml` 存在时增加 Run、Action、Evidence、Delivery、Skill、Specification 与 Telemetry；配置 `postMerge` 时还增加一次性 Coordinator、受保护 Action Provider 和命令 Contributor，但不启动监听端口或后台轮询。`runner` composition 在相同项目配置之上增加 HTTP Host、Webhook Route、Event Inbox Runner 和 Application Plugin；只有 `runner start` 使用这条长驻组合。
+`bootstrap` composition 不要求正式项目配置，只装载项目探测、配置接入、来源检查和浏览器诊断。`project` composition 在有效 `repoctopus.yaml` 存在时增加 Run、Action、Evidence、Delivery、Skill、Specification 与 Telemetry；配置 `postMerge` 时还增加只读 Coordinator、受保护 Archive Action Provider 和命令 Contributor，但不启动监听端口或后台轮询。`runner` composition 在相同项目配置之上增加 HTTP Host、Webhook Route、Event Inbox Runner 和 Application Plugin；只有 `runner start` 使用这条长驻组合。
 
 公共入口都必须经 App Boot。当前已切换的真实调用链为：
 
 ```text
-run start/status/next/record/resume
+run start/status/next/verify/record/resume/archive-*
 CLI → App Boot → CommandRouter → run.* Contributor → WorkflowRuns Service
 
 evidence plan/run/status/resume/inspect/clean
 CLI → App Boot → CommandRouter → evidence.* Contributor → EvidenceCoordinator Service
 
-delivery checkpoint/prepare/status/decide/publish/refresh
-CLI → App Boot → CommandRouter → delivery.* Contributor → Delivery Service
+delivery status/migration-plan（旧状态只读）
+CLI → App Boot → CommandRouter → delivery.* Contributor → migration diagnostic / Delivery query
 
 project detect/prepare/review 与 browser/provenance 维护
 CLI → App Boot → CommandRouter → 对应 Contributor → ProjectOnboarding 或 BrowserMaintenance Service
@@ -60,10 +60,10 @@ CLI → App Boot → CommandRouter → 对应 Contributor → ProjectOnboarding 
 
 runner start
 CLI → Runner Application → HTTP Host + Webhook Route → PlatformEvents → durable Inbox
-                                                Inbox Runner → PostMergeCoordinator → WorkflowRuns
+                                                Inbox Runner → PostMergeCoordinator → platform facts
 
 post-merge reconcile / run start preflight
-CLI → short-lived Project composition → Delivery candidates → PostMergeCoordinator → WorkflowRuns
+CLI → short-lived Project composition → Delivery candidates → PostMergeCoordinator → platform facts
 ```
 
 静态 Plugin Descriptor 只用于 import 前准入、来源、权限类别、状态兼容和审计。运行期依赖仍由插件自身的 Cordis `inject` 声明。内置插件的 `codeDigest` 由其登记的实际源码文件计算。
@@ -81,11 +81,11 @@ Engine 只根据 Workflow、Run State 和已经核对的事实计算下一状态
 外部副作用不能占用 Run 锁。WorkflowRuns 使用两个受保护转换连接动作执行：
 
 1. 第一笔 Run 事务提交 `action.proposed`。
-2. 释放 Run 锁后，ActionDispatcher 保存 Intent 和幂等键。
-3. Contributor Adapter 执行动作或等待人工结果，并保存 Receipt。
+2. 释放 Run 锁后，ActionDispatcher 领取并保存 Intent；Intent 以 `runId + workId + attempt + claimToken + inputDigest` 形成 fencing identity 和幂等键。
+3. Contributor Adapter 执行动作或等待人工结果；Outcome 必须回传相同的五元绑定，Dispatcher 拒绝旧 attempt、跨 Work 或输入漂移的结果，并保存带有同一绑定的 Receipt。
 4. 第二笔 Run 事务核对当前待处理 Action、Receipt 和所需 Evidence，再提交 Outcome。
 
-第一条纵切提供 Manual Action Contributor。Intent 与 Receipt 独立保存在 `.repoctopus/actions/`，Trajectory 的 `action.completed` 事件记录 Receipt ID。
+第一条纵切提供 Manual Action Contributor。Intent 与 Receipt 独立保存在 `.repoctopus/actions/`，Trajectory 的 `action.completed` 事件记录 Receipt ID。同一 claim 重放返回原 Intent；已保存 Receipt 的完成调用在响应丢失后返回原 Receipt，不重复执行 Adapter。副作用始终发生在 RunStore transaction 之外。
 
 ## Evidence 与 Gate
 
@@ -114,7 +114,7 @@ App Boot 关闭时先把 Loader composition 更新为空并等待子 Fiber 的�
 - `repoctopus.yaml` 是可提交的团队配置，只保存仓库逻辑身份、Provider 选择、策略和环境变量名，不保存 Token、Webhook secret 或机器作者身份。
 - `.repoctopus/` 是工作区本机的持久权威，包含 Run、Journal、Evidence、Action、Delivery、Inbox 和规格关闭 Receipt；其中 Inbox payload 与租约状态属于敏感数据，应限制访问、备份并按保留策略清理。
 - Change 是团队共享工作单元，不由 MR author、Git author、Bot 或 Runner identity 独占。不同 Runner 可以重复计算；公开 Change 分支的精确远端 OID、非强制 push 和发布后核对是跨本地状态卷的最终副作用栅栏。
-- 业务仓只由受保护 Adapter 在已核对的精确提交和允许路径上读取或写入。PostMergeCoordinator 不直接写 RunStore、Evidence Store、规格文件或 Git。
+- 业务仓只由受保护 Adapter 在已核对的精确提交和允许路径上读取或写入。PostMergeCoordinator 只查询、规范化并返回平台事实，不创建或推进 Run，也不直接写 RunStore、Evidence Store、规格文件或 Git。
 - OpenSpec Provider 是唯一执行规格工具关闭命令的边界；Delivery Action Adapter 是唯一执行 commit、push 与 MR 创建/更新的边界。
 - 遥测只导出允许列表中的稳定身份和低基数结果；秘密、原始 Header、payload、绝对路径、自由文本与规格正文不进入 OTel。
 
@@ -129,6 +129,8 @@ App Boot 关闭时先把 Loader composition 更新为空并等待子 Fiber 的�
 
 ## 与上游来源的关系
 
-Cordis Core 4.0.5 与 Plugin Loader 1.0.6 的未修改发布快照位于 `third_party/`，固定在 DSH `dsh-v0.2.1-rc.2` 对应提交。DSH 的 Skill Registry 作为精确版本依赖使用，Filesystem Skill 与 GitHub Webhook 边界按来源登记后适配；DSH Agent、Session、Workspace 和 fire-and-forget Webhook Runtime 不进入产品运行时。
+Cordis Core 4.0.5 与 Plugin Loader 1.0.6 的未修改发布快照位于 `third_party/`，固定在 DSH `dsh-v0.2.1-rc.3` 对应提交。DSH 的 Skill Registry 作为精确版本依赖使用，Filesystem Skill 与 GitHub Webhook 边界按来源登记后适配；DSH Agent、Session、Workspace 和 fire-and-forget Webhook Runtime 不进入产品运行时。默认分支审计身份与发布依赖身份分开固定，未发布的 Cordis/Loader 源码不会伪装成 npm 发布快照。
 
-Comet `0.4.5` / 固定 `master` 提交是纯 Engine、受保护转换、文件安全、Evidence、Journal、Checkpoint、恢复和 Receipt 的源码或行为来源，不是 Repoctopus 的运行时父应用。Repoctopus 按多仓、持久 Inbox 和团队交付边界选择采用、改写或原生实现。OpenSpec 是可替换 Specification Provider 的当前实现；Matt Skills 是固定内容来源。机器身份、逐文件摘要和采用方式分别记录在 `third_party/cordis-upstream.json`、`third_party/dsh-adoption.json`、`third_party/comet/source-manifest.json` 与 Matt Skills manifest；完整能力判断见[上游对齐审计](../third_party/upstream-alignment-audit.md)。
+Comet `0.5.0` / 固定 `master` 提交是 Engine、受保护转换、文件安全、Evidence、Journal、Checkpoint、恢复、Receipt 和 Change 生命周期的源码或行为来源，不是 Repoctopus 的运行时父应用。Repoctopus 按团队 Workspace、多仓、持久 Inbox 和 Cordis 组合边界选择采用、改写或原生实现。OpenSpec 是可替换 Specification Provider 的当前实现；Matt Skills 是固定内容来源。机器身份、逐文件摘要和采用方式分别记录在 `third_party/cordis-upstream.json`、`third_party/dsh-adoption.json`、`third_party/comet/source-manifest.json` 与 Matt Skills manifest；0.5.0 增量判断见[Comet 审计](../third_party/comet/0.5.0-audit.md)，跨上游能力判断见[上游对齐审计](../third_party/upstream-alignment-audit.md)。
+
+Change lifecycle 的扩展面使用四类有类型的 Cordis 契约：Lifecycle Definition、Work Contributor、Validator Contributor 和 Lifecycle Extension。它们分别注册、卸载并进入 composition/Run 身份快照；Extension 只能声明 definition 已开放的 checkpoint，不能取得核心 transition 权限。这里没有另建通用 Capability Resolver，也没有把 Comet Workflow Application shell 搬进产品；DSH 仅使用已固定发布包和已登记的 Cordis 发布快照，不引用未发布的 Agent、Session 或应用源码。

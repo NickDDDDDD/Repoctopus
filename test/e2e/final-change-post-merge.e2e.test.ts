@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
@@ -10,6 +10,7 @@ import { build } from 'esbuild';
 import { afterEach, expect, it } from 'vitest';
 
 import { normalizeRemoteIdentity } from '../../platform/git/remote-identity.js';
+import { createOpenSpecStoreEnvironment } from '../helpers/fixtures.js';
 
 const execFileAsync = promisify(execFile);
 const productRoot = path.resolve(import.meta.dirname, '..', '..');
@@ -137,7 +138,7 @@ The system MUST create the final MR only after closure publication.
   }
 }
 
-it('runs one-Business-MR closure out of process before creating the final Change MR', async () => {
+it('fences the legacy out-of-process Post-merge writer behind the Change lifecycle', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'repoctopus-final-change-e2e-'));
   const buildRoot = await mkdtemp(
     path.join(productRoot, 'node_modules', '.repoctopus-final-change-build-'),
@@ -151,6 +152,11 @@ it('runs one-Business-MR closure out of process before creating the final Change
   await git(workspace.source, 'switch', '-c', sourceBranch);
   await writeFile(path.join(workspace.source, '.gitignore'), '.repoctopus/\n');
   await writeSpecification(workspace.source, changeId);
+  const storeEnvironment = await createOpenSpecStoreEnvironment(
+    root,
+    workspace.source,
+    'final-change-e2e',
+  );
   const port = await availablePort();
   await writeFile(
     path.join(workspace.source, 'repoctopus.yaml'),
@@ -193,7 +199,10 @@ it('runs one-Business-MR closure out of process before creating the final Change
           },
         },
         skillProviders: [{ id: 'skill-provider-matt' }],
-        specificationProvider: { id: 'specification-openspec' },
+        specificationProvider: {
+          id: 'specification-openspec',
+          store: { id: 'final-change-e2e', repositoryId: 'workspace' },
+        },
         platformEvents: {
           storeProvider: { id: 'platform-events-file' },
           http: { hostname: '127.0.0.1', port, shutdownTimeoutMs: 1000 },
@@ -265,7 +274,6 @@ it('runs one-Business-MR closure out of process before creating the final Change
   await git(targetWriter, 'add', '.');
   await git(targetWriter, 'commit', '-m', 'feat: advance workspace target');
   await git(targetWriter, 'push', 'origin', 'main');
-  const targetOid = await git(targetWriter, 'rev-parse', 'HEAD');
 
   const mergeRequestStateFile = path.join(root, 'final-merge-requests.json');
   await writeFile(
@@ -339,7 +347,7 @@ it('runs one-Business-MR closure out of process before creating the final Change
     logLevel: 'silent',
   });
   const environment: NodeJS.ProcessEnv = {
-    ...process.env,
+    ...storeEnvironment,
     REPOCTOPUS_E2E_WEBHOOK_SECRET: 'secret',
     REPOCTOPUS_E2E_GITHUB_TOKEN: 'token',
     REPOCTOPUS_E2E_AUTHOR_NAME: 'Repoctopus E2E',
@@ -357,8 +365,10 @@ it('runs one-Business-MR closure out of process before creating the final Change
       timeout: 45_000,
     },
   );
-  expect(JSON.parse(interrupted.stdout.trim().split(/\r?\n/u).at(-1)!)).toEqual({
-    status: 'interrupted',
+  expect(JSON.parse(interrupted.stdout.trim().split(/\r?\n/u).at(-1)!)).toMatchObject({
+    status: 'migration_required',
+    diagnostic: 'change-lifecycle-run-required',
+    replacementCommand: 'run.archive.refresh',
   });
   expect(await git(workspace.remote, 'rev-parse', `refs/heads/${sourceBranch}`)).toBe(sourceOid);
   expect(JSON.parse(await readFile(mergeRequestStateFile, 'utf8'))).toMatchObject({ created: 0 });
@@ -372,26 +382,11 @@ it('runs one-Business-MR closure out of process before creating the final Change
     status: string;
     diagnostic: string;
   };
-  expect(result).toMatchObject({ status: 'executed', diagnostic: 'post-merge-completed' });
-
-  const publishedOid = await git(workspace.remote, 'rev-parse', `refs/heads/${sourceBranch}`);
-  expect(publishedOid).not.toBe(sourceOid);
-  const targetMergeOid = await git(workspace.remote, 'rev-parse', `${publishedOid}^`);
-  expect(await git(workspace.remote, 'rev-list', '--parents', '-n', '1', targetMergeOid)).toBe(
-    [targetMergeOid, sourceOid, targetOid].join(' '),
-  );
-  expect(
-    await git(
-      workspace.remote,
-      'show',
-      `${publishedOid}:openspec/specs/post-merge-automation/spec.md`,
-    ),
-  ).toContain('Final Change publication');
-  expect(
-    (await git(workspace.remote, 'ls-tree', '-r', '--name-only', publishedOid))
-      .split(/\r?\n/u)
-      .some((item) => item.includes(`openspec/changes/archive/`) && item.endsWith('/proposal.md')),
-  ).toBe(true);
+  expect(result).toMatchObject({
+    status: 'migration_required',
+    diagnostic: 'change-lifecycle-run-required',
+  });
+  expect(await git(workspace.remote, 'rev-parse', `refs/heads/${sourceBranch}`)).toBe(sourceOid);
 
   const mergeRequestState = JSON.parse(await readFile(mergeRequestStateFile, 'utf8')) as {
     created: number;
@@ -402,20 +397,9 @@ it('runs one-Business-MR closure out of process before creating the final Change
     }>;
   };
   expect(mergeRequestState).toMatchObject({
-    created: 1,
-    mergeRequests: [
-      {
-        sourceBranch,
-        targetBranch: 'main',
-        title: 'Closed final Change',
-      },
-    ],
+    created: 0,
+    mergeRequests: [],
   });
   expect(await git(workspace.source, 'rev-parse', 'HEAD')).toBe(sourceOid);
   expect(await git(workspace.source, 'status', '--porcelain')).toBe('');
-  expect(
-    (await readdir(path.join(workspace.source, '.repoctopus', 'runs'))).filter((item) =>
-      item.startsWith('post-merge-'),
-    ),
-  ).toHaveLength(1);
 }, 60_000);

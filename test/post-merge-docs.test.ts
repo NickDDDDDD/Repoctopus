@@ -33,13 +33,14 @@ describe('Post-merge operator documentation', () => {
 
     for (const command of [
       'post-merge reconcile',
-      'spec approval status',
-      'spec approval prepare',
       'event status',
       'event retry',
-      'delivery status',
       'run status',
-      'run resume',
+      'run archive-prepare',
+      'run archive-publish',
+      'run archive-refresh',
+      'run archive-verify',
+      'run archive-complete',
       'evidence status',
       'evidence resume',
     ]) {
@@ -47,8 +48,8 @@ describe('Post-merge operator documentation', () => {
     }
 
     for (const operationalSignal of [
-      'post-merge-business-merge-requests-open',
-      'changeBranch.remoteOid',
+      'delivery.await-merge',
+      'repoctopus.change.phase',
       'target-merge-conflict',
       'final-change-publication-failed',
       'merge_request.create_or_recover',
@@ -56,6 +57,22 @@ describe('Post-merge operator documentation', () => {
       '分支作者',
     ]) {
       expect(documentation).toContain(operationalSignal);
+    }
+    expect(documentation).toContain('Post-merge 不是第二个 Run');
+    expect(documentation).not.toContain("$runId = 'post-merge-<sha256>'");
+
+    for (const relative of [
+      'runtime-state.md',
+      'specification.md',
+      'skills.md',
+      'project-onboarding.md',
+      'delivery.md',
+      'post-merge.md',
+      'plugins.md',
+      'telemetry.md',
+    ]) {
+      const content = await readFile(path.join(repositoryRoot, 'docs', relative), 'utf8');
+      expect(content.length).toBeGreaterThan(100);
     }
 
     const root = await temporaryDirectory('repoctopus-post-merge-docs-');

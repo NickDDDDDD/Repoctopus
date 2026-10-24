@@ -5,6 +5,7 @@ import type {
   TeamPluginConfig,
 } from '../../domains/project-configuration/types.js';
 import type { DeliveryPolicy } from '../../domains/delivery/types.js';
+import type { SpecificationRoot } from '../../services/specification.js';
 import type { BuiltinPluginRegistration } from './descriptor.js';
 import {
   compileComposition,
@@ -16,7 +17,7 @@ const DEFAULT_SKILL_PROVIDERS = [
   { id: 'skill-provider-matt' },
   { id: 'skill-provider-filesystem' },
 ] as const;
-const DEFAULT_SPECIFICATION_PROVIDER = { id: 'specification-openspec' } as const;
+const DEFAULT_SPECIFICATION_PROVIDER_ID = 'specification-openspec';
 const DEFAULT_PLATFORM_EVENTS_PROVIDER = { id: 'platform-events-file' } as const;
 const PRODUCT_ROOT_IDENTITY = '@repoctopus/product-root';
 const WORKSPACE_ROOT_IDENTITY = '@repoctopus/workspace-root';
@@ -64,6 +65,27 @@ function projectSelections(
   const teamPlugins = new Map(
     (config.shared.composition?.plugins ?? []).map((plugin) => [plugin.id, plugin] as const),
   );
+  const specificationProvider = config.shared.specificationProvider ?? {
+    id: DEFAULT_SPECIFICATION_PROVIDER_ID,
+    store: {
+      id: config.shared.workspace.id,
+      repositoryId: config.shared.workspace.repositoryId,
+    },
+  };
+  const specificationRepository = config.repositories.find(
+    (repository) => repository.id === specificationProvider.store.repositoryId,
+  );
+  if (!specificationRepository) {
+    throw new Error(
+      `Specification Store repository is not resolved: ${specificationProvider.store.repositoryId}`,
+    );
+  }
+  const specificationRoot: SpecificationRoot = {
+    schemaVersion: 1,
+    kind: 'SpecificationRoot',
+    storeId: specificationProvider.store.id,
+    repositoryId: specificationProvider.store.repositoryId,
+  };
   const builtinConfig: Readonly<Record<string, BuiltinRuntimeConfig>> = {
     'skill-provider-matt': {
       config: { productRoot },
@@ -74,8 +96,8 @@ function projectSelections(
       identityConfig: { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
     },
     'specification-openspec': {
-      config: { workspaceRoot },
-      identityConfig: { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
+      config: { workspaceRoot: specificationRepository.resolvedPath, specificationRoot },
+      identityConfig: { workspaceRoot: WORKSPACE_ROOT_IDENTITY, specificationRoot },
     },
     'platform-events-file': {
       config: { workspaceRoot },
@@ -83,8 +105,6 @@ function projectSelections(
     },
   };
   const skillProviders = config.shared.skillProviders ?? DEFAULT_SKILL_PROVIDERS;
-  const specificationProvider =
-    config.shared.specificationProvider ?? DEFAULT_SPECIFICATION_PROVIDER;
   const platformEventsProvider =
     config.shared.platformEvents?.storeProvider ?? DEFAULT_PLATFORM_EVENTS_PROVIDER;
   const selectedProviders = [
@@ -124,12 +144,26 @@ function projectSelections(
       { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
     ),
     { id: 'action-dispatcher' },
-    { id: 'action-manual' },
     runtimeSelection(
       'run-store-file',
       { workspaceRoot },
       { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
     ),
+    { id: 'runtime-work-guard' },
+    runtimeSelection(
+      'work-context-assembler',
+      { workspaceRoot },
+      { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
+    ),
+    { id: 'work-dispatcher' },
+    { id: 'lifecycle-definition-service' },
+    { id: 'lifecycle-definition-builtin' },
+    { id: 'lifecycle-validator-service' },
+    { id: 'lifecycle-validator-builtin' },
+    { id: 'lifecycle-extension-service' },
+    { id: 'lifecycle-extension-builtin' },
+    { id: 'action-manual' },
+    { id: 'action-work-contributors' },
     { id: 'workflow-source-file' },
     { id: 'workflow-telemetry-otel' },
     { id: 'evidence-adapters' },
@@ -178,6 +212,12 @@ function projectSelections(
       { workspaceRoot },
       { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
     ),
+    runtimeSelection(
+      'change-lifecycle-migration',
+      { workspaceRoot },
+      { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
+    ),
+    { id: 'change-lifecycle-migration-command' },
     { id: 'workflow-run-command' },
     ...postMergeSelections(productRoot, workspaceRoot, config),
     ...(config.shared.composition?.plugins
@@ -241,6 +281,7 @@ function postMergeSelections(
         publication: postMerge.publication,
       },
     ),
+    { id: 'archive-command' },
     { id: 'post-merge-command' },
   ];
 }
@@ -293,18 +334,25 @@ const BASE_REQUIRED_SERVICES = [
   'actionDispatcher',
   'actionStore',
   'browserMaintenance',
+  'changeLifecycleMigration',
   'commandRouter',
   'delivery',
   'evidenceAdapters',
   'evidenceCoordinator',
+  'lifecycleDefinitions',
+  'lifecycleExtensions',
+  'lifecycleValidators',
   'project',
   'projectOnboarding',
   'platformEvents',
   'runStore',
+  'runtimeWorkGuard',
   'skills',
   'specification',
   'specificationPlanning',
   'workflowRuns',
+  'workDispatcher',
+  'workContextAssembler',
   'workflowSource',
   'workflowTelemetry',
 ] as const;
