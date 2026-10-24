@@ -4,7 +4,10 @@ import type { SpecificationTask } from '../specification/types.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import type { VerificationInput } from './verification-input.js';
 import type { ArchiveDeliveryInput } from './archive-input.js';
-import type { ArchivePublicationResult } from '../delivery/service-v3.js';
+import type {
+  ArchiveMergeRefreshResult,
+  ArchivePublicationResult,
+} from '../delivery/service-v3.js';
 
 export const CHANGE_PHASES = ['open', 'design', 'build', 'verify', 'archive'] as const;
 export type ChangePhase = (typeof CHANGE_PHASES)[number];
@@ -206,7 +209,10 @@ export interface ChangeLifecycleState {
   verificationInvalidation?: VerificationInvalidation;
   archiveDeliveryInput?: ArchiveDeliveryInput;
   archivePublication?: ArchivePublicationResult;
+  archiveMerge?: ArchiveMergeRefreshResult & { source: ArchiveMergeRefreshSource };
 }
+
+export type ArchiveMergeRefreshSource = 'webhook' | 'inbox' | 'active-check' | 'run-start';
 
 export interface VerificationInvalidation {
   schemaVersion: 1;
@@ -346,6 +352,11 @@ export type ChangeLifecycleObservation =
       actionReceiptId: string;
       publication: ArchivePublicationResult;
       work: WorkDescriptor;
+    }
+  | {
+      kind: 'archive-merge-refreshed';
+      source: ArchiveMergeRefreshSource;
+      refresh: ArchiveMergeRefreshResult;
     };
 
 export interface ChangeLifecycleReduction {
@@ -430,6 +441,7 @@ export function applyChangeLifecycleTransition(options: {
     verificationInvalidation?: VerificationInvalidation | null;
     archiveDeliveryInput?: ArchiveDeliveryInput | null;
     archivePublication?: ArchivePublicationResult | null;
+    archiveMerge?: (ArchiveMergeRefreshResult & { source: ArchiveMergeRefreshSource }) | null;
   };
 }): { snapshot: ChangeLifecycleSnapshot; fact: ChangeLifecycleTransitionFact } {
   assertChangeLifecycleSnapshot(options.current);
@@ -485,6 +497,8 @@ export function applyChangeLifecycleTransition(options: {
   else if (options.next.archivePublication) {
     snapshot.archivePublication = structuredClone(options.next.archivePublication);
   }
+  if (options.next.archiveMerge === null) delete snapshot.archiveMerge;
+  else if (options.next.archiveMerge) snapshot.archiveMerge = structuredClone(options.next.archiveMerge);
   assertChangeLifecycleSnapshot(snapshot);
   return {
     snapshot,
@@ -878,6 +892,51 @@ export function evolveChangeLifecycle(options: {
         waitCondition,
         blocker: null,
         archivePublication: observation.publication,
+      },
+    });
+  }
+  if (observation.kind === 'archive-merge-refreshed') {
+    if (
+      current.phase !== 'archive' ||
+      current.status !== 'waiting' ||
+      current.currentWork?.kind !== 'delivery.await-merge' ||
+      current.waitCondition?.kind !== 'platform-event' ||
+      !current.archivePublication
+    ) {
+      throw new Error(`Archive merge refresh is not valid from ${current.phase}/${current.status}`);
+    }
+    const expected = current.archiveDeliveryInput?.businessDeliveries.length ?? 0;
+    if (
+      observation.refresh.mergeRequestStatuses.length !== expected ||
+      observation.refresh.mergeEvidence.length > expected
+    ) {
+      throw new Error('Archive merge refresh does not cover the frozen Business MR collection');
+    }
+    if (!observation.refresh.allMerged) {
+      return applyChangeLifecycleTransition({
+        definition: options.definition,
+        current,
+        transitionId: 'archive.merge-pending',
+        next: {
+          currentWork: current.currentWork,
+          waitCondition: current.waitCondition,
+          blocker: null,
+          archiveMerge: { ...observation.refresh, source: observation.source },
+        },
+      });
+    }
+    if (observation.refresh.mergeEvidence.length !== expected) {
+      throw new Error('Archive merge completion is missing exact merge evidence');
+    }
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'archive.business-merged',
+      next: {
+        currentWork: null,
+        waitCondition: null,
+        blocker: null,
+        archiveMerge: { ...observation.refresh, source: observation.source },
       },
     });
   }

@@ -25,6 +25,7 @@ import type {
   HumanDecisionResponse,
   MergeRequestIdentity,
   MergeRequestReference,
+  MergeRequestStatus,
   TrustedActor,
 } from './types.js';
 import {
@@ -65,6 +66,13 @@ export interface ArchivePublicationReceipt {
 export interface ArchivePublicationResult {
   snapshot: ReturnType<typeof createDeliverySnapshotV3>;
   receipts: ArchivePublicationReceipt[];
+}
+
+export interface ArchiveMergeRefreshResult {
+  allMerged: boolean;
+  mergeRequestStatuses: MergeRequestStatus[];
+  mergeEvidence: DeliveryStateV3['mergeEvidence'];
+  platformCapabilities: DeliveryStateV3['platformCapabilities'];
 }
 
 function deliveryEvent(
@@ -295,6 +303,66 @@ export class DeliveryServiceV3 {
       });
     }
     return { snapshot, receipts };
+  }
+
+  async refreshArchive(
+    publication: ArchivePublicationResult,
+  ): Promise<ArchiveMergeRefreshResult> {
+    const identities = publication.receipts.flatMap((receipt) =>
+      receipt.mergeRequest ? [receipt.mergeRequest] : [],
+    );
+    const mergeRequestStatuses = await Promise.all(
+      identities.map((identity) => this.mergeRequests.status(identity)),
+    );
+    const mergeEvidence = mergeRequestStatuses.flatMap((status) => {
+      const expected = publication.snapshot.businessDeliveries.find(
+        (delivery) =>
+          delivery.repositoryId === status.repositoryId &&
+          delivery.sourceBranch === status.sourceBranch,
+      );
+      if (
+        !expected ||
+        status.sourceBranch !== expected.sourceBranch ||
+        status.targetBranch !== expected.targetBranch ||
+        status.headCommit !== expected.head
+      ) {
+        throw new Error(`Business merge request mapping drifted: ${status.repositoryId}`);
+      }
+      if (status.state !== 'merged' || !status.mergeCommit || !status.mergedAt) return [];
+      const delivery = publication.snapshot.businessDeliveries.find(
+        (candidate) =>
+          candidate.repositoryId === status.repositoryId &&
+          candidate.sourceBranch === status.sourceBranch,
+      )!;
+      return [
+        {
+          deliveryId: delivery.deliveryId,
+          repositoryId: status.repositoryId,
+          mergeRequest: {
+            provider: status.provider,
+            repositoryId: status.repositoryId,
+            number: status.number,
+            url: status.url,
+          },
+          mergeCommit: status.mergeCommit,
+          mergedAt: status.mergedAt,
+          observedAt: this.clock().toISOString(),
+        },
+      ];
+    });
+    const platformCapabilities = await Promise.all(
+      publication.snapshot.businessDeliveries.map((delivery) =>
+        this.mergeRequests.capability(delivery.remoteIdentity!, delivery.targetBranch),
+      ),
+    );
+    return {
+      allMerged:
+        identities.length === publication.snapshot.businessDeliveries.length &&
+        mergeEvidence.length === identities.length,
+      mergeRequestStatuses,
+      mergeEvidence,
+      platformCapabilities,
+    };
   }
 
   async decide(

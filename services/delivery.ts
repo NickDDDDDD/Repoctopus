@@ -21,7 +21,10 @@ import type {
   TrustedActor,
 } from '../domains/delivery/types.js';
 import type { DeliveryV2MigrationPlan } from '../domains/delivery/migration.js';
-import type { ArchivePublicationResult } from '../domains/delivery/service-v3.js';
+import type {
+  ArchiveMergeRefreshResult,
+  ArchivePublicationResult,
+} from '../domains/delivery/service-v3.js';
 
 export interface DeliveryPreparation {
   project: ProjectSnapshot;
@@ -64,6 +67,19 @@ export abstract class Delivery extends Service {
     void signal;
     return Promise.reject(
       new Error(`Delivery provider cannot publish lifecycle Archive for ${options.intent.changeId}`),
+    );
+  }
+  refreshArchive(
+    publication: ArchivePublicationResult,
+    policy: DeliveryPolicy,
+    signal?: AbortSignal,
+  ): Promise<ArchiveMergeRefreshResult> {
+    void policy;
+    void signal;
+    return Promise.reject(
+      new Error(
+        `Delivery provider cannot refresh lifecycle Archive for ${publication.snapshot.changeId}`,
+      ),
     );
   }
   publishPostMerge(

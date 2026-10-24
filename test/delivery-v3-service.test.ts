@@ -282,6 +282,35 @@ describe('DeliveryServiceV3', () => {
     expect(result.snapshot.plan).toHaveLength(2);
   });
 
+  it('refreshes the frozen Archive MR collection until every exact merge commit exists', async () => {
+    const mergeRequests = new FakeMergeRequests();
+    const service = new DeliveryServiceV3(
+      new MemoryStore(),
+      new FakeGit(),
+      mergeRequests,
+      { assertSatisfied: () => Promise.resolve() },
+      TEST_COMPOSITION_DIGEST,
+    );
+    const publication = await service.publishArchive({
+      project,
+      intent,
+      policy,
+      reportContents: 'verification-report:sha256',
+      evidenceBundleIds: ['bundle-verified'],
+    });
+    await expect(service.refreshArchive(publication)).resolves.toMatchObject({
+      allMerged: false,
+      mergeEvidence: [],
+      mergeRequestStatuses: [{ state: 'open' }],
+    });
+    mergeRequests.authoritativeState = 'merged';
+    await expect(service.refreshArchive(publication)).resolves.toMatchObject({
+      allMerged: true,
+      mergeEvidence: [{ deliveryId: 'primary', mergeCommit: '5'.repeat(40) }],
+      mergeRequestStatuses: [{ state: 'merged' }],
+    });
+  });
+
   it('publishes exactly the declared Business MR without reading or creating a Change MR', async () => {
     const store = new MemoryStore();
     const git = new FakeGit();

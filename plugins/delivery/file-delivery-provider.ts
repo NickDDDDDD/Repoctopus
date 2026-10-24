@@ -20,7 +20,10 @@ import type {
   PostMergePublicationRequestV2,
 } from '../../domains/delivery/post-merge.js';
 import type { DeliveryV2MigrationPlan } from '../../domains/delivery/migration.js';
-import type { ArchivePublicationResult } from '../../domains/delivery/service-v3.js';
+import type {
+  ArchiveMergeRefreshResult,
+  ArchivePublicationResult,
+} from '../../domains/delivery/service-v3.js';
 import type { ProjectSnapshot } from '../../domains/project/types.js';
 import { canonicalJson } from '../../domains/workflow-contract/canonical.js';
 import { FileDeliveryEvidence } from '../../platform/delivery/file-delivery-evidence.js';
@@ -199,6 +202,16 @@ export class FileDeliveryProvider extends Delivery {
       await this.assertPlanningApproval(options.intent, options.policy.publication.remote);
       return this.domainV3(options.policy).publishArchive(options);
     });
+  }
+
+  override refreshArchive(
+    publication: ArchivePublicationResult,
+    policy: DeliveryPolicy,
+    signal?: AbortSignal,
+  ): Promise<ArchiveMergeRefreshResult> {
+    return this.operations.run({ cancellable: false, signal }, () =>
+      this.domainV3(policy).refreshArchive(publication),
+    );
   }
 
   override publishPostMerge(

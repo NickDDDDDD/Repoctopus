@@ -299,6 +299,22 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       requiredValidatorProfile: 'archive.delivery-ready',
     },
     {
+      id: 'archive.merge-pending',
+      kind: 'self',
+      from: { phase: 'archive', statuses: ['waiting'] },
+      to: { phase: 'archive', status: 'waiting' },
+      trigger: 'business-merge-facts-refreshed',
+      requiredValidatorProfile: 'archive.delivery-ready',
+    },
+    {
+      id: 'archive.business-merged',
+      kind: 'self',
+      from: { phase: 'archive', statuses: ['waiting'] },
+      to: { phase: 'archive', status: 'running' },
+      trigger: 'all-business-merge-requests-merged',
+      requiredValidatorProfile: 'archive.delivery-ready',
+    },
+    {
       id: 'archive.completed',
       kind: 'complete',
       from: { phase: 'archive', statuses: ['running'] },

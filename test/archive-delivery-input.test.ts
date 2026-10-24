@@ -169,6 +169,85 @@ describe('Archive Delivery input', () => {
       waitCondition: { kind: 'platform-event', eventType: 'business-merge-request.updated' },
       archivePublication: { receipts: [{ type: 'git.push' }, { type: 'mr.create_or_update' }] },
     });
+    const pending = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current: waiting.snapshot,
+      observation: {
+        kind: 'archive-merge-refreshed',
+        source: 'webhook',
+        refresh: {
+          allMerged: false,
+          mergeRequestStatuses: [
+            {
+              provider: 'github',
+              repositoryId: 'app',
+              number: 1,
+              url: 'https://github.com/team/app/pull/1',
+              state: 'open',
+              ci: 'passed',
+              review: 'approved',
+              conversationsResolved: true,
+              mergeCommit: null,
+              mergedAt: null,
+            },
+          ],
+          mergeEvidence: [],
+          platformCapabilities: [],
+        },
+      },
+    });
+    expect(pending.snapshot).toMatchObject({
+      status: 'waiting',
+      archiveMerge: { source: 'webhook', allMerged: false },
+    });
+    const merged = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current: pending.snapshot,
+      observation: {
+        kind: 'archive-merge-refreshed',
+        source: 'run-start',
+        refresh: {
+          allMerged: true,
+          mergeRequestStatuses: [
+            {
+              provider: 'github',
+              repositoryId: 'app',
+              number: 1,
+              url: 'https://github.com/team/app/pull/1',
+              state: 'merged',
+              ci: 'passed',
+              review: 'approved',
+              conversationsResolved: true,
+              mergeCommit: 'e'.repeat(40),
+              mergedAt: '2026-10-24T00:00:00.000Z',
+            },
+          ],
+          mergeEvidence: [
+            {
+              deliveryId: 'primary',
+              repositoryId: 'app',
+              mergeRequest: {
+                provider: 'github',
+                repositoryId: 'app',
+                number: 1,
+                url: 'https://github.com/team/app/pull/1',
+              },
+              mergeCommit: 'e'.repeat(40),
+              mergedAt: '2026-10-24T00:00:00.000Z',
+              observedAt: '2026-10-24T00:01:00.000Z',
+            },
+          ],
+          platformCapabilities: [],
+        },
+      },
+    });
+    expect(merged.snapshot).toMatchObject({
+      phase: 'archive',
+      status: 'running',
+      currentWork: null,
+      waitCondition: null,
+      archiveMerge: { source: 'run-start', allMerged: true },
+    });
   });
 
   it('requires a split reason for multiple Business merge requests and accepted Evidence', () => {

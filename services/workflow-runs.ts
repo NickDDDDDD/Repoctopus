@@ -44,6 +44,7 @@ import { acceptVerifyGate, rejectVerifyGate } from '../domains/change-lifecycle/
 import type { SpecificationTask } from '../domains/specification/types.js';
 import type {
   ChangeLifecycleState,
+  ArchiveMergeRefreshSource,
   WorkDescriptor,
 } from '../domains/change-lifecycle/transition.js';
 import {
@@ -116,6 +117,12 @@ export interface ExecuteArchiveDeliveryResult {
   publication: ArchivePublicationResult;
   actionReceiptId: string;
   run: RunStatusView;
+}
+
+export interface RefreshArchiveMergesInput {
+  runId: string;
+  policy: DeliveryPolicy;
+  source: ArchiveMergeRefreshSource;
 }
 
 export class WorkflowRuns extends Service {
@@ -1061,6 +1068,41 @@ export class WorkflowRuns extends Service {
         },
         diagnostics: advanced.diagnostics,
       };
+    });
+  }
+
+  refreshArchiveMerges(
+    input: RefreshArchiveMergesInput,
+    signal?: AbortSignal,
+  ): Promise<RuntimeResult<RunStatusView>> {
+    return this.operations.run({ cancellable: false, signal }, async () => {
+      const state = await this.ctx.runStore.loadRun(input.runId);
+      const lifecycle = state.changeLifecycle;
+      if (
+        !lifecycle ||
+        state.status !== 'waiting' ||
+        lifecycle.phase !== 'archive' ||
+        lifecycle.currentWork?.kind !== 'delivery.await-merge' ||
+        !lifecycle.archivePublication
+      ) {
+        throw new Error(`Change Run is not waiting for Business merges: ${input.runId}`);
+      }
+      if (
+        lifecycle.archiveDeliveryInput?.publicationPolicyDigest !==
+        deliveryPolicyDigest(input.policy)
+      ) {
+        throw new Error('Archive merge refresh policy does not match the frozen Delivery input');
+      }
+      const refresh = await this.ctx.delivery.refreshArchive(
+        lifecycle.archivePublication,
+        input.policy,
+        signal,
+      );
+      return this.coordinator.acceptChangeObservation(input.runId, {
+        kind: 'archive-merge-refreshed',
+        source: input.source,
+        refresh,
+      });
     });
   }
 

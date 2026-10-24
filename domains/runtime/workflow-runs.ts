@@ -80,6 +80,7 @@ function lifecycleState(snapshot: ChangeLifecycleSnapshot): ChangeLifecycleState
     ...(snapshot.archivePublication
       ? { archivePublication: structuredClone(snapshot.archivePublication) }
       : {}),
+    ...(snapshot.archiveMerge ? { archiveMerge: structuredClone(snapshot.archiveMerge) } : {}),
   };
 }
 
