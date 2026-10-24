@@ -212,7 +212,6 @@ function projectSelections(
     ),
     { id: 'change-lifecycle-migration-command' },
     { id: 'workflow-run-command' },
-    { id: 'archive-command' },
     ...(config.shared.composition?.plugins
       .filter((plugin) => !selectedIds.has(plugin.id))
       .map((plugin) => ({

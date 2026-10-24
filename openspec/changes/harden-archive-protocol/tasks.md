@@ -85,11 +85,11 @@
       **Blocked by:** 5.1
       **Acceptance:** 公共 CLI/production catalog 不再暴露相关入口；架构检查和依赖扫描找不到运行时引用；普通项目 composition 可启动
       **Requirements:** platform-event-processing#retirement, runtime-foundation#short-lived-runtime, plugin-composition#event-stack-retirement
-- [ ] 5.3 删除 Post-merge workflow、Coordinator/Actions、exact-merge checkout、Evidence profile 和启动补偿，把仍需的 publish/closure 原语收归 Archive、Delivery 与 Specification owner。
+- [x] 5.3 删除 Post-merge workflow、Coordinator/Actions、exact-merge checkout、Evidence profile 和启动补偿，把仍需的 publish/closure 原语收归 Archive、Delivery 与 Specification owner。
       **Blocked by:** 5.2
       **Acceptance:** 生产代码不存在独立 Post-merge Run/状态机/Telemetry；Archive tracer 与多仓恢复测试继续通过
       **Requirements:** post-merge-automation#retirement, runtime-foundation#short-lived-runtime
-- [ ] 5.4 删除平台事件与 Post-merge 专用测试、文档和 OTel 属性，新增负向架构测试防止无当前 Change 的 webhook/daemon 基础设施重新进入核心组合。
+- [x] 5.4 删除平台事件与 Post-merge 专用测试、文档和 OTel 属性，新增负向架构测试防止无当前 Change 的 webhook/daemon 基础设施重新进入核心组合。
       **Blocked by:** 5.3
       **Acceptance:** 文档只描述短生命周期 publish/reconcile；Telemetry 仅包含有界 Publication/Consistency 字段；负向 fixture 能拒绝新监听入口
       **Requirements:** development-telemetry#publication-consistency, plugin-composition#event-stack-retirement

@@ -2,12 +2,6 @@ import { Service, type Context } from '@deepseek-ai/cordis';
 
 import type { ProjectSnapshot } from '../domains/project/types.js';
 import type {
-  PostMergePublicationReceipt,
-  PostMergePublicationReceiptV2,
-  PostMergePublicationRequest,
-  PostMergePublicationRequestV2,
-} from '../domains/delivery/post-merge.js';
-import type {
   DeliveryIntent,
   DeliveryIntentV3,
   DeliveryMergeRequestRefresh,
@@ -22,9 +16,12 @@ import type {
   MergeRequestStatus,
 } from '../domains/delivery/types.js';
 import type { PublicationReceiptItem } from '../domains/delivery/publication-receipt.js';
+import type {
+  SpecificationPublicationRequest,
+  SpecificationPublicationResult,
+} from '../domains/delivery/specification-publication.js';
 import type { DeliveryV2MigrationPlan } from '../domains/delivery/migration.js';
 import type {
-  ArchiveFinalPublicationProof,
   ArchiveMergeRefreshResult,
   ArchivePublicationResult,
 } from '../domains/delivery/service-v3.js';
@@ -74,6 +71,16 @@ export abstract class Delivery extends Service {
       ),
     );
   }
+  publishSpecification(
+    request: SpecificationPublicationRequest,
+    signal?: AbortSignal,
+  ): Promise<SpecificationPublicationResult> {
+    void signal;
+    return Promise.reject(
+      new Error(`Delivery provider cannot publish specification closure for ${request.changeId}`),
+    );
+  }
+  /** @deprecated Archive completion is receipt-driven and never waits for merge events. */
   refreshArchive(
     publication: ArchivePublicationResult,
     policy: DeliveryPolicy,
@@ -82,38 +89,7 @@ export abstract class Delivery extends Service {
     void policy;
     void signal;
     return Promise.reject(
-      new Error(
-        `Delivery provider cannot refresh lifecycle Archive for ${publication.snapshot.changeId}`,
-      ),
-    );
-  }
-  publishPostMerge(
-    request: PostMergePublicationRequest,
-    signal?: AbortSignal,
-  ): Promise<PostMergePublicationReceipt> {
-    void signal;
-    return Promise.reject(
-      new Error(`Delivery provider cannot publish post-merge closure for ${request.changeId}`),
-    );
-  }
-  publishFinalChange(
-    request: PostMergePublicationRequestV2,
-    signal?: AbortSignal,
-  ): Promise<PostMergePublicationReceiptV2> {
-    void signal;
-    return Promise.reject(
-      new Error(`Delivery provider cannot publish final Change for ${request.changeId}`),
-    );
-  }
-  publishArchiveFinalChange(
-    request: PostMergePublicationRequestV2,
-    proof: ArchiveFinalPublicationProof,
-    signal?: AbortSignal,
-  ): Promise<PostMergePublicationReceiptV2> {
-    void proof;
-    void signal;
-    return Promise.reject(
-      new Error(`Delivery provider cannot publish final Change for ${request.changeId}`),
+      new Error(`Archive merge waiting was removed: ${publication.snapshot.changeId}`),
     );
   }
   abstract refresh(

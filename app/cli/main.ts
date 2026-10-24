@@ -41,7 +41,6 @@ import type { BrowserMaintenance } from '../../services/browser-maintenance.js';
 import { bootBootstrapComposition, bootProjectComposition } from '../boot/bootstrap.js';
 import { reviewHumanDecision } from './human-decision.js';
 import { reviewProjectConfigurationDecision } from './project-configuration-decision.js';
-import type { PostMergeReconciliationResult } from '../../services/post-merge-coordinator.js';
 import type { SpecificationApprovalState } from '../../domains/specification/types.js';
 import { inspectPublishedChangeBranch } from '../../platform/git/change-branch.js';
 import { reviewSpecificationApproval } from './specification-approval-decision.js';
@@ -54,7 +53,7 @@ const PRODUCT_ROOT =
     ? path.resolve(DIST_DIR, '..')
     : path.resolve(DIST_DIR, '..', '..');
 const USAGE =
-  'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decide|record|resume|work-claim|work-outcome|work-validate|archive-prepare|archive-publish|archive-refresh|archive-verify|archive-complete> | change reconcile | post-merge reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | approval review | browser <doctor|install> | doctor';
+  'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decide|record|resume|work-claim|work-outcome|work-validate|archive-prepare|archive-publish> | change reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | approval review | browser <doctor|install> | doctor';
 
 function defaultWorkflowPath(): string {
   return path.resolve(DIST_DIR, '..', 'workflows', 'foundation.yaml');
@@ -875,36 +874,6 @@ async function changeReconcile(parsed: ParsedArguments): Promise<CliEnvelope<unk
   }
 }
 
-async function postMergeReconcile(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
-  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
-  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
-  try {
-    if (!app.composition.entries.some((entry) => entry.id === 'post-merge-command')) {
-      throw new Error('Post-merge reconciliation requires postMerge project configuration');
-    }
-    const result = await app.context.commandRouter.execute<
-      Record<string, never>,
-      PostMergeReconciliationResult
-    >('post-merge.reconcile', {});
-    return successEnvelope({
-      command: 'post-merge reconcile',
-      result,
-      diagnostics:
-        result.failed > 0 || result.blocked > 0
-          ? [
-              {
-                level: 'warning',
-                code: 'post-merge.reconciliation-incomplete',
-                message: `补偿检查存在未收敛结果：阻断 ${result.blocked}，失败 ${result.failed}`,
-              },
-            ]
-          : [],
-    });
-  } finally {
-    await app.close();
-  }
-}
-
 async function runStatus(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
   const runId = stringFlag(parsed, 'run', { required: true })!;
@@ -1019,54 +988,6 @@ async function runArchivePublish(parsed: ParsedArguments): Promise<CliEnvelope<u
       },
     });
     return successEnvelope({ command: 'run archive-publish', runId, result });
-  } finally {
-    await app.close();
-  }
-}
-
-async function runArchiveRefresh(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
-  const { workspace, policy } = await archiveRuntimeInputs(parsed);
-  const runId = stringFlag(parsed, 'run', { required: true })!;
-  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
-  try {
-    const result = await app.context.commandRouter.execute('run.archive.refresh', {
-      runId,
-      policy,
-      source: 'active-check',
-    });
-    return successEnvelope({ command: 'run archive-refresh', runId, result });
-  } finally {
-    await app.close();
-  }
-}
-
-async function runArchiveVerify(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
-  const { workspace, config } = await archiveRuntimeInputs(parsed);
-  const runId = stringFlag(parsed, 'run', { required: true })!;
-  const profileId = stringFlag(parsed, 'profile', { fallback: 'verify' })!;
-  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
-  try {
-    const result = await app.context.commandRouter.execute('run.archive.verify-merged', {
-      runId,
-      profileId,
-      sources: config.repositories.map((repository) => ({
-        repositoryId: repository.id,
-        path: repository.resolvedPath,
-      })),
-    });
-    return successEnvelope({ command: 'run archive-verify', runId, result });
-  } finally {
-    await app.close();
-  }
-}
-
-async function runArchiveComplete(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
-  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
-  const runId = stringFlag(parsed, 'run', { required: true })!;
-  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
-  try {
-    const result = await app.context.commandRouter.execute('run.archive.complete', { runId });
-    return successEnvelope({ command: 'run archive-complete', runId, result });
   } finally {
     await app.close();
   }
@@ -1382,9 +1303,6 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   if (command === 'run verify') return runVerify(parsed);
   if (command === 'run archive-prepare') return runArchivePrepare(parsed);
   if (command === 'run archive-publish') return runArchivePublish(parsed);
-  if (command === 'run archive-refresh') return runArchiveRefresh(parsed);
-  if (command === 'run archive-verify') return runArchiveVerify(parsed);
-  if (command === 'run archive-complete') return runArchiveComplete(parsed);
   if (command === 'run work-claim') return runWorkClaim(parsed);
   if (command === 'run work-outcome') return runWorkOutcome(parsed);
   if (command === 'run work-validate') return runWorkValidate(parsed);
@@ -1400,7 +1318,6 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
     return deliveryPublish(parsed);
   if (command === 'delivery refresh') return deliveryRefresh(parsed);
   if (command === 'delivery migration-plan') return deliveryMigrationPlan(parsed);
-  if (command === 'post-merge reconcile') return postMergeReconcile(parsed);
   if (command === 'doctor') return doctor(parsed);
   if (command === 'browser doctor') return browserDoctor(parsed);
   if (command === 'browser install') return browserInstall(parsed);

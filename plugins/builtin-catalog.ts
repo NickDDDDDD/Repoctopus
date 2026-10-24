@@ -18,12 +18,10 @@ import builtinLifecycleExtensions from './lifecycle/builtin-extension-contributo
 import projectProbeContributor from './command/project-probe-contributor.js';
 import evidenceContributor from './command/evidence-contributor.js';
 import workflowRunContributor from './command/workflow-run-contributor.js';
-import archiveContributor from './command/archive-contributor.js';
 import changeLifecycleMigrationContributor from './command/change-lifecycle-migration-contributor.js';
 import deliveryContributor from './command/delivery-contributor.js';
 import projectOnboardingContributor from './command/project-onboarding-contributor.js';
 import maintenanceContributor from './command/maintenance-contributor.js';
-import postMergeContributor from './command/post-merge-contributor.js';
 import { FileDeliveryProvider } from './delivery/file-delivery-provider.js';
 import { GitProjectProvider } from './project/git-project-provider.js';
 import { FileRunStoreProvider } from './run/file-run-store-provider.js';
@@ -57,8 +55,6 @@ import filesystemSkillProvider from './skill/filesystem-skill-provider.js';
 import skillCatalogContributor from './command/skill-catalog-contributor.js';
 import specificationContributor from './command/specification-contributor.js';
 import { OpenSpecProvider } from '../platform/specification/openspec-provider.js';
-import { PostMergeCoordinator } from '../services/post-merge-coordinator.js';
-import postMergeActionsProvider from './post-merge/post-merge-actions-provider.js';
 import desktopApplication from './application/desktop-application.js';
 import { DesktopApplication } from '../services/desktop-application.js';
 import { SpecificationPlanning } from '../services/specification-planning.js';
@@ -231,69 +227,6 @@ const definitions: readonly BuiltinDefinition[] = [
     },
     plugin: CommandRouter,
     sourceFiles: ['services/command-router.ts'],
-  },
-  {
-    descriptor: {
-      id: 'post-merge-coordinator',
-      version: VERSION,
-      contractVersion: PLUGIN_CONTRACT_VERSION,
-      configSchemaVersion: '1',
-      kind: 'service-provider',
-      source: 'builtin',
-      compositions: ['project'],
-      authorities: ['post-merge-coordinate'],
-      permissions: [],
-      stateSchemas: {},
-    },
-    plugin: PostMergeCoordinator,
-    sourceFiles: [
-      'domains/post-merge/coordinator.ts',
-      'domains/post-merge/run.ts',
-      'services/post-merge-coordinator.ts',
-    ],
-  },
-  {
-    descriptor: {
-      id: 'post-merge-command',
-      version: VERSION,
-      contractVersion: PLUGIN_CONTRACT_VERSION,
-      configSchemaVersion: '1',
-      kind: 'contributor',
-      source: 'builtin',
-      compositions: ['project'],
-      authorities: [],
-      permissions: [],
-      stateSchemas: {},
-    },
-    plugin: postMergeContributor,
-    sourceFiles: [
-      'plugins/command/post-merge-contributor.ts',
-      'services/post-merge-coordinator.ts',
-    ],
-  },
-  {
-    descriptor: {
-      id: 'post-merge-actions',
-      version: VERSION,
-      contractVersion: PLUGIN_CONTRACT_VERSION,
-      configSchemaVersion: '2',
-      kind: 'service-provider',
-      source: 'builtin',
-      compositions: ['project'],
-      authorities: ['post-merge-execute'],
-      permissions: ['filesystem', 'network', 'process'],
-      stateSchemas: { 'post-merge-closure': '2' },
-    },
-    plugin: postMergeActionsProvider,
-    sourceFiles: [
-      'domains/delivery/post-merge.ts',
-      'domains/post-merge/checkout.ts',
-      'domains/post-merge/closure.ts',
-      'platform/git/post-merge-checkout.ts',
-      'platform/git/post-merge-workspace.ts',
-      'plugins/post-merge/post-merge-actions-provider.ts',
-      'services/post-merge-actions.ts',
-    ],
   },
   {
     descriptor: {
@@ -864,8 +797,6 @@ const definitions: readonly BuiltinDefinition[] = [
       'plugins/delivery/file-delivery-provider.ts',
       'domains/delivery/service.ts',
       'domains/delivery/service-v3.ts',
-      'domains/delivery/final-change-publication.ts',
-      'domains/delivery/post-merge.ts',
       'platform/delivery/file-delivery-store.ts',
       'platform/delivery/file-delivery-v3-store.ts',
       'platform/git/delivery.ts',
@@ -991,22 +922,6 @@ const definitions: readonly BuiltinDefinition[] = [
     },
     plugin: workflowRunContributor,
     sourceFiles: ['plugins/command/workflow-run-contributor.ts'],
-  },
-  {
-    descriptor: {
-      id: 'archive-command',
-      version: VERSION,
-      contractVersion: PLUGIN_CONTRACT_VERSION,
-      configSchemaVersion: '1',
-      kind: 'contributor',
-      source: 'builtin',
-      compositions: ['project'],
-      authorities: [],
-      permissions: [],
-      stateSchemas: {},
-    },
-    plugin: archiveContributor,
-    sourceFiles: ['plugins/command/archive-contributor.ts'],
   },
   {
     descriptor: {

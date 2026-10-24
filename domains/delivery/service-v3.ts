@@ -38,14 +38,8 @@ import {
   requestDeliveryApprovalV3,
 } from './v3.js';
 import { validateDeliveryPolicy } from './validation.js';
-import type { FinalChangePublicationService } from './final-change-publication.js';
 import { observeOrCreateMergeRequest } from './stable-publication.js';
 import type { PublicationProvenance } from './publication-receipt.js';
-import {
-  assertPostMergePublicationRequestV2,
-  type PostMergePublicationReceiptV2,
-  type PostMergePublicationRequestV2,
-} from './post-merge.js';
 
 export interface DeliveryV3Preparation {
   project: ProjectSnapshot;
@@ -72,16 +66,12 @@ export interface ArchivePublicationResult {
   receipts: ArchivePublicationReceipt[];
 }
 
+/** @deprecated The archive pipeline no longer waits for remote merges. */
 export interface ArchiveMergeRefreshResult {
   allMerged: boolean;
   mergeRequestStatuses: MergeRequestStatus[];
   mergeEvidence: DeliveryStateV3['mergeEvidence'];
   platformCapabilities: DeliveryStateV3['platformCapabilities'];
-}
-
-export interface ArchiveFinalPublicationProof {
-  publication: ArchivePublicationResult;
-  merge: ArchiveMergeRefreshResult;
 }
 
 function deliveryEvent(
@@ -150,7 +140,6 @@ export class DeliveryServiceV3 {
     private readonly evidence: DeliveryEvidencePort,
     private readonly compositionDigest: string,
     private readonly clock: () => Date = () => new Date(),
-    private readonly finalPublication?: Pick<FinalChangePublicationService, 'publish'>,
   ) {}
 
   async checkpoint(project: ProjectSnapshot, intent: DeliveryIntentV3, policy: DeliveryPolicy) {
@@ -316,64 +305,6 @@ export class DeliveryServiceV3 {
       });
     }
     return { snapshot, receipts };
-  }
-
-  async refreshArchive(publication: ArchivePublicationResult): Promise<ArchiveMergeRefreshResult> {
-    const identities = publication.receipts.flatMap((receipt) =>
-      receipt.mergeRequest ? [receipt.mergeRequest] : [],
-    );
-    const mergeRequestStatuses = await Promise.all(
-      identities.map((identity) => this.mergeRequests.status(identity)),
-    );
-    const mergeEvidence = mergeRequestStatuses.flatMap((status) => {
-      const expected = publication.snapshot.businessDeliveries.find(
-        (delivery) =>
-          delivery.repositoryId === status.repositoryId &&
-          delivery.sourceBranch === status.sourceBranch,
-      );
-      if (
-        !expected ||
-        status.sourceBranch !== expected.sourceBranch ||
-        status.targetBranch !== expected.targetBranch ||
-        status.headCommit !== expected.head
-      ) {
-        throw new Error(`Business merge request mapping drifted: ${status.repositoryId}`);
-      }
-      if (status.state !== 'merged' || !status.mergeCommit || !status.mergedAt) return [];
-      const delivery = publication.snapshot.businessDeliveries.find(
-        (candidate) =>
-          candidate.repositoryId === status.repositoryId &&
-          candidate.sourceBranch === status.sourceBranch,
-      )!;
-      return [
-        {
-          deliveryId: delivery.deliveryId,
-          repositoryId: status.repositoryId,
-          mergeRequest: {
-            provider: status.provider,
-            repositoryId: status.repositoryId,
-            number: status.number,
-            url: status.url,
-          },
-          mergeCommit: status.mergeCommit,
-          mergedAt: status.mergedAt,
-          observedAt: this.clock().toISOString(),
-        },
-      ];
-    });
-    const platformCapabilities = await Promise.all(
-      publication.snapshot.businessDeliveries.map((delivery) =>
-        this.mergeRequests.capability(delivery.remoteIdentity!, delivery.targetBranch),
-      ),
-    );
-    return {
-      allMerged:
-        identities.length === publication.snapshot.businessDeliveries.length &&
-        mergeEvidence.length === identities.length,
-      mergeRequestStatuses,
-      mergeEvidence,
-      platformCapabilities,
-    };
   }
 
   async decide(
@@ -614,165 +545,6 @@ export class DeliveryServiceV3 {
       }),
     });
     return { state: next, mergeRequestStatuses };
-  }
-
-  async publishFinalChange(
-    request: PostMergePublicationRequestV2,
-  ): Promise<PostMergePublicationReceiptV2> {
-    assertPostMergePublicationRequestV2(request);
-    const state = await this.requireState(request.changeId);
-    if (!state.snapshot || state.status !== 'merged') {
-      throw new Error(`Final Change publication requires merged Business delivery state`);
-    }
-    if (
-      canonicalJson(state.snapshot.changeBranch) !==
-      canonicalJson(request.targetMerge.intent.changeBranch)
-    ) {
-      throw new Error('Final Change publication branch drifted from the approved Delivery');
-    }
-    if (!this.finalPublication) {
-      throw new Error('Final Change publication is unavailable');
-    }
-
-    const startedAt = this.clock().toISOString();
-    const starting: DeliveryStateV3 = {
-      ...state,
-      stateVersion: state.stateVersion + 1,
-      closure: {
-        status: 'running',
-        evidenceBundleId: request.evidenceBundleId,
-        specificationClosureId: request.audit.closureId,
-        publishedOid: null,
-        errorCode: null,
-      },
-      finalChangeMergeRequest: { status: 'creating', mergeRequest: null, errorCode: null },
-      updatedAt: startedAt,
-    };
-    await this.store.commit({
-      state: starting,
-      previousStateVersion: state.stateVersion,
-      event: deliveryEvent(starting, 'delivery.action', startedAt, {
-        result: 'final-change-publication-started',
-        runId: request.runId,
-      }),
-    });
-
-    try {
-      const receipt = await this.finalPublication.publish(request);
-      const existing = state.finalChangeMergeRequest?.mergeRequest;
-      if (
-        existing &&
-        (existing.provider !== receipt.mergeRequest.provider ||
-          existing.repositoryId !== receipt.mergeRequest.repositoryId ||
-          existing.number !== receipt.mergeRequest.number ||
-          existing.url !== receipt.mergeRequest.url)
-      ) {
-        throw new Error('Final Change MR identity drifted from Delivery state');
-      }
-      const completedAt = this.clock().toISOString();
-      const completed: DeliveryStateV3 = {
-        ...starting,
-        stateVersion: starting.stateVersion + 1,
-        closure: {
-          status: 'succeeded',
-          evidenceBundleId: request.evidenceBundleId,
-          specificationClosureId: request.audit.closureId,
-          publishedOid: receipt.remoteOid,
-          errorCode: null,
-        },
-        finalChangeMergeRequest: {
-          status: 'open',
-          mergeRequest: structuredClone(receipt.mergeRequest),
-          errorCode: null,
-        },
-        updatedAt: completedAt,
-      };
-      await this.store.commit({
-        state: completed,
-        previousStateVersion: starting.stateVersion,
-        event: deliveryEvent(completed, 'delivery.action', completedAt, {
-          result: 'final-change-published',
-          receiptDigest: receipt.digest,
-        }),
-      });
-      return receipt;
-    } catch (error) {
-      const failedAt = this.clock().toISOString();
-      const failed: DeliveryStateV3 = {
-        ...starting,
-        stateVersion: starting.stateVersion + 1,
-        closure: {
-          ...starting.closure!,
-          status: 'failed',
-          errorCode: 'final-change-publication-failed',
-        },
-        finalChangeMergeRequest: {
-          status: 'failed',
-          mergeRequest: state.finalChangeMergeRequest?.mergeRequest ?? null,
-          errorCode: 'final-change-publication-failed',
-        },
-        updatedAt: failedAt,
-      };
-      await this.store.commit({
-        state: failed,
-        previousStateVersion: starting.stateVersion,
-        event: deliveryEvent(failed, 'delivery.action', failedAt, {
-          result: 'final-change-publication-failed',
-        }),
-      });
-      throw error;
-    }
-  }
-
-  /**
-   * Publishes a final Change for the lifecycle-owned Archive path. Unlike the
-   * compatibility method above, this path is deliberately independent of the
-   * Delivery aggregate: the Change Run already owns the frozen publication
-   * snapshot and authoritative merge evidence.
-   */
-  async publishArchiveFinalChange(
-    request: PostMergePublicationRequestV2,
-    proof: ArchiveFinalPublicationProof,
-  ): Promise<PostMergePublicationReceiptV2> {
-    assertPostMergePublicationRequestV2(request);
-    const { snapshot, receipts } = proof.publication;
-    if (snapshot.changeId !== request.changeId) {
-      throw new Error('Final Change publication does not match the Archive Change');
-    }
-    if (
-      canonicalJson(snapshot.changeBranch) !==
-      canonicalJson(request.targetMerge.intent.changeBranch)
-    ) {
-      throw new Error('Final Change publication branch drifted from the Archive snapshot');
-    }
-    if (!proof.merge.allMerged) {
-      throw new Error('Final Change publication requires all frozen Business MRs to be merged');
-    }
-    for (const action of snapshot.plan) {
-      const receipt = receipts.find(
-        (candidate) =>
-          candidate.actionId === action.actionId &&
-          candidate.deliveryId === action.deliveryId &&
-          candidate.type === action.type,
-      );
-      if (!receipt) {
-        throw new Error(`Archive publication Receipt is missing: ${action.actionId}`);
-      }
-    }
-    for (const delivery of snapshot.businessDeliveries) {
-      const evidence = proof.merge.mergeEvidence.find(
-        (candidate) =>
-          candidate.deliveryId === delivery.deliveryId &&
-          candidate.repositoryId === delivery.repositoryId,
-      );
-      if (!evidence) {
-        throw new Error(`Archive merge Evidence is missing: ${delivery.deliveryId}`);
-      }
-    }
-    if (!this.finalPublication) {
-      throw new Error('Final Change publication is unavailable');
-    }
-    return this.finalPublication.publish(request);
   }
 
   private async recordAction(

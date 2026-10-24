@@ -100,7 +100,6 @@ async function fixture() {
   await context.plugin(localBrowserContributor, { workspaceRoot: workspace });
   await context.plugin(EvidenceCoordinator, {
     workspaceRoot: workspace,
-    postMergeEvidenceProfile: 'post-merge',
   });
   const evidence = context.evidenceCoordinator;
   const runtime = new WorkflowRunCoordinator(

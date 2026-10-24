@@ -3,12 +3,12 @@ import { createHash } from 'node:crypto';
 import type { ArtifactRef } from '../evidence/types.js';
 import { deliveryPolicyDigest } from '../delivery/snapshot.js';
 import type { DeliveryIntentV3, DeliveryPolicy } from '../delivery/types.js';
+import { assertDeliveryIntentV3, normalizeDeliveryIntentV3 } from '../delivery/v3.js';
+import type { SkillUsageSnapshot } from '../skill/types.js';
 import type {
   ArchiveMergeRefreshResult,
   ArchivePublicationResult,
 } from '../delivery/service-v3.js';
-import { assertDeliveryIntentV3, normalizeDeliveryIntentV3 } from '../delivery/v3.js';
-import type { SkillUsageSnapshot } from '../skill/types.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import type { ChangeLifecycleDefinition, WorkDescriptor } from './transition.js';
 import { materializeLifecycleWorkBinding } from './work-definition.js';
@@ -74,29 +74,6 @@ export function createArchiveDeliveryInput(input: {
   return { ...stable, digest: sha256(stable) };
 }
 
-export function createArchiveDeliveryWork(facts: {
-  definition: ChangeLifecycleDefinition;
-  archive: ArchiveDeliveryInput;
-  actionSkill: SkillUsageSnapshot;
-  workspaceRepositoryId: string;
-  repositoryIds: readonly string[];
-}): WorkDescriptor {
-  const binding = materializeLifecycleWorkBinding({
-    definition: facts.definition,
-    kind: 'delivery.prepare',
-    actionSkill: facts.actionSkill,
-    augmentationSkills: [],
-    workspaceRepositoryId: facts.workspaceRepositoryId,
-    repositoryIds: facts.repositoryIds,
-  });
-  return {
-    schemaVersion: 1,
-    workId: `archive:delivery:${facts.archive.digest.slice('sha256:'.length, 19)}`,
-    ...binding,
-    inputDigest: facts.archive.digest,
-  };
-}
-
 export function createSpecificationCloseWork(facts: {
   definition: ChangeLifecycleDefinition;
   archive: ArchiveDeliveryInput;
@@ -148,34 +125,19 @@ export function createDeliveryPublishWork(facts: {
   };
 }
 
-export function createAwaitMergeWork(facts: {
+/** @deprecated Archive no longer waits for Business merge events. */
+export function createAwaitMergeWork(_facts: {
   definition: ChangeLifecycleDefinition;
   archive: ArchiveDeliveryInput;
   publication: ArchivePublicationResult;
   workspaceRepositoryId: string;
   repositoryIds: readonly string[];
 }): WorkDescriptor {
-  const binding = materializeLifecycleWorkBinding({
-    definition: facts.definition,
-    kind: 'delivery.await-merge',
-    augmentationSkills: [],
-    workspaceRepositoryId: facts.workspaceRepositoryId,
-    repositoryIds: facts.repositoryIds,
-  });
-  const inputDigest = sha256({
-    archiveInputDigest: facts.archive.digest,
-    publicationSnapshotDigest: facts.publication.snapshot.digest,
-    receipts: facts.publication.receipts,
-  });
-  return {
-    schemaVersion: 1,
-    workId: `archive:await-merge:${inputDigest.slice('sha256:'.length, 19)}`,
-    ...binding,
-    inputDigest,
-  };
+  throw new Error('Archive merge waiting was removed; accept a Publication Receipt instead');
 }
 
-export function createPostMergeVerifyWork(facts: {
+/** @deprecated Archive no longer runs a post-merge verification phase. */
+export function createPostMergeVerifyWork(_facts: {
   definition: ChangeLifecycleDefinition;
   archive: ArchiveDeliveryInput;
   refresh: ArchiveMergeRefreshResult;
@@ -183,31 +145,11 @@ export function createPostMergeVerifyWork(facts: {
   workspaceRepositoryId: string;
   repositoryIds: readonly string[];
 }): WorkDescriptor {
-  if (!facts.refresh.allMerged || facts.refresh.mergeEvidence.length === 0) {
-    throw new Error('Post-merge Verify Work requires the complete exact merge collection');
-  }
-  const binding = materializeLifecycleWorkBinding({
-    definition: facts.definition,
-    kind: 'delivery.verify-merged',
-    actionSkill: facts.actionSkill,
-    augmentationSkills: [],
-    workspaceRepositoryId: facts.workspaceRepositoryId,
-    repositoryIds: facts.repositoryIds,
-  });
-  const inputDigest = sha256({
-    archiveInputDigest: facts.archive.digest,
-    mergeEvidence: facts.refresh.mergeEvidence,
-    binding,
-  });
-  return {
-    schemaVersion: 1,
-    workId: `archive:verify-merged:${inputDigest.slice('sha256:'.length, 19)}`,
-    ...binding,
-    inputDigest,
-  };
+  throw new Error('Post-merge verification was removed');
 }
 
-export function createSpecificationArchiveWork(facts: {
+/** @deprecated Specification closure is performed before publication. */
+export function createSpecificationArchiveWork(_facts: {
   definition: ChangeLifecycleDefinition;
   archive: ArchiveDeliveryInput;
   postMergeBundleId: string;
@@ -215,23 +157,5 @@ export function createSpecificationArchiveWork(facts: {
   workspaceRepositoryId: string;
   repositoryIds: readonly string[];
 }): WorkDescriptor {
-  const binding = materializeLifecycleWorkBinding({
-    definition: facts.definition,
-    kind: 'specification.archive',
-    augmentationSkills: [],
-    workspaceRepositoryId: facts.workspaceRepositoryId,
-    repositoryIds: facts.repositoryIds,
-  });
-  const inputDigest = sha256({
-    archiveInputDigest: facts.archive.digest,
-    postMergeBundleId: facts.postMergeBundleId,
-    checkoutManifestDigest: facts.checkoutManifestDigest,
-    binding,
-  });
-  return {
-    schemaVersion: 1,
-    workId: `archive:specification:${inputDigest.slice('sha256:'.length, 19)}`,
-    ...binding,
-    inputDigest,
-  };
+  throw new Error('Post-merge specification archive was removed');
 }
