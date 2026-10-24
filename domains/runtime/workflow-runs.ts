@@ -33,6 +33,10 @@ import {
   type ChangeLifecycleSnapshot,
   type ChangeLifecycleState,
 } from '../change-lifecycle/transition.js';
+import {
+  compareLifecycleContributorSnapshots,
+  type LifecycleContributorSnapshot,
+} from '../change-lifecycle/contributors.js';
 
 export interface StartWorkflowRunOptions {
   workflow: WorkflowPackage;
@@ -154,6 +158,7 @@ export class WorkflowRunCoordinator {
     private readonly uuid: () => string = () => randomUUID(),
     private readonly workflowSource?: WorkflowSourcePort,
     private readonly evidenceGate?: EvidenceGatePort,
+    private readonly lifecycleContributors?: LifecycleContributorSnapshot,
   ) {}
 
   async start(options: StartWorkflowRunOptions): Promise<RuntimeResult<RunStatusView>> {
@@ -174,6 +179,9 @@ export class WorkflowRunCoordinator {
           changeLifecycle: lifecycleState(options.changeLifecycle),
         }
       : initial;
+    if (this.lifecycleContributors) {
+      state.lifecycleContributorSnapshot = structuredClone(this.lifecycleContributors);
+    }
     const started = event({
       eventId: stableEventId(state.runId, 'run.started'),
       sequence: 1,
@@ -258,6 +266,13 @@ export class WorkflowRunCoordinator {
         : null;
     const workflowDrift = await this.inspectWorkflowDrift(state);
     const compositionCompatibility = compareCompositions(state.composition, this.composition);
+    const lifecycleContributorCompatibility =
+      state.lifecycleContributorSnapshot && this.lifecycleContributors
+        ? compareLifecycleContributorSnapshots(
+            state.lifecycleContributorSnapshot,
+            this.lifecycleContributors,
+          )
+        : undefined;
     const latestVerifyObservation = [...trajectory]
       .reverse()
       .find(
@@ -309,6 +324,9 @@ export class WorkflowRunCoordinator {
       nextAction: state.changeLifecycle ? null : (pendingAction ?? preview?.action ?? null),
       workflowDrift,
       compositionCompatibility,
+      ...(lifecycleContributorCompatibility
+        ? { lifecycleContributorCompatibility }
+        : {}),
       ...(changeLifecycle ? { changeLifecycle } : {}),
       ...(preview?.reason ? { reason: preview.reason } : {}),
     };
@@ -771,6 +789,17 @@ export class WorkflowRunCoordinator {
         `Run ${state.runId} requires composition ${state.composition.compositionDigest}; current composition ${this.composition.compositionDigest} is migration_required`,
       );
     }
+    if (state.lifecycleContributorSnapshot && this.lifecycleContributors) {
+      const compatibility = compareLifecycleContributorSnapshots(
+        state.lifecycleContributorSnapshot,
+        this.lifecycleContributors,
+      );
+      if (compatibility.status === 'migration_required') {
+        throw new Error(
+          `Run ${state.runId} lifecycle Contributors are migration_required: ${compatibility.reason}`,
+        );
+      }
+    }
   }
 
   private async prepareWritableComposition(runId: string): Promise<void> {
@@ -779,16 +808,36 @@ export class WorkflowRunCoordinator {
       this.store.loadTrajectory(runId),
     ]);
     const compatibility = compareCompositions(state.composition, this.composition);
-    if (compatibility.status === 'same') return;
+    const contributorCompatibility =
+      state.lifecycleContributorSnapshot && this.lifecycleContributors
+        ? compareLifecycleContributorSnapshots(
+            state.lifecycleContributorSnapshot,
+            this.lifecycleContributors,
+          )
+        : undefined;
+    if (
+      compatibility.status === 'same' &&
+      (!contributorCompatibility || contributorCompatibility.status === 'same')
+    ) {
+      return;
+    }
     if (compatibility.status === 'migration_required') {
       throw new Error(
         `Run ${state.runId} requires composition ${state.composition.compositionDigest}; current composition ${this.composition.compositionDigest} is migration_required: ${compatibility.reason}`,
+      );
+    }
+    if (contributorCompatibility?.status === 'migration_required') {
+      throw new Error(
+        `Run ${state.runId} lifecycle Contributors are migration_required: ${contributorCompatibility.reason}`,
       );
     }
     const timestamp = this.clock().toISOString();
     const nextState: RunState = {
       ...state,
       composition: structuredClone(this.composition),
+      ...(this.lifecycleContributors
+        ? { lifecycleContributorSnapshot: structuredClone(this.lifecycleContributors) }
+        : {}),
       stateVersion: state.stateVersion + 1,
       updatedAt: timestamp,
     };
@@ -807,6 +856,9 @@ export class WorkflowRunCoordinator {
         previousCompositionDigest: state.composition.compositionDigest,
         compositionDigest: this.composition.compositionDigest,
         changedPluginIds: compatibility.changedPluginIds,
+        ...(contributorCompatibility
+          ? { changedContributorIds: contributorCompatibility.changedContributorIds }
+          : {}),
       },
     });
     await this.store.commit({

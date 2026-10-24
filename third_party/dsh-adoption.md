@@ -24,6 +24,8 @@ Repoctopus 的 Event Inbox 使用稳定的 Provider、Source 与 Delivery ID 摘
 
 没有采用 DSH Webhook Runtime。新版本会在规则卸载时 abort 并 drain 活动回调，但它仍把事件 fire-and-forget 地映射为 Agent Session，不含 Repoctopus 要求的持久收件、去重、租约、重试、Receipt 与跨进程恢复。即使连同 Agent、Session 和 Workspace 全部引入，也不能替代这些产品能力。
 
+Lifecycle Contributor 继续由 Cordis Service/Effect 组合，不从 DSH 未发布源码提取 Capability Resolver 或产品级 Agent/Session 容器。Work 方法仍通过已发布的 DSH Skill Registry 解析；Definition、Validator 与 Extension 是 Repoctopus 原生契约，并由架构检查禁止导入 `third_party/dsh` 或 DSH 应用源码。
+
 ## Desktop 基线
 
 固定提交中的 `apps/desktop` 与 `apps/desktop-host` 采用薄 Electron Shell、Node-mode Host 子进程和私有 IPC。Repoctopus 采用这条进程边界作为桌面故障隔离与生命周期基线，但不会引入 DSH Web Host、账户、Agent/Session/Workspace、完整运行时打包或自动更新系统。

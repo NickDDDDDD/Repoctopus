@@ -60,6 +60,7 @@ import type { WorkExecutorIdentity } from '../domains/action/types.js';
 import type { ArchivePublicationResult } from '../domains/delivery/service-v3.js';
 import type { EvidenceGateProjection } from '../domains/evidence/types.js';
 import type { MergeRequestIdentity } from '../domains/delivery/types.js';
+import { lifecycleContributorSnapshot } from '../domains/change-lifecycle/contributors.js';
 
 export interface StartChangeRunInput {
   workspaceId: string;
@@ -154,6 +155,9 @@ export class WorkflowRuns extends Service {
     'compositionIdentity',
     'delivery',
     'evidenceCoordinator',
+    'lifecycleDefinitions',
+    'lifecycleExtensions',
+    'lifecycleValidators',
     'project',
     'runStore',
     'skills',
@@ -172,6 +176,12 @@ export class WorkflowRuns extends Service {
     super(context, 'workflowRuns');
     this.workspaceRoot = config.workspaceRoot ?? process.cwd();
     this.operations = bindOperationOwnership(context, 'workflowRuns');
+    const contributorSnapshot = lifecycleContributorSnapshot([
+      ...context.lifecycleDefinitions.snapshot().contributors,
+      ...context.workDispatcher.snapshot().contributors,
+      ...context.lifecycleValidators.snapshot().contributors,
+      ...context.lifecycleExtensions.snapshot().contributors,
+    ]);
     this.coordinator = new WorkflowRunCoordinator(
       context.runStore,
       context.workflowTelemetry,
@@ -180,6 +190,7 @@ export class WorkflowRuns extends Service {
       undefined,
       context.workflowSource,
       context.get('evidenceCoordinator'),
+      contributorSnapshot,
     );
   }
 

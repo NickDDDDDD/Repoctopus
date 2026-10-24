@@ -100,9 +100,10 @@
       "targets": ["domains/change-lifecycle/**"],
       "upstream": [
         "domains/native-orchestration/workflow-definition.ts",
-        "domains/native-orchestration/transition.ts"
+        "domains/native-orchestration/transition.ts",
+        "packages/runtime-sdk/src/workflow-application.ts"
       ],
-      "rationale": "采用固定定义、纯转换和投影分离原则，为 Repoctopus 的 Workspace、多仓、OpenSpec 与持久 Run 建立唯一 Change 生命周期。"
+      "rationale": "采用固定定义、纯转换、Contributor 身份和投影分离原则，为 Repoctopus 的 Workspace、多仓、OpenSpec 与持久 Run 建立唯一 Change 生命周期；Cordis 是唯一组合容器。"
     },
     {
       "id": "protected-runtime-transitions",
@@ -507,6 +508,20 @@
       "pattern": "\\b(?:actionSkill|requiredSkill|augmentationSkills|methodProfile)\\s*:\\s*(?:input|options|request|commandInput)\\.",
       "allowed": [],
       "message": "Lifecycle methods must come from the immutable definition, not caller input"
+    },
+    {
+      "id": "no-general-capability-resolver",
+      "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
+      "pattern": "(?:class|interface|new)\\s+[A-Za-z0-9_]*CapabilityResolver\\b",
+      "allowed": [],
+      "message": "Lifecycle composition must use typed Contributor contracts instead of a second general Capability Resolver"
+    },
+    {
+      "id": "no-upstream-product-shell-import",
+      "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
+      "pattern": "from\\s+['\"][^'\"]*(?:third_party/(?:comet|dsh)|comet/(?:apps|cli|shell)|dsh/(?:apps|agent|session))",
+      "allowed": [],
+      "message": "Repoctopus must not import Comet product shells or unpublished DSH product source"
     }
   ],
   "protectedEvidenceFlow": {

@@ -6,6 +6,7 @@ import type {
   ChangeLifecycleState,
   RunStatus as ChangeLifecycleRunStatus,
 } from '../change-lifecycle/transition.js';
+import type { LifecycleContributorSnapshot } from '../change-lifecycle/contributors.js';
 
 export type RunStatus = ChangeLifecycleRunStatus;
 
@@ -24,6 +25,7 @@ export interface RunState {
   workflowDigest: string;
   workflowSource: string | null;
   composition: CompositionIdentitySnapshot;
+  lifecycleContributorSnapshot?: LifecycleContributorSnapshot;
   projectSnapshotDigest: string;
   trigger?: RunTriggerSnapshot;
   traceId: string;

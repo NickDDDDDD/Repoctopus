@@ -20,6 +20,7 @@ export interface LifecycleContributorIdentity {
   version: string;
   codeDigest: `sha256:${string}`;
   configDigest: `sha256:${string}`;
+  compatibleWith: readonly string[];
 }
 
 export interface LifecycleDefinitionContributor {
@@ -67,14 +68,24 @@ export interface LifecycleContributorSnapshot {
   digest: `sha256:${string}`;
 }
 
+export interface LifecycleContributorCompatibility {
+  status: 'same' | 'compatible' | 'migration_required';
+  changedContributorIds: string[];
+  reason: string;
+}
+
 export function lifecycleContributorIdentity<K extends LifecycleContributorKind>(
-  input: Omit<LifecycleContributorIdentity, 'schemaVersion' | 'kind'> & { kind: K },
+  input: Omit<
+    LifecycleContributorIdentity,
+    'schemaVersion' | 'kind' | 'compatibleWith'
+  > & { kind: K; compatibleWith?: readonly string[] },
 ): LifecycleContributorIdentity & { kind: K } {
   const identity = {
     schemaVersion: 1 as const,
     ...input,
     id: input.id.trim(),
     version: input.version.trim(),
+    compatibleWith: [...new Set(input.compatibleWith ?? [])].sort(),
   };
   if (
     !identity.id ||
@@ -85,6 +96,45 @@ export function lifecycleContributorIdentity<K extends LifecycleContributorKind>
     throw new Error(`Invalid ${identity.kind} lifecycle Contributor identity`);
   }
   return identity;
+}
+
+export function compareLifecycleContributorSnapshots(
+  previous: LifecycleContributorSnapshot,
+  current: LifecycleContributorSnapshot,
+): LifecycleContributorCompatibility {
+  if (previous.digest === current.digest) {
+    return { status: 'same', changedContributorIds: [], reason: 'Contributor digest is unchanged' };
+  }
+  const before = new Map(
+    previous.contributors.map((entry) => [`${entry.kind}:${entry.id}`, entry]),
+  );
+  const after = new Map(current.contributors.map((entry) => [`${entry.kind}:${entry.id}`, entry]));
+  const changedContributorIds = [...new Set([...before.keys(), ...after.keys()])]
+    .filter((key) => canonicalJson(before.get(key)) !== canonicalJson(after.get(key)))
+    .sort();
+  for (const key of changedContributorIds) {
+    const oldIdentity = before.get(key);
+    const newIdentity = after.get(key);
+    if (!oldIdentity || !newIdentity) {
+      return {
+        status: 'migration_required',
+        changedContributorIds,
+        reason: `Lifecycle Contributor ${key} was ${oldIdentity ? 'removed' : 'added'}`,
+      };
+    }
+    if (!newIdentity.compatibleWith.includes(oldIdentity.version)) {
+      return {
+        status: 'migration_required',
+        changedContributorIds,
+        reason: `Lifecycle Contributor ${key} changed without a compatibility declaration`,
+      };
+    }
+  }
+  return {
+    status: 'compatible',
+    changedContributorIds,
+    reason: 'All changed lifecycle Contributors declare backward compatibility',
+  };
 }
 
 export function lifecycleContributorSnapshot(
