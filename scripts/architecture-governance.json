@@ -483,8 +483,22 @@
       "id": "independent-post-merge-run-creation",
       "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
       "pattern": "\\bpostMergeRun(?:Options|Id)\\s*\\(",
-      "allowed": ["domains/post-merge/run.ts", "services/post-merge-coordinator.ts"],
-      "message": "Only the registered legacy compatibility path may create a Post-merge Run until Archive migration removes it"
+      "allowed": ["domains/post-merge/run.ts"],
+      "message": "Production callers must never create an independent Post-merge Run; Archive belongs to the original Change Run"
+    },
+    {
+      "id": "post-merge-coordinator-run-write",
+      "targets": ["services/post-merge-coordinator.ts"],
+      "pattern": "workflowRuns\\.(?:start|startOrResume|next|record)\\s*\\(",
+      "allowed": [],
+      "message": "The legacy PostMergeCoordinator may observe platform facts but must not create or advance Runs"
+    },
+    {
+      "id": "legacy-delivery-command-write",
+      "targets": ["plugins/command/delivery-contributor.ts"],
+      "pattern": "context\\.delivery\\.(?:checkpoint|prepare|decide|publish|refresh)\\s*\\(",
+      "allowed": [],
+      "message": "Legacy public Delivery commands must return a migration diagnostic instead of mutating Delivery state"
     },
     {
       "id": "caller-selected-lifecycle-method",

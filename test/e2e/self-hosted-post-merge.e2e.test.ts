@@ -1,7 +1,7 @@
 import { execFile, spawn, type ChildProcessWithoutNullStreams } from 'node:child_process';
 import { createHmac } from 'node:crypto';
 import { once } from 'node:events';
-import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
@@ -579,7 +579,7 @@ async function waitForCompletion(input: {
   throw new Error(`Post-merge event did not complete: ${JSON.stringify(last)}\n${input.output()}`);
 }
 
-it('recovers a signed multi-repository Post-merge run and publishes the Change MR branch', async () => {
+it('recovers a signed merge fact without starting a legacy Post-merge Run', async () => {
   const setup = await fixture();
   const secret = 'self-hosted-e2e-secret';
   const first = startRunner({
@@ -628,47 +628,38 @@ it('recovers a signed multi-repository Post-merge run and publishes the Change M
     environment: environment(setup.mockStateFile, secret, setup.storeEnvironment),
     output: restarted.output,
   });
-  expect(completed).toMatchObject({ status: 'completed', diagnostic: 'post-merge-completed' });
-
-  const runIds = (await readdir(path.join(setup.workspace, '.repoctopus', 'runs'))).filter((id) =>
-    id.startsWith('post-merge-'),
-  );
-  expect(runIds).toHaveLength(1);
-  const run = await runCli<{ state: { status: string; acceptedEvidenceBundleIds: string[] } }>({
-    packageRoot: productRoot,
-    cwd: setup.workspace,
-    args: ['run', 'status', '--workspace', setup.workspace, '--run', runIds[0]!],
-    environment: environment(setup.mockStateFile, secret, setup.storeEnvironment),
+  expect(completed).toMatchObject({
+    status: 'completed',
+    diagnostic: 'change-lifecycle-run-required',
   });
-  expect(run.result?.state.status).toBe('completed');
-  expect(run.result?.state.acceptedEvidenceBundleIds).toHaveLength(1);
-
-  const archiveRoot = path.join(setup.workspace, 'openspec', 'changes', 'archive');
-  expect((await readdir(archiveRoot)).some((entry) => entry.endsWith(`-${setup.changeId}`))).toBe(
-    true,
-  );
   expect(
     await readFile(
       path.join(setup.workspace, 'openspec', 'specs', 'post-merge-automation', 'spec.md'),
       'utf8',
     ),
-  ).toContain('Independent-process closure');
+  ).not.toContain('Independent-process closure');
+  await expect(
+    readFile(
+      path.join(setup.workspace, 'openspec', 'changes', setup.changeId, 'proposal.md'),
+      'utf8',
+    ),
+  ).resolves.toContain(setup.changeId);
   const head = await git(setup.workspace, ['rev-parse', 'HEAD']);
   const remoteHead = await git(setup.workspaceRepository.remote, [
     'rev-parse',
     `refs/heads/${setup.sourceBranch}`,
   ]);
-  expect(head).not.toBe(setup.baselineHead);
-  expect(remoteHead).toBe(head);
+  expect(head).toBe(setup.baselineHead);
+  expect(remoteHead).toBe(setup.baselineHead);
   expect(await git(setup.workspace, ['status', '--porcelain'])).toBe('');
 
   const mockState = JSON.parse(await readFile(setup.mockStateFile, 'utf8')) as {
     updates: number;
     mergeRequests: MergeRequestStatus[];
   };
-  expect(mockState.updates).toBe(1);
+  expect(mockState.updates).toBe(0);
   expect(mockState.mergeRequests.find((item) => item.repositoryId === 'workspace')).toMatchObject({
-    title: 'Closed self-hosted specification',
-    body: 'Post-merge verification completed.',
+    title: 'Self-hosted development',
+    body: 'Awaiting post-merge closure.',
   });
 }, 60_000);

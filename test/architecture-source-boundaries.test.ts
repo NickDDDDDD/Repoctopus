@@ -249,15 +249,11 @@ describe('architecture source boundaries', () => {
     ).toEqual([expect.stringContaining('services/rogue-run-writer.ts: direct-run-state-write')]);
   });
 
-  it('contains independent Post-merge Run creation to the legacy compatibility path', () => {
+  it('rejects every production caller that creates an independent Post-merge Run', () => {
     const allowed = [
       {
         path: 'domains/post-merge/run.ts',
         contents: 'export function postMergeRunOptions(input) { return input; }',
-      },
-      {
-        path: 'services/post-merge-coordinator.ts',
-        contents: 'export function start(input) { return postMergeRunOptions(input); }',
       },
     ];
 
@@ -274,6 +270,29 @@ describe('architecture source boundaries', () => {
         'plugins/events/rogue-post-merge.ts: independent-post-merge-run-creation',
       ),
     ]);
+  });
+
+  it('fences legacy PostMergeCoordinator and Delivery command writes', () => {
+    expect(
+      evaluateSourceBoundaries(
+        [
+          {
+            path: 'services/post-merge-coordinator.ts',
+            contents: 'return context.workflowRuns.startOrResume(input);',
+          },
+          {
+            path: 'plugins/command/delivery-contributor.ts',
+            contents: 'return context.delivery.publish(input);',
+          },
+        ],
+        rules('post-merge-coordinator-run-write', 'legacy-delivery-command-write'),
+      ),
+    ).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining('services/post-merge-coordinator.ts'),
+        expect.stringContaining('plugins/command/delivery-contributor.ts'),
+      ]),
+    );
   });
 
   it('rejects caller-selected lifecycle Skills and Method Profiles', () => {

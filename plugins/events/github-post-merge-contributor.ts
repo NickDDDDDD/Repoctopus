@@ -5,7 +5,7 @@ import type { PostMergeCoordinator } from '../../services/post-merge-coordinator
 import type { PlatformEventProcessor } from '../../services/platform-events.js';
 
 export function createGitHubPostMergeProcessor(
-  coordinator: Pick<PostMergeCoordinator, 'execute'>,
+  coordinator: Pick<PostMergeCoordinator, 'observe'>,
 ): PlatformEventProcessor {
   return {
     id: 'github-post-merge-coordinator',
@@ -19,13 +19,13 @@ export function createGitHubPostMergeProcessor(
         return { result: 'dead_letter', diagnostic: 'github-pull-request-payload-invalid' };
       }
       try {
-        const outcome = await coordinator.execute(reference, signal);
+        const outcome = await coordinator.observe(reference, signal);
         if (outcome.status === 'ambiguous') {
           return { result: 'dead_letter', diagnostic: outcome.diagnostic };
         }
         return { result: 'completed', diagnostic: outcome.diagnostic };
       } catch {
-        return { result: 'retry', diagnostic: 'post-merge-execution-failed' };
+        return { result: 'retry', diagnostic: 'post-merge-fact-observation-failed' };
       }
     },
   };
