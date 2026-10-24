@@ -18,6 +18,7 @@ import builtinLifecycleExtensions from './lifecycle/builtin-extension-contributo
 import projectProbeContributor from './command/project-probe-contributor.js';
 import evidenceContributor from './command/evidence-contributor.js';
 import workflowRunContributor from './command/workflow-run-contributor.js';
+import archiveContributor from './command/archive-contributor.js';
 import changeLifecycleMigrationContributor from './command/change-lifecycle-migration-contributor.js';
 import deliveryContributor from './command/delivery-contributor.js';
 import projectOnboardingContributor from './command/project-onboarding-contributor.js';
@@ -712,11 +713,7 @@ const definitions: readonly BuiltinDefinition[] = [
       stateSchemas: {},
     },
     plugin: WorkDispatcher,
-    sourceFiles: [
-      'domains/action/types.ts',
-      'services/action.ts',
-      'services/work-dispatcher.ts',
-    ],
+    sourceFiles: ['domains/action/types.ts', 'services/action.ts', 'services/work-dispatcher.ts'],
   },
   {
     descriptor: {
@@ -732,10 +729,7 @@ const definitions: readonly BuiltinDefinition[] = [
       stateSchemas: {},
     },
     plugin: LifecycleDefinitions,
-    sourceFiles: [
-      'domains/change-lifecycle/contributors.ts',
-      'services/lifecycle-contributors.ts',
-    ],
+    sourceFiles: ['domains/change-lifecycle/contributors.ts', 'services/lifecycle-contributors.ts'],
   },
   {
     descriptor: {
@@ -770,10 +764,7 @@ const definitions: readonly BuiltinDefinition[] = [
       stateSchemas: {},
     },
     plugin: LifecycleValidators,
-    sourceFiles: [
-      'domains/change-lifecycle/contributors.ts',
-      'services/lifecycle-contributors.ts',
-    ],
+    sourceFiles: ['domains/change-lifecycle/contributors.ts', 'services/lifecycle-contributors.ts'],
   },
   {
     descriptor: {
@@ -808,10 +799,7 @@ const definitions: readonly BuiltinDefinition[] = [
       stateSchemas: {},
     },
     plugin: LifecycleExtensions,
-    sourceFiles: [
-      'domains/change-lifecycle/contributors.ts',
-      'services/lifecycle-contributors.ts',
-    ],
+    sourceFiles: ['domains/change-lifecycle/contributors.ts', 'services/lifecycle-contributors.ts'],
   },
   {
     descriptor: {
@@ -841,19 +829,12 @@ const definitions: readonly BuiltinDefinition[] = [
       kind: 'contributor',
       source: 'builtin',
       compositions: ['project'],
-      authorities: [
-        'action-adapter:git',
-        'action-adapter:process',
-        'action-adapter:specification',
-      ],
+      authorities: ['action-adapter:git', 'action-adapter:process', 'action-adapter:specification'],
       permissions: [],
       stateSchemas: {},
     },
     plugin: runtimeWorkContributors,
-    sourceFiles: [
-      'plugins/action/runtime-work-contributors.ts',
-      'services/work-dispatcher.ts',
-    ],
+    sourceFiles: ['plugins/action/runtime-work-contributors.ts', 'services/work-dispatcher.ts'],
   },
   {
     descriptor: {
@@ -869,10 +850,7 @@ const definitions: readonly BuiltinDefinition[] = [
       stateSchemas: {},
     },
     plugin: manualActionContributor,
-    sourceFiles: [
-      'plugins/action/manual-action-contributor.ts',
-      'services/work-dispatcher.ts',
-    ],
+    sourceFiles: ['plugins/action/manual-action-contributor.ts', 'services/work-dispatcher.ts'],
   },
   {
     descriptor: {
@@ -1079,6 +1057,22 @@ const definitions: readonly BuiltinDefinition[] = [
     },
     plugin: workflowRunContributor,
     sourceFiles: ['plugins/command/workflow-run-contributor.ts'],
+  },
+  {
+    descriptor: {
+      id: 'archive-command',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'contributor',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: [],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: archiveContributor,
+    sourceFiles: ['plugins/command/archive-contributor.ts'],
   },
   {
     descriptor: {

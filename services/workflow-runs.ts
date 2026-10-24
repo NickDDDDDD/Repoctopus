@@ -45,6 +45,7 @@ import type { SpecificationTask } from '../domains/specification/types.js';
 import type {
   ChangeLifecycleState,
   ArchiveMergeRefreshSource,
+  ChangeRunProjection,
   WorkDescriptor,
 } from '../domains/change-lifecycle/transition.js';
 import {
@@ -320,6 +321,12 @@ export class WorkflowRuns extends Service {
     }));
   }
 
+  async changeStatus(runId: string, signal?: AbortSignal): Promise<ChangeRunProjection> {
+    const status = await this.status(runId, signal);
+    if (!status.changeLifecycle) throw new Error(`Run is not a Change lifecycle Run: ${runId}`);
+    return status.changeLifecycle;
+  }
+
   decideChange(
     input: DecideChangeRunInput,
     signal?: AbortSignal,
@@ -418,9 +425,7 @@ export class WorkflowRuns extends Service {
       remote: string;
       targetBranch: string;
     };
-    const projectSnapshot = await this.ctx.runStore.loadProjectSnapshot(
-      lifecycle.identity.runId,
-    );
+    const projectSnapshot = await this.ctx.runStore.loadProjectSnapshot(lifecycle.identity.runId);
     const workspaceRepository = projectSnapshot.repositories.find(
       (repository) => repository.id === targetBranch.repositoryId,
     );
@@ -508,9 +513,7 @@ export class WorkflowRuns extends Service {
         if (!['design', 'build', 'verify'].includes(lifecycle.phase)) {
           throw new Error('Change Run next Work is not available before lifecycle Work dispatch');
         }
-        let build:
-          | { tasks: SpecificationTask[]; work: WorkDescriptor }
-          | undefined;
+        let build: { tasks: SpecificationTask[]; work: WorkDescriptor } | undefined;
         const evaluated = await this.assessChangeDesign(current, lifecycle, signal);
         let assessment = evaluated.assessment;
         const { projectSnapshot, projectConfigDigest, workspaceRepositoryId } = evaluated;
@@ -520,10 +523,7 @@ export class WorkflowRuns extends Service {
             (`sha256:${createHash('sha256')
               .update(canonicalJson({ reason: assessment.reason }))
               .digest('hex')}` as const);
-          if (
-            assessment.status !== 'approved' ||
-            observedDigest !== lifecycle.planningDigest
-          ) {
+          if (assessment.status !== 'approved' || observedDigest !== lifecycle.planningDigest) {
             return this.coordinator.acceptChangeObservation(runId, {
               kind: 'planning-semantic-drift',
               reason: assessment.reason,
@@ -663,10 +663,7 @@ export class WorkflowRuns extends Service {
           try {
             const approvalHash = assessment.approval?.decision?.approvalHash;
             if (!approvalHash) throw new Error('Approved Design has no approval hash');
-            const taskSet = await this.ctx.specification.tasks(
-              lifecycle.identity.changeId,
-              signal,
-            );
+            const taskSet = await this.ctx.specification.tasks(lifecycle.identity.changeId, signal);
             const skills = await this.resolveLifecycleWorkSkills('task.implement', signal);
             build = createInitialBuildWork({
               runId,
@@ -687,8 +684,7 @@ export class WorkflowRuns extends Service {
           } catch (error) {
             assessment = {
               status: 'blocked',
-              reason:
-                error instanceof Error ? error.message : 'Build Task planning failed',
+              reason: error instanceof Error ? error.message : 'Build Task planning failed',
               evidenceDigests: assessment.evidenceDigests,
               validation: assessment.validation,
               ...(assessment.snapshot ? { snapshot: assessment.snapshot } : {}),
@@ -810,7 +806,8 @@ export class WorkflowRuns extends Service {
         if (!accepted) throw new Error(`Run has no active Build Task Work: ${input.runId}`);
         const observation = accepted.data.observation as { taskId?: unknown };
         const task = lifecycle.tasks?.find(
-          (candidate) => candidate.taskId === observation.taskId && candidate.status === 'completed',
+          (candidate) =>
+            candidate.taskId === observation.taskId && candidate.status === 'completed',
         );
         if (!task) throw new Error('Accepted Build Task completion has no Task projection');
         return {

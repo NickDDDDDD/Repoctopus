@@ -32,6 +32,7 @@
         "plugins/command/project-onboarding-contributor.ts",
         "plugins/command/project-probe-contributor.ts",
         "plugins/command/workflow-run-contributor.ts",
+        "plugins/command/archive-contributor.ts",
         "services/**",
         "platform/http/**"
       ],

@@ -49,6 +49,7 @@ import type { PostMergeReconciliationResult } from '../../services/post-merge-co
 import type { SpecificationApprovalState } from '../../domains/specification/types.js';
 import { inspectPublishedChangeBranch } from '../../platform/git/change-branch.js';
 import { reviewSpecificationApproval } from './specification-approval-decision.js';
+import { changeProjection, renderChangeProjection } from './change-run-view.js';
 
 const DIST_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PRODUCT_ROOT =
@@ -61,11 +62,22 @@ function defaultWorkflowPath(): string {
 }
 
 function nextActions(status: RunStatusView): string[] {
-  if (
-    status.changeLifecycle?.phase === 'verify' &&
-    status.changeLifecycle.currentWork?.kind === 'evidence.verify'
-  ) {
-    return ['repoctopus run verify --run <run-id>'];
+  const lifecycle = status.changeLifecycle;
+  if (lifecycle) {
+    const work = lifecycle.currentWork?.kind;
+    if (lifecycle.phase === 'design' && lifecycle.status === 'waiting') {
+      return ['repoctopus run decide --run <run-id>'];
+    }
+    if (work === 'evidence.verify') return ['repoctopus run verify --run <run-id>'];
+    if (work === 'delivery.prepare') return ['repoctopus run archive-publish --run <run-id>'];
+    if (work === 'delivery.await-merge') return ['repoctopus run archive-refresh --run <run-id>'];
+    if (work === 'delivery.verify-merged') {
+      return ['repoctopus run archive-verify --run <run-id>'];
+    }
+    if (work === 'specification.archive') {
+      return ['repoctopus run archive-complete --run <run-id>'];
+    }
+    return lifecycle.nextActions.length > 0 ? ['repoctopus run next --run <run-id>'] : [];
   }
   if (status.state.status === 'running') return ['repoctopus run next --run <run-id>'];
   if (status.state.status === 'waiting') {
@@ -975,10 +987,10 @@ async function runVerify(parsed: ParsedArguments): Promise<CliEnvelope<unknown>>
   const attemptId = stringFlag(parsed, 'attempt');
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
-    const result = await app.context.commandRouter.execute(
-      'run.work.verify',
-      { runId, ...(attemptId ? { attemptId } : {}) },
-    );
+    const result = await app.context.commandRouter.execute('run.work.verify', {
+      runId,
+      ...(attemptId ? { attemptId } : {}),
+    });
     const value = result as RuntimeResult<{ run: RunStatusView }>;
     return successEnvelope({
       command: 'run verify',
@@ -987,6 +999,107 @@ async function runVerify(parsed: ParsedArguments): Promise<CliEnvelope<unknown>>
       diagnostics: value.diagnostics,
       nextActions: nextActions(value.value.run),
     });
+  } finally {
+    await app.close();
+  }
+}
+
+async function archiveRuntimeInputs(parsed: ParsedArguments) {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const policyFile = path.resolve(
+    stringFlag(parsed, 'policy', { fallback: path.join(workspace, 'repoctopus.yaml') })!,
+  );
+  const [config, policy] = await Promise.all([
+    loadProjectConfig(workspace),
+    loadDeliveryPolicy(policyFile),
+  ]);
+  return { workspace, config, policy };
+}
+
+async function runArchivePrepare(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const { workspace, intent, policy } = await deliveryInputs(parsed);
+  const runId = stringFlag(parsed, 'run', { required: true })!;
+  const attemptId = stringFlag(parsed, 'attempt', { required: true })!;
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute('run.archive.prepare', {
+      runId,
+      attemptId,
+      intent,
+      policy,
+    });
+    return successEnvelope({ command: 'run archive-prepare', runId, result });
+  } finally {
+    await app.close();
+  }
+}
+
+async function runArchivePublish(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const { workspace, config, policy } = await archiveRuntimeInputs(parsed);
+  const runId = stringFlag(parsed, 'run', { required: true })!;
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const project = await deliveryProject(app, { workspace, config });
+    const result = await app.context.commandRouter.execute('run.archive.publish', {
+      runId,
+      project,
+      policy,
+      executor: {
+        actorId: userInfo().username,
+        runnerId: `cli:${process.pid}`,
+        source: 'cli',
+        authenticated: true,
+      },
+    });
+    return successEnvelope({ command: 'run archive-publish', runId, result });
+  } finally {
+    await app.close();
+  }
+}
+
+async function runArchiveRefresh(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const { workspace, policy } = await archiveRuntimeInputs(parsed);
+  const runId = stringFlag(parsed, 'run', { required: true })!;
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute('run.archive.refresh', {
+      runId,
+      policy,
+      source: 'active-check',
+    });
+    return successEnvelope({ command: 'run archive-refresh', runId, result });
+  } finally {
+    await app.close();
+  }
+}
+
+async function runArchiveVerify(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const { workspace, config } = await archiveRuntimeInputs(parsed);
+  const runId = stringFlag(parsed, 'run', { required: true })!;
+  const profileId = stringFlag(parsed, 'profile', { fallback: 'verify' })!;
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute('run.archive.verify-merged', {
+      runId,
+      profileId,
+      sources: config.repositories.map((repository) => ({
+        repositoryId: repository.id,
+        path: repository.resolvedPath,
+      })),
+    });
+    return successEnvelope({ command: 'run archive-verify', runId, result });
+  } finally {
+    await app.close();
+  }
+}
+
+async function runArchiveComplete(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const runId = stringFlag(parsed, 'run', { required: true })!;
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute('run.archive.complete', { runId });
+    return successEnvelope({ command: 'run archive-complete', runId, result });
   } finally {
     await app.close();
   }
@@ -1259,6 +1372,11 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   if (command === 'run status') return runStatus(parsed);
   if (command === 'run next') return runNext(parsed);
   if (command === 'run verify') return runVerify(parsed);
+  if (command === 'run archive-prepare') return runArchivePrepare(parsed);
+  if (command === 'run archive-publish') return runArchivePublish(parsed);
+  if (command === 'run archive-refresh') return runArchiveRefresh(parsed);
+  if (command === 'run archive-verify') return runArchiveVerify(parsed);
+  if (command === 'run archive-complete') return runArchiveComplete(parsed);
   if (command === 'run decide') return runDecide(parsed);
   if (command === 'run record') return runRecord(parsed);
   if (command === 'run resume') return runResume(parsed);
@@ -1278,17 +1396,19 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   if (command === 'browser doctor') return browserDoctor(parsed);
   if (command === 'browser install') return browserInstall(parsed);
   throw new Error(
-    'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decide|record|resume> | runner start | post-merge reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | event <status|replay|retry> | approval review | browser <doctor|install> | doctor',
+    'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decide|record|resume|archive-prepare|archive-publish|archive-refresh|archive-verify|archive-complete> | runner start | post-merge reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | event <status|replay|retry> | approval review | browser <doctor|install> | doctor',
   );
 }
 
-function renderHuman(envelope: CliEnvelope<unknown>): string {
+export function renderHuman(envelope: CliEnvelope<unknown>): string {
   const lines = [envelope.ok ? `Repoctopus ${envelope.command}` : `Repoctopus error`];
   if (envelope.runId) lines.push(`Run: ${envelope.runId}`);
   for (const diagnostic of envelope.diagnostics) {
     lines.push(`${diagnostic.level.toUpperCase()} ${diagnostic.code}: ${diagnostic.message}`);
   }
-  if (envelope.result) lines.push(JSON.stringify(envelope.result, null, 2));
+  const projection = changeProjection(envelope.result);
+  if (projection) lines.push(...renderChangeProjection(projection));
+  else if (envelope.result) lines.push(JSON.stringify(envelope.result, null, 2));
   if (envelope.nextActions.length > 0) {
     lines.push('Next actions:', ...envelope.nextActions.map((action) => `- ${action}`));
   }

@@ -281,6 +281,7 @@ function postMergeSelections(
         publication: postMerge.publication,
       },
     ),
+    { id: 'archive-command' },
     { id: 'post-merge-command' },
   ];
 }

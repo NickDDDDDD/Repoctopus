@@ -125,6 +125,65 @@ function lifecycleNextActions(snapshot: ChangeLifecycleSnapshot) {
       },
     ];
   }
+  if (snapshot.phase === 'build') {
+    return [
+      {
+        id: 'build.prepare-verification',
+        kind: 'work' as const,
+        label: 'Prepare immutable verification input',
+      },
+    ];
+  }
+  if (snapshot.phase === 'verify' && snapshot.currentWork?.kind === 'evidence.verify') {
+    return [
+      {
+        id: snapshot.currentWork.workId,
+        kind: 'work' as const,
+        label: 'Run the required Evidence profile',
+      },
+    ];
+  }
+  if (snapshot.phase === 'archive' && snapshot.currentWork?.kind === 'delivery.prepare') {
+    return [
+      {
+        id: snapshot.currentWork.workId,
+        kind: 'work' as const,
+        label: 'Publish Business deliveries',
+      },
+    ];
+  }
+  if (snapshot.phase === 'archive' && snapshot.currentWork?.kind === 'delivery.await-merge') {
+    return [
+      {
+        id: snapshot.currentWork.workId,
+        kind: 'wait' as const,
+        label: 'Refresh Business merge facts',
+      },
+    ];
+  }
+  if (snapshot.phase === 'archive' && snapshot.currentWork?.kind === 'delivery.verify-merged') {
+    return [
+      {
+        id: snapshot.currentWork.workId,
+        kind: 'work' as const,
+        label: 'Verify exact merged commits',
+      },
+    ];
+  }
+  if (snapshot.phase === 'archive' && snapshot.currentWork?.kind === 'specification.archive') {
+    return [
+      {
+        id: snapshot.currentWork.workId,
+        kind: 'work' as const,
+        label: 'Close Specification and publish final Change MR',
+      },
+    ];
+  }
+  if (snapshot.phase === 'archive' && snapshot.currentWork === null) {
+    return [
+      { id: 'archive.prepare', kind: 'work' as const, label: 'Prepare Archive Delivery input' },
+    ];
+  }
   return [];
 }
 
@@ -279,9 +338,7 @@ export class WorkflowRunCoordinator {
         (entry) =>
           entry.data.observationKind === 'verify-gate-satisfied' ||
           entry.data.observationKind === 'verify-gate-rejected',
-      )?.data.observation as
-      | { kind?: string; attemptId?: string }
-      | undefined;
+      )?.data.observation as { kind?: string; attemptId?: string } | undefined;
     const changeLifecycle = state.changeLifecycle
       ? projectChangeRun(
           { ...structuredClone(state.changeLifecycle), status: state.status },
@@ -324,9 +381,7 @@ export class WorkflowRunCoordinator {
       nextAction: state.changeLifecycle ? null : (pendingAction ?? preview?.action ?? null),
       workflowDrift,
       compositionCompatibility,
-      ...(lifecycleContributorCompatibility
-        ? { lifecycleContributorCompatibility }
-        : {}),
+      ...(lifecycleContributorCompatibility ? { lifecycleContributorCompatibility } : {}),
       ...(changeLifecycle ? { changeLifecycle } : {}),
       ...(preview?.reason ? { reason: preview.reason } : {}),
     };
@@ -402,9 +457,8 @@ export class WorkflowRunCoordinator {
         status,
         changeLifecycle,
         acceptedEvidenceBundleIds:
-          (observation.kind === 'verify-gate-satisfied' ||
-            (observation.kind === 'archive-post-merge-verified' &&
-              observation.result === 'satisfied'))
+          observation.kind === 'verify-gate-satisfied' ||
+          (observation.kind === 'archive-post-merge-verified' && observation.result === 'satisfied')
             ? [...new Set([...state.acceptedEvidenceBundleIds, observation.bundleId])]
             : state.acceptedEvidenceBundleIds,
         stateVersion: state.stateVersion + 1,

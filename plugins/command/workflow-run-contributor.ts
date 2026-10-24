@@ -4,7 +4,6 @@ import type { ActionOutcome } from '../../domains/engine/types.js';
 import type { ClaimedActionOutcome, WorkClaimRequest } from '../../domains/action/types.js';
 import type { ProjectSnapshot } from '../../domains/project/types.js';
 import type { WorkflowPackage } from '../../domains/workflow-contract/types.js';
-import type { PostMergeRepositorySource } from '../../domains/post-merge/checkout.js';
 import type {
   DecideChangeRunInput,
   StartChangeRunInput,
@@ -55,46 +54,17 @@ const plugin = ((context: Context) => {
       context.commandRouter.register({
         name: 'run.archive.prepare',
         execute: ({ input, signal }) =>
-          context.workflowRuns.prepareArchiveDelivery(
-            input as PrepareArchiveDeliveryInput,
-            signal,
-          ),
+          context.workflowRuns.prepareArchiveDelivery(input as PrepareArchiveDeliveryInput, signal),
       }),
       context.commandRouter.register({
         name: 'run.archive.publish',
         execute: ({ input, signal }) =>
-          context.workflowRuns.executeArchiveDelivery(
-            input as ExecuteArchiveDeliveryInput,
-            signal,
-          ),
+          context.workflowRuns.executeArchiveDelivery(input as ExecuteArchiveDeliveryInput, signal),
       }),
       context.commandRouter.register({
         name: 'run.archive.refresh',
         execute: ({ input, signal }) =>
-          context.workflowRuns.refreshArchiveMerges(
-            input as RefreshArchiveMergesInput,
-            signal,
-          ),
-      }),
-      context.commandRouter.register({
-        name: 'run.archive.verify-merged',
-        execute: ({ input, signal }) =>
-          context.postMergeActions.verifyChangeRunMergedCode(
-            input as {
-              runId: string;
-              profileId: string;
-              sources: PostMergeRepositorySource[];
-            },
-            signal,
-          ),
-      }),
-      context.commandRouter.register({
-        name: 'run.archive.complete',
-        execute: ({ input, signal }) =>
-          context.postMergeActions.completeChangeRunArchive(
-            (input as { runId: string }).runId,
-            signal,
-          ),
+          context.workflowRuns.refreshArchiveMerges(input as RefreshArchiveMergesInput, signal),
       }),
       context.commandRouter.register({
         name: 'run.start',
@@ -114,6 +84,11 @@ const plugin = ((context: Context) => {
         name: 'run.status',
         execute: ({ input, signal }) =>
           context.workflowRuns.status((input as { runId: string }).runId, signal),
+      }),
+      context.commandRouter.register({
+        name: 'run.change.status',
+        execute: ({ input, signal }) =>
+          context.workflowRuns.changeStatus((input as { runId: string }).runId, signal),
       }),
       context.commandRouter.register({
         name: 'run.next',
@@ -144,7 +119,7 @@ const plugin = ((context: Context) => {
 }) as Plugin;
 
 Object.assign(plugin, {
-  inject: ['commandRouter', 'postMergeActions', 'runStore', 'workDispatcher', 'workflowRuns'],
+  inject: ['commandRouter', 'runStore', 'workDispatcher', 'workflowRuns'],
 });
 
 export default plugin;
