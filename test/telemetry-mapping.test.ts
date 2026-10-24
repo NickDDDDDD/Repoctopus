@@ -1,13 +1,16 @@
+import { readFileSync } from 'node:fs';
+
 import { describe, expect, it } from 'vitest';
 
+import { createChangeLifecycleSnapshot } from '../domains/change-lifecycle/definition.js';
 import { startRun } from '../domains/engine/loop.js';
 import type { TelemetryBatch } from '../domains/runtime/types.js';
 import type { TrajectoryEvent } from '../domains/trajectory/types.js';
 import {
-  safeEventAttributes,
-  workflowEventMetricAttributes,
-  workflowStepMetricAttributes,
-} from '../platform/telemetry/opentelemetry/mapping.js';
+  acceptedChangeLifecycleTelemetry,
+  projectChangeLifecycleTelemetry,
+} from '../platform/telemetry/change-lifecycle-mapping.js';
+import { safeEventAttributes } from '../platform/telemetry/opentelemetry/mapping.js';
 import { compositionFixture, projectFixture, workflowFixture } from './helpers/fixtures.js';
 
 describe('telemetry mapping', () => {
@@ -60,65 +63,65 @@ describe('telemetry mapping', () => {
     expect(attributes['repoctopus.action.type']).toBe('checkpoint');
     expect(attributes['repoctopus.composition.digest']).toBe(run.composition.compositionDigest);
     expect(attributes['repoctopus.event.actionId']).toBe('action-1');
-    expect(JSON.stringify(attributes)).not.toContain('C:/secret');
-    expect(JSON.stringify(attributes)).not.toContain('source code');
-    expect(JSON.stringify(attributes)).not.toContain('ghp_');
-    expect(JSON.stringify(attributes)).not.toContain('session=secret');
-    expect(JSON.stringify(attributes)).not.toContain('DATABASE_PASSWORD');
-    expect(JSON.stringify(attributes)).not.toContain('data:image');
-    expect(JSON.stringify(attributes)).not.toContain('private learning notes');
-    expect(JSON.stringify(attributes)).not.toContain('.repoctopus/learning');
-    expect(JSON.stringify(attributes)).not.toContain('matt-builtins');
+    expect(JSON.stringify(attributes)).not.toMatch(
+      /C:\/secret|source code|ghp_|session=secret|DATABASE_PASSWORD|data:image|private learning notes|\.repoctopus\/learning|matt-builtins/u,
+    );
   });
 
-  it.each([
-    ['post-merge.checkout-exact-commits', 'checkout-manifest'],
-    ['post-merge.close-specification', 'specification-closure'],
-    ['post-merge.audit-paths', 'path-audit'],
-    ['post-merge.publish-change', 'publication'],
-  ])('correlates %s with stable Post-merge and Evidence receipts', (ref, receiptKind) => {
+  it('projects one accepted Change transition identically for Desktop and remote OTLP', () => {
     const workflow = workflowFixture();
     const project = projectFixture();
-    const run = startRun({
+    const baseRun = startRun({
       workflow,
-      runId: 'post-merge-run',
+      runId: 'run-change-telemetry',
       projectSnapshotDigest: project.digest,
       composition: compositionFixture(),
       timestamp: '2026-01-01T00:00:00.000Z',
       traceId: '2'.repeat(32),
-      trigger: {
-        schemaVersion: 1,
-        kind: 'post-merge',
-        identityDigest: `sha256:${'a'.repeat(64)}`,
-        facts: { changeId: 'enable-self-hosted-development' },
+    });
+    const initial = createChangeLifecycleSnapshot({
+      identity: {
+        workspaceId: project.projectId,
+        changeId: 'change-telemetry',
+        generation: 1,
+        runId: baseRun.runId,
       },
     });
-    const proposed: TrajectoryEvent = {
+    const run = { ...baseRun, status: 'waiting' as const, changeLifecycle: initial };
+    const event: TrajectoryEvent = {
       schemaVersion: 1,
-      sequence: 1,
-      eventId: 'proposed',
-      timestamp: run.createdAt,
-      type: 'action.proposed',
+      sequence: 9,
+      eventId: 'accepted-archive-wait',
+      timestamp: '2026-01-01T00:09:00.000Z',
+      type: 'change.lifecycle.transitioned',
       runId: run.runId,
-      stateVersion: 1,
+      stateVersion: 9,
       compositionDigest: run.composition.compositionDigest,
-      data: { action: { id: 'action-1', type: 'call_tool', ref } },
-    };
-    const completed: TrajectoryEvent = {
-      ...proposed,
-      sequence: 2,
-      eventId: 'completed',
-      type: 'action.completed',
       data: {
-        actionId: 'action-1',
-        result: 'succeeded',
-        actionReceiptId: 'b'.repeat(64),
-        correlationReceiptId: `sha256:${'c'.repeat(64)}`,
-        evidenceAttemptId: 'attempt-post-merge',
-        evidenceGate: {
-          bundleId: 'bundle-post-merge',
-          status: 'satisfied',
-          outcome: 'passed',
+        changeLifecycleTransition: {
+          schemaVersion: 1,
+          transitionId: 'archive.await-merges',
+          definition: initial.definition,
+          revision: 9,
+          from: { phase: 'archive', status: 'running' },
+          to: { phase: 'archive', status: 'waiting' },
+          workId: 'archive:await-merge:0123456789abcdef',
+          waitId: 'wait:platform:0123456789abcdef',
+          work: {
+            workId: 'archive:await-merge:0123456789abcdef',
+            kind: 'delivery.await-merge',
+            validatorProfile: {
+              id: 'archive.await-merge',
+              version: '1.0.0',
+              digest: `sha256:${'a'.repeat(64)}`,
+            },
+          },
+          wait: { waitId: 'wait:platform:0123456789abcdef', kind: 'platform-event' },
+        },
+        observation: {
+          summary: 'private specification body',
+          path: 'C:/private/repository',
+          token: 'ghp_abcdefghijklmnopqrstuvwxyz123456',
         },
       },
     };
@@ -126,83 +129,28 @@ describe('telemetry mapping', () => {
       run,
       workflow,
       projectSnapshot: project,
-      events: [completed],
-      trajectory: [proposed, completed],
+      events: [event],
+      trajectory: [event],
     };
-    expect(safeEventAttributes(batch, completed)).toMatchObject({
-      'repoctopus.post_merge.change.id': 'enable-self-hosted-development',
-      'repoctopus.post_merge.merge_facts.digest': `sha256:${'a'.repeat(64)}`,
-      'repoctopus.post_merge.receipt.kind': receiptKind,
-      'repoctopus.post_merge.receipt.id': `sha256:${'c'.repeat(64)}`,
-      'repoctopus.action.receipt.id': 'b'.repeat(64),
-      'repoctopus.evidence.attempt.id': 'attempt-post-merge',
-      'repoctopus.evidence.bundle.id': 'bundle-post-merge',
-      'repoctopus.evidence.gate.status': 'satisfied',
-      'repoctopus.evidence.outcome': 'passed',
-    });
-    const metrics = {
-      ...workflowEventMetricAttributes(batch, completed),
-      ...workflowStepMetricAttributes(batch, completed),
-    };
-    expect(metrics).toEqual({
-      'repoctopus.event.type': 'action.completed',
-      'repoctopus.workflow.name': run.workflowName,
-      'repoctopus.event.result': 'succeeded',
-    });
-    expect(JSON.stringify(metrics)).not.toMatch(/post-merge-run|sha256|receipt|attempt|bundle/u);
-  });
-
-  it('drops malformed Post-merge correlation and private event content', () => {
-    const workflow = workflowFixture();
-    const project = projectFixture();
-    const run = startRun({
-      workflow,
-      runId: 'post-merge-private',
-      projectSnapshotDigest: project.digest,
-      composition: compositionFixture(),
-      timestamp: '2026-01-01T00:00:00.000Z',
-      trigger: {
-        schemaVersion: 1,
-        kind: 'post-merge',
-        identityDigest: `sha256:${'d'.repeat(64)}`,
-        facts: { changeId: 'ghp_12345678901234567890' },
-      },
-    });
-    const event: TrajectoryEvent = {
-      schemaVersion: 1,
-      sequence: 1,
-      eventId: 'private-completion',
-      timestamp: run.createdAt,
-      type: 'action.completed',
-      runId: run.runId,
-      stateVersion: 1,
-      compositionDigest: run.composition.compositionDigest,
-      data: {
-        actionId: 'action-private',
-        result: 'succeeded',
-        correlationReceiptId: 'Bearer private-receipt',
-        evidenceAttemptId: 'C:/private/attempt',
-        evidenceGate: {
-          bundleId: 'secret bundle body',
-          status: 'satisfied',
-          outcome: 'passed',
-        },
-        summary: 'private specification body',
-        token: 'ghp_12345678901234567890',
-      },
-    };
-    const attributes = safeEventAttributes(
-      {
-        run,
-        workflow,
-        projectSnapshot: project,
-        events: [event],
-        trajectory: [event],
-      },
-      event,
+    const records = acceptedChangeLifecycleTelemetry(batch, event);
+    expect(records.map((record) => record.signal)).toEqual(['phase', 'status', 'work', 'wait']);
+    expect(new Set(records.map((record) => record.eventId))).toEqual(
+      new Set(['accepted-archive-wait']),
     );
-    expect(JSON.stringify(attributes)).not.toMatch(
-      /ghp_|Bearer private|C:\/private|secret bundle|specification body/u,
+    const desktop = projectChangeLifecycleTelemetry(records);
+    const remote = projectChangeLifecycleTelemetry(
+      JSON.parse(JSON.stringify(records)) as typeof records,
+    );
+    const golden = JSON.parse(
+      readFileSync(
+        new URL('./fixtures/telemetry/change-lifecycle-projection.json', import.meta.url),
+        'utf8',
+      ),
+    ) as unknown;
+    expect(desktop).toEqual(golden);
+    expect(remote).toEqual(golden);
+    expect(JSON.stringify(records)).not.toMatch(
+      /post_merge|ghp_|C:\/private|specification body|authorization|credential/u,
     );
   });
 });

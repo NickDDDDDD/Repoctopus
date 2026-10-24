@@ -17,6 +17,7 @@ import type { TelemetryBatch, TelemetryPort } from '../../../domains/runtime/typ
 import type { DeliveryEvent, DeliveryTelemetryPort } from '../../../domains/delivery/ports.js';
 import type { DeliveryState } from '../../../domains/delivery/types.js';
 import { safeDeliveryAttributes } from '../delivery-mapping.js';
+import { acceptedChangeLifecycleTelemetry } from '../change-lifecycle-mapping.js';
 import {
   eventSeverity,
   safeEventAttributes,
@@ -126,6 +127,24 @@ export class OpenTelemetryExporter implements TelemetryPort {
         rootSpan.end(new Date(started.timestamp));
       }
       for (const item of batch.events) {
+        const lifecycleRecords = acceptedChangeLifecycleTelemetry(batch, item);
+        if (lifecycleRecords.length > 0) {
+          for (const record of lifecycleRecords) {
+            logger.emit({
+              eventName: record.eventName,
+              timestamp: new Date(record.timestamp),
+              severityNumber: 9,
+              body: record.body,
+              attributes: record.attributes,
+              context: parentContext,
+            });
+            eventCounter.add(1, {
+              'repoctopus.event.type': record.eventName,
+              'repoctopus.workflow.name': batch.run.workflowName,
+            });
+          }
+          continue;
+        }
         const attributes = safeEventAttributes(batch, item);
         if (item.type === 'action.completed') {
           const id = actionId(item);

@@ -283,6 +283,8 @@ export interface ChangeLifecycleTransitionFact {
   to: { phase: ChangePhase; status: RunStatus };
   workId: string | null;
   waitId: string | null;
+  work?: Pick<WorkDescriptor, 'workId' | 'kind' | 'taskId' | 'validatorProfile'> | null;
+  wait?: Pick<WaitCondition, 'waitId' | 'kind'> | null;
   invalidation?: {
     kind: 'planning-semantic-drift';
     supersededPlanningDigest: `sha256:${string}`;
@@ -539,7 +541,8 @@ export function applyChangeLifecycleTransition(options: {
     snapshot.archivePublication = structuredClone(options.next.archivePublication);
   }
   if (options.next.archiveMerge === null) delete snapshot.archiveMerge;
-  else if (options.next.archiveMerge) snapshot.archiveMerge = structuredClone(options.next.archiveMerge);
+  else if (options.next.archiveMerge)
+    snapshot.archiveMerge = structuredClone(options.next.archiveMerge);
   if (options.next.postMergeVerification === null) delete snapshot.postMergeVerification;
   else if (options.next.postMergeVerification) {
     snapshot.postMergeVerification = structuredClone(options.next.postMergeVerification);
@@ -560,6 +563,17 @@ export function applyChangeLifecycleTransition(options: {
       to: { phase: snapshot.phase, status: snapshot.status },
       workId: snapshot.currentWork?.workId ?? null,
       waitId: snapshot.waitCondition?.waitId ?? null,
+      work: snapshot.currentWork
+        ? {
+            workId: snapshot.currentWork.workId,
+            kind: snapshot.currentWork.kind,
+            ...(snapshot.currentWork.taskId ? { taskId: snapshot.currentWork.taskId } : {}),
+            validatorProfile: structuredClone(snapshot.currentWork.validatorProfile),
+          }
+        : null,
+      wait: snapshot.waitCondition
+        ? { waitId: snapshot.waitCondition.waitId, kind: snapshot.waitCondition.kind }
+        : null,
     },
   };
 }
@@ -592,16 +606,12 @@ export function evolveChangeLifecycle(options: {
     }
     const supersededPlanningDigest = current.planningDigest;
     const supersededWorkId = current.currentWork?.workId ?? null;
-    const supersededTaskRevisions = (current.tasks ?? [])
-      .map((task) => task.taskRevision)
-      .sort();
+    const supersededTaskRevisions = (current.tasks ?? []).map((task) => task.taskRevision).sort();
     const reduced = applyChangeLifecycleTransition({
       definition: options.definition,
       current,
       transitionId:
-        current.phase === 'build'
-          ? 'build.semantic-plan-drift'
-          : 'verify.semantic-plan-drift',
+        current.phase === 'build' ? 'build.semantic-plan-drift' : 'verify.semantic-plan-drift',
       next: {
         currentWork: null,
         waitCondition: null,
@@ -676,11 +686,7 @@ export function evolveChangeLifecycle(options: {
     });
   }
   if (observation.kind === 'build-task-ready') {
-    if (
-      current.phase !== 'build' ||
-      current.status !== 'running' ||
-      current.currentWork !== null
-    ) {
+    if (current.phase !== 'build' || current.status !== 'running' || current.currentWork !== null) {
       throw new Error(`Build Task dispatch is not valid from ${current.phase}/${current.status}`);
     }
     const currentTasks = current.tasks ?? [];
@@ -698,7 +704,9 @@ export function evolveChangeLifecycle(options: {
     ) {
       throw new Error('Next Build Work changed the approved Task projection');
     }
-    const task = observation.tasks.find((candidate) => candidate.taskId === observation.work.taskId);
+    const task = observation.tasks.find(
+      (candidate) => candidate.taskId === observation.work.taskId,
+    );
     if (
       observation.work.phase !== 'build' ||
       observation.work.kind !== 'task.implement' ||
@@ -776,7 +784,9 @@ export function evolveChangeLifecycle(options: {
     const taskRevisions = (current.tasks ?? [])
       .map(({ taskId, taskRevision }) => ({ taskId, taskRevision }))
       .sort((left, right) => left.taskId.localeCompare(right.taskId));
-    if (canonicalJson(taskRevisions) !== canonicalJson(observation.verificationInput.taskRevisions)) {
+    if (
+      canonicalJson(taskRevisions) !== canonicalJson(observation.verificationInput.taskRevisions)
+    ) {
       throw new Error('Verification input Task revisions do not match the completed Task set');
     }
     return applyChangeLifecycleTransition({
@@ -872,7 +882,9 @@ export function evolveChangeLifecycle(options: {
       current.status !== 'running' ||
       current.currentWork !== null
     ) {
-      throw new Error(`Archive Delivery planning is not valid from ${current.phase}/${current.status}`);
+      throw new Error(
+        `Archive Delivery planning is not valid from ${current.phase}/${current.status}`,
+      );
     }
     if (
       observation.work.phase !== 'archive' ||
@@ -917,10 +929,7 @@ export function evolveChangeLifecycle(options: {
     ) {
       throw new Error('Archive publication receipts do not cover the frozen Delivery plan');
     }
-    if (
-      observation.work.phase !== 'archive' ||
-      observation.work.kind !== 'delivery.await-merge'
-    ) {
+    if (observation.work.phase !== 'archive' || observation.work.kind !== 'delivery.await-merge') {
       throw new Error('Archive publication did not create the fixed merge wait Work');
     }
     const waitCondition: PlatformEventWaitCondition = {

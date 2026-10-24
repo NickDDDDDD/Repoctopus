@@ -69,7 +69,7 @@
 - [x] 7.1 实现只读 migration planner，按已记录 fixture 输出 `migratable`、`completed_history`、`manual_decision_required` 或 `migration_required`，不得在 plan 阶段写 Store 或调用平台。
 - [x] 7.2 实现受控迁移事务和旧写入口 fence，迁移后保存旧 identity/audit link 与新 Run generation；用崩溃注入证明重复执行幂等且不会双 coordinator 推进。
 - [x] 7.3 让 CLI 文本/JSON、Application Service 与开发工具统一消费 `ChangeRunProjection`，加入 `phase`、`status`、current Work、Task progress、wait、blocker、Evidence 和 next actions；运行协议兼容测试。
-- [ ] 7.4 从 accepted trajectory 生成 OTLP phase/status/work/wait 事件，移除独立 Post-merge Run 遥测语义；用 golden fixture 证明 Desktop 与远端目的地可从同一事件得到一致状态且不泄露正文、路径或凭据。
+- [x] 7.4 从 accepted trajectory 生成 OTLP phase/status/work/wait 事件，移除独立 Post-merge Run 遥测语义；用 golden fixture 证明 Desktop 与远端目的地可从同一事件得到一致状态且不泄露正文、路径或凭据。
 - [ ] 7.5 更新 Runtime、Specification、Skill、Store/onboarding、Delivery、Post-merge、Plugin 和 Telemetry 文档，明确 Workspace/Store/实现仓角色、每机登记、pointer 可选性与安全注销；文档命令冒烟测试必须使用生产 composition 和公共 CLI，而不是测试旁路。
 
 ## 8. 全量验证与自举交付

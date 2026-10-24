@@ -1,0 +1,19 @@
+{
+  "runId": "run-change-telemetry",
+  "changeId": "change-telemetry",
+  "phase": "archive",
+  "status": "waiting",
+  "currentWork": {
+    "workId": "archive:await-merge:0123456789abcdef",
+    "kind": "delivery.await-merge",
+    "validatorProfile": "archive.await-merge"
+  },
+  "wait": {
+    "waitId": "wait:platform:0123456789abcdef",
+    "kind": "platform-event",
+    "reasonCategory": "platform-event"
+  },
+  "eventId": "accepted-archive-wait",
+  "revision": 9,
+  "observedAt": "2026-01-01T00:09:00.000Z"
+}
