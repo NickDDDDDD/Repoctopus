@@ -2,7 +2,7 @@
 
 ## 0. 固定简化边界和上游证据
 
-- [ ] 0.1 为当前 Archive 等待 Business MR、Webhook/Inbox/Runner 组合和 `run start --help` 副作用建立去身份化基线测试，记录计划删除或修复的公共行为。
+- [x] 0.1 为当前 Archive 等待 Business MR、Webhook/Inbox/Runner 组合和 `run start --help` 副作用建立去身份化基线测试，记录计划删除或修复的公共行为。
       **Blocked by:** None
       **Acceptance:** 测试分别证明当前 Run 会等待 merge、生产组合暴露 webhook runner、帮助请求可能装配 composition；fixture 不依赖开发机已有状态
       **Requirements:** change-lifecycle#archive-publication-terminal, platform-event-processing#retirement, post-merge-automation#retirement, runtime-foundation#readonly-cli
