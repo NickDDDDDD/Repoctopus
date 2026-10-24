@@ -363,11 +363,7 @@ export class OpenSpecProvider extends Specification {
   ): Promise<SpecificationTaskSet> {
     const id = changeId.trim();
     if (!id) throw new Error('Specification change id is required');
-    const status = await this.json<StatusResult>(
-      workspace,
-      ['status', '--change', id],
-      signal,
-    );
+    const status = await this.json<StatusResult>(workspace, ['status', '--change', id], signal);
     return this.taskSetFromPaths(workspace, id, status.artifactPaths?.tasks?.existingOutputPaths);
   }
 
@@ -505,13 +501,7 @@ export class OpenSpecProvider extends Specification {
             if (!kind) return undefined;
             const digest =
               kind === 'tasks'
-                ? (
-                    await this.taskSetFromPaths(
-                      workspace,
-                      id,
-                      artifact.existingOutputPaths,
-                    )
-                  ).digest
+                ? (await this.taskSetFromPaths(workspace, id, artifact.existingOutputPaths)).digest
                 : await artifactDigest(workspace, artifact.existingOutputPaths);
             return {
               id: artifactId,
@@ -672,7 +662,9 @@ export class OpenSpecProvider extends Specification {
       const source = await readFile(file, 'utf8');
       const placeholder = `TBD - created by archiving change ${changeId}. Update Purpose after archive.`;
       if (!source.includes(placeholder)) continue;
-      await atomicWriteText(file, source.replace(placeholder, purpose), { containedRoot: workspace });
+      await atomicWriteText(file, source.replace(placeholder, purpose), {
+        containedRoot: workspace,
+      });
     }
   }
 
@@ -698,7 +690,8 @@ export class OpenSpecProvider extends Specification {
         ...(signal ? { signal } : {}),
       });
       const parsed = parseJson<ValidationResult>(result.stdout, args.join(' '));
-      const item = parsed.items?.find((candidate) => candidate.id === capability) ?? parsed.items?.[0];
+      const item =
+        parsed.items?.find((candidate) => candidate.id === capability) ?? parsed.items?.[0];
       if (result.exitCode !== 0 || item?.valid !== true) {
         const findings = diagnostics(item?.issues);
         throw new Error(
@@ -707,6 +700,76 @@ export class OpenSpecProvider extends Specification {
           }`,
         );
       }
+    }
+  }
+
+  private async assertStrictStoreAt(workspace: string, signal?: AbortSignal): Promise<void> {
+    const args = [
+      'validate',
+      '--all',
+      '--strict',
+      '--no-interactive',
+      '--store',
+      this.specificationRoot.storeId,
+      '--json',
+    ];
+    const result = await this.process.execute(args, {
+      cwd: workspace,
+      ...(signal ? { signal } : {}),
+    });
+    const parsed = parseJson<ValidationResult>(result.stdout, args.join(' '));
+    if (
+      result.exitCode !== 0 ||
+      !parsed.items?.length ||
+      parsed.items.some((item) => item.valid !== true)
+    ) {
+      throw new Error('Archived Specification Store failed strict validation');
+    }
+  }
+
+  private async assertClosurePostconditionsAt(input: {
+    workspace: string;
+    plan: SpecificationClosurePlan;
+    archiveId: string;
+    changedFiles: readonly string[];
+    purposes: ReadonlyMap<string, string>;
+    signal?: AbortSignal;
+  }): Promise<void> {
+    if (await exists(path.join(input.workspace, 'openspec', 'changes', input.plan.changeId))) {
+      throw new Error('Archived Specification still contains the active Change');
+    }
+    const archiveRoot = path.join(input.workspace, 'openspec', 'changes', 'archive');
+    const matchingArchives = (await readdir(archiveRoot, { withFileTypes: true })).filter(
+      (entry) => entry.isDirectory() && entry.name === input.archiveId,
+    );
+    if (matchingArchives.length !== 1) {
+      throw new Error('Archived Specification must contain exactly one expected archive');
+    }
+    for (const [capability, purpose] of input.purposes) {
+      const source = await readFile(
+        path.join(input.workspace, 'openspec', 'specs', capability, 'spec.md'),
+        'utf8',
+      );
+      if (!source.includes('## Purpose') || !source.includes(purpose)) {
+        throw new Error(`Archived Specification Purpose was not synchronized: ${capability}`);
+      }
+    }
+    await this.assertArchivedSpecificationsAt(
+      input.workspace,
+      input.plan.affectedCapabilities,
+      input.signal,
+    );
+    await this.assertStrictStoreAt(input.workspace, input.signal);
+    const outside = input.changedFiles.filter(
+      (file) =>
+        !input.plan.allowedPathPrefixes.some((prefix) =>
+          file.startsWith(prefix.endsWith('/') ? prefix : `${prefix}/`),
+        ),
+    );
+    if (outside.length > 0) {
+      throw new Error(
+        `Archived Specification changed paths outside the closure plan: ${outside.join(', ')}`,
+      );
     }
   }
 
@@ -757,12 +820,7 @@ export class OpenSpecProvider extends Specification {
       ['archive', plan.changeId, '--yes'],
       signal,
     );
-    await this.completeNewCapabilityPurposesAt(
-      workspace,
-      plan.changeId,
-      newCapabilityPurposes,
-    );
-    await this.assertArchivedSpecificationsAt(workspace, plan.affectedCapabilities, signal);
+    await this.completeNewCapabilityPurposesAt(workspace, plan.changeId, newCapabilityPurposes);
     const after = await tree(openspecRoot);
     const changedFiles = [...new Set([...before.keys(), ...after.keys()])]
       .filter((file) => before.get(file) !== after.get(file))
@@ -774,6 +832,14 @@ export class OpenSpecProvider extends Specification {
         : typeof archived.archive?.path === 'string'
           ? path.basename(archived.archive.path)
           : `${plan.changeId}:${plan.planDigest.slice(7, 19)}`;
+    await this.assertClosurePostconditionsAt({
+      workspace,
+      plan,
+      archiveId,
+      changedFiles,
+      purposes: newCapabilityPurposes,
+      ...(signal ? { signal } : {}),
+    });
     const result: SpecificationClosureResult = {
       apiVersion: SPECIFICATION_API_VERSION,
       kind: 'SpecificationClosureResult',

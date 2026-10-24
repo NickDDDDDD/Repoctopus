@@ -5,6 +5,7 @@ import path from 'node:path';
 import {
   advanceSpecificationClosureJournal,
   createSpecificationClosureJournal,
+  recordSpecificationClosureExpectedManifest,
   type SpecificationFileIdentity,
 } from '../../domains/specification/closure-journal.js';
 import type {
@@ -72,7 +73,7 @@ export class IsolatedSpecificationClosureTransaction {
   constructor(
     private readonly journals: Pick<
       FileSpecificationClosureJournalStore,
-      'load' | 'create' | 'compareAndSet'
+      'load' | 'create' | 'compareAndSet' | 'loadReceipt' | 'saveReceipt'
     >,
     private readonly checkouts: Pick<
       GitSpecificationCheckoutManager,
@@ -90,7 +91,21 @@ export class IsolatedSpecificationClosureTransaction {
     plan: SpecificationClosurePlan,
     signal?: AbortSignal,
   ): Promise<IsolatedClosureExecution> {
-    if (await this.journals.load(plan.planDigest)) {
+    const existing = await this.journals.load(plan.planDigest);
+    if (existing) {
+      if (existing.changeId !== plan.changeId || existing.plan.planDigest !== plan.planDigest) {
+        throw new Error('Specification closure Journal belongs to another plan');
+      }
+      const priorReceipt = await this.journals.loadReceipt(plan.planDigest);
+      if (existing.state === 'committed' && priorReceipt) {
+        const priorCheckout = await this.checkouts.find(existing.checkoutId);
+        if (!priorCheckout) throw new Error('Committed Specification closure checkout is missing');
+        const current = await manifest(priorCheckout.root);
+        if (canonicalJson(current) !== canonicalJson(existing.expected)) {
+          throw new Error('Committed Specification closure checkout requires manual repair');
+        }
+        return { checkout: priorCheckout, result: priorReceipt };
+      }
       throw new Error('Specification closure already has a Journal and requires recovery');
     }
     const checkout = await this.checkouts.create(checkoutId(plan));
@@ -111,12 +126,15 @@ export class IsolatedSpecificationClosureTransaction {
     this.injectFault?.('after-command');
 
     const expected = await manifest(checkout.root);
+    const observed = recordSpecificationClosureExpectedManifest(applying, expected);
+    await this.journals.compareAndSet(observed, applying.digest);
     this.injectFault?.('before-receipt');
-    const committed = advanceSpecificationClosureJournal(applying, 'committed', {
+    await this.journals.saveReceipt(result);
+    const committed = advanceSpecificationClosureJournal(observed, 'committed', {
       expected,
       resultClosureId: result.closureId,
     });
-    await this.journals.compareAndSet(committed, applying.digest);
+    await this.journals.compareAndSet(committed, observed.digest);
     return { checkout, result };
   }
 

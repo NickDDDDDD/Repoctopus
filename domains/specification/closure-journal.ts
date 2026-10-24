@@ -223,3 +223,20 @@ export function advanceSpecificationClosureJournal(
   };
   return { ...withoutDigest, digest: sha256(withoutDigest) };
 }
+
+export function recordSpecificationClosureExpectedManifest(
+  current: SpecificationClosureJournal,
+  expected: readonly SpecificationFileIdentity[],
+): SpecificationClosureJournal {
+  assertSpecificationClosureJournal(current);
+  if (current.state !== 'applying' || current.expected.length > 0) {
+    throw new Error('Expected Specification manifest can only be recorded once while applying');
+  }
+  const { digest: _digest, ...unsignedCurrent } = current;
+  const unsigned = stable({
+    ...unsignedCurrent,
+    stateVersion: current.stateVersion + 1,
+    expected: [...expected],
+  });
+  return { ...unsigned, digest: sha256(unsigned) };
+}

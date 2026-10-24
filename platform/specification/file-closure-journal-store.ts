@@ -5,6 +5,7 @@ import {
   assertSpecificationClosureJournal,
   type SpecificationClosureJournal,
 } from '../../domains/specification/closure-journal.js';
+import type { SpecificationClosureResult } from '../../domains/specification/types.js';
 import { atomicWriteJson } from '../filesystem/atomic-write.js';
 
 export class FileSpecificationClosureJournalStore {
@@ -16,6 +17,16 @@ export class FileSpecificationClosureJournalStore {
       '.repoctopus',
       'specification',
       'closure-journals',
+      `${planDigest.slice('sha256:'.length)}.json`,
+    );
+  }
+
+  private receiptFile(planDigest: `sha256:${string}`): string {
+    return path.join(
+      this.workspaceRoot,
+      '.repoctopus',
+      'specification',
+      'closures',
       `${planDigest.slice('sha256:'.length)}.json`,
     );
   }
@@ -55,6 +66,23 @@ export class FileSpecificationClosureJournalStore {
       throw new Error('Specification Closure Journal changed concurrently');
     }
     await atomicWriteJson(this.file(journal.plan.planDigest), journal, {
+      containedRoot: this.workspaceRoot,
+    });
+  }
+
+  async loadReceipt(planDigest: `sha256:${string}`): Promise<SpecificationClosureResult | null> {
+    try {
+      return JSON.parse(
+        await readFile(this.receiptFile(planDigest), 'utf8'),
+      ) as SpecificationClosureResult;
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return null;
+      throw error;
+    }
+  }
+
+  async saveReceipt(result: SpecificationClosureResult): Promise<void> {
+    await atomicWriteJson(this.receiptFile(result.planDigest), result, {
       containedRoot: this.workspaceRoot,
     });
   }

@@ -36,7 +36,7 @@
       **Blocked by:** 2.1
       **Acceptance:** 命令前、目录移动后和 Receipt 前故障注入均留下可解释状态，开发者工作树摘要不变
       **Requirements:** specification-authority#closure-journal, specification-authority#closure-candidate
-- [ ] 2.3 验证唯一归档、活动 change 消失、Purpose、受影响规格、全 Store strict 和允许 diff；按 CAS 安全继续、回滚或进入人工修复。
+- [x] 2.3 验证唯一归档、活动 change 消失、Purpose、受影响规格、全 Store strict 和允许 diff；按 CAS 安全继续、回滚或进入人工修复。
       **Blocked by:** 2.2
       **Acceptance:** 每个后置条件有独立失败 fixture；相同计划重放只产生一个逻辑归档和 Closure Receipt，并发修改不被覆盖
       **Requirements:** specification-authority#closure-journal, specification-authority#closure-candidate

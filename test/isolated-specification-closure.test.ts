@@ -140,10 +140,14 @@ describe('isolated Specification closure transaction', () => {
     const root = await repository();
     const store = new FileSpecificationClosureJournalStore(root);
     const manager = new GitSpecificationCheckoutManager(root);
+    let executions = 0;
     const transaction = new IsolatedSpecificationClosureTransaction(
       store,
       manager,
-      officialArchive,
+      async (checkout) => {
+        executions += 1;
+        return officialArchive(checkout);
+      },
     );
     const result = await transaction.execute(plan);
     expect(result.result.closureId).toBe(digest('5'));
@@ -152,6 +156,21 @@ describe('isolated Specification closure transaction', () => {
       resultClosureId: digest('5'),
     });
     expect((await exec('git', ['status', '--porcelain=v1'], { cwd: root })).stdout).toBe('');
+    const replay = await transaction.execute(plan);
+    expect(replay.result).toEqual(result.result);
+    expect(executions).toBe(1);
+    const archives = await readFile(
+      path.join(
+        result.checkout.root,
+        'openspec',
+        'changes',
+        'archive',
+        result.result.archiveId,
+        'proposal.md',
+      ),
+      'utf8',
+    );
+    expect(archives.replaceAll('\r\n', '\n')).toBe('# Proposal\n');
     await manager.cleanup(result.checkout);
   });
 });
