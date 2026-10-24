@@ -210,6 +210,13 @@ export interface ChangeLifecycleState {
   archiveDeliveryInput?: ArchiveDeliveryInput;
   archivePublication?: ArchivePublicationResult;
   archiveMerge?: ArchiveMergeRefreshResult & { source: ArchiveMergeRefreshSource };
+  postMergeVerification?: {
+    attemptId: string;
+    bundleId: string;
+    checkoutManifestDigest: `sha256:${string}`;
+    inputFingerprint: string;
+    status: 'satisfied';
+  };
 }
 
 export type ArchiveMergeRefreshSource = 'webhook' | 'inbox' | 'active-check' | 'run-start';
@@ -357,6 +364,18 @@ export type ChangeLifecycleObservation =
       kind: 'archive-merge-refreshed';
       source: ArchiveMergeRefreshSource;
       refresh: ArchiveMergeRefreshResult;
+      work?: WorkDescriptor;
+    }
+  | {
+      kind: 'archive-post-merge-verified';
+      result: 'satisfied' | 'failed';
+      workId: string;
+      inputDigest: `sha256:${string}`;
+      attemptId: string;
+      bundleId: string;
+      checkoutManifestDigest: `sha256:${string}`;
+      evidenceInputFingerprint: string;
+      workflowStateVersion: number;
     };
 
 export interface ChangeLifecycleReduction {
@@ -442,6 +461,7 @@ export function applyChangeLifecycleTransition(options: {
     archiveDeliveryInput?: ArchiveDeliveryInput | null;
     archivePublication?: ArchivePublicationResult | null;
     archiveMerge?: (ArchiveMergeRefreshResult & { source: ArchiveMergeRefreshSource }) | null;
+    postMergeVerification?: ChangeLifecycleState['postMergeVerification'] | null;
   };
 }): { snapshot: ChangeLifecycleSnapshot; fact: ChangeLifecycleTransitionFact } {
   assertChangeLifecycleSnapshot(options.current);
@@ -499,6 +519,10 @@ export function applyChangeLifecycleTransition(options: {
   }
   if (options.next.archiveMerge === null) delete snapshot.archiveMerge;
   else if (options.next.archiveMerge) snapshot.archiveMerge = structuredClone(options.next.archiveMerge);
+  if (options.next.postMergeVerification === null) delete snapshot.postMergeVerification;
+  else if (options.next.postMergeVerification) {
+    snapshot.postMergeVerification = structuredClone(options.next.postMergeVerification);
+  }
   assertChangeLifecycleSnapshot(snapshot);
   return {
     snapshot,
@@ -928,15 +952,68 @@ export function evolveChangeLifecycle(options: {
     if (observation.refresh.mergeEvidence.length !== expected) {
       throw new Error('Archive merge completion is missing exact merge evidence');
     }
+    if (
+      !observation.work ||
+      observation.work.phase !== 'archive' ||
+      observation.work.kind !== 'delivery.verify-merged'
+    ) {
+      throw new Error('Archive merge completion requires the fixed post-merge Verify Work');
+    }
     return applyChangeLifecycleTransition({
       definition: options.definition,
       current,
       transitionId: 'archive.business-merged',
       next: {
-        currentWork: null,
+        currentWork: observation.work,
         waitCondition: null,
         blocker: null,
         archiveMerge: { ...observation.refresh, source: observation.source },
+      },
+    });
+  }
+  if (observation.kind === 'archive-post-merge-verified') {
+    const work = current.currentWork;
+    if (
+      current.phase !== 'archive' ||
+      current.status !== 'running' ||
+      work?.kind !== 'delivery.verify-merged' ||
+      work.workId !== observation.workId ||
+      work.inputDigest !== observation.inputDigest
+    ) {
+      throw new Error('Post-merge Evidence does not match the active Archive Work');
+    }
+    if (observation.result === 'failed') {
+      return applyChangeLifecycleTransition({
+        definition: options.definition,
+        current,
+        transitionId: 'archive.implementation-drift',
+        next: {
+          currentWork: null,
+          waitCondition: null,
+          blocker: null,
+          verificationInput: null,
+          archiveDeliveryInput: null,
+          archivePublication: null,
+          archiveMerge: null,
+          postMergeVerification: null,
+        },
+      });
+    }
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'archive.post-merge-verified',
+      next: {
+        currentWork: null,
+        waitCondition: null,
+        blocker: null,
+        postMergeVerification: {
+          attemptId: observation.attemptId,
+          bundleId: observation.bundleId,
+          checkoutManifestDigest: observation.checkoutManifestDigest,
+          inputFingerprint: observation.evidenceInputFingerprint,
+          status: 'satisfied',
+        },
       },
     });
   }

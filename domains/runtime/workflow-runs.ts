@@ -81,6 +81,9 @@ function lifecycleState(snapshot: ChangeLifecycleSnapshot): ChangeLifecycleState
       ? { archivePublication: structuredClone(snapshot.archivePublication) }
       : {}),
     ...(snapshot.archiveMerge ? { archiveMerge: structuredClone(snapshot.archiveMerge) } : {}),
+    ...(snapshot.postMergeVerification
+      ? { postMergeVerification: structuredClone(snapshot.postMergeVerification) }
+      : {}),
   };
 }
 
@@ -355,7 +358,8 @@ export class WorkflowRunCoordinator {
       if (!state.changeLifecycle) throw new Error(`Run is not a Change Run: ${runId}`);
       if (
         (observation.kind === 'verify-gate-satisfied' ||
-          observation.kind === 'verify-gate-rejected') &&
+          observation.kind === 'verify-gate-rejected' ||
+          observation.kind === 'archive-post-merge-verified') &&
         observation.workflowStateVersion !== state.stateVersion
       ) {
         throw new Error('Satisfied Verify Gate is bound to a stale workflow state');
@@ -377,7 +381,9 @@ export class WorkflowRunCoordinator {
         status,
         changeLifecycle,
         acceptedEvidenceBundleIds:
-          observation.kind === 'verify-gate-satisfied'
+          (observation.kind === 'verify-gate-satisfied' ||
+            (observation.kind === 'archive-post-merge-verified' &&
+              observation.result === 'satisfied'))
             ? [...new Set([...state.acceptedEvidenceBundleIds, observation.bundleId])]
             : state.acceptedEvidenceBundleIds,
         stateVersion: state.stateVersion + 1,

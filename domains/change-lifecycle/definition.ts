@@ -75,8 +75,17 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
     },
     {
       phase: 'archive',
-      workKinds: ['delivery.await-merge', 'delivery.prepare', 'specification.archive'],
-      requiredValidatorProfiles: ['archive.delivery-ready', 'archive.specification-closed'],
+      workKinds: [
+        'delivery.await-merge',
+        'delivery.prepare',
+        'delivery.verify-merged',
+        'specification.archive',
+      ],
+      requiredValidatorProfiles: [
+        'archive.delivery-ready',
+        'archive.specification-closed',
+        'verify.evidence-gate',
+      ],
       extensionCheckpoints: [
         'archive.after-merge',
         'archive.before-close',
@@ -189,6 +198,19 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       outputContract: { artifactKinds: [], trackerPublish: false },
       validatorProfile: validatorProfile('archive.delivery-ready'),
       checkpoint: 'archive.before-publish',
+    },
+    {
+      kind: 'delivery.verify-merged',
+      phase: 'archive',
+      actionSkill: { name: 'code-review' },
+      augmentationSkills: [],
+      methodProfile: BUILTIN_METHOD_PROFILE_REGISTRY.snapshot('repoctopus.verify', '1.0.0'),
+      capabilities: ['evidence.write', 'process.execute', 'repository.read'],
+      sideEffectClass: 'process',
+      writeScopes: [],
+      outputContract: { artifactKinds: ['verification'], trackerPublish: false },
+      validatorProfile: validatorProfile('verify.evidence-gate'),
+      checkpoint: 'archive.after-merge',
     },
     {
       kind: 'specification.archive',
@@ -313,6 +335,14 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       to: { phase: 'archive', status: 'running' },
       trigger: 'all-business-merge-requests-merged',
       requiredValidatorProfile: 'archive.delivery-ready',
+    },
+    {
+      id: 'archive.post-merge-verified',
+      kind: 'self',
+      from: { phase: 'archive', statuses: ['running'] },
+      to: { phase: 'archive', status: 'running' },
+      trigger: 'exact-merge-evidence-gate-satisfied',
+      requiredValidatorProfile: 'verify.evidence-gate',
     },
     {
       id: 'archive.completed',

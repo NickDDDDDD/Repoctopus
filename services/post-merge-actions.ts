@@ -680,6 +680,119 @@ export class PostMergeActions extends Service {
     return withRecoverableFileLock(lock, () => this.verifyMergedCodeLocked(input, signal));
   }
 
+  async verifyChangeRunMergedCode(
+    input: { runId: string; profileId: string; sources: PostMergeRepositorySource[] },
+    signal?: AbortSignal,
+  ): Promise<PostMergeVerificationResult> {
+    const lock = path.join(
+      this.temporaryRoot,
+      '.locks',
+      `${identity('change-run-post-merge-verification-lock/v1', input.runId)}.lock`,
+    );
+    return withRecoverableFileLock(lock, async () => {
+      const status = await this.ctx.workflowRuns.status(input.runId, signal);
+      const lifecycle = status.changeLifecycle;
+      if (
+        !lifecycle ||
+        lifecycle.phase !== 'archive' ||
+        lifecycle.status !== 'running' ||
+        lifecycle.currentWork?.kind !== 'delivery.verify-merged' ||
+        !lifecycle.archiveMerge?.allMerged ||
+        !lifecycle.archiveDeliveryInput
+      ) {
+        throw new Error(`Change Run is not awaiting exact merged-code Evidence: ${input.runId}`);
+      }
+      const deliveries = new Map(
+        lifecycle.archiveDeliveryInput.businessDeliveries.map((delivery) => [
+          `${delivery.deliveryId}\0${delivery.repositoryId}`,
+          delivery,
+        ]),
+      );
+      const repositories = new Map<string, {
+        repositoryId: string;
+        remoteIdentity: string;
+        targetBranch: string;
+        mergeCommit: string;
+        mergedAt: string;
+      }>();
+      for (const evidence of lifecycle.archiveMerge.mergeEvidence) {
+        const delivery = deliveries.get(`${evidence.deliveryId}\0${evidence.repositoryId}`);
+        if (!delivery) throw new Error(`Unknown frozen Business delivery: ${evidence.deliveryId}`);
+        const existing = repositories.get(evidence.repositoryId);
+        if (!existing || evidence.mergedAt > existing.mergedAt) {
+          const facts = lifecycle.archiveDeliveryInput.businessDeliveries.find(
+            (candidate) => candidate.deliveryId === evidence.deliveryId,
+          )!;
+          const snapshot = lifecycle.archivePublication!.snapshot.businessDeliveries.find(
+            (candidate) => candidate.deliveryId === evidence.deliveryId,
+          )!;
+          repositories.set(evidence.repositoryId, {
+            repositoryId: evidence.repositoryId,
+            remoteIdentity: snapshot.remoteIdentity!,
+            targetBranch: facts.targetBranch,
+            mergeCommit: evidence.mergeCommit,
+            mergedAt: evidence.mergedAt,
+          });
+        }
+      }
+      const exactRepositories = [...repositories.values()]
+        .map((repository) => ({
+          repositoryId: repository.repositoryId,
+          remoteIdentity: repository.remoteIdentity,
+          targetBranch: repository.targetBranch,
+          mergeCommit: repository.mergeCommit,
+        }))
+        .sort((left, right) => left.repositoryId.localeCompare(right.repositoryId));
+      const mergeFactsDigest = `sha256:${identity(
+        'change-run-merge-facts/v1',
+        canonicalJson(lifecycle.archiveMerge.mergeEvidence),
+      )}` as const;
+      const manifest = await this.checkout.checkout({
+        runId: input.runId,
+        mergeFactsDigest,
+        temporaryRoot: this.temporaryRoot,
+        repositories: exactRepositories,
+        sources: input.sources,
+        ...(signal ? { signal } : {}),
+      });
+      try {
+        await this.checkout.verify(manifest, signal);
+        const attemptId = identity(
+          'change-run-post-merge-evidence/v1',
+          input.runId,
+          lifecycle.currentWork.workId,
+          manifest.digest,
+        );
+        const result = await this.ctx.evidenceCoordinator.runForRepositories(
+          input.profileId,
+          manifest.repositories.map((repository) => ({
+            repositoryId: repository.repositoryId,
+            root: repository.path,
+            head: repository.mergeCommit,
+          })),
+          attemptId,
+          input.runId,
+          signal,
+        );
+        await this.ctx.workflowRuns.acceptArchivePostMergeVerification({
+          runId: input.runId,
+          attemptId,
+          checkoutManifestDigest: manifest.digest,
+          gate: result.gate,
+        });
+        return {
+          runId: input.runId,
+          checkout: manifest,
+          attemptId,
+          gate: result.gate,
+          status: result.gate.status === 'satisfied' ? 'succeeded' : 'failed',
+        };
+      } finally {
+        await this.checkout.cleanup(manifest);
+      }
+    });
+  }
+
   private async verifyMergedCodeLocked(
     input: { runId: string; profileId: string; sources: PostMergeRepositorySource[] },
     signal?: AbortSignal,

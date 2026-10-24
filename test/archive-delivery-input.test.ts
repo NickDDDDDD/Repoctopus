@@ -4,6 +4,7 @@ import {
   createArchiveDeliveryInput,
   createArchiveDeliveryWork,
   createAwaitMergeWork,
+  createPostMergeVerifyWork,
 } from '../domains/change-lifecycle/archive-input.js';
 import { BUILTIN_CHANGE_LIFECYCLE_DEFINITION, createChangeLifecycleSnapshot } from '../domains/change-lifecycle/definition.js';
 import { evolveChangeLifecycle } from '../domains/change-lifecycle/transition.js';
@@ -52,6 +53,7 @@ const skill: SkillUsageSnapshot = {
   contentDigest: digest('a'),
   resourceManifestDigest: digest('b'),
 };
+const reviewSkill: SkillUsageSnapshot = { ...skill, name: 'code-review' };
 
 describe('Archive Delivery input', () => {
   it('freezes the complete MR set and uses policy authorization without a second approval', () => {
@@ -200,53 +202,87 @@ describe('Archive Delivery input', () => {
       status: 'waiting',
       archiveMerge: { source: 'webhook', allMerged: false },
     });
+    const mergedRefresh = {
+      allMerged: true,
+      mergeRequestStatuses: [
+        {
+          provider: 'github',
+          repositoryId: 'app',
+          number: 1,
+          url: 'https://github.com/team/app/pull/1',
+          state: 'merged' as const,
+          ci: 'passed' as const,
+          review: 'approved' as const,
+          conversationsResolved: true,
+          mergeCommit: 'e'.repeat(40),
+          mergedAt: '2026-10-24T00:00:00.000Z',
+        },
+      ],
+      mergeEvidence: [
+        {
+          deliveryId: 'primary',
+          repositoryId: 'app',
+          mergeRequest: {
+            provider: 'github',
+            repositoryId: 'app',
+            number: 1,
+            url: 'https://github.com/team/app/pull/1',
+          },
+          mergeCommit: 'e'.repeat(40),
+          mergedAt: '2026-10-24T00:00:00.000Z',
+          observedAt: '2026-10-24T00:01:00.000Z',
+        },
+      ],
+      platformCapabilities: [],
+    };
     const merged = evolveChangeLifecycle({
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
       current: pending.snapshot,
       observation: {
         kind: 'archive-merge-refreshed',
         source: 'run-start',
-        refresh: {
-          allMerged: true,
-          mergeRequestStatuses: [
-            {
-              provider: 'github',
-              repositoryId: 'app',
-              number: 1,
-              url: 'https://github.com/team/app/pull/1',
-              state: 'merged',
-              ci: 'passed',
-              review: 'approved',
-              conversationsResolved: true,
-              mergeCommit: 'e'.repeat(40),
-              mergedAt: '2026-10-24T00:00:00.000Z',
-            },
-          ],
-          mergeEvidence: [
-            {
-              deliveryId: 'primary',
-              repositoryId: 'app',
-              mergeRequest: {
-                provider: 'github',
-                repositoryId: 'app',
-                number: 1,
-                url: 'https://github.com/team/app/pull/1',
-              },
-              mergeCommit: 'e'.repeat(40),
-              mergedAt: '2026-10-24T00:00:00.000Z',
-              observedAt: '2026-10-24T00:01:00.000Z',
-            },
-          ],
-          platformCapabilities: [],
-        },
+        refresh: mergedRefresh,
+        work: createPostMergeVerifyWork({
+          definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+          archive,
+          refresh: mergedRefresh,
+          actionSkill: reviewSkill,
+          workspaceRepositoryId: 'workspace',
+          repositoryIds: ['workspace', 'app'],
+        }),
       },
     });
     expect(merged.snapshot).toMatchObject({
       phase: 'archive',
       status: 'running',
-      currentWork: null,
+      currentWork: { kind: 'delivery.verify-merged' },
       waitCondition: null,
       archiveMerge: { source: 'run-start', allMerged: true },
+    });
+    const postMergeVerified = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current: merged.snapshot,
+      observation: {
+        kind: 'archive-post-merge-verified',
+        result: 'satisfied',
+        workId: merged.snapshot.currentWork!.workId,
+        inputDigest: merged.snapshot.currentWork!.inputDigest,
+        attemptId: 'attempt-post-merge',
+        bundleId: 'bundle-post-merge',
+        checkoutManifestDigest: digest('m'),
+        evidenceInputFingerprint: 'fingerprint-post-merge',
+        workflowStateVersion: 12,
+      },
+    });
+    expect(postMergeVerified.snapshot).toMatchObject({
+      phase: 'archive',
+      status: 'running',
+      currentWork: null,
+      postMergeVerification: {
+        status: 'satisfied',
+        attemptId: 'attempt-post-merge',
+        bundleId: 'bundle-post-merge',
+      },
     });
   });
 

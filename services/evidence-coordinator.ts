@@ -275,6 +275,19 @@ export class EvidenceCoordinator extends Service {
         expectedEvidenceFingerprint: verification.evidenceProfile.fingerprintDigest,
       };
     }
+    if (lifecycle?.phase === 'archive' && lifecycle.currentWork?.kind === 'delivery.verify-merged') {
+      const profile = state.trigger?.facts.verificationProfileId;
+      if (state.status !== 'running' || profile !== profileId) {
+        throw new Error(`Change Run ${workflowRunId} has no active post-merge Verify Work`);
+      }
+      return {
+        workflowRunId,
+        workflowActionId: lifecycle.currentWork.workId,
+        workflowStepId: 'archive.verify-merged',
+        workflowStateVersion: state.stateVersion,
+        workflowInputDigest: lifecycle.currentWork.inputDigest,
+      };
+    }
     if (
       state.status !== 'waiting' ||
       state.pendingActionId === null ||

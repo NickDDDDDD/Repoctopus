@@ -51,11 +51,13 @@ import {
   createArchiveDeliveryInput,
   createArchiveDeliveryWork,
   createAwaitMergeWork,
+  createPostMergeVerifyWork,
 } from '../domains/change-lifecycle/archive-input.js';
 import type { DeliveryIntentV3, DeliveryPolicy } from '../domains/delivery/types.js';
 import { deliveryPolicyDigest } from '../domains/delivery/snapshot.js';
 import type { WorkExecutorIdentity } from '../domains/action/types.js';
 import type { ArchivePublicationResult } from '../domains/delivery/service-v3.js';
+import type { EvidenceGateProjection } from '../domains/evidence/types.js';
 
 export interface StartChangeRunInput {
   workspaceId: string;
@@ -123,6 +125,13 @@ export interface RefreshArchiveMergesInput {
   runId: string;
   policy: DeliveryPolicy;
   source: ArchiveMergeRefreshSource;
+}
+
+export interface AcceptArchivePostMergeVerificationInput {
+  runId: string;
+  attemptId: string;
+  checkoutManifestDigest: `sha256:${string}`;
+  gate: EvidenceGateProjection;
 }
 
 export class WorkflowRuns extends Service {
@@ -1098,10 +1107,70 @@ export class WorkflowRuns extends Service {
         input.policy,
         signal,
       );
+      let work: WorkDescriptor | undefined;
+      if (refresh.allMerged) {
+        if (!lifecycle.archiveDeliveryInput) {
+          throw new Error('Archive merge completion has no frozen Delivery input');
+        }
+        const skills = await this.resolveLifecycleWorkSkills('delivery.verify-merged', signal);
+        work = createPostMergeVerifyWork({
+          definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+          archive: lifecycle.archiveDeliveryInput,
+          refresh,
+          actionSkill: skills.actionSkill,
+          workspaceRepositoryId: lifecycle.archiveDeliveryInput.changeBranch.repositoryId,
+          repositoryIds: [
+            lifecycle.archiveDeliveryInput.changeBranch.repositoryId,
+            ...lifecycle.archiveDeliveryInput.businessDeliveries.map(
+              (delivery) => delivery.repositoryId,
+            ),
+          ],
+        });
+        await this.coordinator.bindSkill(input.runId, skills.actionSkill);
+      }
       return this.coordinator.acceptChangeObservation(input.runId, {
         kind: 'archive-merge-refreshed',
         source: input.source,
         refresh,
+        ...(work ? { work } : {}),
+      });
+    });
+  }
+
+  acceptArchivePostMergeVerification(
+    input: AcceptArchivePostMergeVerificationInput,
+  ): Promise<RuntimeResult<RunStatusView>> {
+    return this.operations.run({ cancellable: false }, async () => {
+      const state = await this.ctx.runStore.loadRun(input.runId);
+      const lifecycle = state.changeLifecycle;
+      const work = lifecycle?.currentWork;
+      if (
+        !lifecycle ||
+        state.status !== 'running' ||
+        lifecycle.phase !== 'archive' ||
+        work?.kind !== 'delivery.verify-merged'
+      ) {
+        throw new Error(`Change Run has no active post-merge Verify Work: ${input.runId}`);
+      }
+      if (
+        input.gate.workflowRunId !== input.runId ||
+        input.gate.workflowActionId !== work.workId ||
+        input.gate.workflowStepId !== 'archive.verify-merged' ||
+        input.gate.workflowStateVersion !== state.stateVersion ||
+        input.gate.compositionDigest !== state.composition.compositionDigest
+      ) {
+        throw new Error('Post-merge Evidence Gate is stale or belongs to another Archive Work');
+      }
+      return this.coordinator.acceptChangeObservation(input.runId, {
+        kind: 'archive-post-merge-verified',
+        result: input.gate.status === 'satisfied' ? 'satisfied' : 'failed',
+        workId: work.workId,
+        inputDigest: work.inputDigest,
+        attemptId: input.attemptId,
+        bundleId: input.gate.bundleId,
+        checkoutManifestDigest: input.checkoutManifestDigest,
+        evidenceInputFingerprint: input.gate.inputFingerprint,
+        workflowStateVersion: state.stateVersion,
       });
     });
   }
