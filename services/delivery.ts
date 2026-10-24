@@ -22,6 +22,7 @@ import type {
 } from '../domains/delivery/types.js';
 import type { DeliveryV2MigrationPlan } from '../domains/delivery/migration.js';
 import type {
+  ArchiveFinalPublicationProof,
   ArchiveMergeRefreshResult,
   ArchivePublicationResult,
 } from '../domains/delivery/service-v3.js';
@@ -95,6 +96,17 @@ export abstract class Delivery extends Service {
     request: PostMergePublicationRequestV2,
     signal?: AbortSignal,
   ): Promise<PostMergePublicationReceiptV2> {
+    void signal;
+    return Promise.reject(
+      new Error(`Delivery provider cannot publish final Change for ${request.changeId}`),
+    );
+  }
+  publishArchiveFinalChange(
+    request: PostMergePublicationRequestV2,
+    proof: ArchiveFinalPublicationProof,
+    signal?: AbortSignal,
+  ): Promise<PostMergePublicationReceiptV2> {
+    void proof;
     void signal;
     return Promise.reject(
       new Error(`Delivery provider cannot publish final Change for ${request.changeId}`),

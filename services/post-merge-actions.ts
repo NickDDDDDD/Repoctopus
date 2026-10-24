@@ -1005,7 +1005,14 @@ export class PostMergeActions extends Service {
       const request = publication.request;
       let receipt = publication.receipt;
       if (!receipt) {
-        receipt = await this.ctx.delivery.publishFinalChange(request, signal);
+        receipt = await this.ctx.delivery.publishArchiveFinalChange(
+          request,
+          {
+            publication: lifecycle.archivePublication!,
+            merge: lifecycle.archiveMerge,
+          },
+          signal,
+        );
         assertPostMergePublicationReceiptV2(receipt, request);
         journal = { ...journal, publication: { request, receipt } };
         await this.saveClosureJournal(journal);
