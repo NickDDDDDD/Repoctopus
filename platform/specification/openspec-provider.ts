@@ -19,6 +19,8 @@ import {
   type SpecificationTaskSet,
   type CompleteSpecificationTaskInput,
   type CompleteSpecificationTaskResult,
+  type SpecificationFollowUpChange,
+  type SpecificationFollowUpChangeInput,
 } from '../../domains/specification/types.js';
 import {
   completeSpecificationTaskDocument,
@@ -790,6 +792,76 @@ export class OpenSpecProvider extends Specification {
     return this.closeAt(this.workspace, plan, signal);
   }
 
+  override openFollowUp(
+    input: SpecificationFollowUpChangeInput,
+  ): Promise<SpecificationFollowUpChange> {
+    return this.openFollowUpAt(this.workspace, input);
+  }
+
+  private async openFollowUpAt(
+    workspace: string,
+    input: SpecificationFollowUpChangeInput,
+  ): Promise<SpecificationFollowUpChange> {
+    if (
+      !/^[a-z0-9][a-z0-9-]*$/u.test(input.changeId) ||
+      !input.originalChangeId.trim() ||
+      !/^sha256:[a-f0-9]{64}$/u.test(input.publicationReceiptDigest) ||
+      !input.rationale.trim() ||
+      input.affectedMergeRequests.length === 0
+    ) {
+      throw new Error('Follow-up Specification Change input is invalid');
+    }
+    const active = path.join(workspace, 'openspec', 'changes', input.changeId);
+    if (await exists(active))
+      throw new Error(`Follow-up Specification Change already exists: ${input.changeId}`);
+    await this.json<unknown>(workspace, ['new', 'change', input.changeId], input.signal);
+    const references = input.affectedMergeRequests
+      .map(
+        (mergeRequest) =>
+          `- ${mergeRequest.provider}:${mergeRequest.repositoryId}#${mergeRequest.number} (${mergeRequest.url})`,
+      )
+      .join('\n');
+    const proposal = `# Proposal
+
+## Why
+
+已完成 Change \`${input.originalChangeId}\` 的发布后语义审查确认需要规格修正。原 Publication Receipt：\`${input.publicationReceiptDigest}\`。
+
+${input.rationale}
+
+受影响的 Merge Request：
+
+${references}
+
+## What Changes
+
+- 重新评估上述远端变更对已接受行为契约的影响。
+- 通过本普通 OpenSpec Change 更新必要的 Delta Specs、Design 和 Tasks。
+- 不修改原归档 Change、Closure Receipt 或已完成 Run。
+
+## Capabilities
+
+### Modified Capabilities
+
+- 待 Design 阶段根据审查证据确定。
+
+## Impact
+
+本 Change 从标准 Open 阶段进入 Design 审批；在规格影响范围获批前不得开始 Build。
+`;
+    await atomicWriteText(path.join(active, 'proposal.md'), proposal, { containedRoot: workspace });
+    return {
+      apiVersion: SPECIFICATION_API_VERSION,
+      kind: 'SpecificationFollowUpChange',
+      changeId: input.changeId,
+      originalChangeId: input.originalChangeId,
+      publicationReceiptDigest: input.publicationReceiptDigest,
+      status: 'opened',
+      lifecycleEntry: 'open',
+      proposalDigest: sha256(proposal),
+    };
+  }
+
   private async closeAt(
     workspace: string,
     plan: SpecificationClosurePlan,
@@ -890,6 +962,7 @@ export class OpenSpecProvider extends Specification {
       validate: (changeId, options) => this.validateAt(workspace, changeId, options),
       prepareClosure: (input) => this.prepareClosureAt(workspace, input),
       close: (plan, signal) => this.closeAt(workspace, plan, signal),
+      openFollowUp: (input) => this.openFollowUpAt(workspace, input),
     };
   }
 }

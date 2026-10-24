@@ -318,6 +318,31 @@ export interface SpecificationClosureResult {
   changedFiles: string[];
 }
 
+export interface SpecificationFollowUpChangeInput {
+  changeId: string;
+  originalChangeId: string;
+  publicationReceiptDigest: `sha256:${string}`;
+  affectedMergeRequests: Array<{
+    provider: string;
+    repositoryId: string;
+    number: number;
+    url: string;
+  }>;
+  rationale: string;
+  signal?: AbortSignal;
+}
+
+export interface SpecificationFollowUpChange {
+  apiVersion: typeof SPECIFICATION_API_VERSION;
+  kind: 'SpecificationFollowUpChange';
+  changeId: string;
+  originalChangeId: string;
+  publicationReceiptDigest: `sha256:${string}`;
+  status: 'opened';
+  lifecycleEntry: 'open';
+  proposalDigest: `sha256:${string}`;
+}
+
 export interface RequirementsAuthoritySource {
   sourceId: string;
   sourceType: 'specification' | 'design' | 'api-contract' | 'other';

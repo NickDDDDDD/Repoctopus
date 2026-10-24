@@ -14,6 +14,8 @@ import type {
   SpecificationPlanningGuidance,
   PlanningSpecificationRoot,
   SpecificationValidation,
+  SpecificationFollowUpChange,
+  SpecificationFollowUpChangeInput,
 } from '../domains/specification/types.js';
 import { createSpecificationPlanningManifest } from '../domains/specification/planning-manifest.js';
 import { createSpecificationPlanningGuidance } from '../domains/specification/planning-guidance.js';
@@ -36,14 +38,8 @@ export interface SpecificationWorkspace {
     signal?: AbortSignal,
   ): Promise<SpecificationSchemaInstructions>;
   planningContext(changeId: string, signal?: AbortSignal): Promise<SpecificationPlanningContext>;
-  planningManifest(
-    changeId: string,
-    signal?: AbortSignal,
-  ): Promise<SpecificationPlanningManifest>;
-  planningGuidance(
-    changeId: string,
-    signal?: AbortSignal,
-  ): Promise<SpecificationPlanningGuidance>;
+  planningManifest(changeId: string, signal?: AbortSignal): Promise<SpecificationPlanningManifest>;
+  planningGuidance(changeId: string, signal?: AbortSignal): Promise<SpecificationPlanningGuidance>;
   tasks(changeId: string, signal?: AbortSignal): Promise<SpecificationTaskSet>;
   completeTask(input: CompleteSpecificationTaskInput): Promise<CompleteSpecificationTaskResult>;
   inspect(changeId: string, signal?: AbortSignal): Promise<SpecificationChange>;
@@ -53,6 +49,7 @@ export interface SpecificationWorkspace {
   ): Promise<SpecificationValidation>;
   prepareClosure(input: PrepareSpecificationClosureInput): Promise<SpecificationClosurePlan>;
   close(plan: SpecificationClosurePlan, signal?: AbortSignal): Promise<SpecificationClosureResult>;
+  openFollowUp(input: SpecificationFollowUpChangeInput): Promise<SpecificationFollowUpChange>;
 }
 
 export abstract class Specification extends Service implements SpecificationWorkspace {
@@ -115,9 +112,7 @@ export abstract class Specification extends Service implements SpecificationWork
     changeId: string,
     signal?: AbortSignal,
   ): Promise<SpecificationPlanningGuidance> {
-    return createSpecificationPlanningGuidance(
-      await this.planningInstructions(changeId, signal),
-    );
+    return createSpecificationPlanningGuidance(await this.planningInstructions(changeId, signal));
   }
   abstract inspect(changeId: string, signal?: AbortSignal): Promise<SpecificationChange>;
   abstract validate(
@@ -131,6 +126,13 @@ export abstract class Specification extends Service implements SpecificationWork
     plan: SpecificationClosurePlan,
     signal?: AbortSignal,
   ): Promise<SpecificationClosureResult>;
+  openFollowUp(input: SpecificationFollowUpChangeInput): Promise<SpecificationFollowUpChange> {
+    return Promise.reject(
+      new Error(
+        `Specification provider ${this.identity().id} cannot open follow-up ${input.changeId}`,
+      ),
+    );
+  }
 
   atWorkspace(workspaceRoot: string): SpecificationWorkspace {
     throw new Error(

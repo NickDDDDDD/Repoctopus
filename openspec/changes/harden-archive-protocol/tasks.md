@@ -70,7 +70,7 @@
       **Blocked by:** 4.2
       **Acceptance:** 实现/测试/流水线变化、API/配置/权限变化及混合歧义 fixture 产生预期 verdict 和证据映射
       **Requirements:** consistency-reconciliation#impact-review
-- [ ] 4.4 对确认需要修正的结果启动普通后续 OpenSpec change，引用原 Change、Publication Receipt 和受影响 MR；不得编辑归档目录或重开原 Run。
+- [x] 4.4 对确认需要修正的结果启动普通后续 OpenSpec change，引用原 Change、Publication Receipt 和受影响 MR；不得编辑归档目录或重开原 Run。
       **Blocked by:** 4.3
       **Acceptance:** 后续 Change 经过标准 Open/Design 门禁，原 Run trajectory 和归档摘要在前后保持不变
       **Requirements:** consistency-reconciliation#follow-up-change, specification-authority#semantic-compensation

@@ -12,6 +12,7 @@ import type { SkillUsageSnapshot } from '../domains/skill/types.js';
 import { canonicalJson } from '../domains/workflow-contract/canonical.js';
 import { FileConsistencyStore } from '../platform/consistency/file-consistency-store.js';
 import { snapshotSkillDefinition } from '../platform/skill/snapshot.js';
+import type { SpecificationFollowUpChange } from '../domains/specification/types.js';
 
 export interface ConsistencySemanticAssessment {
   behaviorContractChanged: boolean | null;
@@ -121,7 +122,7 @@ export function evaluateConsistencyAssessment(input: {
 }
 
 export class ConsistencyReviewService extends Service {
-  static inject = ['skills'];
+  static inject = ['skills', 'specification'];
   private readonly store: FileConsistencyStore;
 
   constructor(
@@ -162,6 +163,61 @@ export class ConsistencyReviewService extends Service {
     const result = evaluateConsistencyAssessment(input);
     if (result.receipt) await this.store.saveReceipt(result.receipt);
     return result;
+  }
+
+  async confirm(input: {
+    work: ConsistencyReviewWorkPackage;
+    decisionRequest: ConsistencyHumanDecisionRequest;
+    decision: 'no-spec-impact' | 'spec-update-required';
+    actor: { actorId: string; authenticated: boolean };
+    evidenceIds: readonly string[];
+    reviewedAt: string;
+    followUpChangeId?: string;
+  }): Promise<{ receipt: ConsistencyReviewReceipt; followUp: SpecificationFollowUpChange | null }> {
+    if (
+      !input.actor.authenticated ||
+      !input.actor.actorId.trim() ||
+      input.decisionRequest.reviewRequestId !== input.work.request.requestId ||
+      input.decisionRequest.inputDigest !== input.work.inputDigest ||
+      !input.decisionRequest.options.includes(input.decision)
+    ) {
+      throw new Error('Consistency impact decision is not trusted or does not match the review');
+    }
+    const affected = input.work.request.observations
+      .filter((item) => item.currentHeadOid !== item.publishedHeadOid)
+      .map((item) => item.publicationId);
+    let followUp: SpecificationFollowUpChange | null = null;
+    if (input.decision === 'spec-update-required') {
+      const defaultId =
+        `reconcile-${input.work.request.changeId}-${input.work.request.requestId.slice(7, 15)}`
+          .toLowerCase()
+          .replace(/[^a-z0-9-]/gu, '-');
+      followUp = await this.ctx.specification.openFollowUp({
+        changeId: input.followUpChangeId ?? defaultId,
+        originalChangeId: input.work.request.changeId,
+        publicationReceiptDigest: input.work.request.publicationReceiptDigest,
+        affectedMergeRequests: input.work.request.observations
+          .filter((item) => affected.includes(item.publicationId))
+          .map((item) => ({
+            provider: item.provider,
+            repositoryId: item.repositoryId,
+            number: item.number,
+            url: item.url,
+          })),
+        rationale: input.decisionRequest.rationale,
+      });
+    }
+    const receipt = createConsistencyReviewReceipt({
+      request: input.work.request,
+      verdict: input.decision,
+      rationale: `${input.decisionRequest.rationale} Confirmed by trusted actor ${input.actor.actorId}.`,
+      evidenceIds: input.evidenceIds,
+      affectedPublicationIds: affected,
+      followUpChangeId: followUp?.changeId ?? null,
+      reviewedAt: input.reviewedAt,
+    });
+    await this.store.saveReceipt(receipt);
+    return { receipt, followUp };
   }
 }
 
