@@ -58,7 +58,7 @@
 
 ## 4. 建立非阻塞最终一致性审查
 
-- [ ] 4.1 定义 `ConsistencyReviewRequest/Receipt`，按 Publication Receipt 比较业务 MR 当前 head/state，输出 `no-spec-impact | spec-update-required | uncertain` 和有界证据。
+- [x] 4.1 定义 `ConsistencyReviewRequest/Receipt`，按 Publication Receipt 比较业务 MR 当前 head/state，输出 `no-spec-impact | spec-update-required | uncertain` 和有界证据。
       **Blocked by:** 3.3
       **Acceptance:** contract tests 证明结果不改原 Run/Receipt，不包含 MR body、完整 diff、凭据或绝对路径，并可关联后续 Change
       **Requirements:** consistency-reconciliation#pull-reconcile, consistency-reconciliation#impact-review
