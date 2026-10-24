@@ -123,7 +123,7 @@ export class WorkDispatcher extends Service {
         inputDigest: work.inputDigest,
         archiveDeliveryInput: state.changeLifecycle!.archiveDeliveryInput ?? null,
       },
-      diagnostic: (request.attempt ?? 1) > 1,
+      diagnostic: work.phase === 'build' && (request.attempt ?? 1) > 1,
     });
     return this.ctx.actionDispatcher.claim({
       runId: request.runId,
