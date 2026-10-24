@@ -51,7 +51,7 @@
       **Blocked by:** 3.1
       **Acceptance:** 每个响应丢失点最多形成一个逻辑远端结果；人工 MR 记录 `human-created` 且不伪造 Action Intent
       **Requirements:** delivery-governance#stable-publication
-- [ ] 3.3 在第二仓失败、进程退出和不同短生命周期执行者恢复时从首个未确认 item 继续，保持已发布项不可回滚且禁止 force-push/rebase/delete/auto-merge。
+- [x] 3.3 在第二仓失败、进程退出和不同短生命周期执行者恢复时从首个未确认 item 继续，保持已发布项不可回滚且禁止 force-push/rebase/delete/auto-merge。
       **Blocked by:** 3.2
       **Acceptance:** 多仓故障矩阵无重复逻辑副作用；失败诊断精确指向 item，恢复不依赖原开发者或 Runner identity
       **Requirements:** delivery-governance#publication-receipt, delivery-governance#stable-publication
