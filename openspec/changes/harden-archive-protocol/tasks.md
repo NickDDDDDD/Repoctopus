@@ -28,7 +28,7 @@
 
 ## 2. 收紧 OpenSpec 本地关闭事务
 
-- [ ] 2.1 定义窄范围 `SpecificationClosureJournal`，只包含 prepared/applying/rolling-back/rolled-back/committed、关闭计划、文件 CAS identity 和预期后置条件。
+- [x] 2.1 定义窄范围 `SpecificationClosureJournal`，只包含 prepared/applying/rolling-back/rolled-back/committed、关闭计划、文件 CAS identity 和预期后置条件。
       **Blocked by:** 1.3
       **Acceptance:** schema/golden tests 拒绝未知版本、倒退状态、跨 Change 输入和 checkout 外路径
       **Requirements:** specification-authority#closure-journal
