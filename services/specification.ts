@@ -8,6 +8,7 @@ import type {
   SpecificationClosureResult,
   SpecificationProviderIdentity,
   SpecificationSchemaInstructions,
+  SpecificationPlanningContext,
   SpecificationTaskSet,
   SpecificationPlanningManifest,
   SpecificationPlanningGuidance,
@@ -34,6 +35,7 @@ export interface SpecificationWorkspace {
     changeId: string,
     signal?: AbortSignal,
   ): Promise<SpecificationSchemaInstructions>;
+  planningContext(changeId: string, signal?: AbortSignal): Promise<SpecificationPlanningContext>;
   planningManifest(
     changeId: string,
     signal?: AbortSignal,
@@ -76,6 +78,13 @@ export abstract class Specification extends Service implements SpecificationWork
     void signal;
     return Promise.reject(
       new Error(`Specification provider ${this.identity().id} has no planning instructions`),
+    );
+  }
+  planningContext(changeId: string, signal?: AbortSignal): Promise<SpecificationPlanningContext> {
+    void changeId;
+    void signal;
+    return Promise.reject(
+      new Error(`Specification provider ${this.identity().id} has no planning context`),
     );
   }
   tasks(changeId: string, signal?: AbortSignal): Promise<SpecificationTaskSet> {

@@ -37,7 +37,7 @@
 - [x] 3.5 将现有 Manual/Process/Git/Specification Contributor 接到 Work Dispatcher；运行 production composition 纵切证明 Adapter 返回成功只形成 Outcome，缺少 Validator/Evidence 时 Task 和 phase 不推进。
 - [x] 3.6 实现 Build Task validator 和完成投影：验证通过后由 Provider 安全更新 checkbox/任务状态，重复完成幂等；验证失败、输入漂移和任务 revision 变化分别产生可定位状态。
 - [x] 3.7 加入团队协作测试，证明不同成员/Runner 可领取后续修复 Work，identity 仅用于授权和审计，不形成 change owner 或 MR 作者过滤。
-- [ ] 3.8 固定上下文优先级和阶段组合并做真实装填测试：Runtime contract → action Skill → OpenSpec instructions/template → augmentations → Method Profile → change inputs；覆盖 Open 的探索/创建、Design 的继续/决策、Build 写入前的 `tdd + codebase-design`、失败诊断、Verify 验证/审查和 Archive 归档/PR，证明缺失依赖、第二个 action owner 或冲突产物协议均在副作用前被拒绝。
+- [x] 3.8 固定上下文优先级和阶段组合并做真实装填测试：Runtime contract → action Skill → OpenSpec instructions/template → augmentations → Method Profile → change inputs；覆盖 Open 的探索/创建、Design 的继续/决策、Build 写入前的 `tdd + codebase-design`、失败诊断、Verify 验证/审查和 Archive 归档/PR，证明缺失依赖、第二个 action owner 或冲突产物协议均在副作用前被拒绝。
 
 ## 4. 接入 Verify Gate 与回退循环
 

@@ -225,6 +225,7 @@ describe('Specification authority', () => {
 
     const inspected = await context.specification.inspect('sample');
     const instructions = await context.specification.planningInstructions('sample');
+    const planningContext = await context.specification.planningContext('sample');
     expect(context.specification.root()).toEqual({
       schemaVersion: 1,
       kind: 'SpecificationRoot',
@@ -238,6 +239,9 @@ describe('Specification authority', () => {
       planningComplete: true,
       affectedCapabilities: ['demo'],
     });
+    expect(planningContext.artifacts).toHaveLength(4);
+    expect(typeof planningContext.artifacts[0]?.instruction).toBe('string');
+    expect(typeof planningContext.artifacts[0]?.template).toBe('string');
     expect(inspected.artifacts.map((artifact) => artifact.kind)).toEqual([
       'design',
       'proposal',

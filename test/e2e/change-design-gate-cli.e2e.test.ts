@@ -312,6 +312,13 @@ describe('Change Run Design gate CLI', () => {
           authenticated: true,
         },
       });
+      expect(intent.executionContext?.layers.map((entry) => entry.source)).toEqual([
+        'repoctopus-runtime',
+        'tdd',
+        'codebase-design',
+        'repoctopus.build@1.0.0',
+        approvedWorkId,
+      ]);
       const accepted = await outcomeApp.context.commandRouter.execute<
         ReturnType<typeof outcomeApp.context.workDispatcher.outcome>,
         WorkOutcomeAcceptance
@@ -380,6 +387,14 @@ describe('Change Run Design gate CLI', () => {
         },
       });
       expect(repairIntent.executor).toMatchObject({ actorId: 'bob', runnerId: 'runner-b' });
+      expect(repairIntent.executionContext?.layers.map((entry) => entry.source)).toEqual([
+        'repoctopus-runtime',
+        'tdd',
+        'codebase-design',
+        'diagnosing-bugs',
+        'repoctopus.build@1.0.0',
+        approvedWorkId,
+      ]);
       const repaired = await validationApp.context.workDispatcher.acceptOutcome(
         validationApp.context.workDispatcher.outcome(
           repairIntent,

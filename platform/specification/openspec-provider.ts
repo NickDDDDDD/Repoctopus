@@ -14,6 +14,7 @@ import {
   type SpecificationDiagnostic,
   type SpecificationProviderIdentity,
   type SpecificationSchemaInstructions,
+  type SpecificationPlanningContext,
   type SpecificationValidation,
   type SpecificationTaskSet,
   type CompleteSpecificationTaskInput,
@@ -374,11 +375,38 @@ export class OpenSpecProvider extends Specification {
     return this.planningInstructionsAt(this.workspace, changeId, signal);
   }
 
+  override async planningContext(
+    changeId: string,
+    signal?: AbortSignal,
+  ): Promise<SpecificationPlanningContext> {
+    return this.planningContextAt(this.workspace, changeId, signal);
+  }
+
   private async planningInstructionsAt(
     workspace: string,
     changeId: string,
     signal?: AbortSignal,
   ): Promise<SpecificationSchemaInstructions> {
+    const context = await this.planningContextAt(workspace, changeId, signal);
+    const stable = {
+      schemaVersion: 1 as const,
+      schemaName: context.schemaName,
+      provider: structuredClone(context.provider),
+      artifacts: context.artifacts.map((artifact) => ({
+        id: artifact.id,
+        kind: artifact.kind,
+        instructionDigest: artifact.instructionDigest,
+        templateDigest: artifact.templateDigest,
+      })),
+    };
+    return { ...stable, digest: sha256(stable) };
+  }
+
+  private async planningContextAt(
+    workspace: string,
+    changeId: string,
+    signal?: AbortSignal,
+  ): Promise<SpecificationPlanningContext> {
     const id = changeId.trim();
     if (!id) throw new Error('Specification change id is required');
     const artifactIds = ['proposal', 'specs', 'design', 'tasks'] as const;
@@ -412,6 +440,8 @@ export class OpenSpecProvider extends Specification {
       return {
         id: expectedId,
         kind,
+        instruction: result.instruction,
+        template: result.template,
         instructionDigest: sha256(result.instruction),
         templateDigest: sha256(result.template),
       };
@@ -661,6 +691,7 @@ export class OpenSpecProvider extends Specification {
       },
       planningInstructions: (changeId, signal) =>
         this.planningInstructionsAt(workspace, changeId, signal),
+      planningContext: (changeId, signal) => this.planningContextAt(workspace, changeId, signal),
       planningGuidance: async (changeId, signal) =>
         createSpecificationPlanningGuidance(
           await this.planningInstructionsAt(workspace, changeId, signal),

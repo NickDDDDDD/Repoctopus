@@ -58,7 +58,7 @@ export function outcomeReceiptAdapter(id: string): ActionAdapter {
 }
 
 export class WorkDispatcher extends Service {
-  static inject = ['actionDispatcher', 'actionStore', 'runStore'];
+  static inject = ['actionDispatcher', 'actionStore', 'runStore', 'workContextAssembler'];
 
   private readonly contributors = new Map<string, WorkContributor>();
 
@@ -100,6 +100,18 @@ export class WorkDispatcher extends Service {
       throw new Error('Work claim requires an authenticated actor and Runner identity');
     }
     assertContributorSupportsWork(contributor, work);
+    const executionContext = await this.ctx.workContextAssembler.assemble({
+      work,
+      changeId: state.changeLifecycle!.identity.changeId,
+      changeInputs: {
+        runId: state.runId,
+        change: state.changeLifecycle!.identity,
+        taskId: work.taskId ?? null,
+        taskRevision: work.taskRevision ?? null,
+        inputDigest: work.inputDigest,
+      },
+      diagnostic: (request.attempt ?? 1) > 1,
+    });
     return this.ctx.actionDispatcher.claim({
       runId: request.runId,
       workId: work.workId,
@@ -115,6 +127,15 @@ export class WorkDispatcher extends Service {
       },
       adapter: contributor.id,
       executor: structuredClone(request.executor),
+      executionContext: {
+        digest: executionContext.digest,
+        layers: executionContext.layers.map((entry) => ({
+          kind: entry.kind,
+          priority: entry.priority,
+          source: entry.source,
+          digest: entry.digest,
+        })),
+      },
     });
   }
 

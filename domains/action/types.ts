@@ -15,6 +15,7 @@ export interface ActionIntent {
   action: EngineAction;
   adapter: string;
   executor?: WorkExecutorIdentity;
+  executionContext?: WorkExecutionContextIdentity;
   createdAt: string;
 }
 
@@ -47,6 +48,7 @@ export interface ActionClaimInput {
   action: EngineAction;
   adapter?: string;
   executor?: WorkExecutorIdentity;
+  executionContext?: WorkExecutionContextIdentity;
 }
 
 export interface ClaimedActionOutcome {
@@ -81,6 +83,16 @@ export interface WorkExecutorIdentity {
   runnerId: string;
   source: 'cli' | 'desktop' | 'runner' | 'api';
   authenticated: boolean;
+}
+
+export interface WorkExecutionContextIdentity {
+  digest: `sha256:${string}`;
+  layers: readonly {
+    kind: string;
+    priority: number;
+    source: string;
+    digest: `sha256:${string}`;
+  }[];
 }
 
 export interface WorkOutcomeAcceptance {

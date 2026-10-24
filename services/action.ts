@@ -124,6 +124,9 @@ export class ActionDispatcher extends Service {
       action: structuredClone(input.action),
       adapter,
       ...(input.executor ? { executor: structuredClone(input.executor) } : {}),
+      ...(input.executionContext
+        ? { executionContext: structuredClone(input.executionContext) }
+        : {}),
       createdAt: new Date().toISOString(),
     });
   }

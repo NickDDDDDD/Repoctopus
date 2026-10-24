@@ -150,6 +150,11 @@ function projectSelections(
       { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
     ),
     { id: 'runtime-work-guard' },
+    runtimeSelection(
+      'work-context-assembler',
+      { workspaceRoot },
+      { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
+    ),
     { id: 'work-dispatcher' },
     { id: 'action-manual' },
     { id: 'action-work-contributors' },
@@ -330,6 +335,7 @@ const BASE_REQUIRED_SERVICES = [
   'specificationPlanning',
   'workflowRuns',
   'workDispatcher',
+  'workContextAssembler',
   'workflowSource',
   'workflowTelemetry',
 ] as const;

@@ -91,6 +91,19 @@ export interface SpecificationArtifactInstructions {
   templateDigest: `sha256:${string}`;
 }
 
+export interface SpecificationArtifactContext extends SpecificationArtifactInstructions {
+  instruction: string;
+  template: string;
+}
+
+export interface SpecificationPlanningContext {
+  schemaVersion: 1;
+  schemaName: string;
+  provider: SpecificationProviderIdentity;
+  artifacts: SpecificationArtifactContext[];
+  digest: `sha256:${string}`;
+}
+
 export interface SpecificationSchemaInstructions {
   schemaVersion: 1;
   schemaName: string;

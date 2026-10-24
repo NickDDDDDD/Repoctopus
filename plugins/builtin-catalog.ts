@@ -29,6 +29,7 @@ import { CommandRouter } from '../services/command-router.js';
 import { ActionDispatcher } from '../services/action.js';
 import { RuntimeWorkGuard } from '../services/runtime-work-guard.js';
 import { WorkDispatcher } from '../services/work-dispatcher.js';
+import { WorkContextAssembler } from '../services/work-context-assembler.js';
 import { EvidenceCoordinator } from '../services/evidence-coordinator.js';
 import { EvidenceAdapters } from '../services/evidence-adapters.js';
 import {
@@ -664,6 +665,27 @@ const definitions: readonly BuiltinDefinition[] = [
       'domains/change-lifecycle/work-guard.ts',
       'services/runtime-work-guard.ts',
       'services/command-router.ts',
+    ],
+  },
+  {
+    descriptor: {
+      id: 'work-context-assembler',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['work-context'],
+      permissions: ['filesystem'],
+      stateSchemas: {},
+    },
+    plugin: WorkContextAssembler,
+    sourceFiles: [
+      'domains/change-lifecycle/method-profile.ts',
+      'domains/change-lifecycle/work-context.ts',
+      'platform/skill/snapshot.ts',
+      'services/work-context-assembler.ts',
     ],
   },
   {
