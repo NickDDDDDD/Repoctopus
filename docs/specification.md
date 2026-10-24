@@ -41,6 +41,8 @@ node bin/repoctopus.js run decide --workspace . --run <run-id>
 
 批准生效时，Provider 从官方 `tasks.md` 解析 checkbox 任务。编号是稳定 `taskId`；规范化后的任务文字、层级、`Blocked by` 依赖、Acceptance criteria 和 Requirement mappings 共同形成 `taskRevision`。checkbox 完成状态、CRLF/LF、等价 Markdown 强调、空白以及元数据声明顺序不改变 task revision 或 Tasks semantic digest；任一任务语义、层级、依赖、验收或需求映射变化则必须改变。没有显式依赖时按文档顺序串行依赖前一任务。Runtime 只接受恰好一个 ready Task，并在 Design→Build 转换中持久化对应 Work；`run status` 读取该 Work，不从文件重新猜测。修改或拒绝状态不会产生 Build Work。
 
+`planningGuidance` 把已审核的方法规则只读映射到 Provider 声明的四类官方工件：已解决上下文被综合进现有工件，最少公共测试缝进入 Design，tracer-bullet、验收验证和 expand/migrate/contract 顺序进入 Tasks。该指导明确禁止额外规划工件和 tracker 发布；它不复制 OpenSpec 模板，也不执行原始 `to-spec`/`to-tickets` Skill。
+
 批准只授权按照该快照进入实施。产物、Provider、配置、目标分支或 Change 分支 OID 任一变化，下一次准备或实施门禁都会生成新请求，旧批准不能沿用。后续 Delivery approval 单独授权 Business MR 发布；最终 Change MR 则只在全部 Business MR 合入、Post-merge Evidence 通过、主规格同步且 change 归档以后创建，并仍由人合入。因此三个事实不能互相替代：
 
 - **公开 Change 分支**：保存共享工作与精确远端版本，不代表人已同意方案。

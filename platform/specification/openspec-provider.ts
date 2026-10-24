@@ -19,6 +19,7 @@ import {
 } from '../../domains/specification/types.js';
 import { parseSpecificationTasks } from '../../domains/specification/tasks.js';
 import { createSpecificationPlanningManifest } from '../../domains/specification/planning-manifest.js';
+import { createSpecificationPlanningGuidance } from '../../domains/specification/planning-guidance.js';
 import { atomicWriteJson } from '../filesystem/atomic-write.js';
 import {
   Specification,
@@ -599,6 +600,10 @@ export class OpenSpecProvider extends Specification {
       },
       planningInstructions: (changeId, signal) =>
         this.planningInstructionsAt(workspace, changeId, signal),
+      planningGuidance: async (changeId, signal) =>
+        createSpecificationPlanningGuidance(
+          await this.planningInstructionsAt(workspace, changeId, signal),
+        ),
       planningManifest: async (changeId, signal) => {
         const [change, specificationRoot, schema] = await Promise.all([
           this.inspectAt(workspace, changeId, signal),

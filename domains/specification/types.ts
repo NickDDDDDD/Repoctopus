@@ -83,6 +83,33 @@ export interface SpecificationSchemaInstructions {
   digest: `sha256:${string}`;
 }
 
+export interface SpecificationMethodRule {
+  id: string;
+  statement: string;
+  sources: readonly string[];
+}
+
+export interface SpecificationArtifactMethodGuidance {
+  artifactId: string;
+  artifactKind: Exclude<SpecificationArtifactKind, 'verification'>;
+  rules: readonly SpecificationMethodRule[];
+}
+
+export interface SpecificationPlanningGuidance {
+  schemaVersion: 1;
+  kind: 'SpecificationPlanningGuidance';
+  provider: SpecificationProviderIdentity;
+  schemaName: string;
+  schemaDigest: `sha256:${string}`;
+  artifacts: readonly SpecificationArtifactMethodGuidance[];
+  outputContract: {
+    artifactKinds: readonly Exclude<SpecificationArtifactKind, 'verification'>[];
+    allowAdditionalPlanningArtifacts: false;
+    trackerPublish: false;
+  };
+  digest: `sha256:${string}`;
+}
+
 export interface SpecificationPlanningManifest {
   schemaVersion: 1;
   kind: 'SpecificationPlanningManifest';

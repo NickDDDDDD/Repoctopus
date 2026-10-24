@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { Context } from '@deepseek-ai/cordis';
@@ -280,6 +280,38 @@ describe('Specification authority', () => {
     expect(() => assertSpecificationPlanningManifest(manifest)).not.toThrow();
     expect(JSON.stringify(manifest)).not.toContain(workspace);
     expect(JSON.stringify(manifest)).not.toContain('openspec/changes');
+    const filesBeforeGuidance = (await readdir(workspace, { recursive: true })).sort();
+    const guidance = await context.specification.planningGuidance('sample');
+    expect(guidance.artifacts.map((artifact) => artifact.artifactKind)).toEqual([
+      'proposal',
+      'delta-specs',
+      'design',
+      'tasks',
+    ]);
+    expect(
+      guidance.artifacts.find((artifact) => artifact.artifactKind === 'design')?.rules,
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: 'design.public-test-seams' }),
+        expect.objectContaining({ id: 'planning.synthesize-known-context' }),
+      ]),
+    );
+    expect(
+      guidance.artifacts.find((artifact) => artifact.artifactKind === 'tasks')?.rules,
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: 'tasks.tracer-bullet-slices' }),
+        expect.objectContaining({ id: 'tasks.verifiable-acceptance' }),
+        expect.objectContaining({ id: 'tasks.expand-contract-wide-refactors' }),
+      ]),
+    );
+    expect(guidance.outputContract).toEqual({
+      artifactKinds: ['proposal', 'delta-specs', 'design', 'tasks'],
+      allowAdditionalPlanningArtifacts: false,
+      trackerPublish: false,
+    });
+    expect((await readdir(workspace, { recursive: true })).sort()).toEqual(filesBeforeGuidance);
+    expect(filesBeforeGuidance.some((file) => /(?:ticket|tracker)/iu.test(file))).toBe(false);
     const tasksFile = path.join(workspace, 'openspec', 'changes', 'sample', 'tasks.md');
     const originalTasks = await readFile(tasksFile, 'utf8');
     await writeFile(tasksFile, originalTasks.replace('- [x]', '- [ ]').replaceAll('\n', '\r\n'));

@@ -8,10 +8,12 @@ import type {
   SpecificationSchemaInstructions,
   SpecificationTaskSet,
   SpecificationPlanningManifest,
+  SpecificationPlanningGuidance,
   PlanningSpecificationRoot,
   SpecificationValidation,
 } from '../domains/specification/types.js';
 import { createSpecificationPlanningManifest } from '../domains/specification/planning-manifest.js';
+import { createSpecificationPlanningGuidance } from '../domains/specification/planning-guidance.js';
 
 export type SpecificationRoot = PlanningSpecificationRoot;
 
@@ -34,6 +36,10 @@ export interface SpecificationWorkspace {
     changeId: string,
     signal?: AbortSignal,
   ): Promise<SpecificationPlanningManifest>;
+  planningGuidance(
+    changeId: string,
+    signal?: AbortSignal,
+  ): Promise<SpecificationPlanningGuidance>;
   tasks(changeId: string, signal?: AbortSignal): Promise<SpecificationTaskSet>;
   inspect(changeId: string, signal?: AbortSignal): Promise<SpecificationChange>;
   validate(
@@ -86,6 +92,14 @@ export abstract class Specification extends Service implements SpecificationWork
       this.planningInstructions(changeId, signal),
     ]);
     return createSpecificationPlanningManifest({ change, specificationRoot, schema });
+  }
+  async planningGuidance(
+    changeId: string,
+    signal?: AbortSignal,
+  ): Promise<SpecificationPlanningGuidance> {
+    return createSpecificationPlanningGuidance(
+      await this.planningInstructions(changeId, signal),
+    );
   }
   abstract inspect(changeId: string, signal?: AbortSignal): Promise<SpecificationChange>;
   abstract validate(
