@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   createArchiveDeliveryInput,
   createArchiveDeliveryWork,
+  createAwaitMergeWork,
 } from '../domains/change-lifecycle/archive-input.js';
 import { BUILTIN_CHANGE_LIFECYCLE_DEFINITION, createChangeLifecycleSnapshot } from '../domains/change-lifecycle/definition.js';
 import { evolveChangeLifecycle } from '../domains/change-lifecycle/transition.js';
@@ -102,6 +103,71 @@ describe('Archive Delivery input', () => {
       phase: 'archive',
       currentWork: { kind: 'delivery.prepare', inputDigest: archive.digest },
       archiveDeliveryInput: { digest: archive.digest },
+    });
+    const publication = {
+      snapshot: {
+        schemaVersion: 3 as const,
+        changeId: 'archive-plan',
+        compositionDigest: digest('o'),
+        digest: digest('d'),
+        reportDigest: digest('r'),
+        policyDigest: archive.publicationPolicyDigest,
+        intentDigest: digest('i'),
+        evidenceBundleIds: ['bundle-1'],
+        changeBranch: archive.changeBranch,
+        businessDeliveries: [],
+        businessSplitReason: null,
+        plan: [],
+        createdAt: '2026-10-24T00:00:00.000Z',
+      },
+      receipts: [
+        {
+          actionId: 'push-1',
+          deliveryId: 'primary',
+          type: 'git.push' as const,
+          status: 'succeeded' as const,
+          recovered: false,
+          remoteOid: 'd'.repeat(40),
+        },
+        {
+          actionId: 'mr-1',
+          deliveryId: 'primary',
+          type: 'mr.create_or_update' as const,
+          status: 'succeeded' as const,
+          recovered: false,
+          mergeRequest: {
+            provider: 'github',
+            repositoryId: 'app',
+            number: 1,
+            url: 'https://github.com/team/app/pull/1',
+          },
+        },
+      ],
+    };
+    const waitWork = createAwaitMergeWork({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      archive,
+      publication,
+      workspaceRepositoryId: 'workspace',
+      repositoryIds: ['workspace', 'app'],
+    });
+    const waiting = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current: planned.snapshot,
+      observation: {
+        kind: 'archive-publication-completed',
+        archiveInputDigest: archive.digest,
+        actionReceiptId: 'action-receipt-1',
+        publication,
+        work: waitWork,
+      },
+    });
+    expect(waiting.snapshot).toMatchObject({
+      phase: 'archive',
+      status: 'waiting',
+      currentWork: { kind: 'delivery.await-merge' },
+      waitCondition: { kind: 'platform-event', eventType: 'business-merge-request.updated' },
+      archivePublication: { receipts: [{ type: 'git.push' }, { type: 'mr.create_or_update' }] },
     });
   });
 

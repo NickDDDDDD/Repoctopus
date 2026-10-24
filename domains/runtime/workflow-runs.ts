@@ -77,6 +77,9 @@ function lifecycleState(snapshot: ChangeLifecycleSnapshot): ChangeLifecycleState
     ...(snapshot.archiveDeliveryInput
       ? { archiveDeliveryInput: structuredClone(snapshot.archiveDeliveryInput) }
       : {}),
+    ...(snapshot.archivePublication
+      ? { archivePublication: structuredClone(snapshot.archivePublication) }
+      : {}),
   };
 }
 

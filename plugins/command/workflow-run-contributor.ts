@@ -10,6 +10,7 @@ import type {
   ValidateBuildTaskInput,
   VerifyChangeRunInput,
   PrepareArchiveDeliveryInput,
+  ExecuteArchiveDeliveryInput,
 } from '../../services/workflow-runs.js';
 
 interface StartInput {
@@ -54,6 +55,14 @@ const plugin = ((context: Context) => {
         execute: ({ input, signal }) =>
           context.workflowRuns.prepareArchiveDelivery(
             input as PrepareArchiveDeliveryInput,
+            signal,
+          ),
+      }),
+      context.commandRouter.register({
+        name: 'run.archive.publish',
+        execute: ({ input, signal }) =>
+          context.workflowRuns.executeArchiveDelivery(
+            input as ExecuteArchiveDeliveryInput,
             signal,
           ),
       }),

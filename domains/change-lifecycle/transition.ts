@@ -4,6 +4,7 @@ import type { SpecificationTask } from '../specification/types.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import type { VerificationInput } from './verification-input.js';
 import type { ArchiveDeliveryInput } from './archive-input.js';
+import type { ArchivePublicationResult } from '../delivery/service-v3.js';
 
 export const CHANGE_PHASES = ['open', 'design', 'build', 'verify', 'archive'] as const;
 export type ChangePhase = (typeof CHANGE_PHASES)[number];
@@ -204,6 +205,7 @@ export interface ChangeLifecycleState {
   verificationInput?: VerificationInput;
   verificationInvalidation?: VerificationInvalidation;
   archiveDeliveryInput?: ArchiveDeliveryInput;
+  archivePublication?: ArchivePublicationResult;
 }
 
 export interface VerificationInvalidation {
@@ -337,6 +339,13 @@ export type ChangeLifecycleObservation =
       kind: 'archive-delivery-ready';
       archiveInput: ArchiveDeliveryInput;
       work: WorkDescriptor;
+    }
+  | {
+      kind: 'archive-publication-completed';
+      archiveInputDigest: `sha256:${string}`;
+      actionReceiptId: string;
+      publication: ArchivePublicationResult;
+      work: WorkDescriptor;
     };
 
 export interface ChangeLifecycleReduction {
@@ -420,6 +429,7 @@ export function applyChangeLifecycleTransition(options: {
     verificationInput?: VerificationInput | null;
     verificationInvalidation?: VerificationInvalidation | null;
     archiveDeliveryInput?: ArchiveDeliveryInput | null;
+    archivePublication?: ArchivePublicationResult | null;
   };
 }): { snapshot: ChangeLifecycleSnapshot; fact: ChangeLifecycleTransitionFact } {
   assertChangeLifecycleSnapshot(options.current);
@@ -470,6 +480,10 @@ export function applyChangeLifecycleTransition(options: {
   if (options.next.archiveDeliveryInput === null) delete snapshot.archiveDeliveryInput;
   else if (options.next.archiveDeliveryInput) {
     snapshot.archiveDeliveryInput = structuredClone(options.next.archiveDeliveryInput);
+  }
+  if (options.next.archivePublication === null) delete snapshot.archivePublication;
+  else if (options.next.archivePublication) {
+    snapshot.archivePublication = structuredClone(options.next.archivePublication);
   }
   assertChangeLifecycleSnapshot(snapshot);
   return {
@@ -815,6 +829,55 @@ export function evolveChangeLifecycle(options: {
         waitCondition: null,
         blocker: null,
         archiveDeliveryInput: observation.archiveInput,
+      },
+    });
+  }
+  if (observation.kind === 'archive-publication-completed') {
+    const archive = current.archiveDeliveryInput;
+    if (
+      current.phase !== 'archive' ||
+      current.status !== 'running' ||
+      current.currentWork?.kind !== 'delivery.prepare' ||
+      !archive
+    ) {
+      throw new Error(`Archive publication is not valid from ${current.phase}/${current.status}`);
+    }
+    const expectedActions = archive.businessDeliveries.length * 2;
+    if (
+      archive.digest !== observation.archiveInputDigest ||
+      current.currentWork.inputDigest !== archive.digest ||
+      observation.publication.receipts.length !== expectedActions ||
+      new Set(observation.publication.receipts.map((receipt) => receipt.actionId)).size !==
+        expectedActions ||
+      observation.publication.receipts.some((receipt) => receipt.status !== 'succeeded') ||
+      !observation.actionReceiptId.trim()
+    ) {
+      throw new Error('Archive publication receipts do not cover the frozen Delivery plan');
+    }
+    if (
+      observation.work.phase !== 'archive' ||
+      observation.work.kind !== 'delivery.await-merge'
+    ) {
+      throw new Error('Archive publication did not create the fixed merge wait Work');
+    }
+    const waitCondition: PlatformEventWaitCondition = {
+      schemaVersion: 1,
+      waitId: `archive:business-merge:${observation.work.inputDigest}`,
+      kind: 'platform-event',
+      reason: 'Waiting for every frozen Business merge request to merge',
+      inputDigest: observation.work.inputDigest,
+      eventType: 'business-merge-request.updated',
+      subjectDigest: observation.work.inputDigest,
+    };
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'archive.publication-completed',
+      next: {
+        currentWork: observation.work,
+        waitCondition,
+        blocker: null,
+        archivePublication: observation.publication,
       },
     });
   }

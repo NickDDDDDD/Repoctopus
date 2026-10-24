@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import type { ArtifactRef } from '../evidence/types.js';
 import { deliveryPolicyDigest } from '../delivery/snapshot.js';
 import type { DeliveryIntentV3, DeliveryPolicy } from '../delivery/types.js';
+import type { ArchivePublicationResult } from '../delivery/service-v3.js';
 import { assertDeliveryIntentV3, normalizeDeliveryIntentV3 } from '../delivery/v3.js';
 import type { SkillUsageSnapshot } from '../skill/types.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
@@ -90,5 +91,32 @@ export function createArchiveDeliveryWork(facts: {
     workId: `archive:delivery:${facts.archive.digest.slice('sha256:'.length, 19)}`,
     ...binding,
     inputDigest: facts.archive.digest,
+  };
+}
+
+export function createAwaitMergeWork(facts: {
+  definition: ChangeLifecycleDefinition;
+  archive: ArchiveDeliveryInput;
+  publication: ArchivePublicationResult;
+  workspaceRepositoryId: string;
+  repositoryIds: readonly string[];
+}): WorkDescriptor {
+  const binding = materializeLifecycleWorkBinding({
+    definition: facts.definition,
+    kind: 'delivery.await-merge',
+    augmentationSkills: [],
+    workspaceRepositoryId: facts.workspaceRepositoryId,
+    repositoryIds: facts.repositoryIds,
+  });
+  const inputDigest = sha256({
+    archiveInputDigest: facts.archive.digest,
+    publicationSnapshotDigest: facts.publication.snapshot.digest,
+    receipts: facts.publication.receipts,
+  });
+  return {
+    schemaVersion: 1,
+    workId: `archive:await-merge:${inputDigest.slice('sha256:'.length, 19)}`,
+    ...binding,
+    inputDigest,
   };
 }

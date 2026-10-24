@@ -291,6 +291,14 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       requiredValidatorProfile: 'archive.delivery-ready',
     },
     {
+      id: 'archive.publication-completed',
+      kind: 'self',
+      from: { phase: 'archive', statuses: ['running'] },
+      to: { phase: 'archive', status: 'waiting' },
+      trigger: 'business-publication-receipts-accepted',
+      requiredValidatorProfile: 'archive.delivery-ready',
+    },
+    {
       id: 'archive.completed',
       kind: 'complete',
       from: { phase: 'archive', statuses: ['running'] },

@@ -49,8 +49,12 @@ import type {
 import {
   createArchiveDeliveryInput,
   createArchiveDeliveryWork,
+  createAwaitMergeWork,
 } from '../domains/change-lifecycle/archive-input.js';
 import type { DeliveryIntentV3, DeliveryPolicy } from '../domains/delivery/types.js';
+import { deliveryPolicyDigest } from '../domains/delivery/snapshot.js';
+import type { WorkExecutorIdentity } from '../domains/action/types.js';
+import type { ArchivePublicationResult } from '../domains/delivery/service-v3.js';
 
 export interface StartChangeRunInput {
   workspaceId: string;
@@ -100,11 +104,26 @@ export interface PrepareArchiveDeliveryInput {
   policy: DeliveryPolicy;
 }
 
+export interface ExecuteArchiveDeliveryInput {
+  runId: string;
+  project: ProjectSnapshot;
+  policy: DeliveryPolicy;
+  executor: WorkExecutorIdentity;
+  attempt?: number;
+}
+
+export interface ExecuteArchiveDeliveryResult {
+  publication: ArchivePublicationResult;
+  actionReceiptId: string;
+  run: RunStatusView;
+}
+
 export class WorkflowRuns extends Service {
   static inject = [
     'actionDispatcher',
     'actionStore',
     'compositionIdentity',
+    'delivery',
     'evidenceCoordinator',
     'project',
     'runStore',
@@ -113,6 +132,7 @@ export class WorkflowRuns extends Service {
     'specificationPlanning',
     'workflowTelemetry',
     'workflowSource',
+    'workDispatcher',
   ];
 
   private readonly coordinator: WorkflowRunCoordinator;
@@ -956,6 +976,91 @@ export class WorkflowRuns extends Service {
         archiveInput,
         work,
       });
+    });
+  }
+
+  executeArchiveDelivery(
+    input: ExecuteArchiveDeliveryInput,
+    signal?: AbortSignal,
+  ): Promise<RuntimeResult<ExecuteArchiveDeliveryResult>> {
+    return this.operations.run({ cancellable: false, signal }, async () => {
+      const state = await this.ctx.runStore.loadRun(input.runId);
+      const lifecycle = state.changeLifecycle;
+      const archive = lifecycle?.archiveDeliveryInput;
+      if (
+        !lifecycle ||
+        state.status !== 'running' ||
+        lifecycle.phase !== 'archive' ||
+        lifecycle.currentWork?.kind !== 'delivery.prepare' ||
+        !archive
+      ) {
+        throw new Error(`Change Run has no active Archive Delivery Work: ${input.runId}`);
+      }
+      if (deliveryPolicyDigest(input.policy) !== archive.publicationPolicyDigest) {
+        throw new Error('Archive Delivery policy changed after Work planning');
+      }
+      const intent: DeliveryIntentV3 = {
+        schemaVersion: 3,
+        changeId: archive.changeId,
+        changeBranch: structuredClone(archive.changeBranch),
+        businessDeliveries: structuredClone(archive.businessDeliveries),
+        ...(archive.businessSplitReason
+          ? { businessSplitReason: structuredClone(archive.businessSplitReason) }
+          : {}),
+      };
+      const claim = await this.ctx.workDispatcher.claim({
+        runId: input.runId,
+        adapter: 'git',
+        ...(input.attempt ? { attempt: input.attempt } : {}),
+        executor: input.executor,
+      });
+      let publication: ArchivePublicationResult;
+      try {
+        publication = await this.ctx.delivery.publishArchive(
+          {
+            project: input.project,
+            intent,
+            policy: input.policy,
+            reportContents: `verification-report:sha256:${archive.verificationReport.sha256}`,
+            evidenceBundleIds: [archive.evidenceBundleId],
+          },
+          signal,
+        );
+      } catch (error) {
+        await this.ctx.workDispatcher.acceptOutcome(
+          this.ctx.workDispatcher.outcome(
+            claim,
+            'failed',
+            error instanceof Error ? error.message : String(error),
+          ),
+        );
+        throw error;
+      }
+      const accepted = await this.ctx.workDispatcher.acceptOutcome(
+        this.ctx.workDispatcher.outcome(claim, 'succeeded', 'Archive publication completed'),
+      );
+      const waitWork = createAwaitMergeWork({
+        definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+        archive,
+        publication,
+        workspaceRepositoryId: archive.changeBranch.repositoryId,
+        repositoryIds: input.project.repositories.map((repository) => repository.id),
+      });
+      const advanced = await this.coordinator.acceptChangeObservation(input.runId, {
+        kind: 'archive-publication-completed',
+        archiveInputDigest: archive.digest,
+        actionReceiptId: accepted.receipt.receiptId,
+        publication,
+        work: waitWork,
+      });
+      return {
+        value: {
+          publication,
+          actionReceiptId: accepted.receipt.receiptId,
+          run: advanced.value,
+        },
+        diagnostics: advanced.diagnostics,
+      };
     });
   }
 

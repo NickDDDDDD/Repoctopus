@@ -109,6 +109,7 @@ export class WorkDispatcher extends Service {
         taskId: work.taskId ?? null,
         taskRevision: work.taskRevision ?? null,
         inputDigest: work.inputDigest,
+        archiveDeliveryInput: state.changeLifecycle!.archiveDeliveryInput ?? null,
       },
       diagnostic: (request.attempt ?? 1) > 1,
     });
