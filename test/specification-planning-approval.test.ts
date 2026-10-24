@@ -15,6 +15,7 @@ import {
 import { canonicalJson } from '../domains/workflow-contract/canonical.js';
 import type {
   ChangeBranchReference,
+  SpecificationApprovalState,
   SpecificationChange,
   SpecificationValidation,
 } from '../domains/specification/types.js';
@@ -382,5 +383,61 @@ describe('specification planning approval', () => {
     });
     expect(decided).toMatchObject({ status, decision: { decision, approvalHash: null } });
     expect(() => assertSpecificationApprovalState(decided)).not.toThrow();
+  });
+
+  it('replaces a readable legacy approval with a new pending decision', () => {
+    const currentSnapshot = createPlanningSnapshot(planningInput());
+    const current = requestSpecificationApproval({
+      current: null,
+      snapshot: currentSnapshot,
+      requestId: 'current-request',
+      timestamp: '2026-10-24T00:00:00.000Z',
+    });
+    const legacy = structuredClone(current) as unknown as Record<string, unknown>;
+    const legacySnapshot = legacy.snapshot as Record<string, unknown>;
+    delete legacySnapshot.schema;
+    delete legacySnapshot.specificationRoot;
+    delete legacySnapshot.planningManifestDigest;
+    delete legacySnapshot.publicationProvenanceDigest;
+    const { digest: _digest, ...legacyStable } = legacySnapshot;
+    void _digest;
+    legacySnapshot.digest = `sha256:${createHash('sha256')
+      .update(canonicalJson(legacyStable))
+      .digest('hex')}`;
+    const legacyRequest = legacy.decisionRequest as Record<string, unknown>;
+    delete legacyRequest.proposal;
+    delete legacyRequest.proposalHash;
+    delete legacyRequest.schema;
+    legacyRequest.snapshotDigest = legacySnapshot.digest;
+
+    const migrated = requestSpecificationApproval({
+      current: legacy as unknown as SpecificationApprovalState,
+      snapshot: currentSnapshot,
+      requestId: 'migration-decision',
+      timestamp: '2026-10-24T00:01:00.000Z',
+    });
+    expect(migrated).toMatchObject({
+      status: 'awaiting_approval',
+      stateVersion: current.stateVersion + 1,
+      decision: null,
+      decisionRequest: {
+        requestId: 'migration-decision',
+        proposal: { semanticDigest: currentSnapshot.digest },
+      },
+    });
+    expect(migrated.decisionRequest.proposalHash).toMatch(/^sha256:[a-f0-9]{64}$/u);
+    const approved = recordSpecificationApprovalDecision({
+      state: migrated,
+      response: {
+        apiVersion: 'repoctopus/v1alpha1',
+        kind: 'HumanDecisionResponse',
+        requestId: migrated.decisionRequest.requestId,
+        proposalHash: migrated.decisionRequest.proposalHash,
+        decision: 'approve',
+      },
+      actor: { actorId: 'migration-reviewer', source: 'cli', authenticated: true },
+      timestamp: '2026-10-24T00:02:00.000Z',
+    });
+    expect(approved.status).toBe('approved');
   });
 });

@@ -47,6 +47,8 @@ node bin/repoctopus.js run decide --workspace . --run <run-id>
 
 Build 或 Verify 每次继续前都会重新核对 planning semantic digest。发生变化时，Runtime 追加 `planning-semantic-drift` invalidation、清除当前 Work 与任务 revision 快照并返回 Design；Trajectory 保留被替代的 planning digest、Work ID、Task revisions 和证据身份。官方 Tasks checkbox 的完成状态已经从 planning digest 排除，因此有效的任务完成更新不会误触发回退。
 
+旧版 planning approval 仍可只读加载，但迁移计划会返回 `migration_required`，且没有外部副作用。迁移必须重新计算当前 planning manifest、重新核对公开分支来源并生成新的 Human Decision request；旧批准、分支 OID 或 Agent 声明都不会被静默转换为当前 Design decision。
+
 - **公开 Change 分支**：保存共享工作与精确远端版本，不代表人已同意方案。
 - **规划批准**：允许开始实现当前快照，不授权发布或合入任何 MR。
 - **最终 Change MR**：呈现已经关闭的完整 Change，供最终人工评审与合入，不是实施期间的工作区。

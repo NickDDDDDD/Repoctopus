@@ -2,6 +2,7 @@ import { Service, type Context } from '@deepseek-ai/cordis';
 
 import {
   createPlanningSnapshot,
+  createSpecificationApprovalMigrationPlan,
   recordSpecificationApprovalDecision,
   requestSpecificationApproval,
   type SpecificationApprovalStorePort,
@@ -13,6 +14,7 @@ import type {
   SpecificationApprovalState,
   SpecificationValidation,
   PlanningSnapshot,
+  SpecificationApprovalMigrationPlan,
 } from '../domains/specification/types.js';
 import { FilePlanningApprovalStore } from '../platform/specification/file-planning-approval-store.js';
 
@@ -54,6 +56,12 @@ export class SpecificationPlanning extends Service {
 
   status(changeId: string): Promise<SpecificationApprovalState | null> {
     return this.store.load(changeId);
+  }
+
+  async migrationPlan(changeId: string): Promise<SpecificationApprovalMigrationPlan> {
+    const current = await this.store.load(changeId);
+    if (!current) throw new Error(`Specification approval does not exist: ${changeId}`);
+    return createSpecificationApprovalMigrationPlan(current);
   }
 
   async prepare(input: PrepareSpecificationApprovalInput): Promise<SpecificationApprovalState> {

@@ -130,6 +130,11 @@ describe('SpecificationPlanning service', () => {
     expect(
       await first.planning.prepare({ ...prepareInput(), requestId: 'request-ignored' }),
     ).toEqual(prepared);
+    expect(await first.planning.migrationPlan('planning-approval')).toMatchObject({
+      status: 'current',
+      requiredActions: [],
+      externalSideEffects: [],
+    });
     await first.context.fiber.dispose();
 
     const recovered = app(workspace);

@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import type { RunState } from '../domains/engine/types.js';
 import { postMergeTriggerFacts } from '../domains/post-merge/run.js';
 import type { SpecificationApprovalState } from '../domains/specification/types.js';
+import { createSpecificationApprovalMigrationPlan } from '../domains/specification/planning-approval.js';
 import { FileDeliveryStore } from '../platform/delivery/file-delivery-store.js';
 import { FileDeliveryV3Store } from '../platform/delivery/file-delivery-v3-store.js';
 import { FileRuntimeStore } from '../platform/runtime/file-runtime-store.js';
@@ -224,5 +225,32 @@ describe('change lifecycle migration fixture baseline', () => {
         .update(await readFile(inventoryFile))
         .digest('hex'),
     ).toBe(sourceBefore);
+  });
+
+  it('classifies a legacy planning approval without silently reusing it', async () => {
+    const catalog = await inventory();
+    const fixture = catalog.fixtures.find((candidate) => candidate.kind === 'planning-approval')!;
+    const workspace = await temporaryDirectory('repoctopus-planning-migration-plan-');
+    cleanup.push(workspace);
+    await writeState(workspace, fixture);
+    const before = await fileManifest(workspace);
+    const state = await new FilePlanningApprovalStore(workspace).load(
+      fixture.identity.changeId!,
+    );
+    expect(state).not.toBeNull();
+
+    expect(createSpecificationApprovalMigrationPlan(state!)).toMatchObject({
+      kind: 'SpecificationApprovalMigrationPlan',
+      changeId: 'legacy-planning',
+      status: 'migration_required',
+      persistedSnapshotDigest: fixture.identity.snapshotDigest,
+      requiredActions: [
+        'recompute-current-planning-manifest',
+        'verify-current-publication-provenance',
+        'request-new-trusted-human-decision',
+      ],
+      externalSideEffects: [],
+    });
+    expect(await fileManifest(workspace)).toEqual(before);
   });
 });

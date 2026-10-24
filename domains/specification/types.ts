@@ -243,6 +243,18 @@ export interface SpecificationApprovalState {
   updatedAt: string;
 }
 
+export interface SpecificationApprovalMigrationPlan {
+  schemaVersion: 1;
+  kind: 'SpecificationApprovalMigrationPlan';
+  changeId: string;
+  status: 'current' | 'migration_required';
+  persistedSnapshotDigest: `sha256:${string}`;
+  reason: string;
+  requiredActions: readonly string[];
+  externalSideEffects: readonly [];
+  planDigest: `sha256:${string}`;
+}
+
 export interface SpecificationCompatibility {
   status: 'same' | 'drifted';
   reason: string;

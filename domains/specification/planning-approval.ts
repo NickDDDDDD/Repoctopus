@@ -12,6 +12,7 @@ import type {
   SpecificationApprovalDecisionResponse,
   SpecificationApprovalRecord,
   SpecificationApprovalState,
+  SpecificationApprovalMigrationPlan,
   SpecificationChange,
   SpecificationSchemaInstructions,
   SpecificationValidation,
@@ -272,6 +273,48 @@ function approvalHash(record: Omit<SpecificationApprovalRecord, 'approvalHash'>)
   return sha256({ kind: 'SpecificationApproval', ...record });
 }
 
+export function specificationApprovalCompatibility(
+  state: SpecificationApprovalState,
+): { status: 'current' | 'migration_required'; reason: string } {
+  try {
+    assertSpecificationApprovalState(state);
+    return { status: 'current', reason: 'Planning approval uses the current semantic schema' };
+  } catch (error) {
+    assertSpecificationApprovalState(state, { allowLegacy: true });
+    return {
+      status: 'migration_required',
+      reason:
+        error instanceof Error
+          ? error.message
+          : 'Legacy planning approval requires migration',
+    };
+  }
+}
+
+export function createSpecificationApprovalMigrationPlan(
+  state: SpecificationApprovalState,
+): SpecificationApprovalMigrationPlan {
+  const compatibility = specificationApprovalCompatibility(state);
+  const stable = {
+    schemaVersion: 1 as const,
+    kind: 'SpecificationApprovalMigrationPlan' as const,
+    changeId: state.changeId,
+    status: compatibility.status,
+    persistedSnapshotDigest: state.snapshot.digest,
+    reason: compatibility.reason,
+    requiredActions:
+      compatibility.status === 'migration_required'
+        ? [
+            'recompute-current-planning-manifest',
+            'verify-current-publication-provenance',
+            'request-new-trusted-human-decision',
+          ]
+        : [],
+    externalSideEffects: [] as const,
+  };
+  return { ...stable, planDigest: sha256(stable) };
+}
+
 export function assertSpecificationApprovalState(
   state: SpecificationApprovalState,
   options: { allowLegacy?: boolean } = {},
@@ -340,7 +383,13 @@ export function requestSpecificationApproval(input: {
   if (current && current.changeId !== input.snapshot.changeId) {
     throw new Error('Specification approval state belongs to another change');
   }
-  if (current?.snapshot.digest === input.snapshot.digest) {
+  const currentCompatibility = current
+    ? specificationApprovalCompatibility(current)
+    : null;
+  if (
+    currentCompatibility?.status === 'current' &&
+    current?.snapshot.digest === input.snapshot.digest
+  ) {
     if (
       current.snapshot.publicationProvenanceDigest ===
       input.snapshot.publicationProvenanceDigest
