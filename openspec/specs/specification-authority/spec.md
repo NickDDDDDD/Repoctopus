@@ -68,7 +68,12 @@ OpenSpec Provider MUST 使用 OpenSpec 官方命令和状态模型创建、校�
 #### Scenario: Change 满足关闭条件
 
 - **WHEN** 合入后验证通过且 delta specs 可以同步到主规格
-- **THEN** Provider 使用官方生命周期同步主规格并归档 change，再返回变更文件清单和归档身份
+- **THEN** Provider 使用官方生命周期同步主规格并归档 change，补全新 capability 的 Purpose，严格校验受影响主规格，再返回变更文件清单和归档身份
+
+#### Scenario: 新 capability 缺少可追溯 Purpose
+
+- **WHEN** change 创建新 capability，但 Proposal 的 New Capabilities 没有为它提供说明
+- **THEN** Provider 在调用归档副作用前阻断关闭，不发布带占位 Purpose 或未通过严格校验的最终 Change MR
 
 #### Scenario: Change 目录包含非 schema 文档
 

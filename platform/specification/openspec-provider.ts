@@ -158,6 +158,30 @@ function diagnostics(value: unknown): SpecificationDiagnostic[] {
   });
 }
 
+function proposalCapabilityDescriptions(source: string): Map<string, string> {
+  const descriptions = new Map<string, string>();
+  let inCapabilities = false;
+  let acceptsNewCapabilities = false;
+  for (const line of source.split(/\r?\n/u)) {
+    const heading = /^(#{2,3})\s+(.+?)\s*$/u.exec(line);
+    if (heading?.[1] === '##') {
+      inCapabilities = heading[2]?.trim().toLowerCase() === 'capabilities';
+      // Older official templates put capability entries directly below the H2.
+      acceptsNewCapabilities = inCapabilities;
+      continue;
+    }
+    if (!inCapabilities) continue;
+    if (heading?.[1] === '###') {
+      acceptsNewCapabilities = heading[2]?.trim().toLowerCase() === 'new capabilities';
+      continue;
+    }
+    if (!acceptsNewCapabilities) continue;
+    const entry = /^\s*-\s+`([^`]+)`:\s+(.+?)\s*$/u.exec(line);
+    if (entry?.[1] && entry[2]) descriptions.set(entry[1], entry[2]);
+  }
+  return descriptions;
+}
+
 async function exists(file: string): Promise<boolean> {
   try {
     await access(file);
@@ -594,6 +618,7 @@ export class OpenSpecProvider extends Specification {
     if (!validation.valid) {
       throw new Error(`Specification change is not valid: ${input.changeId}`);
     }
+    await this.newCapabilityPurposesAt(workspace, change.changeId, change.affectedCapabilities);
     const base = {
       apiVersion: SPECIFICATION_API_VERSION,
       kind: 'SpecificationClosurePlan' as const,
@@ -610,6 +635,79 @@ export class OpenSpecProvider extends Specification {
       ].sort(),
     };
     return { ...base, planDigest: sha256(base) };
+  }
+
+  private async newCapabilityPurposesAt(
+    workspace: string,
+    changeId: string,
+    affectedCapabilities: readonly string[],
+  ): Promise<Map<string, string>> {
+    const proposal = await readFile(
+      path.join(workspace, 'openspec', 'changes', changeId, 'proposal.md'),
+      'utf8',
+    );
+    const descriptions = proposalCapabilityDescriptions(proposal);
+    const purposes = new Map<string, string>();
+    for (const capability of affectedCapabilities) {
+      const mainSpec = path.join(workspace, 'openspec', 'specs', capability, 'spec.md');
+      if (await exists(mainSpec)) continue;
+      const purpose = descriptions.get(capability)?.trim();
+      if (!purpose) {
+        throw new Error(
+          `New capability ${capability} requires a Proposal capability description before Archive`,
+        );
+      }
+      purposes.set(capability, purpose);
+    }
+    return purposes;
+  }
+
+  private async completeNewCapabilityPurposesAt(
+    workspace: string,
+    changeId: string,
+    purposes: ReadonlyMap<string, string>,
+  ): Promise<void> {
+    for (const [capability, purpose] of purposes) {
+      const file = path.join(workspace, 'openspec', 'specs', capability, 'spec.md');
+      const source = await readFile(file, 'utf8');
+      const placeholder = `TBD - created by archiving change ${changeId}. Update Purpose after archive.`;
+      if (!source.includes(placeholder)) continue;
+      await atomicWriteText(file, source.replace(placeholder, purpose), { containedRoot: workspace });
+    }
+  }
+
+  private async assertArchivedSpecificationsAt(
+    workspace: string,
+    capabilities: readonly string[],
+    signal?: AbortSignal,
+  ): Promise<void> {
+    for (const capability of capabilities) {
+      const args = [
+        'validate',
+        capability,
+        '--type',
+        'spec',
+        '--no-interactive',
+        '--strict',
+        '--store',
+        this.specificationRoot.storeId,
+        '--json',
+      ];
+      const result = await this.process.execute(args, {
+        cwd: workspace,
+        ...(signal ? { signal } : {}),
+      });
+      const parsed = parseJson<ValidationResult>(result.stdout, args.join(' '));
+      const item = parsed.items?.find((candidate) => candidate.id === capability) ?? parsed.items?.[0];
+      if (result.exitCode !== 0 || item?.valid !== true) {
+        const findings = diagnostics(item?.issues);
+        throw new Error(
+          `Archived Specification is not valid: ${capability}${
+            findings.length > 0 ? ` (${findings.map((finding) => finding.message).join('; ')})` : ''
+          }`,
+        );
+      }
+    }
   }
 
   private receiptFile(workspace: string, planDigest: string): string {
@@ -647,6 +745,11 @@ export class OpenSpecProvider extends Specification {
     if (current.planDigest !== plan.planDigest) {
       throw new Error('Specification closure plan drifted before execution');
     }
+    const newCapabilityPurposes = await this.newCapabilityPurposesAt(
+      workspace,
+      plan.changeId,
+      plan.affectedCapabilities,
+    );
     const openspecRoot = path.join(workspace, 'openspec');
     const before = await tree(openspecRoot);
     const archived = await this.json<ArchiveResult>(
@@ -654,6 +757,12 @@ export class OpenSpecProvider extends Specification {
       ['archive', plan.changeId, '--yes'],
       signal,
     );
+    await this.completeNewCapabilityPurposesAt(
+      workspace,
+      plan.changeId,
+      newCapabilityPurposes,
+    );
+    await this.assertArchivedSpecificationsAt(workspace, plan.affectedCapabilities, signal);
     const after = await tree(openspecRoot);
     const changedFiles = [...new Set([...before.keys(), ...after.keys()])]
       .filter((file) => before.get(file) !== after.get(file))

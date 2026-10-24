@@ -1,7 +1,7 @@
 # change-lifecycle Specification
 
 ## Purpose
-TBD - created by archiving change establish-change-lifecycle. Update Purpose after archive.
+定义 Repoctopus 的权威 Change Run、固定五阶段状态机、阶段与执行状态的正交模型，以及 Work、转换守卫、恢复和兼容边界。
 
 ## Requirements
 

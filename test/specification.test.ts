@@ -64,7 +64,7 @@ async function openSpecFixture(valid = true): Promise<OpenSpecFixture> {
     `# Demo Specification
 
 ## Purpose
-Demo capability.
+Define the stable demo behavior used to verify Specification Provider lifecycle operations.
 
 ## Requirements
 
@@ -366,6 +366,99 @@ describe('Specification authority', () => {
     expect(
       await readFile(path.join(workspace, 'openspec', 'specs', 'demo', 'spec.md'), 'utf8'),
     ).toContain('Added behavior');
+    await context.fiber.dispose();
+  }, 30_000);
+
+  it('replaces the OpenSpec archive placeholder with the Proposal purpose for a new capability', async () => {
+    const fixture = await openSpecFixture();
+    await write(
+      'openspec/changes/add-fresh-capability/proposal.md',
+      `# Change: add-fresh-capability
+
+## Why
+The fixture needs a fresh capability.
+
+## What Changes
+- Add the fresh capability.
+
+## Capabilities
+
+### New Capabilities
+- \`fresh-capability\`: Define the fresh behavior owned by this capability.
+
+## Impact
+- Test fixture only.
+`,
+      fixture.workspace,
+    );
+    await write(
+      'openspec/changes/add-fresh-capability/design.md',
+      `# Design
+
+## Context
+The fixture creates one capability.
+
+## Goals / Non-Goals
+
+**Goals:**
+- Add one requirement.
+
+**Non-Goals:**
+- Change another capability.
+
+## Decisions
+Use the official OpenSpec archive lifecycle.
+`,
+      fixture.workspace,
+    );
+    await write(
+      'openspec/changes/add-fresh-capability/tasks.md',
+      '# Tasks\n\n- [x] 1.1 Complete the fresh capability.\n',
+      fixture.workspace,
+    );
+    await write(
+      'openspec/changes/add-fresh-capability/specs/fresh-capability/spec.md',
+      `# Fresh capability delta
+
+## ADDED Requirements
+
+### Requirement: Fresh behavior
+The system MUST provide fresh behavior.
+
+#### Scenario: Fresh action
+- **WHEN** the fresh action runs
+- **THEN** it succeeds
+`,
+      fixture.workspace,
+    );
+    const context = new Context();
+    const fiber = context.plugin(OpenSpecProvider, {
+      workspaceRoot: fixture.workspace,
+      specificationRoot: fixture.specificationRoot,
+      process: fixture.process,
+    });
+    await fiber;
+    const plan = await context.specification.prepareClosure({
+      changeId: 'add-fresh-capability',
+      mergeFactsDigest: `sha256:${'c'.repeat(64)}`,
+      targetBaselineDigest: `sha256:${'d'.repeat(64)}`,
+    });
+
+    await expect(context.specification.close(plan)).resolves.toMatchObject({ status: 'closed' });
+    expect(
+      await readFile(
+        path.join(
+          fixture.workspace,
+          'openspec',
+          'specs',
+          'fresh-capability',
+          'spec.md',
+        ),
+        'utf8',
+      ),
+    ).toContain(
+      '## Purpose\nDefine the fresh behavior owned by this capability.\n\n## Requirements',
+    );
     await context.fiber.dispose();
   }, 30_000);
 
