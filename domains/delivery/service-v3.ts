@@ -75,6 +75,11 @@ export interface ArchiveMergeRefreshResult {
   platformCapabilities: DeliveryStateV3['platformCapabilities'];
 }
 
+export interface ArchiveFinalPublicationProof {
+  publication: ArchivePublicationResult;
+  merge: ArchiveMergeRefreshResult;
+}
+
 function deliveryEvent(
   state: DeliveryStateV3,
   type: DeliveryEvent['type'],
@@ -711,6 +716,57 @@ export class DeliveryServiceV3 {
       });
       throw error;
     }
+  }
+
+  /**
+   * Publishes a final Change for the lifecycle-owned Archive path. Unlike the
+   * compatibility method above, this path is deliberately independent of the
+   * Delivery aggregate: the Change Run already owns the frozen publication
+   * snapshot and authoritative merge evidence.
+   */
+  async publishArchiveFinalChange(
+    request: PostMergePublicationRequestV2,
+    proof: ArchiveFinalPublicationProof,
+  ): Promise<PostMergePublicationReceiptV2> {
+    assertPostMergePublicationRequestV2(request);
+    const { snapshot, receipts } = proof.publication;
+    if (snapshot.changeId !== request.changeId) {
+      throw new Error('Final Change publication does not match the Archive Change');
+    }
+    if (
+      canonicalJson(snapshot.changeBranch) !==
+      canonicalJson(request.targetMerge.intent.changeBranch)
+    ) {
+      throw new Error('Final Change publication branch drifted from the Archive snapshot');
+    }
+    if (!proof.merge.allMerged) {
+      throw new Error('Final Change publication requires all frozen Business MRs to be merged');
+    }
+    for (const action of snapshot.plan) {
+      const receipt = receipts.find(
+        (candidate) =>
+          candidate.actionId === action.actionId &&
+          candidate.deliveryId === action.deliveryId &&
+          candidate.type === action.type,
+      );
+      if (!receipt) {
+        throw new Error(`Archive publication Receipt is missing: ${action.actionId}`);
+      }
+    }
+    for (const delivery of snapshot.businessDeliveries) {
+      const evidence = proof.merge.mergeEvidence.find(
+        (candidate) =>
+          candidate.deliveryId === delivery.deliveryId &&
+          candidate.repositoryId === delivery.repositoryId,
+      );
+      if (!evidence) {
+        throw new Error(`Archive merge Evidence is missing: ${delivery.deliveryId}`);
+      }
+    }
+    if (!this.finalPublication) {
+      throw new Error('Final Change publication is unavailable');
+    }
+    return this.finalPublication.publish(request);
   }
 
   private async recordAction(

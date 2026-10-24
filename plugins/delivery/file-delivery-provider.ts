@@ -21,6 +21,7 @@ import type {
 } from '../../domains/delivery/post-merge.js';
 import type { DeliveryV2MigrationPlan } from '../../domains/delivery/migration.js';
 import type {
+  ArchiveFinalPublicationProof,
   ArchiveMergeRefreshResult,
   ArchivePublicationResult,
 } from '../../domains/delivery/service-v3.js';
@@ -233,6 +234,16 @@ export class FileDeliveryProvider extends Delivery {
   ): Promise<PostMergePublicationReceiptV2> {
     return this.operations.run({ cancellable: false, signal }, () =>
       this.domainV3().publishFinalChange(request),
+    );
+  }
+
+  override publishArchiveFinalChange(
+    request: PostMergePublicationRequestV2,
+    proof: ArchiveFinalPublicationProof,
+    signal?: AbortSignal,
+  ): Promise<PostMergePublicationReceiptV2> {
+    return this.operations.run({ cancellable: false, signal }, () =>
+      this.domainV3().publishArchiveFinalChange(request, proof),
     );
   }
 

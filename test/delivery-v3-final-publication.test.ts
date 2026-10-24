@@ -12,7 +12,11 @@ import {
   createPostMergePublicationReceiptV2,
   type PostMergePublicationRequestV2,
 } from '../domains/delivery/post-merge.js';
-import { DeliveryServiceV3 } from '../domains/delivery/service-v3.js';
+import {
+  DeliveryServiceV3,
+  type ArchiveFinalPublicationProof,
+  type ArchivePublicationReceipt,
+} from '../domains/delivery/service-v3.js';
 import type { DeliveryPolicy, DeliveryStateV3 } from '../domains/delivery/types.js';
 import {
   createDefaultDeliveryIntentV3,
@@ -52,6 +56,20 @@ class MemoryStore implements DeliveryV3StorePort {
     this.state = structuredClone(options.state);
     this.events.push(structuredClone(options.event));
     return Promise.resolve();
+  }
+}
+
+class EmptyStore implements DeliveryV3StorePort {
+  load(): Promise<null> {
+    return Promise.resolve(null);
+  }
+
+  list(): Promise<DeliveryStateV3[]> {
+    return Promise.resolve([]);
+  }
+
+  commit(): Promise<void> {
+    return Promise.reject(new Error('Archive final publication must not create Delivery state'));
   }
 }
 
@@ -266,5 +284,100 @@ describe('Delivery v3 final Change publication state', () => {
       'final-change-publication-started',
       'final-change-published',
     ]);
+  });
+
+  it('publishes a lifecycle-owned Archive without a parallel Delivery aggregate', async () => {
+    const fx = fixture();
+    const snapshot = fx.state.snapshot!;
+    const mergeRequest = {
+      provider: 'github' as const,
+      repositoryId: 'app',
+      number: 7,
+      url: 'https://github.com/team/app/pull/7',
+    };
+    const receipts: ArchivePublicationReceipt[] = snapshot.plan.map((action) => {
+      if (action.type === 'git.push') {
+        return {
+          actionId: action.actionId,
+          deliveryId: action.deliveryId,
+          type: action.type,
+          status: 'succeeded',
+          recovered: false,
+          remoteOid: action.expectedHead,
+        };
+      }
+      if (action.type === 'mr.create_or_update') {
+        return {
+          actionId: action.actionId,
+          deliveryId: action.deliveryId,
+          type: action.type,
+          status: 'succeeded',
+          recovered: false,
+          mergeRequest,
+        };
+      }
+      throw new Error(`Unexpected fixture action: ${action.type}`);
+    });
+    const proof: ArchiveFinalPublicationProof = {
+      publication: {
+        snapshot,
+        receipts,
+      },
+      merge: {
+        allMerged: true,
+        mergeRequestStatuses: [],
+        mergeEvidence: [
+          {
+            deliveryId: 'primary',
+            repositoryId: 'app',
+            mergeRequest,
+            mergeCommit: '9'.repeat(40),
+            mergedAt: '2026-10-22T00:30:00.000Z',
+            observedAt: '2026-10-22T00:31:00.000Z',
+          },
+        ],
+        platformCapabilities: [],
+      },
+    };
+    const finalPublication = {
+      publish: (request: PostMergePublicationRequestV2) =>
+        Promise.resolve(
+          createPostMergePublicationReceiptV2({
+            request,
+            git: {
+              commitOid: '8'.repeat(40),
+              remoteOid: '8'.repeat(40),
+              commitRecovered: false,
+              pushRecovered: false,
+            },
+            mergeRequest: {
+              provider: 'github',
+              repositoryId: 'workspace',
+              number: 9,
+              url: 'https://github.com/team/workspace/pull/9',
+            },
+            mergeRequestRecovered: false,
+          }),
+        ),
+    };
+    const service = new DeliveryServiceV3(
+      new EmptyStore(),
+      unusedGit,
+      unusedMergeRequests,
+      { assertSatisfied: () => Promise.resolve() },
+      TEST_COMPOSITION_DIGEST,
+      undefined,
+      finalPublication,
+    );
+
+    await expect(service.publishArchiveFinalChange(fx.request, proof)).resolves.toMatchObject({
+      mergeRequest: { repositoryId: 'workspace', number: 9 },
+    });
+    await expect(
+      service.publishArchiveFinalChange(fx.request, {
+        ...proof,
+        merge: { ...proof.merge, allMerged: false },
+      }),
+    ).rejects.toThrow('requires all frozen Business MRs to be merged');
   });
 });
