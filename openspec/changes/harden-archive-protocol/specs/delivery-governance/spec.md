@@ -25,6 +25,16 @@ Repoctopus MUST 在创建受保护 Action Intent、领取 Work 或消耗 attempt
 - **WHEN** 平台已创建最终 Change MR，但 Adapter 在 Receipt 持久化前断开
 - **THEN** 任一恢复 Runner 通过稳定 head/base 与仓库身份找回唯一 MR，核对精确 head 后追加恢复 Receipt
 
+#### Scenario: 人工创建最终 MR
+
+- **WHEN** 人已经把经过验证的关闭 head 普通 push 并手工创建最终 Change MR，Runtime 没有执行 MR 创建动作
+- **THEN** Runtime 查询包含开放、关闭和已合入状态的 MR，以 repository、head、base 和精确 head OID 采用唯一匹配项，并记录 `human-created` provenance 而不伪造 Action Intent
+
+#### Scenario: 人工创建并合入后 Runner 才恢复
+
+- **WHEN** 最终 Change MR 在 Runner 离线期间由人创建并合入，源分支随后可以被删除
+- **THEN** Runtime 从平台保留的 MR identity、head OID、base 和 merge commit 恢复同一发布事实，并在完整后置核对后继续 finalize
+
 #### Scenario: 远端存在不等价结果
 
 - **WHEN** 恢复查询发现相同稳定动作身份对应的远端 head、目标分支或内容摘要不匹配当前输入

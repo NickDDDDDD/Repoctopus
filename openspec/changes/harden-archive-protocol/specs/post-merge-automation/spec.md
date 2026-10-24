@@ -18,7 +18,7 @@
 
 ### Requirement: 最终 Change MR head 漂移使发布证明失效
 
-Repoctopus MUST 在最终 Change MR 创建或恢复时冻结精确 head，并在等待和最终化时重新读取平台权威状态；MR head、目标分支或关闭提交发生变化时，旧 publication Receipt 必须标记为 superseded，并通过新 attempt 重新验证和发布，不得沿用旧合入授权或完成事实。
+Repoctopus MUST 在最终 Change MR 创建、恢复或采用人工 MR 时冻结精确 head，并在等待和最终化时重新读取平台权威状态；采用操作必须查询开放、关闭和已合入状态，不得要求 MR 由 Agent 或 Runner 创建。MR head、目标分支或关闭提交发生变化时，旧 publication Receipt 必须标记为 superseded，并通过新 attempt 重新验证和发布，不得沿用旧合入授权或完成事实。
 
 #### Scenario: 最终 MR 等待期间分支新增提交
 
@@ -29,6 +29,11 @@ Repoctopus MUST 在最终 Change MR 创建或恢复时冻结精确 head，并在
 
 - **WHEN** 平台报告冻结 head 已合入登记目标分支，并返回可核对的 merge commit
 - **THEN** Runtime 绑定 MR identity、head、base、merge commit、关闭摘要和审计摘要后才允许 finalize
+
+#### Scenario: 已合入的人工 MR 被事后采用
+
+- **WHEN** Runner 首次观察最终 MR 时它已经由人创建并合入，但平台仍能返回匹配冻结 head/base 的不可变 MR 与 merge facts
+- **THEN** Runtime 记录 adopted publication 与 merge proof，完成相同核对后继续，不要求重新创建 MR 或原 Agent 在线
 
 ### Requirement: 临时资源清理不覆盖主结果
 

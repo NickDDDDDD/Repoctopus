@@ -90,7 +90,7 @@ history
 - OpenSpec Store registry、Provider/schema identity 和官方命令可用性；
 - Verify 与 post-merge Evidence profile、依赖自举命令和所需 Adapter；
 - Workspace、业务仓、Change 分支、目标分支和全部远端 OID；
-- 平台 read/create-or-recover/final merge status 能力；
+- 平台 read/create-or-recover、全状态 MR discovery/adoption 和 final merge status 能力；
 - 临时根、可用空间、允许路径和清理策略；
 - Publication policy 与完整 Business MR 集合。
 
@@ -139,19 +139,21 @@ OpenSpec Provider 继续使用官方 `archive --yes --json`，但执行前先写
 
 Archive 先从冻结目标 OID 和 Change 分支 OID 构造隔离 checkout，生成可重现的 target merge，再在其中运行 post-merge Evidence、Specification close 和路径审计。候选关闭提交固定 tree、parents、message、author、closure audit digest 和 Evidence identity。
 
-发布仍只允许：普通非强制 push 到已登记 Change 分支，以及同 repository/head/base 的最终 MR create-or-recover。不同 Runner 产生相同语义 tree、parents、message、author 和 audit 时可以收敛到远端胜出结果；任一不等价则 fail-closed。
+Runtime 发起发布时仍只允许：普通非强制 push 到已登记 Change 分支，以及同 repository/head/base 的最终 MR create-or-recover。人也可以手工 push 同一个经过验证的候选 head 并创建 MR；这类动作作为平台外部事实被采用，不伪造 Runtime Action Intent。无论来源如何，不同 Runner 只有在 tree、parents、message、author、head OID 和 audit 都等价时才收敛到远端结果；任一不等价则 fail-closed。
 
 旧 Delivery v3 可继续提供 Business MR 发布/平台 Adapter，但最终关闭发布直接消费 Archive Journal 的冻结事实与 Receipt，不要求构造第二个 Delivery lifecycle 状态。
 
-### 8. 最终 MR 创建后进入等待，合入后才 finalize
+### 8. 最终 MR 可以由人创建，精确合入后才 finalize
 
-`delivery.publish-final` 成功只保存 `FinalPublicationReceipt` 并创建 `delivery.await-final-merge` Work。Receipt 绑定 repository、MR identity、base、冻结 head OID、关闭 plan/audit digest 和候选提交。
+`delivery.publish-final` 实际是 ensure/adopt Work：先按 repository、head、base 和精确 head OID 查询开放、关闭及已合入 MR；存在唯一匹配时直接采用，不存在时才在策略允许下 create-or-recover。它保存 `FinalPublicationReceipt` 并创建 `delivery.await-final-merge` Work。Receipt 绑定 repository、MR identity、base、冻结 head OID、关闭 plan/audit digest、候选提交和 `runner-created | recovered | human-created` provenance。
+
+如果人已经完成 commit、普通 push、MR 创建甚至合入，Runner 后续仍走同一查询。平台必须能在源分支删除后返回 MR 记录中的 head OID、base、状态与 merge commit；因此 Adapter 查询不能只搜索 open MR。只要唯一匹配且远端候选通过相同路径审计和严格规格验证，就能事后采用。若 Runtime 在人工 push 前没有形成候选 Receipt，它会先把远端 head 当作待采用候选重新验证，而不是信任“人已经合入”这一声明。
 
 刷新最终 MR 时：
 
 - `open`：保持 `archive/waiting`；
 - `closed_unmerged`：进入 `archive/blocked`，要求人处理；
-- `merged` 且 head/base/merge commit 可证明匹配：产生 `FinalMergeProof`；
+- `merged` 且 head/base/merge commit 可证明匹配：无论 MR 由谁创建，都产生 `FinalMergeProof`；
 - head 或 base 漂移：把旧 Publication Receipt 标为 `superseded`，重新获取候选、严格验证归档和允许 diff，再由 Runtime 分配新 attempt；
 - 查询不到或匹配多个 MR：fail-closed。
 
@@ -184,7 +186,7 @@ Archive Completion Receipt 可以在存在非关键 `cleanup_pending` 时形成�
 - **WorkflowRuns / Archive Coordinator Cordis Service**：生成 input、调用 Dispatcher/Provider、把经过验证的 Receipt 转成 observation；不自行改 Run JSON。
 - **Action Dispatcher / Store**：attempt 分配、claim lease、Intent/Outcome/Receipt 身份和未知结果协调。
 - **Specification Service / OpenSpec Provider**：官方 schema 生命周期、关闭事务和规格后置验证；不知道 MR 是否已合入。
-- **Delivery / Platform Adapter**：Git push、MR create-or-recover、状态读取和 merge facts；不决定 Change 完成。
+- **Delivery / Platform Adapter**：Git push、MR create-or-recover、全状态 MR discovery/adoption、状态读取和 merge facts；不决定 Change 完成，也不要求 Agent 是 MR 作者。
 - **RunStore / ArchiveJournalStore**：CAS、原子持久化、历史与恢复，不调用外部系统。
 - **CLI / Runner / Dashboard / OTel**：调用公共命令和读取投影，不拥有 transition。
 
@@ -241,7 +243,7 @@ accepted trajectory 产生相同 OTLP event：phase/status、work kind、attempt
 - CLI 进程外测试证明 `--help`、版本、未知/缺失参数为零 composition、零 reconcile、零 Run 写入。
 - Provider 故障注入在 OpenSpec archive 前、目录移动后、Purpose 补全后、严格校验前后和 Receipt 写入前中断，验证继续、回滚或人工修复。
 - 多仓 E2E 覆盖多个业务仓、同仓多个 MR、目标分支前进、merge commit 漂移和不同 Runner 恢复。
-- 最终发布测试覆盖 push 响应丢失、MR 创建响应丢失、开放等待、head 漂移、关闭未合入、精确合入和 merge proof 不匹配。
+- 最终发布测试覆盖 push 响应丢失、MR 创建响应丢失、人工创建后采用、人工创建并合入后首次发现、源分支删除、开放等待、head 漂移、关闭未合入、精确合入和 merge proof 不匹配。
 - 新 clone/no `node_modules` 的 public CLI + production composition 测试验证 Evidence 自举、Store 显式选择和无测试旁路。
 - Windows 测试注入共享冲突/`EBUSY`，验证有界重试、`cleanup_pending` 和精确 GC。
 - 自举测试证明 future-phase checkbox 在 Design 被拒绝，且当前 Change 迁移后只能在最终 Change MR 合入时完成。

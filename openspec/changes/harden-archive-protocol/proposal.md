@@ -7,14 +7,14 @@
 ## What Changes
 
 - 把 Archive 明确为五阶段状态机内部的可恢复工作协议：只读 preflight、Business MR 发布与合入核对、候选规格关闭、最终 Change MR 发布与合入等待、终态提交。
-- 最终 Change MR “已创建”不再等于 Change 完成；只有平台权威事实证明其精确 head 已合入目标分支，并且关闭与审计摘要一致，Run 才进入 `completed`。
+- 最终 Change MR 可以由 Runtime 创建/恢复，也可以由人完全手工创建并合入；Runtime 必须查询全状态 MR、采用唯一匹配的精确 head/base，并且只有平台权威事实证明该版本已合入且关闭与审计摘要一致时，Run 才进入 `completed`。
 - 引入可持久恢复的 Archive Journal，记录准备、应用、核对、回滚或继续、最终化和清理状态；进程在任何边界中断后先协调外部事实，再决定重试。
 - 在产生 Action Intent 和消耗 attempt 之前执行无副作用 preflight，覆盖凭据可用性、Git 作者、Provider/Store、平台能力、Evidence profile、远端 OID、临时空间和发布策略。
 - 让 Runtime 分配单调 attempt，并使用稳定 Runner identity 领取工作；PID 只表示当前租约活性，不再成为跨进程幂等身份。
 - 保持多仓 Business MR 集合冻结并逐仓核对精确 merge commit；规格关闭仍发生在 Workspace Repository 的隔离检出中，最终 Change MR 仍由人合入。
 - 将 `tasks.md` 的 checkbox 限定为 Build 阶段可完成的工作；Verify、Archive、最终 MR 合入和工作流清理由固定 phase Work、Validator 与退出条件表达，防止通过提前勾选未来事实绕过门禁。
 - 对既有“Run 已完成但最终发布 head 后续改变”的历史记录生成追加式完整性诊断或迁移记录，不重写旧 Receipt。
-- 补齐故障注入、全新检出、跨 Runner、多个业务仓、最终 MR 响应丢失/head 漂移、Windows 清理重试和自举闭环测试。
+- 补齐故障注入、全新检出、跨 Runner、多个业务仓、最终 MR 响应丢失、人工创建后再发现、人工创建并合入后再发现、head 漂移、Windows 清理重试和自举闭环测试。
 - 修正 CLI 帮助等只读探测不得创建 Run 或触发补偿副作用的契约。
 
 ## Capabilities

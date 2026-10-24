@@ -37,9 +37,9 @@
   **Blocked by:** 1.3
   **Acceptance:** projection golden tests 与 CLI protocol tests 对相同 Run 给出同一 phase/status/next action
   **Requirements:** change-lifecycle#archive-terminal, post-merge-automation#archive-protocol
-- [ ] 1.5 用内存平台 Adapter 建立最小生产 composition 纵切，模拟最终 MR 创建、人工合入和 finalize。
+- [ ] 1.5 用内存平台 Adapter 建立最小生产 composition 纵切，模拟 Runner 创建或采用人工最终 MR、人工合入和 finalize。
   **Blocked by:** 1.4
-  **Acceptance:** 集成测试证明创建后未完成、精确合入后完成、Runtime 从未调用 merge
+  **Acceptance:** 集成测试证明 Runner 创建和人工创建均在合入前未完成、精确合入后完成、Runtime 从未调用 merge
   **Requirements:** change-lifecycle#archive-terminal, delivery-governance#stable-external-action
 
 ## 2. 建立 Archive Journal 与恢复核心
@@ -148,13 +148,13 @@
 
 ## 6. 最终 Change MR 发布、等待与终态证明
 
-- [ ] 6.1 把关闭候选普通 push 和最终 MR create-or-recover 拆成 `publish-final` Work，并冻结 repository/head/base、closure plan 和 audit digest。
+- [ ] 6.1 把关闭候选普通 push 和最终 MR create-or-recover/create-or-adopt 拆成 `publish-final` Work，并冻结 repository/head/base、closure plan 和 audit digest。
   **Blocked by:** 5.7
-  **Acceptance:** 发布测试覆盖非强制 push、远端 OID fence、MR 响应丢失和唯一 tuple 恢复
+  **Acceptance:** 发布测试覆盖非强制 push、远端 OID fence、MR 响应丢失、人工创建的 open/merged MR、源分支删除和唯一 tuple 恢复
   **Requirements:** delivery-governance#stable-external-action, post-merge-automation#final-head-drift
-- [ ] 6.2 实现 `await-final-merge` 平台刷新，对 open、closed-unmerged、merged 和查询故障产生稳定等待或 blocker。
+- [ ] 6.2 实现 `await-final-merge` 全状态平台发现与刷新，对 open、closed-unmerged、merged 和查询故障产生稳定采用、等待或 blocker。
   **Blocked by:** 6.1
-  **Acceptance:** 相同平台事实从 webhook、reconcile 和显式 refresh 得到相同 Run projection
+  **Acceptance:** Agent 创建、人工创建、人工已合入三种来源从 webhook、reconcile 和显式 refresh 得到相同 Run projection
   **Requirements:** change-lifecycle#archive-terminal, post-merge-automation#final-head-drift
 - [ ] 6.3 实现 final head/base 漂移的 publication supersede、新 attempt 和候选归档重新严格验证。
   **Blocked by:** 6.2
@@ -243,6 +243,6 @@
 - 四类规划产物严格校验并经可信用户批准后才进入 Build；当前 Change 分支保持公开，每次 commit 立即 push。
 - Build 完成后由 Change Run 的 Verify phase 生成正式 Evidence 与验证报告；这些不是 tracked task。
 - 原则上创建一个 Business MR；只有存在独立仓库或可验证拆分理由时登记多个，并冻结完整集合。
-- Business MR 全部由人合入后，同一 Change Run 运行新 Archive 协议、迁移自身 definition、关闭规格并创建最终 Change MR。
+- Business MR 全部由人合入后，同一 Change Run 运行新 Archive 协议并关闭规格；最终 Change MR 可以由 Runtime 创建/恢复，也可以由人手工 push、创建和合入，Runtime 只采用精确匹配的远端事实。
 - 最终 Change MR 由人合入后，Runtime 核对精确 FinalMergeProof 并 finalize；此前 Run 必须保持 `archive/waiting`。
 - 归档后只清理 registry 中的受管临时资源；保留正式 Evidence、Receipt、Journal 和历史完整性 finding。
