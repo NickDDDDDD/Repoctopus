@@ -120,6 +120,11 @@ function projectSelections(
     { id: 'command-router' },
     { id: 'skill-registry' },
     ...selectedProviders,
+    runtimeSelection(
+      'skill-provider-consistency-method',
+      { productRoot },
+      { productRoot: PRODUCT_ROOT_IDENTITY },
+    ),
     { id: 'skill-command' },
     runtimeSelection(
       'specification-planning',
@@ -223,6 +228,11 @@ function projectSelections(
       { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
     ),
     { id: 'consistency-command' },
+    runtimeSelection(
+      'consistency-review',
+      { workspaceRoot },
+      { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
+    ),
     runtimeSelection(
       'workflow-runs',
       { workspaceRoot },
@@ -352,6 +362,7 @@ const BASE_REQUIRED_SERVICES = [
   'browserMaintenance',
   'changeLifecycleMigration',
   'consistencyReconciler',
+  'consistencyReview',
   'commandRouter',
   'delivery',
   'evidenceAdapters',

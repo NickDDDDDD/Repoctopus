@@ -71,6 +71,8 @@ import { DesktopApplication } from '../services/desktop-application.js';
 import { SpecificationPlanning } from '../services/specification-planning.js';
 import { ConsistencyReconciler } from '../services/consistency-reconciler.js';
 import consistencyContributor from './command/consistency-contributor.js';
+import consistencyMethodProvider from './skill/consistency-method-provider.js';
+import { ConsistencyReviewService } from '../services/consistency-review.js';
 
 interface BuiltinDefinition {
   descriptor: Omit<PluginDescriptor, 'codeDigest'>;
@@ -494,6 +496,26 @@ const definitions: readonly BuiltinDefinition[] = [
     sourceFiles: [
       'plugins/skill/file-skill-provider.ts',
       'plugins/skill/filesystem-skill-provider.ts',
+    ],
+  },
+  {
+    descriptor: {
+      id: 'skill-provider-consistency-method',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'contributor',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: [],
+      permissions: ['filesystem'],
+      stateSchemas: {},
+    },
+    plugin: consistencyMethodProvider,
+    sourceFiles: [
+      'plugins/skill/file-skill-provider.ts',
+      'plugins/skill/consistency-method-provider.ts',
+      'third_party/matt-skills/method-adoptions.json',
     ],
   },
   {
@@ -1053,7 +1075,7 @@ const definitions: readonly BuiltinDefinition[] = [
       kind: 'service-provider',
       source: 'builtin',
       compositions: ['project'],
-      authorities: ['consistency-review-write'],
+      authorities: ['consistency-impact-review'],
       permissions: ['filesystem', 'network'],
       stateSchemas: { consistency: '1' },
     },
@@ -1079,6 +1101,27 @@ const definitions: readonly BuiltinDefinition[] = [
     },
     plugin: consistencyContributor,
     sourceFiles: ['plugins/command/consistency-contributor.ts'],
+  },
+  {
+    descriptor: {
+      id: 'consistency-review',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['consistency-review-write'],
+      permissions: ['filesystem'],
+      stateSchemas: { consistency: '1' },
+    },
+    plugin: ConsistencyReviewService,
+    sourceFiles: [
+      'services/consistency-review.ts',
+      'domains/consistency/review.ts',
+      'platform/consistency/file-consistency-store.ts',
+      'platform/skill/snapshot.ts',
+    ],
   },
   {
     descriptor: {

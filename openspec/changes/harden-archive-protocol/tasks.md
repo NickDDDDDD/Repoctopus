@@ -66,7 +66,7 @@
       **Blocked by:** 4.1
       **Acceptance:** head 未变为 no-op；命令执行后退出且无 Timer/端口；`--help` 不 boot composition；网络失败不创建等待 Run
       **Requirements:** consistency-reconciliation#pull-reconcile, runtime-foundation#readonly-cli
-- [ ] 4.3 增加窄范围 Consistency Review Service，通过现有 Skill Registry 固定解析并快照 `to-spec`，执行语义影响审查；把 `uncertain` 或 `spec-update-required` 交给可信人工决定，不新增 lifecycle phase/Work，也不得仅按路径自动宣称无影响。
+- [x] 4.3 增加窄范围 Consistency Review Service，通过现有 Skill Registry 固定解析并快照 `to-spec`，执行语义影响审查；把 `uncertain` 或 `spec-update-required` 交给可信人工决定，不新增 lifecycle phase/Work，也不得仅按路径自动宣称无影响。
       **Blocked by:** 4.2
       **Acceptance:** 实现/测试/流水线变化、API/配置/权限变化及混合歧义 fixture 产生预期 verdict 和证据映射
       **Requirements:** consistency-reconciliation#impact-review
