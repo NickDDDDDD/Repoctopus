@@ -106,7 +106,7 @@ const RULES: readonly MethodRuleDefinition[] = [
     artifactKinds: ['tasks'],
     enforcement: 'deterministic-validator',
     statement:
-      'Give every tracked task at least one explicit structured Acceptance criterion and an evidence-producing verification step.',
+      'Give every tracked task at least one indented **Acceptance:** criterion and an evidence-producing verification step.',
   },
 ];
 

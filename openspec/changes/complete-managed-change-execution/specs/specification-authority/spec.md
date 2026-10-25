@@ -46,7 +46,7 @@ Specification Provider MUST 保留 Tasks checkbox 作为规划权威，但在 fr
 
 ### Requirement: Design 在批准前验证结构化 Acceptance
 
-Specification Provider MUST 将每个 tracked Task 的结构化 `Acceptance` 元数据投影为稳定 Acceptance identity；Design Validator MUST 在 Human Decision 前拒绝任何缺少 Acceptance 的 Task。Task checkbox 描述中的自然语言验证提示不得被 Runtime 猜测为 Acceptance。
+Specification Provider MUST 将每个 tracked Task 下层级更深的规范 `**Acceptance:**` 元数据投影为稳定 Acceptance identity；Design Validator MUST 在 Human Decision 前拒绝任何缺少 Acceptance 的 Task。Task checkbox 描述中的自然语言验证提示、无缩进文本、无粗体标签或旧别名不得被 Runtime 猜测为 Acceptance。
 
 #### Scenario: Task 只有内联验证描述
 
@@ -57,3 +57,13 @@ Specification Provider MUST 将每个 tracked Task 的结构化 `Acceptance` 元
 
 - **WHEN** Provider 能为全部 tracked Task 投影至少一个非空 Acceptance criterion，且其余官方工件通过 strict validation
 - **THEN** Design Validator 接受 Tasks 合同并允许创建绑定当前 planning snapshot 的 Human Decision 请求
+
+#### Scenario: Acceptance 元数据格式畸形
+
+- **WHEN** checkbox 后使用无缩进、无粗体或旧别名形式的 Acceptance 文本
+- **THEN** Provider 不把该文本投影为 Acceptance identity，并以缺少 Acceptance 的 Task identity 阻断 Design
+
+#### Scenario: Tasks 投影因其他合同失败
+
+- **WHEN** Tasks 加载、解析或 Receipt 校验因重复 Task identity、非法依赖、进程失败或取消而失败
+- **THEN** Provider 保留该失败的真实身份，不得将其误报为缺少 Acceptance

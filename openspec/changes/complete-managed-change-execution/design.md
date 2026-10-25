@@ -243,7 +243,7 @@ claim.persisted
 
 OpenSpec 官方 tasks 模板允许把验证写进 checkbox 描述，但 Repoctopus 的 Evidence 模型需要稳定、可寻址的 Acceptance identity。两者不能靠 Runtime 从自然语言中猜测关联。Repoctopus Design action Skill 因此在 Provider 模板之上增加一条窄约束：每个 tracked Task 在 checkbox 后必须至少有一条缩进的 `**Acceptance:** <observable criterion>` 元数据；可选 `**Requirements:** <capability#requirement>` 继续提供 requirement selector。
 
-`parseSpecificationTasks()` 仍负责唯一的结构化投影，新增的完整性断言只检查每个 Task 是否至少有一个非空 Acceptance，不复制 OpenSpec strict validation。OpenSpec Provider 在 strict validation 成功后执行该断言，并把失败合并为稳定 diagnostic，使 Design gate 在生成 Human Decision 前 blocked。Verify 继续只消费 Provider 已批准的 Acceptance identities，不从 Task 标题、测试名称、Agent 摘要或 checkbox 状态回填缺失语义。
+`parseSpecificationTasks()` 仍负责唯一的结构化投影，并且只把层级深于所属 checkbox 的规范 `**Acceptance:**` 行识别为 Acceptance；无缩进、无粗体或 `Acceptance criteria` 等旧别名都不属于合同。新增的完整性断言只检查每个 Task 是否至少有一个非空 Acceptance，不复制 OpenSpec strict validation。OpenSpec Provider 在 strict validation 成功后加载 Tasks，再只把完整性断言的失败合并为稳定 diagnostic，使 Design gate 在生成 Human Decision 前 blocked；Tasks 加载、解析、取消或 Receipt 损坏等其他错误保持原始失败身份，不能伪装成缺少 Acceptance。Verify 继续只消费 Provider 已批准的 Acceptance identities，不从 Task 标题、测试名称、Agent 摘要或 checkbox 状态回填缺失语义。
 
 选择 Design-time fail-fast，而不是让 `VerificationInput` 从 Task 标题生成默认 Acceptance，是因为默认值会把实现步骤误当行为合同，并掩盖规划质量问题。现有 Change 的 Tasks 通过显式元数据迁移；语义变化会产生新 task revision 和 planning snapshot，因此必须建立新的 adopt-existing generation 并重新审批，不能复用旧 approval。
 

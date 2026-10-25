@@ -17,7 +17,7 @@
 - 增加从空目录开始的进程外黑盒自举测试：创建 Change Run、捕获完整 Skill 正文、完成 OpenSpec 四类工件、等待真实 Design 决定、逐 Task Build、Verify、Archive；测试必须证明首次受保护写入发生在 claim 和上下文交付之后。
 - 把 `establish-change-lifecycle` 曾漏过的真实缺陷固定为历史回归：当前 `repoctopus-change@1.1.0` 在第一次 `run next` 中合成 `open-intake-ready` 并从 Open 直接进入 Design，新测试必须先在旧实现上失败；修复后的黑盒验收还必须通过故障注入证明，只要重新引入该自动 observation 或只检查最终 projection，测试就会失败。
 - 增加 definition 可达性与消费端契约检查：每个内置 Work kind 都必须具有生产创建路径、合法 Host/Contributor、完整上下文交付测试和 Validator，不能用只检查 layer 名称/digest 的测试替代宿主消费测试。
-- 收紧 Design 的 Tasks 合同：每个 tracked Task 必须声明可由 Evidence 覆盖的结构化 `Acceptance` 元数据；OpenSpec 模板、Repoctopus 阶段 Skill 与 Design Validator 必须采用同一格式，使缺失验收在 Human Decision 前失败，而不是拖到 Build 完成后才阻塞 Verify。
+- 收紧 Design 的 Tasks 合同：每个 tracked Task 必须以缩进的 `**Acceptance:**` 声明可由 Evidence 覆盖的结构化元数据；OpenSpec 模板、Repoctopus 阶段 Skill、Task parser 与 Design Validator 必须采用同一格式并保留非 Acceptance 投影错误的真实身份，使缺失或畸形验收在 Human Decision 前失败，而不是拖到 Build 完成后才阻塞 Verify。
 - 在同一次重构中补齐 OpenTelemetry 执行遥测：从已持久化的 Change Run trajectory 投影五阶段、Work attempt、Host、Skill 上下文交付/消费、受保护工具调用、Validator、wait/reconcile 和 continuation 事件；生成可跨进程关联的 Trace/Span、审计 Log/Event 与低基数效率 Metric，让本地 Dashboard 和 SigNoz 使用同一套 OTLP 事实，而不是各自查询或推断状态。
 - 保持 Repoctopus 是工作流与授权边界而不是操作系统沙箱。任意外部进程仍可能直接改文件，但这种写入不得形成受管 Receipt、Task 完成或阶段推进；正式集成的 Agent Host 只能使用当前 Work 授权的应用能力。
 

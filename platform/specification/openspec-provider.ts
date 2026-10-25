@@ -743,8 +743,8 @@ export class OpenSpecProvider extends Specification {
     const findings = diagnostics(item?.issues);
     let valid = result.exitCode === 0 && item?.valid === true;
     if (valid && options.strict !== false) {
+      const tasks = await this.tasksAt(workspace, changeId, options.signal);
       try {
-        const tasks = await this.tasksAt(workspace, changeId, options.signal);
         assertSpecificationTaskAcceptance(tasks.tasks);
       } catch (error) {
         valid = false;

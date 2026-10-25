@@ -742,6 +742,34 @@ Use the official OpenSpec retirement metadata.
     await context.fiber.dispose();
   });
 
+  it('does not relabel unrelated Task projection failures as missing Acceptance', async () => {
+    const fixture = await openSpecFixture();
+    await writeFile(
+      path.join(fixture.workspace, 'openspec', 'changes', 'sample', 'tasks.md'),
+      [
+        '# Tasks',
+        '',
+        '- [ ] 1.1 First task.',
+        '  **Acceptance:** First behavior is observable',
+        '- [ ] 1.1 Duplicate task.',
+        '  **Acceptance:** Second behavior is observable',
+        '',
+      ].join('\n'),
+    );
+    const context = new Context();
+    const fiber = context.plugin(OpenSpecProvider, {
+      workspaceRoot: fixture.workspace,
+      specificationRoot: fixture.specificationRoot,
+      process: fixture.process,
+    });
+    await fiber;
+
+    await expect(context.specification.validate('sample', { strict: true })).rejects.toThrow(
+      'Task id is duplicated: 1.1',
+    );
+    await context.fiber.dispose();
+  });
+
   it('fails closed for an unregistered Store instead of falling back to nearest or default roots', async () => {
     const fixture = await openSpecFixture();
     const context = new Context();

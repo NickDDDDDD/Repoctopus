@@ -56,7 +56,7 @@ node bin/repoctopus.js run decide --workspace . --run <run-id>
 
 批准生效时，Provider 从官方 `tasks.md` 解析 checkbox 任务。编号是稳定 `taskId`；规范化后的任务文字、层级、`Blocked by` 依赖、Acceptance criteria 和 Requirement mappings 共同形成 `taskRevision`。每条 Acceptance 还由 Task、规范化文本、Requirement mappings 和官方来源形成 `acceptanceId`，供 Verify Evidence 精确引用。checkbox 完成状态、CRLF/LF、等价 Markdown 强调、空白以及元数据声明顺序不改变 task revision、Acceptance identity 或 Tasks semantic digest；任一任务语义、层级、依赖、验收或需求映射变化则必须改变。重复 Acceptance 会被拒绝，不会静默折叠。
 
-每个 checkbox Task 都必须紧跟至少一行显式 `**Acceptance:** <可观察条件>`；多个条件用分号分隔，关联需求用 `**Requirements:** <引用>`。只在任务标题中写“验证……”不构成结构化 Acceptance。严格 Provider 校验会在 Design 的 Human Decision 之前拒绝缺失项，避免把不可建立 coverage plan 的任务带入 Build 或 Verify。
+每个 checkbox Task 都必须在其下使用至少一行层级更深的规范 `**Acceptance:** <可观察条件>`；多个条件用分号分隔，关联需求用 `**Requirements:** <引用>`。无缩进、无粗体、`Acceptance criteria` 旧别名或只在任务标题中写“验证……”都不构成结构化 Acceptance。严格 Provider 校验会在 Design 的 Human Decision 之前拒绝缺失项，避免把不可建立 coverage plan 的任务带入 Build 或 Verify；其他 Tasks 投影错误保留原始诊断，不会被误报为缺少 Acceptance。
 
 checkbox 是 completion claim，不是测试结果。Runtime 接受 Build Work Outcome 并通过 Validator 后，Provider 才写入 checkbox，同时在 `.repoctopus/specification-task-receipts/` 保存与 `taskRevision + workId` 绑定的来源 Receipt；该 sidecar 不是第五类 OpenSpec 工件。默认 `fresh` Run 发现预勾选任务会报 adoption conflict。只有显式 `adopt-existing` generation 才把既有 `[x]` 投影为带来源摘要的 `imported-claim`，避免重复 Build，但仍必须执行 Verify。Runtime 只接受恰好一个 ready Task，`run status` 从 Run aggregate 读取当前 Work，不从文件重新猜测。
 

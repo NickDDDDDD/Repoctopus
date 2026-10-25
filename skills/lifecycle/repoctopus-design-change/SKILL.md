@@ -15,4 +15,4 @@ Execute only the selected `specification.plan` Work. Read the Provider instructi
 
 Keep requirements and observable behavior in specs, engineering decisions in `design.md`, and executable sequencing in `tasks.md`. Do not add a fifth planning artifact, approve the plan, or advance the phase. Return an Outcome so strict Provider validation and the Human Decision gate can run.
 
-Every tracked checkbox Task MUST have at least one following `**Acceptance:** <observable criterion>` metadata line. Use semicolons for multiple criteria and `**Requirements:** <requirement refs>` for traceability. A verification phrase embedded only in the Task title is not structured Acceptance and will fail strict validation.
+Every tracked checkbox Task MUST have at least one following metadata line, indented deeper than the checkbox, using exactly `**Acceptance:** <observable criterion>`. Use semicolons for multiple criteria and `**Requirements:** <requirement refs>` for traceability. Unindented text, unbolded labels, legacy aliases, and a verification phrase embedded only in the Task title are not structured Acceptance and will fail strict validation.

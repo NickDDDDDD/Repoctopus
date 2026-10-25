@@ -29,6 +29,21 @@ describe('Specification Tasks', () => {
   });
 
   it.each([
+    '**Acceptance:** unindented metadata is invalid',
+    '  Acceptance: missing bold structure is invalid',
+    '  - Acceptance criteria: legacy aliases are invalid',
+  ])('does not project malformed Acceptance metadata: %s', (metadata) => {
+    const tasks = parseSpecificationTasks(
+      'acceptance-contract',
+      `- [ ] 1.1 Build it.\n${metadata}\n`,
+    );
+
+    expect(() => assertSpecificationTaskAcceptance(tasks.tasks)).toThrow(
+      /Task 1\.1 requires at least one explicit Acceptance criterion/u,
+    );
+  });
+
+  it.each([
     '- [ ] 1.1 Wait for the MR merge before finishing.\n',
     '- [ ] 1.1 Finalize.\n  **Acceptance:** after Verify completes, record the result\n',
     '- [ ] 1.1 等待一致性审查结果完成后再处理。\n',
