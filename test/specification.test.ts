@@ -12,6 +12,7 @@ import { compileComposition } from '../app/boot/composition.js';
 import { PLUGIN_CONTRACT_VERSION, type BuiltinPluginRegistration } from '../app/boot/descriptor.js';
 import { createRepoctopusBuiltinCatalog } from '../plugins/builtin-catalog.js';
 import { OpenSpecProvider } from '../platform/specification/openspec-provider.js';
+import { GitSpecificationCheckoutManager } from '../platform/git/specification-checkout.js';
 import {
   OpenSpecProcess,
   type SpecificationProcessPort,
@@ -393,9 +394,19 @@ describe('Specification authority', () => {
         expect.stringMatching(/^openspec\/changes\/archive\/.+\/proposal\.md$/u),
       ]),
     );
+    const archiveCheckout = await new GitSpecificationCheckoutManager(workspace).find(
+      first.candidate.checkoutId,
+    );
+    expect(archiveCheckout).not.toBeNull();
+    expect(
+      await readFile(
+        path.join(archiveCheckout!.root, 'openspec', 'specs', 'demo', 'spec.md'),
+        'utf8',
+      ),
+    ).toContain('Added behavior');
     expect(
       await readFile(path.join(workspace, 'openspec', 'specs', 'demo', 'spec.md'), 'utf8'),
-    ).toContain('Added behavior');
+    ).not.toContain('Added behavior');
     expect(
       JSON.parse(
         await readFile(
@@ -412,7 +423,7 @@ describe('Specification authority', () => {
     ).toMatchObject({ state: 'committed', resultClosureId: first.closureId });
     expect(
       await readdir(path.join(workspace, '.repoctopus', 'archive-checkouts')).catch(() => []),
-    ).toEqual([]);
+    ).toEqual([first.candidate.checkoutId]);
     await context.fiber.dispose();
   }, 30_000);
 
@@ -548,10 +559,14 @@ The system MUST provide fresh behavior.
       targetBaselineDigest: `sha256:${'d'.repeat(64)}`,
     });
 
-    await expect(context.specification.close(plan)).resolves.toMatchObject({ status: 'closed' });
+    const result = await context.specification.close(plan);
+    const archiveCheckout = await new GitSpecificationCheckoutManager(fixture.workspace).find(
+      result.candidate.checkoutId,
+    );
+    expect(archiveCheckout).not.toBeNull();
     expect(
       await readFile(
-        path.join(fixture.workspace, 'openspec', 'specs', 'fresh-capability', 'spec.md'),
+        path.join(archiveCheckout!.root, 'openspec', 'specs', 'fresh-capability', 'spec.md'),
         'utf8',
       ),
     ).toContain(
@@ -643,10 +658,17 @@ Use the official OpenSpec retirement metadata.
       targetBaselineDigest: `sha256:${'8'.repeat(64)}`,
     });
     expect(plan.retiredCapabilities).toEqual(['demo']);
-    await expect(context.specification.close(plan)).resolves.toMatchObject({ status: 'closed' });
+    const result = await context.specification.close(plan);
+    const archiveCheckout = await new GitSpecificationCheckoutManager(fixture.workspace).find(
+      result.candidate.checkoutId,
+    );
+    expect(archiveCheckout).not.toBeNull();
+    await expect(
+      readFile(path.join(archiveCheckout!.root, 'openspec', 'specs', 'demo', 'spec.md'), 'utf8'),
+    ).rejects.toMatchObject({ code: 'ENOENT' });
     await expect(
       readFile(path.join(fixture.workspace, 'openspec', 'specs', 'demo', 'spec.md'), 'utf8'),
-    ).rejects.toMatchObject({ code: 'ENOENT' });
+    ).resolves.toContain('Existing behavior');
     await context.fiber.dispose();
   }, 30_000);
 
