@@ -3,7 +3,7 @@
 ## Subject
 
 - Change: `complete-managed-change-execution`
-- Tested implementation commit: `609432a1d4dde6369f66d7acd73190750cc23fc6`
+- Tested implementation commit: `31edb0597333a1520d58ce3a18f9abd3bc6dad92`
 - Branch: `feat/complete-managed-change-execution`
 - Package: `repoctopus@0.1.0`
 - Package bytes: `937712`
