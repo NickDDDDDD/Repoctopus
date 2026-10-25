@@ -216,20 +216,6 @@ Repoctopus App Host MUST 只负责创建 Cordis Context、加载 composition、�
 - **WHEN** CLI 完成请求或进程收到受控关闭信号
 - **THEN** Host 发起有界排空并等待 Cordis Fiber 清理，不逐个硬编码平台资源释放顺序
 
-### Requirement: 外部事件通过受保护入口启动 Run
-
-WorkflowRuns MUST 只接受已经持久化且映射到当前 Workspace 与 change 的平台投递作为外部事实或唤醒条件，并使用稳定幂等键恢复对应的现有 Change Run；平台事件、Webhook、补偿检查和 Adapter 不得直接写 Run State、创建独立 Post-merge Run或在缺少权威 Run 时猜测生命周期。
-
-#### Scenario: 两个合入事件同时满足关闭条件
-
-- **WHEN** 两个 Runner 并发投递同一 change 和合入事实
-- **THEN** Event Inbox 去重或收敛事实并唤醒同一个 `archive/waiting` Change Run，不创建第二个逻辑 Run
-
-#### Scenario: 全新状态卷收到历史合入事件
-
-- **WHEN** Runner 无法加载该 change 的权威 Change Run 但收到已合入事实
-- **THEN** WorkflowRuns 返回恢复或迁移诊断，不根据 MR 作者、分支或载荷临时创建 Post-merge Run
-
 ### Requirement: Run 绑定方法和规格实现身份
 
 WorkflowRuns MUST 把实际使用的 Skill 快照和 Specification Provider 身份作为 Run 语义输入持久化，并在恢复、Evidence 接受和规格关闭前重新核对兼容性。
@@ -241,26 +227,12 @@ WorkflowRuns MUST 把实际使用的 Skill 快照和 Specification Provider 身�
 
 ### Requirement: 自举开发使用产品公共能力
 
-Repoctopus MUST 能用已发布或当前工作树构建的产品入口执行自身真实 change 的需求澄清、规格校验、实施 Evidence、交付、合入后验证与关闭，不得使用只存在于测试中的旁路状态转换。
+Repoctopus MUST 能用已发布或当前工作树构建的产品入口执行自身真实 change 的需求澄清、规格校验、实施 Evidence、交付、规格关闭和后续一致性审查，不得使用只存在于测试中的旁路状态转换或要求 Webhook/长驻 Runner。
 
 #### Scenario: Repoctopus 交付自身 change
 
 - **WHEN** 维护者以 Repoctopus 仓库作为项目运行自举工作流
-- **THEN** Run、Evidence、Delivery、平台事件和规格关闭均通过生产 composition 与公共服务完成，并留下可核对 Trajectory
-
-### Requirement: 人工等待与后台恢复不占用进程
-
-WorkflowRuns MUST 把等待用户决定、等待 MR 合入和等待重试时间表示为 Change Run 内持久化的 phase、status 与可唤醒条件，不要求单一进程、IDE 会话或 Fiber 在等待期间持续存活；唤醒只能恢复同一 Run 并重新核对当前事实。
-
-#### Scenario: Run 等待 MR 合入时 Runner 重启
-
-- **WHEN** `archive/waiting` 的 Run 所在 Runner 退出并于后续平台事件到来时重新启动
-- **THEN** 系统从 Store 恢复等待条件并继续同一 Run，不依赖旧内存回调或创建 Post-merge Run
-
-#### Scenario: 等待人工决定期间产物漂移
-
-- **WHEN** `design/waiting` 的 Run 被用户响应唤醒但当前规划语义摘要已变化
-- **THEN** Runtime 拒绝旧决定并生成基于当前摘要的新等待事实
+- **THEN** Run、Evidence、Delivery、规格关闭和 Publication Receipt 均通过生产 composition 与公共服务完成，并留下可核对 Trajectory
 
 ### Requirement: Workspace 是版本化的团队工作流入口
 
@@ -284,3 +256,45 @@ Repoctopus MUST 在日常 Run、Evidence、Delivery 和恢复中按 Workspace �
 
 - **WHEN** Workspace 同级目录新增一个 Git 仓但配置尚未登记它
 - **THEN** 日常 Run 和 Delivery 不把该仓加入快照，只有显式重新探测才把它作为候选交给用户确认
+
+### Requirement: 产品运行时使用短生命周期入口
+
+Repoctopus MUST 通过请求范围的 CLI、Desktop 或受保护 Service 调用装配项目 composition、执行当前工作并有界关闭；核心工作流不得要求监听端口、Webhook、Event Inbox、轮询 Timer 或长驻 Runner 才能完成或恢复。
+
+#### Scenario: 正常 Change 命令执行
+
+- **WHEN** 用户启动、继续、验证、归档或核对一个 Change
+- **THEN** Host 装配所需项目能力、执行请求、持久化 Receipt 并关闭插件树，不留下后台监听器
+
+#### Scenario: 下一次命令恢复未确认发布
+
+- **WHEN** 前一次短生命周期命令在 push 或 MR 创建响应前中断
+- **THEN** 新命令从 Intent 和远端当前事实恢复，不依赖旧进程、Runner lease 或事件投递
+
+### Requirement: 只读 CLI 命令不得启动项目副作用
+
+帮助、版本、状态、inspect、doctor 和参数错误 MUST 在装配 Project composition 前完成解析；这些请求不得执行一致性审查、创建 Run 或写持久状态。
+
+#### Scenario: 请求子命令帮助
+
+- **WHEN** 用户执行 `run start --help` 或 `change reconcile --help`
+- **THEN** CLI 只输出对应子命令用法，零 composition、零 reconcile、零 Run 写入
+
+#### Scenario: 必需参数缺失
+
+- **WHEN** 用户意图启动 Change Run 但缺少受保护的必需参数
+- **THEN** CLI 返回参数错误，不回退到默认 workflow 或执行启动前检查
+
+### Requirement: 人工等待与按需恢复不占用进程
+
+WorkflowRuns MUST 把等待用户决定或可重试输入表示为 Change Run 内持久化的 phase、status 与条件，不要求单一进程、IDE 会话或 Fiber 持续存活；Archive 不得等待 MR 合入，已完成 Change 的一致性审查不得建立生命周期等待条件。
+
+#### Scenario: 等待人工决定期间产物漂移
+
+- **WHEN** `design/waiting` 的 Run 被用户响应唤醒但当前规划语义摘要已变化
+- **THEN** Runtime 拒绝旧决定并生成基于当前摘要的新等待事实
+
+#### Scenario: 已完成 Change 尚未执行一致性审查
+
+- **WHEN** 远端 MR 可能已变化但尚无下一次任务或显式 reconcile
+- **THEN** 原 Run 保持 completed，系统只报告最后审查时间，不维持后台进程或 waiting 状态
