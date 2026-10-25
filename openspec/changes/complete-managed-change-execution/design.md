@@ -45,7 +45,7 @@ interface WorkExecutionPacket {
 }
 ```
 
-`WorkExecutionContext.layers` 继续包含真实 content。`ActionIntent.executionContext` 只保存相同 schema、layer identity 与 digest。`WorkDispatcher.claim()` 先由 ActionDispatcher 持久化 intent，再返回 packet；任何序列化失败都不得留下“已交付”事实。Packet 不进入 RunStore、ActionStore、Trajectory、日志或 OTLP。
+`WorkExecutionContext.layers` 继续包含真实 content。`ActionIntent.executionContext` 只保存相同 schema、layer identity 与 digest。`WorkDispatcher.claim()` 先把不可变 intent 内容写入 ActionStore，再以 Run CAS 把其 identity 绑定为当前 Work attempt；只有权威 Run commit 成功后才返回 packet。CAS 失败留下的孤立 intent 不是 claim，可以安全忽略或清理；任何序列化或权威 commit 失败都不得留下“已交付”事实。Packet 不进入 RunStore、ActionStore、Trajectory、日志或 OTLP。
 
 选择这种分离，而不是把正文写进 ActionIntent，是因为 Skill、模板和 change 输入可能很大或包含仅允许当前执行者读取的信息；恢复只需要冻结 identity，再由原 Provider 重新解析并逐层核对。
 
@@ -94,7 +94,7 @@ Guard 不是 OS 沙箱。直接 `fs.writeFile` 或外部 shell 仍可能改变�
 
 ### 5. 将现有 Runtime checkpoint 扩展为 Work 级断点续跑
 
-复用现有 `FileRuntimeStore` 的原子 checkpoint、transition journal、`stateVersion` CAS 和 Project Snapshot reconciliation，不引入 Comet Runtime、第二套 Store 或后台 daemon。当前 checkpoint 已能恢复 Run、phase、accepted evidence、Skill/Specification identity 和 trajectory offset；本 Change 把当前执行边界也纳入同一权威恢复协议。
+复用现有 `FileRuntimeStore` 的原子 checkpoint、transition journal、`stateVersion` CAS 和 Project Snapshot reconciliation，不引入 Comet Runtime、第二套推进权威或后台 daemon。当前 checkpoint 已能恢复 Run、phase、accepted evidence、Skill/Specification identity 和 trajectory offset；本 Change 把当前执行边界直接纳入同一个 Change Run aggregate，而不是在旁路 Store 建立另一份执行状态。
 
 每次会改变“下一步该做什么”的事实都必须在返回成功前形成可恢复 checkpoint，包括：Work 创建、claim、context delivered、Host invocation started、Outcome persisted、Validator accepted、Human Decision created/resolved 和 lifecycle transitioned。checkpoint 只保存有界 identity，不保存完整 packet 正文或凭据：
 
@@ -115,7 +115,9 @@ interface WorkExecutionCheckpoint {
 }
 ```
 
-ActionStore 继续保存 ActionIntent/Receipt 明细，但 Run checkpoint 必须保存足以关联原 attempt 的执行投影；两者通过可恢复 transaction journal 协调。claim 只有在 intent 与 checkpoint 都可通过 journal 收敛到同一 identity 后才算 durable。恢复不能仅凭一侧文件推断另一侧成功。
+`RunState.workExecution` 与 Run checkpoint 是 claim、attempt、Host 状态和 continuation 的唯一权威，并由现有 Run transition journal 与 Trajectory 一次提交。ActionStore 降级为不可变、identity-addressed 的 ActionIntent/Receipt 内容库：先写内容，再由 Run CAS 绑定其 digest。CAS 前崩溃只会产生无权威引用的孤立内容；CAS 后响应丢失时，恢复仍从 Run 得到同一 claim。Outcome/Receipt 采用相同顺序，先持久化不可变内容，再由 Run CAS 接受其 identity。ActionStore 的“latest intent”、文件存在或写入顺序不得决定 attempt、完成状态或下一步；被 Run 引用的内容缺失、损坏或摘要不匹配时 fail closed 进入 `reconcile`，不得从另一侧猜测成功。
+
+这与 Comet 0.5.0 的关键不变量一致：完整执行状态由一个 RuntimeStore CAS record 负责，其他 holder index、portable projection 或内容文件不保存第二套业务推进状态。Repoctopus 保留自己的多仓 Project Snapshot、Cordis composition 和独立不可变内容库，但这些差异不能削弱单一执行权威。
 
 `run resume` 先恢复未完成的文件事务，再核对 definition、composition、Skill/Provider identity、Project Snapshot、当前多仓 Git事实和 packet digest，然后按原边界产生 continuation：
 
@@ -213,7 +215,7 @@ claim.persisted
 - **[阶段 Skill 与 Provider instructions 冲突]** → 阶段 Skill 不拥有模板内容；definition validation 检查 artifact protocol owner 唯一，冲突在 claim 前失败。
 - **[旧 Run 因 definition/composition 升级不可恢复]** → 不静默升级；保留只读状态，使用 migration planner 或新 generation，并记录关联。
 - **[Host 调用中断导致是否执行未知]** → claim 和 session identity 先持久化；有 reconcile 的 Host 核对原调用，无 reconcile 时保持 unknown/manual repair，不自动重发外部副作用。
-- **[Run checkpoint 与 ActionStore 在中断后分叉]** → 用同一 recoverable transaction journal 关联执行投影和 Action identity；启动时先收敛 journal，再公开 continuation，任一侧孤立或摘要不匹配都进入 reconcile 而非猜测成功。
+- **[Run checkpoint 与 ActionStore 内容在中断后不一致]** → 不协调两套推进状态；ActionStore 先写不可变内容，Run CAS 后绑定 identity 并独占 claim/attempt/continuation 权威。孤立内容可忽略，被引用内容缺失或摘要不匹配则进入 reconcile，绝不从 ActionStore latest/file existence 推断进度。
 - **[Agent coordination checkpoint 被误当作完成事实]** → coordination 只保存有界进度提示，Runtime 只接受 Engine checkpoint、Outcome、Validator、Evidence 和 Human Decision；缺失或过期时核对实际工作，不自动重做。
 - **[黑盒 Host 仍可能只是高级 mock]** → 捕获 Host 只替代模型推理，不替代生产服务；它必须通过公共 Host Contributor、真实 packet、真实 Guard/Provider/Store 完成文件纵切，并验证实际文件结果。
 

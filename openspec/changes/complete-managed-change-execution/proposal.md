@@ -11,7 +11,7 @@
 - 提供 Repoctopus-owned、Provider-neutral 的阶段 action Skills。当前 OpenSpec Provider 继续提供官方 instructions/template 和四类工件权威；Matt `tdd`、`codebase-design`、`diagnosing-bugs`、`code-review` 与 `pr` 只作为 definition 固定的 augmentation 或独立发布 action，不建立第二套规格权威。
 - 将公共 claim 协议升级为完整、短生命周期的 `WorkExecutionPacket`，包含 Runtime contract、action Skill 正文、Specification Provider 指令、augmentations、Method Profile 和当前输入；ActionIntent、Run、日志和遥测只保留各层 identity 与整体 digest。
 - 增加版本化 `WorkExecutionHost` Cordis Contributor 契约和受管执行服务。Host 必须声明能力、执行 preflight、接收冻结执行包并调用 Agent；不能通过调用参数替换 Skill、扩大范围或绕过当前 claim。
-- 把现有 Run checkpoint 从“恢复 phase 与投影”扩展为 Work 级断点续跑协议：持久化当前 Action attempt、claim/Host/packet identity、Outcome/Validator/transition 边界和 continuation；新进程或新 Runner 必须从原断点等待、核对、继续验证或重放幂等转换，不得从 phase 名称猜测进度或重复外部副作用。
+- 把现有 Run checkpoint 从“恢复 phase 与投影”扩展为 Work 级断点续跑协议：由同一个 Change Run aggregate 权威持久化当前 Action attempt、claim/Host/packet identity、Outcome/Validator/transition 边界和 continuation；ActionStore 只保存由 Run identity 绑定的不可变明细，不拥有 claim、attempt 或下一步。新进程或新 Runner 必须从原断点等待、核对、继续验证或重放幂等转换，不得从 phase 名称猜测进度、协调两套推进状态或重复外部副作用。
 - 明确 `fresh` 与 `adopt-existing` 两种 Change 启动模式。新开发默认 `fresh`，已完成 checkbox 不得静默变成 `imported-claim`；只有显式采用既有实现时才允许导入 completion claim，并仍要求完整 Verify。
 - 增加从空目录开始的进程外黑盒自举测试：创建 Change Run、捕获完整 Skill 正文、完成 OpenSpec 四类工件、等待真实 Design 决定、逐 Task Build、Verify、Archive；测试必须证明首次受保护写入发生在 claim 和上下文交付之后。
 - 增加 definition 可达性与消费端契约检查：每个内置 Work kind 都必须具有生产创建路径、合法 Host/Contributor、完整上下文交付测试和 Validator，不能用只检查 layer 名称/digest 的测试替代宿主消费测试。

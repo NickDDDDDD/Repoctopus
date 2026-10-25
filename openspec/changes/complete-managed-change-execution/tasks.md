@@ -4,7 +4,7 @@
 
 - [ ] 1.1 固定 Comet 0.5.0 `applicationSkillWork`、`skill-executor`、`skill-invocation` 的行为对照和当前 G1 bootstrap Run 身份；增加回归测试重现“assembler 有正文、public claim 只有 identity”的缺口，并验证测试在修复前失败。
 - [ ] 1.2 定义版本化 `WorkExecutionPacket`、packet identity、Host requirement 和 Host invocation/outcome 类型；用领域测试验证正文与 identity digest 一致、对象深冻结、规范序列化稳定且正文不进入持久 identity。
-- [ ] 1.3 重构 Work claim 为“先持久化 ActionIntent，再返回完整 packet”，保留 ActionStore 的 identity-only Schema；用 Store/Dispatcher 测试证明持久文件不含 Skill、Provider instruction 或 change input 正文，claim 失败不暴露 packet。
+- [ ] 1.3 重构 Work claim 为“先持久化不可变 ActionIntent，再由 Run CAS 绑定 identity，最后返回完整 packet”，保留 ActionStore 的 identity-only Schema但移除其 attempt/latest 权威；用 Store/Dispatcher 测试证明孤立 intent 不是 claim、并发 CAS 只有一个获胜 attempt、持久文件不含 Skill/Provider instruction/change input 正文，失败不暴露 packet。
 - [ ] 1.4 升级公共 Application/CLI `run work-claim` 协议并保留明确的 identity-only 展示；运行打包 CLI E2E，证明 JSON Host 协议得到完整正文而普通文本、日志和诊断不泄漏正文。
 
 ## 2. 建立真实 Agent Host 执行端口
@@ -14,7 +14,7 @@
 - [ ] 2.3 实现短生命周期 `WorkExecutionSession` 并把 RuntimeWorkGuard 接到显式 invocation identity；用并发测试验证两个 Run 不串线、session 结束立即失效、首次受保护写入早于 context delivery 会被拒绝。
 - [ ] 2.4 为进程外 Host 增加带 session identity 的受保护操作协议和 Host-bound Outcome 校验；用伪造 Host、错误 packet digest、过期 claim、跨 Work Outcome 与无 session 写入 fixture 证明全部被拒绝。
 - [ ] 2.5 实现 Host 调用中断与 reconciliation 语义；故障注入测试覆盖 claim 后崩溃、invoke 结果未知、可核对已执行、可证明未执行和无 reconcile Host，证明不会自动重发未知副作用或猜测成功。
-- [ ] 2.6 扩展 Runtime checkpoint schema，持久化当前 Work attempt、claim/packet/Host/Outcome/Receipt identity 和 continuation 投影，并用 recoverable transaction journal 协调 RunStore 与 ActionStore；测试在任一侧写入后崩溃都能收敛或 fail closed。
+- [ ] 2.6 把 `workExecution` 纳入唯一 Change Run aggregate/checkpoint，由现有 Run CAS 与 transition journal 原子持久化 Work attempt、claim/packet/Host/Outcome/Receipt identity 和 continuation；将 ActionStore 降级为先写的不可变内容库。测试覆盖内容写入后 CAS 前崩溃、CAS 后响应丢失、孤立内容、被引用内容缺失/损坏和并发 claim，证明不会产生第二套权威且恢复能收敛或 fail closed。
 - [ ] 2.7 实现 `execute|ask|wait|reconcile|done` 恢复分类：未 invoke 的原 attempt 可重新交付、活跃 Host 必须等待、未知副作用必须核对、已持久 Outcome 从 Validator 继续、已接受 Validator 幂等完成 transition、Human Decision 保留原 proposal hash。
 - [ ] 2.8 实现可选 Agent coordination checkpoint，用于上下文压缩、Agent handoff 和子任务进度；验证它不进入 OpenSpec 四类工件、不授权写入、不形成 completion claim，缺失或 stale 时只触发实际工作核对。
 - [ ] 2.9 将多仓 Project Snapshot reconciliation 接入 Work resume：按 repository identity 重新解析本机路径和 scope，核对 commit/dirty state/definition/composition/Skill/Provider/packet digest，漂移时返回结构化 reconcile 或 migration 而不重复执行。

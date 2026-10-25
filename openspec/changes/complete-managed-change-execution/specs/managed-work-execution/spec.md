@@ -83,7 +83,22 @@ Repoctopus MUST 让受管 Outcome 绑定执行包 digest、Host identity、执�
 
 ### Requirement: 受管 Work 必须从原执行断点恢复
 
-Repoctopus MUST 把当前 Work attempt、claim、执行包、Host invocation、Outcome、Validator、Human Decision 和 lifecycle transition 的有界 identity 纳入权威 Runtime checkpoint，并在每个持久边界返回前原子提交或留下可恢复 journal；进程、Agent 或 Runner 中断后必须从原边界产生 `execute`、`ask`、`wait`、`reconcile` 或 `done` continuation，不得仅凭 phase、文件存在或会话记忆重新开始。
+Repoctopus MUST 把当前 Work attempt、claim、执行包、Host invocation、Outcome、Validator、Human Decision 和 lifecycle transition 的有界 identity 纳入同一个权威 Change Run aggregate/checkpoint，并通过 Run CAS 与可恢复 journal 提交每个执行边界；ActionStore 或其他投影不得拥有 attempt、claim、完成状态或 continuation。进程、Agent 或 Runner 中断后必须从原 Run 边界产生 `execute`、`ask`、`wait`、`reconcile` 或 `done` continuation，不得仅凭 phase、旁路文件存在或会话记忆重新开始。
+
+#### Scenario: Action 内容写入后 Run claim 前中断
+
+- **WHEN** 不可变 ActionIntent 已写入内容库，但绑定其 identity 的 Run CAS 尚未成功
+- **THEN** 该内容是可忽略或可清理的孤立记录，不构成 claim，新 Runner 只按权威 Run 尝试领取且不得把 ActionStore latest 当作当前 attempt
+
+#### Scenario: Run claim 成功后响应丢失
+
+- **WHEN** Run checkpoint 已绑定 claim/packet identity，但领取响应在返回宿主前丢失
+- **THEN** 新 Runner 从同一 Run 恢复原 attempt，并在摘要一致时重新交付同一 packet，不创建第二个 claim
+
+#### Scenario: Run 引用的 Action 内容损坏
+
+- **WHEN** 权威 Run 引用的 ActionIntent、Outcome 或 Receipt 内容缺失、损坏或摘要不匹配
+- **THEN** Runtime fail closed 并返回 reconcile/repair 诊断，不从其他 Action 文件、最新时间或 checkbox 猜测执行结果
 
 #### Scenario: Host 调用后连接中断
 
@@ -117,7 +132,7 @@ Repoctopus MAY 保存用于上下文压缩、Agent handoff 或子任务协调的
 #### Scenario: Coordination checkpoint 缺失
 
 - **WHEN** 新 Agent恢复 Build 而 coordination checkpoint 不存在或已 stale
-- **THEN** Agent按权威 Run/Action、实际文件和 Git事实核对进度，不能因为记录缺失而假定实现未发生并重复执行
+- **THEN** Agent按权威 Change Run、其绑定的不可变 Action 内容、实际文件和 Git事实核对进度，不能因为协调记录缺失而假定实现未发生并重复执行
 
 ### Requirement: 黑盒验收必须观察真实内容消费
 
