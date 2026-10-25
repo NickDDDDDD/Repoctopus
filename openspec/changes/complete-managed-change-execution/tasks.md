@@ -115,6 +115,10 @@
       **Acceptance:** 三种畸形 Acceptance fixture 都通过真实 CLI/Runtime/OpenSpec Provider 链路在 Human Decision 前 blocked；完整 fixture 仍可进入审批；定向与全量回归通过
       **Requirements:** specification-authority#design-在批准前验证结构化-acceptance
 
+- [ ] 8.4 修复自举发现的 Verify 恢复缺口：Validator accepted 后允许新 Runner 复用同一 succeeded Host review 与 Evidence attempt 继续 gate 投影，不重复 Agent review 或 Validator 事实。
+      **Acceptance:** production composition 在 Verify Validator 后模拟进程中断，由新 Application Host 使用原 Evidence attempt 恢复到 Archive；错误 Work、失败 Outcome 或不匹配 Validator 仍 fail closed
+      **Requirements:** managed-work-execution#受管-work-必须可断点恢复且不重复副作用
+
 ## Workflow follow-up
 
 - Build 与 Verify 满足后，由同一 Change Run 执行规格关闭和发布 Work；实际 MR 合入仍由人决定，Run 不等待 MR 合入。

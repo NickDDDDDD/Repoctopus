@@ -282,10 +282,29 @@ describe('managed Change execution production composition', () => {
         currentWork: { kind: 'evidence.verify' },
       });
       await next();
-      const verified = await application.context.commandRouter.execute<
-        { runId: string },
-        RuntimeResult<VerifyChangeRunResult>
-      >('run.work.verify', { runId });
+      const verifyIntent = await application.context.workExecutionAuthority.loadIntent(runId);
+      await application.context.workExecutionAuthority.markValidated({
+        intent: verifyIntent,
+        validatorId: 'verify.evidence-gate',
+        continuation: 'wait',
+      });
+      const interruptedAttemptId = 'managed-blackbox-interrupted-after-validator';
+      const interruptedEvidence = await application.context.evidenceCoordinator.run(
+        'verify',
+        interruptedAttemptId,
+        runId,
+      );
+      expect(interruptedEvidence.bundle?.outcome).toBe('passed');
+      const recoveryApplication = await bootProjectComposition(productRoot, workspace);
+      let verified: RuntimeResult<VerifyChangeRunResult>;
+      try {
+        verified = await recoveryApplication.context.commandRouter.execute<
+          { runId: string; attemptId: string },
+          RuntimeResult<VerifyChangeRunResult>
+        >('run.work.verify', { runId, attemptId: interruptedAttemptId });
+      } finally {
+        await recoveryApplication.close();
+      }
       expect(verified.value).toMatchObject({ gate: 'satisfied' });
       expect(verified.value.run.changeLifecycle).toMatchObject({
         phase: 'archive',

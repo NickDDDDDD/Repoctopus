@@ -237,6 +237,8 @@ claim.persisted
 
 故障注入必须在 `claim.persisted`、`context.delivered`、`host.invoked`、`outcome.persisted`、`validator.accepted` 和 `lifecycle.transitioned` 之后分别终止进程，并由新进程/Runner 恢复同一 Run。验收按 checkpoint 返回的 `execute|ask|wait|reconcile|done` 继续，断言 Agent、外部平台操作、Evidence 和 phase transition 都没有重复或遗漏。
 
+Verify 的 Validator 与 Evidence gate 是两个独立的持久边界。`run verify` 首次执行时从 succeeded Host review Outcome 验证并写入 `validated`；若进程随后在 Evidence 执行或 gate 投影前中断，恢复调用必须接受同一 Work 上、同一 Validator identity 的 `validated` checkpoint，跳过重复 Validator 写入并继续现有或新的 Evidence attempt。`validated` 只复用 Agent review，不放宽 Evidence 的 fingerprint、Acceptance trace、freshness 或 gate 约束；Evidence superseded 仍按 implementation drift 返回 Build 并冻结新的 Verification Input。
+
 正式验证报告位于 `verification/complete-managed-change-execution/verification-report.md`，它是 Evidence 引用的报告而不是第五类 OpenSpec 规划工件。报告必须固定被测 Git commit、打包产物 checksum、definition/composition digest、公共命令、runId、各事件/Receipt identity、历史 red baseline、三个故障 fixture 的预期失败和进程恢复矩阵；若报告对应的 commit 或 package checksum 与待发布提交不一致，Verify 不得宣称通过。
 
 ### 12. Tasks 的 Acceptance 必须显式且在 Design 阶段闭合

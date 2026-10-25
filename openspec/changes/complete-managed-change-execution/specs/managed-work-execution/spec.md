@@ -115,6 +115,11 @@ Repoctopus MUST 把当前 Work attempt、claim、执行包、Host invocation、O
 - **WHEN** Validator accepted 已持久化而 lifecycle transition 尚未完整提交
 - **THEN** Runtime 通过 recoverable journal 幂等完成原 transition，并且 Trajectory 只出现一次对应推进事实
 
+#### Scenario: Verify Validator 后 Evidence gate 投影前中断
+
+- **WHEN** Verify Host review Outcome 与 Validator accepted 已持久化，Evidence attempt 已完成或可恢复，但 gate 尚未投影到 Change Run
+- **THEN** 新 Runner 复用同一受验证 review 与 Evidence attempt 完成 gate 投影，不重新调用 Agent、不重复写 Validator 事实，也不把 `validated` 误判为缺少 review Outcome
+
 #### Scenario: 等待用户决定时更换 Agent
 
 - **WHEN** Change Run 在 Human Decision Wait 中断或由新 Agent接管

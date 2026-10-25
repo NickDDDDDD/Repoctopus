@@ -1219,30 +1219,35 @@ export class WorkflowRuns extends Service {
       ) {
         throw new Error(`Change Run has no active Verify Work: ${input.runId}`);
       }
-      if (
-        state.workExecution?.workId !== current.currentWork.workId ||
-        state.workExecution.status !== 'outcome' ||
-        state.workExecution.actionOutcome?.status !== 'succeeded' ||
-        !state.workExecution.receiptId
-      ) {
+      const execution = state.workExecution;
+      const reviewOutcomeIsReusable =
+        execution?.workId === current.currentWork.workId &&
+        (execution.status === 'outcome' ||
+          (execution.status === 'validated' &&
+            execution.validatorId === current.currentWork.validatorProfile.id)) &&
+        execution.actionOutcome?.status === 'succeeded' &&
+        Boolean(execution.receiptId);
+      if (!reviewOutcomeIsReusable || !execution?.receiptId) {
         throw new Error('Verify Evidence requires a succeeded managed Host review Outcome');
       }
-      const validator = this.ctx.lifecycleValidators.resolve(
-        current.currentWork.validatorProfile.id,
-      );
-      const validation = await validator.validate({
-        profileId: current.currentWork.validatorProfile.id,
-        work: current.currentWork,
-        fact: { receiptId: state.workExecution.receiptId, review: 'host-succeeded' },
-      });
-      if (!validation.accepted) {
-        throw new Error(`Verify Validator rejected: ${validation.diagnostic}`);
+      if (execution.status === 'outcome') {
+        const validator = this.ctx.lifecycleValidators.resolve(
+          current.currentWork.validatorProfile.id,
+        );
+        const validation = await validator.validate({
+          profileId: current.currentWork.validatorProfile.id,
+          work: current.currentWork,
+          fact: { receiptId: execution.receiptId, review: 'host-succeeded' },
+        });
+        if (!validation.accepted) {
+          throw new Error(`Verify Validator rejected: ${validation.diagnostic}`);
+        }
+        await this.ctx.workExecutionAuthority.markValidated({
+          intent: await this.ctx.workExecutionAuthority.loadIntent(input.runId),
+          validatorId: current.currentWork.validatorProfile.id,
+          continuation: 'wait',
+        });
       }
-      await this.ctx.workExecutionAuthority.markValidated({
-        intent: await this.ctx.workExecutionAuthority.loadIntent(input.runId),
-        validatorId: current.currentWork.validatorProfile.id,
-        continuation: 'wait',
-      });
       const workflowStateVersion = (await this.ctx.runStore.loadRun(input.runId)).stateVersion;
       const attemptId = input.attemptId ?? randomUUID();
       let result;
