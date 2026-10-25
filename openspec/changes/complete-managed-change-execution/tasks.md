@@ -44,14 +44,22 @@
 - [ ] 5.3 让旧 G1 bootstrap Run明确报告 definition/composition drift并保持只读，以新 generation `adopt-existing` 接管既有规划和实现；新 Run 必须记录可验证的 Open/Design adoption facts而不伪造旧 Work 历史，从首个未完成 Task 起使用完整 packet 与 Host 执行，Trajectory 必须记录 context delivered 和 host invoked。
 - [ ] 5.4 更新 CLI、self-hosting、Skill、Specification 与架构文档，执行所有文档命令冒烟测试，明确受管 Host 边界、外部进程 drift、fresh/adopt 选择和正文隐私。
 
-## 6. 用消费者导向的黑盒验收闭包
+## 6. 把受管执行事实投影为统一 OTLP 遥测
 
-- [ ] 6.1 建立生产 composition 的 `CapturingWorkExecutionHost` 测试插件，只替代模型推理、不替代真实 Skill Registry、OpenSpec Provider、Store、Guard、Validator 或文件操作；架构测试证明它不进入 builtin catalog 和发布包默认组合。
-- [ ] 6.2 在临时 Git Workspace 用独立进程启动打包 CLI/Application Host 协议，从不存在 change 目录的 fresh Run 执行 `Open → Design → Build → Verify → Archive`；测试不得 import `WorkflowRuns`、coordinator/reducer、直接构造 Work 或 completion observation。每个公共调用后分别断言 continuation/中间 phase、追加式 trajectory identity/顺序和实际受保护文件；尤其证明首次及重复 `run next` 在 Open Host/Validator 完成前保持同一 Work/attempt。最终事件顺序必须为 `claim.persisted → context.delivered → host.invoked → protected-operation.accepted → outcome.persisted → validator.accepted → lifecycle.transitioned`。
-- [ ] 6.3 增加反作弊与验收灵敏度回归：identity-only、Host 未读正文、写入早于 delivery、无 Host、双 Host、Provider/Skill 漂移、session 过期、越仓写入、伪造 Outcome、fresh imported claim 任一出现时黑盒测试必须失败；另用三个受控故障 fixture 分别重新引入 Open 自动 `open-intake-ready`、跳过 Host 正文消费和伪造 Validator acceptance，证明 6.2 的同一 harness 会失败，而不是只验证 happy path 最终成功。
-- [ ] 6.4 在 6.2 的每个持久边界故障注入终止进程并由新 Runner 恢复同一 Run；覆盖 waiting decision、Agent handoff、上下文压缩、Host running/unknown、Outcome 后、Validator 后和多仓路径重绑定，证明 continuation 精确且无重复副作用。
-- [ ] 6.5 执行 `npm run verify`、`npm run test:package-e2e` 和 `npm run test:tracer-e2e`，生成 `verification/complete-managed-change-execution/verification-report.md`，固定被测 Git commit、打包产物 checksum、definition/composition digest、公共命令、runId、事件/Receipt identity、两个历史 red baseline、三个受控故障 fixture 的预期失败、fresh 五阶段黑盒证据和断点恢复矩阵；报告与待发布 commit/package 不一致时 Verify 必须失败，并记录未实现模型厂商 Host 和所有明确排除项。
-- [ ] 6.6 清理临时 Workspace、捕获正文、测试状态卷、日志、进程和 scratch artifacts；复查 Git 状态、公开分支远端 OID、运行进程和 package contents，证明没有泄漏执行包正文或遗留未推送提交。
+- [ ] 6.1 扩展版本化 Trajectory event schema，为 phase、Work create/claim/context/Host/completion、Skill resolve/deliver/consume、受保护 tool start/complete、Validator、wait、reconcile 和 continuation 建立稳定 identity 与成对时间戳；所有成功事件必须与对应 Run CAS/transition journal 一起持久化，测试证明提交失败不导出成功、重放不改变 event/invocation identity。
+- [ ] 6.2 扩展 Telemetry mapping 和 OTLP exporter：用同一 Change Run trace identity 生成 phase、Work attempt、Host、tool、Validator 与 wait Span，生成版本化审计 Log/Event，并从同一事件派生 duration histogram 和 attempt/result/retry/reconcile/Skill/tool counters；测试跨进程恢复、未结束边界、重复投递、事件乱序和相同 Run 的唯一关联链。
+- [ ] 6.3 将 Skill 遥测绑定真实 packet/Host 回执：分别记录 action/augmentation 的 resolved、delivered 与可验证 consumed，不从 Work 成功推断消费；将工具遥测绑定 `WorkExecutionSession` 的受保护 operation identity，只记录 capability/operation kind/result/duration，旁路外部操作只产生 drift。用 Host/tool fixture 覆盖未读正文、部分 augmentation、调用失败、超时和重试。
+- [ ] 6.4 建立遥测隐私与基数 gate：Event/Trace 禁止正文、Prompt/回复、tool 参数/结果、命令、diff、文件/绝对路径、URL、环境变量和凭据；Metric label 禁止 run/change/task/repository、digest、自由 Skill/插件名和 invocation identity，只允许有界 phase/work/tool/role/result/recovery 分类。用恶意 payload、超长 ID、自定义 Skill/工具和 cardinality budget 测试 fail closed/降级为 `custom|unknown`。
+- [ ] 6.5 通过真实 OTLP HTTP 测试 receiver 验证日志、Trace 和 Metric payload，与持久 Trajectory 逐事件核对；复用 cursor/outbox 覆盖 Collector 不可用、进程退出、积压重放和重复发送，证明本地 Desktop 与远端 SigNoz 消费同一协议且遥测失败不影响 Work/phase 结果。
+
+## 7. 用消费者导向的黑盒验收闭包
+
+- [ ] 7.1 建立生产 composition 的 `CapturingWorkExecutionHost` 测试插件，只替代模型推理、不替代真实 Skill Registry、OpenSpec Provider、Store、Guard、Validator 或文件操作；架构测试证明它不进入 builtin catalog 和发布包默认组合。
+- [ ] 7.2 在临时 Git Workspace 用独立进程启动打包 CLI/Application Host 协议，从不存在 change 目录的 fresh Run 执行 `Open → Design → Build → Verify → Archive`；测试不得 import `WorkflowRuns`、coordinator/reducer、直接构造 Work 或 completion observation。每个公共调用后分别断言 continuation/中间 phase、追加式 trajectory identity/顺序、实际受保护文件和 6.x OTLP 记录；尤其证明首次及重复 `run next` 在 Open Host/Validator 完成前保持同一 Work/attempt。最终事件顺序必须为 `claim.persisted → context.delivered → host.invoked → protected-operation.accepted → outcome.persisted → validator.accepted → lifecycle.transitioned`。
+- [ ] 7.3 增加反作弊与验收灵敏度回归：identity-only、Host 未读正文、写入早于 delivery、无 Host、双 Host、Provider/Skill 漂移、session 过期、越仓写入、伪造 Outcome、fresh imported claim 任一出现时黑盒测试必须失败；另用三个受控故障 fixture 分别重新引入 Open 自动 `open-intake-ready`、跳过 Host 正文消费和伪造 Validator acceptance，证明 7.2 的同一 harness 会失败，而不是只验证 happy path 最终成功。
+- [ ] 7.4 在 7.2 的每个持久边界故障注入终止进程并由新 Runner 恢复同一 Run；覆盖 waiting decision、Agent handoff、上下文压缩、Host running/unknown、Outcome 后、Validator 后和多仓路径重绑定，证明 continuation 精确且无重复副作用。
+- [ ] 7.5 执行 `npm run verify`、`npm run test:package-e2e` 和 `npm run test:tracer-e2e`，生成 `verification/complete-managed-change-execution/verification-report.md`，固定被测 Git commit、打包产物 checksum、definition/composition digest、公共命令、runId、事件/Receipt identity、两个历史 red baseline、三个受控故障 fixture 的预期失败、fresh 五阶段黑盒证据、OTLP taxonomy/隐私/基数检查和断点恢复矩阵；报告与待发布 commit/package 不一致时 Verify 必须失败，并记录未实现模型厂商 Host 和所有明确排除项。
+- [ ] 7.6 清理临时 Workspace、捕获正文、OTLP receiver payload、测试状态卷、日志、进程和 scratch artifacts；复查 Git 状态、公开分支远端 OID、运行进程和 package contents，证明没有泄漏执行包正文或遗留未推送提交。
 
 ## Workflow follow-up
 

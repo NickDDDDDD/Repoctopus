@@ -17,6 +17,7 @@
 - 增加从空目录开始的进程外黑盒自举测试：创建 Change Run、捕获完整 Skill 正文、完成 OpenSpec 四类工件、等待真实 Design 决定、逐 Task Build、Verify、Archive；测试必须证明首次受保护写入发生在 claim 和上下文交付之后。
 - 把 `establish-change-lifecycle` 曾漏过的真实缺陷固定为历史回归：当前 `repoctopus-change@1.1.0` 在第一次 `run next` 中合成 `open-intake-ready` 并从 Open 直接进入 Design，新测试必须先在旧实现上失败；修复后的黑盒验收还必须通过故障注入证明，只要重新引入该自动 observation 或只检查最终 projection，测试就会失败。
 - 增加 definition 可达性与消费端契约检查：每个内置 Work kind 都必须具有生产创建路径、合法 Host/Contributor、完整上下文交付测试和 Validator，不能用只检查 layer 名称/digest 的测试替代宿主消费测试。
+- 在同一次重构中补齐 OpenTelemetry 执行遥测：从已持久化的 Change Run trajectory 投影五阶段、Work attempt、Host、Skill 上下文交付/消费、受保护工具调用、Validator、wait/reconcile 和 continuation 事件；生成可跨进程关联的 Trace/Span、审计 Log/Event 与低基数效率 Metric，让本地 Dashboard 和 SigNoz 使用同一套 OTLP 事实，而不是各自查询或推断状态。
 - 保持 Repoctopus 是工作流与授权边界而不是操作系统沙箱。任意外部进程仍可能直接改文件，但这种写入不得形成受管 Receipt、Task 完成或阶段推进；正式集成的 Agent Host 只能使用当前 Work 授权的应用能力。
 
 ## Capabilities
@@ -28,13 +29,14 @@
 ### Modified Capabilities
 
 - `change-lifecycle`: 让五阶段中的声明 Work 全部可达且必须由受管执行或 Human Decision 推进，并区分 fresh 与 adopt-existing 启动语义。
+- `development-telemetry`: 为五阶段和受管 Work 执行建立版本化 OTLP 事件、Span、Metric、重放、关联、隐私与基数契约。
 - `skill-integration`: 要求 action/augmentation Skill 的实际正文在执行前交付给唯一 Host，并增加 Repoctopus 阶段 Skill Provider。
 - `plugin-composition`: 增加可替换的 Work Execution Host Contributor 与受管执行 Service，保持 Cordis 为唯一组合容器。
 - `specification-authority`: 让 Specification Provider 为阶段 Work 提供官方指令和工件协议，同时保持 OpenSpec 四类工件与 Tasks 的唯一权威。
 
 ## Impact
 
-- 影响 Change lifecycle definition、transition、WorkflowRuns、WorkDispatcher、ActionIntent/claim 公共协议、Runtime checkpoint/transition journal、Command Router、CLI、Skill Provider、Specification Provider、Cordis builtin catalog、composition snapshot、Run 兼容性和自举文档。
+- 影响 Change lifecycle definition、transition、WorkflowRuns、WorkDispatcher、ActionIntent/claim 公共协议、Runtime checkpoint/transition journal、Command Router、CLI、Skill Provider、Specification Provider、Telemetry mapping/outbox/OTLP exporter、Cordis builtin catalog、composition snapshot、Run 兼容性和自举文档。
 - `run work-claim` 的结果从仅含 ActionIntent 的身份投影升级为版本化执行包；旧调用方必须迁移，不保留旧 claim fallback。身份信息仍可通过明确的只读 inspection projection 查看，但该投影不能领取、执行或提交 Outcome。
 - 不新增模型厂商依赖，也不把 DSH LLM 或某个 IDE 写死为执行器；真实 IDE/Runner 通过 Host Contributor 接入。首个内置 Host 是可进程外消费的 CLI/Application Host 协议，测试使用行为等价的捕获 Host，不以 mock 绕过 Runtime。
 - Comet 0.5.0 固定提交继续作为行为参考，采用 `applicationSkillWork`、`SkillExecutionHost` 与 preflight/execute 分离的架构思想，不复制其产品 shell、CLI、状态目录或 Skill 文案，因此不新增第三方源码派生文件或许可证义务。

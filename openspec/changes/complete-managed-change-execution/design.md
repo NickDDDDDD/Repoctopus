@@ -192,7 +192,23 @@ Open 的修复采用破坏性替换，不在旧分支旁增加第二条路径：
 
 这不是通用 Capability Resolver；它只验证 lifecycle 已声明的四类 Contributor/Provider 关系，并进入现有 composition snapshot。
 
-### 10. 测试以消费者、事件顺序和恢复边界为验收中心
+### 10. 执行遥测是权威 Trajectory 的可重放投影
+
+现有 Telemetry Provider 已能从 `change.lifecycle.transitioned` 导出 phase/status/work/wait，并用持久 cursor 在进程重启后继续发送。本 Change 不另建 Dashboard 状态表，也不让 Host 直接向 OTLP 宣告成功；它扩展 Change Run 的追加式 trajectory，使每个已提交执行边界都先有稳定领域事件，再由现有 outbox/cursor 投影到同一套 OTLP logs、traces 和 metrics。OTLP 不可用只产生 backlog/health 诊断，不能回滚 Work 或阻塞 phase transition。
+
+版本化事件 taxonomy 包含：`change.phase.transitioned`、`work.created|claimed|context-delivered|host-started|host-completed|completed`、`skill.resolved|delivered|consumed`、`tool.started|completed`、`validator.completed`、`wait.started|ended`、`reconcile.started|completed` 和 `continuation.selected`。它们共享 `project.id + change.id + run.id + generation + event.id + state.version`，并按事实类型增加 `phase`、`work.id/kind/attempt`、`claim/packet/invocation/receipt`、`skill identity/role`、`tool capability/operation identity`、`validator identity` 或 `continuation.kind`。事件 ID 和 invocation identity 在重放时保持稳定；Runtime 不承诺 OTLP exactly-once，消费方可据此关联或去重。
+
+信号分工如下：
+
+- Log/Event：保存完整的允许列表身份、状态变化、结果类别和恢复原因，用于精确审计与本地即时投影。
+- Trace/Span：同一 Change Run 使用稳定 trace identity；已完成的 phase、Work attempt、Host invocation、受保护 tool invocation、Validator 与 wait 由成对 trajectory 时间戳重建 Span。进程中断不会制造第二条 trace，未结束边界保持事件/当前状态，恢复完成后再形成结束 Span。
+- Metric：只从相同事件派生 phase/work/host/tool/validator/wait duration histogram，以及 attempt、result、retry、reconcile、Skill delivery/consumption 和 tool call counter。Metric label 只允许 phase、内置 work/tool kind、Skill role、结果和恢复类别等有界值；run/change/task/repository、自由 Skill 名称、digest 和 invocation ID 只能进入 Event/Trace 属性，不能成为 Metric label。
+
+Skill 在当前架构中主要是交付给 Host 的指令内容，Runtime 不能观测 Agent 的“理解程度”。因此 `skill.resolved` 和 `skill.delivered` 是 Runtime 事实；只有 Host 用当前 packet digest 回执已消费时才产生 `skill.consumed`，不能仅因最终 Work 成功反推所有 augmentation 已使用。工具调用只统计经过 `WorkExecutionSession` 受保护操作协议并持久化的调用；外部 IDE 绕过协议的文件或命令活动只能表现为 drift，不能伪造成受管 tool span。
+
+隐私边界沿用并收紧现有 allowlist：禁止导出 Skill/Provider 正文、Prompt、模型回复、tool 参数/返回值、命令、diff、文件名/绝对路径、URL、环境变量或凭据；只允许逻辑 capability、operation kind、稳定 identity、摘要、结果类别、字节/数量和时间。测试用 OTLP receiver 必须证明本地 Dashboard 与远端 SigNoz 所需记录来自同一 exporter payload，并覆盖 replay、重复投递、乱序完成、未结束 Span、Collector 失败和高基数输入降级。
+
+### 11. 测试以消费者、事件顺序和恢复边界为验收中心
 
 测试分四层：
 
