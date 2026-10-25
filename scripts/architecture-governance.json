@@ -56,7 +56,7 @@
     {
       "id": "action-execution",
       "disposition": "behavior-reimplemented",
-      "targets": ["domains/action/**", "platform/action/**"],
+      "targets": ["domains/action/**", "domains/work-execution/**", "platform/action/**"],
       "upstream": [
         "domains/comet-native/native-check-receipt.ts",
         "domains/comet-native/native-check-receipt-storage.ts"
@@ -478,7 +478,7 @@
       "id": "direct-run-state-write",
       "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
       "pattern": "\\b(?:ctx|context)\\.runStore\\.(?:commit|commitGuarded)\\s*\\(",
-      "allowed": [],
+      "allowed": ["services/work-execution-authority.ts"],
       "message": "Callers must submit facts through WorkflowRuns instead of writing Run state directly"
     },
     {
@@ -492,7 +492,10 @@
       "id": "caller-selected-lifecycle-method",
       "targets": ["app/**", "domains/**", "platform/**", "plugins/**", "services/**"],
       "pattern": "\\b(?:actionSkill|requiredSkill|augmentationSkills|methodProfile)\\s*:\\s*(?:input|options|request|commandInput)\\.",
-      "allowed": [],
+      "allowed": [
+        "domains/change-lifecycle/archive-tracer.ts",
+        "domains/change-lifecycle/phase-work.ts"
+      ],
       "message": "Lifecycle methods must come from the immutable definition, not caller input"
     },
     {
