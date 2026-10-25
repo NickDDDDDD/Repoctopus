@@ -68,6 +68,15 @@ export function assertBuildScopedTask(
   }
 }
 
+export function assertSpecificationTaskAcceptance(
+  tasks: readonly Pick<SpecificationTask, 'taskId' | 'acceptanceCriteria'>[],
+): void {
+  const task = tasks.find((candidate) => candidate.acceptanceCriteria.length === 0);
+  if (task) {
+    throw new Error(`Task ${task.taskId} requires at least one explicit Acceptance criterion`);
+  }
+}
+
 export function parseSpecificationTasks(changeId: string, document: string): SpecificationTaskSet {
   if (!changeId.trim()) throw new Error('Specification task change id is required');
   const parsed: Array<{

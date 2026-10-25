@@ -71,6 +71,7 @@ Use a change owned by the temporary test workspace.
       `# Tasks
 
 - [ ] 1.1 Validate the installed package.
+  **Acceptance:** The installed package validates its workspace-owned OpenSpec change
 `,
     ),
     writeFile(

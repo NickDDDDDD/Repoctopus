@@ -37,7 +37,7 @@ async function write(root: string, relative: string, contents: string): Promise<
 async function writeChange(
   root: string,
   changeId: string,
-  mode: 'valid' | 'invalid' | 'incomplete',
+  mode: 'valid' | 'invalid' | 'incomplete' | 'missing-acceptance',
 ): Promise<void> {
   await write(
     root,
@@ -53,7 +53,9 @@ async function writeChange(
   await write(
     root,
     `openspec/changes/${changeId}/tasks.md`,
-    '# Tasks\n\n- [ ] 1.1 Build it.\n  **Acceptance:** The implementation passes its required check\n  **Requirements:** demo#existing-behavior\n',
+    mode === 'missing-acceptance'
+      ? '# Tasks\n\n- [ ] 1.1 Build it and verify the implementation passes its required check.\n  **Requirements:** demo#existing-behavior\n'
+      : '# Tasks\n\n- [ ] 1.1 Build it.\n  **Acceptance:** The implementation passes its required check\n  **Requirements:** demo#existing-behavior\n',
   );
   await write(
     root,
@@ -155,6 +157,7 @@ describe('Change Run Design gate CLI', () => {
     await writeChange(workspace, 'reject-plan', 'valid');
     await writeChange(workspace, 'invalid-plan', 'invalid');
     await writeChange(workspace, 'incomplete-plan', 'incomplete');
+    await writeChange(workspace, 'missing-acceptance-plan', 'missing-acceptance');
     await write(
       workspace,
       'openspec/changes/valid-plan/implementation-notes.md',
@@ -857,7 +860,7 @@ describe('Change Run Design gate CLI', () => {
       });
     }
 
-    for (const changeId of ['invalid-plan']) {
+    for (const changeId of ['invalid-plan', 'missing-acceptance-plan']) {
       const run = await start(changeId);
       const blocked = await reachDesignGate(run.runId!);
       expect(blocked.result?.changeLifecycle).toMatchObject({
