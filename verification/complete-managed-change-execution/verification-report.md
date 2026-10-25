@@ -3,11 +3,11 @@
 ## Subject
 
 - Change: `complete-managed-change-execution`
-- Tested implementation commit: `8502a2614638809fdd03faa8ad6b0686ab8929a5`
+- Tested implementation commit: `80f4925311ddc95242403aaebb3c11ce65699666`
 - Branch: `codex/fix-managed-change-acceptance`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `938633`
-- Package SHA-256: `0ed1169d9122a22d8dcec3371700a1d6b068ebe00ab0439e9b2d58410f3f85f4`
+- Package bytes: `940356`
+- Package SHA-256: `adc268e0a10df778cb2941fdd686a21ced904a2e162bb5275d5198d0775c6080`
 - Lifecycle definition: `repoctopus-change@2.0.0`
 - Lifecycle definition digest: `sha256:3d4c53a5ba52c54417b1b1f3117d1953364c7afba95255ea073e2efd011259f8`
 - Production composition rule: the exact composition digest is frozen into every Run and asserted by the black-box harness; it is intentionally environment/configuration specific rather than copied as a package-global constant.
@@ -21,7 +21,7 @@ All commands completed successfully on Windows with Node.js `24.21.0`:
 ```text
 npm run verify
   118 test files passed
-  440 tests passed, 1 skipped
+  442 tests passed, 1 skipped
   generated output, brand, architecture and provenance checks passed
   OpenSpec strict validation: 14 passed, 0 failed
 
@@ -33,7 +33,7 @@ npm run test:tracer-e2e
 
 npm pack --json --pack-destination <isolated-temp-directory>
   repoctopus-0.1.0.tgz
-  SHA-256 0ed1169d9122a22d8dcec3371700a1d6b068ebe00ab0439e9b2d58410f3f85f4
+  SHA-256 adc268e0a10df778cb2941fdd686a21ced904a2e162bb5275d5198d0775c6080
 ```
 
 ## Structured Acceptance Design gate
@@ -42,7 +42,7 @@ Every tracked checkbox Task now carries at least one explicit, indented `**Accep
 
 The strict OpenSpec Provider loads and parses Tasks before entering the narrow completeness catch. Only `assertSpecificationTaskAcceptance()` failures become `repoctopus.task-acceptance-missing`; process, cancellation, duplicate identity, dependency and Receipt failures preserve their original identity. Domain, Provider and packaged CLI tests cover missing, complete, duplicate-identity and each malformed-format case before Human Decision creation.
 
-Self-hosting generations 3 and 4 were invalidated after protected Provider/Skill changes. Generation 4's first Verify review failed on permissive parsing and overbroad error relabeling; generation 5's review then found that only one of three malformed forms crossed the packaged CLI seam. Generation 6 re-ran Open and Design with actual Skill content, recorded the bounded corrective approval for proposal `sha256:78057864d9582d5c89facf6246e3d02353944956a7102893aecadc9558344cc6`, and accepted Task 8.3 only through the bound Host Outcome, Receipt and Runtime Validator chain. Its final independent Standards and Spec reviews reported no findings.
+Self-hosting generations 3 and 4 were invalidated after protected Provider/Skill changes. Generation 4's first Verify review failed on permissive parsing and overbroad error relabeling; generation 5's review then found that only one of three malformed forms crossed the packaged CLI seam. The next Verify review rejected a recovery test that wrote `validated` directly and exposed that callers still had to remember a completed Evidence attempt ID. Commit `80f4925` replaced that shortcut with a deterministic attempt identity, an idempotent create-or-resume coordinator path, `validated` continuation through ordinary `run next`, duplicate-attempt fencing and recovery for both journaled running attempts and the completed-bundle/context-write crash window. Generation 7 then re-ran Open and Design with the new protected composition and recorded the bounded corrective approval for proposal `sha256:a46a6b056fae29055d5b95d202b8d5cb4621e1583a2d2df50b6761acc94168f0`.
 
 ## Fresh five-stage black-box evidence
 
@@ -54,6 +54,7 @@ Self-hosting generations 3 and 4 were invalidated after protected Provider/Skill
 - Required event order per attempt: `work.claimed` → `work.context-delivered` → `work.host-started` → `tool.completed` → `work.host-completed` → `work.completed` → `validator.completed` → lifecycle transition
 - Work, packet, invocation, operation, Receipt and event identities are asserted for uniqueness/order through the public inspection projection. The public projection and persisted Run are also scanned to prove that packet bodies are absent.
 - Both Build tasks use independent Work/packet/Receipt/Validator boundaries. Task checkbox commits are pushed before planning is re-evaluated. Verify still runs after all adopted or Runtime-produced completion claims.
+- The Verify harness uses the real Validator, interrupts only after Evidence has durably completed and before gate projection, boots a new Application Host, and resumes through ordinary `run next` without passing an attempt ID. Coordinator integration tests separately cover journaled running recovery, duplicate identity rejection and the completed-bundle/context-write crash window.
 - Archive closes the real OpenSpec change first, then creates and validates a distinct publication Work. The final Run is completed from a full Publication Receipt and remains independent of later MR merge state.
 
 ## Historical red baselines
@@ -85,6 +86,7 @@ Additional fail-closed coverage includes no Host, ambiguous Host, capability mis
 | Host proves executed | `wait/execute` | Persists original Outcome and continues at Validator |
 | Outcome persisted | `execute` | Validator resumes without invoking Host |
 | Validator persisted | `execute` | Transition journal completes idempotently |
+| Verify Validator persisted, Evidence absent/running/completed | `execute` | Runtime derives the same attempt identity; Coordinator creates once or resumes under the profile lease, and a new Runner projects the original gate without another Agent or Validator call |
 | Human Decision waiting | `ask` | Same request/proposal hash is retained |
 | Coordination missing/stale | unchanged | Hint cannot authorize or claim completion |
 | Skill/Provider/definition/project drift | `reconcile` or migration | Old Run remains read-only |
@@ -118,4 +120,4 @@ Malicious payload tests include prompt/response text, command, absolute path, UR
 
 ## Verdict
 
-All 43 tasks in `openspec/changes/complete-managed-change-execution/tasks.md` are implemented and verified. The managed five-stage workflow is pull-based, Runtime-authoritative, Host-mediated, resumable at persisted boundaries, multi-repository aware and projected through one privacy-bounded OTLP protocol. Design fails closed on missing or malformed structured Acceptance before requesting approval, while unrelated Task projection failures keep their real diagnostic identity.
+All 45 tasks in `openspec/changes/complete-managed-change-execution/tasks.md` are implemented and verified. The managed five-stage workflow is pull-based, Runtime-authoritative, Host-mediated, resumable at persisted boundaries, multi-repository aware and projected through one privacy-bounded OTLP protocol. Design fails closed on missing or malformed structured Acceptance before requesting approval, while unrelated Task projection failures keep their real diagnostic identity. Verify recovery is now caller-independent: `run next` derives and reuses the one Evidence attempt bound to the frozen Work and Verification Input.
