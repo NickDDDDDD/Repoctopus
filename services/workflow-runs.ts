@@ -1140,7 +1140,7 @@ export class WorkflowRuns extends Service {
       } catch (error) {
         await this.ctx.workDispatcher.acceptOutcome(
           this.ctx.workDispatcher.outcome(
-            claim,
+            claim.intent,
             'failed',
             error instanceof Error ? error.message : String(error),
           ),
@@ -1148,7 +1148,11 @@ export class WorkflowRuns extends Service {
         throw error;
       }
       await this.ctx.workDispatcher.acceptOutcome(
-        this.ctx.workDispatcher.outcome(claim, 'succeeded', 'Archive publication completed'),
+        this.ctx.workDispatcher.outcome(
+          claim.intent,
+          'succeeded',
+          'Archive publication completed',
+        ),
       );
       const advanced = await this.coordinator.acceptChangeObservation(input.runId, {
         kind: 'archive-publication-receipt-accepted',

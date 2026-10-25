@@ -7,11 +7,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import type { RunStatusView, RuntimeResult } from '../../domains/runtime/types.js';
 import type { VerifyChangeRunResult } from '../../services/workflow-runs.js';
-import type {
-  ActionIntent,
-  WorkClaimRequest,
-  WorkOutcomeAcceptance,
-} from '../../domains/action/types.js';
+import type { WorkClaimRequest, WorkOutcomeAcceptance } from '../../domains/action/types.js';
+import type { WorkClaimResult } from '../../domains/work-execution/types.js';
 import type { SpecificationApprovalState } from '../../domains/specification/types.js';
 import { bootProjectComposition } from '../../app/boot/bootstrap.js';
 import {
@@ -308,7 +305,7 @@ describe('Change Run Design gate CLI', () => {
     } finally {
       await outcomeApp.close();
     }
-    const claim = await runCli<ActionIntent>({
+    const claim = await runCli<WorkClaimResult>({
       packageRoot,
       cwd: workspace,
       args: [
@@ -325,7 +322,7 @@ describe('Change Run Design gate CLI', () => {
       ],
       environment,
     });
-    expect(claim.result?.executionContext?.layers.map((entry) => entry.source)).toEqual([
+    expect(claim.result?.packet.context.layers.map((entry) => entry.source)).toEqual([
       'repoctopus-runtime',
       'tdd',
       'codebase-design',
@@ -343,13 +340,13 @@ describe('Change Run Design gate CLI', () => {
         '--run',
         validRun.runId!,
         '--work',
-        claim.result!.workId,
+        claim.result!.intent.workId,
         '--attempt',
-        String(claim.result!.attempt),
+        String(claim.result!.intent.attempt),
         '--claim-token',
-        claim.result!.claimToken,
+        claim.result!.intent.claimToken,
         '--input-digest',
-        claim.result!.inputDigest,
+        claim.result!.intent.inputDigest,
         '--status',
         'failed',
         '--summary',
@@ -418,7 +415,7 @@ describe('Change Run Design gate CLI', () => {
       });
       const repairIntent = await validationApp.context.commandRouter.execute<
         WorkClaimRequest,
-        ActionIntent
+        WorkClaimResult
       >('run.work.claim', {
         runId: validRun.runId!,
         adapter: 'process',
@@ -430,8 +427,8 @@ describe('Change Run Design gate CLI', () => {
           authenticated: true,
         },
       });
-      expect(repairIntent.executor).toMatchObject({ actorId: 'bob', runnerId: 'runner-b' });
-      expect(repairIntent.executionContext?.layers.map((entry) => entry.source)).toEqual([
+      expect(repairIntent.intent.executor).toMatchObject({ actorId: 'bob', runnerId: 'runner-b' });
+      expect(repairIntent.packet.context.layers.map((entry) => entry.source)).toEqual([
         'repoctopus-runtime',
         'tdd',
         'codebase-design',
@@ -441,7 +438,7 @@ describe('Change Run Design gate CLI', () => {
       ]);
       const repaired = await validationApp.context.workDispatcher.acceptOutcome(
         validationApp.context.workDispatcher.outcome(
-          repairIntent,
+          repairIntent.intent,
           'succeeded',
           'Repair Process Adapter succeeded',
         ),
@@ -587,7 +584,7 @@ describe('Change Run Design gate CLI', () => {
     for (const key of openSpecEnvironmentKeys) process.env[key] = environment[key];
     const verifyApp = await bootProjectComposition(packageRoot, workspace);
     try {
-      const intent = await verifyApp.context.workDispatcher.claim({
+      const claim = await verifyApp.context.workDispatcher.claim({
         runId: verifySuccessRun.runId!,
         adapter: 'process',
         executor: {
@@ -598,7 +595,7 @@ describe('Change Run Design gate CLI', () => {
         },
       });
       const outcome = await verifyApp.context.workDispatcher.acceptOutcome(
-        verifyApp.context.workDispatcher.outcome(intent, 'succeeded', 'Build completed'),
+        verifyApp.context.workDispatcher.outcome(claim.intent, 'succeeded', 'Build completed'),
       );
       await verifyApp.context.workflowRuns.validateBuildTask({
         runId: verifySuccessRun.runId!,

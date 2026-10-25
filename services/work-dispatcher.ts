@@ -9,6 +9,10 @@ import type {
   WorkClaimRequest,
   WorkOutcomeAcceptance,
 } from '../domains/action/types.js';
+import {
+  createWorkExecutionPacket,
+  type WorkClaimResult,
+} from '../domains/work-execution/types.js';
 import type { WorkDescriptor } from '../domains/change-lifecycle/transition.js';
 import {
   lifecycleContributorSnapshot,
@@ -96,7 +100,7 @@ export class WorkDispatcher extends Service {
     );
   }
 
-  async claim(request: WorkClaimRequest): Promise<ActionIntent> {
+  async claim(request: WorkClaimRequest): Promise<WorkClaimResult> {
     const state = await this.ctx.runStore.loadRun(request.runId);
     const work = state.changeLifecycle?.currentWork;
     if (state.status !== 'running' || !work) {
@@ -125,7 +129,7 @@ export class WorkDispatcher extends Service {
       },
       diagnostic: work.phase === 'build' && (request.attempt ?? 1) > 1,
     });
-    return this.ctx.actionDispatcher.claim({
+    const intent = await this.ctx.actionDispatcher.claim({
       runId: request.runId,
       workId: work.workId,
       attempt: request.attempt ?? 1,
@@ -150,6 +154,10 @@ export class WorkDispatcher extends Service {
         })),
       },
     });
+    return {
+      intent,
+      packet: createWorkExecutionPacket({ intent, work, context: executionContext }),
+    };
   }
 
   async acceptOutcome(input: ClaimedActionOutcome): Promise<WorkOutcomeAcceptance> {
