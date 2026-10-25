@@ -30,7 +30,7 @@
 - [ ] 4.3 实现 Design `specification.plan` 的创建、retry、strict validation 和 Human Decision 衔接；fixture 依次覆盖缺失工件、无效工件、Host succeeded 但校验失败、四类工件有效后 waiting，以及可信批准后进入 Build。
 - [ ] 4.4 将 Build 调度接到 ManagedWorkExecutor，并由 Provider/Validator 唯一更新 Task checkbox；用两个 Task 的 red-green-refactor 纵切证明每个 Task 都有独立 packet、Receipt 和 validation，Agent 直接勾选不能推进。
 - [ ] 4.5 将 Verify Host Outcome 设为自动 Evidence 执行的前置事实，并保留失败回 Build；测试证明仅测试命令通过、仅 code-review identity 存在或伪造 review Outcome 都不能进入 Archive。
-- [ ] 4.6 将 Archive 的 specification close 与 delivery publish 都接到真实 Work/Host/Validator 链路；故障注入覆盖 closure candidate、publication journal、PR create-or-recover 和 Host 中断，证明同一 Run 恢复且不等待 MR 合入。
+- [ ] 4.6 将 Archive 的 specification close 与 delivery publish 都接到真实 Work/Host/Validator 链路；故障注入覆盖 closure candidate、publication journal、PR create-or-recover 和 Host 中断，断言同一 Run 可恢复且终态与 MR state 正交。
 
 ## 5. 区分 fresh 与 adopt-existing 并完成自举接管
 
