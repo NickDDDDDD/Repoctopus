@@ -253,4 +253,28 @@ describe('Change lifecycle definition', () => {
       snapshot: first.snapshot,
     });
   });
+
+  it('stops an active Run whose Verification Input cannot produce an Acceptance Trace', () => {
+    const persisted = {
+      ...createChangeLifecycleSnapshot({ identity }),
+      verificationInput: {
+        schemaVersion: 1,
+        runId: identity.runId,
+      },
+    } as unknown as ReturnType<typeof createChangeLifecycleSnapshot>;
+
+    const recovered = recoverChangeLifecycleSnapshot({ persisted });
+    expect(recovered).toMatchObject({
+      compatibility: 'migration_required',
+      changed: true,
+      snapshot: {
+        status: 'migration_required',
+        currentWork: null,
+        blocker: {
+          code: 'change-lifecycle.verification-input-schema-drift',
+          evidenceIds: ['verification-input:v1', 'verification-input:v2'],
+        },
+      },
+    });
+  });
 });

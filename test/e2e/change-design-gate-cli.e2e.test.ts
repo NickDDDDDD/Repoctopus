@@ -653,8 +653,14 @@ describe('Change Run Design gate CLI', () => {
           status: 'completed',
           workflowBinding: { workflowRunId: verifySuccessRun.runId },
         },
-        bundle: { bundleId: verified.result!.bundleId },
-        gate: { status: 'satisfied' },
+        bundle: {
+          bundleId: verified.result!.bundleId,
+          acceptanceTrace: { total: 1, passed: 1, failed: 0, missing: 0 },
+        },
+        gate: {
+          status: 'satisfied',
+          verificationInputDigest: verified.result!.run.changeLifecycle?.verificationInput?.digest,
+        },
       });
     } finally {
       await gateApp.close();

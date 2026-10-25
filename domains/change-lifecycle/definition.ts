@@ -705,6 +705,55 @@ export function recoverChangeLifecycleSnapshot(options: {
     expected.version === current.version &&
     expected.digest === current.digest;
 
+  const verificationSchemaVersion = (
+    options.persisted.verificationInput as unknown as { schemaVersion?: number } | undefined
+  )?.schemaVersion;
+  if (
+    verificationSchemaVersion !== undefined &&
+    verificationSchemaVersion !== 2 &&
+    options.persisted.status !== 'completed'
+  ) {
+    const evidenceIds = [
+      `verification-input:v${verificationSchemaVersion}`,
+      'verification-input:v2',
+    ];
+    const alreadyStopped =
+      options.persisted.status === 'migration_required' &&
+      options.persisted.blocker?.code === 'change-lifecycle.verification-input-schema-drift' &&
+      canonicalJson(options.persisted.blocker.evidenceIds) === canonicalJson(evidenceIds);
+    if (alreadyStopped) {
+      return {
+        compatibility: 'migration_required',
+        expected,
+        current,
+        changed: false,
+        snapshot: structuredClone(options.persisted),
+      };
+    }
+    const revision = options.persisted.revision + 1;
+    const snapshot: ChangeLifecycleSnapshot = {
+      ...structuredClone(options.persisted),
+      revision,
+      status: 'migration_required',
+      currentWork: null,
+      waitCondition: null,
+      blocker: {
+        code: 'change-lifecycle.verification-input-schema-drift',
+        message: `Verification Input schema v${verificationSchemaVersion} cannot produce an Acceptance Trace`,
+        evidenceIds,
+        sinceRevision: revision,
+      },
+    };
+    assertChangeLifecycleSnapshot(snapshot);
+    return {
+      compatibility: 'migration_required',
+      expected,
+      current,
+      changed: true,
+      snapshot,
+    };
+  }
+
   if (definitionMatches) {
     return {
       compatibility: 'same',

@@ -54,7 +54,9 @@ node bin/repoctopus.js run decide --workspace . --run <run-id>
 
 请求中的 `proposalHash` 是用户实际审核内容的稳定身份，覆盖 change、Specification Root、Provider/schema、规划语义摘要、能力集合和目标分支。响应必须同时匹配当前 Run 的 `requestId` 与 `proposalHash`；批准记录还生成绑定主体、决定和时间的 `approvalHash`。旧请求、跨 Run 响应或任一受保护事实被篡改时都必须拒绝，不能靠重新包装响应沿用批准。
 
-批准生效时，Provider 从官方 `tasks.md` 解析 checkbox 任务。编号是稳定 `taskId`；规范化后的任务文字、层级、`Blocked by` 依赖、Acceptance criteria 和 Requirement mappings 共同形成 `taskRevision`。checkbox 完成状态、CRLF/LF、等价 Markdown 强调、空白以及元数据声明顺序不改变 task revision 或 Tasks semantic digest；任一任务语义、层级、依赖、验收或需求映射变化则必须改变。没有显式依赖时按文档顺序串行依赖前一任务。Runtime 只接受恰好一个 ready Task，并在 Design→Build 转换中持久化对应 Work；`run status` 读取该 Work，不从文件重新猜测。修改或拒绝状态不会产生 Build Work。
+批准生效时，Provider 从官方 `tasks.md` 解析 checkbox 任务。编号是稳定 `taskId`；规范化后的任务文字、层级、`Blocked by` 依赖、Acceptance criteria 和 Requirement mappings 共同形成 `taskRevision`。每条 Acceptance 还由 Task、规范化文本、Requirement mappings 和官方来源形成 `acceptanceId`，供 Verify Evidence 精确引用。checkbox 完成状态、CRLF/LF、等价 Markdown 强调、空白以及元数据声明顺序不改变 task revision、Acceptance identity 或 Tasks semantic digest；任一任务语义、层级、依赖、验收或需求映射变化则必须改变。重复 Acceptance 会被拒绝，不会静默折叠。
+
+checkbox 是 completion claim，不是测试结果。Runtime 接受 Build Work Outcome 后形成带 Work identity 的 `runtime-work` claim；启动时发现既有 `[x]` 则导入为 `imported-claim`，可避免重复派发已经完成的 Build，却不能制造 Receipt 或跳过 Verify。Runtime 只接受恰好一个 ready Task，并在 Design→Build 转换中持久化对应 Work；`run status` 读取该 Work，不从文件重新猜测。修改或拒绝状态不会产生 Build Work。
 
 `planningGuidance` 把已审核的方法规则只读映射到 Provider 声明的四类官方工件：已解决上下文被综合进现有工件，最少公共测试缝进入 Design，tracer-bullet、验收验证和 expand/migrate/contract 顺序进入 Tasks。该指导明确禁止额外规划工件和 tracker 发布；它不复制 OpenSpec 模板，也不执行原始 `to-spec`/`to-tickets` Skill。
 

@@ -35,6 +35,8 @@
 
 0.5.0 复核确认 Workflow Application、Classic SDK 五阶段、proposal/approval hash、稳定 Task ID、Action claim 与写作用域是 Change 生命周期的成熟参考；异步命令进程树清理已立即采用。完整增量决定见 `0.5.0-audit.md`，跨上游能力矩阵见 `../upstream-alignment-audit.md`。
 
+2026-10-25 的验收闭包复核继续采用以下行为不变量，但没有复制新源码：Classic `classic-tasks.ts` 的 expected-revision Task 投影只把 checkbox 当作完成声明；Native `native-acceptance.ts` / `native-verification-evidence.ts` 的内容身份、精确 Acceptance Trace、未知/重复/缺失拒绝和 required Receipt 门禁，映射到 `domains/specification/tasks.ts`、`domains/change-lifecycle/verification-input.ts` 与 `domains/evidence/acceptance-trace.ts`；`native-sdk-supervisor-archive.ts` 的 Archive 前重检由 Repoctopus 的 Verify Gate identity 与后续 Archive preflight 分工承担。OpenSpec `tasks.md` 仍是唯一 Task/Acceptance 权威，Evidence Bundle 只保存运行事实；不采用 Comet 产品 shell、Classic/Native 双状态根、verification 文档权威或单仓目录布局。
+
 ## 未直接采用
 
 - 上游 Engine 内的文件存储和手动运行封装没有复制。它们依赖 Skill 和平台文件系统，会破坏 Repoctopus 的纯 Engine 边界。

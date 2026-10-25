@@ -72,9 +72,14 @@ export function parseEvidenceBundle(value: unknown): EvidenceBundle {
   if (item.schemaVersion !== 2 || !('acceptanceTrace' in item)) {
     throw new Error('Unsupported EvidenceBundle schemaVersion');
   }
-  if (!Array.isArray(item.checks) || !Array.isArray(item.receiptIds)) {
+  if (
+    !Array.isArray(item.checks) ||
+    !Array.isArray(item.receiptIds) ||
+    item.receiptIds.some((receiptId) => typeof receiptId !== 'string')
+  ) {
     throw new Error('Invalid EvidenceBundle collections');
   }
+  const receiptIds = item.receiptIds as string[];
   if (item.acceptanceTrace !== null) {
     const trace = record(item.acceptanceTrace, 'EvidenceBundle.acceptanceTrace');
     if (
@@ -94,7 +99,9 @@ export function parseEvidenceBundle(value: unknown): EvidenceBundle {
       entries.some(
         (entry) =>
           !Array.isArray(entry.receiptIds) ||
-          entry.receiptIds.some((receiptId) => !item.receiptIds.includes(receiptId)),
+          (entry.receiptIds as unknown[]).some(
+            (receiptId) => typeof receiptId !== 'string' || !receiptIds.includes(receiptId),
+          ),
       )
     ) {
       throw new Error('EvidenceBundle Acceptance Trace has invalid identity references');

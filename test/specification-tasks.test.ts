@@ -97,8 +97,9 @@ describe('Specification Tasks', () => {
 
     expect(pending.tasks[0]?.acceptanceCriteria).toHaveLength(2);
     expect(completed.tasks[0]?.acceptanceCriteria).toEqual(pending.tasks[0]?.acceptanceCriteria);
-    expect(pending.tasks[0]?.acceptanceCriteria[0]).toMatchObject({
-      acceptanceId: expect.stringMatching(/^acceptance-[a-f0-9]{64}$/u),
+    const criterion = pending.tasks[0]?.acceptanceCriteria[0];
+    expect(criterion?.acceptanceId).toMatch(/^acceptance-[a-f0-9]{64}$/u);
+    expect(criterion).toMatchObject({
       taskId: '1.1',
       taskRevision: pending.tasks[0]?.taskRevision,
       requirementRefs: ['evidence#trace', 'runtime#safe'],

@@ -11,19 +11,37 @@ composition:
 profiles:
   - id: verify
     nodes:
-      - id: typecheck
+      - id: full-verify
         type: command
         repository: repoctopus
+        covers: ['*']
         executable: npm
-        args: [run, typecheck]
-        timeoutMs: 120000
-      - id: architecture
+        args: [run, verify]
+        timeoutMs: 900000
+      - id: package-e2e
         type: command
         repository: repoctopus
-        dependsOn: [typecheck]
+        dependsOn: [full-verify]
+        covers: ['*']
         executable: npm
-        args: [run, check:architecture]
-        timeoutMs: 120000
+        args: [run, test:package-e2e]
+        timeoutMs: 600000
+      - id: tracer-e2e
+        type: command
+        repository: repoctopus
+        dependsOn: [package-e2e]
+        covers: ['*']
+        executable: npm
+        args: [run, test:tracer-e2e]
+        timeoutMs: 600000
+      - id: production-audit
+        type: command
+        repository: repoctopus
+        dependsOn: [tracer-e2e]
+        covers: ['*']
+        executable: npm
+        args: [audit, --omit=dev]
+        timeoutMs: 300000
   - id: recovery-probe
     nodes:
       - id: interrupted-command
