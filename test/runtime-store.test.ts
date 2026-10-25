@@ -179,6 +179,7 @@ describe('Change lifecycle runtime schema', () => {
         workspaceId: 'team-platform',
         changeId: 'establish-change-lifecycle',
         generation: 1,
+        mode: 'fresh',
         runId: base.runId,
       },
       definition: {
@@ -240,5 +241,45 @@ describe('Change lifecycle runtime schema', () => {
         },
       },
     });
+  });
+
+  it('keeps Agent coordination hints outside Run completion authority', async () => {
+    const workspace = await temporaryDirectory('repoctopus-coordination-store-');
+    cleanup.push(workspace);
+    const workflow = workflowFixture();
+    const project = projectFixture();
+    const state = startRun({
+      workflow,
+      runId: 'run-coordination-hint',
+      projectSnapshotDigest: project.digest,
+      composition: compositionFixture(),
+      timestamp: '2026-10-24T00:00:00.000Z',
+    });
+    const store = new FileRuntimeStore(workspace);
+    await store.initialize({
+      state,
+      workflow,
+      projectSnapshot: project,
+      event: startedEvent(state.runId, 0),
+    });
+    await store.writeCoordinationCheckpoint({
+      schemaVersion: 1,
+      runId: state.runId,
+      workId: 'build:1.1',
+      attempt: 1,
+      observedStateVersion: state.stateVersion,
+      currentTask: '1.1',
+      observedPaths: ['src/example.ts'],
+      progress: ['red test written'],
+      updatedAt: '2026-10-24T00:00:01.000Z',
+    });
+
+    expect(await store.readCoordinationCheckpoint(state.runId)).toMatchObject({
+      workId: 'build:1.1',
+      progress: ['red test written'],
+    });
+    expect(await store.loadRun(state.runId)).toEqual(state);
+    expect(await store.loadTrajectory(state.runId)).toHaveLength(1);
+    expect(await store.loadCheckpoint(state.runId)).not.toHaveProperty('coordination');
   });
 });

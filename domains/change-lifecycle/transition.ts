@@ -82,6 +82,7 @@ export interface ChangeRunIdentity {
   workspaceId: string;
   changeId: string;
   generation: number;
+  mode: 'fresh' | 'adopt-existing';
   runId: string;
 }
 
@@ -271,7 +272,17 @@ export interface ChangeLifecycleTransitionFact {
 }
 
 export type ChangeLifecycleObservation =
-  | { kind: 'open-intake-ready' }
+  | {
+      kind: 'open-intake-validated';
+      workId: string;
+      inputDigest: `sha256:${string}`;
+      receiptId: string;
+      validatorId: string;
+    }
+  | {
+      kind: 'design-work-ready';
+      work: WorkDescriptor;
+    }
   | {
       kind: 'planning-semantic-drift';
       reason: string;
@@ -529,9 +540,20 @@ export function evolveChangeLifecycle(options: {
   observation: ChangeLifecycleObservation;
 }): ChangeLifecycleReduction {
   const { current, observation } = options;
-  if (observation.kind === 'open-intake-ready') {
+  if (observation.kind === 'open-intake-validated') {
     if (current.phase !== 'open' || current.status !== 'running') {
       throw new Error(`Open intake is not valid from ${current.phase}/${current.status}`);
+    }
+    const work = current.currentWork;
+    if (
+      !work ||
+      work.kind !== 'change.intake' ||
+      work.workId !== observation.workId ||
+      work.inputDigest !== observation.inputDigest ||
+      work.validatorProfile.id !== observation.validatorId ||
+      !observation.receiptId.trim()
+    ) {
+      throw new Error('Open intake validation does not match the active Work and Validator');
     }
     return applyChangeLifecycleTransition({
       definition: options.definition,
@@ -576,6 +598,27 @@ export function evolveChangeLifecycle(options: {
       evidenceIds: [...observation.evidenceIds],
     };
     return reduced;
+  }
+  if (observation.kind === 'design-work-ready') {
+    if (
+      current.phase !== 'design' ||
+      current.status !== 'running' ||
+      current.currentWork !== null ||
+      observation.work.phase !== 'design' ||
+      observation.work.kind !== 'specification.plan'
+    ) {
+      throw new Error(`Design Work dispatch is not valid from ${current.phase}/${current.status}`);
+    }
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'design.work-ready',
+      next: {
+        currentWork: observation.work,
+        waitCondition: null,
+        blocker: null,
+      },
+    });
   }
   if (observation.kind === 'build-task-completed') {
     if (current.phase !== 'build' || current.status !== 'running') {

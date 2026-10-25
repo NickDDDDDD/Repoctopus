@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 import { Service, type Context } from '@deepseek-ai/cordis';
 
 import type {
@@ -16,11 +18,60 @@ import type {
   SpecificationValidation,
   SpecificationFollowUpChange,
   SpecificationFollowUpChangeInput,
+  SpecificationPhaseContext,
 } from '../domains/specification/types.js';
 import { createSpecificationPlanningManifest } from '../domains/specification/planning-manifest.js';
 import { createSpecificationPlanningGuidance } from '../domains/specification/planning-guidance.js';
+import { canonicalJson } from '../domains/workflow-contract/canonical.js';
 
 export type SpecificationRoot = PlanningSpecificationRoot;
+
+export function specificationPhaseArtifacts(
+  phase: SpecificationPhaseContext['phase'],
+  artifacts: SpecificationPlanningContext['artifacts'],
+): SpecificationPlanningContext['artifacts'] {
+  const applicable: Record<SpecificationPhaseContext['phase'], readonly string[]> = {
+    open: ['proposal'],
+    design: ['proposal', 'specs', 'design', 'tasks'],
+    build: ['tasks'],
+    verify: ['specs', 'tasks'],
+    archive: ['proposal', 'specs', 'design', 'tasks'],
+  };
+  const selected = artifacts.filter((artifact) => applicable[phase].includes(artifact.id));
+  if (selected.length !== applicable[phase].length) {
+    throw new Error(`Specification Provider phase protocol is incomplete for ${phase}`);
+  }
+  return selected;
+}
+
+export function createSpecificationPhaseContext(input: {
+  phase: SpecificationPhaseContext['phase'];
+  provider: SpecificationProviderIdentity;
+  artifacts: SpecificationPlanningContext['artifacts'];
+}): SpecificationPhaseContext {
+  const allowedOperations: SpecificationPhaseContext['allowedOperations'] =
+    input.phase === 'open'
+      ? ['inspect-change', 'write-planning-artifact']
+      : input.phase === 'design'
+        ? ['inspect-change', 'write-planning-artifact', 'validate-strict']
+        : input.phase === 'build'
+          ? ['inspect-change', 'read-tasks', 'complete-task-from-receipt']
+          : input.phase === 'verify'
+            ? ['inspect-change', 'validate-strict', 'read-tasks']
+            : ['inspect-change', 'validate-strict', 'prepare-closure', 'close-change'];
+  const stable = {
+    schemaVersion: 1 as const,
+    phase: input.phase,
+    provider: structuredClone(input.provider),
+    instruction: `Use only the ${input.provider.id} Specification Provider operations allowed for ${input.phase}; Runtime validators own completion.`,
+    allowedOperations,
+    artifacts: structuredClone(input.artifacts),
+  };
+  return {
+    ...stable,
+    digest: `sha256:${createHash('sha256').update(canonicalJson(stable)).digest('hex')}`,
+  };
+}
 
 export interface PrepareSpecificationClosureInput {
   changeId: string;
@@ -38,6 +89,11 @@ export interface SpecificationWorkspace {
     signal?: AbortSignal,
   ): Promise<SpecificationSchemaInstructions>;
   planningContext(changeId: string, signal?: AbortSignal): Promise<SpecificationPlanningContext>;
+  phaseContext(
+    phase: SpecificationPhaseContext['phase'],
+    changeId: string,
+    signal?: AbortSignal,
+  ): Promise<SpecificationPhaseContext>;
   planningManifest(changeId: string, signal?: AbortSignal): Promise<SpecificationPlanningManifest>;
   planningGuidance(changeId: string, signal?: AbortSignal): Promise<SpecificationPlanningGuidance>;
   tasks(changeId: string, signal?: AbortSignal): Promise<SpecificationTaskSet>;
@@ -83,6 +139,17 @@ export abstract class Specification extends Service implements SpecificationWork
     return Promise.reject(
       new Error(`Specification provider ${this.identity().id} has no planning context`),
     );
+  }
+  async phaseContext(
+    phase: SpecificationPhaseContext['phase'],
+    changeId: string,
+    signal?: AbortSignal,
+  ): Promise<SpecificationPhaseContext> {
+    const artifacts = specificationPhaseArtifacts(
+      phase,
+      (await this.planningContext(changeId, signal)).artifacts,
+    );
+    return createSpecificationPhaseContext({ phase, provider: this.identity(), artifacts });
   }
   tasks(changeId: string, signal?: AbortSignal): Promise<SpecificationTaskSet> {
     void changeId;

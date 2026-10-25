@@ -12,8 +12,9 @@ import type {
   TransitionJournal,
 } from '../../domains/trajectory/types.js';
 import type { WorkflowPackage } from '../../domains/workflow-contract/types.js';
+import type { AgentCoordinationCheckpoint } from '../../domains/work-execution/types.js';
 import { atomicWriteJson, atomicWriteText } from '../filesystem/atomic-write.js';
-import { runPaths, type RunPaths } from './paths.js';
+import { assertRunId, runPaths, type RunPaths } from './paths.js';
 import {
   RecoverableFileTransition,
   type FileTransitionContext,
@@ -104,6 +105,7 @@ function checkpointFor(state: RunState, event: TrajectoryEvent): Checkpoint {
     ...(state.specificationUsageSnapshot
       ? { specificationUsageSnapshot: structuredClone(state.specificationUsageSnapshot) }
       : {}),
+    ...(state.workExecution ? { workExecution: structuredClone(state.workExecution) } : {}),
     createdAt: event.timestamp,
   };
 }
@@ -334,6 +336,16 @@ export class FileRuntimeStore {
       exists(paths.transitionJournal),
     ]);
     return { state, checkpoint, trajectory, cursor, pendingTransition };
+  }
+
+  async readCoordinationCheckpoint(runId: string): Promise<AgentCoordinationCheckpoint | null> {
+    const file = this.paths(runId).coordinationCheckpoint;
+    return (await exists(file)) ? readJson<AgentCoordinationCheckpoint>(file) : null;
+  }
+
+  async writeCoordinationCheckpoint(checkpoint: AgentCoordinationCheckpoint): Promise<void> {
+    assertRunId(checkpoint.runId);
+    await atomicWriteJson(this.paths(checkpoint.runId).coordinationCheckpoint, checkpoint);
   }
 
   async evidenceRetentionState(): Promise<{

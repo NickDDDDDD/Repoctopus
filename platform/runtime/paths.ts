@@ -10,6 +10,7 @@ export interface RunPaths {
   transitionJournal: string;
   transitionLock: string;
   telemetryCursor: string;
+  coordinationCheckpoint: string;
 }
 
 export function assertRunId(runId: string): void {
@@ -31,5 +32,6 @@ export function runPaths(workspaceRoot: string, runId: string): RunPaths {
     transitionJournal: path.join(root, 'transition.json'),
     transitionLock: path.join(root, 'transition.lock'),
     telemetryCursor: path.join(root, 'telemetry-cursor.json'),
+    coordinationCheckpoint: path.join(root, 'agent-coordination.json'),
   };
 }

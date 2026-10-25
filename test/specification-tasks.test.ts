@@ -4,6 +4,7 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import {
+  assertSpecificationTaskAdoption,
   completeSpecificationTaskDocument,
   parseSpecificationTasks,
   readySpecificationTasks,
@@ -83,6 +84,42 @@ describe('Specification Tasks', () => {
     expect(readySpecificationTasks(completed.tasks).map((task) => task.taskId)).toEqual(['1.2']);
     expect(pending.tasks[0]?.completion).toBeNull();
     expect(completed.tasks[0]?.completion).toEqual({ source: 'imported-claim' });
+  });
+
+  it('distinguishes fresh Runtime receipts from explicit adoption across pending, partial, and complete sets', () => {
+    const document = '- [ ] 1.1 First.\n- [ ] 1.2 Second.\n';
+    const pending = parseSpecificationTasks('adoption-plan', document);
+    const partial = parseSpecificationTasks(
+      'adoption-plan',
+      '- [x] 1.1 First.\n- [ ] 1.2 Second.\n',
+    );
+    const complete = parseSpecificationTasks(
+      'adoption-plan',
+      '- [x] 1.1 First.\n- [x] 1.2 Second.\n',
+    );
+    expect(() => assertSpecificationTaskAdoption('fresh', pending.tasks)).not.toThrow();
+    expect(() => assertSpecificationTaskAdoption('fresh', partial.tasks)).toThrow(
+      /cannot adopt pre-completed/u,
+    );
+    expect(() => assertSpecificationTaskAdoption('fresh', complete.tasks)).toThrow(
+      /cannot adopt pre-completed/u,
+    );
+    expect(() => assertSpecificationTaskAdoption('adopt-existing', partial.tasks)).not.toThrow();
+    expect(() => assertSpecificationTaskAdoption('adopt-existing', complete.tasks)).not.toThrow();
+
+    const runtimeCompleted = completeSpecificationTaskDocument({
+      changeId: 'adoption-plan',
+      taskId: '1.1',
+      taskRevision: pending.tasks[0]!.taskRevision,
+      workId: 'build:1.1',
+      document,
+    });
+    expect(() =>
+      assertSpecificationTaskAdoption('fresh', runtimeCompleted.tasks.tasks),
+    ).not.toThrow();
+    expect(readySpecificationTasks(runtimeCompleted.tasks.tasks).map((task) => task.taskId)).toEqual([
+      '1.2',
+    ]);
   });
 
   it('derives content-addressed Acceptance identities independently from checkbox state', () => {

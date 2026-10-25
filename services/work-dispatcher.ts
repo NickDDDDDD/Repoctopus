@@ -9,6 +9,10 @@ import type {
   WorkClaimRequest,
   WorkOutcomeAcceptance,
 } from '../domains/action/types.js';
+import {
+  createWorkExecutionPacket,
+  type WorkClaimResult,
+} from '../domains/work-execution/types.js';
 import type { WorkDescriptor } from '../domains/change-lifecycle/transition.js';
 import {
   lifecycleContributorSnapshot,
@@ -21,10 +25,7 @@ export interface WorkContributor {
   requiredCapabilities: readonly string[];
 }
 
-function assertContributorSupportsWork(
-  contributor: WorkContributor,
-  work: WorkDescriptor,
-): void {
+function assertContributorSupportsWork(contributor: WorkContributor, work: WorkDescriptor): void {
   const missing = contributor.requiredCapabilities.filter(
     (capability) => !work.capabilities.includes(capability),
   );
@@ -63,7 +64,13 @@ export function outcomeReceiptAdapter(id: string): ActionAdapter {
 }
 
 export class WorkDispatcher extends Service {
-  static inject = ['actionDispatcher', 'actionStore', 'runStore', 'workContextAssembler'];
+  static inject = [
+    'actionDispatcher',
+    'actionStore',
+    'runStore',
+    'workContextAssembler',
+    'workExecutionAuthority',
+  ];
 
   private readonly contributors = new Map<string, WorkContributor>();
 
@@ -96,7 +103,7 @@ export class WorkDispatcher extends Service {
     );
   }
 
-  async claim(request: WorkClaimRequest): Promise<ActionIntent> {
+  async claim(request: WorkClaimRequest): Promise<WorkClaimResult> {
     const state = await this.ctx.runStore.loadRun(request.runId);
     const work = state.changeLifecycle?.currentWork;
     if (state.status !== 'running' || !work) {
@@ -125,7 +132,7 @@ export class WorkDispatcher extends Service {
       },
       diagnostic: work.phase === 'build' && (request.attempt ?? 1) > 1,
     });
-    return this.ctx.actionDispatcher.claim({
+    const intent = await this.ctx.actionDispatcher.claim({
       runId: request.runId,
       workId: work.workId,
       attempt: request.attempt ?? 1,
@@ -150,6 +157,40 @@ export class WorkDispatcher extends Service {
         })),
       },
     });
+    const packet = createWorkExecutionPacket({ intent, work, context: executionContext });
+    await this.ctx.workExecutionAuthority.bindClaim(packet);
+    await this.ctx.workExecutionAuthority.recordSkillFacts(packet, 'resolved');
+    await this.ctx.workExecutionAuthority.markContextDelivered(packet);
+    await this.ctx.workExecutionAuthority.recordSkillFacts(packet, 'delivered');
+    return { intent, packet };
+  }
+
+  async resumeClaim(runId: string): Promise<WorkClaimResult> {
+    const state = await this.ctx.runStore.loadRun(runId);
+    const work = state.changeLifecycle?.currentWork;
+    const checkpoint = state.workExecution;
+    if (!work || !checkpoint || checkpoint.workId !== work.workId) {
+      throw new Error('Run has no authoritative Work claim to resume');
+    }
+    const intent = await this.ctx.workExecutionAuthority.loadIntent(runId);
+    const context = await this.ctx.workContextAssembler.assemble({
+      work,
+      changeId: state.changeLifecycle!.identity.changeId,
+      changeInputs: {
+        runId: state.runId,
+        change: state.changeLifecycle!.identity,
+        taskId: work.taskId ?? null,
+        taskRevision: work.taskRevision ?? null,
+        inputDigest: work.inputDigest,
+        archiveDeliveryInput: state.changeLifecycle!.archiveDeliveryInput ?? null,
+      },
+      diagnostic: work.phase === 'build' && checkpoint.attempt > 1,
+    });
+    const packet = createWorkExecutionPacket({ intent, work, context });
+    if (packet.identity.packetDigest !== checkpoint.packet.packetDigest) {
+      throw new Error('Reassembled Work packet drifted from the authoritative claim');
+    }
+    return { intent, packet };
   }
 
   async acceptOutcome(input: ClaimedActionOutcome): Promise<WorkOutcomeAcceptance> {
@@ -163,11 +204,12 @@ export class WorkDispatcher extends Service {
     ) {
       throw new Error('Work Outcome does not belong to the active lifecycle Work');
     }
-    const intent = await this.ctx.actionStore.loadLatestIntent(input.runId, input.workId);
+    const intent = await this.ctx.workExecutionAuthority.loadIntent(input.runId);
     if (!this.contributors.has(intent.adapter)) {
       throw new Error(`Work Contributor is no longer active: ${intent.adapter}`);
     }
     const receipt = await this.ctx.actionDispatcher.complete(input);
+    await this.ctx.workExecutionAuthority.bindOutcome({ intent, outcome: input, receipt });
     return {
       intent,
       outcome: structuredClone(input),
@@ -177,7 +219,11 @@ export class WorkDispatcher extends Service {
     };
   }
 
-  outcome(intent: ActionIntent, status: 'succeeded' | 'failed', summary: string): ClaimedActionOutcome {
+  outcome(
+    intent: ActionIntent,
+    status: 'succeeded' | 'failed',
+    summary: string,
+  ): ClaimedActionOutcome {
     return {
       schemaVersion: 1,
       outcomeId: randomUUID(),

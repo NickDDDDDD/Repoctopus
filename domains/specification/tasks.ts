@@ -201,6 +201,22 @@ export function readySpecificationTasks(tasks: readonly SpecificationTask[]): Sp
   );
 }
 
+export function assertSpecificationTaskAdoption(
+  mode: 'fresh' | 'adopt-existing',
+  tasks: readonly SpecificationTask[],
+): void {
+  if (
+    mode === 'fresh' &&
+    tasks.some(
+      (task) => task.status === 'completed' && task.completion?.source === 'imported-claim',
+    )
+  ) {
+    throw new Error(
+      'Fresh Change Run cannot adopt pre-completed Specification Tasks; start a new adopt-existing generation',
+    );
+  }
+}
+
 export function completeSpecificationTaskDocument(input: {
   changeId: string;
   taskId: string;

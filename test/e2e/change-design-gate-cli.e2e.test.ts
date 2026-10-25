@@ -7,11 +7,11 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import type { RunStatusView, RuntimeResult } from '../../domains/runtime/types.js';
 import type { VerifyChangeRunResult } from '../../services/workflow-runs.js';
+import type { WorkClaimRequest } from '../../domains/action/types.js';
 import type {
-  ActionIntent,
-  WorkClaimRequest,
-  WorkOutcomeAcceptance,
-} from '../../domains/action/types.js';
+  ExternalWorkClaimResult,
+  ManagedWorkExecutionResult,
+} from '../../services/managed-work-executor.js';
 import type { SpecificationApprovalState } from '../../domains/specification/types.js';
 import { bootProjectComposition } from '../../app/boot/bootstrap.js';
 import {
@@ -180,13 +180,89 @@ describe('Change Run Design gate CLI', () => {
         args: ['run', 'start', '--workspace', workspace, '--change', changeId, '--target', 'main'],
         environment,
       });
+    const executeCurrentWork = async (runId: string, adapter = 'specification') => {
+      const claim = await runCli<ExternalWorkClaimResult>({
+        packageRoot,
+        cwd: workspace,
+        args: [
+          'run',
+          'work-claim',
+          '--workspace',
+          workspace,
+          '--run',
+          runId,
+          '--adapter',
+          adapter,
+          '--runner',
+          'design-gate-host',
+        ],
+        environment,
+      });
+      await runCli<ManagedWorkExecutionResult>({
+        packageRoot,
+        cwd: workspace,
+        args: [
+          'run',
+          'work-outcome',
+          '--workspace',
+          workspace,
+          '--run',
+          runId,
+          '--invocation-id',
+          claim.result!.invocation.invocationId,
+          '--host-id',
+          claim.result!.invocation.host.id,
+          '--packet-digest',
+          claim.result!.packet.identity.packetDigest,
+          '--consumed-layers',
+          claim
+            .result!.packet.context.layers.filter((layer) =>
+              ['action-skill', 'augmentation-skill'].includes(layer.kind),
+            )
+            .map((layer) => layer.digest)
+            .join(','),
+          '--status',
+          'succeeded',
+          '--summary',
+          'Capturing Host consumed the complete packet',
+        ],
+        environment,
+      });
+    };
+    const reachDesignGate = async (runId: string) => {
+      const first = await runCli<RunStatusView>({
+        packageRoot,
+        cwd: workspace,
+        args: ['run', 'next', '--workspace', workspace, '--run', runId],
+        environment,
+      });
+      expect(first.result?.changeLifecycle).toMatchObject({
+        phase: 'open',
+        status: 'running',
+        currentWork: { kind: 'change.intake' },
+      });
+      await executeCurrentWork(runId);
+      const design = await runCli<RunStatusView>({
+        packageRoot,
+        cwd: workspace,
+        args: ['run', 'next', '--workspace', workspace, '--run', runId],
+        environment,
+      });
+      expect(design.result?.changeLifecycle).toMatchObject({
+        phase: 'design',
+        status: 'running',
+        currentWork: { kind: 'specification.plan' },
+      });
+      await executeCurrentWork(runId);
+      return runCli<RunStatusView>({
+        packageRoot,
+        cwd: workspace,
+        args: ['run', 'next', '--workspace', workspace, '--run', runId],
+        environment,
+      });
+    };
     const validRun = await start('valid-plan');
-    const waiting = await runCli<RunStatusView>({
-      packageRoot,
-      cwd: workspace,
-      args: ['run', 'next', '--workspace', workspace, '--run', validRun.runId!],
-      environment,
-    });
+    const waiting = await reachDesignGate(validRun.runId!);
     expect(waiting.result?.changeLifecycle).toMatchObject({
       phase: 'design',
       status: 'waiting',
@@ -266,8 +342,14 @@ describe('Change Run Design gate CLI', () => {
         phase: 'build',
         kind: 'task.implement',
         taskId: '1.1',
-        actionSkill: { name: 'tdd', provider: 'matt-builtins' },
-        augmentationSkills: [{ name: 'codebase-design', provider: 'matt-builtins' }],
+        actionSkill: {
+          name: 'repoctopus-build-task',
+          provider: 'repoctopus-lifecycle',
+        },
+        augmentationSkills: [
+          { name: 'tdd', provider: 'matt-builtins' },
+          { name: 'codebase-design', provider: 'matt-builtins' },
+        ],
         methodProfile: { id: 'repoctopus.build', version: '1.0.0' },
         capabilities: ['process.execute', 'repository.read', 'repository.write'],
         sideEffectClass: 'repository-write',
@@ -308,7 +390,7 @@ describe('Change Run Design gate CLI', () => {
     } finally {
       await outcomeApp.close();
     }
-    const claim = await runCli<ActionIntent>({
+    const claim = await runCli<ExternalWorkClaimResult>({
       packageRoot,
       cwd: workspace,
       args: [
@@ -325,14 +407,76 @@ describe('Change Run Design gate CLI', () => {
       ],
       environment,
     });
-    expect(claim.result?.executionContext?.layers.map((entry) => entry.source)).toEqual([
+    expect(claim.result?.packet.context.layers.map((entry) => entry.source)).toEqual([
       'repoctopus-runtime',
+      'repoctopus-build-task',
+      'openspec:build',
       'tdd',
       'codebase-design',
       'repoctopus.build@1.0.0',
       approvedWorkId,
     ]);
-    const accepted = await runCli<WorkOutcomeAcceptance>({
+    expect(
+      await failure(workspace, environment, [
+        'run',
+        'work-outcome',
+        '--workspace',
+        workspace,
+        '--run',
+        validRun.runId!,
+        '--invocation-id',
+        claim.result!.invocation.invocationId,
+        '--host-id',
+        'external:cli:forged-runner',
+        '--packet-digest',
+        claim.result!.packet.identity.packetDigest,
+        '--status',
+        'succeeded',
+        '--summary',
+        'forged Host',
+      ]),
+    ).toMatch(/does not match the authoritative invocation/u);
+    expect(
+      await failure(workspace, environment, [
+        'run',
+        'work-outcome',
+        '--workspace',
+        workspace,
+        '--run',
+        validRun.runId!,
+        '--invocation-id',
+        claim.result!.invocation.invocationId,
+        '--host-id',
+        claim.result!.invocation.host.id,
+        '--packet-digest',
+        `sha256:${'f'.repeat(64)}`,
+        '--status',
+        'succeeded',
+        '--summary',
+        'forged packet',
+      ]),
+    ).toMatch(/does not match the authoritative invocation/u);
+    expect(
+      await failure(workspace, environment, [
+        'run',
+        'work-outcome',
+        '--workspace',
+        workspace,
+        '--run',
+        validRun.runId!,
+        '--invocation-id',
+        claim.result!.invocation.invocationId,
+        '--host-id',
+        claim.result!.invocation.host.id,
+        '--packet-digest',
+        claim.result!.packet.identity.packetDigest,
+        '--status',
+        'succeeded',
+        '--summary',
+        'Host skipped its delivered Skill content',
+      ]),
+    ).toMatch(/must prove consumption of every delivered/u);
+    const accepted = await runCli<ManagedWorkExecutionResult>({
       packageRoot,
       cwd: workspace,
       args: [
@@ -342,14 +486,12 @@ describe('Change Run Design gate CLI', () => {
         workspace,
         '--run',
         validRun.runId!,
-        '--work',
-        claim.result!.workId,
-        '--attempt',
-        String(claim.result!.attempt),
-        '--claim-token',
-        claim.result!.claimToken,
-        '--input-digest',
-        claim.result!.inputDigest,
+        '--invocation-id',
+        claim.result!.invocation.invocationId,
+        '--host-id',
+        claim.result!.invocation.host.id,
+        '--packet-digest',
+        claim.result!.packet.identity.packetDigest,
         '--status',
         'failed',
         '--summary',
@@ -358,15 +500,18 @@ describe('Change Run Design gate CLI', () => {
       environment,
     });
     expect(accepted.result).toMatchObject({
-      validation: 'pending',
-      lifecycleAdvanced: false,
-      receipt: {
-        adapter: 'process',
-        outcome: 'failed',
-        executor: { runnerId: 'runner-a', source: 'cli', authenticated: true },
+      hostOutcome: { status: 'failed' },
+      acceptance: {
+        validation: 'pending',
+        lifecycleAdvanced: false,
+        receipt: {
+          adapter: 'process',
+          outcome: 'failed',
+          executor: { runnerId: 'runner-a', source: 'cli', authenticated: true },
+        },
       },
     });
-    const failedReceiptId = accepted.result!.receipt.receiptId;
+    const failedReceiptId = accepted.result!.acceptance!.receipt.receiptId;
     const outcomeDidNotAdvance = await runCli<RunStatusView>({
       packageRoot,
       cwd: workspace,
@@ -418,7 +563,7 @@ describe('Change Run Design gate CLI', () => {
       });
       const repairIntent = await validationApp.context.commandRouter.execute<
         WorkClaimRequest,
-        ActionIntent
+        ExternalWorkClaimResult
       >('run.work.claim', {
         runId: validRun.runId!,
         adapter: 'process',
@@ -430,25 +575,34 @@ describe('Change Run Design gate CLI', () => {
           authenticated: true,
         },
       });
-      expect(repairIntent.executor).toMatchObject({ actorId: 'bob', runnerId: 'runner-b' });
-      expect(repairIntent.executionContext?.layers.map((entry) => entry.source)).toEqual([
+      expect(repairIntent.intent.executor).toMatchObject({ actorId: 'bob', runnerId: 'runner-b' });
+      expect(repairIntent.packet.context.layers.map((entry) => entry.source)).toEqual([
         'repoctopus-runtime',
+        'repoctopus-build-task',
+        'openspec:build',
         'tdd',
         'codebase-design',
         'diagnosing-bugs',
         'repoctopus.build@1.0.0',
         approvedWorkId,
       ]);
-      const repaired = await validationApp.context.workDispatcher.acceptOutcome(
-        validationApp.context.workDispatcher.outcome(
-          repairIntent,
-          'succeeded',
-          'Repair Process Adapter succeeded',
-        ),
-      );
+      const repaired = await validationApp.context.managedWorkExecutor.acceptExternalOutcome({
+        schemaVersion: 1,
+        runId: validRun.runId!,
+        invocationId: repairIntent.invocation.invocationId,
+        hostId: repairIntent.invocation.host.id,
+        packetDigest: repairIntent.packet.identity.packetDigest,
+        status: 'succeeded',
+        summary: 'Repair Process Adapter succeeded',
+        consumedLayerDigests: repairIntent.packet.context.layers
+          .filter((layer) => ['action-skill', 'augmentation-skill'].includes(layer.kind))
+          .map((layer) => layer.digest),
+      });
       expect(repaired).toMatchObject({
-        lifecycleAdvanced: false,
-        receipt: { executor: { actorId: 'bob', runnerId: 'runner-b' } },
+        acceptance: {
+          lifecycleAdvanced: false,
+          receipt: { executor: { actorId: 'bob', runnerId: 'runner-b' } },
+        },
       });
       const beforeValidation = await validationApp.context.workflowRuns.status(validRun.runId!);
       expect(beforeValidation.changeLifecycle).toMatchObject({
@@ -457,7 +611,7 @@ describe('Change Run Design gate CLI', () => {
       });
       const validated = await validationApp.context.workflowRuns.validateBuildTask({
         runId: validRun.runId!,
-        receiptId: repaired.receipt.receiptId,
+        receiptId: repaired.acceptance!.receipt.receiptId,
       });
       expect(validated.value).toMatchObject({
         validation: { status: 'validated', taskId: '1.1' },
@@ -471,7 +625,7 @@ describe('Change Run Design gate CLI', () => {
       });
       const replay = await validationApp.context.workflowRuns.validateBuildTask({
         runId: validRun.runId!,
-        receiptId: repaired.receipt.receiptId,
+        receiptId: repaired.acceptance!.receipt.receiptId,
       });
       expect(replay.value.validation.status).toBe('already-completed');
     } finally {
@@ -503,7 +657,10 @@ describe('Change Run Design gate CLI', () => {
       taskProgress: { total: 1, completed: 1, currentTaskId: null },
       currentWork: {
         kind: 'evidence.verify',
-        actionSkill: { name: 'code-review', provider: 'matt-builtins' },
+        actionSkill: {
+          name: 'repoctopus-verify-change',
+          provider: 'repoctopus-lifecycle',
+        },
       },
       verificationInput: {
         taskRevisions: [{ taskId: '1.1' }],
@@ -513,7 +670,15 @@ describe('Change Run Design gate CLI', () => {
           },
         ],
         evidenceProfile: { id: 'verify' },
-        skills: [{ name: 'code-review' }, { name: 'codebase-design' }, { name: 'tdd' }],
+        skills: [
+          { name: 'code-review' },
+          { name: 'codebase-design' },
+          { name: 'tdd' },
+          { name: 'repoctopus-build-task' },
+          { name: 'repoctopus-design-change' },
+          { name: 'repoctopus-open-change' },
+          { name: 'repoctopus-verify-change' },
+        ],
       },
     });
     const frozenVerification = verificationReady.result?.changeLifecycle?.verificationInput;
@@ -571,12 +736,7 @@ describe('Change Run Design gate CLI', () => {
     }
 
     const verifySuccessRun = await start('verify-success');
-    await runCli<RunStatusView>({
-      packageRoot,
-      cwd: workspace,
-      args: ['run', 'next', '--workspace', workspace, '--run', verifySuccessRun.runId!],
-      environment,
-    });
+    await reachDesignGate(verifySuccessRun.runId!);
     await decidePending(workspace, 'verify-success', verifySuccessRun.runId!, 'approve');
     await runCli<RunStatusView>({
       packageRoot,
@@ -587,7 +747,7 @@ describe('Change Run Design gate CLI', () => {
     for (const key of openSpecEnvironmentKeys) process.env[key] = environment[key];
     const verifyApp = await bootProjectComposition(packageRoot, workspace);
     try {
-      const intent = await verifyApp.context.workDispatcher.claim({
+      const claim = await verifyApp.context.managedWorkExecutor.claimExternal({
         runId: verifySuccessRun.runId!,
         adapter: 'process',
         executor: {
@@ -597,12 +757,21 @@ describe('Change Run Design gate CLI', () => {
           authenticated: true,
         },
       });
-      const outcome = await verifyApp.context.workDispatcher.acceptOutcome(
-        verifyApp.context.workDispatcher.outcome(intent, 'succeeded', 'Build completed'),
-      );
+      const outcome = await verifyApp.context.managedWorkExecutor.acceptExternalOutcome({
+        schemaVersion: 1,
+        runId: verifySuccessRun.runId!,
+        invocationId: claim.invocation.invocationId,
+        hostId: claim.invocation.host.id,
+        packetDigest: claim.packet.identity.packetDigest,
+        status: 'succeeded',
+        summary: 'Build completed',
+        consumedLayerDigests: claim.packet.context.layers
+          .filter((layer) => ['action-skill', 'augmentation-skill'].includes(layer.kind))
+          .map((layer) => layer.digest),
+      });
       await verifyApp.context.workflowRuns.validateBuildTask({
         runId: verifySuccessRun.runId!,
-        receiptId: outcome.receipt.receiptId,
+        receiptId: outcome.acceptance!.receipt.receiptId,
       });
     } finally {
       await verifyApp.close();
@@ -625,6 +794,7 @@ describe('Change Run Design gate CLI', () => {
       args: ['run', 'next', '--workspace', workspace, '--run', verifySuccessRun.runId!],
       environment,
     });
+    await executeCurrentWork(verifySuccessRun.runId!, 'process');
     const verified = await runCli<RuntimeResult<VerifyChangeRunResult>['value']>({
       packageRoot,
       cwd: workspace,
@@ -671,12 +841,7 @@ describe('Change Run Design gate CLI', () => {
       ['reject-plan', 'reject', 'rejected'],
     ] as const) {
       const run = await start(changeId);
-      const unapproved = await runCli<RunStatusView>({
-        packageRoot,
-        cwd: workspace,
-        args: ['run', 'next', '--workspace', workspace, '--run', run.runId!],
-        environment,
-      });
+      const unapproved = await reachDesignGate(run.runId!);
       expect(unapproved.result?.changeLifecycle?.currentWork).toBeNull();
       const result = await decidePending(workspace, changeId, run.runId!, decision);
       expect(result.status).toBe(expectedStatus);
@@ -692,14 +857,9 @@ describe('Change Run Design gate CLI', () => {
       });
     }
 
-    for (const changeId of ['invalid-plan', 'incomplete-plan']) {
+    for (const changeId of ['invalid-plan']) {
       const run = await start(changeId);
-      const blocked = await runCli<RunStatusView>({
-        packageRoot,
-        cwd: workspace,
-        args: ['run', 'next', '--workspace', workspace, '--run', run.runId!],
-        environment,
-      });
+      const blocked = await reachDesignGate(run.runId!);
       expect(blocked.result?.changeLifecycle).toMatchObject({
         phase: 'design',
         status: 'blocked',

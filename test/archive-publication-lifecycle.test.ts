@@ -24,6 +24,7 @@ import type { SkillUsageSnapshot } from '../domains/skill/types.js';
 import type { SpecificationClosureResult } from '../domains/specification/types.js';
 import { WorkflowRunCoordinator } from '../domains/runtime/workflow-runs.js';
 import { FileRuntimeStore } from '../platform/runtime/file-runtime-store.js';
+import { createSpecificationPhaseContext } from '../services/specification.js';
 import { snapshotSkillDefinition } from '../platform/skill/snapshot.js';
 import {
   compositionFixture,
@@ -88,6 +89,24 @@ const prSkill: SkillUsageSnapshot = {
   resourceManifestDigest: digest('2'),
 };
 
+const archiveSkill: SkillUsageSnapshot = {
+  ...prSkill,
+  name: 'repoctopus-archive-change',
+};
+
+function archivePhaseContext(provider: SpecificationClosureResult['provider']) {
+  return createSpecificationPhaseContext({
+    phase: 'archive',
+    provider,
+    artifacts: [
+      { id: 'proposal', kind: 'proposal', instruction: 'proposal', template: '# Proposal', instructionDigest: digest('a'), templateDigest: digest('b') },
+      { id: 'specs', kind: 'delta-specs', instruction: 'specs', template: '# Specs', instructionDigest: digest('c'), templateDigest: digest('d') },
+      { id: 'design', kind: 'design', instruction: 'design', template: '# Design', instructionDigest: digest('e'), templateDigest: digest('f') },
+      { id: 'tasks', kind: 'tasks', instruction: 'tasks', template: '# Tasks', instructionDigest: digest('1'), templateDigest: digest('2') },
+    ],
+  });
+}
+
 function archiveState(actionSkill: SkillUsageSnapshot = prSkill) {
   const archive = createArchiveDeliveryInput({
     runId: 'run-terminal',
@@ -113,6 +132,7 @@ function archiveState(actionSkill: SkillUsageSnapshot = prSkill) {
         workspaceId: 'team',
         changeId: 'terminal-archive',
         generation: 2,
+        mode: 'fresh',
         runId: 'run-terminal',
       },
     }),
@@ -140,6 +160,7 @@ function archiveState(actionSkill: SkillUsageSnapshot = prSkill) {
   const closeWork = createSpecificationCloseWork({
     definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
     archive,
+    actionSkill: archiveSkill,
     workspaceRepositoryId: 'workspace',
     repositoryIds: ['workspace', 'app'],
   });
@@ -228,7 +249,7 @@ function archiveState(actionSkill: SkillUsageSnapshot = prSkill) {
       },
     ],
   });
-  return { closed: closed.snapshot, receipt };
+  return { preflight: preflight.snapshot, closed: closed.snapshot, archive, closure, receipt };
 }
 
 describe('Archive publication terminal lifecycle', () => {
@@ -318,6 +339,146 @@ describe('Archive publication terminal lifecycle', () => {
     expect(status.changeLifecycle?.nextActions).toEqual([]);
   });
 
+  it('requires managed Host outcomes for specification.close before creating delivery.publish', async () => {
+    const root = await temporaryDirectory('repoctopus-archive-close-managed-');
+    cleanup.push(root);
+    const workspace = await createGitRepository(root, 'workspace');
+    await writeFile(
+      path.join(workspace, 'repoctopus.yaml'),
+      JSON.stringify({
+        apiVersion: 'repoctopus/v1alpha1',
+        kind: 'RepoctopusWorkspace',
+        workspace: { id: 'archive-close', repositoryId: 'workspace' },
+        repositories: [{ id: 'workspace', path: '.' }],
+        profiles: [
+          {
+            id: 'verify',
+            nodes: [
+              {
+                id: 'check',
+                type: 'command',
+                repository: 'workspace',
+                executable: process.execPath,
+                args: ['-e', 'process.exit(0)'],
+              },
+            ],
+          },
+        ],
+      }),
+    );
+    const app = await bootProjectComposition(path.resolve(import.meta.dirname, '..'), workspace);
+    try {
+      const archiveDefinition = await app.context.skills.get('repoctopus-archive-change', {
+        cwd: workspace,
+      });
+      if (!archiveDefinition) throw new Error('Expected Archive Skill');
+      const boundArchiveSkill = await snapshotSkillDefinition(archiveDefinition);
+      const { preflight, closure } = archiveState();
+      const project = {
+        ...projectFixture(),
+        root: workspace,
+        repositories: [
+          {
+            ...projectFixture().repositories[0]!,
+            id: 'workspace',
+            name: 'workspace',
+            path: workspace,
+            remoteIdentity: 'team/workspace',
+          },
+        ],
+      };
+      const runtime = new WorkflowRunCoordinator(
+        app.context.runStore,
+        { export: () => Promise.resolve() },
+        app.context.compositionIdentity.current(),
+      );
+      await runtime.start({
+        workflow: workflowFixture(),
+        projectSnapshot: project,
+        runId: preflight.identity.runId,
+        changeLifecycle: {
+          ...preflight,
+          currentWork: {
+            ...preflight.currentWork!,
+            actionSkill: boundArchiveSkill,
+          },
+        },
+      });
+      await runtime.bindSkill(preflight.identity.runId, boundArchiveSkill);
+      vi.spyOn(app.context.specification, 'prepareClosure').mockResolvedValue({
+        apiVersion: 'repoctopus.specification/v1alpha1',
+        kind: 'SpecificationClosurePlan',
+        changeId: closure.changeId,
+        provider: closure.provider,
+        mergeFactsDigest: digest('d'),
+        targetBaselineDigest: digest('e'),
+        changeDigest: digest('f'),
+        affectedCapabilities: [],
+        retiredCapabilities: [],
+        allowedPathPrefixes: ['openspec/changes/archive/**'],
+        planDigest: closure.planDigest,
+      });
+      vi.spyOn(app.context.specification, 'close').mockResolvedValue(closure);
+      vi.spyOn(app.context.specification, 'phaseContext').mockResolvedValue(
+        archivePhaseContext(closure.provider),
+      );
+      await expect(
+        app.context.workflowRuns.executeArchiveDelivery({
+          runId: preflight.identity.runId,
+          project,
+          policy,
+          executor: {
+            actorId: 'archive-user',
+            runnerId: 'archive-runner',
+            source: 'runner',
+            authenticated: true,
+          },
+        }),
+      ).rejects.toThrow(/managed Host Outcome/u);
+      const claim = await app.context.managedWorkExecutor.claimExternal({
+        runId: preflight.identity.runId,
+        adapter: 'specification',
+        executor: {
+          actorId: 'archive-user',
+          runnerId: 'archive-runner',
+          source: 'runner',
+          authenticated: true,
+        },
+      });
+      await app.context.managedWorkExecutor.acceptExternalOutcome({
+        schemaVersion: 1,
+        runId: preflight.identity.runId,
+        invocationId: claim.invocation.invocationId,
+        hostId: claim.invocation.host.id,
+        packetDigest: claim.packet.identity.packetDigest,
+        status: 'succeeded',
+        summary: 'Close protocol consumed',
+        consumedLayerDigests: claim.packet.context.layers
+          .filter((layer) => ['action-skill', 'augmentation-skill'].includes(layer.kind))
+          .map((layer) => layer.digest),
+      });
+      const result = await app.context.workflowRuns.executeArchiveDelivery({
+        runId: preflight.identity.runId,
+        project,
+        policy,
+        executor: {
+          actorId: 'archive-user',
+          runnerId: 'archive-runner',
+          source: 'runner',
+          authenticated: true,
+        },
+      });
+      expect(result.value).toMatchObject({
+        stage: 'specification-closed',
+        publication: null,
+        receipt: null,
+        run: { changeLifecycle: { currentWork: { kind: 'delivery.publish' } } },
+      });
+    } finally {
+      await app.close();
+    }
+  });
+
   it('resumes production Archive orchestration from delivery.publish after specification publication fails', async () => {
     const root = await temporaryDirectory('repoctopus-archive-orchestration-');
     cleanup.push(root);
@@ -351,7 +512,7 @@ describe('Archive publication terminal lifecycle', () => {
       const prDefinition = await app.context.skills.get('pr', { cwd: workspace });
       if (!prDefinition) throw new Error('Expected the pr Skill in the production composition');
       const actionSkill = await snapshotSkillDefinition(prDefinition);
-      const { closed, receipt } = archiveState(actionSkill);
+      const { closed, closure, receipt } = archiveState(actionSkill);
       const project = {
         ...projectFixture(),
         root: workspace,
@@ -418,12 +579,33 @@ describe('Archive publication terminal lifecycle', () => {
         });
       const prepareClosure = vi.spyOn(app.context.specification, 'prepareClosure');
       const close = vi.spyOn(app.context.specification, 'close');
+      vi.spyOn(app.context.specification, 'phaseContext').mockResolvedValue(
+        archivePhaseContext(closure.provider),
+      );
       const executor = {
         actorId: 'archive-user',
         runnerId: 'archive-runner',
         source: 'runner' as const,
         authenticated: true,
       };
+
+      const publicationClaim = await app.context.managedWorkExecutor.claimExternal({
+        runId: closed.identity.runId,
+        adapter: 'git',
+        executor,
+      });
+      await app.context.managedWorkExecutor.acceptExternalOutcome({
+        schemaVersion: 1,
+        runId: closed.identity.runId,
+        invocationId: publicationClaim.invocation.invocationId,
+        hostId: publicationClaim.invocation.host.id,
+        packetDigest: publicationClaim.packet.identity.packetDigest,
+        status: 'succeeded',
+        summary: 'Archive publication packet consumed',
+        consumedLayerDigests: publicationClaim.packet.context.layers
+          .filter((layer) => ['action-skill', 'augmentation-skill'].includes(layer.kind))
+          .map((layer) => layer.digest),
+      });
 
       await expect(
         app.context.workflowRuns.executeArchiveDelivery({

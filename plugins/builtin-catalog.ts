@@ -31,6 +31,9 @@ import { CommandRouter } from '../services/command-router.js';
 import { ActionDispatcher } from '../services/action.js';
 import { RuntimeWorkGuard } from '../services/runtime-work-guard.js';
 import { WorkDispatcher } from '../services/work-dispatcher.js';
+import { WorkExecutionAuthority } from '../services/work-execution-authority.js';
+import { WorkExecutionHosts, WorkExecutionSessions } from '../services/work-execution-hosts.js';
+import { ManagedWorkExecutor } from '../services/managed-work-executor.js';
 import { WorkContextAssembler } from '../services/work-context-assembler.js';
 import {
   LifecycleDefinitions,
@@ -61,6 +64,7 @@ import { SpecificationPlanning } from '../services/specification-planning.js';
 import { ConsistencyReconciler } from '../services/consistency-reconciler.js';
 import consistencyContributor from './command/consistency-contributor.js';
 import consistencyMethodProvider from './skill/consistency-method-provider.js';
+import lifecycleSkillProvider from './skill/lifecycle-skill-provider.js';
 import { ConsistencyReviewService } from '../services/consistency-review.js';
 
 interface BuiltinDefinition {
@@ -263,6 +267,30 @@ const definitions: readonly BuiltinDefinition[] = [
       'plugins/skill/matt-skill-provider.ts',
       'third_party/matt-skills/method-adoptions.json',
       'third_party/matt-skills/source-manifest.json',
+    ],
+  },
+  {
+    descriptor: {
+      id: 'skill-provider-lifecycle',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'contributor',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: [],
+      permissions: ['filesystem'],
+      stateSchemas: {},
+    },
+    plugin: lifecycleSkillProvider,
+    sourceFiles: [
+      'plugins/skill/file-skill-provider.ts',
+      'plugins/skill/lifecycle-skill-provider.ts',
+      'skills/lifecycle/repoctopus-open-change/SKILL.md',
+      'skills/lifecycle/repoctopus-design-change/SKILL.md',
+      'skills/lifecycle/repoctopus-build-task/SKILL.md',
+      'skills/lifecycle/repoctopus-verify-change/SKILL.md',
+      'skills/lifecycle/repoctopus-archive-change/SKILL.md',
     ],
   },
   {
@@ -470,6 +498,26 @@ const definitions: readonly BuiltinDefinition[] = [
   },
   {
     descriptor: {
+      id: 'work-execution-authority',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['work-execution-state'],
+      permissions: [],
+      stateSchemas: { 'work-execution': '1' },
+    },
+    plugin: WorkExecutionAuthority,
+    sourceFiles: [
+      'domains/work-execution/types.ts',
+      'services/work-execution-authority.ts',
+      'platform/runtime/file-runtime-store.ts',
+    ],
+  },
+  {
+    descriptor: {
       id: 'runtime-work-guard',
       version: VERSION,
       contractVersion: PLUGIN_CONTRACT_VERSION,
@@ -486,6 +534,59 @@ const definitions: readonly BuiltinDefinition[] = [
       'domains/change-lifecycle/work-guard.ts',
       'services/runtime-work-guard.ts',
       'services/command-router.ts',
+    ],
+  },
+  {
+    descriptor: {
+      id: 'work-execution-hosts',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['work-execution-host-registry'],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: WorkExecutionHosts,
+    sourceFiles: ['domains/work-execution/types.ts', 'services/work-execution-hosts.ts'],
+  },
+  {
+    descriptor: {
+      id: 'work-execution-sessions',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['work-execution-session'],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: WorkExecutionSessions,
+    sourceFiles: ['domains/work-execution/types.ts', 'services/work-execution-hosts.ts'],
+  },
+  {
+    descriptor: {
+      id: 'managed-work-executor',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['managed-work-execution'],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: ManagedWorkExecutor,
+    sourceFiles: [
+      'domains/work-execution/types.ts',
+      'services/managed-work-executor.ts',
+      'services/work-execution-authority.ts',
+      'services/work-execution-hosts.ts',
     ],
   },
   {

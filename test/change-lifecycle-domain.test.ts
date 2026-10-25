@@ -114,6 +114,7 @@ function initialSnapshot(
       workspaceId: 'team-platform',
       changeId: 'establish-change-lifecycle',
       generation: 1,
+      mode: 'fresh',
       runId: 'change-run-1',
     },
     definition: {
@@ -209,10 +210,34 @@ const buildWork: WorkDescriptor = {
 
 describe('Change lifecycle domain', () => {
   it('owns Open and Design gate decisions in the canonical reducer', () => {
+    const { taskId, taskRevision, ...workWithoutTask } = buildWork;
+    void taskId;
+    void taskRevision;
+    const openWork: WorkDescriptor = {
+      ...workWithoutTask,
+      workId: 'open:intake',
+      phase: 'open',
+      kind: 'change.intake',
+      inputDigest: digest('o'),
+      validatorProfile: {
+        id: 'open.intake-ready',
+        version: '1.0.0',
+        digest: digest('v'),
+      },
+    };
     const opened = evolveChangeLifecycle({
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-      current: createChangeLifecycleSnapshot({ identity: initialSnapshot().identity }),
-      observation: { kind: 'open-intake-ready' },
+      current: {
+        ...createChangeLifecycleSnapshot({ identity: initialSnapshot().identity }),
+        currentWork: openWork,
+      },
+      observation: {
+        kind: 'open-intake-validated',
+        workId: openWork.workId,
+        inputDigest: openWork.inputDigest,
+        receiptId: 'receipt-open',
+        validatorId: openWork.validatorProfile.id,
+      },
     });
     expect(opened.snapshot).toMatchObject({ phase: 'design', status: 'running' });
 

@@ -47,7 +47,7 @@ function validatorProfile(id: string) {
 export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
   schemaVersion: 1,
   id: 'repoctopus-change',
-  version: '1.1.0',
+  version: '2.0.0',
   phases: [
     {
       phase: 'open',
@@ -57,7 +57,7 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
     },
     {
       phase: 'design',
-      workKinds: ['specification.decision', 'specification.plan'],
+      workKinds: ['specification.plan'],
       requiredValidatorProfiles: ['design.approval-valid', 'design.artifacts-valid'],
       extensionCheckpoints: ['design.after-approval', 'design.after-validation'],
     },
@@ -84,33 +84,26 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
     {
       kind: 'change.intake',
       phase: 'open',
+      actionSkill: { name: 'repoctopus-open-change' },
       augmentationSkills: [],
       methodProfile: BUILTIN_METHOD_PROFILE_REGISTRY.snapshot('repoctopus.open', '1.0.0'),
-      capabilities: ['repository.read', 'specification.read'],
-      sideEffectClass: 'none',
-      writeScopes: [],
-      outputContract: { artifactKinds: [], trackerPublish: false },
+      capabilities: ['repository.read', 'specification.read', 'specification.write'],
+      sideEffectClass: 'specification-write',
+      writeScopes: [
+        {
+          repositorySelector: 'workspace',
+          paths: ['openspec/changes/**'],
+          operations: ['create', 'update'],
+        },
+      ],
+      outputContract: { artifactKinds: ['proposal'], trackerPublish: false },
       validatorProfile: validatorProfile('open.intake-ready'),
       checkpoint: 'open.after-intake',
     },
     {
-      kind: 'specification.decision',
-      phase: 'design',
-      augmentationSkills: [],
-      methodProfile: BUILTIN_METHOD_PROFILE_REGISTRY.snapshot('repoctopus.design', '1.0.0'),
-      capabilities: ['repository.read', 'specification.read'],
-      sideEffectClass: 'none',
-      writeScopes: [],
-      outputContract: {
-        artifactKinds: ['proposal', 'delta-specs', 'design', 'tasks'],
-        trackerPublish: false,
-      },
-      validatorProfile: validatorProfile('design.approval-valid'),
-      checkpoint: 'design.after-approval',
-    },
-    {
       kind: 'specification.plan',
       phase: 'design',
+      actionSkill: { name: 'repoctopus-design-change' },
       augmentationSkills: [{ name: 'codebase-design' }],
       methodProfile: BUILTIN_METHOD_PROFILE_REGISTRY.snapshot('repoctopus.design', '1.0.0'),
       capabilities: ['repository.read', 'specification.read', 'specification.write'],
@@ -132,8 +125,8 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
     {
       kind: 'task.implement',
       phase: 'build',
-      actionSkill: { name: 'tdd' },
-      augmentationSkills: [{ name: 'codebase-design' }],
+      actionSkill: { name: 'repoctopus-build-task' },
+      augmentationSkills: [{ name: 'tdd' }, { name: 'codebase-design' }],
       methodProfile: BUILTIN_METHOD_PROFILE_REGISTRY.snapshot('repoctopus.build', '1.0.0'),
       capabilities: ['process.execute', 'repository.read', 'repository.write'],
       sideEffectClass: 'repository-write',
@@ -151,8 +144,8 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
     {
       kind: 'evidence.verify',
       phase: 'verify',
-      actionSkill: { name: 'code-review' },
-      augmentationSkills: [],
+      actionSkill: { name: 'repoctopus-verify-change' },
+      augmentationSkills: [{ name: 'code-review' }],
       methodProfile: BUILTIN_METHOD_PROFILE_REGISTRY.snapshot('repoctopus.verify', '1.0.0'),
       capabilities: ['evidence.write', 'process.execute', 'repository.read'],
       sideEffectClass: 'process',
@@ -164,6 +157,7 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
     {
       kind: 'specification.close',
       phase: 'archive',
+      actionSkill: { name: 'repoctopus-archive-change' },
       augmentationSkills: [],
       methodProfile: BUILTIN_METHOD_PROFILE_REGISTRY.snapshot('repoctopus.archive', '1.0.0'),
       capabilities: ['repository.read', 'specification.write'],
@@ -201,6 +195,14 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       to: { phase: 'design', status: 'running' },
       trigger: 'intake-ready',
       requiredValidatorProfile: 'open.intake-ready',
+    },
+    {
+      id: 'design.work-ready',
+      kind: 'self',
+      from: { phase: 'design', statuses: ['running'] },
+      to: { phase: 'design', status: 'running' },
+      trigger: 'design-work-created',
+      requiredValidatorProfile: 'design.artifacts-valid',
     },
     {
       id: 'design.approved',

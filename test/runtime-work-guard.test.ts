@@ -5,8 +5,8 @@ import type { ActionIntent } from '../domains/action/types.js';
 import {
   authorizeRuntimeWorkOperation,
   observeUnmanagedRuntimeMutation,
-  type RuntimeWorkClaimReference,
   type RuntimeWorkOperation,
+  type RuntimeWorkSessionReference,
 } from '../domains/change-lifecycle/work-guard.js';
 import type { WorkDescriptor } from '../domains/change-lifecycle/transition.js';
 import type { RunState } from '../domains/engine/types.js';
@@ -15,12 +15,22 @@ import { RuntimeWorkGuard } from '../services/runtime-work-guard.js';
 
 const digest = (character: string) => `sha256:${character.repeat(64)}` as const;
 
-const claim: RuntimeWorkClaimReference = {
+const claim = {
   runId: 'run-1',
   workId: 'design:plan',
   attempt: 1,
   claimToken: digest('c'),
   inputDigest: digest('i'),
+};
+
+const session: RuntimeWorkSessionReference = {
+  schemaVersion: 1,
+  sessionId: digest('x'),
+  runId: claim.runId,
+  workId: claim.workId,
+  attempt: claim.attempt,
+  invocationId: digest('n'),
+  packetDigest: digest('p'),
 };
 
 function designWork(overrides: Partial<WorkDescriptor> = {}): WorkDescriptor {
@@ -69,7 +79,13 @@ function run(work = designWork()): RunState {
     status: 'running',
     changeLifecycle: {
       schemaVersion: 1,
-      identity: { workspaceId: 'team', changeId: 'guard', generation: 1, runId: claim.runId },
+      identity: {
+        workspaceId: 'team',
+        changeId: 'guard',
+        generation: 1,
+        mode: 'fresh',
+        runId: claim.runId,
+      },
       definition: { id: 'repoctopus-change', version: '1.1.0', digest: digest('d') },
       revision: 1,
       phase: work.phase,
@@ -87,7 +103,44 @@ function run(work = designWork()): RunState {
       },
       validationDigest: digest('s'),
     },
-  } as RunState;
+    workExecution: {
+      schemaVersion: 1,
+      workId: claim.workId,
+      attempt: claim.attempt,
+      intentId: 'intent-1',
+      claimToken: claim.claimToken,
+      inputDigest: claim.inputDigest,
+      packet: {
+        schemaVersion: 1,
+        packetId: digest('q'),
+        packetDigest: session.packetDigest,
+        contextDigest: digest('z'),
+      },
+      status: 'invoking',
+      hostInvocation: {
+        schemaVersion: 1,
+        invocationId: session.invocationId,
+        host: {
+          schemaVersion: 1,
+          id: 'agent-host',
+          version: '1.0.0',
+          codeDigest: digest('h'),
+          capabilities: ['specification.write'],
+          actionKinds: ['agent'],
+          reconcile: false,
+        },
+        packet: {
+          schemaVersion: 1,
+          packetId: digest('q'),
+          packetDigest: session.packetDigest,
+          contextDigest: digest('z'),
+        },
+        startedAt: '2026-10-24T00:00:00.000Z',
+      },
+      continuation: 'wait',
+      updatedAt: '2026-10-24T00:00:00.000Z',
+    },
+  } as unknown as RunState;
 }
 
 function intent(): ActionIntent {
@@ -95,7 +148,11 @@ function intent(): ActionIntent {
     schemaVersion: 2,
     intentId: 'intent-1',
     idempotencyKey: 'key-1',
-    ...claim,
+    runId: claim.runId,
+    workId: claim.workId,
+    attempt: claim.attempt,
+    claimToken: claim.claimToken,
+    inputDigest: claim.inputDigest,
     compositionDigest: digest('o'),
     composition: {} as ActionIntent['composition'],
     action: {} as ActionIntent['action'],
@@ -107,13 +164,14 @@ function intent(): ActionIntent {
 function specificationWrite(
   overrides: Omit<
     Partial<Extract<RuntimeWorkOperation, { kind: 'specification-write' }>>,
-    'claim'
-  > & { claim?: RuntimeWorkClaimReference | undefined } = {},
+    'session'
+  > & { session?: RuntimeWorkSessionReference | undefined } = {},
 ): Extract<RuntimeWorkOperation, { kind: 'specification-write' }> {
-  const { claim: claimOverride, ...rest } = overrides;
+  const { session: sessionOverride, ...rest } = overrides;
   return {
     kind: 'specification-write',
-    adapterId: 'openspec',
+    hostId: 'agent-host',
+    operationId: 'operation-1',
     repositoryId: 'workspace',
     path: 'openspec/changes/guard/design.md',
     operation: 'update',
@@ -121,28 +179,53 @@ function specificationWrite(
     artifactKind: 'design',
     terminalArtifact: false,
     ...rest,
-    ...(claimOverride === undefined && 'claim' in overrides ? {} : { claim: claimOverride ?? claim }),
+    ...(sessionOverride === undefined && 'session' in overrides
+      ? {}
+      : { session: sessionOverride ?? session }),
   };
 }
 
 describe('Runtime Work Guard', () => {
   it('authorizes an exact active claim, Provider artifact, capability, and write scope', () => {
     expect(
-      authorizeRuntimeWorkOperation({ state: run(), intent: intent(), operation: specificationWrite() }),
-    ).toEqual({ runId: claim.runId, workId: claim.workId, attempt: 1, operation: 'specification-write' });
+      authorizeRuntimeWorkOperation({
+        state: run(),
+        intent: intent(),
+        operation: specificationWrite(),
+      }),
+    ).toEqual({
+      runId: claim.runId,
+      workId: claim.workId,
+      attempt: 1,
+      invocationId: session.invocationId,
+      operationId: 'operation-1',
+      operation: 'specification-write',
+    });
   });
 
   it.each([
-    ['missing claim', specificationWrite({ claim: undefined }), 'active Action claim'],
+    [
+      'missing session',
+      specificationWrite({ session: undefined }),
+      'active Work Execution Session',
+    ],
     ['cross-repository write', specificationWrite({ repositoryId: 'backend' }), 'does not allow'],
     ['terminal artifact rewrite', specificationWrite({ terminalArtifact: true }), 'immutable'],
-    ['wrong Adapter', specificationWrite({ adapterId: 'filesystem' }), 'Adapter does not match'],
-    ['wrong Provider', specificationWrite({ providerId: 'foreign-spec' }), 'Provider does not match'],
-    ['wrong artifact kind', specificationWrite({ artifactKind: 'verification' }), 'output contract'],
+    ['wrong Host', specificationWrite({ hostId: 'foreign-host' }), 'session does not match'],
+    [
+      'wrong Provider',
+      specificationWrite({ providerId: 'foreign-spec' }),
+      'Provider does not match',
+    ],
+    [
+      'wrong artifact kind',
+      specificationWrite({ artifactKind: 'verification' }),
+      'output contract',
+    ],
   ])('rejects %s before a side effect', (_name, operation, message) => {
-    expect(() => authorizeRuntimeWorkOperation({ state: run(), intent: intent(), operation })).toThrow(
-      message,
-    );
+    expect(() =>
+      authorizeRuntimeWorkOperation({ state: run(), intent: intent(), operation }),
+    ).toThrow(message);
   });
 
   it('rejects Design tracker publication even when an Adapter has platform capability', () => {
@@ -151,7 +234,12 @@ describe('Runtime Work Guard', () => {
       authorizeRuntimeWorkOperation({
         state: run(work),
         intent: intent(),
-        operation: { kind: 'tracker-publish', adapterId: 'openspec', claim },
+        operation: {
+          kind: 'tracker-publish',
+          hostId: 'agent-host',
+          operationId: 'operation-2',
+          session,
+        },
       }),
     ).toThrow('may not publish tracker state');
   });
@@ -181,14 +269,24 @@ describe('Runtime Work Guard', () => {
       runId: claim.runId,
       workId: claim.workId,
       attempt: 1,
+      invocationId: session.invocationId,
+      operationId: operation.operationId,
       operation: operation.kind,
     });
+    const complete = vi.spyOn(guard, 'complete').mockResolvedValue();
     const execute = vi.fn(() => Promise.resolve('written'));
     router.register({ name: 'managed.write', runtimeWork: () => operation, execute });
 
     await expect(router.execute('managed.write', {})).resolves.toBe('written');
     expect(authorize).toHaveBeenCalledWith(operation);
-    expect(authorize.mock.invocationCallOrder[0]).toBeLessThan(execute.mock.invocationCallOrder[0]!);
+    expect(complete).toHaveBeenCalledWith(
+      expect.objectContaining({ operationId: operation.operationId }),
+      'succeeded',
+      expect.any(Number),
+    );
+    expect(authorize.mock.invocationCallOrder[0]).toBeLessThan(
+      execute.mock.invocationCallOrder[0]!,
+    );
     await context.fiber.dispose();
   });
 });

@@ -7,6 +7,7 @@ import type {
   RunStatus as ChangeLifecycleRunStatus,
 } from '../change-lifecycle/transition.js';
 import type { LifecycleContributorSnapshot } from '../change-lifecycle/contributors.js';
+import type { WorkExecutionCheckpoint } from '../work-execution/types.js';
 
 export type RunStatus = ChangeLifecycleRunStatus;
 
@@ -40,6 +41,7 @@ export interface RunState {
   changeLifecycle?: ChangeLifecycleState;
   skillUsageSnapshots?: SkillUsageSnapshot[];
   specificationUsageSnapshot?: SpecificationUsageSnapshot;
+  workExecution?: WorkExecutionCheckpoint;
   createdAt: string;
   updatedAt: string;
 }

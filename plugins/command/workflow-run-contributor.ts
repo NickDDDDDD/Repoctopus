@@ -1,7 +1,8 @@
 import type { Context, Plugin } from '@deepseek-ai/cordis';
 
 import type { ActionOutcome } from '../../domains/engine/types.js';
-import type { ClaimedActionOutcome, WorkClaimRequest } from '../../domains/action/types.js';
+import type { WorkClaimRequest } from '../../domains/action/types.js';
+import type { ExternalWorkExecutionOutcome } from '../../domains/work-execution/types.js';
 import type { ProjectSnapshot } from '../../domains/project/types.js';
 import type { WorkflowPackage } from '../../domains/workflow-contract/types.js';
 import type {
@@ -34,11 +35,18 @@ const plugin = ((context: Context) => {
     const disposers = [
       context.commandRouter.register({
         name: 'run.work.claim',
-        execute: ({ input }) => context.workDispatcher.claim(input as WorkClaimRequest),
+        execute: ({ input }) =>
+          context.managedWorkExecutor.claimExternal(input as WorkClaimRequest),
       }),
       context.commandRouter.register({
         name: 'run.work.outcome',
-        execute: ({ input }) => context.workDispatcher.acceptOutcome(input as ClaimedActionOutcome),
+        execute: ({ input }) =>
+          context.managedWorkExecutor.acceptExternalOutcome(input as ExternalWorkExecutionOutcome),
+      }),
+      context.commandRouter.register({
+        name: 'run.work.reconcile',
+        execute: ({ input }) =>
+          context.managedWorkExecutor.reconcile((input as { runId: string }).runId),
       }),
       context.commandRouter.register({
         name: 'run.work.validate',
@@ -113,7 +121,7 @@ const plugin = ((context: Context) => {
 }) as Plugin;
 
 Object.assign(plugin, {
-  inject: ['commandRouter', 'runStore', 'workDispatcher', 'workflowRuns'],
+  inject: ['commandRouter', 'managedWorkExecutor', 'runStore', 'workflowRuns'],
 });
 
 export default plugin;

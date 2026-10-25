@@ -29,9 +29,9 @@ node bin/repoctopus.js skill get --workspace . --audience user --name tdd --json
 
 内置入口为 `grill-with-docs`、`codebase-design`、`tdd`、`diagnosing-bugs`、`code-review`、`pr` 和 `teach`。`grill-with-docs` 使用的 `grilling` 与 `domain-modeling` 也随固定上游快照提供。`to-spec` 与 `to-tickets` 仅作为方法采用的固定参考保存在 Provider roots 之外，不会出现在 Skill 目录或 IDE 投影中；Repoctopus 只通过版本化 Method Profile 使用其中已审核的规则，OpenSpec 仍是规格和任务的唯一结构权威。
 
-Change lifecycle definition 为每个 Work kind 固定至多一个 action Skill、有序 augmentation Skills、独立 Method Profile、能力、side-effect class、写入范围、输出契约、Validator 和 checkpoint。Runtime 只把 action/augmentation 名称交给 `ctx.skills` 解析并冻结内容快照；Method Profile 不经过 Skill Registry，也不能由调用方参数替换或伪装成 Skill。当前 Build Work 固定 `tdd` 为 action、`codebase-design` 为 augmentation，解析后的 Provider 与内容摘要共同进入 Work input digest 和 Run Skill snapshots。
+Change lifecycle definition 为每个 Work kind 固定至多一个 action Skill、有序 augmentation Skills、独立 Method Profile、能力、side-effect class、写入范围、输出契约、Validator 和 checkpoint。Runtime 解析并冻结真实正文，把它们装入不可变执行包而不只记录名称；Method Profile 不经过 Skill Registry，也不能由调用方参数替换或伪装成 Skill。当前 Build Work 以 `repoctopus-build-task` 为阶段 action owner，固定 `tdd`、`codebase-design` 为 augmentation，retry 时再加入 `diagnosing-bugs`；Verify 使用 `repoctopus-verify-change + code-review`，Archive close/publish 分别使用 `repoctopus-archive-change` 与 `pr`。
 
-Skill 在 Runtime 接受当前 Work 时装配，而不是在 change 开始时把所有 Skill 一次性塞进上下文。Open/Design 使用规格规划方法，Build 的 `task.implement` 才以 TDD 先建立失败证明再完成实现，Verify 使用证据方法，Archive 使用交付、合入核对与规格关闭方法。Agent 只能得到当前 Work 固定的 action/augmentation 组合；调用方不能把 TDD 推迟成实现后的补测，也不能在 Archive 选择一个更宽权限的 Skill。
+Skill 在 Runtime 接受当前 Work 时装配，而不是在 change 开始时把所有 Skill 一次性塞进上下文。固定顺序为 Runtime contract → action Skill → Provider protocol → augmentations → Method Profile → change inputs。Host 必须明确回报真正读取的 action/augmentation layer digest；Runtime 只据此记录 `skill.consumed`，不会从 Work 成功反推所有 Skill 已被使用。
 
 内置 Method Profile Registry 以 `id + version + digest` 固定已审核规则；每条规则同时绑定上游 source digest、适用 phase、官方 artifact kind，以及 `context`、`deterministic-validator`、`review-rubric` 或 `human-decision` enforcement。上下文装配只输出这些 Repoctopus-owned 规则，不读取或注入原始 `to-spec`/`to-tickets` 正文。即使项目或用户目录定义同名 Skill，lifecycle definition validation 也会在 Work 创建前拒绝它。
 
@@ -50,7 +50,7 @@ description: 团队的测试驱动开发方法
 先写一个能证明需求的失败测试，再写最少实现使其通过。
 ```
 
-再次执行 `skill get`，返回的 Provider 应为 `project-user-files`。正在运行的 Run 已经绑定旧版本时，Repoctopus 会报告 Skill 漂移并要求 Human Decision 或新建 Run；未被该 Run 使用的 Skill 变化不会阻塞推进。
+再次执行 `skill get`，返回的 Provider 应为 `project-user-files`。正在运行的 Run 已经绑定旧版本时，Repoctopus 返回只读 `migration_required/new-generation-required` reconcile 诊断，不修改旧 Run；未被该 Run 使用的 Skill 变化不会阻塞推进。
 
 ## 投影到 IDE
 

@@ -99,8 +99,8 @@ function harness(workspace: string, executions: { count: number }) {
   return { context, dispatcher };
 }
 
-describe('Action claims', () => {
-  it('fences duplicate, stale, and cross-Work claims and replays a lost response', async () => {
+describe('Action immutable content store', () => {
+  it('deduplicates identity content while leaving attempt authority to the Run aggregate', async () => {
     const workspace = await temporaryDirectory('repoctopus-action-claims-');
     cleanup.push(workspace);
     const executions = { count: 0 };
@@ -120,22 +120,17 @@ describe('Action claims', () => {
     });
     expect(first.claimToken).toMatch(/^sha256:[a-f0-9]{64}$/u);
     await expect(
-      firstProcess.dispatcher.claim(
-        claimInput({ inputDigest: `sha256:${'b'.repeat(64)}` }),
-      ),
+      firstProcess.dispatcher.claim(claimInput({ inputDigest: `sha256:${'b'.repeat(64)}` })),
     ).rejects.toThrow(/identity changed|stale/u);
     await firstProcess.context.fiber.dispose();
 
     const recoveredProcess = harness(workspace, executions);
     expect(await recoveredProcess.dispatcher.claim(claimInput())).toEqual(first);
     const second = await recoveredProcess.dispatcher.claim(claimInput({ attempt: 2 }));
-    await expect(recoveredProcess.dispatcher.complete(outcome(first))).rejects.toThrow(
-      /stale attempt/u,
-    );
+    const firstReceipt = await recoveredProcess.dispatcher.complete(outcome(first));
+    expect(firstReceipt.attempt).toBe(1);
 
-    const other = await recoveredProcess.dispatcher.claim(
-      claimInput({ workId: 'build:1.2' }),
-    );
+    const other = await recoveredProcess.dispatcher.claim(claimInput({ workId: 'build:1.2' }));
     await expect(
       recoveredProcess.dispatcher.complete({
         ...outcome(other, 'cross-work'),
@@ -155,7 +150,7 @@ describe('Action claims', () => {
       inputDigest: second.inputDigest,
       outcomeId: 'outcome-1',
     });
-    expect(executions.count).toBe(1);
+    expect(executions.count).toBe(2);
     await recoveredProcess.context.fiber.dispose();
   });
 });

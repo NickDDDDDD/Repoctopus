@@ -28,6 +28,7 @@ const skill: SkillUsageSnapshot = {
   resourceManifestDigest: digest('r'),
 };
 const reviewSkill: SkillUsageSnapshot = { ...skill, name: 'code-review' };
+const verifySkill: SkillUsageSnapshot = { ...skill, name: 'repoctopus-verify-change' };
 const plan: EvidenceExecutionPlan = {
   schemaVersion: 1,
   profileId: 'verify',
@@ -90,14 +91,20 @@ function create(overrides: Partial<Parameters<typeof createVerificationInput>[0]
     const work = createVerifyWork({
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
       verification,
-      actionSkill: reviewSkill,
-      augmentationSkills: [],
+      actionSkill: verifySkill,
+      augmentationSkills: [reviewSkill],
       workspaceRepositoryId: 'workspace',
       repositoryIds: ['workspace'],
     });
     const lifecycle = {
       ...createChangeLifecycleSnapshot({
-        identity: { workspaceId: 'team', changeId: 'verify-input', generation: 1, runId: 'run-1' },
+        identity: {
+          workspaceId: 'team',
+          changeId: 'verify-input',
+          generation: 1,
+          mode: 'fresh',
+          runId: 'run-1',
+        },
       }),
       phase: 'verify' as const,
       status: 'running' as const,
@@ -177,14 +184,20 @@ describe('Verification input', () => {
     const work = createVerifyWork({
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
       verification,
-      actionSkill: reviewSkill,
-      augmentationSkills: [],
+      actionSkill: verifySkill,
+      augmentationSkills: [reviewSkill],
       workspaceRepositoryId: 'workspace',
       repositoryIds: ['workspace'],
     });
     const lifecycle = {
       ...createChangeLifecycleSnapshot({
-        identity: { workspaceId: 'team', changeId: 'verify-input', generation: 1, runId: 'run-1' },
+        identity: {
+          workspaceId: 'team',
+          changeId: 'verify-input',
+          generation: 1,
+          mode: 'fresh',
+          runId: 'run-1',
+        },
       }),
       phase: 'verify' as const,
       status: 'running' as const,
@@ -314,7 +327,13 @@ describe('Verification input', () => {
 
   it('keeps the Change in build/blocked when verification input preparation is incomplete', () => {
     const opened = createChangeLifecycleSnapshot({
-      identity: { workspaceId: 'team', changeId: 'verify-input', generation: 1, runId: 'run-1' },
+      identity: {
+        workspaceId: 'team',
+        changeId: 'verify-input',
+        generation: 1,
+        mode: 'fresh',
+        runId: 'run-1',
+      },
     });
     const current = {
       ...opened,

@@ -4,18 +4,14 @@ import type { ActionIntent } from '../action/types.js';
 import type { RunState } from '../engine/types.js';
 import type { SpecificationArtifactKind } from '../specification/types.js';
 import type { WorkDescriptor } from './transition.js';
+import type { WorkExecutionSessionIdentity } from '../work-execution/types.js';
 
-export interface RuntimeWorkClaimReference {
-  runId: string;
-  workId: string;
-  attempt: number;
-  claimToken: `sha256:${string}`;
-  inputDigest: `sha256:${string}`;
-}
+export type RuntimeWorkSessionReference = WorkExecutionSessionIdentity;
 
 interface RuntimeWorkOperationBase {
-  adapterId: string;
-  claim?: RuntimeWorkClaimReference;
+  hostId: string;
+  operationId: string;
+  session?: RuntimeWorkSessionReference;
 }
 
 export type RuntimeWorkOperation =
@@ -43,6 +39,8 @@ export interface RuntimeWorkAuthorization {
   runId: string;
   workId: string;
   attempt: number;
+  invocationId: string;
+  operationId: string;
   operation: RuntimeWorkOperation['kind'];
 }
 
@@ -118,20 +116,32 @@ function assertWriteScope(
   }
 }
 
-function assertClaim(intent: ActionIntent, operation: RuntimeWorkOperation): RuntimeWorkClaimReference {
-  const claim = operation.claim;
-  if (!claim) reject('Runtime write requires an active Action claim');
-  const exact =
-    claim.runId === intent.runId &&
-    claim.workId === intent.workId &&
-    claim.attempt === intent.attempt &&
-    claim.claimToken === intent.claimToken &&
-    claim.inputDigest === intent.inputDigest;
-  if (!exact) reject('Runtime write claim does not match the active Action Intent');
-  if (operation.adapterId !== intent.adapter) {
-    reject(`Runtime write Adapter does not match the active claim: ${operation.adapterId}`);
+function assertSession(
+  state: RunState,
+  intent: ActionIntent,
+  operation: RuntimeWorkOperation,
+): RuntimeWorkSessionReference {
+  const session = operation.session;
+  if (!session) reject('Runtime write requires an active Work Execution Session');
+  if (!operation.operationId.trim()) reject('Runtime write operation identity is required');
+  const execution = state.workExecution;
+  const invocation = execution?.hostInvocation;
+  if (!execution || execution.status !== 'invoking' || !invocation) {
+    reject('Runtime write requires a delivered packet and active Host invocation');
   }
-  return claim;
+  const exact =
+    session.runId === intent.runId &&
+    session.workId === intent.workId &&
+    session.attempt === intent.attempt &&
+    session.invocationId === invocation.invocationId &&
+    session.packetDigest === execution.packet.packetDigest &&
+    operation.hostId === invocation.host.id &&
+    execution.intentId === intent.intentId;
+  if (!exact) reject('Runtime write session does not match the authoritative Host invocation');
+  if (!session.sessionId.trim()) {
+    reject('Runtime write session identity is missing');
+  }
+  return session;
 }
 
 export function authorizeRuntimeWorkOperation(input: {
@@ -139,13 +149,13 @@ export function authorizeRuntimeWorkOperation(input: {
   intent: ActionIntent;
   operation: RuntimeWorkOperation;
 }): RuntimeWorkAuthorization {
-  const claim = assertClaim(input.intent, input.operation);
-  if (input.state.runId !== claim.runId || input.state.status !== 'running') {
-    reject(`Runtime Work claim is not attached to a running Run: ${claim.runId}`);
+  const session = assertSession(input.state, input.intent, input.operation);
+  if (input.state.runId !== session.runId || input.state.status !== 'running') {
+    reject(`Runtime Work session is not attached to a running Run: ${session.runId}`);
   }
   const work = input.state.changeLifecycle?.currentWork;
-  if (!work || work.workId !== claim.workId || work.inputDigest !== claim.inputDigest) {
-    reject('Runtime Work claim is not attached to the active Work input');
+  if (!work || work.workId !== session.workId || work.inputDigest !== input.intent.inputDigest) {
+    reject('Runtime Work session is not attached to the active Work input');
   }
   const capability = requiredCapabilities[input.operation.kind];
   if (!work.capabilities.includes(capability)) {
@@ -162,9 +172,19 @@ export function authorizeRuntimeWorkOperation(input: {
     if (input.operation.terminalArtifact) {
       reject('Terminal Specification artifacts are immutable');
     }
-    const providerId = input.state.specificationUsageSnapshot?.provider.id;
+    const triggerProvider = input.state.trigger?.facts.specificationProvider;
+    const providerId =
+      input.state.specificationUsageSnapshot?.provider.id ??
+      ((work.phase === 'open' || work.phase === 'design') &&
+      triggerProvider &&
+      typeof triggerProvider === 'object' &&
+      typeof (triggerProvider as { id?: unknown }).id === 'string'
+        ? (triggerProvider as { id: string }).id
+        : undefined);
     if (!providerId || providerId !== input.operation.providerId) {
-      reject(`Specification Provider does not match the Run snapshot: ${input.operation.providerId}`);
+      reject(
+        `Specification Provider does not match the Run snapshot: ${input.operation.providerId}`,
+      );
     }
     if (!work.outputContract.artifactKinds.includes(input.operation.artifactKind)) {
       reject(
@@ -177,9 +197,11 @@ export function authorizeRuntimeWorkOperation(input: {
   }
 
   return {
-    runId: claim.runId,
-    workId: claim.workId,
-    attempt: claim.attempt,
+    runId: session.runId,
+    workId: session.workId,
+    attempt: session.attempt,
+    invocationId: session.invocationId,
+    operationId: input.operation.operationId,
     operation: input.operation.kind,
   };
 }

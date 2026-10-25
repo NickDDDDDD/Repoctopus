@@ -5,6 +5,7 @@ import type {
   ChangeLifecycleState,
   ChangeLifecycleTransitionFact,
 } from '../change-lifecycle/transition.js';
+import type { WorkExecutionCheckpoint } from '../work-execution/types.js';
 
 export type TrajectoryEventType =
   | 'run.started'
@@ -16,7 +17,24 @@ export type TrajectoryEventType =
   | 'specification.closure-planned'
   | 'change.lifecycle.transitioned'
   | 'run.resumed'
-  | 'recovery.reconciled';
+  | 'recovery.reconciled'
+  | 'work.created'
+  | 'work.claimed'
+  | 'work.context-delivered'
+  | 'work.host-started'
+  | 'work.host-completed'
+  | 'work.completed'
+  | 'skill.resolved'
+  | 'skill.delivered'
+  | 'skill.consumed'
+  | 'tool.started'
+  | 'tool.completed'
+  | 'validator.completed'
+  | 'wait.started'
+  | 'wait.ended'
+  | 'reconcile.started'
+  | 'reconcile.completed'
+  | 'continuation.selected';
 
 export interface TrajectoryEvent {
   schemaVersion: 1;
@@ -46,6 +64,7 @@ export interface Checkpoint {
   changeLifecycle?: ChangeLifecycleState;
   skillUsageSnapshots?: SkillUsageSnapshot[];
   specificationUsageSnapshot?: SpecificationUsageSnapshot;
+  workExecution?: WorkExecutionCheckpoint;
   createdAt: string;
 }
 

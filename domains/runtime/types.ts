@@ -9,6 +9,10 @@ import type { SkillCompatibility } from '../skill/types.js';
 import type { SpecificationCompatibility } from '../specification/types.js';
 import type { ChangeRunProjection } from '../change-lifecycle/transition.js';
 import type { LifecycleContributorCompatibility } from '../change-lifecycle/contributors.js';
+import type {
+  AgentCoordinationCheckpoint,
+  WorkExecutionRecovery,
+} from '../work-execution/types.js';
 
 export interface RuntimeDiagnostic {
   level: 'info' | 'warning' | 'error';
@@ -39,10 +43,12 @@ export interface RunStatusView {
   skillCompatibility?: SkillCompatibility;
   specificationCompatibility?: SpecificationCompatibility;
   reason?: string;
+  continuation?: WorkExecutionRecovery;
 }
 
 export interface ResumeView extends RunStatusView {
   reconciliation: ProjectReconciliation;
+  execution?: WorkExecutionRecovery;
 }
 
 export interface TelemetryBatch {
@@ -117,5 +123,7 @@ export interface RunStorePort {
   readTelemetryCursor(runId: string): Promise<TelemetryDeliveryCursor>;
   writeTelemetryCursor(cursor: TelemetryDeliveryCursor): Promise<void>;
   inspect(runId: string): Promise<RunStoreInspection>;
+  readCoordinationCheckpoint(runId: string): Promise<AgentCoordinationCheckpoint | null>;
+  writeCoordinationCheckpoint(checkpoint: AgentCoordinationCheckpoint): Promise<void>;
   evidenceRetentionState(): Promise<{ deferred: boolean; acceptedBundleIds: string[] }>;
 }
