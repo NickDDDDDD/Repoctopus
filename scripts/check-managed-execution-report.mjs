@@ -8,7 +8,8 @@ import { promisify } from 'node:util';
 
 const execute = promisify(execFile);
 const root = path.resolve(import.meta.dirname, '..');
-const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+const npmCli = process.env.npm_execpath;
+if (!npmCli) throw new Error('npm_execpath is required to reproduce the package archive');
 const reportPath = path.join(
   root,
   'verification',
@@ -45,8 +46,8 @@ try {
   const packed = JSON.parse(
     (
       await execute(
-        npmCommand,
-        ['pack', '--json', '--ignore-scripts', '--pack-destination', temporary],
+        process.execPath,
+        [npmCli, 'pack', '--json', '--ignore-scripts', '--pack-destination', temporary],
         { cwd: root, maxBuffer: 16 * 1024 * 1024 },
       )
     ).stdout,
