@@ -1,4 +1,9 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { writeFile } from 'node:fs/promises';
+import path from 'node:path';
+
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import { bootProjectComposition } from '../app/boot/bootstrap.js';
 
 import {
   createArchiveDeliveryInput,
@@ -19,8 +24,10 @@ import type { SkillUsageSnapshot } from '../domains/skill/types.js';
 import type { SpecificationClosureResult } from '../domains/specification/types.js';
 import { WorkflowRunCoordinator } from '../domains/runtime/workflow-runs.js';
 import { FileRuntimeStore } from '../platform/runtime/file-runtime-store.js';
+import { snapshotSkillDefinition } from '../platform/skill/snapshot.js';
 import {
   compositionFixture,
+  createGitRepository,
   projectFixture,
   removeTemporaryDirectory,
   temporaryDirectory,
@@ -81,7 +88,7 @@ const prSkill: SkillUsageSnapshot = {
   resourceManifestDigest: digest('2'),
 };
 
-function archiveState() {
+function archiveState(actionSkill: SkillUsageSnapshot = prSkill) {
   const archive = createArchiveDeliveryInput({
     runId: 'run-terminal',
     changeId: 'terminal-archive',
@@ -161,7 +168,7 @@ function archiveState() {
     definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
     archive,
     closure,
-    actionSkill: prSkill,
+    actionSkill,
     workspaceRepositoryId: 'workspace',
     repositoryIds: ['workspace', 'app'],
   });
@@ -310,4 +317,148 @@ describe('Archive publication terminal lifecycle', () => {
     });
     expect(status.changeLifecycle?.nextActions).toEqual([]);
   });
+
+  it('resumes production Archive orchestration from delivery.publish after specification publication fails', async () => {
+    const root = await temporaryDirectory('repoctopus-archive-orchestration-');
+    cleanup.push(root);
+    const workspace = await createGitRepository(root, 'workspace');
+    await writeFile(
+      path.join(workspace, 'repoctopus.yaml'),
+      JSON.stringify({
+        apiVersion: 'repoctopus/v1alpha1',
+        kind: 'RepoctopusWorkspace',
+        workspace: { id: 'archive-recovery', repositoryId: 'workspace' },
+        repositories: [{ id: 'workspace', path: '.' }],
+        profiles: [
+          {
+            id: 'verify',
+            nodes: [
+              {
+                id: 'check',
+                type: 'command',
+                repository: 'workspace',
+                executable: process.execPath,
+                args: ['-e', 'process.exit(0)'],
+              },
+            ],
+          },
+        ],
+      }),
+    );
+    const productRoot = path.resolve(import.meta.dirname, '..');
+    const app = await bootProjectComposition(productRoot, workspace);
+    try {
+      const prDefinition = await app.context.skills.get('pr', { cwd: workspace });
+      if (!prDefinition) throw new Error('Expected the pr Skill in the production composition');
+      const actionSkill = await snapshotSkillDefinition(prDefinition);
+      const { closed, receipt } = archiveState(actionSkill);
+      const project = {
+        ...projectFixture(),
+        root: workspace,
+        repositories: [
+          {
+            ...projectFixture().repositories[0]!,
+            id: 'workspace',
+            name: 'workspace',
+            path: workspace,
+            remoteIdentity: 'team/workspace',
+          },
+          {
+            ...projectFixture().repositories[0]!,
+            id: 'app',
+            name: 'app',
+            path: path.join(root, 'app'),
+            remoteIdentity: 'team/app',
+          },
+        ],
+      };
+      const runtime = new WorkflowRunCoordinator(
+        app.context.runStore,
+        { export: () => Promise.resolve() },
+        app.context.compositionIdentity.current(),
+      );
+      await runtime.start({
+        workflow: workflowFixture(),
+        projectSnapshot: project,
+        runId: closed.identity.runId,
+        changeLifecycle: closed,
+      });
+      await runtime.bindSkill(closed.identity.runId, actionSkill);
+
+      const business = receipt.items.find((item) => item.role === 'business')!;
+      const specification = receipt.items.find((item) => item.role === 'specification')!;
+      vi.spyOn(app.context.delivery, 'publishArchive').mockResolvedValue({
+        snapshot: { digest: receipt.deliverySnapshotDigest } as never,
+        receipts: [
+          {
+            actionId: 'push-primary',
+            deliveryId: 'primary',
+            type: 'git.push',
+            status: 'succeeded',
+            recovered: false,
+            remoteOid: business.publishedOid,
+          },
+          {
+            actionId: 'mr-primary',
+            deliveryId: 'primary',
+            type: 'mr.create_or_update',
+            status: 'succeeded',
+            recovered: false,
+            mergeRequest: business.mergeRequest,
+            provenance: business.provenance,
+          },
+        ],
+      });
+      const publishSpecification = vi
+        .spyOn(app.context.delivery, 'publishSpecification')
+        .mockRejectedValueOnce(new Error('fault:after-push'))
+        .mockResolvedValue({
+          expectedPublishedOid: specification.publishedOid,
+          item: specification,
+        });
+      const prepareClosure = vi.spyOn(app.context.specification, 'prepareClosure');
+      const close = vi.spyOn(app.context.specification, 'close');
+      const executor = {
+        actorId: 'archive-user',
+        runnerId: 'archive-runner',
+        source: 'runner' as const,
+        authenticated: true,
+      };
+
+      await expect(
+        app.context.workflowRuns.executeArchiveDelivery({
+          runId: closed.identity.runId,
+          project,
+          policy,
+          executor,
+          attempt: 1,
+        }),
+      ).rejects.toThrow('fault:after-push');
+      await expect(app.context.runStore.loadRun(closed.identity.runId)).resolves.toMatchObject({
+        status: 'running',
+        changeLifecycle: {
+          currentWork: { kind: 'delivery.publish' },
+          specificationClosure: { closureId: closed.specificationClosure?.closureId },
+        },
+      });
+
+      const recovered = await app.context.workflowRuns.executeArchiveDelivery({
+        runId: closed.identity.runId,
+        project,
+        policy,
+        executor,
+        attempt: 2,
+      });
+      expect(recovered.value.run.changeLifecycle).toMatchObject({
+        status: 'completed',
+        currentWork: null,
+        publicationReceipt: { specificationClosure: receipt.specificationClosure },
+      });
+      expect(publishSpecification).toHaveBeenCalledTimes(2);
+      expect(prepareClosure).not.toHaveBeenCalled();
+      expect(close).not.toHaveBeenCalled();
+    } finally {
+      await app.close();
+    }
+  }, 30_000);
 });

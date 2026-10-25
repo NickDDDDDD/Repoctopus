@@ -360,6 +360,14 @@
       "status": "isolated-local-transaction"
     },
     {
+      "id": "specification-publication-journal",
+      "files": [
+        "domains/delivery/specification-publication-journal.ts",
+        "platform/delivery/file-specification-publication-journal-store.ts"
+      ],
+      "status": "recoverable-publication-journal"
+    },
+    {
       "id": "delivery-publication-journal",
       "files": [
         "domains/delivery/publication-journal.ts",

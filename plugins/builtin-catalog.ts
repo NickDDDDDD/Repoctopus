@@ -797,9 +797,13 @@ const definitions: readonly BuiltinDefinition[] = [
       'plugins/delivery/file-delivery-provider.ts',
       'domains/delivery/service.ts',
       'domains/delivery/service-v3.ts',
+      'domains/delivery/specification-publication-journal.ts',
       'platform/delivery/file-delivery-store.ts',
       'platform/delivery/file-delivery-v3-store.ts',
+      'platform/delivery/file-specification-publication-journal-store.ts',
+      'platform/delivery/specification-publication.ts',
       'platform/git/delivery.ts',
+      'platform/git/specification-checkout.ts',
     ],
   },
   {
