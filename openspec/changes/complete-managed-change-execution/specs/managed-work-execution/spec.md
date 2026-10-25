@@ -147,3 +147,8 @@ Repoctopus MUST 使用生产 composition 和公共应用协议运行捕获 Host�
 
 - **WHEN** 生产协议只返回 layer identity 或 Host 没有读取完整执行包
 - **THEN** 黑盒验收失败，即使 Task、Verify 和 Archive 最终状态均显示成功
+
+#### Scenario: 黑盒只读取最终统一投影
+
+- **WHEN** 验收只断言最终 `ChangeRunProjection`，或测试直接 import coordinator/reducer 来构造 Work、Outcome 或 completion observation
+- **THEN** 该测试不得计入生产执行验收；合格验收必须通过独立进程公共协议，并交叉核对每一步 continuation/phase、追加式 trajectory identity 与实际受保护文件结果

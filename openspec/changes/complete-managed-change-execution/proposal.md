@@ -15,6 +15,7 @@
 - 把现有 Run checkpoint 从“恢复 phase 与投影”扩展为 Work 级断点续跑协议：由同一个 Change Run aggregate 权威持久化当前 Action attempt、claim/Host/packet identity、Outcome/Validator/transition 边界和 continuation；ActionStore 只保存由 Run identity 绑定的不可变明细，不拥有 claim、attempt 或下一步。新进程或新 Runner 必须从原断点等待、核对、继续验证或重放幂等转换，不得从 phase 名称猜测进度、协调两套推进状态或重复外部副作用。
 - 明确 `fresh` 与 `adopt-existing` 两种 Change 启动模式。新开发默认 `fresh`，已完成 checkbox 不得静默变成 `imported-claim`；只有显式采用既有实现时才允许导入 completion claim，并仍要求完整 Verify。
 - 增加从空目录开始的进程外黑盒自举测试：创建 Change Run、捕获完整 Skill 正文、完成 OpenSpec 四类工件、等待真实 Design 决定、逐 Task Build、Verify、Archive；测试必须证明首次受保护写入发生在 claim 和上下文交付之后。
+- 把 `establish-change-lifecycle` 曾漏过的真实缺陷固定为历史回归：当前 `repoctopus-change@1.1.0` 在第一次 `run next` 中合成 `open-intake-ready` 并从 Open 直接进入 Design，新测试必须先在旧实现上失败；修复后的黑盒验收还必须通过故障注入证明，只要重新引入该自动 observation 或只检查最终 projection，测试就会失败。
 - 增加 definition 可达性与消费端契约检查：每个内置 Work kind 都必须具有生产创建路径、合法 Host/Contributor、完整上下文交付测试和 Validator，不能用只检查 layer 名称/digest 的测试替代宿主消费测试。
 - 保持 Repoctopus 是工作流与授权边界而不是操作系统沙箱。任意外部进程仍可能直接改文件，但这种写入不得形成受管 Receipt、Task 完成或阶段推进；正式集成的 Agent Host 只能使用当前 Work 授权的应用能力。
 

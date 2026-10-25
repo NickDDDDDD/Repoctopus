@@ -2,7 +2,7 @@
 
 ## 1. 锁定缺口并交付完整 claim packet 纵切
 
-- [ ] 1.1 固定 Comet 0.5.0 `applicationSkillWork`、`skill-executor`、`skill-invocation` 的行为对照和当前 G1 bootstrap Run 身份；增加回归测试重现“assembler 有正文、public claim 只有 identity”的缺口，并验证测试在修复前失败。
+- [ ] 1.1 固定 Comet 0.5.0 `applicationSkillWork`、`skill-executor`、`skill-invocation` 的行为对照和当前 G1 bootstrap Run 身份；增加两个必须先在当前打包实现上失败的历史回归：assembler 有正文但 public claim 只有 identity，以及首次 `run next` 合成 `open-intake-ready` 并把 Open 自动推进到 Design；保存失败命令、旧 definition/commit 和可复现断言，防止后续把缺陷重定义为预期行为。
 - [ ] 1.2 定义版本化 `WorkExecutionPacket`、packet identity、Host requirement 和 Host invocation/outcome 类型；用领域测试验证正文与 identity digest 一致、对象深冻结、规范序列化稳定且正文不进入持久 identity。
 - [ ] 1.3 重构 Work claim 为“先持久化不可变 ActionIntent，再由 Run CAS 绑定 identity，最后返回完整 packet”，保留 ActionStore 的 identity-only Schema但移除其 attempt/latest 权威；用 Store/Dispatcher 测试证明孤立 intent 不是 claim、并发 CAS 只有一个获胜 attempt、持久文件不含 Skill/Provider instruction/change input 正文，失败不暴露 packet。
 - [ ] 1.4 破坏性升级公共 Application/CLI `run work-claim` 协议并仅保留不可执行的 identity-only inspection projection，不提供旧 claim fallback；运行打包 CLI E2E，证明 JSON Host 协议得到完整正文，而普通文本、只读 inspection、日志和诊断不泄漏正文或取得执行能力。
@@ -47,10 +47,10 @@
 ## 6. 用消费者导向的黑盒验收闭包
 
 - [ ] 6.1 建立生产 composition 的 `CapturingWorkExecutionHost` 测试插件，只替代模型推理、不替代真实 Skill Registry、OpenSpec Provider、Store、Guard、Validator 或文件操作；架构测试证明它不进入 builtin catalog 和发布包默认组合。
-- [ ] 6.2 在临时 Git Workspace 用打包 CLI/Application 协议从零运行 fresh `Open → Design → Build → Verify → Archive`，断言每阶段完整正文、当前输入、受保护文件结果和事件顺序 `claim.persisted → context.delivered → host.invoked → protected-operation.accepted → outcome.persisted → validator.accepted → lifecycle.transitioned`。
-- [ ] 6.3 增加反作弊回归：identity-only、Host 未读正文、写入早于 delivery、无 Host、双 Host、Provider/Skill 漂移、session 过期、越仓写入、伪造 Outcome、fresh imported claim 任一出现时黑盒测试必须失败。
+- [ ] 6.2 在临时 Git Workspace 用独立进程启动打包 CLI/Application Host 协议，从不存在 change 目录的 fresh Run 执行 `Open → Design → Build → Verify → Archive`；测试不得 import `WorkflowRuns`、coordinator/reducer、直接构造 Work 或 completion observation。每个公共调用后分别断言 continuation/中间 phase、追加式 trajectory identity/顺序和实际受保护文件；尤其证明首次及重复 `run next` 在 Open Host/Validator 完成前保持同一 Work/attempt。最终事件顺序必须为 `claim.persisted → context.delivered → host.invoked → protected-operation.accepted → outcome.persisted → validator.accepted → lifecycle.transitioned`。
+- [ ] 6.3 增加反作弊与验收灵敏度回归：identity-only、Host 未读正文、写入早于 delivery、无 Host、双 Host、Provider/Skill 漂移、session 过期、越仓写入、伪造 Outcome、fresh imported claim 任一出现时黑盒测试必须失败；另用三个受控故障 fixture 分别重新引入 Open 自动 `open-intake-ready`、跳过 Host 正文消费和伪造 Validator acceptance，证明 6.2 的同一 harness 会失败，而不是只验证 happy path 最终成功。
 - [ ] 6.4 在 6.2 的每个持久边界故障注入终止进程并由新 Runner 恢复同一 Run；覆盖 waiting decision、Agent handoff、上下文压缩、Host running/unknown、Outcome 后、Validator 后和多仓路径重绑定，证明 continuation 精确且无重复副作用。
-- [ ] 6.5 执行 `npm run verify`、`npm run test:package-e2e` 和 `npm run test:tracer-e2e`，生成正式验证报告，记录 G1 bootstrap 限制、新 generation 自举证据、fresh 五阶段黑盒 Receipt、断点恢复矩阵、未实现模型厂商 Host 和所有明确排除项。
+- [ ] 6.5 执行 `npm run verify`、`npm run test:package-e2e` 和 `npm run test:tracer-e2e`，生成 `verification/complete-managed-change-execution/verification-report.md`，固定被测 Git commit、打包产物 checksum、definition/composition digest、公共命令、runId、事件/Receipt identity、两个历史 red baseline、三个受控故障 fixture 的预期失败、fresh 五阶段黑盒证据和断点恢复矩阵；报告与待发布 commit/package 不一致时 Verify 必须失败，并记录未实现模型厂商 Host 和所有明确排除项。
 - [ ] 6.6 清理临时 Workspace、捕获正文、测试状态卷、日志、进程和 scratch artifacts；复查 Git 状态、公开分支远端 OID、运行进程和 package contents，证明没有泄漏执行包正文或遗留未推送提交。
 
 ## Workflow follow-up

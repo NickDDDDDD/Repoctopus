@@ -201,6 +201,10 @@ Open 的修复采用破坏性替换，不在旧分支旁增加第二条路径：
 3. Production composition：显式注入 `CapturingWorkExecutionHost`，但使用真实 Skill Registry、OpenSpec Provider、ActionStore、RunStore、Command Router、Guard 和 Validator。
 4. 进程外黑盒：临时 Git Workspace 从不存在的 change 开始，通过打包 CLI/Application Host 协议执行 Open → Design → Build → Verify → Archive；捕获 Host 把收到的 packet 写入测试私有内存/有界 fixture，不把正文写入产品 Store。
 
+旧 `establish-change-lifecycle` 的 CLI E2E 把“第一次 `run next` 后已经处于 Design/waiting”当作正确结果，而其自举 Receipt 从 Build 尾部开始，因此同时绕过了 Open Work 和生产 Host 内容消费。这个历史缺陷必须作为本 Change 的 red baseline：测试先对当前 `repoctopus-change@1.1.0` 打包产物运行，证明第一次 `run next` 会错误地产生 phase transition；实现后相同脚本改为断言首次和重复 `run next` 都保持同一 Open Work/attempt，直到 Host Outcome 与 Validator 被 Run CAS 接受。
+
+黑盒验收不得只用最终 `ChangeRunProjection` 给自身作证。每个公共调用之后同时核对三个独立观察面：公共 continuation/中间 phase，追加式 trajectory 中的 Work/Host/Validator/transition identity 及顺序，以及临时 Workspace 中实际受保护文件结果。测试不能 import `WorkflowRuns`、coordinator、领域 reducer，也不能直接构造 Work 或 completion observation。另提供受控故障 fixture，分别重新引入 Open 自动 observation、跳过 Host 正文消费和伪造 Validator acceptance；主黑盒 harness 对每个 fixture 都必须失败，证明验收能捕获实现退化，而不只是证明 happy path 能结束。
+
 关键事件序列必须可断言：
 
 ```text
@@ -216,6 +220,8 @@ claim.persisted
 负向测试覆盖 identity-only packet、正文未读取、首次写入早于 delivery、无 Host、双 Host、Skill 漂移、Provider 指令漂移、session 过期、越仓写入、伪造 Outcome 和 fresh imported claim。
 
 故障注入必须在 `claim.persisted`、`context.delivered`、`host.invoked`、`outcome.persisted`、`validator.accepted` 和 `lifecycle.transitioned` 之后分别终止进程，并由新进程/Runner 恢复同一 Run。验收按 checkpoint 返回的 `execute|ask|wait|reconcile|done` 继续，断言 Agent、外部平台操作、Evidence 和 phase transition 都没有重复或遗漏。
+
+正式验证报告位于 `verification/complete-managed-change-execution/verification-report.md`，它是 Evidence 引用的报告而不是第五类 OpenSpec 规划工件。报告必须固定被测 Git commit、打包产物 checksum、definition/composition digest、公共命令、runId、各事件/Receipt identity、历史 red baseline、三个故障 fixture 的预期失败和进程恢复矩阵；若报告对应的 commit 或 package checksum 与待发布提交不一致，Verify 不得宣称通过。
 
 ## Risks / Trade-offs
 

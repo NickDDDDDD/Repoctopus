@@ -31,6 +31,25 @@
 - **WHEN** 架构检查发现某个 Work kind 没有生产创建路径、Host/Contributor 或 Validator
 - **THEN** builtin composition 验证失败并定位缺少的链路，测试 fixture 不能代替生产可达性
 
+### Requirement: 生命周期验收必须捕获历史自动推进缺陷
+
+Repoctopus MUST 将当前 `repoctopus-change@1.1.0` 第一次 `run next` 合成 `open-intake-ready` 并越过 Open 的行为保存为修复前必败回归；修复后的生产黑盒验收 MUST 对公共 continuation、中间 phase、追加式 trajectory 和实际受保护文件进行交叉核对，并证明重新引入自动 observation 时验收失败。仅证明最终 Run 到达目标 phase、只读取统一 projection 或从已进入 Build 的自举 Run 开始，不得作为五阶段执行正确性的证据。
+
+#### Scenario: 在旧打包实现上建立 red baseline
+
+- **WHEN** 历史回归从不存在 change 目录的 fresh Run 调用当前 `repoctopus-change@1.1.0` 的首次 `run next`
+- **THEN** 测试捕获其错误的 Open → Design transition 并保持失败，直到生产实现删除自动 `open-intake-ready` 路径
+
+#### Scenario: 重新引入 Open 自动推进
+
+- **WHEN** 受控故障 fixture 在修复后的生产路径重新引入 `run next` 自动提交 Open 完成事实
+- **THEN** 同一进程外黑盒 harness 必须因缺少 Host invocation、Validator identity 或错误的中间 phase 而失败，即使最终 projection 与文件看似正确
+
+#### Scenario: 自举只从 Build 尾部开始
+
+- **WHEN** 验证只提供 Build/Verify/Archive Receipt，未从 fresh Open 观察每个阶段的执行边界
+- **THEN** 验证报告必须标记覆盖不完整，且不得宣称五阶段端到端通过
+
 ### Requirement: 预发布旧执行协议不得形成兼容债务
 
 Repoctopus MUST 破坏性替换尚未正式发布的 Open 自动推进、不可达 Work 和旧 claim/attempt 协议，删除其生产分支与兼容 fixture；旧开发 Run MAY 保留只读审计和新 generation 迁移诊断，但不得通过双读、双写、fallback Adapter 或原 generation 重解释继续执行。
