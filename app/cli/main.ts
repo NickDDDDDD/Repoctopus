@@ -111,6 +111,7 @@ const CLI_FLAGS = new Set([
   'workflow',
   'run',
   'attempt',
+  'work-attempt',
   'policy',
   'intent',
   'report',
@@ -148,7 +149,7 @@ const REQUIRED_FLAGS = new Map<string, readonly string[]>([
   ['run status', ['run']],
   ['run next', ['run']],
   ['run verify', ['run']],
-  ['run archive-prepare', ['run', 'attempt', 'intent']],
+  ['run archive-prepare', ['run', 'intent']],
   ['run archive-publish', ['run']],
   ['delivery status', ['change']],
 ]);
@@ -172,13 +173,14 @@ function defaultWorkflowPath(): string {
 function nextActions(status: RunStatusView): string[] {
   const lifecycle = status.changeLifecycle;
   if (lifecycle) {
+    if (['completed', 'failed', 'migration_required'].includes(lifecycle.status)) return [];
     const work = lifecycle.currentWork?.kind;
     if (lifecycle.phase === 'design' && lifecycle.status === 'waiting') {
       return ['repoctopus run decide --run <run-id>'];
     }
     if (work === 'evidence.verify') return ['repoctopus run verify --run <run-id>'];
     if (work === 'specification.close' || work === 'delivery.publish') {
-      return ['repoctopus run archive-publish --run <run-id>'];
+      return ['repoctopus run archive-publish --run <run-id> --work-attempt <integer>'];
     }
     return lifecycle.nextActions.length > 0 ? ['repoctopus run next --run <run-id>'] : [];
   }
@@ -1057,9 +1059,14 @@ async function archiveRuntimeInputs(parsed: ParsedArguments) {
 }
 
 async function runArchivePrepare(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  if (parsed.flags.has('attempt')) {
+    throw new Error(
+      'run archive-prepare no longer accepts ambiguous --attempt; use --evidence-attempt <attempt-id>',
+    );
+  }
+  const attemptId = stringFlag(parsed, 'evidence-attempt', { required: true })!;
   const { workspace, intent, policy } = await deliveryInputs(parsed);
   const runId = stringFlag(parsed, 'run', { required: true })!;
-  const attemptId = stringFlag(parsed, 'attempt', { required: true })!;
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
     const result = await app.context.commandRouter.execute('run.archive.prepare', {
@@ -1075,9 +1082,14 @@ async function runArchivePrepare(parsed: ParsedArguments): Promise<CliEnvelope<u
 }
 
 async function runArchivePublish(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  if (parsed.flags.has('attempt')) {
+    throw new Error(
+      'run archive-publish no longer accepts ambiguous --attempt; use --work-attempt <integer>',
+    );
+  }
+  const attempt = integerFlag(parsed, 'work-attempt', { fallback: 1, minimum: 1 })!;
   const { workspace, config, policy } = await archiveRuntimeInputs(parsed);
   const runId = stringFlag(parsed, 'run', { required: true })!;
-  const attempt = integerFlag(parsed, 'attempt', { fallback: 1, minimum: 1 })!;
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
     const project = await deliveryProject(app, { workspace, config });

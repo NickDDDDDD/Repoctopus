@@ -1,3 +1,6 @@
+import { createHash } from 'node:crypto';
+
+import { canonicalJson } from '../workflow-contract/canonical.js';
 import {
   EVIDENCE_API_VERSION,
   type ArtifactRef,
@@ -66,8 +69,46 @@ export function parseEvidenceBundle(value: unknown): EvidenceBundle {
   if (item.kind !== 'EvidenceBundle' || typeof item.bundleId !== 'string') {
     throw new Error('Invalid EvidenceBundle');
   }
-  if (!Array.isArray(item.checks) || !Array.isArray(item.receiptIds)) {
+  if (item.schemaVersion !== 2 || !('acceptanceTrace' in item)) {
+    throw new Error('Unsupported EvidenceBundle schemaVersion');
+  }
+  if (
+    !Array.isArray(item.checks) ||
+    !Array.isArray(item.receiptIds) ||
+    item.receiptIds.some((receiptId) => typeof receiptId !== 'string')
+  ) {
     throw new Error('Invalid EvidenceBundle collections');
+  }
+  const receiptIds = item.receiptIds as string[];
+  if (item.acceptanceTrace !== null) {
+    const trace = record(item.acceptanceTrace, 'EvidenceBundle.acceptanceTrace');
+    if (
+      trace.schemaVersion !== 1 ||
+      !Array.isArray(trace.entries) ||
+      typeof trace.digest !== 'string'
+    ) {
+      throw new Error('Invalid EvidenceBundle Acceptance Trace');
+    }
+    const entries = trace.entries.map((entry, index) =>
+      record(entry, `EvidenceBundle.acceptanceTrace.entries[${index}]`),
+    );
+    const acceptanceIds = entries.map((entry) => entry.acceptanceId);
+    if (
+      acceptanceIds.some((id) => typeof id !== 'string') ||
+      new Set(acceptanceIds).size !== acceptanceIds.length ||
+      entries.some(
+        (entry) =>
+          !Array.isArray(entry.receiptIds) ||
+          (entry.receiptIds as unknown[]).some(
+            (receiptId) => typeof receiptId !== 'string' || !receiptIds.includes(receiptId),
+          ),
+      )
+    ) {
+      throw new Error('EvidenceBundle Acceptance Trace has invalid identity references');
+    }
+    const { digest, ...base } = trace;
+    const expected = `sha256:${createHash('sha256').update(canonicalJson(base)).digest('hex')}`;
+    if (digest !== expected) throw new Error('EvidenceBundle Acceptance Trace digest mismatch');
   }
   if (item.verificationReport !== undefined) parseArtifactRef(item.verificationReport);
   return structuredClone(item) as unknown as EvidenceBundle;

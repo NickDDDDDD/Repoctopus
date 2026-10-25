@@ -50,7 +50,11 @@ async function writeChange(
     `openspec/changes/${changeId}/design.md`,
     '# Design\n\n## Context\n\nTest the Design gate.\n\n## Goals / Non-Goals\n\n**Goals:**\n- Prove the gate.\n\n**Non-Goals:**\n- Production behavior.\n\n## Decisions\n\nUse the Provider result.\n',
   );
-  await write(root, `openspec/changes/${changeId}/tasks.md`, '# Tasks\n\n- [ ] 1.1 Build it.\n');
+  await write(
+    root,
+    `openspec/changes/${changeId}/tasks.md`,
+    '# Tasks\n\n- [ ] 1.1 Build it.\n  **Acceptance:** The implementation passes its required check\n  **Requirements:** demo#existing-behavior\n',
+  );
   await write(
     root,
     `openspec/changes/${changeId}/specs/demo/spec.md`,
@@ -126,6 +130,7 @@ describe('Change Run Design gate CLI', () => {
                 id: 'check',
                 type: 'command',
                 repository: 'workspace',
+                covers: ['*'],
                 executable: process.execPath,
                 args: ['-e', 'process.exit(0)'],
               },
@@ -508,11 +513,7 @@ describe('Change Run Design gate CLI', () => {
           },
         ],
         evidenceProfile: { id: 'verify' },
-        skills: [
-          { name: 'code-review' },
-          { name: 'codebase-design' },
-          { name: 'tdd' },
-        ],
+        skills: [{ name: 'code-review' }, { name: 'codebase-design' }, { name: 'tdd' }],
       },
     });
     const frozenVerification = verificationReady.result?.changeLifecycle?.verificationInput;
@@ -646,13 +647,20 @@ describe('Change Run Design gate CLI', () => {
       expect(verified.result!.run.state.acceptedEvidenceBundleIds).toEqual([
         verified.result!.bundleId,
       ]);
-      const evidence = await gateApp.context.evidenceCoordinator.status(
-        verified.result!.attemptId,
-      );
+      const evidence = await gateApp.context.evidenceCoordinator.status(verified.result!.attemptId);
       expect(evidence).toMatchObject({
-        context: { status: 'completed', workflowBinding: { workflowRunId: verifySuccessRun.runId } },
-        bundle: { bundleId: verified.result!.bundleId },
-        gate: { status: 'satisfied' },
+        context: {
+          status: 'completed',
+          workflowBinding: { workflowRunId: verifySuccessRun.runId },
+        },
+        bundle: {
+          bundleId: verified.result!.bundleId,
+          acceptanceTrace: { total: 1, passed: 1, failed: 0, missing: 0 },
+        },
+        gate: {
+          status: 'satisfied',
+          verificationInputDigest: verified.result!.run.changeLifecycle?.verificationInput?.digest,
+        },
       });
     } finally {
       await gateApp.close();

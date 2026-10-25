@@ -8,6 +8,7 @@ Evidence 是 Repoctopus 对“实现已经获得正确反馈”的可审计证�
 - **Receipt**：一个节点的一次 Adapter 结果，绑定输入指纹、可信等级、新鲜度、Artifact 与 finding。
 - **Artifact**：按 SHA-256 内容寻址的输出引用。相同内容只保存一次。
 - **Bundle**：一个 Attempt 的有序检查集合，结果为 `passed`、`failed`、`incomplete` 或 `passed_with_warnings`。
+- **Acceptance Trace**：把当前 Change 的每条验收身份绑定到 Profile 中明确声明的 required 节点及其实际 Receipt；它不是第二套任务账本。
 - **Gate Projection**：Runtime 提供给 Engine 的最小门禁事实，不包含日志或文件正文。
 
 ## 可信等级与新鲜度
@@ -25,6 +26,19 @@ zeroTests: warning # ignore | warning | blocking
 Repoctopus 识别 npm 测试生态、Maven Surefire 和 Gradle 的常见结构化摘要。退出码为零但执行数为零时生成 `no-tests-detected`；`warning` 产生 `passed_with_warnings`，`blocking` 产生 `incomplete`。没有可识别摘要时不会猜测测试数。
 
 ## 统一反馈 DAG
+
+用于 Change Verify 的节点必须用 `covers` 显式声明语义覆盖：
+
+```yaml
+- id: runtime-e2e
+  type: command
+  repository: workspace
+  covers: ['task:2.1', 'requirement:dashboard#live-state']
+  executable: npm
+  args: [run, test:e2e]
+```
+
+selector 可以是精确 `acceptance-<sha256>`、`task:<taskId>`、`requirement:<ref>` 或显式共享策略 `*`。Runtime 在启动任何命令前，把 selector 解析进不可变 Verification Input；未知、未覆盖或只由 optional 节点覆盖的 Acceptance 会直接阻断。一个 Acceptance 若绑定多个 required 节点，所有节点都必须产生当前输入下 `verified`、`fresh | reused` 且 `passed` 的 Receipt，Trace 才会标记为 passed。
 
 Profile 可以组合四类节点：
 
@@ -60,5 +74,7 @@ node bin/repoctopus.js evidence clean --workspace . --max-age-days 30 --max-byte
 ```
 
 若 Evidence 用于推进现有工作流 Run，`evidence run` 必须增加 `--workflow-run <run-id>`。该 Run 必须正等待一个声明相同 Profile 的动作；Attempt 会绑定当前 Action、Step 和 `stateVersion`。状态代次变化后，即使项目文件未变化，旧 Attempt 也不能推进工作流。
+
+Change Verify 还会把 Acceptance Set hash、Verification Input digest 和解析后的 coverage plan 写入 Evidence Run Context。独立执行同一 Profile 可以产生普通 Bundle，但 `acceptanceTrace` 为 `null`，不能拿来推进 Change 的 Verify→Archive 转换。checkbox 全部勾选也只表示 implementation completion claim，不会伪造 Trace。
 
 `clean` 使用标记清扫：运行中 Attempt、Runtime Checkpoint 已接受 Bundle、Delivery 批准 Bundle、失败 Bundle 和配置要求保留的每个 Run/Profile 近期成功 Bundle 构成保护根。它不会根据单个文件年龄删除仍被这些事实引用的 Artifact；任何 Run 存在待恢复转换时，本次清理整体延后。

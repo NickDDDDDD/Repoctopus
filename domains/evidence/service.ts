@@ -19,6 +19,7 @@ import {
 } from '../feedback/visual.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import { createEvidenceBundle } from './gate.js';
+import { createAcceptanceTrace } from './acceptance-trace.js';
 import { canReuseReceipt, reuseReceipt } from './lifecycle.js';
 import { redactEvidenceText } from './redaction.js';
 import { parseTestExecution } from './test-output.js';
@@ -26,6 +27,7 @@ import {
   EVIDENCE_API_VERSION,
   type ArtifactRef,
   type EvidenceAttempt,
+  type EvidenceAcceptanceContext,
   type EvidenceBundle,
   type EvidenceCheck,
   type EvidenceFinding,
@@ -52,6 +54,7 @@ export interface EvidenceRunOptions {
   redactionPatterns?: readonly RegExp[];
   afterNodeCommitted?: (receipt: EvidenceReceipt) => void | Promise<void>;
   maxParallel?: number;
+  acceptanceContext?: EvidenceAcceptanceContext;
 }
 
 export interface EvidenceClock {
@@ -756,6 +759,14 @@ export class EvidenceService {
       receiptIds: receipts.map((receipt) => receipt.receiptId),
       artifactDigests: evidenceArtifactDigests,
       findings,
+      acceptanceTrace: options.acceptanceContext
+        ? createAcceptanceTrace({
+            context: options.acceptanceContext,
+            checks: orderedChecks,
+            receipts,
+            inputFingerprint,
+          })
+        : null,
     };
     const preliminary = createEvidenceBundle({ bundleId: digest(bundleBase), ...bundleBase });
     const verificationReport = createVerificationReport({

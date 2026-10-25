@@ -6,7 +6,12 @@ import { parse } from 'yaml';
 import { parseSharedProjectConfig } from '../domains/project-configuration/config.js';
 
 async function fixture(): Promise<Record<string, unknown>> {
-  return parse(await readFile(path.join(import.meta.dirname, 'fixtures', 'project-config', 'self-hosted-valid.yaml'), 'utf8')) as Record<string, unknown>;
+  return parse(
+    await readFile(
+      path.join(import.meta.dirname, 'fixtures', 'project-config', 'self-hosted-valid.yaml'),
+      'utf8',
+    ),
+  ) as Record<string, unknown>;
 }
 
 describe('project configuration', () => {
@@ -18,16 +23,33 @@ describe('project configuration', () => {
     });
   });
 
-  it.each(['platformEvents', 'postMerge'])('rejects removed %s configuration with a migration diagnostic', async (field) => {
-    const input = await fixture();
-    input[field] = {};
-    expect(() => parseSharedProjectConfig(input)).toThrow(new RegExp(`${field}.*removed`, 'i'));
-  });
+  it.each(['platformEvents', 'postMerge'])(
+    'rejects removed %s configuration with a migration diagnostic',
+    async (field) => {
+      const input = await fixture();
+      input[field] = {};
+      expect(() => parseSharedProjectConfig(input)).toThrow(new RegExp(`${field}.*removed`, 'i'));
+    },
+  );
 
   it('rejects raw Delivery credentials', async () => {
     const input = await fixture();
     const publication = (input.delivery as { publication: Record<string, unknown> }).publication;
     publication.apiCredential = 'secret';
     expect(() => parseSharedProjectConfig(input)).toThrow(/publication\.apiCredential/i);
+  });
+
+  it('parses strict Acceptance coverage selectors and includes them in configuration', async () => {
+    const input = await fixture();
+    const node = (input.profiles as Array<{ nodes: Array<Record<string, unknown>> }>)[0]!.nodes[0]!;
+    node.covers = ['*', 'task:1.2', 'requirement:evidence#trace'];
+    expect(parseSharedProjectConfig(input).profiles[0]?.nodes[0]?.covers).toEqual(node.covers);
+
+    for (const invalid of [[''], ['task:abc'], ['*', '*']]) {
+      node.covers = invalid;
+      expect(() => parseSharedProjectConfig(input)).toThrow(
+        /covers.*(?:non-empty|invalid|duplicate)/iu,
+      );
+    }
   });
 });

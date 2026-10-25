@@ -103,6 +103,10 @@ function fixture(provenance: PublicationReceiptItem['provenance']) {
           status: 'closed',
           archiveId: '2026-10-24-single-tracer',
           changedFiles: ['openspec/changes/archive/2026-10-24-single-tracer/proposal.md'],
+          candidate: {
+            checkoutId: 'closure-single-tracer',
+            baseOid: archive.changeBranch.remoteOid,
+          },
         });
       },
     ),
@@ -157,9 +161,12 @@ describe('single-repository Archive production tracer', () => {
         phase: 'archive' as const,
         status: 'running' as const,
         verificationInput: {
-          schemaVersion: 1 as const,
+          schemaVersion: 2 as const,
           runId: 'run-tracer',
           taskRevisions: [],
+          acceptanceCriteria: [],
+          acceptanceSetHash: digest('a'),
+          acceptanceCoverage: [],
           repositories: [],
           projectConfigDigest: digest('3'),
           compositionDigest: digest('4'),

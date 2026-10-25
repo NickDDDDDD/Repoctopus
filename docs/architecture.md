@@ -59,7 +59,10 @@ CLI → App Boot → CommandRouter → 对应 Contributor → ProjectOnboarding 
                    detect → 显式 scan root → Git Project Provider
 
 run archive-prepare / archive-publish
-CLI → App Boot → WorkflowRuns → Specification close → Delivery publication → Publication Receipt
+CLI → App Boot → WorkflowRuns → isolated Specification close
+                                → Business Publication Journal
+                                → Specification prepared/committed/pushed/completed Journal
+                                → complete Publication Receipt
 
 change reconcile / run start preflight
 CLI → short-lived Project composition → completed Publication Receipts → authoritative platform facts

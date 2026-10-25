@@ -247,8 +247,8 @@ describe('Repoctopus runtime', () => {
       compatibleSnapshot,
     );
     expect(
-      (await compatible.status('run-lifecycle-contributor-drift'))
-        .lifecycleContributorCompatibility?.status,
+      (await compatible.status('run-lifecycle-contributor-drift')).lifecycleContributorCompatibility
+        ?.status,
     ).toBe('compatible');
     await compatible.next('run-lifecycle-contributor-drift');
     expect(
@@ -524,6 +524,8 @@ describe('Repoctopus runtime', () => {
           profileId: input.profileId,
           bundleId: 'bundle-verified',
           inputFingerprint: 'fingerprint-current',
+          verificationInputDigest: null,
+          acceptanceSetHash: null,
           outcome: 'passed',
           status: 'satisfied',
           reason: 'current Runtime evidence passed',
@@ -590,6 +592,8 @@ describe('Repoctopus runtime', () => {
           profileId: input.profileId,
           bundleId: 'bundle-stale',
           inputFingerprint: 'fingerprint-stale',
+          verificationInputDigest: null,
+          acceptanceSetHash: null,
           outcome: 'incomplete',
           status: 'blocked',
           reason: 'inputs changed after verification',

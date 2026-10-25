@@ -22,11 +22,11 @@ GitHub Credential 使用 `delivery.publication.apiCredential` 引用环境变量
 `archive-prepare` 只接受已经通过 Design、Build 与 Verify 的 Change Run。验证报告必须被 Intent 选中的业务仓跟踪，相关工作树必须干净：
 
 ```powershell
-node bin/repoctopus.js run archive-prepare --workspace . --run <run-id> --attempt <attempt-id> --intent <intent.yaml> --json
+node bin/repoctopus.js run archive-prepare --workspace . --run <run-id> --evidence-attempt <attempt-id> --intent <intent.yaml> --json
 node bin/repoctopus.js approval review --workspace . --change <change-id>
 ```
 
-Archive 关闭规格后可能在同一个 source-branch worktree 中出现尚未提交的规格关闭 diff。该 diff 不属于 Business MR：Runtime 只在 repository 与 source branch 同时匹配时采用 Closure Receipt 的 `changedFiles` 作为一次性清洁范围，并要求 staged、unstaged、untracked 的实际路径集合与其完全相等。任何额外修改、缺失关闭文件或越界路径仍会阻断发布；普通 Delivery 不接受此例外。
+`--evidence-attempt` 明确引用 Verify 的 Evidence Attempt。规格关闭在由 Closure Receipt 绑定的隔离 checkout 中执行；不会把归档 diff 复制回 Business source branch，也不会为业务发布放宽 clean worktree 条件。
 
 准备快照绑定 Change 分支、完整业务交付集合、每仓 HEAD tree 与目标基线、验证报告、策略、动作计划、composition digest 和 Evidence Bundle。任一代码树、报告、策略、分支、仓库选择或目标基线变化都会使批准失效。
 
@@ -37,15 +37,15 @@ Archive 关闭规格后可能在同一个 source-branch worktree 中出现尚未
 批准后执行：
 
 ```powershell
-node bin/repoctopus.js run archive-publish --workspace . --run <run-id> --json
+node bin/repoctopus.js run archive-publish --workspace . --run <run-id> --work-attempt 1 --json
 ```
 
 协议按固定顺序执行：
 
 1. 重新核对 frozen Delivery plan、Evidence 和远端基线。
-2. 通过 Specification Provider 关闭 OpenSpec change，同步主规格并归档四类规划产物。
+2. 通过 Specification Provider 在隔离 checkout 关闭 OpenSpec change，同步主规格并归档四类规划产物。
 3. 对每个 Business Delivery 普通 push 精确 source OID，并创建或恢复同 head/base 的 MR。
-4. 发布关闭后的 Change 分支，并创建或恢复唯一最终 Change MR。
+4. 在隔离 checkout 形成唯一规格归档 commit，发布专用 archive branch，并创建或恢复唯一最终 Change MR。
 5. 逐项核对 repository、remote、base branch、head branch、published OID 和 MR identity。
 6. 形成包含全部业务项、最终规格项与 Specification Closure 的 `PublicationReceipt`。
 7. 同一 Change Run 接受 Receipt 后进入 `completed`。
@@ -54,14 +54,14 @@ Archive 不等待 Business MR 或最终 Change MR 合入，也不执行 merge。
 
 ## 多仓原子性与重试
 
-多仓远端没有跨仓事务。Publication Journal 在每个远端动作前保存 Intent，动作后保存 Receipt。命令中断或响应丢失时，对同一 Run 重试 `archive-publish`：
+多仓远端没有跨仓事务。Business Publication Journal 保存每个远端动作；Specification Publication Journal 以 `prepared → committed → pushed → completed` 保存隔离候选、commit OID、远端 branch 和 MR。命令中断或响应丢失时，对同一 Run 和递增的 `--work-attempt` 重试 `archive-publish`：
 
-- 已完成项先查询远端，等价则复用；
+- 已完成项先查询远端，等价则复用，并稳定返回原 Publication item；
 - 未完成项从第一个 pending intent 继续；
 - head/base/OID 或 MR identity 漂移时 fail closed；
 - 不自动删除分支、关闭 MR、force-push、rebase 或回滚其他仓。
 
-临时 checkout 只服务当前命令，并在 `finally` 中有界清理；失败会留下明确诊断，而不是建立通用 daemon GC。
+隔离 checkout 是非终态恢复资产：commit、push 或 MR 响应窗口失败时保留，只有 Journal 到达 `completed` 且远端事实复核通过后才清理。终态重放不依赖 checkout，也不建立通用 daemon GC。
 
 ## 最终一致性检查
 

@@ -71,6 +71,7 @@ const result: SpecificationClosureResult = {
     'openspec/changes/candidate/proposal.md',
     'openspec/specs/archive/spec.md',
   ],
+  candidate: { checkoutId: 'checkout-candidate', baseOid: 'b'.repeat(40) },
 };
 const candidate: SpecificationClosureCandidateObservation = {
   changeId: plan.changeId,

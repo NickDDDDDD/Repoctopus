@@ -39,13 +39,23 @@ export interface SpecificationTask {
   title: string;
   level: number;
   status: 'pending' | 'completed';
+  completion: { source: 'imported-claim' } | { source: 'runtime-work'; workId: string } | null;
   blockedBy: string[];
-  acceptanceCriteria: string[];
+  acceptanceCriteria: SpecificationAcceptanceCriterion[];
   requirementRefs: string[];
 }
 
+export interface SpecificationAcceptanceCriterion {
+  acceptanceId: `acceptance-${string}`;
+  taskId: string;
+  taskRevision: `sha256:${string}`;
+  text: string;
+  requirementRefs: string[];
+  source: string;
+}
+
 export interface SpecificationTaskSet {
-  schemaVersion: 1;
+  schemaVersion: 2;
   changeId: string;
   tasks: SpecificationTask[];
   digest: `sha256:${string}`;
@@ -55,6 +65,7 @@ export interface CompleteSpecificationTaskInput {
   changeId: string;
   taskId: string;
   taskRevision: `sha256:${string}`;
+  workId?: string;
   signal?: AbortSignal;
 }
 
@@ -318,6 +329,10 @@ export interface SpecificationClosureResult {
   status: 'closed';
   archiveId: string;
   changedFiles: string[];
+  candidate: {
+    checkoutId: string;
+    baseOid: string;
+  };
 }
 
 export interface SpecificationFollowUpChangeInput {

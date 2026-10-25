@@ -41,7 +41,7 @@ function config(
 function command(
   id: string,
   script: string,
-  options: { dependsOn?: string[]; required?: boolean } = {},
+  options: { dependsOn?: string[]; required?: boolean; covers?: string[] } = {},
 ): Extract<
   EffectiveProjectConfig['shared']['profiles'][number]['nodes'][number],
   { type: 'command' }
@@ -52,6 +52,7 @@ function command(
     repository: 'workspace',
     dependsOn: options.dependsOn ?? [],
     required: options.required ?? true,
+    covers: options.covers ?? [],
     executable: process.execPath,
     args: ['-e', script],
     timeoutMs: 5000,
@@ -60,6 +61,46 @@ function command(
 }
 
 describe('evidence command vertical slice', () => {
+  it('persists a Receipt-backed Acceptance Trace in the Bundle and report', async () => {
+    const workspace = await temporaryDirectory('repoctopus-evidence-acceptance-');
+    cleanup.push(workspace);
+    const plan = compileEvidenceProfile(
+      config(workspace, [command('verify', 'process.exit(0)', { covers: ['*'] })]),
+      'verify',
+    );
+    const artifacts = new FileArtifactStore(workspace);
+    const acceptanceId = `acceptance-${'a'.repeat(64)}` as const;
+    const result = await new EvidenceService(
+      artifacts,
+      new FileEvidenceStore(workspace),
+      new LocalCommandAdapter(),
+    ).run(plan, 'fingerprint-acceptance', {
+      compositionDigest: TEST_COMPOSITION_DIGEST,
+      acceptanceContext: {
+        verificationInputDigest: `sha256:${'1'.repeat(64)}`,
+        acceptanceSetHash: `sha256:${'2'.repeat(64)}`,
+        acceptanceIds: [acceptanceId],
+        acceptanceCoverage: [{ acceptanceId, nodeIds: ['verify'] }],
+      },
+    });
+
+    expect(result.bundle).toMatchObject({
+      schemaVersion: 2,
+      outcome: 'passed',
+      acceptanceTrace: {
+        total: 1,
+        passed: 1,
+        entries: [{ acceptanceId, status: 'passed' }],
+      },
+    });
+    const report = JSON.parse(
+      Buffer.from(await artifacts.read(result.bundle.verificationReport!)).toString('utf8'),
+    ) as Record<string, unknown>;
+    expect(report).toMatchObject({
+      acceptanceTrace: { acceptanceSetHash: `sha256:${'2'.repeat(64)}` },
+    });
+  });
+
   it('persists receipts and artifacts while blocking only dependent nodes', async () => {
     const workspace = await temporaryDirectory('repoctopus-evidence-');
     cleanup.push(workspace);
@@ -147,9 +188,7 @@ describe('evidence command vertical slice', () => {
     const store = new FileEvidenceStore(workspace);
     const service = new EvidenceService(artifacts, store, new LocalCommandAdapter());
     const timedOutPlan = compileEvidenceProfile(
-      config(workspace, [
-        { ...command('check', 'setInterval(() => {}, 1000)'), timeoutMs: 20 },
-      ]),
+      config(workspace, [{ ...command('check', 'setInterval(() => {}, 1000)'), timeoutMs: 20 }]),
       'verify',
     );
     const timedOut = await service.run(timedOutPlan, 'fingerprint-timeout', {

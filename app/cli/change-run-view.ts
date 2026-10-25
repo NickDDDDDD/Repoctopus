@@ -24,7 +24,9 @@ export function renderChangeProjection(projection: ChangeRunProjection): string[
   if (currentTask) {
     lines.push(`Build scope: ${currentTask.title}`);
     if (currentTask.acceptanceCriteria.length > 0) {
-      lines.push(`Acceptance: ${currentTask.acceptanceCriteria.join('; ')}`);
+      lines.push(
+        `Acceptance: ${currentTask.acceptanceCriteria.map((criterion) => criterion.text).join('; ')}`,
+      );
     }
     if (currentTask.requirementRefs.length > 0) {
       lines.push(`Requirement mappings: ${currentTask.requirementRefs.join(', ')}`);

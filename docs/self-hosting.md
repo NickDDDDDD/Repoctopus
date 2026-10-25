@@ -63,11 +63,11 @@ node bin/repoctopus.js run status --workspace . --run <run-id> --json
 Archive 使用两个公共入口：
 
 ```powershell
-node bin/repoctopus.js run archive-prepare --workspace . --run <run-id> --attempt <attempt-id> --intent <intent.yaml> --json
-node bin/repoctopus.js run archive-publish --workspace . --run <run-id> --json
+node bin/repoctopus.js run archive-prepare --workspace . --run <run-id> --evidence-attempt <attempt-id> --intent <intent.yaml> --json
+node bin/repoctopus.js run archive-publish --workspace . --run <run-id> --work-attempt 1 --json
 ```
 
-`archive-prepare` 冻结已经验证的代码、报告、Delivery Intent、远端基线与人工授权请求。批准后，`archive-publish` 依次关闭规格、发布业务分支/MR 和最终规格分支/MR，并在接受完整 Publication Receipt 后完成 Run。响应丢失时重跑同一命令；Publication Journal 会观察远端结果并复用已经完成的项，不重复创建 MR。
+`archive-prepare` 冻结已经验证的代码、报告、Delivery Intent、远端基线与人工授权请求。批准后，`archive-publish` 在隔离 checkout 关闭规格，依次发布业务分支/MR 和专用规格 archive branch/MR，并在接受完整 Publication Receipt 后完成 Run。响应丢失时递增 `--work-attempt` 重跑；Publication Journal 会观察 commit、远端 branch 与 MR，复用已经完成的项，不推进或污染当前开发分支。
 
 后续远端变化使用短生命周期命令：
 

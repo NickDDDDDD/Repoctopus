@@ -50,10 +50,12 @@ Provider 契约见 [Specification Provider](docs/specification.md)，Skill 组�
 实现和 Verify 完成后，Archive 先冻结经过人工批准的 Delivery Intent，再关闭规格并发布全部 Business MR 与最终 Change MR：
 
 ```powershell
-node bin/repoctopus.js run archive-prepare --workspace . --run <run-id> --attempt <attempt-id> --intent docs/examples/delivery-intent.yaml --json
+node bin/repoctopus.js run archive-prepare --workspace . --run <run-id> --evidence-attempt <attempt-id> --intent docs/examples/delivery-intent.yaml --json
 node bin/repoctopus.js approval review --workspace . --change <change-id>
-node bin/repoctopus.js run archive-publish --workspace . --run <run-id> --json
+node bin/repoctopus.js run archive-publish --workspace . --run <run-id> --work-attempt 1 --json
 ```
+
+`archive-prepare` 的 `--evidence-attempt` 是 Verify 产生的证据运行身份；`archive-publish` 的 `--work-attempt` 是 Archive Work 的认领次数，两者不再共用含义模糊的 `--attempt`。发布时，规格关闭只写入隔离 checkout；可恢复 Journal 再提交、push 并创建最终规格 MR，开发分支的 HEAD 与工作树不会被规格归档提交推进。
 
 `archive-publish` 核对每个远端分支及 MR 的 repository、base、head 和 head OID，形成完整 `PublicationReceipt` 后完成原 Change Run。Repoctopus 不等待也不自动合入 MR；代码审查、流水线或人工修改造成的后续远端变化由下一次任务启动或显式短命令拉取：
 
