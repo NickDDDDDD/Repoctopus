@@ -1062,7 +1062,10 @@ export function evolveChangeLifecycle(options: {
     current,
     transitionId: 'design.invalid',
     next: {
-      currentWork: null,
+      // A blocked Design gate has not accepted the Validator boundary. Keep the
+      // Runtime-selected Work attached so a later pull retries validation from
+      // the persisted Outcome instead of orphaning its authoritative claim.
+      currentWork: current.currentWork,
       waitCondition: null,
       blocker,
       planningDigest: null,

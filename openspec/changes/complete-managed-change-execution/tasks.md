@@ -25,8 +25,8 @@
       **Acceptance:** 故障注入覆盖全部 Host 中断窗口，未知副作用不会被自动重发或推断为成功
 - [x] 2.6 把 `workExecution` 纳入唯一 Change Run aggregate/checkpoint，由现有 Run CAS 与 transition journal 原子持久化 Work attempt、claim/packet/Host/Outcome/Receipt identity 和 continuation；将 ActionStore 降级为先写的不可变内容库。测试覆盖内容写入后 CAS 前崩溃、CAS 后响应丢失、孤立内容、被引用内容缺失/损坏和并发 claim，证明不会产生第二套权威且恢复能收敛或 fail closed。
       **Acceptance:** 原子性与恢复测试证明 Run aggregate 是唯一推进权威，所有中断、损坏与并发窗口收敛或 fail closed
-- [x] 2.7 实现 `execute|ask|wait|reconcile|done` 恢复分类：未 invoke 的原 attempt 可重新交付、活跃 Host 必须等待、未知副作用必须核对、已持久 Outcome 从 Validator 继续、已接受 Validator 幂等完成 transition、Human Decision 保留原 proposal hash。
-      **Acceptance:** 恢复矩阵为各持久边界返回唯一合法 continuation，并保持 attempt、Validator 与 Human Decision identity
+- [x] 2.7 实现 `execute|ask|wait|reconcile|done` 恢复分类：未 invoke 的原 attempt 可重新交付、活跃 Host 必须等待、未知副作用必须核对、已持久 Outcome 从 Validator 继续、已接受 Validator 幂等完成 transition、Human Decision 保留原 proposal hash；Design Validator 的外部依赖暂时失败时保持原 `currentWork`，只从原 Outcome 重试验证。
+      **Acceptance:** 恢复矩阵为各持久边界返回唯一合法 continuation，并保持 attempt、Validator 与 Human Decision identity；production composition 证明 Design blocked→retry 不会清除原 Work、重复调用 Host 或让 lifecycle 越过未接受的 Validator
 - [x] 2.8 实现可选 Agent coordination checkpoint，用于上下文压缩、Agent handoff 和子任务进度；验证它不进入 OpenSpec 四类工件、不授权写入、不形成 completion claim，缺失或 stale 时只触发实际工作核对。
       **Acceptance:** coordination checkpoint 缺失、过期或存在时均不改变规格权威、写入授权或 completion claim
 - [x] 2.9 将多仓 Project Snapshot reconciliation 接入 Work resume：按 repository identity 重新解析本机路径和 scope，核对 commit/dirty state/definition/composition/Skill/Provider/packet digest，漂移时返回结构化 reconcile 或 migration 而不重复执行。

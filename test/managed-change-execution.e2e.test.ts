@@ -218,8 +218,36 @@ describe('managed Change execution production composition', () => {
         cwd: workspace,
       });
       await execFileAsync('git', ['push'], { cwd: workspace });
+
+      const originalChangeBranch = application.context.project.changeBranch.bind(
+        application.context.project,
+      );
+      const transientDesignFailure = vi
+        .spyOn(application.context.project, 'changeBranch')
+        .mockRejectedValueOnce(new Error('simulated transient remote lookup failure'))
+        .mockImplementation(originalChangeBranch);
+      const blocked = await next();
+      expect(blocked.value).toMatchObject({
+        changeLifecycle: {
+          phase: 'design',
+          status: 'blocked',
+          currentWork: { kind: 'specification.plan' },
+        },
+        continuation: { reason: 'validator-pending' },
+      });
+      const blockedWorkId = blocked.value.changeLifecycle?.currentWork?.workId;
+      expect(blockedWorkId).toBeTruthy();
+      expect((await status()).state.workExecution).toMatchObject({
+        status: 'outcome',
+        workId: blockedWorkId,
+      });
       const waiting = await next();
+      transientDesignFailure.mockRestore();
       expect(waiting.value.changeLifecycle).toMatchObject({ phase: 'design', status: 'waiting' });
+      expect((await status()).state.workExecution).toMatchObject({
+        status: 'validated',
+        validatorId: 'design.artifacts-valid',
+      });
       const approval = await application.context.commandRouter.execute<
         { changeId: string },
         SpecificationApprovalState | null
@@ -282,10 +310,9 @@ describe('managed Change execution production composition', () => {
         currentWork: { kind: 'evidence.verify' },
       });
       await next();
-      const originalRunOrResume =
-        application.context.evidenceCoordinator.runOrResume.bind(
-          application.context.evidenceCoordinator,
-        );
+      const originalRunOrResume = application.context.evidenceCoordinator.runOrResume.bind(
+        application.context.evidenceCoordinator,
+      );
       let interruptedAttemptId = '';
       const evidenceInterruption = vi
         .spyOn(application.context.evidenceCoordinator, 'runOrResume')
@@ -320,9 +347,8 @@ describe('managed Change execution production composition', () => {
         phase: 'archive',
         currentWork: null,
       });
-      const recoveredEvidence = await application.context.evidenceCoordinator.status(
-        interruptedAttemptId,
-      );
+      const recoveredEvidence =
+        await application.context.evidenceCoordinator.status(interruptedAttemptId);
       expect(recoveredEvidence.context.status).toBe('completed');
 
       await execFileAsync(

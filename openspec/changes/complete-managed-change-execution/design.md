@@ -166,6 +166,8 @@ Build 的 action owner 改为 `repoctopus-build-task`，`tdd` 与 `codebase-desi
 
 删除当前不可达的 `specification.decision` Work；Human Decision 是 wait condition，不伪装成 Agent Work。`next()` 不再自动提交 Open intake。Design assessment 不完整时创建/保持 `specification.plan`，而不是只写 blocker。Verify 自动命令仍由 Evidence Coordinator 执行，但必须在 Verify Host Outcome 被接受后才开始，避免把自动测试成功当成 Agent 已审查。
 
+Design 的 `blocked` 是 Validator 尚未接受的可恢复边界，不是 Work 已完成的边界。若 Provider、Git remote 或其他验证依赖暂时失败，lifecycle 必须保留原 `specification.plan` 作为 `currentWork`，并让 continuation 指向原 Outcome 的 Validator retry；只有 Validator accepted 后，Human Decision wait 或 Build transition 才能清除该 Work。这样 Change lifecycle 与 `workExecution` aggregate 始终指向同一权威 Work，不会出现 lifecycle 已到 Verify、旧 Design claim 仍占用权威位置的分裂状态。
+
 Open 的修复采用破坏性替换，不在旧分支旁增加第二条路径：删除 `WorkflowRuns.next()` 中按 phase 直接提交 `open-intake-ready` 的逻辑；`run next` 在 Open 只解析、幂等创建或调度 Runtime 已选择的 `change.intake`，并返回/消费它的 `execute` continuation，重复调用不能创造新的 Work 或完成事实。`change.intake` 绑定 `repoctopus-open-change`、Specification Provider 阶段协议和最小 `specification.write` scope；只有原 attempt 的 Host Outcome 通过 `open.intake-ready` Validator 后，transition handler 才能接收带 Work/Receipt/validator identity 的事实并进入 Design。合法提交 Outcome/Validator 的响应直接携带 Design continuation；是否自动加载下一 Skill由客户端 `auto_transition` 决定。裸 `open-intake-ready` observation、目录存在、已有工件或调用内部 coordinator 都不能构成推进依据。
 
 由于产品尚未正式发布，本 Change 直接提升 lifecycle definition、Run schema 和公共 claim 协议版本，删除旧自动推进代码、死 Work、旧分支和只为测试服务的 fixture，不实现双读、双写或旧行为 fallback。旧 G1 bootstrap Run 保持只读审计记录；自举通过新 generation 的显式 `adopt-existing` 接管既有实现，但仍需生成新协议下可验证的 Open/Design adoption facts，不能伪造旧 Run 曾执行过这些 Work。
