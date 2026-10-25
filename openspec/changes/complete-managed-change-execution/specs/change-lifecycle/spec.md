@@ -35,6 +35,15 @@ Change Run MUST 为 Open、Design、Build、Verify 和 Archive 的每次前进�
 - **WHEN** 每个阶段的推进依据都属于相同 Run generation 和当前输入
 - **THEN** projection 与 Trajectory 能按顺序定位 Work、决定、Validator 和 transition，不依赖事后目录推断
 
+### Requirement: Change Run continuation 必须来自同一权威 checkpoint
+
+Runtime、CLI、Dashboard 和 Telemetry MUST 从同一持久 Change Run checkpoint 投影当前 phase/status、Work attempt、Wait、blocker 和 `execute|ask|wait|reconcile|done` continuation；恢复方不得根据阶段名、OpenSpec目录、Git diff或历史对话另行推断下一动作。
+
+#### Scenario: 新 Runner恢复活动 Change
+
+- **WHEN** 原 Runner退出且另一个 Runner加载同一 Run
+- **THEN** 新 Runner得到与 checkpoint一致的当前 Work/Wait 和 continuation，并在完成兼容性与多仓核对前不创建第二个 attempt
+
 ## MODIFIED Requirements
 
 ### Requirement: Completion Claim 与验证事实分离

@@ -14,6 +14,10 @@
 - [ ] 2.3 实现短生命周期 `WorkExecutionSession` 并把 RuntimeWorkGuard 接到显式 invocation identity；用并发测试验证两个 Run 不串线、session 结束立即失效、首次受保护写入早于 context delivery 会被拒绝。
 - [ ] 2.4 为进程外 Host 增加带 session identity 的受保护操作协议和 Host-bound Outcome 校验；用伪造 Host、错误 packet digest、过期 claim、跨 Work Outcome 与无 session 写入 fixture 证明全部被拒绝。
 - [ ] 2.5 实现 Host 调用中断与 reconciliation 语义；故障注入测试覆盖 claim 后崩溃、invoke 结果未知、可核对已执行、可证明未执行和无 reconcile Host，证明不会自动重发未知副作用或猜测成功。
+- [ ] 2.6 扩展 Runtime checkpoint schema，持久化当前 Work attempt、claim/packet/Host/Outcome/Receipt identity 和 continuation 投影，并用 recoverable transaction journal 协调 RunStore 与 ActionStore；测试在任一侧写入后崩溃都能收敛或 fail closed。
+- [ ] 2.7 实现 `execute|ask|wait|reconcile|done` 恢复分类：未 invoke 的原 attempt 可重新交付、活跃 Host 必须等待、未知副作用必须核对、已持久 Outcome 从 Validator 继续、已接受 Validator 幂等完成 transition、Human Decision 保留原 proposal hash。
+- [ ] 2.8 实现可选 Agent coordination checkpoint，用于上下文压缩、Agent handoff 和子任务进度；验证它不进入 OpenSpec 四类工件、不授权写入、不形成 completion claim，缺失或 stale 时只触发实际工作核对。
+- [ ] 2.9 将多仓 Project Snapshot reconciliation 接入 Work resume：按 repository identity 重新解析本机路径和 scope，核对 commit/dirty state/definition/composition/Skill/Provider/packet digest，漂移时返回结构化 reconcile 或 migration 而不重复执行。
 
 ## 3. 提供阶段 Skill 与 Specification Provider 协议
 
@@ -44,8 +48,9 @@
 - [ ] 6.1 建立生产 composition 的 `CapturingWorkExecutionHost` 测试插件，只替代模型推理、不替代真实 Skill Registry、OpenSpec Provider、Store、Guard、Validator 或文件操作；架构测试证明它不进入 builtin catalog 和发布包默认组合。
 - [ ] 6.2 在临时 Git Workspace 用打包 CLI/Application 协议从零运行 fresh `Open → Design → Build → Verify → Archive`，断言每阶段完整正文、当前输入、受保护文件结果和事件顺序 `claim.persisted → context.delivered → host.invoked → protected-operation.accepted → outcome.persisted → validator.accepted → lifecycle.transitioned`。
 - [ ] 6.3 增加反作弊回归：identity-only、Host 未读正文、写入早于 delivery、无 Host、双 Host、Provider/Skill 漂移、session 过期、越仓写入、伪造 Outcome、fresh imported claim 任一出现时黑盒测试必须失败。
-- [ ] 6.4 执行 `npm run verify`、`npm run test:package-e2e` 和 `npm run test:tracer-e2e`，生成正式验证报告，记录 G1 bootstrap 限制、新 generation 自举证据、fresh 五阶段黑盒 Receipt、未实现模型厂商 Host 和所有明确排除项。
-- [ ] 6.5 清理临时 Workspace、捕获正文、测试状态卷、日志、进程和 scratch artifacts；复查 Git 状态、公开分支远端 OID、运行进程和 package contents，证明没有泄漏执行包正文或遗留未推送提交。
+- [ ] 6.4 在 6.2 的每个持久边界故障注入终止进程并由新 Runner 恢复同一 Run；覆盖 waiting decision、Agent handoff、上下文压缩、Host running/unknown、Outcome 后、Validator 后和多仓路径重绑定，证明 continuation 精确且无重复副作用。
+- [ ] 6.5 执行 `npm run verify`、`npm run test:package-e2e` 和 `npm run test:tracer-e2e`，生成正式验证报告，记录 G1 bootstrap 限制、新 generation 自举证据、fresh 五阶段黑盒 Receipt、断点恢复矩阵、未实现模型厂商 Host 和所有明确排除项。
+- [ ] 6.6 清理临时 Workspace、捕获正文、测试状态卷、日志、进程和 scratch artifacts；复查 Git 状态、公开分支远端 OID、运行进程和 package contents，证明没有泄漏执行包正文或遗留未推送提交。
 
 ## Workflow follow-up
 

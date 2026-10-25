@@ -81,6 +81,44 @@ Repoctopus MUST 让受管 Outcome 绑定执行包 digest、Host identity、执�
 - **WHEN** 调用方提交缺少执行会话 identity、执行包 digest 不匹配或来自另一 Host 的 succeeded Outcome
 - **THEN** Runtime 拒绝结果并保持原 Work 状态
 
+### Requirement: 受管 Work 必须从原执行断点恢复
+
+Repoctopus MUST 把当前 Work attempt、claim、执行包、Host invocation、Outcome、Validator、Human Decision 和 lifecycle transition 的有界 identity 纳入权威 Runtime checkpoint，并在每个持久边界返回前原子提交或留下可恢复 journal；进程、Agent 或 Runner 中断后必须从原边界产生 `execute`、`ask`、`wait`、`reconcile` 或 `done` continuation，不得仅凭 phase、文件存在或会话记忆重新开始。
+
+#### Scenario: Host 调用后连接中断
+
+- **WHEN** checkpoint 已记录原 Host invocation，但 Runtime 未取得可验证 Outcome
+- **THEN** 新 Runner 保留同一 Work attempt 和 scope，返回 reconcile 或等待原 Host，不自动再次调用 Agent或重发外部副作用
+
+#### Scenario: Outcome 后 Validator 前中断
+
+- **WHEN** 原 Host Outcome 已持久化且 identity 匹配，但 Validator 尚未接受
+- **THEN** 恢复从原 Outcome 的 Validator 继续，不重新交付执行包或调用 Agent
+
+#### Scenario: Validator 后 transition 写入中断
+
+- **WHEN** Validator accepted 已持久化而 lifecycle transition 尚未完整提交
+- **THEN** Runtime 通过 recoverable journal 幂等完成原 transition，并且 Trajectory 只出现一次对应推进事实
+
+#### Scenario: 等待用户决定时更换 Agent
+
+- **WHEN** Change Run 在 Human Decision Wait 中断或由新 Agent接管
+- **THEN** 恢复展示相同 proposal hash 与 choices，不重新生成提案、不丢失批准边界，也不代替用户选择
+
+#### Scenario: 恢复时多仓或执行组合漂移
+
+- **WHEN** repository commit/path binding、definition、composition、Skill、Specification Provider 或 packet digest 与 checkpoint 不一致
+- **THEN** Runtime 返回结构化 reconcile/migration 状态并保留原执行事实，不把漂移解释为未执行后重跑
+
+### Requirement: Agent coordination checkpoint 不得成为完成权威
+
+Repoctopus MAY 保存用于上下文压缩、Agent handoff 或子任务协调的有界 progress checkpoint，但它 MUST 与 Engine checkpoint、OpenSpec 工件和 completion evidence 分离；其存在、缺失或 checkbox 状态不得授权写入、形成 Receipt、完成 Task 或推进 phase。
+
+#### Scenario: Coordination checkpoint 缺失
+
+- **WHEN** 新 Agent恢复 Build 而 coordination checkpoint 不存在或已 stale
+- **THEN** Agent按权威 Run/Action、实际文件和 Git事实核对进度，不能因为记录缺失而假定实现未发生并重复执行
+
 ### Requirement: 黑盒验收必须观察真实内容消费
 
 Repoctopus MUST 使用生产 composition 和公共应用协议运行捕获 Host，断言 Host 收到每个阶段的完整正文、固定顺序和当前输入，并观察受保护副作用发生在 claim/context-delivered 之后；只断言 Skill 名称、layer source、digest、Run projection 或 mock 领域函数不得满足该验收。

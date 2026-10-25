@@ -11,6 +11,7 @@
 - 提供 Repoctopus-owned、Provider-neutral 的阶段 action Skills。当前 OpenSpec Provider 继续提供官方 instructions/template 和四类工件权威；Matt `tdd`、`codebase-design`、`diagnosing-bugs`、`code-review` 与 `pr` 只作为 definition 固定的 augmentation 或独立发布 action，不建立第二套规格权威。
 - 将公共 claim 协议升级为完整、短生命周期的 `WorkExecutionPacket`，包含 Runtime contract、action Skill 正文、Specification Provider 指令、augmentations、Method Profile 和当前输入；ActionIntent、Run、日志和遥测只保留各层 identity 与整体 digest。
 - 增加版本化 `WorkExecutionHost` Cordis Contributor 契约和受管执行服务。Host 必须声明能力、执行 preflight、接收冻结执行包并调用 Agent；不能通过调用参数替换 Skill、扩大范围或绕过当前 claim。
+- 把现有 Run checkpoint 从“恢复 phase 与投影”扩展为 Work 级断点续跑协议：持久化当前 Action attempt、claim/Host/packet identity、Outcome/Validator/transition 边界和 continuation；新进程或新 Runner 必须从原断点等待、核对、继续验证或重放幂等转换，不得从 phase 名称猜测进度或重复外部副作用。
 - 明确 `fresh` 与 `adopt-existing` 两种 Change 启动模式。新开发默认 `fresh`，已完成 checkbox 不得静默变成 `imported-claim`；只有显式采用既有实现时才允许导入 completion claim，并仍要求完整 Verify。
 - 增加从空目录开始的进程外黑盒自举测试：创建 Change Run、捕获完整 Skill 正文、完成 OpenSpec 四类工件、等待真实 Design 决定、逐 Task Build、Verify、Archive；测试必须证明首次受保护写入发生在 claim 和上下文交付之后。
 - 增加 definition 可达性与消费端契约检查：每个内置 Work kind 都必须具有生产创建路径、合法 Host/Contributor、完整上下文交付测试和 Validator，不能用只检查 layer 名称/digest 的测试替代宿主消费测试。
@@ -31,7 +32,7 @@
 
 ## Impact
 
-- 影响 Change lifecycle definition、transition、WorkflowRuns、WorkDispatcher、ActionIntent/claim 公共协议、Command Router、CLI、Skill Provider、Specification Provider、Cordis builtin catalog、composition snapshot、Run 兼容性和自举文档。
+- 影响 Change lifecycle definition、transition、WorkflowRuns、WorkDispatcher、ActionIntent/claim 公共协议、Runtime checkpoint/transition journal、Command Router、CLI、Skill Provider、Specification Provider、Cordis builtin catalog、composition snapshot、Run 兼容性和自举文档。
 - `run work-claim` 的结果从仅含 ActionIntent 的身份投影升级为版本化执行包；旧调用方必须迁移或显式请求 identity-only 投影，属于受版本化协议保护的行为变更。
 - 不新增模型厂商依赖，也不把 DSH LLM 或某个 IDE 写死为执行器；真实 IDE/Runner 通过 Host Contributor 接入。首个内置 Host 是可进程外消费的 CLI/Application Host 协议，测试使用行为等价的捕获 Host，不以 mock 绕过 Runtime。
 - Comet 0.5.0 固定提交继续作为行为参考，采用 `applicationSkillWork`、`SkillExecutionHost` 与 preflight/execute 分离的架构思想，不复制其产品 shell、CLI、状态目录或 Skill 文案，因此不新增第三方源码派生文件或许可证义务。

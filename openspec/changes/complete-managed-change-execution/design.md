@@ -14,6 +14,7 @@ Comet 0.5.0 固定提交 `aeb1a6598034e28ce46b8422d4dbd8785e607bd7` 提供两个
 
 - 让 lifecycle Work 从“可记录”变成“可由受管 Host 执行”，且完整上下文在首次副作用前交付。
 - 让 Open、Design、Build、Verify、Archive 的内置 Work 都有生产可达路径和确定的推进依据。
+- 让任意进程、Agent 或 Runner 中断后从原 Work attempt 的准确边界继续，不重做已接受工作、不丢失等待决定，也不猜测外部副作用结果。
 - 保持 OpenSpec 四类工件、Tasks、strict validation 与归档为唯一规格权威。
 - 让 Host 可替换且不把模型厂商或 IDE 引入 Engine。
 - 用黑盒捕获 Host 和进程外 CLI/Application 协议证明正文消费、事件顺序、恢复与拒绝路径。
@@ -91,7 +92,46 @@ CLI `run work-claim --json` 可以成为 IDE/Runner 的进程外 Host 协议，�
 
 Guard 不是 OS 沙箱。直接 `fs.writeFile` 或外部 shell 仍可能改变文件，但没有 session 的变化只能被 Git/Provider snapshot 观察为 drift，不能产生 Receipt 或 Validator success。
 
-### 5. Repoctopus-owned 阶段 Skill 与 Provider 指令分层
+### 5. 将现有 Runtime checkpoint 扩展为 Work 级断点续跑
+
+复用现有 `FileRuntimeStore` 的原子 checkpoint、transition journal、`stateVersion` CAS 和 Project Snapshot reconciliation，不引入 Comet Runtime、第二套 Store 或后台 daemon。当前 checkpoint 已能恢复 Run、phase、accepted evidence、Skill/Specification identity 和 trajectory offset；本 Change 把当前执行边界也纳入同一权威恢复协议。
+
+每次会改变“下一步该做什么”的事实都必须在返回成功前形成可恢复 checkpoint，包括：Work 创建、claim、context delivered、Host invocation started、Outcome persisted、Validator accepted、Human Decision created/resolved 和 lifecycle transitioned。checkpoint 只保存有界 identity，不保存完整 packet 正文或凭据：
+
+```ts
+interface WorkExecutionCheckpoint {
+  schemaVersion: 1;
+  runId: string;
+  lifecycleRevision: number;
+  workId: string;
+  attempt: number;
+  state: 'pending' | 'claimed' | 'running' | 'unknown' | 'outcome-recorded' | 'validated';
+  claimIdentity: string | null;
+  packetDigest: string;
+  hostIdentity: string | null;
+  outcomeIdentity: string | null;
+  receiptIdentity: string | null;
+  continuation: 'execute' | 'ask' | 'wait' | 'reconcile' | 'done';
+}
+```
+
+ActionStore 继续保存 ActionIntent/Receipt 明细，但 Run checkpoint 必须保存足以关联原 attempt 的执行投影；两者通过可恢复 transaction journal 协调。claim 只有在 intent 与 checkpoint 都可通过 journal 收敛到同一 identity 后才算 durable。恢复不能仅凭一侧文件推断另一侧成功。
+
+`run resume` 先恢复未完成的文件事务，再核对 definition、composition、Skill/Provider identity、Project Snapshot、当前多仓 Git事实和 packet digest，然后按原边界产生 continuation：
+
+- `pending/claimed` 且尚无 `host.invoked`：重新解析相同 packet，digest 一致时向合法 Host 交付原 attempt；
+- `running` 且原 Host 仍活跃：返回 `wait`，不得抢占或重新调用；
+- `running/unknown` 且结果不明：返回 `reconcile`，由原 Host 或只读外部事实核对；只有可证明 `not-executed` 才创建新 attempt；
+- Outcome 已持久化但 Validator 未接受：从 Validator 继续，不能再次调用 Agent；
+- Validator 已接受但 transition 写入中断：由 transaction journal 幂等完成原 transition；
+- Human Decision 正在等待：重新展示相同 proposal hash，不重新生成提案或替用户决定；
+- terminal Run：返回 `done`，不暴露遗留执行建议。
+
+多仓恢复使用冻结的 repository identity/commit 与本机路径映射重新解析 scope；绝对路径不进入可移植 identity。仓库集合、commit、Provider、Skill 或 definition 漂移时返回结构化 reconcile/migration 结果，不以“重新跑一遍”掩盖不一致。
+
+另设可选的 Agent coordination checkpoint，记录当前 task、已观察文件和有界进度，帮助上下文压缩、Agent handoff 或子任务协调；它不是第五类 OpenSpec 工件，也不能授权写入、证明完成或覆盖 Engine checkpoint。缺失 coordination checkpoint 只意味着需要检查实际工作，不意味着实现不存在。
+
+### 6. Repoctopus-owned 阶段 Skill 与 Provider 指令分层
 
 新增只读内置 `repoctopus-lifecycle` Skill Provider，提供：
 
@@ -105,7 +145,7 @@ Guard 不是 OS 沙箱。直接 `fs.writeFile` 或外部 shell 仍可能改变�
 
 Build 的 action owner 改为 `repoctopus-build-task`，`tdd` 与 `codebase-design` 是 augmentation；Verify 的 action owner 改为 `repoctopus-verify-change`，`code-review` 是 augmentation。这样阶段协议拥有产物和 continuation，方法 Skill 不会意外成为工作流 owner。
 
-### 6. 让五阶段 Work 真正可达
+### 7. 让五阶段 Work 真正可达
 
 内置 definition 升级版本，保留五个 phase，但只声明真实可创建的 Work：
 
@@ -119,7 +159,7 @@ Build 的 action owner 改为 `repoctopus-build-task`，`tdd` 与 `codebase-desi
 
 删除当前不可达的 `specification.decision` Work；Human Decision 是 wait condition，不伪装成 Agent Work。`next()` 不再自动提交 Open intake。Design assessment 不完整时创建/保持 `specification.plan`，而不是只写 blocker。Verify 自动命令仍由 Evidence Coordinator 执行，但必须在 Verify Host Outcome 被接受后才开始，避免把自动测试成功当成 Agent 已审查。
 
-### 7. Fresh 与 adopt-existing 是创建时冻结的事实
+### 8. Fresh 与 adopt-existing 是创建时冻结的事实
 
 `StartChangeRunInput` 和 trigger facts 增加 `mode: 'fresh' | 'adopt-existing'`，默认 fresh，并纳入 runId identity input、trigger digest、projection 和 telemetry allowlist。
 
@@ -128,7 +168,7 @@ Build 的 action owner 改为 `repoctopus-build-task`，`tdd` 与 `codebase-desi
 
 现有历史 Run 保持旧语义，不在原 generation 下重解释。迁移 planner 对活动旧 Run 返回 `migration_required` 或要求新 generation；不会批量改写已有 Run 文件。
 
-### 8. 可达性检查属于 definition/composition 验证
+### 9. 可达性检查属于 definition/composition 验证
 
 为每个 Work definition 建立静态 registration：creator id、允许 Host action、Contributor capability、Validator id。builtin validation 必须证明：
 
@@ -141,7 +181,7 @@ Build 的 action owner 改为 `repoctopus-build-task`，`tdd` 与 `codebase-desi
 
 这不是通用 Capability Resolver；它只验证 lifecycle 已声明的四类 Contributor/Provider 关系，并进入现有 composition snapshot。
 
-### 9. 测试以消费者和事件顺序为验收中心
+### 10. 测试以消费者、事件顺序和恢复边界为验收中心
 
 测试分四层：
 
@@ -164,6 +204,8 @@ claim.persisted
 
 负向测试覆盖 identity-only packet、正文未读取、首次写入早于 delivery、无 Host、双 Host、Skill 漂移、Provider 指令漂移、session 过期、越仓写入、伪造 Outcome 和 fresh imported claim。
 
+故障注入必须在 `claim.persisted`、`context.delivered`、`host.invoked`、`outcome.persisted`、`validator.accepted` 和 `lifecycle.transitioned` 之后分别终止进程，并由新进程/Runner 恢复同一 Run。验收按 checkpoint 返回的 `execute|ask|wait|reconcile|done` 继续，断言 Agent、外部平台操作、Evidence 和 phase transition 都没有重复或遗漏。
+
 ## Risks / Trade-offs
 
 - **[外部 IDE 仍可绕过 Repoctopus 直接改文件]** → 明确区分 managed success 与 drift；正式 Host 只暴露受保护工具，黑盒测试证明旁路不能产生 Receipt 或推进事实。
@@ -171,13 +213,15 @@ claim.persisted
 - **[阶段 Skill 与 Provider instructions 冲突]** → 阶段 Skill 不拥有模板内容；definition validation 检查 artifact protocol owner 唯一，冲突在 claim 前失败。
 - **[旧 Run 因 definition/composition 升级不可恢复]** → 不静默升级；保留只读状态，使用 migration planner 或新 generation，并记录关联。
 - **[Host 调用中断导致是否执行未知]** → claim 和 session identity 先持久化；有 reconcile 的 Host 核对原调用，无 reconcile 时保持 unknown/manual repair，不自动重发外部副作用。
+- **[Run checkpoint 与 ActionStore 在中断后分叉]** → 用同一 recoverable transaction journal 关联执行投影和 Action identity；启动时先收敛 journal，再公开 continuation，任一侧孤立或摘要不匹配都进入 reconcile 而非猜测成功。
+- **[Agent coordination checkpoint 被误当作完成事实]** → coordination 只保存有界进度提示，Runtime 只接受 Engine checkpoint、Outcome、Validator、Evidence 和 Human Decision；缺失或过期时核对实际工作，不自动重做。
 - **[黑盒 Host 仍可能只是高级 mock]** → 捕获 Host 只替代模型推理，不替代生产服务；它必须通过公共 Host Contributor、真实 packet、真实 Guard/Provider/Store 完成文件纵切，并验证实际文件结果。
 
 ## Migration Plan
 
 1. 保留 G1 bootstrap Run 在旧 definition 的 Open，不调用旧 `next()`；记录它无法证明新协议。
-2. 先实现 packet、Host registry/executor、阶段 Skill Provider、Open/Design Work 和 black-box capture Host 的最小纵切。
+2. 先实现 packet、Host registry/executor、Work 级 checkpoint/continuation、阶段 Skill Provider、Open/Design Work 和 black-box capture Host 的最小纵切。
 3. 升级 definition/composition 后，让 G1 明确显示 contributor/definition drift；以新 generation 和 `adopt-existing` 接管已完成的 bootstrap 任务，剩余实现任务通过新 Host 协议执行。
-4. 在临时 Workspace 创建完全 fresh 的独立 Change，逐阶段运行到 Archive，作为 Open/Design/Build/Verify/Archive 的正式行为证据。
+4. 在临时 Workspace 创建完全 fresh 的独立 Change，逐阶段运行到 Archive，并在每个持久边界终止和恢复进程，作为 Open/Design/Build/Verify/Archive 与断点续跑的正式行为证据。
 5. 运行完整 verify、package E2E 和 tracer E2E；更新正式验证报告与现有规格，之后才允许恢复 Dashboard Change。
 6. 回退时可以移除新 Host/Skill plugins 并恢复旧 CLI，但新 definition generation 不允许用旧 Runtime 继续写；只读检查保持可用。
