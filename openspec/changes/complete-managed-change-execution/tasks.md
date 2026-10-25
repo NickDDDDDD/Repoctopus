@@ -29,8 +29,8 @@
 
 ## 4. 让五阶段 Work 全部生产可达
 
-- [ ] 4.1 升级 builtin lifecycle definition，删除不可达 `specification.decision` 并登记每个 Work 的 creator、Host action、Contributor 和 Validator；架构测试遍历 definition，证明不存在仅由测试构造的 Work kind。
-- [ ] 4.2 实现 Open `change.intake` 的创建、claim、Provider validator 和 transition；进程外 fixture 从不存在的 change 开始，证明 `run next` 不自动越过 Open，只有 Host 创建合法 metadata 后进入 Design。
+- [ ] 4.1 破坏性升级 builtin lifecycle definition、Run schema 和 claim 协议，删除不可达 `specification.decision`、Open 自动 observation、ActionStore latest-attempt 权威、旧分支与对应兼容 fixture，并登记每个 Work 的 creator、Host action、Contributor 和 Validator；架构测试遍历 definition 和生产路由，证明不存在仅由测试构造的 Work kind，也不存在旧协议 fallback、双读或双写。
+- [ ] 4.2 实现 Open `change.intake` 的创建、claim、`repoctopus-open-change` Host 执行、最小 Specification 写 scope、Provider validator 和 transition；进程外 fixture 从不存在的 change 开始，证明首次及重复 `run next` 都保持 Open 并返回同一 Work/attempt，裸 `open-intake-ready` observation、目录/工件存在和伪造 Outcome 均不能推进，只有原 Host Outcome 与 `open.intake-ready` Validator identity 被同一 Run CAS 接受后才进入 Design。
 - [ ] 4.3 实现 Design `specification.plan` 的创建、retry、strict validation 和 Human Decision 衔接；fixture 依次覆盖缺失工件、无效工件、Host succeeded 但校验失败、四类工件有效后 waiting，以及可信批准后进入 Build。
 - [ ] 4.4 将 Build 调度接到 ManagedWorkExecutor，并由 Provider/Validator 唯一更新 Task checkbox；用两个 Task 的 red-green-refactor 纵切证明每个 Task 都有独立 packet、Receipt 和 validation，Agent 直接勾选不能推进。
 - [ ] 4.5 将 Verify Host Outcome 设为自动 Evidence 执行的前置事实，并保留失败回 Build；测试证明仅测试命令通过、仅 code-review identity 存在或伪造 review Outcome 都不能进入 Archive。
@@ -38,9 +38,9 @@
 
 ## 5. 区分 fresh 与 adopt-existing 并完成自举接管
 
-- [ ] 5.1 在 Change Run trigger、projection、CLI 和兼容检查中加入冻结的 `fresh|adopt-existing` mode；测试默认 fresh、显式 adopt、mode 进入 identity，以及旧 Run 不被静默重解释。
+- [ ] 5.1 在 Change Run trigger、projection 和 CLI 中加入冻结的 `fresh|adopt-existing` mode；测试默认 fresh、显式 adopt 和 mode 进入 identity。旧预发布 Run 只返回只读 `migration_required/new-generation-required` 诊断，不实现旧 schema 的执行兼容 Adapter，也不在原 generation 下静默重解释。
 - [ ] 5.2 更新 Specification Task 投影：fresh 中预勾选且无当前 Receipt 返回 adoption conflict，adopt-existing 才生成带来源摘要的 imported claims；运行 pending、部分完成、全完成、语义漂移和 Verify 仍必需的矩阵测试。
-- [ ] 5.3 让旧 G1 bootstrap Run明确报告 definition/composition drift，并以新 generation `adopt-existing` 接管已完成的引导任务；从首个未完成 Task 起使用完整 packet 与 Host 执行，Trajectory 必须记录 context delivered 和 host invoked。
+- [ ] 5.3 让旧 G1 bootstrap Run明确报告 definition/composition drift并保持只读，以新 generation `adopt-existing` 接管既有规划和实现；新 Run 必须记录可验证的 Open/Design adoption facts而不伪造旧 Work 历史，从首个未完成 Task 起使用完整 packet 与 Host 执行，Trajectory 必须记录 context delivered 和 host invoked。
 - [ ] 5.4 更新 CLI、self-hosting、Skill、Specification 与架构文档，执行所有文档命令冒烟测试，明确受管 Host 边界、外部进程 drift、fresh/adopt 选择和正文隐私。
 
 ## 6. 用消费者导向的黑盒验收闭包

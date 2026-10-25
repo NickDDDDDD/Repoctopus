@@ -11,6 +11,16 @@
 - **WHEN** fresh Change Run 创建且尚无规划工件
 - **THEN** Run 保持 `phase=open,status=running` 并公开可领取的 intake Work，不自动提交 `open-intake-ready`
 
+#### Scenario: Open 中重复请求下一步
+
+- **WHEN** `change.intake` 尚未产生被 Validator 接受的 Host Outcome，调用方一次或多次执行 `run next`
+- **THEN** 每次都返回同一个 Open Work/attempt 或其当前 continuation，Run 不进入 Design，也不生成裸 `open-intake-ready` 事实
+
+#### Scenario: 尝试伪造 Open 完成
+
+- **WHEN** 调用方只提交 `open-intake-ready` observation、创建 change 目录/规划文件、伪造 Outcome 或直接请求 Design transition
+- **THEN** Runtime 拒绝推进；只有绑定当前 Run、Work、attempt、claim、Receipt 和 `open.intake-ready` Validator identity 的接受事实才能进入 Design
+
 #### Scenario: Design 工件尚不完整
 
 - **WHEN** Open 已完成但 Proposal、Delta Specs、Design 或 Tasks 任一缺失或无效
@@ -20,6 +30,15 @@
 
 - **WHEN** 架构检查发现某个 Work kind 没有生产创建路径、Host/Contributor 或 Validator
 - **THEN** builtin composition 验证失败并定位缺少的链路，测试 fixture 不能代替生产可达性
+
+### Requirement: 预发布旧执行协议不得形成兼容债务
+
+Repoctopus MUST 破坏性替换尚未正式发布的 Open 自动推进、不可达 Work 和旧 claim/attempt 协议，删除其生产分支与兼容 fixture；旧开发 Run MAY 保留只读审计和新 generation 迁移诊断，但不得通过双读、双写、fallback Adapter 或原 generation 重解释继续执行。
+
+#### Scenario: 加载旧 G1 bootstrap Run
+
+- **WHEN** 旧 Run 使用会自动越过 Open 或缺少受管 Work 执行事实的 definition/schema
+- **THEN** Runtime 返回只读 `migration_required/new-generation-required` 诊断，新实现不执行旧路径；继续开发必须创建新 generation 并按新协议记录 adoption facts
 
 ### Requirement: 五阶段必须留下可核对的推进依据
 

@@ -25,6 +25,7 @@ Comet 0.5.0 固定提交 `aeb1a6598034e28ce46b8422d4dbd8785e607bd7` 提供两个
 - 不把 Repoctopus 描述为操作系统沙箱；任意未受管进程仍可能写文件，但不能取得受管成功事实。
 - 不恢复 Webhook、后台 daemon 或等待 MR 合入模型。
 - 不继续 Windows Dashboard 功能；该 Change 只保证后续 Dashboard 有可信 Work/Agent 状态可展示。
+- 不为尚未正式发布的自动 Open 推进、`specification.decision`、ActionStore latest-attempt 或旧 Work claim 协议保留兼容 Adapter；旧开发 Run 只保留只读诊断，需要继续时建立新 generation。
 
 ## Decisions
 
@@ -160,6 +161,10 @@ Build 的 action owner 改为 `repoctopus-build-task`，`tdd` 与 `codebase-desi
 | Archive | `specification.close`，随后 `delivery.publish` | `repoctopus-archive-change`，`pr` | Closure/Publication Receipt                       |
 
 删除当前不可达的 `specification.decision` Work；Human Decision 是 wait condition，不伪装成 Agent Work。`next()` 不再自动提交 Open intake。Design assessment 不完整时创建/保持 `specification.plan`，而不是只写 blocker。Verify 自动命令仍由 Evidence Coordinator 执行，但必须在 Verify Host Outcome 被接受后才开始，避免把自动测试成功当成 Agent 已审查。
+
+Open 的修复采用破坏性替换，不在旧分支旁增加第二条路径：删除 `WorkflowRuns.next()` 中按 phase 直接提交 `open-intake-ready` 的逻辑；`run next` 在 Open 只创建或返回同一个 `change.intake` Work 和 `execute` continuation，重复调用必须幂等。`change.intake` 绑定 `repoctopus-open-change`、Specification Provider 阶段协议和最小 `specification.write` scope；只有原 attempt 的 Host Outcome 通过 `open.intake-ready` Validator 后，transition handler 才能接收带 Work/Receipt/validator identity 的事实并进入 Design。裸 `open-intake-ready` observation、目录存在、已有工件或调用内部 coordinator 都不能构成推进依据。
+
+由于产品尚未正式发布，本 Change 直接提升 lifecycle definition、Run schema 和公共 claim 协议版本，删除旧自动推进代码、死 Work、旧分支和只为测试服务的 fixture，不实现双读、双写或旧行为 fallback。旧 G1 bootstrap Run 保持只读审计记录；自举通过新 generation 的显式 `adopt-existing` 接管既有实现，但仍需生成新协议下可验证的 Open/Design adoption facts，不能伪造旧 Run 曾执行过这些 Work。
 
 ### 8. Fresh 与 adopt-existing 是创建时冻结的事实
 
