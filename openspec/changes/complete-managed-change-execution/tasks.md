@@ -119,6 +119,10 @@
       **Acceptance:** production composition 在 Verify Validator 后模拟进程中断，由新 Application Host 使用原 Evidence attempt 恢复到 Archive；错误 Work、失败 Outcome 或不匹配 Validator 仍 fail closed
       **Requirements:** managed-work-execution#受管-work-必须可断点恢复且不重复副作用
 
+- [x] 8.5 修复独立审查发现的恢复身份缺口：Runtime 确定性绑定 Evidence attempt，`run next` 从 `validated` 自动恢复，并让 Evidence Coordinator 拒绝覆盖和补偿已完成 attempt 的上下文落盘窗口。
+      **Acceptance:** production composition 通过真实 Verify Validator 后在 Evidence 完成、gate 投影前中断；新 Application Host 仅调用 `run next` 即复用原 attempt 到 Archive，不由测试直接写 Validator、不要求调用方传 attemptId；重复 attempt 与完成 bundle 恢复测试通过
+      **Requirements:** managed-work-execution#受管-work-必须可断点恢复且不重复副作用
+
 ## Workflow follow-up
 
 - Build 与 Verify 满足后，由同一 Change Run 执行规格关闭和发布 Work；实际 MR 合入仍由人决定，Run 不等待 MR 合入。

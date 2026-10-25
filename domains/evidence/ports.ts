@@ -19,6 +19,7 @@ export interface EvidenceStore {
   loadReceipt(receiptId: string): Promise<EvidenceReceipt>;
   saveBundle(bundle: EvidenceBundle): Promise<void>;
   loadBundle(bundleId: string): Promise<EvidenceBundle>;
+  findBundleByAttempt(attemptId: string): Promise<EvidenceBundle | null>;
 }
 
 export interface EvidenceJournalEntry {

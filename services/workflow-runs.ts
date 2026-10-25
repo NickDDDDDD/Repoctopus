@@ -638,7 +638,9 @@ export class WorkflowRuns extends Service {
     if (
       preflightLifecycle?.phase === 'verify' &&
       preflightLifecycle.currentWork &&
-      preflight.workExecution?.status === 'outcome' &&
+      preflight.workExecution?.workId === preflightLifecycle.currentWork.workId &&
+      (preflight.workExecution?.status === 'outcome' ||
+        preflight.workExecution?.status === 'validated') &&
       preflight.workExecution.actionOutcome?.status === 'succeeded'
     ) {
       const verified = await this.verifyChange({ runId }, signal);
@@ -1249,17 +1251,26 @@ export class WorkflowRuns extends Service {
         });
       }
       const workflowStateVersion = (await this.ctx.runStore.loadRun(input.runId)).stateVersion;
-      const attemptId = input.attemptId ?? randomUUID();
+      const attemptId =
+        input.attemptId ??
+        `verify-${createHash('sha256')
+          .update(
+            canonicalJson({
+              runId: input.runId,
+              workId: current.currentWork.workId,
+              workAttempt: execution.attempt,
+              verificationInputDigest: current.verificationInput.digest,
+            }),
+          )
+          .digest('hex')}`;
       let result;
       try {
-        result = input.attemptId
-          ? await this.ctx.evidenceCoordinator.status(attemptId)
-          : await this.ctx.evidenceCoordinator.run(
-              current.verificationInput.evidenceProfile.id,
-              attemptId,
-              input.runId,
-              signal,
-            );
+        result = await this.ctx.evidenceCoordinator.runOrResume(
+          current.verificationInput.evidenceProfile.id,
+          attemptId,
+          input.runId,
+          signal,
+        );
       } catch (error) {
         const reason = error instanceof Error ? error.message : String(error);
         if (!reason.includes('input fingerprint changed before Evidence execution')) throw error;

@@ -1,4 +1,4 @@
-import { writeFile } from 'node:fs/promises';
+import { readFile, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
@@ -97,7 +97,7 @@ async function fixture() {
   const runId = 'run-evidence-binding';
   await runtime.start({ workflow, projectSnapshot: projectFixture(), runId });
   const waiting = await runtime.next(runId);
-  return { app: path.join(root, 'app'), evidence, runtime, runId, store, waiting };
+  return { app: path.join(root, 'app'), evidence, runtime, runId, store, waiting, workspace };
 }
 
 describe('EvidenceCoordinator workflow binding', () => {
@@ -136,5 +136,71 @@ describe('EvidenceCoordinator workflow binding', () => {
         evidenceAttemptId: 'attempt-stale-state',
       }),
     ).rejects.toThrow(/stale workflow state/i);
+  });
+
+  it('rejects duplicate attempt creation and repairs the completed-attempt context gap', async () => {
+    const { evidence, runId, workspace } = await fixture();
+    const attemptId = 'attempt-context-gap';
+    const completed = await evidence.run('verify', attemptId, runId);
+
+    await expect(evidence.run('verify', attemptId, runId)).rejects.toThrow(
+      /Evidence attempt already exists/u,
+    );
+
+    const contextFile = path.join(workspace, '.repoctopus', 'evidence', 'runs', `${attemptId}.json`);
+    const context = JSON.parse(await readFile(contextFile, 'utf8')) as Record<string, unknown>;
+    await writeFile(
+      contextFile,
+      JSON.stringify({ ...context, status: 'running', bundleId: null }),
+      'utf8',
+    );
+
+    const recovered = await evidence.resume(attemptId);
+    expect(recovered.context.status).toBe('recovered');
+    expect(recovered.bundle?.bundleId).toBe(completed.bundle.bundleId);
+    expect(recovered.attempt.status).toBe('completed');
+  });
+
+  it('auto-recovers a journaled running attempt instead of executing it again', async () => {
+    const { evidence, runId, workspace } = await fixture();
+    const attemptId = 'attempt-running-recovery';
+    const completed = await evidence.run('verify', attemptId, runId);
+    const contextFile = path.join(workspace, '.repoctopus', 'evidence', 'runs', `${attemptId}.json`);
+    const attemptFile = path.join(
+      workspace,
+      '.repoctopus',
+      'evidence',
+      'attempts',
+      `${attemptId}.json`,
+    );
+    const bundleFile = path.join(
+      workspace,
+      '.repoctopus',
+      'evidence',
+      'bundles',
+      `${completed.bundle.bundleId}.json`,
+    );
+    const context = JSON.parse(await readFile(contextFile, 'utf8')) as Record<string, unknown>;
+    const attempt = JSON.parse(await readFile(attemptFile, 'utf8')) as Record<string, unknown>;
+    const runningAttempt = { ...attempt };
+    delete runningAttempt.completedAt;
+    await Promise.all([
+      writeFile(
+        contextFile,
+        JSON.stringify({ ...context, status: 'running', bundleId: null }),
+        'utf8',
+      ),
+      writeFile(
+        attemptFile,
+        JSON.stringify({ ...runningAttempt, status: 'running', receiptIds: [] }),
+        'utf8',
+      ),
+      unlink(bundleFile),
+    ]);
+
+    const recovered = await evidence.runOrResume('verify', attemptId, runId);
+    expect(recovered.context.status).toBe('recovered');
+    expect(recovered.bundle?.outcome).toBe('passed');
+    expect(recovered.attempt.status).toBe('completed');
   });
 });

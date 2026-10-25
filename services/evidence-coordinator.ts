@@ -178,6 +178,10 @@ export class EvidenceCoordinator extends Service {
     return asContext(JSON.parse(await readFile(this.contextFile(attemptId), 'utf8')) as unknown);
   }
 
+  async lookup(attemptId: string): Promise<EvidenceStatus | null> {
+    return optional(() => this.status(attemptId));
+  }
+
   private async effectiveConfig(
     profileId: string,
     repositoryOverrides: readonly EvidenceRepositoryOverride[] | null,
@@ -400,6 +404,9 @@ export class EvidenceCoordinator extends Service {
       ({ signal: operationSignal, markDurableBoundary }) =>
         this.leases.withLease(`evidence-profile:${profileId}`, async () => {
           if (operationSignal.aborted) throw operationSignal.reason;
+          if (await optional(() => this.loadContext(attemptId))) {
+            throw new Error(`Evidence attempt already exists: ${attemptId}`);
+          }
           const [binding, planned] = await Promise.all([
             this.workflowBinding(workflowRunId, profileId),
             this.planWithRepositories(profileId, useOverrides ? repositories : null),
@@ -494,44 +501,84 @@ export class EvidenceCoordinator extends Service {
   async resume(attemptId: string, signal?: AbortSignal): Promise<EvidenceStatus> {
     return this.operations.run({ cancellable: false, signal }, () =>
       this.leases.withLease(`evidence-profile-recovery:${attemptId}`, async () => {
-        const context = await this.loadContext(attemptId);
-        if (context.status !== 'running') {
+        const discovered = await this.loadContext(attemptId);
+        return this.leases.withLease(`evidence-profile:${discovered.profileId}`, async () => {
+          const context = await this.loadContext(attemptId);
+          if (context.status !== 'running') {
+            await this.flushTelemetry(attemptId);
+            return this.status(attemptId);
+          }
+          const attempt = await this.store.loadAttempt(attemptId);
+          let recovered;
+          if (attempt.status === 'running') {
+            const config = await this.effectiveConfig(context.profileId, context.repositoryOverrides);
+            const endingFingerprint = await this.fingerprint(context.profileId, config);
+            recovered = await recoverEvidenceAttempt({
+              attemptId,
+              plan: context.plan,
+              store: this.store,
+              journal: this.journal,
+              timestamp: new Date().toISOString(),
+              endingFingerprint: endingFingerprint.digest,
+              artifacts: new FileArtifactStore(this.workspace),
+              ...(context.workflowBinding?.acceptanceContext
+                ? { acceptanceContext: context.workflowBinding.acceptanceContext }
+                : {}),
+            });
+          } else {
+            const bundle = await this.store.findBundleByAttempt(attemptId);
+            if (!bundle) {
+              throw new Error(`Completed Evidence attempt has no durable bundle: ${attemptId}`);
+            }
+            recovered = {
+              bundle,
+              receipts: await Promise.all(
+                bundle.receiptIds.map((receiptId) => this.store.loadReceipt(receiptId)),
+              ),
+            };
+          }
+          await atomicWriteJson(this.contextFile(attemptId), {
+            ...context,
+            status: 'recovered',
+            bundleId: recovered.bundle.bundleId,
+            updatedAt: new Date().toISOString(),
+          } satisfies EvidenceRunContext);
+          const recoveredAttempt = await this.store.loadAttempt(attemptId);
+          const result: EvidenceRunResult = {
+            attempt: recoveredAttempt,
+            ...recovered,
+            decisionRequests: [],
+          };
+          await this.telemetryOutbox.save(
+            createEvidenceTelemetryBatch({
+              workflowRunId: context.workflowBinding?.workflowRunId ?? null,
+              result,
+              gate: projectEvidenceGate(recovered.bundle, context.workflowBinding),
+            }),
+          );
           await this.flushTelemetry(attemptId);
           return this.status(attemptId);
-        }
-        const config = await this.effectiveConfig(context.profileId, context.repositoryOverrides);
-        const endingFingerprint = await this.fingerprint(context.profileId, config);
-        const recovered = await recoverEvidenceAttempt({
-          attemptId,
-          plan: context.plan,
-          store: this.store,
-          journal: this.journal,
-          timestamp: new Date().toISOString(),
-          endingFingerprint: endingFingerprint.digest,
-          artifacts: new FileArtifactStore(this.workspace),
-          ...(context.workflowBinding?.acceptanceContext
-            ? { acceptanceContext: context.workflowBinding.acceptanceContext }
-            : {}),
         });
-        await atomicWriteJson(this.contextFile(attemptId), {
-          ...context,
-          status: 'recovered',
-          bundleId: recovered.bundle.bundleId,
-          updatedAt: new Date().toISOString(),
-        } satisfies EvidenceRunContext);
-        const attempt = await this.store.loadAttempt(attemptId);
-        const result: EvidenceRunResult = { attempt, ...recovered, decisionRequests: [] };
-        await this.telemetryOutbox.save(
-          createEvidenceTelemetryBatch({
-            workflowRunId: context.workflowBinding?.workflowRunId ?? null,
-            result,
-            gate: projectEvidenceGate(recovered.bundle, context.workflowBinding),
-          }),
-        );
-        await this.flushTelemetry(attemptId);
-        return this.status(attemptId);
       }),
     );
+  }
+
+  async runOrResume(
+    profileId: string,
+    attemptId: string,
+    workflowRunId: string,
+    signal?: AbortSignal,
+  ): Promise<EvidenceStatus> {
+    const existing = await this.lookup(attemptId);
+    if (existing) return this.resume(attemptId, signal);
+    try {
+      await this.run(profileId, attemptId, workflowRunId, signal);
+      return this.status(attemptId);
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+      if (!reason.includes(`Evidence attempt already exists: ${attemptId}`)) throw error;
+      return this.resume(attemptId, signal);
+    }
   }
 
   async evaluate(input: {

@@ -282,34 +282,48 @@ describe('managed Change execution production composition', () => {
         currentWork: { kind: 'evidence.verify' },
       });
       await next();
-      const verifyIntent = await application.context.workExecutionAuthority.loadIntent(runId);
-      await application.context.workExecutionAuthority.markValidated({
-        intent: verifyIntent,
-        validatorId: 'verify.evidence-gate',
-        continuation: 'wait',
-      });
-      const interruptedAttemptId = 'managed-blackbox-interrupted-after-validator';
-      const interruptedEvidence = await application.context.evidenceCoordinator.run(
-        'verify',
-        interruptedAttemptId,
-        runId,
-      );
-      expect(interruptedEvidence.bundle?.outcome).toBe('passed');
-      const recoveryApplication = await bootProjectComposition(productRoot, workspace);
-      let verified: RuntimeResult<VerifyChangeRunResult>;
+      const originalRunOrResume =
+        application.context.evidenceCoordinator.runOrResume.bind(
+          application.context.evidenceCoordinator,
+        );
+      let interruptedAttemptId = '';
+      const evidenceInterruption = vi
+        .spyOn(application.context.evidenceCoordinator, 'runOrResume')
+        .mockImplementationOnce(async (...args) => {
+          const evidence = await originalRunOrResume(...args);
+          interruptedAttemptId = evidence.attempt.attemptId;
+          expect(evidence.bundle?.outcome).toBe('passed');
+          throw new Error('simulated interruption before Verify gate projection');
+        });
       try {
-        verified = await recoveryApplication.context.commandRouter.execute<
-          { runId: string; attemptId: string },
-          RuntimeResult<VerifyChangeRunResult>
-        >('run.work.verify', { runId, attemptId: interruptedAttemptId });
+        await expect(
+          application.context.commandRouter.execute<
+            { runId: string },
+            RuntimeResult<VerifyChangeRunResult>
+          >('run.work.verify', { runId }),
+        ).rejects.toThrow(/simulated interruption before Verify gate projection/u);
+      } finally {
+        evidenceInterruption.mockRestore();
+      }
+      expect(interruptedAttemptId).toMatch(/^verify-[a-f0-9]{64}$/u);
+      const recoveryApplication = await bootProjectComposition(productRoot, workspace);
+      let recovered: RuntimeResult<RunStatusView>;
+      try {
+        recovered = await recoveryApplication.context.commandRouter.execute<
+          { runId: string },
+          RuntimeResult<RunStatusView>
+        >('run.next', { runId });
       } finally {
         await recoveryApplication.close();
       }
-      expect(verified.value).toMatchObject({ gate: 'satisfied' });
-      expect(verified.value.run.changeLifecycle).toMatchObject({
+      expect(recovered.value.changeLifecycle).toMatchObject({
         phase: 'archive',
         currentWork: null,
       });
+      const recoveredEvidence = await application.context.evidenceCoordinator.status(
+        interruptedAttemptId,
+      );
+      expect(recoveredEvidence.context.status).toBe('completed');
 
       await execFileAsync(
         'git',
@@ -360,7 +374,7 @@ describe('managed Change execution production composition', () => {
       };
       await application.context.commandRouter.execute('run.archive.prepare', {
         runId,
-        attemptId: verified.value.attemptId,
+        attemptId: interruptedAttemptId,
         intent,
         policy,
       });
