@@ -122,6 +122,8 @@ function create(overrides: Partial<Parameters<typeof createVerificationInput>[0]
         profileId: 'verify',
         bundleId: 'bundle-failed',
         inputFingerprint: verification.evidenceProfile.fingerprintDigest,
+        verificationInputDigest: verification.digest,
+        acceptanceSetHash: verification.acceptanceSetHash,
         outcome: 'failed',
         status: 'blocked',
         reason: 'required test failed',
@@ -202,6 +204,8 @@ describe('Verification input', () => {
       profileId: 'verify',
       bundleId: 'bundle-1',
       inputFingerprint: verification.evidenceProfile.fingerprintDigest,
+      verificationInputDigest: verification.digest,
+      acceptanceSetHash: verification.acceptanceSetHash,
       outcome: 'passed',
       status: 'satisfied',
       reason: 'passed',
@@ -253,6 +257,15 @@ describe('Verification input', () => {
         workflowStateVersion: 7,
       }),
     ).toThrow(/stale verification inputs/u);
+    expect(() =>
+      acceptVerifyGate({
+        runId: 'run-1',
+        lifecycle,
+        gate: { ...gate, verificationInputDigest: null, acceptanceSetHash: null },
+        attemptId: 'attempt-no-trace',
+        workflowStateVersion: 7,
+      }),
+    ).toThrow(/matching Acceptance Trace/u);
   });
 
   it('fails closed when any required verification identity is missing or mismatched', () => {

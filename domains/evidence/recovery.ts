@@ -5,6 +5,8 @@ import { canonicalJson } from '../workflow-contract/canonical.js';
 import { createEvidenceBundle } from './gate.js';
 import type { ArtifactStore, EvidenceJournal, EvidenceStore } from './ports.js';
 import type { EvidenceBundle, EvidenceCheck, EvidenceFinding, EvidenceReceipt } from './types.js';
+import type { EvidenceAcceptanceContext } from './types.js';
+import { createAcceptanceTrace } from './acceptance-trace.js';
 import { createVerificationReport } from './verification-report.js';
 
 export async function recoverEvidenceAttempt(input: {
@@ -15,6 +17,7 @@ export async function recoverEvidenceAttempt(input: {
   timestamp: string;
   endingFingerprint?: string;
   artifacts?: ArtifactStore;
+  acceptanceContext?: EvidenceAcceptanceContext;
 }): Promise<{ receipts: EvidenceReceipt[]; bundle: EvidenceBundle }> {
   const attempt = await input.store.loadAttempt(input.attemptId);
   if (attempt.status !== 'running')
@@ -90,6 +93,14 @@ export async function recoverEvidenceAttempt(input: {
       ),
     ].sort(),
     findings,
+    acceptanceTrace: input.acceptanceContext
+      ? createAcceptanceTrace({
+          context: input.acceptanceContext,
+          checks: input.plan.order.map((nodeId) => checks.get(nodeId)!),
+          receipts,
+          inputFingerprint: attempt.inputFingerprint,
+        })
+      : null,
   };
   let bundle = createEvidenceBundle({
     bundleId: createHash('sha256').update(canonicalJson(bundleBase)).digest('hex'),

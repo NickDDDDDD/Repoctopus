@@ -17,6 +17,7 @@ import {
 } from '../domains/evidence/telemetry.js';
 import type {
   EvidenceAttempt,
+  EvidenceAcceptanceContext,
   EvidenceBundle,
   EvidenceGateProjection,
 } from '../domains/evidence/types.js';
@@ -46,6 +47,7 @@ interface WorkflowEvidenceBinding {
   workflowStateVersion: number;
   workflowInputDigest?: `sha256:${string}`;
   expectedEvidenceFingerprint?: string;
+  acceptanceContext?: EvidenceAcceptanceContext;
 }
 
 interface EvidenceRunContext {
@@ -114,7 +116,13 @@ function asContext(value: unknown): EvidenceRunContext {
         (binding.workflowInputDigest !== undefined &&
           !/^sha256:[a-f0-9]{64}$/u.test(binding.workflowInputDigest)) ||
         (binding.expectedEvidenceFingerprint !== undefined &&
-          typeof binding.expectedEvidenceFingerprint !== 'string')))
+          typeof binding.expectedEvidenceFingerprint !== 'string') ||
+        (binding.acceptanceContext !== undefined &&
+          (!binding.acceptanceContext ||
+            !/^sha256:[a-f0-9]{64}$/u.test(binding.acceptanceContext.verificationInputDigest) ||
+            !/^sha256:[a-f0-9]{64}$/u.test(binding.acceptanceContext.acceptanceSetHash) ||
+            !Array.isArray(binding.acceptanceContext.acceptanceIds) ||
+            !Array.isArray(binding.acceptanceContext.acceptanceCoverage)))))
   ) {
     throw new Error('Invalid EvidenceRunContext');
   }
@@ -273,6 +281,15 @@ export class EvidenceCoordinator extends Service {
         workflowStateVersion: state.stateVersion,
         workflowInputDigest: verification.digest,
         expectedEvidenceFingerprint: verification.evidenceProfile.fingerprintDigest,
+        acceptanceContext: {
+          verificationInputDigest: verification.digest,
+          acceptanceSetHash: verification.acceptanceSetHash,
+          acceptanceIds: verification.acceptanceCriteria.map((criterion) => criterion.acceptanceId),
+          acceptanceCoverage: verification.acceptanceCoverage.map((coverage) => ({
+            acceptanceId: coverage.acceptanceId,
+            nodeIds: [...coverage.nodeIds],
+          })),
+        },
       };
     }
     if (
@@ -437,6 +454,7 @@ export class EvidenceCoordinator extends Service {
               : {}),
             captureEndingFingerprint: async () =>
               (await this.fingerprint(profileId, config)).digest,
+            ...(binding?.acceptanceContext ? { acceptanceContext: binding.acceptanceContext } : {}),
           });
           await atomicWriteJson(this.contextFile(attemptId), {
             ...context,
@@ -491,6 +509,9 @@ export class EvidenceCoordinator extends Service {
           timestamp: new Date().toISOString(),
           endingFingerprint: endingFingerprint.digest,
           artifacts: new FileArtifactStore(this.workspace),
+          ...(context.workflowBinding?.acceptanceContext
+            ? { acceptanceContext: context.workflowBinding.acceptanceContext }
+            : {}),
         });
         await atomicWriteJson(this.contextFile(attemptId), {
           ...context,

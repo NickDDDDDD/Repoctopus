@@ -57,7 +57,10 @@ describe('evidence contracts', () => {
       status: 'satisfied',
       outcome: 'passed',
       bundleId: bundle.bundleId,
+      verificationInputDigest: null,
+      acceptanceSetHash: null,
     });
+    expect(() => parseEvidenceBundle({ ...bundle, schemaVersion: 1 })).toThrow(/schemaVersion/u);
   });
 
   it('rejects an unknown major evidence version', () => {

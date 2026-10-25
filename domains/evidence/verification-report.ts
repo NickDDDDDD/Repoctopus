@@ -43,6 +43,7 @@ export interface VerificationReport {
   createdAt: string;
   nodes: readonly VerificationReportNode[];
   receiptIds: readonly string[];
+  acceptanceTrace: EvidenceBundle['acceptanceTrace'];
   evidenceArtifactDigests: readonly string[];
   truncated: boolean;
   limits: { maxBytes: number; embeddedOutput: false };
@@ -102,13 +103,11 @@ export function createVerificationReport(input: {
             }
           : {}),
       },
-      findings: (receipt?.findings ?? [])
-        .slice(0, 128)
-        .map((finding) => ({
-          code: finding.code,
-          severity: finding.severity,
-          summary: safeText(finding.summary, redaction),
-        })),
+      findings: (receipt?.findings ?? []).slice(0, 128).map((finding) => ({
+        code: finding.code,
+        severity: finding.severity,
+        summary: safeText(finding.summary, redaction),
+      })),
       artifactRefs: (receipt?.artifacts ?? []).map((artifact) => ({ ...artifact })),
     };
   });
@@ -122,6 +121,9 @@ export function createVerificationReport(input: {
     outcome: input.bundle.outcome,
     createdAt: input.bundle.createdAt,
     receiptIds: [...input.bundle.receiptIds],
+    acceptanceTrace: input.bundle.acceptanceTrace
+      ? structuredClone(input.bundle.acceptanceTrace)
+      : null,
     evidenceArtifactDigests: [...input.bundle.artifactDigests],
     limits: { maxBytes: MAX_VERIFICATION_REPORT_BYTES, embeddedOutput: false as const },
   };

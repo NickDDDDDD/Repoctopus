@@ -30,13 +30,27 @@ export function aggregateGateOutcome(
 }
 
 export function createEvidenceBundle(
-  input: Omit<EvidenceBundle, 'apiVersion' | 'kind' | 'outcome'>,
+  input: Omit<
+    EvidenceBundle,
+    'schemaVersion' | 'apiVersion' | 'kind' | 'outcome' | 'acceptanceTrace'
+  > &
+    Partial<Pick<EvidenceBundle, 'acceptanceTrace'>>,
 ): EvidenceBundle {
+  const acceptanceTrace = input.acceptanceTrace ?? null;
+  const aggregate = aggregateGateOutcome(input.checks, input.findings);
+  const outcome =
+    acceptanceTrace && acceptanceTrace.passed !== acceptanceTrace.total
+      ? acceptanceTrace.failed > 0
+        ? 'failed'
+        : 'incomplete'
+      : aggregate;
   return {
+    schemaVersion: 2,
     apiVersion: 'repoctopus/v1alpha1',
     kind: 'EvidenceBundle',
     ...input,
-    outcome: aggregateGateOutcome(input.checks, input.findings),
+    acceptanceTrace,
+    outcome,
   };
 }
 
@@ -47,9 +61,25 @@ export function projectEvidenceGate(
     workflowActionId: string;
     workflowStepId: string;
     workflowStateVersion: number;
+    workflowInputDigest?: `sha256:${string}`;
+    acceptanceContext?: {
+      verificationInputDigest: `sha256:${string}`;
+      acceptanceSetHash: `sha256:${string}`;
+    };
   } | null = null,
 ): EvidenceGateProjection {
   const satisfied = bundle.outcome === 'passed' || bundle.outcome === 'passed_with_warnings';
+  const traceMatchesBinding =
+    !binding ||
+    binding.workflowInputDigest === undefined ||
+    (bundle.acceptanceTrace !== null &&
+      bundle.acceptanceTrace.verificationInputDigest === binding.workflowInputDigest &&
+      (!binding.acceptanceContext ||
+        (bundle.acceptanceTrace.verificationInputDigest ===
+          binding.acceptanceContext.verificationInputDigest &&
+          bundle.acceptanceTrace.acceptanceSetHash ===
+            binding.acceptanceContext.acceptanceSetHash)));
+  const gateSatisfied = satisfied && traceMatchesBinding;
   return {
     schemaVersion: 1,
     kind: 'EvidenceGateProjection',
@@ -61,10 +91,14 @@ export function projectEvidenceGate(
     profileId: bundle.profileId,
     bundleId: bundle.bundleId,
     inputFingerprint: bundle.inputFingerprint,
+    verificationInputDigest: bundle.acceptanceTrace?.verificationInputDigest ?? null,
+    acceptanceSetHash: bundle.acceptanceTrace?.acceptanceSetHash ?? null,
     outcome: bundle.outcome,
-    status: satisfied ? 'satisfied' : 'blocked',
-    reason: satisfied
+    status: gateSatisfied ? 'satisfied' : 'blocked',
+    reason: gateSatisfied
       ? `Evidence profile ${bundle.profileId} satisfied the current input fingerprint`
-      : `Evidence profile ${bundle.profileId} is ${bundle.outcome}`,
+      : traceMatchesBinding
+        ? `Evidence profile ${bundle.profileId} is ${bundle.outcome}`
+        : `Evidence profile ${bundle.profileId} has no matching Acceptance Trace`,
   };
 }

@@ -63,10 +63,18 @@ export function acceptVerifyGate(input: {
     throw new Error(`Evidence attempt ${input.attemptId} uses another Evidence Profile`);
   }
   if (gate.inputFingerprint !== verification.evidenceProfile.fingerprintDigest) {
-    throw new Error(`Evidence attempt ${input.attemptId} was produced from stale verification inputs`);
+    throw new Error(
+      `Evidence attempt ${input.attemptId} was produced from stale verification inputs`,
+    );
   }
   if (gate.compositionDigest !== verification.compositionDigest) {
     throw new Error(`Evidence attempt ${input.attemptId} was produced by another composition`);
+  }
+  if (
+    gate.verificationInputDigest !== verification.digest ||
+    gate.acceptanceSetHash !== verification.acceptanceSetHash
+  ) {
+    throw new Error(`Evidence attempt ${input.attemptId} has no matching Acceptance Trace`);
   }
   if (gate.status !== 'satisfied') {
     throw new Error(`Evidence Gate blocked the transition: ${gate.reason}`);
@@ -115,7 +123,9 @@ export function rejectVerifyGate(input: {
     gate.profileId !== verification.evidenceProfile.id ||
     gate.compositionDigest !== verification.compositionDigest
   ) {
-    throw new Error(`Evidence attempt ${input.attemptId} has an incompatible verification identity`);
+    throw new Error(
+      `Evidence attempt ${input.attemptId} has an incompatible verification identity`,
+    );
   }
   if (gate.status !== 'blocked') {
     throw new Error(`Evidence attempt ${input.attemptId} is not a rejected Gate`);
