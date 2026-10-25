@@ -30,6 +30,21 @@ Repoctopus MUST 在同一权威 Change Run trajectory 中记录 Open、Design、
 - **WHEN** 当前 Work 在同一 epoch 内依次完成 claim、context delivery、Host invocation、受保护工具调用、Outcome 和 Validator acceptance
 - **THEN** Trajectory 与 OTLP 按相同 runId、attempt、epoch、稳定 identity 和顺序表示全部边界，最后的 lifecycle transition 不能替代或合成前序事件
 
+#### Scenario: Open 与 Design 分别等待批准
+
+- **WHEN** Open 或 Design Work 的 Outcome 与 Validator 已接受并建立各自 Human Decision
+- **THEN** Trajectory 与 OTLP 分别记录 phase、Skill delivery/consumption、proposal hash、approval requested/accepted/rejected 和 transition；不得用单个 planning-approved 事件合并两个边界
+
+#### Scenario: Verify 触发受管修复
+
+- **WHEN** Verify implementation failure 使 task revision 重开并创建 Build Repair Work
+- **THEN** Trajectory 与 OTLP 关联失败 Evidence、invalidation、phase transition、task reopen、Repair Work identity、TDD Skill 使用和新 completion claim，使团队能复算一次完整返工而不是只看到 phase 往返
+
+#### Scenario: Archive 请求重新验证
+
+- **WHEN** Archive 在副作用前发现 Verify 输入陈旧并返回 Verify
+- **THEN** 遥测记录 reverify 分类、epoch 变化与新的 Evidence attempt；若副作用已经开始则记录 reconcile 而不是虚假的 Archive→Verify transition
+
 #### Scenario: 本地提交失败
 
 - **WHEN** Run CAS 或 transition journal 没有持久化某个 Host、工具、Validator、epoch 或 phase 成功事实

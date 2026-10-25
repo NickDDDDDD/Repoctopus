@@ -21,6 +21,49 @@ Change Run MUST 维护从零开始且只由 Runtime 写入的 `checkEpoch`；每
 - **WHEN** 检查被策略显式标记为 reusable，且命令、输入、环境、Provider 和证据摘要在新 epoch 下仍通过全部新鲜度校验
 - **THEN** Runtime 可以记录复用事实；仅有 reusable 标记或旧成功结果不足以跨 epoch 接受证据
 
+### Requirement: Open 与 Design 必须分别形成受审查边界
+
+Change Run MUST 把 Open 和 Design 实现为两个独立的受管阶段。Open 必须在核对仓库、现有规格和输入事实后创建或修复 proposal、delta specs、design、tasks 四类 OpenSpec 工件，经严格 Provider 校验后建立绑定其语义摘要的 Human Decision；只有可信批准才能进入 Design。Design 必须从已批准 Open 基线深化同一四类工件，经独立校验和第二个 Human Decision 批准后才能进入 Build。两个批准不得互相替代、合并或由 `auto_transition`、文件存在和 checkbox 状态推断。
+
+#### Scenario: Open 四类工件通过严格校验
+
+- **WHEN** Open Work 交付四类官方工件且 Specification Provider strict validation 接受当前语义摘要
+- **THEN** Runtime 在 Open 建立稳定 Human Decision 并停止；在收到绑定该摘要的可信批准前不得创建 Design Work或转换 phase
+
+#### Scenario: Open 被拒绝或要求修订
+
+- **WHEN** 用户拒绝 Open proposal 或要求修订其中任一受控语义
+- **THEN** Run 保持 Open、使过期 proposal hash 不可提交，并恢复或创建受管 Open Work，而不是进入 Design
+
+#### Scenario: Design 深化同一 OpenSpec 工件
+
+- **WHEN** 已批准 Open 进入 Design并补足工程边界、决策、验证策略或可执行 Tasks
+- **THEN** Design 只更新同一 Change 的四类 OpenSpec 工件，严格校验后建立独立 Human Decision，不创建第五份 Design Doc、Build Plan、ADR 或 implementation notes
+
+#### Scenario: 只有 Open approval
+
+- **WHEN** Open approval 已接受但 Design Work、Validator 或 Design approval 任一缺失
+- **THEN** Runtime 不得进入 Build，也不得把 Open approval 解释为整个规划阶段已获批
+
+### Requirement: 失败分类必须决定真实返工路径
+
+Runtime MUST 根据持久化的有界失败分类和当前副作用边界选择 continuation；Host、Agent 与调用方不得直接指定目标 phase。普通实现失败、设计假设失效、规划语义漂移、验证行为失败、Evidence/基础设施失败、未知外部结果和 Archive 前置重验必须走 definition 声明的不同路径，并在同一 Run 中保留旧事实、失效不再适用的批准/claim/evidence并递增合法 transition 的 `checkEpoch`。
+
+#### Scenario: Verify 发现实现行为失败
+
+- **WHEN** Verify review 或 Gate 将失败分类为实现行为不满足当前批准规格
+- **THEN** Runtime 记录失败 Evidence、重开有依据的 task revision、转换到 Build并创建真实 Repair Work，不只改变 phase 或等待旁路文件变化
+
+#### Scenario: Verify 依赖暂时不可用
+
+- **WHEN** 失败来自 Evidence Provider、命令环境或其他基础设施而未证明实现错误
+- **THEN** Runtime 保持 Verify blocked/retry 或 reconcile，不重开 Build Task、不使 Design approval 失效
+
+#### Scenario: Archive 前发现验证输入陈旧
+
+- **WHEN** Archive 尚未开始规格关闭或外部 publication 副作用且当前 Verify identity 已失效
+- **THEN** Runtime 回到 Verify并要求当前输入的新 Evidence；若副作用已经开始，则保持 Archive并从稳定 Journal reconcile而不回滚 phase
+
 ## MODIFIED Requirements
 
 ### Requirement: 每个活动 Change 使用唯一权威 Run
@@ -44,7 +87,7 @@ Repoctopus MUST 为一个 Workspace 中的一个 change 建立至多一个权威
 
 ### Requirement: 生命周期回退保留审计历史
 
-Design revision、规划语义漂移、Verify 失败、实现输入漂移和 Archive 后置验证失败 MUST 在同一 Run 中通过追加 invalidation、递增 `checkEpoch` 与定义声明的回退转换处理；旧批准、Task Outcome、Evidence 和 Receipt 必须保留但不得用于不匹配的新输入，普通回退不得创建替代 Run。
+Design revision、规划语义漂移、Verify 失败、实现输入漂移和 Archive 前置验证失效 MUST 在同一 Run 中通过追加 invalidation、递增 `checkEpoch` 与定义声明的回退转换处理；旧批准、Task Outcome、Evidence 和 Receipt 必须保留但不得用于不匹配的新输入，普通回退不得创建替代 Run。外部或规格关闭副作用开始后的 Archive 不得回滚，只能 reconcile。
 
 #### Scenario: Verify 发现实现失败
 

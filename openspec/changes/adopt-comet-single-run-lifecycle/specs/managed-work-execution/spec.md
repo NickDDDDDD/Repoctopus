@@ -74,3 +74,43 @@ Repoctopus MUST 把当前 Work attempt、checkEpoch、claim、执行包、Host i
 
 - **WHEN** repository commit/path binding、definition、composition、Skill、Specification Provider 或 packet digest 与 checkpoint 不一致
 - **THEN** Runtime 在同一 Run 返回结构化 reconcile 或 `migration_required` 状态并保留原执行事实，不把漂移解释为未执行后重跑
+
+## ADDED Requirements
+
+### Requirement: Host 只能报告发现而不能选择阶段
+
+Repoctopus MUST 让 Host Outcome 只表达当前 Work 的结果、产物、工具事实和 definition 允许的有界 finding classification；Outcome schema MUST NOT 接受 `targetPhase`、任意 continuation 或伪造 Human Decision。Runtime MUST 在验证 Outcome 后根据当前 phase、checkpoint、retry policy、批准和副作用边界选择下一 Work、Human Decision、wait、reconcile、transition 或 done。
+
+#### Scenario: Host 报告设计假设无效
+
+- **WHEN** Build Host 返回绑定当前 Work 的 `design_assumption_invalid` 发现
+- **THEN** Runtime 建立稳定 Human Decision并保持当前状态，只有可信批准修订后才能使旧依据失效并回到 Design；Host 不能直接完成转换
+
+#### Scenario: Host 指定目标 phase
+
+- **WHEN** Host Outcome 或调用方额外字段尝试指定 Design、Build、Verify、Archive 或 completed
+- **THEN** Runtime 拒绝该 Outcome 或忽略未声明字段并记录协议错误，不据此修改 lifecycle
+
+#### Scenario: 普通 Build 失败重复发生
+
+- **WHEN** 同一逻辑 Build Work 连续返回可重试 implementation failure
+- **THEN** Runtime 仅按有界 retry policy 创建后续 attempt；达到上限时进入稳定 blocked/Human Decision，而不是无限重派或创建另一 Run
+
+### Requirement: 验证失败必须创建受管 Repair Work
+
+当 Verify 证明实现行为不满足当前批准规格时，Repoctopus MUST 在同一 Run 记录失败 Evidence、重新打开有依据的 OpenSpec task revision，并由 Runtime 创建 Build Repair Work。Repair Work MUST 使用 Build 的固定 Skill 组合并完整经过 intent、claim、packet、Host invocation、Outcome、Validator 和 completion claim；文件变化、Git commit、checkbox、fingerprint 或 phase 变化本身不得构成修复完成。
+
+#### Scenario: Verify 失败后重新进入 Build
+
+- **WHEN** Runtime 接受 implementation failure 并从 Verify 转换到 Build
+- **THEN** projection 返回可领取的 Repair Work及其受影响 task revision，不返回只有标签而不可执行的 `verify.repair` 状态
+
+#### Scenario: Agent 在受管 Repair Work 外修改代码
+
+- **WHEN** 仓库 fingerprint 已改变但当前 Repair Work 没有可验证 Outcome、Validator 和 completion claim
+- **THEN** Runtime 保持 Build pending/blocked并报告旁路修改，不允许再次进入 Verify
+
+#### Scenario: 无法证明最小受影响 Task 集合
+
+- **WHEN** Verify finding 没有可核对的 requirement/task links，Runtime 无法安全选择最小重开集合
+- **THEN** Runtime 建立 Human Decision或采用 definition 声明的保守集合并记录依据，不静默把所有已完成 Task 保持 closed
