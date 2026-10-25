@@ -3,13 +3,13 @@
 ## Subject
 
 - Change: `complete-managed-change-execution`
-- Tested implementation commit: `173938d359202acfc1373c248c29fb33016338bb`
-- Branch: `feat/complete-managed-change-execution`
+- Tested implementation commit: `8502a2614638809fdd03faa8ad6b0686ab8929a5`
+- Branch: `codex/fix-managed-change-acceptance`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `937712`
-- Package SHA-256: `3ed1746395de3cbc09fa34fb7394d198996f0f667a440e37cc6e62671d36c575`
+- Package bytes: `938633`
+- Package SHA-256: `0ed1169d9122a22d8dcec3371700a1d6b068ebe00ab0439e9b2d58410f3f85f4`
 - Lifecycle definition: `repoctopus-change@2.0.0`
-- Lifecycle definition digest: `sha256:8ffa2adcb0b9837858a24d96f5410dd776828905d21fd481805f1e2d741df7cd`
+- Lifecycle definition digest: `sha256:3d4c53a5ba52c54417b1b1f3117d1953364c7afba95255ea073e2efd011259f8`
 - Production composition rule: the exact composition digest is frozen into every Run and asserted by the black-box harness; it is intentionally environment/configuration specific rather than copied as a package-global constant.
 
 The report commit may contain only this Evidence document. Verification remains valid only while the tested implementation commit is an ancestor and the diff contains no packaged product file; any product/package change requires a new package checksum and a full rerun.
@@ -21,7 +21,7 @@ All commands completed successfully on Windows with Node.js `24.21.0`:
 ```text
 npm run verify
   118 test files passed
-  434 tests passed, 1 skipped
+  440 tests passed, 1 skipped
   generated output, brand, architecture and provenance checks passed
   OpenSpec strict validation: 14 passed, 0 failed
 
@@ -33,8 +33,16 @@ npm run test:tracer-e2e
 
 npm pack --json --pack-destination <isolated-temp-directory>
   repoctopus-0.1.0.tgz
-  SHA-256 3ed1746395de3cbc09fa34fb7394d198996f0f667a440e37cc6e62671d36c575
+  SHA-256 0ed1169d9122a22d8dcec3371700a1d6b068ebe00ab0439e9b2d58410f3f85f4
 ```
+
+## Structured Acceptance Design gate
+
+Every tracked checkbox Task now carries at least one explicit, indented `**Acceptance:**` line. `parseSpecificationTasks()` is the single projection seam: it accepts only that canonical form at a deeper indentation level than its Task and derives content-addressed Acceptance identities independently from checkbox state. Unindented text, unbolded labels and legacy `Acceptance criteria` aliases remain ordinary prose and therefore fail Design completeness validation.
+
+The strict OpenSpec Provider loads and parses Tasks before entering the narrow completeness catch. Only `assertSpecificationTaskAcceptance()` failures become `repoctopus.task-acceptance-missing`; process, cancellation, duplicate identity, dependency and Receipt failures preserve their original identity. Domain, Provider and packaged CLI tests cover missing, complete, duplicate-identity and each malformed-format case before Human Decision creation.
+
+Self-hosting generations 3 and 4 were invalidated after protected Provider/Skill changes. Generation 4's first Verify review failed on permissive parsing and overbroad error relabeling; generation 5's review then found that only one of three malformed forms crossed the packaged CLI seam. Generation 6 re-ran Open and Design with actual Skill content, recorded the bounded corrective approval for proposal `sha256:78057864d9582d5c89facf6246e3d02353944956a7102893aecadc9558344cc6`, and accepted Task 8.3 only through the bound Host Outcome, Receipt and Runtime Validator chain. Its final independent Standards and Spec reviews reported no findings.
 
 ## Fresh five-stage black-box evidence
 
@@ -110,4 +118,4 @@ Malicious payload tests include prompt/response text, command, absolute path, UR
 
 ## Verdict
 
-All 40 tasks in `openspec/changes/complete-managed-change-execution/tasks.md` are implemented and verified. The managed five-stage workflow is pull-based, Runtime-authoritative, Host-mediated, resumable at persisted boundaries, multi-repository aware and projected through one privacy-bounded OTLP protocol.
+All 43 tasks in `openspec/changes/complete-managed-change-execution/tasks.md` are implemented and verified. The managed five-stage workflow is pull-based, Runtime-authoritative, Host-mediated, resumable at persisted boundaries, multi-repository aware and projected through one privacy-bounded OTLP protocol. Design fails closed on missing or malformed structured Acceptance before requesting approval, while unrelated Task projection failures keep their real diagnostic identity.
