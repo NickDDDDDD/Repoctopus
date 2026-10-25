@@ -73,6 +73,10 @@ interface WorkExecutionHost {
 
 `ManagedWorkExecutor.execute()` 是唯一会调用 `host.invoke` 的入口。它在调用前重新加载 Run/current Work、核对 intent、composition、definition、Skill/Provider digests 和 Host 能力。Host 返回值仍经过 ActionDispatcher、Work Validator 和 phase transition，Host 无权直接完成 Task 或改变 Run。
 
+正常 Agent/Runner 入口保持 pull-based：调用 `run next` 请求 Runtime 解析当前 continuation，而不是提交目标 phase、选择 Work 或指定 Skill。`run next` 只允许幂等创建/调度 definition 已选定的当前 Action、调用已唯一解析的 Managed Host，或返回 `execute|ask|wait|reconcile|done`；它本身不能制造成功 Outcome、Validator fact 或 lifecycle transition。若当前 Action 需要进程外 Host，`run next` 返回绑定当前 revision/action 的 claim request，由 Host 使用下述 `run work-*` 协议完成原 Action；普通 Agent 不把低级协议当作阶段选择器。
+
+每个成功写操作都在同一响应中返回新的权威 continuation。Agent 应直接消费该 continuation；`run status` 是只读恢复入口，`run next` 只在冷恢复、缺少最新响应或 continuation 明确要求 Runtime-owned dispatch 时调用，不需要在每个阶段边界额外轮询。`auto_transition` 属于客户端是否继续消费 `execute` continuation 的策略：关闭时只停止自动加载下一 Skill，不撤销已经由 Validator 合法提交的 phase，也不允许继续非法 transition。
+
 不把 Host 合并进现有 Work Contributor：Contributor 表达副作用适配和所需能力，Host 表达“谁调用 Agent”。二者生命周期、恢复和安全诊断不同；合并会再次把“能接收 Outcome”误当成“真的执行过 Agent”。
 
 ### 3. 外部 Host 使用相同 packet 协议，不用 manual success
@@ -162,7 +166,7 @@ Build 的 action owner 改为 `repoctopus-build-task`，`tdd` 与 `codebase-desi
 
 删除当前不可达的 `specification.decision` Work；Human Decision 是 wait condition，不伪装成 Agent Work。`next()` 不再自动提交 Open intake。Design assessment 不完整时创建/保持 `specification.plan`，而不是只写 blocker。Verify 自动命令仍由 Evidence Coordinator 执行，但必须在 Verify Host Outcome 被接受后才开始，避免把自动测试成功当成 Agent 已审查。
 
-Open 的修复采用破坏性替换，不在旧分支旁增加第二条路径：删除 `WorkflowRuns.next()` 中按 phase 直接提交 `open-intake-ready` 的逻辑；`run next` 在 Open 只创建或返回同一个 `change.intake` Work 和 `execute` continuation，重复调用必须幂等。`change.intake` 绑定 `repoctopus-open-change`、Specification Provider 阶段协议和最小 `specification.write` scope；只有原 attempt 的 Host Outcome 通过 `open.intake-ready` Validator 后，transition handler 才能接收带 Work/Receipt/validator identity 的事实并进入 Design。裸 `open-intake-ready` observation、目录存在、已有工件或调用内部 coordinator 都不能构成推进依据。
+Open 的修复采用破坏性替换，不在旧分支旁增加第二条路径：删除 `WorkflowRuns.next()` 中按 phase 直接提交 `open-intake-ready` 的逻辑；`run next` 在 Open 只解析、幂等创建或调度 Runtime 已选择的 `change.intake`，并返回/消费它的 `execute` continuation，重复调用不能创造新的 Work 或完成事实。`change.intake` 绑定 `repoctopus-open-change`、Specification Provider 阶段协议和最小 `specification.write` scope；只有原 attempt 的 Host Outcome 通过 `open.intake-ready` Validator 后，transition handler 才能接收带 Work/Receipt/validator identity 的事实并进入 Design。合法提交 Outcome/Validator 的响应直接携带 Design continuation；是否自动加载下一 Skill由客户端 `auto_transition` 决定。裸 `open-intake-ready` observation、目录存在、已有工件或调用内部 coordinator 都不能构成推进依据。
 
 由于产品尚未正式发布，本 Change 直接提升 lifecycle definition、Run schema 和公共 claim 协议版本，删除旧自动推进代码、死 Work、旧分支和只为测试服务的 fixture，不实现双读、双写或旧行为 fallback。旧 G1 bootstrap Run 保持只读审计记录；自举通过新 generation 的显式 `adopt-existing` 接管既有实现，但仍需生成新协议下可验证的 Open/Design adoption facts，不能伪造旧 Run 曾执行过这些 Work。
 

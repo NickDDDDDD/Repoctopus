@@ -63,6 +63,25 @@ Runtime、CLI、Dashboard 和 Telemetry MUST 从同一持久 Change Run checkpoi
 - **WHEN** 原 Runner退出且另一个 Runner加载同一 Run
 - **THEN** 新 Runner得到与 checkpoint一致的当前 Work/Wait 和 continuation，并在完成兼容性与多仓核对前不创建第二个 attempt
 
+### Requirement: `run next` 必须是 pull-based continuation 入口
+
+Agent 或 Runner MAY 调用 `run next` 请求 Runtime 解析或调度当前 Action，但调用方不得提供目标 phase、替换当前 Work 或选择 Skill。Runtime MUST 只处理 definition 和当前 Run 已选定的 Action，并返回 `execute|ask|wait|reconcile|done`；`run next` 本身不得生成成功 Outcome、Validator acceptance 或 phase transition。每个完成写入的 Runtime/Host 命令 MUST 在同一响应返回新的 continuation，使 Agent 无需通过轮询猜测进度。
+
+#### Scenario: Agent请求下一项工作
+
+- **WHEN** 当前 Run 在 Open 且 `change.intake` 尚未完成，Agent 调用 `run next`
+- **THEN** Runtime 解析或调度同一个 `change.intake` 及其固定 Skill/Host，返回 `execute` 或当前 wait/reconcile，不接受“进入 Design”或另一 Skill作为输入
+
+#### Scenario: Outcome 验证后自动继续
+
+- **WHEN** 当前 Action Outcome 通过 Validator 并由 Run CAS 合法推进到下一 phase
+- **THEN** 同一响应返回下一 phase 的 continuation；`auto_transition=true` 可让客户端继续消费其 `execute`，`false` 只产生手动交接，不改变已提交 phase 或合法性判断
+
+#### Scenario: 必须停止的 continuation
+
+- **WHEN** continuation 为 Human Decision、原 Host running/unknown、failed、reconcile 或 manual handoff
+- **THEN** Agent停止自动派发并处理对应决定、等待、核对或交接；重复 `run next` 不得创建第二个 Action、伪造结果或绕过停止条件
+
 ## MODIFIED Requirements
 
 ### Requirement: Completion Claim 与验证事实分离

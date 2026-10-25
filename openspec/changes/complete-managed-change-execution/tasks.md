@@ -18,6 +18,7 @@
 - [ ] 2.7 实现 `execute|ask|wait|reconcile|done` 恢复分类：未 invoke 的原 attempt 可重新交付、活跃 Host 必须等待、未知副作用必须核对、已持久 Outcome 从 Validator 继续、已接受 Validator 幂等完成 transition、Human Decision 保留原 proposal hash。
 - [ ] 2.8 实现可选 Agent coordination checkpoint，用于上下文压缩、Agent handoff 和子任务进度；验证它不进入 OpenSpec 四类工件、不授权写入、不形成 completion claim，缺失或 stale 时只触发实际工作核对。
 - [ ] 2.9 将多仓 Project Snapshot reconciliation 接入 Work resume：按 repository identity 重新解析本机路径和 scope，核对 commit/dirty state/definition/composition/Skill/Provider/packet digest，漂移时返回结构化 reconcile 或 migration 而不重复执行。
+- [ ] 2.10 将 `run next` 收敛为 pull-based continuation/dispatch 入口：不得接受目标 phase、Work 或 Skill 选择，只能解析并调度 Runtime 当前 Action；每个写响应直接返回新 continuation，`run status` 保持只读，`run work-*` 只作为 Host 协议。测试覆盖自动连续、manual handoff、Human Decision、unknown、failed 和 cold resume，证明 `auto_transition` 只控制是否消费下一 `execute`，不参与 transition 合法性。
 
 ## 3. 提供阶段 Skill 与 Specification Provider 协议
 
@@ -30,7 +31,7 @@
 ## 4. 让五阶段 Work 全部生产可达
 
 - [ ] 4.1 破坏性升级 builtin lifecycle definition、Run schema 和 claim 协议，删除不可达 `specification.decision`、Open 自动 observation、ActionStore latest-attempt 权威、旧分支与对应兼容 fixture，并登记每个 Work 的 creator、Host action、Contributor 和 Validator；架构测试遍历 definition 和生产路由，证明不存在仅由测试构造的 Work kind，也不存在旧协议 fallback、双读或双写。
-- [ ] 4.2 实现 Open `change.intake` 的创建、claim、`repoctopus-open-change` Host 执行、最小 Specification 写 scope、Provider validator 和 transition；进程外 fixture 从不存在的 change 开始，证明首次及重复 `run next` 都保持 Open 并返回同一 Work/attempt，裸 `open-intake-ready` observation、目录/工件存在和伪造 Outcome 均不能推进，只有原 Host Outcome 与 `open.intake-ready` Validator identity 被同一 Run CAS 接受后才进入 Design。
+- [ ] 4.2 实现 Open `change.intake` 的创建、claim、`repoctopus-open-change` Host 执行、最小 Specification 写 scope、Provider validator 和 transition；进程外 fixture 从不存在的 change 开始，证明首次及重复 `run next` 只解析/调度同一 Runtime-selected Work且不能产生完成事实，裸 `open-intake-ready` observation、目录/工件存在和伪造 Outcome 均不能推进，只有原 Host Outcome 与 `open.intake-ready` Validator identity 被同一 Run CAS 接受后才进入 Design，并在同一响应返回 Design continuation。
 - [ ] 4.3 实现 Design `specification.plan` 的创建、retry、strict validation 和 Human Decision 衔接；fixture 依次覆盖缺失工件、无效工件、Host succeeded 但校验失败、四类工件有效后 waiting，以及可信批准后进入 Build。
 - [ ] 4.4 将 Build 调度接到 ManagedWorkExecutor，并由 Provider/Validator 唯一更新 Task checkbox；用两个 Task 的 red-green-refactor 纵切证明每个 Task 都有独立 packet、Receipt 和 validation，Agent 直接勾选不能推进。
 - [ ] 4.5 将 Verify Host Outcome 设为自动 Evidence 执行的前置事实，并保留失败回 Build；测试证明仅测试命令通过、仅 code-review identity 存在或伪造 review Outcome 都不能进入 Archive。
