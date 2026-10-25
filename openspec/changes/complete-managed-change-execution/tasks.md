@@ -5,7 +5,7 @@
 - [ ] 1.1 固定 Comet 0.5.0 `applicationSkillWork`、`skill-executor`、`skill-invocation` 的行为对照和当前 G1 bootstrap Run 身份；增加回归测试重现“assembler 有正文、public claim 只有 identity”的缺口，并验证测试在修复前失败。
 - [ ] 1.2 定义版本化 `WorkExecutionPacket`、packet identity、Host requirement 和 Host invocation/outcome 类型；用领域测试验证正文与 identity digest 一致、对象深冻结、规范序列化稳定且正文不进入持久 identity。
 - [ ] 1.3 重构 Work claim 为“先持久化不可变 ActionIntent，再由 Run CAS 绑定 identity，最后返回完整 packet”，保留 ActionStore 的 identity-only Schema但移除其 attempt/latest 权威；用 Store/Dispatcher 测试证明孤立 intent 不是 claim、并发 CAS 只有一个获胜 attempt、持久文件不含 Skill/Provider instruction/change input 正文，失败不暴露 packet。
-- [ ] 1.4 升级公共 Application/CLI `run work-claim` 协议并保留明确的 identity-only 展示；运行打包 CLI E2E，证明 JSON Host 协议得到完整正文而普通文本、日志和诊断不泄漏正文。
+- [ ] 1.4 破坏性升级公共 Application/CLI `run work-claim` 协议并仅保留不可执行的 identity-only inspection projection，不提供旧 claim fallback；运行打包 CLI E2E，证明 JSON Host 协议得到完整正文，而普通文本、只读 inspection、日志和诊断不泄漏正文或取得执行能力。
 
 ## 2. 建立真实 Agent Host 执行端口
 
