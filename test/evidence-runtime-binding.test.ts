@@ -248,6 +248,48 @@ describe('EvidenceCoordinator workflow binding', () => {
     expect(recovered.attempt.status).toBe('completed');
   });
 
+  it('preserves terminal superseded status while rebuilding a missing bundle', async () => {
+    const { evidence, runId, workspace } = await fixture();
+    const attemptId = 'attempt-superseded-bundle-gap';
+    const completed = await evidence.run('verify', attemptId, runId);
+    const contextFile = path.join(workspace, '.repoctopus', 'evidence', 'runs', `${attemptId}.json`);
+    const attemptFile = path.join(
+      workspace,
+      '.repoctopus',
+      'evidence',
+      'attempts',
+      `${attemptId}.json`,
+    );
+    const bundleFile = path.join(
+      workspace,
+      '.repoctopus',
+      'evidence',
+      'bundles',
+      `${completed.bundle.bundleId}.json`,
+    );
+    const [context, attempt] = await Promise.all([
+      readFile(contextFile, 'utf8').then((source) => JSON.parse(source) as Record<string, unknown>),
+      readFile(attemptFile, 'utf8').then((source) => JSON.parse(source) as Record<string, unknown>),
+    ]);
+    await Promise.all([
+      writeFile(
+        contextFile,
+        JSON.stringify({ ...context, status: 'running', bundleId: null }),
+        'utf8',
+      ),
+      writeFile(attemptFile, JSON.stringify({ ...attempt, status: 'superseded' }), 'utf8'),
+      unlink(bundleFile),
+    ]);
+
+    const recovered = await evidence.runOrResume('verify', attemptId, runId);
+    expect(recovered.context.status).toBe('recovered');
+    expect(recovered.attempt.status).toBe('superseded');
+    expect(recovered.bundle?.outcome).toBe('incomplete');
+    expect(recovered.bundle?.findings).toEqual(
+      expect.arrayContaining([expect.objectContaining({ code: 'input-drift' })]),
+    );
+  });
+
   it('continues a prepared context that has no Attempt yet', async () => {
     const { evidence, runId, workspace } = await fixture();
     const attemptId = 'attempt-prepared-context';
@@ -302,6 +344,54 @@ describe('EvidenceCoordinator workflow binding', () => {
     expect(recovered.context.status).toBe('recovered');
     expect(recovered.bundle?.outcome).toBe('passed');
     expect(recovered.attempt.status).toBe('completed');
+  });
+
+  it('fails closed when an Attempt is missing but its journal proves execution started', async () => {
+    const { evidence, runId, workspace } = await fixture();
+    const attemptId = 'attempt-orphaned-journal';
+    const completed = await evidence.run('verify', attemptId, runId);
+    const contextFile = path.join(workspace, '.repoctopus', 'evidence', 'runs', `${attemptId}.json`);
+    const attemptFile = path.join(
+      workspace,
+      '.repoctopus',
+      'evidence',
+      'attempts',
+      `${attemptId}.json`,
+    );
+    const bundleFile = path.join(
+      workspace,
+      '.repoctopus',
+      'evidence',
+      'bundles',
+      `${completed.bundle.bundleId}.json`,
+    );
+    const context = JSON.parse(await readFile(contextFile, 'utf8')) as Record<string, unknown>;
+    await Promise.all([
+      writeFile(
+        contextFile,
+        JSON.stringify({ ...context, status: 'running', bundleId: null }),
+        'utf8',
+      ),
+      unlink(attemptFile),
+      unlink(bundleFile),
+    ]);
+
+    await expect(evidence.runOrResume('verify', attemptId, runId)).rejects.toThrow(
+      `Evidence attempt is missing but durable execution facts exist: ${attemptId}`,
+    );
+  });
+
+  it('rejects serial attempt takeover by another profile or workflow Run', async () => {
+    const { evidence, runId } = await fixture();
+    const attemptId = 'attempt-owner-fencing';
+    await evidence.run('verify', attemptId, runId);
+
+    await expect(evidence.runOrResume('verify-alt', attemptId, runId)).rejects.toThrow(
+      `Evidence attempt ownership mismatch: ${attemptId}`,
+    );
+    await expect(evidence.runOrResume('verify', attemptId, 'another-run')).rejects.toThrow(
+      `Evidence attempt ownership mismatch: ${attemptId}`,
+    );
   });
 
   it('serializes the same attempt identity across different profiles', async () => {

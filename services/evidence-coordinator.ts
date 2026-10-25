@@ -181,6 +181,19 @@ export class EvidenceCoordinator extends Service {
     return asContext(JSON.parse(await readFile(this.contextFile(attemptId), 'utf8')) as unknown);
   }
 
+  private assertRunOwner(
+    context: EvidenceRunContext,
+    profileId: string,
+    workflowRunId: string,
+  ): void {
+    if (
+      context.profileId !== profileId ||
+      context.workflowBinding?.workflowRunId !== workflowRunId
+    ) {
+      throw new Error(`Evidence attempt ownership mismatch: ${context.attemptId}`);
+    }
+  }
+
   async lookup(attemptId: string): Promise<EvidenceStatus | null> {
     return optional(() => this.status(attemptId));
   }
@@ -539,6 +552,15 @@ export class EvidenceCoordinator extends Service {
           }
           const attempt = await optional(() => this.store.loadAttempt(attemptId));
           if (!attempt) {
+            const [entries, bundle] = await Promise.all([
+              this.journal.load(attemptId),
+              this.store.findBundleByAttempt(attemptId),
+            ]);
+            if (entries.length > 0 || bundle || context.bundleId) {
+              throw new Error(
+                `Evidence attempt is missing but durable execution facts exist: ${attemptId}`,
+              );
+            }
             const config = await this.effectiveConfig(context.profileId, context.repositoryOverrides);
             const currentFingerprint = await this.fingerprint(context.profileId, config);
             if (currentFingerprint.digest !== context.fingerprint.digest) {
@@ -628,13 +650,17 @@ export class EvidenceCoordinator extends Service {
     signal?: AbortSignal,
   ): Promise<EvidenceStatus> {
     const existing = await this.lookup(attemptId);
-    if (existing) return this.resume(attemptId, signal);
+    if (existing) {
+      this.assertRunOwner(existing.context, profileId, workflowRunId);
+      return this.resume(attemptId, signal);
+    }
     try {
       await this.run(profileId, attemptId, workflowRunId, signal);
       return this.status(attemptId);
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);
       if (!reason.includes(`Evidence attempt already exists: ${attemptId}`)) throw error;
+      this.assertRunOwner(await this.loadContext(attemptId), profileId, workflowRunId);
       return this.resume(attemptId, signal);
     }
   }

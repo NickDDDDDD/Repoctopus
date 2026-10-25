@@ -36,7 +36,9 @@ export async function recoverEvidenceAttempt(input: {
   const checks = new Map<string, EvidenceCheck>();
   const findings: EvidenceFinding[] = [];
   const superseded =
-    input.endingFingerprint !== undefined && input.endingFingerprint !== attempt.inputFingerprint;
+    attempt.status === 'superseded' ||
+    (input.endingFingerprint !== undefined &&
+      input.endingFingerprint !== attempt.inputFingerprint);
   if (superseded) {
     findings.push({
       code: 'input-drift',

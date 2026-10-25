@@ -120,7 +120,7 @@
       **Requirements:** managed-work-execution#受管-work-必须可断点恢复且不重复副作用
 
 - [x] 8.5 修复独立审查发现的恢复身份缺口：Runtime 确定性绑定 Evidence attempt，`run next` 从 `validated` 自动恢复，并让 Evidence Coordinator 拒绝覆盖和补偿已完成 attempt 的上下文落盘窗口。
-      **Acceptance:** production composition 通过真实 Verify Validator 后在 Evidence 完成、gate 投影前中断；新 Application Host 仅调用 `run next` 即复用原 attempt 到 Archive，不由测试直接写 Validator、不要求调用方传 attemptId；context-only、journaled running、terminal Attempt 缺 Bundle、completed context 和跨 profile 重复 attempt 的恢复/互斥测试通过
+      **Acceptance:** production composition 通过真实 Verify Validator 后在 Evidence 完成、gate 投影前中断；新 Application Host 仅调用 `run next` 即复用原 attempt 到 Archive，不由测试直接写 Validator、不要求调用方传 attemptId；无执行事实的 context-only、孤立 journal fail-closed、journaled running、terminal superseded/Attempt 缺 Bundle、completed context 和跨 profile/run 重复 attempt 的恢复/互斥测试通过
       **Requirements:** managed-work-execution#受管-work-必须可断点恢复且不重复副作用
 
 ## Workflow follow-up
