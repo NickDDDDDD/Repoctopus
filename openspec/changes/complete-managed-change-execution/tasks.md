@@ -111,6 +111,10 @@
       **Acceptance:** 无缩进、无粗体和旧别名 fixture 均在 Design blocked；重复 Task 等非 Acceptance 错误不会被误报；领域、Provider、进程外 Design gate 和全量回归通过
       **Requirements:** specification-authority#design-在批准前验证结构化-acceptance
 
+- [ ] 8.3 补齐 Verify 发现的进程外 Acceptance 负向矩阵：让 packaged CLI Design gate 分别执行无缩进、无粗体和旧别名 fixture，而不是只在领域测试覆盖其中两类。
+      **Acceptance:** 三种畸形 Acceptance fixture 都通过真实 CLI/Runtime/OpenSpec Provider 链路在 Human Decision 前 blocked；完整 fixture 仍可进入审批；定向与全量回归通过
+      **Requirements:** specification-authority#design-在批准前验证结构化-acceptance
+
 ## Workflow follow-up
 
 - Build 与 Verify 满足后，由同一 Change Run 执行规格关闭和发布 Work；实际 MR 合入仍由人决定，Run 不等待 MR 合入。
