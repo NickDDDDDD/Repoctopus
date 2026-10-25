@@ -117,36 +117,41 @@ Repoctopus MUST 记录批准决定、可信主体、时间和快照摘要，并�
 
 ### Requirement: 多仓发布计划可恢复且幂等
 
-Repoctopus MUST 按稳定顺序执行逐仓 push 和 MR 动作，在每个动作后持久化结果，并在重试时跳过已确认成功且远端事实仍一致的动作。
+Repoctopus MUST 按稳定顺序执行逐仓普通 push 和 MR create-or-recover/create-or-adopt，在每个动作后持久化精确结果，并在重试时先查询远端、跳过已确认成功且事实仍一致的动作；计划完成不要求任一 MR 合入。
 
 #### Scenario: 中途发布失败
 
 - **WHEN** 一个仓库的远端动作失败且此前仓库已有动作成功
-- **THEN** Runtime 保存部分完成状态、停止后续动作并明确说明不存在跨仓事务回滚
+- **THEN** Runtime 保存部分 Publication Intent/Receipt、停止后续动作并明确说明不存在跨仓事务回滚
 
 #### Scenario: 从失败点继续
 
 - **WHEN** 失败原因解决后恢复同一交付计划
-- **THEN** Runtime 核对已完成动作并从第一个未完成动作继续
+- **THEN** Runtime 核对已完成动作并从第一个未确认发布项继续
+
+#### Scenario: 规格关闭与业务发布使用同一工作树
+
+- **WHEN** 已验证的 Specification Closure 把 Receipt 中的精确允许 diff 同步到同时承载业务源分支的工作树
+- **THEN** Delivery 只把与 Closure Receipt 完全相等的路径集合排除在业务清洁范围之外；任一缺失路径、额外修改或越界路径都必须阻断发布
 
 #### Scenario: MR 创建响应丢失
 
 - **WHEN** 托管平台已经创建 MR 但 Runtime 未持久化成功响应
-- **THEN** Adapter 通过仓库、源分支和目标分支查询已有 MR 并复用其身份
+- **THEN** Adapter 以仓库、源分支、目标分支和精确 head OID 查询并复用唯一 MR identity
 
 ### Requirement: MR 由平台端口管理但不自动合入
 
-Repoctopus MUST 通过平台无关端口创建或更新 MR 并读取 CI、评审、会话解决和合入状态；Runtime 与任何 Adapter 都不得执行 merge 动作。
+Repoctopus MUST 通过平台无关端口创建或采用 MR，并读取完成精确发布与后续一致性审查所需的 head、base、state 和 identity；Runtime 与任何 Adapter 都不得执行 merge、force-push、rebase 或删除远端分支。
 
 #### Scenario: GitHub 仓库发布
 
-- **WHEN** 已批准计划为 GitHub 仓库创建或更新 MR
-- **THEN** GitHub Adapter 使用托管平台 API 完成动作并返回稳定 MR 身份和可审计状态
+- **WHEN** 已批准计划为 GitHub 仓库创建或采用 MR
+- **THEN** GitHub Adapter 使用托管平台 API 完成动作并返回稳定 MR identity、base、head branch 和 head OID
 
 #### Scenario: MR 已由人合入
 
-- **WHEN** Adapter 读取到 MR 的合入提交和合入时间
-- **THEN** Runtime 记录合入证据并把该仓库标记为已合入
+- **WHEN** 人已经 push 经过验证的 head，并在 Runtime 恢复前创建甚至合入同 repository/base/head/head OID 的唯一 MR
+- **THEN** Runtime 采用该 MR 并记录 `human-created` provenance，不要求 MR 由原 Agent 或 Runner 创建，也不把合入状态作为额外完成条件
 
 #### Scenario: 请求自动合入
 
@@ -184,15 +189,6 @@ Repoctopus MUST 让合入后 workspace 收尾动作使用明确的机器身份�
 
 - **WHEN** 收尾动作计划包含 MR merge、force push、分支删除或目标分支变更
 - **THEN** Delivery Guardrail 拒绝计划，即使合入后验证已经通过
-
-### Requirement: 合入后状态由事件和主动核对共同推进
-
-Repoctopus MUST 支持平台事件唤醒与显式刷新使用同一 Delivery 状态转换；两种入口都必须重新读取权威 MR 状态，并产生相同的合入证据。
-
-#### Scenario: Webhook 不可用时人工刷新
-
-- **WHEN** 平台未能投递 webhook 但用户或定时恢复任务执行刷新
-- **THEN** 系统仍可根据平台权威事实发现全部 MR 已合入并启动同一后续流程
 
 ### Requirement: 未决定的批准请求可由新快照安全取代
 
@@ -258,22 +254,22 @@ Repoctopus MUST 默认把一个 Change 规划为一个 Business MR；需要多�
 
 ### Requirement: 最终 Change MR 只在规格关闭后创建
 
-Repoctopus MUST 只在同一 Change Run 的 Archive 阶段确认全部 Business MR 合入、精确 merge commit Evidence Gate 满足、主规格同步且 Change 已归档后，通过平台端口创建或幂等恢复一个最终 Change MR；该 MR 只承载允许的规格、验证和关闭结果，Runtime 不得自动合入。
+Repoctopus MUST 在同一 Change Run 的 Archive 阶段确认 Verify Evidence 有效、主规格同步且 Change 已归档后，通过平台端口创建或幂等采用一个最终 Change MR；该 MR 只承载允许的规格、验证和关闭结果，创建后不等待合入。
 
 #### Scenario: Change 仍在实施
 
-- **WHEN** 任一 Business MR 未登记、未合入或合入后验证尚未满足
+- **WHEN** 当前实现没有满足 Verify Gate 或规格关闭后置条件
 - **THEN** Runtime 保持当前 Build、Verify 或 Archive 状态且不创建最终 Change MR
 
 #### Scenario: Change 已完成规格关闭
 
-- **WHEN** Archive Work 已核对全部 Business MR 的 merge commit 并取得有效规格关闭结果
-- **THEN** Runtime 从登记的 Change 分支和目标分支创建最终 Change MR，把 Receipt 写入同一 Change Run
+- **WHEN** Archive Work 取得有效规格关闭结果且业务发布项已准备
+- **THEN** Runtime 发布登记的 Change 分支、创建或采用最终 Change MR，并把精确 item 写入 Publication Receipt
 
 #### Scenario: 最终 MR 创建响应丢失
 
-- **WHEN** 平台已经创建最终 Change MR但 Runtime 没有持久化成功响应
-- **THEN** Adapter 按仓库、源分支和目标分支查询并复用唯一匹配 MR，不创建重复 MR
+- **WHEN** 平台已经创建最终 Change MR 但 Runtime 没有持久化成功响应
+- **THEN** Adapter 按仓库、源分支、目标分支和精确 head OID查询并复用唯一匹配 MR，不创建重复 MR
 
 #### Scenario: 最终 MR 差异包含业务代码
 
@@ -336,3 +332,31 @@ Repoctopus MUST 把 Delivery plan、Git/MR Intent、Receipt、平台事实和并
 
 - **WHEN** 项目策略要求用户确认一个已验证 Archive 发布计划
 - **THEN** Human Decision 只绑定该 Action 的输入和副作用，确认后仍由同一 Archive Work 推进，不建立独立 Delivery lifecycle
+
+### Requirement: Publication Receipt 证明交付完成
+
+Delivery MUST 为每个业务仓和 Workspace 规格仓生成版本化 Publication item，并以顺序无关摘要组成唯一 Publication Receipt；Receipt MUST 绑定 Change/generation、Delivery snapshot、Verify evidence、规格关闭摘要、repository、remote、base、head branch、published head OID、MR identity 和 provenance，且不得包含凭据、MR body、完整 diff 或绝对路径。
+
+#### Scenario: 所有发布项精确匹配
+
+- **WHEN** 每个预期分支的远端 OID 和唯一 MR 的 head/base 都匹配已批准输入
+- **THEN** Delivery 签发完整 Publication Receipt 供 Archive terminal Validator 使用
+
+#### Scenario: 同一仓库包含多个业务 MR
+
+- **WHEN** 已批准 Delivery snapshot 为同一 repository 登记多个有明确拆分理由的 MR
+- **THEN** Receipt 保留每个 MR 的独立 item，且 canonical digest 不受查询返回顺序影响
+
+### Requirement: 外部发布动作以稳定身份恢复
+
+每个 push 和 MR create-or-recover/create-or-adopt MUST 具有由 Change、generation、repository、base、head 与精确 head OID 组成的稳定身份；结果未知时必须先观察远端再决定复用、创建或阻断，不得盲重试。
+
+#### Scenario: 恢复查询发现唯一等价结果
+
+- **WHEN** 另一短生命周期执行者发现唯一 MR 的 repository/base/head/head OID 与稳定身份一致
+- **THEN** 它复用远端结果并补写同一逻辑 Receipt，无需原开发者或 Runner identity 在线
+
+#### Scenario: 恢复查询发现歧义或不等价结果
+
+- **WHEN** 查询得到多个候选，或唯一候选的 base/head OID 不匹配
+- **THEN** Runtime fail-closed 并报告差异，不覆盖远端、不自动分配替代发布
