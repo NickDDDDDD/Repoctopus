@@ -29,6 +29,33 @@ describe('CLI preflight', () => {
     { args: ['run', 'start', '--unknown'], message: 'Unknown option: --unknown' },
     { args: ['spec', 'inspect'], message: 'Missing required option: --change' },
     { args: ['run', 'start', '--change', 'sample'], message: 'Missing required option: --target' },
+    {
+      args: [
+        'run',
+        'archive-prepare',
+        '--run',
+        'sample',
+        '--intent',
+        'missing.yaml',
+        '--attempt',
+        'evidence-1',
+      ],
+      message:
+        'run archive-prepare no longer accepts ambiguous --attempt; use --evidence-attempt <attempt-id>',
+    },
+    {
+      args: ['run', 'archive-prepare', '--run', 'sample', '--intent', 'missing.yaml'],
+      message: 'Missing required option: --evidence-attempt',
+    },
+    {
+      args: ['run', 'archive-publish', '--run', 'sample', '--attempt', '2'],
+      message:
+        'run archive-publish no longer accepts ambiguous --attempt; use --work-attempt <integer>',
+    },
+    {
+      args: ['run', 'archive-publish', '--run', 'sample', '--work-attempt', 'zero'],
+      message: 'Option --work-attempt must be an integer',
+    },
   ] as const)(
     'rejects invalid input before composition and persistence',
     async ({ args, message }) => {

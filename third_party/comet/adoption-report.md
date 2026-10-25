@@ -37,6 +37,8 @@
 
 2026-10-25 的验收闭包复核继续采用以下行为不变量，但没有复制新源码：Classic `classic-tasks.ts` 的 expected-revision Task 投影只把 checkbox 当作完成声明；Native `native-acceptance.ts` / `native-verification-evidence.ts` 的内容身份、精确 Acceptance Trace、未知/重复/缺失拒绝和 required Receipt 门禁，映射到 `domains/specification/tasks.ts`、`domains/change-lifecycle/verification-input.ts` 与 `domains/evidence/acceptance-trace.ts`；`native-sdk-supervisor-archive.ts` 的 Archive 前重检由 Repoctopus 的 Verify Gate identity 与后续 Archive preflight 分工承担。OpenSpec `tasks.md` 仍是唯一 Task/Acceptance 权威，Evidence Bundle 只保存运行事实；不采用 Comet 产品 shell、Classic/Native 双状态根、verification 文档权威或单仓目录布局。
 
+2026-10-25 的 Archive 恢复复核采用 Comet 0.5.0 archive transaction 与 workspace finish journal 的行为思想：把稳定 Intent 先于副作用持久化，恢复时先观察本地 commit、远端 branch 和 MR，再决定是否继续，并把临时 workspace 的清理放在可证明的终态之后。Repoctopus 将它改造成 OpenSpec 多仓发布协议：Closure Receipt 绑定隔离 checkout/base OID，规格 Journal 明确为 `prepared → committed → pushed → completed`，Business 与 Specification Receipt 最终组合；不复制 Comet 产品命令壳、Classic/Native 双运行时、单仓路径假设或等待远端合入模型。
+
 ## 未直接采用
 
 - 上游 Engine 内的文件存储和手动运行封装没有复制。它们依赖 Skill 和平台文件系统，会破坏 Repoctopus 的纯 Engine 边界。

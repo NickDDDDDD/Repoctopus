@@ -329,6 +329,10 @@ export interface SpecificationClosureResult {
   status: 'closed';
   archiveId: string;
   changedFiles: string[];
+  candidate: {
+    checkoutId: string;
+    baseOid: string;
+  };
 }
 
 export interface SpecificationFollowUpChangeInput {

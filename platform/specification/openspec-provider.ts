@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { access, readFile, readdir, rm } from 'node:fs/promises';
+import { access, readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 
 import type { Context } from '@deepseek-ai/cordis';
@@ -30,7 +30,7 @@ import {
 } from '../../domains/specification/tasks.js';
 import { createSpecificationPlanningManifest } from '../../domains/specification/planning-manifest.js';
 import { createSpecificationPlanningGuidance } from '../../domains/specification/planning-guidance.js';
-import { atomicWriteBytes, atomicWriteText } from '../filesystem/atomic-write.js';
+import { atomicWriteText } from '../filesystem/atomic-write.js';
 import { GitSpecificationCheckoutManager } from '../git/specification-checkout.js';
 import { execute } from '../process/execute.js';
 import {
@@ -956,12 +956,11 @@ ${references}
   ): Promise<SpecificationClosureResult> {
     const journals = new FileSpecificationClosureJournalStore(workspace);
     const priorReceipt = await journals.loadReceipt(plan.planDigest);
-    if (
-      priorReceipt &&
-      !(await exists(path.join(workspace, 'openspec', 'changes', plan.changeId))) &&
-      (await exists(path.join(workspace, 'openspec', 'changes', 'archive', priorReceipt.archiveId)))
-    ) {
-      return priorReceipt;
+    if (priorReceipt) {
+      const priorCheckout = await new GitSpecificationCheckoutManager(workspace).find(
+        priorReceipt.candidate.checkoutId,
+      );
+      if (!priorCheckout) return priorReceipt;
     }
     const current = await this.prepareClosureAt(workspace, {
       changeId: plan.changeId,
@@ -979,11 +978,6 @@ ${references}
     if (status.stdout.trim()) {
       throw new Error('Specification closure requires a clean OpenSpec working tree');
     }
-    const newCapabilityPurposes = await this.newCapabilityPurposesAt(
-      workspace,
-      plan.changeId,
-      plan.affectedCapabilities,
-    );
     const checkouts = new GitSpecificationCheckoutManager(workspace);
     const transaction = new IsolatedSpecificationClosureTransaction(
       journals,
@@ -1010,32 +1004,6 @@ ${references}
     if (currentHead !== execution.checkout.head) {
       throw new Error('Specification closure source HEAD changed after isolated validation');
     }
-    for (const file of execution.result.changedFiles) {
-      const relative = file.replaceAll('\\', '/');
-      if (!relative.startsWith('openspec/')) {
-        throw new Error(`Specification closure returned an unmanaged path: ${relative}`);
-      }
-      const source = path.join(execution.checkout.root, ...relative.split('/'));
-      const target = path.join(workspace, ...relative.split('/'));
-      if (await exists(source)) {
-        await atomicWriteBytes(target, await readFile(source), { containedRoot: workspace });
-      } else {
-        await rm(target, { force: true });
-      }
-    }
-    await rm(path.join(workspace, 'openspec', 'changes', plan.changeId), {
-      recursive: true,
-      force: true,
-    });
-    await this.assertClosurePostconditionsAt({
-      workspace,
-      plan,
-      archiveId: execution.result.archiveId,
-      changedFiles: execution.result.changedFiles,
-      purposes: newCapabilityPurposes,
-      ...(signal ? { signal } : {}),
-    });
-    await checkouts.cleanup(execution.checkout);
     return execution.result;
   }
 
@@ -1043,7 +1011,7 @@ ${references}
     workspace: string,
     plan: SpecificationClosurePlan,
     signal?: AbortSignal,
-  ): Promise<SpecificationClosureResult> {
+  ): Promise<Omit<SpecificationClosureResult, 'candidate'>> {
     const current = await this.prepareClosureAt(workspace, {
       changeId: plan.changeId,
       mergeFactsDigest: plan.mergeFactsDigest,
@@ -1090,7 +1058,7 @@ ${references}
       purposes: newCapabilityPurposes,
       ...(signal ? { signal } : {}),
     });
-    const result: SpecificationClosureResult = {
+    const result: Omit<SpecificationClosureResult, 'candidate'> = {
       apiVersion: SPECIFICATION_API_VERSION,
       kind: 'SpecificationClosureResult',
       changeId: plan.changeId,
@@ -1110,7 +1078,7 @@ ${references}
     before: readonly SpecificationFileIdentity[],
     changedFiles: readonly string[],
     signal?: AbortSignal,
-  ): Promise<SpecificationClosureResult> {
+  ): Promise<Omit<SpecificationClosureResult, 'candidate'>> {
     const archiveRoot = path.join(workspace, 'openspec', 'changes', 'archive');
     const candidates = (await readdir(archiveRoot, { withFileTypes: true }))
       .filter(

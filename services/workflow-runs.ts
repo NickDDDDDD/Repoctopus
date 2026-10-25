@@ -1003,11 +1003,12 @@ export class WorkflowRuns extends Service {
       const state = await this.ctx.runStore.loadRun(input.runId);
       const lifecycle = state.changeLifecycle;
       const archive = lifecycle?.archiveDeliveryInput;
+      const workKind = lifecycle?.currentWork?.kind;
       if (
         !lifecycle ||
         state.status !== 'running' ||
         lifecycle.phase !== 'archive' ||
-        lifecycle.currentWork?.kind !== 'specification.close' ||
+        !['specification.close', 'delivery.publish'].includes(workKind ?? '') ||
         !archive
       ) {
         throw new Error(`Change Run has no active Archive Delivery Work: ${input.runId}`);
@@ -1018,28 +1019,34 @@ export class WorkflowRuns extends Service {
       const targetBaselineDigest = `sha256:${createHash('sha256')
         .update(archive.changeBranch.remoteOid)
         .digest('hex')}` as const;
-      const plan = await this.ctx.specification.prepareClosure({
-        changeId: archive.changeId,
-        mergeFactsDigest: archive.digest,
-        targetBaselineDigest,
-        ...(signal ? { signal } : {}),
-      });
-      const closure = await this.ctx.specification.close(plan, signal);
-      const skills = await this.resolveLifecycleWorkSkills('delivery.publish', signal);
-      const publishWork = createDeliveryPublishWork({
-        definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-        archive,
-        closure,
-        actionSkill: skills.actionSkill,
-        workspaceRepositoryId: archive.changeBranch.repositoryId,
-        repositoryIds: input.project.repositories.map((repository) => repository.id),
-      });
-      await this.coordinator.bindSkill(input.runId, skills.actionSkill);
-      await this.coordinator.acceptChangeObservation(input.runId, {
-        kind: 'archive-specification-closed',
-        closure,
-        work: publishWork,
-      });
+      let closure = lifecycle.specificationClosure;
+      if (workKind === 'specification.close') {
+        const plan = await this.ctx.specification.prepareClosure({
+          changeId: archive.changeId,
+          mergeFactsDigest: archive.digest,
+          targetBaselineDigest,
+          ...(signal ? { signal } : {}),
+        });
+        closure = await this.ctx.specification.close(plan, signal);
+        const skills = await this.resolveLifecycleWorkSkills('delivery.publish', signal);
+        const publishWork = createDeliveryPublishWork({
+          definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+          archive,
+          closure,
+          actionSkill: skills.actionSkill,
+          workspaceRepositoryId: archive.changeBranch.repositoryId,
+          repositoryIds: input.project.repositories.map((repository) => repository.id),
+        });
+        await this.coordinator.bindSkill(input.runId, skills.actionSkill);
+        await this.coordinator.acceptChangeObservation(input.runId, {
+          kind: 'archive-specification-closed',
+          closure,
+          work: publishWork,
+        });
+      }
+      if (!closure) {
+        throw new Error('Archive Delivery Work is missing its Specification Closure Receipt');
+      }
       const intent: DeliveryIntentV3 = {
         schemaVersion: 3,
         changeId: archive.changeId,
@@ -1056,18 +1063,8 @@ export class WorkflowRuns extends Service {
         executor: input.executor,
       });
       let publication: ArchivePublicationResult;
+      let receipt: PublicationReceipt;
       try {
-        const closureDelivery = archive.businessDeliveries.filter(
-          (delivery) =>
-            delivery.repositoryId === archive.changeBranch.repositoryId &&
-            delivery.sourceBranch === archive.changeBranch.sourceBranch,
-        );
-        if (closureDelivery.length > 1) {
-          throw new Error('Specification closure maps to multiple Business deliveries');
-        }
-        const allowedDirtyPathsByDeliveryId = closureDelivery[0]
-          ? { [closureDelivery[0].deliveryId]: closure.changedFiles }
-          : undefined;
         publication = await this.ctx.delivery.publishArchive(
           {
             project: input.project,
@@ -1075,10 +1072,71 @@ export class WorkflowRuns extends Service {
             policy: input.policy,
             reportContents: `verification-report:sha256:${archive.verificationReport.sha256}`,
             evidenceBundleIds: [archive.evidenceBundleId],
-            ...(allowedDirtyPathsByDeliveryId ? { allowedDirtyPathsByDeliveryId } : {}),
           },
           signal,
         );
+        const verifiedAt = new Date().toISOString();
+        const businessItems: PublicationReceiptItem[] = archive.businessDeliveries.map(
+          (delivery) => {
+            const mergeRequestReceipt = publication.receipts.find(
+              (item) => item.deliveryId === delivery.deliveryId && item.mergeRequest,
+            );
+            const pushReceipt = publication.receipts.find(
+              (item) => item.deliveryId === delivery.deliveryId && item.remoteOid,
+            );
+            if (!mergeRequestReceipt?.mergeRequest || !pushReceipt?.remoteOid) {
+              throw new Error(`Business publication Receipt is incomplete: ${delivery.deliveryId}`);
+            }
+            return {
+              publicationId: `business:${delivery.deliveryId}`,
+              role: 'business',
+              deliveryId: delivery.deliveryId,
+              repositoryId: delivery.repositoryId,
+              remoteIdentity:
+                input.project.repositories.find(
+                  (repository) => repository.id === delivery.repositoryId,
+                )?.remoteIdentity ??
+                (() => {
+                  throw new Error(
+                    `Repository remote identity is missing: ${delivery.repositoryId}`,
+                  );
+                })(),
+              remote: input.policy.publication.remote,
+              sourceBranch: delivery.sourceBranch,
+              targetBranch: delivery.targetBranch,
+              publishedOid: pushReceipt.remoteOid,
+              mergeRequest: mergeRequestReceipt.mergeRequest,
+              provenance: mergeRequestReceipt.provenance ?? 'recovered',
+              verifiedAt,
+            };
+          },
+        );
+        const specification = await this.ctx.delivery.publishSpecification(
+          {
+            changeId: archive.changeId,
+            generation: lifecycle.identity.generation,
+            workspaceRoot: input.project.root,
+            changeBranch: archive.changeBranch,
+            closure,
+            remote: input.policy.publication.remote,
+            title: `Archive specification: ${archive.changeId}`,
+            body: `Closes verified specification change ${archive.changeId}.`,
+          },
+          signal,
+        );
+        receipt = createPublicationReceipt({
+          apiVersion: PUBLICATION_RECEIPT_API_VERSION,
+          kind: 'PublicationReceipt',
+          schemaVersion: 1,
+          changeId: archive.changeId,
+          generation: lifecycle.identity.generation,
+          runId: input.runId,
+          deliverySnapshotDigest: publication.snapshot.digest as `sha256:${string}`,
+          verificationInputDigest: archive.verificationInputDigest,
+          evidenceBundleIds: [archive.evidenceBundleId],
+          specificationClosure: { closureId: closure.closureId, planDigest: closure.planDigest },
+          items: [...businessItems, specification.item],
+        });
       } catch (error) {
         await this.ctx.workDispatcher.acceptOutcome(
           this.ctx.workDispatcher.outcome(
@@ -1092,63 +1150,6 @@ export class WorkflowRuns extends Service {
       await this.ctx.workDispatcher.acceptOutcome(
         this.ctx.workDispatcher.outcome(claim, 'succeeded', 'Archive publication completed'),
       );
-      const verifiedAt = new Date().toISOString();
-      const businessItems: PublicationReceiptItem[] = archive.businessDeliveries.map((delivery) => {
-        const mergeRequestReceipt = publication.receipts.find(
-          (receipt) => receipt.deliveryId === delivery.deliveryId && receipt.mergeRequest,
-        );
-        const pushReceipt = publication.receipts.find(
-          (receipt) => receipt.deliveryId === delivery.deliveryId && receipt.remoteOid,
-        );
-        if (!mergeRequestReceipt?.mergeRequest || !pushReceipt?.remoteOid) {
-          throw new Error(`Business publication Receipt is incomplete: ${delivery.deliveryId}`);
-        }
-        return {
-          publicationId: `business:${delivery.deliveryId}`,
-          role: 'business',
-          deliveryId: delivery.deliveryId,
-          repositoryId: delivery.repositoryId,
-          remoteIdentity:
-            input.project.repositories.find((repository) => repository.id === delivery.repositoryId)
-              ?.remoteIdentity ??
-            (() => {
-              throw new Error(`Repository remote identity is missing: ${delivery.repositoryId}`);
-            })(),
-          remote: input.policy.publication.remote,
-          sourceBranch: delivery.sourceBranch,
-          targetBranch: delivery.targetBranch,
-          publishedOid: pushReceipt.remoteOid,
-          mergeRequest: mergeRequestReceipt.mergeRequest,
-          provenance: mergeRequestReceipt.provenance ?? 'recovered',
-          verifiedAt,
-        };
-      });
-      const specification = await this.ctx.delivery.publishSpecification(
-        {
-          changeId: archive.changeId,
-          generation: lifecycle.identity.generation,
-          workspaceRoot: input.project.root,
-          changeBranch: archive.changeBranch,
-          closure,
-          remote: input.policy.publication.remote,
-          title: `Archive specification: ${archive.changeId}`,
-          body: `Closes verified specification change ${archive.changeId}.`,
-        },
-        signal,
-      );
-      const receipt = createPublicationReceipt({
-        apiVersion: PUBLICATION_RECEIPT_API_VERSION,
-        kind: 'PublicationReceipt',
-        schemaVersion: 1,
-        changeId: archive.changeId,
-        generation: lifecycle.identity.generation,
-        runId: input.runId,
-        deliverySnapshotDigest: publication.snapshot.digest as `sha256:${string}`,
-        verificationInputDigest: archive.verificationInputDigest,
-        evidenceBundleIds: [archive.evidenceBundleId],
-        specificationClosure: { closureId: closure.closureId, planDigest: closure.planDigest },
-        items: [...businessItems, specification.item],
-      });
       const advanced = await this.coordinator.acceptChangeObservation(input.runId, {
         kind: 'archive-publication-receipt-accepted',
         receipt,

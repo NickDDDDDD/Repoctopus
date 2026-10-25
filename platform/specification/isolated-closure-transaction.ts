@@ -32,6 +32,8 @@ export interface IsolatedClosureExecution {
   result: SpecificationClosureResult;
 }
 
+type UnboundSpecificationClosureResult = Omit<SpecificationClosureResult, 'candidate'>;
+
 async function files(root: string, relative = ''): Promise<string[]> {
   const directory = path.join(root, relative);
   const entries = await readdir(directory, { withFileTypes: true }).catch(
@@ -96,7 +98,7 @@ export class IsolatedSpecificationClosureTransaction {
       checkoutRoot: string,
       plan: SpecificationClosurePlan,
       signal?: AbortSignal,
-    ) => Promise<SpecificationClosureResult>,
+    ) => Promise<UnboundSpecificationClosureResult>,
     private readonly injectFault?: (point: SpecificationClosureFaultPoint) => void,
     private readonly recoverOfficialArchive?: (
       checkoutRoot: string,
@@ -104,8 +106,21 @@ export class IsolatedSpecificationClosureTransaction {
       before: readonly SpecificationFileIdentity[],
       changedFiles: readonly string[],
       signal?: AbortSignal,
-    ) => Promise<SpecificationClosureResult>,
+    ) => Promise<UnboundSpecificationClosureResult>,
   ) {}
+
+  private bindCandidate(
+    checkout: IsolatedSpecificationCheckout,
+    result: UnboundSpecificationClosureResult,
+  ): SpecificationClosureResult {
+    return {
+      ...result,
+      candidate: {
+        checkoutId: checkout.checkoutId,
+        baseOid: checkout.head,
+      },
+    };
+  }
 
   async execute(
     plan: SpecificationClosurePlan,
@@ -163,12 +178,15 @@ export class IsolatedSpecificationClosureTransaction {
       throw new Error('Specification closure Journal requires manual repair');
     }
 
-    const recovered = await this.recoverOfficialArchive(
-      checkout.root,
-      journal.plan,
-      journal.before,
-      changedFiles(journal.before, current),
-      signal,
+    const recovered = this.bindCandidate(
+      checkout,
+      await this.recoverOfficialArchive(
+        checkout.root,
+        journal.plan,
+        journal.before,
+        changedFiles(journal.before, current),
+        signal,
+      ),
     );
     if (priorReceipt && canonicalJson(priorReceipt) !== canonicalJson(recovered)) {
       throw new Error('Specification closure Receipt conflicts with the recovered candidate');
@@ -210,7 +228,10 @@ export class IsolatedSpecificationClosureTransaction {
     }
 
     this.injectFault?.('after-applying');
-    const result = await this.executeOfficialArchive(checkout.root, applying.plan, signal);
+    const result = this.bindCandidate(
+      checkout,
+      await this.executeOfficialArchive(checkout.root, applying.plan, signal),
+    );
     this.injectFault?.('after-command');
 
     const expected = await manifest(checkout.root);

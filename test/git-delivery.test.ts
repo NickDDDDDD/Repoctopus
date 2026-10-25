@@ -200,7 +200,7 @@ describe('Git delivery adapter', () => {
     });
   });
 
-  it('treats only the exact receipted Archive closure paths as clean for Business publication', async () => {
+  it('keeps Business publication cleanliness strict when Specification files are dirty', async () => {
     const setup = await fixture();
     const closurePath = 'openspec/changes/archive/example/proposal.md';
     await mkdir(path.join(setup.repositoryPath, 'openspec', 'changes', 'archive', 'example'), {
@@ -212,28 +212,10 @@ describe('Git delivery adapter', () => {
     await expect(adapter.inspect(setup.repository, setup.selected, policy)).resolves.toMatchObject({
       clean: false,
     });
-    await expect(
-      adapter.inspect(setup.repository, setup.selected, policy, {
-        allowedDirtyPaths: [closurePath],
-      }),
-    ).resolves.toMatchObject({ clean: true });
-    await expect(
-      adapter.inspect(setup.repository, setup.selected, policy, {
-        allowedDirtyPaths: [closurePath, 'openspec/specs/missing/spec.md'],
-      }),
-    ).resolves.toMatchObject({ clean: false });
-
     await writeFile(path.join(setup.repositoryPath, 'unexpected.txt'), 'not part of closure');
-    await expect(
-      adapter.inspect(setup.repository, setup.selected, policy, {
-        allowedDirtyPaths: [closurePath],
-      }),
-    ).resolves.toMatchObject({ clean: false });
-    await expect(
-      adapter.inspect(setup.repository, setup.selected, policy, {
-        allowedDirtyPaths: [closurePath, '../escape.txt'],
-      }),
-    ).rejects.toThrow(/invalid repository path/i);
+    await expect(adapter.inspect(setup.repository, setup.selected, policy)).resolves.toMatchObject({
+      clean: false,
+    });
   });
 
   it('rejects protected branches and invalid commit messages without committing', async () => {
