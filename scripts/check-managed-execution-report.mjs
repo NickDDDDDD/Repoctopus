@@ -8,6 +8,7 @@ import { promisify } from 'node:util';
 
 const execute = promisify(execFile);
 const root = path.resolve(import.meta.dirname, '..');
+const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 const reportPath = path.join(
   root,
   'verification',
@@ -44,7 +45,7 @@ try {
   const packed = JSON.parse(
     (
       await execute(
-        'npm',
+        npmCommand,
         ['pack', '--json', '--ignore-scripts', '--pack-destination', temporary],
         { cwd: root, maxBuffer: 16 * 1024 * 1024 },
       )
