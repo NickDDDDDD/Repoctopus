@@ -50,12 +50,34 @@ export class CommandRouter extends Service {
     const handler = this.handlers.get(name) as CommandHandler<TInput, TOutput> | undefined;
     if (!handler) throw new CommandNotFoundError(name);
     if (signal.aborted) throw signal.reason;
+    let authorization;
+    let startedAt = 0;
     if (handler.runtimeWork) {
       const guard = this.ctx.get('runtimeWorkGuard');
       if (!guard) throw new Error(`Runtime Work Guard is not active for command: ${name}`);
-      await guard.authorize(handler.runtimeWork(input));
+      authorization = await guard.authorize(handler.runtimeWork(input));
+      startedAt = Date.now();
     }
-    return handler.execute({ input, signal });
+    try {
+      const result = await handler.execute({ input, signal });
+      if (authorization) {
+        await this.ctx.runtimeWorkGuard.complete(
+          authorization,
+          'succeeded',
+          Math.max(0, Date.now() - startedAt),
+        );
+      }
+      return result;
+    } catch (error) {
+      if (authorization) {
+        await this.ctx.runtimeWorkGuard.complete(
+          authorization,
+          'failed',
+          Math.max(0, Date.now() - startedAt),
+        );
+      }
+      throw error;
+    }
   }
 }
 

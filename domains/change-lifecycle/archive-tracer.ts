@@ -35,6 +35,7 @@ export interface TraceArchiveInput {
   definition: ChangeLifecycleDefinition;
   current: ChangeLifecycleSnapshot;
   archive: ArchiveDeliveryInput;
+  archiveSkill: SkillUsageSnapshot;
   prSkill: SkillUsageSnapshot;
   workspaceRepositoryId: string;
   repositoryIds: readonly string[];
@@ -77,6 +78,7 @@ export class ArchiveCompletionTracer {
     const closeWork = createSpecificationCloseWork({
       definition: input.definition,
       archive: input.archive,
+      actionSkill: input.archiveSkill,
       workspaceRepositoryId: input.workspaceRepositoryId,
       repositoryIds: input.repositoryIds,
     });

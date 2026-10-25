@@ -104,6 +104,7 @@ function checkpointFor(state: RunState, event: TrajectoryEvent): Checkpoint {
     ...(state.specificationUsageSnapshot
       ? { specificationUsageSnapshot: structuredClone(state.specificationUsageSnapshot) }
       : {}),
+    ...(state.workExecution ? { workExecution: structuredClone(state.workExecution) } : {}),
     createdAt: event.timestamp,
   };
 }

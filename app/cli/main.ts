@@ -107,6 +107,7 @@ const CLI_FLAGS = new Set([
   'target',
   'remote',
   'generation',
+  'mode',
   'profile',
   'workflow',
   'run',
@@ -892,6 +893,7 @@ async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
           projectSnapshot: ProjectSnapshot;
           projectConfigDigest: `sha256:${string}`;
           verificationProfileId: string;
+          mode?: 'fresh' | 'adopt-existing';
         },
         RuntimeResult<RunStatusView>
       >('run.change.start', {
@@ -905,6 +907,13 @@ async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
         projectSnapshot,
         projectConfigDigest: qualifiedSha256(config.effectiveDigest, 'Project configuration'),
         verificationProfileId: stringFlag(parsed, 'profile', { fallback: 'verify' })!,
+        mode: (() => {
+          const value = stringFlag(parsed, 'mode', { fallback: 'fresh' })!;
+          if (value !== 'fresh' && value !== 'adopt-existing') {
+            throw new Error('Change Run mode must be fresh or adopt-existing');
+          }
+          return value;
+        })(),
       });
       return successEnvelope({
         command: 'run start',
@@ -1450,7 +1459,30 @@ export function renderHuman(envelope: CliEnvelope<unknown>): string {
   }
   const projection = changeProjection(envelope.result);
   if (projection) lines.push(...renderChangeProjection(projection));
-  else if (envelope.result) lines.push(JSON.stringify(envelope.result, null, 2));
+  else if (
+    envelope.command === 'run work-claim' &&
+    envelope.result &&
+    typeof envelope.result === 'object' &&
+    'intent' in envelope.result &&
+    'packet' in envelope.result
+  ) {
+    const result = envelope.result as {
+      intent?: { intentId?: unknown; workId?: unknown; attempt?: unknown };
+      packet?: { identity?: unknown };
+    };
+    lines.push(
+      JSON.stringify(
+        {
+          intentId: result.intent?.intentId,
+          workId: result.intent?.workId,
+          attempt: result.intent?.attempt,
+          packet: result.packet?.identity,
+        },
+        null,
+        2,
+      ),
+    );
+  } else if (envelope.result) lines.push(JSON.stringify(envelope.result, null, 2));
   if (envelope.nextActions.length > 0) {
     lines.push('Next actions:', ...envelope.nextActions.map((action) => `- ${action}`));
   }

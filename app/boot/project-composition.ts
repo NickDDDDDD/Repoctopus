@@ -11,6 +11,7 @@ import {
 } from './composition.js';
 
 const DEFAULT_SKILL_PROVIDERS = [
+  { id: 'skill-provider-lifecycle' },
   { id: 'skill-provider-matt' },
   { id: 'skill-provider-filesystem' },
 ] as const;
@@ -76,6 +77,10 @@ function projectSelections(
       config: { productRoot },
       identityConfig: { productRoot: PRODUCT_ROOT_IDENTITY },
     },
+    'skill-provider-lifecycle': {
+      config: { productRoot },
+      identityConfig: { productRoot: PRODUCT_ROOT_IDENTITY },
+    },
     'skill-provider-filesystem': {
       config: { workspaceRoot },
       identityConfig: { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
@@ -131,6 +136,9 @@ function projectSelections(
       { workspaceRoot },
       { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
     ),
+    { id: 'work-execution-authority' },
+    { id: 'work-execution-hosts' },
+    { id: 'work-execution-sessions' },
     { id: 'runtime-work-guard' },
     runtimeSelection(
       'work-context-assembler',
@@ -138,6 +146,7 @@ function projectSelections(
       { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
     ),
     { id: 'work-dispatcher' },
+    { id: 'managed-work-executor' },
     { id: 'lifecycle-definition-service' },
     { id: 'lifecycle-definition-builtin' },
     { id: 'lifecycle-validator-service' },
@@ -239,11 +248,15 @@ const BASE_REQUIRED_SERVICES = [
   'projectOnboarding',
   'runStore',
   'runtimeWorkGuard',
+  'managedWorkExecutor',
   'skills',
   'specification',
   'specificationPlanning',
   'workflowRuns',
   'workDispatcher',
+  'workExecutionAuthority',
+  'workExecutionHosts',
+  'workExecutionSessions',
   'workContextAssembler',
   'workflowSource',
   'workflowTelemetry',

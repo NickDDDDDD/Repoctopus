@@ -25,10 +25,7 @@ export interface WorkContributor {
   requiredCapabilities: readonly string[];
 }
 
-function assertContributorSupportsWork(
-  contributor: WorkContributor,
-  work: WorkDescriptor,
-): void {
+function assertContributorSupportsWork(contributor: WorkContributor, work: WorkDescriptor): void {
   const missing = contributor.requiredCapabilities.filter(
     (capability) => !work.capabilities.includes(capability),
   );
@@ -67,7 +64,13 @@ export function outcomeReceiptAdapter(id: string): ActionAdapter {
 }
 
 export class WorkDispatcher extends Service {
-  static inject = ['actionDispatcher', 'actionStore', 'runStore', 'workContextAssembler'];
+  static inject = [
+    'actionDispatcher',
+    'actionStore',
+    'runStore',
+    'workContextAssembler',
+    'workExecutionAuthority',
+  ];
 
   private readonly contributors = new Map<string, WorkContributor>();
 
@@ -154,10 +157,12 @@ export class WorkDispatcher extends Service {
         })),
       },
     });
-    return {
-      intent,
-      packet: createWorkExecutionPacket({ intent, work, context: executionContext }),
-    };
+    const packet = createWorkExecutionPacket({ intent, work, context: executionContext });
+    await this.ctx.workExecutionAuthority.bindClaim(packet);
+    await this.ctx.workExecutionAuthority.recordSkillFacts(packet, 'resolved');
+    await this.ctx.workExecutionAuthority.markContextDelivered(packet);
+    await this.ctx.workExecutionAuthority.recordSkillFacts(packet, 'delivered');
+    return { intent, packet };
   }
 
   async acceptOutcome(input: ClaimedActionOutcome): Promise<WorkOutcomeAcceptance> {
@@ -171,11 +176,12 @@ export class WorkDispatcher extends Service {
     ) {
       throw new Error('Work Outcome does not belong to the active lifecycle Work');
     }
-    const intent = await this.ctx.actionStore.loadLatestIntent(input.runId, input.workId);
+    const intent = await this.ctx.workExecutionAuthority.loadIntent(input.runId);
     if (!this.contributors.has(intent.adapter)) {
       throw new Error(`Work Contributor is no longer active: ${intent.adapter}`);
     }
     const receipt = await this.ctx.actionDispatcher.complete(input);
+    await this.ctx.workExecutionAuthority.bindOutcome({ intent, outcome: input, receipt });
     return {
       intent,
       outcome: structuredClone(input),
@@ -185,7 +191,11 @@ export class WorkDispatcher extends Service {
     };
   }
 
-  outcome(intent: ActionIntent, status: 'succeeded' | 'failed', summary: string): ClaimedActionOutcome {
+  outcome(
+    intent: ActionIntent,
+    status: 'succeeded' | 'failed',
+    summary: string,
+  ): ClaimedActionOutcome {
     return {
       schemaVersion: 1,
       outcomeId: randomUUID(),

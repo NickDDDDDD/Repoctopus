@@ -2,12 +2,12 @@ import { createHash } from 'node:crypto';
 
 import type { SkillUsageSnapshot } from '../skill/types.js';
 import { sameSkillUsageSnapshot } from '../skill/types.js';
-import type { SpecificationArtifactContext } from '../specification/types.js';
+import type {
+  SpecificationArtifactContext,
+  SpecificationPhaseContext,
+} from '../specification/types.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
-import {
-  BUILTIN_METHOD_PROFILE_REGISTRY,
-  type MethodRuleDefinition,
-} from './method-profile.js';
+import { BUILTIN_METHOD_PROFILE_REGISTRY, type MethodRuleDefinition } from './method-profile.js';
 import type { WorkDescriptor } from './transition.js';
 
 export const WORK_CONTEXT_LAYER_ORDER = [
@@ -47,6 +47,10 @@ function sha256(value: string): `sha256:${string}` {
   return `sha256:${createHash('sha256').update(value).digest('hex')}`;
 }
 
+function canonicalDigest(value: unknown): `sha256:${string}` {
+  return sha256(canonicalJson(value));
+}
+
 function layer(kind: WorkContextLayerKind, source: string, content: string): WorkContextLayer {
   if (!content.trim()) throw new Error(`Work context layer is empty: ${kind}/${source}`);
   return {
@@ -70,9 +74,7 @@ function assertSkill(
 }
 
 function methodContent(rules: readonly MethodRuleDefinition[]): string {
-  return rules
-    .map((rule) => `[${rule.enforcement}] ${rule.id}: ${rule.statement}`)
-    .join('\n');
+  return rules.map((rule) => `[${rule.enforcement}] ${rule.id}: ${rule.statement}`).join('\n');
 }
 
 export function assembleWorkExecutionContext(input: {
@@ -80,6 +82,7 @@ export function assembleWorkExecutionContext(input: {
   runtimeContract: string;
   actionSkill?: ResolvedWorkContextSkill;
   specificationArtifacts: readonly SpecificationArtifactContext[];
+  specificationPhase: SpecificationPhaseContext;
   augmentationSkills: readonly ResolvedWorkContextSkill[];
   diagnosticSkill?: ResolvedWorkContextSkill;
   changeInputs: unknown;
@@ -99,15 +102,37 @@ export function assembleWorkExecutionContext(input: {
   );
   const observedArtifacts = input.specificationArtifacts.map((artifact) => artifact.kind);
   if (canonicalJson(expectedArtifacts) !== canonicalJson(observedArtifacts)) {
-    throw new Error('Work context Specification artifact protocol does not match the output contract');
+    throw new Error(
+      'Work context Specification artifact protocol does not match the output contract',
+    );
   }
-  if (input.work.actionSkill && input.specificationArtifacts.length > 0) {
-    throw new Error('Work context has a second action owner for Specification artifacts');
+  const phaseStable = {
+    schemaVersion: input.specificationPhase.schemaVersion,
+    phase: input.specificationPhase.phase,
+    provider: input.specificationPhase.provider,
+    instruction: input.specificationPhase.instruction,
+    allowedOperations: input.specificationPhase.allowedOperations,
+    artifacts: input.specificationPhase.artifacts,
+  };
+  if (
+    input.specificationPhase.phase !== input.work.phase ||
+    sha256(canonicalJson(phaseStable)) !== input.specificationPhase.digest
+  ) {
+    throw new Error('Work context Specification phase protocol is missing or drifted');
   }
+  layers.push(
+    layer(
+      'specification-protocol',
+      `${input.specificationPhase.provider.id}:${input.work.phase}`,
+      `${input.specificationPhase.instruction}\n\nAllowed operations:\n${input.specificationPhase.allowedOperations
+        .map((operation) => `- ${operation}`)
+        .join('\n')}`,
+    ),
+  );
   for (const artifact of input.specificationArtifacts) {
     if (
-      sha256(artifact.instruction) !== artifact.instructionDigest ||
-      sha256(artifact.template) !== artifact.templateDigest
+      canonicalDigest(artifact.instruction) !== artifact.instructionDigest ||
+      canonicalDigest(artifact.template) !== artifact.templateDigest
     ) {
       throw new Error(`Work context OpenSpec instructions drifted: ${artifact.id}`);
     }
@@ -130,16 +155,16 @@ export function assembleWorkExecutionContext(input: {
       `augmentation ${index + 1}`,
     );
     if (augmentation.artifactProtocolOwner) {
-      throw new Error(`Augmentation Skill may not become an action owner: ${augmentation.snapshot.name}`);
+      throw new Error(
+        `Augmentation Skill may not become an action owner: ${augmentation.snapshot.name}`,
+      );
     }
     if (augmentation.artifactKinds.some((kind) => expectedArtifacts.includes(kind as never))) {
       throw new Error(
         `Augmentation Skill conflicts with the Specification artifact protocol: ${augmentation.snapshot.name}`,
       );
     }
-    layers.push(
-      layer('augmentation-skill', augmentation.snapshot.name, augmentation.content),
-    );
+    layers.push(layer('augmentation-skill', augmentation.snapshot.name, augmentation.content));
   });
   if (input.diagnosticSkill) {
     if (input.work.phase !== 'build' || input.diagnosticSkill.snapshot.name !== 'diagnosing-bugs') {

@@ -88,6 +88,11 @@ const prSkill: SkillUsageSnapshot = {
   resourceManifestDigest: digest('2'),
 };
 
+const archiveSkill: SkillUsageSnapshot = {
+  ...prSkill,
+  name: 'repoctopus-archive-change',
+};
+
 function archiveState(actionSkill: SkillUsageSnapshot = prSkill) {
   const archive = createArchiveDeliveryInput({
     runId: 'run-terminal',
@@ -113,6 +118,7 @@ function archiveState(actionSkill: SkillUsageSnapshot = prSkill) {
         workspaceId: 'team',
         changeId: 'terminal-archive',
         generation: 2,
+        mode: 'fresh',
         runId: 'run-terminal',
       },
     }),
@@ -140,6 +146,7 @@ function archiveState(actionSkill: SkillUsageSnapshot = prSkill) {
   const closeWork = createSpecificationCloseWork({
     definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
     archive,
+    actionSkill: archiveSkill,
     workspaceRepositoryId: 'workspace',
     repositoryIds: ['workspace', 'app'],
   });

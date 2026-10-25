@@ -14,7 +14,11 @@ import {
 } from '../domains/change-lifecycle/work-definition.js';
 import type { WorkDescriptor } from '../domains/change-lifecycle/transition.js';
 import type { SkillUsageSnapshot } from '../domains/skill/types.js';
-import type { SpecificationArtifactContext } from '../domains/specification/types.js';
+import type {
+  SpecificationArtifactContext,
+  SpecificationPhaseContext,
+} from '../domains/specification/types.js';
+import { canonicalJson } from '../domains/workflow-contract/canonical.js';
 
 const digest = (value: string) =>
   `sha256:${createHash('sha256').update(value).digest('hex')}` as const;
@@ -72,8 +76,8 @@ function artifact(
     kind,
     instruction,
     template,
-    instructionDigest: digest(instruction),
-    templateDigest: digest(template),
+    instructionDigest: digest(canonicalJson(instruction)),
+    templateDigest: digest(canonicalJson(template)),
   };
 }
 
@@ -89,15 +93,33 @@ function assemble(
   overrides: Partial<Parameters<typeof assembleWorkExecutionContext>[0]> = {},
   omitActionSkill = false,
 ) {
+  const specificationArtifacts = planningArtifacts.filter((artifact) =>
+    descriptor.outputContract.artifactKinds.includes(artifact.kind),
+  );
+  const phaseStable = {
+    schemaVersion: 1 as const,
+    phase: descriptor.phase,
+    provider: {
+      id: 'openspec',
+      version: '1.0.0',
+      protocolVersion: 'repoctopus.specification/v1alpha1' as const,
+    },
+    instruction: `Official ${descriptor.phase} protocol`,
+    allowedOperations: ['inspect-change'] as const,
+    artifacts: specificationArtifacts,
+  };
+  const specificationPhase: SpecificationPhaseContext = {
+    ...phaseStable,
+    digest: digest(canonicalJson(phaseStable)),
+  };
   return assembleWorkExecutionContext({
     work: descriptor,
     runtimeContract: 'Runtime contract',
     ...(descriptor.actionSkill && !omitActionSkill
       ? { actionSkill: skill(descriptor.actionSkill.name) }
       : {}),
-    specificationArtifacts: descriptor.outputContract.artifactKinds.includes('proposal')
-      ? planningArtifacts
-      : [],
+    specificationArtifacts,
+    specificationPhase,
     augmentationSkills: descriptor.augmentationSkills.map((entry) => skill(entry.name)),
     changeInputs: { changeId: 'context-test' },
     ...overrides,
@@ -106,11 +128,23 @@ function assemble(
 
 describe('Work execution context', () => {
   it.each([
-    ['change.intake', ['runtime-contract', 'method-profile', 'change-inputs']],
+    [
+      'change.intake',
+      [
+        'runtime-contract',
+        'action-skill',
+        'specification-protocol',
+        'specification-protocol',
+        'method-profile',
+        'change-inputs',
+      ],
+    ],
     [
       'specification.plan',
       [
         'runtime-contract',
+        'action-skill',
+        'specification-protocol',
         'specification-protocol',
         'specification-protocol',
         'specification-protocol',
@@ -121,23 +155,38 @@ describe('Work execution context', () => {
       ],
     ],
     [
-      'specification.decision',
+      'task.implement',
       [
         'runtime-contract',
+        'action-skill',
         'specification-protocol',
-        'specification-protocol',
-        'specification-protocol',
-        'specification-protocol',
+        'augmentation-skill',
+        'augmentation-skill',
         'method-profile',
         'change-inputs',
       ],
     ],
     [
-      'task.implement',
-      ['runtime-contract', 'action-skill', 'augmentation-skill', 'method-profile', 'change-inputs'],
+      'evidence.verify',
+      [
+        'runtime-contract',
+        'action-skill',
+        'specification-protocol',
+        'augmentation-skill',
+        'method-profile',
+        'change-inputs',
+      ],
     ],
-    ['evidence.verify', ['runtime-contract', 'action-skill', 'method-profile', 'change-inputs']],
-    ['delivery.publish', ['runtime-contract', 'action-skill', 'method-profile', 'change-inputs']],
+    [
+      'delivery.publish',
+      [
+        'runtime-contract',
+        'action-skill',
+        'specification-protocol',
+        'method-profile',
+        'change-inputs',
+      ],
+    ],
   ])('loads the fixed %s phase composition in priority order', (kind, expected) => {
     const context = assemble(work(kind));
     expect(context.layers.map((entry) => entry.kind)).toEqual(expected);
@@ -153,7 +202,7 @@ describe('Work execution context', () => {
       context.layers
         .filter((entry) => entry.kind === 'augmentation-skill')
         .map((entry) => entry.source),
-    ).toEqual(['codebase-design', 'diagnosing-bugs']);
+    ).toEqual(['tdd', 'codebase-design', 'diagnosing-bugs']);
   });
 
   it('fails before execution for a missing dependency, second owner, or artifact conflict', () => {
@@ -161,13 +210,14 @@ describe('Work execution context', () => {
     expect(() => assemble(build, {}, true)).toThrow(/missing or drifted/u);
     expect(() =>
       assemble(build, {
-        augmentationSkills: [skill('codebase-design', { artifactProtocolOwner: true })],
+        augmentationSkills: [
+          skill('tdd', { artifactProtocolOwner: true }),
+          skill('codebase-design'),
+        ],
       }),
     ).toThrow(/may not become an action owner/u);
     const design = work('specification.plan');
-    expect(() => assemble(design, { actionSkill: skill('tdd') })).toThrow(
-      /undeclared action owner/u,
-    );
+    expect(() => assemble(design, { actionSkill: skill('tdd') })).toThrow(/missing or drifted/u);
     expect(() =>
       assemble(design, {
         specificationArtifacts: planningArtifacts.map((entry, index) =>

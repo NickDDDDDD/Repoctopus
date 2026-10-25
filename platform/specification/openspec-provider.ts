@@ -35,6 +35,7 @@ import { GitSpecificationCheckoutManager } from '../git/specification-checkout.j
 import { execute } from '../process/execute.js';
 import {
   Specification,
+  createSpecificationPhaseContext,
   type PrepareSpecificationClosureInput,
   type SpecificationRoot,
   type SpecificationWorkspace,
@@ -1131,6 +1132,15 @@ ${references}
       planningInstructions: (changeId, signal) =>
         this.planningInstructionsAt(workspace, changeId, signal),
       planningContext: (changeId, signal) => this.planningContextAt(workspace, changeId, signal),
+      phaseContext: async (phase, changeId, signal) =>
+        createSpecificationPhaseContext({
+          phase,
+          provider: this.identity(),
+          artifacts:
+            phase === 'open' || phase === 'design'
+              ? (await this.planningContextAt(workspace, changeId, signal)).artifacts
+              : [],
+        }),
       planningGuidance: async (changeId, signal) =>
         createSpecificationPlanningGuidance(
           await this.planningInstructionsAt(workspace, changeId, signal),

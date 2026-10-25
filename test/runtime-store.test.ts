@@ -179,6 +179,7 @@ describe('Change lifecycle runtime schema', () => {
         workspaceId: 'team-platform',
         changeId: 'establish-change-lifecycle',
         generation: 1,
+        mode: 'fresh',
         runId: base.runId,
       },
       definition: {

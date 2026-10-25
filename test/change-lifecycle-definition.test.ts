@@ -21,6 +21,7 @@ const identity: ChangeRunIdentity = {
   workspaceId: 'repoctopus',
   changeId: 'establish-change-lifecycle',
   generation: 1,
+  mode: 'fresh',
   runId: 'change-establish-change-lifecycle-1',
 };
 
@@ -87,14 +88,14 @@ describe('Change lifecycle definition', () => {
     const binding = materializeLifecycleWorkBinding({
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
       kind: 'task.implement',
-      actionSkill: skill('tdd'),
-      augmentationSkills: [skill('codebase-design')],
+      actionSkill: skill('repoctopus-build-task'),
+      augmentationSkills: [skill('tdd'), skill('codebase-design')],
       workspaceRepositoryId: 'workspace',
       repositoryIds: ['backend', 'workspace'],
     });
     expect(binding).toMatchObject({
-      actionSkill: { name: 'tdd' },
-      augmentationSkills: [{ name: 'codebase-design' }],
+      actionSkill: { name: 'repoctopus-build-task' },
+      augmentationSkills: [{ name: 'tdd' }, { name: 'codebase-design' }],
       methodProfile: { id: 'repoctopus.build' },
       writeScopes: [
         { repositoryId: 'backend', paths: ['**'] },
@@ -111,7 +112,7 @@ describe('Change lifecycle definition', () => {
         definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
         kind: 'task.implement',
         actionSkill: skill('repoctopus.build'),
-        augmentationSkills: [skill('codebase-design')],
+        augmentationSkills: [skill('tdd'), skill('codebase-design')],
         workspaceRepositoryId: 'workspace',
         repositoryIds: ['workspace'],
       }),

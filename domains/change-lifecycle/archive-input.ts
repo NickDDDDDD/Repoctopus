@@ -73,12 +73,14 @@ export function createArchiveDeliveryInput(input: {
 export function createSpecificationCloseWork(facts: {
   definition: ChangeLifecycleDefinition;
   archive: ArchiveDeliveryInput;
+  actionSkill: SkillUsageSnapshot;
   workspaceRepositoryId: string;
   repositoryIds: readonly string[];
 }): WorkDescriptor {
   const binding = materializeLifecycleWorkBinding({
     definition: facts.definition,
     kind: 'specification.close',
+    actionSkill: facts.actionSkill,
     augmentationSkills: [],
     workspaceRepositoryId: facts.workspaceRepositoryId,
     repositoryIds: facts.repositoryIds,

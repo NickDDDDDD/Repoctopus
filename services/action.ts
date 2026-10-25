@@ -147,15 +147,7 @@ export class ActionDispatcher extends Service {
   }
 
   async complete(input: ClaimedActionOutcome): Promise<ActionReceipt> {
-    const intent = await this.ctx.actionStore.loadIntent(
-      input.runId,
-      input.workId,
-      input.attempt,
-    );
-    const latest = await this.ctx.actionStore.loadLatestIntent(input.runId, input.workId);
-    if (latest.attempt !== input.attempt || latest.intentId !== intent.intentId) {
-      throw new Error(`Action Outcome belongs to a stale attempt: ${input.workId}`);
-    }
+    const intent = await this.ctx.actionStore.loadIntent(input.runId, input.workId, input.attempt);
     if (
       input.claimToken !== intent.claimToken ||
       input.inputDigest !== intent.inputDigest ||

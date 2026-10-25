@@ -98,10 +98,11 @@ describe('Change Run CLI', () => {
         workspaceId: 'team-platform',
         changeId: 'stable-create-or-resume',
         generation: 1,
+        mode: 'fresh',
       },
       phase: 'open',
       status: 'running',
-      definition: { id: 'repoctopus-change', version: '1.1.0' },
+      definition: { id: 'repoctopus-change', version: '2.0.0' },
     });
     expect(second.result?.changeLifecycle).toEqual(first.result?.changeLifecycle);
 

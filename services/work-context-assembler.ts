@@ -62,17 +62,16 @@ export class WorkContextAssembler extends Service {
     const planningKinds = input.work.outputContract.artifactKinds.filter(
       (kind) => kind !== 'verification',
     );
-    const planning =
-      planningKinds.length > 0
-        ? await this.ctx.specification.planningContext(input.changeId, input.signal)
-        : undefined;
-    const specificationArtifacts = planning
-      ? planningKinds.map((kind) => {
-          const artifact = planning.artifacts.find((candidate) => candidate.kind === kind);
-          if (!artifact) throw new Error(`Work context is missing OpenSpec ${kind} instructions`);
-          return artifact;
-        })
-      : [];
+    const phaseContext = await this.ctx.specification.phaseContext(
+      input.work.phase,
+      input.changeId,
+      input.signal,
+    );
+    const specificationArtifacts = planningKinds.map((kind) => {
+      const artifact = phaseContext.artifacts.find((candidate) => candidate.kind === kind);
+      if (!artifact) throw new Error(`Work context is missing OpenSpec ${kind} instructions`);
+      return artifact;
+    });
     return assembleWorkExecutionContext({
       work: input.work,
       runtimeContract: RUNTIME_CONTRACT,
@@ -80,6 +79,7 @@ export class WorkContextAssembler extends Service {
         ? { actionSkill: await resolve(input.work.actionSkill.name) }
         : {}),
       specificationArtifacts,
+      specificationPhase: phaseContext,
       augmentationSkills: await Promise.all(
         input.work.augmentationSkills.map((skill) => resolve(skill.name)),
       ),

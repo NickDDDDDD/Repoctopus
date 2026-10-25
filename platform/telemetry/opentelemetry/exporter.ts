@@ -11,7 +11,7 @@ import {
   ATTR_SERVICE_VERSION,
   ATTR_DEPLOYMENT_ENVIRONMENT_NAME,
 } from '@opentelemetry/semantic-conventions';
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash } from 'node:crypto';
 
 import type { TelemetryBatch, TelemetryPort } from '../../../domains/runtime/types.js';
 import type { DeliveryEvent, DeliveryTelemetryPort } from '../../../domains/delivery/ports.js';
@@ -20,6 +20,7 @@ import { safeDeliveryAttributes } from '../delivery-mapping.js';
 import { acceptedChangeLifecycleTelemetry } from '../change-lifecycle-mapping.js';
 import {
   eventSeverity,
+  executionMetricAttributes,
   safeEventAttributes,
   workflowEventMetricAttributes,
   workflowStepMetricAttributes,
@@ -55,6 +56,37 @@ function proposedActionId(event: TelemetryBatch['events'][number]): string | und
   return typeof value === 'string' ? value : undefined;
 }
 
+const EXECUTION_SPAN_START: Partial<
+  Record<TelemetryBatch['events'][number]['type'], TelemetryBatch['events'][number]['type']>
+> = {
+  'work.completed': 'work.claimed',
+  'work.host-completed': 'work.host-started',
+  'tool.completed': 'tool.started',
+  'wait.ended': 'wait.started',
+  'reconcile.completed': 'reconcile.started',
+};
+
+function sameExecutionBoundary(
+  left: TelemetryBatch['events'][number],
+  right: TelemetryBatch['events'][number],
+): boolean {
+  for (const key of ['invocationId', 'operationId', 'waitId', 'reconcileId'] as const) {
+    const value = left.data[key];
+    if (typeof value === 'string') return value === right.data[key];
+  }
+  return left.data.workId === right.data.workId && left.data.attempt === right.data.attempt;
+}
+
+function executionSpanName(type: TelemetryBatch['events'][number]['type']): string {
+  if (type.startsWith('work.host-')) return 'repoctopus.host';
+  if (type.startsWith('work.')) return 'repoctopus.work';
+  if (type.startsWith('tool.')) return 'repoctopus.tool';
+  if (type.startsWith('validator.')) return 'repoctopus.validator';
+  if (type.startsWith('wait.')) return 'repoctopus.wait';
+  if (type.startsWith('reconcile.')) return 'repoctopus.reconcile';
+  return 'repoctopus.execution';
+}
+
 export interface OpenTelemetryOptions {
   timeoutMillis?: number;
   environment?: string;
@@ -71,18 +103,32 @@ export class OpenTelemetryExporter implements TelemetryPort {
     });
     const timeoutMillis = this.options.timeoutMillis ?? 5_000;
     const exportsRoot = batch.events.some((event) => event.type === 'run.started');
-    let rootIdPending = exportsRoot;
+    const spannedEvents = batch.events.filter(
+      (event) =>
+        event.type === 'action.completed' ||
+        EXECUTION_SPAN_START[event.type] !== undefined ||
+        event.type === 'validator.completed',
+    );
+    const stableSpanIds = [
+      ...(exportsRoot ? [rootSpanId(batch.run.runId)] : []),
+      ...spannedEvents.map((event) =>
+        createHash('sha256')
+          .update(`${batch.run.runId}\0${event.eventId}\0${event.type}`)
+          .digest('hex')
+          .slice(0, 16),
+      ),
+    ];
+    let spanCursor = 0;
     const traceProvider = new BasicTracerProvider({
       resource,
       idGenerator: {
         generateTraceId: () => batch.run.traceId,
-        generateSpanId: () => {
-          if (rootIdPending) {
-            rootIdPending = false;
-            return rootSpanId(batch.run.runId);
-          }
-          return randomBytes(8).toString('hex');
-        },
+        generateSpanId: () =>
+          stableSpanIds[spanCursor++] ??
+          createHash('sha256')
+            .update(`${batch.run.runId}\0fallback\0${spanCursor}`)
+            .digest('hex')
+            .slice(0, 16),
       },
       spanProcessors: [new SimpleSpanProcessor(new OTLPTraceExporter({ timeoutMillis }))],
     });
@@ -108,6 +154,14 @@ export class OpenTelemetryExporter implements TelemetryPort {
     });
     const stepDuration = meter.createHistogram('repoctopus.workflow.step.duration', {
       description: 'Completed Repoctopus workflow step duration',
+      unit: 'ms',
+    });
+    const executionCounter = meter.createCounter('repoctopus.work.execution.events', {
+      description: 'Committed managed Work execution events',
+      unit: '{event}',
+    });
+    const executionDuration = meter.createHistogram('repoctopus.work.execution.duration', {
+      description: 'Managed Work, Host, tool, Validator, wait, and reconcile duration',
       unit: 'ms',
     });
     const parentContext = syntheticParentContext(batch.run.runId, batch.run.traceId);
@@ -167,6 +221,33 @@ export class OpenTelemetryExporter implements TelemetryPort {
           });
           span.end(endedAt);
           stepDuration.record(duration, workflowStepMetricAttributes(batch, item));
+        }
+        const executionMetric = executionMetricAttributes(item);
+        if (executionMetric) {
+          executionCounter.add(1, executionMetric);
+          const startType = EXECUTION_SPAN_START[item.type];
+          const startedBoundary = startType
+            ? batch.trajectory.find(
+                (candidate) =>
+                  candidate.type === startType && sameExecutionBoundary(item, candidate),
+              )
+            : undefined;
+          if (startType || item.type === 'validator.completed') {
+            const startedAt = new Date(startedBoundary?.timestamp ?? item.timestamp);
+            const endedAt = new Date(item.timestamp);
+            const duration = Math.max(0, endedAt.getTime() - startedAt.getTime());
+            attributes['repoctopus.execution.duration_ms'] = duration;
+            const span = tracer.startSpan(
+              executionSpanName(item.type),
+              { startTime: startedAt, attributes },
+              parentContext,
+            );
+            span.setStatus({
+              code: item.data.result === 'failed' ? SpanStatusCode.ERROR : SpanStatusCode.OK,
+            });
+            span.end(endedAt);
+            executionDuration.record(duration, executionMetric);
+          }
         }
 
         logger.emit({

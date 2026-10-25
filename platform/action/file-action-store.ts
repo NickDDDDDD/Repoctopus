@@ -64,19 +64,6 @@ export class FileActionStore implements ActionStorePort {
       }
       return current;
     }
-    const latest = await this.optionalLatestIntent(intent.runId, intent.workId);
-    if (latest) {
-      if (latest.inputDigest !== intent.inputDigest) {
-        throw new Error(`Action Work input is stale: ${intent.workId}`);
-      }
-      if (intent.attempt !== latest.attempt + 1) {
-        throw new Error(
-          `Action claim attempt must follow ${latest.attempt}: ${intent.workId}`,
-        );
-      }
-    } else if (intent.attempt !== 1) {
-      throw new Error(`First Action claim attempt must be 1: ${intent.workId}`);
-    }
     try {
       await atomicWriteJson(file, intent, { exclusive: true });
       return intent;
@@ -102,10 +89,7 @@ export class FileActionStore implements ActionStorePort {
     return latest;
   }
 
-  private async optionalLatestIntent(
-    runId: string,
-    workId: string,
-  ): Promise<ActionIntent | null> {
+  private async optionalLatestIntent(runId: string, workId: string): Promise<ActionIntent | null> {
     const directory = this.intentDirectory(runId, workId);
     let entries: string[];
     try {
@@ -115,14 +99,12 @@ export class FileActionStore implements ActionStorePort {
       throw error;
     }
     const attempts = entries
-      .map((entry) => (/^(\d+)\.json$/u.exec(entry)?.[1] ?? ''))
+      .map((entry) => /^(\d+)\.json$/u.exec(entry)?.[1] ?? '')
       .filter(Boolean)
       .map(Number)
       .filter((attempt) => Number.isSafeInteger(attempt) && attempt > 0)
       .sort((left, right) => right - left);
-    return attempts[0]
-      ? readJson<ActionIntent>(this.intentFile(runId, workId, attempts[0]))
-      : null;
+    return attempts[0] ? readJson<ActionIntent>(this.intentFile(runId, workId, attempts[0])) : null;
   }
 
   async saveReceipt(receipt: ActionReceipt): Promise<ActionReceipt> {

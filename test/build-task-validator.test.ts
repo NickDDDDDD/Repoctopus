@@ -48,7 +48,13 @@ function state(): RunState {
     status: 'running',
     changeLifecycle: {
       schemaVersion: 1,
-      identity: { workspaceId: 'team', changeId: 'build-validator', generation: 1, runId: 'run-1' },
+      identity: {
+        workspaceId: 'team',
+        changeId: 'build-validator',
+        generation: 1,
+        mode: 'fresh',
+        runId: 'run-1',
+      },
       definition: { id: 'repoctopus-change', version: '1.1.0', digest: digest('d') },
       revision: 1,
       phase: 'build',
@@ -85,7 +91,9 @@ function receipt(overrides: Partial<ActionReceipt> = {}): ActionReceipt {
 
 describe('Build Task validator', () => {
   it('distinguishes accepted, failed, input drift, Task revision drift, and replay', () => {
-    expect(validateBuildTaskOutcome({ state: state(), receipt: receipt(), tasks: pending })).toMatchObject({
+    expect(
+      validateBuildTaskOutcome({ state: state(), receipt: receipt(), tasks: pending }),
+    ).toMatchObject({
       status: 'validated',
       taskId: '1.1',
     });

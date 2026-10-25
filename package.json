@@ -20,6 +20,7 @@
     "platform",
     "plugins",
     "services",
+    "skills",
     "workflows",
     "third_party/comet",
     "third_party/cordis",

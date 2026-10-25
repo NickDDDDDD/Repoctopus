@@ -54,7 +54,7 @@ export function createChangeLifecycleMigrationIntent(
   if (!Number.isSafeInteger(request.target.generation) || request.target.generation < 1) {
     throw new Error('Migration target generation must be a positive safe integer');
   }
-  const targetRunId = changeRunId(request.target);
+  const targetRunId = changeRunId({ ...request.target, mode: 'adopt-existing' });
   const stable = {
     schemaVersion: 1 as const,
     planDigest: request.plan.digest,

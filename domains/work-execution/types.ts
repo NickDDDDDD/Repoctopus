@@ -93,7 +93,7 @@ export interface WorkExecutionCheckpoint {
   claimToken: `sha256:${string}`;
   inputDigest: `sha256:${string}`;
   packet: WorkExecutionPacketIdentity;
-  status: 'claimed' | 'invoking' | 'unknown' | 'outcome' | 'validated';
+  status: 'claimed' | 'context-delivered' | 'invoking' | 'unknown' | 'outcome' | 'validated';
   hostInvocation?: WorkExecutionHostInvocation;
   hostOutcome?: WorkExecutionHostOutcome;
   actionOutcome?: ClaimedActionOutcome;
@@ -173,7 +173,7 @@ export function createWorkExecutionPacket(input: {
       contextDigest: input.context.digest,
     },
   };
-  return deepFreeze(packet) as WorkExecutionPacket;
+  return deepFreeze(packet);
 }
 
 export function assertPacketIdentity(packet: WorkExecutionPacket): void {
@@ -188,16 +188,27 @@ export function assertPacketIdentity(packet: WorkExecutionPacket): void {
         compositionDigest: packet.claim.compositionDigest as `sha256:${string}`,
         plugins: [],
       },
-      action: { id: packet.claim.workId, stepId: packet.work.phase, type: 'invoke_skill', ref: packet.work.kind, summary: 'packet verification' },
+      action: {
+        id: packet.claim.workId,
+        stepId: packet.work.phase,
+        type: 'invoke_skill',
+        ref: packet.work.kind,
+        summary: 'packet verification',
+      },
       adapter: 'packet-verification',
       executionContext: {
         digest: packet.context.digest,
-        layers: packet.context.layers.map(({ kind, priority, source, digest }) => ({ kind, priority, source, digest })),
+        layers: packet.context.layers.map(({ kind, priority, source, digest }) => ({
+          kind,
+          priority,
+          source,
+          digest,
+        })),
       },
       createdAt: '',
     },
     work: packet.work,
-    context: packet.context as WorkExecutionContext,
+    context: packet.context,
   });
   if (rebuilt.identity.packetDigest !== packet.identity.packetDigest) {
     throw new Error('Work execution packet identity does not match its content');

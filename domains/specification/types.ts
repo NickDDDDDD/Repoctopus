@@ -116,6 +116,25 @@ export interface SpecificationPlanningContext {
   digest: `sha256:${string}`;
 }
 
+export type SpecificationPhaseOperation =
+  | 'inspect-change'
+  | 'write-planning-artifact'
+  | 'validate-strict'
+  | 'read-tasks'
+  | 'complete-task-from-receipt'
+  | 'prepare-closure'
+  | 'close-change';
+
+export interface SpecificationPhaseContext {
+  schemaVersion: 1;
+  phase: 'open' | 'design' | 'build' | 'verify' | 'archive';
+  provider: SpecificationProviderIdentity;
+  instruction: string;
+  allowedOperations: readonly SpecificationPhaseOperation[];
+  artifacts: readonly SpecificationArtifactContext[];
+  digest: `sha256:${string}`;
+}
+
 export interface SpecificationSchemaInstructions {
   schemaVersion: 1;
   schemaName: string;
