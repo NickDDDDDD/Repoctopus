@@ -42,6 +42,7 @@ import { observeOrCreateMergeRequest } from './stable-publication.js';
 import type { PublicationProvenance } from './publication-receipt.js';
 
 export interface DeliveryV3Preparation {
+  runId?: string;
   project: ProjectSnapshot;
   intent: DeliveryIntentV3;
   policy: DeliveryPolicy;
@@ -285,7 +286,7 @@ export class DeliveryServiceV3 {
         request,
         identity: {
           changeId: options.intent.changeId,
-          generation: 1,
+          runId: options.runId ?? `delivery:${options.intent.changeId}`,
           repositoryId: repository.id,
           remoteIdentity: repository.remoteIdentity,
           sourceBranch: action.sourceBranch,

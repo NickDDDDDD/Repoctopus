@@ -18,7 +18,6 @@ import builtinLifecycleExtensions from './lifecycle/builtin-extension-contributo
 import projectProbeContributor from './command/project-probe-contributor.js';
 import evidenceContributor from './command/evidence-contributor.js';
 import workflowRunContributor from './command/workflow-run-contributor.js';
-import changeLifecycleMigrationContributor from './command/change-lifecycle-migration-contributor.js';
 import deliveryContributor from './command/delivery-contributor.js';
 import projectOnboardingContributor from './command/project-onboarding-contributor.js';
 import maintenanceContributor from './command/maintenance-contributor.js';
@@ -49,7 +48,6 @@ import {
   localServiceContributor,
 } from './evidence/local-adapter-contributors.js';
 import { WorkflowRuns } from '../services/workflow-runs.js';
-import { ChangeLifecycleMigration } from '../services/change-lifecycle-migration.js';
 import { ProjectOnboarding } from '../services/project-onboarding.js';
 import { BrowserMaintenance } from '../services/browser-maintenance.js';
 import { SkillRegistry } from '@deepseek-ai/dsh-skill';
@@ -1027,43 +1025,6 @@ const definitions: readonly BuiltinDefinition[] = [
     },
     plugin: workflowRunContributor,
     sourceFiles: ['plugins/command/workflow-run-contributor.ts'],
-  },
-  {
-    descriptor: {
-      id: 'change-lifecycle-migration',
-      version: VERSION,
-      contractVersion: PLUGIN_CONTRACT_VERSION,
-      configSchemaVersion: '1',
-      kind: 'service-provider',
-      source: 'builtin',
-      compositions: ['project'],
-      authorities: ['change-lifecycle-migration'],
-      permissions: ['filesystem'],
-      stateSchemas: { 'change-lifecycle-migration': '1' },
-    },
-    plugin: ChangeLifecycleMigration,
-    sourceFiles: [
-      'domains/change-lifecycle/migration.ts',
-      'domains/change-lifecycle/migration-transaction.ts',
-      'platform/runtime/file-change-lifecycle-migration-store.ts',
-      'services/change-lifecycle-migration.ts',
-    ],
-  },
-  {
-    descriptor: {
-      id: 'change-lifecycle-migration-command',
-      version: VERSION,
-      contractVersion: PLUGIN_CONTRACT_VERSION,
-      configSchemaVersion: '1',
-      kind: 'contributor',
-      source: 'builtin',
-      compositions: ['project'],
-      authorities: [],
-      permissions: [],
-      stateSchemas: {},
-    },
-    plugin: changeLifecycleMigrationContributor,
-    sourceFiles: ['plugins/command/change-lifecycle-migration-contributor.ts'],
   },
 ];
 

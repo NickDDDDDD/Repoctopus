@@ -39,6 +39,8 @@ function planningApprovalState(value: unknown): SpecificationApprovalState {
     !Number.isSafeInteger(state.stateVersion) ||
     state.stateVersion < 0 ||
     state.changeId !== state.snapshot?.changeId ||
+    state.approvalPhase !== state.snapshot?.approvalPhase ||
+    state.decisionRequest?.approvalPhase !== state.approvalPhase ||
     state.decisionRequest?.changeId !== state.changeId ||
     state.decisionRequest?.snapshotDigest !== state.snapshot?.digest ||
     (state.decision !== null && state.decision.snapshotDigest !== state.snapshot?.digest)
@@ -52,13 +54,14 @@ function planningApprovalState(value: unknown): SpecificationApprovalState {
 export class FilePlanningApprovalStore implements SpecificationApprovalStorePort {
   constructor(private readonly workspaceRoot: string) {}
 
-  private paths(changeId: string) {
+  private paths(changeId: string, approvalPhase: 'open' | 'design' = 'design') {
     assertChangeId(changeId);
     const root = path.join(
       path.resolve(this.workspaceRoot),
       '.repoctopus',
       'specification-approvals',
       changeId,
+      approvalPhase,
     );
     return {
       state: path.join(root, 'state.json'),
@@ -67,8 +70,11 @@ export class FilePlanningApprovalStore implements SpecificationApprovalStorePort
     };
   }
 
-  async load(changeId: string): Promise<SpecificationApprovalState | null> {
-    const paths = this.paths(changeId);
+  async load(
+    changeId: string,
+    approvalPhase: 'open' | 'design' = 'design',
+  ): Promise<SpecificationApprovalState | null> {
+    const paths = this.paths(changeId, approvalPhase);
     await this.transition(paths).recover((journal) => this.replay(paths, journal));
     if (!(await exists(paths.state))) return null;
     return planningApprovalState(JSON.parse(await readFile(paths.state, 'utf8')) as unknown);
@@ -79,7 +85,7 @@ export class FilePlanningApprovalStore implements SpecificationApprovalStorePort
     previousStateVersion: number | null,
   ): Promise<void> {
     planningApprovalState(state);
-    const paths = this.paths(state.changeId);
+    const paths = this.paths(state.changeId, state.approvalPhase);
     await this.transition(paths).run(
       (journal) => this.replay(paths, journal),
       async (transition) => {

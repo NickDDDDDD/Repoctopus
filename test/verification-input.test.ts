@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { createVerificationInput } from '../domains/change-lifecycle/verification-input.js';
-import { acceptVerifyGate, rejectVerifyGate } from '../domains/change-lifecycle/verify-gate.js';
+import { acceptVerifyGate } from '../domains/change-lifecycle/verify-gate.js';
 import { createVerifyWork } from '../domains/change-lifecycle/verify-work.js';
 import type { EvidenceGateProjection } from '../domains/evidence/types.js';
 import { evolveChangeLifecycle } from '../domains/change-lifecycle/transition.js';
@@ -77,6 +77,7 @@ const fingerprint: EvidenceFingerprint = {
 function create(overrides: Partial<Parameters<typeof createVerificationInput>[0]> = {}) {
   return createVerificationInput({
     runId: 'run-1',
+    checkEpoch: 1,
     tasks,
     fingerprint,
     plan,
@@ -84,76 +85,6 @@ function create(overrides: Partial<Parameters<typeof createVerificationInput>[0]
     compositionDigest: digest('o'),
     skills: [skill],
     ...overrides,
-  });
-
-  it('appends a Verify invalidation, preserves Evidence identity, and returns to Build', () => {
-    const verification = create();
-    const work = createVerifyWork({
-      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-      verification,
-      actionSkill: verifySkill,
-      augmentationSkills: [reviewSkill],
-      workspaceRepositoryId: 'workspace',
-      repositoryIds: ['workspace'],
-    });
-    const lifecycle = {
-      ...createChangeLifecycleSnapshot({
-        identity: {
-          workspaceId: 'team',
-          changeId: 'verify-input',
-          generation: 1,
-          mode: 'fresh',
-          runId: 'run-1',
-        },
-      }),
-      phase: 'verify' as const,
-      status: 'running' as const,
-      currentWork: work,
-      tasks,
-      planningDigest: digest('p'),
-      verificationInput: verification,
-    };
-    const rejected = rejectVerifyGate({
-      runId: 'run-1',
-      lifecycle,
-      attemptId: 'attempt-failed',
-      workflowStateVersion: 9,
-      gate: {
-        schemaVersion: 1,
-        kind: 'EvidenceGateProjection',
-        workflowRunId: 'run-1',
-        workflowActionId: work.workId,
-        workflowStepId: 'verify',
-        workflowStateVersion: 9,
-        compositionDigest: verification.compositionDigest,
-        profileId: 'verify',
-        bundleId: 'bundle-failed',
-        inputFingerprint: verification.evidenceProfile.fingerprintDigest,
-        verificationInputDigest: verification.digest,
-        acceptanceSetHash: verification.acceptanceSetHash,
-        outcome: 'failed',
-        status: 'blocked',
-        reason: 'required test failed',
-      },
-    });
-    const fallback = evolveChangeLifecycle({
-      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-      current: lifecycle,
-      observation: { kind: 'verify-gate-rejected', ...rejected },
-    });
-    expect(fallback.snapshot).toMatchObject({
-      phase: 'build',
-      status: 'running',
-      currentWork: null,
-      verificationInvalidation: {
-        kind: 'evidence-gate-blocked',
-        priorInputDigest: verification.digest,
-        attemptId: 'attempt-failed',
-        bundleId: 'bundle-failed',
-      },
-    });
-    expect(fallback.snapshot.verificationInput).toBeUndefined();
-    expect(fallback.fact?.transitionId).toBe('verify.failed');
   });
 }
 
@@ -183,6 +114,7 @@ describe('Verification input', () => {
     const verification = create();
     const work = createVerifyWork({
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      checkEpoch: verification.checkEpoch,
       verification,
       actionSkill: verifySkill,
       augmentationSkills: [reviewSkill],
@@ -194,25 +126,25 @@ describe('Verification input', () => {
         identity: {
           workspaceId: 'team',
           changeId: 'verify-input',
-          generation: 1,
-          mode: 'fresh',
           runId: 'run-1',
         },
       }),
       phase: 'verify' as const,
       status: 'running' as const,
+      checkEpoch: verification.checkEpoch,
       currentWork: work,
       tasks,
       planningDigest: digest('p'),
       verificationInput: verification,
     };
     const gate: EvidenceGateProjection = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       kind: 'EvidenceGateProjection',
       workflowRunId: 'run-1',
       workflowActionId: work.workId,
       workflowStepId: 'verify',
       workflowStateVersion: 7,
+      checkEpoch: verification.checkEpoch,
       compositionDigest: verification.compositionDigest,
       profileId: 'verify',
       bundleId: 'bundle-1',
@@ -228,7 +160,7 @@ describe('Verification input', () => {
       lifecycle,
       gate,
       attemptId: 'attempt-1',
-      workflowStateVersion: 7,
+      checkEpoch: verification.checkEpoch,
     });
     expect(accepted).toMatchObject({
       runId: 'run-1',
@@ -247,18 +179,18 @@ describe('Verification input', () => {
       acceptVerifyGate({
         runId: 'run-1',
         lifecycle,
-        gate: { ...gate, workflowStateVersion: 6 },
+        gate: { ...gate, checkEpoch: 0 },
         attemptId: 'attempt-old',
-        workflowStateVersion: 7,
+        checkEpoch: verification.checkEpoch,
       }),
-    ).toThrow(/stale workflow state/u);
+    ).toThrow(/stale checkEpoch/u);
     expect(() =>
       acceptVerifyGate({
         runId: 'run-1',
         lifecycle,
         gate: { ...gate, workflowRunId: 'run-2' },
         attemptId: 'attempt-other-run',
-        workflowStateVersion: 7,
+        checkEpoch: verification.checkEpoch,
       }),
     ).toThrow(/another workflow run/u);
     expect(() =>
@@ -267,7 +199,7 @@ describe('Verification input', () => {
         lifecycle,
         gate: { ...gate, inputFingerprint: 'fingerprint-old' },
         attemptId: 'attempt-old-input',
-        workflowStateVersion: 7,
+        checkEpoch: verification.checkEpoch,
       }),
     ).toThrow(/stale verification inputs/u);
     expect(() =>
@@ -276,7 +208,7 @@ describe('Verification input', () => {
         lifecycle,
         gate: { ...gate, verificationInputDigest: null, acceptanceSetHash: null },
         attemptId: 'attempt-no-trace',
-        workflowStateVersion: 7,
+        checkEpoch: verification.checkEpoch,
       }),
     ).toThrow(/matching Acceptance Trace/u);
   });
@@ -330,8 +262,6 @@ describe('Verification input', () => {
       identity: {
         workspaceId: 'team',
         changeId: 'verify-input',
-        generation: 1,
-        mode: 'fresh',
         runId: 'run-1',
       },
     });

@@ -86,8 +86,6 @@ describe('telemetry mapping', () => {
       identity: {
         workspaceId: project.projectId,
         changeId: 'change-telemetry',
-        generation: 1,
-        mode: 'fresh',
         runId: baseRun.runId,
       },
     });
@@ -103,12 +101,12 @@ describe('telemetry mapping', () => {
       compositionDigest: run.composition.compositionDigest,
       data: {
         changeLifecycleTransition: {
-          schemaVersion: 1,
+          schemaVersion: 2,
           transitionId: 'archive.completed',
           definition: initial.definition,
           revision: 9,
-          from: { phase: 'archive', status: 'running' },
-          to: { phase: 'archive', status: 'completed' },
+          from: { phase: 'archive', status: 'running', checkEpoch: 8 },
+          to: { phase: 'archive', status: 'completed', checkEpoch: 9 },
           workId: null,
           waitId: null,
           work: null,
@@ -145,6 +143,27 @@ describe('telemetry mapping', () => {
     ) as unknown;
     expect(desktop).toEqual(golden);
     expect(remote).toEqual(golden);
+    const older = records.map((record) => ({
+      ...record,
+      eventId: 'older-transition',
+      timestamp: '2026-01-01T00:08:00.000Z',
+      attributes: {
+        ...record.attributes,
+        'repoctopus.event.id': 'older-transition',
+        'repoctopus.change.transition.revision': 8,
+        'repoctopus.change.check_epoch': 8,
+      },
+    }));
+    expect(
+      projectChangeLifecycleTelemetry([
+        records[2]!,
+        ...older.reverse(),
+        records[0]!,
+        records[3]!,
+        records[1]!,
+        records[2]!,
+      ]),
+    ).toEqual(golden);
     expect(JSON.stringify(records)).not.toMatch(
       /post_merge|ghp_|C:\/private|specification body|authorization|credential/u,
     );
@@ -167,8 +186,6 @@ describe('telemetry mapping', () => {
         identity: {
           workspaceId: project.projectId,
           changeId: 'execution-telemetry',
-          generation: 1,
-          mode: 'adopt-existing' as const,
           runId: base.runId,
         },
       }),
@@ -210,7 +227,6 @@ describe('telemetry mapping', () => {
       'repoctopus.execution.workId': 'work-1',
       'repoctopus.execution.invocationId': 'invocation-1',
       'repoctopus.execution.packetDigest': `sha256:${'a'.repeat(64)}`,
-      'repoctopus.change.mode': 'adopt-existing',
     });
     expect(JSON.stringify(attributes)).not.toMatch(/private|ghp_|npm run|C:\//u);
     expect(executionMetricAttributes(event)).toEqual({

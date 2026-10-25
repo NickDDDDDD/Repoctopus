@@ -31,7 +31,7 @@ export function specificationPhaseArtifacts(
   artifacts: SpecificationPlanningContext['artifacts'],
 ): SpecificationPlanningContext['artifacts'] {
   const applicable: Record<SpecificationPhaseContext['phase'], readonly string[]> = {
-    open: ['proposal'],
+    open: ['proposal', 'specs', 'design', 'tasks'],
     design: ['proposal', 'specs', 'design', 'tasks'],
     build: ['tasks'],
     verify: ['specs', 'tasks'],

@@ -330,7 +330,6 @@ describe('Specification authority', () => {
       guidance.artifacts.find((artifact) => artifact.artifactKind === 'design')?.rules,
     ).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ id: 'design.public-test-seams' }),
         expect.objectContaining({ id: 'planning.synthesize-known-context' }),
       ]),
     );

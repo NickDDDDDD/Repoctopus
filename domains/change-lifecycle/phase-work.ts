@@ -7,6 +7,7 @@ import { materializeLifecycleWorkBinding } from './work-definition.js';
 
 export function createLifecyclePhaseWork(input: {
   runId: string;
+  checkEpoch: number;
   changeId: string;
   definition: ChangeLifecycleDefinition;
   kind: 'change.intake' | 'specification.plan';
@@ -28,6 +29,7 @@ export function createLifecyclePhaseWork(input: {
   });
   const stable = {
     runId: input.runId,
+    checkEpoch: input.checkEpoch,
     changeId: input.changeId,
     kind: input.kind,
     definitionId: input.definition.id,
@@ -42,8 +44,9 @@ export function createLifecyclePhaseWork(input: {
     .update(canonicalJson(stable))
     .digest('hex')}` as const;
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     workId: `${input.runId}:${input.kind}:${inputDigest.slice(-16)}`,
+    checkEpoch: input.checkEpoch,
     ...binding,
     inputDigest,
   };

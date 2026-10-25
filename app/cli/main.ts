@@ -42,7 +42,10 @@ import { reviewHumanDecision } from './human-decision.js';
 import { reviewProjectConfigurationDecision } from './project-configuration-decision.js';
 import type { SpecificationApprovalState } from '../../domains/specification/types.js';
 import { inspectPublishedChangeBranch } from '../../platform/git/change-branch.js';
-import { reviewSpecificationApproval } from './specification-approval-decision.js';
+import {
+  reviewHumanDecision as reviewLifecycleDecision,
+  reviewSpecificationApproval,
+} from './specification-approval-decision.js';
 import { changeProjection, renderChangeProjection } from './change-run-view.js';
 import type { ConsistencyReconciliationResult } from '../../services/consistency-reconciler.js';
 
@@ -106,8 +109,6 @@ const CLI_FLAGS = new Set([
   'change',
   'target',
   'remote',
-  'generation',
-  'mode',
   'profile',
   'workflow',
   'run',
@@ -891,13 +892,11 @@ async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
           workspaceRepositoryId: string;
           repositoryIds: string[];
           changeId: string;
-          generation: number;
           targetBranch: string;
           remote: string;
           projectSnapshot: ProjectSnapshot;
           projectConfigDigest: `sha256:${string}`;
           verificationProfileId: string;
-          mode?: 'fresh' | 'adopt-existing';
         },
         RuntimeResult<RunStatusView>
       >('run.change.start', {
@@ -905,19 +904,11 @@ async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
         workspaceRepositoryId: config.shared.workspace.repositoryId,
         repositoryIds: config.shared.repositories.map((repository) => repository.id),
         changeId,
-        generation: integerFlag(parsed, 'generation', { fallback: 1, minimum: 1 })!,
         targetBranch: targetBranch!,
         remote: stringFlag(parsed, 'remote', { fallback: 'origin' })!,
         projectSnapshot,
         projectConfigDigest: qualifiedSha256(config.effectiveDigest, 'Project configuration'),
         verificationProfileId: stringFlag(parsed, 'profile', { fallback: 'verify' })!,
-        mode: (() => {
-          const value = stringFlag(parsed, 'mode', { fallback: 'fresh' })!;
-          if (value !== 'fresh' && value !== 'adopt-existing') {
-            throw new Error('Change Run mode must be fresh or adopt-existing');
-          }
-          return value;
-        })(),
       });
       return successEnvelope({
         command: 'run start',
@@ -1222,23 +1213,75 @@ async function runDecide(parsed: ParsedArguments): Promise<CliEnvelope<unknown>>
     const lifecycle = status.changeLifecycle;
     if (
       !lifecycle ||
-      lifecycle.phase !== 'design' ||
+      !['open', 'design', 'build'].includes(lifecycle.phase) ||
       lifecycle.status !== 'waiting' ||
       lifecycle.waitCondition?.kind !== 'human-decision'
     ) {
-      throw new Error('Change Run is not waiting for a Design Human Decision');
+      throw new Error('Change Run is not waiting for a lifecycle Human Decision');
+    }
+    if (
+      lifecycle.phase === 'build' &&
+      (lifecycle.waitCondition.waitId.startsWith('build-adoption:') ||
+        lifecycle.waitCondition.waitId.startsWith('build-design:'))
+    ) {
+      const adoption = lifecycle.waitCondition.waitId.startsWith('build-adoption:');
+      const selected = await reviewLifecycleDecision({
+        title: adoption
+          ? `Adopt existing completion claims: ${lifecycle.identity.changeId}`
+          : `Return Build to Design: ${lifecycle.identity.changeId}`,
+        proposalHash: lifecycle.waitCondition.proposalDigest,
+        details: adoption
+          ? [
+              `Tasks: ${lifecycle.tasks?.filter((task) => task.completion?.source === 'imported-claim').length ?? 0}`,
+              'Approval imports only Build completion claims; Verify and Archive still run normally.',
+            ]
+          : [
+              lifecycle.waitCondition.reason,
+              'Approval invalidates the old Design approval and Work.',
+            ],
+        input: process.stdin,
+        output: process.stdout,
+      });
+      const result = await app.context.commandRouter.execute('run.change.decide', {
+        runId,
+        response: {
+          apiVersion: 'repoctopus/v1alpha1',
+          kind: 'HumanDecisionResponse',
+          requestId: lifecycle.waitCondition.requestId,
+          proposalHash: lifecycle.waitCondition.proposalDigest,
+          decision: selected.decision,
+          ...(selected.comment ? { comment: selected.comment } : {}),
+        },
+        actor: {
+          actorId: userInfo().username,
+          source: 'cli',
+          authenticated: true,
+        },
+      });
+      return successEnvelope({
+        command: 'run decide',
+        runId,
+        result,
+        nextActions: [`repoctopus run next --run ${runId}`],
+      });
+    }
+    if (lifecycle.phase !== 'open' && lifecycle.phase !== 'design') {
+      throw new Error('Unsupported lifecycle Human Decision');
     }
     const approval = await app.context.commandRouter.execute<
-      { changeId: string },
+      { changeId: string; approvalPhase: 'open' | 'design' },
       SpecificationApprovalState | null
-    >('specification.approval.status', { changeId: lifecycle.identity.changeId });
+    >('specification.approval.status', {
+      changeId: lifecycle.identity.changeId,
+      approvalPhase: lifecycle.phase,
+    });
     if (
       !approval ||
       approval.status !== 'awaiting_approval' ||
       approval.decisionRequest.requestId !== lifecycle.waitCondition.requestId ||
       approval.decisionRequest.proposalHash !== lifecycle.waitCondition.proposalDigest
     ) {
-      throw new Error('Change Run Design proposal is stale or unavailable');
+      throw new Error(`Change Run ${lifecycle.phase} proposal is stale or unavailable`);
     }
     const selected = await reviewSpecificationApproval({
       request: approval.decisionRequest,

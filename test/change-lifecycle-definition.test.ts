@@ -20,8 +20,6 @@ import type { SkillUsageSnapshot } from '../domains/skill/types.js';
 const identity: ChangeRunIdentity = {
   workspaceId: 'repoctopus',
   changeId: 'establish-change-lifecycle',
-  generation: 1,
-  mode: 'fresh',
   runId: 'change-establish-change-lifecycle-1',
 };
 
@@ -89,13 +87,13 @@ describe('Change lifecycle definition', () => {
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
       kind: 'task.implement',
       actionSkill: skill('repoctopus-build-task'),
-      augmentationSkills: [skill('tdd'), skill('codebase-design')],
+      augmentationSkills: [skill('tdd')],
       workspaceRepositoryId: 'workspace',
       repositoryIds: ['backend', 'workspace'],
     });
     expect(binding).toMatchObject({
       actionSkill: { name: 'repoctopus-build-task' },
-      augmentationSkills: [{ name: 'tdd' }, { name: 'codebase-design' }],
+      augmentationSkills: [{ name: 'tdd' }],
       methodProfile: { id: 'repoctopus.build' },
       writeScopes: [
         { repositoryId: 'backend', paths: ['**'] },
@@ -112,7 +110,7 @@ describe('Change lifecycle definition', () => {
         definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
         kind: 'task.implement',
         actionSkill: skill('repoctopus.build'),
-        augmentationSkills: [skill('tdd'), skill('codebase-design')],
+        augmentationSkills: [skill('tdd')],
         workspaceRepositoryId: 'workspace',
         repositoryIds: ['workspace'],
       }),
@@ -188,7 +186,7 @@ describe('Change lifecycle definition', () => {
       })),
       version: original.version,
       id: original.id,
-      schemaVersion: 1,
+      schemaVersion: 2,
     };
     const persisted = createChangeLifecycleSnapshot({ identity, definition: original });
 
@@ -208,8 +206,7 @@ describe('Change lifecycle definition', () => {
     );
 
     const bypass = copyDefinition();
-    bypass.transitions.find((transition) => transition.id === 'open.intake-ready')!.to.phase =
-      'build';
+    bypass.transitions.find((transition) => transition.id === 'open.approved')!.to.phase = 'build';
     expect(() => assertChangeLifecycleDefinition(bypass)).toThrow(/bypasses a protected phase/u);
   });
 
@@ -220,7 +217,7 @@ describe('Change lifecycle definition', () => {
 
     const wrongValidator = copyDefinition();
     wrongValidator.transitions.find(
-      (transition) => transition.id === 'open.intake-ready',
+      (transition) => transition.id === 'open.work-ready',
     )!.requiredValidatorProfile = 'verify.evidence-gate';
     expect(() => assertChangeLifecycleDefinition(wrongValidator)).toThrow(
       /references validator outside open/u,

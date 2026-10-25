@@ -3,7 +3,7 @@ import type { ChangeBranchReference, SpecificationClosureResult } from '../speci
 
 export interface SpecificationPublicationRequest {
   changeId: string;
-  generation: number;
+  runId: string;
   workspaceRoot: string;
   changeBranch: ChangeBranchReference;
   closure: SpecificationClosureResult;

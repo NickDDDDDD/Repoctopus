@@ -29,6 +29,7 @@ export interface ChangeLifecycleTelemetryProjection {
   wait: { waitId: string; kind: string; reasonCategory: string } | null;
   eventId: string;
   revision: number;
+  checkEpoch: number;
   observedAt: string;
 }
 
@@ -42,7 +43,7 @@ function safeId(value: unknown): string | undefined {
 function transitionFact(event: TrajectoryEvent): ChangeLifecycleTransitionFact | null {
   if (event.type !== 'change.lifecycle.transitioned') return null;
   const value = event.data.changeLifecycleTransition;
-  if (!value || value.schemaVersion !== 1) return null;
+  if (!value || value.schemaVersion !== 2) return null;
   if (!safeId(value.transitionId) || !Number.isSafeInteger(value.revision)) return null;
   if (!CHANGE_PHASES.includes(value.from.phase) || !CHANGE_PHASES.includes(value.to.phase)) {
     return null;
@@ -50,6 +51,13 @@ function transitionFact(event: TrajectoryEvent): ChangeLifecycleTransitionFact |
   if (
     !CHANGE_RUN_STATUSES.includes(value.from.status) ||
     !CHANGE_RUN_STATUSES.includes(value.to.status)
+  ) {
+    return null;
+  }
+  if (
+    !Number.isSafeInteger(value.from.checkEpoch) ||
+    !Number.isSafeInteger(value.to.checkEpoch) ||
+    value.to.checkEpoch !== value.from.checkEpoch + 1
   ) {
     return null;
   }
@@ -71,6 +79,8 @@ function commonAttributes(
     'repoctopus.state.version': event.stateVersion,
     'repoctopus.change.transition.id': fact.transitionId,
     'repoctopus.change.transition.revision': fact.revision,
+    'repoctopus.change.check_epoch.before': fact.from.checkEpoch,
+    'repoctopus.change.check_epoch': fact.to.checkEpoch,
     'repoctopus.change.phase.before': fact.from.phase,
     'repoctopus.change.phase': fact.to.phase,
     'repoctopus.change.status.before': fact.from.status,
@@ -131,8 +141,43 @@ export function projectChangeLifecycleTelemetry(
   records: readonly ChangeLifecycleTelemetryRecord[],
 ): ChangeLifecycleTelemetryProjection | null {
   if (records.length === 0) return null;
-  const latest = records.at(-1)!;
-  const bySignal = new Map(records.map((record) => [record.signal, record]));
+  const groups = new Map<string, ChangeLifecycleTelemetryRecord[]>();
+  for (const record of records) {
+    const runId = safeId(record.attributes['repoctopus.run.id']);
+    const changeId = safeId(record.attributes['repoctopus.change.id']);
+    if (!runId || !changeId || !safeId(record.eventId)) continue;
+    const key = `${runId}\0${changeId}\0${record.eventId}`;
+    const group = groups.get(key) ?? [];
+    group.push(record);
+    groups.set(key, group);
+  }
+  const candidates = [...groups.values()]
+    .map((group) => {
+      const bySignal = new Map(group.map((record) => [record.signal, record]));
+      if (bySignal.size !== 4) return null;
+      const revisions = new Set(
+        group.map((record) => record.attributes['repoctopus.change.transition.revision']),
+      );
+      const epochs = new Set(
+        group.map((record) => record.attributes['repoctopus.change.check_epoch']),
+      );
+      if (revisions.size !== 1 || epochs.size !== 1) return null;
+      const revision = [...revisions][0];
+      const checkEpoch = [...epochs][0];
+      if (typeof revision !== 'number' || typeof checkEpoch !== 'number') return null;
+      return { bySignal, revision, checkEpoch, latest: group.at(-1)! };
+    })
+    .filter((candidate): candidate is NonNullable<typeof candidate> => candidate !== null)
+    .sort(
+      (left, right) =>
+        left.checkEpoch - right.checkEpoch ||
+        left.revision - right.revision ||
+        left.latest.timestamp.localeCompare(right.latest.timestamp) ||
+        left.latest.eventId.localeCompare(right.latest.eventId),
+    );
+  const selected = candidates.at(-1);
+  if (!selected) return null;
+  const { bySignal, latest, revision, checkEpoch } = selected;
   const phase = bySignal.get('phase')?.attributes;
   const status = bySignal.get('status')?.attributes;
   const work = bySignal.get('work')?.attributes;
@@ -141,8 +186,14 @@ export function projectChangeLifecycleTelemetry(
   const changeId = safeId(latest.attributes['repoctopus.change.id']);
   const phaseValue = safeId(phase?.['repoctopus.change.phase']);
   const statusValue = safeId(status?.['repoctopus.change.status']);
-  const revision = latest.attributes['repoctopus.change.transition.revision'];
-  if (!runId || !changeId || !phaseValue || !statusValue || typeof revision !== 'number') {
+  if (
+    !runId ||
+    !changeId ||
+    !phaseValue ||
+    !statusValue ||
+    !Number.isSafeInteger(revision) ||
+    !Number.isSafeInteger(checkEpoch)
+  ) {
     return null;
   }
   const workId = safeId(work?.['repoctopus.change.work.id']);
@@ -166,6 +217,7 @@ export function projectChangeLifecycleTelemetry(
         : null,
     eventId: latest.eventId,
     revision,
+    checkEpoch,
     observedAt: latest.timestamp,
   };
 }

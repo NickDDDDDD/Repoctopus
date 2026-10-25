@@ -16,7 +16,6 @@ const work: ConsistencyReviewWorkPackage = {
     schemaVersion: 1,
     requestId: digest('1'),
     changeId: 'semantic-review',
-    generation: 1,
     originalRunId: 'run-semantic-review',
     publicationReceiptDigest: digest('2'),
     verificationInputDigest: digest('3'),

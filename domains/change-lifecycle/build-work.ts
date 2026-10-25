@@ -13,6 +13,7 @@ function sha256(value: unknown): `sha256:${string}` {
 
 export function createInitialBuildWork(facts: {
   runId: string;
+  checkEpoch: number;
   definition: ChangeLifecycleDefinition;
   actionSkill: SkillUsageSnapshot;
   augmentationSkills: readonly SkillUsageSnapshot[];
@@ -37,6 +38,7 @@ export function createInitialBuildWork(facts: {
   });
   const stableInput = {
     runId: facts.runId,
+    checkEpoch: facts.checkEpoch,
     taskId: task.taskId,
     taskRevision: task.taskRevision,
     taskSetDigest: facts.taskSet.digest,
@@ -51,8 +53,9 @@ export function createInitialBuildWork(facts: {
   return {
     tasks: structuredClone(facts.taskSet.tasks),
     work: {
-      schemaVersion: 1,
+      schemaVersion: 2,
       workId: `build:${task.taskId}:${inputDigest.slice('sha256:'.length, 19)}`,
+      checkEpoch: facts.checkEpoch,
       ...binding,
       taskId: task.taskId,
       taskRevision: task.taskRevision,

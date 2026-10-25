@@ -11,8 +11,9 @@ export function changeProjection(value: unknown): ChangeRunProjection | null {
 
 export function renderChangeProjection(projection: ChangeRunProjection): string[] {
   const lines = [
-    `Change: ${projection.identity.changeId} (generation ${projection.identity.generation})`,
+    `Change: ${projection.identity.changeId} [${projection.identity.runId}]`,
     `Phase: ${projection.phase}`,
+    `Check epoch: ${projection.checkEpoch}`,
     `Status: ${projection.status}`,
     `Work: ${projection.currentWork ? `${projection.currentWork.kind} [${projection.currentWork.workId}]` : '-'}`,
     `Tasks: ${projection.taskProgress.completed}/${projection.taskProgress.total}${projection.taskProgress.currentTaskId ? ` (current ${projection.taskProgress.currentTaskId})` : ''}`,

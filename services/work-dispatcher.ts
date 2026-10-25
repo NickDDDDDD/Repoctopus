@@ -41,13 +41,14 @@ export function outcomeReceiptAdapter(id: string): ActionAdapter {
     id,
     complete(intent, input) {
       return Promise.resolve({
-        schemaVersion: 2,
+        schemaVersion: 3,
         receiptId: input.receiptId,
         intentId: intent.intentId,
         idempotencyKey: intent.idempotencyKey,
         runId: intent.runId,
         workId: intent.workId,
         attempt: intent.attempt,
+        checkEpoch: intent.checkEpoch,
         claimToken: intent.claimToken,
         inputDigest: intent.inputDigest,
         outcomeId: input.outcomeId,
@@ -136,6 +137,7 @@ export class WorkDispatcher extends Service {
       runId: request.runId,
       workId: work.workId,
       attempt: request.attempt ?? 1,
+      checkEpoch: work.checkEpoch,
       inputDigest: work.inputDigest,
       composition: state.composition,
       action: {
@@ -225,11 +227,12 @@ export class WorkDispatcher extends Service {
     summary: string,
   ): ClaimedActionOutcome {
     return {
-      schemaVersion: 1,
+      schemaVersion: 2,
       outcomeId: randomUUID(),
       runId: intent.runId,
       workId: intent.workId,
       attempt: intent.attempt,
+      checkEpoch: intent.checkEpoch,
       claimToken: intent.claimToken,
       inputDigest: intent.inputDigest,
       status,

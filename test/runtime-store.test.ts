@@ -174,12 +174,10 @@ describe('Change lifecycle runtime schema', () => {
       timestamp: '2026-10-24T00:00:00.000Z',
     });
     const changeLifecycle: ChangeLifecycleSnapshot = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       identity: {
         workspaceId: 'team-platform',
         changeId: 'establish-change-lifecycle',
-        generation: 1,
-        mode: 'fresh',
         runId: base.runId,
       },
       definition: {
@@ -188,6 +186,7 @@ describe('Change lifecycle runtime schema', () => {
         digest: `sha256:${'d'.repeat(64)}`,
       },
       revision: 1,
+      checkEpoch: 1,
       phase: 'design',
       status: 'waiting',
       currentWork: null,
@@ -209,12 +208,12 @@ describe('Change lifecycle runtime schema', () => {
       type: 'change.lifecycle.transitioned',
       data: {
         changeLifecycleTransition: {
-          schemaVersion: 1,
+          schemaVersion: 2,
           transitionId: 'design.await-approval',
           definition: changeLifecycle.definition,
           revision: changeLifecycle.revision,
-          from: { phase: 'design', status: 'running' },
-          to: { phase: 'design', status: 'waiting' },
+          from: { phase: 'design', status: 'running', checkEpoch: 0 },
+          to: { phase: 'design', status: 'waiting', checkEpoch: 1 },
           workId: null,
           waitId: changeLifecycle.waitCondition!.waitId,
         },
@@ -263,10 +262,11 @@ describe('Change lifecycle runtime schema', () => {
       event: startedEvent(state.runId, 0),
     });
     await store.writeCoordinationCheckpoint({
-      schemaVersion: 1,
+      schemaVersion: 2,
       runId: state.runId,
       workId: 'build:1.1',
       attempt: 1,
+      checkEpoch: 0,
       observedStateVersion: state.stateVersion,
       currentTask: '1.1',
       observedPaths: ['src/example.ts'],

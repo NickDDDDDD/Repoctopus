@@ -146,7 +146,7 @@ describe('managed Change execution production composition', () => {
         workspace,
         repositories: { workspace, app: appRepository },
         operations(packet) {
-          if (packet.work.kind === 'change.intake') {
+          if (packet.work.kind === 'change.intake' || packet.work.kind === 'specification.plan') {
             return [
               {
                 repositoryId: 'workspace',
@@ -155,10 +155,6 @@ describe('managed Change execution production composition', () => {
                 content:
                   '# Proposal\n\n## Why\n\nProve managed execution.\n\n## What Changes\n\n- Add managed behavior.\n\n## Capabilities\n\n### New Capabilities\n\n- `managed-demo`: add behavior.\n\n### Modified Capabilities\n\n## Impact\n\n- Runtime only.\n',
               },
-            ];
-          }
-          if (packet.work.kind === 'specification.plan') {
-            return [
               {
                 repositoryId: 'workspace',
                 relativePath: 'openspec/changes/managed-blackbox/design.md',
@@ -193,6 +189,20 @@ describe('managed Change execution production composition', () => {
           }
           return [];
         },
+        async afterOperations(packet) {
+          if (!['change.intake', 'specification.plan'].includes(packet.work.kind)) return;
+          await execFileAsync('git', ['add', 'openspec/changes/managed-blackbox'], {
+            cwd: workspace,
+          });
+          const status = await execFileAsync('git', ['status', '--porcelain'], { cwd: workspace });
+          if (!status.stdout.trim()) return;
+          await execFileAsync(
+            'git',
+            ['commit', '-m', `spec: complete ${packet.work.phase} planning work`],
+            { cwd: workspace },
+          );
+          await execFileAsync('git', ['push'], { cwd: workspace });
+        },
       });
       const next = () =>
         application.context.commandRouter.execute<{ runId: string }, RuntimeResult<RunStatusView>>(
@@ -209,15 +219,40 @@ describe('managed Change execution production composition', () => {
         continuation: { reason: 'validator-pending' },
       });
       expect((await next()).value.changeLifecycle).toMatchObject({
+        phase: 'open',
+        status: 'waiting',
+        currentWork: null,
+        waitCondition: { kind: 'human-decision' },
+      });
+      const openApproval = await application.context.commandRouter.execute<
+        { changeId: string; approvalPhase: 'open' },
+        SpecificationApprovalState | null
+      >('specification.approval.status', {
+        changeId: 'managed-blackbox',
+        approvalPhase: 'open',
+      });
+      if (!openApproval || openApproval.status !== 'awaiting_approval') {
+        throw new Error('missing Open approval');
+      }
+      await application.context.commandRouter.execute('run.change.decide', {
+        runId,
+        response: {
+          apiVersion: 'repoctopus/v1alpha1',
+          kind: 'HumanDecisionResponse',
+          requestId: openApproval.decisionRequest.requestId,
+          proposalHash: openApproval.decisionRequest.proposalHash,
+          decision: 'approve',
+        },
+        actor: { actorId: 'managed-test-user', source: 'cli', authenticated: true },
+      });
+      const designWork = await next();
+      expect(designWork.value.changeLifecycle).toMatchObject({
         phase: 'design',
         currentWork: { kind: 'specification.plan' },
       });
+      const designWorkId = designWork.value.changeLifecycle?.currentWork?.workId;
+      expect(designWorkId).toBeTruthy();
       await next();
-      await execFileAsync('git', ['add', 'openspec/changes/managed-blackbox'], { cwd: workspace });
-      await execFileAsync('git', ['commit', '-m', 'spec: add managed blackbox plan'], {
-        cwd: workspace,
-      });
-      await execFileAsync('git', ['push'], { cwd: workspace });
 
       const originalChangeBranch = application.context.project.changeBranch.bind(
         application.context.project,
@@ -231,22 +266,20 @@ describe('managed Change execution production composition', () => {
         changeLifecycle: {
           phase: 'design',
           status: 'blocked',
-          currentWork: { kind: 'specification.plan' },
+          currentWork: null,
         },
         continuation: { reason: 'validator-pending' },
       });
-      const blockedWorkId = blocked.value.changeLifecycle?.currentWork?.workId;
-      expect(blockedWorkId).toBeTruthy();
       expect((await status()).state.workExecution).toMatchObject({
         status: 'outcome',
-        workId: blockedWorkId,
+        workId: designWorkId,
       });
       const waiting = await next();
       transientDesignFailure.mockRestore();
       expect(waiting.value.changeLifecycle).toMatchObject({ phase: 'design', status: 'waiting' });
       expect((await status()).state.workExecution).toMatchObject({
-        status: 'validated',
-        validatorId: 'design.artifacts-valid',
+        status: 'outcome',
+        workId: designWorkId,
       });
       const approval = await application.context.commandRouter.execute<
         { changeId: string },
@@ -272,7 +305,28 @@ describe('managed Change execution production composition', () => {
         phase: 'build',
         taskProgress: { completed: 0, currentTaskId: '1.1' },
       });
-      expect((await next()).value.changeLifecycle).toMatchObject({
+      const firstBuildOutcome = await status();
+      expect(firstBuildOutcome.state.workExecution).toMatchObject({
+        status: 'outcome',
+        actionOutcome: { status: 'succeeded' },
+      });
+      const firstBuildReceipt = await application.context.actionStore.loadReceipt(
+        runId,
+        firstBuildOutcome.state.workExecution!.receiptId!,
+      );
+      expect({
+        receiptWorkId: firstBuildReceipt.workId,
+        receiptInputDigest: firstBuildReceipt.inputDigest,
+      }).toEqual({
+        receiptWorkId: firstBuildOutcome.changeLifecycle!.currentWork!.workId,
+        receiptInputDigest: firstBuildOutcome.changeLifecycle!.currentWork!.inputDigest,
+      });
+      const firstBuildValidation = await application.context.workflowRuns.validateBuildTask({
+        runId,
+        receiptId: firstBuildOutcome.state.workExecution!.receiptId!,
+      });
+      expect(firstBuildValidation.value.validation.status).toBe('validated');
+      expect(firstBuildValidation.value.run.changeLifecycle).toMatchObject({
         phase: 'build',
         taskProgress: { completed: 1, currentTaskId: null },
       });
@@ -322,24 +376,45 @@ describe('managed Change execution production composition', () => {
           expect(evidence.bundle?.outcome).toBe('passed');
           throw new Error('simulated interruption before Verify gate projection');
         });
+      let interrupted: RuntimeResult<VerifyChangeRunResult>;
       try {
-        await expect(
-          application.context.commandRouter.execute<
-            { runId: string },
-            RuntimeResult<VerifyChangeRunResult>
-          >('run.work.verify', { runId }),
-        ).rejects.toThrow(/simulated interruption before Verify gate projection/u);
+        interrupted = await application.context.commandRouter.execute<
+          { runId: string },
+          RuntimeResult<VerifyChangeRunResult>
+        >('run.work.verify', { runId });
       } finally {
         evidenceInterruption.mockRestore();
       }
+      expect(interrupted.value).toMatchObject({
+        gate: 'blocked',
+        run: {
+          changeLifecycle: {
+            phase: 'verify',
+            status: 'running',
+            currentWork: { kind: 'evidence.verify' },
+            evidence: { gateStatus: 'failed' },
+          },
+        },
+      });
       expect(interruptedAttemptId).toMatch(/^verify-[a-f0-9]{64}$/u);
       const recoveryApplication = await bootProjectComposition(productRoot, workspace);
       let recovered: RuntimeResult<RunStatusView>;
       try {
+        const recoveryHost = installCapturingWorkExecutionHost({
+          context: recoveryApplication.context,
+          workspace,
+          repositories: { workspace, app: appRepository },
+          operations: () => [],
+        });
+        await recoveryApplication.context.commandRouter.execute<
+          { runId: string },
+          RuntimeResult<RunStatusView>
+        >('run.next', { runId });
         recovered = await recoveryApplication.context.commandRouter.execute<
           { runId: string },
           RuntimeResult<RunStatusView>
         >('run.next', { runId });
+        recoveryHost.dispose();
       } finally {
         await recoveryApplication.close();
       }
@@ -347,9 +422,17 @@ describe('managed Change execution production composition', () => {
         phase: 'archive',
         currentWork: null,
       });
-      const recoveredEvidence =
+      const interruptedEvidence =
         await application.context.evidenceCoordinator.status(interruptedAttemptId);
-      expect(recoveredEvidence.context.status).toBe('completed');
+      expect(interruptedEvidence.context.status).toBe('completed');
+      const acceptedAttemptId = recovered.value.changeLifecycle?.evidence.latestAttemptId;
+      expect(acceptedAttemptId).toMatch(/^verify-[a-f0-9]{64}$/u);
+      const recoveredEvidence = await application.context.evidenceCoordinator.status(
+        acceptedAttemptId!,
+      );
+      expect(recovered.value.state.acceptedEvidenceBundleIds).toEqual([
+        recoveredEvidence.bundle!.bundleId,
+      ]);
 
       await execFileAsync(
         'git',
@@ -400,7 +483,7 @@ describe('managed Change execution production composition', () => {
       };
       await application.context.commandRouter.execute('run.archive.prepare', {
         runId,
-        attemptId: interruptedAttemptId,
+        attemptId: acceptedAttemptId,
         intent,
         policy,
       });

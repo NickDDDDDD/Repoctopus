@@ -125,7 +125,7 @@ async function fixture(): Promise<Fixture> {
     primaryHead,
     request: {
       changeId: 'example',
-      generation: 1,
+      runId: 'run-example',
       workspaceRoot: repository,
       changeBranch: {
         repositoryId: 'workspace',

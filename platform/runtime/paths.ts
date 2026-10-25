@@ -19,6 +19,10 @@ export function assertRunId(runId: string): void {
   }
 }
 
+export function isLegacyLifecycleGenerationRunId(runId: string): boolean {
+  return /(?:^|-)g\d+(?:-|$)/u.test(runId);
+}
+
 export function runPaths(workspaceRoot: string, runId: string): RunPaths {
   assertRunId(runId);
   const root = path.join(path.resolve(workspaceRoot), '.repoctopus', 'runs', runId);

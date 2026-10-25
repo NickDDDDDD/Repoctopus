@@ -13,9 +13,10 @@ const digest = (character: string) => `sha256:${character.repeat(64)}` as const;
 
 function checkpoint(status: WorkExecutionCheckpoint['status']): WorkExecutionCheckpoint {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     workId: 'build:1.1',
     attempt: 1,
+    checkEpoch: 4,
     intentId: 'intent-1',
     claimToken: digest('a'),
     inputDigest: digest('b'),
@@ -70,8 +71,9 @@ describe('Work execution recovery classification', () => {
     ['not-executed', 'execute', 'host-not-executed'],
     ['validated', 'execute', 'transition-pending'],
   ] as const)('classifies %s without guessing completion', async (status, continuation, reason) => {
-    await expect(recoveryAuthority(state({ execution: checkpoint(status) })).recovery('run-recovery'))
-      .resolves.toMatchObject({ continuation, reason, workId: 'build:1.1', attempt: 1 });
+    await expect(
+      recoveryAuthority(state({ execution: checkpoint(status) })).recovery('run-recovery'),
+    ).resolves.toMatchObject({ continuation, reason, workId: 'build:1.1', attempt: 1 });
   });
 
   it('distinguishes active, unknown, failed, validator, human and corrupt boundaries', async () => {
@@ -91,22 +93,29 @@ describe('Work execution recovery classification', () => {
       startedAt: '2026-10-25T00:00:00.000Z',
     };
     const invoking = { ...checkpoint('invoking'), hostInvocation: invocation };
-    await expect(recoveryAuthority(state({ execution: invoking }), { active: true }).recovery('run-recovery'))
-      .resolves.toMatchObject({ continuation: 'wait', reason: 'host-active' });
-    await expect(recoveryAuthority(state({ execution: invoking })).recovery('run-recovery'))
-      .resolves.toMatchObject({ continuation: 'reconcile', reason: 'host-result-unknown' });
+    await expect(
+      recoveryAuthority(state({ execution: invoking }), { active: true }).recovery('run-recovery'),
+    ).resolves.toMatchObject({ continuation: 'wait', reason: 'host-active' });
+    await expect(
+      recoveryAuthority(state({ execution: invoking })).recovery('run-recovery'),
+    ).resolves.toMatchObject({ continuation: 'reconcile', reason: 'host-result-unknown' });
     await expect(
       recoveryAuthority(
-        state({ execution: { ...checkpoint('outcome'), actionOutcome: { status: 'failed' } as never } }),
+        state({
+          execution: { ...checkpoint('outcome'), actionOutcome: { status: 'failed' } as never },
+        }),
       ).recovery('run-recovery'),
     ).resolves.toMatchObject({ continuation: 'execute', reason: 'work-failed' });
     await expect(
       recoveryAuthority(
-        state({ execution: { ...checkpoint('outcome'), actionOutcome: { status: 'succeeded' } as never } }),
+        state({
+          execution: { ...checkpoint('outcome'), actionOutcome: { status: 'succeeded' } as never },
+        }),
       ).recovery('run-recovery'),
     ).resolves.toMatchObject({ continuation: 'execute', reason: 'validator-pending' });
-    await expect(recoveryAuthority(state({ humanDecision: true })).recovery('run-recovery'))
-      .resolves.toMatchObject({ continuation: 'ask', reason: 'human-decision' });
+    await expect(
+      recoveryAuthority(state({ humanDecision: true })).recovery('run-recovery'),
+    ).resolves.toMatchObject({ continuation: 'ask', reason: 'human-decision' });
     await expect(
       recoveryAuthority(state({ execution: checkpoint('claimed') }), { corrupt: true }).recovery(
         'run-recovery',

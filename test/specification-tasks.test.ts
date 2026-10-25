@@ -5,7 +5,6 @@ import { describe, expect, it } from 'vitest';
 
 import {
   assertSpecificationTaskAcceptance,
-  assertSpecificationTaskAdoption,
   completeSpecificationTaskDocument,
   parseSpecificationTasks,
   readySpecificationTasks,
@@ -118,7 +117,7 @@ describe('Specification Tasks', () => {
     expect(completed.tasks[0]?.completion).toEqual({ source: 'imported-claim' });
   });
 
-  it('distinguishes fresh Runtime receipts from explicit adoption across pending, partial, and complete sets', () => {
+  it('distinguishes imported checkbox claims from Runtime completion receipts', () => {
     const document = '- [ ] 1.1 First.\n- [ ] 1.2 Second.\n';
     const pending = parseSpecificationTasks('adoption-plan', document);
     const partial = parseSpecificationTasks(
@@ -129,15 +128,9 @@ describe('Specification Tasks', () => {
       'adoption-plan',
       '- [x] 1.1 First.\n- [x] 1.2 Second.\n',
     );
-    expect(() => assertSpecificationTaskAdoption('fresh', pending.tasks)).not.toThrow();
-    expect(() => assertSpecificationTaskAdoption('fresh', partial.tasks)).toThrow(
-      /cannot adopt pre-completed/u,
-    );
-    expect(() => assertSpecificationTaskAdoption('fresh', complete.tasks)).toThrow(
-      /cannot adopt pre-completed/u,
-    );
-    expect(() => assertSpecificationTaskAdoption('adopt-existing', partial.tasks)).not.toThrow();
-    expect(() => assertSpecificationTaskAdoption('adopt-existing', complete.tasks)).not.toThrow();
+    expect(pending.tasks.every((task) => task.completion === null)).toBe(true);
+    expect(partial.tasks[0]?.completion).toEqual({ source: 'imported-claim' });
+    expect(complete.tasks.every((task) => task.completion?.source === 'imported-claim')).toBe(true);
 
     const runtimeCompleted = completeSpecificationTaskDocument({
       changeId: 'adoption-plan',
@@ -146,9 +139,10 @@ describe('Specification Tasks', () => {
       workId: 'build:1.1',
       document,
     });
-    expect(() =>
-      assertSpecificationTaskAdoption('fresh', runtimeCompleted.tasks.tasks),
-    ).not.toThrow();
+    expect(runtimeCompleted.tasks.tasks[0]?.completion).toEqual({
+      source: 'runtime-work',
+      workId: 'build:1.1',
+    });
     expect(
       readySpecificationTasks(runtimeCompleted.tasks.tasks).map((task) => task.taskId),
     ).toEqual(['1.2']);

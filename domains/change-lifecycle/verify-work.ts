@@ -5,6 +5,7 @@ import { materializeLifecycleWorkBinding } from './work-definition.js';
 
 export function createVerifyWork(facts: {
   definition: ChangeLifecycleDefinition;
+  checkEpoch: number;
   verification: VerificationInput;
   actionSkill: SkillUsageSnapshot;
   augmentationSkills: readonly SkillUsageSnapshot[];
@@ -20,8 +21,9 @@ export function createVerifyWork(facts: {
     repositoryIds: facts.repositoryIds,
   });
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     workId: `verify:${facts.verification.digest.slice('sha256:'.length, 19)}`,
+    checkEpoch: facts.checkEpoch,
     ...binding,
     inputDigest: facts.verification.digest,
   };

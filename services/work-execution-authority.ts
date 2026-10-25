@@ -54,6 +54,8 @@ function assertActivePacket(state: RunState, packet: WorkExecutionPacket): void 
     state.runId !== packet.claim.runId ||
     work.workId !== packet.claim.workId ||
     work.inputDigest !== packet.claim.inputDigest ||
+    work.checkEpoch !== packet.claim.checkEpoch ||
+    state.changeLifecycle?.checkEpoch !== packet.claim.checkEpoch ||
     work.workId !== packet.work.workId ||
     packet.identity.contextDigest !== packet.context.digest
   ) {
@@ -65,6 +67,7 @@ function assertSameClaim(checkpoint: WorkExecutionCheckpoint, intent: ActionInte
   if (
     checkpoint.workId !== intent.workId ||
     checkpoint.attempt !== intent.attempt ||
+    checkpoint.checkEpoch !== intent.checkEpoch ||
     checkpoint.intentId !== intent.intentId ||
     checkpoint.claimToken !== intent.claimToken ||
     checkpoint.inputDigest !== intent.inputDigest
@@ -100,9 +103,10 @@ export class WorkExecutionAuthority extends Service {
             ((existing.status === 'outcome' && existing.actionOutcome?.status === 'failed') ||
               existing.status === 'not-executed') &&
             packet.claim.attempt === existing.attempt + 1;
-          const nextValidatedWork =
-            existing.workId !== packet.claim.workId && existing.status === 'validated';
-          if (!retryAfterFailure && !nextValidatedWork) {
+          const nextAuthorizedWork =
+            existing.workId !== packet.claim.workId &&
+            (existing.status === 'validated' || existing.checkEpoch < packet.claim.checkEpoch);
+          if (!retryAfterFailure && !nextAuthorizedWork) {
             throw new Error(
               `Run already has an authoritative claim for ${existing.workId} attempt ${existing.attempt}`,
             );
@@ -110,9 +114,10 @@ export class WorkExecutionAuthority extends Service {
         }
         const timestamp = new Date().toISOString();
         const checkpoint: WorkExecutionCheckpoint = {
-          schemaVersion: 1,
+          schemaVersion: 2,
           workId: packet.claim.workId,
           attempt: packet.claim.attempt,
+          checkEpoch: packet.claim.checkEpoch,
           intentId: packet.claim.intentId,
           claimToken: packet.claim.claimToken,
           inputDigest: packet.claim.inputDigest,
@@ -140,6 +145,7 @@ export class WorkExecutionAuthority extends Service {
               workId: checkpoint.workId,
               workKind: packet.work.kind,
               attempt: checkpoint.attempt,
+              checkEpoch: checkpoint.checkEpoch,
               intentId: checkpoint.intentId,
               packetDigest: checkpoint.packet.packetDigest,
               continuation: checkpoint.continuation,
@@ -179,6 +185,7 @@ export class WorkExecutionAuthority extends Service {
             workId: work.workId,
             workKind: work.kind,
             inputDigest: work.inputDigest,
+            checkEpoch: work.checkEpoch,
           },
         }),
         value: undefined,
@@ -329,10 +336,13 @@ export class WorkExecutionAuthority extends Service {
       {
         workId: intent.workId,
         attempt: intent.attempt,
+        checkEpoch: intent.checkEpoch,
         invocationId: outcome.invocationId,
         hostId: outcome.hostId,
         packetDigest: outcome.packetDigest,
         result: outcome.status,
+        findingCount: outcome.findings?.length ?? 0,
+        ...(outcome.findings?.[0] ? { findingKind: outcome.findings[0].kind } : {}),
       },
       { hostOutcome: structuredClone(outcome) },
     );
@@ -397,6 +407,7 @@ export class WorkExecutionAuthority extends Service {
       intent.runId,
       intent.workId,
       String(intent.attempt),
+      String(intent.checkEpoch),
       intent.inputDigest,
       intent.adapter,
     );
@@ -433,10 +444,11 @@ export class WorkExecutionAuthority extends Service {
       continuation: WorkContinuationKind,
       reason: WorkExecutionRecovery['reason'],
     ): WorkExecutionRecovery => ({
-      schemaVersion: 1,
+      schemaVersion: 2,
       continuation,
       workId: current?.workId ?? state.changeLifecycle?.currentWork?.workId ?? null,
       attempt: current?.attempt ?? null,
+      checkEpoch: current?.checkEpoch ?? state.changeLifecycle?.checkEpoch ?? null,
       reason,
     });
     if (state.status === 'completed') return result('done', 'terminal');
@@ -565,10 +577,11 @@ export class WorkExecutionAuthority extends Service {
       return result.sort();
     };
     const checkpoint: AgentCoordinationCheckpoint = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       runId: state.runId,
       workId: execution.workId,
       attempt: execution.attempt,
+      checkEpoch: execution.checkEpoch,
       observedStateVersion: state.stateVersion,
       currentTask: input.currentTask?.trim() || null,
       observedPaths: bounded(input.observedPaths, 'Observed paths'),
@@ -588,6 +601,7 @@ export class WorkExecutionAuthority extends Service {
     const execution = state.workExecution;
     const current =
       execution !== undefined &&
+      state.changeLifecycle?.checkEpoch === checkpoint.checkEpoch &&
       checkpoint.workId === execution.workId &&
       checkpoint.attempt === execution.attempt &&
       checkpoint.observedStateVersion <= state.stateVersion;
@@ -608,6 +622,13 @@ export class WorkExecutionAuthority extends Service {
       const current = state.workExecution;
       if (!current || current.intentId !== intentId) {
         throw new Error('Work execution transition does not match the authoritative Run claim');
+      }
+      if (
+        state.changeLifecycle &&
+        (state.changeLifecycle.checkEpoch !== current.checkEpoch ||
+          state.changeLifecycle.currentWork?.workId !== current.workId)
+      ) {
+        throw new Error('Stale Work execution cannot cross a lifecycle checkEpoch boundary');
       }
       if (!allowed.includes(current.status)) {
         if (current.status === status) return { value: structuredClone(current) };
@@ -655,6 +676,13 @@ export class WorkExecutionAuthority extends Service {
       const current = state.workExecution;
       if (!current || current.intentId !== intentId) {
         throw new Error('Execution event does not match the authoritative Run claim');
+      }
+      if (
+        state.changeLifecycle &&
+        (state.changeLifecycle.checkEpoch !== current.checkEpoch ||
+          state.changeLifecycle.currentWork?.workId !== current.workId)
+      ) {
+        throw new Error('Stale Work event cannot cross a lifecycle checkEpoch boundary');
       }
       const eventId = digest(runId, type, current.workId, String(current.attempt), ...identity);
       if (trajectory.some((event) => event.eventId === eventId)) {

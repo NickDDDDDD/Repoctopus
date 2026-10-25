@@ -116,12 +116,13 @@ export interface EvidenceBundle {
 }
 
 export interface EvidenceGateProjection {
-  schemaVersion: 1;
+  schemaVersion: 2;
   kind: 'EvidenceGateProjection';
   workflowRunId: string | null;
   workflowActionId: string | null;
   workflowStepId: string | null;
   workflowStateVersion: number | null;
+  checkEpoch: number | null;
   compositionDigest: string;
   profileId: string;
   bundleId: string;

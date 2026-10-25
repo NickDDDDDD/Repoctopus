@@ -60,7 +60,8 @@ export function projectEvidenceGate(
     workflowRunId: string;
     workflowActionId: string;
     workflowStepId: string;
-    workflowStateVersion: number;
+    workflowStateVersion?: number;
+    checkEpoch?: number;
     workflowInputDigest?: `sha256:${string}`;
     acceptanceContext?: {
       verificationInputDigest: `sha256:${string}`;
@@ -81,12 +82,13 @@ export function projectEvidenceGate(
             binding.acceptanceContext.acceptanceSetHash)));
   const gateSatisfied = satisfied && traceMatchesBinding;
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     kind: 'EvidenceGateProjection',
     workflowRunId: binding?.workflowRunId ?? null,
     workflowActionId: binding?.workflowActionId ?? null,
     workflowStepId: binding?.workflowStepId ?? null,
     workflowStateVersion: binding?.workflowStateVersion ?? null,
+    checkEpoch: binding?.checkEpoch ?? null,
     compositionDigest: bundle.compositionDigest,
     profileId: bundle.profileId,
     bundleId: bundle.bundleId,

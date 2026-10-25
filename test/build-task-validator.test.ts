@@ -11,8 +11,9 @@ const pending = parseSpecificationTasks('build-validator', '- [ ] 1.1 Build it.\
 
 function work(): WorkDescriptor {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     workId: 'build:1.1:test',
+    checkEpoch: 1,
     phase: 'build',
     kind: 'task.implement',
     taskId: '1.1',
@@ -47,16 +48,15 @@ function state(): RunState {
     runId: 'run-1',
     status: 'running',
     changeLifecycle: {
-      schemaVersion: 1,
+      schemaVersion: 2,
       identity: {
         workspaceId: 'team',
         changeId: 'build-validator',
-        generation: 1,
-        mode: 'fresh',
         runId: 'run-1',
       },
       definition: { id: 'repoctopus-change', version: '1.1.0', digest: digest('d') },
       revision: 1,
+      checkEpoch: 1,
       phase: 'build',
       currentWork,
       waitCondition: null,
@@ -69,13 +69,14 @@ function state(): RunState {
 
 function receipt(overrides: Partial<ActionReceipt> = {}): ActionReceipt {
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     receiptId: 'receipt-1',
     intentId: 'intent-1',
     idempotencyKey: 'key-1',
     runId: 'run-1',
     workId: work().workId,
     attempt: 1,
+    checkEpoch: 1,
     claimToken: digest('c'),
     inputDigest: work().inputDigest,
     outcomeId: 'outcome-1',

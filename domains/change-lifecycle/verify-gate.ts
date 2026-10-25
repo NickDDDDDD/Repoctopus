@@ -8,7 +8,7 @@ export interface AcceptedVerifyGate {
   attemptId: string;
   bundleId: string;
   evidenceInputFingerprint: string;
-  workflowStateVersion: number;
+  checkEpoch: number;
 }
 
 export interface RejectedVerifyGate {
@@ -18,8 +18,8 @@ export interface RejectedVerifyGate {
   attemptId: string;
   bundleId: string | null;
   reason: string;
-  result: 'failed' | 'implementation-drift';
-  workflowStateVersion: number;
+  result: 'implementation-failure' | 'evidence-unavailable';
+  checkEpoch: number;
 }
 
 export function acceptVerifyGate(input: {
@@ -27,7 +27,7 @@ export function acceptVerifyGate(input: {
   lifecycle: ChangeLifecycleSnapshot;
   gate: EvidenceGateProjection;
   attemptId: string;
-  workflowStateVersion: number;
+  checkEpoch: number;
 }): AcceptedVerifyGate {
   const { lifecycle, gate } = input;
   const work = lifecycle.currentWork;
@@ -56,8 +56,8 @@ export function acceptVerifyGate(input: {
   if (gate.workflowStepId !== 'verify') {
     throw new Error(`Evidence attempt ${input.attemptId} is not bound to the Verify phase`);
   }
-  if (gate.workflowStateVersion !== input.workflowStateVersion) {
-    throw new Error(`Evidence attempt ${input.attemptId} is bound to a stale workflow state`);
+  if (gate.checkEpoch !== input.checkEpoch || lifecycle.checkEpoch !== input.checkEpoch) {
+    throw new Error(`Evidence attempt ${input.attemptId} is bound to a stale checkEpoch`);
   }
   if (gate.profileId !== verification.evidenceProfile.id) {
     throw new Error(`Evidence attempt ${input.attemptId} uses another Evidence Profile`);
@@ -86,7 +86,7 @@ export function acceptVerifyGate(input: {
     attemptId: input.attemptId,
     bundleId: gate.bundleId,
     evidenceInputFingerprint: gate.inputFingerprint,
-    workflowStateVersion: input.workflowStateVersion,
+    checkEpoch: input.checkEpoch,
   };
 }
 
@@ -95,7 +95,8 @@ export function rejectVerifyGate(input: {
   lifecycle: ChangeLifecycleSnapshot;
   gate: EvidenceGateProjection;
   attemptId: string;
-  workflowStateVersion: number;
+  checkEpoch: number;
+  result?: RejectedVerifyGate['result'];
 }): RejectedVerifyGate {
   const { lifecycle, gate } = input;
   const work = lifecycle.currentWork;
@@ -116,8 +117,8 @@ export function rejectVerifyGate(input: {
   ) {
     throw new Error(`Evidence attempt ${input.attemptId} is bound to another Run or Verify Work`);
   }
-  if (gate.workflowStateVersion !== input.workflowStateVersion) {
-    throw new Error(`Evidence attempt ${input.attemptId} is bound to a stale workflow state`);
+  if (gate.checkEpoch !== input.checkEpoch || lifecycle.checkEpoch !== input.checkEpoch) {
+    throw new Error(`Evidence attempt ${input.attemptId} is bound to a stale checkEpoch`);
   }
   if (
     gate.profileId !== verification.evidenceProfile.id ||
@@ -137,10 +138,7 @@ export function rejectVerifyGate(input: {
     attemptId: input.attemptId,
     bundleId: gate.bundleId,
     reason: gate.reason,
-    result:
-      gate.inputFingerprint === verification.evidenceProfile.fingerprintDigest
-        ? 'failed'
-        : 'implementation-drift',
-    workflowStateVersion: input.workflowStateVersion,
+    result: input.result ?? 'implementation-failure',
+    checkEpoch: input.checkEpoch,
   };
 }

@@ -11,29 +11,23 @@ import { atomicWriteJson } from '../filesystem/atomic-write.js';
 export class FileSpecificationPublicationJournalStore implements SpecificationPublicationJournalStore {
   constructor(private readonly workspaceRoot: string) {}
 
-  private file(changeId: string, generation: number): string {
-    if (!/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/u.test(changeId)) {
-      throw new Error('Specification publication Journal Change id is invalid');
-    }
-    if (!Number.isSafeInteger(generation) || generation < 1) {
-      throw new Error('Specification publication Journal generation is invalid');
+  private file(runId: string): string {
+    if (!/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/u.test(runId)) {
+      throw new Error('Specification publication Journal Run id is invalid');
     }
     return path.join(
       this.workspaceRoot,
       '.repoctopus',
       'delivery',
       'specification-publications',
-      `${changeId}.g${generation}.json`,
+      `${runId}.json`,
     );
   }
 
-  async load(
-    changeId: string,
-    generation: number,
-  ): Promise<SpecificationPublicationJournal | null> {
+  async load(runId: string): Promise<SpecificationPublicationJournal | null> {
     try {
       const journal = JSON.parse(
-        await readFile(this.file(changeId, generation), 'utf8'),
+        await readFile(this.file(runId), 'utf8'),
       ) as SpecificationPublicationJournal;
       assertSpecificationPublicationJournal(journal);
       return journal;
@@ -45,12 +39,12 @@ export class FileSpecificationPublicationJournalStore implements SpecificationPu
 
   async create(journal: SpecificationPublicationJournal): Promise<void> {
     assertSpecificationPublicationJournal(journal);
-    const existing = await this.load(journal.intent.changeId, journal.intent.generation);
+    const existing = await this.load(journal.intent.runId);
     if (existing) {
       if (existing.digest === journal.digest) return;
       throw new Error('Specification publication Journal already exists with another identity');
     }
-    await atomicWriteJson(this.file(journal.intent.changeId, journal.intent.generation), journal, {
+    await atomicWriteJson(this.file(journal.intent.runId), journal, {
       containedRoot: this.workspaceRoot,
     });
   }
@@ -60,11 +54,11 @@ export class FileSpecificationPublicationJournalStore implements SpecificationPu
     expectedDigest: `sha256:${string}`,
   ): Promise<void> {
     assertSpecificationPublicationJournal(journal);
-    const existing = await this.load(journal.intent.changeId, journal.intent.generation);
+    const existing = await this.load(journal.intent.runId);
     if (!existing || existing.digest !== expectedDigest) {
       throw new Error('Specification publication Journal changed concurrently');
     }
-    await atomicWriteJson(this.file(journal.intent.changeId, journal.intent.generation), journal, {
+    await atomicWriteJson(this.file(journal.intent.runId), journal, {
       containedRoot: this.workspaceRoot,
     });
   }

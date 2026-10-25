@@ -36,6 +36,7 @@ export function installCapturingWorkExecutionHost(input: {
   workspace: string;
   repositories: Readonly<Record<string, string>>;
   operations(packet: WorkExecutionPacket): readonly CapturingHostOperation[];
+  afterOperations?(packet: WorkExecutionPacket): Promise<void>;
 }): { invocations: CapturedWorkInvocation[]; dispose(): void } {
   const invocations: CapturedWorkInvocation[] = [];
   const commandName = 'test.capturing-host.write';
@@ -116,6 +117,7 @@ export function installCapturingWorkExecutionHost(input: {
           ...operation,
         });
       }
+      await input.afterOperations?.(packet);
       return {
         schemaVersion: 1,
         invocationId: session.invocationId,

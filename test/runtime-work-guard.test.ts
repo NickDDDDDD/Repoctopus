@@ -19,24 +19,27 @@ const claim = {
   runId: 'run-1',
   workId: 'design:plan',
   attempt: 1,
+  checkEpoch: 1,
   claimToken: digest('c'),
   inputDigest: digest('i'),
 };
 
 const session: RuntimeWorkSessionReference = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   sessionId: digest('x'),
   runId: claim.runId,
   workId: claim.workId,
   attempt: claim.attempt,
+  checkEpoch: claim.checkEpoch,
   invocationId: digest('n'),
   packetDigest: digest('p'),
 };
 
 function designWork(overrides: Partial<WorkDescriptor> = {}): WorkDescriptor {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     workId: claim.workId,
+    checkEpoch: claim.checkEpoch,
     phase: 'design',
     kind: 'specification.plan',
     augmentationSkills: [],
@@ -78,23 +81,22 @@ function run(work = designWork()): RunState {
     runId: claim.runId,
     status: 'running',
     changeLifecycle: {
-      schemaVersion: 1,
+      schemaVersion: 2,
       identity: {
         workspaceId: 'team',
         changeId: 'guard',
-        generation: 1,
-        mode: 'fresh',
         runId: claim.runId,
       },
       definition: { id: 'repoctopus-change', version: '1.1.0', digest: digest('d') },
       revision: 1,
+      checkEpoch: claim.checkEpoch,
       phase: work.phase,
       currentWork: work,
       waitCondition: null,
       blocker: null,
     },
     specificationUsageSnapshot: {
-      schemaVersion: 1,
+      schemaVersion: 2,
       changeId: 'guard',
       provider: {
         id: 'specification-openspec',
@@ -107,6 +109,7 @@ function run(work = designWork()): RunState {
       schemaVersion: 1,
       workId: claim.workId,
       attempt: claim.attempt,
+      checkEpoch: claim.checkEpoch,
       intentId: 'intent-1',
       claimToken: claim.claimToken,
       inputDigest: claim.inputDigest,
@@ -145,12 +148,13 @@ function run(work = designWork()): RunState {
 
 function intent(): ActionIntent {
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     intentId: 'intent-1',
     idempotencyKey: 'key-1',
     runId: claim.runId,
     workId: claim.workId,
     attempt: claim.attempt,
+    checkEpoch: claim.checkEpoch,
     claimToken: claim.claimToken,
     inputDigest: claim.inputDigest,
     compositionDigest: digest('o'),

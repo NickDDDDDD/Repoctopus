@@ -58,8 +58,9 @@ function work(kind: string): WorkDescriptor {
     repositoryIds: ['workspace', 'backend'],
   });
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     workId: `${definition.phase}:${kind}`,
+    checkEpoch: 0,
     ...binding,
     inputDigest: digest(`${kind} input`),
   };
@@ -135,6 +136,10 @@ describe('Work execution context', () => {
         'action-skill',
         'specification-protocol',
         'specification-protocol',
+        'specification-protocol',
+        'specification-protocol',
+        'specification-protocol',
+        'augmentation-skill',
         'method-profile',
         'change-inputs',
       ],
@@ -160,7 +165,6 @@ describe('Work execution context', () => {
         'runtime-contract',
         'action-skill',
         'specification-protocol',
-        'augmentation-skill',
         'augmentation-skill',
         'method-profile',
         'change-inputs',
@@ -202,7 +206,7 @@ describe('Work execution context', () => {
       context.layers
         .filter((entry) => entry.kind === 'augmentation-skill')
         .map((entry) => entry.source),
-    ).toEqual(['tdd', 'codebase-design', 'diagnosing-bugs']);
+    ).toEqual(['tdd', 'diagnosing-bugs']);
   });
 
   it('fails before execution for a missing dependency, second owner, or artifact conflict', () => {
@@ -210,10 +214,7 @@ describe('Work execution context', () => {
     expect(() => assemble(build, {}, true)).toThrow(/missing or drifted/u);
     expect(() =>
       assemble(build, {
-        augmentationSkills: [
-          skill('tdd', { artifactProtocolOwner: true }),
-          skill('codebase-design'),
-        ],
+        augmentationSkills: [skill('tdd', { artifactProtocolOwner: true })],
       }),
     ).toThrow(/may not become an action owner/u);
     const design = work('specification.plan');

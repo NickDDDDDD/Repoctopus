@@ -32,3 +32,33 @@ export async function reviewSpecificationApproval(options: {
     terminal.close();
   }
 }
+
+export async function reviewHumanDecision(options: {
+  title: string;
+  proposalHash: string;
+  details: readonly string[];
+  input: NodeJS.ReadableStream;
+  output: NodeJS.WritableStream;
+}): Promise<{ decision: SpecificationApprovalDecision; comment?: string }> {
+  const terminal = createInterface({ input: options.input, output: options.output });
+  try {
+    options.output.write(
+      `\n${options.title}\nProposal: ${options.proposalHash}\n${options.details.join('\n')}\n\n1) Approve\n2) Revise\n3) Reject\n`,
+    );
+    const answer = (await terminal.question('Decision [1-3]: ')).trim();
+    const decision: SpecificationApprovalDecision =
+      answer === '1'
+        ? 'approve'
+        : answer === '2'
+          ? 'revise'
+          : answer === '3'
+            ? 'reject'
+            : (() => {
+                throw new Error('Decision must be 1, 2, or 3');
+              })();
+    const comment = (await terminal.question('Comment (optional): ')).trim();
+    return { decision, ...(comment ? { comment } : {}) };
+  } finally {
+    terminal.close();
+  }
+}

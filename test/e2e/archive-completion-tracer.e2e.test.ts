@@ -154,8 +154,6 @@ describe('single-repository Archive production tracer', () => {
           identity: {
             workspaceId: 'team',
             changeId: 'single-tracer',
-            generation: 1,
-            mode: 'fresh',
             runId: 'run-tracer',
           },
         }),
@@ -164,6 +162,7 @@ describe('single-repository Archive production tracer', () => {
         verificationInput: {
           schemaVersion: 2 as const,
           runId: 'run-tracer',
+          checkEpoch: 0,
           taskRevisions: [],
           acceptanceCriteria: [],
           acceptanceSetHash: digest('a'),

@@ -47,7 +47,8 @@ interface WorkflowEvidenceBinding {
   workflowRunId: string;
   workflowActionId: string;
   workflowStepId: string;
-  workflowStateVersion: number;
+  workflowStateVersion?: number;
+  checkEpoch?: number;
   workflowInputDigest?: `sha256:${string}`;
   expectedEvidenceFingerprint?: string;
   acceptanceContext?: EvidenceAcceptanceContext;
@@ -114,8 +115,12 @@ function asContext(value: unknown): EvidenceRunContext {
         typeof binding.workflowRunId !== 'string' ||
         typeof binding.workflowActionId !== 'string' ||
         typeof binding.workflowStepId !== 'string' ||
-        !Number.isSafeInteger(binding.workflowStateVersion) ||
-        binding.workflowStateVersion < 0 ||
+        (binding.workflowStateVersion !== undefined &&
+          (!Number.isSafeInteger(binding.workflowStateVersion) ||
+            binding.workflowStateVersion < 0)) ||
+        (binding.checkEpoch !== undefined &&
+          (!Number.isSafeInteger(binding.checkEpoch) || binding.checkEpoch < 0)) ||
+        (binding.workflowStateVersion === undefined && binding.checkEpoch === undefined) ||
         (binding.workflowInputDigest !== undefined &&
           !/^sha256:[a-f0-9]{64}$/u.test(binding.workflowInputDigest)) ||
         (binding.expectedEvidenceFingerprint !== undefined &&
@@ -298,7 +303,7 @@ export class EvidenceCoordinator extends Service {
         workflowRunId,
         workflowActionId: work.workId,
         workflowStepId: 'verify',
-        workflowStateVersion: state.stateVersion,
+        checkEpoch: lifecycle.checkEpoch,
         workflowInputDigest: verification.digest,
         expectedEvidenceFingerprint: verification.evidenceProfile.fingerprintDigest,
         acceptanceContext: {
@@ -561,7 +566,10 @@ export class EvidenceCoordinator extends Service {
                 `Evidence attempt is missing but durable execution facts exist: ${attemptId}`,
               );
             }
-            const config = await this.effectiveConfig(context.profileId, context.repositoryOverrides);
+            const config = await this.effectiveConfig(
+              context.profileId,
+              context.repositoryOverrides,
+            );
             const currentFingerprint = await this.fingerprint(context.profileId, config);
             if (currentFingerprint.digest !== context.fingerprint.digest) {
               throw new Error(
@@ -573,7 +581,10 @@ export class EvidenceCoordinator extends Service {
           }
           let recovered;
           if (attempt.status === 'running') {
-            const config = await this.effectiveConfig(context.profileId, context.repositoryOverrides);
+            const config = await this.effectiveConfig(
+              context.profileId,
+              context.repositoryOverrides,
+            );
             const endingFingerprint = await this.fingerprint(context.profileId, config);
             recovered = await recoverEvidenceAttempt({
               attemptId,
@@ -669,7 +680,8 @@ export class EvidenceCoordinator extends Service {
     workflowRunId: string;
     workflowActionId: string;
     workflowStepId: string;
-    workflowStateVersion: number;
+    workflowStateVersion?: number;
+    checkEpoch?: number;
     profileId: string;
     attemptId: string;
   }): Promise<EvidenceGateProjection> {
@@ -700,11 +712,15 @@ export class EvidenceCoordinator extends Service {
         reason: `Evidence attempt ${input.attemptId} belongs to a different workflow step`,
       };
     }
-    if (binding.workflowStateVersion !== input.workflowStateVersion) {
+    if (
+      (input.checkEpoch !== undefined && binding.checkEpoch !== input.checkEpoch) ||
+      (input.checkEpoch === undefined &&
+        binding.workflowStateVersion !== input.workflowStateVersion)
+    ) {
       return {
         ...gate,
         status: 'blocked',
-        reason: `Evidence attempt ${input.attemptId} belongs to a stale workflow state`,
+        reason: `Evidence attempt ${input.attemptId} belongs to a stale lifecycle fence`,
       };
     }
     if (status.context.profileId !== input.profileId) {

@@ -15,6 +15,7 @@ import type {
   WorkClaimResult,
   WorkExecutionPacket,
 } from '../domains/work-execution/types.js';
+import { assertBoundedWorkExecutionFindings } from '../domains/work-execution/findings.js';
 
 function invocationId(packetDigest: string, hostId: string): string {
   return `sha256:${createHash('sha256')
@@ -87,6 +88,7 @@ export class ManagedWorkExecutor extends Service {
       runId: claim.intent.runId,
       workId: claim.intent.workId,
       attempt: claim.intent.attempt,
+      checkEpoch: claim.intent.checkEpoch,
       invocationId: invocation.invocationId,
       packetDigest: claim.packet.identity.packetDigest,
       hostId: host.identity.id,
@@ -114,6 +116,7 @@ export class ManagedWorkExecutor extends Service {
       );
       throw new Error('Work Execution Host Outcome identity mismatch');
     }
+    assertBoundedWorkExecutionFindings(hostOutcome);
     assertConsumedExecutionSkills(claim.packet, hostOutcome);
     await this.ctx.workExecutionAuthority.markHostCompleted(claim.intent, hostOutcome);
     await this.ctx.workExecutionAuthority.recordSkillFacts(
@@ -175,8 +178,10 @@ export class ManagedWorkExecutor extends Service {
       status: input.status,
       summary: input.summary,
       consumedLayerDigests: [...new Set(input.consumedLayerDigests)].sort(),
+      ...(input.findings ? { findings: structuredClone(input.findings) } : {}),
       completedAt: new Date().toISOString(),
     };
+    assertBoundedWorkExecutionFindings(hostOutcome);
     const packet = await this.ctx.workDispatcher.resumeClaim(input.runId);
     assertConsumedExecutionSkills(packet.packet, hostOutcome);
     await this.ctx.workExecutionAuthority.markHostCompleted(intent, hostOutcome);
@@ -226,6 +231,7 @@ export class ManagedWorkExecutor extends Service {
     ) {
       throw new Error('Reconciled Host Outcome identity mismatch');
     }
+    assertBoundedWorkExecutionFindings(outcome);
     const packet = await this.ctx.workDispatcher.resumeClaim(runId);
     assertConsumedExecutionSkills(packet.packet, outcome);
     await this.ctx.workExecutionAuthority.markHostCompleted(intent, outcome);

@@ -14,7 +14,7 @@ export type SpecificationPublicationJournalState =
 
 export interface SpecificationPublicationIntent {
   changeId: string;
-  generation: number;
+  runId: string;
   closureId: `sha256:${string}`;
   planDigest: `sha256:${string}`;
   checkoutId: string;
@@ -31,7 +31,7 @@ export interface SpecificationPublicationIntent {
 export interface SpecificationPublicationJournal {
   apiVersion: typeof SPECIFICATION_PUBLICATION_JOURNAL_API_VERSION;
   kind: 'SpecificationPublicationJournal';
-  schemaVersion: 1;
+  schemaVersion: 2;
   journalId: `sha256:${string}`;
   state: SpecificationPublicationJournalState;
   stateVersion: number;
@@ -42,7 +42,7 @@ export interface SpecificationPublicationJournal {
 }
 
 export interface SpecificationPublicationJournalStore {
-  load(changeId: string, generation: number): Promise<SpecificationPublicationJournal | null>;
+  load(runId: string): Promise<SpecificationPublicationJournal | null>;
   create(journal: SpecificationPublicationJournal): Promise<void>;
   compareAndSet(
     journal: SpecificationPublicationJournal,
@@ -87,6 +87,7 @@ function stable(journal: Omit<SpecificationPublicationJournal, 'digest'>) {
 function assertIntent(intent: SpecificationPublicationIntent): void {
   const required = [
     intent.changeId,
+    intent.runId,
     intent.checkoutId,
     intent.repositoryId,
     intent.remoteIdentity,
@@ -97,8 +98,6 @@ function assertIntent(intent: SpecificationPublicationIntent): void {
   ];
   if (
     required.some((value) => !value.trim()) ||
-    !Number.isSafeInteger(intent.generation) ||
-    intent.generation < 1 ||
     !SHA256.test(intent.closureId) ||
     !SHA256.test(intent.planDigest) ||
     !GIT_OID.test(intent.baseOid) ||
@@ -119,7 +118,7 @@ function assertResult(
   result: PublicationReceiptItem,
 ): void {
   if (
-    result.publicationId !== `specification:${intent.changeId}:${intent.generation}` ||
+    result.publicationId !== `specification:${intent.runId}` ||
     result.role !== 'specification' ||
     result.deliveryId !== undefined ||
     result.repositoryId !== intent.repositoryId ||
@@ -141,7 +140,7 @@ export function createSpecificationPublicationJournal(
   const unsigned = stable({
     apiVersion: SPECIFICATION_PUBLICATION_JOURNAL_API_VERSION,
     kind: 'SpecificationPublicationJournal',
-    schemaVersion: 1,
+    schemaVersion: 2,
     journalId: sha256(normalized),
     state: 'prepared',
     stateVersion: 1,
@@ -158,7 +157,7 @@ export function assertSpecificationPublicationJournal(
   if (
     journal.apiVersion !== SPECIFICATION_PUBLICATION_JOURNAL_API_VERSION ||
     journal.kind !== 'SpecificationPublicationJournal' ||
-    journal.schemaVersion !== 1 ||
+    journal.schemaVersion !== 2 ||
     !Number.isSafeInteger(journal.stateVersion) ||
     journal.stateVersion < 1
   ) {

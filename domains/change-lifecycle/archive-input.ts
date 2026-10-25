@@ -72,6 +72,7 @@ export function createArchiveDeliveryInput(input: {
 
 export function createSpecificationCloseWork(facts: {
   definition: ChangeLifecycleDefinition;
+  checkEpoch: number;
   archive: ArchiveDeliveryInput;
   actionSkill: SkillUsageSnapshot;
   workspaceRepositoryId: string;
@@ -86,8 +87,9 @@ export function createSpecificationCloseWork(facts: {
     repositoryIds: facts.repositoryIds,
   });
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     workId: `archive:specification-close:${facts.archive.digest.slice('sha256:'.length, 19)}`,
+    checkEpoch: facts.checkEpoch,
     ...binding,
     inputDigest: facts.archive.digest,
   };
@@ -95,6 +97,7 @@ export function createSpecificationCloseWork(facts: {
 
 export function createDeliveryPublishWork(facts: {
   definition: ChangeLifecycleDefinition;
+  checkEpoch: number;
   archive: ArchiveDeliveryInput;
   closure: { closureId: `sha256:${string}`; planDigest: `sha256:${string}` };
   actionSkill: SkillUsageSnapshot;
@@ -116,8 +119,9 @@ export function createDeliveryPublishWork(facts: {
     binding,
   });
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     workId: `archive:delivery-publish:${inputDigest.slice('sha256:'.length, 19)}`,
+    checkEpoch: facts.checkEpoch,
     ...binding,
     inputDigest,
   };

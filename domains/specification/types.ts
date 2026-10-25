@@ -215,6 +215,7 @@ export interface PlanningSpecificationRoot {
 export interface PlanningSnapshot {
   schemaVersion: 1;
   changeId: string;
+  approvalPhase: 'open' | 'design';
   provider: SpecificationProviderIdentity;
   schema?: SpecificationSchemaInstructions;
   specificationRoot?: PlanningSpecificationRoot;
@@ -236,6 +237,7 @@ export interface SpecificationApprovalProposal {
   schemaVersion: 1;
   kind: 'SpecificationApprovalProposal';
   changeId: string;
+  approvalPhase: 'open' | 'design';
   specificationRoot: PlanningSpecificationRoot;
   provider: SpecificationProviderIdentity;
   schema: { name: string; digest: `sha256:${string}` };
@@ -250,6 +252,7 @@ export interface SpecificationApprovalDecisionRequest {
   decisionType: 'specification-approval';
   requestId: string;
   changeId: string;
+  approvalPhase: 'open' | 'design';
   snapshotDigest: `sha256:${string}`;
   proposal: SpecificationApprovalProposal;
   proposalHash: `sha256:${string}`;
@@ -280,6 +283,7 @@ export interface SpecificationApprovalRecord {
   schemaVersion: 1;
   requestId: string;
   changeId: string;
+  approvalPhase: 'open' | 'design';
   snapshotDigest: `sha256:${string}`;
   proposalHash: `sha256:${string}`;
   approvalHash: `sha256:${string}` | null;
@@ -299,6 +303,7 @@ export type SpecificationApprovalStatus =
 export interface SpecificationApprovalState {
   schemaVersion: 1;
   changeId: string;
+  approvalPhase: 'open' | 'design';
   stateVersion: number;
   status: SpecificationApprovalStatus;
   snapshot: PlanningSnapshot;

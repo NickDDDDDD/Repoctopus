@@ -77,6 +77,7 @@ export class ArchiveCompletionTracer {
     }
     const closeWork = createSpecificationCloseWork({
       definition: input.definition,
+      checkEpoch: input.current.checkEpoch + 1,
       archive: input.archive,
       actionSkill: input.archiveSkill,
       workspaceRepositoryId: input.workspaceRepositoryId,
@@ -96,6 +97,7 @@ export class ArchiveCompletionTracer {
     const resolvedPrSkill = input.prSkill;
     const publishWork = createDeliveryPublishWork({
       definition: input.definition,
+      checkEpoch: preflight.snapshot.checkEpoch + 1,
       archive: input.archive,
       closure,
       actionSkill: resolvedPrSkill,
@@ -139,9 +141,8 @@ export class ArchiveCompletionTracer {
     const receipt = createPublicationReceipt({
       apiVersion: PUBLICATION_RECEIPT_API_VERSION,
       kind: 'PublicationReceipt',
-      schemaVersion: 1,
+      schemaVersion: 2,
       changeId: input.current.identity.changeId,
-      generation: input.current.identity.generation,
       runId: input.current.identity.runId,
       deliverySnapshotDigest: business.deliverySnapshotDigest,
       verificationInputDigest: input.archive.verificationInputDigest,

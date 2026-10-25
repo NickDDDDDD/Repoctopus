@@ -26,9 +26,8 @@ export interface PublicationReceiptItem {
 export interface PublicationReceipt {
   apiVersion: typeof PUBLICATION_RECEIPT_API_VERSION;
   kind: 'PublicationReceipt';
-  schemaVersion: 1;
+  schemaVersion: 2;
   changeId: string;
-  generation: number;
   runId: string;
   deliverySnapshotDigest: `sha256:${string}`;
   verificationInputDigest: `sha256:${string}`;
@@ -117,13 +116,15 @@ function normalizedItem(item: PublicationReceiptItem): PublicationReceiptItem {
 }
 
 function stable(input: Omit<PublicationReceipt, 'digest'>) {
-  const items = input.items.map(normalizedItem).sort((left, right) =>
-    [left.role, left.repositoryId, left.deliveryId ?? '', left.publicationId]
-      .join('\0')
-      .localeCompare(
-        [right.role, right.repositoryId, right.deliveryId ?? '', right.publicationId].join('\0'),
-      ),
-  );
+  const items = input.items
+    .map(normalizedItem)
+    .sort((left, right) =>
+      [left.role, left.repositoryId, left.deliveryId ?? '', left.publicationId]
+        .join('\0')
+        .localeCompare(
+          [right.role, right.repositoryId, right.deliveryId ?? '', right.publicationId].join('\0'),
+        ),
+    );
   const evidenceBundleIds = [...new Set(input.evidenceBundleIds)].sort();
   return { ...structuredClone(input), evidenceBundleIds, items };
 }
@@ -134,15 +135,12 @@ export function createPublicationReceipt(
   if (
     input.apiVersion !== PUBLICATION_RECEIPT_API_VERSION ||
     input.kind !== 'PublicationReceipt' ||
-    input.schemaVersion !== 1
+    input.schemaVersion !== 2
   ) {
     throw new Error('Publication Receipt contract identity is invalid');
   }
   text(input.changeId, 'Publication Receipt change id');
   text(input.runId, 'Publication Receipt run id');
-  if (!Number.isSafeInteger(input.generation) || input.generation < 1) {
-    throw new Error('Publication Receipt generation is invalid');
-  }
   if (!SHA256.test(input.deliverySnapshotDigest) || !SHA256.test(input.verificationInputDigest)) {
     throw new Error('Publication Receipt input digest is invalid');
   }
@@ -165,7 +163,9 @@ export function createPublicationReceipt(
   if (!normalized.items.some((item) => item.role === 'business')) {
     throw new Error('Publication Receipt requires at least one Business publication');
   }
-  if (new Set(normalized.items.map((item) => item.publicationId)).size !== normalized.items.length) {
+  if (
+    new Set(normalized.items.map((item) => item.publicationId)).size !== normalized.items.length
+  ) {
     throw new Error('Publication Receipt item ids must be unique');
   }
   return { ...normalized, digest: sha256(normalized) };

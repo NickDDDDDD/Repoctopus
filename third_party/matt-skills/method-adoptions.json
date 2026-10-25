@@ -17,6 +17,12 @@
       "target": "third_party/matt-skills/skills/engineering/codebase-design/SKILL.md"
     },
     {
+      "name": "grilling",
+      "source": "skills/productivity/grilling/SKILL.md",
+      "sourceSha256": "26d225ea8a36f4acacbe267e789cfb97d73964412f4243dd4b65b6cb806ddebc",
+      "target": "third_party/matt-skills/skills/productivity/grilling/SKILL.md"
+    },
+    {
       "name": "pr",
       "source": "skills/engineering/pr/SKILL.md",
       "sourceSha256": "57658baca2e50e9cf98fdb6b74a51f2afd34b71019d516f7c5d45a51a28354b0",
@@ -48,7 +54,6 @@
       "targetSha256": "c73a2250beac0479e384f5466e834bb54ce6e30b7f8705e9999ba840d9d59b36",
       "adoptedRuleIds": [
         "planning.synthesize-known-context",
-        "design.public-test-seams",
         "planning.decision-rich-not-volatile"
       ],
       "rejectedBehaviors": [
@@ -100,14 +105,6 @@
       "artifacts": ["proposal", "delta-specs", "design", "tasks"],
       "enforcement": "context",
       "statement": "Synthesize decisions already established by the conversation and repository evidence; do not repeat an interview for resolved decisions."
-    },
-    {
-      "id": "design.public-test-seams",
-      "sources": ["to-spec", "tdd", "codebase-design"],
-      "phases": ["design", "build"],
-      "artifacts": ["design"],
-      "enforcement": "human-decision",
-      "statement": "Choose the fewest stable public seams that observe required behavior, and request a decision only when the seam remains materially unresolved."
     },
     {
       "id": "planning.decision-rich-not-volatile",
