@@ -1,5 +1,4 @@
 import { readFile } from 'node:fs/promises';
-import { randomUUID } from 'node:crypto';
 import { userInfo } from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
@@ -53,7 +52,7 @@ const PRODUCT_ROOT =
     ? path.resolve(DIST_DIR, '..')
     : path.resolve(DIST_DIR, '..', '..');
 const USAGE =
-  'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decide|record|resume|work-claim|work-outcome|work-validate|archive-prepare|archive-publish> | change reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | approval review | browser <doctor|install> | doctor';
+  'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decide|record|resume|work-claim|work-outcome|work-reconcile|work-validate|archive-prepare|archive-publish> | change reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | approval review | browser <doctor|install> | doctor';
 const CLI_VERSION = '0.1.0';
 const COMMANDS = new Set([
   'project detect',
@@ -81,6 +80,7 @@ const COMMANDS = new Set([
   'run archive-publish',
   'run work-claim',
   'run work-outcome',
+  'run work-reconcile',
   'run work-validate',
   'run decide',
   'run record',
@@ -129,6 +129,10 @@ const CLI_FLAGS = new Set([
   'claim-token',
   'receipt',
   'input-digest',
+  'invocation-id',
+  'host-id',
+  'packet-digest',
+  'consumed-layers',
   'candidate',
   'branch',
   'draft',
@@ -1148,29 +1152,41 @@ async function runWorkOutcome(parsed: ParsedArguments): Promise<CliEnvelope<unkn
   const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
   const runId = stringFlag(parsed, 'run', { required: true })!;
   const status = stringFlag(parsed, 'status', { required: true });
-  if (status !== 'succeeded' && status !== 'failed') {
-    throw new Error('--status must be succeeded or failed');
+  if (status !== 'succeeded' && status !== 'failed' && status !== 'unknown') {
+    throw new Error('--status must be succeeded, failed, or unknown');
   }
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
     const result = await app.context.commandRouter.execute('run.work.outcome', {
       schemaVersion: 1,
-      outcomeId: randomUUID(),
       runId,
-      workId: stringFlag(parsed, 'work', { required: true })!,
-      attempt: integerFlag(parsed, 'attempt', { required: true, minimum: 1 })!,
-      claimToken: qualifiedSha256(
-        stringFlag(parsed, 'claim-token', { required: true })!,
-        'Claim token',
-      ),
-      inputDigest: qualifiedSha256(
-        stringFlag(parsed, 'input-digest', { required: true })!,
-        'Work input digest',
+      invocationId: stringFlag(parsed, 'invocation-id', { required: true })!,
+      hostId: stringFlag(parsed, 'host-id', { required: true })!,
+      packetDigest: qualifiedSha256(
+        stringFlag(parsed, 'packet-digest', { required: true })!,
+        'Packet digest',
       ),
       status,
       summary: stringFlag(parsed, 'summary', { required: true })!,
+      consumedLayerDigests: (stringFlag(parsed, 'consumed-layers', { fallback: '' }) ?? '')
+        .split(',')
+        .map((value) => value.trim())
+        .filter(Boolean)
+        .map((value) => qualifiedSha256(value, 'Consumed layer digest')),
     });
     return successEnvelope({ command: 'run work-outcome', runId, result });
+  } finally {
+    await app.close();
+  }
+}
+
+async function runWorkReconcile(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
+  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
+  const runId = stringFlag(parsed, 'run', { required: true })!;
+  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
+  try {
+    const result = await app.context.commandRouter.execute('run.work.reconcile', { runId });
+    return successEnvelope({ command: 'run work-reconcile', runId, result });
   } finally {
     await app.close();
   }
@@ -1432,6 +1448,7 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   if (command === 'run archive-publish') return runArchivePublish(parsed);
   if (command === 'run work-claim') return runWorkClaim(parsed);
   if (command === 'run work-outcome') return runWorkOutcome(parsed);
+  if (command === 'run work-reconcile') return runWorkReconcile(parsed);
   if (command === 'run work-validate') return runWorkValidate(parsed);
   if (command === 'run decide') return runDecide(parsed);
   if (command === 'run record') return runRecord(parsed);

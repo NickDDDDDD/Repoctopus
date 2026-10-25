@@ -143,9 +143,11 @@ describe('Work Execution Sessions', () => {
     });
     expect(first.sessionId).not.toBe(second.sessionId);
     expect(sessions.require(first, 'host-a')).toEqual(first);
+    expect(sessions.isActive(first.invocationId)).toBe(true);
     expect(() => sessions.require(first, 'host-b')).toThrow(/another Host/u);
     sessions.close(first.sessionId);
     expect(() => sessions.require(first, 'host-a')).toThrow(/expired/u);
+    expect(sessions.isActive(first.invocationId)).toBe(false);
     expect(sessions.require(second, 'host-b')).toEqual(second);
     await context.fiber.dispose();
   });

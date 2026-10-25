@@ -28,11 +28,13 @@ export class CommandRouter extends Service {
     super(context, 'commandRouter');
   }
 
-  register(handler: CommandHandler): () => void {
+  register<TInput = unknown, TOutput = unknown>(
+    handler: CommandHandler<TInput, TOutput>,
+  ): () => void {
     const name = handler.name.trim();
     if (!name) throw new Error('Command handler name is required');
     if (this.handlers.has(name)) throw new Error(`Command handler already registered: ${name}`);
-    this.handlers.set(name, handler);
+    this.handlers.set(name, handler as CommandHandler);
     return () => {
       if (this.handlers.get(name) === handler) this.handlers.delete(name);
     };

@@ -342,6 +342,22 @@ describe('Specification authority', () => {
       allowAdditionalPlanningArtifacts: false,
       trackerPublish: false,
     });
+    const buildProtocol = await context.specification.phaseContext('build', 'sample');
+    expect(buildProtocol.allowedOperations).toEqual([
+      'inspect-change',
+      'read-tasks',
+      'complete-task-from-receipt',
+    ]);
+    expect(buildProtocol.artifacts.map((artifact) => artifact.id)).toEqual(['tasks']);
+    expect(typeof buildProtocol.artifacts[0]?.instruction).toBe('string');
+    expect(typeof buildProtocol.artifacts[0]?.template).toBe('string');
+    const archiveProtocol = await context.specification.phaseContext('archive', 'sample');
+    expect(archiveProtocol.artifacts.map((artifact) => artifact.id)).toEqual([
+      'proposal',
+      'specs',
+      'design',
+      'tasks',
+    ]);
     expect((await readdir(workspace, { recursive: true })).sort()).toEqual(filesBeforeGuidance);
     expect(filesBeforeGuidance.some((file) => /(?:ticket|tracker)/iu.test(file))).toBe(false);
     const tasksFile = path.join(workspace, 'openspec', 'changes', 'sample', 'tasks.md');
@@ -355,15 +371,21 @@ describe('Specification authority', () => {
       changeId: 'sample',
       taskId: '1.1',
       taskRevision: pendingTasks.tasks[0]!.taskRevision,
+      workId: 'build:1.1:runtime-receipt',
     });
     const replayCompletion = await context.specification.completeTask({
       changeId: 'sample',
       taskId: '1.1',
       taskRevision: pendingTasks.tasks[0]!.taskRevision,
+      workId: 'build:1.1:runtime-receipt',
     });
     expect(firstCompletion).toMatchObject({ updated: true, taskId: '1.1' });
     expect(replayCompletion).toMatchObject({ updated: false, taskId: '1.1' });
     expect(await readFile(tasksFile, 'utf8')).toContain('- [x] 1.1 Complete fixture.');
+    expect((await context.specification.tasks('sample')).tasks[0]?.completion).toEqual({
+      source: 'runtime-work',
+      workId: 'build:1.1:runtime-receipt',
+    });
     await writeFile(
       tasksFile,
       originalTasks.replace('Complete fixture', 'Complete fixture safely'),

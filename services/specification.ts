@@ -26,6 +26,24 @@ import { canonicalJson } from '../domains/workflow-contract/canonical.js';
 
 export type SpecificationRoot = PlanningSpecificationRoot;
 
+export function specificationPhaseArtifacts(
+  phase: SpecificationPhaseContext['phase'],
+  artifacts: SpecificationPlanningContext['artifacts'],
+): SpecificationPlanningContext['artifacts'] {
+  const applicable: Record<SpecificationPhaseContext['phase'], readonly string[]> = {
+    open: ['proposal'],
+    design: ['proposal', 'specs', 'design', 'tasks'],
+    build: ['tasks'],
+    verify: ['specs', 'tasks'],
+    archive: ['proposal', 'specs', 'design', 'tasks'],
+  };
+  const selected = artifacts.filter((artifact) => applicable[phase].includes(artifact.id));
+  if (selected.length !== applicable[phase].length) {
+    throw new Error(`Specification Provider phase protocol is incomplete for ${phase}`);
+  }
+  return selected;
+}
+
 export function createSpecificationPhaseContext(input: {
   phase: SpecificationPhaseContext['phase'];
   provider: SpecificationProviderIdentity;
@@ -127,10 +145,10 @@ export abstract class Specification extends Service implements SpecificationWork
     changeId: string,
     signal?: AbortSignal,
   ): Promise<SpecificationPhaseContext> {
-    const artifacts =
-      phase === 'open' || phase === 'design'
-        ? (await this.planningContext(changeId, signal)).artifacts
-        : [];
+    const artifacts = specificationPhaseArtifacts(
+      phase,
+      (await this.planningContext(changeId, signal)).artifacts,
+    );
     return createSpecificationPhaseContext({ phase, provider: this.identity(), artifacts });
   }
   tasks(changeId: string, signal?: AbortSignal): Promise<SpecificationTaskSet> {

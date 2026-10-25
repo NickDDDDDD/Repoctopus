@@ -172,7 +172,15 @@ export function authorizeRuntimeWorkOperation(input: {
     if (input.operation.terminalArtifact) {
       reject('Terminal Specification artifacts are immutable');
     }
-    const providerId = input.state.specificationUsageSnapshot?.provider.id;
+    const triggerProvider = input.state.trigger?.facts.specificationProvider;
+    const providerId =
+      input.state.specificationUsageSnapshot?.provider.id ??
+      ((work.phase === 'open' || work.phase === 'design') &&
+      triggerProvider &&
+      typeof triggerProvider === 'object' &&
+      typeof (triggerProvider as { id?: unknown }).id === 'string'
+        ? (triggerProvider as { id: string }).id
+        : undefined);
     if (!providerId || providerId !== input.operation.providerId) {
       reject(
         `Specification Provider does not match the Run snapshot: ${input.operation.providerId}`,

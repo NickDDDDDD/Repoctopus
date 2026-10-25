@@ -58,6 +58,10 @@ export class WorkExecutionHosts extends Service {
     return candidates[0]!;
   }
 
+  get(hostId: string): WorkExecutionHost | null {
+    return this.hosts.get(hostId) ?? null;
+  }
+
   snapshot(): WorkExecutionHostSnapshot {
     const hosts = [...this.hosts.values()]
       .map((host) => structuredClone(host.identity))
@@ -122,6 +126,12 @@ export class WorkExecutionSessions extends Service {
   close(sessionId: string): void {
     const session = this.sessions.get(sessionId);
     if (session) session.active = false;
+  }
+
+  isActive(invocationId: string): boolean {
+    return [...this.sessions.values()].some(
+      (session) => session.active && session.identity.invocationId === invocationId,
+    );
   }
 }
 

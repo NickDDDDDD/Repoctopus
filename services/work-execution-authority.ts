@@ -4,17 +4,25 @@ import { Service, type Context } from '@deepseek-ai/cordis';
 
 import type { ActionIntent, ActionReceipt, ClaimedActionOutcome } from '../domains/action/types.js';
 import type { RunState } from '../domains/engine/types.js';
+import type { WorkDescriptor } from '../domains/change-lifecycle/transition.js';
 import type { TrajectoryEvent, TrajectoryEventType } from '../domains/trajectory/types.js';
 import type {
+  AgentCoordinationCheckpoint,
+  AgentCoordinationCheckpointView,
   WorkContinuationKind,
   WorkExecutionCheckpoint,
   WorkExecutionHostInvocation,
   WorkExecutionHostOutcome,
   WorkExecutionPacket,
+  WorkExecutionRecovery,
 } from '../domains/work-execution/types.js';
 
 function digest(...parts: readonly string[]): `sha256:${string}` {
   return `sha256:${createHash('sha256').update(parts.join('\0')).digest('hex')}`;
+}
+
+function rawDigest(...parts: readonly string[]): string {
+  return createHash('sha256').update(parts.join('\0')).digest('hex');
 }
 
 function executionEvent(input: {
@@ -66,7 +74,7 @@ function assertSameClaim(checkpoint: WorkExecutionCheckpoint, intent: ActionInte
 }
 
 export class WorkExecutionAuthority extends Service {
-  static inject = ['runStore', 'actionStore', 'workflowTelemetry'];
+  static inject = ['runStore', 'actionStore', 'workExecutionSessions', 'workflowTelemetry'];
 
   constructor(context: Context) {
     super(context, 'workExecutionAuthority');
@@ -89,8 +97,8 @@ export class WorkExecutionAuthority extends Service {
           }
           const retryAfterFailure =
             existing.workId === packet.claim.workId &&
-            existing.status === 'outcome' &&
-            existing.actionOutcome?.status === 'failed' &&
+            ((existing.status === 'outcome' && existing.actionOutcome?.status === 'failed') ||
+              existing.status === 'not-executed') &&
             packet.claim.attempt === existing.attempt + 1;
           const nextValidatedWork =
             existing.workId !== packet.claim.workId && existing.status === 'validated';
@@ -143,6 +151,40 @@ export class WorkExecutionAuthority extends Service {
     );
     await this.flushTelemetry(packet.claim.runId);
     return result;
+  }
+
+  async recordWorkCreated(runId: string, work: WorkDescriptor): Promise<void> {
+    await this.ctx.runStore.commitGuarded(runId, ({ state, trajectory }) => {
+      const eventId = digest(runId, 'work.created', work.workId, work.inputDigest);
+      if (trajectory.some((event) => event.eventId === eventId)) return { value: undefined };
+      if (state.changeLifecycle?.currentWork?.workId !== work.workId) {
+        throw new Error('Created Work is not the Runtime-selected current Work');
+      }
+      const timestamp = new Date().toISOString();
+      const nextState: RunState = {
+        ...state,
+        stateVersion: state.stateVersion + 1,
+        updatedAt: timestamp,
+      };
+      return {
+        state: nextState,
+        event: executionEvent({
+          state: nextState,
+          sequence: trajectory.length + 1,
+          timestamp,
+          type: 'work.created',
+          identity: [work.workId, work.inputDigest],
+          data: {
+            phase: work.phase,
+            workId: work.workId,
+            workKind: work.kind,
+            inputDigest: work.inputDigest,
+          },
+        }),
+        value: undefined,
+      };
+    });
+    await this.flushTelemetry(runId);
   }
 
   async markContextDelivered(packet: WorkExecutionPacket): Promise<WorkExecutionCheckpoint> {
@@ -253,6 +295,26 @@ export class WorkExecutionAuthority extends Service {
     );
   }
 
+  async markHostNotExecuted(
+    intent: ActionIntent,
+    reason: string,
+  ): Promise<WorkExecutionCheckpoint> {
+    return this.transition(
+      intent.runId,
+      intent.intentId,
+      ['invoking', 'unknown'],
+      'reconcile.completed',
+      'not-executed',
+      'execute',
+      {
+        workId: intent.workId,
+        attempt: intent.attempt,
+        result: 'not-executed',
+        reason,
+      },
+    );
+  }
+
   async markHostCompleted(
     intent: ActionIntent,
     outcome: WorkExecutionHostOutcome,
@@ -331,6 +393,27 @@ export class WorkExecutionAuthority extends Service {
     if (!claim) throw new Error(`Run has no authoritative Work claim: ${runId}`);
     const intent = await this.ctx.actionStore.loadIntent(runId, claim.workId, claim.attempt);
     assertSameClaim(claim, intent);
+    const expectedIdempotencyKey = rawDigest(
+      intent.runId,
+      intent.workId,
+      String(intent.attempt),
+      intent.inputDigest,
+      intent.adapter,
+    );
+    if (
+      intent.idempotencyKey !== expectedIdempotencyKey ||
+      intent.intentId !== rawDigest('intent', expectedIdempotencyKey) ||
+      intent.claimToken !== digest('claim', expectedIdempotencyKey)
+    ) {
+      throw new Error('Authoritative Action intent content is corrupt');
+    }
+    if (
+      intent.compositionDigest !== intent.composition.compositionDigest ||
+      intent.compositionDigest !== state.composition.compositionDigest ||
+      intent.executionContext?.digest !== claim.packet.contextDigest
+    ) {
+      throw new Error('Authoritative Action intent content drifted from the Work packet');
+    }
     return intent;
   }
 
@@ -339,7 +422,176 @@ export class WorkExecutionAuthority extends Service {
     if (state.status === 'completed') return 'done';
     if (state.changeLifecycle?.waitCondition?.kind === 'human-decision') return 'ask';
     if (!state.workExecution) return state.changeLifecycle?.currentWork ? 'execute' : 'wait';
+    if (state.workExecution.status === 'outcome') return 'execute';
     return state.workExecution.continuation;
+  }
+
+  async recovery(runId: string): Promise<WorkExecutionRecovery> {
+    const state = await this.ctx.runStore.loadRun(runId);
+    const current = state.workExecution;
+    const result = (
+      continuation: WorkContinuationKind,
+      reason: WorkExecutionRecovery['reason'],
+    ): WorkExecutionRecovery => ({
+      schemaVersion: 1,
+      continuation,
+      workId: current?.workId ?? state.changeLifecycle?.currentWork?.workId ?? null,
+      attempt: current?.attempt ?? null,
+      reason,
+    });
+    if (state.status === 'completed') return result('done', 'terminal');
+    if (state.changeLifecycle?.waitCondition?.kind === 'human-decision') {
+      return result('ask', 'human-decision');
+    }
+    if (!current) {
+      return state.changeLifecycle?.currentWork
+        ? result('execute', 'work-unclaimed')
+        : result('wait', 'transition-pending');
+    }
+    try {
+      await this.loadIntent(runId);
+    } catch {
+      return result('reconcile', 'content-missing-or-corrupt');
+    }
+    if (current.status === 'claimed' || current.status === 'context-delivered') {
+      return result('execute', 'claim-redelivery');
+    }
+    if (current.status === 'invoking') {
+      return current.hostInvocation &&
+        this.ctx.workExecutionSessions.isActive(current.hostInvocation.invocationId)
+        ? result('wait', 'host-active')
+        : result('reconcile', 'host-result-unknown');
+    }
+    if (current.status === 'unknown') return result('reconcile', 'host-result-unknown');
+    if (current.status === 'not-executed') return result('execute', 'host-not-executed');
+    if (current.status === 'outcome') {
+      return current.actionOutcome?.status === 'failed'
+        ? result('execute', 'work-failed')
+        : result('execute', 'validator-pending');
+    }
+    return result('execute', 'transition-pending');
+  }
+
+  async recordContinuation(runId: string, recovery: WorkExecutionRecovery): Promise<void> {
+    await this.ctx.runStore.commitGuarded(runId, ({ state, trajectory }) => {
+      const eventId = digest(
+        runId,
+        'continuation.selected',
+        recovery.workId ?? 'none',
+        String(recovery.attempt ?? 0),
+        recovery.continuation,
+        recovery.reason,
+      );
+      if (trajectory.some((event) => event.eventId === eventId)) return { value: undefined };
+      const timestamp = new Date().toISOString();
+      const nextState: RunState = {
+        ...state,
+        stateVersion: state.stateVersion + 1,
+        updatedAt: timestamp,
+      };
+      return {
+        state: nextState,
+        event: executionEvent({
+          state: nextState,
+          sequence: trajectory.length + 1,
+          timestamp,
+          type: 'continuation.selected',
+          identity: [
+            recovery.workId ?? 'none',
+            String(recovery.attempt ?? 0),
+            recovery.continuation,
+            recovery.reason,
+          ],
+          data: {
+            continuation: recovery.continuation,
+            reason: recovery.reason,
+            workId: recovery.workId,
+            attempt: recovery.attempt,
+          },
+        }),
+        value: undefined,
+      };
+    });
+    await this.flushTelemetry(runId);
+  }
+
+  async recordWaitBoundary(input: {
+    runId: string;
+    waitId: string;
+    stage: 'started' | 'ended';
+    kind: string;
+    reason: string;
+  }): Promise<void> {
+    await this.ctx.runStore.commitGuarded(input.runId, ({ state, trajectory }) => {
+      const type = `wait.${input.stage}` as const;
+      const eventId = digest(input.runId, type, input.waitId);
+      if (trajectory.some((event) => event.eventId === eventId)) return { value: undefined };
+      const timestamp = new Date().toISOString();
+      const nextState: RunState = {
+        ...state,
+        stateVersion: state.stateVersion + 1,
+        updatedAt: timestamp,
+      };
+      return {
+        state: nextState,
+        event: executionEvent({
+          state: nextState,
+          sequence: trajectory.length + 1,
+          timestamp,
+          type,
+          identity: [input.waitId, input.stage],
+          data: { waitId: input.waitId, waitKind: input.kind, reason: input.reason },
+        }),
+        value: undefined,
+      };
+    });
+    await this.flushTelemetry(input.runId);
+  }
+
+  async saveCoordination(input: {
+    runId: string;
+    currentTask?: string | null;
+    observedPaths?: readonly string[];
+    progress?: readonly string[];
+  }): Promise<AgentCoordinationCheckpoint> {
+    const state = await this.ctx.runStore.loadRun(input.runId);
+    const execution = state.workExecution;
+    if (!execution) throw new Error('Coordination checkpoint requires an authoritative Work claim');
+    const bounded = (values: readonly string[] | undefined, label: string): string[] => {
+      const result = [...new Set(values ?? [])].map((value) => value.trim()).filter(Boolean);
+      if (result.length > 64 || result.some((value) => value.length > 256)) {
+        throw new Error(`${label} exceeds the coordination checkpoint bound`);
+      }
+      return result.sort();
+    };
+    const checkpoint: AgentCoordinationCheckpoint = {
+      schemaVersion: 1,
+      runId: state.runId,
+      workId: execution.workId,
+      attempt: execution.attempt,
+      observedStateVersion: state.stateVersion,
+      currentTask: input.currentTask?.trim() || null,
+      observedPaths: bounded(input.observedPaths, 'Observed paths'),
+      progress: bounded(input.progress, 'Progress'),
+      updatedAt: new Date().toISOString(),
+    };
+    await this.ctx.runStore.writeCoordinationCheckpoint(checkpoint);
+    return checkpoint;
+  }
+
+  async coordination(runId: string): Promise<AgentCoordinationCheckpointView> {
+    const [state, checkpoint] = await Promise.all([
+      this.ctx.runStore.loadRun(runId),
+      this.ctx.runStore.readCoordinationCheckpoint(runId),
+    ]);
+    if (!checkpoint) return { status: 'missing', checkpoint: null };
+    const execution = state.workExecution;
+    const current =
+      execution !== undefined &&
+      checkpoint.workId === execution.workId &&
+      checkpoint.attempt === execution.attempt &&
+      checkpoint.observedStateVersion <= state.stateVersion;
+    return { status: current ? 'current' : 'stale', checkpoint };
   }
 
   private async transition(

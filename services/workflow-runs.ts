@@ -7,6 +7,7 @@ import type { ActionOutcome, RunState, RunTriggerSnapshot } from '../domains/eng
 import type { BuildTaskValidation } from '../domains/change-lifecycle/build-validator.js';
 import { validateBuildTaskOutcome } from '../domains/change-lifecycle/build-validator.js';
 import type { ProjectSnapshot } from '../domains/project/types.js';
+import { reconcileProjectSnapshots } from '../domains/project/snapshot.js';
 import { WorkflowRunCoordinator } from '../domains/runtime/workflow-runs.js';
 import type {
   ResumeView,
@@ -128,8 +129,9 @@ export interface ExecuteArchiveDeliveryInput {
 }
 
 export interface ExecuteArchiveDeliveryResult {
-  publication: ArchivePublicationResult;
-  receipt: PublicationReceipt;
+  stage: 'specification-closed' | 'published';
+  publication: ArchivePublicationResult | null;
+  receipt: PublicationReceipt | null;
   run: RunStatusView;
 }
 
@@ -143,6 +145,7 @@ export class WorkflowRuns extends Service {
     'lifecycleDefinitions',
     'lifecycleExtensions',
     'lifecycleValidators',
+    'managedWorkExecutor',
     'project',
     'runStore',
     'skills',
@@ -152,6 +155,7 @@ export class WorkflowRuns extends Service {
     'workflowSource',
     'workDispatcher',
     'workExecutionAuthority',
+    'workExecutionHosts',
   ];
 
   private readonly coordinator: WorkflowRunCoordinator;
@@ -297,6 +301,7 @@ export class WorkflowRuns extends Service {
         repositoryIds,
         projectConfigDigest: input.projectConfigDigest,
         verificationProfileId: input.verificationProfileId,
+        specificationProvider: this.ctx.specification.identity(),
       };
       const started = await this.coordinator.startOrResume({
         workflow: createChangeRunHostWorkflow(),
@@ -315,16 +320,23 @@ export class WorkflowRuns extends Service {
       for (const skill of [openSkills.actionSkill, ...openSkills.augmentationSkills]) {
         await this.coordinator.bindSkill(runId, skill);
       }
+      await this.ctx.workExecutionAuthority.recordWorkCreated(runId, lifecycle.currentWork);
       return { ...started, value: await this.coordinator.status(runId) };
     });
   }
 
   status(runId: string, signal?: AbortSignal): Promise<RunStatusView> {
-    return this.operations.run({ cancellable: true, signal }, async () => ({
-      ...(await this.coordinator.status(runId)),
-      skillCompatibility: await this.skillCompatibility(runId, signal),
-      specificationCompatibility: await this.specificationCompatibility(runId),
-    }));
+    return this.operations.run({ cancellable: true, signal }, async () => {
+      const status = await this.coordinator.status(runId);
+      return {
+        ...status,
+        skillCompatibility: await this.skillCompatibility(runId, signal),
+        specificationCompatibility: await this.specificationCompatibility(runId),
+        ...(status.state.changeLifecycle
+          ? { continuation: await this.ctx.workExecutionAuthority.recovery(runId) }
+          : {}),
+      };
+    });
   }
 
   async changeStatus(runId: string, signal?: AbortSignal): Promise<ChangeRunProjection> {
@@ -534,10 +546,12 @@ export class WorkflowRuns extends Service {
     for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
       await this.coordinator.bindSkill(state.runId, skill);
     }
-    return this.coordinator.acceptChangeObservation(state.runId, {
+    const created = await this.coordinator.acceptChangeObservation(state.runId, {
       kind: 'design-work-ready',
       work,
     });
+    await this.ctx.workExecutionAuthority.recordWorkCreated(state.runId, work);
+    return { ...created, value: await this.coordinator.status(state.runId) };
   }
 
   private async validateOpenWork(
@@ -600,93 +614,286 @@ export class WorkflowRuns extends Service {
     confirmations: ReadonlySet<string> = new Set(),
     signal?: AbortSignal,
   ): Promise<RuntimeResult<RunStatusView>> {
-    return this.operations.run({ cancellable: false, signal }, async () => {
-      const state = await this.ctx.runStore.loadRun(runId);
-      if (state.changeLifecycle) {
-        const diagnostics: RuntimeDiagnostic[] = [];
-        const current = state;
-        if (state.changeLifecycle.phase === 'open') {
-          if (!state.changeLifecycle.currentWork) {
-            throw new Error('Open phase has no Runtime-selected intake Work');
-          }
-          if (
-            state.workExecution?.status === 'outcome' &&
-            state.workExecution.actionOutcome?.status === 'succeeded'
-          ) {
-            return this.validateOpenWork(state, signal);
-          }
-          return {
-            value: await this.coordinator.status(runId),
-            diagnostics: [
-              {
-                level: 'info',
-                code: 'change.work-execute',
-                message: 'Execute the Runtime-selected Open intake Work',
+    const preflight = await this.ctx.runStore.loadRun(runId);
+    const preflightLifecycle = preflight.changeLifecycle;
+    if (
+      preflightLifecycle?.phase === 'build' &&
+      preflightLifecycle.currentWork &&
+      preflight.workExecution?.status === 'outcome' &&
+      preflight.workExecution.actionOutcome?.status === 'succeeded' &&
+      preflight.workExecution.receiptId
+    ) {
+      const validated = await this.validateBuildTask(
+        { runId, receiptId: preflight.workExecution.receiptId },
+        signal,
+      );
+      const continuation = await this.ctx.workExecutionAuthority.recovery(runId);
+      await this.ctx.workExecutionAuthority.recordContinuation(runId, continuation);
+      return {
+        diagnostics: validated.diagnostics,
+        value: { ...validated.value.run, continuation },
+      };
+    }
+    if (
+      preflightLifecycle?.phase === 'verify' &&
+      preflightLifecycle.currentWork &&
+      preflight.workExecution?.status === 'outcome' &&
+      preflight.workExecution.actionOutcome?.status === 'succeeded'
+    ) {
+      const verified = await this.verifyChange({ runId }, signal);
+      const continuation = await this.ctx.workExecutionAuthority.recovery(runId);
+      await this.ctx.workExecutionAuthority.recordContinuation(runId, continuation);
+      return {
+        diagnostics: verified.diagnostics,
+        value: { ...verified.value.run, continuation },
+      };
+    }
+    const beforeNext = await this.ctx.runStore.loadRun(runId);
+    const result: RuntimeResult<RunStatusView> = await this.operations.run(
+      { cancellable: false, signal },
+      async () => {
+        const state = await this.ctx.runStore.loadRun(runId);
+        if (state.changeLifecycle) {
+          const work = state.changeLifecycle.currentWork;
+          const execution = state.workExecution;
+          const dispatchable =
+            work &&
+            this.ctx.workExecutionHosts.snapshot().hosts.length > 0 &&
+            (!execution ||
+              execution.workId !== work.workId ||
+              ['claimed', 'context-delivered', 'not-executed'].includes(execution.status) ||
+              (execution.status === 'outcome' && execution.actionOutcome?.status === 'failed'));
+          if (dispatchable) {
+            const adapter =
+              work.kind === 'delivery.publish'
+                ? 'git'
+                : work.phase === 'build' || work.phase === 'verify'
+                  ? 'process'
+                  : 'specification';
+            await this.ctx.managedWorkExecutor.execute({
+              runId,
+              adapter,
+              ...(execution?.workId === work.workId ? { attempt: execution.attempt + 1 } : {}),
+              executor: {
+                actorId: 'repoctopus-runtime',
+                runnerId: `runtime:${runId}`,
+                source: 'runner',
+                authenticated: true,
               },
-            ],
-          };
-        }
-        const lifecycle = current.changeLifecycle;
-        if (!lifecycle) throw new Error(`Run is not a Change Run: ${runId}`);
-        if (!['design', 'build', 'verify'].includes(lifecycle.phase)) {
-          throw new Error('Change Run next Work is not available before lifecycle Work dispatch');
-        }
-        let build: { tasks: SpecificationTask[]; work: WorkDescriptor | null } | undefined;
-        const evaluated = await this.assessChangeDesign(current, lifecycle, signal);
-        let assessment = evaluated.assessment;
-        const { projectSnapshot, projectConfigDigest, workspaceRepositoryId } = evaluated;
-        if (lifecycle.phase === 'build' || lifecycle.phase === 'verify') {
-          const observedDigest =
-            assessment.snapshot?.digest ??
-            (`sha256:${createHash('sha256')
-              .update(canonicalJson({ reason: assessment.reason }))
-              .digest('hex')}` as const);
-          if (assessment.status !== 'approved' || observedDigest !== lifecycle.planningDigest) {
-            return this.coordinator.acceptChangeObservation(runId, {
-              kind: 'planning-semantic-drift',
-              reason: assessment.reason,
-              evidenceIds: assessment.evidenceDigests,
-              inputDigest: observedDigest,
             });
+            return {
+              value: await this.coordinator.status(runId),
+              diagnostics: [
+                {
+                  level: 'info',
+                  code: 'change.work-host-completed',
+                  message: `Managed Host completed ${work.kind}; Runtime validation is next`,
+                },
+              ],
+            };
           }
-          if (lifecycle.phase === 'build' && lifecycle.verificationInvalidation) {
-            const profileId = current.trigger?.facts.verificationProfileId;
-            if (typeof profileId !== 'string' || !profileId.trim()) {
-              throw new Error('Verification Evidence Profile identity is missing');
+          const diagnostics: RuntimeDiagnostic[] = [];
+          const current = state;
+          if (state.changeLifecycle.phase === 'open') {
+            if (!state.changeLifecycle.currentWork) {
+              throw new Error('Open phase has no Runtime-selected intake Work');
             }
-            const refreshed = await this.ctx.evidenceCoordinator.plan(profileId);
             if (
-              refreshed.fingerprint.digest ===
-              lifecycle.verificationInvalidation.evidenceInputFingerprint
+              state.workExecution?.status === 'outcome' &&
+              state.workExecution.actionOutcome?.status === 'succeeded'
             ) {
+              return this.validateOpenWork(state, signal);
+            }
+            return {
+              value: await this.coordinator.status(runId),
+              diagnostics: [
+                {
+                  level: 'info',
+                  code: 'change.work-execute',
+                  message: 'Execute the Runtime-selected Open intake Work',
+                },
+              ],
+            };
+          }
+          const lifecycle = current.changeLifecycle;
+          if (!lifecycle) throw new Error(`Run is not a Change Run: ${runId}`);
+          if (lifecycle.phase === 'archive') {
+            return {
+              value: await this.coordinator.status(runId),
+              diagnostics: [
+                {
+                  level: 'info',
+                  code: 'change.archive-input-required',
+                  message: 'Archive requires the frozen Delivery intent and publication policy',
+                },
+              ],
+            };
+          }
+          if (!['design', 'build', 'verify'].includes(lifecycle.phase)) {
+            throw new Error('Change Run next Work is unavailable for the current lifecycle phase');
+          }
+          let build: { tasks: SpecificationTask[]; work: WorkDescriptor | null } | undefined;
+          const evaluated = await this.assessChangeDesign(current, lifecycle, signal);
+          let assessment = evaluated.assessment;
+          const { projectSnapshot, projectConfigDigest, workspaceRepositoryId } = evaluated;
+          if (lifecycle.phase === 'build' || lifecycle.phase === 'verify') {
+            const observedDigest =
+              assessment.snapshot?.digest ??
+              (`sha256:${createHash('sha256')
+                .update(canonicalJson({ reason: assessment.reason }))
+                .digest('hex')}` as const);
+            if (assessment.status !== 'approved' || observedDigest !== lifecycle.planningDigest) {
+              const drift = await this.coordinator.acceptChangeObservation(runId, {
+                kind: 'planning-semantic-drift',
+                reason: assessment.reason,
+                evidenceIds: assessment.evidenceDigests,
+                inputDigest: observedDigest,
+              });
+              return {
+                ...drift,
+                diagnostics: [
+                  ...drift.diagnostics,
+                  {
+                    level: 'warning',
+                    code: 'change.planning-semantic-drift',
+                    message: `${assessment.reason}; approved=${lifecycle.planningDigest}; observed=${observedDigest}`,
+                  },
+                ],
+              };
+            }
+            if (lifecycle.phase === 'build' && lifecycle.verificationInvalidation) {
+              const profileId = current.trigger?.facts.verificationProfileId;
+              if (typeof profileId !== 'string' || !profileId.trim()) {
+                throw new Error('Verification Evidence Profile identity is missing');
+              }
+              const refreshed = await this.ctx.evidenceCoordinator.plan(profileId);
+              if (
+                refreshed.fingerprint.digest ===
+                lifecycle.verificationInvalidation.evidenceInputFingerprint
+              ) {
+                return {
+                  value: await this.coordinator.status(runId),
+                  diagnostics: [
+                    ...diagnostics,
+                    {
+                      level: 'warning',
+                      code: 'change.verify-repair-required',
+                      message: lifecycle.verificationInvalidation.reason,
+                    },
+                  ],
+                };
+              }
+            }
+            if (lifecycle.phase === 'verify' || lifecycle.currentWork) {
               return {
                 value: await this.coordinator.status(runId),
                 diagnostics: [
                   ...diagnostics,
                   {
-                    level: 'warning',
-                    code: 'change.verify-repair-required',
-                    message: lifecycle.verificationInvalidation.reason,
+                    level: 'info',
+                    code: 'change.work-current',
+                    message: 'Current lifecycle Work remains valid',
                   },
                 ],
               };
             }
+            const tasks = lifecycle.tasks ?? [];
+            if (tasks.some((task) => task.status !== 'completed')) {
+              try {
+                const approvalHash = assessment.approval?.decision?.approvalHash;
+                if (!approvalHash) throw new Error('Approved Design has no approval hash');
+                const taskSet = await this.ctx.specification.tasks(
+                  lifecycle.identity.changeId,
+                  signal,
+                );
+                const skills = await this.resolveLifecycleWorkSkills('task.implement', signal);
+                const nextBuild = createInitialBuildWork({
+                  runId,
+                  definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+                  actionSkill: skills.actionSkill,
+                  augmentationSkills: skills.augmentationSkills,
+                  taskSet,
+                  approvalHash,
+                  compositionDigest: current.composition.compositionDigest,
+                  projectConfigDigest,
+                  projectSnapshotDigest: current.projectSnapshotDigest,
+                  workspaceRepositoryId,
+                  repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
+                });
+                for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
+                  await this.coordinator.bindSkill(runId, skill);
+                }
+                const created = await this.coordinator.acceptChangeObservation(runId, {
+                  kind: 'build-task-ready',
+                  work: nextBuild.work,
+                  tasks: nextBuild.tasks,
+                });
+                await this.ctx.workExecutionAuthority.recordWorkCreated(runId, nextBuild.work);
+                return { ...created, value: await this.coordinator.status(runId) };
+              } catch (error) {
+                throw new Error(
+                  error instanceof Error ? error.message : 'Next Build Task planning failed',
+                  { cause: error },
+                );
+              }
+            }
+            try {
+              const profileId = current.trigger?.facts.verificationProfileId;
+              if (typeof profileId !== 'string' || !profileId.trim()) {
+                throw new Error('Verification Evidence Profile identity is missing');
+              }
+              const planned = await this.ctx.evidenceCoordinator.plan(profileId);
+              const skills = await this.resolveLifecycleWorkSkills('evidence.verify', signal);
+              const boundSkills = [
+                ...(current.skillUsageSnapshots ?? []),
+                skills.actionSkill,
+                ...skills.augmentationSkills,
+              ].filter(
+                (skill, index, all) =>
+                  all.findIndex(
+                    (candidate) =>
+                      candidate.name === skill.name && candidate.provider === skill.provider,
+                  ) === index,
+              );
+              const verificationInput = createVerificationInput({
+                runId,
+                tasks,
+                fingerprint: planned.fingerprint,
+                plan: planned.plan,
+                projectConfigDigest,
+                compositionDigest: current.composition.compositionDigest,
+                skills: boundSkills,
+              });
+              const verifyWork = createVerifyWork({
+                definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+                verification: verificationInput,
+                actionSkill: skills.actionSkill,
+                augmentationSkills: skills.augmentationSkills,
+                workspaceRepositoryId,
+                repositoryIds: planned.fingerprint.manifest.repositories.map(
+                  (repository) => repository.repositoryId,
+                ),
+              });
+              for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
+                await this.coordinator.bindSkill(runId, skill);
+              }
+              const created = await this.coordinator.acceptChangeObservation(runId, {
+                kind: 'build-verification-ready',
+                verificationInput,
+                work: verifyWork,
+              });
+              await this.ctx.workExecutionAuthority.recordWorkCreated(runId, verifyWork);
+              return { ...created, value: await this.coordinator.status(runId) };
+            } catch (error) {
+              return this.coordinator.acceptChangeObservation(runId, {
+                kind: 'build-verification-blocked',
+                reason:
+                  error instanceof Error ? error.message : 'Verification input preparation failed',
+                evidenceIds: [],
+              });
+            }
           }
-          if (lifecycle.phase === 'verify' || lifecycle.currentWork) {
-            return {
-              value: await this.coordinator.status(runId),
-              diagnostics: [
-                ...diagnostics,
-                {
-                  level: 'info',
-                  code: 'change.work-current',
-                  message: 'Current lifecycle Work remains valid',
-                },
-              ],
-            };
-          }
-          const tasks = lifecycle.tasks ?? [];
-          if (tasks.some((task) => task.status !== 'completed')) {
+          if (assessment.status === 'approved' && assessment.validation) {
             try {
               const approvalHash = assessment.approval?.decision?.approvalHash;
               if (!approvalHash) throw new Error('Approved Design has no approval hash');
@@ -694,213 +901,167 @@ export class WorkflowRuns extends Service {
                 lifecycle.identity.changeId,
                 signal,
               );
-              const skills = await this.resolveLifecycleWorkSkills('task.implement', signal);
-              const nextBuild = createInitialBuildWork({
-                runId,
-                definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-                actionSkill: skills.actionSkill,
-                augmentationSkills: skills.augmentationSkills,
-                taskSet,
-                approvalHash,
-                compositionDigest: current.composition.compositionDigest,
-                projectConfigDigest,
-                projectSnapshotDigest: current.projectSnapshotDigest,
-                workspaceRepositoryId,
-                repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
-              });
-              for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
-                await this.coordinator.bindSkill(runId, skill);
+              if (
+                lifecycle.identity.mode === 'fresh' &&
+                taskSet.tasks.some((task) => task.status === 'completed')
+              ) {
+                throw new Error(
+                  'Fresh Change Run cannot adopt pre-completed Specification Tasks; start a new adopt-existing generation',
+                );
               }
-              return this.coordinator.acceptChangeObservation(runId, {
-                kind: 'build-task-ready',
-                work: nextBuild.work,
-                tasks: nextBuild.tasks,
-              });
+              if (taskSet.tasks.every((task) => task.status === 'completed')) {
+                build = { tasks: structuredClone(taskSet.tasks), work: null };
+              } else {
+                const skills = await this.resolveLifecycleWorkSkills('task.implement', signal);
+                build = createInitialBuildWork({
+                  runId,
+                  definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+                  actionSkill: skills.actionSkill,
+                  augmentationSkills: skills.augmentationSkills,
+                  taskSet,
+                  approvalHash,
+                  compositionDigest: current.composition.compositionDigest,
+                  projectConfigDigest,
+                  projectSnapshotDigest: current.projectSnapshotDigest,
+                  workspaceRepositoryId,
+                  repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
+                });
+                for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
+                  await this.coordinator.bindSkill(runId, skill);
+                }
+              }
             } catch (error) {
-              throw new Error(
-                error instanceof Error ? error.message : 'Next Build Task planning failed',
-                { cause: error },
-              );
+              assessment = {
+                status: 'blocked',
+                reason: error instanceof Error ? error.message : 'Build Task planning failed',
+                evidenceDigests: assessment.evidenceDigests,
+                validation: assessment.validation,
+                ...(assessment.snapshot ? { snapshot: assessment.snapshot } : {}),
+                ...(assessment.approval ? { approval: assessment.approval } : {}),
+              };
             }
           }
-          try {
-            const profileId = current.trigger?.facts.verificationProfileId;
-            if (typeof profileId !== 'string' || !profileId.trim()) {
-              throw new Error('Verification Evidence Profile identity is missing');
-            }
-            const planned = await this.ctx.evidenceCoordinator.plan(profileId);
-            const skills = await this.resolveLifecycleWorkSkills('evidence.verify', signal);
-            const boundSkills = [
-              ...(current.skillUsageSnapshots ?? []),
-              skills.actionSkill,
-              ...skills.augmentationSkills,
-            ].filter(
-              (skill, index, all) =>
-                all.findIndex(
-                  (candidate) =>
-                    candidate.name === skill.name && candidate.provider === skill.provider,
-                ) === index,
-            );
-            const verificationInput = createVerificationInput({
-              runId,
-              tasks,
-              fingerprint: planned.fingerprint,
-              plan: planned.plan,
-              projectConfigDigest,
-              compositionDigest: current.composition.compositionDigest,
-              skills: boundSkills,
-            });
-            const verifyWork = createVerifyWork({
-              definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-              verification: verificationInput,
-              actionSkill: skills.actionSkill,
-              augmentationSkills: skills.augmentationSkills,
-              workspaceRepositoryId,
-              repositoryIds: planned.fingerprint.manifest.repositories.map(
-                (repository) => repository.repositoryId,
-              ),
-            });
-            for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
-              await this.coordinator.bindSkill(runId, skill);
-            }
-            return this.coordinator.acceptChangeObservation(runId, {
-              kind: 'build-verification-ready',
-              verificationInput,
-              work: verifyWork,
-            });
-          } catch (error) {
-            return this.coordinator.acceptChangeObservation(runId, {
-              kind: 'build-verification-blocked',
-              reason:
-                error instanceof Error ? error.message : 'Verification input preparation failed',
-              evidenceIds: [],
+          if (assessment.status === 'approved' && assessment.validation && build) {
+            await this.coordinator.bindSpecification(runId, {
+              schemaVersion: 1,
+              changeId: assessment.validation.changeId,
+              provider: structuredClone(assessment.validation.provider),
+              validationDigest: assessment.validation.validationDigest,
             });
           }
-        }
-        if (assessment.status === 'approved' && assessment.validation) {
-          try {
-            const approvalHash = assessment.approval?.decision?.approvalHash;
-            if (!approvalHash) throw new Error('Approved Design has no approval hash');
-            const taskSet = await this.ctx.specification.tasks(lifecycle.identity.changeId, signal);
+          const inputDigest =
+            assessment.snapshot?.digest ??
+            assessment.validation?.validationDigest ??
+            (`sha256:${createHash('sha256')
+              .update(canonicalJson({ reason: assessment.reason }))
+              .digest('hex')}` as const);
+          if (
+            lifecycle.phase === 'design' &&
+            lifecycle.currentWork?.kind === 'specification.plan' &&
+            assessment.status !== 'blocked'
+          ) {
+            const execution = current.workExecution;
             if (
-              lifecycle.identity.mode === 'fresh' &&
-              taskSet.tasks.some(
-                (task) =>
-                  task.status === 'completed' && task.completion?.source === 'imported-claim',
-              )
+              execution?.status !== 'outcome' ||
+              execution.actionOutcome?.status !== 'succeeded'
             ) {
-              throw new Error(
-                'Fresh Change Run cannot adopt pre-completed Specification Tasks; start a new adopt-existing generation',
-              );
+              throw new Error('Design Provider validation requires a succeeded Host Outcome');
             }
-            if (taskSet.tasks.every((task) => task.status === 'completed')) {
-              build = { tasks: structuredClone(taskSet.tasks), work: null };
-            } else {
-              const skills = await this.resolveLifecycleWorkSkills('task.implement', signal);
-              build = createInitialBuildWork({
-                runId,
-                definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-                actionSkill: skills.actionSkill,
-                augmentationSkills: skills.augmentationSkills,
-                taskSet,
-                approvalHash,
-                compositionDigest: current.composition.compositionDigest,
-                projectConfigDigest,
-                projectSnapshotDigest: current.projectSnapshotDigest,
-                workspaceRepositoryId,
-                repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
-              });
-              for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
-                await this.coordinator.bindSkill(runId, skill);
-              }
+            const validator = this.ctx.lifecycleValidators.resolve(
+              lifecycle.currentWork.validatorProfile.id,
+            );
+            const validation = await validator.validate({
+              profileId: lifecycle.currentWork.validatorProfile.id,
+              work: lifecycle.currentWork,
+              fact: {
+                validationDigest: assessment.validation?.validationDigest,
+                result: assessment.status,
+              },
+            });
+            if (!validation.accepted) {
+              throw new Error(`Design Validator rejected: ${validation.diagnostic}`);
             }
-          } catch (error) {
-            assessment = {
-              status: 'blocked',
-              reason: error instanceof Error ? error.message : 'Build Task planning failed',
-              evidenceDigests: assessment.evidenceDigests,
-              validation: assessment.validation,
-              ...(assessment.snapshot ? { snapshot: assessment.snapshot } : {}),
-              ...(assessment.approval ? { approval: assessment.approval } : {}),
-            };
+            await this.ctx.workExecutionAuthority.markValidated({
+              intent: await this.ctx.workExecutionAuthority.loadIntent(runId),
+              validatorId: lifecycle.currentWork.validatorProfile.id,
+              continuation: assessment.status === 'waiting' ? 'ask' : 'execute',
+            });
           }
-        }
-        if (assessment.status === 'approved' && assessment.validation && build) {
-          await this.coordinator.bindSpecification(runId, {
-            schemaVersion: 1,
-            changeId: assessment.validation.changeId,
-            provider: structuredClone(assessment.validation.provider),
-            validationDigest: assessment.validation.validationDigest,
+          const advanced = await this.coordinator.acceptChangeObservation(runId, {
+            kind: 'design-gate',
+            result: assessment.status,
+            reason: assessment.reason,
+            evidenceIds: assessment.evidenceDigests,
+            inputDigest,
+            ...(assessment.status === 'waiting' && assessment.approval
+              ? {
+                  requestId: assessment.approval.decisionRequest.requestId,
+                  proposalDigest: assessment.approval.decisionRequest.proposalHash,
+                }
+              : {}),
+            ...(assessment.status === 'approved' && build
+              ? { tasks: build.tasks, ...(build.work ? { work: build.work } : {}) }
+              : {}),
           });
-        }
-        const inputDigest =
-          assessment.snapshot?.digest ??
-          assessment.validation?.validationDigest ??
-          (`sha256:${createHash('sha256')
-            .update(canonicalJson({ reason: assessment.reason }))
-            .digest('hex')}` as const);
-        if (
-          lifecycle.phase === 'design' &&
-          lifecycle.currentWork?.kind === 'specification.plan' &&
-          assessment.status !== 'blocked'
-        ) {
-          const execution = current.workExecution;
-          if (execution?.status !== 'outcome' || execution.actionOutcome?.status !== 'succeeded') {
-            throw new Error('Design Provider validation requires a succeeded Host Outcome');
+          if (advanced.value.state.changeLifecycle?.currentWork) {
+            await this.ctx.workExecutionAuthority.recordWorkCreated(
+              runId,
+              advanced.value.state.changeLifecycle.currentWork,
+            );
           }
-          const validator = this.ctx.lifecycleValidators.resolve(
-            lifecycle.currentWork.validatorProfile.id,
-          );
-          const validation = await validator.validate({
-            profileId: lifecycle.currentWork.validatorProfile.id,
-            work: lifecycle.currentWork,
-            fact: {
-              validationDigest: assessment.validation?.validationDigest,
-              result: assessment.status,
-            },
-          });
-          if (!validation.accepted) {
-            throw new Error(`Design Validator rejected: ${validation.diagnostic}`);
-          }
-          await this.ctx.workExecutionAuthority.markValidated({
-            intent: await this.ctx.workExecutionAuthority.loadIntent(runId),
-            validatorId: lifecycle.currentWork.validatorProfile.id,
-            continuation: assessment.status === 'waiting' ? 'ask' : 'execute',
-          });
+          return {
+            ...advanced,
+            diagnostics: [...diagnostics, ...advanced.diagnostics],
+          };
         }
-        const advanced = await this.coordinator.acceptChangeObservation(runId, {
-          kind: 'design-gate',
-          result: assessment.status,
-          reason: assessment.reason,
-          evidenceIds: assessment.evidenceDigests,
-          inputDigest,
-          ...(assessment.status === 'waiting' && assessment.approval
-            ? {
-                requestId: assessment.approval.decisionRequest.requestId,
-                proposalDigest: assessment.approval.decisionRequest.proposalHash,
-              }
-            : {}),
-          ...(assessment.status === 'approved' && build
-            ? { tasks: build.tasks, ...(build.work ? { work: build.work } : {}) }
-            : {}),
-        });
+        const skillCompatibility = await this.assertSkillCompatibility(runId, signal);
+        const specificationCompatibility = await this.assertSpecificationCompatibility(runId);
+        const result = await this.coordinator.next(runId, confirmations);
+        const action = result.value.nextAction;
+        if (action && result.value.state.pendingActionId === action.id) {
+          await this.ctx.actionDispatcher.propose(runId, action, result.value.state.composition);
+        }
         return {
-          ...advanced,
-          diagnostics: [...diagnostics, ...advanced.diagnostics],
+          ...result,
+          value: { ...result.value, skillCompatibility, specificationCompatibility },
         };
-      }
-      const skillCompatibility = await this.assertSkillCompatibility(runId, signal);
-      const specificationCompatibility = await this.assertSpecificationCompatibility(runId);
-      const result = await this.coordinator.next(runId, confirmations);
-      const action = result.value.nextAction;
-      if (action && result.value.state.pendingActionId === action.id) {
-        await this.ctx.actionDispatcher.propose(runId, action, result.value.state.composition);
-      }
-      return {
-        ...result,
-        value: { ...result.value, skillCompatibility, specificationCompatibility },
-      };
-    });
+      },
+    );
+    const afterNext = await this.ctx.runStore.loadRun(runId);
+    const beforeWait = beforeNext.changeLifecycle?.waitCondition;
+    const afterWait = afterNext.changeLifecycle?.waitCondition;
+    if (!beforeWait && afterWait) {
+      await this.ctx.workExecutionAuthority.recordWaitBoundary({
+        runId,
+        waitId: afterWait.waitId,
+        stage: 'started',
+        kind: afterWait.kind,
+        reason: afterWait.reason,
+      });
+    } else if (beforeWait && !afterWait) {
+      await this.ctx.workExecutionAuthority.recordWaitBoundary({
+        runId,
+        waitId: beforeWait.waitId,
+        stage: 'ended',
+        kind: beforeWait.kind,
+        reason: beforeWait.reason,
+      });
+    }
+    const continuation = await this.ctx.workExecutionAuthority.recovery(runId);
+    await this.ctx.workExecutionAuthority.recordContinuation(runId, continuation);
+    return {
+      ...result,
+      value: {
+        ...(await this.coordinator.status(runId)),
+        ...(result.value.skillCompatibility
+          ? { skillCompatibility: result.value.skillCompatibility }
+          : {}),
+        ...(result.value.specificationCompatibility
+          ? { specificationCompatibility: result.value.specificationCompatibility }
+          : {}),
+        continuation,
+      },
+    };
   }
 
   async record(
@@ -995,6 +1156,14 @@ export class WorkflowRuns extends Service {
           value: { validation, run: await this.coordinator.status(input.runId) },
           diagnostics: [],
         };
+      }
+      if (
+        state.workExecution?.status !== 'outcome' ||
+        state.workExecution.hostOutcome?.status !== 'succeeded' ||
+        state.workExecution.hostOutcome.invocationId !==
+          state.workExecution.hostInvocation?.invocationId
+      ) {
+        throw new Error('Build Task validation requires a succeeded managed Host Outcome');
       }
       const completed = await this.ctx.specification.completeTask({
         changeId: lifecycle.identity.changeId,
@@ -1216,11 +1385,13 @@ export class WorkflowRuns extends Service {
         repositoryIds,
       });
       await this.coordinator.bindSkill(input.runId, archiveSkills.actionSkill);
-      return this.coordinator.acceptChangeObservation(input.runId, {
+      const created = await this.coordinator.acceptChangeObservation(input.runId, {
         kind: 'archive-preflight-ready',
         archiveInput,
         work,
       });
+      await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, work);
+      return { ...created, value: await this.coordinator.status(input.runId) };
     });
   }
 
@@ -1245,6 +1416,39 @@ export class WorkflowRuns extends Service {
       if (deliveryPolicyDigest(input.policy) !== archive.publicationPolicyDigest) {
         throw new Error('Archive Delivery policy changed after Work planning');
       }
+      const currentWork = lifecycle.currentWork!;
+      const execution = state.workExecution;
+      if (
+        !execution ||
+        execution.workId !== currentWork.workId ||
+        !['outcome', 'validated'].includes(execution.status) ||
+        execution.actionOutcome?.status !== 'succeeded' ||
+        execution.hostOutcome?.status !== 'succeeded' ||
+        execution.hostOutcome.invocationId !== execution.hostInvocation?.invocationId ||
+        !execution.receiptId
+      ) {
+        throw new Error('Archive Work requires a succeeded managed Host Outcome');
+      }
+      if (execution.status === 'outcome') {
+        const validator = this.ctx.lifecycleValidators.resolve(currentWork.validatorProfile.id);
+        const validation = await validator.validate({
+          profileId: currentWork.validatorProfile.id,
+          work: currentWork,
+          fact: {
+            receiptId: execution.receiptId,
+            hostInvocationId: execution.hostInvocation.invocationId,
+            result: 'host-succeeded',
+          },
+        });
+        if (!validation.accepted) {
+          throw new Error(`Archive Validator rejected: ${validation.diagnostic}`);
+        }
+        await this.ctx.workExecutionAuthority.markValidated({
+          intent: await this.ctx.workExecutionAuthority.loadIntent(input.runId),
+          validatorId: currentWork.validatorProfile.id,
+          continuation: 'execute',
+        });
+      }
       const targetBaselineDigest = `sha256:${createHash('sha256')
         .update(archive.changeBranch.remoteOid)
         .digest('hex')}` as const;
@@ -1267,11 +1471,21 @@ export class WorkflowRuns extends Service {
           repositoryIds: input.project.repositories.map((repository) => repository.id),
         });
         await this.coordinator.bindSkill(input.runId, skills.actionSkill);
-        await this.coordinator.acceptChangeObservation(input.runId, {
+        const advanced = await this.coordinator.acceptChangeObservation(input.runId, {
           kind: 'archive-specification-closed',
           closure,
           work: publishWork,
         });
+        await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, publishWork);
+        return {
+          value: {
+            stage: 'specification-closed',
+            publication: null,
+            receipt: null,
+            run: await this.coordinator.status(input.runId),
+          },
+          diagnostics: advanced.diagnostics,
+        };
       }
       if (!closure) {
         throw new Error('Archive Delivery Work is missing its Specification Closure Receipt');
@@ -1285,25 +1499,18 @@ export class WorkflowRuns extends Service {
           ? { businessSplitReason: structuredClone(archive.businessSplitReason) }
           : {}),
       };
-      const claim = await this.ctx.workDispatcher.claim({
-        runId: input.runId,
-        adapter: 'git',
-        ...(input.attempt ? { attempt: input.attempt } : {}),
-        executor: input.executor,
-      });
-      let publication: ArchivePublicationResult;
+      const publication = await this.ctx.delivery.publishArchive(
+        {
+          project: input.project,
+          intent,
+          policy: input.policy,
+          reportContents: `verification-report:sha256:${archive.verificationReport.sha256}`,
+          evidenceBundleIds: [archive.evidenceBundleId],
+        },
+        signal,
+      );
       let receipt: PublicationReceipt;
-      try {
-        publication = await this.ctx.delivery.publishArchive(
-          {
-            project: input.project,
-            intent,
-            policy: input.policy,
-            reportContents: `verification-report:sha256:${archive.verificationReport.sha256}`,
-            evidenceBundleIds: [archive.evidenceBundleId],
-          },
-          signal,
-        );
+      {
         const verifiedAt = new Date().toISOString();
         const businessItems: PublicationReceiptItem[] = archive.businessDeliveries.map(
           (delivery) => {
@@ -1366,25 +1573,14 @@ export class WorkflowRuns extends Service {
           specificationClosure: { closureId: closure.closureId, planDigest: closure.planDigest },
           items: [...businessItems, specification.item],
         });
-      } catch (error) {
-        await this.ctx.workDispatcher.acceptOutcome(
-          this.ctx.workDispatcher.outcome(
-            claim.intent,
-            'failed',
-            error instanceof Error ? error.message : String(error),
-          ),
-        );
-        throw error;
       }
-      await this.ctx.workDispatcher.acceptOutcome(
-        this.ctx.workDispatcher.outcome(claim.intent, 'succeeded', 'Archive publication completed'),
-      );
       const advanced = await this.coordinator.acceptChangeObservation(input.runId, {
         kind: 'archive-publication-receipt-accepted',
         receipt,
       });
       return {
         value: {
+          stage: 'published',
           publication,
           receipt,
           run: advanced.value,
@@ -1402,15 +1598,73 @@ export class WorkflowRuns extends Service {
     signal?: AbortSignal,
   ): Promise<RuntimeResult<ResumeView>> {
     return this.operations.run({ cancellable: false, signal }, async () => {
-      await this.assertSkillCompatibility(options.runId, signal);
-      await this.assertSpecificationCompatibility(options.runId);
+      const [skillCompatibility, specificationCompatibility, previousProjectSnapshot] =
+        await Promise.all([
+          this.skillCompatibility(options.runId, signal),
+          this.specificationCompatibility(options.runId),
+          this.ctx.runStore.loadProjectSnapshot(options.runId),
+        ]);
+      if (
+        skillCompatibility.status === 'drifted' ||
+        specificationCompatibility.status === 'drifted'
+      ) {
+        const reconciliation = reconcileProjectSnapshots(
+          previousProjectSnapshot,
+          options.currentProjectSnapshot,
+        );
+        const status = await this.coordinator.status(options.runId);
+        return {
+          value: {
+            ...status,
+            skillCompatibility,
+            specificationCompatibility,
+            reconciliation,
+            execution: {
+              schemaVersion: 1,
+              continuation: 'reconcile',
+              workId: status.state.workExecution?.workId ?? null,
+              attempt: status.state.workExecution?.attempt ?? null,
+              reason: reconciliation.changed ? 'project-drift' : 'content-missing-or-corrupt',
+            },
+          },
+          diagnostics: [
+            {
+              level: 'error',
+              code: 'runtime.migration-required',
+              message:
+                skillCompatibility.status === 'drifted'
+                  ? skillCompatibility.reason
+                  : specificationCompatibility.reason,
+            },
+          ],
+        };
+      }
       const result = await this.coordinator.resume(options);
+      let execution = await this.ctx.workExecutionAuthority.recovery(options.runId);
+      if (result.value.reconciliation.changed) {
+        execution = { ...execution, continuation: 'reconcile', reason: 'project-drift' };
+      } else if (
+        execution.continuation === 'execute' &&
+        result.value.state.workExecution &&
+        ['claimed', 'context-delivered'].includes(result.value.state.workExecution.status)
+      ) {
+        try {
+          await this.ctx.workDispatcher.resumeClaim(options.runId);
+        } catch {
+          execution = {
+            ...execution,
+            continuation: 'reconcile',
+            reason: 'content-missing-or-corrupt',
+          };
+        }
+      }
       return {
         ...result,
         value: {
           ...result.value,
-          skillCompatibility: await this.skillCompatibility(options.runId, signal),
-          specificationCompatibility: await this.specificationCompatibility(options.runId),
+          skillCompatibility,
+          specificationCompatibility,
+          execution,
         },
       };
     });

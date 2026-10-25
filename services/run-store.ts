@@ -9,6 +9,7 @@ import type {
   TrajectoryEvent,
 } from '../domains/trajectory/types.js';
 import type { WorkflowPackage } from '../domains/workflow-contract/types.js';
+import type { AgentCoordinationCheckpoint } from '../domains/work-execution/types.js';
 
 export abstract class RunStore extends Service implements RunStorePort {
   protected abstract readonly port: RunStorePort;
@@ -89,6 +90,14 @@ export abstract class RunStore extends Service implements RunStorePort {
 
   inspect(runId: string): Promise<RunStoreInspection> {
     return this.port.inspect(runId);
+  }
+
+  readCoordinationCheckpoint(runId: string): Promise<AgentCoordinationCheckpoint | null> {
+    return this.port.readCoordinationCheckpoint(runId);
+  }
+
+  writeCoordinationCheckpoint(checkpoint: AgentCoordinationCheckpoint): Promise<void> {
+    return this.port.writeCoordinationCheckpoint(checkpoint);
   }
 
   evidenceRetentionState(): Promise<{ deferred: boolean; acceptedBundleIds: string[] }> {

@@ -23,6 +23,7 @@ import {
   type CompleteSpecificationTaskResult,
   type SpecificationFollowUpChange,
   type SpecificationFollowUpChangeInput,
+  type SpecificationPhaseContext,
 } from '../../domains/specification/types.js';
 import {
   completeSpecificationTaskDocument,
@@ -30,12 +31,13 @@ import {
 } from '../../domains/specification/tasks.js';
 import { createSpecificationPlanningManifest } from '../../domains/specification/planning-manifest.js';
 import { createSpecificationPlanningGuidance } from '../../domains/specification/planning-guidance.js';
-import { atomicWriteText } from '../filesystem/atomic-write.js';
+import { atomicWriteJson, atomicWriteText } from '../filesystem/atomic-write.js';
 import { GitSpecificationCheckoutManager } from '../git/specification-checkout.js';
 import { execute } from '../process/execute.js';
 import {
   Specification,
   createSpecificationPhaseContext,
+  specificationPhaseArtifacts,
   type PrepareSpecificationClosureInput,
   type SpecificationRoot,
   type SpecificationWorkspace,
@@ -211,6 +213,10 @@ async function exists(file: string): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+async function readJsonFile<T>(file: string): Promise<T> {
+  return JSON.parse(await readFile(file, 'utf8')) as T;
 }
 
 async function tree(root: string, prefix = ''): Promise<Map<string, string>> {
@@ -391,6 +397,24 @@ export class OpenSpecProvider extends Specification {
         },
       });
     }
+    if (input.workId) {
+      const receiptFile = this.taskReceiptFile(workspace, input.changeId);
+      const current = (await exists(receiptFile))
+        ? await readJsonFile<{
+            schemaVersion: 1;
+            receipts: Array<{
+              taskId: string;
+              taskRevision: `sha256:${string}`;
+              workId: string;
+            }>;
+          }>(receiptFile)
+        : { schemaVersion: 1 as const, receipts: [] };
+      const receipts = [
+        ...current.receipts.filter((receipt) => receipt.taskId !== input.taskId),
+        { taskId: input.taskId, taskRevision: input.taskRevision, workId: input.workId },
+      ].sort((left, right) => left.taskId.localeCompare(right.taskId));
+      await atomicWriteJson(receiptFile, { schemaVersion: 1, receipts });
+    }
     return {
       schemaVersion: 1,
       changeId: input.changeId,
@@ -430,7 +454,37 @@ export class OpenSpecProvider extends Specification {
     ) {
       throw new Error('OpenSpec Tasks path escapes the workspace');
     }
-    return parseSpecificationTasks(changeId, await readFile(absolute, 'utf8'));
+    const tasks = parseSpecificationTasks(changeId, await readFile(absolute, 'utf8'));
+    const receiptFile = this.taskReceiptFile(workspace, changeId);
+    if (!(await exists(receiptFile))) return tasks;
+    const saved = await readJsonFile<{
+      schemaVersion: 1;
+      receipts: Array<{
+        taskId: string;
+        taskRevision: `sha256:${string}`;
+        workId: string;
+      }>;
+    }>(receiptFile);
+    if (saved.schemaVersion !== 1 || !Array.isArray(saved.receipts)) {
+      throw new Error('Specification Task completion Receipt store is invalid');
+    }
+    return {
+      ...tasks,
+      tasks: tasks.tasks.map((task) => {
+        const receipt = saved.receipts.find(
+          (candidate) =>
+            candidate.taskId === task.taskId && candidate.taskRevision === task.taskRevision,
+        );
+        return task.status === 'completed' && receipt
+          ? { ...task, completion: { source: 'runtime-work' as const, workId: receipt.workId } }
+          : task;
+      }),
+    };
+  }
+
+  private taskReceiptFile(workspace: string, changeId: string): string {
+    const name = createHash('sha256').update(changeId).digest('hex');
+    return path.join(workspace, '.repoctopus', 'specification-task-receipts', `${name}.json`);
   }
 
   override async planningInstructions(
@@ -445,6 +499,51 @@ export class OpenSpecProvider extends Specification {
     signal?: AbortSignal,
   ): Promise<SpecificationPlanningContext> {
     return this.planningContextAt(this.workspace, changeId, signal);
+  }
+
+  override async phaseContext(
+    phase: SpecificationPhaseContext['phase'],
+    changeId: string,
+    signal?: AbortSignal,
+  ): Promise<SpecificationPhaseContext> {
+    return this.phaseContextAt(this.workspace, phase, changeId, signal);
+  }
+
+  private async phaseContextAt(
+    workspace: string,
+    phase: SpecificationPhaseContext['phase'],
+    changeId: string,
+    signal?: AbortSignal,
+  ): Promise<SpecificationPhaseContext> {
+    try {
+      const planning = await this.planningContextAt(workspace, changeId, signal);
+      return createSpecificationPhaseContext({
+        phase,
+        provider: this.identity(),
+        artifacts: specificationPhaseArtifacts(phase, planning.artifacts),
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (phase !== 'open' || !/change .* not found|no changes exist/iu.test(message)) throw error;
+      const instruction =
+        'Bootstrap the named change through the configured OpenSpec Store, then write only the proposal artifact required by this Work.';
+      const template =
+        'Use the proposal template generated by the configured OpenSpec schema; do not create design, specs, tasks, or additional planning artifacts in Open.';
+      return createSpecificationPhaseContext({
+        phase,
+        provider: this.identity(),
+        artifacts: [
+          {
+            id: 'proposal',
+            kind: 'proposal',
+            instruction,
+            template,
+            instructionDigest: sha256(instruction),
+            templateDigest: sha256(template),
+          },
+        ],
+      });
+    }
   }
 
   private async planningInstructionsAt(
@@ -544,10 +643,13 @@ export class OpenSpecProvider extends Specification {
           async ([artifactId, artifact]): Promise<SpecificationArtifact | undefined> => {
             const kind = artifactKind(artifactId);
             if (!kind) return undefined;
+            const outputs = artifact.existingOutputPaths;
             const digest =
               kind === 'tasks'
-                ? (await this.taskSetFromPaths(workspace, id, artifact.existingOutputPaths)).digest
-                : await artifactDigest(workspace, artifact.existingOutputPaths);
+                ? Array.isArray(outputs) && outputs.length === 0
+                  ? null
+                  : (await this.taskSetFromPaths(workspace, id, outputs)).digest
+                : await artifactDigest(workspace, outputs);
             return {
               id: artifactId,
               kind,
@@ -1132,15 +1234,8 @@ ${references}
       planningInstructions: (changeId, signal) =>
         this.planningInstructionsAt(workspace, changeId, signal),
       planningContext: (changeId, signal) => this.planningContextAt(workspace, changeId, signal),
-      phaseContext: async (phase, changeId, signal) =>
-        createSpecificationPhaseContext({
-          phase,
-          provider: this.identity(),
-          artifacts:
-            phase === 'open' || phase === 'design'
-              ? (await this.planningContextAt(workspace, changeId, signal)).artifacts
-              : [],
-        }),
+      phaseContext: (phase, changeId, signal) =>
+        this.phaseContextAt(workspace, phase, changeId, signal),
       planningGuidance: async (changeId, signal) =>
         createSpecificationPlanningGuidance(
           await this.planningInstructionsAt(workspace, changeId, signal),

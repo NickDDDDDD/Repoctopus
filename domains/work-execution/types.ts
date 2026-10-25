@@ -7,6 +7,43 @@ import { canonicalJson } from '../workflow-contract/canonical.js';
 
 export type WorkContinuationKind = 'execute' | 'ask' | 'wait' | 'reconcile' | 'done';
 
+export interface WorkExecutionRecovery {
+  schemaVersion: 1;
+  continuation: WorkContinuationKind;
+  workId: string | null;
+  attempt: number | null;
+  reason:
+    | 'terminal'
+    | 'human-decision'
+    | 'work-unclaimed'
+    | 'claim-redelivery'
+    | 'host-active'
+    | 'host-result-unknown'
+    | 'host-not-executed'
+    | 'work-failed'
+    | 'validator-pending'
+    | 'transition-pending'
+    | 'content-missing-or-corrupt'
+    | 'project-drift';
+}
+
+export interface AgentCoordinationCheckpoint {
+  schemaVersion: 1;
+  runId: string;
+  workId: string;
+  attempt: number;
+  observedStateVersion: number;
+  currentTask: string | null;
+  observedPaths: readonly string[];
+  progress: readonly string[];
+  updatedAt: string;
+}
+
+export interface AgentCoordinationCheckpointView {
+  status: 'missing' | 'current' | 'stale';
+  checkpoint: AgentCoordinationCheckpoint | null;
+}
+
 export interface WorkExecutionPacketIdentity {
   schemaVersion: 1;
   packetId: `sha256:${string}`;
@@ -85,6 +122,22 @@ export interface WorkExecutionHostOutcome {
   completedAt: string;
 }
 
+export type WorkExecutionHostReconciliation =
+  | { status: 'executed'; outcome: WorkExecutionHostOutcome }
+  | { status: 'not-executed'; reason: string }
+  | { status: 'unknown'; reason: string };
+
+export interface ExternalWorkExecutionOutcome {
+  schemaVersion: 1;
+  runId: string;
+  invocationId: string;
+  hostId: string;
+  packetDigest: `sha256:${string}`;
+  status: WorkExecutionHostOutcome['status'];
+  summary: string;
+  consumedLayerDigests: readonly `sha256:${string}`[];
+}
+
 export interface WorkExecutionCheckpoint {
   schemaVersion: 1;
   workId: string;
@@ -93,7 +146,14 @@ export interface WorkExecutionCheckpoint {
   claimToken: `sha256:${string}`;
   inputDigest: `sha256:${string}`;
   packet: WorkExecutionPacketIdentity;
-  status: 'claimed' | 'context-delivered' | 'invoking' | 'unknown' | 'outcome' | 'validated';
+  status:
+    | 'claimed'
+    | 'context-delivered'
+    | 'invoking'
+    | 'unknown'
+    | 'not-executed'
+    | 'outcome'
+    | 'validated';
   hostInvocation?: WorkExecutionHostInvocation;
   hostOutcome?: WorkExecutionHostOutcome;
   actionOutcome?: ClaimedActionOutcome;
@@ -115,9 +175,7 @@ export interface WorkExecutionHost {
     packet: WorkExecutionPacket,
     session: WorkExecutionSessionIdentity,
   ): Promise<WorkExecutionHostOutcome>;
-  reconcile?(
-    invocation: WorkExecutionHostInvocation,
-  ): Promise<'executed' | 'not-executed' | 'unknown'>;
+  reconcile?(invocation: WorkExecutionHostInvocation): Promise<WorkExecutionHostReconciliation>;
 }
 
 function sha256(value: string): `sha256:${string}` {

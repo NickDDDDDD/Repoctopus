@@ -2,10 +2,17 @@ import { createHash } from 'node:crypto';
 
 import { Service, type Context } from '@deepseek-ai/cordis';
 
-import type { WorkClaimRequest, WorkOutcomeAcceptance } from '../domains/action/types.js';
 import type {
+  WorkClaimRequest,
+  WorkExecutorIdentity,
+  WorkOutcomeAcceptance,
+} from '../domains/action/types.js';
+import type {
+  ExternalWorkExecutionOutcome,
   WorkExecutionHostInvocation,
+  WorkExecutionHostIdentity,
   WorkExecutionHostOutcome,
+  WorkClaimResult,
 } from '../domains/work-execution/types.js';
 
 function invocationId(packetDigest: string, hostId: string): string {
@@ -20,12 +27,17 @@ export interface ManagedWorkExecutionResult {
   acceptance: WorkOutcomeAcceptance | null;
 }
 
+export interface ExternalWorkClaimResult extends WorkClaimResult {
+  invocation: WorkExecutionHostInvocation;
+}
+
 export class ManagedWorkExecutor extends Service {
   static inject = [
     'workDispatcher',
     'workExecutionAuthority',
     'workExecutionHosts',
     'workExecutionSessions',
+    'runStore',
   ];
 
   constructor(context: Context) {
@@ -99,6 +111,131 @@ export class ManagedWorkExecutor extends Service {
       ),
     );
     return { invocation, hostOutcome, acceptance };
+  }
+
+  async claimExternal(request: WorkClaimRequest): Promise<ExternalWorkClaimResult> {
+    const claim = await this.ctx.workDispatcher.claim(request);
+    const host = this.externalHostIdentity(
+      request.executor,
+      claim.packet.hostRequirement.capabilities,
+    );
+    const invocation: WorkExecutionHostInvocation = {
+      schemaVersion: 1,
+      invocationId: invocationId(claim.packet.identity.packetDigest, host.id),
+      host,
+      packet: structuredClone(claim.packet.identity),
+      startedAt: new Date().toISOString(),
+    };
+    await this.ctx.workExecutionAuthority.markHostStarted(claim.intent, invocation);
+    return { ...claim, invocation };
+  }
+
+  async acceptExternalOutcome(
+    input: ExternalWorkExecutionOutcome,
+  ): Promise<ManagedWorkExecutionResult> {
+    const intent = await this.ctx.workExecutionAuthority.loadIntent(input.runId);
+    const state = await this.ctx.runStore.loadRun(input.runId);
+    const invocation = state.workExecution?.hostInvocation;
+    if (
+      !invocation ||
+      invocation.invocationId !== input.invocationId ||
+      invocation.host.id !== input.hostId ||
+      invocation.packet.packetDigest !== input.packetDigest ||
+      invocation.packet.packetDigest !== state.workExecution?.packet.packetDigest
+    ) {
+      throw new Error('External Host Outcome does not match the authoritative invocation');
+    }
+    const hostOutcome: WorkExecutionHostOutcome = {
+      schemaVersion: 1,
+      invocationId: input.invocationId,
+      hostId: input.hostId,
+      packetDigest: input.packetDigest,
+      status: input.status,
+      summary: input.summary,
+      consumedLayerDigests: [...new Set(input.consumedLayerDigests)].sort(),
+      completedAt: new Date().toISOString(),
+    };
+    await this.ctx.workExecutionAuthority.markHostCompleted(intent, hostOutcome);
+    const packet = await this.ctx.workDispatcher.resumeClaim(input.runId);
+    await this.ctx.workExecutionAuthority.recordSkillFacts(
+      packet.packet,
+      'consumed',
+      hostOutcome.consumedLayerDigests,
+    );
+    if (hostOutcome.status === 'unknown') {
+      await this.ctx.workExecutionAuthority.markHostUnknown(intent, input.summary);
+      return { invocation, hostOutcome, acceptance: null };
+    }
+    const acceptance = await this.ctx.workDispatcher.acceptOutcome(
+      this.ctx.workDispatcher.outcome(
+        intent,
+        hostOutcome.status === 'succeeded' ? 'succeeded' : 'failed',
+        input.summary,
+      ),
+    );
+    return { invocation, hostOutcome, acceptance };
+  }
+
+  async reconcile(runId: string): Promise<ManagedWorkExecutionResult | null> {
+    const state = await this.ctx.runStore.loadRun(runId);
+    const checkpoint = state.workExecution;
+    const invocation = checkpoint?.hostInvocation;
+    if (!checkpoint || !invocation || !['invoking', 'unknown'].includes(checkpoint.status)) {
+      throw new Error('Run has no Host invocation requiring reconciliation');
+    }
+    const host = this.ctx.workExecutionHosts.get(invocation.host.id);
+    if (!host?.reconcile || !invocation.host.reconcile) return null;
+    const resolution = await host.reconcile(invocation);
+    const intent = await this.ctx.workExecutionAuthority.loadIntent(runId);
+    if (resolution.status === 'unknown') {
+      await this.ctx.workExecutionAuthority.markHostUnknown(intent, resolution.reason);
+      return null;
+    }
+    if (resolution.status === 'not-executed') {
+      await this.ctx.workExecutionAuthority.markHostNotExecuted(intent, resolution.reason);
+      return null;
+    }
+    const outcome = resolution.outcome;
+    if (
+      outcome.invocationId !== invocation.invocationId ||
+      outcome.hostId !== invocation.host.id ||
+      outcome.packetDigest !== invocation.packet.packetDigest
+    ) {
+      throw new Error('Reconciled Host Outcome identity mismatch');
+    }
+    await this.ctx.workExecutionAuthority.markHostCompleted(intent, outcome);
+    const packet = await this.ctx.workDispatcher.resumeClaim(runId);
+    await this.ctx.workExecutionAuthority.recordSkillFacts(
+      packet.packet,
+      'consumed',
+      outcome.consumedLayerDigests,
+    );
+    const acceptance = await this.ctx.workDispatcher.acceptOutcome(
+      this.ctx.workDispatcher.outcome(
+        intent,
+        outcome.status === 'succeeded' ? 'succeeded' : 'failed',
+        outcome.summary,
+      ),
+    );
+    return { invocation, hostOutcome: outcome, acceptance };
+  }
+
+  private externalHostIdentity(
+    executor: WorkExecutorIdentity,
+    capabilities: readonly string[],
+  ): WorkExecutionHostIdentity {
+    const id = `external:${executor.source}:${executor.runnerId}`;
+    return {
+      schemaVersion: 1,
+      id,
+      version: '1',
+      codeDigest: `sha256:${createHash('sha256')
+        .update(`${executor.source}\0${executor.runnerId}`)
+        .digest('hex')}`,
+      capabilities: [...new Set(capabilities)].sort(),
+      actionKinds: ['agent'],
+      reconcile: false,
+    };
   }
 }
 

@@ -165,6 +165,34 @@ export class WorkDispatcher extends Service {
     return { intent, packet };
   }
 
+  async resumeClaim(runId: string): Promise<WorkClaimResult> {
+    const state = await this.ctx.runStore.loadRun(runId);
+    const work = state.changeLifecycle?.currentWork;
+    const checkpoint = state.workExecution;
+    if (!work || !checkpoint || checkpoint.workId !== work.workId) {
+      throw new Error('Run has no authoritative Work claim to resume');
+    }
+    const intent = await this.ctx.workExecutionAuthority.loadIntent(runId);
+    const context = await this.ctx.workContextAssembler.assemble({
+      work,
+      changeId: state.changeLifecycle!.identity.changeId,
+      changeInputs: {
+        runId: state.runId,
+        change: state.changeLifecycle!.identity,
+        taskId: work.taskId ?? null,
+        taskRevision: work.taskRevision ?? null,
+        inputDigest: work.inputDigest,
+        archiveDeliveryInput: state.changeLifecycle!.archiveDeliveryInput ?? null,
+      },
+      diagnostic: work.phase === 'build' && checkpoint.attempt > 1,
+    });
+    const packet = createWorkExecutionPacket({ intent, work, context });
+    if (packet.identity.packetDigest !== checkpoint.packet.packetDigest) {
+      throw new Error('Reassembled Work packet drifted from the authoritative claim');
+    }
+    return { intent, packet };
+  }
+
   async acceptOutcome(input: ClaimedActionOutcome): Promise<WorkOutcomeAcceptance> {
     const state = await this.ctx.runStore.loadRun(input.runId);
     const work = state.changeLifecycle?.currentWork;
