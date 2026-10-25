@@ -13,14 +13,12 @@ if (!npmCli) throw new Error('npm_execpath is required to reproduce the package 
 const reportPath = path.join(
   root,
   'verification',
-  'complete-managed-change-execution',
+  'adopt-comet-single-run-lifecycle',
   'verification-report.md',
 );
 const report = await readFile(reportPath, 'utf8');
 const commit = report.match(/Tested implementation commit: `([a-f0-9]{40})`/u)?.[1];
-const expectedPackage = report
-  .match(/Package SHA-256: `([a-f0-9]{64})`/u)?.[1]
-  ?.toLowerCase();
+const expectedPackage = report.match(/Package SHA-256: `([a-f0-9]{64})`/u)?.[1]?.toLowerCase();
 if (!commit || !expectedPackage) {
   throw new Error('Managed execution verification report has no pinned commit or package checksum');
 }
@@ -32,12 +30,14 @@ const changed = (
   .trim()
   .split(/\r?\n/u)
   .filter(Boolean);
-const disallowed = changed.filter(
-  (file) => file !== 'verification/complete-managed-change-execution/verification-report.md',
-);
+const evidenceOnly = (file) =>
+  file.startsWith('openspec/') ||
+  file.startsWith('verification/') ||
+  file === 'scripts/check-managed-execution-report.mjs';
+const disallowed = changed.filter((file) => !evidenceOnly(file));
 if (disallowed.length > 0) {
   throw new Error(
-    `Managed execution report is stale for packaged product changes: ${disallowed.join(', ')}`,
+    `Lifecycle verification report is stale for packaged product changes: ${disallowed.join(', ')}`,
   );
 }
 
@@ -65,6 +65,4 @@ try {
   await rm(temporary, { recursive: true, force: true });
 }
 
-process.stdout.write(
-  `Verified managed execution report commit ${commit} and package ${expectedPackage}\n`,
-);
+process.stdout.write(`Verified lifecycle report commit ${commit} and package ${expectedPackage}\n`);
