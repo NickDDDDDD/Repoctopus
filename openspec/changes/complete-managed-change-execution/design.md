@@ -239,6 +239,14 @@ claim.persisted
 
 正式验证报告位于 `verification/complete-managed-change-execution/verification-report.md`，它是 Evidence 引用的报告而不是第五类 OpenSpec 规划工件。报告必须固定被测 Git commit、打包产物 checksum、definition/composition digest、公共命令、runId、各事件/Receipt identity、历史 red baseline、三个故障 fixture 的预期失败和进程恢复矩阵；若报告对应的 commit 或 package checksum 与待发布提交不一致，Verify 不得宣称通过。
 
+### 12. Tasks 的 Acceptance 必须显式且在 Design 阶段闭合
+
+OpenSpec 官方 tasks 模板允许把验证写进 checkbox 描述，但 Repoctopus 的 Evidence 模型需要稳定、可寻址的 Acceptance identity。两者不能靠 Runtime 从自然语言中猜测关联。Repoctopus Design action Skill 因此在 Provider 模板之上增加一条窄约束：每个 tracked Task 在 checkbox 后必须至少有一条缩进的 `**Acceptance:** <observable criterion>` 元数据；可选 `**Requirements:** <capability#requirement>` 继续提供 requirement selector。
+
+`parseSpecificationTasks()` 仍负责唯一的结构化投影，新增的完整性断言只检查每个 Task 是否至少有一个非空 Acceptance，不复制 OpenSpec strict validation。OpenSpec Provider 在 strict validation 成功后执行该断言，并把失败合并为稳定 diagnostic，使 Design gate 在生成 Human Decision 前 blocked。Verify 继续只消费 Provider 已批准的 Acceptance identities，不从 Task 标题、测试名称、Agent 摘要或 checkbox 状态回填缺失语义。
+
+选择 Design-time fail-fast，而不是让 `VerificationInput` 从 Task 标题生成默认 Acceptance，是因为默认值会把实现步骤误当行为合同，并掩盖规划质量问题。现有 Change 的 Tasks 通过显式元数据迁移；语义变化会产生新 task revision 和 planning snapshot，因此必须建立新的 adopt-existing generation 并重新审批，不能复用旧 approval。
+
 ## Risks / Trade-offs
 
 - **[外部 IDE 仍可绕过 Repoctopus 直接改文件]** → 明确区分 managed success 与 drift；正式 Host 只暴露受保护工具，黑盒测试证明旁路不能产生 Receipt 或推进事实。
@@ -249,6 +257,7 @@ claim.persisted
 - **[Run checkpoint 与 ActionStore 内容在中断后不一致]** → 不协调两套推进状态；ActionStore 先写不可变内容，Run CAS 后绑定 identity 并独占 claim/attempt/continuation 权威。孤立内容可忽略，被引用内容缺失或摘要不匹配则进入 reconcile，绝不从 ActionStore latest/file existence 推断进度。
 - **[Agent coordination checkpoint 被误当作完成事实]** → coordination 只保存有界进度提示，Runtime 只接受 Engine checkpoint、Outcome、Validator、Evidence 和 Human Decision；缺失或过期时核对实际工作，不自动重做。
 - **[黑盒 Host 仍可能只是高级 mock]** → 捕获 Host 只替代模型推理，不替代生产服务；它必须通过公共 Host Contributor、真实 packet、真实 Guard/Provider/Store 完成文件纵切，并验证实际文件结果。
+- **[显式 Acceptance 增加 Tasks 文档体积]** → 保持一条 Task 至少一条短、可观察 criterion；只在确有多个独立验收面时用分号拆分，不重复实现细节或测试命令全文。
 
 ## Migration Plan
 

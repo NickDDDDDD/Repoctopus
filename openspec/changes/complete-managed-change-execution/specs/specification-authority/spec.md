@@ -43,3 +43,17 @@ Specification Provider MUST 保留 Tasks checkbox 作为规划权威，但在 fr
 
 - **WHEN** 当前 Build Work 的 Outcome、Receipt 与 Validator 全部匹配
 - **THEN** Provider 幂等更新 checkbox 并投影 `runtime-work` completion，后续恢复不会重复执行该 Task
+
+### Requirement: Design 在批准前验证结构化 Acceptance
+
+Specification Provider MUST 将每个 tracked Task 的结构化 `Acceptance` 元数据投影为稳定 Acceptance identity；Design Validator MUST 在 Human Decision 前拒绝任何缺少 Acceptance 的 Task。Task checkbox 描述中的自然语言验证提示不得被 Runtime 猜测为 Acceptance。
+
+#### Scenario: Task 只有内联验证描述
+
+- **WHEN** `tasks.md` 的 checkbox 描述提到测试或验证，但没有 Provider 可识别的 `Acceptance` 元数据
+- **THEN** Design 保持 blocked，并精确报告缺少 Acceptance 的 Task identity，不创建 Human Decision 请求
+
+#### Scenario: 每个 Task 都声明 Acceptance
+
+- **WHEN** Provider 能为全部 tracked Task 投影至少一个非空 Acceptance criterion，且其余官方工件通过 strict validation
+- **THEN** Design Validator 接受 Tasks 合同并允许创建绑定当前 planning snapshot 的 Human Decision 请求
