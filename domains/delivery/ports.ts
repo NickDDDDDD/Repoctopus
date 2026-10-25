@@ -67,6 +67,15 @@ export interface DeliveryGitPort {
     repository: RepositorySnapshot,
     intent: DeliveryRepositoryIntent,
     policy: DeliveryPolicy,
+    options?: {
+      /**
+       * Archive may have already materialized its verified Specification
+       * closure in this worktree.  Those exact paths are outside the
+       * Business delivery and therefore do not make that delivery dirty.
+       * Any missing or additional worktree change still fails cleanliness.
+       */
+      allowedDirtyPaths?: readonly string[];
+    },
   ): Promise<DeliveryRepositoryFacts>;
   push(
     repository: RepositorySnapshot,
@@ -87,6 +96,7 @@ export interface MergeRequestInput {
 export interface MergeRequestPort {
   capability(remoteIdentity: string, targetBranch: string): Promise<PlatformCapability>;
   find(input: MergeRequestInput): Promise<MergeRequestIdentity | null>;
+  findAll?(input: MergeRequestInput): Promise<MergeRequestIdentity[]>;
   create(input: MergeRequestInput): Promise<MergeRequestIdentity>;
   update(identity: MergeRequestIdentity, input: MergeRequestInput): Promise<MergeRequestIdentity>;
   status(identity: MergeRequestIdentity): Promise<MergeRequestStatus>;

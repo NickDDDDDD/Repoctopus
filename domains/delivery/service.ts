@@ -38,13 +38,6 @@ import type {
   TrustedActor,
 } from './types.js';
 import { validateDeliveryIntent, validateDeliveryPolicy } from './validation.js';
-import {
-  assertPostMergePublicationRequest,
-  createPostMergePublicationReceipt,
-  type PostMergeDeliveryGitPort,
-  type PostMergePublicationReceipt,
-  type PostMergePublicationRequest,
-} from './post-merge.js';
 
 function selectedRepositories(
   project: ProjectSnapshot,
@@ -105,7 +98,6 @@ export class DeliveryService {
     private readonly clock: () => Date = () => new Date(),
     private readonly telemetry?: DeliveryTelemetryPort,
     private readonly compositionDigest: string = `sha256:${'0'.repeat(64)}`,
-    private readonly postMergeGit?: PostMergeDeliveryGitPort,
   ) {}
 
   async checkpoint(project: ProjectSnapshot, intent: DeliveryIntent, policy: DeliveryPolicy) {
@@ -374,65 +366,6 @@ export class DeliveryService {
 
   async refresh(changeId: string): Promise<DeliveryState> {
     return (await this.refreshWithMergeRequestStatuses(changeId)).state;
-  }
-
-  async publishPostMerge(
-    request: PostMergePublicationRequest,
-  ): Promise<PostMergePublicationReceipt> {
-    assertPostMergePublicationRequest(request);
-    const state = await this.requireState(request.changeId);
-    this.assertWritableComposition(state);
-    if (state.status !== 'merged') {
-      throw new Error(`Post-merge publication requires merged Delivery state: ${state.status}`);
-    }
-    const changeMergeRequest = state.mergeRequests?.change;
-    if (!changeMergeRequest) throw new Error('Delivery has no original Change MR');
-    if (!this.postMergeGit) throw new Error('Post-merge Git publication is unavailable');
-    if (path.resolve(request.workspaceRoot) !== path.resolve(request.baseline.root)) {
-      throw new Error('Post-merge publication root is not bound to its audited baseline');
-    }
-
-    const current = await this.mergeRequests.status(changeMergeRequest.mergeRequest);
-    this.assertChangeMergeRequestStatus(current, changeMergeRequest);
-    const git = await this.postMergeGit.publishPostMerge({
-      workspaceRoot: request.workspaceRoot,
-      changeMergeRequest,
-      baseline: request.baseline,
-      audit: request.audit,
-      policy: request.policy,
-    });
-
-    let afterPush = await this.mergeRequests.status(changeMergeRequest.mergeRequest);
-    this.assertChangeMergeRequestStatus(afterPush, changeMergeRequest, git.commitOid);
-    let mergeRequestRecovered =
-      afterPush.title === request.policy.mergeRequest.title &&
-      afterPush.body === request.policy.mergeRequest.body;
-    if (!mergeRequestRecovered) {
-      const updated = await this.mergeRequests.update(changeMergeRequest.mergeRequest, {
-        repositoryId: changeMergeRequest.repositoryId,
-        remoteIdentity: changeMergeRequest.remoteIdentity,
-        sourceBranch: changeMergeRequest.sourceBranch,
-        targetBranch: changeMergeRequest.targetBranch,
-        title: request.policy.mergeRequest.title,
-        body: request.policy.mergeRequest.body,
-      });
-      this.assertSameMergeRequest(updated, changeMergeRequest.mergeRequest);
-      afterPush = await this.mergeRequests.status(changeMergeRequest.mergeRequest);
-      this.assertChangeMergeRequestStatus(afterPush, changeMergeRequest, git.commitOid);
-      if (
-        afterPush.title !== request.policy.mergeRequest.title ||
-        afterPush.body !== request.policy.mergeRequest.body
-      ) {
-        throw new Error('Original Change MR update could not be verified');
-      }
-      mergeRequestRecovered = false;
-    }
-    return createPostMergePublicationReceipt({
-      request,
-      git,
-      mergeRequest: changeMergeRequest.mergeRequest,
-      mergeRequestRecovered,
-    });
   }
 
   private async refreshWithMergeRequestStatuses(changeId: string): Promise<{

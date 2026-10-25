@@ -1,10 +1,8 @@
 # Repoctopus
 
-Repoctopus 是面向团队 Agent 开发的多仓交付编排器。它把项目探测、确定性阶段推进、运行轨迹、断点恢复和 OpenTelemetry 反馈放进同一个可检查的插件系统，IDE 与 Agent 只通过稳定协议调用它。Cordis 是唯一应用 Runtime；Repoctopus 的能力以 Service、Provider 和 Contributor 组成。
+Repoctopus 是面向团队 Agent 开发的多仓交付编排器。它把 OpenSpec 规格、确定性 Change 生命周期、Evidence、可恢复发布与 OpenTelemetry 反馈放进同一个可检查的插件系统。Cordis 是唯一应用 Runtime；所有公共命令都使用短生命周期 composition，执行后释放资源。
 
-团队从一个版本化 Workspace 进入这条工作流：单仓可将 Workspace 嵌入业务仓，多仓可使用独立的 Workspace Repository。每个 change 的 Change MR 固定属于 Workspace Repository，业务 MR 则属于显式选择的业务仓。
-
-当前版本包含运行基础和交付治理纵切：探测同级 Git 仓库，确定性推进工作流，自动创建并立即远端备份策略允许的 checkpoint commit，把验证报告绑定为多仓交付快照，并在用户通过 IDE 或 CLI 交互批准后可恢复地创建或更新 MR。Repoctopus 只读取 MR 合入事实，不自动 merge。
+团队从一个版本化 Workspace 进入工作流。单仓项目可把 Workspace 嵌入业务仓；多仓项目可使用与业务仓同级的独立 Workspace Repository。Workspace 保存 `repoctopus.yaml`、OpenSpec change 和最终 Change MR，业务实现保存在显式登记的业务仓。
 
 ## 快速开始
 
@@ -17,113 +15,67 @@ node bin/repoctopus.js project detect --scan-root C:\path\to\project --workspace
 node bin/repoctopus.js run start --workspace C:\path\to\project\repoctopus --json
 ```
 
-`run start` 返回 `runId`，随后使用：
+`run start` 返回 `runId`，Change 随后按 `Open → Design → Build → Verify → Archive` 推进：
 
 ```powershell
-node bin/repoctopus.js run next --workspace C:\path\to\project\repoctopus --run <run-id> --json
-node bin/repoctopus.js run record --workspace C:\path\to\project\repoctopus --run <run-id> --action <action-id> --status succeeded --summary "验证通过" --json
-node bin/repoctopus.js run resume --workspace C:\path\to\project\repoctopus --run <run-id> --json
-node bin/repoctopus.js doctor --workspace C:\path\to\project\repoctopus --run <run-id> --json
+node bin/repoctopus.js run status --workspace . --run <run-id> --json
+node bin/repoctopus.js run next --workspace . --run <run-id> --json
+node bin/repoctopus.js run resume --workspace . --run <run-id> --json
+node bin/repoctopus.js doctor --workspace . --run <run-id> --json
 ```
 
-运行状态保存在 workspace 的 `.repoctopus/`，不会写入同级业务仓。OTLP 配置遵循标准 `OTEL_EXPORTER_OTLP_*` 环境变量；没有配置端点时遥测自动降级为空实现。
+运行状态保存在 Workspace 的 `.repoctopus/`。OTLP 配置遵循标准 `OTEL_EXPORTER_OTLP_*` 环境变量；没有配置端点时遥测降级为空实现，不影响领域结果。
 
-## Skills
+## Skills 与规格权威
 
-Repoctopus 使用 DSH Skill Registry 统一解析内置、个人和项目 Skill。你可以查看有效目录、加载 Skill，或把同一目录投影到 Codex 和 OpenCode：
+DSH Skill Registry 统一解析内置、个人和项目 Skill：
 
 ```powershell
 node bin/repoctopus.js skill list --workspace . --audience user --json
 node bin/repoctopus.js skill get --workspace . --audience user --name tdd --json
 node bin/repoctopus.js skill project --workspace . --target codex --json
-node bin/repoctopus.js skill project --workspace . --target opencode --json
 ```
 
-Provider 优先级、项目替换、Run 快照和 `teach` 本地状态规则见 [Skills 接入与投影](docs/skills.md)。
-
-## 规格权威
-
-Repoctopus 通过可替换的 Specification Provider 使用规格体系。当前 OpenSpec Provider 支持规范化检查、严格校验、Evidence 节点和幂等关闭：
+当前 Specification Provider 使用 OpenSpec，并将 Proposal、Delta Specs、Design 与 Tasks 映射为稳定领域契约：
 
 ```powershell
 node bin/repoctopus.js spec inspect --workspace . --change <change-id> --json
 node bin/repoctopus.js spec validate --workspace . --change <change-id> --json
 ```
 
-Provider 契约、Evidence 配置与权威资料冲突规则见 [Specification Provider](docs/specification.md)。
+Provider 契约见 [Specification Provider](docs/specification.md)，Skill 组合规则见 [Skills 接入与投影](docs/skills.md)。
 
-## 平台事件运维
+## Archive 发布与最终一致性
 
-平台未能直接投递 webhook 时，可以把已经验签或通过平台 API 获得的规范化 Envelope 写入同一个持久 Inbox；查询和人工重试都只经过 `PlatformEvents` 权威 Service：
-
-```powershell
-node bin/repoctopus.js event replay --workspace . --file verified-envelope.json --json
-node bin/repoctopus.js event status --workspace . --envelope sha256:<digest> --json
-node bin/repoctopus.js event retry --workspace . --envelope sha256:<digest> --json
-```
-
-`replay` 校验 Envelope 的身份和 payload 摘要并幂等接收，不直接调用下游 Coordinator。`retry` 只接受 `dead_letter`，不能重新执行已完成事件。命令输出是脱敏状态投影，不包含原始 payload、Header、签名、Lease token 或平台 Token。
-
-Runner、Inbox、GitHub 验签和安全边界见[平台事件处理](docs/platform-events.md)。需要验证强制中断后的跨进程恢复时，按[平台事件故障恢复](docs/platform-event-recovery.md)运行签名 HTTP 演练。
-
-正式工作区在 `repoctopus.yaml` 中选择 Provider、HTTP 入口、Inbox Runner 与可选的 Post-merge 策略后，可以启动常驻 Application：
+实现和 Verify 完成后，Archive 先冻结经过人工批准的 Delivery Intent，再关闭规格并发布全部 Business MR 与最终 Change MR：
 
 ```powershell
-$env:REPOCTOPUS_GITHUB_WEBHOOK_SECRET = '<webhook-secret>'
-$env:REPOCTOPUS_GITHUB_TOKEN = '<github-token>'
-$env:REPOCTOPUS_GIT_AUTHOR_NAME = 'Repoctopus Bot'
-$env:REPOCTOPUS_GIT_AUTHOR_EMAIL = 'repoctopus@example.invalid'
-node bin/repoctopus.js runner start --workspace . --json
-```
-
-Runner 输出一次 `ready` envelope 后保持前台运行；由进程管理器发送 `SIGINT` 或 `SIGTERM` 时，它会停止接收新请求、排空有界操作并释放 HTTP 与后台 Fiber。完整配置、部署方式、数据边界和自举闭环见[自举与 Runner 部署](docs/self-hosting.md)。
-
-Webhook 不可达或 Runner 曾离线时，可以执行一次短生命周期补偿；日常 `run start` 也会在创建新 Run 前调用相同入口：
-
-```powershell
-node bin/repoctopus.js post-merge reconcile --workspace . --json
-```
-
-补偿按 Repoctopus 已登记的 Change 分支和 Business MR 集合查询，不按 MR 作者划分所有权。最终 Change MR 与 Business MR 可以位于同一仓库，但不是同一个 MR；前者只在后者全部合入并完成规格关闭后创建。多个 Runner 可以重复验证同一 change，远端发布以 Change 分支精确 OID、非强制 push 和结果核对安全收敛。
-
-## 交付治理
-
-通过项目接入流程生成 workspace 的 `repoctopus.yaml`，在其 `delivery` 段维护团队交付策略（完整示例见 [项目配置示例](docs/examples/repoctopus.yaml)），并为 change 创建 [交付意图](docs/examples/delivery-intent.yaml)。checkpoint 会普通 push 当前 HEAD、建立 upstream 并核对远端 OID，不需要逐次人工批准：
-
-```powershell
-node bin/repoctopus.js delivery checkpoint --workspace . --intent docs/examples/delivery-intent.yaml --policy repoctopus.yaml --json
-```
-
-实现完成并由同一 Change Run 的 Verify Gate 接受后，在 Archive phase 冻结交付输入：
-
-```powershell
-node bin/repoctopus.js run archive-prepare --workspace . --run <run-id> --attempt <attempt-id> --intent docs/examples/delivery-intent.yaml --policy repoctopus.yaml --json
-node bin/repoctopus.js approval review --workspace . --change example-change
-```
-
-`approval review` 只在交互式终端中运行；IDE Adapter 可以把同一 `HumanDecisionRequest` 显示为原生确认卡片。批准后由原 Change Run 发布并等待 Business MR；失败时对同一 Run 重试对应命令，Receipt 会防止重复副作用：
-
-```powershell
+node bin/repoctopus.js run archive-prepare --workspace . --run <run-id> --attempt <attempt-id> --intent docs/examples/delivery-intent.yaml --json
+node bin/repoctopus.js approval review --workspace . --change <change-id>
 node bin/repoctopus.js run archive-publish --workspace . --run <run-id> --json
-node bin/repoctopus.js run archive-refresh --workspace . --run <run-id> --json
 ```
 
-多仓项目首次接入和 Evidence 命令见 [项目接入](docs/project-onboarding.md)。
+`archive-publish` 核对每个远端分支及 MR 的 repository、base、head 和 head OID，形成完整 `PublicationReceipt` 后完成原 Change Run。Repoctopus 不等待也不自动合入 MR；代码审查、流水线或人工修改造成的后续远端变化由下一次任务启动或显式短命令拉取：
+
+```powershell
+node bin/repoctopus.js change reconcile --workspace . --json
+node bin/repoctopus.js change reconcile --workspace . --change <change-id> --json
+```
+
+无变化时命令直接退出；有变化时产生结构化影响审查。需要修正规格时建立普通后续 OpenSpec change，引用原 Change 与 Publication Receipt，不修改已归档目录或重开原 Run。
+
+配置示例见 [repoctopus.yaml](docs/examples/repoctopus.yaml)，发布与恢复语义见 [交付治理](docs/delivery.md)，自举方式见 [短生命周期自举](docs/self-hosting.md)。
 
 ## 架构入口
 
-- [Runtime 架构](docs/architecture.md)
+- [Runtime 与插件架构](docs/architecture.md)
 - [Plugin 与 lifecycle 扩展](docs/plugins.md)
-- [状态与恢复](docs/runtime-state.md)
+- [状态、轨迹与恢复](docs/runtime-state.md)
 - [项目接入](docs/project-onboarding.md)
 - [Evidence](docs/evidence.md)
-- [Skills 接入与投影](docs/skills.md)
 - [Specification Provider](docs/specification.md)
-- [OpenTelemetry 与 SigNoz](docs/telemetry.md)
+- [OpenTelemetry 与本地 Desktop](docs/telemetry.md)
 - [交付治理与失败恢复](docs/delivery.md)
-- [Delivery v2 到 v3 迁移](docs/delivery-v2-migration.md)
-- [运维和恢复 Post-merge 收尾](docs/post-merge.md)
-- [自举与 Runner 部署](docs/self-hosting.md)
 - [Human Decision 协议](docs/human-decision.md)
 - [第三方来源与采用报告](third_party/comet/adoption-report.md)
 
@@ -135,6 +87,4 @@ npm run test:package-e2e
 npm run test:tracer-e2e
 ```
 
-完整验证还包含类型检查、Lint、确定性构建、来源摘要检查、OpenSpec 严格校验和实际 npm 打包安装。
-
-仓库自身提交了最小 `repoctopus.yaml`，因此普通开发命令可以用同一条 Project composition 执行自举验证。生产 Runner 还需要平台事件、Credential 引用与 Post-merge 策略；可运行结构见[完整项目配置示例](docs/examples/repoctopus.yaml)，不要把秘密写入 YAML。
+完整验证包含类型检查、Lint、确定性构建、架构和来源摘要检查、OpenSpec 严格校验、单元/E2E 测试与实际 npm 打包安装。

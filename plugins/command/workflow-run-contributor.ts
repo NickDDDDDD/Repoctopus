@@ -11,7 +11,6 @@ import type {
   VerifyChangeRunInput,
   PrepareArchiveDeliveryInput,
   ExecuteArchiveDeliveryInput,
-  RefreshArchiveMergesInput,
 } from '../../services/workflow-runs.js';
 
 interface StartInput {
@@ -60,11 +59,6 @@ const plugin = ((context: Context) => {
         name: 'run.archive.publish',
         execute: ({ input, signal }) =>
           context.workflowRuns.executeArchiveDelivery(input as ExecuteArchiveDeliveryInput, signal),
-      }),
-      context.commandRouter.register({
-        name: 'run.archive.refresh',
-        execute: ({ input, signal }) =>
-          context.workflowRuns.refreshArchiveMerges(input as RefreshArchiveMergesInput, signal),
       }),
       context.commandRouter.register({
         name: 'run.start',

@@ -10,17 +10,13 @@ import {
   type BrowserJourney,
 } from '../feedback/browser.js';
 import type { ReadinessCondition } from '../feedback/service.js';
-import { normalizePostMergeVerificationPathPrefixes } from '../post-merge/closure.js';
 import {
   PROJECT_CONFIG_API_VERSION,
   type BrowserNodeConfig,
   type CapabilityProviderReference,
   type CommandNodeConfig,
-  type CredentialReference,
   type EvidenceNodeConfig,
   type LocalProjectConfig,
-  type PlatformEventsConfig,
-  type PostMergeConfig,
   type ServiceNodeConfig,
   type SharedProjectConfig,
   type SpecificationNodeConfig,
@@ -96,19 +92,6 @@ function identifier(value: unknown, field: string): string {
   return parsed;
 }
 
-function credentialReference(value: unknown, field: string): CredentialReference {
-  const reference = object(value, field);
-  exactKeys(reference, ['provider', 'variable'], field);
-  if (reference.provider !== 'environment') {
-    throw new ProjectConfigError('expected environment Credential Provider', `${field}.provider`);
-  }
-  const variable = string(reference.variable, `${field}.variable`);
-  if (!/^[A-Z_][A-Z0-9_]*$/u.test(variable)) {
-    throw new ProjectConfigError('expected an environment variable name', `${field}.variable`);
-  }
-  return { provider: 'environment', variable };
-}
-
 function providerReference(value: unknown, field: string): CapabilityProviderReference {
   const reference = object(value, field);
   exactKeys(reference, ['id'], field);
@@ -121,238 +104,6 @@ function storeIdentifier(value: unknown, field: string): string {
     throw new ProjectConfigError('expected a lowercase kebab-case Store id', field);
   }
   return parsed;
-}
-
-function concreteDirectory(value: unknown, field: string): string {
-  const configured = string(value, field);
-  const normalized = configured.replaceAll('\\', '/');
-  const segments = normalized.split('/').filter(Boolean);
-  if (
-    configured !== normalized ||
-    normalized !== `${segments.join('/')}/` ||
-    normalized.startsWith('/') ||
-    path.posix.isAbsolute(normalized) ||
-    path.win32.isAbsolute(normalized) ||
-    segments.length < 2 ||
-    segments.some((segment) => segment === '.' || segment === '..') ||
-    /[*?[\]{}!]/u.test(normalized) ||
-    [...normalized].some((character) => {
-      const code = character.codePointAt(0)!;
-      return code <= 0x1f || code === 0x7f;
-    })
-  ) {
-    throw new ProjectConfigError(
-      'expected a concrete project-relative directory below the project root',
-      field,
-    );
-  }
-  return normalized;
-}
-
-function projectRelativeDirectory(value: unknown, field: string): string {
-  const configured = string(value, field);
-  const normalized = configured.replaceAll('\\', '/');
-  const segments = normalized.split('/').filter(Boolean);
-  const canonical = segments.join('/');
-  if (
-    configured !== canonical ||
-    normalized.startsWith('/') ||
-    path.posix.isAbsolute(normalized) ||
-    path.win32.isAbsolute(normalized) ||
-    segments.length === 0 ||
-    segments.some((segment) => segment === '.' || segment === '..') ||
-    /[*?[\]{}!]/u.test(normalized) ||
-    [...normalized].some((character) => {
-      const code = character.codePointAt(0)!;
-      return code <= 0x1f || code === 0x7f;
-    })
-  ) {
-    throw new ProjectConfigError('expected a project-relative directory', field);
-  }
-  return normalized;
-}
-
-function parsePlatformEvents(value: unknown): PlatformEventsConfig {
-  const config = object(value, 'platformEvents');
-  exactKeys(config, ['storeProvider', 'http', 'github', 'runner'], 'platformEvents');
-
-  const http = object(config.http, 'platformEvents.http');
-  exactKeys(http, ['hostname', 'port', 'shutdownTimeoutMs'], 'platformEvents.http');
-  const github = object(config.github, 'platformEvents.github');
-  exactKeys(
-    github,
-    ['source', 'path', 'maxBodyBytes', 'webhookCredential', 'apiCredential'],
-    'platformEvents.github',
-  );
-  const routePath = string(github.path, 'platformEvents.github.path');
-  if (!routePath.startsWith('/') || routePath.includes('?') || routePath.includes('#')) {
-    throw new ProjectConfigError(
-      'expected an absolute HTTP route path',
-      'platformEvents.github.path',
-    );
-  }
-  const runner = object(config.runner, 'platformEvents.runner');
-  exactKeys(
-    runner,
-    ['identity', 'leaseMs', 'pollIntervalMs', 'retryDelayMs', 'maxAttempts', 'shutdownTimeoutMs'],
-    'platformEvents.runner',
-  );
-  return {
-    storeProvider: providerReference(config.storeProvider, 'platformEvents.storeProvider'),
-    http: {
-      hostname: string(http.hostname, 'platformEvents.http.hostname'),
-      port: portNumber(http.port, 'platformEvents.http.port'),
-      shutdownTimeoutMs: positiveInteger(
-        http.shutdownTimeoutMs,
-        'platformEvents.http.shutdownTimeoutMs',
-        5_000,
-      ),
-    },
-    github: {
-      source: identifier(github.source, 'platformEvents.github.source'),
-      path: routePath,
-      maxBodyBytes: positiveInteger(
-        github.maxBodyBytes,
-        'platformEvents.github.maxBodyBytes',
-        1024 * 1024,
-      ),
-      webhookCredential: credentialReference(
-        github.webhookCredential,
-        'platformEvents.github.webhookCredential',
-      ),
-      apiCredential: credentialReference(
-        github.apiCredential,
-        'platformEvents.github.apiCredential',
-      ),
-    },
-    runner: {
-      identity: identifier(runner.identity, 'platformEvents.runner.identity'),
-      leaseMs: positiveInteger(runner.leaseMs, 'platformEvents.runner.leaseMs', 30_000),
-      pollIntervalMs: positiveInteger(
-        runner.pollIntervalMs,
-        'platformEvents.runner.pollIntervalMs',
-        1_000,
-      ),
-      retryDelayMs: positiveInteger(
-        runner.retryDelayMs,
-        'platformEvents.runner.retryDelayMs',
-        1_000,
-      ),
-      maxAttempts: positiveInteger(runner.maxAttempts, 'platformEvents.runner.maxAttempts', 5),
-      shutdownTimeoutMs: positiveInteger(
-        runner.shutdownTimeoutMs,
-        'platformEvents.runner.shutdownTimeoutMs',
-        5_000,
-      ),
-    },
-  };
-}
-
-function parsePostMerge(value: unknown): PostMergeConfig {
-  const config = object(value, 'postMerge');
-  exactKeys(
-    config,
-    ['runnerIdentity', 'temporaryRoot', 'evidenceProfile', 'allowedWorkspacePaths', 'publication'],
-    'postMerge',
-  );
-  const allowed = object(config.allowedWorkspacePaths, 'postMerge.allowedWorkspacePaths');
-  exactKeys(
-    allowed,
-    ['specificationClosure', 'verificationPathPrefixes'],
-    'postMerge.allowedWorkspacePaths',
-  );
-  if (allowed.specificationClosure !== true) {
-    throw new ProjectConfigError(
-      'must delegate specification paths to the active Specification Provider',
-      'postMerge.allowedWorkspacePaths.specificationClosure',
-    );
-  }
-  if (!Array.isArray(allowed.verificationPathPrefixes)) {
-    throw new ProjectConfigError(
-      'expected an array',
-      'postMerge.allowedWorkspacePaths.verificationPathPrefixes',
-    );
-  }
-  const concretePrefixes = allowed.verificationPathPrefixes.map((item, index) =>
-    concreteDirectory(item, `postMerge.allowedWorkspacePaths.verificationPathPrefixes[${index}]`),
-  );
-  let verificationPathPrefixes: string[];
-  try {
-    verificationPathPrefixes = normalizePostMergeVerificationPathPrefixes(concretePrefixes);
-  } catch (error) {
-    throw new ProjectConfigError(
-      error instanceof Error ? error.message : 'invalid verification path prefix',
-      'postMerge.allowedWorkspacePaths.verificationPathPrefixes',
-    );
-  }
-
-  const publication = object(config.publication, 'postMerge.publication');
-  if (
-    'changeMergeRequest' in publication ||
-    (Array.isArray(publication.operations) &&
-      publication.operations.includes('merge_request.update'))
-  ) {
-    throw new ProjectConfigError(
-      'legacy update-existing publication is read-only; configure merge_target, commit, push, merge_request.create_or_recover, and finalChangeMergeRequest',
-      'postMerge.publication',
-    );
-  }
-  exactKeys(
-    publication,
-    ['operations', 'remote', 'commit', 'finalChangeMergeRequest'],
-    'postMerge.publication',
-  );
-  const operations = stringArray(publication.operations, 'postMerge.publication.operations');
-  if (
-    canonicalJson([...operations].sort()) !==
-    canonicalJson(['commit', 'merge_request.create_or_recover', 'merge_target', 'push'])
-  ) {
-    throw new ProjectConfigError(
-      'must contain only merge_target, commit, push, and merge_request.create_or_recover',
-      'postMerge.publication.operations',
-    );
-  }
-  const commit = object(publication.commit, 'postMerge.publication.commit');
-  exactKeys(
-    commit,
-    ['message', 'authorNameCredential', 'authorEmailCredential'],
-    'postMerge.publication.commit',
-  );
-  const message = string(commit.message, 'postMerge.publication.commit.message');
-  if (message.includes('\n') || message.includes('\r')) {
-    throw new ProjectConfigError('must be one line', 'postMerge.publication.commit.message');
-  }
-  const mergeRequest = object(
-    publication.finalChangeMergeRequest,
-    'postMerge.publication.finalChangeMergeRequest',
-  );
-  exactKeys(mergeRequest, ['title', 'body'], 'postMerge.publication.finalChangeMergeRequest');
-  const remote = identifier(publication.remote, 'postMerge.publication.remote');
-  return {
-    runnerIdentity: identifier(config.runnerIdentity, 'postMerge.runnerIdentity'),
-    temporaryRoot: projectRelativeDirectory(config.temporaryRoot, 'postMerge.temporaryRoot'),
-    evidenceProfile: identifier(config.evidenceProfile, 'postMerge.evidenceProfile'),
-    allowedWorkspacePaths: { specificationClosure: true, verificationPathPrefixes },
-    publication: {
-      operations: ['merge_target', 'commit', 'push', 'merge_request.create_or_recover'],
-      remote,
-      commit: {
-        message,
-        authorNameCredential: credentialReference(
-          commit.authorNameCredential,
-          'postMerge.publication.commit.authorNameCredential',
-        ),
-        authorEmailCredential: credentialReference(
-          commit.authorEmailCredential,
-          'postMerge.publication.commit.authorEmailCredential',
-        ),
-      },
-      finalChangeMergeRequest: {
-        title: string(mergeRequest.title, 'postMerge.publication.finalChangeMergeRequest.title'),
-        body: string(mergeRequest.body, 'postMerge.publication.finalChangeMergeRequest.body'),
-      },
-    },
-  };
 }
 
 function nodeBase(node: Record<string, unknown>, field: string) {
@@ -695,6 +446,18 @@ function parseDeliveryConfig(value: unknown): NonNullable<SharedProjectConfig['d
 
 export function parseSharedProjectConfig(value: unknown): SharedProjectConfig {
   const root = object(value, 'config');
+  if ('platformEvents' in root) {
+    throw new ProjectConfigError(
+      'webhook listeners and Inbox Runner were removed; configure delivery.publication.apiCredential and use change reconcile',
+      'platformEvents',
+    );
+  }
+  if ('postMerge' in root) {
+    throw new ProjectConfigError(
+      'Post-merge Runner was removed; use receipt-driven archive publication and change reconcile',
+      'postMerge',
+    );
+  }
   exactKeys(
     root,
     [
@@ -708,8 +471,6 @@ export function parseSharedProjectConfig(value: unknown): SharedProjectConfig {
       'delivery',
       'skillProviders',
       'specificationProvider',
-      'platformEvents',
-      'postMerge',
     ],
     'config',
   );
@@ -841,30 +602,6 @@ export function parseSharedProjectConfig(value: unknown): SharedProjectConfig {
       },
     };
   }
-  const platformEvents =
-    root.platformEvents === undefined ? undefined : parsePlatformEvents(root.platformEvents);
-  const postMerge = root.postMerge === undefined ? undefined : parsePostMerge(root.postMerge);
-  if (postMerge && !platformEvents) {
-    throw new ProjectConfigError(
-      'requires platformEvents Runner configuration',
-      'postMerge.runnerIdentity',
-    );
-  }
-  if (postMerge && !delivery) {
-    throw new ProjectConfigError('requires a shared Delivery policy', 'postMerge.publication');
-  }
-  if (platformEvents && postMerge && platformEvents.runner.identity !== postMerge.runnerIdentity) {
-    throw new ProjectConfigError(
-      'must reference platformEvents.runner.identity',
-      'postMerge.runnerIdentity',
-    );
-  }
-  if (postMerge && !profiles.some((profile) => profile.id === postMerge.evidenceProfile)) {
-    throw new ProjectConfigError(
-      'must reference an existing Evidence profile',
-      'postMerge.evidenceProfile',
-    );
-  }
   let composition: SharedProjectConfig['composition'];
   if (root.composition !== undefined) {
     const raw = object(root.composition, 'composition');
@@ -913,8 +650,6 @@ export function parseSharedProjectConfig(value: unknown): SharedProjectConfig {
     ...(delivery ? { delivery } : {}),
     ...(skillProviders ? { skillProviders } : {}),
     ...(specificationProvider ? { specificationProvider } : {}),
-    ...(platformEvents ? { platformEvents } : {}),
-    ...(postMerge ? { postMerge } : {}),
   };
 }
 
@@ -1018,11 +753,6 @@ export function canonicalProjectConfig(value: SharedProjectConfig | LocalProject
       for (const node of profile.nodes) {
         if ('cwd' in node && node.cwd !== undefined) node.cwd = normalizePathText(node.cwd);
       }
-    }
-    if (copy.postMerge) {
-      copy.postMerge.temporaryRoot = normalizePathText(copy.postMerge.temporaryRoot);
-      copy.postMerge.allowedWorkspacePaths.verificationPathPrefixes =
-        copy.postMerge.allowedWorkspacePaths.verificationPathPrefixes.map(normalizePathText);
     }
   } else {
     if (copy.repositoryPaths) {

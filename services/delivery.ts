@@ -2,12 +2,6 @@ import { Service, type Context } from '@deepseek-ai/cordis';
 
 import type { ProjectSnapshot } from '../domains/project/types.js';
 import type {
-  PostMergePublicationReceipt,
-  PostMergePublicationReceiptV2,
-  PostMergePublicationRequest,
-  PostMergePublicationRequestV2,
-} from '../domains/delivery/post-merge.js';
-import type {
   DeliveryIntent,
   DeliveryIntentV3,
   DeliveryMergeRequestRefresh,
@@ -19,13 +13,15 @@ import type {
   HumanDecisionResponse,
   MergeRequestReference,
   TrustedActor,
+  MergeRequestStatus,
 } from '../domains/delivery/types.js';
-import type { DeliveryV2MigrationPlan } from '../domains/delivery/migration.js';
+import type { PublicationReceiptItem } from '../domains/delivery/publication-receipt.js';
 import type {
-  ArchiveFinalPublicationProof,
-  ArchiveMergeRefreshResult,
-  ArchivePublicationResult,
-} from '../domains/delivery/service-v3.js';
+  SpecificationPublicationRequest,
+  SpecificationPublicationResult,
+} from '../domains/delivery/specification-publication.js';
+import type { DeliveryV2MigrationPlan } from '../domains/delivery/migration.js';
+import type { ArchivePublicationResult } from '../domains/delivery/service-v3.js';
 
 export interface DeliveryPreparation {
   project: ProjectSnapshot;
@@ -67,49 +63,18 @@ export abstract class Delivery extends Service {
   ): Promise<ArchivePublicationResult> {
     void signal;
     return Promise.reject(
-      new Error(`Delivery provider cannot publish lifecycle Archive for ${options.intent.changeId}`),
-    );
-  }
-  refreshArchive(
-    publication: ArchivePublicationResult,
-    policy: DeliveryPolicy,
-    signal?: AbortSignal,
-  ): Promise<ArchiveMergeRefreshResult> {
-    void policy;
-    void signal;
-    return Promise.reject(
       new Error(
-        `Delivery provider cannot refresh lifecycle Archive for ${publication.snapshot.changeId}`,
+        `Delivery provider cannot publish lifecycle Archive for ${options.intent.changeId}`,
       ),
     );
   }
-  publishPostMerge(
-    request: PostMergePublicationRequest,
+  publishSpecification(
+    request: SpecificationPublicationRequest,
     signal?: AbortSignal,
-  ): Promise<PostMergePublicationReceipt> {
+  ): Promise<SpecificationPublicationResult> {
     void signal;
     return Promise.reject(
-      new Error(`Delivery provider cannot publish post-merge closure for ${request.changeId}`),
-    );
-  }
-  publishFinalChange(
-    request: PostMergePublicationRequestV2,
-    signal?: AbortSignal,
-  ): Promise<PostMergePublicationReceiptV2> {
-    void signal;
-    return Promise.reject(
-      new Error(`Delivery provider cannot publish final Change for ${request.changeId}`),
-    );
-  }
-  publishArchiveFinalChange(
-    request: PostMergePublicationRequestV2,
-    proof: ArchiveFinalPublicationProof,
-    signal?: AbortSignal,
-  ): Promise<PostMergePublicationReceiptV2> {
-    void proof;
-    void signal;
-    return Promise.reject(
-      new Error(`Delivery provider cannot publish final Change for ${request.changeId}`),
+      new Error(`Delivery provider cannot publish specification closure for ${request.changeId}`),
     );
   }
   abstract refresh(
@@ -125,6 +90,15 @@ export abstract class Delivery extends Service {
   reconciliationCandidates(signal?: AbortSignal): Promise<DeliveryReconciliationCandidate[]> {
     void signal;
     return Promise.resolve([]);
+  }
+  observePublication(
+    item: PublicationReceiptItem,
+    signal?: AbortSignal,
+  ): Promise<MergeRequestStatus> {
+    void signal;
+    return Promise.reject(
+      new Error(`Delivery provider cannot observe publication: ${item.publicationId}`),
+    );
   }
   migrationPlan(
     changeId: string,

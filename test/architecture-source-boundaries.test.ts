@@ -14,13 +14,11 @@ interface Fixtures {
   secondContainers: SourceFixture[];
   legacyPostMergeConfig: SourceFixture[];
   platformRunWrite: SourceFixture[];
-  coordinatorStoreWrite: SourceFixture[];
   nonProviderClosure: SourceFixture[];
   unprotectedPublication: SourceFixture[];
   desktopIsolation: SourceFixture[];
   lifecyclePhaseOwner: SourceFixture[];
   directRunStateWrite: SourceFixture[];
-  independentPostMergeRun: SourceFixture[];
   callerSelectedLifecycleSkill: SourceFixture[];
 }
 
@@ -105,23 +103,10 @@ describe('architecture source boundaries', () => {
     expect(
       evaluateSourceBoundaries(
         fixtures.legacyPostMergeConfig,
-        rules('v3-post-merge-configuration'),
+        rules('legacy-delivery-configuration'),
       ),
     ).toEqual([
-      expect.stringContaining(
-        'plugins/post-merge/rogue-actions-provider.ts: v3-post-merge-configuration',
-      ),
-    ]);
-  });
-
-  it('rejects a PostMergeCoordinator that writes a domain Store directly', () => {
-    expect(
-      evaluateSourceBoundaries(
-        fixtures.coordinatorStoreWrite,
-        rules('coordinator-domain-store-write'),
-      ),
-    ).toEqual([
-      expect.stringContaining('services/post-merge-coordinator.ts: coordinator-domain-store-write'),
+      expect.stringContaining('app/boot/rogue-delivery-plugin.ts: legacy-delivery-configuration'),
     ]);
   });
 
@@ -249,50 +234,18 @@ describe('architecture source boundaries', () => {
     ).toEqual([expect.stringContaining('services/rogue-run-writer.ts: direct-run-state-write')]);
   });
 
-  it('rejects every production caller that creates an independent Post-merge Run', () => {
-    const allowed = [
-      {
-        path: 'domains/post-merge/run.ts',
-        contents: 'export function postMergeRunOptions(input) { return input; }',
-      },
-    ];
-
-    expect(evaluateSourceBoundaries(allowed, rules('independent-post-merge-run-creation'))).toEqual(
-      [],
-    );
-    expect(
-      evaluateSourceBoundaries(
-        fixtures.independentPostMergeRun,
-        rules('independent-post-merge-run-creation'),
-      ),
-    ).toEqual([
-      expect.stringContaining(
-        'plugins/events/rogue-post-merge.ts: independent-post-merge-run-creation',
-      ),
-    ]);
-  });
-
-  it('fences legacy PostMergeCoordinator and Delivery command writes', () => {
+  it('fences legacy Delivery command writes', () => {
     expect(
       evaluateSourceBoundaries(
         [
-          {
-            path: 'services/post-merge-coordinator.ts',
-            contents: 'return context.workflowRuns.startOrResume(input);',
-          },
           {
             path: 'plugins/command/delivery-contributor.ts',
             contents: 'return context.delivery.publish(input);',
           },
         ],
-        rules('post-merge-coordinator-run-write', 'legacy-delivery-command-write'),
+        rules('legacy-delivery-command-write'),
       ),
-    ).toEqual(
-      expect.arrayContaining([
-        expect.stringContaining('services/post-merge-coordinator.ts'),
-        expect.stringContaining('plugins/command/delivery-contributor.ts'),
-      ]),
-    );
+    ).toEqual([expect.stringContaining('plugins/command/delivery-contributor.ts')]);
   });
 
   it('rejects caller-selected lifecycle Skills and Method Profiles', () => {

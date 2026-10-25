@@ -175,7 +175,7 @@ describe('delivery CLI', () => {
       schemaVersion: 1,
       status: 'migration_required',
       diagnostic: 'change-lifecycle-run-required',
-      replacementCommand: 'run.archive.refresh',
+      replacementCommand: 'change.reconcile',
     });
     expect(await readFile(legacyStateFile, 'utf8')).toBe(before);
   }, 30_000);

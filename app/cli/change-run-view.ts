@@ -18,6 +18,18 @@ export function renderChangeProjection(projection: ChangeRunProjection): string[
     `Tasks: ${projection.taskProgress.completed}/${projection.taskProgress.total}${projection.taskProgress.currentTaskId ? ` (current ${projection.taskProgress.currentTaskId})` : ''}`,
     `Evidence: ${projection.evidence.gateStatus} (${projection.evidence.acceptedBundleIds.length} accepted)`,
   ];
+  const currentTask = projection.tasks?.find(
+    (task) => task.taskId === projection.taskProgress.currentTaskId,
+  );
+  if (currentTask) {
+    lines.push(`Build scope: ${currentTask.title}`);
+    if (currentTask.acceptanceCriteria.length > 0) {
+      lines.push(`Acceptance: ${currentTask.acceptanceCriteria.join('; ')}`);
+    }
+    if (currentTask.requirementRefs.length > 0) {
+      lines.push(`Requirement mappings: ${currentTask.requirementRefs.join(', ')}`);
+    }
+  }
   if (projection.waitCondition) {
     lines.push(`Wait: ${projection.waitCondition.kind} - ${projection.waitCondition.reason}`);
   }

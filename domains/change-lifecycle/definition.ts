@@ -75,22 +75,9 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
     },
     {
       phase: 'archive',
-      workKinds: [
-        'delivery.await-merge',
-        'delivery.prepare',
-        'delivery.verify-merged',
-        'specification.archive',
-      ],
-      requiredValidatorProfiles: [
-        'archive.delivery-ready',
-        'archive.specification-closed',
-        'verify.evidence-gate',
-      ],
-      extensionCheckpoints: [
-        'archive.after-merge',
-        'archive.before-close',
-        'archive.before-publish',
-      ],
+      workKinds: ['specification.close', 'delivery.publish'],
+      requiredValidatorProfiles: ['archive.preflight-valid', 'archive.publication-complete'],
+      extensionCheckpoints: ['archive.before-close', 'archive.before-publish'],
     },
   ],
   works: [
@@ -175,49 +162,11 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       checkpoint: 'verify.before-gate',
     },
     {
-      kind: 'delivery.await-merge',
+      kind: 'specification.close',
       phase: 'archive',
       augmentationSkills: [],
       methodProfile: BUILTIN_METHOD_PROFILE_REGISTRY.snapshot('repoctopus.archive', '1.0.0'),
-      capabilities: ['platform.read'],
-      sideEffectClass: 'none',
-      writeScopes: [],
-      outputContract: { artifactKinds: [], trackerPublish: false },
-      validatorProfile: validatorProfile('archive.delivery-ready'),
-      checkpoint: 'archive.after-merge',
-    },
-    {
-      kind: 'delivery.prepare',
-      phase: 'archive',
-      actionSkill: { name: 'pr' },
-      augmentationSkills: [],
-      methodProfile: BUILTIN_METHOD_PROFILE_REGISTRY.snapshot('repoctopus.archive', '1.0.0'),
-      capabilities: ['git.publish', 'platform.mutate', 'repository.read'],
-      sideEffectClass: 'platform-mutation',
-      writeScopes: [],
-      outputContract: { artifactKinds: [], trackerPublish: false },
-      validatorProfile: validatorProfile('archive.delivery-ready'),
-      checkpoint: 'archive.before-publish',
-    },
-    {
-      kind: 'delivery.verify-merged',
-      phase: 'archive',
-      actionSkill: { name: 'code-review' },
-      augmentationSkills: [],
-      methodProfile: BUILTIN_METHOD_PROFILE_REGISTRY.snapshot('repoctopus.verify', '1.0.0'),
-      capabilities: ['evidence.write', 'process.execute', 'repository.read'],
-      sideEffectClass: 'process',
-      writeScopes: [],
-      outputContract: { artifactKinds: ['verification'], trackerPublish: false },
-      validatorProfile: validatorProfile('verify.evidence-gate'),
-      checkpoint: 'archive.after-merge',
-    },
-    {
-      kind: 'specification.archive',
-      phase: 'archive',
-      augmentationSkills: [],
-      methodProfile: BUILTIN_METHOD_PROFILE_REGISTRY.snapshot('repoctopus.archive', '1.0.0'),
-      capabilities: ['git.publish', 'specification.write'],
+      capabilities: ['repository.read', 'specification.write'],
       sideEffectClass: 'specification-write',
       writeScopes: [
         {
@@ -227,8 +176,21 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
         },
       ],
       outputContract: { artifactKinds: [], trackerPublish: false },
-      validatorProfile: validatorProfile('archive.specification-closed'),
+      validatorProfile: validatorProfile('archive.preflight-valid'),
       checkpoint: 'archive.before-close',
+    },
+    {
+      kind: 'delivery.publish',
+      phase: 'archive',
+      actionSkill: { name: 'pr' },
+      augmentationSkills: [],
+      methodProfile: BUILTIN_METHOD_PROFILE_REGISTRY.snapshot('repoctopus.archive', '1.0.0'),
+      capabilities: ['git.publish', 'platform.mutate', 'repository.read'],
+      sideEffectClass: 'platform-mutation',
+      writeScopes: [],
+      outputContract: { artifactKinds: [], trackerPublish: false },
+      validatorProfile: validatorProfile('archive.publication-complete'),
+      checkpoint: 'archive.before-publish',
     },
   ],
   transitions: [
@@ -305,52 +267,36 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       requiredValidatorProfile: 'verify.evidence-gate',
     },
     {
-      id: 'archive.delivery-planned',
+      id: 'archive.preflight-ready',
       kind: 'self',
       from: { phase: 'archive', statuses: ['running'] },
       to: { phase: 'archive', status: 'running' },
-      trigger: 'archive-delivery-input-frozen',
-      requiredValidatorProfile: 'archive.delivery-ready',
+      trigger: 'archive-preflight-accepted',
+      requiredValidatorProfile: 'archive.preflight-valid',
     },
     {
-      id: 'archive.publication-completed',
-      kind: 'self',
-      from: { phase: 'archive', statuses: ['running'] },
-      to: { phase: 'archive', status: 'waiting' },
-      trigger: 'business-publication-receipts-accepted',
-      requiredValidatorProfile: 'archive.delivery-ready',
-    },
-    {
-      id: 'archive.merge-pending',
-      kind: 'self',
-      from: { phase: 'archive', statuses: ['waiting'] },
-      to: { phase: 'archive', status: 'waiting' },
-      trigger: 'business-merge-facts-refreshed',
-      requiredValidatorProfile: 'archive.delivery-ready',
-    },
-    {
-      id: 'archive.business-merged',
-      kind: 'self',
-      from: { phase: 'archive', statuses: ['waiting'] },
-      to: { phase: 'archive', status: 'running' },
-      trigger: 'all-business-merge-requests-merged',
-      requiredValidatorProfile: 'archive.delivery-ready',
-    },
-    {
-      id: 'archive.post-merge-verified',
+      id: 'archive.specification-closed',
       kind: 'self',
       from: { phase: 'archive', statuses: ['running'] },
       to: { phase: 'archive', status: 'running' },
-      trigger: 'exact-merge-evidence-gate-satisfied',
-      requiredValidatorProfile: 'verify.evidence-gate',
+      trigger: 'specification-closure-receipt-accepted',
+      requiredValidatorProfile: 'archive.preflight-valid',
     },
     {
       id: 'archive.completed',
       kind: 'complete',
       from: { phase: 'archive', statuses: ['running'] },
       to: { phase: 'archive', status: 'completed' },
-      trigger: 'specification-closed-and-final-merge-request-ready',
-      requiredValidatorProfile: 'archive.specification-closed',
+      trigger: 'publication-receipt-accepted',
+      requiredValidatorProfile: 'archive.publication-complete',
+    },
+    {
+      id: 'archive.publication-blocked',
+      kind: 'self',
+      from: { phase: 'archive', statuses: ['running', 'blocked'] },
+      to: { phase: 'archive', status: 'blocked' },
+      trigger: 'publication-receipt-missing-or-invalid',
+      requiredValidatorProfile: 'archive.publication-complete',
     },
     {
       id: 'design.revision-requested',
@@ -379,13 +325,6 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       from: { phase: 'verify', statuses: ['running', 'blocked'] },
       to: { phase: 'build', status: 'running' },
       trigger: 'verification-failed-or-drifted',
-    },
-    {
-      id: 'archive.implementation-drift',
-      kind: 'fallback',
-      from: { phase: 'archive', statuses: ['running', 'waiting', 'blocked'] },
-      to: { phase: 'build', status: 'running' },
-      trigger: 'implementation-drift-detected',
     },
     {
       id: 'archive.specification-conflict',
@@ -495,7 +434,10 @@ export function assertChangeLifecycleDefinition(
       }
     }
     assertNonEmpty(work.methodProfile.id, `Lifecycle Work ${work.kind} Method Profile`);
-    assertNonEmpty(work.methodProfile.version, `Lifecycle Work ${work.kind} Method Profile version`);
+    assertNonEmpty(
+      work.methodProfile.version,
+      `Lifecycle Work ${work.kind} Method Profile version`,
+    );
     let registeredMethodProfile;
     try {
       registeredMethodProfile = BUILTIN_METHOD_PROFILE_REGISTRY.snapshot(
@@ -659,9 +601,7 @@ function normalizeWork(
       operations: [...scope.operations].sort(),
     })),
     outputContract: {
-      ...(work.outputContract.providerId
-        ? { providerId: work.outputContract.providerId }
-        : {}),
+      ...(work.outputContract.providerId ? { providerId: work.outputContract.providerId } : {}),
       artifactKinds: [...work.outputContract.artifactKinds].sort(),
       trackerPublish: work.outputContract.trackerPublish,
     },
@@ -679,7 +619,9 @@ export function normalizeChangeLifecycleDefinition(
     id: definition.id,
     version: definition.version,
     phases: definition.phases.map(normalizePhase),
-    works: definition.works.map(normalizeWork).sort((left, right) => left.kind.localeCompare(right.kind)),
+    works: definition.works
+      .map(normalizeWork)
+      .sort((left, right) => left.kind.localeCompare(right.kind)),
     transitions: definition.transitions
       .map(normalizeTransition)
       .sort((left, right) => left.id.localeCompare(right.id)),

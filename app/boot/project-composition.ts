@@ -1,10 +1,7 @@
-import path from 'node:path';
-
 import type {
   EffectiveProjectConfig,
   TeamPluginConfig,
 } from '../../domains/project-configuration/types.js';
-import type { DeliveryPolicy } from '../../domains/delivery/types.js';
 import type { SpecificationRoot } from '../../services/specification.js';
 import type { BuiltinPluginRegistration } from './descriptor.js';
 import {
@@ -18,7 +15,6 @@ const DEFAULT_SKILL_PROVIDERS = [
   { id: 'skill-provider-filesystem' },
 ] as const;
 const DEFAULT_SPECIFICATION_PROVIDER_ID = 'specification-openspec';
-const DEFAULT_PLATFORM_EVENTS_PROVIDER = { id: 'platform-events-file' } as const;
 const PRODUCT_ROOT_IDENTITY = '@repoctopus/product-root';
 const WORKSPACE_ROOT_IDENTITY = '@repoctopus/workspace-root';
 
@@ -44,17 +40,6 @@ function configuredSelection(
   if (team?.config !== undefined) return { id, config: team.config };
   const builtin = builtinConfig[id];
   return builtin ? runtimeSelection(id, builtin.config, builtin.identityConfig) : { id };
-}
-
-function deliveryPolicy(config: EffectiveProjectConfig): DeliveryPolicy {
-  if (!config.shared.delivery) {
-    throw new Error('Post-merge Runner requires a shared Delivery policy');
-  }
-  return {
-    apiVersion: 'repoctopus/v1alpha1',
-    kind: 'DeliveryPolicy',
-    ...structuredClone(config.shared.delivery),
-  };
 }
 
 function projectSelections(
@@ -99,20 +84,13 @@ function projectSelections(
       config: { workspaceRoot: specificationRepository.resolvedPath, specificationRoot },
       identityConfig: { workspaceRoot: WORKSPACE_ROOT_IDENTITY, specificationRoot },
     },
-    'platform-events-file': {
-      config: { workspaceRoot },
-      identityConfig: { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
-    },
   };
   const skillProviders = config.shared.skillProviders ?? DEFAULT_SKILL_PROVIDERS;
-  const platformEventsProvider =
-    config.shared.platformEvents?.storeProvider ?? DEFAULT_PLATFORM_EVENTS_PROVIDER;
   const selectedProviders = [
     ...skillProviders.map((provider) =>
       configuredSelection(provider.id, builtinConfig, teamPlugins),
     ),
     configuredSelection(specificationProvider.id, builtinConfig, teamPlugins),
-    configuredSelection(platformEventsProvider.id, builtinConfig, teamPlugins),
   ];
   const selectedIds = new Set(selectedProviders.map((selection) => selection.id));
 
@@ -120,6 +98,11 @@ function projectSelections(
     { id: 'command-router' },
     { id: 'skill-registry' },
     ...selectedProviders,
+    runtimeSelection(
+      'skill-provider-consistency-method',
+      { productRoot },
+      { productRoot: PRODUCT_ROOT_IDENTITY },
+    ),
     { id: 'skill-command' },
     runtimeSelection(
       'specification-planning',
@@ -137,7 +120,6 @@ function projectSelections(
       { productRoot },
       { productRoot: PRODUCT_ROOT_IDENTITY },
     ),
-    { id: 'platform-event-command' },
     runtimeSelection(
       'action-store-file',
       { workspaceRoot },
@@ -185,18 +167,8 @@ function projectSelections(
     ),
     runtimeSelection(
       'evidence-coordinator',
-      {
-        workspaceRoot,
-        ...(config.shared.postMerge
-          ? { postMergeEvidenceProfile: config.shared.postMerge.evidenceProfile }
-          : {}),
-      },
-      {
-        workspaceRoot: WORKSPACE_ROOT_IDENTITY,
-        ...(config.shared.postMerge
-          ? { postMergeEvidenceProfile: config.shared.postMerge.evidenceProfile }
-          : {}),
-      },
+      { workspaceRoot },
+      { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
     ),
     { id: 'evidence-command' },
     runtimeSelection(
@@ -204,19 +176,30 @@ function projectSelections(
       {
         workspaceRoot,
         projectConfigDigest: `sha256:${config.effectiveDigest}`,
-        ...(config.shared.platformEvents
-          ? { githubTokenVariable: config.shared.platformEvents.github.apiCredential.variable }
+        ...(config.shared.delivery?.publication.apiCredential
+          ? { githubTokenVariable: config.shared.delivery.publication.apiCredential.variable }
           : {}),
       },
       {
         workspaceRoot: WORKSPACE_ROOT_IDENTITY,
         projectConfigDigest: `sha256:${config.effectiveDigest}`,
-        ...(config.shared.platformEvents
-          ? { githubTokenVariable: config.shared.platformEvents.github.apiCredential.variable }
+        ...(config.shared.delivery?.publication.apiCredential
+          ? { githubTokenVariable: config.shared.delivery.publication.apiCredential.variable }
           : {}),
       },
     ),
     { id: 'delivery-command' },
+    runtimeSelection(
+      'consistency-reconciler',
+      { workspaceRoot },
+      { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
+    ),
+    { id: 'consistency-command' },
+    runtimeSelection(
+      'consistency-review',
+      { workspaceRoot },
+      { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
+    ),
     runtimeSelection(
       'workflow-runs',
       { workspaceRoot },
@@ -229,7 +212,6 @@ function projectSelections(
     ),
     { id: 'change-lifecycle-migration-command' },
     { id: 'workflow-run-command' },
-    ...postMergeSelections(productRoot, workspaceRoot, config),
     ...(config.shared.composition?.plugins
       .filter((plugin) => !selectedIds.has(plugin.id))
       .map((plugin) => ({
@@ -239,112 +221,13 @@ function projectSelections(
   ];
 }
 
-function postMergeSelections(
-  productRoot: string,
-  workspaceRoot: string,
-  config: EffectiveProjectConfig,
-): CompositionPluginSelection[] {
-  const postMerge = config.shared.postMerge;
-  if (!postMerge) return [];
-  return [
-    runtimeSelection(
-      'post-merge-coordinator',
-      {
-        policy: deliveryPolicy(config),
-        execution: {
-          projectId: config.shared.workspace.id,
-          workspaceRoot,
-          workflowSource: path.join(productRoot, 'workflows', 'post-merge.yaml'),
-          evidenceProfile: postMerge.evidenceProfile,
-          repositories: config.shared.repositories.map((repository) => ({
-            repositoryId: repository.id,
-            path: path.resolve(workspaceRoot, repository.path),
-          })),
-        },
-      },
-      {
-        policy: deliveryPolicy(config),
-        execution: {
-          projectId: config.shared.workspace.id,
-          workspaceRoot: WORKSPACE_ROOT_IDENTITY,
-          workflowSource: `${PRODUCT_ROOT_IDENTITY}/workflows/post-merge.yaml`,
-          evidenceProfile: postMerge.evidenceProfile,
-          repositories: config.shared.repositories.map((repository) => ({
-            repositoryId: repository.id,
-            path: `${WORKSPACE_ROOT_IDENTITY}/${repository.path.replaceAll('\\', '/')}`,
-          })),
-        },
-      },
-    ),
-    runtimeSelection(
-      'post-merge-actions',
-      {
-        workspaceRoot,
-        temporaryRoot: path.resolve(workspaceRoot, postMerge.temporaryRoot),
-        verificationPathPrefixes: postMerge.allowedWorkspacePaths.verificationPathPrefixes,
-        publication: postMerge.publication,
-      },
-      {
-        workspaceRoot: WORKSPACE_ROOT_IDENTITY,
-        temporaryRoot: `${WORKSPACE_ROOT_IDENTITY}/${postMerge.temporaryRoot.replaceAll('\\', '/')}`,
-        verificationPathPrefixes: postMerge.allowedWorkspacePaths.verificationPathPrefixes,
-        publication: postMerge.publication,
-      },
-    ),
-    { id: 'archive-command' },
-    { id: 'post-merge-command' },
-  ];
-}
-
-function runnerSelections(
-  productRoot: string,
-  workspaceRoot: string,
-  config: EffectiveProjectConfig,
-): CompositionPluginSelection[] {
-  const platformEvents = config.shared.platformEvents;
-  if (!platformEvents) {
-    throw new Error('Runner application requires platformEvents configuration');
-  }
-  return [
-    ...projectSelections(productRoot, workspaceRoot, config),
-    {
-      id: 'http-host',
-      config: {
-        hostname: platformEvents.http.hostname,
-        port: platformEvents.http.port,
-        shutdownTimeoutMs: platformEvents.http.shutdownTimeoutMs,
-      },
-    },
-    {
-      id: 'github-webhook-route',
-      config: {
-        source: platformEvents.github.source,
-        path: platformEvents.github.path,
-        maxBodyBytes: platformEvents.github.maxBodyBytes,
-        credentialVariable: platformEvents.github.webhookCredential.variable,
-      },
-    },
-    {
-      id: 'platform-event-runner',
-      config: {
-        owner: platformEvents.runner.identity,
-        leaseMs: platformEvents.runner.leaseMs,
-        pollIntervalMs: platformEvents.runner.pollIntervalMs,
-        retryDelayMs: platformEvents.runner.retryDelayMs,
-        maxAttempts: platformEvents.runner.maxAttempts,
-        shutdownTimeoutMs: platformEvents.runner.shutdownTimeoutMs,
-      },
-    },
-    ...(config.shared.postMerge ? [{ id: 'github-post-merge-events' }] : []),
-    { id: 'runner-application' },
-  ];
-}
-
 const BASE_REQUIRED_SERVICES = [
   'actionDispatcher',
   'actionStore',
   'browserMaintenance',
   'changeLifecycleMigration',
+  'consistencyReconciler',
+  'consistencyReview',
   'commandRouter',
   'delivery',
   'evidenceAdapters',
@@ -354,7 +237,6 @@ const BASE_REQUIRED_SERVICES = [
   'lifecycleValidators',
   'project',
   'projectOnboarding',
-  'platformEvents',
   'runStore',
   'runtimeWorkGuard',
   'skills',
@@ -400,26 +282,6 @@ export function compileProjectComposition(
     'repoctopus-project',
     projectSelections(productRoot, workspaceRoot, config),
     BASE_REQUIRED_SERVICES,
-    config,
-    catalog,
-  );
-}
-
-export function compileRunnerComposition(
-  productRoot: string,
-  workspaceRoot: string,
-  config: EffectiveProjectConfig,
-  catalog: ReadonlyMap<string, BuiltinPluginRegistration>,
-): CompiledComposition {
-  return compile(
-    'repoctopus-runner',
-    runnerSelections(productRoot, workspaceRoot, config),
-    [
-      ...BASE_REQUIRED_SERVICES,
-      'httpHost',
-      'platformEventRunner',
-      ...(config.shared.postMerge ? ['postMergeActions', 'postMergeCoordinator'] : []),
-    ],
     config,
     catalog,
   );

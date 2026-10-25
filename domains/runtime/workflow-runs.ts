@@ -81,15 +81,11 @@ function lifecycleState(snapshot: ChangeLifecycleSnapshot): ChangeLifecycleState
     ...(snapshot.archiveDeliveryInput
       ? { archiveDeliveryInput: structuredClone(snapshot.archiveDeliveryInput) }
       : {}),
-    ...(snapshot.archivePublication
-      ? { archivePublication: structuredClone(snapshot.archivePublication) }
+    ...(snapshot.specificationClosure
+      ? { specificationClosure: structuredClone(snapshot.specificationClosure) }
       : {}),
-    ...(snapshot.archiveMerge ? { archiveMerge: structuredClone(snapshot.archiveMerge) } : {}),
-    ...(snapshot.postMergeVerification
-      ? { postMergeVerification: structuredClone(snapshot.postMergeVerification) }
-      : {}),
-    ...(snapshot.archiveClosure
-      ? { archiveClosure: structuredClone(snapshot.archiveClosure) }
+    ...(snapshot.publicationReceipt
+      ? { publicationReceipt: structuredClone(snapshot.publicationReceipt) }
       : {}),
   };
 }
@@ -143,39 +139,21 @@ function lifecycleNextActions(snapshot: ChangeLifecycleSnapshot) {
       },
     ];
   }
-  if (snapshot.phase === 'archive' && snapshot.currentWork?.kind === 'delivery.prepare') {
+  if (snapshot.phase === 'archive' && snapshot.currentWork?.kind === 'specification.close') {
     return [
       {
         id: snapshot.currentWork.workId,
         kind: 'work' as const,
-        label: 'Publish Business deliveries',
+        label: 'Close the verified Specification change',
       },
     ];
   }
-  if (snapshot.phase === 'archive' && snapshot.currentWork?.kind === 'delivery.await-merge') {
-    return [
-      {
-        id: snapshot.currentWork.workId,
-        kind: 'wait' as const,
-        label: 'Refresh Business merge facts',
-      },
-    ];
-  }
-  if (snapshot.phase === 'archive' && snapshot.currentWork?.kind === 'delivery.verify-merged') {
+  if (snapshot.phase === 'archive' && snapshot.currentWork?.kind === 'delivery.publish') {
     return [
       {
         id: snapshot.currentWork.workId,
         kind: 'work' as const,
-        label: 'Verify exact merged commits',
-      },
-    ];
-  }
-  if (snapshot.phase === 'archive' && snapshot.currentWork?.kind === 'specification.archive') {
-    return [
-      {
-        id: snapshot.currentWork.workId,
-        kind: 'work' as const,
-        label: 'Close Specification and publish final Change MR',
+        label: 'Publish all merge requests and accept the Publication Receipt',
       },
     ];
   }
@@ -434,8 +412,7 @@ export class WorkflowRunCoordinator {
       if (!state.changeLifecycle) throw new Error(`Run is not a Change Run: ${runId}`);
       if (
         (observation.kind === 'verify-gate-satisfied' ||
-          observation.kind === 'verify-gate-rejected' ||
-          observation.kind === 'archive-post-merge-verified') &&
+          observation.kind === 'verify-gate-rejected') &&
         observation.workflowStateVersion !== state.stateVersion
       ) {
         throw new Error('Satisfied Verify Gate is bound to a stale workflow state');
@@ -457,8 +434,7 @@ export class WorkflowRunCoordinator {
         status,
         changeLifecycle,
         acceptedEvidenceBundleIds:
-          observation.kind === 'verify-gate-satisfied' ||
-          (observation.kind === 'archive-post-merge-verified' && observation.result === 'satisfied')
+          observation.kind === 'verify-gate-satisfied'
             ? [...new Set([...state.acceptedEvidenceBundleIds, observation.bundleId])]
             : state.acceptedEvidenceBundleIds,
         stateVersion: state.stateVersion + 1,

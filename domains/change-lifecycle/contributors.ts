@@ -2,16 +2,9 @@ import { createHash } from 'node:crypto';
 
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import type { ChangeLifecycleDefinition, WorkDescriptor } from './transition.js';
-import type {
-  LifecycleWriteScopeDefinition,
-  WorkSideEffectClass,
-} from './transition.js';
+import type { LifecycleWriteScopeDefinition, WorkSideEffectClass } from './transition.js';
 
-export type LifecycleContributorKind =
-  | 'definition'
-  | 'work'
-  | 'validator'
-  | 'extension';
+export type LifecycleContributorKind = 'definition' | 'work' | 'validator' | 'extension';
 
 export interface LifecycleContributorIdentity {
   schemaVersion: 1;
@@ -75,10 +68,10 @@ export interface LifecycleContributorCompatibility {
 }
 
 export function lifecycleContributorIdentity<K extends LifecycleContributorKind>(
-  input: Omit<
-    LifecycleContributorIdentity,
-    'schemaVersion' | 'kind' | 'compatibleWith'
-  > & { kind: K; compatibleWith?: readonly string[] },
+  input: Omit<LifecycleContributorIdentity, 'schemaVersion' | 'kind' | 'compatibleWith'> & {
+    kind: K;
+    compatibleWith?: readonly string[];
+  },
 ): LifecycleContributorIdentity & { kind: K } {
   const identity = {
     schemaVersion: 1 as const,
@@ -167,9 +160,7 @@ export function lifecycleExtensionFindings(
   definition: ChangeLifecycleDefinition,
 ): string[] {
   const findings: string[] = [];
-  const checkpoints = new Set(
-    definition.phases.flatMap((phase) => phase.extensionCheckpoints),
-  );
+  const checkpoints = new Set(definition.phases.flatMap((phase) => phase.extensionCheckpoints));
   const coreWorkKinds = new Set(definition.works.map((work) => work.kind));
   const capabilities = new Set(extension.declaredCapabilities);
   const writeScopes = new Set(extension.declaredWriteScopes.map(scopeKey));
@@ -182,7 +173,8 @@ export function lifecycleExtensionFindings(
     findings.push('protected-gate-bypass-requested');
   }
   for (const work of extension.works) {
-    if (!checkpoints.has(work.checkpoint)) findings.push(`undeclared-checkpoint:${work.checkpoint}`);
+    if (!checkpoints.has(work.checkpoint))
+      findings.push(`undeclared-checkpoint:${work.checkpoint}`);
     if (!work.kind.trim() || coreWorkKinds.has(work.kind)) {
       findings.push(`core-or-invalid-work-kind:${work.kind}`);
     }
@@ -194,8 +186,7 @@ export function lifecycleExtensionFindings(
     }
     if (
       work.sideEffectClass === 'specification-write' ||
-      work.capabilities.includes('specification.write') ||
-      work.kind === 'specification.archive'
+      work.capabilities.includes('specification.write')
     ) {
       findings.push(`premature-specification-archive:${work.kind}`);
     }
@@ -205,7 +196,8 @@ export function lifecycleExtensionFindings(
       findings.push(`undeclared-checkpoint:${validation.checkpoint}`);
     }
     if (!validation.profileId.trim()) findings.push('invalid-validator-profile');
-    if (!validation.required) findings.push(`optional-authoritative-validation:${validation.profileId}`);
+    if (!validation.required)
+      findings.push(`optional-authoritative-validation:${validation.profileId}`);
   }
   return [...new Set(findings)].sort();
 }

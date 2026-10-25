@@ -1,8 +1,6 @@
 import type { Context, Plugin } from '@deepseek-ai/cordis';
 
-import type {
-  DeliveryPolicy,
-} from '../../domains/delivery/types.js';
+import type { DeliveryPolicy } from '../../domains/delivery/types.js';
 
 const plugin = ((context: Context) => {
   const migrationRequired = (replacementCommand: string) => ({
@@ -36,7 +34,7 @@ const plugin = ((context: Context) => {
       }),
       context.commandRouter.register({
         name: 'delivery.refresh',
-        execute: () => Promise.resolve(migrationRequired('run.archive.refresh')),
+        execute: () => Promise.resolve(migrationRequired('change.reconcile')),
       }),
       context.commandRouter.register({
         name: 'delivery.migration-plan',

@@ -2,7 +2,6 @@ import type { Context } from '@deepseek-ai/cordis';
 
 import { DeliveryService as DeliveryDomainService } from '../../domains/delivery/service.js';
 import { DeliveryServiceV3 } from '../../domains/delivery/service-v3.js';
-import { FinalChangePublicationService } from '../../domains/delivery/final-change-publication.js';
 import type {
   DeliveryIntent,
   DeliveryIntentV3,
@@ -12,22 +11,19 @@ import type {
   HumanDecisionResponse,
   MergeRequestReference,
   TrustedActor,
+  MergeRequestStatus,
 } from '../../domains/delivery/types.js';
+import type { PublicationReceiptItem } from '../../domains/delivery/publication-receipt.js';
 import type {
-  PostMergePublicationReceipt,
-  PostMergePublicationReceiptV2,
-  PostMergePublicationRequest,
-  PostMergePublicationRequestV2,
-} from '../../domains/delivery/post-merge.js';
+  SpecificationPublicationRequest,
+  SpecificationPublicationResult,
+} from '../../domains/delivery/specification-publication.js';
 import type { DeliveryV2MigrationPlan } from '../../domains/delivery/migration.js';
-import type {
-  ArchiveFinalPublicationProof,
-  ArchiveMergeRefreshResult,
-  ArchivePublicationResult,
-} from '../../domains/delivery/service-v3.js';
+import type { ArchivePublicationResult } from '../../domains/delivery/service-v3.js';
 import type { ProjectSnapshot } from '../../domains/project/types.js';
 import { canonicalJson } from '../../domains/workflow-contract/canonical.js';
 import { FileDeliveryEvidence } from '../../platform/delivery/file-delivery-evidence.js';
+import { SpecificationPublicationAdapter } from '../../platform/delivery/specification-publication.js';
 import { FileDeliveryStore } from '../../platform/delivery/file-delivery-store.js';
 import {
   deliveryStateSchemaVersion,
@@ -79,7 +75,6 @@ export class FileDeliveryProvider extends Delivery {
       undefined,
       deliveryTelemetryFromEnvironment(environment),
       this.ctx.compositionIdentity.current().compositionDigest,
-      git,
     );
   }
 
@@ -97,8 +92,28 @@ export class FileDeliveryProvider extends Delivery {
       new FileDeliveryEvidence(this.config.workspaceRoot),
       this.ctx.compositionIdentity.current().compositionDigest,
       undefined,
-      new FinalChangePublicationService(git, mergeRequests),
     );
+  }
+
+  override observePublication(
+    item: PublicationReceiptItem,
+    signal?: AbortSignal,
+  ): Promise<MergeRequestStatus> {
+    return this.operations.run({ cancellable: true, signal }, async () => {
+      const environment = this.config.environment ?? process.env;
+      const adapter = new GitHubMergeRequestAdapter(
+        new EnvironmentCredentialProvider(environment, this.config.githubTokenVariable),
+      );
+      const status = await adapter.status(item.mergeRequest);
+      if (
+        status.repositoryId !== item.repositoryId ||
+        status.sourceBranch !== item.sourceBranch ||
+        status.targetBranch !== item.targetBranch
+      ) {
+        throw new Error(`Observed publication identity drifted: ${item.publicationId}`);
+      }
+      return status;
+    });
   }
 
   private async assertPlanningApproval(intent: DeliveryIntentV3, remote: string): Promise<void> {
@@ -205,46 +220,17 @@ export class FileDeliveryProvider extends Delivery {
     });
   }
 
-  override refreshArchive(
-    publication: ArchivePublicationResult,
-    policy: DeliveryPolicy,
+  override publishSpecification(
+    request: SpecificationPublicationRequest,
     signal?: AbortSignal,
-  ): Promise<ArchiveMergeRefreshResult> {
-    return this.operations.run({ cancellable: false, signal }, () =>
-      this.domainV3(policy).refreshArchive(publication),
-    );
-  }
-
-  override publishPostMerge(
-    request: PostMergePublicationRequest,
-    signal?: AbortSignal,
-  ): Promise<PostMergePublicationReceipt> {
-    return this.operations.run({ cancellable: false, signal }, () =>
-      Promise.reject(
-        new Error(
-          `Delivery v2 is read-only and cannot publish post-merge closure for ${request.changeId}`,
-        ),
-      ),
-    );
-  }
-
-  override publishFinalChange(
-    request: PostMergePublicationRequestV2,
-    signal?: AbortSignal,
-  ): Promise<PostMergePublicationReceiptV2> {
-    return this.operations.run({ cancellable: false, signal }, () =>
-      this.domainV3().publishFinalChange(request),
-    );
-  }
-
-  override publishArchiveFinalChange(
-    request: PostMergePublicationRequestV2,
-    proof: ArchiveFinalPublicationProof,
-    signal?: AbortSignal,
-  ): Promise<PostMergePublicationReceiptV2> {
-    return this.operations.run({ cancellable: false, signal }, () =>
-      this.domainV3().publishArchiveFinalChange(request, proof),
-    );
+  ): Promise<SpecificationPublicationResult> {
+    return this.operations.run({ cancellable: false, signal }, () => {
+      const environment = this.config.environment ?? process.env;
+      const mergeRequests = new GitHubMergeRequestAdapter(
+        new EnvironmentCredentialProvider(environment, this.config.githubTokenVariable),
+      );
+      return new SpecificationPublicationAdapter(mergeRequests).publish(request);
+    });
   }
 
   refresh(

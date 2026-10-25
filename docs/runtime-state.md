@@ -2,7 +2,7 @@
 
 ## Change Run 是唯一生命周期权威
 
-一个 Workspace、change 和 generation 最多有一个未终结 Change Run。它按 `Open → Design → Build → Verify → Archive` 推进，`phase`、`status`、当前 Work、Task progress、wait、blocker、Evidence 和 next actions 都来自同一条 accepted trajectory。Specification、Delivery、Webhook、CLI、Desktop 与 OTLP 只能提交事实或读取 `ChangeRunProjection`，不能维护另一套阶段状态。
+一个 Workspace、change 和 generation 最多有一个未终结 Change Run。它按 `Open → Design → Build → Verify → Archive` 推进，`phase`、`status`、当前 Work、Task progress、wait、blocker、Evidence 和 next actions 都来自同一条 accepted trajectory。Specification、Delivery、CLI、Desktop 与 OTLP 只能提交事实或读取 `ChangeRunProjection`，不能维护另一套阶段状态。
 
 ```powershell
 node bin/repoctopus.js run status --workspace . --run <run-id> --json
@@ -64,4 +64,6 @@ Change Run 还冻结 Lifecycle Definition、Work Contributor、Validator、Exten
 | `transition.json` | 尚未完成的交付状态转换 Journal           |
 | `transition.lock` | 跨进程交付锁；进程退出后的陈旧锁可回收   |
 
-旧 Delivery 状态仍可只读诊断和迁移，但新写入已经并入同一 Change Run 的 Archive phase。发布 Business MR、等待合入、核对精确 merge commit、关闭规格和创建最终 Change MR 都是持久 Work；只有最后一步 Receipt 被同一 Run 接受后才进入 `completed`。所有 MR 都由人合入，Runtime 不执行 merge。
+旧 Delivery 状态仍可只读诊断和迁移，但新写入已经并入同一 Change Run 的 Archive phase。Archive 关闭规格，发布全部 Business MR 与最终 Change MR，并核对完整 `PublicationReceipt`；Receipt 被同一 Run 接受后立即进入 `completed`，不等待 MR 合入。所有 MR 都由人或托管平台合入，Runtime 不执行 merge。
+
+Publication Receipt 是完成证明，不是第二套状态机。后续审查、流水线或人工修改造成的远端 head/state 变化由 `change reconcile` 或下一次 `run start` 有界拉取。Reconciler 不修改已完成 Run；需要规格补偿时创建普通后续 Change。

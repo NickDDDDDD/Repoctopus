@@ -7,6 +7,11 @@ const TASK = /^(\s*)-\s+\[([ xX])\]\s+(\d+(?:\.\d+)*)\s+(.+?)\s*$/u;
 const BLOCKED_BY = /^\s*(?:-\s*)?(?:\*\*)?Blocked by:(?:\*\*)?\s*(.+?)\s*$/iu;
 const ACCEPTANCE = /^\s*(?:-\s*)?(?:\*\*)?Acceptance(?: criteria)?:(?:\*\*)?\s*(.+?)\s*$/iu;
 const REQUIREMENTS = /^\s*(?:-\s*)?(?:\*\*)?Requirements?(?: mappings?)?:(?:\*\*)?\s*(.+?)\s*$/iu;
+const FUTURE_PHASE_DEPENDENCY = [
+  /\b(?:after|once|when)\b.*\b(?:verify|verification|archive|merge request|mr|consistency review)\b.*\b(?:complete[sd]?|merged?|result|verdict|passes?)\b/iu,
+  /\b(?:wait(?:ing)? for|depends? on)\b.*\b(?:verification|archive|merge request|mr merge|consistency review)\b/iu,
+  /(?:等待|依赖).*(?:验证|归档|MR|合入|一致性审查).*(?:完成|结果|结论|通过|合入)/u,
+] as const;
 
 function sha256(value: unknown): `sha256:${string}` {
   return `sha256:${createHash('sha256').update(canonicalJson(value)).digest('hex')}`;
@@ -36,6 +41,19 @@ function normalizeText(value: string): string {
 
 function semanticList(value: string, separator: RegExp): string[] {
   return [...new Set(value.split(separator).map(normalizeText).filter(Boolean))].sort();
+}
+
+export function assertBuildScopedTask(
+  task: Pick<SpecificationTask, 'taskId' | 'title' | 'acceptanceCriteria'>,
+): void {
+  const dependency = [task.title, ...task.acceptanceCriteria].find((text) =>
+    FUTURE_PHASE_DEPENDENCY.some((pattern) => pattern.test(text)),
+  );
+  if (dependency) {
+    throw new Error(
+      `Task ${task.taskId} is not Build-scoped; future Verify, Archive, MR merge, and consistency outcomes are Runtime facts: ${dependency}`,
+    );
+  }
 }
 
 export function parseSpecificationTasks(
@@ -108,7 +126,9 @@ export function parseSpecificationTasks(
       acceptanceCriteria: [...new Set(task.acceptanceCriteria)].sort(),
       requirementRefs: [...new Set(task.requirementRefs)].sort(),
     };
-    return { ...stable, status: task.status, taskRevision: sha256(stable) };
+    const projected = { ...stable, status: task.status, taskRevision: sha256(stable) };
+    if (projected.status === 'pending') assertBuildScopedTask(projected);
+    return projected;
   });
   return {
     schemaVersion: 1,

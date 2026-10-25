@@ -51,7 +51,7 @@ Attempt、Receipt、Artifact、Bundle 和 Gate 先持久化。之后 Runtime 把
 | `repoctopus.evidence.*`                         | Evidence Attempt、Bundle、Gate 关联  |
 | `repoctopus.action.receipt.id`                  | Runtime Action Dispatcher Receipt    |
 
-Archive 仍使用同一 Run 和相同字段；不再创建独立 Post-merge Run，也不输出 `repoctopus.post_merge.*` 平行语义。Webhook 进入 Inbox 但尚未被 Run 接受时，只能上报投递状态，不能提前把 change 标成 completed。
+Archive 仍使用同一 Run 和相同字段；不创建独立 Post-merge Run，也不输出 `repoctopus.post_merge.*` 平行语义。Publication Receipt 被同一 Run 接受时上报完成；后续 consistency reconcile 只上报有界的检查结果、变化类别和审查状态，不回写历史 phase。
 
 Log 和 Span 可以携带这些高基数关联 ID。Metric 只使用工作流名、事件类型、动作结果、Evidence Adapter、状态等有界维度；它们不使用 Run、change、Attempt、Bundle、Delivery、Envelope 或 Receipt ID，避免时间序列数量随执行次数增长。
 
@@ -66,4 +66,6 @@ OTel 属性只允许稳定 ID、Adapter、状态、可信等级、耗时，以�
 
 原始内容只保存在受本机保留策略管理的 Artifact Store 中。遥测失败诊断也不会被写回领域事实。
 
-Change lifecycle 映射只读取 accepted transition fact 中的枚举、稳定 ID 和摘要；自由文本 wait reason 只映射为有界 category。格式异常、疑似 Token、绝对路径、换行和超长值都会被拒绝。Action summary、规格正文、MR body、commit message、仓库 URL、文件列表和 webhook payload 不进入关联属性。
+Change lifecycle 映射只读取 accepted transition fact 中的枚举、稳定 ID 和摘要；自由文本 wait reason 只映射为有界 category。格式异常、疑似 Token、绝对路径、换行和超长值都会被拒绝。Action summary、规格正文、MR body、commit message、仓库 URL、文件列表和平台响应正文不进入关联属性。
+
+本地 Desktop 与远端 SigNoz 消费同一套 OTLP 事件和属性；Desktop Receiver 不扫描 `.repoctopus/` 或轮询 CLI，因此两个显示端不会因各自推断状态而分叉。Desktop 只负责当前 change 的低延迟视图，SigNoz 负责团队历史、趋势和流程改进。

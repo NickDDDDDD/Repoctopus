@@ -87,11 +87,11 @@ describe('telemetry mapping', () => {
         runId: baseRun.runId,
       },
     });
-    const run = { ...baseRun, status: 'waiting' as const, changeLifecycle: initial };
+    const run = { ...baseRun, status: 'completed' as const, changeLifecycle: initial };
     const event: TrajectoryEvent = {
       schemaVersion: 1,
       sequence: 9,
-      eventId: 'accepted-archive-wait',
+      eventId: 'accepted-publication-receipt',
       timestamp: '2026-01-01T00:09:00.000Z',
       type: 'change.lifecycle.transitioned',
       runId: run.runId,
@@ -100,23 +100,15 @@ describe('telemetry mapping', () => {
       data: {
         changeLifecycleTransition: {
           schemaVersion: 1,
-          transitionId: 'archive.await-merges',
+          transitionId: 'archive.completed',
           definition: initial.definition,
           revision: 9,
           from: { phase: 'archive', status: 'running' },
-          to: { phase: 'archive', status: 'waiting' },
-          workId: 'archive:await-merge:0123456789abcdef',
-          waitId: 'wait:platform:0123456789abcdef',
-          work: {
-            workId: 'archive:await-merge:0123456789abcdef',
-            kind: 'delivery.await-merge',
-            validatorProfile: {
-              id: 'archive.await-merge',
-              version: '1.0.0',
-              digest: `sha256:${'a'.repeat(64)}`,
-            },
-          },
-          wait: { waitId: 'wait:platform:0123456789abcdef', kind: 'platform-event' },
+          to: { phase: 'archive', status: 'completed' },
+          workId: null,
+          waitId: null,
+          work: null,
+          wait: null,
         },
         observation: {
           summary: 'private specification body',
@@ -135,7 +127,7 @@ describe('telemetry mapping', () => {
     const records = acceptedChangeLifecycleTelemetry(batch, event);
     expect(records.map((record) => record.signal)).toEqual(['phase', 'status', 'work', 'wait']);
     expect(new Set(records.map((record) => record.eventId))).toEqual(
-      new Set(['accepted-archive-wait']),
+      new Set(['accepted-publication-receipt']),
     );
     const desktop = projectChangeLifecycleTelemetry(records);
     const remote = projectChangeLifecycleTelemetry(

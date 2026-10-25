@@ -33,6 +33,7 @@ export function createSpecificationPlanningManifest(input: {
   const change = structuredClone(input.change);
   change.artifacts = [...artifacts].sort((left, right) => left.kind.localeCompare(right.kind));
   change.affectedCapabilities = [...new Set(change.affectedCapabilities)].sort();
+  change.retiredCapabilities = [...new Set(change.retiredCapabilities)].sort();
   const stable = {
     schemaVersion: 1 as const,
     kind: 'SpecificationPlanningManifest' as const,
@@ -43,9 +44,7 @@ export function createSpecificationPlanningManifest(input: {
   return { ...stable, semanticDigest: sha256(stable) };
 }
 
-export function assertSpecificationPlanningManifest(
-  manifest: SpecificationPlanningManifest,
-): void {
+export function assertSpecificationPlanningManifest(manifest: SpecificationPlanningManifest): void {
   const expected = createSpecificationPlanningManifest(manifest);
   if (
     manifest.semanticDigest !== expected.semanticDigest ||

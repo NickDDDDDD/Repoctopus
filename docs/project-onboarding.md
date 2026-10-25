@@ -29,7 +29,7 @@ $draft
 
 `--store` 是可编辑的 lowercase kebab-case OpenSpec Store ID；省略时优先沿用已有共享配置，否则从 Workspace 名称派生。草稿的 `storeBinding` 明确记录 Workspace 根与逐业务仓分类：未配置、已指向同一 Store、指向其他 Store、本地规格权威、配置损坏或只读。只有安全的未配置仓会得到 `openspec/config.yaml` 的精确 `before/after` pointer diff；冲突不会生成覆盖操作。用户不希望为某个仓安装 pointer 时，可以在候选中把 selection 改为 `skip`，或重新探测时传 `--skip-pointer repo-a,repo-b`。Runtime 仍通过显式 `--store` 使用权威 Store，不依赖业务仓 pointer。
 
-Store ID 是团队配置，registration 是每机状态：新成员、CI Runner 和另一台开发机 clone Workspace 后都必须各自登记相同 ID 到各自的绝对路径。pointer 可选且可按仓跳过，它不负责登记，也不改变 Workspace 的 Specification 权威。
+Store ID 是团队配置，registration 是每机状态：新成员、CI 节点和另一台开发机 clone Workspace 后都必须各自登记相同 ID 到各自的绝对路径。pointer 可选且可按仓跳过，它不负责登记，也不改变 Workspace 的 Specification 权威。
 
 ## 2. 由 Agent 补全候选
 
@@ -68,7 +68,7 @@ node bin/repoctopus.js project review --workspace . --request $request
 
 审批摘要同时绑定完整 Store binding proposal，不能在等待期间替换 Store ID、Workspace 根、仓库选择或 pointer diff。批准后的 apply 先用 OpenSpec `store register` 核对或登记当前 Workspace checkout，绝不调用会删除目录的 `store remove`。随后为每个选择安装的业务仓分别保存 Intent、重新比较 `openspec/config.yaml` 的 `before` 内容、原子写入并保存 Receipt；一个仓的操作不伪装成跨仓事务。进程若在写入与 Receipt 之间退出，重试会识别完全相同的 `after` 内容并补记 `recovered`，其他内容则作为输入漂移拒绝且不覆盖。生成的 Workspace 配置、Store metadata 和业务仓 pointer 仍是各仓普通 Git 变化，必须走后续正常 Change/Delivery 发布流程，接入 apply 本身不 commit、push 或创建 MR。
 
-需要从本机安全移除登记时，先停止引用该 Workspace 的 Runner/Desktop，运行 `npx openspec context --store <store-id> --json` 核对精确路径，再运行 `npx openspec store unregister <store-id> --json`。该命令不删除 checkout；禁止把 `store remove` 当作清理命令。业务仓 pointer 的删除必须作为普通 Git change 单独评审。
+需要从本机安全移除登记时，先停止引用该 Workspace 的 CLI/Desktop，运行 `npx openspec context --store <store-id> --json` 核对精确路径，再运行 `npx openspec store unregister <store-id> --json`。该命令不删除 checkout；禁止把 `store remove` 当作清理命令。业务仓 pointer 的删除必须作为普通 Git change 单独评审。
 
 ## 5. 运行首次 Evidence
 

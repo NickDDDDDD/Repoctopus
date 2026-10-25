@@ -11,7 +11,7 @@
   ],
   "legacyPostMergeConfig": [
     {
-      "path": "plugins/post-merge/rogue-actions-provider.ts",
+      "path": "app/boot/rogue-delivery-plugin.ts",
       "contents": "export const publication = { operations: ['commit', 'push', 'merge_request.update'], changeMergeRequest: { mode: 'update-existing' } };"
     }
   ],
@@ -19,12 +19,6 @@
     {
       "path": "platform/github/rogue-event-adapter.ts",
       "contents": "export async function accept(context) { await context.workflowRuns.start({}); }"
-    }
-  ],
-  "coordinatorStoreWrite": [
-    {
-      "path": "services/post-merge-coordinator.ts",
-      "contents": "export async function wake(context) { await context.runStore.commit({}); }"
     }
   ],
   "nonProviderClosure": [
@@ -63,12 +57,6 @@
     {
       "path": "services/rogue-run-writer.ts",
       "contents": "export async function force(context) { await context.runStore.commit({}); }"
-    }
-  ],
-  "independentPostMergeRun": [
-    {
-      "path": "plugins/events/rogue-post-merge.ts",
-      "contents": "export function start(input) { return postMergeRunOptions(input); }"
     }
   ],
   "callerSelectedLifecycleSkill": [

@@ -80,6 +80,18 @@
       ]
     }
   ],
+  "consistencyReviewUsage": {
+    "skill": "to-spec",
+    "provider": "matt-consistency-method",
+    "status": "snapshot-only-non-authoritative",
+    "allowedOutput": ["semantic-findings", "impact-recommendation", "evidence-mappings"],
+    "forbiddenOutput": [
+      "specification-write",
+      "ticket-publication",
+      "tracker-label",
+      "secondary-requirements-authority"
+    ]
+  },
   "rules": [
     {
       "id": "planning.synthesize-known-context",

@@ -12,7 +12,7 @@ $changeId = '<change-id>'
 $policyFile = Join-Path $workspace 'delivery-policy.yaml'
 ```
 
-如果你使用的是新 clone，先从团队备份或原 Runner 的持久卷恢复 `.repoctopus/`。不要通过复制部分 JSON、修改 `state.json` 或伪造 MR identity 重建状态。
+如果你使用的是新 clone，先从团队备份或原工作目录恢复 `.repoctopus/`。不要通过复制部分 JSON、修改 `state.json` 或伪造 MR identity 重建状态。
 
 ## 生成只读迁移计划
 
@@ -68,5 +68,4 @@ v3 Intent 完成后，重新执行规格严格校验并取得新的 planning app
 迁移计划完成后，继续阅读与当前阶段对应的指南：
 
 - [交付治理与失败恢复](delivery.md)：理解 v3 Intent、批准快照和发布边界。
-- [运维和恢复 Post-merge 收尾](post-merge.md)：在 Business MR 合入后恢复规格关闭。
-- [自举与 Runner 部署](self-hosting.md)：部署可接手团队 Change 的 Runner。
+- [短生命周期自举](self-hosting.md)：运行 Archive publication 与按需 reconcile。

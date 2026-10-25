@@ -44,23 +44,24 @@ import { acceptVerifyGate, rejectVerifyGate } from '../domains/change-lifecycle/
 import type { SpecificationTask } from '../domains/specification/types.js';
 import type {
   ChangeLifecycleState,
-  ArchiveMergeRefreshSource,
   ChangeRunProjection,
   WorkDescriptor,
 } from '../domains/change-lifecycle/transition.js';
 import {
   createArchiveDeliveryInput,
-  createArchiveDeliveryWork,
-  createAwaitMergeWork,
-  createPostMergeVerifyWork,
-  createSpecificationArchiveWork,
+  createDeliveryPublishWork,
+  createSpecificationCloseWork,
 } from '../domains/change-lifecycle/archive-input.js';
 import type { DeliveryIntentV3, DeliveryPolicy } from '../domains/delivery/types.js';
 import { deliveryPolicyDigest } from '../domains/delivery/snapshot.js';
 import type { WorkExecutorIdentity } from '../domains/action/types.js';
 import type { ArchivePublicationResult } from '../domains/delivery/service-v3.js';
-import type { EvidenceGateProjection } from '../domains/evidence/types.js';
-import type { MergeRequestIdentity } from '../domains/delivery/types.js';
+import {
+  createPublicationReceipt,
+  PUBLICATION_RECEIPT_API_VERSION,
+  type PublicationReceipt,
+  type PublicationReceiptItem,
+} from '../domains/delivery/publication-receipt.js';
 import { lifecycleContributorSnapshot } from '../domains/change-lifecycle/contributors.js';
 
 export interface StartChangeRunInput {
@@ -121,32 +122,8 @@ export interface ExecuteArchiveDeliveryInput {
 
 export interface ExecuteArchiveDeliveryResult {
   publication: ArchivePublicationResult;
-  actionReceiptId: string;
+  receipt: PublicationReceipt;
   run: RunStatusView;
-}
-
-export interface RefreshArchiveMergesInput {
-  runId: string;
-  policy: DeliveryPolicy;
-  source: ArchiveMergeRefreshSource;
-}
-
-export interface AcceptArchivePostMergeVerificationInput {
-  runId: string;
-  attemptId: string;
-  checkoutManifestDigest: `sha256:${string}`;
-  gate: EvidenceGateProjection;
-}
-
-export interface CompleteArchiveInput {
-  runId: string;
-  workId: string;
-  inputDigest: `sha256:${string}`;
-  closureId: `sha256:${string}`;
-  planDigest: `sha256:${string}`;
-  auditDigest: `sha256:${string}`;
-  publicationReceiptDigest: `sha256:${string}`;
-  finalMergeRequest: MergeRequestIdentity;
 }
 
 export class WorkflowRuns extends Service {
@@ -998,22 +975,19 @@ export class WorkflowRuns extends Service {
         intent: input.intent,
         policy: input.policy,
       });
-      const skills = await this.resolveLifecycleWorkSkills('delivery.prepare', signal);
       const repositoryIds = Array.isArray(state.trigger?.facts.repositoryIds)
         ? state.trigger.facts.repositoryIds.filter(
             (repositoryId): repositoryId is string => typeof repositoryId === 'string',
           )
         : [];
-      const work = createArchiveDeliveryWork({
+      const work = createSpecificationCloseWork({
         definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
         archive: archiveInput,
-        actionSkill: skills.actionSkill,
         workspaceRepositoryId: input.intent.changeBranch.repositoryId,
         repositoryIds,
       });
-      await this.coordinator.bindSkill(input.runId, skills.actionSkill);
       return this.coordinator.acceptChangeObservation(input.runId, {
-        kind: 'archive-delivery-ready',
+        kind: 'archive-preflight-ready',
         archiveInput,
         work,
       });
@@ -1032,7 +1006,7 @@ export class WorkflowRuns extends Service {
         !lifecycle ||
         state.status !== 'running' ||
         lifecycle.phase !== 'archive' ||
-        lifecycle.currentWork?.kind !== 'delivery.prepare' ||
+        lifecycle.currentWork?.kind !== 'specification.close' ||
         !archive
       ) {
         throw new Error(`Change Run has no active Archive Delivery Work: ${input.runId}`);
@@ -1040,6 +1014,31 @@ export class WorkflowRuns extends Service {
       if (deliveryPolicyDigest(input.policy) !== archive.publicationPolicyDigest) {
         throw new Error('Archive Delivery policy changed after Work planning');
       }
+      const targetBaselineDigest = `sha256:${createHash('sha256')
+        .update(archive.changeBranch.remoteOid)
+        .digest('hex')}` as const;
+      const plan = await this.ctx.specification.prepareClosure({
+        changeId: archive.changeId,
+        mergeFactsDigest: archive.digest,
+        targetBaselineDigest,
+        ...(signal ? { signal } : {}),
+      });
+      const closure = await this.ctx.specification.close(plan, signal);
+      const skills = await this.resolveLifecycleWorkSkills('delivery.publish', signal);
+      const publishWork = createDeliveryPublishWork({
+        definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+        archive,
+        closure,
+        actionSkill: skills.actionSkill,
+        workspaceRepositoryId: archive.changeBranch.repositoryId,
+        repositoryIds: input.project.repositories.map((repository) => repository.id),
+      });
+      await this.coordinator.bindSkill(input.runId, skills.actionSkill);
+      await this.coordinator.acceptChangeObservation(input.runId, {
+        kind: 'archive-specification-closed',
+        closure,
+        work: publishWork,
+      });
       const intent: DeliveryIntentV3 = {
         schemaVersion: 3,
         changeId: archive.changeId,
@@ -1057,6 +1056,17 @@ export class WorkflowRuns extends Service {
       });
       let publication: ArchivePublicationResult;
       try {
+        const closureDelivery = archive.businessDeliveries.filter(
+          (delivery) =>
+            delivery.repositoryId === archive.changeBranch.repositoryId &&
+            delivery.sourceBranch === archive.changeBranch.sourceBranch,
+        );
+        if (closureDelivery.length > 1) {
+          throw new Error('Specification closure maps to multiple Business deliveries');
+        }
+        const allowedDirtyPathsByDeliveryId = closureDelivery[0]
+          ? { [closureDelivery[0].deliveryId]: closure.changedFiles }
+          : undefined;
         publication = await this.ctx.delivery.publishArchive(
           {
             project: input.project,
@@ -1064,6 +1074,7 @@ export class WorkflowRuns extends Service {
             policy: input.policy,
             reportContents: `verification-report:sha256:${archive.verificationReport.sha256}`,
             evidenceBundleIds: [archive.evidenceBundleId],
+            ...(allowedDirtyPathsByDeliveryId ? { allowedDirtyPathsByDeliveryId } : {}),
           },
           signal,
         );
@@ -1077,168 +1088,78 @@ export class WorkflowRuns extends Service {
         );
         throw error;
       }
-      const accepted = await this.ctx.workDispatcher.acceptOutcome(
+      await this.ctx.workDispatcher.acceptOutcome(
         this.ctx.workDispatcher.outcome(claim, 'succeeded', 'Archive publication completed'),
       );
-      const waitWork = createAwaitMergeWork({
-        definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-        archive,
-        publication,
-        workspaceRepositoryId: archive.changeBranch.repositoryId,
-        repositoryIds: input.project.repositories.map((repository) => repository.id),
+      const verifiedAt = new Date().toISOString();
+      const businessItems: PublicationReceiptItem[] = archive.businessDeliveries.map((delivery) => {
+        const mergeRequestReceipt = publication.receipts.find(
+          (receipt) => receipt.deliveryId === delivery.deliveryId && receipt.mergeRequest,
+        );
+        const pushReceipt = publication.receipts.find(
+          (receipt) => receipt.deliveryId === delivery.deliveryId && receipt.remoteOid,
+        );
+        if (!mergeRequestReceipt?.mergeRequest || !pushReceipt?.remoteOid) {
+          throw new Error(`Business publication Receipt is incomplete: ${delivery.deliveryId}`);
+        }
+        return {
+          publicationId: `business:${delivery.deliveryId}`,
+          role: 'business',
+          deliveryId: delivery.deliveryId,
+          repositoryId: delivery.repositoryId,
+          remoteIdentity:
+            input.project.repositories.find((repository) => repository.id === delivery.repositoryId)
+              ?.remoteIdentity ??
+            (() => {
+              throw new Error(`Repository remote identity is missing: ${delivery.repositoryId}`);
+            })(),
+          remote: input.policy.publication.remote,
+          sourceBranch: delivery.sourceBranch,
+          targetBranch: delivery.targetBranch,
+          publishedOid: pushReceipt.remoteOid,
+          mergeRequest: mergeRequestReceipt.mergeRequest,
+          provenance: mergeRequestReceipt.provenance ?? 'recovered',
+          verifiedAt,
+        };
+      });
+      const specification = await this.ctx.delivery.publishSpecification(
+        {
+          changeId: archive.changeId,
+          generation: lifecycle.identity.generation,
+          workspaceRoot: input.project.root,
+          changeBranch: archive.changeBranch,
+          closure,
+          remote: input.policy.publication.remote,
+          title: `Archive specification: ${archive.changeId}`,
+          body: `Closes verified specification change ${archive.changeId}.`,
+        },
+        signal,
+      );
+      const receipt = createPublicationReceipt({
+        apiVersion: PUBLICATION_RECEIPT_API_VERSION,
+        kind: 'PublicationReceipt',
+        schemaVersion: 1,
+        changeId: archive.changeId,
+        generation: lifecycle.identity.generation,
+        runId: input.runId,
+        deliverySnapshotDigest: publication.snapshot.digest as `sha256:${string}`,
+        verificationInputDigest: archive.verificationInputDigest,
+        evidenceBundleIds: [archive.evidenceBundleId],
+        specificationClosure: { closureId: closure.closureId, planDigest: closure.planDigest },
+        items: [...businessItems, specification.item],
       });
       const advanced = await this.coordinator.acceptChangeObservation(input.runId, {
-        kind: 'archive-publication-completed',
-        archiveInputDigest: archive.digest,
-        actionReceiptId: accepted.receipt.receiptId,
-        publication,
-        work: waitWork,
+        kind: 'archive-publication-receipt-accepted',
+        receipt,
       });
       return {
         value: {
           publication,
-          actionReceiptId: accepted.receipt.receiptId,
+          receipt,
           run: advanced.value,
         },
         diagnostics: advanced.diagnostics,
       };
-    });
-  }
-
-  refreshArchiveMerges(
-    input: RefreshArchiveMergesInput,
-    signal?: AbortSignal,
-  ): Promise<RuntimeResult<RunStatusView>> {
-    return this.operations.run({ cancellable: false, signal }, async () => {
-      const state = await this.ctx.runStore.loadRun(input.runId);
-      const lifecycle = state.changeLifecycle;
-      if (
-        !lifecycle ||
-        state.status !== 'waiting' ||
-        lifecycle.phase !== 'archive' ||
-        lifecycle.currentWork?.kind !== 'delivery.await-merge' ||
-        !lifecycle.archivePublication
-      ) {
-        throw new Error(`Change Run is not waiting for Business merges: ${input.runId}`);
-      }
-      if (
-        lifecycle.archiveDeliveryInput?.publicationPolicyDigest !==
-        deliveryPolicyDigest(input.policy)
-      ) {
-        throw new Error('Archive merge refresh policy does not match the frozen Delivery input');
-      }
-      const refresh = await this.ctx.delivery.refreshArchive(
-        lifecycle.archivePublication,
-        input.policy,
-        signal,
-      );
-      let work: WorkDescriptor | undefined;
-      if (refresh.allMerged) {
-        if (!lifecycle.archiveDeliveryInput) {
-          throw new Error('Archive merge completion has no frozen Delivery input');
-        }
-        const skills = await this.resolveLifecycleWorkSkills('delivery.verify-merged', signal);
-        work = createPostMergeVerifyWork({
-          definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-          archive: lifecycle.archiveDeliveryInput,
-          refresh,
-          actionSkill: skills.actionSkill,
-          workspaceRepositoryId: lifecycle.archiveDeliveryInput.changeBranch.repositoryId,
-          repositoryIds: [
-            lifecycle.archiveDeliveryInput.changeBranch.repositoryId,
-            ...lifecycle.archiveDeliveryInput.businessDeliveries.map(
-              (delivery) => delivery.repositoryId,
-            ),
-          ],
-        });
-        await this.coordinator.bindSkill(input.runId, skills.actionSkill);
-      }
-      return this.coordinator.acceptChangeObservation(input.runId, {
-        kind: 'archive-merge-refreshed',
-        source: input.source,
-        refresh,
-        ...(work ? { work } : {}),
-      });
-    });
-  }
-
-  acceptArchivePostMergeVerification(
-    input: AcceptArchivePostMergeVerificationInput,
-  ): Promise<RuntimeResult<RunStatusView>> {
-    return this.operations.run({ cancellable: false }, async () => {
-      const state = await this.ctx.runStore.loadRun(input.runId);
-      const lifecycle = state.changeLifecycle;
-      const work = lifecycle?.currentWork;
-      if (
-        !lifecycle ||
-        state.status !== 'running' ||
-        lifecycle.phase !== 'archive' ||
-        work?.kind !== 'delivery.verify-merged'
-      ) {
-        throw new Error(`Change Run has no active post-merge Verify Work: ${input.runId}`);
-      }
-      if (
-        input.gate.workflowRunId !== input.runId ||
-        input.gate.workflowActionId !== work.workId ||
-        input.gate.workflowStepId !== 'archive.verify-merged' ||
-        input.gate.workflowStateVersion !== state.stateVersion ||
-        input.gate.compositionDigest !== state.composition.compositionDigest
-      ) {
-        throw new Error('Post-merge Evidence Gate is stale or belongs to another Archive Work');
-      }
-      const nextWork =
-        input.gate.status === 'satisfied' && lifecycle.archiveDeliveryInput
-          ? createSpecificationArchiveWork({
-              definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-              archive: lifecycle.archiveDeliveryInput,
-              postMergeBundleId: input.gate.bundleId,
-              checkoutManifestDigest: input.checkoutManifestDigest,
-              workspaceRepositoryId: lifecycle.archiveDeliveryInput.changeBranch.repositoryId,
-              repositoryIds: [
-                lifecycle.archiveDeliveryInput.changeBranch.repositoryId,
-                ...lifecycle.archiveDeliveryInput.businessDeliveries.map(
-                  (delivery) => delivery.repositoryId,
-                ),
-              ],
-            })
-          : undefined;
-      return this.coordinator.acceptChangeObservation(input.runId, {
-        kind: 'archive-post-merge-verified',
-        result: input.gate.status === 'satisfied' ? 'satisfied' : 'failed',
-        workId: work.workId,
-        inputDigest: work.inputDigest,
-        attemptId: input.attemptId,
-        bundleId: input.gate.bundleId,
-        checkoutManifestDigest: input.checkoutManifestDigest,
-        evidenceInputFingerprint: input.gate.inputFingerprint,
-        workflowStateVersion: state.stateVersion,
-        ...(nextWork ? { work: nextWork } : {}),
-      });
-    });
-  }
-
-  completeArchive(input: CompleteArchiveInput): Promise<RuntimeResult<RunStatusView>> {
-    return this.operations.run({ cancellable: false }, async () => {
-      const state = await this.ctx.runStore.loadRun(input.runId);
-      const lifecycle = state.changeLifecycle;
-      if (
-        !lifecycle ||
-        state.status !== 'running' ||
-        lifecycle.phase !== 'archive' ||
-        lifecycle.currentWork?.kind !== 'specification.archive'
-      ) {
-        throw new Error(`Change Run has no active Specification Archive Work: ${input.runId}`);
-      }
-      return this.coordinator.acceptChangeObservation(input.runId, {
-        kind: 'archive-completed',
-        workId: input.workId,
-        inputDigest: input.inputDigest,
-        closureId: input.closureId,
-        planDigest: input.planDigest,
-        auditDigest: input.auditDigest,
-        publicationReceiptDigest: input.publicationReceiptDigest,
-        finalMergeRequest: structuredClone(input.finalMergeRequest),
-      });
     });
   }
 

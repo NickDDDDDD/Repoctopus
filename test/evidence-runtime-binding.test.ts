@@ -15,7 +15,6 @@ import {
 } from '../plugins/evidence/local-adapter-contributors.js';
 import { WorkflowRunCoordinator } from '../domains/runtime/workflow-runs.js';
 import { createWorkflowPackage } from '../domains/workflow-contract/package.js';
-import type { RunState } from '../domains/engine/types.js';
 import type { SharedProjectConfig } from '../domains/project-configuration/types.js';
 import { FileRuntimeStore } from '../platform/runtime/file-runtime-store.js';
 import {
@@ -65,22 +64,6 @@ async function fixture() {
           },
         ],
       },
-      {
-        id: 'post-merge',
-        nodes: [
-          {
-            id: 'check-merged-code',
-            type: 'command',
-            repository: 'app',
-            dependsOn: [],
-            required: true,
-            executable: process.execPath,
-            args: ['-e', 'process.exit(0)'],
-            timeoutMs: 5_000,
-            cache: false,
-          },
-        ],
-      },
     ],
   };
   await writeFile(path.join(workspace, 'repoctopus.yaml'), JSON.stringify(config));
@@ -100,7 +83,6 @@ async function fixture() {
   await context.plugin(localBrowserContributor, { workspaceRoot: workspace });
   await context.plugin(EvidenceCoordinator, {
     workspaceRoot: workspace,
-    postMergeEvidenceProfile: 'post-merge',
   });
   const evidence = context.evidenceCoordinator;
   const runtime = new WorkflowRunCoordinator(
@@ -154,44 +136,5 @@ describe('EvidenceCoordinator workflow binding', () => {
         evidenceAttemptId: 'attempt-stale-state',
       }),
     ).rejects.toThrow(/stale workflow state/i);
-  });
-
-  it('binds Archive Evidence to the configured post-merge profile', async () => {
-    const { app, evidence, runId, store } = await fixture();
-    const state = await store.loadRun(runId);
-    state.status = 'running';
-    state.changeLifecycle = {
-      phase: 'archive',
-      status: 'running',
-      currentWork: {
-        workId: 'archive:verify-merged:test',
-        kind: 'delivery.verify-merged',
-        inputDigest: `sha256:${'a'.repeat(64)}`,
-      },
-    } as unknown as NonNullable<RunState['changeLifecycle']>;
-    await writeFile(store.paths(runId).run, JSON.stringify(state));
-
-    const result = await evidence.runForRepositories(
-      'post-merge',
-      [{ repositoryId: 'app', root: app }],
-      'attempt-post-merge-bound',
-      runId,
-    );
-    expect(result.gate).toMatchObject({
-      workflowRunId: runId,
-      workflowActionId: 'archive:verify-merged:test',
-      workflowStepId: 'archive.verify-merged',
-      workflowStateVersion: state.stateVersion,
-      status: 'satisfied',
-    });
-
-    await expect(
-      evidence.runForRepositories(
-        'verify',
-        [{ repositoryId: 'app', root: app }],
-        'attempt-wrong-post-merge-profile',
-        runId,
-      ),
-    ).rejects.toThrow(/no active post-merge Verify Work/i);
   });
 });

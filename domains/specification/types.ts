@@ -30,6 +30,7 @@ export interface SpecificationChange {
   planningComplete: boolean;
   artifacts: SpecificationArtifact[];
   affectedCapabilities: string[];
+  retiredCapabilities: string[];
 }
 
 export interface SpecificationTask {
@@ -302,6 +303,7 @@ export interface SpecificationClosurePlan {
   mergeFactsDigest: `sha256:${string}`;
   targetBaselineDigest: `sha256:${string}`;
   affectedCapabilities: string[];
+  retiredCapabilities: string[];
   allowedPathPrefixes: string[];
   planDigest: `sha256:${string}`;
 }
@@ -316,6 +318,31 @@ export interface SpecificationClosureResult {
   status: 'closed';
   archiveId: string;
   changedFiles: string[];
+}
+
+export interface SpecificationFollowUpChangeInput {
+  changeId: string;
+  originalChangeId: string;
+  publicationReceiptDigest: `sha256:${string}`;
+  affectedMergeRequests: Array<{
+    provider: string;
+    repositoryId: string;
+    number: number;
+    url: string;
+  }>;
+  rationale: string;
+  signal?: AbortSignal;
+}
+
+export interface SpecificationFollowUpChange {
+  apiVersion: typeof SPECIFICATION_API_VERSION;
+  kind: 'SpecificationFollowUpChange';
+  changeId: string;
+  originalChangeId: string;
+  publicationReceiptDigest: `sha256:${string}`;
+  status: 'opened';
+  lifecycleEntry: 'open';
+  proposalDigest: `sha256:${string}`;
 }
 
 export interface RequirementsAuthoritySource {

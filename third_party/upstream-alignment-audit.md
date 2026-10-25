@@ -8,7 +8,7 @@
 - Cordis 从 `4.0.4` 升到 `4.0.5`，Loader 从 `1.0.5` 升到 `1.0.6`；两个目录继续保存未修改 npm 发布快照。
 - Comet 从 0.4.5 源码基线升级到 `0.5.0` / `aeb1a6598034e28ce46b8422d4dbd8785e607bd7`；当前 `master` 与发布标签指向同一提交。来源仓库统一为 `rpamis/comet`，20 个既有派生文件的上游摘要全部在新提交复核。
 - 本轮发现并吸收两个适用修复：Loader 保存原始 module namespace 以支持安全重载；文件 Skill watcher 在 Windows 关闭阶段保留 error sink，避免迟到的 Chokidar 错误成为未捕获异常。
-- Comet 0.5.0 的 Workflow Application 与 Classic SDK 提供了五阶段、固定 Skill/权限、审批哈希、稳定 Task ID 和同一 Run 恢复的成熟证据；这些不变量进入新的 Change 生命周期设计，但其单仓产品外壳不能整体替换 Repoctopus 的持久事件 Inbox、多仓 Evidence、MR 聚合和团队 Workspace。
+- Comet 0.5.0 的 Workflow Application 与 Classic SDK 提供了五阶段、固定 Skill/权限、审批哈希、稳定 Task ID 和同一 Run 恢复的成熟证据；Classic Archive preflight、官方 OpenSpec 后置校验、Native 本地 Journal、finish create-or-reuse PR 与 resume probe 进入简化 Archive 设计，但其单仓产品外壳不能替换 Repoctopus 的多仓 Evidence、MR 聚合和团队 Workspace。
 
 ## 基线差异审查
 
@@ -18,13 +18,13 @@ DSH 两个固定提交之间有约 10,007 个路径变化，主要增长来自�
 | --- | --- | --- |
 | Skill Registry | `packages/skill/skill/src` 的 blob 未变化 | 升级发布包，不重写 Registry |
 | Filesystem Skill | watcher 关闭错误处理、Agents Home 解析和测试增强 | 移植适用于当前显式 roots 适配器的关闭错误修复；不引入 DSH Home/ctx.fs |
-| GitHub Webhook | Handler blob 未变化；路径移动到 `packages/experimental/webhook-github` | 更新来源路径和 commit；保留持久 Inbox 适配 |
-| Webhook Runtime | 移到 experimental；现在会在规则卸载时 abort 并 drain 活动回调，但仍是 fire-and-forget Session dispatch | 不采用；它仍无 durable inbox、去重、lease、receipt、retry 和跨进程恢复 |
+| GitHub Webhook | Handler blob 未变化；路径移动到 `packages/experimental/webhook-github` | 不采用；Archive 和 reconcile 均通过 GitHub API 的短命令边界 |
+| Webhook Runtime | 移到 experimental；现在会在规则卸载时 abort 并 drain 活动回调，但仍是 fire-and-forget Session dispatch | 不采用；核心产品不拥有 listener、Inbox 或 daemon |
 | Cordis / Loader | Cordis 源码只有发布版本变化；Loader Entry 新增 `moduleNamespace` 并在加载成功后记录 | 更新不可修改快照；由现有 Loader 契约测试保护 |
 | Runtime invariants | DSH 删除独立 runtime invariant plugins，把约束收回各领域 | 删除不再存在的 `dsh-invariants` 依赖；Repoctopus 继续在领域状态机和架构检查中维护自身不变量 |
 | Jobs / lifecycle | DSH 增加稳定 job id、按所有者限流、first-wins settlement、wait claim 撤销和有序 shutdown | 作为 Operation Ownership 的交叉证据；不采用其进程内 Agent-owned Registry |
 | Schedule | DSH 新增持久 Schedule 与 delivery history，但调度目标仍是 Agent Session/消息 | 不替换 Repoctopus Workflow Run；每日上游检查使用 CI schedule，不耦合产品运行时 |
-| Session JSONL | 增加写 lease、迁移拒绝、撕裂尾恢复、并发有界扫描和 teardown 顺序测试 | 记录为文件持久化参考；当前 Run/Inbox 已使用 Comet 来源的原子写、身份复核和 intent journal，不引入 Session 格式体系 |
+| Session JSONL | 增加写 lease、迁移拒绝、撕裂尾恢复、并发有界扫描和 teardown 顺序测试 | 记录为文件持久化参考；当前 Run/Publication Journal 已使用原子写、身份复核和 intent journal，不引入 Session 格式体系 |
 | Telemetry | DSH 增加可取消 HTTP export、重试和 shutdown deadline | Repoctopus exporter 已有 timeout、forceFlush、shutdown 与 durable Evidence outbox；无缺失行为需要移植 |
 
 Comet 0.5.0 是一次显著升级。新增的 Runtime SDK、Workflow Application、Classic SDK、Application Hook、静态流程定义、运行视图与 Dashboard trace 共同把产品工作流约束下沉到可恢复 Runtime。Repoctopus 立即采用异步命令的进程树清理修复；生命周期能力进入 `establish-change-lifecycle`，而 POSIX 进程组探测、有界 Plugin Store 读取和 Native Snapshot 限额竞态复核列为独立维护 change 候选。完整证据与取舍见 `comet/0.5.0-audit.md`。
@@ -46,9 +46,9 @@ Comet 0.5.0 是一次显著升级。新增的 Runtime SDK、Workflow Application
 | Project onboarding | 无确定性多仓确认流 | Workspace registry 不含本产品确认协议 | 无对应，保留原生 |
 | Skill integration | Workflow Application 固定 Skill、能力、side effect 与 scope | `ctx.skills` Registry 与 filesystem provider | 采用 DSH Registry 与 Cordis 组合；吸收 Comet 的 Action 绑定和写权限不变量 |
 | Specification authority | OpenSpec integration 与事务写入 | 无 Specification Provider | Repoctopus 原生 Provider；Comet 继续作为事务/恢复参考 |
-| Platform event ingress | 无通用 webhook runtime | GitHub handler 与 fire-and-forget runtime | 适配 handler；持久 Inbox 保持原生 |
-| Platform event runner | Experience Journal claim/renew | Webhook drain、Jobs lifecycle | 已吸收两者不变量；Repoctopus 仍需自己的跨进程 Runner |
-| Delivery governance | Classic Archive 在同一 Run 内执行 prepare/confirm/preflight/archive/deliver | Workspace changes 记录本地改动 | 吸收单一 Archive 阶段；多仓 Business MR、合入恢复和最终 Change MR 保持原生 |
+| Platform event ingress | 无通用 webhook runtime | GitHub handler 与 fire-and-forget runtime | 不采用；核心产品删除 Webhook/Event Inbox，按需 reconcile 直接读取平台状态 |
+| Platform event runner | Experience Journal claim/renew | Webhook drain、Jobs lifecycle | 不采用常驻 Runner；命令级 Journal 和 observe-before-retry 提供恢复边界 |
+| Delivery governance | Classic preflight；Native finish 创建或复用 PR 后返回 | Workspace changes 记录本地改动 | 采用发布即完成；多仓 Publication Receipt 保持原生且不等待合入 |
 | Evidence / receipt / retention | Native Evidence 全套实现 | Session log 不表达跨仓 Evidence | 行为适配 Comet，不引入 DSH Session |
 | Repository fingerprint | Native snapshot/fence | 无等价多仓 fence | 适配 Comet |
 | Feedback adapters | Agent/project learning | Message/command feedback 面向聊天产品 | 语义不同，保留 Repoctopus Browser/implementation feedback |
@@ -59,9 +59,8 @@ Comet 0.5.0 是一次显著升级。新增的 Runtime SDK、Workflow Application
 
 | 当前任务面 | 上游可复用证据 | 审计决定 |
 | --- | --- | --- |
-| 4.5 event status/replay/retry | Comet claim/renew；DSH Jobs wait claim、first-wins settlement | 使用现有 Inbox authority 增加管理命令，不引入第二个队列 |
-| 4.6 event 运维文档/E2E | DSH GitHub real E2E 的签名请求结构 | 只借鉴 fixture 形状；验证目标必须是 Repoctopus 持久接收与恢复 |
-| 5.x post-merge closure | Comet Native PR finish、snapshot/fence、OpenSpec transaction | 继续采用精确 commit、fence、receipt 思路；两个上游都没有多业务 MR 聚合与只允许规格收尾的 guardrail |
+| Archive publication | Comet Native PR finish、snapshot/fence、OpenSpec transaction | 采用精确 commit、普通 push、create-or-reuse MR、CAS 和 receipt；不等待 merge |
+| Event/Post-merge retirement | Comet 无合入等待或通用 Webhook runtime | DSH Webhook 位于 experimental 且面向 Session dispatch | 删除产品事件链，保留 Delivery Provider 的 GitHub API 端口 |
 | 6.x config/composition | Cordis Loader；Comet project-config transaction | Loader 负责生命周期；配置写入可复用 Comet 的 candidate/quarantine/recovery 思路，但 schema 与 authority 保持原生 |
 | 7.x package/deploy/recovery | DSH teardown 与持久 Session E2E；Comet package/tracer E2E | 作为故障矩阵输入，不直接复制产品装配 |
 
