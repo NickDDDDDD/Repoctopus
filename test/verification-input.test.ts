@@ -15,7 +15,10 @@ import type { SkillUsageSnapshot } from '../domains/skill/types.js';
 import { parseSpecificationTasks } from '../domains/specification/tasks.js';
 
 const digest = (character: string) => `sha256:${character.repeat(64)}` as const;
-const tasks = parseSpecificationTasks('verify-input', '- [x] 1.1 Build it.\n').tasks;
+const tasks = parseSpecificationTasks(
+  'verify-input',
+  '- [x] 1.1 Build it.\n  **Acceptance:** The implementation works\n  **Requirements:** runtime#works\n',
+).tasks;
 const skill: SkillUsageSnapshot = {
   schemaVersion: 1,
   name: 'tdd',
@@ -36,6 +39,7 @@ const plan: EvidenceExecutionPlan = {
       repository: 'workspace',
       repositoryPath: '.',
       required: true,
+      covers: ['*'],
       dependsOn: [],
       executable: 'npm',
       args: ['test'],
@@ -148,10 +152,15 @@ describe('Verification input', () => {
   it('freezes Task, repository, configuration, composition, Skill, and Evidence identities', () => {
     const input = create();
     expect(input).toMatchObject({
+      schemaVersion: 2,
       taskRevisions: [{ taskId: '1.1', taskRevision: tasks[0]!.taskRevision }],
-      repositories: [
-        { repositoryId: 'workspace', commit: 'a'.repeat(40), tree: 'b'.repeat(40) },
+      acceptanceCriteria: [
+        { taskId: '1.1', text: 'The implementation works', requirementRefs: ['runtime#works'] },
       ],
+      acceptanceCoverage: [
+        { acceptanceId: tasks[0]!.acceptanceCriteria[0]!.acceptanceId, nodeIds: ['test'] },
+      ],
+      repositories: [{ repositoryId: 'workspace', commit: 'a'.repeat(40), tree: 'b'.repeat(40) }],
       projectConfigDigest: digest('c'),
       compositionDigest: digest('o'),
       skills: [{ name: 'tdd', provider: 'matt-builtins' }],
@@ -250,10 +259,36 @@ describe('Verification input', () => {
     const pending = parseSpecificationTasks('verify-input', '- [ ] 1.1 Build it.\n').tasks;
     expect(() => create({ tasks: pending })).toThrow(/every approved Task/u);
     expect(() =>
-      create({ fingerprint: { ...fingerprint, manifest: { ...fingerprint.manifest, repositories: [] } } }),
+      create({
+        fingerprint: { ...fingerprint, manifest: { ...fingerprint.manifest, repositories: [] } },
+      }),
     ).toThrow(/repository fingerprint/u);
     expect(() => create({ skills: [] })).toThrow(/bound Skills/u);
     expect(() => create({ plan: { ...plan, nodes: [], order: [] } })).toThrow(/has no nodes/u);
+    expect(() =>
+      create({
+        plan: {
+          ...plan,
+          nodes: plan.nodes.map((node) => ({ ...node, covers: [] })),
+        },
+      }),
+    ).toThrow(/does not cover Acceptance/u);
+    expect(() =>
+      create({
+        plan: {
+          ...plan,
+          nodes: plan.nodes.map((node) => ({ ...node, covers: ['task:9.9'] })),
+        },
+      }),
+    ).toThrow(/unknown Acceptance selector/u);
+    expect(() =>
+      create({
+        plan: {
+          ...plan,
+          nodes: plan.nodes.map((node) => ({ ...node, required: false, covers: ['*'] })),
+        },
+      }),
+    ).toThrow(/does not cover Acceptance/u);
     expect(() =>
       create({
         fingerprint: {

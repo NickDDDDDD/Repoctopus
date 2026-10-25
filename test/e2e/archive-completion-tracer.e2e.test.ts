@@ -157,9 +157,12 @@ describe('single-repository Archive production tracer', () => {
         phase: 'archive' as const,
         status: 'running' as const,
         verificationInput: {
-          schemaVersion: 1 as const,
+          schemaVersion: 2 as const,
           runId: 'run-tracer',
           taskRevisions: [],
+          acceptanceCriteria: [],
+          acceptanceSetHash: digest('a'),
+          acceptanceCoverage: [],
           repositories: [],
           projectConfigDigest: digest('3'),
           compositionDigest: digest('4'),

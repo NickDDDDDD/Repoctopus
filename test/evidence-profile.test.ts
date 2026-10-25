@@ -40,6 +40,7 @@ function command(
     repository,
     dependsOn,
     required: true,
+    covers: [],
     executable: 'node',
     args: ['--version'],
     timeoutMs: 1000,

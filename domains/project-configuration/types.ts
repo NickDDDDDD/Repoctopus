@@ -15,6 +15,7 @@ export interface CommandNodeConfig {
   repository: string;
   dependsOn: string[];
   required: boolean;
+  covers?: string[];
   executable: string;
   args: string[];
   cwd?: string;
@@ -29,6 +30,7 @@ interface EvidenceNodeBase {
   repository: string;
   dependsOn: string[];
   required: boolean;
+  covers?: string[];
 }
 
 export interface ManagedServiceNodeConfig extends EvidenceNodeBase {

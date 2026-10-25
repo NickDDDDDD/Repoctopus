@@ -84,6 +84,24 @@ function stringArray(value: unknown, field: string): string[] {
   return value.map((item, index) => string(item, `${field}[${index}]`));
 }
 
+function acceptanceSelectors(value: unknown, field: string): string[] {
+  const selectors = stringArray(value ?? [], field);
+  if (new Set(selectors).size !== selectors.length) {
+    throw new ProjectConfigError('contains duplicate Acceptance selectors', field);
+  }
+  for (const selector of selectors) {
+    if (
+      selector !== '*' &&
+      !/^acceptance-[a-f0-9]{64}$/u.test(selector) &&
+      !/^task:\d+(?:\.\d+)*$/u.test(selector) &&
+      !/^requirement:\S+$/u.test(selector)
+    ) {
+      throw new ProjectConfigError('contains an invalid Acceptance selector', field);
+    }
+  }
+  return selectors;
+}
+
 function identifier(value: unknown, field: string): string {
   const parsed = string(value, field);
   if (!/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/u.test(parsed)) {
@@ -112,6 +130,7 @@ function nodeBase(node: Record<string, unknown>, field: string) {
     repository: string(node.repository, `${field}.repository`),
     dependsOn: stringArray(node.dependsOn ?? [], `${field}.dependsOn`),
     required: boolean(node.required, `${field}.required`, true),
+    covers: acceptanceSelectors(node.covers, `${field}.covers`),
   };
 }
 
@@ -125,6 +144,7 @@ function parseCommandNode(value: unknown, field: string): CommandNodeConfig {
       'repository',
       'dependsOn',
       'required',
+      'covers',
       'executable',
       'args',
       'cwd',
@@ -254,6 +274,7 @@ function parseServiceNode(value: unknown, field: string): ServiceNodeConfig {
     'repository',
     'dependsOn',
     'required',
+    'covers',
     'readiness',
     'startupTimeoutMs',
     'probeIntervalMs',
@@ -319,7 +340,7 @@ function parseBrowserNode(value: unknown, field: string): BrowserNodeConfig {
   const node = object(value, field);
   exactKeys(
     node,
-    ['id', 'type', 'repository', 'dependsOn', 'required', 'source', 'journey'],
+    ['id', 'type', 'repository', 'dependsOn', 'required', 'covers', 'source', 'journey'],
     field,
   );
   if (node.type !== 'browser') {
@@ -359,6 +380,7 @@ function parseVisualNode(value: unknown, field: string): VisualNodeConfig {
       'repository',
       'dependsOn',
       'required',
+      'covers',
       'changeId',
       'browserNode',
       'pageUrl',
@@ -398,7 +420,7 @@ function parseSpecificationNode(value: unknown, field: string): SpecificationNod
   const node = object(value, field);
   exactKeys(
     node,
-    ['id', 'type', 'repository', 'dependsOn', 'required', 'changeId', 'strict'],
+    ['id', 'type', 'repository', 'dependsOn', 'required', 'covers', 'changeId', 'strict'],
     field,
   );
   if (node.type !== 'specification') {
