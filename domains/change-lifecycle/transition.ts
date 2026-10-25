@@ -407,6 +407,21 @@ export type ChangeLifecycleObservation =
       work: WorkDescriptor;
     }
   | {
+      kind: 'archive-intent-corrected';
+      priorArchiveInputDigest: `sha256:${string}`;
+      archiveInput: ArchiveDeliveryInput;
+      closure: SpecificationClosureResult;
+      work: WorkDescriptor;
+      reason: string;
+    }
+  | {
+      kind: 'archive-planning-drift';
+      work: WorkDescriptor;
+      observedPlanningDigest: `sha256:${string}`;
+      reason: string;
+      evidenceIds: readonly string[];
+    }
+  | {
       kind: 'archive-publication-receipt-accepted';
       receipt: PublicationReceipt;
     }
@@ -1296,6 +1311,95 @@ export function evolveChangeLifecycle(options: {
         specificationClosure: observation.closure,
       },
     });
+  }
+  if (observation.kind === 'archive-intent-corrected') {
+    const stableArchiveIdentity = (archive: ArchiveDeliveryInput) => ({
+      runId: archive.runId,
+      changeId: archive.changeId,
+      verificationInputDigest: archive.verificationInputDigest,
+      evidenceBundleId: archive.evidenceBundleId,
+      verificationReport: archive.verificationReport,
+      changeBranch: { ...archive.changeBranch, remoteOid: '<corrected>' },
+      businessDeliveries: archive.businessDeliveries,
+      businessSplitReason: archive.businessSplitReason,
+      publicationPolicyDigest: archive.publicationPolicyDigest,
+      actionAuthorization: archive.actionAuthorization,
+    });
+    if (
+      current.phase !== 'archive' ||
+      current.status !== 'running' ||
+      current.currentWork?.kind !== 'delivery.publish' ||
+      !current.archiveDeliveryInput ||
+      !current.specificationClosure ||
+      current.publicationReceipt ||
+      observation.priorArchiveInputDigest !== current.archiveDeliveryInput.digest ||
+      observation.closure.closureId !== current.specificationClosure.closureId ||
+      observation.work.phase !== 'archive' ||
+      observation.work.kind !== 'delivery.publish' ||
+      observation.work.inputDigest === current.currentWork.inputDigest ||
+      observation.archiveInput.runId !== current.identity.runId ||
+      observation.archiveInput.changeId !== current.identity.changeId ||
+      observation.archiveInput.changeBranch.remoteOid !==
+        current.specificationClosure.candidate.baseOid ||
+      observation.archiveInput.changeBranch.remoteOid ===
+        current.archiveDeliveryInput.changeBranch.remoteOid ||
+      canonicalJson(stableArchiveIdentity(observation.archiveInput)) !==
+        canonicalJson(stableArchiveIdentity(current.archiveDeliveryInput)) ||
+      !observation.reason.trim()
+    ) {
+      throw new Error('Archive intent correction is not valid for the active publication Work');
+    }
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'archive.intent-corrected',
+      next: {
+        currentWork: observation.work,
+        waitCondition: null,
+        blocker: null,
+        archiveDeliveryInput: observation.archiveInput,
+      },
+    });
+  }
+  if (observation.kind === 'archive-planning-drift') {
+    if (
+      current.phase !== 'archive' ||
+      current.status !== 'running' ||
+      current.currentWork?.kind !== 'delivery.publish' ||
+      !current.archiveDeliveryInput ||
+      !current.specificationClosure ||
+      current.publicationReceipt ||
+      observation.work.phase !== 'design' ||
+      observation.work.kind !== 'specification.plan' ||
+      !observation.reason.trim()
+    ) {
+      throw new Error('Archive planning drift is not valid before the publication boundary');
+    }
+    const reduced = applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'archive.planning-drift',
+      next: {
+        currentWork: observation.work,
+        waitCondition: null,
+        blocker: null,
+        tasks: [],
+        planningDigest: null,
+        verificationInput: null,
+        verificationInvalidation: null,
+        archiveDeliveryInput: null,
+        specificationClosure: null,
+      },
+    });
+    reduced.fact.invalidation = {
+      kind: 'planning-semantic-drift',
+      supersededPlanningDigest: current.planningDigest ?? current.archiveDeliveryInput.digest,
+      observedPlanningDigest: observation.observedPlanningDigest,
+      supersededWorkId: current.currentWork.workId,
+      supersededTaskRevisions: (current.tasks ?? []).map((task) => task.taskRevision).sort(),
+      evidenceIds: [...observation.evidenceIds],
+    };
+    return reduced;
   }
   if (observation.kind === 'archive-publication-receipt-accepted') {
     if (

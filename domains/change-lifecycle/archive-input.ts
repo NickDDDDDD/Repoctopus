@@ -10,7 +10,7 @@ import type { ChangeLifecycleDefinition, WorkDescriptor } from './transition.js'
 import { materializeLifecycleWorkBinding } from './work-definition.js';
 
 export interface ArchiveDeliveryInput {
-  schemaVersion: 1;
+  schemaVersion: 1 | 2;
   runId: string;
   changeId: string;
   verificationInputDigest: `sha256:${string}`;
@@ -21,6 +21,8 @@ export interface ArchiveDeliveryInput {
   businessSplitReason: DeliveryIntentV3['businessSplitReason'] | null;
   publicationPolicyDigest: string;
   actionAuthorization: 'policy';
+  planningCompositionDigest?: `sha256:${string}`;
+  evidenceCompositionDigest?: `sha256:${string}`;
   digest: `sha256:${string}`;
 }
 
@@ -37,6 +39,8 @@ export function createArchiveDeliveryInput(input: {
   verificationReport: ArtifactRef;
   intent: DeliveryIntentV3;
   policy: DeliveryPolicy;
+  planningCompositionDigest: `sha256:${string}`;
+  evidenceCompositionDigest: `sha256:${string}`;
 }): ArchiveDeliveryInput {
   assertDeliveryIntentV3(input.intent);
   if (input.intent.changeId !== input.changeId) {
@@ -53,7 +57,7 @@ export function createArchiveDeliveryInput(input: {
   }
   const intent = normalizeDeliveryIntentV3(input.intent);
   const stable = {
-    schemaVersion: 1 as const,
+    schemaVersion: 2 as const,
     runId: input.runId,
     changeId: input.changeId,
     verificationInputDigest: input.verificationInputDigest,
@@ -66,6 +70,8 @@ export function createArchiveDeliveryInput(input: {
       : null,
     publicationPolicyDigest: deliveryPolicyDigest(input.policy),
     actionAuthorization: 'policy' as const,
+    planningCompositionDigest: input.planningCompositionDigest,
+    evidenceCompositionDigest: input.evidenceCompositionDigest,
   };
   return { ...stable, digest: sha256(stable) };
 }

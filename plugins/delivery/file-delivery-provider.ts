@@ -116,7 +116,11 @@ export class FileDeliveryProvider extends Delivery {
     });
   }
 
-  private async assertPlanningApproval(intent: DeliveryIntentV3, remote: string): Promise<void> {
+  private async assertPlanningApproval(
+    intent: DeliveryIntentV3,
+    remote: string,
+    planningCompositionDigest = this.ctx.compositionIdentity.current().compositionDigest,
+  ): Promise<void> {
     const approval = await this.ctx.specificationPlanning.status(intent.changeId);
     const currentChangeBranch = await inspectRemoteChangeBranch({
       repositoryPath: this.config.workspaceRoot,
@@ -125,21 +129,38 @@ export class FileDeliveryProvider extends Delivery {
       sourceBranch: intent.changeBranch.sourceBranch,
       targetBranch: intent.changeBranch.targetBranch,
     });
+    const branchCoordinates = (branch: DeliveryIntentV3['changeBranch']) => ({
+      repositoryId: branch.repositoryId,
+      remoteIdentity: branch.remoteIdentity,
+      sourceBranch: branch.sourceBranch,
+      targetBranch: branch.targetBranch,
+    });
     if (
       !approval ||
       approval.status !== 'approved' ||
       approval.decision?.decision !== 'approve' ||
       approval.snapshot.changeId !== intent.changeId ||
-      approval.snapshot.compositionDigest !==
-        this.ctx.compositionIdentity.current().compositionDigest ||
+      approval.snapshot.compositionDigest !== planningCompositionDigest ||
       approval.snapshot.projectConfigDigest !== this.config.projectConfigDigest ||
-      canonicalJson(approval.snapshot.changeBranch) !== canonicalJson(intent.changeBranch) ||
+      canonicalJson(branchCoordinates(approval.snapshot.changeBranch)) !==
+        canonicalJson(branchCoordinates(intent.changeBranch)) ||
       canonicalJson(currentChangeBranch) !== canonicalJson(intent.changeBranch)
     ) {
       throw new Error(
         `Delivery v3 requires an effective planning approval for Change branch: ${intent.changeId}`,
       );
     }
+  }
+
+  override validateArchiveIntent(
+    intent: DeliveryIntentV3,
+    policy: DeliveryPolicy,
+    planningCompositionDigest: `sha256:${string}`,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    return this.operations.run({ cancellable: true, signal }, () =>
+      this.assertPlanningApproval(intent, policy.publication.remote, planningCompositionDigest),
+    );
   }
 
   private legacyReadOnly(operation: string): never {
@@ -215,7 +236,11 @@ export class FileDeliveryProvider extends Delivery {
     signal?: AbortSignal,
   ): Promise<ArchivePublicationResult> {
     return this.operations.run({ cancellable: false, signal }, async () => {
-      await this.assertPlanningApproval(options.intent, options.policy.publication.remote);
+      await this.assertPlanningApproval(
+        options.intent,
+        options.policy.publication.remote,
+        options.planningCompositionDigest,
+      );
       return this.domainV3(options.policy).publishArchive(options);
     });
   }

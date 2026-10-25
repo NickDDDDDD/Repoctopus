@@ -9,9 +9,7 @@ import { lifecycleContributorIdentity } from '../../domains/change-lifecycle/con
 const plugin = ((context: Context) => {
   const definitionDigest = prepareChangeLifecycleDefinition().snapshot.digest;
   const profiles = [
-    ...new Set(
-      BUILTIN_CHANGE_LIFECYCLE_DEFINITION.works.map((work) => work.validatorProfile.id),
-    ),
+    ...new Set(BUILTIN_CHANGE_LIFECYCLE_DEFINITION.works.map((work) => work.validatorProfile.id)),
   ].sort();
   context.effect(() =>
     context.lifecycleValidators.register({
@@ -21,6 +19,7 @@ const plugin = ((context: Context) => {
         version: BUILTIN_CHANGE_LIFECYCLE_DEFINITION.version,
         codeDigest: definitionDigest,
         configDigest: definitionDigest,
+        compatibleWith: [BUILTIN_CHANGE_LIFECYCLE_DEFINITION.version],
       }),
       profiles,
       validate({ profileId, work }) {

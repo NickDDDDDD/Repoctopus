@@ -30,6 +30,8 @@ export interface DeliveryPreparation {
   policy: DeliveryPolicy;
   reportContents: string;
   evidenceBundleIds: string[];
+  planningCompositionDigest?: `sha256:${string}`;
+  evidenceCompositionDigest?: `sha256:${string}`;
 }
 
 export abstract class Delivery extends Service {
@@ -68,6 +70,18 @@ export abstract class Delivery extends Service {
         `Delivery provider cannot publish lifecycle Archive for ${options.intent.changeId}`,
       ),
     );
+  }
+  validateArchiveIntent(
+    intent: DeliveryIntentV3,
+    policy: DeliveryPolicy,
+    planningCompositionDigest: `sha256:${string}`,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    void intent;
+    void policy;
+    void planningCompositionDigest;
+    void signal;
+    return Promise.reject(new Error('Delivery provider cannot validate lifecycle Archive intent'));
   }
   publishSpecification(
     request: SpecificationPublicationRequest,

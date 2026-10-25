@@ -48,6 +48,7 @@ export interface DeliveryV3Preparation {
   policy: DeliveryPolicy;
   reportContents: string;
   evidenceBundleIds: string[];
+  evidenceCompositionDigest?: `sha256:${string}`;
 }
 
 export interface ArchivePublicationReceipt {
@@ -203,7 +204,10 @@ export class DeliveryServiceV3 {
 
   async publishArchive(options: DeliveryV3Preparation): Promise<ArchivePublicationResult> {
     this.validate(options.intent, options.policy);
-    await this.evidence.assertSatisfied(options.evidenceBundleIds, this.compositionDigest);
+    await this.evidence.assertSatisfied(
+      options.evidenceBundleIds,
+      options.evidenceCompositionDigest ?? this.compositionDigest,
+    );
     const repositories = selectedRepositories(options.project, options.intent);
     const facts: BusinessDeliveryFactsV3[] = [];
     for (const delivery of options.intent.businessDeliveries) {

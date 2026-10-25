@@ -376,6 +376,22 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       requiredValidatorProfile: 'archive.preflight-valid',
     },
     {
+      id: 'archive.intent-corrected',
+      kind: 'self',
+      from: { phase: 'archive', statuses: ['running'] },
+      to: { phase: 'archive', status: 'running' },
+      trigger: 'archive-intent-corrected-before-publication',
+      requiredValidatorProfile: 'archive.preflight-valid',
+    },
+    {
+      id: 'archive.planning-drift',
+      kind: 'fallback',
+      from: { phase: 'archive', statuses: ['running'] },
+      to: { phase: 'design', status: 'running' },
+      trigger: 'planning-drift-before-remote-publication',
+      requiredValidatorProfile: 'archive.preflight-valid',
+    },
+    {
       id: 'archive.completed',
       kind: 'complete',
       from: { phase: 'archive', statuses: ['running'] },

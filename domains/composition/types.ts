@@ -8,6 +8,10 @@ export interface PluginImplementationIdentity {
   descriptorDigest: `sha256:${string}`;
   authorities: string[];
   stateSchemas: Record<string, string>;
+  compatibleImplementations?: readonly {
+    codeDigest: `sha256:${string}`;
+    descriptorDigest: `sha256:${string}`;
+  }[];
 }
 
 export interface CompositionCompatibility {

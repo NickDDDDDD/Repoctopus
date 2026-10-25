@@ -157,6 +157,16 @@ SpecificationPublicationJournal key:
 
 Consistency Review 从 Receipt 获取 runId，Store 以 Receipt/runId identity 定位；它仍可创建后续普通 OpenSpec Change，但绝不重开原 Run。
 
+### 7.1 Archive 发布前校验与同 Run 输入纠正
+
+Archive 必须在建立 `specification.close` Work 前以只读方式验证 Design planning approval、当前远端 Change branch identity 和 publication policy；校验失败不能产生规格关闭或远端副作用。`delivery.publish` 在执行任何 push/MR 前再次执行同一只读校验，形成明确的 side-effect fence。
+
+Design approval 绑定 repository、remote identity、source branch 与 target branch，但不把 Design 时的 `remoteOid` 当成 Build 后实现 OID；Archive 的最终 OID 由实时远端 source branch 与 isolated closure candidate 共同证明。为恢复旧实现已经关闭规格、但尚未进入任何远端 publication 的精确窗口，Runtime 只允许一种有界纠正：审批中的 branch coordinates 与冻结输入一致，实时远端 OID 等于 isolated closure candidate 的 `baseOid`，且冻结输入仅 `remoteOid` 错误；业务交付、Evidence、policy、closure 和 Run identity 全部不变。Runtime 在同一 Run 中递增 `checkEpoch`、保留旧 Work/输入审计事实并创建新的 `delivery.publish` Work；Host 不能请求该转换，也不能借它修改 branch、target 或业务交付。
+
+如果实时远端 branch 已经前进，旧 approval 与 isolated closure 都不再代表待发布实现。只要发布前校验尚未放行任何远端动作，Runtime 会保留失效事实、丢弃该本地 candidate 的权威资格并回到 Design，重新批准、Build claim、Verify 与 closure；它不会在旧 candidate 上改 base，也不会把新提交悄悄塞进已经验证的 publication。
+
+受保护 Plugin 的原地修复只能通过当前 descriptor 对旧 `codeDigest + descriptorDigest` 精确二元组的兼容声明；authority、state schema 或 effective config 变化仍然进入 `migration_required`。这使本次自举 Run 可以应用已验证的无 schema 修复，同时不会把任意受保护代码漂移放宽为兼容。
+
 ### 8. 旧 generation 文件保持不可变且不参与新定位
 
 产品尚未正式发布，因此不实现 schema adapter。新代码不扫描带 `-g<n>-` 的旧 Run 作为 current，也不读取 `*.g<n>.json` Journal 继续副作用；文件保留用于人工审计和可选清理。测试 fixture 使用专用临时目录证明新 locator 忽略 legacy 数据，不修改仓库中的自举历史。
@@ -180,6 +190,7 @@ Desktop receiver 继续消费相同 OTLP payload，不查询 RunStore。删除 g
 - **[`grilling` Provider 在不同机器不可用或重名]** → composition 明确声明依赖并要求唯一解析，领取 Open Work 前冻结 provenance；缺失或歧义 fail closed，不回退成无 GrillMe 的 Open。
 - **[Verify 无法可靠映射受影响 Task]** → 不猜测最小集合；优先使用 review finding 的 requirement/task links，无法证明时建立 Human Decision 或重开保守集合，并在 Trajectory 记录依据。
 - **[Archive 回退可能重放发布副作用]** → 只允许在 closure/publication 副作用开始前回到 Verify；开始后固定 phase，通过稳定 Journal observe/reconcile。
+- **[错误 Change branch OID 在规格关闭后才被发现]** → 在 closure 前和远端 publication 前执行同一只读审批校验；仅在已关闭规格但尚未发布的兼容升级窗口，允许把 OID 纠正为审批与 closure candidate 共同证明的值并创建新 Work。
 - **[Publication schema 破坏现有未完成 Archive]** → 当前产品为预发布；旧 Journal只读，不尝试继续未知副作用。新 Run 在发布前重新观察远端并按稳定 OID create-or-recover。
 
 ## Migration Plan

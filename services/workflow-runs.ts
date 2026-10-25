@@ -130,10 +130,19 @@ export interface ExecuteArchiveDeliveryInput {
 }
 
 export interface ExecuteArchiveDeliveryResult {
-  stage: 'specification-closed' | 'published';
+  stage: 'specification-closed' | 'intent-corrected' | 'planning-revision-required' | 'published';
   publication: ArchivePublicationResult | null;
   receipt: PublicationReceipt | null;
   run: RunStatusView;
+}
+
+function deliveryBranchCoordinates(branch: DeliveryIntentV3['changeBranch']) {
+  return {
+    repositoryId: branch.repositoryId,
+    remoteIdentity: branch.remoteIdentity,
+    sourceBranch: branch.sourceBranch,
+    targetBranch: branch.targetBranch,
+  };
 }
 
 export class WorkflowRuns extends Service {
@@ -1849,6 +1858,31 @@ export class WorkflowRuns extends Service {
       if (!evidence.bundle || !evidence.bundle.verificationReport) {
         throw new Error('Archive Delivery requires a completed formal verification report');
       }
+      const planningApproval = await this.ctx.specificationPlanning.status(
+        lifecycle.identity.changeId,
+        'design',
+      );
+      if (
+        !planningApproval ||
+        planningApproval.status !== 'approved' ||
+        planningApproval.decision?.decision !== 'approve' ||
+        planningApproval.snapshot.changeId !== lifecycle.identity.changeId ||
+        planningApproval.snapshot.compositionDigest !== state.composition.compositionDigest ||
+        planningApproval.snapshot.projectConfigDigest !==
+          state.trigger?.facts.projectConfigDigest ||
+        canonicalJson(deliveryBranchCoordinates(planningApproval.snapshot.changeBranch)) !==
+          canonicalJson(deliveryBranchCoordinates(input.intent.changeBranch))
+      ) {
+        throw new Error(
+          `Archive Delivery requires the effective Design planning approval: ${lifecycle.identity.changeId}`,
+        );
+      }
+      await this.ctx.delivery.validateArchiveIntent(
+        input.intent,
+        input.policy,
+        planningApproval.snapshot.compositionDigest,
+        signal,
+      );
       const archiveInput = createArchiveDeliveryInput({
         runId: input.runId,
         changeId: lifecycle.identity.changeId,
@@ -1858,6 +1892,9 @@ export class WorkflowRuns extends Service {
         verificationReport: evidence.bundle.verificationReport,
         intent: input.intent,
         policy: input.policy,
+        planningCompositionDigest: planningApproval.snapshot.compositionDigest,
+        evidenceCompositionDigest: lifecycle.verificationInput
+          .compositionDigest as `sha256:${string}`,
       });
       const repositoryIds = Array.isArray(state.trigger?.facts.repositoryIds)
         ? state.trigger.facts.repositoryIds.filter(
@@ -1980,6 +2017,10 @@ export class WorkflowRuns extends Service {
       if (!closure) {
         throw new Error('Archive Delivery Work is missing its Specification Closure Receipt');
       }
+      const verificationCompositionDigest = lifecycle.verificationInput?.compositionDigest;
+      if (!verificationCompositionDigest) {
+        throw new Error('Archive Delivery is missing its Verification composition identity');
+      }
       const intent: DeliveryIntentV3 = {
         schemaVersion: 3,
         changeId: archive.changeId,
@@ -1989,6 +2030,181 @@ export class WorkflowRuns extends Service {
           ? { businessSplitReason: structuredClone(archive.businessSplitReason) }
           : {}),
       };
+      const planningApproval = await this.ctx.specificationPlanning.status(
+        lifecycle.identity.changeId,
+        'design',
+      );
+      const planningCompositionDigest =
+        archive.planningCompositionDigest ?? planningApproval?.snapshot.compositionDigest;
+      if (!planningCompositionDigest) {
+        throw new Error('Archive Delivery is missing its planning composition identity');
+      }
+      try {
+        await this.ctx.delivery.validateArchiveIntent(
+          intent,
+          input.policy,
+          planningCompositionDigest,
+          signal,
+        );
+      } catch (error) {
+        if (
+          !planningApproval ||
+          planningApproval.status !== 'approved' ||
+          planningApproval.decision?.decision !== 'approve' ||
+          planningApproval.snapshot.changeId !== lifecycle.identity.changeId ||
+          planningApproval.snapshot.projectConfigDigest !==
+            state.trigger?.facts.projectConfigDigest ||
+          canonicalJson(deliveryBranchCoordinates(archive.changeBranch)) !==
+            canonicalJson(deliveryBranchCoordinates(planningApproval.snapshot.changeBranch)) ||
+          archive.changeBranch.remoteOid === closure.candidate.baseOid
+        ) {
+          throw error;
+        }
+        const normalizeCorrection = (candidate: DeliveryIntentV3) => ({
+          ...candidate,
+          changeBranch: { ...candidate.changeBranch, remoteOid: '<corrected>' },
+        });
+        const correctedIntent: DeliveryIntentV3 = {
+          ...intent,
+          changeBranch: {
+            ...structuredClone(intent.changeBranch),
+            remoteOid: closure.candidate.baseOid,
+          },
+        };
+        if (
+          canonicalJson(normalizeCorrection(intent)) !==
+          canonicalJson(normalizeCorrection(correctedIntent))
+        ) {
+          throw new Error(
+            'Archive intent correction may change only the Change branch remote OID',
+            {
+              cause: error,
+            },
+          );
+        }
+        try {
+          await this.ctx.delivery.validateArchiveIntent(
+            correctedIntent,
+            input.policy,
+            planningApproval.snapshot.compositionDigest,
+            signal,
+          );
+        } catch (correctedError) {
+          const projectConfigDigest = state.trigger?.facts.projectConfigDigest;
+          const specificationRoot = state.trigger?.facts.specificationRoot as
+            | { repositoryId?: unknown }
+            | undefined;
+          if (
+            typeof projectConfigDigest !== 'string' ||
+            !/^sha256:[a-f0-9]{64}$/u.test(projectConfigDigest) ||
+            typeof specificationRoot?.repositoryId !== 'string'
+          ) {
+            throw new Error('Archive planning repair identities are missing', {
+              cause: correctedError,
+            });
+          }
+          const skills = await this.resolveLifecycleWorkSkills('specification.plan', signal);
+          const designWork = createLifecyclePhaseWork({
+            runId: input.runId,
+            checkEpoch: lifecycle.checkEpoch + 1,
+            changeId: lifecycle.identity.changeId,
+            definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+            kind: 'specification.plan',
+            actionSkill: skills.actionSkill,
+            augmentationSkills: skills.augmentationSkills,
+            compositionDigest: state.composition.compositionDigest,
+            projectSnapshotDigest: state.projectSnapshotDigest,
+            projectConfigDigest,
+            workspaceRepositoryId: specificationRoot.repositoryId,
+            repositoryIds: input.project.repositories.map((repository) => repository.id),
+          });
+          for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
+            await this.coordinator.bindSkill(input.runId, skill);
+          }
+          const revised = await this.coordinator.acceptChangeObservation(input.runId, {
+            kind: 'archive-planning-drift',
+            work: designWork,
+            observedPlanningDigest: planningApproval.snapshot.digest,
+            reason:
+              correctedError instanceof Error
+                ? correctedError.message
+                : 'Approved Change branch no longer matches the live remote branch',
+            evidenceIds: [archive.digest, closure.closureId, planningApproval.snapshot.digest],
+          });
+          await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, designWork);
+          return {
+            value: {
+              stage: 'planning-revision-required',
+              publication: null,
+              receipt: null,
+              run: await this.coordinator.status(input.runId),
+            },
+            diagnostics: [
+              ...revised.diagnostics,
+              {
+                level: 'warning',
+                code: 'change.archive-planning-drift',
+                message:
+                  'Archive returned to Design because the approved Change branch drifted before remote publication',
+              },
+            ],
+          };
+        }
+        const correctedArchive = createArchiveDeliveryInput({
+          runId: input.runId,
+          changeId: archive.changeId,
+          verificationInputDigest: archive.verificationInputDigest,
+          acceptedEvidenceBundleIds: state.acceptedEvidenceBundleIds,
+          evidenceBundleId: archive.evidenceBundleId,
+          verificationReport: archive.verificationReport,
+          intent: correctedIntent,
+          policy: input.policy,
+          planningCompositionDigest: planningApproval.snapshot.compositionDigest,
+          evidenceCompositionDigest:
+            archive.evidenceCompositionDigest ??
+            (verificationCompositionDigest as `sha256:${string}`),
+        });
+        const skills = await this.resolveLifecycleWorkSkills('delivery.publish', signal);
+        const correctedWork = createDeliveryPublishWork({
+          definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+          checkEpoch: lifecycle.checkEpoch + 1,
+          archive: correctedArchive,
+          closure,
+          actionSkill: skills.actionSkill,
+          workspaceRepositoryId: correctedArchive.changeBranch.repositoryId,
+          repositoryIds: input.project.repositories.map((repository) => repository.id),
+        });
+        await this.coordinator.bindSkill(input.runId, skills.actionSkill);
+        const corrected = await this.coordinator.acceptChangeObservation(input.runId, {
+          kind: 'archive-intent-corrected',
+          priorArchiveInputDigest: archive.digest,
+          archiveInput: correctedArchive,
+          closure,
+          work: correctedWork,
+          reason:
+            error instanceof Error
+              ? error.message
+              : 'Archive planning approval rejected the frozen Change branch OID',
+        });
+        await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, correctedWork);
+        return {
+          value: {
+            stage: 'intent-corrected',
+            publication: null,
+            receipt: null,
+            run: await this.coordinator.status(input.runId),
+          },
+          diagnostics: [
+            ...corrected.diagnostics,
+            {
+              level: 'warning',
+              code: 'change.archive-intent-corrected',
+              message:
+                'Archive Change branch OID was rebound to the approved closure baseline before publication',
+            },
+          ],
+        };
+      }
       const publication = await this.ctx.delivery.publishArchive(
         {
           runId: input.runId,
@@ -1997,6 +2213,10 @@ export class WorkflowRuns extends Service {
           policy: input.policy,
           reportContents: `verification-report:sha256:${archive.verificationReport.sha256}`,
           evidenceBundleIds: [archive.evidenceBundleId],
+          planningCompositionDigest,
+          evidenceCompositionDigest:
+            archive.evidenceCompositionDigest ??
+            (verificationCompositionDigest as `sha256:${string}`),
         },
         signal,
       );

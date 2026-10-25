@@ -34,3 +34,24 @@ Delivery MUST 为每个业务仓和 Workspace 规格仓生成版本化 Publicati
 
 - **WHEN** 查询得到多个候选，或唯一候选的 runId、base、head OID 不匹配
 - **THEN** Runtime fail-closed 并报告差异，不覆盖远端、不自动分配替代发布或新 generation
+
+## ADDED Requirements
+
+### Requirement: Archive 在副作用前验证审批身份
+
+Runtime MUST 在创建 specification closure Work 前验证有效 Design planning approval 的 repository/remote/source/target coordinates 与实时远端 Change branch，并在执行任何 push 或 MR 前重复同一只读校验。Design approval 的 OID 表示 Design 边界，不得被误当作 Build 后实现 OID；Archive 的最终 OID MUST 同时匹配实时远端 source branch 与 isolated closure candidate baseOid。若旧兼容实现已经产生 isolated closure 但尚未开始远端 publication，Runtime MAY 在同一 Run 中将冻结的错误 `remoteOid` 纠正为该共同证明的值；除该 OID 外的任何输入变化 MUST 被拒绝，且纠正后 MUST 创建新 epoch 的受管 publication Work。
+
+#### Scenario: 错误 OID 在规格关闭前被拒绝
+
+- **WHEN** Archive intent 的 Change branch OID 与有效 Design approval 或实时远端 source branch 不一致
+- **THEN** Runtime 在创建 specification closure Work 前拒绝 preflight，且不产生 closure、push 或 MR 副作用
+
+#### Scenario: 已关闭规格但尚未发布时纠正 OID
+
+- **WHEN** 兼容升级恢复一个已有 isolated closure、没有 Publication Receipt 的 Archive，且 Design approval 的 branch coordinates 一致、实时远端 OID 等于 closure candidate baseOid，冻结输入仅该 OID 错误
+- **THEN** Runtime 保持 runId 与 closure 不变，递增 checkEpoch并建立新的 delivery publication Work；业务交付、Evidence、policy、branch 名或 target 的变化均被拒绝
+
+#### Scenario: 实时远端已越过本地 closure baseline
+
+- **WHEN** publication 前只读校验发现实时 Change branch 已前进，旧 approval 与 isolated closure candidate 都不再匹配待发布实现，且尚未放行任何远端 publication 动作
+- **THEN** Runtime 在同一 runId 内使旧 approval、Evidence、Archive input 与本地 closure candidate 失效，递增 checkEpoch回到 Design并要求重新批准和验证

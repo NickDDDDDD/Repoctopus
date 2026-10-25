@@ -464,8 +464,7 @@ describe('managed Change execution production composition', () => {
         changeId: 'managed-blackbox',
         changeBranch: {
           repositoryId: 'workspace',
-          remoteIdentity: project.repositories.find((repository) => repository.id === 'workspace')!
-            .remoteIdentity!,
+          remoteIdentity: approval.snapshot.changeBranch.remoteIdentity,
           sourceBranch: 'spec/managed-blackbox',
           targetBranch: 'main',
           remoteOid: changeRemoteOid,
@@ -481,6 +480,7 @@ describe('managed Change execution production composition', () => {
           },
         ],
       };
+      vi.spyOn(application.context.delivery, 'validateArchiveIntent').mockResolvedValue();
       await application.context.commandRouter.execute('run.archive.prepare', {
         runId,
         attemptId: acceptedAttemptId,
@@ -551,7 +551,9 @@ describe('managed Change execution production composition', () => {
           publicationId: 'specification',
           role: 'specification',
           repositoryId: 'workspace',
-          remoteIdentity: intent.changeBranch.remoteIdentity,
+          remoteIdentity: project.repositories.find(
+            (repository) => repository.id === 'workspace',
+          )!.remoteIdentity!,
           remote: 'origin',
           sourceBranch: 'spec/managed-blackbox',
           targetBranch: 'main',

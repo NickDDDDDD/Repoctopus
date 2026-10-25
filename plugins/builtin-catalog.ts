@@ -652,6 +652,13 @@ const definitions: readonly BuiltinDefinition[] = [
       authorities: ['lifecycle-definition'],
       permissions: [],
       stateSchemas: {},
+      compatibleImplementations: [
+        {
+          codeDigest: 'sha256:2926551cac3ad5a47cb6e6f4a285425c150caac2d82c1c4d291f8ec9f7251436',
+          descriptorDigest:
+            'sha256:9dfa238c84298c5fd26500cf0519e605afe70bb2508f48d87554609c48d00930',
+        },
+      ],
     },
     plugin: builtinLifecycleDefinition,
     sourceFiles: [
@@ -687,6 +694,13 @@ const definitions: readonly BuiltinDefinition[] = [
       authorities: ['lifecycle-validator'],
       permissions: [],
       stateSchemas: {},
+      compatibleImplementations: [
+        {
+          codeDigest: 'sha256:cb472a770aacb43e7b73c8969531889b294af30c06e66e99c086908a70db34dc',
+          descriptorDigest:
+            'sha256:a87e4735dd873231d22125896f04cc5bcbd03074858d437309009feac4f76da2',
+        },
+      ],
     },
     plugin: builtinLifecycleValidators,
     sourceFiles: [
@@ -722,6 +736,13 @@ const definitions: readonly BuiltinDefinition[] = [
       authorities: ['lifecycle-extension'],
       permissions: [],
       stateSchemas: {},
+      compatibleImplementations: [
+        {
+          codeDigest: 'sha256:18359f2ee893508d1f4f4903c6479d3272abfb036e74f8694bedec7873541f03',
+          descriptorDigest:
+            'sha256:efa84ce4e4bbfaad450dfe6628f396aebfd7e411725c3cb42ee5d4db8ea129d6',
+        },
+      ],
     },
     plugin: builtinLifecycleExtensions,
     sourceFiles: [
@@ -888,6 +909,13 @@ const definitions: readonly BuiltinDefinition[] = [
       authorities: ['delivery-state-write'],
       permissions: ['filesystem', 'process', 'network'],
       stateSchemas: { delivery: '2|3' },
+      compatibleImplementations: [
+        {
+          codeDigest: 'sha256:fc2ca8286f660b259ccd1a4d1bdc42cf8f75843aed55743cf9fe788fd7ff276e',
+          descriptorDigest:
+            'sha256:3de2ec154dacf4e714d388da14e2a14a5f59f66909e7890e55f6fab92634567b',
+        },
+      ],
     },
     plugin: FileDeliveryProvider,
     sourceFiles: [
@@ -933,6 +961,13 @@ const definitions: readonly BuiltinDefinition[] = [
       authorities: ['workflow-transition'],
       permissions: [],
       stateSchemas: { run: '1' },
+      compatibleImplementations: [
+        {
+          codeDigest: 'sha256:b402fe98d8867d618a421d4aa06e71f7428aa235bd8e918ada71f9e70f0fcb04',
+          descriptorDigest:
+            'sha256:f2e5447d57b4f4e81e8ab2adc0941f28bf1555e6915a5efe6f5c5e6b201ca3a5',
+        },
+      ],
     },
     plugin: WorkflowRuns,
     sourceFiles: [
@@ -944,6 +979,7 @@ const definitions: readonly BuiltinDefinition[] = [
       'domains/change-lifecycle/build-validator.ts',
       'domains/change-lifecycle/host-workflow.ts',
       'domains/change-lifecycle/transition.ts',
+      'domains/change-lifecycle/archive-input.ts',
       'domains/change-lifecycle/verification-input.ts',
       'domains/change-lifecycle/verify-work.ts',
       'domains/engine/loop.ts',

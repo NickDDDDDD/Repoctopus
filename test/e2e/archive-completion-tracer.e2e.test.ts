@@ -148,6 +148,8 @@ describe('single-repository Archive production tracer', () => {
         },
         intent,
         policy,
+        planningCompositionDigest: digest('4'),
+        evidenceCompositionDigest: digest('4'),
       });
       const current = {
         ...createChangeLifecycleSnapshot({

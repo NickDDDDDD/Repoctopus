@@ -78,6 +78,7 @@
       **Acceptance:** 只改 phase、只改文件、只勾 checkbox 或只观察新 fingerprint 都不能重新进入 Verify
       **Requirements:** managed-work-execution#验证失败必须创建受管-repair-work, change-lifecycle#completion-claim-与验证事实分离
 - [x] 4.6 Archive 在任何 closure/publication 副作用前发现 Verify 陈旧时回到 Verify；副作用开始后固定 phase并从 Journal reconcile。
+      同时在 closure 与远端 publication 前验证 planning approval/实时 Change branch；兼容升级若只发现冻结 OID 错误，可用 approval + closure candidate 在同 Run 新 epoch 建立替代 publication Work，不得修改其他交付输入。
       **Acceptance:** pre-side-effect reverify 与 post-side-effect unknown-result 两条恢复路径均不重复远端动作
       **Requirements:** change-lifecycle#失败分类必须决定真实返工路径, delivery-governance#外部发布动作以稳定身份恢复
 - [x] 4.7 把 definition、composition、Skill、Method Profile 与 Provider 漂移改为同一 Run 的兼容恢复、当前 Work 失效或 `migration_required`，删除 successor generation。
