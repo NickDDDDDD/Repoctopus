@@ -107,7 +107,7 @@
       **Acceptance:** 真实 `complete-managed-change-execution` Tasks 的每个 tracked Task 都投影至少一个稳定 Acceptance；无元数据 fixture 在 Design blocked，完整 fixture 保持原五阶段行为；相关定向测试和 OpenSpec strict validation 通过
       **Requirements:** specification-authority#design-在批准前验证结构化-acceptance
 
-- [ ] 8.2 修复 Verify code review 发现的 Acceptance 合同缺口：Parser 只接受层级正确的规范 `**Acceptance:**` 元数据，Provider 只把完整性断言映射为 missing-Acceptance diagnostic，并保留其他 Tasks 投影失败的真实身份。
+- [x] 8.2 修复 Verify code review 发现的 Acceptance 合同缺口：Parser 只接受层级正确的规范 `**Acceptance:**` 元数据，Provider 只把完整性断言映射为 missing-Acceptance diagnostic，并保留其他 Tasks 投影失败的真实身份。
       **Acceptance:** 无缩进、无粗体和旧别名 fixture 均在 Design blocked；重复 Task 等非 Acceptance 错误不会被误报；领域、Provider、进程外 Design gate 和全量回归通过
       **Requirements:** specification-authority#design-在批准前验证结构化-acceptance
 
