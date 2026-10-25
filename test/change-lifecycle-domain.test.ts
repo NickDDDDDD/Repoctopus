@@ -172,6 +172,7 @@ const buildTask: SpecificationTask = {
   title: 'Build it',
   level: 0,
   status: 'pending',
+  completion: null,
   blockedBy: [],
   acceptanceCriteria: [],
   requirementRefs: [],

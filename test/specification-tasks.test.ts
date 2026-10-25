@@ -81,6 +81,35 @@ describe('Specification Tasks', () => {
     expect(completed.digest).toBe(pending.digest);
     expect(readySpecificationTasks(pending.tasks).map((task) => task.taskId)).toEqual(['1.1']);
     expect(readySpecificationTasks(completed.tasks).map((task) => task.taskId)).toEqual(['1.2']);
+    expect(pending.tasks[0]?.completion).toBeNull();
+    expect(completed.tasks[0]?.completion).toEqual({ source: 'imported-claim' });
+  });
+
+  it('derives content-addressed Acceptance identities independently from checkbox state', () => {
+    const pending = parseSpecificationTasks(
+      'acceptance-plan',
+      '- [ ] 1.1 Build it.\n  **Acceptance:** Works safely; Emits evidence\n  **Requirements:** runtime#safe, evidence#trace\n',
+    );
+    const completed = parseSpecificationTasks(
+      'acceptance-plan',
+      '- [x] 1.1 Build it.\n  **Acceptance:** Emits evidence; Works safely\n  **Requirements:** evidence#trace, runtime#safe\n',
+    );
+
+    expect(pending.tasks[0]?.acceptanceCriteria).toHaveLength(2);
+    expect(completed.tasks[0]?.acceptanceCriteria).toEqual(pending.tasks[0]?.acceptanceCriteria);
+    expect(pending.tasks[0]?.acceptanceCriteria[0]).toMatchObject({
+      acceptanceId: expect.stringMatching(/^acceptance-[a-f0-9]{64}$/u),
+      taskId: '1.1',
+      taskRevision: pending.tasks[0]?.taskRevision,
+      requirementRefs: ['evidence#trace', 'runtime#safe'],
+      source: 'tasks.md#task-1.1',
+    });
+    expect(() =>
+      parseSpecificationTasks(
+        'duplicate-acceptance',
+        '- [ ] 1.1 Build it.\n  **Acceptance:** Same; **Same**\n',
+      ),
+    ).toThrow(/duplicate Acceptance/u);
   });
 
   it('uses explicit Blocked by metadata and rejects ambiguous identities', () => {
@@ -93,10 +122,7 @@ describe('Specification Tasks', () => {
       parseSpecificationTasks('bad-plan', '- [ ] 1.1 First.\n- [ ] 1.1 Duplicate.\n'),
     ).toThrow(/duplicated/u);
     expect(() =>
-      parseSpecificationTasks(
-        'bad-plan',
-        '- [ ] 1.1 First.\n  **Blocked by:** 9.9\n',
-      ),
+      parseSpecificationTasks('bad-plan', '- [ ] 1.1 First.\n  **Blocked by:** 9.9\n'),
     ).toThrow(/unknown or later/u);
   });
 
@@ -114,17 +140,27 @@ describe('Specification Tasks', () => {
       changeId: 'task-plan',
       taskId: '1.1',
       taskRevision: before.tasks[0]!.taskRevision,
+      workId: 'work-build-1.1',
       document,
     });
     const replay = completeSpecificationTaskDocument({
       changeId: 'task-plan',
       taskId: '1.1',
       taskRevision: before.tasks[0]!.taskRevision,
+      workId: 'work-build-1.1',
       document: first.document,
     });
     expect(first.updated).toBe(true);
     expect(first.document).toContain('- [x] 1.1 Build it.');
     expect(first.tasks.digest).toBe(before.digest);
+    expect(first.tasks.tasks[0]?.completion).toEqual({
+      source: 'runtime-work',
+      workId: 'work-build-1.1',
+    });
+    expect(replay.tasks.tasks[0]?.completion).toEqual({
+      source: 'runtime-work',
+      workId: 'work-build-1.1',
+    });
     expect(replay).toMatchObject({ updated: false, document: first.document });
     expect(() =>
       completeSpecificationTaskDocument({

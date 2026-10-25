@@ -299,9 +299,11 @@ describe('Archive publication terminal lifecycle', () => {
         publicationReceipt: { digest: receipt.digest },
       },
     });
-    expect((await runtime.status(closed.identity.runId)).changeLifecycle).toMatchObject({
+    const status = await runtime.status(closed.identity.runId);
+    expect(status.changeLifecycle).toMatchObject({
       status: 'completed',
       publicationReceipt: { digest: receipt.digest },
     });
+    expect(status.changeLifecycle?.nextActions).toEqual([]);
   });
 });

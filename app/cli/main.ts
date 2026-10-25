@@ -172,6 +172,7 @@ function defaultWorkflowPath(): string {
 function nextActions(status: RunStatusView): string[] {
   const lifecycle = status.changeLifecycle;
   if (lifecycle) {
+    if (['completed', 'failed', 'migration_required'].includes(lifecycle.status)) return [];
     const work = lifecycle.currentWork?.kind;
     if (lifecycle.phase === 'design' && lifecycle.status === 'waiting') {
       return ['repoctopus run decide --run <run-id>'];

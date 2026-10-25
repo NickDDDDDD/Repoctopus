@@ -91,6 +91,7 @@ function lifecycleState(snapshot: ChangeLifecycleSnapshot): ChangeLifecycleState
 }
 
 function lifecycleNextActions(snapshot: ChangeLifecycleSnapshot) {
+  if (['completed', 'failed', 'migration_required'].includes(snapshot.status)) return [];
   if (snapshot.phase === 'open') {
     return [{ id: 'change.continue', kind: 'work' as const, label: 'Validate Open intake' }];
   }

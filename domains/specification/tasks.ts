@@ -1,7 +1,11 @@
 import { createHash } from 'node:crypto';
 
 import { canonicalJson } from '../workflow-contract/canonical.js';
-import type { SpecificationTask, SpecificationTaskSet } from './types.js';
+import type {
+  SpecificationAcceptanceCriterion,
+  SpecificationTask,
+  SpecificationTaskSet,
+} from './types.js';
 
 const TASK = /^(\s*)-\s+\[([ xX])\]\s+(\d+(?:\.\d+)*)\s+(.+?)\s*$/u;
 const BLOCKED_BY = /^\s*(?:-\s*)?(?:\*\*)?Blocked by:(?:\*\*)?\s*(.+?)\s*$/iu;
@@ -15,6 +19,13 @@ const FUTURE_PHASE_DEPENDENCY = [
 
 function sha256(value: unknown): `sha256:${string}` {
   return `sha256:${createHash('sha256').update(canonicalJson(value)).digest('hex')}`;
+}
+
+function acceptanceId(value: unknown): `acceptance-${string}` {
+  return `acceptance-${createHash('sha256')
+    .update('repoctopus.specification.acceptance.v1\0')
+    .update(canonicalJson(value))
+    .digest('hex')}`;
 }
 
 function parseDependencies(value: string): string[] {
@@ -46,9 +57,10 @@ function semanticList(value: string, separator: RegExp): string[] {
 export function assertBuildScopedTask(
   task: Pick<SpecificationTask, 'taskId' | 'title' | 'acceptanceCriteria'>,
 ): void {
-  const dependency = [task.title, ...task.acceptanceCriteria].find((text) =>
-    FUTURE_PHASE_DEPENDENCY.some((pattern) => pattern.test(text)),
-  );
+  const dependency = [
+    task.title,
+    ...task.acceptanceCriteria.map((criterion) => criterion.text),
+  ].find((text) => FUTURE_PHASE_DEPENDENCY.some((pattern) => pattern.test(text)));
   if (dependency) {
     throw new Error(
       `Task ${task.taskId} is not Build-scoped; future Verify, Archive, MR merge, and consistency outcomes are Runtime facts: ${dependency}`,
@@ -56,10 +68,7 @@ export function assertBuildScopedTask(
   }
 }
 
-export function parseSpecificationTasks(
-  changeId: string,
-  document: string,
-): SpecificationTaskSet {
+export function parseSpecificationTasks(changeId: string, document: string): SpecificationTaskSet {
   if (!changeId.trim()) throw new Error('Specification task change id is required');
   const parsed: Array<{
     taskId: string;
@@ -99,7 +108,9 @@ export function parseSpecificationTasks(
     }
     const acceptance = line.match(ACCEPTANCE);
     if (acceptance && parsed.length > 0) {
-      parsed.at(-1)!.acceptanceCriteria.push(...semanticList(acceptance[1]!, /;/u));
+      parsed
+        .at(-1)!
+        .acceptanceCriteria.push(...acceptance[1]!.split(/;/u).map(normalizeText).filter(Boolean));
       continue;
     }
     const requirements = line.match(REQUIREMENTS);
@@ -118,24 +129,54 @@ export function parseSpecificationTasks(
       }
     }
     ids.add(task.taskId);
+    const acceptanceTexts = task.acceptanceCriteria.map(normalizeText).filter(Boolean);
+    if (new Set(acceptanceTexts).size !== acceptanceTexts.length) {
+      throw new Error(`Task ${task.taskId} declares duplicate Acceptance criteria`);
+    }
     const stable = {
       taskId: task.taskId,
       title: task.title,
       level: task.level,
       blockedBy,
-      acceptanceCriteria: [...new Set(task.acceptanceCriteria)].sort(),
+      acceptanceCriteria: [...acceptanceTexts].sort(),
       requirementRefs: [...new Set(task.requirementRefs)].sort(),
     };
-    const projected = { ...stable, status: task.status, taskRevision: sha256(stable) };
+    const taskRevision = sha256(stable);
+    const acceptanceCriteria: SpecificationAcceptanceCriterion[] = stable.acceptanceCriteria.map(
+      (text) => {
+        const source = `tasks.md#task-${task.taskId}`;
+        const identity = {
+          taskId: task.taskId,
+          text,
+          requirementRefs: stable.requirementRefs,
+          source,
+        };
+        return {
+          acceptanceId: acceptanceId(identity),
+          taskId: task.taskId,
+          taskRevision,
+          text,
+          requirementRefs: stable.requirementRefs,
+          source,
+        };
+      },
+    );
+    const projected: SpecificationTask = {
+      ...stable,
+      acceptanceCriteria,
+      status: task.status,
+      completion: task.status === 'completed' ? { source: 'imported-claim' } : null,
+      taskRevision,
+    };
     if (projected.status === 'pending') assertBuildScopedTask(projected);
     return projected;
   });
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     changeId,
     tasks,
     digest: sha256({
-      schemaVersion: 1,
+      schemaVersion: 2,
       changeId,
       tasks: tasks.map((task) => ({
         taskId: task.taskId,
@@ -143,7 +184,7 @@ export function parseSpecificationTasks(
         title: task.title,
         level: task.level,
         blockedBy: task.blockedBy,
-        acceptanceCriteria: task.acceptanceCriteria,
+        acceptanceCriteria: task.acceptanceCriteria.map((criterion) => criterion.text),
         requirementRefs: task.requirementRefs,
       })),
     }),
@@ -164,6 +205,7 @@ export function completeSpecificationTaskDocument(input: {
   changeId: string;
   taskId: string;
   taskRevision: `sha256:${string}`;
+  workId?: string;
   document: string;
 }): { document: string; tasks: SpecificationTaskSet; updated: boolean } {
   const before = parseSpecificationTasks(input.changeId, input.document);
@@ -172,14 +214,25 @@ export function completeSpecificationTaskDocument(input: {
   if (task.taskRevision !== input.taskRevision) {
     throw new Error(`Specification Task revision changed: ${input.taskId}`);
   }
+  const applyRuntimeCompletion = (tasks: SpecificationTaskSet): SpecificationTaskSet => {
+    if (!input.workId) return tasks;
+    return {
+      ...tasks,
+      tasks: tasks.tasks.map((candidate) =>
+        candidate.taskId === input.taskId
+          ? {
+              ...candidate,
+              completion: { source: 'runtime-work' as const, workId: input.workId! },
+            }
+          : candidate,
+      ),
+    };
+  };
   if (task.status === 'completed') {
-    return { document: input.document, tasks: before, updated: false };
+    return { document: input.document, tasks: applyRuntimeCompletion(before), updated: false };
   }
   const escaped = input.taskId.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
-  const pattern = new RegExp(
-    `^(\\s*-\\s+\\[)[ ](\\]\\s+${escaped}(?:\\s|$).*)$`,
-    'gmu',
-  );
+  const pattern = new RegExp(`^(\\s*-\\s+\\[)[ ](\\]\\s+${escaped}(?:\\s|$).*)$`, 'gmu');
   let replacements = 0;
   const document = input.document.replace(pattern, (_match, prefix: string, suffix: string) => {
     replacements += 1;
@@ -193,5 +246,5 @@ export function completeSpecificationTaskDocument(input: {
   if (completed?.status !== 'completed' || completed.taskRevision !== input.taskRevision) {
     throw new Error(`Specification Task completion changed its semantic revision: ${input.taskId}`);
   }
-  return { document, tasks, updated: true };
+  return { document, tasks: applyRuntimeCompletion(tasks), updated: true };
 }

@@ -377,6 +377,7 @@ export class OpenSpecProvider extends Specification {
       changeId: input.changeId,
       taskId: input.taskId,
       taskRevision: input.taskRevision,
+      ...(input.workId ? { workId: input.workId } : {}),
       document: original,
     });
     if (completed.updated) {

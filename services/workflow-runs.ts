@@ -819,6 +819,7 @@ export class WorkflowRuns extends Service {
         changeId: lifecycle.identity.changeId,
         taskId: validation.taskId,
         taskRevision: validation.taskRevision,
+        workId: validation.workId,
         ...(signal ? { signal } : {}),
       });
       const advanced = await this.coordinator.acceptChangeObservation(input.runId, {
