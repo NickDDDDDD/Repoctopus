@@ -13,12 +13,33 @@ import type {
   WorkExecutionHostIdentity,
   WorkExecutionHostOutcome,
   WorkClaimResult,
+  WorkExecutionPacket,
 } from '../domains/work-execution/types.js';
 
 function invocationId(packetDigest: string, hostId: string): string {
   return `sha256:${createHash('sha256')
     .update(`work-host-invocation\0${packetDigest}\0${hostId}`)
     .digest('hex')}`;
+}
+
+function assertConsumedExecutionSkills(
+  packet: WorkExecutionPacket,
+  outcome: Pick<WorkExecutionHostOutcome, 'status' | 'consumedLayerDigests'>,
+): void {
+  if (outcome.status !== 'succeeded') return;
+  const required = packet.context.layers
+    .filter((layer) => layer.kind === 'action-skill' || layer.kind === 'augmentation-skill')
+    .map((layer) => layer.digest);
+  const eligible = new Set(required);
+  const consumed = new Set(outcome.consumedLayerDigests);
+  if (
+    required.some((layerDigest) => !consumed.has(layerDigest)) ||
+    [...consumed].some((layerDigest) => !eligible.has(layerDigest))
+  ) {
+    throw new Error(
+      'Successful Work Execution Host Outcome must prove consumption of every delivered action and augmentation Skill layer',
+    );
+  }
 }
 
 export interface ManagedWorkExecutionResult {
@@ -93,6 +114,7 @@ export class ManagedWorkExecutor extends Service {
       );
       throw new Error('Work Execution Host Outcome identity mismatch');
     }
+    assertConsumedExecutionSkills(claim.packet, hostOutcome);
     await this.ctx.workExecutionAuthority.markHostCompleted(claim.intent, hostOutcome);
     await this.ctx.workExecutionAuthority.recordSkillFacts(
       claim.packet,
@@ -155,8 +177,9 @@ export class ManagedWorkExecutor extends Service {
       consumedLayerDigests: [...new Set(input.consumedLayerDigests)].sort(),
       completedAt: new Date().toISOString(),
     };
-    await this.ctx.workExecutionAuthority.markHostCompleted(intent, hostOutcome);
     const packet = await this.ctx.workDispatcher.resumeClaim(input.runId);
+    assertConsumedExecutionSkills(packet.packet, hostOutcome);
+    await this.ctx.workExecutionAuthority.markHostCompleted(intent, hostOutcome);
     await this.ctx.workExecutionAuthority.recordSkillFacts(
       packet.packet,
       'consumed',
@@ -203,8 +226,9 @@ export class ManagedWorkExecutor extends Service {
     ) {
       throw new Error('Reconciled Host Outcome identity mismatch');
     }
-    await this.ctx.workExecutionAuthority.markHostCompleted(intent, outcome);
     const packet = await this.ctx.workDispatcher.resumeClaim(runId);
+    assertConsumedExecutionSkills(packet.packet, outcome);
+    await this.ctx.workExecutionAuthority.markHostCompleted(intent, outcome);
     await this.ctx.workExecutionAuthority.recordSkillFacts(
       packet.packet,
       'consumed',

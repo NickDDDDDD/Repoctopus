@@ -456,6 +456,26 @@ describe('Change Run Design gate CLI', () => {
         'forged packet',
       ]),
     ).toMatch(/does not match the authoritative invocation/u);
+    expect(
+      await failure(workspace, environment, [
+        'run',
+        'work-outcome',
+        '--workspace',
+        workspace,
+        '--run',
+        validRun.runId!,
+        '--invocation-id',
+        claim.result!.invocation.invocationId,
+        '--host-id',
+        claim.result!.invocation.host.id,
+        '--packet-digest',
+        claim.result!.packet.identity.packetDigest,
+        '--status',
+        'succeeded',
+        '--summary',
+        'Host skipped its delivered Skill content',
+      ]),
+    ).toMatch(/must prove consumption of every delivered/u);
     const accepted = await runCli<ManagedWorkExecutionResult>({
       packageRoot,
       cwd: workspace,
