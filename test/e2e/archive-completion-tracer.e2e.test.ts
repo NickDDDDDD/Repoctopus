@@ -103,6 +103,10 @@ function fixture(provenance: PublicationReceiptItem['provenance']) {
           status: 'closed',
           archiveId: '2026-10-24-single-tracer',
           changedFiles: ['openspec/changes/archive/2026-10-24-single-tracer/proposal.md'],
+          candidate: {
+            checkoutId: 'closure-single-tracer',
+            baseOid: archive.changeBranch.remoteOid,
+          },
         });
       },
     ),

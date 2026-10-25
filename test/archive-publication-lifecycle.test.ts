@@ -155,6 +155,7 @@ function archiveState() {
     status: 'closed',
     archiveId: '2026-10-24-terminal-archive',
     changedFiles: ['openspec/changes/archive/2026-10-24-terminal-archive/proposal.md'],
+    candidate: { checkoutId: 'closure-terminal-archive', baseOid: 'b'.repeat(40) },
   };
   const publishWork = createDeliveryPublishWork({
     definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
