@@ -416,6 +416,46 @@ describe('Change Run Design gate CLI', () => {
       'repoctopus.build@1.0.0',
       approvedWorkId,
     ]);
+    expect(
+      await failure(workspace, environment, [
+        'run',
+        'work-outcome',
+        '--workspace',
+        workspace,
+        '--run',
+        validRun.runId!,
+        '--invocation-id',
+        claim.result!.invocation.invocationId,
+        '--host-id',
+        'external:cli:forged-runner',
+        '--packet-digest',
+        claim.result!.packet.identity.packetDigest,
+        '--status',
+        'succeeded',
+        '--summary',
+        'forged Host',
+      ]),
+    ).toMatch(/does not match the authoritative invocation/u);
+    expect(
+      await failure(workspace, environment, [
+        'run',
+        'work-outcome',
+        '--workspace',
+        workspace,
+        '--run',
+        validRun.runId!,
+        '--invocation-id',
+        claim.result!.invocation.invocationId,
+        '--host-id',
+        claim.result!.invocation.host.id,
+        '--packet-digest',
+        `sha256:${'f'.repeat(64)}`,
+        '--status',
+        'succeeded',
+        '--summary',
+        'forged packet',
+      ]),
+    ).toMatch(/does not match the authoritative invocation/u);
     const accepted = await runCli<ManagedWorkExecutionResult>({
       packageRoot,
       cwd: workspace,

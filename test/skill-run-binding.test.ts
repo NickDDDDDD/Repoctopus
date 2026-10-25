@@ -85,12 +85,18 @@ describe('Skill snapshots bound to a Run', () => {
       status: 'drifted',
       changedSkills: ['tdd'],
     });
-    await expect(
-      app.context.workflowRuns.resume({
-        runId: 'skill-bound-run',
-        currentProjectSnapshot: projectFixture({ root: workspace }),
-      }),
-    ).rejects.toThrow('requires a Human Decision or a new Run');
+    const resumed = await app.context.workflowRuns.resume({
+      runId: 'skill-bound-run',
+      currentProjectSnapshot: projectFixture({ root: workspace }),
+    });
+    expect(resumed).toMatchObject({
+      diagnostics: [{ level: 'error', code: 'runtime.migration-required' }],
+      value: {
+        execution: { continuation: 'reconcile', reason: 'content-missing-or-corrupt' },
+        skillCompatibility: { status: 'drifted', changedSkills: ['tdd'] },
+        state: { stateVersion: status.state.stateVersion },
+      },
+    });
     await app.close();
   });
 });

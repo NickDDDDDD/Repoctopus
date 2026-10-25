@@ -56,9 +56,12 @@ npm install
 npm run build
 node bin/repoctopus.js run start --workspace . --json
 node bin/repoctopus.js run status --workspace . --run <run-id> --json
+node bin/repoctopus.js run next --workspace . --run <run-id> --json
 ```
 
 `run start` 在创建新 Run 前执行一次有界 consistency reconcile。平台暂时不可用只产生警告，不阻断新任务；命令不会启动 listener 或 Timer。
+
+全新开发使用默认 `fresh`；接管已有规划或实现时使用 `--mode adopt-existing` 创建新 generation。每次 `run next` 只拉取 Runtime 当前 continuation。内嵌 Host 由同一短生命周期 App 注册；外部 Agent/Runner 则使用 `run work-claim`/`run work-outcome` 的 Host-bound 协议。电脑关闭不需要守护进程：下一位具备 Workspace 状态的 Runner 从同一个 checkpoint 恢复；若原调用结果未知，必须先 `run work-reconcile`，不能自动重放。
 
 Archive 使用两个公共入口：
 

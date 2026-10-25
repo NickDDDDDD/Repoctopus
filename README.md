@@ -24,6 +24,10 @@ node bin/repoctopus.js run resume --workspace . --run <run-id> --json
 node bin/repoctopus.js doctor --workspace . --run <run-id> --json
 ```
 
+`run next` 是唯一的 pull-based 推进入口：调用方不能指定 phase、Work 或 Skill。Runtime 选择当前 Action，把不可变完整执行包交给唯一 `WorkExecutionHost`，验证 Host Outcome 后才允许 Validator 推进。新 Change 默认 `fresh`；接管已有 checkbox/实现时显式使用 `run start ... --mode adopt-existing`，且仍必须执行 Verify。
+
+进程外 Host 使用 `run work-claim` 领取完整 JSON packet，再用 invocation、Host 与 packet digest 三重绑定的 `run work-outcome` 回报；普通文本、`run status` 和持久 Run 只显示 identity，不输出 Skill、Provider 或 change input 正文。结果未知时使用 `run work-reconcile`，不得自动重放可能已有副作用的调用。
+
 运行状态保存在 Workspace 的 `.repoctopus/`。OTLP 配置遵循标准 `OTEL_EXPORTER_OTLP_*` 环境变量；没有配置端点时遥测降级为空实现，不影响领域结果。
 
 ## Skills 与规格权威

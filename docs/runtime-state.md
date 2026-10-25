@@ -23,6 +23,16 @@ node bin/repoctopus.js run status --workspace . --run <run-id> --json
 | `transition.lock`       | 跨进程转换锁；正常完成后删除                             |
 | `telemetry-cursor.json` | 已成功发送的最后一个轨迹序号                             |
 
+可选的 `agent-coordination.json` 只保存有界的 handoff/上下文压缩提示。它不进入 Run、Checkpoint 或 OpenSpec 四类工件，不能授权写入、声明 Task 完成或覆盖真实 execution checkpoint；缺失或 stale 只意味着 Runner 要重新核对事实。
+
+## 受管 Work 与 continuation
+
+`run next` 每次只解析 Runtime 已选定的当前 Action，并返回 `execute | ask | wait | reconcile | done`。完整 `WorkExecutionPacket` 按 Runtime contract、阶段 action Skill、Specification Provider protocol、augmentation Skills、Method Profile、change inputs 的固定顺序装配；正文只交给短生命周期 Host，Run 仅保存 packet/context digest。
+
+claim、context delivery、Host invocation、Outcome、Validator 与 lifecycle transition 都写入同一个 Run aggregate 和追加式 trajectory。ActionStore 只是先写的不可变内容库，不拥有 attempt 或下一步。恢复分类遵循以下边界：未调用可重交同一 attempt；活跃 Host 返回 `wait`；未知副作用返回 `reconcile`；可证明未执行才创建下一 attempt；已有 Outcome 从 Validator 继续；Human Decision 保留原 proposal hash。
+
+进程外 Host 的 Outcome 必须同时匹配原 invocation ID、Host ID 和 packet digest。受保护操作还必须携带活动 session identity；跨 Run/Work、过期 session、越仓或越 scope 操作全部 fail closed。Repoctopus 不是 OS 沙箱，旁路文件变化只能成为 drift，不能形成受管 Receipt。
+
 ## 转换协议
 
 1. 原子取得 `transition.lock`；仍存活的持有者使竞争写入等待，进程已经退出的陈旧锁可以回收。
