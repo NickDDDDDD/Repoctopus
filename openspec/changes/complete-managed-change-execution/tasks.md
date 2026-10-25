@@ -103,7 +103,7 @@
 
 ## 8. 闭合 Design Acceptance 合同
 
-- [ ] 8.1 统一 Design Skill、Method Profile、Task parser 与 OpenSpec Provider 的结构化 Acceptance 合同；给全部既有 tracked Tasks 补齐显式 Acceptance，并用领域、Provider 和进程外 Design gate 回归证明缺失项在 Human Decision 前 fail-closed、完整项可进入审批且 Verify 能建立非空 coverage plan。
+- [x] 8.1 统一 Design Skill、Method Profile、Task parser 与 OpenSpec Provider 的结构化 Acceptance 合同；给全部既有 tracked Tasks 补齐显式 Acceptance，并用领域、Provider 和进程外 Design gate 回归证明缺失项在 Human Decision 前 fail-closed、完整项可进入审批且 Verify 能建立非空 coverage plan。
       **Acceptance:** 真实 `complete-managed-change-execution` Tasks 的每个 tracked Task 都投影至少一个稳定 Acceptance；无元数据 fixture 在 Design blocked，完整 fixture 保持原五阶段行为；相关定向测试和 OpenSpec strict validation 通过
       **Requirements:** specification-authority#design-在批准前验证结构化-acceptance
 
