@@ -102,11 +102,6 @@ async function worktreeChangedPaths(cwd: string): Promise<string[]> {
   return [...new Set([...nulPaths(unstaged), ...nulPaths(staged), ...nulPaths(untracked)])].sort();
 }
 
-function hasExactChanges(changed: readonly string[], allowed: readonly string[]): boolean {
-  const expected = [...new Set(allowed.map(normalizeRepositoryPath))].sort();
-  return JSON.stringify(changed) === JSON.stringify(expected);
-}
-
 async function publishCheckpoint(
   cwd: string,
   remote: string,
@@ -178,7 +173,6 @@ export class GitDeliveryAdapter {
     repository: RepositorySnapshot,
     intent: DeliveryRepositoryIntent,
     policy: DeliveryPolicy,
-    options?: { allowedDirtyPaths?: readonly string[] },
   ): Promise<DeliveryRepositoryFacts> {
     const cwd = await deliveryWorktree(repository.path, intent.sourceBranch);
     const branch = await git(cwd, ['symbolic-ref', '--quiet', '--short', 'HEAD']);
@@ -206,9 +200,7 @@ export class GitDeliveryAdapter {
       tree,
       remoteSourceOid,
       remoteTargetOid,
-      clean: options?.allowedDirtyPaths
-        ? hasExactChanges(changedPaths, options.allowedDirtyPaths)
-        : changedPaths.length === 0,
+      clean: changedPaths.length === 0,
     };
   }
 

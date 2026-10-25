@@ -14,11 +14,6 @@ import { TEST_COMPOSITION_DIGEST } from './helpers/fixtures.js';
 const head = 'a'.repeat(40);
 const target = 'b'.repeat(40);
 const workspace = 'C:/repoctopus-workspace';
-const closurePaths = [
-  'openspec/changes/archive/2026-10-25-example/proposal.md',
-  'openspec/changes/example/proposal.md',
-];
-
 const policy: DeliveryPolicy = {
   apiVersion: 'repoctopus/v1alpha1',
   kind: 'DeliveryPolicy',
@@ -80,8 +75,8 @@ const project: ProjectSnapshot = {
 };
 
 describe('Delivery v3 Archive publication', () => {
-  it('scopes Business cleanliness to the exact Specification Closure receipt', async () => {
-    const inspect = vi.fn<DeliveryGitPort['inspect']>((repository, delivery, _policy, options) =>
+  it('requires ordinary clean Business delivery facts after isolated Specification closure', async () => {
+    const inspect = vi.fn<DeliveryGitPort['inspect']>((repository, delivery) =>
       Promise.resolve({
         repositoryId: repository.id,
         repositoryName: repository.name,
@@ -92,7 +87,7 @@ describe('Delivery v3 Archive publication', () => {
         tree: 'c'.repeat(40),
         remoteSourceOid: head,
         remoteTargetOid: target,
-        clean: options?.allowedDirtyPaths === closurePaths,
+        clean: true,
       }),
     );
     const git: DeliveryGitPort = {
@@ -149,7 +144,6 @@ describe('Delivery v3 Archive publication', () => {
         policy,
         reportContents: 'verified',
         evidenceBundleIds: ['bundle'],
-        allowedDirtyPathsByDeliveryId: { primary: closurePaths },
       }),
     ).resolves.toMatchObject({
       receipts: [
@@ -161,42 +155,6 @@ describe('Delivery v3 Archive publication', () => {
       project.repositories[0],
       expect.objectContaining({ sourceBranch: 'spec/archive-cleanliness' }),
       policy,
-      { allowedDirtyPaths: closurePaths },
     );
-  });
-
-  it('rejects an Archive cleanliness scope that does not name a frozen delivery', async () => {
-    const service = new DeliveryServiceV3(
-      {
-        load: () => Promise.resolve(null),
-        list: () => Promise.resolve([]),
-        commit: () => Promise.resolve(),
-      },
-      {
-        checkpoint: () => Promise.reject(new Error('not used')),
-        inspect: () => Promise.reject(new Error('must not inspect')),
-        push: () => Promise.reject(new Error('must not push')),
-      },
-      {
-        capability: () => Promise.reject(new Error('not used')),
-        find: () => Promise.resolve(null),
-        create: () => Promise.reject(new Error('must not create')),
-        update: () => Promise.reject(new Error('not used')),
-        status: () => Promise.reject(new Error('not used')),
-      },
-      { assertSatisfied: () => Promise.resolve() },
-      TEST_COMPOSITION_DIGEST,
-    );
-
-    await expect(
-      service.publishArchive({
-        project,
-        intent,
-        policy,
-        reportContents: 'verified',
-        evidenceBundleIds: ['bundle'],
-        allowedDirtyPathsByDeliveryId: { unknown: closurePaths },
-      }),
-    ).rejects.toThrow(/unknown delivery/i);
   });
 });
