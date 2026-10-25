@@ -20,7 +20,13 @@ export class SpecificationPublicationAdapter {
     const sourceBranch = `repoctopus/archive/${request.changeId}-${request.closure.closureId.slice(7, 19)}`;
     await git(request.workspaceRoot, ['check-ref-format', '--branch', sourceBranch]);
     await git(request.workspaceRoot, ['add', '--all', '--', ...request.closure.changedFiles]);
-    const staged = (await execute('git', ['diff', '--cached', '--name-only', '-z'], { cwd: request.workspaceRoot })).stdout
+    // A Closure Receipt records file identities, so a rename is represented by
+    // both the deleted source and the added destination.  Git's default rename
+    // detection collapses those identities to the destination in --name-only
+    // output, which makes an exact, valid archive move look like an allowlist
+    // mismatch.  Disable rename detection so the staged observation uses the
+    // same identity model as the Receipt.
+    const staged = (await execute('git', ['diff', '--cached', '--name-only', '--no-renames', '-z'], { cwd: request.workspaceRoot })).stdout
       .split('\0').filter(Boolean).map((item) => item.replaceAll('\\', '/')).sort();
     const expected = [...request.closure.changedFiles].map((item) => item.replaceAll('\\', '/')).sort();
     if (JSON.stringify(staged) !== JSON.stringify(expected)) {
