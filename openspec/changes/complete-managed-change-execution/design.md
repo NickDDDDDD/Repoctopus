@@ -166,6 +166,8 @@ Build 的 action owner 改为 `repoctopus-build-task`，`tdd` 与 `codebase-desi
 
 删除当前不可达的 `specification.decision` Work；Human Decision 是 wait condition，不伪装成 Agent Work。`next()` 不再自动提交 Open intake。Design assessment 不完整时创建/保持 `specification.plan`，而不是只写 blocker。Verify 自动命令仍由 Evidence Coordinator 执行，但必须在 Verify Host Outcome 被接受后才开始，避免把自动测试成功当成 Agent 已审查。
 
+Design 的 `blocked` 是 Validator 尚未接受的可恢复边界，不是 Work 已完成的边界。若 Provider、Git remote 或其他验证依赖暂时失败，lifecycle 必须保留原 `specification.plan` 作为 `currentWork`，并让 continuation 指向原 Outcome 的 Validator retry；只有 Validator accepted 后，Human Decision wait 或 Build transition 才能清除该 Work。这样 Change lifecycle 与 `workExecution` aggregate 始终指向同一权威 Work，不会出现 lifecycle 已到 Verify、旧 Design claim 仍占用权威位置的分裂状态。
+
 Open 的修复采用破坏性替换，不在旧分支旁增加第二条路径：删除 `WorkflowRuns.next()` 中按 phase 直接提交 `open-intake-ready` 的逻辑；`run next` 在 Open 只解析、幂等创建或调度 Runtime 已选择的 `change.intake`，并返回/消费它的 `execute` continuation，重复调用不能创造新的 Work 或完成事实。`change.intake` 绑定 `repoctopus-open-change`、Specification Provider 阶段协议和最小 `specification.write` scope；只有原 attempt 的 Host Outcome 通过 `open.intake-ready` Validator 后，transition handler 才能接收带 Work/Receipt/validator identity 的事实并进入 Design。合法提交 Outcome/Validator 的响应直接携带 Design continuation；是否自动加载下一 Skill由客户端 `auto_transition` 决定。裸 `open-intake-ready` observation、目录存在、已有工件或调用内部 coordinator 都不能构成推进依据。
 
 由于产品尚未正式发布，本 Change 直接提升 lifecycle definition、Run schema 和公共 claim 协议版本，删除旧自动推进代码、死 Work、旧分支和只为测试服务的 fixture，不实现双读、双写或旧行为 fallback。旧 G1 bootstrap Run 保持只读审计记录；自举通过新 generation 的显式 `adopt-existing` 接管既有实现，但仍需生成新协议下可验证的 Open/Design adoption facts，不能伪造旧 Run 曾执行过这些 Work。
@@ -237,7 +239,17 @@ claim.persisted
 
 故障注入必须在 `claim.persisted`、`context.delivered`、`host.invoked`、`outcome.persisted`、`validator.accepted` 和 `lifecycle.transitioned` 之后分别终止进程，并由新进程/Runner 恢复同一 Run。验收按 checkpoint 返回的 `execute|ask|wait|reconcile|done` 继续，断言 Agent、外部平台操作、Evidence 和 phase transition 都没有重复或遗漏。
 
+Verify 的 Validator 与 Evidence gate 是两个独立的持久边界。`run verify` 首次执行时从 succeeded Host review Outcome 验证并写入 `validated`；Runtime 以 Run、Work、Work attempt 和冻结 Verification Input 生成确定性的 Evidence attempt identity，Evidence Coordinator 对该 identity 执行“存在则恢复、否则创建”并拒绝覆盖。全局 attempt lease 必须先于 profile lease 获取，使不同 profile 也不能并发占用同一 identity；已存在的 identity 还必须精确匹配原 profile 与 workflow Run，不能被串行调用接管。恢复必须区分 context-only、journaled running、terminal Attempt 缺 Bundle、completed context 四个边界：只有 journal、Bundle 和 Attempt 都没有执行事实的 prepared context 才可以安全开始原计划；孤立 journal 必须 fail closed，已有 journal 或 terminal Attempt 时只从持久事实重建，绝不重跑不确定副作用，且已持久化的 superseded 状态不能因输入后来恢复而降级。若进程随后在 Evidence 执行或 gate 投影前中断，新 Runner 的普通 `run next` 必须接受同一 Work 上、同一 Validator identity 的 `validated` checkpoint，跳过重复 Validator 写入并继续原 Evidence attempt，不要求 Agent 或调用方记忆 attemptId。`validated` 只复用 Agent review，不放宽 Evidence 的 fingerprint、Acceptance trace、freshness 或 gate 约束；Evidence superseded 仍按 implementation drift 返回 Build 并冻结新的 Verification Input。
+
 正式验证报告位于 `verification/complete-managed-change-execution/verification-report.md`，它是 Evidence 引用的报告而不是第五类 OpenSpec 规划工件。报告必须固定被测 Git commit、打包产物 checksum、definition/composition digest、公共命令、runId、各事件/Receipt identity、历史 red baseline、三个故障 fixture 的预期失败和进程恢复矩阵；若报告对应的 commit 或 package checksum 与待发布提交不一致，Verify 不得宣称通过。
+
+### 12. Tasks 的 Acceptance 必须显式且在 Design 阶段闭合
+
+OpenSpec 官方 tasks 模板允许把验证写进 checkbox 描述，但 Repoctopus 的 Evidence 模型需要稳定、可寻址的 Acceptance identity。两者不能靠 Runtime 从自然语言中猜测关联。Repoctopus Design action Skill 因此在 Provider 模板之上增加一条窄约束：每个 tracked Task 在 checkbox 后必须至少有一条缩进的 `**Acceptance:** <observable criterion>` 元数据；可选 `**Requirements:** <capability#requirement>` 继续提供 requirement selector。
+
+`parseSpecificationTasks()` 仍负责唯一的结构化投影，并且只把层级深于所属 checkbox 的规范 `**Acceptance:**` 行识别为 Acceptance；无缩进、无粗体或 `Acceptance criteria` 等旧别名都不属于合同。新增的完整性断言只检查每个 Task 是否至少有一个非空 Acceptance，不复制 OpenSpec strict validation。OpenSpec Provider 在 strict validation 成功后加载 Tasks，再只把完整性断言的失败合并为稳定 diagnostic，使 Design gate 在生成 Human Decision 前 blocked；Tasks 加载、解析、取消或 Receipt 损坏等其他错误保持原始失败身份，不能伪装成缺少 Acceptance。Verify 继续只消费 Provider 已批准的 Acceptance identities，不从 Task 标题、测试名称、Agent 摘要或 checkbox 状态回填缺失语义。
+
+选择 Design-time fail-fast，而不是让 `VerificationInput` 从 Task 标题生成默认 Acceptance，是因为默认值会把实现步骤误当行为合同，并掩盖规划质量问题。现有 Change 的 Tasks 通过显式元数据迁移；语义变化会产生新 task revision 和 planning snapshot，因此必须建立新的 adopt-existing generation 并重新审批，不能复用旧 approval。
 
 ## Risks / Trade-offs
 
@@ -249,6 +261,7 @@ claim.persisted
 - **[Run checkpoint 与 ActionStore 内容在中断后不一致]** → 不协调两套推进状态；ActionStore 先写不可变内容，Run CAS 后绑定 identity 并独占 claim/attempt/continuation 权威。孤立内容可忽略，被引用内容缺失或摘要不匹配则进入 reconcile，绝不从 ActionStore latest/file existence 推断进度。
 - **[Agent coordination checkpoint 被误当作完成事实]** → coordination 只保存有界进度提示，Runtime 只接受 Engine checkpoint、Outcome、Validator、Evidence 和 Human Decision；缺失或过期时核对实际工作，不自动重做。
 - **[黑盒 Host 仍可能只是高级 mock]** → 捕获 Host 只替代模型推理，不替代生产服务；它必须通过公共 Host Contributor、真实 packet、真实 Guard/Provider/Store 完成文件纵切，并验证实际文件结果。
+- **[显式 Acceptance 增加 Tasks 文档体积]** → 保持一条 Task 至少一条短、可观察 criterion；只在确有多个独立验收面时用分号拆分，不重复实现细节或测试命令全文。
 
 ## Migration Plan
 

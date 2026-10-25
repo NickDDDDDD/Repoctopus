@@ -9,7 +9,7 @@ import type {
 
 const TASK = /^(\s*)-\s+\[([ xX])\]\s+(\d+(?:\.\d+)*)\s+(.+?)\s*$/u;
 const BLOCKED_BY = /^\s*(?:-\s*)?(?:\*\*)?Blocked by:(?:\*\*)?\s*(.+?)\s*$/iu;
-const ACCEPTANCE = /^\s*(?:-\s*)?(?:\*\*)?Acceptance(?: criteria)?:(?:\*\*)?\s*(.+?)\s*$/iu;
+const ACCEPTANCE = /^(\s+)\*\*Acceptance:\*\*\s*(.+?)\s*$/u;
 const REQUIREMENTS = /^\s*(?:-\s*)?(?:\*\*)?Requirements?(?: mappings?)?:(?:\*\*)?\s*(.+?)\s*$/iu;
 const FUTURE_PHASE_DEPENDENCY = [
   /\b(?:after|once|when)\b.*\b(?:verify|verification|archive|merge request|mr|consistency review)\b.*\b(?:complete[sd]?|merged?|result|verdict|passes?)\b/iu,
@@ -68,11 +68,21 @@ export function assertBuildScopedTask(
   }
 }
 
+export function assertSpecificationTaskAcceptance(
+  tasks: readonly Pick<SpecificationTask, 'taskId' | 'acceptanceCriteria'>[],
+): void {
+  const task = tasks.find((candidate) => candidate.acceptanceCriteria.length === 0);
+  if (task) {
+    throw new Error(`Task ${task.taskId} requires at least one explicit Acceptance criterion`);
+  }
+}
+
 export function parseSpecificationTasks(changeId: string, document: string): SpecificationTaskSet {
   if (!changeId.trim()) throw new Error('Specification task change id is required');
   const parsed: Array<{
     taskId: string;
     title: string;
+    indentation: number;
     level: number;
     status: SpecificationTask['status'];
     explicitDependencies: string[] | null;
@@ -89,6 +99,7 @@ export function parseSpecificationTasks(changeId: string, document: string): Spe
       parsed.push({
         taskId: task[3]!,
         title: normalizeText(task[4]!),
+        indentation,
         level: indentation / 2,
         status: task[2]!.toLowerCase() === 'x' ? 'completed' : 'pending',
         explicitDependencies: null,
@@ -108,9 +119,12 @@ export function parseSpecificationTasks(changeId: string, document: string): Spe
     }
     const acceptance = line.match(ACCEPTANCE);
     if (acceptance && parsed.length > 0) {
-      parsed
-        .at(-1)!
-        .acceptanceCriteria.push(...acceptance[1]!.split(/;/u).map(normalizeText).filter(Boolean));
+      const current = parsed.at(-1)!;
+      const indentation = acceptance[1]!.replaceAll('\t', '  ').length;
+      if (indentation <= current.indentation) continue;
+      current.acceptanceCriteria.push(
+        ...acceptance[2]!.split(/;/u).map(normalizeText).filter(Boolean),
+      );
       continue;
     }
     const requirements = line.match(REQUIREMENTS);

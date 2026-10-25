@@ -225,6 +225,18 @@ describe('Change lifecycle domain', () => {
         digest: digest('v'),
       },
     };
+    const designWork: WorkDescriptor = {
+      ...workWithoutTask,
+      workId: 'design:plan',
+      phase: 'design',
+      kind: 'specification.plan',
+      inputDigest: digest('p'),
+      validatorProfile: {
+        id: 'design.artifacts-valid',
+        version: '1.0.0',
+        digest: digest('v'),
+      },
+    };
     const opened = evolveChangeLifecycle({
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
       current: {
@@ -344,9 +356,14 @@ describe('Change lifecycle domain', () => {
       },
     });
 
-    const blocked = evolveChangeLifecycle({
+    const planned = evolveChangeLifecycle({
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
       current: opened.snapshot,
+      observation: { kind: 'design-work-ready', work: designWork },
+    });
+    const blocked = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current: planned.snapshot,
       observation: {
         kind: 'design-gate',
         result: 'blocked',
@@ -358,6 +375,7 @@ describe('Change lifecycle domain', () => {
     expect(blocked.snapshot).toMatchObject({
       phase: 'design',
       status: 'blocked',
+      currentWork: { workId: designWork.workId },
       blocker: { code: 'design.planning-invalid' },
     });
   });

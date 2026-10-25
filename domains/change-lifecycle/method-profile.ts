@@ -28,13 +28,10 @@ export interface MethodProfileDefinition {
 }
 
 const SOURCE_DIGESTS = {
-  'to-spec':
-    'sha256:c73a2250beac0479e384f5466e834bb54ce6e30b7f8705e9999ba840d9d59b36',
-  'to-tickets':
-    'sha256:b8eb6dca1085e85220b0f5990ed787ebf8a924844d090689f1073b06367e2f7a',
+  'to-spec': 'sha256:c73a2250beac0479e384f5466e834bb54ce6e30b7f8705e9999ba840d9d59b36',
+  'to-tickets': 'sha256:b8eb6dca1085e85220b0f5990ed787ebf8a924844d090689f1073b06367e2f7a',
   tdd: 'sha256:969583080caf842ae86a53501a0091eced13fd89cad65d3aa75c09112318ff33',
-  'codebase-design':
-    'sha256:362b0bec828219d9f4b08ca7c466164e67253bdd817359258e60d2e9c5692a8f',
+  'codebase-design': 'sha256:362b0bec828219d9f4b08ca7c466164e67253bdd817359258e60d2e9c5692a8f',
 } as const;
 
 const RULES: readonly MethodRuleDefinition[] = [
@@ -109,7 +106,7 @@ const RULES: readonly MethodRuleDefinition[] = [
     artifactKinds: ['tasks'],
     enforcement: 'deterministic-validator',
     statement:
-      'Give every task observable acceptance criteria and an explicit verification step that can produce evidence.',
+      'Give every tracked task at least one indented **Acceptance:** criterion and an evidence-producing verification step.',
   },
 ];
 

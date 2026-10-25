@@ -4,6 +4,7 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import {
+  assertSpecificationTaskAcceptance,
   assertSpecificationTaskAdoption,
   completeSpecificationTaskDocument,
   parseSpecificationTasks,
@@ -11,6 +12,37 @@ import {
 } from '../domains/specification/tasks.js';
 
 describe('Specification Tasks', () => {
+  it('requires explicit structured Acceptance for every tracked Task', () => {
+    const tasks = parseSpecificationTasks(
+      'acceptance-contract',
+      [
+        '- [ ] 1.1 Build it and verify the unit test passes.',
+        '  **Acceptance:** The unit test observes the delivered behavior',
+        '- [ ] 1.2 Document it and verify the example runs.',
+      ].join('\n'),
+    );
+
+    expect(() => assertSpecificationTaskAcceptance(tasks.tasks)).toThrow(
+      /Task 1\.2 requires at least one explicit Acceptance criterion/u,
+    );
+    expect(() => assertSpecificationTaskAcceptance(tasks.tasks.slice(0, 1))).not.toThrow();
+  });
+
+  it.each([
+    '**Acceptance:** unindented metadata is invalid',
+    '  Acceptance: missing bold structure is invalid',
+    '  - Acceptance criteria: legacy aliases are invalid',
+  ])('does not project malformed Acceptance metadata: %s', (metadata) => {
+    const tasks = parseSpecificationTasks(
+      'acceptance-contract',
+      `- [ ] 1.1 Build it.\n${metadata}\n`,
+    );
+
+    expect(() => assertSpecificationTaskAcceptance(tasks.tasks)).toThrow(
+      /Task 1\.1 requires at least one explicit Acceptance criterion/u,
+    );
+  });
+
   it.each([
     '- [ ] 1.1 Wait for the MR merge before finishing.\n',
     '- [ ] 1.1 Finalize.\n  **Acceptance:** after Verify completes, record the result\n',
@@ -117,9 +149,9 @@ describe('Specification Tasks', () => {
     expect(() =>
       assertSpecificationTaskAdoption('fresh', runtimeCompleted.tasks.tasks),
     ).not.toThrow();
-    expect(readySpecificationTasks(runtimeCompleted.tasks.tasks).map((task) => task.taskId)).toEqual([
-      '1.2',
-    ]);
+    expect(
+      readySpecificationTasks(runtimeCompleted.tasks.tasks).map((task) => task.taskId),
+    ).toEqual(['1.2']);
   });
 
   it('derives content-addressed Acceptance identities independently from checkbox state', () => {

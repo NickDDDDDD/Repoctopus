@@ -134,7 +134,11 @@ Use the official OpenSpec lifecycle.
 `,
     root,
   );
-  await write('openspec/changes/sample/tasks.md', '# Tasks\n\n- [x] 1.1 Complete fixture.\n', root);
+  await write(
+    'openspec/changes/sample/tasks.md',
+    '# Tasks\n\n- [x] 1.1 Complete fixture.\n  **Acceptance:** The fixture behavior is observable\n',
+    root,
+  );
   await write(
     'openspec/changes/sample/specs/demo/spec.md',
     valid
@@ -549,7 +553,7 @@ Use the official OpenSpec archive lifecycle.
     );
     await write(
       'openspec/changes/add-fresh-capability/tasks.md',
-      '# Tasks\n\n- [x] 1.1 Complete the fresh capability.\n',
+      '# Tasks\n\n- [x] 1.1 Complete the fresh capability.\n  **Acceptance:** The fresh capability behavior is observable\n',
       fixture.workspace,
     );
     await write(
@@ -644,7 +648,7 @@ Use the official OpenSpec retirement metadata.
     );
     await write(
       'openspec/changes/retire-demo/tasks.md',
-      '# Tasks\n\n- [x] 1.1 Remove the demo implementation.\n',
+      '# Tasks\n\n- [x] 1.1 Remove the demo implementation.\n  **Acceptance:** The retired behavior is absent\n',
       fixture.workspace,
     );
     await write(
@@ -706,6 +710,63 @@ Use the official OpenSpec retirement metadata.
     const result = await context.specification.validate('sample', { strict: true });
     expect(result.valid).toBe(false);
     expect(result.diagnostics).not.toHaveLength(0);
+    await context.fiber.dispose();
+  });
+
+  it('rejects missing structured Task Acceptance during strict Provider validation', async () => {
+    const fixture = await openSpecFixture();
+    await writeFile(
+      path.join(fixture.workspace, 'openspec', 'changes', 'sample', 'tasks.md'),
+      '# Tasks\n\n- [ ] 1.1 Complete and verify the fixture.\n',
+    );
+    const context = new Context();
+    const fiber = context.plugin(OpenSpecProvider, {
+      workspaceRoot: fixture.workspace,
+      specificationRoot: fixture.specificationRoot,
+      process: fixture.process,
+    });
+    await fiber;
+
+    const result = await context.specification.validate('sample', { strict: true });
+    expect(result).toMatchObject({
+      valid: false,
+      diagnostics: [
+        {
+          code: 'repoctopus.task-acceptance-missing',
+          severity: 'error',
+          artifactId: 'tasks',
+          message: 'Task 1.1 requires at least one explicit Acceptance criterion',
+        },
+      ],
+    });
+    await context.fiber.dispose();
+  });
+
+  it('does not relabel unrelated Task projection failures as missing Acceptance', async () => {
+    const fixture = await openSpecFixture();
+    await writeFile(
+      path.join(fixture.workspace, 'openspec', 'changes', 'sample', 'tasks.md'),
+      [
+        '# Tasks',
+        '',
+        '- [ ] 1.1 First task.',
+        '  **Acceptance:** First behavior is observable',
+        '- [ ] 1.1 Duplicate task.',
+        '  **Acceptance:** Second behavior is observable',
+        '',
+      ].join('\n'),
+    );
+    const context = new Context();
+    const fiber = context.plugin(OpenSpecProvider, {
+      workspaceRoot: fixture.workspace,
+      specificationRoot: fixture.specificationRoot,
+      process: fixture.process,
+    });
+    await fiber;
+
+    await expect(context.specification.validate('sample', { strict: true })).rejects.toThrow(
+      'Task id is duplicated: 1.1',
+    );
     await context.fiber.dispose();
   });
 

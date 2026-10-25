@@ -218,8 +218,36 @@ describe('managed Change execution production composition', () => {
         cwd: workspace,
       });
       await execFileAsync('git', ['push'], { cwd: workspace });
+
+      const originalChangeBranch = application.context.project.changeBranch.bind(
+        application.context.project,
+      );
+      const transientDesignFailure = vi
+        .spyOn(application.context.project, 'changeBranch')
+        .mockRejectedValueOnce(new Error('simulated transient remote lookup failure'))
+        .mockImplementation(originalChangeBranch);
+      const blocked = await next();
+      expect(blocked.value).toMatchObject({
+        changeLifecycle: {
+          phase: 'design',
+          status: 'blocked',
+          currentWork: { kind: 'specification.plan' },
+        },
+        continuation: { reason: 'validator-pending' },
+      });
+      const blockedWorkId = blocked.value.changeLifecycle?.currentWork?.workId;
+      expect(blockedWorkId).toBeTruthy();
+      expect((await status()).state.workExecution).toMatchObject({
+        status: 'outcome',
+        workId: blockedWorkId,
+      });
       const waiting = await next();
+      transientDesignFailure.mockRestore();
       expect(waiting.value.changeLifecycle).toMatchObject({ phase: 'design', status: 'waiting' });
+      expect((await status()).state.workExecution).toMatchObject({
+        status: 'validated',
+        validatorId: 'design.artifacts-valid',
+      });
       const approval = await application.context.commandRouter.execute<
         { changeId: string },
         SpecificationApprovalState | null
@@ -282,15 +310,46 @@ describe('managed Change execution production composition', () => {
         currentWork: { kind: 'evidence.verify' },
       });
       await next();
-      const verified = await application.context.commandRouter.execute<
-        { runId: string },
-        RuntimeResult<VerifyChangeRunResult>
-      >('run.work.verify', { runId });
-      expect(verified.value).toMatchObject({ gate: 'satisfied' });
-      expect(verified.value.run.changeLifecycle).toMatchObject({
+      const originalRunOrResume = application.context.evidenceCoordinator.runOrResume.bind(
+        application.context.evidenceCoordinator,
+      );
+      let interruptedAttemptId = '';
+      const evidenceInterruption = vi
+        .spyOn(application.context.evidenceCoordinator, 'runOrResume')
+        .mockImplementationOnce(async (...args) => {
+          const evidence = await originalRunOrResume(...args);
+          interruptedAttemptId = evidence.attempt.attemptId;
+          expect(evidence.bundle?.outcome).toBe('passed');
+          throw new Error('simulated interruption before Verify gate projection');
+        });
+      try {
+        await expect(
+          application.context.commandRouter.execute<
+            { runId: string },
+            RuntimeResult<VerifyChangeRunResult>
+          >('run.work.verify', { runId }),
+        ).rejects.toThrow(/simulated interruption before Verify gate projection/u);
+      } finally {
+        evidenceInterruption.mockRestore();
+      }
+      expect(interruptedAttemptId).toMatch(/^verify-[a-f0-9]{64}$/u);
+      const recoveryApplication = await bootProjectComposition(productRoot, workspace);
+      let recovered: RuntimeResult<RunStatusView>;
+      try {
+        recovered = await recoveryApplication.context.commandRouter.execute<
+          { runId: string },
+          RuntimeResult<RunStatusView>
+        >('run.next', { runId });
+      } finally {
+        await recoveryApplication.close();
+      }
+      expect(recovered.value.changeLifecycle).toMatchObject({
         phase: 'archive',
         currentWork: null,
       });
+      const recoveredEvidence =
+        await application.context.evidenceCoordinator.status(interruptedAttemptId);
+      expect(recoveredEvidence.context.status).toBe('completed');
 
       await execFileAsync(
         'git',
@@ -341,7 +400,7 @@ describe('managed Change execution production composition', () => {
       };
       await application.context.commandRouter.execute('run.archive.prepare', {
         runId,
-        attemptId: verified.value.attemptId,
+        attemptId: interruptedAttemptId,
         intent,
         policy,
       });

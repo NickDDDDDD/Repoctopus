@@ -35,7 +35,10 @@ import {
 } from '../platform/evidence/retention.js';
 import { collectRepositoryFingerprint } from '../platform/git/evidence-fingerprint.js';
 import { loadProjectConfig } from '../platform/project-configuration/file-config.js';
-import { FileResourceLeaseManager } from '../platform/runtime/resource-lease.js';
+import {
+  FileResourceLeaseManager,
+  ResourceLeaseConflictError,
+} from '../platform/runtime/resource-lease.js';
 import { FileEvidenceTelemetryOutbox } from '../platform/telemetry/evidence-outbox.js';
 import { evidenceTelemetryFromEnvironment } from '../platform/telemetry/opentelemetry/evidence-exporter.js';
 import { bindOperationOwnership, type OperationOwnership } from './operation-ownership.js';
@@ -176,6 +179,23 @@ export class EvidenceCoordinator extends Service {
 
   private async loadContext(attemptId: string): Promise<EvidenceRunContext> {
     return asContext(JSON.parse(await readFile(this.contextFile(attemptId), 'utf8')) as unknown);
+  }
+
+  private assertRunOwner(
+    context: EvidenceRunContext,
+    profileId: string,
+    workflowRunId: string,
+  ): void {
+    if (
+      context.profileId !== profileId ||
+      context.workflowBinding?.workflowRunId !== workflowRunId
+    ) {
+      throw new Error(`Evidence attempt ownership mismatch: ${context.attemptId}`);
+    }
+  }
+
+  async lookup(attemptId: string): Promise<EvidenceStatus | null> {
+    return optional(() => this.status(attemptId));
   }
 
   private async effectiveConfig(
@@ -385,6 +405,62 @@ export class EvidenceCoordinator extends Service {
     );
   }
 
+  private async executeContext(
+    context: EvidenceRunContext,
+    config: EffectiveProjectConfig,
+    signal: AbortSignal | undefined,
+    completedStatus: Extract<EvidenceRunContext['status'], 'completed' | 'recovered'>,
+  ): Promise<
+    EvidenceRunResult & { gate: EvidenceGateProjection; telemetry: EvidenceTelemetryStatus }
+  > {
+    const artifacts = new FileArtifactStore(this.workspace);
+    const adapters = this.ctx.evidenceAdapters.create(config, artifacts);
+    const specification = this.ctx.get('specification');
+    const result = await new EvidenceService(
+      artifacts,
+      this.store,
+      adapters.command,
+      undefined,
+      this.journal,
+      {
+        ...adapters,
+        ...(specification ? { specification } : {}),
+      },
+    ).run(context.plan, context.fingerprint.digest, {
+      compositionDigest: this.ctx.compositionIdentity.current().compositionDigest,
+      attemptId: context.attemptId,
+      ...(signal ? { signal } : {}),
+      ...(config.local?.resources?.maxParallel
+        ? { maxParallel: config.local.resources.maxParallel }
+        : {}),
+      ...(config.local?.resources?.maxLogBytes
+        ? { maxOutputBytes: config.local.resources.maxLogBytes }
+        : {}),
+      captureEndingFingerprint: async () =>
+        (await this.fingerprint(context.profileId, config)).digest,
+      ...(context.workflowBinding?.acceptanceContext
+        ? { acceptanceContext: context.workflowBinding.acceptanceContext }
+        : {}),
+    });
+    await atomicWriteJson(this.contextFile(context.attemptId), {
+      ...context,
+      status: completedStatus,
+      bundleId: result.bundle.bundleId,
+      decisionRequests: result.decisionRequests,
+      updatedAt: new Date().toISOString(),
+    } satisfies EvidenceRunContext);
+    const gate = projectEvidenceGate(result.bundle, context.workflowBinding);
+    await this.telemetryOutbox.save(
+      createEvidenceTelemetryBatch({
+        workflowRunId: context.workflowBinding?.workflowRunId ?? null,
+        result,
+        gate,
+      }),
+    );
+    const telemetry = await this.flushTelemetry(context.attemptId);
+    return { ...result, gate, telemetry };
+  }
+
   private async runWithRepositories(
     profileId: string,
     repositories: EvidenceRepositoryOverride[],
@@ -395,86 +471,59 @@ export class EvidenceCoordinator extends Service {
   ): Promise<
     EvidenceRunResult & { gate: EvidenceGateProjection; telemetry: EvidenceTelemetryStatus }
   > {
-    return this.operations.run(
-      { cancellable: true, signal },
-      ({ signal: operationSignal, markDurableBoundary }) =>
-        this.leases.withLease(`evidence-profile:${profileId}`, async () => {
-          if (operationSignal.aborted) throw operationSignal.reason;
-          const [binding, planned] = await Promise.all([
-            this.workflowBinding(workflowRunId, profileId),
-            this.planWithRepositories(profileId, useOverrides ? repositories : null),
-          ]);
-          const { config, plan, fingerprint } = planned;
-          if (
-            binding?.expectedEvidenceFingerprint &&
-            binding.expectedEvidenceFingerprint !== fingerprint.digest
-          ) {
-            throw new Error(
-              `Verify Work input fingerprint changed before Evidence execution: ${profileId}`,
-            );
-          }
-          const artifacts = new FileArtifactStore(this.workspace);
-          const adapters = this.ctx.evidenceAdapters.create(config, artifacts);
-          const context: EvidenceRunContext = {
-            schemaVersion: 1,
-            kind: 'EvidenceRunContext',
-            attemptId,
-            profileId,
-            repositoryOverrides: useOverrides ? structuredClone(repositories) : null,
-            workflowBinding: binding,
-            status: 'running',
-            plan,
-            fingerprint,
-            bundleId: null,
-            decisionRequests: [],
-            updatedAt: new Date().toISOString(),
-          };
-          await atomicWriteJson(this.contextFile(attemptId), context);
-          markDurableBoundary();
-          const specification = this.ctx.get('specification');
-          const result = await new EvidenceService(
-            artifacts,
-            this.store,
-            adapters.command,
-            undefined,
-            this.journal,
-            {
-              ...adapters,
-              ...(specification ? { specification } : {}),
-            },
-          ).run(plan, fingerprint.digest, {
-            compositionDigest: this.ctx.compositionIdentity.current().compositionDigest,
-            attemptId,
-            signal: operationSignal,
-            ...(config.local?.resources?.maxParallel
-              ? { maxParallel: config.local.resources.maxParallel }
-              : {}),
-            ...(config.local?.resources?.maxLogBytes
-              ? { maxOutputBytes: config.local.resources.maxLogBytes }
-              : {}),
-            captureEndingFingerprint: async () =>
-              (await this.fingerprint(profileId, config)).digest,
-            ...(binding?.acceptanceContext ? { acceptanceContext: binding.acceptanceContext } : {}),
-          });
-          await atomicWriteJson(this.contextFile(attemptId), {
-            ...context,
-            status: 'completed',
-            bundleId: result.bundle.bundleId,
-            decisionRequests: result.decisionRequests,
-            updatedAt: new Date().toISOString(),
-          } satisfies EvidenceRunContext);
-          const gate = projectEvidenceGate(result.bundle, binding);
-          await this.telemetryOutbox.save(
-            createEvidenceTelemetryBatch({
-              workflowRunId: binding?.workflowRunId ?? null,
-              result,
-              gate,
+    const attemptResource = `evidence-attempt:${attemptId}`;
+    try {
+      return await this.operations.run(
+        { cancellable: true, signal },
+        ({ signal: operationSignal, markDurableBoundary }) =>
+          this.leases.withLease(attemptResource, () =>
+            this.leases.withLease(`evidence-profile:${profileId}`, async () => {
+              if (operationSignal.aborted) throw operationSignal.reason;
+              if (await optional(() => this.loadContext(attemptId))) {
+                throw new Error(`Evidence attempt already exists: ${attemptId}`);
+              }
+              const [binding, planned] = await Promise.all([
+                this.workflowBinding(workflowRunId, profileId),
+                this.planWithRepositories(profileId, useOverrides ? repositories : null),
+              ]);
+              const { config, plan, fingerprint } = planned;
+              if (
+                binding?.expectedEvidenceFingerprint &&
+                binding.expectedEvidenceFingerprint !== fingerprint.digest
+              ) {
+                throw new Error(
+                  `Verify Work input fingerprint changed before Evidence execution: ${profileId}`,
+                );
+              }
+              const context: EvidenceRunContext = {
+                schemaVersion: 1,
+                kind: 'EvidenceRunContext',
+                attemptId,
+                profileId,
+                repositoryOverrides: useOverrides ? structuredClone(repositories) : null,
+                workflowBinding: binding,
+                status: 'running',
+                plan,
+                fingerprint,
+                bundleId: null,
+                decisionRequests: [],
+                updatedAt: new Date().toISOString(),
+              };
+              await atomicWriteJson(this.contextFile(attemptId), context);
+              markDurableBoundary();
+              return this.executeContext(context, config, operationSignal, 'completed');
             }),
-          );
-          const telemetry = await this.flushTelemetry(attemptId);
-          return { ...result, gate, telemetry };
-        }),
-    );
+          ),
+      );
+    } catch (error) {
+      if (
+        error instanceof ResourceLeaseConflictError &&
+        error.owner.resourceKey === attemptResource
+      ) {
+        throw new Error(`Evidence attempt already exists: ${attemptId}`, { cause: error });
+      }
+      throw error;
+    }
   }
 
   async status(attemptId: string): Promise<EvidenceStatus> {
@@ -493,45 +542,127 @@ export class EvidenceCoordinator extends Service {
 
   async resume(attemptId: string, signal?: AbortSignal): Promise<EvidenceStatus> {
     return this.operations.run({ cancellable: false, signal }, () =>
-      this.leases.withLease(`evidence-profile-recovery:${attemptId}`, async () => {
-        const context = await this.loadContext(attemptId);
-        if (context.status !== 'running') {
+      this.leases.withLease(`evidence-attempt:${attemptId}`, async () => {
+        const discovered = await this.loadContext(attemptId);
+        return this.leases.withLease(`evidence-profile:${discovered.profileId}`, async () => {
+          const context = await this.loadContext(attemptId);
+          if (context.status !== 'running') {
+            await this.flushTelemetry(attemptId);
+            return this.status(attemptId);
+          }
+          const attempt = await optional(() => this.store.loadAttempt(attemptId));
+          if (!attempt) {
+            const [entries, bundle] = await Promise.all([
+              this.journal.load(attemptId),
+              this.store.findBundleByAttempt(attemptId),
+            ]);
+            if (entries.length > 0 || bundle || context.bundleId) {
+              throw new Error(
+                `Evidence attempt is missing but durable execution facts exist: ${attemptId}`,
+              );
+            }
+            const config = await this.effectiveConfig(context.profileId, context.repositoryOverrides);
+            const currentFingerprint = await this.fingerprint(context.profileId, config);
+            if (currentFingerprint.digest !== context.fingerprint.digest) {
+              throw new Error(
+                `Verify Work input fingerprint changed before Evidence execution: ${context.profileId}`,
+              );
+            }
+            await this.executeContext(context, config, signal, 'recovered');
+            return this.status(attemptId);
+          }
+          let recovered;
+          if (attempt.status === 'running') {
+            const config = await this.effectiveConfig(context.profileId, context.repositoryOverrides);
+            const endingFingerprint = await this.fingerprint(context.profileId, config);
+            recovered = await recoverEvidenceAttempt({
+              attemptId,
+              plan: context.plan,
+              store: this.store,
+              journal: this.journal,
+              timestamp: new Date().toISOString(),
+              endingFingerprint: endingFingerprint.digest,
+              artifacts: new FileArtifactStore(this.workspace),
+              ...(context.workflowBinding?.acceptanceContext
+                ? { acceptanceContext: context.workflowBinding.acceptanceContext }
+                : {}),
+            });
+          } else {
+            const bundle = await this.store.findBundleByAttempt(attemptId);
+            if (bundle) {
+              recovered = {
+                bundle,
+                receipts: await Promise.all(
+                  bundle.receiptIds.map((receiptId) => this.store.loadReceipt(receiptId)),
+                ),
+              };
+            } else {
+              const config = await this.effectiveConfig(
+                context.profileId,
+                context.repositoryOverrides,
+              );
+              const endingFingerprint = await this.fingerprint(context.profileId, config);
+              recovered = await recoverEvidenceAttempt({
+                attemptId,
+                plan: context.plan,
+                store: this.store,
+                journal: this.journal,
+                timestamp: new Date().toISOString(),
+                endingFingerprint: endingFingerprint.digest,
+                artifacts: new FileArtifactStore(this.workspace),
+                allowTerminalAttempt: true,
+                ...(context.workflowBinding?.acceptanceContext
+                  ? { acceptanceContext: context.workflowBinding.acceptanceContext }
+                  : {}),
+              });
+            }
+          }
+          await atomicWriteJson(this.contextFile(attemptId), {
+            ...context,
+            status: 'recovered',
+            bundleId: recovered.bundle.bundleId,
+            updatedAt: new Date().toISOString(),
+          } satisfies EvidenceRunContext);
+          const recoveredAttempt = await this.store.loadAttempt(attemptId);
+          const result: EvidenceRunResult = {
+            attempt: recoveredAttempt,
+            ...recovered,
+            decisionRequests: [],
+          };
+          await this.telemetryOutbox.save(
+            createEvidenceTelemetryBatch({
+              workflowRunId: context.workflowBinding?.workflowRunId ?? null,
+              result,
+              gate: projectEvidenceGate(recovered.bundle, context.workflowBinding),
+            }),
+          );
           await this.flushTelemetry(attemptId);
           return this.status(attemptId);
-        }
-        const config = await this.effectiveConfig(context.profileId, context.repositoryOverrides);
-        const endingFingerprint = await this.fingerprint(context.profileId, config);
-        const recovered = await recoverEvidenceAttempt({
-          attemptId,
-          plan: context.plan,
-          store: this.store,
-          journal: this.journal,
-          timestamp: new Date().toISOString(),
-          endingFingerprint: endingFingerprint.digest,
-          artifacts: new FileArtifactStore(this.workspace),
-          ...(context.workflowBinding?.acceptanceContext
-            ? { acceptanceContext: context.workflowBinding.acceptanceContext }
-            : {}),
         });
-        await atomicWriteJson(this.contextFile(attemptId), {
-          ...context,
-          status: 'recovered',
-          bundleId: recovered.bundle.bundleId,
-          updatedAt: new Date().toISOString(),
-        } satisfies EvidenceRunContext);
-        const attempt = await this.store.loadAttempt(attemptId);
-        const result: EvidenceRunResult = { attempt, ...recovered, decisionRequests: [] };
-        await this.telemetryOutbox.save(
-          createEvidenceTelemetryBatch({
-            workflowRunId: context.workflowBinding?.workflowRunId ?? null,
-            result,
-            gate: projectEvidenceGate(recovered.bundle, context.workflowBinding),
-          }),
-        );
-        await this.flushTelemetry(attemptId);
-        return this.status(attemptId);
       }),
     );
+  }
+
+  async runOrResume(
+    profileId: string,
+    attemptId: string,
+    workflowRunId: string,
+    signal?: AbortSignal,
+  ): Promise<EvidenceStatus> {
+    const existing = await this.lookup(attemptId);
+    if (existing) {
+      this.assertRunOwner(existing.context, profileId, workflowRunId);
+      return this.resume(attemptId, signal);
+    }
+    try {
+      await this.run(profileId, attemptId, workflowRunId, signal);
+      return this.status(attemptId);
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+      if (!reason.includes(`Evidence attempt already exists: ${attemptId}`)) throw error;
+      this.assertRunOwner(await this.loadContext(attemptId), profileId, workflowRunId);
+      return this.resume(attemptId, signal);
+    }
   }
 
   async evaluate(input: {

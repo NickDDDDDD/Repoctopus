@@ -39,7 +39,7 @@ async function writeChange(root: string, changeId: string, valid: boolean): Prom
   await write(
     root,
     `openspec/changes/${changeId}/tasks.md`,
-    '# Tasks\n\n- [x] 1.1 Complete fixture.\n',
+    '# Tasks\n\n- [x] 1.1 Complete fixture.\n  **Acceptance:** The fixture behavior is observable\n',
   );
   await write(
     root,

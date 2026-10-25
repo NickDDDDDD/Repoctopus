@@ -18,9 +18,10 @@ export async function recoverEvidenceAttempt(input: {
   endingFingerprint?: string;
   artifacts?: ArtifactStore;
   acceptanceContext?: EvidenceAcceptanceContext;
+  allowTerminalAttempt?: boolean;
 }): Promise<{ receipts: EvidenceReceipt[]; bundle: EvidenceBundle }> {
   const attempt = await input.store.loadAttempt(input.attemptId);
-  if (attempt.status !== 'running')
+  if (attempt.status !== 'running' && !input.allowTerminalAttempt)
     throw new Error(`Evidence attempt is not running: ${attempt.attemptId}`);
   const entries = await input.journal.load(input.attemptId);
   const intents = new Set(
@@ -35,7 +36,9 @@ export async function recoverEvidenceAttempt(input: {
   const checks = new Map<string, EvidenceCheck>();
   const findings: EvidenceFinding[] = [];
   const superseded =
-    input.endingFingerprint !== undefined && input.endingFingerprint !== attempt.inputFingerprint;
+    attempt.status === 'superseded' ||
+    (input.endingFingerprint !== undefined &&
+      input.endingFingerprint !== attempt.inputFingerprint);
   if (superseded) {
     findings.push({
       code: 'input-drift',

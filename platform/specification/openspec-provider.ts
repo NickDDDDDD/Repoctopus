@@ -26,6 +26,7 @@ import {
   type SpecificationPhaseContext,
 } from '../../domains/specification/types.js';
 import {
+  assertSpecificationTaskAcceptance,
   completeSpecificationTaskDocument,
   parseSpecificationTasks,
 } from '../../domains/specification/tasks.js';
@@ -740,7 +741,21 @@ export class OpenSpecProvider extends Specification {
     const parsed = parseJson<ValidationResult>(result.stdout, args.join(' '));
     const item = parsed.items?.find((candidate) => candidate.id === changeId) ?? parsed.items?.[0];
     const findings = diagnostics(item?.issues);
-    const valid = result.exitCode === 0 && item?.valid === true;
+    let valid = result.exitCode === 0 && item?.valid === true;
+    if (valid && options.strict !== false) {
+      const tasks = await this.tasksAt(workspace, changeId, options.signal);
+      try {
+        assertSpecificationTaskAcceptance(tasks.tasks);
+      } catch (error) {
+        valid = false;
+        findings.push({
+          code: 'repoctopus.task-acceptance-missing',
+          severity: 'error',
+          message: error instanceof Error ? error.message : String(error),
+          artifactId: 'tasks',
+        });
+      }
+    }
     if (!valid && findings.length === 0) {
       findings.push({
         code: 'openspec.validation-failed',
