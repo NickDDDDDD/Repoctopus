@@ -48,6 +48,7 @@ import { createVerificationInput } from '../domains/change-lifecycle/verificatio
 import { createVerifyWork } from '../domains/change-lifecycle/verify-work.js';
 import { acceptVerifyGate, rejectVerifyGate } from '../domains/change-lifecycle/verify-gate.js';
 import type { SpecificationTask } from '../domains/specification/types.js';
+import { assertSpecificationTaskAdoption } from '../domains/specification/tasks.js';
 import type {
   ChangeLifecycleState,
   ChangeRunProjection,
@@ -901,14 +902,7 @@ export class WorkflowRuns extends Service {
                 lifecycle.identity.changeId,
                 signal,
               );
-              if (
-                lifecycle.identity.mode === 'fresh' &&
-                taskSet.tasks.some((task) => task.status === 'completed')
-              ) {
-                throw new Error(
-                  'Fresh Change Run cannot adopt pre-completed Specification Tasks; start a new adopt-existing generation',
-                );
-              }
+              assertSpecificationTaskAdoption(lifecycle.identity.mode, taskSet.tasks);
               if (taskSet.tasks.every((task) => task.status === 'completed')) {
                 build = { tasks: structuredClone(taskSet.tasks), work: null };
               } else {
