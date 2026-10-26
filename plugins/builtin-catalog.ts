@@ -506,6 +506,13 @@ const definitions: readonly BuiltinDefinition[] = [
       authorities: ['work-execution-state'],
       permissions: [],
       stateSchemas: { 'work-execution': '1' },
+      compatibleImplementations: [
+        {
+          codeDigest: 'sha256:bb5ed1fa9ea6fe418102fc13e558f630efa80400e4dde11612bed411c0608d71',
+          descriptorDigest:
+            'sha256:8a5f106a29257672c585da2de20f6dd1c7bfcef4c432b23fa9ec918c7a533f23',
+        },
+      ],
     },
     plugin: WorkExecutionAuthority,
     sourceFiles: [

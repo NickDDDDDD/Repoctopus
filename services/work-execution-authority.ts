@@ -106,7 +106,11 @@ export class WorkExecutionAuthority extends Service {
           const nextAuthorizedWork =
             existing.workId !== packet.claim.workId &&
             (existing.status === 'validated' || existing.checkEpoch < packet.claim.checkEpoch);
-          if (!retryAfterFailure && !nextAuthorizedWork) {
+          const nextAuthorizedEpochForSameWork =
+            existing.workId === packet.claim.workId &&
+            existing.checkEpoch < packet.claim.checkEpoch &&
+            packet.claim.attempt === existing.attempt + 1;
+          if (!retryAfterFailure && !nextAuthorizedWork && !nextAuthorizedEpochForSameWork) {
             throw new Error(
               `Run already has an authoritative claim for ${existing.workId} attempt ${existing.attempt}`,
             );

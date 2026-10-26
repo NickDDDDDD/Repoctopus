@@ -1,10 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import type { RunState } from '../domains/engine/types.js';
+import type { TrajectoryEvent } from '../domains/trajectory/types.js';
 import type {
   WorkExecutionCheckpoint,
   WorkExecutionHostInvocation,
   WorkExecutionHostOutcome,
+  WorkExecutionPacket,
 } from '../domains/work-execution/types.js';
 import { ManagedWorkExecutor } from '../services/managed-work-executor.js';
 import { WorkExecutionAuthority } from '../services/work-execution-authority.js';
@@ -121,6 +123,69 @@ describe('Work execution recovery classification', () => {
         'run-recovery',
       ),
     ).resolves.toMatchObject({ continuation: 'reconcile', reason: 'content-missing-or-corrupt' });
+  });
+});
+
+describe('Work execution epoch authority', () => {
+  it('accepts the next attempt when Runtime reissues the same semantic Work in a newer epoch', async () => {
+    const previous = checkpoint('validated');
+    const currentWork = {
+      workId: previous.workId,
+      inputDigest: previous.inputDigest,
+      checkEpoch: previous.checkEpoch + 1,
+    };
+    let run = {
+      ...state({ execution: previous }),
+      stateVersion: 10,
+      composition: { compositionDigest: digest('9') },
+      changeLifecycle: { checkEpoch: currentWork.checkEpoch, currentWork, waitCondition: null },
+    } as unknown as RunState;
+    const packet = {
+      identity: {
+        schemaVersion: 1,
+        packetId: digest('1'),
+        packetDigest: digest('2'),
+        contextDigest: digest('3'),
+      },
+      claim: {
+        runId: run.runId,
+        workId: currentWork.workId,
+        attempt: previous.attempt + 1,
+        checkEpoch: currentWork.checkEpoch,
+        intentId: 'intent-2',
+        claimToken: digest('4'),
+        inputDigest: currentWork.inputDigest,
+      },
+      work: currentWork,
+      context: { digest: digest('3') },
+    } as unknown as WorkExecutionPacket;
+    const authority = Object.create(WorkExecutionAuthority.prototype) as WorkExecutionAuthority;
+    const commitGuarded = vi.fn(
+      <T>(
+        _runId: string,
+        reduce: (current: { state: RunState; trajectory: TrajectoryEvent[] }) => {
+          state?: RunState;
+          value: T;
+        },
+      ): Promise<T> => {
+        const reduced = reduce({ state: run, trajectory: [] });
+        if (reduced.state) run = reduced.state;
+        return Promise.resolve(reduced.value);
+      },
+    );
+    Object.defineProperty(authority, 'ctx', {
+      value: {
+        runStore: { commitGuarded },
+      },
+    });
+
+    await expect(authority.bindClaim(packet)).resolves.toMatchObject({
+      workId: previous.workId,
+      attempt: 2,
+      checkEpoch: 5,
+      status: 'claimed',
+    });
+    expect(run.workExecution).toMatchObject({ intentId: 'intent-2', checkEpoch: 5 });
   });
 });
 

@@ -72,6 +72,7 @@ Runtime MUST 根据持久化的有界失败分类和当前副作用边界选择 
 
 - **WHEN** 未开始远端 publication 的 Archive 因 definition drift 停止，当前 Plugin 与 definition 都精确声明该旧实现兼容
 - **THEN** Runtime 在同一 runId 恢复 Archive 聚合，保留 Evidence、Archive input 和 closure，并在新 checkEpoch 建立新的 delivery publication Work
+- **AND** 若新旧 Work 的稳定 `workId` 相同，Runtime 使用递增 attempt 并以新 `checkEpoch` 建立独立执行身份
 
 #### Scenario: 缺少任一精确兼容声明
 
