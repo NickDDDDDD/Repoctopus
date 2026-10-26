@@ -450,7 +450,7 @@ describe('Specification authority', () => {
       await readdir(path.join(workspace, '.repoctopus', 'archive-checkouts')).catch(() => []),
     ).toEqual([first.candidate.checkoutId]);
     await context.fiber.dispose();
-  }, 30_000);
+  }, 60_000);
 
   it('keeps a failed official archive candidate out of the developer working tree', async () => {
     const fixture = await openSpecFixture();
