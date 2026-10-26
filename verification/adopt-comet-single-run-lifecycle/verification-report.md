@@ -3,13 +3,13 @@
 ## Reproducible subject
 
 - Change: `adopt-comet-single-run-lifecycle`
-- Tested implementation commit: `9b86ea32db3be730ed37322985d3d5f70c4b3044`
+- Tested implementation commit: `9cb47ba0f853a25a0422aaa523b7078896d6c444`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `960830`
-- Package SHA-256: `8c7dfa94b8fac950acc02a6ed62cea228a243086a986a52d8c97115b4160eecc`
+- Package bytes: `964158`
+- Package SHA-256: `eacc5d03571d69e48bcc0841a5499f141c5601e206806114489d0571b27e738f`
 - Lifecycle definition: `repoctopus-change@3.0.0`
-- Lifecycle definition digest: `sha256:42eebeda8add66e967021c322a765aa9052797c07e3f526f7322cdecc4e4e7d9`
-- Composition digest: `sha256:0f52306c5478580e72a9618918ebcdb11a13b1ca5a310cbef9bf3722e2488b69`
+- Lifecycle definition digest: `sha256:d45fdabde20f79ccc9e0dd95ce164d5b7225ce736b1e76e08c44e53e85c92a0e`
+- Verified input composition digest: `sha256:0f52306c5478580e72a9618918ebcdb11a13b1ca5a310cbef9bf3722e2488b69`
 - Self-bootstrap runId: `change-repoctopus-adopt-comet-single-run-lifecycle-1784ada21df4159c`
 
 The implementation commit is the package boundary. Later commits may contain only OpenSpec or verification evidence and the report checker itself; any other product change invalidates this report. The package checksum is independently reproduced by `npm pack`.
@@ -22,7 +22,7 @@ Run on Windows with Node.js `24.21.0`:
 npm run verify
   typecheck, desktop typecheck, lint and both builds passed
   120 test files passed
-  455 tests passed, 1 skipped
+  457 tests passed, 1 skipped
   generated, brand, architecture and provenance checks passed
   OpenSpec strict validation: 15 passed, 0 failed
 
@@ -42,7 +42,7 @@ The real repository self-bootstrap uses the stable runId above. Open delivered `
 
 The complete packaged-CLI single- and multi-repository journeys are exercised by `test/managed-change-execution.e2e.test.ts`, `test/e2e/change-design-gate-cli.e2e.test.ts`, `test/e2e/change-run-cli.e2e.test.ts`, archive publication suites and recovery suites. They restart process boundaries, inject implementation retry, Build-to-Design, Verify repair, planning drift, infrastructure retry, Archive reverify, response loss and OID drift while asserting one runId and monotonically increasing `checkEpoch`.
 
-The self-bootstrap Archive exposed an incorrect frozen Change branch OID before any remote publication. The regression repair now performs the planning/live-remote check before creating closure Work and repeats it before push/MR. Tests prove that an isolated closure can rebind only an OID jointly established by the live source branch and closure candidate; if the live branch has advanced, the same Run invalidates the local closure and returns to Design instead of publishing unverified code. Protected plugin recovery is limited to an exact predecessor `codeDigest + descriptorDigest` declaration with unchanged authority, state schema and effective config.
+The self-bootstrap Archive exposed an incorrect frozen Change branch OID before any remote publication. The regression repair now performs the planning/live-remote check before creating closure Work and repeats it before push/MR. Tests prove that an isolated closure can rebind only an OID jointly established by the live source branch and closure candidate; if the live branch has advanced, the same Run invalidates the local closure and returns to Design instead of publishing unverified code. Protected plugin recovery is limited to an exact predecessor `codeDigest + descriptorDigest` declaration with unchanged authority, state schema and effective config. Lifecycle-definition recovery is separately limited to an explicitly listed predecessor definition digest; a compatible upgrade may restore an interrupted Archive publication by creating a fresh Work at a new `checkEpoch`, but it cannot reuse the cleared Work or its Outcome.
 
 ## Anti-cheating sensitivity
 
