@@ -130,7 +130,12 @@ export interface ExecuteArchiveDeliveryInput {
 }
 
 export interface ExecuteArchiveDeliveryResult {
-  stage: 'specification-closed' | 'intent-corrected' | 'planning-revision-required' | 'published';
+  stage:
+    | 'specification-closed'
+    | 'intent-corrected'
+    | 'definition-recovered'
+    | 'planning-revision-required'
+    | 'published';
   publication: ArchivePublicationResult | null;
   receipt: PublicationReceipt | null;
   run: RunStatusView;
@@ -1926,8 +1931,53 @@ export class WorkflowRuns extends Service {
     signal?: AbortSignal,
   ): Promise<RuntimeResult<ExecuteArchiveDeliveryResult>> {
     return this.operations.run({ cancellable: false, signal }, async () => {
+      await this.coordinator.recoverChangeLifecycleDefinition(input.runId);
       const state = await this.ctx.runStore.loadRun(input.runId);
       const lifecycle = state.changeLifecycle;
+      if (
+        lifecycle &&
+        state.status === 'running' &&
+        lifecycle.phase === 'archive' &&
+        lifecycle.currentWork === null &&
+        lifecycle.archiveDeliveryInput &&
+        lifecycle.specificationClosure &&
+        !lifecycle.publicationReceipt
+      ) {
+        const skills = await this.resolveLifecycleWorkSkills('delivery.publish', signal);
+        const restoredWork = createDeliveryPublishWork({
+          definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+          checkEpoch: lifecycle.checkEpoch + 1,
+          archive: lifecycle.archiveDeliveryInput,
+          closure: lifecycle.specificationClosure,
+          actionSkill: skills.actionSkill,
+          workspaceRepositoryId: lifecycle.archiveDeliveryInput.changeBranch.repositoryId,
+          repositoryIds: input.project.repositories.map((repository) => repository.id),
+        });
+        await this.coordinator.bindSkill(input.runId, skills.actionSkill);
+        const restored = await this.coordinator.acceptChangeObservation(input.runId, {
+          kind: 'archive-work-restored',
+          work: restoredWork,
+          reason: 'Compatible lifecycle definition upgrade restored interrupted Archive Work',
+        });
+        await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, restoredWork);
+        return {
+          value: {
+            stage: 'definition-recovered',
+            publication: null,
+            receipt: null,
+            run: await this.coordinator.status(input.runId),
+          },
+          diagnostics: [
+            ...restored.diagnostics,
+            {
+              level: 'warning',
+              code: 'change.archive-work-restored',
+              message:
+                'Archive publication Work was rebuilt after an explicitly compatible definition upgrade',
+            },
+          ],
+        };
+      }
       const archive = lifecycle?.archiveDeliveryInput;
       const workKind = lifecycle?.currentWork?.kind;
       if (

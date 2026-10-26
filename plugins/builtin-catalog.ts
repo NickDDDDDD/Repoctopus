@@ -658,6 +658,11 @@ const definitions: readonly BuiltinDefinition[] = [
           descriptorDigest:
             'sha256:9dfa238c84298c5fd26500cf0519e605afe70bb2508f48d87554609c48d00930',
         },
+        {
+          codeDigest: 'sha256:ccd3c55bc617831309b4acc220ff0ab85daa1f52f1d036d16da2eb81f2f01e25',
+          descriptorDigest:
+            'sha256:50a53cf313733271140de690dc4a6949ea04507f44cae75b18b7846fc6b7a1ca',
+        },
       ],
     },
     plugin: builtinLifecycleDefinition,
@@ -700,6 +705,11 @@ const definitions: readonly BuiltinDefinition[] = [
           descriptorDigest:
             'sha256:a87e4735dd873231d22125896f04cc5bcbd03074858d437309009feac4f76da2',
         },
+        {
+          codeDigest: 'sha256:cdd4a7fc826169ddc38a1fe76716e59891c8bcbba97312604a8ae31a01d1a064',
+          descriptorDigest:
+            'sha256:d787876afcb2173b484ae27b050d6b89a50dd4d4dd16f030ab2416ec2becff02',
+        },
       ],
     },
     plugin: builtinLifecycleValidators,
@@ -741,6 +751,11 @@ const definitions: readonly BuiltinDefinition[] = [
           codeDigest: 'sha256:18359f2ee893508d1f4f4903c6479d3272abfb036e74f8694bedec7873541f03',
           descriptorDigest:
             'sha256:efa84ce4e4bbfaad450dfe6628f396aebfd7e411725c3cb42ee5d4db8ea129d6',
+        },
+        {
+          codeDigest: 'sha256:b86cd92087acf6c70bc5e4dfc7a08e9a2732a53c0111328b66396e6b18d660e4',
+          descriptorDigest:
+            'sha256:5a2a9e443841bc41e9c4634f3a8aa29d6c17bade967c260bbe739653a17d705f',
         },
       ],
     },
@@ -966,6 +981,11 @@ const definitions: readonly BuiltinDefinition[] = [
           codeDigest: 'sha256:b402fe98d8867d618a421d4aa06e71f7428aa235bd8e918ada71f9e70f0fcb04',
           descriptorDigest:
             'sha256:f2e5447d57b4f4e81e8ab2adc0941f28bf1555e6915a5efe6f5c5e6b201ca3a5',
+        },
+        {
+          codeDigest: 'sha256:9a53c8d23a6964b54a43e1b33c0e4d6a75edb52a44ff330715994bede9eeaa73',
+          descriptorDigest:
+            'sha256:b91fad7967cdd2ff81ea86d4b94ce482858bda40d8df95a4a7e3aa032b4ab387',
         },
       ],
     },

@@ -48,6 +48,7 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
   schemaVersion: 2,
   id: 'repoctopus-change',
   version: '3.0.0',
+  compatibleDigests: ['sha256:42eebeda8add66e967021c322a765aa9052797c07e3f526f7322cdecc4e4e7d9'],
   phases: [
     {
       phase: 'open',
@@ -392,6 +393,14 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       requiredValidatorProfile: 'archive.preflight-valid',
     },
     {
+      id: 'archive.work-restored',
+      kind: 'self',
+      from: { phase: 'archive', statuses: ['running'] },
+      to: { phase: 'archive', status: 'running' },
+      trigger: 'compatible-definition-restored-archive-work',
+      requiredValidatorProfile: 'archive.preflight-valid',
+    },
+    {
       id: 'archive.completed',
       kind: 'complete',
       from: { phase: 'archive', statuses: ['running'] },
@@ -488,6 +497,11 @@ export function assertChangeLifecycleDefinition(
   if (definition.schemaVersion !== 2) throw new Error('Unsupported lifecycle definition schema');
   assertNonEmpty(definition.id, 'Lifecycle definition id');
   assertNonEmpty(definition.version, 'Lifecycle definition version');
+  for (const compatibleDigest of definition.compatibleDigests ?? []) {
+    if (!/^sha256:[a-f0-9]{64}$/u.test(compatibleDigest)) {
+      throw new Error('Lifecycle compatible definition digest must be a sha256 digest');
+    }
+  }
 
   if (
     definition.phases.length !== CHANGE_PHASES.length ||
@@ -735,6 +749,9 @@ export function normalizeChangeLifecycleDefinition(
     schemaVersion: 2,
     id: definition.id,
     version: definition.version,
+    ...(definition.compatibleDigests?.length
+      ? { compatibleDigests: [...new Set(definition.compatibleDigests)].sort() }
+      : {}),
     phases: definition.phases.map(normalizePhase),
     works: definition.works
       .map(normalizeWork)
@@ -801,7 +818,7 @@ export function createChangeLifecycleSnapshot(options: {
 }
 
 export interface ChangeLifecycleRecoveryResult {
-  compatibility: 'same' | 'completed_history' | 'migration_required';
+  compatibility: 'same' | 'compatible' | 'completed_history' | 'migration_required';
   expected: ChangeLifecycleDefinitionSnapshot;
   current: ChangeLifecycleDefinitionSnapshot;
   changed: boolean;
@@ -876,6 +893,31 @@ export function recoverChangeLifecycleSnapshot(options: {
       current,
       changed: false,
       snapshot: structuredClone(options.persisted),
+    };
+  }
+  if (
+    expected.id === current.id &&
+    options.currentDefinition?.compatibleDigests?.includes(expected.digest)
+  ) {
+    const wasDefinitionDrift =
+      options.persisted.status === 'migration_required' &&
+      options.persisted.blocker?.code === 'change-lifecycle.definition-drift' &&
+      options.persisted.blocker.evidenceIds.includes(expected.digest);
+    const snapshot: ChangeLifecycleSnapshot = {
+      ...structuredClone(options.persisted),
+      definition: current,
+      revision: options.persisted.revision + 1,
+      ...(wasDefinitionDrift
+        ? { status: 'running' as const, blocker: null, waitCondition: null }
+        : {}),
+    };
+    assertChangeLifecycleSnapshot(snapshot);
+    return {
+      compatibility: 'compatible',
+      expected,
+      current,
+      changed: true,
+      snapshot,
     };
   }
   if (options.persisted.status === 'completed') {

@@ -49,6 +49,7 @@ export interface ChangeLifecycleDefinition {
   schemaVersion: 2;
   id: string;
   version: string;
+  compatibleDigests?: readonly `sha256:${string}`[];
   phases: readonly ChangeLifecyclePhaseDefinition[];
   works: readonly ChangeLifecycleWorkDefinition[];
   transitions: readonly ChangeLifecycleTransitionDefinition[];
@@ -420,6 +421,11 @@ export type ChangeLifecycleObservation =
       observedPlanningDigest: `sha256:${string}`;
       reason: string;
       evidenceIds: readonly string[];
+    }
+  | {
+      kind: 'archive-work-restored';
+      work: WorkDescriptor;
+      reason: string;
     }
   | {
       kind: 'archive-publication-receipt-accepted';
@@ -1400,6 +1406,31 @@ export function evolveChangeLifecycle(options: {
       evidenceIds: [...observation.evidenceIds],
     };
     return reduced;
+  }
+  if (observation.kind === 'archive-work-restored') {
+    if (
+      current.phase !== 'archive' ||
+      current.status !== 'running' ||
+      current.currentWork !== null ||
+      !current.archiveDeliveryInput ||
+      !current.specificationClosure ||
+      current.publicationReceipt ||
+      observation.work.phase !== 'archive' ||
+      observation.work.kind !== 'delivery.publish' ||
+      !observation.reason.trim()
+    ) {
+      throw new Error('Archive Work restoration is not valid for the recovered lifecycle');
+    }
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'archive.work-restored',
+      next: {
+        currentWork: observation.work,
+        waitCondition: null,
+        blocker: null,
+      },
+    });
   }
   if (observation.kind === 'archive-publication-receipt-accepted') {
     if (

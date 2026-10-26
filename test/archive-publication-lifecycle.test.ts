@@ -390,6 +390,38 @@ describe('Archive publication terminal lifecycle', () => {
     });
   });
 
+  it('recreates publication Work after an explicitly compatible definition recovery', () => {
+    const { closed } = archiveState();
+    const recovered = {
+      ...closed,
+      status: 'running' as const,
+      currentWork: null,
+      blocker: null,
+    };
+    const work = {
+      ...closed.currentWork!,
+      workId: 'archive:restored-publication',
+      checkEpoch: recovered.checkEpoch + 1,
+    };
+    const restored = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current: recovered,
+      observation: {
+        kind: 'archive-work-restored',
+        work,
+        reason: 'compatible definition patch restored the interrupted Work',
+      },
+    });
+    expect(restored.snapshot).toMatchObject({
+      phase: 'archive',
+      status: 'running',
+      checkEpoch: recovered.checkEpoch + 1,
+      currentWork: { workId: work.workId, kind: 'delivery.publish' },
+      specificationClosure: closed.specificationClosure,
+      archiveDeliveryInput: closed.archiveDeliveryInput,
+    });
+  });
+
   it.each(['open', 'merged', 'closed'] as const)(
     'completes from a full receipt without consulting an MR in %s state',
     () => {

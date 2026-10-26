@@ -64,6 +64,20 @@ Runtime MUST 根据持久化的有界失败分类和当前副作用边界选择 
 - **WHEN** Archive 尚未开始规格关闭或外部 publication 副作用且当前 Verify identity 已失效
 - **THEN** Runtime 回到 Verify并要求当前输入的新 Evidence；若副作用已经开始，则保持 Archive并从稳定 Journal reconcile而不回滚 phase
 
+### Requirement: 兼容 definition 升级必须显式恢复 Work
+
+受保护 composition 的原地兼容升级 MUST 同时精确声明旧 Plugin implementation identity 与旧 lifecycle definition digest；若先前 Runtime 已因该 definition drift 进入 `migration_required` 并清空 current Work，升级后 MUST 保留聚合事实并在递增的 checkEpoch 创建新 Work，不得恢复旧 composition 的 Work packet 或手工改写 phase。
+
+#### Scenario: 精确声明的 Archive definition 补丁恢复
+
+- **WHEN** 未开始远端 publication 的 Archive 因 definition drift 停止，当前 Plugin 与 definition 都精确声明该旧实现兼容
+- **THEN** Runtime 在同一 runId 恢复 Archive 聚合，保留 Evidence、Archive input 和 closure，并在新 checkEpoch 建立新的 delivery publication Work
+
+#### Scenario: 缺少任一精确兼容声明
+
+- **WHEN** Plugin code/descriptor 或 lifecycle definition digest 没有被当前实现精确列为兼容，或者 authority、state schema、effective config 已变化
+- **THEN** Run 保持 `migration_required`，Runtime 不重建 Work且不执行任何外部副作用
+
 ## MODIFIED Requirements
 
 ### Requirement: 每个活动 Change 使用唯一权威 Run

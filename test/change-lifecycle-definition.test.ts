@@ -149,6 +149,39 @@ describe('Change lifecycle definition', () => {
     expect(recovered.snapshot.definition).toEqual(persisted.definition);
   });
 
+  it('recovers only an exactly declared compatible definition digest, including a prior drift stop', () => {
+    const previous = copyDefinition();
+    delete previous.compatibleDigests;
+    previous.transitions = previous.transitions.filter(
+      (transition) => transition.id !== 'archive.work-restored',
+    );
+    const persisted = createChangeLifecycleSnapshot({ identity, definition: previous });
+    const incompatibleCurrent = copyDefinition();
+    delete incompatibleCurrent.compatibleDigests;
+    const stopped = recoverChangeLifecycleSnapshot({
+      persisted,
+      currentDefinition: incompatibleCurrent,
+    });
+    expect(stopped.snapshot.status).toBe('migration_required');
+
+    const compatibleCurrent = copyDefinition();
+    compatibleCurrent.compatibleDigests = [persisted.definition.digest];
+    const recovered = recoverChangeLifecycleSnapshot({
+      persisted: stopped.snapshot,
+      currentDefinition: compatibleCurrent,
+    });
+    expect(recovered).toMatchObject({
+      compatibility: 'compatible',
+      changed: true,
+      snapshot: {
+        status: 'running',
+        blocker: null,
+        currentWork: null,
+        definition: { digest: prepareChangeLifecycleDefinition(compatibleCurrent).snapshot.digest },
+      },
+    });
+  });
+
   it('ignores object key order and set-like array order when calculating compatibility', () => {
     const original = copyDefinition();
     const reordered: ChangeLifecycleDefinition = {
@@ -187,6 +220,9 @@ describe('Change lifecycle definition', () => {
       version: original.version,
       id: original.id,
       schemaVersion: 2,
+      ...(original.compatibleDigests
+        ? { compatibleDigests: [...original.compatibleDigests].reverse() }
+        : {}),
     };
     const persisted = createChangeLifecycleSnapshot({ identity, definition: original });
 

@@ -383,7 +383,7 @@ export class WorkflowRunCoordinator {
     };
   }
 
-  private async recoverChangeLifecycleDefinition(runId: string): Promise<void> {
+  async recoverChangeLifecycleDefinition(runId: string): Promise<void> {
     await this.store.commitGuarded(runId, ({ state, trajectory }) => {
       if (!state.changeLifecycle) return { value: undefined };
       const recovered = recoverChangeLifecycleSnapshot({
@@ -409,7 +409,10 @@ export class WorkflowRunCoordinator {
           type: 'change.lifecycle.transitioned',
           state: nextState,
           data: {
-            reason: 'definition-drift',
+            reason:
+              recovered.compatibility === 'compatible'
+                ? 'compatible-definition-upgrade'
+                : 'definition-drift',
             expectedDefinition: recovered.expected,
             currentDefinition: recovered.current,
             phase: changeLifecycle.phase,
