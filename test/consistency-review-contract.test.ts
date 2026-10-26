@@ -13,9 +13,8 @@ const digest = (character: string) => `sha256:${character.repeat(64)}` as const;
 const receipt = createPublicationReceipt({
   apiVersion: PUBLICATION_RECEIPT_API_VERSION,
   kind: 'PublicationReceipt',
-  schemaVersion: 1,
+  schemaVersion: 2,
   changeId: 'consistency',
-  generation: 1,
   runId: 'run-consistency',
   deliverySnapshotDigest: digest('1'),
   verificationInputDigest: digest('2'),

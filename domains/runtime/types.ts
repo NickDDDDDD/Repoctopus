@@ -73,7 +73,8 @@ export interface EvidenceGatePort {
     workflowRunId: string;
     workflowActionId: string;
     workflowStepId: string;
-    workflowStateVersion: number;
+    workflowStateVersion?: number;
+    checkEpoch?: number;
     profileId: string;
     attemptId: string;
   }): Promise<EvidenceGateProjection>;

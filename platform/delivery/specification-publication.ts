@@ -198,11 +198,11 @@ export class SpecificationPublicationAdapter {
     await git(request.workspaceRoot, ['check-ref-format', '--branch', sourceBranch]);
     const stores: SpecificationPublicationJournalStore =
       new FileSpecificationPublicationJournalStore(request.workspaceRoot);
-    let journal = await stores.load(request.changeId, request.generation);
+    let journal = await stores.load(request.runId);
     if (!journal) {
       journal = createSpecificationPublicationJournal({
         changeId: request.changeId,
-        generation: request.generation,
+        runId: request.runId,
         closureId: request.closure.closureId,
         planDigest: request.closure.planDigest,
         checkoutId: request.closure.candidate.checkoutId,
@@ -285,7 +285,7 @@ export class SpecificationPublicationAdapter {
         request: mergeRequestInput(request),
         identity: {
           changeId: request.changeId,
-          generation: request.generation,
+          runId: request.runId,
           repositoryId: request.changeBranch.repositoryId,
           remoteIdentity: request.changeBranch.remoteIdentity,
           sourceBranch,
@@ -295,7 +295,7 @@ export class SpecificationPublicationAdapter {
       });
       this.injectFault?.('after-mr');
       const item: PublicationReceiptItem = {
-        publicationId: `specification:${request.changeId}:${request.generation}`,
+        publicationId: `specification:${request.runId}`,
         role: 'specification',
         repositoryId: request.changeBranch.repositoryId,
         remoteIdentity: request.changeBranch.remoteIdentity,

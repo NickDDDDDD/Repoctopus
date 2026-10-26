@@ -108,10 +108,11 @@ async function decidePending(
   changeId: string,
   runId: string,
   decision: 'approve' | 'revise' | 'reject',
+  approvalPhase: 'open' | 'design' = 'design',
 ): Promise<SpecificationApprovalState> {
   const app = await bootProjectComposition(packageRoot, workspace);
   try {
-    const state = await app.context.specificationPlanning.status(changeId);
+    const state = await app.context.specificationPlanning.status(changeId, approvalPhase);
     if (!state || state.status !== 'awaiting_approval') throw new Error('missing pending approval');
     return app.context.commandRouter.execute('run.change.decide', {
       runId,
@@ -259,7 +260,7 @@ describe('Change Run Design gate CLI', () => {
         environment,
       });
     };
-    const reachDesignGate = async (runId: string) => {
+    const reachDesignGate = async (changeId: string, runId: string) => {
       const first = await runCli<RunStatusView>({
         packageRoot,
         cwd: workspace,
@@ -272,6 +273,19 @@ describe('Change Run Design gate CLI', () => {
         currentWork: { kind: 'change.intake' },
       });
       await executeCurrentWork(runId);
+      const openApproval = await runCli<RunStatusView>({
+        packageRoot,
+        cwd: workspace,
+        args: ['run', 'next', '--workspace', workspace, '--run', runId],
+        environment,
+      });
+      expect(openApproval.result?.changeLifecycle).toMatchObject({
+        phase: 'open',
+        status: 'waiting',
+        currentWork: null,
+        waitCondition: { kind: 'human-decision' },
+      });
+      await decidePending(workspace, changeId, runId, 'approve', 'open');
       const design = await runCli<RunStatusView>({
         packageRoot,
         cwd: workspace,
@@ -292,13 +306,16 @@ describe('Change Run Design gate CLI', () => {
       });
     };
     const validRun = await start('valid-plan');
-    const waiting = await reachDesignGate(validRun.runId!);
+    const waiting = await reachDesignGate('valid-plan', validRun.runId!);
     expect(waiting.result?.changeLifecycle).toMatchObject({
       phase: 'design',
       status: 'waiting',
       waitCondition: { kind: 'human-decision' },
     });
-    expect(waiting.result?.state.specificationUsageSnapshot).toBeUndefined();
+    expect(waiting.result?.state.specificationUsageSnapshot).toMatchObject({
+      changeId: 'valid-plan',
+      provider: { id: 'openspec' },
+    });
 
     const approval = await runCli<SpecificationApprovalState>({
       packageRoot,
@@ -376,10 +393,7 @@ describe('Change Run Design gate CLI', () => {
           name: 'repoctopus-build-task',
           provider: 'repoctopus-lifecycle',
         },
-        augmentationSkills: [
-          { name: 'tdd', provider: 'matt-builtins' },
-          { name: 'codebase-design', provider: 'matt-builtins' },
-        ],
+        augmentationSkills: [{ name: 'tdd', provider: 'matt-builtins' }],
         methodProfile: { id: 'repoctopus.build', version: '1.0.0' },
         capabilities: ['process.execute', 'repository.read', 'repository.write'],
         sideEffectClass: 'repository-write',
@@ -442,7 +456,6 @@ describe('Change Run Design gate CLI', () => {
       'repoctopus-build-task',
       'openspec:build',
       'tdd',
-      'codebase-design',
       'repoctopus.build@1.0.0',
       approvedWorkId,
     ]);
@@ -611,13 +624,12 @@ describe('Change Run Design gate CLI', () => {
         'repoctopus-build-task',
         'openspec:build',
         'tdd',
-        'codebase-design',
         'diagnosing-bugs',
         'repoctopus.build@1.0.0',
         approvedWorkId,
       ]);
       const repaired = await validationApp.context.managedWorkExecutor.acceptExternalOutcome({
-        schemaVersion: 1,
+        schemaVersion: 2,
         runId: validRun.runId!,
         invocationId: repairIntent.invocation.invocationId,
         hostId: repairIntent.invocation.host.id,
@@ -703,6 +715,7 @@ describe('Change Run Design gate CLI', () => {
         skills: [
           { name: 'code-review' },
           { name: 'codebase-design' },
+          { name: 'grilling' },
           { name: 'tdd' },
           { name: 'repoctopus-build-task' },
           { name: 'repoctopus-design-change' },
@@ -766,7 +779,7 @@ describe('Change Run Design gate CLI', () => {
     }
 
     const verifySuccessRun = await start('verify-success');
-    await reachDesignGate(verifySuccessRun.runId!);
+    await reachDesignGate('verify-success', verifySuccessRun.runId!);
     await decidePending(workspace, 'verify-success', verifySuccessRun.runId!, 'approve');
     await runCli<RunStatusView>({
       packageRoot,
@@ -788,7 +801,7 @@ describe('Change Run Design gate CLI', () => {
         },
       });
       const outcome = await verifyApp.context.managedWorkExecutor.acceptExternalOutcome({
-        schemaVersion: 1,
+        schemaVersion: 2,
         runId: verifySuccessRun.runId!,
         invocationId: claim.invocation.invocationId,
         hostId: claim.invocation.host.id,
@@ -871,7 +884,7 @@ describe('Change Run Design gate CLI', () => {
       ['reject-plan', 'reject', 'rejected'],
     ] as const) {
       const run = await start(changeId);
-      const unapproved = await reachDesignGate(run.runId!);
+      const unapproved = await reachDesignGate(changeId, run.runId!);
       expect(unapproved.result?.changeLifecycle?.currentWork).toBeNull();
       const result = await decidePending(workspace, changeId, run.runId!, decision);
       expect(result.status).toBe(expectedStatus);
@@ -883,23 +896,39 @@ describe('Change Run Design gate CLI', () => {
       });
       expect(blocked.result?.changeLifecycle).toMatchObject({
         phase: 'design',
-        status: 'blocked',
+        status: decision === 'revise' ? 'running' : 'blocked',
+        ...(decision === 'revise'
+          ? { currentWork: { phase: 'design', kind: 'specification.plan' } }
+          : {}),
       });
     }
 
     for (const changeId of [
       'invalid-plan',
+      'incomplete-plan',
       'missing-acceptance-plan',
       'unbolded-acceptance-plan',
       'unindented-acceptance-plan',
       'legacy-acceptance-alias-plan',
     ]) {
       const run = await start(changeId);
-      const blocked = await reachDesignGate(run.runId!);
+      await runCli<RunStatusView>({
+        packageRoot,
+        cwd: workspace,
+        args: ['run', 'next', '--workspace', workspace, '--run', run.runId!],
+        environment,
+      });
+      await executeCurrentWork(run.runId!);
+      const blocked = await runCli<RunStatusView>({
+        packageRoot,
+        cwd: workspace,
+        args: ['run', 'next', '--workspace', workspace, '--run', run.runId!],
+        environment,
+      });
       expect(blocked.result?.changeLifecycle).toMatchObject({
-        phase: 'design',
+        phase: 'open',
         status: 'blocked',
-        blocker: { code: 'design.planning-invalid' },
+        blocker: { code: 'open.planning-invalid' },
       });
     }
   }, 180_000);

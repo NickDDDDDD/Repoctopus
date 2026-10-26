@@ -29,7 +29,7 @@ node bin/repoctopus.js skill get --workspace . --audience user --name tdd --json
 
 内置入口为 `grill-with-docs`、`codebase-design`、`tdd`、`diagnosing-bugs`、`code-review`、`pr` 和 `teach`。`grill-with-docs` 使用的 `grilling` 与 `domain-modeling` 也随固定上游快照提供。`to-spec` 与 `to-tickets` 仅作为方法采用的固定参考保存在 Provider roots 之外，不会出现在 Skill 目录或 IDE 投影中；Repoctopus 只通过版本化 Method Profile 使用其中已审核的规则，OpenSpec 仍是规格和任务的唯一结构权威。
 
-Change lifecycle definition 为每个 Work kind 固定至多一个 action Skill、有序 augmentation Skills、独立 Method Profile、能力、side-effect class、写入范围、输出契约、Validator 和 checkpoint。Runtime 解析并冻结真实正文，把它们装入不可变执行包而不只记录名称；Method Profile 不经过 Skill Registry，也不能由调用方参数替换或伪装成 Skill。当前 Build Work 以 `repoctopus-build-task` 为阶段 action owner，固定 `tdd`、`codebase-design` 为 augmentation，retry 时再加入 `diagnosing-bugs`；Verify 使用 `repoctopus-verify-change + code-review`，Archive close/publish 分别使用 `repoctopus-archive-change` 与 `pr`。
+Change lifecycle definition 为每个 Work kind 固定至多一个 action Skill、有序 augmentation Skills、独立 Method Profile、能力、side-effect class、写入范围、输出契约、Validator 和 checkpoint。Runtime 解析并冻结真实正文，把它们装入不可变执行包而不只记录名称；Method Profile 不经过 Skill Registry，也不能由调用方参数替换或伪装成 Skill。Open 使用 `repoctopus-open-change + grilling`，Design 使用 `repoctopus-design-change + codebase-design`，Build 只使用 `repoctopus-build-task + tdd`；Verify 使用 `repoctopus-verify-change + code-review`，Archive close/publish 分别使用 `repoctopus-archive-change` 与 `pr`。
 
 Skill 在 Runtime 接受当前 Work 时装配，而不是在 change 开始时把所有 Skill 一次性塞进上下文。固定顺序为 Runtime contract → action Skill → Provider protocol → augmentations → Method Profile → change inputs。Host 必须明确回报真正读取的 action/augmentation layer digest；Runtime 只据此记录 `skill.consumed`，不会从 Work 成功反推所有 Skill 已被使用。
 
@@ -50,7 +50,7 @@ description: 团队的测试驱动开发方法
 先写一个能证明需求的失败测试，再写最少实现使其通过。
 ```
 
-再次执行 `skill get`，返回的 Provider 应为 `project-user-files`。正在运行的 Run 已经绑定旧版本时，Repoctopus 返回只读 `migration_required/new-generation-required` reconcile 诊断，不修改旧 Run；未被该 Run 使用的 Skill 变化不会阻塞推进。
+再次执行 `skill get`，返回的 Provider 应为 `project-user-files`。正在运行的 Run 已经绑定旧版本时，Repoctopus 在同一 runId 上判断兼容性：可兼容则重新领取当前 Work，不可证明兼容则返回只读 `migration_required`；未被该 Run 使用的 Skill 变化不会阻塞推进。
 
 ## 投影到 IDE
 

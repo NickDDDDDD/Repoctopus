@@ -34,8 +34,9 @@ function fixture() {
     ],
   };
   const work: WorkDescriptor = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     workId: context.workId,
+    checkEpoch: 4,
     phase: 'build',
     kind: 'task.implement',
     actionSkill: {
@@ -74,12 +75,13 @@ function fixture() {
     checkpoint: 'build.before-task',
   };
   const intent: ActionIntent = {
-    schemaVersion: 2,
+    schemaVersion: 3,
     intentId: 'intent-1',
     idempotencyKey: 'idempotency-1',
     runId: 'run-1',
     workId: work.workId,
     attempt: 1,
+    checkEpoch: work.checkEpoch,
     claimToken: digest('2'),
     inputDigest: work.inputDigest,
     compositionDigest: compositionFixture().compositionDigest,

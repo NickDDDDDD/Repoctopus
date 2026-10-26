@@ -4,19 +4,14 @@ import { createWorkflowPackage } from '../workflow-contract/package.js';
 import type { WorkflowPackage } from '../workflow-contract/types.js';
 import { prepareChangeLifecycleDefinition } from './definition.js';
 
-export function changeRunId(input: {
-  workspaceId: string;
-  changeId: string;
-  generation: number;
-  mode: 'fresh' | 'adopt-existing';
-}): string {
-  const semantic = `${input.workspaceId}\u0000${input.changeId}\u0000${input.generation}\u0000${input.mode}`;
+export function changeRunId(input: { workspaceId: string; changeId: string }): string {
+  const semantic = `${input.workspaceId}\u0000${input.changeId}`;
   const digest = createHash('sha256').update(semantic).digest('hex').slice(0, 16);
   const label = `${input.workspaceId}-${input.changeId}`
     .replace(/[^a-zA-Z0-9_-]+/gu, '-')
     .replace(/^-+|-+$/gu, '')
     .slice(0, 80);
-  return `change-${label || 'run'}-g${input.generation}-${digest}`;
+  return `change-${label || 'run'}-${digest}`;
 }
 
 export function createChangeRunHostWorkflow(): WorkflowPackage {

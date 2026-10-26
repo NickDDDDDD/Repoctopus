@@ -2,7 +2,7 @@
 
 ## Change Run 是唯一生命周期权威
 
-一个 Workspace、change 和 generation 最多有一个未终结 Change Run。它按 `Open → Design → Build → Verify → Archive` 推进，`phase`、`status`、当前 Work、Task progress、wait、blocker、Evidence 和 next actions 都来自同一条 accepted trajectory。Specification、Delivery、CLI、Desktop 与 OTLP 只能提交事实或读取 `ChangeRunProjection`，不能维护另一套阶段状态。
+一个 Workspace/change 只有一个由二者确定性派生的权威 Change Run。它按 `Open → Design → Build → Verify → Archive` 推进，`phase`、`status`、`checkEpoch`、当前 Work、Task progress、wait、blocker、Evidence 和 next actions 都来自同一条 accepted trajectory。Specification、Delivery、CLI、Desktop 与 OTLP 只能提交事实或读取 `ChangeRunProjection`，不能维护另一套阶段状态。
 
 ```powershell
 node bin/repoctopus.js run status --workspace . --run <run-id> --json
@@ -36,7 +36,7 @@ claim、context delivery、Host invocation、Outcome、Validator 与 lifecycle t
 ## 转换协议
 
 1. 原子取得 `transition.lock`；仍存活的持有者使竞争写入等待，进程已经退出的陈旧锁可以回收。
-2. 重新读取锁内 Run 和 Workflow，校验事件属于当前 Run、事件版本等于新状态版本，并对比当前 `stateVersion`。受 Evidence 保护的动作同时核对 Attempt 绑定和当前多仓输入指纹。
+2. 重新读取锁内 Run 和 Workflow，校验事件属于当前 Run，并对比普通存储 CAS `stateVersion`。生命周期推进另由 machine-owned `checkEpoch` 建立证据 fence；Work、Action、Outcome、Validator 与 Evidence 必须绑定当前 epoch，普通遥测写入造成的 CAS 变化不会使验证证据失效。
 3. 原子写入 `transition.json` 并刷盘。
 4. 写入完整且以换行结束的 `trajectory.jsonl`。
 5. 原子写入 `run.json`。
@@ -51,13 +51,13 @@ Run、Checkpoint 和 Trajectory 保存完整 composition 身份。写转换前�
 
 普通插件重载由 Cordis Loader 先卸载旧 Fiber，再激活新 Fiber。Run 不依赖旧 Fiber 的内存对象，恢复依据始终是 Store、Journal 与 Checkpoint。
 
-Change Run 还冻结 Lifecycle Definition、Work Contributor、Validator、Extension、Skill 与 Specification Provider 身份。只改变顺序或声明为向后兼容的 Contributor 升级可更新快照；核心 transition、Validator 或写入范围漂移会进入 `migration_required`。使用 `change-lifecycle migration-plan` 先做只读判断，再执行受控迁移；规划阶段不会写 Store 或调用平台。
+Change Run 还冻结 Lifecycle Definition、Work Contributor、Validator、Extension、Skill 与 Specification Provider 身份。兼容变化在同一 runId 恢复；当前 Work 无法证明兼容时失效并重新领取，核心 transition、Validator 或写入范围不兼容时进入只读 `migration_required`。预发布旧 lifecycle 状态不会被扫描或原地升级，也没有 successor Run。
 
 ## 恢复时的多仓核对
 
 `run resume` 会重新执行只读 Project Probe，将远端身份、路径、分支、HEAD 和工作树摘要与启动快照比较。没有变化时 Run 可继续；出现任何变化时 Run State 永久标记 `reconciliationRequired`，Engine 直接拒绝产生新动作。
 
-第一阶段没有提供“忽略变化继续”的命令。使用者需要恢复原仓库状态或开启新 Run，防止旧决策在新代码事实之上继续执行。
+第一阶段没有提供“忽略变化继续”的命令。使用者需要恢复原仓库状态；同一活动 change 不会通过创建并列 Run 绕过旧决策。
 
 ## 诊断
 

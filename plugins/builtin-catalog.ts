@@ -18,7 +18,6 @@ import builtinLifecycleExtensions from './lifecycle/builtin-extension-contributo
 import projectProbeContributor from './command/project-probe-contributor.js';
 import evidenceContributor from './command/evidence-contributor.js';
 import workflowRunContributor from './command/workflow-run-contributor.js';
-import changeLifecycleMigrationContributor from './command/change-lifecycle-migration-contributor.js';
 import deliveryContributor from './command/delivery-contributor.js';
 import projectOnboardingContributor from './command/project-onboarding-contributor.js';
 import maintenanceContributor from './command/maintenance-contributor.js';
@@ -49,7 +48,6 @@ import {
   localServiceContributor,
 } from './evidence/local-adapter-contributors.js';
 import { WorkflowRuns } from '../services/workflow-runs.js';
-import { ChangeLifecycleMigration } from '../services/change-lifecycle-migration.js';
 import { ProjectOnboarding } from '../services/project-onboarding.js';
 import { BrowserMaintenance } from '../services/browser-maintenance.js';
 import { SkillRegistry } from '@deepseek-ai/dsh-skill';
@@ -508,6 +506,13 @@ const definitions: readonly BuiltinDefinition[] = [
       authorities: ['work-execution-state'],
       permissions: [],
       stateSchemas: { 'work-execution': '1' },
+      compatibleImplementations: [
+        {
+          codeDigest: 'sha256:bb5ed1fa9ea6fe418102fc13e558f630efa80400e4dde11612bed411c0608d71',
+          descriptorDigest:
+            'sha256:8a5f106a29257672c585da2de20f6dd1c7bfcef4c432b23fa9ec918c7a533f23',
+        },
+      ],
     },
     plugin: WorkExecutionAuthority,
     sourceFiles: [
@@ -654,6 +659,18 @@ const definitions: readonly BuiltinDefinition[] = [
       authorities: ['lifecycle-definition'],
       permissions: [],
       stateSchemas: {},
+      compatibleImplementations: [
+        {
+          codeDigest: 'sha256:2926551cac3ad5a47cb6e6f4a285425c150caac2d82c1c4d291f8ec9f7251436',
+          descriptorDigest:
+            'sha256:9dfa238c84298c5fd26500cf0519e605afe70bb2508f48d87554609c48d00930',
+        },
+        {
+          codeDigest: 'sha256:ccd3c55bc617831309b4acc220ff0ab85daa1f52f1d036d16da2eb81f2f01e25',
+          descriptorDigest:
+            'sha256:50a53cf313733271140de690dc4a6949ea04507f44cae75b18b7846fc6b7a1ca',
+        },
+      ],
     },
     plugin: builtinLifecycleDefinition,
     sourceFiles: [
@@ -689,6 +706,18 @@ const definitions: readonly BuiltinDefinition[] = [
       authorities: ['lifecycle-validator'],
       permissions: [],
       stateSchemas: {},
+      compatibleImplementations: [
+        {
+          codeDigest: 'sha256:cb472a770aacb43e7b73c8969531889b294af30c06e66e99c086908a70db34dc',
+          descriptorDigest:
+            'sha256:a87e4735dd873231d22125896f04cc5bcbd03074858d437309009feac4f76da2',
+        },
+        {
+          codeDigest: 'sha256:cdd4a7fc826169ddc38a1fe76716e59891c8bcbba97312604a8ae31a01d1a064',
+          descriptorDigest:
+            'sha256:d787876afcb2173b484ae27b050d6b89a50dd4d4dd16f030ab2416ec2becff02',
+        },
+      ],
     },
     plugin: builtinLifecycleValidators,
     sourceFiles: [
@@ -724,6 +753,18 @@ const definitions: readonly BuiltinDefinition[] = [
       authorities: ['lifecycle-extension'],
       permissions: [],
       stateSchemas: {},
+      compatibleImplementations: [
+        {
+          codeDigest: 'sha256:18359f2ee893508d1f4f4903c6479d3272abfb036e74f8694bedec7873541f03',
+          descriptorDigest:
+            'sha256:efa84ce4e4bbfaad450dfe6628f396aebfd7e411725c3cb42ee5d4db8ea129d6',
+        },
+        {
+          codeDigest: 'sha256:b86cd92087acf6c70bc5e4dfc7a08e9a2732a53c0111328b66396e6b18d660e4',
+          descriptorDigest:
+            'sha256:5a2a9e443841bc41e9c4634f3a8aa29d6c17bade967c260bbe739653a17d705f',
+        },
+      ],
     },
     plugin: builtinLifecycleExtensions,
     sourceFiles: [
@@ -890,6 +931,13 @@ const definitions: readonly BuiltinDefinition[] = [
       authorities: ['delivery-state-write'],
       permissions: ['filesystem', 'process', 'network'],
       stateSchemas: { delivery: '2|3' },
+      compatibleImplementations: [
+        {
+          codeDigest: 'sha256:fc2ca8286f660b259ccd1a4d1bdc42cf8f75843aed55743cf9fe788fd7ff276e',
+          descriptorDigest:
+            'sha256:3de2ec154dacf4e714d388da14e2a14a5f59f66909e7890e55f6fab92634567b',
+        },
+      ],
     },
     plugin: FileDeliveryProvider,
     sourceFiles: [
@@ -935,6 +983,18 @@ const definitions: readonly BuiltinDefinition[] = [
       authorities: ['workflow-transition'],
       permissions: [],
       stateSchemas: { run: '1' },
+      compatibleImplementations: [
+        {
+          codeDigest: 'sha256:b402fe98d8867d618a421d4aa06e71f7428aa235bd8e918ada71f9e70f0fcb04',
+          descriptorDigest:
+            'sha256:f2e5447d57b4f4e81e8ab2adc0941f28bf1555e6915a5efe6f5c5e6b201ca3a5',
+        },
+        {
+          codeDigest: 'sha256:9a53c8d23a6964b54a43e1b33c0e4d6a75edb52a44ff330715994bede9eeaa73',
+          descriptorDigest:
+            'sha256:b91fad7967cdd2ff81ea86d4b94ce482858bda40d8df95a4a7e3aa032b4ab387',
+        },
+      ],
     },
     plugin: WorkflowRuns,
     sourceFiles: [
@@ -946,6 +1006,7 @@ const definitions: readonly BuiltinDefinition[] = [
       'domains/change-lifecycle/build-validator.ts',
       'domains/change-lifecycle/host-workflow.ts',
       'domains/change-lifecycle/transition.ts',
+      'domains/change-lifecycle/archive-input.ts',
       'domains/change-lifecycle/verification-input.ts',
       'domains/change-lifecycle/verify-work.ts',
       'domains/engine/loop.ts',
@@ -1027,43 +1088,6 @@ const definitions: readonly BuiltinDefinition[] = [
     },
     plugin: workflowRunContributor,
     sourceFiles: ['plugins/command/workflow-run-contributor.ts'],
-  },
-  {
-    descriptor: {
-      id: 'change-lifecycle-migration',
-      version: VERSION,
-      contractVersion: PLUGIN_CONTRACT_VERSION,
-      configSchemaVersion: '1',
-      kind: 'service-provider',
-      source: 'builtin',
-      compositions: ['project'],
-      authorities: ['change-lifecycle-migration'],
-      permissions: ['filesystem'],
-      stateSchemas: { 'change-lifecycle-migration': '1' },
-    },
-    plugin: ChangeLifecycleMigration,
-    sourceFiles: [
-      'domains/change-lifecycle/migration.ts',
-      'domains/change-lifecycle/migration-transaction.ts',
-      'platform/runtime/file-change-lifecycle-migration-store.ts',
-      'services/change-lifecycle-migration.ts',
-    ],
-  },
-  {
-    descriptor: {
-      id: 'change-lifecycle-migration-command',
-      version: VERSION,
-      contractVersion: PLUGIN_CONTRACT_VERSION,
-      configSchemaVersion: '1',
-      kind: 'contributor',
-      source: 'builtin',
-      compositions: ['project'],
-      authorities: [],
-      permissions: [],
-      stateSchemas: {},
-    },
-    plugin: changeLifecycleMigrationContributor,
-    sourceFiles: ['plugins/command/change-lifecycle-migration-contributor.ts'],
   },
 ];
 

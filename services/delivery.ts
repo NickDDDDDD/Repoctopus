@@ -24,11 +24,14 @@ import type { DeliveryV2MigrationPlan } from '../domains/delivery/migration.js';
 import type { ArchivePublicationResult } from '../domains/delivery/service-v3.js';
 
 export interface DeliveryPreparation {
+  runId?: string;
   project: ProjectSnapshot;
   intent: DeliveryIntent | DeliveryIntentV3;
   policy: DeliveryPolicy;
   reportContents: string;
   evidenceBundleIds: string[];
+  planningCompositionDigest?: `sha256:${string}`;
+  evidenceCompositionDigest?: `sha256:${string}`;
 }
 
 export abstract class Delivery extends Service {
@@ -58,7 +61,7 @@ export abstract class Delivery extends Service {
     signal?: AbortSignal,
   ): Promise<DeliveryState | DeliveryStateV3>;
   publishArchive(
-    options: DeliveryPreparation & { intent: DeliveryIntentV3 },
+    options: DeliveryPreparation & { intent: DeliveryIntentV3; runId?: string },
     signal?: AbortSignal,
   ): Promise<ArchivePublicationResult> {
     void signal;
@@ -67,6 +70,18 @@ export abstract class Delivery extends Service {
         `Delivery provider cannot publish lifecycle Archive for ${options.intent.changeId}`,
       ),
     );
+  }
+  validateArchiveIntent(
+    intent: DeliveryIntentV3,
+    policy: DeliveryPolicy,
+    planningCompositionDigest: `sha256:${string}`,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    void intent;
+    void policy;
+    void planningCompositionDigest;
+    void signal;
+    return Promise.reject(new Error('Delivery provider cannot validate lifecycle Archive intent'));
   }
   publishSpecification(
     request: SpecificationPublicationRequest,

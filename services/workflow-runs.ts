@@ -44,11 +44,13 @@ import {
 } from '../domains/change-lifecycle/host-workflow.js';
 import type { DesignGateAssessment } from './specification-planning.js';
 import { createInitialBuildWork } from '../domains/change-lifecycle/build-work.js';
-import { createVerificationInput } from '../domains/change-lifecycle/verification-input.js';
+import {
+  createVerificationInput,
+  rebaseVerificationInput,
+} from '../domains/change-lifecycle/verification-input.js';
 import { createVerifyWork } from '../domains/change-lifecycle/verify-work.js';
 import { acceptVerifyGate, rejectVerifyGate } from '../domains/change-lifecycle/verify-gate.js';
 import type { SpecificationTask } from '../domains/specification/types.js';
-import { assertSpecificationTaskAdoption } from '../domains/specification/tasks.js';
 import type {
   ChangeLifecycleState,
   ChangeRunProjection,
@@ -77,13 +79,11 @@ export interface StartChangeRunInput {
   workspaceRepositoryId: string;
   repositoryIds: readonly string[];
   changeId: string;
-  generation: number;
   targetBranch: string;
   remote: string;
   projectSnapshot: ProjectSnapshot;
   projectConfigDigest: `sha256:${string}`;
   verificationProfileId: string;
-  mode?: 'fresh' | 'adopt-existing';
 }
 
 export interface DecideChangeRunInput {
@@ -130,10 +130,24 @@ export interface ExecuteArchiveDeliveryInput {
 }
 
 export interface ExecuteArchiveDeliveryResult {
-  stage: 'specification-closed' | 'published';
+  stage:
+    | 'specification-closed'
+    | 'intent-corrected'
+    | 'definition-recovered'
+    | 'planning-revision-required'
+    | 'published';
   publication: ArchivePublicationResult | null;
   receipt: PublicationReceipt | null;
   run: RunStatusView;
+}
+
+function deliveryBranchCoordinates(branch: DeliveryIntentV3['changeBranch']) {
+  return {
+    repositoryId: branch.repositoryId,
+    remoteIdentity: branch.remoteIdentity,
+    sourceBranch: branch.sourceBranch,
+    targetBranch: branch.targetBranch,
+  };
 }
 
 export class WorkflowRuns extends Service {
@@ -222,12 +236,8 @@ export class WorkflowRuns extends Service {
     return this.operations.run({ cancellable: false, signal }, async () => {
       const workspaceId = input.workspaceId.trim();
       const changeId = input.changeId.trim();
-      const mode = input.mode ?? 'fresh';
       if (!workspaceId) throw new Error('Change Run Workspace id is required');
       if (!changeId) throw new Error('Change Run change id is required');
-      if (!Number.isSafeInteger(input.generation) || input.generation < 1) {
-        throw new Error('Change Run generation must be a positive safe integer');
-      }
       if (!/^sha256:[a-f0-9]{64}$/u.test(input.projectConfigDigest)) {
         throw new Error('Change Run project configuration digest is invalid');
       }
@@ -268,19 +278,18 @@ export class WorkflowRuns extends Service {
         remote: input.remote,
         targetBranch: input.targetBranch,
       });
-      const runId = changeRunId({ workspaceId, changeId, generation: input.generation, mode });
+      const runId = changeRunId({ workspaceId, changeId });
       const lifecycle = createChangeLifecycleSnapshot({
         identity: {
           workspaceId,
           changeId,
-          generation: input.generation,
-          mode,
           runId,
         },
       });
       const openSkills = await this.resolveLifecycleWorkSkills('change.intake', signal);
       lifecycle.currentWork = createLifecyclePhaseWork({
         runId,
+        checkEpoch: lifecycle.checkEpoch,
         changeId,
         definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
         kind: 'change.intake',
@@ -295,8 +304,6 @@ export class WorkflowRuns extends Service {
       const triggerFacts = {
         workspaceId,
         changeId,
-        generation: input.generation,
-        mode,
         specificationRoot,
         targetBranch,
         repositoryIds,
@@ -349,17 +356,114 @@ export class WorkflowRuns extends Service {
   decideChange(
     input: DecideChangeRunInput,
     signal?: AbortSignal,
-  ): Promise<SpecificationApprovalState> {
+  ): Promise<SpecificationApprovalState | RunStatusView> {
     return this.operations.run({ cancellable: false, signal }, async () => {
       const state = await this.ctx.runStore.loadRun(input.runId);
       const lifecycle = state.changeLifecycle;
       if (
+        lifecycle?.phase === 'build' &&
+        state.status === 'waiting' &&
+        lifecycle.waitCondition?.kind === 'human-decision' &&
+        lifecycle.waitCondition.waitId.startsWith('build-adoption:')
+      ) {
+        if (!input.actor.authenticated) throw new Error('Adopt-existing requires a trusted actor');
+        if (
+          input.response.requestId !== lifecycle.waitCondition.requestId ||
+          input.response.proposalHash !== lifecycle.waitCondition.proposalDigest
+        ) {
+          throw new Error('Adopt-existing response does not match the current proposal');
+        }
+        const waitId = lifecycle.waitCondition.waitId;
+        const decided = await this.coordinator.acceptChangeObservation(input.runId, {
+          kind: 'build-adoption-decision',
+          decision: input.response.decision === 'approve' ? 'approve' : 'reject',
+          requestId: input.response.requestId,
+          proposalDigest: input.response.proposalHash,
+          actorId: input.actor.actorId,
+        });
+        await this.ctx.workExecutionAuthority.recordWaitBoundary({
+          runId: input.runId,
+          waitId,
+          stage: 'ended',
+          kind: 'human-decision',
+          reason: lifecycle.waitCondition.reason,
+        });
+        return this.coordinator.status(decided.value.state.runId);
+      }
+      if (
+        lifecycle?.phase === 'build' &&
+        state.status === 'waiting' &&
+        lifecycle.waitCondition?.kind === 'human-decision' &&
+        lifecycle.waitCondition.waitId.startsWith('build-design:')
+      ) {
+        if (!input.actor.authenticated) throw new Error('Design fallback requires a trusted actor');
+        if (
+          input.response.requestId !== lifecycle.waitCondition.requestId ||
+          input.response.proposalHash !== lifecycle.waitCondition.proposalDigest
+        ) {
+          throw new Error('Design fallback response does not match the current proposal');
+        }
+        let designWork: WorkDescriptor | undefined;
+        if (input.response.decision === 'approve') {
+          const projectSnapshot = await this.ctx.runStore.loadProjectSnapshot(input.runId);
+          const projectConfigDigest = state.trigger?.facts.projectConfigDigest;
+          const specificationRoot = state.trigger?.facts.specificationRoot as
+            | { repositoryId?: unknown }
+            | undefined;
+          if (
+            typeof projectConfigDigest !== 'string' ||
+            !/^sha256:[a-f0-9]{64}$/u.test(projectConfigDigest) ||
+            typeof specificationRoot?.repositoryId !== 'string'
+          ) {
+            throw new Error('Design fallback trigger identities are missing');
+          }
+          const skills = await this.resolveLifecycleWorkSkills('specification.plan', signal);
+          designWork = createLifecyclePhaseWork({
+            runId: input.runId,
+            checkEpoch: lifecycle.checkEpoch + 1,
+            changeId: lifecycle.identity.changeId,
+            definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+            kind: 'specification.plan',
+            actionSkill: skills.actionSkill,
+            augmentationSkills: skills.augmentationSkills,
+            compositionDigest: state.composition.compositionDigest,
+            projectSnapshotDigest: state.projectSnapshotDigest,
+            projectConfigDigest: projectConfigDigest as `sha256:${string}`,
+            workspaceRepositoryId: specificationRoot.repositoryId,
+            repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
+          });
+          for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
+            await this.coordinator.bindSkill(input.runId, skill);
+          }
+        }
+        const waitId = lifecycle.waitCondition.waitId;
+        const decided = await this.coordinator.acceptChangeObservation(input.runId, {
+          kind: 'build-design-revision-decision',
+          decision: input.response.decision === 'approve' ? 'approve' : 'reject',
+          requestId: input.response.requestId,
+          proposalDigest: input.response.proposalHash,
+          actorId: input.actor.actorId,
+          ...(designWork ? { work: designWork } : {}),
+        });
+        if (designWork) {
+          await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, designWork);
+        }
+        await this.ctx.workExecutionAuthority.recordWaitBoundary({
+          runId: input.runId,
+          waitId,
+          stage: 'ended',
+          kind: 'human-decision',
+          reason: lifecycle.waitCondition.reason,
+        });
+        return this.coordinator.status(decided.value.state.runId);
+      }
+      if (
         !lifecycle ||
-        lifecycle.phase !== 'design' ||
+        (lifecycle.phase !== 'open' && lifecycle.phase !== 'design') ||
         state.status !== 'waiting' ||
         lifecycle.waitCondition?.kind !== 'human-decision'
       ) {
-        throw new Error('Change Run is not waiting for a Design Human Decision');
+        throw new Error('Change Run is not waiting for an Open or Design Human Decision');
       }
       if (
         input.response.requestId !== lifecycle.waitCondition.requestId ||
@@ -369,6 +473,7 @@ export class WorkflowRuns extends Service {
       }
       const decided = await this.ctx.specificationPlanning.decide({
         changeId: lifecycle.identity.changeId,
+        approvalPhase: lifecycle.phase,
         response: input.response,
         actor: input.actor,
       });
@@ -415,9 +520,10 @@ export class WorkflowRuns extends Service {
     );
   }
 
-  private async assessChangeDesign(
+  private async assessChangePlanning(
     state: RunState,
     lifecycle: ChangeLifecycleState,
+    approvalPhase: 'open' | 'design',
     signal?: AbortSignal,
   ): Promise<{
     assessment: DesignGateAssessment;
@@ -437,7 +543,7 @@ export class WorkflowRuns extends Service {
       typeof projectConfigDigest !== 'string' ||
       !/^sha256:[a-f0-9]{64}$/u.test(projectConfigDigest)
     ) {
-      throw new Error('Change Run is missing its stable Design input facts');
+      throw new Error(`Change Run is missing its stable ${approvalPhase} input facts`);
     }
     const targetBranch = target as {
       repositoryId: string;
@@ -461,6 +567,7 @@ export class WorkflowRuns extends Service {
       });
       assessment = await this.ctx.specificationPlanning.assess({
         changeId: lifecycle.identity.changeId,
+        approvalPhase,
         changeBranch,
         compositionDigest: state.composition.compositionDigest,
         projectConfigDigest: projectConfigDigest as `sha256:${string}`,
@@ -469,7 +576,7 @@ export class WorkflowRuns extends Service {
     } catch (error) {
       assessment = {
         status: 'blocked',
-        reason: error instanceof Error ? error.message : 'Design gate assessment failed',
+        reason: error instanceof Error ? error.message : `${approvalPhase} gate assessment failed`,
         evidenceDigests: [],
       };
     }
@@ -533,6 +640,7 @@ export class WorkflowRuns extends Service {
     const skills = await this.resolveLifecycleWorkSkills('specification.plan', signal);
     const work = createLifecyclePhaseWork({
       runId: state.runId,
+      checkEpoch: lifecycle.checkEpoch + 1,
       changeId: lifecycle.identity.changeId,
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
       kind: 'specification.plan',
@@ -578,15 +686,29 @@ export class WorkflowRuns extends Service {
       this.ctx.specification.inspect(lifecycle.identity.changeId, signal),
       this.ctx.workExecutionAuthority.loadIntent(state.runId),
     ]);
+    const requiredArtifacts = new Set(['proposal', 'delta-specs', 'design', 'tasks']);
     if (
       receipt.intentId !== execution.intentId ||
       receipt.outcome !== 'succeeded' ||
-      change.changeId !== lifecycle.identity.changeId ||
-      !change.artifacts.some(
-        (artifact) => artifact.kind === 'proposal' && artifact.status === 'ready',
-      )
+      change.changeId !== lifecycle.identity.changeId
     ) {
-      throw new Error('Open Provider validation did not observe the claimed change metadata');
+      throw new Error('Open Provider validation is not bound to the authoritative Work Outcome');
+    }
+    if (
+      change.artifacts.filter(
+        (artifact) => requiredArtifacts.has(artifact.kind) && artifact.status === 'ready',
+      ).length !== requiredArtifacts.size
+    ) {
+      const blocked = await this.coordinator.acceptChangeObservation(state.runId, {
+        kind: 'open-gate',
+        result: 'blocked',
+        reason: 'Open Provider validation requires the complete four-artifact OpenSpec set',
+        evidenceIds: change.artifacts.flatMap((artifact) =>
+          artifact.digest ? [artifact.digest] : [],
+        ),
+        inputDigest: change.changeDigest,
+      });
+      return { ...blocked, value: await this.coordinator.status(state.runId) };
     }
     const validator = this.ctx.lifecycleValidators.resolve(work.validatorProfile.id);
     const validation = await validator.validate({
@@ -594,20 +716,112 @@ export class WorkflowRuns extends Service {
       work,
       fact: { receiptId: receipt.receiptId, changeDigest: change.changeDigest },
     });
-    if (!validation.accepted) throw new Error(`Open Validator rejected: ${validation.diagnostic}`);
+    if (!validation.accepted) {
+      const blocked = await this.coordinator.acceptChangeObservation(state.runId, {
+        kind: 'open-gate',
+        result: 'blocked',
+        reason: `Open Validator rejected: ${validation.diagnostic}`,
+        evidenceIds: [receipt.receiptId, change.changeDigest],
+        inputDigest: change.changeDigest,
+      });
+      return { ...blocked, value: await this.coordinator.status(state.runId) };
+    }
     await this.ctx.workExecutionAuthority.markValidated({
       intent,
       validatorId: work.validatorProfile.id,
       continuation: 'execute',
     });
-    const opened = await this.coordinator.acceptChangeObservation(state.runId, {
-      kind: 'open-intake-validated',
-      workId: work.workId,
-      inputDigest: work.inputDigest,
-      receiptId: receipt.receiptId,
-      validatorId: work.validatorProfile.id,
+    return this.advanceOpenGate(state, signal);
+  }
+
+  private async advanceOpenGate(
+    state: RunState,
+    signal?: AbortSignal,
+  ): Promise<RuntimeResult<RunStatusView>> {
+    const lifecycle = state.changeLifecycle;
+    if (!lifecycle || lifecycle.phase !== 'open') {
+      throw new Error('Open gate requires an Open Change Run');
+    }
+    const evaluated = await this.assessChangePlanning(state, lifecycle, 'open', signal);
+    const assessment = evaluated.assessment;
+    if (assessment.approval?.status === 'changes_requested') {
+      const skills = await this.resolveLifecycleWorkSkills('change.intake', signal);
+      const revisionWork = createLifecyclePhaseWork({
+        runId: state.runId,
+        checkEpoch: lifecycle.checkEpoch + 1,
+        changeId: lifecycle.identity.changeId,
+        definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+        kind: 'change.intake',
+        actionSkill: skills.actionSkill,
+        augmentationSkills: skills.augmentationSkills,
+        compositionDigest: state.composition.compositionDigest,
+        projectSnapshotDigest: state.projectSnapshotDigest,
+        projectConfigDigest: evaluated.projectConfigDigest,
+        workspaceRepositoryId: evaluated.workspaceRepositoryId,
+        repositoryIds: evaluated.projectSnapshot.repositories.map((repository) => repository.id),
+      });
+      for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
+        await this.coordinator.bindSkill(state.runId, skill);
+      }
+      const revised = await this.coordinator.acceptChangeObservation(state.runId, {
+        kind: 'open-work-ready',
+        work: revisionWork,
+      });
+      await this.ctx.workExecutionAuthority.recordWorkCreated(state.runId, revisionWork);
+      return { ...revised, value: await this.coordinator.status(state.runId) };
+    }
+    const inputDigest =
+      assessment.snapshot?.digest ??
+      assessment.validation?.validationDigest ??
+      (`sha256:${createHash('sha256')
+        .update(canonicalJson({ phase: 'open', reason: assessment.reason }))
+        .digest('hex')}` as const);
+    let designWork: WorkDescriptor | undefined;
+    if (assessment.status === 'approved') {
+      const skills = await this.resolveLifecycleWorkSkills('specification.plan', signal);
+      designWork = createLifecyclePhaseWork({
+        runId: state.runId,
+        checkEpoch: lifecycle.checkEpoch + 1,
+        changeId: lifecycle.identity.changeId,
+        definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+        kind: 'specification.plan',
+        actionSkill: skills.actionSkill,
+        augmentationSkills: skills.augmentationSkills,
+        compositionDigest: state.composition.compositionDigest,
+        projectSnapshotDigest: state.projectSnapshotDigest,
+        projectConfigDigest: evaluated.projectConfigDigest,
+        workspaceRepositoryId: evaluated.workspaceRepositoryId,
+        repositoryIds: evaluated.projectSnapshot.repositories.map((repository) => repository.id),
+      });
+      for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
+        await this.coordinator.bindSkill(state.runId, skill);
+      }
+      if (assessment.validation) {
+        await this.coordinator.bindSpecification(state.runId, {
+          schemaVersion: 1,
+          changeId: assessment.validation.changeId,
+          provider: structuredClone(assessment.validation.provider),
+          validationDigest: assessment.validation.validationDigest,
+        });
+      }
+    }
+    const advanced = await this.coordinator.acceptChangeObservation(state.runId, {
+      kind: 'open-gate',
+      result: assessment.status,
+      reason: assessment.reason,
+      evidenceIds: assessment.evidenceDigests,
+      inputDigest,
+      ...(assessment.status === 'waiting' && assessment.approval
+        ? {
+            requestId: assessment.approval.decisionRequest.requestId,
+            proposalDigest: assessment.approval.decisionRequest.proposalHash,
+          }
+        : {}),
+      ...(designWork ? { work: designWork } : {}),
     });
-    return this.createDesignWork(opened.value.state, signal);
+    if (designWork)
+      await this.ctx.workExecutionAuthority.recordWorkCreated(state.runId, designWork);
+    return { ...advanced, value: await this.coordinator.status(state.runId) };
   }
 
   async next(
@@ -620,6 +834,8 @@ export class WorkflowRuns extends Service {
     if (
       preflightLifecycle?.phase === 'build' &&
       preflightLifecycle.currentWork &&
+      preflight.workExecution?.workId === preflightLifecycle.currentWork.workId &&
+      preflight.workExecution.checkEpoch === preflightLifecycle.checkEpoch &&
       preflight.workExecution?.status === 'outcome' &&
       preflight.workExecution.actionOutcome?.status === 'succeeded' &&
       preflight.workExecution.receiptId
@@ -639,6 +855,7 @@ export class WorkflowRuns extends Service {
       preflightLifecycle?.phase === 'verify' &&
       preflightLifecycle.currentWork &&
       preflight.workExecution?.workId === preflightLifecycle.currentWork.workId &&
+      preflight.workExecution.checkEpoch === preflightLifecycle.checkEpoch &&
       (preflight.workExecution?.status === 'outcome' ||
         preflight.workExecution?.status === 'validated') &&
       preflight.workExecution.actionOutcome?.status === 'succeeded'
@@ -659,6 +876,55 @@ export class WorkflowRuns extends Service {
         if (state.changeLifecycle) {
           const work = state.changeLifecycle.currentWork;
           const execution = state.workExecution;
+          const designFinding = execution?.hostOutcome?.findings?.find(
+            (finding) =>
+              finding.kind === 'design_assumption_invalid' ||
+              finding.kind === 'planning_semantics_changed',
+          );
+          if (
+            state.changeLifecycle.phase === 'build' &&
+            work &&
+            execution?.workId === work.workId &&
+            execution.actionOutcome?.status === 'failed' &&
+            designFinding
+          ) {
+            const proposalDigest = `sha256:${createHash('sha256')
+              .update(
+                canonicalJson({
+                  kind: designFinding.kind,
+                  runId,
+                  workId: work.workId,
+                  checkEpoch: work.checkEpoch,
+                  taskIds: designFinding.taskIds ?? [],
+                  requirementIds: designFinding.requirementIds ?? [],
+                }),
+              )
+              .digest('hex')}` as const;
+            const requested = await this.coordinator.acceptChangeObservation(runId, {
+              kind: 'build-design-revision-required',
+              requestId: `build-design:${proposalDigest.slice(-24)}`,
+              proposalDigest,
+              reason: designFinding.summary,
+              evidenceIds: [execution.receiptId ?? work.inputDigest],
+            });
+            return { ...requested, value: await this.coordinator.status(runId) };
+          }
+          if (
+            state.changeLifecycle.phase === 'build' &&
+            work &&
+            execution?.workId === work.workId &&
+            execution.status === 'outcome' &&
+            execution.actionOutcome?.status === 'failed' &&
+            execution.attempt >= 3
+          ) {
+            const exhausted = await this.coordinator.acceptChangeObservation(runId, {
+              kind: 'build-retry-exhausted',
+              workId: work.workId,
+              attempt: execution.attempt,
+              reason: `Build Work failed ${execution.attempt} bounded attempts`,
+            });
+            return { ...exhausted, value: await this.coordinator.status(runId) };
+          }
           const dispatchable =
             work &&
             this.ctx.workExecutionHosts.snapshot().hosts.length > 0 &&
@@ -699,7 +965,7 @@ export class WorkflowRuns extends Service {
           const current = state;
           if (state.changeLifecycle.phase === 'open') {
             if (!state.changeLifecycle.currentWork) {
-              throw new Error('Open phase has no Runtime-selected intake Work');
+              return this.advanceOpenGate(state, signal);
             }
             if (
               state.workExecution?.status === 'outcome' &&
@@ -736,9 +1002,16 @@ export class WorkflowRuns extends Service {
             throw new Error('Change Run next Work is unavailable for the current lifecycle phase');
           }
           let build: { tasks: SpecificationTask[]; work: WorkDescriptor | null } | undefined;
-          const evaluated = await this.assessChangeDesign(current, lifecycle, signal);
+          const evaluated = await this.assessChangePlanning(current, lifecycle, 'design', signal);
           let assessment = evaluated.assessment;
           const { projectSnapshot, projectConfigDigest, workspaceRepositoryId } = evaluated;
+          if (
+            lifecycle.phase === 'design' &&
+            lifecycle.currentWork === null &&
+            assessment.approval?.status === 'changes_requested'
+          ) {
+            return this.createDesignWork(current, signal);
+          }
           if (lifecycle.phase === 'build' || lifecycle.phase === 'verify') {
             const observedDigest =
               assessment.snapshot?.digest ??
@@ -764,7 +1037,11 @@ export class WorkflowRuns extends Service {
                 ],
               };
             }
-            if (lifecycle.phase === 'build' && lifecycle.verificationInvalidation) {
+            if (
+              lifecycle.phase === 'build' &&
+              lifecycle.verificationInvalidation &&
+              (lifecycle.tasks ?? []).every((task) => task.status === 'completed')
+            ) {
               const profileId = current.trigger?.facts.verificationProfileId;
               if (typeof profileId !== 'string' || !profileId.trim()) {
                 throw new Error('Verification Evidence Profile identity is missing');
@@ -812,6 +1089,7 @@ export class WorkflowRuns extends Service {
                 const skills = await this.resolveLifecycleWorkSkills('task.implement', signal);
                 const nextBuild = createInitialBuildWork({
                   runId,
+                  checkEpoch: lifecycle.checkEpoch + 1,
                   definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
                   actionSkill: skills.actionSkill,
                   augmentationSkills: skills.augmentationSkills,
@@ -860,6 +1138,7 @@ export class WorkflowRuns extends Service {
               );
               const verificationInput = createVerificationInput({
                 runId,
+                checkEpoch: lifecycle.checkEpoch + 1,
                 tasks,
                 fingerprint: planned.fingerprint,
                 plan: planned.plan,
@@ -869,6 +1148,7 @@ export class WorkflowRuns extends Service {
               });
               const verifyWork = createVerifyWork({
                 definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+                checkEpoch: lifecycle.checkEpoch + 1,
                 verification: verificationInput,
                 actionSkill: skills.actionSkill,
                 augmentationSkills: skills.augmentationSkills,
@@ -904,13 +1184,17 @@ export class WorkflowRuns extends Service {
                 lifecycle.identity.changeId,
                 signal,
               );
-              assertSpecificationTaskAdoption(lifecycle.identity.mode, taskSet.tasks);
-              if (taskSet.tasks.every((task) => task.status === 'completed')) {
+              const hasImportedClaims = taskSet.tasks.some(
+                (task) =>
+                  task.status === 'completed' && task.completion?.source === 'imported-claim',
+              );
+              if (hasImportedClaims || taskSet.tasks.every((task) => task.status === 'completed')) {
                 build = { tasks: structuredClone(taskSet.tasks), work: null };
               } else {
                 const skills = await this.resolveLifecycleWorkSkills('task.implement', signal);
                 build = createInitialBuildWork({
                   runId,
+                  checkEpoch: lifecycle.checkEpoch + 1,
                   definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
                   actionSkill: skills.actionSkill,
                   augmentationSkills: skills.augmentationSkills,
@@ -999,6 +1283,33 @@ export class WorkflowRuns extends Service {
               ? { tasks: build.tasks, ...(build.work ? { work: build.work } : {}) }
               : {}),
           });
+          const importedClaims = advanced.value.state.changeLifecycle?.tasks?.filter(
+            (task) => task.status === 'completed' && task.completion?.source === 'imported-claim',
+          );
+          if (advanced.value.state.changeLifecycle?.phase === 'build' && importedClaims?.length) {
+            const proposalDigest = `sha256:${createHash('sha256')
+              .update(
+                canonicalJson({
+                  kind: 'BuildCompletionClaimAdoption',
+                  runId,
+                  planningDigest: inputDigest,
+                  tasks: importedClaims.map(({ taskId, taskRevision }) => ({
+                    taskId,
+                    taskRevision,
+                  })),
+                  repositories: projectSnapshot.repositories.map((repository) => repository.id),
+                }),
+              )
+              .digest('hex')}` as const;
+            const requestId = `adopt-existing:${proposalDigest.slice(-24)}`;
+            const adoption = await this.coordinator.acceptChangeObservation(runId, {
+              kind: 'build-adoption-required',
+              requestId,
+              proposalDigest,
+              reason: 'Pre-completed OpenSpec Tasks require explicit completion-claim adoption',
+            });
+            return { ...adoption, value: await this.coordinator.status(runId) };
+          }
           if (advanced.value.state.changeLifecycle?.currentWork) {
             await this.ctx.workExecutionAuthority.recordWorkCreated(
               runId,
@@ -1099,6 +1410,89 @@ export class WorkflowRuns extends Service {
     });
   }
 
+  private async createVerifyFailureContinuation(
+    state: RunState,
+    result: 'implementation-failure' | 'evidence-unavailable',
+    signal?: AbortSignal,
+  ): Promise<{
+    tasks?: SpecificationTask[];
+    work: WorkDescriptor;
+    verificationInput?: ReturnType<typeof rebaseVerificationInput>;
+  }> {
+    const lifecycle = state.changeLifecycle;
+    if (!lifecycle?.verificationInput || lifecycle.phase !== 'verify') {
+      throw new Error('Verify failure continuation requires an active verification input');
+    }
+    const projectSnapshot = await this.ctx.runStore.loadProjectSnapshot(state.runId);
+    const projectConfigDigest = state.trigger?.facts.projectConfigDigest;
+    const specificationRoot = state.trigger?.facts.specificationRoot as
+      | { repositoryId?: unknown }
+      | undefined;
+    if (
+      typeof projectConfigDigest !== 'string' ||
+      !/^sha256:[a-f0-9]{64}$/u.test(projectConfigDigest) ||
+      typeof specificationRoot?.repositoryId !== 'string'
+    ) {
+      throw new Error('Verify failure continuation trigger identities are missing');
+    }
+    if (result === 'evidence-unavailable') {
+      const skills = await this.resolveLifecycleWorkSkills('evidence.verify', signal);
+      const verificationInput = rebaseVerificationInput(
+        lifecycle.verificationInput,
+        lifecycle.checkEpoch + 1,
+      );
+      const work = createVerifyWork({
+        definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+        checkEpoch: lifecycle.checkEpoch + 1,
+        verification: verificationInput,
+        actionSkill: skills.actionSkill,
+        augmentationSkills: skills.augmentationSkills,
+        workspaceRepositoryId: specificationRoot.repositoryId,
+        repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
+      });
+      for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
+        await this.coordinator.bindSkill(state.runId, skill);
+      }
+      return { work, verificationInput };
+    }
+    if (!lifecycle.planningDigest)
+      throw new Error('Repair Work requires an approved Design digest');
+    const taskSet = await this.ctx.specification.tasks(lifecycle.identity.changeId, signal);
+    const approved = new Map(
+      (lifecycle.tasks ?? []).map((task) => [task.taskId, task.taskRevision]),
+    );
+    if (
+      taskSet.tasks.length !== approved.size ||
+      taskSet.tasks.some((task) => approved.get(task.taskId) !== task.taskRevision)
+    ) {
+      throw new Error('Repair Work Task revisions drifted from the approved Design');
+    }
+    const reopened = taskSet.tasks.map((task) => ({
+      ...task,
+      status: 'pending' as const,
+      completion: null,
+    }));
+    const skills = await this.resolveLifecycleWorkSkills('task.implement', signal);
+    const repair = createInitialBuildWork({
+      runId: state.runId,
+      checkEpoch: lifecycle.checkEpoch + 1,
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      actionSkill: skills.actionSkill,
+      augmentationSkills: skills.augmentationSkills,
+      taskSet: { ...taskSet, tasks: reopened },
+      approvalHash: lifecycle.planningDigest,
+      compositionDigest: state.composition.compositionDigest,
+      projectConfigDigest: projectConfigDigest as `sha256:${string}`,
+      projectSnapshotDigest: state.projectSnapshotDigest,
+      workspaceRepositoryId: specificationRoot.repositoryId,
+      repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
+    });
+    for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
+      await this.coordinator.bindSkill(state.runId, skill);
+    }
+    return repair;
+  }
+
   validateBuildTask(
     input: ValidateBuildTaskInput,
     signal?: AbortSignal,
@@ -1161,7 +1555,7 @@ export class WorkflowRuns extends Service {
       ) {
         throw new Error('Build Task validation requires a succeeded managed Host Outcome');
       }
-      const completed = await this.ctx.specification.completeTask({
+      await this.ctx.specification.completeTask({
         changeId: lifecycle.identity.changeId,
         taskId: validation.taskId,
         taskRevision: validation.taskRevision,
@@ -1188,6 +1582,15 @@ export class WorkflowRuns extends Service {
         validatorId: lifecycle.currentWork.validatorProfile.id,
         continuation: 'execute',
       });
+      const projectedTasks = (lifecycle.tasks ?? []).map((task) =>
+        task.taskId === validation.taskId
+          ? {
+              ...task,
+              status: 'completed' as const,
+              completion: { source: 'runtime-work' as const, workId: validation.workId },
+            }
+          : task,
+      );
       const advanced = await this.coordinator.acceptChangeObservation(input.runId, {
         kind: 'build-task-completed',
         workId: validation.workId,
@@ -1195,7 +1598,7 @@ export class WorkflowRuns extends Service {
         taskRevision: validation.taskRevision,
         inputDigest: lifecycle.currentWork.inputDigest,
         receiptId: receipt.receiptId,
-        tasks: completed.tasks.tasks,
+        tasks: projectedTasks,
       });
       return {
         value: { validation, run: advanced.value },
@@ -1250,7 +1653,7 @@ export class WorkflowRuns extends Service {
           continuation: 'wait',
         });
       }
-      const workflowStateVersion = (await this.ctx.runStore.loadRun(input.runId)).stateVersion;
+      const checkEpoch = current.checkEpoch;
       const attemptId =
         input.attemptId ??
         `verify-${createHash('sha256')
@@ -1273,7 +1676,16 @@ export class WorkflowRuns extends Service {
         );
       } catch (error) {
         const reason = error instanceof Error ? error.message : String(error);
-        if (!reason.includes('input fingerprint changed before Evidence execution')) throw error;
+        const classification = reason.includes(
+          'input fingerprint changed before Evidence execution',
+        )
+          ? ('implementation-failure' as const)
+          : ('evidence-unavailable' as const);
+        const continuation = await this.createVerifyFailureContinuation(
+          state,
+          classification,
+          signal,
+        );
         const fallback = await this.coordinator.acceptChangeObservation(input.runId, {
           kind: 'verify-gate-rejected',
           workId: current.currentWork.workId,
@@ -1282,9 +1694,11 @@ export class WorkflowRuns extends Service {
           attemptId,
           bundleId: null,
           reason,
-          result: 'implementation-drift',
-          workflowStateVersion,
+          result: classification,
+          checkEpoch,
+          ...continuation,
         });
+        await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, continuation.work);
         return {
           value: { attemptId, bundleId: null, gate: 'blocked', run: fallback.value },
           diagnostics: fallback.diagnostics,
@@ -1297,7 +1711,7 @@ export class WorkflowRuns extends Service {
         workflowRunId: input.runId,
         workflowActionId: current.currentWork.workId,
         workflowStepId: 'verify',
-        workflowStateVersion,
+        checkEpoch,
         profileId: current.verificationInput.evidenceProfile.id,
         attemptId,
       });
@@ -1307,15 +1721,20 @@ export class WorkflowRuns extends Service {
           lifecycle: current,
           gate,
           attemptId,
-          workflowStateVersion,
+          checkEpoch,
+          result: 'implementation-failure',
         });
+        const continuation = await this.createVerifyFailureContinuation(
+          state,
+          rejected.result,
+          signal,
+        );
         const fallback = await this.coordinator.acceptChangeObservation(input.runId, {
           kind: 'verify-gate-rejected',
           ...rejected,
-          ...(result.attempt.status === 'superseded'
-            ? { result: 'implementation-drift' as const }
-            : {}),
+          ...continuation,
         });
+        await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, continuation.work);
         return {
           value: {
             attemptId,
@@ -1331,7 +1750,7 @@ export class WorkflowRuns extends Service {
         lifecycle: current,
         gate,
         attemptId,
-        workflowStateVersion,
+        checkEpoch,
       });
       const advanced = await this.coordinator.acceptChangeObservation(input.runId, {
         kind: 'verify-gate-satisfied',
@@ -1368,9 +1787,107 @@ export class WorkflowRuns extends Service {
       ) {
         throw new Error(`Change Run is not ready to plan Archive Delivery: ${input.runId}`);
       }
+      const refreshed = await this.ctx.evidenceCoordinator.plan(
+        lifecycle.verificationInput.evidenceProfile.id,
+      );
+      if (
+        refreshed.fingerprint.digest !==
+        lifecycle.verificationInput.evidenceProfile.fingerprintDigest
+      ) {
+        const projectConfigDigest = state.trigger?.facts.projectConfigDigest;
+        const specificationRoot = state.trigger?.facts.specificationRoot as
+          | { repositoryId?: unknown }
+          | undefined;
+        if (
+          typeof projectConfigDigest !== 'string' ||
+          !/^sha256:[a-f0-9]{64}$/u.test(projectConfigDigest) ||
+          typeof specificationRoot?.repositoryId !== 'string'
+        ) {
+          throw new Error('Archive reverify trigger identities are missing');
+        }
+        const skills = await this.resolveLifecycleWorkSkills('evidence.verify', signal);
+        const verificationInput = createVerificationInput({
+          runId: input.runId,
+          checkEpoch: lifecycle.checkEpoch + 1,
+          tasks: lifecycle.tasks ?? [],
+          fingerprint: refreshed.fingerprint,
+          plan: refreshed.plan,
+          projectConfigDigest: projectConfigDigest as `sha256:${string}`,
+          compositionDigest: state.composition.compositionDigest,
+          skills: [
+            ...(state.skillUsageSnapshots ?? []),
+            skills.actionSkill,
+            ...skills.augmentationSkills,
+          ].filter(
+            (skill, index, all) =>
+              all.findIndex(
+                (candidate) =>
+                  candidate.name === skill.name && candidate.provider === skill.provider,
+              ) === index,
+          ),
+        });
+        const work = createVerifyWork({
+          definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+          checkEpoch: lifecycle.checkEpoch + 1,
+          verification: verificationInput,
+          actionSkill: skills.actionSkill,
+          augmentationSkills: skills.augmentationSkills,
+          workspaceRepositoryId: specificationRoot.repositoryId,
+          repositoryIds: refreshed.fingerprint.manifest.repositories.map(
+            (repository) => repository.repositoryId,
+          ),
+        });
+        for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
+          await this.coordinator.bindSkill(input.runId, skill);
+        }
+        const fallback = await this.coordinator.acceptChangeObservation(input.runId, {
+          kind: 'archive-reverify-required',
+          reason: 'Verification input changed before Archive side effects',
+          verificationInput,
+          work,
+        });
+        await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, work);
+        return {
+          ...fallback,
+          value: await this.coordinator.status(input.runId),
+          diagnostics: [
+            ...fallback.diagnostics,
+            {
+              level: 'warning',
+              code: 'change.archive-reverify',
+              message: 'Archive returned to Verify before any closure or publication side effect',
+            },
+          ],
+        };
+      }
       if (!evidence.bundle || !evidence.bundle.verificationReport) {
         throw new Error('Archive Delivery requires a completed formal verification report');
       }
+      const planningApproval = await this.ctx.specificationPlanning.status(
+        lifecycle.identity.changeId,
+        'design',
+      );
+      if (
+        !planningApproval ||
+        planningApproval.status !== 'approved' ||
+        planningApproval.decision?.decision !== 'approve' ||
+        planningApproval.snapshot.changeId !== lifecycle.identity.changeId ||
+        planningApproval.snapshot.compositionDigest !== state.composition.compositionDigest ||
+        planningApproval.snapshot.projectConfigDigest !==
+          state.trigger?.facts.projectConfigDigest ||
+        canonicalJson(deliveryBranchCoordinates(planningApproval.snapshot.changeBranch)) !==
+          canonicalJson(deliveryBranchCoordinates(input.intent.changeBranch))
+      ) {
+        throw new Error(
+          `Archive Delivery requires the effective Design planning approval: ${lifecycle.identity.changeId}`,
+        );
+      }
+      await this.ctx.delivery.validateArchiveIntent(
+        input.intent,
+        input.policy,
+        planningApproval.snapshot.compositionDigest,
+        signal,
+      );
       const archiveInput = createArchiveDeliveryInput({
         runId: input.runId,
         changeId: lifecycle.identity.changeId,
@@ -1380,6 +1897,9 @@ export class WorkflowRuns extends Service {
         verificationReport: evidence.bundle.verificationReport,
         intent: input.intent,
         policy: input.policy,
+        planningCompositionDigest: planningApproval.snapshot.compositionDigest,
+        evidenceCompositionDigest: lifecycle.verificationInput
+          .compositionDigest as `sha256:${string}`,
       });
       const repositoryIds = Array.isArray(state.trigger?.facts.repositoryIds)
         ? state.trigger.facts.repositoryIds.filter(
@@ -1389,6 +1909,7 @@ export class WorkflowRuns extends Service {
       const archiveSkills = await this.resolveLifecycleWorkSkills('specification.close', signal);
       const work = createSpecificationCloseWork({
         definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+        checkEpoch: lifecycle.checkEpoch + 1,
         archive: archiveInput,
         actionSkill: archiveSkills.actionSkill,
         workspaceRepositoryId: input.intent.changeBranch.repositoryId,
@@ -1410,8 +1931,53 @@ export class WorkflowRuns extends Service {
     signal?: AbortSignal,
   ): Promise<RuntimeResult<ExecuteArchiveDeliveryResult>> {
     return this.operations.run({ cancellable: false, signal }, async () => {
+      await this.coordinator.recoverChangeLifecycleDefinition(input.runId);
       const state = await this.ctx.runStore.loadRun(input.runId);
       const lifecycle = state.changeLifecycle;
+      if (
+        lifecycle &&
+        state.status === 'running' &&
+        lifecycle.phase === 'archive' &&
+        lifecycle.currentWork === null &&
+        lifecycle.archiveDeliveryInput &&
+        lifecycle.specificationClosure &&
+        !lifecycle.publicationReceipt
+      ) {
+        const skills = await this.resolveLifecycleWorkSkills('delivery.publish', signal);
+        const restoredWork = createDeliveryPublishWork({
+          definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+          checkEpoch: lifecycle.checkEpoch + 1,
+          archive: lifecycle.archiveDeliveryInput,
+          closure: lifecycle.specificationClosure,
+          actionSkill: skills.actionSkill,
+          workspaceRepositoryId: lifecycle.archiveDeliveryInput.changeBranch.repositoryId,
+          repositoryIds: input.project.repositories.map((repository) => repository.id),
+        });
+        await this.coordinator.bindSkill(input.runId, skills.actionSkill);
+        const restored = await this.coordinator.acceptChangeObservation(input.runId, {
+          kind: 'archive-work-restored',
+          work: restoredWork,
+          reason: 'Compatible lifecycle definition upgrade restored interrupted Archive Work',
+        });
+        await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, restoredWork);
+        return {
+          value: {
+            stage: 'definition-recovered',
+            publication: null,
+            receipt: null,
+            run: await this.coordinator.status(input.runId),
+          },
+          diagnostics: [
+            ...restored.diagnostics,
+            {
+              level: 'warning',
+              code: 'change.archive-work-restored',
+              message:
+                'Archive publication Work was rebuilt after an explicitly compatible definition upgrade',
+            },
+          ],
+        };
+      }
       const archive = lifecycle?.archiveDeliveryInput;
       const workKind = lifecycle?.currentWork?.kind;
       if (
@@ -1474,6 +2040,7 @@ export class WorkflowRuns extends Service {
         const skills = await this.resolveLifecycleWorkSkills('delivery.publish', signal);
         const publishWork = createDeliveryPublishWork({
           definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+          checkEpoch: lifecycle.checkEpoch + 1,
           archive,
           closure,
           actionSkill: skills.actionSkill,
@@ -1500,6 +2067,10 @@ export class WorkflowRuns extends Service {
       if (!closure) {
         throw new Error('Archive Delivery Work is missing its Specification Closure Receipt');
       }
+      const verificationCompositionDigest = lifecycle.verificationInput?.compositionDigest;
+      if (!verificationCompositionDigest) {
+        throw new Error('Archive Delivery is missing its Verification composition identity');
+      }
       const intent: DeliveryIntentV3 = {
         schemaVersion: 3,
         changeId: archive.changeId,
@@ -1509,13 +2080,193 @@ export class WorkflowRuns extends Service {
           ? { businessSplitReason: structuredClone(archive.businessSplitReason) }
           : {}),
       };
+      const planningApproval = await this.ctx.specificationPlanning.status(
+        lifecycle.identity.changeId,
+        'design',
+      );
+      const planningCompositionDigest =
+        archive.planningCompositionDigest ?? planningApproval?.snapshot.compositionDigest;
+      if (!planningCompositionDigest) {
+        throw new Error('Archive Delivery is missing its planning composition identity');
+      }
+      try {
+        await this.ctx.delivery.validateArchiveIntent(
+          intent,
+          input.policy,
+          planningCompositionDigest,
+          signal,
+        );
+      } catch (error) {
+        if (
+          !planningApproval ||
+          planningApproval.status !== 'approved' ||
+          planningApproval.decision?.decision !== 'approve' ||
+          planningApproval.snapshot.changeId !== lifecycle.identity.changeId ||
+          planningApproval.snapshot.projectConfigDigest !==
+            state.trigger?.facts.projectConfigDigest ||
+          canonicalJson(deliveryBranchCoordinates(archive.changeBranch)) !==
+            canonicalJson(deliveryBranchCoordinates(planningApproval.snapshot.changeBranch)) ||
+          archive.changeBranch.remoteOid === closure.candidate.baseOid
+        ) {
+          throw error;
+        }
+        const normalizeCorrection = (candidate: DeliveryIntentV3) => ({
+          ...candidate,
+          changeBranch: { ...candidate.changeBranch, remoteOid: '<corrected>' },
+        });
+        const correctedIntent: DeliveryIntentV3 = {
+          ...intent,
+          changeBranch: {
+            ...structuredClone(intent.changeBranch),
+            remoteOid: closure.candidate.baseOid,
+          },
+        };
+        if (
+          canonicalJson(normalizeCorrection(intent)) !==
+          canonicalJson(normalizeCorrection(correctedIntent))
+        ) {
+          throw new Error(
+            'Archive intent correction may change only the Change branch remote OID',
+            {
+              cause: error,
+            },
+          );
+        }
+        try {
+          await this.ctx.delivery.validateArchiveIntent(
+            correctedIntent,
+            input.policy,
+            planningApproval.snapshot.compositionDigest,
+            signal,
+          );
+        } catch (correctedError) {
+          const projectConfigDigest = state.trigger?.facts.projectConfigDigest;
+          const specificationRoot = state.trigger?.facts.specificationRoot as
+            | { repositoryId?: unknown }
+            | undefined;
+          if (
+            typeof projectConfigDigest !== 'string' ||
+            !/^sha256:[a-f0-9]{64}$/u.test(projectConfigDigest) ||
+            typeof specificationRoot?.repositoryId !== 'string'
+          ) {
+            throw new Error('Archive planning repair identities are missing', {
+              cause: correctedError,
+            });
+          }
+          const skills = await this.resolveLifecycleWorkSkills('specification.plan', signal);
+          const designWork = createLifecyclePhaseWork({
+            runId: input.runId,
+            checkEpoch: lifecycle.checkEpoch + 1,
+            changeId: lifecycle.identity.changeId,
+            definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+            kind: 'specification.plan',
+            actionSkill: skills.actionSkill,
+            augmentationSkills: skills.augmentationSkills,
+            compositionDigest: state.composition.compositionDigest,
+            projectSnapshotDigest: state.projectSnapshotDigest,
+            projectConfigDigest,
+            workspaceRepositoryId: specificationRoot.repositoryId,
+            repositoryIds: input.project.repositories.map((repository) => repository.id),
+          });
+          for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
+            await this.coordinator.bindSkill(input.runId, skill);
+          }
+          const revised = await this.coordinator.acceptChangeObservation(input.runId, {
+            kind: 'archive-planning-drift',
+            work: designWork,
+            observedPlanningDigest: planningApproval.snapshot.digest,
+            reason:
+              correctedError instanceof Error
+                ? correctedError.message
+                : 'Approved Change branch no longer matches the live remote branch',
+            evidenceIds: [archive.digest, closure.closureId, planningApproval.snapshot.digest],
+          });
+          await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, designWork);
+          return {
+            value: {
+              stage: 'planning-revision-required',
+              publication: null,
+              receipt: null,
+              run: await this.coordinator.status(input.runId),
+            },
+            diagnostics: [
+              ...revised.diagnostics,
+              {
+                level: 'warning',
+                code: 'change.archive-planning-drift',
+                message:
+                  'Archive returned to Design because the approved Change branch drifted before remote publication',
+              },
+            ],
+          };
+        }
+        const correctedArchive = createArchiveDeliveryInput({
+          runId: input.runId,
+          changeId: archive.changeId,
+          verificationInputDigest: archive.verificationInputDigest,
+          acceptedEvidenceBundleIds: state.acceptedEvidenceBundleIds,
+          evidenceBundleId: archive.evidenceBundleId,
+          verificationReport: archive.verificationReport,
+          intent: correctedIntent,
+          policy: input.policy,
+          planningCompositionDigest: planningApproval.snapshot.compositionDigest,
+          evidenceCompositionDigest:
+            archive.evidenceCompositionDigest ??
+            (verificationCompositionDigest as `sha256:${string}`),
+        });
+        const skills = await this.resolveLifecycleWorkSkills('delivery.publish', signal);
+        const correctedWork = createDeliveryPublishWork({
+          definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+          checkEpoch: lifecycle.checkEpoch + 1,
+          archive: correctedArchive,
+          closure,
+          actionSkill: skills.actionSkill,
+          workspaceRepositoryId: correctedArchive.changeBranch.repositoryId,
+          repositoryIds: input.project.repositories.map((repository) => repository.id),
+        });
+        await this.coordinator.bindSkill(input.runId, skills.actionSkill);
+        const corrected = await this.coordinator.acceptChangeObservation(input.runId, {
+          kind: 'archive-intent-corrected',
+          priorArchiveInputDigest: archive.digest,
+          archiveInput: correctedArchive,
+          closure,
+          work: correctedWork,
+          reason:
+            error instanceof Error
+              ? error.message
+              : 'Archive planning approval rejected the frozen Change branch OID',
+        });
+        await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, correctedWork);
+        return {
+          value: {
+            stage: 'intent-corrected',
+            publication: null,
+            receipt: null,
+            run: await this.coordinator.status(input.runId),
+          },
+          diagnostics: [
+            ...corrected.diagnostics,
+            {
+              level: 'warning',
+              code: 'change.archive-intent-corrected',
+              message:
+                'Archive Change branch OID was rebound to the approved closure baseline before publication',
+            },
+          ],
+        };
+      }
       const publication = await this.ctx.delivery.publishArchive(
         {
+          runId: input.runId,
           project: input.project,
           intent,
           policy: input.policy,
           reportContents: `verification-report:sha256:${archive.verificationReport.sha256}`,
           evidenceBundleIds: [archive.evidenceBundleId],
+          planningCompositionDigest,
+          evidenceCompositionDigest:
+            archive.evidenceCompositionDigest ??
+            (verificationCompositionDigest as `sha256:${string}`),
         },
         signal,
       );
@@ -1560,7 +2311,7 @@ export class WorkflowRuns extends Service {
         const specification = await this.ctx.delivery.publishSpecification(
           {
             changeId: archive.changeId,
-            generation: lifecycle.identity.generation,
+            runId: lifecycle.identity.runId,
             workspaceRoot: input.project.root,
             changeBranch: archive.changeBranch,
             closure,
@@ -1573,9 +2324,8 @@ export class WorkflowRuns extends Service {
         receipt = createPublicationReceipt({
           apiVersion: PUBLICATION_RECEIPT_API_VERSION,
           kind: 'PublicationReceipt',
-          schemaVersion: 1,
+          schemaVersion: 2,
           changeId: archive.changeId,
-          generation: lifecycle.identity.generation,
           runId: input.runId,
           deliverySnapshotDigest: publication.snapshot.digest as `sha256:${string}`,
           verificationInputDigest: archive.verificationInputDigest,
@@ -1630,10 +2380,14 @@ export class WorkflowRuns extends Service {
             specificationCompatibility,
             reconciliation,
             execution: {
-              schemaVersion: 1,
+              schemaVersion: 2,
               continuation: 'reconcile',
               workId: status.state.workExecution?.workId ?? null,
               attempt: status.state.workExecution?.attempt ?? null,
+              checkEpoch:
+                status.state.workExecution?.checkEpoch ??
+                status.state.changeLifecycle?.checkEpoch ??
+                null,
               reason: reconciliation.changed ? 'project-drift' : 'content-missing-or-corrupt',
             },
           },

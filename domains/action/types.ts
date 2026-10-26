@@ -2,12 +2,13 @@ import type { ActionOutcome, EngineAction } from '../engine/types.js';
 import type { CompositionIdentitySnapshot } from '../composition/types.js';
 
 export interface ActionIntent {
-  schemaVersion: 2;
+  schemaVersion: 3;
   intentId: string;
   idempotencyKey: string;
   runId: string;
   workId: string;
   attempt: number;
+  checkEpoch: number;
   claimToken: `sha256:${string}`;
   inputDigest: `sha256:${string}`;
   compositionDigest: string;
@@ -20,13 +21,14 @@ export interface ActionIntent {
 }
 
 export interface ActionReceipt {
-  schemaVersion: 2;
+  schemaVersion: 3;
   receiptId: string;
   intentId: string;
   idempotencyKey: string;
   runId: string;
   workId: string;
   attempt: number;
+  checkEpoch: number;
   claimToken: `sha256:${string}`;
   inputDigest: `sha256:${string}`;
   outcomeId: string;
@@ -43,6 +45,7 @@ export interface ActionClaimInput {
   runId: string;
   workId: string;
   attempt: number;
+  checkEpoch: number;
   inputDigest: `sha256:${string}`;
   composition: CompositionIdentitySnapshot;
   action: EngineAction;
@@ -52,11 +55,12 @@ export interface ActionClaimInput {
 }
 
 export interface ClaimedActionOutcome {
-  schemaVersion: 1;
+  schemaVersion: 2;
   outcomeId: string;
   runId: string;
   workId: string;
   attempt: number;
+  checkEpoch: number;
   claimToken: `sha256:${string}`;
   inputDigest: `sha256:${string}`;
   status: ActionOutcome['status'];

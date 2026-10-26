@@ -12,11 +12,13 @@ const request: SpecificationApprovalDecisionRequest = {
   decisionType: 'specification-approval',
   requestId: 'request',
   changeId: 'change-approval',
+  approvalPhase: 'design',
   snapshotDigest: `sha256:${'a'.repeat(64)}`,
   proposal: {
     schemaVersion: 1,
     kind: 'SpecificationApprovalProposal',
     changeId: 'change-approval',
+    approvalPhase: 'design',
     specificationRoot: {
       schemaVersion: 1,
       kind: 'SpecificationRoot',

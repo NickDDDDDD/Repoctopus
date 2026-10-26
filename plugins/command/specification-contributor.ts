@@ -8,6 +8,7 @@ import type {
 
 interface Input {
   changeId?: string;
+  approvalPhase?: 'open' | 'design';
   strict?: boolean;
   mergeFactsDigest?: `sha256:${string}`;
   targetBaselineDigest?: `sha256:${string}`;
@@ -43,9 +44,9 @@ const plugin = ((context: Context) => {
     context.commandRouter.register({
       name: 'specification.approval.status',
       execute({ input }) {
-        const { changeId } = input as Input;
+        const { changeId, approvalPhase } = input as Input;
         if (!changeId?.trim()) throw new Error('Specification change id is required');
-        return context.specificationPlanning.status(changeId);
+        return context.specificationPlanning.status(changeId, approvalPhase);
       },
     }),
   );
@@ -53,11 +54,16 @@ const plugin = ((context: Context) => {
     context.commandRouter.register({
       name: 'specification.approval.decide',
       execute({ input }) {
-        const { changeId, response, actor } = input as Input;
+        const { changeId, approvalPhase, response, actor } = input as Input;
         if (!changeId?.trim() || !response || !actor) {
           throw new Error('Specification approval decision requires change, response, and actor');
         }
-        return context.specificationPlanning.decide({ changeId, response, actor });
+        return context.specificationPlanning.decide({
+          changeId,
+          ...(approvalPhase ? { approvalPhase } : {}),
+          response,
+          actor,
+        });
       },
     }),
   );

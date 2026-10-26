@@ -11,8 +11,8 @@ metadata:
 
 # Design a managed Change
 
-Execute only the selected `specification.plan` Work. Read the Provider instructions and templates in the packet, then create or repair proposal, delta specs, design, and tasks in their Provider-owned locations.
+Execute only the selected `specification.plan` Work. Start from the approved Open baseline, consume the delivered `codebase-design` augmentation, and deepen proposal, delta specs, `design.md`, and `tasks.md` in their existing Provider-owned locations.
 
-Keep requirements and observable behavior in specs, engineering decisions in `design.md`, and executable sequencing in `tasks.md`. Do not add a fifth planning artifact, approve the plan, or advance the phase. Return an Outcome so strict Provider validation and the Human Decision gate can run.
+Keep requirements and observable behavior in specs, engineering decisions in `design.md`, and executable sequencing in `tasks.md`. Update the same four artifacts; do not add a fifth planning artifact, ADR, implementation notes, Build Plan, or alternate ticket authority. Do not approve the plan or advance the phase. Return an Outcome so strict Provider validation and the independent Design Human Decision can run.
 
 Every tracked checkbox Task MUST have at least one following metadata line, indented deeper than the checkbox, using exactly `**Acceptance:** <observable criterion>`. Use semicolons for multiple criteria and `**Requirements:** <requirement refs>` for traceability. Unindented text, unbolded labels, legacy aliases, and a verification phrase embedded only in the Task title are not structured Acceptance and will fail strict validation.

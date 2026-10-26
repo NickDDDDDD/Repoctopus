@@ -29,12 +29,15 @@ class TestActionStore extends ActionStore {
 }
 
 function claimInput(
-  overrides: Partial<Pick<ActionClaimInput, 'workId' | 'attempt' | 'inputDigest'>> = {},
+  overrides: Partial<
+    Pick<ActionClaimInput, 'workId' | 'attempt' | 'checkEpoch' | 'inputDigest'>
+  > = {},
 ): ActionClaimInput {
   return {
     runId: 'action-claim-run',
     workId: 'build:1.1',
     attempt: 1,
+    checkEpoch: 4,
     inputDigest: `sha256:${'a'.repeat(64)}`,
     composition,
     action: {
@@ -54,11 +57,12 @@ function outcome(
   outcomeId = 'outcome-1',
 ): ClaimedActionOutcome {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     outcomeId,
     runId: intent.runId,
     workId: intent.workId,
     attempt: intent.attempt,
+    checkEpoch: intent.checkEpoch,
     claimToken: intent.claimToken,
     inputDigest: intent.inputDigest,
     status: 'succeeded',
@@ -76,13 +80,14 @@ function harness(workspace: string, executions: { count: number }) {
     complete(intent, input) {
       executions.count += 1;
       return Promise.resolve({
-        schemaVersion: 2,
+        schemaVersion: 3,
         receiptId: input.receiptId,
         intentId: intent.intentId,
         idempotencyKey: intent.idempotencyKey,
         runId: intent.runId,
         workId: intent.workId,
         attempt: intent.attempt,
+        checkEpoch: intent.checkEpoch,
         claimToken: intent.claimToken,
         inputDigest: intent.inputDigest,
         outcomeId: input.outcomeId,
@@ -112,7 +117,7 @@ describe('Action immutable content store', () => {
     ]);
     expect(duplicate).toEqual(first);
     expect(first).toMatchObject({
-      schemaVersion: 2,
+      schemaVersion: 3,
       runId: 'action-claim-run',
       workId: 'build:1.1',
       attempt: 1,
@@ -142,7 +147,7 @@ describe('Action immutable content store', () => {
     const replayAfterLostResponse = await recoveredProcess.dispatcher.complete(outcome(second));
     expect(replayAfterLostResponse).toEqual(completed);
     expect(completed).toMatchObject({
-      schemaVersion: 2,
+      schemaVersion: 3,
       runId: second.runId,
       workId: second.workId,
       attempt: second.attempt,

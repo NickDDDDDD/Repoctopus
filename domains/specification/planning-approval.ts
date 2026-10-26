@@ -50,15 +50,11 @@ function normalizeBranch(branch: ChangeBranchReference): ChangeBranchReference {
   return structuredClone(branch);
 }
 
-function publicationProvenanceDigest(
-  branch: ChangeBranchReference,
-): `sha256:${string}` {
+function publicationProvenanceDigest(branch: ChangeBranchReference): `sha256:${string}` {
   return sha256({ kind: 'ChangeBranchPublication', changeBranch: branch });
 }
 
-function planningSnapshotDigest(
-  snapshot: Omit<PlanningSnapshot, 'digest'>,
-): `sha256:${string}` {
+function planningSnapshotDigest(snapshot: Omit<PlanningSnapshot, 'digest'>): `sha256:${string}` {
   const { publicationProvenanceDigest: _publication, changeBranch, ...semantic } = snapshot;
   const { remoteOid: _remoteOid, ...branchIdentity } = changeBranch;
   void _publication;
@@ -113,6 +109,7 @@ export function createPlanningSnapshot(input: {
   changeBranch: ChangeBranchReference;
   compositionDigest: `sha256:${string}`;
   projectConfigDigest: `sha256:${string}`;
+  approvalPhase?: 'open' | 'design';
   planningManifest?: SpecificationPlanningManifest;
 }): PlanningSnapshot {
   const manifest =
@@ -158,6 +155,7 @@ export function createPlanningSnapshot(input: {
   const stable = {
     schemaVersion: 1 as const,
     changeId: input.change.changeId,
+    approvalPhase: input.approvalPhase ?? 'design',
     provider: structuredClone(input.change.provider),
     schema: structuredClone(input.schema),
     specificationRoot: structuredClone(input.specificationRoot),
@@ -180,11 +178,11 @@ export function assertPlanningSnapshot(
 ): void {
   const { digest, ...stable } = snapshot;
   assertDigest(digest, 'Planning snapshot');
-  const legacyPublication =
-    typeof snapshot.publicationProvenanceDigest !== 'string';
-  if (
-    (legacyPublication ? sha256(stable) : planningSnapshotDigest(stable)) !== digest
-  ) {
+  if (snapshot.approvalPhase !== 'open' && snapshot.approvalPhase !== 'design') {
+    throw new Error('Planning snapshot approval phase is invalid');
+  }
+  const legacyPublication = typeof snapshot.publicationProvenanceDigest !== 'string';
+  if ((legacyPublication ? sha256(stable) : planningSnapshotDigest(stable)) !== digest) {
     throw new Error('Planning snapshot digest is invalid');
   }
   if (snapshot.schema) assertSchemaInstructions(snapshot.schema);
@@ -231,6 +229,7 @@ export function createSpecificationApprovalRequest(
     decisionType: 'specification-approval',
     requestId,
     changeId: snapshot.changeId,
+    approvalPhase: snapshot.approvalPhase,
     snapshotDigest: snapshot.digest,
     proposal,
     proposalHash,
@@ -254,6 +253,7 @@ export function createSpecificationApprovalProposal(
     schemaVersion: 1,
     kind: 'SpecificationApprovalProposal',
     changeId: snapshot.changeId,
+    approvalPhase: snapshot.approvalPhase,
     specificationRoot: structuredClone(snapshot.specificationRoot),
     provider: structuredClone(snapshot.provider),
     schema: { name: snapshot.schema.schemaName, digest: snapshot.schema.digest },
@@ -263,9 +263,7 @@ export function createSpecificationApprovalProposal(
   };
 }
 
-export function hashApprovalProposal(
-  proposal: SpecificationApprovalProposal,
-): `sha256:${string}` {
+export function hashApprovalProposal(proposal: SpecificationApprovalProposal): `sha256:${string}` {
   return sha256(proposal);
 }
 
@@ -273,9 +271,10 @@ function approvalHash(record: Omit<SpecificationApprovalRecord, 'approvalHash'>)
   return sha256({ kind: 'SpecificationApproval', ...record });
 }
 
-export function specificationApprovalCompatibility(
-  state: SpecificationApprovalState,
-): { status: 'current' | 'migration_required'; reason: string } {
+export function specificationApprovalCompatibility(state: SpecificationApprovalState): {
+  status: 'current' | 'migration_required';
+  reason: string;
+} {
   try {
     assertSpecificationApprovalState(state);
     return { status: 'current', reason: 'Planning approval uses the current semantic schema' };
@@ -284,9 +283,7 @@ export function specificationApprovalCompatibility(
     return {
       status: 'migration_required',
       reason:
-        error instanceof Error
-          ? error.message
-          : 'Legacy planning approval requires migration',
+        error instanceof Error ? error.message : 'Legacy planning approval requires migration',
     };
   }
 }
@@ -319,10 +316,7 @@ export function assertSpecificationApprovalState(
   state: SpecificationApprovalState,
   options: { allowLegacy?: boolean } = {},
 ): void {
-  assertPlanningSnapshot(
-    state.snapshot,
-    options.allowLegacy === true ? { allowLegacy: true } : {},
-  );
+  assertPlanningSnapshot(state.snapshot, options.allowLegacy === true ? { allowLegacy: true } : {});
   const request = state.decisionRequest as SpecificationApprovalDecisionRequest & {
     proposal?: SpecificationApprovalProposal;
     proposalHash?: `sha256:${string}`;
@@ -342,6 +336,7 @@ export function assertSpecificationApprovalState(
     request.proposalHash !== hashApprovalProposal(expectedProposal) ||
     request.snapshotDigest !== state.snapshot.digest ||
     request.changeId !== state.changeId ||
+    request.approvalPhase !== state.approvalPhase ||
     canonicalJson(request.changeBranch) !== canonicalJson(state.snapshot.changeBranch)
   ) {
     throw new Error('Specification approval proposal hash is invalid');
@@ -351,6 +346,7 @@ export function assertSpecificationApprovalState(
     if (
       record.requestId !== request.requestId ||
       record.changeId !== state.changeId ||
+      record.approvalPhase !== state.approvalPhase ||
       record.snapshotDigest !== state.snapshot.digest ||
       record.proposalHash !== request.proposalHash ||
       (record.decision === 'approve'
@@ -380,19 +376,20 @@ export function requestSpecificationApproval(input: {
 }): SpecificationApprovalState {
   assertPlanningSnapshot(input.snapshot);
   const current = input.current;
-  if (current && current.changeId !== input.snapshot.changeId) {
+  if (
+    current &&
+    (current.changeId !== input.snapshot.changeId ||
+      current.approvalPhase !== input.snapshot.approvalPhase)
+  ) {
     throw new Error('Specification approval state belongs to another change');
   }
-  const currentCompatibility = current
-    ? specificationApprovalCompatibility(current)
-    : null;
+  const currentCompatibility = current ? specificationApprovalCompatibility(current) : null;
   if (
     currentCompatibility?.status === 'current' &&
     current?.snapshot.digest === input.snapshot.digest
   ) {
     if (
-      current.snapshot.publicationProvenanceDigest ===
-      input.snapshot.publicationProvenanceDigest
+      current.snapshot.publicationProvenanceDigest === input.snapshot.publicationProvenanceDigest
     ) {
       return structuredClone(current);
     }
@@ -410,6 +407,7 @@ export function requestSpecificationApproval(input: {
   return {
     schemaVersion: 1,
     changeId: input.snapshot.changeId,
+    approvalPhase: input.snapshot.approvalPhase,
     stateVersion: (current?.stateVersion ?? -1) + 1,
     status: 'awaiting_approval',
     snapshot: structuredClone(input.snapshot),
@@ -459,6 +457,7 @@ export function recordSpecificationApprovalDecision(input: {
     schemaVersion: 1,
     requestId: request.requestId,
     changeId: input.state.changeId,
+    approvalPhase: input.state.approvalPhase,
     snapshotDigest: input.state.snapshot.digest,
     proposalHash: request.proposalHash,
     decision: response.decision,
@@ -486,6 +485,9 @@ export function recordSpecificationApprovalDecision(input: {
 }
 
 export interface SpecificationApprovalStorePort {
-  load(changeId: string): Promise<SpecificationApprovalState | null>;
+  load(
+    changeId: string,
+    approvalPhase?: 'open' | 'design',
+  ): Promise<SpecificationApprovalState | null>;
   commit(state: SpecificationApprovalState, previousStateVersion: number | null): Promise<void>;
 }

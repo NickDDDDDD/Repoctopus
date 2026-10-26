@@ -8,10 +8,7 @@ import {
 const hash = (value: string) => `sha256:${value.repeat(64).slice(0, 64)}` as const;
 const oid = (value: string) => value.repeat(40).slice(0, 40);
 
-function item(
-  role: 'business' | 'specification',
-  publicationId: string,
-): PublicationReceiptItem {
+function item(role: 'business' | 'specification', publicationId: string): PublicationReceiptItem {
   return {
     publicationId,
     role,
@@ -37,9 +34,8 @@ function receipt(items: PublicationReceiptItem[]) {
   return createPublicationReceipt({
     apiVersion: 'repoctopus.delivery/v1alpha1',
     kind: 'PublicationReceipt',
-    schemaVersion: 1,
+    schemaVersion: 2,
     changeId: 'archive-lite',
-    generation: 2,
     runId: 'change-archive-lite-g2',
     deliverySnapshotDigest: hash('1'),
     verificationInputDigest: hash('2'),
@@ -67,7 +63,9 @@ describe('PublicationReceipt', () => {
 
   it('rejects missing roles, invalid OIDs, and identity mismatches', () => {
     expect(() => receipt([item('business', 'primary')])).toThrow(/Business and Specification/u);
-    expect(() => receipt([item('specification', 'specification')])).toThrow(/Business and Specification/u);
+    expect(() => receipt([item('specification', 'specification')])).toThrow(
+      /Business and Specification/u,
+    );
     expect(() =>
       receipt([
         { ...item('business', 'primary'), publishedOid: 'not-an-oid' },

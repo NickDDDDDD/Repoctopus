@@ -30,16 +30,16 @@ export interface PublicationJournalItem {
 export interface PublicationJournal {
   apiVersion: 'repoctopus.delivery-publication/v1alpha1';
   kind: 'PublicationJournal';
-  schemaVersion: 1;
+  schemaVersion: 2;
   changeId: string;
-  generation: number;
+  runId: string;
   stateVersion: number;
   items: PublicationJournalItem[];
   digest: `sha256:${string}`;
 }
 
 export interface PublicationJournalStore {
-  load(changeId: string, generation: number): Promise<PublicationJournal | null>;
+  load(runId: string): Promise<PublicationJournal | null>;
   create(journal: PublicationJournal): Promise<void>;
   compareAndSet(journal: PublicationJournal, expectedDigest: `sha256:${string}`): Promise<void>;
 }
@@ -80,10 +80,10 @@ function stable(input: Omit<PublicationJournal, 'digest'>) {
 
 export function createPublicationJournal(input: {
   changeId: string;
-  generation: number;
+  runId: string;
   items: readonly PublicationJournalItemIntent[];
 }): PublicationJournal {
-  if (!input.changeId.trim() || !Number.isSafeInteger(input.generation) || input.generation < 1) {
+  if (!input.changeId.trim() || !input.runId.trim()) {
     throw new Error('Publication Journal Change identity is invalid');
   }
   if (input.items.length < 2)
@@ -103,7 +103,7 @@ export function createPublicationJournal(input: {
     }
     const operationId = sha256({
       changeId: input.changeId,
-      generation: input.generation,
+      runId: input.runId,
       repositoryId: intent.repositoryId,
       role: intent.role,
       deliveryId: intent.deliveryId ?? null,
@@ -126,9 +126,9 @@ export function createPublicationJournal(input: {
   const unsigned = stable({
     apiVersion: 'repoctopus.delivery-publication/v1alpha1',
     kind: 'PublicationJournal',
-    schemaVersion: 1,
+    schemaVersion: 2,
     changeId: input.changeId,
-    generation: input.generation,
+    runId: input.runId,
     stateVersion: 1,
     items,
   });
@@ -178,10 +178,10 @@ export class ResumablePublicationExecutor {
 
   async publish(input: {
     changeId: string;
-    generation: number;
+    runId: string;
     items: readonly PublicationJournalItemIntent[];
   }): Promise<PublicationJournal> {
-    let journal = await this.store.load(input.changeId, input.generation);
+    let journal = await this.store.load(input.runId);
     if (!journal) {
       journal = createPublicationJournal(input);
       await this.store.create(journal);

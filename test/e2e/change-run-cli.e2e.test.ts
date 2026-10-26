@@ -21,7 +21,7 @@ const cleanup: string[] = [];
 afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
 
 describe('Change Run CLI', () => {
-  it('converges concurrent create-or-resume calls on one Open Run per generation', async () => {
+  it('converges concurrent create-or-resume calls on one stable Open Run', async () => {
     const root = await temporaryDirectory('repoctopus-change-run-cli-');
     cleanup.push(root);
     const remote = path.join(root, 'workspace.git');
@@ -83,8 +83,6 @@ describe('Change Run CLI', () => {
           workspace,
           '--change',
           'stable-create-or-resume',
-          '--generation',
-          '1',
           '--target',
           'main',
         ],
@@ -97,12 +95,10 @@ describe('Change Run CLI', () => {
       identity: {
         workspaceId: 'team-platform',
         changeId: 'stable-create-or-resume',
-        generation: 1,
-        mode: 'fresh',
       },
       phase: 'open',
       status: 'running',
-      definition: { id: 'repoctopus-change', version: '2.0.0' },
+      definition: { id: 'repoctopus-change', version: '3.0.0' },
     });
     expect(second.result?.changeLifecycle).toEqual(first.result?.changeLifecycle);
 
@@ -114,7 +110,6 @@ describe('Change Run CLI', () => {
     });
     expect(status.result?.changeLifecycle).toMatchObject({ phase: 'open', status: 'running' });
     expect(status.result?.state.trigger?.facts).toMatchObject({
-      mode: 'fresh',
       specificationRoot: {
         storeId: 'team-platform',
         repositoryId: 'workspace',
@@ -126,31 +121,29 @@ describe('Change Run CLI', () => {
     const runDirectories = await readdir(path.join(workspace, '.repoctopus', 'runs'));
     expect(runDirectories).toEqual([first.runId]);
 
-    const adopted = await runCli<RunStatusView>({
-      packageRoot,
-      cwd: workspace,
-      args: [
-        'run',
-        'start',
-        '--workspace',
-        workspace,
-        '--change',
-        'stable-create-or-resume',
-        '--generation',
-        '2',
-        '--mode',
-        'adopt-existing',
-        '--target',
-        'main',
-      ],
-      environment,
-    });
-    expect(adopted.runId).not.toBe(first.runId);
-    expect(adopted.result?.changeLifecycle?.identity).toMatchObject({
-      generation: 2,
-      mode: 'adopt-existing',
-    });
-    expect(adopted.result?.state.trigger?.facts).toMatchObject({ mode: 'adopt-existing' });
+    for (const obsolete of [
+      ['--generation', '2'],
+      ['--mode', 'adopt-existing'],
+    ]) {
+      await expect(
+        runCli({
+          packageRoot,
+          cwd: workspace,
+          args: [
+            'run',
+            'start',
+            '--workspace',
+            workspace,
+            '--change',
+            'stable-create-or-resume',
+            ...obsolete,
+            '--target',
+            'main',
+          ],
+          environment,
+        }),
+      ).rejects.toThrow(/Unknown option/u);
+    }
 
     await expect(
       runCli({

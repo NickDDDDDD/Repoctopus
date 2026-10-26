@@ -66,12 +66,17 @@ function lifecycleState(snapshot: ChangeLifecycleSnapshot): ChangeLifecycleState
     identity: structuredClone(snapshot.identity),
     definition: structuredClone(snapshot.definition),
     revision: snapshot.revision,
+    checkEpoch: snapshot.checkEpoch,
     phase: snapshot.phase,
     currentWork: structuredClone(snapshot.currentWork),
     waitCondition: structuredClone(snapshot.waitCondition),
     blocker: structuredClone(snapshot.blocker),
     ...(snapshot.tasks ? { tasks: structuredClone(snapshot.tasks) } : {}),
+    ...(snapshot.openApprovalDigest ? { openApprovalDigest: snapshot.openApprovalDigest } : {}),
     ...(snapshot.planningDigest ? { planningDigest: snapshot.planningDigest } : {}),
+    ...(snapshot.adoptedCompletionClaimDigest
+      ? { adoptedCompletionClaimDigest: snapshot.adoptedCompletionClaimDigest }
+      : {}),
     ...(snapshot.verificationInput
       ? { verificationInput: structuredClone(snapshot.verificationInput) }
       : {}),
@@ -93,6 +98,12 @@ function lifecycleState(snapshot: ChangeLifecycleSnapshot): ChangeLifecycleState
 function lifecycleNextActions(snapshot: ChangeLifecycleSnapshot) {
   if (['completed', 'failed', 'migration_required'].includes(snapshot.status)) return [];
   if (snapshot.phase === 'open') {
+    if (snapshot.status === 'waiting') {
+      return [{ id: 'open.review', kind: 'decision' as const, label: 'Review Open baseline' }];
+    }
+    if (snapshot.status === 'blocked') {
+      return [{ id: 'open.repair', kind: 'repair' as const, label: 'Repair Open artifacts' }];
+    }
     return [{ id: 'change.continue', kind: 'work' as const, label: 'Validate Open intake' }];
   }
   if (snapshot.phase === 'design' && snapshot.status === 'waiting') {
@@ -112,6 +123,12 @@ function lifecycleNextActions(snapshot: ChangeLifecycleSnapshot) {
         label: `Implement Task ${snapshot.currentWork.taskId}`,
       },
     ];
+  }
+  if (snapshot.phase === 'build' && snapshot.status === 'waiting') {
+    return [{ id: 'build.review', kind: 'decision' as const, label: 'Review Build decision' }];
+  }
+  if (snapshot.phase === 'build' && snapshot.status === 'blocked') {
+    return [{ id: 'build.blocked', kind: 'wait' as const, label: 'Resolve Build blocker' }];
   }
   if (snapshot.phase === 'build' && snapshot.verificationInvalidation) {
     return [
@@ -242,8 +259,8 @@ export class WorkflowRunCoordinator {
         ...(state.changeLifecycle
           ? {
               changeId: state.changeLifecycle.identity.changeId,
-              generation: state.changeLifecycle.identity.generation,
               phase: state.changeLifecycle.phase,
+              checkEpoch: state.changeLifecycle.checkEpoch,
               definition: state.changeLifecycle.definition,
             }
           : {}),
@@ -366,7 +383,7 @@ export class WorkflowRunCoordinator {
     };
   }
 
-  private async recoverChangeLifecycleDefinition(runId: string): Promise<void> {
+  async recoverChangeLifecycleDefinition(runId: string): Promise<void> {
     await this.store.commitGuarded(runId, ({ state, trajectory }) => {
       if (!state.changeLifecycle) return { value: undefined };
       const recovered = recoverChangeLifecycleSnapshot({
@@ -392,7 +409,10 @@ export class WorkflowRunCoordinator {
           type: 'change.lifecycle.transitioned',
           state: nextState,
           data: {
-            reason: 'definition-drift',
+            reason:
+              recovered.compatibility === 'compatible'
+                ? 'compatible-definition-upgrade'
+                : 'definition-drift',
             expectedDefinition: recovered.expected,
             currentDefinition: recovered.current,
             phase: changeLifecycle.phase,
@@ -414,9 +434,9 @@ export class WorkflowRunCoordinator {
       if (
         (observation.kind === 'verify-gate-satisfied' ||
           observation.kind === 'verify-gate-rejected') &&
-        observation.workflowStateVersion !== state.stateVersion
+        observation.checkEpoch !== state.changeLifecycle.checkEpoch
       ) {
-        throw new Error('Satisfied Verify Gate is bound to a stale workflow state');
+        throw new Error('Verify Gate is bound to a stale lifecycle checkEpoch');
       }
       const current: ChangeLifecycleSnapshot = {
         ...structuredClone(state.changeLifecycle),
@@ -473,7 +493,7 @@ export class WorkflowRunCoordinator {
     if (state.workflowDigest !== options.workflow.digest) {
       throw new RunIdentityConflictError(options.runId, 'workflow digest');
     }
-    if (state.projectSnapshotDigest !== options.projectSnapshot.digest) {
+    if (!state.changeLifecycle && state.projectSnapshotDigest !== options.projectSnapshot.digest) {
       throw new RunIdentityConflictError(options.runId, 'project snapshot digest');
     }
     if (state.workflowSource !== (options.workflowSource ?? null)) {

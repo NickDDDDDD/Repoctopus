@@ -40,9 +40,8 @@ function receipt(items: PublicationReceiptItem[]) {
   return createPublicationReceipt({
     apiVersion: PUBLICATION_RECEIPT_API_VERSION,
     kind: 'PublicationReceipt',
-    schemaVersion: 1,
+    schemaVersion: 2,
     changeId: 'multi-repo',
-    generation: 1,
     runId: 'run-multi-repo',
     deliverySnapshotDigest: digest('1'),
     verificationInputDigest: digest('2'),

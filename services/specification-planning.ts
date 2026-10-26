@@ -24,6 +24,7 @@ export interface SpecificationPlanningConfig {
 
 export interface PrepareSpecificationApprovalInput {
   changeId: string;
+  approvalPhase?: 'open' | 'design';
   changeBranch: ChangeBranchReference;
   compositionDigest: `sha256:${string}`;
   projectConfigDigest: `sha256:${string}`;
@@ -54,8 +55,11 @@ export class SpecificationPlanning extends Service {
     this.store = store;
   }
 
-  status(changeId: string): Promise<SpecificationApprovalState | null> {
-    return this.store.load(changeId);
+  status(
+    changeId: string,
+    approvalPhase: 'open' | 'design' = 'design',
+  ): Promise<SpecificationApprovalState | null> {
+    return this.store.load(changeId, approvalPhase);
   }
 
   async migrationPlan(changeId: string): Promise<SpecificationApprovalMigrationPlan> {
@@ -111,6 +115,7 @@ export class SpecificationPlanning extends Service {
         compositionDigest: input.compositionDigest,
         projectConfigDigest: input.projectConfigDigest,
         planningManifest: manifest,
+        approvalPhase: input.approvalPhase ?? 'design',
       });
     } catch (error) {
       return {
@@ -174,18 +179,19 @@ export class SpecificationPlanning extends Service {
         strict: true,
         ...(input.signal ? { signal: input.signal } : {}),
       }),
-      this.store.load(input.changeId),
+      this.store.load(input.changeId, input.approvalPhase ?? 'design'),
     ]);
     return { manifest, validation, current };
   }
 
   async decide(input: {
     changeId: string;
+    approvalPhase?: 'open' | 'design';
     response: SpecificationApprovalDecisionResponse;
     actor: SpecificationApprovalActor;
     now?: () => Date;
   }): Promise<SpecificationApprovalState> {
-    const current = await this.store.load(input.changeId);
+    const current = await this.store.load(input.changeId, input.approvalPhase ?? 'design');
     if (!current) throw new Error(`Specification approval does not exist: ${input.changeId}`);
     const next = recordSpecificationApprovalDecision({
       state: current,

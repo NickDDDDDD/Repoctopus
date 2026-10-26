@@ -8,10 +8,11 @@ import { canonicalJson } from '../workflow-contract/canonical.js';
 export type WorkContinuationKind = 'execute' | 'ask' | 'wait' | 'reconcile' | 'done';
 
 export interface WorkExecutionRecovery {
-  schemaVersion: 1;
+  schemaVersion: 2;
   continuation: WorkContinuationKind;
   workId: string | null;
   attempt: number | null;
+  checkEpoch: number | null;
   reason:
     | 'terminal'
     | 'human-decision'
@@ -28,10 +29,11 @@ export interface WorkExecutionRecovery {
 }
 
 export interface AgentCoordinationCheckpoint {
-  schemaVersion: 1;
+  schemaVersion: 2;
   runId: string;
   workId: string;
   attempt: number;
+  checkEpoch: number;
   observedStateVersion: number;
   currentTask: string | null;
   observedPaths: readonly string[];
@@ -59,7 +61,7 @@ export interface WorkExecutionHostRequirement {
 }
 
 export interface WorkExecutionPacket {
-  schemaVersion: 1;
+  schemaVersion: 2;
   identity: WorkExecutionPacketIdentity;
   claim: Readonly<
     Pick<
@@ -68,6 +70,7 @@ export interface WorkExecutionPacket {
       | 'runId'
       | 'workId'
       | 'attempt'
+      | 'checkEpoch'
       | 'claimToken'
       | 'inputDigest'
       | 'compositionDigest'
@@ -94,11 +97,12 @@ export interface WorkExecutionHostIdentity {
 }
 
 export interface WorkExecutionSessionIdentity {
-  schemaVersion: 1;
+  schemaVersion: 2;
   sessionId: string;
   runId: string;
   workId: string;
   attempt: number;
+  checkEpoch: number;
   invocationId: string;
   packetDigest: `sha256:${string}`;
 }
@@ -119,7 +123,22 @@ export interface WorkExecutionHostOutcome {
   status: 'succeeded' | 'failed' | 'unknown';
   summary: string;
   consumedLayerDigests: readonly `sha256:${string}`[];
+  findings?: readonly WorkExecutionFinding[];
   completedAt: string;
+}
+
+export type WorkExecutionFindingKind =
+  | 'implementation_failure'
+  | 'design_assumption_invalid'
+  | 'planning_semantics_changed'
+  | 'evidence_unavailable'
+  | 'external_result_unknown';
+
+export interface WorkExecutionFinding {
+  kind: WorkExecutionFindingKind;
+  summary: string;
+  requirementIds?: readonly string[];
+  taskIds?: readonly string[];
 }
 
 export type WorkExecutionHostReconciliation =
@@ -128,7 +147,7 @@ export type WorkExecutionHostReconciliation =
   | { status: 'unknown'; reason: string };
 
 export interface ExternalWorkExecutionOutcome {
-  schemaVersion: 1;
+  schemaVersion: 2;
   runId: string;
   invocationId: string;
   hostId: string;
@@ -136,12 +155,14 @@ export interface ExternalWorkExecutionOutcome {
   status: WorkExecutionHostOutcome['status'];
   summary: string;
   consumedLayerDigests: readonly `sha256:${string}`[];
+  findings?: readonly WorkExecutionFinding[];
 }
 
 export interface WorkExecutionCheckpoint {
-  schemaVersion: 1;
+  schemaVersion: 2;
   workId: string;
   attempt: number;
+  checkEpoch: number;
   intentId: string;
   claimToken: `sha256:${string}`;
   inputDigest: `sha256:${string}`;
@@ -204,6 +225,7 @@ export function createWorkExecutionPacket(input: {
     runId: input.intent.runId,
     workId: input.intent.workId,
     attempt: input.intent.attempt,
+    checkEpoch: input.intent.checkEpoch,
     claimToken: input.intent.claimToken,
     inputDigest: input.intent.inputDigest,
     compositionDigest: input.intent.compositionDigest,
@@ -215,7 +237,7 @@ export function createWorkExecutionPacket(input: {
     sideEffectClass: input.work.sideEffectClass,
   };
   const stable = {
-    schemaVersion: 1 as const,
+    schemaVersion: 2 as const,
     claim,
     work: structuredClone(input.work),
     context: structuredClone(input.context),
@@ -237,7 +259,7 @@ export function createWorkExecutionPacket(input: {
 export function assertPacketIdentity(packet: WorkExecutionPacket): void {
   const rebuilt = createWorkExecutionPacket({
     intent: {
-      schemaVersion: 2,
+      schemaVersion: 3,
       ...packet.claim,
       idempotencyKey: 'packet-verification',
       composition: {

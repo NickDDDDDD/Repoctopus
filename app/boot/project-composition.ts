@@ -214,12 +214,6 @@ function projectSelections(
       { workspaceRoot },
       { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
     ),
-    runtimeSelection(
-      'change-lifecycle-migration',
-      { workspaceRoot },
-      { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
-    ),
-    { id: 'change-lifecycle-migration-command' },
     { id: 'workflow-run-command' },
     ...(config.shared.composition?.plugins
       .filter((plugin) => !selectedIds.has(plugin.id))
@@ -234,7 +228,6 @@ const BASE_REQUIRED_SERVICES = [
   'actionDispatcher',
   'actionStore',
   'browserMaintenance',
-  'changeLifecycleMigration',
   'consistencyReconciler',
   'consistencyReview',
   'commandRouter',

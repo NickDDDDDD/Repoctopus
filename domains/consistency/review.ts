@@ -33,7 +33,6 @@ export interface ConsistencyReviewRequest {
   schemaVersion: 1;
   requestId: `sha256:${string}`;
   changeId: string;
-  generation: number;
   originalRunId: string;
   publicationReceiptDigest: `sha256:${string}`;
   verificationInputDigest: `sha256:${string}`;
@@ -111,7 +110,6 @@ export function createConsistencyReviewRequest(input: {
   }
   const identity = {
     changeId: input.receipt.changeId,
-    generation: input.receipt.generation,
     originalRunId: input.receipt.runId,
     publicationReceiptDigest: input.receipt.digest,
   };

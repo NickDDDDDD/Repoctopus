@@ -1,10 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import type { RunState } from '../domains/engine/types.js';
+import type { TrajectoryEvent } from '../domains/trajectory/types.js';
 import type {
   WorkExecutionCheckpoint,
   WorkExecutionHostInvocation,
   WorkExecutionHostOutcome,
+  WorkExecutionPacket,
 } from '../domains/work-execution/types.js';
 import { ManagedWorkExecutor } from '../services/managed-work-executor.js';
 import { WorkExecutionAuthority } from '../services/work-execution-authority.js';
@@ -13,9 +15,10 @@ const digest = (character: string) => `sha256:${character.repeat(64)}` as const;
 
 function checkpoint(status: WorkExecutionCheckpoint['status']): WorkExecutionCheckpoint {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     workId: 'build:1.1',
     attempt: 1,
+    checkEpoch: 4,
     intentId: 'intent-1',
     claimToken: digest('a'),
     inputDigest: digest('b'),
@@ -70,8 +73,9 @@ describe('Work execution recovery classification', () => {
     ['not-executed', 'execute', 'host-not-executed'],
     ['validated', 'execute', 'transition-pending'],
   ] as const)('classifies %s without guessing completion', async (status, continuation, reason) => {
-    await expect(recoveryAuthority(state({ execution: checkpoint(status) })).recovery('run-recovery'))
-      .resolves.toMatchObject({ continuation, reason, workId: 'build:1.1', attempt: 1 });
+    await expect(
+      recoveryAuthority(state({ execution: checkpoint(status) })).recovery('run-recovery'),
+    ).resolves.toMatchObject({ continuation, reason, workId: 'build:1.1', attempt: 1 });
   });
 
   it('distinguishes active, unknown, failed, validator, human and corrupt boundaries', async () => {
@@ -91,27 +95,97 @@ describe('Work execution recovery classification', () => {
       startedAt: '2026-10-25T00:00:00.000Z',
     };
     const invoking = { ...checkpoint('invoking'), hostInvocation: invocation };
-    await expect(recoveryAuthority(state({ execution: invoking }), { active: true }).recovery('run-recovery'))
-      .resolves.toMatchObject({ continuation: 'wait', reason: 'host-active' });
-    await expect(recoveryAuthority(state({ execution: invoking })).recovery('run-recovery'))
-      .resolves.toMatchObject({ continuation: 'reconcile', reason: 'host-result-unknown' });
+    await expect(
+      recoveryAuthority(state({ execution: invoking }), { active: true }).recovery('run-recovery'),
+    ).resolves.toMatchObject({ continuation: 'wait', reason: 'host-active' });
+    await expect(
+      recoveryAuthority(state({ execution: invoking })).recovery('run-recovery'),
+    ).resolves.toMatchObject({ continuation: 'reconcile', reason: 'host-result-unknown' });
     await expect(
       recoveryAuthority(
-        state({ execution: { ...checkpoint('outcome'), actionOutcome: { status: 'failed' } as never } }),
+        state({
+          execution: { ...checkpoint('outcome'), actionOutcome: { status: 'failed' } as never },
+        }),
       ).recovery('run-recovery'),
     ).resolves.toMatchObject({ continuation: 'execute', reason: 'work-failed' });
     await expect(
       recoveryAuthority(
-        state({ execution: { ...checkpoint('outcome'), actionOutcome: { status: 'succeeded' } as never } }),
+        state({
+          execution: { ...checkpoint('outcome'), actionOutcome: { status: 'succeeded' } as never },
+        }),
       ).recovery('run-recovery'),
     ).resolves.toMatchObject({ continuation: 'execute', reason: 'validator-pending' });
-    await expect(recoveryAuthority(state({ humanDecision: true })).recovery('run-recovery'))
-      .resolves.toMatchObject({ continuation: 'ask', reason: 'human-decision' });
+    await expect(
+      recoveryAuthority(state({ humanDecision: true })).recovery('run-recovery'),
+    ).resolves.toMatchObject({ continuation: 'ask', reason: 'human-decision' });
     await expect(
       recoveryAuthority(state({ execution: checkpoint('claimed') }), { corrupt: true }).recovery(
         'run-recovery',
       ),
     ).resolves.toMatchObject({ continuation: 'reconcile', reason: 'content-missing-or-corrupt' });
+  });
+});
+
+describe('Work execution epoch authority', () => {
+  it('accepts a higher attempt when Runtime reissues the same semantic Work in a newer epoch', async () => {
+    const previous = checkpoint('validated');
+    const currentWork = {
+      workId: previous.workId,
+      inputDigest: previous.inputDigest,
+      checkEpoch: previous.checkEpoch + 1,
+    };
+    let run = {
+      ...state({ execution: previous }),
+      stateVersion: 10,
+      composition: { compositionDigest: digest('9') },
+      changeLifecycle: { checkEpoch: currentWork.checkEpoch, currentWork, waitCondition: null },
+    } as unknown as RunState;
+    const packet = {
+      identity: {
+        schemaVersion: 1,
+        packetId: digest('1'),
+        packetDigest: digest('2'),
+        contextDigest: digest('3'),
+      },
+      claim: {
+        runId: run.runId,
+        workId: currentWork.workId,
+        attempt: previous.attempt + 2,
+        checkEpoch: currentWork.checkEpoch,
+        intentId: 'intent-2',
+        claimToken: digest('4'),
+        inputDigest: currentWork.inputDigest,
+      },
+      work: currentWork,
+      context: { digest: digest('3') },
+    } as unknown as WorkExecutionPacket;
+    const authority = Object.create(WorkExecutionAuthority.prototype) as WorkExecutionAuthority;
+    const commitGuarded = vi.fn(
+      <T>(
+        _runId: string,
+        reduce: (current: { state: RunState; trajectory: TrajectoryEvent[] }) => {
+          state?: RunState;
+          value: T;
+        },
+      ): Promise<T> => {
+        const reduced = reduce({ state: run, trajectory: [] });
+        if (reduced.state) run = reduced.state;
+        return Promise.resolve(reduced.value);
+      },
+    );
+    Object.defineProperty(authority, 'ctx', {
+      value: {
+        runStore: { commitGuarded },
+      },
+    });
+
+    await expect(authority.bindClaim(packet)).resolves.toMatchObject({
+      workId: previous.workId,
+      attempt: 3,
+      checkEpoch: 5,
+      status: 'claimed',
+    });
+    expect(run.workExecution).toMatchObject({ intentId: 'intent-2', checkEpoch: 5 });
   });
 });
 

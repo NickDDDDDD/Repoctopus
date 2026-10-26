@@ -4,7 +4,7 @@ import type { MergeRequestIdentity, MergeRequestStatus } from './types.js';
 
 export interface StablePublicationIdentity {
   changeId: string;
-  generation: number;
+  runId: string;
   repositoryId: string;
   remoteIdentity: string;
   sourceBranch: string;

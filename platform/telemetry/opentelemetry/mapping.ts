@@ -17,6 +17,7 @@ const EXECUTION_DATA_KEYS = new Set([
   'workId',
   'workKind',
   'attempt',
+  'checkEpoch',
   'intentId',
   'packetDigest',
   'contextDigest',
@@ -36,6 +37,8 @@ const EXECUTION_DATA_KEYS = new Set([
   'reconcileId',
   'durationMs',
   'recovery',
+  'findingCount',
+  'findingKind',
 ]);
 
 const SENSITIVE_KEY =
@@ -153,6 +156,18 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
       } else if (key === 'result' && typeof value === 'string' && !BOUNDED_RESULTS.has(value)) {
         normalized = 'unknown';
       } else if (
+        key === 'findingKind' &&
+        typeof value === 'string' &&
+        ![
+          'implementation_failure',
+          'design_assumption_invalid',
+          'planning_semantics_changed',
+          'evidence_unavailable',
+          'external_result_unknown',
+        ].includes(value)
+      ) {
+        normalized = 'unknown';
+      } else if (
         key === 'skillName' &&
         typeof value === 'string' &&
         ![
@@ -161,6 +176,7 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
           'repoctopus-build-task',
           'repoctopus-verify-change',
           'repoctopus-archive-change',
+          'grilling',
           'tdd',
           'codebase-design',
           'diagnosing-bugs',
@@ -172,10 +188,6 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
       }
       const safe = scalar(normalized);
       if (safe !== undefined) attributes[`repoctopus.execution.${key}`] = safe;
-    }
-    const mode = batch.run.changeLifecycle?.identity.mode;
-    if (mode === 'fresh' || mode === 'adopt-existing') {
-      attributes['repoctopus.change.mode'] = mode;
     }
   }
   const actionReceiptId = event.data.actionReceiptId;
@@ -195,7 +207,15 @@ const BOUNDED_WORK_KINDS = new Set([
   'specification.close',
   'delivery.publish',
 ]);
-const BOUNDED_RESULTS = new Set(['succeeded', 'failed', 'unknown', 'accepted', 'rejected']);
+const BOUNDED_RESULTS = new Set([
+  'succeeded',
+  'failed',
+  'unknown',
+  'accepted',
+  'rejected',
+  'implementation-failure',
+  'evidence-unavailable',
+]);
 
 export function executionMetricAttributes(event: TrajectoryEvent): Attributes | null {
   if (!EXECUTION_EVENTS.has(event.type)) return null;

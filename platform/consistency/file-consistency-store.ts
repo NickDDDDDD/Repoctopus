@@ -36,11 +36,9 @@ export class FileConsistencyStore {
   }
 
   async savePublication(receipt: PublicationReceipt): Promise<void> {
-    await atomicWriteJson(
-      path.join(this.publicationRoot(), `${receipt.changeId}.g${receipt.generation}.json`),
-      receipt,
-      { containedRoot: this.workspaceRoot },
-    );
+    await atomicWriteJson(path.join(this.publicationRoot(), `${receipt.runId}.json`), receipt, {
+      containedRoot: this.workspaceRoot,
+    });
   }
 
   async saveRequest(request: ConsistencyReviewRequest): Promise<void> {

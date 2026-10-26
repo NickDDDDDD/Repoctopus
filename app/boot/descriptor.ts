@@ -26,6 +26,10 @@ export interface PluginDescriptor {
   authorities: readonly string[];
   permissions: readonly PluginPermission[];
   stateSchemas: Readonly<Record<string, string>>;
+  compatibleImplementations?: readonly {
+    codeDigest: `sha256:${string}`;
+    descriptorDigest: `sha256:${string}`;
+  }[];
 }
 
 export interface BuiltinPluginRegistration {
@@ -95,6 +99,30 @@ export function normalizePluginDescriptor(input: PluginDescriptor): PluginDescri
     throw new Error(`Invalid plugin source for ${id}: ${input.source}`);
   }
   if (!DIGEST.test(input.codeDigest)) throw new Error(`Invalid code digest for ${id}`);
+  const compatibleImplementations = (input.compatibleImplementations ?? [])
+    .map((implementation) => {
+      if (
+        !DIGEST.test(implementation.codeDigest) ||
+        !DIGEST.test(implementation.descriptorDigest)
+      ) {
+        throw new Error(`Invalid compatible implementation digest for ${id}`);
+      }
+      return { ...implementation };
+    })
+    .sort((left, right) =>
+      `${left.descriptorDigest}:${left.codeDigest}`.localeCompare(
+        `${right.descriptorDigest}:${right.codeDigest}`,
+      ),
+    );
+  if (
+    new Set(
+      compatibleImplementations.map(
+        (implementation) => `${implementation.descriptorDigest}:${implementation.codeDigest}`,
+      ),
+    ).size !== compatibleImplementations.length
+  ) {
+    throw new Error(`Plugin descriptor ${id}.compatibleImplementations contains duplicates`);
+  }
 
   return {
     id,
@@ -111,6 +139,7 @@ export function normalizePluginDescriptor(input: PluginDescriptor): PluginDescri
     authorities: sortedUnique(input.authorities, `${id}.authorities`),
     permissions: sortedUnique(input.permissions, `${id}.permissions`, PERMISSIONS),
     stateSchemas: normalizeStateSchemas(id, input.stateSchemas),
+    ...(compatibleImplementations.length > 0 ? { compatibleImplementations } : {}),
   };
 }
 

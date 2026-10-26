@@ -13,6 +13,7 @@ function plugin(
   code: string,
   authorities: string[] = [],
   stateSchemas: Record<string, string> = {},
+  compatibleImplementations?: PluginImplementationIdentity['compatibleImplementations'],
 ): PluginImplementationIdentity {
   return {
     id,
@@ -22,6 +23,7 @@ function plugin(
     descriptorDigest: digest(code),
     authorities,
     stateSchemas,
+    ...(compatibleImplementations ? { compatibleImplementations } : {}),
   };
 }
 
@@ -53,5 +55,31 @@ describe('composition compatibility', () => {
       status: 'migration_required',
       changedPluginIds: ['workflow-runs'],
     });
+  });
+
+  it('accepts an exact predecessor declaration for a protected compatible patch', () => {
+    const beforePlugin = plugin('workflow-runs', 'a', ['workflow-transition'], { run: '1' });
+    const afterPlugin = plugin('workflow-runs', 'b', ['workflow-transition'], { run: '1' }, [
+      { codeDigest: beforePlugin.codeDigest, descriptorDigest: beforePlugin.descriptorDigest },
+    ]);
+    expect(
+      compareCompositions(
+        composition(digest('1'), [beforePlugin]),
+        composition(digest('2'), [afterPlugin]),
+      ),
+    ).toMatchObject({ status: 'compatible', changedPluginIds: ['workflow-runs'] });
+  });
+
+  it('rejects a compatibility declaration that does not match the exact predecessor', () => {
+    const beforePlugin = plugin('workflow-runs', 'a', ['workflow-transition'], { run: '1' });
+    const afterPlugin = plugin('workflow-runs', 'b', ['workflow-transition'], { run: '1' }, [
+      { codeDigest: digest('c'), descriptorDigest: beforePlugin.descriptorDigest },
+    ]);
+    expect(
+      compareCompositions(
+        composition(digest('1'), [beforePlugin]),
+        composition(digest('2'), [afterPlugin]),
+      ),
+    ).toMatchObject({ status: 'migration_required' });
   });
 });

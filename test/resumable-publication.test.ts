@@ -90,7 +90,7 @@ describe('resumable multi-repository publication', () => {
     await expect(
       new ResumablePublicationExecutor(store, first).publish({
         changeId: 'resume',
-        generation: 2,
+        runId: 'run-resume',
         items,
       }),
     ).rejects.toThrow(/backend/u);
@@ -115,7 +115,7 @@ describe('resumable multi-repository publication', () => {
     };
     const completed = await new ResumablePublicationExecutor(store, second).publish({
       changeId: 'resume',
-      generation: 2,
+      runId: 'run-resume',
       items,
     });
     expect(executions).toEqual(['backend', 'specification']);
@@ -133,7 +133,7 @@ describe('resumable multi-repository publication', () => {
     expect(() =>
       createPublicationJournal({
         changeId: 'duplicate',
-        generation: 1,
+        runId: 'run-duplicate',
         items: [duplicate, duplicate],
       }),
     ).toThrow(/duplicate stable operations/u);

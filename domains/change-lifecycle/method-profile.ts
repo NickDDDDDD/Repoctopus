@@ -46,20 +46,6 @@ const RULES: readonly MethodRuleDefinition[] = [
       'Synthesize decisions already established by conversation and repository evidence; do not repeat an interview for resolved decisions.',
   },
   {
-    id: 'design.public-test-seams',
-    sources: ['to-spec', 'tdd', 'codebase-design'],
-    sourceDigests: [
-      SOURCE_DIGESTS['to-spec'],
-      SOURCE_DIGESTS.tdd,
-      SOURCE_DIGESTS['codebase-design'],
-    ],
-    phases: ['design', 'build'],
-    artifactKinds: ['design'],
-    enforcement: 'human-decision',
-    statement:
-      'Record the fewest stable public seams needed to observe required behavior; request a decision only when the seam remains materially unresolved.',
-  },
-  {
     id: 'planning.decision-rich-not-volatile',
     sources: ['to-spec'],
     sourceDigests: [SOURCE_DIGESTS['to-spec']],
@@ -123,7 +109,6 @@ const PROFILES: readonly MethodProfileDefinition[] = [
     id: 'repoctopus.build',
     version: '1.0.0',
     ruleIds: [
-      'design.public-test-seams',
       'tasks.tracer-bullet-slices',
       'tasks.explicit-blocking-edges',
       'tasks.expand-contract-wide-refactors',

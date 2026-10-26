@@ -53,6 +53,9 @@ export function compositionIdentity(composition: CompiledComposition): Compositi
       descriptorDigest: descriptorDigest(descriptor),
       authorities: [...descriptor.authorities],
       stateSchemas: { ...descriptor.stateSchemas },
+      ...(descriptor.compatibleImplementations
+        ? { compatibleImplementations: structuredClone(descriptor.compatibleImplementations) }
+        : {}),
     }),
   );
   return {

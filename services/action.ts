@@ -83,6 +83,7 @@ export class ActionDispatcher extends Service {
       runId,
       workId: action.id,
       attempt: 1,
+      checkEpoch: 0,
       inputDigest,
       composition,
       action,
@@ -98,6 +99,9 @@ export class ActionDispatcher extends Service {
     if (!Number.isSafeInteger(input.attempt) || input.attempt < 1) {
       throw new Error('Action claim attempt must be a positive safe integer');
     }
+    if (!Number.isSafeInteger(input.checkEpoch) || input.checkEpoch < 0) {
+      throw new Error('Action claim checkEpoch must be a non-negative safe integer');
+    }
     if (!/^sha256:[a-f0-9]{64}$/u.test(input.inputDigest)) {
       throw new Error('Action claim input digest must be a SHA-256 digest');
     }
@@ -107,16 +111,18 @@ export class ActionDispatcher extends Service {
       input.runId,
       input.workId,
       String(input.attempt),
+      String(input.checkEpoch),
       input.inputDigest,
       adapter,
     );
     return this.ctx.actionStore.saveIntent({
-      schemaVersion: 2,
+      schemaVersion: 3,
       intentId: identity('intent', idempotencyKey),
       idempotencyKey,
       runId: input.runId,
       workId: input.workId,
       attempt: input.attempt,
+      checkEpoch: input.checkEpoch,
       claimToken: `sha256:${identity('claim', idempotencyKey)}`,
       inputDigest: input.inputDigest,
       compositionDigest,
@@ -134,11 +140,12 @@ export class ActionDispatcher extends Service {
   async completeManual(input: ManualActionResult): Promise<ActionReceipt> {
     const intent = await this.ctx.actionStore.loadLatestIntent(input.runId, input.actionId);
     return this.complete({
-      schemaVersion: 1,
+      schemaVersion: 2,
       outcomeId: input.eventId,
       runId: intent.runId,
       workId: intent.workId,
       attempt: intent.attempt,
+      checkEpoch: intent.checkEpoch,
       claimToken: intent.claimToken,
       inputDigest: intent.inputDigest,
       status: input.status,
@@ -153,7 +160,8 @@ export class ActionDispatcher extends Service {
       input.inputDigest !== intent.inputDigest ||
       input.runId !== intent.runId ||
       input.workId !== intent.workId ||
-      input.attempt !== intent.attempt
+      input.attempt !== intent.attempt ||
+      input.checkEpoch !== intent.checkEpoch
     ) {
       throw new Error('Action Outcome does not match its claimed Work');
     }
@@ -178,6 +186,7 @@ export class ActionDispatcher extends Service {
       receipt.runId !== input.runId ||
       receipt.workId !== input.workId ||
       receipt.attempt !== input.attempt ||
+      receipt.checkEpoch !== input.checkEpoch ||
       receipt.claimToken !== input.claimToken ||
       receipt.inputDigest !== input.inputDigest ||
       receipt.outcomeId !== input.outcomeId

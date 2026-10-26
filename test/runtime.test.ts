@@ -514,12 +514,13 @@ describe('Repoctopus runtime', () => {
       evaluate(input) {
         evaluations.push(input);
         return Promise.resolve({
-          schemaVersion: 1,
+          schemaVersion: 2,
           kind: 'EvidenceGateProjection',
           workflowRunId: input.workflowRunId,
           workflowActionId: input.workflowActionId,
           workflowStepId: input.workflowStepId,
-          workflowStateVersion: input.workflowStateVersion,
+          workflowStateVersion: input.workflowStateVersion ?? null,
+          checkEpoch: input.checkEpoch ?? null,
           compositionDigest: compositionFixture().compositionDigest,
           profileId: input.profileId,
           bundleId: 'bundle-verified',
@@ -582,12 +583,13 @@ describe('Repoctopus runtime', () => {
     const gate: EvidenceGatePort = {
       evaluate(input) {
         return Promise.resolve({
-          schemaVersion: 1,
+          schemaVersion: 2,
           kind: 'EvidenceGateProjection',
           workflowRunId: input.workflowRunId,
           workflowActionId: input.workflowActionId,
           workflowStepId: input.workflowStepId,
-          workflowStateVersion: input.workflowStateVersion,
+          workflowStateVersion: input.workflowStateVersion ?? null,
+          checkEpoch: input.checkEpoch ?? null,
           compositionDigest: compositionFixture().compositionDigest,
           profileId: input.profileId,
           bundleId: 'bundle-stale',

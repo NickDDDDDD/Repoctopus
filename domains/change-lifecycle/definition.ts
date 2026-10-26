@@ -45,9 +45,10 @@ function validatorProfile(id: string) {
 }
 
 export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   id: 'repoctopus-change',
-  version: '2.0.0',
+  version: '3.0.0',
+  compatibleDigests: ['sha256:42eebeda8add66e967021c322a765aa9052797c07e3f526f7322cdecc4e4e7d9'],
   phases: [
     {
       phase: 'open',
@@ -85,7 +86,7 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       kind: 'change.intake',
       phase: 'open',
       actionSkill: { name: 'repoctopus-open-change' },
-      augmentationSkills: [],
+      augmentationSkills: [{ name: 'grilling' }],
       methodProfile: BUILTIN_METHOD_PROFILE_REGISTRY.snapshot('repoctopus.open', '1.0.0'),
       capabilities: ['repository.read', 'specification.read', 'specification.write'],
       sideEffectClass: 'specification-write',
@@ -96,7 +97,10 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
           operations: ['create', 'update'],
         },
       ],
-      outputContract: { artifactKinds: ['proposal'], trackerPublish: false },
+      outputContract: {
+        artifactKinds: ['proposal', 'delta-specs', 'design', 'tasks'],
+        trackerPublish: false,
+      },
       validatorProfile: validatorProfile('open.intake-ready'),
       checkpoint: 'open.after-intake',
     },
@@ -126,7 +130,7 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       kind: 'task.implement',
       phase: 'build',
       actionSkill: { name: 'repoctopus-build-task' },
-      augmentationSkills: [{ name: 'tdd' }, { name: 'codebase-design' }],
+      augmentationSkills: [{ name: 'tdd' }],
       methodProfile: BUILTIN_METHOD_PROFILE_REGISTRY.snapshot('repoctopus.build', '1.0.0'),
       capabilities: ['process.execute', 'repository.read', 'repository.write'],
       sideEffectClass: 'repository-write',
@@ -189,17 +193,41 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
   ],
   transitions: [
     {
-      id: 'open.intake-ready',
+      id: 'open.work-ready',
+      kind: 'self',
+      from: { phase: 'open', statuses: ['running', 'waiting', 'blocked'] },
+      to: { phase: 'open', status: 'running' },
+      trigger: 'open-work-created',
+      requiredValidatorProfile: 'open.intake-ready',
+    },
+    {
+      id: 'open.approved',
       kind: 'advance',
-      from: { phase: 'open', statuses: ['running'] },
+      from: { phase: 'open', statuses: ['running', 'waiting', 'blocked'] },
       to: { phase: 'design', status: 'running' },
-      trigger: 'intake-ready',
+      trigger: 'open-valid-and-approved',
+      requiredValidatorProfile: 'open.intake-ready',
+    },
+    {
+      id: 'open.await-approval',
+      kind: 'self',
+      from: { phase: 'open', statuses: ['running', 'waiting', 'blocked'] },
+      to: { phase: 'open', status: 'waiting' },
+      trigger: 'open-valid-awaiting-trusted-decision',
+      requiredValidatorProfile: 'open.intake-ready',
+    },
+    {
+      id: 'open.invalid',
+      kind: 'self',
+      from: { phase: 'open', statuses: ['running', 'waiting', 'blocked'] },
+      to: { phase: 'open', status: 'blocked' },
+      trigger: 'open-incomplete-or-invalid',
       requiredValidatorProfile: 'open.intake-ready',
     },
     {
       id: 'design.work-ready',
       kind: 'self',
-      from: { phase: 'design', statuses: ['running'] },
+      from: { phase: 'design', statuses: ['running', 'waiting', 'blocked'] },
       to: { phase: 'design', status: 'running' },
       trigger: 'design-work-created',
       requiredValidatorProfile: 'design.artifacts-valid',
@@ -211,6 +239,14 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       to: { phase: 'build', status: 'running' },
       trigger: 'planning-valid-and-approved',
       requiredValidatorProfile: 'design.approval-valid',
+    },
+    {
+      id: 'build.adoption-required',
+      kind: 'self',
+      from: { phase: 'build', statuses: ['running'] },
+      to: { phase: 'build', status: 'waiting' },
+      trigger: 'planning-valid-precompleted-tasks-require-decision',
+      requiredValidatorProfile: 'build.plan-current',
     },
     {
       id: 'design.await-approval',
@@ -234,6 +270,54 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       from: { phase: 'build', statuses: ['running'] },
       to: { phase: 'build', status: 'running' },
       trigger: 'next-task-ready',
+      requiredValidatorProfile: 'build.plan-current',
+    },
+    {
+      id: 'build.adoption-approved',
+      kind: 'self',
+      from: { phase: 'build', statuses: ['waiting'] },
+      to: { phase: 'build', status: 'running' },
+      trigger: 'precompleted-task-claims-adopted',
+      requiredValidatorProfile: 'build.plan-current',
+    },
+    {
+      id: 'build.adoption-rejected',
+      kind: 'self',
+      from: { phase: 'build', statuses: ['waiting'] },
+      to: { phase: 'build', status: 'blocked' },
+      trigger: 'precompleted-task-claims-rejected',
+      requiredValidatorProfile: 'build.plan-current',
+    },
+    {
+      id: 'build.retry-exhausted',
+      kind: 'self',
+      from: { phase: 'build', statuses: ['running'] },
+      to: { phase: 'build', status: 'blocked' },
+      trigger: 'bounded-work-attempts-exhausted',
+      requiredValidatorProfile: 'build.task-valid',
+    },
+    {
+      id: 'build.design-revision-required',
+      kind: 'self',
+      from: { phase: 'build', statuses: ['running'] },
+      to: { phase: 'build', status: 'waiting' },
+      trigger: 'host-reported-design-assumption-invalid',
+      requiredValidatorProfile: 'build.task-valid',
+    },
+    {
+      id: 'build.design-revision-approved',
+      kind: 'fallback',
+      from: { phase: 'build', statuses: ['waiting'] },
+      to: { phase: 'design', status: 'running' },
+      trigger: 'human-approved-design-revision',
+      requiredValidatorProfile: 'build.plan-current',
+    },
+    {
+      id: 'build.design-revision-rejected',
+      kind: 'self',
+      from: { phase: 'build', statuses: ['waiting'] },
+      to: { phase: 'build', status: 'blocked' },
+      trigger: 'human-rejected-design-revision',
       requiredValidatorProfile: 'build.plan-current',
     },
     {
@@ -277,11 +361,43 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       requiredValidatorProfile: 'archive.preflight-valid',
     },
     {
+      id: 'archive.reverify',
+      kind: 'fallback',
+      from: { phase: 'archive', statuses: ['running'] },
+      to: { phase: 'verify', status: 'running' },
+      trigger: 'verification-input-stale-before-side-effects',
+      requiredValidatorProfile: 'archive.preflight-valid',
+    },
+    {
       id: 'archive.specification-closed',
       kind: 'self',
       from: { phase: 'archive', statuses: ['running'] },
       to: { phase: 'archive', status: 'running' },
       trigger: 'specification-closure-receipt-accepted',
+      requiredValidatorProfile: 'archive.preflight-valid',
+    },
+    {
+      id: 'archive.intent-corrected',
+      kind: 'self',
+      from: { phase: 'archive', statuses: ['running'] },
+      to: { phase: 'archive', status: 'running' },
+      trigger: 'archive-intent-corrected-before-publication',
+      requiredValidatorProfile: 'archive.preflight-valid',
+    },
+    {
+      id: 'archive.planning-drift',
+      kind: 'fallback',
+      from: { phase: 'archive', statuses: ['running'] },
+      to: { phase: 'design', status: 'running' },
+      trigger: 'planning-drift-before-remote-publication',
+      requiredValidatorProfile: 'archive.preflight-valid',
+    },
+    {
+      id: 'archive.work-restored',
+      kind: 'self',
+      from: { phase: 'archive', statuses: ['running'] },
+      to: { phase: 'archive', status: 'running' },
+      trigger: 'compatible-definition-restored-archive-work',
       requiredValidatorProfile: 'archive.preflight-valid',
     },
     {
@@ -329,6 +445,14 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       trigger: 'verification-failed-or-drifted',
     },
     {
+      id: 'verify.retry',
+      kind: 'self',
+      from: { phase: 'verify', statuses: ['running', 'blocked'] },
+      to: { phase: 'verify', status: 'running' },
+      trigger: 'evidence-or-infrastructure-retry',
+      requiredValidatorProfile: 'verify.evidence-gate',
+    },
+    {
       id: 'archive.specification-conflict',
       kind: 'self',
       from: { phase: 'archive', statuses: ['running', 'waiting'] },
@@ -370,9 +494,14 @@ function assertProtectedPath(
 export function assertChangeLifecycleDefinition(
   definition: ChangeLifecycleDefinition,
 ): asserts definition is ChangeLifecycleDefinition {
-  if (definition.schemaVersion !== 1) throw new Error('Unsupported lifecycle definition schema');
+  if (definition.schemaVersion !== 2) throw new Error('Unsupported lifecycle definition schema');
   assertNonEmpty(definition.id, 'Lifecycle definition id');
   assertNonEmpty(definition.version, 'Lifecycle definition version');
+  for (const compatibleDigest of definition.compatibleDigests ?? []) {
+    if (!/^sha256:[a-f0-9]{64}$/u.test(compatibleDigest)) {
+      throw new Error('Lifecycle compatible definition digest must be a sha256 digest');
+    }
+  }
 
   if (
     definition.phases.length !== CHANGE_PHASES.length ||
@@ -617,9 +746,12 @@ export function normalizeChangeLifecycleDefinition(
 ): ChangeLifecycleDefinition {
   assertChangeLifecycleDefinition(definition);
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     id: definition.id,
     version: definition.version,
+    ...(definition.compatibleDigests?.length
+      ? { compatibleDigests: [...new Set(definition.compatibleDigests)].sort() }
+      : {}),
     phases: definition.phases.map(normalizePhase),
     works: definition.works
       .map(normalizeWork)
@@ -660,9 +792,6 @@ function assertChangeRunIdentity(identity: ChangeRunIdentity): void {
   assertNonEmpty(identity.workspaceId, 'Change Run workspace id');
   assertNonEmpty(identity.changeId, 'Change Run change id');
   assertNonEmpty(identity.runId, 'Change Run id');
-  if (!Number.isSafeInteger(identity.generation) || identity.generation < 1) {
-    throw new Error('Change Run generation must be a positive safe integer');
-  }
 }
 
 export function createChangeLifecycleSnapshot(options: {
@@ -672,10 +801,11 @@ export function createChangeLifecycleSnapshot(options: {
   assertChangeRunIdentity(options.identity);
   const prepared = prepareChangeLifecycleDefinition(options.definition);
   const snapshot: ChangeLifecycleSnapshot = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     identity: structuredClone(options.identity),
     definition: prepared.snapshot,
     revision: 0,
+    checkEpoch: 0,
     phase: 'open',
     status: 'running',
     currentWork: null,
@@ -688,7 +818,7 @@ export function createChangeLifecycleSnapshot(options: {
 }
 
 export interface ChangeLifecycleRecoveryResult {
-  compatibility: 'same' | 'completed_history' | 'migration_required';
+  compatibility: 'same' | 'compatible' | 'completed_history' | 'migration_required';
   expected: ChangeLifecycleDefinitionSnapshot;
   current: ChangeLifecycleDefinitionSnapshot;
   changed: boolean;
@@ -763,6 +893,31 @@ export function recoverChangeLifecycleSnapshot(options: {
       current,
       changed: false,
       snapshot: structuredClone(options.persisted),
+    };
+  }
+  if (
+    expected.id === current.id &&
+    options.currentDefinition?.compatibleDigests?.includes(expected.digest)
+  ) {
+    const wasDefinitionDrift =
+      options.persisted.status === 'migration_required' &&
+      options.persisted.blocker?.code === 'change-lifecycle.definition-drift' &&
+      options.persisted.blocker.evidenceIds.includes(expected.digest);
+    const snapshot: ChangeLifecycleSnapshot = {
+      ...structuredClone(options.persisted),
+      definition: current,
+      revision: options.persisted.revision + 1,
+      ...(wasDefinitionDrift
+        ? { status: 'running' as const, blocker: null, waitCondition: null }
+        : {}),
+    };
+    assertChangeLifecycleSnapshot(snapshot);
+    return {
+      compatibility: 'compatible',
+      expected,
+      current,
+      changed: true,
+      snapshot,
     };
   }
   if (options.persisted.status === 'completed') {

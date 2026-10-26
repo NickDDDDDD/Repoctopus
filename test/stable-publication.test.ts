@@ -14,7 +14,7 @@ const request: MergeRequestInput = {
 };
 const expected = {
   changeId: 'stable',
-  generation: 3,
+  runId: 'run-stable',
   repositoryId: 'app',
   remoteIdentity: 'github.com/team/app',
   sourceBranch: 'feature/stable',

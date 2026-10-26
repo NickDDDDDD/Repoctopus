@@ -14,7 +14,7 @@ import type {
 import type { WorkflowPackage } from '../../domains/workflow-contract/types.js';
 import type { AgentCoordinationCheckpoint } from '../../domains/work-execution/types.js';
 import { atomicWriteJson, atomicWriteText } from '../filesystem/atomic-write.js';
-import { assertRunId, runPaths, type RunPaths } from './paths.js';
+import { assertRunId, isLegacyLifecycleGenerationRunId, runPaths, type RunPaths } from './paths.js';
 import {
   RecoverableFileTransition,
   type FileTransitionContext,
@@ -365,6 +365,7 @@ export class FileRuntimeStore {
     const accepted = new Set<string>();
     for (const entry of entries) {
       if (!entry.isDirectory() || entry.isSymbolicLink()) continue;
+      if (isLegacyLifecycleGenerationRunId(entry.name)) continue;
       const paths = this.paths(entry.name);
       if (await exists(paths.transitionJournal)) {
         return { deferred: true, acceptedBundleIds: [] };

@@ -11,7 +11,7 @@ import {
 const oid = 'a'.repeat(40);
 const intent = {
   changeId: 'recoverable-archive',
-  generation: 1,
+  runId: 'run-recoverable-archive',
   closureId: `sha256:${'b'.repeat(64)}` as const,
   planDigest: `sha256:${'c'.repeat(64)}` as const,
   checkoutId: 'closure-recoverable-archive',
@@ -34,7 +34,7 @@ describe('Specification publication Journal', () => {
     const committed = recordSpecificationPublicationCommit(prepared, oid);
     const pushed = recordSpecificationPublicationPush(committed);
     const completed = recordSpecificationPublicationCompletion(pushed, {
-      publicationId: 'specification:recoverable-archive:1',
+      publicationId: `specification:${intent.runId}`,
       role: 'specification',
       repositoryId: intent.repositoryId,
       remoteIdentity: intent.remoteIdentity,

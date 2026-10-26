@@ -34,7 +34,7 @@ node bin/repoctopus.js spec validate --workspace . --change <change-id> --json
 
 `spec inspect` 返回规范化的 change 身份、规划产物状态、受影响能力和语义摘要。结果不暴露 Provider 的绝对路径。
 
-Design gate 不直接拼接 `inspect`、目录或 CLI 输出，而只消费版本化 `SpecificationPlanningManifest`。该契约由 Provider 映射 change、Specification Root、Provider/schema identity、Proposal、Delta Specs、Design、Tasks、会影响 Provider 行为的 Change-local 元数据与受影响能力，并计算稳定 `semanticDigest`；OpenSpec 的文件路径和命令结果不会进入 Engine 或持久 Run。Provider contract test 会验证四类工件完整、元数据语义变化会改变摘要、摘要可重算且序列化结果不泄露 checkout 路径。
+Open 与 Design gate 不直接拼接 `inspect`、目录或 CLI 输出，而只消费版本化 `SpecificationPlanningManifest`。该契约由 Provider 映射 change、Specification Root、Provider/schema identity、Proposal、Delta Specs、Design、Tasks、会影响 Provider 行为的 Change-local 元数据与受影响能力，并计算稳定 `semanticDigest`；OpenSpec 的文件路径和命令结果不会进入 Engine 或持久 Run。Provider contract test 会验证四类工件完整、元数据语义变化会改变摘要、摘要可重算且序列化结果不泄露 checkout 路径。
 
 `spec validate` 始终执行严格校验。传入 `--run <run-id>` 时，Repoctopus 把 Provider 身份和验证摘要绑定到 Run；恢复前如果 Provider 身份变化，Runtime 会进入迁移诊断，不会换用新 Provider 继续推进。
 
@@ -50,7 +50,7 @@ node bin/repoctopus.js spec approval review --workspace . --change <change-id>
 node bin/repoctopus.js run decide --workspace . --run <run-id>
 ```
 
-`prepare` 通过当前 Specification Provider 严格校验 Proposal、Delta Specs、Design 和 Tasks，把四份内容摘要、Store、Provider、官方 schema instructions、受影响能力、远端分支 OID、目标分支以及 composition 和配置摘要绑定为不可变请求。它只生成 `awaiting_approval` 状态，不等于批准。Change Run 在 `design/waiting` 时用 `run decide` 展示并提交当前请求；`approve`、`revise` 和 `reject` 都通过同一个公共命令入口记录。该命令必须运行在可信交互终端，IDE 则提交同一版本化响应；非交互 Agent、Git 作者和 MR 状态都不能代替用户决定。
+Open 先创建或修复完整四件套，严格校验后在 `open/waiting` 形成第一次请求；批准才进入 Design。Design 在同一四件套上深化工程决策和任务，再严格校验并在 `design/waiting` 形成第二次独立请求；批准才进入 Build。两次都用 `run decide` 提交 `approve`、`revise` 或 `reject`，并按 phase 分库存储，不能互相冒充。该命令必须运行在可信交互终端，IDE 则提交同一版本化响应；非交互 Agent、Git 作者和 MR 状态都不能代替用户决定。
 
 请求中的 `proposalHash` 是用户实际审核内容的稳定身份，覆盖 change、Specification Root、Provider/schema、规划语义摘要、能力集合和目标分支。响应必须同时匹配当前 Run 的 `requestId` 与 `proposalHash`；批准记录还生成绑定主体、决定和时间的 `approvalHash`。旧请求、跨 Run 响应或任一受保护事实被篡改时都必须拒绝，不能靠重新包装响应沿用批准。
 
@@ -58,7 +58,7 @@ node bin/repoctopus.js run decide --workspace . --run <run-id>
 
 每个 checkbox Task 都必须在其下使用至少一行层级更深的规范 `**Acceptance:** <可观察条件>`；多个条件用分号分隔，关联需求用 `**Requirements:** <引用>`。无缩进、无粗体、`Acceptance criteria` 旧别名或只在任务标题中写“验证……”都不构成结构化 Acceptance。严格 Provider 校验会在 Design 的 Human Decision 之前拒绝缺失项，避免把不可建立 coverage plan 的任务带入 Build 或 Verify；其他 Tasks 投影错误保留原始诊断，不会被误报为缺少 Acceptance。
 
-checkbox 是 completion claim，不是测试结果。Runtime 接受 Build Work Outcome 并通过 Validator 后，Provider 才写入 checkbox，同时在 `.repoctopus/specification-task-receipts/` 保存与 `taskRevision + workId` 绑定的来源 Receipt；该 sidecar 不是第五类 OpenSpec 工件。默认 `fresh` Run 发现预勾选任务会报 adoption conflict。只有显式 `adopt-existing` generation 才把既有 `[x]` 投影为带来源摘要的 `imported-claim`，避免重复 Build，但仍必须执行 Verify。Runtime 只接受恰好一个 ready Task，`run status` 从 Run aggregate 读取当前 Work，不从文件重新猜测。
+checkbox 是 completion claim，不是测试结果。Runtime 接受 Build Work Outcome 并通过 Validator 后，Provider 才写入 checkbox，同时在 `.repoctopus/specification-task-receipts/` 保存与 `taskRevision + workId` 绑定的来源 Receipt；该 sidecar 不是第五类 OpenSpec 工件。Design 批准后若发现预勾选任务，Runtime 在同一 runId 建立 `adopt-existing` Human Decision，绑定 planning digest、task revisions、仓库集合和 proposal identity。批准只导入这些 Build completion claims，仍必须执行 Verify；拒绝会明确阻断，不能通过另起并列 Run 绕过。Runtime 只接受恰好一个 ready Task，`run status` 从 Run aggregate 读取当前 Work，不从文件重新猜测。
 
 `planningGuidance` 把已审核的方法规则只读映射到 Provider 声明的四类官方工件：已解决上下文被综合进现有工件，最少公共测试缝进入 Design，tracer-bullet、验收验证和 expand/migrate/contract 顺序进入 Tasks。该指导明确禁止额外规划工件和 tracker 发布；它不复制 OpenSpec 模板，也不执行原始 `to-spec`/`to-tickets` Skill。
 
@@ -66,7 +66,7 @@ checkbox 是 completion claim，不是测试结果。Runtime 接受 Build Work O
 
 Build 或 Verify 每次继续前都会重新核对 planning semantic digest。发生变化时，Runtime 追加 `planning-semantic-drift` invalidation、清除当前 Work 与任务 revision 快照并返回 Design；Trajectory 保留被替代的 planning digest、Work ID、Task revisions 和证据身份。官方 Tasks checkbox 的完成状态已经从 planning digest 排除，因此有效的任务完成更新不会误触发回退。
 
-旧版 planning approval 仍可只读加载，但迁移计划会返回 `migration_required`，且没有外部副作用。迁移必须重新计算当前 planning manifest、重新核对公开分支来源并生成新的 Human Decision request；旧批准、分支 OID 或 Agent 声明都不会被静默转换为当前 Design decision。
+旧版未分 Open/Design scope 的 planning approval 不参与当前定位；当前协议只读取按 phase 隔离的新状态，旧文件保持字节不变并可由审计工具只读查看。
 
 - **公开 Change 分支**：保存共享工作与精确远端版本，不代表人已同意方案。
 - **规划批准**：允许开始实现当前快照，不授权发布或合入任何 MR。

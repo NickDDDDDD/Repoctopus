@@ -12,8 +12,6 @@ describe('Change Run CLI projection', () => {
           identity: {
             workspaceId: 'team',
             changeId: 'projection-test',
-            generation: 3,
-            mode: 'fresh',
             runId: 'change-team-projection-test-g3',
           },
         }),

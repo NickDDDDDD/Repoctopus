@@ -87,19 +87,21 @@ export class WorkExecutionSessions extends Service {
     runId: string;
     workId: string;
     attempt: number;
+    checkEpoch: number;
     invocationId: string;
     packetDigest: `sha256:${string}`;
     hostId: string;
   }): WorkExecutionSessionIdentity {
     const nonce = randomUUID();
     const identity: WorkExecutionSessionIdentity = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       sessionId: sha256(
         `${input.runId}\0${input.workId}\0${input.attempt}\0${input.invocationId}\0${input.packetDigest}\0${nonce}`,
       ),
       runId: input.runId,
       workId: input.workId,
       attempt: input.attempt,
+      checkEpoch: input.checkEpoch,
       invocationId: input.invocationId,
       packetDigest: input.packetDigest,
     };

@@ -12,6 +12,7 @@ import { canonicalJson } from '../workflow-contract/canonical.js';
 export interface VerificationInput {
   schemaVersion: 2;
   runId: string;
+  checkEpoch: number;
   taskRevisions: readonly { taskId: string; taskRevision: `sha256:${string}` }[];
   acceptanceCriteria: readonly SpecificationAcceptanceCriterion[];
   acceptanceSetHash: `sha256:${string}`;
@@ -101,6 +102,7 @@ function resolveAcceptanceCoverage(
 
 export function createVerificationInput(input: {
   runId: string;
+  checkEpoch: number;
   tasks: readonly SpecificationTask[];
   fingerprint: EvidenceFingerprint;
   plan: EvidenceExecutionPlan;
@@ -109,6 +111,9 @@ export function createVerificationInput(input: {
   skills: readonly SkillUsageSnapshot[];
 }): VerificationInput {
   if (!input.runId.trim()) throw new Error('Verification input requires a Run identity');
+  if (!Number.isSafeInteger(input.checkEpoch) || input.checkEpoch < 0) {
+    throw new Error('Verification input requires a non-negative checkEpoch');
+  }
   if (input.tasks.length === 0 || input.tasks.some((task) => task.status !== 'completed')) {
     throw new Error('Verification input requires every approved Task completion fact');
   }
@@ -136,6 +141,7 @@ export function createVerificationInput(input: {
   const stable = {
     schemaVersion: 2 as const,
     runId: input.runId,
+    checkEpoch: input.checkEpoch,
     taskRevisions: input.tasks
       .map(({ taskId, taskRevision }) => ({ taskId, taskRevision }))
       .sort((left, right) => left.taskId.localeCompare(right.taskId)),
@@ -165,4 +171,17 @@ export function createVerificationInput(input: {
     },
   };
   return { ...stable, digest: sha256(stable) };
+}
+
+export function rebaseVerificationInput(
+  input: VerificationInput,
+  checkEpoch: number,
+): VerificationInput {
+  if (!Number.isSafeInteger(checkEpoch) || checkEpoch < 0) {
+    throw new Error('Verification input rebase requires a non-negative checkEpoch');
+  }
+  const { digest: _digest, ...stable } = input;
+  void _digest;
+  const rebased = { ...structuredClone(stable), checkEpoch };
+  return { ...rebased, digest: sha256(rebased) };
 }

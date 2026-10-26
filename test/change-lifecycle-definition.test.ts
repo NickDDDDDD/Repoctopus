@@ -20,8 +20,6 @@ import type { SkillUsageSnapshot } from '../domains/skill/types.js';
 const identity: ChangeRunIdentity = {
   workspaceId: 'repoctopus',
   changeId: 'establish-change-lifecycle',
-  generation: 1,
-  mode: 'fresh',
   runId: 'change-establish-change-lifecycle-1',
 };
 
@@ -89,13 +87,13 @@ describe('Change lifecycle definition', () => {
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
       kind: 'task.implement',
       actionSkill: skill('repoctopus-build-task'),
-      augmentationSkills: [skill('tdd'), skill('codebase-design')],
+      augmentationSkills: [skill('tdd')],
       workspaceRepositoryId: 'workspace',
       repositoryIds: ['backend', 'workspace'],
     });
     expect(binding).toMatchObject({
       actionSkill: { name: 'repoctopus-build-task' },
-      augmentationSkills: [{ name: 'tdd' }, { name: 'codebase-design' }],
+      augmentationSkills: [{ name: 'tdd' }],
       methodProfile: { id: 'repoctopus.build' },
       writeScopes: [
         { repositoryId: 'backend', paths: ['**'] },
@@ -112,7 +110,7 @@ describe('Change lifecycle definition', () => {
         definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
         kind: 'task.implement',
         actionSkill: skill('repoctopus.build'),
-        augmentationSkills: [skill('tdd'), skill('codebase-design')],
+        augmentationSkills: [skill('tdd')],
         workspaceRepositoryId: 'workspace',
         repositoryIds: ['workspace'],
       }),
@@ -149,6 +147,39 @@ describe('Change lifecycle definition', () => {
     });
     expect(recovered.current.digest).not.toBe(recovered.expected.digest);
     expect(recovered.snapshot.definition).toEqual(persisted.definition);
+  });
+
+  it('recovers only an exactly declared compatible definition digest, including a prior drift stop', () => {
+    const previous = copyDefinition();
+    delete previous.compatibleDigests;
+    previous.transitions = previous.transitions.filter(
+      (transition) => transition.id !== 'archive.work-restored',
+    );
+    const persisted = createChangeLifecycleSnapshot({ identity, definition: previous });
+    const incompatibleCurrent = copyDefinition();
+    delete incompatibleCurrent.compatibleDigests;
+    const stopped = recoverChangeLifecycleSnapshot({
+      persisted,
+      currentDefinition: incompatibleCurrent,
+    });
+    expect(stopped.snapshot.status).toBe('migration_required');
+
+    const compatibleCurrent = copyDefinition();
+    compatibleCurrent.compatibleDigests = [persisted.definition.digest];
+    const recovered = recoverChangeLifecycleSnapshot({
+      persisted: stopped.snapshot,
+      currentDefinition: compatibleCurrent,
+    });
+    expect(recovered).toMatchObject({
+      compatibility: 'compatible',
+      changed: true,
+      snapshot: {
+        status: 'running',
+        blocker: null,
+        currentWork: null,
+        definition: { digest: prepareChangeLifecycleDefinition(compatibleCurrent).snapshot.digest },
+      },
+    });
   });
 
   it('ignores object key order and set-like array order when calculating compatibility', () => {
@@ -188,7 +219,10 @@ describe('Change lifecycle definition', () => {
       })),
       version: original.version,
       id: original.id,
-      schemaVersion: 1,
+      schemaVersion: 2,
+      ...(original.compatibleDigests
+        ? { compatibleDigests: [...original.compatibleDigests].reverse() }
+        : {}),
     };
     const persisted = createChangeLifecycleSnapshot({ identity, definition: original });
 
@@ -208,8 +242,7 @@ describe('Change lifecycle definition', () => {
     );
 
     const bypass = copyDefinition();
-    bypass.transitions.find((transition) => transition.id === 'open.intake-ready')!.to.phase =
-      'build';
+    bypass.transitions.find((transition) => transition.id === 'open.approved')!.to.phase = 'build';
     expect(() => assertChangeLifecycleDefinition(bypass)).toThrow(/bypasses a protected phase/u);
   });
 
@@ -220,7 +253,7 @@ describe('Change lifecycle definition', () => {
 
     const wrongValidator = copyDefinition();
     wrongValidator.transitions.find(
-      (transition) => transition.id === 'open.intake-ready',
+      (transition) => transition.id === 'open.work-ready',
     )!.requiredValidatorProfile = 'verify.evidence-gate';
     expect(() => assertChangeLifecycleDefinition(wrongValidator)).toThrow(
       /references validator outside open/u,

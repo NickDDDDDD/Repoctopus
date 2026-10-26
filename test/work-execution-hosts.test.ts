@@ -8,7 +8,7 @@ const digest = (character: string) => `sha256:${character.repeat(64)}` as const;
 
 function packet(capabilities: readonly string[] = ['repository.write']): WorkExecutionPacket {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     identity: {
       schemaVersion: 1,
       packetId: digest('a'),
@@ -20,13 +20,15 @@ function packet(capabilities: readonly string[] = ['repository.write']): WorkExe
       runId: 'run-1',
       workId: 'work-1',
       attempt: 1,
+      checkEpoch: 4,
       claimToken: digest('d'),
       inputDigest: digest('e'),
       compositionDigest: digest('f'),
     },
     work: {
-      schemaVersion: 1,
+      schemaVersion: 2,
       workId: 'work-1',
+      checkEpoch: 4,
       phase: 'build',
       kind: 'task.implement',
       augmentationSkills: [],
@@ -129,6 +131,7 @@ describe('Work Execution Sessions', () => {
       runId: 'run-a',
       workId: 'work',
       attempt: 1,
+      checkEpoch: 4,
       invocationId: 'invoke-a',
       packetDigest: digest('a'),
       hostId: 'host-a',
@@ -137,6 +140,7 @@ describe('Work Execution Sessions', () => {
       runId: 'run-b',
       workId: 'work',
       attempt: 1,
+      checkEpoch: 4,
       invocationId: 'invoke-b',
       packetDigest: digest('b'),
       hostId: 'host-b',

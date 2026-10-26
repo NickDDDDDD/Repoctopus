@@ -6,7 +6,6 @@ import type {
 
 const PROTECTED_AUTHORITIES = new Set([
   'action-store-write',
-  'change-lifecycle-migration',
   'delivery-state-write',
   'evidence-gate',
   'lifecycle-definition',
@@ -33,6 +32,19 @@ function sameRecord(
   const leftEntries = Object.entries(left).sort(([a], [b]) => a.localeCompare(b));
   const rightEntries = Object.entries(right).sort(([a], [b]) => a.localeCompare(b));
   return JSON.stringify(leftEntries) === JSON.stringify(rightEntries);
+}
+
+function explicitlyAccepts(
+  previous: PluginImplementationIdentity,
+  current: PluginImplementationIdentity,
+): boolean {
+  return (
+    current.compatibleImplementations?.some(
+      (implementation) =>
+        implementation.codeDigest === previous.codeDigest &&
+        implementation.descriptorDigest === previous.descriptorDigest,
+    ) ?? false
+  );
 }
 
 export function compareCompositions(
@@ -73,16 +85,18 @@ export function compareCompositions(
       }
       continue;
     }
-    if (
-      protectsDurableSemantics(before) ||
-      protectsDurableSemantics(after) ||
+    const contractChanged =
       !sameRecord(before.stateSchemas, after.stateSchemas) ||
-      JSON.stringify(before.authorities) !== JSON.stringify(after.authorities)
-    ) {
+      JSON.stringify(before.authorities) !== JSON.stringify(after.authorities) ||
+      before.configDigest !== after.configDigest;
+    const protectedChange = protectsDurableSemantics(before) || protectsDurableSemantics(after);
+    if (contractChanged || (protectedChange && !explicitlyAccepts(before, after))) {
       return {
         status: 'migration_required',
         changedPluginIds,
-        reason: `plugin ${id} owns protected behavior or changed its state contract`,
+        reason: contractChanged
+          ? `plugin ${id} changed its state, authority, or configuration contract`
+          : `protected plugin ${id} changed without an exact implementation compatibility declaration`,
       };
     }
   }
@@ -90,6 +104,7 @@ export function compareCompositions(
   return {
     status: 'compatible',
     changedPluginIds,
-    reason: 'only stateless, non-protected plugin implementations changed',
+    reason:
+      'changed implementations are stateless or carry an exact predecessor declaration without contract drift',
   };
 }

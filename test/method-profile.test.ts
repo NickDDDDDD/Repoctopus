@@ -26,10 +26,10 @@ describe('Method Profile registry', () => {
     expect(assembled.rules).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          id: 'design.public-test-seams',
-          phases: ['design', 'build'],
-          artifactKinds: ['design'],
-          enforcement: 'human-decision',
+          id: 'planning.decision-rich-not-volatile',
+          phases: ['design'],
+          artifactKinds: ['design', 'tasks'],
+          enforcement: 'review-rubric',
         }),
         expect.objectContaining({
           id: 'tasks.explicit-blocking-edges',
@@ -53,7 +53,7 @@ describe('Method Profile registry', () => {
     expect(() => new MethodProfileRegistry()).not.toThrow();
   });
 
-  it.each(['to-spec', 'to-tickets']) (
+  it.each(['to-spec', 'to-tickets'])(
     'rejects a user Skill named %s from every lifecycle Work binding',
     (name) => {
       const definition = structuredClone(BUILTIN_CHANGE_LIFECYCLE_DEFINITION);

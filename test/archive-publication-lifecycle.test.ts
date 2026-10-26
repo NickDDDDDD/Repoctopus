@@ -99,10 +99,38 @@ function archivePhaseContext(provider: SpecificationClosureResult['provider']) {
     phase: 'archive',
     provider,
     artifacts: [
-      { id: 'proposal', kind: 'proposal', instruction: 'proposal', template: '# Proposal', instructionDigest: digest('a'), templateDigest: digest('b') },
-      { id: 'specs', kind: 'delta-specs', instruction: 'specs', template: '# Specs', instructionDigest: digest('c'), templateDigest: digest('d') },
-      { id: 'design', kind: 'design', instruction: 'design', template: '# Design', instructionDigest: digest('e'), templateDigest: digest('f') },
-      { id: 'tasks', kind: 'tasks', instruction: 'tasks', template: '# Tasks', instructionDigest: digest('1'), templateDigest: digest('2') },
+      {
+        id: 'proposal',
+        kind: 'proposal',
+        instruction: 'proposal',
+        template: '# Proposal',
+        instructionDigest: digest('a'),
+        templateDigest: digest('b'),
+      },
+      {
+        id: 'specs',
+        kind: 'delta-specs',
+        instruction: 'specs',
+        template: '# Specs',
+        instructionDigest: digest('c'),
+        templateDigest: digest('d'),
+      },
+      {
+        id: 'design',
+        kind: 'design',
+        instruction: 'design',
+        template: '# Design',
+        instructionDigest: digest('e'),
+        templateDigest: digest('f'),
+      },
+      {
+        id: 'tasks',
+        kind: 'tasks',
+        instruction: 'tasks',
+        template: '# Tasks',
+        instructionDigest: digest('1'),
+        templateDigest: digest('2'),
+      },
     ],
   });
 }
@@ -125,14 +153,14 @@ function archiveState(actionSkill: SkillUsageSnapshot = prSkill) {
     },
     intent,
     policy,
+    planningCompositionDigest: digest('6'),
+    evidenceCompositionDigest: digest('6'),
   });
   const initial = {
     ...createChangeLifecycleSnapshot({
       identity: {
         workspaceId: 'team',
         changeId: 'terminal-archive',
-        generation: 2,
-        mode: 'fresh',
         runId: 'run-terminal',
       },
     }),
@@ -141,6 +169,7 @@ function archiveState(actionSkill: SkillUsageSnapshot = prSkill) {
     verificationInput: {
       schemaVersion: 2 as const,
       runId: 'run-terminal',
+      checkEpoch: 0,
       taskRevisions: [],
       acceptanceCriteria: [],
       acceptanceSetHash: digest('a'),
@@ -159,6 +188,7 @@ function archiveState(actionSkill: SkillUsageSnapshot = prSkill) {
   };
   const closeWork = createSpecificationCloseWork({
     definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+    checkEpoch: initial.checkEpoch + 1,
     archive,
     actionSkill: archiveSkill,
     workspaceRepositoryId: 'workspace',
@@ -187,6 +217,7 @@ function archiveState(actionSkill: SkillUsageSnapshot = prSkill) {
   };
   const publishWork = createDeliveryPublishWork({
     definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+    checkEpoch: preflight.snapshot.checkEpoch + 1,
     archive,
     closure,
     actionSkill,
@@ -201,9 +232,8 @@ function archiveState(actionSkill: SkillUsageSnapshot = prSkill) {
   const receipt = createPublicationReceipt({
     apiVersion: PUBLICATION_RECEIPT_API_VERSION,
     kind: 'PublicationReceipt',
-    schemaVersion: 1,
+    schemaVersion: 2,
     changeId: 'terminal-archive',
-    generation: 2,
     runId: 'run-terminal',
     deliverySnapshotDigest: digest('b'),
     verificationInputDigest: digest('3'),
@@ -253,6 +283,145 @@ function archiveState(actionSkill: SkillUsageSnapshot = prSkill) {
 }
 
 describe('Archive publication terminal lifecycle', () => {
+  it('rebinds only the approved Change branch OID before publication and preserves the closure', () => {
+    const { closed, archive, closure } = archiveState();
+    const correctedArchive = createArchiveDeliveryInput({
+      runId: archive.runId,
+      changeId: archive.changeId,
+      verificationInputDigest: archive.verificationInputDigest,
+      acceptedEvidenceBundleIds: [archive.evidenceBundleId],
+      evidenceBundleId: archive.evidenceBundleId,
+      verificationReport: archive.verificationReport,
+      intent: {
+        ...intent,
+        changeBranch: { ...intent.changeBranch, remoteOid: closure.candidate.baseOid },
+      },
+      policy,
+      planningCompositionDigest: digest('6'),
+      evidenceCompositionDigest: digest('6'),
+    });
+    const work = createDeliveryPublishWork({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      checkEpoch: closed.checkEpoch + 1,
+      archive: correctedArchive,
+      closure,
+      actionSkill: prSkill,
+      workspaceRepositoryId: 'workspace',
+      repositoryIds: ['workspace', 'app'],
+    });
+    const corrected = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current: closed,
+      observation: {
+        kind: 'archive-intent-corrected',
+        priorArchiveInputDigest: archive.digest,
+        archiveInput: correctedArchive,
+        closure,
+        work,
+        reason: 'approved remote OID differs from the frozen input',
+      },
+    });
+    expect(corrected.snapshot).toMatchObject({
+      phase: 'archive',
+      status: 'running',
+      checkEpoch: closed.checkEpoch + 1,
+      currentWork: { kind: 'delivery.publish', checkEpoch: closed.checkEpoch + 1 },
+      archiveDeliveryInput: {
+        changeBranch: { remoteOid: closure.candidate.baseOid },
+      },
+      specificationClosure: { closureId: closure.closureId },
+    });
+
+    expect(() =>
+      evolveChangeLifecycle({
+        definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+        current: closed,
+        observation: {
+          kind: 'archive-intent-corrected',
+          priorArchiveInputDigest: archive.digest,
+          archiveInput: {
+            ...correctedArchive,
+            businessDeliveries: [
+              { ...correctedArchive.businessDeliveries[0]!, targetBranch: 'release' },
+            ],
+          },
+          closure,
+          work,
+          reason: 'invalid broad correction',
+        },
+      }),
+    ).toThrow(/correction is not valid/u);
+  });
+
+  it('returns a local-only closed Archive to Design when the live planning branch drifts', () => {
+    const { closed, archive, closure } = archiveState();
+    const work = {
+      ...closed.currentWork!,
+      workId: 'design:archive-drift',
+      checkEpoch: closed.checkEpoch + 1,
+      phase: 'design' as const,
+      kind: 'specification.plan',
+      inputDigest: digest('f'),
+    };
+    const revised = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current: closed,
+      observation: {
+        kind: 'archive-planning-drift',
+        work,
+        observedPlanningDigest: digest('e'),
+        reason: 'live Change branch advanced before remote publication',
+        evidenceIds: [archive.digest, closure.closureId],
+      },
+    });
+    expect(revised.snapshot).toMatchObject({
+      phase: 'design',
+      status: 'running',
+      checkEpoch: closed.checkEpoch + 1,
+      currentWork: { kind: 'specification.plan' },
+      tasks: [],
+    });
+    expect(revised.snapshot.archiveDeliveryInput).toBeUndefined();
+    expect(revised.snapshot.specificationClosure).toBeUndefined();
+    expect(revised.snapshot.verificationInput).toBeUndefined();
+    expect(revised.fact?.invalidation).toMatchObject({
+      kind: 'planning-semantic-drift',
+      supersededWorkId: closed.currentWork?.workId,
+    });
+  });
+
+  it('recreates publication Work after an explicitly compatible definition recovery', () => {
+    const { closed } = archiveState();
+    const recovered = {
+      ...closed,
+      status: 'running' as const,
+      currentWork: null,
+      blocker: null,
+    };
+    const work = {
+      ...closed.currentWork!,
+      workId: 'archive:restored-publication',
+      checkEpoch: recovered.checkEpoch + 1,
+    };
+    const restored = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current: recovered,
+      observation: {
+        kind: 'archive-work-restored',
+        work,
+        reason: 'compatible definition patch restored the interrupted Work',
+      },
+    });
+    expect(restored.snapshot).toMatchObject({
+      phase: 'archive',
+      status: 'running',
+      checkEpoch: recovered.checkEpoch + 1,
+      currentWork: { workId: work.workId, kind: 'delivery.publish' },
+      specificationClosure: closed.specificationClosure,
+      archiveDeliveryInput: closed.archiveDeliveryInput,
+    });
+  });
+
   it.each(['open', 'merged', 'closed'] as const)(
     'completes from a full receipt without consulting an MR in %s state',
     () => {
@@ -290,7 +459,7 @@ describe('Archive publication terminal lifecycle', () => {
     });
     expect(blocked.snapshot).toMatchObject({
       status: 'blocked',
-      currentWork: { kind: 'delivery.publish' },
+      currentWork: null,
       blocker: { code: 'publication-receipt-incomplete' },
     });
     expect(() =>
@@ -446,7 +615,7 @@ describe('Archive publication terminal lifecycle', () => {
         },
       });
       await app.context.managedWorkExecutor.acceptExternalOutcome({
-        schemaVersion: 1,
+        schemaVersion: 2,
         runId: preflight.identity.runId,
         invocationId: claim.invocation.invocationId,
         hostId: claim.invocation.host.id,
@@ -548,6 +717,7 @@ describe('Archive publication terminal lifecycle', () => {
 
       const business = receipt.items.find((item) => item.role === 'business')!;
       const specification = receipt.items.find((item) => item.role === 'specification')!;
+      vi.spyOn(app.context.delivery, 'validateArchiveIntent').mockResolvedValue();
       vi.spyOn(app.context.delivery, 'publishArchive').mockResolvedValue({
         snapshot: { digest: receipt.deliverySnapshotDigest } as never,
         receipts: [
@@ -595,7 +765,7 @@ describe('Archive publication terminal lifecycle', () => {
         executor,
       });
       await app.context.managedWorkExecutor.acceptExternalOutcome({
-        schemaVersion: 1,
+        schemaVersion: 2,
         runId: closed.identity.runId,
         invocationId: publicationClaim.invocation.invocationId,
         hostId: publicationClaim.invocation.host.id,

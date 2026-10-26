@@ -243,7 +243,7 @@ export async function checkProvenance(
   const mattFilesByTarget = new Map((matt.files ?? []).map((entry) => [entry.target, entry]));
   const isInProviderRoot = (target: string): boolean =>
     providerRoots.some((root) => target === root || target.startsWith(`${root}/`));
-  const requiredExecutableSkills = new Set(['codebase-design', 'pr', 'tdd']);
+  const requiredExecutableSkills = new Set(['codebase-design', 'grilling', 'pr', 'tdd']);
   const executableSkillNames = new Set<string>();
   for (const skill of mattAdoption.executableSkills ?? []) {
     if (typeof skill.name === 'string') requiredExecutableSkills.delete(skill.name);
