@@ -165,7 +165,7 @@ Design approval 绑定 repository、remote identity、source branch 与 target b
 
 如果实时远端 branch 已经前进，旧 approval 与 isolated closure 都不再代表待发布实现。只要发布前校验尚未放行任何远端动作，Runtime 会保留失效事实、丢弃该本地 candidate 的权威资格并回到 Design，重新批准、Build claim、Verify 与 closure；它不会在旧 candidate 上改 base，也不会把新提交悄悄塞进已经验证的 publication。
 
-受保护 Plugin 的原地修复只能通过当前 descriptor 对旧 `codeDigest + descriptorDigest` 精确二元组的兼容声明；lifecycle definition 还必须单独列出精确旧 definition digest。authority、state schema、effective config 或未声明 definition 变化仍然进入 `migration_required`。若旧 Runtime 已先把该精确漂移停为 `migration_required`，兼容升级只恢复聚合事实并由 Runtime 在新 epoch 重建下一 Work，绝不复用被清空或旧 composition 的 Work packet。同一种语义 Work 在新 epoch 重建时保留稳定 `workId` 以关联审计历史，但必须使用下一个 attempt；执行权威以 `workId + checkEpoch` 区分新旧实例。这使本次自举 Run 可以应用已验证的无 schema 修复，同时不会把任意受保护代码漂移放宽为兼容。
+受保护 Plugin 的原地修复只能通过当前 descriptor 对旧 `codeDigest + descriptorDigest` 精确二元组的兼容声明；lifecycle definition 还必须单独列出精确旧 definition digest。authority、state schema、effective config 或未声明 definition 变化仍然进入 `migration_required`。若旧 Runtime 已先把该精确漂移停为 `migration_required`，兼容升级只恢复聚合事实并由 Runtime 在新 epoch 重建下一 Work，绝不复用被清空或旧 composition 的 Work packet。同一种语义 Work 在新 epoch 重建时保留稳定 `workId` 以关联审计历史，但必须使用更高 attempt；执行权威以 `workId + checkEpoch` 区分新旧实例，并允许跳过已经持久化 Action Intent、却尚未绑定 Run checkpoint 的孤儿 attempt。这使本次自举 Run 可以应用已验证的无 schema 修复，同时不会把任意受保护代码漂移放宽为兼容。
 
 ### 8. 旧 generation 文件保持不可变且不参与新定位
 

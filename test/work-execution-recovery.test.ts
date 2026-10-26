@@ -127,7 +127,7 @@ describe('Work execution recovery classification', () => {
 });
 
 describe('Work execution epoch authority', () => {
-  it('accepts the next attempt when Runtime reissues the same semantic Work in a newer epoch', async () => {
+  it('accepts a higher attempt when Runtime reissues the same semantic Work in a newer epoch', async () => {
     const previous = checkpoint('validated');
     const currentWork = {
       workId: previous.workId,
@@ -150,7 +150,7 @@ describe('Work execution epoch authority', () => {
       claim: {
         runId: run.runId,
         workId: currentWork.workId,
-        attempt: previous.attempt + 1,
+        attempt: previous.attempt + 2,
         checkEpoch: currentWork.checkEpoch,
         intentId: 'intent-2',
         claimToken: digest('4'),
@@ -181,7 +181,7 @@ describe('Work execution epoch authority', () => {
 
     await expect(authority.bindClaim(packet)).resolves.toMatchObject({
       workId: previous.workId,
-      attempt: 2,
+      attempt: 3,
       checkEpoch: 5,
       status: 'claimed',
     });
