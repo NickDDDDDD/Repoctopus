@@ -3,10 +3,10 @@
 ## Reproducible subject
 
 - Change: `adopt-comet-single-run-lifecycle`
-- Tested implementation commit: `c96509d20a9f013aed77f70f037d080610c1f6f3`
+- Tested implementation commit: `9b86ea32db3be730ed37322985d3d5f70c4b3044`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `952389`
-- Package SHA-256: `ab0c91f8f4d86e28bc8b527c461b0f746db89d6d15b92d6e0c8052719194b487`
+- Package bytes: `960830`
+- Package SHA-256: `8c7dfa94b8fac950acc02a6ed62cea228a243086a986a52d8c97115b4160eecc`
 - Lifecycle definition: `repoctopus-change@3.0.0`
 - Lifecycle definition digest: `sha256:42eebeda8add66e967021c322a765aa9052797c07e3f526f7322cdecc4e4e7d9`
 - Composition digest: `sha256:0f52306c5478580e72a9618918ebcdb11a13b1ca5a310cbef9bf3722e2488b69`
@@ -22,7 +22,7 @@ Run on Windows with Node.js `24.21.0`:
 npm run verify
   typecheck, desktop typecheck, lint and both builds passed
   120 test files passed
-  451 tests passed, 1 skipped
+  455 tests passed, 1 skipped
   generated, brand, architecture and provenance checks passed
   OpenSpec strict validation: 15 passed, 0 failed
 
@@ -41,6 +41,8 @@ npm audit --omit=dev --audit-level=high
 The real repository self-bootstrap uses the stable runId above. Open delivered `repoctopus-open-change` plus `grilling`, validated the same four OpenSpec artifact classes, and stopped at an Open Human Decision. After approval, Design delivered `repoctopus-design-change` plus `codebase-design`, deepened the same four artifacts, and stopped at a separate Design Human Decision. Build imported all 42 pre-existing completion claims only after a third, same-Run `adopt-existing` decision; the import does not synthesize either planning approval and does not skip Verify.
 
 The complete packaged-CLI single- and multi-repository journeys are exercised by `test/managed-change-execution.e2e.test.ts`, `test/e2e/change-design-gate-cli.e2e.test.ts`, `test/e2e/change-run-cli.e2e.test.ts`, archive publication suites and recovery suites. They restart process boundaries, inject implementation retry, Build-to-Design, Verify repair, planning drift, infrastructure retry, Archive reverify, response loss and OID drift while asserting one runId and monotonically increasing `checkEpoch`.
+
+The self-bootstrap Archive exposed an incorrect frozen Change branch OID before any remote publication. The regression repair now performs the planning/live-remote check before creating closure Work and repeats it before push/MR. Tests prove that an isolated closure can rebind only an OID jointly established by the live source branch and closure candidate; if the live branch has advanced, the same Run invalidates the local closure and returns to Design instead of publishing unverified code. Protected plugin recovery is limited to an exact predecessor `codeDigest + descriptorDigest` declaration with unchanged authority, state schema and effective config.
 
 ## Anti-cheating sensitivity
 
