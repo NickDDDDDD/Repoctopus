@@ -47,8 +47,11 @@ function validatorProfile(id: string) {
 export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
   schemaVersion: 2,
   id: 'repoctopus-change',
-  version: '3.0.0',
-  compatibleDigests: ['sha256:42eebeda8add66e967021c322a765aa9052797c07e3f526f7322cdecc4e4e7d9'],
+  version: '3.1.0',
+  compatibleDigests: [
+    'sha256:42eebeda8add66e967021c322a765aa9052797c07e3f526f7322cdecc4e4e7d9',
+    'sha256:d45fdabde20f79ccc9e0dd95ce164d5b7225ce736b1e76e08c44e53e85c92a0e',
+  ],
   phases: [
     {
       phase: 'open',
@@ -64,8 +67,12 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
     },
     {
       phase: 'build',
-      workKinds: ['task.implement'],
-      requiredValidatorProfiles: ['build.plan-current', 'build.task-valid'],
+      workKinds: ['task.implement', 'implementation.repair'],
+      requiredValidatorProfiles: [
+        'build.plan-current',
+        'build.task-valid',
+        'build.repair-valid',
+      ],
       extensionCheckpoints: ['build.after-task', 'build.before-task'],
     },
     {
@@ -143,6 +150,25 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       ],
       outputContract: { artifactKinds: [], trackerPublish: false },
       validatorProfile: validatorProfile('build.task-valid'),
+      checkpoint: 'build.before-task',
+    },
+    {
+      kind: 'implementation.repair',
+      phase: 'build',
+      actionSkill: { name: 'repoctopus-build-task' },
+      augmentationSkills: [{ name: 'tdd' }],
+      methodProfile: BUILTIN_METHOD_PROFILE_REGISTRY.snapshot('repoctopus.build', '1.0.0'),
+      capabilities: ['process.execute', 'repository.read', 'repository.write'],
+      sideEffectClass: 'repository-write',
+      writeScopes: [
+        {
+          repositorySelector: 'all-repositories',
+          paths: ['**'],
+          operations: ['create', 'update', 'delete'],
+        },
+      ],
+      outputContract: { artifactKinds: [], trackerPublish: false },
+      validatorProfile: validatorProfile('build.repair-valid'),
       checkpoint: 'build.before-task',
     },
     {
@@ -327,6 +353,14 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       to: { phase: 'build', status: 'running' },
       trigger: 'task-outcome-validated',
       requiredValidatorProfile: 'build.task-valid',
+    },
+    {
+      id: 'build.repair-completed',
+      kind: 'self',
+      from: { phase: 'build', statuses: ['running'] },
+      to: { phase: 'build', status: 'running' },
+      trigger: 'repair-outcome-validated',
+      requiredValidatorProfile: 'build.repair-valid',
     },
     {
       id: 'build.verification-blocked',

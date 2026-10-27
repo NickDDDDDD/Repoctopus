@@ -1,6 +1,7 @@
 import type { SkillUsageSnapshot } from '../skill/types.js';
 import type { SpecificationArtifactKind } from '../specification/types.js';
 import type { SpecificationTask } from '../specification/types.js';
+import type { WorkExecutionFinding } from '../work-execution/types.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import type { VerificationInput } from './verification-input.js';
 import type { ArchiveDeliveryInput } from './archive-input.js';
@@ -216,6 +217,7 @@ export interface VerificationInvalidation {
   attemptId: string;
   bundleId: string | null;
   reason: string;
+  findings: readonly WorkExecutionFinding[];
 }
 
 export interface ChangeLifecycleSnapshot extends ChangeLifecycleState {
@@ -354,6 +356,12 @@ export type ChangeLifecycleObservation =
       tasks: readonly SpecificationTask[];
     }
   | {
+      kind: 'build-repair-completed';
+      workId: string;
+      inputDigest: `sha256:${string}`;
+      receiptId: string;
+    }
+  | {
       kind: 'build-task-ready';
       work: WorkDescriptor;
       tasks: readonly SpecificationTask[];
@@ -387,7 +395,7 @@ export type ChangeLifecycleObservation =
       reason: string;
       result: 'implementation-failure' | 'evidence-unavailable';
       checkEpoch: number;
-      tasks?: readonly SpecificationTask[];
+      findings?: readonly WorkExecutionFinding[];
       work: WorkDescriptor;
       verificationInput?: VerificationInput;
     }
@@ -486,7 +494,9 @@ export function assertChangeLifecycleSnapshot(
   if (
     snapshot.verificationInvalidation &&
     (snapshot.phase !== 'build' ||
-      (snapshot.currentWork !== null && snapshot.currentWork.kind !== 'task.implement') ||
+      (snapshot.currentWork !== null &&
+        snapshot.currentWork.kind !== 'task.implement' &&
+        snapshot.currentWork.kind !== 'implementation.repair') ||
       snapshot.verificationInput)
   ) {
     throw new Error('Verification invalidation requires Build repair without verification input');
@@ -1007,6 +1017,30 @@ export function evolveChangeLifecycle(options: {
       },
     });
   }
+  if (observation.kind === 'build-repair-completed') {
+    const work = current.currentWork;
+    if (
+      current.phase !== 'build' ||
+      current.status !== 'running' ||
+      work?.kind !== 'implementation.repair' ||
+      work.workId !== observation.workId ||
+      work.inputDigest !== observation.inputDigest ||
+      !current.verificationInvalidation ||
+      !observation.receiptId.trim()
+    ) {
+      throw new Error('Build repair completion does not match the active Repair Work');
+    }
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'build.repair-completed',
+      next: {
+        currentWork: null,
+        waitCondition: null,
+        blocker: null,
+      },
+    });
+  }
   if (observation.kind === 'build-task-ready') {
     if (current.phase !== 'build' || current.status !== 'running' || current.currentWork !== null) {
       throw new Error(`Build Task dispatch is not valid from ${current.phase}/${current.status}`);
@@ -1202,15 +1236,11 @@ export function evolveChangeLifecycle(options: {
     }
     if (
       observation.work.phase !== 'build' ||
-      observation.work.kind !== 'task.implement' ||
-      !observation.tasks?.some(
-        (task) =>
-          task.taskId === observation.work.taskId &&
-          task.taskRevision === observation.work.taskRevision &&
-          task.status === 'pending',
-      )
+      observation.work.kind !== 'implementation.repair' ||
+      observation.work.taskId !== undefined ||
+      observation.work.taskRevision !== undefined
     ) {
-      throw new Error('Implementation failure requires a real reopened Repair Work');
+      throw new Error('Implementation failure requires a real standalone Repair Work');
     }
     return applyChangeLifecycleTransition({
       definition: options.definition,
@@ -1220,7 +1250,7 @@ export function evolveChangeLifecycle(options: {
         currentWork: observation.work,
         waitCondition: null,
         blocker: null,
-        tasks: observation.tasks,
+        tasks: current.tasks,
         verificationInput: null,
         verificationInvalidation: {
           schemaVersion: 1,
@@ -1230,6 +1260,7 @@ export function evolveChangeLifecycle(options: {
           attemptId: observation.attemptId,
           bundleId: observation.bundleId,
           reason: observation.reason,
+          findings: structuredClone(observation.findings ?? []),
         },
       },
     });

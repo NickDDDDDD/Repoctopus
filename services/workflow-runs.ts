@@ -4,8 +4,11 @@ import { Service, type Context } from '@deepseek-ai/cordis';
 import { isModelInvocable, type SkillDefinition } from '@deepseek-ai/dsh-skill';
 
 import type { ActionOutcome, RunState, RunTriggerSnapshot } from '../domains/engine/types.js';
-import type { BuildTaskValidation } from '../domains/change-lifecycle/build-validator.js';
-import { validateBuildTaskOutcome } from '../domains/change-lifecycle/build-validator.js';
+import type { BuildWorkValidation } from '../domains/change-lifecycle/build-validator.js';
+import {
+  validateBuildRepairOutcome,
+  validateBuildTaskOutcome,
+} from '../domains/change-lifecycle/build-validator.js';
 import type { ProjectSnapshot } from '../domains/project/types.js';
 import { reconcileProjectSnapshots } from '../domains/project/snapshot.js';
 import { WorkflowRunCoordinator } from '../domains/runtime/workflow-runs.js';
@@ -44,6 +47,7 @@ import {
 } from '../domains/change-lifecycle/host-workflow.js';
 import type { DesignGateAssessment } from './specification-planning.js';
 import { createInitialBuildWork } from '../domains/change-lifecycle/build-work.js';
+import { createBuildRepairWork } from '../domains/change-lifecycle/build-repair-work.js';
 import {
   createVerificationInput,
   rebaseVerificationInput,
@@ -64,6 +68,7 @@ import {
 import type { DeliveryIntentV3, DeliveryPolicy } from '../domains/delivery/types.js';
 import { deliveryPolicyDigest } from '../domains/delivery/snapshot.js';
 import type { WorkExecutorIdentity } from '../domains/action/types.js';
+import type { WorkExecutionFinding } from '../domains/work-execution/types.js';
 import type { ArchivePublicationResult } from '../domains/delivery/service-v3.js';
 import {
   createPublicationReceipt,
@@ -98,7 +103,7 @@ export interface ValidateBuildTaskInput {
 }
 
 export interface ValidateBuildTaskResult {
-  validation: BuildTaskValidation;
+  validation: BuildWorkValidation;
   run: RunStatusView;
 }
 
@@ -868,6 +873,62 @@ export class WorkflowRuns extends Service {
         value: { ...verified.value.run, continuation },
       };
     }
+    if (
+      preflightLifecycle?.phase === 'verify' &&
+      preflightLifecycle.currentWork?.kind === 'evidence.verify' &&
+      preflight.workExecution?.workId === preflightLifecycle.currentWork.workId &&
+      preflight.workExecution.checkEpoch === preflightLifecycle.checkEpoch &&
+      preflight.workExecution.status === 'outcome' &&
+      preflight.workExecution.actionOutcome?.status === 'failed' &&
+      preflight.workExecution.hostOutcome?.status === 'failed'
+    ) {
+      const hostOutcome = preflight.workExecution.hostOutcome;
+      const unsupportedFinding = hostOutcome.findings?.find(
+        (finding) => finding.kind !== 'implementation_failure',
+      );
+      if (unsupportedFinding) {
+        throw new Error(
+          `Verify review requires a different Runtime continuation: ${unsupportedFinding.kind}`,
+        );
+      }
+      const findings: readonly WorkExecutionFinding[] = hostOutcome.findings?.length
+        ? hostOutcome.findings
+        : [{ kind: 'implementation_failure', summary: hostOutcome.summary }];
+      const attemptId = `verify-review:${hostOutcome.invocationId}`;
+      const continuation = await this.createVerifyFailureContinuation(
+        preflight,
+        {
+          result: 'implementation-failure',
+          reason: hostOutcome.summary,
+          attemptId,
+          bundleId: null,
+          findings,
+        },
+        signal,
+      );
+      const fallback = await this.coordinator.acceptChangeObservation(runId, {
+        kind: 'verify-gate-rejected',
+        workId: preflightLifecycle.currentWork.workId,
+        inputDigest: preflightLifecycle.verificationInput!.digest,
+        evidenceInputFingerprint:
+          preflightLifecycle.verificationInput!.evidenceProfile.fingerprintDigest,
+        attemptId,
+        bundleId: null,
+        reason: hostOutcome.summary,
+        result: 'implementation-failure',
+        checkEpoch: preflightLifecycle.checkEpoch,
+        findings,
+        ...continuation,
+      });
+      await this.ctx.workExecutionAuthority.recordWorkCreated(runId, continuation.work);
+      return {
+        diagnostics: fallback.diagnostics,
+        value: {
+          ...(await this.coordinator.status(runId)),
+          continuation: await this.ctx.workExecutionAuthority.recovery(runId),
+        },
+      };
+    }
     const beforeNext = await this.ctx.runStore.loadRun(runId);
     const result: RuntimeResult<RunStatusView> = await this.operations.run(
       { cancellable: false, signal },
@@ -1433,7 +1494,13 @@ export class WorkflowRuns extends Service {
 
   private async createVerifyFailureContinuation(
     state: RunState,
-    result: 'implementation-failure' | 'evidence-unavailable',
+    failure: {
+      result: 'implementation-failure' | 'evidence-unavailable';
+      reason: string;
+      attemptId: string;
+      bundleId: string | null;
+      findings?: readonly WorkExecutionFinding[];
+    },
     signal?: AbortSignal,
   ): Promise<{
     tasks?: SpecificationTask[];
@@ -1456,7 +1523,7 @@ export class WorkflowRuns extends Service {
     ) {
       throw new Error('Verify failure continuation trigger identities are missing');
     }
-    if (result === 'evidence-unavailable') {
+    if (failure.result === 'evidence-unavailable') {
       const skills = await this.resolveLifecycleWorkSkills('evidence.verify', signal);
       const verificationInput = rebaseVerificationInput(
         lifecycle.verificationInput,
@@ -1479,29 +1546,41 @@ export class WorkflowRuns extends Service {
     if (!lifecycle.planningDigest)
       throw new Error('Repair Work requires an approved Design digest');
     const taskSet = await this.ctx.specification.tasks(lifecycle.identity.changeId, signal);
-    const approved = new Map(
-      (lifecycle.tasks ?? []).map((task) => [task.taskId, task.taskRevision]),
-    );
+    const approved = lifecycle.tasks ?? [];
     if (
-      taskSet.tasks.length !== approved.size ||
-      taskSet.tasks.some((task) => approved.get(task.taskId) !== task.taskRevision)
+      taskSet.tasks.length !== approved.length ||
+      taskSet.tasks.some((task, index) => {
+        const projected = approved[index];
+        return (
+          !projected ||
+          projected.taskId !== task.taskId ||
+          projected.taskRevision !== task.taskRevision
+        );
+      })
     ) {
       throw new Error('Repair Work Task revisions drifted from the approved Design');
     }
-    const reopened = taskSet.tasks.map((task) => ({
-      ...task,
-      status: 'pending' as const,
-      completion: null,
-    }));
-    const skills = await this.resolveLifecycleWorkSkills('task.implement', signal);
-    const repair = createInitialBuildWork({
+    const findings = structuredClone(failure.findings ?? []);
+    const invalidation = {
+      schemaVersion: 1 as const,
+      kind: 'implementation-drift' as const,
+      priorInputDigest: lifecycle.verificationInput.digest,
+      evidenceInputFingerprint: lifecycle.verificationInput.evidenceProfile.fingerprintDigest,
+      attemptId: failure.attemptId,
+      bundleId: failure.bundleId,
+      reason: failure.reason,
+      findings,
+    };
+    const skills = await this.resolveLifecycleWorkSkills('implementation.repair', signal);
+    const repair = createBuildRepairWork({
       runId: state.runId,
       checkEpoch: lifecycle.checkEpoch + 1,
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
       actionSkill: skills.actionSkill,
       augmentationSkills: skills.augmentationSkills,
-      taskSet: { ...taskSet, tasks: reopened },
-      approvalHash: lifecycle.planningDigest,
+      planningDigest: lifecycle.planningDigest,
+      invalidation,
+      findings,
       compositionDigest: state.composition.compositionDigest,
       projectConfigDigest: projectConfigDigest as `sha256:${string}`,
       projectSnapshotDigest: state.projectSnapshotDigest,
@@ -1511,7 +1590,7 @@ export class WorkflowRuns extends Service {
     for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
       await this.coordinator.bindSkill(state.runId, skill);
     }
-    return repair;
+    return { work: repair };
   }
 
   validateBuildTask(
@@ -1560,8 +1639,13 @@ export class WorkflowRuns extends Service {
           diagnostics: [],
         };
       }
-      const tasks = await this.ctx.specification.tasks(lifecycle.identity.changeId, signal);
-      const validation = validateBuildTaskOutcome({ state, receipt, tasks });
+      const repair = lifecycle.currentWork.kind === 'implementation.repair';
+      const tasks = repair
+        ? null
+        : await this.ctx.specification.tasks(lifecycle.identity.changeId, signal);
+      const validation = repair
+        ? validateBuildRepairOutcome({ state, receipt })
+        : validateBuildTaskOutcome({ state, receipt, tasks: tasks! });
       if (!['validated', 'already-completed'].includes(validation.status)) {
         return {
           value: { validation, run: await this.coordinator.status(input.runId) },
@@ -1581,13 +1665,15 @@ export class WorkflowRuns extends Service {
       ) {
         throw new Error('Build Task validation requires a succeeded managed Host Outcome');
       }
-      await this.ctx.specification.completeTask({
-        changeId: lifecycle.identity.changeId,
-        taskId: validation.taskId,
-        taskRevision: validation.taskRevision,
-        workId: validation.workId,
-        ...(signal ? { signal } : {}),
-      });
+      if (validation.workKind === 'task.implement') {
+        await this.ctx.specification.completeTask({
+          changeId: lifecycle.identity.changeId,
+          taskId: validation.taskId,
+          taskRevision: validation.taskRevision,
+          workId: validation.workId,
+          ...(signal ? { signal } : {}),
+        });
+      }
       if (!validatorResultIsReusable) {
         const validator = this.ctx.lifecycleValidators.resolve(
           lifecycle.currentWork.validatorProfile.id,
@@ -1597,8 +1683,9 @@ export class WorkflowRuns extends Service {
           work: lifecycle.currentWork,
           fact: {
             receiptId: receipt.receiptId,
-            taskId: validation.taskId,
-            taskRevision: validation.taskRevision,
+            ...(validation.workKind === 'task.implement'
+              ? { taskId: validation.taskId, taskRevision: validation.taskRevision }
+              : { repair: true }),
           },
         });
         if (!validatorResult.accepted) {
@@ -1610,24 +1697,34 @@ export class WorkflowRuns extends Service {
           continuation: 'execute',
         });
       }
-      const projectedTasks = (lifecycle.tasks ?? []).map((task) =>
-        task.taskId === validation.taskId
-          ? {
-              ...task,
-              status: 'completed' as const,
-              completion: { source: 'runtime-work' as const, workId: validation.workId },
-            }
-          : task,
-      );
-      const advanced = await this.coordinator.acceptChangeObservation(input.runId, {
-        kind: 'build-task-completed',
-        workId: validation.workId,
-        taskId: validation.taskId,
-        taskRevision: validation.taskRevision,
-        inputDigest: lifecycle.currentWork.inputDigest,
-        receiptId: receipt.receiptId,
-        tasks: projectedTasks,
-      });
+      const advanced =
+        validation.workKind === 'implementation.repair'
+          ? await this.coordinator.acceptChangeObservation(input.runId, {
+              kind: 'build-repair-completed',
+              workId: validation.workId,
+              inputDigest: lifecycle.currentWork.inputDigest,
+              receiptId: receipt.receiptId,
+            })
+          : await this.coordinator.acceptChangeObservation(input.runId, {
+              kind: 'build-task-completed',
+              workId: validation.workId,
+              taskId: validation.taskId,
+              taskRevision: validation.taskRevision,
+              inputDigest: lifecycle.currentWork.inputDigest,
+              receiptId: receipt.receiptId,
+              tasks: (lifecycle.tasks ?? []).map((task) =>
+                task.taskId === validation.taskId
+                  ? {
+                      ...task,
+                      status: 'completed' as const,
+                      completion: {
+                        source: 'runtime-work' as const,
+                        workId: validation.workId,
+                      },
+                    }
+                  : task,
+              ),
+            });
       return {
         value: { validation, run: advanced.value },
         diagnostics: advanced.diagnostics,
