@@ -4,6 +4,8 @@ export const OBSERVATION_PHASES = ['open', 'design', 'build', 'verify', 'archive
 
 export type ObservationPhase = (typeof OBSERVATION_PHASES)[number];
 export type ObservationCategory =
+  | 'app-lifecycle'
+  | 'delivery'
   | 'phase'
   | 'work'
   | 'task'
@@ -33,6 +35,15 @@ export interface ObservationEventSchema {
   metric: {
     instrument: ObservationMetricInstrument;
     dimensions: Readonly<Record<string, readonly ObservationAttributeValue[]>>;
+    measurements: Readonly<
+      Record<
+        string,
+        {
+          instrument: Exclude<ObservationMetricInstrument, 'none'>;
+          dimensions: Readonly<Record<string, readonly ObservationAttributeValue[]>>;
+        }
+      >
+    >;
   };
 }
 
@@ -65,15 +76,45 @@ const EVIDENCE_NODE_RESULTS = ['passed', 'failed', 'incomplete'] as const;
 const EVIDENCE_FRESHNESS = ['fresh', 'reused', 'superseded'] as const;
 const EVIDENCE_TRUST = ['verified', 'observed'] as const;
 const EVIDENCE_ATTEMPT_RESULTS = ['completed', 'recovered', 'superseded'] as const;
-const EVIDENCE_GATE_RESULTS = [
-  'passed',
-  'failed',
-  'incomplete',
-  'passed_with_warnings',
-] as const;
+const EVIDENCE_GATE_RESULTS = ['passed', 'failed', 'incomplete', 'passed_with_warnings'] as const;
 const RECOVERY_KINDS = ['resume', 'reconcile', 'fallback', 'retry', 'unknown'] as const;
 const DESTINATION_KINDS = ['remote', 'desktop'] as const;
 const PIPELINE_RESULTS = ['accepted', 'rejected', 'delivered', 'failed', 'dropped', 'gap'] as const;
+const LIFECYCLE_PHASES = [
+  'boot',
+  'pending',
+  'loading',
+  'active',
+  'unloading',
+  'failed',
+  'disposed',
+  'draining',
+  'closed',
+] as const;
+const LIFECYCLE_RESULTS = ['started', 'succeeded', 'failed', 'timed_out'] as const;
+const DELIVERY_EVENTS = [
+  'delivery.prepared',
+  'delivery.decided',
+  'delivery.action',
+  'delivery.refreshed',
+  'delivery.invalidated',
+] as const;
+const DELIVERY_STATES = [
+  'development',
+  'verification_required',
+  'awaiting_approval',
+  'approved',
+  'publishing',
+  'partially_published',
+  'in_review',
+  'merged',
+  'rejected',
+  'repair_required',
+] as const;
+const DELIVERY_RESULTS = ['started', 'succeeded', 'failed', 'rejected', 'unknown'] as const;
+const DELIVERY_ACTION_TYPES = ['git.push', 'mr.create_or_update', 'mr.refresh'] as const;
+
+type MetricMeasurementSchemas = ObservationEventSchema['metric']['measurements'];
 
 function dimensions(
   entries: Readonly<Record<string, readonly ObservationAttributeValue[]>>,
@@ -87,6 +128,7 @@ function schema(
   span: ObservationEventSchema['span'],
   instrument: ObservationMetricInstrument,
   metricDimensions: Readonly<Record<string, readonly ObservationAttributeValue[]>> = {},
+  measurements: MetricMeasurementSchemas = {},
 ): ObservationEventSchema {
   return Object.freeze({
     schemaVersion: 1,
@@ -94,7 +136,11 @@ function schema(
     category,
     log: Object.freeze({ emit: true, correlation: 'trace-and-span' as const }),
     span: Object.freeze(span),
-    metric: Object.freeze({ instrument, dimensions: dimensions(metricDimensions) }),
+    metric: Object.freeze({
+      instrument,
+      dimensions: dimensions(metricDimensions),
+      measurements: Object.freeze(measurements),
+    }),
   });
 }
 
@@ -102,8 +148,9 @@ function point(
   name: string,
   category: ObservationCategory,
   metricDimensions: Readonly<Record<string, readonly ObservationAttributeValue[]>>,
+  measurements: MetricMeasurementSchemas = {},
 ): ObservationEventSchema {
-  return schema(name, category, { strategy: 'point' }, 'counter', metricDimensions);
+  return schema(name, category, { strategy: 'point' }, 'counter', metricDimensions, measurements);
 }
 
 function boundary(
@@ -112,6 +159,7 @@ function boundary(
   strategy: Extract<ObservationSpanStrategy, 'boundary-start' | 'boundary-end'>,
   operation: string,
   metricDimensions: Readonly<Record<string, readonly ObservationAttributeValue[]>>,
+  measurements: MetricMeasurementSchemas = {},
 ): ObservationEventSchema {
   return schema(
     name,
@@ -119,10 +167,86 @@ function boundary(
     { strategy, operation, correlation: 'operation-id' },
     strategy === 'boundary-end' ? 'histogram' : 'counter',
     metricDimensions,
+    measurements,
   );
 }
 
+const PIPELINE_DIMENSIONS = {
+  'destination.kind': DESTINATION_KINDS,
+  result: PIPELINE_RESULTS,
+} as const;
+
+function pipelineMeasurements(includeDeliveryEvents = false): MetricMeasurementSchemas {
+  return Object.freeze({
+    ...(includeDeliveryEvents
+      ? {
+          'repoctopus.telemetry.delivery.events': {
+            instrument: 'counter' as const,
+            dimensions: dimensions(PIPELINE_DIMENSIONS),
+          },
+        }
+      : {}),
+    'repoctopus.telemetry.cursor.lag': {
+      instrument: 'gauge',
+      dimensions: dimensions(PIPELINE_DIMENSIONS),
+    },
+    'repoctopus.telemetry.backlog.count': {
+      instrument: 'gauge',
+      dimensions: dimensions(PIPELINE_DIMENSIONS),
+    },
+    'repoctopus.telemetry.backlog.bytes': {
+      instrument: 'gauge',
+      dimensions: dimensions(PIPELINE_DIMENSIONS),
+    },
+    'repoctopus.telemetry.backlog.oldest_age': {
+      instrument: 'gauge',
+      dimensions: dimensions(PIPELINE_DIMENSIONS),
+    },
+    'repoctopus.telemetry.retry.count': {
+      instrument: 'gauge',
+      dimensions: dimensions(PIPELINE_DIMENSIONS),
+    },
+    'repoctopus.telemetry.gap.count': {
+      instrument: 'gauge',
+      dimensions: dimensions(PIPELINE_DIMENSIONS),
+    },
+    'repoctopus.telemetry.retention.dropped_count': {
+      instrument: 'gauge',
+      dimensions: dimensions(PIPELINE_DIMENSIONS),
+    },
+    'repoctopus.telemetry.retention.dropped_bytes': {
+      instrument: 'gauge',
+      dimensions: dimensions(PIPELINE_DIMENSIONS),
+    },
+  });
+}
+
 const EVENT_SCHEMAS = [
+  point('app.lifecycle', 'app-lifecycle', {
+    'lifecycle.type': ['app'],
+    phase: LIFECYCLE_PHASES,
+    result: LIFECYCLE_RESULTS,
+  }),
+  point('plugin.lifecycle', 'app-lifecycle', {
+    'lifecycle.type': ['plugin'],
+    phase: LIFECYCLE_PHASES,
+    result: LIFECYCLE_RESULTS,
+  }),
+  point('operation.drain', 'app-lifecycle', {
+    'lifecycle.type': ['operation-drain'],
+    phase: LIFECYCLE_PHASES,
+    result: LIFECYCLE_RESULTS,
+  }),
+
+  ...DELIVERY_EVENTS.map((eventName) =>
+    point(eventName, 'delivery', {
+      'delivery.event.type': [eventName],
+      'delivery.state': DELIVERY_STATES,
+      'delivery.action.type': DELIVERY_ACTION_TYPES,
+      result: DELIVERY_RESULTS,
+    }),
+  ),
+
   point('change.phase.entered', 'phase', { phase: PHASES }),
   point('change.phase.completed', 'phase', { phase: PHASES, result: RESULTS }),
   point('change.phase.reopened', 'phase', { phase: PHASES, 'recovery.kind': RECOVERY_KINDS }),
@@ -237,7 +361,13 @@ const EVENT_SCHEMAS = [
     phase: ['verify'],
     'evidence.result': EVIDENCE_RESULTS,
   }),
-  boundary('evidence.attempt.started', 'validator-evidence', 'boundary-start', 'evidence.attempt', {}),
+  boundary(
+    'evidence.attempt.started',
+    'validator-evidence',
+    'boundary-start',
+    'evidence.attempt',
+    {},
+  ),
   boundary('evidence.node.completed', 'validator-evidence', 'boundary-end', 'evidence.node', {
     'evidence.result': EVIDENCE_NODE_RESULTS,
     'evidence.freshness': EVIDENCE_FRESHNESS,
@@ -248,13 +378,9 @@ const EVENT_SCHEMAS = [
     'evidence.result': EVIDENCE_GATE_RESULTS,
     'evidence.gate': ['satisfied', 'blocked'],
   }),
-  boundary(
-    'evidence.attempt.completed',
-    'validator-evidence',
-    'boundary-end',
-    'evidence.attempt',
-    { 'evidence.result': EVIDENCE_ATTEMPT_RESULTS },
-  ),
+  boundary('evidence.attempt.completed', 'validator-evidence', 'boundary-end', 'evidence.attempt', {
+    'evidence.result': EVIDENCE_ATTEMPT_RESULTS,
+  }),
 
   boundary('reconcile.started', 'recovery', 'boundary-start', 'reconcile', {
     phase: PHASES,
@@ -272,21 +398,45 @@ const EVENT_SCHEMAS = [
   }),
 
   point('telemetry.envelope-stored', 'telemetry-pipeline', { result: ['accepted', 'rejected'] }),
-  boundary('telemetry.delivery-started', 'telemetry-pipeline', 'boundary-start', 'delivery', {
-    'destination.kind': DESTINATION_KINDS,
-  }),
-  boundary('telemetry.delivery-completed', 'telemetry-pipeline', 'boundary-end', 'delivery', {
-    'destination.kind': DESTINATION_KINDS,
-    result: PIPELINE_RESULTS,
-  }),
-  point('telemetry.receiver-evaluated', 'telemetry-pipeline', {
-    'destination.kind': ['desktop'],
-    result: ['accepted', 'rejected'],
-  }),
-  point('telemetry.gap-recorded', 'telemetry-pipeline', {
-    'destination.kind': DESTINATION_KINDS,
-    result: ['dropped', 'gap'],
-  }),
+  boundary(
+    'telemetry.delivery-started',
+    'telemetry-pipeline',
+    'boundary-start',
+    'delivery',
+    {
+      'destination.kind': DESTINATION_KINDS,
+    },
+    pipelineMeasurements(),
+  ),
+  boundary(
+    'telemetry.delivery-completed',
+    'telemetry-pipeline',
+    'boundary-end',
+    'delivery',
+    {
+      'destination.kind': DESTINATION_KINDS,
+      result: PIPELINE_RESULTS,
+    },
+    pipelineMeasurements(true),
+  ),
+  point(
+    'telemetry.receiver-evaluated',
+    'telemetry-pipeline',
+    {
+      'destination.kind': ['desktop'],
+      result: ['accepted', 'rejected'],
+    },
+    pipelineMeasurements(),
+  ),
+  point(
+    'telemetry.gap-recorded',
+    'telemetry-pipeline',
+    {
+      'destination.kind': DESTINATION_KINDS,
+      result: ['dropped', 'gap'],
+    },
+    pipelineMeasurements(),
+  ),
 ] as const;
 
 const schemaByName = new Map(EVENT_SCHEMAS.map((entry) => [entry.name, entry]));
@@ -342,9 +492,17 @@ export function validateObservationMetricAttributes(
   candidate: Readonly<Record<string, unknown>>,
 ): Record<string, ObservationAttributeValue> {
   const event = observationEventSchema(eventName);
+  return validateMetricDimensions(eventName, candidate, event.metric.dimensions);
+}
+
+function validateMetricDimensions(
+  eventName: string,
+  candidate: Readonly<Record<string, unknown>>,
+  allowedDimensions: Readonly<Record<string, readonly ObservationAttributeValue[]>>,
+): Record<string, ObservationAttributeValue> {
   const result: Record<string, ObservationAttributeValue> = {};
   for (const key of Object.keys(candidate).sort()) {
-    const allowed = event.metric.dimensions[key];
+    const allowed = allowedDimensions[key];
     const value = candidate[key];
     if (!allowed || !allowed.some((entry) => entry === value)) {
       throw new Error(`Unsafe Metric dimension ${key} for ${eventName}`);
@@ -352,6 +510,24 @@ export function validateObservationMetricAttributes(
     result[key] = value as ObservationAttributeValue;
   }
   return result;
+}
+
+export function observationMetricMeasurementSchema(eventName: string, measurementName: string) {
+  const event = observationEventSchema(eventName);
+  const measurement = event.metric.measurements[measurementName];
+  if (!measurement) {
+    throw new Error(`Unknown Metric measurement ${measurementName} for ${eventName}`);
+  }
+  return measurement;
+}
+
+export function validateObservationMeasurementAttributes(
+  eventName: string,
+  measurementName: string,
+  candidate: Readonly<Record<string, unknown>>,
+): Record<string, ObservationAttributeValue> {
+  const measurement = observationMetricMeasurementSchema(eventName, measurementName);
+  return validateMetricDimensions(eventName, candidate, measurement.dimensions);
 }
 
 export function validateObservationAttributes(

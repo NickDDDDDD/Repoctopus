@@ -60,6 +60,10 @@ const METRIC_ATTRIBUTE_NAMES: Readonly<Record<string, string>> = {
   'evidence.trust': 'repoctopus.evidence.trust',
   'evidence.gate': 'repoctopus.evidence.gate.status',
   'destination.kind': 'repoctopus.telemetry.destination.kind',
+  'lifecycle.type': 'repoctopus.lifecycle.type',
+  'delivery.event.type': 'repoctopus.delivery.event.type',
+  'delivery.state': 'repoctopus.delivery.state',
+  'delivery.action.type': 'repoctopus.delivery.action.type',
 };
 
 function correlatedAttributes(
@@ -74,10 +78,17 @@ function correlatedAttributes(
 }
 
 function metricAttributes(record: ObservationMetricRecord): EncodedAttributes {
+  const eventTypeAttribute = record.name.startsWith('evidence.')
+    ? 'repoctopus.evidence.event.type'
+    : record.name.startsWith('delivery.')
+      ? 'repoctopus.delivery.event.type'
+      : record.name.endsWith('.lifecycle') || record.name === 'operation.drain'
+        ? 'repoctopus.lifecycle.event.type'
+        : record.name.startsWith('telemetry.')
+          ? 'repoctopus.telemetry.event.type'
+          : 'repoctopus.execution.event.type';
   return {
-    [record.name.startsWith('evidence.')
-      ? 'repoctopus.evidence.event.type'
-      : 'repoctopus.execution.event.type']: record.name,
+    [eventTypeAttribute]: record.name,
     ...Object.fromEntries(
       Object.entries(record.attributes).map(([key, value]) => [
         METRIC_ATTRIBUTE_NAMES[key] ?? `repoctopus.observation.${key}`,
@@ -98,6 +109,9 @@ function spanResult(record: ObservationSpanRecord): string | null {
     'repoctopus.evidence.status',
     'repoctopus.evidence.outcome',
     'repoctopus.evidence.gate_status',
+    'repoctopus.lifecycle.result',
+    'repoctopus.delivery.result',
+    'repoctopus.telemetry.result',
   ]) {
     const value = record.attributes[key];
     if (typeof value === 'string') return value;
@@ -106,11 +120,29 @@ function spanResult(record: ObservationSpanRecord): string | null {
 }
 
 function metricName(record: ObservationMetricRecord): string {
+  if (record.metricName) return record.metricName;
   if (record.name === 'evidence.node.completed') return 'repoctopus.evidence.node.duration';
   if (record.name === 'evidence.attempt.completed') {
     return 'repoctopus.evidence.attempt.duration';
   }
   if (record.name.startsWith('evidence.')) return 'repoctopus.evidence.events';
+  if (record.name.endsWith('.lifecycle') || record.name === 'operation.drain') {
+    return 'repoctopus.lifecycle.events';
+  }
+  if (record.name.startsWith('delivery.')) return 'repoctopus.delivery.events';
+  if (record.name === 'telemetry.delivery-completed') {
+    return 'repoctopus.telemetry.delivery.latency';
+  }
+  if (record.name === 'telemetry.delivery-started') {
+    return 'repoctopus.telemetry.delivery.events';
+  }
+  if (record.name === 'telemetry.receiver-evaluated') {
+    return 'repoctopus.telemetry.receiver.events';
+  }
+  if (record.name === 'telemetry.gap-recorded') return 'repoctopus.telemetry.gap.events';
+  if (record.name === 'telemetry.envelope-stored') {
+    return 'repoctopus.telemetry.envelope.events';
+  }
   return record.instrument === 'histogram'
     ? 'repoctopus.work.execution.duration'
     : 'repoctopus.work.execution.events';

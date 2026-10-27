@@ -3,7 +3,9 @@ import { createHash } from 'node:crypto';
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import {
   observationEventSchema,
+  observationMetricMeasurementSchema,
   validateObservationAttributes,
+  validateObservationMeasurementAttributes,
   validateObservationMetricAttributes,
 } from './observation-contract.js';
 
@@ -26,6 +28,12 @@ export interface ObservationEnvelopeInput {
   metric?: {
     value: number;
     attributes: Record<string, unknown>;
+    measurements?: readonly {
+      name: string;
+      instrument: 'counter' | 'histogram' | 'gauge';
+      value: number;
+      attributes: Record<string, unknown>;
+    }[];
   };
 }
 
@@ -55,6 +63,7 @@ export interface ObservationMetricRecord extends ObservationRecordBase {
   signal: 'metric';
   instrument: 'counter' | 'histogram' | 'gauge';
   value: number;
+  metricName?: string;
 }
 
 export type ObservationEnvelopeRecord =
@@ -88,8 +97,7 @@ const TRACE_ID = /^[a-f0-9]{32}$/u;
 const SPAN_ID = /^[a-f0-9]{16}$/u;
 const DIGEST = /^sha256:[a-f0-9]{64}$/u;
 const STABLE_ID = /^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,255}$/u;
-const PRIVATE_CONTENT_KEY =
-  /(?:^|[._-])(content|log|message|screenshot|summary|text)$/iu;
+const PRIVATE_CONTENT_KEY = /(?:^|[._-])(content|log|message|screenshot|summary|text)$/iu;
 
 function digest(value: unknown): ObservationDigest {
   return `sha256:${createHash('sha256').update(canonicalJson(value)).digest('hex')}`;
@@ -122,10 +130,7 @@ function finiteMetricValue(value: number): number {
   return value;
 }
 
-function envelopeIdentity(source: {
-  eventId: string;
-  eventName: string;
-}): ObservationDigest {
+function envelopeIdentity(source: { eventId: string; eventName: string }): ObservationDigest {
   return digest({
     schemaVersion: 1,
     namespace: 'repoctopus.observation-envelope',
@@ -203,6 +208,28 @@ export function createObservationEnvelope(input: ObservationEnvelopeInput): Obse
       value: finiteMetricValue(input.metric.value),
       attributes: validateObservationMetricAttributes(schema.name, input.metric.attributes),
     });
+    for (const measurement of input.metric.measurements ?? []) {
+      const measurementSchema = observationMetricMeasurementSchema(schema.name, measurement.name);
+      if (measurement.instrument !== measurementSchema.instrument) {
+        throw new Error(
+          `Metric measurement ${measurement.name} must use ${measurementSchema.instrument}`,
+        );
+      }
+      records.push({
+        schemaVersion: 1,
+        signal: 'metric',
+        name: schema.name,
+        metricName: measurement.name,
+        observedAt: source.observedAt,
+        instrument: measurement.instrument,
+        value: finiteMetricValue(measurement.value),
+        attributes: validateObservationMeasurementAttributes(
+          schema.name,
+          measurement.name,
+          measurement.attributes,
+        ),
+      });
+    }
   } else if (input.metric) {
     throw new Error(`Observation ${schema.name} does not allow a Metric record`);
   }

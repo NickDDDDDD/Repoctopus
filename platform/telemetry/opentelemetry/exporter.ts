@@ -1,4 +1,11 @@
-import { ROOT_CONTEXT, SpanStatusCode, TraceFlags, trace, type Context } from '@opentelemetry/api';
+import {
+  ROOT_CONTEXT,
+  SpanStatusCode,
+  TraceFlags,
+  trace,
+  type Context,
+  type Meter,
+} from '@opentelemetry/api';
 import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
@@ -16,7 +23,6 @@ import { createHash } from 'node:crypto';
 import type { TelemetryBatch, TelemetryPort } from '../../../domains/runtime/types.js';
 import type { DeliveryEvent, DeliveryTelemetryPort } from '../../../domains/delivery/ports.js';
 import type { DeliveryState } from '../../../domains/delivery/types.js';
-import { safeDeliveryAttributes } from '../delivery-mapping.js';
 import { acceptedChangeLifecycleTelemetry } from '../change-lifecycle-mapping.js';
 import {
   eventSeverity,
@@ -32,7 +38,57 @@ import type {
 } from '../../../services/lifecycle-diagnostics.js';
 import { projectWorkflowHealthMetrics } from '../../../domains/telemetry/workflow-health-metrics.js';
 import { mapWorkflowObservationEnvelopes } from '../workflow-observation-mapping.js';
-import { encodeObservationEnvelopes, type EncodedObservationSignals } from './envelope-encoder.js';
+import {
+  mapDeliveryObservationEnvelope,
+  mapLifecycleObservationEnvelopes,
+  mapTelemetryPipelineObservationEnvelopes,
+} from '../platform-observation-mapping.js';
+import {
+  encodeObservationEnvelopes,
+  type EncodedObservationSignals,
+  type EncodedOtlpMetric,
+} from './envelope-encoder.js';
+
+interface MetricInstrumentCache {
+  counters: Map<string, ReturnType<Meter['createCounter']>>;
+  histograms: Map<string, ReturnType<Meter['createHistogram']>>;
+  gauges: Map<string, ReturnType<Meter['createGauge']>>;
+}
+
+function metricInstrumentCache(): MetricInstrumentCache {
+  return { counters: new Map(), histograms: new Map(), gauges: new Map() };
+}
+
+function recordEncodedMetric(
+  meter: Meter,
+  cache: MetricInstrumentCache,
+  record: EncodedOtlpMetric,
+): void {
+  if (record.instrument === 'counter') {
+    let instrument = cache.counters.get(record.name);
+    if (!instrument) {
+      instrument = meter.createCounter(record.name);
+      cache.counters.set(record.name, instrument);
+    }
+    instrument.add(record.value, record.attributes);
+    return;
+  }
+  if (record.instrument === 'histogram') {
+    let instrument = cache.histograms.get(record.name);
+    if (!instrument) {
+      instrument = meter.createHistogram(record.name);
+      cache.histograms.set(record.name, instrument);
+    }
+    instrument.record(record.value, record.attributes);
+    return;
+  }
+  let instrument = cache.gauges.get(record.name);
+  if (!instrument) {
+    instrument = meter.createGauge(record.name);
+    cache.gauges.set(record.name, instrument);
+  }
+  instrument.record(record.value, record.attributes);
+}
 
 function syntheticParentContext(runId: string, traceId: string): Context {
   const spanId = createHash('sha256').update(runId).digest('hex').slice(0, 16);
@@ -127,7 +183,10 @@ export class OpenTelemetryExporter implements TelemetryPort {
 
   async export(batch: TelemetryBatch): Promise<void> {
     const observationSignalsByEvent = new Map<string, EncodedObservationSignals>();
-    for (const envelope of mapWorkflowObservationEnvelopes(batch)) {
+    for (const envelope of [
+      ...mapWorkflowObservationEnvelopes(batch),
+      ...mapTelemetryPipelineObservationEnvelopes(batch),
+    ]) {
       observationSignalsByEvent.set(
         envelope.source.eventId,
         encodeObservationEnvelopes([envelope]),
@@ -235,59 +294,7 @@ export class OpenTelemetryExporter implements TelemetryPort {
       description: 'Host-declared model Token aggregate when available',
       unit: '{token}',
     });
-    const telemetryCursorLag = meter.createGauge('repoctopus.telemetry.cursor.lag', {
-      description: 'Unacknowledged envelope sequence distance for one destination kind',
-      unit: '{envelope}',
-    });
-    const telemetryBacklogCount = meter.createGauge('repoctopus.telemetry.backlog.count', {
-      description: 'Queued envelope count for one destination kind',
-      unit: '{envelope}',
-    });
-    const telemetryBacklogBytes = meter.createGauge('repoctopus.telemetry.backlog.bytes', {
-      description: 'Queued envelope bytes for one destination kind',
-      unit: 'By',
-    });
-    const telemetryBacklogAge = meter.createGauge('repoctopus.telemetry.backlog.oldest_age', {
-      description: 'Age of the oldest queued envelope for one destination kind',
-      unit: 'ms',
-    });
-    const telemetryRetryCount = meter.createGauge('repoctopus.telemetry.retry.count', {
-      description: 'Consecutive delivery retries for one destination kind',
-      unit: '{retry}',
-    });
-    const telemetryGapCount = meter.createGauge('repoctopus.telemetry.gap.count', {
-      description: 'Known delivery history gaps for one destination kind',
-      unit: '{gap}',
-    });
-    const telemetryRetentionDroppedCount = meter.createGauge(
-      'repoctopus.telemetry.retention.dropped_count',
-      {
-        description: 'Cumulative envelopes removed before destination acknowledgement',
-        unit: '{envelope}',
-      },
-    );
-    const telemetryRetentionDroppedBytes = meter.createGauge(
-      'repoctopus.telemetry.retention.dropped_bytes',
-      {
-        description: 'Cumulative bytes removed before destination acknowledgement',
-        unit: 'By',
-      },
-    );
-    const telemetryDeliveryLatency = meter.createHistogram(
-      'repoctopus.telemetry.delivery.latency',
-      {
-        description: 'Destination delivery attempt latency',
-        unit: 'ms',
-      },
-    );
-    const telemetryDeliveryEvents = meter.createCounter('repoctopus.telemetry.delivery.events', {
-      description: 'Bounded destination delivery results',
-      unit: '{attempt}',
-    });
-    const telemetryReceiverEvents = meter.createCounter('repoctopus.telemetry.receiver.events', {
-      description: 'Bounded desktop Receiver acceptance results',
-      unit: '{request}',
-    });
+    const observationMetricInstruments = metricInstrumentCache();
     const parentContext = syntheticParentContext(batch.run.runId, batch.run.traceId);
 
     try {
@@ -388,47 +395,6 @@ export class OpenTelemetryExporter implements TelemetryPort {
             }
           }
         }
-        const destinationKind = item.data.destinationKind;
-        if (
-          item.type.startsWith('telemetry.') &&
-          (destinationKind === 'remote' || destinationKind === 'desktop')
-        ) {
-          const rawResult = item.data.result;
-          const result =
-            typeof rawResult === 'string' &&
-            ['accepted', 'rejected', 'delivered', 'failed', 'dropped', 'gap'].includes(rawResult)
-              ? rawResult
-              : 'unknown';
-          const metricAttributes = {
-            'repoctopus.telemetry.destination.kind': destinationKind,
-            'repoctopus.telemetry.result': result,
-          };
-          for (const [source, instrument] of [
-            ['cursorLag', telemetryCursorLag],
-            ['backlogCount', telemetryBacklogCount],
-            ['backlogBytes', telemetryBacklogBytes],
-            ['backlogOldestAgeMs', telemetryBacklogAge],
-            ['retryCount', telemetryRetryCount],
-            ['gapCount', telemetryGapCount],
-            ['retentionDroppedCount', telemetryRetentionDroppedCount],
-            ['retentionDroppedBytes', telemetryRetentionDroppedBytes],
-          ] as const) {
-            const value = item.data[source];
-            if (typeof value === 'number' && Number.isSafeInteger(value) && value >= 0) {
-              instrument.record(value, metricAttributes);
-            }
-          }
-          if (item.type === 'telemetry.delivery-completed') {
-            telemetryDeliveryEvents.add(1, metricAttributes);
-            const latency = item.data.deliveryLatencyMs;
-            if (typeof latency === 'number' && Number.isSafeInteger(latency) && latency >= 0) {
-              telemetryDeliveryLatency.record(latency, metricAttributes);
-            }
-          }
-          if (item.type === 'telemetry.receiver-evaluated') {
-            telemetryReceiverEvents.add(1, metricAttributes);
-          }
-        }
         const lifecycleRecords = acceptedChangeLifecycleTelemetry(batch, item);
         if (lifecycleRecords.length > 0) {
           for (const record of lifecycleRecords) {
@@ -477,37 +443,11 @@ export class OpenTelemetryExporter implements TelemetryPort {
             });
           }
           for (const metricRecord of observationSignals.metrics) {
-            if (metricRecord.instrument === 'histogram') {
-              executionDuration.record(metricRecord.value, metricRecord.attributes);
-            } else {
-              executionCounter.add(metricRecord.value, metricRecord.attributes);
-            }
+            recordEncodedMetric(meter, observationMetricInstruments, metricRecord);
           }
           continue;
         }
         const attributes = safeEventAttributes(batch, item);
-        if (item.type === 'telemetry.delivery-completed') {
-          const started = batch.trajectory.find(
-            (candidate) =>
-              candidate.type === 'telemetry.delivery-started' &&
-              candidate.data.operationId === item.data.operationId &&
-              candidate.data.destinationId === item.data.destinationId,
-          );
-          if (started) {
-            const span = tracer.startSpan(
-              'repoctopus.telemetry.delivery',
-              { startTime: new Date(started.timestamp), attributes },
-              parentContext,
-            );
-            span.setStatus({
-              code:
-                item.data.result === 'failed' || item.data.result === 'rejected'
-                  ? SpanStatusCode.ERROR
-                  : SpanStatusCode.OK,
-            });
-            span.end(new Date(item.timestamp));
-          }
-        }
         if (item.type === 'action.completed') {
           const id = actionId(item);
           const proposed = batch.trajectory.find(
@@ -592,70 +532,111 @@ export class InMemoryTelemetryExporter implements TelemetryPort {
   }
 }
 
+async function exportStandaloneObservationSignals(
+  signals: EncodedObservationSignals,
+  serviceName: string,
+  options: OpenTelemetryOptions,
+): Promise<void> {
+  if (signals.logs.length === 0) return;
+  const timeoutMillis = options.timeoutMillis ?? 5_000;
+  const resource = resourceFromAttributes({
+    [ATTR_SERVICE_NAME]: serviceName,
+    [ATTR_SERVICE_VERSION]: '0.1.0',
+    [ATTR_DEPLOYMENT_ENVIRONMENT_NAME]: options.environment ?? 'development',
+    ...signals.logs[0]?.resourceAttributes,
+  });
+  let spanCursor = 0;
+  const traceProvider = new BasicTracerProvider({
+    resource,
+    idGenerator: {
+      generateTraceId: () => signals.logs[0]!.traceId,
+      generateSpanId: () =>
+        signals.spans[spanCursor++]?.spanId ??
+        createHash('sha256')
+          .update(`${serviceName}\0fallback\0${spanCursor}`)
+          .digest('hex')
+          .slice(0, 16),
+    },
+    spanProcessors: [new SimpleSpanProcessor(new OTLPTraceExporter({ timeoutMillis }))],
+  });
+  const loggerProvider = new LoggerProvider({
+    resource,
+    processors: [
+      new SimpleLogRecordProcessor({ exporter: new OTLPLogExporter({ timeoutMillis }) }),
+    ],
+  });
+  const metricReader = new PeriodicExportingMetricReader({
+    exporter: new OTLPMetricExporter({ timeoutMillis }),
+    exportIntervalMillis: 60_000,
+    exportTimeoutMillis: timeoutMillis,
+  });
+  const meterProvider = new MeterProvider({ resource, readers: [metricReader] });
+  const tracer = traceProvider.getTracer('io.repoctopus.observation', '1.0.0');
+  const logger = loggerProvider.getLogger('io.repoctopus.observation', '1.0.0');
+  const meter = meterProvider.getMeter('io.repoctopus.observation', '1.0.0');
+  const instruments = metricInstrumentCache();
+  try {
+    for (const record of signals.spans) {
+      const parent = observationContext(
+        record.traceId,
+        createHash('sha256')
+          .update(`${serviceName}\0${record.traceId}\0root`)
+          .digest('hex')
+          .slice(0, 16),
+      );
+      const span = tracer.startSpan(
+        record.name,
+        { startTime: new Date(record.startTime), attributes: record.attributes },
+        parent,
+      );
+      span.setStatus({
+        code:
+          record.result === 'failed' ||
+          record.result === 'rejected' ||
+          record.result === 'timed_out'
+            ? SpanStatusCode.ERROR
+            : SpanStatusCode.OK,
+      });
+      span.end(new Date(record.endTime));
+    }
+    for (const record of signals.logs) {
+      logger.emit({
+        eventName: record.eventName,
+        timestamp: new Date(record.observedAt),
+        severityNumber:
+          record.attributes['repoctopus.lifecycle.result'] === 'failed' ||
+          record.attributes['repoctopus.lifecycle.result'] === 'timed_out' ||
+          record.attributes['repoctopus.delivery.result'] === 'failed'
+            ? 13
+            : 9,
+        body: record.body,
+        attributes: record.attributes,
+        context: observationContext(record.traceId, record.spanId),
+      });
+    }
+    for (const record of signals.metrics) {
+      recordEncodedMetric(meter, instruments, record);
+    }
+    await Promise.all([
+      traceProvider.forceFlush({ timeoutMillis }),
+      loggerProvider.forceFlush({ timeoutMillis }),
+      meterProvider.forceFlush({ timeoutMillis }),
+    ]);
+  } finally {
+    await Promise.allSettled([
+      traceProvider.shutdown(),
+      loggerProvider.shutdown(),
+      meterProvider.shutdown(),
+    ]);
+  }
+}
+
 export class OpenTelemetryLifecycleExporter implements LifecycleTelemetryPort {
   constructor(private readonly options: OpenTelemetryOptions = {}) {}
 
   async export(events: readonly LifecycleTelemetryEvent[]): Promise<void> {
-    if (events.length === 0) return;
-    const timeoutMillis = this.options.timeoutMillis ?? 5_000;
-    const resource = resourceFromAttributes({
-      [ATTR_SERVICE_NAME]: 'repoctopus-lifecycle',
-      [ATTR_SERVICE_VERSION]: '0.1.0',
-      [ATTR_DEPLOYMENT_ENVIRONMENT_NAME]: this.options.environment ?? 'development',
-    });
-    const loggerProvider = new LoggerProvider({
-      resource,
-      processors: [
-        new SimpleLogRecordProcessor({ exporter: new OTLPLogExporter({ timeoutMillis }) }),
-      ],
-    });
-    const metricReader = new PeriodicExportingMetricReader({
-      exporter: new OTLPMetricExporter({ timeoutMillis }),
-      exportIntervalMillis: 60_000,
-      exportTimeoutMillis: timeoutMillis,
-    });
-    const meterProvider = new MeterProvider({ resource, readers: [metricReader] });
-    const logger = loggerProvider.getLogger('repoctopus-lifecycle', '0.1.0');
-    const counter = meterProvider
-      .getMeter('repoctopus-lifecycle', '0.1.0')
-      .createCounter('repoctopus.lifecycle.events', { unit: '{event}' });
-    try {
-      for (const event of events) {
-        const attributes = {
-          'repoctopus.boot.id': event.bootId,
-          'repoctopus.composition.digest': event.compositionDigest,
-          'repoctopus.lifecycle.type': event.type,
-          'repoctopus.lifecycle.phase': event.phase,
-          'repoctopus.lifecycle.result': event.result,
-          ...(event.pluginId ? { 'repoctopus.plugin.id': event.pluginId } : {}),
-          ...(event.service ? { 'repoctopus.service.name': event.service } : {}),
-          ...(event.remaining !== undefined
-            ? { 'repoctopus.operation.remaining': event.remaining }
-            : {}),
-          ...(event.recoverability
-            ? { 'repoctopus.operation.recoverability': event.recoverability }
-            : {}),
-        };
-        logger.emit({
-          eventName: `repoctopus.${event.type}`,
-          timestamp: new Date(event.timestamp),
-          severityNumber: event.result === 'failed' || event.result === 'timed_out' ? 13 : 9,
-          body: `Repoctopus lifecycle event: ${event.type}`,
-          attributes,
-        });
-        counter.add(1, {
-          'repoctopus.lifecycle.type': event.type,
-          'repoctopus.lifecycle.phase': event.phase,
-          'repoctopus.lifecycle.result': event.result,
-        });
-      }
-      await Promise.all([
-        loggerProvider.forceFlush({ timeoutMillis }),
-        meterProvider.forceFlush({ timeoutMillis }),
-      ]);
-    } finally {
-      await Promise.allSettled([loggerProvider.shutdown(), meterProvider.shutdown()]);
-    }
+    const signals = encodeObservationEnvelopes(mapLifecycleObservationEnvelopes(events));
+    await exportStandaloneObservationSignals(signals, 'repoctopus-lifecycle', this.options);
   }
 }
 
@@ -672,47 +653,8 @@ export class OpenTelemetryDeliveryExporter implements DeliveryTelemetryPort {
   constructor(private readonly options: OpenTelemetryOptions = {}) {}
 
   async export(state: DeliveryState, event: DeliveryEvent): Promise<void> {
-    const timeoutMillis = this.options.timeoutMillis ?? 5_000;
-    const resource = resourceFromAttributes({
-      [ATTR_SERVICE_NAME]: 'repoctopus-delivery',
-      [ATTR_SERVICE_VERSION]: '0.1.0',
-      [ATTR_DEPLOYMENT_ENVIRONMENT_NAME]: this.options.environment ?? 'development',
-    });
-    const loggerProvider = new LoggerProvider({
-      resource,
-      processors: [
-        new SimpleLogRecordProcessor({ exporter: new OTLPLogExporter({ timeoutMillis }) }),
-      ],
-    });
-    const metricReader = new PeriodicExportingMetricReader({
-      exporter: new OTLPMetricExporter({ timeoutMillis }),
-      exportIntervalMillis: 60_000,
-      exportTimeoutMillis: timeoutMillis,
-    });
-    const meterProvider = new MeterProvider({ resource, readers: [metricReader] });
-    try {
-      const attributes = safeDeliveryAttributes(state, event);
-      loggerProvider.getLogger('repoctopus-delivery', '0.1.0').emit({
-        eventName: `repoctopus.${event.type}`,
-        timestamp: new Date(event.timestamp),
-        severityNumber: 9,
-        body: `Repoctopus delivery event: ${event.type}`,
-        attributes,
-      });
-      meterProvider
-        .getMeter('repoctopus-delivery', '0.1.0')
-        .createCounter('repoctopus.delivery.events', { unit: '{event}' })
-        .add(1, {
-          'repoctopus.delivery.event.type': event.type,
-          'repoctopus.delivery.state': state.status,
-        });
-      await Promise.all([
-        loggerProvider.forceFlush({ timeoutMillis }),
-        meterProvider.forceFlush({ timeoutMillis }),
-      ]);
-    } finally {
-      await Promise.allSettled([loggerProvider.shutdown(), meterProvider.shutdown()]);
-    }
+    const signals = encodeObservationEnvelopes([mapDeliveryObservationEnvelope(state, event)]);
+    await exportStandaloneObservationSignals(signals, 'repoctopus-delivery', this.options);
   }
 }
 

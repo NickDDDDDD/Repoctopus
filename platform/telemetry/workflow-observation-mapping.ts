@@ -17,6 +17,7 @@ const END_BOUNDARIES: Partial<Record<TrajectoryEvent['type'], TrajectoryEvent['t
   'tool.completed': 'tool.started',
   'validator.completed': 'validator.started',
   'reconcile.completed': 'reconcile.started',
+  'telemetry.delivery-completed': 'telemetry.delivery-started',
 };
 
 const OPERATION_ID_KEYS = [
@@ -103,7 +104,12 @@ function metricAttributes(
   const result: Record<string, string | number | boolean> = {};
   for (const key of Object.keys(schema.metric.dimensions)) {
     const source = METRIC_ATTRIBUTE_SOURCES[key];
-    const value = source ? candidates[source] : undefined;
+    const value =
+      key === 'result'
+        ? (candidates['repoctopus.execution.result'] ?? candidates['repoctopus.telemetry.result'])
+        : source
+          ? candidates[source]
+          : undefined;
     const allowed = schema.metric.dimensions[key] ?? [];
     if (value !== undefined && allowed.some((candidate) => candidate === value)) {
       result[key] = value;
@@ -112,22 +118,65 @@ function metricAttributes(
   return result;
 }
 
+const PIPELINE_MEASUREMENT_SOURCES: Readonly<Record<string, string>> = {
+  'repoctopus.telemetry.cursor.lag': 'cursorLag',
+  'repoctopus.telemetry.backlog.count': 'backlogCount',
+  'repoctopus.telemetry.backlog.bytes': 'backlogBytes',
+  'repoctopus.telemetry.backlog.oldest_age': 'backlogOldestAgeMs',
+  'repoctopus.telemetry.retry.count': 'retryCount',
+  'repoctopus.telemetry.gap.count': 'gapCount',
+  'repoctopus.telemetry.retention.dropped_count': 'retentionDroppedCount',
+  'repoctopus.telemetry.retention.dropped_bytes': 'retentionDroppedBytes',
+};
+
+function pipelineMeasurements(
+  event: TrajectoryEvent,
+  attributes: Readonly<Record<string, string | number | boolean>>,
+) {
+  const schema = observationEventSchema(event.type);
+  const boundedAttributes = metricAttributes(event, attributes);
+  const measurements = [];
+  if (
+    event.type === 'telemetry.delivery-completed' &&
+    schema.metric.measurements['repoctopus.telemetry.delivery.events']
+  ) {
+    measurements.push({
+      name: 'repoctopus.telemetry.delivery.events',
+      instrument: 'counter' as const,
+      value: 1,
+      attributes: boundedAttributes,
+    });
+  }
+  for (const [name, source] of Object.entries(PIPELINE_MEASUREMENT_SOURCES)) {
+    const definition = schema.metric.measurements[name];
+    const value = event.data[source];
+    if (definition && typeof value === 'number' && Number.isSafeInteger(value) && value >= 0) {
+      measurements.push({
+        name,
+        instrument: definition.instrument,
+        value,
+        attributes: boundedAttributes,
+      });
+    }
+  }
+  return measurements;
+}
+
 function spanId(batch: TelemetryBatch, event: TrajectoryEvent): string {
   const identity = operationId(event) ?? event.eventId;
   return createHash('sha256').update(`${batch.run.runId}\0${identity}`).digest('hex').slice(0, 16);
 }
 
-function mapEvent(batch: TelemetryBatch, event: TrajectoryEvent): ObservationEnvelope | null {
+export function mapTrajectoryObservationEnvelope(
+  batch: TelemetryBatch,
+  event: TrajectoryEvent,
+): ObservationEnvelope | null {
   let schema;
   try {
     schema = observationEventSchema(event.type);
   } catch {
     return null;
   }
-  // Delivery and receiver observations have their own aggregate and migration task.
-  // Keeping them on the legacy path here prevents a pipeline event from being
-  // mislabeled as a Workflow Run execution metric during the staged migration.
-  if (schema.category === 'telemetry-pipeline') return null;
   const identity = operationId(event);
   if (
     (schema.span.strategy === 'boundary-start' || schema.span.strategy === 'boundary-end') &&
@@ -159,6 +208,9 @@ function mapEvent(batch: TelemetryBatch, event: TrajectoryEvent): ObservationEnv
           metric: {
             value: metricValue(batch, event),
             attributes: metricAttributes(event, attributes),
+            ...(schema.category === 'telemetry-pipeline'
+              ? { measurements: pipelineMeasurements(event, attributes) }
+              : {}),
           },
         }),
   };
@@ -170,6 +222,13 @@ export function mapWorkflowObservationEnvelopes(
   batch: TelemetryBatch,
 ): readonly ObservationEnvelope[] {
   return batch.events
-    .map((event) => mapEvent(batch, event))
+    .filter((event) => {
+      try {
+        return observationEventSchema(event.type).category !== 'telemetry-pipeline';
+      } catch {
+        return true;
+      }
+    })
+    .map((event) => mapTrajectoryObservationEnvelope(batch, event))
     .filter((envelope): envelope is ObservationEnvelope => envelope !== null);
 }
