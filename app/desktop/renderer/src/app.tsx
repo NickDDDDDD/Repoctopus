@@ -8,6 +8,7 @@ import {
 } from './dashboard-navigation.js';
 import { dashboardModelFromShell } from './dashboard-model.js';
 import { DashboardSurface } from './dashboard-surface.js';
+import { DesktopProjectionSession } from './projection-session.js';
 
 const initialState: DesktopShellState = { phase: 'starting' };
 
@@ -16,16 +17,10 @@ export function App() {
   const [selection, setSelection] = useState<DashboardSelection | null>(null);
 
   useEffect(() => {
-    let active = true;
-    void window.repoctopusDesktop.currentState().then((next) => {
-      if (active) setState(next);
-    });
-    const unsubscribe = window.repoctopusDesktop.onState((next) => {
-      if (active) setState(next);
-    });
+    const session = new DesktopProjectionSession(window.repoctopusDesktop, setState);
+    void session.start();
     return () => {
-      active = false;
-      unsubscribe();
+      session.stop();
     };
   }, []);
 

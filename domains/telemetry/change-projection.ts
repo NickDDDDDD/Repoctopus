@@ -17,6 +17,45 @@ export type ChangeProjectionSkillRole = 'action' | 'augmentation';
 export type ChangeProjectionSkillStatus = 'resolved' | 'delivered' | 'consumed';
 export type ChangeProjectionExecutionStatus = 'running' | 'completed' | 'failed';
 export type ChangeProjectionContinuation = 'execute' | 'ask' | 'wait' | 'reconcile' | 'done';
+export type ChangeProjectionHealthKind = 'flow' | 'execution' | 'quality' | 'telemetry';
+export type ChangeProjectionHealthStatus = 'healthy' | 'warning' | 'critical' | 'unknown';
+
+export interface ChangeProjectionHealthSignal {
+  kind: ChangeProjectionHealthKind;
+  status: ChangeProjectionHealthStatus;
+  summary: string;
+  diagnostics: readonly {
+    label: string;
+    eventId: string | null;
+    target: {
+      type: 'phase' | 'work' | 'evidence' | 'destination';
+      id: string;
+    };
+  }[];
+}
+
+export interface ChangeProjectionTelemetryDestination {
+  id: string;
+  kind: 'remote' | 'desktop';
+  result: 'accepted' | 'rejected' | 'delivered' | 'failed' | 'dropped' | null;
+  cursorOffset: number;
+  headOffset: number;
+  cursorLag: number;
+  backlogCount: number;
+  backlogBytes: number;
+  backlogOldestAgeMs: number;
+  retryCount: number;
+  gapCount: number;
+  retentionDroppedCount: number;
+  retentionDroppedBytes: number;
+  completeHistory: boolean;
+  deliveryLatencyMs: number | null;
+  receiverLatencyMs: number | null;
+  receiverResult: 'accepted' | 'rejected' | null;
+  lastSequence: number;
+  lastEventId: string;
+  observedAt: string;
+}
 
 export interface ChangeProjectionObservation {
   schemaVersion: 1;
@@ -82,6 +121,24 @@ export interface ChangeProjectionObservation {
     result: string | null;
   } | null;
   blocker?: { id: string; kind: string } | null;
+  telemetry?: {
+    destinationId: string;
+    destinationKind: 'remote' | 'desktop';
+    result: 'accepted' | 'rejected' | 'delivered' | 'failed' | 'dropped' | null;
+    cursorOffset: number;
+    headOffset: number;
+    cursorLag: number;
+    backlogCount: number;
+    backlogBytes: number;
+    backlogOldestAgeMs: number;
+    retryCount: number;
+    gapCount: number;
+    retentionDroppedCount: number;
+    retentionDroppedBytes: number;
+    completeHistory: boolean;
+    deliveryLatencyMs: number | null;
+    receiverLatencyMs: number | null;
+  } | null;
   result: string | null;
 }
 
@@ -164,6 +221,15 @@ export interface ChangeProjectionRun {
   blockerSequence: number;
   nextAction: ChangeProjectionContinuation | null;
   nextActionSequence: number;
+  telemetryDestinations: readonly ChangeProjectionTelemetryDestination[];
+  recentEvents: readonly {
+    eventId: string;
+    eventName: string;
+    sequence: number;
+    observedAt: string;
+    result: string | null;
+  }[];
+  health: readonly ChangeProjectionHealthSignal[];
 }
 
 export interface ChangeProjectionChange {
@@ -275,6 +341,14 @@ function assertObservation(observation: ChangeProjectionObservation): void {
     assertIdentity(observation.blocker.id, 'Blocker id');
     assertIdentity(observation.blocker.kind, 'Blocker kind');
   }
+  if (observation.telemetry) {
+    assertIdentity(observation.telemetry.destinationId, 'Telemetry destination id');
+    for (const [label, value] of Object.entries(observation.telemetry)) {
+      if (typeof value === 'number' && (!Number.isSafeInteger(value) || value < 0)) {
+        throw new Error(`Telemetry ${label} must be a non-negative safe integer`);
+      }
+    }
+  }
   if (
     observation.recoverySourcePhase !== null &&
     !OBSERVATION_PHASES.includes(observation.recoverySourcePhase)
@@ -359,6 +433,17 @@ function cloneSnapshot(snapshot: ChangeProjectionSnapshot): ChangeProjectionSnap
         })),
         decisions: run.decisions.map((decision) => ({ ...decision })),
         blocker: run.blocker ? { ...run.blocker } : null,
+        telemetryDestinations: run.telemetryDestinations.map((destination) => ({
+          ...destination,
+        })),
+        recentEvents: run.recentEvents.map((event) => ({ ...event })),
+        health: run.health.map((signal) => ({
+          ...signal,
+          diagnostics: signal.diagnostics.map((diagnostic) => ({
+            ...diagnostic,
+            target: { ...diagnostic.target },
+          })),
+        })),
       })),
     })),
   };
@@ -434,6 +519,7 @@ function recalculateDerivedState(snapshot: ChangeProjectionSnapshot): void {
         )
         .at(-1);
       run.currentWork = currentWork ? cloneWork(currentWork) : null;
+      run.health = projectHealth(run, snapshot.freshness);
     }
     const currentRun = [...change.runs]
       .sort(
@@ -457,6 +543,154 @@ function recalculateDerivedState(snapshot: ChangeProjectionSnapshot): void {
   snapshot.activeChange = active
     ? { workspaceId: active.workspaceId, changeId: active.changeId }
     : null;
+}
+
+function signal(
+  kind: ChangeProjectionHealthKind,
+  status: ChangeProjectionHealthStatus,
+  summary: string,
+  diagnostics: ChangeProjectionHealthSignal['diagnostics'] = [],
+): ChangeProjectionHealthSignal {
+  return { kind, status, summary, diagnostics };
+}
+
+function projectHealth(
+  run: ChangeProjectionRun,
+  freshness: ChangeProjectionSnapshot['freshness'],
+): readonly ChangeProjectionHealthSignal[] {
+  const rework = run.phases
+    .flatMap((phase) =>
+      phase.history
+        .filter((entry) => entry.event === 'reopened')
+        .map((entry) => ({ phase: phase.phase, entry })),
+    )
+    .at(-1);
+  const blockedPhase = run.phases.find((phase) => phase.status === 'blocked');
+  const flow =
+    run.status === 'failed'
+      ? signal('flow', 'critical', '生命周期已失败', [
+          {
+            label: 'Run 已失败',
+            eventId: blockedPhase?.lastEventId ?? null,
+            target: { type: 'phase', id: run.currentPhase ?? 'unknown' },
+          },
+        ])
+      : rework
+        ? signal('flow', 'warning', '生命周期发生返工', [
+            {
+              label: `${rework.phase} 已重新打开`,
+              eventId: rework.entry.eventId,
+              target: { type: 'phase', id: rework.phase },
+            },
+          ])
+        : blockedPhase
+          ? signal('flow', 'critical', '生命周期已阻塞', [
+              {
+                label: `${blockedPhase.phase} 已阻塞`,
+                eventId: blockedPhase.lastEventId,
+                target: { type: 'phase', id: blockedPhase.phase },
+              },
+            ])
+          : run.currentPhase
+            ? signal('flow', 'healthy', '生命周期按权威阶段推进')
+            : signal('flow', 'unknown', '尚未收到阶段事实');
+
+  const failedWork = [...run.works]
+    .filter(
+      (work) =>
+        work.status === 'failed' ||
+        work.host?.status === 'failed' ||
+        work.validator?.status === 'failed',
+    )
+    .sort((left, right) => right.lastSequence - left.lastSequence)[0];
+  const execution = failedWork
+    ? signal('execution', 'critical', '最近执行或验证失败', [
+        {
+          label: `${failedWork.kind} attempt ${failedWork.attempt} 失败`,
+          eventId: failedWork.lastEventId,
+          target: { type: 'work', id: failedWork.id },
+        },
+      ])
+    : run.works.length > 0
+      ? signal('execution', 'healthy', 'Work、Host 与 Validator 未报告失败')
+      : signal('execution', 'unknown', '尚未收到执行事实');
+
+  const failedGate = [...run.evidenceAttempts]
+    .filter(
+      (attempt) =>
+        attempt.gate &&
+        (['failed', 'rejected', 'blocked'].includes(attempt.gate.status) ||
+          ['failed', 'rejected', 'blocked'].includes(attempt.gate.outcome)),
+    )
+    .at(-1);
+  const acceptedGate = run.evidenceAttempts.some(
+    (attempt) =>
+      attempt.gate &&
+      ['satisfied', 'passed', 'accepted'].includes(attempt.gate.status) &&
+      ['passed', 'accepted', 'succeeded'].includes(attempt.gate.outcome),
+  );
+  const verifyRework = run.phases
+    .find((phase) => phase.phase === 'build')
+    ?.history.find((entry) => entry.event === 'reopened' && entry.recoverySourcePhase === 'verify');
+  const quality = failedGate
+    ? signal('quality', 'critical', 'Evidence Gate 未通过', [
+        {
+          label: `Gate ${failedGate.gate!.status} · ${failedGate.gate!.outcome}`,
+          eventId: null,
+          target: { type: 'evidence', id: failedGate.attemptId },
+        },
+      ])
+    : verifyRework
+      ? signal('quality', 'warning', 'Verify 已触发返工', [
+          {
+            label: 'Verify 返回 Build',
+            eventId: verifyRework.eventId,
+            target: { type: 'phase', id: 'verify' },
+          },
+        ])
+      : acceptedGate
+        ? signal('quality', 'healthy', 'Evidence Gate 已通过')
+        : signal('quality', 'unknown', '尚未收到质量 Gate');
+
+  const incompleteDestination = run.telemetryDestinations.find(
+    (destination) =>
+      !destination.completeHistory || destination.gapCount > 0 || destination.result === 'dropped',
+  );
+  const degradedDestination = run.telemetryDestinations.find(
+    (destination) =>
+      destination.result === 'failed' ||
+      destination.result === 'rejected' ||
+      destination.cursorLag > 0 ||
+      destination.backlogCount > 0 ||
+      destination.retryCount > 0,
+  );
+  const telemetry =
+    freshness.status === 'gap' || incompleteDestination
+      ? signal('telemetry', 'critical', '观测历史存在缺口', [
+          {
+            label: incompleteDestination
+              ? `${incompleteDestination.id} 历史不完整`
+              : `缺少 ${freshness.missingSequences.length} 个 workflow 事件`,
+            eventId: incompleteDestination?.lastEventId ?? null,
+            target: {
+              type: 'destination',
+              id: incompleteDestination?.id ?? 'desktop-projection',
+            },
+          },
+        ])
+      : degradedDestination
+        ? signal('telemetry', 'warning', '遥测目的地存在积压或失败', [
+            {
+              label: `${degradedDestination.id} backlog ${degradedDestination.backlogCount}`,
+              eventId: degradedDestination.lastEventId,
+              target: { type: 'destination', id: degradedDestination.id },
+            },
+          ])
+        : run.telemetryDestinations.length > 0
+          ? signal('telemetry', 'healthy', '接收与目的地投递正常')
+          : signal('telemetry', 'unknown', '尚未收到遥测管道健康事实');
+
+  return [flow, execution, quality, telemetry];
 }
 
 export function reduceChangeProjection(
@@ -536,9 +770,27 @@ export function reduceChangeProjection(
       blockerSequence: 0,
       nextAction: null,
       nextActionSequence: 0,
+      telemetryDestinations: [],
+      recentEvents: [],
+      health: [],
     };
     change.runs = [...change.runs, run];
   }
+
+  run.recentEvents = [
+    ...run.recentEvents,
+    {
+      eventId: observation.eventId,
+      eventName: observation.eventName,
+      sequence: observation.sequence,
+      observedAt: observation.observedAt,
+      result: observation.result,
+    },
+  ]
+    .sort(
+      (left, right) => right.sequence - left.sequence || right.eventId.localeCompare(left.eventId),
+    )
+    .slice(0, 20);
 
   if (eventIsLater(observation.sequence, observation.eventId, run.latestSequence, null)) {
     run.latestSequence = observation.sequence;
@@ -822,6 +1074,55 @@ export function reduceChangeProjection(
   if (observation.continuation && observation.sequence >= run.nextActionSequence) {
     run.nextAction = observation.continuation;
     run.nextActionSequence = observation.sequence;
+  }
+
+  if (observation.telemetry) {
+    const current = run.telemetryDestinations.find(
+      (destination) => destination.id === observation.telemetry!.destinationId,
+    );
+    if (
+      !current ||
+      eventIsLater(
+        observation.sequence,
+        observation.eventId,
+        current.lastSequence,
+        current.lastEventId,
+      )
+    ) {
+      const destination: ChangeProjectionTelemetryDestination = {
+        id: observation.telemetry.destinationId,
+        kind: observation.telemetry.destinationKind,
+        result: observation.telemetry.result,
+        cursorOffset: observation.telemetry.cursorOffset,
+        headOffset: observation.telemetry.headOffset,
+        cursorLag: observation.telemetry.cursorLag,
+        backlogCount: observation.telemetry.backlogCount,
+        backlogBytes: observation.telemetry.backlogBytes,
+        backlogOldestAgeMs: observation.telemetry.backlogOldestAgeMs,
+        retryCount: observation.telemetry.retryCount,
+        gapCount: observation.telemetry.gapCount,
+        retentionDroppedCount: observation.telemetry.retentionDroppedCount,
+        retentionDroppedBytes: observation.telemetry.retentionDroppedBytes,
+        completeHistory: observation.telemetry.completeHistory,
+        deliveryLatencyMs: observation.telemetry.deliveryLatencyMs,
+        receiverLatencyMs: observation.telemetry.receiverLatencyMs,
+        receiverResult:
+          observation.eventName === 'telemetry.receiver-evaluated' &&
+          (observation.telemetry.result === 'accepted' ||
+            observation.telemetry.result === 'rejected')
+            ? observation.telemetry.result
+            : (current?.receiverResult ?? null),
+        lastSequence: observation.sequence,
+        lastEventId: observation.eventId,
+        observedAt: observation.observedAt,
+      };
+      run.telemetryDestinations = [
+        ...run.telemetryDestinations.filter((candidate) => candidate.id !== destination.id),
+        destination,
+      ].sort(
+        (left, right) => left.kind.localeCompare(right.kind) || left.id.localeCompare(right.id),
+      );
+    }
   }
 
   if (observation.sequence >= change.latestSequence) {

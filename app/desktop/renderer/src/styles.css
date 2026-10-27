@@ -720,6 +720,108 @@ footer {
   text-align: right;
 }
 
+.health-panel,
+.telemetry-health,
+.recent-events {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line-subtle);
+}
+
+.health-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.health-grid article,
+.telemetry-health > ul > li {
+  padding: var(--space-3);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-control);
+  background: var(--surface-secondary);
+}
+
+.health-grid article > div,
+.telemetry-health li > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.health-grid article > div span,
+.health-grid p,
+.health-grid li,
+.telemetry-health span,
+.telemetry-health small,
+.recent-events small {
+  color: var(--ink-tertiary);
+  font-size: 0.6875rem;
+}
+
+.health-grid p {
+  margin-top: var(--space-2);
+  line-height: 1.45;
+}
+
+.health-grid ul,
+.telemetry-health ul,
+.recent-events ol {
+  display: grid;
+  gap: var(--space-2);
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.health-grid li,
+.recent-events li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.health-grid article[data-health-status='healthy'] {
+  border-color: color-mix(in srgb, var(--status-success) 42%, var(--line-subtle));
+}
+
+.health-grid article[data-health-status='warning'] {
+  border-color: color-mix(in srgb, var(--status-warning) 50%, var(--line-subtle));
+}
+
+.health-grid article[data-health-status='critical'] {
+  border-color: color-mix(in srgb, var(--status-danger) 52%, var(--line-subtle));
+}
+
+.telemetry-health dl {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin: var(--space-3) 0 0;
+}
+
+.telemetry-health dl div {
+  display: grid;
+  gap: 2px;
+}
+
+.telemetry-health dt,
+.telemetry-health dd {
+  margin: 0;
+  font-size: 0.6875rem;
+}
+
+.telemetry-health dt {
+  color: var(--ink-tertiary);
+}
+
+.recent-events summary {
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
 .guidance {
   display: grid;
   grid-template-columns: 20px minmax(0, 1fr);
@@ -815,6 +917,10 @@ footer {
   .phase-rail li::before {
     top: 18px;
     left: 0;
+  }
+
+  .health-grid {
+    grid-template-columns: 1fr;
   }
 }
 

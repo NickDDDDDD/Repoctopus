@@ -28,6 +28,20 @@ const SKILL_STATUS_LABELS = {
   consumed: 'Consumed',
 } as const;
 
+const HEALTH_LABELS = {
+  flow: '流转健康',
+  execution: '执行健康',
+  quality: '质量健康',
+  telemetry: '遥测健康',
+} as const;
+
+const HEALTH_STATUS_LABELS = {
+  healthy: '正常',
+  warning: '注意',
+  critical: '异常',
+  unknown: '未知',
+} as const;
+
 function identity(value: string | null): string {
   return value ?? '尚未上报';
 }
@@ -221,6 +235,101 @@ export function DashboardSurface({
               </li>
             ))}
           </ol>
+
+          {model.health.length > 0 ? (
+            <section className="health-panel" aria-labelledby="health-title">
+              <div className="section-heading">
+                <h2 id="health-title">Explainable health</h2>
+                <span>Four independent signals</span>
+              </div>
+              <div className="health-grid">
+                {model.health.map((signal) => (
+                  <article key={signal.kind} data-health-status={signal.status}>
+                    <div>
+                      <strong>{HEALTH_LABELS[signal.kind]}</strong>
+                      <span>{HEALTH_STATUS_LABELS[signal.status]}</span>
+                    </div>
+                    <p>{signal.summary}</p>
+                    {signal.diagnostics.length > 0 ? (
+                      <ul>
+                        {signal.diagnostics.map((diagnostic) => (
+                          <li key={`${diagnostic.target.type}:${diagnostic.target.id}`}>
+                            <span>{diagnostic.label}</span>
+                            <small>
+                              {diagnostic.target.type} · {diagnostic.target.id}
+                            </small>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </article>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
+          {model.destinations.length > 0 ? (
+            <section className="telemetry-health" aria-labelledby="telemetry-health-title">
+              <div className="section-heading">
+                <h2 id="telemetry-health-title">Telemetry destinations</h2>
+                <span>At-least-once replay</span>
+              </div>
+              <ul>
+                {model.destinations.map((destination) => (
+                  <li
+                    key={destination.id}
+                    data-destination-kind={destination.kind}
+                    aria-label={`${destination.id}, Backlog ${destination.backlogCount}, Cursor lag ${destination.cursorLag}`}
+                  >
+                    <div>
+                      <strong>{destination.id}</strong>
+                      <span>
+                        {destination.kind} · {destination.result ?? 'idle'}
+                      </span>
+                    </div>
+                    <dl>
+                      <div>
+                        <dt>Backlog</dt>
+                        <dd>{destination.backlogCount}</dd>
+                      </div>
+                      <div>
+                        <dt>Cursor lag</dt>
+                        <dd>{destination.cursorLag}</dd>
+                      </div>
+                      <div>
+                        <dt>Retries</dt>
+                        <dd>{destination.retryCount}</dd>
+                      </div>
+                      <div>
+                        <dt>Gap</dt>
+                        <dd>{destination.gapCount}</dd>
+                      </div>
+                    </dl>
+                    {destination.receiverResult ? (
+                      <small>Receiver {destination.receiverResult}</small>
+                    ) : null}
+                    {!destination.completeHistory ? <small>History incomplete</small> : null}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+
+          {model.recentEvents.length > 0 ? (
+            <details className="recent-events">
+              <summary>最近事件 · {model.recentEvents.length}</summary>
+              <ol>
+                {model.recentEvents.map((event) => (
+                  <li key={event.eventId}>
+                    <span>{event.eventName}</span>
+                    <small>
+                      #{event.sequence} · {event.result ?? 'observed'}
+                    </small>
+                  </li>
+                ))}
+              </ol>
+            </details>
+          ) : null}
 
           {model.executionHistory.length > 0 ? (
             <section className="execution-history" aria-labelledby="execution-history-title">

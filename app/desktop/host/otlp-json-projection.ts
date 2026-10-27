@@ -202,7 +202,9 @@ export function decodeOtlpJsonProjectionObservations(
         const attempt = integer(recordAttributes, 'repoctopus.execution.attempt');
         const skillName = text(recordAttributes, 'repoctopus.skill.name');
         const skillRole = text(recordAttributes, 'repoctopus.skill.role');
-        const result = text(recordAttributes, 'repoctopus.execution.result');
+        const result =
+          text(recordAttributes, 'repoctopus.execution.result') ??
+          text(recordAttributes, 'repoctopus.telemetry.result');
         const taskId =
           text(recordAttributes, 'repoctopus.task.id') ??
           text(recordAttributes, 'repoctopus.execution.task.id');
@@ -229,6 +231,78 @@ export function decodeOtlpJsonProjectionObservations(
         const decisionKind = text(recordAttributes, 'repoctopus.decision.kind');
         const blockerId = text(recordAttributes, 'repoctopus.blocker.id');
         const blockerKind = text(recordAttributes, 'repoctopus.blocker.kind');
+        const destinationId = text(recordAttributes, 'repoctopus.telemetry.destination.id');
+        const destinationKind = text(recordAttributes, 'repoctopus.telemetry.destination.kind');
+        const cursorOffset = integer(recordAttributes, 'repoctopus.telemetry.cursor.offset');
+        const headOffset = integer(recordAttributes, 'repoctopus.telemetry.head.offset');
+        const cursorLag = integer(recordAttributes, 'repoctopus.telemetry.cursor.lag');
+        const backlogCount = integer(recordAttributes, 'repoctopus.telemetry.backlog.count');
+        const backlogBytes = integer(recordAttributes, 'repoctopus.telemetry.backlog.bytes');
+        const backlogOldestAgeMs = integer(
+          recordAttributes,
+          'repoctopus.telemetry.backlog.oldest_age_ms',
+        );
+        const retryCount = integer(recordAttributes, 'repoctopus.telemetry.retry.count');
+        const gapCount = integer(recordAttributes, 'repoctopus.telemetry.gap.count');
+        const retentionDroppedCount = integer(
+          recordAttributes,
+          'repoctopus.telemetry.retention.dropped_count',
+        );
+        const retentionDroppedBytes = integer(
+          recordAttributes,
+          'repoctopus.telemetry.retention.dropped_bytes',
+        );
+        const completeHistory = boolean(recordAttributes, 'repoctopus.telemetry.history.complete');
+        const deliveryLatencyMs = integer(
+          recordAttributes,
+          'repoctopus.telemetry.delivery.latency_ms',
+        );
+        const receiverLatencyMs = integer(
+          recordAttributes,
+          'repoctopus.telemetry.receiver.latency_ms',
+        );
+        const telemetryResult =
+          result === 'accepted' ||
+          result === 'rejected' ||
+          result === 'delivered' ||
+          result === 'failed' ||
+          result === 'dropped'
+            ? result
+            : null;
+        const telemetry: ChangeProjectionObservation['telemetry'] =
+          eventName.startsWith('telemetry.') &&
+          destinationId &&
+          (destinationKind === 'remote' || destinationKind === 'desktop') &&
+          cursorOffset !== null &&
+          headOffset !== null &&
+          cursorLag !== null &&
+          backlogCount !== null &&
+          backlogBytes !== null &&
+          backlogOldestAgeMs !== null &&
+          retryCount !== null &&
+          gapCount !== null &&
+          retentionDroppedCount !== null &&
+          retentionDroppedBytes !== null &&
+          completeHistory !== null
+            ? {
+                destinationId,
+                destinationKind,
+                result: telemetryResult,
+                cursorOffset,
+                headOffset,
+                cursorLag,
+                backlogCount,
+                backlogBytes,
+                backlogOldestAgeMs,
+                retryCount,
+                gapCount,
+                retentionDroppedCount,
+                retentionDroppedBytes,
+                completeHistory,
+                deliveryLatencyMs,
+                receiverLatencyMs,
+              }
+            : null;
         observations.push({
           schemaVersion: 1,
           sequence,
@@ -292,6 +366,7 @@ export function decodeOtlpJsonProjectionObservations(
                 }
               : null,
           blocker: blockerId && blockerKind ? { id: blockerId, kind: blockerKind } : null,
+          ...(telemetry ? { telemetry } : {}),
           result,
         });
       }

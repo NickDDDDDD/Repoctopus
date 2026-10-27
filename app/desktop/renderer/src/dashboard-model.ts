@@ -93,6 +93,37 @@ export interface DashboardModel {
   }[];
   blocker: { id: string; kind: string } | null;
   nextAction: string | null;
+  health: readonly {
+    kind: 'flow' | 'execution' | 'quality' | 'telemetry';
+    status: 'healthy' | 'warning' | 'critical' | 'unknown';
+    summary: string;
+    diagnostics: readonly {
+      label: string;
+      eventId: string | null;
+      target: { type: 'phase' | 'work' | 'evidence' | 'destination'; id: string };
+    }[];
+  }[];
+  destinations: readonly {
+    id: string;
+    kind: 'remote' | 'desktop';
+    result: string | null;
+    cursorLag: number;
+    backlogCount: number;
+    backlogBytes: number;
+    backlogOldestAgeMs: number;
+    retryCount: number;
+    gapCount: number;
+    completeHistory: boolean;
+    receiverResult: 'accepted' | 'rejected' | null;
+    observedAt: string;
+  }[];
+  recentEvents: readonly {
+    eventId: string;
+    eventName: string;
+    sequence: number;
+    observedAt: string;
+    result: string | null;
+  }[];
   guidance: string;
   busy: boolean;
   recoverable: boolean;
@@ -144,6 +175,9 @@ function shellModel(
     decisions: [],
     blocker: null,
     nextAction: null,
+    health: [],
+    destinations: [],
+    recentEvents: [],
   };
 }
 
@@ -327,9 +361,14 @@ export function dashboardModelFromShell(
               ? 'rework'
               : phases.some((phase) => phase.status === 'blocked')
                 ? 'blocked'
-                : run.currentPhase === null
-                  ? 'sparse'
-                  : 'live';
+                : run.telemetryDestinations.some(
+                      (destination) =>
+                        destination.kind === 'desktop' && destination.backlogCount > 0,
+                    )
+                  ? 'catching-up'
+                  : run.currentPhase === null
+                    ? 'sparse'
+                    : 'live';
   const copy = stateCopy(state);
 
   const workModel = (work: (typeof run.works)[number]): DashboardWorkModel => ({
@@ -359,7 +398,11 @@ export function dashboardModelFromShell(
     freshnessLabel:
       shell.projection.freshness.status === 'gap'
         ? `缺少 ${shell.projection.freshness.missingSequences.length} 个事件`
-        : 'OTLP 已同步',
+        : run.telemetryDestinations.some(
+              (destination) => destination.kind === 'desktop' && destination.backlogCount > 0,
+            )
+          ? `正在重放 ${run.telemetryDestinations.find((destination) => destination.kind === 'desktop')!.backlogCount} 个事件`
+          : 'OTLP 已同步',
     lastObservedAt: run.latestObservedAt,
     phases,
     currentWork: run.currentWork ? workModel(run.currentWork) : null,
@@ -385,5 +428,27 @@ export function dashboardModelFromShell(
     })),
     blocker: run.blocker ? { ...run.blocker } : null,
     nextAction: run.nextAction,
+    health: run.health.map((signal) => ({
+      ...signal,
+      diagnostics: signal.diagnostics.map((diagnostic) => ({
+        ...diagnostic,
+        target: { ...diagnostic.target },
+      })),
+    })),
+    destinations: run.telemetryDestinations.map((destination) => ({
+      id: destination.id,
+      kind: destination.kind,
+      result: destination.result,
+      cursorLag: destination.cursorLag,
+      backlogCount: destination.backlogCount,
+      backlogBytes: destination.backlogBytes,
+      backlogOldestAgeMs: destination.backlogOldestAgeMs,
+      retryCount: destination.retryCount,
+      gapCount: destination.gapCount,
+      completeHistory: destination.completeHistory,
+      receiverResult: destination.receiverResult,
+      observedAt: destination.observedAt,
+    })),
+    recentEvents: run.recentEvents.map((event) => ({ ...event })),
   };
 }
