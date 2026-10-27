@@ -681,31 +681,6 @@ describe('Change lifecycle domain', () => {
       currentWork: { workId: repairWork.workId },
       verificationInvalidation: { kind: 'implementation-drift' },
     });
-    const repairCompleted = evolveChangeLifecycle({
-      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-      current: repaired.snapshot,
-      observation: {
-        kind: 'build-task-completed',
-        workId: repairWork.workId,
-        taskId: buildTask.taskId,
-        taskRevision: buildTask.taskRevision,
-        inputDigest: repairWork.inputDigest,
-        receiptId: 'repair-receipt-1',
-        tasks: [
-          {
-            ...buildTask,
-            status: 'completed',
-            completion: { source: 'runtime-work', workId: repairWork.workId },
-          },
-        ],
-      },
-    });
-    expect(repairCompleted.snapshot).toMatchObject({
-      phase: 'build',
-      status: 'running',
-      currentWork: null,
-      verificationInvalidation: { kind: 'implementation-drift' },
-    });
     const retryInput = verificationInput(6, 'r');
     const retryWork = phaseWork('verify', 'evidence.verify', 6, retryInput.digest);
     const retried = evolveChangeLifecycle({

@@ -1082,31 +1082,10 @@ export class WorkflowRuns extends Service {
               try {
                 const approvalHash = assessment.approval?.decision?.approvalHash;
                 if (!approvalHash) throw new Error('Approved Design has no approval hash');
-                const sourceTaskSet = await this.ctx.specification.tasks(
+                const taskSet = await this.ctx.specification.tasks(
                   lifecycle.identity.changeId,
                   signal,
                 );
-                const projectedById = new Map(
-                  (lifecycle.tasks ?? []).map((task) => [task.taskId, task] as const),
-                );
-                const taskSet = lifecycle.verificationInvalidation
-                  ? {
-                      ...sourceTaskSet,
-                      tasks: sourceTaskSet.tasks.map((task) => {
-                        const projected = projectedById.get(task.taskId);
-                        if (!projected || projected.taskRevision !== task.taskRevision) {
-                          throw new Error(
-                            `Repair Task projection drifted from the approved revision: ${task.taskId}`,
-                          );
-                        }
-                        return {
-                          ...task,
-                          status: projected.status,
-                          completion: projected.completion,
-                        };
-                      }),
-                    }
-                  : sourceTaskSet;
                 const skills = await this.resolveLifecycleWorkSkills('task.implement', signal);
                 const nextBuild = createInitialBuildWork({
                   runId,
@@ -1568,16 +1547,11 @@ export class WorkflowRuns extends Service {
           diagnostics: [],
         };
       }
-      const execution = state.workExecution;
-      const succeededOutcome =
-        execution?.hostOutcome?.status === 'succeeded' &&
-        execution.hostOutcome.invocationId === execution.hostInvocation?.invocationId;
-      const validatorResultIsReusable =
-        execution?.status === 'validated' &&
-        execution.validatorId === lifecycle.currentWork.validatorProfile.id;
       if (
-        !succeededOutcome ||
-        (execution?.status !== 'outcome' && !validatorResultIsReusable)
+        state.workExecution?.status !== 'outcome' ||
+        state.workExecution.hostOutcome?.status !== 'succeeded' ||
+        state.workExecution.hostOutcome.invocationId !==
+          state.workExecution.hostInvocation?.invocationId
       ) {
         throw new Error('Build Task validation requires a succeeded managed Host Outcome');
       }
@@ -1588,28 +1562,26 @@ export class WorkflowRuns extends Service {
         workId: validation.workId,
         ...(signal ? { signal } : {}),
       });
-      if (!validatorResultIsReusable) {
-        const validator = this.ctx.lifecycleValidators.resolve(
-          lifecycle.currentWork.validatorProfile.id,
-        );
-        const validatorResult = await validator.validate({
-          profileId: lifecycle.currentWork.validatorProfile.id,
-          work: lifecycle.currentWork,
-          fact: {
-            receiptId: receipt.receiptId,
-            taskId: validation.taskId,
-            taskRevision: validation.taskRevision,
-          },
-        });
-        if (!validatorResult.accepted) {
-          throw new Error(`Build Validator rejected: ${validatorResult.diagnostic}`);
-        }
-        await this.ctx.workExecutionAuthority.markValidated({
-          intent: await this.ctx.workExecutionAuthority.loadIntent(input.runId),
-          validatorId: lifecycle.currentWork.validatorProfile.id,
-          continuation: 'execute',
-        });
+      const validator = this.ctx.lifecycleValidators.resolve(
+        lifecycle.currentWork.validatorProfile.id,
+      );
+      const validatorResult = await validator.validate({
+        profileId: lifecycle.currentWork.validatorProfile.id,
+        work: lifecycle.currentWork,
+        fact: {
+          receiptId: receipt.receiptId,
+          taskId: validation.taskId,
+          taskRevision: validation.taskRevision,
+        },
+      });
+      if (!validatorResult.accepted) {
+        throw new Error(`Build Validator rejected: ${validatorResult.diagnostic}`);
       }
+      await this.ctx.workExecutionAuthority.markValidated({
+        intent: await this.ctx.workExecutionAuthority.loadIntent(input.runId),
+        validatorId: lifecycle.currentWork.validatorProfile.id,
+        continuation: 'execute',
+      });
       const projectedTasks = (lifecycle.tasks ?? []).map((task) =>
         task.taskId === validation.taskId
           ? {
