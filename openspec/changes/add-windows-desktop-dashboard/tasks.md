@@ -29,7 +29,7 @@
 - [x] 2.5 增加 Validator started/completed 边界以及 phase 驻留、主动执行、人工/外部等待、返工、retry、unknown、reconcile 和 recovery 的有界指标；修复零时长 Run/Evidence/Validator Span，并用可控时钟测试真实持续时间。
       **Blocked by:** 2.2
       **Acceptance:** 可控时钟测试证明 Run、Evidence、Validator 和等待持续时间非伪造零值，所有指标维度来自固定枚举
-- [ ] 2.6 扩展 Tool 遥测契约：保留 Runtime 受保护操作，允许 Host 上报版本化有界类别、结果、耗时和可选模型/Token 聚合；以支持和不支持 Tool observation 的 Host fixture 证明缺失显示 unknown、命令/路径/Prompt/输出永不进入 envelope。
+- [x] 2.6 扩展 Tool 遥测契约：保留 Runtime 受保护操作，允许 Host 上报版本化有界类别、结果、耗时和可选模型/Token 聚合；以支持和不支持 Tool observation 的 Host fixture 证明缺失显示 unknown、命令/路径/Prompt/输出永不进入 envelope。
       **Blocked by:** 2.2
       **Acceptance:** 两类 Host fixture 分别呈现可信 Tool 事实或 unknown，任何命令、路径、Prompt、回复和输出都不会进入 envelope
 - [ ] 2.7 增加每目的地 cursor lag、backlog 数量/字节/最老年龄、最近结果、重试、gap、retention drop、Receiver 接受/拒绝与投递延迟事实；用远端失败、本地成功和 retention overflow 测试证明遥测健康可本地诊断且不改变领域结果。
