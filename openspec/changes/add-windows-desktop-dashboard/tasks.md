@@ -35,7 +35,7 @@
 - [x] 2.7 增加每目的地 cursor lag、backlog 数量/字节/最老年龄、最近结果、重试、gap、retention drop、Receiver 接受/拒绝与投递延迟事实；用远端失败、本地成功和 retention overflow 测试证明遥测健康可本地诊断且不改变领域结果。
       **Blocked by:** 2.1
       **Acceptance:** 远端失败、本地成功和 retention overflow 均产生独立可解释健康事实，且领域 Run 结果保持不变
-- [ ] 2.8 用真实自举 Trajectory 和合成故障 fixture 验证完整覆盖：不用扫描 Workspace、OpenSpec、Git 或最新 Run 快照即可重建五阶段、当前 Work/Task、Skill 链、审批、Evidence、返工和恢复；生成覆盖报告并把遗漏事件作为失败处理。
+- [x] 2.8 用真实自举 Trajectory 和合成故障 fixture 验证完整覆盖：不用扫描 Workspace、OpenSpec、Git 或最新 Run 快照即可重建五阶段、当前 Work/Task、Skill 链、审批、Evidence、返工和恢复；生成覆盖报告并把遗漏事件作为失败处理。
       **Blocked by:** 2.3, 2.4, 2.5, 2.6, 2.7
       **Acceptance:** 覆盖测试仅凭规范观测记录重建全部列举状态，任一必需事件缺失都会使覆盖报告失败
 
