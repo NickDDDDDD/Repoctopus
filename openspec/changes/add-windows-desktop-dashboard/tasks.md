@@ -155,7 +155,7 @@
 - [x] 8.2 用打包后的 Repoctopus 和安装后的 Dashboard 执行本 change 的真实自举 Run，验证窗口从接收上报实时呈现五阶段、Work/Task、Skill 装填/消费、审批、验证、返工、恢复和遥测健康，且没有 SigNoZ 查询、本地文件扫描或周期轮询。
       **Blocked by:** 5.8, 7.2, 8.1
       **Acceptance:** 自举 Evidence 覆盖全部列举状态，网络与文件访问断言证明 Dashboard 不查询 SigNoZ、不扫描 Workspace 且不轮询
-- [ ] 8.3 执行 `npm run verify`、`npm run test:package-e2e`、`npm run test:tracer-e2e` 和 Windows Desktop E2E，生成正式验证报告并记录遥测覆盖、架构约束、恢复实验、安全检查、资源预算、未连接真实 SigNoZ 和未支持平台。
+- [x] 8.3 执行 `npm run verify`、`npm run test:package-e2e`、`npm run test:tracer-e2e` 和 Windows Desktop E2E，生成正式验证报告并记录遥测覆盖、架构约束、恢复实验、安全检查、资源预算、未连接真实 SigNoZ 和未支持平台。
       **Blocked by:** 7.3, 7.4, 8.2
       **Acceptance:** 所有验证命令成功，正式报告关联结果与 Evidence 并明确未连接真实 SigNoZ 和未支持平台而不伪造结论
 - [ ] 8.4 清理测试产生的临时安装目录、日志、端口监听、用户级 discovery、托盘进程、mock receiver 和 scratch Artifact；复查 Git 状态与运行进程证明没有遗留调试产物。
