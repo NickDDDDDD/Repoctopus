@@ -140,7 +140,7 @@
 - [x] 7.2 在干净 Windows 用户环境安装候选，运行启动、Run 自动激活、OTLP 接收、单实例、托盘、直接退出和卸载端到端测试并保存 Evidence。
       **Blocked by:** 7.1
       **Acceptance:** 干净用户环境端到端矩阵覆盖全部列举行为并保存可关联当前 Task 的 Evidence
-- [ ] 7.3 为 macOS、Linux 和 Windows ARM64 返回明确 unsupported/experimental 状态，用平台矩阵测试证明构建能力不会被文档、CLI 或 UI 误报为正式支持。
+- [x] 7.3 为 macOS、Linux 和 Windows ARM64 返回明确 unsupported/experimental 状态，用平台矩阵测试证明构建能力不会被文档、CLI 或 UI 误报为正式支持。
       **Blocked by:** 7.1
       **Acceptance:** 平台矩阵在文档、CLI 和 UI 中一致呈现 Windows x64 支持级别，其他平台不会被误报为正式支持
 - [ ] 7.4 测量安装体积、冷启动、空闲内存、活动内存和 receiver 吞吐，把预算与实测结果写入正式验证报告；超出预算时先消除非必要依赖和后台工作再重新验证。
