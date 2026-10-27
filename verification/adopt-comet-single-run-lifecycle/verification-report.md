@@ -3,10 +3,10 @@
 ## Reproducible subject
 
 - Change: `adopt-comet-single-run-lifecycle`
-- Tested implementation commit: `c5577434976b2beea60c219b06ed28666a6b3b56`
+- Tested implementation commit: `7b813a74e710d202060b4934213df6ff5ddee4ce`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `1081774`
-- Package SHA-256: `87f33524e3e96bb45e22518267b7eaa57d2ebfe1c5c9d887bfea8183fa8ce35a`
+- Package bytes: `1085113`
+- Package SHA-256: `437d74d295a86658ea3f047bcb20eb9517ae51d70ff93b0a4edf823f642db61c`
 - Lifecycle definition: `repoctopus-change@3.0.0`
 - Lifecycle definition digest: `sha256:d45fdabde20f79ccc9e0dd95ce164d5b7225ce736b1e76e08c44e53e85c92a0e`
 - Verified input composition digest: `sha256:0f52306c5478580e72a9618918ebcdb11a13b1ca5a310cbef9bf3722e2488b69`
@@ -21,8 +21,8 @@ Run on Windows with Node.js `24.21.0`:
 ```text
 npm run verify
   typecheck, desktop typecheck, lint and both builds passed
-  143 test files passed
-  588 tests passed, 1 skipped
+  144 test files passed
+  592 tests passed, 1 skipped
   generated, brand, architecture and provenance checks passed
   OpenSpec strict validation: 14 passed, 0 failed
 
@@ -75,6 +75,8 @@ The pure Desktop change projection reducer consumes only schema-validated, allow
 The Desktop Host now decodes allowlisted identities from standard OTLP JSON Logs, applies them to the same pure projection and pushes a typed snapshot plus monotonic delta over private Node IPC. Electron Main forwards only the public projection through its sender-checked channel; the receiver endpoint and session token remain outside Preload and Renderer. The typed bridge updates the minimal Renderer without polling, while the existing controller exposes Host failure and supports a serialized retry. A real Electron smoke process intercepts only the private Host-ready event in the test harness, submits an authenticated OTLP Run event and verifies the visible window changes from its empty state to the five-stage Open projection. The production Host process test independently proves the same export produces a versioned projection delta before graceful shutdown.
 
 The Desktop Renderer now separates authoritative Shell-to-view projection, one semantic Dashboard surface and executable state stories. Thirteen fixtures cover starting, empty, sparse, live, catching-up, stale, gap, waiting-human, blocked, rework, error, completed and failed states through the same five-stage lifecycle, current-context and current-work regions, shared tokens and accessible recovery control. Production mapping derives only states supported by the current typed projection; fixture-only future states are not inferred from missing facts. The Electron OTLP smoke now asserts the semantic live state and running Open phase, and a captured 1080 by 720 window was visually inspected for hierarchy and responsive structure before the temporary image was removed.
+
+Workspace/change navigation now keeps observation focus separate from Renderer-owned user selection. The Shell validates and forwards the bounded initial Runtime launch context; the Renderer establishes that source exactly once, includes a not-yet-observed source as pending, and thereafter treats newer projection activity only as list updates. Multi-Workspace fixtures prove a third, later change cannot steal either the launch-selected change or a manual selection, while the selected change still receives live projection updates. The navigation uses one grouped native-button surface with an accessible current-page marker and never writes UI selection back into the authoritative projection.
 
 The Runtime-side Desktop activation seam now carries only validated Workspace, change and Run identities across a detached Windows process boundary. Repeated invocation is intentionally the start-or-activate protocol consumed by Electron single-instance ownership; a successful activation wakes the independently owned desktop destination replay, while unsupported platforms, process launch failure and replay wake failure return bounded warnings and never fail the development Run. Unit tests preserve that ordering and retry boundary. A real child-process fixture proves the encoded context crosses the process boundary, and a loopback remote OTLP mock proves a missing desktop executable leaves the original observation envelope byte-for-byte deliverable to the remote destination. The built-in Project composition now owns the destination and activation Services plus a disposable pre-Run Contributor. A zero-desktop Context has no hook or launch side effect, while disabling the composed activation is silent and launcher failures remain bounded diagnostics.
 
