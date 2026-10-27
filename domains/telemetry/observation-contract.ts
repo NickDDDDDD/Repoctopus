@@ -61,6 +61,16 @@ const WAIT_KINDS = ['human', 'external-fact', 'retry', 'manual-handoff'] as cons
 const TOOL_KINDS = ['runtime-operation', 'host-tool', 'model', 'unknown'] as const;
 const TOOL_OBSERVATION_STATUSES = ['observed', 'unknown'] as const;
 const EVIDENCE_RESULTS = ['passed', 'failed', 'blocked', 'unavailable', 'unknown'] as const;
+const EVIDENCE_NODE_RESULTS = ['passed', 'failed', 'incomplete'] as const;
+const EVIDENCE_FRESHNESS = ['fresh', 'reused', 'superseded'] as const;
+const EVIDENCE_TRUST = ['verified', 'observed'] as const;
+const EVIDENCE_ATTEMPT_RESULTS = ['completed', 'recovered', 'superseded'] as const;
+const EVIDENCE_GATE_RESULTS = [
+  'passed',
+  'failed',
+  'incomplete',
+  'passed_with_warnings',
+] as const;
 const RECOVERY_KINDS = ['resume', 'reconcile', 'fallback', 'retry', 'unknown'] as const;
 const DESTINATION_KINDS = ['remote', 'desktop'] as const;
 const PIPELINE_RESULTS = ['accepted', 'rejected', 'delivered', 'failed', 'dropped', 'gap'] as const;
@@ -227,6 +237,24 @@ const EVENT_SCHEMAS = [
     phase: ['verify'],
     'evidence.result': EVIDENCE_RESULTS,
   }),
+  boundary('evidence.attempt.started', 'validator-evidence', 'boundary-start', 'evidence.attempt', {}),
+  boundary('evidence.node.completed', 'validator-evidence', 'boundary-end', 'evidence.node', {
+    'evidence.result': EVIDENCE_NODE_RESULTS,
+    'evidence.freshness': EVIDENCE_FRESHNESS,
+    'evidence.trust': EVIDENCE_TRUST,
+  }),
+  point('evidence.artifact.recorded', 'validator-evidence', {}),
+  point('evidence.gate.evaluated', 'validator-evidence', {
+    'evidence.result': EVIDENCE_GATE_RESULTS,
+    'evidence.gate': ['satisfied', 'blocked'],
+  }),
+  boundary(
+    'evidence.attempt.completed',
+    'validator-evidence',
+    'boundary-end',
+    'evidence.attempt',
+    { 'evidence.result': EVIDENCE_ATTEMPT_RESULTS },
+  ),
 
   boundary('reconcile.started', 'recovery', 'boundary-start', 'reconcile', {
     phase: PHASES,

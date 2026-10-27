@@ -56,6 +56,9 @@ const METRIC_ATTRIBUTE_NAMES: Readonly<Record<string, string>> = {
   'tool.category': 'repoctopus.tool.category',
   'observation.status': 'repoctopus.tool.observation.status',
   'evidence.result': 'repoctopus.evidence.result',
+  'evidence.freshness': 'repoctopus.evidence.freshness',
+  'evidence.trust': 'repoctopus.evidence.trust',
+  'evidence.gate': 'repoctopus.evidence.gate.status',
   'destination.kind': 'repoctopus.telemetry.destination.kind',
 };
 
@@ -72,7 +75,9 @@ function correlatedAttributes(
 
 function metricAttributes(record: ObservationMetricRecord): EncodedAttributes {
   return {
-    'repoctopus.execution.event.type': record.name,
+    [record.name.startsWith('evidence.')
+      ? 'repoctopus.evidence.event.type'
+      : 'repoctopus.execution.event.type']: record.name,
     ...Object.fromEntries(
       Object.entries(record.attributes).map(([key, value]) => [
         METRIC_ATTRIBUTE_NAMES[key] ?? `repoctopus.observation.${key}`,
@@ -84,10 +89,28 @@ function metricAttributes(record: ObservationMetricRecord): EncodedAttributes {
 
 function spanName(record: ObservationSpanRecord): string {
   if (record.operation) return `repoctopus.${record.operation}`;
-  return `repoctopus.${record.name.split('.', 1)[0] ?? 'observation'}`;
+  return `repoctopus.${record.name}`;
+}
+
+function spanResult(record: ObservationSpanRecord): string | null {
+  for (const key of [
+    'repoctopus.execution.result',
+    'repoctopus.evidence.status',
+    'repoctopus.evidence.outcome',
+    'repoctopus.evidence.gate_status',
+  ]) {
+    const value = record.attributes[key];
+    if (typeof value === 'string') return value;
+  }
+  return null;
 }
 
 function metricName(record: ObservationMetricRecord): string {
+  if (record.name === 'evidence.node.completed') return 'repoctopus.evidence.node.duration';
+  if (record.name === 'evidence.attempt.completed') {
+    return 'repoctopus.evidence.attempt.duration';
+  }
+  if (record.name.startsWith('evidence.')) return 'repoctopus.evidence.events';
   return record.instrument === 'histogram'
     ? 'repoctopus.work.execution.duration'
     : 'repoctopus.work.execution.events';
@@ -126,7 +149,9 @@ export function encodeObservationEnvelopes(
       if (record.signal === 'log') {
         logs.push({
           ...base,
-          eventName: `repoctopus.${record.name}`,
+          eventName: record.name.startsWith('evidence.')
+            ? record.name
+            : `repoctopus.${record.name}`,
           body: `Repoctopus workflow event: ${record.name}`,
           traceId: record.traceId,
           spanId: record.spanId,
@@ -140,10 +165,7 @@ export function encodeObservationEnvelopes(
           traceId: record.traceId,
           spanId: record.spanId,
           ...times,
-          result:
-            typeof record.attributes['repoctopus.execution.result'] === 'string'
-              ? record.attributes['repoctopus.execution.result']
-              : null,
+          result: spanResult(record),
           attributes: {
             ...correlatedAttributes(envelope, record.attributes),
             ...(record.strategy === 'boundary-end' && metric?.instrument === 'histogram'

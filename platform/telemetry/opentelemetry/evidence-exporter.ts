@@ -17,21 +17,28 @@ import type {
   EvidenceTelemetryBatch,
   EvidenceTelemetryPort,
 } from '../../../domains/evidence/telemetry.js';
-import { safeEvidenceAttributes } from '../evidence-mapping.js';
+import { mapEvidenceObservationEnvelopes } from '../evidence-observation-mapping.js';
+import { encodeObservationEnvelopes } from './envelope-encoder.js';
 
 export interface EvidenceOpenTelemetryOptions {
   timeoutMillis?: number;
   environment?: string;
 }
 
-function parentContext(batch: EvidenceTelemetryBatch) {
-  const rootIdentity = batch.runId ?? batch.attemptId;
+function observationContext(traceId: string, spanId: string) {
   return trace.setSpanContext(ROOT_CONTEXT, {
-    traceId: createHash('sha256').update(rootIdentity).digest('hex').slice(0, 32),
-    spanId: createHash('sha256').update(batch.attemptId).digest('hex').slice(0, 16),
+    traceId,
+    spanId,
     traceFlags: TraceFlags.SAMPLED,
     isRemote: true,
   });
+}
+
+function parentContext(traceId: string, attemptId: string) {
+  return observationContext(
+    traceId,
+    createHash('sha256').update(`${attemptId}\0evidence-root`).digest('hex').slice(0, 16),
+  );
 }
 
 export class OpenTelemetryEvidenceExporter implements EvidenceTelemetryPort {
@@ -39,14 +46,27 @@ export class OpenTelemetryEvidenceExporter implements EvidenceTelemetryPort {
 
   async export(batch: EvidenceTelemetryBatch): Promise<void> {
     if (batch.events.length === 0) return;
+    const signals = encodeObservationEnvelopes(mapEvidenceObservationEnvelopes(batch));
+    const traceId = signals.logs[0]?.traceId;
+    if (!traceId) return;
     const timeoutMillis = this.options.timeoutMillis ?? 5_000;
     const resource = resourceFromAttributes({
       [ATTR_SERVICE_NAME]: 'repoctopus-evidence',
       [ATTR_SERVICE_VERSION]: '0.1.0',
       [ATTR_DEPLOYMENT_ENVIRONMENT_NAME]: this.options.environment ?? 'development',
     });
+    let spanCursor = 0;
     const traceProvider = new BasicTracerProvider({
       resource,
+      idGenerator: {
+        generateTraceId: () => traceId,
+        generateSpanId: () =>
+          signals.spans[spanCursor++]?.spanId ??
+          createHash('sha256')
+            .update(`${batch.attemptId}\0fallback\0${spanCursor}`)
+            .digest('hex')
+            .slice(0, 16),
+      },
       spanProcessors: [new SimpleSpanProcessor(new OTLPTraceExporter({ timeoutMillis }))],
     });
     const loggerProvider = new LoggerProvider({
@@ -61,74 +81,49 @@ export class OpenTelemetryEvidenceExporter implements EvidenceTelemetryPort {
       exportTimeoutMillis: timeoutMillis,
     });
     const meterProvider = new MeterProvider({ resource, readers: [metricReader] });
-    const tracer = traceProvider.getTracer('repoctopus-evidence', '0.1.0');
-    const logger = loggerProvider.getLogger('repoctopus-evidence', '0.1.0');
-    const meter = meterProvider.getMeter('repoctopus-evidence', '0.1.0');
+    const tracer = traceProvider.getTracer('io.repoctopus.observation', '1.0.0');
+    const logger = loggerProvider.getLogger('io.repoctopus.observation', '1.0.0');
+    const meter = meterProvider.getMeter('io.repoctopus.observation', '1.0.0');
     const counter = meter.createCounter('repoctopus.evidence.events', { unit: '{event}' });
     const duration = meter.createHistogram('repoctopus.evidence.node.duration', { unit: 'ms' });
     const attemptDuration = meter.createHistogram('repoctopus.evidence.attempt.duration', {
       unit: 'ms',
     });
-    const parent = parentContext(batch);
+    const parent = parentContext(traceId, batch.attemptId);
     try {
-      for (const event of batch.events) {
-        const attributes = safeEvidenceAttributes(batch, event);
-        if (event.type === 'evidence.node.completed') {
-          const durationMs =
-            typeof event.data.durationMs === 'number' ? Math.max(0, event.data.durationMs) : 0;
-          const span = tracer.startSpan(
-            'repoctopus.evidence.node',
-            { startTime: new Date(Date.parse(event.timestamp) - durationMs), attributes },
-            parent,
-          );
-          span.setStatus({
-            code:
-              event.data.status === 'failed' || event.data.status === 'incomplete'
-                ? SpanStatusCode.ERROR
-                : SpanStatusCode.OK,
-          });
-          span.end(new Date(event.timestamp));
-        }
-        if (event.type === 'evidence.attempt.completed') {
-          const started = batch.events.find(
-            (candidate) => candidate.type === 'evidence.attempt.started',
-          );
-          if (started) {
-            const span = tracer.startSpan(
-              'repoctopus.evidence.attempt',
-              { startTime: new Date(started.timestamp), attributes },
-              parent,
-            );
-            span.setStatus({
-              code:
-                event.data.status === 'completed' || event.data.status === 'recovered'
-                  ? SpanStatusCode.OK
-                  : SpanStatusCode.ERROR,
-            });
-            span.end(new Date(event.timestamp));
-          }
-        }
-        logger.emit({
-          eventName: event.type,
-          timestamp: new Date(event.timestamp),
-          body: `Repoctopus Evidence event: ${event.type}`,
-          attributes,
-          context: parent,
+      for (const record of signals.spans) {
+        const span = tracer.startSpan(
+          record.name,
+          { startTime: new Date(record.startTime), attributes: record.attributes },
+          parent,
+        );
+        span.setStatus({
+          code:
+            record.result === 'failed' ||
+            record.result === 'incomplete' ||
+            record.result === 'blocked' ||
+            record.result === 'superseded'
+              ? SpanStatusCode.ERROR
+              : SpanStatusCode.OK,
         });
-        counter.add(1, { 'repoctopus.evidence.event.type': event.type });
-        if (event.type === 'evidence.node.completed' && typeof event.data.durationMs === 'number') {
-          duration.record(event.data.durationMs, {
-            'repoctopus.evidence.adapter': String(event.data.adapter ?? 'unknown'),
-            'repoctopus.evidence.status': String(event.data.status ?? 'unknown'),
-          });
-        }
-        if (
-          event.type === 'evidence.attempt.completed' &&
-          typeof event.data.durationMs === 'number'
-        ) {
-          attemptDuration.record(event.data.durationMs, {
-            'repoctopus.evidence.status': String(event.data.status ?? 'unknown'),
-          });
+        span.end(new Date(record.endTime));
+      }
+      for (const record of signals.logs) {
+        logger.emit({
+          eventName: record.eventName,
+          timestamp: new Date(record.observedAt),
+          body: record.body,
+          attributes: record.attributes,
+          context: observationContext(record.traceId, record.spanId),
+        });
+      }
+      for (const record of signals.metrics) {
+        if (record.name === 'repoctopus.evidence.node.duration') {
+          duration.record(record.value, record.attributes);
+        } else if (record.name === 'repoctopus.evidence.attempt.duration') {
+          attemptDuration.record(record.value, record.attributes);
+        } else {
+          counter.add(record.value, record.attributes);
         }
       }
       await Promise.all([
