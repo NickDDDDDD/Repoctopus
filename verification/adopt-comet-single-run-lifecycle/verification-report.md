@@ -3,10 +3,10 @@
 ## Reproducible subject
 
 - Change: `adopt-comet-single-run-lifecycle`
-- Tested implementation commit: `c83a20fb5932ef35cc5c218cace5ba1efec2d5e7`
+- Tested implementation commit: `2012ec5dad6505ec2849badbc1e3328a624759ba`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `1004785`
-- Package SHA-256: `07c9d39e098773d8dc228a9e7bf968ed8f8241e85003418293161b4f4215e06b`
+- Package bytes: `1006245`
+- Package SHA-256: `5ac791511e467bdae195c7009667979a8de06e84060efad7544df21d167430ff`
 - Lifecycle definition: `repoctopus-change@3.0.0`
 - Lifecycle definition digest: `sha256:d45fdabde20f79ccc9e0dd95ce164d5b7225ce736b1e76e08c44e53e85c92a0e`
 - Verified input composition digest: `sha256:0f52306c5478580e72a9618918ebcdb11a13b1ca5a310cbef9bf3722e2488b69`
@@ -21,8 +21,8 @@ Run on Windows with Node.js `24.21.0`:
 ```text
 npm run verify
   typecheck, desktop typecheck, lint and both builds passed
-  128 test files passed
-  521 tests passed, 1 skipped
+  129 test files passed
+  532 tests passed, 1 skipped
   generated, brand, architecture and provenance checks passed
   OpenSpec strict validation: 14 passed, 0 failed
 
@@ -49,6 +49,8 @@ Managed Hosts can now attach a versioned, bounded Tool usage report to their Out
 Per-destination telemetry health now has an immutable domain projection for cursor/head lag, backlog count/bytes/oldest age, recent result, consecutive retries, gaps, cumulative retention drops, Receiver acceptance and delivery latency. Controlled fixtures prove a failed remote destination cannot advance or contaminate a successful desktop destination, and retention overflow first records a gap and marks history incomplete. Correlated Log/Span facts retain the stable destination identity for local diagnosis, while Metrics expose only bounded `remote|desktop` kind and result dimensions; telemetry failures do not modify the workflow domain result.
 
 The observation-only coverage report consumes normalized records rather than Workspace, OpenSpec, Git or latest-Run snapshots. An identity-preserving slice of the pinned real self-bootstrap Trajectory proves all five phases, Work and Skill history, Human wait, continuation and a real Archive-to-Design rework; explicitly labeled synthetic records cover the newer Task, Decision, Validator-start, Host-tool, Evidence-attempt, recovery and telemetry-pipeline contracts that did not exist in that older Run. The resulting projection identifies the current Build Work, Task and consumed Skill chain. Eighteen omission tests independently remove every required coverage category and require an `incomplete` report, while reverse-order and duplicate inputs prove deterministic ordering and replay deduplication. The detailed source digest and coverage matrix are recorded in `verification/add-windows-desktop-dashboard/telemetry-coverage-report.md`.
+
+The shared `ObservationEnvelope` v1 now gives every accepted observation one immutable, destination-neutral unit containing its source event identity and time, fixed scope, allowlisted resource attributes, correlated Log/Span records, bounded Metric record, stable envelope identity and canonical integrity digest. The envelope identity derives only from the source event identity and fixed event name, while the canonical digest covers the full normalized payload; this separates replay deduplication from content-drift detection. Mapping is deterministic and domain-pure: it reads no files, network, Runtime snapshot or destination configuration. A byte-level golden fixture proves reordered attribute input produces identical serialized output, boundary events require a stable operation identity, tampering fails integrity validation, high-cardinality Metric identity is rejected and seven private credential/path/content/Prompt/reply/command/output cases fail before persistence.
 
 The self-bootstrap Archive exposed an incorrect frozen Change branch OID before any remote publication. The regression repair now performs the planning/live-remote check before creating closure Work and repeats it before push/MR. Tests prove that an isolated closure can rebind only an OID jointly established by the live source branch and closure candidate; if the live branch has advanced, the same Run invalidates the local closure and returns to Design instead of publishing unverified code. Protected plugin recovery is limited to an exact predecessor `codeDigest + descriptorDigest` declaration with unchanged authority, state schema and effective config. Lifecycle-definition recovery is separately limited to an explicitly listed predecessor definition digest; a compatible upgrade may restore an interrupted Archive publication by creating a fresh Work at a new `checkEpoch`, but it cannot reuse the cleared Work or its Outcome. If the semantic `workId` is stable across epochs, the claim must use a higher attempt and execution authority distinguishes the new instance by `workId + checkEpoch`; an orphaned Action Intent that never reached the Run checkpoint may safely leave an attempt gap.
 
