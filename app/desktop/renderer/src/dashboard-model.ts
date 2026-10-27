@@ -31,6 +31,12 @@ export interface DashboardPhaseModel {
   phase: DashboardPhase;
   label: string;
   status: DashboardPhaseStatus;
+  history: readonly {
+    event: 'entered' | 'completed' | 'reopened';
+    sequence: number;
+    observedAt: string;
+    recoverySourcePhase: DashboardPhase | null;
+  }[];
 }
 
 export interface DashboardSkillModel {
@@ -44,6 +50,11 @@ export interface DashboardWorkModel {
   kind: string;
   attempt: number;
   status: 'active' | 'completed' | 'failed';
+  phase: DashboardPhase;
+  task: { id: string; revision: string | null } | null;
+  host: { id: string; status: 'running' | 'completed' | 'failed' } | null;
+  validator: { id: string; status: 'running' | 'completed' | 'failed' } | null;
+  continuation: 'execute' | 'ask' | 'wait' | 'reconcile' | 'done' | null;
   skills: readonly DashboardSkillModel[];
 }
 
@@ -61,6 +72,7 @@ export interface DashboardModel {
   lastObservedAt: string | null;
   phases: readonly DashboardPhaseModel[];
   currentWork: DashboardWorkModel | null;
+  executionHistory: readonly DashboardWorkModel[];
   guidance: string;
   busy: boolean;
   recoverable: boolean;
@@ -79,6 +91,7 @@ export function emptyDashboardPhases(): DashboardPhaseModel[] {
     phase,
     label: PHASE_LABELS[phase],
     status: 'not-started',
+    history: [],
   }));
 }
 
@@ -106,6 +119,7 @@ function shellModel(
     lastObservedAt: null,
     phases: emptyDashboardPhases(),
     currentWork: null,
+    executionHistory: [],
   };
 }
 
@@ -266,6 +280,15 @@ export function dashboardModelFromShell(
     phase,
     label: PHASE_LABELS[phase],
     status: failedPhase === phase ? 'failed' : (phaseStatus.get(phase) ?? 'not-started'),
+    history:
+      run.phases
+        .find((candidate) => candidate.phase === phase)
+        ?.history.map((entry) => ({
+          event: entry.event,
+          sequence: entry.sequence,
+          observedAt: entry.observedAt,
+          recoverySourcePhase: entry.recoverySourcePhase,
+        })) ?? [],
   }));
   const state: DashboardSemanticState =
     shell.projection.freshness.status === 'gap'
@@ -283,6 +306,23 @@ export function dashboardModelFromShell(
                 : 'live';
   const copy = stateCopy(state);
 
+  const workModel = (work: (typeof run.works)[number]): DashboardWorkModel => ({
+    id: work.id,
+    kind: work.kind,
+    attempt: work.attempt,
+    status: work.status,
+    phase: work.phase,
+    task: work.task ? { ...work.task } : null,
+    host: work.host ? { ...work.host } : null,
+    validator: work.validator ? { ...work.validator } : null,
+    continuation: work.continuation,
+    skills: work.skills.map((skill) => ({
+      name: skill.name,
+      role: skill.role,
+      status: skill.status,
+    })),
+  });
+
   return {
     state,
     ...copy,
@@ -296,18 +336,14 @@ export function dashboardModelFromShell(
         : 'OTLP 已同步',
     lastObservedAt: run.latestObservedAt,
     phases,
-    currentWork: run.currentWork
-      ? {
-          id: run.currentWork.id,
-          kind: run.currentWork.kind,
-          attempt: run.currentWork.attempt,
-          status: run.currentWork.status,
-          skills: run.currentWork.skills.map((skill) => ({
-            name: skill.name,
-            role: skill.role,
-            status: skill.status,
-          })),
-        }
-      : null,
+    currentWork: run.currentWork ? workModel(run.currentWork) : null,
+    executionHistory: [...run.works]
+      .sort(
+        (left, right) =>
+          right.lastSequence - left.lastSequence ||
+          right.attempt - left.attempt ||
+          left.id.localeCompare(right.id),
+      )
+      .map(workModel),
   };
 }

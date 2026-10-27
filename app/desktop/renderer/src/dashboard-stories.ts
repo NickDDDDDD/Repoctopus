@@ -23,6 +23,7 @@ function phases(statuses: readonly DashboardPhaseStatus[]): DashboardModel['phas
     phase,
     label: labels[phase],
     status: statuses[index] ?? 'not-started',
+    history: [],
   }));
 }
 
@@ -55,11 +56,17 @@ function story(state: DashboardSemanticState, overrides: Partial<DashboardModel>
       kind: 'task',
       attempt: 1,
       status: 'active',
+      phase: 'build',
+      task: { id: '5.1', revision: null },
+      host: { id: 'external:cli:codex-root', status: 'running' },
+      validator: null,
+      continuation: 'execute',
       skills: [
         { name: 'codebase-design', role: 'action', status: 'consumed' },
         { name: 'test-driven-development', role: 'augmentation', status: 'delivered' },
       ],
     },
+    executionHistory: [],
     guidance: '界面只读；状态推进权属于 Runtime。',
     busy: false,
     recoverable: false,
@@ -186,6 +193,11 @@ export const DASHBOARD_STATE_STORIES: Record<DashboardSemanticState, DashboardMo
       kind: 'verification',
       attempt: 2,
       status: 'failed',
+      phase: 'verify',
+      task: null,
+      host: { id: 'external:cli:codex-root', status: 'completed' },
+      validator: { id: 'verify.acceptance', status: 'failed' },
+      continuation: null,
       skills: [{ name: 'systematic-debugging', role: 'action', status: 'consumed' }],
     },
     guidance: '检查失败证据并启动恢复 action。',

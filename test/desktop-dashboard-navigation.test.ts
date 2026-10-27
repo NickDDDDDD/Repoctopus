@@ -39,6 +39,13 @@ const observation = (
   phase: 'open',
   work: null,
   skill: null,
+  task: null,
+  host: null,
+  validator: null,
+  continuation: null,
+  recoverySourcePhase: null,
+  previousPhase: null,
+  lifecycleStatus: null,
   result: null,
 });
 

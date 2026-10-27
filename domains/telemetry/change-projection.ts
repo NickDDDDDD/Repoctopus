@@ -15,6 +15,8 @@ export type ChangeProjectionPhaseStatus =
   | 'rework';
 export type ChangeProjectionSkillRole = 'action' | 'augmentation';
 export type ChangeProjectionSkillStatus = 'resolved' | 'delivered' | 'consumed';
+export type ChangeProjectionExecutionStatus = 'running' | 'completed' | 'failed';
+export type ChangeProjectionContinuation = 'execute' | 'ask' | 'wait' | 'reconcile' | 'done';
 
 export interface ChangeProjectionObservation {
   schemaVersion: 1;
@@ -36,6 +38,29 @@ export interface ChangeProjectionObservation {
     name: string;
     role: ChangeProjectionSkillRole;
   } | null;
+  task: {
+    id: string;
+    revision: string | null;
+  } | null;
+  host: {
+    id: string;
+    status: ChangeProjectionExecutionStatus;
+  } | null;
+  validator: {
+    id: string;
+    status: ChangeProjectionExecutionStatus;
+  } | null;
+  continuation: ChangeProjectionContinuation | null;
+  recoverySourcePhase: ObservationPhase | null;
+  previousPhase: ObservationPhase | null;
+  lifecycleStatus:
+    | 'running'
+    | 'waiting'
+    | 'blocked'
+    | 'completed'
+    | 'failed'
+    | 'migration_required'
+    | null;
   result: string | null;
 }
 
@@ -51,11 +76,29 @@ export interface ChangeProjectionWork {
   id: string;
   kind: string;
   attempt: number;
+  phase: ObservationPhase;
   status: 'active' | 'completed' | 'failed';
   statusSequence: number;
   lastSequence: number;
   lastEventId: string;
+  task: ChangeProjectionObservation['task'];
+  taskSequence: number;
+  host: ChangeProjectionObservation['host'];
+  hostSequence: number;
+  validator: ChangeProjectionObservation['validator'];
+  validatorSequence: number;
+  continuation: ChangeProjectionContinuation | null;
+  continuationSequence: number;
   skills: readonly ChangeProjectionSkill[];
+}
+
+export interface ChangeProjectionPhaseHistory {
+  event: 'entered' | 'completed' | 'reopened';
+  sequence: number;
+  eventId: string;
+  observedAt: string;
+  result: string | null;
+  recoverySourcePhase: ObservationPhase | null;
 }
 
 export interface ChangeProjectionPhase {
@@ -65,12 +108,14 @@ export interface ChangeProjectionPhase {
   lastEventId: string | null;
   enteredAt: string | null;
   completedAt: string | null;
+  history: readonly ChangeProjectionPhaseHistory[];
 }
 
 export interface ChangeProjectionRun {
   runId: string;
   workflowName: string | null;
   status: 'active' | 'completed' | 'failed';
+  statusSequence: number;
   currentPhase: ObservationPhase | null;
   currentPhaseSequence: number;
   latestSequence: number;
@@ -168,8 +213,28 @@ function assertObservation(observation: ChangeProjectionObservation): void {
     if (!Number.isSafeInteger(observation.work.attempt) || observation.work.attempt < 1) {
       throw new Error('Work attempt must be a positive safe integer');
     }
+    if (observation.phase === null) throw new Error('Work observation requires a phase');
   }
   if (observation.skill) assertIdentity(observation.skill.name, 'Skill name');
+  if (observation.task) {
+    assertIdentity(observation.task.id, 'Task id');
+    if (observation.task.revision !== null)
+      assertIdentity(observation.task.revision, 'Task revision');
+  }
+  if (observation.host) assertIdentity(observation.host.id, 'Host id');
+  if (observation.validator) assertIdentity(observation.validator.id, 'Validator id');
+  if (
+    observation.recoverySourcePhase !== null &&
+    !OBSERVATION_PHASES.includes(observation.recoverySourcePhase)
+  ) {
+    throw new Error('Projection recovery source phase is invalid');
+  }
+  if (
+    observation.previousPhase !== null &&
+    !OBSERVATION_PHASES.includes(observation.previousPhase)
+  ) {
+    throw new Error('Projection previous phase is invalid');
+  }
   if (observation.result !== null) assertIdentity(observation.result, 'Result');
 }
 
@@ -185,6 +250,7 @@ function emptyPhases(): ChangeProjectionPhase[] {
     lastEventId: null,
     enteredAt: null,
     completedAt: null,
+    history: [],
   }));
 }
 
@@ -205,7 +271,13 @@ export function createEmptyChangeProjection(): ChangeProjectionSnapshot {
 }
 
 function cloneWork(work: ChangeProjectionWork): ChangeProjectionWork {
-  return { ...work, skills: work.skills.map((skill) => ({ ...skill })) };
+  return {
+    ...work,
+    task: work.task ? { ...work.task } : null,
+    host: work.host ? { ...work.host } : null,
+    validator: work.validator ? { ...work.validator } : null,
+    skills: work.skills.map((skill) => ({ ...skill })),
+  };
 }
 
 function cloneSnapshot(snapshot: ChangeProjectionSnapshot): ChangeProjectionSnapshot {
@@ -222,7 +294,10 @@ function cloneSnapshot(snapshot: ChangeProjectionSnapshot): ChangeProjectionSnap
       ...change,
       runs: change.runs.map((run) => ({
         ...run,
-        phases: run.phases.map((phase) => ({ ...phase })),
+        phases: run.phases.map((phase) => ({
+          ...phase,
+          history: phase.history.map((entry) => ({ ...entry })),
+        })),
         currentWork: run.currentWork ? cloneWork(run.currentWork) : null,
         works: run.works.map(cloneWork),
       })),
@@ -244,6 +319,14 @@ function eventIsLater(
 }
 
 function phaseStatus(observation: ChangeProjectionObservation): ChangeProjectionPhaseStatus {
+  if (
+    observation.lifecycleStatus === 'blocked' ||
+    observation.lifecycleStatus === 'failed' ||
+    observation.lifecycleStatus === 'migration_required'
+  ) {
+    return 'blocked';
+  }
+  if (observation.lifecycleStatus === 'completed') return 'completed';
   if (observation.eventName === 'change.phase.reopened') return 'rework';
   if (observation.eventName === 'change.phase.entered') return 'running';
   return ['succeeded', 'accepted', 'completed'].includes(observation.result ?? '')
@@ -369,6 +452,7 @@ export function reduceChangeProjection(
       runId: observation.runId,
       workflowName: observation.workflowName,
       status: 'active',
+      statusSequence: 0,
       currentPhase: null,
       currentPhaseSequence: 0,
       latestSequence: observation.sequence,
@@ -391,33 +475,138 @@ export function reduceChangeProjection(
   }
 
   if (PHASE_EVENTS.has(observation.eventName) && observation.phase) {
+    const sourcePhaseName = observation.previousPhase ?? observation.recoverySourcePhase;
+    const previousPhase = sourcePhaseName
+      ? run.phases.find((candidate) => candidate.phase === sourcePhaseName)
+      : null;
+    if (
+      previousPhase &&
+      OBSERVATION_PHASES.indexOf(previousPhase.phase) <
+        OBSERVATION_PHASES.indexOf(observation.phase)
+    ) {
+      const completionEventId = `${observation.eventId}:completed`;
+      previousPhase.history = [
+        ...previousPhase.history,
+        {
+          event: 'completed' as const,
+          sequence: observation.sequence,
+          eventId: completionEventId,
+          observedAt: observation.observedAt,
+          result: 'completed',
+          recoverySourcePhase: null,
+        },
+      ].sort(
+        (left, right) =>
+          left.sequence - right.sequence || left.eventId.localeCompare(right.eventId),
+      );
+      previousPhase.completedAt =
+        previousPhase.history.filter((entry) => entry.event === 'completed').at(-1)?.observedAt ??
+        null;
+      if (
+        eventIsLater(
+          observation.sequence,
+          completionEventId,
+          previousPhase.lastSequence,
+          previousPhase.lastEventId,
+        )
+      ) {
+        previousPhase.status = 'completed';
+        previousPhase.lastSequence = observation.sequence;
+        previousPhase.lastEventId = completionEventId;
+      }
+    }
+    if (
+      previousPhase &&
+      OBSERVATION_PHASES.indexOf(previousPhase.phase) >
+        OBSERVATION_PHASES.indexOf(observation.phase) &&
+      eventIsLater(
+        observation.sequence,
+        `${observation.eventId}:fallback`,
+        previousPhase.lastSequence,
+        previousPhase.lastEventId,
+      )
+    ) {
+      previousPhase.status = 'blocked';
+      previousPhase.lastSequence = observation.sequence;
+      previousPhase.lastEventId = `${observation.eventId}:fallback`;
+    }
     const phase = run.phases.find((candidate) => candidate.phase === observation.phase)!;
+    phase.history = [
+      ...phase.history,
+      {
+        event: observation.eventName.slice('change.phase.'.length) as
+          | 'entered'
+          | 'completed'
+          | 'reopened',
+        sequence: observation.sequence,
+        eventId: observation.eventId,
+        observedAt: observation.observedAt,
+        result: observation.result,
+        recoverySourcePhase: observation.recoverySourcePhase,
+      },
+    ].sort(
+      (left, right) => left.sequence - right.sequence || left.eventId.localeCompare(right.eventId),
+    );
+    phase.enteredAt =
+      phase.history
+        .filter((entry) => entry.event === 'entered' || entry.event === 'reopened')
+        .at(-1)?.observedAt ?? null;
+    phase.completedAt =
+      phase.history.filter((entry) => entry.event === 'completed').at(-1)?.observedAt ?? null;
     if (
       eventIsLater(observation.sequence, observation.eventId, phase.lastSequence, phase.lastEventId)
     ) {
       phase.status = phaseStatus(observation);
       phase.lastSequence = observation.sequence;
       phase.lastEventId = observation.eventId;
-      if (observation.eventName === 'change.phase.entered')
-        phase.enteredAt = observation.observedAt;
-      if (observation.eventName === 'change.phase.completed') {
-        phase.completedAt = observation.observedAt;
-      }
-      if (observation.phase === 'archive' && observation.eventName === 'change.phase.completed') {
+      if (
+        observation.phase === 'archive' &&
+        observation.eventName === 'change.phase.completed' &&
+        observation.sequence >= run.statusSequence
+      ) {
         run.status = phase.status === 'completed' ? 'completed' : 'failed';
+        run.statusSequence = observation.sequence;
+      }
+      if (observation.lifecycleStatus && observation.sequence >= run.statusSequence) {
+        run.status =
+          observation.lifecycleStatus === 'completed'
+            ? 'completed'
+            : observation.lifecycleStatus === 'failed'
+              ? 'failed'
+              : 'active';
+        run.statusSequence = observation.sequence;
+      }
+      if (
+        observation.eventName === 'change.phase.reopened' &&
+        observation.sequence >= run.statusSequence
+      ) {
+        run.status = 'active';
+        run.statusSequence = observation.sequence;
       }
     }
   }
 
   if (observation.work) {
-    let work = run.works.find((candidate) => candidate.id === observation.work!.id);
+    let work = run.works.find(
+      (candidate) =>
+        candidate.id === observation.work!.id && candidate.attempt === observation.work!.attempt,
+    );
     if (!work) {
       work = {
         ...observation.work,
+        phase: observation.phase!,
         status: workStatus(observation),
         statusSequence: observation.eventName.startsWith('work.') ? observation.sequence : 0,
         lastSequence: observation.sequence,
         lastEventId: observation.eventId,
+        task: observation.task ? { ...observation.task } : null,
+        taskSequence: observation.task ? observation.sequence : 0,
+        host: observation.host ? { ...observation.host } : null,
+        hostSequence: observation.host ? observation.sequence : 0,
+        validator: observation.validator ? { ...observation.validator } : null,
+        validatorSequence: observation.validator ? observation.sequence : 0,
+        continuation: observation.continuation,
+        continuationSequence: observation.continuation ? observation.sequence : 0,
         skills: [],
       };
       run.works = [...run.works, work];
@@ -426,9 +615,25 @@ export function reduceChangeProjection(
         eventIsLater(observation.sequence, observation.eventId, work.lastSequence, work.lastEventId)
       ) {
         work.kind = observation.work.kind;
-        work.attempt = observation.work.attempt;
+        work.phase = observation.phase!;
         work.lastSequence = observation.sequence;
         work.lastEventId = observation.eventId;
+      }
+      if (observation.task && observation.sequence >= work.taskSequence) {
+        work.task = { ...observation.task };
+        work.taskSequence = observation.sequence;
+      }
+      if (observation.host && observation.sequence >= work.hostSequence) {
+        work.host = { ...observation.host };
+        work.hostSequence = observation.sequence;
+      }
+      if (observation.validator && observation.sequence >= work.validatorSequence) {
+        work.validator = { ...observation.validator };
+        work.validatorSequence = observation.sequence;
+      }
+      if (observation.continuation && observation.sequence >= work.continuationSequence) {
+        work.continuation = observation.continuation;
+        work.continuationSequence = observation.sequence;
       }
       if (
         observation.eventName.startsWith('work.') &&
@@ -471,7 +676,9 @@ export function reduceChangeProjection(
         (left, right) => left.role.localeCompare(right.role) || left.name.localeCompare(right.name),
       );
     }
-    run.works = [...run.works].sort((left, right) => left.id.localeCompare(right.id));
+    run.works = [...run.works].sort(
+      (left, right) => left.id.localeCompare(right.id) || left.attempt - right.attempt,
+    );
   }
 
   if (observation.sequence >= change.latestSequence) {

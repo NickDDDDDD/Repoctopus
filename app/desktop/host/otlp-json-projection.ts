@@ -1,4 +1,5 @@
 import type { ChangeProjectionObservation } from '../../../domains/telemetry/change-projection.js';
+import { observationEventSchema } from '../../../domains/telemetry/observation-contract.js';
 
 type JsonObject = Record<string, unknown>;
 
@@ -65,6 +66,70 @@ function bodyName(record: JsonObject): string | null {
   return typeof value === 'string' ? value : null;
 }
 
+function executionStatus(
+  eventName: string,
+  prefix: 'work.host-' | 'host.' | 'validator.',
+  result: string | null,
+): 'running' | 'completed' | 'failed' | null {
+  if (eventName === `${prefix}started`) return 'running';
+  if (eventName !== `${prefix}completed`) return null;
+  return result === 'failed' || result === 'rejected' ? 'failed' : 'completed';
+}
+
+function phase(value: string | null) {
+  return value === 'open' ||
+    value === 'design' ||
+    value === 'build' ||
+    value === 'verify' ||
+    value === 'archive'
+    ? value
+    : null;
+}
+
+function continuation(value: string | null) {
+  return value === 'execute' ||
+    value === 'ask' ||
+    value === 'wait' ||
+    value === 'reconcile' ||
+    value === 'done'
+    ? value
+    : null;
+}
+
+function lifecycleStatus(value: string | null) {
+  return value === 'running' ||
+    value === 'waiting' ||
+    value === 'blocked' ||
+    value === 'completed' ||
+    value === 'failed' ||
+    value === 'migration_required'
+    ? value
+    : null;
+}
+
+const PHASE_ORDER = ['open', 'design', 'build', 'verify', 'archive'] as const;
+
+function lifecyclePhaseEvent(
+  previous: ReturnType<typeof phase>,
+  next: ReturnType<typeof phase>,
+  status: ReturnType<typeof lifecycleStatus>,
+): string | null {
+  if (!next || !status) return null;
+  if (previous && PHASE_ORDER.indexOf(next) < PHASE_ORDER.indexOf(previous)) {
+    return 'change.phase.reopened';
+  }
+  return status === 'completed' ? 'change.phase.completed' : 'change.phase.entered';
+}
+
+function supportedObservationEvent(value: string): boolean {
+  try {
+    observationEventSchema(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function decodeOtlpJsonProjectionObservations(
   body: Uint8Array,
 ): readonly ChangeProjectionObservation[] {
@@ -89,7 +154,7 @@ export function decodeOtlpJsonProjectionObservations(
         const logRecord = object(logRecordValue);
         if (!logRecord) continue;
         const recordAttributes = attributes(logRecord.attributes);
-        const eventName = bodyName(logRecord);
+        const bodyEventName = bodyName(logRecord);
         const eventId = text(recordAttributes, 'repoctopus.event.id');
         const sequence = integer(recordAttributes, 'repoctopus.event.sequence');
         const changeId = text(recordAttributes, 'repoctopus.change.id');
@@ -97,7 +162,7 @@ export function decodeOtlpJsonProjectionObservations(
         const timestamp = observedAt(logRecord);
         if (
           !workspaceId ||
-          !eventName ||
+          !bodyEventName ||
           !eventId ||
           !sequence ||
           !changeId ||
@@ -106,12 +171,37 @@ export function decodeOtlpJsonProjectionObservations(
         ) {
           continue;
         }
-        const phase = text(recordAttributes, 'repoctopus.execution.phase');
+        const previousPhase = phase(text(recordAttributes, 'repoctopus.change.phase.before'));
+        const lifecyclePhase = phase(text(recordAttributes, 'repoctopus.change.phase'));
+        const lifecycleRunStatus = lifecycleStatus(
+          text(recordAttributes, 'repoctopus.change.status'),
+        );
+        const normalizedLifecycleEvent =
+          bodyEventName === 'Repoctopus Change lifecycle phase event'
+            ? lifecyclePhaseEvent(previousPhase, lifecyclePhase, lifecycleRunStatus)
+            : null;
+        const eventName = normalizedLifecycleEvent ?? bodyEventName;
+        if (!normalizedLifecycleEvent && !supportedObservationEvent(eventName)) continue;
+        const observationPhase =
+          lifecyclePhase ?? phase(text(recordAttributes, 'repoctopus.execution.phase'));
         const workId = text(recordAttributes, 'repoctopus.execution.work.id');
         const workKind = text(recordAttributes, 'repoctopus.execution.work.kind');
         const attempt = integer(recordAttributes, 'repoctopus.execution.attempt');
-        const skillName = text(recordAttributes, 'repoctopus.execution.skillName');
-        const skillRole = text(recordAttributes, 'repoctopus.execution.skillRole');
+        const skillName = text(recordAttributes, 'repoctopus.skill.name');
+        const skillRole = text(recordAttributes, 'repoctopus.skill.role');
+        const result = text(recordAttributes, 'repoctopus.execution.result');
+        const taskId =
+          text(recordAttributes, 'repoctopus.task.id') ??
+          text(recordAttributes, 'repoctopus.execution.task.id');
+        const taskRevision =
+          text(recordAttributes, 'repoctopus.task.revision') ??
+          text(recordAttributes, 'repoctopus.execution.task.revision');
+        const executorId = text(recordAttributes, 'repoctopus.executor.id');
+        const validatorId = text(recordAttributes, 'repoctopus.validator.id');
+        const hostStatus =
+          executionStatus(eventName, 'work.host-', result) ??
+          executionStatus(eventName, 'host.', result);
+        const validatorStatus = executionStatus(eventName, 'validator.', result);
         observations.push({
           schemaVersion: 1,
           sequence,
@@ -122,20 +212,23 @@ export function decodeOtlpJsonProjectionObservations(
           changeId,
           runId,
           workflowName: text(recordAttributes, 'repoctopus.workflow.name'),
-          phase:
-            phase === 'open' ||
-            phase === 'design' ||
-            phase === 'build' ||
-            phase === 'verify' ||
-            phase === 'archive'
-              ? phase
-              : null,
+          phase: observationPhase,
           work: workId && workKind && attempt ? { id: workId, kind: workKind, attempt } : null,
           skill:
             skillName && (skillRole === 'action' || skillRole === 'augmentation')
               ? { name: skillName, role: skillRole }
               : null,
-          result: text(recordAttributes, 'repoctopus.execution.result'),
+          task: taskId ? { id: taskId, revision: taskRevision } : null,
+          host: executorId && hostStatus ? { id: executorId, status: hostStatus } : null,
+          validator:
+            validatorId && validatorStatus ? { id: validatorId, status: validatorStatus } : null,
+          continuation: continuation(text(recordAttributes, 'repoctopus.next_action.kind')),
+          recoverySourcePhase:
+            phase(text(recordAttributes, 'repoctopus.recovery.source_phase')) ??
+            (normalizedLifecycleEvent === 'change.phase.reopened' ? previousPhase : null),
+          previousPhase,
+          lifecycleStatus: lifecycleRunStatus,
+          result,
         });
       }
     }

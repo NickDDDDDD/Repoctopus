@@ -126,6 +126,24 @@ export function DashboardSurface({
                 <span className="work-kind">
                   {model.currentWork.kind} · {model.currentWork.status}
                 </span>
+                <dl className="execution-facts">
+                  <div>
+                    <dt>Task</dt>
+                    <dd>{model.currentWork.task ? `Task ${model.currentWork.task.id}` : '—'}</dd>
+                  </div>
+                  <div>
+                    <dt>Host</dt>
+                    <dd>{model.currentWork.host?.id ?? '—'}</dd>
+                  </div>
+                  <div>
+                    <dt>Validator</dt>
+                    <dd>{model.currentWork.validator?.id ?? '—'}</dd>
+                  </div>
+                  <div>
+                    <dt>Continuation</dt>
+                    <dd>{model.currentWork.continuation ?? '—'}</dd>
+                  </div>
+                </dl>
                 <ul className="skill-list" aria-label="装填的 Skills">
                   {model.currentWork.skills.map((skill) => (
                     <li key={`${skill.role}:${skill.name}`}>
@@ -177,10 +195,40 @@ export function DashboardSurface({
                 <span className="phase-copy">
                   <strong>{phase.label}</strong>
                   <small>{PHASE_STATUS_LABELS[phase.status]}</small>
+                  {phase.history.filter((entry) => entry.event === 'reopened').length > 0 ? (
+                    <small>
+                      返工 {phase.history.filter((entry) => entry.event === 'reopened').length} 次
+                    </small>
+                  ) : null}
                 </span>
               </li>
             ))}
           </ol>
+
+          {model.executionHistory.length > 0 ? (
+            <section className="execution-history" aria-labelledby="execution-history-title">
+              <div className="section-heading">
+                <h2 id="execution-history-title">Execution history</h2>
+                <span>{model.executionHistory.length} attempts</span>
+              </div>
+              <ol>
+                {model.executionHistory.map((work) => (
+                  <li key={`${work.id}:${work.attempt}`} data-work-status={work.status}>
+                    <span className="history-phase">{work.phase}</span>
+                    <span>
+                      <strong>{work.id}</strong>
+                      <small>
+                        Attempt {work.attempt} · {work.status}
+                      </small>
+                    </span>
+                    <span className="history-runtime">
+                      {work.host?.id ?? work.validator?.id ?? 'Runtime pending'}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          ) : null}
 
           <div className="guidance">
             <span aria-hidden="true">i</span>
