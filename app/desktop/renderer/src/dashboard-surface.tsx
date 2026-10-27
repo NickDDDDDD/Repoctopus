@@ -17,6 +17,17 @@ const PHASE_STATUS_LABELS: Record<DashboardPhaseStatus, string> = {
   failed: '失败',
 };
 
+const SKILL_ROLE_LABELS = {
+  action: 'Action',
+  augmentation: 'Augmentation',
+} as const;
+
+const SKILL_STATUS_LABELS = {
+  resolved: 'Resolved',
+  delivered: 'Delivered',
+  consumed: 'Consumed',
+} as const;
+
 function identity(value: string | null): string {
   return value ?? '尚未上报';
 }
@@ -149,11 +160,17 @@ export function DashboardSurface({
                     <li key={`${skill.role}:${skill.name}`}>
                       <span>{skill.name}</span>
                       <small>
-                        {skill.role} · {skill.status}
+                        {SKILL_ROLE_LABELS[skill.role]} · {SKILL_STATUS_LABELS[skill.status]}
                       </small>
                     </li>
                   ))}
                 </ul>
+                {model.currentWork.skills.length > 0 ? (
+                  <p className="skill-semantics">
+                    Resolved 表示 Runtime 已选择；Delivered 表示内容已装入 Host packet；Consumed
+                    表示 Host 声明并经 Runtime 验证。Dashboard 不观察 Agent 的内部思考。
+                  </p>
+                ) : null}
               </>
             ) : (
               <p className="empty-copy">当前没有可展示的 work 或 skill。</p>

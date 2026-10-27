@@ -402,6 +402,13 @@ footer {
   white-space: nowrap;
 }
 
+.skill-semantics {
+  margin: var(--space-2) 0 0;
+  color: var(--ink-tertiary);
+  font-size: 0.6875rem;
+  line-height: 1.55;
+}
+
 .empty-copy {
   color: var(--ink-secondary);
   font-size: 0.75rem;
