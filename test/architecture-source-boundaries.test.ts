@@ -17,6 +17,10 @@ interface Fixtures {
   nonProviderClosure: SourceFixture[];
   unprotectedPublication: SourceFixture[];
   desktopIsolation: SourceFixture[];
+  desktopRendererIsolation: SourceFixture[];
+  desktopShellComposition: SourceFixture[];
+  desktopApplicationBypass: SourceFixture[];
+  desktopEngineLeak: SourceFixture[];
   lifecyclePhaseOwner: SourceFixture[];
   directRunStateWrite: SourceFixture[];
   callerSelectedLifecycleSkill: SourceFixture[];
@@ -154,6 +158,39 @@ describe('architecture source boundaries', () => {
         expect.stringContaining('app/desktop/main/rogue-boot.ts: desktop-shell-cordis-isolation'),
       ]),
     );
+  });
+
+  it('rejects Renderer access to Node and Cordis independently', () => {
+    expect(
+      evaluateSourceBoundaries(
+        fixtures.desktopRendererIsolation,
+        rules('desktop-renderer-process-isolation'),
+      ),
+    ).toHaveLength(2);
+  });
+
+  it('rejects product composition in Electron Main', () => {
+    expect(
+      evaluateSourceBoundaries(
+        fixtures.desktopShellComposition,
+        rules('desktop-shell-cordis-isolation'),
+      ),
+    ).toEqual([expect.stringContaining('desktop-shell-cordis-isolation')]);
+  });
+
+  it('rejects Desktop Host entry points that bypass the Application Plugin', () => {
+    expect(
+      evaluateSourceBoundaries(
+        fixtures.desktopApplicationBypass,
+        rules('desktop-host-application-plugin-boundary'),
+      ),
+    ).toEqual([expect.stringContaining('desktop-host-application-plugin-boundary')]);
+  });
+
+  it('rejects desktop dependencies entering the Engine', () => {
+    expect(
+      evaluateSourceBoundaries(fixtures.desktopEngineLeak, rules('engine-desktop-isolation')),
+    ).toEqual([expect.stringContaining('engine-desktop-isolation')]);
   });
 
   it('keeps Desktop Receiver and Projection construction inside their Host Services', async () => {

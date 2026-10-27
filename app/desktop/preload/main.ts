@@ -3,14 +3,15 @@ import { contextBridge, ipcRenderer } from 'electron';
 import {
   DESKTOP_BACKEND_STATE_CHANNEL,
   DESKTOP_RETRY_CHANNEL,
+  desktopIpcRequest,
   type DesktopShellState,
   type RepoctopusDesktopBridge,
 } from '../shared/renderer-contract.js';
 
 const bridge: RepoctopusDesktopBridge = {
-  currentState: () => ipcRenderer.invoke(DESKTOP_BACKEND_STATE_CHANNEL),
+  currentState: () => ipcRenderer.invoke(DESKTOP_BACKEND_STATE_CHANNEL, desktopIpcRequest()),
   retry: () => {
-    ipcRenderer.send(DESKTOP_RETRY_CHANNEL);
+    ipcRenderer.send(DESKTOP_RETRY_CHANNEL, desktopIpcRequest());
   },
   onState: (listener) => {
     const handler = (_event: Electron.IpcRendererEvent, state: DesktopShellState) => {

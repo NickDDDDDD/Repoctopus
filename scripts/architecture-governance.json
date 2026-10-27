@@ -43,14 +43,21 @@
       "targets": [
         "app/desktop/main/backend-controller.ts",
         "app/desktop/main/host-process.ts",
+        "app/desktop/main/ipc-security.ts",
         "app/desktop/main/node-environment.ts",
-        "app/desktop/main/single-instance.ts"
+        "app/desktop/main/shell-lifecycle.ts",
+        "app/desktop/main/shell-settings.ts",
+        "app/desktop/main/single-instance.ts",
+        "app/desktop/main/tray.ts"
       ],
       "upstream": [
         "apps/desktop/src/backend-controller.ts",
         "apps/desktop/src/host-process.ts",
+        "apps/desktop/src/main.ts",
         "apps/desktop/src/node-environment.ts",
-        "apps/desktop/src/single-instance.ts"
+        "apps/desktop/src/settings.ts",
+        "apps/desktop/src/single-instance.ts",
+        "apps/desktop/src/tray.ts"
       ],
       "rationale": "采用固定 DSH Desktop 的薄 Shell、Node-mode Host、串行恢复、单实例和有界退出模式，并收窄为 Repoctopus OTLP Dashboard 所需契约。"
     },
@@ -474,6 +481,20 @@
       "pattern": "from\\s+['\"](?:@deepseek-ai/cordis(?:/[^'\"]*)?|[^'\"]*/boot/[^'\"]*)['\"]",
       "allowed": [],
       "message": "Electron Shell and preload must not host Cordis directly or through App Boot"
+    },
+    {
+      "id": "desktop-host-application-plugin-boundary",
+      "targets": ["app/desktop/host/**"],
+      "pattern": "(?:from\\s+['\"][^'\"]*services/desktop-application(?:\\.js)?['\"]|new\\s+DesktopApplication\\s*\\()",
+      "allowed": [],
+      "message": "Desktop Host entry points must consume the registered Application Plugin service instead of constructing or importing its implementation"
+    },
+    {
+      "id": "engine-desktop-isolation",
+      "targets": ["domains/engine/**"],
+      "pattern": "from\\s+['\"][^'\"]*(?:/desktop/|desktop-(?:application|launcher|receiver|projection))[^'\"]*['\"]",
+      "allowed": [],
+      "message": "The generic Engine must not depend on desktop product or infrastructure code"
     },
     {
       "id": "single-change-lifecycle-transition-owner",

@@ -51,6 +51,34 @@
       "contents": "import { bootDesktopComposition } from '../../boot/bootstrap.js'; export const value = bootDesktopComposition;"
     }
   ],
+  "desktopRendererIsolation": [
+    {
+      "path": "app/desktop/renderer/src/rogue-node.tsx",
+      "contents": "import { readFile } from 'node:fs/promises'; export const value = readFile;"
+    },
+    {
+      "path": "app/desktop/renderer/src/rogue-cordis.tsx",
+      "contents": "import { Context } from '@deepseek-ai/cordis'; export const value = Context;"
+    }
+  ],
+  "desktopShellComposition": [
+    {
+      "path": "app/desktop/main/rogue-composition.ts",
+      "contents": "import { bootDesktopComposition } from '../../boot/bootstrap.js'; export const value = bootDesktopComposition;"
+    }
+  ],
+  "desktopApplicationBypass": [
+    {
+      "path": "app/desktop/host/rogue-application.ts",
+      "contents": "import { DesktopApplication } from '../../../services/desktop-application.js'; export const value = new DesktopApplication(context);"
+    }
+  ],
+  "desktopEngineLeak": [
+    {
+      "path": "domains/engine/rogue-desktop.ts",
+      "contents": "import { DesktopLaunchContext } from '../desktop/launcher.js'; export const value = DesktopLaunchContext;"
+    }
+  ],
   "lifecyclePhaseOwner": [
     {
       "path": "services/rogue-lifecycle.ts",

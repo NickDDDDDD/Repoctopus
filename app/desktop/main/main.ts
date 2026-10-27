@@ -20,6 +20,7 @@ import {
 } from '../shared/renderer-contract.js';
 import { DesktopBackendController, type DesktopBackendState } from './backend-controller.js';
 import { DesktopHostProcess, type DesktopHostReady } from './host-process.js';
+import { isTrustedDesktopIpcEvent, validateDesktopIpcRequest } from './ipc-security.js';
 import type { ChangeProjectionDelta } from '../../../domains/telemetry/change-projection.js';
 import { DesktopLaunchRegistry, desktopLaunchContextFromArguments } from './launch-context.js';
 import { resolveDesktopProductRoot } from './product-root.js';
@@ -101,20 +102,11 @@ const controller = new DesktopBackendController(
 
 function ownsSender(event: IpcMainEvent | IpcMainInvokeEvent): boolean {
   const window = mainWindow;
-  if (
-    window === undefined ||
-    window.isDestroyed() ||
-    event.sender !== window.webContents ||
-    event.senderFrame !== window.webContents.mainFrame
-  ) {
-    return false;
-  }
-  try {
-    const sender = new URL(event.senderFrame.url);
-    return sender.protocol === 'file:' && path.resolve(fileURLToPath(sender)) === rendererEntry;
-  } catch {
-    return false;
-  }
+  return (
+    window !== undefined &&
+    !window.isDestroyed() &&
+    isTrustedDesktopIpcEvent(event, window.webContents, rendererEntry)
+  );
 }
 
 async function startBackend(): Promise<void> {
@@ -161,6 +153,12 @@ async function createWindow(): Promise<void> {
     void shellLifecycle.requestFullQuit('session');
   });
   window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  window.webContents.on('will-navigate', (event, url) => {
+    if (url !== window.webContents.getURL()) event.preventDefault();
+  });
+  window.webContents.session.setPermissionRequestHandler((_contents, _permission, callback) => {
+    callback(false);
+  });
   window.once('ready-to-show', () => {
     window.show();
   });
@@ -262,12 +260,18 @@ const ownsInstance = claimDesktopSingleInstance(
 );
 
 if (ownsInstance) {
-  ipcMain.handle(DESKTOP_BACKEND_STATE_CHANNEL, (event) => {
+  ipcMain.handle(DESKTOP_BACKEND_STATE_CHANNEL, (event, request: unknown) => {
     if (!ownsSender(event)) throw new Error('Untrusted desktop IPC sender');
+    validateDesktopIpcRequest(DESKTOP_BACKEND_STATE_CHANNEL, request);
     return publicState(controller.state);
   });
-  ipcMain.on(DESKTOP_RETRY_CHANNEL, (event) => {
+  ipcMain.on(DESKTOP_RETRY_CHANNEL, (event, request: unknown) => {
     if (!ownsSender(event)) return;
+    try {
+      validateDesktopIpcRequest(DESKTOP_RETRY_CHANNEL, request);
+    } catch {
+      return;
+    }
     void restartBackend();
   });
   app.on('window-all-closed', () => {
