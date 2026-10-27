@@ -3,10 +3,10 @@
 ## Reproducible subject
 
 - Change: `adopt-comet-single-run-lifecycle`
-- Tested implementation commit: `9ca91ce2a214a685d9a165ea73a4c0033225befc`
+- Tested implementation commit: `f9934d37201b817ad9c9df5fe18ef2e220db3f70`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `1123822`
-- Package SHA-256: `adcb4123d6cac7ec89aedf9a41bfbd5d22bc6abca96ea07919885a724c2ae326`
+- Package bytes: `972881`
+- Package SHA-256: `9a7df4c2a883f0251d517af3bd1b53c9dd13d27083d7f07708949dfec80a5c8c`
 - Lifecycle definition: `repoctopus-change@3.0.0`
 - Lifecycle definition digest: `sha256:d45fdabde20f79ccc9e0dd95ce164d5b7225ce736b1e76e08c44e53e85c92a0e`
 - Verified input composition digest: `sha256:0f52306c5478580e72a9618918ebcdb11a13b1ca5a310cbef9bf3722e2488b69`
@@ -21,8 +21,8 @@ Run on Windows with Node.js `24.21.0`:
 ```text
 npm run verify
   typecheck, desktop typecheck, lint and both builds passed
-  154 test files passed
-  619 tests passed, 1 skipped
+  167 test files passed
+  658 tests passed, 1 skipped
   generated, brand, architecture and provenance checks passed
   OpenSpec strict validation: 14 passed, 0 failed
 

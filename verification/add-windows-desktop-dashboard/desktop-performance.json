@@ -4,7 +4,7 @@
   "taskId": "7.4",
   "runtimeRunId": "change-repoctopus-add-windows-desktop-dashboard-f5ddf312046dbfbb",
   "status": "passed",
-  "completedAt": "2026-10-27T16:27:52.985Z",
+  "completedAt": "2026-10-27T17:10:28.892Z",
   "environment": {
     "platform": "win32",
     "architecture": "x64",
@@ -15,7 +15,7 @@
   },
   "measurements": {
     "installerBytes": {
-      "value": 117165612,
+      "value": 117167585,
       "budget": 157286400,
       "unit": "bytes",
       "comparison": "at-most",
@@ -23,7 +23,7 @@
       "method": "Byte size of the versioned NSIS x64 setup candidate."
     },
     "coldStartMs": {
-      "value": 4051.7487999999994,
+      "value": 3887.213700000001,
       "budget": 15000,
       "unit": "milliseconds",
       "comparison": "at-most",
@@ -31,7 +31,7 @@
       "method": "Wall time from CreateProcess for an isolated installed candidate to authenticated Receiver discovery."
     },
     "idleWorkingSetBytes": {
-      "value": 485945344,
+      "value": 484499456,
       "budget": 734003200,
       "unit": "bytes",
       "comparison": "at-most",
@@ -40,7 +40,7 @@
       "processCount": 5
     },
     "activeWorkingSetBytes": {
-      "value": 607219712,
+      "value": 608722944,
       "budget": 891289600,
       "unit": "bytes",
       "comparison": "at-most",
@@ -49,14 +49,14 @@
       "processCount": 5
     },
     "receiverRequestsPerSecond": {
-      "value": 387.96180386720283,
+      "value": 380.58107880273684,
       "budget": 75,
       "unit": "requests/second",
       "comparison": "at-least",
       "passed": true,
       "method": "300 authenticated one-record OTLP/HTTP requests at concurrency 16, divided by wall time; every response must be accepted.",
       "requestCount": 300,
-      "elapsedMs": 773.2720000000008
+      "elapsedMs": 788.2683000000015
     }
   }
 }
