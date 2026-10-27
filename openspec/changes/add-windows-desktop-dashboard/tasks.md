@@ -53,7 +53,7 @@
 - [x] 3.4 实现最小五阶段 change projection reducer 与稳定事件去重，用乱序、重复和缺失 fixture 验证 active change、Run、phase、Work、Skill、新鲜度和 gap 状态确定性收敛。
       **Blocked by:** 3.1
       **Acceptance:** reducer 对乱序和重复事件确定性收敛，缺失序列产生 gap 而不是猜测状态
-- [ ] 3.5 由 Electron Main 启动 Desktop Host，把 Host 的 receiver/projection snapshot 与 delta 通过私有 Node IPC、Main 和类型化 Preload 桥接到最小 Renderer；运行桌面集成测试证明一个真实 OTLP Run 事件无需轮询即可在窗口显示，Host 崩溃时 Shell 保持错误/重试能力。
+- [x] 3.5 由 Electron Main 启动 Desktop Host，把 Host 的 receiver/projection snapshot 与 delta 通过私有 Node IPC、Main 和类型化 Preload 桥接到最小 Renderer；运行桌面集成测试证明一个真实 OTLP Run 事件无需轮询即可在窗口显示，Host 崩溃时 Shell 保持错误/重试能力。
       **Blocked by:** 3.3, 3.4
       **Acceptance:** 桌面集成测试证明真实 OTLP 事件经私有桥实时显示且无轮询，Host 崩溃可见并可重试
 - [ ] 3.6 接入最小 Desktop Launcher，在 Windows 开发 Run 开始前启动或激活 Dashboard 并唤醒本地目的地重放；运行进程外纵切测试验证 Dashboard 启动失败只产生 warning，远端 mock 仍收到同一 envelope。
