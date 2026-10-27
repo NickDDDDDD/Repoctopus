@@ -3,10 +3,10 @@
 ## Reproducible subject
 
 - Change: `adopt-comet-single-run-lifecycle`
-- Tested implementation commit: `669c2aaf1ca1d390b83241d9f41e6826b7b04d76`
+- Tested implementation commit: `e105c525ef1621c7d196e66b8462a8a4328180a0`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `1025679`
-- Package SHA-256: `d8631fb7226aa4026d08c8f3bce51dcf2be6216079ca48cba564068ee5eed749`
+- Package bytes: `1027775`
+- Package SHA-256: `ab400cd91366c4bde17de6102400b49c554f885e926730d11ef62f539c646f92`
 - Lifecycle definition: `repoctopus-change@3.0.0`
 - Lifecycle definition digest: `sha256:d45fdabde20f79ccc9e0dd95ce164d5b7225ce736b1e76e08c44e53e85c92a0e`
 - Verified input composition digest: `sha256:0f52306c5478580e72a9618918ebcdb11a13b1ca5a310cbef9bf3722e2488b69`
@@ -21,8 +21,8 @@ Run on Windows with Node.js `24.21.0`:
 ```text
 npm run verify
   typecheck, desktop typecheck, lint and both builds passed
-  133 test files passed
-  555 tests passed, 1 skipped
+  135 test files passed
+  560 tests passed, 1 skipped
   generated, brand, architecture and provenance checks passed
   OpenSpec strict validation: 14 passed, 0 failed
 
@@ -59,6 +59,8 @@ The independent Desktop Host now owns a headless OTLP/HTTP receiver that binds a
 The pure Desktop change projection reducer consumes only schema-validated, allowlisted observation facts. It maintains explicit five-phase, Run, Work and Skill state with authoritative sequence ownership, stable event fingerprints and a monotonic unique-event version; it reads no Workspace, OpenSpec, Git, Runtime store or remote backend. Ordered, shuffled and duplicate deliveries converge byte-for-byte, exact replay is a no-op, and reuse of either an event identity or sequence for different content fails closed. A missing sequence marks freshness as `gap` while preserving only explicitly observed phase states; receiving the missing fact repairs freshness without inferring an omitted completion. Multiple Workspace/change observations choose the active change by authoritative sequence rather than arrival order.
 
 The Desktop Host now decodes allowlisted identities from standard OTLP JSON Logs, applies them to the same pure projection and pushes a typed snapshot plus monotonic delta over private Node IPC. Electron Main forwards only the public projection through its sender-checked channel; the receiver endpoint and session token remain outside Preload and Renderer. The typed bridge updates the minimal Renderer without polling, while the existing controller exposes Host failure and supports a serialized retry. A real Electron smoke process intercepts only the private Host-ready event in the test harness, submits an authenticated OTLP Run event and verifies the visible window changes from its empty state to the five-stage Open projection. The production Host process test independently proves the same export produces a versioned projection delta before graceful shutdown.
+
+The Runtime-side Desktop activation seam now carries only validated Workspace, change and Run identities across a detached Windows process boundary. Repeated invocation is intentionally the start-or-activate protocol consumed by Electron single-instance ownership; a successful activation wakes the independently owned desktop destination replay, while unsupported platforms, process launch failure and replay wake failure return bounded warnings and never fail the development Run. Unit tests preserve that ordering and retry boundary. A real child-process fixture proves the encoded context crosses the process boundary, and a loopback remote OTLP mock proves a missing desktop executable leaves the original observation envelope byte-for-byte deliverable to the remote destination. Cordis catalog and project-composition registration remain the explicit next task rather than an implicit constructor side path.
 
 The self-bootstrap Archive exposed an incorrect frozen Change branch OID before any remote publication. The regression repair now performs the planning/live-remote check before creating closure Work and repeats it before push/MR. Tests prove that an isolated closure can rebind only an OID jointly established by the live source branch and closure candidate; if the live branch has advanced, the same Run invalidates the local closure and returns to Design instead of publishing unverified code. Protected plugin recovery is limited to an exact predecessor `codeDigest + descriptorDigest` declaration with unchanged authority, state schema and effective config. Lifecycle-definition recovery is separately limited to an explicitly listed predecessor definition digest; a compatible upgrade may restore an interrupted Archive publication by creating a fresh Work at a new `checkEpoch`, but it cannot reuse the cleared Work or its Outcome. If the semantic `workId` is stable across epochs, the claim must use a higher attempt and execution authority distinguishes the new instance by `workId + checkEpoch`; an orphaned Action Intent that never reached the Run checkpoint may safely leave an attempt gap.
 
