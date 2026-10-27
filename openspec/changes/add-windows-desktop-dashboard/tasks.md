@@ -8,7 +8,7 @@
 - [x] 1.2 选择并精确锁定 Electron、React、Vite 和 `electron-builder` 版本，审计固定 DSH Desktop 基线并登记许可证、来源、安装脚本、采用文件、修改方式与排除范围；更新 `third_party/dsh-adoption.json` 后执行 `npm install`、`npm run check:provenance` 和许可证检查，证明没有未登记依赖或 Comet 源码复制。
       **Blocked by:** 1.1
       **Acceptance:** lockfile 与采用清单固定全部桌面依赖和 DSH 来源，provenance 与许可证检查拒绝未登记依赖或源码复制
-- [ ] 1.3 在 `app/desktop` 建立 thin-main、preload、renderer、desktop-host 和共享契约边界；只在 Node-mode Desktop Host 子进程建立统一 App Boot 与 desktop composition。执行桌面 typecheck、lint、composition/进程契约测试和开发构建，证明 Application Plugin 只在必需 Service 就绪后激活，Electron Main 不承载 Cordis 产品 composition，Renderer 没有 Node/Cordis 权限。
+- [x] 1.3 在 `app/desktop` 建立 thin-main、preload、renderer、desktop-host 和共享契约边界；只在 Node-mode Desktop Host 子进程建立统一 App Boot 与 desktop composition。执行桌面 typecheck、lint、composition/进程契约测试和开发构建，证明 Application Plugin 只在必需 Service 就绪后激活，Electron Main 不承载 Cordis 产品 composition，Renderer 没有 Node/Cordis 权限。
       **Blocked by:** 1.2
       **Acceptance:** 桌面构建和边界测试通过，只有 Desktop Host 装配产品 composition，Main 与 Renderer 的禁止依赖由负向检查覆盖
 
