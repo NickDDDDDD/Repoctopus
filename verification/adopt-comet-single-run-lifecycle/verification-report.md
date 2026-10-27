@@ -3,10 +3,10 @@
 ## Reproducible subject
 
 - Change: `adopt-comet-single-run-lifecycle`
-- Tested implementation commit: `d1045a556dd87e824725a583e8f8ec49e1329170`
+- Tested implementation commit: `15aa6534ad923fc67ee78cb1d35bea65e84ce8f2`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `1042786`
-- Package SHA-256: `9f24cec6d050809d28d6bb925920d95f620e57beb38b257aca96a4d508680775`
+- Package bytes: `1052806`
+- Package SHA-256: `b72e9cbf20d6e82156b7797fd5ea0cf020a48056279188da1d683dc2d4bd4fd8`
 - Lifecycle definition: `repoctopus-change@3.0.0`
 - Lifecycle definition digest: `sha256:d45fdabde20f79ccc9e0dd95ce164d5b7225ce736b1e76e08c44e53e85c92a0e`
 - Verified input composition digest: `sha256:0f52306c5478580e72a9618918ebcdb11a13b1ca5a310cbef9bf3722e2488b69`
@@ -21,8 +21,8 @@ Run on Windows with Node.js `24.21.0`:
 ```text
 npm run verify
   typecheck, desktop typecheck, lint and both builds passed
-  136 test files passed
-  567 tests passed, 1 skipped
+  137 test files passed
+  570 tests passed, 1 skipped
   generated, brand, architecture and provenance checks passed
   OpenSpec strict validation: 14 passed, 0 failed
 
@@ -51,6 +51,8 @@ Per-destination telemetry health now has an immutable domain projection for curs
 The observation-only coverage report consumes normalized records rather than Workspace, OpenSpec, Git or latest-Run snapshots. An identity-preserving slice of the pinned real self-bootstrap Trajectory proves all five phases, Work and Skill history, Human wait, continuation and a real Archive-to-Design rework; explicitly labeled synthetic records cover the newer Task, Decision, Validator-start, Host-tool, Evidence-attempt, recovery and telemetry-pipeline contracts that did not exist in that older Run. The resulting projection identifies the current Build Work, Task and consumed Skill chain. Eighteen omission tests independently remove every required coverage category and require an `incomplete` report, while reverse-order and duplicate inputs prove deterministic ordering and replay deduplication. The detailed source digest and coverage matrix are recorded in `verification/add-windows-desktop-dashboard/telemetry-coverage-report.md`.
 
 The shared `ObservationEnvelope` v1 now gives every accepted observation one immutable, destination-neutral unit containing its source event identity and time, fixed scope, allowlisted resource attributes, correlated Log/Span records, bounded Metric record, stable envelope identity and canonical integrity digest. The envelope identity derives only from the source event identity and fixed event name, while the canonical digest covers the full normalized payload; this separates replay deduplication from content-drift detection. Mapping is deterministic and domain-pure: it reads no files, network, Runtime snapshot or destination configuration. A byte-level golden fixture proves reordered attribute input produces identical serialized output, boundary events require a stable operation identity, tampering fails integrity validation, high-cardinality Metric identity is rejected and seven private credential/path/content/Prompt/reply/command/output cases fail before persistence.
+
+Persisted Workflow Run execution events now pass through one pure envelope mapper and one destination-neutral OTLP semantic encoder before the OpenTelemetry SDK. The mapper preserves stable event, trace, span and operation identities, pairs duration boundaries against the authoritative Trajectory, applies the event-specific Metric dimension enum and leaves telemetry-pipeline facts on their separately staged migration path. The same immutable envelope encoded for remote and desktop destinations produces identical Log, Span and Metric semantics; correlated Log and Span records share the exact identity, Metric records exclude Run, Work and Host identities, and existing tracer plus managed-execution E2E tests prove the remote exporter retains its prior event names and execution instruments. The schema privacy guard permits only the four reviewed aggregate model Token counters and continues to reject generic Token attributes.
 
 The file Observation Store serializes append and acknowledgement transitions through recoverable cross-process locks and atomically replaces a validated v1 snapshot. Exact envelope replay is idempotent, while a reused source identity with a different canonical digest is rejected. Every destination has its own hashed Cursor file, must acknowledge the exact next contiguous Store entry and cannot mutate another destination's position. Fault tests cover remote success with desktop failure, desktop success with remote failure, a process exit after the envelope commit but before delivery, a pre-commit Store interruption, a pre-commit Cursor interruption and restart replay from each destination's own durable position. In all cases the previous state remains readable and no failed destination advances.
 
