@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "kind": "WindowsDesktopPerformance",
+  "taskId": "7.4",
+  "runtimeRunId": "change-repoctopus-add-windows-desktop-dashboard-f5ddf312046dbfbb",
+  "status": "passed",
+  "completedAt": "2026-10-27T16:27:52.985Z",
+  "environment": {
+    "platform": "win32",
+    "architecture": "x64",
+    "windowsRelease": "10.0.26300",
+    "nodeVersion": "v24.21.0",
+    "isolatedInstall": true,
+    "isolatedUserData": true
+  },
+  "measurements": {
+    "installerBytes": {
+      "value": 117165612,
+      "budget": 157286400,
+      "unit": "bytes",
+      "comparison": "at-most",
+      "passed": true,
+      "method": "Byte size of the versioned NSIS x64 setup candidate."
+    },
+    "coldStartMs": {
+      "value": 4051.7487999999994,
+      "budget": 15000,
+      "unit": "milliseconds",
+      "comparison": "at-most",
+      "passed": true,
+      "method": "Wall time from CreateProcess for an isolated installed candidate to authenticated Receiver discovery."
+    },
+    "idleWorkingSetBytes": {
+      "value": 485945344,
+      "budget": 734003200,
+      "unit": "bytes",
+      "comparison": "at-most",
+      "passed": true,
+      "method": "Sum of WorkingSetSize for the installed Electron Shell process tree after Receiver ready and a 1 second idle settle.",
+      "processCount": 5
+    },
+    "activeWorkingSetBytes": {
+      "value": 607219712,
+      "budget": 891289600,
+      "unit": "bytes",
+      "comparison": "at-most",
+      "passed": true,
+      "method": "Sum of WorkingSetSize for the same process tree after 300 authenticated OTLP log requests and projection settle.",
+      "processCount": 5
+    },
+    "receiverRequestsPerSecond": {
+      "value": 387.96180386720283,
+      "budget": 75,
+      "unit": "requests/second",
+      "comparison": "at-least",
+      "passed": true,
+      "method": "300 authenticated one-record OTLP/HTTP requests at concurrency 16, divided by wall time; every response must be accepted.",
+      "requestCount": 300,
+      "elapsedMs": 773.2720000000008
+    }
+  }
+}

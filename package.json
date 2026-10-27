@@ -60,6 +60,7 @@
     "test:package-e2e": "vitest run test/e2e/package.e2e.test.ts",
     "test:desktop-e2e": "npm run build:desktop && vitest run test/desktop-host.e2e.test.ts",
     "test:desktop-package-e2e": "node scripts/windows-desktop-package-e2e.mjs",
+    "measure:desktop": "node scripts/measure-windows-desktop.mjs",
     "test:tracer-e2e": "vitest run test/e2e/runtime-tracer.e2e.test.ts",
     "typecheck:desktop": "tsc --noEmit -p app/desktop/renderer/tsconfig.json",
     "desktop:start": "npm run desktop:prepare && npm run build:desktop && electron dist/desktop/main.js",
