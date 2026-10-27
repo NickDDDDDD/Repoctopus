@@ -8,7 +8,7 @@ import { clearTimeout, setTimeout } from 'node:timers';
 
 import { app } from 'electron';
 
-const expectedHeading = 'desktop-smoke';
+const expectedChangeId = 'desktop-smoke';
 const screenshot = process.env.REPOCTOPUS_DESKTOP_SMOKE_SCREENSHOT;
 let finished = false;
 
@@ -31,42 +31,44 @@ childProcess.spawn = function instrumentDesktopHost(...args) {
   const child = originalSpawn.apply(this, args);
   child.on('message', (message) => {
     if (message?.type !== 'ready') return;
-    void globalThis.fetch(`${message.receiver.endpoint}/v1/logs`, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'x-repoctopus-session': message.receiver.sessionToken,
-      },
-      body: JSON.stringify({
-        resourceLogs: [
-          {
-            resource: {
-              attributes: [attribute('repoctopus.workspace.id', 'workspace-smoke')],
-            },
-            scopeLogs: [
-              {
-                logRecords: [
-                  {
-                    timeUnixNano: '1793080800000000000',
-                    body: { stringValue: 'change.phase.entered' },
-                    attributes: [
-                      attribute('repoctopus.event.id', 'event-smoke-open'),
-                      attribute('repoctopus.event.sequence', 1),
-                      attribute('repoctopus.change.id', expectedHeading),
-                      attribute('repoctopus.run.id', 'run-desktop-smoke'),
-                      attribute('repoctopus.workflow.name', 'repoctopus-change'),
-                      attribute('repoctopus.execution.phase', 'open'),
-                    ],
-                  },
-                ],
+    void globalThis
+      .fetch(`${message.receiver.endpoint}/v1/logs`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-repoctopus-session': message.receiver.sessionToken,
+        },
+        body: JSON.stringify({
+          resourceLogs: [
+            {
+              resource: {
+                attributes: [attribute('repoctopus.workspace.id', 'workspace-smoke')],
               },
-            ],
-          },
-        ],
-      }),
-    }).then((response) => {
-      if (!response.ok) fail(new Error(`Desktop smoke OTLP export failed: ${response.status}`));
-    }, fail);
+              scopeLogs: [
+                {
+                  logRecords: [
+                    {
+                      timeUnixNano: '1793080800000000000',
+                      body: { stringValue: 'change.phase.entered' },
+                      attributes: [
+                        attribute('repoctopus.event.id', 'event-smoke-open'),
+                        attribute('repoctopus.event.sequence', 1),
+                        attribute('repoctopus.change.id', expectedChangeId),
+                        attribute('repoctopus.run.id', 'run-desktop-smoke'),
+                        attribute('repoctopus.workflow.name', 'repoctopus-change'),
+                        attribute('repoctopus.execution.phase', 'open'),
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        }),
+      })
+      .then((response) => {
+        if (!response.ok) fail(new Error(`Desktop smoke OTLP export failed: ${response.status}`));
+      }, fail);
   });
   return child;
 };
@@ -77,20 +79,22 @@ async function inspect(window) {
   let state;
   while (Date.now() < deadline) {
     state = await window.webContents.executeJavaScript(`(() => ({
-      heading: document.querySelector('h1')?.textContent,
+      dashboardState: document.querySelector('[data-dashboard-state]')?.dataset.dashboardState,
+      phaseStatus: document.querySelector('[data-phase-status="running"]')?.textContent,
       body: document.body.innerText,
       processType: typeof globalThis.process,
       requireType: typeof globalThis.require,
       bridgeType: typeof window.repoctopusDesktop,
     }))()`);
-    if (state.heading === expectedHeading) break;
+    if (state.dashboardState === 'live') break;
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
 
   if (
-    state?.heading !== expectedHeading ||
-    !state.body.includes('实时观测') ||
-    !state.body.includes('当前阶段 open')
+    state?.dashboardState !== 'live' ||
+    !state.body.includes(expectedChangeId) ||
+    !state.phaseStatus?.includes('Open') ||
+    !state.phaseStatus.includes('进行中')
   ) {
     throw new Error(`Desktop did not render the OTLP projection: ${JSON.stringify(state)}`);
   }
