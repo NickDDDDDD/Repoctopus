@@ -26,7 +26,7 @@
 - [x] 2.4 增加 Open、Design、adopt-existing 与 design-revision Human Decision 请求/结果边界，区分 human、retry、external-fact 等等待类别并记录真实等待时长；证明自由文本 reason、审批正文和 Actor 敏感身份不会进入 Metric。
       **Blocked by:** 2.2
       **Acceptance:** 四类 Decision 均产生可配对的等待边界和真实时长，Metric 只包含有界类别且不泄露正文或敏感 Actor 身份
-- [ ] 2.5 增加 Validator started/completed 边界以及 phase 驻留、主动执行、人工/外部等待、返工、retry、unknown、reconcile 和 recovery 的有界指标；修复零时长 Run/Evidence/Validator Span，并用可控时钟测试真实持续时间。
+- [x] 2.5 增加 Validator started/completed 边界以及 phase 驻留、主动执行、人工/外部等待、返工、retry、unknown、reconcile 和 recovery 的有界指标；修复零时长 Run/Evidence/Validator Span，并用可控时钟测试真实持续时间。
       **Blocked by:** 2.2
       **Acceptance:** 可控时钟测试证明 Run、Evidence、Validator 和等待持续时间非伪造零值，所有指标维度来自固定枚举
 - [ ] 2.6 扩展 Tool 遥测契约：保留 Runtime 受保护操作，允许 Host 上报版本化有界类别、结果、耗时和可选模型/Token 聚合；以支持和不支持 Tool observation 的 Host fixture 证明缺失显示 unknown、命令/路径/Prompt/输出永不进入 envelope。
