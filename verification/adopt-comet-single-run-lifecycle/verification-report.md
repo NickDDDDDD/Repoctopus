@@ -5,8 +5,8 @@
 - Change: `adopt-comet-single-run-lifecycle`
 - Tested implementation commit: `df54746f4eec91afb554112d9b29b194f2a56837`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `1065539`
-- Package SHA-256: `959a005554703f60fb0f46966d7ed1d1393bd642a82e576cde1088a1cd761e59`
+- Package bytes: `1065534`
+- Package SHA-256: `1e0493086cfe4b6763784502b4387836ffd68984a8d0accda97660e839cd5dc9`
 - Lifecycle definition: `repoctopus-change@3.0.0`
 - Lifecycle definition digest: `sha256:d45fdabde20f79ccc9e0dd95ce164d5b7225ce736b1e76e08c44e53e85c92a0e`
 - Verified input composition digest: `sha256:0f52306c5478580e72a9618918ebcdb11a13b1ca5a310cbef9bf3722e2488b69`
