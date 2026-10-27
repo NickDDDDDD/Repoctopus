@@ -1,7 +1,6 @@
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -20,6 +19,15 @@ const context = {
   runId: 'change-desktop-launcher-e2e-1234',
 };
 
+const launchTarget = `
+  import { writeFile } from 'node:fs/promises';
+  const output = process.argv[1];
+  const flag = process.argv.indexOf('--repoctopus-launch-context');
+  if (!output || flag < 0 || !process.argv[flag + 1]) process.exit(2);
+  const context = JSON.parse(Buffer.from(process.argv[flag + 1], 'base64url').toString('utf8'));
+  await writeFile(output, JSON.stringify(context), 'utf8');
+`;
+
 async function waitForJson(file: string): Promise<unknown> {
   await vi.waitFor(
     async () => {
@@ -35,15 +43,12 @@ describe('Windows desktop launcher process boundary', () => {
     const root = await temporaryDirectory('repoctopus-desktop-launcher-');
     cleanup.push(root);
     const output = path.join(root, 'context.json');
-    const fixture = fileURLToPath(
-      new URL('../fixtures/desktop-launch-target.mjs', import.meta.url),
-    );
     const wakeReplay = vi.fn(() => Promise.resolve());
     const activation = new DesktopRunActivation(
       new WindowsDesktopProcessLauncher({
         platform: 'win32',
         executable: process.execPath,
-        prefixArguments: [fixture, output],
+        prefixArguments: ['--input-type=module', '--eval', launchTarget, output],
       }),
       wakeReplay,
     );
