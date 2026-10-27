@@ -126,6 +126,17 @@ Envelope 先以原子写入进入 Workspace 的本地遥测 outbox，再由目�
 
 第一版复用仓库现有原子文件 Store、Journal 和 cursor 模式，不引入共享数据库。未来可以把 Store Provider 替换为 SQLite 或远端队列，但不得改变 per-destination 确认语义。
 
+四个 seam 形成单向依赖，接口保持小而深：
+
+1. `ObservationMapper` 只接受已经持久化的领域事件及其权威上下文，返回规范 envelope；它不访问文件、网络、最新 Run 或任何目的地。
+2. `ObservationOutbox` 只负责原子追加、按连续序列读取和有界保留；append 成功表示事实已进入可恢复投递，不表示任何目的地已确认。
+3. `ObservationDestination` 只接受一批不可变 envelope 并返回有界确认结果；cursor owner 根据结果推进该目的地，Adapter 不写 cursor、也不重新解释领域对象。
+4. `ChangeProjection` 只接受已验证的 observation record 和旧 snapshot，返回新 snapshot、单调版本及 delta；它不拥有 Receiver、IPC、文件或 UI 生命周期。
+
+这些名称描述职责，不要求四个公开 class。实现可以在模块内部组合 encoder、batcher、journal 与 validator，但调用者只需理解以上四个接口。删除任一模块时，其复杂性会重新散落到多个 exporter、目的地或 Renderer，因而这些 seam 具有真实的 leverage，而不是为单一实现预留的假抽象。
+
+Runtime 不新增常驻 destination daemon。每个短生命周期命令在持久化新 envelope 后执行有界 delivery pump，并在命令结束前保存各目的地结果；下一次 `run start`、`run next`、恢复或显式重放继续未确认记录。仅用户选择托盘常驻时，Desktop Host 的 Receiver 与投影订阅保持运行；这不会让 Runtime 获得 Timer、监听端口或后台所有权。
+
 备选方案一是把一份数据同时直接 `Promise.all` 发往两个端点；进程退出后无法确定各目的地是否确认。备选方案二是让 Electron 接收后再转发 SigNoZ；Electron 关闭会切断团队遥测并使桌面成为单点，因此拒绝。
 
 ### 5. Desktop Host 子进程实现受保护的本地 OTLP 接收器
@@ -156,6 +167,8 @@ Receiver 先验证 OTLP 和 Repoctopus schema version，再把 Span、Log 和 Me
 Projection 不读取仓库、OpenSpec、Git 或领域 Store，不从文本猜测 Agent、完成度和下一步动作。Metric 仅用于聚合摘要；具有稳定身份的 UI 状态主要来自 Span 与 Log，避免从低基数 Metric 反推实体。
 
 Desktop Host 把已接受记录写入追加式本地 journal，并周期生成原子 snapshot。启动时加载 snapshot 后重放 journal，重复 `event.id` 收敛为 no-op。该 journal 只保存经过遥测允许列表的数据，不复制 Artifact 正文。使用现有文件持久化模式可以避免 Windows 原生 SQLite addon 的构建和 ABI 风险；如果性能证据表明不足，数据库替换走后续 change。
+
+Receiver、Projection 和 Application Plugin 分别拥有协议接纳、状态归约和用户会话，不能合并为一个“桌面状态服务”。Receiver 成功只说明请求通过认证且记录已耐久接受；Projection 失败必须留下 gap/invalid-record 诊断，不能把 HTTP 成功误写成投影成功。Application Plugin 只订阅版本化 snapshot/delta，不得调用 Reducer 的内部函数或读取 journal。这样协议测试、纯 reducer fixture 与桌面交互测试可以穿过各自正式接口，而无需越过 seam 测试实现细节。
 
 ### 7. Renderer 通过类型化 IPC 接收 snapshot 与有序 delta
 
