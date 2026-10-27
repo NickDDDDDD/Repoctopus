@@ -1172,10 +1172,31 @@ export class WorkflowRuns extends Service {
               try {
                 const approvalHash = assessment.approval?.decision?.approvalHash;
                 if (!approvalHash) throw new Error('Approved Design has no approval hash');
-                const taskSet = await this.ctx.specification.tasks(
+                const sourceTaskSet = await this.ctx.specification.tasks(
                   lifecycle.identity.changeId,
                   signal,
                 );
+                const projectedById = new Map(
+                  (lifecycle.tasks ?? []).map((task) => [task.taskId, task] as const),
+                );
+                const taskSet = lifecycle.verificationInvalidation
+                  ? {
+                      ...sourceTaskSet,
+                      tasks: sourceTaskSet.tasks.map((task) => {
+                        const projected = projectedById.get(task.taskId);
+                        if (!projected || projected.taskRevision !== task.taskRevision) {
+                          throw new Error(
+                            `Repair Task projection drifted from the approved revision: ${task.taskId}`,
+                          );
+                        }
+                        return {
+                          ...task,
+                          status: projected.status,
+                          completion: projected.completion,
+                        };
+                      }),
+                    }
+                  : sourceTaskSet;
                 const skills = await this.resolveLifecycleWorkSkills('task.implement', signal);
                 const nextBuild = createInitialBuildWork({
                   runId,
