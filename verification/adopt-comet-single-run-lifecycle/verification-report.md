@@ -3,10 +3,10 @@
 ## Reproducible subject
 
 - Change: `adopt-comet-single-run-lifecycle`
-- Tested implementation commit: `733e6bb90d5c13a31653f292ab8148a476d8a687`
+- Tested implementation commit: `9c56d0fdacb1745fbbbdaff711e142b8eb048517`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `1114309`
-- Package SHA-256: `e64804d60e6c232caeca708bc93b46f6c510fe92d8b7e6d0a0eebf9ff8a6699b`
+- Package bytes: `1121190`
+- Package SHA-256: `352cfb135c0e81845d5b24cce0b9444ebfab278241e76b9d3496a7305260b8a7`
 - Lifecycle definition: `repoctopus-change@3.0.0`
 - Lifecycle definition digest: `sha256:d45fdabde20f79ccc9e0dd95ce164d5b7225ce736b1e76e08c44e53e85c92a0e`
 - Verified input composition digest: `sha256:0f52306c5478580e72a9618918ebcdb11a13b1ca5a310cbef9bf3722e2488b69`
@@ -21,8 +21,8 @@ Run on Windows with Node.js `24.21.0`:
 ```text
 npm run verify
   typecheck, desktop typecheck, lint and both builds passed
-  151 test files passed
-  609 tests passed, 1 skipped
+  152 test files passed
+  612 tests passed, 1 skipped
   generated, brand, architecture and provenance checks passed
   OpenSpec strict validation: 14 passed, 0 failed
 
@@ -69,6 +69,8 @@ The public telemetry configuration now has one environment parser shared by Proj
 Planning observation now distinguishes a complete negative assessment from an unavailable external observation. A transient remote branch lookup failure during Build or Verify returns a retryable warning while preserving phase, approved planning digest, task revisions and completion progress; only a successfully collected semantic mismatch can trigger the destructive return to Design. The production-composition regression first demonstrates the old Build-to-Design failure and then proves a retry selects the same next Task without synthesizing approval or rewriting history.
 
 The independent Desktop Host now owns a headless OTLP/HTTP receiver that binds an ephemeral port exclusively on `127.0.0.1` and authenticates every export with a per-process cryptographically random session token carried only over private Host IPC. Protocol tests cover Trace, Log and Metric protobuf exports, structurally valid OTLP JSON, missing authentication, wrong methods, unsupported content types and encodings, empty or malformed bodies, bounded-body overflow and loopback-only discovery. Success and rejection responses contain no body; bounded diagnostics retain only signal, result, reason, timestamp and byte count, never request content or credentials. A real forked Host test proves the advertised endpoint accepts an authenticated export and shuts down with the Host process.
+
+The Windows Host now publishes that ephemeral endpoint and session credential through one user-level discovery record with an atomic refresh lease. The record is accepted only when its file owner is the current Windows user, its timestamp is fresh, its PID still has the recorded creation identity and the loopback listening socket belongs to that same PID. ACL handling uses the Windows .NET security API directly and listener ownership uses the native system `netstat.exe`, avoiding optional PowerShell module loading in packaged or test Hosts. Production Host discovery plus adversarial fixtures reject a forged owner, a stale or dead process, a hijacked port and a wrong HTTP credential; neither accepted diagnostics nor projection state contains either credential.
 
 The pure Desktop change projection reducer consumes only schema-validated, allowlisted observation facts. It maintains explicit five-phase, Run, Work and Skill state with authoritative sequence ownership, stable event fingerprints and a monotonic unique-event version; it reads no Workspace, OpenSpec, Git, Runtime store or remote backend. Ordered, shuffled and duplicate deliveries converge byte-for-byte, exact replay is a no-op, and reuse of either an event identity or sequence for different content fails closed. A missing sequence marks freshness as `gap` while preserving only explicitly observed phase states; receiving the missing fact repairs freshness without inferring an omitted completion. Multiple Workspace/change observations choose the active change by authoritative sequence rather than arrival order.
 
