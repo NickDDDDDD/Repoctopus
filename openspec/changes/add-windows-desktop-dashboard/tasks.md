@@ -17,7 +17,7 @@
 - [x] 2.1 在 `design.md` 与类型化测试中建立五阶段、Work、Task、Skill、Decision、Tool/Host、Validator/Evidence、Recovery 和 Telemetry pipeline 覆盖矩阵；冻结事件 schema、Log/Span 精确关联、Metric 低基数维度和隐私边界，并用负向测试拒绝自由文本或高基数身份进入 Metric。
       **Blocked by:** 1.1
       **Acceptance:** 覆盖矩阵中的每类事实都有版本化事件、Log/Span 与 Metric 策略，负向测试拒绝自由文本和高基数 Metric 标签
-- [ ] 2.2 引入由当前权威 Work/claim 构造的统一 Execution Context，让 context-delivered、Host、Skill、Tool、Outcome、Validator、Wait、Reconcile 和 Continuation 事件完整携带 phase、Work kind/id、attempt、checkEpoch 与可用的 Task identity；用乱序事件测试证明映射器无需相邻事件或最新 Run 补值。
+- [x] 2.2 引入由当前权威 Work/claim 构造的统一 Execution Context，让 context-delivered、Host、Skill、Tool、Outcome、Validator、Wait、Reconcile 和 Continuation 事件完整携带 phase、Work kind/id、attempt、checkEpoch 与可用的 Task identity；用乱序事件测试证明映射器无需相邻事件或最新 Run 补值。
       **Blocked by:** 2.1
       **Acceptance:** 所列执行事件携带同一权威 Execution Context，乱序映射不读取相邻事件或最新 Run 快照也能还原关联
 - [ ] 2.3 增加 Task started/completed/failed/reopened 及 revision 关联，把 Build、Verify fallback 和 Archive fallback 绑定到原 Task、Evidence 和新 Work；以多 Task、Verify→Build、Archive→Design fixture 验证进度和返工链可确定重建。
