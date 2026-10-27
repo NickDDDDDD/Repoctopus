@@ -3,10 +3,10 @@
 ## Reproducible subject
 
 - Change: `adopt-comet-single-run-lifecycle`
-- Tested implementation commit: `0cec7401dd6293253a5e8bd579fae5bfc8a688ae`
+- Tested implementation commit: `cff8261e55e4aa20ad3101c3c597f53bc1789607`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `1069309`
-- Package SHA-256: `7436dc71aea438c346f39c332f6d1e0e2a159f15f74e319335e07e58899d0da1`
+- Package bytes: `1071089`
+- Package SHA-256: `ba2bd71dca2878a7685bad55e0f84d50d01b81460a3007d108c574cd0a5b6dea`
 - Lifecycle definition: `repoctopus-change@3.0.0`
 - Lifecycle definition digest: `sha256:d45fdabde20f79ccc9e0dd95ce164d5b7225ce736b1e76e08c44e53e85c92a0e`
 - Verified input composition digest: `sha256:0f52306c5478580e72a9618918ebcdb11a13b1ca5a310cbef9bf3722e2488b69`
@@ -21,8 +21,8 @@ Run on Windows with Node.js `24.21.0`:
 ```text
 npm run verify
   typecheck, desktop typecheck, lint and both builds passed
-  141 test files passed
-  583 tests passed, 1 skipped
+  142 test files passed
+  585 tests passed, 1 skipped
   generated, brand, architecture and provenance checks passed
   OpenSpec strict validation: 14 passed, 0 failed
 
@@ -63,6 +63,8 @@ App lifecycle, telemetry-pipeline and Delivery facts now also enter the canonica
 The file Observation Store now uses one validated v2 atomic snapshot for retained envelopes, monotonic offsets, destination lifecycle, cursors and gap history; the unshipped v1 split-store format is not retained as a second authority. Exact retained-envelope replay is idempotent, while a reused source identity with a different canonical digest is rejected. A destination must be explicitly enabled, may be paused without losing its backlog, and may be removed so future envelopes no longer enlarge its responsibility; re-enabling a removed destination starts at the then-current head and never changes another destination's cursor. Public snapshots report head/cursor lag, backlog count/bytes/oldest age, cumulative gaps and the explicit `at-least-once-replay` semantic.
 
 Count, UTF-8 byte and age retention limits prune only through the serialized Store transition. If an enabled or paused destination has not confirmed a pruned envelope, the same atomic replacement first records its exact offset range, dropped count/bytes and incomplete-history state, then advances only its next deliverable offset; its last confirmed cursor remains truthful. Interrupted retention leaves both the prior envelopes and prior gap history readable. Small-capacity tests prove independent remote/desktop positions, pause/resume, remove/re-enable, restart recovery, byte and age overflow, authorized continuation after a gap and no exactly-once claim.
+
+The public telemetry configuration now has one environment parser shared by Project composition and the Workflow, Evidence, Delivery and App-lifecycle exporter factories. It recognizes the standard generic and signal-specific OTLP endpoint variables without allowing an empty generic value to hide a configured signal endpoint; Desktop autostart continues to use `REPOCTOPUS_DESKTOP_AUTOSTART`. The read-only `telemetry config` command exposes only enabled state and variable names, never endpoint values. A documentation smoke test extracts and executes all four PowerShell examples in order, proving remote-only, remote-plus-desktop, Desktop-disabled and Desktop-re-enabled configurations while retaining the explicit `at-least-once-replay` semantic.
 
 Planning observation now distinguishes a complete negative assessment from an unavailable external observation. A transient remote branch lookup failure during Build or Verify returns a retryable warning while preserving phase, approved planning digest, task revisions and completion progress; only a successfully collected semantic mismatch can trigger the destructive return to Design. The production-composition regression first demonstrates the old Build-to-Design failure and then proves a retry selects the same next Task without synthesizing approval or rewriting history.
 
