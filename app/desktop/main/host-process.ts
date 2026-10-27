@@ -53,6 +53,7 @@ export interface DesktopHostProcessOptions {
   executable: string;
   entry: string;
   productRoot: string;
+  workingDirectory?: string;
   environment?: NodeJS.ProcessEnv;
   onReady?: (ready: DesktopHostReady) => void;
   onProjection?: (snapshot: ChangeProjectionSnapshot, delta: ChangeProjectionDelta) => void;
@@ -102,7 +103,7 @@ export class DesktopHostProcess {
       this.options.executable,
       [this.options.entry, this.options.productRoot],
       {
-        cwd: this.options.productRoot,
+        cwd: this.options.workingDirectory ?? this.options.productRoot,
         env: desktopNodeEnvironment(this.options.environment),
         stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
         windowsHide: true,

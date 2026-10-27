@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "kind": "WindowsDesktopPackageE2E",
+  "taskId": "7.2",
+  "runtimeRunId": "change-repoctopus-add-windows-desktop-dashboard-f5ddf312046dbfbb",
+  "status": "passed",
+  "startedAt": "2026-10-27T16:15:26.619Z",
+  "completedAt": "2026-10-27T16:15:41.540Z",
+  "environment": {
+    "platform": "win32",
+    "architecture": "x64",
+    "windowsRelease": "10.0.26300",
+    "isolatedUserData": true,
+    "isolatedDiscovery": true
+  },
+  "candidate": {
+    "artifact": "release/desktop/Repoctopus-Desktop-0.1.0-x64-Setup.exe",
+    "bytes": 117163981,
+    "digest": "sha256:1ab266b92f04f41d7c4f9d99e2743efe84921e1e52bcbcc86c682b7927c92c82"
+  },
+  "checks": [
+    {
+      "id": "install-candidate",
+      "status": "passed",
+      "durationMs": 4463,
+      "executable": "Repoctopus.exe"
+    },
+    {
+      "id": "run-activation",
+      "status": "passed",
+      "durationMs": 328,
+      "initialContextRendered": true
+    },
+    {
+      "id": "otlp-receiver",
+      "status": "passed",
+      "durationMs": 25,
+      "receiverAcceptedCanonicalOtlp": true
+    },
+    {
+      "id": "single-instance",
+      "status": "passed",
+      "durationMs": 264,
+      "oneHostPid": true,
+      "contextForwarded": true
+    },
+    {
+      "id": "tray-hide-and-restore",
+      "status": "passed",
+      "durationMs": 1061,
+      "shellStayedAlive": true,
+      "receiverStayedAlive": true,
+      "restoredByActivation": true
+    },
+    {
+      "id": "direct-exit",
+      "status": "passed",
+      "durationMs": 1986,
+      "shellExited": true,
+      "receiverDiscoveryRemoved": true
+    },
+    {
+      "id": "uninstall-candidate",
+      "status": "passed",
+      "durationMs": 2400,
+      "executableRemoved": true,
+      "userDataRetained": true
+    }
+  ],
+  "diagnostic": null
+}

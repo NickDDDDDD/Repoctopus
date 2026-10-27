@@ -48,6 +48,33 @@ const ready = {
 };
 
 describe('DesktopHostProcess', () => {
+  it('keeps the packaged ASAR root as input while spawning from its containing directory', async () => {
+    const child = new FakeHostChild();
+    const spawnProcess = vi.fn(() => child as unknown as ChildProcess);
+    const host = new DesktopHostProcess({
+      executable: 'Repoctopus.exe',
+      entry: 'resources\\app.asar.unpacked\\dist\\desktop\\host.mjs',
+      productRoot: 'C:\\Repoctopus\\resources\\app.asar',
+      workingDirectory: 'C:\\Repoctopus\\resources',
+      spawnProcess,
+    });
+
+    const starting = host.start();
+
+    expect(spawnProcess).toHaveBeenCalledWith(
+      'Repoctopus.exe',
+      [
+        'resources\\app.asar.unpacked\\dist\\desktop\\host.mjs',
+        'C:\\Repoctopus\\resources\\app.asar',
+      ],
+      expect.objectContaining({ cwd: 'C:\\Repoctopus\\resources' }),
+    );
+    child.emit('message', ready);
+    await starting;
+    child.connected = false;
+    child.emit('close', 0, null);
+  });
+
   it('bounds readiness and escalates shutdown without leaving a Host alive', async () => {
     const child = new FakeHostChild();
     const host = new DesktopHostProcess({

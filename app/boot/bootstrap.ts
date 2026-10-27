@@ -29,25 +29,6 @@ export async function bootBootstrapComposition(productRoot: string): Promise<Run
   return bootApp({ composition, catalog, lifecycleTelemetry: lifecycleTelemetryFromEnvironment() });
 }
 
-export async function bootDesktopComposition(productRoot: string): Promise<RunningApp> {
-  const catalog = await createRepoctopusBuiltinCatalog(productRoot);
-  const composition = compileComposition(
-    {
-      id: 'repoctopus-desktop',
-      kind: 'desktop',
-      plugins: [
-        { id: 'desktop-application-service' },
-        { id: 'desktop-projection-service' },
-        { id: 'desktop-receiver-service' },
-        { id: 'desktop-application' },
-      ],
-      requiredServices: ['desktopApplication', 'desktopProjection', 'desktopReceiver'],
-    },
-    catalog,
-  );
-  return bootApp({ composition, catalog, lifecycleTelemetry: lifecycleTelemetryFromEnvironment() });
-}
-
 export async function bootProjectComposition(
   productRoot: string,
   workspaceRoot: string,
@@ -59,3 +40,5 @@ export async function bootProjectComposition(
   const composition = compileProjectComposition(productRoot, workspaceRoot, config, catalog);
   return bootApp({ composition, catalog, lifecycleTelemetry: lifecycleTelemetryFromEnvironment() });
 }
+
+export { bootDesktopComposition } from './desktop-bootstrap.js';

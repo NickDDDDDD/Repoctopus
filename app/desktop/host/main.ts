@@ -1,6 +1,6 @@
 import path from 'node:path';
 
-import { bootDesktopComposition } from '../../boot/bootstrap.js';
+import { bootDesktopComposition } from '../../boot/desktop-bootstrap.js';
 import type { RunningApp } from '../../boot/boot.js';
 import {
   DEFAULT_DESKTOP_DISCOVERY_MAX_AGE_MS,

@@ -90,6 +90,24 @@ describe('DesktopBackendController', () => {
     expect(createHost).not.toHaveBeenCalled();
   });
 
+  it('preserves the primary diagnostic when failed startup cleanup is aggregated', async () => {
+    const controller = new DesktopBackendController(
+      () => ({
+        start: () => Promise.reject(new Error('OpenSpec dependency is unavailable')),
+        stop: () => Promise.reject(new Error('Host did not acknowledge shutdown')),
+      }),
+      () => undefined,
+    );
+
+    await expect(controller.start(() => Promise.resolve())).rejects.toThrow(
+      'desktop backend startup and cleanup failed',
+    );
+    expect(controller.state.phase).toBe('error');
+    if (controller.state.phase !== 'error') throw new Error('Expected an error state');
+    expect(controller.state.message).toContain('OpenSpec dependency is unavailable');
+    expect(controller.state.message).toContain('Host did not acknowledge shutdown');
+  });
+
   it('waits for crashed Host cleanup before sharing one retry Host', async () => {
     const firstStopped = deferred<void>();
     let fail!: (error: Error) => void;

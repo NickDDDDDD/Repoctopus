@@ -15,10 +15,26 @@ interface Attempt<Host> {
   cleanup?: Promise<void>;
 }
 
+const MAX_PUBLIC_FAILURE_CHARS = 8 * 1024;
+
+function summarizeFailure(failure: unknown): string {
+  const messages: string[] = [];
+  const visit = (candidate: unknown): void => {
+    if (candidate instanceof AggregateError) {
+      messages.push(candidate.message);
+      for (const nested of candidate.errors) visit(nested);
+      return;
+    }
+    messages.push(candidate instanceof Error ? candidate.message : String(candidate));
+  };
+  visit(failure);
+  return [...new Set(messages.filter(Boolean))].join(': ').slice(0, MAX_PUBLIC_FAILURE_CHARS);
+}
+
 function errorState(failure: unknown): DesktopBackendState {
   return {
     phase: 'error',
-    message: failure instanceof Error ? failure.message : 'Desktop Host failed',
+    message: summarizeFailure(failure) || 'Desktop Host failed',
     failure,
   };
 }

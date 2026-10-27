@@ -6,11 +6,22 @@ import { bootApp } from '../app/boot/boot.js';
 import { bootDesktopComposition } from '../app/boot/bootstrap.js';
 import { compileComposition } from '../app/boot/composition.js';
 import { createRepoctopusBuiltinCatalog } from '../plugins/builtin-catalog.js';
+import { createDesktopBuiltinCatalog } from '../plugins/desktop-builtin-catalog.js';
 import { DESKTOP_APPLICATION_CONTRACT } from '../services/desktop-application.js';
 
 const productRoot = path.resolve(import.meta.dirname, '..');
 
 describe('desktop composition', () => {
+  it('uses a minimal catalog that cannot import project-only runtime dependencies', async () => {
+    const catalog = await createDesktopBuiltinCatalog(productRoot);
+    expect([...catalog.keys()].sort()).toEqual([
+      'desktop-application',
+      'desktop-application-service',
+      'desktop-projection-service',
+      'desktop-receiver-service',
+    ]);
+  });
+
   it('boots the Desktop Application through the shared Cordis App Boot', async () => {
     const app = await bootDesktopComposition(productRoot);
     try {

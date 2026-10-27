@@ -84,6 +84,7 @@ const controller = new DesktopBackendController(
       executable: process.execPath,
       entry: hostEntry,
       productRoot,
+      workingDirectory: app.isPackaged ? path.dirname(productRoot) : productRoot,
       environment: {
         ...process.env,
         REPOCTOPUS_DESKTOP_DATA_DIR: path.join(app.getPath('userData'), 'projection'),

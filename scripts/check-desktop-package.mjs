@@ -20,6 +20,7 @@ const required = [
   '/dist/desktop/host.mjs',
   '/dist/desktop/renderer/index.html',
   '/dist/desktop/resource-manifest.json',
+  '/app/desktop/host/projection-journal-store.ts',
   '/package.json',
 ];
 

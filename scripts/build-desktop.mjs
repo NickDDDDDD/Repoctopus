@@ -35,7 +35,6 @@ await Promise.all([
     entryPoints: [path.join(desktopRoot, 'host', 'main.ts')],
     outfile: path.join(outputRoot, 'host.mjs'),
     bundle: true,
-    packages: 'external',
     platform: 'node',
     target: 'node22',
     format: 'esm',

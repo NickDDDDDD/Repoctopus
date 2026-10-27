@@ -118,7 +118,7 @@
       "sourceSha256": "eec9641e9abf40586464d7b3d4ffa8d968e040696f3fc7923507faae3d82ed27",
       "disposition": "source-modified",
       "target": "app/desktop/main/backend-controller.ts",
-      "targetSha256": "239a3f21f99b38c89d00e214accdab4f9b924615b43ed41ee70ea9b25db7d825"
+      "targetSha256": "292c57dc475e711176399acedbffaba855df58d1f2dc3311b82b75cecfb569d2"
     },
     {
       "id": "desktop-host-process",
@@ -126,7 +126,7 @@
       "sourceSha256": "6b9d3e558f526b7832020fb43d6682a07a68bf2d5657f26951f50a4f3eabfa28",
       "disposition": "source-modified",
       "target": "app/desktop/main/host-process.ts",
-      "targetSha256": "1d40552100d64bd18b3f77ea8338bdd150e1bf6566ebb775bedc8dafa2b66620"
+      "targetSha256": "7deac25e503c194aacc337cd435d10949c0bfab65c55f52ee84b2cb890b3d9bc"
     },
     {
       "id": "desktop-node-environment",

@@ -32,7 +32,12 @@ describe('Windows x64 desktop packaging contract', () => {
       nsis: { deleteAppDataOnUninstall: false },
     });
     expect(config.files).toEqual(
-      expect.arrayContaining(['dist/desktop/**/*', 'app/boot/**/*', 'package.json']),
+      expect.arrayContaining([
+        'dist/desktop/**/*',
+        'app/boot/**/*',
+        'app/desktop/host/**/*',
+        'package.json',
+      ]),
     );
     expect(config.asarUnpack).toContain('dist/desktop/host.mjs');
     expect(packageMetadata.author.name).toBe('Repoctopus Contributors');
@@ -47,5 +52,11 @@ describe('Windows x64 desktop packaging contract', () => {
     await expect(
       access(path.join(root, 'app', 'desktop', 'resources', 'icon.ico')),
     ).resolves.toBeUndefined();
+  });
+
+  it('bundles Host static dependencies instead of resolving them from a developer checkout', async () => {
+    const buildScript = await readFile(path.join(root, 'scripts', 'build-desktop.mjs'), 'utf8');
+    expect(buildScript).not.toContain("packages: 'external'");
+    expect(buildScript).toContain("external: ['electron']");
   });
 });

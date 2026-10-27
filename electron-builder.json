@@ -11,6 +11,7 @@
   "files": [
     "dist/desktop/**/*",
     "app/boot/**/*",
+    "app/desktop/host/**/*",
     "domains/**/*",
     "platform/**/*",
     "plugins/**/*",

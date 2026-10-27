@@ -56,10 +56,7 @@ import filesystemSkillProvider from './skill/filesystem-skill-provider.js';
 import skillCatalogContributor from './command/skill-catalog-contributor.js';
 import specificationContributor from './command/specification-contributor.js';
 import { OpenSpecProvider } from '../platform/specification/openspec-provider.js';
-import desktopApplication from './application/desktop-application.js';
-import { DesktopApplication } from '../services/desktop-application.js';
-import { DesktopProjection } from '../app/desktop/host/projection-service.js';
-import { DesktopReceiver } from '../app/desktop/host/receiver-service.js';
+import { desktopBuiltinDefinitions } from './desktop-builtin-catalog.js';
 import desktopRunContributor from './desktop/desktop-run-contributor.js';
 import { DesktopLocalDestination } from '../services/desktop-local-destination.js';
 import { DesktopRuntimeActivation } from '../services/desktop-runtime-activation.js';
@@ -171,78 +168,7 @@ const definitions: readonly BuiltinDefinition[] = [
     plugin: desktopRunContributor,
     sourceFiles: ['plugins/desktop/desktop-run-contributor.ts'],
   },
-  {
-    descriptor: {
-      id: 'desktop-application-service',
-      version: VERSION,
-      contractVersion: PLUGIN_CONTRACT_VERSION,
-      configSchemaVersion: '1',
-      kind: 'service-provider',
-      source: 'builtin',
-      compositions: ['desktop'],
-      authorities: [],
-      permissions: [],
-      stateSchemas: {},
-    },
-    plugin: DesktopApplication,
-    sourceFiles: ['services/desktop-application.ts'],
-  },
-  {
-    descriptor: {
-      id: 'desktop-projection-service',
-      version: VERSION,
-      contractVersion: PLUGIN_CONTRACT_VERSION,
-      configSchemaVersion: '1',
-      kind: 'service-provider',
-      source: 'builtin',
-      compositions: ['desktop'],
-      authorities: ['desktop-projection-state'],
-      permissions: [],
-      stateSchemas: { 'desktop-projection': '1' },
-    },
-    plugin: DesktopProjection,
-    sourceFiles: [
-      'app/desktop/host/projection-journal-store.ts',
-      'app/desktop/host/projection-service.ts',
-      'domains/telemetry/change-projection.ts',
-    ],
-  },
-  {
-    descriptor: {
-      id: 'desktop-receiver-service',
-      version: VERSION,
-      contractVersion: PLUGIN_CONTRACT_VERSION,
-      configSchemaVersion: '1',
-      kind: 'service-provider',
-      source: 'builtin',
-      compositions: ['desktop'],
-      authorities: ['desktop-otlp-receiver'],
-      permissions: ['network'],
-      stateSchemas: {},
-    },
-    plugin: DesktopReceiver,
-    sourceFiles: [
-      'app/desktop/host/receiver-service.ts',
-      'app/desktop/host/otlp-http-receiver.ts',
-      'app/desktop/host/otlp-json-projection.ts',
-    ],
-  },
-  {
-    descriptor: {
-      id: 'desktop-application',
-      version: VERSION,
-      contractVersion: PLUGIN_CONTRACT_VERSION,
-      configSchemaVersion: '1',
-      kind: 'application',
-      source: 'builtin',
-      compositions: ['desktop'],
-      authorities: [],
-      permissions: [],
-      stateSchemas: {},
-    },
-    plugin: desktopApplication,
-    sourceFiles: ['plugins/application/desktop-application.ts'],
-  },
+  ...desktopBuiltinDefinitions,
   {
     descriptor: {
       id: 'project-onboarding',
