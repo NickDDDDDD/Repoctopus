@@ -22,7 +22,7 @@ Run on Windows with Node.js `24.21.0`:
 npm run verify
   typecheck, desktop typecheck, lint and both builds passed
   145 test files passed
-  598 tests passed, 1 skipped
+  599 tests passed, 1 skipped
   generated, brand, architecture and provenance checks passed
   OpenSpec strict validation: 14 passed, 0 failed
 
