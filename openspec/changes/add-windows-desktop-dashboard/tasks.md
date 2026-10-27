@@ -122,7 +122,7 @@
 - [x] 6.3 基于固定 DSH 的 Tray 与 Shell settings ownership 模式实现 `quit`、`tray`、`ask` 用户级关闭偏好和托盘“完全退出”，运行 Windows 自动化测试验证隐藏、重新打开、保存偏好、会话退出、Host 关闭和完全退出语义。
       **Blocked by:** 6.2
       **Acceptance:** Windows 自动化覆盖三种关闭偏好、托盘恢复与完全退出，设置持久化且完全退出终止 Shell、Host 和 receiver
-- [ ] 6.4 强化 Renderer sandbox、`contextIsolation`、CSP、IPC sender/origin 校验和版本化 allowlist，并扩展架构检查拒绝 Renderer 访问 Cordis/Node、Electron Main 承载产品 composition、入口绕过 Application Plugin 和桌面代码进入 Engine；以负向 fixture 证明每条边界都会失败。
+- [x] 6.4 强化 Renderer sandbox、`contextIsolation`、CSP、IPC sender/origin 校验和版本化 allowlist，并扩展架构检查拒绝 Renderer 访问 Cordis/Node、Electron Main 承载产品 composition、入口绕过 Application Plugin 和桌面代码进入 Engine；以负向 fixture 证明每条边界都会失败。
       **Blocked by:** 3.5, 6.1
       **Acceptance:** 每条安全与架构边界都有独立负向 fixture，合法 IPC 只通过版本化 allowlist 和可信 sender/origin
 - [ ] 6.5 实现投影 journal、原子 snapshot、重复收敛和阈值压缩，以高事件量基准验证重启恢复、内存上限、启动时间和 journal 损坏诊断满足记录的性能预算。
