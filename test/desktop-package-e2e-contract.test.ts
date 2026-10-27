@@ -22,7 +22,8 @@ describe('installed Windows desktop end-to-end contract', () => {
     ]) {
       expect(script).toContain(`'${contract}'`);
     }
-    expect(script).toContain("taskId: '7.2'");
+    expect(script).toContain("taskId: selfHostWorkspace ? '8.2' : '7.2'");
+    expect(script).toContain("kind: selfHostWorkspace ? 'WindowsDesktopSelfHostE2E'");
     expect(script).toContain('REPOCTOPUS_DESKTOP_E2E_EVIDENCE');
   });
 
