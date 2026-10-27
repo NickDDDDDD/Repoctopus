@@ -8,6 +8,7 @@
       "targets": [
         "app/boot/**",
         "app/desktop/host/**",
+        "app/desktop/main/launch-context.ts",
         "app/desktop/main/main.ts",
         "app/desktop/main/product-root.ts",
         "app/desktop/main/startup.ts",

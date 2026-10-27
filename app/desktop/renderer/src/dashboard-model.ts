@@ -1,4 +1,5 @@
 import type { DesktopShellState } from '../../shared/renderer-contract.js';
+import type { DashboardSelection } from './dashboard-navigation.js';
 
 export const DASHBOARD_PHASES = ['open', 'design', 'build', 'verify', 'archive'] as const;
 
@@ -212,7 +213,10 @@ function stateCopy(
   }
 }
 
-export function dashboardModelFromShell(shell: DesktopShellState): DashboardModel {
+export function dashboardModelFromShell(
+  shell: DesktopShellState,
+  selection: DashboardSelection | null = null,
+): DashboardModel {
   if (shell.phase === 'starting') return STARTING_MODEL;
   if (shell.phase === 'error') {
     return {
@@ -229,7 +233,7 @@ export function dashboardModelFromShell(shell: DesktopShellState): DashboardMode
     };
   }
 
-  const activeIdentity = shell.projection.activeChange;
+  const activeIdentity = selection ?? shell.projection.activeChange;
   const change = activeIdentity
     ? shell.projection.changes.find(
         (candidate) =>
@@ -238,7 +242,23 @@ export function dashboardModelFromShell(shell: DesktopShellState): DashboardMode
       )
     : undefined;
   const run = change?.runs.find((candidate) => candidate.runId === change.currentRunId);
-  if (!change || !run) return readyWithoutRunModel();
+  if (!change || !run) {
+    if (activeIdentity === null) return readyWithoutRunModel();
+    const launchRunId =
+      shell.launchContext?.workspaceId === activeIdentity.workspaceId &&
+      shell.launchContext.changeId === activeIdentity.changeId
+        ? shell.launchContext.runId
+        : null;
+    return {
+      ...shellModel('sparse', {
+        ...stateCopy('sparse'),
+        freshnessLabel: '等待首条事件',
+      }),
+      workspaceId: activeIdentity.workspaceId,
+      changeId: activeIdentity.changeId,
+      runId: launchRunId,
+    };
+  }
 
   const phaseStatus = new Map(run.phases.map((phase) => [phase.phase, phase.status]));
   const failedPhase = run.status === 'failed' ? run.currentPhase : null;

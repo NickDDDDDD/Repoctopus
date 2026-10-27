@@ -197,6 +197,78 @@ footer {
   background: var(--surface-subtle);
 }
 
+.change-explorer {
+  display: grid;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.change-explorer section {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.change-explorer h2 {
+  margin: 0;
+  overflow: hidden;
+  color: var(--ink-tertiary);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.change-explorer ul {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.change-explorer button {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  min-height: 34px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-2);
+  align-items: center;
+  padding: var(--space-2);
+  border-color: transparent;
+  color: var(--ink-secondary);
+  background: transparent;
+  text-align: left;
+}
+
+.change-explorer button:hover {
+  border-color: var(--line-subtle);
+  color: var(--ink-primary);
+  background: var(--surface-primary);
+}
+
+.change-explorer button[aria-current='page'] {
+  border-color: color-mix(in srgb, var(--accent), transparent 76%);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.change-explorer button span {
+  overflow: hidden;
+  font-size: 0.75rem;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.change-explorer button small {
+  color: var(--ink-tertiary);
+  font-size: 0.625rem;
+  text-transform: capitalize;
+}
+
 .section-kicker,
 .identity-list,
 .identity-list dd,
@@ -501,9 +573,13 @@ footer {
     grid-column: 1;
   }
 
+  .change-explorer {
+    grid-column: 1 / -1;
+  }
+
   .work-panel {
     grid-column: 2;
-    grid-row: 1 / span 2;
+    grid-row: 2 / span 2;
     margin-top: 0;
     padding: 0 0 0 var(--space-5);
     border-top: 0;

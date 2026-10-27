@@ -11,6 +11,7 @@ import {
 import { DesktopBackendController, type DesktopBackendState } from './backend-controller.js';
 import { DesktopHostProcess, type DesktopHostReady } from './host-process.js';
 import type { ChangeProjectionDelta } from '../../../domains/telemetry/change-projection.js';
+import { desktopLaunchContextFromArguments } from './launch-context.js';
 import { resolveDesktopProductRoot } from './product-root.js';
 import { claimDesktopSingleInstance } from './single-instance.js';
 import { scheduleDesktopStartup } from './startup.js';
@@ -28,6 +29,7 @@ const productRoot = resolveDesktopProductRoot({
 let mainWindow: BrowserWindow | undefined;
 let hostReady: DesktopHostReady | undefined;
 let quitting = false;
+const initialLaunchContext = desktopLaunchContextFromArguments(process.argv);
 
 app.setName('Repoctopus');
 app.setAppUserModelId('com.repoctopus.desktop');
@@ -42,6 +44,7 @@ function publicState(
       snapshot: hostReady.snapshot,
       projection: hostReady.projection,
       delta,
+      launchContext: initialLaunchContext,
     };
   }
   if (state.phase === 'error') return { phase: 'error', message: state.message };

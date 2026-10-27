@@ -1,7 +1,10 @@
 import type { DashboardModel, DashboardPhaseStatus } from './dashboard-model.js';
+import type { DashboardNavigationModel, DashboardSelection } from './dashboard-navigation.js';
 
 export interface DashboardSurfaceProps {
   model: DashboardModel;
+  navigation?: DashboardNavigationModel;
+  onSelect?: (selection: DashboardSelection) => void;
   onRetry: () => void;
 }
 
@@ -32,7 +35,12 @@ function formatObservedAt(value: string | null): string {
   }).format(date);
 }
 
-export function DashboardSurface({ model, onRetry }: DashboardSurfaceProps) {
+export function DashboardSurface({
+  model,
+  navigation = { groups: [] },
+  onSelect,
+  onRetry,
+}: DashboardSurfaceProps) {
   const alert = model.state === 'error' || model.state === 'failed';
   return (
     <div className="app-shell" data-dashboard-state={model.state} data-tone={model.tone}>
@@ -57,6 +65,36 @@ export function DashboardSurface({ model, onRetry }: DashboardSurfaceProps) {
 
       <main className="dashboard-layout" aria-busy={model.busy}>
         <aside className="context-pane" data-region="current-context" aria-label="当前上下文">
+          {navigation.groups.length > 0 ? (
+            <nav className="change-explorer" aria-label="Workspace 和 Change">
+              <p className="section-kicker">Change explorer</p>
+              {navigation.groups.map((group) => (
+                <section key={group.workspaceId} aria-labelledby={`workspace-${group.workspaceId}`}>
+                  <h2 id={`workspace-${group.workspaceId}`}>{group.workspaceId}</h2>
+                  <ul>
+                    {group.changes.map((change) => (
+                      <li key={change.changeId}>
+                        <button
+                          type="button"
+                          data-change-choice={`${change.workspaceId}/${change.changeId}`}
+                          aria-current={change.selected ? 'page' : undefined}
+                          onClick={() =>
+                            onSelect?.({
+                              workspaceId: change.workspaceId,
+                              changeId: change.changeId,
+                            })
+                          }
+                        >
+                          <span>{change.changeId}</span>
+                          <small>{change.status}</small>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              ))}
+            </nav>
+          ) : null}
           <p className="section-kicker">Current context</p>
           <dl className="identity-list">
             <div>

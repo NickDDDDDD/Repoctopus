@@ -1,4 +1,5 @@
 import type { DesktopApplicationSnapshot } from '../../../services/desktop-application.js';
+import type { DesktopLaunchContext } from '../../../domains/desktop/launcher.js';
 import type {
   ChangeProjectionDelta,
   ChangeProjectionSnapshot,
@@ -14,6 +15,7 @@ export type DesktopShellState =
       snapshot: DesktopApplicationSnapshot;
       projection: ChangeProjectionSnapshot;
       delta: ChangeProjectionDelta | null;
+      launchContext: DesktopLaunchContext | null;
     }
   | { phase: 'error'; message: string };
 
