@@ -74,7 +74,7 @@
 - [x] 4.3 将 App 生命周期、平台事件和 Delivery 映射迁移到共享 envelope，运行各领域现有测试与 golden fixture 证明 exporter 不再分别解释领域对象。
       **Blocked by:** 4.1
       **Acceptance:** App 与 Delivery 的 golden fixture 只经过共享领域映射，exporter 中不存在领域对象二次解释
-- [ ] 4.4 补齐 Workspace、change、Run、父子执行、五阶段、执行主体、任务、Skill、验证、阻塞、下一步动作和观测时间的可信属性映射，以正反 fixture 证明只导出已持久化事实且 Metric 不使用高基数实体身份。
+- [x] 4.4 补齐 Workspace、change、Run、父子执行、五阶段、执行主体、任务、Skill、验证、阻塞、下一步动作和观测时间的可信属性映射，以正反 fixture 证明只导出已持久化事实且 Metric 不使用高基数实体身份。
       **Blocked by:** 4.1
       **Acceptance:** 正反 fixture 覆盖全部列举属性，只导出持久化事实并拒绝高基数实体身份成为 Metric label
 - [ ] 4.5 实现目的地启用、暂停、移除、保留上限、积压健康与 gap 记录，使用小容量故障测试验证超限可诊断、远端 Cursor 不重置且系统不宣称 exactly-once。
