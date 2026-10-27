@@ -119,7 +119,7 @@
 - [x] 6.2 基于固定 DSH 的 Host process/backend controller、Node-mode 环境与 single-instance 模式实现 Electron 单实例锁、第二实例上下文转交、串行 start/retry/stop、有界 ready、优雅停止和强制终止升级；运行两个并发 Run 与 Host 崩溃恢复测试，证明只有一个 Shell 和一个有效 Receiver，两个 change 都可达且孤儿 Host 不会残留。
       **Blocked by:** 3.7, 6.1
       **Acceptance:** 并发与崩溃测试证明单 Shell、单有效 Receiver、两个 change 可达，并且停止升级后无孤儿 Host
-- [ ] 6.3 基于固定 DSH 的 Tray 与 Shell settings ownership 模式实现 `quit`、`tray`、`ask` 用户级关闭偏好和托盘“完全退出”，运行 Windows 自动化测试验证隐藏、重新打开、保存偏好、会话退出、Host 关闭和完全退出语义。
+- [x] 6.3 基于固定 DSH 的 Tray 与 Shell settings ownership 模式实现 `quit`、`tray`、`ask` 用户级关闭偏好和托盘“完全退出”，运行 Windows 自动化测试验证隐藏、重新打开、保存偏好、会话退出、Host 关闭和完全退出语义。
       **Blocked by:** 6.2
       **Acceptance:** Windows 自动化覆盖三种关闭偏好、托盘恢复与完全退出，设置持久化且完全退出终止 Shell、Host 和 receiver
 - [ ] 6.4 强化 Renderer sandbox、`contextIsolation`、CSP、IPC sender/origin 校验和版本化 allowlist，并扩展架构检查拒绝 Renderer 访问 Cordis/Node、Electron Main 承载产品 composition、入口绕过 Application Plugin 和桌面代码进入 Engine；以负向 fixture 证明每条边界都会失败。
