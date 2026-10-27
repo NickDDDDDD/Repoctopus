@@ -128,7 +128,7 @@
 - [x] 6.5 实现投影 journal、原子 snapshot、重复收敛和阈值压缩，以高事件量基准验证重启恢复、内存上限、启动时间和 journal 损坏诊断满足记录的性能预算。
       **Blocked by:** 3.4, 6.4
       **Acceptance:** 高事件量基准满足 design 记录的启动、内存与压缩预算，损坏 journal 产生可诊断 gap 且不会静默丢状态
-- [ ] 6.6 更新桌面安全、数据保留、关闭行为和恢复文档，执行卸载/重装 fixture 证明默认不误删 Workspace 事实并明确用户级 Dashboard 数据处理方式。
+- [x] 6.6 更新桌面安全、数据保留、关闭行为和恢复文档，执行卸载/重装 fixture 证明默认不误删 Workspace 事实并明确用户级 Dashboard 数据处理方式。
       **Blocked by:** 6.3, 6.5
       **Acceptance:** 卸载与重装 fixture 保留 Workspace 事实，文档明确用户级数据位置、保留、清理、关闭和恢复语义
 
