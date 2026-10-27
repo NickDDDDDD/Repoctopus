@@ -89,7 +89,7 @@
 - [x] 5.1 建立 Repoctopus Desktop 的语义组件、设计 token、窗口信息架构和完整状态矩阵，用可执行 Story/fixture 覆盖启动、空、稀疏、实时、追平、过期、gap、等待人工、阻塞、返工、错误、完成和失败状态。
       **Blocked by:** 3.4
       **Acceptance:** 可执行 Story 或 fixture 覆盖全部列举状态并复用统一语义组件与设计 token
-- [ ] 5.2 实现 Workspace/change 导航与选择保持，用多 Workspace、多 change fixture 验证新上报不会抢占用户当前视图，首次无选择时才聚焦启动来源。
+- [x] 5.2 实现 Workspace/change 导航与选择保持，用多 Workspace、多 change fixture 验证新上报不会抢占用户当前视图，首次无选择时才聚焦启动来源。
       **Blocked by:** 3.5, 5.1
       **Acceptance:** 多 Workspace 与多 change 测试证明已有选择不被新事件抢占，仅首次无选择时自动聚焦启动来源
 - [ ] 5.3 实现 `Open → Design → Build → Verify → Archive` 主体、阶段时间线、当前 Work/Task/attempt/Host/Validator/continuation，并用正常推进、Verify→Build、Archive→Verify/Design fixture 证明返工历史不会丢失或伪装为首次执行。
