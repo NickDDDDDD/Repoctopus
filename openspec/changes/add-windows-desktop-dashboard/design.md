@@ -82,6 +82,24 @@ Engine 和 Workflow 只产生权威领域事实；为补足可观察行为而新
 - 可验证的 Workspace、change、Run、父子执行、阶段、任务、验证和阻塞关联；
 - 用于完整性校验的规范摘要。
 
+遥测覆盖矩阵由 `domains/telemetry/observation-contract.ts` 机器校验。下表冻结 schema v1 的事件目录与信号策略；新增、删除或改名都属于协议变更，必须通过新的 Specification change 评审，不能由 Dashboard 或某个 exporter 私自推断。
+
+| 事实类别 | schema v1 事件 | Span 策略 | Metric 低基数维度 |
+| --- | --- | --- | --- |
+| 五阶段 | `change.phase.entered`、`change.phase.completed`、`change.phase.reopened` | 每个已接受转换产生 point Span | `phase`、有界 `result` / `recovery.kind` |
+| Work | `work.created`、`work.claimed`、`work.context-delivered`、`work.host-started`、`work.host-completed`、`work.completed`、`continuation.selected` | Host start/end 以 `operation-id` 配对，其余为 point Span | `phase`、`work.kind`、`result`、`continuation` |
+| Task | `task.started`、`task.completed`、`task.failed`、`task.reopened` | point Span，revision 与稳定 Task identity 只进入 Log/Span | `phase`、`task.result`、`recovery.kind` |
+| Skill | `skill.resolved`、`skill.delivered`、`skill.consumed` | point Span；角色与内容摘要分离 | `phase`、`skill.role`、`result`，禁止 Skill 名和摘要作为标签 |
+| Human Decision / Wait | `decision.requested`、`decision.resolved`、`wait.started`、`wait.ended` | request/result 与 wait start/end 分别以 `operation-id` 配对 | `phase`、`decision.kind`、`wait.kind`、`result` |
+| Tool / Host | `tool.started`、`tool.completed`、`host.started`、`host.completed` | start/end 以各自 `operation-id` 配对 | `phase`、`tool.kind`、`work.kind`、`result` |
+| Validator / Evidence | `validator.started`、`validator.completed`、`evidence.started`、`evidence.completed`、`evidence.gate-evaluated` | Validator 与 Evidence 各自形成可计时边界，Gate 为 point Span | `phase`、`result`、`evidence.result` |
+| Recovery | `reconcile.started`、`reconcile.completed`、`recovery.reconciled` | Reconcile 以 `operation-id` 配对，恢复结果为 point Span | `phase`、`recovery.kind`、`result` |
+| Telemetry pipeline | `telemetry.envelope-stored`、`telemetry.delivery-started`、`telemetry.delivery-completed`、`telemetry.receiver-evaluated`、`telemetry.gap-recorded` | Delivery start/end 以 `operation-id` 配对，其余为 point Span | `destination.kind` 与固定投递 `result` |
+
+每个事件都必须产生同一 Trace 下带精确 `traceId + spanId` 关联的结构化 Log。边界事件共享稳定 `operation-id`，Log 指向该操作 Span；point 事件的 Span identity 由规范事件身份确定。Metric 只接受矩阵声明的枚举维度，不接受 Workspace、change、Run、Work、Task、Host、Tool、Validator、Evidence、Actor、目的地实例等身份，也不接受自由文本。稳定身份只进入允许列表内的 Log/Span 属性。
+
+所有信号共享同一隐私边界：不得包含凭据、Token、Cookie、Authorization、环境变量、绝对路径、Prompt、回复、规格/Artifact 正文、命令或命令输出；字符串有长度和换行限制。属性键即使被调用方加入允许列表，只要命中上述受限类别也必须拒绝，而不是静默上报。Metric 还必须同时通过事件级维度和值枚举校验。
+
 Envelope Store 只保存不可变 envelope。目的地 Adapter 将同一 envelope 编码成标准 OTLP/HTTP 请求，可以拥有不同端点、Header、超时和批量策略，但不得再次读取领域 Store 或改变领域属性。这样保证“同一套 OTLP 数据”指相同身份和语义，而不是要求不同 HTTP 请求具有逐字节相同的压缩、批次或传输头。
 
 备选方案是让每个 exporter 分别从领域对象构造 SDK Span/Log/Metric。这是当前分散实现，容易在新增字段或修复映射时产生本地与远端差异，因此替换。
