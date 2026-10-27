@@ -8,6 +8,7 @@ import { promisify } from 'node:util';
 import { describe, expect, it } from 'vitest';
 
 import { isDesktopHostEvent } from '../app/desktop/shared/host-protocol.js';
+import { WindowsDesktopReceiverDiscovery } from '../platform/desktop/windows-receiver-discovery.js';
 
 const execFileAsync = promisify(execFile);
 const require = createRequire(import.meta.url);
@@ -25,9 +26,15 @@ function nextMessage(child: ChildProcess): Promise<unknown> {
 
 describe('Desktop Host process', () => {
   it('boots the Cordis desktop composition and acknowledges graceful shutdown', async () => {
+    const profile = await mkdtemp(path.join(os.tmpdir(), 'repoctopus-desktop-host-e2e-'));
+    const discoveryRoot = path.join(profile, 'discovery');
     const child = fork(hostEntry, [productRoot], {
       cwd: productRoot,
       silent: true,
+      env: {
+        ...process.env,
+        REPOCTOPUS_DESKTOP_DISCOVERY_ROOT: discoveryRoot,
+      },
     });
     try {
       const ready = await nextMessage(child);
@@ -43,6 +50,10 @@ describe('Desktop Host process', () => {
       expect(ready.receiver).toMatchObject({ schemaVersion: 1 });
       expect(ready.receiver.endpoint).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/u);
       expect(ready.receiver.sessionToken.length).toBeGreaterThanOrEqual(24);
+      const discovered = await new WindowsDesktopReceiverDiscovery({
+        root: discoveryRoot,
+      }).discover();
+      expect(discovered).toEqual({ status: 'available', connection: ready.receiver });
       const exported = await fetch(`${ready.receiver.endpoint}/v1/traces`, {
         method: 'POST',
         headers: {
@@ -121,6 +132,7 @@ describe('Desktop Host process', () => {
       expect(child.exitCode).toBe(0);
     } finally {
       if (child.exitCode === null) child.kill('SIGKILL');
+      await rm(profile, { recursive: true, force: true });
     }
   }, 20_000);
 
@@ -134,6 +146,7 @@ describe('Desktop Host process', () => {
       environment.REPOCTOPUS_DESKTOP_A11Y_AUDIT = '1';
       environment.REPOCTOPUS_DESKTOP_EXPECT_DPR = '2';
       environment.REPOCTOPUS_DESKTOP_SMOKE_SCREENSHOT = screenshot;
+      environment.REPOCTOPUS_DESKTOP_DISCOVERY_ROOT = path.join(profile, 'discovery');
       try {
         await execFileAsync(
           electronExecutable,
