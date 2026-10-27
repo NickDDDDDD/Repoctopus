@@ -71,7 +71,7 @@
 - [x] 4.2 将 Evidence Attempt、节点、Artifact 与 Gate 映射迁移到共享 envelope，运行 Evidence 重放、superseded、Receipt 复用和隐私测试证明本地与远端投影一致。
       **Blocked by:** 4.1
       **Acceptance:** Evidence 四类场景在本地与远端得到相同规范投影，隐私测试拒绝 Artifact 正文和敏感数据
-- [ ] 4.3 将 App 生命周期、平台事件和 Delivery 映射迁移到共享 envelope，运行各领域现有测试与 golden fixture 证明 exporter 不再分别解释领域对象。
+- [x] 4.3 将 App 生命周期、平台事件和 Delivery 映射迁移到共享 envelope，运行各领域现有测试与 golden fixture 证明 exporter 不再分别解释领域对象。
       **Blocked by:** 4.1
       **Acceptance:** App 与 Delivery 的 golden fixture 只经过共享领域映射，exporter 中不存在领域对象二次解释
 - [ ] 4.4 补齐 Workspace、change、Run、父子执行、五阶段、执行主体、任务、Skill、验证、阻塞、下一步动作和观测时间的可信属性映射，以正反 fixture 证明只导出已持久化事实且 Metric 不使用高基数实体身份。
