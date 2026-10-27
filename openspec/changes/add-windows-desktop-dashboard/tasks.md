@@ -41,7 +41,7 @@
 
 ## 3. 交付首个真实 OTLP 到桌面纵切
 
-- [ ] 3.1 定义版本化 `ObservationEnvelope`、稳定身份、规范摘要和纯领域映射，用 golden fixture 验证同一事件重复映射结果一致且不包含凭据、绝对路径、正文或命令输出。
+- [x] 3.1 定义版本化 `ObservationEnvelope`、稳定身份、规范摘要和纯领域映射，用 golden fixture 验证同一事件重复映射结果一致且不包含凭据、绝对路径、正文或命令输出。
       **Blocked by:** 2.8
       **Acceptance:** golden fixture 对重复输入生成字节级稳定 envelope，隐私测试拒绝凭据、绝对路径、正文和命令输出
 - [ ] 3.2 实现原子 Envelope Store 与每目的地独立 Cursor，使用故障注入测试覆盖远端成功/本地失败、本地成功/远端失败、进程退出和重放，并证明一个目的地不能推进另一个目的地。
