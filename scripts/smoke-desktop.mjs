@@ -1,18 +1,22 @@
 import console from 'node:console';
+import { Buffer } from 'node:buffer';
 import childProcess from 'node:child_process';
-import { writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { syncBuiltinESMExports } from 'node:module';
 import path from 'node:path';
 import process from 'node:process';
 import { clearTimeout, setTimeout } from 'node:timers';
+import { fileURLToPath } from 'node:url';
 
-import { app } from 'electron';
+import { app, BrowserWindow } from 'electron';
 
 const expectedChangeId = 'desktop-smoke';
 const screenshot = process.env.REPOCTOPUS_DESKTOP_SMOKE_SCREENSHOT;
 const auditAccessibility = process.env.REPOCTOPUS_DESKTOP_A11Y_AUDIT === '1';
 const expectedDevicePixelRatio = Number(process.env.REPOCTOPUS_DESKTOP_EXPECT_DPR ?? '0');
+const singleInstanceSmoke = process.env.REPOCTOPUS_DESKTOP_SINGLE_INSTANCE_SMOKE === '1';
 let finished = false;
+let hostReadyCount = 0;
 
 function fail(error) {
   if (finished) return;
@@ -33,6 +37,7 @@ childProcess.spawn = function instrumentDesktopHost(...args) {
   const child = originalSpawn.apply(this, args);
   child.on('message', (message) => {
     if (message?.type !== 'ready') return;
+    hostReadyCount += 1;
     void globalThis
       .fetch(`${message.receiver.endpoint}/v1/logs`, {
         method: 'POST',
@@ -75,6 +80,63 @@ childProcess.spawn = function instrumentDesktopHost(...args) {
   return child;
 };
 syncBuiltinESMExports();
+
+async function verifySecondInstance(window) {
+  const context = Buffer.from(
+    JSON.stringify({
+      schemaVersion: 1,
+      workspaceId: 'workspace-smoke',
+      changeId: 'desktop-smoke-secondary',
+      runId: 'run-desktop-smoke-secondary',
+    }),
+    'utf8',
+  ).toString('base64url');
+  const secondary = originalSpawn.call(
+    childProcess,
+    process.execPath,
+    [
+      `--user-data-dir=${app.getPath('userData')}`,
+      fileURLToPath(import.meta.url),
+      '--repoctopus-launch-context',
+      context,
+    ],
+    {
+      cwd: process.cwd(),
+      env: { ...process.env, REPOCTOPUS_DESKTOP_SINGLE_INSTANCE_SMOKE: '0' },
+      stdio: 'ignore',
+      windowsHide: true,
+    },
+  );
+  const exitCode = await new Promise((resolve, reject) => {
+    const deadline = setTimeout(() => {
+      secondary.kill();
+      reject(new Error('Secondary Electron activation did not exit'));
+    }, 10_000);
+    secondary.once('error', reject);
+    secondary.once('exit', (code) => {
+      clearTimeout(deadline);
+      resolve(code);
+    });
+  });
+  if (exitCode !== 0) throw new Error(`Secondary Electron activation exited with ${exitCode}`);
+
+  const deadline = Date.now() + 5_000;
+  let body = '';
+  while (Date.now() < deadline) {
+    body = await window.webContents.executeJavaScript('document.body.innerText');
+    if (body.includes('desktop-smoke-secondary')) break;
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+  if (
+    !body.includes('desktop-smoke-secondary') ||
+    BrowserWindow.getAllWindows().length !== 1 ||
+    hostReadyCount !== 1
+  ) {
+    throw new Error(
+      `Single-instance activation failed: ${JSON.stringify({ windows: BrowserWindow.getAllWindows().length, hostReadyCount, body })}`,
+    );
+  }
+}
 
 async function inspect(window) {
   const deadline = Date.now() + 15_000;
@@ -189,6 +251,8 @@ async function inspect(window) {
     }
   }
 
+  if (singleInstanceSmoke) await verifySecondInstance(window);
+
   if (screenshot) {
     const image = await window.webContents.capturePage();
     await writeFile(path.resolve(screenshot), image.toPNG());
@@ -201,6 +265,13 @@ const timeout = setTimeout(() => {
   fail(new Error('Desktop window was not created within 20 seconds'));
 }, 20_000);
 timeout.unref();
+
+const settingsDirectory = path.join(app.getPath('userData'), 'desktop');
+await mkdir(settingsDirectory, { recursive: true });
+await writeFile(
+  path.join(settingsDirectory, 'settings.json'),
+  `${JSON.stringify({ schemaVersion: 1, closePreference: 'quit' }, null, 2)}\n`,
+);
 
 app.once('browser-window-created', (_event, window) => {
   window.webContents.once('did-finish-load', () => {

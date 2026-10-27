@@ -145,6 +145,22 @@
       "targetSha256": "9419cfc5e7b87d0cafd6cbae318c1350d5be8337894cf7e012e114634ef90bab"
     },
     {
+      "id": "desktop-shell-settings",
+      "source": "apps/desktop/src/settings.ts",
+      "sourceSha256": "665cdc4b0683644a21c188900d2182f5ae8bd44f124d4056f16fbec20a037f9c",
+      "disposition": "source-modified",
+      "target": "app/desktop/main/shell-settings.ts",
+      "targetSha256": "8d58c5f1b2f544571949b48718eae95989cc14906f3a6875de8899c8f8726275"
+    },
+    {
+      "id": "desktop-tray",
+      "source": "apps/desktop/src/tray.ts",
+      "sourceSha256": "b638b310c86775db9a3c19b9db89b2fe097ae7dcf813497edfe0d612a5027a7b",
+      "disposition": "source-modified",
+      "target": "app/desktop/main/tray.ts",
+      "targetSha256": "4893c122b579098799c2602ec00aa3c1739088ed445c6c247d0e9cf57f7ba06d"
+    },
+    {
       "id": "skill-registry",
       "source": "packages/skill/skill/src/index.ts",
       "disposition": "direct-package",

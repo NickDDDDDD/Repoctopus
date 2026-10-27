@@ -238,4 +238,26 @@ describe('Desktop Host process', () => {
     },
     30_000,
   );
+
+  it.runIf(process.platform === 'win32')(
+    'redirects a second Electron activation to one Shell, Host, and Receiver',
+    async () => {
+      const profile = await mkdtemp(path.join(os.tmpdir(), 'repoctopus-single-instance-e2e-'));
+      const environment = { ...process.env };
+      delete environment.ELECTRON_RUN_AS_NODE;
+      environment.REPOCTOPUS_DESKTOP_SINGLE_INSTANCE_SMOKE = '1';
+      environment.REPOCTOPUS_DESKTOP_DISCOVERY_ROOT = path.join(profile, 'discovery');
+      try {
+        await execFileAsync(electronExecutable, [`--user-data-dir=${profile}`, smokeEntry], {
+          cwd: productRoot,
+          env: environment,
+          windowsHide: true,
+          timeout: 25_000,
+        });
+      } finally {
+        await rm(profile, { recursive: true, force: true });
+      }
+    },
+    30_000,
+  );
 });
