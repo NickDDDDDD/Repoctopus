@@ -3,8 +3,13 @@ import { randomBytes } from 'node:crypto';
 
 import { bootDesktopComposition } from '../../boot/bootstrap.js';
 import type { RunningApp } from '../../boot/boot.js';
+import {
+  createEmptyChangeProjection,
+  reduceChangeProjection,
+} from '../../../domains/telemetry/change-projection.js';
 import { isDesktopShellCommand, type DesktopHostEvent } from '../shared/host-protocol.js';
 import { DesktopOtlpHttpReceiver } from './otlp-http-receiver.js';
+import { decodeOtlpJsonProjectionObservations } from './otlp-json-projection.js';
 
 function send(event: DesktopHostEvent): void {
   if (process.connected) process.send?.(event);
@@ -17,6 +22,7 @@ function failureMessage(error: unknown): string {
 
 let running: RunningApp | undefined;
 let receiver: DesktopOtlpHttpReceiver | undefined;
+let projection = createEmptyChangeProjection();
 let shutdown: Promise<void> | undefined;
 
 function close(): Promise<void> {
@@ -49,13 +55,23 @@ try {
   const sessionToken = randomBytes(32).toString('base64url');
   receiver = new DesktopOtlpHttpReceiver({
     sessionToken,
-    onExport: () => undefined,
+    onExport: (record) => {
+      if (record.signal !== 'log' || record.contentType !== 'json') return;
+      for (const observation of decodeOtlpJsonProjectionObservations(record.body)) {
+        const reduced = reduceChangeProjection(projection, observation);
+        projection = reduced.snapshot;
+        if (reduced.delta) {
+          send({ type: 'projection-updated', snapshot: projection, delta: reduced.delta });
+        }
+      }
+    },
   });
   const endpoint = await receiver.start();
   send({
     type: 'ready',
     snapshot: running.context.desktopApplication.snapshot(),
     receiver: { schemaVersion: 1, endpoint, sessionToken },
+    projection,
   });
 } catch (error) {
   await receiver?.stop();

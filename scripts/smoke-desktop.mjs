@@ -1,12 +1,14 @@
 import console from 'node:console';
+import childProcess from 'node:child_process';
 import { writeFile } from 'node:fs/promises';
+import { syncBuiltinESMExports } from 'node:module';
 import path from 'node:path';
 import process from 'node:process';
 import { clearTimeout, setTimeout } from 'node:timers';
 
 import { app } from 'electron';
 
-const expectedHeading = '等待首个 OTLP 上报';
+const expectedHeading = 'desktop-smoke';
 const screenshot = process.env.REPOCTOPUS_DESKTOP_SMOKE_SCREENSHOT;
 let finished = false;
 
@@ -16,6 +18,59 @@ function fail(error) {
   console.error('desktop smoke failed', error);
   app.exit(1);
 }
+
+function attribute(key, value) {
+  return {
+    key,
+    value: typeof value === 'number' ? { intValue: String(value) } : { stringValue: value },
+  };
+}
+
+const originalSpawn = childProcess.spawn;
+childProcess.spawn = function instrumentDesktopHost(...args) {
+  const child = originalSpawn.apply(this, args);
+  child.on('message', (message) => {
+    if (message?.type !== 'ready') return;
+    void globalThis.fetch(`${message.receiver.endpoint}/v1/logs`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-repoctopus-session': message.receiver.sessionToken,
+      },
+      body: JSON.stringify({
+        resourceLogs: [
+          {
+            resource: {
+              attributes: [attribute('repoctopus.workspace.id', 'workspace-smoke')],
+            },
+            scopeLogs: [
+              {
+                logRecords: [
+                  {
+                    timeUnixNano: '1793080800000000000',
+                    body: { stringValue: 'change.phase.entered' },
+                    attributes: [
+                      attribute('repoctopus.event.id', 'event-smoke-open'),
+                      attribute('repoctopus.event.sequence', 1),
+                      attribute('repoctopus.change.id', expectedHeading),
+                      attribute('repoctopus.run.id', 'run-desktop-smoke'),
+                      attribute('repoctopus.workflow.name', 'repoctopus-change'),
+                      attribute('repoctopus.execution.phase', 'open'),
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      }),
+    }).then((response) => {
+      if (!response.ok) fail(new Error(`Desktop smoke OTLP export failed: ${response.status}`));
+    }, fail);
+  });
+  return child;
+};
+syncBuiltinESMExports();
 
 async function inspect(window) {
   const deadline = Date.now() + 15_000;
@@ -32,8 +87,12 @@ async function inspect(window) {
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
 
-  if (state?.heading !== expectedHeading || !state.body.includes('Host 已就绪')) {
-    throw new Error(`Desktop did not reach the Host-ready state: ${JSON.stringify(state)}`);
+  if (
+    state?.heading !== expectedHeading ||
+    !state.body.includes('实时观测') ||
+    !state.body.includes('当前阶段 open')
+  ) {
+    throw new Error(`Desktop did not render the OTLP projection: ${JSON.stringify(state)}`);
   }
   if (
     state.processType !== 'undefined' ||

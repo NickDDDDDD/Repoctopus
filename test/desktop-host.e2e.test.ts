@@ -54,6 +54,63 @@ describe('Desktop Host process', () => {
       expect(exported.status).toBe(200);
       expect(await exported.text()).toBe('');
 
+      const attribute = (key: string, value: string | number) => ({
+        key,
+        value: typeof value === 'number' ? { intValue: String(value) } : { stringValue: value },
+      });
+      const projectionMessage = nextMessage(child);
+      const projected = await fetch(`${ready.receiver.endpoint}/v1/logs`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-repoctopus-session': ready.receiver.sessionToken,
+        },
+        body: JSON.stringify({
+          resourceLogs: [
+            {
+              resource: {
+                attributes: [attribute('repoctopus.workspace.id', 'workspace-e2e')],
+              },
+              scopeLogs: [
+                {
+                  logRecords: [
+                    {
+                      timeUnixNano: '1793080800000000000',
+                      body: { stringValue: 'change.phase.entered' },
+                      attributes: [
+                        attribute('repoctopus.event.id', 'event-e2e-open'),
+                        attribute('repoctopus.event.sequence', 1),
+                        attribute('repoctopus.change.id', 'desktop-e2e'),
+                        attribute('repoctopus.run.id', 'run-desktop-e2e'),
+                        attribute('repoctopus.workflow.name', 'repoctopus-change'),
+                        attribute('repoctopus.execution.phase', 'open'),
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        }),
+      });
+      expect(projected.status).toBe(200);
+      const update = await projectionMessage;
+      expect(isDesktopHostEvent(update)).toBe(true);
+      expect(update).toMatchObject({
+        type: 'projection-updated',
+        snapshot: {
+          version: 1,
+          activeChange: { workspaceId: 'workspace-e2e', changeId: 'desktop-e2e' },
+          changes: [
+            {
+              changeId: 'desktop-e2e',
+              runs: [{ runId: 'run-desktop-e2e', currentPhase: 'open' }],
+            },
+          ],
+        },
+        delta: { version: 1, eventId: 'event-e2e-open' },
+      });
+
       const exited = new Promise<void>((resolve) => {
         child.once('close', () => resolve());
       });

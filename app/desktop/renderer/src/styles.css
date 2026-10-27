@@ -96,6 +96,7 @@ footer {
 }
 
 .status-group {
+  container-type: inline-size;
   display: grid;
   width: min(100%, 520px);
   grid-template-columns: auto minmax(0, 1fr);
@@ -159,6 +160,52 @@ h1 {
   justify-self: start;
 }
 
+.phase-rail {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+
+.phase-rail li {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+  padding: 12px 10px 0;
+  border-left: 1px solid var(--line);
+}
+
+.phase-rail li:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+.phase-rail span,
+.phase-rail small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.phase-rail span {
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.phase-rail small {
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+}
+
+.phase-rail li[data-status='running'] span,
+.phase-rail li[data-status='rework'] span {
+  color: var(--ready);
+}
+
 footer {
   padding: 12px 20px;
   border-top: 1px solid var(--line);
@@ -172,6 +219,21 @@ footer {
   .startup-surface {
     place-items: start;
     padding: 28px 20px;
+  }
+}
+
+@container (max-width: 480px) {
+  .phase-rail {
+    grid-template-columns: 1fr;
+    border-top: 0;
+  }
+
+  .phase-rail li,
+  .phase-rail li:first-child {
+    grid-template-columns: 1fr auto;
+    padding: 10px 0;
+    border-top: 1px solid var(--line);
+    border-left: 0;
   }
 }
 

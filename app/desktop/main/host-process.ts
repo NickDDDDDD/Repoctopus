@@ -1,6 +1,10 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 
 import type { DesktopApplicationSnapshot } from '../../../services/desktop-application.js';
+import type {
+  ChangeProjectionDelta,
+  ChangeProjectionSnapshot,
+} from '../../../domains/telemetry/change-projection.js';
 import { isDesktopHostEvent } from '../shared/host-protocol.js';
 import { desktopNodeEnvironment } from './node-environment.js';
 
@@ -25,6 +29,8 @@ async function exitsWithin(exit: Promise<void>, milliseconds: number): Promise<b
 
 export interface DesktopHostReady {
   snapshot: DesktopApplicationSnapshot;
+  receiver: { schemaVersion: 1; endpoint: string; sessionToken: string };
+  projection: ChangeProjectionSnapshot;
 }
 
 export interface DesktopHostProcessOptions {
@@ -33,6 +39,7 @@ export interface DesktopHostProcessOptions {
   productRoot: string;
   environment?: NodeJS.ProcessEnv;
   onReady?: (ready: DesktopHostReady) => void;
+  onProjection?: (snapshot: ChangeProjectionSnapshot, delta: ChangeProjectionDelta) => void;
   onFailure?: (error: Error) => void;
 }
 
@@ -74,13 +81,26 @@ export class DesktopHostProcess {
         return;
       }
       if (message.type === 'ready') {
-        const ready = { snapshot: message.snapshot };
+        const ready = {
+          snapshot: message.snapshot,
+          receiver: message.receiver,
+          projection: message.projection,
+        };
         try {
           this.options.onReady?.(ready);
           this.readyResolve(ready);
         } catch (error) {
           this.fail(
             error instanceof Error ? error : new Error('Desktop Host ready listener failed'),
+          );
+          child.kill('SIGTERM');
+        }
+      } else if (message.type === 'projection-updated') {
+        try {
+          this.options.onProjection?.(message.snapshot, message.delta);
+        } catch (error) {
+          this.fail(
+            error instanceof Error ? error : new Error('Desktop Host projection listener failed'),
           );
           child.kill('SIGTERM');
         }

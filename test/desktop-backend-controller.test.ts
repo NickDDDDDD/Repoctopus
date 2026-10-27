@@ -60,6 +60,19 @@ describe('DesktopBackendController', () => {
     });
     expect(stop).toHaveBeenCalledOnce();
     expect(states.map((state) => state.phase)).toEqual(['starting', 'ready', 'error']);
+
+    await controller.stop();
+    await controller.start(() => Promise.resolve());
+    expect(controller.state.phase).toBe('ready');
+    expect(states.map((state) => state.phase)).toEqual([
+      'starting',
+      'ready',
+      'error',
+      'starting',
+      'starting',
+      'ready',
+    ]);
+    await controller.close();
   });
 
   it('does not spawn a Host after close cancels pending preparation', async () => {

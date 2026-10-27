@@ -10,6 +10,7 @@ import {
 } from '../shared/renderer-contract.js';
 import { DesktopBackendController, type DesktopBackendState } from './backend-controller.js';
 import { DesktopHostProcess, type DesktopHostReady } from './host-process.js';
+import type { ChangeProjectionDelta } from '../../../domains/telemetry/change-projection.js';
 import { resolveDesktopProductRoot } from './product-root.js';
 import { claimDesktopSingleInstance } from './single-instance.js';
 import { scheduleDesktopStartup } from './startup.js';
@@ -31,9 +32,17 @@ let quitting = false;
 app.setName('Repoctopus');
 app.setAppUserModelId('com.repoctopus.desktop');
 
-function publicState(state: DesktopBackendState): DesktopShellState {
+function publicState(
+  state: DesktopBackendState,
+  delta: ChangeProjectionDelta | null = null,
+): DesktopShellState {
   if (state.phase === 'ready' && hostReady !== undefined) {
-    return { phase: 'ready', snapshot: hostReady.snapshot };
+    return {
+      phase: 'ready',
+      snapshot: hostReady.snapshot,
+      projection: hostReady.projection,
+      delta,
+    };
   }
   if (state.phase === 'error') return { phase: 'error', message: state.message };
   return { phase: 'starting' };
@@ -53,6 +62,16 @@ const controller = new DesktopBackendController(
       productRoot,
       onReady: (ready) => {
         hostReady = ready;
+      },
+      onProjection: (projection, delta) => {
+        if (hostReady === undefined) return;
+        hostReady = { ...hostReady, projection };
+        const window = mainWindow;
+        if (window === undefined || window.isDestroyed()) return;
+        window.webContents.send(
+          DESKTOP_BACKEND_STATE_CHANNEL,
+          publicState(controller.state, delta),
+        );
       },
       onFailure,
     }),
