@@ -1,13 +1,8 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
-import {
-  createObservationEnvelope,
-} from '../domains/telemetry/observation-envelope.js';
+import { createObservationEnvelope } from '../domains/telemetry/observation-envelope.js';
 import { FileObservationEnvelopeStore } from '../platform/telemetry/file-observation-envelope-store.js';
-import {
-  removeTemporaryDirectory,
-  temporaryDirectory,
-} from './helpers/fixtures.js';
+import { removeTemporaryDirectory, temporaryDirectory } from './helpers/fixtures.js';
 
 const cleanup: string[] = [];
 afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
@@ -40,12 +35,28 @@ async function workspace(): Promise<string> {
   return value;
 }
 
+async function enableDestinations(
+  store: FileObservationEnvelopeStore,
+  ...destinationIds: string[]
+): Promise<void> {
+  await Promise.all(
+    destinationIds.map((destinationId) =>
+      store.enableDestination({
+        destinationId,
+        destinationKind: destinationId.startsWith('desktop') ? 'desktop' : 'remote',
+        changedAt: '2026-10-27T05:20:00.000Z',
+      }),
+    ),
+  );
+}
+
 describe('atomic observation envelope store', () => {
   it.each([
     ['remote succeeds while desktop fails', 'team-signoz', 'desktop-current-user'],
     ['desktop succeeds while remote fails', 'desktop-current-user', 'team-signoz'],
   ])('keeps destination cursors independent when %s', async (_label, succeeds, fails) => {
     const store = new FileObservationEnvelopeStore(await workspace());
+    await enableDestinations(store, succeeds, fails);
     const appended = await store.append(envelope(1));
 
     await store.acknowledge({
@@ -76,18 +87,20 @@ describe('atomic observation envelope store', () => {
         throw new Error('simulated process exit');
       },
     });
+    await enableDestinations(crashing, 'team-signoz', 'desktop-current-user');
     await expect(crashing.append(envelope(1))).rejects.toThrow('simulated process exit');
 
     const restarted = new FileObservationEnvelopeStore(root);
     expect((await restarted.readPending('team-signoz')).map((entry) => entry.offset)).toEqual([1]);
-    expect((await restarted.readPending('desktop-current-user')).map((entry) => entry.offset)).toEqual(
-      [1],
-    );
+    expect(
+      (await restarted.readPending('desktop-current-user')).map((entry) => entry.offset),
+    ).toEqual([1]);
   });
 
   it('replays only records after each destination own persisted cursor', async () => {
     const root = await workspace();
     const firstProcess = new FileObservationEnvelopeStore(root);
+    await enableDestinations(firstProcess, 'team-signoz', 'desktop-current-user');
     const first = await firstProcess.append(envelope(1));
     const second = await firstProcess.append(envelope(2));
     await firstProcess.acknowledge({
@@ -101,14 +114,15 @@ describe('atomic observation envelope store', () => {
     expect((await restarted.readPending('team-signoz')).map((entry) => entry.offset)).toEqual([
       second.offset,
     ]);
-    expect((await restarted.readPending('desktop-current-user')).map((entry) => entry.offset)).toEqual(
-      [first.offset, second.offset],
-    );
+    expect(
+      (await restarted.readPending('desktop-current-user')).map((entry) => entry.offset),
+    ).toEqual([first.offset, second.offset]);
   });
 
   it('leaves the old atomic state readable when envelope or cursor commit is interrupted', async () => {
     const root = await workspace();
     const stable = new FileObservationEnvelopeStore(root);
+    await enableDestinations(stable, 'team-signoz');
     const first = await stable.append(envelope(1));
     const interruptedEnvelope = new FileObservationEnvelopeStore(root, {
       beforeEnvelopeCommit: () => {
@@ -141,6 +155,7 @@ describe('atomic observation envelope store', () => {
 
   it('deduplicates exact replay and rejects gaps, wrong identities and identity collisions', async () => {
     const store = new FileObservationEnvelopeStore(await workspace());
+    await enableDestinations(store, 'team-signoz');
     const value = envelope(1);
     const first = await store.append(value);
     expect(await store.append(value)).toEqual(first);
