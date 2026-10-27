@@ -19,6 +19,7 @@ import type {
 } from '../../../domains/evidence/telemetry.js';
 import { mapEvidenceObservationEnvelopes } from '../evidence-observation-mapping.js';
 import { encodeObservationEnvelopes } from './envelope-encoder.js';
+import { remoteTelemetryEnabled } from '../environment-configuration.js';
 
 export interface EvidenceOpenTelemetryOptions {
   timeoutMillis?: number;
@@ -153,12 +154,7 @@ export class InMemoryEvidenceTelemetryExporter implements EvidenceTelemetryPort 
 export function evidenceTelemetryFromEnvironment(
   environment: NodeJS.ProcessEnv = process.env,
 ): EvidenceTelemetryPort {
-  const endpoint =
-    environment.OTEL_EXPORTER_OTLP_ENDPOINT ??
-    environment.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT ??
-    environment.OTEL_EXPORTER_OTLP_LOGS_ENDPOINT ??
-    environment.OTEL_EXPORTER_OTLP_METRICS_ENDPOINT;
-  if (!endpoint) return { async export() {} };
+  if (!remoteTelemetryEnabled(environment)) return { async export() {} };
   const options: EvidenceOpenTelemetryOptions = {};
   if (!environment.OTEL_RESOURCE_ATTRIBUTES?.includes('deployment.environment.name=')) {
     options.environment = environment.REPOCTOPUS_ENVIRONMENT ?? 'development';

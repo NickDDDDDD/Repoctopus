@@ -2,17 +2,68 @@
 
 Repoctopus 通过标准 OTLP HTTP 导出适配自部署 SigNoz 等后端。领域层只产生稳定事实，不依赖具体观测产品。
 
-## 配置
+## 配置遥测目的地
 
-设置标准环境变量后启动 CLI：
+你可以单独启用团队 OTLP 后端，也可以同时自动激活本地 Desktop。Repoctopus 使用标准 `OTEL_EXPORTER_OTLP_*` 变量配置远端；`REPOCTOPUS_DESKTOP_AUTOSTART=0` 只关闭后续开发 Run 的 Desktop 自动激活，不会关闭远端出口。
+
+`telemetry config` 是只读诊断命令。它不会连接后端、启动 Desktop 或输出 endpoint 值。
+
+### 只使用远端 OTLP
+
+设置远端 endpoint，并关闭 Desktop 自动激活：
+
+<!-- telemetry-smoke:remote-only -->
 
 ```powershell
 $env:OTEL_EXPORTER_OTLP_ENDPOINT = 'http://signoz.example.internal:4318'
+$env:REPOCTOPUS_DESKTOP_AUTOSTART = '0'
 $env:REPOCTOPUS_ENVIRONMENT = 'development'
-node bin/repoctopus.js evidence run --workspace . --profile verify --json
+node bin/repoctopus.js telemetry config --json
 ```
 
-也可以分别使用 `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`、`OTEL_EXPORTER_OTLP_LOGS_ENDPOINT` 和 `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT`。没有配置端点时使用空实现，不影响本地 Evidence。
+结果中的 `remote.enabled` 为 `true`，`desktop.autostart` 为 `disabled`。Runtime 仍向远端导出，Desktop 不会随新开发 Run 自动启动。
+
+### 同时使用远端和 Desktop
+
+将 Desktop 自动激活设为 `1`。下一次开发 Run 会启动或激活 Desktop，并唤醒本地积压重放：
+
+<!-- telemetry-smoke:remote-and-desktop -->
+
+```powershell
+$env:OTEL_EXPORTER_OTLP_ENDPOINT = 'http://signoz.example.internal:4318'
+$env:REPOCTOPUS_DESKTOP_AUTOSTART = '1'
+node bin/repoctopus.js telemetry config --json
+```
+
+结果中的远端和 Desktop 都处于启用状态。两个目的地独立确认 envelope；一个目的地失败不会推进另一个目的地的 cursor。
+
+### 关闭 Desktop 自动激活
+
+如果 Desktop 已在运行，请先从应用中完全退出。然后关闭后续开发 Run 的自动激活；远端 endpoint 保持不变：
+
+<!-- telemetry-smoke:desktop-closed -->
+
+```powershell
+$env:REPOCTOPUS_DESKTOP_AUTOSTART = '0'
+node bin/repoctopus.js telemetry config --json
+```
+
+结果中的 `desktop.autostart` 为 `disabled`，`remote.enabled` 仍为 `true`。本地 Desktop 停止不会重置远端 cursor。
+
+### 恢复 Desktop
+
+重新启用自动激活。下一次以 `run start --change ...` 启动的新开发 Run 会激活 Desktop，并从本地目的地未确认位置重放：
+
+<!-- telemetry-smoke:desktop-recovered -->
+
+```powershell
+$env:REPOCTOPUS_DESKTOP_AUTOSTART = '1'
+node bin/repoctopus.js telemetry config --json
+```
+
+结果中的 `desktop.replayOnNextDevelopmentRun` 为 `true`。传输语义是可重放的 at-least-once；稳定事件身份让投影收敛，但系统不宣称 exactly-once。
+
+也可以分别设置 `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`、`OTEL_EXPORTER_OTLP_LOGS_ENDPOINT` 和 `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT`。未配置任何远端 endpoint 时，远端使用空实现，不影响领域结果或本地 Desktop。
 
 ## 先落盘，再导出
 

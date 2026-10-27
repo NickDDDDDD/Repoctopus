@@ -48,6 +48,7 @@ import {
   type EncodedObservationSignals,
   type EncodedOtlpMetric,
 } from './envelope-encoder.js';
+import { remoteTelemetryEnabled, type OtlpEndpointVariable } from '../environment-configuration.js';
 
 interface MetricInstrumentCache {
   counters: Map<string, ReturnType<Meter['createCounter']>>;
@@ -661,12 +662,7 @@ export class OpenTelemetryDeliveryExporter implements DeliveryTelemetryPort {
 export function telemetryFromEnvironment(
   environment: NodeJS.ProcessEnv = process.env,
 ): TelemetryPort {
-  const endpoint =
-    environment.OTEL_EXPORTER_OTLP_ENDPOINT ??
-    environment.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT ??
-    environment.OTEL_EXPORTER_OTLP_LOGS_ENDPOINT ??
-    environment.OTEL_EXPORTER_OTLP_METRICS_ENDPOINT;
-  if (!endpoint) {
+  if (!remoteTelemetryEnabled(environment)) {
     return { async export() {} };
   }
   const options: OpenTelemetryOptions = {};
@@ -679,11 +675,12 @@ export function telemetryFromEnvironment(
 export function deliveryTelemetryFromEnvironment(
   environment: NodeJS.ProcessEnv = process.env,
 ): DeliveryTelemetryPort {
-  const endpoint =
-    environment.OTEL_EXPORTER_OTLP_ENDPOINT ??
-    environment.OTEL_EXPORTER_OTLP_LOGS_ENDPOINT ??
-    environment.OTEL_EXPORTER_OTLP_METRICS_ENDPOINT;
-  if (!endpoint) return { async export() {} };
+  const variables: readonly OtlpEndpointVariable[] = [
+    'OTEL_EXPORTER_OTLP_ENDPOINT',
+    'OTEL_EXPORTER_OTLP_LOGS_ENDPOINT',
+    'OTEL_EXPORTER_OTLP_METRICS_ENDPOINT',
+  ];
+  if (!remoteTelemetryEnabled(environment, variables)) return { async export() {} };
   const options: OpenTelemetryOptions = {};
   if (!environment.OTEL_RESOURCE_ATTRIBUTES?.includes('deployment.environment.name=')) {
     options.environment = environment.REPOCTOPUS_ENVIRONMENT ?? 'development';
@@ -694,11 +691,12 @@ export function deliveryTelemetryFromEnvironment(
 export function lifecycleTelemetryFromEnvironment(
   environment: NodeJS.ProcessEnv = process.env,
 ): LifecycleTelemetryPort {
-  const endpoint =
-    environment.OTEL_EXPORTER_OTLP_ENDPOINT ??
-    environment.OTEL_EXPORTER_OTLP_LOGS_ENDPOINT ??
-    environment.OTEL_EXPORTER_OTLP_METRICS_ENDPOINT;
-  if (!endpoint) return { async export() {} };
+  const variables: readonly OtlpEndpointVariable[] = [
+    'OTEL_EXPORTER_OTLP_ENDPOINT',
+    'OTEL_EXPORTER_OTLP_LOGS_ENDPOINT',
+    'OTEL_EXPORTER_OTLP_METRICS_ENDPOINT',
+  ];
+  if (!remoteTelemetryEnabled(environment, variables)) return { async export() {} };
   const options: OpenTelemetryOptions = {};
   if (!environment.OTEL_RESOURCE_ATTRIBUTES?.includes('deployment.environment.name=')) {
     options.environment = environment.REPOCTOPUS_ENVIRONMENT ?? 'development';

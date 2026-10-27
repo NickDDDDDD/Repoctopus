@@ -52,6 +52,7 @@ import {
   assertHostTelemetryReport,
   type HostTelemetryReport,
 } from '../../domains/telemetry/host-tool-telemetry.js';
+import { developmentTelemetryConfiguration } from '../../platform/telemetry/environment-configuration.js';
 
 const DIST_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PRODUCT_ROOT =
@@ -59,7 +60,7 @@ const PRODUCT_ROOT =
     ? path.resolve(DIST_DIR, '..')
     : path.resolve(DIST_DIR, '..', '..');
 const USAGE =
-  'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decide|record|resume|work-claim|work-outcome|work-reconcile|work-validate|archive-prepare|archive-publish> | change reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | approval review | browser <doctor|install> | doctor';
+  'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decide|record|resume|work-claim|work-outcome|work-reconcile|work-validate|archive-prepare|archive-publish> | change reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | telemetry config | approval review | browser <doctor|install> | doctor';
 const CLI_VERSION = '0.1.0';
 const COMMANDS = new Set([
   'project detect',
@@ -100,6 +101,7 @@ const COMMANDS = new Set([
   'delivery resume',
   'delivery refresh',
   'delivery migration-plan',
+  'telemetry config',
   'approval review',
   'browser doctor',
   'browser install',
@@ -1523,6 +1525,12 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
     return deliveryPublish(parsed);
   if (command === 'delivery refresh') return deliveryRefresh(parsed);
   if (command === 'delivery migration-plan') return deliveryMigrationPlan(parsed);
+  if (command === 'telemetry config') {
+    return successEnvelope({
+      command: 'telemetry config',
+      result: developmentTelemetryConfiguration(process.env),
+    });
+  }
   if (command === 'doctor') return doctor(parsed);
   if (command === 'browser doctor') return browserDoctor(parsed);
   if (command === 'browser install') return browserInstall(parsed);

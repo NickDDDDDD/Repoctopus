@@ -3,6 +3,7 @@ import type {
   TeamPluginConfig,
 } from '../../domains/project-configuration/types.js';
 import type { SpecificationRoot } from '../../services/specification.js';
+import { desktopAutostartEnabled } from '../../platform/telemetry/environment-configuration.js';
 import type { BuiltinPluginRegistration } from './descriptor.js';
 import {
   compileComposition,
@@ -98,7 +99,7 @@ function projectSelections(
     configuredSelection(specificationProvider.id, builtinConfig, teamPlugins),
   ];
   const selectedIds = new Set(selectedProviders.map((selection) => selection.id));
-  const desktopAutostartEnabled = process.env.REPOCTOPUS_DESKTOP_AUTOSTART !== '0';
+  const desktopEnabled = desktopAutostartEnabled(process.env);
 
   return [
     { id: 'command-router' },
@@ -162,12 +163,12 @@ function projectSelections(
     runtimeSelection(
       'desktop-runtime-activation-service',
       {
-        enabled: desktopAutostartEnabled,
+        enabled: desktopEnabled,
         productRoot,
         platform: process.platform,
       },
       {
-        enabled: desktopAutostartEnabled,
+        enabled: desktopEnabled,
         productRoot: PRODUCT_ROOT_IDENTITY,
         platform: process.platform,
       },
