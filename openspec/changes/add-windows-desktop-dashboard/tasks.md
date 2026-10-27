@@ -32,7 +32,7 @@
 - [x] 2.6 扩展 Tool 遥测契约：保留 Runtime 受保护操作，允许 Host 上报版本化有界类别、结果、耗时和可选模型/Token 聚合；以支持和不支持 Tool observation 的 Host fixture 证明缺失显示 unknown、命令/路径/Prompt/输出永不进入 envelope。
       **Blocked by:** 2.2
       **Acceptance:** 两类 Host fixture 分别呈现可信 Tool 事实或 unknown，任何命令、路径、Prompt、回复和输出都不会进入 envelope
-- [ ] 2.7 增加每目的地 cursor lag、backlog 数量/字节/最老年龄、最近结果、重试、gap、retention drop、Receiver 接受/拒绝与投递延迟事实；用远端失败、本地成功和 retention overflow 测试证明遥测健康可本地诊断且不改变领域结果。
+- [x] 2.7 增加每目的地 cursor lag、backlog 数量/字节/最老年龄、最近结果、重试、gap、retention drop、Receiver 接受/拒绝与投递延迟事实；用远端失败、本地成功和 retention overflow 测试证明遥测健康可本地诊断且不改变领域结果。
       **Blocked by:** 2.1
       **Acceptance:** 远端失败、本地成功和 retention overflow 均产生独立可解释健康事实，且领域 Run 结果保持不变
 - [ ] 2.8 用真实自举 Trajectory 和合成故障 fixture 验证完整覆盖：不用扫描 Workspace、OpenSpec、Git 或最新 Run 快照即可重建五阶段、当前 Work/Task、Skill 链、审批、Evidence、返工和恢复；生成覆盖报告并把遗漏事件作为失败处理。
