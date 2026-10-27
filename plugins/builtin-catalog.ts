@@ -202,6 +202,7 @@ const definitions: readonly BuiltinDefinition[] = [
     },
     plugin: DesktopProjection,
     sourceFiles: [
+      'app/desktop/host/projection-journal-store.ts',
       'app/desktop/host/projection-service.ts',
       'domains/telemetry/change-projection.ts',
     ],

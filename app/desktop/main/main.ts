@@ -82,6 +82,10 @@ const controller = new DesktopBackendController(
       executable: process.execPath,
       entry: hostEntry,
       productRoot,
+      environment: {
+        ...process.env,
+        REPOCTOPUS_DESKTOP_DATA_DIR: path.join(app.getPath('userData'), 'projection'),
+      },
       onReady: (ready) => {
         hostReady = ready;
       },

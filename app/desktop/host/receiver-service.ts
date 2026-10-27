@@ -22,11 +22,11 @@ export class DesktopReceiver extends Service {
     const sessionToken = randomBytes(32).toString('base64url');
     const receiver = new DesktopOtlpHttpReceiver({
       sessionToken,
-      onExport: (record) => {
+      onExport: async (record) => {
         if (record.signal !== 'log' || record.contentType !== 'json') return;
-        for (const observation of decodeOtlpJsonProjectionObservations(record.body)) {
-          this.ctx.desktopProjection.accept(observation);
-        }
+        await this.ctx.desktopProjection.acceptMany(
+          decodeOtlpJsonProjectionObservations(record.body),
+        );
       },
     });
     const endpoint = await receiver.start();

@@ -345,6 +345,11 @@
       "status": "shared-coordinator"
     },
     {
+      "id": "desktop-projection-transition",
+      "files": ["app/desktop/host/projection-journal-store.ts"],
+      "status": "canonical"
+    },
+    {
       "id": "specification-approval-transition",
       "files": [
         "platform/specification/file-planning-approval-store.ts",
