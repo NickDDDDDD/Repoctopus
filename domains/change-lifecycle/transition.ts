@@ -486,10 +486,10 @@ export function assertChangeLifecycleSnapshot(
   if (
     snapshot.verificationInvalidation &&
     (snapshot.phase !== 'build' ||
-      snapshot.currentWork?.kind !== 'task.implement' ||
+      (snapshot.currentWork !== null && snapshot.currentWork.kind !== 'task.implement') ||
       snapshot.verificationInput)
   ) {
-    throw new Error('Verification invalidation requires an active Build Repair Work without input');
+    throw new Error('Verification invalidation requires Build repair without verification input');
   }
   if (snapshot.status === 'waiting' && snapshot.waitCondition === null) {
     throw new Error('Waiting Change Run requires a durable WaitCondition');
