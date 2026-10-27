@@ -6,10 +6,12 @@ import { createChangeLifecycleSnapshot } from '../domains/change-lifecycle/defin
 import { startRun } from '../domains/engine/loop.js';
 import type { TelemetryBatch } from '../domains/runtime/types.js';
 import type { TrajectoryEvent } from '../domains/trajectory/types.js';
+import { decodeOtlpJsonProjectionObservations } from '../app/desktop/host/otlp-json-projection.js';
 import {
   acceptedChangeLifecycleTelemetry,
   projectChangeLifecycleTelemetry,
 } from '../platform/telemetry/change-lifecycle-mapping.js';
+import { encodeTelemetryBatchOtlpJsonRequests } from '../platform/telemetry/canonical-otlp-json-exporter.js';
 import {
   executionMetricAttributes,
   safeEventAttributes,
@@ -166,6 +168,16 @@ describe('telemetry mapping', () => {
     ).toEqual(golden);
     expect(JSON.stringify(records)).not.toMatch(
       /post_merge|ghp_|C:\/private|specification body|authorization|credential/u,
+    );
+    const requests = encodeTelemetryBatchOtlpJsonRequests(batch);
+    expect(
+      decodeOtlpJsonProjectionObservations(Buffer.from(JSON.stringify(requests.logs))),
+    ).toContainEqual(
+      expect.objectContaining({
+        eventName: 'change.phase.completed',
+        phase: 'archive',
+        lifecycleStatus: 'completed',
+      }),
     );
   });
 

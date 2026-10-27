@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "kind": "WindowsDesktopSelfHostE2E",
+  "taskId": "8.2",
+  "runtimeRunId": "change-repoctopus-add-windows-desktop-dashboard-f5ddf312046dbfbb",
+  "status": "passed",
+  "startedAt": "2026-10-27T16:56:54.587Z",
+  "completedAt": "2026-10-27T16:57:12.290Z",
+  "environment": {
+    "platform": "win32",
+    "architecture": "x64",
+    "windowsRelease": "10.0.26300",
+    "isolatedUserData": true,
+    "isolatedDiscovery": true
+  },
+  "candidate": {
+    "artifact": "release/desktop/Repoctopus-Desktop-0.1.0-x64-Setup.exe",
+    "bytes": 117167585,
+    "digest": "sha256:30573d5b3916f124a3f5d988f4afa7c1695bf4c83c88064304607c30722163a3"
+  },
+  "checks": [
+    {
+      "id": "install-candidate",
+      "status": "passed",
+      "durationMs": 5883,
+      "executable": "Repoctopus.exe"
+    },
+    {
+      "id": "run-activation",
+      "status": "passed",
+      "durationMs": 327,
+      "initialContextRendered": true
+    },
+    {
+      "id": "otlp-receiver",
+      "status": "passed",
+      "durationMs": 24,
+      "receiverAcceptedCanonicalOtlp": true
+    },
+    {
+      "id": "self-hosted-run-projection",
+      "status": "passed",
+      "durationMs": 1235,
+      "runId": "change-repoctopus-add-windows-desktop-dashboard-f5ddf312046dbfbb",
+      "trajectoryEvents": 754,
+      "lastSequence": 754,
+      "observedPhases": {
+        "Open": "completed",
+        "Design": "completed",
+        "Build": "running",
+        "Verify": "not-started",
+        "Archive": "not-started"
+      },
+      "actionSkill": "repoctopus-build-task",
+      "augmentationSkill": "tdd",
+      "rendererHttpRequests": [],
+      "futurePhaseClaim": "not-observed"
+    },
+    {
+      "id": "single-instance",
+      "status": "passed",
+      "durationMs": 256,
+      "oneHostPid": true,
+      "contextForwarded": true
+    },
+    {
+      "id": "tray-hide-and-restore",
+      "status": "passed",
+      "durationMs": 1073,
+      "shellStayedAlive": true,
+      "receiverStayedAlive": true,
+      "restoredByActivation": true
+    },
+    {
+      "id": "direct-exit",
+      "status": "passed",
+      "durationMs": 2128,
+      "shellExited": true,
+      "receiverDiscoveryRemoved": true
+    },
+    {
+      "id": "uninstall-candidate",
+      "status": "passed",
+      "durationMs": 2419,
+      "executableRemoved": true,
+      "userDataRetained": true
+    }
+  ],
+  "diagnostic": null
+}

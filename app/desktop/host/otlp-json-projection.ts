@@ -70,6 +70,12 @@ function observedAt(record: JsonObject): string | null {
 }
 
 function bodyName(record: JsonObject): string | null {
+  if (typeof record.eventName === 'string' && record.eventName.trim()) {
+    const eventName = record.eventName.startsWith('repoctopus.')
+      ? record.eventName.slice('repoctopus.'.length)
+      : record.eventName;
+    if (supportedObservationEvent(eventName)) return eventName;
+  }
   const value = anyValue(record.body);
   return typeof value === 'string' ? value : null;
 }
@@ -200,6 +206,7 @@ export function decodeOtlpJsonProjectionObservations(
         const workId = text(recordAttributes, 'repoctopus.execution.work.id');
         const workKind = text(recordAttributes, 'repoctopus.execution.work.kind');
         const attempt = integer(recordAttributes, 'repoctopus.execution.attempt');
+        const workAttempt = attempt ?? (eventName === 'work.created' ? 1 : null);
         const skillName = text(recordAttributes, 'repoctopus.skill.name');
         const skillRole = text(recordAttributes, 'repoctopus.skill.role');
         const result =
@@ -314,7 +321,10 @@ export function decodeOtlpJsonProjectionObservations(
           runId,
           workflowName: text(recordAttributes, 'repoctopus.workflow.name'),
           phase: observationPhase,
-          work: workId && workKind && attempt ? { id: workId, kind: workKind, attempt } : null,
+          work:
+            workId && workKind && workAttempt
+              ? { id: workId, kind: workKind, attempt: workAttempt }
+              : null,
           skill:
             skillName && (skillRole === 'action' || skillRole === 'augmentation')
               ? { name: skillName, role: skillRole }

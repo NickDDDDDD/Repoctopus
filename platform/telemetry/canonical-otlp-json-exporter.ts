@@ -1,5 +1,8 @@
+import { createHash } from 'node:crypto';
+
 import type { TelemetryBatch, TelemetryPort } from '../../domains/runtime/types.js';
 import type { ObservationAttributeValue } from '../../domains/telemetry/observation-envelope.js';
+import { acceptedChangeLifecycleTelemetry } from './change-lifecycle-mapping.js';
 import { mapWorkflowObservationEnvelopes } from './workflow-observation-mapping.js';
 import { mapTelemetryPipelineObservationEnvelopes } from './platform-observation-mapping.js';
 import {
@@ -151,6 +154,47 @@ export function encodeOtlpJsonRequests(signals: EncodedObservationSignals): Read
   };
 }
 
+function scalarAttributes(
+  values: Readonly<Record<string, unknown>>,
+): Readonly<Record<string, ObservationAttributeValue>> {
+  return Object.fromEntries(
+    Object.entries(values).filter(
+      (entry): entry is [string, ObservationAttributeValue] =>
+        typeof entry[1] === 'string' ||
+        typeof entry[1] === 'number' ||
+        typeof entry[1] === 'boolean',
+    ),
+  );
+}
+
+/** Encodes the complete canonical Run view, including authoritative lifecycle facts. */
+export function encodeTelemetryBatchOtlpJsonRequests(batch: TelemetryBatch) {
+  const signals = encodeObservationEnvelopes([
+    ...mapWorkflowObservationEnvelopes(batch),
+    ...mapTelemetryPipelineObservationEnvelopes(batch),
+  ]);
+  const lifecycleLogs = batch.events.flatMap((event) =>
+    acceptedChangeLifecycleTelemetry(batch, event).map((record) => ({
+      observedAt: record.timestamp,
+      resourceAttributes: {
+        'service.name': 'repoctopus-runtime',
+        'service.version': '0.1.0',
+        'repoctopus.workspace.id': batch.projectSnapshot.projectId,
+      },
+      scope: { schemaVersion: 1 as const, name: 'io.repoctopus.observation' as const, version: '1.0.0' as const },
+      eventName: record.eventName,
+      body: record.body,
+      traceId: batch.run.traceId,
+      spanId: createHash('sha256')
+        .update(`${record.eventId}\0${record.signal}`)
+        .digest('hex')
+        .slice(0, 16),
+      attributes: scalarAttributes(record.attributes),
+    })),
+  );
+  return encodeOtlpJsonRequests({ ...signals, logs: [...signals.logs, ...lifecycleLogs] });
+}
+
 function signalUrl(endpoint: string, signal: 'traces' | 'logs' | 'metrics'): string {
   const base = new URL(endpoint);
   base.pathname = `${base.pathname.replace(/\/$/u, '')}/v1/${signal}`;
@@ -178,11 +222,7 @@ export class CanonicalOtlpJsonExporter implements TelemetryPort {
   }
 
   async export(batch: TelemetryBatch): Promise<void> {
-    const signals = encodeObservationEnvelopes([
-      ...mapWorkflowObservationEnvelopes(batch),
-      ...mapTelemetryPipelineObservationEnvelopes(batch),
-    ]);
-    const requests = encodeOtlpJsonRequests(signals);
+    const requests = encodeTelemetryBatchOtlpJsonRequests(batch);
     await Promise.all(
       (['traces', 'logs', 'metrics'] as const).map(async (signal) => {
         const response = await this.#fetch(signalUrl(this.#endpoint, signal), {

@@ -55,12 +55,71 @@ function snakeCaseAttributeName(value: string): string {
   return value.replace(/([a-z0-9])([A-Z])/gu, '$1_$2').toLowerCase();
 }
 
+const SAFE_EXECUTION_ID = /^[a-zA-Z0-9][a-zA-Z0-9._:@/-]{0,255}$/u;
+const PHASES = new Set(['open', 'design', 'build', 'verify', 'archive']);
+const WORK_KINDS = new Set([
+  'change.intake',
+  'change.design',
+  'task.implement',
+  'change.verify',
+  'change.archive',
+]);
+
+function safeExecutionId(value: unknown): value is string {
+  return (
+    typeof value === 'string' &&
+    SAFE_EXECUTION_ID.test(value) &&
+    !value.includes('://') &&
+    !value.includes('..') &&
+    !value.includes('\\') &&
+    !/^[A-Za-z]:\//u.test(value) &&
+    !value.startsWith('/')
+  );
+}
+
+/** Completes OTLP Work correlation from the immutable trajectory without altering domain facts. */
+function trajectoryExecutionAttributes(
+  batch: TelemetryBatch,
+  event: TrajectoryEvent,
+): Record<string, string | number> {
+  const workId = event.data.workId;
+  if (!safeExecutionId(workId)) return {};
+  const source = batch.trajectory.find(
+    (candidate) =>
+      candidate.data.workId === workId &&
+      typeof candidate.data.workKind === 'string' &&
+      typeof candidate.data.phase === 'string',
+  );
+  const workKind = event.data.workKind ?? source?.data.workKind;
+  const phase = event.data.phase ?? source?.data.phase;
+  const attempt = event.data.attempt ?? source?.data.attempt;
+  const checkEpoch = event.data.checkEpoch ?? source?.data.checkEpoch;
+  return {
+    'repoctopus.execution.work.id': workId,
+    ...(safeExecutionId(workKind)
+      ? { 'repoctopus.execution.work.kind': WORK_KINDS.has(workKind) ? workKind : 'custom' }
+      : {}),
+    ...(typeof phase === 'string' && PHASES.has(phase)
+      ? { 'repoctopus.execution.phase': phase }
+      : {}),
+    ...(typeof attempt === 'number' && Number.isSafeInteger(attempt) && attempt >= 1
+      ? { 'repoctopus.execution.attempt': attempt }
+      : {}),
+    ...(typeof checkEpoch === 'number' && Number.isSafeInteger(checkEpoch) && checkEpoch >= 0
+      ? { 'repoctopus.execution.check_epoch': checkEpoch }
+      : {}),
+  };
+}
+
 function recordAttributes(
   batch: TelemetryBatch,
   event: TrajectoryEvent,
 ): Record<string, string | number | boolean> {
   return Object.fromEntries(
-    Object.entries(safeEventAttributes(batch, event)).map(([key, value]) => [
+    Object.entries({
+      ...safeEventAttributes(batch, event),
+      ...trajectoryExecutionAttributes(batch, event),
+    }).map(([key, value]) => [
       snakeCaseAttributeName(key),
       value as string | number | boolean,
     ]),
