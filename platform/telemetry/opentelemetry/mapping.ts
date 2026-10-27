@@ -85,6 +85,13 @@ const EXECUTION_EVENTS = new Set<TrajectoryEvent['type']>([
   'reconcile.completed',
   'continuation.selected',
 ]);
+const TELEMETRY_PIPELINE_EVENTS = new Set<TrajectoryEvent['type']>([
+  'telemetry.envelope-stored',
+  'telemetry.delivery-started',
+  'telemetry.delivery-completed',
+  'telemetry.receiver-evaluated',
+  'telemetry.gap-recorded',
+]);
 
 const BOUNDED_DECISION_KINDS = new Set([
   'open-approval',
@@ -98,6 +105,15 @@ const BOUNDED_TOOL_CATEGORIES = new Set<string>(HOST_TOOL_CATEGORIES);
 const BOUNDED_TOOL_RESULTS = new Set<string>(HOST_TOOL_RESULTS);
 const BOUNDED_OBSERVATION_STATUSES = new Set(['observed', 'unknown']);
 const MODEL_VERSION = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/u;
+const BOUNDED_DESTINATION_KINDS = new Set(['remote', 'desktop']);
+const BOUNDED_PIPELINE_RESULTS = new Set([
+  'accepted',
+  'rejected',
+  'delivered',
+  'failed',
+  'dropped',
+  'gap',
+]);
 
 function safeExecutionId(value: string): boolean {
   return (
@@ -344,6 +360,50 @@ function addHostTelemetryAttributes(attributes: Attributes, event: TrajectoryEve
   }
 }
 
+function addTelemetryPipelineAttributes(attributes: Attributes, event: TrajectoryEvent): void {
+  if (!TELEMETRY_PIPELINE_EVENTS.has(event.type)) return;
+  const destinationId = event.data.destinationId;
+  if (typeof destinationId === 'string' && safeExecutionId(destinationId)) {
+    attributes['repoctopus.telemetry.destination.id'] = destinationId;
+  }
+  const destinationKind = event.data.destinationKind;
+  if (typeof destinationKind === 'string' && BOUNDED_DESTINATION_KINDS.has(destinationKind)) {
+    attributes['repoctopus.telemetry.destination.kind'] = destinationKind;
+  }
+  const operationId = event.data.operationId;
+  if (typeof operationId === 'string' && safeExecutionId(operationId)) {
+    attributes['repoctopus.telemetry.operation.id'] = operationId;
+  }
+  const result = event.data.result;
+  if (typeof result === 'string' && BOUNDED_PIPELINE_RESULTS.has(result)) {
+    attributes['repoctopus.telemetry.result'] = result;
+  }
+  for (const [source, target] of [
+    ['cursorOffset', 'repoctopus.telemetry.cursor.offset'],
+    ['headOffset', 'repoctopus.telemetry.head.offset'],
+    ['cursorLag', 'repoctopus.telemetry.cursor.lag'],
+    ['backlogCount', 'repoctopus.telemetry.backlog.count'],
+    ['backlogBytes', 'repoctopus.telemetry.backlog.bytes'],
+    ['backlogOldestAgeMs', 'repoctopus.telemetry.backlog.oldest_age_ms'],
+    ['retryCount', 'repoctopus.telemetry.retry.count'],
+    ['gapCount', 'repoctopus.telemetry.gap.count'],
+    ['retentionDroppedCount', 'repoctopus.telemetry.retention.dropped_count'],
+    ['retentionDroppedBytes', 'repoctopus.telemetry.retention.dropped_bytes'],
+    ['deliveryLatencyMs', 'repoctopus.telemetry.delivery.latency_ms'],
+    ['receiverLatencyMs', 'repoctopus.telemetry.receiver.latency_ms'],
+    ['droppedCount', 'repoctopus.telemetry.dropped.count'],
+    ['droppedBytes', 'repoctopus.telemetry.dropped.bytes'],
+  ] as const) {
+    const value = event.data[source];
+    if (typeof value === 'number' && Number.isSafeInteger(value) && value >= 0) {
+      attributes[target] = value;
+    }
+  }
+  if (typeof event.data.completeHistory === 'boolean') {
+    attributes['repoctopus.telemetry.history.complete'] = event.data.completeHistory;
+  }
+}
+
 export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEvent): Attributes {
   const attributes: Attributes = {
     'repoctopus.project.id': batch.projectSnapshot.projectId,
@@ -465,6 +525,7 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
   addTaskCorrelation(attributes, event);
   addDecisionCorrelation(attributes, event);
   addHostTelemetryAttributes(attributes, event);
+  addTelemetryPipelineAttributes(attributes, event);
   return attributes;
 }
 
@@ -541,7 +602,11 @@ export function executionMetricAttributes(event: TrajectoryEvent): Attributes | 
 }
 
 export function eventSeverity(type: TrajectoryEvent['type']): number {
-  return type === 'recovery.reconciled' || type === 'task.failed' ? 13 : 9;
+  return type === 'recovery.reconciled' ||
+    type === 'task.failed' ||
+    type === 'telemetry.gap-recorded'
+    ? 13
+    : 9;
 }
 
 export function workflowEventMetricAttributes(

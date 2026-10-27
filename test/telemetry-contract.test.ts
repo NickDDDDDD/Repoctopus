@@ -92,6 +92,18 @@ describe('observation telemetry contract', () => {
         result: 'the validator failed because a private command printed its token',
       }),
     ).toThrow(/metric dimension.*result/iu);
+
+    expect(
+      validateObservationMetricAttributes('telemetry.delivery-completed', {
+        'destination.kind': 'remote',
+        result: 'failed',
+      }),
+    ).toEqual({ 'destination.kind': 'remote', result: 'failed' });
+    expect(() =>
+      validateObservationMetricAttributes('telemetry.delivery-completed', {
+        'destination.id': 'team-signoz',
+      }),
+    ).toThrow(/metric dimension.*destination\.id/iu);
   });
 
   it('rejects private or free-text Observation attributes before an envelope exists', () => {

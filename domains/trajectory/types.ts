@@ -44,7 +44,12 @@ export type TrajectoryEventType =
   | 'wait.ended'
   | 'reconcile.started'
   | 'reconcile.completed'
-  | 'continuation.selected';
+  | 'continuation.selected'
+  | 'telemetry.envelope-stored'
+  | 'telemetry.delivery-started'
+  | 'telemetry.delivery-completed'
+  | 'telemetry.receiver-evaluated'
+  | 'telemetry.gap-recorded';
 
 export interface TrajectoryEvent {
   schemaVersion: 1;

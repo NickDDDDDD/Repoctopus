@@ -126,7 +126,9 @@ export class OpenTelemetryExporter implements TelemetryPort {
       batch.trajectory.some((event) => event.type === 'run.started');
     const spannedEvents = batch.events.filter(
       (event) =>
-        event.type === 'action.completed' || EXECUTION_SPAN_START[event.type] !== undefined,
+        event.type === 'action.completed' ||
+        event.type === 'telemetry.delivery-completed' ||
+        EXECUTION_SPAN_START[event.type] !== undefined,
     );
     const stableSpanIds = [
       ...(exportsRoot ? [rootSpanId(batch.run.runId)] : []),
@@ -207,6 +209,59 @@ export class OpenTelemetryExporter implements TelemetryPort {
     const modelTokens = meter.createCounter('repoctopus.model.tokens', {
       description: 'Host-declared model Token aggregate when available',
       unit: '{token}',
+    });
+    const telemetryCursorLag = meter.createGauge('repoctopus.telemetry.cursor.lag', {
+      description: 'Unacknowledged envelope sequence distance for one destination kind',
+      unit: '{envelope}',
+    });
+    const telemetryBacklogCount = meter.createGauge('repoctopus.telemetry.backlog.count', {
+      description: 'Queued envelope count for one destination kind',
+      unit: '{envelope}',
+    });
+    const telemetryBacklogBytes = meter.createGauge('repoctopus.telemetry.backlog.bytes', {
+      description: 'Queued envelope bytes for one destination kind',
+      unit: 'By',
+    });
+    const telemetryBacklogAge = meter.createGauge('repoctopus.telemetry.backlog.oldest_age', {
+      description: 'Age of the oldest queued envelope for one destination kind',
+      unit: 'ms',
+    });
+    const telemetryRetryCount = meter.createGauge('repoctopus.telemetry.retry.count', {
+      description: 'Consecutive delivery retries for one destination kind',
+      unit: '{retry}',
+    });
+    const telemetryGapCount = meter.createGauge('repoctopus.telemetry.gap.count', {
+      description: 'Known delivery history gaps for one destination kind',
+      unit: '{gap}',
+    });
+    const telemetryRetentionDroppedCount = meter.createGauge(
+      'repoctopus.telemetry.retention.dropped_count',
+      {
+        description: 'Cumulative envelopes removed before destination acknowledgement',
+        unit: '{envelope}',
+      },
+    );
+    const telemetryRetentionDroppedBytes = meter.createGauge(
+      'repoctopus.telemetry.retention.dropped_bytes',
+      {
+        description: 'Cumulative bytes removed before destination acknowledgement',
+        unit: 'By',
+      },
+    );
+    const telemetryDeliveryLatency = meter.createHistogram(
+      'repoctopus.telemetry.delivery.latency',
+      {
+        description: 'Destination delivery attempt latency',
+        unit: 'ms',
+      },
+    );
+    const telemetryDeliveryEvents = meter.createCounter('repoctopus.telemetry.delivery.events', {
+      description: 'Bounded destination delivery results',
+      unit: '{attempt}',
+    });
+    const telemetryReceiverEvents = meter.createCounter('repoctopus.telemetry.receiver.events', {
+      description: 'Bounded desktop Receiver acceptance results',
+      unit: '{request}',
     });
     const parentContext = syntheticParentContext(batch.run.runId, batch.run.traceId);
 
@@ -308,6 +363,47 @@ export class OpenTelemetryExporter implements TelemetryPort {
             }
           }
         }
+        const destinationKind = item.data.destinationKind;
+        if (
+          item.type.startsWith('telemetry.') &&
+          (destinationKind === 'remote' || destinationKind === 'desktop')
+        ) {
+          const rawResult = item.data.result;
+          const result =
+            typeof rawResult === 'string' &&
+            ['accepted', 'rejected', 'delivered', 'failed', 'dropped', 'gap'].includes(rawResult)
+              ? rawResult
+              : 'unknown';
+          const metricAttributes = {
+            'repoctopus.telemetry.destination.kind': destinationKind,
+            'repoctopus.telemetry.result': result,
+          };
+          for (const [source, instrument] of [
+            ['cursorLag', telemetryCursorLag],
+            ['backlogCount', telemetryBacklogCount],
+            ['backlogBytes', telemetryBacklogBytes],
+            ['backlogOldestAgeMs', telemetryBacklogAge],
+            ['retryCount', telemetryRetryCount],
+            ['gapCount', telemetryGapCount],
+            ['retentionDroppedCount', telemetryRetentionDroppedCount],
+            ['retentionDroppedBytes', telemetryRetentionDroppedBytes],
+          ] as const) {
+            const value = item.data[source];
+            if (typeof value === 'number' && Number.isSafeInteger(value) && value >= 0) {
+              instrument.record(value, metricAttributes);
+            }
+          }
+          if (item.type === 'telemetry.delivery-completed') {
+            telemetryDeliveryEvents.add(1, metricAttributes);
+            const latency = item.data.deliveryLatencyMs;
+            if (typeof latency === 'number' && Number.isSafeInteger(latency) && latency >= 0) {
+              telemetryDeliveryLatency.record(latency, metricAttributes);
+            }
+          }
+          if (item.type === 'telemetry.receiver-evaluated') {
+            telemetryReceiverEvents.add(1, metricAttributes);
+          }
+        }
         const lifecycleRecords = acceptedChangeLifecycleTelemetry(batch, item);
         if (lifecycleRecords.length > 0) {
           for (const record of lifecycleRecords) {
@@ -327,6 +423,28 @@ export class OpenTelemetryExporter implements TelemetryPort {
           continue;
         }
         const attributes = safeEventAttributes(batch, item);
+        if (item.type === 'telemetry.delivery-completed') {
+          const started = batch.trajectory.find(
+            (candidate) =>
+              candidate.type === 'telemetry.delivery-started' &&
+              candidate.data.operationId === item.data.operationId &&
+              candidate.data.destinationId === item.data.destinationId,
+          );
+          if (started) {
+            const span = tracer.startSpan(
+              'repoctopus.telemetry.delivery',
+              { startTime: new Date(started.timestamp), attributes },
+              parentContext,
+            );
+            span.setStatus({
+              code:
+                item.data.result === 'failed' || item.data.result === 'rejected'
+                  ? SpanStatusCode.ERROR
+                  : SpanStatusCode.OK,
+            });
+            span.end(new Date(item.timestamp));
+          }
+        }
         if (item.type === 'action.completed') {
           const id = actionId(item);
           const proposed = batch.trajectory.find(

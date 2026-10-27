@@ -176,6 +176,109 @@ describe('managed execution OTLP protocol', () => {
           cacheWriteTokenCount: 100,
           reply: secret,
         }),
+        event(17, 'telemetry.delivery-started', {
+          destinationId: 'team-signoz',
+          destinationKind: 'remote',
+          operationId: 'remote-attempt-1',
+          cursorOffset: 4,
+          headOffset: 10,
+          cursorLag: 6,
+          backlogCount: 6,
+          backlogBytes: 6_000,
+          backlogOldestAgeMs: 30_000,
+          retryCount: 0,
+          gapCount: 0,
+          retentionDroppedCount: 0,
+          retentionDroppedBytes: 0,
+          completeHistory: true,
+        }),
+        event(18, 'telemetry.delivery-completed', {
+          destinationId: 'team-signoz',
+          destinationKind: 'remote',
+          operationId: 'remote-attempt-1',
+          result: 'failed',
+          cursorOffset: 4,
+          headOffset: 10,
+          cursorLag: 6,
+          backlogCount: 6,
+          backlogBytes: 6_000,
+          backlogOldestAgeMs: 31_200,
+          retryCount: 1,
+          gapCount: 0,
+          retentionDroppedCount: 0,
+          retentionDroppedBytes: 0,
+          completeHistory: true,
+          deliveryLatencyMs: 1_200,
+        }),
+        event(19, 'telemetry.delivery-started', {
+          destinationId: 'desktop-current-user',
+          destinationKind: 'desktop',
+          operationId: 'desktop-attempt-1',
+          cursorOffset: 4,
+          headOffset: 10,
+          cursorLag: 6,
+          backlogCount: 6,
+          backlogBytes: 6_000,
+          backlogOldestAgeMs: 30_000,
+          retryCount: 0,
+          gapCount: 0,
+          retentionDroppedCount: 0,
+          retentionDroppedBytes: 0,
+          completeHistory: true,
+        }),
+        event(20, 'telemetry.delivery-completed', {
+          destinationId: 'desktop-current-user',
+          destinationKind: 'desktop',
+          operationId: 'desktop-attempt-1',
+          result: 'delivered',
+          cursorOffset: 10,
+          headOffset: 10,
+          cursorLag: 0,
+          backlogCount: 0,
+          backlogBytes: 0,
+          backlogOldestAgeMs: 0,
+          retryCount: 0,
+          gapCount: 0,
+          retentionDroppedCount: 0,
+          retentionDroppedBytes: 0,
+          completeHistory: true,
+          deliveryLatencyMs: 80,
+        }),
+        event(21, 'telemetry.receiver-evaluated', {
+          destinationId: 'desktop-current-user',
+          destinationKind: 'desktop',
+          result: 'accepted',
+          cursorOffset: 10,
+          headOffset: 10,
+          cursorLag: 0,
+          backlogCount: 0,
+          backlogBytes: 0,
+          backlogOldestAgeMs: 0,
+          retryCount: 0,
+          gapCount: 0,
+          retentionDroppedCount: 0,
+          retentionDroppedBytes: 0,
+          completeHistory: true,
+          receiverLatencyMs: 12,
+        }),
+        event(22, 'telemetry.gap-recorded', {
+          destinationId: 'team-signoz',
+          destinationKind: 'remote',
+          result: 'dropped',
+          cursorOffset: 4,
+          headOffset: 12,
+          cursorLag: 8,
+          backlogCount: 5,
+          backlogBytes: 4_200,
+          backlogOldestAgeMs: 18_000,
+          retryCount: 1,
+          gapCount: 1,
+          retentionDroppedCount: 3,
+          retentionDroppedBytes: 2_400,
+          completeHistory: false,
+          droppedCount: 3,
+          droppedBytes: 2_400,
+        }),
       ];
       const batch: TelemetryBatch = {
         run,
@@ -210,11 +313,21 @@ describe('managed execution OTLP protocol', () => {
       expect(payload).toContain('repoctopus.tool.category');
       expect(payload).toContain('test.run');
       expect(payload).toContain('gpt-5.1-2026-10-01');
+      expect(payload).toContain('repoctopus.telemetry.cursor.lag');
+      expect(payload).toContain('repoctopus.telemetry.backlog.count');
+      expect(payload).toContain('repoctopus.telemetry.retention.dropped_count');
+      expect(payload).toContain('repoctopus.telemetry.delivery.latency');
+      expect(payload).toContain('repoctopus.telemetry.receiver.events');
       expect(payload).toContain('repoctopus.validator');
       expect(payload).toContain('repoctopus.execution.check_epoch');
       expect(payload).toContain('repoctopus.execution.task.id');
       expect(payload).not.toContain(secret);
       expect(payload).not.toContain('C:\\secret');
+      const metricPayload = Buffer.concat(
+        requests.filter((request) => request.path === '/v1/metrics').map((request) => request.body),
+      ).toString('latin1');
+      expect(metricPayload).not.toContain('team-signoz');
+      expect(metricPayload).not.toContain('desktop-current-user');
       const traces = requests.filter((request) => request.path === '/v1/traces');
       expect(traces.length).toBeGreaterThan(0);
       const spans = traces.flatMap((request) => {
@@ -236,7 +349,7 @@ describe('managed execution OTLP protocol', () => {
       const runSpan = spans.find((span) => span.name === 'repoctopus.run');
       const validatorSpan = spans.find((span) => span.name === 'repoctopus.validator');
       expect(BigInt(runSpan!.endTimeUnixNano!) - BigInt(runSpan!.startTimeUnixNano!)).toBe(
-        15_000_000_000n,
+        21_000_000_000n,
       );
       expect(
         BigInt(validatorSpan!.endTimeUnixNano!) - BigInt(validatorSpan!.startTimeUnixNano!),
