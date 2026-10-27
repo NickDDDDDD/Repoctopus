@@ -20,7 +20,7 @@
 - [x] 2.2 引入由当前权威 Work/claim 构造的统一 Execution Context，让 context-delivered、Host、Skill、Tool、Outcome、Validator、Wait、Reconcile 和 Continuation 事件完整携带 phase、Work kind/id、attempt、checkEpoch 与可用的 Task identity；用乱序事件测试证明映射器无需相邻事件或最新 Run 补值。
       **Blocked by:** 2.1
       **Acceptance:** 所列执行事件携带同一权威 Execution Context，乱序映射不读取相邻事件或最新 Run 快照也能还原关联
-- [ ] 2.3 增加 Task started/completed/failed/reopened 及 revision 关联，把 Build、Verify fallback 和 Archive fallback 绑定到原 Task、Evidence 和新 Work；以多 Task、Verify→Build、Archive→Design fixture 验证进度和返工链可确定重建。
+- [x] 2.3 增加 Task started/completed/failed/reopened 及 revision 关联，把 Build、Verify fallback 和 Archive fallback 绑定到原 Task、Evidence 和新 Work；以多 Task、Verify→Build、Archive→Design fixture 验证进度和返工链可确定重建。
       **Blocked by:** 2.2
       **Acceptance:** 多 Task 与两类 fallback fixture 可从事件确定重建 Task revision、原 Evidence、新 Work 和返工链
 - [ ] 2.4 增加 Open、Design、adopt-existing 与 design-revision Human Decision 请求/结果边界，区分 human、retry、external-fact 等等待类别并记录真实等待时长；证明自由文本 reason、审批正文和 Actor 敏感身份不会进入 Metric。
