@@ -3,6 +3,9 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     environment: 'node',
+    env: {
+      REPOCTOPUS_DESKTOP_AUTOSTART: '0',
+    },
     include: ['test/**/*.test.ts'],
     // Many suites start Git, Node, and PowerShell subprocesses of their own.
     // Bound file-level workers so high-core Windows hosts do not oversubscribe

@@ -19,6 +19,7 @@
         "plugins/action/**",
         "plugins/application/**",
         "plugins/delivery/**",
+        "plugins/desktop/**",
         "plugins/evidence/**",
         "plugins/lifecycle/**",
         "plugins/project/**",
@@ -442,6 +443,22 @@
       "pattern": "method\\s*:\\s*['\"](?:POST|PATCH)['\"]",
       "allowed": ["platform/github/merge-request.ts"],
       "message": "Merge request creation and updates may only be executed by a protected Delivery Action adapter"
+    },
+    {
+      "id": "desktop-host-receiver-owner",
+      "targets": ["app/desktop/host/**"],
+      "pattern": "new\\s+DesktopOtlpHttpReceiver\\s*\\(",
+      "allowed": ["app/desktop/host/receiver-service.ts"],
+      "exactMatches": 1,
+      "message": "Desktop OTLP Receiver construction belongs only to the Desktop Receiver Service"
+    },
+    {
+      "id": "desktop-host-projection-owner",
+      "targets": ["app/desktop/host/**"],
+      "pattern": "createEmptyChangeProjection\\s*\\(",
+      "allowed": ["app/desktop/host/projection-service.ts"],
+      "exactMatches": 1,
+      "message": "Desktop projection state belongs only to the Desktop Projection Service"
     },
     {
       "id": "desktop-renderer-process-isolation",

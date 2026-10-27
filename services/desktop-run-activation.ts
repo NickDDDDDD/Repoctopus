@@ -8,7 +8,7 @@ import {
 export type DesktopReplayWake = (context: DesktopLaunchContext) => Promise<void>;
 
 export interface DesktopRunActivationResult {
-  status: 'ready' | 'warning' | 'unsupported';
+  status: 'disabled' | 'ready' | 'warning' | 'unsupported';
   diagnostics: RuntimeDiagnostic[];
 }
 

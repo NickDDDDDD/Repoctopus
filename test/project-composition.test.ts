@@ -16,7 +16,10 @@ describe('project composition assembly', () => {
     cleanup.push(workspaceRoot);
     await writeFile(
       path.join(workspaceRoot, 'repoctopus.yaml'),
-      await readFile(path.join(import.meta.dirname, 'fixtures', 'project-config', 'self-hosted-valid.yaml'), 'utf8'),
+      await readFile(
+        path.join(import.meta.dirname, 'fixtures', 'project-config', 'self-hosted-valid.yaml'),
+        'utf8',
+      ),
     );
     const config = await loadProjectConfig(workspaceRoot);
     const composition = compileProjectComposition(
@@ -26,7 +29,24 @@ describe('project composition assembly', () => {
       await createRepoctopusBuiltinCatalog(path.resolve(import.meta.dirname, '..')),
     );
     const ids = composition.entries.map((entry) => entry.id);
-    expect(ids).toEqual(expect.arrayContaining(['workflow-runs', 'delivery-file', 'specification-openspec', 'consistency-reconciler']));
-    expect(ids).not.toEqual(expect.arrayContaining(['http-host', 'platform-event-runner', 'runner-application', 'post-merge-coordinator']));
+    expect(ids).toEqual(
+      expect.arrayContaining([
+        'workflow-runs',
+        'delivery-file',
+        'specification-openspec',
+        'consistency-reconciler',
+        'desktop-destination-service',
+        'desktop-runtime-activation-service',
+        'desktop-run-contributor',
+      ]),
+    );
+    expect(ids).not.toEqual(
+      expect.arrayContaining([
+        'http-host',
+        'platform-event-runner',
+        'runner-application',
+        'post-merge-coordinator',
+      ]),
+    );
   });
 });

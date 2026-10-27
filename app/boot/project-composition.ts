@@ -98,6 +98,7 @@ function projectSelections(
     configuredSelection(specificationProvider.id, builtinConfig, teamPlugins),
   ];
   const selectedIds = new Set(selectedProviders.map((selection) => selection.id));
+  const desktopAutostartEnabled = process.env.REPOCTOPUS_DESKTOP_AUTOSTART !== '0';
 
   return [
     { id: 'command-router' },
@@ -157,6 +158,21 @@ function projectSelections(
     { id: 'action-work-contributors' },
     { id: 'workflow-source-file' },
     { id: 'workflow-telemetry-otel' },
+    { id: 'desktop-destination-service' },
+    runtimeSelection(
+      'desktop-runtime-activation-service',
+      {
+        enabled: desktopAutostartEnabled,
+        productRoot,
+        platform: process.platform,
+      },
+      {
+        enabled: desktopAutostartEnabled,
+        productRoot: PRODUCT_ROOT_IDENTITY,
+        platform: process.platform,
+      },
+    ),
+    { id: 'desktop-run-contributor' },
     { id: 'evidence-adapters' },
     { id: 'evidence-command-local' },
     runtimeSelection(
@@ -232,6 +248,8 @@ const BASE_REQUIRED_SERVICES = [
   'consistencyReview',
   'commandRouter',
   'delivery',
+  'desktopDestination',
+  'desktopRunActivation',
   'evidenceAdapters',
   'evidenceCoordinator',
   'lifecycleDefinitions',

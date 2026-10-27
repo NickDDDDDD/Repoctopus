@@ -1,7 +1,12 @@
-import type { Plugin } from '@deepseek-ai/cordis';
+import type { Context, Plugin } from '@deepseek-ai/cordis';
 
-const plugin = (() => undefined) as Plugin;
+const plugin = (async (context: Context) => {
+  await context.desktopReceiver.start();
+  return () => context.desktopReceiver.stop();
+}) as Plugin;
 
-Object.assign(plugin, { inject: ['desktopApplication'] });
+Object.assign(plugin, {
+  inject: ['desktopApplication', 'desktopProjection', 'desktopReceiver'],
+});
 
 export default plugin;

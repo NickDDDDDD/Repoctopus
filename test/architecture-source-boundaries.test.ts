@@ -151,9 +151,37 @@ describe('architecture source boundaries', () => {
           'app/desktop/renderer/src/rogue.tsx: desktop-renderer-process-isolation',
         ),
         expect.stringContaining('app/desktop/main/rogue.ts: desktop-shell-cordis-isolation'),
-        expect.stringContaining(
-          'app/desktop/main/rogue-boot.ts: desktop-shell-cordis-isolation',
-        ),
+        expect.stringContaining('app/desktop/main/rogue-boot.ts: desktop-shell-cordis-isolation'),
+      ]),
+    );
+  });
+
+  it('keeps Desktop Receiver and Projection construction inside their Host Services', async () => {
+    const canonical = await Promise.all(
+      ['app/desktop/host/receiver-service.ts', 'app/desktop/host/projection-service.ts'].map(
+        async (source) => ({
+          path: source,
+          contents: await readFile(path.join(root, source), 'utf8'),
+        }),
+      ),
+    );
+    const ownershipRules = rules('desktop-host-receiver-owner', 'desktop-host-projection-owner');
+
+    expect(evaluateSourceBoundaries(canonical, ownershipRules)).toEqual([]);
+    expect(
+      evaluateSourceBoundaries(
+        [
+          {
+            path: 'app/desktop/host/rogue-main.ts',
+            contents: 'new DesktopOtlpHttpReceiver(options); createEmptyChangeProjection();',
+          },
+        ],
+        ownershipRules,
+      ),
+    ).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining('desktop-host-receiver-owner'),
+        expect.stringContaining('desktop-host-projection-owner'),
       ]),
     );
   });

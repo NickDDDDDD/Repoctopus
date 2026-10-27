@@ -359,6 +359,12 @@ export class WorkflowRuns extends Service {
         verificationProfileId: input.verificationProfileId,
         specificationProvider: this.ctx.specification.identity(),
       };
+      const desktopActivation = await this.ctx.serial('repoctopus/desktop-before-change-run', {
+        schemaVersion: 1,
+        workspaceId,
+        changeId,
+        runId,
+      });
       const started = await this.coordinator.startOrResume({
         workflow: createChangeRunHostWorkflow(),
         projectSnapshot: input.projectSnapshot,
@@ -377,7 +383,11 @@ export class WorkflowRuns extends Service {
         await this.coordinator.bindSkill(runId, skill);
       }
       await this.ctx.workExecutionAuthority.recordWorkCreated(runId, lifecycle.currentWork);
-      return { ...started, value: await this.coordinator.status(runId) };
+      return {
+        ...started,
+        value: await this.coordinator.status(runId),
+        diagnostics: [...(desktopActivation?.diagnostics ?? []), ...started.diagnostics],
+      };
     });
   }
 

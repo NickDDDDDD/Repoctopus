@@ -58,6 +58,11 @@ import specificationContributor from './command/specification-contributor.js';
 import { OpenSpecProvider } from '../platform/specification/openspec-provider.js';
 import desktopApplication from './application/desktop-application.js';
 import { DesktopApplication } from '../services/desktop-application.js';
+import { DesktopProjection } from '../app/desktop/host/projection-service.js';
+import { DesktopReceiver } from '../app/desktop/host/receiver-service.js';
+import desktopRunContributor from './desktop/desktop-run-contributor.js';
+import { DesktopLocalDestination } from '../services/desktop-local-destination.js';
+import { DesktopRuntimeActivation } from '../services/desktop-runtime-activation.js';
 import { SpecificationPlanning } from '../services/specification-planning.js';
 import { ConsistencyReconciler } from '../services/consistency-reconciler.js';
 import consistencyContributor from './command/consistency-contributor.js';
@@ -115,6 +120,59 @@ const evidenceAdapterDefinitions: readonly EvidenceAdapterDefinition[] = [
 const definitions: readonly BuiltinDefinition[] = [
   {
     descriptor: {
+      id: 'desktop-destination-service',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['desktop-local-destination'],
+      permissions: [],
+      stateSchemas: { 'desktop-destination': '1' },
+    },
+    plugin: DesktopLocalDestination,
+    sourceFiles: ['services/desktop-local-destination.ts'],
+  },
+  {
+    descriptor: {
+      id: 'desktop-runtime-activation-service',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['desktop-process-activation'],
+      permissions: ['process'],
+      stateSchemas: {},
+    },
+    plugin: DesktopRuntimeActivation,
+    sourceFiles: [
+      'services/desktop-runtime-activation.ts',
+      'services/desktop-run-activation.ts',
+      'domains/desktop/launcher.ts',
+      'platform/desktop/windows-desktop-process-launcher.ts',
+    ],
+  },
+  {
+    descriptor: {
+      id: 'desktop-run-contributor',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'contributor',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: [],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: desktopRunContributor,
+    sourceFiles: ['plugins/desktop/desktop-run-contributor.ts'],
+  },
+  {
+    descriptor: {
       id: 'desktop-application-service',
       version: VERSION,
       contractVersion: PLUGIN_CONTRACT_VERSION,
@@ -128,6 +186,45 @@ const definitions: readonly BuiltinDefinition[] = [
     },
     plugin: DesktopApplication,
     sourceFiles: ['services/desktop-application.ts'],
+  },
+  {
+    descriptor: {
+      id: 'desktop-projection-service',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['desktop'],
+      authorities: ['desktop-projection-state'],
+      permissions: [],
+      stateSchemas: { 'desktop-projection': '1' },
+    },
+    plugin: DesktopProjection,
+    sourceFiles: [
+      'app/desktop/host/projection-service.ts',
+      'domains/telemetry/change-projection.ts',
+    ],
+  },
+  {
+    descriptor: {
+      id: 'desktop-receiver-service',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['desktop'],
+      authorities: ['desktop-otlp-receiver'],
+      permissions: ['network'],
+      stateSchemas: {},
+    },
+    plugin: DesktopReceiver,
+    sourceFiles: [
+      'app/desktop/host/receiver-service.ts',
+      'app/desktop/host/otlp-http-receiver.ts',
+      'app/desktop/host/otlp-json-projection.ts',
+    ],
   },
   {
     descriptor: {
