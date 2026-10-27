@@ -59,7 +59,7 @@
 - [x] 3.6 接入最小 Desktop Launcher，在 Windows 开发 Run 开始前启动或激活 Dashboard 并唤醒本地目的地重放；运行进程外纵切测试验证 Dashboard 启动失败只产生 warning，远端 mock 仍收到同一 envelope。
       **Blocked by:** 3.2, 3.5
       **Acceptance:** Windows 进程外测试覆盖启动与激活，桌面失败只产生 warning 且远端仍接收相同 envelope identity
-- [ ] 3.7 把 Runtime 侧 Desktop Launcher 与本地目的地作为内置 Service/Contributor 加入 builtin catalog 和 project composition，把 Receiver、Projection 与 Desktop Application Plugin 加入 Desktop Host composition；Electron Main 只使用显式 Shell owner 管理原生资源。运行零桌面、正常桌面、依赖缺失、Host 重启和插件卸载测试，证明没有旁路构造或第二套产品容器。
+- [x] 3.7 把 Runtime 侧 Desktop Launcher 与本地目的地作为内置 Service/Contributor 加入 builtin catalog 和 project composition，把 Receiver、Projection 与 Desktop Application Plugin 加入 Desktop Host composition；Electron Main 只使用显式 Shell owner 管理原生资源。运行零桌面、正常桌面、依赖缺失、Host 重启和插件卸载测试，证明没有旁路构造或第二套产品容器。
       **Blocked by:** 3.6
       **Acceptance:** composition 测试覆盖五种装配状态，所有能力来自已登记 Contributor 或 Application Plugin 且不存在第二套产品容器
 
