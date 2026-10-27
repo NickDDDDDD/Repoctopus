@@ -654,6 +654,7 @@ export class WorkflowRuns extends Service {
       });
     } catch (error) {
       assessment = {
+        observation: 'unavailable',
         status: 'blocked',
         reason: error instanceof Error ? error.message : `${approvalPhase} gate assessment failed`,
         evidenceDigests: [],
@@ -1090,6 +1091,18 @@ export class WorkflowRuns extends Service {
             return this.createDesignWork(current, signal);
           }
           if (lifecycle.phase === 'build' || lifecycle.phase === 'verify') {
+            if (assessment.observation === 'unavailable') {
+              return {
+                value: await this.coordinator.status(runId),
+                diagnostics: [
+                  {
+                    level: 'warning',
+                    code: 'change.planning-observation-unavailable',
+                    message: `${assessment.reason}; the approved planning state was preserved and may be retried`,
+                  },
+                ],
+              };
+            }
             const observedDigest =
               assessment.snapshot?.digest ??
               (`sha256:${createHash('sha256')
@@ -1289,6 +1302,7 @@ export class WorkflowRuns extends Service {
               }
             } catch (error) {
               assessment = {
+                observation: 'available',
                 status: 'blocked',
                 reason: error instanceof Error ? error.message : 'Build Task planning failed',
                 evidenceDigests: assessment.evidenceDigests,

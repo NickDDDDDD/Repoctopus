@@ -339,6 +339,30 @@ describe('managed Change execution production composition', () => {
         cwd: workspace,
       });
       await execFileAsync('git', ['push'], { cwd: workspace });
+
+      const buildBeforeUnavailableObservation = (await status()).changeLifecycle!;
+      const transientBuildFailure = vi
+        .spyOn(application.context.project, 'changeBranch')
+        .mockRejectedValueOnce(new Error('simulated transient Build remote lookup failure'))
+        .mockImplementation(originalChangeBranch);
+      const unavailableBuildObservation = await next();
+      transientBuildFailure.mockRestore();
+      expect(unavailableBuildObservation.value.changeLifecycle).toMatchObject({
+        phase: 'build',
+        status: 'running',
+        currentWork: null,
+        planningDigest: buildBeforeUnavailableObservation.planningDigest,
+        taskProgress: { completed: 1, currentTaskId: null },
+      });
+      expect(unavailableBuildObservation.value.changeLifecycle?.tasks).toEqual(
+        buildBeforeUnavailableObservation.tasks,
+      );
+      expect(unavailableBuildObservation.diagnostics).toContainEqual(
+        expect.objectContaining({
+          level: 'warning',
+          code: 'change.planning-observation-unavailable',
+        }),
+      );
       expect((await next()).value.changeLifecycle).toMatchObject({
         phase: 'build',
         taskProgress: { completed: 1, currentTaskId: '1.2' },

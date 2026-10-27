@@ -34,6 +34,7 @@ export interface PrepareSpecificationApprovalInput {
 }
 
 export interface DesignGateAssessment {
+  observation: 'available' | 'unavailable';
   status: 'blocked' | 'waiting' | 'approved';
   reason: string;
   evidenceDigests: `sha256:${string}`[];
@@ -80,6 +81,7 @@ export class SpecificationPlanning extends Service {
       collected = await this.collect(input);
     } catch (error) {
       return {
+        observation: 'unavailable',
         status: 'blocked',
         reason: error instanceof Error ? error.message : 'Specification planning assessment failed',
         evidenceDigests: [],
@@ -90,6 +92,7 @@ export class SpecificationPlanning extends Service {
     const evidenceDigests = [schema.digest, change.changeDigest, validation.validationDigest];
     if (!change.planningComplete) {
       return {
+        observation: 'available',
         status: 'blocked',
         reason: 'Specification planning is incomplete',
         evidenceDigests,
@@ -98,6 +101,7 @@ export class SpecificationPlanning extends Service {
     }
     if (!validation.strict || !validation.valid) {
       return {
+        observation: 'available',
         status: 'blocked',
         reason: 'Specification planning requires successful strict validation',
         evidenceDigests,
@@ -119,6 +123,7 @@ export class SpecificationPlanning extends Service {
       });
     } catch (error) {
       return {
+        observation: 'available',
         status: 'blocked',
         reason: error instanceof Error ? error.message : 'Specification planning manifest failed',
         evidenceDigests,
@@ -141,6 +146,7 @@ export class SpecificationPlanning extends Service {
       next.decision.snapshotDigest === snapshot.digest
     ) {
       return {
+        observation: 'available',
         status: 'approved',
         reason: 'Specification planning is strictly valid and has a trusted Human Decision',
         evidenceDigests: [...evidenceDigests, snapshot.digest, next.decision.approvalHash],
@@ -151,6 +157,7 @@ export class SpecificationPlanning extends Service {
     }
     if (next.status === 'changes_requested' || next.status === 'rejected') {
       return {
+        observation: 'available',
         status: 'blocked',
         reason:
           next.status === 'changes_requested'
@@ -163,6 +170,7 @@ export class SpecificationPlanning extends Service {
       };
     }
     return {
+      observation: 'available',
       status: 'waiting',
       reason: 'Specification planning is waiting for a trusted Human Decision',
       evidenceDigests: [...evidenceDigests, snapshot.digest],
