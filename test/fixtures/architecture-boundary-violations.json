@@ -45,6 +45,10 @@
     {
       "path": "app/desktop/main/rogue.ts",
       "contents": "import { Context } from '@deepseek-ai/cordis'; export const value = Context;"
+    },
+    {
+      "path": "app/desktop/main/rogue-boot.ts",
+      "contents": "import { bootDesktopComposition } from '../../boot/bootstrap.js'; export const value = bootDesktopComposition;"
     }
   ],
   "lifecyclePhaseOwner": [

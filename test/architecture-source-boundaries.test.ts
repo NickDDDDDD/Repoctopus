@@ -151,6 +151,9 @@ describe('architecture source boundaries', () => {
           'app/desktop/renderer/src/rogue.tsx: desktop-renderer-process-isolation',
         ),
         expect.stringContaining('app/desktop/main/rogue.ts: desktop-shell-cordis-isolation'),
+        expect.stringContaining(
+          'app/desktop/main/rogue-boot.ts: desktop-shell-cordis-isolation',
+        ),
       ]),
     );
   });

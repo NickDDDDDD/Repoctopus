@@ -446,9 +446,9 @@
     {
       "id": "desktop-shell-cordis-isolation",
       "targets": ["app/desktop/main/**", "app/desktop/preload/**"],
-      "pattern": "from\\s+['\"]@deepseek-ai/cordis(?:/|['\"])",
+      "pattern": "from\\s+['\"](?:@deepseek-ai/cordis(?:/[^'\"]*)?|[^'\"]*/boot/[^'\"]*)['\"]",
       "allowed": [],
-      "message": "Electron Shell and preload must not host or import the Cordis application runtime"
+      "message": "Electron Shell and preload must not host Cordis directly or through App Boot"
     },
     {
       "id": "single-change-lifecycle-transition-owner",
