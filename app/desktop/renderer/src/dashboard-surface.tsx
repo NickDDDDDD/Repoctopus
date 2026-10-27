@@ -247,6 +247,64 @@ export function DashboardSurface({
             </section>
           ) : null}
 
+          {model.evidenceAttempts.length > 0 ||
+          model.decisions.length > 0 ||
+          model.blocker ||
+          model.nextAction ? (
+            <section className="observed-facts" aria-labelledby="observed-facts-title">
+              <div className="section-heading">
+                <h2 id="observed-facts-title">Evidence &amp; decisions</h2>
+                <span>Allowlisted metadata only</span>
+              </div>
+              {model.blocker ? (
+                <p className="blocker-line">
+                  <strong>Blocker</strong> {model.blocker.kind} · {model.blocker.id}
+                </p>
+              ) : null}
+              {model.nextAction ? (
+                <p className="next-action-line">
+                  <strong>Next action</strong> {model.nextAction}
+                </p>
+              ) : null}
+              {model.decisions.length > 0 ? (
+                <ul className="decision-list" aria-label="Human decisions">
+                  {model.decisions.map((decision) => (
+                    <li key={decision.id}>
+                      <span>{decision.kind}</span>
+                      <strong>{decision.status}</strong>
+                      <small>{decision.id}</small>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+              {model.evidenceAttempts.map((attempt) => (
+                <article className="evidence-attempt" key={attempt.attemptId}>
+                  <div>
+                    <strong>{attempt.attemptId}</strong>
+                    <span>{attempt.status ?? 'active'}</span>
+                  </div>
+                  {attempt.gate ? (
+                    <p>
+                      Gate {attempt.gate.status} · {attempt.gate.outcome}
+                    </p>
+                  ) : null}
+                  <ul aria-label={`Artifacts for ${attempt.attemptId}`}>
+                    {attempt.artifacts.map((artifact) => (
+                      <li key={artifact.digest}>
+                        <span>{artifact.type}</span>
+                        <code>{artifact.digest}</code>
+                        <small>
+                          {artifact.mediaType} · {artifact.size} bytes ·
+                          {artifact.redacted ? ' redacted' : ' metadata only'}
+                        </small>
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              ))}
+            </section>
+          ) : null}
+
           <div className="guidance">
             <span aria-hidden="true">i</span>
             <p>{model.guidance}</p>

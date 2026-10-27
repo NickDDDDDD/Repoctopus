@@ -73,6 +73,26 @@ export interface DashboardModel {
   phases: readonly DashboardPhaseModel[];
   currentWork: DashboardWorkModel | null;
   executionHistory: readonly DashboardWorkModel[];
+  evidenceAttempts: readonly {
+    attemptId: string;
+    status: string | null;
+    gate: { bundleId: string | null; status: string; outcome: string } | null;
+    artifacts: readonly {
+      digest: string;
+      type: string;
+      size: number;
+      mediaType: string;
+      redacted: boolean;
+    }[];
+  }[];
+  decisions: readonly {
+    id: string;
+    kind: string;
+    status: 'requested' | 'resolved';
+    result: string | null;
+  }[];
+  blocker: { id: string; kind: string } | null;
+  nextAction: string | null;
   guidance: string;
   busy: boolean;
   recoverable: boolean;
@@ -120,6 +140,10 @@ function shellModel(
     phases: emptyDashboardPhases(),
     currentWork: null,
     executionHistory: [],
+    evidenceAttempts: [],
+    decisions: [],
+    blocker: null,
+    nextAction: null,
   };
 }
 
@@ -297,13 +321,15 @@ export function dashboardModelFromShell(
         ? 'failed'
         : run.status === 'completed'
           ? 'completed'
-          : phases.some((phase) => phase.status === 'rework')
-            ? 'rework'
-            : phases.some((phase) => phase.status === 'blocked')
-              ? 'blocked'
-              : run.currentPhase === null
-                ? 'sparse'
-                : 'live';
+          : run.blocker?.kind === 'human-decision'
+            ? 'waiting-human'
+            : phases.some((phase) => phase.status === 'rework')
+              ? 'rework'
+              : phases.some((phase) => phase.status === 'blocked')
+                ? 'blocked'
+                : run.currentPhase === null
+                  ? 'sparse'
+                  : 'live';
   const copy = stateCopy(state);
 
   const workModel = (work: (typeof run.works)[number]): DashboardWorkModel => ({
@@ -345,5 +371,19 @@ export function dashboardModelFromShell(
           left.id.localeCompare(right.id),
       )
       .map(workModel),
+    evidenceAttempts: run.evidenceAttempts.map((attempt) => ({
+      attemptId: attempt.attemptId,
+      status: attempt.status,
+      gate: attempt.gate ? { ...attempt.gate } : null,
+      artifacts: attempt.artifacts.map((artifact) => ({ ...artifact })),
+    })),
+    decisions: run.decisions.map((decision) => ({
+      id: decision.id,
+      kind: decision.kind,
+      status: decision.status,
+      result: decision.result,
+    })),
+    blocker: run.blocker ? { ...run.blocker } : null,
+    nextAction: run.nextAction,
   };
 }

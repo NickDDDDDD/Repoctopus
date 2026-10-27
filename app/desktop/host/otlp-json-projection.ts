@@ -54,6 +54,14 @@ function integer(
   return typeof value === 'number' && Number.isSafeInteger(value) ? value : null;
 }
 
+function boolean(
+  source: Readonly<Record<string, string | number | boolean>>,
+  key: string,
+): boolean | null {
+  const value = source[key];
+  return typeof value === 'boolean' ? value : null;
+}
+
 function observedAt(record: JsonObject): string | null {
   if (typeof record.timeUnixNano !== 'string' || !/^\d+$/u.test(record.timeUnixNano)) return null;
   const milliseconds = Number(BigInt(record.timeUnixNano) / 1_000_000n);
@@ -155,8 +163,13 @@ export function decodeOtlpJsonProjectionObservations(
         if (!logRecord) continue;
         const recordAttributes = attributes(logRecord.attributes);
         const bodyEventName = bodyName(logRecord);
-        const eventId = text(recordAttributes, 'repoctopus.event.id');
-        const sequence = integer(recordAttributes, 'repoctopus.event.sequence');
+        const evidenceEvent = bodyEventName?.startsWith('evidence.') ?? false;
+        const eventId =
+          text(recordAttributes, 'repoctopus.event.id') ??
+          text(recordAttributes, 'repoctopus.evidence.event.id');
+        const sequence =
+          integer(recordAttributes, 'repoctopus.event.sequence') ??
+          integer(recordAttributes, 'repoctopus.evidence.event.sequence');
         const changeId = text(recordAttributes, 'repoctopus.change.id');
         const runId = text(recordAttributes, 'repoctopus.run.id');
         const timestamp = observedAt(logRecord);
@@ -202,6 +215,20 @@ export function decodeOtlpJsonProjectionObservations(
           executionStatus(eventName, 'work.host-', result) ??
           executionStatus(eventName, 'host.', result);
         const validatorStatus = executionStatus(eventName, 'validator.', result);
+        const attemptId = text(recordAttributes, 'repoctopus.evidence.attempt.id');
+        const artifactDigest = text(recordAttributes, 'repoctopus.evidence.artifact_digest');
+        const artifactType = text(recordAttributes, 'repoctopus.evidence.artifact_type');
+        const artifactSize = integer(recordAttributes, 'repoctopus.evidence.artifact_size');
+        const artifactMediaType = text(recordAttributes, 'repoctopus.evidence.media_type');
+        const artifactRedacted = boolean(recordAttributes, 'repoctopus.evidence.redacted');
+        const gateStatus = text(recordAttributes, 'repoctopus.evidence.gate_status');
+        const gateOutcome = text(recordAttributes, 'repoctopus.evidence.outcome');
+        const bundleId = text(recordAttributes, 'repoctopus.evidence.bundle_id');
+        const evidenceStatus = text(recordAttributes, 'repoctopus.evidence.status');
+        const decisionId = text(recordAttributes, 'repoctopus.decision.id');
+        const decisionKind = text(recordAttributes, 'repoctopus.decision.kind');
+        const blockerId = text(recordAttributes, 'repoctopus.blocker.id');
+        const blockerKind = text(recordAttributes, 'repoctopus.blocker.kind');
         observations.push({
           schemaVersion: 1,
           sequence,
@@ -228,6 +255,43 @@ export function decodeOtlpJsonProjectionObservations(
             (normalizedLifecycleEvent === 'change.phase.reopened' ? previousPhase : null),
           previousPhase,
           lifecycleStatus: lifecycleRunStatus,
+          sequenceScope: evidenceEvent && attemptId ? `evidence:${attemptId}` : `workflow:${runId}`,
+          affectsFreshness: !evidenceEvent,
+          evidence:
+            evidenceEvent && attemptId
+              ? {
+                  attemptId,
+                  status: evidenceStatus,
+                  gate:
+                    gateStatus && gateOutcome
+                      ? { bundleId, status: gateStatus, outcome: gateOutcome }
+                      : null,
+                  artifact:
+                    artifactDigest &&
+                    artifactType &&
+                    artifactSize !== null &&
+                    artifactMediaType &&
+                    artifactRedacted !== null
+                      ? {
+                          digest: artifactDigest,
+                          type: artifactType,
+                          size: artifactSize,
+                          mediaType: artifactMediaType,
+                          redacted: artifactRedacted,
+                        }
+                      : null,
+                }
+              : null,
+          decision:
+            decisionId && decisionKind && eventName.startsWith('decision.')
+              ? {
+                  id: decisionId,
+                  kind: decisionKind,
+                  status: eventName === 'decision.requested' ? 'requested' : 'resolved',
+                  result,
+                }
+              : null,
+          blocker: blockerId && blockerKind ? { id: blockerId, kind: blockerKind } : null,
           result,
         });
       }

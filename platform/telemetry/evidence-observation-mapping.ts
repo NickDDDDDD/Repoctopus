@@ -57,10 +57,7 @@ function traceId(batch: EvidenceTelemetryBatch): string {
 }
 
 function operationId(event: EvidenceTelemetryEvent): string {
-  if (
-    event.type === 'evidence.attempt.started' ||
-    event.type === 'evidence.attempt.completed'
-  ) {
+  if (event.type === 'evidence.attempt.started' || event.type === 'evidence.attempt.completed') {
     return event.attemptId;
   }
   if (event.type === 'evidence.node.completed' && typeof event.data.receiptId === 'string') {
@@ -83,7 +80,9 @@ const METRIC_SOURCES: Readonly<Record<string, string>> = {
   'evidence.gate': 'gateStatus',
 };
 
-function metricAttributes(event: EvidenceTelemetryEvent): Record<string, string | number | boolean> {
+function metricAttributes(
+  event: EvidenceTelemetryEvent,
+): Record<string, string | number | boolean> {
   const schema = observationEventSchema(event.type);
   const result: Record<string, string | number | boolean> = {};
   for (const [dimension, allowed] of Object.entries(schema.metric.dimensions)) {
@@ -106,8 +105,7 @@ function metricAttributes(event: EvidenceTelemetryEvent): Record<string, string 
 
 function metricValue(event: EvidenceTelemetryEvent): number {
   if (
-    (event.type === 'evidence.node.completed' ||
-      event.type === 'evidence.attempt.completed') &&
+    (event.type === 'evidence.node.completed' || event.type === 'evidence.attempt.completed') &&
     typeof event.data.durationMs === 'number'
   ) {
     return Math.max(0, event.data.durationMs);
@@ -130,9 +128,11 @@ function mapEvent(
     correlation: {
       traceId: traceId(batch),
       spanId: spanId(batch, event),
-      ...(['evidence.attempt.started', 'evidence.attempt.completed', 'evidence.node.completed'].includes(
-        event.type,
-      )
+      ...([
+        'evidence.attempt.started',
+        'evidence.attempt.completed',
+        'evidence.node.completed',
+      ].includes(event.type)
         ? { operationId: operationId(event) }
         : {}),
     },
@@ -140,6 +140,7 @@ function mapEvent(
       'service.name': 'repoctopus-evidence',
       'service.version': '0.1.0',
       'repoctopus.composition.digest': batch.compositionDigest,
+      ...(batch.workspaceId ? { 'repoctopus.workspace.id': batch.workspaceId } : {}),
     },
     recordAttributes: attributes,
     metric: {

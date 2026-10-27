@@ -61,6 +61,27 @@ export interface ChangeProjectionObservation {
     | 'failed'
     | 'migration_required'
     | null;
+  sequenceScope?: string;
+  affectsFreshness?: boolean;
+  evidence?: {
+    attemptId: string;
+    status: string | null;
+    gate: { bundleId: string | null; status: string; outcome: string } | null;
+    artifact: {
+      digest: string;
+      type: string;
+      size: number;
+      mediaType: string;
+      redacted: boolean;
+    } | null;
+  } | null;
+  decision?: {
+    id: string;
+    kind: string;
+    status: 'requested' | 'resolved';
+    result: string | null;
+  } | null;
+  blocker?: { id: string; kind: string } | null;
   result: string | null;
 }
 
@@ -123,6 +144,26 @@ export interface ChangeProjectionRun {
   phases: readonly ChangeProjectionPhase[];
   currentWork: ChangeProjectionWork | null;
   works: readonly ChangeProjectionWork[];
+  evidenceAttempts: readonly {
+    attemptId: string;
+    status: string | null;
+    gate: { bundleId: string | null; status: string; outcome: string } | null;
+    artifacts: readonly {
+      digest: string;
+      type: string;
+      size: number;
+      mediaType: string;
+      redacted: boolean;
+    }[];
+    latestObservedAt: string;
+  }[];
+  decisions: readonly (NonNullable<ChangeProjectionObservation['decision']> & {
+    lastSequence: number;
+  })[];
+  blocker: ChangeProjectionObservation['blocker'];
+  blockerSequence: number;
+  nextAction: ChangeProjectionContinuation | null;
+  nextActionSequence: number;
 }
 
 export interface ChangeProjectionChange {
@@ -149,6 +190,8 @@ export interface ChangeProjectionSnapshot {
     eventId: string;
     digest: string;
     sequence: number;
+    sequenceScope: string;
+    affectsFreshness: boolean;
     observedAt: string;
   }[];
   changes: readonly ChangeProjectionChange[];
@@ -223,6 +266,15 @@ function assertObservation(observation: ChangeProjectionObservation): void {
   }
   if (observation.host) assertIdentity(observation.host.id, 'Host id');
   if (observation.validator) assertIdentity(observation.validator.id, 'Validator id');
+  if (observation.evidence) assertIdentity(observation.evidence.attemptId, 'Evidence attempt id');
+  if (observation.decision) {
+    assertIdentity(observation.decision.id, 'Decision id');
+    assertIdentity(observation.decision.kind, 'Decision kind');
+  }
+  if (observation.blocker) {
+    assertIdentity(observation.blocker.id, 'Blocker id');
+    assertIdentity(observation.blocker.kind, 'Blocker kind');
+  }
   if (
     observation.recoverySourcePhase !== null &&
     !OBSERVATION_PHASES.includes(observation.recoverySourcePhase)
@@ -300,6 +352,13 @@ function cloneSnapshot(snapshot: ChangeProjectionSnapshot): ChangeProjectionSnap
         })),
         currentWork: run.currentWork ? cloneWork(run.currentWork) : null,
         works: run.works.map(cloneWork),
+        evidenceAttempts: run.evidenceAttempts.map((attempt) => ({
+          ...attempt,
+          gate: attempt.gate ? { ...attempt.gate } : null,
+          artifacts: attempt.artifacts.map((artifact) => ({ ...artifact })),
+        })),
+        decisions: run.decisions.map((decision) => ({ ...decision })),
+        blocker: run.blocker ? { ...run.blocker } : null,
       })),
     })),
   };
@@ -340,12 +399,17 @@ function workStatus(observation: ChangeProjectionObservation): ChangeProjectionW
 }
 
 function recalculateFreshness(snapshot: ChangeProjectionSnapshot): void {
-  const head = snapshot.events.at(-1);
+  const freshnessEvents = snapshot.events.filter((event) => event.affectsFreshness);
+  const head = freshnessEvents.at(-1);
   if (!head) {
     snapshot.freshness = createEmptyChangeProjection().freshness;
     return;
   }
-  const seen = new Set(snapshot.events.map((event) => event.sequence));
+  const seen = new Set(
+    freshnessEvents
+      .filter((event) => event.sequenceScope === head.sequenceScope)
+      .map((event) => event.sequence),
+  );
   const missingSequences: number[] = [];
   for (let sequence = 1; sequence < head.sequence; sequence += 1) {
     if (!seen.has(sequence)) missingSequences.push(sequence);
@@ -401,6 +465,8 @@ export function reduceChangeProjection(
 ): ChangeProjectionReduction {
   assertObservation(observation);
   const digest = observationDigest(observation);
+  const sequenceScope = observation.sequenceScope ?? `workflow:${observation.runId}`;
+  const affectsFreshness = observation.affectsFreshness ?? true;
   const existing = previous.events.find((event) => event.eventId === observation.eventId);
   if (existing) {
     if (existing.digest !== digest) {
@@ -408,7 +474,9 @@ export function reduceChangeProjection(
     }
     return { snapshot: previous, delta: null };
   }
-  const sequenceOwner = previous.events.find((event) => event.sequence === observation.sequence);
+  const sequenceOwner = previous.events.find(
+    (event) => event.sequenceScope === sequenceScope && event.sequence === observation.sequence,
+  );
   if (sequenceOwner) {
     throw new Error(
       `Projection sequence collision between ${sequenceOwner.eventId} and ${observation.eventId}`,
@@ -422,6 +490,8 @@ export function reduceChangeProjection(
       eventId: observation.eventId,
       digest,
       sequence: observation.sequence,
+      sequenceScope,
+      affectsFreshness,
       observedAt: new Date(observation.observedAt).toISOString(),
     },
   ].sort(
@@ -460,6 +530,12 @@ export function reduceChangeProjection(
       phases: emptyPhases(),
       currentWork: null,
       works: [],
+      evidenceAttempts: [],
+      decisions: [],
+      blocker: null,
+      blockerSequence: 0,
+      nextAction: null,
+      nextActionSequence: 0,
     };
     change.runs = [...change.runs, run];
   }
@@ -679,6 +755,73 @@ export function reduceChangeProjection(
     run.works = [...run.works].sort(
       (left, right) => left.id.localeCompare(right.id) || left.attempt - right.attempt,
     );
+  }
+
+  if (observation.evidence) {
+    let attempt = run.evidenceAttempts.find(
+      (candidate) => candidate.attemptId === observation.evidence!.attemptId,
+    );
+    if (!attempt) {
+      attempt = {
+        attemptId: observation.evidence.attemptId,
+        status: null,
+        gate: null,
+        artifacts: [],
+        latestObservedAt: observation.observedAt,
+      };
+      run.evidenceAttempts = [...run.evidenceAttempts, attempt];
+    }
+    if (observation.evidence.status) attempt.status = observation.evidence.status;
+    if (observation.evidence.gate) attempt.gate = { ...observation.evidence.gate };
+    if (
+      observation.evidence.artifact &&
+      !attempt.artifacts.some(
+        (artifact) => artifact.digest === observation.evidence!.artifact!.digest,
+      )
+    ) {
+      attempt.artifacts = [...attempt.artifacts, { ...observation.evidence.artifact }].sort(
+        (left, right) => left.digest.localeCompare(right.digest),
+      );
+    }
+    if (observation.observedAt > attempt.latestObservedAt) {
+      attempt.latestObservedAt = observation.observedAt;
+    }
+    run.evidenceAttempts = [...run.evidenceAttempts].sort((left, right) =>
+      left.attemptId.localeCompare(right.attemptId),
+    );
+  }
+
+  if (observation.decision) {
+    const existingDecision = run.decisions.find(
+      (candidate) => candidate.id === observation.decision!.id,
+    );
+    if (!existingDecision)
+      run.decisions = [
+        ...run.decisions,
+        { ...observation.decision, lastSequence: observation.sequence },
+      ];
+    else if (observation.sequence >= existingDecision.lastSequence) {
+      existingDecision.status = observation.decision.status;
+      existingDecision.result = observation.decision.result;
+      existingDecision.lastSequence = observation.sequence;
+    }
+    run.decisions = [...run.decisions].sort((left, right) => left.id.localeCompare(right.id));
+  }
+  if (observation.blocker && observation.sequence >= run.blockerSequence) {
+    run.blocker = { ...observation.blocker };
+    run.blockerSequence = observation.sequence;
+  }
+  if (
+    observation.decision?.status === 'resolved' &&
+    run.blocker?.id === observation.decision.id &&
+    observation.sequence >= run.blockerSequence
+  ) {
+    run.blocker = null;
+    run.blockerSequence = observation.sequence;
+  }
+  if (observation.continuation && observation.sequence >= run.nextActionSequence) {
+    run.nextAction = observation.continuation;
+    run.nextActionSequence = observation.sequence;
   }
 
   if (observation.sequence >= change.latestSequence) {

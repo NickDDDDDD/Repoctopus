@@ -8,6 +8,8 @@ function batch(): EvidenceTelemetryBatch {
   return {
     schemaVersion: 1,
     runId: 'run-evidence-envelope',
+    workspaceId: 'workspace-evidence',
+    changeId: 'change-evidence',
     attemptId: 'attempt-2',
     profileId: 'verify',
     compositionDigest: `sha256:${'a'.repeat(64)}`,
@@ -87,6 +89,12 @@ describe('Evidence observation envelope mapping', () => {
     const envelopes = mapEvidenceObservationEnvelopes(batch());
     expect(envelopes).toHaveLength(5);
     expect(new Set(envelopes.map((envelope) => envelope.envelopeId)).size).toBe(5);
+    expect(envelopes[0]?.resource.attributes).toMatchObject({
+      'repoctopus.workspace.id': 'workspace-evidence',
+    });
+    expect(envelopes[0]?.records[0]?.attributes).toMatchObject({
+      'repoctopus.change.id': 'change-evidence',
+    });
 
     const remote = encodeObservationEnvelopes(envelopes);
     const desktop = encodeObservationEnvelopes(envelopes);
@@ -98,13 +106,17 @@ describe('Evidence observation envelope mapping', () => {
         'repoctopus.evidence.freshness': 'reused',
       },
     });
-    expect(remote.logs.find((log) => log.eventName === 'evidence.artifact.recorded')).toMatchObject({
-      attributes: {
-        'repoctopus.evidence.artifact_digest': 'b'.repeat(64),
-        'repoctopus.evidence.redacted': true,
+    expect(remote.logs.find((log) => log.eventName === 'evidence.artifact.recorded')).toMatchObject(
+      {
+        attributes: {
+          'repoctopus.evidence.artifact_digest': 'b'.repeat(64),
+          'repoctopus.evidence.redacted': true,
+        },
       },
-    });
-    expect(remote.metrics.find((metric) => metric.name === 'repoctopus.evidence.node.duration')).toMatchObject({
+    );
+    expect(
+      remote.metrics.find((metric) => metric.name === 'repoctopus.evidence.node.duration'),
+    ).toMatchObject({
       value: 3_000,
       attributes: {
         'repoctopus.evidence.result': 'passed',

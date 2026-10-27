@@ -51,6 +51,8 @@ export function safeEvidenceAttributes(
     'repoctopus.evidence.profile.id': batch.profileId,
     'repoctopus.composition.digest': batch.compositionDigest,
     ...(batch.runId ? { 'repoctopus.run.id': batch.runId } : {}),
+    ...(batch.workspaceId ? { 'repoctopus.workspace.id': batch.workspaceId } : {}),
+    ...(batch.changeId ? { 'repoctopus.change.id': batch.changeId } : {}),
   };
   for (const [key, value] of Object.entries(event.data)) {
     if (!ALLOWED_DATA.has(key)) continue;

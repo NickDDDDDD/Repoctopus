@@ -45,6 +45,8 @@ import { bindOperationOwnership, type OperationOwnership } from './operation-own
 
 interface WorkflowEvidenceBinding {
   workflowRunId: string;
+  workspaceId?: string;
+  changeId?: string;
   workflowActionId: string;
   workflowStepId: string;
   workflowStateVersion?: number;
@@ -301,6 +303,8 @@ export class EvidenceCoordinator extends Service {
       }
       return {
         workflowRunId,
+        workspaceId: lifecycle.identity.workspaceId,
+        changeId: lifecycle.identity.changeId,
         workflowActionId: work.workId,
         workflowStepId: 'verify',
         checkEpoch: lifecycle.checkEpoch,
@@ -458,6 +462,12 @@ export class EvidenceCoordinator extends Service {
     await this.telemetryOutbox.save(
       createEvidenceTelemetryBatch({
         workflowRunId: context.workflowBinding?.workflowRunId ?? null,
+        ...(context.workflowBinding?.workspaceId
+          ? { workspaceId: context.workflowBinding.workspaceId }
+          : {}),
+        ...(context.workflowBinding?.changeId
+          ? { changeId: context.workflowBinding.changeId }
+          : {}),
         result,
         gate,
       }),
@@ -643,6 +653,12 @@ export class EvidenceCoordinator extends Service {
           await this.telemetryOutbox.save(
             createEvidenceTelemetryBatch({
               workflowRunId: context.workflowBinding?.workflowRunId ?? null,
+              ...(context.workflowBinding?.workspaceId
+                ? { workspaceId: context.workflowBinding.workspaceId }
+                : {}),
+              ...(context.workflowBinding?.changeId
+                ? { changeId: context.workflowBinding.changeId }
+                : {}),
               result,
               gate: projectEvidenceGate(recovered.bundle, context.workflowBinding),
             }),

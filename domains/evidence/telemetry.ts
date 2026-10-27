@@ -24,6 +24,8 @@ export interface EvidenceTelemetryEvent {
 export interface EvidenceTelemetryBatch {
   schemaVersion: 1;
   runId: string | null;
+  workspaceId?: string;
+  changeId?: string;
   attemptId: string;
   profileId: string;
   compositionDigest: string;
@@ -40,6 +42,8 @@ function eventId(attemptId: string, type: EvidenceTelemetryEventType, identity: 
 
 export function createEvidenceTelemetryBatch(input: {
   workflowRunId: string | null;
+  workspaceId?: string;
+  changeId?: string;
   result: EvidenceRunResult;
   gate: EvidenceGateProjection;
 }): EvidenceTelemetryBatch {
@@ -130,6 +134,8 @@ export function createEvidenceTelemetryBatch(input: {
   return {
     schemaVersion: 1,
     runId: input.workflowRunId,
+    ...(input.workspaceId ? { workspaceId: input.workspaceId } : {}),
+    ...(input.changeId ? { changeId: input.changeId } : {}),
     attemptId: attempt.attemptId,
     profileId: attempt.profileId,
     compositionDigest: attempt.compositionDigest,

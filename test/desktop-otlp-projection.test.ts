@@ -65,6 +65,8 @@ describe('Desktop OTLP JSON projection decoder', () => {
       {
         schemaVersion: 1,
         sequence: 12,
+        sequenceScope: 'workflow:run-a',
+        affectsFreshness: true,
         eventId: 'event-skill',
         eventName: 'skill.delivered',
         observedAt: '2026-10-27T06:00:00.000Z',
@@ -82,6 +84,9 @@ describe('Desktop OTLP JSON projection decoder', () => {
         recoverySourcePhase: null,
         previousPhase: null,
         lifecycleStatus: null,
+        evidence: null,
+        decision: null,
+        blocker: null,
         result: 'accepted',
       },
     ]);
