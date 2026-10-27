@@ -81,6 +81,7 @@ node bin/repoctopus.js change reconcile --workspace . --change <change-id> --jso
 - [Evidence](docs/evidence.md)
 - [Specification Provider](docs/specification.md)
 - [OpenTelemetry 与本地 Desktop](docs/telemetry.md)
+- [Desktop Dashboard 状态与故障诊断](docs/desktop-dashboard.md)
 - [交付治理与失败恢复](docs/delivery.md)
 - [Human Decision 协议](docs/human-decision.md)
 - [第三方来源与采用报告](third_party/comet/adoption-report.md)

@@ -19,6 +19,8 @@ export type DashboardSemanticState =
   | 'completed'
   | 'failed';
 export type DashboardTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger';
+export type DashboardDataState = 'live' | 'catching-up' | 'stale' | 'unknown' | 'gap';
+export const DASHBOARD_STALE_AFTER_MS = 5 * 60 * 1000;
 export type DashboardPhaseStatus =
   | 'not-started'
   | 'running'
@@ -129,6 +131,29 @@ export interface DashboardModel {
   recoverable: boolean;
 }
 
+export interface DashboardDataStateInput {
+  freshnessStatus: 'fresh' | 'gap' | 'empty';
+  desktopBacklogCount: number;
+  currentPhase: DashboardPhase | null;
+  lastObservedAt: string | null;
+  nowMs: number;
+}
+
+export function classifyDashboardDataState(input: DashboardDataStateInput): DashboardDataState {
+  if (input.freshnessStatus === 'gap') return 'gap';
+  if (
+    input.freshnessStatus === 'empty' ||
+    input.currentPhase === null ||
+    input.lastObservedAt === null
+  )
+    return 'unknown';
+  if (input.desktopBacklogCount > 0) return 'catching-up';
+  const observedAtMs = Date.parse(input.lastObservedAt);
+  if (!Number.isFinite(observedAtMs)) return 'unknown';
+  if (input.nowMs - observedAtMs >= DASHBOARD_STALE_AFTER_MS) return 'stale';
+  return 'live';
+}
+
 const PHASE_LABELS: Record<DashboardPhase, string> = {
   open: 'Open',
   design: 'Design',
@@ -222,6 +247,26 @@ function stateCopy(
         busy: true,
         recoverable: false,
       };
+    case 'catching-up':
+      return {
+        tone: 'info',
+        statusLabel: '正在追平',
+        title: '正在重放本地遥测队列',
+        description: 'Desktop Receiver 已恢复，保留期内的历史事件正在按序投影。',
+        guidance: '等待 backlog 归零；追平期间不会把视图标记为实时。',
+        busy: true,
+        recoverable: false,
+      };
+    case 'stale':
+      return {
+        tone: 'warning',
+        statusLabel: '数据过期',
+        title: '最近一次观测已超过新鲜度阈值',
+        description: 'Run 可能仍在执行，但 Desktop 尚未收到后续事件。',
+        guidance: '检查 producer、Desktop Host 和目的地投递健康；不要据此推断 Run 已停止。',
+        busy: false,
+        recoverable: false,
+      };
     case 'gap':
       return {
         tone: 'warning',
@@ -239,6 +284,16 @@ function stateCopy(
         title: '当前阶段无法继续',
         description: 'Runtime 已验证当前 outcome 不满足推进条件。',
         guidance: '查看当前 work 与 skill，解决阻塞原因后由 Runtime 重新选择 action。',
+        busy: false,
+        recoverable: false,
+      };
+    case 'waiting-human':
+      return {
+        tone: 'warning',
+        statusLabel: '等待人工',
+        title: 'Runtime 正在等待 Human Decision',
+        description: '当前 phase 已停止自动推进，等待明确的人类决定。',
+        guidance: '在原工作入口处理决定；Dashboard 仅显示状态，不代替审批入口。',
         busy: false,
         recoverable: false,
       };
@@ -288,6 +343,7 @@ function stateCopy(
 export function dashboardModelFromShell(
   shell: DesktopShellState,
   selection: DashboardSelection | null = null,
+  options: { nowMs?: number } = {},
 ): DashboardModel {
   if (shell.phase === 'starting') return STARTING_MODEL;
   if (shell.phase === 'error') {
@@ -348,8 +404,18 @@ export function dashboardModelFromShell(
           recoverySourcePhase: entry.recoverySourcePhase,
         })) ?? [],
   }));
+  const desktopBacklogCount =
+    run.telemetryDestinations.find((destination) => destination.kind === 'desktop')?.backlogCount ??
+    0;
+  const dataState = classifyDashboardDataState({
+    freshnessStatus: shell.projection.freshness.status,
+    desktopBacklogCount,
+    currentPhase: run.currentPhase,
+    lastObservedAt: run.latestObservedAt,
+    nowMs: options.nowMs ?? Date.parse(run.latestObservedAt),
+  });
   const state: DashboardSemanticState =
-    shell.projection.freshness.status === 'gap'
+    dataState === 'gap'
       ? 'gap'
       : run.status === 'failed'
         ? 'failed'
@@ -361,14 +427,13 @@ export function dashboardModelFromShell(
               ? 'rework'
               : phases.some((phase) => phase.status === 'blocked')
                 ? 'blocked'
-                : run.telemetryDestinations.some(
-                      (destination) =>
-                        destination.kind === 'desktop' && destination.backlogCount > 0,
-                    )
+                : dataState === 'catching-up'
                   ? 'catching-up'
-                  : run.currentPhase === null
-                    ? 'sparse'
-                    : 'live';
+                  : dataState === 'stale'
+                    ? 'stale'
+                    : dataState === 'unknown'
+                      ? 'sparse'
+                      : 'live';
   const copy = stateCopy(state);
 
   const workModel = (work: (typeof run.works)[number]): DashboardWorkModel => ({
@@ -396,13 +461,15 @@ export function dashboardModelFromShell(
     runId: run.runId,
     workflowName: run.workflowName,
     freshnessLabel:
-      shell.projection.freshness.status === 'gap'
+      dataState === 'gap'
         ? `缺少 ${shell.projection.freshness.missingSequences.length} 个事件`
-        : run.telemetryDestinations.some(
-              (destination) => destination.kind === 'desktop' && destination.backlogCount > 0,
-            )
-          ? `正在重放 ${run.telemetryDestinations.find((destination) => destination.kind === 'desktop')!.backlogCount} 个事件`
-          : 'OTLP 已同步',
+        : dataState === 'catching-up'
+          ? `正在重放 ${desktopBacklogCount} 个事件`
+          : dataState === 'stale'
+            ? '最近观测已过期'
+            : dataState === 'unknown'
+              ? '新鲜度未知'
+              : 'OTLP 已同步',
     lastObservedAt: run.latestObservedAt,
     phases,
     currentWork: run.currentWork ? workModel(run.currentWork) : null,

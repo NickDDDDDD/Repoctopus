@@ -119,4 +119,6 @@ OTel 属性只允许稳定 ID、Adapter、状态、可信等级、耗时，以�
 
 Change lifecycle 映射只读取 accepted transition fact 中的枚举、稳定 ID 和摘要；自由文本 wait reason 只映射为有界 category。格式异常、疑似 Token、绝对路径、换行和超长值都会被拒绝。Action summary、规格正文、MR body、commit message、仓库 URL、文件列表和平台响应正文不进入关联属性。
 
-本地 Desktop 与远端 SigNoz 消费同一套 OTLP 事件和属性；Desktop Receiver 不扫描 `.repoctopus/` 或轮询 CLI，因此两个显示端不会因各自推断状态而分叉。Desktop 只负责当前 change 的低延迟视图，SigNoz 负责团队历史、趋势和流程改进。
+本地 Desktop 与远端 SigNoZ 消费同一套 OTLP 事件和属性；Desktop Receiver 不扫描 `.repoctopus/` 或轮询 CLI，因此两个显示端不会因各自推断状态而分叉。Desktop 只负责当前 change 的低延迟视图，SigNoZ 负责团队历史、趋势和流程改进。
+
+桌面端五种数据状态、Skill consumption 证据边界、四类健康信号和排障顺序参见 [Repoctopus Desktop Dashboard](desktop-dashboard.md)。

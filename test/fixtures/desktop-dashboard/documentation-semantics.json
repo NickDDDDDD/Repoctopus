@@ -1,0 +1,65 @@
+{
+  "dataStates": [
+    {
+      "id": "live",
+      "story": "live",
+      "label": "实时",
+      "marker": "dashboard-data-state:live",
+      "freshness": "fresh",
+      "desktopBacklogCount": 0,
+      "currentPhase": "build",
+      "lastObservedAgeMs": 1000
+    },
+    {
+      "id": "catching-up",
+      "story": "catching-up",
+      "label": "正在追平",
+      "marker": "dashboard-data-state:catching-up",
+      "freshness": "fresh",
+      "desktopBacklogCount": 18,
+      "currentPhase": "build",
+      "lastObservedAgeMs": 1000
+    },
+    {
+      "id": "stale",
+      "story": "stale",
+      "label": "数据过期",
+      "marker": "dashboard-data-state:stale",
+      "freshness": "fresh",
+      "desktopBacklogCount": 0,
+      "currentPhase": "build",
+      "lastObservedAgeMs": 480000
+    },
+    {
+      "id": "unknown",
+      "story": "sparse",
+      "label": "未知",
+      "marker": "dashboard-data-state:unknown",
+      "freshness": "fresh",
+      "desktopBacklogCount": 0,
+      "currentPhase": null,
+      "lastObservedAgeMs": 1000
+    },
+    {
+      "id": "gap",
+      "story": "gap",
+      "label": "事件不连续",
+      "marker": "dashboard-data-state:gap",
+      "freshness": "gap",
+      "desktopBacklogCount": 0,
+      "currentPhase": "build",
+      "lastObservedAgeMs": 1000
+    }
+  ],
+  "skillStates": [
+    { "id": "resolved", "label": "Resolved" },
+    { "id": "delivered", "label": "Delivered" },
+    { "id": "consumed", "label": "Consumed" }
+  ],
+  "healthKinds": [
+    { "id": "flow", "label": "流转健康", "target": "phase" },
+    { "id": "execution", "label": "执行健康", "target": "work" },
+    { "id": "quality", "label": "质量健康", "target": "evidence" },
+    { "id": "telemetry", "label": "遥测健康", "target": "destination" }
+  ]
+}

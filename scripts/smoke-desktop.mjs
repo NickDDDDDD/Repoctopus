@@ -50,7 +50,7 @@ childProcess.spawn = function instrumentDesktopHost(...args) {
                 {
                   logRecords: [
                     {
-                      timeUnixNano: '1793080800000000000',
+                      timeUnixNano: (BigInt(Date.now()) * 1_000_000n).toString(),
                       body: { stringValue: 'change.phase.entered' },
                       attributes: [
                         attribute('repoctopus.event.id', 'event-smoke-open'),
