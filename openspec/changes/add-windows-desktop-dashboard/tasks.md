@@ -47,7 +47,7 @@
 - [x] 3.2 实现原子 Envelope Store 与每目的地独立 Cursor，使用故障注入测试覆盖远端成功/本地失败、本地成功/远端失败、进程退出和重放，并证明一个目的地不能推进另一个目的地。
       **Blocked by:** 3.1
       **Acceptance:** 四类故障与重放测试证明 Store 原子恢复且每个 destination cursor 只能由自身确认推进
-- [ ] 3.3 在可独立运行的 Desktop Host 中实现仅绑定回环地址的 headless OTLP/HTTP Trace、Log、Metric receiver 和会话认证，以协议测试验证合法请求、未授权、错误方法、错误 content type、超限、畸形请求和无正文诊断。
+- [x] 3.3 在可独立运行的 Desktop Host 中实现仅绑定回环地址的 headless OTLP/HTTP Trace、Log、Metric receiver 和会话认证，以协议测试验证合法请求、未授权、错误方法、错误 content type、超限、畸形请求和无正文诊断。
       **Blocked by:** 1.3, 3.1
       **Acceptance:** receiver 协议矩阵覆盖三类 OTLP 信号和全部拒绝场景，只绑定回环地址且错误响应不泄露正文
 - [ ] 3.4 实现最小五阶段 change projection reducer 与稳定事件去重，用乱序、重复和缺失 fixture 验证 active change、Run、phase、Work、Skill、新鲜度和 gap 状态确定性收敛。
