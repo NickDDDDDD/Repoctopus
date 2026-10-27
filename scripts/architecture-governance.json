@@ -53,6 +53,13 @@
       "rationale": "采用固定 DSH Desktop 的薄 Shell、Node-mode Host、串行恢复、单实例和有界退出模式，并收窄为 Repoctopus OTLP Dashboard 所需契约。"
     },
     {
+      "id": "desktop-runtime-activation",
+      "disposition": "behavior-reimplemented",
+      "targets": ["domains/desktop/**", "platform/desktop/**"],
+      "upstream": ["apps/desktop/scripts/development-app.ts"],
+      "rationale": "借鉴固定 DSH 的开发桌面进程启动边界，以 Repoctopus 自有的受限 Run 上下文、非阻断诊断和目的地重放唤醒语义实现 Windows Runtime Launcher。"
+    },
+    {
       "id": "action-execution",
       "disposition": "behavior-reimplemented",
       "targets": ["domains/action/**", "domains/work-execution/**", "platform/action/**"],
