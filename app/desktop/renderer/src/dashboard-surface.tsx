@@ -1,5 +1,6 @@
 import type { DashboardModel, DashboardPhaseStatus } from './dashboard-model.js';
 import type { DashboardNavigationModel, DashboardSelection } from './dashboard-navigation.js';
+import { DesktopPlatformSupportPanel } from './platform-support-panel.js';
 
 export interface DashboardSurfaceProps {
   model: DashboardModel;
@@ -418,6 +419,8 @@ export function DashboardSurface({
             <span aria-hidden="true">i</span>
             <p>{model.guidance}</p>
           </div>
+
+          <DesktopPlatformSupportPanel />
         </section>
       </main>
 

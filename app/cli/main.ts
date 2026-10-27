@@ -53,6 +53,10 @@ import {
   type HostTelemetryReport,
 } from '../../domains/telemetry/host-tool-telemetry.js';
 import { developmentTelemetryConfiguration } from '../../platform/telemetry/environment-configuration.js';
+import {
+  DESKTOP_PLATFORM_SUPPORT_MATRIX,
+  desktopPlatformSupport,
+} from '../../domains/desktop/platform-support.js';
 
 const DIST_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PRODUCT_ROOT =
@@ -60,7 +64,7 @@ const PRODUCT_ROOT =
     ? path.resolve(DIST_DIR, '..')
     : path.resolve(DIST_DIR, '..', '..');
 const USAGE =
-  'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decide|record|resume|work-claim|work-outcome|work-reconcile|work-validate|archive-prepare|archive-publish> | change reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | telemetry config | approval review | browser <doctor|install> | doctor';
+  'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decide|record|resume|work-claim|work-outcome|work-reconcile|work-validate|archive-prepare|archive-publish> | change reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | telemetry config | desktop support | approval review | browser <doctor|install> | doctor';
 const CLI_VERSION = '0.1.0';
 const COMMANDS = new Set([
   'project detect',
@@ -102,6 +106,7 @@ const COMMANDS = new Set([
   'delivery refresh',
   'delivery migration-plan',
   'telemetry config',
+  'desktop support',
   'approval review',
   'browser doctor',
   'browser install',
@@ -1529,6 +1534,15 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
     return successEnvelope({
       command: 'telemetry config',
       result: developmentTelemetryConfiguration(process.env),
+    });
+  }
+  if (command === 'desktop support') {
+    return successEnvelope({
+      command: 'desktop support',
+      result: {
+        current: desktopPlatformSupport(process.platform, process.arch),
+        matrix: DESKTOP_PLATFORM_SUPPORT_MATRIX,
+      },
     });
   }
   if (command === 'doctor') return doctor(parsed);

@@ -6,6 +6,7 @@ import {
   type DesktopLaunchContext,
   type DesktopLauncher,
 } from '../../domains/desktop/launcher.js';
+import { desktopPlatformSupport } from '../../domains/desktop/platform-support.js';
 
 type SpawnDesktopProcess = (
   executable: string,
@@ -17,6 +18,7 @@ export interface WindowsDesktopProcessLauncherOptions {
   executable: string;
   prefixArguments?: readonly string[];
   platform?: NodeJS.Platform;
+  architecture?: string;
   spawnProcess?: SpawnDesktopProcess;
 }
 
@@ -29,6 +31,7 @@ export class WindowsDesktopProcessLauncher implements DesktopLauncher {
   readonly #executable: string;
   readonly #prefixArguments: readonly string[];
   readonly #platform: NodeJS.Platform;
+  readonly #architecture: string;
   readonly #spawnProcess: SpawnDesktopProcess;
 
   constructor(options: WindowsDesktopProcessLauncherOptions) {
@@ -36,6 +39,7 @@ export class WindowsDesktopProcessLauncher implements DesktopLauncher {
     this.#executable = options.executable;
     this.#prefixArguments = [...(options.prefixArguments ?? [])];
     this.#platform = options.platform ?? process.platform;
+    this.#architecture = options.architecture ?? process.arch;
     this.#spawnProcess = options.spawnProcess ?? spawn;
   }
 
@@ -44,8 +48,11 @@ export class WindowsDesktopProcessLauncher implements DesktopLauncher {
   }
 
   activate(context: DesktopLaunchContext): Promise<DesktopLaunchAttempt> {
-    if (this.#platform !== 'win32') {
-      return Promise.resolve({ status: 'unsupported', platform: this.#platform });
+    if (desktopPlatformSupport(this.#platform, this.#architecture).status !== 'supported') {
+      return Promise.resolve({
+        status: 'unsupported',
+        platform: `${this.#platform}/${this.#architecture}`,
+      });
     }
     const arguments_ = [
       ...this.#prefixArguments,

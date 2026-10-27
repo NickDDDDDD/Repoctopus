@@ -4,6 +4,21 @@ Repoctopus Desktop 是当前开发者的只读工作流观测入口。它展示�
 
 Desktop 与远端 SigNoZ 接收相同的标准 OTLP 信号和 Repoctopus 属性。Desktop 不查询 SigNoZ，不扫描 Workspace、Git 或 `.repoctopus/`，也不靠周期轮询维持状态。Receiver 接受事件后，Host 生成有序 snapshot/delta 并主动推送给 Renderer。
 
+## 平台支持矩阵
+
+平台支持是产品契约，不由 Electron 是否能在某个平台编译来推断。能够编译或打包不等于正式支持；只有安装、启动、单实例、托盘、OTLP、退出与卸载都经过端到端验证的目标才能标记为 `supported`。
+
+| 平台目标          | 状态        | 分发目标 | 说明                                     |
+| ----------------- | ----------- | -------- | ---------------------------------------- |
+| Windows 10/11 x64 | supported   | NSIS x64 | 正式支持并完成 Windows x64 端到端验证。  |
+| Windows ARM64     | unsupported | —        | 尚无 ARM64 安装产物与端到端验证。        |
+| macOS x64         | unsupported | —        | 尚未实现 macOS Shell、分发与端到端验证。 |
+| macOS ARM64       | unsupported | —        | 尚未实现 macOS Shell、分发与端到端验证。 |
+| Linux x64         | unsupported | —        | 尚未实现 Linux Shell、分发与端到端验证。 |
+| Linux ARM64       | unsupported | —        | 尚未实现 Linux Shell、分发与端到端验证。 |
+
+`repoctopus desktop support --json` 和 Desktop UI 直接读取同一领域矩阵。未知平台或架构默认返回 `unsupported`；未来只有完成对应验证后才能显式升级为 `experimental` 或 `supported`。
+
 ## 先判断数据状态
 
 数据状态回答“当前画面有多新、是否完整”，不回答“工作流是否正确”。判断优先级是 gap、未知、追平、过期、实时；更高优先级状态不会被较低优先级状态掩盖。
