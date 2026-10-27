@@ -2,13 +2,15 @@
 
 ## Why
 
-Repoctopus 已经能够把工作流事实导出为 OTLP，但开发者在本机无法即时看到当前 change 的 Agent、阶段、任务、验证和阻塞状态，只能依赖日志或事后查询远端后端。需要先交付一个由同一套 OTLP 数据驱动的桌面观测入口，使本地调试与团队遥测共享事实语义而不相互替代。
+Repoctopus 已经能够把部分工作流事实导出为 OTLP，但现有事件上下文、Task、人工审批、阶段耗时、返工和遥测管道健康仍不足以无推断地还原一次完整开发。开发者在本机也无法即时看到当前 change 的五阶段、Work、Skill、任务、验证和阻塞状态，只能依赖日志或事后查询远端后端。需要先补齐一套可用于实时投影和团队流程改进的权威遥测契约，再交付由同一套 OTLP 数据驱动的桌面观测入口，使本地调试与团队遥测共享事实语义而不相互替代。
 
 ## What Changes
 
 - 增加 Windows-first 的 Electron Desktop Dashboard，在开发 Run 开始时自动启动或激活单实例应用，并聚焦对应 Workspace 与 change。
+- 补齐五阶段、Work、Task、Skill、Validator、Tool、Human Decision、Evidence、恢复与遥测投递健康的权威事实；所有执行事件携带可验证的 phase、Work、attempt 和 Task 关联，避免 Dashboard 或 SigNoZ 依赖前后事件猜测。
+- 增加阶段驻留、主动执行、人工/外部等待、返工、重试、未知结果、协调恢复、验证和 Skill 交付/消费等低基数指标，使团队可以分析瓶颈、返工来源、验证质量和工作流健康。
 - 通过现有 Cordis Plugin Composition 接入桌面能力：Runtime composition 提供桌面目的地与 Launcher Contributor；薄 Electron 主进程只管理原生窗口、托盘、单实例和 Host 生命周期；独立 Node-mode Desktop Host 子进程通过专用 App Boot composition 组合 Receiver、Projection Store 和 Desktop Application Plugin；Renderer 不建立第二套容器。
-- 在 Desktop Host 子进程中提供仅监听本机的 OTLP/HTTP 接收器，把 Trace、Log 和 Metric 投影为 change、Run、阶段、Agent、任务、验证、阻塞和下一步动作等桌面视图；Electron 主进程只桥接有界的类型化 IPC，Renderer 不读取仓库文件或领域 Store。
+- 在 Desktop Host 子进程中提供仅监听本机的 OTLP/HTTP 接收器，把 Trace、Log 和 Metric 投影为 change、Run、完整五阶段、当前 Work、Skill 装填/消费、Agent、任务、验证、阻塞、恢复、遥测健康和下一步动作等桌面视图；Electron 主进程只桥接有界的类型化 IPC，Renderer 不读取仓库文件或领域 Store。
 - 将一次领域事实到 OTLP 的规范化结果作为统一观测 envelope，按独立目的地状态投递到本地 Desktop Dashboard 与团队 OTLP 后端；任一目的地不可用不得阻塞领域提交或另一个目的地。
 - 增加本地重放、稳定事件身份、重复投递收敛和数据新鲜度诊断，使 Dashboard 晚启动或重启后可以从持久 outbox 追平，追平后由上报驱动实时更新而非轮询查询。
 - 增加关闭偏好：直接退出、最小化到系统托盘或每次询问；偏好保存在用户级配置中，托盘驻留时本地接收器继续工作，完全退出时远端 OTLP 投递仍继续。
@@ -25,7 +27,7 @@ Repoctopus 已经能够把工作流事实导出为 OTLP，但开发者在本机�
 
 ### Modified Capabilities
 
-- `development-telemetry`: 增加统一观测 envelope、多目的地独立投递、本地接收器重放与桌面状态所需的可验证低基数/关联维度。
+- `development-telemetry`: 增加完整工作流观测契约、统一观测 envelope、多目的地独立投递、本地接收器重放与桌面/团队分析所需的可验证关联和低基数指标。
 - `plugin-composition`: 明确桌面能力的跨进程 Cordis composition、Application Plugin、生命周期和 Renderer 权限边界。
 
 ## Impact
