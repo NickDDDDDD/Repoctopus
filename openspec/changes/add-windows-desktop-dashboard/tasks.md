@@ -44,7 +44,7 @@
 - [x] 3.1 定义版本化 `ObservationEnvelope`、稳定身份、规范摘要和纯领域映射，用 golden fixture 验证同一事件重复映射结果一致且不包含凭据、绝对路径、正文或命令输出。
       **Blocked by:** 2.8
       **Acceptance:** golden fixture 对重复输入生成字节级稳定 envelope，隐私测试拒绝凭据、绝对路径、正文和命令输出
-- [ ] 3.2 实现原子 Envelope Store 与每目的地独立 Cursor，使用故障注入测试覆盖远端成功/本地失败、本地成功/远端失败、进程退出和重放，并证明一个目的地不能推进另一个目的地。
+- [x] 3.2 实现原子 Envelope Store 与每目的地独立 Cursor，使用故障注入测试覆盖远端成功/本地失败、本地成功/远端失败、进程退出和重放，并证明一个目的地不能推进另一个目的地。
       **Blocked by:** 3.1
       **Acceptance:** 四类故障与重放测试证明 Store 原子恢复且每个 destination cursor 只能由自身确认推进
 - [ ] 3.3 在可独立运行的 Desktop Host 中实现仅绑定回环地址的 headless OTLP/HTTP Trace、Log、Metric receiver 和会话认证，以协议测试验证合法请求、未授权、错误方法、错误 content type、超限、畸形请求和无正文诊断。
