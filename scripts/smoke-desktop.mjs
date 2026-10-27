@@ -10,6 +10,8 @@ import { app } from 'electron';
 
 const expectedChangeId = 'desktop-smoke';
 const screenshot = process.env.REPOCTOPUS_DESKTOP_SMOKE_SCREENSHOT;
+const auditAccessibility = process.env.REPOCTOPUS_DESKTOP_A11Y_AUDIT === '1';
+const expectedDevicePixelRatio = Number(process.env.REPOCTOPUS_DESKTOP_EXPECT_DPR ?? '0');
 let finished = false;
 
 function fail(error) {
@@ -85,6 +87,7 @@ async function inspect(window) {
       processType: typeof globalThis.process,
       requireType: typeof globalThis.require,
       bridgeType: typeof window.repoctopusDesktop,
+      devicePixelRatio: window.devicePixelRatio,
     }))()`);
     if (state.dashboardState === 'live') break;
     await new Promise((resolve) => setTimeout(resolve, 100));
@@ -104,6 +107,86 @@ async function inspect(window) {
     state.bridgeType !== 'object'
   ) {
     throw new Error(`Desktop Renderer isolation failed: ${JSON.stringify(state)}`);
+  }
+  if (
+    expectedDevicePixelRatio > 0 &&
+    (!Number.isFinite(state.devicePixelRatio) || state.devicePixelRatio < expectedDevicePixelRatio)
+  ) {
+    throw new Error(`Desktop high-DPI scale was not applied: ${JSON.stringify(state)}`);
+  }
+
+  if (auditAccessibility) {
+    const domAudit = await window.webContents.executeJavaScript(`(() => {
+      const ids = [...document.querySelectorAll('[id]')].map((element) => element.id);
+      const duplicateIds = ids.filter((id, index) => ids.indexOf(id) !== index);
+      const controls = [...document.querySelectorAll('button, summary')];
+      const unnamedControls = controls
+        .filter((element) => !(element.getAttribute('aria-label') || element.textContent || '').trim())
+        .map((element) => element.tagName);
+      document.body.tabIndex = -1;
+      document.body.focus();
+      return {
+        duplicateIds,
+        unnamedControls,
+        hasMain: document.querySelectorAll('main').length === 1,
+        hasNamedNavigation: Boolean(document.querySelector('nav[aria-label]')),
+        hasPrimaryHeading: document.querySelectorAll('h1').length === 1,
+      };
+    })()`);
+    if (
+      domAudit.duplicateIds.length > 0 ||
+      domAudit.unnamedControls.length > 0 ||
+      !domAudit.hasMain ||
+      !domAudit.hasNamedNavigation ||
+      !domAudit.hasPrimaryHeading
+    ) {
+      throw new Error(`Desktop DOM accessibility audit failed: ${JSON.stringify(domAudit)}`);
+    }
+
+    window.webContents.sendInputEvent({ type: 'keyDown', keyCode: 'TAB' });
+    window.webContents.sendInputEvent({ type: 'keyUp', keyCode: 'TAB' });
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    const focusAudit = await window.webContents.executeJavaScript(`(() => {
+      const active = document.activeElement;
+      const style = active ? getComputedStyle(active) : null;
+      return {
+        tagName: active?.tagName,
+        name: (active?.getAttribute('aria-label') || active?.textContent || '').trim(),
+        outlineStyle: style?.outlineStyle,
+        outlineWidth: style?.outlineWidth,
+      };
+    })()`);
+    if (
+      focusAudit.tagName !== 'BUTTON' ||
+      !focusAudit.name ||
+      focusAudit.outlineStyle === 'none' ||
+      focusAudit.outlineWidth === '0px'
+    ) {
+      throw new Error(`Desktop keyboard focus audit failed: ${JSON.stringify(focusAudit)}`);
+    }
+
+    let accessibilityTree;
+    try {
+      window.webContents.debugger.attach('1.3');
+      await window.webContents.debugger.sendCommand('Accessibility.enable');
+      accessibilityTree = await window.webContents.debugger.sendCommand(
+        'Accessibility.getFullAXTree',
+      );
+    } finally {
+      if (window.webContents.debugger.isAttached()) window.webContents.debugger.detach();
+    }
+    const exposed = accessibilityTree?.nodes?.filter((node) => !node.ignored) ?? [];
+    const buttons = exposed.filter((node) => node.role?.value === 'button');
+    const headings = exposed.filter((node) => node.role?.value === 'heading');
+    if (
+      buttons.length === 0 ||
+      buttons.some((node) => !String(node.name?.value ?? '').trim()) ||
+      headings.length < 2
+    ) {
+      throw new Error(
+        `Desktop accessibility tree audit failed: ${JSON.stringify({ buttons, headings })}`,
+      );
+    }
   }
 
   if (screenshot) {

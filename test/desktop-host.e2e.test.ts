@@ -1,5 +1,5 @@
 import { execFile, fork, type ChildProcess } from 'node:child_process';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
@@ -128,15 +128,27 @@ describe('Desktop Host process', () => {
     'renders the isolated desktop shell from a real Electron process',
     async () => {
       const profile = await mkdtemp(path.join(os.tmpdir(), 'repoctopus-desktop-e2e-'));
+      const screenshot = path.join(profile, 'desktop-high-dpi.png');
       const environment = { ...process.env };
       delete environment.ELECTRON_RUN_AS_NODE;
+      environment.REPOCTOPUS_DESKTOP_A11Y_AUDIT = '1';
+      environment.REPOCTOPUS_DESKTOP_EXPECT_DPR = '2';
+      environment.REPOCTOPUS_DESKTOP_SMOKE_SCREENSHOT = screenshot;
       try {
-        await execFileAsync(electronExecutable, [`--user-data-dir=${profile}`, smokeEntry], {
-          cwd: productRoot,
-          env: environment,
-          windowsHide: true,
-          timeout: 25_000,
-        });
+        await execFileAsync(
+          electronExecutable,
+          ['--force-device-scale-factor=2', `--user-data-dir=${profile}`, smokeEntry],
+          {
+            cwd: productRoot,
+            env: environment,
+            windowsHide: true,
+            timeout: 25_000,
+          },
+        );
+        const image = await readFile(screenshot);
+        expect(image.subarray(1, 4).toString('ascii')).toBe('PNG');
+        expect(image.readUInt32BE(16)).toBeGreaterThanOrEqual(1_600);
+        expect(image.readUInt32BE(20)).toBeGreaterThanOrEqual(900);
       } finally {
         await rm(profile, { recursive: true, force: true });
       }

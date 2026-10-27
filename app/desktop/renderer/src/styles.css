@@ -16,6 +16,7 @@
   --radius-panel: 10px;
   --surface-canvas: #f3f6f8;
   --surface-primary: #ffffff;
+  --surface-secondary: #f8fafb;
   --surface-subtle: #f8fafb;
   --ink-primary: #1d252d;
   --ink-secondary: #596671;
@@ -69,7 +70,8 @@ button:hover {
   color: var(--accent);
 }
 
-button:focus-visible {
+button:focus-visible,
+summary:focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
@@ -750,6 +752,18 @@ footer {
   gap: var(--space-3);
 }
 
+.health-grid article > div > *,
+.telemetry-health li > div > * {
+  min-width: 0;
+}
+
+.telemetry-health li > div strong,
+.telemetry-health li > div span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .health-grid article > div span,
 .health-grid p,
 .health-grid li,
@@ -803,6 +817,7 @@ footer {
 
 .telemetry-health dl div {
   display: grid;
+  min-width: 0;
   gap: 2px;
 }
 
@@ -814,6 +829,13 @@ footer {
 
 .telemetry-health dt {
   color: var(--ink-tertiary);
+}
+
+.telemetry-health dd {
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .recent-events summary {
@@ -946,6 +968,7 @@ footer {
     background: #151a1e;
     --surface-canvas: #151a1e;
     --surface-primary: #1b2227;
+    --surface-secondary: #181e23;
     --surface-subtle: #181e23;
     --ink-primary: #e8edf0;
     --ink-secondary: #aab5bd;
