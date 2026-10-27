@@ -92,7 +92,7 @@
 - [x] 5.2 实现 Workspace/change 导航与选择保持，用多 Workspace、多 change fixture 验证新上报不会抢占用户当前视图，首次无选择时才聚焦启动来源。
       **Blocked by:** 3.5, 5.1
       **Acceptance:** 多 Workspace 与多 change 测试证明已有选择不被新事件抢占，仅首次无选择时自动聚焦启动来源
-- [ ] 5.3 实现 `Open → Design → Build → Verify → Archive` 主体、阶段时间线、当前 Work/Task/attempt/Host/Validator/continuation，并用正常推进、Verify→Build、Archive→Verify/Design fixture 证明返工历史不会丢失或伪装为首次执行。
+- [x] 5.3 实现 `Open → Design → Build → Verify → Archive` 主体、阶段时间线、当前 Work/Task/attempt/Host/Validator/continuation，并用正常推进、Verify→Build、Archive→Verify/Design fixture 证明返工历史不会丢失或伪装为首次执行。
       **Blocked by:** 4.4, 5.1
       **Acceptance:** 正常和三类返工 fixture 均准确显示五阶段、当前执行与历史尝试，不把返工伪装为首次执行
 - [ ] 5.4 实现 action/augmentation Skill 的 resolved/delivered/consumed 状态与语义说明，用 OTLP fixture 验证已交付不会提前显示已消费、自定义 Skill 不破坏投影且界面不宣称观察 Agent 内部思考。
