@@ -137,7 +137,7 @@
 - [x] 7.1 使用精确锁定的 `electron-builder` 配置 Windows x64 桌面打包、产品元数据、图标和确定性资源清单，把 Desktop Host 与 Renderer 作为显式资源打包；执行打包命令生成可安装产物并通过品牌、来源和 package contents 检查。
       **Blocked by:** 5.7, 6.6
       **Acceptance:** Windows x64 安装产物可重复生成，品牌、provenance 与 package contents 检查确认 Host、Renderer 和资源清单完整
-- [ ] 7.2 在干净 Windows 用户环境安装候选，运行启动、Run 自动激活、OTLP 接收、单实例、托盘、直接退出和卸载端到端测试并保存 Evidence。
+- [x] 7.2 在干净 Windows 用户环境安装候选，运行启动、Run 自动激活、OTLP 接收、单实例、托盘、直接退出和卸载端到端测试并保存 Evidence。
       **Blocked by:** 7.1
       **Acceptance:** 干净用户环境端到端矩阵覆盖全部列举行为并保存可关联当前 Task 的 Evidence
 - [ ] 7.3 为 macOS、Linux 和 Windows ARM64 返回明确 unsupported/experimental 状态，用平台矩阵测试证明构建能力不会被文档、CLI 或 UI 误报为正式支持。
