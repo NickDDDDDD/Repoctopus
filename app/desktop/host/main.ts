@@ -1,8 +1,10 @@
 import path from 'node:path';
+import { randomBytes } from 'node:crypto';
 
 import { bootDesktopComposition } from '../../boot/bootstrap.js';
 import type { RunningApp } from '../../boot/boot.js';
 import { isDesktopShellCommand, type DesktopHostEvent } from '../shared/host-protocol.js';
+import { DesktopOtlpHttpReceiver } from './otlp-http-receiver.js';
 
 function send(event: DesktopHostEvent): void {
   if (process.connected) process.send?.(event);
@@ -14,12 +16,14 @@ function failureMessage(error: unknown): string {
 }
 
 let running: RunningApp | undefined;
+let receiver: DesktopOtlpHttpReceiver | undefined;
 let shutdown: Promise<void> | undefined;
 
 function close(): Promise<void> {
   if (shutdown !== undefined) return shutdown;
   shutdown = Promise.resolve()
     .then(async () => {
+      await receiver?.stop();
       await running?.close();
       send({ type: 'shutdown-complete' });
       process.disconnect?.();
@@ -42,8 +46,20 @@ const productRoot = path.resolve(process.argv[2] ?? process.cwd());
 
 try {
   running = await bootDesktopComposition(productRoot);
-  send({ type: 'ready', snapshot: running.context.desktopApplication.snapshot() });
+  const sessionToken = randomBytes(32).toString('base64url');
+  receiver = new DesktopOtlpHttpReceiver({
+    sessionToken,
+    onExport: () => undefined,
+  });
+  const endpoint = await receiver.start();
+  send({
+    type: 'ready',
+    snapshot: running.context.desktopApplication.snapshot(),
+    receiver: { schemaVersion: 1, endpoint, sessionToken },
+  });
 } catch (error) {
+  await receiver?.stop();
+  await running?.close();
   send({ type: 'fatal', message: failureMessage(error) });
   process.exitCode = 1;
   process.disconnect?.();

@@ -37,6 +37,23 @@ describe('Desktop Host process', () => {
         snapshot: { apiVersion: 'repoctopus.desktop/v1alpha1', phase: 'ready' },
       });
 
+      if (!isDesktopHostEvent(ready) || ready.type !== 'ready') {
+        throw new Error('Desktop Host did not publish a valid ready event');
+      }
+      expect(ready.receiver).toMatchObject({ schemaVersion: 1 });
+      expect(ready.receiver.endpoint).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/u);
+      expect(ready.receiver.sessionToken.length).toBeGreaterThanOrEqual(24);
+      const exported = await fetch(`${ready.receiver.endpoint}/v1/traces`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/x-protobuf',
+          'x-repoctopus-session': ready.receiver.sessionToken,
+        },
+        body: new Uint8Array([10, 0]),
+      });
+      expect(exported.status).toBe(200);
+      expect(await exported.text()).toBe('');
+
       const exited = new Promise<void>((resolve) => {
         child.once('close', () => resolve());
       });
