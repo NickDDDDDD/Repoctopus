@@ -3,10 +3,10 @@
 ## Reproducible subject
 
 - Change: `adopt-comet-single-run-lifecycle`
-- Tested implementation commit: `df54746f4eec91afb554112d9b29b194f2a56837`
+- Tested implementation commit: `0cec7401dd6293253a5e8bd579fae5bfc8a688ae`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `1065534`
-- Package SHA-256: `1e0493086cfe4b6763784502b4387836ffd68984a8d0accda97660e839cd5dc9`
+- Package bytes: `1069309`
+- Package SHA-256: `7436dc71aea438c346f39c332f6d1e0e2a159f15f74e319335e07e58899d0da1`
 - Lifecycle definition: `repoctopus-change@3.0.0`
 - Lifecycle definition digest: `sha256:d45fdabde20f79ccc9e0dd95ce164d5b7225ce736b1e76e08c44e53e85c92a0e`
 - Verified input composition digest: `sha256:0f52306c5478580e72a9618918ebcdb11a13b1ca5a310cbef9bf3722e2488b69`
@@ -21,8 +21,8 @@ Run on Windows with Node.js `24.21.0`:
 ```text
 npm run verify
   typecheck, desktop typecheck, lint and both builds passed
-  140 test files passed
-  578 tests passed, 1 skipped
+  141 test files passed
+  583 tests passed, 1 skipped
   generated, brand, architecture and provenance checks passed
   OpenSpec strict validation: 14 passed, 0 failed
 
@@ -60,7 +60,11 @@ Evidence telemetry now uses the same canonical mapper and OTLP encoder for durab
 
 App lifecycle, telemetry-pipeline and Delivery facts now also enter the canonical envelope before any OpenTelemetry provider is created. Pure mappers derive stable trace/span identities, preserve the existing allowlisted lifecycle and Delivery correlations, and expose only bounded lifecycle type/phase/result, Delivery event/state/action/result and destination kind/result dimensions to Metrics. One persisted telemetry-pipeline event can carry multiple schema-declared Metric records, so delivery latency, event counts, cursor lag, backlog, retry, gap and retention-drop aggregates retain one envelope identity instead of becoming parallel inferred facts. Golden fixtures prove lifecycle, Delivery and pipeline signals encode identically for desktop and remote destinations and exclude credentials, paths, bodies and destination instance identity from Metrics. The shared exporter records only encoded signal names, instruments and attributes; it no longer reads App, Delivery or telemetry-pipeline fields to construct a second interpretation.
 
-The file Observation Store serializes append and acknowledgement transitions through recoverable cross-process locks and atomically replaces a validated v1 snapshot. Exact envelope replay is idempotent, while a reused source identity with a different canonical digest is rejected. Every destination has its own hashed Cursor file, must acknowledge the exact next contiguous Store entry and cannot mutate another destination's position. Fault tests cover remote success with desktop failure, desktop success with remote failure, a process exit after the envelope commit but before delivery, a pre-commit Store interruption, a pre-commit Cursor interruption and restart replay from each destination's own durable position. In all cases the previous state remains readable and no failed destination advances.
+The file Observation Store now uses one validated v2 atomic snapshot for retained envelopes, monotonic offsets, destination lifecycle, cursors and gap history; the unshipped v1 split-store format is not retained as a second authority. Exact retained-envelope replay is idempotent, while a reused source identity with a different canonical digest is rejected. A destination must be explicitly enabled, may be paused without losing its backlog, and may be removed so future envelopes no longer enlarge its responsibility; re-enabling a removed destination starts at the then-current head and never changes another destination's cursor. Public snapshots report head/cursor lag, backlog count/bytes/oldest age, cumulative gaps and the explicit `at-least-once-replay` semantic.
+
+Count, UTF-8 byte and age retention limits prune only through the serialized Store transition. If an enabled or paused destination has not confirmed a pruned envelope, the same atomic replacement first records its exact offset range, dropped count/bytes and incomplete-history state, then advances only its next deliverable offset; its last confirmed cursor remains truthful. Interrupted retention leaves both the prior envelopes and prior gap history readable. Small-capacity tests prove independent remote/desktop positions, pause/resume, remove/re-enable, restart recovery, byte and age overflow, authorized continuation after a gap and no exactly-once claim.
+
+Planning observation now distinguishes a complete negative assessment from an unavailable external observation. A transient remote branch lookup failure during Build or Verify returns a retryable warning while preserving phase, approved planning digest, task revisions and completion progress; only a successfully collected semantic mismatch can trigger the destructive return to Design. The production-composition regression first demonstrates the old Build-to-Design failure and then proves a retry selects the same next Task without synthesizing approval or rewriting history.
 
 The independent Desktop Host now owns a headless OTLP/HTTP receiver that binds an ephemeral port exclusively on `127.0.0.1` and authenticates every export with a per-process cryptographically random session token carried only over private Host IPC. Protocol tests cover Trace, Log and Metric protobuf exports, structurally valid OTLP JSON, missing authentication, wrong methods, unsupported content types and encodings, empty or malformed bodies, bounded-body overflow and loopback-only discovery. Success and rejection responses contain no body; bounded diagnostics retain only signal, result, reason, timestamp and byte count, never request content or credentials. A real forked Host test proves the advertised endpoint accepts an authenticated export and shuts down with the Host process.
 
