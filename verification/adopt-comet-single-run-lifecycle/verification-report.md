@@ -3,10 +3,10 @@
 ## Reproducible subject
 
 - Change: `adopt-comet-single-run-lifecycle`
-- Tested implementation commit: `15aa6534ad923fc67ee78cb1d35bea65e84ce8f2`
+- Tested implementation commit: `3e5518af834f17d39134fc77ec4cd1273e2a9936`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `1052806`
-- Package SHA-256: `b72e9cbf20d6e82156b7797fd5ea0cf020a48056279188da1d683dc2d4bd4fd8`
+- Package bytes: `1057030`
+- Package SHA-256: `05d30262f48f1670dfc007797e9d218f24f34e47002f9bc39b55b00ccec5a974`
 - Lifecycle definition: `repoctopus-change@3.0.0`
 - Lifecycle definition digest: `sha256:d45fdabde20f79ccc9e0dd95ce164d5b7225ce736b1e76e08c44e53e85c92a0e`
 - Verified input composition digest: `sha256:0f52306c5478580e72a9618918ebcdb11a13b1ca5a310cbef9bf3722e2488b69`
@@ -21,8 +21,8 @@ Run on Windows with Node.js `24.21.0`:
 ```text
 npm run verify
   typecheck, desktop typecheck, lint and both builds passed
-  137 test files passed
-  570 tests passed, 1 skipped
+  138 test files passed
+  572 tests passed, 1 skipped
   generated, brand, architecture and provenance checks passed
   OpenSpec strict validation: 14 passed, 0 failed
 
@@ -53,6 +53,8 @@ The observation-only coverage report consumes normalized records rather than Wor
 The shared `ObservationEnvelope` v1 now gives every accepted observation one immutable, destination-neutral unit containing its source event identity and time, fixed scope, allowlisted resource attributes, correlated Log/Span records, bounded Metric record, stable envelope identity and canonical integrity digest. The envelope identity derives only from the source event identity and fixed event name, while the canonical digest covers the full normalized payload; this separates replay deduplication from content-drift detection. Mapping is deterministic and domain-pure: it reads no files, network, Runtime snapshot or destination configuration. A byte-level golden fixture proves reordered attribute input produces identical serialized output, boundary events require a stable operation identity, tampering fails integrity validation, high-cardinality Metric identity is rejected and seven private credential/path/content/Prompt/reply/command/output cases fail before persistence.
 
 Persisted Workflow Run execution events now pass through one pure envelope mapper and one destination-neutral OTLP semantic encoder before the OpenTelemetry SDK. The mapper preserves stable event, trace, span and operation identities, pairs duration boundaries against the authoritative Trajectory, applies the event-specific Metric dimension enum and leaves telemetry-pipeline facts on their separately staged migration path. The same immutable envelope encoded for remote and desktop destinations produces identical Log, Span and Metric semantics; correlated Log and Span records share the exact identity, Metric records exclude Run, Work and Host identities, and existing tracer plus managed-execution E2E tests prove the remote exporter retains its prior event names and execution instruments. The schema privacy guard permits only the four reviewed aggregate model Token counters and continues to reject generic Token attributes.
+
+Evidence telemetry now uses the same canonical mapper and OTLP encoder for durable Attempt, node, Artifact and Gate facts. The event contract covers the existing Evidence outbox identities directly: Attempt and node durations become stable boundary Spans and histograms, Artifact observations retain only digest/type/size/media/redaction metadata, Gate results remain bounded, and reused Receipts retain their source Receipt correlation. A single fixture proves remote and desktop encodings are identical for replay, a superseded Attempt and a reused Receipt; Metric records exclude Run, Attempt and Receipt identities. The mapper rejects Artifact bodies, credentials, paths, Prompt/reply, commands and output before envelope creation. Existing outbox replay and OTLP E2E suites still prove stable replay, non-zero duration and all three signals, while the exporter no longer branches on Evidence domain events.
 
 The file Observation Store serializes append and acknowledgement transitions through recoverable cross-process locks and atomically replaces a validated v1 snapshot. Exact envelope replay is idempotent, while a reused source identity with a different canonical digest is rejected. Every destination has its own hashed Cursor file, must acknowledge the exact next contiguous Store entry and cannot mutate another destination's position. Fault tests cover remote success with desktop failure, desktop success with remote failure, a process exit after the envelope commit but before delivery, a pre-commit Store interruption, a pre-commit Cursor interruption and restart replay from each destination's own durable position. In all cases the previous state remains readable and no failed destination advances.
 
