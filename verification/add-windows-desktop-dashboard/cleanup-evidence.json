@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "taskId": "8.4",
+  "checkedAt": "2026-10-27T17:18:53.0437420Z",
+  "scope": {
+    "temporaryRoot": "%TEMP%",
+    "temporaryPrefixes": [
+      "repoctopus-installed-e2e-",
+      "repoctopus-desktop-performance-",
+      "repoctopus-package-check-",
+      "repoctopus-verification-pack-",
+      "repoctopus-desktop-host-e2e-",
+      "repoctopus-desktop-recovery-",
+      "repoctopus-desktop-e2e-",
+      "repoctopus-single-instance-e2e-",
+      "repoctopus-projection-",
+      "repoctopus-self-host-export-",
+      "repoctopus-shell-settings-",
+      "repoctopus-uninstall-",
+      "repoctopus-desktop-launcher-",
+      "repoctopus-package-"
+    ],
+    "productionDiscovery": "%LOCALAPPDATA%\\Repoctopus\\desktop-receiver.json",
+    "processCommandLineMarkers": [
+      "Repoctopus-dashboard-telemetry",
+      "repoctopus-installed-e2e",
+      "repoctopus-desktop-performance",
+      "Repoctopus Dashboard"
+    ]
+  },
+  "cleanup": {
+    "removed": [
+      {
+        "path": "%TEMP%\\repoctopus-desktop-e2e-QitOey",
+        "reason": "stale interrupted test sandbox from 2026-10-21",
+        "safety": "resolved below the operating-system temporary root and required the repoctopus- prefix before recursive removal"
+      }
+    ]
+  },
+  "result": {
+    "temporaryMatches": 0,
+    "matchingProcesses": 0,
+    "matchingListeningSockets": 0,
+    "productionDiscoveryPresent": false,
+    "packageScratchArchives": 0,
+    "productGit": {
+      "head": "68b5be0e03c7dcfbffb3487307460ce12dca8cc1",
+      "trackingDelta": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "dirtyEntries": 0
+    },
+    "specGit": {
+      "head": "6cf057a47a8e41d2ecabc6f4590f5bda6c185ad5",
+      "trackingDelta": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "dirtyEntries": 0
+    }
+  },
+  "verdict": "pass"
+}
