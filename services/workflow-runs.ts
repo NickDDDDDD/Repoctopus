@@ -1547,11 +1547,16 @@ export class WorkflowRuns extends Service {
           diagnostics: [],
         };
       }
+      const execution = state.workExecution;
+      const succeededOutcome =
+        execution?.hostOutcome?.status === 'succeeded' &&
+        execution.hostOutcome.invocationId === execution.hostInvocation?.invocationId;
+      const validatorResultIsReusable =
+        execution?.status === 'validated' &&
+        execution.validatorId === lifecycle.currentWork.validatorProfile.id;
       if (
-        state.workExecution?.status !== 'outcome' ||
-        state.workExecution.hostOutcome?.status !== 'succeeded' ||
-        state.workExecution.hostOutcome.invocationId !==
-          state.workExecution.hostInvocation?.invocationId
+        !succeededOutcome ||
+        (execution?.status !== 'outcome' && !validatorResultIsReusable)
       ) {
         throw new Error('Build Task validation requires a succeeded managed Host Outcome');
       }
@@ -1562,26 +1567,28 @@ export class WorkflowRuns extends Service {
         workId: validation.workId,
         ...(signal ? { signal } : {}),
       });
-      const validator = this.ctx.lifecycleValidators.resolve(
-        lifecycle.currentWork.validatorProfile.id,
-      );
-      const validatorResult = await validator.validate({
-        profileId: lifecycle.currentWork.validatorProfile.id,
-        work: lifecycle.currentWork,
-        fact: {
-          receiptId: receipt.receiptId,
-          taskId: validation.taskId,
-          taskRevision: validation.taskRevision,
-        },
-      });
-      if (!validatorResult.accepted) {
-        throw new Error(`Build Validator rejected: ${validatorResult.diagnostic}`);
+      if (!validatorResultIsReusable) {
+        const validator = this.ctx.lifecycleValidators.resolve(
+          lifecycle.currentWork.validatorProfile.id,
+        );
+        const validatorResult = await validator.validate({
+          profileId: lifecycle.currentWork.validatorProfile.id,
+          work: lifecycle.currentWork,
+          fact: {
+            receiptId: receipt.receiptId,
+            taskId: validation.taskId,
+            taskRevision: validation.taskRevision,
+          },
+        });
+        if (!validatorResult.accepted) {
+          throw new Error(`Build Validator rejected: ${validatorResult.diagnostic}`);
+        }
+        await this.ctx.workExecutionAuthority.markValidated({
+          intent: await this.ctx.workExecutionAuthority.loadIntent(input.runId),
+          validatorId: lifecycle.currentWork.validatorProfile.id,
+          continuation: 'execute',
+        });
       }
-      await this.ctx.workExecutionAuthority.markValidated({
-        intent: await this.ctx.workExecutionAuthority.loadIntent(input.runId),
-        validatorId: lifecycle.currentWork.validatorProfile.id,
-        continuation: 'execute',
-      });
       const projectedTasks = (lifecycle.tasks ?? []).map((task) =>
         task.taskId === validation.taskId
           ? {
