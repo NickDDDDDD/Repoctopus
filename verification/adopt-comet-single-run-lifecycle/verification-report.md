@@ -3,10 +3,10 @@
 ## Reproducible subject
 
 - Change: `adopt-comet-single-run-lifecycle`
-- Tested implementation commit: `57337f9d901d63cdf773c259b851c85f88212ce6`
+- Tested implementation commit: `e40875d5a43202374f067f7b6dd9a40bb77b5847`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `1092306`
-- Package SHA-256: `bcb4de635d651c403f1e1de7ac00c73eea4ad6ca1ac87b1dd51f02139cffc261`
+- Package bytes: `1098184`
+- Package SHA-256: `8857e62c446697198f1a25b055ddf37622d1e096e85c96b03a5f74c62e725e96`
 - Lifecycle definition: `repoctopus-change@3.0.0`
 - Lifecycle definition digest: `sha256:d45fdabde20f79ccc9e0dd95ce164d5b7225ce736b1e76e08c44e53e85c92a0e`
 - Verified input composition digest: `sha256:0f52306c5478580e72a9618918ebcdb11a13b1ca5a310cbef9bf3722e2488b69`
@@ -21,8 +21,8 @@ Run on Windows with Node.js `24.21.0`:
 ```text
 npm run verify
   typecheck, desktop typecheck, lint and both builds passed
-  146 test files passed
-  601 tests passed, 1 skipped
+  147 test files passed
+  602 tests passed, 1 skipped
   generated, brand, architecture and provenance checks passed
   OpenSpec strict validation: 14 passed, 0 failed
 
@@ -81,6 +81,8 @@ Workspace/change navigation now keeps observation focus separate from Renderer-o
 The Desktop projection now retains append-only five-phase history and one immutable execution summary per `Work id + attempt` instead of overwriting an earlier attempt with a retry. Task revision, Host, Validator and Runtime continuation facts are decoded only from their allowlisted OTLP attributes and merge through independent sequence cursors, so ordered and reversed delivery converge. The decoder also consumes the authoritative lifecycle phase signal emitted by `change.lifecycle.transitioned`; forward transitions complete the prior phase, while Verify-to-Build, Archive-to-Verify and Archive-to-Design fallbacks preserve their source and reopen the target without leaving a completed Run. Renderer fixtures show the current Task, attempt, Host, Validator and continuation beside a separate execution history, and prove all three fallback paths remain visible rather than appearing as a first execution. Targeted tests, the real Electron OTLP smoke and visual inspection passed; the temporary screenshot was removed after inspection.
 
 Skill rendering now preserves the canonical `resolved`, `delivered` and `consumed` states for both Action and Augmentation roles, including bounded custom Skill identities. OTLP fixtures prove delivery alone never appears as consumption and the accepted consumption event is required before the projection advances to `consumed`. The visible semantic note defines that state narrowly as a Host consumption declaration validated by Runtime and explicitly states that the Dashboard does not observe Agent internal reasoning.
+
+Evidence telemetry associated with a lifecycle Run now carries its authoritative Workspace and change identities through the same envelope instead of leaving detailed Evidence events uncorrelated. The Desktop projection gives each Evidence Attempt an independent sequence scope, preventing its local sequence from colliding with the Workflow stream while keeping Workflow freshness authoritative. The read-only surface shows Attempt, Gate, outcome, Artifact digest/type/size/media/redaction metadata, Human Decision, blocker and next action. Ordered and reversed multi-stream delivery converge, and an adversarial OTLP fixture proves Artifact body, absolute path, Prompt, reply and command attributes never enter the projection or rendered DOM.
 
 The Runtime-side Desktop activation seam now carries only validated Workspace, change and Run identities across a detached Windows process boundary. Repeated invocation is intentionally the start-or-activate protocol consumed by Electron single-instance ownership; a successful activation wakes the independently owned desktop destination replay, while unsupported platforms, process launch failure and replay wake failure return bounded warnings and never fail the development Run. Unit tests preserve that ordering and retry boundary. A real child-process fixture proves the encoded context crosses the process boundary, and a loopback remote OTLP mock proves a missing desktop executable leaves the original observation envelope byte-for-byte deliverable to the remote destination. The built-in Project composition now owns the destination and activation Services plus a disposable pre-Run Contributor. A zero-desktop Context has no hook or launch side effect, while disabling the composed activation is silent and launcher failures remain bounded diagnostics.
 
