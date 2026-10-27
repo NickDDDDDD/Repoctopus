@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import type { ActionIntent, ClaimedActionOutcome } from '../action/types.js';
 import type { WorkExecutionContext } from '../change-lifecycle/work-context.js';
 import type { WorkDescriptor } from '../change-lifecycle/transition.js';
+import type { ExecutionContext } from '../telemetry/execution-context.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
 
 export type WorkContinuationKind = 'execute' | 'ask' | 'wait' | 'reconcile' | 'done';
@@ -159,10 +160,11 @@ export interface ExternalWorkExecutionOutcome {
 }
 
 export interface WorkExecutionCheckpoint {
-  schemaVersion: 2;
+  schemaVersion: 3;
   workId: string;
   attempt: number;
   checkEpoch: number;
+  executionContext: Readonly<ExecutionContext>;
   intentId: string;
   claimToken: `sha256:${string}`;
   inputDigest: `sha256:${string}`;

@@ -15,10 +15,18 @@ const digest = (character: string) => `sha256:${character.repeat(64)}` as const;
 
 function checkpoint(status: WorkExecutionCheckpoint['status']): WorkExecutionCheckpoint {
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     workId: 'build:1.1',
     attempt: 1,
     checkEpoch: 4,
+    executionContext: {
+      schemaVersion: 1,
+      phase: 'build',
+      work: { id: 'build:1.1', kind: 'task.implement' },
+      attempt: 1,
+      checkEpoch: 4,
+      task: { id: '1.1', revision: digest('9') },
+    },
     intentId: 'intent-1',
     claimToken: digest('a'),
     inputDigest: digest('b'),
@@ -186,6 +194,54 @@ describe('Work execution epoch authority', () => {
       status: 'claimed',
     });
     expect(run.workExecution).toMatchObject({ intentId: 'intent-2', checkEpoch: 5 });
+  });
+});
+
+describe('Work reconciliation telemetry context', () => {
+  it('persists the claimed execution context on both reconciliation boundaries', async () => {
+    let run = {
+      ...state({ execution: checkpoint('invoking') }),
+      stateVersion: 10,
+      updatedAt: '2026-10-25T00:00:00.000Z',
+      composition: { compositionDigest: digest('8') },
+      changeLifecycle: {
+        checkEpoch: 4,
+        currentWork: { workId: 'build:1.1' },
+        waitCondition: null,
+      },
+    } as unknown as RunState;
+    const events: TrajectoryEvent[] = [];
+    const authority = Object.create(WorkExecutionAuthority.prototype) as WorkExecutionAuthority;
+    Object.defineProperty(authority, 'ctx', {
+      value: {
+        runStore: {
+          commitGuarded: vi.fn(
+            <T>(
+              _runId: string,
+              reduce: (current: { state: RunState; trajectory: TrajectoryEvent[] }) => {
+                state?: RunState;
+                event?: TrajectoryEvent;
+                value: T;
+              },
+            ): Promise<T> => {
+              const reduced = reduce({ state: run, trajectory: events });
+              if (reduced.state) run = reduced.state;
+              if (reduced.event) events.push(reduced.event);
+              return Promise.resolve(reduced.value);
+            },
+          ),
+        },
+      },
+    });
+    const intent = { runId: 'run-recovery', intentId: 'intent-1' } as never;
+
+    await authority.markHostUnknown(intent, 'host result unknown');
+    await authority.markHostNotExecuted(intent, 'host proved no side effect');
+
+    expect(events.map((event) => event.type)).toEqual(['reconcile.started', 'reconcile.completed']);
+    for (const event of events) {
+      expect(event.data.executionContext).toEqual(checkpoint('invoking').executionContext);
+    }
   });
 });
 

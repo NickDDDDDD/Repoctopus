@@ -57,13 +57,18 @@ describe('managed execution OTLP protocol', () => {
         traceId: '0123456789abcdef0123456789abcdef',
       };
       const secret = 'SECRET-PROMPT-DO-NOT-EXPORT';
+      const executionContext = {
+        schemaVersion: 1,
+        phase: 'build',
+        work: { id: 'build:1.1', kind: 'task.implement' },
+        attempt: 1,
+        checkEpoch: 4,
+        task: { id: '1.1', revision: `sha256:${'b'.repeat(64)}` },
+      };
       const trajectory = [
         event(1, 'run.started', {}),
         event(2, 'work.claimed', {
-          phase: 'build',
-          workKind: 'task.implement',
-          workId: 'build:1.1',
-          attempt: 1,
+          executionContext,
           packetDigest: `sha256:${'a'.repeat(64)}`,
           prompt: secret,
           command: `echo ${secret}`,
@@ -71,47 +76,37 @@ describe('managed execution OTLP protocol', () => {
           url: `https://example.invalid/${secret}`,
         }),
         event(3, 'work.host-started', {
-          phase: 'build',
-          workKind: 'task.implement',
-          workId: 'build:1.1',
-          attempt: 1,
+          executionContext,
           invocationId: 'invocation-1',
           hostId: 'host-1',
         }),
         event(4, 'tool.started', {
+          executionContext,
           operationId: 'operation-1',
           invocationId: 'invocation-1',
           operationKind: 'repository.write',
           arguments: secret,
         }),
         event(5, 'tool.completed', {
+          executionContext,
           operationId: 'operation-1',
           invocationId: 'invocation-1',
           operationKind: 'repository.write',
           result: 'succeeded',
         }),
         event(6, 'work.host-completed', {
-          phase: 'build',
-          workKind: 'task.implement',
-          workId: 'build:1.1',
-          attempt: 1,
+          executionContext,
           invocationId: 'invocation-1',
           hostId: 'host-1',
           result: 'succeeded',
           response: secret,
         }),
         event(7, 'work.completed', {
-          phase: 'build',
-          workKind: 'task.implement',
-          workId: 'build:1.1',
-          attempt: 1,
+          executionContext,
           result: 'succeeded',
         }),
         event(8, 'validator.completed', {
-          phase: 'build',
-          workKind: 'task.implement',
-          workId: 'build:1.1',
-          attempt: 1,
+          executionContext,
           validatorId: 'build.task-valid',
           result: 'accepted',
         }),
@@ -135,6 +130,8 @@ describe('managed execution OTLP protocol', () => {
       expect(payload).toContain('repoctopus.work.execution.events');
       expect(payload).toContain('repoctopus.host');
       expect(payload).toContain('repoctopus.tool');
+      expect(payload).toContain('repoctopus.execution.check_epoch');
+      expect(payload).toContain('repoctopus.execution.task.id');
       expect(payload).not.toContain(secret);
       expect(payload).not.toContain('C:\\secret');
       const traces = requests.filter((request) => request.path === '/v1/traces');

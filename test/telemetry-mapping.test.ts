@@ -200,10 +200,14 @@ describe('telemetry mapping', () => {
       stateVersion: 2,
       compositionDigest: run.composition.compositionDigest,
       data: {
-        phase: 'custom-phase',
-        workId: 'work-1',
-        workKind: 'team.private-work',
-        attempt: 1,
+        executionContext: {
+          schemaVersion: 1,
+          phase: 'build',
+          work: { id: 'work-1', kind: 'task.implement' },
+          attempt: 1,
+          checkEpoch: 7,
+          task: { id: '2.2', revision: `sha256:${'b'.repeat(64)}` },
+        },
         invocationId: 'invocation-1',
         hostId: 'host-1',
         packetDigest: `sha256:${'a'.repeat(64)}`,
@@ -224,17 +228,119 @@ describe('telemetry mapping', () => {
     };
     const attributes = safeEventAttributes(batch, event);
     expect(attributes).toMatchObject({
-      'repoctopus.execution.workId': 'work-1',
+      'repoctopus.execution.context.schema_version': 1,
+      'repoctopus.execution.phase': 'build',
+      'repoctopus.execution.work.id': 'work-1',
+      'repoctopus.execution.work.kind': 'task.implement',
+      'repoctopus.execution.attempt': 1,
+      'repoctopus.execution.check_epoch': 7,
+      'repoctopus.execution.task.id': '2.2',
+      'repoctopus.execution.task.revision': `sha256:${'b'.repeat(64)}`,
       'repoctopus.execution.invocationId': 'invocation-1',
       'repoctopus.execution.packetDigest': `sha256:${'a'.repeat(64)}`,
     });
     expect(JSON.stringify(attributes)).not.toMatch(/private|ghp_|npm run|C:\//u);
     expect(executionMetricAttributes(event)).toEqual({
       'repoctopus.execution.event.type': 'work.host-completed',
-      'repoctopus.execution.phase': 'unknown',
-      'repoctopus.execution.work.kind': 'custom',
+      'repoctopus.execution.phase': 'build',
+      'repoctopus.execution.work.kind': 'task.implement',
       'repoctopus.execution.result': 'succeeded',
       'repoctopus.execution.continuation': 'unknown',
     });
+  });
+
+  it('maps shuffled execution events only from their own context and leaves legacy gaps unknown', () => {
+    const workflow = workflowFixture();
+    const project = projectFixture();
+    const base = startRun({
+      workflow,
+      runId: 'run-shuffled-context',
+      projectSnapshotDigest: project.digest,
+      composition: compositionFixture(),
+      timestamp: '2026-01-01T00:00:00.000Z',
+      traceId: '4'.repeat(32),
+    });
+    const run = {
+      ...base,
+      changeLifecycle: {
+        ...createChangeLifecycleSnapshot({
+          identity: {
+            workspaceId: project.projectId,
+            changeId: 'shuffled-context',
+            runId: base.runId,
+          },
+        }),
+        phase: 'archive' as const,
+        currentWork: null,
+      },
+    };
+    const context = (id: string, taskId: string) => ({
+      schemaVersion: 1,
+      phase: 'build',
+      work: { id, kind: 'task.implement' },
+      attempt: 1,
+      checkEpoch: taskId === '2.2' ? 16 : 17,
+      task: {
+        id: taskId,
+        revision: `sha256:${taskId === '2.2' ? 'c' : 'd'}`.padEnd(71, taskId === '2.2' ? 'c' : 'd'),
+      },
+    });
+    const events: TrajectoryEvent[] = [
+      {
+        schemaVersion: 1,
+        sequence: 3,
+        eventId: 'second-context',
+        timestamp: '2026-01-01T00:00:03.000Z',
+        type: 'validator.completed',
+        runId: run.runId,
+        stateVersion: 3,
+        compositionDigest: run.composition.compositionDigest,
+        data: { executionContext: context('work-2.3', '2.3'), result: 'accepted' },
+      },
+      {
+        schemaVersion: 1,
+        sequence: 1,
+        eventId: 'first-context',
+        timestamp: '2026-01-01T00:00:01.000Z',
+        type: 'work.context-delivered',
+        runId: run.runId,
+        stateVersion: 1,
+        compositionDigest: run.composition.compositionDigest,
+        data: { executionContext: context('work-2.2', '2.2') },
+      },
+    ];
+    const batch: TelemetryBatch = {
+      run,
+      workflow,
+      projectSnapshot: project,
+      events,
+      trajectory: events,
+    };
+
+    expect(
+      events.map((item) => {
+        const attributes = safeEventAttributes(batch, item);
+        return [
+          attributes['repoctopus.execution.work.id'],
+          attributes['repoctopus.execution.task.id'],
+          attributes['repoctopus.execution.check_epoch'],
+        ];
+      }),
+    ).toEqual([
+      ['work-2.3', '2.3', 17],
+      ['work-2.2', '2.2', 16],
+    ]);
+
+    const legacy = {
+      ...events[1]!,
+      eventId: 'legacy-missing-context',
+      data: { phase: 'archive', workId: 'latest-work', workKind: 'specification.close' },
+    };
+    expect(safeEventAttributes({ ...batch, events: [legacy] }, legacy)).toMatchObject({
+      'repoctopus.execution.context.status': 'missing',
+    });
+    expect(safeEventAttributes({ ...batch, events: [legacy] }, legacy)).not.toHaveProperty(
+      'repoctopus.execution.work.id',
+    );
   });
 });

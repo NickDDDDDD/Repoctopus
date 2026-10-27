@@ -6,6 +6,10 @@ import type { ActionIntent, ActionReceipt, ClaimedActionOutcome } from '../domai
 import type { RunState } from '../domains/engine/types.js';
 import type { WorkDescriptor } from '../domains/change-lifecycle/transition.js';
 import type { TrajectoryEvent, TrajectoryEventType } from '../domains/trajectory/types.js';
+import {
+  createExecutionContext,
+  type ExecutionContext,
+} from '../domains/telemetry/execution-context.js';
 import type {
   AgentCoordinationCheckpoint,
   AgentCoordinationCheckpointView,
@@ -43,6 +47,16 @@ function executionEvent(input: {
     stateVersion: input.state.stateVersion,
     compositionDigest: input.state.composition.compositionDigest,
     data: input.data,
+  };
+}
+
+function executionData(
+  context: Readonly<ExecutionContext>,
+  data: Record<string, unknown>,
+): Record<string, unknown> {
+  return {
+    executionContext: structuredClone(context),
+    ...data,
   };
 }
 
@@ -118,10 +132,11 @@ export class WorkExecutionAuthority extends Service {
         }
         const timestamp = new Date().toISOString();
         const checkpoint: WorkExecutionCheckpoint = {
-          schemaVersion: 2,
+          schemaVersion: 3,
           workId: packet.claim.workId,
           attempt: packet.claim.attempt,
           checkEpoch: packet.claim.checkEpoch,
+          executionContext: createExecutionContext({ work: packet.work, claim: packet.claim }),
           intentId: packet.claim.intentId,
           claimToken: packet.claim.claimToken,
           inputDigest: packet.claim.inputDigest,
@@ -144,16 +159,11 @@ export class WorkExecutionAuthority extends Service {
             timestamp,
             type: 'work.claimed',
             identity: [checkpoint.workId, String(checkpoint.attempt), checkpoint.intentId],
-            data: {
-              phase: packet.work.phase,
-              workId: checkpoint.workId,
-              workKind: packet.work.kind,
-              attempt: checkpoint.attempt,
-              checkEpoch: checkpoint.checkEpoch,
+            data: executionData(checkpoint.executionContext, {
               intentId: checkpoint.intentId,
               packetDigest: checkpoint.packet.packetDigest,
               continuation: checkpoint.continuation,
-            },
+            }),
           }),
           value: structuredClone(checkpoint),
         };
@@ -207,8 +217,6 @@ export class WorkExecutionAuthority extends Service {
       'context-delivered',
       'execute',
       {
-        workId: packet.claim.workId,
-        attempt: packet.claim.attempt,
         packetDigest: packet.identity.packetDigest,
         contextDigest: packet.identity.contextDigest,
         layerCount: packet.context.layers.length,
@@ -232,10 +240,6 @@ export class WorkExecutionAuthority extends Service {
         packet.claim.intentId,
         `skill.${stage}`,
         {
-          phase: packet.work.phase,
-          workId: packet.work.workId,
-          workKind: packet.work.kind,
-          attempt: packet.claim.attempt,
           packetDigest: packet.identity.packetDigest,
           skillName: layer.source,
           skillRole: layer.kind === 'action-skill' ? 'action' : 'augmentation',
@@ -283,8 +287,6 @@ export class WorkExecutionAuthority extends Service {
       'invoking',
       'wait',
       {
-        workId: intent.workId,
-        attempt: intent.attempt,
         invocationId: invocation.invocationId,
         hostId: invocation.host.id,
         packetDigest: invocation.packet.packetDigest,
@@ -302,7 +304,7 @@ export class WorkExecutionAuthority extends Service {
       'reconcile.started',
       'unknown',
       'reconcile',
-      { workId: intent.workId, attempt: intent.attempt, reason: summary },
+      { reason: summary },
     );
   }
 
@@ -318,8 +320,6 @@ export class WorkExecutionAuthority extends Service {
       'not-executed',
       'execute',
       {
-        workId: intent.workId,
-        attempt: intent.attempt,
         result: 'not-executed',
         reason,
       },
@@ -338,9 +338,6 @@ export class WorkExecutionAuthority extends Service {
       'invoking',
       'wait',
       {
-        workId: intent.workId,
-        attempt: intent.attempt,
-        checkEpoch: intent.checkEpoch,
         invocationId: outcome.invocationId,
         hostId: outcome.hostId,
         packetDigest: outcome.packetDigest,
@@ -365,8 +362,6 @@ export class WorkExecutionAuthority extends Service {
       'outcome',
       'wait',
       {
-        workId: input.intent.workId,
-        attempt: input.intent.attempt,
         outcomeId: input.outcome.outcomeId,
         receiptId: input.receipt.receiptId,
         result: input.outcome.status,
@@ -391,8 +386,6 @@ export class WorkExecutionAuthority extends Service {
       'validated',
       input.continuation,
       {
-        workId: input.intent.workId,
-        attempt: input.intent.attempt,
         validatorId: input.validatorId,
         result: 'accepted',
         continuation: input.continuation,
@@ -518,12 +511,12 @@ export class WorkExecutionAuthority extends Service {
             recovery.continuation,
             recovery.reason,
           ],
-          data: {
-            continuation: recovery.continuation,
-            reason: recovery.reason,
-            workId: recovery.workId,
-            attempt: recovery.attempt,
-          },
+          data: state.workExecution?.executionContext
+            ? executionData(state.workExecution.executionContext, {
+                continuation: recovery.continuation,
+                reason: recovery.reason,
+              })
+            : { continuation: recovery.continuation, reason: recovery.reason },
         }),
         value: undefined,
       };
@@ -556,7 +549,13 @@ export class WorkExecutionAuthority extends Service {
           timestamp,
           type,
           identity: [input.waitId, input.stage],
-          data: { waitId: input.waitId, waitKind: input.kind, reason: input.reason },
+          data: state.workExecution?.executionContext
+            ? executionData(state.workExecution.executionContext, {
+                waitId: input.waitId,
+                waitKind: input.kind,
+                reason: input.reason,
+              })
+            : { waitId: input.waitId, waitKind: input.kind, reason: input.reason },
         }),
         value: undefined,
       };
@@ -660,7 +659,7 @@ export class WorkExecutionAuthority extends Service {
           timestamp,
           type,
           identity: [current.workId, String(current.attempt), intentId, status],
-          data,
+          data: executionData(current.executionContext, data),
         }),
         value: structuredClone(checkpoint),
       };
@@ -706,7 +705,7 @@ export class WorkExecutionAuthority extends Service {
           timestamp,
           type,
           identity: [current.workId, String(current.attempt), ...identity],
-          data,
+          data: executionData(current.executionContext, data),
         }),
         value: undefined,
       };

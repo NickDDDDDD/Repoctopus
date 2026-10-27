@@ -1,6 +1,7 @@
 import type { Attributes } from '@opentelemetry/api';
 
 import type { TelemetryBatch } from '../../../domains/runtime/types.js';
+import type { ExecutionContext } from '../../../domains/telemetry/execution-context.js';
 import type { TrajectoryEvent } from '../../../domains/trajectory/types.js';
 
 const SAFE_DATA_KEYS = new Set([
@@ -13,11 +14,6 @@ const SAFE_DATA_KEYS = new Set([
 ]);
 
 const EXECUTION_DATA_KEYS = new Set([
-  'phase',
-  'workId',
-  'workKind',
-  'attempt',
-  'checkEpoch',
   'intentId',
   'packetDigest',
   'contextDigest',
@@ -90,6 +86,86 @@ function scalar(value: unknown): string | number | boolean | undefined {
   return undefined;
 }
 
+type ExecutionContextRead =
+  | { status: 'complete'; context: Readonly<ExecutionContext> }
+  | { status: 'missing' | 'invalid'; context: null };
+
+function readExecutionContextValue(value: unknown): ExecutionContextRead {
+  if (value === undefined) return { status: 'missing', context: null };
+  if (!value || typeof value !== 'object') return { status: 'invalid', context: null };
+  const record = value as Record<string, unknown>;
+  const work = record.work as Record<string, unknown> | undefined;
+  const task = record.task as Record<string, unknown> | undefined;
+  if (
+    record.schemaVersion !== 1 ||
+    typeof record.phase !== 'string' ||
+    !BOUNDED_PHASES.has(record.phase) ||
+    !work ||
+    typeof work.id !== 'string' ||
+    !safeExecutionId(work.id) ||
+    typeof work.kind !== 'string' ||
+    !safeExecutionId(work.kind) ||
+    typeof record.attempt !== 'number' ||
+    !Number.isSafeInteger(record.attempt) ||
+    record.attempt < 1 ||
+    typeof record.checkEpoch !== 'number' ||
+    !Number.isSafeInteger(record.checkEpoch) ||
+    record.checkEpoch < 0 ||
+    (task !== undefined &&
+      (typeof task.id !== 'string' ||
+        !safeExecutionId(task.id) ||
+        (task.revision !== undefined &&
+          (typeof task.revision !== 'string' || !DIGEST.test(task.revision)))))
+  ) {
+    return { status: 'invalid', context: null };
+  }
+  return {
+    status: 'complete',
+    context: {
+      schemaVersion: 1,
+      phase: record.phase as ExecutionContext['phase'],
+      work: { id: work.id, kind: work.kind },
+      attempt: record.attempt,
+      checkEpoch: record.checkEpoch,
+      ...(task
+        ? {
+            task: {
+              id: task.id as string,
+              ...(task.revision ? { revision: task.revision as `sha256:${string}` } : {}),
+            },
+          }
+        : {}),
+    },
+  };
+}
+
+export function executionContextFromEvent(
+  event: TrajectoryEvent,
+): Readonly<ExecutionContext> | null {
+  return readExecutionContextValue(event.data.executionContext).context;
+}
+
+function addExecutionContextAttributes(attributes: Attributes, event: TrajectoryEvent): void {
+  const read = readExecutionContextValue(event.data.executionContext);
+  if (!read.context) {
+    attributes['repoctopus.execution.context.status'] = read.status;
+    return;
+  }
+  const context = read.context;
+  attributes['repoctopus.execution.context.schema_version'] = context.schemaVersion;
+  attributes['repoctopus.execution.phase'] = context.phase;
+  attributes['repoctopus.execution.work.id'] = context.work.id;
+  attributes['repoctopus.execution.work.kind'] = context.work.kind;
+  attributes['repoctopus.execution.attempt'] = context.attempt;
+  attributes['repoctopus.execution.check_epoch'] = context.checkEpoch;
+  if (context.task) {
+    attributes['repoctopus.execution.task.id'] = context.task.id;
+    if (context.task.revision) {
+      attributes['repoctopus.execution.task.revision'] = context.task.revision;
+    }
+  }
+}
+
 function addEvidenceCorrelation(attributes: Attributes, event: TrajectoryEvent): void {
   if (event.type !== 'action.completed') return;
   const attemptId = event.data.evidenceAttemptId;
@@ -139,6 +215,7 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
     if (safe !== undefined) attributes[`repoctopus.event.${key}`] = safe;
   }
   if (EXECUTION_EVENTS.has(event.type)) {
+    addExecutionContextAttributes(attributes, event);
     for (const [key, value] of Object.entries(event.data)) {
       if (!EXECUTION_DATA_KEYS.has(key) || SENSITIVE_KEY.test(key)) continue;
       if (
@@ -219,8 +296,9 @@ const BOUNDED_RESULTS = new Set([
 
 export function executionMetricAttributes(event: TrajectoryEvent): Attributes | null {
   if (!EXECUTION_EVENTS.has(event.type)) return null;
-  const phase = typeof event.data.phase === 'string' ? event.data.phase : 'unknown';
-  const workKind = typeof event.data.workKind === 'string' ? event.data.workKind : 'unknown';
+  const context = executionContextFromEvent(event);
+  const phase = context?.phase ?? 'unknown';
+  const workKind = context?.work.kind ?? 'unknown';
   const result = typeof event.data.result === 'string' ? event.data.result : 'unknown';
   const continuation =
     typeof event.data.continuation === 'string' &&

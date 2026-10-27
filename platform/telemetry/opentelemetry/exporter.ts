@@ -20,6 +20,7 @@ import { safeDeliveryAttributes } from '../delivery-mapping.js';
 import { acceptedChangeLifecycleTelemetry } from '../change-lifecycle-mapping.js';
 import {
   eventSeverity,
+  executionContextFromEvent,
   executionMetricAttributes,
   safeEventAttributes,
   workflowEventMetricAttributes,
@@ -74,7 +75,15 @@ function sameExecutionBoundary(
     const value = left.data[key];
     if (typeof value === 'string') return value === right.data[key];
   }
-  return left.data.workId === right.data.workId && left.data.attempt === right.data.attempt;
+  const leftContext = executionContextFromEvent(left);
+  const rightContext = executionContextFromEvent(right);
+  return (
+    leftContext !== null &&
+    rightContext !== null &&
+    leftContext.work.id === rightContext.work.id &&
+    leftContext.attempt === rightContext.attempt &&
+    leftContext.checkEpoch === rightContext.checkEpoch
+  );
 }
 
 function executionSpanName(type: TelemetryBatch['events'][number]['type']): string {

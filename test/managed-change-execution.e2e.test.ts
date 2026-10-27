@@ -10,6 +10,7 @@ import type { DeliveryIntentV3, DeliveryPolicy } from '../domains/delivery/types
 import type { RunStatusView, RuntimeResult } from '../domains/runtime/types.js';
 import type { RunStoreInspection } from '../domains/runtime/types.js';
 import type { SpecificationApprovalState } from '../domains/specification/types.js';
+import { executionContextFromEvent } from '../platform/telemetry/opentelemetry/mapping.js';
 import type {
   ExecuteArchiveDeliveryResult,
   VerifyChangeRunResult,
@@ -551,9 +552,8 @@ describe('managed Change execution production composition', () => {
           publicationId: 'specification',
           role: 'specification',
           repositoryId: 'workspace',
-          remoteIdentity: project.repositories.find(
-            (repository) => repository.id === 'workspace',
-          )!.remoteIdentity!,
+          remoteIdentity: project.repositories.find((repository) => repository.id === 'workspace')!
+            .remoteIdentity!,
           remote: 'origin',
           sourceBranch: 'spec/managed-blackbox',
           targetBranch: 'main',
@@ -617,6 +617,50 @@ describe('managed Change execution production composition', () => {
       for (const type of ordered) {
         cursor = types.indexOf(type as (typeof types)[number], cursor + 1);
         expect(cursor, type).toBeGreaterThan(-1);
+      }
+      const taskPacket = capture.invocations[2]!.packet;
+      const expectedExecutionContext = {
+        schemaVersion: 1,
+        phase: taskPacket.work.phase,
+        work: { id: taskPacket.work.workId, kind: taskPacket.work.kind },
+        attempt: taskPacket.claim.attempt,
+        checkEpoch: taskPacket.claim.checkEpoch,
+        task: { id: taskPacket.work.taskId, revision: taskPacket.work.taskRevision },
+      };
+      const contextEventTypes = new Set([
+        'work.context-delivered',
+        'work.host-started',
+        'work.host-completed',
+        'work.completed',
+        'skill.resolved',
+        'skill.delivered',
+        'skill.consumed',
+        'tool.started',
+        'tool.completed',
+        'validator.completed',
+        'continuation.selected',
+      ]);
+      const taskEvents = inspection.trajectory.filter(
+        (event) =>
+          contextEventTypes.has(event.type) &&
+          (event.data.executionContext as { work?: { id?: string } } | undefined)?.work?.id ===
+            taskPacket.work.workId,
+      );
+      expect(new Set(taskEvents.map((event) => event.type))).toEqual(contextEventTypes);
+      for (const taskEvent of taskEvents) {
+        expect(taskEvent.data.executionContext, taskEvent.type).toEqual(expectedExecutionContext);
+      }
+      const waitEvents = inspection.trajectory.filter(
+        (event) => event.type === 'wait.started' || event.type === 'wait.ended',
+      );
+      expect(waitEvents.length).toBeGreaterThanOrEqual(4);
+      for (const waitEvent of waitEvents) {
+        const waitContext = executionContextFromEvent(waitEvent);
+        expect(waitContext, waitEvent.type).not.toBeNull();
+        expect(waitContext?.work.id.length, waitEvent.type).toBeGreaterThan(0);
+        expect(waitContext?.work.kind.length, waitEvent.type).toBeGreaterThan(0);
+        expect(waitContext?.attempt, waitEvent.type).toBeGreaterThan(0);
+        expect(waitContext?.checkEpoch, waitEvent.type).toBeGreaterThanOrEqual(0);
       }
       expect(JSON.stringify(inspection)).not.toContain('Prove managed execution');
       capture.dispose();
