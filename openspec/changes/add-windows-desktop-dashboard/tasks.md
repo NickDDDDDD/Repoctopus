@@ -116,7 +116,7 @@
 - [x] 6.1 实现随机端口、会话凭据、Windows 用户级 discovery 文件和所有者/freshness/进程验证，运行伪造 discovery、过期进程、端口劫持和错误凭据测试证明本地状态不能被未授权请求改变。
       **Blocked by:** 3.3
       **Acceptance:** 四类攻击 fixture 全部被拒绝，合法当前用户会话可发现 receiver 且凭据不会进入日志或遥测
-- [ ] 6.2 基于固定 DSH 的 Host process/backend controller、Node-mode 环境与 single-instance 模式实现 Electron 单实例锁、第二实例上下文转交、串行 start/retry/stop、有界 ready、优雅停止和强制终止升级；运行两个并发 Run 与 Host 崩溃恢复测试，证明只有一个 Shell 和一个有效 Receiver，两个 change 都可达且孤儿 Host 不会残留。
+- [x] 6.2 基于固定 DSH 的 Host process/backend controller、Node-mode 环境与 single-instance 模式实现 Electron 单实例锁、第二实例上下文转交、串行 start/retry/stop、有界 ready、优雅停止和强制终止升级；运行两个并发 Run 与 Host 崩溃恢复测试，证明只有一个 Shell 和一个有效 Receiver，两个 change 都可达且孤儿 Host 不会残留。
       **Blocked by:** 3.7, 6.1
       **Acceptance:** 并发与崩溃测试证明单 Shell、单有效 Receiver、两个 change 可达，并且停止升级后无孤儿 Host
 - [ ] 6.3 基于固定 DSH 的 Tray 与 Shell settings ownership 模式实现 `quit`、`tray`、`ask` 用户级关闭偏好和托盘“完全退出”，运行 Windows 自动化测试验证隐藏、重新打开、保存偏好、会话退出、Host 关闭和完全退出语义。
