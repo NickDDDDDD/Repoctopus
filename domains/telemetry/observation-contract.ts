@@ -296,6 +296,12 @@ const SENSITIVE_VALUE =
   /(?:bearer\s+[a-z0-9._~+/-]+=*|gh[opusr]_[a-z0-9]{20,}|api[-_]?key|password|secret|token|-----BEGIN [A-Z ]+PRIVATE KEY-----)/iu;
 const ABSOLUTE_PATH = /^(?:[a-z]:[\\/]|\\\\|\/)/iu;
 const ATTRIBUTE_NAME = /^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$/u;
+const SAFE_MODEL_TOKEN_AGGREGATES = new Set([
+  'repoctopus.model.input_token_count',
+  'repoctopus.model.output_token_count',
+  'repoctopus.model.cache_read_token_count',
+  'repoctopus.model.cache_write_token_count',
+]);
 
 export function observationEventSchema(eventName: string): ObservationEventSchema {
   const event = schemaByName.get(eventName);
@@ -329,7 +335,7 @@ export function validateObservationAttributes(
     if (
       key.length > 128 ||
       !ATTRIBUTE_NAME.test(key) ||
-      FORBIDDEN_ATTRIBUTE_KEY.test(key) ||
+      (FORBIDDEN_ATTRIBUTE_KEY.test(key) && !SAFE_MODEL_TOKEN_AGGREGATES.has(key)) ||
       (typeof value !== 'string' && typeof value !== 'number' && typeof value !== 'boolean') ||
       (typeof value === 'number' && !Number.isFinite(value)) ||
       (typeof value === 'string' &&

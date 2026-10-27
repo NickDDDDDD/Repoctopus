@@ -144,4 +144,20 @@ describe('canonical observation envelope', () => {
       operationId: 'host-operation-1',
     });
   });
+
+  it('allows only the reviewed aggregate model Token counters', () => {
+    const aggregate = input();
+    aggregate.recordAttributes = {
+      ...aggregate.recordAttributes,
+      'repoctopus.model.input_token_count': 120,
+      'repoctopus.model.cache_read_token_count': 40,
+    };
+    expect(createObservationEnvelope(aggregate).records[0]?.attributes).toMatchObject({
+      'repoctopus.model.input_token_count': 120,
+      'repoctopus.model.cache_read_token_count': 40,
+    });
+
+    aggregate.recordAttributes['repoctopus.model.token'] = 'private-token';
+    expect(() => createObservationEnvelope(aggregate)).toThrow(/unsafe observation/iu);
+  });
 });

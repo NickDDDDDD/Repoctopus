@@ -31,9 +31,20 @@ import type {
   LifecycleTelemetryPort,
 } from '../../../services/lifecycle-diagnostics.js';
 import { projectWorkflowHealthMetrics } from '../../../domains/telemetry/workflow-health-metrics.js';
+import { mapWorkflowObservationEnvelopes } from '../workflow-observation-mapping.js';
+import { encodeObservationEnvelopes, type EncodedObservationSignals } from './envelope-encoder.js';
 
 function syntheticParentContext(runId: string, traceId: string): Context {
   const spanId = createHash('sha256').update(runId).digest('hex').slice(0, 16);
+  return trace.setSpanContext(ROOT_CONTEXT, {
+    traceId,
+    spanId,
+    traceFlags: TraceFlags.SAMPLED,
+    isRemote: true,
+  });
+}
+
+function observationContext(traceId: string, spanId: string): Context {
   return trace.setSpanContext(ROOT_CONTEXT, {
     traceId,
     spanId,
@@ -115,6 +126,13 @@ export class OpenTelemetryExporter implements TelemetryPort {
   constructor(private readonly options: OpenTelemetryOptions = {}) {}
 
   async export(batch: TelemetryBatch): Promise<void> {
+    const observationSignalsByEvent = new Map<string, EncodedObservationSignals>();
+    for (const envelope of mapWorkflowObservationEnvelopes(batch)) {
+      observationSignalsByEvent.set(
+        envelope.source.eventId,
+        encodeObservationEnvelopes([envelope]),
+      );
+    }
     const resource = resourceFromAttributes({
       [ATTR_SERVICE_NAME]: 'repoctopus-runtime',
       [ATTR_SERVICE_VERSION]: '0.1.0',
@@ -124,20 +142,25 @@ export class OpenTelemetryExporter implements TelemetryPort {
     const exportsRoot =
       batch.run.status === 'completed' &&
       batch.trajectory.some((event) => event.type === 'run.started');
-    const spannedEvents = batch.events.filter(
-      (event) =>
-        event.type === 'action.completed' ||
-        event.type === 'telemetry.delivery-completed' ||
-        EXECUTION_SPAN_START[event.type] !== undefined,
-    );
     const stableSpanIds = [
       ...(exportsRoot ? [rootSpanId(batch.run.runId)] : []),
-      ...spannedEvents.map((event) =>
-        createHash('sha256')
-          .update(`${batch.run.runId}\0${event.eventId}\0${event.type}`)
-          .digest('hex')
-          .slice(0, 16),
-      ),
+      ...batch.events.flatMap((event) => {
+        const observationSpans = observationSignalsByEvent.get(event.eventId)?.spans ?? [];
+        if (observationSpans.length > 0) return observationSpans.map((span) => span.spanId);
+        if (
+          event.type !== 'action.completed' &&
+          event.type !== 'telemetry.delivery-completed' &&
+          EXECUTION_SPAN_START[event.type] === undefined
+        ) {
+          return [];
+        }
+        return [
+          createHash('sha256')
+            .update(`${batch.run.runId}\0${event.eventId}\0${event.type}`)
+            .digest('hex')
+            .slice(0, 16),
+        ];
+      }),
     ];
     let spanCursor = 0;
     const traceProvider = new BasicTracerProvider({
@@ -169,6 +192,8 @@ export class OpenTelemetryExporter implements TelemetryPort {
     const tracer = traceProvider.getTracer('repoctopus-runtime', '0.1.0');
     const logger = loggerProvider.getLogger('repoctopus-runtime', '0.1.0');
     const meter = meterProvider.getMeter('repoctopus-runtime', '0.1.0');
+    const observationTracer = traceProvider.getTracer('io.repoctopus.observation', '1.0.0');
+    const observationLogger = loggerProvider.getLogger('io.repoctopus.observation', '1.0.0');
     const eventCounter = meter.createCounter('repoctopus.workflow.events', {
       description: 'Number of Repoctopus workflow events exported',
       unit: '{event}',
@@ -419,6 +444,44 @@ export class OpenTelemetryExporter implements TelemetryPort {
               'repoctopus.event.type': record.eventName,
               'repoctopus.workflow.name': batch.run.workflowName,
             });
+          }
+          continue;
+        }
+        const observationSignals = observationSignalsByEvent.get(item.eventId);
+        if (observationSignals) {
+          for (const spanRecord of observationSignals.spans) {
+            const span = observationTracer.startSpan(
+              spanRecord.name,
+              {
+                startTime: new Date(spanRecord.startTime),
+                attributes: spanRecord.attributes,
+              },
+              syntheticParentContext(batch.run.runId, spanRecord.traceId),
+            );
+            span.setStatus({
+              code:
+                spanRecord.result === 'failed' || spanRecord.result === 'rejected'
+                  ? SpanStatusCode.ERROR
+                  : SpanStatusCode.OK,
+            });
+            span.end(new Date(spanRecord.endTime));
+          }
+          for (const logRecord of observationSignals.logs) {
+            observationLogger.emit({
+              eventName: logRecord.eventName,
+              timestamp: new Date(logRecord.observedAt),
+              severityNumber: eventSeverity(item.type),
+              body: logRecord.body,
+              attributes: logRecord.attributes,
+              context: observationContext(logRecord.traceId, logRecord.spanId),
+            });
+          }
+          for (const metricRecord of observationSignals.metrics) {
+            if (metricRecord.instrument === 'histogram') {
+              executionDuration.record(metricRecord.value, metricRecord.attributes);
+            } else {
+              executionCounter.add(metricRecord.value, metricRecord.attributes);
+            }
           }
           continue;
         }
