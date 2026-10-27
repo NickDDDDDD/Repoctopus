@@ -134,7 +134,7 @@
 
 ## 7. 生成并验证 Windows x64 安装产物
 
-- [ ] 7.1 使用精确锁定的 `electron-builder` 配置 Windows x64 桌面打包、产品元数据、图标和确定性资源清单，把 Desktop Host 与 Renderer 作为显式资源打包；执行打包命令生成可安装产物并通过品牌、来源和 package contents 检查。
+- [x] 7.1 使用精确锁定的 `electron-builder` 配置 Windows x64 桌面打包、产品元数据、图标和确定性资源清单，把 Desktop Host 与 Renderer 作为显式资源打包；执行打包命令生成可安装产物并通过品牌、来源和 package contents 检查。
       **Blocked by:** 5.7, 6.6
       **Acceptance:** Windows x64 安装产物可重复生成，品牌、provenance 与 package contents 检查确认 Host、Renderer 和资源清单完整
 - [ ] 7.2 在干净 Windows 用户环境安装候选，运行启动、Run 自动激活、OTLP 接收、单实例、托盘、直接退出和卸载端到端测试并保存 Evidence。
