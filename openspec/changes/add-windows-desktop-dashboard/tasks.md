@@ -65,7 +65,7 @@
 
 ## 4. 收敛完整遥测映射与多目的地恢复
 
-- [ ] 4.1 将 Workflow Run 的 Trace、Log 和 Metric exporter 迁移到共享 envelope 映射与 OTLP encoder，执行现有 tracer E2E 和新双目的地测试证明事件身份、允许列表属性与原语义一致。
+- [x] 4.1 将 Workflow Run 的 Trace、Log 和 Metric exporter 迁移到共享 envelope 映射与 OTLP encoder，执行现有 tracer E2E 和新双目的地测试证明事件身份、允许列表属性与原语义一致。
       **Blocked by:** 2.8, 3.2
       **Acceptance:** tracer E2E 与双目的地测试证明 Workflow 信号共享同一 envelope identity、允许列表和既有语义
 - [ ] 4.2 将 Evidence Attempt、节点、Artifact 与 Gate 映射迁移到共享 envelope，运行 Evidence 重放、superseded、Receipt 复用和隐私测试证明本地与远端投影一致。
