@@ -52,6 +52,10 @@ const EXECUTION_EVENTS = new Set<TrajectoryEvent['type']>([
   'work.host-started',
   'work.host-completed',
   'work.completed',
+  'task.started',
+  'task.completed',
+  'task.failed',
+  'task.reopened',
   'skill.resolved',
   'skill.delivered',
   'skill.consumed',
@@ -186,6 +190,59 @@ function addEvidenceCorrelation(attributes: Attributes, event: TrajectoryEvent):
   }
 }
 
+function addTaskCorrelation(attributes: Attributes, event: TrajectoryEvent): void {
+  if (!event.type.startsWith('task.')) return;
+  const task = event.data.task;
+  if (task && typeof task === 'object') {
+    const record = task as Record<string, unknown>;
+    if (typeof record.id === 'string' && safeExecutionId(record.id)) {
+      attributes['repoctopus.task.id'] = record.id;
+    }
+    if (typeof record.revision === 'string' && DIGEST.test(record.revision)) {
+      attributes['repoctopus.task.revision'] = record.revision;
+    }
+  }
+  const result = event.data.result;
+  if (
+    result === 'started' ||
+    result === 'completed' ||
+    result === 'failed' ||
+    result === 'reopened'
+  ) {
+    attributes['repoctopus.task.result'] = result;
+  }
+  const recovery = event.data.recovery;
+  if (!recovery || typeof recovery !== 'object') return;
+  const recoveryRecord = recovery as Record<string, unknown>;
+  if (recoveryRecord.kind === 'fallback') {
+    attributes['repoctopus.recovery.kind'] = 'fallback';
+  }
+  if (recoveryRecord.sourcePhase === 'verify' || recoveryRecord.sourcePhase === 'archive') {
+    attributes['repoctopus.recovery.source_phase'] = recoveryRecord.sourcePhase;
+  }
+  const continuation = recoveryRecord.continuation;
+  if (!continuation || typeof continuation !== 'object') return;
+  const continuationRecord = continuation as Record<string, unknown>;
+  const nextWork = continuationRecord.work;
+  if (nextWork && typeof nextWork === 'object') {
+    const workRecord = nextWork as Record<string, unknown>;
+    if (typeof workRecord.id === 'string' && safeExecutionId(workRecord.id)) {
+      attributes['repoctopus.recovery.next_work.id'] = workRecord.id;
+    }
+    if (typeof workRecord.kind === 'string' && safeExecutionId(workRecord.kind)) {
+      attributes['repoctopus.recovery.next_work.kind'] = BOUNDED_WORK_KINDS.has(workRecord.kind)
+        ? workRecord.kind
+        : 'custom';
+    }
+  }
+  if (
+    typeof continuationRecord.checkEpoch === 'number' &&
+    Number.isSafeInteger(continuationRecord.checkEpoch)
+  ) {
+    attributes['repoctopus.recovery.next_check_epoch'] = continuationRecord.checkEpoch;
+  }
+}
+
 export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEvent): Attributes {
   const attributes: Attributes = {
     'repoctopus.project.id': batch.projectSnapshot.projectId,
@@ -272,6 +329,7 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
     attributes['repoctopus.action.receipt.id'] = actionReceiptId;
   }
   addEvidenceCorrelation(attributes, event);
+  addTaskCorrelation(attributes, event);
   return attributes;
 }
 
@@ -292,12 +350,22 @@ const BOUNDED_RESULTS = new Set([
   'rejected',
   'implementation-failure',
   'evidence-unavailable',
+  'started',
+  'completed',
+  'reopened',
 ]);
 
 export function executionMetricAttributes(event: TrajectoryEvent): Attributes | null {
   if (!EXECUTION_EVENTS.has(event.type)) return null;
   const context = executionContextFromEvent(event);
-  const phase = context?.phase ?? 'unknown';
+  const recovery = event.data.recovery;
+  const recoveryPhase =
+    recovery && typeof recovery === 'object'
+      ? (recovery as Record<string, unknown>).sourcePhase
+      : undefined;
+  const phase =
+    context?.phase ??
+    (recoveryPhase === 'verify' || recoveryPhase === 'archive' ? recoveryPhase : 'unknown');
   const workKind = context?.work.kind ?? 'unknown';
   const result = typeof event.data.result === 'string' ? event.data.result : 'unknown';
   const continuation =
@@ -315,7 +383,7 @@ export function executionMetricAttributes(event: TrajectoryEvent): Attributes | 
 }
 
 export function eventSeverity(type: TrajectoryEvent['type']): number {
-  return type === 'recovery.reconciled' ? 13 : 9;
+  return type === 'recovery.reconciled' || type === 'task.failed' ? 13 : 9;
 }
 
 export function workflowEventMetricAttributes(

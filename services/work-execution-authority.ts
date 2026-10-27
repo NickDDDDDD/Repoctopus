@@ -11,6 +11,11 @@ import {
   type ExecutionContext,
 } from '../domains/telemetry/execution-context.js';
 import type {
+  TaskReworkCorrelation,
+  TaskTrajectoryData,
+  TaskTrajectoryIdentity,
+} from '../domains/telemetry/task-trajectory.js';
+import type {
   AgentCoordinationCheckpoint,
   AgentCoordinationCheckpointView,
   WorkContinuationKind,
@@ -169,6 +174,19 @@ export class WorkExecutionAuthority extends Service {
         };
       },
     );
+    const task = result.executionContext.task;
+    if (task?.revision) {
+      await this.recordTaskLifecycleEvent(
+        packet.claim.runId,
+        {
+          schemaVersion: 1,
+          task: { id: task.id, revision: task.revision },
+          result: 'started',
+          executionContext: result.executionContext,
+        },
+        false,
+      );
+    }
     await this.flushTelemetry(packet.claim.runId);
     return result;
   }
@@ -354,7 +372,7 @@ export class WorkExecutionAuthority extends Service {
     outcome: ClaimedActionOutcome;
     receipt: ActionReceipt;
   }): Promise<WorkExecutionCheckpoint> {
-    return this.transition(
+    const checkpoint = await this.transition(
       input.intent.runId,
       input.intent.intentId,
       ['context-delivered', 'invoking'],
@@ -371,6 +389,74 @@ export class WorkExecutionAuthority extends Service {
         receiptId: input.receipt.receiptId,
       },
     );
+    const task = checkpoint.executionContext.task;
+    if (input.outcome.status === 'failed' && task?.revision) {
+      await this.recordTaskLifecycleEvent(input.intent.runId, {
+        schemaVersion: 1,
+        task: { id: task.id, revision: task.revision },
+        result: 'failed',
+        executionContext: checkpoint.executionContext,
+        failure: { reason: input.outcome.summary },
+      });
+    }
+    return checkpoint;
+  }
+
+  async recordTaskCompleted(input: {
+    runId: string;
+    task: TaskTrajectoryIdentity;
+    receiptId: string;
+  }): Promise<void> {
+    const [state, trajectory] = await Promise.all([
+      this.ctx.runStore.loadRun(input.runId),
+      this.ctx.runStore.loadTrajectory(input.runId),
+    ]);
+    const alreadyRecorded = trajectory.some((event) => {
+      if (event.type !== 'task.completed') return false;
+      const task = event.data.task as { id?: unknown; revision?: unknown } | undefined;
+      const completion = event.data.completion as { receiptId?: unknown } | undefined;
+      return (
+        task?.id === input.task.id &&
+        task.revision === input.task.revision &&
+        completion?.receiptId === input.receiptId
+      );
+    });
+    if (alreadyRecorded) return;
+    const context = state.workExecution?.executionContext;
+    if (
+      !context?.task?.revision ||
+      context.task.id !== input.task.id ||
+      context.task.revision !== input.task.revision
+    ) {
+      throw new Error('Task completion does not match the authoritative execution context');
+    }
+    await this.recordTaskLifecycleEvent(input.runId, {
+      schemaVersion: 1,
+      task: input.task,
+      result: 'completed',
+      executionContext: context,
+      completion: { receiptId: input.receiptId },
+    });
+  }
+
+  async recordTasksReopened(input: {
+    runId: string;
+    tasks: readonly TaskTrajectoryIdentity[];
+    recovery: TaskReworkCorrelation;
+  }): Promise<void> {
+    for (const task of input.tasks) {
+      await this.recordTaskLifecycleEvent(
+        input.runId,
+        {
+          schemaVersion: 1,
+          task,
+          result: 'reopened',
+          recovery: input.recovery,
+        },
+        false,
+      );
+    }
+    await this.flushTelemetry(input.runId);
   }
 
   async markValidated(input: {
@@ -711,6 +797,48 @@ export class WorkExecutionAuthority extends Service {
       };
     });
     await this.flushTelemetry(runId);
+  }
+
+  private async recordTaskLifecycleEvent(
+    runId: string,
+    data: TaskTrajectoryData,
+    flush = true,
+  ): Promise<void> {
+    const type: Extract<TrajectoryEventType, `task.${string}`> = `task.${data.result}`;
+    await this.ctx.runStore.commitGuarded(runId, ({ state, trajectory }) => {
+      const workId =
+        data.executionContext?.work.id ??
+        (data.result === 'reopened' ? data.recovery.continuation.work.id : 'none');
+      const attempt = data.executionContext?.attempt ?? 0;
+      const eventId = digest(
+        runId,
+        type,
+        data.task.id,
+        data.task.revision,
+        workId,
+        String(attempt),
+      );
+      if (trajectory.some((event) => event.eventId === eventId)) return { value: undefined };
+      const timestamp = new Date().toISOString();
+      const nextState: RunState = {
+        ...state,
+        stateVersion: state.stateVersion + 1,
+        updatedAt: timestamp,
+      };
+      return {
+        state: nextState,
+        event: executionEvent({
+          state: nextState,
+          sequence: trajectory.length + 1,
+          timestamp,
+          type,
+          identity: [data.task.id, data.task.revision, workId, String(attempt)],
+          data: structuredClone(data),
+        }),
+        value: undefined,
+      };
+    });
+    if (flush) await this.flushTelemetry(runId);
   }
 
   private async flushTelemetry(runId: string): Promise<void> {

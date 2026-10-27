@@ -1523,6 +1523,11 @@ export class WorkflowRuns extends Service {
             candidate.taskId === observation.taskId && candidate.status === 'completed',
         );
         if (!task) throw new Error('Accepted Build Task completion has no Task projection');
+        await this.ctx.workExecutionAuthority.recordTaskCompleted({
+          runId: input.runId,
+          task: { id: task.taskId, revision: task.taskRevision },
+          receiptId: receipt.receiptId,
+        });
         return {
           value: {
             validation: {
@@ -1599,6 +1604,11 @@ export class WorkflowRuns extends Service {
         inputDigest: lifecycle.currentWork.inputDigest,
         receiptId: receipt.receiptId,
         tasks: projectedTasks,
+      });
+      await this.ctx.workExecutionAuthority.recordTaskCompleted({
+        runId: input.runId,
+        task: { id: validation.taskId, revision: validation.taskRevision },
+        receiptId: receipt.receiptId,
       });
       return {
         value: { validation, run: advanced.value },
@@ -1698,6 +1708,35 @@ export class WorkflowRuns extends Service {
           checkEpoch,
           ...continuation,
         });
+        if (classification === 'implementation-failure' && continuation.tasks) {
+          await this.ctx.workExecutionAuthority.recordTasksReopened({
+            runId: input.runId,
+            tasks: (lifecycle.tasks ?? []).map((task) => ({
+              id: task.taskId,
+              revision: task.taskRevision,
+            })),
+            recovery: {
+              kind: 'fallback',
+              sourcePhase: 'verify',
+              evidence: {
+                attemptId,
+                inputFingerprint: current.verificationInput.evidenceProfile.fingerprintDigest,
+              },
+              continuation: {
+                work: { id: continuation.work.workId, kind: continuation.work.kind },
+                ...(continuation.work.taskId && continuation.work.taskRevision
+                  ? {
+                      task: {
+                        id: continuation.work.taskId,
+                        revision: continuation.work.taskRevision,
+                      },
+                    }
+                  : {}),
+                checkEpoch: continuation.work.checkEpoch,
+              },
+            },
+          });
+        }
         await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, continuation.work);
         return {
           value: { attemptId, bundleId: null, gate: 'blocked', run: fallback.value },
@@ -1733,6 +1772,34 @@ export class WorkflowRuns extends Service {
           kind: 'verify-gate-rejected',
           ...rejected,
           ...continuation,
+        });
+        await this.ctx.workExecutionAuthority.recordTasksReopened({
+          runId: input.runId,
+          tasks: (lifecycle.tasks ?? []).map((task) => ({
+            id: task.taskId,
+            revision: task.taskRevision,
+          })),
+          recovery: {
+            kind: 'fallback',
+            sourcePhase: 'verify',
+            evidence: {
+              attemptId,
+              bundleId: gate.bundleId,
+              inputFingerprint: current.verificationInput.evidenceProfile.fingerprintDigest,
+            },
+            continuation: {
+              work: { id: continuation.work.workId, kind: continuation.work.kind },
+              ...(continuation.work.taskId && continuation.work.taskRevision
+                ? {
+                    task: {
+                      id: continuation.work.taskId,
+                      revision: continuation.work.taskRevision,
+                    },
+                  }
+                : {}),
+              checkEpoch: continuation.work.checkEpoch,
+            },
+          },
         });
         await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, continuation.work);
         return {
@@ -2180,6 +2247,24 @@ export class WorkflowRuns extends Service {
                 ? correctedError.message
                 : 'Approved Change branch no longer matches the live remote branch',
             evidenceIds: [archive.digest, closure.closureId, planningApproval.snapshot.digest],
+          });
+          await this.ctx.workExecutionAuthority.recordTasksReopened({
+            runId: input.runId,
+            tasks: (lifecycle.tasks ?? []).map((task) => ({
+              id: task.taskId,
+              revision: task.taskRevision,
+            })),
+            recovery: {
+              kind: 'fallback',
+              sourcePhase: 'archive',
+              evidence: {
+                ids: [archive.digest, closure.closureId, planningApproval.snapshot.digest],
+              },
+              continuation: {
+                work: { id: designWork.workId, kind: designWork.kind },
+                checkEpoch: designWork.checkEpoch,
+              },
+            },
           });
           await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, designWork);
           return {

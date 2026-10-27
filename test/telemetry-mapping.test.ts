@@ -343,4 +343,67 @@ describe('telemetry mapping', () => {
       'repoctopus.execution.work.id',
     );
   });
+
+  it('exports bounded Task rework correlation without requiring a current execution context', () => {
+    const workflow = workflowFixture();
+    const project = projectFixture();
+    const run = startRun({
+      workflow,
+      runId: 'run-task-reopened',
+      projectSnapshotDigest: project.digest,
+      composition: compositionFixture(),
+      timestamp: '2026-01-01T00:00:00.000Z',
+      traceId: '5'.repeat(32),
+    });
+    const event: TrajectoryEvent = {
+      schemaVersion: 1,
+      sequence: 1,
+      eventId: 'task-reopened-1',
+      timestamp: '2026-01-01T00:00:01.000Z',
+      type: 'task.reopened',
+      runId: run.runId,
+      stateVersion: 2,
+      compositionDigest: run.composition.compositionDigest,
+      data: {
+        schemaVersion: 1,
+        task: { id: '2.3', revision: `sha256:${'2'.repeat(64)}` },
+        result: 'reopened',
+        recovery: {
+          kind: 'fallback',
+          sourcePhase: 'verify',
+          evidence: { bundleId: 'bundle-1' },
+          continuation: {
+            work: { id: 'build:repair:2.3', kind: 'task.implement' },
+            checkEpoch: 12,
+          },
+        },
+      },
+    };
+    const batch: TelemetryBatch = {
+      run,
+      workflow,
+      projectSnapshot: project,
+      events: [event],
+      trajectory: [event],
+    };
+
+    expect(safeEventAttributes(batch, event)).toMatchObject({
+      'repoctopus.execution.context.status': 'missing',
+      'repoctopus.task.id': '2.3',
+      'repoctopus.task.revision': `sha256:${'2'.repeat(64)}`,
+      'repoctopus.task.result': 'reopened',
+      'repoctopus.recovery.kind': 'fallback',
+      'repoctopus.recovery.source_phase': 'verify',
+      'repoctopus.recovery.next_work.id': 'build:repair:2.3',
+      'repoctopus.recovery.next_work.kind': 'task.implement',
+      'repoctopus.recovery.next_check_epoch': 12,
+    });
+    expect(executionMetricAttributes(event)).toEqual({
+      'repoctopus.execution.event.type': 'task.reopened',
+      'repoctopus.execution.phase': 'verify',
+      'repoctopus.execution.work.kind': 'custom',
+      'repoctopus.execution.result': 'reopened',
+      'repoctopus.execution.continuation': 'unknown',
+    });
+  });
 });

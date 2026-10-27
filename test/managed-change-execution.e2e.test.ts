@@ -10,6 +10,7 @@ import type { DeliveryIntentV3, DeliveryPolicy } from '../domains/delivery/types
 import type { RunStatusView, RuntimeResult } from '../domains/runtime/types.js';
 import type { RunStoreInspection } from '../domains/runtime/types.js';
 import type { SpecificationApprovalState } from '../domains/specification/types.js';
+import { projectTaskTrajectory } from '../domains/telemetry/task-trajectory.js';
 import { executionContextFromEvent } from '../platform/telemetry/opentelemetry/mapping.js';
 import type {
   ExecuteArchiveDeliveryResult,
@@ -650,6 +651,25 @@ describe('managed Change execution production composition', () => {
       for (const taskEvent of taskEvents) {
         expect(taskEvent.data.executionContext, taskEvent.type).toEqual(expectedExecutionContext);
       }
+      const taskLifecycleEvents = inspection.trajectory.filter((event) =>
+        event.type.startsWith('task.'),
+      );
+      expect(taskLifecycleEvents.map((event) => event.type)).toEqual([
+        'task.started',
+        'task.completed',
+        'task.started',
+        'task.completed',
+      ]);
+      const taskProjection = projectTaskTrajectory({
+        tasks: capture.invocations
+          .filter((item) => item.packet.work.kind === 'task.implement')
+          .map((item) => ({
+            id: item.packet.work.taskId!,
+            revision: item.packet.work.taskRevision!,
+          })),
+        events: inspection.trajectory,
+      });
+      expect(taskProjection.progress).toEqual({ total: 2, completed: 2, active: 0, pending: 0 });
       const waitEvents = inspection.trajectory.filter(
         (event) => event.type === 'wait.started' || event.type === 'wait.ended',
       );
