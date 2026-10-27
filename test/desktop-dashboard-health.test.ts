@@ -80,7 +80,7 @@ function shell(
     snapshot: { apiVersion: DESKTOP_APPLICATION_CONTRACT, phase: 'ready' },
     projection,
     delta: null,
-    launchContext: null,
+    launch: { sequence: 0, current: null, history: [] },
   };
 }
 

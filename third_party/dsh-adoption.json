@@ -118,7 +118,7 @@
       "sourceSha256": "eec9641e9abf40586464d7b3d4ffa8d968e040696f3fc7923507faae3d82ed27",
       "disposition": "source-modified",
       "target": "app/desktop/main/backend-controller.ts",
-      "targetSha256": "313a167c4be0ffe601318618bfbde07e697a2ff9770930a6a440688d2062a90d"
+      "targetSha256": "239a3f21f99b38c89d00e214accdab4f9b924615b43ed41ee70ea9b25db7d825"
     },
     {
       "id": "desktop-host-process",
@@ -126,7 +126,7 @@
       "sourceSha256": "6b9d3e558f526b7832020fb43d6682a07a68bf2d5657f26951f50a4f3eabfa28",
       "disposition": "source-modified",
       "target": "app/desktop/main/host-process.ts",
-      "targetSha256": "90a3e8c2fcb56b4b93cb791ed5c76036fc51b5d516f2ad715f9d66705af85b3e"
+      "targetSha256": "1d40552100d64bd18b3f77ea8338bdd150e1bf6566ebb775bedc8dafa2b66620"
     },
     {
       "id": "desktop-node-environment",
@@ -142,7 +142,7 @@
       "sourceSha256": "dc6a6e263a6fdedc3f1cfacb97eb6f60dd5b04ad5d3b02daae4640f2e30a5150",
       "disposition": "source-modified",
       "target": "app/desktop/main/single-instance.ts",
-      "targetSha256": "26ebfb6cc1013639ab00ffef162f44330501b72d599f036b833d61e863f2f929"
+      "targetSha256": "9419cfc5e7b87d0cafd6cbae318c1350d5be8337894cf7e012e114634ef90bab"
     },
     {
       "id": "skill-registry",

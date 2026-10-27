@@ -116,6 +116,10 @@ export class DesktopBackendController<Host extends DesktopBackendHost> {
         if (cleanup.status === 'rejected') throw cleanup.reason;
         if (this.attempt === attempt) this.attempt = undefined;
       })
+      .catch((error: unknown) => {
+        if (!this.closed) this.update(errorState(error));
+        throw error;
+      })
       .finally(() => {
         if (this.stopping === stopping) this.stopping = undefined;
       });

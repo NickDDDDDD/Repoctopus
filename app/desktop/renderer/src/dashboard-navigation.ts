@@ -20,6 +20,11 @@ export interface DashboardNavigationModel {
   groups: readonly DashboardWorkspaceGroup[];
 }
 
+export interface DashboardLaunchSelection {
+  sequence: number;
+  selection: DashboardSelection;
+}
+
 function sameSelection(left: DashboardSelection | null, right: DashboardSelection): boolean {
   return left?.workspaceId === right.workspaceId && left.changeId === right.changeId;
 }
@@ -33,13 +38,34 @@ export function reconcileDashboardSelection(
   shell: DesktopShellState,
 ): DashboardSelection | null {
   if (current !== null || shell.phase !== 'ready') return current;
-  if (shell.launchContext !== null) {
+  if (shell.launch.current !== null) {
     return {
-      workspaceId: shell.launchContext.workspaceId,
-      changeId: shell.launchContext.changeId,
+      workspaceId: shell.launch.current.workspaceId,
+      changeId: shell.launch.current.changeId,
     };
   }
   return shell.projection.activeChange ? { ...shell.projection.activeChange } : null;
+}
+
+/** Returns each explicit process activation exactly once to the Renderer. */
+export function dashboardLaunchSelection(
+  shell: DesktopShellState,
+  afterSequence: number,
+): DashboardLaunchSelection | null {
+  if (
+    shell.phase !== 'ready' ||
+    shell.launch.current === null ||
+    shell.launch.sequence <= afterSequence
+  ) {
+    return null;
+  }
+  return {
+    sequence: shell.launch.sequence,
+    selection: {
+      workspaceId: shell.launch.current.workspaceId,
+      changeId: shell.launch.current.changeId,
+    },
+  };
 }
 
 export function dashboardNavigationFromShell(
@@ -55,13 +81,23 @@ export function dashboardNavigationFromShell(
     status: change.status,
     selected: sameSelection(selection, change),
   }));
+  for (const context of shell.launch.history) {
+    if (choices.some((choice) => sameSelection(choice, context))) continue;
+    choices.push({
+      workspaceId: context.workspaceId,
+      changeId: context.changeId,
+      runId: context.runId,
+      status: 'pending',
+      selected: sameSelection(selection, context),
+    });
+  }
   if (selection !== null && !choices.some((choice) => sameSelection(selection, choice))) {
     choices.push({
       ...selection,
       runId:
-        shell.launchContext?.workspaceId === selection.workspaceId &&
-        shell.launchContext.changeId === selection.changeId
-          ? shell.launchContext.runId
+        shell.launch.current?.workspaceId === selection.workspaceId &&
+        shell.launch.current.changeId === selection.changeId
+          ? shell.launch.current.runId
           : null,
       status: 'pending',
       selected: true,

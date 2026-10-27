@@ -131,7 +131,7 @@ describe('Desktop Dashboard Evidence and decision projection', () => {
       snapshot: { apiVersion: DESKTOP_APPLICATION_CONTRACT, phase: 'ready' },
       projection,
       delta: null,
-      launchContext: null,
+      launch: { sequence: 0, current: null, history: [] },
     };
     const model = dashboardModelFromShell(shell);
     const markup = renderToStaticMarkup(

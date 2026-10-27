@@ -1,4 +1,4 @@
-import { spawn, type ChildProcess } from 'node:child_process';
+import { spawn, type ChildProcess, type SpawnOptions } from 'node:child_process';
 
 import type { DesktopApplicationSnapshot } from '../../../services/desktop-application.js';
 import type {
@@ -9,6 +9,7 @@ import { isDesktopHostEvent } from '../shared/host-protocol.js';
 import { desktopNodeEnvironment } from './node-environment.js';
 
 const MAX_HOST_DIAGNOSTIC_CHARS = 64 * 1024;
+const READY_TIMEOUT_MS = 15_000;
 const GRACEFUL_STOP_MS = 10_000;
 const TERMINATION_STOP_MS = 5_000;
 
@@ -22,6 +23,21 @@ async function exitsWithin(exit: Promise<void>, milliseconds: number): Promise<b
   });
   try {
     return await Promise.race([exit.then(() => true), timeout]);
+  } finally {
+    if (timer !== undefined) clearTimeout(timer);
+  }
+}
+
+async function readyWithin<T>(ready: Promise<T>, milliseconds: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_resolve, reject) => {
+    timer = setTimeout(() => {
+      reject(new Error(`Repoctopus Desktop Host did not become ready within ${milliseconds}ms`));
+    }, milliseconds);
+    timer.unref();
+  });
+  try {
+    return await Promise.race([ready, timeout]);
   } finally {
     if (timer !== undefined) clearTimeout(timer);
   }
@@ -41,6 +57,9 @@ export interface DesktopHostProcessOptions {
   onReady?: (ready: DesktopHostReady) => void;
   onProjection?: (snapshot: ChangeProjectionSnapshot, delta: ChangeProjectionDelta) => void;
   onFailure?: (error: Error) => void;
+  readyTimeoutMs?: number;
+  stopTimeouts?: Readonly<{ gracefulMs: number; terminationMs: number }>;
+  spawnProcess?: (command: string, arguments_: string[], options: SpawnOptions) => ChildProcess;
 }
 
 /** One Cordis Desktop Host running under the Electron executable in Node mode. */
@@ -53,21 +72,42 @@ export class DesktopHostProcess {
     this.readyReject = reject;
   });
   private exitPromise: Promise<void> | undefined;
+  private starting: Promise<DesktopHostReady> | undefined;
+  private stoppingPromise: Promise<void> | undefined;
   private stderr = '';
   private failureReported = false;
   private stopping = false;
   private shutdownCompleted = false;
+  private childExited = false;
 
   constructor(private readonly options: DesktopHostProcessOptions) {}
 
-  async start(): Promise<DesktopHostReady> {
-    if (this.child !== undefined) return this.readyPromise;
-    const child = spawn(this.options.executable, [this.options.entry, this.options.productRoot], {
-      cwd: this.options.productRoot,
-      env: desktopNodeEnvironment(this.options.environment),
-      stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
-      windowsHide: true,
-    });
+  get processId(): number | null {
+    return this.child?.pid ?? null;
+  }
+
+  start(): Promise<DesktopHostReady> {
+    if (this.starting !== undefined) return this.starting;
+    const starting = this.startOnce();
+    this.starting = starting;
+    return starting;
+  }
+
+  private async startOnce(): Promise<DesktopHostReady> {
+    const spawnProcess =
+      this.options.spawnProcess ??
+      ((command: string, arguments_: string[], options: SpawnOptions) =>
+        spawn(command, arguments_, options));
+    const child = spawnProcess(
+      this.options.executable,
+      [this.options.entry, this.options.productRoot],
+      {
+        cwd: this.options.productRoot,
+        env: desktopNodeEnvironment(this.options.environment),
+        stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
+        windowsHide: true,
+      },
+    );
     this.child = child;
     child.stdout?.pipe(process.stdout);
     child.stderr?.setEncoding('utf8');
@@ -117,6 +157,7 @@ export class DesktopHostProcess {
     });
     this.exitPromise = new Promise<void>((resolve) => {
       child.once('close', (code, signal) => {
+        this.childExited = true;
         const diagnostic = this.stderr.trim();
         const suffix = diagnostic.length === 0 ? '' : `: ${diagnostic}`;
         if (!this.stopping) {
@@ -129,29 +170,56 @@ export class DesktopHostProcess {
         resolve();
       });
     });
-    return this.readyPromise;
+    try {
+      return await readyWithin(this.readyPromise, this.options.readyTimeoutMs ?? READY_TIMEOUT_MS);
+    } catch (error) {
+      const failure =
+        error instanceof Error ? error : new Error('Repoctopus Desktop Host failed to start');
+      this.fail(failure);
+      try {
+        await this.stop();
+      } catch (stopError) {
+        throw new AggregateError([failure, stopError], 'Desktop Host startup cleanup failed', {
+          cause: stopError,
+        });
+      }
+      throw failure;
+    }
   }
 
-  async stop(): Promise<void> {
+  stop(): Promise<void> {
+    if (this.stoppingPromise !== undefined) return this.stoppingPromise;
+    const stopping = this.stopOnce();
+    this.stoppingPromise = stopping;
+    return stopping;
+  }
+
+  private async stopOnce(): Promise<void> {
     const child = this.child;
     if (child === undefined) return;
     this.stopping = true;
-    if (child.connected) {
+    if (!this.childExited) {
+      this.readyReject(new Error('Repoctopus Desktop Host stopped before becoming ready'));
+    }
+    const requestedShutdown = !this.childExited && child.connected;
+    if (requestedShutdown) {
       child.send({ type: 'shutdown' }, (error) => {
         if (error !== null) this.fail(error);
       });
     }
     const exited = this.exitPromise ?? Promise.resolve();
-    const graceful = await exitsWithin(exited, GRACEFUL_STOP_MS);
+    const gracefulMs = this.options.stopTimeouts?.gracefulMs ?? GRACEFUL_STOP_MS;
+    const terminationMs = this.options.stopTimeouts?.terminationMs ?? TERMINATION_STOP_MS;
+    const graceful = await exitsWithin(exited, gracefulMs);
     if (!graceful) child.kill('SIGTERM');
-    if (!(await exitsWithin(exited, TERMINATION_STOP_MS))) {
+    if (!(await exitsWithin(exited, terminationMs))) {
       child.kill('SIGKILL');
-      if (!(await exitsWithin(exited, TERMINATION_STOP_MS))) {
+      if (!(await exitsWithin(exited, terminationMs))) {
         throw new Error('Repoctopus Desktop Host did not exit after SIGKILL');
       }
     }
     this.child = undefined;
-    if (graceful && !this.shutdownCompleted) {
+    if (requestedShutdown && graceful && !this.shutdownCompleted) {
       throw new Error('Repoctopus Desktop Host exited without acknowledging shutdown');
     }
   }

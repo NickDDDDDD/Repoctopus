@@ -89,4 +89,46 @@ describe('DesktopBackendController', () => {
     await Promise.all([start, close]);
     expect(createHost).not.toHaveBeenCalled();
   });
+
+  it('waits for crashed Host cleanup before sharing one retry Host', async () => {
+    const firstStopped = deferred<void>();
+    let fail!: (error: Error) => void;
+    const first = {
+      start: vi.fn(() => Promise.resolve()),
+      stop: vi.fn(() => firstStopped.promise),
+    };
+    const second = {
+      start: vi.fn(() => Promise.resolve()),
+      stop: vi.fn(() => Promise.resolve()),
+    };
+    const createHost = vi
+      .fn<(onFailure: (error: Error) => void) => DesktopBackendHost>()
+      .mockImplementationOnce((onFailure) => {
+        fail = onFailure;
+        return first;
+      })
+      .mockImplementationOnce(() => second);
+    const controller = new DesktopBackendController(createHost, () => undefined);
+
+    await controller.start(() => Promise.resolve());
+    fail(new Error('Host crashed'));
+    await vi.waitFor(() => expect(first.stop).toHaveBeenCalledOnce());
+
+    const stopping = controller.stop();
+    await expect(controller.start(() => Promise.resolve())).rejects.toThrow(
+      'desktop backend is stopping',
+    );
+    firstStopped.resolve();
+    await stopping;
+
+    const firstRetry = controller.start(() => Promise.resolve());
+    const secondRetry = controller.start(() => Promise.resolve());
+    expect(secondRetry).toBe(firstRetry);
+    await firstRetry;
+
+    expect(createHost).toHaveBeenCalledTimes(2);
+    expect(second.start).toHaveBeenCalledOnce();
+    await controller.close();
+    expect(second.stop).toHaveBeenCalledOnce();
+  });
 });

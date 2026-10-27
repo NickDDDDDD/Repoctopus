@@ -373,9 +373,9 @@ export function dashboardModelFromShell(
   if (!change || !run) {
     if (activeIdentity === null) return readyWithoutRunModel();
     const launchRunId =
-      shell.launchContext?.workspaceId === activeIdentity.workspaceId &&
-      shell.launchContext.changeId === activeIdentity.changeId
-        ? shell.launchContext.runId
+      shell.launch.current?.workspaceId === activeIdentity.workspaceId &&
+      shell.launch.current.changeId === activeIdentity.changeId
+        ? shell.launch.current.runId
         : null;
     return {
       ...shellModel('sparse', {

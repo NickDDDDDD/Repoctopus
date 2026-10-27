@@ -65,7 +65,7 @@ function modelFor(records: readonly ReturnType<typeof skillRecord>[]) {
     snapshot: { apiVersion: DESKTOP_APPLICATION_CONTRACT, phase: 'ready' },
     projection,
     delta: null,
-    launchContext: null,
+    launch: { sequence: 0, current: null, history: [] },
   };
   return dashboardModelFromShell(shell);
 }

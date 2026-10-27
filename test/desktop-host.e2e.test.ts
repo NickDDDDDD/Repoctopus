@@ -5,8 +5,10 @@ import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
+import { DesktopBackendController } from '../app/desktop/main/backend-controller.js';
+import { DesktopHostProcess } from '../app/desktop/main/host-process.js';
 import { isDesktopHostEvent } from '../app/desktop/shared/host-protocol.js';
 import { WindowsDesktopReceiverDiscovery } from '../platform/desktop/windows-receiver-discovery.js';
 
@@ -16,6 +18,15 @@ const productRoot = path.resolve(import.meta.dirname, '..');
 const hostEntry = path.join(productRoot, 'dist', 'desktop', 'host.mjs');
 const smokeEntry = path.join(productRoot, 'scripts', 'smoke-desktop.mjs');
 const electronExecutable = require('electron') as string;
+
+function processIsAlive(pid: number): boolean {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 function nextMessage(child: ChildProcess): Promise<unknown> {
   return new Promise((resolve, reject) => {
@@ -135,6 +146,65 @@ describe('Desktop Host process', () => {
       await rm(profile, { recursive: true, force: true });
     }
   }, 20_000);
+
+  it.runIf(process.platform === 'win32')(
+    'shares one active Receiver and recovers a crashed Host without an orphan',
+    async () => {
+      const profile = await mkdtemp(path.join(os.tmpdir(), 'repoctopus-desktop-recovery-'));
+      const discoveryRoot = path.join(profile, 'discovery');
+      const states: string[] = [];
+      const controller = new DesktopBackendController(
+        (onFailure) =>
+          new DesktopHostProcess({
+            executable: process.execPath,
+            entry: hostEntry,
+            productRoot,
+            environment: {
+              ...process.env,
+              REPOCTOPUS_DESKTOP_DISCOVERY_ROOT: discoveryRoot,
+            },
+            onFailure,
+          }),
+        (state) => states.push(state.phase),
+      );
+      const discovery = new WindowsDesktopReceiverDiscovery({ root: discoveryRoot });
+      try {
+        const firstStart = controller.start(() => Promise.resolve());
+        const concurrentStart = controller.start(() => Promise.resolve());
+        expect(concurrentStart).toBe(firstStart);
+        await firstStart;
+
+        const firstPid = controller.host?.processId;
+        expect(firstPid).toBeTypeOf('number');
+        await expect(discovery.discover()).resolves.toMatchObject({ status: 'available' });
+        process.kill(firstPid!, 'SIGTERM');
+        await vi.waitFor(() => {
+          expect(controller.state.phase).toBe('error');
+          expect(processIsAlive(firstPid!)).toBe(false);
+        });
+
+        await controller.stop();
+        const retry = controller.start(() => Promise.resolve());
+        const concurrentRetry = controller.start(() => Promise.resolve());
+        expect(concurrentRetry).toBe(retry);
+        await retry;
+
+        const secondPid = controller.host?.processId;
+        expect(secondPid).toBeTypeOf('number');
+        expect(secondPid).not.toBe(firstPid);
+        expect(processIsAlive(secondPid!)).toBe(true);
+        await expect(discovery.discover()).resolves.toMatchObject({ status: 'available' });
+
+        await controller.close();
+        await vi.waitFor(() => expect(processIsAlive(secondPid!)).toBe(false));
+        expect(states).toContain('error');
+      } finally {
+        await controller.close().catch(() => undefined);
+        await rm(profile, { recursive: true, force: true });
+      }
+    },
+    30_000,
+  );
 
   it.runIf(process.platform === 'win32')(
     'renders the isolated desktop shell from a real Electron process',

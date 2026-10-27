@@ -25,7 +25,7 @@ function ready(version: number, deltaVersion: number | null = null): DesktopShel
             changeId: 'change-a',
             freshness: projection.freshness,
           },
-    launchContext: null,
+    launch: { sequence: 0, current: null, history: [] },
   };
 }
 

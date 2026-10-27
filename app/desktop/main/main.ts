@@ -11,7 +11,7 @@ import {
 import { DesktopBackendController, type DesktopBackendState } from './backend-controller.js';
 import { DesktopHostProcess, type DesktopHostReady } from './host-process.js';
 import type { ChangeProjectionDelta } from '../../../domains/telemetry/change-projection.js';
-import { desktopLaunchContextFromArguments } from './launch-context.js';
+import { DesktopLaunchRegistry, desktopLaunchContextFromArguments } from './launch-context.js';
 import { resolveDesktopProductRoot } from './product-root.js';
 import { claimDesktopSingleInstance } from './single-instance.js';
 import { scheduleDesktopStartup } from './startup.js';
@@ -30,6 +30,7 @@ let mainWindow: BrowserWindow | undefined;
 let hostReady: DesktopHostReady | undefined;
 let quitting = false;
 const initialLaunchContext = desktopLaunchContextFromArguments(process.argv);
+const launchRegistry = new DesktopLaunchRegistry(initialLaunchContext);
 
 app.setName('Repoctopus');
 app.setAppUserModelId('com.repoctopus.desktop');
@@ -44,7 +45,7 @@ function publicState(
       snapshot: hostReady.snapshot,
       projection: hostReady.projection,
       delta,
-      launchContext: initialLaunchContext,
+      launch: launchRegistry.snapshot(),
     };
   }
   if (state.phase === 'error') return { phase: 'error', message: state.message };
@@ -108,6 +109,15 @@ async function startBackend(): Promise<void> {
   }
 }
 
+async function restartBackend(): Promise<void> {
+  try {
+    await controller.stop();
+    await startBackend();
+  } catch {
+    // The controller owns and publishes the bounded failure state.
+  }
+}
+
 async function createWindow(): Promise<void> {
   const window = new BrowserWindow({
     width: 1080,
@@ -147,16 +157,26 @@ async function quit(): Promise<void> {
   }
 }
 
-const ownsInstance = claimDesktopSingleInstance(app, () => {
-  const window = mainWindow;
-  if (window === undefined) {
-    void createWindow();
-    return;
-  }
-  if (window.isMinimized()) window.restore();
-  window.show();
-  window.focus();
-});
+const ownsInstance = claimDesktopSingleInstance(
+  {
+    requestSingleInstanceLock: (additionalData) => app.requestSingleInstanceLock(additionalData),
+    quit: () => app.quit(),
+    on: (_event, listener) => app.on('second-instance', listener),
+  },
+  initialLaunchContext,
+  (context) => {
+    if (context !== null) launchRegistry.activate(context);
+    const window = mainWindow;
+    if (window === undefined) {
+      void createWindow();
+      return;
+    }
+    if (window.isMinimized()) window.restore();
+    window.show();
+    window.focus();
+    publish(controller.state);
+  },
+);
 
 if (ownsInstance) {
   ipcMain.handle(DESKTOP_BACKEND_STATE_CHANNEL, (event) => {
@@ -165,7 +185,7 @@ if (ownsInstance) {
   });
   ipcMain.on(DESKTOP_RETRY_CHANNEL, (event) => {
     if (!ownsSender(event)) return;
-    void controller.stop().then(startBackend);
+    void restartBackend();
   });
   app.on('window-all-closed', () => {
     void quit();

@@ -34,6 +34,8 @@ Electron `44.9.3` 没有 lifecycle install script；它在首次解析包且本�
 
 桌面采用面不仅登记被修改的四个生命周期文件，还固定 `main.ts`、应用 `package.json`、development launcher 及其相邻启动测试。上游的 `app.whenReady().then(main)`、`main: lib/main.js` 与开发态 `app.getAppPath()` 必须作为一个行为切片审计；Repoctopus 使用不同的 `dist/desktop` 入口，因此用独立产品根解析器和回归测试补偿这个布局差异。
 
+Repoctopus 保留 DSH 的单实例、串行 Backend Controller、Node-mode Host 和分级停止骨架，并针对多 Run Dashboard 扩展了第二实例上下文转交、进程期激活历史、有界 Host ready 以及可测试的强制终止升级。真实 Windows 进程测试覆盖并发启动共享一个 Receiver、Host 崩溃后恢复和 Shell 关闭后无孤儿进程；这些差异继续登记为 `source-modified`，不冒充上游原样实现。
+
 ## 漂移控制
 
 - `package.json` 固定所有 DSH 包的精确 `0.2.1-rc.3` 版本，并用 overrides 阻止内部范围漂移。

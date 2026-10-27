@@ -3,12 +3,16 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
 import {
+  dashboardLaunchSelection,
   dashboardNavigationFromShell,
   reconcileDashboardSelection,
 } from '../app/desktop/renderer/src/dashboard-navigation.js';
 import { dashboardModelFromShell } from '../app/desktop/renderer/src/dashboard-model.js';
 import { DashboardSurface } from '../app/desktop/renderer/src/dashboard-surface.js';
-import { desktopLaunchContextFromArguments } from '../app/desktop/main/launch-context.js';
+import {
+  DesktopLaunchRegistry,
+  desktopLaunchContextFromArguments,
+} from '../app/desktop/main/launch-context.js';
 import type { DesktopShellState } from '../app/desktop/shared/renderer-contract.js';
 import {
   encodeDesktopLaunchContext,
@@ -58,14 +62,20 @@ function project(records: readonly ChangeProjectionObservation[]): ChangeProject
 
 function ready(
   projection: ChangeProjectionSnapshot,
-  launchContext: Omit<DesktopLaunchContext, 'schemaVersion'>,
-): DesktopShellState {
+  launchContexts: readonly Omit<DesktopLaunchContext, 'schemaVersion'>[],
+  sequence = launchContexts.length,
+): Extract<DesktopShellState, { phase: 'ready' }> {
+  const history = launchContexts.map((context) => ({ schemaVersion: 1 as const, ...context }));
   return {
     phase: 'ready',
     snapshot: { apiVersion: DESKTOP_APPLICATION_CONTRACT, phase: 'ready' },
     projection,
     delta: null,
-    launchContext: { schemaVersion: 1, ...launchContext },
+    launch: {
+      sequence,
+      current: history.at(-1) ?? null,
+      history,
+    },
   };
 }
 
@@ -99,7 +109,7 @@ describe('Desktop Dashboard navigation selection', () => {
         observation(1, 'workspace-a', 'change-a'),
         observation(2, 'workspace-b', 'change-b'),
       ]),
-      launchSource,
+      [launchSource],
     );
 
     const initial = reconcileDashboardSelection(null, first);
@@ -111,7 +121,7 @@ describe('Desktop Dashboard navigation selection', () => {
         observation(2, 'workspace-b', 'change-b'),
         observation(3, 'workspace-c', 'change-c'),
       ]),
-      launchSource,
+      [launchSource],
     );
     expect(reconcileDashboardSelection(initial, withNewerChange)).toEqual(initial);
 
@@ -125,11 +135,13 @@ describe('Desktop Dashboard navigation selection', () => {
   });
 
   it('keeps an unseen launch source selected until its first OTLP observation arrives', () => {
-    const shell = ready(project([observation(1, 'workspace-b', 'change-b')]), {
-      workspaceId: 'workspace-a',
-      changeId: 'change-a',
-      runId: 'run-change-a',
-    });
+    const shell = ready(project([observation(1, 'workspace-b', 'change-b')]), [
+      {
+        workspaceId: 'workspace-a',
+        changeId: 'change-a',
+        runId: 'run-change-a',
+      },
+    ]);
     const selection = reconcileDashboardSelection(null, shell);
 
     expect(selection).toEqual({ workspaceId: 'workspace-a', changeId: 'change-a' });
@@ -148,7 +160,7 @@ describe('Desktop Dashboard navigation selection', () => {
         observation(2, 'workspace-a', 'change-b'),
         observation(3, 'workspace-b', 'change-c'),
       ]),
-      { workspaceId: 'workspace-a', changeId: 'change-a', runId: 'run-change-a' },
+      [{ workspaceId: 'workspace-a', changeId: 'change-a', runId: 'run-change-a' }],
     );
     const selection = reconcileDashboardSelection(null, shell);
     const navigation = dashboardNavigationFromShell(shell, selection);
@@ -165,5 +177,35 @@ describe('Desktop Dashboard navigation selection', () => {
     expect(navigation.groups.flatMap((group) => group.changes)).toHaveLength(3);
     expect(markup.match(/data-change-choice=/g)).toHaveLength(3);
     expect(markup.match(/aria-current="page"/g)).toHaveLength(1);
+  });
+
+  it('forwards a later Run activation once and keeps both unseen changes reachable', () => {
+    const registry = new DesktopLaunchRegistry({
+      schemaVersion: 1,
+      workspaceId: 'workspace-a',
+      changeId: 'change-a',
+      runId: 'run-a',
+    });
+    registry.activate({
+      schemaVersion: 1,
+      workspaceId: 'workspace-b',
+      changeId: 'change-b',
+      runId: 'run-b',
+    });
+    const shell = {
+      ...ready(createEmptyChangeProjection(), []),
+      launch: registry.snapshot(),
+    } satisfies DesktopShellState;
+
+    expect(dashboardLaunchSelection(shell, 1)).toEqual({
+      sequence: 2,
+      selection: { workspaceId: 'workspace-b', changeId: 'change-b' },
+    });
+    expect(dashboardLaunchSelection(shell, 2)).toBeNull();
+    expect(
+      dashboardNavigationFromShell(shell, { workspaceId: 'workspace-b', changeId: 'change-b' })
+        .groups.flatMap((group) => group.changes)
+        .map((choice) => `${choice.workspaceId}/${choice.changeId}`),
+    ).toEqual(['workspace-a/change-a', 'workspace-b/change-b']);
   });
 });

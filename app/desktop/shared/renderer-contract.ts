@@ -8,6 +8,12 @@ import type {
 export const DESKTOP_BACKEND_STATE_CHANNEL = 'repoctopus:desktop-backend-state';
 export const DESKTOP_RETRY_CHANNEL = 'repoctopus:desktop-retry';
 
+export interface DesktopLaunchState {
+  sequence: number;
+  current: DesktopLaunchContext | null;
+  history: readonly DesktopLaunchContext[];
+}
+
 export type DesktopShellState =
   | { phase: 'starting' }
   | {
@@ -15,7 +21,7 @@ export type DesktopShellState =
       snapshot: DesktopApplicationSnapshot;
       projection: ChangeProjectionSnapshot;
       delta: ChangeProjectionDelta | null;
-      launchContext: DesktopLaunchContext | null;
+      launch: DesktopLaunchState;
     }
   | { phase: 'error'; message: string };
 

@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import type { DesktopShellState } from '../../shared/renderer-contract.js';
 import {
+  dashboardLaunchSelection,
   dashboardNavigationFromShell,
   reconcileDashboardSelection,
   type DashboardSelection,
@@ -15,6 +16,7 @@ const initialState: DesktopShellState = { phase: 'starting' };
 export function App() {
   const [state, setState] = useState<DesktopShellState>(initialState);
   const [selection, setSelection] = useState<DashboardSelection | null>(null);
+  const appliedLaunchSequence = useRef(0);
   const [nowMs, setNowMs] = useState(() => Date.now());
 
   useEffect(() => {
@@ -29,6 +31,12 @@ export function App() {
   }, []);
 
   useEffect(() => {
+    const activation = dashboardLaunchSelection(state, appliedLaunchSequence.current);
+    if (activation !== null) {
+      appliedLaunchSequence.current = activation.sequence;
+      setSelection(activation.selection);
+      return;
+    }
     setSelection((current) => reconcileDashboardSelection(current, state));
   }, [state]);
 
