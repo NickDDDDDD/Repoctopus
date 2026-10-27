@@ -4,7 +4,7 @@
 
 ### Requirement: 核心阶段提供固定默认方法组合
 
-Repoctopus MUST 为内置 lifecycle 的每个受管 Action 固定方法组合：Open 使用 action Skill 与 `grilling`；Design 使用 action Skill 与 `codebase-design`；Build Configure 和 Plan 使用各自 action Skill，Execute 根据冻结配置使用执行 action，并仅在 `tddMode=tdd` 时加载 `tdd`、仅在 `executionMode=subagent-driven-development` 时加载 `subagent-driven-development`；Build Check 使用检查 action 与固定 `code-review`；Verify 使用 action Skill 与 `code-review`；Archive 使用 action Skill，发布 Work 使用 `pr`。`diagnosing-bugs` 只能由声明的失败事实触发，调用方不得任意选择。
+Repoctopus MUST 为内置 lifecycle 的每个受管 Action 固定方法组合：Open 使用 action Skill 与 `grilling`；Design 使用 action Skill 与 `codebase-design`；Build Configure、Plan、Execute 和 Check 使用各自 Repoctopus-owned action Skill，Execute 从冻结配置读取 autonomous 或 subagent 协调协议并仅在 `tddMode=tdd` 时加载 Matt `tdd`；Build Check 固定加载 Matt `code-review`；Verify 使用 action Skill 与 `code-review`；Archive 使用 action Skill，发布 Work 使用 `pr`。`diagnosing-bugs` 只能由声明的失败事实触发，调用方不得任意选择，系统不得把 Superpowers 或不存在于固定 Matt 快照的 Skill 变成隐式依赖。
 
 #### Scenario: Build 首次写入尚未加载 TDD
 
@@ -28,7 +28,7 @@ Repoctopus MUST 为内置 lifecycle 的每个受管 Action 固定方法组合：
 
 ### Requirement: 阶段 Work 必须装填固定且唯一的 Skill 组合
 
-Lifecycle definition MUST 声明并由 Runtime 根据 phase、Action kind 和冻结 Build Configuration 计算唯一有序组合。Open 固定 `repoctopus-open-change + grilling`，Design 固定 `repoctopus-design-change + codebase-design`；Build 必须使用对应 Configure、Plan、Execute 或 Check action Skill，并按配置有条件增加 `tdd` 或 `subagent-driven-development`，Check 固定增加 `code-review`。Runtime MUST 在 claim 前解析唯一 Provider、资源、调用策略与 provenance，并向 Host 交付真实内容；调用方、Agent 和 Host不得跳过、替换、重排或额外装填另一规划权威。
+Lifecycle definition MUST 声明并由 Runtime 根据 phase、Action kind 和冻结 Build Configuration 计算唯一有序组合。Open 固定 `repoctopus-open-change + grilling`，Design 固定 `repoctopus-design-change + codebase-design`；Build 必须使用对应 Configure、Plan、Execute 或 Check action Skill，Execute 仅按 TDD 配置有条件增加 Matt `tdd`，Check 固定增加 Matt `code-review`。execution mode 作为 action input 决定 Repoctopus 协调协议，不作为外部 augmentation Skill。Runtime MUST 在 claim 前解析唯一 Provider、资源、调用策略与 provenance，并向 Host 交付真实内容；调用方、Agent 和 Host不得跳过、替换、重排或额外装填另一规划权威。
 
 #### Scenario: Open 的 grilling 没有未决 frontier
 
@@ -45,10 +45,10 @@ Lifecycle definition MUST 声明并由 Runtime 根据 phase、Action kind 和冻
 - **WHEN** composition 无法为规范名 `grilling` 解析恰好一个满足约束的 Provider，或只能依赖未声明的开发机全局安装
 - **THEN** Runtime 在领取 Open Work 前 fail closed并报告 Provider/provenance 差异，不降级成无 augmentation 的 Open
 
-#### Scenario: autonomous Execute 请求 subagent Skill
+#### Scenario: Execute 请求外部 execution Skill
 
-- **WHEN** 冻结配置为 autonomous，而调用方请求装填 `subagent-driven-development` 或委派另一执行者
-- **THEN** Runtime 拒绝请求并返回当前 Execute Work 的冻结组合 identity，不把委派解释为模式升级
+- **WHEN** 调用方请求为 autonomous 或 subagent 模式装填 Superpowers `subagent-driven-development`、`executing-plans` 或其他未固定 execution Skill
+- **THEN** Runtime 拒绝请求并返回 Repoctopus Execute action 与 Matt augmentation 的冻结组合 identity，不把外部 Skill 当作隐藏的模式实现
 
 #### Scenario: 调用方修改阶段组合
 

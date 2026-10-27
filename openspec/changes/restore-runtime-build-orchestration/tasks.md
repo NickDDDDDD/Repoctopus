@@ -10,7 +10,7 @@
       **Blocked by:** 1.1
       **Acceptance:** 测试可独立捕获 task reopen、`verify.repair` 与 `implementation.repair` 三类退化
       **Requirements:** change-lifecycle#verify-失败通过-build-plan-revision-返工, managed-work-execution#验证失败必须修订-build-plan-并创建普通-work
-- [ ] 1.3 定义版本化 `BuildActionKind`、`BuildConfiguration`、`BuildPlan`、`WorkPackage`、`PlanEvidence` 与 `BuildCheckEvidence` 纯领域类型，并实现 canonical digest 与稳定 identity。
+- [ ] 1.3 定义版本化 `ExecutionWorkspaceIntent/Binding`、`BuildActionKind`、`BuildConfiguration`、`BuildPlan`、`WorkPackage`、`PlanEvidence` 与 `BuildCheckEvidence` 纯领域类型，并实现 canonical digest 与稳定 identity。
       **Blocked by:** 1.1
       **Acceptance:** 类型、冻结、规范化、序列化、顺序规范化、重复项、非法枚举与碰撞测试通过，等价输入摘要一致且领域模块不导入 Cordis 或平台 I/O
       **Requirements:** managed-work-execution#build-configure-产生可批准的不可变配置, managed-work-execution#runtime-buildplan-是-openspec-tasks-的执行投影
@@ -25,35 +25,39 @@
 
 ## 2. 交付 Autonomous 单仓纵切
 
-- [ ] 2.1 实现 Build Configure proposal，读取批准规划、Open isolation 意图、仓库拓扑和 Host capability，生成合法配置候选。
+- [ ] 2.1 扩展 Open decision，要求在四类工件批准前选择 `current|branch|worktree`，持久化不含绝对路径的 `ExecutionWorkspaceIntent`。
       **Blocked by:** 1.5
-      **Acceptance:** 单仓 current/branch/worktree 正向测试通过，缺能力、拓扑漂移与非法枚举阻断
-      **Requirements:** managed-work-execution#build-configure-产生可批准的不可变配置
-- [ ] 2.2 建立配置 Human Decision，批准后冻结 semantic digest，拒绝/修订留在 Configure，过期或重放决定不能推进。
+      **Acceptance:** 三种选择、缺失选择、过期/重放决定和模式变更测试通过；Open approval 语义与 OTLP 不含本机路径
+      **Requirements:** change-lifecycle#open-在规划批准前固定执行隔离意图
+- [ ] 2.2 实现 execution-workspace Service 与 Git facts adapter，验证 Runner/Host 提供的单仓 checkout binding，再生成 Build Configure proposal。
       **Blocked by:** 2.1
+      **Acceptance:** current/branch/worktree 的 repository、branch、head、worktree ownership 正向测试通过；Runtime 不创建/切换 checkout，虚假 binding、路径猜测、拓扑漂移与非法枚举阻断
+      **Requirements:** managed-work-execution#build-configure-产生可批准的不可变配置
+- [ ] 2.3 建立配置 Human Decision，批准后冻结 semantic digest 与本地 binding digest，拒绝/修订留在 Configure，过期或重放决定不能推进。
+      **Blocked by:** 2.2
       **Acceptance:** 批准、拒绝、篡改、重复响应和冷恢复测试通过，批准后切换 execution/TDD/isolation 被拒绝
       **Requirements:** change-lifecycle#build-configuration-只允许受支持的固定策略
-- [ ] 2.3 实现最小 BuildPlan 生成器，把单仓 OpenSpec Tasks 投影为有序 Work Packages，保留稳定 Task references 且不生成 checkbox。
-      **Blocked by:** 2.2
-      **Acceptance:** 依赖顺序、Task coverage、稳定摘要和非法新增需求测试通过；OpenSpec change 目录不产生第五工件
-      **Requirements:** managed-work-execution#runtime-buildplan-是-openspec-tasks-的执行投影, specification-authority#openspec-tasks-与-runtime-buildplan-分层而不平行
-- [ ] 2.4 实现最小 Plan Evidence Validator，验证 Task coverage、依赖、write scope、Host、isolation、Skill 和 acceptance，并支持无风险自动接受。
+- [ ] 2.4 实现 `build.plan` Host Work、`build-plan-candidate` Outcome result 与 Plan Validator，让 Agent 把单仓 OpenSpec Tasks 投影为有界 Work Packages。
       **Blocked by:** 2.3
+      **Acceptance:** Host 收到固定 Tasks/配置/拓扑/binding/Skill 并返回结构化 candidate；Runtime 规范化 revision 与摘要；依赖顺序、Task coverage、字段上限和非法新增需求测试通过；Plan 随 Run snapshot 保存且 OpenSpec change 目录不产生第五工件
+      **Requirements:** managed-work-execution#runtime-buildplan-是-openspec-tasks-的执行投影, specification-authority#openspec-tasks-与-runtime-buildplan-分层而不平行
+- [ ] 2.5 实现最小 Plan Evidence Validator，验证 Task coverage、依赖、write scope、Host、isolation、Skill 和 acceptance，并支持无风险自动接受。
+      **Blocked by:** 2.4
       **Acceptance:** 完整计划生成可复用 Evidence，任一输入漂移使其失效，用户先前批准 Design 不能替代验证
       **Requirements:** managed-work-execution#plan-evidence-在执行前证明计划可行
-- [ ] 2.5 从计划包派生 autonomous Execute Work，并沿现有 claim/packet/Host/Outcome/Validator 链完成一个真实 Task。
-      **Blocked by:** 2.4
+- [ ] 2.6 从计划包派生 autonomous Execute Work，并沿现有 claim/packet/Host/Outcome/Validator 链完成一个真实 Task。
+      **Blocked by:** 2.5
       **Acceptance:** 进程级测试证明 Host 收到当前包、真实 Skill 内容和范围，越界或输入漂移 Outcome 不接受
       **Requirements:** managed-work-execution#work-descriptor-只能由已接受计划派生
-- [ ] 2.6 实现最小 Build Check，汇总 package、Task acceptance、测试与 standard review 后进入 Verify，并完成单仓纵切测试。
-      **Blocked by:** 2.5
+- [ ] 2.7 实现最小 Build Check，汇总 package、Task acceptance、测试与 standard review 后进入 Verify，并完成单仓纵切测试。
+      **Blocked by:** 2.6
       **Acceptance:** Configure→Plan→Evidence→Execute→Check→Verify 全链在每个边界可重启，缺任一 Evidence 不能进入 Verify
       **Requirements:** managed-work-execution#build-check-汇总计划和任务完成事实
 
 ## 3. 完整 BuildPlan 与多仓边界
 
 - [ ] 3.1 扩展 Plan 生成器，支持一个 Task 拆成多个包、多个强耦合 Task 合并包及显式 package dependency DAG。
-      **Blocked by:** 2.6
+      **Blocked by:** 2.7
       **Acceptance:** 单 Task 多包、多 Task 单包、依赖环、孤儿包和缺失 Task 引用测试通过
       **Requirements:** managed-work-execution#runtime-buildplan-是-openspec-tasks-的执行投影
 - [ ] 3.2 将 repository binding、write scope、acceptance refs、expected outcomes 与 validator profile 纳入 WorkPackage 和 Plan digest。
@@ -68,9 +72,9 @@
       **Blocked by:** 3.3
       **Acceptance:** 低风险自动通过，高风险建立绑定配置/计划摘要的决定，过期决定不能解锁 Execute
       **Requirements:** managed-work-execution#plan-evidence-在执行前证明计划可行
-- [ ] 3.5 让 Task completion 只由全部 required package 与 acceptance Evidence 投影，删除单个 Work 成功即完成 Task 的假设。
+- [ ] 3.5 让 Task 首次 completion 只由全部 required package 与 acceptance Evidence 投影，并保持 checkbox completion claim 单调；当前有效性由最新 Plan/Check Evidence 决定。
       **Blocked by:** 3.3
-      **Acceptance:** 部分包成功、重复 completion、跨 revision completion 和全部满足四类测试通过
+      **Acceptance:** 部分包成功、重复 completion、跨 revision completion、已勾选 Task 的后续返工包和全部满足测试通过；Verify 返工不取消 checkbox
       **Requirements:** specification-authority#openspec-tasks-与-runtime-buildplan-分层而不平行
 - [ ] 3.6 增加真实多仓纵切，验证 Workspace Store、两个业务仓、隔离 binding 与包依赖在进程重启后保持一致。
       **Blocked by:** 3.4, 3.5
@@ -80,8 +84,8 @@
 ## 4. Execution Mode、Skill 与受管委派
 
 - [ ] 4.1 将 Skill 组合从 phase 静态数组改为由 definition、Build Action 和冻结配置确定的纯函数，并覆盖唯一 Provider 解析。
-      **Blocked by:** 2.6
-      **Acceptance:** 每个 Action 的有序组合有快照测试，调用方无法增删、替换或重排
+      **Blocked by:** 2.7
+      **Acceptance:** 每个 Action 的有序组合有快照测试；execution mode 作为 Repoctopus action input，不解析 Superpowers 或不存在的 Matt Skill；调用方无法增删、替换或重排
       **Requirements:** skill-integration#阶段-work-必须装填固定且唯一的-skill-组合
 - [ ] 4.2 新增 Configure、Plan、Execute、Check action Skills，更新内置 Skill Provider 与真实内容交付检查。
       **Blocked by:** 4.1
@@ -91,28 +95,24 @@
       **Blocked by:** 4.2
       **Acceptance:** 两种模式的正负测试通过，direct 不加载 TDD 且不能绕过测试或 Verify
       **Requirements:** change-lifecycle#build-configuration-只允许受支持的固定策略, skill-integration#核心阶段提供固定默认方法组合
-- [ ] 4.4 为 autonomous Host 增加明确 capability contract，证明它只能执行当前包且不能修改 Plan、Action 或配置。
+- [ ] 4.4 为 autonomous Host 增加明确 capability contract 与配置/能力/binding 漂移矩阵，证明它只能执行当前包且不能修改 Plan、Action、配置或静默降级。
       **Blocked by:** 4.2
-      **Acceptance:** 兼容 Host 正常执行，越包、越仓和返回目标 Action 的 Outcome 全部拒绝
+      **Acceptance:** 兼容 Host 正常执行；越包、越仓、返回目标 Action、Host 更换、capability 消失、binding 漂移和模式切换请求只产生拒绝、blocked、decision 或 `migration_required`
       **Requirements:** managed-work-execution#work-descriptor-只能由已接受计划派生
-- [ ] 4.5 扩展 Host packet/outcome，定义 subagent coordinator capability 与结构化 delegation receipt，不把子调用变成新 Run 或并行 currentWork。
+- [ ] 4.5 扩展 Host packet/outcome，定义 `subagent.dispatch.attested` coordinator capability 与结构化 delegation receipt，不把子调用变成新 Run 或并行 currentWork。
       **Blocked by:** 4.2
-      **Acceptance:** 合法父子 identity、包范围和 Outcome 可验证；未知、重复、越界和脱离父 invocation 的 receipt 被拒绝
+      **Acceptance:** 合法父子 execution identity、role、包范围和 Outcome 可验证；自由文本身份、同 execution 换角色、未知、重复、越界和脱离父 invocation 的 receipt 被拒绝
       **Requirements:** managed-work-execution#work-descriptor-只能由已接受计划派生
-- [ ] 4.6 实现 subagent-driven-development 协调 Host 流程，交付对应 Skill 并让所有子调用通过受保护工具 session 回到父 claim。
+- [ ] 4.6 在 `repoctopus-build-execute` action 中实现 subagent-driven-development 协调协议，并让所有子调用通过受保护工具 session 回到父 claim。
       **Blocked by:** 4.5
-      **Acceptance:** 捕获 Host 测试证明真实内容被消费、委派可恢复且子 Agent 无 phase/Action 决策权
+      **Acceptance:** 捕获 Host 测试证明 Repoctopus action 与 Matt augmentation 真实内容被消费、委派可恢复、无 Superpowers 依赖且子 Agent 无 phase/Action 决策权
       **Requirements:** skill-integration#核心阶段提供固定默认方法组合, managed-work-execution#work-descriptor-只能由已接受计划派生
-- [ ] 4.7 增加配置冻结与能力漂移矩阵，禁止 autonomous/subagent 运行中切换或静默降级。
-      **Blocked by:** 4.4, 4.6
-      **Acceptance:** capability 消失、Host 更换、isolation 漂移和切换请求只产生 blocked、decision 或 `migration_required`
-      **Requirements:** change-lifecycle#build-configuration-只允许受支持的固定策略
 
 ## 5. Build Check 与统一返工
 
-- [ ] 5.1 完整实现 Build Check Validator，覆盖 package completion、Task acceptance、测试、standard review、仓库漂移和未解决 finding。
-      **Blocked by:** 3.6, 4.7
-      **Acceptance:** 每一失败维度都有独立诊断与测试，只有绑定当前配置/计划/仓库摘要的 Check 可进入 Verify
+- [ ] 5.1 完整实现 Build Check Validator，覆盖 package completion、Task acceptance、测试、独立 standard review、仓库漂移和未解决 finding。
+      **Blocked by:** 3.6, 4.6
+      **Acceptance:** 每一失败维度都有独立诊断与测试；reviewer execution 必须不同于被审查 implementation execution；只有绑定当前配置/计划/仓库摘要的 Check 可进入 Verify
       **Requirements:** managed-work-execution#build-check-汇总计划和任务完成事实
 - [ ] 5.2 将 Build/Verify finding 规范化为有界 classification 与 requirement/Task/package references，拒绝 Host 自选 phase。
       **Blocked by:** 5.1
@@ -164,9 +164,9 @@
       **Blocked by:** 7.2
       **Acceptance:** 正常与恶意 fixture 证明指标可复算且未知/高基数值被拒绝或降级
       **Requirements:** development-telemetry#build-协议的配置计划执行检查必须可观测
-- [ ] 7.4 更新 runtime-state、telemetry、self-hosting、Skill 与 CLI 文档，解释唯一工作流、两种 execution mode、TDD direct 语义和 Tasks/BuildPlan 分层。
+- [ ] 7.4 更新 runtime-state、telemetry、self-hosting、Skill 与 CLI 文档，解释唯一工作流、Runner 提供的 isolation binding、两种 execution mode、TDD direct 语义和 Tasks/BuildPlan 分层。
       **Blocked by:** 6.3, 7.3
-      **Acceptance:** 文档示例命令可运行，负向扫描无 Hotfix/Tweak/Full Direct/Repair lifecycle 或第五 OpenSpec 工件指导
+      **Acceptance:** 文档示例命令可运行，明确 Runtime 本版不创建 checkout 且无 Superpowers 依赖；负向扫描无 Hotfix/Tweak/Full Direct/Repair lifecycle 或第五 OpenSpec 工件指导
       **Requirements:** specification-authority#openspec-tasks-与-runtime-buildplan-分层而不平行
 
 ## 8. 集成验收与自举证明

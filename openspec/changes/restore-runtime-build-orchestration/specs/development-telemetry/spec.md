@@ -11,6 +11,11 @@ Repoctopus MUST 在本地 Trajectory 持久化后，为 Build Configure、Plan�
 - **WHEN** Runtime 持久化配置 proposal、可信批准与冻结 identity
 - **THEN** OTLP 表示 configure action、选择的有界策略、approval latency 和结果，但不导出用户输入正文或本机路径
 
+#### Scenario: isolation binding 被接受
+
+- **WHEN** Runtime 接受 Runner/Host 提供的多仓 execution workspace binding
+- **THEN** Trajectory 记录 repository role、isolation 枚举、binding semantic digest 和验证结果；OTLP 不导出 checkout 绝对路径、用户名或本机 worktree 名称
+
 #### Scenario: Plan revision 修复 Verify finding
 
 - **WHEN** Verify failure 使当前计划部分失效并接受新的 revision

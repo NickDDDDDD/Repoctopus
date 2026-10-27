@@ -21,9 +21,19 @@ Runtime MUST 根据当前 Run、仓库拓扑、OpenSpec Tasks、隔离能力与 
 - **WHEN** 恢复时 Host 不再满足冻结 execution mode 或 isolation 的 capability contract
 - **THEN** Runtime 在副作用前进入 blocked 或 `migration_required`，不得降级为 autonomous/current 或切换模式
 
+#### Scenario: 多仓 isolation binding 通过验证
+
+- **WHEN** Runner 为当前、分支或 worktree 模式提供受影响仓库的本地 checkout facts
+- **THEN** Runtime 以稳定 repository identity、branch、head、worktree identity、Workspace ownership 与本地 binding digest 验证并冻结配置；绝对路径只保存在本地 Run overlay
+
 ### Requirement: Runtime BuildPlan 是 OpenSpec Tasks 的执行投影
 
-Build Plan MUST 是 Runtime 管理的版本化执行产物，引用批准的 Build Configuration、OpenSpec planning digest 与稳定 Task IDs，并把 Task 投影为有依赖、仓库绑定、write scope、acceptance references、validator profile 和预期 Outcome 的 Work Package。Build Plan MUST NOT 包含第二套完成 checkbox、改写 Task 语义或成为 Specification Provider 产物；Task 的 scope、依赖与完成权威仍属于 OpenSpec Tasks。
+Build Plan MUST 是 Runtime 管理的版本化执行产物：Runtime 选择 `build.plan` Work并向 Host 交付批准的 Build Configuration、OpenSpec planning digest、稳定 Task IDs、拓扑与 action Skill，Host 只返回受 output contract 约束的结构化 candidate，Runtime 规范化、验证并接受 revision。Plan 把 Task 投影为有依赖、仓库绑定、write scope、acceptance references、validator profile 和预期 Outcome 的 Work Package；它不得包含第二套完成 checkbox、改写 Task 语义或成为 Specification Provider 产物，Task 的 scope、依赖与完成权威仍属于 OpenSpec Tasks。
+
+#### Scenario: Host 提交结构化计划候选
+
+- **WHEN** 当前 `build.plan` Work 的 Host 返回绑定 claim 和 input digest 的 `build-plan-candidate`
+- **THEN** Runtime 验证 schema、边界与 Task references 后分配 plan identity/revision；自由 Markdown、路径指针或 Agent 自述成功不能成为已接受计划
 
 #### Scenario: 计划拆分一个跨仓 Task
 
@@ -86,6 +96,11 @@ Build Check MUST 对当前 Build Plan revision 的 required Work Package complet
 
 - **WHEN** 标准 Review finding 绑定当前 Work Package 且分类为 blocking
 - **THEN** Build Check 保持未通过，并把 finding 作为 Plan revision 输入；finding 本身不是新的 lifecycle 或特殊 repair 类型
+
+#### Scenario: Review 不能证明独立执行身份
+
+- **WHEN** standard Review 由实现当前包的同一 Agent execution 自评，或 Host 不能提供与 implementation execution 区分的受管 reviewer identity
+- **THEN** Build Check 保持 blocked，不把自评、自由文本 reviewer 名称或同一 invocation 的角色声明作为独立审查
 
 ## MODIFIED Requirements
 

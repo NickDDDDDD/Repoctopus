@@ -14,7 +14,7 @@ Repoctopus 已经建立权威五阶段 Change Run，但 Build 仍把 OpenSpec Ta
 - Build Configuration 成为绑定 Run revision、能力快照和人工批准的 Runtime 决定；配置批准后在本次版本内冻结，不实现运行中策略升级或降级。
 - OpenSpec Tasks 继续作为唯一任务与完成声明权威；Runtime Build Plan 只引用稳定 Task identity，描述依赖、工作包、仓库边界、验收和执行顺序，不复制第二套 checkbox。
 - Verify 失败或 Build 输入失效时回到 Build Plan 修订和普通 Execute/Check，不猜测并重开 Task，不创建特殊 Repair lifecycle；已完成且输入仍有效的 Outcome 与 Evidence 可复用。
-- 更新 Skill 装填规则：Autonomous 与 Sub-Agent 使用不同的执行方法，但都由 Runtime 交付真实 action/augmentation 内容、能力与输出合同；Agent 不得选择 phase、Action 或下一执行策略。
+- 更新 Skill 装填规则：Autonomous 与 Sub-Agent 都执行 Repoctopus-owned Build action 协议，Runtime 按冻结配置交付真实 action、Matt augmentation、能力与输出合同；不引入 Superpowers 或伪造 Matt 中不存在的 `subagent-driven-development` Skill，Agent 不得选择 phase、Action 或下一执行策略。
 - 扩充 Trajectory 与 OTLP 事实，记录配置提案/批准、计划 revision/evidence、执行策略、TDD 方法、工作包、Build Check、返工原因和恢复，不把自由文本或高基数身份放入 Metric。
 - 删除为预发布旧协议提供的生产兼容分支；旧开发 Run 只保留为只读审计证据，不迁移或继续执行。
 
@@ -37,6 +37,7 @@ Repoctopus 已经建立权威五阶段 Change Run，但 Build 仍把 OpenSpec Ta
 - 主要影响 `domains/change-lifecycle`、`domains/work-execution`、`services/workflow-runs`、Skill Provider、CLI continuation、Trajectory 与 OTLP 映射。
 - Change Run、Work Descriptor、Validator profile、事件 schema 和 Dashboard 投影将发生预发布破坏性变化；不提供旧 Run 执行兼容。
 - OpenSpec Provider 与 Matt Skills 继续通过现有适配边界使用，不复制其模板或建立第二套任务权威。
+- Open 在四类工件批准前记录 `current|branch|worktree` isolation 意图；Build Configure 只接受与该意图一致、由 Runner/Host 提供并经 Git 事实验证的多仓 checkout binding，不把本机绝对路径写入规格工件或 OTLP。
 - Comet 只作为固定上游的行为参考；本次不复制 Comet 源码，不产生新的第三方许可证义务。
 - Desktop Dashboard change 保持冻结，待本 change 合入后适配新的 Build 观测语义并重新 Verify/Archive。
 

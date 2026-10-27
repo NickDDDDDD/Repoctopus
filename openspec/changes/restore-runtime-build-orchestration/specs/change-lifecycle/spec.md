@@ -2,6 +2,20 @@
 
 ## ADDED Requirements
 
+### Requirement: Open 在规划批准前固定执行隔离意图
+
+Repoctopus MUST 在接受 Open approval 前取得可信用户对 `current|branch|worktree` 的一次选择，并把模式、目标分支语义和 Workspace/change identity 作为 `ExecutionWorkspaceIntent` 固定到同一 Run；本机 checkout 绝对路径不得进入 OpenSpec 工件或可移植语义摘要。Build Configure MUST 复核实际 binding，任何调用方不得在批准后静默换成另一模式。
+
+#### Scenario: Open 尚未选择隔离方式
+
+- **WHEN** 四类 OpenSpec 工件已有效但当前 Run 没有可信 isolation 决定
+- **THEN** Runtime 保持 `phase=open,status=waiting` 并展示三个模式的实际影响，不创建 Design Work
+
+#### Scenario: Build 发现 binding 与 Open 意图不一致
+
+- **WHEN** Open 批准 worktree，但 Runner 提供 current checkout 或无法证明 worktree 与目标仓库/分支的关系
+- **THEN** Build Configure 阻断并返回可定位诊断；修复 binding 可在原意图下重试，改变 isolation 必须返回 Open 取得新批准
+
 ### Requirement: Build 使用固定的受管内部协议
 
 Repoctopus MUST 在唯一的 Build phase 内按 `Configure → Plan → Plan Evidence → Execute → Check` 推进受管工作，并仅在 Check 接受当前输入后请求进入 Verify。上述步骤 MUST 是 Runtime definition 中可恢复、可审计的 Action，而不是新增 lifecycle phase；调用方与 Host 不得跳步、选择下一步或用最终代码状态补写缺失步骤。
@@ -29,6 +43,11 @@ Build Configure MUST 生成并冻结版本化配置，且本版本仅允许 `exe
 
 - **WHEN** Runtime 根据仓库拓扑、任务依赖、Host 能力和用户选择提出合法 Build Configuration，且可信用户批准其语义摘要
 - **THEN** Run 固定配置 identity 与 digest，后续 Plan、Work、Check 和遥测都必须引用该配置
+
+#### Scenario: 实际隔离没有可信 binding
+
+- **WHEN** Runner 或 Host 只声明 isolation 名称，但没有为受影响仓库提供可验证的 checkout、branch、head、worktree 与 Workspace ownership facts
+- **THEN** Runtime 不接受 Build Configuration，不从本机路径或当前进程目录猜测 binding
 
 #### Scenario: 请求 Hotfix profile
 
