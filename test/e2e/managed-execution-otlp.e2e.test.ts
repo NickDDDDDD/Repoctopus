@@ -61,7 +61,7 @@ describe('managed execution OTLP protocol', () => {
         schemaVersion: 1,
         phase: 'build',
         work: { id: 'build:1.1', kind: 'task.implement' },
-        attempt: 1,
+        attempt: 2,
         checkEpoch: 4,
         task: { id: '1.1', revision: `sha256:${'b'.repeat(64)}` },
       };
@@ -105,12 +105,18 @@ describe('managed execution OTLP protocol', () => {
           executionContext,
           result: 'succeeded',
         }),
-        event(8, 'validator.completed', {
+        event(8, 'validator.started', {
           executionContext,
           validatorId: 'build.task-valid',
+          operationId: 'validator-operation-1',
+        }),
+        event(9, 'validator.completed', {
+          executionContext,
+          validatorId: 'build.task-valid',
+          operationId: 'validator-operation-1',
           result: 'accepted',
         }),
-        event(9, 'decision.requested', {
+        event(10, 'decision.requested', {
           schemaVersion: 1,
           phase: 'design',
           decisionId: 'design-approval-1',
@@ -118,7 +124,7 @@ describe('managed execution OTLP protocol', () => {
           result: 'requested',
           reason: secret,
         }),
-        event(10, 'decision.resolved', {
+        event(11, 'decision.resolved', {
           schemaVersion: 1,
           phase: 'design',
           decisionId: 'design-approval-1',
@@ -128,13 +134,13 @@ describe('managed execution OTLP protocol', () => {
           actorId: secret,
           reply: secret,
         }),
-        event(11, 'wait.started', {
+        event(12, 'wait.started', {
           phase: 'verify',
           waitId: 'external-wait-1',
           waitKind: 'external-fact',
           reason: secret,
         }),
-        event(12, 'wait.ended', {
+        event(13, 'wait.ended', {
           phase: 'verify',
           waitId: 'external-wait-1',
           waitKind: 'external-fact',
@@ -166,12 +172,39 @@ describe('managed execution OTLP protocol', () => {
       expect(payload).toContain('repoctopus.execution.duration_ms');
       expect(payload).toContain('repoctopus.decision.kind');
       expect(payload).toContain('repoctopus.wait.kind');
+      expect(payload).toContain('repoctopus.workflow.health.duration');
+      expect(payload).toContain('repoctopus.workflow.health.events');
+      expect(payload).toContain('repoctopus.validator');
       expect(payload).toContain('repoctopus.execution.check_epoch');
       expect(payload).toContain('repoctopus.execution.task.id');
       expect(payload).not.toContain(secret);
       expect(payload).not.toContain('C:\\secret');
       const traces = requests.filter((request) => request.path === '/v1/traces');
       expect(traces.length).toBeGreaterThan(0);
+      const spans = traces.flatMap((request) => {
+        const body = JSON.parse(request.body.toString('utf8')) as {
+          resourceSpans?: Array<{
+            scopeSpans?: Array<{
+              spans?: Array<{
+                name?: string;
+                startTimeUnixNano?: string;
+                endTimeUnixNano?: string;
+              }>;
+            }>;
+          }>;
+        };
+        return (body.resourceSpans ?? []).flatMap((resource) =>
+          (resource.scopeSpans ?? []).flatMap((scope) => scope.spans ?? []),
+        );
+      });
+      const runSpan = spans.find((span) => span.name === 'repoctopus.run');
+      const validatorSpan = spans.find((span) => span.name === 'repoctopus.validator');
+      expect(BigInt(runSpan!.endTimeUnixNano!) - BigInt(runSpan!.startTimeUnixNano!)).toBe(
+        12_000_000_000n,
+      );
+      expect(
+        BigInt(validatorSpan!.endTimeUnixNano!) - BigInt(validatorSpan!.startTimeUnixNano!),
+      ).toBe(1_000_000_000n);
       expect(traces.length % 2).toBe(0);
       const replayOffset = traces.length / 2;
       for (let index = 0; index < replayOffset; index += 1) {

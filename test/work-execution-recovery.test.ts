@@ -10,6 +10,7 @@ import type {
 } from '../domains/work-execution/types.js';
 import { ManagedWorkExecutor } from '../services/managed-work-executor.js';
 import { WorkExecutionAuthority } from '../services/work-execution-authority.js';
+import { projectWorkflowHealthMetrics } from '../domains/telemetry/workflow-health-metrics.js';
 
 const digest = (character: string) => `sha256:${character.repeat(64)}` as const;
 
@@ -194,6 +195,80 @@ describe('Work execution epoch authority', () => {
       status: 'claimed',
     });
     expect(run.workExecution).toMatchObject({ intentId: 'intent-2', checkEpoch: 5 });
+  });
+});
+
+describe('Validator telemetry boundaries', () => {
+  it('persists a rejected Validator operation with one stable identity and real duration', async () => {
+    vi.useFakeTimers();
+    try {
+      let run = {
+        ...state({ execution: checkpoint('outcome') }),
+        stateVersion: 10,
+        updatedAt: '2026-10-25T00:00:00.000Z',
+        composition: { compositionDigest: digest('8') },
+        changeLifecycle: {
+          phase: 'build',
+          checkEpoch: 4,
+          currentWork: { workId: 'build:1.1' },
+          waitCondition: null,
+        },
+      } as unknown as RunState;
+      const events: TrajectoryEvent[] = [];
+      const authority = Object.create(WorkExecutionAuthority.prototype) as WorkExecutionAuthority;
+      Object.defineProperty(authority, 'ctx', {
+        value: {
+          runStore: {
+            commitGuarded: vi.fn(
+              <T>(
+                _runId: string,
+                reduce: (current: { state: RunState; trajectory: TrajectoryEvent[] }) => {
+                  state?: RunState;
+                  event?: TrajectoryEvent;
+                  value: T;
+                },
+              ): Promise<T> => {
+                const reduced = reduce({ state: run, trajectory: events });
+                if (reduced.state) run = reduced.state;
+                if (reduced.event) events.push(reduced.event);
+                return Promise.resolve(reduced.value);
+              },
+            ),
+          },
+        },
+      });
+      const intent = { runId: run.runId, intentId: 'intent-1' } as never;
+
+      vi.setSystemTime(new Date('2026-10-25T00:00:01.000Z'));
+      await authority.recordValidatorStarted({ intent, validatorId: 'build.task-valid' });
+      vi.setSystemTime(new Date('2026-10-25T00:00:04.000Z'));
+      await authority.recordValidatorCompleted({
+        intent,
+        validatorId: 'build.task-valid',
+        result: 'rejected',
+        findingKind: 'contract-rejected',
+      });
+
+      expect(events.map((event) => event.type)).toEqual([
+        'validator.started',
+        'validator.completed',
+      ]);
+      expect(events[0]?.data.operationId).toBe(events[1]?.data.operationId);
+      expect(
+        projectWorkflowHealthMetrics({ run, trajectory: events, event: events[1]! }),
+      ).toEqual([
+        {
+          instrument: 'duration',
+          kind: 'validator',
+          phase: 'build',
+          result: 'rejected',
+          durationMs: 3_000,
+          validatorFinding: 'contract-rejected',
+        },
+      ]);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

@@ -65,7 +65,7 @@ import {
 } from '../domains/change-lifecycle/archive-input.js';
 import type { DeliveryIntentV3, DeliveryPolicy } from '../domains/delivery/types.js';
 import { deliveryPolicyDigest } from '../domains/delivery/snapshot.js';
-import type { WorkExecutorIdentity } from '../domains/action/types.js';
+import type { ActionIntent, WorkExecutorIdentity } from '../domains/action/types.js';
 import type { ArchivePublicationResult } from '../domains/delivery/service-v3.js';
 import {
   createPublicationReceipt,
@@ -204,6 +204,47 @@ export class WorkflowRuns extends Service {
       context.runStore,
       context.workflowTelemetry,
     );
+  }
+
+  private async validateLifecycleWork(input: {
+    runId: string;
+    work: WorkDescriptor;
+    fact: unknown;
+  }): Promise<{
+    intent: ActionIntent;
+    validation: { accepted: boolean; diagnostic: string };
+  }> {
+    const intent = await this.ctx.workExecutionAuthority.loadIntent(input.runId);
+    await this.ctx.workExecutionAuthority.recordValidatorStarted({
+      intent,
+      validatorId: input.work.validatorProfile.id,
+    });
+    const validator = this.ctx.lifecycleValidators.resolve(input.work.validatorProfile.id);
+    let validation: { accepted: boolean; diagnostic: string };
+    try {
+      validation = await validator.validate({
+        profileId: input.work.validatorProfile.id,
+        work: input.work,
+        fact: input.fact,
+      });
+    } catch (error) {
+      await this.ctx.workExecutionAuthority.recordValidatorCompleted({
+        intent,
+        validatorId: input.work.validatorProfile.id,
+        result: 'failed',
+        findingKind: 'validator-error',
+      });
+      throw error;
+    }
+    if (!validation.accepted) {
+      await this.ctx.workExecutionAuthority.recordValidatorCompleted({
+        intent,
+        validatorId: input.work.validatorProfile.id,
+        result: 'rejected',
+        findingKind: 'contract-rejected',
+      });
+    }
+    return { intent, validation };
   }
 
   start(
@@ -709,10 +750,9 @@ export class WorkflowRuns extends Service {
     ) {
       throw new Error('Open Work is not ready for Provider validation');
     }
-    const [receipt, change, intent] = await Promise.all([
+    const [receipt, change] = await Promise.all([
       this.ctx.actionStore.loadReceipt(state.runId, execution.receiptId),
       this.ctx.specification.inspect(lifecycle.identity.changeId, signal),
-      this.ctx.workExecutionAuthority.loadIntent(state.runId),
     ]);
     const requiredArtifacts = new Set(['proposal', 'delta-specs', 'design', 'tasks']);
     if (
@@ -738,9 +778,8 @@ export class WorkflowRuns extends Service {
       });
       return { ...blocked, value: await this.coordinator.status(state.runId) };
     }
-    const validator = this.ctx.lifecycleValidators.resolve(work.validatorProfile.id);
-    const validation = await validator.validate({
-      profileId: work.validatorProfile.id,
+    const { intent, validation } = await this.validateLifecycleWork({
+      runId: state.runId,
       work,
       fact: { receiptId: receipt.receiptId, changeDigest: change.changeDigest },
     });
@@ -1275,11 +1314,8 @@ export class WorkflowRuns extends Service {
             ) {
               throw new Error('Design Provider validation requires a succeeded Host Outcome');
             }
-            const validator = this.ctx.lifecycleValidators.resolve(
-              lifecycle.currentWork.validatorProfile.id,
-            );
-            const validation = await validator.validate({
-              profileId: lifecycle.currentWork.validatorProfile.id,
+            const { intent, validation } = await this.validateLifecycleWork({
+              runId,
               work: lifecycle.currentWork,
               fact: {
                 validationDigest: assessment.validation?.validationDigest,
@@ -1290,7 +1326,7 @@ export class WorkflowRuns extends Service {
               throw new Error(`Design Validator rejected: ${validation.diagnostic}`);
             }
             await this.ctx.workExecutionAuthority.markValidated({
-              intent: await this.ctx.workExecutionAuthority.loadIntent(runId),
+              intent,
               validatorId: lifecycle.currentWork.validatorProfile.id,
               continuation: assessment.status === 'waiting' ? 'ask' : 'execute',
             });
@@ -1604,11 +1640,8 @@ export class WorkflowRuns extends Service {
         workId: validation.workId,
         ...(signal ? { signal } : {}),
       });
-      const validator = this.ctx.lifecycleValidators.resolve(
-        lifecycle.currentWork.validatorProfile.id,
-      );
-      const validatorResult = await validator.validate({
-        profileId: lifecycle.currentWork.validatorProfile.id,
+      const { intent, validation: validatorResult } = await this.validateLifecycleWork({
+        runId: input.runId,
         work: lifecycle.currentWork,
         fact: {
           receiptId: receipt.receiptId,
@@ -1620,7 +1653,7 @@ export class WorkflowRuns extends Service {
         throw new Error(`Build Validator rejected: ${validatorResult.diagnostic}`);
       }
       await this.ctx.workExecutionAuthority.markValidated({
-        intent: await this.ctx.workExecutionAuthority.loadIntent(input.runId),
+        intent,
         validatorId: lifecycle.currentWork.validatorProfile.id,
         continuation: 'execute',
       });
@@ -1683,11 +1716,8 @@ export class WorkflowRuns extends Service {
         throw new Error('Verify Evidence requires a succeeded managed Host review Outcome');
       }
       if (execution.status === 'outcome') {
-        const validator = this.ctx.lifecycleValidators.resolve(
-          current.currentWork.validatorProfile.id,
-        );
-        const validation = await validator.validate({
-          profileId: current.currentWork.validatorProfile.id,
+        const { intent, validation } = await this.validateLifecycleWork({
+          runId: input.runId,
           work: current.currentWork,
           fact: { receiptId: execution.receiptId, review: 'host-succeeded' },
         });
@@ -1695,7 +1725,7 @@ export class WorkflowRuns extends Service {
           throw new Error(`Verify Validator rejected: ${validation.diagnostic}`);
         }
         await this.ctx.workExecutionAuthority.markValidated({
-          intent: await this.ctx.workExecutionAuthority.loadIntent(input.runId),
+          intent,
           validatorId: current.currentWork.validatorProfile.id,
           continuation: 'wait',
         });
@@ -2110,9 +2140,8 @@ export class WorkflowRuns extends Service {
         throw new Error('Archive Work requires a succeeded managed Host Outcome');
       }
       if (execution.status === 'outcome') {
-        const validator = this.ctx.lifecycleValidators.resolve(currentWork.validatorProfile.id);
-        const validation = await validator.validate({
-          profileId: currentWork.validatorProfile.id,
+        const { intent, validation } = await this.validateLifecycleWork({
+          runId: input.runId,
           work: currentWork,
           fact: {
             receiptId: execution.receiptId,
@@ -2124,7 +2153,7 @@ export class WorkflowRuns extends Service {
           throw new Error(`Archive Validator rejected: ${validation.diagnostic}`);
         }
         await this.ctx.workExecutionAuthority.markValidated({
-          intent: await this.ctx.workExecutionAuthority.loadIntent(input.runId),
+          intent,
           validatorId: currentWork.validatorProfile.id,
           continuation: 'execute',
         });

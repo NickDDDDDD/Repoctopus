@@ -35,6 +35,7 @@ const EXECUTION_DATA_KEYS = new Set([
   'recovery',
   'findingCount',
   'findingKind',
+  'validatorFindingKind',
   'phase',
 ]);
 
@@ -64,6 +65,7 @@ const EXECUTION_EVENTS = new Set<TrajectoryEvent['type']>([
   'skill.consumed',
   'tool.started',
   'tool.completed',
+  'validator.started',
   'validator.completed',
   'wait.started',
   'wait.ended',
@@ -333,6 +335,12 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
       ) {
         normalized = 'unknown';
       } else if (
+        key === 'validatorFindingKind' &&
+        typeof value === 'string' &&
+        !['none', 'contract-rejected', 'validator-error', 'unknown'].includes(value)
+      ) {
+        normalized = 'unknown';
+      } else if (
         key === 'skillName' &&
         typeof value === 'string' &&
         ![
@@ -385,6 +393,7 @@ const BOUNDED_RESULTS = new Set([
   'started',
   'completed',
   'reopened',
+  'not-executed',
 ]);
 
 export function executionMetricAttributes(event: TrajectoryEvent): Attributes | null {

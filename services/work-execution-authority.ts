@@ -475,10 +475,47 @@ export class WorkExecutionAuthority extends Service {
       input.continuation,
       {
         validatorId: input.validatorId,
+        operationId: digest('validator', input.intent.intentId, input.validatorId),
         result: 'accepted',
+        validatorFindingKind: 'none',
         continuation: input.continuation,
       },
       { validatorId: input.validatorId },
+    );
+  }
+
+  async recordValidatorStarted(input: {
+    intent: ActionIntent;
+    validatorId: string;
+  }): Promise<void> {
+    const operationId = digest('validator', input.intent.intentId, input.validatorId);
+    await this.recordEvent(
+      input.intent.runId,
+      input.intent.intentId,
+      'validator.started',
+      { validatorId: input.validatorId, operationId },
+      [input.validatorId, operationId, 'started'],
+    );
+  }
+
+  async recordValidatorCompleted(input: {
+    intent: ActionIntent;
+    validatorId: string;
+    result: 'rejected' | 'failed';
+    findingKind: 'contract-rejected' | 'validator-error';
+  }): Promise<void> {
+    const operationId = digest('validator', input.intent.intentId, input.validatorId);
+    await this.recordEvent(
+      input.intent.runId,
+      input.intent.intentId,
+      'validator.completed',
+      {
+        validatorId: input.validatorId,
+        operationId,
+        result: input.result,
+        validatorFindingKind: input.findingKind,
+      },
+      [input.validatorId, operationId, 'completed'],
     );
   }
 

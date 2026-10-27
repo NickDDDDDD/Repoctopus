@@ -611,6 +611,7 @@ describe('managed Change execution production composition', () => {
         'tool.completed',
         'work.host-completed',
         'work.completed',
+        'validator.started',
         'validator.completed',
         'change.lifecycle.transitioned',
       ];
@@ -638,6 +639,7 @@ describe('managed Change execution production composition', () => {
         'skill.consumed',
         'tool.started',
         'tool.completed',
+        'validator.started',
         'validator.completed',
         'continuation.selected',
       ]);

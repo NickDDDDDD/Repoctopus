@@ -19,6 +19,8 @@ import type {
   EvidenceTelemetryPort,
 } from '../domains/evidence/telemetry.js';
 import { createEvidenceTelemetryBatch } from '../domains/evidence/telemetry.js';
+import type { EvidenceRunResult } from '../domains/evidence/service.js';
+import type { EvidenceGateProjection } from '../domains/evidence/types.js';
 import type { SharedProjectConfig } from '../domains/project-configuration/types.js';
 import { FileEvidenceTelemetryOutbox } from '../platform/telemetry/evidence-outbox.js';
 import { FileRuntimeStore } from '../platform/runtime/file-runtime-store.js';
@@ -52,6 +54,48 @@ class RecoveringTelemetry implements EvidenceTelemetryPort {
 }
 
 describe('Evidence telemetry outbox', () => {
+  it('preserves controlled attempt and node duration boundaries', () => {
+    const result = {
+      attempt: {
+        attemptId: 'attempt-controlled',
+        profileId: 'verify',
+        compositionDigest: compositionFixture().compositionDigest,
+        inputFingerprint: 'fingerprint',
+        startedAt: '2026-01-01T00:00:01.000Z',
+        completedAt: '2026-01-01T00:00:10.000Z',
+        status: 'completed',
+      },
+      receipts: [
+        {
+          receiptId: 'receipt-controlled',
+          nodeId: 'tests',
+          adapter: 'command',
+          trust: 'verified',
+          freshness: 'fresh',
+          status: 'passed',
+          startedAt: '2026-01-01T00:00:03.000Z',
+          completedAt: '2026-01-01T00:00:07.000Z',
+          artifacts: [],
+        },
+      ],
+      bundle: { bundleId: 'bundle-controlled', createdAt: '2026-01-01T00:00:10.000Z' },
+      decisionRequests: [],
+    } as unknown as EvidenceRunResult;
+    const gate = {
+      bundleId: 'bundle-controlled',
+      outcome: 'passed',
+      status: 'satisfied',
+    } as EvidenceGateProjection;
+
+    const batch = createEvidenceTelemetryBatch({ workflowRunId: 'run', result, gate });
+    expect(batch.events.find((event) => event.type === 'evidence.node.completed')?.data).toMatchObject(
+      { durationMs: 4_000 },
+    );
+    expect(
+      batch.events.find((event) => event.type === 'evidence.attempt.completed')?.data,
+    ).toMatchObject({ durationMs: 9_000 });
+  });
+
   it('keeps local facts on exporter failure and replays stable Run, Attempt, node, Artifact and Gate events', async () => {
     const root = await temporaryDirectory('repoctopus-evidence-telemetry-');
     cleanup.push(root);

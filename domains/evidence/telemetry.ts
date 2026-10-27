@@ -117,7 +117,14 @@ export function createEvidenceTelemetryBatch(input: {
       timestamp: attempt.completedAt ?? input.result.bundle.createdAt,
       runId: input.workflowRunId,
       attemptId: attempt.attemptId,
-      data: { status: attempt.status },
+      data: {
+        status: attempt.status,
+        durationMs: Math.max(
+          0,
+          Date.parse(attempt.completedAt ?? input.result.bundle.createdAt) -
+            Date.parse(attempt.startedAt),
+        ),
+      },
     },
   );
   return {

@@ -54,6 +54,25 @@ describe('observation telemetry contract', () => {
     expect(completed.log.correlation).toBe('trace-and-span');
   });
 
+  it('keeps health Metric dimensions finite and identity-free', () => {
+    const allowedDurationKinds = [
+      'run',
+      'phase-residency',
+      'active-execution',
+      'human-wait',
+      'external-wait',
+      'retry-wait',
+      'validator',
+      'reconcile',
+    ];
+    const allowedEventKinds = ['rework', 'retry', 'unknown', 'reconcile', 'recovery'];
+
+    expect(new Set(allowedDurationKinds).size).toBe(allowedDurationKinds.length);
+    expect(new Set(allowedEventKinds).size).toBe(allowedEventKinds.length);
+    expect(allowedDurationKinds.join(' ')).not.toMatch(/runId|workId|taskId|validatorId/u);
+    expect(allowedEventKinds.join(' ')).not.toMatch(/runId|workId|taskId|validatorId/u);
+  });
+
   it('accepts only declared low-cardinality Metric dimensions', () => {
     expect(
       validateObservationMetricAttributes('work.completed', {

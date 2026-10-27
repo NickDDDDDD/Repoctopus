@@ -66,16 +66,19 @@ export class OpenTelemetryEvidenceExporter implements EvidenceTelemetryPort {
     const meter = meterProvider.getMeter('repoctopus-evidence', '0.1.0');
     const counter = meter.createCounter('repoctopus.evidence.events', { unit: '{event}' });
     const duration = meter.createHistogram('repoctopus.evidence.node.duration', { unit: 'ms' });
+    const attemptDuration = meter.createHistogram('repoctopus.evidence.attempt.duration', {
+      unit: 'ms',
+    });
     const parent = parentContext(batch);
     try {
       for (const event of batch.events) {
         const attributes = safeEvidenceAttributes(batch, event);
-        if (event.type === 'evidence.attempt.started' || event.type === 'evidence.node.completed') {
+        if (event.type === 'evidence.node.completed') {
+          const durationMs =
+            typeof event.data.durationMs === 'number' ? Math.max(0, event.data.durationMs) : 0;
           const span = tracer.startSpan(
-            event.type === 'evidence.attempt.started'
-              ? 'repoctopus.evidence.attempt'
-              : 'repoctopus.evidence.node',
-            { startTime: new Date(event.timestamp), attributes },
+            'repoctopus.evidence.node',
+            { startTime: new Date(Date.parse(event.timestamp) - durationMs), attributes },
             parent,
           );
           span.setStatus({
@@ -85,6 +88,25 @@ export class OpenTelemetryEvidenceExporter implements EvidenceTelemetryPort {
                 : SpanStatusCode.OK,
           });
           span.end(new Date(event.timestamp));
+        }
+        if (event.type === 'evidence.attempt.completed') {
+          const started = batch.events.find(
+            (candidate) => candidate.type === 'evidence.attempt.started',
+          );
+          if (started) {
+            const span = tracer.startSpan(
+              'repoctopus.evidence.attempt',
+              { startTime: new Date(started.timestamp), attributes },
+              parent,
+            );
+            span.setStatus({
+              code:
+                event.data.status === 'completed' || event.data.status === 'recovered'
+                  ? SpanStatusCode.OK
+                  : SpanStatusCode.ERROR,
+            });
+            span.end(new Date(event.timestamp));
+          }
         }
         logger.emit({
           eventName: event.type,
@@ -97,6 +119,14 @@ export class OpenTelemetryEvidenceExporter implements EvidenceTelemetryPort {
         if (event.type === 'evidence.node.completed' && typeof event.data.durationMs === 'number') {
           duration.record(event.data.durationMs, {
             'repoctopus.evidence.adapter': String(event.data.adapter ?? 'unknown'),
+            'repoctopus.evidence.status': String(event.data.status ?? 'unknown'),
+          });
+        }
+        if (
+          event.type === 'evidence.attempt.completed' &&
+          typeof event.data.durationMs === 'number'
+        ) {
+          attemptDuration.record(event.data.durationMs, {
             'repoctopus.evidence.status': String(event.data.status ?? 'unknown'),
           });
         }

@@ -30,6 +30,7 @@ import type {
   LifecycleTelemetryEvent,
   LifecycleTelemetryPort,
 } from '../../../services/lifecycle-diagnostics.js';
+import { projectWorkflowHealthMetrics } from '../../../domains/telemetry/workflow-health-metrics.js';
 
 function syntheticParentContext(runId: string, traceId: string): Context {
   const spanId = createHash('sha256').update(runId).digest('hex').slice(0, 16);
@@ -65,6 +66,7 @@ const EXECUTION_SPAN_START: Partial<
   'tool.completed': 'tool.started',
   'wait.ended': 'wait.started',
   'decision.resolved': 'decision.requested',
+  'validator.completed': 'validator.started',
   'reconcile.completed': 'reconcile.started',
 };
 
@@ -119,12 +121,12 @@ export class OpenTelemetryExporter implements TelemetryPort {
       [ATTR_DEPLOYMENT_ENVIRONMENT_NAME]: this.options.environment ?? 'development',
     });
     const timeoutMillis = this.options.timeoutMillis ?? 5_000;
-    const exportsRoot = batch.events.some((event) => event.type === 'run.started');
+    const exportsRoot =
+      batch.run.status === 'completed' &&
+      batch.trajectory.some((event) => event.type === 'run.started');
     const spannedEvents = batch.events.filter(
       (event) =>
-        event.type === 'action.completed' ||
-        EXECUTION_SPAN_START[event.type] !== undefined ||
-        event.type === 'validator.completed',
+        event.type === 'action.completed' || EXECUTION_SPAN_START[event.type] !== undefined,
     );
     const stableSpanIds = [
       ...(exportsRoot ? [rootSpanId(batch.run.runId)] : []),
@@ -181,11 +183,23 @@ export class OpenTelemetryExporter implements TelemetryPort {
       description: 'Managed Work, Host, tool, Validator, wait, and reconcile duration',
       unit: 'ms',
     });
+    const workflowHealthDuration = meter.createHistogram('repoctopus.workflow.health.duration', {
+      description: 'Identity-free workflow residency, execution, wait, validation, and recovery time',
+      unit: 'ms',
+    });
+    const workflowHealthEvents = meter.createCounter('repoctopus.workflow.health.events', {
+      description: 'Identity-free workflow rework, retry, unknown, reconcile, and recovery events',
+      unit: '{event}',
+    });
     const parentContext = syntheticParentContext(batch.run.runId, batch.run.traceId);
 
     try {
-      const started = batch.events.find((event) => event.type === 'run.started');
+      const started = batch.trajectory.find((event) => event.type === 'run.started');
       if (started) {
+        const lastObservedAt = batch.trajectory.at(-1)?.timestamp ?? batch.run.updatedAt;
+        const endedAt = new Date(
+          Math.max(Date.parse(batch.run.updatedAt), Date.parse(lastObservedAt)),
+        );
         const rootSpan = tracer.startSpan(
           'repoctopus.run',
           {
@@ -195,9 +209,28 @@ export class OpenTelemetryExporter implements TelemetryPort {
           ROOT_CONTEXT,
         );
         rootSpan.setStatus({ code: SpanStatusCode.OK });
-        rootSpan.end(new Date(started.timestamp));
+        rootSpan.end(endedAt);
       }
       for (const item of batch.events) {
+        for (const sample of projectWorkflowHealthMetrics({
+          run: batch.run,
+          trajectory: batch.trajectory,
+          event: item,
+        })) {
+          const attributes = {
+            'repoctopus.health.kind': sample.kind,
+            'repoctopus.execution.phase': sample.phase,
+            'repoctopus.execution.result': sample.result,
+            ...(sample.instrument === 'duration' && sample.validatorFinding
+              ? { 'repoctopus.validator.finding.kind': sample.validatorFinding }
+              : {}),
+          };
+          if (sample.instrument === 'duration') {
+            workflowHealthDuration.record(sample.durationMs, attributes);
+          } else {
+            workflowHealthEvents.add(1, attributes);
+          }
+        }
         const lifecycleRecords = acceptedChangeLifecycleTelemetry(batch, item);
         if (lifecycleRecords.length > 0) {
           for (const record of lifecycleRecords) {
@@ -249,7 +282,7 @@ export class OpenTelemetryExporter implements TelemetryPort {
                   candidate.type === startType && sameExecutionBoundary(item, candidate),
               )
             : undefined;
-          if (startType || item.type === 'validator.completed') {
+          if (startType) {
             const startedAt = new Date(startedBoundary?.timestamp ?? item.timestamp);
             const endedAt = new Date(item.timestamp);
             const duration = Math.max(0, endedAt.getTime() - startedAt.getTime());

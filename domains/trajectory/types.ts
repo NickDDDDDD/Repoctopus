@@ -35,6 +35,7 @@ export type TrajectoryEventType =
   | 'skill.consumed'
   | 'tool.started'
   | 'tool.completed'
+  | 'validator.started'
   | 'validator.completed'
   | 'wait.started'
   | 'wait.ended'
