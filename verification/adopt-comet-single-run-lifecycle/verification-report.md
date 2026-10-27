@@ -3,10 +3,10 @@
 ## Reproducible subject
 
 - Change: `adopt-comet-single-run-lifecycle`
-- Tested implementation commit: `94ca11cdfc7074c7aefc91118315302f469fdf0b`
+- Tested implementation commit: `df54746f4eec91afb554112d9b29b194f2a56837`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `1062260`
-- Package SHA-256: `9ed96a98c708c1c6c7e506086d4003146f87d697cd61c58fed565ebd9ea0fd31`
+- Package bytes: `1065539`
+- Package SHA-256: `959a005554703f60fb0f46966d7ed1d1393bd642a82e576cde1088a1cd761e59`
 - Lifecycle definition: `repoctopus-change@3.0.0`
 - Lifecycle definition digest: `sha256:d45fdabde20f79ccc9e0dd95ce164d5b7225ce736b1e76e08c44e53e85c92a0e`
 - Verified input composition digest: `sha256:0f52306c5478580e72a9618918ebcdb11a13b1ca5a310cbef9bf3722e2488b69`
@@ -21,8 +21,8 @@ Run on Windows with Node.js `24.21.0`:
 ```text
 npm run verify
   typecheck, desktop typecheck, lint and both builds passed
-  139 test files passed
-  575 tests passed, 1 skipped
+  140 test files passed
+  578 tests passed, 1 skipped
   generated, brand, architecture and provenance checks passed
   OpenSpec strict validation: 14 passed, 0 failed
 
@@ -43,6 +43,8 @@ The real repository self-bootstrap uses the stable runId above. Open delivered `
 The complete packaged-CLI single- and multi-repository journeys are exercised by `test/managed-change-execution.e2e.test.ts`, `test/e2e/change-design-gate-cli.e2e.test.ts`, `test/e2e/change-run-cli.e2e.test.ts`, archive publication suites and recovery suites. They restart process boundaries, inject implementation retry, Build-to-Design, Verify repair, planning drift, infrastructure retry, Archive reverify, response loss and OID drift while asserting one runId and monotonically increasing `checkEpoch`.
 
 Follow-up telemetry regression coverage now persists Validator start/completion boundaries around every lifecycle Validator invocation. Controlled-time tests prove non-zero Run, Validator, Evidence Attempt and Evidence Node spans, and derive identity-free phase residency, active execution, human/external wait, rework, retry, unknown, reconcile and recovery metrics from durable facts. Metric dimensions remain fixed enums; Work, Task, Validator and operation identities stay in correlated Log/Span attributes only.
+
+The shared observation mapper now records stable Workspace, change, Run, execution hierarchy, phase, Host, Task, Skill, Validator, blocker, continuation and observation-time correlations only when the persisted event or its stable owning Run identity supplies the fact. Negative fixtures keep missing execution context unknown even when the latest Run snapshot contains tempting replacement state. High-cardinality entity identities remain restricted to correlated Log/Span records; event-level Metric schemas reject them.
 
 Managed Hosts can now attach a versioned, bounded Tool usage report to their Outcome. Runtime validation accepts only the reviewed Tool categories, result enums, aggregate duration/call counts and optional model/Token/cache counts; it rejects extra command, path, Prompt, reply or output fields and reserves `runtime-operation` for Runtime-observed protected operations. Hosts without this capability persist one explicit `unknown` observation and no invented zero usage. OTLP tests verify the bounded Tool and model aggregates reach Trace/Log/Metric payloads without private execution content.
 
