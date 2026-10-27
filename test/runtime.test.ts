@@ -8,6 +8,7 @@ import {
 import type { EvidenceGatePort, TelemetryBatch, TelemetryPort } from '../domains/runtime/types.js';
 import { createWorkflowPackage } from '../domains/workflow-contract/package.js';
 import { FileRuntimeStore } from '../platform/runtime/file-runtime-store.js';
+import { DecisionTelemetryRecorder } from '../services/decision-telemetry-recorder.js';
 import {
   compositionFixture,
   projectFixture,
@@ -37,6 +38,51 @@ describe('Repoctopus runtime', () => {
     definition.steps[1]!.action.evidenceProfile = 'verify';
     return createWorkflowPackage(definition);
   }
+
+  it('records all lifecycle Human Decision boundary kinds without actor or reply content', async () => {
+    const workspace = await temporaryDirectory('repoctopus-decision-boundaries-');
+    cleanup.push(workspace);
+    const store = new FileRuntimeStore(workspace);
+    const runtime = new WorkflowRunCoordinator(store, { async export() {} }, compositionFixture());
+    const decisionTelemetry = new DecisionTelemetryRecorder(store, { async export() {} });
+    await runtime.start({
+      workflow: workflowFixture(),
+      projectSnapshot: projectFixture(),
+      runId: 'run-decision-boundaries',
+    });
+
+    for (const kind of [
+      'open-approval',
+      'design-approval',
+      'adopt-existing',
+      'design-revision',
+    ] as const) {
+      await decisionTelemetry.record({
+        runId: 'run-decision-boundaries',
+        decisionId: `${kind}-1`,
+        kind,
+        stage: 'requested',
+      });
+      await decisionTelemetry.record({
+        runId: 'run-decision-boundaries',
+        decisionId: `${kind}-1`,
+        kind,
+        stage: 'resolved',
+        outcome: 'approve',
+      });
+    }
+
+    const events = (await store.loadTrajectory('run-decision-boundaries')).filter((event) =>
+      event.type.startsWith('decision.'),
+    );
+    expect(events).toHaveLength(8);
+    expect(
+      events
+        .filter((event) => event.type === 'decision.requested')
+        .map((event) => event.data.decisionKind),
+    ).toEqual(['open-approval', 'design-approval', 'adopt-existing', 'design-revision']);
+    expect(JSON.stringify(events)).not.toMatch(/actor|reply|comment/iu);
+  });
 
   it('binds the first Skill use to Run, Checkpoint, and Trajectory idempotently', async () => {
     const workspace = await temporaryDirectory('repoctopus-skill-binding-');

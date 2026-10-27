@@ -31,6 +31,8 @@ import type {
   SpecificationUsageSnapshot,
   SpecificationValidation,
 } from '../domains/specification/types.js';
+import { decisionKindForWaitId } from '../domains/telemetry/decision-trajectory.js';
+import { DecisionTelemetryRecorder } from './decision-telemetry-recorder.js';
 import { bindOperationOwnership, type OperationOwnership } from './operation-ownership.js';
 import { canonicalJson } from '../domains/workflow-contract/canonical.js';
 import {
@@ -174,6 +176,7 @@ export class WorkflowRuns extends Service {
   ];
 
   private readonly coordinator: WorkflowRunCoordinator;
+  private readonly decisionTelemetry: DecisionTelemetryRecorder;
   private readonly operations: OperationOwnership;
   private readonly workspaceRoot: string;
 
@@ -196,6 +199,10 @@ export class WorkflowRuns extends Service {
       context.workflowSource,
       context.get('evidenceCoordinator'),
       contributorSnapshot,
+    );
+    this.decisionTelemetry = new DecisionTelemetryRecorder(
+      context.runStore,
+      context.workflowTelemetry,
     );
   }
 
@@ -381,6 +388,13 @@ export class WorkflowRuns extends Service {
           proposalDigest: input.response.proposalHash,
           actorId: input.actor.actorId,
         });
+        await this.decisionTelemetry.record({
+          runId: input.runId,
+          decisionId: input.response.requestId,
+          kind: 'adopt-existing',
+          stage: 'resolved',
+          outcome: input.response.decision,
+        });
         await this.ctx.workExecutionAuthority.recordWaitBoundary({
           runId: input.runId,
           waitId,
@@ -448,6 +462,13 @@ export class WorkflowRuns extends Service {
         if (designWork) {
           await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, designWork);
         }
+        await this.decisionTelemetry.record({
+          runId: input.runId,
+          decisionId: input.response.requestId,
+          kind: 'design-revision',
+          stage: 'resolved',
+          outcome: input.response.decision,
+        });
         await this.ctx.workExecutionAuthority.recordWaitBoundary({
           runId: input.runId,
           waitId,
@@ -480,6 +501,13 @@ export class WorkflowRuns extends Service {
       if (decided.decision?.proposalHash !== lifecycle.waitCondition.proposalDigest) {
         throw new Error('Recorded Human Decision does not match the current Change Run proposal');
       }
+      await this.decisionTelemetry.record({
+        runId: input.runId,
+        decisionId: input.response.requestId,
+        kind: lifecycle.phase === 'open' ? 'open-approval' : 'design-approval',
+        stage: 'resolved',
+        outcome: input.response.decision,
+      });
       return decided;
     });
   }
@@ -1338,6 +1366,15 @@ export class WorkflowRuns extends Service {
     const beforeWait = beforeNext.changeLifecycle?.waitCondition;
     const afterWait = afterNext.changeLifecycle?.waitCondition;
     if (!beforeWait && afterWait) {
+      const decisionKind = decisionKindForWaitId(afterWait.waitId);
+      if (decisionKind && afterWait.kind === 'human-decision') {
+        await this.decisionTelemetry.record({
+          runId,
+          decisionId: afterWait.requestId,
+          kind: decisionKind,
+          stage: 'requested',
+        });
+      }
       await this.ctx.workExecutionAuthority.recordWaitBoundary({
         runId,
         waitId: afterWait.waitId,

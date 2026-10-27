@@ -670,6 +670,17 @@ describe('managed Change execution production composition', () => {
         events: inspection.trajectory,
       });
       expect(taskProjection.progress).toEqual({ total: 2, completed: 2, active: 0, pending: 0 });
+      const decisionEvents = inspection.trajectory.filter((event) =>
+        event.type.startsWith('decision.'),
+      );
+      expect(
+        decisionEvents.map((event) => [event.type, event.data.decisionKind, event.data.result]),
+      ).toEqual([
+        ['decision.requested', 'open-approval', 'requested'],
+        ['decision.resolved', 'open-approval', 'accepted'],
+        ['decision.requested', 'design-approval', 'requested'],
+        ['decision.resolved', 'design-approval', 'accepted'],
+      ]);
       const waitEvents = inspection.trajectory.filter(
         (event) => event.type === 'wait.started' || event.type === 'wait.ended',
       );

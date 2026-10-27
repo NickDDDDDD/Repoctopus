@@ -245,6 +245,60 @@ describe('Work reconciliation telemetry context', () => {
   });
 });
 
+describe('Wait telemetry boundaries', () => {
+  it('normalizes bounded Wait categories', async () => {
+    let run = {
+      ...state({ execution: checkpoint('validated'), currentWork: false }),
+      stateVersion: 20,
+      updatedAt: '2026-10-25T00:00:00.000Z',
+      composition: { compositionDigest: digest('8') },
+      changeLifecycle: {
+        phase: 'build',
+        checkEpoch: 4,
+        currentWork: null,
+        waitCondition: null,
+      },
+    } as unknown as RunState;
+    const events: TrajectoryEvent[] = [];
+    const authority = Object.create(WorkExecutionAuthority.prototype) as WorkExecutionAuthority;
+    Object.defineProperty(authority, 'ctx', {
+      value: {
+        runStore: {
+          commitGuarded: vi.fn(
+            <T>(
+              _runId: string,
+              reduce: (current: { state: RunState; trajectory: TrajectoryEvent[] }) => {
+                state?: RunState;
+                event?: TrajectoryEvent;
+                value: T;
+              },
+            ): Promise<T> => {
+              const reduced = reduce({ state: run, trajectory: events });
+              if (reduced.state) run = reduced.state;
+              if (reduced.event) events.push(reduced.event);
+              return Promise.resolve(reduced.value);
+            },
+          ),
+        },
+      },
+    });
+
+    for (const kind of ['human-decision', 'retry', 'external-fact'] as const) {
+      await authority.recordWaitBoundary({
+        runId: run.runId,
+        waitId: `${kind}-1`,
+        stage: 'started',
+        kind,
+        reason: 'free text must not become a Metric dimension',
+      });
+    }
+
+    expect(
+      events.filter((event) => event.type === 'wait.started').map((event) => event.data.waitKind),
+    ).toEqual(['human', 'retry', 'external-fact']);
+  });
+});
+
 describe('Managed Host reconciliation', () => {
   const invocation: WorkExecutionHostInvocation = {
     schemaVersion: 1,

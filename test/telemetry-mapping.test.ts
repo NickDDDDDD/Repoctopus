@@ -406,4 +406,79 @@ describe('telemetry mapping', () => {
       'repoctopus.execution.continuation': 'unknown',
     });
   });
+
+  it('maps Human Decision and Wait boundaries with bounded kinds and no sensitive identity', () => {
+    const workflow = workflowFixture();
+    const project = projectFixture();
+    const run = startRun({
+      workflow,
+      runId: 'run-human-decision',
+      projectSnapshotDigest: project.digest,
+      composition: compositionFixture(),
+      timestamp: '2026-01-01T00:00:00.000Z',
+      traceId: '6'.repeat(32),
+    });
+    const decision: TrajectoryEvent = {
+      schemaVersion: 1,
+      sequence: 2,
+      eventId: 'decision-resolved-1',
+      timestamp: '2026-01-01T00:00:09.000Z',
+      type: 'decision.resolved',
+      runId: run.runId,
+      stateVersion: 2,
+      compositionDigest: run.composition.compositionDigest,
+      data: {
+        schemaVersion: 1,
+        phase: 'design',
+        decisionId: 'design-request-1',
+        decisionKind: 'design-approval',
+        result: 'accepted',
+        outcome: 'approve',
+        actorId: 'alice@example.internal',
+        reply: 'private approval body',
+        reason: 'private planning context',
+      },
+    };
+    const wait: TrajectoryEvent = {
+      ...decision,
+      sequence: 3,
+      eventId: 'external-wait-1',
+      type: 'wait.started',
+      data: {
+        schemaVersion: 1,
+        phase: 'verify',
+        waitId: 'external-1',
+        waitKind: 'external-fact',
+        reason: 'private provider response',
+      },
+    };
+    const batch: TelemetryBatch = {
+      run,
+      workflow,
+      projectSnapshot: project,
+      events: [decision, wait],
+      trajectory: [decision, wait],
+    };
+
+    expect(safeEventAttributes(batch, decision)).toMatchObject({
+      'repoctopus.decision.id': 'design-request-1',
+      'repoctopus.decision.kind': 'design-approval',
+      'repoctopus.execution.phase': 'design',
+      'repoctopus.execution.result': 'accepted',
+    });
+    expect(executionMetricAttributes(decision)).toMatchObject({
+      'repoctopus.execution.event.type': 'decision.resolved',
+      'repoctopus.execution.phase': 'design',
+      'repoctopus.decision.kind': 'design-approval',
+      'repoctopus.execution.result': 'accepted',
+    });
+    expect(executionMetricAttributes(wait)).toMatchObject({
+      'repoctopus.execution.event.type': 'wait.started',
+      'repoctopus.execution.phase': 'verify',
+      'repoctopus.wait.kind': 'external-fact',
+    });
+    expect(JSON.stringify(safeEventAttributes(batch, decision))).not.toMatch(
+      /alice|private|reply|reason/u,
+    );
+  });
 });

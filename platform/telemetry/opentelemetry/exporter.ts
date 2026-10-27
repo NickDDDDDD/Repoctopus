@@ -64,6 +64,7 @@ const EXECUTION_SPAN_START: Partial<
   'work.host-completed': 'work.host-started',
   'tool.completed': 'tool.started',
   'wait.ended': 'wait.started',
+  'decision.resolved': 'decision.requested',
   'reconcile.completed': 'reconcile.started',
 };
 
@@ -71,7 +72,13 @@ function sameExecutionBoundary(
   left: TelemetryBatch['events'][number],
   right: TelemetryBatch['events'][number],
 ): boolean {
-  for (const key of ['invocationId', 'operationId', 'waitId', 'reconcileId'] as const) {
+  for (const key of [
+    'invocationId',
+    'operationId',
+    'waitId',
+    'reconcileId',
+    'decisionId',
+  ] as const) {
     const value = left.data[key];
     if (typeof value === 'string') return value === right.data[key];
   }
@@ -87,11 +94,12 @@ function sameExecutionBoundary(
 }
 
 function executionSpanName(type: TelemetryBatch['events'][number]['type']): string {
+  if (type.startsWith('decision.')) return 'repoctopus.decision';
+  if (type.startsWith('wait.')) return 'repoctopus.wait';
   if (type.startsWith('work.host-')) return 'repoctopus.host';
   if (type.startsWith('work.')) return 'repoctopus.work';
   if (type.startsWith('tool.')) return 'repoctopus.tool';
   if (type.startsWith('validator.')) return 'repoctopus.validator';
-  if (type.startsWith('wait.')) return 'repoctopus.wait';
   if (type.startsWith('reconcile.')) return 'repoctopus.reconcile';
   return 'repoctopus.execution';
 }

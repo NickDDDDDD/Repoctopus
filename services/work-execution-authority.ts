@@ -5,11 +5,13 @@ import { Service, type Context } from '@deepseek-ai/cordis';
 import type { ActionIntent, ActionReceipt, ClaimedActionOutcome } from '../domains/action/types.js';
 import type { RunState } from '../domains/engine/types.js';
 import type { WorkDescriptor } from '../domains/change-lifecycle/transition.js';
+import type { WaitCondition } from '../domains/change-lifecycle/transition.js';
 import type { TrajectoryEvent, TrajectoryEventType } from '../domains/trajectory/types.js';
 import {
   createExecutionContext,
   type ExecutionContext,
 } from '../domains/telemetry/execution-context.js';
+import { observationWaitKind } from '../domains/telemetry/decision-trajectory.js';
 import type {
   TaskReworkCorrelation,
   TaskTrajectoryData,
@@ -614,7 +616,7 @@ export class WorkExecutionAuthority extends Service {
     runId: string;
     waitId: string;
     stage: 'started' | 'ended';
-    kind: string;
+    kind: WaitCondition['kind'];
     reason: string;
   }): Promise<void> {
     await this.ctx.runStore.commitGuarded(input.runId, ({ state, trajectory }) => {
@@ -622,6 +624,7 @@ export class WorkExecutionAuthority extends Service {
       const eventId = digest(input.runId, type, input.waitId);
       if (trajectory.some((event) => event.eventId === eventId)) return { value: undefined };
       const timestamp = new Date().toISOString();
+      const waitKind = observationWaitKind(input.kind);
       const nextState: RunState = {
         ...state,
         stateVersion: state.stateVersion + 1,
@@ -637,11 +640,17 @@ export class WorkExecutionAuthority extends Service {
           identity: [input.waitId, input.stage],
           data: state.workExecution?.executionContext
             ? executionData(state.workExecution.executionContext, {
+                phase: state.changeLifecycle?.phase,
                 waitId: input.waitId,
-                waitKind: input.kind,
+                waitKind,
                 reason: input.reason,
               })
-            : { waitId: input.waitId, waitKind: input.kind, reason: input.reason },
+            : {
+                phase: state.changeLifecycle?.phase,
+                waitId: input.waitId,
+                waitKind,
+                reason: input.reason,
+              },
         }),
         value: undefined,
       };

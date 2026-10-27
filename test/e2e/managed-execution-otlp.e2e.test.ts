@@ -17,7 +17,7 @@ function event(
     schemaVersion: 1,
     sequence,
     eventId: `managed-event-${sequence}`,
-    timestamp: `2026-10-25T00:00:0${sequence}.000Z`,
+    timestamp: `2026-10-25T00:00:${String(sequence).padStart(2, '0')}.000Z`,
     type,
     runId: 'run-managed-otlp',
     stateVersion: sequence,
@@ -110,6 +110,37 @@ describe('managed execution OTLP protocol', () => {
           validatorId: 'build.task-valid',
           result: 'accepted',
         }),
+        event(9, 'decision.requested', {
+          schemaVersion: 1,
+          phase: 'design',
+          decisionId: 'design-approval-1',
+          decisionKind: 'design-approval',
+          result: 'requested',
+          reason: secret,
+        }),
+        event(10, 'decision.resolved', {
+          schemaVersion: 1,
+          phase: 'design',
+          decisionId: 'design-approval-1',
+          decisionKind: 'design-approval',
+          result: 'accepted',
+          outcome: 'approve',
+          actorId: secret,
+          reply: secret,
+        }),
+        event(11, 'wait.started', {
+          phase: 'verify',
+          waitId: 'external-wait-1',
+          waitKind: 'external-fact',
+          reason: secret,
+        }),
+        event(12, 'wait.ended', {
+          phase: 'verify',
+          waitId: 'external-wait-1',
+          waitKind: 'external-fact',
+          result: 'succeeded',
+          reason: secret,
+        }),
       ];
       const batch: TelemetryBatch = {
         run,
@@ -130,6 +161,11 @@ describe('managed execution OTLP protocol', () => {
       expect(payload).toContain('repoctopus.work.execution.events');
       expect(payload).toContain('repoctopus.host');
       expect(payload).toContain('repoctopus.tool');
+      expect(payload).toContain('repoctopus.decision');
+      expect(payload).toContain('repoctopus.wait');
+      expect(payload).toContain('repoctopus.execution.duration_ms');
+      expect(payload).toContain('repoctopus.decision.kind');
+      expect(payload).toContain('repoctopus.wait.kind');
       expect(payload).toContain('repoctopus.execution.check_epoch');
       expect(payload).toContain('repoctopus.execution.task.id');
       expect(payload).not.toContain(secret);

@@ -35,6 +35,7 @@ const EXECUTION_DATA_KEYS = new Set([
   'recovery',
   'findingCount',
   'findingKind',
+  'phase',
 ]);
 
 const SENSITIVE_KEY =
@@ -56,6 +57,8 @@ const EXECUTION_EVENTS = new Set<TrajectoryEvent['type']>([
   'task.completed',
   'task.failed',
   'task.reopened',
+  'decision.requested',
+  'decision.resolved',
   'skill.resolved',
   'skill.delivered',
   'skill.consumed',
@@ -68,6 +71,14 @@ const EXECUTION_EVENTS = new Set<TrajectoryEvent['type']>([
   'reconcile.completed',
   'continuation.selected',
 ]);
+
+const BOUNDED_DECISION_KINDS = new Set([
+  'open-approval',
+  'design-approval',
+  'adopt-existing',
+  'design-revision',
+]);
+const BOUNDED_WAIT_KINDS = new Set(['human', 'retry', 'external-fact', 'manual-handoff']);
 
 function safeExecutionId(value: string): boolean {
   return (
@@ -243,6 +254,25 @@ function addTaskCorrelation(attributes: Attributes, event: TrajectoryEvent): voi
   }
 }
 
+function addDecisionCorrelation(attributes: Attributes, event: TrajectoryEvent): void {
+  if (event.type.startsWith('decision.')) {
+    const decisionId = event.data.decisionId;
+    const decisionKind = event.data.decisionKind;
+    if (typeof decisionId === 'string' && safeExecutionId(decisionId)) {
+      attributes['repoctopus.decision.id'] = decisionId;
+    }
+    if (typeof decisionKind === 'string' && BOUNDED_DECISION_KINDS.has(decisionKind)) {
+      attributes['repoctopus.decision.kind'] = decisionKind;
+    }
+  }
+  if (event.type === 'wait.started' || event.type === 'wait.ended') {
+    const waitKind = event.data.waitKind;
+    if (typeof waitKind === 'string' && BOUNDED_WAIT_KINDS.has(waitKind)) {
+      attributes['repoctopus.wait.kind'] = waitKind;
+    }
+  }
+}
+
 export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEvent): Attributes {
   const attributes: Attributes = {
     'repoctopus.project.id': batch.projectSnapshot.projectId,
@@ -275,6 +305,7 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
     addExecutionContextAttributes(attributes, event);
     for (const [key, value] of Object.entries(event.data)) {
       if (!EXECUTION_DATA_KEYS.has(key) || SENSITIVE_KEY.test(key)) continue;
+      if (key === 'phase' && executionContextFromEvent(event)) continue;
       if (
         (key.endsWith('Digest') && (typeof value !== 'string' || !DIGEST.test(value))) ||
         (key.endsWith('Id') &&
@@ -330,6 +361,7 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
   }
   addEvidenceCorrelation(attributes, event);
   addTaskCorrelation(attributes, event);
+  addDecisionCorrelation(attributes, event);
   return attributes;
 }
 
@@ -363,9 +395,14 @@ export function executionMetricAttributes(event: TrajectoryEvent): Attributes | 
     recovery && typeof recovery === 'object'
       ? (recovery as Record<string, unknown>).sourcePhase
       : undefined;
+  const eventPhase = event.data.phase;
   const phase =
     context?.phase ??
-    (recoveryPhase === 'verify' || recoveryPhase === 'archive' ? recoveryPhase : 'unknown');
+    (recoveryPhase === 'verify' || recoveryPhase === 'archive'
+      ? recoveryPhase
+      : typeof eventPhase === 'string'
+        ? eventPhase
+        : 'unknown');
   const workKind = context?.work.kind ?? 'unknown';
   const result = typeof event.data.result === 'string' ? event.data.result : 'unknown';
   const continuation =
@@ -373,13 +410,22 @@ export function executionMetricAttributes(event: TrajectoryEvent): Attributes | 
     ['execute', 'ask', 'wait', 'reconcile', 'done'].includes(event.data.continuation)
       ? event.data.continuation
       : 'unknown';
-  return {
+  const attributes: Attributes = {
     'repoctopus.execution.event.type': event.type,
     'repoctopus.execution.phase': BOUNDED_PHASES.has(phase) ? phase : 'unknown',
     'repoctopus.execution.work.kind': BOUNDED_WORK_KINDS.has(workKind) ? workKind : 'custom',
     'repoctopus.execution.result': BOUNDED_RESULTS.has(result) ? result : 'unknown',
     'repoctopus.execution.continuation': continuation,
   };
+  const decisionKind = event.data.decisionKind;
+  if (typeof decisionKind === 'string' && BOUNDED_DECISION_KINDS.has(decisionKind)) {
+    attributes['repoctopus.decision.kind'] = decisionKind;
+  }
+  const waitKind = event.data.waitKind;
+  if (typeof waitKind === 'string' && BOUNDED_WAIT_KINDS.has(waitKind)) {
+    attributes['repoctopus.wait.kind'] = waitKind;
+  }
+  return attributes;
 }
 
 export function eventSeverity(type: TrajectoryEvent['type']): number {

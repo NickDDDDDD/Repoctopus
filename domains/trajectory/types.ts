@@ -28,6 +28,8 @@ export type TrajectoryEventType =
   | 'task.completed'
   | 'task.failed'
   | 'task.reopened'
+  | 'decision.requested'
+  | 'decision.resolved'
   | 'skill.resolved'
   | 'skill.delivered'
   | 'skill.consumed'
