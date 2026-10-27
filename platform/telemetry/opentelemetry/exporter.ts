@@ -184,12 +184,29 @@ export class OpenTelemetryExporter implements TelemetryPort {
       unit: 'ms',
     });
     const workflowHealthDuration = meter.createHistogram('repoctopus.workflow.health.duration', {
-      description: 'Identity-free workflow residency, execution, wait, validation, and recovery time',
+      description:
+        'Identity-free workflow residency, execution, wait, validation, and recovery time',
       unit: 'ms',
     });
     const workflowHealthEvents = meter.createCounter('repoctopus.workflow.health.events', {
       description: 'Identity-free workflow rework, retry, unknown, reconcile, and recovery events',
       unit: '{event}',
+    });
+    const toolObservation = meter.createCounter('repoctopus.tool.observations', {
+      description: 'Host Tool observation availability reported by managed Work executions',
+      unit: '{observation}',
+    });
+    const toolCalls = meter.createCounter('repoctopus.tool.calls', {
+      description: 'Host-declared bounded Tool call aggregate',
+      unit: '{call}',
+    });
+    const toolDuration = meter.createHistogram('repoctopus.tool.duration', {
+      description: 'Host-declared bounded Tool duration aggregate',
+      unit: 'ms',
+    });
+    const modelTokens = meter.createCounter('repoctopus.model.tokens', {
+      description: 'Host-declared model Token aggregate when available',
+      unit: '{token}',
     });
     const parentContext = syntheticParentContext(batch.run.runId, batch.run.traceId);
 
@@ -229,6 +246,66 @@ export class OpenTelemetryExporter implements TelemetryPort {
             workflowHealthDuration.record(sample.durationMs, attributes);
           } else {
             workflowHealthEvents.add(1, attributes);
+          }
+        }
+        const executionContext = executionContextFromEvent(item);
+        const phase = executionContext?.phase ?? 'unknown';
+        if (item.type === 'tool.observation-reported') {
+          const status = item.data.observationStatus;
+          if (status === 'observed' || status === 'unknown') {
+            toolObservation.add(1, {
+              'repoctopus.execution.phase': phase,
+              'repoctopus.tool.observation.status': status,
+            });
+          }
+        }
+        if (item.type === 'tool.usage-reported') {
+          const category = item.data.toolCategory;
+          const result = item.data.result;
+          const callCount = item.data.callCount;
+          const durationMs = item.data.durationMs;
+          if (
+            typeof category === 'string' &&
+            [
+              'repository.read',
+              'repository.search',
+              'code.edit',
+              'test.run',
+              'git.inspect',
+              'git.publish',
+              'external.request',
+            ].includes(category) &&
+            (result === 'succeeded' || result === 'failed' || result === 'unknown') &&
+            typeof callCount === 'number' &&
+            Number.isSafeInteger(callCount) &&
+            callCount > 0 &&
+            typeof durationMs === 'number' &&
+            Number.isSafeInteger(durationMs) &&
+            durationMs >= 0
+          ) {
+            const metricAttributes = {
+              'repoctopus.execution.phase': phase,
+              'repoctopus.tool.category': category,
+              'repoctopus.tool.result': result,
+            };
+            toolCalls.add(callCount, metricAttributes);
+            toolDuration.record(durationMs, metricAttributes);
+          }
+        }
+        if (item.type === 'model.usage-reported') {
+          for (const [source, kind] of [
+            ['inputTokenCount', 'input'],
+            ['outputTokenCount', 'output'],
+            ['cacheReadTokenCount', 'cache-read'],
+            ['cacheWriteTokenCount', 'cache-write'],
+          ] as const) {
+            const value = item.data[source];
+            if (typeof value === 'number' && Number.isSafeInteger(value) && value >= 0) {
+              modelTokens.add(value, {
+                'repoctopus.execution.phase': phase,
+                'repoctopus.model.token.kind': kind,
+              });
+            }
           }
         }
         const lifecycleRecords = acceptedChangeLifecycleTelemetry(batch, item);

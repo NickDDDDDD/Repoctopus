@@ -254,9 +254,7 @@ describe('Validator telemetry boundaries', () => {
         'validator.completed',
       ]);
       expect(events[0]?.data.operationId).toBe(events[1]?.data.operationId);
-      expect(
-        projectWorkflowHealthMetrics({ run, trajectory: events, event: events[1]! }),
-      ).toEqual([
+      expect(projectWorkflowHealthMetrics({ run, trajectory: events, event: events[1]! })).toEqual([
         {
           instrument: 'duration',
           kind: 'validator',
@@ -417,6 +415,7 @@ describe('Managed Host reconciliation', () => {
           markHostUnknown: marks.unknown,
           markHostNotExecuted: marks.notExecuted,
           markHostCompleted: marks.completed,
+          recordHostTelemetry: vi.fn(),
           recordSkillFacts: vi.fn(),
         },
         workDispatcher: {

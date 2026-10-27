@@ -12,6 +12,10 @@ import {
   type ExecutionContext,
 } from '../domains/telemetry/execution-context.js';
 import { observationWaitKind } from '../domains/telemetry/decision-trajectory.js';
+import {
+  hostTelemetryFacts,
+  type HostTelemetryReport,
+} from '../domains/telemetry/host-tool-telemetry.js';
 import type {
   TaskReworkCorrelation,
   TaskTrajectoryData,
@@ -288,11 +292,72 @@ export class WorkExecutionAuthority extends Service {
         invocationId: input.invocationId,
         operationId: input.operationId,
         operationKind: input.operationKind,
+        toolKind: 'runtime-operation',
         ...(input.result ? { result: input.result } : {}),
         ...(input.durationMs === undefined ? {} : { durationMs: input.durationMs }),
       },
       [input.invocationId, input.operationId, input.stage],
     );
+  }
+
+  async recordHostTelemetry(input: {
+    intent: ActionIntent;
+    invocationId: string;
+    report: HostTelemetryReport | undefined;
+  }): Promise<void> {
+    const facts = hostTelemetryFacts(input.report);
+    for (const [index, fact] of facts.entries()) {
+      if (fact.kind === 'observation') {
+        await this.recordEvent(
+          input.intent.runId,
+          input.intent.intentId,
+          'tool.observation-reported',
+          {
+            invocationId: input.invocationId,
+            toolKind: fact.observationStatus === 'observed' ? 'host-tool' : 'unknown',
+            observationStatus: fact.observationStatus,
+          },
+          [input.invocationId, fact.observationStatus],
+        );
+        continue;
+      }
+      if (fact.kind === 'tool-usage') {
+        await this.recordEvent(
+          input.intent.runId,
+          input.intent.intentId,
+          'tool.usage-reported',
+          {
+            invocationId: input.invocationId,
+            toolKind: 'host-tool',
+            toolCategory: fact.category,
+            result: fact.result,
+            durationMs: fact.durationMs,
+            callCount: fact.callCount,
+          },
+          [input.invocationId, fact.category, fact.result, String(index)],
+        );
+        continue;
+      }
+      await this.recordEvent(
+        input.intent.runId,
+        input.intent.intentId,
+        'model.usage-reported',
+        {
+          invocationId: input.invocationId,
+          toolKind: 'model',
+          modelVersion: fact.modelVersion,
+          inputTokenCount: fact.inputTokens,
+          outputTokenCount: fact.outputTokens,
+          ...(fact.cacheReadTokens === undefined
+            ? {}
+            : { cacheReadTokenCount: fact.cacheReadTokens }),
+          ...(fact.cacheWriteTokens === undefined
+            ? {}
+            : { cacheWriteTokenCount: fact.cacheWriteTokens }),
+        },
+        [input.invocationId, fact.modelVersion, String(index)],
+      );
+    }
   }
 
   async markHostStarted(

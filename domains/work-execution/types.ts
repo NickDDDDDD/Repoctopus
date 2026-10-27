@@ -4,6 +4,7 @@ import type { ActionIntent, ClaimedActionOutcome } from '../action/types.js';
 import type { WorkExecutionContext } from '../change-lifecycle/work-context.js';
 import type { WorkDescriptor } from '../change-lifecycle/transition.js';
 import type { ExecutionContext } from '../telemetry/execution-context.js';
+import type { HostTelemetryReport } from '../telemetry/host-tool-telemetry.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
 
 export type WorkContinuationKind = 'execute' | 'ask' | 'wait' | 'reconcile' | 'done';
@@ -125,6 +126,7 @@ export interface WorkExecutionHostOutcome {
   summary: string;
   consumedLayerDigests: readonly `sha256:${string}`[];
   findings?: readonly WorkExecutionFinding[];
+  hostTelemetry?: HostTelemetryReport;
   completedAt: string;
 }
 
@@ -157,6 +159,7 @@ export interface ExternalWorkExecutionOutcome {
   summary: string;
   consumedLayerDigests: readonly `sha256:${string}`[];
   findings?: readonly WorkExecutionFinding[];
+  hostTelemetry?: HostTelemetryReport;
 }
 
 export interface WorkExecutionCheckpoint {

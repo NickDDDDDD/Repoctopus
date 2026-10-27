@@ -3,6 +3,10 @@ import type { Attributes } from '@opentelemetry/api';
 import type { TelemetryBatch } from '../../../domains/runtime/types.js';
 import type { ExecutionContext } from '../../../domains/telemetry/execution-context.js';
 import type { TrajectoryEvent } from '../../../domains/trajectory/types.js';
+import {
+  HOST_TOOL_CATEGORIES,
+  HOST_TOOL_RESULTS,
+} from '../../../domains/telemetry/host-tool-telemetry.js';
 
 const SAFE_DATA_KEYS = new Set([
   'actionId',
@@ -29,6 +33,11 @@ const EXECUTION_DATA_KEYS = new Set([
   'skillName',
   'operationKind',
   'operationId',
+  'toolKind',
+  'toolCategory',
+  'observationStatus',
+  'callCount',
+  'modelVersion',
   'waitId',
   'reconcileId',
   'durationMs',
@@ -65,6 +74,9 @@ const EXECUTION_EVENTS = new Set<TrajectoryEvent['type']>([
   'skill.consumed',
   'tool.started',
   'tool.completed',
+  'tool.observation-reported',
+  'tool.usage-reported',
+  'model.usage-reported',
   'validator.started',
   'validator.completed',
   'wait.started',
@@ -81,6 +93,11 @@ const BOUNDED_DECISION_KINDS = new Set([
   'design-revision',
 ]);
 const BOUNDED_WAIT_KINDS = new Set(['human', 'retry', 'external-fact', 'manual-handoff']);
+const BOUNDED_TOOL_KINDS = new Set(['runtime-operation', 'host-tool', 'model', 'unknown']);
+const BOUNDED_TOOL_CATEGORIES = new Set<string>(HOST_TOOL_CATEGORIES);
+const BOUNDED_TOOL_RESULTS = new Set<string>(HOST_TOOL_RESULTS);
+const BOUNDED_OBSERVATION_STATUSES = new Set(['observed', 'unknown']);
+const MODEL_VERSION = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/u;
 
 function safeExecutionId(value: string): boolean {
   return (
@@ -275,6 +292,58 @@ function addDecisionCorrelation(attributes: Attributes, event: TrajectoryEvent):
   }
 }
 
+function addHostTelemetryAttributes(attributes: Attributes, event: TrajectoryEvent): void {
+  if (
+    event.type !== 'tool.observation-reported' &&
+    event.type !== 'tool.usage-reported' &&
+    event.type !== 'model.usage-reported'
+  ) {
+    return;
+  }
+  const toolKind = event.data.toolKind;
+  if (typeof toolKind === 'string' && BOUNDED_TOOL_KINDS.has(toolKind)) {
+    attributes['repoctopus.tool.kind'] = toolKind;
+  }
+  const observationStatus = event.data.observationStatus;
+  if (
+    typeof observationStatus === 'string' &&
+    BOUNDED_OBSERVATION_STATUSES.has(observationStatus)
+  ) {
+    attributes['repoctopus.tool.observation.status'] = observationStatus;
+  }
+  const category = event.data.toolCategory;
+  if (typeof category === 'string' && BOUNDED_TOOL_CATEGORIES.has(category)) {
+    attributes['repoctopus.tool.category'] = category;
+  }
+  const result = event.data.result;
+  if (typeof result === 'string' && BOUNDED_TOOL_RESULTS.has(result)) {
+    attributes['repoctopus.tool.result'] = result;
+  }
+  const callCount = event.data.callCount;
+  if (typeof callCount === 'number' && Number.isSafeInteger(callCount) && callCount > 0) {
+    attributes['repoctopus.tool.call_count'] = callCount;
+  }
+  const durationMs = event.data.durationMs;
+  if (typeof durationMs === 'number' && Number.isSafeInteger(durationMs) && durationMs >= 0) {
+    attributes['repoctopus.tool.duration_ms'] = durationMs;
+  }
+  const modelVersion = event.data.modelVersion;
+  if (typeof modelVersion === 'string' && MODEL_VERSION.test(modelVersion)) {
+    attributes['repoctopus.model.version'] = modelVersion;
+  }
+  for (const [source, target] of [
+    ['inputTokenCount', 'repoctopus.model.input_token_count'],
+    ['outputTokenCount', 'repoctopus.model.output_token_count'],
+    ['cacheReadTokenCount', 'repoctopus.model.cache_read_token_count'],
+    ['cacheWriteTokenCount', 'repoctopus.model.cache_write_token_count'],
+  ] as const) {
+    const value = event.data[source];
+    if (typeof value === 'number' && Number.isSafeInteger(value) && value >= 0) {
+      attributes[target] = value;
+    }
+  }
+}
+
 export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEvent): Attributes {
   const attributes: Attributes = {
     'repoctopus.project.id': batch.projectSnapshot.projectId,
@@ -358,6 +427,31 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
         ].includes(value)
       ) {
         normalized = 'custom';
+      } else if (
+        key === 'toolKind' &&
+        (typeof value !== 'string' || !BOUNDED_TOOL_KINDS.has(value))
+      ) {
+        normalized = 'unknown';
+      } else if (
+        key === 'toolCategory' &&
+        (typeof value !== 'string' || !BOUNDED_TOOL_CATEGORIES.has(value))
+      ) {
+        continue;
+      } else if (
+        key === 'observationStatus' &&
+        (typeof value !== 'string' || !BOUNDED_OBSERVATION_STATUSES.has(value))
+      ) {
+        normalized = 'unknown';
+      } else if (
+        key === 'callCount' &&
+        (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 1)
+      ) {
+        continue;
+      } else if (
+        key === 'modelVersion' &&
+        (typeof value !== 'string' || !MODEL_VERSION.test(value))
+      ) {
+        continue;
       }
       const safe = scalar(normalized);
       if (safe !== undefined) attributes[`repoctopus.execution.${key}`] = safe;
@@ -370,6 +464,7 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
   addEvidenceCorrelation(attributes, event);
   addTaskCorrelation(attributes, event);
   addDecisionCorrelation(attributes, event);
+  addHostTelemetryAttributes(attributes, event);
   return attributes;
 }
 
@@ -426,6 +521,14 @@ export function executionMetricAttributes(event: TrajectoryEvent): Attributes | 
     'repoctopus.execution.result': BOUNDED_RESULTS.has(result) ? result : 'unknown',
     'repoctopus.execution.continuation': continuation,
   };
+  const toolKind = event.data.toolKind;
+  if (typeof toolKind === 'string' && BOUNDED_TOOL_KINDS.has(toolKind)) {
+    attributes['repoctopus.tool.kind'] = toolKind;
+  }
+  const toolCategory = event.data.toolCategory;
+  if (typeof toolCategory === 'string' && BOUNDED_TOOL_CATEGORIES.has(toolCategory)) {
+    attributes['repoctopus.tool.category'] = toolCategory;
+  }
   const decisionKind = event.data.decisionKind;
   if (typeof decisionKind === 'string' && BOUNDED_DECISION_KINDS.has(decisionKind)) {
     attributes['repoctopus.decision.kind'] = decisionKind;

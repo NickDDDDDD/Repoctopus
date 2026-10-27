@@ -16,6 +16,7 @@ import type {
   WorkExecutionPacket,
 } from '../domains/work-execution/types.js';
 import { assertBoundedWorkExecutionFindings } from '../domains/work-execution/findings.js';
+import { assertHostTelemetryReport } from '../domains/telemetry/host-tool-telemetry.js';
 
 function invocationId(packetDigest: string, hostId: string): string {
   return `sha256:${createHash('sha256')
@@ -117,7 +118,15 @@ export class ManagedWorkExecutor extends Service {
       throw new Error('Work Execution Host Outcome identity mismatch');
     }
     assertBoundedWorkExecutionFindings(hostOutcome);
+    if (hostOutcome.hostTelemetry !== undefined) {
+      assertHostTelemetryReport(hostOutcome.hostTelemetry);
+    }
     assertConsumedExecutionSkills(claim.packet, hostOutcome);
+    await this.ctx.workExecutionAuthority.recordHostTelemetry({
+      intent: claim.intent,
+      invocationId: invocation.invocationId,
+      report: hostOutcome.hostTelemetry,
+    });
     await this.ctx.workExecutionAuthority.markHostCompleted(claim.intent, hostOutcome);
     await this.ctx.workExecutionAuthority.recordSkillFacts(
       claim.packet,
@@ -179,11 +188,20 @@ export class ManagedWorkExecutor extends Service {
       summary: input.summary,
       consumedLayerDigests: [...new Set(input.consumedLayerDigests)].sort(),
       ...(input.findings ? { findings: structuredClone(input.findings) } : {}),
+      ...(input.hostTelemetry ? { hostTelemetry: structuredClone(input.hostTelemetry) } : {}),
       completedAt: new Date().toISOString(),
     };
     assertBoundedWorkExecutionFindings(hostOutcome);
+    if (hostOutcome.hostTelemetry !== undefined) {
+      assertHostTelemetryReport(hostOutcome.hostTelemetry);
+    }
     const packet = await this.ctx.workDispatcher.resumeClaim(input.runId);
     assertConsumedExecutionSkills(packet.packet, hostOutcome);
+    await this.ctx.workExecutionAuthority.recordHostTelemetry({
+      intent,
+      invocationId: invocation.invocationId,
+      report: hostOutcome.hostTelemetry,
+    });
     await this.ctx.workExecutionAuthority.markHostCompleted(intent, hostOutcome);
     await this.ctx.workExecutionAuthority.recordSkillFacts(
       packet.packet,
@@ -232,8 +250,14 @@ export class ManagedWorkExecutor extends Service {
       throw new Error('Reconciled Host Outcome identity mismatch');
     }
     assertBoundedWorkExecutionFindings(outcome);
+    if (outcome.hostTelemetry !== undefined) assertHostTelemetryReport(outcome.hostTelemetry);
     const packet = await this.ctx.workDispatcher.resumeClaim(runId);
     assertConsumedExecutionSkills(packet.packet, outcome);
+    await this.ctx.workExecutionAuthority.recordHostTelemetry({
+      intent,
+      invocationId: invocation.invocationId,
+      report: outcome.hostTelemetry,
+    });
     await this.ctx.workExecutionAuthority.markHostCompleted(intent, outcome);
     await this.ctx.workExecutionAuthority.recordSkillFacts(
       packet.packet,

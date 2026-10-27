@@ -48,6 +48,10 @@ import {
 } from './specification-approval-decision.js';
 import { changeProjection, renderChangeProjection } from './change-run-view.js';
 import type { ConsistencyReconciliationResult } from '../../services/consistency-reconciler.js';
+import {
+  assertHostTelemetryReport,
+  type HostTelemetryReport,
+} from '../../domains/telemetry/host-tool-telemetry.js';
 
 const DIST_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PRODUCT_ROOT =
@@ -134,6 +138,7 @@ const CLI_FLAGS = new Set([
   'host-id',
   'packet-digest',
   'consumed-layers',
+  'host-telemetry',
   'candidate',
   'branch',
   'draft',
@@ -1146,10 +1151,22 @@ async function runWorkOutcome(parsed: ParsedArguments): Promise<CliEnvelope<unkn
   if (status !== 'succeeded' && status !== 'failed' && status !== 'unknown') {
     throw new Error('--status must be succeeded, failed, or unknown');
   }
+  const rawHostTelemetry = stringFlag(parsed, 'host-telemetry');
+  let hostTelemetry: HostTelemetryReport | undefined;
+  if (rawHostTelemetry !== undefined) {
+    let candidate: unknown;
+    try {
+      candidate = JSON.parse(rawHostTelemetry);
+    } catch {
+      throw new Error('--host-telemetry must be valid JSON');
+    }
+    assertHostTelemetryReport(candidate);
+    hostTelemetry = candidate;
+  }
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
     const result = await app.context.commandRouter.execute('run.work.outcome', {
-      schemaVersion: 1,
+      schemaVersion: 2,
       runId,
       invocationId: stringFlag(parsed, 'invocation-id', { required: true })!,
       hostId: stringFlag(parsed, 'host-id', { required: true })!,
@@ -1164,6 +1181,7 @@ async function runWorkOutcome(parsed: ParsedArguments): Promise<CliEnvelope<unkn
         .map((value) => value.trim())
         .filter(Boolean)
         .map((value) => qualifiedSha256(value, 'Consumed layer digest')),
+      ...(hostTelemetry ? { hostTelemetry } : {}),
     });
     return successEnvelope({ command: 'run work-outcome', runId, result });
   } finally {

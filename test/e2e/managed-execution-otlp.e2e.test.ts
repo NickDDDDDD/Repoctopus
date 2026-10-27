@@ -147,6 +147,35 @@ describe('managed execution OTLP protocol', () => {
           result: 'succeeded',
           reason: secret,
         }),
+        event(14, 'tool.observation-reported', {
+          executionContext,
+          invocationId: 'invocation-1',
+          toolKind: 'host-tool',
+          observationStatus: 'observed',
+          prompt: secret,
+        }),
+        event(15, 'tool.usage-reported', {
+          executionContext,
+          invocationId: 'invocation-1',
+          toolKind: 'host-tool',
+          toolCategory: 'test.run',
+          result: 'succeeded',
+          durationMs: 1_250,
+          callCount: 2,
+          command: `npm test -- ${secret}`,
+          output: secret,
+        }),
+        event(16, 'model.usage-reported', {
+          executionContext,
+          invocationId: 'invocation-1',
+          toolKind: 'model',
+          modelVersion: 'gpt-5.1-2026-10-01',
+          inputTokenCount: 1_000,
+          outputTokenCount: 250,
+          cacheReadTokenCount: 400,
+          cacheWriteTokenCount: 100,
+          reply: secret,
+        }),
       ];
       const batch: TelemetryBatch = {
         run,
@@ -174,6 +203,13 @@ describe('managed execution OTLP protocol', () => {
       expect(payload).toContain('repoctopus.wait.kind');
       expect(payload).toContain('repoctopus.workflow.health.duration');
       expect(payload).toContain('repoctopus.workflow.health.events');
+      expect(payload).toContain('repoctopus.tool.observations');
+      expect(payload).toContain('repoctopus.tool.calls');
+      expect(payload).toContain('repoctopus.tool.duration');
+      expect(payload).toContain('repoctopus.model.tokens');
+      expect(payload).toContain('repoctopus.tool.category');
+      expect(payload).toContain('test.run');
+      expect(payload).toContain('gpt-5.1-2026-10-01');
       expect(payload).toContain('repoctopus.validator');
       expect(payload).toContain('repoctopus.execution.check_epoch');
       expect(payload).toContain('repoctopus.execution.task.id');
@@ -200,7 +236,7 @@ describe('managed execution OTLP protocol', () => {
       const runSpan = spans.find((span) => span.name === 'repoctopus.run');
       const validatorSpan = spans.find((span) => span.name === 'repoctopus.validator');
       expect(BigInt(runSpan!.endTimeUnixNano!) - BigInt(runSpan!.startTimeUnixNano!)).toBe(
-        12_000_000_000n,
+        15_000_000_000n,
       );
       expect(
         BigInt(validatorSpan!.endTimeUnixNano!) - BigInt(validatorSpan!.startTimeUnixNano!),

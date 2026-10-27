@@ -1,3 +1,5 @@
+import { HOST_TOOL_CATEGORIES, HOST_TOOL_RESULTS } from './host-tool-telemetry.js';
+
 export const OBSERVATION_PHASES = ['open', 'design', 'build', 'verify', 'archive'] as const;
 
 export type ObservationPhase = (typeof OBSERVATION_PHASES)[number];
@@ -57,6 +59,7 @@ const DECISION_KINDS = [
 ] as const;
 const WAIT_KINDS = ['human', 'external-fact', 'retry', 'manual-handoff'] as const;
 const TOOL_KINDS = ['runtime-operation', 'host-tool', 'model', 'unknown'] as const;
+const TOOL_OBSERVATION_STATUSES = ['observed', 'unknown'] as const;
 const EVIDENCE_RESULTS = ['passed', 'failed', 'blocked', 'unavailable', 'unknown'] as const;
 const RECOVERY_KINDS = ['resume', 'reconcile', 'fallback', 'retry', 'unknown'] as const;
 const DESTINATION_KINDS = ['remote', 'desktop'] as const;
@@ -180,6 +183,21 @@ const EVENT_SCHEMAS = [
     phase: PHASES,
     'tool.kind': TOOL_KINDS,
     result: RESULTS,
+  }),
+  point('tool.observation-reported', 'tool-host', {
+    phase: PHASES,
+    'tool.kind': TOOL_KINDS,
+    'observation.status': TOOL_OBSERVATION_STATUSES,
+  }),
+  point('tool.usage-reported', 'tool-host', {
+    phase: PHASES,
+    'tool.kind': ['host-tool'],
+    'tool.category': HOST_TOOL_CATEGORIES,
+    result: HOST_TOOL_RESULTS,
+  }),
+  point('model.usage-reported', 'tool-host', {
+    phase: PHASES,
+    'tool.kind': ['model'],
   }),
   boundary('host.started', 'tool-host', 'boundary-start', 'host', {
     phase: PHASES,
