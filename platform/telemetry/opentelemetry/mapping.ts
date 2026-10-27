@@ -210,10 +210,184 @@ function addExecutionContextAttributes(attributes: Attributes, event: Trajectory
   attributes['repoctopus.execution.check_epoch'] = context.checkEpoch;
   if (context.task) {
     attributes['repoctopus.execution.task.id'] = context.task.id;
+    attributes['repoctopus.task.id'] = context.task.id;
     if (context.task.revision) {
       attributes['repoctopus.execution.task.revision'] = context.task.revision;
+      attributes['repoctopus.task.revision'] = context.task.revision;
     }
   }
+}
+
+type ExecutionEntityKind =
+  | 'work'
+  | 'task'
+  | 'skill'
+  | 'host'
+  | 'tool'
+  | 'validator'
+  | 'decision'
+  | 'wait'
+  | 'reconcile';
+
+function safeDataId(event: TrajectoryEvent, key: string): string | undefined {
+  const value = event.data[key];
+  return typeof value === 'string' && safeExecutionId(value) ? value : undefined;
+}
+
+function taskIdentity(event: TrajectoryEvent): { id: string; revision?: string } | null {
+  const value = event.data.task;
+  if (value && typeof value === 'object') {
+    const task = value as Record<string, unknown>;
+    if (typeof task.id === 'string' && safeExecutionId(task.id)) {
+      return {
+        id: task.id,
+        ...(typeof task.revision === 'string' && DIGEST.test(task.revision)
+          ? { revision: task.revision }
+          : {}),
+      };
+    }
+  }
+  const context = executionContextFromEvent(event);
+  return context?.task ? { ...context.task } : null;
+}
+
+function executionEntity(event: TrajectoryEvent): { kind: ExecutionEntityKind; id: string } | null {
+  if (event.type.startsWith('work.host-')) {
+    const id = safeDataId(event, 'invocationId');
+    return id ? { kind: 'host', id } : null;
+  }
+  if (event.type.startsWith('work.')) {
+    const id = executionContextFromEvent(event)?.work.id ?? safeDataId(event, 'workId');
+    return id ? { kind: 'work', id } : null;
+  }
+  if (event.type.startsWith('task.')) {
+    const task = taskIdentity(event);
+    return task ? { kind: 'task', id: task.id } : null;
+  }
+  for (const [prefix, kind, key] of [
+    ['skill.', 'skill', 'skillName'],
+    ['validator.', 'validator', 'validatorId'],
+    ['decision.', 'decision', 'decisionId'],
+    ['wait.', 'wait', 'waitId'],
+    ['tool.', 'tool', 'operationId'],
+    ['reconcile.', 'reconcile', 'reconcileId'],
+  ] as const) {
+    if (!event.type.startsWith(prefix)) continue;
+    const id = safeDataId(event, key);
+    return id ? { kind, id } : null;
+  }
+  return null;
+}
+
+/** Maps only identities carried by the persisted event or its stable owning Run snapshot. */
+export function trustedObservationCorrelationAttributes(
+  batch: TelemetryBatch,
+  event: TrajectoryEvent,
+): Attributes {
+  const attributes: Attributes = {};
+  if (safeExecutionId(batch.projectSnapshot.projectId)) {
+    attributes['repoctopus.workspace.id'] = batch.projectSnapshot.projectId;
+  }
+  if (safeExecutionId(event.runId)) attributes['repoctopus.run.id'] = event.runId;
+  const lifecycleIdentity = batch.run.changeLifecycle?.identity;
+  if (
+    lifecycleIdentity?.runId === event.runId &&
+    lifecycleIdentity.workspaceId === batch.projectSnapshot.projectId &&
+    safeExecutionId(lifecycleIdentity.changeId)
+  ) {
+    attributes['repoctopus.change.id'] = lifecycleIdentity.changeId;
+  }
+  const observedAt = new Date(event.timestamp);
+  if (Number.isFinite(observedAt.getTime())) {
+    attributes['repoctopus.observation.observed_at'] = observedAt.toISOString();
+  }
+
+  const context = executionContextFromEvent(event);
+  const entity = executionEntity(event);
+  if (entity) {
+    attributes['repoctopus.execution.entity.kind'] = entity.kind;
+    attributes['repoctopus.execution.entity.id'] = entity.id;
+  }
+  if (context && entity?.kind !== 'work') {
+    attributes['repoctopus.execution.parent.kind'] = 'work';
+    attributes['repoctopus.execution.parent.id'] = context.work.id;
+  } else if (
+    entity?.kind === 'work' ||
+    (!context && entity?.kind === 'decision') ||
+    (!context && entity?.kind === 'wait')
+  ) {
+    attributes['repoctopus.execution.parent.kind'] = 'run';
+    attributes['repoctopus.execution.parent.id'] = event.runId;
+  }
+  const toolInvocationId = event.type.startsWith('tool.')
+    ? safeDataId(event, 'invocationId')
+    : undefined;
+  if (toolInvocationId) {
+    attributes['repoctopus.execution.parent.kind'] = 'host';
+    attributes['repoctopus.execution.parent.id'] = toolInvocationId;
+  }
+
+  if (event.type.startsWith('work.host-')) {
+    const hostId = safeDataId(event, 'hostId');
+    if (hostId) {
+      attributes['repoctopus.executor.kind'] = 'host';
+      attributes['repoctopus.executor.id'] = hostId;
+    }
+  }
+
+  const task = taskIdentity(event);
+  if (task) {
+    attributes['repoctopus.task.id'] = task.id;
+    if (task.revision) attributes['repoctopus.task.revision'] = task.revision;
+  }
+
+  if (event.type.startsWith('skill.')) {
+    const skillName = safeDataId(event, 'skillName');
+    const skillRole = event.data.skillRole;
+    if (skillName) attributes['repoctopus.skill.name'] = skillName;
+    if (skillRole === 'action' || skillRole === 'augmentation') {
+      attributes['repoctopus.skill.role'] = skillRole;
+    }
+    const state = event.type.slice('skill.'.length);
+    if (state === 'resolved' || state === 'delivered' || state === 'consumed') {
+      attributes['repoctopus.skill.state'] = state;
+    }
+  }
+
+  if (event.type.startsWith('validator.')) {
+    const validatorId = safeDataId(event, 'validatorId');
+    if (validatorId) attributes['repoctopus.validator.id'] = validatorId;
+    const result = event.data.result;
+    if (typeof result === 'string' && BOUNDED_RESULTS.has(result)) {
+      attributes['repoctopus.validator.result'] = result;
+    }
+  }
+
+  if (event.type === 'decision.requested') {
+    const decisionId = safeDataId(event, 'decisionId');
+    if (decisionId) {
+      attributes['repoctopus.blocker.kind'] = 'human-decision';
+      attributes['repoctopus.blocker.id'] = decisionId;
+    }
+  } else if (event.type === 'wait.started') {
+    const waitId = safeDataId(event, 'waitId');
+    const waitKind = event.data.waitKind;
+    if (waitId && typeof waitKind === 'string' && BOUNDED_WAIT_KINDS.has(waitKind)) {
+      attributes['repoctopus.blocker.kind'] = waitKind;
+      attributes['repoctopus.blocker.id'] = waitId;
+    }
+  }
+
+  if (event.type === 'continuation.selected') {
+    const continuation = event.data.continuation;
+    if (
+      typeof continuation === 'string' &&
+      ['execute', 'ask', 'wait', 'reconcile', 'done'].includes(continuation)
+    ) {
+      attributes['repoctopus.next_action.kind'] = continuation;
+    }
+  }
+  return attributes;
 }
 
 function addEvidenceCorrelation(attributes: Attributes, event: TrajectoryEvent): void {
@@ -407,7 +581,7 @@ function addTelemetryPipelineAttributes(attributes: Attributes, event: Trajector
 export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEvent): Attributes {
   const attributes: Attributes = {
     'repoctopus.project.id': batch.projectSnapshot.projectId,
-    'repoctopus.run.id': batch.run.runId,
+    'repoctopus.run.id': event.runId,
     'repoctopus.workflow.name': batch.run.workflowName,
     'repoctopus.workflow.version': batch.run.workflowVersion,
     'repoctopus.workflow.digest': batch.run.workflowDigest,
@@ -417,7 +591,7 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
     'repoctopus.state.version': event.stateVersion,
     'repoctopus.repository.count': batch.projectSnapshot.repositories.length,
   };
-  if (batch.run.currentStep) attributes['repoctopus.stage.name'] = batch.run.currentStep;
+  Object.assign(attributes, trustedObservationCorrelationAttributes(batch, event));
 
   const action = event.data.action;
   if (action && typeof action === 'object') {

@@ -7,6 +7,7 @@ import {
 } from '../../domains/change-lifecycle/transition.js';
 import type { TelemetryBatch } from '../../domains/runtime/types.js';
 import type { TrajectoryEvent } from '../../domains/trajectory/types.js';
+import { trustedObservationCorrelationAttributes } from './opentelemetry/mapping.js';
 
 export type ChangeLifecycleTelemetrySignal = 'phase' | 'status' | 'work' | 'wait';
 
@@ -71,8 +72,9 @@ function commonAttributes(
 ): Attributes {
   const changeId = batch.run.changeLifecycle?.identity.changeId;
   return {
+    ...trustedObservationCorrelationAttributes(batch, event),
     'repoctopus.project.id': batch.projectSnapshot.projectId,
-    'repoctopus.run.id': batch.run.runId,
+    'repoctopus.run.id': event.runId,
     ...(changeId && safeId(changeId) ? { 'repoctopus.change.id': changeId } : {}),
     'repoctopus.event.id': event.eventId,
     'repoctopus.event.sequence': event.sequence,
