@@ -149,7 +149,7 @@
 
 ## 8. 自举验证与交付
 
-- [ ] 8.1 使用两个进程外 OTLP 目的地运行同一真实 Repoctopus 开发 Run，比较 envelope identity、信号语义和允许列表属性，证明桌面与远端 mock 接收相同规范数据且任一端故障不影响另一端。
+- [x] 8.1 使用两个进程外 OTLP 目的地运行同一真实 Repoctopus 开发 Run，比较 envelope identity、信号语义和允许列表属性，证明桌面与远端 mock 接收相同规范数据且任一端故障不影响另一端。
       **Blocked by:** 4.6
       **Acceptance:** 双目的地进程外测试比较结果一致，并分别注入单端故障证明另一端和领域 Run 不受影响
 - [ ] 8.2 用打包后的 Repoctopus 和安装后的 Dashboard 执行本 change 的真实自举 Run，验证窗口从接收上报实时呈现五阶段、Work/Task、Skill 装填/消费、审批、验证、返工、恢复和遥测健康，且没有 SigNoZ 查询、本地文件扫描或周期轮询。
