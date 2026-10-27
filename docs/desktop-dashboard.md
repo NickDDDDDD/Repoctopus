@@ -84,3 +84,33 @@ Dashboard 按当前 Work 和 attempt 区分 action 与 augmentation Skill。前�
 5. 不要通过编辑本地状态、猜测 MR 状态或重启窗口来“修正” phase。修复输入或故障后，让 Runtime 选择下一 Action；结果未知时走 reconcile。
 
 传输语义是可重放的 at-least-once，不是 exactly-once。只要 retention 尚未造成 gap，重复投递会按稳定身份收敛；一旦发生永久缺口，界面会持续保留不完整诊断，不会静默恢复为“实时”。
+
+## 本地安全与数据生命周期
+
+<!-- desktop-data:security -->
+
+Dashboard 只接收当前 Windows 用户经会话凭据认证后发送到随机 loopback 端口的 OTLP；Renderer 没有 Node、Cordis、文件系统或任意 IPC 权限。会话凭据只存在于受当前用户保护的 discovery 文件与进程内存，不进入日志、遥测或界面。Dashboard 不查询 SigNoZ，也不会扫描 Workspace。
+
+<!-- desktop-data:retention -->
+
+三类数据必须分开理解：
+
+| 所有者             | Windows 位置                                      | 内容                                                    | 保留语义                                                            |
+| ------------------ | ------------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------------------- |
+| Workspace          | 各项目自己的 `.repoctopus/` 与 `openspec/`        | Run、Trajectory、Evidence、规格等权威事实               | Dashboard 不会读取或删除 Workspace；备份与保留由团队策略管理        |
+| Dashboard 用户数据 | `%APPDATA%\Repoctopus`                            | `desktop/settings.json`、projection snapshot 与 journal | 仅用于关闭偏好和本地可重建投影；默认跨升级、卸载和重装保留          |
+| 临时发现记录       | `%LOCALAPPDATA%\Repoctopus\desktop-receiver.json` | 当前进程、端点和短期会话凭据                            | Host 停止或会话结束时删除；过期、进程不匹配或非当前用户记录一律拒绝 |
+
+projection journal 只保存遥测允许列表中的结构化观测，不保存规格、Artifact、Prompt、回复或命令输出。达到条数或字节阈值时生成原子 snapshot 并压缩 journal；重复事件按稳定 `eventId` 收敛。
+
+<!-- desktop-data:close -->
+
+关闭偏好是 `ask`、`quit` 或 `tray`。`tray` 只隐藏窗口，Shell、Desktop Host 和 Receiver 继续运行；托盘“完全退出”、`quit`、Windows 会话结束和应用退出都会先停止接纳，再有界关闭 Receiver/Host，最后退出 Shell。`ask` 中只有明确勾选“记住我的选择”才会持久化 `quit` 或 `tray`。
+
+<!-- desktop-data:recovery -->
+
+异常退出后，Host 先加载校验过的原子 snapshot，再按 journal 顺序重放。重复记录是 no-op；损坏记录会产生明确的 journal corruption 诊断，并在可推断时保留 sequence gap，绝不把不完整历史显示成实时。删除用户级投影不会修改权威事实；后续只有仍在遥测保留期内的事件可以重新上报，超出保留期的历史可能保持 gap。
+
+<!-- desktop-data:uninstall -->
+
+默认卸载只删除安装目录，不删除 `%APPDATA%\Repoctopus`，更不会读取或删除 Workspace。重装会复用关闭偏好和可校验的本地投影。若用户明确选择“同时清理 Dashboard 用户数据”，只能删除用户级 settings、snapshot 与 journal；这仍不得触碰任何 Workspace。临时 discovery 不属于保留数据，并由进程退出或清理检查移除。

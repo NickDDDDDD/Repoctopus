@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "installFiles": ["Repoctopus.exe", "resources/app.asar"],
+  "userDataFiles": [
+    "desktop/settings.json",
+    "projection/projection.snapshot.json",
+    "projection/projection.journal.jsonl"
+  ],
+  "workspaceFiles": [
+    ".repoctopus/runs/run-a/run.json",
+    ".repoctopus/runs/run-a/trajectory.jsonl",
+    "openspec/changes/change-a/tasks.md"
+  ],
+  "defaultUninstall": {
+    "remove": ["install"],
+    "preserve": ["userData", "workspace"]
+  },
+  "explicitUserDataCleanup": {
+    "remove": ["userData"],
+    "preserve": ["workspace"]
+  }
+}
