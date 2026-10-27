@@ -1,6 +1,9 @@
 {
   "name": "repoctopus",
   "version": "0.1.0",
+  "author": {
+    "name": "Repoctopus Contributors"
+  },
   "private": true,
   "description": "Deterministic multi-repository delivery orchestration for team agents",
   "type": "module",
@@ -40,6 +43,7 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "build:desktop": "node scripts/build-desktop.mjs",
+    "desktop:assets": "node scripts/generate-desktop-assets.mjs --check",
     "desktop:prepare": "node scripts/prepare-desktop.mjs",
     "desktop:smoke": "npm run desktop:prepare && npm run build:desktop && electron scripts/smoke-desktop.mjs",
     "check:generated": "node scripts/build.mjs --check",
@@ -58,6 +62,8 @@
     "test:tracer-e2e": "vitest run test/e2e/runtime-tracer.e2e.test.ts",
     "typecheck:desktop": "tsc --noEmit -p app/desktop/renderer/tsconfig.json",
     "desktop:start": "npm run desktop:prepare && npm run build:desktop && electron dist/desktop/main.js",
+    "package:desktop": "npm run desktop:assets && npm run build:desktop && electron-builder --config electron-builder.json --win nsis --x64 --publish never",
+    "check:desktop-package": "node scripts/check-desktop-package.mjs",
     "spec:validate": "openspec validate --all --strict",
     "pretest": "npm run build && npm run build:desktop",
     "verify": "npm run typecheck && npm run typecheck:desktop && npm run lint && npm run build && npm test && npm run check:generated && npm run check:brand && npm run check:architecture && npm run check:provenance && npm run spec:validate && npm run check:managed-execution-report"

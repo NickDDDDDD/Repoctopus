@@ -31,7 +31,9 @@ import { scheduleDesktopStartup } from './startup.js';
 import { DesktopTray } from './tray.js';
 
 const moduleDirectory = path.dirname(fileURLToPath(import.meta.url));
-const hostEntry = path.join(moduleDirectory, 'host.mjs');
+const hostEntry = app.isPackaged
+  ? path.join(process.resourcesPath, 'app.asar.unpacked', 'dist', 'desktop', 'host.mjs')
+  : path.join(moduleDirectory, 'host.mjs');
 const preloadEntry = path.join(moduleDirectory, 'preload.cjs');
 const rendererEntry = path.join(moduleDirectory, 'renderer', 'index.html');
 const productRoot = resolveDesktopProductRoot({
@@ -235,11 +237,12 @@ const shellLifecycle = new DesktopShellLifecycle({
 
 function ensureTray(): void {
   if (process.platform !== 'win32' || tray !== undefined) return;
-  const icon = nativeImage.createFromDataURL(
-    `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
-      '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#18212f"/><path d="M8 9h16v4H8zm0 6h10v4H8zm0 6h16v4H8z" fill="#72d6bc"/></svg>',
-    )}`,
+  const icon = nativeImage.createFromPath(
+    app.isPackaged
+      ? path.join(process.resourcesPath, 'desktop-icon.ico')
+      : path.join(productRoot, 'app', 'desktop', 'resources', 'icon.ico'),
   );
+  if (icon.isEmpty()) throw new Error('Repoctopus Desktop icon is unavailable');
   tray = new DesktopTray({
     handle: new Tray(icon),
     buildMenu: (template) => Menu.buildFromTemplate(template),

@@ -1,0 +1,54 @@
+{
+  "appId": "com.repoctopus.desktop",
+  "productName": "Repoctopus",
+  "copyright": "Copyright © 2026 Repoctopus Contributors",
+  "asar": true,
+  "asarUnpack": ["dist/desktop/host.mjs"],
+  "directories": {
+    "output": "release/desktop",
+    "buildResources": "app/desktop/resources"
+  },
+  "files": [
+    "dist/desktop/**/*",
+    "app/boot/**/*",
+    "domains/**/*",
+    "platform/**/*",
+    "plugins/**/*",
+    "services/**/*",
+    "skills/lifecycle/**/*",
+    "third_party/dsh-adoption.json",
+    "third_party/matt-skills/method-adoptions.json",
+    "third_party/matt-skills/source-manifest.json",
+    "package.json"
+  ],
+  "extraResources": [
+    {
+      "from": "app/desktop/resources/icon.ico",
+      "to": "desktop-icon.ico"
+    }
+  ],
+  "extraMetadata": {
+    "main": "dist/desktop/main.js",
+    "author": {
+      "name": "Repoctopus Contributors"
+    }
+  },
+  "win": {
+    "icon": "app/desktop/resources/icon.ico",
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      }
+    ],
+    "artifactName": "Repoctopus-Desktop-${version}-${arch}-Setup.${ext}"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "Repoctopus",
+    "deleteAppDataOnUninstall": false
+  }
+}

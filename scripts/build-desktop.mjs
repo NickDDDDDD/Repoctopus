@@ -1,5 +1,6 @@
 import { build as buildBundle } from 'esbuild';
-import { rm } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { build as buildRenderer } from 'vite';
 
@@ -55,3 +56,37 @@ await buildRenderer({
     outDir: path.join(outputRoot, 'renderer'),
   },
 });
+
+async function filesUnder(directory) {
+  const files = [];
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    const target = path.join(directory, entry.name);
+    if (entry.isDirectory()) files.push(...(await filesUnder(target)));
+    else files.push(target);
+  }
+  return files;
+}
+
+const icon = path.join(desktopRoot, 'resources', 'icon.ico');
+const packagedFiles = [...(await filesUnder(outputRoot)), icon].sort((left, right) =>
+  left.localeCompare(right),
+);
+const resources = await Promise.all(
+  packagedFiles.map(async (file) => {
+    const bytes = await readFile(file);
+    const relative =
+      file === icon
+        ? 'desktop-icon.ico'
+        : path.posix.join('dist/desktop', path.relative(outputRoot, file).replaceAll('\\', '/'));
+    return {
+      path: relative,
+      size: (await stat(file)).size,
+      sha256: createHash('sha256').update(bytes).digest('hex'),
+    };
+  }),
+);
+await writeFile(
+  path.join(outputRoot, 'resource-manifest.json'),
+  `${JSON.stringify({ schemaVersion: 1, platform: 'win32', arch: 'x64', resources }, null, 2)}\n`,
+  'utf8',
+);
