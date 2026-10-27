@@ -50,7 +50,7 @@
 - [x] 3.3 在可独立运行的 Desktop Host 中实现仅绑定回环地址的 headless OTLP/HTTP Trace、Log、Metric receiver 和会话认证，以协议测试验证合法请求、未授权、错误方法、错误 content type、超限、畸形请求和无正文诊断。
       **Blocked by:** 1.3, 3.1
       **Acceptance:** receiver 协议矩阵覆盖三类 OTLP 信号和全部拒绝场景，只绑定回环地址且错误响应不泄露正文
-- [ ] 3.4 实现最小五阶段 change projection reducer 与稳定事件去重，用乱序、重复和缺失 fixture 验证 active change、Run、phase、Work、Skill、新鲜度和 gap 状态确定性收敛。
+- [x] 3.4 实现最小五阶段 change projection reducer 与稳定事件去重，用乱序、重复和缺失 fixture 验证 active change、Run、phase、Work、Skill、新鲜度和 gap 状态确定性收敛。
       **Blocked by:** 3.1
       **Acceptance:** reducer 对乱序和重复事件确定性收敛，缺失序列产生 gap 而不是猜测状态
 - [ ] 3.5 由 Electron Main 启动 Desktop Host，把 Host 的 receiver/projection snapshot 与 delta 通过私有 Node IPC、Main 和类型化 Preload 桥接到最小 Renderer；运行桌面集成测试证明一个真实 OTLP Run 事件无需轮询即可在窗口显示，Host 崩溃时 Shell 保持错误/重试能力。
