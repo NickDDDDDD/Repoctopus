@@ -23,7 +23,7 @@
 - [x] 2.3 增加 Task started/completed/failed/reopened 及 revision 关联，把 Build、Verify fallback 和 Archive fallback 绑定到原 Task、Evidence 和新 Work；以多 Task、Verify→Build、Archive→Design fixture 验证进度和返工链可确定重建。
       **Blocked by:** 2.2
       **Acceptance:** 多 Task 与两类 fallback fixture 可从事件确定重建 Task revision、原 Evidence、新 Work 和返工链
-- [ ] 2.4 增加 Open、Design、adopt-existing 与 design-revision Human Decision 请求/结果边界，区分 human、retry、external-fact 等等待类别并记录真实等待时长；证明自由文本 reason、审批正文和 Actor 敏感身份不会进入 Metric。
+- [x] 2.4 增加 Open、Design、adopt-existing 与 design-revision Human Decision 请求/结果边界，区分 human、retry、external-fact 等等待类别并记录真实等待时长；证明自由文本 reason、审批正文和 Actor 敏感身份不会进入 Metric。
       **Blocked by:** 2.2
       **Acceptance:** 四类 Decision 均产生可配对的等待边界和真实时长，Metric 只包含有界类别且不泄露正文或敏感 Actor 身份
 - [ ] 2.5 增加 Validator started/completed 边界以及 phase 驻留、主动执行、人工/外部等待、返工、retry、unknown、reconcile 和 recovery 的有界指标；修复零时长 Run/Evidence/Validator Span，并用可控时钟测试真实持续时间。
