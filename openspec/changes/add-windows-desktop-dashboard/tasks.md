@@ -158,7 +158,7 @@
 - [x] 8.3 执行 `npm run verify`、`npm run test:package-e2e`、`npm run test:tracer-e2e` 和 Windows Desktop E2E，生成正式验证报告并记录遥测覆盖、架构约束、恢复实验、安全检查、资源预算、未连接真实 SigNoZ 和未支持平台。
       **Blocked by:** 7.3, 7.4, 8.2
       **Acceptance:** 所有验证命令成功，正式报告关联结果与 Evidence 并明确未连接真实 SigNoZ 和未支持平台而不伪造结论
-- [ ] 8.4 清理测试产生的临时安装目录、日志、端口监听、用户级 discovery、托盘进程、mock receiver 和 scratch Artifact；复查 Git 状态与运行进程证明没有遗留调试产物。
+- [x] 8.4 清理测试产生的临时安装目录、日志、端口监听、用户级 discovery、托盘进程、mock receiver 和 scratch Artifact；复查 Git 状态与运行进程证明没有遗留调试产物。
       **Blocked by:** 8.3
       **Acceptance:** 清理检查证明没有临时目录、日志、监听、discovery、进程或 scratch Artifact 残留，Git 只包含预期交付文件
 
