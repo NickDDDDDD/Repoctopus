@@ -101,7 +101,7 @@
 - [x] 5.5 实现 Evidence、Gate、Artifact 元数据、blocker/Human Decision 和下一步动作界面，用脱敏 fixture 验证不显示正文、绝对路径、Prompt、回复或命令输出。
       **Blocked by:** 4.2, 5.3
       **Acceptance:** 状态界面可定位 Evidence、Gate、blocker、Decision 与下一步动作，脱敏 fixture 中不渲染任何受限内容
-- [ ] 5.6 实现流转、执行、质量、遥测四类可解释健康状态，以及最近事件、接收状态、目的地健康、新鲜度、重放和 gap 诊断；用 IPC 序列测试证明异常可下钻、snapshot 之后只应用更高版本 delta，序列缺口会重新取得 snapshot 而非开始轮询。
+- [x] 5.6 实现流转、执行、质量、遥测四类可解释健康状态，以及最近事件、接收状态、目的地健康、新鲜度、重放和 gap 诊断；用 IPC 序列测试证明异常可下钻、snapshot 之后只应用更高版本 delta，序列缺口会重新取得 snapshot 而非开始轮询。
       **Blocked by:** 4.5, 5.3
       **Acceptance:** IPC 序列测试证明四类健康可追溯，旧 delta 被拒绝且序列缺口触发一次 snapshot 恢复而非轮询
 - [ ] 5.7 完成键盘导航、可见焦点、可访问名称、长文本、大数值和高 DPI Windows 布局验证；运行 Renderer 组件测试、自动化可访问性检查和关键状态截图审查并修复发现。
