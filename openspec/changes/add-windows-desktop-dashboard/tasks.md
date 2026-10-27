@@ -125,7 +125,7 @@
 - [x] 6.4 强化 Renderer sandbox、`contextIsolation`、CSP、IPC sender/origin 校验和版本化 allowlist，并扩展架构检查拒绝 Renderer 访问 Cordis/Node、Electron Main 承载产品 composition、入口绕过 Application Plugin 和桌面代码进入 Engine；以负向 fixture 证明每条边界都会失败。
       **Blocked by:** 3.5, 6.1
       **Acceptance:** 每条安全与架构边界都有独立负向 fixture，合法 IPC 只通过版本化 allowlist 和可信 sender/origin
-- [ ] 6.5 实现投影 journal、原子 snapshot、重复收敛和阈值压缩，以高事件量基准验证重启恢复、内存上限、启动时间和 journal 损坏诊断满足记录的性能预算。
+- [x] 6.5 实现投影 journal、原子 snapshot、重复收敛和阈值压缩，以高事件量基准验证重启恢复、内存上限、启动时间和 journal 损坏诊断满足记录的性能预算。
       **Blocked by:** 3.4, 6.4
       **Acceptance:** 高事件量基准满足 design 记录的启动、内存与压缩预算，损坏 journal 产生可诊断 gap 且不会静默丢状态
 - [ ] 6.6 更新桌面安全、数据保留、关闭行为和恢复文档，执行卸载/重装 fixture 证明默认不误删 Workspace 事实并明确用户级 Dashboard 数据处理方式。
