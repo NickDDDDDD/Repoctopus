@@ -98,7 +98,7 @@
 - [x] 5.4 实现 action/augmentation Skill 的 resolved/delivered/consumed 状态与语义说明，用 OTLP fixture 验证已交付不会提前显示已消费、自定义 Skill 不破坏投影且界面不宣称观察 Agent 内部思考。
       **Blocked by:** 5.3
       **Acceptance:** OTLP fixture 区分 Skill 三态与两种角色，自定义 Skill 可展示且 UI 明确 consumed 仅表示 Host 声明并经 Runtime 验证
-- [ ] 5.5 实现 Evidence、Gate、Artifact 元数据、blocker/Human Decision 和下一步动作界面，用脱敏 fixture 验证不显示正文、绝对路径、Prompt、回复或命令输出。
+- [x] 5.5 实现 Evidence、Gate、Artifact 元数据、blocker/Human Decision 和下一步动作界面，用脱敏 fixture 验证不显示正文、绝对路径、Prompt、回复或命令输出。
       **Blocked by:** 4.2, 5.3
       **Acceptance:** 状态界面可定位 Evidence、Gate、blocker、Decision 与下一步动作，脱敏 fixture 中不渲染任何受限内容
 - [ ] 5.6 实现流转、执行、质量、遥测四类可解释健康状态，以及最近事件、接收状态、目的地健康、新鲜度、重放和 gap 诊断；用 IPC 序列测试证明异常可下钻、snapshot 之后只应用更高版本 delta，序列缺口会重新取得 snapshot 而非开始轮询。
