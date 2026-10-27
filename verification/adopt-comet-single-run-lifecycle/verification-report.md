@@ -3,10 +3,10 @@
 ## Reproducible subject
 
 - Change: `adopt-comet-single-run-lifecycle`
-- Tested implementation commit: `9c56d0fdacb1745fbbbdaff711e142b8eb048517`
+- Tested implementation commit: `9ca91ce2a214a685d9a165ea73a4c0033225befc`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `1121190`
-- Package SHA-256: `352cfb135c0e81845d5b24cce0b9444ebfab278241e76b9d3496a7305260b8a7`
+- Package bytes: `1123822`
+- Package SHA-256: `adcb4123d6cac7ec89aedf9a41bfbd5d22bc6abca96ea07919885a724c2ae326`
 - Lifecycle definition: `repoctopus-change@3.0.0`
 - Lifecycle definition digest: `sha256:d45fdabde20f79ccc9e0dd95ce164d5b7225ce736b1e76e08c44e53e85c92a0e`
 - Verified input composition digest: `sha256:0f52306c5478580e72a9618918ebcdb11a13b1ca5a310cbef9bf3722e2488b69`
@@ -21,8 +21,8 @@ Run on Windows with Node.js `24.21.0`:
 ```text
 npm run verify
   typecheck, desktop typecheck, lint and both builds passed
-  152 test files passed
-  612 tests passed, 1 skipped
+  154 test files passed
+  619 tests passed, 1 skipped
   generated, brand, architecture and provenance checks passed
   OpenSpec strict validation: 14 passed, 0 failed
 
@@ -71,6 +71,8 @@ Planning observation now distinguishes a complete negative assessment from an un
 The independent Desktop Host now owns a headless OTLP/HTTP receiver that binds an ephemeral port exclusively on `127.0.0.1` and authenticates every export with a per-process cryptographically random session token carried only over private Host IPC. Protocol tests cover Trace, Log and Metric protobuf exports, structurally valid OTLP JSON, missing authentication, wrong methods, unsupported content types and encodings, empty or malformed bodies, bounded-body overflow and loopback-only discovery. Success and rejection responses contain no body; bounded diagnostics retain only signal, result, reason, timestamp and byte count, never request content or credentials. A real forked Host test proves the advertised endpoint accepts an authenticated export and shuts down with the Host process.
 
 The Windows Host now publishes that ephemeral endpoint and session credential through one user-level discovery record with an atomic refresh lease. The record is accepted only when its file owner is the current Windows user, its timestamp is fresh, its PID still has the recorded creation identity and the loopback listening socket belongs to that same PID. ACL handling uses the Windows .NET security API directly and listener ownership uses the native system `netstat.exe`, avoiding optional PowerShell module loading in packaged or test Hosts. Production Host discovery plus adversarial fixtures reject a forged owner, a stale or dead process, a hijacked port and a wrong HTTP credential; neither accepted diagnostics nor projection state contains either credential.
+
+The Electron Shell now forwards each bounded second-instance Run context to the one lock owner and retains a process-lifetime activation history, so a later Run is focused once without allowing ordinary projection updates to steal a user's selection; both launched changes remain navigable before their first OTLP observations arrive. Host startup has a 15-second ready deadline, start/retry/stop share serialized attempts, stop first requests an acknowledged shutdown and then escalates through termination and forced kill. Unit fixtures prove both graceful and forced paths, while a real Windows Host/Receiver process test proves concurrent starts share one Receiver, a killed Host can be replaced exactly once and Shell close leaves neither Host PID alive.
 
 The pure Desktop change projection reducer consumes only schema-validated, allowlisted observation facts. It maintains explicit five-phase, Run, Work and Skill state with authoritative sequence ownership, stable event fingerprints and a monotonic unique-event version; it reads no Workspace, OpenSpec, Git, Runtime store or remote backend. Ordered, shuffled and duplicate deliveries converge byte-for-byte, exact replay is a no-op, and reuse of either an event identity or sequence for different content fails closed. A missing sequence marks freshness as `gap` while preserving only explicitly observed phase states; receiving the missing fact repairs freshness without inferring an omitted completion. Multiple Workspace/change observations choose the active change by authoritative sequence rather than arrival order.
 
