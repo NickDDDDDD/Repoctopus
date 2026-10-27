@@ -3,10 +3,10 @@
 ## Reproducible subject
 
 - Change: `adopt-comet-single-run-lifecycle`
-- Tested implementation commit: `372ec2f0208ec6df0e19726351f4b7eae6a335fa`
+- Tested implementation commit: `733e6bb90d5c13a31653f292ab8148a476d8a687`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `1109457`
-- Package SHA-256: `72694f5bba1ef2fec700eeef774a9777c887b69cbde43d44db241beb609ff1fb`
+- Package bytes: `1114309`
+- Package SHA-256: `e64804d60e6c232caeca708bc93b46f6c510fe92d8b7e6d0a0eebf9ff8a6699b`
 - Lifecycle definition: `repoctopus-change@3.0.0`
 - Lifecycle definition digest: `sha256:d45fdabde20f79ccc9e0dd95ce164d5b7225ce736b1e76e08c44e53e85c92a0e`
 - Verified input composition digest: `sha256:0f52306c5478580e72a9618918ebcdb11a13b1ca5a310cbef9bf3722e2488b69`
@@ -21,8 +21,8 @@ Run on Windows with Node.js `24.21.0`:
 ```text
 npm run verify
   typecheck, desktop typecheck, lint and both builds passed
-  150 test files passed
-  607 tests passed, 1 skipped
+  151 test files passed
+  609 tests passed, 1 skipped
   generated, brand, architecture and provenance checks passed
   OpenSpec strict validation: 14 passed, 0 failed
 
@@ -74,7 +74,9 @@ The pure Desktop change projection reducer consumes only schema-validated, allow
 
 The Desktop Host now decodes allowlisted identities from standard OTLP JSON Logs, applies them to the same pure projection and pushes a typed snapshot plus monotonic delta over private Node IPC. Electron Main forwards only the public projection through its sender-checked channel; the receiver endpoint and session token remain outside Preload and Renderer. The typed bridge updates the minimal Renderer without polling, while the existing controller exposes Host failure and supports a serialized retry. A real Electron smoke process intercepts only the private Host-ready event in the test harness, submits an authenticated OTLP Run event and verifies the visible window changes from its empty state to the five-stage Open projection. The production Host process test independently proves the same export produces a versioned projection delta before graceful shutdown.
 
-The Desktop Renderer now separates authoritative Shell-to-view projection, one semantic Dashboard surface and executable state stories. Thirteen fixtures cover starting, empty, sparse, live, catching-up, stale, gap, waiting-human, blocked, rework, error, completed and failed states through the same five-stage lifecycle, current-context and current-work regions, shared tokens and accessible recovery control. Production mapping derives only states supported by the current typed projection; fixture-only future states are not inferred from missing facts. The Electron OTLP smoke now asserts the semantic live state and running Open phase, and a captured 1080 by 720 window was visually inspected for hierarchy and responsive structure before the temporary image was removed.
+The Desktop Renderer now separates authoritative Shell-to-view projection, one semantic Dashboard surface and executable state stories. Thirteen fixtures cover starting, empty, sparse, live, catching-up, stale, gap, waiting-human, blocked, rework, error, completed and failed states through the same five-stage lifecycle, current-context and current-work regions, shared tokens and accessible recovery control. A pure five-state classifier distinguishes live, catching-up, stale, unknown and gap from the same OTLP projection; one event-driven deadline changes an active Run to stale after five minutes without querying a backend or starting a polling loop. The Electron OTLP smoke uses the actual send time, asserts the semantic live state and running Open phase, and a captured 1080 by 720 window was visually inspected for hierarchy and responsive structure before the temporary image was removed.
+
+The public Desktop guide documents those five data states as evidence boundaries rather than cosmetic labels. Its executable fixture ties each state to the rendered surface, distinguishes resolved, delivered and Host-declared Runtime-validated consumed Skill facts without claiming access to Agent reasoning, and keeps flow, execution, quality and telemetry health independent with phase, Work, Evidence and destination drill-down targets. It also records the shared OTLP source, privacy boundary and a gap-first troubleshooting order.
 
 Workspace/change navigation now keeps observation focus separate from Renderer-owned user selection. The Shell validates and forwards the bounded initial Runtime launch context; the Renderer establishes that source exactly once, includes a not-yet-observed source as pending, and thereafter treats newer projection activity only as list updates. Multi-Workspace fixtures prove a third, later change cannot steal either the launch-selected change or a manual selection, while the selected change still receives live projection updates. The navigation uses one grouped native-button surface with an accessible current-page marker and never writes UI selection back into the authoritative projection.
 
