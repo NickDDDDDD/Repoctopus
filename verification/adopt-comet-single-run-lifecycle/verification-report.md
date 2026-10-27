@@ -3,10 +3,10 @@
 ## Reproducible subject
 
 - Change: `adopt-comet-single-run-lifecycle`
-- Tested implementation commit: `e105c525ef1621c7d196e66b8462a8a4328180a0`
+- Tested implementation commit: `d1045a556dd87e824725a583e8f8ec49e1329170`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `1027775`
-- Package SHA-256: `ab400cd91366c4bde17de6102400b49c554f885e926730d11ef62f539c646f92`
+- Package bytes: `1042786`
+- Package SHA-256: `9f24cec6d050809d28d6bb925920d95f620e57beb38b257aca96a4d508680775`
 - Lifecycle definition: `repoctopus-change@3.0.0`
 - Lifecycle definition digest: `sha256:d45fdabde20f79ccc9e0dd95ce164d5b7225ce736b1e76e08c44e53e85c92a0e`
 - Verified input composition digest: `sha256:0f52306c5478580e72a9618918ebcdb11a13b1ca5a310cbef9bf3722e2488b69`
@@ -21,8 +21,8 @@ Run on Windows with Node.js `24.21.0`:
 ```text
 npm run verify
   typecheck, desktop typecheck, lint and both builds passed
-  135 test files passed
-  560 tests passed, 1 skipped
+  136 test files passed
+  567 tests passed, 1 skipped
   generated, brand, architecture and provenance checks passed
   OpenSpec strict validation: 14 passed, 0 failed
 
@@ -60,7 +60,9 @@ The pure Desktop change projection reducer consumes only schema-validated, allow
 
 The Desktop Host now decodes allowlisted identities from standard OTLP JSON Logs, applies them to the same pure projection and pushes a typed snapshot plus monotonic delta over private Node IPC. Electron Main forwards only the public projection through its sender-checked channel; the receiver endpoint and session token remain outside Preload and Renderer. The typed bridge updates the minimal Renderer without polling, while the existing controller exposes Host failure and supports a serialized retry. A real Electron smoke process intercepts only the private Host-ready event in the test harness, submits an authenticated OTLP Run event and verifies the visible window changes from its empty state to the five-stage Open projection. The production Host process test independently proves the same export produces a versioned projection delta before graceful shutdown.
 
-The Runtime-side Desktop activation seam now carries only validated Workspace, change and Run identities across a detached Windows process boundary. Repeated invocation is intentionally the start-or-activate protocol consumed by Electron single-instance ownership; a successful activation wakes the independently owned desktop destination replay, while unsupported platforms, process launch failure and replay wake failure return bounded warnings and never fail the development Run. Unit tests preserve that ordering and retry boundary. A real child-process fixture proves the encoded context crosses the process boundary, and a loopback remote OTLP mock proves a missing desktop executable leaves the original observation envelope byte-for-byte deliverable to the remote destination. Cordis catalog and project-composition registration remain the explicit next task rather than an implicit constructor side path.
+The Runtime-side Desktop activation seam now carries only validated Workspace, change and Run identities across a detached Windows process boundary. Repeated invocation is intentionally the start-or-activate protocol consumed by Electron single-instance ownership; a successful activation wakes the independently owned desktop destination replay, while unsupported platforms, process launch failure and replay wake failure return bounded warnings and never fail the development Run. Unit tests preserve that ordering and retry boundary. A real child-process fixture proves the encoded context crosses the process boundary, and a loopback remote OTLP mock proves a missing desktop executable leaves the original observation envelope byte-for-byte deliverable to the remote destination. The built-in Project composition now owns the destination and activation Services plus a disposable pre-Run Contributor. A zero-desktop Context has no hook or launch side effect, while disabling the composed activation is silent and launcher failures remain bounded diagnostics.
+
+The Desktop Host composition now owns the Receiver and Projection Services as well as the Application Plugin. The Application Plugin starts the Receiver only after all injected dependencies are active and stops it on unload; restart creates a new loopback endpoint and session token. Host Main only publishes service snapshots and projection deltas, while Electron Main remains the explicit native Shell owner with no Cordis product container. Source-boundary checks reject Receiver or Projection construction outside their canonical Host Services, and composition tests cover normal boot, missing dependencies, Application Plugin removal and Host restart.
 
 The self-bootstrap Archive exposed an incorrect frozen Change branch OID before any remote publication. The regression repair now performs the planning/live-remote check before creating closure Work and repeats it before push/MR. Tests prove that an isolated closure can rebind only an OID jointly established by the live source branch and closure candidate; if the live branch has advanced, the same Run invalidates the local closure and returns to Design instead of publishing unverified code. Protected plugin recovery is limited to an exact predecessor `codeDigest + descriptorDigest` declaration with unchanged authority, state schema and effective config. Lifecycle-definition recovery is separately limited to an explicitly listed predecessor definition digest; a compatible upgrade may restore an interrupted Archive publication by creating a fresh Work at a new `checkEpoch`, but it cannot reuse the cleared Work or its Outcome. If the semantic `workId` is stable across epochs, the claim must use a higher attempt and execution authority distinguishes the new instance by `workId + checkEpoch`; an orphaned Action Intent that never reached the Run checkpoint may safely leave an attempt gap.
 
