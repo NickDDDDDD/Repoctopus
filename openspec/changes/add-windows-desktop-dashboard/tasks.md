@@ -95,7 +95,7 @@
 - [x] 5.3 实现 `Open → Design → Build → Verify → Archive` 主体、阶段时间线、当前 Work/Task/attempt/Host/Validator/continuation，并用正常推进、Verify→Build、Archive→Verify/Design fixture 证明返工历史不会丢失或伪装为首次执行。
       **Blocked by:** 4.4, 5.1
       **Acceptance:** 正常和三类返工 fixture 均准确显示五阶段、当前执行与历史尝试，不把返工伪装为首次执行
-- [ ] 5.4 实现 action/augmentation Skill 的 resolved/delivered/consumed 状态与语义说明，用 OTLP fixture 验证已交付不会提前显示已消费、自定义 Skill 不破坏投影且界面不宣称观察 Agent 内部思考。
+- [x] 5.4 实现 action/augmentation Skill 的 resolved/delivered/consumed 状态与语义说明，用 OTLP fixture 验证已交付不会提前显示已消费、自定义 Skill 不破坏投影且界面不宣称观察 Agent 内部思考。
       **Blocked by:** 5.3
       **Acceptance:** OTLP fixture 区分 Skill 三态与两种角色，自定义 Skill 可展示且 UI 明确 consumed 仅表示 Host 声明并经 Runtime 验证
 - [ ] 5.5 实现 Evidence、Gate、Artifact 元数据、blocker/Human Decision 和下一步动作界面，用脱敏 fixture 验证不显示正文、绝对路径、Prompt、回复或命令输出。
