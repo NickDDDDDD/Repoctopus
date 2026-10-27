@@ -19,7 +19,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['scripts/**/*.mjs', 'bin/**/*.js'],
+    files: ['scripts/**/*.mjs', 'test/fixtures/**/*.mjs', 'bin/**/*.js'],
     ...tseslint.configs.disableTypeChecked,
   },
 );

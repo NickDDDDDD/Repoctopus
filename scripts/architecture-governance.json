@@ -455,7 +455,10 @@
       "id": "protected-merge-request-publication",
       "targets": ["platform/**"],
       "pattern": "method\\s*:\\s*['\"](?:POST|PATCH)['\"]",
-      "allowed": ["platform/github/merge-request.ts"],
+      "allowed": [
+        "platform/github/merge-request.ts",
+        "platform/telemetry/canonical-otlp-json-exporter.ts"
+      ],
       "message": "Merge request creation and updates may only be executed by a protected Delivery Action adapter"
     },
     {
