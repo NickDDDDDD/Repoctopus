@@ -13,7 +13,10 @@ import {
   createWorkExecutionPacket,
   type WorkClaimResult,
 } from '../domains/work-execution/types.js';
-import type { WorkDescriptor } from '../domains/change-lifecycle/transition.js';
+import type {
+  ChangeLifecycleState,
+  WorkDescriptor,
+} from '../domains/change-lifecycle/transition.js';
 import {
   lifecycleContributorSnapshot,
   type LifecycleContributorIdentity,
@@ -34,6 +37,37 @@ function assertContributorSupportsWork(contributor: WorkContributor, work: WorkD
       `Work Contributor ${contributor.id} cannot claim ${work.workId}; missing ${missing.join(', ')}`,
     );
   }
+}
+
+function createChangeInputs(input: {
+  runId: string;
+  lifecycle: ChangeLifecycleState;
+  work: WorkDescriptor;
+}): unknown {
+  const protocol = input.lifecycle.buildProtocol;
+  const plan = protocol?.plan ?? null;
+  return {
+    runId: input.runId,
+    change: input.lifecycle.identity,
+    taskId: input.work.taskId ?? null,
+    taskRevision: input.work.taskRevision ?? null,
+    inputDigest: input.work.inputDigest,
+    tasks: input.lifecycle.tasks ?? [],
+    workspaceIntent: input.lifecycle.workspaceIntent ?? null,
+    build: protocol
+      ? {
+          currentAction: protocol.currentAction,
+          actionAttempt: protocol.actionAttempt,
+          configuration: protocol.configuration,
+          plan,
+          planEvidence: protocol.planEvidence,
+          packageCompletions: protocol.packageCompletions,
+          currentPackage:
+            plan?.packages.find((candidate) => candidate.packageId === input.work.packageId) ?? null,
+        }
+      : null,
+    archiveDeliveryInput: input.lifecycle.archiveDeliveryInput ?? null,
+  };
 }
 
 export function outcomeReceiptAdapter(id: string): ActionAdapter {
@@ -123,14 +157,11 @@ export class WorkDispatcher extends Service {
     const executionContext = await this.ctx.workContextAssembler.assemble({
       work,
       changeId: state.changeLifecycle!.identity.changeId,
-      changeInputs: {
+      changeInputs: createChangeInputs({
         runId: state.runId,
-        change: state.changeLifecycle!.identity,
-        taskId: work.taskId ?? null,
-        taskRevision: work.taskRevision ?? null,
-        inputDigest: work.inputDigest,
-        archiveDeliveryInput: state.changeLifecycle!.archiveDeliveryInput ?? null,
-      },
+        lifecycle: state.changeLifecycle!,
+        work,
+      }),
       diagnostic: work.phase === 'build' && (request.attempt ?? 1) > 1,
     });
     const intent = await this.ctx.actionDispatcher.claim({
@@ -178,14 +209,11 @@ export class WorkDispatcher extends Service {
     const context = await this.ctx.workContextAssembler.assemble({
       work,
       changeId: state.changeLifecycle!.identity.changeId,
-      changeInputs: {
+      changeInputs: createChangeInputs({
         runId: state.runId,
-        change: state.changeLifecycle!.identity,
-        taskId: work.taskId ?? null,
-        taskRevision: work.taskRevision ?? null,
-        inputDigest: work.inputDigest,
-        archiveDeliveryInput: state.changeLifecycle!.archiveDeliveryInput ?? null,
-      },
+        lifecycle: state.changeLifecycle!,
+        work,
+      }),
       diagnostic: work.phase === 'build' && checkpoint.attempt > 1,
     });
     const packet = createWorkExecutionPacket({ intent, work, context });

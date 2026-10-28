@@ -29,7 +29,21 @@ node bin/repoctopus.js skill get --workspace . --audience user --name tdd --json
 
 内置入口为 `grill-with-docs`、`codebase-design`、`tdd`、`diagnosing-bugs`、`code-review`、`pr` 和 `teach`。`grill-with-docs` 使用的 `grilling` 与 `domain-modeling` 也随固定上游快照提供。`to-spec` 与 `to-tickets` 仅作为方法采用的固定参考保存在 Provider roots 之外，不会出现在 Skill 目录或 IDE 投影中；Repoctopus 只通过版本化 Method Profile 使用其中已审核的规则，OpenSpec 仍是规格和任务的唯一结构权威。
 
-Change lifecycle definition 为每个 Work kind 固定至多一个 action Skill、有序 augmentation Skills、独立 Method Profile、能力、side-effect class、写入范围、输出契约、Validator 和 checkpoint。Runtime 解析并冻结真实正文，把它们装入不可变执行包而不只记录名称；Method Profile 不经过 Skill Registry，也不能由调用方参数替换或伪装成 Skill。Open 使用 `repoctopus-open-change + grilling`，Design 使用 `repoctopus-design-change + codebase-design`，Build 只使用 `repoctopus-build-task + tdd`；Verify 使用 `repoctopus-verify-change + code-review`，Archive close/publish 分别使用 `repoctopus-archive-change` 与 `pr`。
+Change lifecycle definition 为每个 Work kind 固定一个 action Skill、有序 augmentation Skills、独立 Method Profile、能力、side-effect class、写入范围、输出契约、Validator 和 checkpoint。Runtime 解析并冻结真实正文，把它们装入不可变执行包而不只记录名称；Method Profile 不经过 Skill Registry，也不能由调用方参数替换或伪装成 Skill。
+
+| Work                         | 固定 Skill 组合                                         |
+| ---------------------------- | ------------------------------------------------------- |
+| Open                         | `repoctopus-open-change + grilling`                     |
+| Design                       | `repoctopus-design-change + codebase-design`            |
+| Build Configure              | `repoctopus-build-configure`                            |
+| Build Plan                   | `repoctopus-build-plan`                                 |
+| Build Execute，`tddMode=tdd` | `repoctopus-build-execute + tdd`                        |
+| Build Execute，`direct`      | `repoctopus-build-execute`                              |
+| Build Check                  | `repoctopus-build-check + code-review`                  |
+| Verify                       | `repoctopus-verify-change + code-review`                |
+| Archive close/publish        | `repoctopus-archive-change` / `pr`                      |
+
+Execution mode 是 Repoctopus action input，不是另一个 Skill。`subagent-driven-development` 要求 Host 具有 `subagent.dispatch.attested`，并为当前 package 返回结构化 delegation receipts；`autonomous` 禁止未声明的子调用。两种模式使用相同的 Runtime、Validator 和 Verify 边界，不依赖 Superpowers。
 
 Skill 在 Runtime 接受当前 Work 时装配，而不是在 change 开始时把所有 Skill 一次性塞进上下文。固定顺序为 Runtime contract → action Skill → Provider protocol → augmentations → Method Profile → change inputs。Host 必须明确回报真正读取的 action/augmentation layer digest；Runtime 只据此记录 `skill.consumed`，不会从 Work 成功反推所有 Skill 已被使用。
 

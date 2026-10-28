@@ -47,22 +47,50 @@ const policy: DeliveryPolicy = {
 };
 
 describe('managed Change execution production composition', () => {
-  it('executes fresh Open -> Design -> Build -> Verify -> Archive through one managed Host', async () => {
+  it.each([
+    {
+      label: 'autonomous mode with one business repository',
+      executionMode: 'autonomous' as const,
+      multiRepository: false,
+    },
+    {
+      label: 'autonomous mode with two business repositories',
+      executionMode: 'autonomous' as const,
+      multiRepository: true,
+    },
+    {
+      label: 'subagent-driven-development mode with two business repositories',
+      executionMode: 'subagent-driven-development' as const,
+      multiRepository: true,
+    },
+  ])('executes fresh Open -> Design -> Build -> Verify -> Archive in $label', async ({
+    executionMode,
+    multiRepository,
+  }) => {
     const root = await temporaryDirectory('repoctopus-managed-change-');
     cleanup.push(root);
     const workspaceRemote = path.join(root, 'workspace.git');
     const appRemote = path.join(root, 'app.git');
+    const workerRemote = path.join(root, 'worker.git');
     await mkdir(workspaceRemote);
     await mkdir(appRemote);
+    await mkdir(workerRemote);
     await execFileAsync('git', ['init', '--bare', '--initial-branch=main'], {
       cwd: workspaceRemote,
     });
     await execFileAsync('git', ['init', '--bare', '--initial-branch=main'], { cwd: appRemote });
+    await execFileAsync('git', ['init', '--bare', '--initial-branch=main'], {
+      cwd: workerRemote,
+    });
     const workspace = await createGitRepository(root, 'workspace', workspaceRemote);
     const appRepository = await createGitRepository(root, 'app', appRemote);
+    const workerRepository = await createGitRepository(root, 'worker', workerRemote);
     await execFileAsync('git', ['push', '--set-upstream', 'origin', 'main'], { cwd: workspace });
     await execFileAsync('git', ['push', '--set-upstream', 'origin', 'main'], {
       cwd: appRepository,
+    });
+    await execFileAsync('git', ['push', '--set-upstream', 'origin', 'main'], {
+      cwd: workerRepository,
     });
     await execFileAsync('git', ['switch', '-c', 'spec/managed-blackbox'], { cwd: workspace });
     await execFileAsync('git', ['push', '--set-upstream', 'origin', 'spec/managed-blackbox'], {
@@ -73,6 +101,12 @@ describe('managed Change execution production composition', () => {
     });
     await execFileAsync('git', ['push', '--set-upstream', 'origin', 'feature/managed-blackbox'], {
       cwd: appRepository,
+    });
+    await execFileAsync('git', ['switch', '-c', 'feature/managed-blackbox'], {
+      cwd: workerRepository,
+    });
+    await execFileAsync('git', ['push', '--set-upstream', 'origin', 'feature/managed-blackbox'], {
+      cwd: workerRepository,
     });
     const environment = await createOpenSpecStoreEnvironment(root, workspace, 'managed-blackbox');
     await writeFile(path.join(workspace, '.gitignore'), '.repoctopus/\n');
@@ -85,6 +119,7 @@ describe('managed Change execution production composition', () => {
         repositories: [
           { id: 'workspace', path: '.' },
           { id: 'app', path: '../app' },
+          ...(multiRepository ? [{ id: 'worker', path: '../worker' }] : []),
         ],
         profiles: [
           {
@@ -98,6 +133,18 @@ describe('managed Change execution production composition', () => {
                 executable: process.execPath,
                 args: ['-e', 'process.exit(0)'],
               },
+              ...(multiRepository
+                ? [
+                    {
+                      id: 'worker-check',
+                      type: 'command',
+                      repository: 'worker',
+                      covers: ['*'],
+                      executable: process.execPath,
+                      args: ['-e', 'process.exit(0)'],
+                    },
+                  ]
+                : []),
             ],
           },
         ],
@@ -139,12 +186,16 @@ describe('managed Change execution production composition', () => {
       environmentKeys.map((key) => [key, process.env[key]]),
     );
     for (const key of environmentKeys) process.env[key] = environment[key];
-    const application = await bootProjectComposition(productRoot, workspace);
+    let application = await bootProjectComposition(productRoot, workspace);
     try {
-      const capture = installCapturingWorkExecutionHost({
+      const installHost = () => installCapturingWorkExecutionHost({
         context: application.context,
         workspace,
-        repositories: { workspace, app: appRepository },
+        repositories: { workspace, app: appRepository, worker: workerRepository },
+        capabilities:
+          executionMode === 'subagent-driven-development'
+            ? ['subagent.dispatch.attested']
+            : [],
         operations(packet) {
           if (packet.work.kind === 'change.intake' || packet.work.kind === 'specification.plan') {
             return [
@@ -178,16 +229,119 @@ describe('managed Change execution production composition', () => {
               },
             ];
           }
-          if (packet.work.kind === 'task.implement') {
+          if (packet.work.kind === 'build.execute') {
+            const inputs = JSON.parse(
+              packet.context.layers.find((layer) => layer.kind === 'change-inputs')!.content,
+            ) as { build: { currentPackage: { repositoryIds: string[] } } };
+            const repositoryId = inputs.build.currentPackage.repositoryIds[0]!;
             return [
               {
-                repositoryId: 'app',
-                relativePath: `src/managed-${packet.work.taskId}.txt`,
-                content: `managed task ${packet.work.taskId}\n`,
+                repositoryId,
+                relativePath: `src/managed-${packet.work.packageId!.replace(':', '-')}.txt`,
+                content: `managed package ${packet.work.packageId}\n`,
               },
             ];
           }
           return [];
+        },
+        result(packet, session) {
+          const inputs = JSON.parse(
+            packet.context.layers.find((layer) => layer.kind === 'change-inputs')!.content,
+          ) as {
+            tasks: Array<{
+              taskId: string;
+              acceptanceCriteria: Array<{ acceptanceId: string }>;
+            }>;
+            build: {
+              configuration: { bindingDigest: `sha256:${string}` };
+              plan: {
+                packages: Array<{
+                  packageId: string;
+                  taskIds: string[];
+                  repositoryIds: string[];
+                }>;
+              } | null;
+              currentPackage: { packageId: string } | null;
+            } | null;
+          };
+          if (packet.work.kind === 'build.configure') {
+            return {
+              schemaVersion: 1,
+              kind: 'build-configuration-candidate',
+              executionMode,
+              tddMode: 'tdd',
+            };
+          }
+          if (packet.work.kind === 'build.plan') {
+            return {
+              schemaVersion: 1,
+              kind: 'build-plan-candidate',
+              packages: inputs.tasks.map((task, index) => {
+                const repositoryId = multiRepository && index > 0 ? 'worker' : 'app';
+                return {
+                packageKey: task.taskId,
+                taskIds: [task.taskId],
+                repositoryIds: [repositoryId],
+                writeScopes: [{ repositoryId, paths: ['src/**'] }],
+                acceptanceRefs: task.acceptanceCriteria.map((entry) => entry.acceptanceId),
+                expectedOutcomes: [`Complete ${task.taskId}`],
+                validatorProfile: 'build-package-v1',
+                dependsOn: index === 0 ? [] : [inputs.tasks[index - 1]!.taskId],
+                };
+              }),
+            };
+          }
+          if (packet.work.kind === 'build.execute') {
+            return {
+              schemaVersion: 1,
+              kind: 'build-package-completion',
+              packageId: packet.work.packageId!,
+              acceptanceEvidenceIds: [`acceptance:${packet.work.packageId}`],
+              testEvidenceIds: [`test:${packet.work.packageId}`],
+              tddEvidence: {
+                redEvidenceId: `red:${packet.work.packageId}`,
+                greenEvidenceId: `green:${packet.work.packageId}`,
+                regressionEvidenceId: `regression:${packet.work.packageId}`,
+              },
+              repositoryDigest: inputs.build!.configuration.bindingDigest,
+              implementationDigest: `sha256:${'e'.repeat(64)}`,
+            };
+          }
+          if (packet.work.kind === 'build.check') {
+            return {
+              schemaVersion: 1,
+              kind: 'build-check-candidate',
+              completedPackageIds: inputs.build!.plan!.packages.map((entry) => entry.packageId),
+              acceptedTaskIds: inputs.tasks.map((task) => task.taskId),
+              testEvidenceIds: ['test:build-check'],
+              repositoryDigest: inputs.build!.configuration.bindingDigest,
+              implementationDigest: `sha256:${'f'.repeat(64)}`,
+              reviewerExecutionId: session.invocationId,
+            };
+          }
+          return undefined;
+        },
+        delegationReceipts(packet, session) {
+          if (
+            executionMode !== 'subagent-driven-development' ||
+            packet.work.kind !== 'build.execute' ||
+            !packet.work.packageId
+          ) {
+            return [];
+          }
+          return [
+            {
+              schemaVersion: 1,
+              receiptId: `${session.invocationId}:implementer`,
+              parentInvocationId: session.invocationId,
+              coordinatorHostId: 'capturing-work-execution-host',
+              executionId: `${session.invocationId}:subagent`,
+              role: 'implementer',
+              packageId: packet.work.packageId,
+              status: 'succeeded',
+              outcomeDigest: `sha256:${'9'.repeat(64)}`,
+            },
+          ];
         },
         async afterOperations(packet) {
           if (!['change.intake', 'specification.plan'].includes(packet.work.kind)) return;
@@ -204,6 +358,15 @@ describe('managed Change execution production composition', () => {
           await execFileAsync('git', ['push'], { cwd: workspace });
         },
       });
+      let capture = installHost();
+      const invocationKinds: string[] = [];
+      const restartApplication = async () => {
+        invocationKinds.push(...capture.invocations.map((item) => item.packet.work.kind));
+        capture.dispose();
+        await application.close();
+        application = await bootProjectComposition(productRoot, workspace);
+        capture = installHost();
+      };
       const next = () =>
         application.context.commandRouter.execute<{ runId: string }, RuntimeResult<RunStatusView>>(
           'run.next',
@@ -244,6 +407,7 @@ describe('managed Change execution production composition', () => {
           decision: 'approve',
         },
         actor: { actorId: 'managed-test-user', source: 'cli', authenticated: true },
+        isolation: 'current',
       });
       const designWork = await next();
       expect(designWork.value.changeLifecycle).toMatchObject({
@@ -299,58 +463,103 @@ describe('managed Change execution production composition', () => {
       });
       expect((await next()).value.changeLifecycle).toMatchObject({
         phase: 'build',
-        currentWork: { kind: 'task.implement', taskId: '1.1' },
+        currentWork: { kind: 'build.configure' },
       });
-      expect((await next()).value.changeLifecycle).toMatchObject({
+      await next();
+      const configurationWait = await next();
+      expect(configurationWait.value.changeLifecycle).toMatchObject({
         phase: 'build',
-        taskProgress: { completed: 0, currentTaskId: '1.1' },
+        status: 'waiting',
+        currentWork: null,
+        waitCondition: { kind: 'human-decision' },
+        build: { action: 'configure' },
       });
-      const firstBuildOutcome = await status();
-      expect(firstBuildOutcome.state.workExecution).toMatchObject({
-        status: 'outcome',
-        actionOutcome: { status: 'succeeded' },
-      });
-      const firstBuildReceipt = await application.context.actionStore.loadReceipt(
+      const configurationDecision = configurationWait.value.changeLifecycle!.waitCondition!;
+      if (configurationDecision.kind !== 'human-decision') {
+        throw new Error('missing Build Configuration decision');
+      }
+      await restartApplication();
+      const planned = await application.context.commandRouter.execute<
+        Parameters<typeof application.context.workflowRuns.decideChange>[0],
+        RunStatusView
+      >('run.change.decide', {
         runId,
-        firstBuildOutcome.state.workExecution!.receiptId!,
-      );
-      expect({
-        receiptWorkId: firstBuildReceipt.workId,
-        receiptInputDigest: firstBuildReceipt.inputDigest,
-      }).toEqual({
-        receiptWorkId: firstBuildOutcome.changeLifecycle!.currentWork!.workId,
-        receiptInputDigest: firstBuildOutcome.changeLifecycle!.currentWork!.inputDigest,
+        response: {
+          apiVersion: 'repoctopus/v1alpha1',
+          kind: 'HumanDecisionResponse',
+          requestId: configurationDecision.requestId,
+          proposalHash: configurationDecision.proposalDigest,
+          decision: 'approve',
+        },
+        actor: { actorId: 'managed-test-user', source: 'cli', authenticated: true },
       });
-      const firstBuildValidation = await application.context.workflowRuns.validateBuildTask({
-        runId,
-        receiptId: firstBuildOutcome.state.workExecution!.receiptId!,
-      });
-      expect(firstBuildValidation.value.validation.status).toBe('validated');
-      expect(firstBuildValidation.value.run.changeLifecycle).toMatchObject({
+      expect(planned.changeLifecycle).toMatchObject({
         phase: 'build',
-        taskProgress: { completed: 1, currentTaskId: null },
+        currentWork: { kind: 'build.plan' },
+        build: { action: 'plan' },
       });
+      await next();
+      const afterPlanValidation = await next();
+      let afterPlan: RunStatusView;
+      if (multiRepository) {
+        expect(afterPlanValidation.value.changeLifecycle).toMatchObject({
+          phase: 'build',
+          status: 'waiting',
+          currentWork: null,
+          waitCondition: { kind: 'human-decision' },
+          build: { action: 'plan-evidence', planRevision: 1 },
+        });
+        const planDecision = afterPlanValidation.value.changeLifecycle!.waitCondition!;
+        if (planDecision.kind !== 'human-decision') {
+          throw new Error('missing high-risk Build Plan decision');
+        }
+        await restartApplication();
+        afterPlan = await application.context.commandRouter.execute<
+          Parameters<typeof application.context.workflowRuns.decideChange>[0],
+          RunStatusView
+        >('run.change.decide', {
+          runId,
+          response: {
+            apiVersion: 'repoctopus/v1alpha1',
+            kind: 'HumanDecisionResponse',
+            requestId: planDecision.requestId,
+            proposalHash: planDecision.proposalDigest,
+            decision: 'approve',
+          },
+          actor: { actorId: 'managed-test-user', source: 'cli', authenticated: true },
+        });
+      } else {
+        afterPlan = afterPlanValidation.value;
+        await restartApplication();
+      }
+      expect(afterPlan.changeLifecycle).toMatchObject({
+        phase: 'build',
+        currentWork: { kind: 'build.execute' },
+        build: { action: 'execute', planRevision: 1 },
+      });
+      await next();
+      const afterFirstPackage = await next();
+      expect(afterFirstPackage.value.changeLifecycle).toMatchObject({
+        phase: 'build',
+        currentWork: { kind: 'build.execute' },
+        taskProgress: { completed: 1 },
+      });
+      await restartApplication();
+      await next();
+      const afterAllPackages = await next();
+      expect(
+        afterAllPackages.value.changeLifecycle,
+        JSON.stringify(afterAllPackages.diagnostics),
+      ).toMatchObject({
+        phase: 'build',
+        currentWork: { kind: 'build.check' },
+        taskProgress: { completed: 2 },
+      });
+      await restartApplication();
       await execFileAsync('git', ['add', 'openspec/changes/managed-blackbox/tasks.md'], {
         cwd: workspace,
       });
-      await execFileAsync('git', ['commit', '-m', 'spec: record managed task 1.1'], {
-        cwd: workspace,
-      });
-      await execFileAsync('git', ['push'], { cwd: workspace });
-      expect((await next()).value.changeLifecycle).toMatchObject({
-        phase: 'build',
-        taskProgress: { completed: 1, currentTaskId: '1.2' },
-      });
-      await next();
-      await next();
-      expect((await status()).changeLifecycle).toMatchObject({
-        phase: 'build',
-        taskProgress: { total: 2, completed: 2, currentTaskId: null },
-      });
-      await execFileAsync('git', ['add', 'openspec/changes/managed-blackbox/tasks.md'], {
-        cwd: workspace,
-      });
-      await execFileAsync('git', ['commit', '-m', 'spec: record managed task 1.2'], {
+      await execFileAsync('git', ['commit', '-m', 'spec: record managed task completion'], {
         cwd: workspace,
       });
       await execFileAsync('git', ['push'], { cwd: workspace });
@@ -359,10 +568,19 @@ describe('managed Change execution production composition', () => {
         cwd: appRepository,
       });
       await execFileAsync('git', ['push'], { cwd: appRepository });
+      if (multiRepository) {
+        await execFileAsync('git', ['add', 'src'], { cwd: workerRepository });
+        await execFileAsync('git', ['commit', '-m', 'feat: add managed worker output'], {
+          cwd: workerRepository,
+        });
+        await execFileAsync('git', ['push'], { cwd: workerRepository });
+      }
+      await next();
       expect((await next()).value.changeLifecycle).toMatchObject({
         phase: 'verify',
         currentWork: { kind: 'evidence.verify' },
       });
+      await restartApplication();
       await next();
       const originalRunOrResume = application.context.evidenceCoordinator.runOrResume.bind(
         application.context.evidenceCoordinator,
@@ -403,7 +621,7 @@ describe('managed Change execution production composition', () => {
         const recoveryHost = installCapturingWorkExecutionHost({
           context: recoveryApplication.context,
           workspace,
-          repositories: { workspace, app: appRepository },
+          repositories: { workspace, app: appRepository, worker: workerRepository },
           operations: () => [],
         });
         await recoveryApplication.context.commandRouter.execute<
@@ -444,6 +662,13 @@ describe('managed Change execution production composition', () => {
         ['remote', 'set-url', 'origin', 'https://github.com/example/app.git'],
         { cwd: appRepository },
       );
+      if (multiRepository) {
+        await execFileAsync(
+          'git',
+          ['remote', 'set-url', 'origin', 'https://github.com/example/worker.git'],
+          { cwd: workerRepository },
+        );
+      }
 
       const project = await application.context.project.snapshot({
         workspaceId: 'managed-blackbox',
@@ -452,6 +677,7 @@ describe('managed Change execution production composition', () => {
         repositories: [
           { id: 'workspace', path: workspace },
           { id: 'app', path: appRepository },
+          ...(multiRepository ? [{ id: 'worker', path: workerRepository }] : []),
         ],
       });
       const changeRemoteOid = (
@@ -478,7 +704,28 @@ describe('managed Change execution production composition', () => {
             commitMessage: 'feat: add managed outputs',
             actions: ['push', 'merge_request'],
           },
+          ...(multiRepository
+            ? [
+                {
+                  deliveryId: 'worker',
+                  repositoryId: 'worker',
+                  sourceBranch: 'feature/managed-blackbox',
+                  targetBranch: 'main',
+                  commitMessage: 'feat: add managed worker output',
+                  actions: ['push', 'merge_request'] as Array<'push' | 'merge_request'>,
+                },
+              ]
+            : []),
         ],
+        ...(multiRepository
+          ? {
+              businessSplitReason: {
+                kind: 'multi_repository' as const,
+                summary:
+                  'The managed Change intentionally spans the app and worker repositories.',
+              },
+            }
+          : {}),
       };
       vi.spyOn(application.context.delivery, 'validateArchiveIntent').mockResolvedValue();
       await application.context.commandRouter.execute('run.archive.prepare', {
@@ -518,6 +765,9 @@ describe('managed Change execution production composition', () => {
       const businessRepository = project.repositories.find(
         (repository) => repository.id === 'app',
       )!;
+      const workerBusinessRepository = project.repositories.find(
+        (repository) => repository.id === 'worker',
+      );
       vi.spyOn(application.context.delivery, 'publishArchive').mockResolvedValue({
         snapshot: { digest: `sha256:${'d'.repeat(64)}` } as never,
         receipts: [
@@ -543,6 +793,32 @@ describe('managed Change execution production composition', () => {
             },
             provenance: 'runtime-created',
           },
+          ...(multiRepository
+            ? [
+                {
+                  actionId: 'push-worker',
+                  deliveryId: 'worker',
+                  type: 'git.push' as const,
+                  status: 'succeeded' as const,
+                  recovered: false,
+                  remoteOid: 'c'.repeat(40),
+                },
+                {
+                  actionId: 'mr-worker',
+                  deliveryId: 'worker',
+                  type: 'mr.create_or_update' as const,
+                  status: 'succeeded' as const,
+                  recovered: false,
+                  mergeRequest: {
+                    provider: 'github' as const,
+                    repositoryId: 'worker',
+                    number: 103,
+                    url: 'https://github.com/example/worker/pull/103',
+                  },
+                  provenance: 'runtime-created' as const,
+                },
+              ]
+            : []),
         ],
       });
       vi.spyOn(application.context.delivery, 'publishSpecification').mockResolvedValue({
@@ -569,6 +845,7 @@ describe('managed Change execution production composition', () => {
         },
       });
       expect(businessRepository.remoteIdentity).toBeTruthy();
+      if (multiRepository) expect(workerBusinessRepository?.remoteIdentity).toBeTruthy();
       await next();
       const published = await application.context.commandRouter.execute<
         Parameters<typeof application.context.workflowRuns.executeArchiveDelivery>[0],
@@ -588,11 +865,15 @@ describe('managed Change execution production composition', () => {
         stage: 'published',
         run: { changeLifecycle: { phase: 'archive', status: 'completed' } },
       });
-      expect(capture.invocations.map((item) => item.packet.work.kind)).toEqual([
+      invocationKinds.push(...capture.invocations.map((item) => item.packet.work.kind));
+      expect(invocationKinds).toEqual([
         'change.intake',
         'specification.plan',
-        'task.implement',
-        'task.implement',
+        'build.configure',
+        'build.plan',
+        'build.execute',
+        'build.execute',
+        'build.check',
         'evidence.verify',
         'specification.close',
         'delivery.publish',
@@ -628,5 +909,7 @@ describe('managed Change execution production composition', () => {
         else process.env[key] = previous;
       }
     }
-  }, 120_000);
+    },
+    120_000,
+  );
 });

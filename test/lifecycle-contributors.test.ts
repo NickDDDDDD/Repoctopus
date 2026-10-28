@@ -94,7 +94,7 @@ describe('lifecycle Cordis Contributors', () => {
       declaredWriteScopes: [],
       works: [],
       validations: [
-        { profileId: 'team.license-valid', checkpoint: 'build.after-task', required: true },
+        { profileId: 'team.license-valid', checkpoint: 'build.after-execute', required: true },
       ],
     };
     expect(() => assertSafeLifecycleExtension(base, BUILTIN_CHANGE_LIFECYCLE_DEFINITION)).not.toThrow();
@@ -120,7 +120,7 @@ describe('lifecycle Cordis Contributors', () => {
         works: [
           {
             kind: 'team.unbounded-write',
-            checkpoint: 'build.after-task',
+            checkpoint: 'build.after-execute',
             capabilities: ['repository.read'],
             sideEffectClass: 'repository-write',
             writeScopes: [

@@ -23,6 +23,7 @@ export type TrajectoryEventType =
   | 'work.context-delivered'
   | 'work.host-started'
   | 'work.host-completed'
+  | 'delegation.completed'
   | 'work.completed'
   | 'skill.resolved'
   | 'skill.delivered'

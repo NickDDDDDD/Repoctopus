@@ -46,6 +46,28 @@ function executionEvent(input: {
   };
 }
 
+function buildTelemetryFields(state: RunState, work: WorkDescriptor): Record<string, unknown> {
+  if (work.phase !== 'build') return {};
+  const configuration = state.changeLifecycle?.buildProtocol?.configuration;
+  return {
+    ...(work.buildAction ? { buildAction: work.buildAction } : {}),
+    ...(work.configurationId ? { configurationId: work.configurationId } : {}),
+    ...(work.planId ? { planId: work.planId } : {}),
+    ...(work.planRevision === undefined ? {} : { planRevision: work.planRevision }),
+    ...(work.packageId ? { packageId: work.packageId } : {}),
+    ...(configuration
+      ? {
+          executionMode: configuration.executionMode,
+          tddMode: configuration.tddMode,
+          reviewMode: configuration.reviewMode,
+          isolation: configuration.isolation,
+        }
+      : state.changeLifecycle?.workspaceIntent
+        ? { isolation: state.changeLifecycle.workspaceIntent.isolation }
+        : {}),
+  };
+}
+
 function assertActivePacket(state: RunState, packet: WorkExecutionPacket): void {
   const work = state.changeLifecycle?.currentWork;
   if (
@@ -153,6 +175,7 @@ export class WorkExecutionAuthority extends Service {
               intentId: checkpoint.intentId,
               packetDigest: checkpoint.packet.packetDigest,
               continuation: checkpoint.continuation,
+              ...buildTelemetryFields(state, packet.work),
             },
           }),
           value: structuredClone(checkpoint),
@@ -190,6 +213,7 @@ export class WorkExecutionAuthority extends Service {
             workKind: work.kind,
             inputDigest: work.inputDigest,
             checkEpoch: work.checkEpoch,
+            ...buildTelemetryFields(state, work),
           },
         }),
         value: undefined,
@@ -242,6 +266,32 @@ export class WorkExecutionAuthority extends Service {
           result: stage,
         },
         [layer.digest, stage],
+      );
+    }
+  }
+
+  async recordDelegationFacts(
+    packet: WorkExecutionPacket,
+    outcome: WorkExecutionHostOutcome,
+  ): Promise<void> {
+    for (const receipt of outcome.delegationReceipts ?? []) {
+      await this.recordEvent(
+        packet.claim.runId,
+        packet.claim.intentId,
+        'delegation.completed',
+        {
+          phase: packet.work.phase,
+          workId: packet.work.workId,
+          workKind: packet.work.kind,
+          buildAction: packet.work.buildAction,
+          attempt: packet.claim.attempt,
+          invocationId: outcome.invocationId,
+          executionId: receipt.executionId,
+          packageId: receipt.packageId,
+          delegationRole: receipt.role,
+          result: receipt.status,
+        },
+        [receipt.receiptId, receipt.outcomeDigest],
       );
     }
   }
@@ -540,7 +590,7 @@ export class WorkExecutionAuthority extends Service {
   }): Promise<void> {
     await this.ctx.runStore.commitGuarded(input.runId, ({ state, trajectory }) => {
       const type = `wait.${input.stage}` as const;
-      const eventId = digest(input.runId, type, input.waitId);
+      const eventId = digest(input.runId, type, input.waitId, input.stage);
       if (trajectory.some((event) => event.eventId === eventId)) return { value: undefined };
       const timestamp = new Date().toISOString();
       const nextState: RunState = {

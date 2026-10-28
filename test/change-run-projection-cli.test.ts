@@ -49,4 +49,57 @@ describe('Change Run CLI projection', () => {
     expect(output).toContain('Wait: human-decision - Review the planning proposal');
     expect(output).toContain('Lifecycle next actions:');
   });
+
+  it('renders the public Build protocol projection without exposing checkout paths', () => {
+    const lifecycle = projectChangeRun(
+      {
+        ...createChangeLifecycleSnapshot({
+          identity: {
+            workspaceId: 'team',
+            changeId: 'build-projection',
+            runId: 'change-team-build-projection-g1',
+          },
+        }),
+        phase: 'build',
+        status: 'running',
+      },
+      {
+        taskProgress: { total: 2, completed: 1, currentTaskId: '1.2' },
+        evidence: {
+          gateStatus: 'not-evaluated',
+          acceptedBundleIds: [],
+          latestAttemptId: null,
+        },
+        nextActions: [],
+        freshness: {
+          stateVersion: 8,
+          trajectoryOffset: 14,
+          observedAt: '2026-10-28T00:00:00.000Z',
+        },
+      },
+    );
+    const output = renderChangeProjection({
+      ...lifecycle,
+      build: {
+        action: 'execute',
+        actionAttempt: 2,
+        configurationId: 'build-configuration:123',
+        executionMode: 'subagent-driven-development',
+        tddMode: 'tdd',
+        isolation: 'worktree',
+        planId: 'build-plan:456',
+        planRevision: 3,
+        packageId: 'work-package:789',
+        completedPackages: 1,
+        totalPackages: 2,
+        checkAccepted: false,
+      },
+    }).join('\n');
+
+    expect(output).toContain('Build action: execute (attempt 2)');
+    expect(output).toContain('execution=subagent-driven-development; tdd=tdd; isolation=worktree');
+    expect(output).toContain('Build plan: build-plan:456 (revision 3)');
+    expect(output).toContain('Build packages: 1/2 (current work-package:789)');
+    expect(output).not.toMatch(/[A-Z]:\\|checkoutPath/u);
+  });
 });

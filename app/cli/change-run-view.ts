@@ -22,6 +22,16 @@ export function renderChangeProjection(projection: ChangeRunProjection): string[
   const currentTask = projection.tasks?.find(
     (task) => task.taskId === projection.taskProgress.currentTaskId,
   );
+  if (projection.build) {
+    const build = projection.build;
+    lines.push(
+      `Build action: ${build.action ?? '-'} (attempt ${build.actionAttempt})`,
+      `Build configuration: ${build.configurationId ?? '-'}; execution=${build.executionMode ?? '-'}; tdd=${build.tddMode ?? '-'}; isolation=${build.isolation}`,
+      `Build plan: ${build.planId ?? '-'}${build.planRevision === null ? '' : ` (revision ${build.planRevision})`}`,
+      `Build packages: ${build.completedPackages}/${build.totalPackages}${build.packageId ? ` (current ${build.packageId})` : ''}`,
+      `Build check: ${build.checkAccepted ? 'accepted' : 'pending'}`,
+    );
+  }
   if (currentTask) {
     lines.push(`Build scope: ${currentTask.title}`);
     if (currentTask.acceptanceCriteria.length > 0) {

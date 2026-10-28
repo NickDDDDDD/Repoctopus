@@ -5,8 +5,10 @@ import type { Context } from '@deepseek-ai/cordis';
 
 import type { SpecificationArtifactKind } from '../../domains/specification/types.js';
 import type {
+  DelegationReceipt,
   WorkExecutionHost,
   WorkExecutionPacket,
+  WorkExecutionResult,
   WorkExecutionSessionIdentity,
 } from '../../domains/work-execution/types.js';
 import type { CommandHandler } from '../../services/command-router.js';
@@ -35,8 +37,17 @@ export function installCapturingWorkExecutionHost(input: {
   context: Context;
   workspace: string;
   repositories: Readonly<Record<string, string>>;
+  capabilities?: readonly string[];
   operations(packet: WorkExecutionPacket): readonly CapturingHostOperation[];
   afterOperations?(packet: WorkExecutionPacket): Promise<void>;
+  result?(
+    packet: WorkExecutionPacket,
+    session: WorkExecutionSessionIdentity,
+  ): WorkExecutionResult | undefined;
+  delegationReceipts?(
+    packet: WorkExecutionPacket,
+    session: WorkExecutionSessionIdentity,
+  ): readonly DelegationReceipt[];
 }): { invocations: CapturedWorkInvocation[]; dispose(): void } {
   const invocations: CapturedWorkInvocation[] = [];
   const commandName = 'test.capturing-host.write';
@@ -85,6 +96,7 @@ export function installCapturingWorkExecutionHost(input: {
       version: '1.0.0-test',
       codeDigest,
       capabilities: [
+        'build.autonomous',
         'repository.read',
         'repository.write',
         'process.execute',
@@ -93,6 +105,7 @@ export function installCapturingWorkExecutionHost(input: {
         'specification.write',
         'git.publish',
         'platform.mutate',
+        ...(input.capabilities ?? []),
       ],
       actionKinds: ['agent'],
       reconcile: false,
@@ -118,6 +131,8 @@ export function installCapturingWorkExecutionHost(input: {
         });
       }
       await input.afterOperations?.(packet);
+      const result = input.result?.(packet, session);
+      const delegationReceipts = input.delegationReceipts?.(packet, session) ?? [];
       return {
         schemaVersion: 1,
         invocationId: session.invocationId,
@@ -128,6 +143,8 @@ export function installCapturingWorkExecutionHost(input: {
         consumedLayerDigests: packet.context.layers
           .filter((layer) => ['action-skill', 'augmentation-skill'].includes(layer.kind))
           .map((layer) => layer.digest),
+        ...(result ? { result } : {}),
+        ...(delegationReceipts.length > 0 ? { delegationReceipts } : {}),
         completedAt: new Date().toISOString(),
       };
     },

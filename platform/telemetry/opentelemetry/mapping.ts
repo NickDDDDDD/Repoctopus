@@ -39,6 +39,18 @@ const EXECUTION_DATA_KEYS = new Set([
   'recovery',
   'findingCount',
   'findingKind',
+  'buildAction',
+  'configurationId',
+  'planId',
+  'planRevision',
+  'packageId',
+  'executionMode',
+  'tddMode',
+  'reviewMode',
+  'isolation',
+  'executionId',
+  'delegationRole',
+  'findingClassification',
 ]);
 
 const SENSITIVE_KEY =
@@ -55,6 +67,7 @@ const EXECUTION_EVENTS = new Set<TrajectoryEvent['type']>([
   'work.context-delivered',
   'work.host-started',
   'work.host-completed',
+  'delegation.completed',
   'work.completed',
   'skill.resolved',
   'skill.delivered',
@@ -173,7 +186,10 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
         ![
           'repoctopus-open-change',
           'repoctopus-design-change',
-          'repoctopus-build-task',
+          'repoctopus-build-configure',
+          'repoctopus-build-plan',
+          'repoctopus-build-execute',
+          'repoctopus-build-check',
           'repoctopus-verify-change',
           'repoctopus-archive-change',
           'grilling',
@@ -195,6 +211,45 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
     attributes['repoctopus.action.receipt.id'] = actionReceiptId;
   }
   addEvidenceCorrelation(attributes, event);
+  if (event.type === 'change.lifecycle.transitioned') {
+    const observationKind = scalar(event.data.observationKind);
+    if (observationKind !== undefined) {
+      attributes['repoctopus.lifecycle.observation.kind'] = observationKind;
+    }
+    const observation = event.data.observation;
+    if (observation && typeof observation === 'object') {
+      const record = observation as Record<string, unknown>;
+      const configuration = record.configuration;
+      if (configuration && typeof configuration === 'object') {
+        const value = configuration as Record<string, unknown>;
+        for (const key of ['executionMode', 'tddMode', 'reviewMode', 'isolation'] as const) {
+          const safe = scalar(value[key]);
+          if (safe !== undefined) attributes[`repoctopus.build.${key}`] = safe;
+        }
+        if (typeof value.configurationId === 'string' && safeExecutionId(value.configurationId)) {
+          attributes['repoctopus.build.configuration.id'] = value.configurationId;
+        }
+      }
+      const plan = record.plan;
+      if (plan && typeof plan === 'object') {
+        const value = plan as Record<string, unknown>;
+        if (typeof value.planId === 'string' && safeExecutionId(value.planId)) {
+          attributes['repoctopus.build.plan.id'] = value.planId;
+        }
+        if (typeof value.revision === 'number' && Number.isSafeInteger(value.revision)) {
+          attributes['repoctopus.build.plan.revision'] = value.revision;
+        }
+      }
+      const invalidation = record.invalidation;
+      if (invalidation && typeof invalidation === 'object') {
+        const value = invalidation as Record<string, unknown>;
+        const classification = scalar(value.classification);
+        if (classification !== undefined) {
+          attributes['repoctopus.build.finding.classification'] = classification;
+        }
+      }
+    }
+  }
   return attributes;
 }
 
@@ -202,7 +257,10 @@ const BOUNDED_PHASES = new Set(['open', 'design', 'build', 'verify', 'archive'])
 const BOUNDED_WORK_KINDS = new Set([
   'change.intake',
   'specification.plan',
-  'task.implement',
+  'build.configure',
+  'build.plan',
+  'build.execute',
+  'build.check',
   'evidence.verify',
   'specification.close',
   'delivery.publish',
@@ -227,12 +285,35 @@ export function executionMetricAttributes(event: TrajectoryEvent): Attributes | 
     ['execute', 'ask', 'wait', 'reconcile', 'done'].includes(event.data.continuation)
       ? event.data.continuation
       : 'unknown';
+  const buildAction =
+    typeof event.data.buildAction === 'string' &&
+    ['configure', 'plan', 'execute', 'check'].includes(event.data.buildAction)
+      ? event.data.buildAction
+      : 'none';
+  const executionMode =
+    typeof event.data.executionMode === 'string' &&
+    ['autonomous', 'subagent-driven-development'].includes(event.data.executionMode)
+      ? event.data.executionMode
+      : 'none';
+  const tddMode =
+    typeof event.data.tddMode === 'string' && ['tdd', 'direct'].includes(event.data.tddMode)
+      ? event.data.tddMode
+      : 'none';
+  const isolation =
+    typeof event.data.isolation === 'string' &&
+    ['current', 'branch', 'worktree'].includes(event.data.isolation)
+      ? event.data.isolation
+      : 'none';
   return {
     'repoctopus.execution.event.type': event.type,
     'repoctopus.execution.phase': BOUNDED_PHASES.has(phase) ? phase : 'unknown',
     'repoctopus.execution.work.kind': BOUNDED_WORK_KINDS.has(workKind) ? workKind : 'custom',
     'repoctopus.execution.result': BOUNDED_RESULTS.has(result) ? result : 'unknown',
     'repoctopus.execution.continuation': continuation,
+    'repoctopus.build.action': buildAction,
+    'repoctopus.build.execution.mode': executionMode,
+    'repoctopus.build.tdd.mode': tddMode,
+    'repoctopus.build.isolation': isolation,
   };
 }
 

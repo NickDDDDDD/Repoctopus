@@ -51,6 +51,18 @@ Attempt、Receipt、Artifact、Bundle 和 Gate 先持久化。之后 Runtime 把
 | `repoctopus.evidence.*`                         | Evidence Attempt、Bundle、Gate 关联  |
 | `repoctopus.action.receipt.id`                  | Runtime Action Dispatcher Receipt    |
 
+Build 的每个已提交边界使用同一条 Trajectory 和 OTLP 管道。`work.*` 事件携带有界的 `buildAction`、execution mode、TDD mode、review mode 和 isolation；`change.lifecycle.transitioned` 携带 Configure approval、Plan revision、Plan Evidence、Check 和 invalidation 的稳定身份；`skill.resolved|delivered|consumed`、`validator.completed` 与 `delegation.completed` 保留父 Work、invocation 和 package 关联。Host 自述不会合成成功事件，事件只在本地 Run 提交后导出。
+
+Trace 和 Log 可以使用 run、Work、configuration、plan、package、invocation、Skill digest 与 delegation execution identity 进行单次运行重建。Metric 只使用以下有界枚举：
+
+- phase、event type、Work kind 和结果；
+- `configure|plan|execute|check` Build Action；
+- `autonomous|subagent-driven-development` execution mode；
+- `tdd|direct` TDD mode；
+- `current|branch|worktree` isolation。
+
+Metric 不使用 run、Task、package、repository、plan、digest、自由 Skill 名称或 Agent identity 作为 label。未知值统一降级为 `unknown`、`custom` 或 `none`，因此恶意或新插件输入不会产生无界时间序列。
+
 Archive 仍使用同一 Run 和相同字段；不创建独立 Post-merge Run，也不输出 `repoctopus.post_merge.*` 平行语义。Publication Receipt 被同一 Run 接受时上报完成；后续 consistency reconcile 只上报有界的检查结果、变化类别和审查状态，不回写历史 phase。
 
 Log 和 Span 可以携带这些高基数关联 ID。Metric 只使用工作流名、事件类型、动作结果、Evidence Adapter、状态等有界维度；它们不使用 Run、change、Attempt、Bundle、Delivery、Envelope 或 Receipt ID，避免时间序列数量随执行次数增长。

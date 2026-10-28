@@ -57,7 +57,7 @@ describe('Method Profile registry', () => {
     'rejects a user Skill named %s from every lifecycle Work binding',
     (name) => {
       const definition = structuredClone(BUILTIN_CHANGE_LIFECYCLE_DEFINITION);
-      definition.works.find((work) => work.kind === 'task.implement')!.actionSkill = {
+      definition.works.find((work) => work.kind === 'build.execute')!.actionSkill = {
         name,
       };
       expect(() => assertChangeLifecycleDefinition(definition)).toThrow(

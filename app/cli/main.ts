@@ -55,7 +55,7 @@ const PRODUCT_ROOT =
     ? path.resolve(DIST_DIR, '..')
     : path.resolve(DIST_DIR, '..', '..');
 const USAGE =
-  'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decide|record|resume|work-claim|work-outcome|work-reconcile|work-validate|archive-prepare|archive-publish> | change reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | approval review | browser <doctor|install> | doctor';
+  'Usage: repoctopus project <probe|detect|prepare|review> | skill <list|get|project> | spec <inspect|validate|approval prepare|approval status|approval review> | evidence <plan|run|status|resume|inspect|clean> | run <start|status|next|verify|decide|record|resume|work-claim|work-outcome|work-reconcile|archive-prepare|archive-publish> | change reconcile | delivery <checkpoint|prepare|status|publish|resume|refresh|migration-plan> | approval review | browser <doctor|install> | doctor';
 const CLI_VERSION = '0.1.0';
 const COMMANDS = new Set([
   'project detect',
@@ -84,7 +84,6 @@ const COMMANDS = new Set([
   'run work-claim',
   'run work-outcome',
   'run work-reconcile',
-  'run work-validate',
   'run decide',
   'run record',
   'run resume',
@@ -897,6 +896,7 @@ async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
           projectSnapshot: ProjectSnapshot;
           projectConfigDigest: `sha256:${string}`;
           verificationProfileId: string;
+          executionCheckouts: Array<{ repositoryId: string; checkoutPath: string }>;
         },
         RuntimeResult<RunStatusView>
       >('run.change.start', {
@@ -909,6 +909,10 @@ async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
         projectSnapshot,
         projectConfigDigest: qualifiedSha256(config.effectiveDigest, 'Project configuration'),
         verificationProfileId: stringFlag(parsed, 'profile', { fallback: 'verify' })!,
+        executionCheckouts: projectSnapshot.repositories.map((repository) => ({
+          repositoryId: repository.id,
+          checkoutPath: repository.path,
+        })),
       });
       return successEnvelope({
         command: 'run start',
@@ -1183,21 +1187,6 @@ async function runWorkReconcile(parsed: ParsedArguments): Promise<CliEnvelope<un
   }
 }
 
-async function runWorkValidate(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
-  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
-  const runId = stringFlag(parsed, 'run', { required: true })!;
-  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
-  try {
-    const result = await app.context.commandRouter.execute('run.work.validate', {
-      runId,
-      receiptId: stringFlag(parsed, 'receipt', { required: true })!,
-    });
-    return successEnvelope({ command: 'run work-validate', runId, result });
-  } finally {
-    await app.close();
-  }
-}
-
 async function runDecide(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   if (!process.stdin.isTTY || !process.stdout.isTTY) {
     throw new Error('Human approval requires an interactive terminal or a trusted IDE Adapter');
@@ -1221,24 +1210,35 @@ async function runDecide(parsed: ParsedArguments): Promise<CliEnvelope<unknown>>
     }
     if (
       lifecycle.phase === 'build' &&
-      (lifecycle.waitCondition.waitId.startsWith('build-adoption:') ||
-        lifecycle.waitCondition.waitId.startsWith('build-design:'))
+      (lifecycle.waitCondition.waitId.startsWith('build-design:') ||
+        lifecycle.waitCondition.waitId.startsWith('build-configuration:') ||
+        lifecycle.waitCondition.waitId.startsWith('build-plan:'))
     ) {
-      const adoption = lifecycle.waitCondition.waitId.startsWith('build-adoption:');
+      const configuration = lifecycle.waitCondition.waitId.startsWith('build-configuration:');
+      const plan = lifecycle.waitCondition.waitId.startsWith('build-plan:');
       const selected = await reviewLifecycleDecision({
-        title: adoption
-          ? `Adopt existing completion claims: ${lifecycle.identity.changeId}`
-          : `Return Build to Design: ${lifecycle.identity.changeId}`,
+        title: configuration
+          ? `Approve Build Configuration: ${lifecycle.identity.changeId}`
+          : plan
+            ? `Approve Build Plan: ${lifecycle.identity.changeId}`
+            : `Return Build to Design: ${lifecycle.identity.changeId}`,
         proposalHash: lifecycle.waitCondition.proposalDigest,
-        details: adoption
+        details: configuration
           ? [
-              `Tasks: ${lifecycle.tasks?.filter((task) => task.completion?.source === 'imported-claim').length ?? 0}`,
-              'Approval imports only Build completion claims; Verify and Archive still run normally.',
+              `Execution: ${lifecycle.buildProtocol?.configurationProposal?.executionMode ?? '-'}`,
+              `TDD: ${lifecycle.buildProtocol?.configurationProposal?.tddMode ?? '-'}`,
+              `Review: ${lifecycle.buildProtocol?.configurationProposal?.reviewMode ?? '-'}`,
+              `Isolation: ${lifecycle.buildProtocol?.configurationProposal?.isolation ?? '-'}`,
             ]
-          : [
-              lifecycle.waitCondition.reason,
-              'Approval invalidates the old Design approval and Work.',
-            ],
+          : plan
+            ? [
+                lifecycle.waitCondition.reason,
+                `Plan revision: ${lifecycle.buildProtocol?.plan?.revision ?? '-'}`,
+              ]
+            : [
+                lifecycle.waitCondition.reason,
+                'Approval invalidates the old Design approval and Work.',
+              ],
         input: process.stdin,
         output: process.stdout,
       });
@@ -1287,6 +1287,7 @@ async function runDecide(parsed: ParsedArguments): Promise<CliEnvelope<unknown>>
       request: approval.decisionRequest,
       input: process.stdin,
       output: process.stdout,
+      selectIsolation: lifecycle.phase === 'open',
     });
     const result = await app.context.commandRouter.execute<unknown, SpecificationApprovalState>(
       'run.change.decide',
@@ -1305,6 +1306,7 @@ async function runDecide(parsed: ParsedArguments): Promise<CliEnvelope<unknown>>
           source: 'cli',
           authenticated: true,
         },
+        ...(selected.isolation ? { isolation: selected.isolation } : {}),
       },
     );
     return successEnvelope({
@@ -1492,7 +1494,6 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   if (command === 'run work-claim') return runWorkClaim(parsed);
   if (command === 'run work-outcome') return runWorkOutcome(parsed);
   if (command === 'run work-reconcile') return runWorkReconcile(parsed);
-  if (command === 'run work-validate') return runWorkValidate(parsed);
   if (command === 'run decide') return runDecide(parsed);
   if (command === 'run record') return runRecord(parsed);
   if (command === 'run resume') return runResume(parsed);

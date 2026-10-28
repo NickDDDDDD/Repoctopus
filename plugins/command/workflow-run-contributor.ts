@@ -8,7 +8,6 @@ import type { WorkflowPackage } from '../../domains/workflow-contract/types.js';
 import type {
   DecideChangeRunInput,
   StartChangeRunInput,
-  ValidateBuildTaskInput,
   VerifyChangeRunInput,
   PrepareArchiveDeliveryInput,
   ExecuteArchiveDeliveryInput,
@@ -47,11 +46,6 @@ const plugin = ((context: Context) => {
         name: 'run.work.reconcile',
         execute: ({ input }) =>
           context.managedWorkExecutor.reconcile((input as { runId: string }).runId),
-      }),
-      context.commandRouter.register({
-        name: 'run.work.validate',
-        execute: ({ input, signal }) =>
-          context.workflowRuns.validateBuildTask(input as ValidateBuildTaskInput, signal),
       }),
       context.commandRouter.register({
         name: 'run.work.verify',

@@ -23,6 +23,7 @@ import projectOnboardingContributor from './command/project-onboarding-contribut
 import maintenanceContributor from './command/maintenance-contributor.js';
 import { FileDeliveryProvider } from './delivery/file-delivery-provider.js';
 import { GitProjectProvider } from './project/git-project-provider.js';
+import { GitExecutionWorkspaceProvider } from './project/git-execution-workspace-provider.js';
 import { FileRunStoreProvider } from './run/file-run-store-provider.js';
 import { FileWorkflowSourceProvider } from './run/file-workflow-source-provider.js';
 import { WorkflowTelemetryProvider } from './run/workflow-telemetry-provider.js';
@@ -286,7 +287,10 @@ const definitions: readonly BuiltinDefinition[] = [
       'plugins/skill/lifecycle-skill-provider.ts',
       'skills/lifecycle/repoctopus-open-change/SKILL.md',
       'skills/lifecycle/repoctopus-design-change/SKILL.md',
-      'skills/lifecycle/repoctopus-build-task/SKILL.md',
+      'skills/lifecycle/repoctopus-build-configure/SKILL.md',
+      'skills/lifecycle/repoctopus-build-plan/SKILL.md',
+      'skills/lifecycle/repoctopus-build-execute/SKILL.md',
+      'skills/lifecycle/repoctopus-build-check/SKILL.md',
       'skills/lifecycle/repoctopus-verify-change/SKILL.md',
       'skills/lifecycle/repoctopus-archive-change/SKILL.md',
     ],
@@ -424,6 +428,26 @@ const definitions: readonly BuiltinDefinition[] = [
       'platform/git/change-branch.ts',
       'platform/git/remote-identity.ts',
       'platform/git/probe.ts',
+    ],
+  },
+  {
+    descriptor: {
+      id: 'execution-workspace-git',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['execution-workspace-binding'],
+      permissions: ['filesystem', 'process'],
+      stateSchemas: {},
+    },
+    plugin: GitExecutionWorkspaceProvider,
+    sourceFiles: [
+      'services/execution-workspace.ts',
+      'plugins/project/git-execution-workspace-provider.ts',
+      'platform/git/execution-workspace.ts',
     ],
   },
   {
@@ -675,6 +699,8 @@ const definitions: readonly BuiltinDefinition[] = [
     plugin: builtinLifecycleDefinition,
     sourceFiles: [
       'domains/change-lifecycle/definition.ts',
+      'domains/change-lifecycle/build-protocol.ts',
+      'domains/change-lifecycle/build-work.ts',
       'plugins/lifecycle/builtin-definition-contributor.ts',
     ],
   },
@@ -1003,7 +1029,6 @@ const definitions: readonly BuiltinDefinition[] = [
       'domains/runtime/workflow-runs.ts',
       'domains/runtime/evidence-guard.ts',
       'domains/change-lifecycle/definition.ts',
-      'domains/change-lifecycle/build-validator.ts',
       'domains/change-lifecycle/host-workflow.ts',
       'domains/change-lifecycle/transition.ts',
       'domains/change-lifecycle/archive-input.ts',
