@@ -47,9 +47,26 @@ const policy: DeliveryPolicy = {
 };
 
 describe('managed Change execution production composition', () => {
-  it.each(['autonomous', 'subagent-driven-development'] as const)(
-    'executes fresh Open -> Design -> Build -> Verify -> Archive in %s mode',
-    async (executionMode) => {
+  it.each([
+    {
+      label: 'autonomous mode with one business repository',
+      executionMode: 'autonomous' as const,
+      multiRepository: false,
+    },
+    {
+      label: 'autonomous mode with two business repositories',
+      executionMode: 'autonomous' as const,
+      multiRepository: true,
+    },
+    {
+      label: 'subagent-driven-development mode with two business repositories',
+      executionMode: 'subagent-driven-development' as const,
+      multiRepository: true,
+    },
+  ])('executes fresh Open -> Design -> Build -> Verify -> Archive in $label', async ({
+    executionMode,
+    multiRepository,
+  }) => {
     const root = await temporaryDirectory('repoctopus-managed-change-');
     cleanup.push(root);
     const workspaceRemote = path.join(root, 'workspace.git');
@@ -102,7 +119,7 @@ describe('managed Change execution production composition', () => {
         repositories: [
           { id: 'workspace', path: '.' },
           { id: 'app', path: '../app' },
-          { id: 'worker', path: '../worker' },
+          ...(multiRepository ? [{ id: 'worker', path: '../worker' }] : []),
         ],
         profiles: [
           {
@@ -116,14 +133,18 @@ describe('managed Change execution production composition', () => {
                 executable: process.execPath,
                 args: ['-e', 'process.exit(0)'],
               },
-              {
-                id: 'worker-check',
-                type: 'command',
-                repository: 'worker',
-                covers: ['*'],
-                executable: process.execPath,
-                args: ['-e', 'process.exit(0)'],
-              },
+              ...(multiRepository
+                ? [
+                    {
+                      id: 'worker-check',
+                      type: 'command',
+                      repository: 'worker',
+                      covers: ['*'],
+                      executable: process.execPath,
+                      args: ['-e', 'process.exit(0)'],
+                    },
+                  ]
+                : []),
             ],
           },
         ],
@@ -256,7 +277,7 @@ describe('managed Change execution production composition', () => {
               schemaVersion: 1,
               kind: 'build-plan-candidate',
               packages: inputs.tasks.map((task, index) => {
-                const repositoryId = index === 0 ? 'app' : 'worker';
+                const repositoryId = multiRepository && index > 0 ? 'worker' : 'app';
                 return {
                 packageKey: task.taskId,
                 taskIds: [task.taskId],
@@ -478,33 +499,39 @@ describe('managed Change execution production composition', () => {
         build: { action: 'plan' },
       });
       await next();
-      const planApprovalWait = await next();
-      expect(planApprovalWait.value.changeLifecycle).toMatchObject({
-        phase: 'build',
-        status: 'waiting',
-        currentWork: null,
-        waitCondition: { kind: 'human-decision' },
-        build: { action: 'plan-evidence', planRevision: 1 },
-      });
-      const planDecision = planApprovalWait.value.changeLifecycle!.waitCondition!;
-      if (planDecision.kind !== 'human-decision') {
-        throw new Error('missing high-risk Build Plan decision');
+      const afterPlanValidation = await next();
+      let afterPlan: RunStatusView;
+      if (multiRepository) {
+        expect(afterPlanValidation.value.changeLifecycle).toMatchObject({
+          phase: 'build',
+          status: 'waiting',
+          currentWork: null,
+          waitCondition: { kind: 'human-decision' },
+          build: { action: 'plan-evidence', planRevision: 1 },
+        });
+        const planDecision = afterPlanValidation.value.changeLifecycle!.waitCondition!;
+        if (planDecision.kind !== 'human-decision') {
+          throw new Error('missing high-risk Build Plan decision');
+        }
+        await restartApplication();
+        afterPlan = await application.context.commandRouter.execute<
+          Parameters<typeof application.context.workflowRuns.decideChange>[0],
+          RunStatusView
+        >('run.change.decide', {
+          runId,
+          response: {
+            apiVersion: 'repoctopus/v1alpha1',
+            kind: 'HumanDecisionResponse',
+            requestId: planDecision.requestId,
+            proposalHash: planDecision.proposalDigest,
+            decision: 'approve',
+          },
+          actor: { actorId: 'managed-test-user', source: 'cli', authenticated: true },
+        });
+      } else {
+        afterPlan = afterPlanValidation.value;
+        await restartApplication();
       }
-      await restartApplication();
-      const afterPlan = await application.context.commandRouter.execute<
-        Parameters<typeof application.context.workflowRuns.decideChange>[0],
-        RunStatusView
-      >('run.change.decide', {
-        runId,
-        response: {
-          apiVersion: 'repoctopus/v1alpha1',
-          kind: 'HumanDecisionResponse',
-          requestId: planDecision.requestId,
-          proposalHash: planDecision.proposalDigest,
-          decision: 'approve',
-        },
-        actor: { actorId: 'managed-test-user', source: 'cli', authenticated: true },
-      });
       expect(afterPlan.changeLifecycle).toMatchObject({
         phase: 'build',
         currentWork: { kind: 'build.execute' },
@@ -541,11 +568,13 @@ describe('managed Change execution production composition', () => {
         cwd: appRepository,
       });
       await execFileAsync('git', ['push'], { cwd: appRepository });
-      await execFileAsync('git', ['add', 'src'], { cwd: workerRepository });
-      await execFileAsync('git', ['commit', '-m', 'feat: add managed worker output'], {
-        cwd: workerRepository,
-      });
-      await execFileAsync('git', ['push'], { cwd: workerRepository });
+      if (multiRepository) {
+        await execFileAsync('git', ['add', 'src'], { cwd: workerRepository });
+        await execFileAsync('git', ['commit', '-m', 'feat: add managed worker output'], {
+          cwd: workerRepository,
+        });
+        await execFileAsync('git', ['push'], { cwd: workerRepository });
+      }
       await next();
       expect((await next()).value.changeLifecycle).toMatchObject({
         phase: 'verify',
@@ -633,11 +662,13 @@ describe('managed Change execution production composition', () => {
         ['remote', 'set-url', 'origin', 'https://github.com/example/app.git'],
         { cwd: appRepository },
       );
-      await execFileAsync(
-        'git',
-        ['remote', 'set-url', 'origin', 'https://github.com/example/worker.git'],
-        { cwd: workerRepository },
-      );
+      if (multiRepository) {
+        await execFileAsync(
+          'git',
+          ['remote', 'set-url', 'origin', 'https://github.com/example/worker.git'],
+          { cwd: workerRepository },
+        );
+      }
 
       const project = await application.context.project.snapshot({
         workspaceId: 'managed-blackbox',
@@ -646,7 +677,7 @@ describe('managed Change execution production composition', () => {
         repositories: [
           { id: 'workspace', path: workspace },
           { id: 'app', path: appRepository },
-          { id: 'worker', path: workerRepository },
+          ...(multiRepository ? [{ id: 'worker', path: workerRepository }] : []),
         ],
       });
       const changeRemoteOid = (
@@ -673,19 +704,28 @@ describe('managed Change execution production composition', () => {
             commitMessage: 'feat: add managed outputs',
             actions: ['push', 'merge_request'],
           },
-          {
-            deliveryId: 'worker',
-            repositoryId: 'worker',
-            sourceBranch: 'feature/managed-blackbox',
-            targetBranch: 'main',
-            commitMessage: 'feat: add managed worker output',
-            actions: ['push', 'merge_request'],
-          },
+          ...(multiRepository
+            ? [
+                {
+                  deliveryId: 'worker',
+                  repositoryId: 'worker',
+                  sourceBranch: 'feature/managed-blackbox',
+                  targetBranch: 'main',
+                  commitMessage: 'feat: add managed worker output',
+                  actions: ['push', 'merge_request'] as Array<'push' | 'merge_request'>,
+                },
+              ]
+            : []),
         ],
-        businessSplitReason: {
-          kind: 'multi_repository',
-          summary: 'The managed Change intentionally spans the app and worker repositories.',
-        },
+        ...(multiRepository
+          ? {
+              businessSplitReason: {
+                kind: 'multi_repository' as const,
+                summary:
+                  'The managed Change intentionally spans the app and worker repositories.',
+              },
+            }
+          : {}),
       };
       vi.spyOn(application.context.delivery, 'validateArchiveIntent').mockResolvedValue();
       await application.context.commandRouter.execute('run.archive.prepare', {
@@ -727,7 +767,7 @@ describe('managed Change execution production composition', () => {
       )!;
       const workerBusinessRepository = project.repositories.find(
         (repository) => repository.id === 'worker',
-      )!;
+      );
       vi.spyOn(application.context.delivery, 'publishArchive').mockResolvedValue({
         snapshot: { digest: `sha256:${'d'.repeat(64)}` } as never,
         receipts: [
@@ -753,28 +793,32 @@ describe('managed Change execution production composition', () => {
             },
             provenance: 'runtime-created',
           },
-          {
-            actionId: 'push-worker',
-            deliveryId: 'worker',
-            type: 'git.push',
-            status: 'succeeded',
-            recovered: false,
-            remoteOid: 'c'.repeat(40),
-          },
-          {
-            actionId: 'mr-worker',
-            deliveryId: 'worker',
-            type: 'mr.create_or_update',
-            status: 'succeeded',
-            recovered: false,
-            mergeRequest: {
-              provider: 'github',
-              repositoryId: 'worker',
-              number: 103,
-              url: 'https://github.com/example/worker/pull/103',
-            },
-            provenance: 'runtime-created',
-          },
+          ...(multiRepository
+            ? [
+                {
+                  actionId: 'push-worker',
+                  deliveryId: 'worker',
+                  type: 'git.push' as const,
+                  status: 'succeeded' as const,
+                  recovered: false,
+                  remoteOid: 'c'.repeat(40),
+                },
+                {
+                  actionId: 'mr-worker',
+                  deliveryId: 'worker',
+                  type: 'mr.create_or_update' as const,
+                  status: 'succeeded' as const,
+                  recovered: false,
+                  mergeRequest: {
+                    provider: 'github' as const,
+                    repositoryId: 'worker',
+                    number: 103,
+                    url: 'https://github.com/example/worker/pull/103',
+                  },
+                  provenance: 'runtime-created' as const,
+                },
+              ]
+            : []),
         ],
       });
       vi.spyOn(application.context.delivery, 'publishSpecification').mockResolvedValue({
@@ -801,7 +845,7 @@ describe('managed Change execution production composition', () => {
         },
       });
       expect(businessRepository.remoteIdentity).toBeTruthy();
-      expect(workerBusinessRepository.remoteIdentity).toBeTruthy();
+      if (multiRepository) expect(workerBusinessRepository?.remoteIdentity).toBeTruthy();
       await next();
       const published = await application.context.commandRouter.execute<
         Parameters<typeof application.context.workflowRuns.executeArchiveDelivery>[0],

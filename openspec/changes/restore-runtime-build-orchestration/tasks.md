@@ -171,7 +171,7 @@
 
 ## 8. 集成验收与自举证明
 
-- [ ] 8.1 用打包 Runtime 在临时单仓 Workspace 执行完整 Open→Design→Build→Verify→Archive，并在每个 Build Action 后重启。
+- [x] 8.1 用打包 Runtime 在临时单仓 Workspace 执行完整 Open→Design→Build→Verify→Archive，并在每个 Build Action 后重启。
       **Blocked by:** 7.4
       **Acceptance:** 全程一个 runId，两个规划批准、配置批准、计划 Evidence、Check 与 Archive 可从 Trajectory 核对
       **Requirements:** change-lifecycle#build-使用固定的受管内部协议
