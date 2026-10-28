@@ -37,7 +37,10 @@ import {
 import { failureEnvelope, successEnvelope, type CliEnvelope } from './envelope.js';
 import type { EvidenceCoordinator } from '../../services/evidence-coordinator.js';
 import type { BrowserMaintenance } from '../../services/browser-maintenance.js';
-import type { WorkExecutionResult } from '../../domains/work-execution/types.js';
+import type {
+  WorkExecutionFinding,
+  WorkExecutionResult,
+} from '../../domains/work-execution/types.js';
 import { bootBootstrapComposition, bootProjectComposition } from '../boot/bootstrap.js';
 import { reviewHumanDecision } from './human-decision.js';
 import { reviewProjectConfigurationDecision } from './project-configuration-decision.js';
@@ -136,6 +139,7 @@ const CLI_FLAGS = new Set([
   'consumed-layers',
   'host-capabilities',
   'result-file',
+  'findings-file',
   'candidate',
   'branch',
   'draft',
@@ -1162,6 +1166,12 @@ async function runWorkOutcome(parsed: ParsedArguments): Promise<CliEnvelope<unkn
   const structuredResult = resultFile
     ? (JSON.parse(await readFile(path.resolve(resultFile), 'utf8')) as WorkExecutionResult)
     : undefined;
+  const findingsFile = stringFlag(parsed, 'findings-file');
+  const findings = findingsFile
+    ? (JSON.parse(
+        await readFile(path.resolve(findingsFile), 'utf8'),
+      ) as readonly WorkExecutionFinding[])
+    : undefined;
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
     const result = await app.context.commandRouter.execute('run.work.outcome', {
@@ -1181,6 +1191,7 @@ async function runWorkOutcome(parsed: ParsedArguments): Promise<CliEnvelope<unkn
         .filter(Boolean)
         .map((value) => qualifiedSha256(value, 'Consumed layer digest')),
       ...(structuredResult ? { result: structuredResult } : {}),
+      ...(findings ? { findings } : {}),
     });
     return successEnvelope({ command: 'run work-outcome', runId, result });
   } finally {
