@@ -76,7 +76,7 @@
       **Blocked by:** 3.3
       **Acceptance:** 部分包成功、重复 completion、跨 revision completion、已勾选 Task 的后续返工包和全部满足测试通过；Verify 返工不取消 checkbox
       **Requirements:** specification-authority#openspec-tasks-与-runtime-buildplan-分层而不平行
-- [ ] 3.6 增加真实多仓纵切，验证 Workspace Store、两个业务仓、隔离 binding 与包依赖在进程重启后保持一致。
+- [x] 3.6 增加真实多仓纵切，验证 Workspace Store、两个业务仓、隔离 binding 与包依赖在进程重启后保持一致。
       **Blocked by:** 3.4, 3.5
       **Acceptance:** 打包 Runtime 在临时多仓 Workspace 完成 Build 协议，越仓写入和拓扑漂移 fail closed
       **Requirements:** managed-work-execution#runtime-buildplan-是-openspec-tasks-的执行投影
@@ -126,7 +126,7 @@
       **Blocked by:** 5.3
       **Acceptance:** production source 负向扫描和反作弊测试均无特殊 repair 生命周期，旧 fixture 仅保留为历史输入
       **Requirements:** managed-work-execution#验证失败必须修订-build-plan-并创建普通-work
-- [ ] 5.5 完成 Build Check 失败、Verify→Build、Verify→Design、基础设施 retry 与未知副作用 reconcile 的完整旅程测试。
+- [x] 5.5 完成 Build Check 失败、Verify→Build、Verify→Design、基础设施 retry 与未知副作用 reconcile 的完整旅程测试。
       **Blocked by:** 5.4
       **Acceptance:** 所有旅程保持同一 runId、epoch 单调、Runtime 选择下一 Action且不重开 Task
       **Requirements:** change-lifecycle#verify-失败通过-build-plan-revision-返工
@@ -137,7 +137,7 @@
       **Blocked by:** 5.5
       **Acceptance:** schema round-trip、CAS、损坏、未知字段和内容缺失测试通过
       **Requirements:** change-lifecycle#build-使用固定的受管内部协议
-- [ ] 6.2 为 Configure、Plan、Evidence、Execute、Check 的每个提交边界增加 crash/restart 参数化测试和 Host reconciliation。
+- [x] 6.2 为 Configure、Plan、Evidence、Execute、Check 的每个提交边界增加 crash/restart 参数化测试和 Host reconciliation。
       **Blocked by:** 6.1
       **Acceptance:** 在任一边界终止进程后只恢复同一逻辑 attempt，不重复已确认副作用或跳 Action
       **Requirements:** managed-work-execution#plan-evidence-在执行前证明计划可行
@@ -175,7 +175,7 @@
       **Blocked by:** 7.4
       **Acceptance:** 全程一个 runId，两个规划批准、配置批准、计划 Evidence、Check 与 Archive 可从 Trajectory 核对
       **Requirements:** change-lifecycle#build-使用固定的受管内部协议
-- [ ] 8.2 在多仓 Workspace 分别执行 autonomous 与 subagent-driven-development，注入 topology/isolation/capability 漂移和子调用响应丢失。
+- [x] 8.2 在多仓 Workspace 分别执行 autonomous 与 subagent-driven-development，注入 topology/isolation/capability 漂移和子调用响应丢失。
       **Blocked by:** 8.1
       **Acceptance:** 正常路径完成，漂移 fail closed，委派 reconcile 不重复写入且没有并行 currentWork
       **Requirements:** managed-work-execution#work-descriptor-只能由已接受计划派生

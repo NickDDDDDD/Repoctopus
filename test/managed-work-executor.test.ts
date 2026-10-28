@@ -63,7 +63,11 @@ function frozenPacket(): WorkExecutionPacket {
   return packet;
 }
 
-function executor(resultOverride?: Record<string, unknown>) {
+function executor(
+  resultOverride?: Record<string, unknown>,
+  delegationReceiptsOverride?: WorkExecutionHostOutcome['delegationReceipts'],
+  invokeError?: Error,
+) {
   const packet = frozenPacket();
   const intent = {
     runId: 'run-1',
@@ -89,8 +93,9 @@ function executor(resultOverride?: Record<string, unknown>) {
       reconcile: true,
     },
     preflight: vi.fn().mockResolvedValue({ accepted: true }),
-    invoke: vi.fn((_packet: WorkExecutionPacket, session: WorkExecutionSessionIdentity) =>
-      Promise.resolve({
+    invoke: vi.fn((_packet: WorkExecutionPacket, session: WorkExecutionSessionIdentity) => {
+      if (invokeError) return Promise.reject(invokeError);
+      return Promise.resolve({
       schemaVersion: 1 as const,
       invocationId: session.invocationId,
       hostId: 'coordinator-1',
@@ -112,7 +117,7 @@ function executor(resultOverride?: Record<string, unknown>) {
           repositoryDigest: digest('5'),
           implementationDigest: digest('6'),
         }) as WorkExecutionResult,
-      delegationReceipts: [
+      delegationReceipts: delegationReceiptsOverride ?? [
         {
           schemaVersion: 1 as const,
           receiptId: 'receipt-1',
@@ -126,8 +131,8 @@ function executor(resultOverride?: Record<string, unknown>) {
         },
       ],
       completedAt: '2026-10-28T00:00:00.000Z',
-      } satisfies WorkExecutionHostOutcome),
-    ),
+      } satisfies WorkExecutionHostOutcome);
+    }),
   };
   const service = Object.create(ManagedWorkExecutor.prototype) as ManagedWorkExecutor;
   Object.defineProperty(service, 'ctx', {
@@ -184,5 +189,25 @@ describe('Managed Work Executor Build contract', () => {
     });
     await expect(service.execute({} as never)).rejects.toThrow(/managed Build result schema/u);
     expect(authority.markHostCompleted).not.toHaveBeenCalled();
+  });
+
+  it('fails closed when a subagent response is lost before an attested receipt exists', async () => {
+    const missingReceipt = executor(undefined, []);
+    await expect(missingReceipt.service.execute({} as never)).rejects.toThrow(
+      /bounded delegation receipts/u,
+    );
+    expect(missingReceipt.authority.markHostCompleted).not.toHaveBeenCalled();
+
+    const lostResponse = executor(
+      undefined,
+      undefined,
+      new Error('subagent response lost after dispatch'),
+    );
+    await expect(lostResponse.service.execute({} as never)).rejects.toThrow(/response lost/u);
+    expect(lostResponse.authority.markHostUnknown).toHaveBeenCalledWith(
+      expect.anything(),
+      'subagent response lost after dispatch',
+    );
+    expect(lostResponse.authority.markHostCompleted).not.toHaveBeenCalled();
   });
 });

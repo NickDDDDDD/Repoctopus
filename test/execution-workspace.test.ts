@@ -130,6 +130,66 @@ describe('Execution Workspace binding', () => {
     ).rejects.toThrow(/ownership facts/u);
   });
 
+  it('freezes the complete multi-repository topology across restart inspection', async () => {
+    const multiRepositoryProject: ProjectSnapshot = {
+      ...project(),
+      repositories: [
+        project().repositories[0]!,
+        {
+          ...project().repositories[0]!,
+          id: 'worker',
+          name: 'worker',
+          path: 'C:\\worker',
+          remoteIdentity: 'github.com/team/worker',
+        },
+      ],
+    };
+    const intent = createExecutionWorkspaceIntent({
+      workspaceId: 'team',
+      changeId: 'multi-repository-change',
+      isolation: 'current',
+    });
+    const checkouts = [
+      { repositoryId: 'workspace', checkoutPath: 'C:\\workspace' },
+      { repositoryId: 'worker', checkoutPath: 'C:\\worker' },
+    ];
+    const inspect = (checkoutPath: string) =>
+      Promise.resolve(
+        checkoutPath.endsWith('worker')
+          ? facts({
+              checkoutPath,
+              remoteIdentity: 'github.com/team/worker',
+              gitDirectory: 'C:\\worker\\.git',
+              commonDirectory: 'C:\\worker\\.git',
+            })
+          : facts({ checkoutPath }),
+      );
+
+    const first = await bindExecutionWorkspace(
+      { intent, project: multiRepositoryProject, checkouts },
+      inspect,
+    );
+    const afterRestart = await bindExecutionWorkspace(
+      { intent, project: multiRepositoryProject, checkouts: [...checkouts].reverse() },
+      inspect,
+    );
+    expect(afterRestart.semanticDigest).toBe(first.semanticDigest);
+    expect(afterRestart.localDigest).toBe(first.localDigest);
+
+    await expect(
+      bindExecutionWorkspace(
+        { intent, project: multiRepositoryProject, checkouts: checkouts.slice(0, 1) },
+        inspect,
+      ),
+    ).rejects.toThrow(/topology/u);
+    await expect(
+      bindExecutionWorkspace(
+        { intent, project: multiRepositoryProject, checkouts },
+        (checkoutPath) => inspect(checkoutPath).then((entry) => ({ ...entry, worktreeId: 'wt' })),
+      ),
+    ).rejects.toThrow(/current isolation/iu);
+  });
+
   it('binds the isolation choice to the current Open Human Decision', () => {
     const initial = createChangeLifecycleSnapshot({
       identity: { workspaceId: 'team', changeId: 'change', runId: 'run-1' },
