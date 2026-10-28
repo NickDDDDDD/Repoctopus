@@ -950,7 +950,7 @@ export function evolveChangeLifecycle(options: {
     if (
       current.phase !== 'build' ||
       current.status !== 'running' ||
-      current.currentWork?.kind !== 'build.configure' ||
+      (current.currentWork !== null && current.currentWork.kind !== 'build.configure') ||
       !current.buildProtocol ||
       current.buildProtocol.currentAction !== 'configure'
     ) {
