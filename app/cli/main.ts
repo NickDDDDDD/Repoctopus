@@ -37,6 +37,7 @@ import {
 import { failureEnvelope, successEnvelope, type CliEnvelope } from './envelope.js';
 import type { EvidenceCoordinator } from '../../services/evidence-coordinator.js';
 import type { BrowserMaintenance } from '../../services/browser-maintenance.js';
+import type { WorkExecutionResult } from '../../domains/work-execution/types.js';
 import { bootBootstrapComposition, bootProjectComposition } from '../boot/bootstrap.js';
 import { reviewHumanDecision } from './human-decision.js';
 import { reviewProjectConfigurationDecision } from './project-configuration-decision.js';
@@ -1124,12 +1125,17 @@ async function runWorkClaim(parsed: ParsedArguments): Promise<CliEnvelope<unknow
   const runId = stringFlag(parsed, 'run', { required: true })!;
   const adapter = stringFlag(parsed, 'adapter', { fallback: 'process' })!;
   const attempt = integerFlag(parsed, 'attempt', { fallback: 1, minimum: 1 })!;
+  const hostCapabilities = stringFlag(parsed, 'host-capabilities')
+    ?.split(',')
+    .map((capability) => capability.trim())
+    .filter(Boolean);
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
     const result = await app.context.commandRouter.execute('run.work.claim', {
       runId,
       adapter,
       attempt,
+      ...(hostCapabilities?.length ? { hostCapabilities } : {}),
       executor: {
         actorId: userInfo().username,
         runnerId: stringFlag(parsed, 'runner', { fallback: `cli:${process.pid}` })!,
@@ -1150,6 +1156,10 @@ async function runWorkOutcome(parsed: ParsedArguments): Promise<CliEnvelope<unkn
   if (status !== 'succeeded' && status !== 'failed' && status !== 'unknown') {
     throw new Error('--status must be succeeded, failed, or unknown');
   }
+  const resultFile = stringFlag(parsed, 'result-file');
+  const structuredResult = resultFile
+    ? (JSON.parse(await readFile(path.resolve(resultFile), 'utf8')) as WorkExecutionResult)
+    : undefined;
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
     const result = await app.context.commandRouter.execute('run.work.outcome', {
@@ -1168,6 +1178,7 @@ async function runWorkOutcome(parsed: ParsedArguments): Promise<CliEnvelope<unkn
         .map((value) => value.trim())
         .filter(Boolean)
         .map((value) => qualifiedSha256(value, 'Consumed layer digest')),
+      ...(structuredResult ? { result: structuredResult } : {}),
     });
     return successEnvelope({ command: 'run work-outcome', runId, result });
   } finally {

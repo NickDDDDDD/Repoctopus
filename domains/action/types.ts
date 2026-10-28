@@ -79,6 +79,7 @@ export interface WorkClaimRequest {
   runId: string;
   adapter: string;
   attempt?: number;
+  hostCapabilities?: readonly string[];
   executor: WorkExecutorIdentity;
 }
 

@@ -96,13 +96,13 @@ function executor(
     invoke: vi.fn((_packet: WorkExecutionPacket, session: WorkExecutionSessionIdentity) => {
       if (invokeError) return Promise.reject(invokeError);
       return Promise.resolve({
-      schemaVersion: 1 as const,
-      invocationId: session.invocationId,
-      hostId: 'coordinator-1',
-      packetDigest: packet.identity.packetDigest,
-      status: 'succeeded' as const,
-      summary: 'delegated package completed',
-      consumedLayerDigests: [digest('1'), digest('2')],
+        schemaVersion: 1 as const,
+        invocationId: session.invocationId,
+        hostId: 'coordinator-1',
+        packetDigest: packet.identity.packetDigest,
+        status: 'succeeded' as const,
+        summary: 'delegated package completed',
+        consumedLayerDigests: [digest('1'), digest('2')],
         result: (resultOverride ?? {
           schemaVersion: 1,
           kind: 'build-package-completion',
@@ -117,20 +117,20 @@ function executor(
           repositoryDigest: digest('5'),
           implementationDigest: digest('6'),
         }) as WorkExecutionResult,
-      delegationReceipts: delegationReceiptsOverride ?? [
-        {
-          schemaVersion: 1 as const,
-          receiptId: 'receipt-1',
-          parentInvocationId: session.invocationId,
-          coordinatorHostId: 'coordinator-1',
-          executionId: 'subagent-implementation-1',
-          role: 'implementer' as const,
-          packageId: 'package-1',
-          status: 'succeeded' as const,
-          outcomeDigest: digest('7'),
-        },
-      ],
-      completedAt: '2026-10-28T00:00:00.000Z',
+        delegationReceipts: delegationReceiptsOverride ?? [
+          {
+            schemaVersion: 1 as const,
+            receiptId: 'receipt-1',
+            parentInvocationId: session.invocationId,
+            coordinatorHostId: 'coordinator-1',
+            executionId: 'subagent-implementation-1',
+            role: 'implementer' as const,
+            packageId: 'package-1',
+            status: 'succeeded' as const,
+            outcomeDigest: digest('7'),
+          },
+        ],
+        completedAt: '2026-10-28T00:00:00.000Z',
       } satisfies WorkExecutionHostOutcome);
     }),
   };
@@ -144,13 +144,11 @@ function executor(
       },
       workExecutionHosts: { select: vi.fn().mockReturnValue(host) },
       workExecutionSessions: {
-        open: vi.fn(
-          (input: Omit<WorkExecutionSessionIdentity, 'schemaVersion' | 'sessionId'>) => ({
-            ...input,
-            schemaVersion: 2,
-            sessionId: 'session-1',
-          }),
-        ),
+        open: vi.fn((input: Omit<WorkExecutionSessionIdentity, 'schemaVersion' | 'sessionId'>) => ({
+          ...input,
+          schemaVersion: 2,
+          sessionId: 'session-1',
+        })),
         close: vi.fn(),
       },
       workExecutionAuthority: authority,
@@ -160,6 +158,44 @@ function executor(
 }
 
 describe('Managed Work Executor Build contract', () => {
+  it('persists external Runner capabilities beyond the current Work requirement', async () => {
+    const packet = frozenPacket();
+    const service = Object.create(ManagedWorkExecutor.prototype) as ManagedWorkExecutor;
+    const markHostStarted = vi.fn();
+    Object.defineProperty(service, 'ctx', {
+      value: {
+        workDispatcher: {
+          claim: vi.fn().mockResolvedValue({
+            packet,
+            intent: { runId: 'run-1', workId: 'work-1', attempt: 1, checkEpoch: 4 },
+          }),
+        },
+        workExecutionAuthority: { markHostStarted },
+      },
+    });
+
+    const claimed = await service.claimExternal({
+      runId: 'run-1',
+      adapter: 'manual',
+      hostCapabilities: ['build.autonomous'],
+      executor: {
+        actorId: 'user-1',
+        runnerId: 'codex-root',
+        source: 'cli',
+        authenticated: true,
+      },
+    });
+
+    expect(claimed.invocation.host.capabilities).toEqual([
+      'build.autonomous',
+      'subagent.dispatch.attested',
+    ]);
+    expect(markHostStarted).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ host: claimed.invocation.host }),
+    );
+  });
+
   it('accepts attested subagent delegation only after Skill consumption and durable Host completion', async () => {
     const { service, authority } = executor();
     await expect(service.execute({} as never)).resolves.toMatchObject({
@@ -168,11 +204,10 @@ describe('Managed Work Executor Build contract', () => {
     });
     expect(authority.markHostCompleted).toHaveBeenCalledOnce();
     expect(authority.recordDelegationFacts).toHaveBeenCalledOnce();
-    expect(authority.recordSkillFacts).toHaveBeenCalledWith(
-      expect.anything(),
-      'consumed',
-      [digest('1'), digest('2')],
-    );
+    expect(authority.recordSkillFacts).toHaveBeenCalledWith(expect.anything(), 'consumed', [
+      digest('1'),
+      digest('2'),
+    ]);
     expect(authority.markHostUnknown).not.toHaveBeenCalled();
   });
 

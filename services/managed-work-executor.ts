@@ -27,7 +27,10 @@ function assertBoundedExecutionResult(outcome: WorkExecutionHostOutcome): void {
     throw new Error('Build Plan candidate exceeds the package bound');
   }
   const receipts = outcome.delegationReceipts ?? [];
-  if (receipts.length > 64 || new Set(receipts.map((receipt) => receipt.receiptId)).size !== receipts.length) {
+  if (
+    receipts.length > 64 ||
+    new Set(receipts.map((receipt) => receipt.receiptId)).size !== receipts.length
+  ) {
     throw new Error('Delegation receipts are duplicated or exceed the bounded receipt count');
   }
   for (const receipt of receipts) {
@@ -50,28 +53,28 @@ function assertBoundedExecutionResult(outcome: WorkExecutionHostOutcome): void {
     outcome.result.kind === 'build-configuration-candidate'
       ? [...common, 'executionMode', 'tddMode']
       : outcome.result.kind === 'build-plan-candidate'
-      ? [...common, 'packages']
-      : outcome.result.kind === 'build-package-completion'
-        ? [
-            ...common,
-            'packageId',
-            'acceptanceEvidenceIds',
-            'testEvidenceIds',
-            'tddEvidence',
-            'repositoryDigest',
-            'implementationDigest',
-          ]
-        : outcome.result.kind === 'build-check-candidate'
+        ? [...common, 'packages']
+        : outcome.result.kind === 'build-package-completion'
           ? [
               ...common,
-              'completedPackageIds',
-              'acceptedTaskIds',
+              'packageId',
+              'acceptanceEvidenceIds',
               'testEvidenceIds',
+              'tddEvidence',
               'repositoryDigest',
               'implementationDigest',
-              'reviewerExecutionId',
             ]
-          : [];
+          : outcome.result.kind === 'build-check-candidate'
+            ? [
+                ...common,
+                'completedPackageIds',
+                'acceptedTaskIds',
+                'testEvidenceIds',
+                'repositoryDigest',
+                'implementationDigest',
+                'reviewerExecutionId',
+              ]
+            : [];
   if (
     outcome.result.schemaVersion !== 1 ||
     allowed.length === 0 ||
@@ -207,10 +210,10 @@ export class ManagedWorkExecutor extends Service {
 
   async claimExternal(request: WorkClaimRequest): Promise<ExternalWorkClaimResult> {
     const claim = await this.ctx.workDispatcher.claim(request);
-    const host = this.externalHostIdentity(
-      request.executor,
-      claim.packet.hostRequirement.capabilities,
-    );
+    const host = this.externalHostIdentity(request.executor, [
+      ...claim.packet.hostRequirement.capabilities,
+      ...(request.hostCapabilities ?? []),
+    ]);
     const invocation: WorkExecutionHostInvocation = {
       schemaVersion: 1,
       invocationId: invocationId(claim.packet.identity.packetDigest, host.id),
@@ -332,14 +335,17 @@ export class ManagedWorkExecutor extends Service {
     capabilities: readonly string[],
   ): WorkExecutionHostIdentity {
     const id = `external:${executor.source}:${executor.runnerId}`;
+    const normalizedCapabilities = [...new Set(capabilities.map((capability) => capability.trim()))]
+      .filter(Boolean)
+      .sort();
     return {
       schemaVersion: 1,
       id,
       version: '1',
       codeDigest: `sha256:${createHash('sha256')
-        .update(`${executor.source}\0${executor.runnerId}`)
+        .update(`${executor.source}\0${executor.runnerId}\0${normalizedCapabilities.join('\0')}`)
         .digest('hex')}`,
-      capabilities: [...new Set(capabilities)].sort(),
+      capabilities: normalizedCapabilities,
       actionKinds: ['agent'],
       reconcile: false,
     };
