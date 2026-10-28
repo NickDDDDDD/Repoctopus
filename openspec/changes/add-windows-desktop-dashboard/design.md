@@ -249,6 +249,6 @@ Repoctopus 的 Renderer 是本地 OTLP 投影客户端，不需要 DSH 的共享
 5. 实现 headless Desktop Host 的本机 receiver、认证、投影、journal、App Boot 和协议测试。
 6. 在现有 thin Electron Main、Host controller、私有 Node IPC、preload/renderer 和单实例 foundation 上增加启动上下文、Launcher、关闭偏好、托盘与安装配置，并完成 Windows 打包 E2E。
 7. 用 Repoctopus 自身的开发 Run 启动桌面应用，发送真实 OTLP，验证本地五阶段、Build 子动作、Skill 状态和四类健康状态；远端使用 mock receiver 验证相同 envelope。
-8. 运行完整验证、生成 Evidence 和正式验证报告，明确未连接真实 SigNoZ、未支持平台和未迁移旧 Dashboard 本地数据。
+8. 最终发布验证 Work Package 独占正式验证输出：运行完整验证，将本 change 的报告写入 `verification/add-windows-desktop-dashboard/**`，并在全部产品代码提交完成后刷新 `verification/restore-runtime-build-orchestration/verification-report.md` 的 managed-execution 基线；其他 Work Package 不写这些路径。报告明确未连接真实 SigNoZ、未支持平台和未迁移旧 Dashboard 本地数据。
 
 回滚通过普通 revert MR 移除 Desktop Launcher 和本地目的地，不删除领域 Trajectory 或远端 cursor。当前 schema 的本地 projection 可以由保留期内的规范 envelope 重建；旧实验分支的数据不属于迁移输入，也没有兼容承诺。桌面用户数据只能由明确的卸载或清理动作处理，代码回滚默认不自动删除。
