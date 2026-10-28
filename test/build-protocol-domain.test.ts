@@ -8,6 +8,7 @@ import {
   createBuildProtocolState,
   createExecutionWorkspaceBinding,
   createExecutionWorkspaceIntent,
+  createPlanEvidence,
   validateBuildPlan,
 } from '../domains/change-lifecycle/build-protocol.js';
 import { parseSpecificationTasks } from '../domains/specification/tasks.js';
@@ -203,7 +204,11 @@ describe('Build protocol domain', () => {
       workspaceIntent: configuration.workspaceIntent,
     });
     expect(initial.currentAction).toBe('configure');
-    const configured = advanceBuildProtocol(initial, {
+    const proposed = advanceBuildProtocol(initial, {
+      kind: 'configuration-proposed',
+      proposal: configuration,
+    });
+    const configured = advanceBuildProtocol(proposed, {
       kind: 'configuration-approved',
       configuration,
     });
@@ -257,14 +262,23 @@ describe('Build protocol domain', () => {
       planningDigest: tasks.digest,
       workspaceIntent: configuration.workspaceIntent,
     });
-    const configured = advanceBuildProtocol(initial, {
+    const proposed = advanceBuildProtocol(initial, {
+      kind: 'configuration-proposed',
+      proposal: configuration,
+    });
+    const configured = advanceBuildProtocol(proposed, {
       kind: 'configuration-approved',
       configuration,
     });
     const planned = advanceBuildProtocol(configured, { kind: 'plan-accepted', plan });
+    const evidence = createPlanEvidence({
+      plan,
+      configuration,
+      validation: validateBuildPlan({ plan, configuration, tasks }),
+    });
     const evidenced = advanceBuildProtocol(planned, {
       kind: 'plan-evidence-accepted',
-      planDigest: plan.digest,
+      evidence,
     });
     const retry = advanceBuildProtocol(evidenced, {
       kind: 'host-outcome',

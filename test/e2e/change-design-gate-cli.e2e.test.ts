@@ -124,6 +124,9 @@ async function decidePending(
         decision,
       },
       actor: { actorId: 'trusted-e2e-user', source: 'cli', authenticated: true },
+      ...(approvalPhase === 'open' && decision === 'approve'
+        ? { isolation: 'current' as const }
+        : {}),
     });
   } finally {
     await app.close();

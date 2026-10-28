@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import type { ActionIntent, ClaimedActionOutcome } from '../action/types.js';
 import type { WorkExecutionContext } from '../change-lifecycle/work-context.js';
 import type { WorkDescriptor } from '../change-lifecycle/transition.js';
+import type { WorkPackageCandidate } from '../change-lifecycle/build-protocol.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
 
 export type WorkContinuationKind = 'execute' | 'ask' | 'wait' | 'reconcile' | 'done';
@@ -124,7 +125,47 @@ export interface WorkExecutionHostOutcome {
   summary: string;
   consumedLayerDigests: readonly `sha256:${string}`[];
   findings?: readonly WorkExecutionFinding[];
+  result?: WorkExecutionResult;
+  delegationReceipts?: readonly DelegationReceipt[];
   completedAt: string;
+}
+
+export type WorkExecutionResult =
+  | {
+      schemaVersion: 1;
+      kind: 'build-plan-candidate';
+      packages: readonly WorkPackageCandidate[];
+    }
+  | {
+      schemaVersion: 1;
+      kind: 'build-package-completion';
+      packageId: string;
+      acceptanceEvidenceIds: readonly string[];
+      testEvidenceIds: readonly string[];
+      repositoryDigest: `sha256:${string}`;
+      implementationDigest: `sha256:${string}`;
+    }
+  | {
+      schemaVersion: 1;
+      kind: 'build-check-candidate';
+      completedPackageIds: readonly string[];
+      acceptedTaskIds: readonly string[];
+      testEvidenceIds: readonly string[];
+      repositoryDigest: `sha256:${string}`;
+      implementationDigest: `sha256:${string}`;
+      reviewerExecutionId: string;
+    };
+
+export interface DelegationReceipt {
+  schemaVersion: 1;
+  receiptId: string;
+  parentInvocationId: string;
+  coordinatorHostId: string;
+  executionId: string;
+  role: 'implementer' | 'reviewer';
+  packageId: string;
+  status: 'succeeded' | 'failed' | 'unknown';
+  outcomeDigest: `sha256:${string}`;
 }
 
 export type WorkExecutionFindingKind =
@@ -156,6 +197,8 @@ export interface ExternalWorkExecutionOutcome {
   summary: string;
   consumedLayerDigests: readonly `sha256:${string}`[];
   findings?: readonly WorkExecutionFinding[];
+  result?: WorkExecutionResult;
+  delegationReceipts?: readonly DelegationReceipt[];
 }
 
 export interface WorkExecutionCheckpoint {

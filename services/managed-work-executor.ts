@@ -16,6 +16,31 @@ import type {
   WorkExecutionPacket,
 } from '../domains/work-execution/types.js';
 import { assertBoundedWorkExecutionFindings } from '../domains/work-execution/findings.js';
+import { canonicalJson } from '../domains/workflow-contract/canonical.js';
+
+function assertBoundedExecutionResult(outcome: WorkExecutionHostOutcome): void {
+  if (outcome.result && canonicalJson(outcome.result).length > 1024 * 1024) {
+    throw new Error('Work Execution result exceeds the bounded payload size');
+  }
+  if (outcome.result?.kind === 'build-plan-candidate' && outcome.result.packages.length > 256) {
+    throw new Error('Build Plan candidate exceeds the package bound');
+  }
+  const receipts = outcome.delegationReceipts ?? [];
+  if (receipts.length > 64 || new Set(receipts.map((receipt) => receipt.receiptId)).size !== receipts.length) {
+    throw new Error('Delegation receipts are duplicated or exceed the bounded receipt count');
+  }
+  for (const receipt of receipts) {
+    if (
+      receipt.parentInvocationId !== outcome.invocationId ||
+      receipt.coordinatorHostId !== outcome.hostId ||
+      !receipt.executionId.trim() ||
+      !receipt.packageId.trim() ||
+      !/^sha256:[a-f0-9]{64}$/u.test(receipt.outcomeDigest)
+    ) {
+      throw new Error('Delegation receipt does not match the parent Host invocation');
+    }
+  }
+}
 
 function invocationId(packetDigest: string, hostId: string): string {
   return `sha256:${createHash('sha256')
@@ -117,6 +142,7 @@ export class ManagedWorkExecutor extends Service {
       throw new Error('Work Execution Host Outcome identity mismatch');
     }
     assertBoundedWorkExecutionFindings(hostOutcome);
+    assertBoundedExecutionResult(hostOutcome);
     assertConsumedExecutionSkills(claim.packet, hostOutcome);
     await this.ctx.workExecutionAuthority.markHostCompleted(claim.intent, hostOutcome);
     await this.ctx.workExecutionAuthority.recordSkillFacts(
@@ -179,9 +205,14 @@ export class ManagedWorkExecutor extends Service {
       summary: input.summary,
       consumedLayerDigests: [...new Set(input.consumedLayerDigests)].sort(),
       ...(input.findings ? { findings: structuredClone(input.findings) } : {}),
+      ...(input.result ? { result: structuredClone(input.result) } : {}),
+      ...(input.delegationReceipts
+        ? { delegationReceipts: structuredClone(input.delegationReceipts) }
+        : {}),
       completedAt: new Date().toISOString(),
     };
     assertBoundedWorkExecutionFindings(hostOutcome);
+    assertBoundedExecutionResult(hostOutcome);
     const packet = await this.ctx.workDispatcher.resumeClaim(input.runId);
     assertConsumedExecutionSkills(packet.packet, hostOutcome);
     await this.ctx.workExecutionAuthority.markHostCompleted(intent, hostOutcome);
@@ -232,6 +263,7 @@ export class ManagedWorkExecutor extends Service {
       throw new Error('Reconciled Host Outcome identity mismatch');
     }
     assertBoundedWorkExecutionFindings(outcome);
+    assertBoundedExecutionResult(outcome);
     const packet = await this.ctx.workDispatcher.resumeClaim(runId);
     assertConsumedExecutionSkills(packet.packet, outcome);
     await this.ctx.workExecutionAuthority.markHostCompleted(intent, outcome);

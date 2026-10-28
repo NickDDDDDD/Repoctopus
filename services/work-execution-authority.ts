@@ -540,7 +540,7 @@ export class WorkExecutionAuthority extends Service {
   }): Promise<void> {
     await this.ctx.runStore.commitGuarded(input.runId, ({ state, trajectory }) => {
       const type = `wait.${input.stage}` as const;
-      const eventId = digest(input.runId, type, input.waitId);
+      const eventId = digest(input.runId, type, input.waitId, input.stage);
       if (trajectory.some((event) => event.eventId === eventId)) return { value: undefined };
       const timestamp = new Date().toISOString();
       const nextState: RunState = {

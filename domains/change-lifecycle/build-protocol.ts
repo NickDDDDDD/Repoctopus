@@ -166,6 +166,7 @@ export interface BuildConfigurationProposal {
   isolation: ExecutionIsolation;
   bindingDigest: Digest;
   bindingSemanticDigest: Digest;
+  repositoryIds: readonly string[];
   hostId: string;
   hostCapabilities: readonly string[];
   semanticDigest: Digest;
@@ -216,6 +217,10 @@ export function createBuildConfigurationProposal(input: {
     isolation: input.intent.isolation,
     bindingDigest: input.binding.localDigest,
     bindingSemanticDigest: input.binding.semanticDigest,
+    repositoryIds: unique(
+      input.binding.repositories.map((repository) => repository.repositoryId),
+      'Build Configuration repositories',
+    ),
     hostId: text(input.hostId, 'Host identity'),
     hostCapabilities,
   };
@@ -326,6 +331,7 @@ export function createBuildPlan(input: {
   if (new Set(keys).size !== keys.length)
     throw new Error('Build Plan contains duplicate package key');
   const taskIds = new Set(input.tasks.tasks.map((task) => task.taskId));
+  const repositoryIds = new Set(input.configuration.repositoryIds);
   const acceptanceIds = new Set<string>(
     input.tasks.tasks.flatMap((task) => task.acceptanceCriteria.map((item) => item.acceptanceId)),
   );
@@ -353,6 +359,9 @@ export function createBuildPlan(input: {
     }
     if (stable.repositoryIds.length === 0 || stable.writeScopes.length === 0) {
       throw new Error('Build Plan package requires repository and write scope boundaries');
+    }
+    if (stable.repositoryIds.some((repositoryId) => !repositoryIds.has(repositoryId))) {
+      throw new Error('Build Plan package references an unbound repository');
     }
     if (stable.writeScopes.some((scope) => !stable.repositoryIds.includes(scope.repositoryId))) {
       throw new Error('Build Plan write scope exceeds package repository bindings');
@@ -444,12 +453,18 @@ export interface BuildProtocolState {
   currentAction: BuildActionKind | null;
   status: 'active' | 'ready-for-verify';
   actionAttempt: number;
+  configurationProposal: BuildConfigurationProposal | null;
   configuration: BuildConfiguration | null;
+  plans: readonly BuildPlan[];
   plan: BuildPlan | null;
+  planEvidence: PlanEvidence | null;
+  packageCompletions: readonly PackageCompletionEvidence[];
+  checkEvidence: BuildCheckEvidence | null;
   revision: number;
 }
 
 export type BuildProtocolObservation =
+  | { kind: 'configuration-proposed'; proposal: BuildConfigurationProposal }
   | { kind: 'configuration-approved'; configuration: BuildConfiguration }
   | {
       kind: 'host-outcome';
@@ -458,7 +473,9 @@ export type BuildProtocolObservation =
       requestedNextAction?: BuildActionKind;
     }
   | { kind: 'plan-accepted'; plan: BuildPlan }
-  | { kind: 'plan-evidence-accepted'; planDigest: Digest }
+  | { kind: 'plan-evidence-accepted'; evidence: PlanEvidence }
+  | { kind: 'package-completed'; completion: PackageCompletionEvidence }
+  | { kind: 'check-accepted'; evidence: BuildCheckEvidence }
   | { kind: 'retry'; action: BuildActionKind };
 
 export function createBuildProtocolState(input: {
@@ -474,8 +491,13 @@ export function createBuildProtocolState(input: {
     currentAction: 'configure',
     status: 'active',
     actionAttempt: 1,
+    configurationProposal: null,
     configuration: null,
+    plans: [],
     plan: null,
+    planEvidence: null,
+    packageCompletions: [],
+    checkEvidence: null,
     revision: 0,
   }) as BuildProtocolState;
 }
@@ -490,6 +512,21 @@ export function advanceBuildProtocol(
     }
     return deepFreeze({ ...state, actionAttempt: state.actionAttempt + 1 }) as BuildProtocolState;
   }
+  if (observation.kind === 'configuration-proposed') {
+    if (state.currentAction !== 'configure' || state.configuration) {
+      throw new Error('Configuration proposal does not match the current Runtime-selected Action');
+    }
+    if (
+      observation.proposal.workspaceIntent.semanticDigest !== state.workspaceIntent.semanticDigest
+    ) {
+      throw new Error('Configuration proposal changed the Workspace intent');
+    }
+    return deepFreeze({
+      ...state,
+      configurationProposal: observation.proposal,
+      revision: state.revision + 1,
+    }) as BuildProtocolState;
+  }
   if (observation.kind === 'configuration-approved') {
     if (state.currentAction !== 'configure') {
       throw new Error('Configuration approval does not match the current Runtime-selected Action');
@@ -500,10 +537,17 @@ export function advanceBuildProtocol(
     ) {
       throw new Error('Configuration approval changed the Workspace intent');
     }
+    if (
+      !state.configurationProposal ||
+      observation.configuration.semanticDigest !== state.configurationProposal.semanticDigest
+    ) {
+      throw new Error('Configuration approval does not match the active proposal');
+    }
     return deepFreeze({
       ...state,
       currentAction: 'plan',
       actionAttempt: 1,
+      configurationProposal: state.configurationProposal,
       configuration: observation.configuration,
       revision: state.revision + 1,
     }) as BuildProtocolState;
@@ -515,11 +559,17 @@ export function advanceBuildProtocol(
     if (observation.plan.configurationId !== state.configuration?.configurationId) {
       throw new Error('Plan does not bind the frozen Build Configuration');
     }
+    const expectedRevision = (state.plan?.revision ?? 0) + 1;
+    if (observation.plan.revision !== expectedRevision) {
+      throw new Error('Build Plan revision is not monotonic');
+    }
     return deepFreeze({
       ...state,
       currentAction: 'plan-evidence',
       actionAttempt: 1,
+      plans: [...state.plans, observation.plan],
       plan: observation.plan,
+      planEvidence: null,
       revision: state.revision + 1,
     }) as BuildProtocolState;
   }
@@ -527,11 +577,66 @@ export function advanceBuildProtocol(
     if (state.currentAction !== 'plan-evidence') {
       throw new Error('Plan Evidence does not match the current Runtime-selected Action');
     }
-    if (observation.planDigest !== state.plan?.digest) throw new Error('Plan Evidence is stale');
+    if (observation.evidence.planDigest !== state.plan?.digest) {
+      throw new Error('Plan Evidence is stale');
+    }
     return deepFreeze({
       ...state,
       currentAction: 'execute',
       actionAttempt: 1,
+      planEvidence: observation.evidence,
+      revision: state.revision + 1,
+    }) as BuildProtocolState;
+  }
+  if (observation.kind === 'package-completed') {
+    if (state.currentAction !== 'execute' || !state.plan || !state.planEvidence) {
+      throw new Error('Package completion does not match the active Execute Action');
+    }
+    const workPackage = state.plan.packages.find(
+      (candidate) => candidate.packageId === observation.completion.packageId,
+    );
+    if (!workPackage || observation.completion.packageDigest !== workPackage.digest) {
+      throw new Error('Package completion does not match the current Build Plan');
+    }
+    if (
+      workPackage.dependsOn.some(
+        (dependency) =>
+          !state.packageCompletions.some((completion) => completion.packageId === dependency),
+      )
+    ) {
+      throw new Error('Package completion was accepted before its dependencies');
+    }
+    if (state.packageCompletions.some((entry) => entry.packageId === workPackage.packageId)) {
+      return state;
+    }
+    const packageCompletions = [...state.packageCompletions, observation.completion];
+    const allCompleted = state.plan.packages.every((candidate) =>
+      packageCompletions.some((completion) => completion.packageId === candidate.packageId),
+    );
+    return deepFreeze({
+      ...state,
+      currentAction: allCompleted ? 'check' : 'execute',
+      actionAttempt: 1,
+      packageCompletions,
+      revision: state.revision + 1,
+    }) as BuildProtocolState;
+  }
+  if (observation.kind === 'check-accepted') {
+    if (state.currentAction !== 'check' || !observation.evidence.accepted) {
+      throw new Error('Build Check Evidence does not match the active Check Action');
+    }
+    if (
+      observation.evidence.configurationDigest !== state.configuration?.semanticDigest ||
+      observation.evidence.planDigest !== state.plan?.digest
+    ) {
+      throw new Error('Build Check Evidence input drifted');
+    }
+    return deepFreeze({
+      ...state,
+      currentAction: null,
+      status: 'ready-for-verify',
+      actionAttempt: 1,
+      checkEvidence: observation.evidence,
       revision: state.revision + 1,
     }) as BuildProtocolState;
   }
@@ -567,6 +672,56 @@ export interface PlanEvidence {
   configurationDigest: Digest;
   validationDigest: Digest;
   accepted: true;
+}
+
+export interface PackageCompletionEvidence {
+  schemaVersion: 1;
+  completionId: string;
+  packageId: string;
+  packageDigest: Digest;
+  executionId: string;
+  acceptanceEvidenceIds: readonly string[];
+  testEvidenceIds: readonly string[];
+  repositoryDigest: Digest;
+  implementationDigest: Digest;
+  digest: Digest;
+}
+
+export function createPackageCompletionEvidence(input: {
+  workPackage: WorkPackage;
+  executionId: string;
+  acceptanceEvidenceIds: readonly string[];
+  testEvidenceIds: readonly string[];
+  repositoryDigest: Digest;
+  implementationDigest: Digest;
+}): PackageCompletionEvidence {
+  if (!SHA256.test(input.repositoryDigest) || !SHA256.test(input.implementationDigest)) {
+    throw new Error('Package completion digests are invalid');
+  }
+  const acceptanceEvidenceIds = unique(
+    input.acceptanceEvidenceIds,
+    'Package acceptance Evidence identities',
+  );
+  const testEvidenceIds = unique(input.testEvidenceIds, 'Package test Evidence identities');
+  if (acceptanceEvidenceIds.length === 0 || testEvidenceIds.length === 0) {
+    throw new Error('Package completion requires acceptance and test Evidence');
+  }
+  const stable = {
+    schemaVersion: 1 as const,
+    packageId: input.workPackage.packageId,
+    packageDigest: input.workPackage.digest,
+    executionId: text(input.executionId, 'Implementation execution identity'),
+    acceptanceEvidenceIds,
+    testEvidenceIds,
+    repositoryDigest: input.repositoryDigest,
+    implementationDigest: input.implementationDigest,
+  };
+  const completionDigest = digest(stable);
+  return deepFreeze({
+    ...stable,
+    completionId: `package-completion:${completionDigest.slice(-24)}`,
+    digest: completionDigest,
+  }) as PackageCompletionEvidence;
 }
 
 export function createPlanEvidence(input: {

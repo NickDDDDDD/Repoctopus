@@ -897,6 +897,7 @@ async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
           projectSnapshot: ProjectSnapshot;
           projectConfigDigest: `sha256:${string}`;
           verificationProfileId: string;
+          executionCheckouts: Array<{ repositoryId: string; checkoutPath: string }>;
         },
         RuntimeResult<RunStatusView>
       >('run.change.start', {
@@ -909,6 +910,10 @@ async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
         projectSnapshot,
         projectConfigDigest: qualifiedSha256(config.effectiveDigest, 'Project configuration'),
         verificationProfileId: stringFlag(parsed, 'profile', { fallback: 'verify' })!,
+        executionCheckouts: projectSnapshot.repositories.map((repository) => ({
+          repositoryId: repository.id,
+          checkoutPath: repository.path,
+        })),
       });
       return successEnvelope({
         command: 'run start',
@@ -1222,23 +1227,34 @@ async function runDecide(parsed: ParsedArguments): Promise<CliEnvelope<unknown>>
     if (
       lifecycle.phase === 'build' &&
       (lifecycle.waitCondition.waitId.startsWith('build-adoption:') ||
-        lifecycle.waitCondition.waitId.startsWith('build-design:'))
+        lifecycle.waitCondition.waitId.startsWith('build-design:') ||
+        lifecycle.waitCondition.waitId.startsWith('build-configuration:'))
     ) {
       const adoption = lifecycle.waitCondition.waitId.startsWith('build-adoption:');
+      const configuration = lifecycle.waitCondition.waitId.startsWith('build-configuration:');
       const selected = await reviewLifecycleDecision({
-        title: adoption
-          ? `Adopt existing completion claims: ${lifecycle.identity.changeId}`
-          : `Return Build to Design: ${lifecycle.identity.changeId}`,
+        title: configuration
+          ? `Approve Build Configuration: ${lifecycle.identity.changeId}`
+          : adoption
+            ? `Adopt existing completion claims: ${lifecycle.identity.changeId}`
+            : `Return Build to Design: ${lifecycle.identity.changeId}`,
         proposalHash: lifecycle.waitCondition.proposalDigest,
-        details: adoption
+        details: configuration
           ? [
-              `Tasks: ${lifecycle.tasks?.filter((task) => task.completion?.source === 'imported-claim').length ?? 0}`,
-              'Approval imports only Build completion claims; Verify and Archive still run normally.',
+              `Execution: ${lifecycle.buildProtocol?.configurationProposal?.executionMode ?? '-'}`,
+              `TDD: ${lifecycle.buildProtocol?.configurationProposal?.tddMode ?? '-'}`,
+              `Review: ${lifecycle.buildProtocol?.configurationProposal?.reviewMode ?? '-'}`,
+              `Isolation: ${lifecycle.buildProtocol?.configurationProposal?.isolation ?? '-'}`,
             ]
-          : [
-              lifecycle.waitCondition.reason,
-              'Approval invalidates the old Design approval and Work.',
-            ],
+          : adoption
+            ? [
+                `Tasks: ${lifecycle.tasks?.filter((task) => task.completion?.source === 'imported-claim').length ?? 0}`,
+                'Approval imports only Build completion claims; Verify and Archive still run normally.',
+              ]
+            : [
+                lifecycle.waitCondition.reason,
+                'Approval invalidates the old Design approval and Work.',
+              ],
         input: process.stdin,
         output: process.stdout,
       });
@@ -1287,6 +1303,7 @@ async function runDecide(parsed: ParsedArguments): Promise<CliEnvelope<unknown>>
       request: approval.decisionRequest,
       input: process.stdin,
       output: process.stdout,
+      selectIsolation: lifecycle.phase === 'open',
     });
     const result = await app.context.commandRouter.execute<unknown, SpecificationApprovalState>(
       'run.change.decide',
@@ -1305,6 +1322,7 @@ async function runDecide(parsed: ParsedArguments): Promise<CliEnvelope<unknown>>
           source: 'cli',
           authenticated: true,
         },
+        ...(selected.isolation ? { isolation: selected.isolation } : {}),
       },
     );
     return successEnvelope({

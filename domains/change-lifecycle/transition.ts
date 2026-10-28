@@ -9,11 +9,20 @@ import { assertPublicationReceipt } from '../delivery/publication-receipt.js';
 import type { SpecificationClosureResult } from '../specification/types.js';
 import type {
   BuildActionKind,
+  BuildConfiguration,
+  BuildConfigurationProposal,
+  BuildCheckEvidence,
   BuildExecutionMode,
+  BuildPlan,
+  BuildProtocolState,
   BuildReviewMode,
   BuildTddMode,
   ExecutionIsolation,
+  ExecutionWorkspaceIntent,
+  PlanEvidence,
+  PackageCompletionEvidence,
 } from './build-protocol.js';
+import { advanceBuildProtocol } from './build-protocol.js';
 
 export const CHANGE_PHASES = ['open', 'design', 'build', 'verify', 'archive'] as const;
 export type ChangePhase = (typeof CHANGE_PHASES)[number];
@@ -95,6 +104,11 @@ export interface LifecycleWriteScopeDefinition {
 
 export interface ChangeLifecycleWorkDefinition {
   kind: string;
+  buildAction?: BuildActionKind;
+  configurationId?: string;
+  planId?: string;
+  planRevision?: number;
+  packageId?: string;
   phase: ChangePhase;
   actionSkill?: LifecycleSkillReference;
   augmentationSkills: readonly LifecycleSkillReference[];
@@ -159,6 +173,11 @@ export interface WorkDescriptor {
   checkEpoch: number;
   phase: ChangePhase;
   kind: string;
+  buildAction?: BuildActionKind;
+  configurationId?: string;
+  planId?: string;
+  planRevision?: number;
+  packageId?: string;
   taskId?: string;
   taskRevision?: `sha256:${string}`;
   actionSkill?: SkillUsageSnapshot;
@@ -226,6 +245,8 @@ export interface ChangeLifecycleState {
   waitCondition: WaitCondition | null;
   blocker: ChangeRunBlocker | null;
   tasks?: readonly SpecificationTask[];
+  workspaceIntent?: ExecutionWorkspaceIntent;
+  buildProtocol?: BuildProtocolState;
   openApprovalDigest?: `sha256:${string}`;
   planningDigest?: `sha256:${string}`;
   adoptedCompletionClaimDigest?: `sha256:${string}`;
@@ -277,8 +298,24 @@ export interface ChangeRunFreshness {
 export interface ChangeRunProjection extends ChangeLifecycleSnapshot {
   taskProgress: ChangeTaskProgress;
   evidence: ChangeEvidenceSummary;
+  build: ChangeBuildSummary | null;
   nextActions: readonly ChangeNextAction[];
   freshness: ChangeRunFreshness;
+}
+
+export interface ChangeBuildSummary {
+  action: BuildActionKind | null;
+  actionAttempt: number;
+  configurationId: string | null;
+  executionMode: BuildExecutionMode | null;
+  tddMode: BuildTddMode | null;
+  isolation: ExecutionIsolation;
+  planId: string | null;
+  planRevision: number | null;
+  packageId: string | null;
+  completedPackages: number;
+  totalPackages: number;
+  checkAccepted: boolean;
 }
 
 export interface ChangeLifecycleTransitionFact {
@@ -318,6 +355,13 @@ export type ChangeLifecycleObservation =
       work?: WorkDescriptor;
     }
   | {
+      kind: 'open-workspace-intent-selected';
+      intent: ExecutionWorkspaceIntent;
+      requestId: string;
+      proposalDigest: `sha256:${string}`;
+      actorId: string;
+    }
+  | {
       kind: 'design-work-ready';
       work: WorkDescriptor;
     }
@@ -337,12 +381,49 @@ export type ChangeLifecycleObservation =
       proposalDigest?: `sha256:${string}`;
       tasks?: readonly SpecificationTask[];
       work?: WorkDescriptor;
+      buildProtocol?: BuildProtocolState;
     }
   | {
       kind: 'build-adoption-required';
       requestId: string;
       proposalDigest: `sha256:${string}`;
       reason: string;
+    }
+  | {
+      kind: 'build-configuration-proposed';
+      proposal: BuildConfigurationProposal;
+      requestId: string;
+      reason: string;
+    }
+  | {
+      kind: 'build-configuration-decision';
+      decision: 'approve' | 'reject';
+      requestId: string;
+      proposalDigest: `sha256:${string}`;
+      actorId: string;
+      configuration?: BuildConfiguration;
+      work: WorkDescriptor;
+    }
+  | {
+      kind: 'build-plan-accepted';
+      plan: BuildPlan;
+    }
+  | {
+      kind: 'build-plan-evidence-accepted';
+      evidence: PlanEvidence;
+      work: WorkDescriptor;
+    }
+  | {
+      kind: 'build-package-completed';
+      completion: PackageCompletionEvidence;
+      work: WorkDescriptor;
+      tasks: readonly SpecificationTask[];
+    }
+  | {
+      kind: 'build-check-accepted';
+      evidence: BuildCheckEvidence;
+      verificationInput: VerificationInput;
+      work: WorkDescriptor;
     }
   | {
       kind: 'build-adoption-decision';
@@ -501,6 +582,23 @@ export function assertChangeLifecycleSnapshot(
     }
   }
   if (
+    snapshot.workspaceIntent &&
+    (snapshot.workspaceIntent.workspaceId !== snapshot.identity.workspaceId ||
+      snapshot.workspaceIntent.changeId !== snapshot.identity.changeId ||
+      !/^sha256:[a-f0-9]{64}$/u.test(snapshot.workspaceIntent.semanticDigest))
+  ) {
+    throw new Error('Execution Workspace intent does not match the Change Run identity');
+  }
+  if (
+    snapshot.buildProtocol &&
+    (!['build', 'verify', 'archive'].includes(snapshot.phase) ||
+      snapshot.buildProtocol.runId !== snapshot.identity.runId ||
+      snapshot.buildProtocol.workspaceIntent.semanticDigest !==
+        snapshot.workspaceIntent?.semanticDigest)
+  ) {
+    throw new Error('Build protocol state does not match the Change Run');
+  }
+  if (
     snapshot.phase === 'verify' &&
     ((snapshot.verificationInput && !snapshot.currentWork) ||
       (!snapshot.verificationInput && snapshot.currentWork) ||
@@ -514,10 +612,10 @@ export function assertChangeLifecycleSnapshot(
   if (
     snapshot.verificationInvalidation &&
     (snapshot.phase !== 'build' ||
-      snapshot.currentWork?.kind !== 'task.implement' ||
+      snapshot.currentWork?.kind !== 'build.plan' ||
       snapshot.verificationInput)
   ) {
-    throw new Error('Verification invalidation requires an active Build Repair Work without input');
+    throw new Error('Verification invalidation requires an active Build Plan revision without input');
   }
   if (snapshot.status === 'waiting' && snapshot.waitCondition === null) {
     throw new Error('Waiting Change Run requires a durable WaitCondition');
@@ -548,6 +646,8 @@ export function applyChangeLifecycleTransition(options: {
     waitCondition: WaitCondition | null;
     blocker: ChangeRunBlocker | null;
     tasks?: readonly SpecificationTask[];
+    workspaceIntent?: ExecutionWorkspaceIntent | null;
+    buildProtocol?: BuildProtocolState | null;
     openApprovalDigest?: `sha256:${string}` | null;
     planningDigest?: `sha256:${string}` | null;
     adoptedCompletionClaimDigest?: `sha256:${string}` | null;
@@ -597,6 +697,14 @@ export function applyChangeLifecycleTransition(options: {
     blocker: structuredClone(options.next.blocker),
     ...(options.next.tasks ? { tasks: structuredClone(options.next.tasks) } : {}),
   };
+  if (options.next.workspaceIntent === null) delete snapshot.workspaceIntent;
+  else if (options.next.workspaceIntent) {
+    snapshot.workspaceIntent = structuredClone(options.next.workspaceIntent);
+  }
+  if (options.next.buildProtocol === null) delete snapshot.buildProtocol;
+  else if (options.next.buildProtocol) {
+    snapshot.buildProtocol = structuredClone(options.next.buildProtocol);
+  }
   if (options.next.planningDigest === null) delete snapshot.planningDigest;
   else if (options.next.planningDigest) snapshot.planningDigest = options.next.planningDigest;
   if (options.next.adoptedCompletionClaimDigest === null) {
@@ -682,11 +790,46 @@ export function evolveChangeLifecycle(options: {
       next: { currentWork: observation.work, waitCondition: null, blocker: null },
     });
   }
+  if (observation.kind === 'open-workspace-intent-selected') {
+    const wait = current.waitCondition;
+    if (
+      current.phase !== 'open' ||
+      current.status !== 'waiting' ||
+      wait?.kind !== 'human-decision' ||
+      wait.requestId !== observation.requestId ||
+      wait.proposalDigest !== observation.proposalDigest ||
+      observation.intent.workspaceId !== current.identity.workspaceId ||
+      observation.intent.changeId !== current.identity.changeId ||
+      !observation.actorId.trim()
+    ) {
+      throw new Error('Workspace intent selection does not match the Open Human Decision');
+    }
+    if (current.workspaceIntent) {
+      if (current.workspaceIntent.semanticDigest !== observation.intent.semanticDigest) {
+        throw new Error('Open approval cannot replace the selected Workspace intent');
+      }
+      return { snapshot: structuredClone(current), fact: null };
+    }
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'open.intent-selected',
+      next: {
+        currentWork: null,
+        waitCondition: wait,
+        blocker: null,
+        workspaceIntent: observation.intent,
+      },
+    });
+  }
   if (observation.kind === 'open-gate') {
     if (current.phase !== 'open' || !['running', 'waiting', 'blocked'].includes(current.status)) {
       throw new Error(`Open gate is not valid from ${current.phase}/${current.status}`);
     }
     if (observation.result === 'approved') {
+      if (!current.workspaceIntent) {
+        throw new Error('Approved Open gate requires a trusted Execution Workspace intent');
+      }
       if (
         !observation.work ||
         observation.work.phase !== 'design' ||
@@ -773,6 +916,7 @@ export function evolveChangeLifecycle(options: {
         waitCondition: null,
         blocker: null,
         tasks: [],
+        buildProtocol: null,
         planningDigest: null,
         verificationInput: null,
         verificationInvalidation: null,
@@ -806,6 +950,224 @@ export function evolveChangeLifecycle(options: {
         currentWork: observation.work,
         waitCondition: null,
         blocker: null,
+      },
+    });
+  }
+  if (observation.kind === 'build-configuration-proposed') {
+    if (
+      current.phase !== 'build' ||
+      current.status !== 'running' ||
+      current.currentWork?.kind !== 'build.configure' ||
+      !current.buildProtocol ||
+      current.buildProtocol.currentAction !== 'configure'
+    ) {
+      throw new Error('Build Configuration proposal requires the active Configure Action');
+    }
+    const buildProtocol = advanceBuildProtocol(current.buildProtocol, {
+      kind: 'configuration-proposed',
+      proposal: observation.proposal,
+    });
+    const waitCondition: HumanDecisionWaitCondition = {
+      schemaVersion: 1,
+      kind: 'human-decision',
+      waitId: `build-configuration:${observation.requestId}`,
+      requestId: observation.requestId,
+      proposalDigest: observation.proposal.semanticDigest,
+      inputDigest: observation.proposal.semanticDigest,
+      reason: observation.reason,
+    };
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'build.configuration-awaiting-approval',
+      next: {
+        currentWork: null,
+        waitCondition,
+        blocker: null,
+        buildProtocol,
+      },
+    });
+  }
+  if (observation.kind === 'build-configuration-decision') {
+    const wait = current.waitCondition;
+    if (
+      current.phase !== 'build' ||
+      current.status !== 'waiting' ||
+      wait?.kind !== 'human-decision' ||
+      !wait.waitId.startsWith('build-configuration:') ||
+      wait.requestId !== observation.requestId ||
+      wait.proposalDigest !== observation.proposalDigest ||
+      !current.buildProtocol ||
+      !observation.actorId.trim()
+    ) {
+      throw new Error('Build Configuration decision does not match the current proposal');
+    }
+    if (observation.decision === 'approve') {
+      if (!observation.configuration || observation.work.kind !== 'build.plan') {
+        throw new Error('Approved Build Configuration requires Runtime-selected Plan Work');
+      }
+      const buildProtocol = advanceBuildProtocol(current.buildProtocol, {
+        kind: 'configuration-approved',
+        configuration: observation.configuration,
+      });
+      return applyChangeLifecycleTransition({
+        definition: options.definition,
+        current,
+        transitionId: 'build.configuration-approved',
+        next: {
+          currentWork: observation.work,
+          waitCondition: null,
+          blocker: null,
+          buildProtocol,
+        },
+      });
+    }
+    if (observation.work.kind !== 'build.configure') {
+      throw new Error('Rejected Build Configuration requires another Configure Work');
+    }
+    const buildProtocol = advanceBuildProtocol(current.buildProtocol, {
+      kind: 'retry',
+      action: 'configure',
+    });
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'build.configuration-rejected',
+      next: {
+        currentWork: observation.work,
+        waitCondition: null,
+        blocker: null,
+        buildProtocol,
+      },
+    });
+  }
+  if (observation.kind === 'build-plan-accepted') {
+    if (
+      current.phase !== 'build' ||
+      current.status !== 'running' ||
+      current.currentWork?.kind !== 'build.plan' ||
+      !current.buildProtocol ||
+      current.buildProtocol.currentAction !== 'plan'
+    ) {
+      throw new Error('Accepted Build Plan does not match the active Plan Action');
+    }
+    const buildProtocol = advanceBuildProtocol(current.buildProtocol, {
+      kind: 'plan-accepted',
+      plan: observation.plan,
+    });
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'build.plan-accepted',
+      next: {
+        currentWork: null,
+        waitCondition: null,
+        blocker: null,
+        buildProtocol,
+      },
+    });
+  }
+  if (observation.kind === 'build-plan-evidence-accepted') {
+    if (
+      current.phase !== 'build' ||
+      current.status !== 'running' ||
+      current.currentWork !== null ||
+      observation.work.kind !== 'build.execute' ||
+      !current.buildProtocol ||
+      current.buildProtocol.currentAction !== 'plan-evidence'
+    ) {
+      throw new Error('Plan Evidence does not match the active Runtime validator Action');
+    }
+    const buildProtocol = advanceBuildProtocol(current.buildProtocol, {
+      kind: 'plan-evidence-accepted',
+      evidence: observation.evidence,
+    });
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'build.plan-evidence-accepted',
+      next: {
+        currentWork: observation.work,
+        waitCondition: null,
+        blocker: null,
+        buildProtocol,
+      },
+    });
+  }
+  if (observation.kind === 'build-package-completed') {
+    if (
+      current.phase !== 'build' ||
+      current.status !== 'running' ||
+      current.currentWork?.kind !== 'build.execute' ||
+      current.currentWork.packageId !== observation.completion.packageId ||
+      !current.buildProtocol ||
+      current.buildProtocol.currentAction !== 'execute'
+    ) {
+      throw new Error('Package completion does not match the active Execute Work');
+    }
+    const buildProtocol = advanceBuildProtocol(current.buildProtocol, {
+      kind: 'package-completed',
+      completion: observation.completion,
+    });
+    const expectedKind = buildProtocol.currentAction === 'check' ? 'build.check' : 'build.execute';
+    if (observation.work.kind !== expectedKind) {
+      throw new Error('Runtime-selected Work does not match the next Build Action');
+    }
+    const previousTasks = current.tasks ?? [];
+    if (
+      observation.tasks.length !== previousTasks.length ||
+      observation.tasks.some((task, index) => {
+        const previous = previousTasks[index];
+        return (
+          !previous ||
+          task.taskId !== previous.taskId ||
+          task.taskRevision !== previous.taskRevision ||
+          (previous.status === 'completed' && task.status !== 'completed')
+        );
+      })
+    ) {
+      throw new Error('Package completion changed the approved Task authority');
+    }
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'build.package-completed',
+      next: {
+        currentWork: observation.work,
+        waitCondition: null,
+        blocker: null,
+        tasks: observation.tasks,
+        buildProtocol,
+      },
+    });
+  }
+  if (observation.kind === 'build-check-accepted') {
+    if (
+      current.phase !== 'build' ||
+      current.status !== 'running' ||
+      current.currentWork?.kind !== 'build.check' ||
+      !current.buildProtocol ||
+      current.buildProtocol.currentAction !== 'check' ||
+      observation.work.kind !== 'evidence.verify' ||
+      observation.work.inputDigest !== observation.verificationInput.digest
+    ) {
+      throw new Error('Build Check acceptance does not match the active Check Action');
+    }
+    const buildProtocol = advanceBuildProtocol(current.buildProtocol, {
+      kind: 'check-accepted',
+      evidence: observation.evidence,
+    });
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'build.validated',
+      next: {
+        currentWork: observation.work,
+        waitCondition: null,
+        blocker: null,
+        buildProtocol,
+        verificationInput: observation.verificationInput,
+        verificationInvalidation: null,
       },
     });
   }
@@ -1544,25 +1906,24 @@ export function evolveChangeLifecycle(options: {
     if (!observation.tasks || observation.tasks.length === 0) {
       throw new Error('Approved Design gate requires a fixed Task projection');
     }
-    const hasPendingTask = observation.tasks.some((task) => task.status !== 'completed');
-    const hasImportedClaim = observation.tasks.some(
-      (task) => task.status === 'completed' && task.completion?.source === 'imported-claim',
-    );
     if (
-      (hasPendingTask && !hasImportedClaim && !observation.work) ||
-      ((!hasPendingTask || hasImportedClaim) && observation.work)
+      !observation.work ||
+      observation.work.kind !== 'build.configure' ||
+      !observation.buildProtocol ||
+      observation.buildProtocol.currentAction !== 'configure'
     ) {
-      throw new Error('Approved Design gate Build Work does not match the Task projection');
+      throw new Error('Approved Design gate requires Runtime-selected Build Configure');
     }
     return applyChangeLifecycleTransition({
       definition: options.definition,
       current,
       transitionId: 'design.approved',
       next: {
-        currentWork: observation.work ?? null,
+        currentWork: observation.work,
         waitCondition: null,
         blocker: null,
         tasks: observation.tasks,
+        buildProtocol: observation.buildProtocol,
         planningDigest: observation.inputDigest,
       },
     });
@@ -1642,5 +2003,22 @@ export function projectChangeRun(
   ) {
     throw new Error('Change task progress is outside its valid range');
   }
-  return structuredClone({ ...snapshot, ...details });
+  const protocol = snapshot.buildProtocol;
+  const build: ChangeBuildSummary | null = protocol
+    ? {
+        action: protocol.currentAction,
+        actionAttempt: protocol.actionAttempt,
+        configurationId: protocol.configuration?.configurationId ?? null,
+        executionMode: protocol.configuration?.executionMode ?? null,
+        tddMode: protocol.configuration?.tddMode ?? null,
+        isolation: protocol.workspaceIntent.isolation,
+        planId: protocol.plan?.planId ?? null,
+        planRevision: protocol.plan?.revision ?? null,
+        packageId: snapshot.currentWork?.packageId ?? null,
+        completedPackages: protocol.packageCompletions.length,
+        totalPackages: protocol.plan?.packages.length ?? 0,
+        checkAccepted: protocol.checkEvidence?.accepted ?? false,
+      }
+    : null;
+  return structuredClone({ ...snapshot, ...details, build });
 }

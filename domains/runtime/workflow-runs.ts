@@ -72,6 +72,12 @@ function lifecycleState(snapshot: ChangeLifecycleSnapshot): ChangeLifecycleState
     waitCondition: structuredClone(snapshot.waitCondition),
     blocker: structuredClone(snapshot.blocker),
     ...(snapshot.tasks ? { tasks: structuredClone(snapshot.tasks) } : {}),
+    ...(snapshot.workspaceIntent
+      ? { workspaceIntent: structuredClone(snapshot.workspaceIntent) }
+      : {}),
+    ...(snapshot.buildProtocol
+      ? { buildProtocol: structuredClone(snapshot.buildProtocol) }
+      : {}),
     ...(snapshot.openApprovalDigest ? { openApprovalDigest: snapshot.openApprovalDigest } : {}),
     ...(snapshot.planningDigest ? { planningDigest: snapshot.planningDigest } : {}),
     ...(snapshot.adoptedCompletionClaimDigest

@@ -7,6 +7,7 @@ import type { SpecificationArtifactKind } from '../../domains/specification/type
 import type {
   WorkExecutionHost,
   WorkExecutionPacket,
+  WorkExecutionResult,
   WorkExecutionSessionIdentity,
 } from '../../domains/work-execution/types.js';
 import type { CommandHandler } from '../../services/command-router.js';
@@ -37,6 +38,10 @@ export function installCapturingWorkExecutionHost(input: {
   repositories: Readonly<Record<string, string>>;
   operations(packet: WorkExecutionPacket): readonly CapturingHostOperation[];
   afterOperations?(packet: WorkExecutionPacket): Promise<void>;
+  result?(
+    packet: WorkExecutionPacket,
+    session: WorkExecutionSessionIdentity,
+  ): WorkExecutionResult | undefined;
 }): { invocations: CapturedWorkInvocation[]; dispose(): void } {
   const invocations: CapturedWorkInvocation[] = [];
   const commandName = 'test.capturing-host.write';
@@ -85,6 +90,7 @@ export function installCapturingWorkExecutionHost(input: {
       version: '1.0.0-test',
       codeDigest,
       capabilities: [
+        'build.autonomous',
         'repository.read',
         'repository.write',
         'process.execute',
@@ -118,6 +124,7 @@ export function installCapturingWorkExecutionHost(input: {
         });
       }
       await input.afterOperations?.(packet);
+      const result = input.result?.(packet, session);
       return {
         schemaVersion: 1,
         invocationId: session.invocationId,
@@ -128,6 +135,7 @@ export function installCapturingWorkExecutionHost(input: {
         consumedLayerDigests: packet.context.layers
           .filter((layer) => ['action-skill', 'augmentation-skill'].includes(layer.kind))
           .map((layer) => layer.digest),
+        ...(result ? { result } : {}),
         completedAt: new Date().toISOString(),
       };
     },

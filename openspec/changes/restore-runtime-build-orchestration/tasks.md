@@ -25,31 +25,31 @@
 
 ## 2. 交付 Autonomous 单仓纵切
 
-- [ ] 2.1 扩展 Open decision，要求在四类工件批准前选择 `current|branch|worktree`，持久化不含绝对路径的 `ExecutionWorkspaceIntent`。
+- [x] 2.1 扩展 Open decision，要求在四类工件批准前选择 `current|branch|worktree`，持久化不含绝对路径的 `ExecutionWorkspaceIntent`。
       **Blocked by:** 1.5
       **Acceptance:** 三种选择、缺失选择、过期/重放决定和模式变更测试通过；Open approval 语义与 OTLP 不含本机路径
       **Requirements:** change-lifecycle#open-在规划批准前固定执行隔离意图
-- [ ] 2.2 实现 execution-workspace Service 与 Git facts adapter，验证 Runner/Host 提供的单仓 checkout binding，再生成 Build Configure proposal。
+- [x] 2.2 实现 execution-workspace Service 与 Git facts adapter，验证 Runner/Host 提供的单仓 checkout binding，再生成 Build Configure proposal。
       **Blocked by:** 2.1
       **Acceptance:** current/branch/worktree 的 repository、branch、head、worktree ownership 正向测试通过；Runtime 不创建/切换 checkout，虚假 binding、路径猜测、拓扑漂移与非法枚举阻断
       **Requirements:** managed-work-execution#build-configure-产生可批准的不可变配置
-- [ ] 2.3 建立配置 Human Decision，批准后冻结 semantic digest 与本地 binding digest，拒绝/修订留在 Configure，过期或重放决定不能推进。
+- [x] 2.3 建立配置 Human Decision，批准后冻结 semantic digest 与本地 binding digest，拒绝/修订留在 Configure，过期或重放决定不能推进。
       **Blocked by:** 2.2
       **Acceptance:** 批准、拒绝、篡改、重复响应和冷恢复测试通过，批准后切换 execution/TDD/isolation 被拒绝
       **Requirements:** change-lifecycle#build-configuration-只允许受支持的固定策略
-- [ ] 2.4 实现 `build.plan` Host Work、`build-plan-candidate` Outcome result 与 Plan Validator，让 Agent 把单仓 OpenSpec Tasks 投影为有界 Work Packages。
+- [x] 2.4 实现 `build.plan` Host Work、`build-plan-candidate` Outcome result 与 Plan Validator，让 Agent 把单仓 OpenSpec Tasks 投影为有界 Work Packages。
       **Blocked by:** 2.3
       **Acceptance:** Host 收到固定 Tasks/配置/拓扑/binding/Skill 并返回结构化 candidate；Runtime 规范化 revision 与摘要；依赖顺序、Task coverage、字段上限和非法新增需求测试通过；Plan 随 Run snapshot 保存且 OpenSpec change 目录不产生第五工件
       **Requirements:** managed-work-execution#runtime-buildplan-是-openspec-tasks-的执行投影, specification-authority#openspec-tasks-与-runtime-buildplan-分层而不平行
-- [ ] 2.5 实现最小 Plan Evidence Validator，验证 Task coverage、依赖、write scope、Host、isolation、Skill 和 acceptance，并支持无风险自动接受。
+- [x] 2.5 实现最小 Plan Evidence Validator，验证 Task coverage、依赖、write scope、Host、isolation、Skill 和 acceptance，并支持无风险自动接受。
       **Blocked by:** 2.4
       **Acceptance:** 完整计划生成可复用 Evidence，任一输入漂移使其失效，用户先前批准 Design 不能替代验证
       **Requirements:** managed-work-execution#plan-evidence-在执行前证明计划可行
-- [ ] 2.6 从计划包派生 autonomous Execute Work，并沿现有 claim/packet/Host/Outcome/Validator 链完成一个真实 Task。
+- [x] 2.6 从计划包派生 autonomous Execute Work，并沿现有 claim/packet/Host/Outcome/Validator 链完成一个真实 Task。
       **Blocked by:** 2.5
       **Acceptance:** 进程级测试证明 Host 收到当前包、真实 Skill 内容和范围，越界或输入漂移 Outcome 不接受
       **Requirements:** managed-work-execution#work-descriptor-只能由已接受计划派生
-- [ ] 2.7 实现最小 Build Check，汇总 package、Task acceptance、测试与 standard review 后进入 Verify，并完成单仓纵切测试。
+- [x] 2.7 实现最小 Build Check，汇总 package、Task acceptance、测试与 standard review 后进入 Verify，并完成单仓纵切测试。
       **Blocked by:** 2.6
       **Acceptance:** Configure→Plan→Evidence→Execute→Check→Verify 全链在每个边界可重启，缺任一 Evidence 不能进入 Verify
       **Requirements:** managed-work-execution#build-check-汇总计划和任务完成事实
