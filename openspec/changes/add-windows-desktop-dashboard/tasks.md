@@ -3,7 +3,7 @@
 ## 1. 固定当前主线与候选复用边界
 
 - [ ] 1.1 在全新 worktree 记录 `main`、Node、npm、Windows 和当前 Runtime workflow schema 基线；执行 `npm run check:upstream`、`npm run verify` 与 `npm run test:tracer-e2e`，保存可复现的通过结果。
-- [ ] 1.2 对两个旧 Dashboard 分支建立 salvage ledger，逐行为记录来源提交、候选文件、当前规格映射、依赖、过时语义、重写范围、验证方法和采用结论；证明没有整体 merge、批量 cherry-pick 或继承旧任务勾选。
+- [ ] 1.2 对两个旧 Dashboard 分支建立 salvage ledger，逐行为记录来源提交、候选文件、当前规格映射、外部前提、过时语义、重写范围、核验方法和采用结论；证明没有整体导入、批量 cherry-pick 或继承旧任务勾选。
 - [ ] 1.3 对候选代码执行负向语义扫描，拒绝独立修复阶段、merge 后自动化、已完成 Task 回退、旧 task action、旧 Run schema 和旧数据 reader；把误报与最终处置记入 ledger。
 - [ ] 1.4 审计固定 DSH Desktop 基线并精确锁定 Electron、React、Vite 与 `electron-builder`；登记许可证、来源、安装脚本、采用行为切片、修改方式与排除范围，更新 `third_party/dsh-adoption.json`，并通过 provenance、漏洞与许可证检查。
 
