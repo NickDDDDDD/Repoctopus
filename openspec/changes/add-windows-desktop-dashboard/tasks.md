@@ -79,31 +79,31 @@
 
 ## 4. 收敛完整遥测映射与恢复
 
-- [ ] 4.1 将 Workflow Run exporter 迁移到共享 envelope 映射与 OTLP encoder。
+- [x] 4.1 将 Workflow Run exporter 迁移到共享 envelope 映射与 OTLP encoder。
       **Blocked by:** 3.3
       **Acceptance:** 现有 tracer E2E 与双目的地测试通过；事件身份、允许列表和主规格语义保持一致；目的地不再解释领域对象
       **Requirements:** development-telemetry#每个领域事实只产生一份规范观测 envelope
-- [ ] 4.2 映射 Build action 与 fallback 事实。
+- [x] 4.2 映射 Build action 与 fallback 事实。
       **Blocked by:** 3.2, 4.1
       **Acceptance:** Configure、Plan、Plan Evidence、Execute、Check 与 fallback 均可投影；Verify finding 只失效受影响 Evidence、Package 或 Check；已完成 Task 保持完成
       **Requirements:** development-telemetry#规范 envelope 保留桌面投影所需的权威关联, desktop-observability-dashboard#主视图呈现完整五阶段与 Build 子动作
-- [ ] 4.3 映射 Skill、Work Package、Host Outcome 与 Validator 事实。
+- [x] 4.3 映射 Skill、Work Package、Host Outcome 与 Validator 事实。
       **Blocked by:** 3.2, 4.1
       **Acceptance:** 正反 fixture 区分 resolved、delivered、consumed、消费校验失败和未上报；记录不包含 Skill 正文或 Agent 内部思考
       **Requirements:** development-telemetry#规范 envelope 保留桌面投影所需的权威关联, desktop-observability-dashboard#当前 Work 显示 Skill 装填与消费状态
-- [ ] 4.4 将 Evidence、Artifact 与 Gate 映射迁移到共享 envelope。
+- [x] 4.4 将 Evidence、Artifact 与 Gate 映射迁移到共享 envelope。
       **Blocked by:** 4.1
       **Acceptance:** Evidence 重放、superseded、Receipt 复用和隐私测试通过；本地与远端获得相同关联语义
       **Requirements:** development-telemetry#每个领域事实只产生一份规范观测 envelope, desktop-observability-dashboard#桌面界面保持最小权限边界
-- [ ] 4.5 将 App 生命周期、平台事件和轻量 Archive 映射迁移到共享 envelope。
+- [x] 4.5 将 App 生命周期、平台事件和轻量 Archive 映射迁移到共享 envelope。
       **Blocked by:** 4.1
       **Acceptance:** exporter 不再分别解释领域对象；事件模型不包含 Webhook、等待远端合入或 merge 后自动化状态
       **Requirements:** development-telemetry#规范 envelope 保留桌面投影所需的权威关联
-- [ ] 4.6 实现目的地保留、积压与 gap 治理。
+- [x] 4.6 实现目的地保留、积压与 gap 治理。
       **Blocked by:** 3.3
       **Acceptance:** 启用、暂停、移除、容量上限、积压健康和 gap 均有测试；超限可诊断；远端 Cursor 不重置；文档不宣称 exactly-once
       **Requirements:** development-telemetry#遥测目的地独立确认和恢复, desktop-observability-dashboard#重放和重复投递收敛为一致投影
-- [ ] 4.7 更新遥测配置与开发文档。
+- [x] 4.7 更新遥测配置与开发文档。
       **Blocked by:** 4.2, 4.3, 4.4, 4.5, 4.6
       **Acceptance:** 文档命令冒烟测试覆盖单远端、远端加桌面、桌面关闭、追平和移除五种配置
       **Requirements:** development-telemetry#本地实时消费不改变远端 OTLP 契约
