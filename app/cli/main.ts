@@ -134,6 +134,8 @@ const CLI_FLAGS = new Set([
   'host-id',
   'packet-digest',
   'consumed-layers',
+  'host-capabilities',
+  'result-file',
   'candidate',
   'branch',
   'draft',
