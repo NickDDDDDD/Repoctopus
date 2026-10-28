@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "kind": "WindowsDesktopPerformance",
+  "taskId": "7.5",
+  "runtimeRunId": "change-repoctopus-add-windows-desktop-dashboard-f5ddf312046dbfbb",
+  "status": "passed",
+  "completedAt": "2026-10-28T18:34:04.111Z",
+  "environment": {
+    "platform": "win32",
+    "architecture": "x64",
+    "windowsRelease": "10.0.26300",
+    "nodeVersion": "v24.21.0",
+    "isolatedInstall": true,
+    "isolatedUserData": true
+  },
+  "candidate": {
+    "artifact": "dist/desktop-release/Repoctopus-Desktop-0.1.0-x64-Setup.exe",
+    "bytes": 116494089,
+    "digest": "sha256:c96418adee47145e2cd501d5abf6636596cdb21ea60ed829c55303850529b735"
+  },
+  "measurements": {
+    "installerBytes": {
+      "value": 116494089,
+      "budget": 157286400,
+      "unit": "bytes",
+      "comparison": "at-most",
+      "passed": true,
+      "method": "Byte size of the versioned NSIS x64 setup candidate."
+    },
+    "coldStartMs": {
+      "value": 4942.6988,
+      "budget": 15000,
+      "unit": "milliseconds",
+      "comparison": "at-most",
+      "passed": true,
+      "method": "Wall time from CreateProcess for an isolated installed candidate to authenticated Receiver discovery."
+    },
+    "idleWorkingSetBytes": {
+      "value": 465846272,
+      "budget": 734003200,
+      "unit": "bytes",
+      "comparison": "at-most",
+      "passed": true,
+      "method": "Sum of WorkingSetSize for the installed Shell, Renderer and Host process tree after a one-second idle settle.",
+      "processCount": 5
+    },
+    "activeWorkingSetBytes": {
+      "value": 533889024,
+      "budget": 891289600,
+      "unit": "bytes",
+      "comparison": "at-most",
+      "passed": true,
+      "method": "Sum of WorkingSetSize for the same process tree after 300 authenticated canonical OTLP requests.",
+      "processCount": 5
+    },
+    "receiverRequestsPerSecond": {
+      "value": 495.90539183055455,
+      "budget": 75,
+      "unit": "requests/second",
+      "comparison": "at-least",
+      "passed": true,
+      "method": "300 accepted one-record canonical OTLP/HTTP requests at concurrency 16 divided by wall time.",
+      "requestCount": 300,
+      "elapsedMs": 604.954099999999
+    }
+  }
+}

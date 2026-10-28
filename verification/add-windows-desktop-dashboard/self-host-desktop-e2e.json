@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "kind": "WindowsDesktopSelfHostE2E",
+  "taskId": "7.4",
+  "runtimeRunId": "change-repoctopus-add-windows-desktop-dashboard-f5ddf312046dbfbb",
+  "status": "passed",
+  "startedAt": "2026-10-28T18:32:35.027Z",
+  "completedAt": "2026-10-28T18:32:59.092Z",
+  "environment": {
+    "platform": "win32",
+    "architecture": "x64",
+    "windowsRelease": "10.0.26300",
+    "isolatedUserData": true,
+    "isolatedDiscovery": true
+  },
+  "candidate": {
+    "artifact": "dist/desktop-release/Repoctopus-Desktop-0.1.0-x64-Setup.exe",
+    "bytes": 116494089,
+    "digest": "sha256:c96418adee47145e2cd501d5abf6636596cdb21ea60ed829c55303850529b735"
+  },
+  "checks": [
+    {
+      "id": "install-candidate",
+      "status": "passed",
+      "durationMs": 6782
+    },
+    {
+      "id": "run-activation",
+      "status": "passed",
+      "durationMs": 1178
+    },
+    {
+      "id": "otlp-receiver",
+      "status": "passed",
+      "durationMs": 36
+    },
+    {
+      "id": "self-hosted-run-projection",
+      "status": "passed",
+      "durationMs": 365,
+      "runId": "change-repoctopus-add-windows-desktop-dashboard-f5ddf312046dbfbb",
+      "workspaceId": "repoctopus",
+      "changeId": "add-windows-desktop-dashboard",
+      "trajectoryEvents": 512,
+      "lastSequence": 512,
+      "otlpRequestCount": 2,
+      "observedPhases": {
+        "Open": "completed",
+        "Design": "completed",
+        "Build": "running",
+        "Verify": "not-reported",
+        "Archive": "not-reported"
+      },
+      "observedBuildActions": {
+        "Configure": "running",
+        "Plan": "running",
+        "Plan Evidence": "running",
+        "Execute": "running",
+        "Check": "not-reported"
+      },
+      "actionSkill": "repoctopus-build-execute",
+      "augmentationSkill": "tdd",
+      "healthDimensions": ["流转", "执行", "质量", "遥测"],
+      "rendererHttpRequests": [],
+      "futurePhaseClaim": "not-observed"
+    },
+    {
+      "id": "single-instance",
+      "status": "passed",
+      "durationMs": 368
+    },
+    {
+      "id": "tray-hide-and-restore",
+      "status": "passed",
+      "durationMs": 2087
+    },
+    {
+      "id": "direct-exit",
+      "status": "passed",
+      "durationMs": 4966
+    },
+    {
+      "id": "uninstall-candidate",
+      "status": "passed",
+      "durationMs": 3096
+    }
+  ],
+  "diagnostic": null
+}

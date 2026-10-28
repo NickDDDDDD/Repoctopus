@@ -168,15 +168,15 @@
 
 ## 7. 打包、自举与交付
 
-- [ ] 7.1 配置并生成 Windows x64 安装产物。
+- [x] 7.1 配置并生成 Windows x64 安装产物。
       **Blocked by:** 1.4, 2.5, 6.3
       **Acceptance:** `electron-builder` 使用精确版本和确定性资源清单；产物包含声明的 Desktop Host 与 Renderer；品牌、来源和 package contents 检查通过
       **Requirements:** desktop-observability-dashboard#首个发布只承诺 Windows x64 支持
-- [ ] 7.2 在干净 Windows 用户环境执行安装候选 E2E。
+- [x] 7.2 在干净 Windows 用户环境执行安装候选 E2E。
       **Blocked by:** 3.7, 6.2, 6.4, 7.1
       **Acceptance:** 安装、启动、Run 自动激活、OTLP 接收、单实例、托盘、直接退出和卸载均通过并产生 Evidence
       **Requirements:** desktop-observability-dashboard#Windows 开发 Run 自动激活单实例桌面应用, desktop-observability-dashboard#用户可以选择窗口关闭行为, desktop-observability-dashboard#首个发布只承诺 Windows x64 支持
-- [ ] 7.3 执行双目的地真实开发 Run。
+- [x] 7.3 执行双目的地真实开发 Run。
       **Blocked by:** 4.7, 7.2
       **Acceptance:** 本地桌面与远端 mock 收到相同 envelope identity、信号语义和允许列表；任一目的地故障不影响另一端
       **Requirements:** development-telemetry#每个领域事实只产生一份规范观测 envelope, development-telemetry#遥测目的地独立确认和恢复
