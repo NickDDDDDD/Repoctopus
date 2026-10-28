@@ -187,7 +187,7 @@
       **Blocked by:** 8.3
       **Acceptance:** 全部正式检查通过，报告可复现并证明验收对受控退化敏感
       **Requirements:** development-telemetry#受管-change-执行必须产生完整可重放遥测
-- [ ] 8.5 清理临时 Workspace、receiver、状态卷、日志和 payload，推送全部提交并确认远端分支与被验证 HEAD 一致。
+- [x] 8.5 清理临时 Workspace、receiver、状态卷、日志和 payload，推送全部提交并确认远端分支与被验证 HEAD 一致。
       **Blocked by:** 8.4
       **Acceptance:** 无临时进程或调试残留，工作树干净且远端包含验证提交
       **Requirements:** change-lifecycle#build-使用固定的受管内部协议
