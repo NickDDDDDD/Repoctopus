@@ -21,27 +21,27 @@
 
 ## 2. 建立桌面进程与插件骨架
 
-- [ ] 2.1 收敛现有 thin-main、preload、renderer、desktop-host 和共享协议边界。
+- [x] 2.1 收敛现有 thin-main、preload、renderer、desktop-host 和共享协议边界。
       **Blocked by:** 1.3, 1.4
       **Acceptance:** 现有 foundation 复用清单已记录且没有平行 Shell；桌面 typecheck、lint 与开发构建通过；Electron Main 不承载 Cordis 产品 composition；Renderer 没有 Node 或 Cordis 权限
       **Requirements:** plugin-composition#外部入口作为 Application Plugin 接入, desktop-observability-dashboard#桌面界面保持最小权限边界
-- [ ] 2.2 深化现有 Node-mode Desktop Host App Boot 与专用 Cordis composition。
+- [x] 2.2 深化现有 Node-mode Desktop Host App Boot 与专用 Cordis composition。
       **Blocked by:** 2.1
       **Acceptance:** 现有 `bootDesktopComposition()` 扩展后组合 Receiver、Projection Store 和 Desktop Application Plugin；依赖缺失时不发布 ready；正常启动契约测试通过
       **Requirements:** plugin-composition#桌面能力使用跨进程 Cordis composition, plugin-composition#桌面插件资源遵循 Cordis 生命周期
-- [ ] 2.3 在 Runtime composition 中注册 Desktop Launcher 与本地遥测目的地 Contributor。
+- [x] 2.3 在 Runtime composition 中注册 Desktop Launcher 与本地遥测目的地 Contributor。
       **Blocked by:** 2.2
       **Acceptance:** 无桌面、桌面可用和插件卸载测试通过；入口只经版本化应用服务；不存在旁路构造
       **Requirements:** plugin-composition#外部入口作为 Application Plugin 接入, plugin-composition#桌面能力使用跨进程 Cordis composition
-- [ ] 2.4 定义 Shell、Host、Preload 与 Renderer 的版本化协议。
+- [x] 2.4 定义 Shell、Host、Preload 与 Renderer 的版本化协议。
       **Blocked by:** 2.1
       **Acceptance:** 协议声明版本、大小上限和错误分类；未知版本、未知 channel、错误 sender/origin 与超限 payload 均 fail closed
       **Requirements:** desktop-observability-dashboard#桌面界面保持最小权限边界, plugin-composition#外部入口作为 Application Plugin 接入
-- [ ] 2.5 扩展现有 Desktop Host 串行启动、重试和停止控制器。
+- [x] 2.5 扩展现有 Desktop Host 串行启动、重试和停止控制器。
       **Blocked by:** 2.2, 2.4
       **Acceptance:** ready deadline、stderr 上限、优雅停止和强制终止升级均有测试；Host 崩溃后 Shell 可恢复；退出后没有孤儿 Host
       **Requirements:** plugin-composition#桌面插件资源遵循 Cordis 生命周期
-- [ ] 2.6 扩展现有 Electron 单实例以转交启动上下文。
+- [x] 2.6 扩展现有 Electron 单实例以转交启动上下文。
       **Blocked by:** 2.5
       **Acceptance:** 两个并发 Run 只产生一个 Shell 和一个有效 Receiver；临时第二进程只转交 Workspace/change/Run 后退出
       **Requirements:** desktop-observability-dashboard#Windows 开发 Run 自动激活单实例桌面应用
