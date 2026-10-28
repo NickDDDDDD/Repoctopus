@@ -6,16 +6,48 @@ import {
   type ObservationEnvelope,
 } from '../domains/trajectory/observation.js';
 
+export type ObservationDestinationMode = 'enabled' | 'paused' | 'removed';
+
+export interface ObservationDestinationAttempt {
+  result: 'succeeded' | 'failed';
+  attemptedAt: string;
+  warningCode?: string;
+}
+
+interface ObservationDestinationState {
+  mode: ObservationDestinationMode;
+  cursor: string | null;
+  cursorPosition: number;
+  gap: { droppedEnvelopes: number; firstRetainedSequence: number | null } | null;
+  lastAttempt: ObservationDestinationAttempt | null;
+}
+
 interface ObservationStoreState {
-  schemaVersion: 1;
+  schemaVersion: 2;
   envelopes: ObservationEnvelope[];
-  cursors: Record<string, string | null>;
+  positions: Record<string, number>;
+  nextPosition: number;
+  droppedEnvelopes: number;
+  destinations: Record<string, ObservationDestinationState>;
+}
+
+export interface ObservationDestinationStatus extends ObservationDestinationState {
+  destinationId: string;
+  backlog: number;
+  retained: number;
 }
 
 const STORE_FILE = 'observation-envelopes.json';
 
 function emptyState(): ObservationStoreState {
-  return { schemaVersion: 1, envelopes: [], cursors: {} };
+  return {
+    schemaVersion: 2,
+    envelopes: [],
+    positions: {},
+    nextPosition: 0,
+    droppedEnvelopes: 0,
+    destinations: {},
+  };
 }
 
 function parseState(value: unknown): ObservationStoreState {
@@ -23,32 +55,62 @@ function parseState(value: unknown): ObservationStoreState {
     throw new Error('Observation Store state is not an object');
   }
   const candidate = value as Record<string, unknown>;
-  if (candidate.schemaVersion !== 1 || !Array.isArray(candidate.envelopes)) {
+  if (candidate.schemaVersion !== 2 || !Array.isArray(candidate.envelopes)) {
     throw new Error('Observation Store schema is unsupported');
   }
   if (!candidate.envelopes.every(isObservationEnvelope)) {
     throw new Error('Observation Store contains an invalid envelope');
   }
   if (
-    typeof candidate.cursors !== 'object' ||
-    candidate.cursors === null ||
-    Array.isArray(candidate.cursors)
+    typeof candidate.positions !== 'object' ||
+    candidate.positions === null ||
+    Array.isArray(candidate.positions) ||
+    !Number.isSafeInteger(candidate.nextPosition) ||
+    (candidate.nextPosition as number) < 0 ||
+    !Number.isSafeInteger(candidate.droppedEnvelopes) ||
+    (candidate.droppedEnvelopes as number) < 0
   ) {
-    throw new Error('Observation Store contains invalid cursors');
+    throw new Error('Observation Store contains invalid append positions');
   }
-  const cursors: Record<string, string | null> = {};
-  for (const [destination, cursor] of Object.entries(
-    candidate.cursors as Record<string, unknown>,
+  const positions = candidate.positions as Record<string, unknown>;
+  if (
+    candidate.envelopes.some((envelope) => !Number.isSafeInteger(positions[envelope.envelopeId]))
+  ) {
+    throw new Error('Observation Store is missing an envelope append position');
+  }
+  if (
+    typeof candidate.destinations !== 'object' ||
+    candidate.destinations === null ||
+    Array.isArray(candidate.destinations)
+  ) {
+    throw new Error('Observation Store contains invalid destinations');
+  }
+  const destinations: Record<string, ObservationDestinationState> = {};
+  for (const [destination, rawState] of Object.entries(
+    candidate.destinations as Record<string, unknown>,
   )) {
-    if (!destination.trim() || (cursor !== null && typeof cursor !== 'string')) {
-      throw new Error('Observation Store contains an invalid destination cursor');
+    const value = rawState as Partial<ObservationDestinationState> | null;
+    if (
+      !destination.trim() ||
+      !value ||
+      !['enabled', 'paused', 'removed'].includes(value.mode ?? '') ||
+      (value.cursor !== null && typeof value.cursor !== 'string') ||
+      !Number.isSafeInteger(value.cursorPosition) ||
+      (value.cursorPosition ?? -2) < -1 ||
+      !('gap' in value) ||
+      !('lastAttempt' in value)
+    ) {
+      throw new Error('Observation Store contains an invalid destination state');
     }
-    cursors[destination] = cursor;
+    destinations[destination] = value as ObservationDestinationState;
   }
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     envelopes: candidate.envelopes,
-    cursors,
+    positions: positions as Record<string, number>,
+    nextPosition: candidate.nextPosition as number,
+    droppedEnvelopes: candidate.droppedEnvelopes as number,
+    destinations,
   };
 }
 
@@ -57,13 +119,18 @@ export class ObservationPipeline {
   private readonly file: string;
   private state: ObservationStoreState;
   private transition = Promise.resolve();
+  private readonly capacity: number;
 
-  private constructor(directory: string, state: ObservationStoreState) {
+  private constructor(directory: string, state: ObservationStoreState, capacity: number) {
     this.file = path.join(directory, STORE_FILE);
     this.state = state;
+    this.capacity = capacity;
   }
 
-  static async open(directory: string): Promise<ObservationPipeline> {
+  static async open(
+    directory: string,
+    options: { capacity?: number } = {},
+  ): Promise<ObservationPipeline> {
     await mkdir(directory, { recursive: true });
     const file = path.join(directory, STORE_FILE);
     let state = emptyState();
@@ -72,7 +139,11 @@ export class ObservationPipeline {
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
     }
-    return new ObservationPipeline(directory, state);
+    const capacity = options.capacity ?? 10_000;
+    if (!Number.isSafeInteger(capacity) || capacity < 1) {
+      throw new Error('Observation retention capacity must be a positive integer');
+    }
+    return new ObservationPipeline(directory, state, capacity);
   }
 
   append(envelopes: readonly ObservationEnvelope[]): Promise<void> {
@@ -83,12 +154,48 @@ export class ObservationPipeline {
         if (known.has(envelope.envelopeId)) continue;
         known.add(envelope.envelopeId);
         state.envelopes.push(structuredClone(envelope));
+        state.positions[envelope.envelopeId] = state.nextPosition;
+        state.nextPosition += 1;
       }
-      state.envelopes.sort(
-        (left, right) =>
-          left.identity.sequence - right.identity.sequence ||
-          left.envelopeId.localeCompare(right.envelopeId),
-      );
+      const overflow = Math.max(0, state.envelopes.length - this.capacity);
+      if (overflow === 0) return;
+      const dropped = state.envelopes.splice(0, overflow);
+      state.droppedEnvelopes += dropped.length;
+      const firstRetainedSequence = state.envelopes[0]?.identity.sequence ?? null;
+      for (const destination of Object.values(state.destinations)) {
+        if (destination.mode === 'removed') continue;
+        const missed = dropped.filter(
+          (envelope) => state.positions[envelope.envelopeId]! > destination.cursorPosition,
+        ).length;
+        if (missed === 0) continue;
+        destination.gap = {
+          droppedEnvelopes: (destination.gap?.droppedEnvelopes ?? 0) + missed,
+          firstRetainedSequence,
+        };
+      }
+      for (const envelope of dropped) delete state.positions[envelope.envelopeId];
+    });
+  }
+
+  configureDestination(destinationId: string, mode: ObservationDestinationMode): Promise<void> {
+    return this.mutate((state) => {
+      const destination = this.destinationId(destinationId);
+      const current = state.destinations[destination];
+      state.destinations[destination] = current
+        ? { ...current, mode }
+        : {
+            mode,
+            cursor: null,
+            cursorPosition: -1,
+            gap:
+              state.droppedEnvelopes > 0
+                ? {
+                    droppedEnvelopes: state.droppedEnvelopes,
+                    firstRetainedSequence: state.envelopes[0]?.identity.sequence ?? null,
+                  }
+                : null,
+            lastAttempt: null,
+          };
     });
   }
 
@@ -96,29 +203,81 @@ export class ObservationPipeline {
     await this.transition;
     const destination = destinationId.trim();
     if (!destination) throw new Error('Observation destination id is required');
-    const cursor = this.state.cursors[destination] ?? null;
-    const cursorIndex =
-      cursor === null
-        ? -1
-        : this.state.envelopes.findIndex((envelope) => envelope.envelopeId === cursor);
-    if (cursor !== null && cursorIndex < 0) {
-      throw new Error(`Observation cursor is outside retained history: ${destination}`);
-    }
-    return structuredClone(this.state.envelopes.slice(cursorIndex + 1, cursorIndex + 1 + limit));
+    const current = this.state.destinations[destination];
+    if (current?.mode === 'paused' || current?.mode === 'removed') return [];
+    const cursorPosition = current?.cursorPosition ?? -1;
+    return structuredClone(
+      this.state.envelopes
+        .filter((envelope) => this.state.positions[envelope.envelopeId]! > cursorPosition)
+        .slice(0, limit),
+    );
   }
 
   acknowledge(destinationId: string, envelopeId: string): Promise<void> {
     return this.mutate((state) => {
-      const destination = destinationId.trim();
-      if (!destination) throw new Error('Observation destination id is required');
+      const destination = this.destinationId(destinationId);
       const nextIndex = state.envelopes.findIndex((item) => item.envelopeId === envelopeId);
       if (nextIndex < 0) throw new Error('Cannot acknowledge an unknown observation envelope');
-      const current = state.cursors[destination] ?? null;
-      const currentIndex =
-        current === null ? -1 : state.envelopes.findIndex((item) => item.envelopeId === current);
-      if (nextIndex < currentIndex) return;
-      state.cursors[destination] = envelopeId;
+      const next = state.envelopes[nextIndex]!;
+      const nextPosition = state.positions[next.envelopeId]!;
+      const current = state.destinations[destination] ?? {
+        mode: 'enabled' as const,
+        cursor: null,
+        cursorPosition: -1,
+        gap: null,
+        lastAttempt: null,
+      };
+      if (nextPosition < current.cursorPosition) return;
+      state.destinations[destination] = {
+        ...current,
+        cursor: envelopeId,
+        cursorPosition: nextPosition,
+      };
     });
+  }
+
+  recordAttempt(destinationId: string, attempt: ObservationDestinationAttempt): Promise<void> {
+    return this.mutate((state) => {
+      const destination = this.destinationId(destinationId);
+      const current = state.destinations[destination] ?? {
+        mode: 'enabled' as const,
+        cursor: null,
+        cursorPosition: -1,
+        gap: null,
+        lastAttempt: null,
+      };
+      state.destinations[destination] = { ...current, lastAttempt: structuredClone(attempt) };
+    });
+  }
+
+  async status(destinationId: string): Promise<ObservationDestinationStatus> {
+    await this.transition;
+    const destination = this.destinationId(destinationId);
+    const current = this.state.destinations[destination] ?? {
+      mode: 'enabled' as const,
+      cursor: null,
+      cursorPosition: -1,
+      gap: null,
+      lastAttempt: null,
+    };
+    const backlog =
+      current.mode === 'removed'
+        ? 0
+        : this.state.envelopes.filter(
+            (envelope) => this.state.positions[envelope.envelopeId]! > current.cursorPosition,
+          ).length;
+    return structuredClone({
+      destinationId: destination,
+      ...current,
+      backlog,
+      retained: this.state.envelopes.length,
+    });
+  }
+
+  private destinationId(value: string): string {
+    const destination = value.trim();
+    if (!destination) throw new Error('Observation destination id is required');
+    return destination;
   }
 
   private mutate(operation: (state: ObservationStoreState) => void | Promise<void>): Promise<void> {

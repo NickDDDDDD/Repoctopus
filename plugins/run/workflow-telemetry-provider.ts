@@ -1,7 +1,7 @@
 import type { Context } from '@deepseek-ai/cordis';
 
 import type { TelemetryBatch, TelemetryPort } from '../../domains/runtime/types.js';
-import { telemetryFromEnvironment } from '../../platform/telemetry/opentelemetry/exporter.js';
+import { WorkflowObservationTelemetry } from '../../services/observation-telemetry.js';
 import { WorkflowTelemetry } from '../../services/workflow-support.js';
 
 export interface WorkflowTelemetryConfig {
@@ -9,11 +9,15 @@ export interface WorkflowTelemetryConfig {
 }
 
 export class WorkflowTelemetryProvider extends WorkflowTelemetry {
+  static inject = ['observationDelivery'];
   private readonly telemetry: TelemetryPort;
 
   constructor(context: Context, config: WorkflowTelemetryConfig = {}) {
     super(context);
-    this.telemetry = telemetryFromEnvironment(config.environment ?? process.env);
+    this.telemetry = new WorkflowObservationTelemetry(
+      context.observationDelivery,
+      config.environment ?? process.env,
+    );
     context.effect(() => () => this.shutdown());
   }
 

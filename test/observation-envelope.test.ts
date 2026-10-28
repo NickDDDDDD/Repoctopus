@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  createApplicationObservationEnvelope,
+  createDeliveryObservationEnvelope,
+  createEvidenceObservationEnvelopes,
   createObservationEnvelope,
   type ObservationContext,
 } from '../domains/trajectory/observation.js';
+import type { EvidenceTelemetryBatch } from '../domains/evidence/telemetry.js';
 import type { TrajectoryEvent } from '../domains/trajectory/types.js';
 
 const context: ObservationContext = {
@@ -110,5 +114,116 @@ describe('ObservationEnvelope', () => {
     expect(createObservationEnvelope(event('run.resumed'), context).correlation).not.toHaveProperty(
       'workId',
     );
+  });
+
+  it('derives Build action, fallback and Skill state from authoritative persisted facts', () => {
+    const planEvidence = createObservationEnvelope(
+      event('change.lifecycle.transitioned', {
+        observationKind: 'build-plan-evidence-accepted',
+        changeLifecycleTransition: {
+          to: { phase: 'build' },
+          work: null,
+          wait: null,
+        },
+      }),
+      context,
+    );
+    expect(planEvidence.correlation).toMatchObject({
+      phase: 'build',
+      buildAction: 'plan-evidence',
+    });
+
+    const fallback = createObservationEnvelope(
+      event('change.lifecycle.transitioned', {
+        observationKind: 'build-fallback-applied',
+        changeLifecycleTransition: { to: { phase: 'build' }, work: null, wait: null },
+        observation: {
+          invalidation: {
+            classification: 'implementation_failure',
+            packageId: 'work-package:4',
+          },
+        },
+      }),
+      context,
+    );
+    expect(fallback.correlation).toMatchObject({ phase: 'build', packageId: 'work-package:4' });
+    expect(fallback.attributes).toMatchObject({
+      observationKind: 'build-fallback-applied',
+      findingKind: 'implementation_failure',
+    });
+
+    for (const [type, state] of [
+      ['skill.resolved', 'resolved'],
+      ['skill.delivered', 'delivered'],
+      ['skill.consumed', 'consumed'],
+    ] as const) {
+      const skill = createObservationEnvelope(
+        event(type, {
+          phase: 'build',
+          workId: 'build.execute:4',
+          skillName: 'tdd',
+          skillRole: 'augmentation',
+          result: 'succeeded',
+        }),
+        context,
+      );
+      expect(skill.attributes.skillState).toBe(state);
+      expect(JSON.stringify(skill)).not.toMatch(/skillContent|prompt|internalThought/u);
+    }
+  });
+
+  it('normalizes Evidence, Delivery and application facts through the same canonical envelope', () => {
+    const evidenceBatch: EvidenceTelemetryBatch = {
+      schemaVersion: 1,
+      runId: 'run-dashboard',
+      attemptId: 'attempt-1',
+      profileId: 'verify',
+      compositionDigest: `sha256:${'a'.repeat(64)}`,
+      events: [
+        {
+          schemaVersion: 1,
+          sequence: 1,
+          eventId: 'evidence-1',
+          type: 'evidence.artifact.recorded',
+          timestamp: '2026-10-28T00:00:08.000Z',
+          runId: 'run-dashboard',
+          attemptId: 'attempt-1',
+          data: {
+            receiptId: 'receipt-1',
+            artifactDigest: `sha256:${'b'.repeat(64)}`,
+            artifactType: 'report',
+            path: 'C:\\private\\report.md',
+          },
+        },
+      ],
+    };
+    const [evidence] = createEvidenceObservationEnvelopes(evidenceBatch, context);
+    expect(evidence?.correlation).toMatchObject({ evidenceAttemptId: 'attempt-1' });
+    expect(JSON.stringify(evidence)).not.toContain('C:\\private');
+
+    const delivery = createDeliveryObservationEnvelope(
+      {
+        schemaVersion: 1,
+        eventId: 'delivery-1',
+        changeId: 'dashboard',
+        stateVersion: 4,
+        timestamp: '2026-10-28T00:00:09.000Z',
+        type: 'delivery.refreshed',
+        data: { result: 'succeeded', webhook: 'private', post_merge: true },
+      },
+      context,
+    );
+    expect(delivery.attributes.result).toBe('succeeded');
+    expect(JSON.stringify(delivery)).not.toMatch(/webhook|post_merge/u);
+
+    const application = createApplicationObservationEnvelope({
+      eventId: 'desktop-ready-1',
+      runId: 'run-dashboard',
+      observedAt: '2026-10-28T00:00:10.000Z',
+      eventType: 'application.desktop.ready',
+      context,
+      attributes: { platform: 'win32', lifecycle: 'ready', path: 'C:\\private' },
+    });
+    expect(application.attributes).toEqual({ lifecycle: 'ready', platform: 'win32' });
   });
 });

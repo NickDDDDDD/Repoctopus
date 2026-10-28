@@ -25,11 +25,15 @@ function envelope(): ObservationEnvelope {
 }
 
 async function receiver(target: ObservationEnvelope[]) {
+  const paths: string[] = [];
   const server = createServer((request, response) => {
+    paths.push(request.url ?? '');
     const chunks: Buffer[] = [];
     request.on('data', (chunk: Buffer) => chunks.push(chunk));
     request.on('end', () => {
-      target.push(...decodeObservationOtlpJson(Buffer.concat(chunks)));
+      for (const envelope of decodeObservationOtlpJson(Buffer.concat(chunks))) {
+        if (!target.some((item) => item.envelopeId === envelope.envelopeId)) target.push(envelope);
+      }
       response.writeHead(200).end();
     });
   });
@@ -38,6 +42,7 @@ async function receiver(target: ObservationEnvelope[]) {
   if (address === null || typeof address === 'string') throw new Error('mock receiver failed');
   return {
     endpoint: `http://127.0.0.1:${address.port}`,
+    paths,
     close: () => new Promise<void>((resolve) => server.close(() => resolve())),
   };
 }
@@ -63,6 +68,12 @@ describe('desktop observation delivery slice', () => {
       ).toMatchObject({ delivered: 1 });
       expect(remote).toEqual([envelope()]);
       expect(desktop).toEqual(remote);
+      expect(new Set(remoteServer.paths)).toEqual(
+        new Set(['/v1/traces', '/v1/logs', '/v1/metrics']),
+      );
+      expect(new Set(desktopServer.paths)).toEqual(
+        new Set(['/v1/traces', '/v1/logs', '/v1/metrics']),
+      );
 
       const failed = await delivery.replay({ id: 'offline', endpoint: 'http://127.0.0.1:1' });
       expect(failed).toMatchObject({ delivered: 0 });
@@ -78,6 +89,44 @@ describe('desktop observation delivery slice', () => {
       expect(typeof launch.warning).toBe('string');
     } finally {
       await Promise.all([remoteServer.close(), desktopServer.close()]);
+      await context.fiber.dispose();
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
+  it('isolates destination failures and preserves health while destinations pause or are removed', async () => {
+    const directory = await mkdtemp(path.join(os.tmpdir(), 'repoctopus-delivery-health-'));
+    const received: ObservationEnvelope[] = [];
+    const healthy = await receiver(received);
+    const context = new Context();
+    try {
+      const delivery = new ObservationDelivery(context, { workspaceRoot: directory });
+      await delivery.append([envelope()]);
+      const results = await delivery.replayAll([
+        { id: 'remote', endpoint: healthy.endpoint },
+        { id: 'desktop', endpoint: 'http://127.0.0.1:1' },
+      ]);
+      expect(results).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ destinationId: 'remote', delivered: 1 }),
+          expect.objectContaining({ destinationId: 'desktop', delivered: 0 }),
+        ]),
+      );
+      expect(await delivery.health('remote')).toMatchObject({ backlog: 0 });
+      expect(await delivery.health('desktop')).toMatchObject({
+        backlog: 1,
+        lastAttempt: { result: 'failed' },
+      });
+
+      await delivery.setMode('desktop', 'paused');
+      expect(await delivery.replay({ id: 'desktop', endpoint: healthy.endpoint })).toMatchObject({
+        delivered: 0,
+        skipped: 'paused',
+      });
+      await delivery.setMode('desktop', 'removed');
+      expect(await delivery.health('desktop')).toMatchObject({ mode: 'removed', backlog: 0 });
+    } finally {
+      await healthy.close();
       await context.fiber.dispose();
       await rm(directory, { recursive: true, force: true });
     }

@@ -145,7 +145,7 @@ const definitions: readonly BuiltinDefinition[] = [
       compositions: ['project'],
       authorities: ['observation-envelope-store'],
       permissions: ['filesystem', 'network'],
-      stateSchemas: { 'observation-envelope-store': '1' },
+      stateSchemas: { 'observation-envelope-store': '2' },
     },
     plugin: ObservationDelivery,
     sourceFiles: [
@@ -965,6 +965,7 @@ const definitions: readonly BuiltinDefinition[] = [
     plugin: WorkflowTelemetryProvider,
     sourceFiles: [
       'services/workflow-support.ts',
+      'services/observation-telemetry.ts',
       'plugins/run/workflow-telemetry-provider.ts',
       'platform/telemetry/opentelemetry/exporter.ts',
     ],

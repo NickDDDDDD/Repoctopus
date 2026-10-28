@@ -2,6 +2,8 @@ import { createHash } from 'node:crypto';
 
 import { CHANGE_PHASES, type ChangePhase } from '../change-lifecycle/transition.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
+import type { DeliveryEvent } from '../delivery/ports.js';
+import type { EvidenceTelemetryBatch } from '../evidence/telemetry.js';
 import type { TrajectoryEvent } from './types.js';
 
 export const OBSERVATION_SCHEMA_VERSION = 1 as const;
@@ -38,6 +40,11 @@ export interface ObservationCorrelation {
   decisionKind?: string;
   evidenceAttemptId?: string;
   recovery?: string;
+  invocationId?: string;
+  parentWorkId?: string;
+  receiptId?: string;
+  artifactId?: string;
+  gateId?: string;
 }
 
 export interface ObservationEnvelope {
@@ -45,7 +52,7 @@ export interface ObservationEnvelope {
   envelopeId: `sha256:${string}`;
   digest: `sha256:${string}`;
   observedAt: string;
-  eventType: TrajectoryEvent['type'];
+  eventType: string;
   identity: {
     eventId: string;
     runId: string;
@@ -78,6 +85,17 @@ const ATTRIBUTE_KEYS = [
   'reviewMode',
   'isolation',
   'recoveredTransition',
+  'actionType',
+  'decision',
+  'gateStatus',
+  'outcome',
+  'status',
+  'artifactType',
+  'artifactSize',
+  'mediaType',
+  'redacted',
+  'platform',
+  'lifecycle',
 ] as const;
 
 function digest(value: unknown): `sha256:${string}` {
@@ -133,6 +151,30 @@ function nestedTransition(event: TrajectoryEvent) {
   return value && typeof value === 'object' ? value : undefined;
 }
 
+function record(value: unknown): Record<string, unknown> | undefined {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : undefined;
+}
+
+function inferredBuildAction(event: TrajectoryEvent): ObservationBuildAction | undefined {
+  const explicit = buildAction(event.data.buildAction);
+  if (explicit) return explicit;
+  const workKind = id(event.data.workKind);
+  if (workKind?.startsWith('build.')) {
+    const candidate = workKind.slice('build.'.length);
+    return buildAction(candidate === 'configure' ? 'configure' : candidate);
+  }
+  const observationKind = id(event.data.observationKind);
+  if (!observationKind) return undefined;
+  if (observationKind.includes('plan-evidence')) return 'plan-evidence';
+  if (observationKind.includes('configuration')) return 'configure';
+  if (observationKind.includes('package')) return 'execute';
+  if (observationKind.includes('check')) return 'check';
+  if (observationKind.includes('plan')) return 'plan';
+  return undefined;
+}
+
 function correlation(event: TrajectoryEvent, context: ObservationContext): ObservationCorrelation {
   const transition = nestedTransition(event);
   const target = transition?.to;
@@ -149,10 +191,16 @@ function correlation(event: TrajectoryEvent, context: ObservationContext): Obser
   assign('workspaceId', id(context.workspaceId));
   assign('changeId', id(context.changeId));
   assign('phase', phase(event.data.phase) ?? phase(target?.phase));
-  assign('buildAction', buildAction(event.data.buildAction));
+  assign('buildAction', inferredBuildAction(event));
   assign('workId', id(event.data.workId) ?? id(work?.workId));
   assign('workKind', id(event.data.workKind) ?? id(work?.kind));
-  assign('packageId', id(event.data.packageId));
+  const observation = record(event.data.observation);
+  const invalidation = record(observation?.invalidation);
+  const completion = record(observation?.completion);
+  assign(
+    'packageId',
+    id(event.data.packageId) ?? id(invalidation?.packageId) ?? id(completion?.packageId),
+  );
   assign('taskId', id(event.data.taskId) ?? id(work?.taskId));
   assign('taskRevision', id(event.data.taskRevision));
   assign('attempt', integer(event.data.attempt));
@@ -170,6 +218,11 @@ function correlation(event: TrajectoryEvent, context: ObservationContext): Obser
   );
   assign('decisionKind', id(event.data.decisionKind) ?? waitKind);
   assign('evidenceAttemptId', id(event.data.evidenceAttemptId));
+  assign('invocationId', id(event.data.invocationId));
+  assign('parentWorkId', id(event.data.parentWorkId));
+  assign('receiptId', id(event.data.receiptId));
+  assign('artifactId', id(event.data.artifactId));
+  assign('gateId', id(event.data.gateId));
   assign(
     'recovery',
     id(event.data.recovery) ??
@@ -192,7 +245,40 @@ function attributes(event: TrajectoryEvent, context: ObservationContext) {
     const value = scalar(event.data[key]);
     if (value !== undefined) result[key] = value;
   }
+  const observationKind = scalar(event.data.observationKind);
+  if (observationKind !== undefined) result.observationKind = observationKind;
+  const observation = record(event.data.observation);
+  const invalidation = record(observation?.invalidation);
+  const findingKind = scalar(invalidation?.classification);
+  if (findingKind !== undefined) result.findingKind = findingKind;
+  if (event.type.startsWith('skill.')) result.skillState = event.type.slice('skill.'.length);
   return result;
+}
+
+function canonicalEnvelope(input: {
+  eventId: string;
+  runId: string;
+  sequence: number;
+  observedAt: string;
+  eventType: string;
+  correlation?: ObservationCorrelation;
+  attributes?: Readonly<Record<string, ObservationScalar>>;
+}): ObservationEnvelope {
+  const payload = {
+    schemaVersion: OBSERVATION_SCHEMA_VERSION,
+    observedAt: input.observedAt,
+    eventType: input.eventType,
+    identity: { eventId: input.eventId, runId: input.runId, sequence: input.sequence },
+    correlation: input.correlation ?? {},
+    attributes: input.attributes ?? {},
+  } as const;
+  const envelopeId = digest({
+    schemaVersion: OBSERVATION_SCHEMA_VERSION,
+    eventId: input.eventId,
+    runId: input.runId,
+    sequence: input.sequence,
+  });
+  return { ...payload, envelopeId, digest: digest({ ...payload, envelopeId }) };
 }
 
 /** Maps one persisted Runtime fact into the only canonical observation representation. */
@@ -200,21 +286,131 @@ export function createObservationEnvelope(
   event: TrajectoryEvent,
   context: ObservationContext = {},
 ): ObservationEnvelope {
-  const payload = {
-    schemaVersion: OBSERVATION_SCHEMA_VERSION,
-    observedAt: event.timestamp,
-    eventType: event.type,
-    identity: { eventId: event.eventId, runId: event.runId, sequence: event.sequence },
-    correlation: correlation(event, context),
-    attributes: attributes(event, context),
-  } as const;
-  const envelopeId = digest({
-    schemaVersion: OBSERVATION_SCHEMA_VERSION,
+  return canonicalEnvelope({
     eventId: event.eventId,
     runId: event.runId,
     sequence: event.sequence,
+    observedAt: event.timestamp,
+    eventType: event.type,
+    correlation: correlation(event, context),
+    attributes: attributes(event, context),
   });
-  return { ...payload, envelopeId, digest: digest({ ...payload, envelopeId }) };
+}
+
+function safeAttributes(
+  source: Readonly<Record<string, unknown>>,
+  keys: readonly string[],
+): Readonly<Record<string, ObservationScalar>> {
+  const result: Record<string, ObservationScalar> = {};
+  for (const key of keys) {
+    const value = scalar(source[key]);
+    if (value !== undefined) result[key] = value;
+  }
+  return result;
+}
+
+/** Maps durable Evidence facts without exposing artifact paths or report bodies. */
+export function createEvidenceObservationEnvelopes(
+  batch: EvidenceTelemetryBatch,
+  context: ObservationContext = {},
+): readonly ObservationEnvelope[] {
+  return batch.events.map((event) => {
+    const workspaceId = id(context.workspaceId);
+    const changeId = id(context.changeId);
+    const receiptId = id(event.data.receiptId);
+    const artifactId = id(event.data.artifactDigest);
+    const gateId = id(event.data.bundleId);
+    const correlation: ObservationCorrelation = {
+      ...(workspaceId ? { workspaceId } : {}),
+      ...(changeId ? { changeId } : {}),
+      evidenceAttemptId: event.attemptId,
+      ...(receiptId ? { receiptId } : {}),
+      ...(artifactId ? { artifactId } : {}),
+      ...(gateId ? { gateId } : {}),
+    };
+    return canonicalEnvelope({
+      eventId: event.eventId,
+      runId: event.runId ?? `evidence:${event.attemptId}`,
+      sequence: event.sequence,
+      observedAt: event.timestamp,
+      eventType: event.type,
+      correlation,
+      attributes: safeAttributes(event.data, [
+        'adapter',
+        'artifactType',
+        'artifactSize',
+        'durationMs',
+        'freshness',
+        'gateStatus',
+        'mediaType',
+        'outcome',
+        'redacted',
+        'sourceReceiptId',
+        'status',
+        'trust',
+      ]),
+    });
+  });
+}
+
+/** Maps lightweight delivery/archive facts; merge automation and webhook state are intentionally absent. */
+export function createDeliveryObservationEnvelope(
+  event: DeliveryEvent,
+  context: ObservationContext = {},
+): ObservationEnvelope {
+  const workspaceId = id(context.workspaceId);
+  return canonicalEnvelope({
+    eventId: event.eventId,
+    runId: `delivery:${event.changeId}`,
+    sequence: event.stateVersion,
+    observedAt: event.timestamp,
+    eventType: event.type,
+    correlation: {
+      ...(workspaceId ? { workspaceId } : {}),
+      changeId: event.changeId,
+    },
+    attributes: safeAttributes(event.data, [
+      'actionType',
+      'decision',
+      'mergedCount',
+      'mergeRequestCount',
+      'repositoryCount',
+      'result',
+    ]),
+  });
+}
+
+/** Creates allowlisted application/platform lifecycle observations for the same OTLP pipeline. */
+export function createApplicationObservationEnvelope(input: {
+  eventId: string;
+  runId: string;
+  observedAt: string;
+  eventType: `application.${string}` | `platform.${string}` | `archive.${string}`;
+  context?: ObservationContext;
+  attributes?: Readonly<Record<string, unknown>>;
+}): ObservationEnvelope {
+  if (/webhook|post[_-]?merge|merge[_-]?wait/iu.test(input.eventType)) {
+    throw new Error('Legacy merge automation is not an observation lifecycle');
+  }
+  const workspaceId = id(input.context?.workspaceId);
+  const changeId = id(input.context?.changeId);
+  return canonicalEnvelope({
+    eventId: input.eventId,
+    runId: input.runId,
+    sequence: 0,
+    observedAt: input.observedAt,
+    eventType: input.eventType,
+    correlation: {
+      ...(workspaceId ? { workspaceId } : {}),
+      ...(changeId ? { changeId } : {}),
+    },
+    attributes: safeAttributes(input.attributes ?? {}, [
+      'platform',
+      'lifecycle',
+      'result',
+      'status',
+    ]),
+  });
 }
 
 export function isObservationEnvelope(value: unknown): value is ObservationEnvelope {
