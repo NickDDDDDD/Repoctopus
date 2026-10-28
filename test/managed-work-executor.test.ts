@@ -96,13 +96,13 @@ function executor(
     invoke: vi.fn((_packet: WorkExecutionPacket, session: WorkExecutionSessionIdentity) => {
       if (invokeError) return Promise.reject(invokeError);
       return Promise.resolve({
-        schemaVersion: 1 as const,
-        invocationId: session.invocationId,
-        hostId: 'coordinator-1',
-        packetDigest: packet.identity.packetDigest,
-        status: 'succeeded' as const,
-        summary: 'delegated package completed',
-        consumedLayerDigests: [digest('1'), digest('2')],
+      schemaVersion: 1 as const,
+      invocationId: session.invocationId,
+      hostId: 'coordinator-1',
+      packetDigest: packet.identity.packetDigest,
+      status: 'succeeded' as const,
+      summary: 'delegated package completed',
+      consumedLayerDigests: [digest('1'), digest('2')],
         result: (resultOverride ?? {
           schemaVersion: 1,
           kind: 'build-package-completion',
@@ -117,20 +117,20 @@ function executor(
           repositoryDigest: digest('5'),
           implementationDigest: digest('6'),
         }) as WorkExecutionResult,
-        delegationReceipts: delegationReceiptsOverride ?? [
-          {
-            schemaVersion: 1 as const,
-            receiptId: 'receipt-1',
-            parentInvocationId: session.invocationId,
-            coordinatorHostId: 'coordinator-1',
-            executionId: 'subagent-implementation-1',
-            role: 'implementer' as const,
-            packageId: 'package-1',
-            status: 'succeeded' as const,
-            outcomeDigest: digest('7'),
-          },
-        ],
-        completedAt: '2026-10-28T00:00:00.000Z',
+      delegationReceipts: delegationReceiptsOverride ?? [
+        {
+          schemaVersion: 1 as const,
+          receiptId: 'receipt-1',
+          parentInvocationId: session.invocationId,
+          coordinatorHostId: 'coordinator-1',
+          executionId: 'subagent-implementation-1',
+          role: 'implementer' as const,
+          packageId: 'package-1',
+          status: 'succeeded' as const,
+          outcomeDigest: digest('7'),
+        },
+      ],
+      completedAt: '2026-10-28T00:00:00.000Z',
       } satisfies WorkExecutionHostOutcome);
     }),
   };
@@ -144,11 +144,13 @@ function executor(
       },
       workExecutionHosts: { select: vi.fn().mockReturnValue(host) },
       workExecutionSessions: {
-        open: vi.fn((input: Omit<WorkExecutionSessionIdentity, 'schemaVersion' | 'sessionId'>) => ({
-          ...input,
-          schemaVersion: 2,
-          sessionId: 'session-1',
-        })),
+        open: vi.fn(
+          (input: Omit<WorkExecutionSessionIdentity, 'schemaVersion' | 'sessionId'>) => ({
+            ...input,
+            schemaVersion: 2,
+            sessionId: 'session-1',
+          }),
+        ),
         close: vi.fn(),
       },
       workExecutionAuthority: authority,
@@ -204,10 +206,11 @@ describe('Managed Work Executor Build contract', () => {
     });
     expect(authority.markHostCompleted).toHaveBeenCalledOnce();
     expect(authority.recordDelegationFacts).toHaveBeenCalledOnce();
-    expect(authority.recordSkillFacts).toHaveBeenCalledWith(expect.anything(), 'consumed', [
-      digest('1'),
-      digest('2'),
-    ]);
+    expect(authority.recordSkillFacts).toHaveBeenCalledWith(
+      expect.anything(),
+      'consumed',
+      [digest('1'), digest('2')],
+    );
     expect(authority.markHostUnknown).not.toHaveBeenCalled();
   });
 
