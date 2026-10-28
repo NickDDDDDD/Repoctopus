@@ -115,12 +115,12 @@ function lifecycleNextActions(snapshot: ChangeLifecycleSnapshot) {
   if (snapshot.phase === 'design') {
     return [{ id: 'design.evaluate', kind: 'work' as const, label: 'Evaluate Design gate' }];
   }
-  if (snapshot.phase === 'build' && snapshot.currentWork?.taskId) {
+  if (snapshot.phase === 'build' && snapshot.currentWork) {
     return [
       {
         id: snapshot.currentWork.workId,
         kind: 'work' as const,
-        label: `Implement Task ${snapshot.currentWork.taskId}`,
+        label: `Run ${snapshot.currentWork.kind}`,
       },
     ];
   }
@@ -129,15 +129,6 @@ function lifecycleNextActions(snapshot: ChangeLifecycleSnapshot) {
   }
   if (snapshot.phase === 'build' && snapshot.status === 'blocked') {
     return [{ id: 'build.blocked', kind: 'wait' as const, label: 'Resolve Build blocker' }];
-  }
-  if (snapshot.phase === 'build' && snapshot.verificationInvalidation) {
-    return [
-      {
-        id: 'verify.repair',
-        kind: 'repair' as const,
-        label: 'Repair implementation after failed verification',
-      },
-    ];
   }
   if (snapshot.phase === 'build') {
     return [

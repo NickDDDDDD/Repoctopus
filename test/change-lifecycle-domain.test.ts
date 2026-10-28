@@ -23,7 +23,7 @@ import {
 const digest = (value: string): `sha256:${string}` => `sha256:${value.repeat(64).slice(0, 64)}`;
 
 const definition: ChangeLifecycleDefinition = {
-  schemaVersion: 2,
+  schemaVersion: 3,
   id: 'repoctopus-change',
   version: '1.0.0',
   phases: CHANGE_PHASES.map((phase) => ({
@@ -33,6 +33,7 @@ const definition: ChangeLifecycleDefinition = {
     extensionCheckpoints: [`after-${phase}`],
   })),
   works: structuredClone(BUILTIN_CHANGE_LIFECYCLE_DEFINITION.works),
+  buildProtocol: structuredClone(BUILTIN_CHANGE_LIFECYCLE_DEFINITION.buildProtocol),
   transitions: [
     {
       id: 'open.ready',

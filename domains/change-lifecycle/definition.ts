@@ -34,6 +34,7 @@ const sideEffectClasses = new Set([
   'platform-mutation',
 ]);
 const behaviorReferenceOnlySkills = new Set(['to-spec', 'to-tickets']);
+const expectedBuildActions = ['configure', 'plan', 'plan-evidence', 'execute', 'check'] as const;
 
 function profileDigest(value: unknown): `sha256:${string}` {
   return `sha256:${createHash('sha256').update(canonicalJson(value)).digest('hex')}`;
@@ -45,10 +46,9 @@ function validatorProfile(id: string) {
 }
 
 export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
-  schemaVersion: 2,
+  schemaVersion: 3,
   id: 'repoctopus-change',
-  version: '3.0.0',
-  compatibleDigests: ['sha256:42eebeda8add66e967021c322a765aa9052797c07e3f526f7322cdecc4e4e7d9'],
+  version: '4.0.0',
   phases: [
     {
       phase: 'open',
@@ -64,9 +64,20 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
     },
     {
       phase: 'build',
-      workKinds: ['task.implement'],
-      requiredValidatorProfiles: ['build.plan-current', 'build.task-valid'],
-      extensionCheckpoints: ['build.after-task', 'build.before-task'],
+      workKinds: ['build.configure', 'build.plan', 'build.execute', 'build.check'],
+      requiredValidatorProfiles: [
+        'build.configuration-approved',
+        'build.plan-valid',
+        'build.plan-evidence-valid',
+        'build.package-valid',
+        'build.check-valid',
+      ],
+      extensionCheckpoints: [
+        'build.after-check',
+        'build.after-execute',
+        'build.after-plan',
+        'build.before-configure',
+      ],
     },
     {
       phase: 'verify',
@@ -127,10 +138,36 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       checkpoint: 'design.after-validation',
     },
     {
-      kind: 'task.implement',
+      kind: 'build.configure',
       phase: 'build',
-      actionSkill: { name: 'repoctopus-build-task' },
-      augmentationSkills: [{ name: 'tdd' }],
+      actionSkill: { name: 'repoctopus-build-configure' },
+      augmentationSkills: [],
+      methodProfile: BUILTIN_METHOD_PROFILE_REGISTRY.snapshot('repoctopus.build', '1.0.0'),
+      capabilities: ['repository.read'],
+      sideEffectClass: 'none',
+      writeScopes: [],
+      outputContract: { artifactKinds: [], trackerPublish: false },
+      validatorProfile: validatorProfile('build.configuration-approved'),
+      checkpoint: 'build.before-configure',
+    },
+    {
+      kind: 'build.plan',
+      phase: 'build',
+      actionSkill: { name: 'repoctopus-build-plan' },
+      augmentationSkills: [],
+      methodProfile: BUILTIN_METHOD_PROFILE_REGISTRY.snapshot('repoctopus.build', '1.0.0'),
+      capabilities: ['repository.read', 'specification.read'],
+      sideEffectClass: 'none',
+      writeScopes: [],
+      outputContract: { artifactKinds: [], trackerPublish: false },
+      validatorProfile: validatorProfile('build.plan-valid'),
+      checkpoint: 'build.after-plan',
+    },
+    {
+      kind: 'build.execute',
+      phase: 'build',
+      actionSkill: { name: 'repoctopus-build-execute' },
+      augmentationSkills: [],
       methodProfile: BUILTIN_METHOD_PROFILE_REGISTRY.snapshot('repoctopus.build', '1.0.0'),
       capabilities: ['process.execute', 'repository.read', 'repository.write'],
       sideEffectClass: 'repository-write',
@@ -142,8 +179,21 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
         },
       ],
       outputContract: { artifactKinds: [], trackerPublish: false },
-      validatorProfile: validatorProfile('build.task-valid'),
-      checkpoint: 'build.before-task',
+      validatorProfile: validatorProfile('build.package-valid'),
+      checkpoint: 'build.after-execute',
+    },
+    {
+      kind: 'build.check',
+      phase: 'build',
+      actionSkill: { name: 'repoctopus-build-check' },
+      augmentationSkills: [],
+      methodProfile: BUILTIN_METHOD_PROFILE_REGISTRY.snapshot('repoctopus.build', '1.0.0'),
+      capabilities: ['process.execute', 'repository.read'],
+      sideEffectClass: 'process',
+      writeScopes: [],
+      outputContract: { artifactKinds: [], trackerPublish: false },
+      validatorProfile: validatorProfile('build.check-valid'),
+      checkpoint: 'build.after-check',
     },
     {
       kind: 'evidence.verify',
@@ -246,7 +296,7 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       from: { phase: 'build', statuses: ['running'] },
       to: { phase: 'build', status: 'waiting' },
       trigger: 'planning-valid-precompleted-tasks-require-decision',
-      requiredValidatorProfile: 'build.plan-current',
+      requiredValidatorProfile: 'build.plan-valid',
     },
     {
       id: 'design.await-approval',
@@ -270,7 +320,7 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       from: { phase: 'build', statuses: ['running'] },
       to: { phase: 'build', status: 'running' },
       trigger: 'next-task-ready',
-      requiredValidatorProfile: 'build.plan-current',
+      requiredValidatorProfile: 'build.plan-valid',
     },
     {
       id: 'build.adoption-approved',
@@ -278,7 +328,7 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       from: { phase: 'build', statuses: ['waiting'] },
       to: { phase: 'build', status: 'running' },
       trigger: 'precompleted-task-claims-adopted',
-      requiredValidatorProfile: 'build.plan-current',
+      requiredValidatorProfile: 'build.plan-valid',
     },
     {
       id: 'build.adoption-rejected',
@@ -286,7 +336,7 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       from: { phase: 'build', statuses: ['waiting'] },
       to: { phase: 'build', status: 'blocked' },
       trigger: 'precompleted-task-claims-rejected',
-      requiredValidatorProfile: 'build.plan-current',
+      requiredValidatorProfile: 'build.plan-valid',
     },
     {
       id: 'build.retry-exhausted',
@@ -294,7 +344,7 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       from: { phase: 'build', statuses: ['running'] },
       to: { phase: 'build', status: 'blocked' },
       trigger: 'bounded-work-attempts-exhausted',
-      requiredValidatorProfile: 'build.task-valid',
+      requiredValidatorProfile: 'build.package-valid',
     },
     {
       id: 'build.design-revision-required',
@@ -302,7 +352,7 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       from: { phase: 'build', statuses: ['running'] },
       to: { phase: 'build', status: 'waiting' },
       trigger: 'host-reported-design-assumption-invalid',
-      requiredValidatorProfile: 'build.task-valid',
+      requiredValidatorProfile: 'build.package-valid',
     },
     {
       id: 'build.design-revision-approved',
@@ -310,7 +360,7 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       from: { phase: 'build', statuses: ['waiting'] },
       to: { phase: 'design', status: 'running' },
       trigger: 'human-approved-design-revision',
-      requiredValidatorProfile: 'build.plan-current',
+      requiredValidatorProfile: 'build.plan-valid',
     },
     {
       id: 'build.design-revision-rejected',
@@ -318,7 +368,7 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       from: { phase: 'build', statuses: ['waiting'] },
       to: { phase: 'build', status: 'blocked' },
       trigger: 'human-rejected-design-revision',
-      requiredValidatorProfile: 'build.plan-current',
+      requiredValidatorProfile: 'build.plan-valid',
     },
     {
       id: 'build.task-completed',
@@ -326,7 +376,7 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       from: { phase: 'build', statuses: ['running'] },
       to: { phase: 'build', status: 'running' },
       trigger: 'task-outcome-validated',
-      requiredValidatorProfile: 'build.task-valid',
+      requiredValidatorProfile: 'build.package-valid',
     },
     {
       id: 'build.verification-blocked',
@@ -334,7 +384,7 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       from: { phase: 'build', statuses: ['running', 'blocked'] },
       to: { phase: 'build', status: 'blocked' },
       trigger: 'verification-input-incomplete',
-      requiredValidatorProfile: 'build.plan-current',
+      requiredValidatorProfile: 'build.plan-evidence-valid',
     },
     {
       id: 'build.validated',
@@ -342,7 +392,7 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       from: { phase: 'build', statuses: ['running', 'blocked'] },
       to: { phase: 'verify', status: 'running' },
       trigger: 'all-tasks-validated',
-      requiredValidatorProfile: 'build.task-valid',
+      requiredValidatorProfile: 'build.check-valid',
     },
     {
       id: 'verify.satisfied',
@@ -460,6 +510,53 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       trigger: 'specification-conflict-detected',
     },
   ],
+  buildProtocol: {
+    schemaVersion: 1,
+    actions: [
+      {
+        action: 'configure',
+        workKind: 'build.configure',
+        validatorProfile: 'build.configuration-approved',
+        next: 'plan',
+        autoTransition: false,
+      },
+      {
+        action: 'plan',
+        workKind: 'build.plan',
+        validatorProfile: 'build.plan-valid',
+        next: 'plan-evidence',
+        autoTransition: true,
+      },
+      {
+        action: 'plan-evidence',
+        workKind: null,
+        validatorProfile: 'build.plan-evidence-valid',
+        next: 'execute',
+        autoTransition: true,
+      },
+      {
+        action: 'execute',
+        workKind: 'build.execute',
+        validatorProfile: 'build.package-valid',
+        next: 'check',
+        autoTransition: true,
+      },
+      {
+        action: 'check',
+        workKind: 'build.check',
+        validatorProfile: 'build.check-valid',
+        next: 'verify',
+        autoTransition: false,
+      },
+    ],
+    policies: {
+      executionModes: ['autonomous', 'subagent-driven-development'],
+      tddModes: ['tdd', 'direct'],
+      reviewModes: ['standard'],
+      isolations: ['current', 'branch', 'worktree'],
+      allowRuntimeModeSwitch: false,
+    },
+  },
 };
 
 function assertNonEmpty(value: string, label: string): void {
@@ -494,7 +591,7 @@ function assertProtectedPath(
 export function assertChangeLifecycleDefinition(
   definition: ChangeLifecycleDefinition,
 ): asserts definition is ChangeLifecycleDefinition {
-  if (definition.schemaVersion !== 2) throw new Error('Unsupported lifecycle definition schema');
+  if (definition.schemaVersion !== 3) throw new Error('Unsupported lifecycle definition schema');
   assertNonEmpty(definition.id, 'Lifecycle definition id');
   assertNonEmpty(definition.version, 'Lifecycle definition version');
   for (const compatibleDigest of definition.compatibleDigests ?? []) {
@@ -599,6 +696,43 @@ export function assertChangeLifecycleDefinition(
     if (!definition.works.some((work) => work.kind === kind)) {
       throw new Error(`Lifecycle Work has no immutable binding: ${kind}`);
     }
+  }
+
+  const build = definition.buildProtocol;
+  if (build.schemaVersion !== 1) throw new Error('Unsupported Build protocol schema');
+  if (
+    build.actions.length !== expectedBuildActions.length ||
+    build.actions.some((action, index) => action.action !== expectedBuildActions[index])
+  ) {
+    throw new Error(`Build Actions must be exactly ${expectedBuildActions.join(' -> ')}`);
+  }
+  const expectedNext = ['plan', 'plan-evidence', 'execute', 'check', 'verify'];
+  for (const [index, action] of build.actions.entries()) {
+    if (action.next !== expectedNext[index])
+      throw new Error('Build Action order cannot be changed');
+    if (action.action === 'plan-evidence') {
+      if (action.workKind !== null) throw new Error('Plan Evidence is a Runtime validator Action');
+    } else {
+      const work = definition.works.find((candidate) => candidate.kind === action.workKind);
+      if (!work || work.phase !== 'build') {
+        throw new Error(`Build Action ${action.action} must bind one Build Work`);
+      }
+      if (work.validatorProfile.id !== action.validatorProfile) {
+        throw new Error(`Build Action ${action.action} validator does not match its Work`);
+      }
+    }
+  }
+  if (
+    canonicalJson(build.policies) !==
+    canonicalJson({
+      executionModes: ['autonomous', 'subagent-driven-development'],
+      tddModes: ['tdd', 'direct'],
+      reviewModes: ['standard'],
+      isolations: ['current', 'branch', 'worktree'],
+      allowRuntimeModeSwitch: false,
+    })
+  ) {
+    throw new Error('Build protocol policies contain unsupported or reordered modes');
   }
 
   if (definition.transitions.length === 0) {
@@ -746,7 +880,7 @@ export function normalizeChangeLifecycleDefinition(
 ): ChangeLifecycleDefinition {
   assertChangeLifecycleDefinition(definition);
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     id: definition.id,
     version: definition.version,
     ...(definition.compatibleDigests?.length
@@ -759,6 +893,7 @@ export function normalizeChangeLifecycleDefinition(
     transitions: definition.transitions
       .map(normalizeTransition)
       .sort((left, right) => left.id.localeCompare(right.id)),
+    buildProtocol: structuredClone(definition.buildProtocol),
   };
 }
 

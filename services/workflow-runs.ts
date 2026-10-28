@@ -43,7 +43,10 @@ import {
   createChangeRunHostWorkflow,
 } from '../domains/change-lifecycle/host-workflow.js';
 import type { DesignGateAssessment } from './specification-planning.js';
-import { createInitialBuildWork } from '../domains/change-lifecycle/build-work.js';
+import {
+  createBuildActionWork,
+  createInitialBuildWork,
+} from '../domains/change-lifecycle/build-work.js';
 import {
   createVerificationInput,
   rebaseVerificationInput,
@@ -1086,7 +1089,7 @@ export class WorkflowRuns extends Service {
                   lifecycle.identity.changeId,
                   signal,
                 );
-                const skills = await this.resolveLifecycleWorkSkills('task.implement', signal);
+                const skills = await this.resolveLifecycleWorkSkills('build.configure', signal);
                 const nextBuild = createInitialBuildWork({
                   runId,
                   checkEpoch: lifecycle.checkEpoch + 1,
@@ -1191,7 +1194,7 @@ export class WorkflowRuns extends Service {
               if (hasImportedClaims || taskSet.tasks.every((task) => task.status === 'completed')) {
                 build = { tasks: structuredClone(taskSet.tasks), work: null };
               } else {
-                const skills = await this.resolveLifecycleWorkSkills('task.implement', signal);
+                const skills = await this.resolveLifecycleWorkSkills('build.configure', signal);
                 build = createInitialBuildWork({
                   runId,
                   checkEpoch: lifecycle.checkEpoch + 1,
@@ -1455,42 +1458,35 @@ export class WorkflowRuns extends Service {
       }
       return { work, verificationInput };
     }
-    if (!lifecycle.planningDigest)
-      throw new Error('Repair Work requires an approved Design digest');
-    const taskSet = await this.ctx.specification.tasks(lifecycle.identity.changeId, signal);
-    const approved = new Map(
-      (lifecycle.tasks ?? []).map((task) => [task.taskId, task.taskRevision]),
-    );
-    if (
-      taskSet.tasks.length !== approved.size ||
-      taskSet.tasks.some((task) => approved.get(task.taskId) !== task.taskRevision)
-    ) {
-      throw new Error('Repair Work Task revisions drifted from the approved Design');
+    if (!lifecycle.planningDigest) {
+      throw new Error('Build Plan revision requires an approved Design digest');
     }
-    const reopened = taskSet.tasks.map((task) => ({
-      ...task,
-      status: 'pending' as const,
-      completion: null,
-    }));
-    const skills = await this.resolveLifecycleWorkSkills('task.implement', signal);
-    const repair = createInitialBuildWork({
+    const skills = await this.resolveLifecycleWorkSkills('build.plan', signal);
+    const work = createBuildActionWork({
       runId: state.runId,
       checkEpoch: lifecycle.checkEpoch + 1,
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      kind: 'build.plan',
       actionSkill: skills.actionSkill,
       augmentationSkills: skills.augmentationSkills,
-      taskSet: { ...taskSet, tasks: reopened },
-      approvalHash: lifecycle.planningDigest,
       compositionDigest: state.composition.compositionDigest,
       projectConfigDigest: projectConfigDigest as `sha256:${string}`,
       projectSnapshotDigest: state.projectSnapshotDigest,
       workspaceRepositoryId: specificationRoot.repositoryId,
       repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
+      stableInput: {
+        planningDigest: lifecycle.planningDigest,
+        taskRevisions: (lifecycle.tasks ?? []).map(({ taskId, taskRevision }) => ({
+          taskId,
+          taskRevision,
+        })),
+        reason: 'verify-finding-plan-revision',
+      },
     });
     for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
       await this.coordinator.bindSkill(state.runId, skill);
     }
-    return repair;
+    return { tasks: Array.from(lifecycle.tasks ?? [], (task) => structuredClone(task)), work };
   }
 
   validateBuildTask(

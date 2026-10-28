@@ -7,6 +7,13 @@ import type { ArchiveDeliveryInput } from './archive-input.js';
 import type { PublicationReceipt } from '../delivery/publication-receipt.js';
 import { assertPublicationReceipt } from '../delivery/publication-receipt.js';
 import type { SpecificationClosureResult } from '../specification/types.js';
+import type {
+  BuildActionKind,
+  BuildExecutionMode,
+  BuildReviewMode,
+  BuildTddMode,
+  ExecutionIsolation,
+} from './build-protocol.js';
 
 export const CHANGE_PHASES = ['open', 'design', 'build', 'verify', 'archive'] as const;
 export type ChangePhase = (typeof CHANGE_PHASES)[number];
@@ -46,13 +53,34 @@ export interface ChangeLifecycleTransitionDefinition {
 }
 
 export interface ChangeLifecycleDefinition {
-  schemaVersion: 2;
+  schemaVersion: 3;
   id: string;
   version: string;
   compatibleDigests?: readonly `sha256:${string}`[];
   phases: readonly ChangeLifecyclePhaseDefinition[];
   works: readonly ChangeLifecycleWorkDefinition[];
   transitions: readonly ChangeLifecycleTransitionDefinition[];
+  buildProtocol: BuildProtocolDefinition;
+}
+
+export interface BuildProtocolActionDefinition {
+  action: BuildActionKind;
+  workKind: string | null;
+  validatorProfile: string;
+  next: BuildActionKind | 'verify';
+  autoTransition: boolean;
+}
+
+export interface BuildProtocolDefinition {
+  schemaVersion: 1;
+  actions: readonly BuildProtocolActionDefinition[];
+  policies: {
+    executionModes: readonly BuildExecutionMode[];
+    tddModes: readonly BuildTddMode[];
+    reviewModes: readonly BuildReviewMode[];
+    isolations: readonly ExecutionIsolation[];
+    allowRuntimeModeSwitch: false;
+  };
 }
 
 export interface LifecycleSkillReference {
@@ -1202,15 +1230,24 @@ export function evolveChangeLifecycle(options: {
     }
     if (
       observation.work.phase !== 'build' ||
-      observation.work.kind !== 'task.implement' ||
-      !observation.tasks?.some(
-        (task) =>
-          task.taskId === observation.work.taskId &&
-          task.taskRevision === observation.work.taskRevision &&
-          task.status === 'pending',
-      )
+      observation.work.kind !== 'build.plan' ||
+      !observation.tasks ||
+      canonicalJson(
+        observation.tasks.map(({ taskId, taskRevision, status }) => ({
+          taskId,
+          taskRevision,
+          status,
+        })),
+      ) !==
+        canonicalJson(
+          (current.tasks ?? []).map(({ taskId, taskRevision, status }) => ({
+            taskId,
+            taskRevision,
+            status,
+          })),
+        )
     ) {
-      throw new Error('Implementation failure requires a real reopened Repair Work');
+      throw new Error('Implementation failure requires a Runtime-selected Build Plan revision');
     }
     return applyChangeLifecycleTransition({
       definition: options.definition,

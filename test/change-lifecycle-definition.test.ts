@@ -85,15 +85,15 @@ describe('Change lifecycle definition', () => {
     );
     const binding = materializeLifecycleWorkBinding({
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-      kind: 'task.implement',
-      actionSkill: skill('repoctopus-build-task'),
-      augmentationSkills: [skill('tdd')],
+      kind: 'build.execute',
+      actionSkill: skill('repoctopus-build-execute'),
+      augmentationSkills: [],
       workspaceRepositoryId: 'workspace',
       repositoryIds: ['backend', 'workspace'],
     });
     expect(binding).toMatchObject({
-      actionSkill: { name: 'repoctopus-build-task' },
-      augmentationSkills: [{ name: 'tdd' }],
+      actionSkill: { name: 'repoctopus-build-execute' },
+      augmentationSkills: [],
       methodProfile: { id: 'repoctopus.build' },
       writeScopes: [
         { repositoryId: 'backend', paths: ['**'] },
@@ -108,9 +108,9 @@ describe('Change lifecycle definition', () => {
     expect(() =>
       materializeLifecycleWorkBinding({
         definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-        kind: 'task.implement',
+        kind: 'build.execute',
         actionSkill: skill('repoctopus.build'),
-        augmentationSkills: [skill('tdd')],
+        augmentationSkills: [],
         workspaceRepositoryId: 'workspace',
         repositoryIds: ['workspace'],
       }),
@@ -219,7 +219,8 @@ describe('Change lifecycle definition', () => {
       })),
       version: original.version,
       id: original.id,
-      schemaVersion: 2,
+      schemaVersion: 3,
+      buildProtocol: structuredClone(original.buildProtocol),
       ...(original.compatibleDigests
         ? { compatibleDigests: [...original.compatibleDigests].reverse() }
         : {}),

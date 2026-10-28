@@ -2,23 +2,23 @@
 
 ## 1. 固定错误基线与领域合同
 
-- [ ] 1.1 为当前 Build 直接从 Task 生成 `task.implement`、固定 TDD、缺少 Configure/Plan/Check 的行为增加 characterization tests，并确认旧实现按预期失败。
+- [x] 1.1 为当前 Build 直接从 Task 生成 `task.implement`、固定 TDD、缺少 Configure/Plan/Check 的行为增加 characterization tests，并确认旧实现按预期失败。
       **Blocked by:** 无
       **Acceptance:** 测试分别定位五个缺失边界，而不是只断言最终 phase
       **Requirements:** change-lifecycle#build-使用固定的受管内部协议
-- [ ] 1.2 为 Verify 失败重开 Task、创建特殊 Repair Work 的旧行为增加反向基线，并证明新断言在旧实现上失败。
+- [x] 1.2 为 Verify 失败重开 Task、创建特殊 Repair Work 的旧行为增加反向基线，并证明新断言在旧实现上失败。
       **Blocked by:** 1.1
       **Acceptance:** 测试可独立捕获 task reopen、`verify.repair` 与 `implementation.repair` 三类退化
       **Requirements:** change-lifecycle#verify-失败通过-build-plan-revision-返工, managed-work-execution#验证失败必须修订-build-plan-并创建普通-work
-- [ ] 1.3 定义版本化 `ExecutionWorkspaceIntent/Binding`、`BuildActionKind`、`BuildConfiguration`、`BuildPlan`、`WorkPackage`、`PlanEvidence` 与 `BuildCheckEvidence` 纯领域类型，并实现 canonical digest 与稳定 identity。
+- [x] 1.3 定义版本化 `ExecutionWorkspaceIntent/Binding`、`BuildActionKind`、`BuildConfiguration`、`BuildPlan`、`WorkPackage`、`PlanEvidence` 与 `BuildCheckEvidence` 纯领域类型，并实现 canonical digest 与稳定 identity。
       **Blocked by:** 1.1
       **Acceptance:** 类型、冻结、规范化、序列化、顺序规范化、重复项、非法枚举与碰撞测试通过，等价输入摘要一致且领域模块不导入 Cordis 或平台 I/O
       **Requirements:** managed-work-execution#build-configure-产生可批准的不可变配置, managed-work-execution#runtime-buildplan-是-openspec-tasks-的执行投影
-- [ ] 1.4 升级 lifecycle definition/schema，声明五个 Build Action、固定策略集合、Validator profile 和合法内部转换。
+- [x] 1.4 升级 lifecycle definition/schema，声明五个 Build Action、固定策略集合、Validator profile 和合法内部转换。
       **Blocked by:** 1.3
       **Acceptance:** definition validation 接受唯一完整协议，拒绝 Hotfix、Tweak、Full Direct、缺步、重排和未声明模式
       **Requirements:** change-lifecycle#build-使用固定的受管内部协议, change-lifecycle#build-configuration-只允许受支持的固定策略
-- [ ] 1.5 为 Build reducer 建立表驱动测试，覆盖合法 Action 推进、self/retry、非法跳步、Host 指定下一步和 `auto_transition` 边界。
+- [x] 1.5 为 Build reducer 建立表驱动测试，覆盖合法 Action 推进、self/retry、非法跳步、Host 指定下一步和 `auto_transition` 边界。
       **Blocked by:** 1.4
       **Acceptance:** Runtime 是唯一 Action 决策者，Agent/Runner 无法跳到 Plan、Execute、Check 或 Verify
       **Requirements:** change-lifecycle#build-使用固定的受管内部协议
