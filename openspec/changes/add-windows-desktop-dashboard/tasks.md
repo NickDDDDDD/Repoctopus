@@ -62,7 +62,7 @@
       **Requirements:** development-telemetry#Trajectory 先于遥测导出持久化, development-telemetry#遥测目的地独立确认和恢复
 - [ ] 3.4 实现受保护的本机 OTLP/HTTP receiver。
       **Blocked by:** 2.2, 3.1
-      **Acceptance:** Receiver 只绑定回环地址并验证会话凭据；Trace、Log、Metric 合法请求通过；未授权、错误方法、错误 content type、超限和畸形请求被拒绝且诊断不含正文
+      **Acceptance:** Receiver 只绑定回环地址并验证会话凭据；Trace、Log、Metric 合法请求通过；未授权、错误方法、错误 content type、超限和畸形请求被拒绝且诊断不含正文；Receiver 与 Projection 在 Desktop Host App Boot 中由专用 composition 注册并通过启动测试
       **Requirements:** desktop-observability-dashboard#桌面接收器接纳标准 OTLP 上报
 - [ ] 3.5 实现确定性 projection reducer 与 snapshot/delta 序列。
       **Blocked by:** 3.2, 3.4
@@ -70,11 +70,11 @@
       **Requirements:** desktop-observability-dashboard#重放和重复投递收敛为一致投影, desktop-observability-dashboard#桌面状态只由接收到的观测数据投影
 - [ ] 3.6 把 Receiver 投影经类型化 IPC 桥接到最小 Renderer。
       **Blocked by:** 2.4, 3.5
-      **Acceptance:** 真实 OTLP 事件无需轮询即可显示；snapshot 后只应用更高序列 delta；序列缺口请求新 snapshot
+      **Acceptance:** 真实 OTLP 事件无需轮询即可显示；snapshot 后只应用更高序列 delta；序列缺口请求新 snapshot；采用自 DSH 的桌面实现逐文件登记 provenance 并通过来源校验
       **Requirements:** desktop-observability-dashboard#接收驱动桌面实时更新
 - [ ] 3.7 接入最小 Desktop Launcher 与本地目的地重放。
       **Blocked by:** 2.3, 2.6, 3.3, 3.6
-      **Acceptance:** Windows 开发 Run 可以启动或激活 Dashboard 并唤醒重放；Dashboard 启动失败只产生 warning；远端 mock 仍收到同一 envelope
+      **Acceptance:** Windows 开发 Run 可以通过 Runtime composition 与 builtin catalog 中已注册的 Contributor 启动或激活 Dashboard 并唤醒重放；Dashboard 启动失败只产生 warning；远端 mock 仍收到同一 envelope；外部 Host 可经 CLI 上报结构化 planning finding，防止实现越过批准的 Package 作用域
       **Requirements:** desktop-observability-dashboard#Windows 开发 Run 自动激活单实例桌面应用, development-telemetry#本地实时消费不改变远端 OTLP 契约
 
 ## 4. 收敛完整遥测映射与恢复

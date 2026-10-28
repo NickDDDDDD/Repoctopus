@@ -93,6 +93,8 @@ Engine 和 Workflow 只产生现有领域事实。Runtime 的 Desktop Contributo
 
 这些模块可以拥有内部 seam，但不得为了单元测试把 mapper、cursor、journal、reducer 或窗口状态逐个暴露成产品 Interface。持久文件系统属于 local-substitutable 依赖，通过临时目录测试；远端 OTLP 和桌面回环属于跨进程 Adapter，通过进程外 receiver 验证。接口测试覆盖可观察结果，替代对旧浅模块内部状态的重复测试。
 
+Build Package 的作用域按可交付行为切片，而不是按核心模块目录切片。一个 Package 只要新增可发现的 Service、Contributor、外部 Host 能力或采用自上游的实现，就必须同时声明并验证其 App Boot 注册、builtin catalog 接线、Host/CLI 协议入口和 provenance 登记；这些集成面与核心实现共同构成该行为的完成条件。Runtime 在实际实现发现批准 Plan 漏掉必要集成面时，必须把结构化 planning finding 交回 Design/Plan，失效旧 Plan，而不是让 Host 越权写入未声明路径或隐瞒差异。
+
 备选方案一是为 mapper、store、cursor、retry、projection 和 IPC 各建立公共 Service；这会让调用者编排同一事务并产生浅接口群，因此拒绝。备选方案二是让 Desktop Application 直接读取 Trajectory 或 OpenSpec；这会绕过标准 OTLP seam 并制造本地专用状态协议，因此拒绝。
 
 ### 4. 规范观测 envelope 是不可变投递单元
