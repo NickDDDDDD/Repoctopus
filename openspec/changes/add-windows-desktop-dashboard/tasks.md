@@ -180,11 +180,11 @@
       **Blocked by:** 4.7, 7.2
       **Acceptance:** 本地桌面与远端 mock 收到相同 envelope identity、信号语义和允许列表；任一目的地故障不影响另一端
       **Requirements:** development-telemetry#每个领域事实只产生一份规范观测 envelope, development-telemetry#遥测目的地独立确认和恢复
-- [ ] 7.4 使用安装后的 Dashboard 自举本 change。
+- [x] 7.4 使用安装后的 Dashboard 自举本 change。
       **Blocked by:** 5.7, 7.2, 7.3
       **Acceptance:** 五阶段、Build action、Skill、验证、等待、恢复和四类健康实时呈现；没有 SigNoZ 查询、本地文件扫描或周期轮询
       **Requirements:** desktop-observability-dashboard#主视图呈现完整五阶段与 Build 子动作, desktop-observability-dashboard#当前 Work 显示 Skill 装填与消费状态, desktop-observability-dashboard#Dashboard 区分四类可解释健康状态, desktop-observability-dashboard#接收驱动桌面实时更新
-- [ ] 7.5 完成平台矩阵、正式验证报告与临时产物清理。
+- [x] 7.5 完成平台矩阵、正式验证报告与临时产物清理。
       **Blocked by:** 6.6, 7.4
       **Acceptance:** 最终发布验证 Work Package 明确拥有 `verification/add-windows-desktop-dashboard/**` 和 `verification/restore-runtime-build-orchestration/verification-report.md` 写入范围，并在全部产品代码提交完成后刷新两个报告；macOS、Linux 和 Windows ARM64 明确为 unsupported/experimental；报告记录架构、安全、恢复、资源预算、未连接真实 SigNoZ 与未迁移旧数据；临时安装目录、日志、端口、discovery、托盘进程、mock receiver 和 scratch Artifact 已清理
       **Requirements:** desktop-observability-dashboard#首个发布只承诺 Windows x64 支持
