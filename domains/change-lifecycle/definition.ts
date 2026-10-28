@@ -48,7 +48,7 @@ function validatorProfile(id: string) {
 export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
   schemaVersion: 3,
   id: 'repoctopus-change',
-  version: '4.1.0',
+  version: '4.2.0',
   compatibleDigests: [
     'sha256:3890da04d20fb364e363a976b21877f0198ca22da3c00af4de302de0f48b430b',
   ],

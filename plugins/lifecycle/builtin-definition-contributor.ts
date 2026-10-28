@@ -16,7 +16,7 @@ const plugin = ((context: Context) => {
         version: BUILTIN_CHANGE_LIFECYCLE_DEFINITION.version,
         codeDigest: definitionDigest,
         configDigest: definitionDigest,
-        compatibleWith: [BUILTIN_CHANGE_LIFECYCLE_DEFINITION.version, '4.0.0'],
+        compatibleWith: [BUILTIN_CHANGE_LIFECYCLE_DEFINITION.version, '4.1.0', '4.0.0'],
       }),
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
     }),
