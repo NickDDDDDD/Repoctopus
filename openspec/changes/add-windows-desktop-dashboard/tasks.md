@@ -2,19 +2,19 @@
 
 ## 1. 固定当前主线与候选复用边界
 
-- [ ] 1.1 安装锁定依赖并记录全新 worktree 的主线、工具链与 Runtime 基线。
+- [x] 1.1 安装锁定依赖并记录全新 worktree 的主线、工具链与 Runtime 基线。
       **Blocked by:** None
       **Acceptance:** `npm ci` 使用 lockfile 成功；`main`、Node、npm、Windows 和 workflow schema 已记录；`npm run check:upstream`、`npm run verify` 与 `npm run test:tracer-e2e` 具有可复现结果
       **Requirements:** development-telemetry#Trajectory 先于遥测导出持久化
-- [ ] 1.2 为两个旧 Dashboard 分支建立按行为切片的 salvage ledger。
+- [x] 1.2 为两个旧 Dashboard 分支建立按行为切片的 salvage ledger。
       **Blocked by:** 1.1
       **Acceptance:** 每个候选记录来源提交、文件、当前规格映射、外部前提、过时语义、重写范围、核验方法和采用结论；没有整体导入、批量 cherry-pick 或旧任务完成度继承
       **Requirements:** desktop-observability-dashboard#桌面状态只由接收到的观测数据投影
-- [ ] 1.3 对候选代码执行旧语义负向扫描并处置发现。
+- [x] 1.3 对候选代码执行旧语义负向扫描并处置发现。
       **Blocked by:** 1.2
       **Acceptance:** 独立修复阶段、merge 后自动化、已完成 Task 回退、旧 task action、旧 Run schema 和旧数据 reader 均被拒绝或重写；误报与处置已进入 ledger
       **Requirements:** desktop-observability-dashboard#主视图呈现完整五阶段与 Build 子动作
-- [ ] 1.4 审计 DSH 基线并复核已锁定的桌面依赖。
+- [x] 1.4 审计 DSH 基线并复核已锁定的桌面依赖。
       **Blocked by:** 1.1
       **Acceptance:** Electron、React、Vite 与 `electron-builder` 使用精确版本；许可证、来源、安装脚本、DSH 行为切片、修改与排除范围已登记；provenance、漏洞和许可证检查通过
       **Requirements:** plugin-composition#桌面能力使用跨进程 Cordis composition, desktop-observability-dashboard#首个发布只承诺 Windows x64 支持
