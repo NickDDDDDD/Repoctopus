@@ -350,6 +350,14 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       requiredValidatorProfile: 'build.plan-valid',
     },
     {
+      id: 'build.plan-retry',
+      kind: 'self',
+      from: { phase: 'build', statuses: ['running'] },
+      to: { phase: 'build', status: 'running' },
+      trigger: 'plan-host-validation-retry',
+      requiredValidatorProfile: 'build.plan-valid',
+    },
+    {
       id: 'build.plan-evidence-accepted',
       kind: 'self',
       from: { phase: 'build', statuses: ['running'] },

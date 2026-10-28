@@ -755,6 +755,81 @@ describe('Change lifecycle domain', () => {
     expect(retried.fact).toMatchObject({ transitionId: 'build.configuration-retry' });
   });
 
+  it('retries Build Plan without accepting an Outcome from a drifted Host', () => {
+    const intent = createExecutionWorkspaceIntent({
+      workspaceId: initialSnapshot().identity.workspaceId,
+      changeId: initialSnapshot().identity.changeId,
+      isolation: 'worktree',
+    });
+    const binding = createExecutionWorkspaceBinding({
+      intent,
+      repositories: [
+        {
+          repositoryId: 'workspace',
+          checkoutPath: 'C:\\workspace',
+          branch: 'main',
+          head: '1'.repeat(40),
+          worktreeId: 'dashboard-worktree',
+          workspaceOwned: true,
+        },
+      ],
+    });
+    const proposal = createBuildConfigurationProposal({
+      intent,
+      binding,
+      executionMode: 'autonomous',
+      tddMode: 'tdd',
+      reviewMode: 'standard',
+      hostId: 'external:cli:codex-root',
+      hostCapabilities: ['build.autonomous', 'repository.read', 'repository.write'],
+    });
+    let protocol = createBuildProtocolState({
+      runId: initialSnapshot().identity.runId,
+      planningDigest: digest('p'),
+      workspaceIntent: intent,
+    });
+    protocol = advanceBuildProtocol(protocol, { kind: 'configuration-proposed', proposal });
+    protocol = advanceBuildProtocol(protocol, {
+      kind: 'configuration-approved',
+      configuration: acceptBuildConfiguration({
+        proposal,
+        requestId: 'configuration-decision',
+        actorId: 'trusted-user',
+        decidedAt: '2026-10-28T00:00:00.000Z',
+      }),
+    });
+    const planWork = phaseWork('build', 'build.plan', 5, digest('a'));
+    const retryWork = phaseWork('build', 'build.plan', 6, digest('b'));
+
+    const retried = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current: builtinSnapshot({
+        revision: 5,
+        checkEpoch: 5,
+        phase: 'build',
+        currentWork: planWork,
+        tasks: [buildTask],
+        workspaceIntent: intent,
+        planningDigest: digest('p'),
+        buildProtocol: protocol,
+      }),
+      observation: {
+        kind: 'build-plan-retry-required',
+        reason: 'The Plan Outcome came from a Host outside the approved Configuration.',
+        work: retryWork,
+      },
+    });
+
+    expect(retried.snapshot).toMatchObject({
+      phase: 'build',
+      status: 'running',
+      checkEpoch: 6,
+      currentWork: { workId: retryWork.workId, kind: 'build.plan' },
+      buildProtocol: { currentAction: 'plan', actionAttempt: 2 },
+    });
+    expect(retried.fact).toMatchObject({ transitionId: 'build.plan-retry' });
+  });
+
   it('routes Build Check and Verify implementation findings through ordinary Plan revision', () => {
     const tasks = parseSpecificationTasks(
       'managed-rework',

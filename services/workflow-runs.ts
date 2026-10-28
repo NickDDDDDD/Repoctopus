@@ -1566,6 +1566,57 @@ export class WorkflowRuns extends Service {
               if (!invocationHost || invocationHost.id !== hostOutcome.hostId) {
                 throw new Error('Build Plan Host does not match the persisted invocation');
               }
+              if (
+                invocationHost.id !== configuration.hostId ||
+                configuration.hostCapabilities.some(
+                  (capability) => !invocationHost.capabilities.includes(capability),
+                )
+              ) {
+                const planSkills = await this.resolveLifecycleWorkSkills('build.plan', signal);
+                const retryWork = createBuildActionWork({
+                  runId,
+                  checkEpoch: lifecycle.checkEpoch + 1,
+                  definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+                  kind: 'build.plan',
+                  actionSkill: planSkills.actionSkill,
+                  augmentationSkills: planSkills.augmentationSkills,
+                  compositionDigest: current.composition.compositionDigest,
+                  projectConfigDigest,
+                  projectSnapshotDigest: current.projectSnapshotDigest,
+                  workspaceRepositoryId,
+                  repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
+                  configurationId: configuration.configurationId,
+                  executionMode: configuration.executionMode,
+                  tddMode: configuration.tddMode,
+                  stableInput: {
+                    reason: 'plan-host-drift',
+                    priorWorkId: lifecycle.currentWork.workId,
+                    approvedHostId: configuration.hostId,
+                    observedHostId: invocationHost.id,
+                  },
+                });
+                for (const skill of [planSkills.actionSkill, ...planSkills.augmentationSkills]) {
+                  await this.coordinator.bindSkill(runId, skill);
+                }
+                const retried = await this.coordinator.acceptChangeObservation(runId, {
+                  kind: 'build-plan-retry-required',
+                  reason: 'Build Plan Outcome came from a Host outside the approved Configuration',
+                  work: retryWork,
+                });
+                await this.ctx.workExecutionAuthority.recordWorkCreated(runId, retryWork);
+                return {
+                  ...retried,
+                  value: await this.coordinator.status(runId),
+                  diagnostics: [
+                    ...retried.diagnostics,
+                    {
+                      level: 'warning',
+                      code: 'change.build-plan-host-retry',
+                      message: 'Build Plan will retry with the Host approved by the Configuration',
+                    },
+                  ],
+                };
+              }
               this.assertFrozenBuildHost(configuration, invocationHost);
               await this.assertFrozenExecutionWorkspace(
                 current,

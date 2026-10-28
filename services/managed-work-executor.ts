@@ -206,6 +206,31 @@ export class ManagedWorkExecutor extends Service {
   }
 
   async claimExternal(request: WorkClaimRequest): Promise<ExternalWorkClaimResult> {
+    const state = await this.ctx.runStore.loadRun(request.runId);
+    const lifecycle = state.changeLifecycle;
+    const work = lifecycle?.currentWork;
+    const configuration = lifecycle?.buildProtocol?.configuration;
+    if (
+      lifecycle?.phase === 'build' &&
+      work?.kind.startsWith('build.') &&
+      work.kind !== 'build.configure' &&
+      configuration
+    ) {
+      const anticipatedHost = this.externalHostIdentity(request.executor, [
+        ...work.capabilities,
+        ...(request.hostCapabilities ?? []),
+      ]);
+      if (
+        anticipatedHost.id !== configuration.hostId ||
+        configuration.hostCapabilities.some(
+          (capability) => !anticipatedHost.capabilities.includes(capability),
+        )
+      ) {
+        throw new Error(
+          'External Runner does not match the Host approved by the Build Configuration',
+        );
+      }
+    }
     const claim = await this.ctx.workDispatcher.claim(request);
     const host = this.externalHostIdentity(
       request.executor,

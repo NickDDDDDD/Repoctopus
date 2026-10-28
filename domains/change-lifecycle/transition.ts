@@ -411,6 +411,11 @@ export type ChangeLifecycleObservation =
       plan: BuildPlan;
     }
   | {
+      kind: 'build-plan-retry-required';
+      reason: string;
+      work: WorkDescriptor;
+    }
+  | {
       kind: 'build-plan-evidence-accepted';
       evidence: PlanEvidence;
       work: WorkDescriptor;
@@ -1055,6 +1060,35 @@ export function evolveChangeLifecycle(options: {
       definition: options.definition,
       current,
       transitionId: 'build.configuration-rejected',
+      next: {
+        currentWork: observation.work,
+        waitCondition: null,
+        blocker: null,
+        buildProtocol,
+      },
+    });
+  }
+  if (observation.kind === 'build-plan-retry-required') {
+    if (
+      current.phase !== 'build' ||
+      current.status !== 'running' ||
+      current.currentWork?.kind !== 'build.plan' ||
+      !current.buildProtocol ||
+      current.buildProtocol.currentAction !== 'plan' ||
+      observation.work.phase !== 'build' ||
+      observation.work.kind !== 'build.plan' ||
+      !observation.reason.trim()
+    ) {
+      throw new Error('Build Plan retry requires the active Plan Action');
+    }
+    const buildProtocol = advanceBuildProtocol(current.buildProtocol, {
+      kind: 'retry',
+      action: 'plan',
+    });
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'build.plan-retry',
       next: {
         currentWork: observation.work,
         waitCondition: null,

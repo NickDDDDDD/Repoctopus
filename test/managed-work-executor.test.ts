@@ -173,6 +173,7 @@ describe('Managed Work Executor Build contract', () => {
           }),
         },
         workExecutionAuthority: { markHostStarted },
+        runStore: { loadRun: vi.fn().mockResolvedValue({ changeLifecycle: null }) },
       },
     });
 
@@ -196,6 +197,54 @@ describe('Managed Work Executor Build contract', () => {
       expect.anything(),
       expect.objectContaining({ host: claimed.invocation.host }),
     );
+  });
+
+  it('rejects Build claims from a Runner outside the approved Host before persisting a claim', async () => {
+    const packet = frozenPacket();
+    const claim = vi.fn().mockResolvedValue({
+      packet,
+      intent: { runId: 'run-1', workId: 'work-plan', attempt: 1, checkEpoch: 4 },
+    });
+    const service = Object.create(ManagedWorkExecutor.prototype) as ManagedWorkExecutor;
+    Object.defineProperty(service, 'ctx', {
+      value: {
+        workDispatcher: { claim },
+        workExecutionAuthority: { markHostStarted: vi.fn() },
+        runStore: {
+          loadRun: vi.fn().mockResolvedValue({
+            changeLifecycle: {
+              phase: 'build',
+              currentWork: {
+                kind: 'build.plan',
+                capabilities: ['repository.read', 'specification.read'],
+              },
+              buildProtocol: {
+                configuration: {
+                  hostId: 'external:cli:codex-root',
+                  hostCapabilities: ['build.autonomous', 'repository.read', 'repository.write'],
+                  executionMode: 'autonomous',
+                },
+              },
+            },
+          }),
+        },
+      },
+    });
+
+    await expect(
+      service.claimExternal({
+        runId: 'run-1',
+        adapter: 'manual',
+        hostCapabilities: ['build.autonomous', 'repository.read', 'repository.write'],
+        executor: {
+          actorId: 'user-1',
+          runnerId: 'cli:ephemeral-pid',
+          source: 'cli',
+          authenticated: true,
+        },
+      }),
+    ).rejects.toThrow(/Host approved by the Build Configuration/u);
+    expect(claim).not.toHaveBeenCalled();
   });
 
   it('accepts attested subagent delegation only after Skill consumption and durable Host completion', async () => {
