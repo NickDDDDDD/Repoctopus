@@ -149,7 +149,12 @@
     {
       "id": "project-model",
       "disposition": "repoctopus-native",
-      "targets": ["domains/project/**", "platform/git/probe.ts", "platform/git/remote-identity.ts"],
+      "targets": [
+        "domains/project/**",
+        "platform/git/execution-workspace.ts",
+        "platform/git/probe.ts",
+        "platform/git/remote-identity.ts"
+      ],
       "upstream": ["platform/project-registry.ts"],
       "rationale": "Repoctopus 以同级多仓为项目边界，项目发现快照只提供启发式候选与恢复核对。"
     },
