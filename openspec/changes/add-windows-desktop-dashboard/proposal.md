@@ -36,9 +36,9 @@ Repoctopus Runtime 已经以 `Open → Design → Build → Verify → Archive` 
 
 ## Impact
 
-- 新增 Electron 桌面应用、Renderer 前端构建、Windows 安装与启动集成，以及相应的平台适配器和端到端测试。
+- 深化已合入的 Electron Desktop foundation 与 Renderer 构建链，增加 OTLP Receiver、Projection、Launcher、托盘、Windows 安装和端到端测试；不重建第二套 Shell。
 - 调整 `platform/telemetry` 的映射、outbox、目的地游标与 OTLP/HTTP 发送边界；领域事件、Trajectory 和现有 Telemetry Port 保持后端中立。
 - 扩展 builtin catalog 与 Desktop Host App Boot composition；Electron 主进程保持基础设施外壳，不增加第二套产品级依赖容器或让 Electron 类型进入 Engine。
-- 增加 Electron、`electron-builder` 及桌面构建工具依赖，并把版本、许可证、安装脚本和发布产物纳入现有来源、构建与安全检查。对 DSH 的源码级采用记录固定 commit、源文件和本地修改；不采用 Comet 源码，因此不新增 Comet 派生作品义务。
+- 复核已精确锁定的 Electron、`electron-builder` 及桌面构建工具依赖，并把许可证、安装脚本和发布产物纳入现有来源、构建与安全检查。对 DSH 的源码级采用记录固定 commit、源文件和本地修改；不采用 Comet 源码，因此不新增 Comet 派生作品义务。
 - 旧 Dashboard 分支中的代码只有通过当前 Work Package、测试和规格审查后才可选择性移植；旧任务勾选、旧 Run 状态和旧投影数据不计入本 change 的完成度。
 - 更新遥测、架构、自举和桌面应用文档；SigNoZ 的本地部署文件不在本次范围。

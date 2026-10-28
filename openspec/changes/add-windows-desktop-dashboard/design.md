@@ -2,7 +2,9 @@
 
 ## Context
 
-参见 [proposal.md](./proposal.md) 的动机。当前 Runtime 已经以 `Open → Design → Build → Verify → Archive` 管理 change，Build 内部具有 `Configure → Plan → Plan Evidence → Execute → Check`，并把 Work Package、Host Outcome、Skill resolved/delivered/consumed、Validator、Human Decision、等待和恢复作为权威事实。现有 OpenTelemetry exporter 在领域事实持久化后分别构造并发送 Trace、Log 和 Metric；Evidence 已有持久 outbox 与 cursor，但平台事件和目的地投递映射仍分散在不同 exporter 中。仓库没有桌面应用、前端构建链或多目的地投递抽象。
+参见 [proposal.md](./proposal.md) 的动机。当前 Runtime 已经以 `Open → Design → Build → Verify → Archive` 管理 change，Build 内部具有 `Configure → Plan → Plan Evidence → Execute → Check`，并把 Work Package、Host Outcome、Skill resolved/delivered/consumed、Validator、Human Decision、等待和恢复作为权威事实。现有 OpenTelemetry exporter 在领域事实持久化后分别构造并发送 Trace、Log 和 Metric；Evidence 已有持久 outbox 与 cursor，但平台事件和目的地投递映射仍分散在不同 exporter 中。
+
+主线已经包含第一版桌面 foundation，而不是从零开始：`app/desktop` 提供 thin Electron Main、Node-mode Host、Preload、最小 Renderer、单实例锁和串行 backend controller；`bootDesktopComposition()` 只组合 `desktopApplication` Service 与 Application Plugin；构建脚本已经固定 Electron、React、Vite 和 `electron-builder` 的精确版本，并有 composition、startup、controller 与 Host E2E 测试。当前 `DesktopApplicationSnapshot` 只表达 `{ phase: "ready" }`，单实例回调只聚焦窗口，桌面 composition 尚无 OTLP Receiver、Projection Store、Launcher、目的地、托盘、持久投影或工作流视图；也没有安装包配置。因此本 change 深化现有模块，不复制或平行重建第二套 Shell。
 
 桌面端需要以标准 OTLP 上报作为唯一状态输入，不能扫描 OpenSpec、Git 或领域 Store，也不能查询 SigNoZ 后轮询刷新。团队远端后端与本地 Dashboard 必须消费同一事实映射，但桌面应用离线、关闭或卸载不能阻塞工作流和远端遥测。
 
@@ -81,7 +83,19 @@ Engine 和 Workflow 只产生现有领域事实。Runtime 的 Desktop Contributo
 
 备选方案一是在 Electron Main 内运行 Cordis、Receiver 与投影；这会把可热重载或可失败的产品插件与不可替换的原生 Shell 放进同一故障域，不利于恢复和安全审计，因此在审计 DSH 后拒绝。备选方案二是把 Electron 加载进每个 CLI Context，会把窗口生命周期和大体积依赖耦合到短命令。备选方案三是在 CLI 内嵌 HTTP UI 或让 Engine 直接发布 UI 状态。后两者分别破坏进程边界或后端中立，也拒绝。
 
-### 3. 规范观测 envelope 是不可变投递单元
+### 3. 以三个深模块承载遥测投递、投影和桌面应用状态
+
+当前多个 exporter、`FileEvidenceTelemetryOutbox`、最小 `DesktopApplication.snapshot()` 和 Shell state bridge 都偏浅：调用者需要理解映射、游标、重放、顺序与恢复细节。实现把这些复杂性收敛到三个深模块，外部 Interface 只暴露调用者真正需要的能力：
+
+1. **Observation Pipeline**：接收已持久化的权威事实，完成允许列表映射、envelope 原子追加、按目的地取批次、确认与 gap 治理。外部 Interface 不暴露文件路径、cursor 文件或 exporter SDK；远端 OTLP 与桌面回环是两个真实 `ObservationDestination` Adapter，测试使用进程外假接收器穿过同一 Interface。
+2. **Desktop Projection**：接收已认证和解码的 `ObservationRecord` 批次，原子地产生版本化 snapshot 与有序 delta，并负责去重、乱序、缺口、新鲜度和 journal 压缩。OTLP Receiver 和 Desktop Application 只知道 `ingest()`、`snapshot()` 与 `subscribe()`，不操作 reducer 内部状态。
+3. **Desktop Application**：把 change 选择、snapshot/delta 订阅、关闭偏好和有限桌面动作统一在版本化 Interface 后；Electron Main/Preload 只转发该 Interface，不重新解释领域事实。现有只返回 ready 的 Service 在原位置深化，不建立新的平行 Service。
+
+这些模块可以拥有内部 seam，但不得为了单元测试把 mapper、cursor、journal、reducer 或窗口状态逐个暴露成产品 Interface。持久文件系统属于 local-substitutable 依赖，通过临时目录测试；远端 OTLP 和桌面回环属于跨进程 Adapter，通过进程外 receiver 验证。接口测试覆盖可观察结果，替代对旧浅模块内部状态的重复测试。
+
+备选方案一是为 mapper、store、cursor、retry、projection 和 IPC 各建立公共 Service；这会让调用者编排同一事务并产生浅接口群，因此拒绝。备选方案二是让 Desktop Application 直接读取 Trajectory 或 OpenSpec；这会绕过标准 OTLP seam 并制造本地专用状态协议，因此拒绝。
+
+### 4. 规范观测 envelope 是不可变投递单元
 
 把分散 exporter 中的领域映射收敛为纯映射层。每个已持久化事件生成版本化 `ObservationEnvelope`，至少包含：
 
@@ -95,7 +109,7 @@ Envelope Store 只保存不可变 envelope。目的地 Adapter 将同一 envelop
 
 备选方案是让每个 exporter 分别从领域对象构造 SDK Span/Log/Metric。这是当前分散实现，容易在新增字段或修复映射时产生本地与远端差异，因此替换。
 
-### 4. 使用共享 envelope store 与独立目的地 cursor
+### 5. 使用共享 envelope store 与独立目的地 cursor
 
 Envelope 先以原子写入进入 Workspace 的本地遥测 outbox，再由目的地 worker 独立读取和确认。目的地状态包含稳定 `destinationId`、最后确认 envelope、连续序列、最近尝试、结果分类和积压摘要。
 
@@ -110,7 +124,7 @@ Envelope 先以原子写入进入 Workspace 的本地遥测 outbox，再由目�
 
 备选方案一是把一份数据同时直接 `Promise.all` 发往两个端点；进程退出后无法确定各目的地是否确认。备选方案二是让 Electron 接收后再转发 SigNoZ；Electron 关闭会切断团队遥测并使桌面成为单点，因此拒绝。
 
-### 5. Desktop Host 子进程实现受保护的本地 OTLP 接收器
+### 6. Desktop Host 子进程实现受保护的本地 OTLP 接收器
 
 接收器仅绑定 `127.0.0.1`，由操作系统分配可用端口。每次 Desktop Host 就绪生成高熵会话凭据，把版本、Shell/Host 进程身份、端点、凭据引用和就绪时间原子写入用户级 discovery 文件。文件权限按 Windows 当前用户收紧，Runtime launcher 验证文件所有者、协议版本、进程存活和 freshness 后才登记本地目的地。
 
@@ -120,7 +134,7 @@ Host 停止、重启或桌面退出后 discovery 文件被删除或失效。Runt
 
 备选方案是固定端口且无凭据。任何本机进程都能伪造 change 状态或读取错误细节，因此拒绝。Windows named pipe 虽然权限更自然，但不是标准 OTLP/HTTP 端点，首版不采用。
 
-### 6. OTLP 解码后进入确定性 change 投影
+### 7. OTLP 解码后进入确定性 change 投影
 
 Receiver 先验证 OTLP 和 Repoctopus schema version，再把 Span、Log 和 Metric 解码为只读 `ObservationRecord`。Projection Reducer 按 `event.id`、envelope 序列和关联身份确定性地产生：
 
@@ -139,7 +153,7 @@ Projection 不读取仓库、OpenSpec、Git 或领域 Store，不从文本猜测
 
 Desktop Host 把已接受记录写入追加式本地 journal，并周期生成原子 snapshot。启动时加载 snapshot 后重放 journal，重复 `event.id` 收敛为 no-op。该 journal 只保存经过遥测允许列表的数据，不复制 Artifact 正文。使用现有文件持久化模式可以避免 Windows 原生 SQLite addon 的构建和 ABI 风险；如果性能证据表明不足，数据库替换走后续 change。
 
-### 7. Renderer 通过类型化 IPC 接收 snapshot 与有序 delta
+### 8. Renderer 通过类型化 IPC 接收 snapshot 与有序 delta
 
 Electron 启用 `contextIsolation`、renderer sandbox，并关闭 `nodeIntegration`。Preload 只公开版本化的窄接口：
 
@@ -153,7 +167,7 @@ Renderer 不直接监听端口、不读取 discovery/journal、不访问文件�
 
 浏览器 SSE/WebSocket 需要额外 HTTP surface、Origin 防护和端口，不为同进程桌面窗口提供价值，因此选择 IPC。
 
-### 8. 单实例启动与关闭偏好由桌面生命周期适配器管理
+### 9. 单实例启动与关闭偏好由桌面生命周期适配器管理
 
 开发 Run 在创建首个遥测 envelope 前调用 Desktop Launcher：
 
@@ -172,7 +186,7 @@ Electron Main 使用单实例锁，后续启动只把上下文交给主实例；
 
 未保存设置默认进入 `ask`，避免第一次关闭就留下用户不知情的后台进程。托盘的“完全退出”绕过偏好并关闭应用；Windows 会话退出和更新安装也使用真正退出路径。
 
-### 9. Windows 是唯一首发验收平台，代码边界保留可移植性
+### 10. Windows 是唯一首发验收平台，代码边界保留可移植性
 
 使用 Electron、TypeScript、React 和 Vite 构建桌面应用，使用 `electron-builder` 生成 Windows x64 安装产物。选择 `electron-builder` 是因为固定 DSH Desktop 已验证同类 thin-shell/Host 资源打包路径，便于采用经过验证的 Windows 基线；依赖仍使用精确版本并纳入许可证、来源、构建脚本和漏洞检查。UI 不采用 Comet 的 Ant Design/Tailwind 组合；首版建立自己的轻量语义组件和设计 token，避免为了少量状态页面引入完整 UI 框架。
 
@@ -182,7 +196,7 @@ Renderer 首版采用三层信息架构：全局层选择 Workspace/change 并�
 
 所有可达状态包括启动中、无数据、稀疏事实、追平、实时、过期、gap、Receiver 错误、Work 停滞、等待人工决定、验证返工、Run 完成和 Run 失败。字段缺失显示“尚未上报”，禁止从文本、Task 数量或接收时间猜测状态；视觉实现与可访问性在业务实现阶段按 UI 设计检查验证。
 
-### 10. DSH 采用遵循选择性源码采用矩阵
+### 11. DSH 采用遵循选择性源码采用矩阵
 
 对固定 DSH commit 的采用分三类，避免把“参考桌面端”误解为复制整个产品：
 
@@ -194,13 +208,13 @@ Renderer 首版采用三层信息架构：全局层选择 Workspace/change 并�
 
 Repoctopus 的 Renderer 是本地 OTLP 投影客户端，不需要 DSH 的共享 Web App 和鉴权反向代理；Desktop Host 也只包含桌面观测 composition，不加载 DSH 产品插件。这样采用的是被验证的进程与生命周期模式，而不是引入另一个产品内核。
 
-### 11. SigNoZ 与本地 Docker Compose 不进入首个验证门槛
+### 12. SigNoZ 与本地 Docker Compose 不进入首个验证门槛
 
 自动化测试使用协议 fixture 和进程外 mock OTLP receiver，验证三类信号、身份一致、目的地隔离、重放和隐私。桌面 E2E 在 Windows 启动打包候选，向真实本机 receiver 发送 OTLP，验证 projection、IPC、单实例、关闭和托盘生命周期。
 
 本 change 不创建本地 SigNoZ Compose，也不让真实公司后端成为 CI 或合入前提。后续在可访问环境中把远端 endpoint 指向已部署 SigNoZ，比较固定 event identity、属性与查询结果；发现后端兼容问题时修改 OTLP Adapter，而不是给桌面建立专用旁路。
 
-### 12. 规格、设计与来源冲突是停止条件
+### 13. 规格、设计与来源冲突是停止条件
 
 以下情况停止受影响实现并请求决定：
 
@@ -233,7 +247,7 @@ Repoctopus 的 Renderer 是本地 OTLP 投影客户端，不需要 DSH 的共享
 3. 将现有 exporter 逐类迁移到纯映射与共享 Envelope Store，用 golden fixture 证明允许列表语义保持一致。
 4. 增加多目的地 cursor；先只注册现有远端目的地，验证失败和恢复行为后再启用桌面目的地。
 5. 实现 headless Desktop Host 的本机 receiver、认证、投影、journal、App Boot 和协议测试。
-6. 基于固定 DSH 模式实现 thin Electron Main、Host controller、私有 Node IPC、preload/renderer、单实例、Launcher、关闭偏好与托盘，并完成 Windows 打包 E2E。
+6. 在现有 thin Electron Main、Host controller、私有 Node IPC、preload/renderer 和单实例 foundation 上增加启动上下文、Launcher、关闭偏好、托盘与安装配置，并完成 Windows 打包 E2E。
 7. 用 Repoctopus 自身的开发 Run 启动桌面应用，发送真实 OTLP，验证本地五阶段、Build 子动作、Skill 状态和四类健康状态；远端使用 mock receiver 验证相同 envelope。
 8. 运行完整验证、生成 Evidence 和正式验证报告，明确未连接真实 SigNoZ、未支持平台和未迁移旧 Dashboard 本地数据。
 
