@@ -1399,6 +1399,64 @@ export class WorkflowRuns extends Service {
               if (!lifecycle.workspaceIntent || !lifecycle.buildProtocol) {
                 throw new Error('Build Configure requires the approved Workspace intent');
               }
+              const requiredCapability =
+                configurationCandidate.executionMode === 'autonomous'
+                  ? 'build.autonomous'
+                  : 'subagent.dispatch.attested';
+              if (!invocationHost.capabilities.includes(requiredCapability)) {
+                const projectConfigDigest = current.trigger?.facts.projectConfigDigest;
+                const specificationRoot = current.trigger?.facts.specificationRoot as
+                  | { repositoryId?: unknown }
+                  | undefined;
+                if (
+                  typeof projectConfigDigest !== 'string' ||
+                  !/^sha256:[a-f0-9]{64}$/u.test(projectConfigDigest) ||
+                  typeof specificationRoot?.repositoryId !== 'string'
+                ) {
+                  throw new Error('Build Configure retry trigger identities are missing');
+                }
+                const skills = await this.resolveLifecycleWorkSkills('build.configure', signal);
+                const retryWork = createBuildActionWork({
+                  runId,
+                  checkEpoch: lifecycle.checkEpoch + 1,
+                  definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+                  kind: 'build.configure',
+                  actionSkill: skills.actionSkill,
+                  augmentationSkills: skills.augmentationSkills,
+                  compositionDigest: current.composition.compositionDigest,
+                  projectConfigDigest: projectConfigDigest as `sha256:${string}`,
+                  projectSnapshotDigest: current.projectSnapshotDigest,
+                  workspaceRepositoryId: specificationRoot.repositoryId,
+                  repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
+                  stableInput: {
+                    reason: 'configuration-host-capability-missing',
+                    priorWorkId: lifecycle.currentWork.workId,
+                    executionMode: configurationCandidate.executionMode,
+                    requiredCapability,
+                  },
+                });
+                for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
+                  await this.coordinator.bindSkill(runId, skill);
+                }
+                const retried = await this.coordinator.acceptChangeObservation(runId, {
+                  kind: 'build-configuration-retry-required',
+                  reason: `Configure Host did not attest ${requiredCapability}`,
+                  work: retryWork,
+                });
+                await this.ctx.workExecutionAuthority.recordWorkCreated(runId, retryWork);
+                return {
+                  ...retried,
+                  value: await this.coordinator.status(runId),
+                  diagnostics: [
+                    ...retried.diagnostics,
+                    {
+                      level: 'warning',
+                      code: 'change.build-configuration-host-capability-retry',
+                      message: `Build Configure will retry with a Host that attests ${requiredCapability}`,
+                    },
+                  ],
+                };
+              }
               const binding = await this.bindExecutionWorkspace(
                 current,
                 lifecycle,

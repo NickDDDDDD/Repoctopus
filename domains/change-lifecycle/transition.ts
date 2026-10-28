@@ -393,6 +393,11 @@ export type ChangeLifecycleObservation =
       reason: string;
     }
   | {
+      kind: 'build-configuration-retry-required';
+      reason: string;
+      work: WorkDescriptor;
+    }
+  | {
       kind: 'build-configuration-decision';
       decision: 'approve' | 'reject';
       requestId: string;
@@ -971,6 +976,35 @@ export function evolveChangeLifecycle(options: {
       next: {
         currentWork: null,
         waitCondition,
+        blocker: null,
+        buildProtocol,
+      },
+    });
+  }
+  if (observation.kind === 'build-configuration-retry-required') {
+    if (
+      current.phase !== 'build' ||
+      current.status !== 'running' ||
+      current.currentWork?.kind !== 'build.configure' ||
+      !current.buildProtocol ||
+      current.buildProtocol.currentAction !== 'configure' ||
+      observation.work.phase !== 'build' ||
+      observation.work.kind !== 'build.configure' ||
+      !observation.reason.trim()
+    ) {
+      throw new Error('Build Configuration retry requires the active Configure Action');
+    }
+    const buildProtocol = advanceBuildProtocol(current.buildProtocol, {
+      kind: 'retry',
+      action: 'configure',
+    });
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'build.configuration-retry',
+      next: {
+        currentWork: observation.work,
+        waitCondition: null,
         blocker: null,
         buildProtocol,
       },

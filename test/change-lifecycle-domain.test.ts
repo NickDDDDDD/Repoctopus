@@ -711,6 +711,50 @@ describe('Change lifecycle domain', () => {
     expect(reverified.snapshot.identity.runId).toBe(activeVerify.identity.runId);
   });
 
+  it('retries Build Configure without leaving Build when Host capability evidence is incomplete', () => {
+    const intent = createExecutionWorkspaceIntent({
+      workspaceId: initialSnapshot().identity.workspaceId,
+      changeId: initialSnapshot().identity.changeId,
+      isolation: 'worktree',
+    });
+    const protocol = createBuildProtocolState({
+      runId: initialSnapshot().identity.runId,
+      planningDigest: digest('p'),
+      workspaceIntent: intent,
+    });
+    const configureWork = phaseWork('build', 'build.configure', 4, digest('c'));
+    const retryWork = phaseWork('build', 'build.configure', 5, digest('r'));
+
+    const retried = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current: builtinSnapshot({
+        revision: 4,
+        checkEpoch: 4,
+        phase: 'build',
+        currentWork: configureWork,
+        tasks: [buildTask],
+        workspaceIntent: intent,
+        planningDigest: digest('p'),
+        buildProtocol: protocol,
+      }),
+      observation: {
+        kind: 'build-configuration-retry-required',
+        reason: 'The Configure Host did not attest the selected execution capability.',
+        work: retryWork,
+      },
+    });
+
+    expect(retried.snapshot).toMatchObject({
+      phase: 'build',
+      status: 'running',
+      checkEpoch: 5,
+      currentWork: { workId: retryWork.workId, kind: 'build.configure' },
+      tasks: [{ taskId: buildTask.taskId }],
+      buildProtocol: { currentAction: 'configure', actionAttempt: 2 },
+    });
+    expect(retried.fact).toMatchObject({ transitionId: 'build.configuration-retry' });
+  });
+
   it('routes Build Check and Verify implementation findings through ordinary Plan revision', () => {
     const tasks = parseSpecificationTasks(
       'managed-rework',

@@ -315,6 +315,14 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       requiredValidatorProfile: 'build.configuration-approved',
     },
     {
+      id: 'build.configuration-retry',
+      kind: 'self',
+      from: { phase: 'build', statuses: ['running'] },
+      to: { phase: 'build', status: 'running' },
+      trigger: 'configuration-host-capability-retry',
+      requiredValidatorProfile: 'build.configuration-approved',
+    },
+    {
       id: 'build.configuration-approved',
       kind: 'self',
       from: { phase: 'build', statuses: ['waiting'] },
