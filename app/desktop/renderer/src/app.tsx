@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 import type { DesktopShellState } from '../../shared/renderer-contract.js';
 
-const initialState: DesktopShellState = { phase: 'starting' };
+const initialState: DesktopShellState = { protocolVersion: 1, phase: 'starting' };
 
 export function App() {
   const [state, setState] = useState<DesktopShellState>(initialState);

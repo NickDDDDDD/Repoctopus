@@ -1,12 +1,14 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 
 import type { DesktopApplicationSnapshot } from '../../../services/desktop-application.js';
-import { isDesktopHostEvent } from '../shared/host-protocol.js';
+import type { DesktopLaunchContext } from '../shared/launch-context.js';
+import { DESKTOP_HOST_PROTOCOL_VERSION, isDesktopHostEvent } from '../shared/host-protocol.js';
 import { desktopNodeEnvironment } from './node-environment.js';
 
 const MAX_HOST_DIAGNOSTIC_CHARS = 64 * 1024;
 const GRACEFUL_STOP_MS = 10_000;
 const TERMINATION_STOP_MS = 5_000;
+const READY_DEADLINE_MS = 15_000;
 
 async function exitsWithin(exit: Promise<void>, milliseconds: number): Promise<boolean> {
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -33,7 +35,10 @@ export interface DesktopHostProcessOptions {
   productRoot: string;
   environment?: NodeJS.ProcessEnv;
   onReady?: (ready: DesktopHostReady) => void;
+  onSnapshot?: (ready: DesktopHostReady) => void;
   onFailure?: (error: Error) => void;
+  readyDeadlineMs?: number;
+  spawnChild?: typeof spawn;
 }
 
 /** One Cordis Desktop Host running under the Electron executable in Node mode. */
@@ -50,18 +55,28 @@ export class DesktopHostProcess {
   private failureReported = false;
   private stopping = false;
   private shutdownCompleted = false;
+  private readyTimer: ReturnType<typeof setTimeout> | undefined;
 
   constructor(private readonly options: DesktopHostProcessOptions) {}
 
   async start(): Promise<DesktopHostReady> {
     if (this.child !== undefined) return this.readyPromise;
-    const child = spawn(this.options.executable, [this.options.entry, this.options.productRoot], {
+    const child = (this.options.spawnChild ?? spawn)(
+      this.options.executable,
+      [this.options.entry, this.options.productRoot],
+      {
       cwd: this.options.productRoot,
       env: desktopNodeEnvironment(this.options.environment),
       stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
       windowsHide: true,
-    });
+      },
+    );
     this.child = child;
+    this.readyTimer = setTimeout(() => {
+      this.fail(new Error('Repoctopus Desktop Host readiness deadline exceeded'));
+      child.kill('SIGTERM');
+    }, this.options.readyDeadlineMs ?? READY_DEADLINE_MS);
+    this.readyTimer.unref();
     child.stdout?.pipe(process.stdout);
     child.stderr?.setEncoding('utf8');
     child.stderr?.on('data', (chunk: string) => {
@@ -74,6 +89,7 @@ export class DesktopHostProcess {
         return;
       }
       if (message.type === 'ready') {
+        this.clearReadyTimer();
         const ready = { snapshot: message.snapshot };
         try {
           this.options.onReady?.(ready);
@@ -84,6 +100,8 @@ export class DesktopHostProcess {
           );
           child.kill('SIGTERM');
         }
+      } else if (message.type === 'snapshot-updated') {
+        this.options.onSnapshot?.({ snapshot: message.snapshot });
       } else if (message.type === 'fatal') {
         this.fail(new Error(message.message));
       } else if (this.stopping) {
@@ -97,6 +115,7 @@ export class DesktopHostProcess {
     });
     this.exitPromise = new Promise<void>((resolve) => {
       child.once('close', (code, signal) => {
+        this.clearReadyTimer();
         const diagnostic = this.stderr.trim();
         const suffix = diagnostic.length === 0 ? '' : `: ${diagnostic}`;
         if (!this.stopping) {
@@ -116,8 +135,9 @@ export class DesktopHostProcess {
     const child = this.child;
     if (child === undefined) return;
     this.stopping = true;
+    this.clearReadyTimer();
     if (child.connected) {
-      child.send({ type: 'shutdown' }, (error) => {
+      child.send({ protocolVersion: DESKTOP_HOST_PROTOCOL_VERSION, type: 'shutdown' }, (error) => {
         if (error !== null) this.fail(error);
       });
     }
@@ -134,6 +154,22 @@ export class DesktopHostProcess {
     if (graceful && !this.shutdownCompleted) {
       throw new Error('Repoctopus Desktop Host exited without acknowledging shutdown');
     }
+  }
+
+  activate(context: DesktopLaunchContext): void {
+    const child = this.child;
+    if (child?.connected) {
+      child.send({
+        protocolVersion: DESKTOP_HOST_PROTOCOL_VERSION,
+        type: 'activate-context',
+        context,
+      });
+    }
+  }
+
+  private clearReadyTimer(): void {
+    if (this.readyTimer !== undefined) clearTimeout(this.readyTimer);
+    this.readyTimer = undefined;
   }
 
   private fail(error: Error): void {

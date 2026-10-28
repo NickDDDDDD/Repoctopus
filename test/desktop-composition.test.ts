@@ -22,7 +22,18 @@ describe('desktop composition', () => {
       ]);
       expect(app.context.desktopApplication.snapshot()).toEqual({
         apiVersion: DESKTOP_APPLICATION_CONTRACT,
+        protocolVersion: 1,
         phase: 'ready',
+        activeContext: null,
+      });
+      app.context.desktopApplication.activate({
+        schemaVersion: 1,
+        workspaceId: 'team-platform',
+        changeId: 'add-dashboard',
+        runId: 'run-dashboard',
+      });
+      expect(app.context.desktopApplication.snapshot()).toMatchObject({
+        activeContext: { workspaceId: 'team-platform', changeId: 'add-dashboard' },
       });
     } finally {
       await app.close();

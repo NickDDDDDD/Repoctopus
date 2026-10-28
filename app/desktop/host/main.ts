@@ -2,7 +2,11 @@ import path from 'node:path';
 
 import { bootDesktopComposition } from '../../boot/bootstrap.js';
 import type { RunningApp } from '../../boot/boot.js';
-import { isDesktopShellCommand, type DesktopHostEvent } from '../shared/host-protocol.js';
+import {
+  DESKTOP_HOST_PROTOCOL_VERSION,
+  isDesktopShellCommand,
+  type DesktopHostEvent,
+} from '../shared/host-protocol.js';
 
 function send(event: DesktopHostEvent): void {
   if (process.connected) process.send?.(event);
@@ -21,18 +25,33 @@ function close(): Promise<void> {
   shutdown = Promise.resolve()
     .then(async () => {
       await running?.close();
-      send({ type: 'shutdown-complete' });
+      send({ protocolVersion: DESKTOP_HOST_PROTOCOL_VERSION, type: 'shutdown-complete' });
       process.disconnect?.();
     })
     .catch((error: unknown) => {
-      send({ type: 'fatal', message: failureMessage(error) });
+      send({ protocolVersion: DESKTOP_HOST_PROTOCOL_VERSION, type: 'fatal', message: failureMessage(error) });
       process.exitCode = 1;
     });
   return shutdown;
 }
 
 process.on('message', (message: unknown) => {
-  if (isDesktopShellCommand(message)) void close();
+  if (!isDesktopShellCommand(message)) return;
+  if (message.type === 'shutdown') {
+    void close();
+    return;
+  }
+  running?.context.desktopApplication.activate(message.context);
+  send({
+    protocolVersion: DESKTOP_HOST_PROTOCOL_VERSION,
+    type: 'snapshot-updated',
+    snapshot: running?.context.desktopApplication.snapshot() ?? {
+      apiVersion: 'repoctopus.desktop/v1alpha1',
+      protocolVersion: 1,
+      phase: 'ready',
+      activeContext: message.context,
+    },
+  });
 });
 process.once('disconnect', () => {
   void close();
@@ -42,9 +61,13 @@ const productRoot = path.resolve(process.argv[2] ?? process.cwd());
 
 try {
   running = await bootDesktopComposition(productRoot);
-  send({ type: 'ready', snapshot: running.context.desktopApplication.snapshot() });
+  send({
+    protocolVersion: DESKTOP_HOST_PROTOCOL_VERSION,
+    type: 'ready',
+    snapshot: running.context.desktopApplication.snapshot(),
+  });
 } catch (error) {
-  send({ type: 'fatal', message: failureMessage(error) });
+  send({ protocolVersion: DESKTOP_HOST_PROTOCOL_VERSION, type: 'fatal', message: failureMessage(error) });
   process.exitCode = 1;
   process.disconnect?.();
 }

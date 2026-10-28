@@ -6,6 +6,7 @@ import { app, BrowserWindow, ipcMain, type IpcMainEvent, type IpcMainInvokeEvent
 import {
   DESKTOP_BACKEND_STATE_CHANNEL,
   DESKTOP_RETRY_CHANNEL,
+  DESKTOP_RENDERER_PROTOCOL_VERSION,
   type DesktopShellState,
 } from '../shared/renderer-contract.js';
 import { DesktopBackendController, type DesktopBackendState } from './backend-controller.js';
@@ -13,6 +14,7 @@ import { DesktopHostProcess, type DesktopHostReady } from './host-process.js';
 import { resolveDesktopProductRoot } from './product-root.js';
 import { claimDesktopSingleInstance } from './single-instance.js';
 import { scheduleDesktopStartup } from './startup.js';
+import { desktopLaunchContextFromArguments, type DesktopLaunchContext } from '../shared/launch-context.js';
 
 const moduleDirectory = path.dirname(fileURLToPath(import.meta.url));
 const hostEntry = path.join(moduleDirectory, 'host.mjs');
@@ -27,16 +29,23 @@ const productRoot = resolveDesktopProductRoot({
 let mainWindow: BrowserWindow | undefined;
 let hostReady: DesktopHostReady | undefined;
 let quitting = false;
+let pendingContext: DesktopLaunchContext | null = (() => {
+  try {
+    return desktopLaunchContextFromArguments(process.argv);
+  } catch {
+    return null;
+  }
+})();
 
 app.setName('Repoctopus');
 app.setAppUserModelId('com.repoctopus.desktop');
 
 function publicState(state: DesktopBackendState): DesktopShellState {
   if (state.phase === 'ready' && hostReady !== undefined) {
-    return { phase: 'ready', snapshot: hostReady.snapshot };
+    return { protocolVersion: DESKTOP_RENDERER_PROTOCOL_VERSION, phase: 'ready', snapshot: hostReady.snapshot };
   }
-  if (state.phase === 'error') return { phase: 'error', message: state.message };
-  return { phase: 'starting' };
+  if (state.phase === 'error') return { protocolVersion: DESKTOP_RENDERER_PROTOCOL_VERSION, phase: 'error', message: state.message };
+  return { protocolVersion: DESKTOP_RENDERER_PROTOCOL_VERSION, phase: 'starting' };
 }
 
 function publish(state: DesktopBackendState): void {
@@ -53,6 +62,10 @@ const controller = new DesktopBackendController(
       productRoot,
       onReady: (ready) => {
         hostReady = ready;
+      },
+      onSnapshot: (ready) => {
+        hostReady = ready;
+        publish(controller.state);
       },
       onFailure,
     }),
@@ -81,6 +94,7 @@ async function startBackend(): Promise<void> {
   hostReady = undefined;
   try {
     await controller.start(() => Promise.resolve());
+    if (pendingContext !== null) controller.host?.activate(pendingContext);
   } catch {
     // The controller has already published a bounded error state.
   }
@@ -125,7 +139,11 @@ async function quit(): Promise<void> {
   }
 }
 
-const ownsInstance = claimDesktopSingleInstance(app, () => {
+function activateOwner(context: DesktopLaunchContext | null): void {
+  if (context !== null) {
+    pendingContext = context;
+    controller.host?.activate(context);
+  }
   const window = mainWindow;
   if (window === undefined) {
     void createWindow();
@@ -134,7 +152,9 @@ const ownsInstance = claimDesktopSingleInstance(app, () => {
   if (window.isMinimized()) window.restore();
   window.show();
   window.focus();
-});
+}
+
+const ownsInstance = claimDesktopSingleInstance(app, pendingContext, activateOwner);
 
 if (ownsInstance) {
   ipcMain.handle(DESKTOP_BACKEND_STATE_CHANNEL, (event) => {

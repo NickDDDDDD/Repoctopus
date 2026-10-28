@@ -34,15 +34,21 @@ describe('Desktop Host process', () => {
       expect(isDesktopHostEvent(ready)).toBe(true);
       expect(ready).toMatchObject({
         type: 'ready',
-        snapshot: { apiVersion: 'repoctopus.desktop/v1alpha1', phase: 'ready' },
+        protocolVersion: 1,
+        snapshot: {
+          apiVersion: 'repoctopus.desktop/v1alpha1',
+          protocolVersion: 1,
+          phase: 'ready',
+          activeContext: null,
+        },
       });
 
       const exited = new Promise<void>((resolve) => {
         child.once('close', () => resolve());
       });
-      child.send({ type: 'shutdown' });
+      child.send({ protocolVersion: 1, type: 'shutdown' });
       const stopped = await nextMessage(child);
-      expect(stopped).toEqual({ type: 'shutdown-complete' });
+      expect(stopped).toEqual({ protocolVersion: 1, type: 'shutdown-complete' });
       await exited;
       expect(child.exitCode).toBe(0);
     } finally {
