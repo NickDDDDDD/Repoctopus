@@ -110,10 +110,10 @@
 
 ## 5. 完成开发者 Dashboard 体验
 
-- [ ] 5.1 建立语义组件、设计 token、窗口结构与状态矩阵。
-      **Blocked by:** 3.6
-      **Acceptance:** 可执行 fixture 覆盖启动、空、稀疏、追平、实时、过期、gap、错误、停滞、等待、返工、完成和失败；组件不依赖 Comet 源码
-      **Requirements:** desktop-observability-dashboard#桌面状态只由接收到的观测数据投影
+- [ ] 5.1 扩展权威 projection read model，并在其上建立语义组件、设计 token、窗口结构与状态矩阵。
+      **Blocked by:** 3.6, 4.2, 4.3, 4.4, 4.6
+      **Acceptance:** Desktop Projection、Desktop Application/Host、共享 snapshot/delta 契约、Renderer 与测试共同覆盖五阶段及尝试历史、Build 五个 action、Work/Task/attempt、Host、Validator、continuation、Skill 生命周期、Decision、Evidence、fallback、目的地健康和四类健康原因；可执行 fixture 覆盖启动、空、稀疏、追平、实时、过期、gap、错误、停滞、等待、返工、完成和失败；缺失事实保持 `not-reported`，Renderer 不读取 raw envelope 或推断领域状态，组件不依赖 Comet 源码
+      **Requirements:** desktop-observability-dashboard#桌面状态只由接收到的观测数据投影, desktop-observability-dashboard#主视图呈现完整五阶段与 Build 子动作, desktop-observability-dashboard#当前 Work 显示 Skill 装填与消费状态, desktop-observability-dashboard#Dashboard 区分四类可解释健康状态
 - [ ] 5.2 实现 Workspace/change 导航与选择保持。
       **Blocked by:** 5.1
       **Acceptance:** 多 Workspace、多 change fixture 证明新上报不抢占当前视图；首次无选择时才聚焦启动来源

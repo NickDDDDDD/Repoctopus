@@ -95,6 +95,8 @@ Engine 和 Workflow 只产生现有领域事实。Runtime 的 Desktop Contributo
 
 Build Package 的作用域按可交付行为切片，而不是按核心模块目录切片。一个 Package 只要新增可发现的 Service、Contributor、外部 Host 能力或采用自上游的实现，就必须同时声明并验证其 App Boot 注册、builtin catalog 接线、Host/CLI 协议入口和 provenance 登记；这些集成面与核心实现共同构成该行为的完成条件。Runtime 在实际实现发现批准 Plan 漏掉必要集成面时，必须把结构化 planning finding 交回 Design/Plan，失效旧 Plan，而不是让 Host 越权写入未声明路径或隐瞒差异。
 
+Developer Dashboard 纵切不是纯 Renderer Package。它必须同时拥有 `Desktop Projection` 的语义视图模型、Desktop Application/Host 的 snapshot/delta 传递契约、共享 IPC 类型、Renderer 和相应测试；否则 Renderer 只能猜测阶段历史、Skill 生命周期、Human Decision、Evidence、fallback 与健康原因。Build Plan 为该纵切声明写入范围时必须覆盖这些实现面，不能因界面最终绘制在 Renderer 中而把领域投影排除在 Package 外。此前只授权 Renderer/shared/docs/test 的 Plan 已由结构化 planning finding 失效。
+
 备选方案一是为 mapper、store、cursor、retry、projection 和 IPC 各建立公共 Service；这会让调用者编排同一事务并产生浅接口群，因此拒绝。备选方案二是让 Desktop Application 直接读取 Trajectory 或 OpenSpec；这会绕过标准 OTLP seam 并制造本地专用状态协议，因此拒绝。
 
 ### 4. 规范观测 envelope 是不可变投递单元
@@ -155,6 +157,8 @@ Projection 不读取仓库、OpenSpec、Git 或领域 Store，不从文本猜测
 
 Desktop Host 把已接受记录写入追加式本地 journal，并周期生成原子 snapshot。启动时加载 snapshot 后重放 journal，重复 `event.id` 收敛为 no-op。该 journal 只保存经过遥测允许列表的数据，不复制 Artifact 正文。使用现有文件持久化模式可以避免 Windows 原生 SQLite addon 的构建和 ABI 风险；如果性能证据表明不足，数据库替换走后续 change。
 
+Projection 对 Renderer 暴露一个深的、版本化的 read model Interface，而不是原始 envelope 集合。该 read model 必须保留五阶段及尝试历史、Build 五个 action、当前 Work/Task/attempt、Host、Validator、continuation、Skill resolved/delivered/consumed/失败或未上报、Decision、Evidence/Gate/Artifact 元数据、fallback/rework 历史、目的地积压/gap 以及四类健康状态的来源事实。健康结论只能由已接收事实确定性计算，并携带原因与新鲜度；事实缺失时显式返回 `not-reported`，不得由 Renderer 以文案、默认值或阶段顺序补全。
+
 ### 8. Renderer 通过类型化 IPC 接收 snapshot 与有序 delta
 
 Electron 启用 `contextIsolation`、renderer sandbox，并关闭 `nodeIntegration`。Preload 只公开版本化的窄接口：
@@ -166,6 +170,8 @@ Electron 启用 `contextIsolation`、renderer sandbox，并关闭 `nodeIntegrati
 - 请求显示窗口或完全退出等有界桌面动作。
 
 Renderer 不直接监听端口、不读取 discovery/journal、不访问文件系统或执行任意 IPC channel。订阅建立时，Desktop Host 生成一致 snapshot 与版本，经 Main/Preload 转交后只发送更高序列 delta；发现序列缺口时 Renderer 丢弃局部状态并经相同桥接请求新 snapshot，不轮询。Main 不解释或二次投影业务状态，只校验、关联和转发有界消息。
+
+Renderer 只负责选择、布局、可访问交互和状态表达。语义组件消费上述 read model，不重新聚合 raw record，也不根据当前 phase 推导过去阶段、Build action 或下一步。这样桌面窗口重载、多个 Renderer 订阅与 headless projection 测试共享同一权威结果，修复语义时只修改 Projection 模块而不是分散到各个 UI 组件。
 
 浏览器 SSE/WebSocket 需要额外 HTTP surface、Origin 防护和端口，不为同进程桌面窗口提供价值，因此选择 IPC。
 
@@ -248,7 +254,7 @@ Repoctopus 的 Renderer 是本地 OTLP 投影客户端，不需要 DSH 的共享
 2. 定义当前唯一的 envelope schema 与 Store，不提供旧 Dashboard schema、journal、Run 或 IPC 的读取器；用当前主规格 fixture 验证五阶段、Build action、Work、Skill 和恢复事实。
 3. 将现有 exporter 逐类迁移到纯映射与共享 Envelope Store，用 golden fixture 证明允许列表语义保持一致。
 4. 增加多目的地 cursor；先只注册现有远端目的地，验证失败和恢复行为后再启用桌面目的地。
-5. 实现 headless Desktop Host 的本机 receiver、认证、投影、journal、App Boot 和协议测试。
+5. 实现 headless Desktop Host 的本机 receiver、认证、投影、journal、App Boot 和协议测试；在 Dashboard 纵切中扩展权威 projection read model 与 snapshot/delta 契约，再由 Renderer 消费，不把语义推导下沉到 UI。
 6. 在现有 thin Electron Main、Host controller、私有 Node IPC、preload/renderer 和单实例 foundation 上增加启动上下文、Launcher、关闭偏好、托盘与安装配置，并完成 Windows 打包 E2E。
 7. 用 Repoctopus 自身的开发 Run 启动桌面应用，发送真实 OTLP，验证本地五阶段、Build 子动作、Skill 状态和四类健康状态；远端使用 mock receiver 验证相同 envelope。
 8. 最终发布验证 Work Package 独占正式验证输出：运行完整验证，将本 change 的报告写入 `verification/add-windows-desktop-dashboard/**`，并在全部产品代码提交完成后刷新 `verification/restore-runtime-build-orchestration/verification-report.md` 的 managed-execution 基线；其他 Work Package 不写这些路径。报告明确未连接真实 SigNoZ、未支持平台和未迁移旧 Dashboard 本地数据。
