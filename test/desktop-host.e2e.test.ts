@@ -27,9 +27,11 @@ function nextMessage(child: ChildProcess): Promise<unknown> {
 
 describe('Desktop Host process', () => {
   it('boots the Cordis desktop composition and acknowledges graceful shutdown', async () => {
+    const dataRoot = await mkdtemp(path.join(os.tmpdir(), 'repoctopus-desktop-data-'));
     const child = fork(hostEntry, [productRoot], {
       cwd: productRoot,
       silent: true,
+      env: { ...process.env, REPOCTOPUS_DESKTOP_DATA_ROOT: dataRoot },
     });
     try {
       const ready = await nextMessage(child);
@@ -94,8 +96,35 @@ describe('Desktop Host process', () => {
       expect(stopped).toEqual({ protocolVersion: 1, type: 'shutdown-complete' });
       await exited;
       expect(child.exitCode).toBe(0);
+
+      const restarted = fork(hostEntry, [productRoot], {
+        cwd: productRoot,
+        silent: true,
+        env: { ...process.env, REPOCTOPUS_DESKTOP_DATA_ROOT: dataRoot },
+      });
+      try {
+        await expect(nextMessage(restarted)).resolves.toMatchObject({
+          type: 'ready',
+          projection: {
+            version: 1,
+            changes: [{ changeId: 'desktop-dashboard', buildAction: 'execute' }],
+          },
+        });
+        const restartedExit = new Promise<void>((resolve) =>
+          restarted.once('close', () => resolve()),
+        );
+        restarted.send({ protocolVersion: 1, type: 'shutdown' });
+        await expect(nextMessage(restarted)).resolves.toEqual({
+          protocolVersion: 1,
+          type: 'shutdown-complete',
+        });
+        await restartedExit;
+      } finally {
+        if (restarted.exitCode === null) restarted.kill('SIGKILL');
+      }
     } finally {
       if (child.exitCode === null) child.kill('SIGKILL');
+      await rm(dataRoot, { recursive: true, force: true });
     }
   }, 20_000);
 

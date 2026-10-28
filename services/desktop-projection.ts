@@ -13,11 +13,21 @@ export type DesktopProjectionListener = (
   delta: ChangeProjectionDelta,
 ) => void;
 
+export interface DesktopProjectionJournal {
+  readonly snapshot: ChangeProjectionSnapshot;
+  append(
+    observations: readonly ObservationEnvelope[],
+    next: ChangeProjectionSnapshot,
+  ): Promise<void>;
+  close(next: ChangeProjectionSnapshot): Promise<void>;
+}
+
 /** Host-owned projection transaction boundary; callers never operate the reducer directly. */
 export class DesktopProjection extends Service {
   private current = createEmptyChangeProjection();
   private readonly listeners = new Set<DesktopProjectionListener>();
   private transition = Promise.resolve();
+  private journal: DesktopProjectionJournal | undefined;
 
   constructor(context: Context) {
     super(context, 'desktopProjection');
@@ -27,6 +37,21 @@ export class DesktopProjection extends Service {
     return structuredClone(this.current);
   }
 
+  async attachJournal(journal: DesktopProjectionJournal): Promise<void> {
+    await this.transition;
+    if (this.journal !== undefined)
+      throw new Error('Desktop projection journal is already attached');
+    this.journal = journal;
+    this.current = structuredClone(journal.snapshot);
+  }
+
+  async closeJournal(): Promise<void> {
+    await this.transition;
+    const journal = this.journal;
+    this.journal = undefined;
+    await journal?.close(this.current);
+  }
+
   ingest(envelopes: readonly ObservationEnvelope[]): Promise<readonly ChangeProjectionDelta[]> {
     let resolveResult!: (deltas: readonly ChangeProjectionDelta[]) => void;
     let rejectResult!: (reason: unknown) => void;
@@ -34,29 +59,35 @@ export class DesktopProjection extends Service {
       resolveResult = resolve;
       rejectResult = reject;
     });
-    this.transition = this.transition.then(() => {
-      try {
+    const execution = this.transition
+      .catch(() => undefined)
+      .then(async () => {
         const publications: Array<{
           snapshot: ChangeProjectionSnapshot;
           delta: ChangeProjectionDelta;
         }> = [];
+        let next = this.current;
         for (const envelope of envelopes) {
-          const reduction = reduceChangeProjection(this.current, envelope);
-          this.current = reduction.snapshot;
+          const reduction = reduceChangeProjection(next, envelope);
+          next = reduction.snapshot;
           if (reduction.delta !== null) {
-            publications.push({ snapshot: this.snapshot(), delta: reduction.delta });
+            publications.push({ snapshot: structuredClone(next), delta: reduction.delta });
           }
         }
+        await this.journal?.append(envelopes, next);
+        this.current = next;
         for (const publication of publications) {
           for (const listener of this.listeners) {
             listener(structuredClone(publication.snapshot), structuredClone(publication.delta));
           }
         }
-        resolveResult(publications.map((publication) => publication.delta));
-      } catch (error) {
-        rejectResult(error);
-      }
-    });
+        return publications.map((publication) => publication.delta);
+      });
+    this.transition = execution.then(
+      () => undefined,
+      () => undefined,
+    );
+    void execution.then(resolveResult, rejectResult);
     return result;
   }
 

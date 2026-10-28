@@ -1,7 +1,18 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { app, BrowserWindow, ipcMain, type IpcMainEvent, type IpcMainInvokeEvent } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  dialog,
+  ipcMain,
+  Menu,
+  nativeImage,
+  Tray,
+  type IpcMainEvent,
+  type IpcMainInvokeEvent,
+  type MessageBoxOptions,
+} from 'electron';
 
 import {
   DESKTOP_BACKEND_STATE_CHANNEL,
@@ -15,7 +26,10 @@ import { DesktopBackendController, type DesktopBackendState } from './backend-co
 import { DesktopHostProcess, type DesktopHostReady } from './host-process.js';
 import { resolveDesktopProductRoot } from './product-root.js';
 import { claimDesktopSingleInstance } from './single-instance.js';
+import { DesktopShellLifecycle, type DesktopCloseDecision } from './shell-lifecycle.js';
+import { DesktopShellSettingsStore } from './shell-settings.js';
 import { scheduleDesktopStartup } from './startup.js';
+import { DesktopTray } from './tray.js';
 import {
   desktopLaunchContextFromArguments,
   parseDesktopLaunchContext,
@@ -34,7 +48,8 @@ const productRoot = resolveDesktopProductRoot({
 
 let mainWindow: BrowserWindow | undefined;
 let hostReady: DesktopHostReady | undefined;
-let quitting = false;
+let windowCreation: Promise<void> | undefined;
+let tray: DesktopTray | undefined;
 let pendingContext: DesktopLaunchContext | null = (() => {
   try {
     return desktopLaunchContextFromArguments(process.argv);
@@ -45,6 +60,10 @@ let pendingContext: DesktopLaunchContext | null = (() => {
 
 app.setName('Repoctopus');
 app.setAppUserModelId('com.repoctopus.desktop');
+
+const userDataRoot = app.getPath('userData');
+const settingsStore = new DesktopShellSettingsStore(userDataRoot);
+let closePreference = settingsStore.read().closePreference;
 
 function publicState(state: DesktopBackendState): DesktopShellState {
   if (state.phase === 'ready' && hostReady !== undefined) {
@@ -76,6 +95,11 @@ const controller = new DesktopBackendController(
       executable: process.execPath,
       entry: hostEntry,
       productRoot,
+      environment: {
+        ...process.env,
+        REPOCTOPUS_DESKTOP_DATA_ROOT: path.join(userDataRoot, 'desktop'),
+        REPOCTOPUS_DESKTOP_DISCOVERY_ROOT: path.join(userDataRoot, 'discovery'),
+      },
       onReady: (ready) => {
         hostReady = ready;
       },
@@ -140,7 +164,22 @@ async function createWindow(): Promise<void> {
     },
   });
   mainWindow = window;
+  window.on('close', (event) => {
+    if (shellLifecycle.isQuitting) return;
+    event.preventDefault();
+    void shellLifecycle.requestWindowClose();
+  });
+  window.on('session-end', () => {
+    void shellLifecycle.requestFullQuit('session');
+  });
   window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  window.webContents.on('will-navigate', (event, url) => {
+    if (url !== window.webContents.getURL()) event.preventDefault();
+  });
+  window.webContents.session.setPermissionRequestHandler((_contents, _permission, callback) => {
+    callback(false);
+  });
+  window.webContents.session.setPermissionCheckHandler(() => false);
   window.once('ready-to-show', () => {
     window.show();
   });
@@ -152,14 +191,78 @@ async function createWindow(): Promise<void> {
   void startBackend();
 }
 
-async function quit(): Promise<void> {
-  if (quitting) return;
-  quitting = true;
-  try {
-    await controller.close();
-  } finally {
-    app.quit();
+function ensureWindow(): Promise<void> {
+  const window = mainWindow;
+  if (window !== undefined && !window.isDestroyed()) {
+    if (window.isMinimized()) window.restore();
+    window.show();
+    window.focus();
+    return Promise.resolve();
   }
+  if (windowCreation !== undefined) return windowCreation;
+  const pending = createWindow().finally(() => {
+    if (windowCreation === pending) windowCreation = undefined;
+  });
+  windowCreation = pending;
+  return pending;
+}
+
+async function askCloseDecision(): Promise<DesktopCloseDecision> {
+  const options: MessageBoxOptions = {
+    type: 'question',
+    title: '关闭 Repoctopus Dashboard',
+    message: '关闭窗口后要完全退出，还是最小化到系统托盘？',
+    detail: '最小化到托盘时，本地遥测接收器会继续运行。',
+    buttons: ['完全退出', '最小化到托盘', '取消'],
+    defaultId: 1,
+    cancelId: 2,
+    noLink: true,
+    checkboxLabel: '记住我的选择',
+    checkboxChecked: false,
+  };
+  const window = mainWindow;
+  const result =
+    window === undefined || window.isDestroyed()
+      ? await dialog.showMessageBox(options)
+      : await dialog.showMessageBox(window, options);
+  return {
+    action: result.response === 0 ? 'quit' : result.response === 1 ? 'tray' : 'cancel',
+    remember: result.checkboxChecked,
+  };
+}
+
+const shellLifecycle = new DesktopShellLifecycle({
+  readPreference: () => closePreference,
+  writePreference: (preference) => {
+    settingsStore.writeClosePreference(preference);
+    closePreference = preference;
+  },
+  ask: askCloseDecision,
+  hideWindow: () => mainWindow?.hide(),
+  showWindow: () => {
+    void ensureWindow();
+  },
+  stopBackend: () => controller.close(),
+  quitApplication: () => app.quit(),
+  disposeTray: () => {
+    tray?.dispose();
+    tray = undefined;
+  },
+});
+
+function ensureTray(): void {
+  if (tray !== undefined) return;
+  const icon = nativeImage.createFromDataURL(
+    `data:image/svg+xml;charset=utf-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><rect width="16" height="16" rx="4" fill="#244f42"/><circle cx="8" cy="8" r="3" fill="#d8f26d"/></svg>')}`,
+  );
+  tray = new DesktopTray({
+    handle: new Tray(icon),
+    buildMenu: (items) => Menu.buildFromTemplate(items),
+    open: () => shellLifecycle.activateWindow(),
+    quit: () => {
+      void shellLifecycle.requestFullQuit('tray');
+    },
+  });
 }
 
 function activateOwner(context: DesktopLaunchContext | null): void {
@@ -169,7 +272,7 @@ function activateOwner(context: DesktopLaunchContext | null): void {
   }
   const window = mainWindow;
   if (window === undefined) {
-    void createWindow();
+    void ensureWindow();
     return;
   }
   if (window.isMinimized()) window.restore();
@@ -197,14 +300,21 @@ if (ownsInstance) {
     }
   });
   app.on('window-all-closed', () => {
-    void quit();
+    if (!shellLifecycle.isQuitting) void shellLifecycle.requestFullQuit('application');
   });
   app.on('before-quit', (event) => {
-    if (quitting) return;
+    if (shellLifecycle.isQuitting) return;
     event.preventDefault();
-    void quit();
+    void shellLifecycle.requestFullQuit('application');
   });
-  scheduleDesktopStartup(app, createWindow, (error) => {
-    console.error('desktop shell startup failed', error);
-  });
+  scheduleDesktopStartup(
+    app,
+    async () => {
+      ensureTray();
+      await ensureWindow();
+    },
+    (error) => {
+      console.error('desktop shell startup failed', error);
+    },
+  );
 }

@@ -32,7 +32,7 @@ Lifecycle Contributor 继续由 Cordis Service/Effect 组合，不从 DSH 未发
 
 Electron `44.9.3` 没有 lifecycle install script；它在首次解析包且本机二进制缺失时惰性下载固定平台产物。`npm run desktop:prepare` 把这一步显式化，便于干净机器、缓存和离线构建在启动窗口前失败。它不能登记为 `allowScripts`。真正的安装脚本仍按包和版本显式准入：允许 Vite 闭包中的 `esbuild@0.25.12` 校验平台二进制；拒绝未使用的 `electron-winstaller@5.4.0` Squirrel 辅助脚本。Repoctopus 首版只生成 NSIS Windows x64 安装包。
 
-桌面采用面不仅登记被修改的四个生命周期文件，还固定 `main.ts`、应用 `package.json`、development launcher 及其相邻启动测试。上游的 `app.whenReady().then(main)`、`main: lib/main.js` 与开发态 `app.getAppPath()` 必须作为一个行为切片审计；Repoctopus 使用不同的 `dist/desktop` 入口，因此用独立产品根解析器和回归测试补偿这个布局差异。
+桌面采用面登记 backend controller、Host process、Node-mode 环境、单实例、关闭生命周期、Shell settings 与 Tray 七个修改目标，并固定 `main.ts`、应用 `package.json`、development launcher 及其相邻启动测试。关闭生命周期从 DSH `main.ts` 的原生资源 owner 行为中抽出纯状态机，settings 与 Tray 保留上游边界但使用 Repoctopus 的 `ask | quit | tray` 契约。上游的 `app.whenReady().then(main)`、`main: lib/main.js` 与开发态 `app.getAppPath()` 必须作为一个行为切片审计；Repoctopus 使用不同的 `dist/desktop` 入口，因此用独立产品根解析器和回归测试补偿这个布局差异。
 
 ## 漂移控制
 

@@ -145,6 +145,30 @@
       "targetSha256": "0f1780db8759f2e2f6318c268bd6c069b592613d5a8aa4f082a5ee034cc1a7ac"
     },
     {
+      "id": "desktop-shell-lifecycle",
+      "source": "apps/desktop/src/main.ts",
+      "sourceSha256": "e345eda0425f2df795d20413bb87bb9a3ddc46e71ceb1cec0755ad1cca3fb847",
+      "disposition": "source-modified",
+      "target": "app/desktop/main/shell-lifecycle.ts",
+      "targetSha256": "27dd743b7e397712a2a34ebef05d65e1de290a3a42d901124ea475ef5b32550f"
+    },
+    {
+      "id": "desktop-shell-settings",
+      "source": "apps/desktop/src/settings.ts",
+      "sourceSha256": "665cdc4b0683644a21c188900d2182f5ae8bd44f124d4056f16fbec20a037f9c",
+      "disposition": "source-modified",
+      "target": "app/desktop/main/shell-settings.ts",
+      "targetSha256": "cc5ab5556c358c97ae55a52dcb1f0ba1917b37e98ca0642235cdc52412f1c372"
+    },
+    {
+      "id": "desktop-tray",
+      "source": "apps/desktop/src/tray.ts",
+      "sourceSha256": "b638b310c86775db9a3c19b9db89b2fe097ae7dcf813497edfe0d612a5027a7b",
+      "disposition": "source-modified",
+      "target": "app/desktop/main/tray.ts",
+      "targetSha256": "bbeb230a466f5074f56909867a8f8d0ce57ce9b77ae42576b8291f5e289a120f"
+    },
+    {
       "id": "skill-registry",
       "source": "packages/skill/skill/src/index.ts",
       "disposition": "direct-package",

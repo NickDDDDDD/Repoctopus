@@ -110,58 +110,58 @@
 
 ## 5. 完成开发者 Dashboard 体验
 
-- [ ] 5.1 扩展权威 projection read model，并在其上建立语义组件、设计 token、窗口结构与状态矩阵。
+- [x] 5.1 扩展权威 projection read model，并在其上建立语义组件、设计 token、窗口结构与状态矩阵。
       **Blocked by:** 3.6, 4.2, 4.3, 4.4, 4.6
       **Acceptance:** Desktop Projection、Desktop Application/Host、共享 snapshot/delta 契约、Renderer 与测试共同覆盖五阶段及尝试历史、Build 五个 action、Work/Task/attempt、Host、Validator、continuation、Skill 生命周期、Decision、Evidence、fallback、目的地健康和四类健康原因；可执行 fixture 覆盖启动、空、稀疏、追平、实时、过期、gap、错误、停滞、等待、返工、完成和失败；缺失事实保持 `not-reported`，Renderer 不读取 raw envelope 或推断领域状态，组件不依赖 Comet 源码
       **Requirements:** desktop-observability-dashboard#桌面状态只由接收到的观测数据投影, desktop-observability-dashboard#主视图呈现完整五阶段与 Build 子动作, desktop-observability-dashboard#当前 Work 显示 Skill 装填与消费状态, desktop-observability-dashboard#Dashboard 区分四类可解释健康状态
-- [ ] 5.2 实现 Workspace/change 导航与选择保持。
+- [x] 5.2 实现 Workspace/change 导航与选择保持。
       **Blocked by:** 5.1
       **Acceptance:** 多 Workspace、多 change fixture 证明新上报不抢占当前视图；首次无选择时才聚焦启动来源
       **Requirements:** desktop-observability-dashboard#桌面状态只由接收到的观测数据投影
-- [ ] 5.3 实现五阶段主体导航。
+- [x] 5.3 实现五阶段主体导航。
       **Blocked by:** 4.2, 5.1
       **Acceptance:** `Open → Design → Build → Verify → Archive` 显示状态、尝试与可信时间；缺失事实显示尚未上报；实现不扫描 OpenSpec、Git 或领域 Store
       **Requirements:** desktop-observability-dashboard#主视图呈现完整五阶段与 Build 子动作
-- [ ] 5.4 实现 Build action 与当前执行详情。
+- [x] 5.4 实现 Build action 与当前执行详情。
       **Blocked by:** 5.3
       **Acceptance:** Configure、Plan、Plan Evidence、Execute、Check 及当前 Work、Task、attempt、Host、Validator、continuation 与最近活动可见；fallback 保留历史尝试
       **Requirements:** desktop-observability-dashboard#主视图呈现完整五阶段与 Build 子动作
-- [ ] 5.5 实现 Skill 装填与消费状态。
+- [x] 5.5 实现 Skill 装填与消费状态。
       **Blocked by:** 4.3, 5.1
       **Acceptance:** action/augmentation Skill 分角色显示 resolved、delivered、consumed、失败和未上报；文案说明 consumed 是 Runtime 校验的 Host 证明
       **Requirements:** desktop-observability-dashboard#当前 Work 显示 Skill 装填与消费状态
-- [ ] 5.6 实现 Evidence、Human Decision 与下一步详情。
+- [x] 5.6 实现 Evidence、Human Decision 与下一步详情。
       **Blocked by:** 4.4, 5.1
       **Acceptance:** Evidence、Gate、Human Decision、Artifact 元数据和下一步动作可见；脱敏 fixture 不显示正文、绝对路径、Prompt、回复或命令输出
       **Requirements:** desktop-observability-dashboard#桌面界面保持最小权限边界
-- [ ] 5.7 实现四类可解释健康状态与下钻。
+- [x] 5.7 实现四类可解释健康状态与下钻。
       **Blocked by:** 4.6, 5.2, 5.3, 5.4, 5.5, 5.6
       **Acceptance:** 流转、执行、质量和遥测健康分别显示原因；远端积压、Work 停滞、Verify 返工与阶段阻塞可区分；不生成无依据总分
       **Requirements:** desktop-observability-dashboard#Dashboard 区分四类可解释健康状态
 
 ## 6. 完成 Windows 生命周期、安全与本地恢复
 
-- [ ] 6.1 实现 Windows discovery 与本机会话验证。
+- [x] 6.1 实现 Windows discovery 与本机会话验证。
       **Blocked by:** 2.5, 3.4
       **Acceptance:** 随机端口、会话凭据、用户级 discovery、所有者、freshness 和进程验证已实现；伪造 discovery、过期进程、端口劫持和错误凭据测试失败
       **Requirements:** desktop-observability-dashboard#桌面接收器接纳标准 OTLP 上报, desktop-observability-dashboard#桌面界面保持最小权限边界
-- [ ] 6.2 实现关闭偏好与托盘生命周期。
+- [x] 6.2 实现关闭偏好与托盘生命周期。
       **Blocked by:** 2.6, 6.1
       **Acceptance:** `quit`、`tray`、`ask` 和托盘完全退出覆盖隐藏、重新打开、保存偏好、Windows 会话退出、Host 关闭与完全退出
       **Requirements:** desktop-observability-dashboard#用户可以选择窗口关闭行为
-- [ ] 6.3 强化 Renderer sandbox 与 IPC 权限边界。
+- [x] 6.3 强化 Renderer sandbox 与 IPC 权限边界。
       **Blocked by:** 2.4
       **Acceptance:** `contextIsolation`、sandbox、CSP 和 IPC allowlist 已启用；负向测试拒绝 Renderer 访问 Node/Cordis、Main 承载产品 composition、入口绕过 Application Plugin 和桌面代码进入 Engine
       **Requirements:** desktop-observability-dashboard#桌面界面保持最小权限边界, plugin-composition#外部入口作为 Application Plugin 接入
-- [ ] 6.4 实现 projection journal、原子 snapshot 与压缩。
+- [x] 6.4 实现 projection journal、原子 snapshot 与压缩。
       **Blocked by:** 3.5, 6.1
       **Acceptance:** 高事件量基准覆盖重启恢复、内存上限、启动时间、重复收敛、阈值压缩和损坏诊断；结果满足已记录预算
       **Requirements:** desktop-observability-dashboard#重放和重复投递收敛为一致投影
-- [ ] 6.5 完成 Windows 可访问性与高 DPI 验证。
+- [x] 6.5 完成 Windows 可访问性与高 DPI 验证。
       **Blocked by:** 5.7, 6.3
       **Acceptance:** 键盘导航、可见焦点、可访问名称、长文本、大数值和高 DPI 通过组件测试、自动化检查与关键状态截图审查
       **Requirements:** desktop-observability-dashboard#首个发布只承诺 Windows x64 支持
-- [ ] 6.6 更新桌面状态、安全、保留与故障文档。
+- [x] 6.6 更新桌面状态、安全、保留与故障文档。
       **Blocked by:** 4.7, 5.7, 6.2, 6.4, 6.5
       **Acceptance:** 文档 fixture 能区分实时、追平、过期、缺口和未知事实；关闭、恢复、保留与用户级数据处理方式明确
       **Requirements:** desktop-observability-dashboard#重放和重复投递收敛为一致投影, desktop-observability-dashboard#用户可以选择窗口关闭行为

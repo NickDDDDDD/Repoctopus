@@ -7,6 +7,11 @@ import {
   isDesktopShellCommand,
   type DesktopHostEvent,
 } from '../shared/host-protocol.js';
+import { ProjectionJournalStore } from './projection-journal-store.js';
+import {
+  DesktopReceiverDiscovery,
+  type DesktopReceiverDiscoveryHandle,
+} from './receiver-discovery.js';
 
 function send(event: DesktopHostEvent): void {
   if (process.connected) process.send?.(event);
@@ -20,14 +25,38 @@ function failureMessage(error: unknown): string {
 let running: RunningApp | undefined;
 let shutdown: Promise<void> | undefined;
 let unsubscribeProjection: (() => void) | undefined;
+let discovery: DesktopReceiverDiscovery | undefined;
+let discoveryHandle: DesktopReceiverDiscoveryHandle | undefined;
+let discoveryRefresh: ReturnType<typeof setInterval> | undefined;
 
 function close(): Promise<void> {
   if (shutdown !== undefined) return shutdown;
   shutdown = Promise.resolve()
     .then(async () => {
-      await running?.close();
+      const failures: unknown[] = [];
+      const settle = async (operation: () => Promise<void>): Promise<void> => {
+        try {
+          await operation();
+        } catch (error) {
+          failures.push(error);
+        }
+      };
+      if (discoveryRefresh !== undefined) clearInterval(discoveryRefresh);
+      discoveryRefresh = undefined;
+      const ownedDiscovery = discovery;
+      const ownedDiscoveryHandle = discoveryHandle;
+      if (ownedDiscovery !== undefined && ownedDiscoveryHandle !== undefined) {
+        await settle(() => ownedDiscovery.remove(ownedDiscoveryHandle));
+      }
+      discoveryHandle = undefined;
+      await settle(() => running?.context.desktopReceiver.stop() ?? Promise.resolve());
+      await settle(() => running?.context.desktopProjection.closeJournal() ?? Promise.resolve());
+      await settle(() => running?.close() ?? Promise.resolve());
       unsubscribeProjection?.();
       unsubscribeProjection = undefined;
+      if (failures.length > 0) {
+        throw new AggregateError(failures, 'Desktop Host shutdown was incomplete');
+      }
       send({ protocolVersion: DESKTOP_HOST_PROTOCOL_VERSION, type: 'shutdown-complete' });
       process.disconnect?.();
     })
@@ -38,6 +67,7 @@ function close(): Promise<void> {
         message: failureMessage(error),
       });
       process.exitCode = 1;
+      process.disconnect?.();
     });
   return shutdown;
 }
@@ -73,7 +103,32 @@ const productRoot = path.resolve(process.argv[2] ?? process.cwd());
 
 try {
   running = await bootDesktopComposition(productRoot);
+  const dataRoot = process.env.REPOCTOPUS_DESKTOP_DATA_ROOT;
+  if (dataRoot !== undefined) {
+    const journal = await ProjectionJournalStore.open(
+      path.join(path.resolve(dataRoot), 'projection'),
+      running.context.desktopProjection.snapshot(),
+    );
+    await running.context.desktopProjection.attachJournal(journal);
+  }
   const receiver = await running.context.desktopReceiver.start();
+  const discoveryRoot = process.env.REPOCTOPUS_DESKTOP_DISCOVERY_ROOT;
+  if (process.platform === 'win32' && discoveryRoot !== undefined) {
+    discovery = new DesktopReceiverDiscovery({ root: discoveryRoot });
+    discoveryHandle = await discovery.publish(receiver);
+    discoveryRefresh = setInterval(() => {
+      if (discovery === undefined || discoveryHandle === undefined) return;
+      void discovery.refresh(discoveryHandle).catch((error: unknown) => {
+        send({
+          protocolVersion: DESKTOP_HOST_PROTOCOL_VERSION,
+          type: 'fatal',
+          message: failureMessage(error),
+        });
+        void close();
+      });
+    }, 15_000);
+    discoveryRefresh.unref();
+  }
   unsubscribeProjection = running.context.desktopProjection.subscribe((snapshot, delta) => {
     send({
       protocolVersion: DESKTOP_HOST_PROTOCOL_VERSION,
