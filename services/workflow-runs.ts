@@ -1398,6 +1398,56 @@ export class WorkflowRuns extends Service {
             }
             if (
               lifecycle.phase === 'build' &&
+              lifecycle.currentWork === null &&
+              lifecycle.buildProtocol?.currentAction === 'plan' &&
+              lifecycle.buildProtocol.configuration
+            ) {
+              const configuration = lifecycle.buildProtocol.configuration;
+              const skills = await this.resolveLifecycleWorkSkills('build.plan', signal);
+              const work = createBuildActionWork({
+                runId,
+                checkEpoch: lifecycle.checkEpoch + 1,
+                definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+                kind: 'build.plan',
+                actionSkill: skills.actionSkill,
+                augmentationSkills: skills.augmentationSkills,
+                compositionDigest: current.composition.compositionDigest,
+                projectConfigDigest,
+                projectSnapshotDigest: current.projectSnapshotDigest,
+                workspaceRepositoryId,
+                repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
+                configurationId: configuration.configurationId,
+                executionMode: configuration.executionMode,
+                tddMode: configuration.tddMode,
+                stableInput: {
+                  reason: 'compatible-definition-recovery',
+                  actionAttempt: lifecycle.buildProtocol.actionAttempt + 1,
+                },
+              });
+              for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
+                await this.coordinator.bindSkill(runId, skill);
+              }
+              const restored = await this.coordinator.acceptChangeObservation(runId, {
+                kind: 'build-plan-retry-required',
+                reason: 'Compatible lifecycle recovery restored interrupted Plan Work',
+                work,
+              });
+              await this.ctx.workExecutionAuthority.recordWorkCreated(runId, work);
+              return {
+                ...restored,
+                value: await this.coordinator.status(runId),
+                diagnostics: [
+                  ...restored.diagnostics,
+                  {
+                    level: 'warning',
+                    code: 'change.build-plan-work-restored',
+                    message: 'Compatible lifecycle recovery restored interrupted Plan Work',
+                  },
+                ],
+              };
+            }
+            if (
+              lifecycle.phase === 'build' &&
               lifecycle.verificationInvalidation &&
               (lifecycle.tasks ?? []).every((task) => task.status === 'completed')
             ) {

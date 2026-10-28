@@ -798,7 +798,6 @@ describe('Change lifecycle domain', () => {
         decidedAt: '2026-10-28T00:00:00.000Z',
       }),
     });
-    const planWork = phaseWork('build', 'build.plan', 5, digest('a'));
     const retryWork = phaseWork('build', 'build.plan', 6, digest('b'));
 
     const retried = evolveChangeLifecycle({
@@ -807,7 +806,7 @@ describe('Change lifecycle domain', () => {
         revision: 5,
         checkEpoch: 5,
         phase: 'build',
-        currentWork: planWork,
+        currentWork: null,
         tasks: [buildTask],
         workspaceIntent: intent,
         planningDigest: digest('p'),

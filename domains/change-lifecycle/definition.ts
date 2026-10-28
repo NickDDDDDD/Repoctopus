@@ -51,6 +51,7 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
   version: '4.2.0',
   compatibleDigests: [
     'sha256:3890da04d20fb364e363a976b21877f0198ca22da3c00af4de302de0f48b430b',
+    'sha256:8be6236a13ddf44b9174517779cc4992b718a1ebff41cb3b69860c6a86e1c8d5',
   ],
   phases: [
     {

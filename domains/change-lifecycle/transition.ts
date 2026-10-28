@@ -1072,7 +1072,7 @@ export function evolveChangeLifecycle(options: {
     if (
       current.phase !== 'build' ||
       current.status !== 'running' ||
-      current.currentWork?.kind !== 'build.plan' ||
+      (current.currentWork !== null && current.currentWork.kind !== 'build.plan') ||
       !current.buildProtocol ||
       current.buildProtocol.currentAction !== 'plan' ||
       observation.work.phase !== 'build' ||
