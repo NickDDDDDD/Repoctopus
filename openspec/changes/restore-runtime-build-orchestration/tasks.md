@@ -183,7 +183,7 @@
       **Blocked by:** 8.2
       **Acceptance:** 每类退化均被正式 harness 捕获，合法 plan revision 保留仍有效 completion
       **Requirements:** change-lifecycle#verify-失败通过-build-plan-revision-返工, skill-integration#openspec-四类工件必须保持唯一规划权威
-- [ ] 8.4 执行 `npm run verify`、OpenSpec strict、package/tracer E2E 与 provenance 校验，生成绑定 commit、definition、configuration、plan 和 runId 的验证报告。
+- [x] 8.4 执行 `npm run verify`、OpenSpec strict、package/tracer E2E 与 provenance 校验，生成绑定 commit、definition、configuration、plan 和 runId 的验证报告。
       **Blocked by:** 8.3
       **Acceptance:** 全部正式检查通过，报告可复现并证明验收对受控退化敏感
       **Requirements:** development-telemetry#受管-change-执行必须产生完整可重放遥测
