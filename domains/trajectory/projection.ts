@@ -194,18 +194,15 @@ export interface ChangeProjectionSnapshot {
   receivedSequences: Record<string, number[]>;
 }
 
-/** Bounded Renderer-facing view; deduplication and gap bookkeeping remain Host-internal. */
-export type ChangeProjectionView = Pick<
-  ChangeProjectionSnapshot,
-  'schemaVersion' | 'version' | 'changes' | 'freshness'
->;
-
-export function changeProjectionView(snapshot: ChangeProjectionSnapshot): ChangeProjectionView {
+/** Bounded transport snapshot; deduplication and gap bookkeeping remain Host-internal. */
+export function changeProjectionView(snapshot: ChangeProjectionSnapshot): ChangeProjectionSnapshot {
   return {
     schemaVersion: 1,
     version: snapshot.version,
     changes: structuredClone(snapshot.changes),
     freshness: structuredClone(snapshot.freshness),
+    seenEnvelopeIds: [],
+    receivedSequences: {},
   };
 }
 
@@ -929,25 +926,6 @@ export function isChangeProjectionSnapshot(value: unknown): value is ChangeProje
         Array.isArray((change as Record<string, unknown>).buildActions),
     ) &&
     Array.isArray(candidate.seenEnvelopeIds) &&
-    typeof candidate.freshness === 'object' &&
-    candidate.freshness !== null
-  );
-}
-
-export function isChangeProjectionView(value: unknown): value is ChangeProjectionView {
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) return false;
-  const candidate = value as Record<string, unknown>;
-  return (
-    candidate.schemaVersion === 1 &&
-    Number.isSafeInteger(candidate.version) &&
-    Array.isArray(candidate.changes) &&
-    candidate.changes.every(
-      (change) =>
-        typeof change === 'object' &&
-        change !== null &&
-        Array.isArray((change as Record<string, unknown>).phases) &&
-        Array.isArray((change as Record<string, unknown>).buildActions),
-    ) &&
     typeof candidate.freshness === 'object' &&
     candidate.freshness !== null
   );

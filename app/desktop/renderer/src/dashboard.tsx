@@ -1,6 +1,6 @@
 import type { DesktopApplicationSnapshot } from '../../../../services/desktop-application.js';
 import type {
-  ChangeProjectionView,
+  ChangeProjectionSnapshot,
   ProjectedAttempt,
   ProjectedChange,
   ProjectedHealthDimension,
@@ -147,7 +147,7 @@ function ChangeNavigation({
   snapshot,
   application,
 }: {
-  snapshot: ChangeProjectionView;
+  snapshot: ChangeProjectionSnapshot;
   application: DesktopApplicationSnapshot;
 }) {
   const selected = application.selectedContext;
@@ -494,7 +494,7 @@ export function Dashboard({
   projection,
   application,
 }: {
-  projection: ChangeProjectionView;
+  projection: ChangeProjectionSnapshot;
   application: DesktopApplicationSnapshot;
 }) {
   const selected = application.selectedContext;

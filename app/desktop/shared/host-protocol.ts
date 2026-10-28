@@ -2,9 +2,9 @@ import type { DesktopApplicationSnapshot } from '../../../services/desktop-appli
 import { parseDesktopLaunchContext, type DesktopLaunchContext } from './launch-context.js';
 import {
   isChangeProjectionDelta,
-  isChangeProjectionView,
+  isChangeProjectionSnapshot,
   type ChangeProjectionDelta,
-  type ChangeProjectionView,
+  type ChangeProjectionSnapshot,
 } from '../../../domains/trajectory/projection.js';
 import type { DesktopReceiverConnection } from '../../../services/desktop-receiver.js';
 
@@ -17,13 +17,13 @@ export type DesktopHostEvent =
       type: 'ready';
       snapshot: DesktopApplicationSnapshot;
       receiver: DesktopReceiverConnection;
-      projection: ChangeProjectionView;
+      projection: ChangeProjectionSnapshot;
     }
   | { protocolVersion: 1; type: 'snapshot-updated'; snapshot: DesktopApplicationSnapshot }
   | {
       protocolVersion: 1;
       type: 'projection-updated';
-      snapshot: ChangeProjectionView;
+      snapshot: ChangeProjectionSnapshot;
       delta: ChangeProjectionDelta;
     }
   | { protocolVersion: 1; type: 'fatal'; message: string }
@@ -54,7 +54,9 @@ export function isDesktopHostEvent(value: unknown): value is DesktopHostEvent {
     );
   }
   if (candidate.type === 'projection-updated') {
-    return isChangeProjectionView(candidate.snapshot) && isChangeProjectionDelta(candidate.delta);
+    return (
+      isChangeProjectionSnapshot(candidate.snapshot) && isChangeProjectionDelta(candidate.delta)
+    );
   }
   if (candidate.type !== 'ready' && candidate.type !== 'snapshot-updated') return false;
   if (typeof candidate.snapshot !== 'object' || candidate.snapshot === null) return false;
@@ -72,7 +74,7 @@ export function isDesktopHostEvent(value: unknown): value is DesktopHostEvent {
     /^http:\/\/127\.0\.0\.1:\d+$/u.test(receiver.endpoint) &&
     typeof receiver.sessionToken === 'string' &&
     receiver.sessionToken.length >= 24 &&
-    isChangeProjectionView(candidate.projection)
+    isChangeProjectionSnapshot(candidate.projection)
   );
 }
 

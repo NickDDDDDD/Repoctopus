@@ -5,7 +5,7 @@ import type { DesktopLaunchContext } from '../shared/launch-context.js';
 import { DESKTOP_HOST_PROTOCOL_VERSION, isDesktopHostEvent } from '../shared/host-protocol.js';
 import type {
   ChangeProjectionDelta,
-  ChangeProjectionView,
+  ChangeProjectionSnapshot,
 } from '../../../domains/trajectory/projection.js';
 import type { DesktopReceiverConnection } from '../../../services/desktop-receiver.js';
 import { desktopNodeEnvironment } from './node-environment.js';
@@ -33,11 +33,11 @@ async function exitsWithin(exit: Promise<void>, milliseconds: number): Promise<b
 export interface DesktopHostReady {
   snapshot: DesktopApplicationSnapshot;
   receiver: DesktopReceiverConnection;
-  projection: ChangeProjectionView;
+  projection: ChangeProjectionSnapshot;
 }
 
 export interface DesktopHostProjectionUpdate {
-  snapshot: ChangeProjectionView;
+  snapshot: ChangeProjectionSnapshot;
   delta: ChangeProjectionDelta;
 }
 
