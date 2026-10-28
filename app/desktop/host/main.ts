@@ -1,7 +1,7 @@
 import path from 'node:path';
 
-import { bootDesktopComposition } from '../../boot/bootstrap.js';
 import type { RunningApp } from '../../boot/boot.js';
+import { bootDesktopComposition } from './composition.js';
 import {
   DESKTOP_HOST_PROTOCOL_VERSION,
   isDesktopShellCommand,
@@ -80,6 +80,7 @@ process.on('message', (message: unknown) => {
   }
   if (message.type === 'activate-context') {
     running?.context.desktopApplication.activate(message.context);
+    running?.context.desktopApplication.select(message.context);
   } else {
     running?.context.desktopApplication.select(message.selection);
   }

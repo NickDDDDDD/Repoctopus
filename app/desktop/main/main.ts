@@ -37,7 +37,9 @@ import {
 } from '../shared/launch-context.js';
 
 const moduleDirectory = path.dirname(fileURLToPath(import.meta.url));
-const hostEntry = path.join(moduleDirectory, 'host.mjs');
+const hostEntry = app.isPackaged
+  ? path.join(process.resourcesPath, 'app.asar.unpacked', 'dist', 'desktop', 'host.mjs')
+  : path.join(moduleDirectory, 'host.mjs');
 const preloadEntry = path.join(moduleDirectory, 'preload.cjs');
 const rendererEntry = path.join(moduleDirectory, 'renderer', 'index.html');
 const productRoot = resolveDesktopProductRoot({
@@ -45,6 +47,7 @@ const productRoot = resolveDesktopProductRoot({
   isPackaged: app.isPackaged,
   moduleDirectory,
 });
+const hostProductRoot = app.isPackaged ? path.join(process.resourcesPath, 'product') : productRoot;
 
 let mainWindow: BrowserWindow | undefined;
 let hostReady: DesktopHostReady | undefined;
@@ -94,7 +97,7 @@ const controller = new DesktopBackendController(
     new DesktopHostProcess({
       executable: process.execPath,
       entry: hostEntry,
-      productRoot,
+      productRoot: hostProductRoot,
       environment: {
         ...process.env,
         REPOCTOPUS_DESKTOP_DATA_ROOT: path.join(userDataRoot, 'desktop'),
@@ -252,9 +255,12 @@ const shellLifecycle = new DesktopShellLifecycle({
 
 function ensureTray(): void {
   if (tray !== undefined) return;
-  const icon = nativeImage.createFromDataURL(
-    `data:image/svg+xml;charset=utf-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><rect width="16" height="16" rx="4" fill="#244f42"/><circle cx="8" cy="8" r="3" fill="#d8f26d"/></svg>')}`,
+  const icon = nativeImage.createFromPath(
+    app.isPackaged
+      ? path.join(process.resourcesPath, 'desktop-icon.ico')
+      : path.join(productRoot, 'app', 'desktop', 'resources', 'icon.ico'),
   );
+  if (icon.isEmpty()) throw new Error('Repoctopus Desktop icon is unavailable');
   tray = new DesktopTray({
     handle: new Tray(icon),
     buildMenu: (items) => Menu.buildFromTemplate(items),
