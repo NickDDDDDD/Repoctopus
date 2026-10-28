@@ -84,7 +84,6 @@ const COMMANDS = new Set([
   'run work-claim',
   'run work-outcome',
   'run work-reconcile',
-  'run work-validate',
   'run decide',
   'run record',
   'run resume',
@@ -1188,21 +1187,6 @@ async function runWorkReconcile(parsed: ParsedArguments): Promise<CliEnvelope<un
   }
 }
 
-async function runWorkValidate(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
-  const workspace = path.resolve(stringFlag(parsed, 'workspace', { fallback: process.cwd() })!);
-  const runId = stringFlag(parsed, 'run', { required: true })!;
-  const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
-  try {
-    const result = await app.context.commandRouter.execute('run.work.validate', {
-      runId,
-      receiptId: stringFlag(parsed, 'receipt', { required: true })!,
-    });
-    return successEnvelope({ command: 'run work-validate', runId, result });
-  } finally {
-    await app.close();
-  }
-}
-
 async function runDecide(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
   if (!process.stdin.isTTY || !process.stdout.isTTY) {
     throw new Error('Human approval requires an interactive terminal or a trusted IDE Adapter');
@@ -1226,17 +1210,17 @@ async function runDecide(parsed: ParsedArguments): Promise<CliEnvelope<unknown>>
     }
     if (
       lifecycle.phase === 'build' &&
-      (lifecycle.waitCondition.waitId.startsWith('build-adoption:') ||
-        lifecycle.waitCondition.waitId.startsWith('build-design:') ||
-        lifecycle.waitCondition.waitId.startsWith('build-configuration:'))
+      (lifecycle.waitCondition.waitId.startsWith('build-design:') ||
+        lifecycle.waitCondition.waitId.startsWith('build-configuration:') ||
+        lifecycle.waitCondition.waitId.startsWith('build-plan:'))
     ) {
-      const adoption = lifecycle.waitCondition.waitId.startsWith('build-adoption:');
       const configuration = lifecycle.waitCondition.waitId.startsWith('build-configuration:');
+      const plan = lifecycle.waitCondition.waitId.startsWith('build-plan:');
       const selected = await reviewLifecycleDecision({
         title: configuration
           ? `Approve Build Configuration: ${lifecycle.identity.changeId}`
-          : adoption
-            ? `Adopt existing completion claims: ${lifecycle.identity.changeId}`
+          : plan
+            ? `Approve Build Plan: ${lifecycle.identity.changeId}`
             : `Return Build to Design: ${lifecycle.identity.changeId}`,
         proposalHash: lifecycle.waitCondition.proposalDigest,
         details: configuration
@@ -1246,10 +1230,10 @@ async function runDecide(parsed: ParsedArguments): Promise<CliEnvelope<unknown>>
               `Review: ${lifecycle.buildProtocol?.configurationProposal?.reviewMode ?? '-'}`,
               `Isolation: ${lifecycle.buildProtocol?.configurationProposal?.isolation ?? '-'}`,
             ]
-          : adoption
+          : plan
             ? [
-                `Tasks: ${lifecycle.tasks?.filter((task) => task.completion?.source === 'imported-claim').length ?? 0}`,
-                'Approval imports only Build completion claims; Verify and Archive still run normally.',
+                lifecycle.waitCondition.reason,
+                `Plan revision: ${lifecycle.buildProtocol?.plan?.revision ?? '-'}`,
               ]
             : [
                 lifecycle.waitCondition.reason,
@@ -1510,7 +1494,6 @@ async function dispatch(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
   if (command === 'run work-claim') return runWorkClaim(parsed);
   if (command === 'run work-outcome') return runWorkOutcome(parsed);
   if (command === 'run work-reconcile') return runWorkReconcile(parsed);
-  if (command === 'run work-validate') return runWorkValidate(parsed);
   if (command === 'run decide') return runDecide(parsed);
   if (command === 'run record') return runRecord(parsed);
   if (command === 'run resume') return runResume(parsed);

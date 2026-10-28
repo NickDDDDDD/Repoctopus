@@ -142,6 +142,11 @@ export type WorkExecutionResult =
       packageId: string;
       acceptanceEvidenceIds: readonly string[];
       testEvidenceIds: readonly string[];
+      tddEvidence?: {
+        redEvidenceId: string;
+        greenEvidenceId: string;
+        regressionEvidenceId: string;
+      };
       repositoryDigest: `sha256:${string}`;
       implementationDigest: `sha256:${string}`;
     }

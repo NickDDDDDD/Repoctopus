@@ -235,6 +235,10 @@ describe('telemetry mapping', () => {
       'repoctopus.execution.work.kind': 'custom',
       'repoctopus.execution.result': 'succeeded',
       'repoctopus.execution.continuation': 'unknown',
+      'repoctopus.build.action': 'none',
+      'repoctopus.build.execution.mode': 'none',
+      'repoctopus.build.tdd.mode': 'none',
+      'repoctopus.build.isolation': 'none',
     });
   });
 });

@@ -1029,7 +1029,6 @@ const definitions: readonly BuiltinDefinition[] = [
       'domains/runtime/workflow-runs.ts',
       'domains/runtime/evidence-guard.ts',
       'domains/change-lifecycle/definition.ts',
-      'domains/change-lifecycle/build-validator.ts',
       'domains/change-lifecycle/host-workflow.ts',
       'domains/change-lifecycle/transition.ts',
       'domains/change-lifecycle/archive-input.ts',

@@ -57,13 +57,15 @@ function work(kind: string): WorkDescriptor {
     workspaceRepositoryId: 'workspace',
     repositoryIds: ['workspace', 'backend'],
   });
-  return {
+  const descriptor: WorkDescriptor = {
     schemaVersion: 2,
     workId: `${definition.phase}:${kind}`,
     checkEpoch: 0,
     ...binding,
     inputDigest: digest(`${kind} input`),
   };
+  if (kind === 'build.execute') descriptor.augmentationSkills = [snapshot('tdd')];
+  return descriptor;
 }
 
 function artifact(
@@ -160,7 +162,7 @@ describe('Work execution context', () => {
       ],
     ],
     [
-      'task.implement',
+      'build.execute',
       [
         'runtime-contract',
         'action-skill',
@@ -200,7 +202,7 @@ describe('Work execution context', () => {
   });
 
   it('adds only the fixed diagnosing-bugs method for a Build retry', () => {
-    const descriptor = work('task.implement');
+    const descriptor = work('build.execute');
     const context = assemble(descriptor, { diagnosticSkill: skill('diagnosing-bugs') });
     expect(
       context.layers
@@ -210,7 +212,7 @@ describe('Work execution context', () => {
   });
 
   it('fails before execution for a missing dependency, second owner, or artifact conflict', () => {
-    const build = work('task.implement');
+    const build = work('build.execute');
     expect(() => assemble(build, {}, true)).toThrow(/missing or drifted/u);
     expect(() =>
       assemble(build, {

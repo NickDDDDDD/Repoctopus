@@ -19,6 +19,10 @@ import {
   BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
   createChangeLifecycleSnapshot,
 } from '../domains/change-lifecycle/definition.js';
+import {
+  createBuildProtocolState,
+  createExecutionWorkspaceIntent,
+} from '../domains/change-lifecycle/build-protocol.js';
 
 const digest = (value: string): `sha256:${string}` => `sha256:${value.repeat(64).slice(0, 64)}`;
 
@@ -316,16 +320,35 @@ describe('Change lifecycle domain', () => {
       },
     });
     expect(openWaiting.snapshot).toMatchObject({ phase: 'open', status: 'waiting' });
-    const opened = evolveChangeLifecycle({
+    const intent = createExecutionWorkspaceIntent({
+      workspaceId: initialSnapshot().identity.workspaceId,
+      changeId: initialSnapshot().identity.changeId,
+      isolation: 'current',
+    });
+    const intentSelected = evolveChangeLifecycle({
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
       current: openWaiting.snapshot,
+      observation: {
+        kind: 'open-workspace-intent-selected',
+        intent,
+        requestId: 'open-decision-1',
+        proposalDigest: digest('q'),
+        actorId: 'trusted-user',
+      },
+    });
+    const opened = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current: intentSelected.snapshot,
       observation: {
         kind: 'open-gate',
         result: 'approved',
         reason: 'Open baseline approved',
         evidenceIds: [digest('e')],
         inputDigest: digest('o'),
-        work: designWork,
+        work: {
+          ...designWork,
+          checkEpoch: intentSelected.snapshot.checkEpoch + 1,
+        },
       },
     });
     expect(opened.snapshot).toMatchObject({ phase: 'design', status: 'running' });
@@ -364,6 +387,17 @@ describe('Change lifecycle domain', () => {
       }).fact,
     ).toBeNull();
 
+    const configureWork = phaseWork(
+      'build',
+      'build.configure',
+      waiting.snapshot.checkEpoch + 1,
+      digest('b'),
+    );
+    const buildProtocol = createBuildProtocolState({
+      runId: initialSnapshot().identity.runId,
+      planningDigest: digest('i'),
+      workspaceIntent: intent,
+    });
     const approved = evolveChangeLifecycle({
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
       current: waiting.snapshot,
@@ -374,33 +408,14 @@ describe('Change lifecycle domain', () => {
         evidenceIds: [digest('e')],
         inputDigest: digest('i'),
         tasks: [buildTask],
-        work: buildWork,
+        work: configureWork,
+        buildProtocol,
       },
     });
     expect(approved.snapshot).toMatchObject({
       phase: 'build',
       status: 'running',
-      currentWork: { workId: buildWork.workId, taskId: buildTask.taskId },
-      planningDigest: digest('i'),
-    });
-
-    const resumedCompleted = evolveChangeLifecycle({
-      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-      current: opened.snapshot,
-      observation: {
-        kind: 'design-gate',
-        result: 'approved',
-        reason: 'Trusted decision accepted for a completed Task projection',
-        evidenceIds: [digest('e')],
-        inputDigest: digest('i'),
-        tasks: [{ ...buildTask, status: 'completed' }],
-      },
-    });
-    expect(resumedCompleted.snapshot).toMatchObject({
-      phase: 'build',
-      status: 'running',
-      currentWork: null,
-      tasks: [{ taskId: buildTask.taskId, status: 'completed' }],
+      currentWork: { workId: configureWork.workId, kind: 'build.configure' },
       planningDigest: digest('i'),
     });
 
@@ -427,7 +442,7 @@ describe('Change lifecycle domain', () => {
         kind: 'planning-semantic-drift',
         supersededPlanningDigest: digest('i'),
         observedPlanningDigest: digest('z'),
-        supersededWorkId: buildWork.workId,
+        supersededWorkId: configureWork.workId,
         supersededTaskRevisions: [buildTask.taskRevision],
         evidenceIds: [digest('n')],
       },
@@ -543,46 +558,7 @@ describe('Change lifecycle domain', () => {
     ).toThrow(/cannot overflow/u);
   });
 
-  it('keeps adoption, design rework, Verify repair/retry, and Archive reverify in one Run', () => {
-    const imported = {
-      ...buildTask,
-      status: 'completed' as const,
-      completion: { source: 'imported-claim' as const },
-    };
-    const adoptionRequired = evolveChangeLifecycle({
-      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-      current: builtinSnapshot({
-        revision: 4,
-        checkEpoch: 4,
-        phase: 'build',
-        tasks: [imported],
-        planningDigest: digest('p'),
-      }),
-      observation: {
-        kind: 'build-adoption-required',
-        requestId: 'adopt-1',
-        proposalDigest: digest('a'),
-        reason: 'Confirm imported completion claims',
-      },
-    });
-    const adopted = evolveChangeLifecycle({
-      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-      current: adoptionRequired.snapshot,
-      observation: {
-        kind: 'build-adoption-decision',
-        decision: 'approve',
-        requestId: 'adopt-1',
-        proposalDigest: digest('a'),
-        actorId: 'trusted-user',
-      },
-    });
-    expect(adopted.snapshot).toMatchObject({
-      phase: 'build',
-      status: 'running',
-      checkEpoch: 6,
-      adoptedCompletionClaimDigest: digest('a'),
-    });
-
+  it('keeps design rework, Verify retry, and Archive reverify in one Run', () => {
     const activeBuild = builtinSnapshot({
       revision: 4,
       checkEpoch: 4,
@@ -656,31 +632,6 @@ describe('Change lifecycle domain', () => {
       tasks: [{ ...buildTask, status: 'completed' }],
       planningDigest: digest('p'),
       verificationInput: verifyInput,
-    });
-    const repairWork = { ...buildWork, checkEpoch: 6 };
-    const repaired = evolveChangeLifecycle({
-      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-      current: activeVerify,
-      observation: {
-        kind: 'verify-gate-rejected',
-        workId: verifyWork.workId,
-        inputDigest: verifyInput.digest,
-        evidenceInputFingerprint: verifyInput.evidenceProfile.fingerprintDigest,
-        attemptId: 'attempt-1',
-        bundleId: 'bundle-1',
-        reason: 'Behavioral acceptance failed',
-        result: 'implementation-failure',
-        checkEpoch: 5,
-        tasks: [buildTask],
-        work: repairWork,
-      },
-    });
-    expect(repaired.snapshot).toMatchObject({
-      phase: 'build',
-      status: 'running',
-      checkEpoch: 6,
-      currentWork: { workId: repairWork.workId },
-      verificationInvalidation: { kind: 'implementation-drift' },
     });
     const retryInput = verificationInput(6, 'r');
     const retryWork = phaseWork('verify', 'evidence.verify', 6, retryInput.digest);

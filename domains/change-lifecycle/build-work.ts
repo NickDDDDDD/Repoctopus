@@ -5,9 +5,28 @@ import type { SkillUsageSnapshot } from '../skill/types.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import type { ChangeLifecycleDefinition, WorkDescriptor } from './transition.js';
 import { materializeLifecycleWorkBinding } from './work-definition.js';
+import type { BuildActionKind, BuildExecutionMode, BuildTddMode } from './build-protocol.js';
 
 function sha256(value: unknown): `sha256:${string}` {
   return `sha256:${createHash('sha256').update(canonicalJson(value)).digest('hex')}`;
+}
+
+export function buildActionSkillComposition(input: {
+  action: Exclude<BuildActionKind, 'plan-evidence'>;
+  tddMode?: BuildTddMode;
+}): { actionSkill: string; augmentationSkills: readonly string[] } {
+  const augmentationSkills =
+    input.action === 'execute'
+      ? input.tddMode === 'tdd'
+        ? ['tdd']
+        : []
+      : input.action === 'check'
+        ? ['code-review']
+        : [];
+  return Object.freeze({
+    actionSkill: `repoctopus-build-${input.action}`,
+    augmentationSkills: Object.freeze(augmentationSkills),
+  });
 }
 
 export function createInitialBuildWork(facts: {
@@ -51,6 +70,7 @@ export function createBuildActionWork(facts: {
   planId?: string;
   planRevision?: number;
   packageId?: string;
+  executionMode?: BuildExecutionMode;
   writeScopes?: readonly { repositoryId: string; paths: readonly string[] }[];
   taskId?: string;
   taskRevision?: `sha256:${string}`;
@@ -72,6 +92,7 @@ export function createBuildActionWork(facts: {
     projectSnapshotDigest: facts.projectSnapshotDigest,
     repositoryIds: [...facts.repositoryIds].sort(),
     binding,
+    executionMode: facts.executionMode ?? null,
   };
   const inputDigest = sha256(stableInput);
   const augmentationNames = facts.augmentationSkills.map((skill) => skill.name);
@@ -97,11 +118,20 @@ export function createBuildActionWork(facts: {
         };
       })
     : binding.writeScopes;
+  const modeCapability =
+    facts.executionMode === 'subagent-driven-development'
+      ? 'subagent.dispatch.attested'
+      : facts.executionMode === 'autonomous'
+        ? 'build.autonomous'
+        : null;
   return {
     schemaVersion: 2,
     workId: `${facts.kind}:${inputDigest.slice('sha256:'.length, 19)}`,
     checkEpoch: facts.checkEpoch,
     ...binding,
+    capabilities: modeCapability
+      ? [...new Set([...binding.capabilities, modeCapability])].sort()
+      : binding.capabilities,
     buildAction: facts.kind.slice('build.'.length) as NonNullable<WorkDescriptor['buildAction']>,
     ...(facts.configurationId ? { configurationId: facts.configurationId } : {}),
     ...(facts.planId ? { planId: facts.planId } : {}),

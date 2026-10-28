@@ -11,6 +11,7 @@ import type {
   BuildActionKind,
   BuildConfiguration,
   BuildConfigurationProposal,
+  BuildInvalidation,
   BuildCheckEvidence,
   BuildExecutionMode,
   BuildPlan,
@@ -384,12 +385,6 @@ export type ChangeLifecycleObservation =
       buildProtocol?: BuildProtocolState;
     }
   | {
-      kind: 'build-adoption-required';
-      requestId: string;
-      proposalDigest: `sha256:${string}`;
-      reason: string;
-    }
-  | {
       kind: 'build-configuration-proposed';
       proposal: BuildConfigurationProposal;
       requestId: string;
@@ -414,6 +409,21 @@ export type ChangeLifecycleObservation =
       work: WorkDescriptor;
     }
   | {
+      kind: 'build-plan-approval-required';
+      evidence: PlanEvidence;
+      requestId: string;
+      reason: string;
+    }
+  | {
+      kind: 'build-plan-decision';
+      decision: 'approve' | 'reject';
+      requestId: string;
+      proposalDigest: `sha256:${string}`;
+      actorId: string;
+      evidence: PlanEvidence;
+      work: WorkDescriptor;
+    }
+  | {
       kind: 'build-package-completed';
       completion: PackageCompletionEvidence;
       work: WorkDescriptor;
@@ -426,11 +436,10 @@ export type ChangeLifecycleObservation =
       work: WorkDescriptor;
     }
   | {
-      kind: 'build-adoption-decision';
-      decision: 'approve' | 'reject';
-      requestId: string;
-      proposalDigest: `sha256:${string}`;
-      actorId: string;
+      kind: 'build-check-rejected';
+      evidence: BuildCheckEvidence;
+      invalidation: BuildInvalidation;
+      work: WorkDescriptor;
     }
   | {
       kind: 'build-design-revision-required';
@@ -454,30 +463,6 @@ export type ChangeLifecycleObservation =
       reason: string;
     }
   | {
-      kind: 'build-task-completed';
-      workId: string;
-      taskId: string;
-      taskRevision: `sha256:${string}`;
-      inputDigest: `sha256:${string}`;
-      receiptId: string;
-      tasks: readonly SpecificationTask[];
-    }
-  | {
-      kind: 'build-task-ready';
-      work: WorkDescriptor;
-      tasks: readonly SpecificationTask[];
-    }
-  | {
-      kind: 'build-verification-ready';
-      verificationInput: VerificationInput;
-      work: WorkDescriptor;
-    }
-  | {
-      kind: 'build-verification-blocked';
-      reason: string;
-      evidenceIds: readonly string[];
-    }
-  | {
       kind: 'verify-gate-satisfied';
       workId: string;
       inputDigest: `sha256:${string}`;
@@ -497,6 +482,7 @@ export type ChangeLifecycleObservation =
       result: 'implementation-failure' | 'evidence-unavailable';
       checkEpoch: number;
       tasks?: readonly SpecificationTask[];
+      invalidation?: BuildInvalidation;
       work: WorkDescriptor;
       verificationInput?: VerificationInput;
     }
@@ -1072,7 +1058,6 @@ export function evolveChangeLifecycle(options: {
       current.phase !== 'build' ||
       current.status !== 'running' ||
       current.currentWork !== null ||
-      observation.work.kind !== 'build.execute' ||
       !current.buildProtocol ||
       current.buildProtocol.currentAction !== 'plan-evidence'
     ) {
@@ -1082,10 +1067,87 @@ export function evolveChangeLifecycle(options: {
       kind: 'plan-evidence-accepted',
       evidence: observation.evidence,
     });
+    const expectedKind = buildProtocol.currentAction === 'check' ? 'build.check' : 'build.execute';
+    if (observation.work.kind !== expectedKind) {
+      throw new Error('Plan Evidence produced a Work outside the Runtime-selected Action');
+    }
     return applyChangeLifecycleTransition({
       definition: options.definition,
       current,
       transitionId: 'build.plan-evidence-accepted',
+      next: {
+        currentWork: observation.work,
+        waitCondition: null,
+        blocker: null,
+        buildProtocol,
+      },
+    });
+  }
+  if (observation.kind === 'build-plan-approval-required') {
+    if (
+      current.phase !== 'build' ||
+      current.status !== 'running' ||
+      current.currentWork !== null ||
+      !current.buildProtocol ||
+      current.buildProtocol.currentAction !== 'plan-evidence' ||
+      observation.evidence.risk.level !== 'high' ||
+      observation.evidence.planDigest !== current.buildProtocol.plan?.digest
+    ) {
+      throw new Error('Plan approval wait does not match the active Plan Evidence');
+    }
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'build.plan-approval-required',
+      next: {
+        currentWork: null,
+        waitCondition: {
+          schemaVersion: 1,
+          kind: 'human-decision',
+          waitId: `build-plan:${observation.requestId}`,
+          requestId: observation.requestId,
+          proposalDigest: observation.evidence.validationDigest,
+          inputDigest: observation.evidence.validationDigest,
+          reason: observation.reason,
+        },
+        blocker: null,
+      },
+    });
+  }
+  if (observation.kind === 'build-plan-decision') {
+    const wait = current.waitCondition;
+    if (
+      current.phase !== 'build' ||
+      current.status !== 'waiting' ||
+      wait?.kind !== 'human-decision' ||
+      !wait.waitId.startsWith('build-plan:') ||
+      wait.requestId !== observation.requestId ||
+      wait.proposalDigest !== observation.proposalDigest ||
+      observation.evidence.validationDigest !== observation.proposalDigest ||
+      !current.buildProtocol ||
+      !observation.actorId.trim()
+    ) {
+      throw new Error('Plan decision does not match the active Human Decision');
+    }
+    const buildProtocol = advanceBuildProtocol(
+      current.buildProtocol,
+      observation.decision === 'approve'
+        ? { kind: 'plan-evidence-accepted', evidence: observation.evidence }
+        : { kind: 'plan-rejected' },
+    );
+    const expectedKind = observation.decision === 'approve'
+      ? buildProtocol.currentAction === 'check'
+        ? 'build.check'
+        : 'build.execute'
+      : 'build.plan';
+    if (observation.work.kind !== expectedKind) {
+      throw new Error('Plan decision Work does not match the Runtime-selected Action');
+    }
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId:
+        observation.decision === 'approve' ? 'build.plan-approved' : 'build.plan-rejected',
       next: {
         currentWork: observation.work,
         waitCondition: null,
@@ -1171,74 +1233,31 @@ export function evolveChangeLifecycle(options: {
       },
     });
   }
-  if (observation.kind === 'build-adoption-required') {
+  if (observation.kind === 'build-check-rejected') {
     if (
       current.phase !== 'build' ||
       current.status !== 'running' ||
-      current.currentWork !== null ||
-      !(current.tasks ?? []).length ||
-      (current.tasks ?? []).some(
-        (task) => task.status !== 'completed' || task.completion?.source !== 'imported-claim',
-      )
+      current.currentWork?.kind !== 'build.check' ||
+      observation.evidence.accepted ||
+      observation.work.kind !== 'build.plan' ||
+      !current.buildProtocol ||
+      current.buildProtocol.currentAction !== 'check'
     ) {
-      throw new Error('Adopt-existing decision requires only imported pre-completed Build claims');
+      throw new Error('Build Check rejection does not match the active Check Action');
     }
-    const waitCondition: HumanDecisionWaitCondition = {
-      schemaVersion: 1,
-      kind: 'human-decision',
-      waitId: `build-adoption:${observation.requestId}`,
-      requestId: observation.requestId,
-      proposalDigest: observation.proposalDigest,
-      inputDigest: observation.proposalDigest,
-      reason: observation.reason,
-    };
-    return applyChangeLifecycleTransition({
-      definition: options.definition,
-      current,
-      transitionId: 'build.adoption-required',
-      next: { currentWork: null, waitCondition, blocker: null },
+    const buildProtocol = advanceBuildProtocol(current.buildProtocol, {
+      kind: 'revision-required',
+      invalidation: observation.invalidation,
     });
-  }
-  if (observation.kind === 'build-adoption-decision') {
-    const wait = current.waitCondition;
-    if (
-      current.phase !== 'build' ||
-      current.status !== 'waiting' ||
-      wait?.kind !== 'human-decision' ||
-      !wait.waitId.startsWith('build-adoption:') ||
-      wait.requestId !== observation.requestId ||
-      wait.proposalDigest !== observation.proposalDigest ||
-      !observation.actorId.trim()
-    ) {
-      throw new Error('Adopt-existing decision does not match the current Human Decision');
-    }
-    if (observation.decision === 'approve') {
-      return applyChangeLifecycleTransition({
-        definition: options.definition,
-        current,
-        transitionId: 'build.adoption-approved',
-        next: {
-          currentWork: null,
-          waitCondition: null,
-          blocker: null,
-          adoptedCompletionClaimDigest: observation.proposalDigest,
-        },
-      });
-    }
     return applyChangeLifecycleTransition({
       definition: options.definition,
       current,
-      transitionId: 'build.adoption-rejected',
+      transitionId: 'build.check-rejected',
       next: {
-        currentWork: null,
+        currentWork: observation.work,
         waitCondition: null,
-        blocker: {
-          code: 'build.adoption-rejected',
-          message: 'Imported completion claims were rejected by the Human Decision',
-          evidenceIds: [observation.proposalDigest],
-          sinceRevision: current.revision + 1,
-        },
-        adoptedCompletionClaimDigest: null,
+        blocker: null,
+        buildProtocol,
       },
     });
   }
@@ -1344,176 +1363,6 @@ export function evolveChangeLifecycle(options: {
       },
     });
   }
-  if (observation.kind === 'build-task-completed') {
-    if (current.phase !== 'build' || current.status !== 'running') {
-      throw new Error(`Build Task completion is not valid from ${current.phase}/${current.status}`);
-    }
-    const existing = current.tasks?.find((task) => task.taskId === observation.taskId);
-    if (
-      existing?.status === 'completed' &&
-      existing.taskRevision === observation.taskRevision &&
-      current.currentWork === null
-    ) {
-      return { snapshot: structuredClone(current), fact: null };
-    }
-    const work = current.currentWork;
-    if (
-      !work ||
-      work.workId !== observation.workId ||
-      work.taskId !== observation.taskId ||
-      work.taskRevision !== observation.taskRevision ||
-      work.inputDigest !== observation.inputDigest
-    ) {
-      throw new Error('Build Task completion does not match the active Work');
-    }
-    const currentTasks = current.tasks ?? [];
-    if (
-      currentTasks.length !== observation.tasks.length ||
-      currentTasks.some((task, index) => {
-        const observed = observation.tasks[index];
-        return (
-          !observed ||
-          observed.taskId !== task.taskId ||
-          observed.taskRevision !== task.taskRevision ||
-          (task.taskId !== observation.taskId && observed.status !== task.status)
-        );
-      })
-    ) {
-      throw new Error('Build Task completion changed the approved Task set');
-    }
-    const completed = observation.tasks.find((task) => task.taskId === observation.taskId);
-    if (completed?.status !== 'completed') {
-      throw new Error('Build Task completion projection did not mark the Task complete');
-    }
-    return applyChangeLifecycleTransition({
-      definition: options.definition,
-      current,
-      transitionId: 'build.task-completed',
-      next: {
-        currentWork: null,
-        waitCondition: null,
-        blocker: null,
-        tasks: observation.tasks,
-      },
-    });
-  }
-  if (observation.kind === 'build-task-ready') {
-    if (current.phase !== 'build' || current.status !== 'running' || current.currentWork !== null) {
-      throw new Error(`Build Task dispatch is not valid from ${current.phase}/${current.status}`);
-    }
-    const currentTasks = current.tasks ?? [];
-    if (
-      currentTasks.length !== observation.tasks.length ||
-      currentTasks.some((task, index) => {
-        const observed = observation.tasks[index];
-        return (
-          !observed ||
-          observed.taskId !== task.taskId ||
-          observed.taskRevision !== task.taskRevision ||
-          observed.status !== task.status
-        );
-      })
-    ) {
-      throw new Error('Next Build Work changed the approved Task projection');
-    }
-    const task = observation.tasks.find(
-      (candidate) => candidate.taskId === observation.work.taskId,
-    );
-    if (
-      observation.work.phase !== 'build' ||
-      observation.work.kind !== 'task.implement' ||
-      task?.status !== 'pending' ||
-      task.taskRevision !== observation.work.taskRevision
-    ) {
-      throw new Error('Next Build Work does not bind a pending Task revision');
-    }
-    return applyChangeLifecycleTransition({
-      definition: options.definition,
-      current,
-      transitionId: 'build.task-ready',
-      next: {
-        currentWork: observation.work,
-        waitCondition: null,
-        blocker: null,
-        tasks: observation.tasks,
-      },
-    });
-  }
-  if (observation.kind === 'build-verification-blocked') {
-    if (current.phase !== 'build' || !['running', 'blocked'].includes(current.status)) {
-      throw new Error(
-        `Build verification blocking is not valid from ${current.phase}/${current.status}`,
-      );
-    }
-    if ((current.tasks ?? []).some((task) => task.status !== 'completed')) {
-      throw new Error('Build verification input may not be prepared before all Tasks complete');
-    }
-    const blocker: ChangeRunBlocker = {
-      code: 'build.verification-input-incomplete',
-      message: observation.reason,
-      evidenceIds: [...observation.evidenceIds],
-      sinceRevision: current.revision + 1,
-    };
-    if (
-      current.status === 'blocked' &&
-      current.blocker?.code === blocker.code &&
-      current.blocker.message === blocker.message
-    ) {
-      return { snapshot: structuredClone(current), fact: null };
-    }
-    return applyChangeLifecycleTransition({
-      definition: options.definition,
-      current,
-      transitionId: 'build.verification-blocked',
-      next: {
-        currentWork: null,
-        waitCondition: null,
-        blocker,
-        verificationInput: null,
-      },
-    });
-  }
-  if (observation.kind === 'build-verification-ready') {
-    if (current.phase !== 'build' || !['running', 'blocked'].includes(current.status)) {
-      throw new Error(
-        `Build verification input is not valid from ${current.phase}/${current.status}`,
-      );
-    }
-    if (
-      current.currentWork !== null ||
-      (current.tasks ?? []).length === 0 ||
-      (current.tasks ?? []).some((task) => task.status !== 'completed')
-    ) {
-      throw new Error('Build verification input requires all Tasks complete and no active Work');
-    }
-    if (
-      observation.work.phase !== 'verify' ||
-      observation.work.kind !== 'evidence.verify' ||
-      observation.work.inputDigest !== observation.verificationInput.digest
-    ) {
-      throw new Error('Verify Work does not bind the immutable verification input');
-    }
-    const taskRevisions = (current.tasks ?? [])
-      .map(({ taskId, taskRevision }) => ({ taskId, taskRevision }))
-      .sort((left, right) => left.taskId.localeCompare(right.taskId));
-    if (
-      canonicalJson(taskRevisions) !== canonicalJson(observation.verificationInput.taskRevisions)
-    ) {
-      throw new Error('Verification input Task revisions do not match the completed Task set');
-    }
-    return applyChangeLifecycleTransition({
-      definition: options.definition,
-      current,
-      transitionId: 'build.validated',
-      next: {
-        currentWork: observation.work,
-        waitCondition: null,
-        blocker: null,
-        verificationInput: observation.verificationInput,
-        verificationInvalidation: null,
-      },
-    });
-  }
   if (observation.kind === 'verify-gate-satisfied') {
     if (current.phase !== 'verify' || current.status !== 'running') {
       throw new Error(`Verify Gate is not valid from ${current.phase}/${current.status}`);
@@ -1593,6 +1442,8 @@ export function evolveChangeLifecycle(options: {
     if (
       observation.work.phase !== 'build' ||
       observation.work.kind !== 'build.plan' ||
+      !observation.invalidation ||
+      !current.buildProtocol ||
       !observation.tasks ||
       canonicalJson(
         observation.tasks.map(({ taskId, taskRevision, status }) => ({
@@ -1611,6 +1462,10 @@ export function evolveChangeLifecycle(options: {
     ) {
       throw new Error('Implementation failure requires a Runtime-selected Build Plan revision');
     }
+    const buildProtocol = advanceBuildProtocol(current.buildProtocol, {
+      kind: 'revision-required',
+      invalidation: observation.invalidation,
+    });
     return applyChangeLifecycleTransition({
       definition: options.definition,
       current,
@@ -1620,6 +1475,7 @@ export function evolveChangeLifecycle(options: {
         waitCondition: null,
         blocker: null,
         tasks: observation.tasks,
+        buildProtocol,
         verificationInput: null,
         verificationInvalidation: {
           schemaVersion: 1,

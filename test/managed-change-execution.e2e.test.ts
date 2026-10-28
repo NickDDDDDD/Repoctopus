@@ -228,6 +228,11 @@ describe('managed Change execution production composition', () => {
               packageId: packet.work.packageId!,
               acceptanceEvidenceIds: [`acceptance:${packet.work.packageId}`],
               testEvidenceIds: [`test:${packet.work.packageId}`],
+              tddEvidence: {
+                redEvidenceId: `red:${packet.work.packageId}`,
+                greenEvidenceId: `green:${packet.work.packageId}`,
+                regressionEvidenceId: `regression:${packet.work.packageId}`,
+              },
               repositoryDigest: inputs.build!.configuration.bindingDigest,
               implementationDigest: `sha256:${'e'.repeat(64)}`,
             };

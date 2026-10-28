@@ -257,35 +257,4 @@ describe('Verification input', () => {
     ).toThrow(/do not match/u);
   });
 
-  it('keeps the Change in build/blocked when verification input preparation is incomplete', () => {
-    const opened = createChangeLifecycleSnapshot({
-      identity: {
-        workspaceId: 'team',
-        changeId: 'verify-input',
-        runId: 'run-1',
-      },
-    });
-    const current = {
-      ...opened,
-      phase: 'build' as const,
-      status: 'running' as const,
-      tasks,
-      planningDigest: digest('p'),
-    };
-    const blocked = evolveChangeLifecycle({
-      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-      current,
-      observation: {
-        kind: 'build-verification-blocked',
-        reason: 'Verification Evidence Profile has no nodes: verify',
-        evidenceIds: [],
-      },
-    });
-    expect(blocked.snapshot).toMatchObject({
-      phase: 'build',
-      status: 'blocked',
-      currentWork: null,
-      blocker: { code: 'build.verification-input-incomplete' },
-    });
-  });
 });

@@ -460,6 +460,7 @@ export interface BuildProtocolState {
   planEvidence: PlanEvidence | null;
   packageCompletions: readonly PackageCompletionEvidence[];
   checkEvidence: BuildCheckEvidence | null;
+  invalidations: readonly BuildInvalidation[];
   revision: number;
 }
 
@@ -474,8 +475,10 @@ export type BuildProtocolObservation =
     }
   | { kind: 'plan-accepted'; plan: BuildPlan }
   | { kind: 'plan-evidence-accepted'; evidence: PlanEvidence }
+  | { kind: 'plan-rejected' }
   | { kind: 'package-completed'; completion: PackageCompletionEvidence }
   | { kind: 'check-accepted'; evidence: BuildCheckEvidence }
+  | { kind: 'revision-required'; invalidation: BuildInvalidation }
   | { kind: 'retry'; action: BuildActionKind };
 
 export function createBuildProtocolState(input: {
@@ -498,6 +501,7 @@ export function createBuildProtocolState(input: {
     planEvidence: null,
     packageCompletions: [],
     checkEvidence: null,
+    invalidations: [],
     revision: 0,
   }) as BuildProtocolState;
 }
@@ -563,6 +567,13 @@ export function advanceBuildProtocol(
     if (observation.plan.revision !== expectedRevision) {
       throw new Error('Build Plan revision is not monotonic');
     }
+    const packageCompletions = state.packageCompletions.filter((completion) =>
+      observation.plan.packages.some(
+        (workPackage) =>
+          workPackage.packageId === completion.packageId &&
+          workPackage.digest === completion.packageDigest,
+      ),
+    );
     return deepFreeze({
       ...state,
       currentAction: 'plan-evidence',
@@ -570,6 +581,8 @@ export function advanceBuildProtocol(
       plans: [...state.plans, observation.plan],
       plan: observation.plan,
       planEvidence: null,
+      packageCompletions,
+      checkEvidence: null,
       revision: state.revision + 1,
     }) as BuildProtocolState;
   }
@@ -580,11 +593,32 @@ export function advanceBuildProtocol(
     if (observation.evidence.planDigest !== state.plan?.digest) {
       throw new Error('Plan Evidence is stale');
     }
+    const allCompleted =
+      state.plan?.packages.every((workPackage) =>
+        state.packageCompletions.some(
+          (completion) =>
+            completion.packageId === workPackage.packageId &&
+            completion.packageDigest === workPackage.digest,
+        ),
+      ) ?? false;
     return deepFreeze({
       ...state,
-      currentAction: 'execute',
+      currentAction: allCompleted ? 'check' : 'execute',
       actionAttempt: 1,
       planEvidence: observation.evidence,
+      revision: state.revision + 1,
+    }) as BuildProtocolState;
+  }
+  if (observation.kind === 'plan-rejected') {
+    if (state.currentAction !== 'plan-evidence' || !state.plan) {
+      throw new Error('Plan rejection does not match the current Plan Evidence Action');
+    }
+    return deepFreeze({
+      ...state,
+      currentAction: 'plan',
+      actionAttempt: 1,
+      planEvidence: null,
+      checkEvidence: null,
       revision: state.revision + 1,
     }) as BuildProtocolState;
   }
@@ -640,6 +674,29 @@ export function advanceBuildProtocol(
       revision: state.revision + 1,
     }) as BuildProtocolState;
   }
+  if (observation.kind === 'revision-required') {
+    if (!state.plan || !state.configuration) {
+      throw new Error('Build Plan revision requires an accepted Plan and Configuration');
+    }
+    if (observation.invalidation.planDigest !== state.plan.digest) {
+      throw new Error('Build invalidation does not bind the current Plan');
+    }
+    const affected = new Set(observation.invalidation.affectedPackageIds);
+    const packageCompletions = state.packageCompletions.filter(
+      (completion) => !affected.has(completion.packageId),
+    );
+    return deepFreeze({
+      ...state,
+      currentAction: 'plan',
+      status: 'active',
+      actionAttempt: 1,
+      planEvidence: null,
+      packageCompletions,
+      checkEvidence: null,
+      invalidations: [...state.invalidations, observation.invalidation],
+      revision: state.revision + 1,
+    }) as BuildProtocolState;
+  }
   if (observation.requestedNextAction) throw new Error('Host cannot select the next Build Action');
   if (observation.action !== state.currentAction) {
     throw new Error('Host Outcome does not match the current Runtime-selected Action');
@@ -671,7 +728,36 @@ export interface PlanEvidence {
   planDigest: Digest;
   configurationDigest: Digest;
   validationDigest: Digest;
+  risk: BuildPlanRisk;
   accepted: true;
+}
+
+export interface BuildPlanRisk {
+  level: 'low' | 'high';
+  reasons: readonly ('cross-repository-package' | 'cross-repository-order')[];
+  digest: Digest;
+}
+
+export function assessBuildPlanRisk(plan: BuildPlan): BuildPlanRisk {
+  const reasons = new Set<BuildPlanRisk['reasons'][number]>();
+  const byId = new Map(plan.packages.map((workPackage) => [workPackage.packageId, workPackage]));
+  for (const workPackage of plan.packages) {
+    if (workPackage.repositoryIds.length > 1) reasons.add('cross-repository-package');
+    for (const dependencyId of workPackage.dependsOn) {
+      const dependency = byId.get(dependencyId);
+      if (
+        dependency &&
+        canonicalJson(dependency.repositoryIds) !== canonicalJson(workPackage.repositoryIds)
+      ) {
+        reasons.add('cross-repository-order');
+      }
+    }
+  }
+  const stable = {
+    level: reasons.size > 0 ? ('high' as const) : ('low' as const),
+    reasons: [...reasons].sort(),
+  };
+  return deepFreeze({ ...stable, digest: digest(stable) }) as BuildPlanRisk;
 }
 
 export interface PackageCompletionEvidence {
@@ -682,6 +768,11 @@ export interface PackageCompletionEvidence {
   executionId: string;
   acceptanceEvidenceIds: readonly string[];
   testEvidenceIds: readonly string[];
+  tddEvidence: {
+    redEvidenceId: string;
+    greenEvidenceId: string;
+    regressionEvidenceId: string;
+  } | null;
   repositoryDigest: Digest;
   implementationDigest: Digest;
   digest: Digest;
@@ -692,6 +783,8 @@ export function createPackageCompletionEvidence(input: {
   executionId: string;
   acceptanceEvidenceIds: readonly string[];
   testEvidenceIds: readonly string[];
+  tddMode: BuildTddMode;
+  tddEvidence?: PackageCompletionEvidence['tddEvidence'];
   repositoryDigest: Digest;
   implementationDigest: Digest;
 }): PackageCompletionEvidence {
@@ -706,6 +799,19 @@ export function createPackageCompletionEvidence(input: {
   if (acceptanceEvidenceIds.length === 0 || testEvidenceIds.length === 0) {
     throw new Error('Package completion requires acceptance and test Evidence');
   }
+  const tddEvidence = input.tddEvidence
+    ? {
+        redEvidenceId: text(input.tddEvidence.redEvidenceId, 'TDD RED Evidence identity'),
+        greenEvidenceId: text(input.tddEvidence.greenEvidenceId, 'TDD GREEN Evidence identity'),
+        regressionEvidenceId: text(
+          input.tddEvidence.regressionEvidenceId,
+          'TDD regression Evidence identity',
+        ),
+      }
+    : null;
+  if (input.tddMode === 'tdd' && !tddEvidence) {
+    throw new Error('TDD Build completion requires RED, GREEN, and regression Evidence');
+  }
   const stable = {
     schemaVersion: 1 as const,
     packageId: input.workPackage.packageId,
@@ -713,6 +819,7 @@ export function createPackageCompletionEvidence(input: {
     executionId: text(input.executionId, 'Implementation execution identity'),
     acceptanceEvidenceIds,
     testEvidenceIds,
+    tddEvidence,
     repositoryDigest: input.repositoryDigest,
     implementationDigest: input.implementationDigest,
   };
@@ -746,6 +853,7 @@ export function createPlanEvidence(input: {
     planDigest: input.plan.digest,
     configurationDigest: input.configuration.semanticDigest,
     validationDigest: input.validation.inputDigest,
+    risk: assessBuildPlanRisk(input.plan),
     accepted: true as const,
   };
   return deepFreeze({
@@ -768,6 +876,56 @@ export interface BuildFinding {
   taskIds: readonly string[];
   packageIds: readonly string[];
   summary: string;
+}
+
+export interface BuildInvalidation {
+  schemaVersion: 1;
+  invalidationId: string;
+  source: 'build-check' | 'verify';
+  planDigest: Digest;
+  classification: BuildFindingClassification;
+  affectedPackageIds: readonly string[];
+  retainedCompletionIds: readonly string[];
+  reason: string;
+  digest: Digest;
+}
+
+export function createBuildInvalidation(input: {
+  source: BuildInvalidation['source'];
+  plan: BuildPlan;
+  classification: BuildFindingClassification;
+  affectedPackageIds: readonly string[];
+  packageCompletions: readonly PackageCompletionEvidence[];
+  reason: string;
+}): BuildInvalidation {
+  const affectedPackageIds = unique(input.affectedPackageIds, 'Affected package identities');
+  if (
+    affectedPackageIds.length === 0 ||
+    affectedPackageIds.some(
+      (packageId) => !input.plan.packages.some((workPackage) => workPackage.packageId === packageId),
+    )
+  ) {
+    throw new Error('Build invalidation requires current Plan package identities');
+  }
+  const affected = new Set(affectedPackageIds);
+  const stable = {
+    schemaVersion: 1 as const,
+    source: input.source,
+    planDigest: input.plan.digest,
+    classification: input.classification,
+    affectedPackageIds,
+    retainedCompletionIds: input.packageCompletions
+      .filter((completion) => !affected.has(completion.packageId))
+      .map((completion) => completion.completionId)
+      .sort(),
+    reason: text(input.reason, 'Build invalidation reason', 2048),
+  };
+  const invalidationDigest = digest(stable);
+  return deepFreeze({
+    ...stable,
+    invalidationId: `build-invalidation:${invalidationDigest.slice(-24)}`,
+    digest: invalidationDigest,
+  }) as BuildInvalidation;
 }
 
 export interface BuildCheckEvidence {
