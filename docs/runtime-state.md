@@ -33,6 +33,22 @@ claim、context delivery、Host invocation、Outcome、Validator 与 lifecycle t
 
 进程外 Host 的 Outcome 必须同时匹配原 invocation ID、Host ID 和 packet digest。受保护操作还必须携带活动 session identity；跨 Run/Work、过期 session、越仓或越 scope 操作全部 fail closed。Repoctopus 不是 OS 沙箱，旁路文件变化只能成为 drift，不能形成受管 Receipt。
 
+## Build 内部协议
+
+Build phase 固定执行 `Configure → Plan → Plan Evidence → Execute → Check`。Runtime 选择当前 Action；Host 只能执行当前 Work 并返回结构化 Outcome。`auto_transition` 只决定 Runner 是否继续调用 `run next`，不允许 Host 跳过 Action 或直接进入 Verify。
+
+| Action        | Runtime 接受的结果                                                                    |
+| ------------- | ------------------------------------------------------------------------------------- |
+| Configure     | Runner 提供的 checkout facts、Host 能力和 `current\|branch\|worktree` 隔离绑定       |
+| Plan          | OpenSpec Tasks 到有界 Work Packages 的执行投影，包括依赖、仓库、write scope 和验收引用 |
+| Plan Evidence | Task coverage、DAG、配置、Host、Skill 和隔离校验；高风险计划建立 Human Decision       |
+| Execute       | 当前 package 的验收、测试、实现和可选受管子代理委派 Evidence                           |
+| Check         | 全部 package、Task acceptance、测试、独立 standard review 和仓库事实                   |
+
+`BuildConfiguration` 冻结 `autonomous|subagent-driven-development`、`tdd|direct`、standard review、Host 能力、checkout identity 和 Configure 时的初始 repository state。Runtime 本版不创建、切换或删除 checkout；Runner 先准备 checkout，再把精确 binding facts 交给 Configure。实现提交可以改变 HEAD，但 repository、路径、branch 和 worktree ownership 不能漂移。Host、能力、配置、计划或 checkout identity 漂移时，Runtime fail closed。
+
+`tasks.md` 是需求分解与完成 claim 的语义权威。`BuildPlan` 是 Run 内的执行投影，可以把一个 Task 拆成多个 package，或把多个强耦合 Task 合为一个 package；它不会写回 OpenSpec，也不是第五类规划工件。Plan revision 只使受影响 package 的 Evidence 失效，保留摘要仍匹配的 completion。Task checkbox 一旦完成就保持完成；最新 Plan 和 Check Evidence 决定当前实现是否仍有效。
+
 ## 转换协议
 
 1. 原子取得 `transition.lock`；仍存活的持有者使竞争写入等待，进程已经退出的陈旧锁可以回收。

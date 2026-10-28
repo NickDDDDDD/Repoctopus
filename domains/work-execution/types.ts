@@ -133,6 +133,12 @@ export interface WorkExecutionHostOutcome {
 export type WorkExecutionResult =
   | {
       schemaVersion: 1;
+      kind: 'build-configuration-candidate';
+      executionMode: 'autonomous' | 'subagent-driven-development';
+      tddMode: 'tdd' | 'direct';
+    }
+  | {
+      schemaVersion: 1;
       kind: 'build-plan-candidate';
       packages: readonly WorkPackageCandidate[];
     }

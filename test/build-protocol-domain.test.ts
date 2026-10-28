@@ -77,6 +77,29 @@ describe('Build protocol domain', () => {
     expect(() => {
       (first.hostCapabilities as string[]).push('unsafe');
     }).toThrow();
+
+    const intent = createExecutionWorkspaceIntent({
+      workspaceId: 'team-platform',
+      changeId: 'managed-build',
+      isolation: 'worktree',
+      targetBranch: 'codex/managed-build',
+    });
+    const repository = {
+      repositoryId: 'workspace',
+      checkoutPath: 'C:\\work\\repoctopus-managed-build-workspace',
+      branch: 'codex/managed-build',
+      head: '0'.padEnd(40, 'a'),
+      worktreeId: 'wt-managed-build-workspace',
+      workspaceOwned: true,
+    };
+    const before = createExecutionWorkspaceBinding({ intent, repositories: [repository] });
+    const afterCommit = createExecutionWorkspaceBinding({
+      intent,
+      repositories: [{ ...repository, head: '1'.padEnd(40, 'b') }],
+    });
+    expect(afterCommit.semanticDigest).toBe(before.semanticDigest);
+    expect(afterCommit.localDigest).toBe(before.localDigest);
+    expect(afterCommit.stateDigest).not.toBe(before.stateDigest);
   });
 
   it('rejects unsupported profiles and a Host without the selected mode capability', () => {
@@ -349,6 +372,19 @@ describe('Build protocol domain', () => {
     expect(state.invalidations).toEqual([invalidation]);
     expect(plan2.packages[0]!.packageId).toBe(plan1.packages[0]!.packageId);
     expect(plan2.packages[1]!.packageId).not.toBe(plan1.packages[1]!.packageId);
+
+    const dependencyInvalidation = createBuildInvalidation({
+      source: 'verify',
+      plan: plan1,
+      classification: 'implementation',
+      affectedPackageIds: [plan1.packages[0]!.packageId],
+      packageCompletions: [modelCompletion],
+      reason: 'The model changed and every dependent package must be rechecked',
+    });
+    expect(dependencyInvalidation.affectedPackageIds).toEqual(
+      plan1.packages.map((workPackage) => workPackage.packageId).sort(),
+    );
+    expect(dependencyInvalidation.retainedCompletionIds).toEqual([]);
   });
 
   it('rejects cycles, duplicate keys, unknown Tasks, and missing Task coverage', () => {

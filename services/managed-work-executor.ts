@@ -47,7 +47,9 @@ function assertBoundedExecutionResult(outcome: WorkExecutionHostOutcome): void {
   if (!outcome.result) return;
   const common = ['schemaVersion', 'kind'];
   const allowed =
-    outcome.result.kind === 'build-plan-candidate'
+    outcome.result.kind === 'build-configuration-candidate'
+      ? [...common, 'executionMode', 'tddMode']
+      : outcome.result.kind === 'build-plan-candidate'
       ? [...common, 'packages']
       : outcome.result.kind === 'build-package-completion'
         ? [

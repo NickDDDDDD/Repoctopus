@@ -89,6 +89,10 @@ Engine 只根据 Workflow、Run State 和已经核对的事实计算下一状态
 4. Outcome 必须匹配 invocation、Host、packet 和原 claim；Action Receipt 保存后仍须由当前 Work 的 Validator 接受，Agent 不能直接改 phase。
 5. Runtime 在同一响应选择下一 continuation。`auto_transition` 只决定客户端是否继续拉取下一项，不改变 transition 合法性。
 
+Build phase 在该执行链内固定使用 `Configure → Plan → Plan Evidence → Execute → Check`。Configure 冻结 Runner 提供的多仓 checkout binding、Host 能力、`autonomous|subagent-driven-development`、`tdd|direct` 和 standard review；Runtime 不创建 checkout。Plan 把 OpenSpec Tasks 投影为有界 Work Packages，但不建立第二套规格或 ticket 权威。Plan Evidence 可以按 definition 风险策略自动接受或建立 Human Decision。Execute 只处理当前 package；Check 汇总全部 completion、Task acceptance、测试、独立 review 和仓库事实后，Runtime 才能进入 Verify。
+
+受管子代理不会创建并列 Run 或并行 `currentWork`。具有 `subagent.dispatch.attested` 的协调 Host 在父 invocation 下返回 package-bound delegation receipts；Runtime 校验 execution identity、role、结果和父调用，再把它们写入同一 Trajectory。Autonomous Host 返回 delegation receipt 会被拒绝。
+
 Intent 与 Receipt 独立保存在 `.repoctopus/actions/`，但 `RunState.workExecution` 是 claim、attempt、Host、Outcome、Validator 和 continuation 的唯一权威。同一 claim 重放返回原 packet identity；已保存 Outcome/Receipt 在响应丢失后从 Validator 或 transition 边界继续，不重复 Host。未知外部结果保持 `reconcile`，只有 Host 能证明 `not-executed` 才允许新 attempt。
 
 ## Evidence 与 Gate

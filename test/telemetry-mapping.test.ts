@@ -240,5 +240,33 @@ describe('telemetry mapping', () => {
       'repoctopus.build.tdd.mode': 'none',
       'repoctopus.build.isolation': 'none',
     });
+    const buildEvent: TrajectoryEvent = {
+      ...event,
+      eventId: 'build-work-event-1',
+      data: {
+        ...event.data,
+        phase: 'build',
+        workKind: 'build.execute',
+        buildAction: 'execute',
+        executionMode: 'subagent-driven-development',
+        tddMode: 'tdd',
+        isolation: 'worktree',
+        packageId: 'work-package:high-cardinality-identity',
+        repositoryId: 'private-repository-identity',
+      },
+    };
+    const metric = executionMetricAttributes(buildEvent);
+    expect(metric).toEqual({
+      'repoctopus.execution.event.type': 'work.host-completed',
+      'repoctopus.execution.phase': 'build',
+      'repoctopus.execution.work.kind': 'build.execute',
+      'repoctopus.execution.result': 'succeeded',
+      'repoctopus.execution.continuation': 'unknown',
+      'repoctopus.build.action': 'execute',
+      'repoctopus.build.execution.mode': 'subagent-driven-development',
+      'repoctopus.build.tdd.mode': 'tdd',
+      'repoctopus.build.isolation': 'worktree',
+    });
+    expect(JSON.stringify(metric)).not.toMatch(/work-package|repository/u);
   });
 });

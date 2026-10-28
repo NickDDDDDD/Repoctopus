@@ -58,6 +58,7 @@ import {
   createPackageCompletionEvidence,
   validateBuildPlan,
   type BuildConfiguration,
+  type ExecutionWorkspaceBinding,
   type ExecutionIsolation,
 } from '../domains/change-lifecycle/build-protocol.js';
 import type { ExecutionCheckoutRequest } from './execution-workspace.js';
@@ -895,6 +896,51 @@ export class WorkflowRuns extends Service {
     }
   }
 
+  private async bindExecutionWorkspace(
+    state: RunState,
+    lifecycle: NonNullable<RunState['changeLifecycle']>,
+    projectSnapshot: ProjectSnapshot,
+  ): Promise<ExecutionWorkspaceBinding> {
+    const checkoutInput = state.trigger?.facts.executionCheckouts;
+    if (!Array.isArray(checkoutInput)) {
+      throw new Error('Runner did not provide execution checkout bindings');
+    }
+    if (!lifecycle.workspaceIntent) {
+      throw new Error('Build requires the approved Workspace intent');
+    }
+    const checkouts = checkoutInput.map((entry) => {
+      if (
+        !entry ||
+        typeof entry !== 'object' ||
+        typeof (entry as { repositoryId?: unknown }).repositoryId !== 'string' ||
+        typeof (entry as { checkoutPath?: unknown }).checkoutPath !== 'string'
+      ) {
+        throw new Error('Runner execution checkout binding is malformed');
+      }
+      return entry as { repositoryId: string; checkoutPath: string };
+    });
+    return this.ctx.executionWorkspace.bind({
+      intent: lifecycle.workspaceIntent,
+      project: projectSnapshot,
+      checkouts,
+    });
+  }
+
+  private async assertFrozenExecutionWorkspace(
+    state: RunState,
+    lifecycle: NonNullable<RunState['changeLifecycle']>,
+    projectSnapshot: ProjectSnapshot,
+    configuration: BuildConfiguration,
+  ): Promise<void> {
+    const binding = await this.bindExecutionWorkspace(state, lifecycle, projectSnapshot);
+    if (
+      binding.localDigest !== configuration.bindingDigest ||
+      binding.semanticDigest !== configuration.bindingSemanticDigest
+    ) {
+      throw new Error('Execution Workspace identity drifted from the approved Configuration');
+    }
+  }
+
   private async createDesignWork(
     state: RunState,
     signal?: AbortSignal,
@@ -1337,41 +1383,27 @@ export class WorkflowRuns extends Service {
             ) {
               const hostOutcome = current.workExecution.hostOutcome;
               if (!hostOutcome) throw new Error('Build Configure Host Outcome is missing');
+              const configurationCandidate = hostOutcome.result;
+              if (configurationCandidate?.kind !== 'build-configuration-candidate') {
+                throw new Error(
+                  'Build Configure Host must return a structured build-configuration-candidate',
+                );
+              }
               const host = this.ctx.workExecutionHosts.get(hostOutcome.hostId);
               if (!host) throw new Error('Build Configure Host is no longer registered');
-              const checkoutInput = current.trigger?.facts.executionCheckouts;
-              if (!Array.isArray(checkoutInput)) {
-                throw new Error('Runner did not provide execution checkout bindings');
-              }
               if (!lifecycle.workspaceIntent || !lifecycle.buildProtocol) {
                 throw new Error('Build Configure requires the approved Workspace intent');
               }
-              const checkouts = checkoutInput.map((entry) => {
-                if (
-                  !entry ||
-                  typeof entry !== 'object' ||
-                  typeof (entry as { repositoryId?: unknown }).repositoryId !== 'string' ||
-                  typeof (entry as { checkoutPath?: unknown }).checkoutPath !== 'string'
-                ) {
-                  throw new Error('Runner execution checkout binding is malformed');
-                }
-                return entry as { repositoryId: string; checkoutPath: string };
-              });
-              const binding = await this.ctx.executionWorkspace.bind({
-                intent: lifecycle.workspaceIntent,
-                project: projectSnapshot,
-                checkouts,
-              });
-              const executionMode =
-                projectSnapshot.repositories.length > 1 &&
-                host.identity.capabilities.includes('subagent.dispatch.attested')
-                  ? 'subagent-driven-development'
-                  : 'autonomous';
+              const binding = await this.bindExecutionWorkspace(
+                current,
+                lifecycle,
+                projectSnapshot,
+              );
               const proposal = createBuildConfigurationProposal({
                 intent: lifecycle.workspaceIntent,
                 binding,
-                executionMode,
-                tddMode: 'tdd',
+                executionMode: configurationCandidate.executionMode,
+                tddMode: configurationCandidate.tddMode,
                 reviewMode: 'standard',
                 hostId: host.identity.id,
                 hostCapabilities: host.identity.capabilities,
@@ -1423,6 +1455,12 @@ export class WorkflowRuns extends Service {
               }
               if (!hostOutcome) throw new Error('Build Plan Host Outcome is missing');
               this.assertFrozenBuildHost(configuration, hostOutcome.hostId);
+              await this.assertFrozenExecutionWorkspace(
+                current,
+                lifecycle,
+                projectSnapshot,
+                configuration,
+              );
               if (result?.kind !== 'build-plan-candidate') {
                 throw new Error('Build Plan Host must return a structured build-plan-candidate');
               }
@@ -1555,6 +1593,12 @@ export class WorkflowRuns extends Service {
               this.assertFrozenBuildHost(
                 configuration,
                 current.workExecution.hostOutcome!.hostId,
+              );
+              await this.assertFrozenExecutionWorkspace(
+                current,
+                lifecycle,
+                projectSnapshot,
+                configuration,
               );
               if (
                 result?.kind !== 'build-package-completion' ||
@@ -1711,6 +1755,12 @@ export class WorkflowRuns extends Service {
                 throw new Error('Build Check Outcome has no current Plan');
               }
               this.assertFrozenBuildHost(configuration, hostOutcome.hostId);
+              await this.assertFrozenExecutionWorkspace(
+                current,
+                lifecycle,
+                projectSnapshot,
+                configuration,
+              );
               if (result?.kind !== 'build-check-candidate') {
                 throw new Error('Build Check Host must return a structured check candidate');
               }

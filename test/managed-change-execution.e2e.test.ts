@@ -47,7 +47,9 @@ const policy: DeliveryPolicy = {
 };
 
 describe('managed Change execution production composition', () => {
-  it('executes fresh Open -> Design -> Build -> Verify -> Archive through one managed Host', async () => {
+  it.each(['autonomous', 'subagent-driven-development'] as const)(
+    'executes fresh Open -> Design -> Build -> Verify -> Archive in %s mode',
+    async (executionMode) => {
     const root = await temporaryDirectory('repoctopus-managed-change-');
     cleanup.push(root);
     const workspaceRemote = path.join(root, 'workspace.git');
@@ -145,6 +147,10 @@ describe('managed Change execution production composition', () => {
         context: application.context,
         workspace,
         repositories: { workspace, app: appRepository },
+        capabilities:
+          executionMode === 'subagent-driven-development'
+            ? ['subagent.dispatch.attested']
+            : [],
         operations(packet) {
           if (packet.work.kind === 'change.intake' || packet.work.kind === 'specification.plan') {
             return [
@@ -205,6 +211,14 @@ describe('managed Change execution production composition', () => {
               currentPackage: { packageId: string } | null;
             } | null;
           };
+          if (packet.work.kind === 'build.configure') {
+            return {
+              schemaVersion: 1,
+              kind: 'build-configuration-candidate',
+              executionMode,
+              tddMode: 'tdd',
+            };
+          }
           if (packet.work.kind === 'build.plan') {
             return {
               schemaVersion: 1,
@@ -250,6 +264,28 @@ describe('managed Change execution production composition', () => {
             };
           }
           return undefined;
+        },
+        delegationReceipts(packet, session) {
+          if (
+            executionMode !== 'subagent-driven-development' ||
+            packet.work.kind !== 'build.execute' ||
+            !packet.work.packageId
+          ) {
+            return [];
+          }
+          return [
+            {
+              schemaVersion: 1,
+              receiptId: `${session.invocationId}:implementer`,
+              parentInvocationId: session.invocationId,
+              coordinatorHostId: 'capturing-work-execution-host',
+              executionId: `${session.invocationId}:subagent`,
+              role: 'implementer',
+              packageId: packet.work.packageId,
+              status: 'succeeded',
+              outcomeDigest: `sha256:${'9'.repeat(64)}`,
+            },
+          ];
         },
         async afterOperations(packet) {
           if (!['change.intake', 'specification.plan'].includes(packet.work.kind)) return;
@@ -707,5 +743,7 @@ describe('managed Change execution production composition', () => {
         else process.env[key] = previous;
       }
     }
-  }, 120_000);
+    },
+    120_000,
+  );
 });

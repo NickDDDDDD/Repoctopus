@@ -63,6 +63,9 @@ describe('managed Build protocol characterization', () => {
 
     expect(production).not.toContain("id: 'verify.repair'");
     expect(production).not.toContain('implementation.repair');
+    expect(production).not.toContain("kind: 'task.implement'");
+    expect(production).not.toContain('build-adoption');
+    expect(production).not.toContain('adopt-existing');
     expect(production).not.toContain('real reopened Repair Work');
     expect(service).not.toContain('const reopened = taskSet.tasks.map');
   });

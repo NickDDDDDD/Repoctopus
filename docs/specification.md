@@ -58,7 +58,9 @@ Open 先创建或修复完整四件套，严格校验后在 `open/waiting` 形�
 
 每个 checkbox Task 都必须在其下使用至少一行层级更深的规范 `**Acceptance:** <可观察条件>`；多个条件用分号分隔，关联需求用 `**Requirements:** <引用>`。无缩进、无粗体、`Acceptance criteria` 旧别名或只在任务标题中写“验证……”都不构成结构化 Acceptance。严格 Provider 校验会在 Design 的 Human Decision 之前拒绝缺失项，避免把不可建立 coverage plan 的任务带入 Build 或 Verify；其他 Tasks 投影错误保留原始诊断，不会被误报为缺少 Acceptance。
 
-checkbox 是 completion claim，不是测试结果。Runtime 接受 Build Work Outcome 并通过 Validator 后，Provider 才写入 checkbox，同时在 `.repoctopus/specification-task-receipts/` 保存与 `taskRevision + workId` 绑定的来源 Receipt；该 sidecar 不是第五类 OpenSpec 工件。Design 批准后若发现预勾选任务，Runtime 在同一 runId 建立 `adopt-existing` Human Decision，绑定 planning digest、task revisions、仓库集合和 proposal identity。批准只导入这些 Build completion claims，仍必须执行 Verify；拒绝会明确阻断，不能通过另起并列 Run 绕过。Runtime 只接受恰好一个 ready Task，`run status` 从 Run aggregate 读取当前 Work，不从文件重新猜测。
+checkbox 是单调 completion claim，不是测试结果。Runtime 把 Tasks 投影成 Run-local BuildPlan：一个 Task 可以拆成多个 Work Packages，多个强耦合 Task 也可以合并为一个 package。只有当前 Plan 中覆盖某个 Task 的全部 required package 都具有验收和测试 Evidence，Provider 才写入 checkbox，并在 `.repoctopus/specification-task-receipts/` 保存与 `taskRevision + workId` 绑定的来源 Receipt；该 sidecar 不是第五类 OpenSpec 工件。
+
+BuildPlan 保存 package DAG、repository binding、write scope、acceptance refs、expected outcomes 和 Validator profile。它只决定如何执行已经批准的 Tasks，不能新增需求或修改 Task 语义。纯执行调整通过 Plan revision 留在 Build；Task、Acceptance 或 Requirement mapping 改变时，Runtime 返回 Design。后续返工不会取消已勾选 checkbox，当前有效性由最新 Plan、package completion 和 Build Check Evidence 决定。
 
 `planningGuidance` 把已审核的方法规则只读映射到 Provider 声明的四类官方工件：已解决上下文被综合进现有工件，最少公共测试缝进入 Design，tracer-bullet、验收验证和 expand/migrate/contract 顺序进入 Tasks。该指导明确禁止额外规划工件和 tracker 发布；它不复制 OpenSpec 模板，也不执行原始 `to-spec`/`to-tickets` Skill。
 

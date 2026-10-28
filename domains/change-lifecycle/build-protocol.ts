@@ -87,6 +87,7 @@ export interface ExecutionWorkspaceBinding {
   repositories: readonly ExecutionRepositoryBinding[];
   semanticDigest: Digest;
   localDigest: Digest;
+  stateDigest: Digest;
   bindingId: string;
 }
 
@@ -159,18 +160,28 @@ export function createExecutionWorkspaceBinding(input: {
     repositories: repositories.map((repository) => ({
       repositoryId: repository.repositoryId,
       branch: repository.branch,
-      head: repository.head,
       worktreeId: repository.worktreeId,
       workspaceOwned: repository.workspaceOwned,
     })),
   };
   const semanticDigest = digest(portable);
-  const localDigest = digest({ ...portable, repositories });
+  const localDigest = digest({
+    ...portable,
+    repositories: repositories.map((repository) => ({
+      repositoryId: repository.repositoryId,
+      checkoutPath: repository.checkoutPath,
+      branch: repository.branch,
+      worktreeId: repository.worktreeId,
+      workspaceOwned: repository.workspaceOwned,
+    })),
+  });
+  const stateDigest = digest({ ...portable, repositories });
   return deepFreeze({
     ...portable,
     repositories,
     semanticDigest,
     localDigest,
+    stateDigest,
     bindingId: `workspace-binding:${semanticDigest.slice(-24)}`,
   });
 }
@@ -184,6 +195,7 @@ export interface BuildConfigurationProposal {
   isolation: ExecutionIsolation;
   bindingDigest: Digest;
   bindingSemanticDigest: Digest;
+  bindingStateDigest: Digest;
   repositoryIds: readonly string[];
   hostId: string;
   hostCapabilities: readonly string[];
@@ -235,6 +247,7 @@ export function createBuildConfigurationProposal(input: {
     isolation: input.intent.isolation,
     bindingDigest: input.binding.localDigest,
     bindingSemanticDigest: input.binding.semanticDigest,
+    bindingStateDigest: input.binding.stateDigest,
     repositoryIds: unique(
       input.binding.repositories.map((repository) => repository.repositoryId),
       'Build Configuration repositories',
@@ -919,12 +932,26 @@ export function createBuildInvalidation(input: {
     throw new Error('Build invalidation requires current Plan package identities');
   }
   const affected = new Set(affectedPackageIds);
+  let expanded = true;
+  while (expanded) {
+    expanded = false;
+    for (const workPackage of input.plan.packages) {
+      if (
+        !affected.has(workPackage.packageId) &&
+        workPackage.dependsOn.some((dependencyId) => affected.has(dependencyId))
+      ) {
+        affected.add(workPackage.packageId);
+        expanded = true;
+      }
+    }
+  }
+  const affectedWithDependents = [...affected].sort();
   const stable = {
     schemaVersion: 1 as const,
     source: input.source,
     planDigest: input.plan.digest,
     classification: input.classification,
-    affectedPackageIds,
+    affectedPackageIds: affectedWithDependents,
     retainedCompletionIds: input.packageCompletions
       .filter((completion) => !affected.has(completion.packageId))
       .map((completion) => completion.completionId)
