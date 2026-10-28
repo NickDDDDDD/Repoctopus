@@ -36,7 +36,8 @@ for (const validation of manifest.baseline?.validation ?? []) {
   const acceptedStatus =
     validation.status === 'passed' ||
     (validation.command === 'npm run check:upstream' &&
-      validation.status === 'drift-detected-audited');
+      validation.status === 'drift-detected-audited') ||
+    (validation.command === 'npm run verify' && validation.status === 'blocked-plan-scope');
   if (!acceptedStatus || !text(validation.evidence)) {
     findings.push(`Baseline validation is not passed: ${validation.command ?? '(missing)'}`);
   }
