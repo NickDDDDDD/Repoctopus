@@ -14,11 +14,13 @@ describe('desktop composition', () => {
       expect(app.composition).toMatchObject({
         id: 'repoctopus-desktop',
         kind: 'desktop',
-        requiredServices: ['desktopApplication'],
+        requiredServices: ['desktopApplication', 'desktopProjection', 'desktopReceiver'],
       });
       expect(app.composition.entries.map((entry) => entry.id)).toEqual([
         'desktop-application',
         'desktop-application-service',
+        'desktop-projection-service',
+        'desktop-receiver-service',
       ]);
       expect(app.context.desktopApplication.snapshot()).toEqual({
         apiVersion: DESKTOP_APPLICATION_CONTRACT,
@@ -34,6 +36,13 @@ describe('desktop composition', () => {
       });
       expect(app.context.desktopApplication.snapshot()).toMatchObject({
         activeContext: { workspaceId: 'team-platform', changeId: 'add-dashboard' },
+      });
+      const receiver = await app.context.desktopReceiver.start();
+      expect(receiver.endpoint).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/u);
+      expect(app.context.desktopProjection.snapshot()).toMatchObject({
+        schemaVersion: 1,
+        version: 0,
+        freshness: { status: 'empty' },
       });
     } finally {
       await app.close();

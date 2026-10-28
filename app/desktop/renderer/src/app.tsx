@@ -15,9 +15,24 @@ export function App() {
     const unsubscribe = window.repoctopusDesktop.onState((next) => {
       if (active) setState(next);
     });
+    const unsubscribeProjection = window.repoctopusDesktop.onProjection((update) => {
+      if (!active) return;
+      setState((current) => {
+        if (current.phase !== 'ready') return current;
+        if (update.delta.version <= current.projection.version) return current;
+        if (update.delta.previousVersion !== current.projection.version) {
+          void window.repoctopusDesktop.currentState().then((next) => {
+            if (active) setState(next);
+          });
+          return current;
+        }
+        return { ...current, projection: update.snapshot };
+      });
+    });
     return () => {
       active = false;
       unsubscribe();
+      unsubscribeProjection();
     };
   }, []);
 

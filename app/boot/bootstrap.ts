@@ -35,8 +35,13 @@ export async function bootDesktopComposition(productRoot: string): Promise<Runni
     {
       id: 'repoctopus-desktop',
       kind: 'desktop',
-      plugins: [{ id: 'desktop-application-service' }, { id: 'desktop-application' }],
-      requiredServices: ['desktopApplication'],
+      plugins: [
+        { id: 'desktop-application-service' },
+        { id: 'desktop-projection-service' },
+        { id: 'desktop-receiver-service' },
+        { id: 'desktop-application' },
+      ],
+      requiredServices: ['desktopApplication', 'desktopProjection', 'desktopReceiver'],
     },
     catalog,
   );

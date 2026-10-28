@@ -59,6 +59,10 @@ import specificationContributor from './command/specification-contributor.js';
 import { OpenSpecProvider } from '../platform/specification/openspec-provider.js';
 import desktopApplication from './application/desktop-application.js';
 import { DesktopApplication } from '../services/desktop-application.js';
+import { DesktopProjection } from '../services/desktop-projection.js';
+import { DesktopReceiver } from '../services/desktop-receiver.js';
+import { DesktopLauncher } from '../services/desktop-launcher.js';
+import { ObservationDelivery } from '../services/observation-delivery.js';
 import { SpecificationPlanning } from '../services/specification-planning.js';
 import { ConsistencyReconciler } from '../services/consistency-reconciler.js';
 import consistencyContributor from './command/consistency-contributor.js';
@@ -114,6 +118,79 @@ const evidenceAdapterDefinitions: readonly EvidenceAdapterDefinition[] = [
 ];
 
 const definitions: readonly BuiltinDefinition[] = [
+  {
+    descriptor: {
+      id: 'desktop-launcher',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['desktop-launch'],
+      permissions: ['process'],
+      stateSchemas: {},
+    },
+    plugin: DesktopLauncher,
+    sourceFiles: ['services/desktop-launcher.ts', 'app/desktop/shared/launch-context.ts'],
+  },
+  {
+    descriptor: {
+      id: 'observation-delivery',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['observation-envelope-store'],
+      permissions: ['filesystem', 'network'],
+      stateSchemas: { 'observation-envelope-store': '1' },
+    },
+    plugin: ObservationDelivery,
+    sourceFiles: [
+      'services/observation-delivery.ts',
+      'services/observation-pipeline.ts',
+      'domains/trajectory/observation.ts',
+      'app/desktop/host/otlp-envelope-codec.ts',
+    ],
+  },
+  {
+    descriptor: {
+      id: 'desktop-projection-service',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['desktop'],
+      authorities: ['desktop-projection'],
+      permissions: [],
+      stateSchemas: { 'desktop-projection': '1' },
+    },
+    plugin: DesktopProjection,
+    sourceFiles: ['services/desktop-projection.ts', 'domains/trajectory/projection.ts'],
+  },
+  {
+    descriptor: {
+      id: 'desktop-receiver-service',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['desktop'],
+      authorities: ['desktop-otlp-receiver'],
+      permissions: ['network'],
+      stateSchemas: {},
+    },
+    plugin: DesktopReceiver,
+    sourceFiles: [
+      'services/desktop-receiver.ts',
+      'app/desktop/host/otlp-http-receiver.ts',
+      'app/desktop/host/otlp-envelope-codec.ts',
+    ],
+  },
   {
     descriptor: {
       id: 'desktop-application-service',

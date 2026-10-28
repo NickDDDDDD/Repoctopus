@@ -1,12 +1,24 @@
 import type { DesktopApplicationSnapshot } from '../../../services/desktop-application.js';
+import {
+  isChangeProjectionDelta,
+  isChangeProjectionSnapshot,
+  type ChangeProjectionDelta,
+  type ChangeProjectionSnapshot,
+} from '../../../domains/trajectory/projection.js';
 
 export const DESKTOP_BACKEND_STATE_CHANNEL = 'repoctopus:desktop-backend-state';
 export const DESKTOP_RETRY_CHANNEL = 'repoctopus:desktop-retry';
+export const DESKTOP_PROJECTION_DELTA_CHANNEL = 'repoctopus:desktop-projection-delta';
 export const DESKTOP_RENDERER_PROTOCOL_VERSION = 1 as const;
 
 export type DesktopShellState =
   | { protocolVersion: 1; phase: 'starting' }
-  | { protocolVersion: 1; phase: 'ready'; snapshot: DesktopApplicationSnapshot }
+  | {
+      protocolVersion: 1;
+      phase: 'ready';
+      snapshot: DesktopApplicationSnapshot;
+      projection: ChangeProjectionSnapshot;
+    }
   | { protocolVersion: 1; phase: 'error'; message: string };
 
 export function isDesktopShellState(value: unknown): value is DesktopShellState {
@@ -14,16 +26,33 @@ export function isDesktopShellState(value: unknown): value is DesktopShellState 
   const state = value as Record<string, unknown>;
   if (state.protocolVersion !== DESKTOP_RENDERER_PROTOCOL_VERSION) return false;
   if (state.phase === 'starting') return true;
-  if (state.phase === 'error') return typeof state.message === 'string' && state.message.length <= 4096;
+  if (state.phase === 'error')
+    return typeof state.message === 'string' && state.message.length <= 4096;
   if (state.phase !== 'ready' || typeof state.snapshot !== 'object' || state.snapshot === null) {
     return false;
   }
   const snapshot = state.snapshot as Record<string, unknown>;
-  return snapshot.apiVersion === 'repoctopus.desktop/v1alpha1' && snapshot.protocolVersion === 1;
+  return (
+    snapshot.apiVersion === 'repoctopus.desktop/v1alpha1' &&
+    snapshot.protocolVersion === 1 &&
+    isChangeProjectionSnapshot(state.projection)
+  );
 }
 
 export interface RepoctopusDesktopBridge {
   currentState(): Promise<DesktopShellState>;
   retry(): void;
   onState(listener: (state: DesktopShellState) => void): () => void;
+  onProjection(listener: (update: DesktopProjectionUpdate) => void): () => void;
+}
+
+export interface DesktopProjectionUpdate {
+  snapshot: ChangeProjectionSnapshot;
+  delta: ChangeProjectionDelta;
+}
+
+export function isDesktopProjectionUpdate(value: unknown): value is DesktopProjectionUpdate {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return false;
+  const update = value as Record<string, unknown>;
+  return isChangeProjectionSnapshot(update.snapshot) && isChangeProjectionDelta(update.delta);
 }

@@ -3,6 +3,11 @@ import { spawn, type ChildProcess } from 'node:child_process';
 import type { DesktopApplicationSnapshot } from '../../../services/desktop-application.js';
 import type { DesktopLaunchContext } from '../shared/launch-context.js';
 import { DESKTOP_HOST_PROTOCOL_VERSION, isDesktopHostEvent } from '../shared/host-protocol.js';
+import type {
+  ChangeProjectionDelta,
+  ChangeProjectionSnapshot,
+} from '../../../domains/trajectory/projection.js';
+import type { DesktopReceiverConnection } from '../../../services/desktop-receiver.js';
 import { desktopNodeEnvironment } from './node-environment.js';
 
 const MAX_HOST_DIAGNOSTIC_CHARS = 64 * 1024;
@@ -27,6 +32,13 @@ async function exitsWithin(exit: Promise<void>, milliseconds: number): Promise<b
 
 export interface DesktopHostReady {
   snapshot: DesktopApplicationSnapshot;
+  receiver: DesktopReceiverConnection;
+  projection: ChangeProjectionSnapshot;
+}
+
+export interface DesktopHostProjectionUpdate {
+  snapshot: ChangeProjectionSnapshot;
+  delta: ChangeProjectionDelta;
 }
 
 export interface DesktopHostProcessOptions {
@@ -36,6 +48,7 @@ export interface DesktopHostProcessOptions {
   environment?: NodeJS.ProcessEnv;
   onReady?: (ready: DesktopHostReady) => void;
   onSnapshot?: (ready: DesktopHostReady) => void;
+  onProjection?: (update: DesktopHostProjectionUpdate) => void;
   onFailure?: (error: Error) => void;
   readyDeadlineMs?: number;
   spawnChild?: typeof spawn;
@@ -56,6 +69,7 @@ export class DesktopHostProcess {
   private stopping = false;
   private shutdownCompleted = false;
   private readyTimer: ReturnType<typeof setTimeout> | undefined;
+  private readyState: DesktopHostReady | undefined;
 
   constructor(private readonly options: DesktopHostProcessOptions) {}
 
@@ -65,10 +79,10 @@ export class DesktopHostProcess {
       this.options.executable,
       [this.options.entry, this.options.productRoot],
       {
-      cwd: this.options.productRoot,
-      env: desktopNodeEnvironment(this.options.environment),
-      stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
-      windowsHide: true,
+        cwd: this.options.productRoot,
+        env: desktopNodeEnvironment(this.options.environment),
+        stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
+        windowsHide: true,
       },
     );
     this.child = child;
@@ -90,7 +104,12 @@ export class DesktopHostProcess {
       }
       if (message.type === 'ready') {
         this.clearReadyTimer();
-        const ready = { snapshot: message.snapshot };
+        const ready = {
+          snapshot: message.snapshot,
+          receiver: message.receiver,
+          projection: message.projection,
+        };
+        this.readyState = ready;
         try {
           this.options.onReady?.(ready);
           this.readyResolve(ready);
@@ -101,7 +120,15 @@ export class DesktopHostProcess {
           child.kill('SIGTERM');
         }
       } else if (message.type === 'snapshot-updated') {
-        this.options.onSnapshot?.({ snapshot: message.snapshot });
+        if (this.readyState !== undefined) {
+          this.readyState = { ...this.readyState, snapshot: message.snapshot };
+          this.options.onSnapshot?.(this.readyState);
+        }
+      } else if (message.type === 'projection-updated') {
+        if (this.readyState !== undefined) {
+          this.readyState = { ...this.readyState, projection: message.snapshot };
+        }
+        this.options.onProjection?.({ snapshot: message.snapshot, delta: message.delta });
       } else if (message.type === 'fatal') {
         this.fail(new Error(message.message));
       } else if (this.stopping) {
@@ -151,6 +178,7 @@ export class DesktopHostProcess {
       }
     }
     this.child = undefined;
+    this.readyState = undefined;
     if (graceful && !this.shutdownCompleted) {
       throw new Error('Repoctopus Desktop Host exited without acknowledging shutdown');
     }

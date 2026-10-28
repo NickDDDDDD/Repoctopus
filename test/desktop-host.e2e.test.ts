@@ -8,6 +8,8 @@ import { promisify } from 'node:util';
 import { describe, expect, it } from 'vitest';
 
 import { isDesktopHostEvent } from '../app/desktop/shared/host-protocol.js';
+import { encodeObservationOtlpJson } from '../app/desktop/host/otlp-envelope-codec.js';
+import type { ObservationEnvelope } from '../domains/trajectory/observation.js';
 
 const execFileAsync = promisify(execFile);
 const require = createRequire(import.meta.url);
@@ -40,6 +42,47 @@ describe('Desktop Host process', () => {
           protocolVersion: 1,
           phase: 'ready',
           activeContext: null,
+        },
+        receiver: { schemaVersion: 1 },
+        projection: { schemaVersion: 1, version: 0 },
+      });
+
+      const connection = (
+        ready as {
+          receiver: { endpoint: string; sessionToken: string };
+        }
+      ).receiver;
+      const observation: ObservationEnvelope = {
+        schemaVersion: 1,
+        envelopeId: `sha256:${'1'.repeat(64)}`,
+        digest: `sha256:${'2'.repeat(64)}`,
+        observedAt: '2026-10-28T00:00:00.000Z',
+        eventType: 'work.created',
+        identity: { eventId: 'desktop-event-1', runId: 'desktop-run-1', sequence: 1 },
+        correlation: {
+          workspaceId: 'team-platform',
+          changeId: 'desktop-dashboard',
+          phase: 'build',
+          buildAction: 'execute',
+        },
+        attributes: {},
+      };
+      const projectionUpdate = nextMessage(child);
+      const accepted = await fetch(`${connection.endpoint}/v1/logs`, {
+        method: 'POST',
+        headers: {
+          authorization: `Bearer ${connection.sessionToken}`,
+          'content-type': 'application/json',
+        },
+        body: encodeObservationOtlpJson([observation], 'log'),
+      });
+      expect(accepted.status).toBe(200);
+      expect(await projectionUpdate).toMatchObject({
+        type: 'projection-updated',
+        delta: { previousVersion: 0, version: 1, eventId: 'desktop-event-1' },
+        snapshot: {
+          version: 1,
+          changes: [{ phase: 'build', buildAction: 'execute' }],
         },
       });
 

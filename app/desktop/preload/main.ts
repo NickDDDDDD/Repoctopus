@@ -3,9 +3,11 @@ import { contextBridge, ipcRenderer } from 'electron';
 import {
   DESKTOP_BACKEND_STATE_CHANNEL,
   DESKTOP_RETRY_CHANNEL,
+  DESKTOP_PROJECTION_DELTA_CHANNEL,
   isDesktopShellState,
   type DesktopShellState,
   type RepoctopusDesktopBridge,
+  isDesktopProjectionUpdate,
 } from '../shared/renderer-contract.js';
 
 const bridge: RepoctopusDesktopBridge = {
@@ -24,6 +26,15 @@ const bridge: RepoctopusDesktopBridge = {
     ipcRenderer.on(DESKTOP_BACKEND_STATE_CHANNEL, handler);
     return () => {
       ipcRenderer.removeListener(DESKTOP_BACKEND_STATE_CHANNEL, handler);
+    };
+  },
+  onProjection: (listener) => {
+    const handler = (_event: Electron.IpcRendererEvent, update: unknown) => {
+      if (isDesktopProjectionUpdate(update)) listener(update);
+    };
+    ipcRenderer.on(DESKTOP_PROJECTION_DELTA_CHANNEL, handler);
+    return () => {
+      ipcRenderer.removeListener(DESKTOP_PROJECTION_DELTA_CHANNEL, handler);
     };
   },
 };

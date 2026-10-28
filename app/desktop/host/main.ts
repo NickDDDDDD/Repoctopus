@@ -19,17 +19,24 @@ function failureMessage(error: unknown): string {
 
 let running: RunningApp | undefined;
 let shutdown: Promise<void> | undefined;
+let unsubscribeProjection: (() => void) | undefined;
 
 function close(): Promise<void> {
   if (shutdown !== undefined) return shutdown;
   shutdown = Promise.resolve()
     .then(async () => {
       await running?.close();
+      unsubscribeProjection?.();
+      unsubscribeProjection = undefined;
       send({ protocolVersion: DESKTOP_HOST_PROTOCOL_VERSION, type: 'shutdown-complete' });
       process.disconnect?.();
     })
     .catch((error: unknown) => {
-      send({ protocolVersion: DESKTOP_HOST_PROTOCOL_VERSION, type: 'fatal', message: failureMessage(error) });
+      send({
+        protocolVersion: DESKTOP_HOST_PROTOCOL_VERSION,
+        type: 'fatal',
+        message: failureMessage(error),
+      });
       process.exitCode = 1;
     });
   return shutdown;
@@ -61,13 +68,28 @@ const productRoot = path.resolve(process.argv[2] ?? process.cwd());
 
 try {
   running = await bootDesktopComposition(productRoot);
+  const receiver = await running.context.desktopReceiver.start();
+  unsubscribeProjection = running.context.desktopProjection.subscribe((snapshot, delta) => {
+    send({
+      protocolVersion: DESKTOP_HOST_PROTOCOL_VERSION,
+      type: 'projection-updated',
+      snapshot,
+      delta,
+    });
+  });
   send({
     protocolVersion: DESKTOP_HOST_PROTOCOL_VERSION,
     type: 'ready',
     snapshot: running.context.desktopApplication.snapshot(),
+    receiver,
+    projection: running.context.desktopProjection.snapshot(),
   });
 } catch (error) {
-  send({ protocolVersion: DESKTOP_HOST_PROTOCOL_VERSION, type: 'fatal', message: failureMessage(error) });
+  send({
+    protocolVersion: DESKTOP_HOST_PROTOCOL_VERSION,
+    type: 'fatal',
+    message: failureMessage(error),
+  });
   process.exitCode = 1;
   process.disconnect?.();
 }

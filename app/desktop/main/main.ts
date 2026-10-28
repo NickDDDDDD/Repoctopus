@@ -6,6 +6,7 @@ import { app, BrowserWindow, ipcMain, type IpcMainEvent, type IpcMainInvokeEvent
 import {
   DESKTOP_BACKEND_STATE_CHANNEL,
   DESKTOP_RETRY_CHANNEL,
+  DESKTOP_PROJECTION_DELTA_CHANNEL,
   DESKTOP_RENDERER_PROTOCOL_VERSION,
   type DesktopShellState,
 } from '../shared/renderer-contract.js';
@@ -14,7 +15,10 @@ import { DesktopHostProcess, type DesktopHostReady } from './host-process.js';
 import { resolveDesktopProductRoot } from './product-root.js';
 import { claimDesktopSingleInstance } from './single-instance.js';
 import { scheduleDesktopStartup } from './startup.js';
-import { desktopLaunchContextFromArguments, type DesktopLaunchContext } from '../shared/launch-context.js';
+import {
+  desktopLaunchContextFromArguments,
+  type DesktopLaunchContext,
+} from '../shared/launch-context.js';
 
 const moduleDirectory = path.dirname(fileURLToPath(import.meta.url));
 const hostEntry = path.join(moduleDirectory, 'host.mjs');
@@ -42,9 +46,19 @@ app.setAppUserModelId('com.repoctopus.desktop');
 
 function publicState(state: DesktopBackendState): DesktopShellState {
   if (state.phase === 'ready' && hostReady !== undefined) {
-    return { protocolVersion: DESKTOP_RENDERER_PROTOCOL_VERSION, phase: 'ready', snapshot: hostReady.snapshot };
+    return {
+      protocolVersion: DESKTOP_RENDERER_PROTOCOL_VERSION,
+      phase: 'ready',
+      snapshot: hostReady.snapshot,
+      projection: hostReady.projection,
+    };
   }
-  if (state.phase === 'error') return { protocolVersion: DESKTOP_RENDERER_PROTOCOL_VERSION, phase: 'error', message: state.message };
+  if (state.phase === 'error')
+    return {
+      protocolVersion: DESKTOP_RENDERER_PROTOCOL_VERSION,
+      phase: 'error',
+      message: state.message,
+    };
   return { protocolVersion: DESKTOP_RENDERER_PROTOCOL_VERSION, phase: 'starting' };
 }
 
@@ -66,6 +80,13 @@ const controller = new DesktopBackendController(
       onSnapshot: (ready) => {
         hostReady = ready;
         publish(controller.state);
+      },
+      onProjection: (update) => {
+        if (hostReady !== undefined) hostReady = { ...hostReady, projection: update.snapshot };
+        const window = mainWindow;
+        if (window !== undefined && !window.isDestroyed()) {
+          window.webContents.send(DESKTOP_PROJECTION_DELTA_CHANNEL, update);
+        }
       },
       onFailure,
     }),

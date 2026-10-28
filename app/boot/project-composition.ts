@@ -157,6 +157,12 @@ function projectSelections(
     { id: 'action-manual' },
     { id: 'action-work-contributors' },
     { id: 'workflow-source-file' },
+    { id: 'desktop-launcher' },
+    runtimeSelection(
+      'observation-delivery',
+      { workspaceRoot },
+      { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
+    ),
     { id: 'workflow-telemetry-otel' },
     { id: 'evidence-adapters' },
     { id: 'evidence-command-local' },
