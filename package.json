@@ -46,6 +46,7 @@
     "check:brand": "node scripts/check-brand.mjs",
     "check:architecture": "node scripts/check-architecture.mjs",
     "check:provenance": "node scripts/check-provenance.mjs",
+    "check:dashboard-salvage": "node scripts/check-dashboard-salvage.mjs",
     "check:managed-execution-report": "node scripts/check-managed-execution-report.mjs",
     "check:upstream": "node scripts/check-upstream-drift.mjs",
     "format": "prettier --write app domains platform plugins services scripts test workflows deploy third_party docs openspec README.md package.json tsconfig.json eslint.config.js vitest.config.ts",
@@ -60,7 +61,7 @@
     "desktop:start": "npm run desktop:prepare && npm run build:desktop && electron dist/desktop/main.js",
     "spec:validate": "openspec validate --all --strict",
     "pretest": "npm run build && npm run build:desktop",
-    "verify": "npm run typecheck && npm run typecheck:desktop && npm run lint && npm run build && npm test && npm run check:generated && npm run check:brand && npm run check:architecture && npm run check:provenance && npm run spec:validate && npm run check:managed-execution-report"
+    "verify": "npm run typecheck && npm run typecheck:desktop && npm run lint && npm run build && npm test && npm run check:generated && npm run check:brand && npm run check:architecture && npm run check:provenance && npm run check:dashboard-salvage && npm run spec:validate && npm run check:managed-execution-report"
   },
   "dependencies": {
     "@deepseek-ai/cordis": "file:third_party/cordis",

@@ -1,0 +1,430 @@
+{
+  "schemaVersion": 1,
+  "baseline": {
+    "capturedAt": "2026-10-28T00:00:00.000Z",
+    "mainCommit": "76df7b75b83b0b4f74eefc2230a787e1d1537e84",
+    "workflowVersion": "4.0.0",
+    "node": "24.21.0",
+    "npm": "11.19.0",
+    "platform": "win32-x64",
+    "windows": "Windows 11 Pro 10.0.26300",
+    "validation": [
+      {
+        "command": "npm ci",
+        "status": "passed",
+        "evidence": "Installed 486 packages from package-lock in the isolated worktree; npm audited 489 packages and reported 0 vulnerabilities."
+      },
+      {
+        "command": "npm run check:upstream",
+        "status": "drift-detected-audited",
+        "evidence": "Read-only check observed DSH f3803c96974ad4a94195fb97e5c637e9c2a3afe3 and Comet 35c9860b77b42bafa0c2d80d8d695889f888a924; file-level impact is recorded in upstreamDrift and fixed baselines remain immutable for this approved Build."
+      },
+      {
+        "command": "npm run check:provenance",
+        "status": "passed",
+        "evidence": "Verified 20 Comet-derived files, 60 immutable Cordis files, 33 Matt Skill files, 8 fixed DSH packages, and 5 DSH desktop references."
+      },
+      {
+        "command": "npm audit --audit-level=high",
+        "status": "passed",
+        "evidence": "Audited the complete locked dependency graph, including desktop development dependencies; 0 vulnerabilities."
+      },
+      {
+        "command": "npm run verify",
+        "status": "blocked-plan-scope",
+        "evidence": "Type, desktop type, lint, build, 125 test files with 489 passing tests, generated output, brand, architecture, provenance, salvage ledger, and 14 strict OpenSpec validations passed. The final managed-execution-report gate correctly rejected a stale verification report, but no Build Plan package currently authorizes verification/** writes."
+      },
+      {
+        "command": "npm run test:tracer-e2e",
+        "status": "passed",
+        "evidence": "Current Runtime tracer boundary passed independently for this package revision."
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "revise-dashboard-telemetry",
+      "ref": "codex/revise-dashboard-telemetry",
+      "commit": "42e7c669be2ceed99b83ca5d2bd2028ec39d4779",
+      "role": "Earlier specification-only revision; no implementation completion is inherited."
+    },
+    {
+      "id": "windows-desktop-dashboard-telemetry",
+      "ref": "codex/windows-desktop-dashboard-telemetry",
+      "commit": "4e0b9df14679d5dcf5026fbac5fc5a1192c617e9",
+      "role": "Earlier end-to-end implementation experiment; only bounded behavior slices may be rewritten."
+    }
+  ],
+  "policy": {
+    "wholeBranchMerge": "forbidden",
+    "bulkCherryPick": "forbidden",
+    "taskCompletionInheritance": "forbidden",
+    "selectionUnit": "behavioral-slice",
+    "authority": "current approved OpenSpec change and Runtime-selected Work Package"
+  },
+  "slices": [
+    {
+      "id": "specification-drafts",
+      "sourceId": "revise-dashboard-telemetry",
+      "files": [
+        "openspec/changes/add-windows-desktop-dashboard/proposal.md",
+        "openspec/changes/add-windows-desktop-dashboard/design.md",
+        "openspec/changes/add-windows-desktop-dashboard/tasks.md",
+        "openspec/changes/add-windows-desktop-dashboard/specs/**"
+      ],
+      "requirementRefs": ["desktop-observability-dashboard", "development-telemetry"],
+      "externalPrerequisites": ["OpenSpec 1.14.3 templates", "current lifecycle 4.0.0"],
+      "outdatedSemantics": [
+        "Predates the approved Build Configure, Plan, Execute, Check protocol."
+      ],
+      "rewriteScope": [
+        "Use only as historical rationale; current four-artifact OpenSpec set is authoritative."
+      ],
+      "verification": ["openspec validate --all --strict", "planning semantic digest comparison"],
+      "decision": "reject"
+    },
+    {
+      "id": "otlp-receiver-and-projection",
+      "sourceId": "windows-desktop-dashboard-telemetry",
+      "files": [
+        "app/desktop/host/otlp-http-receiver.ts",
+        "app/desktop/host/otlp-json-projection.ts",
+        "app/desktop/host/projection-service.ts",
+        "app/desktop/host/receiver-service.ts"
+      ],
+      "requirementRefs": [
+        "desktop-observability-dashboard#桌面接收器接纳标准 OTLP 上报",
+        "desktop-observability-dashboard#接收驱动桌面实时更新"
+      ],
+      "externalPrerequisites": ["OTLP HTTP JSON", "current ObservationEnvelope v1 allowlist"],
+      "outdatedSemantics": [
+        "Reader accepts an earlier projection schema and stale lifecycle fields."
+      ],
+      "rewriteScope": [
+        "Retain receiver boundaries and size-limit ideas; rebuild decoding against the current envelope contract."
+      ],
+      "verification": [
+        "public receiver contract tests",
+        "malformed and oversized payload tests",
+        "no polling assertion"
+      ],
+      "decision": "rewrite"
+    },
+    {
+      "id": "projection-journal",
+      "sourceId": "windows-desktop-dashboard-telemetry",
+      "files": ["app/desktop/host/projection-journal-store.ts"],
+      "requirementRefs": ["desktop-observability-dashboard#重放和重复投递收敛为一致投影"],
+      "externalPrerequisites": ["current envelope identity", "Windows atomic rename semantics"],
+      "outdatedSemantics": [
+        "Snapshot payload and recovery rules bind to the earlier dashboard model."
+      ],
+      "rewriteScope": [
+        "Reuse append, snapshot, and compaction behavior only after replacing stored schema and corruption diagnostics."
+      ],
+      "verification": [
+        "restart replay",
+        "duplicate convergence",
+        "corruption recovery",
+        "bounded resource benchmark"
+      ],
+      "decision": "rewrite"
+    },
+    {
+      "id": "runtime-launcher-and-local-destination",
+      "sourceId": "windows-desktop-dashboard-telemetry",
+      "files": [
+        "domains/desktop/launcher.ts",
+        "platform/desktop/windows-desktop-process-launcher.ts",
+        "services/desktop-local-destination.ts",
+        "services/desktop-run-activation.ts",
+        "plugins/desktop/desktop-run-contributor.ts"
+      ],
+      "requirementRefs": [
+        "plugin-composition#外部入口作为 Application Plugin 接入",
+        "desktop-observability-dashboard#Windows 开发 Run 自动激活单实例桌面应用"
+      ],
+      "externalPrerequisites": ["Cordis contributor lifecycle", "current Run launch context"],
+      "outdatedSemantics": [
+        "Earlier entry points bypass the now-authoritative managed Work protocol in several tests."
+      ],
+      "rewriteScope": [
+        "Keep contributor and destination seams; route all activation through versioned application services."
+      ],
+      "verification": [
+        "plugin register/unregister tests",
+        "no-desktop fallback",
+        "dual-destination independence"
+      ],
+      "decision": "rewrite"
+    },
+    {
+      "id": "electron-shell-lifecycle",
+      "sourceId": "windows-desktop-dashboard-telemetry",
+      "files": [
+        "app/desktop/main/backend-controller.ts",
+        "app/desktop/main/host-process.ts",
+        "app/desktop/main/single-instance.ts",
+        "app/desktop/main/shell-lifecycle.ts",
+        "app/desktop/main/tray.ts"
+      ],
+      "requirementRefs": [
+        "desktop-observability-dashboard#Windows 开发 Run 自动激活单实例桌面应用",
+        "desktop-observability-dashboard#用户可以选择窗口关闭行为"
+      ],
+      "externalPrerequisites": ["Electron 44.9.3", "DSH thin-shell and Node-mode Host behavior"],
+      "outdatedSemantics": [
+        "Launch-context fields and Host readiness payload predate current Run and Build identities."
+      ],
+      "rewriteScope": [
+        "Preserve thin-main, bounded shutdown, tray, and second-instance behavioral seams; replace protocol payloads."
+      ],
+      "verification": [
+        "controller contract tests",
+        "single-instance transfer E2E",
+        "orphan-process assertion"
+      ],
+      "decision": "rewrite"
+    },
+    {
+      "id": "desktop-protocol-and-ipc-security",
+      "sourceId": "windows-desktop-dashboard-telemetry",
+      "files": [
+        "app/desktop/shared/host-protocol.ts",
+        "app/desktop/shared/renderer-contract.ts",
+        "app/desktop/main/ipc-security.ts",
+        "app/desktop/preload/main.ts"
+      ],
+      "requirementRefs": ["desktop-observability-dashboard#桌面界面保持最小权限边界"],
+      "externalPrerequisites": [
+        "Electron context isolation",
+        "current projection snapshot contract"
+      ],
+      "outdatedSemantics": [
+        "Earlier protocol versions expose stale lifecycle shapes and are not migration inputs."
+      ],
+      "rewriteScope": [
+        "Retain fail-closed version, channel, sender, origin, and size checks; issue new current-only protocol versions."
+      ],
+      "verification": [
+        "unknown-version rejection",
+        "sender/origin rejection",
+        "Node and Cordis isolation tests"
+      ],
+      "decision": "rewrite"
+    },
+    {
+      "id": "renderer-information-architecture",
+      "sourceId": "windows-desktop-dashboard-telemetry",
+      "files": [
+        "app/desktop/renderer/src/dashboard-model.ts",
+        "app/desktop/renderer/src/dashboard-navigation.ts",
+        "app/desktop/renderer/src/dashboard-surface.tsx",
+        "app/desktop/renderer/src/styles.css"
+      ],
+      "requirementRefs": [
+        "desktop-observability-dashboard#主视图呈现完整五阶段与 Build 子动作",
+        "desktop-observability-dashboard#当前 Work 显示 Skill 装填与消费状态",
+        "desktop-observability-dashboard#Dashboard 区分四类可解释健康状态"
+      ],
+      "externalPrerequisites": ["current projection read model", "React 18.2.0"],
+      "outdatedSemantics": [
+        "Model includes repair-era lifecycle states and an earlier health interpretation."
+      ],
+      "rewriteScope": [
+        "Reuse navigation and visual hierarchy ideas; derive every displayed state from the new current-only projection."
+      ],
+      "verification": [
+        "five-phase component states",
+        "Build action details",
+        "Skill loaded/consumed states",
+        "keyboard and high-DPI review"
+      ],
+      "decision": "rewrite"
+    },
+    {
+      "id": "workflow-observation-mapping",
+      "sourceId": "windows-desktop-dashboard-telemetry",
+      "files": [
+        "domains/telemetry/**",
+        "platform/telemetry/workflow-observation-mapping.ts",
+        "platform/telemetry/evidence-observation-mapping.ts",
+        "services/decision-telemetry-recorder.ts"
+      ],
+      "requirementRefs": [
+        "development-telemetry#每个领域事实只产生一份规范观测 envelope",
+        "development-telemetry#规范 envelope 保留桌面投影所需的权威关联"
+      ],
+      "externalPrerequisites": ["current Trajectory facts", "OpenTelemetry exporters"],
+      "outdatedSemantics": [
+        "Earlier mappings include independent repair concepts, old task actions, and old Run schemas."
+      ],
+      "rewriteScope": [
+        "Re-derive the allowlist from current authoritative facts; do not copy earlier readers or schema unions."
+      ],
+      "verification": [
+        "golden envelope fixtures",
+        "sensitive-field negative fixtures",
+        "coverage matrix"
+      ],
+      "decision": "rewrite"
+    },
+    {
+      "id": "windows-packaging",
+      "sourceId": "windows-desktop-dashboard-telemetry",
+      "files": [
+        "electron-builder.json",
+        "scripts/check-desktop-package.mjs",
+        "scripts/windows-desktop-package-e2e.mjs",
+        "app/desktop/resources/**"
+      ],
+      "requirementRefs": ["desktop-observability-dashboard#首个发布只承诺 Windows x64 支持"],
+      "externalPrerequisites": ["electron-builder 26.15.3", "Windows x64 clean-user environment"],
+      "outdatedSemantics": [
+        "Packaged resource list points at the earlier Host and Renderer outputs."
+      ],
+      "rewriteScope": [
+        "Retain deterministic package-content checks and branding approach; regenerate resource inventory from current builds."
+      ],
+      "verification": [
+        "package contents",
+        "install-launch-uninstall E2E",
+        "unsupported-platform matrix"
+      ],
+      "decision": "rewrite"
+    },
+    {
+      "id": "old-verification-artifacts",
+      "sourceId": "windows-desktop-dashboard-telemetry",
+      "files": [
+        "verification/add-windows-desktop-dashboard/**",
+        "test/desktop-dashboard-*.test.ts"
+      ],
+      "requirementRefs": ["desktop-observability-dashboard"],
+      "externalPrerequisites": [
+        "current Evidence profile",
+        "current Build Plan package identities"
+      ],
+      "outdatedSemantics": [
+        "Reports, task completion, and evidence identities belong to the abandoned Run and cannot prove this change."
+      ],
+      "rewriteScope": [
+        "Use old assertions only as test-design prompts; generate all Evidence from the current Run."
+      ],
+      "verification": ["fresh Evidence attempt", "current input fingerprint", "cleanup receipt"],
+      "decision": "reject"
+    }
+  ],
+  "negativeScan": [
+    {
+      "id": "independent-repair-phase",
+      "evidence": [
+        "domains/change-lifecycle/transition.ts exposed repair continuation kinds",
+        "services/workflow-runs.ts created repair Work directly"
+      ],
+      "disposition": "reject",
+      "reason": "Current lifecycle returns Build or Verify findings through Runtime-selected actions without a sixth phase."
+    },
+    {
+      "id": "post-merge-automation",
+      "evidence": [
+        "legacy fixtures and comments mention Post-merge Run",
+        "earlier dashboard telemetry still recognizes post-merge vocabulary"
+      ],
+      "disposition": "reject",
+      "reason": "Archive is receipt-driven and reconciliation is lightweight; no webhook or post-merge daemon is restored."
+    },
+    {
+      "id": "completed-task-rollback",
+      "evidence": [
+        "earlier transition logic projected imported completion and repair rollback paths"
+      ],
+      "disposition": "reject",
+      "reason": "Runtime owns package completion and invalidation; Dashboard is a read-only projection."
+    },
+    {
+      "id": "legacy-task-action",
+      "evidence": ["earlier task trajectory inferred task-level execution actions"],
+      "disposition": "rewrite",
+      "reason": "Current projection uses Work Package and Build Action identities, not a second task-action state machine."
+    },
+    {
+      "id": "legacy-run-schema",
+      "evidence": [
+        "earlier telemetry readers include schemaVersion 2 and 3 Work/Run shapes",
+        "current lifecycle definition is 4.0.0 and current-only"
+      ],
+      "disposition": "reject",
+      "reason": "Pre-release policy forbids compatibility readers and migration debt."
+    },
+    {
+      "id": "legacy-data-reader",
+      "evidence": [
+        "earlier renderer and projection service directly consume the abandoned projection snapshot"
+      ],
+      "disposition": "rewrite",
+      "reason": "Desktop must receive the canonical current OTLP envelope and may not scan Runtime files or query SigNoZ."
+    }
+  ],
+  "upstreamDrift": [
+    {
+      "id": "dsh",
+      "observedHead": "f3803c96974ad4a94195fb97e5c637e9c2a3afe3",
+      "latestStableTag": "dsh-v0.2.1-rc.4",
+      "latestStableCommit": "504a01a9578abc2c6f1fb896b1dc322c9fe24f66",
+      "relevantChanges": [
+        "bounded Desktop Host fatal and operation diagnostics",
+        "operation identity and partial-write journal recovery",
+        "shutdown cancellation and remaining-cleanup handling",
+        "packaged diagnostic worker inventory"
+      ],
+      "disposition": "separate-upstream-alignment-change",
+      "reason": "These are valuable candidates for recovery and health views, but updating governed DSH source, licenses, hashes, and package versions exceeds the current approved package write scope and must not silently mutate its fixed baseline."
+    },
+    {
+      "id": "comet",
+      "observedHead": "35c9860b77b42bafa0c2d80d8d695889f888a924",
+      "latestStableTag": "0.5.1",
+      "latestStableCommit": "35c9860b77b42bafa0c2d80d8d695889f888a924",
+      "relevantChanges": [
+        "Native and Classic workflow recovery stabilization",
+        "explicit wait reasons and bounded recovery probes",
+        "incremental shape and verification-input recovery",
+        "Archive manifest and delivery checkpoint hardening"
+      ],
+      "disposition": "separate-upstream-alignment-change",
+      "reason": "Recovery changes are directly relevant to a future Runtime alignment audit, but Comet product code is not copied and its baseline cannot be advanced inside this Dashboard Work Package."
+    }
+  ],
+  "dsh": {
+    "repository": "https://github.com/deepseek-ai/deepseek-harness",
+    "commit": "1f81c047fc48fa190a683e469daa699857e9afe8",
+    "tag": "dsh-v0.2.1-rc.3",
+    "license": "MIT",
+    "includedBehaviors": [
+      "thin Electron shell",
+      "ELECTRON_RUN_AS_NODE Host process",
+      "bounded Host startup and shutdown",
+      "single-instance forwarding",
+      "tray lifecycle",
+      "IPC sender validation",
+      "Windows packaging resource layout"
+    ],
+    "excludedBehaviors": [
+      "DSH Web Host proxy",
+      "DSH Agent, Session, and Workspace model",
+      "account and browser features",
+      "automatic updater",
+      "bundled Python, Node, and pnpm runtimes",
+      "platform installer orchestration"
+    ],
+    "desktopDependencies": {
+      "electron": "44.9.3",
+      "electron-builder": "26.15.3",
+      "vite": "6.4.5",
+      "react": "18.2.0"
+    },
+    "binaryPreparation": "npm run desktop:prepare",
+    "installScriptPolicy": "Only allow governed package scripts recorded in package.json allowScripts."
+  }
+}
