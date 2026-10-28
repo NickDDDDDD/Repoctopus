@@ -4,6 +4,7 @@ import {
   DESKTOP_BACKEND_STATE_CHANNEL,
   DESKTOP_RETRY_CHANNEL,
   DESKTOP_PROJECTION_DELTA_CHANNEL,
+  DESKTOP_SELECT_CHANGE_CHANNEL,
   isDesktopShellState,
   type DesktopShellState,
   type RepoctopusDesktopBridge,
@@ -18,6 +19,9 @@ const bridge: RepoctopusDesktopBridge = {
   },
   retry: () => {
     ipcRenderer.send(DESKTOP_RETRY_CHANNEL);
+  },
+  selectChange: (selection) => {
+    ipcRenderer.send(DESKTOP_SELECT_CHANGE_CHANNEL, selection);
   },
   onState: (listener) => {
     const handler = (_event: Electron.IpcRendererEvent, state: DesktopShellState) => {

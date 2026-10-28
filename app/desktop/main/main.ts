@@ -8,6 +8,7 @@ import {
   DESKTOP_RETRY_CHANNEL,
   DESKTOP_PROJECTION_DELTA_CHANNEL,
   DESKTOP_RENDERER_PROTOCOL_VERSION,
+  DESKTOP_SELECT_CHANGE_CHANNEL,
   type DesktopShellState,
 } from '../shared/renderer-contract.js';
 import { DesktopBackendController, type DesktopBackendState } from './backend-controller.js';
@@ -17,6 +18,7 @@ import { claimDesktopSingleInstance } from './single-instance.js';
 import { scheduleDesktopStartup } from './startup.js';
 import {
   desktopLaunchContextFromArguments,
+  parseDesktopLaunchContext,
   type DesktopLaunchContext,
 } from '../shared/launch-context.js';
 
@@ -185,6 +187,14 @@ if (ownsInstance) {
   ipcMain.on(DESKTOP_RETRY_CHANNEL, (event) => {
     if (!ownsSender(event)) return;
     void controller.stop().then(startBackend);
+  });
+  ipcMain.on(DESKTOP_SELECT_CHANGE_CHANNEL, (event, selection: unknown) => {
+    if (!ownsSender(event)) return;
+    try {
+      controller.host?.select(parseDesktopLaunchContext(selection));
+    } catch {
+      // Invalid renderer selection fails closed.
+    }
   });
   app.on('window-all-closed', () => {
     void quit();

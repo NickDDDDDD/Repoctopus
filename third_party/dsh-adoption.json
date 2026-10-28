@@ -126,7 +126,7 @@
       "sourceSha256": "6b9d3e558f526b7832020fb43d6682a07a68bf2d5657f26951f50a4f3eabfa28",
       "disposition": "source-modified",
       "target": "app/desktop/main/host-process.ts",
-      "targetSha256": "3f418215502af6d5ad4e413e629c044e278d7fc22625a4fa1c68d87442916ef6"
+      "targetSha256": "58d0d4c7121e667cb07ffebed01112a5e1ad7bc28c78fcb5e810612c8eec2dbb"
     },
     {
       "id": "desktop-node-environment",

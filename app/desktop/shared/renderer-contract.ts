@@ -1,4 +1,5 @@
 import type { DesktopApplicationSnapshot } from '../../../services/desktop-application.js';
+import type { DesktopLaunchContext } from './launch-context.js';
 import {
   isChangeProjectionDelta,
   isChangeProjectionSnapshot,
@@ -9,6 +10,7 @@ import {
 export const DESKTOP_BACKEND_STATE_CHANNEL = 'repoctopus:desktop-backend-state';
 export const DESKTOP_RETRY_CHANNEL = 'repoctopus:desktop-retry';
 export const DESKTOP_PROJECTION_DELTA_CHANNEL = 'repoctopus:desktop-projection-delta';
+export const DESKTOP_SELECT_CHANGE_CHANNEL = 'repoctopus:desktop-select-change';
 export const DESKTOP_RENDERER_PROTOCOL_VERSION = 1 as const;
 
 export type DesktopShellState =
@@ -42,6 +44,7 @@ export function isDesktopShellState(value: unknown): value is DesktopShellState 
 export interface RepoctopusDesktopBridge {
   currentState(): Promise<DesktopShellState>;
   retry(): void;
+  selectChange(selection: DesktopLaunchContext): void;
   onState(listener: (state: DesktopShellState) => void): () => void;
   onProjection(listener: (update: DesktopProjectionUpdate) => void): () => void;
 }

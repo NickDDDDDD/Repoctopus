@@ -27,6 +27,7 @@ describe('desktop composition', () => {
         protocolVersion: 1,
         phase: 'ready',
         activeContext: null,
+        selectedContext: null,
       });
       app.context.desktopApplication.activate({
         schemaVersion: 1,
@@ -36,6 +37,29 @@ describe('desktop composition', () => {
       });
       expect(app.context.desktopApplication.snapshot()).toMatchObject({
         activeContext: { workspaceId: 'team-platform', changeId: 'add-dashboard' },
+        selectedContext: { workspaceId: 'team-platform', changeId: 'add-dashboard' },
+      });
+      app.context.desktopApplication.select({
+        schemaVersion: 1,
+        workspaceId: 'team-platform',
+        changeId: 'selected-dashboard',
+        runId: 'run-selected-dashboard',
+      });
+      app.context.desktopApplication.activate({
+        schemaVersion: 1,
+        workspaceId: 'another-workspace',
+        changeId: 'newly-reported-change',
+        runId: 'run-newly-reported-change',
+      });
+      expect(app.context.desktopApplication.snapshot()).toMatchObject({
+        activeContext: {
+          workspaceId: 'another-workspace',
+          changeId: 'newly-reported-change',
+        },
+        selectedContext: {
+          workspaceId: 'team-platform',
+          changeId: 'selected-dashboard',
+        },
       });
       const receiver = await app.context.desktopReceiver.start();
       expect(receiver.endpoint).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/u);

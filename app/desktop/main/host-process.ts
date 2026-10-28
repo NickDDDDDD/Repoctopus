@@ -195,6 +195,17 @@ export class DesktopHostProcess {
     }
   }
 
+  select(selection: DesktopLaunchContext): void {
+    const child = this.child;
+    if (child?.connected) {
+      child.send({
+        protocolVersion: DESKTOP_HOST_PROTOCOL_VERSION,
+        type: 'select-change',
+        selection,
+      });
+    }
+  }
+
   private clearReadyTimer(): void {
     if (this.readyTimer !== undefined) clearTimeout(this.readyTimer);
     this.readyTimer = undefined;

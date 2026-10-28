@@ -48,7 +48,11 @@ process.on('message', (message: unknown) => {
     void close();
     return;
   }
-  running?.context.desktopApplication.activate(message.context);
+  if (message.type === 'activate-context') {
+    running?.context.desktopApplication.activate(message.context);
+  } else {
+    running?.context.desktopApplication.select(message.selection);
+  }
   send({
     protocolVersion: DESKTOP_HOST_PROTOCOL_VERSION,
     type: 'snapshot-updated',
@@ -56,7 +60,8 @@ process.on('message', (message: unknown) => {
       apiVersion: 'repoctopus.desktop/v1alpha1',
       protocolVersion: 1,
       phase: 'ready',
-      activeContext: message.context,
+      activeContext: message.type === 'activate-context' ? message.context : null,
+      selectedContext: message.type === 'activate-context' ? message.context : message.selection,
     },
   });
 });

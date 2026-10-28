@@ -9,10 +9,7 @@ import {
   desktopLaunchContextFromArguments,
   encodeDesktopLaunchContext,
 } from '../app/desktop/shared/launch-context.js';
-import {
-  isDesktopHostEvent,
-  isDesktopShellCommand,
-} from '../app/desktop/shared/host-protocol.js';
+import { isDesktopHostEvent, isDesktopShellCommand } from '../app/desktop/shared/host-protocol.js';
 import { isDesktopShellState } from '../app/desktop/shared/renderer-contract.js';
 import {
   claimDesktopSingleInstance,
@@ -55,6 +52,16 @@ describe('Desktop versioned protocol', () => {
     expect(isDesktopShellCommand({ type: 'activate-context', protocolVersion: 9, context })).toBe(
       false,
     );
+    expect(
+      isDesktopShellCommand({ type: 'select-change', protocolVersion: 1, selection: context }),
+    ).toBe(true);
+    expect(
+      isDesktopShellCommand({
+        type: 'select-change',
+        protocolVersion: 1,
+        selection: { ...context, runId: 'r'.repeat(300) },
+      }),
+    ).toBe(false);
     expect(isDesktopShellState({ protocolVersion: 1, phase: 'starting' })).toBe(true);
     expect(isDesktopShellState({ protocolVersion: 1, phase: 'unknown' })).toBe(false);
   });
@@ -113,5 +120,4 @@ describe('Desktop versioned protocol', () => {
       vi.useRealTimers();
     }
   });
-
 });

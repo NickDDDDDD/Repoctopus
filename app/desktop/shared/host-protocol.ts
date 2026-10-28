@@ -31,7 +31,8 @@ export type DesktopHostEvent =
 
 export type DesktopShellCommand =
   | { protocolVersion: 1; type: 'shutdown' }
-  | { protocolVersion: 1; type: 'activate-context'; context: DesktopLaunchContext };
+  | { protocolVersion: 1; type: 'activate-context'; context: DesktopLaunchContext }
+  | { protocolVersion: 1; type: 'select-change'; selection: DesktopLaunchContext };
 
 function boundedMessage(value: unknown): value is Record<string, unknown> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) return false;
@@ -81,9 +82,9 @@ export function isDesktopShellCommand(value: unknown): value is DesktopShellComm
   if (!boundedMessage(value) || value.protocolVersion !== DESKTOP_HOST_PROTOCOL_VERSION)
     return false;
   if (value.type === 'shutdown') return true;
-  if (value.type !== 'activate-context') return false;
+  if (value.type !== 'activate-context' && value.type !== 'select-change') return false;
   try {
-    parseDesktopLaunchContext(value.context);
+    parseDesktopLaunchContext(value.type === 'activate-context' ? value.context : value.selection);
     return true;
   } catch {
     return false;

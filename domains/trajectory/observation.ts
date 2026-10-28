@@ -45,6 +45,7 @@ export interface ObservationCorrelation {
   receiptId?: string;
   artifactId?: string;
   gateId?: string;
+  destinationId?: string;
 }
 
 export interface ObservationEnvelope {
@@ -96,6 +97,19 @@ const ATTRIBUTE_KEYS = [
   'redacted',
   'platform',
   'lifecycle',
+  'transitionId',
+  'fromPhase',
+  'fromStatus',
+  'toStatus',
+  'revision',
+  'freshness',
+  'destinationId',
+  'destinationMode',
+  'destinationResult',
+  'backlog',
+  'oldestAgeMs',
+  'warningCode',
+  'droppedEnvelopes',
 ] as const;
 
 function digest(value: unknown): `sha256:${string}` {
@@ -223,6 +237,7 @@ function correlation(event: TrajectoryEvent, context: ObservationContext): Obser
   assign('receiptId', id(event.data.receiptId));
   assign('artifactId', id(event.data.artifactId));
   assign('gateId', id(event.data.gateId));
+  assign('destinationId', id(event.data.destinationId));
   assign(
     'recovery',
     id(event.data.recovery) ??
@@ -252,6 +267,17 @@ function attributes(event: TrajectoryEvent, context: ObservationContext) {
   const findingKind = scalar(invalidation?.classification);
   if (findingKind !== undefined) result.findingKind = findingKind;
   if (event.type.startsWith('skill.')) result.skillState = event.type.slice('skill.'.length);
+  const transition = nestedTransition(event);
+  const transitionId = scalar(transition?.transitionId);
+  const fromPhase = scalar(transition?.from?.phase);
+  const fromStatus = scalar(transition?.from?.status);
+  const toStatus = scalar(transition?.to?.status);
+  const revision = scalar(transition?.revision);
+  if (transitionId !== undefined) result.transitionId = transitionId;
+  if (fromPhase !== undefined) result.fromPhase = fromPhase;
+  if (fromStatus !== undefined) result.fromStatus = fromStatus;
+  if (toStatus !== undefined) result.toStatus = toStatus;
+  if (revision !== undefined) result.revision = revision;
   return result;
 }
 

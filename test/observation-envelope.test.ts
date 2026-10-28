@@ -121,7 +121,10 @@ describe('ObservationEnvelope', () => {
       event('change.lifecycle.transitioned', {
         observationKind: 'build-plan-evidence-accepted',
         changeLifecycleTransition: {
-          to: { phase: 'build' },
+          transitionId: 'transition-build-plan',
+          revision: 3,
+          from: { phase: 'design', status: 'completed' },
+          to: { phase: 'build', status: 'running' },
           work: null,
           wait: null,
         },
@@ -131,6 +134,13 @@ describe('ObservationEnvelope', () => {
     expect(planEvidence.correlation).toMatchObject({
       phase: 'build',
       buildAction: 'plan-evidence',
+    });
+    expect(planEvidence.attributes).toMatchObject({
+      transitionId: 'transition-build-plan',
+      fromPhase: 'design',
+      fromStatus: 'completed',
+      toStatus: 'running',
+      revision: 3,
     });
 
     const fallback = createObservationEnvelope(

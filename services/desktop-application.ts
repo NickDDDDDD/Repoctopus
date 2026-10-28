@@ -12,10 +12,12 @@ export interface DesktopApplicationSnapshot {
   protocolVersion: 1;
   phase: 'ready';
   activeContext: DesktopLaunchContext | null;
+  selectedContext: DesktopLaunchContext | null;
 }
 
 export class DesktopApplication extends Service {
   private activeContext: DesktopLaunchContext | null = null;
+  private selectedContext: DesktopLaunchContext | null = null;
 
   constructor(context: Context) {
     super(context, 'desktopApplication');
@@ -27,11 +29,18 @@ export class DesktopApplication extends Service {
       protocolVersion: 1,
       phase: 'ready',
       activeContext: this.activeContext === null ? null : structuredClone(this.activeContext),
+      selectedContext: this.selectedContext === null ? null : structuredClone(this.selectedContext),
     };
   }
 
   activate(context: DesktopLaunchContext): void {
-    this.activeContext = parseDesktopLaunchContext(context);
+    const next = parseDesktopLaunchContext(context);
+    this.activeContext = next;
+    this.selectedContext ??= next;
+  }
+
+  select(context: DesktopLaunchContext): void {
+    this.selectedContext = parseDesktopLaunchContext(context);
   }
 }
 
