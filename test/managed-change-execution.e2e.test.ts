@@ -504,7 +504,12 @@ describe('managed Change execution production composition', () => {
         build: { action: 'plan' },
       });
       await next();
+      invocationKinds.push(...capture.invocations.map((item) => item.packet.work.kind));
+      capture.dispose();
+      await application.close();
+      application = await bootProjectComposition(productRoot, workspace);
       const afterPlanValidation = await next();
+      capture = installHost();
       let afterPlan: RunStatusView;
       if (multiRepository) {
         expect(afterPlanValidation.value.changeLifecycle).toMatchObject({

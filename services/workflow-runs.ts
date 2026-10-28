@@ -82,6 +82,7 @@ import {
 import type { DeliveryIntentV3, DeliveryPolicy } from '../domains/delivery/types.js';
 import { deliveryPolicyDigest } from '../domains/delivery/snapshot.js';
 import type { WorkExecutorIdentity } from '../domains/action/types.js';
+import type { WorkExecutionHostIdentity } from '../domains/work-execution/types.js';
 import type { ArchivePublicationResult } from '../domains/delivery/service-v3.js';
 import {
   createPublicationReceipt,
@@ -875,15 +876,17 @@ export class WorkflowRuns extends Service {
     };
   }
 
-  private assertFrozenBuildHost(configuration: BuildConfiguration, hostId: string): void {
-    if (hostId !== configuration.hostId) {
+  private assertFrozenBuildHost(
+    configuration: BuildConfiguration,
+    invocationHost: WorkExecutionHostIdentity,
+  ): void {
+    if (invocationHost.id !== configuration.hostId) {
       throw new Error('Build Host identity drifted from the approved Configuration');
     }
-    const host = this.ctx.workExecutionHosts.get(hostId);
-    if (!host) throw new Error('Approved Build Host is no longer registered');
     if (
-      canonicalJson([...host.identity.capabilities].sort()) !==
-      canonicalJson([...configuration.hostCapabilities].sort())
+      configuration.hostCapabilities.some(
+        (capability) => !invocationHost.capabilities.includes(capability),
+      )
     ) {
       throw new Error('Build Host capabilities drifted from the approved Configuration');
     }
@@ -891,7 +894,7 @@ export class WorkflowRuns extends Service {
       configuration.executionMode === 'autonomous'
         ? 'build.autonomous'
         : 'subagent.dispatch.attested';
-    if (!host.identity.capabilities.includes(required)) {
+    if (!invocationHost.capabilities.includes(required)) {
       throw new Error(`Approved Build Host no longer supports ${required}`);
     }
   }
@@ -1456,7 +1459,11 @@ export class WorkflowRuns extends Service {
                 throw new Error('Build Plan Outcome has no frozen configuration');
               }
               if (!hostOutcome) throw new Error('Build Plan Host Outcome is missing');
-              this.assertFrozenBuildHost(configuration, hostOutcome.hostId);
+              const invocationHost = current.workExecution.hostInvocation?.host;
+              if (!invocationHost || invocationHost.id !== hostOutcome.hostId) {
+                throw new Error('Build Plan Host does not match the persisted invocation');
+              }
+              this.assertFrozenBuildHost(configuration, invocationHost);
               await this.assertFrozenExecutionWorkspace(
                 current,
                 lifecycle,
@@ -1592,10 +1599,14 @@ export class WorkflowRuns extends Service {
               if (!protocol || !configuration || !plan || !invocationId) {
                 throw new Error('Build Execute Outcome has no current Plan');
               }
-              this.assertFrozenBuildHost(
-                configuration,
-                current.workExecution.hostOutcome!.hostId,
-              );
+              const invocationHost = current.workExecution.hostInvocation?.host;
+              if (
+                !invocationHost ||
+                invocationHost.id !== current.workExecution.hostOutcome!.hostId
+              ) {
+                throw new Error('Build Execute Host does not match the persisted invocation');
+              }
+              this.assertFrozenBuildHost(configuration, invocationHost);
               await this.assertFrozenExecutionWorkspace(
                 current,
                 lifecycle,
@@ -1756,7 +1767,11 @@ export class WorkflowRuns extends Service {
               if (!protocol || !configuration || !plan || !hostOutcome) {
                 throw new Error('Build Check Outcome has no current Plan');
               }
-              this.assertFrozenBuildHost(configuration, hostOutcome.hostId);
+              const invocationHost = current.workExecution.hostInvocation?.host;
+              if (!invocationHost || invocationHost.id !== hostOutcome.hostId) {
+                throw new Error('Build Check Host does not match the persisted invocation');
+              }
+              this.assertFrozenBuildHost(configuration, invocationHost);
               await this.assertFrozenExecutionWorkspace(
                 current,
                 lifecycle,
