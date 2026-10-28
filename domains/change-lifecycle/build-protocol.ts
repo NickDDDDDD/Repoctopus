@@ -41,6 +41,18 @@ function unique(values: readonly string[], label: string, maximum = MAX_ITEMS): 
   return normalized.sort();
 }
 
+function scopePath(value: string): string {
+  const normalized = text(value, 'Write scope path', 2048).replaceAll('\\', '/');
+  if (
+    isAbsolute(normalized) ||
+    /^[a-z]:\//iu.test(normalized) ||
+    normalized.split('/').some((segment) => segment === '..')
+  ) {
+    throw new Error('Build Plan write scope path must stay repository-relative');
+  }
+  return normalized.replace(/^\.\//u, '');
+}
+
 function deepFreeze<T>(value: T): Readonly<T> {
   if (value && typeof value === 'object' && !Object.isFrozen(value)) {
     Object.freeze(value);
@@ -101,7 +113,7 @@ export function createExecutionWorkspaceIntent(input: {
     ...stable,
     semanticDigest,
     intentId: `workspace-intent:${semanticDigest.slice(-24)}`,
-  }) as ExecutionWorkspaceIntent;
+  });
 }
 
 export function createExecutionWorkspaceBinding(input: {
@@ -144,7 +156,13 @@ export function createExecutionWorkspaceBinding(input: {
     schemaVersion: 1 as const,
     intentDigest: input.intent.semanticDigest,
     isolation: input.intent.isolation,
-    repositories: repositories.map(({ checkoutPath: _checkoutPath, ...entry }) => entry),
+    repositories: repositories.map((repository) => ({
+      repositoryId: repository.repositoryId,
+      branch: repository.branch,
+      head: repository.head,
+      worktreeId: repository.worktreeId,
+      workspaceOwned: repository.workspaceOwned,
+    })),
   };
   const semanticDigest = digest(portable);
   const localDigest = digest({ ...portable, repositories });
@@ -154,7 +172,7 @@ export function createExecutionWorkspaceBinding(input: {
     semanticDigest,
     localDigest,
     bindingId: `workspace-binding:${semanticDigest.slice(-24)}`,
-  }) as ExecutionWorkspaceBinding;
+  });
 }
 
 export interface BuildConfigurationProposal {
@@ -229,7 +247,7 @@ export function createBuildConfigurationProposal(input: {
     ...stable,
     semanticDigest,
     proposalId: `build-configuration-proposal:${semanticDigest.slice(-24)}`,
-  }) as BuildConfigurationProposal;
+  });
 }
 
 export function acceptBuildConfiguration(input: {
@@ -249,7 +267,7 @@ export function acceptBuildConfiguration(input: {
       decidedAt: decidedAt.toISOString(),
       proposalDigest: input.proposal.semanticDigest,
     },
-  }) as BuildConfiguration;
+  });
 }
 
 export interface WorkPackageWriteScope {
@@ -344,7 +362,7 @@ export function createBuildPlan(input: {
       writeScopes: candidate.writeScopes
         .map((scope) => ({
           repositoryId: text(scope.repositoryId, 'Write scope repository identity'),
-          paths: unique(scope.paths, 'Write scope paths'),
+          paths: unique(scope.paths.map(scopePath), 'Write scope paths'),
         }))
         .sort((left, right) => left.repositoryId.localeCompare(right.repositoryId)),
       acceptanceRefs: unique(candidate.acceptanceRefs, 'Package acceptance references'),
@@ -354,11 +372,17 @@ export function createBuildPlan(input: {
     if (stable.taskIds.some((taskId) => !taskIds.has(taskId))) {
       throw new Error('Build Plan package references an unknown Task');
     }
+    if (stable.taskIds.length === 0) {
+      throw new Error('Build Plan contains an orphan package without Task references');
+    }
     if (stable.acceptanceRefs.some((acceptanceId) => !acceptanceIds.has(acceptanceId))) {
       throw new Error('Build Plan package references unknown acceptance criteria');
     }
     if (stable.repositoryIds.length === 0 || stable.writeScopes.length === 0) {
       throw new Error('Build Plan package requires repository and write scope boundaries');
+    }
+    if (new Set(stable.writeScopes.map((scope) => scope.repositoryId)).size !== stable.writeScopes.length) {
+      throw new Error('Build Plan package contains duplicate repository write scopes');
     }
     if (stable.repositoryIds.some((repositoryId) => !repositoryIds.has(repositoryId))) {
       throw new Error('Build Plan package references an unbound repository');
@@ -388,6 +412,20 @@ export function createBuildPlan(input: {
   if ([...taskIds].some((taskId) => !covered.has(taskId))) {
     throw new Error('Build Plan must cover every Task');
   }
+  for (const task of input.tasks.tasks) {
+    const coveredAcceptance = new Set(
+      packages
+        .filter((workPackage) => workPackage.taskIds.includes(task.taskId))
+        .flatMap((workPackage) => workPackage.acceptanceRefs),
+    );
+    if (
+      task.acceptanceCriteria.some(
+        (criterion) => !coveredAcceptance.has(criterion.acceptanceId),
+      )
+    ) {
+      throw new Error(`Build Plan does not cover every acceptance criterion for Task ${task.taskId}`);
+    }
+  }
   const stable = {
     schemaVersion: 1 as const,
     runId: text(input.runId, 'Run identity'),
@@ -403,7 +441,7 @@ export function createBuildPlan(input: {
     ...stable,
     planId: `build-plan:${planDigest.slice(-24)}`,
     digest: planDigest,
-  }) as BuildPlan;
+  });
 }
 
 export interface BuildPlanValidation {
@@ -442,7 +480,7 @@ export function validateBuildPlan(input: {
       configuration: input.configuration.semanticDigest,
       tasks: input.tasks.digest,
     }),
-  }) as BuildPlanValidation;
+  });
 }
 
 export interface BuildProtocolState {
@@ -467,12 +505,6 @@ export interface BuildProtocolState {
 export type BuildProtocolObservation =
   | { kind: 'configuration-proposed'; proposal: BuildConfigurationProposal }
   | { kind: 'configuration-approved'; configuration: BuildConfiguration }
-  | {
-      kind: 'host-outcome';
-      action: 'execute' | 'check';
-      accepted: boolean;
-      requestedNextAction?: BuildActionKind;
-    }
   | { kind: 'plan-accepted'; plan: BuildPlan }
   | { kind: 'plan-evidence-accepted'; evidence: PlanEvidence }
   | { kind: 'plan-rejected' }
@@ -503,7 +535,7 @@ export function createBuildProtocolState(input: {
     checkEvidence: null,
     invalidations: [],
     revision: 0,
-  }) as BuildProtocolState;
+  });
 }
 
 export function advanceBuildProtocol(
@@ -514,7 +546,7 @@ export function advanceBuildProtocol(
     if (observation.action !== state.currentAction) {
       throw new Error('Retry does not match the current Runtime-selected Action');
     }
-    return deepFreeze({ ...state, actionAttempt: state.actionAttempt + 1 }) as BuildProtocolState;
+    return deepFreeze({ ...state, actionAttempt: state.actionAttempt + 1 });
   }
   if (observation.kind === 'configuration-proposed') {
     if (state.currentAction !== 'configure' || state.configuration) {
@@ -529,7 +561,7 @@ export function advanceBuildProtocol(
       ...state,
       configurationProposal: observation.proposal,
       revision: state.revision + 1,
-    }) as BuildProtocolState;
+    });
   }
   if (observation.kind === 'configuration-approved') {
     if (state.currentAction !== 'configure') {
@@ -554,7 +586,7 @@ export function advanceBuildProtocol(
       configurationProposal: state.configurationProposal,
       configuration: observation.configuration,
       revision: state.revision + 1,
-    }) as BuildProtocolState;
+    });
   }
   if (observation.kind === 'plan-accepted') {
     if (state.currentAction !== 'plan') {
@@ -584,7 +616,7 @@ export function advanceBuildProtocol(
       packageCompletions,
       checkEvidence: null,
       revision: state.revision + 1,
-    }) as BuildProtocolState;
+    });
   }
   if (observation.kind === 'plan-evidence-accepted') {
     if (state.currentAction !== 'plan-evidence') {
@@ -607,7 +639,7 @@ export function advanceBuildProtocol(
       actionAttempt: 1,
       planEvidence: observation.evidence,
       revision: state.revision + 1,
-    }) as BuildProtocolState;
+    });
   }
   if (observation.kind === 'plan-rejected') {
     if (state.currentAction !== 'plan-evidence' || !state.plan) {
@@ -620,7 +652,7 @@ export function advanceBuildProtocol(
       planEvidence: null,
       checkEvidence: null,
       revision: state.revision + 1,
-    }) as BuildProtocolState;
+    });
   }
   if (observation.kind === 'package-completed') {
     if (state.currentAction !== 'execute' || !state.plan || !state.planEvidence) {
@@ -653,7 +685,7 @@ export function advanceBuildProtocol(
       actionAttempt: 1,
       packageCompletions,
       revision: state.revision + 1,
-    }) as BuildProtocolState;
+    });
   }
   if (observation.kind === 'check-accepted') {
     if (state.currentAction !== 'check' || !observation.evidence.accepted) {
@@ -672,7 +704,7 @@ export function advanceBuildProtocol(
       actionAttempt: 1,
       checkEvidence: observation.evidence,
       revision: state.revision + 1,
-    }) as BuildProtocolState;
+    });
   }
   if (observation.kind === 'revision-required') {
     if (!state.plan || !state.configuration) {
@@ -695,31 +727,10 @@ export function advanceBuildProtocol(
       checkEvidence: null,
       invalidations: [...state.invalidations, observation.invalidation],
       revision: state.revision + 1,
-    }) as BuildProtocolState;
+    });
   }
-  if (observation.requestedNextAction) throw new Error('Host cannot select the next Build Action');
-  if (observation.action !== state.currentAction) {
-    throw new Error('Host Outcome does not match the current Runtime-selected Action');
-  }
-  if (!observation.accepted) {
-    return deepFreeze({ ...state, actionAttempt: state.actionAttempt + 1 }) as BuildProtocolState;
-  }
-  const next: BuildActionKind = 'check';
-  if (observation.action === 'check') {
-    return deepFreeze({
-      ...state,
-      currentAction: null,
-      status: 'ready-for-verify',
-      actionAttempt: 1,
-      revision: state.revision + 1,
-    }) as BuildProtocolState;
-  }
-  return deepFreeze({
-    ...state,
-    currentAction: next,
-    actionAttempt: 1,
-    revision: state.revision + 1,
-  }) as BuildProtocolState;
+  const exhaustive: never = observation;
+  throw new Error(`Unsupported Build protocol observation: ${String(exhaustive)}`);
 }
 
 export interface PlanEvidence {
@@ -757,7 +768,7 @@ export function assessBuildPlanRisk(plan: BuildPlan): BuildPlanRisk {
     level: reasons.size > 0 ? ('high' as const) : ('low' as const),
     reasons: [...reasons].sort(),
   };
-  return deepFreeze({ ...stable, digest: digest(stable) }) as BuildPlanRisk;
+  return deepFreeze({ ...stable, digest: digest(stable) });
 }
 
 export interface PackageCompletionEvidence {
@@ -828,7 +839,7 @@ export function createPackageCompletionEvidence(input: {
     ...stable,
     completionId: `package-completion:${completionDigest.slice(-24)}`,
     digest: completionDigest,
-  }) as PackageCompletionEvidence;
+  });
 }
 
 export function createPlanEvidence(input: {
@@ -859,7 +870,7 @@ export function createPlanEvidence(input: {
   return deepFreeze({
     ...stable,
     evidenceId: `plan-evidence:${digest(stable).slice(-24)}`,
-  }) as PlanEvidence;
+  });
 }
 
 export type BuildFindingClassification =
@@ -925,7 +936,7 @@ export function createBuildInvalidation(input: {
     ...stable,
     invalidationId: `build-invalidation:${invalidationDigest.slice(-24)}`,
     digest: invalidationDigest,
-  }) as BuildInvalidation;
+  });
 }
 
 export interface BuildCheckEvidence {
@@ -947,17 +958,57 @@ export interface BuildCheckEvidence {
 export function createBuildCheckEvidence(
   input: Omit<BuildCheckEvidence, 'schemaVersion' | 'evidenceId' | 'accepted' | 'digest'>,
 ): BuildCheckEvidence {
+  if (
+    !SHA256.test(input.configurationDigest) ||
+    !SHA256.test(input.planDigest) ||
+    !SHA256.test(input.repositoryDigest) ||
+    !SHA256.test(input.implementationDigest)
+  ) {
+    throw new Error('Build Check digests are invalid');
+  }
   if (input.review.mode !== 'standard') throw new Error('Build Check review mode must be standard');
-  if (input.review.implementationExecutionId === input.review.reviewerExecutionId) {
+  const review = {
+    mode: 'standard' as const,
+    implementationExecutionId: text(
+      input.review.implementationExecutionId,
+      'Implementation execution identity',
+    ),
+    reviewerExecutionId: text(input.review.reviewerExecutionId, 'Reviewer execution identity'),
+  };
+  if (review.implementationExecutionId === review.reviewerExecutionId) {
     throw new Error('Standard review requires an independent reviewer execution identity');
   }
+  if (input.findings.length > MAX_ITEMS) throw new Error('Build Check has too many findings');
+  if (new Set(input.findings.map((finding) => finding.findingId)).size !== input.findings.length) {
+    throw new Error('Build Check contains duplicate finding identities');
+  }
+  const classifications = new Set<BuildFindingClassification>([
+    'implementation',
+    'planning',
+    'evidence-infrastructure',
+    'unknown',
+  ]);
+  if (input.findings.some((finding) => !classifications.has(finding.classification))) {
+    throw new Error('Build finding classification is invalid');
+  }
   const accepted = input.findings.every((finding) => !finding.blocking);
+  const completedPackageIds = unique(input.completedPackageIds, 'Completed package identities');
+  const acceptedTaskIds = unique(input.acceptedTaskIds, 'Accepted Task identities');
+  const testEvidenceIds = unique(input.testEvidenceIds, 'Test Evidence identities');
+  if (
+    completedPackageIds.length === 0 ||
+    acceptedTaskIds.length === 0 ||
+    testEvidenceIds.length === 0
+  ) {
+    throw new Error('Build Check requires package, Task acceptance, and test Evidence');
+  }
   const stable = {
     schemaVersion: 1 as const,
     ...input,
-    completedPackageIds: unique(input.completedPackageIds, 'Completed package identities'),
-    acceptedTaskIds: unique(input.acceptedTaskIds, 'Accepted Task identities'),
-    testEvidenceIds: unique(input.testEvidenceIds, 'Test Evidence identities'),
+    completedPackageIds,
+    acceptedTaskIds,
+    testEvidenceIds,
+    review,
     findings: input.findings.map((finding) => ({
       ...finding,
       findingId: text(finding.findingId, 'Finding identity'),
@@ -973,5 +1024,5 @@ export function createBuildCheckEvidence(
     ...stable,
     evidenceId: `build-check:${checkDigest.slice(-24)}`,
     digest: checkDigest,
-  }) as BuildCheckEvidence;
+  });
 }

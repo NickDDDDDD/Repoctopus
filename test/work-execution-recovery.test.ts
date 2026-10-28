@@ -232,10 +232,13 @@ describe('Managed Host reconciliation', () => {
           markHostUnknown: marks.unknown,
           markHostNotExecuted: marks.notExecuted,
           markHostCompleted: marks.completed,
+          recordDelegationFacts: vi.fn(),
           recordSkillFacts: vi.fn(),
         },
         workDispatcher: {
-          resumeClaim: vi.fn().mockResolvedValue({ packet: { context: { layers: [] } } }),
+          resumeClaim: vi.fn().mockResolvedValue({
+            packet: { work: { kind: 'evidence.verify' }, context: { layers: [] } },
+          }),
           outcome: vi.fn().mockReturnValue({}),
           acceptOutcome: vi.fn().mockResolvedValue({ validation: 'pending' }),
         },

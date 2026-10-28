@@ -106,6 +106,8 @@ export interface LifecycleWriteScopeDefinition {
 export interface ChangeLifecycleWorkDefinition {
   kind: string;
   buildAction?: BuildActionKind;
+  executionMode?: BuildExecutionMode;
+  tddMode?: BuildTddMode;
   configurationId?: string;
   planId?: string;
   planRevision?: number;

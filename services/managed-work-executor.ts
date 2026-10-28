@@ -9,13 +9,13 @@ import type {
 } from '../domains/action/types.js';
 import type {
   ExternalWorkExecutionOutcome,
-  DelegationReceipt,
   WorkExecutionHostInvocation,
   WorkExecutionHostIdentity,
   WorkExecutionHostOutcome,
   WorkClaimResult,
   WorkExecutionPacket,
 } from '../domains/work-execution/types.js';
+import { assertManagedDelegation } from '../domains/work-execution/delegation.js';
 import { assertBoundedWorkExecutionFindings } from '../domains/work-execution/findings.js';
 import { canonicalJson } from '../domains/workflow-contract/canonical.js';
 
@@ -32,63 +32,50 @@ function assertBoundedExecutionResult(outcome: WorkExecutionHostOutcome): void {
   }
   for (const receipt of receipts) {
     if (
+      receipt.schemaVersion !== 1 ||
       receipt.parentInvocationId !== outcome.invocationId ||
       receipt.coordinatorHostId !== outcome.hostId ||
       !receipt.executionId.trim() ||
       !receipt.packageId.trim() ||
+      !['implementer', 'reviewer'].includes(receipt.role) ||
+      !['succeeded', 'failed', 'unknown'].includes(receipt.status) ||
       !/^sha256:[a-f0-9]{64}$/u.test(receipt.outcomeDigest)
     ) {
       throw new Error('Delegation receipt does not match the parent Host invocation');
     }
   }
-}
-
-function assertDelegationContract(
-  packet: WorkExecutionPacket,
-  host: WorkExecutionHostIdentity,
-  outcome: WorkExecutionHostOutcome,
-): void {
-  if (packet.work.kind !== 'build.execute') return;
-  const layer = packet.context.layers.find((candidate) => candidate.kind === 'change-inputs');
-  if (!layer) throw new Error('Build Execute packet has no frozen Change inputs');
-  let executionMode: unknown;
-  try {
-    executionMode = (
-      JSON.parse(layer.content) as { build?: { configuration?: { executionMode?: unknown } } }
-    ).build?.configuration?.executionMode;
-  } catch {
-    throw new Error('Build Execute packet has malformed Change inputs');
-  }
-  const receipts = outcome.delegationReceipts ?? [];
-  if (executionMode === 'autonomous') {
-    if (receipts.length > 0) {
-      throw new Error('Autonomous Build Execute cannot report undeclared subagent delegation');
-    }
-    return;
-  }
-  if (executionMode !== 'subagent-driven-development') {
-    throw new Error('Build Execute packet has no supported frozen execution mode');
-  }
-  if (!host.capabilities.includes('subagent.dispatch.attested')) {
-    throw new Error('Subagent Build Execute requires an attested coordinator Host');
-  }
-  if (!packet.work.packageId || receipts.length === 0) {
-    throw new Error('Subagent Build Execute requires bounded delegation receipts');
-  }
-  const identities = new Map<string, DelegationReceipt['role']>();
-  for (const receipt of receipts) {
-    if (receipt.packageId !== packet.work.packageId) {
-      throw new Error('Delegation receipt escaped the current Work Package');
-    }
-    const priorRole = identities.get(receipt.executionId);
-    if (priorRole && priorRole !== receipt.role) {
-      throw new Error('One delegated execution identity cannot claim multiple roles');
-    }
-    if (priorRole) throw new Error('Delegated execution identity is duplicated');
-    identities.set(receipt.executionId, receipt.role);
-  }
-  if (!receipts.some((receipt) => receipt.role === 'implementer' && receipt.status === 'succeeded')) {
-    throw new Error('Subagent Build Execute has no succeeded implementer receipt');
+  if (!outcome.result) return;
+  const common = ['schemaVersion', 'kind'];
+  const allowed =
+    outcome.result.kind === 'build-plan-candidate'
+      ? [...common, 'packages']
+      : outcome.result.kind === 'build-package-completion'
+        ? [
+            ...common,
+            'packageId',
+            'acceptanceEvidenceIds',
+            'testEvidenceIds',
+            'tddEvidence',
+            'repositoryDigest',
+            'implementationDigest',
+          ]
+        : outcome.result.kind === 'build-check-candidate'
+          ? [
+              ...common,
+              'completedPackageIds',
+              'acceptedTaskIds',
+              'testEvidenceIds',
+              'repositoryDigest',
+              'implementationDigest',
+              'reviewerExecutionId',
+            ]
+          : [];
+  if (
+    outcome.result.schemaVersion !== 1 ||
+    allowed.length === 0 ||
+    Object.keys(outcome.result).some((key) => !allowed.includes(key))
+  ) {
+    throw new Error('Work Execution result does not match the managed Build result schema');
   }
 }
 
@@ -193,7 +180,7 @@ export class ManagedWorkExecutor extends Service {
     }
     assertBoundedWorkExecutionFindings(hostOutcome);
     assertBoundedExecutionResult(hostOutcome);
-    assertDelegationContract(claim.packet, host.identity, hostOutcome);
+    assertManagedDelegation(claim.packet, host.identity, hostOutcome);
     assertConsumedExecutionSkills(claim.packet, hostOutcome);
     await this.ctx.workExecutionAuthority.markHostCompleted(claim.intent, hostOutcome);
     await this.ctx.workExecutionAuthority.recordDelegationFacts(claim.packet, hostOutcome);
@@ -266,7 +253,7 @@ export class ManagedWorkExecutor extends Service {
     assertBoundedWorkExecutionFindings(hostOutcome);
     assertBoundedExecutionResult(hostOutcome);
     const packet = await this.ctx.workDispatcher.resumeClaim(input.runId);
-    assertDelegationContract(packet.packet, invocation.host, hostOutcome);
+    assertManagedDelegation(packet.packet, invocation.host, hostOutcome);
     assertConsumedExecutionSkills(packet.packet, hostOutcome);
     await this.ctx.workExecutionAuthority.markHostCompleted(intent, hostOutcome);
     await this.ctx.workExecutionAuthority.recordDelegationFacts(packet.packet, hostOutcome);
@@ -319,8 +306,10 @@ export class ManagedWorkExecutor extends Service {
     assertBoundedWorkExecutionFindings(outcome);
     assertBoundedExecutionResult(outcome);
     const packet = await this.ctx.workDispatcher.resumeClaim(runId);
+    assertManagedDelegation(packet.packet, invocation.host, outcome);
     assertConsumedExecutionSkills(packet.packet, outcome);
     await this.ctx.workExecutionAuthority.markHostCompleted(intent, outcome);
+    await this.ctx.workExecutionAuthority.recordDelegationFacts(packet.packet, outcome);
     await this.ctx.workExecutionAuthority.recordSkillFacts(
       packet.packet,
       'consumed',

@@ -71,6 +71,7 @@ export function createBuildActionWork(facts: {
   planRevision?: number;
   packageId?: string;
   executionMode?: BuildExecutionMode;
+  tddMode?: BuildTddMode;
   writeScopes?: readonly { repositoryId: string; paths: readonly string[] }[];
   taskId?: string;
   taskRevision?: `sha256:${string}`;
@@ -93,17 +94,21 @@ export function createBuildActionWork(facts: {
     repositoryIds: [...facts.repositoryIds].sort(),
     binding,
     executionMode: facts.executionMode ?? null,
+    tddMode: facts.tddMode ?? null,
   };
   const inputDigest = sha256(stableInput);
+  const composition = buildActionSkillComposition({
+    action: facts.kind.slice('build.'.length) as Exclude<BuildActionKind, 'plan-evidence'>,
+    ...(facts.tddMode ? { tddMode: facts.tddMode } : {}),
+  });
   const augmentationNames = facts.augmentationSkills.map((skill) => skill.name);
-  const validAugmentations =
-    facts.kind === 'build.execute'
-      ? augmentationNames.length === 0 ||
-        (augmentationNames.length === 1 && augmentationNames[0] === 'tdd')
-      : facts.kind === 'build.check'
-        ? augmentationNames.length === 1 && augmentationNames[0] === 'code-review'
-        : augmentationNames.length === 0;
-  if (!validAugmentations) {
+  if (facts.actionSkill.name !== composition.actionSkill) {
+    throw new Error(`Build Action Skill does not match frozen policy: ${facts.kind}`);
+  }
+  if (
+    facts.kind === 'build.execute' && !facts.tddMode ||
+    JSON.stringify(augmentationNames) !== JSON.stringify(composition.augmentationSkills)
+  ) {
     throw new Error(`Build Action augmentation Skills do not match frozen policy: ${facts.kind}`);
   }
   const writeScopes = facts.writeScopes
@@ -137,6 +142,8 @@ export function createBuildActionWork(facts: {
     ...(facts.planId ? { planId: facts.planId } : {}),
     ...(facts.planRevision !== undefined ? { planRevision: facts.planRevision } : {}),
     ...(facts.packageId ? { packageId: facts.packageId } : {}),
+    ...(facts.executionMode ? { executionMode: facts.executionMode } : {}),
+    ...(facts.tddMode ? { tddMode: facts.tddMode } : {}),
     augmentationSkills: structuredClone(facts.augmentationSkills),
     writeScopes,
     ...(facts.taskId ? { taskId: facts.taskId } : {}),

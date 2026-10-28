@@ -428,7 +428,9 @@ export class WorkflowRuns extends Service {
           projectSnapshotDigest: state.projectSnapshotDigest,
           workspaceRepositoryId: specificationRoot.repositoryId,
           repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
-          ...(configuration ? { executionMode: configuration.executionMode } : {}),
+          ...(configuration
+            ? { executionMode: configuration.executionMode, tddMode: configuration.tddMode }
+            : {}),
           stableInput: approved
             ? {
                 configurationId: configuration!.configurationId,
@@ -541,6 +543,7 @@ export class WorkflowRuns extends Service {
           repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
           configurationId: configuration.configurationId,
           executionMode: configuration.executionMode,
+          tddMode: configuration.tddMode,
           planId: plan.planId,
           planRevision: plan.revision,
           ...(nextPackage
@@ -1431,7 +1434,7 @@ export class WorkflowRuns extends Service {
                 runId,
                 revision: (protocol.plan?.revision ?? 0) + 1,
                 configuration,
-                planningDigest: lifecycle.planningDigest!,
+                planningDigest: lifecycle.planningDigest,
                 tasks: taskSet,
                 candidate: { packages: result.packages },
               });
@@ -1507,6 +1510,7 @@ export class WorkflowRuns extends Service {
                 repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
                 configurationId: configuration.configurationId,
                 executionMode: configuration.executionMode,
+                tddMode: configuration.tddMode,
                 planId: plan.planId,
                 planRevision: plan.revision,
                 ...(nextPackage
@@ -1658,6 +1662,7 @@ export class WorkflowRuns extends Service {
                 repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
                 configurationId: configuration.configurationId,
                 executionMode: configuration.executionMode,
+                tddMode: configuration.tddMode,
                 planId: plan.planId,
                 planRevision: plan.revision,
                 ...(nextPackage
@@ -1735,6 +1740,10 @@ export class WorkflowRuns extends Service {
               if (result.repositoryDigest !== configuration.bindingDigest) {
                 throw new Error('Build Check repository binding drifted');
               }
+              const knownTaskIds = new Set((lifecycle.tasks ?? []).map((task) => task.taskId));
+              const knownRequirementRefs = new Set(
+                (lifecycle.tasks ?? []).flatMap((task) => task.requirementRefs),
+              );
               const findings = (hostOutcome.findings ?? []).map((finding) => {
                 const classification =
                   finding.kind === 'implementation_failure'
@@ -1746,6 +1755,17 @@ export class WorkflowRuns extends Service {
                         ? ('evidence-infrastructure' as const)
                         : ('unknown' as const);
                 const taskIds = [...new Set(finding.taskIds ?? [])].sort();
+                const requirementRefs = [...new Set(finding.requirementIds ?? [])].sort();
+                if (taskIds.some((taskId) => !knownTaskIds.has(taskId))) {
+                  throw new Error('Build finding references an unknown Task');
+                }
+                if (
+                  requirementRefs.some(
+                    (requirementRef) => !knownRequirementRefs.has(requirementRef),
+                  )
+                ) {
+                  throw new Error('Build finding references an unknown requirement');
+                }
                 const packageIds = plan.packages
                   .filter((entry) => entry.taskIds.some((taskId) => taskIds.includes(taskId)))
                   .map((entry) => entry.packageId)
@@ -1758,7 +1778,7 @@ export class WorkflowRuns extends Service {
                   findingId,
                   classification,
                   blocking: true,
-                  requirementRefs: [...new Set(finding.requirementIds ?? [])].sort(),
+                  requirementRefs,
                   taskIds,
                   packageIds,
                   summary: finding.summary,
@@ -1848,6 +1868,7 @@ export class WorkflowRuns extends Service {
                   repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
                   configurationId: configuration.configurationId,
                   executionMode: configuration.executionMode,
+                  tddMode: configuration.tddMode,
                   planId: plan.planId,
                   planRevision: plan.revision,
                   stableInput: {
@@ -2223,6 +2244,7 @@ export class WorkflowRuns extends Service {
       repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
       configurationId: configuration.configurationId,
       executionMode: configuration.executionMode,
+      tddMode: configuration.tddMode,
       planId: plan.planId,
       planRevision: plan.revision,
       stableInput: {

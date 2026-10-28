@@ -82,9 +82,9 @@ describe('Execution Workspace binding', () => {
         project: project(),
         checkouts: [{ repositoryId: 'workspace', checkoutPath: example.path }],
       },
-      async (checkoutPath) => {
+      (checkoutPath) => {
         inspected = checkoutPath;
-        return example.fact;
+        return Promise.resolve(example.fact);
       },
     );
 
@@ -102,7 +102,7 @@ describe('Execution Workspace binding', () => {
     await expect(
       bindExecutionWorkspace(
         { intent: worktree, project: project(), checkouts: [] },
-        async () => facts(),
+        () => Promise.resolve(facts()),
       ),
     ).rejects.toThrow(/topology/u);
     await expect(
@@ -112,7 +112,10 @@ describe('Execution Workspace binding', () => {
           project: project(),
           checkouts: [{ repositoryId: 'workspace', checkoutPath: 'C:\\workspace-worktree' }],
         },
-        async () => facts({ checkoutPath: 'C:\\workspace-worktree', remoteIdentity: 'other' }),
+        () =>
+          Promise.resolve(
+            facts({ checkoutPath: 'C:\\workspace-worktree', remoteIdentity: 'other' }),
+          ),
       ),
     ).rejects.toThrow(/identity drifted/u);
     await expect(
@@ -122,7 +125,7 @@ describe('Execution Workspace binding', () => {
           project: project(),
           checkouts: [{ repositoryId: 'workspace', checkoutPath: 'C:\\workspace-worktree' }],
         },
-        async () => facts({ checkoutPath: 'C:\\workspace-worktree' }),
+        () => Promise.resolve(facts({ checkoutPath: 'C:\\workspace-worktree' })),
       ),
     ).rejects.toThrow(/ownership facts/u);
   });
