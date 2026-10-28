@@ -1317,6 +1317,7 @@ export function evolveChangeLifecycle(options: {
           waitCondition: null,
           blocker: null,
           tasks: [],
+          buildProtocol: null,
           planningDigest: null,
           adoptedCompletionClaimDigest: null,
           verificationInput: null,

@@ -570,6 +570,16 @@ describe('Change lifecycle domain', () => {
   });
 
   it('keeps design rework, Verify retry, and Archive reverify in one Run', () => {
+    const designRevisionIntent = createExecutionWorkspaceIntent({
+      workspaceId: initialSnapshot().identity.workspaceId,
+      changeId: initialSnapshot().identity.changeId,
+      isolation: 'current',
+    });
+    const activeBuildProtocol = createBuildProtocolState({
+      runId: initialSnapshot().identity.runId,
+      planningDigest: digest('p'),
+      workspaceIntent: designRevisionIntent,
+    });
     const activeBuild = builtinSnapshot({
       revision: 4,
       checkEpoch: 4,
@@ -577,6 +587,8 @@ describe('Change lifecycle domain', () => {
       currentWork: buildWork,
       tasks: [buildTask],
       planningDigest: digest('p'),
+      workspaceIntent: designRevisionIntent,
+      buildProtocol: activeBuildProtocol,
     });
     const designRequired = evolveChangeLifecycle({
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
@@ -615,6 +627,7 @@ describe('Change lifecycle domain', () => {
       currentWork: { workId: designWork.workId },
       tasks: [],
     });
+    expect(designApproved.snapshot.buildProtocol).toBeUndefined();
     const exhausted = evolveChangeLifecycle({
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
       current: activeBuild,
