@@ -62,26 +62,22 @@ export class DesktopProjection extends Service {
     const execution = this.transition
       .catch(() => undefined)
       .then(async () => {
-        const publications: Array<{
-          snapshot: ChangeProjectionSnapshot;
-          delta: ChangeProjectionDelta;
-        }> = [];
+        const deltas: ChangeProjectionDelta[] = [];
         let next = this.current;
         for (const envelope of envelopes) {
           const reduction = reduceChangeProjection(next, envelope);
           next = reduction.snapshot;
-          if (reduction.delta !== null) {
-            publications.push({ snapshot: structuredClone(next), delta: reduction.delta });
-          }
+          if (reduction.delta !== null) deltas.push(reduction.delta);
         }
         await this.journal?.append(envelopes, next);
         this.current = next;
-        for (const publication of publications) {
+        const finalDelta = deltas.at(-1);
+        if (finalDelta !== undefined) {
           for (const listener of this.listeners) {
-            listener(structuredClone(publication.snapshot), structuredClone(publication.delta));
+            listener(structuredClone(next), structuredClone(finalDelta));
           }
         }
-        return publications.map((publication) => publication.delta);
+        return deltas;
       });
     this.transition = execution.then(
       () => undefined,

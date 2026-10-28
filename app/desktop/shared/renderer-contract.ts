@@ -2,9 +2,9 @@ import type { DesktopApplicationSnapshot } from '../../../services/desktop-appli
 import type { DesktopLaunchContext } from './launch-context.js';
 import {
   isChangeProjectionDelta,
-  isChangeProjectionSnapshot,
+  isChangeProjectionView,
   type ChangeProjectionDelta,
-  type ChangeProjectionSnapshot,
+  type ChangeProjectionView,
 } from '../../../domains/trajectory/projection.js';
 
 export const DESKTOP_BACKEND_STATE_CHANNEL = 'repoctopus:desktop-backend-state';
@@ -19,7 +19,7 @@ export type DesktopShellState =
       protocolVersion: 1;
       phase: 'ready';
       snapshot: DesktopApplicationSnapshot;
-      projection: ChangeProjectionSnapshot;
+      projection: ChangeProjectionView;
     }
   | { protocolVersion: 1; phase: 'error'; message: string };
 
@@ -37,7 +37,7 @@ export function isDesktopShellState(value: unknown): value is DesktopShellState 
   return (
     snapshot.apiVersion === 'repoctopus.desktop/v1alpha1' &&
     snapshot.protocolVersion === 1 &&
-    isChangeProjectionSnapshot(state.projection)
+    isChangeProjectionView(state.projection)
   );
 }
 
@@ -50,12 +50,12 @@ export interface RepoctopusDesktopBridge {
 }
 
 export interface DesktopProjectionUpdate {
-  snapshot: ChangeProjectionSnapshot;
+  snapshot: ChangeProjectionView;
   delta: ChangeProjectionDelta;
 }
 
 export function isDesktopProjectionUpdate(value: unknown): value is DesktopProjectionUpdate {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) return false;
   const update = value as Record<string, unknown>;
-  return isChangeProjectionSnapshot(update.snapshot) && isChangeProjectionDelta(update.delta);
+  return isChangeProjectionView(update.snapshot) && isChangeProjectionDelta(update.delta);
 }

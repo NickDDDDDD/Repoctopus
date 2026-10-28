@@ -7,6 +7,7 @@ import os from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
 import { setTimeout as delay } from 'node:timers/promises';
+import { build } from 'esbuild';
 
 const root = path.resolve(import.meta.dirname, '..');
 const installer = path.join(
@@ -19,6 +20,10 @@ const evidenceFile = path.resolve(
   process.env.REPOCTOPUS_DESKTOP_E2E_EVIDENCE ??
     path.join(root, 'dist', 'desktop-release', 'windows-package-e2e.json'),
 );
+const selfHostWorkspace = process.env.REPOCTOPUS_SELF_HOST_WORKSPACE?.trim() || null;
+const runtimeRunId =
+  process.env.REPOCTOPUS_WORKFLOW_RUN_ID ??
+  'change-repoctopus-add-windows-desktop-dashboard-f5ddf312046dbfbb';
 const checks = [];
 const startedAt = new Date().toISOString();
 let sandbox;
@@ -204,9 +209,13 @@ class CdpPage {
     this.socket = socket;
     this.sequence = 0;
     this.pending = new Map();
+    this.events = [];
     socket.addEventListener('message', (event) => {
       const message = JSON.parse(String(event.data));
-      if (!message.id) return;
+      if (!message.id) {
+        if (typeof message.method === 'string') this.events.push(message);
+        return;
+      }
       const pending = this.pending.get(message.id);
       if (!pending) return;
       this.pending.delete(message.id);
@@ -247,6 +256,10 @@ class CdpPage {
     });
     if (response.exceptionDetails) throw new Error('Renderer evaluation failed');
     return response.result.value;
+  }
+
+  eventsByMethod(method) {
+    return this.events.filter((event) => event.method === method);
   }
 
   close() {
@@ -330,8 +343,9 @@ async function writeEvidence(status, diagnostic) {
   const bytes = await readFile(installer).catch(() => null);
   const evidence = {
     schemaVersion: 1,
-    kind: 'WindowsDesktopPackageE2E',
-    taskId: '7.2',
+    kind: selfHostWorkspace ? 'WindowsDesktopSelfHostE2E' : 'WindowsDesktopPackageE2E',
+    taskId: selfHostWorkspace ? '7.4' : '7.2',
+    runtimeRunId,
     status,
     startedAt,
     completedAt: new Date().toISOString(),
@@ -393,6 +407,118 @@ async function main() {
     const body = await waitForText(page, 'installed-e2e-initial');
     assert(body.includes('Open'), 'OTLP projection did not render the Open phase');
   });
+
+  if (selfHostWorkspace) {
+    await runCheck('self-hosted-run-projection', async () => {
+      const bundledExporter = path.join(sandbox, 'self-host-run-export.mjs');
+      await build({
+        entryPoints: [path.join(root, 'scripts', 'self-host-run-export.ts')],
+        outfile: bundledExporter,
+        bundle: true,
+        platform: 'node',
+        format: 'esm',
+        target: 'node22',
+        sourcemap: false,
+      });
+      await page.command('Network.enable');
+      let exported;
+      try {
+        exported = await execute(
+          process.execPath,
+          [
+            bundledExporter,
+            '--workspace',
+            selfHostWorkspace,
+            '--run',
+            runtimeRunId,
+            '--endpoint',
+            discovery.endpoint,
+            '--token',
+            discovery.sessionToken,
+          ],
+          { cwd: root },
+        );
+      } catch (error) {
+        throw new Error(
+          `${error instanceof Error ? error.message : String(error)}; installed process: ${trayProcess.repoctopusOutput.trim()}`,
+          { cause: error },
+        );
+      }
+      const summary = JSON.parse(exported.stdout.trim());
+      assert(summary.runId === runtimeRunId, 'Self-host exporter returned another Run');
+      assert(summary.trajectoryEvents > 0, 'Self-host exporter observed no Trajectory events');
+      await waitFor(
+        async () => {
+          const selected = await page.evaluate(`(() => {
+            const button = [...document.querySelectorAll('button')].find((candidate) =>
+              candidate.textContent?.includes('add-windows-desktop-dashboard'));
+            if (!(button instanceof HTMLButtonElement)) return false;
+            button.click();
+            return true;
+          })()`);
+          return selected ? true : null;
+        },
+        'self-hosted change navigation',
+      ).catch(async (error) => {
+        const body = await page.evaluate('document.body.innerText');
+        const state = await page.evaluate('window.repoctopusDesktop.currentState()');
+        throw new Error(`${error.message}; body: ${body}; state: ${JSON.stringify(state)}`);
+      });
+      const body = await waitForText(page, runtimeRunId);
+      await waitForSelectedChange(page, 'add-windows-desktop-dashboard');
+      assert(
+        body.includes('build.execute:417ed2ee777f'),
+        'Current self-hosted Work was not rendered',
+      );
+      assert(body.includes('repoctopus-build-execute'), 'Action Skill was not rendered');
+      assert(body.includes('tdd'), 'Augmentation Skill was not rendered');
+      const phases = await page.evaluate(`Object.fromEntries(
+        [...document.querySelectorAll('.phase-step')].map((node) => [
+          node.querySelector('h3')?.textContent,
+          node.getAttribute('data-state'),
+        ]),
+      )`);
+      assert(phases.Open === 'completed', 'Open phase was not reconstructed as completed');
+      assert(phases.Design === 'completed', 'Design phase was not reconstructed as completed');
+      assert(
+        phases.Build === 'running' || phases.Build === 'rework',
+        'Build phase was not reconstructed as active',
+      );
+      assert(phases.Verify === 'not-reported', 'Verify was incorrectly presented as observed');
+      assert(phases.Archive === 'not-reported', 'Archive was incorrectly presented as observed');
+      const actions = await page.evaluate(`Object.fromEntries(
+        [...document.querySelectorAll('.build-actions > li')].map((node) => [
+          node.querySelector('span:nth-of-type(2)')?.textContent,
+          node.getAttribute('data-state'),
+        ]),
+      )`);
+      assert(actions.Execute === 'running', 'Execute action was not reconstructed as active');
+      const healthDimensions = await page.evaluate(
+        "[...document.querySelectorAll('.health-item h3')].map((node) => node.textContent)",
+      );
+      assert(healthDimensions.length === 4, 'Four explainable health dimensions were not rendered');
+      const rendererRequests = page
+        .eventsByMethod('Network.requestWillBeSent')
+        .map((event) => event.params?.request?.url)
+        .filter((url) => typeof url === 'string' && /^https?:/u.test(url));
+      assert(rendererRequests.length === 0, 'Renderer made an HTTP query during OTLP projection');
+      return {
+        runId: summary.runId,
+        workspaceId: summary.workspaceId,
+        changeId: summary.changeId,
+        trajectoryEvents: summary.trajectoryEvents,
+        lastSequence: summary.lastSequence,
+        otlpRequestCount: summary.requestCount,
+        observedPhases: phases,
+        observedBuildActions: actions,
+        actionSkill: 'repoctopus-build-execute',
+        augmentationSkill: 'tdd',
+        healthDimensions,
+        rendererHttpRequests: rendererRequests,
+        futurePhaseClaim: 'not-observed',
+      };
+    });
+  }
 
   await runCheck('single-instance', async () => {
     const second = startInstalled(executable, {

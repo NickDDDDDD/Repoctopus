@@ -68,6 +68,7 @@
     "package:desktop": "npm run desktop:assets && npm run build:desktop && electron-builder --config electron-builder.json --win nsis --x64 --publish never",
     "check:desktop-package": "node scripts/check-desktop-package.mjs",
     "test:desktop-package-e2e": "node scripts/windows-desktop-package-e2e.mjs",
+    "measure:desktop": "node scripts/measure-windows-desktop.mjs",
     "spec:validate": "openspec validate --all --strict",
     "pretest": "npm run build && npm run build:desktop",
     "verify": "npm run typecheck && npm run typecheck:desktop && npm run lint && npm run build && npm test && npm run check:generated && npm run check:brand && npm run check:architecture && npm run check:provenance && npm run check:dashboard-salvage && npm run spec:validate && npm run check:managed-execution-report"

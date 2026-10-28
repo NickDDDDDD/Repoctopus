@@ -8,6 +8,7 @@ import {
   type DesktopHostEvent,
 } from '../shared/host-protocol.js';
 import { ProjectionJournalStore } from './projection-journal-store.js';
+import { changeProjectionView } from '../../../domains/trajectory/projection.js';
 import {
   DesktopReceiverDiscovery,
   type DesktopReceiverDiscoveryHandle,
@@ -134,7 +135,7 @@ try {
     send({
       protocolVersion: DESKTOP_HOST_PROTOCOL_VERSION,
       type: 'projection-updated',
-      snapshot,
+      snapshot: changeProjectionView(snapshot),
       delta,
     });
   });
@@ -143,7 +144,7 @@ try {
     type: 'ready',
     snapshot: running.context.desktopApplication.snapshot(),
     receiver,
-    projection: running.context.desktopProjection.snapshot(),
+    projection: changeProjectionView(running.context.desktopProjection.snapshot()),
   });
 } catch (error) {
   send({

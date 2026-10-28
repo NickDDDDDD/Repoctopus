@@ -69,6 +69,21 @@ describe('Desktop Host process', () => {
         },
         attributes: {},
       };
+      const secondObservation: ObservationEnvelope = {
+        ...observation,
+        envelopeId: `sha256:${'3'.repeat(64)}`,
+        digest: `sha256:${'4'.repeat(64)}`,
+        observedAt: '2026-10-28T00:00:01.000Z',
+        eventType: 'skill.delivered',
+        identity: { eventId: 'desktop-event-2', runId: 'desktop-run-1', sequence: 2 },
+        correlation: {
+          ...observation.correlation,
+          workId: 'build.execute:desktop',
+          skillName: 'tdd',
+          skillRole: 'augmentation',
+        },
+        attributes: { skillState: 'delivered' },
+      };
       const projectionUpdate = nextMessage(child);
       const accepted = await fetch(`${connection.endpoint}/v1/logs`, {
         method: 'POST',
@@ -76,15 +91,21 @@ describe('Desktop Host process', () => {
           authorization: `Bearer ${connection.sessionToken}`,
           'content-type': 'application/json',
         },
-        body: encodeObservationOtlpJson([observation], 'log'),
+        body: encodeObservationOtlpJson([observation, secondObservation], 'log'),
       });
       expect(accepted.status).toBe(200);
       expect(await projectionUpdate).toMatchObject({
         type: 'projection-updated',
-        delta: { previousVersion: 0, version: 1, eventId: 'desktop-event-1' },
+        delta: { previousVersion: 1, version: 2, eventId: 'desktop-event-2' },
         snapshot: {
-          version: 1,
-          changes: [{ phase: 'build', buildAction: 'execute' }],
+          version: 2,
+          changes: [
+            {
+              phase: 'build',
+              buildAction: 'execute',
+              skills: [{ name: 'tdd', state: 'delivered' }],
+            },
+          ],
         },
       });
 
@@ -106,8 +127,14 @@ describe('Desktop Host process', () => {
         await expect(nextMessage(restarted)).resolves.toMatchObject({
           type: 'ready',
           projection: {
-            version: 1,
-            changes: [{ changeId: 'desktop-dashboard', buildAction: 'execute' }],
+            version: 2,
+            changes: [
+              {
+                changeId: 'desktop-dashboard',
+                buildAction: 'execute',
+                skills: [{ name: 'tdd', state: 'delivered' }],
+              },
+            ],
           },
         });
         const restartedExit = new Promise<void>((resolve) =>
