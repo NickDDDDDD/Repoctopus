@@ -144,7 +144,11 @@ function windowsSecurity(environment: NodeJS.ProcessEnv): DesktopDiscoverySecuri
           fields.length === 5 &&
           fields[0]?.toUpperCase() === 'TCP' &&
           fields[1] === expected &&
-          fields[3]?.toUpperCase() === 'LISTENING' &&
+          // Windows localizes the textual state column (for example, LISTENING
+          // is not emitted in English on every machine). A TCP listener is the
+          // only netstat row whose remote endpoint is the wildcard zero tuple;
+          // established connections on the same local port have a real peer.
+          fields[2] === '0.0.0.0:0' &&
           /^\d+$/u.test(fields[4] ?? '')
         ) {
           owners.add(Number(fields[4]));
