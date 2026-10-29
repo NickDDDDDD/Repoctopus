@@ -15,17 +15,17 @@
 
 ## 2. 重建 Launcher 深边界
 
-- [ ] 2.1 实现固定优先级目标解析，覆盖显式 override、源码 Product Root 和 Windows 安装协议，不把 Workspace 路径作为可执行来源。
+- [x] 2.1 实现固定优先级目标解析，覆盖显式 override、源码 Product Root 和 Windows 安装协议，不把 Workspace 路径作为可执行来源。
       **Blocked by:** 1.2, 1.3
       **Acceptance:** 表驱动测试覆盖每个来源、缺失 artifact、无 handler、非 Windows 和路径脱敏；等价输入产生相同 target kind
       **Verification:** 运行目标解析测试，并检查所有启动目标均为 executable + arguments 数组
       **Requirements:** desktop-observability-dashboard#Windows-开发-Run-自动激活单实例桌面应用
-- [ ] 2.2 将 Launcher 改为异步 process adapter，等待 `spawn` 或有界失败并捕获异步 error/timeout。
+- [x] 2.2 将 Launcher 改为异步 process adapter，等待 `spawn` 或有界失败并捕获异步 error/timeout。
       **Blocked by:** 2.1
       **Acceptance:** fake child process 证明同步 throw、异步 error、spawn、timeout 各映射一次且无未处理 error；安全 discovery 区分 started/activated；所有调用使用参数数组
       **Verification:** 运行 Launcher fake-process 与 instance-probe 测试，并在进程级测试中启用未处理 error 失败钩子
       **Requirements:** desktop-observability-dashboard#Windows-开发-Run-自动激活单实例桌面应用
-- [ ] 2.3 给 Project composition 注入稳定 Product Root，更新 plugin descriptor/source digest 和恢复兼容测试。
+- [x] 2.3 给 Project composition 注入稳定 Product Root，更新 plugin descriptor/source digest 和恢复兼容测试。
       **Blocked by:** 2.1
       **Acceptance:** composition identity 只绑定 Product Root 逻辑身份，不包含本机绝对路径；缺少或漂移配置 fail closed
       **Verification:** 运行 composition identity、plugin recovery 与路径脱敏测试
