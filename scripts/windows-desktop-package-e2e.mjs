@@ -27,6 +27,8 @@ const runtimeRunId =
 const checks = [];
 const startedAt = new Date().toISOString();
 let sandbox;
+let installRoot;
+let ownsProtocolRegistration = false;
 let trayProcess;
 let quitProcess;
 
@@ -119,6 +121,10 @@ function launchArgument(changeId, runId) {
   return `--repoctopus-launch=${encoded}`;
 }
 
+function launchUrl(changeId, runId) {
+  return `repoctopus://activate/${launchArgument(changeId, runId).slice('--repoctopus-launch='.length)}`;
+}
+
 async function writePreference(userData, closePreference) {
   const directory = path.join(userData, 'desktop');
   await mkdir(directory, { recursive: true });
@@ -135,10 +141,16 @@ function startInstalled(executable, options) {
       `--user-data-dir=${options.userData}`,
       `--remote-debugging-port=${options.debugPort}`,
       '--enable-logging=stderr',
-      launchArgument(options.changeId, options.runId),
+      options.transport === 'url'
+        ? launchUrl(options.changeId, options.runId)
+        : launchArgument(options.changeId, options.runId),
     ],
     {
       cwd: path.dirname(executable),
+      env: {
+        ...process.env,
+        REPOCTOPUS_DESKTOP_DISCOVERY_ROOT: path.join(options.userData, 'discovery'),
+      },
       windowsHide: true,
       stdio: ['ignore', 'pipe', 'pipe'],
     },
@@ -371,13 +383,31 @@ async function writeEvidence(status, diagnostic) {
 async function main() {
   assert(process.platform === 'win32' && process.arch === 'x64', 'Windows x64 is required');
   assert(await exists(installer), `Packaged installer is missing: ${installer}`);
+  const existingProtocol = await execute('reg.exe', [
+    'query',
+    'HKCU\\Software\\Classes\\repoctopus',
+  ]).then(
+    () => true,
+    () => false,
+  );
+  assert(!existingProtocol, 'Package E2E will not replace an existing Repoctopus protocol handler');
   sandbox = await mkdtemp(path.join(os.tmpdir(), 'repoctopus-installed-e2e-'));
-  const installRoot = path.join(sandbox, 'install');
+  installRoot = path.join(sandbox, 'install');
   const trayUserData = path.join(sandbox, 'tray-user-data');
 
   await runCheck('install-candidate', async () => {
+    ownsProtocolRegistration = true;
     await execute(installer, ['/S', `/D=${installRoot}`]);
     assert(await exists(path.join(installRoot, 'Repoctopus.exe')), 'Installed executable missing');
+    const registration = await execute('reg.exe', [
+      'query',
+      'HKCR\\repoctopus\\shell\\open\\command',
+      '/ve',
+    ]);
+    const normalized = registration.stdout.toLowerCase();
+    assert(normalized.includes('repoctopus.exe'), 'Installed protocol handler has no executable');
+    assert(normalized.includes('%1'), 'Installed protocol handler does not forward the URL');
+    return { protocolHandler: 'repoctopus' };
   });
   const executable = path.join(installRoot, 'Repoctopus.exe');
 
@@ -447,19 +477,16 @@ async function main() {
       const summary = JSON.parse(exported.stdout.trim());
       assert(summary.runId === runtimeRunId, 'Self-host exporter returned another Run');
       assert(summary.trajectoryEvents > 0, 'Self-host exporter observed no Trajectory events');
-      await waitFor(
-        async () => {
-          const selected = await page.evaluate(`(() => {
+      await waitFor(async () => {
+        const selected = await page.evaluate(`(() => {
             const button = [...document.querySelectorAll('button')].find((candidate) =>
               candidate.textContent?.includes('add-windows-desktop-dashboard'));
             if (!(button instanceof HTMLButtonElement)) return false;
             button.click();
             return true;
           })()`);
-          return selected ? true : null;
-        },
-        'self-hosted change navigation',
-      ).catch(async (error) => {
+        return selected ? true : null;
+      }, 'self-hosted change navigation').catch(async (error) => {
         const body = await page.evaluate('document.body.innerText');
         const state = await page.evaluate('window.repoctopusDesktop.currentState()');
         throw new Error(`${error.message}; body: ${body}; state: ${JSON.stringify(state)}`);
@@ -526,6 +553,7 @@ async function main() {
       debugPort,
       changeId: 'installed-e2e-secondary',
       runId: 'run-installed-e2e-secondary',
+      transport: 'url',
     });
     await waitForExit(second, 'secondary Repoctopus instance');
     await postOtlp(discovery, 'installed-e2e-secondary', 'run-installed-e2e-secondary');
@@ -546,6 +574,7 @@ async function main() {
       debugPort,
       changeId: 'installed-e2e-restored',
       runId: 'run-installed-e2e-restored',
+      transport: 'url',
     });
     await waitForExit(restore, 'tray restore activation');
     await postOtlp(discovery, 'installed-e2e-restored', 'run-installed-e2e-restored');
@@ -583,6 +612,12 @@ async function main() {
     assert(uninstaller, 'Repoctopus uninstaller is missing');
     await execute(uninstaller, ['/S']);
     await waitFor(async () => !(await exists(executable)), 'Installed executable removal');
+    await waitFor(async () =>
+      execute('reg.exe', ['query', 'HKCR\\repoctopus\\shell\\open\\command', '/ve']).then(
+        () => null,
+        () => true,
+      ),
+    );
     assert(await exists(trayUserData), 'Uninstall unexpectedly deleted user data');
   });
 }
@@ -599,5 +634,12 @@ try {
 } finally {
   await forceStop(trayProcess);
   await forceStop(quitProcess);
+  if (ownsProtocolRegistration) {
+    const uninstaller = installRoot ? await findUninstaller(installRoot).catch(() => null) : null;
+    if (uninstaller) await execute(uninstaller, ['/S']).catch(() => undefined);
+    await execute('reg.exe', ['delete', 'HKCU\\Software\\Classes\\repoctopus', '/f']).catch(
+      () => undefined,
+    );
+  }
   if (sandbox) await rm(sandbox, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 }

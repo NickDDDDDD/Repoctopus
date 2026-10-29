@@ -108,6 +108,8 @@ describe('Desktop versioned protocol', () => {
     );
     listener?.({}, [desktopLaunchContextArgument(context)], '.', {});
     expect(activate).toHaveBeenCalledWith(context);
+    listener?.({}, [desktopLaunchContextUrl(context)], '.', {});
+    expect(activate).toHaveBeenLastCalledWith(context);
     listener?.({}, ['--repoctopus-launch=not-base64'], '.', {});
     expect(activate).toHaveBeenLastCalledWith(null);
   });

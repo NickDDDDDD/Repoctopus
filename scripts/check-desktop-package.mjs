@@ -22,6 +22,19 @@ const required = [
   '/dist/desktop/resource-manifest.json',
   '/package.json',
 ];
+const builderConfiguration = JSON.parse(
+  await readFile(path.join(root, 'electron-builder.json'), 'utf8'),
+);
+const activationProtocol = builderConfiguration.protocols?.find(
+  (candidate) => candidate.name === 'Repoctopus Change Activation',
+);
+const schemes = activationProtocol?.schemes ?? [];
+if (!schemes.includes('repoctopus')) {
+  throw new Error('Desktop installer does not register the Repoctopus Change Activation protocol');
+}
+if (builderConfiguration.nsis?.include !== 'app/desktop/resources/installer.nsh') {
+  throw new Error('Desktop installer does not install the Windows protocol handler');
+}
 
 await Promise.all([
   access(asar),
