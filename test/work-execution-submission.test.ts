@@ -127,7 +127,7 @@ describe('Work execution Host submission identity', () => {
     Object.defineProperty(authority, 'ctx', {
       value: {
         runStore: {
-          commitGuarded: async <T>(
+          commitGuarded: <T>(
             _runId: string,
             reduce: (input: { state: RunState; trajectory: TrajectoryEvent[] }) => {
               state?: RunState;
@@ -138,16 +138,16 @@ describe('Work execution Host submission identity', () => {
             const reduced = reduce({ state, trajectory });
             if (reduced.state) state = reduced.state;
             if (reduced.event) trajectory = [...trajectory, reduced.event];
-            return reduced.value;
+            return Promise.resolve(reduced.value);
           },
-          loadRun: async () => state,
-          loadWorkflow: async () => ({}),
-          loadProjectSnapshot: async () => ({}),
-          loadTrajectory: async () => trajectory,
-          readTelemetryCursor: async () => ({ trajectoryOffset: trajectory.length }),
-          writeTelemetryCursor: async () => undefined,
+          loadRun: () => Promise.resolve(state),
+          loadWorkflow: () => Promise.resolve({}),
+          loadProjectSnapshot: () => Promise.resolve({}),
+          loadTrajectory: () => Promise.resolve(trajectory),
+          readTelemetryCursor: () => Promise.resolve({ trajectoryOffset: trajectory.length }),
+          writeTelemetryCursor: () => Promise.resolve(undefined),
         },
-        workflowTelemetry: { export: async () => undefined },
+        workflowTelemetry: { export: () => Promise.resolve(undefined) },
       },
     });
 
@@ -182,5 +182,92 @@ describe('Work execution Host submission identity', () => {
     await expect(
       authority.markHostCompleted(intent as never, outcome('changed candidate'), 'submission-1'),
     ).rejects.toThrow(/submission identity conflict/iu);
+  });
+
+  it('retains a submitted payload when Runtime processing fails transiently', async () => {
+    const intent = {
+      runId: 'run-processing-error',
+      workId: 'build.plan:processing-error',
+      attempt: 1,
+      checkEpoch: 9,
+      intentId: 'intent-processing-error',
+      claimToken: digest('a'),
+      inputDigest: digest('b'),
+    } as const;
+    const pendingSubmission = createWorkExecutionSubmission(
+      'submission-processing-error',
+      outcome(),
+    );
+    let state = {
+      runId: intent.runId,
+      status: 'running',
+      stateVersion: 1,
+      updatedAt: '2026-10-30T00:00:00.000Z',
+      composition: { compositionDigest: digest('c') },
+      changeLifecycle: {
+        checkEpoch: intent.checkEpoch,
+        currentWork: { workId: intent.workId },
+      },
+      workExecution: {
+        schemaVersion: 2,
+        workId: intent.workId,
+        attempt: intent.attempt,
+        checkEpoch: intent.checkEpoch,
+        intentId: intent.intentId,
+        claimToken: intent.claimToken,
+        inputDigest: intent.inputDigest,
+        packet: {
+          schemaVersion: 1,
+          packetId: digest('d'),
+          packetDigest: digest('2'),
+          contextDigest: digest('e'),
+        },
+        status: 'submitted',
+        continuation: 'execute',
+        pendingSubmission,
+        updatedAt: '2026-10-30T00:00:00.000Z',
+      },
+    } as unknown as RunState;
+    let trajectory: TrajectoryEvent[] = [];
+    const authority = Object.create(WorkExecutionAuthority.prototype) as WorkExecutionAuthority;
+    Object.defineProperty(authority, 'ctx', {
+      value: {
+        runStore: {
+          commitGuarded: <T>(
+            _runId: string,
+            reduce: (input: { state: RunState; trajectory: TrajectoryEvent[] }) => {
+              state?: RunState;
+              event?: TrajectoryEvent;
+              value: T;
+            },
+          ) => {
+            const reduced = reduce({ state, trajectory });
+            if (reduced.state) state = reduced.state;
+            if (reduced.event) trajectory = [...trajectory, reduced.event];
+            return Promise.resolve(reduced.value);
+          },
+          loadRun: () => Promise.resolve(state),
+          loadWorkflow: () => Promise.resolve({}),
+          loadProjectSnapshot: () => Promise.resolve({}),
+          loadTrajectory: () => Promise.resolve(trajectory),
+          readTelemetryCursor: () => Promise.resolve({ trajectoryOffset: trajectory.length }),
+          writeTelemetryCursor: () => Promise.resolve(undefined),
+        },
+        workflowTelemetry: { export: () => Promise.resolve(undefined) },
+      },
+    });
+
+    const retryable = await authority.rejectHostSubmission({
+      intent: intent as never,
+      reasonCode: 'outcome-processing-error',
+      diagnostic: 'task provider temporarily unavailable',
+    });
+
+    expect(retryable).toMatchObject({
+      status: 'submitted',
+      continuation: 'execute',
+      pendingSubmission: { submissionId: 'submission-processing-error' },
+      rejectedSubmissions: [],
+    });
   });
 });

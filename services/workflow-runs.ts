@@ -667,9 +667,7 @@ export class WorkflowRuns extends Service {
         if (!input.isolation) {
           throw new Error('Open approval requires current, branch, or worktree isolation');
         }
-        const target = state.trigger?.facts.targetBranch as
-          | { targetBranch?: unknown }
-          | undefined;
+        const target = state.trigger?.facts.targetBranch as { targetBranch?: unknown } | undefined;
         const intent = createExecutionWorkspaceIntent({
           workspaceId: lifecycle.identity.workspaceId,
           changeId: lifecycle.identity.changeId,
@@ -803,7 +801,10 @@ export class WorkflowRuns extends Service {
     };
   }
 
-  private async inspectPlanningSemantics(changeId: string, signal?: AbortSignal): Promise<{
+  private async inspectPlanningSemantics(
+    changeId: string,
+    signal?: AbortSignal,
+  ): Promise<{
     approved: boolean;
     digest: `sha256:${string}`;
     reason: string;
@@ -868,10 +869,9 @@ export class WorkflowRuns extends Service {
     return {
       actionSkill: await resolve(work.actionSkill.name),
       augmentationSkills: await Promise.all(
-        [
-          ...work.augmentationSkills.map((skill) => skill.name),
-          ...configuredAugmentationNames,
-        ].map((name) => resolve(name)),
+        [...work.augmentationSkills.map((skill) => skill.name), ...configuredAugmentationNames].map(
+          (name) => resolve(name),
+        ),
       ),
     };
   }
@@ -1601,17 +1601,16 @@ export class WorkflowRuns extends Service {
             if (
               lifecycle.phase === 'build' &&
               lifecycle.currentWork?.kind === 'build.plan' &&
-              current.workExecution?.status === 'outcome' &&
-              current.workExecution.actionOutcome?.status === 'succeeded'
+              current.workExecution?.status === 'submitted' &&
+              current.workExecution.pendingSubmission?.outcome.status === 'succeeded'
             ) {
               const protocol = lifecycle.buildProtocol;
               const configuration = protocol?.configuration;
-              const hostOutcome = current.workExecution.hostOutcome;
+              const hostOutcome = current.workExecution.pendingSubmission.outcome;
               const result = hostOutcome?.result;
               if (!protocol || !configuration || protocol.currentAction !== 'plan') {
                 throw new Error('Build Plan Outcome has no frozen configuration');
               }
-              if (!hostOutcome) throw new Error('Build Plan Host Outcome is missing');
               const invocationHost = current.workExecution.hostInvocation?.host;
               if (!invocationHost || invocationHost.id !== hostOutcome.hostId) {
                 throw new Error('Build Plan Host does not match the persisted invocation');
@@ -1674,38 +1673,96 @@ export class WorkflowRuns extends Service {
                 projectSnapshot,
                 configuration,
               );
+              const rejectSubmission = async (
+                reasonCode: 'output-invalid' | 'outcome-rejected' | 'outcome-processing-error',
+                diagnostic: string,
+              ) => {
+                const intent = await this.ctx.workExecutionAuthority.loadIntent(runId);
+                await this.ctx.workExecutionAuthority.rejectHostSubmission({
+                  intent,
+                  reasonCode,
+                  diagnostic,
+                });
+                return {
+                  value: await this.coordinator.status(runId),
+                  diagnostics: [
+                    {
+                      level: 'warning' as const,
+                      code:
+                        reasonCode === 'outcome-processing-error'
+                          ? 'change.build-plan-outcome-processing-error'
+                          : 'change.build-plan-outcome-rejected',
+                      message: diagnostic,
+                    },
+                  ],
+                };
+              };
               if (result?.kind !== 'build-plan-candidate') {
-                throw new Error('Build Plan Host must return a structured build-plan-candidate');
+                return rejectSubmission(
+                  'output-invalid',
+                  'Build Plan Host must return a structured build-plan-candidate',
+                );
               }
-              const taskSet = await this.ctx.specification.tasks(
-                lifecycle.identity.changeId,
-                signal,
-              );
-              const plan = createBuildPlan({
-                runId,
-                revision: (protocol.plan?.revision ?? 0) + 1,
-                configuration,
-                planningDigest: lifecycle.planningDigest,
-                tasks: taskSet,
-                candidate: { packages: result.packages },
-              });
+              let taskSet;
+              try {
+                taskSet = await this.ctx.specification.tasks(lifecycle.identity.changeId, signal);
+              } catch (error) {
+                return rejectSubmission(
+                  'outcome-processing-error',
+                  `Build Plan Task authority failed: ${error instanceof Error ? error.message : String(error)}`,
+                );
+              }
+              let plan;
+              try {
+                plan = createBuildPlan({
+                  runId,
+                  revision: (protocol.plan?.revision ?? 0) + 1,
+                  configuration,
+                  planningDigest: lifecycle.planningDigest,
+                  tasks: taskSet,
+                  candidate: { packages: result.packages },
+                });
+              } catch (error) {
+                return rejectSubmission(
+                  'outcome-rejected',
+                  `Build Plan candidate rejected: ${error instanceof Error ? error.message : String(error)}`,
+                );
+              }
               const planValidation = validateBuildPlan({ plan, configuration, tasks: taskSet });
               if (!planValidation.accepted) {
-                throw new Error(`Build Plan rejected: ${planValidation.diagnostics.join('; ')}`);
+                return rejectSubmission(
+                  'outcome-rejected',
+                  `Build Plan rejected: ${planValidation.diagnostics.join('; ')}`,
+                );
               }
               const validator = this.ctx.lifecycleValidators.resolve(
                 lifecycle.currentWork.validatorProfile.id,
               );
-              const validation = await validator.validate({
-                profileId: lifecycle.currentWork.validatorProfile.id,
-                work: lifecycle.currentWork,
-                fact: planValidation,
-              });
-              if (!validation.accepted) {
-                throw new Error(`Build Plan Validator rejected: ${validation.diagnostic}`);
+              let validation;
+              try {
+                validation = await validator.validate({
+                  profileId: lifecycle.currentWork.validatorProfile.id,
+                  work: lifecycle.currentWork,
+                  fact: planValidation,
+                });
+              } catch (error) {
+                return rejectSubmission(
+                  'outcome-processing-error',
+                  `Build Plan Validator failed: ${error instanceof Error ? error.message : String(error)}`,
+                );
               }
+              if (!validation.accepted) {
+                return rejectSubmission(
+                  'outcome-rejected',
+                  `Build Plan Validator rejected: ${validation.diagnostic}`,
+                );
+              }
+              const intent = await this.ctx.workExecutionAuthority.loadIntent(runId);
+              await this.ctx.workDispatcher.acceptOutcome(
+                this.ctx.workDispatcher.outcome(intent, 'succeeded', hostOutcome.summary),
+              );
               await this.ctx.workExecutionAuthority.markValidated({
-                intent: await this.ctx.workExecutionAuthority.loadIntent(runId),
+                intent,
                 validatorId: lifecycle.currentWork.validatorProfile.id,
                 continuation: 'execute',
               });
@@ -1713,7 +1770,11 @@ export class WorkflowRuns extends Service {
                 kind: 'build-plan-accepted',
                 plan,
               });
-              const evidence = createPlanEvidence({ plan, configuration, validation: planValidation });
+              const evidence = createPlanEvidence({
+                plan,
+                configuration,
+                validation: planValidation,
+              });
               if (evidence.risk.level === 'high') {
                 const requestId = `plan:${evidence.validationDigest.slice(-24)}`;
                 const awaiting = await this.coordinator.acceptChangeObservation(runId, {
@@ -1830,7 +1891,9 @@ export class WorkflowRuns extends Service {
               const implementerExecutionIds = (
                 current.workExecution.hostOutcome?.delegationReceipts ?? []
               )
-                .filter((receipt) => receipt.role === 'implementer' && receipt.status === 'succeeded')
+                .filter(
+                  (receipt) => receipt.role === 'implementer' && receipt.status === 'succeeded',
+                )
                 .map((receipt) => receipt.executionId)
                 .sort();
               const implementationExecutionId =
@@ -1872,7 +1935,9 @@ export class WorkflowRuns extends Service {
                 completion.packageId,
               ]);
               for (const task of lifecycle.tasks ?? []) {
-                const required = plan.packages.filter((entry) => entry.taskIds.includes(task.taskId));
+                const required = plan.packages.filter((entry) =>
+                  entry.taskIds.includes(task.taskId),
+                );
                 if (
                   task.status === 'pending' &&
                   required.length > 0 &&
@@ -1986,7 +2051,9 @@ export class WorkflowRuns extends Service {
                 throw new Error('Build Check Host must return a structured check candidate');
               }
               if (result.reviewerExecutionId !== hostOutcome.invocationId) {
-                throw new Error('Build Check reviewer identity does not match the managed invocation');
+                throw new Error(
+                  'Build Check reviewer identity does not match the managed invocation',
+                );
               }
               if (
                 protocol.packageCompletions.some(
@@ -2002,7 +2069,9 @@ export class WorkflowRuns extends Service {
               ) {
                 throw new Error('Build Check does not cover every required package');
               }
-              const expectedTasks = [...new Set(plan.packages.flatMap((entry) => entry.taskIds))].sort();
+              const expectedTasks = [
+                ...new Set(plan.packages.flatMap((entry) => entry.taskIds)),
+              ].sort();
               if (
                 canonicalJson([...result.acceptedTaskIds].sort()) !== canonicalJson(expectedTasks)
               ) {
@@ -2251,7 +2320,8 @@ export class WorkflowRuns extends Service {
                 repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
               });
               const planningDigest =
-                assessment.snapshot?.planningManifestDigest ?? assessment.validation.validationDigest;
+                assessment.snapshot?.planningManifestDigest ??
+                assessment.validation.validationDigest;
               build = {
                 ...initial,
                 protocol: createBuildProtocolState({

@@ -21,7 +21,8 @@ function boundedText(value: string, label: string, maximum: number): string {
 }
 
 function payloadDigest(outcome: WorkExecutionHostOutcome): `sha256:${string}` {
-  const { completedAt: _completedAt, ...payload } = outcome;
+  const { completedAt, ...payload } = outcome;
+  void completedAt;
   return `sha256:${createHash('sha256').update(canonicalJson(payload)).digest('hex')}`;
 }
 
