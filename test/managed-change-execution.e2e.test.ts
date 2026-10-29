@@ -566,6 +566,23 @@ describe('managed Change execution production composition', () => {
               .map((layer) => layer.digest),
             result: correctedPlanResult,
           });
+          const planCoordinator = Reflect.get(application.context.workflowRuns, 'coordinator') as {
+            acceptChangeObservation: (...args: unknown[]) => Promise<unknown>;
+          };
+          const planProjectionInterruption = vi
+            .spyOn(planCoordinator, 'acceptChangeObservation')
+            .mockRejectedValueOnce(
+              new Error('simulated interruption after Plan Outcome validation'),
+            );
+          await expect(next()).rejects.toThrow(
+            'simulated interruption after Plan Outcome validation',
+          );
+          planProjectionInterruption.mockRestore();
+          expect((await status()).state.workExecution).toMatchObject({
+            workId: planInvocation.packet.work.workId,
+            status: 'validated',
+            acceptedSubmission: { submissionId: 'corrected-build-plan-1' },
+          });
           afterPlanValidation = await next();
           const accepted = await status();
           expect(accepted.state.workExecution).toMatchObject({
@@ -684,6 +701,23 @@ describe('managed Change execution production composition', () => {
               .filter((layer) => ['action-skill', 'augmentation-skill'].includes(layer.kind))
               .map((layer) => layer.digest),
             result: correctedCheckResult,
+          });
+          const checkCoordinator = Reflect.get(application.context.workflowRuns, 'coordinator') as {
+            acceptChangeObservation: (...args: unknown[]) => Promise<unknown>;
+          };
+          const checkProjectionInterruption = vi
+            .spyOn(checkCoordinator, 'acceptChangeObservation')
+            .mockRejectedValueOnce(
+              new Error('simulated interruption after Check Outcome validation'),
+            );
+          await expect(next()).rejects.toThrow(
+            'simulated interruption after Check Outcome validation',
+          );
+          checkProjectionInterruption.mockRestore();
+          expect((await status()).state.workExecution).toMatchObject({
+            workId: checkInvocation.packet.work.workId,
+            status: 'validated',
+            acceptedSubmission: { submissionId: 'corrected-build-check-1' },
           });
           afterCheck = await next();
           const accepted = await status();

@@ -1750,20 +1750,29 @@ export class WorkflowRuns extends Service {
               });
               return { ...proposed, value: await this.coordinator.status(runId) };
             }
+            const planExecution = current.workExecution;
+            const planHostOutcome =
+              planExecution?.status === 'submitted'
+                ? planExecution.pendingSubmission?.outcome
+                : planExecution?.status === 'validated' &&
+                    planExecution.validatorId === lifecycle.currentWork?.validatorProfile.id &&
+                    planExecution.actionOutcome?.status === 'succeeded' &&
+                    planExecution.receiptId
+                  ? planExecution.acceptedSubmission?.outcome
+                  : undefined;
             if (
               lifecycle.phase === 'build' &&
               lifecycle.currentWork?.kind === 'build.plan' &&
-              current.workExecution?.status === 'submitted' &&
-              current.workExecution.pendingSubmission?.outcome.status === 'succeeded'
+              planHostOutcome?.status === 'succeeded'
             ) {
               const protocol = lifecycle.buildProtocol;
               const configuration = protocol?.configuration;
-              const hostOutcome = current.workExecution.pendingSubmission.outcome;
+              const hostOutcome = planHostOutcome;
               const result = hostOutcome?.result;
               if (!protocol || !configuration || protocol.currentAction !== 'plan') {
                 throw new Error('Build Plan Outcome has no frozen configuration');
               }
-              const invocationHost = current.workExecution.hostInvocation?.host;
+              const invocationHost = planExecution?.hostInvocation?.host;
               if (!invocationHost || invocationHost.id !== hostOutcome.hostId) {
                 throw new Error('Build Plan Host does not match the persisted invocation');
               }
@@ -1909,15 +1918,17 @@ export class WorkflowRuns extends Service {
                   `Build Plan Validator rejected: ${validation.diagnostic}`,
                 );
               }
-              const intent = await this.ctx.workExecutionAuthority.loadIntent(runId);
-              await this.ctx.workDispatcher.acceptOutcome(
-                this.ctx.workDispatcher.outcome(intent, 'succeeded', hostOutcome.summary),
-              );
-              await this.ctx.workExecutionAuthority.markValidated({
-                intent,
-                validatorId: lifecycle.currentWork.validatorProfile.id,
-                continuation: 'execute',
-              });
+              if (planExecution?.status === 'submitted') {
+                const intent = await this.ctx.workExecutionAuthority.loadIntent(runId);
+                await this.ctx.workDispatcher.acceptOutcome(
+                  this.ctx.workDispatcher.outcome(intent, 'succeeded', hostOutcome.summary),
+                );
+                await this.ctx.workExecutionAuthority.markValidated({
+                  intent,
+                  validatorId: lifecycle.currentWork.validatorProfile.id,
+                  continuation: 'execute',
+                });
+              }
               const planned = await this.coordinator.acceptChangeObservation(runId, {
                 kind: 'build-plan-accepted',
                 plan,
@@ -2292,21 +2303,30 @@ export class WorkflowRuns extends Service {
                 'Legacy Build Check Outcome is valid under current deterministic checks, so its prior stuck state cannot be reproduced',
               );
             }
+            const checkExecution = current.workExecution;
+            const checkHostOutcome =
+              checkExecution?.status === 'submitted'
+                ? checkExecution.pendingSubmission?.outcome
+                : checkExecution?.status === 'validated' &&
+                    checkExecution.validatorId === lifecycle.currentWork?.validatorProfile.id &&
+                    checkExecution.actionOutcome?.status === 'succeeded' &&
+                    checkExecution.receiptId
+                  ? checkExecution.acceptedSubmission?.outcome
+                  : undefined;
             if (
               lifecycle.phase === 'build' &&
               lifecycle.currentWork?.kind === 'build.check' &&
-              current.workExecution?.status === 'submitted' &&
-              current.workExecution.pendingSubmission?.outcome.status === 'succeeded'
+              checkHostOutcome?.status === 'succeeded'
             ) {
               const protocol = lifecycle.buildProtocol;
               const configuration = protocol?.configuration;
               const plan = protocol?.plan;
-              const hostOutcome = current.workExecution.pendingSubmission.outcome;
+              const hostOutcome = checkHostOutcome;
               const result = hostOutcome?.result;
               if (!protocol || !configuration || !plan || !hostOutcome) {
                 throw new Error('Build Check Outcome has no current Plan');
               }
-              const invocationHost = current.workExecution.hostInvocation?.host;
+              const invocationHost = checkExecution?.hostInvocation?.host;
               if (!invocationHost || invocationHost.id !== hostOutcome.hostId) {
                 throw new Error('Build Check Host does not match the persisted invocation');
               }
@@ -2486,15 +2506,17 @@ export class WorkflowRuns extends Service {
                   `Build Check Validator rejected: ${validation.diagnostic}`,
                 );
               }
-              const intent = await this.ctx.workExecutionAuthority.loadIntent(runId);
-              await this.ctx.workDispatcher.acceptOutcome(
-                this.ctx.workDispatcher.outcome(intent, 'succeeded', hostOutcome.summary),
-              );
-              await this.ctx.workExecutionAuthority.markValidated({
-                intent,
-                validatorId: lifecycle.currentWork.validatorProfile.id,
-                continuation: 'execute',
-              });
+              if (checkExecution?.status === 'submitted') {
+                const intent = await this.ctx.workExecutionAuthority.loadIntent(runId);
+                await this.ctx.workDispatcher.acceptOutcome(
+                  this.ctx.workDispatcher.outcome(intent, 'succeeded', hostOutcome.summary),
+                );
+                await this.ctx.workExecutionAuthority.markValidated({
+                  intent,
+                  validatorId: lifecycle.currentWork.validatorProfile.id,
+                  continuation: 'execute',
+                });
+              }
               if (!checkEvidence.accepted) {
                 const planningFinding = checkEvidence.findings.find(
                   (finding) => finding.classification === 'planning',
