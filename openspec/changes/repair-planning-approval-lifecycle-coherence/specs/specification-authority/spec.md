@@ -4,7 +4,7 @@
 
 ### Requirement: Later phase 必须只读观察并在副作用前收敛规划授权
 
-Build、Verify 和 Archive 中的 planning authority 检查 MUST 只读观察当前 Provider planning semantic digest、strict validation 与已有 approval identity，不得在 lifecycle transition 之前创建或刷新 Human Decision request。若观察结果不再授权当前 lifecycle，Runtime MUST 在任何 Specification Closure、Git push、MR 创建或其他 Archive 副作用前提交受保护的 Design 恢复；只有进入 Design gate 后才能刷新 approval proposal。Status、Dashboard 和其他查询 MUST 保持只读。
+Build、Verify 和 Archive 中的 planning authority 检查 MUST 通过 Specification Planning 权威模块的只读接口观察当前 Provider planning semantic digest、strict validation 与已有 approval identity，不得由编排层拼装 Store 内部规则，也不得在 lifecycle transition 之前创建或刷新 Human Decision request。若观察结果不再授权当前 lifecycle，Runtime MUST 返回受限的 `semantic | approval-authority` 分类，并在任何 Specification Closure、Git push、MR 创建或其他 Archive 副作用前提交受保护的 Design 恢复；只有进入 Design gate 后才能刷新 approval proposal。Status、Dashboard 和其他查询 MUST 保持只读。
 
 #### Scenario: Build pull 发现语义变化
 

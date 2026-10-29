@@ -21,14 +21,14 @@
       **Requirements:** managed-work-execution#只有匹配当前-lifecycle-work-的-execution-checkpoint-才可续行
 - [ ] 2.3 为遗留 torn state 增加只读 recovery 防线，优先投影 lifecycle current Work，不加载或续行旧 intent。
       **Blocked by:** 2.2
-      **Acceptance:** 冷启动夹具返回新 Design Work 的 `work-unclaimed` 或 `transition-pending`，绝不返回旧 Build `validator-pending`
+      **Acceptance:** 冷启动夹具的只读 status 返回新 Design Work 的 `checkpoint-superseded` 投影且不写 Store；下一次 `run next/resume` 在 claim 前用 CAS 退役旧 checkpoint，重复 pull 不产生重复事件
       **Requirements:** managed-work-execution#只有匹配当前-lifecycle-work-的-execution-checkpoint-才可续行
 
 ## 3. 让规划授权在受保护入口收敛
 
-- [ ] 3.1 抽取 later-phase Planning Authority Observation，严格读取 Provider semantic digest、validation 与当前 approval，不刷新 approval proposal。
+- [ ] 3.1 在 `SpecificationPlanning` 深模块上增加 later-phase Planning Authority Observation，严格读取 Provider semantic digest、validation 与当前 approval，不刷新 approval proposal，并返回受限 invalidation kind/reason code。
       **Blocked by:** 2.1
-      **Acceptance:** Build/Verify/Archive 观察不写 approval Store；只有 Design gate 可创建或刷新 Human Decision request
+      **Acceptance:** Build/Verify/Archive 观察不写 approval Store且调用者无需解释 Store 内部结构；只有 Design gate 可创建或刷新 Human Decision request
       **Requirements:** specification-authority#later-phase-必须只读观察并在副作用前收敛规划授权
 - [ ] 3.2 在 Build/Verify pull 入口发现语义漂移时创建 Design Work并提交单次 invalidation observation，移除现有先 `assess()` 后 transition 的顺序。
       **Blocked by:** 3.1
@@ -43,7 +43,7 @@
 
 - [ ] 4.1 为 planning invalidation 与 execution retirement 增加 trajectory/OTLP 事实及低基数契约测试。
       **Blocked by:** 2.2, 3.3
-      **Acceptance:** trace 可关联 from/to phase、旧/新 epoch 与失效类型；Metric label 不含 digest、路径、自由文本或 run/work identity
+      **Acceptance:** `change.lifecycle.transitioned` 与 `recovery.reconciled` trace 可关联 from/to phase、旧/新 epoch 与失效类型；planning recovery counter 的 label 不含 digest、路径、自由文本或 run/work identity
       **Requirements:** development-telemetry#规划恢复必须上报权威失效与-checkpoint-退役事实
 - [ ] 4.2 增加跨进程重启和端到端测试，覆盖 Archive 故障、Desktop 风格旧 continuation、重复恢复、重新批准与继续执行。
       **Blocked by:** 2.3, 4.1

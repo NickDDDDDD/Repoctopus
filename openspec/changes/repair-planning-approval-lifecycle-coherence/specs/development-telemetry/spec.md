@@ -4,7 +4,7 @@
 
 ### Requirement: 规划恢复必须上报权威失效与 checkpoint 退役事实
 
-Runtime MUST 为 planning authority invalidation、lifecycle Design recovery 和 execution checkpoint retirement 记录可关联的 trajectory 与 OTLP 事实，使团队能够区分语义漂移、批准授权失效、原子恢复成功和遗留 torn checkpoint。Trace MAY 携带受控 identity 关联，Metric label MUST 只使用 phase、work kind、invalidation kind、continuation reason 与布尔结果等低基数字段，不得包含 digest、路径、自由文本、runId、workId、changeId 或个人身份。
+Runtime MUST 为 planning authority invalidation、lifecycle Design recovery 和 execution checkpoint retirement 记录可关联的 trajectory 与 OTLP 事实，使团队能够区分语义漂移、批准授权失效、原子恢复成功和遗留 torn checkpoint。正常 lifecycle 恢复 MUST 绑定 `change.lifecycle.transitioned`，遗留状态收敛 MUST 绑定幂等 `recovery.reconciled`；Trace MAY 携带受控 identity 关联，Metric label MUST 只使用 phase、work kind、invalidation kind、continuation reason 与布尔结果等低基数字段，不得包含 digest、路径、自由文本、runId、workId、changeId 或个人身份。
 
 #### Scenario: Archive 在副作用前回到 Design
 

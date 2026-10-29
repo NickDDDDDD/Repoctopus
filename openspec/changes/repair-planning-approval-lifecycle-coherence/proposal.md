@@ -15,7 +15,7 @@ Comet 0.5.1 的成熟恢复语义是：修订命令绑定当前 revision，阶�
 - 回到 Design 时在一次 Run CAS 中同时发布 Design phase、替代 `specification.plan` Work、新 `checkEpoch`、下游证据失效和旧 execution checkpoint 退役。
 - `workExecution` 只有在 `workId` 与 `checkEpoch` 同时匹配 lifecycle current Work 时才可作为当前 checkpoint 或 continuation；历史事实继续保存在 trajectory。
 - Archive 在规格关闭、Git 发布或 MR 创建前发现漂移时返回显式 `planning-revision-required`，而不是只抛出缺少批准。
-- status/Dashboard 保持只读；旧 checkpoint 或跨 Store 中断由下一次 Runtime pull 幂等收敛，不由查询偷偷改变 phase。
+- status/Dashboard 保持只读并只投影 lifecycle 当前 Work；旧 checkpoint 或跨 Store 中断由下一次 `run next/resume` 受保护 pull 通过 CAS 幂等退役，不由查询偷偷改变 phase，也不让后续 claim 撞上遗留 checkpoint。
 - 增加状态机、Service、Archive、冷启动恢复和 OTLP 回归测试，并用两个真实故障形态作为验收夹具。
 
 ## Capabilities
@@ -33,7 +33,7 @@ Comet 0.5.1 的成熟恢复语义是：修订命令绑定当前 revision，阶�
 
 ## Impact
 
-- 主要影响 `domains/change-lifecycle`、`domains/work-execution`、`domains/runtime`、`services/workflow-runs`、`services/work-execution-authority`、Archive 命令路径、RunStore/trajectory 投影与相关测试。
+- 主要影响 `domains/change-lifecycle`、`domains/work-execution`、`domains/runtime`、`services/specification-planning`、`services/workflow-runs`、`services/work-execution-authority`、Archive 命令路径、RunStore/trajectory 投影与相关测试。
 - 不增加 lifecycle generation、后台 daemon、Webhook、轮询、第二套 approval phase 或第五份 OpenSpec 工件。
 - Comet 仅作为恢复不变量和 CAS 边界参考，不复制其单仓 Classic 命令或产品目录，不产生新的许可证影响。
 

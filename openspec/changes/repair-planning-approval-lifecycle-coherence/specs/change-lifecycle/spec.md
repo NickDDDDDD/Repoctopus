@@ -4,7 +4,7 @@
 
 ### Requirement: 规划授权失效必须原子恢复 Design checkpoint
 
-当 Build、Verify 或尚未发生不可逆副作用的 Archive 观察到当前 Specification Provider 的规划语义或 trusted Design approval 不再授权 lifecycle 的 `planningDigest` 时，Runtime MUST 通过一个受保护 transition 回到 Design。该 transition MUST 在同一次权威 Run 提交中设置新的 `specification.plan` Work 与 `checkEpoch`，清除旧 Tasks、Build Protocol、Verification、Archive 输入和未完成 Closure，并退役不匹配的新旧 execution checkpoint；Runtime MUST NOT 暂停在缺少当前 Work 的 Design 中间态、复用旧 approval、创建第二个 Run 或要求手改 Store。
+当 Build、Verify 或尚未发生不可逆副作用的 Archive 观察到当前 Specification Provider 的规划语义或 trusted Design approval 不再授权 lifecycle 的 `planningDigest` 时，Runtime MUST 通过一个带 `semantic | approval-authority` 分类的受保护 transition 回到 Design。该 transition MUST 在同一次权威 Run 提交中设置新的 `specification.plan` Work 与 `checkEpoch`，清除旧 Tasks、Build Protocol、Verification、Archive 输入和未完成 Closure，并退役不匹配的新旧 execution checkpoint；Runtime MUST NOT 暂停在缺少当前 Work 的 Design 中间态、复用旧 approval、创建第二个 Run 或要求手改 Store。
 
 #### Scenario: Verify 收尾提交改变规划语义
 
