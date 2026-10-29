@@ -769,6 +769,11 @@ const definitions: readonly BuiltinDefinition[] = [
       stateSchemas: {},
       compatibleImplementations: [
         {
+          codeDigest: 'sha256:311ff8ae5f4902ff4e2a22d56faf865ca12c03cd233f1b2163f58ce0df12b405',
+          descriptorDigest:
+            'sha256:d2230ef60cc46c55552629e327e808860afb666496758edc2e9a8d5c60def360',
+        },
+        {
           codeDigest: 'sha256:57b06d72816f137c436f7081274771bc7331ce4850d0a9b117f76eb4a4c06390',
           descriptorDigest:
             'sha256:b392a5160f3e93ea4fc1971e17a390fcc3e9c94d3b6babcc5d309a1d97c3690f',
@@ -823,6 +828,11 @@ const definitions: readonly BuiltinDefinition[] = [
       stateSchemas: {},
       compatibleImplementations: [
         {
+          codeDigest: 'sha256:fc23d1df370582670c3c7f62551a15f995d3e5dbe8976f9ddff14e27832c8708',
+          descriptorDigest:
+            'sha256:a62254ab51973d2845fd0d9f79753ed9e02bb2433a839b7e345de5f2f8dff3f0',
+        },
+        {
           codeDigest: 'sha256:839b768c34ff83b40051dc26b1b71d0fbc2cbff9701113034047bf6e45abc209',
           descriptorDigest:
             'sha256:e7778ae3f8f2e6dbb0442ff42c5dc7e275512276258c809ff893668af6b84044',
@@ -874,6 +884,11 @@ const definitions: readonly BuiltinDefinition[] = [
       permissions: [],
       stateSchemas: {},
       compatibleImplementations: [
+        {
+          codeDigest: 'sha256:64f3481013b1670a5d0ccd60017723194422126ef93e3e24faaf364d612c916c',
+          descriptorDigest:
+            'sha256:25bf2e95c93ff2dbdc5bb3bb727a70d33df9e94a768a9d644f2bebdc32998319',
+        },
         {
           codeDigest: 'sha256:1ae35c29ff680a1644e86e62c77d5eb9c90ae3ad6fde7b1657b2ddda5bb55820',
           descriptorDigest:
@@ -1110,6 +1125,16 @@ const definitions: readonly BuiltinDefinition[] = [
       permissions: [],
       stateSchemas: { run: '1' },
       compatibleImplementations: [
+        {
+          codeDigest: 'sha256:537f2630f9a6d7ff501858d05ff4dfee463759a21f8f8250ea24544addb4dff7',
+          descriptorDigest:
+            'sha256:fdd5bbe7e910529415cb761edc3b6b5eea66be67a7729063ba0fb7d06ffab2be',
+        },
+        {
+          codeDigest: 'sha256:93619fc185149e164b96a57ceac3752eec8b6a53f6d0488184d7a955be29db9e',
+          descriptorDigest:
+            'sha256:0a2a63a5a5f0e75f08170daf62ea488d25d3b0b420fa8992db814860d8e12f8c',
+        },
         {
           codeDigest: 'sha256:d5485e4633c9fc310f2fcc58157b38f229ddc8d825a9cb522bacfe35c8bcf244',
           descriptorDigest:

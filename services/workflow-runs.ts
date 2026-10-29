@@ -1281,6 +1281,31 @@ export class WorkflowRuns extends Service {
         if (state.changeLifecycle) {
           const work = state.changeLifecycle.currentWork;
           const execution = state.workExecution;
+          if (
+            work &&
+            execution?.workId === work.workId &&
+            execution.status === 'submitted' &&
+            execution.pendingSubmission?.outcome.status === 'failed'
+          ) {
+            const intent = await this.ctx.workExecutionAuthority.loadIntent(runId);
+            await this.ctx.workDispatcher.acceptOutcome(
+              this.ctx.workDispatcher.outcome(
+                intent,
+                'failed',
+                execution.pendingSubmission.outcome.summary,
+              ),
+            );
+            return {
+              value: await this.coordinator.status(runId),
+              diagnostics: [
+                {
+                  level: 'warning',
+                  code: 'change.work-failure-accepted',
+                  message: `Accepted the failed ${work.kind} submission for Runtime recovery`,
+                },
+              ],
+            };
+          }
           const designFinding = execution?.hostOutcome?.findings?.find(
             (finding) =>
               finding.kind === 'design_assumption_invalid' ||
@@ -2164,25 +2189,35 @@ export class WorkflowRuns extends Service {
               await this.ctx.workExecutionAuthority.recordWorkCreated(runId, nextWork);
               return { ...evidenced, value: await this.coordinator.status(runId) };
             }
+            const executeExecution = current.workExecution;
+            const executeHostOutcome =
+              executeExecution?.status === 'submitted'
+                ? executeExecution.pendingSubmission?.outcome
+                : executeExecution?.status === 'validated' &&
+                    executeExecution.validatorId ===
+                      lifecycle.currentWork?.validatorProfile.id &&
+                    executeExecution.actionOutcome?.status === 'succeeded' &&
+                    executeExecution.receiptId
+                  ? executeExecution.acceptedSubmission?.outcome
+                  : executeExecution?.status === 'outcome' &&
+                      executeExecution.actionOutcome?.status === 'succeeded'
+                    ? executeExecution.hostOutcome
+                    : undefined;
             if (
               lifecycle.phase === 'build' &&
               lifecycle.currentWork?.kind === 'build.execute' &&
-              current.workExecution?.status === 'outcome' &&
-              current.workExecution.actionOutcome?.status === 'succeeded'
+              executeHostOutcome?.status === 'succeeded'
             ) {
               const protocol = lifecycle.buildProtocol;
               const configuration = protocol?.configuration;
               const plan = protocol?.plan;
-              const result = current.workExecution.hostOutcome?.result;
-              const invocationId = current.workExecution.hostOutcome?.invocationId;
+              const result = executeHostOutcome.result;
+              const invocationId = executeHostOutcome.invocationId;
               if (!protocol || !configuration || !plan || !invocationId) {
                 throw new Error('Build Execute Outcome has no current Plan');
               }
-              const invocationHost = current.workExecution.hostInvocation?.host;
-              if (
-                !invocationHost ||
-                invocationHost.id !== current.workExecution.hostOutcome!.hostId
-              ) {
+              const invocationHost = executeExecution?.hostInvocation?.host;
+              if (!invocationHost || invocationHost.id !== executeHostOutcome.hostId) {
                 throw new Error('Build Execute Host does not match the persisted invocation');
               }
               this.assertFrozenBuildHost(configuration, invocationHost);
@@ -2203,7 +2238,7 @@ export class WorkflowRuns extends Service {
               );
               if (!workPackage) throw new Error('Build Execute package is absent from the Plan');
               const implementerExecutionIds = (
-                current.workExecution.hostOutcome?.delegationReceipts ?? []
+                executeHostOutcome.delegationReceipts ?? []
               )
                 .filter(
                   (receipt) => receipt.role === 'implementer' && receipt.status === 'succeeded',
@@ -2238,6 +2273,12 @@ export class WorkflowRuns extends Service {
               });
               if (!validation.accepted) {
                 throw new Error(`Build Package Validator rejected: ${validation.diagnostic}`);
+              }
+              if (executeExecution?.status === 'submitted') {
+                const intent = await this.ctx.workExecutionAuthority.loadIntent(runId);
+                await this.ctx.workDispatcher.acceptOutcome(
+                  this.ctx.workDispatcher.outcome(intent, 'succeeded', executeHostOutcome.summary),
+                );
               }
               await this.ctx.workExecutionAuthority.markValidated({
                 intent: await this.ctx.workExecutionAuthority.loadIntent(runId),
