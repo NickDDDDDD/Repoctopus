@@ -211,6 +211,11 @@ export interface HumanDecisionWaitCondition extends WaitConditionBase {
   kind: 'human-decision';
   requestId: string;
   proposalDigest: `sha256:${string}`;
+  workspaceIntentRevision?: {
+    errorCode: string;
+    previousIsolation: ExecutionIsolation;
+    evidenceIds: readonly string[];
+  };
 }
 
 export interface RetryWaitCondition extends WaitConditionBase {
@@ -340,6 +345,11 @@ export interface ChangeLifecycleTransitionFact {
     supersededTaskRevisions: readonly `sha256:${string}`[];
     evidenceIds: readonly string[];
   };
+  workspaceIntentRevision?: {
+    errorCode: string;
+    previousIsolation: ExecutionIsolation;
+    nextIsolation?: ExecutionIsolation;
+  };
 }
 
 export type ChangeLifecycleObservation =
@@ -391,6 +401,23 @@ export type ChangeLifecycleObservation =
       proposal: BuildConfigurationProposal;
       requestId: string;
       reason: string;
+    }
+  | {
+      kind: 'workspace-intent-revision-required';
+      requestId: string;
+      proposalDigest: `sha256:${string}`;
+      reason: string;
+      evidenceIds: readonly string[];
+      errorCode: string;
+      previousIsolation: ExecutionIsolation;
+    }
+  | {
+      kind: 'workspace-intent-revised';
+      requestId: string;
+      proposalDigest: `sha256:${string}`;
+      actorId: string;
+      intent: ExecutionWorkspaceIntent;
+      work: WorkDescriptor;
     }
   | {
       kind: 'build-configuration-retry-required';
@@ -627,6 +654,18 @@ export function assertChangeLifecycleSnapshot(
   }
   if (snapshot.status !== 'waiting' && snapshot.waitCondition !== null) {
     throw new Error('Only a waiting Change Run may carry a WaitCondition');
+  }
+  if (
+    snapshot.waitCondition?.kind === 'human-decision' &&
+    snapshot.waitCondition.workspaceIntentRevision &&
+    (!snapshot.waitCondition.waitId.startsWith('workspace-intent:') ||
+      !snapshot.waitCondition.workspaceIntentRevision.errorCode.trim() ||
+      !['current', 'branch', 'worktree'].includes(
+        snapshot.waitCondition.workspaceIntentRevision.previousIsolation,
+      ) ||
+      snapshot.waitCondition.workspaceIntentRevision.evidenceIds.length === 0)
+  ) {
+    throw new Error('Workspace intent revision WaitCondition is malformed');
   }
   if (blockerStatuses.has(snapshot.status) && snapshot.blocker === null) {
     throw new Error(`${snapshot.status} Change Run requires a blocker`);
@@ -992,6 +1031,118 @@ export function evolveChangeLifecycle(options: {
         buildProtocol,
       },
     });
+  }
+  if (observation.kind === 'workspace-intent-revision-required') {
+    const existingWait = current.waitCondition;
+    if (
+      current.phase === 'open' &&
+      current.status === 'waiting' &&
+      existingWait?.kind === 'human-decision' &&
+      existingWait.waitId === `workspace-intent:${observation.requestId}` &&
+      existingWait.requestId === observation.requestId &&
+      existingWait.proposalDigest === observation.proposalDigest &&
+      existingWait.workspaceIntentRevision?.errorCode === observation.errorCode &&
+      existingWait.workspaceIntentRevision.previousIsolation === observation.previousIsolation
+    ) {
+      return { snapshot: structuredClone(current), fact: null };
+    }
+    const protocol = current.buildProtocol;
+    if (
+      current.phase !== 'build' ||
+      current.status !== 'running' ||
+      current.currentWork?.kind !== 'build.configure' ||
+      !current.workspaceIntent ||
+      !protocol ||
+      protocol.currentAction !== 'configure' ||
+      protocol.configuration ||
+      protocol.plan ||
+      protocol.packageCompletions.length > 0 ||
+      !observation.requestId.trim() ||
+      !observation.reason.trim() ||
+      !observation.errorCode.trim() ||
+      observation.previousIsolation !== current.workspaceIntent.isolation
+    ) {
+      throw new Error(
+        'Workspace intent revision requires an unapproved active Build Configure Action',
+      );
+    }
+    const reduced = applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'build.workspace-intent-revision-required',
+      next: {
+        currentWork: null,
+        waitCondition: {
+          schemaVersion: 1,
+          kind: 'human-decision',
+          waitId: `workspace-intent:${observation.requestId}`,
+          requestId: observation.requestId,
+          proposalDigest: observation.proposalDigest,
+          inputDigest: observation.proposalDigest,
+          reason: observation.reason,
+          workspaceIntentRevision: {
+            errorCode: observation.errorCode,
+            previousIsolation: observation.previousIsolation,
+            evidenceIds: [...observation.evidenceIds],
+          },
+        },
+        blocker: null,
+        tasks: [],
+        workspaceIntent: null,
+        buildProtocol: null,
+        planningDigest: null,
+        adoptedCompletionClaimDigest: null,
+        verificationInput: null,
+        verificationInvalidation: null,
+        archiveDeliveryInput: null,
+        specificationClosure: null,
+        publicationReceipt: null,
+      },
+    });
+    reduced.fact.workspaceIntentRevision = {
+      errorCode: observation.errorCode,
+      previousIsolation: observation.previousIsolation,
+    };
+    return reduced;
+  }
+  if (observation.kind === 'workspace-intent-revised') {
+    const wait = current.waitCondition;
+    const revision = wait?.kind === 'human-decision' ? wait.workspaceIntentRevision : undefined;
+    if (
+      current.phase !== 'open' ||
+      current.status !== 'waiting' ||
+      wait?.kind !== 'human-decision' ||
+      !wait.waitId.startsWith('workspace-intent:') ||
+      wait.requestId !== observation.requestId ||
+      wait.proposalDigest !== observation.proposalDigest ||
+      !revision ||
+      current.workspaceIntent ||
+      current.buildProtocol ||
+      observation.intent.workspaceId !== current.identity.workspaceId ||
+      observation.intent.changeId !== current.identity.changeId ||
+      observation.work.phase !== 'design' ||
+      observation.work.kind !== 'specification.plan' ||
+      !observation.actorId.trim()
+    ) {
+      throw new Error('Workspace intent revision does not match the current Human Decision');
+    }
+    const reduced = applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'open.workspace-intent-revised',
+      next: {
+        currentWork: observation.work,
+        waitCondition: null,
+        blocker: null,
+        workspaceIntent: observation.intent,
+      },
+    });
+    reduced.fact.workspaceIntentRevision = {
+      errorCode: revision.errorCode,
+      previousIsolation: revision.previousIsolation,
+      nextIsolation: observation.intent.isolation,
+    };
+    return reduced;
   }
   if (observation.kind === 'build-configuration-retry-required') {
     if (

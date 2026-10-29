@@ -101,6 +101,44 @@ function lifecycleState(snapshot: ChangeLifecycleSnapshot): ChangeLifecycleState
   };
 }
 
+interface WorkExecutionRetirementFact {
+  reason: 'workspace-intent-revision';
+  retiredWorkId: string;
+  retiredCheckEpoch: number;
+  nextWorkId: string | null;
+  nextCheckEpoch: number;
+}
+
+function retireWorkspaceIntentExecution(
+  state: RunState,
+  snapshot: ChangeLifecycleSnapshot,
+  observation: ChangeLifecycleObservation,
+): { state: RunState; fact: WorkExecutionRetirementFact | null } {
+  const execution = state.workExecution;
+  if (
+    !execution ||
+    !['workspace-intent-revision-required', 'workspace-intent-revised'].includes(
+      observation.kind,
+    ) ||
+    (execution.workId === snapshot.currentWork?.workId &&
+      execution.checkEpoch === snapshot.checkEpoch)
+  ) {
+    return { state, fact: null };
+  }
+  const stateWithoutExecution = structuredClone(state);
+  delete stateWithoutExecution.workExecution;
+  return {
+    state: stateWithoutExecution,
+    fact: {
+      reason: 'workspace-intent-revision',
+      retiredWorkId: execution.workId,
+      retiredCheckEpoch: execution.checkEpoch,
+      nextWorkId: snapshot.currentWork?.workId ?? null,
+      nextCheckEpoch: snapshot.checkEpoch,
+    },
+  };
+}
+
 function lifecycleNextActions(snapshot: ChangeLifecycleSnapshot) {
   if (['completed', 'failed', 'migration_required'].includes(snapshot.status)) return [];
   if (snapshot.phase === 'open') {
@@ -447,8 +485,9 @@ export class WorkflowRunCoordinator {
       if (!reduced.fact) return { value: undefined };
       const timestamp = this.clock().toISOString();
       const { status, ...changeLifecycle } = reduced.snapshot;
+      const retirement = retireWorkspaceIntentExecution(state, reduced.snapshot, observation);
       const nextState: RunState = {
-        ...state,
+        ...retirement.state,
         status,
         changeLifecycle,
         acceptedEvidenceBundleIds:
@@ -474,6 +513,9 @@ export class WorkflowRunCoordinator {
             changeLifecycleTransition: reduced.fact,
             observationKind: observation.kind,
             observation: structuredClone(observation),
+            ...(retirement.fact
+              ? { executionRetirement: structuredClone(retirement.fact) }
+              : {}),
           },
         }),
         value: undefined,

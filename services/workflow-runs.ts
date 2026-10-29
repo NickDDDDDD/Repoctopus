@@ -59,9 +59,13 @@ import {
   validateBuildPlan,
   type BuildConfiguration,
   type ExecutionWorkspaceBinding,
+  type ExecutionWorkspaceIntent,
   type ExecutionIsolation,
 } from '../domains/change-lifecycle/build-protocol.js';
-import type { ExecutionCheckoutRequest } from './execution-workspace.js';
+import {
+  ExecutionWorkspaceBindingError,
+  type ExecutionCheckoutRequest,
+} from './execution-workspace.js';
 import {
   createVerificationInput,
   rebaseVerificationInput,
@@ -377,6 +381,90 @@ export class WorkflowRuns extends Service {
       const state = await this.ctx.runStore.loadRun(input.runId);
       const lifecycle = state.changeLifecycle;
       if (
+        lifecycle?.phase === 'open' &&
+        state.status === 'waiting' &&
+        lifecycle.waitCondition?.kind === 'human-decision' &&
+        lifecycle.waitCondition.waitId.startsWith('workspace-intent:')
+      ) {
+        const wait = lifecycle.waitCondition;
+        if (!input.actor.authenticated) {
+          throw new Error('Workspace intent revision requires a trusted actor');
+        }
+        if (
+          input.response.requestId !== wait.requestId ||
+          input.response.proposalHash !== wait.proposalDigest
+        ) {
+          throw new Error('Workspace intent revision does not match the current proposal');
+        }
+        if (input.response.decision !== 'approve') {
+          return this.coordinator.status(input.runId);
+        }
+        if (!input.isolation) {
+          throw new Error('Workspace intent revision requires current, branch, or worktree isolation');
+        }
+        const projectSnapshot = await this.ctx.runStore.loadProjectSnapshot(input.runId);
+        const target = state.trigger?.facts.targetBranch as { targetBranch?: unknown } | undefined;
+        const intent = createExecutionWorkspaceIntent({
+          workspaceId: lifecycle.identity.workspaceId,
+          changeId: lifecycle.identity.changeId,
+          isolation: input.isolation,
+          ...(input.isolation === 'branch' && typeof target?.targetBranch === 'string'
+            ? { targetBranch: target.targetBranch }
+            : {}),
+        });
+
+        // Binding is a read-only precondition. No lifecycle, approval, Skill, or Work state is
+        // written until the replacement intent is proven against the frozen checkout snapshot.
+        await this.bindExecutionWorkspaceIntent(state, intent, projectSnapshot);
+
+        const projectConfigDigest = state.trigger?.facts.projectConfigDigest;
+        const specificationRoot = state.trigger?.facts.specificationRoot as
+          | { repositoryId?: unknown }
+          | undefined;
+        if (
+          typeof projectConfigDigest !== 'string' ||
+          !/^sha256:[a-f0-9]{64}$/u.test(projectConfigDigest) ||
+          typeof specificationRoot?.repositoryId !== 'string'
+        ) {
+          throw new Error('Workspace intent revision trigger identities are missing');
+        }
+        const skills = await this.resolveLifecycleWorkSkills('specification.plan', signal);
+        const work = createLifecyclePhaseWork({
+          runId: input.runId,
+          checkEpoch: lifecycle.checkEpoch + 1,
+          changeId: lifecycle.identity.changeId,
+          definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+          kind: 'specification.plan',
+          actionSkill: skills.actionSkill,
+          augmentationSkills: skills.augmentationSkills,
+          compositionDigest: state.composition.compositionDigest,
+          projectSnapshotDigest: state.projectSnapshotDigest,
+          projectConfigDigest: projectConfigDigest as `sha256:${string}`,
+          workspaceRepositoryId: specificationRoot.repositoryId,
+          repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
+        });
+        for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
+          await this.coordinator.bindSkill(input.runId, skill);
+        }
+        const decided = await this.coordinator.acceptChangeObservation(input.runId, {
+          kind: 'workspace-intent-revised',
+          requestId: input.response.requestId,
+          proposalDigest: input.response.proposalHash,
+          actorId: input.actor.actorId,
+          intent,
+          work,
+        });
+        await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, work);
+        await this.ctx.workExecutionAuthority.recordWaitBoundary({
+          runId: input.runId,
+          waitId: wait.waitId,
+          stage: 'ended',
+          kind: 'human-decision',
+          reason: wait.reason,
+        });
+        return this.coordinator.status(decided.value.state.runId);
+      }
+      if (
         lifecycle?.phase === 'build' &&
         state.status === 'waiting' &&
         lifecycle.waitCondition?.kind === 'human-decision' &&
@@ -676,6 +764,8 @@ export class WorkflowRuns extends Service {
             ? { targetBranch: target.targetBranch }
             : {}),
         });
+        const projectSnapshot = await this.ctx.runStore.loadProjectSnapshot(input.runId);
+        await this.bindExecutionWorkspaceIntent(state, intent, projectSnapshot);
         await this.coordinator.acceptChangeObservation(input.runId, {
           kind: 'open-workspace-intent-selected',
           intent,
@@ -899,17 +989,14 @@ export class WorkflowRuns extends Service {
     }
   }
 
-  private async bindExecutionWorkspace(
+  private async bindExecutionWorkspaceIntent(
     state: RunState,
-    lifecycle: NonNullable<RunState['changeLifecycle']>,
+    intent: ExecutionWorkspaceIntent,
     projectSnapshot: ProjectSnapshot,
   ): Promise<ExecutionWorkspaceBinding> {
     const checkoutInput = state.trigger?.facts.executionCheckouts;
     if (!Array.isArray(checkoutInput)) {
       throw new Error('Runner did not provide execution checkout bindings');
-    }
-    if (!lifecycle.workspaceIntent) {
-      throw new Error('Build requires the approved Workspace intent');
     }
     const checkouts = checkoutInput.map((entry) => {
       if (
@@ -923,10 +1010,21 @@ export class WorkflowRuns extends Service {
       return entry as { repositoryId: string; checkoutPath: string };
     });
     return this.ctx.executionWorkspace.bind({
-      intent: lifecycle.workspaceIntent,
+      intent,
       project: projectSnapshot,
       checkouts,
     });
+  }
+
+  private async bindExecutionWorkspace(
+    state: RunState,
+    lifecycle: NonNullable<RunState['changeLifecycle']>,
+    projectSnapshot: ProjectSnapshot,
+  ): Promise<ExecutionWorkspaceBinding> {
+    if (!lifecycle.workspaceIntent) {
+      throw new Error('Build requires the approved Workspace intent');
+    }
+    return this.bindExecutionWorkspaceIntent(state, lifecycle.workspaceIntent, projectSnapshot);
   }
 
   private async assertFrozenExecutionWorkspace(
@@ -1704,11 +1802,64 @@ export class WorkflowRuns extends Service {
                   ],
                 };
               }
-              const binding = await this.bindExecutionWorkspace(
-                current,
-                lifecycle,
-                projectSnapshot,
-              );
+              let binding: ExecutionWorkspaceBinding;
+              try {
+                binding = await this.bindExecutionWorkspace(
+                  current,
+                  lifecycle,
+                  projectSnapshot,
+                );
+              } catch (error) {
+                if (
+                  !(error instanceof ExecutionWorkspaceBindingError) ||
+                  error.recovery !== 'intent-revision'
+                ) {
+                  throw error;
+                }
+                const proposalDigest = `sha256:${createHash('sha256')
+                  .update(
+                    canonicalJson({
+                      schemaVersion: 1,
+                      runId,
+                      lifecycleRevision: lifecycle.revision,
+                      checkEpoch: lifecycle.checkEpoch,
+                      workId: lifecycle.currentWork.workId,
+                      workspaceIntentDigest: lifecycle.workspaceIntent.semanticDigest,
+                      errorCode: error.code,
+                    }),
+                  )
+                  .digest('hex')}` as const;
+                const requestId = `workspace-intent-revision:${proposalDigest.slice(-24)}`;
+                const reason = `Execution Workspace binding requires isolation revision (${error.code})`;
+                const revised = await this.coordinator.acceptChangeObservation(runId, {
+                  kind: 'workspace-intent-revision-required',
+                  requestId,
+                  proposalDigest,
+                  reason,
+                  evidenceIds: [`execution-workspace-binding:${error.code}`],
+                  errorCode: error.code,
+                  previousIsolation: lifecycle.workspaceIntent.isolation,
+                });
+                await this.ctx.workExecutionAuthority.recordWaitBoundary({
+                  runId,
+                  waitId: `workspace-intent:${requestId}`,
+                  stage: 'started',
+                  kind: 'human-decision',
+                  reason,
+                });
+                return {
+                  ...revised,
+                  value: await this.coordinator.status(runId),
+                  diagnostics: [
+                    ...revised.diagnostics,
+                    {
+                      level: 'warning',
+                      code: 'change.workspace-intent-revision-required',
+                      message: reason,
+                    },
+                  ],
+                };
+              }
               const proposal = createBuildConfigurationProposal({
                 intent: lifecycle.workspaceIntent,
                 binding,

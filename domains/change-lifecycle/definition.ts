@@ -54,8 +54,9 @@ function validatorProfile(id: string) {
 export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
   schemaVersion: 3,
   id: 'repoctopus-change',
-  version: '4.2.0',
+  version: '4.3.0',
   compatibleDigests: [
+    'sha256:c84278b1e82a0146759486ef68808c4027d03d211481793149af53e1b720e7fb',
     'sha256:ce90da179b201e1824b559bf7a65a87e5b186a6a0bf82a70da0a907d12f94203',
     'sha256:4bef956969843eb8862947abdedaf5de59d8aa34237debc3387996b8944e8952',
     'sha256:3890da04d20fb364e363a976b21877f0198ca22da3c00af4de302de0f48b430b',
@@ -288,6 +289,14 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       requiredValidatorProfile: 'open.intake-ready',
     },
     {
+      id: 'open.workspace-intent-revised',
+      kind: 'advance',
+      from: { phase: 'open', statuses: ['waiting'] },
+      to: { phase: 'design', status: 'running' },
+      trigger: 'trusted-execution-workspace-intent-revised',
+      requiredValidatorProfile: 'open.intake-ready',
+    },
+    {
       id: 'open.invalid',
       kind: 'self',
       from: { phase: 'open', statuses: ['running', 'waiting', 'blocked'] },
@@ -325,6 +334,14 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       from: { phase: 'build', statuses: ['running'] },
       to: { phase: 'build', status: 'waiting' },
       trigger: 'configuration-proposal-validated',
+      requiredValidatorProfile: 'build.configuration-approved',
+    },
+    {
+      id: 'build.workspace-intent-revision-required',
+      kind: 'fallback',
+      from: { phase: 'build', statuses: ['running'] },
+      to: { phase: 'open', status: 'waiting' },
+      trigger: 'configuration-binding-requires-workspace-intent-revision',
       requiredValidatorProfile: 'build.configuration-approved',
     },
     {
@@ -716,8 +733,8 @@ function assertProtectedPath(
     (transition) =>
       transition.kind === kind && transition.from.phase === from && transition.to.phase === to,
   );
-  if (matches.length !== 1) {
-    throw new Error(`Lifecycle definition requires exactly one protected ${from} -> ${to} path`);
+  if (matches.length === 0) {
+    throw new Error(`Lifecycle definition requires a protected ${from} -> ${to} path`);
   }
 }
 
