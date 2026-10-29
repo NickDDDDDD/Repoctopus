@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import type {
+  ExternalWorkExecutionOutcome,
   WorkExecutionHost,
   WorkExecutionHostOutcome,
   WorkExecutionPacket,
@@ -96,13 +97,13 @@ function executor(
     invoke: vi.fn((_packet: WorkExecutionPacket, session: WorkExecutionSessionIdentity) => {
       if (invokeError) return Promise.reject(invokeError);
       return Promise.resolve({
-      schemaVersion: 1 as const,
-      invocationId: session.invocationId,
-      hostId: 'coordinator-1',
-      packetDigest: packet.identity.packetDigest,
-      status: 'succeeded' as const,
-      summary: 'delegated package completed',
-      consumedLayerDigests: [digest('1'), digest('2')],
+        schemaVersion: 1 as const,
+        invocationId: session.invocationId,
+        hostId: 'coordinator-1',
+        packetDigest: packet.identity.packetDigest,
+        status: 'succeeded' as const,
+        summary: 'delegated package completed',
+        consumedLayerDigests: [digest('1'), digest('2')],
         result: (resultOverride ?? {
           schemaVersion: 1,
           kind: 'build-package-completion',
@@ -117,20 +118,20 @@ function executor(
           repositoryDigest: digest('5'),
           implementationDigest: digest('6'),
         }) as WorkExecutionResult,
-      delegationReceipts: delegationReceiptsOverride ?? [
-        {
-          schemaVersion: 1 as const,
-          receiptId: 'receipt-1',
-          parentInvocationId: session.invocationId,
-          coordinatorHostId: 'coordinator-1',
-          executionId: 'subagent-implementation-1',
-          role: 'implementer' as const,
-          packageId: 'package-1',
-          status: 'succeeded' as const,
-          outcomeDigest: digest('7'),
-        },
-      ],
-      completedAt: '2026-10-28T00:00:00.000Z',
+        delegationReceipts: delegationReceiptsOverride ?? [
+          {
+            schemaVersion: 1 as const,
+            receiptId: 'receipt-1',
+            parentInvocationId: session.invocationId,
+            coordinatorHostId: 'coordinator-1',
+            executionId: 'subagent-implementation-1',
+            role: 'implementer' as const,
+            packageId: 'package-1',
+            status: 'succeeded' as const,
+            outcomeDigest: digest('7'),
+          },
+        ],
+        completedAt: '2026-10-28T00:00:00.000Z',
       } satisfies WorkExecutionHostOutcome);
     }),
   };
@@ -144,13 +145,11 @@ function executor(
       },
       workExecutionHosts: { select: vi.fn().mockReturnValue(host) },
       workExecutionSessions: {
-        open: vi.fn(
-          (input: Omit<WorkExecutionSessionIdentity, 'schemaVersion' | 'sessionId'>) => ({
-            ...input,
-            schemaVersion: 2,
-            sessionId: 'session-1',
-          }),
-        ),
+        open: vi.fn((input: Omit<WorkExecutionSessionIdentity, 'schemaVersion' | 'sessionId'>) => ({
+          ...input,
+          schemaVersion: 2,
+          sessionId: 'session-1',
+        })),
         close: vi.fn(),
       },
       workExecutionAuthority: authority,
@@ -159,95 +158,153 @@ function executor(
   return { service, authority };
 }
 
-describe('Managed Work Executor Build contract', () => {
-  it('resumes an identical external Outcome after Host completion was already persisted', async () => {
-    const packet = frozenPacket();
-    const persistedOutcome: WorkExecutionHostOutcome = {
-      schemaVersion: 1,
-      invocationId: 'invocation-1',
-      hostId: 'external:cli:codex-root',
-      packetDigest: packet.identity.packetDigest,
-      status: 'succeeded',
-      summary: 'package completed',
-      consumedLayerDigests: [digest('1'), digest('2')],
-      result: {
-        schemaVersion: 1,
-        kind: 'build-package-completion',
-        packageId: 'package-1',
-        acceptanceEvidenceIds: ['acceptance-1'],
-        testEvidenceIds: ['test-1'],
-        repositoryDigest: digest('5'),
-        implementationDigest: digest('6'),
+function externalReplayHarness() {
+  const packet = frozenPacket();
+  const persistedOutcome: WorkExecutionHostOutcome = {
+    schemaVersion: 1,
+    invocationId: 'invocation-1',
+    hostId: 'external:cli:codex-root',
+    packetDigest: packet.identity.packetDigest,
+    status: 'succeeded',
+    summary: 'package completed',
+    consumedLayerDigests: [digest('1'), digest('2')],
+    findings: [
+      {
+        kind: 'implementation_failure',
+        summary: 'A bounded finding remains stable across transport retries.',
+        taskIds: ['6.1'],
       },
-      delegationReceipts: [
-        {
-          schemaVersion: 1,
-          receiptId: 'receipt-1',
-          parentInvocationId: 'invocation-1',
-          coordinatorHostId: 'external:cli:codex-root',
-          executionId: 'subagent-1',
-          role: 'implementer',
-          packageId: 'package-1',
-          status: 'succeeded',
-          outcomeDigest: digest('7'),
-        },
-      ],
-      completedAt: '2026-10-28T00:00:00.000Z',
-    };
-    const markHostCompleted = vi.fn();
-    const acceptOutcome = vi.fn().mockResolvedValue({ accepted: true });
-    const service = Object.create(ManagedWorkExecutor.prototype) as ManagedWorkExecutor;
-    Object.defineProperty(service, 'ctx', {
-      value: {
-        runStore: {
-          loadRun: vi.fn().mockResolvedValue({
-            workExecution: {
-              hostInvocation: {
-                invocationId: persistedOutcome.invocationId,
-                host: {
-                  schemaVersion: 1,
-                  id: persistedOutcome.hostId,
-                  version: '1',
-                  codeDigest: digest('8'),
-                  capabilities: ['subagent.dispatch.attested'],
-                  actionKinds: ['agent'],
-                  reconcile: false,
-                },
-                packet: { packetDigest: persistedOutcome.packetDigest },
+    ],
+    result: {
+      schemaVersion: 1,
+      kind: 'build-package-completion',
+      packageId: 'package-1',
+      acceptanceEvidenceIds: ['acceptance-1'],
+      testEvidenceIds: ['test-1'],
+      repositoryDigest: digest('5'),
+      implementationDigest: digest('6'),
+    },
+    delegationReceipts: [
+      {
+        schemaVersion: 1,
+        receiptId: 'receipt-1',
+        parentInvocationId: 'invocation-1',
+        coordinatorHostId: 'external:cli:codex-root',
+        executionId: 'subagent-1',
+        role: 'implementer',
+        packageId: 'package-1',
+        status: 'succeeded',
+        outcomeDigest: digest('7'),
+      },
+    ],
+    completedAt: '2026-10-28T00:00:00.000Z',
+  };
+  const markHostCompleted = vi.fn();
+  const acceptOutcome = vi.fn().mockResolvedValue({ accepted: true });
+  const service = Object.create(ManagedWorkExecutor.prototype) as ManagedWorkExecutor;
+  Object.defineProperty(service, 'ctx', {
+    value: {
+      runStore: {
+        loadRun: vi.fn().mockResolvedValue({
+          workExecution: {
+            hostInvocation: {
+              invocationId: persistedOutcome.invocationId,
+              host: {
+                schemaVersion: 1,
+                id: persistedOutcome.hostId,
+                version: '1',
+                codeDigest: digest('8'),
+                capabilities: ['subagent.dispatch.attested'],
+                actionKinds: ['agent'],
+                reconcile: false,
               },
               packet: { packetDigest: persistedOutcome.packetDigest },
-              hostOutcome: persistedOutcome,
             },
-          }),
-        },
-        workExecutionAuthority: {
-          loadIntent: vi.fn().mockResolvedValue({}),
-          markHostCompleted,
-          recordDelegationFacts: vi.fn(),
-          recordSkillFacts: vi.fn(),
-        },
-        workDispatcher: {
-          resumeClaim: vi.fn().mockResolvedValue({ packet }),
-          outcome: vi.fn().mockReturnValue({}),
-          acceptOutcome,
-        },
+            packet: { packetDigest: persistedOutcome.packetDigest },
+            hostOutcome: persistedOutcome,
+          },
+        }),
       },
-    });
+      workExecutionAuthority: {
+        loadIntent: vi.fn().mockResolvedValue({}),
+        markHostCompleted,
+        recordDelegationFacts: vi.fn(),
+        recordSkillFacts: vi.fn(),
+      },
+      workDispatcher: {
+        resumeClaim: vi.fn().mockResolvedValue({ packet }),
+        outcome: vi.fn().mockReturnValue({}),
+        acceptOutcome,
+      },
+    },
+  });
+  const input: ExternalWorkExecutionOutcome = {
+    schemaVersion: 2,
+    runId: 'run-1',
+    invocationId: persistedOutcome.invocationId,
+    hostId: persistedOutcome.hostId,
+    packetDigest: persistedOutcome.packetDigest,
+    status: persistedOutcome.status,
+    summary: persistedOutcome.summary,
+    consumedLayerDigests: persistedOutcome.consumedLayerDigests,
+    findings: persistedOutcome.findings!,
+    result: persistedOutcome.result!,
+    delegationReceipts: persistedOutcome.delegationReceipts!,
+  };
+  return { acceptOutcome, input, markHostCompleted, persistedOutcome, service };
+}
 
-    const result = await service.acceptExternalOutcome({
-      schemaVersion: 2,
-      runId: 'run-1',
-      invocationId: persistedOutcome.invocationId,
-      hostId: persistedOutcome.hostId,
-      packetDigest: persistedOutcome.packetDigest,
-      status: persistedOutcome.status,
-      summary: persistedOutcome.summary,
-      consumedLayerDigests: persistedOutcome.consumedLayerDigests,
-      result: persistedOutcome.result!,
-      delegationReceipts: persistedOutcome.delegationReceipts!,
-    });
+describe('Managed Work Executor Build contract', () => {
+  it.each([
+    ['status', (input: ExternalWorkExecutionOutcome) => ({ ...input, status: 'failed' as const })],
+    ['summary', (input: ExternalWorkExecutionOutcome) => ({ ...input, summary: 'drifted' })],
+    [
+      'consumed layers',
+      (input: ExternalWorkExecutionOutcome) => ({
+        ...input,
+        consumedLayerDigests: [digest('1')],
+      }),
+    ],
+    [
+      'result',
+      (input: ExternalWorkExecutionOutcome) => ({
+        ...input,
+        result: {
+          ...(input.result as Extract<WorkExecutionResult, { kind: 'build-package-completion' }>),
+          implementationDigest: digest('9'),
+        },
+      }),
+    ],
+    [
+      'findings',
+      (input: ExternalWorkExecutionOutcome) => ({
+        ...input,
+        findings: [{ ...input.findings![0]!, summary: 'drifted finding' }],
+      }),
+    ],
+    [
+      'delegation receipts',
+      (input: ExternalWorkExecutionOutcome) => ({
+        ...input,
+        delegationReceipts: [{ ...input.delegationReceipts![0]!, outcomeDigest: digest('9') }],
+      }),
+    ],
+  ] as const)('fails closed when replayed Host Outcome %s drift', async (_field, mutate) => {
+    const { input, service } = externalReplayHarness();
 
-    expect(result.hostOutcome.completedAt).toBe(persistedOutcome.completedAt);
+    await expect(service.acceptExternalOutcome(mutate(input))).rejects.toThrow(
+      /conflicts with the persisted invocation result/u,
+    );
+  });
+
+  it('reuses the persisted Host completion timestamp without emitting another completion', async () => {
+    const { acceptOutcome, input, markHostCompleted, persistedOutcome, service } =
+      externalReplayHarness();
+
+    const result = await service.acceptExternalOutcome(input);
+
+    expect(result.hostOutcome).toBe(persistedOutcome);
+    expect(result.hostOutcome.completedAt).toBe('2026-10-28T00:00:00.000Z');
     expect(markHostCompleted).not.toHaveBeenCalled();
     expect(acceptOutcome).toHaveBeenCalledOnce();
   });
@@ -347,11 +404,10 @@ describe('Managed Work Executor Build contract', () => {
     });
     expect(authority.markHostCompleted).toHaveBeenCalledOnce();
     expect(authority.recordDelegationFacts).toHaveBeenCalledOnce();
-    expect(authority.recordSkillFacts).toHaveBeenCalledWith(
-      expect.anything(),
-      'consumed',
-      [digest('1'), digest('2')],
-    );
+    expect(authority.recordSkillFacts).toHaveBeenCalledWith(expect.anything(), 'consumed', [
+      digest('1'),
+      digest('2'),
+    ]);
     expect(authority.markHostUnknown).not.toHaveBeenCalled();
   });
 
