@@ -3,7 +3,6 @@
 ## 1. 固定缺陷与领域错误边界
 
 - [ ] 1.1 增加 Service 回归测试：Host 提交未覆盖全部 Task 的 `build-plan-candidate` 后，当前实现会保留旧 Outcome 并永久卡在同一 Plan Work。
-      **Blocked by:** 无
       **Acceptance:** 测试明确区分“Outcome 已知但 candidate 被拒绝”和 Host unknown/reconcile，不以手改 Store恢复
       **Requirements:** managed-work-execution#无效-build-plan-candidate-必须生成新的-plan-work
 - [ ] 1.2 新增 `BuildPlanCandidateRejectedError`，让 `createBuildPlan()` 的候选 schema、引用、覆盖、依赖与边界错误可识别，未知程序错误保持原样。
