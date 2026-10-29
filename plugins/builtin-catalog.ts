@@ -816,6 +816,11 @@ const definitions: readonly BuiltinDefinition[] = [
       stateSchemas: {},
       compatibleImplementations: [
         {
+          codeDigest: 'sha256:839b768c34ff83b40051dc26b1b71d0fbc2cbff9701113034047bf6e45abc209',
+          descriptorDigest:
+            'sha256:e7778ae3f8f2e6dbb0442ff42c5dc7e275512276258c809ff893668af6b84044',
+        },
+        {
           codeDigest: 'sha256:cb472a770aacb43e7b73c8969531889b294af30c06e66e99c086908a70db34dc',
           descriptorDigest:
             'sha256:a87e4735dd873231d22125896f04cc5bcbd03074858d437309009feac4f76da2',
@@ -862,6 +867,11 @@ const definitions: readonly BuiltinDefinition[] = [
       permissions: [],
       stateSchemas: {},
       compatibleImplementations: [
+        {
+          codeDigest: 'sha256:1ae35c29ff680a1644e86e62c77d5eb9c90ae3ad6fde7b1657b2ddda5bb55820',
+          descriptorDigest:
+            'sha256:1b0ea9b397cf918f1e449a848bac1e816304d42ea0110b38c031e265e112e309',
+        },
         {
           codeDigest: 'sha256:18359f2ee893508d1f4f4903c6479d3272abfb036e74f8694bedec7873541f03',
           descriptorDigest:
