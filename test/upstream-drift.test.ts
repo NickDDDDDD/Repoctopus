@@ -10,9 +10,9 @@ const execFileAsync = promisify(execFile);
 const productRoot = path.resolve(import.meta.dirname, '..');
 const script = path.join(productRoot, 'scripts', 'check-upstream-drift.mjs');
 const temporaryRoots: string[] = [];
-const dshBranchCommit = '22ddee3792402c3e70ec5f86a63c3e3e895a2f60';
-const dshReleaseCommit = '1f81c047fc48fa190a683e469daa699857e9afe8';
-const cometCommit = 'aeb1a6598034e28ce46b8422d4dbd8785e607bd7';
+const dshBranchCommit = 'f3803c96974ad4a94195fb97e5c637e9c2a3afe3';
+const dshReleaseCommit = '504a01a9578abc2c6f1fb896b1dc322c9fe24f66';
+const cometCommit = '35c9860b77b42bafa0c2d80d8d695889f888a924';
 
 afterEach(async () => {
   await Promise.all(temporaryRoots.splice(0).map((root) => rm(root, { recursive: true })));
@@ -29,7 +29,7 @@ async function fixture(overrides: Record<string, string> = {}): Promise<NodeJS.P
         repository: 'https://invalid.example/dsh.git',
         branch: 'master',
         pinnedCommit: dshBranchCommit,
-        pinnedTag: 'dsh-v0.2.1-rc.3',
+        pinnedTag: 'dsh-v0.2.1-rc.4',
         pinnedTagCommit: dshReleaseCommit,
       },
       {
@@ -37,7 +37,7 @@ async function fixture(overrides: Record<string, string> = {}): Promise<NodeJS.P
         repository: 'https://invalid.example/comet.git',
         branch: 'master',
         pinnedCommit: cometCommit,
-        pinnedTag: '0.5.0',
+        pinnedTag: '0.5.1',
         pinnedTagCommit: cometCommit,
       },
     ],
@@ -45,11 +45,11 @@ async function fixture(overrides: Record<string, string> = {}): Promise<NodeJS.P
   const refs = {
     dsh: {
       'refs/heads/master': overrides.dsh ?? dshBranchCommit,
-      'refs/tags/dsh-v0.2.1-rc.3': dshReleaseCommit,
+      'refs/tags/dsh-v0.2.1-rc.4': dshReleaseCommit,
     },
     comet: {
       'refs/heads/master': overrides.comet ?? cometCommit,
-      'refs/tags/0.5.0': cometCommit,
+      'refs/tags/0.5.1': cometCommit,
     },
   };
   const manifestPath = path.join(root, 'baselines.json');

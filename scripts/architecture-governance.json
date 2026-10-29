@@ -181,7 +181,7 @@
         "platform/skill/**"
       ],
       "upstream": [
-        "@deepseek-ai/dsh-skill@0.2.1-rc.3",
+        "@deepseek-ai/dsh-skill@0.2.1-rc.4",
         "packages/skill/skill-filesystem/src/index.ts",
         "third_party/matt-skills"
       ],

@@ -1,14 +1,15 @@
 # DSH / Comet 全量上游对齐审计
 
-审计日期：2026-10-24。机器基线见 `upstream-baselines.json`；本报告覆盖 Repoctopus 能力账本中的全部 19 个能力域。这里的“全量”指按 Repoctopus 产品能力逐域闭合，不等同于逐行复制两个上游仓库。Comet 0.5.0 的逐项增量决定见 `comet/0.5.0-audit.md`。
+审计日期：2026-10-30。机器基线见 `upstream-baselines.json`；本报告覆盖 Repoctopus 能力账本中的全部 19 个能力域。这里的“全量”指按 Repoctopus 产品能力逐域闭合，不等同于逐行复制两个上游仓库。Comet 0.5.0 的主体判断见 `comet/0.5.0-audit.md`，0.5.1 的恢复增量见 `comet/0.5.1-audit.md`。
 
 ## 结论
 
-- DSH 发布依赖从 `dsh-v0.2.1-rc.2` 升到 `dsh-v0.2.1-rc.3` / `1f81c047fc48fa190a683e469daa699857e9afe8`，直接依赖统一固定为 `0.2.1-rc.3`；默认分支另行固定并审计到 `22ddee3792402c3e70ec5f86a63c3e3e895a2f60`。
+- DSH 发布依赖已升到 `dsh-v0.2.1-rc.4` / `504a01a9578abc2c6f1fb896b1dc322c9fe24f66`，直接依赖统一固定为 `0.2.1-rc.4`；默认分支另行固定并审计到 `f3803c96974ad4a94195fb97e5c637e9c2a3afe3`。rc.3→rc.4 在 Repoctopus 已采用源码面没有行为变化，只有 Desktop 包版本元数据变化。
 - Cordis 从 `4.0.4` 升到 `4.0.5`，Loader 从 `1.0.5` 升到 `1.0.6`；两个目录继续保存未修改 npm 发布快照。
 - Comet 从 0.4.5 源码基线升级到 `0.5.0` / `aeb1a6598034e28ce46b8422d4dbd8785e607bd7`；当前 `master` 与发布标签指向同一提交。来源仓库统一为 `rpamis/comet`，20 个既有派生文件的上游摘要全部在新提交复核。
 - 本轮发现并吸收两个适用修复：Loader 保存原始 module namespace 以支持安全重载；文件 Skill watcher 在 Windows 关闭阶段保留 error sink，避免迟到的 Chokidar 错误成为未捕获异常。
 - Comet 0.5.0 的 Workflow Application 与 Classic SDK 提供了五阶段、固定 Skill/权限、审批哈希、稳定 Task ID 和同一 Run 恢复的成熟证据；Classic Archive preflight、官方 OpenSpec 后置校验、Native 本地 Journal、finish create-or-reuse PR 与 resume probe 进入简化 Archive 设计，但其单仓产品外壳不能替换 Repoctopus 的多仓 Evidence、MR 聚合和团队 Workspace。
+- Comet 0.5.1 将后期设计/计划修订、失败 Skill 续行和 Archive 修复收敛为 revision-bound command；阶段、待执行 Action 与失效边界通过同一 CAS 发布，历史审批和结果只作为历史保留。Repoctopus 采用这一恢复不变量，仍由自身 Change Run、OpenSpec Provider 与多仓 Work Descriptor 表达。
 
 ## 基线差异审查
 

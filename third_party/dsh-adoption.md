@@ -1,10 +1,10 @@
 # DSH 能力采用报告
 
-本报告固定 DeepSeek Harness 发布 `dsh-v0.2.1-rc.3`、提交 `1f81c047fc48fa190a683e469daa699857e9afe8`，并已审计 2026-10-24 的 `master` 提交 `22ddee3792402c3e70ec5f86a63c3e3e895a2f60`。发布依赖与默认分支审计身份分开记录，避免把未发布源码冒充 npm 版本。机器可检查数据见 `dsh-adoption.json`，跨能力审计见 `upstream-alignment-audit.md`。
+本报告固定 DeepSeek Harness 发布 `dsh-v0.2.1-rc.4`、提交 `504a01a9578abc2c6f1fb896b1dc322c9fe24f66`，并已审计 2026-10-30 的 `master` 提交 `f3803c96974ad4a94195fb97e5c637e9c2a3afe3`。发布依赖与默认分支审计身份分开记录，避免把未发布源码冒充 npm 版本。机器可检查数据见 `dsh-adoption.json`，跨能力审计见 `upstream-alignment-audit.md`。
 
 ## Skill Registry
 
-固定提交中的 `packages/skill/skill/src/index.ts` 已发布为 `@deepseek-ai/dsh-skill@0.2.1-rc.3`。Repoctopus 直接使用该包，保留 `ctx.skills`、Provider 注册、作用域覆盖、rank 裁决、不完整发现、取消、缓存失效和 Cordis Effect 撤销语义。rc.2→rc.3 在已采用 Skill、Filesystem Skill、Cordis 和 Loader 源码面没有行为变化，发布差异只有包版本元数据。
+固定提交中的 `packages/skill/skill/src/index.ts` 已发布为 `@deepseek-ai/dsh-skill@0.2.1-rc.4`。Repoctopus 直接使用该包，保留 `ctx.skills`、Provider 注册、作用域覆盖、rank 裁决、不完整发现、取消、缓存失效和 Cordis Effect 撤销语义。rc.3→rc.4 在已采用 Skill、Filesystem Skill、Cordis、Loader 和 Desktop 源码面没有行为变化；已采用路径只有 `apps/desktop/package.json` 的 DSH 自身版本元数据变化。
 
 使用精确版本和 npm overrides 后，闭包包含 13 个安装项：Repoctopus 已固定的 Cordis、Loader、Cosmokit、Schemastery，8 个 DSH 包和 Zod。闭包不含 Agent、Session、Workspace 或 Webhook Runtime。上游已经删除 `dsh-invariants`，Repoctopus 同步移除该包，而不是保留幽灵依赖。没有因为闭包较深而重写 Registry。
 
@@ -36,7 +36,7 @@ Electron `44.9.3` 没有 lifecycle install script；它在首次解析包且本�
 
 ## 漂移控制
 
-- `package.json` 固定所有 DSH 包的精确 `0.2.1-rc.3` 版本，并用 overrides 阻止内部范围漂移。
+- `package.json` 固定所有 DSH 包的精确 `0.2.1-rc.4` 版本，并用 overrides 阻止内部范围漂移。
 
 ## 2026-10-24 默认分支增量
 
