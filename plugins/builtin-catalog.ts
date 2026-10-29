@@ -686,6 +686,13 @@ const definitions: readonly BuiltinDefinition[] = [
       authorities: ['managed-work-execution'],
       permissions: [],
       stateSchemas: {},
+      compatibleImplementations: [
+        {
+          codeDigest: 'sha256:0cf7cfbc39537eaa33d8f06ef13495a3db6f0a922378182f385c982f008ebef0',
+          descriptorDigest:
+            'sha256:a2fd8a42223fa0171b40f9951648af1926b4dfce501ba8360fc59daedc04cd6b',
+        },
+      ],
     },
     plugin: ManagedWorkExecutor,
     sourceFiles: [
@@ -1103,6 +1110,11 @@ const definitions: readonly BuiltinDefinition[] = [
       permissions: [],
       stateSchemas: { run: '1' },
       compatibleImplementations: [
+        {
+          codeDigest: 'sha256:a3b4c7bbcba89f3776e6c37e12e91665376ed99f899b6e30c07004cc78c01783',
+          descriptorDigest:
+            'sha256:57b826c484e8ee22ab3b09d9ccb933bf8de79a7b25d2a64a43739047b261052f',
+        },
         {
           codeDigest: 'sha256:b402fe98d8867d618a421d4aa06e71f7428aa235bd8e918ada71f9e70f0fcb04',
           descriptorDigest:
