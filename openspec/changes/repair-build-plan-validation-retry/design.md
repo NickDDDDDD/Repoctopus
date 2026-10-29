@@ -2,79 +2,104 @@
 
 ## Context
 
-当前 `WorkflowRuns.next()` 在 `build.plan` Outcome 已持久化后调用 `createBuildPlan()` 和 Plan Validator。候选无效时，这两个边界会抛错或返回拒绝，Service 直接终止。此时存在三项互相冲突的事实：
+当前链路把一次 Host 返回同时当成两个不同事实：
 
-1. Host Outcome 是不可变审计事实，不能用修正版覆盖。
-2. lifecycle 仍引用旧 `build.plan` Work，不能领取第二次。
-3. `work-reconcile` 只处理未知外部结果，`resume` 只恢复缺失 Work，二者都不能把已知的无效 Outcome解释为未执行。
+1. `ManagedWorkExecutor` 收到 Host payload 后调用 `markHostCompleted()`，随后 `acceptOutcome()` 将 Work checkpoint 置为终态 `outcome`；
+2. `WorkflowRuns.next()` 之后才读取 `build-plan-candidate`，调用 `createBuildPlan()`、`validateBuildPlan()` 与 lifecycle Validator；
+3. 任一校验拒绝都会抛错，但终态 Action Outcome 已不可变，原 claim 也无法再次提交。
 
-领域 reducer 已支持 `build-plan-retry-required`，但 Service 只在 Host identity 漂移时使用，未覆盖候选验证失败。这是编排层遗漏，不需要新 phase、Repair lifecycle 或可变 Outcome。
+因此候选错误被错误提升为“Action 已完成但 lifecycle 永远不能接受”的裂缝。`resume`、`work-reconcile` 与新 Plan Work 都不能修复这个顺序：前两者只处理未知/未执行，后者会把初次候选拒绝误建模为新的 Action attempt。
+
+Comet 的成熟边界是：submission 先进入 Runtime，Runtime 在 CAS mutation 内完成 contract/schema/step validation 与 transition；失败只追加 `rejectedOutcomes`，Action 保持 `running`，原 claim/attempt/input hash 不变。纠正提交使用新的 Outcome ID；相同 ID 改内容则冲突。只有已接受 Plan 的后续修改才创建显式 revision/new Plan action。
 
 ## Goals / Non-Goals
 
 **Goals:**
 
-- 把预期的候选拒绝收敛为同一 Plan Action 的新 Work。
-- 保持 configuration、Task set、旧 claim/invocation/outcome 与 transition history 可审计。
-- 让拒绝原因进入新 Work 的稳定输入和低基数遥测分类，支持 Agent 修正与流程健康度分析。
-- 证明进程重启、重复 `next` 和修正候选提交均具备幂等边界。
+- 让 Host submission 在被当前 Work 的权威 Validator 接受前不成为终态 Action Outcome。
+- 可纠正拒绝后保持同一 Work、claim、attempt、checkEpoch、invocation、packet digest 和冻结输入。
+- 保留每次拒绝提交的不可变、有限、可审计事实，并允许使用新 submission identity 纠正。
+- 为当前卡住 desktop Run 提供一次受控、幂等、无需 Store 手术的恢复路径。
+- 让 Dashboard/OTLP 可区分 submitted、rejected、corrected、accepted 与 processing-error。
 
 **Non-Goals:**
 
-- 捕获进程、存储、Provider 或程序缺陷等未知异常并无限重试。
-- 修改候选、自动生成补丁计划或放宽 Plan Validator。
-- 恢复所有历史预发布 Run schema。
+- 自动修改候选、自动重新调用外部 Host 或放宽 Validator。
+- 把已接受 Plan 的 revision 退回首次 candidate correction。
+- 捕获 Store、Provider、CAS、Skill 解析或未知程序缺陷并无限重试。
 
 ## Decisions
 
-### 1. 候选拒绝是受管 Action 结果，不是 Work 失败重放
+### 1. Host submission 与 accepted Outcome 是两个事实
 
-Host 已成功完成“生成候选”动作；失败发生在 Runtime 对候选的确定性验证。因此旧 Host Outcome 保持 `succeeded`，Runtime 记录 `candidate-rejected` 诊断并通过现有 `build-plan-retry-required` observation 创建新的 `build.plan` Work。新 Work 拥有新的 `workId`、`checkEpoch` 和 action attempt，原 invocation 不可再次提交结果。
+`WorkExecutionHostOutcome` 不再因被接收就自动成为 `ClaimedActionOutcome`。Runtime 先记录带独立 `submissionId` 与 payload digest 的 submission，再由当前 Work 的 result validator 返回：
 
-将旧 Outcome 改成 failed 会伪造 Host 执行事实；重新开放旧 claim 会允许覆盖不可变结果；两者均拒绝。
+- `accepted`: 原子绑定 terminal Action Outcome、receipt 与 validator fact；
+- `rejected-correctable`: 追加 rejected submission，Work 保持可纠正；
+- `failed-closed`: 保存处理诊断并停止，不声称候选可由 Agent 修正。
 
-### 2. 只捕获预期的候选验证错误
+accepted/rejected 的判断由 Runtime 注册的 Work result validator 完成，Host 和 Agent 不能选择 phase、Validator 或 continuation。
 
-领域层新增可识别的 `BuildPlanCandidateRejectedError`，只用于候选 schema、字段上限、Task/acceptance 覆盖、依赖、仓库/write scope 和规范化校验。`createBuildPlan()` 继续保留抛出式 API，调用方可通过错误类型区分“候选不合格”和未知程序/基础设施异常。
+### 2. Build Plan 在 acceptance boundary 内完成全部确定性校验
 
-`validateBuildPlan()` 的 `accepted=false` 以及 lifecycle Validator 对完整 Plan validation fact 的拒绝同样属于候选拒绝。存储失败、Skill 解析失败、Provider I/O、CAS 冲突和非该类型异常继续向上失败，不得被伪装成 Agent 可修正问题。
+`build.plan` validator 在绑定终态 Outcome 前完成：
 
-### 3. Runtime 统一创建 Retry Work
+1. result kind 与 bounded schema；
+2. `createBuildPlan()` 的 Task/acceptance/dependency/repository/write-scope 规范化；
+3. `validateBuildPlan()`；
+4. lifecycle Validator；
+5. 当前 configuration、planning digest、Task set 与 workspace snapshot 的冻结身份检查。
 
-`WorkflowRuns` 使用一个私有 helper 处理 Host drift、candidate rejection 和 Validator rejection的 Plan 重试：
+这些步骤的候选/Validator 拒绝属于 `rejected-correctable`。Store 写入、Provider I/O、CAS、Skill 解析与未分类异常属于 `failed-closed`；它们可以留下 processing diagnostic，但不能自动要求 Agent 重新生成候选。
 
-- 重新解析当前 `build.plan` Action Skill 和 augmentation Skills；
-- 绑定同一 composition、project configuration、project snapshot、Workspace/repository set 与冻结 Build Configuration；
-- 在 `stableInput` 中记录有界 `reasonCode`、旧 `workId` 和诊断摘要；
-- 先提交 lifecycle observation，再记录新 Work checkpoint；
-- 返回 warning diagnostic 和新 Run projection。
+### 3. 拒绝保持同一 Work/claim/attempt
 
-helper 不接受调用者指定 phase、Action 或 configuration，避免恢复入口变成跳转 API。
+拒绝不会生成新的 `build.plan` Work，也不递增 `checkEpoch` 或 action attempt。checkpoint 保留原 `workId`、claim token、packet、Host invocation 与冻结上下文，并追加 rejected submission：
 
-### 4. 拒绝原因有界且可观测
+- `submissionId`；
+- payload digest；
+- `reasonCode`：`output-invalid | outcome-rejected | outcome-processing-error`；
+- 有界诊断与时间；
+- 不可变原始 Host outcome。
 
-重试分类固定为 `host-drift | candidate-invalid | validator-rejected`。自由文本诊断截断并规范化，只进入 Work input/事件，不进入 Metric label。OTLP 继续从已提交 transition/Work facts 投影 `build.plan` retry、attempt 和 result；不得从异常日志猜测状态。
+自由文本与完整 payload 不进入 Metric label。历史采用固定上限；达到上限后停止接收并要求人工处理，不静默丢弃审计事实。
 
-### 5. 恢复与幂等
+### 4. 纠正提交必须有新的 submission identity
 
-transition 和新 Work checkpoint 使用现有 Run Store CAS。崩溃发生在 transition 与 checkpoint 之间时，兼容恢复只能为 lifecycle 当前新 Work补齐 checkpoint；不会回到旧 Work。重复 `next` 看到新 Work 后只返回/领取该 Work，不会再次处理旧 Outcome。
+同一 `submissionId` + 同一 digest 是幂等重放；同一 `submissionId` + 不同 digest 返回 conflict。被拒绝后，原 Host invocation/claim 仍是权威绑定，Host 用新的 `submissionId` 提交修正版。
 
-既有卡住 Run 只有在 definition、composition、Provider 和冻结输入兼容时，才可由修复版 Runtime 通过显式恢复入口把已知拒绝 Outcome转换为新 Work；不直接编辑 Store，也不删除旧事实。
+外部 Host 由 CLI/adapter 得到 `awaiting-correction` continuation 与结构化诊断，再显式提交修正版。嵌入式 Host 可以在同一受管会话中纠正，但 Runtime 不自动再次执行任意有副作用的 Host 操作。
+
+### 5. 接受与生命周期推进保持单一权威顺序
+
+校验成功后，Runtime 在 CAS 保护下绑定 accepted Host submission、Action Outcome、receipt 与 validator fact；`WorkflowRuns.next()` 只能消费已接受结果并提交 lifecycle observation。若在 acceptance 与 lifecycle observation 之间崩溃，恢复按 accepted fact 幂等推进，不重新调用 Host，也不产生第二个 Work。
+
+### 6. 预修复卡住 Run 使用显式兼容恢复
+
+兼容恢复只匹配以下可证明状态：当前 Work 是 `build.plan`；checkpoint 已有 terminal host/action Outcome；lifecycle 尚无相应 accepted Plan；候选可重现同一确定性拒绝；definition/composition/packet/configuration 身份兼容。
+
+Runtime 原子地保留旧 Outcome 为 rejected submission，移除“已接受”的 checkpoint 投影，恢复同一 Work/claim/invocation 的 correction 状态，并记录一次 migration fact。恢复幂等，不删除 trajectory/event，不接受任意调用者指定 Work/phase。无法证明兼容时进入 `migration_required`，不得猜测。
+
+### 7. 可观测性来自提交事实
+
+Trajectory/OTLP 从提交事实投影以下低基数事件：`work.outcome-submitted`、`work.outcome-rejected`、`work.outcome-corrected`、`work.outcome-accepted`、`work.outcome-processing-error`。属性包含 phase/action/result/reasonCode/attempt/checkEpoch；run/work/submission identity 只用于 trace/event correlation，不作为 Metric label。
 
 ## 模块边界
 
-- `domains/change-lifecycle/build-protocol.ts`: 定义可识别的候选拒绝错误，不依赖 Cordis、文件系统或 Store。
-- `services/workflow-runs.ts`: 将确定性拒绝编排为现有 lifecycle observation 和新 Work。
-- `platform/runtime`: 继续负责 CAS、checkpoint 与 trajectory 持久化，不解释候选内容。
-- `platform/telemetry`: 消费 transition/Work facts，不新增高基数异常标签。
+- `domains/work-execution`: submission/rejection checkpoint schema、digest/idempotency 与纯状态约束。
+- `services/managed-work-executor`: 接收/规范化 Host submission，不再提前终态化领域 Outcome。
+- `services/work-execution-authority`: CAS 下记录 submission、rejection、acceptance、兼容恢复和 trajectory facts。
+- `services/workflow-runs`: 注册并执行当前 Work result validator，成功后提交 lifecycle observation。
+- `platform/telemetry`: 消费已提交事实，不从异常日志反推业务状态。
 
 ## 验证
 
-- 领域测试证明每类非法 candidate 抛出可识别错误，未知异常不会被该类型吞掉。
-- Service 测试提交缺少 Task 的候选，断言旧 Outcome 不变、新 `workId/checkEpoch/actionAttempt` 递增且诊断可见。
-- 冷恢复测试在拒绝后关闭并重启 Runtime，再提交完整候选，证明只接受新 invocation 并正常进入下一 Action。
-- 严格 OpenSpec、类型检查、lint、相关 Vitest 与完整 `npm run verify` 通过。
+- 先用失败回归测试复现：缺 Task 候选被提前终态化后 Run 永久阻塞。
+- 领域/Service 测试证明拒绝后 Work/claim/attempt/checkEpoch/invocation 不变，新 submission 可纠正，同 ID 改内容冲突。
+- 冷启动测试证明 rejected submissions 与 claim 跨重启保留，修正版仍提交给同一 Work。
+- 兼容测试把真实旧 schema 卡住 fixture 恢复到 correction 状态，并证明重复恢复幂等。
+- 严格 OpenSpec、typecheck、lint、相关 Vitest、完整 `npm run verify` 与 telemetry contract 全部通过。
 
 ## 回退
 
-实现不迁移或重写旧事实。若需回退代码，已创建的新 Work 仍是合法 `build.plan` Work；旧版本若 definition/composition 不兼容应进入 `migration_required`，不得选择旧 Outcome覆盖新状态。
+新 checkpoint schema 只追加不可变 submission/rejection facts。若代码回退后旧 Runtime 无法理解新 schema，应 fail closed 为 `migration_required`，不得把 rejected submission 当成 accepted Outcome 或创建新 Plan Work。

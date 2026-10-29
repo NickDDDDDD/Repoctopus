@@ -1,37 +1,41 @@
 # Tasks
 
-## 1. 固定缺陷与领域错误边界
+## 1. 固定根因与提交状态模型
 
-- [ ] 1.1 增加 Service 回归测试：Host 提交未覆盖全部 Task 的 `build-plan-candidate` 后，当前实现会保留旧 Outcome 并永久卡在同一 Plan Work。
-      **Acceptance:** 测试明确区分“Outcome 已知但 candidate 被拒绝”和 Host unknown/reconcile，不以手改 Store恢复
-      **Requirements:** managed-work-execution#无效-build-plan-candidate-必须生成新的-plan-work
-- [ ] 1.2 新增 `BuildPlanCandidateRejectedError`，让 `createBuildPlan()` 的候选 schema、引用、覆盖、依赖与边界错误可识别，未知程序错误保持原样。
+- [ ] 1.1 增加失败回归测试：缺少 Task 的 `build-plan-candidate` 被提前绑定为终态 Outcome 后，原 Work 无法提交修正版且 Run 永久阻塞。
+      **Acceptance:** 测试明确区分 Host submission、accepted Action Outcome 与 lifecycle Plan acceptance，不以新 Work或手改 Store恢复
+      **Requirements:** managed-work-execution#被校验拒绝的-host-submission-必须保持当前-work-可纠正
+- [ ] 1.2 为 WorkExecution checkpoint 增加有界 rejected submission 模型、独立 `submissionId`、payload digest 与幂等/conflict 规则。
       **Blocked by:** 1.1
-      **Acceptance:** 领域测试覆盖空计划、缺 Task、未知 Task/acceptance、非法 scope、重复/环依赖，均可被精确识别
-      **Requirements:** managed-work-execution#无效-build-plan-candidate-必须生成新的-plan-work
+      **Acceptance:** 同 ID 同 digest 幂等、同 ID 不同 digest 冲突；拒绝历史不可覆盖且达到上限时 fail closed
+      **Requirements:** managed-work-execution#被校验拒绝的-host-submission-必须保持当前-work-可纠正
 
-## 2. 实现 Runtime-authoritative Plan 重试
+## 2. 修正 Outcome acceptance boundary
 
-- [ ] 2.1 提取统一的 Build Plan retry helper，固定 Action、配置、仓库、Skill 与输入 identity，并生成新的 `workId/checkEpoch/actionAttempt`。
+- [ ] 2.1 重构 Managed Work 执行顺序：Host 返回只记录 submission，当前 Work result validator 通过后才绑定 Action Outcome、receipt 与 validator fact。
       **Blocked by:** 1.2
-      **Acceptance:** Host drift 与 candidate rejection 共用安全物化路径，调用方不能指定其他 phase/Action/配置
-      **Requirements:** managed-work-execution#无效-build-plan-candidate-必须生成新的-plan-work
-- [ ] 2.2 将候选创建错误、Plan validation 拒绝和 lifecycle Validator 拒绝映射为新 Plan Work，保留旧 claim/invocation/outcome，不捕获 Store、Provider 或未知异常。
+      **Acceptance:** `markHostCompleted/acceptOutcome` 不再早于 Work result validation；Host/Agent 不能指定 Validator或 continuation
+      **Requirements:** managed-work-execution#被校验拒绝的-host-submission-必须保持当前-work-可纠正
+- [ ] 2.2 将 Build Plan result kind、candidate 创建、Plan validation、lifecycle Validator 与冻结身份检查接入 acceptance boundary。
       **Blocked by:** 2.1
-      **Acceptance:** 三类确定性拒绝均可重试；模拟未知异常仍向上失败且不创建 Work
-      **Requirements:** managed-work-execution#无效-build-plan-candidate-必须生成新的-plan-work
-- [ ] 2.3 记录有界 retry reason、旧 Work identity、transition、Trajectory 与 OTLP 事件，Metric 不使用自由文本或高基数 identity。
+      **Acceptance:** candidate/schema/Validator 拒绝保持原 workId、claim、attempt、checkEpoch、invocation 和 packet；不创建新 Plan Work
+      **Requirements:** managed-work-execution#被校验拒绝的-host-submission-必须保持当前-work-可纠正
+- [ ] 2.3 为外部与嵌入式 Host 实现纠正协议：返回 `awaiting-correction`，新 submission identity 可纠正，Runtime 不自动重放 Host 副作用。
       **Blocked by:** 2.2
-      **Acceptance:** Dashboard/OTLP 可区分 `candidate-invalid` 与 `validator-rejected`，敏感路径和完整异常不进入 Metric
-      **Requirements:** managed-work-execution#无效-build-plan-candidate-必须生成新的-plan-work
+      **Acceptance:** 修正版通过后只产生一个 accepted Outcome；旧 invocation 之外的提交与同 ID 改内容均被拒绝
+      **Requirements:** managed-work-execution#被校验拒绝的-host-submission-必须保持当前-work-可纠正
 
-## 3. 恢复验证与交付
+## 3. 恢复、遥测与交付
 
-- [ ] 3.1 增加进程重启测试：拒绝后只可领取新 Plan Work，旧 invocation 重放/不同 Outcome 被拒绝，完整候选通过后正常进入 Plan Evidence/Execute。
+- [ ] 3.1 实现预修复卡住 Plan Run 的显式兼容恢复，保留旧 Outcome 为 rejected submission，并恢复同一 Work 的 correction 状态。
       **Blocked by:** 2.3
-      **Acceptance:** 测试跨关闭/重启验证 immutable Outcome、单一 current Work、递增 attempt/checkEpoch 和后续 Action
-      **Requirements:** managed-work-execution#无效-build-plan-candidate-必须生成新的-plan-work
-- [ ] 3.2 运行严格 OpenSpec、相关 Vitest、typecheck、lint、generated/architecture/provenance 检查和完整 `npm run verify`；更新正式验证报告并清理临时文件。
+      **Acceptance:** 真实旧 checkpoint fixture 可幂等恢复；身份不兼容或无法重现确定性拒绝时进入 `migration_required`
+      **Requirements:** managed-work-execution#被校验拒绝的-host-submission-必须保持当前-work-可纠正
+- [ ] 3.2 增加重启与遥测测试，覆盖 submitted/rejected/corrected/accepted/processing-error，确认自由文本和 identity 不进入 Metric label。
       **Blocked by:** 3.1
-      **Acceptance:** 所有命令通过，分支提交均已推送，验证记录只包含可复现证据
-      **Requirements:** managed-work-execution#无效-build-plan-candidate-必须生成新的-plan-work
+      **Acceptance:** rejected history、claim 与 correction 能力跨重启保留；Dashboard/OTLP 可还原纠正次数和最终结果
+      **Requirements:** managed-work-execution#被校验拒绝的-host-submission-必须保持当前-work-可纠正
+- [ ] 3.3 运行严格 OpenSpec、相关 Vitest、typecheck、lint、generated/architecture/provenance 检查和完整 `npm run verify`；更新验证证据并清理临时文件。
+      **Blocked by:** 3.2
+      **Acceptance:** 所有命令通过，分支提交均已推送，当前 desktop Run 可通过受控恢复继续而无需 Store 手术
+      **Requirements:** managed-work-execution#被校验拒绝的-host-submission-必须保持当前-work-可纠正
