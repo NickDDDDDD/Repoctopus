@@ -82,6 +82,7 @@ import {
 import type { DeliveryIntentV3, DeliveryPolicy } from '../domains/delivery/types.js';
 import { deliveryPolicyDigest } from '../domains/delivery/snapshot.js';
 import type { WorkExecutorIdentity } from '../domains/action/types.js';
+import type { WorkExecutionHostIdentity } from '../domains/work-execution/types.js';
 import type { ArchivePublicationResult } from '../domains/delivery/service-v3.js';
 import {
   createPublicationReceipt,
@@ -875,15 +876,17 @@ export class WorkflowRuns extends Service {
     };
   }
 
-  private assertFrozenBuildHost(configuration: BuildConfiguration, hostId: string): void {
-    if (hostId !== configuration.hostId) {
+  private assertFrozenBuildHost(
+    configuration: BuildConfiguration,
+    invocationHost: WorkExecutionHostIdentity,
+  ): void {
+    if (invocationHost.id !== configuration.hostId) {
       throw new Error('Build Host identity drifted from the approved Configuration');
     }
-    const host = this.ctx.workExecutionHosts.get(hostId);
-    if (!host) throw new Error('Approved Build Host is no longer registered');
     if (
-      canonicalJson([...host.identity.capabilities].sort()) !==
-      canonicalJson([...configuration.hostCapabilities].sort())
+      configuration.hostCapabilities.some(
+        (capability) => !invocationHost.capabilities.includes(capability),
+      )
     ) {
       throw new Error('Build Host capabilities drifted from the approved Configuration');
     }
@@ -891,7 +894,7 @@ export class WorkflowRuns extends Service {
       configuration.executionMode === 'autonomous'
         ? 'build.autonomous'
         : 'subagent.dispatch.attested';
-    if (!host.identity.capabilities.includes(required)) {
+    if (!invocationHost.capabilities.includes(required)) {
       throw new Error(`Approved Build Host no longer supports ${required}`);
     }
   }
@@ -1350,6 +1353,101 @@ export class WorkflowRuns extends Service {
             }
             if (
               lifecycle.phase === 'build' &&
+              lifecycle.currentWork === null &&
+              lifecycle.buildProtocol?.currentAction === 'configure'
+            ) {
+              const skills = await this.resolveLifecycleWorkSkills('build.configure', signal);
+              const work = createBuildActionWork({
+                runId,
+                checkEpoch: lifecycle.checkEpoch + 1,
+                definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+                kind: 'build.configure',
+                actionSkill: skills.actionSkill,
+                augmentationSkills: skills.augmentationSkills,
+                compositionDigest: current.composition.compositionDigest,
+                projectConfigDigest,
+                projectSnapshotDigest: current.projectSnapshotDigest,
+                workspaceRepositoryId,
+                repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
+                stableInput: {
+                  reason: 'compatible-definition-recovery',
+                  actionAttempt: lifecycle.buildProtocol.actionAttempt + 1,
+                },
+              });
+              for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
+                await this.coordinator.bindSkill(runId, skill);
+              }
+              const restored = await this.coordinator.acceptChangeObservation(runId, {
+                kind: 'build-configuration-retry-required',
+                reason: 'Compatible lifecycle recovery restored interrupted Configure Work',
+                work,
+              });
+              await this.ctx.workExecutionAuthority.recordWorkCreated(runId, work);
+              return {
+                ...restored,
+                value: await this.coordinator.status(runId),
+                diagnostics: [
+                  ...restored.diagnostics,
+                  {
+                    level: 'warning',
+                    code: 'change.build-configuration-work-restored',
+                    message: 'Compatible lifecycle recovery restored interrupted Configure Work',
+                  },
+                ],
+              };
+            }
+            if (
+              lifecycle.phase === 'build' &&
+              lifecycle.currentWork === null &&
+              lifecycle.buildProtocol?.currentAction === 'plan' &&
+              lifecycle.buildProtocol.configuration
+            ) {
+              const configuration = lifecycle.buildProtocol.configuration;
+              const skills = await this.resolveLifecycleWorkSkills('build.plan', signal);
+              const work = createBuildActionWork({
+                runId,
+                checkEpoch: lifecycle.checkEpoch + 1,
+                definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+                kind: 'build.plan',
+                actionSkill: skills.actionSkill,
+                augmentationSkills: skills.augmentationSkills,
+                compositionDigest: current.composition.compositionDigest,
+                projectConfigDigest,
+                projectSnapshotDigest: current.projectSnapshotDigest,
+                workspaceRepositoryId,
+                repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
+                configurationId: configuration.configurationId,
+                executionMode: configuration.executionMode,
+                tddMode: configuration.tddMode,
+                stableInput: {
+                  reason: 'compatible-definition-recovery',
+                  actionAttempt: lifecycle.buildProtocol.actionAttempt + 1,
+                },
+              });
+              for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
+                await this.coordinator.bindSkill(runId, skill);
+              }
+              const restored = await this.coordinator.acceptChangeObservation(runId, {
+                kind: 'build-plan-retry-required',
+                reason: 'Compatible lifecycle recovery restored interrupted Plan Work',
+                work,
+              });
+              await this.ctx.workExecutionAuthority.recordWorkCreated(runId, work);
+              return {
+                ...restored,
+                value: await this.coordinator.status(runId),
+                diagnostics: [
+                  ...restored.diagnostics,
+                  {
+                    level: 'warning',
+                    code: 'change.build-plan-work-restored',
+                    message: 'Compatible lifecycle recovery restored interrupted Plan Work',
+                  },
+                ],
+              };
+            }
+            if (
+              lifecycle.phase === 'build' &&
               lifecycle.verificationInvalidation &&
               (lifecycle.tasks ?? []).every((task) => task.status === 'completed')
             ) {
@@ -1389,10 +1487,70 @@ export class WorkflowRuns extends Service {
                   'Build Configure Host must return a structured build-configuration-candidate',
                 );
               }
-              const host = this.ctx.workExecutionHosts.get(hostOutcome.hostId);
-              if (!host) throw new Error('Build Configure Host is no longer registered');
+              const invocationHost = current.workExecution.hostInvocation?.host;
+              if (!invocationHost || invocationHost.id !== hostOutcome.hostId) {
+                throw new Error('Build Configure Host does not match the persisted invocation');
+              }
               if (!lifecycle.workspaceIntent || !lifecycle.buildProtocol) {
                 throw new Error('Build Configure requires the approved Workspace intent');
+              }
+              const requiredCapability =
+                configurationCandidate.executionMode === 'autonomous'
+                  ? 'build.autonomous'
+                  : 'subagent.dispatch.attested';
+              if (!invocationHost.capabilities.includes(requiredCapability)) {
+                const projectConfigDigest = current.trigger?.facts.projectConfigDigest;
+                const specificationRoot = current.trigger?.facts.specificationRoot as
+                  | { repositoryId?: unknown }
+                  | undefined;
+                if (
+                  typeof projectConfigDigest !== 'string' ||
+                  !/^sha256:[a-f0-9]{64}$/u.test(projectConfigDigest) ||
+                  typeof specificationRoot?.repositoryId !== 'string'
+                ) {
+                  throw new Error('Build Configure retry trigger identities are missing');
+                }
+                const skills = await this.resolveLifecycleWorkSkills('build.configure', signal);
+                const retryWork = createBuildActionWork({
+                  runId,
+                  checkEpoch: lifecycle.checkEpoch + 1,
+                  definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+                  kind: 'build.configure',
+                  actionSkill: skills.actionSkill,
+                  augmentationSkills: skills.augmentationSkills,
+                  compositionDigest: current.composition.compositionDigest,
+                  projectConfigDigest: projectConfigDigest as `sha256:${string}`,
+                  projectSnapshotDigest: current.projectSnapshotDigest,
+                  workspaceRepositoryId: specificationRoot.repositoryId,
+                  repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
+                  stableInput: {
+                    reason: 'configuration-host-capability-missing',
+                    priorWorkId: lifecycle.currentWork.workId,
+                    executionMode: configurationCandidate.executionMode,
+                    requiredCapability,
+                  },
+                });
+                for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
+                  await this.coordinator.bindSkill(runId, skill);
+                }
+                const retried = await this.coordinator.acceptChangeObservation(runId, {
+                  kind: 'build-configuration-retry-required',
+                  reason: `Configure Host did not attest ${requiredCapability}`,
+                  work: retryWork,
+                });
+                await this.ctx.workExecutionAuthority.recordWorkCreated(runId, retryWork);
+                return {
+                  ...retried,
+                  value: await this.coordinator.status(runId),
+                  diagnostics: [
+                    ...retried.diagnostics,
+                    {
+                      level: 'warning',
+                      code: 'change.build-configuration-host-capability-retry',
+                      message: `Build Configure will retry with a Host that attests ${requiredCapability}`,
+                    },
+                  ],
+                };
               }
               const binding = await this.bindExecutionWorkspace(
                 current,
@@ -1405,8 +1563,8 @@ export class WorkflowRuns extends Service {
                 executionMode: configurationCandidate.executionMode,
                 tddMode: configurationCandidate.tddMode,
                 reviewMode: 'standard',
-                hostId: host.identity.id,
-                hostCapabilities: host.identity.capabilities,
+                hostId: invocationHost.id,
+                hostCapabilities: invocationHost.capabilities,
               });
               const validator = this.ctx.lifecycleValidators.resolve(
                 lifecycle.currentWork.validatorProfile.id,
@@ -1454,7 +1612,62 @@ export class WorkflowRuns extends Service {
                 throw new Error('Build Plan Outcome has no frozen configuration');
               }
               if (!hostOutcome) throw new Error('Build Plan Host Outcome is missing');
-              this.assertFrozenBuildHost(configuration, hostOutcome.hostId);
+              const invocationHost = current.workExecution.hostInvocation?.host;
+              if (!invocationHost || invocationHost.id !== hostOutcome.hostId) {
+                throw new Error('Build Plan Host does not match the persisted invocation');
+              }
+              if (
+                invocationHost.id !== configuration.hostId ||
+                configuration.hostCapabilities.some(
+                  (capability) => !invocationHost.capabilities.includes(capability),
+                )
+              ) {
+                const planSkills = await this.resolveLifecycleWorkSkills('build.plan', signal);
+                const retryWork = createBuildActionWork({
+                  runId,
+                  checkEpoch: lifecycle.checkEpoch + 1,
+                  definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+                  kind: 'build.plan',
+                  actionSkill: planSkills.actionSkill,
+                  augmentationSkills: planSkills.augmentationSkills,
+                  compositionDigest: current.composition.compositionDigest,
+                  projectConfigDigest,
+                  projectSnapshotDigest: current.projectSnapshotDigest,
+                  workspaceRepositoryId,
+                  repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
+                  configurationId: configuration.configurationId,
+                  executionMode: configuration.executionMode,
+                  tddMode: configuration.tddMode,
+                  stableInput: {
+                    reason: 'plan-host-drift',
+                    priorWorkId: lifecycle.currentWork.workId,
+                    approvedHostId: configuration.hostId,
+                    observedHostId: invocationHost.id,
+                  },
+                });
+                for (const skill of [planSkills.actionSkill, ...planSkills.augmentationSkills]) {
+                  await this.coordinator.bindSkill(runId, skill);
+                }
+                const retried = await this.coordinator.acceptChangeObservation(runId, {
+                  kind: 'build-plan-retry-required',
+                  reason: 'Build Plan Outcome came from a Host outside the approved Configuration',
+                  work: retryWork,
+                });
+                await this.ctx.workExecutionAuthority.recordWorkCreated(runId, retryWork);
+                return {
+                  ...retried,
+                  value: await this.coordinator.status(runId),
+                  diagnostics: [
+                    ...retried.diagnostics,
+                    {
+                      level: 'warning',
+                      code: 'change.build-plan-host-retry',
+                      message: 'Build Plan will retry with the Host approved by the Configuration',
+                    },
+                  ],
+                };
+              }
+              this.assertFrozenBuildHost(configuration, invocationHost);
               await this.assertFrozenExecutionWorkspace(
                 current,
                 lifecycle,
@@ -1590,10 +1803,14 @@ export class WorkflowRuns extends Service {
               if (!protocol || !configuration || !plan || !invocationId) {
                 throw new Error('Build Execute Outcome has no current Plan');
               }
-              this.assertFrozenBuildHost(
-                configuration,
-                current.workExecution.hostOutcome!.hostId,
-              );
+              const invocationHost = current.workExecution.hostInvocation?.host;
+              if (
+                !invocationHost ||
+                invocationHost.id !== current.workExecution.hostOutcome!.hostId
+              ) {
+                throw new Error('Build Execute Host does not match the persisted invocation');
+              }
+              this.assertFrozenBuildHost(configuration, invocationHost);
               await this.assertFrozenExecutionWorkspace(
                 current,
                 lifecycle,
@@ -1754,7 +1971,11 @@ export class WorkflowRuns extends Service {
               if (!protocol || !configuration || !plan || !hostOutcome) {
                 throw new Error('Build Check Outcome has no current Plan');
               }
-              this.assertFrozenBuildHost(configuration, hostOutcome.hostId);
+              const invocationHost = current.workExecution.hostInvocation?.host;
+              if (!invocationHost || invocationHost.id !== hostOutcome.hostId) {
+                throw new Error('Build Check Host does not match the persisted invocation');
+              }
+              this.assertFrozenBuildHost(configuration, invocationHost);
               await this.assertFrozenExecutionWorkspace(
                 current,
                 lifecycle,

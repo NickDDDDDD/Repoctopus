@@ -41,6 +41,7 @@ import {
 } from '../platform/runtime/resource-lease.js';
 import { FileEvidenceTelemetryOutbox } from '../platform/telemetry/evidence-outbox.js';
 import { evidenceTelemetryFromEnvironment } from '../platform/telemetry/opentelemetry/evidence-exporter.js';
+import { EvidenceObservationTelemetry } from './observation-telemetry.js';
 import { bindOperationOwnership, type OperationOwnership } from './operation-ownership.js';
 
 interface WorkflowEvidenceBinding {
@@ -170,8 +171,12 @@ export class EvidenceCoordinator extends Service {
     super(context, 'evidenceCoordinator');
     this.operations = bindOperationOwnership(context, 'evidenceCoordinator');
     this.workspace = path.resolve(config.workspaceRoot);
+    const observationDelivery = context.get('observationDelivery');
     this.telemetry =
-      config.telemetry ?? evidenceTelemetryFromEnvironment(config.environment ?? process.env);
+      config.telemetry ??
+      (observationDelivery
+        ? new EvidenceObservationTelemetry(observationDelivery, config.environment ?? process.env)
+        : evidenceTelemetryFromEnvironment(config.environment ?? process.env));
     this.store = new FileEvidenceStore(this.workspace);
     this.journal = new FileEvidenceJournal(this.workspace);
     this.leases = new FileResourceLeaseManager(this.workspace);

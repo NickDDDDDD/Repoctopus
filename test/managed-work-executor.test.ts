@@ -160,6 +160,93 @@ function executor(
 }
 
 describe('Managed Work Executor Build contract', () => {
+  it('persists external Runner capabilities beyond the current Work requirement', async () => {
+    const packet = frozenPacket();
+    const service = Object.create(ManagedWorkExecutor.prototype) as ManagedWorkExecutor;
+    const markHostStarted = vi.fn();
+    Object.defineProperty(service, 'ctx', {
+      value: {
+        workDispatcher: {
+          claim: vi.fn().mockResolvedValue({
+            packet,
+            intent: { runId: 'run-1', workId: 'work-1', attempt: 1, checkEpoch: 4 },
+          }),
+        },
+        workExecutionAuthority: { markHostStarted },
+        runStore: { loadRun: vi.fn().mockResolvedValue({ changeLifecycle: null }) },
+      },
+    });
+
+    const claimed = await service.claimExternal({
+      runId: 'run-1',
+      adapter: 'manual',
+      hostCapabilities: ['build.autonomous'],
+      executor: {
+        actorId: 'user-1',
+        runnerId: 'codex-root',
+        source: 'cli',
+        authenticated: true,
+      },
+    });
+
+    expect(claimed.invocation.host.capabilities).toEqual([
+      'build.autonomous',
+      'subagent.dispatch.attested',
+    ]);
+    expect(markHostStarted).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ host: claimed.invocation.host }),
+    );
+  });
+
+  it('rejects Build claims from a Runner outside the approved Host before persisting a claim', async () => {
+    const packet = frozenPacket();
+    const claim = vi.fn().mockResolvedValue({
+      packet,
+      intent: { runId: 'run-1', workId: 'work-plan', attempt: 1, checkEpoch: 4 },
+    });
+    const service = Object.create(ManagedWorkExecutor.prototype) as ManagedWorkExecutor;
+    Object.defineProperty(service, 'ctx', {
+      value: {
+        workDispatcher: { claim },
+        workExecutionAuthority: { markHostStarted: vi.fn() },
+        runStore: {
+          loadRun: vi.fn().mockResolvedValue({
+            changeLifecycle: {
+              phase: 'build',
+              currentWork: {
+                kind: 'build.plan',
+                capabilities: ['repository.read', 'specification.read'],
+              },
+              buildProtocol: {
+                configuration: {
+                  hostId: 'external:cli:codex-root',
+                  hostCapabilities: ['build.autonomous', 'repository.read', 'repository.write'],
+                  executionMode: 'autonomous',
+                },
+              },
+            },
+          }),
+        },
+      },
+    });
+
+    await expect(
+      service.claimExternal({
+        runId: 'run-1',
+        adapter: 'manual',
+        hostCapabilities: ['build.autonomous', 'repository.read', 'repository.write'],
+        executor: {
+          actorId: 'user-1',
+          runnerId: 'cli:ephemeral-pid',
+          source: 'cli',
+          authenticated: true,
+        },
+      }),
+    ).rejects.toThrow(/Host approved by the Build Configuration/u);
+    expect(claim).not.toHaveBeenCalled();
+  });
+
   it('accepts attested subagent delegation only after Skill consumption and durable Host completion', async () => {
     const { service, authority } = executor();
     await expect(service.execute({} as never)).resolves.toMatchObject({

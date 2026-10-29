@@ -94,8 +94,8 @@ describe('managed Build verification subject', () => {
     };
 
     expect(subject).toEqual({
-      definition: 'repoctopus-change@4.0.0',
-      definitionDigest: 'sha256:3890da04d20fb364e363a976b21877f0198ca22da3c00af4de302de0f48b430b',
+      definition: 'repoctopus-change@4.2.0',
+      definitionDigest: 'sha256:4bef956969843eb8862947abdedaf5de59d8aa34237debc3387996b8944e8952',
       runId: 'change-verification-workspace-restore-runtime-build-orchestration-9fda2eb7bf05fdf5',
       blackBoxRunId: 'change-managed-blackbox-managed-blackbox-a56af5c947f984ce',
       configurationId: 'build-configuration:984df01c5c917e6286a1e112',
@@ -103,8 +103,7 @@ describe('managed Build verification subject', () => {
         'sha256:af6f56776fd582eca909f27e86f0d22804d82cd7984df01c5c917e6286a1e112',
       planId: 'build-plan:4e6fa164e2fe59548e6c1164',
       planDigest: 'sha256:f3191d33ce636a38a19ae7f397f7faee898d483b4e6fa164e2fe59548e6c1164',
-      taskSetDigest:
-        'sha256:d96a472d5f9b11f299872af949d92193398bfe295dc727cd7f7eeefb6629cc2f',
+      taskSetDigest: 'sha256:d96a472d5f9b11f299872af949d92193398bfe295dc727cd7f7eeefb6629cc2f',
     });
   });
 });

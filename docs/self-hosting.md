@@ -57,7 +57,7 @@ GitHub Token 只由 Delivery/Consistency 平台 Adapter 读取。不要把值放
 ## 3. 运行与恢复
 
 ```powershell
-npm install
+npm ci
 npm run build
 node bin/repoctopus.js run start --workspace . --change <change-id> --target main --json
 node bin/repoctopus.js run status --workspace . --run <run-id> --json
@@ -68,7 +68,7 @@ node bin/repoctopus.js run next --workspace . --run <run-id> --json
 
 同一 Workspace/change 的 `run start` 总是创建或恢复同一个稳定 runId，不接受 mode 或代次参数。Open 和 Design 分别产生独立 Human Decision。Design 批准后，Runtime 先执行 Build Configure；Runner 必须先准备 `current`、`branch` 或 `worktree` checkout，并提供每个仓库的精确路径和 Git facts。Runtime 本版只校验并冻结 binding，不创建或切换 checkout。
 
-Build Configure 的 Human Decision 冻结 execution mode、TDD mode、standard review、Host 能力和隔离。随后 Runtime 从 OpenSpec Tasks 产生 Run-local BuildPlan，执行 Plan Evidence、当前 Work Package 和 Build Check。每次 `run next` 只拉取 Runtime 当前 continuation。内嵌 Host 由同一短生命周期 App 注册；外部 Agent/Runner 使用 `run work-claim`/`run work-outcome` 的 Host-bound 协议。电脑关闭不需要守护进程：下一位具备 Workspace 状态的 Runner 从同一个 checkpoint 恢复；若原调用结果未知，必须先 `run work-reconcile`，不能自动重放。
+Build Configure 的 Human Decision 冻结 execution mode、TDD mode、standard review、Host 能力和隔离。随后 Runtime 从 OpenSpec Tasks 产生 Run-local BuildPlan，执行 Plan Evidence、当前 Work Package 和 Build Check。每次 `run next` 只拉取 Runtime 当前 continuation。内嵌 Host 由同一短生命周期 App 注册；外部 Agent/Runner 使用 `run work-claim`/`run work-outcome` 的 Host-bound 协议：claim 通过 `--host-capabilities build.autonomous`（或受证明的 `subagent.dispatch.attested`）声明 Runner 能力，Outcome 通过 `--result-file <result.json>` 提交受 Runtime schema 校验的结构化 Build 结果。Invocation 中的 Host 快照是跨 CLI 进程的权威身份，后续校验不依赖原进程仍在运行。电脑关闭不需要守护进程：下一位具备 Workspace 状态的 Runner 从同一个 checkpoint 恢复；若原调用结果未知，必须先 `run work-reconcile`，不能自动重放。
 
 Archive 使用两个公共入口：
 

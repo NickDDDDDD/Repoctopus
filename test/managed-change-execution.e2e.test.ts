@@ -466,7 +466,12 @@ describe('managed Change execution production composition', () => {
         currentWork: { kind: 'build.configure' },
       });
       await next();
+      invocationKinds.push(...capture.invocations.map((item) => item.packet.work.kind));
+      capture.dispose();
+      await application.close();
+      application = await bootProjectComposition(productRoot, workspace);
       const configurationWait = await next();
+      capture = installHost();
       expect(configurationWait.value.changeLifecycle).toMatchObject({
         phase: 'build',
         status: 'waiting',
@@ -499,7 +504,12 @@ describe('managed Change execution production composition', () => {
         build: { action: 'plan' },
       });
       await next();
+      invocationKinds.push(...capture.invocations.map((item) => item.packet.work.kind));
+      capture.dispose();
+      await application.close();
+      application = await bootProjectComposition(productRoot, workspace);
       const afterPlanValidation = await next();
+      capture = installHost();
       let afterPlan: RunStatusView;
       if (multiRepository) {
         expect(afterPlanValidation.value.changeLifecycle).toMatchObject({

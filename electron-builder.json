@@ -1,0 +1,70 @@
+{
+  "appId": "com.repoctopus.desktop",
+  "productName": "Repoctopus",
+  "copyright": "Copyright © 2026 Repoctopus Contributors",
+  "asar": true,
+  "asarUnpack": ["dist/desktop/host.mjs"],
+  "directories": {
+    "output": "dist/desktop-release",
+    "buildResources": "app/desktop/resources"
+  },
+  "files": ["dist/desktop/**/*", "package.json"],
+  "extraResources": [
+    {
+      "from": "app/desktop/resources/icon.ico",
+      "to": "desktop-icon.ico"
+    },
+    {
+      "from": "services/desktop-projection.ts",
+      "to": "product/services/desktop-projection.ts"
+    },
+    {
+      "from": "domains/trajectory/projection.ts",
+      "to": "product/domains/trajectory/projection.ts"
+    },
+    {
+      "from": "services/desktop-receiver.ts",
+      "to": "product/services/desktop-receiver.ts"
+    },
+    {
+      "from": "app/desktop/host/otlp-http-receiver.ts",
+      "to": "product/app/desktop/host/otlp-http-receiver.ts"
+    },
+    {
+      "from": "app/desktop/host/otlp-envelope-codec.ts",
+      "to": "product/app/desktop/host/otlp-envelope-codec.ts"
+    },
+    {
+      "from": "services/desktop-application.ts",
+      "to": "product/services/desktop-application.ts"
+    },
+    {
+      "from": "plugins/application/desktop-application.ts",
+      "to": "product/plugins/application/desktop-application.ts"
+    }
+  ],
+  "extraMetadata": {
+    "main": "dist/desktop/main.js",
+    "author": {
+      "name": "Repoctopus Contributors"
+    }
+  },
+  "win": {
+    "icon": "app/desktop/resources/icon.ico",
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      }
+    ],
+    "artifactName": "Repoctopus-Desktop-${version}-${arch}-Setup.${ext}"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "Repoctopus",
+    "deleteAppDataOnUninstall": false
+  }
+}

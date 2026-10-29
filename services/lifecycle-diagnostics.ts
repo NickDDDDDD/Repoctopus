@@ -1,5 +1,7 @@
 import { Service, type Context } from '@deepseek-ai/cordis';
 
+import { LifecycleObservationTelemetry } from './observation-telemetry.js';
+
 export type LifecyclePhase =
   | 'boot'
   | 'pending'
@@ -82,10 +84,15 @@ export class LifecycleDiagnostics extends Service {
     const pending = this.events.slice(this.exported);
     if (pending.length === 0) return;
 
+    const observationDelivery = this.ctx.get('observationDelivery');
+    const telemetry = observationDelivery
+      ? new LifecycleObservationTelemetry(observationDelivery, process.env)
+      : this.telemetry;
+
     const attempts = 2;
     for (let attempt = 1; attempt <= attempts; attempt += 1) {
       try {
-        await this.telemetry.export(pending);
+        await telemetry.export(pending);
         this.exported = this.events.length;
         return;
       } catch {

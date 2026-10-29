@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "taskId": "7.5",
+  "checkedAt": "2026-10-28T18:40:11.4823001Z",
+  "scope": {
+    "temporaryRoot": "%TEMP%",
+    "temporaryPrefixes": [
+      "repoctopus-installed-e2e-",
+      "repoctopus-desktop-performance-",
+      "repoctopus-package-check-",
+      "repoctopus-verification-pack-",
+      "repoctopus-report-pack-",
+      "repoctopus-desktop-host-e2e-",
+      "repoctopus-desktop-data-",
+      "repoctopus-desktop-recovery-",
+      "repoctopus-projection-",
+      "repoctopus-self-host-export-"
+    ],
+    "productionDiscovery": [
+      "%LOCALAPPDATA%\\Repoctopus\\desktop-receiver.json",
+      "%APPDATA%\\Repoctopus\\discovery\\desktop-receiver.json"
+    ],
+    "workspaceProcessMarker": "Repoctopus-dashboard-runtime",
+    "auditedListenerPort": 64128
+  },
+  "cleanup": {
+    "removed": [
+      {
+        "kind": "process-tree",
+        "rootPid": 34832,
+        "processes": [34832, 43420, 51260, 51860, 54916],
+        "reason": "stale development smoke Shell and Desktop Host",
+        "scope": "verified Electron command lines rooted in this workspace"
+      },
+      {
+        "kind": "discovery",
+        "path": "%APPDATA%\\Repoctopus\\discovery\\desktop-receiver.json",
+        "reason": "stale discovery owned by the terminated Host"
+      },
+      {
+        "kind": "generated-release-candidate",
+        "path": "dist/desktop-release",
+        "reason": "reproducible ignored installer, unpacked tree, blockmap and builder scratch after digest capture"
+      }
+    ]
+  },
+  "result": {
+    "temporaryMatches": 0,
+    "matchingProcesses": 0,
+    "matchingListeningSockets": 0,
+    "productionDiscoveryPresent": false,
+    "desktopReleasePresent": false,
+    "reportScratchPresent": false
+  },
+  "verdict": "pass"
+}

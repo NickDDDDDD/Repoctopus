@@ -3,12 +3,12 @@
 ## Reproducible subject
 
 - Change: `restore-runtime-build-orchestration`
-- Tested implementation commit: `810afd3107227ab62f6b82b232735b4463c9069c`
+- Tested implementation commit: `9e1629000aed1b303e63db124d844a0432f8d36c`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `1016815`
-- Package SHA-256: `df03a958698efd8e1ce3deb2a007843e8e19bd493f3757052091358512257515`
-- Lifecycle definition: `repoctopus-change@4.0.0`
-- Lifecycle definition digest: `sha256:3890da04d20fb364e363a976b21877f0198ca22da3c00af4de302de0f48b430b`
+- Package bytes: `923759`
+- Package SHA-256: `22140997f5f5b09e85fc92f899d0242afd7ce3effa4a9dbce54fd2c7ca8914f2`
+- Lifecycle definition: `repoctopus-change@4.2.0`
+- Lifecycle definition digest: `sha256:4bef956969843eb8862947abdedaf5de59d8aa34237debc3387996b8944e8952`
 - Verification runId: `change-verification-workspace-restore-runtime-build-orchestration-9fda2eb7bf05fdf5`
 - Black-box runId: `change-managed-blackbox-managed-blackbox-a56af5c947f984ce`
 - Build Configuration: `build-configuration:984df01c5c917e6286a1e112`
@@ -26,8 +26,8 @@ Run on Windows with Node.js `24.21.0`:
 ```text
 npm run verify
   TypeScript, desktop TypeScript, ESLint, generated output, brand and architecture checks passed
-  125 test files passed; 488 tests passed and 1 skipped
-  provenance passed; OpenSpec strict validation passed 15 items with 0 failures
+  141 test files passed; 541 tests passed and 1 skipped
+  provenance passed; OpenSpec strict validation passed 14 items with 0 failures
   this report's commit ancestry and npm package checksum were reproduced
 
 npm run test:package-e2e
@@ -39,6 +39,12 @@ npm run test:tracer-e2e
 npm audit --omit=dev --audit-level=high
   0 vulnerabilities
 ```
+
+The refreshed Windows Desktop Dashboard implementation remains inside the same managed Runtime
+contract. Its final installed self-host replay exposed and fixed a batched projection IPC scaling
+defect without changing Runtime Action authority, lifecycle transitions, immutable Work bindings,
+or the DSH-derived Host-process slice. Provenance, multi-process tracer and managed black-box
+regressions all pass against the pinned product commit above.
 
 ## Runtime authority
 

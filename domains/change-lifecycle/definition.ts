@@ -48,7 +48,12 @@ function validatorProfile(id: string) {
 export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
   schemaVersion: 3,
   id: 'repoctopus-change',
-  version: '4.0.0',
+  version: '4.2.0',
+  compatibleDigests: [
+    'sha256:3890da04d20fb364e363a976b21877f0198ca22da3c00af4de302de0f48b430b',
+    'sha256:8be6236a13ddf44b9174517779cc4992b718a1ebff41cb3b69860c6a86e1c8d5',
+    'sha256:989d74305a3e1a9783cc2ee317c7e889bde6c587cb74e2de117e4c41c3e0e44f',
+  ],
   phases: [
     {
       phase: 'open',
@@ -315,6 +320,14 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       requiredValidatorProfile: 'build.configuration-approved',
     },
     {
+      id: 'build.configuration-retry',
+      kind: 'self',
+      from: { phase: 'build', statuses: ['running'] },
+      to: { phase: 'build', status: 'running' },
+      trigger: 'configuration-host-capability-retry',
+      requiredValidatorProfile: 'build.configuration-approved',
+    },
+    {
       id: 'build.configuration-approved',
       kind: 'self',
       from: { phase: 'build', statuses: ['waiting'] },
@@ -336,6 +349,14 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       from: { phase: 'build', statuses: ['running'] },
       to: { phase: 'build', status: 'running' },
       trigger: 'structured-plan-candidate-validated',
+      requiredValidatorProfile: 'build.plan-valid',
+    },
+    {
+      id: 'build.plan-retry',
+      kind: 'self',
+      from: { phase: 'build', statuses: ['running'] },
+      to: { phase: 'build', status: 'running' },
+      trigger: 'plan-host-validation-retry',
       requiredValidatorProfile: 'build.plan-valid',
     },
     {

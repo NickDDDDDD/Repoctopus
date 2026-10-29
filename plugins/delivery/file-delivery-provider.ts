@@ -37,6 +37,7 @@ import {
 } from '../../platform/github/merge-request.js';
 import { deliveryTelemetryFromEnvironment } from '../../platform/telemetry/opentelemetry/exporter.js';
 import { Delivery, type DeliveryPreparation } from '../../services/delivery.js';
+import { DeliveryObservationTelemetry } from '../../services/observation-telemetry.js';
 import {
   bindOperationOwnership,
   type OperationOwnership,
@@ -50,7 +51,7 @@ export interface FileDeliveryConfig {
 }
 
 export class FileDeliveryProvider extends Delivery {
-  static inject = ['compositionIdentity', 'specificationPlanning'];
+  static inject = ['compositionIdentity', 'observationDelivery', 'specificationPlanning'];
   private readonly operations: OperationOwnership;
 
   constructor(
@@ -73,7 +74,9 @@ export class FileDeliveryProvider extends Delivery {
       ),
       new FileDeliveryEvidence(this.config.workspaceRoot),
       undefined,
-      deliveryTelemetryFromEnvironment(environment),
+      this.ctx.get('observationDelivery')
+        ? new DeliveryObservationTelemetry(this.ctx.observationDelivery, environment)
+        : deliveryTelemetryFromEnvironment(environment),
       this.ctx.compositionIdentity.current().compositionDigest,
     );
   }

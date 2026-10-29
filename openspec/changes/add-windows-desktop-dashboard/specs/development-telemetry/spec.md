@@ -56,14 +56,19 @@ Telemetry Provider MUST 为每个目的地记录稳定身份、独立确认位�
 - **WHEN** 用户禁用桌面应用或卸载本地目的地
 - **THEN** 系统按明确保留策略停止该目的地积压增长且不修改其他目的地的 Cursor
 
-### Requirement: OTLP 记录携带桌面状态所需的可信关联
+### Requirement: 规范 envelope 保留桌面投影所需的权威关联
 
-Telemetry Adapter MUST 在事实真实可用时为非 Metric 记录提供 Workspace、change、Run、父子执行、阶段、执行主体、任务、验证、阻塞、下一步动作、结果和观测时间的稳定关联；Metric 仍只使用有界低基数维度，缺失字段不得推断。
+Telemetry Adapter MUST 把主规格定义的五阶段、Build action、Work、Task、attempt、Host、Validator、Runtime continuation、Skill 链路、验证、等待和恢复事实保留在同一规范 envelope 的非 Metric 记录中，并提供 Workspace、change、Run、父子执行、结果和观测时间的稳定关联；Metric 仍只使用有界低基数维度，缺失字段不得推断。本 requirement 只约束桌面消费所需的关联完整性，不建立第二套生命周期或事件命名权威。
 
-#### Scenario: Agent 开始执行一个任务
+#### Scenario: Host 开始执行一个 Work
 
-- **WHEN** Runtime 已持久化可验证的 change、Run、执行主体、阶段和任务关系
+- **WHEN** Runtime 已持久化可验证的 change、Run、阶段、Build action、Work、Task、attempt 和 Host 关系
 - **THEN** 对应 Span 或 Log 可以通过稳定属性重建该执行关系且不包含 Prompt、回复或命令输出
+
+#### Scenario: Skill 从交付进入已消费
+
+- **WHEN** Runtime 已校验 Host Outcome 中与 Work Package 匹配的 consumed Skill layer
+- **THEN** envelope 保留 Skill 身份、角色、resolved/delivered/consumed 状态与关联 Work，不包含 Skill 正文、Prompt 或 Agent 内部思考
 
 #### Scenario: Run 进入人工阻塞
 
