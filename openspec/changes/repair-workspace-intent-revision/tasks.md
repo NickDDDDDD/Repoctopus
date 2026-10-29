@@ -42,7 +42,7 @@
       **Blocked by:** 3.3
       **Acceptance:** `submitted/succeeded` 仅在 Runtime 接受并通过 validator 后完成 package；`submitted/failed` 的 finding 被接受并驱动正式 recovery；重复 `next` 与重启不重复完成 Task、Outcome 或 Receipt
       **Requirements:** managed-work-execution#外部-build-execute-outcome-必须经过统一的两阶段消费
-- [ ] 3.5 为本次受保护 lifecycle/Runtime 语义建立精确的活动 Run adoption contract。
+- [x] 3.5 为本次受保护 lifecycle/Runtime 语义建立精确的活动 Run adoption contract。
       **Blocked by:** 3.4
       **Acceptance:** builtin catalog 只接受当前活动 Run 直接前驱的精确 code/descriptor digest pair；definition、validator、extension contributor 只声明直接前驱 version；任意未声明 digest/version 仍返回 `migration_required`
       **Requirements:** managed-work-execution#活动-run-必须通过精确-adoption-contract-采纳新的受保护语义
