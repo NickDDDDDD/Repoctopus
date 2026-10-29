@@ -110,6 +110,10 @@ trajectory/OTLP 记录：失效来源 `semantic | approval-authority`、from/to 
 - `services/work-execution-authority`: legacy read defense、命令侧 CAS 收敛与 continuation 投影。
 - `platform/telemetry`: 消费 trajectory 事实，不解析异常消息。
 
+## 自举执行约束
+
+当前 Change 在 Repoctopus 管理的 Git linked worktree 中自举开发，因此 Execution Workspace intent 必须选择 `worktree` isolation。`current` 只适用于注册 checkout 本身不是 linked worktree 的场景；Runtime 必须继续拒绝把 linked worktree 绑定为 `current`，不得为了自举便利放宽该所有权不变量。本约束只修正本次 Run 的配置选择，不改变产品的三种 isolation 模型。
+
 ## 验证
 
 - 先增加失败回归，分别复现 Archive approval/lifecycle 撕裂和 Design/old Build continuation 撕裂。
