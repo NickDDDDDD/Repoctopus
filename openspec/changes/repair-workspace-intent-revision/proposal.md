@@ -16,6 +16,8 @@ Repoctopus 已规定 Open approval 必须固定 `current|branch|worktree` Execut
 - Build Configure 仅在 binding 模块明确返回 `intent-revision` 时提交受保护的 `Build → Open(wait)` transition；可在原 intent 下修复的 binding 问题保持 Build retry，身份/拓扑漂移继续 halt。
 - 新的可信 isolation 决策在同一 Run 中提交 `Open → Design`，设置新 intent 与 Runtime 选择的 `specification.plan` Work；Design 重新确认可能受执行环境影响的计划。
 - lifecycle transition 替换或清除 current Work 时，在同一个 Run CAS 中退役不匹配的 execution checkpoint，避免旧 Build Configure Outcome 阻塞新的 Design Work。
+- 统一外部 Runner 对 `Build Execute` 成功/失败 Outcome 的两阶段消费：先接受 Host submission，再由 Runtime validator 决定推进或按 finding 进入恢复路径；不得依赖仅供旧内嵌 Host 使用的 Outcome 投影。
+- 当本 Change 修改受保护的 lifecycle/Runtime 语义时，为当前运行中的唯一直接前驱实现与 contributor version 声明精确 adoption contract，使自举 Run 可以在不编辑 Store、不放宽任意 digest 的前提下采纳新语义。
 - CLI 展示当前 isolation、失败分类与三个候选模式；status 仍只读，拒绝修改 Store 或自动降级。
 - 增加领域、Service、CLI、冷启动恢复、遥测和端到端测试，并用本次 linked-worktree/current 故障作为验收夹具。
 
@@ -33,7 +35,7 @@ Repoctopus 已规定 Open approval 必须固定 `current|branch|worktree` Execut
 
 ## Impact
 
-- 主要影响 `services/execution-workspace`、`domains/change-lifecycle`、`domains/runtime`、`services/workflow-runs`、CLI 人工决策交互、trajectory/OTLP 映射与相关测试。
+- 主要影响 `services/execution-workspace`、`domains/change-lifecycle`、`domains/runtime`、`services/workflow-runs`、受保护 builtin composition/contributor 声明、CLI 人工决策交互、trajectory/OTLP 映射与相关测试。
 - 不增加 lifecycle generation、第二个 Run、后台 daemon、Webhook、轮询、隐式 Store mutation 或新的 OpenSpec 工件。
 - 不允许把 linked worktree 伪装成 `current`，也不把所有 Git/remote identity 错误都误判为可通过 isolation 修订解决。
 
@@ -42,4 +44,4 @@ Repoctopus 已规定 Open approval 必须固定 `current|branch|worktree` Execut
 - 在 Build Configuration 已批准或实现副作用已经发生后任意切换 isolation。
 - 自动选择 worktree、替用户批准新的 intent，或复用旧 intent approval hash。
 - 修改 execution mode、TDD mode、review mode、Build Plan 或 Verify/Archive 业务规则。
-- 为旧版本保留并行行为；产品尚未正式发布，统一采用唯一的新 transition 语义。
+- 为任意旧版本保留并行行为；自举所需 adoption 只接受本次活动 Run 的唯一直接前驱实现/version，统一采用唯一的新 transition 语义。

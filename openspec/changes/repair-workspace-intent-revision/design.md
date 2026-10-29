@@ -95,7 +95,20 @@ trajectory/OTLP 记录 binding error code、from/to phase、旧/新 isolation、
 
 Build Plan 不按文档章节机械切包，而按“能否在冻结 write scope 内完成 red → green → regression”切包。一个 package 引用的全部 Task、Acceptance 与阻塞依赖必须能够由该 package 的 repository binding 和 write scope 独立完成；如果回归测试描述的是跨层行为，package 必须同时覆盖测试 seam 与使该行为成立的权威模块，不能把测试先放入一个无法转绿的包，再期待后续包补实现。
 
-本 Change 的 binding error、Open prevalidation、Build recovery、可信 isolation decision 与 execution retirement 共同构成一个跨层恢复闭环。它们应作为同一个核心实现 package，write scope 覆盖 `services/execution-workspace.ts`、`services/workflow-runs.ts`、`domains/change-lifecycle/**`、`domains/runtime/**`、`app/cli/main.ts` 与相关测试。遥测/E2E 和最终验证仍可作为依赖核心闭环的后续 package。Runtime 接受 Build Plan 前的结构校验不能替代 Host 对 package 可完成性的判断；执行时发现范围不闭合必须走正式 planning finding，不得越界修改。
+本 Change 的 binding error、Open prevalidation、Build recovery、可信 isolation decision 与 execution retirement 共同构成一个跨层恢复闭环。它们应作为同一个核心实现 package，write scope 覆盖 `services/execution-workspace.ts`、`services/workflow-runs.ts`、`domains/change-lifecycle/**`、`domains/runtime/**`、`app/cli/main.ts` 与相关测试。
+
+核心语义完成后，必须有一个 adoption package 让当前自举 Run 能安全消费这些语义。该 package 同时覆盖 `services/workflow-runs.ts`、`plugins/builtin-catalog.ts`、`plugins/lifecycle/builtin-definition-contributor.ts`、`plugins/lifecycle/builtin-extension-contributor.ts`、`plugins/lifecycle/builtin-validator-contributor.ts` 与相关测试，不能把 protected implementation adoption、contributor version adoption 或外部 Outcome 消费拆到 scope 之外。遥测/E2E 和最终验证仍可作为依赖该 adoption 闭环的后续 package。Runtime 接受 Build Plan 前的结构校验不能替代 Host 对 package 可完成性的判断；执行时发现范围不闭合必须走正式 planning finding，不得越界修改。
+
+### 8. 外部 Runner Outcome 与自举 adoption 必须闭环
+
+`Build Execute` 与 `Build Plan`/`Build Check` 使用同一套外部 Host 协议。Host submission 只表示 Runner 已提交结果，Runtime 必须显式接受 submission，再运行 validator 并写入 accepted/validated 状态：
+
+- `submitted/succeeded` 先转为 accepted，再由 package validator 验证并推进；
+- `submitted/failed` 先转为 accepted，finding 成为后续 recovery 的权威输入；
+- 重复 `next`、进程重启或重复读取不得重复接受、重复完成 Task 或跳过 validator；
+- 旧内嵌 Host 的 `outcome` 只保留为同一消费函数的输入兼容形态，不得成为外部 Runner 的隐式要求。
+
+本 Change 又修改了当前 Run 正在使用的受保护 lifecycle/Runtime composition。为避免“代码已正确但当前 Run 永远因 composition drift 无法采纳”的自举死锁，builtin catalog 必须只声明精确的 `{previous codeDigest, previous descriptorDigest}` 对；lifecycle definition/validator/extension contributor 只声明当前活动 Run 的直接前驱 version。任何未列出的 digest 或 version 仍为 `migration_required`。这不是长期旧版本兼容层，而是一次性的活动 Run adoption contract；新实现一旦接管，状态机只执行 4.3 的唯一语义。
 
 ## 模块边界
 
@@ -103,6 +116,8 @@ Build Plan 不按文档章节机械切包，而按“能否在冻结 write scope
 - `domains/change-lifecycle`: intent revision observations、wait 与纯 transition 不变量。
 - `domains/runtime`: lifecycle transition 与 execution retirement 的单 CAS 投影。
 - `services/workflow-runs`: Open prevalidation、Build failure 编排和 Human Decision 后的 Design Work 物化。
+- `plugins/builtin-catalog`: 受保护实现只接受精确直接前驱 digest pair，不提供通配兼容。
+- `plugins/lifecycle/*-contributor`: 声明当前活动 Run 直接前驱 version 可采纳唯一新语义。
 - `app/cli`: 只负责收集可信 isolation 决策，不选择 phase 或直接写 Store。
 - `platform/telemetry`: 从 trajectory facts 映射 OTLP，不解析异常消息。
 
@@ -112,6 +127,8 @@ Build Plan 不按文档章节机械切包，而按“能否在冻结 write scope
 - Service 测试证明 linked worktree + current 在 Open 决策前被拒绝且 approval/lifecycle 均未写入。
 - E2E 复现已有坏 Run：Build Configure Outcome → `current-linked-worktree/intent-revision` → Open wait → 选择 worktree → Design Work；runId 不变且旧 checkpoint 不再是当前状态。
 - 重复 `next`、重复错误观察和无效 isolation 决策不产生第二个 wait、Work 或 retirement event。
+- 外部 Runner 提交的 Build Execute 成功 Outcome 经 accepted→validated 后才完成 package；失败 Outcome 的 finding 经同一路径进入 recovery，重启和重复 pull 均幂等。
+- composition 对比只对活动 Run 的精确直接前驱实现/version 返回 compatible；任意相邻但未声明的 digest/version 仍返回 `migration_required`。
 - OTLP 契约、strict OpenSpec、typecheck、lint、architecture/provenance/generated 检查和完整 `npm run verify` 全部通过。
 
 ## 回退
