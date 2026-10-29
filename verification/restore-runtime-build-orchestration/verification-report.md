@@ -3,10 +3,10 @@
 ## Reproducible subject
 
 - Change: `restore-runtime-build-orchestration`
-- Tested implementation commit: `a4e36e1dcbd2cdc1d74edf38885dd1bf77a3f93b`
+- Tested implementation commit: `e37a13920de6853ef856d1fd93c77fb5ee954499`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `935222`
-- Package SHA-256: `f78ba4e5f8cfa6f62a43bb4cc825f22c531f93f5e89b2d1b84ec5ae47ac8f082`
+- Package bytes: `935488`
+- Package SHA-256: `6c9f9fb15aa9746c0acaf43df62b812ee66a2d5f3747d396ac120d3806937334`
 - Lifecycle definition: `repoctopus-change@4.2.0`
 - Lifecycle definition digest: `sha256:c84278b1e82a0146759486ef68808c4027d03d211481793149af53e1b720e7fb`
 - Verification runId: `change-verification-workspace-restore-runtime-build-orchestration-9fda2eb7bf05fdf5`
@@ -56,6 +56,12 @@ migration only when the same deterministic rejection can be reproduced; incompat
 `change-repoctopus-repair-build-plan-validation-retry-4148cf4f20f9aeca` recovered its legacy rejected
 Check, accepted a corrected submission on the same Work, and advanced from Build checkEpoch 14 to
 Verify checkEpoch 15 without direct Run Store editing.
+
+The same self-host Run also exercised Verify input drift after an evidence-only repository change.
+Runtime invalidated the stale verification, returned through the ordinary Build Plan revision path,
+and retained the historical invalidation in Build Protocol. Acceptance of the replacement Plan now
+clears the transient `verificationInvalidation`, so the next Plan Evidence Work is a valid snapshot
+instead of a permanent invariant failure.
 
 ## Runtime authority
 
