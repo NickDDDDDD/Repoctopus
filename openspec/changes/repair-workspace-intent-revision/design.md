@@ -91,6 +91,12 @@ CLI 在 `workspace-intent:*` wait 中展示失败分类、旧 isolation 和三�
 
 trajectory/OTLP 记录 binding error code、from/to phase、旧/新 isolation、旧/新 work kind、checkEpoch 与 execution 是否退役。Metric label 只允许 phase、work kind、binding error code、isolation 与 boolean；路径、branch、digest、run/work/change identity 和错误文本只可作为受控 trace correlation 或完全省略。
 
+### 7. Build Package 以可独立闭环为边界
+
+Build Plan 不按文档章节机械切包，而按“能否在冻结 write scope 内完成 red → green → regression”切包。一个 package 引用的全部 Task、Acceptance 与阻塞依赖必须能够由该 package 的 repository binding 和 write scope 独立完成；如果回归测试描述的是跨层行为，package 必须同时覆盖测试 seam 与使该行为成立的权威模块，不能把测试先放入一个无法转绿的包，再期待后续包补实现。
+
+本 Change 的 binding error、Open prevalidation、Build recovery、可信 isolation decision 与 execution retirement 共同构成一个跨层恢复闭环。它们应作为同一个核心实现 package，write scope 覆盖 `services/execution-workspace.ts`、`services/workflow-runs.ts`、`domains/change-lifecycle/**`、`domains/runtime/**`、`app/cli/main.ts` 与相关测试。遥测/E2E 和最终验证仍可作为依赖核心闭环的后续 package。Runtime 接受 Build Plan 前的结构校验不能替代 Host 对 package 可完成性的判断；执行时发现范围不闭合必须走正式 planning finding，不得越界修改。
+
 ## 模块边界
 
 - `services/execution-workspace`: binding 深模块与稳定错误分类。
