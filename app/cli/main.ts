@@ -134,6 +134,7 @@ const CLI_FLAGS = new Set([
   'receipt',
   'input-digest',
   'invocation-id',
+  'submission-id',
   'host-id',
   'packet-digest',
   'consumed-layers',
@@ -1175,8 +1176,9 @@ async function runWorkOutcome(parsed: ParsedArguments): Promise<CliEnvelope<unkn
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
     const result = await app.context.commandRouter.execute('run.work.outcome', {
-      schemaVersion: 1,
+      schemaVersion: 3,
       runId,
+      submissionId: stringFlag(parsed, 'submission-id', { required: true })!,
       invocationId: stringFlag(parsed, 'invocation-id', { required: true })!,
       hostId: stringFlag(parsed, 'host-id', { required: true })!,
       packetDigest: qualifiedSha256(

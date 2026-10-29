@@ -667,9 +667,7 @@ export class WorkflowRuns extends Service {
         if (!input.isolation) {
           throw new Error('Open approval requires current, branch, or worktree isolation');
         }
-        const target = state.trigger?.facts.targetBranch as
-          | { targetBranch?: unknown }
-          | undefined;
+        const target = state.trigger?.facts.targetBranch as { targetBranch?: unknown } | undefined;
         const intent = createExecutionWorkspaceIntent({
           workspaceId: lifecycle.identity.workspaceId,
           changeId: lifecycle.identity.changeId,
@@ -803,7 +801,10 @@ export class WorkflowRuns extends Service {
     };
   }
 
-  private async inspectPlanningSemantics(changeId: string, signal?: AbortSignal): Promise<{
+  private async inspectPlanningSemantics(
+    changeId: string,
+    signal?: AbortSignal,
+  ): Promise<{
     approved: boolean;
     digest: `sha256:${string}`;
     reason: string;
@@ -868,10 +869,9 @@ export class WorkflowRuns extends Service {
     return {
       actionSkill: await resolve(work.actionSkill.name),
       augmentationSkills: await Promise.all(
-        [
-          ...work.augmentationSkills.map((skill) => skill.name),
-          ...configuredAugmentationNames,
-        ].map((name) => resolve(name)),
+        [...work.augmentationSkills.map((skill) => skill.name), ...configuredAugmentationNames].map(
+          (name) => resolve(name),
+        ),
       ),
     };
   }
@@ -1353,6 +1353,158 @@ export class WorkflowRuns extends Service {
             }
             if (
               lifecycle.phase === 'build' &&
+              lifecycle.currentWork?.kind === 'build.plan' &&
+              current.workExecution?.status === 'outcome' &&
+              !current.workExecution.acceptedSubmission
+            ) {
+              const protocol = lifecycle.buildProtocol;
+              const configuration = protocol?.configuration;
+              const checkpoint = current.workExecution;
+              const hostOutcome = checkpoint.hostOutcome;
+              const actionOutcome = checkpoint.actionOutcome;
+              const migrationRequired = async (reason: string) => {
+                const migrated = await this.coordinator.acceptChangeObservation(runId, {
+                  kind: 'work-execution-migration-required',
+                  reason,
+                  evidenceIds: actionOutcome?.outcomeId ? [actionOutcome.outcomeId] : [],
+                });
+                return {
+                  ...migrated,
+                  value: await this.coordinator.status(runId),
+                  diagnostics: [
+                    ...migrated.diagnostics,
+                    {
+                      level: 'error' as const,
+                      code: 'change.build-plan-legacy-migration-required',
+                      message: reason,
+                    },
+                  ],
+                };
+              };
+              if (
+                !protocol ||
+                !configuration ||
+                protocol.currentAction !== 'plan' ||
+                !hostOutcome ||
+                hostOutcome.status !== 'succeeded' ||
+                actionOutcome?.status !== 'succeeded' ||
+                checkpoint.pendingSubmission ||
+                checkpoint.validatorId
+              ) {
+                return migrationRequired(
+                  'Legacy Build Plan checkpoint is not an unaccepted terminal Plan Outcome',
+                );
+              }
+              const invocationHost = checkpoint.hostInvocation?.host;
+              if (
+                !invocationHost ||
+                invocationHost.id !== hostOutcome.hostId ||
+                hostOutcome.invocationId !== checkpoint.hostInvocation?.invocationId ||
+                hostOutcome.packetDigest !== checkpoint.packet.packetDigest ||
+                invocationHost.id !== configuration.hostId ||
+                configuration.hostCapabilities.some(
+                  (capability) => !invocationHost.capabilities.includes(capability),
+                )
+              ) {
+                return migrationRequired(
+                  'Legacy Build Plan Host, invocation, packet, or frozen Configuration identity is incompatible',
+                );
+              }
+              try {
+                this.assertFrozenBuildHost(configuration, invocationHost);
+                await this.assertFrozenExecutionWorkspace(
+                  current,
+                  lifecycle,
+                  projectSnapshot,
+                  configuration,
+                );
+              } catch (error) {
+                return migrationRequired(
+                  `Legacy Build Plan frozen identity cannot be proven: ${error instanceof Error ? error.message : String(error)}`,
+                );
+              }
+              const recoverRejected = async (diagnostic: string) => {
+                const intent = await this.ctx.workExecutionAuthority.loadIntent(runId);
+                await this.ctx.workExecutionAuthority.recoverLegacyRejectedOutcome({
+                  intent,
+                  diagnostic,
+                });
+                return {
+                  value: await this.coordinator.status(runId),
+                  diagnostics: [
+                    {
+                      level: 'warning' as const,
+                      code: 'change.build-plan-legacy-outcome-recovered',
+                      message: diagnostic,
+                    },
+                  ],
+                };
+              };
+              const result = hostOutcome.result;
+              if (result?.kind !== 'build-plan-candidate') {
+                return recoverRejected(
+                  'Legacy Build Plan Host must return a structured build-plan-candidate',
+                );
+              }
+              let taskSet;
+              try {
+                taskSet = await this.ctx.specification.tasks(lifecycle.identity.changeId, signal);
+              } catch (error) {
+                return migrationRequired(
+                  `Legacy Build Plan Task authority could not reproduce validation: ${error instanceof Error ? error.message : String(error)}`,
+                );
+              }
+              let legacyPlan;
+              try {
+                legacyPlan = createBuildPlan({
+                  runId,
+                  revision: (protocol.plan?.revision ?? 0) + 1,
+                  configuration,
+                  planningDigest: lifecycle.planningDigest,
+                  tasks: taskSet,
+                  candidate: { packages: result.packages },
+                });
+              } catch (error) {
+                return recoverRejected(
+                  `Legacy Build Plan candidate rejected: ${error instanceof Error ? error.message : String(error)}`,
+                );
+              }
+              const legacyPlanValidation = validateBuildPlan({
+                plan: legacyPlan,
+                configuration,
+                tasks: taskSet,
+              });
+              if (!legacyPlanValidation.accepted) {
+                return recoverRejected(
+                  `Legacy Build Plan rejected: ${legacyPlanValidation.diagnostics.join('; ')}`,
+                );
+              }
+              const validator = this.ctx.lifecycleValidators.resolve(
+                lifecycle.currentWork.validatorProfile.id,
+              );
+              let legacyValidation;
+              try {
+                legacyValidation = await validator.validate({
+                  profileId: lifecycle.currentWork.validatorProfile.id,
+                  work: lifecycle.currentWork,
+                  fact: legacyPlanValidation,
+                });
+              } catch (error) {
+                return migrationRequired(
+                  `Legacy Build Plan Validator could not reproduce validation: ${error instanceof Error ? error.message : String(error)}`,
+                );
+              }
+              if (!legacyValidation.accepted) {
+                return recoverRejected(
+                  `Legacy Build Plan Validator rejected: ${legacyValidation.diagnostic}`,
+                );
+              }
+              return migrationRequired(
+                'Legacy Build Plan Outcome is valid under the current authority, so its prior stuck state cannot be deterministically reproduced',
+              );
+            }
+            if (
+              lifecycle.phase === 'build' &&
               lifecycle.currentWork === null &&
               lifecycle.buildProtocol?.currentAction === 'configure'
             ) {
@@ -1598,21 +1750,29 @@ export class WorkflowRuns extends Service {
               });
               return { ...proposed, value: await this.coordinator.status(runId) };
             }
+            const planExecution = current.workExecution;
+            const planHostOutcome =
+              planExecution?.status === 'submitted'
+                ? planExecution.pendingSubmission?.outcome
+                : planExecution?.status === 'validated' &&
+                    planExecution.validatorId === lifecycle.currentWork?.validatorProfile.id &&
+                    planExecution.actionOutcome?.status === 'succeeded' &&
+                    planExecution.receiptId
+                  ? planExecution.acceptedSubmission?.outcome
+                  : undefined;
             if (
               lifecycle.phase === 'build' &&
               lifecycle.currentWork?.kind === 'build.plan' &&
-              current.workExecution?.status === 'outcome' &&
-              current.workExecution.actionOutcome?.status === 'succeeded'
+              planHostOutcome?.status === 'succeeded'
             ) {
               const protocol = lifecycle.buildProtocol;
               const configuration = protocol?.configuration;
-              const hostOutcome = current.workExecution.hostOutcome;
+              const hostOutcome = planHostOutcome;
               const result = hostOutcome?.result;
               if (!protocol || !configuration || protocol.currentAction !== 'plan') {
                 throw new Error('Build Plan Outcome has no frozen configuration');
               }
-              if (!hostOutcome) throw new Error('Build Plan Host Outcome is missing');
-              const invocationHost = current.workExecution.hostInvocation?.host;
+              const invocationHost = planExecution?.hostInvocation?.host;
               if (!invocationHost || invocationHost.id !== hostOutcome.hostId) {
                 throw new Error('Build Plan Host does not match the persisted invocation');
               }
@@ -1674,46 +1834,110 @@ export class WorkflowRuns extends Service {
                 projectSnapshot,
                 configuration,
               );
+              const rejectSubmission = async (
+                reasonCode: 'output-invalid' | 'outcome-rejected' | 'outcome-processing-error',
+                diagnostic: string,
+              ) => {
+                const intent = await this.ctx.workExecutionAuthority.loadIntent(runId);
+                await this.ctx.workExecutionAuthority.rejectHostSubmission({
+                  intent,
+                  reasonCode,
+                  diagnostic,
+                });
+                return {
+                  value: await this.coordinator.status(runId),
+                  diagnostics: [
+                    {
+                      level: 'warning' as const,
+                      code:
+                        reasonCode === 'outcome-processing-error'
+                          ? 'change.build-plan-outcome-processing-error'
+                          : 'change.build-plan-outcome-rejected',
+                      message: diagnostic,
+                    },
+                  ],
+                };
+              };
               if (result?.kind !== 'build-plan-candidate') {
-                throw new Error('Build Plan Host must return a structured build-plan-candidate');
+                return rejectSubmission(
+                  'output-invalid',
+                  'Build Plan Host must return a structured build-plan-candidate',
+                );
               }
-              const taskSet = await this.ctx.specification.tasks(
-                lifecycle.identity.changeId,
-                signal,
-              );
-              const plan = createBuildPlan({
-                runId,
-                revision: (protocol.plan?.revision ?? 0) + 1,
-                configuration,
-                planningDigest: lifecycle.planningDigest,
-                tasks: taskSet,
-                candidate: { packages: result.packages },
-              });
+              let taskSet;
+              try {
+                taskSet = await this.ctx.specification.tasks(lifecycle.identity.changeId, signal);
+              } catch (error) {
+                return rejectSubmission(
+                  'outcome-processing-error',
+                  `Build Plan Task authority failed: ${error instanceof Error ? error.message : String(error)}`,
+                );
+              }
+              let plan;
+              try {
+                plan = createBuildPlan({
+                  runId,
+                  revision: (protocol.plan?.revision ?? 0) + 1,
+                  configuration,
+                  planningDigest: lifecycle.planningDigest,
+                  tasks: taskSet,
+                  candidate: { packages: result.packages },
+                });
+              } catch (error) {
+                return rejectSubmission(
+                  'outcome-rejected',
+                  `Build Plan candidate rejected: ${error instanceof Error ? error.message : String(error)}`,
+                );
+              }
               const planValidation = validateBuildPlan({ plan, configuration, tasks: taskSet });
               if (!planValidation.accepted) {
-                throw new Error(`Build Plan rejected: ${planValidation.diagnostics.join('; ')}`);
+                return rejectSubmission(
+                  'outcome-rejected',
+                  `Build Plan rejected: ${planValidation.diagnostics.join('; ')}`,
+                );
               }
               const validator = this.ctx.lifecycleValidators.resolve(
                 lifecycle.currentWork.validatorProfile.id,
               );
-              const validation = await validator.validate({
-                profileId: lifecycle.currentWork.validatorProfile.id,
-                work: lifecycle.currentWork,
-                fact: planValidation,
-              });
-              if (!validation.accepted) {
-                throw new Error(`Build Plan Validator rejected: ${validation.diagnostic}`);
+              let validation;
+              try {
+                validation = await validator.validate({
+                  profileId: lifecycle.currentWork.validatorProfile.id,
+                  work: lifecycle.currentWork,
+                  fact: planValidation,
+                });
+              } catch (error) {
+                return rejectSubmission(
+                  'outcome-processing-error',
+                  `Build Plan Validator failed: ${error instanceof Error ? error.message : String(error)}`,
+                );
               }
-              await this.ctx.workExecutionAuthority.markValidated({
-                intent: await this.ctx.workExecutionAuthority.loadIntent(runId),
-                validatorId: lifecycle.currentWork.validatorProfile.id,
-                continuation: 'execute',
-              });
+              if (!validation.accepted) {
+                return rejectSubmission(
+                  'outcome-rejected',
+                  `Build Plan Validator rejected: ${validation.diagnostic}`,
+                );
+              }
+              if (planExecution?.status === 'submitted') {
+                const intent = await this.ctx.workExecutionAuthority.loadIntent(runId);
+                await this.ctx.workDispatcher.acceptOutcome(
+                  this.ctx.workDispatcher.outcome(intent, 'succeeded', hostOutcome.summary),
+                );
+                await this.ctx.workExecutionAuthority.markValidated({
+                  intent,
+                  validatorId: lifecycle.currentWork.validatorProfile.id,
+                  continuation: 'execute',
+                });
+              }
               const planned = await this.coordinator.acceptChangeObservation(runId, {
                 kind: 'build-plan-accepted',
                 plan,
               });
-              const evidence = createPlanEvidence({ plan, configuration, validation: planValidation });
+              const evidence = createPlanEvidence({
+                plan,
+                configuration,
+                validation: planValidation,
+              });
               if (evidence.risk.level === 'high') {
                 const requestId = `plan:${evidence.validationDigest.slice(-24)}`;
                 const awaiting = await this.coordinator.acceptChangeObservation(runId, {
@@ -1830,7 +2054,9 @@ export class WorkflowRuns extends Service {
               const implementerExecutionIds = (
                 current.workExecution.hostOutcome?.delegationReceipts ?? []
               )
-                .filter((receipt) => receipt.role === 'implementer' && receipt.status === 'succeeded')
+                .filter(
+                  (receipt) => receipt.role === 'implementer' && receipt.status === 'succeeded',
+                )
                 .map((receipt) => receipt.executionId)
                 .sort();
               const implementationExecutionId =
@@ -1872,7 +2098,9 @@ export class WorkflowRuns extends Service {
                 completion.packageId,
               ]);
               for (const task of lifecycle.tasks ?? []) {
-                const required = plan.packages.filter((entry) => entry.taskIds.includes(task.taskId));
+                const required = plan.packages.filter((entry) =>
+                  entry.taskIds.includes(task.taskId),
+                );
                 if (
                   task.status === 'pending' &&
                   required.length > 0 &&
@@ -1961,17 +2189,144 @@ export class WorkflowRuns extends Service {
               lifecycle.phase === 'build' &&
               lifecycle.currentWork?.kind === 'build.check' &&
               current.workExecution?.status === 'outcome' &&
-              current.workExecution.actionOutcome?.status === 'succeeded'
+              !current.workExecution.acceptedSubmission
             ) {
               const protocol = lifecycle.buildProtocol;
               const configuration = protocol?.configuration;
               const plan = protocol?.plan;
-              const hostOutcome = current.workExecution.hostOutcome;
+              const checkpoint = current.workExecution;
+              const hostOutcome = checkpoint.hostOutcome;
+              const actionOutcome = checkpoint.actionOutcome;
+              const migrationRequired = async (reason: string) => {
+                const migrated = await this.coordinator.acceptChangeObservation(runId, {
+                  kind: 'work-execution-migration-required',
+                  reason,
+                  evidenceIds: actionOutcome?.outcomeId ? [actionOutcome.outcomeId] : [],
+                });
+                return {
+                  ...migrated,
+                  value: await this.coordinator.status(runId),
+                  diagnostics: [
+                    ...migrated.diagnostics,
+                    {
+                      level: 'error' as const,
+                      code: 'change.build-check-legacy-migration-required',
+                      message: reason,
+                    },
+                  ],
+                };
+              };
+              if (
+                !protocol ||
+                !configuration ||
+                !plan ||
+                protocol.currentAction !== 'check' ||
+                !hostOutcome ||
+                hostOutcome.status !== 'succeeded' ||
+                actionOutcome?.status !== 'succeeded' ||
+                checkpoint.pendingSubmission ||
+                checkpoint.validatorId
+              ) {
+                return migrationRequired(
+                  'Legacy Build Check checkpoint is not an unaccepted terminal Check Outcome',
+                );
+              }
+              const invocationHost = checkpoint.hostInvocation?.host;
+              if (
+                !invocationHost ||
+                invocationHost.id !== hostOutcome.hostId ||
+                hostOutcome.invocationId !== checkpoint.hostInvocation?.invocationId ||
+                hostOutcome.packetDigest !== checkpoint.packet.packetDigest ||
+                invocationHost.id !== configuration.hostId ||
+                configuration.hostCapabilities.some(
+                  (capability) => !invocationHost.capabilities.includes(capability),
+                )
+              ) {
+                return migrationRequired(
+                  'Legacy Build Check Host, invocation, packet, or frozen Configuration identity is incompatible',
+                );
+              }
+              try {
+                this.assertFrozenBuildHost(configuration, invocationHost);
+                await this.assertFrozenExecutionWorkspace(
+                  current,
+                  lifecycle,
+                  projectSnapshot,
+                  configuration,
+                );
+              } catch (error) {
+                return migrationRequired(
+                  `Legacy Build Check frozen identity cannot be proven: ${error instanceof Error ? error.message : String(error)}`,
+                );
+              }
+              const result = hostOutcome.result;
+              const expectedPackages = plan.packages.map((entry) => entry.packageId).sort();
+              const expectedTasks = [
+                ...new Set(plan.packages.flatMap((entry) => entry.taskIds)),
+              ].sort();
+              const deterministicRejection =
+                result?.kind !== 'build-check-candidate'
+                  ? 'Legacy Build Check Host must return a structured check candidate'
+                  : result.reviewerExecutionId !== hostOutcome.invocationId
+                    ? 'Legacy Build Check reviewer identity does not match the managed invocation'
+                    : protocol.packageCompletions.some(
+                          (completion) => completion.executionId === result.reviewerExecutionId,
+                        )
+                      ? 'Legacy Build Check requires an independent reviewer execution'
+                      : canonicalJson([...result.completedPackageIds].sort()) !==
+                          canonicalJson(expectedPackages)
+                        ? 'Legacy Build Check does not cover every required package'
+                        : canonicalJson([...result.acceptedTaskIds].sort()) !==
+                            canonicalJson(expectedTasks)
+                          ? 'Legacy Build Check does not cover every Task acceptance'
+                          : result.repositoryDigest !== configuration.bindingDigest
+                            ? 'Legacy Build Check repository binding drifted'
+                            : null;
+              if (deterministicRejection) {
+                const intent = await this.ctx.workExecutionAuthority.loadIntent(runId);
+                await this.ctx.workExecutionAuthority.recoverLegacyRejectedOutcome({
+                  intent,
+                  diagnostic: deterministicRejection,
+                });
+                return {
+                  value: await this.coordinator.status(runId),
+                  diagnostics: [
+                    {
+                      level: 'warning' as const,
+                      code: 'change.build-check-legacy-outcome-recovered',
+                      message: deterministicRejection,
+                    },
+                  ],
+                };
+              }
+              return migrationRequired(
+                'Legacy Build Check Outcome is valid under current deterministic checks, so its prior stuck state cannot be reproduced',
+              );
+            }
+            const checkExecution = current.workExecution;
+            const checkHostOutcome =
+              checkExecution?.status === 'submitted'
+                ? checkExecution.pendingSubmission?.outcome
+                : checkExecution?.status === 'validated' &&
+                    checkExecution.validatorId === lifecycle.currentWork?.validatorProfile.id &&
+                    checkExecution.actionOutcome?.status === 'succeeded' &&
+                    checkExecution.receiptId
+                  ? checkExecution.acceptedSubmission?.outcome
+                  : undefined;
+            if (
+              lifecycle.phase === 'build' &&
+              lifecycle.currentWork?.kind === 'build.check' &&
+              checkHostOutcome?.status === 'succeeded'
+            ) {
+              const protocol = lifecycle.buildProtocol;
+              const configuration = protocol?.configuration;
+              const plan = protocol?.plan;
+              const hostOutcome = checkHostOutcome;
               const result = hostOutcome?.result;
               if (!protocol || !configuration || !plan || !hostOutcome) {
                 throw new Error('Build Check Outcome has no current Plan');
               }
-              const invocationHost = current.workExecution.hostInvocation?.host;
+              const invocationHost = checkExecution?.hostInvocation?.host;
               if (!invocationHost || invocationHost.id !== hostOutcome.hostId) {
                 throw new Error('Build Check Host does not match the persisted invocation');
               }
@@ -1982,117 +2337,186 @@ export class WorkflowRuns extends Service {
                 projectSnapshot,
                 configuration,
               );
+              const rejectSubmission = async (
+                reasonCode: 'output-invalid' | 'outcome-rejected' | 'outcome-processing-error',
+                diagnostic: string,
+              ) => {
+                const intent = await this.ctx.workExecutionAuthority.loadIntent(runId);
+                await this.ctx.workExecutionAuthority.rejectHostSubmission({
+                  intent,
+                  reasonCode,
+                  diagnostic,
+                });
+                return {
+                  value: await this.coordinator.status(runId),
+                  diagnostics: [
+                    {
+                      level: 'warning' as const,
+                      code:
+                        reasonCode === 'outcome-processing-error'
+                          ? 'change.build-check-outcome-processing-error'
+                          : 'change.build-check-outcome-rejected',
+                      message: diagnostic,
+                    },
+                  ],
+                };
+              };
               if (result?.kind !== 'build-check-candidate') {
-                throw new Error('Build Check Host must return a structured check candidate');
+                return rejectSubmission(
+                  'output-invalid',
+                  'Build Check Host must return a structured check candidate',
+                );
               }
               if (result.reviewerExecutionId !== hostOutcome.invocationId) {
-                throw new Error('Build Check reviewer identity does not match the managed invocation');
+                return rejectSubmission(
+                  'outcome-rejected',
+                  'Build Check reviewer identity does not match the managed invocation',
+                );
               }
               if (
                 protocol.packageCompletions.some(
                   (completion) => completion.executionId === result.reviewerExecutionId,
                 )
               ) {
-                throw new Error('Standard review requires an independent reviewer execution');
+                return rejectSubmission(
+                  'outcome-rejected',
+                  'Standard review requires an independent reviewer execution',
+                );
               }
               const expectedPackages = plan.packages.map((entry) => entry.packageId).sort();
               if (
                 canonicalJson([...result.completedPackageIds].sort()) !==
                 canonicalJson(expectedPackages)
               ) {
-                throw new Error('Build Check does not cover every required package');
+                return rejectSubmission(
+                  'outcome-rejected',
+                  'Build Check does not cover every required package',
+                );
               }
-              const expectedTasks = [...new Set(plan.packages.flatMap((entry) => entry.taskIds))].sort();
+              const expectedTasks = [
+                ...new Set(plan.packages.flatMap((entry) => entry.taskIds)),
+              ].sort();
               if (
                 canonicalJson([...result.acceptedTaskIds].sort()) !== canonicalJson(expectedTasks)
               ) {
-                throw new Error('Build Check does not cover every Task acceptance');
+                return rejectSubmission(
+                  'outcome-rejected',
+                  'Build Check does not cover every Task acceptance',
+                );
               }
               if (result.repositoryDigest !== configuration.bindingDigest) {
-                throw new Error('Build Check repository binding drifted');
+                return rejectSubmission(
+                  'outcome-rejected',
+                  'Build Check repository binding drifted',
+                );
               }
-              const knownTaskIds = new Set((lifecycle.tasks ?? []).map((task) => task.taskId));
-              const knownRequirementRefs = new Set(
-                (lifecycle.tasks ?? []).flatMap((task) => task.requirementRefs),
-              );
-              const findings = (hostOutcome.findings ?? []).map((finding) => {
-                const classification =
-                  finding.kind === 'implementation_failure'
-                    ? ('implementation' as const)
-                    : finding.kind === 'design_assumption_invalid' ||
-                        finding.kind === 'planning_semantics_changed'
-                      ? ('planning' as const)
-                      : finding.kind === 'evidence_unavailable'
-                        ? ('evidence-infrastructure' as const)
-                        : ('unknown' as const);
-                const taskIds = [...new Set(finding.taskIds ?? [])].sort();
-                const requirementRefs = [...new Set(finding.requirementIds ?? [])].sort();
-                if (taskIds.some((taskId) => !knownTaskIds.has(taskId))) {
-                  throw new Error('Build finding references an unknown Task');
-                }
-                if (
-                  requirementRefs.some(
-                    (requirementRef) => !knownRequirementRefs.has(requirementRef),
+              let checkEvidence: ReturnType<typeof createBuildCheckEvidence>;
+              try {
+                const knownTaskIds = new Set((lifecycle.tasks ?? []).map((task) => task.taskId));
+                const knownRequirementRefs = new Set(
+                  (lifecycle.tasks ?? []).flatMap((task) => task.requirementRefs),
+                );
+                const findings = (hostOutcome.findings ?? []).map((finding) => {
+                  const classification =
+                    finding.kind === 'implementation_failure'
+                      ? ('implementation' as const)
+                      : finding.kind === 'design_assumption_invalid' ||
+                          finding.kind === 'planning_semantics_changed'
+                        ? ('planning' as const)
+                        : finding.kind === 'evidence_unavailable'
+                          ? ('evidence-infrastructure' as const)
+                          : ('unknown' as const);
+                  const taskIds = [...new Set(finding.taskIds ?? [])].sort();
+                  const requirementRefs = [...new Set(finding.requirementIds ?? [])].sort();
+                  if (taskIds.some((taskId) => !knownTaskIds.has(taskId))) {
+                    throw new Error('Build finding references an unknown Task');
+                  }
+                  if (
+                    requirementRefs.some(
+                      (requirementRef) => !knownRequirementRefs.has(requirementRef),
+                    )
+                  ) {
+                    throw new Error('Build finding references an unknown requirement');
+                  }
+                  const packageIds = plan.packages
+                    .filter((entry) => entry.taskIds.some((taskId) => taskIds.includes(taskId)))
+                    .map((entry) => entry.packageId)
+                    .sort();
+                  const findingId = `finding:${createHash('sha256')
+                    .update(canonicalJson({ finding, packageIds }))
+                    .digest('hex')
+                    .slice(0, 24)}`;
+                  return {
+                    findingId,
+                    classification,
+                    blocking: true,
+                    requirementRefs,
+                    taskIds,
+                    packageIds,
+                    summary: finding.summary,
+                  };
+                });
+                const implementationExecutionId = `implementation:${createHash('sha256')
+                  .update(
+                    canonicalJson(
+                      protocol.packageCompletions.map((entry) => entry.executionId).sort(),
+                    ),
                   )
-                ) {
-                  throw new Error('Build finding references an unknown requirement');
-                }
-                const packageIds = plan.packages
-                  .filter((entry) => entry.taskIds.some((taskId) => taskIds.includes(taskId)))
-                  .map((entry) => entry.packageId)
-                  .sort();
-                const findingId = `finding:${createHash('sha256')
-                  .update(canonicalJson({ finding, packageIds }))
-                  .digest('hex')
-                  .slice(0, 24)}`;
-                return {
-                  findingId,
-                  classification,
-                  blocking: true,
-                  requirementRefs,
-                  taskIds,
-                  packageIds,
-                  summary: finding.summary,
-                };
-              });
-              const implementationExecutionId = `implementation:${createHash('sha256')
-                .update(
-                  canonicalJson(
-                    protocol.packageCompletions.map((entry) => entry.executionId).sort(),
-                  ),
-                )
-                .digest('hex')}`;
-              const checkEvidence = createBuildCheckEvidence({
-                configurationDigest: configuration.semanticDigest,
-                planDigest: plan.digest,
-                repositoryDigest: result.repositoryDigest,
-                implementationDigest: result.implementationDigest,
-                completedPackageIds: result.completedPackageIds,
-                acceptedTaskIds: result.acceptedTaskIds,
-                testEvidenceIds: result.testEvidenceIds,
-                review: {
-                  mode: 'standard',
-                  implementationExecutionId,
-                  reviewerExecutionId: result.reviewerExecutionId,
-                },
-                findings,
-              });
+                  .digest('hex')}`;
+                checkEvidence = createBuildCheckEvidence({
+                  configurationDigest: configuration.semanticDigest,
+                  planDigest: plan.digest,
+                  repositoryDigest: result.repositoryDigest,
+                  implementationDigest: result.implementationDigest,
+                  completedPackageIds: result.completedPackageIds,
+                  acceptedTaskIds: result.acceptedTaskIds,
+                  testEvidenceIds: result.testEvidenceIds,
+                  review: {
+                    mode: 'standard',
+                    implementationExecutionId,
+                    reviewerExecutionId: result.reviewerExecutionId,
+                  },
+                  findings,
+                });
+              } catch (error) {
+                return rejectSubmission(
+                  'outcome-rejected',
+                  `Build Check candidate rejected: ${error instanceof Error ? error.message : String(error)}`,
+                );
+              }
               const validator = this.ctx.lifecycleValidators.resolve(
                 lifecycle.currentWork.validatorProfile.id,
               );
-              const validation = await validator.validate({
-                profileId: lifecycle.currentWork.validatorProfile.id,
-                work: lifecycle.currentWork,
-                fact: checkEvidence,
-              });
-              if (!validation.accepted) {
-                throw new Error(`Build Check Validator rejected: ${validation.diagnostic}`);
+              let validation;
+              try {
+                validation = await validator.validate({
+                  profileId: lifecycle.currentWork.validatorProfile.id,
+                  work: lifecycle.currentWork,
+                  fact: checkEvidence,
+                });
+              } catch (error) {
+                return rejectSubmission(
+                  'outcome-processing-error',
+                  `Build Check Validator failed: ${error instanceof Error ? error.message : String(error)}`,
+                );
               }
-              await this.ctx.workExecutionAuthority.markValidated({
-                intent: await this.ctx.workExecutionAuthority.loadIntent(runId),
-                validatorId: lifecycle.currentWork.validatorProfile.id,
-                continuation: 'execute',
-              });
+              if (!validation.accepted) {
+                return rejectSubmission(
+                  'outcome-rejected',
+                  `Build Check Validator rejected: ${validation.diagnostic}`,
+                );
+              }
+              if (checkExecution?.status === 'submitted') {
+                const intent = await this.ctx.workExecutionAuthority.loadIntent(runId);
+                await this.ctx.workDispatcher.acceptOutcome(
+                  this.ctx.workDispatcher.outcome(intent, 'succeeded', hostOutcome.summary),
+                );
+                await this.ctx.workExecutionAuthority.markValidated({
+                  intent,
+                  validatorId: lifecycle.currentWork.validatorProfile.id,
+                  continuation: 'execute',
+                });
+              }
               if (!checkEvidence.accepted) {
                 const planningFinding = checkEvidence.findings.find(
                   (finding) => finding.classification === 'planning',
@@ -2251,7 +2675,8 @@ export class WorkflowRuns extends Service {
                 repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
               });
               const planningDigest =
-                assessment.snapshot?.planningManifestDigest ?? assessment.validation.validationDigest;
+                assessment.snapshot?.planningManifestDigest ??
+                assessment.validation.validationDigest;
               build = {
                 ...initial,
                 protocol: createBuildProtocolState({

@@ -45,7 +45,7 @@ export interface ChangeLifecyclePhaseDefinition {
   extensionCheckpoints: readonly string[];
 }
 
-export type ChangeLifecycleTransitionKind = 'advance' | 'self' | 'fallback' | 'complete';
+export type ChangeLifecycleTransitionKind = 'advance' | 'self' | 'fallback' | 'halt' | 'complete';
 
 export interface ChangeLifecycleTransitionDefinition {
   id: string;
@@ -416,6 +416,11 @@ export type ChangeLifecycleObservation =
       work: WorkDescriptor;
     }
   | {
+      kind: 'work-execution-migration-required';
+      reason: string;
+      evidenceIds: readonly string[];
+    }
+  | {
       kind: 'build-plan-evidence-accepted';
       evidence: PlanEvidence;
       work: WorkDescriptor;
@@ -613,7 +618,9 @@ export function assertChangeLifecycleSnapshot(
       snapshot.currentWork?.kind !== 'build.plan' ||
       snapshot.verificationInput)
   ) {
-    throw new Error('Verification invalidation requires an active Build Plan revision without input');
+    throw new Error(
+      'Verification invalidation requires an active Build Plan revision without input',
+    );
   }
   if (snapshot.status === 'waiting' && snapshot.waitCondition === null) {
     throw new Error('Waiting Change Run requires a durable WaitCondition');
@@ -1097,6 +1104,34 @@ export function evolveChangeLifecycle(options: {
       },
     });
   }
+  if (observation.kind === 'work-execution-migration-required') {
+    if (
+      current.phase !== 'build' ||
+      current.status !== 'running' ||
+      !['build.plan', 'build.check'].includes(current.currentWork?.kind ?? '') ||
+      !observation.reason.trim()
+    ) {
+      throw new Error('Work execution migration is not valid from the current lifecycle state');
+    }
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId:
+        current.currentWork?.kind === 'build.check'
+          ? 'build.check-work-execution-migration-required'
+          : 'build.work-execution-migration-required',
+      next: {
+        currentWork: null,
+        waitCondition: null,
+        blocker: {
+          code: 'work-execution.migration-required',
+          message: observation.reason,
+          evidenceIds: [...observation.evidenceIds],
+          sinceRevision: current.revision + 1,
+        },
+      },
+    });
+  }
   if (observation.kind === 'build-plan-accepted') {
     if (
       current.phase !== 'build' ||
@@ -1119,6 +1154,7 @@ export function evolveChangeLifecycle(options: {
         currentWork: null,
         waitCondition: null,
         blocker: null,
+        verificationInvalidation: null,
         buildProtocol,
       },
     });
@@ -1205,11 +1241,12 @@ export function evolveChangeLifecycle(options: {
         ? { kind: 'plan-evidence-accepted', evidence: observation.evidence }
         : { kind: 'plan-rejected' },
     );
-    const expectedKind = observation.decision === 'approve'
-      ? buildProtocol.currentAction === 'check'
-        ? 'build.check'
-        : 'build.execute'
-      : 'build.plan';
+    const expectedKind =
+      observation.decision === 'approve'
+        ? buildProtocol.currentAction === 'check'
+          ? 'build.check'
+          : 'build.execute'
+        : 'build.plan';
     if (observation.work.kind !== expectedKind) {
       throw new Error('Plan decision Work does not match the Runtime-selected Action');
     }

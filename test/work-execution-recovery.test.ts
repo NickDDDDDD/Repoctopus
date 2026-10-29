@@ -71,11 +71,30 @@ describe('Work execution recovery classification', () => {
     ['context-delivered', 'execute', 'claim-redelivery'],
     ['unknown', 'reconcile', 'host-result-unknown'],
     ['not-executed', 'execute', 'host-not-executed'],
+    ['submitted', 'execute', 'validator-pending'],
     ['validated', 'execute', 'transition-pending'],
   ] as const)('classifies %s without guessing completion', async (status, continuation, reason) => {
     await expect(
       recoveryAuthority(state({ execution: checkpoint(status) })).recovery('run-recovery'),
     ).resolves.toMatchObject({ continuation, reason, workId: 'build:1.1', attempt: 1 });
+  });
+
+  it('keeps rejected submissions on the same Work awaiting a corrected payload', async () => {
+    await expect(
+      recoveryAuthority(
+        state({
+          execution: {
+            ...checkpoint('invoking'),
+            continuation: 'awaiting-correction',
+          },
+        }),
+      ).recovery('run-recovery'),
+    ).resolves.toMatchObject({
+      continuation: 'awaiting-correction',
+      reason: 'outcome-rejected',
+      workId: 'build:1.1',
+      attempt: 1,
+    });
   });
 
   it('distinguishes active, unknown, failed, validator, human and corrupt boundaries', async () => {
@@ -210,7 +229,7 @@ describe('Managed Host reconciliation', () => {
     const marks = {
       unknown: vi.fn(),
       notExecuted: vi.fn(),
-      completed: vi.fn(),
+      completed: vi.fn().mockResolvedValue({ status: 'submitted' }),
     };
     const host = {
       identity: invocation.host,

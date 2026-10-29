@@ -16,6 +16,12 @@ import type {
   WorkExecutionPacket,
   WorkExecutionRecovery,
 } from '../domains/work-execution/types.js';
+import {
+  appendRejectedWorkExecutionSubmission,
+  classifyWorkExecutionSubmission,
+  createWorkExecutionSubmission,
+} from '../domains/work-execution/submission.js';
+import type { WorkExecutionSubmissionRejectionCode } from '../domains/work-execution/types.js';
 
 function digest(...parts: readonly string[]): `sha256:${string}` {
   return `sha256:${createHash('sha256').update(parts.join('\0')).digest('hex')}`;
@@ -348,7 +354,7 @@ export class WorkExecutionAuthority extends Service {
     return this.transition(
       intent.runId,
       intent.intentId,
-      ['invoking'],
+      ['invoking', 'submitted'],
       'reconcile.started',
       'unknown',
       'reconcile',
@@ -379,27 +385,282 @@ export class WorkExecutionAuthority extends Service {
   async markHostCompleted(
     intent: ActionIntent,
     outcome: WorkExecutionHostOutcome,
+    submissionId: string,
   ): Promise<WorkExecutionCheckpoint> {
-    return this.transition(
+    const candidate = createWorkExecutionSubmission(submissionId, outcome);
+    const result = await this.ctx.runStore.commitGuarded(intent.runId, ({ state, trajectory }) => {
+      const current = state.workExecution;
+      if (!current || current.intentId !== intent.intentId) {
+        throw new Error('Work submission does not match the authoritative Run claim');
+      }
+      assertSameClaim(current, intent);
+      const disposition = classifyWorkExecutionSubmission({
+        ...(current.pendingSubmission ? { pending: current.pendingSubmission } : {}),
+        rejected: current.rejectedSubmissions ?? [],
+        ...(current.acceptedSubmission ? { accepted: current.acceptedSubmission } : {}),
+        candidate,
+      });
+      if (disposition !== 'new') return { value: structuredClone(current) };
+      if (!['invoking', 'unknown'].includes(current.status)) {
+        throw new Error(`Work submission cannot be recorded from ${current.status}`);
+      }
+      const timestamp = new Date().toISOString();
+      const checkpoint: WorkExecutionCheckpoint = {
+        ...current,
+        status: 'submitted',
+        continuation: 'execute',
+        pendingSubmission: candidate,
+        updatedAt: timestamp,
+      };
+      const nextState: RunState = {
+        ...state,
+        workExecution: checkpoint,
+        stateVersion: state.stateVersion + 1,
+        updatedAt: timestamp,
+      };
+      return {
+        state: nextState,
+        event: executionEvent({
+          state: nextState,
+          sequence: trajectory.length + 1,
+          timestamp,
+          type: 'work.host-completed',
+          identity: [current.workId, String(current.attempt), submissionId],
+          data: {
+            workId: intent.workId,
+            attempt: intent.attempt,
+            checkEpoch: intent.checkEpoch,
+            invocationId: outcome.invocationId,
+            hostId: outcome.hostId,
+            packetDigest: outcome.packetDigest,
+            submissionId,
+            submissionDigest: candidate.payloadDigest,
+            result: outcome.status,
+            findingCount: outcome.findings?.length ?? 0,
+            ...(outcome.findings?.[0] ? { findingKind: outcome.findings[0].kind } : {}),
+          },
+        }),
+        value: structuredClone(checkpoint),
+      };
+    });
+    await this.recordEvent(
       intent.runId,
       intent.intentId,
-      ['invoking', 'unknown'],
-      'work.host-completed',
-      'invoking',
-      'wait',
+      'work.outcome-submitted',
       {
         workId: intent.workId,
         attempt: intent.attempt,
         checkEpoch: intent.checkEpoch,
-        invocationId: outcome.invocationId,
-        hostId: outcome.hostId,
-        packetDigest: outcome.packetDigest,
+        submissionId,
+        submissionDigest: candidate.payloadDigest,
         result: outcome.status,
-        findingCount: outcome.findings?.length ?? 0,
-        ...(outcome.findings?.[0] ? { findingKind: outcome.findings[0].kind } : {}),
       },
-      { hostOutcome: structuredClone(outcome) },
+      [submissionId, candidate.payloadDigest],
     );
+    if (
+      result.pendingSubmission?.submissionId === submissionId &&
+      (result.rejectedSubmissions?.length ?? 0) > 0
+    ) {
+      await this.recordEvent(
+        intent.runId,
+        intent.intentId,
+        'work.outcome-corrected',
+        {
+          workId: intent.workId,
+          attempt: intent.attempt,
+          checkEpoch: intent.checkEpoch,
+          submissionId,
+          rejectedSubmissionCount: result.rejectedSubmissions?.length ?? 0,
+        },
+        [submissionId],
+      );
+    }
+    return result;
+  }
+
+  async rejectHostSubmission(input: {
+    intent: ActionIntent;
+    reasonCode: WorkExecutionSubmissionRejectionCode;
+    diagnostic: string;
+  }): Promise<WorkExecutionCheckpoint> {
+    const result = await this.ctx.runStore.commitGuarded(
+      input.intent.runId,
+      ({ state, trajectory }) => {
+        const current = state.workExecution;
+        if (!current || current.intentId !== input.intent.intentId) {
+          throw new Error('Work rejection does not match the authoritative Run claim');
+        }
+        assertSameClaim(current, input.intent);
+        if (!current.pendingSubmission) {
+          if (
+            current.status === 'invoking' &&
+            (current.continuation === 'awaiting-correction' || current.continuation === 'wait')
+          ) {
+            return { value: structuredClone(current) };
+          }
+          throw new Error('Work rejection requires a pending Host submission');
+        }
+        if (current.status !== 'submitted') {
+          throw new Error(`Work submission cannot be rejected from ${current.status}`);
+        }
+        const timestamp = new Date().toISOString();
+        const submission = current.pendingSubmission;
+        const processingError = input.reasonCode === 'outcome-processing-error';
+        const rejectedSubmissions = processingError
+          ? (current.rejectedSubmissions ?? [])
+          : appendRejectedWorkExecutionSubmission(current.rejectedSubmissions ?? [], submission, {
+              reasonCode: input.reasonCode,
+              diagnostic: input.diagnostic,
+              rejectedAt: timestamp,
+            });
+        const continuation = processingError ? 'execute' : 'awaiting-correction';
+        const checkpoint: WorkExecutionCheckpoint = {
+          ...current,
+          status: processingError ? 'submitted' : 'invoking',
+          continuation,
+          pendingSubmission: processingError ? submission : null,
+          rejectedSubmissions,
+          updatedAt: timestamp,
+        };
+        const nextState: RunState = {
+          ...state,
+          workExecution: checkpoint,
+          stateVersion: state.stateVersion + 1,
+          updatedAt: timestamp,
+        };
+        return {
+          state: nextState,
+          event: executionEvent({
+            state: nextState,
+            sequence: trajectory.length + 1,
+            timestamp,
+            type:
+              input.reasonCode === 'outcome-processing-error'
+                ? 'work.outcome-processing-error'
+                : 'work.outcome-rejected',
+            identity: [current.workId, String(current.attempt), submission.submissionId],
+            data: {
+              workId: current.workId,
+              attempt: current.attempt,
+              checkEpoch: current.checkEpoch,
+              submissionId: submission.submissionId,
+              submissionDigest: submission.payloadDigest,
+              reasonCode: input.reasonCode,
+              diagnostic: input.diagnostic,
+              continuation,
+            },
+          }),
+          value: structuredClone(checkpoint),
+        };
+      },
+    );
+    return result;
+  }
+
+  async recoverLegacyRejectedOutcome(input: {
+    intent: ActionIntent;
+    diagnostic: string;
+  }): Promise<WorkExecutionCheckpoint> {
+    const result = await this.ctx.runStore.commitGuarded(
+      input.intent.runId,
+      ({ state, trajectory }) => {
+        const current = state.workExecution;
+        if (!current || current.intentId !== input.intent.intentId) {
+          throw new Error('Legacy Work recovery does not match the authoritative Run claim');
+        }
+        assertSameClaim(current, input.intent);
+        const existing = current.rejectedSubmissions?.find((submission) =>
+          submission.submissionId.startsWith('legacy:'),
+        );
+        if (
+          existing &&
+          current.status === 'invoking' &&
+          current.continuation === 'awaiting-correction'
+        ) {
+          return { value: structuredClone(current) };
+        }
+        const legacySubmissionId = `legacy:${rawDigest(
+          input.intent.runId,
+          input.intent.intentId,
+          current.actionOutcome?.outcomeId ?? 'missing',
+        )}`;
+        if (
+          current.status !== 'outcome' ||
+          current.acceptedSubmission ||
+          !current.hostOutcome ||
+          !current.actionOutcome ||
+          current.actionOutcome.status !== 'succeeded'
+        ) {
+          throw new Error('Legacy Work recovery requires an unaccepted terminal success Outcome');
+        }
+        const submission = createWorkExecutionSubmission(legacySubmissionId, current.hostOutcome);
+        const timestamp = new Date().toISOString();
+        const rejectedSubmissions = appendRejectedWorkExecutionSubmission(
+          current.rejectedSubmissions ?? [],
+          submission,
+          {
+            reasonCode: 'outcome-rejected',
+            diagnostic: input.diagnostic,
+            rejectedAt: timestamp,
+          },
+        );
+        const {
+          hostOutcome: _legacyHostOutcome,
+          actionOutcome: _legacyActionOutcome,
+          receiptId: _legacyReceiptId,
+          validatorId: _legacyValidatorId,
+          acceptedSubmission: _legacyAcceptedSubmission,
+          pendingSubmission: _legacyPendingSubmission,
+          ...preserved
+        } = current;
+        void _legacyHostOutcome;
+        void _legacyActionOutcome;
+        void _legacyReceiptId;
+        void _legacyValidatorId;
+        void _legacyAcceptedSubmission;
+        void _legacyPendingSubmission;
+        const checkpoint: WorkExecutionCheckpoint = {
+          ...preserved,
+          status: 'invoking',
+          continuation: 'awaiting-correction',
+          pendingSubmission: null,
+          rejectedSubmissions,
+          updatedAt: timestamp,
+        };
+        const nextState: RunState = {
+          ...state,
+          workExecution: checkpoint,
+          stateVersion: state.stateVersion + 1,
+          updatedAt: timestamp,
+        };
+        return {
+          state: nextState,
+          event: executionEvent({
+            state: nextState,
+            sequence: trajectory.length + 1,
+            timestamp,
+            type: 'work.outcome-rejected',
+            identity: [current.workId, String(current.attempt), legacySubmissionId],
+            data: {
+              phase: state.changeLifecycle?.phase,
+              workId: current.workId,
+              workKind: state.changeLifecycle?.currentWork?.kind,
+              attempt: current.attempt,
+              checkEpoch: current.checkEpoch,
+              submissionId: legacySubmissionId,
+              submissionDigest: submission.payloadDigest,
+              reasonCode: 'outcome-rejected',
+              diagnostic: input.diagnostic,
+              continuation: 'awaiting-correction',
+              legacyRecovery: true,
+            },
+          }),
+          value: structuredClone(checkpoint),
+        };
+      },
+    );
+    await this.flushTelemetry(input.intent.runId);
+    return result;
   }
 
   async bindOutcome(input: {
@@ -407,25 +668,78 @@ export class WorkExecutionAuthority extends Service {
     outcome: ClaimedActionOutcome;
     receipt: ActionReceipt;
   }): Promise<WorkExecutionCheckpoint> {
-    return this.transition(
+    const result = await this.ctx.runStore.commitGuarded(
+      input.intent.runId,
+      ({ state, trajectory }) => {
+        const current = state.workExecution;
+        if (!current || current.intentId !== input.intent.intentId) {
+          throw new Error('Work acceptance does not match the authoritative Run claim');
+        }
+        assertSameClaim(current, input.intent);
+        if (
+          current.status === 'outcome' &&
+          current.actionOutcome?.outcomeId === input.outcome.outcomeId
+        ) {
+          return { value: structuredClone(current) };
+        }
+        if (current.status !== 'submitted' || !current.pendingSubmission) {
+          throw new Error('Work acceptance requires a validated pending Host submission');
+        }
+        const timestamp = new Date().toISOString();
+        const acceptedSubmission = current.pendingSubmission;
+        const checkpoint: WorkExecutionCheckpoint = {
+          ...current,
+          status: 'outcome',
+          continuation: 'wait',
+          pendingSubmission: null,
+          acceptedSubmission,
+          hostOutcome: structuredClone(acceptedSubmission.outcome),
+          actionOutcome: structuredClone(input.outcome),
+          receiptId: input.receipt.receiptId,
+          updatedAt: timestamp,
+        };
+        const nextState: RunState = {
+          ...state,
+          workExecution: checkpoint,
+          stateVersion: state.stateVersion + 1,
+          updatedAt: timestamp,
+        };
+        return {
+          state: nextState,
+          event: executionEvent({
+            state: nextState,
+            sequence: trajectory.length + 1,
+            timestamp,
+            type: 'work.completed',
+            identity: [current.workId, String(current.attempt), input.outcome.outcomeId],
+            data: {
+              workId: input.intent.workId,
+              attempt: input.intent.attempt,
+              outcomeId: input.outcome.outcomeId,
+              receiptId: input.receipt.receiptId,
+              submissionId: acceptedSubmission.submissionId,
+              result: input.outcome.status,
+            },
+          }),
+          value: structuredClone(checkpoint),
+        };
+      },
+    );
+    await this.recordEvent(
       input.intent.runId,
       input.intent.intentId,
-      ['context-delivered', 'invoking'],
-      'work.completed',
-      'outcome',
-      'wait',
+      'work.outcome-accepted',
       {
         workId: input.intent.workId,
         attempt: input.intent.attempt,
-        outcomeId: input.outcome.outcomeId,
-        receiptId: input.receipt.receiptId,
+        checkEpoch: input.intent.checkEpoch,
+        submissionId: result.acceptedSubmission?.submissionId,
         result: input.outcome.status,
       },
-      {
-        actionOutcome: structuredClone(input.outcome),
-        receiptId: input.receipt.receiptId,
-      },
+      [input.outcome.outcomeId],
     );
+    await this.flushTelemetry(input.intent.runId);
+    return result;
   }
 
   async markValidated(input: {
@@ -522,7 +836,15 @@ export class WorkExecutionAuthority extends Service {
     if (current.status === 'claimed' || current.status === 'context-delivered') {
       return result('execute', 'claim-redelivery');
     }
+    if (current.status === 'submitted') {
+      return current.continuation === 'execute'
+        ? result('execute', 'validator-pending')
+        : result('execute', 'outcome-processing-error');
+    }
     if (current.status === 'invoking') {
+      if (current.continuation === 'awaiting-correction') {
+        return result('awaiting-correction', 'outcome-rejected');
+      }
       return current.hostInvocation &&
         this.ctx.workExecutionSessions.isActive(current.hostInvocation.invocationId)
         ? result('wait', 'host-active')

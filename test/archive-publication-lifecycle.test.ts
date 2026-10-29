@@ -615,8 +615,9 @@ describe('Archive publication terminal lifecycle', () => {
         },
       });
       await app.context.managedWorkExecutor.acceptExternalOutcome({
-        schemaVersion: 2,
+        schemaVersion: 3,
         runId: preflight.identity.runId,
+        submissionId: 'specification-close-submission',
         invocationId: claim.invocation.invocationId,
         hostId: claim.invocation.host.id,
         packetDigest: claim.packet.identity.packetDigest,
@@ -765,8 +766,9 @@ describe('Archive publication terminal lifecycle', () => {
         executor,
       });
       await app.context.managedWorkExecutor.acceptExternalOutcome({
-        schemaVersion: 2,
+        schemaVersion: 3,
         runId: closed.identity.runId,
+        submissionId: 'archive-publication-submission',
         invocationId: publicationClaim.invocation.invocationId,
         hostId: publicationClaim.invocation.host.id,
         packetDigest: publicationClaim.packet.identity.packetDigest,

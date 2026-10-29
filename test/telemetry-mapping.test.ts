@@ -235,6 +235,7 @@ describe('telemetry mapping', () => {
       'repoctopus.execution.work.kind': 'custom',
       'repoctopus.execution.result': 'succeeded',
       'repoctopus.execution.continuation': 'unknown',
+      'repoctopus.execution.reason.code': 'none',
       'repoctopus.build.action': 'none',
       'repoctopus.build.execution.mode': 'none',
       'repoctopus.build.tdd.mode': 'none',
@@ -262,11 +263,72 @@ describe('telemetry mapping', () => {
       'repoctopus.execution.work.kind': 'build.execute',
       'repoctopus.execution.result': 'succeeded',
       'repoctopus.execution.continuation': 'unknown',
+      'repoctopus.execution.reason.code': 'none',
       'repoctopus.build.action': 'execute',
       'repoctopus.build.execution.mode': 'subagent-driven-development',
       'repoctopus.build.tdd.mode': 'tdd',
       'repoctopus.build.isolation': 'worktree',
     });
     expect(JSON.stringify(metric)).not.toMatch(/work-package|repository/u);
+  });
+
+  it('exports correction facts while keeping identity and diagnostics out of Metric labels', () => {
+    const workflow = workflowFixture();
+    const project = projectFixture();
+    const run = startRun({
+      workflow,
+      runId: 'run-correction-telemetry',
+      projectSnapshotDigest: project.digest,
+      composition: compositionFixture(),
+      timestamp: '2026-01-01T00:00:00.000Z',
+      traceId: '4'.repeat(32),
+    });
+    const event: TrajectoryEvent = {
+      schemaVersion: 1,
+      sequence: 3,
+      eventId: 'work-rejected-1',
+      timestamp: '2026-01-01T00:00:02.000Z',
+      type: 'work.outcome-rejected',
+      runId: run.runId,
+      stateVersion: 3,
+      compositionDigest: run.composition.compositionDigest,
+      data: {
+        phase: 'build',
+        workId: 'build.plan:1',
+        workKind: 'build.plan',
+        attempt: 1,
+        checkEpoch: 8,
+        submissionId: 'submission-private-identity',
+        submissionDigest: `sha256:${'b'.repeat(64)}`,
+        reasonCode: 'outcome-rejected',
+        diagnostic: 'Private Task title and source path C:/private/source.ts',
+        continuation: 'awaiting-correction',
+        rejectedSubmissionCount: 1,
+      },
+    };
+    const batch: TelemetryBatch = {
+      run,
+      workflow,
+      projectSnapshot: project,
+      events: [event],
+      trajectory: [event],
+    };
+
+    const attributes = safeEventAttributes(batch, event);
+    expect(attributes).toMatchObject({
+      'repoctopus.execution.submissionId': 'submission-private-identity',
+      'repoctopus.execution.reasonCode': 'outcome-rejected',
+      'repoctopus.execution.continuation': 'awaiting-correction',
+      'repoctopus.execution.rejectedSubmissionCount': 1,
+    });
+    expect(JSON.stringify(attributes)).not.toMatch(/Private Task|C:\/private/u);
+
+    const metric = executionMetricAttributes(event);
+    expect(metric).toMatchObject({
+      'repoctopus.execution.event.type': 'work.outcome-rejected',
+      'repoctopus.execution.continuation': 'awaiting-correction',
+      'repoctopus.execution.reason.code': 'outcome-rejected',
+    });
+    expect(JSON.stringify(metric)).not.toMatch(/submission-private|sha256:|Private Task|C:\//u);
   });
 });

@@ -11,7 +11,7 @@ import { ManagedWorkExecutor } from '../services/managed-work-executor.js';
 
 const digest = (character: string) => `sha256:${character.repeat(64)}` as const;
 
-function frozenPacket(): WorkExecutionPacket {
+function frozenPacket(kind = 'build.execute'): WorkExecutionPacket {
   const packet = {
     schemaVersion: 2,
     identity: {
@@ -31,7 +31,7 @@ function frozenPacket(): WorkExecutionPacket {
       compositionDigest: digest('f'),
     },
     work: {
-      kind: 'build.execute',
+      kind,
       packageId: 'package-1',
     },
     context: {
@@ -67,8 +67,9 @@ function executor(
   resultOverride?: Record<string, unknown>,
   delegationReceiptsOverride?: WorkExecutionHostOutcome['delegationReceipts'],
   invokeError?: Error,
+  workKind = 'build.execute',
 ) {
-  const packet = frozenPacket();
+  const packet = frozenPacket(workKind);
   const intent = {
     runId: 'run-1',
     workId: 'work-1',
@@ -78,7 +79,7 @@ function executor(
   const authority = {
     markHostStarted: vi.fn(),
     markHostUnknown: vi.fn(),
-    markHostCompleted: vi.fn(),
+    markHostCompleted: vi.fn().mockResolvedValue({ status: 'submitted' }),
     recordDelegationFacts: vi.fn(),
     recordSkillFacts: vi.fn(),
   };
@@ -96,13 +97,13 @@ function executor(
     invoke: vi.fn((_packet: WorkExecutionPacket, session: WorkExecutionSessionIdentity) => {
       if (invokeError) return Promise.reject(invokeError);
       return Promise.resolve({
-      schemaVersion: 1 as const,
-      invocationId: session.invocationId,
-      hostId: 'coordinator-1',
-      packetDigest: packet.identity.packetDigest,
-      status: 'succeeded' as const,
-      summary: 'delegated package completed',
-      consumedLayerDigests: [digest('1'), digest('2')],
+        schemaVersion: 1 as const,
+        invocationId: session.invocationId,
+        hostId: 'coordinator-1',
+        packetDigest: packet.identity.packetDigest,
+        status: 'succeeded' as const,
+        summary: 'delegated package completed',
+        consumedLayerDigests: [digest('1'), digest('2')],
         result: (resultOverride ?? {
           schemaVersion: 1,
           kind: 'build-package-completion',
@@ -117,46 +118,45 @@ function executor(
           repositoryDigest: digest('5'),
           implementationDigest: digest('6'),
         }) as WorkExecutionResult,
-      delegationReceipts: delegationReceiptsOverride ?? [
-        {
-          schemaVersion: 1 as const,
-          receiptId: 'receipt-1',
-          parentInvocationId: session.invocationId,
-          coordinatorHostId: 'coordinator-1',
-          executionId: 'subagent-implementation-1',
-          role: 'implementer' as const,
-          packageId: 'package-1',
-          status: 'succeeded' as const,
-          outcomeDigest: digest('7'),
-        },
-      ],
-      completedAt: '2026-10-28T00:00:00.000Z',
+        delegationReceipts: delegationReceiptsOverride ?? [
+          {
+            schemaVersion: 1 as const,
+            receiptId: 'receipt-1',
+            parentInvocationId: session.invocationId,
+            coordinatorHostId: 'coordinator-1',
+            executionId: 'subagent-implementation-1',
+            role: 'implementer' as const,
+            packageId: 'package-1',
+            status: 'succeeded' as const,
+            outcomeDigest: digest('7'),
+          },
+        ],
+        completedAt: '2026-10-28T00:00:00.000Z',
       } satisfies WorkExecutionHostOutcome);
     }),
   };
   const service = Object.create(ManagedWorkExecutor.prototype) as ManagedWorkExecutor;
+  const workDispatcher = {
+    claim: vi.fn().mockResolvedValue({ packet, intent }),
+    outcome: vi.fn().mockReturnValue({}),
+    acceptOutcome: vi.fn().mockResolvedValue({ accepted: true }),
+  };
   Object.defineProperty(service, 'ctx', {
     value: {
-      workDispatcher: {
-        claim: vi.fn().mockResolvedValue({ packet, intent }),
-        outcome: vi.fn().mockReturnValue({}),
-        acceptOutcome: vi.fn().mockResolvedValue({ accepted: true }),
-      },
+      workDispatcher,
       workExecutionHosts: { select: vi.fn().mockReturnValue(host) },
       workExecutionSessions: {
-        open: vi.fn(
-          (input: Omit<WorkExecutionSessionIdentity, 'schemaVersion' | 'sessionId'>) => ({
-            ...input,
-            schemaVersion: 2,
-            sessionId: 'session-1',
-          }),
-        ),
+        open: vi.fn((input: Omit<WorkExecutionSessionIdentity, 'schemaVersion' | 'sessionId'>) => ({
+          ...input,
+          schemaVersion: 2,
+          sessionId: 'session-1',
+        })),
         close: vi.fn(),
       },
       workExecutionAuthority: authority,
     },
   });
-  return { service, authority };
+  return { service, authority, workDispatcher };
 }
 
 describe('Managed Work Executor Build contract', () => {
@@ -255,12 +255,52 @@ describe('Managed Work Executor Build contract', () => {
     });
     expect(authority.markHostCompleted).toHaveBeenCalledOnce();
     expect(authority.recordDelegationFacts).toHaveBeenCalledOnce();
-    expect(authority.recordSkillFacts).toHaveBeenCalledWith(
-      expect.anything(),
-      'consumed',
-      [digest('1'), digest('2')],
-    );
+    expect(authority.recordSkillFacts).toHaveBeenCalledWith(expect.anything(), 'consumed', [
+      digest('1'),
+      digest('2'),
+    ]);
     expect(authority.markHostUnknown).not.toHaveBeenCalled();
+  });
+
+  it('records a Build Plan submission without accepting a terminal Action Outcome', async () => {
+    const { service, authority, workDispatcher } = executor(
+      { schemaVersion: 1, kind: 'build-plan-candidate', packages: [] },
+      undefined,
+      undefined,
+      'build.plan',
+    );
+
+    await expect(service.execute({} as never)).resolves.toMatchObject({
+      hostOutcome: { status: 'succeeded' },
+      acceptance: null,
+    });
+    expect(authority.markHostCompleted).toHaveBeenCalledOnce();
+    expect(workDispatcher.acceptOutcome).not.toHaveBeenCalled();
+  });
+
+  it('records a Build Check submission without accepting a terminal Action Outcome', async () => {
+    const { service, authority, workDispatcher } = executor(
+      {
+        schemaVersion: 1,
+        kind: 'build-check-candidate',
+        completedPackageIds: ['package-1'],
+        acceptedTaskIds: ['1.1'],
+        testEvidenceIds: ['test-1'],
+        repositoryDigest: digest('5'),
+        implementationDigest: digest('6'),
+        reviewerExecutionId: 'reviewer-1',
+      },
+      undefined,
+      undefined,
+      'build.check',
+    );
+
+    await expect(service.execute({} as never)).resolves.toMatchObject({
+      hostOutcome: { status: 'succeeded' },
+      acceptance: null,
+    });
+    expect(authority.markHostCompleted).toHaveBeenCalledOnce();
+    expect(workDispatcher.acceptOutcome).not.toHaveBeenCalled();
   });
 
   it('rejects a Host-selected next Action as an unsupported result field', async () => {

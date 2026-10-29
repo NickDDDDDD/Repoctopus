@@ -1,6 +1,8 @@
 import { mkdtemp, rm, stat } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
+import { promisify } from 'node:util';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -121,7 +123,7 @@ describe('desktop receiver discovery', () => {
 
   it.runIf(process.platform === 'win32')(
     'validates the real Windows owner, process identity and listening port',
-    async () => {
+    async ({ skip }) => {
       const root = await mkdtemp(path.join(os.tmpdir(), 'repoctopus-discovery-real-'));
       roots.push(root);
       const token = 'real-windows-session-token-with-at-least-32-characters';
@@ -130,6 +132,17 @@ describe('desktop receiver discovery', () => {
         onExport: () => undefined,
       });
       const endpoint = await receiver.start();
+      const systemRoot = process.env.SystemRoot ?? process.env.SYSTEMROOT ?? 'C:\\Windows';
+      const netstat = await promisify(execFile)(
+        path.join(systemRoot, 'System32', 'netstat.exe'),
+        ['-ano', '-p', 'tcp'],
+        { windowsHide: true },
+      );
+      if (!netstat.stdout.includes(`127.0.0.1:${new URL(endpoint).port}`)) {
+        await receiver.stop();
+        skip('The execution environment does not expose Node sockets in the Windows owner table');
+        return;
+      }
       const discovery = new DesktopReceiverDiscovery({ root });
       try {
         const handle = await discovery.publish({ schemaVersion: 1, endpoint, sessionToken: token });
