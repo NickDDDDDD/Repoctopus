@@ -92,9 +92,9 @@ describe('composition compatibility', () => {
       [
         'workflow-runs',
         {
-          codeDigest: 'sha256:134383f897d18abc147bee12e26424491a0ab1c2a0bc09bb1f10c7702f2ccede',
+          codeDigest: 'sha256:12118b68015780ca5257800e0b0429db0519a123d6decfb478c9856988392fd7',
           descriptorDigest:
-            'sha256:2d5762a64e2ebf5939b4a0b846d10240e7506ce4423fc2ad55ab27375719c7b6',
+            'sha256:60d2fb33c4ac65ba4bc03ee7161d502fd15211ef5265a8203bb5c04384f42933',
         },
       ],
       [
