@@ -1,12 +1,17 @@
-import { spawn } from 'node:child_process';
+import { execFile, spawn } from 'node:child_process';
+import { access } from 'node:fs/promises';
+import path from 'node:path';
+import { promisify } from 'node:util';
 
 import { Service, type Context } from '@deepseek-ai/cordis';
 
 import type { RuntimeDiagnostic } from '../domains/runtime/types.js';
 import {
   desktopLaunchContextArgument,
+  desktopLaunchContextUrl,
   type DesktopLaunchContext,
 } from '../app/desktop/shared/launch-context.js';
+import { DesktopReceiverDiscovery } from '../app/desktop/host/receiver-discovery.js';
 
 export const DESKTOP_ACTIVATION_STATUSES = [
   'started',
@@ -53,6 +58,33 @@ export type DesktopLaunchTarget =
       executable: 'explorer.exe';
       arguments: readonly [string];
     };
+
+export interface DesktopProcessHandle {
+  once(event: 'spawn', listener: () => void): this;
+  once(event: 'error', listener: (error: Error) => void): this;
+  on(event: 'error', listener: (error: Error) => void): this;
+  removeListener(event: 'spawn', listener: () => void): this;
+  removeListener(event: 'error', listener: (error: Error) => void): this;
+  unref(): void;
+  kill(): boolean;
+}
+
+export type DesktopProcessAdapter = (
+  executable: string,
+  arguments_: readonly string[],
+  options: { detached: true; stdio: 'ignore'; windowsHide: true },
+) => DesktopProcessHandle;
+
+export interface DesktopLauncherConfig {
+  productRoot: string;
+  environment?: NodeJS.ProcessEnv;
+  platform?: NodeJS.Platform;
+  process?: DesktopProcessAdapter;
+  pathExists?: (candidate: string) => Promise<boolean>;
+  probeExistingInstance?: () => Promise<boolean>;
+  protocolHandlerAvailable?: () => Promise<boolean>;
+  launchDeadlineMs?: number;
+}
 
 const RESULT_FIELDS = new Set(['status', 'targetKind', 'reason']);
 const STATUS_REASONS: Readonly<
@@ -128,31 +160,222 @@ export function desktopActivationDiagnostic(result: DesktopActivationResult): Ru
   return { ...DIAGNOSTICS[parsed.status] };
 }
 
+const executeFile = promisify(execFile);
+const DEFAULT_LAUNCH_DEADLINE_MS = 5_000;
+
+function defaultProcessAdapter(
+  executable: string,
+  arguments_: readonly string[],
+  options: { detached: true; stdio: 'ignore'; windowsHide: true },
+): DesktopProcessHandle {
+  return spawn(executable, [...arguments_], options);
+}
+
+async function fileExists(candidate: string): Promise<boolean> {
+  try {
+    await access(candidate);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function windowsProtocolHandlerAvailable(
+  environment: NodeJS.ProcessEnv,
+): Promise<boolean> {
+  const systemRoot = environment.SystemRoot ?? environment.SYSTEMROOT ?? 'C:\\Windows';
+  try {
+    await executeFile(
+      path.join(systemRoot, 'System32', 'reg.exe'),
+      ['query', 'HKCR\\repoctopus\\shell\\open\\command', '/ve'],
+      { env: environment, windowsHide: true, timeout: 5_000 },
+    );
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+type TargetResolution =
+  | { status: 'resolved'; target: DesktopLaunchTarget }
+  | { status: 'unavailable'; targetKind: DesktopLaunchTargetKind; reason: DesktopActivationReason };
+
+function unavailable(
+  targetKind: DesktopLaunchTargetKind,
+  reason: DesktopActivationReason,
+): TargetResolution {
+  return { status: 'unavailable', targetKind, reason };
+}
+
 /** Best-effort application boundary: launcher failure is observability loss, never workflow failure. */
 export class DesktopLauncher extends Service {
+  private readonly environment: NodeJS.ProcessEnv;
+  private readonly platform: NodeJS.Platform;
+  private readonly productRoot: string;
+  private readonly process: DesktopProcessAdapter;
+  private readonly pathExists: (candidate: string) => Promise<boolean>;
+  private readonly probeExistingInstance: () => Promise<boolean>;
+  private readonly protocolHandlerAvailable: () => Promise<boolean>;
+  private readonly launchDeadlineMs: number;
+
   constructor(
     context: Context,
-    private readonly config: { environment?: NodeJS.ProcessEnv } = {},
+    config: DesktopLauncherConfig,
   ) {
     super(context, 'desktopLauncher');
+    if (!config || !path.isAbsolute(config.productRoot)) {
+      throw new Error('Desktop Launcher productRoot must be an absolute path');
+    }
+    this.environment = config.environment ?? process.env;
+    this.platform = config.platform ?? process.platform;
+    this.productRoot = path.resolve(config.productRoot);
+    this.process = config.process ?? defaultProcessAdapter;
+    this.pathExists = config.pathExists ?? fileExists;
+    this.probeExistingInstance =
+      config.probeExistingInstance ??
+      (async () => {
+        try {
+          const discovery = new DesktopReceiverDiscovery({
+            environment: this.environment,
+            platform: this.platform,
+          });
+          return (await discovery.discover()).status === 'available';
+        } catch {
+          return false;
+        }
+      });
+    this.protocolHandlerAvailable =
+      config.protocolHandlerAvailable ??
+      (() => windowsProtocolHandlerAvailable(this.environment));
+    this.launchDeadlineMs = config.launchDeadlineMs ?? DEFAULT_LAUNCH_DEADLINE_MS;
+    if (!Number.isSafeInteger(this.launchDeadlineMs) || this.launchDeadlineMs <= 0) {
+      throw new Error('Desktop Launcher launchDeadlineMs must be a positive safe integer');
+    }
   }
 
-  activate(launchContext: DesktopLaunchContext): DesktopActivationResult {
-    const environment = this.config.environment ?? process.env;
-    const executable = environment.REPOCTOPUS_DESKTOP_EXECUTABLE?.trim();
-    if (!executable) {
-      return { status: 'unavailable', targetKind: 'none', reason: 'target-unavailable' };
+  async activate(launchContext: DesktopLaunchContext): Promise<DesktopActivationResult> {
+    if (this.platform !== 'win32') {
+      return { status: 'unsupported', targetKind: 'none', reason: 'platform-unsupported' };
     }
+
+    const resolution = await this.resolveTarget(launchContext);
+    if (resolution.status === 'unavailable') {
+      return {
+        status: 'unavailable',
+        targetKind: resolution.targetKind,
+        reason: resolution.reason,
+      };
+    }
+    const existingInstance = await this.probeExistingInstance();
+    return this.requestActivation(resolution.target, existingInstance);
+  }
+
+  private async resolveTarget(launchContext: DesktopLaunchContext): Promise<TargetResolution> {
+    const override = this.environment.REPOCTOPUS_DESKTOP_EXECUTABLE?.trim();
+    if (override) {
+      return {
+        status: 'resolved',
+        target: {
+          kind: 'override',
+          executable: override,
+          arguments: [desktopLaunchContextArgument(launchContext)],
+        },
+      };
+    }
+
+    const electron = path.join(
+      this.productRoot,
+      'node_modules',
+      'electron',
+      'dist',
+      'electron.exe',
+    );
+    const main = path.join(this.productRoot, 'dist', 'desktop', 'main.js');
+    const [electronExists, mainExists] = await Promise.all([
+      this.pathExists(electron),
+      this.pathExists(main),
+    ]);
+    if (electronExists && mainExists) {
+      return {
+        status: 'resolved',
+        target: {
+          kind: 'source',
+          executable: electron,
+          arguments: [main, desktopLaunchContextArgument(launchContext)],
+        },
+      };
+    }
+    if (electronExists || mainExists) {
+      return unavailable('source', 'development-artifact-missing');
+    }
+    if (!(await this.protocolHandlerAvailable())) {
+      return unavailable('installed-protocol', 'protocol-handler-unavailable');
+    }
+    return {
+      status: 'resolved',
+      target: {
+        kind: 'installed-protocol',
+        executable: 'explorer.exe',
+        arguments: [desktopLaunchContextUrl(launchContext)],
+      },
+    };
+  }
+
+  private requestActivation(
+    target: DesktopLaunchTarget,
+    existingInstance: boolean,
+  ): Promise<DesktopActivationResult> {
     try {
-      const child = spawn(executable, [desktopLaunchContextArgument(launchContext)], {
+      const child = this.process(target.executable, target.arguments, {
         detached: true,
         stdio: 'ignore',
         windowsHide: true,
       });
-      child.unref();
-      return { status: 'started', targetKind: 'override', reason: 'new-instance' };
+      return new Promise((resolve) => {
+        let settled = false;
+        const ignoreError = () => undefined;
+        const finish = (result: DesktopActivationResult): void => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          child.removeListener('spawn', onSpawn);
+          child.removeListener('error', onError);
+          resolve(result);
+        };
+        const onSpawn = (): void => {
+          try {
+            child.unref();
+            finish({
+              status: existingInstance ? 'activated' : 'started',
+              targetKind: target.kind,
+              reason: existingInstance ? 'existing-instance' : 'new-instance',
+            });
+          } catch {
+            finish({ status: 'unavailable', targetKind: target.kind, reason: 'launch-rejected' });
+          }
+        };
+        const onError = (): void => {
+          finish({ status: 'unavailable', targetKind: target.kind, reason: 'launch-rejected' });
+        };
+        child.on('error', ignoreError);
+        child.once('spawn', onSpawn);
+        child.once('error', onError);
+        const timer = setTimeout(() => {
+          try {
+            child.kill();
+          } catch {
+            // The result is already bounded by launch-timeout.
+          }
+          finish({ status: 'unavailable', targetKind: target.kind, reason: 'launch-timeout' });
+        }, this.launchDeadlineMs);
+        timer.unref();
+      });
     } catch {
-      return { status: 'unavailable', targetKind: 'override', reason: 'launch-rejected' };
+      return Promise.resolve({
+        status: 'unavailable',
+        targetKind: target.kind,
+        reason: 'launch-rejected',
+      });
     }
   }
 }

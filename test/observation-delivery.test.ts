@@ -78,8 +78,14 @@ describe('desktop observation delivery slice', () => {
       const failed = await delivery.replay({ id: 'offline', endpoint: 'http://127.0.0.1:1' });
       expect(failed).toMatchObject({ delivered: 0 });
       expect(failed.warning).toBeTruthy();
-      const launcher = new DesktopLauncher(context, { environment: {} });
-      const launch = launcher.activate({
+      const launcher = new DesktopLauncher(context, {
+        productRoot: path.resolve(import.meta.dirname, '..'),
+        environment: {},
+        platform: 'win32',
+        pathExists: () => Promise.resolve(false),
+        protocolHandlerAvailable: () => Promise.resolve(false),
+      });
+      const launch = await launcher.activate({
         schemaVersion: 1,
         workspaceId: 'team-platform',
         changeId: 'dashboard',
@@ -88,8 +94,8 @@ describe('desktop observation delivery slice', () => {
       expect(launch.status).toBe('unavailable');
       expect(launch).toEqual({
         status: 'unavailable',
-        targetKind: 'none',
-        reason: 'target-unavailable',
+        targetKind: 'installed-protocol',
+        reason: 'protocol-handler-unavailable',
       });
     } finally {
       await Promise.all([remoteServer.close(), desktopServer.close()]);

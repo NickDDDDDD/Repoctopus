@@ -132,7 +132,11 @@ const definitions: readonly BuiltinDefinition[] = [
       stateSchemas: {},
     },
     plugin: DesktopLauncher,
-    sourceFiles: ['services/desktop-launcher.ts', 'app/desktop/shared/launch-context.ts'],
+    sourceFiles: [
+      'services/desktop-launcher.ts',
+      'app/desktop/shared/launch-context.ts',
+      'app/desktop/host/receiver-discovery.ts',
+    ],
   },
   {
     descriptor: {

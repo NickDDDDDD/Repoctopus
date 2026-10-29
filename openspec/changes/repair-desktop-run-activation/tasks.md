@@ -2,12 +2,12 @@
 
 ## 1. 固定断链并定义启动契约
 
-- [ ] 1.2 定义 `DesktopLaunchTarget`、`DesktopActivationResult`、reason enum 和稳定诊断映射，限制所有字段与文本上限。
+- [x] 1.2 定义 `DesktopLaunchTarget`、`DesktopActivationResult`、reason enum 和稳定诊断映射，限制所有字段与文本上限。
       **Blocked by:** None
       **Acceptance:** schema/类型测试拒绝路径、命令正文和未知 reason；四类结果具有确定诊断 code
       **Verification:** 运行 Launcher 契约测试与 TypeScript typecheck
       **Requirements:** development-telemetry#桌面激活结果形成有界观测事实
-- [ ] 1.3 为启动上下文增加安装协议编码/解析，并与现有参数协议共享 schema、大小和版本校验。
+- [x] 1.3 为启动上下文增加安装协议编码/解析，并与现有参数协议共享 schema、大小和版本校验。
       **Blocked by:** 1.2
       **Acceptance:** 两种载体 round-trip 为同一上下文；畸形、超限、未知版本和非 repoctopus URL 被拒绝
       **Verification:** 运行 launch-context 表驱动单元测试

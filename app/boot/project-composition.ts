@@ -157,7 +157,11 @@ function projectSelections(
     { id: 'action-manual' },
     { id: 'action-work-contributors' },
     { id: 'workflow-source-file' },
-    { id: 'desktop-launcher' },
+    runtimeSelection(
+      'desktop-launcher',
+      { productRoot },
+      { productRoot: PRODUCT_ROOT_IDENTITY },
+    ),
     runtimeSelection(
       'observation-delivery',
       { workspaceRoot },
