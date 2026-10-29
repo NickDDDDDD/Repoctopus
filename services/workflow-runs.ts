@@ -400,7 +400,9 @@ export class WorkflowRuns extends Service {
           return this.coordinator.status(input.runId);
         }
         if (!input.isolation) {
-          throw new Error('Workspace intent revision requires current, branch, or worktree isolation');
+          throw new Error(
+            'Workspace intent revision requires current, branch, or worktree isolation',
+          );
         }
         const projectSnapshot = await this.ctx.runStore.loadProjectSnapshot(input.runId);
         const target = state.trigger?.facts.targetBranch as { targetBranch?: unknown } | undefined;
@@ -1829,11 +1831,7 @@ export class WorkflowRuns extends Service {
               }
               let binding: ExecutionWorkspaceBinding;
               try {
-                binding = await this.bindExecutionWorkspace(
-                  current,
-                  lifecycle,
-                  projectSnapshot,
-                );
+                binding = await this.bindExecutionWorkspace(current, lifecycle, projectSnapshot);
               } catch (error) {
                 if (
                   !(error instanceof ExecutionWorkspaceBindingError) ||
@@ -2190,19 +2188,24 @@ export class WorkflowRuns extends Service {
               return { ...evidenced, value: await this.coordinator.status(runId) };
             }
             const executeExecution = current.workExecution;
+            const executeExecutionIsCurrent =
+              executeExecution !== undefined &&
+              executeExecution.workId === lifecycle.currentWork?.workId &&
+              executeExecution.checkEpoch === lifecycle.currentWork?.checkEpoch;
             const executeHostOutcome =
-              executeExecution?.status === 'submitted'
-                ? executeExecution.pendingSubmission?.outcome
-                : executeExecution?.status === 'validated' &&
-                    executeExecution.validatorId ===
-                      lifecycle.currentWork?.validatorProfile.id &&
-                    executeExecution.actionOutcome?.status === 'succeeded' &&
-                    executeExecution.receiptId
-                  ? executeExecution.acceptedSubmission?.outcome
-                  : executeExecution?.status === 'outcome' &&
-                      executeExecution.actionOutcome?.status === 'succeeded'
-                    ? executeExecution.hostOutcome
-                    : undefined;
+              !executeExecution || !executeExecutionIsCurrent
+                ? undefined
+                : executeExecution.status === 'submitted'
+                  ? executeExecution.pendingSubmission?.outcome
+                  : executeExecution.status === 'validated' &&
+                      executeExecution.validatorId === lifecycle.currentWork?.validatorProfile.id &&
+                      executeExecution.actionOutcome?.status === 'succeeded' &&
+                      executeExecution.receiptId
+                    ? executeExecution.acceptedSubmission?.outcome
+                    : executeExecution.status === 'outcome' &&
+                        executeExecution.actionOutcome?.status === 'succeeded'
+                      ? executeExecution.hostOutcome
+                      : undefined;
             if (
               lifecycle.phase === 'build' &&
               lifecycle.currentWork?.kind === 'build.execute' &&
@@ -2237,9 +2240,7 @@ export class WorkflowRuns extends Service {
                 (candidate) => candidate.packageId === result.packageId,
               );
               if (!workPackage) throw new Error('Build Execute package is absent from the Plan');
-              const implementerExecutionIds = (
-                executeHostOutcome.delegationReceipts ?? []
-              )
+              const implementerExecutionIds = (executeHostOutcome.delegationReceipts ?? [])
                 .filter(
                   (receipt) => receipt.role === 'implementer' && receipt.status === 'succeeded',
                 )

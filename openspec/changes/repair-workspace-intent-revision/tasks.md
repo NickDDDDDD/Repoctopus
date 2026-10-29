@@ -38,7 +38,7 @@
       **Blocked by:** 2.3, 3.2
       **Acceptance:** CLI 复用 `DecideChangeRunInput.isolation` 并显示旧 isolation、错误分类与三个候选模式；无效选择零 transition且可重试，批准后同一 runId 进入 Design且需普通 Design gate
       **Requirements:** change-lifecycle#execution-workspace-intent-必须可验证并可在同一-run-修订
-- [ ] 3.4 统一外部 Runner 的 Build Execute Outcome 消费，使成功与失败 submission 都经过接受、验证或 finding recovery，而不依赖旧内嵌 Host 投影。
+- [x] 3.4 统一外部 Runner 的 Build Execute Outcome 消费，使成功与失败 submission 都经过接受、验证或 finding recovery，而不依赖旧内嵌 Host 投影。
       **Blocked by:** 3.3
       **Acceptance:** `submitted/succeeded` 仅在 Runtime 接受并通过 validator 后完成 package；`submitted/failed` 的 finding 被接受并驱动正式 recovery；重复 `next` 与重启不重复完成 Task、Outcome 或 Receipt
       **Requirements:** managed-work-execution#外部-build-execute-outcome-必须经过统一的两阶段消费

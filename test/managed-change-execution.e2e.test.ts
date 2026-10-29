@@ -632,7 +632,7 @@ describe('managed Change execution production composition', () => {
           currentWork: { kind: 'build.execute' },
           build: { action: 'execute', planRevision: 1 },
         });
-        let afterFirstPackage: RuntimeResult<RunStatusView>;
+        let afterFirstPackage: RunStatusView;
         let afterAllPackages: RuntimeResult<RunStatusView>;
         if (!multiRepository && executionMode === 'autonomous') {
           const successAcceptanceInterruption = vi
@@ -650,7 +650,10 @@ describe('managed Change execution production composition', () => {
           });
 
           await restartApplication();
-          const packageCoordinator = Reflect.get(application.context.workflowRuns, 'coordinator') as {
+          const packageCoordinator = Reflect.get(
+            application.context.workflowRuns,
+            'coordinator',
+          ) as {
             acceptChangeObservation: (...args: unknown[]) => Promise<unknown>;
           };
           const packageProjectionInterruption = vi
@@ -667,7 +670,24 @@ describe('managed Change execution production composition', () => {
             acceptedSubmission: { outcome: { status: 'succeeded' } },
             validatorId: 'build.package-valid',
           });
-          afterFirstPackage = await next();
+          const nextWorkPersistenceInterruption = vi
+            .spyOn(application.context.workExecutionAuthority, 'recordWorkCreated')
+            .mockRejectedValueOnce(
+              new Error('simulated interruption after next package transition'),
+            );
+          await expect(next()).rejects.toThrow(
+            'simulated interruption after next package transition',
+          );
+          nextWorkPersistenceInterruption.mockRestore();
+          afterFirstPackage = await status();
+          expect(afterFirstPackage.state.workExecution).toMatchObject({
+            status: 'validated',
+          });
+          expect(afterFirstPackage.state.workExecution?.workId).not.toBe(
+            afterFirstPackage.changeLifecycle?.currentWork?.workId,
+          );
+
+          await restartApplication();
 
           const packageHost = application.context.workExecutionHosts.get(
             'capturing-work-execution-host',
@@ -675,28 +695,28 @@ describe('managed Change execution production composition', () => {
           if (!packageHost) throw new Error('missing managed package Host');
           const failedInvocation = vi
             .spyOn(packageHost, 'invoke')
-            .mockImplementationOnce(async (packet, session) => ({
-              schemaVersion: 1,
-              invocationId: session.invocationId,
-              hostId: packageHost.identity.id,
-              packetDigest: packet.identity.packetDigest,
-              status: 'failed',
-              summary: 'simulated implementation finding from an external package Runner',
-              consumedLayerDigests: packet.context.layers
-                .filter((layer) =>
-                  ['action-skill', 'augmentation-skill'].includes(layer.kind),
-                )
-                .map((layer) => layer.digest),
-              findings: [
-                {
-                  kind: 'implementation_failure',
-                  summary: 'retry the bounded package without revising Design',
-                  taskIds: ['1.2'],
-                  requirementIds: ['managed-demo#managed-execution'],
-                },
-              ],
-              completedAt: new Date().toISOString(),
-            }));
+            .mockImplementationOnce((packet, session) =>
+              Promise.resolve({
+                schemaVersion: 1,
+                invocationId: session.invocationId,
+                hostId: packageHost.identity.id,
+                packetDigest: packet.identity.packetDigest,
+                status: 'failed',
+                summary: 'simulated implementation finding from an external package Runner',
+                consumedLayerDigests: packet.context.layers
+                  .filter((layer) => ['action-skill', 'augmentation-skill'].includes(layer.kind))
+                  .map((layer) => layer.digest),
+                findings: [
+                  {
+                    kind: 'implementation_failure',
+                    summary: 'retry the bounded package without revising Design',
+                    taskIds: ['1.2'],
+                    requirementIds: ['managed-demo#managed-execution'],
+                  },
+                ],
+                completedAt: new Date().toISOString(),
+              }),
+            );
           const failureAcceptanceInterruption = vi
             .spyOn(application.context.workDispatcher, 'acceptOutcome')
             .mockRejectedValueOnce(
@@ -734,12 +754,12 @@ describe('managed Change execution production composition', () => {
           afterAllPackages = await next();
         } else {
           await next();
-          afterFirstPackage = await next();
+          afterFirstPackage = (await next()).value;
           await restartApplication();
           await next();
           afterAllPackages = await next();
         }
-        expect(afterFirstPackage.value.changeLifecycle).toMatchObject({
+        expect(afterFirstPackage.changeLifecycle).toMatchObject({
           phase: 'build',
           currentWork: { kind: 'build.execute' },
           taskProgress: { completed: 1 },
