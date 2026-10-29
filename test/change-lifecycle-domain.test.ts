@@ -827,6 +827,28 @@ describe('Change lifecycle domain', () => {
       buildProtocol: { currentAction: 'plan', actionAttempt: 2 },
     });
     expect(retried.fact).toMatchObject({ transitionId: 'build.plan-retry' });
+
+    const migrationRequired = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current: retried.snapshot,
+      observation: {
+        kind: 'work-execution-migration-required',
+        reason: 'The legacy terminal Outcome cannot be proven compatible.',
+        evidenceIds: ['legacy-outcome-1'],
+      },
+    });
+    expect(migrationRequired.snapshot).toMatchObject({
+      phase: 'build',
+      status: 'migration_required',
+      currentWork: null,
+      blocker: {
+        code: 'work-execution.migration-required',
+        evidenceIds: ['legacy-outcome-1'],
+      },
+    });
+    expect(migrationRequired.fact).toMatchObject({
+      transitionId: 'build.work-execution-migration-required',
+    });
   });
 
   it('routes Build Check and Verify implementation findings through ordinary Plan revision', () => {

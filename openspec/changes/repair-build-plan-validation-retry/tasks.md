@@ -27,11 +27,11 @@
 
 ## 3. 恢复、遥测与交付
 
-- [ ] 3.1 实现预修复卡住 Plan Run 的显式兼容恢复，保留旧 Outcome 为 rejected submission，并恢复同一 Work 的 correction 状态。
+- [x] 3.1 实现预修复卡住 Plan Run 的显式兼容恢复，保留旧 Outcome 为 rejected submission，并恢复同一 Work 的 correction 状态。
       **Blocked by:** 2.3
       **Acceptance:** 真实旧 checkpoint fixture 可幂等恢复；身份不兼容或无法重现确定性拒绝时进入 `migration_required`
       **Requirements:** managed-work-execution#被校验拒绝的-host-submission-必须保持当前-work-可纠正
-- [ ] 3.2 增加重启与遥测测试，覆盖 submitted/rejected/corrected/accepted/processing-error，确认自由文本和 identity 不进入 Metric label。
+- [x] 3.2 增加重启与遥测测试，覆盖 submitted/rejected/corrected/accepted/processing-error，确认自由文本和 identity 不进入 Metric label。
       **Blocked by:** 3.1
       **Acceptance:** rejected history、claim 与 correction 能力跨重启保留；Dashboard/OTLP 可还原纠正次数和最终结果
       **Requirements:** managed-work-execution#被校验拒绝的-host-submission-必须保持当前-work-可纠正

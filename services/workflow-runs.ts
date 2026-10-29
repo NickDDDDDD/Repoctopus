@@ -1353,6 +1353,158 @@ export class WorkflowRuns extends Service {
             }
             if (
               lifecycle.phase === 'build' &&
+              lifecycle.currentWork?.kind === 'build.plan' &&
+              current.workExecution?.status === 'outcome' &&
+              !current.workExecution.acceptedSubmission
+            ) {
+              const protocol = lifecycle.buildProtocol;
+              const configuration = protocol?.configuration;
+              const checkpoint = current.workExecution;
+              const hostOutcome = checkpoint.hostOutcome;
+              const actionOutcome = checkpoint.actionOutcome;
+              const migrationRequired = async (reason: string) => {
+                const migrated = await this.coordinator.acceptChangeObservation(runId, {
+                  kind: 'work-execution-migration-required',
+                  reason,
+                  evidenceIds: actionOutcome?.outcomeId ? [actionOutcome.outcomeId] : [],
+                });
+                return {
+                  ...migrated,
+                  value: await this.coordinator.status(runId),
+                  diagnostics: [
+                    ...migrated.diagnostics,
+                    {
+                      level: 'error' as const,
+                      code: 'change.build-plan-legacy-migration-required',
+                      message: reason,
+                    },
+                  ],
+                };
+              };
+              if (
+                !protocol ||
+                !configuration ||
+                protocol.currentAction !== 'plan' ||
+                !hostOutcome ||
+                hostOutcome.status !== 'succeeded' ||
+                actionOutcome?.status !== 'succeeded' ||
+                checkpoint.pendingSubmission ||
+                checkpoint.validatorId
+              ) {
+                return migrationRequired(
+                  'Legacy Build Plan checkpoint is not an unaccepted terminal Plan Outcome',
+                );
+              }
+              const invocationHost = checkpoint.hostInvocation?.host;
+              if (
+                !invocationHost ||
+                invocationHost.id !== hostOutcome.hostId ||
+                hostOutcome.invocationId !== checkpoint.hostInvocation?.invocationId ||
+                hostOutcome.packetDigest !== checkpoint.packet.packetDigest ||
+                invocationHost.id !== configuration.hostId ||
+                configuration.hostCapabilities.some(
+                  (capability) => !invocationHost.capabilities.includes(capability),
+                )
+              ) {
+                return migrationRequired(
+                  'Legacy Build Plan Host, invocation, packet, or frozen Configuration identity is incompatible',
+                );
+              }
+              try {
+                this.assertFrozenBuildHost(configuration, invocationHost);
+                await this.assertFrozenExecutionWorkspace(
+                  current,
+                  lifecycle,
+                  projectSnapshot,
+                  configuration,
+                );
+              } catch (error) {
+                return migrationRequired(
+                  `Legacy Build Plan frozen identity cannot be proven: ${error instanceof Error ? error.message : String(error)}`,
+                );
+              }
+              const recoverRejected = async (diagnostic: string) => {
+                const intent = await this.ctx.workExecutionAuthority.loadIntent(runId);
+                await this.ctx.workExecutionAuthority.recoverLegacyRejectedOutcome({
+                  intent,
+                  diagnostic,
+                });
+                return {
+                  value: await this.coordinator.status(runId),
+                  diagnostics: [
+                    {
+                      level: 'warning' as const,
+                      code: 'change.build-plan-legacy-outcome-recovered',
+                      message: diagnostic,
+                    },
+                  ],
+                };
+              };
+              const result = hostOutcome.result;
+              if (result?.kind !== 'build-plan-candidate') {
+                return recoverRejected(
+                  'Legacy Build Plan Host must return a structured build-plan-candidate',
+                );
+              }
+              let taskSet;
+              try {
+                taskSet = await this.ctx.specification.tasks(lifecycle.identity.changeId, signal);
+              } catch (error) {
+                return migrationRequired(
+                  `Legacy Build Plan Task authority could not reproduce validation: ${error instanceof Error ? error.message : String(error)}`,
+                );
+              }
+              let legacyPlan;
+              try {
+                legacyPlan = createBuildPlan({
+                  runId,
+                  revision: (protocol.plan?.revision ?? 0) + 1,
+                  configuration,
+                  planningDigest: lifecycle.planningDigest,
+                  tasks: taskSet,
+                  candidate: { packages: result.packages },
+                });
+              } catch (error) {
+                return recoverRejected(
+                  `Legacy Build Plan candidate rejected: ${error instanceof Error ? error.message : String(error)}`,
+                );
+              }
+              const legacyPlanValidation = validateBuildPlan({
+                plan: legacyPlan,
+                configuration,
+                tasks: taskSet,
+              });
+              if (!legacyPlanValidation.accepted) {
+                return recoverRejected(
+                  `Legacy Build Plan rejected: ${legacyPlanValidation.diagnostics.join('; ')}`,
+                );
+              }
+              const validator = this.ctx.lifecycleValidators.resolve(
+                lifecycle.currentWork.validatorProfile.id,
+              );
+              let legacyValidation;
+              try {
+                legacyValidation = await validator.validate({
+                  profileId: lifecycle.currentWork.validatorProfile.id,
+                  work: lifecycle.currentWork,
+                  fact: legacyPlanValidation,
+                });
+              } catch (error) {
+                return migrationRequired(
+                  `Legacy Build Plan Validator could not reproduce validation: ${error instanceof Error ? error.message : String(error)}`,
+                );
+              }
+              if (!legacyValidation.accepted) {
+                return recoverRejected(
+                  `Legacy Build Plan Validator rejected: ${legacyValidation.diagnostic}`,
+                );
+              }
+              return migrationRequired(
+                'Legacy Build Plan Outcome is valid under the current authority, so its prior stuck state cannot be deterministically reproduced',
+              );
+            }
+            if (
+              lifecycle.phase === 'build' &&
               lifecycle.currentWork === null &&
               lifecycle.buildProtocol?.currentAction === 'configure'
             ) {

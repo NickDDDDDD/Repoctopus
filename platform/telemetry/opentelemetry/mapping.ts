@@ -51,6 +51,11 @@ const EXECUTION_DATA_KEYS = new Set([
   'executionId',
   'delegationRole',
   'findingClassification',
+  'submissionId',
+  'submissionDigest',
+  'reasonCode',
+  'rejectedSubmissionCount',
+  'legacyRecovery',
 ]);
 
 const SENSITIVE_KEY =
@@ -67,6 +72,11 @@ const EXECUTION_EVENTS = new Set<TrajectoryEvent['type']>([
   'work.context-delivered',
   'work.host-started',
   'work.host-completed',
+  'work.outcome-submitted',
+  'work.outcome-corrected',
+  'work.outcome-rejected',
+  'work.outcome-accepted',
+  'work.outcome-processing-error',
   'delegation.completed',
   'work.completed',
   'skill.resolved',
@@ -167,6 +177,12 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
       } else if (key === 'phase' && typeof value === 'string' && !BOUNDED_PHASES.has(value)) {
         normalized = 'unknown';
       } else if (key === 'result' && typeof value === 'string' && !BOUNDED_RESULTS.has(value)) {
+        normalized = 'unknown';
+      } else if (
+        key === 'reasonCode' &&
+        typeof value === 'string' &&
+        !BOUNDED_REASON_CODES.has(value)
+      ) {
         normalized = 'unknown';
       } else if (
         key === 'findingKind' &&
@@ -274,6 +290,11 @@ const BOUNDED_RESULTS = new Set([
   'implementation-failure',
   'evidence-unavailable',
 ]);
+const BOUNDED_REASON_CODES = new Set([
+  'output-invalid',
+  'outcome-rejected',
+  'outcome-processing-error',
+]);
 
 export function executionMetricAttributes(event: TrajectoryEvent): Attributes | null {
   if (!EXECUTION_EVENTS.has(event.type)) return null;
@@ -282,9 +303,15 @@ export function executionMetricAttributes(event: TrajectoryEvent): Attributes | 
   const result = typeof event.data.result === 'string' ? event.data.result : 'unknown';
   const continuation =
     typeof event.data.continuation === 'string' &&
-    ['execute', 'ask', 'wait', 'reconcile', 'done'].includes(event.data.continuation)
+    ['execute', 'ask', 'wait', 'reconcile', 'awaiting-correction', 'done'].includes(
+      event.data.continuation,
+    )
       ? event.data.continuation
       : 'unknown';
+  const reasonCode =
+    typeof event.data.reasonCode === 'string' && BOUNDED_REASON_CODES.has(event.data.reasonCode)
+      ? event.data.reasonCode
+      : 'none';
   const buildAction =
     typeof event.data.buildAction === 'string' &&
     ['configure', 'plan', 'execute', 'check'].includes(event.data.buildAction)
@@ -310,6 +337,7 @@ export function executionMetricAttributes(event: TrajectoryEvent): Attributes | 
     'repoctopus.execution.work.kind': BOUNDED_WORK_KINDS.has(workKind) ? workKind : 'custom',
     'repoctopus.execution.result': BOUNDED_RESULTS.has(result) ? result : 'unknown',
     'repoctopus.execution.continuation': continuation,
+    'repoctopus.execution.reason.code': reasonCode,
     'repoctopus.build.action': buildAction,
     'repoctopus.build.execution.mode': executionMode,
     'repoctopus.build.tdd.mode': tddMode,
@@ -318,7 +346,11 @@ export function executionMetricAttributes(event: TrajectoryEvent): Attributes | 
 }
 
 export function eventSeverity(type: TrajectoryEvent['type']): number {
-  return type === 'recovery.reconciled' ? 13 : 9;
+  return type === 'recovery.reconciled' ||
+    type === 'work.outcome-rejected' ||
+    type === 'work.outcome-processing-error'
+    ? 13
+    : 9;
 }
 
 export function workflowEventMetricAttributes(

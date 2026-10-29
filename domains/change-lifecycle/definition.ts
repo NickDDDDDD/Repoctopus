@@ -23,7 +23,13 @@ const statusOrder = new Map<RunStatus, number>(
   CHANGE_RUN_STATUSES.map((status, index) => [status, index]),
 );
 const declaredStatuses = new Set<string>(CHANGE_RUN_STATUSES);
-const declaredTransitionKinds = new Set<string>(['advance', 'self', 'fallback', 'complete']);
+const declaredTransitionKinds = new Set<string>([
+  'advance',
+  'self',
+  'fallback',
+  'halt',
+  'complete',
+]);
 const terminalStatuses = new Set<RunStatus>(['completed', 'failed', 'migration_required']);
 const sideEffectClasses = new Set([
   'none',
@@ -50,6 +56,7 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
   id: 'repoctopus-change',
   version: '4.2.0',
   compatibleDigests: [
+    'sha256:4bef956969843eb8862947abdedaf5de59d8aa34237debc3387996b8944e8952',
     'sha256:3890da04d20fb364e363a976b21877f0198ca22da3c00af4de302de0f48b430b',
     'sha256:8be6236a13ddf44b9174517779cc4992b718a1ebff41cb3b69860c6a86e1c8d5',
     'sha256:989d74305a3e1a9783cc2ee317c7e889bde6c587cb74e2de117e4c41c3e0e44f',
@@ -357,6 +364,14 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       from: { phase: 'build', statuses: ['running'] },
       to: { phase: 'build', status: 'running' },
       trigger: 'plan-host-validation-retry',
+      requiredValidatorProfile: 'build.plan-valid',
+    },
+    {
+      id: 'build.work-execution-migration-required',
+      kind: 'halt',
+      from: { phase: 'build', statuses: ['running'] },
+      to: { phase: 'build', status: 'migration_required' },
+      trigger: 'legacy-work-execution-state-is-not-provably-compatible',
       requiredValidatorProfile: 'build.plan-valid',
     },
     {
@@ -895,6 +910,14 @@ export function assertChangeLifecycleDefinition(
       );
     }
     if (
+      transition.kind === 'halt' &&
+      (toIndex !== fromIndex || !['failed', 'migration_required'].includes(transition.to.status))
+    ) {
+      throw new Error(
+        `Lifecycle halt transition ${transition.id} must stop in failed or migration_required within its phase`,
+      );
+    }
+    if (
       transition.kind === 'complete' &&
       (transition.from.phase !== 'archive' ||
         transition.to.phase !== 'archive' ||
@@ -902,7 +925,11 @@ export function assertChangeLifecycleDefinition(
     ) {
       throw new Error(`Lifecycle completion ${transition.id} must complete in Archive`);
     }
-    if (transition.kind !== 'complete' && terminalStatuses.has(transition.to.status)) {
+    if (
+      transition.kind !== 'complete' &&
+      transition.kind !== 'halt' &&
+      terminalStatuses.has(transition.to.status)
+    ) {
       throw new Error(`Lifecycle transition ${transition.id} cannot target a terminal status`);
     }
     if (transition.kind === 'complete' && !transition.requiredValidatorProfile) {
