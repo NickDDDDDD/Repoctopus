@@ -10,7 +10,7 @@
 
 - 在权威 Change Run 创建或恢复并取得稳定 `runId` 后，由 `WorkflowRuns` 调用 Desktop Launcher；CLI 不直接拼装桌面进程，也不建立第二套启动路径。
 - 为 Windows 提供确定性的启动目标解析：已安装产品使用安装器登记的应用入口，源码自举使用当前 Product Root 下固定的 Electron 与已构建桌面入口；环境变量只保留为显式覆盖和测试 seam，不再是正常启动的前置条件。
-- 已安装协议调用只使用经过校验的绝对 `SystemRoot` Explorer 路径；Windows E2E 必须穿过真实协议 handler，不得把 URL 直接传给产品 executable 冒充协议链路。
+- 已安装产品采用 DSH/Electron 已验证的协议接收与单实例模型；Windows 安装器同时登记标准 `App Paths`，Runtime 从该受控注册项解析绝对 `Repoctopus.exe`，并以独立 URI 参数直接启动，不依赖 Explorer、`PATH` 或 shell wrapper。
 - 以注入的 `DesktopInstanceProbe` seam 隔离 Launcher 与 Desktop Host discovery，并让 receiver producer 和 discovery consumer 共用一个版本化 health contract/parser，消除 service → app/host 的反向依赖和协议漂移。
 - 把有界 `{ workspaceId, changeId, runId }` 上下文交给 Electron；已有实例继续通过现有 single-instance 协议聚焦对应 change。
 - 将 Launcher 改为异步确认进程请求已被操作系统接受，捕获同步和异步 spawn 错误；失败只降低本地可观测性，不回滚或阻断 Change Run。
@@ -29,6 +29,6 @@
 
 ## Impact
 
-受影响范围包括 `WorkflowRuns`、Desktop Launcher、实例探测 seam、receiver health contract、项目 composition 配置、Electron 启动上下文、Windows 打包登记、`ManagedWorkExecutor` 重放、构建脚本、CLI 诊断、Trajectory/OTLP 映射、桌面启动测试与自举文档。不会修改五阶段状态机、Desktop 投影输入、SigNoZ 契约或 Renderer 权限边界；不会引入 daemon、轮询器或浏览器 UI。
+受影响范围包括 `WorkflowRuns`、Desktop Launcher、实例探测 seam、receiver health contract、项目 composition 配置、Electron 启动上下文、Windows 协议与 `App Paths` 登记、`ManagedWorkExecutor` 重放、构建脚本、CLI 诊断、Trajectory/OTLP 映射、桌面启动测试与自举文档。不会修改五阶段状态机、Desktop 投影输入、SigNoZ 契约或 Renderer 权限边界；不会引入 daemon、轮询器或浏览器 UI。
 
-DSH 仍只作为薄 Electron Shell、开发启动器和相邻测试的固定 MIT 参考；本修复不复制新的上游源码。若实现需要采用新的 DSH 文件，必须先更新 provenance 和摘要。
+DSH 仍只作为薄 Electron Shell、协议登记、单实例激活和相邻测试的固定 MIT 参考；Repoctopus 在该模式上增加受校验的 Change 上下文，不复制新的上游源码。固定 DSH 提交和当前 `master` 都必须作为本次设计审计证据；若实现需要采用新的 DSH 文件，必须先更新 provenance 和摘要。

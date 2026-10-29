@@ -4,7 +4,7 @@
 
 现有 Desktop Dashboard 已包含 Electron Main、Desktop Host、Receiver、Projection、Renderer、单实例锁、托盘和 Windows NSIS 打包。Runtime 侧也注册了 `DesktopLauncher`，但它是一个无生产调用者的浅边界：`WorkflowRuns.startChange()` 完成 Run 初始化后直接返回；Launcher 只接受一个环境变量中的 executable，并在 `spawn()` 返回后立即宣称 started。当前测试只证明插件存在和“没有环境变量时 unavailable”，没有从公共 Run 入口断言桌面激活。
 
-固定 DSH Desktop 参考把开发应用路径解析、Electron readiness、单实例和失败恢复作为相邻行为切片测试。Repoctopus 保留自己的 Change Run、OTLP 和多仓模型，但应采用同样的生产入口纵切原则：登记能力不等于使用能力，启动成功也不能由同步函数返回伪造。
+固定 DSH Desktop 参考把协议登记、开发应用路径解析、Electron readiness、单实例和失败恢复作为相邻行为切片测试：打包配置登记 `dsh://`，应用只接受 `dsh://open`，Windows/Linux 由冷启动 `argv` 或 `second-instance` 交付，macOS 由 `open-url` 交付。Repoctopus 保留自己的 Change Run、OTLP 和多仓模型，并在同一模式上增加受校验的 `{ workspaceId, changeId, runId }`；登记能力不等于使用能力，启动成功也不能由同步函数返回伪造。
 
 ## Goals
 
@@ -35,15 +35,17 @@ Launcher 接受 Product Root、平台、环境和可替换的 process adapter，
 
 1. 测试或运维显式提供的 executable override；
 2. 源码自举 Product Root 下固定 Electron executable 与 `dist/desktop/main.js`；
-3. Windows 安装器登记的 `repoctopus` 应用协议入口。
+3. Windows 安装器登记在标准 `App Paths` 中的 `Repoctopus.exe` 绝对路径。
 
 解析只返回类型化目标和有界来源类别，不把绝对路径写入 Run、诊断或遥测。源码目标缺少依赖或桌面构建产物时返回 `development-artifact-missing`，并给出不含本机路径的修复命令。`npm run build` 将同时生成 CLI 与 Desktop runtime artifact，保证正常自举构建后可启动；发布安装包继续使用独立 `package:desktop`。
 
-Windows 安装包登记版本化 `repoctopus://activate/<encoded-context>` 协议。Electron Main 使用与现有 `--repoctopus-launch` 相同的解析、上限和 schema 校验，再交给 single-instance owner；协议不是第二套业务上下文。显式 executable override 继续使用参数形式，便于测试和受控部署。
+Windows 安装包登记版本化 `repoctopus://activate/<encoded-context>` 协议，并在当前安装 scope 的标准 `Software\Microsoft\Windows\CurrentVersion\App Paths\Repoctopus.exe` 默认值登记完整 executable 路径。Electron Main 使用与现有 `--repoctopus-launch` 相同的解析、上限和 schema 校验，再交给 single-instance owner；协议不是第二套业务上下文。显式 executable override 继续使用参数形式，便于测试和受控部署。
 
-安装态协议调用从可信 `SystemRoot` 解析并验证绝对 `explorer.exe`，再用独立参数数组让操作系统解析已登记 handler；不得使用裸 executable 名称、当前目录或 `PATH` 搜索，也不得经 `cmd /c start`、PowerShell 命令插值或任意 shell 字符串启动。`SystemRoot` 缺失、非绝对或受控文件不存在时返回 unavailable，而不是回退到 `C:\Windows` 猜测。
+安装态调用通过绝对 `SystemRoot\System32\reg.exe` 只读取受控 `App Paths` 默认值；解析结果必须是可访问的绝对路径、basename 精确为 `Repoctopus.exe`，并与协议 handler 共存。Launcher 随后直接以 `spawn(executable, [validatedUri])` 发起冷启动或第二实例，不解析 handler 命令字符串，不使用裸 executable、当前目录、`PATH`、Explorer、`cmd /c start`、PowerShell 命令插值或任意 shell wrapper。缺失、相对、错误 basename、不可访问或协议 handler 缺失均返回 bounded unavailable。
 
-**Alternatives considered:** 继续只接受环境变量会把产品正常路径变成机器私有配置；让 CLI 直接依赖 Electron 会污染公共入口；解析任意 Workspace 路径会扩大信任面；新增第二套 IPC 会与已有 single-instance 和 discovery 重复。以上方案均不采用。
+这复用 DSH/Electron 的接收端语义，但不照搬 DSH 的无 payload `dsh://open`：DSH 由浏览器点击触发系统关联，只需聚焦窗口；Repoctopus 的短生命周期 Runtime 需要主动定位产品并传输有界上下文，因此使用 Microsoft 推荐的 `App Paths` 定位 executable，再让既有 Electron argv/`second-instance` seam 完成转交。
+
+**Alternatives considered:** 继续只接受环境变量会把产品正常路径变成机器私有配置；让 CLI 直接依赖 Electron 会污染公共入口；解析任意 Workspace 路径会扩大信任面；解析 registry handler 命令字符串会引入引号和参数语义；Explorer 已被真实安装 E2E 证明不会可靠分派该 URI；shell wrapper 扩大注入面；新增第二套 IPC 会与已有 single-instance 和 discovery 重复。以上方案均不采用。
 
 ### 3. Launcher 只依赖注入的实例探测 seam
 
@@ -87,7 +89,7 @@ Trajectory/Observation 只记录 Workspace/change/Run 关联、目标类别、�
 1. red characterization 证明旧实现中 `run start` 不调用 Launcher，且环境变量是唯一解析路径；
 2. 纯解析/进程 adapter 测试覆盖 override、源码目标、安装协议、异步 spawn error、超时和不支持平台；
 3. `bootProjectComposition → run.change.start → WorkflowRuns` 集成测试捕获精确上下文、诊断和 Run 非阻断语义；
-4. Windows 安装 E2E 先启动已安装 primary instance，再通过绝对 Explorer 路径打开 `repoctopus://` URL，证明 registry handler → product executable → single-instance owner 的真实链路；把 URL 直接传给 `Repoctopus.exe` 不构成协议验收；
+4. Windows 安装 E2E 验证安装器真实写入协议 handler 与 `App Paths`，先经 Launcher 的安装态解析冷启动产品，再用第二个上下文直接启动同一登记 executable，证明 cold `argv`、`second-instance`、single-instance owner 和 Change 选择；测试不得注入 executable override 或伪造 registry 查询；
 5. 进程级 public CLI case 在隔离且可恢复的 handler 状态下证明无 handler 时返回 `desktop.activation.unavailable`，同时权威 Run 创建成功且远端 OTLP 继续投递。
 
 Catalog membership 和直接 `new DesktopLauncher()` 的测试只能作为补充，不能满足生产验收。
@@ -106,9 +108,9 @@ Catalog membership 和直接 `new DesktopLauncher()` 的测试只能作为补充
 
 1. 先定义目标解析契约与 URL/argument context schema，使首个 Work Package 能在自身写入边界内独立 green。
 2. 抽取 shared receiver health contract 和 `DesktopInstanceProbe` interface，由 composition 注入 discovery adapter；Launcher 不再依赖 Desktop Host 实现。
-3. 重构 Launcher 为异步深模块，给 Project composition 注入 Product Root 身份，并只通过校验后的绝对 SystemRoot Explorer 启动安装协议。
+3. 重构 Launcher 为异步深模块，给 Project composition 注入 Product Root 身份，并只通过绝对 `reg.exe` 读取受控 `App Paths`，再直接启动校验后的已安装 executable。
 4. 在已经存在可替换 Launcher seam 后编写 red production-entry characterization，并在同一个 runtime-integration Work Package 内接通 `WorkflowRuns.startChange()`、diagnostics 与 Trajectory/OTLP 映射。
-5. 增加安装协议和源码构建产物，让 Windows E2E 穿过真实协议 handler，并用 public CLI 证明无 handler 时 Run/远端 OTLP 继续。
+5. 增加协议与 `App Paths` 安装登记和源码构建产物，让 Windows E2E 穿过真实安装发现、冷/热启动与 single-instance owner，并用 public CLI 证明无登记时 Run/远端 OTLP 继续。
 6. 固定并验证已持久化外部 Host Outcome 的稳定内容重放语义。
 7. 删除“仅环境变量才可启动”的正常路径假设，更新文档和验证报告。
 
@@ -122,7 +124,7 @@ Build Plan 不得把只有跨越 `WorkflowRuns` 生产入口后才能 green 的�
 - **构建 CLI 时同时构建 Desktop 增加耗时**：换取源码自举的确定性。桌面依赖下载仍由显式安装/prepare 管理，不在每次 Run 临时构建。
 - **操作系统协议只证明请求被接受**：Receiver readiness 由现有 discovery/telemetry 独立呈现，不把 UI 可用性伪装成 Run Gate。
 - **已有实例与首次启动存在竞态**：Electron single-instance lock 是唯一 Shell owner；重复请求只交付上下文，不能创建第二个有效 Host/Receiver。
-- **Windows handler E2E 会触碰当前用户 registry**：测试必须先快照既有值、只操作精确 `HKCU\Software\Classes\repoctopus` 测试范围并在 finally 恢复；发现非测试安装或无法证明可恢复时跳过破坏性步骤并 fail closed，不能删除未知用户配置。
+- **Windows 安装 E2E 会触碰当前用户 registry**：测试必须先快照协议 key 与 `App Paths\Repoctopus.exe`、只操作精确测试范围并在 finally 字节级恢复；发现无法证明可恢复时 fail closed，不能删除未知用户配置。
 - **Outcome 等价比较遗漏未来字段**：canonical comparison 默认包含所有字段，未来新增稳定字段会自动参与冲突判断；只有显式列出的 Runtime 时间字段可忽略。
 
 ## Assumptions and STOP Conditions
@@ -130,8 +132,9 @@ Build Plan 不得把只有跨越 `WorkflowRuns` 生产入口后才能 green 的�
 - **VERIFIED — 生产断链**：当前仓库没有 `desktopLauncher.activate()` 生产调用点，`run start` 直接返回 Change Run 结果。
 - **VERIFIED — 自举根可用**：CLI App Boot 已持有稳定 Product Root，可通过 composition identity 注入 Launcher，而无需读取 Workspace 内任意路径。
 - **VERIFIED — 单实例协议可复用**：Electron Main 已解析有界启动参数并把第二实例上下文交给现有 Shell。
-- **ASSUMPTION — NSIS 协议登记可在首个正式支持的 Windows 10/11 x64 环境稳定工作**：必须以干净安装 E2E 证明，不能只检查 builder 配置。
+- **VERIFIED — DSH/Electron 接收模型**：固定 DSH 提交与当前 `master` 均登记 `dsh://`，并用冷启动/`second-instance`/`open-url` 激活单实例；Electron 官方文档确认 Windows 将 Deep Link 放入冷启动 `argv` 或 `second-instance` command line。
+- **ASSUMPTION — NSIS 协议与 App Paths 登记可在首个正式支持的 Windows 10/11 x64 环境稳定工作**：必须以干净安装 E2E 证明，不能只检查 builder 配置。
 - **STOP — 激活需要 shell 字符串拼接**：若实现只能通过未转义命令字符串启动 URL 或 executable，停止并改用参数数组或受支持 OS API。
 - **STOP — 激活污染领域状态**：若接入要求把 GUI readiness 变成 phase Gate、Run status 或 Engine dependency，停止并保持应用级 best-effort 边界。
-- **STOP — 协议 E2E 绕过 handler**：若测试只把 URL 作为 `Repoctopus.exe` 参数传入，停止并改为真实 Explorer/registry handler 链路。
+- **STOP — 安装 E2E 绕过发现**：若测试通过 override、硬编码安装路径或伪造 registry 查询直接找到 `Repoctopus.exe`，停止并改为真实 `App Paths` 与协议登记验证。
 - **STOP — Outcome 重放需要再次调用 Host**：若恢复无法在原 invocation 与持久 Outcome 上继续，停止并进入 reconcile，不能重放未知外部副作用。

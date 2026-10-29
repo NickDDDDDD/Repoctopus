@@ -107,19 +107,19 @@
       **Acceptance:** `services/desktop-launcher.ts` 不导入或构造 Host 实现；生产 composition 与测试 adapter 均穿过同一窄 interface；安全 discovery 行为保持不变
       **Verification:** 运行 Launcher/composition/discovery 测试与 architecture source-boundary 检查
       **Requirements:** plugin-composition#生产组合中的桌面-Launcher-必须被权威用例消费
-- [x] 6.4 将安装协议目标限制为经过验证的绝对 SystemRoot Explorer 路径，禁止裸 executable 与 PATH/current-directory 解析。
+- [ ] 6.4 用 Windows 标准 `App Paths` 替换 Explorer 安装目标，并直接启动经过校验的 `Repoctopus.exe` 与受控 URI 参数。
       **Blocked by:** None
-      **Acceptance:** 有效 SystemRoot 产生绝对 target；缺失、相对、不可访问或伪造系统根返回 bounded unavailable；所有调用仍使用参数数组且诊断不泄漏路径
-      **Verification:** 运行 Windows target-resolution 表驱动测试、Launcher process 测试与 lint/typecheck
+      **Acceptance:** 安装器在当前 scope 登记协议与 `App Paths\Repoctopus.exe`；Launcher 仅通过绝对 `reg.exe` 读取默认值并校验绝对路径、basename、可访问性和 handler；缺失或伪造登记返回 bounded unavailable；启动使用 executable + URI 参数数组且诊断不泄漏路径
+      **Verification:** 运行 installer contract、Windows registry target-resolution 表驱动测试、Launcher process 测试与 lint/typecheck
       **Requirements:** desktop-observability-dashboard#Windows-开发-Run-自动激活单实例桌面应用
-- [ ] 6.5 修改 Windows 安装 E2E，使第二实例请求穿过 Explorer、真实 registry protocol handler、产品 executable 与 single-instance owner。
+- [ ] 6.5 修改 Windows 安装 E2E，使冷启动和第二实例请求穿过真实 `App Paths` 发现、产品 executable 与 single-instance owner。
       **Blocked by:** 6.3, 6.4
-      **Acceptance:** 测试不再把 URL 直接传给 `Repoctopus.exe`；既有 Shell 收到正确 Run 上下文且只有一个有效 Host/Receiver；精确 registry 状态在 finally 恢复
-      **Verification:** 构建/安装当前包并运行 Windows protocol-handler E2E、package check 与残留检查
+      **Acceptance:** 测试不注入 executable override、不硬编码安装路径且不伪造 registry；首个 URI 经冷启动 `argv` 到达 Shell，第二个 URI 经 `second-instance` 选择正确 Run；协议/App Paths 原状态在 finally 精确恢复且只有一个有效 Host/Receiver
+      **Verification:** 构建/安装当前包并运行 Windows installed-activation E2E、package check 与 registry/进程/目录残留检查
       **Requirements:** desktop-observability-dashboard#Windows-开发-Run-自动激活单实例桌面应用
 - [ ] 6.6 增加 public CLI 无 handler 的进程级验收，证明 warning、Run 持久化和远端 OTLP 独立继续。
       **Blocked by:** 6.3, 6.4
-      **Acceptance:** 隔离环境没有 source target、override 或 handler 时返回 `desktop.activation.unavailable`；同一命令仍创建权威 Change Run并向捕获 receiver 投递非桌面依赖的远端事实
+      **Acceptance:** 隔离环境没有 source target、override、App Paths 或 handler 时返回 `desktop.activation.unavailable`；同一命令仍创建权威 Change Run并向捕获 receiver 投递非桌面依赖的远端事实
       **Verification:** 运行 public CLI tracer E2E，并核对退出码、诊断、Run checkpoint、OTLP payload 与 teardown
       **Requirements:** desktop-observability-dashboard#Windows-开发-Run-自动激活单实例桌面应用, development-telemetry#桌面激活结果形成有界观测事实
 - [ ] 6.7 重新运行完整验证、更新 Evidence/验证报告并清理所有本轮临时进程、registry、安装目录、日志和 payload 后推送验证 HEAD。

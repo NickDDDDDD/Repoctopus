@@ -31,19 +31,19 @@ Repoctopus MUST 在受支持的 Windows 环境创建或恢复开发 Change Run �
 - **WHEN** 安装协议、显式覆盖和源码启动目标均不可用或操作系统拒绝启动请求
 - **THEN** Change Run 仍成功创建或恢复，调用方收到不含路径和命令正文的 unavailable warning，远端 OTLP 投递继续运行
 
-#### Scenario: 安装协议使用受控系统入口
+#### Scenario: 安装产品使用标准应用定位
 
-- **WHEN** Launcher 选择已安装协议目标
-- **THEN** 它只用经过校验的绝对 SystemRoot Explorer 路径和独立 URL 参数调用 Windows，拒绝裸 executable、当前目录、PATH 搜索、shell 字符串或缺失的受控系统文件
+- **WHEN** Launcher 选择已安装产品目标
+- **THEN** 它只通过绝对 `SystemRoot\System32\reg.exe` 读取当前安装 scope 的 `App Paths\Repoctopus.exe`，校验绝对路径、basename、文件可访问性和协议 handler 后，以独立 URI 参数直接启动产品；拒绝裸 executable、当前目录、PATH、Explorer、handler 命令解析和 shell wrapper
 
-#### Scenario: 安装验收穿过真实协议 handler
+#### Scenario: 安装验收覆盖冷启动和第二实例
 
-- **WHEN** Windows 安装 E2E 向已登记的 `repoctopus://` URL 交付第二个 Change Run 上下文
-- **THEN** 请求经 Explorer、当前用户 registry handler、产品 executable 和 single-instance owner 到达既有 Shell；直接把 URL 参数传给产品 executable 不得计为该场景通过
+- **WHEN** Windows 安装 E2E 通过 Launcher 的安装态发现交付两个不同的 `repoctopus://` Change Run 上下文
+- **THEN** 安装器真实登记的 `App Paths` executable 先通过冷启动 `argv` 接收首个上下文，再通过 Electron `second-instance` 把第二个上下文交给既有 Shell；协议 handler 与 App Paths 均被检查，且只存在一个有效 Host/Receiver
 
 #### Scenario: 公共 CLI 在无 handler 时继续
 
-- **WHEN** 进程级 public CLI 在没有源码 Desktop artifact、显式覆盖和已安装协议 handler 的隔离环境创建 Change Run
+- **WHEN** 进程级 public CLI 在没有源码 Desktop artifact、显式覆盖、已安装 `App Paths` 或协议 handler 的隔离环境创建 Change Run
 - **THEN** CLI 返回 `desktop.activation.unavailable`，权威 Run 仍被持久化且远端 OTLP 继续接收同一 Run 的观测事实
 
 #### Scenario: 未正式支持的平台启动 Run
