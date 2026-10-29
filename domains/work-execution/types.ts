@@ -6,7 +6,13 @@ import type { WorkDescriptor } from '../change-lifecycle/transition.js';
 import type { WorkPackageCandidate } from '../change-lifecycle/build-protocol.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
 
-export type WorkContinuationKind = 'execute' | 'ask' | 'wait' | 'reconcile' | 'done';
+export type WorkContinuationKind =
+  | 'execute'
+  | 'ask'
+  | 'wait'
+  | 'reconcile'
+  | 'awaiting-correction'
+  | 'done';
 
 export interface WorkExecutionRecovery {
   schemaVersion: 2;
@@ -23,6 +29,8 @@ export interface WorkExecutionRecovery {
     | 'host-result-unknown'
     | 'host-not-executed'
     | 'work-failed'
+    | 'outcome-rejected'
+    | 'outcome-processing-error'
     | 'validator-pending'
     | 'transition-pending'
     | 'content-missing-or-corrupt'
@@ -130,6 +138,27 @@ export interface WorkExecutionHostOutcome {
   completedAt: string;
 }
 
+export type WorkExecutionSubmissionRejectionCode =
+  | 'output-invalid'
+  | 'outcome-rejected'
+  | 'outcome-processing-error';
+
+export interface WorkExecutionSubmission {
+  schemaVersion: 1;
+  submissionId: string;
+  payloadDigest: `sha256:${string}`;
+  outcome: WorkExecutionHostOutcome;
+  submittedAt: string;
+}
+
+export interface RejectedWorkExecutionSubmission extends WorkExecutionSubmission {
+  rejection: {
+    reasonCode: WorkExecutionSubmissionRejectionCode;
+    diagnostic: string;
+    rejectedAt: string;
+  };
+}
+
 export type WorkExecutionResult =
   | {
       schemaVersion: 1;
@@ -199,8 +228,9 @@ export type WorkExecutionHostReconciliation =
   | { status: 'unknown'; reason: string };
 
 export interface ExternalWorkExecutionOutcome {
-  schemaVersion: 2;
+  schemaVersion: 3;
   runId: string;
+  submissionId: string;
   invocationId: string;
   hostId: string;
   packetDigest: `sha256:${string}`;
@@ -225,11 +255,15 @@ export interface WorkExecutionCheckpoint {
     | 'claimed'
     | 'context-delivered'
     | 'invoking'
+    | 'submitted'
     | 'unknown'
     | 'not-executed'
     | 'outcome'
     | 'validated';
   hostInvocation?: WorkExecutionHostInvocation;
+  pendingSubmission?: WorkExecutionSubmission | null;
+  rejectedSubmissions?: readonly RejectedWorkExecutionSubmission[];
+  acceptedSubmission?: WorkExecutionSubmission;
   hostOutcome?: WorkExecutionHostOutcome;
   actionOutcome?: ClaimedActionOutcome;
   receiptId?: string;
