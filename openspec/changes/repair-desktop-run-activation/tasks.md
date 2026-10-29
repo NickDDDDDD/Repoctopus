@@ -2,11 +2,6 @@
 
 ## 1. 固定断链并定义启动契约
 
-- [ ] 1.1 增加生产入口 characterization test，证明 `run.change.start` 当前未调用 Launcher、未返回 Desktop diagnostic，且 catalog membership 不能满足验收。
-      **Blocked by:** 2.2, 2.3
-      **Acceptance:** 新断言在旧实现上失败，并精确定位 `WorkflowRuns.startChange` 到 Launcher 的缺失调用
-      **Verification:** 单独运行该测试并保存 red 失败摘要；实现后重跑为 green
-      **Requirements:** desktop-observability-dashboard#Windows-开发-Run-自动激活单实例桌面应用
 - [ ] 1.2 定义 `DesktopLaunchTarget`、`DesktopActivationResult`、reason enum 和稳定诊断映射，限制所有字段与文本上限。
       **Blocked by:** None
       **Acceptance:** schema/类型测试拒绝路径、命令正文和未知 reason；四类结果具有确定诊断 code
@@ -38,18 +33,23 @@
 
 ## 3. 接通 Change Run 生产入口
 
-- [ ] 3.1 在 `WorkflowRuns.startChange()` 成功创建/恢复 Run 后调用 Launcher，并传递 Runtime 确认的 Workspace/change/run identity。
-      **Blocked by:** 1.1
+- [ ] 3.1 增加生产入口 characterization test，证明 `run.change.start` 当前未调用 Launcher、未返回 Desktop diagnostic，且 catalog membership 不能满足验收。
+      **Blocked by:** 2.2, 2.3
+      **Acceptance:** 新断言在旧实现上失败，并精确定位 `WorkflowRuns.startChange` 到 Launcher 的缺失调用
+      **Verification:** 单独运行该测试并保存 red 失败摘要；实现后重跑为 green
+      **Requirements:** desktop-observability-dashboard#Windows-开发-Run-自动激活单实例桌面应用
+- [ ] 3.2 在 `WorkflowRuns.startChange()` 成功创建/恢复 Run 后调用 Launcher，并传递 Runtime 确认的 Workspace/change/run identity。
+      **Blocked by:** 3.1
       **Acceptance:** composition 集成测试从 `run.change.start` 捕获一次精确调用；generic run、status、doctor 和参数错误零调用
       **Verification:** 运行生产 Command Router → WorkflowRuns → Launcher 纵切测试
       **Requirements:** desktop-observability-dashboard#Windows-开发-Run-自动激活单实例桌面应用, plugin-composition#生产组合中的桌面-Launcher-必须被权威用例消费
-- [ ] 3.2 将 activation 结果并入 `RuntimeResult.diagnostics`，确保 unavailable/unsupported 不回滚 Run 或丢失初始 Work receipt。
-      **Blocked by:** 3.1
+- [ ] 3.3 将 activation 结果并入 `RuntimeResult.diagnostics`，确保 unavailable/unsupported 不回滚 Run 或丢失初始 Work receipt。
+      **Blocked by:** 3.2
       **Acceptance:** started/activated 返回 info；unavailable/unsupported 返回 warning；四种结果下 Run identity、phase 和 Work 相同
       **Verification:** 运行四类结果的参数化集成测试并比较 Run checkpoint
       **Requirements:** desktop-observability-dashboard#Windows-开发-Run-自动激活单实例桌面应用
-- [ ] 3.3 持久化 activation Trajectory 并映射到统一 Observation envelope/OTLP 允许列表。
-      **Blocked by:** 3.2
+- [ ] 3.4 持久化 activation Trajectory 并映射到统一 Observation envelope/OTLP 允许列表。
+      **Blocked by:** 3.3
       **Acceptance:** 重放不重复、事件先持久化后导出；捕获 exporter 只看到稳定结果/reason，不含路径、URL payload、命令或错误正文
       **Verification:** 运行 Run Store crash/replay、Observation envelope 和捕获 OTLP exporter 测试
       **Requirements:** development-telemetry#桌面激活结果形成有界观测事实
@@ -67,7 +67,7 @@
       **Verification:** 运行 desktop package check 与 Windows install/second-instance E2E
       **Requirements:** desktop-observability-dashboard#Windows-开发-Run-自动激活单实例桌面应用
 - [ ] 4.3 建立公共 CLI 自举 tracer：启动真实 Change Run、观察 Desktop 进程/上下文/Receiver，并验证 Dashboard 关闭时 Run 与远端 OTLP 不受影响。
-      **Blocked by:** 3.3, 4.1, 4.2
+      **Blocked by:** 3.4, 4.1, 4.2
       **Acceptance:** 进程外测试覆盖首次启动、二次转交、无 handler warning 和远端继续投递；测试结束无 Electron/Host/receiver/discovery 临时残留
       **Verification:** 运行公共 CLI tracer E2E，并执行 teardown 后进程/文件残留断言
       **Requirements:** desktop-observability-dashboard#Windows-开发-Run-自动激活单实例桌面应用, development-telemetry#桌面激活结果形成有界观测事实
