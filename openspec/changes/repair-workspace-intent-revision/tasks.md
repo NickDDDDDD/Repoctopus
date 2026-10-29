@@ -49,7 +49,7 @@
 
 ## 4. 遥测与端到端验证
 
-- [ ] 4.1 为 binding failure、intent revision 和 execution retirement 增加 trajectory/OTLP 有界事实与契约测试。
+- [x] 4.1 为 binding failure、intent revision 和 execution retirement 增加 trajectory/OTLP 有界事实与契约测试。
       **Blocked by:** 2.3, 3.5
       **Acceptance:** trace 可解释 from/to phase、error code、isolation 与 retirement；Metric label 不含路径、branch、digest、错误文本或 run/work/change identity
       **Requirements:** development-telemetry#workspace-intent-修订必须可观测且保持低基数
