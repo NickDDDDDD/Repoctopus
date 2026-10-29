@@ -2,10 +2,10 @@
 
 ## 1. 固定根因与提交状态模型
 
-- [ ] 1.1 增加失败回归测试：缺少 Task 的 `build-plan-candidate` 被提前绑定为终态 Outcome 后，原 Work 无法提交修正版且 Run 永久阻塞。
+- [x] 1.1 增加失败回归测试：缺少 Task 的 `build-plan-candidate` 被提前绑定为终态 Outcome 后，原 Work 无法提交修正版且 Run 永久阻塞。
       **Acceptance:** 测试明确区分 Host submission、accepted Action Outcome 与 lifecycle Plan acceptance，不以新 Work或手改 Store恢复
       **Requirements:** managed-work-execution#被校验拒绝的-host-submission-必须保持当前-work-可纠正
-- [ ] 1.2 为 WorkExecution checkpoint 增加有界 rejected submission 模型、独立 `submissionId`、payload digest 与幂等/conflict 规则。
+- [x] 1.2 为 WorkExecution checkpoint 增加有界 rejected submission 模型、独立 `submissionId`、payload digest 与幂等/conflict 规则。
       **Blocked by:** 1.1
       **Acceptance:** 同 ID 同 digest 幂等、同 ID 不同 digest 冲突；拒绝历史不可覆盖且达到上限时 fail closed
       **Requirements:** managed-work-execution#被校验拒绝的-host-submission-必须保持当前-work-可纠正
