@@ -26,9 +26,15 @@ const runtimeRunId =
   'change-repoctopus-add-windows-desktop-dashboard-f5ddf312046dbfbb';
 const checks = [];
 const startedAt = new Date().toISOString();
+const protocolKey = 'HKCU\\Software\\Classes\\repoctopus';
+const systemRoot = process.env.SystemRoot?.trim() || process.env.SYSTEMROOT?.trim() || null;
+const explorer = systemRoot ? path.join(systemRoot, 'explorer.exe') : null;
 let sandbox;
 let installRoot;
-let ownsProtocolRegistration = false;
+let protocolSnapshot;
+let protocolExisted = false;
+let protocolMutationStarted = false;
+let protocolRestored = false;
 let trayProcess;
 let quitProcess;
 
@@ -141,9 +147,7 @@ function startInstalled(executable, options) {
       `--user-data-dir=${options.userData}`,
       `--remote-debugging-port=${options.debugPort}`,
       '--enable-logging=stderr',
-      options.transport === 'url'
-        ? launchUrl(options.changeId, options.runId)
-        : launchArgument(options.changeId, options.runId),
+      launchArgument(options.changeId, options.runId),
     ],
     {
       cwd: path.dirname(executable),
@@ -162,6 +166,93 @@ function startInstalled(executable, options) {
     });
   }
   return child;
+}
+
+async function protocolRegistrationExists() {
+  return execute('reg.exe', ['query', protocolKey]).then(
+    () => true,
+    () => false,
+  );
+}
+
+async function snapshotProtocolRegistration() {
+  protocolSnapshot = path.join(sandbox, 'repoctopus-protocol-before.reg');
+  protocolExisted = await protocolRegistrationExists();
+  if (protocolExisted) {
+    await execute('reg.exe', ['export', protocolKey, protocolSnapshot, '/y']);
+  }
+  protocolMutationStarted = true;
+  await execute('reg.exe', ['delete', protocolKey, '/f']).catch(() => undefined);
+}
+
+async function restoreProtocolRegistration() {
+  if (!protocolMutationStarted || protocolRestored) {
+    return { previousProtocolHandler: protocolExisted ? 'restored' : 'absent' };
+  }
+  await execute('reg.exe', ['delete', protocolKey, '/f']).catch(() => undefined);
+  if (protocolExisted) {
+    await execute('reg.exe', ['import', protocolSnapshot]);
+    const verification = path.join(sandbox, 'repoctopus-protocol-restored.reg');
+    await execute('reg.exe', ['export', protocolKey, verification, '/y']);
+    const [before, after] = await Promise.all([readFile(protocolSnapshot), readFile(verification)]);
+    assert(
+      before.equals(after),
+      'Previous Repoctopus protocol registration was not restored exactly',
+    );
+  } else {
+    assert(!(await protocolRegistrationExists()), 'Test Repoctopus protocol registration remained');
+  }
+  protocolRestored = true;
+  protocolMutationStarted = false;
+  return { previousProtocolHandler: protocolExisted ? 'restored' : 'absent' };
+}
+
+async function configureIsolatedProtocolHandler(executable, userData, debugPort) {
+  const command = `"${executable}" "--user-data-dir=${userData}" "--remote-debugging-port=${debugPort}" "--enable-logging=stderr" "%1"`;
+  await execute('reg.exe', [
+    'add',
+    `${protocolKey}\\shell\\open\\command`,
+    '/ve',
+    '/d',
+    command,
+    '/f',
+  ]);
+  const registration = await execute('reg.exe', [
+    'query',
+    'HKCR\\repoctopus\\shell\\open\\command',
+    '/ve',
+  ]);
+  assert(
+    registration.stdout.includes(executable),
+    'Protocol handler does not target the candidate',
+  );
+  assert(registration.stdout.includes(userData), 'Protocol handler does not preserve isolation');
+  assert(registration.stdout.includes('%1'), 'Protocol handler does not forward the URL');
+}
+
+async function launchExplorer(url) {
+  assert(explorer && path.win32.isAbsolute(explorer), 'Absolute SystemRoot Explorer is required');
+  assert(await exists(explorer), 'SystemRoot Explorer is unavailable');
+  await new Promise((resolve, reject) => {
+    const child = spawn(explorer, [url], {
+      detached: true,
+      windowsHide: true,
+      stdio: 'ignore',
+    });
+    const ignoreError = () => undefined;
+    const onError = (error) => reject(error);
+    child.on('error', ignoreError);
+    child.once('error', onError);
+    child.once('spawn', () => {
+      child.removeListener('error', onError);
+      child.unref();
+      resolve();
+    });
+  });
+}
+
+async function activateInstalledProtocol(changeId, runId) {
+  await launchExplorer(launchUrl(changeId, runId));
 }
 
 async function readDiscovery(userData, child) {
@@ -383,36 +474,22 @@ async function writeEvidence(status, diagnostic) {
 async function main() {
   assert(process.platform === 'win32' && process.arch === 'x64', 'Windows x64 is required');
   assert(await exists(installer), `Packaged installer is missing: ${installer}`);
-  const existingProtocol = await execute('reg.exe', [
-    'query',
-    'HKCU\\Software\\Classes\\repoctopus',
-  ]).then(
-    () => true,
-    () => false,
-  );
-  assert(!existingProtocol, 'Package E2E will not replace an existing Repoctopus protocol handler');
   sandbox = await mkdtemp(path.join(os.tmpdir(), 'repoctopus-installed-e2e-'));
+  await snapshotProtocolRegistration();
   installRoot = path.join(sandbox, 'install');
   const trayUserData = path.join(sandbox, 'tray-user-data');
+  await writePreference(trayUserData, 'tray');
+  const debugPort = await freePort();
 
   await runCheck('install-candidate', async () => {
-    ownsProtocolRegistration = true;
     await execute(installer, ['/S', `/D=${installRoot}`]);
-    assert(await exists(path.join(installRoot, 'Repoctopus.exe')), 'Installed executable missing');
-    const registration = await execute('reg.exe', [
-      'query',
-      'HKCR\\repoctopus\\shell\\open\\command',
-      '/ve',
-    ]);
-    const normalized = registration.stdout.toLowerCase();
-    assert(normalized.includes('repoctopus.exe'), 'Installed protocol handler has no executable');
-    assert(normalized.includes('%1'), 'Installed protocol handler does not forward the URL');
+    const candidate = path.join(installRoot, 'Repoctopus.exe');
+    assert(await exists(candidate), 'Installed executable missing');
+    await configureIsolatedProtocolHandler(candidate, trayUserData, debugPort);
     return { protocolHandler: 'repoctopus' };
   });
   const executable = path.join(installRoot, 'Repoctopus.exe');
 
-  await writePreference(trayUserData, 'tray');
-  const debugPort = await freePort();
   trayProcess = startInstalled(executable, {
     userData: trayUserData,
     debugPort,
@@ -548,14 +625,7 @@ async function main() {
   }
 
   await runCheck('single-instance', async () => {
-    const second = startInstalled(executable, {
-      userData: trayUserData,
-      debugPort,
-      changeId: 'installed-e2e-secondary',
-      runId: 'run-installed-e2e-secondary',
-      transport: 'url',
-    });
-    await waitForExit(second, 'secondary Repoctopus instance');
+    await activateInstalledProtocol('installed-e2e-secondary', 'run-installed-e2e-secondary');
     await postOtlp(discovery, 'installed-e2e-secondary', 'run-installed-e2e-secondary');
     await waitForSelectedChange(page, 'installed-e2e-secondary').catch(async (error) => {
       const state = await page.evaluate('window.repoctopusDesktop.currentState()');
@@ -569,14 +639,7 @@ async function main() {
     await closeMainWindow(trayProcess.pid);
     await delay(500);
     assert(isAlive(trayProcess), 'Tray preference exited the Shell');
-    const restore = startInstalled(executable, {
-      userData: trayUserData,
-      debugPort,
-      changeId: 'installed-e2e-restored',
-      runId: 'run-installed-e2e-restored',
-      transport: 'url',
-    });
-    await waitForExit(restore, 'tray restore activation');
+    await activateInstalledProtocol('installed-e2e-restored', 'run-installed-e2e-restored');
     await postOtlp(discovery, 'installed-e2e-restored', 'run-installed-e2e-restored');
     await waitForSelectedChange(page, 'installed-e2e-restored');
     const after = await readDiscovery(trayUserData, trayProcess);
@@ -613,13 +676,14 @@ async function main() {
     await execute(uninstaller, ['/S']);
     await waitFor(async () => !(await exists(executable)), 'Installed executable removal');
     await waitFor(async () =>
-      execute('reg.exe', ['query', 'HKCR\\repoctopus\\shell\\open\\command', '/ve']).then(
+      execute('reg.exe', ['query', protocolKey]).then(
         () => null,
         () => true,
       ),
     );
     assert(await exists(trayUserData), 'Uninstall unexpectedly deleted user data');
   });
+  await runCheck('restore-protocol-registration', restoreProtocolRegistration);
 }
 
 try {
@@ -634,12 +698,10 @@ try {
 } finally {
   await forceStop(trayProcess);
   await forceStop(quitProcess);
-  if (ownsProtocolRegistration) {
+  if (protocolMutationStarted) {
     const uninstaller = installRoot ? await findUninstaller(installRoot).catch(() => null) : null;
     if (uninstaller) await execute(uninstaller, ['/S']).catch(() => undefined);
-    await execute('reg.exe', ['delete', 'HKCU\\Software\\Classes\\repoctopus', '/f']).catch(
-      () => undefined,
-    );
+    await restoreProtocolRegistration().catch(() => undefined);
   }
   if (sandbox) await rm(sandbox, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 }

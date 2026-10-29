@@ -25,6 +25,13 @@ describe('installed Windows desktop end-to-end contract', () => {
     expect(script).toContain('REPOCTOPUS_DESKTOP_E2E_EVIDENCE');
     expect(script).toContain('isolatedUserData: true');
     expect(script).toContain('isolatedDiscovery: true');
+    expect(script).toContain("path.join(systemRoot, 'explorer.exe')");
+    expect(script).toContain('await launchExplorer(launchUrl(');
+    expect(script).toContain("child.once('spawn'");
+    expect(script).not.toContain("transport: 'url'");
+    expect(script).toContain("'restore-protocol-registration'");
+    expect(script).toContain("'export'");
+    expect(script).toContain("'import'");
   });
 
   it('exposes package construction, contents verification and installed E2E commands', async () => {

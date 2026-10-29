@@ -97,17 +97,17 @@
       **Acceptance:** 同一 invocation 的等价重放保留原 `completedAt`、不重复 `work.host-completed` 并继续 Validator；status、summary、layers、result、findings 或 delegation receipts 任一漂移均 fail closed
       **Verification:** 运行 ManagedWorkExecutor 等价/冲突参数化测试与中断恢复进程测试
       **Requirements:** managed-work-execution#受管-Work-必须从原执行断点恢复
-- [ ] 6.2 抽取中立的 receiver health contract、serializer/parser 与有界响应规则，让 producer 和 discovery consumer 共享。
+- [x] 6.2 抽取中立的 receiver health contract、serializer/parser 与有界响应规则，让 producer 和 discovery consumer 共享。
       **Blocked by:** None
       **Acceptance:** 单一 protocol 常量和 parser 拒绝未知字段/版本、错误 pid、content type 与超限响应；producer 不再复制 response shape
       **Verification:** 运行 shared contract、OTLP receiver 与 discovery fallback 测试，并检查重复协议字符串为零
       **Requirements:** desktop-observability-dashboard#Windows-开发-Run-自动激活单实例桌面应用
-- [ ] 6.3 建立 `DesktopInstanceProbe` seam，由 Project composition 注入 receiver discovery adapter，移除 Launcher 对 `app/desktop/host` 的反向依赖。
+- [x] 6.3 建立 `DesktopInstanceProbe` seam，由 Project composition 注入 receiver discovery adapter，移除 Launcher 对 `app/desktop/host` 的反向依赖。
       **Blocked by:** 6.2
       **Acceptance:** `services/desktop-launcher.ts` 不导入或构造 Host 实现；生产 composition 与测试 adapter 均穿过同一窄 interface；安全 discovery 行为保持不变
       **Verification:** 运行 Launcher/composition/discovery 测试与 architecture source-boundary 检查
       **Requirements:** plugin-composition#生产组合中的桌面-Launcher-必须被权威用例消费
-- [ ] 6.4 将安装协议目标限制为经过验证的绝对 SystemRoot Explorer 路径，禁止裸 executable 与 PATH/current-directory 解析。
+- [x] 6.4 将安装协议目标限制为经过验证的绝对 SystemRoot Explorer 路径，禁止裸 executable 与 PATH/current-directory 解析。
       **Blocked by:** None
       **Acceptance:** 有效 SystemRoot 产生绝对 target；缺失、相对、不可访问或伪造系统根返回 bounded unavailable；所有调用仍使用参数数组且诊断不泄漏路径
       **Verification:** 运行 Windows target-resolution 表驱动测试、Launcher process 测试与 lint/typecheck
