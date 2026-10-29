@@ -1108,7 +1108,7 @@ export function evolveChangeLifecycle(options: {
     if (
       current.phase !== 'build' ||
       current.status !== 'running' ||
-      current.currentWork?.kind !== 'build.plan' ||
+      !['build.plan', 'build.check'].includes(current.currentWork?.kind ?? '') ||
       !observation.reason.trim()
     ) {
       throw new Error('Work execution migration is not valid from the current lifecycle state');
@@ -1116,7 +1116,10 @@ export function evolveChangeLifecycle(options: {
     return applyChangeLifecycleTransition({
       definition: options.definition,
       current,
-      transitionId: 'build.work-execution-migration-required',
+      transitionId:
+        current.currentWork?.kind === 'build.check'
+          ? 'build.check-work-execution-migration-required'
+          : 'build.work-execution-migration-required',
       next: {
         currentWork: null,
         waitCondition: null,

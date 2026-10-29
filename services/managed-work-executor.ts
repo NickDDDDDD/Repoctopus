@@ -203,7 +203,8 @@ export class ManagedWorkExecutor extends Service {
       return { invocation, hostOutcome, acceptance: null };
     }
     if (
-      (claim.packet.work.kind === 'build.plan' && hostOutcome.status === 'succeeded') ||
+      (['build.plan', 'build.check'].includes(claim.packet.work.kind) &&
+        hostOutcome.status === 'succeeded') ||
       submission.status === 'outcome'
     ) {
       return { invocation, hostOutcome, acceptance: null };
@@ -311,7 +312,8 @@ export class ManagedWorkExecutor extends Service {
       return { invocation, hostOutcome, acceptance: null };
     }
     if (
-      (packet.packet.work.kind === 'build.plan' && hostOutcome.status === 'succeeded') ||
+      (['build.plan', 'build.check'].includes(packet.packet.work.kind) &&
+        hostOutcome.status === 'succeeded') ||
       submission.status === 'outcome'
     ) {
       return { invocation, hostOutcome, acceptance: null };
@@ -370,7 +372,8 @@ export class ManagedWorkExecutor extends Service {
       outcome.consumedLayerDigests,
     );
     if (
-      (packet.packet.work.kind === 'build.plan' && outcome.status === 'succeeded') ||
+      (['build.plan', 'build.check'].includes(packet.packet.work.kind) &&
+        outcome.status === 'succeeded') ||
       submission.status === 'outcome'
     ) {
       return { invocation, hostOutcome: outcome, acceptance: null };

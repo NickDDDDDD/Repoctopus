@@ -278,6 +278,31 @@ describe('Managed Work Executor Build contract', () => {
     expect(workDispatcher.acceptOutcome).not.toHaveBeenCalled();
   });
 
+  it('records a Build Check submission without accepting a terminal Action Outcome', async () => {
+    const { service, authority, workDispatcher } = executor(
+      {
+        schemaVersion: 1,
+        kind: 'build-check-candidate',
+        completedPackageIds: ['package-1'],
+        acceptedTaskIds: ['1.1'],
+        testEvidenceIds: ['test-1'],
+        repositoryDigest: digest('5'),
+        implementationDigest: digest('6'),
+        reviewerExecutionId: 'reviewer-1',
+      },
+      undefined,
+      undefined,
+      'build.check',
+    );
+
+    await expect(service.execute({} as never)).resolves.toMatchObject({
+      hostOutcome: { status: 'succeeded' },
+      acceptance: null,
+    });
+    expect(authority.markHostCompleted).toHaveBeenCalledOnce();
+    expect(workDispatcher.acceptOutcome).not.toHaveBeenCalled();
+  });
+
   it('rejects a Host-selected next Action as an unsupported result field', async () => {
     const { service, authority } = executor({
       schemaVersion: 1,

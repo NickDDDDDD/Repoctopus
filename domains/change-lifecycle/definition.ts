@@ -56,6 +56,7 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
   id: 'repoctopus-change',
   version: '4.2.0',
   compatibleDigests: [
+    'sha256:ce90da179b201e1824b559bf7a65a87e5b186a6a0bf82a70da0a907d12f94203',
     'sha256:4bef956969843eb8862947abdedaf5de59d8aa34237debc3387996b8944e8952',
     'sha256:3890da04d20fb364e363a976b21877f0198ca22da3c00af4de302de0f48b430b',
     'sha256:8be6236a13ddf44b9174517779cc4992b718a1ebff41cb3b69860c6a86e1c8d5',
@@ -373,6 +374,14 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       to: { phase: 'build', status: 'migration_required' },
       trigger: 'legacy-work-execution-state-is-not-provably-compatible',
       requiredValidatorProfile: 'build.plan-valid',
+    },
+    {
+      id: 'build.check-work-execution-migration-required',
+      kind: 'halt',
+      from: { phase: 'build', statuses: ['running'] },
+      to: { phase: 'build', status: 'migration_required' },
+      trigger: 'legacy-build-check-state-is-not-provably-compatible',
+      requiredValidatorProfile: 'build.check-valid',
     },
     {
       id: 'build.plan-evidence-accepted',

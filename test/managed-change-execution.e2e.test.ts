@@ -190,6 +190,8 @@ describe('managed Change execution production composition', () => {
       try {
         let invalidPlanSubmitted = false;
         let correctedPlanResult: WorkExecutionResult | undefined;
+        let invalidCheckSubmitted = false;
+        let correctedCheckResult: WorkExecutionResult | undefined;
         const installHost = () =>
           installCapturingWorkExecutionHost({
             context: application.context,
@@ -318,7 +320,7 @@ describe('managed Change execution production composition', () => {
                 };
               }
               if (packet.work.kind === 'build.check') {
-                return {
+                const candidate = {
                   schemaVersion: 1,
                   kind: 'build-check-candidate',
                   completedPackageIds: inputs.build!.plan!.packages.map((entry) => entry.packageId),
@@ -327,7 +329,13 @@ describe('managed Change execution production composition', () => {
                   repositoryDigest: inputs.build!.configuration.bindingDigest,
                   implementationDigest: `sha256:${'f'.repeat(64)}`,
                   reviewerExecutionId: session.invocationId,
-                };
+                } satisfies WorkExecutionResult;
+                correctedCheckResult = candidate;
+                if (!multiRepository && executionMode === 'autonomous' && !invalidCheckSubmitted) {
+                  invalidCheckSubmitted = true;
+                  return { ...candidate, reviewerExecutionId: 'review:wrong-invocation' };
+                }
+                return candidate;
               }
               return undefined;
             },
@@ -646,7 +654,48 @@ describe('managed Change execution production composition', () => {
           await execFileAsync('git', ['push'], { cwd: workerRepository });
         }
         await next();
-        expect((await next()).value.changeLifecycle).toMatchObject({
+        const checkInvocation = capture.invocations.findLast(
+          (entry) => entry.packet.work.kind === 'build.check',
+        );
+        let afterCheck = await next();
+        if (!multiRepository && executionMode === 'autonomous') {
+          if (!checkInvocation || !correctedCheckResult) {
+            throw new Error('missing captured Build Check correction context');
+          }
+          const rejected = await status();
+          expect(rejected.state.workExecution).toMatchObject({
+            workId: checkInvocation.packet.work.workId,
+            attempt: checkInvocation.packet.claim.attempt,
+            checkEpoch: checkInvocation.packet.claim.checkEpoch,
+            status: 'invoking',
+            continuation: 'awaiting-correction',
+            rejectedSubmissions: [{ rejection: { reasonCode: 'outcome-rejected' } }],
+          });
+          await application.context.managedWorkExecutor.acceptExternalOutcome({
+            schemaVersion: 3,
+            runId,
+            submissionId: 'corrected-build-check-1',
+            invocationId: checkInvocation.session.invocationId,
+            hostId: 'capturing-work-execution-host',
+            packetDigest: checkInvocation.session.packetDigest,
+            status: 'succeeded',
+            summary: 'Corrected Build Check uses the managed reviewer invocation',
+            consumedLayerDigests: checkInvocation.packet.context.layers
+              .filter((layer) => ['action-skill', 'augmentation-skill'].includes(layer.kind))
+              .map((layer) => layer.digest),
+            result: correctedCheckResult,
+          });
+          afterCheck = await next();
+          const accepted = await status();
+          expect(accepted.state.workExecution).toMatchObject({
+            workId: checkInvocation.packet.work.workId,
+            attempt: checkInvocation.packet.claim.attempt,
+            checkEpoch: checkInvocation.packet.claim.checkEpoch,
+            status: 'validated',
+            acceptedSubmission: { submissionId: 'corrected-build-check-1' },
+          });
+        }
+        expect(afterCheck.value.changeLifecycle).toMatchObject({
           phase: 'verify',
           currentWork: { kind: 'evidence.verify' },
         });
