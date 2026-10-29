@@ -3,12 +3,12 @@
 ## Reproducible subject
 
 - Change: `restore-runtime-build-orchestration`
-- Tested implementation commit: `5f6bb675086f0004b007f2a7cea18fe9cd85c8a9`
+- Tested implementation commit: `a4e36e1dcbd2cdc1d74edf38885dd1bf77a3f93b`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `932086`
-- Package SHA-256: `b82004e11d2c5185c8073d524df079f1bc222767119bfaca4e2da9d7e6dcc3b1`
+- Package bytes: `935222`
+- Package SHA-256: `f78ba4e5f8cfa6f62a43bb4cc825f22c531f93f5e89b2d1b84ec5ae47ac8f082`
 - Lifecycle definition: `repoctopus-change@4.2.0`
-- Lifecycle definition digest: `sha256:ce90da179b201e1824b559bf7a65a87e5b186a6a0bf82a70da0a907d12f94203`
+- Lifecycle definition digest: `sha256:c84278b1e82a0146759486ef68808c4027d03d211481793149af53e1b720e7fb`
 - Verification runId: `change-verification-workspace-restore-runtime-build-orchestration-9fda2eb7bf05fdf5`
 - Black-box runId: `change-managed-blackbox-managed-blackbox-a56af5c947f984ce`
 - Build Configuration: `build-configuration:984df01c5c917e6286a1e112`
@@ -26,7 +26,7 @@ Run on Windows with Node.js `24.21.0`:
 ```text
 npm run verify
   TypeScript, desktop TypeScript, ESLint, generated output, brand and architecture checks passed
-  142 test files passed; 550 tests passed and 2 skipped
+  142 test files passed; 551 tests passed and 2 skipped
   provenance passed; OpenSpec strict validation passed 15 items with 0 failures
   this report's commit ancestry and npm package checksum were reproduced
 
@@ -46,12 +46,16 @@ defect without changing Runtime Action authority, lifecycle transitions, immutab
 or the DSH-derived Host-process slice. Provenance, multi-process tracer and managed black-box
 regressions all pass against the pinned product commit above.
 
-Build Plan Outcome correction now separates immutable Host submission from accepted Action Outcome.
-The Runtime validates candidate structure, authoritative Tasks, frozen inputs and lifecycle Validator
-before terminal acceptance. Correctable rejection keeps the same Work, claim, attempt, checkEpoch,
-invocation and packet; a new submission identity can correct it across process restart. Legacy
-premature terminal Plan outcomes recover through a guarded, idempotent migration only when the same
-deterministic rejection can be reproduced; incompatible states halt as `migration_required`.
+Build Plan and Build Check Outcome correction now separate immutable Host submission from accepted
+Action Outcome. The Runtime validates candidate structure, authoritative Tasks, frozen inputs and
+lifecycle Validator before terminal acceptance. Correctable rejection keeps the same Work, claim,
+attempt, checkEpoch, invocation and packet; a new submission identity can correct it across process
+restart. Legacy premature terminal Plan and Check outcomes recover through a guarded, idempotent
+migration only when the same deterministic rejection can be reproduced; incompatible states halt as
+`migration_required`. The self-host Run
+`change-repoctopus-repair-build-plan-validation-retry-4148cf4f20f9aeca` recovered its legacy rejected
+Check, accepted a corrected submission on the same Work, and advanced from Build checkEpoch 14 to
+Verify checkEpoch 15 without direct Run Store editing.
 
 ## Runtime authority
 
