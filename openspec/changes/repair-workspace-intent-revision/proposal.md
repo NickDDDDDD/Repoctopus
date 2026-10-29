@@ -11,9 +11,9 @@ Repoctopus 已规定 Open approval 必须固定 `current|branch|worktree` Execut
 
 ## What Changes
 
-- 为 Execution Workspace binding failure 增加稳定错误分类，区分可通过重新选择 isolation 修复的错误与身份/拓扑漂移。
+- 为 Execution Workspace binding failure 增加稳定错误分类与 `intent-revision | binding-retry | halt` 恢复类别，让编排层不维护错误 code 列表、不解析消息文本。
 - Open approval 在写入 `ExecutionWorkspaceIntent` 和规格决定之前，使用 Run 冻结的 project snapshot 与 checkout facts 验证候选 intent；无效选择不改变 lifecycle 或 approval Store，可重新执行同一决策。
-- Build Configure 遇到可修订的 binding failure 时，提交受保护的 `Build → Open(wait)` transition，清除旧 intent、Tasks、Build Protocol、planning/verification/archive 输入并请求新的 isolation 决策。
+- Build Configure 仅在 binding 模块明确返回 `intent-revision` 时提交受保护的 `Build → Open(wait)` transition；可在原 intent 下修复的 binding 问题保持 Build retry，身份/拓扑漂移继续 halt。
 - 新的可信 isolation 决策在同一 Run 中提交 `Open → Design`，设置新 intent 与 Runtime 选择的 `specification.plan` Work；Design 重新确认可能受执行环境影响的计划。
 - lifecycle transition 替换或清除 current Work 时，在同一个 Run CAS 中退役不匹配的 execution checkpoint，避免旧 Build Configure Outcome 阻塞新的 Design Work。
 - CLI 展示当前 isolation、失败分类与三个候选模式；status 仍只读，拒绝修改 Store 或自动降级。

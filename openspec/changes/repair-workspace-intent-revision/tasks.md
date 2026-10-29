@@ -11,9 +11,9 @@
 
 ## 2. 建立受保护的 intent 修订状态机
 
-- [ ] 2.1 为 Execution Workspace binding 增加稳定错误类型与可修订分类，不让编排层解析消息文本。
+- [ ] 2.1 为 Execution Workspace binding 增加稳定错误类型及 `intent-revision | binding-retry | halt` 恢复类别，不让编排层解析消息文本或复制 code 策略表。
       **Blocked by:** 1.1
-      **Acceptance:** current/worktree/branch 不兼容得到受限 code；remote identity 与 topology 漂移保持不可修订并 fail closed
+      **Acceptance:** `current-linked-worktree` 要求 intent revision；可在原意图下修复的 checkout/branch/ownership facts 要求 binding retry；remote identity 与 topology drift 要求 halt
       **Requirements:** change-lifecycle#execution-workspace-intent-必须可验证并可在同一-run-修订
 - [ ] 2.2 增加 `workspace-intent-revision-required` 与 `workspace-intent-revised` 领域 observation/transition，严格限制在未批准 Build Configure 边界。
       **Blocked by:** 1.2, 2.1
@@ -32,11 +32,11 @@
       **Requirements:** change-lifecycle#execution-workspace-intent-必须可验证并可在同一-run-修订
 - [ ] 3.2 Build Configure 捕获可修订 binding error 并提交单次 Open wait；不可修订身份漂移继续阻断。
       **Blocked by:** 2.2, 3.1
-      **Acceptance:** `current-linked-worktree` 返回可定位 Open wait；remote identity/topology 错误不提供误导性的 isolation 修订
+      **Acceptance:** 仅 `recovery=intent-revision` 返回稳定且幂等的 Open wait；binding retry 保留原 intent，remote identity/topology halt 不提供误导性的 isolation 修订
       **Requirements:** change-lifecycle#execution-workspace-intent-必须可验证并可在同一-run-修订
 - [ ] 3.3 CLI 与 Service 接受新的可信 isolation 决策，重新验证后创建 Design Work；无效或拒绝决定不推进。
       **Blocked by:** 2.3, 3.2
-      **Acceptance:** CLI 显示旧 isolation、错误分类与三个候选模式；批准后同一 runId 进入 Design且需普通 Design gate
+      **Acceptance:** CLI 复用 `DecideChangeRunInput.isolation` 并显示旧 isolation、错误分类与三个候选模式；无效选择零 transition且可重试，批准后同一 runId 进入 Design且需普通 Design gate
       **Requirements:** change-lifecycle#execution-workspace-intent-必须可验证并可在同一-run-修订
 
 ## 4. 遥测与端到端验证

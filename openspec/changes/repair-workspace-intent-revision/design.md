@@ -26,7 +26,16 @@
 
 ### 1. Execution Workspace binding 返回稳定分类
 
-在 `services/execution-workspace` 定义 `ExecutionWorkspaceBindingError`，其 `code` 使用受限枚举，例如：
+在 `services/execution-workspace` 深模块定义 `ExecutionWorkspaceBindingError`。它隐藏具体判定，并只向调用者暴露稳定的小接口：
+
+```ts
+class ExecutionWorkspaceBindingError extends Error {
+  readonly code: ExecutionWorkspaceBindingErrorCode;
+  readonly recovery: 'intent-revision' | 'binding-retry' | 'halt';
+}
+```
+
+`code` 使用受限枚举，例如：
 
 - `current-linked-worktree`；
 - `current-checkout-mismatch`；
@@ -35,7 +44,13 @@
 - `remote-identity-drift`；
 - `repository-topology-drift`。
 
-只有前三类 checkout/isolation 不兼容和缺少 worktree ownership 的情形可进入 intent 修订；remote identity 与 topology 漂移继续 fail closed。编排层只判断 error code，不解析错误文本。
+恢复类别遵循“能否在保持批准 intent 的前提下修复”而不是简单按错误 code 分组：
+
+- 注册 checkout 本身是 linked worktree但 intent 为 `current` 时，必须改变 intent，分类为 `intent-revision`；
+- checkout path、branch 或 worktree ownership facts 只是 Runner binding 不正确时，分类为 `binding-retry`，保留原 intent；
+- remote identity 与 repository topology 漂移分类为 `halt`。
+
+`WorkflowRuns` 只判断 `recovery`，code 用于诊断与遥测，不维护第二份策略表。
 
 ### 2. Open decision 先验证，后写两个权威
 
@@ -45,30 +60,30 @@
 
 ### 3. Build binding failure 使用显式 Build → Open wait
 
-当 active Work 是未批准配置的 `build.configure`，且 binding 抛出可修订 error code 时，Runtime 创建 `workspace-intent-revision-required` observation。领域 transition：
+当 active Work 是未批准配置的 `build.configure`，且 binding error 的 `recovery` 为 `intent-revision` 时，Runtime 根据 `{runId, lifecycle revision, old intent digest, error code}` 生成稳定 request/proposal digest，并创建 `workspace-intent-revision-required` observation。领域 transition：
 
 - phase 由 Build 回到 Open，status 为 waiting；
 - current Work 清空并创建 `workspace-intent:*` Human Decision wait；
 - 删除旧 `workspaceIntent`、Tasks、Build Protocol、planning digest、completion claim、Verification/Archive 输入与未完成 Closure；
 - 保留 Change identity、Open planning artifacts 和历史 trajectory；
-- 记录旧 isolation、error code 与受控 evidence identity。
+- 在 transition fact 记录旧 isolation、error code 与受控 evidence identity，不记录异常文本或路径。
 
 该 transition 只允许在 Build Configure 尚未批准、没有 Build Plan/package completion/Verify/Archive 副作用时触发。
 
 ### 4. 新 intent 决策直接进入 Design Work
 
-CLI 在 `workspace-intent:*` wait 中展示失败分类、旧 isolation 和三个模式，再要求可信用户选择。Service 再次绑定验证候选 intent；成功后物化新的 `specification.plan` Work，并提交 `workspace-intent-revised` observation，在一次 transition 中：
+CLI 在 `workspace-intent:*` wait 中展示失败分类、旧 isolation 和三个模式，再要求可信用户选择。现有 `DecideChangeRunInput.isolation` 继续作为唯一输入，不建立第二套命令 DTO。Service 再次绑定验证候选 intent；成功后物化新的 `specification.plan` Work，并提交 `workspace-intent-revised` observation，在一次 transition 中：
 
 - phase 设为 Design、status 为 running；
 - 保存新 intent；
 - 设置新 Design Work 与递增 checkEpoch；
 - 结束 wait，Design 后续仍需普通 planning Human Decision。
 
-拒绝或无效选择不推进；无效选择保持原 wait，可重试。OpenSpec approval Store 不伪造新的规格决定，因为这里批准的是 execution intent；重新进入 Design 会按普通规则刷新受 branch/plan snapshot 约束的 Design gate。
+拒绝决定进入 Open blocked；无效选择在任何 transition 前失败并保持原 wait，可用同一 request 重试。OpenSpec approval Store 不伪造新的规格决定，因为这里批准的是 execution intent；已批准且未变化的 Open planning digest 保留，重新进入 Design 后按普通规则刷新受 branch/plan snapshot 约束的 Design gate。
 
 ### 5. Runtime CAS 维护 current execution 不变量
 
-`WorkflowRunCoordinator.acceptChangeObservation()` 在领域 transition 产生新 lifecycle 后比较 `workExecution.workId/checkEpoch` 与新 current Work。完全匹配才保留，否则在同一 Run CAS 中移除 checkpoint，并在 transition event 记录 retirement fact；claim、Outcome、Receipt 等历史事件不删除。
+`WorkflowRunCoordinator.acceptChangeObservation()` 在领域 transition 产生新 lifecycle 后调用纯函数 `executionMatchesLifecycle(currentWork, checkpoint)`。`workId/checkEpoch` 完全匹配才保留，否则在同一 Run CAS 中省略 checkpoint，并在同一个 `change.lifecycle.transitioned` event 写入 `executionRetirement` fact；claim、Outcome、Receipt 等历史事件不删除。该函数属于 Runtime state 投影，不新增 Adapter seam。
 
 这是恢复旧 Build Configure Outcome并允许新 Design Work claim 的必要条件，也是所有 lifecycle transition 都应满足的通用不变量，而不是 isolation 专用清理。
 
@@ -89,7 +104,7 @@ trajectory/OTLP 记录 binding error code、from/to phase、旧/新 isolation、
 
 - 领域测试证明 Build Configure 只能在无副作用边界返回 Open，并清除依赖旧 intent 的全部下游状态。
 - Service 测试证明 linked worktree + current 在 Open 决策前被拒绝且 approval/lifecycle 均未写入。
-- E2E 复现已有坏 Run：Build Configure Outcome → binding failure → Open wait → 选择 worktree → Design Work；runId 不变且旧 checkpoint 不再是当前状态。
+- E2E 复现已有坏 Run：Build Configure Outcome → `current-linked-worktree/intent-revision` → Open wait → 选择 worktree → Design Work；runId 不变且旧 checkpoint 不再是当前状态。
 - 重复 `next`、重复错误观察和无效 isolation 决策不产生第二个 wait、Work 或 retirement event。
 - OTLP 契约、strict OpenSpec、typecheck、lint、architecture/provenance/generated 检查和完整 `npm run verify` 全部通过。
 
