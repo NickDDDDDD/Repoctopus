@@ -13,8 +13,13 @@ Repoctopus MUST 在受支持的 Windows 环境创建或恢复开发 Change Run �
 
 #### Scenario: 第二个 change 开始运行
 
-- **WHEN** 桌面应用已经运行且另一个开发 Change Run 开始
-- **THEN** 既有 Shell 把新的 Workspace、change 与 Run 上下文交给当前 Desktop Host 并聚焦该 change，且不创建第二个有效 Host 或接收器
+- **WHEN** 桌面应用已经运行、receiver discovery 通过同用户与进程身份校验，且另一个开发 Change Run 开始
+- **THEN** 操作系统接受单实例转交请求并返回 activated 诊断，既有 Shell 把新的 Workspace、change 与 Run 上下文交给当前 Desktop Host 并聚焦该 change，且不创建第二个有效 Host 或接收器
+
+#### Scenario: 启动结果不冒充界面就绪
+
+- **WHEN** Launcher 返回 started 或 activated
+- **THEN** 该结果只证明请求前的安全 discovery 分类和操作系统已接受请求，不得被解释为 Renderer 已绘制、窗口已聚焦或 Desktop Host 已 ready
 
 #### Scenario: 源码自举启动
 

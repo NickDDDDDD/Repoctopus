@@ -41,6 +41,10 @@ Launcher 接受 Product Root、平台、环境和可替换的 process adapter，
 
 Windows 安装包登记版本化 `repoctopus://activate/<encoded-context>` 协议。Electron Main 使用与现有 `--repoctopus-launch` 相同的解析、上限和 schema 校验，再交给 single-instance owner；协议不是第二套业务上下文。显式 executable override 继续使用参数形式，便于测试和受控部署。
 
+安装态协议调用使用 Windows `explorer.exe` 和独立参数数组，让操作系统解析已登记 handler；不得经 `cmd /c start`、PowerShell 命令插值或任意 shell 字符串启动。Launcher 在调用前用现有、同用户且通过进程身份与监听端口校验的 receiver discovery 作为 `DesktopInstanceProbe`：有效实例存在时，操作系统接受请求后结果为 `activated`；不存在时为 `started`。该分类只描述请求前实例状态与请求被接受，不声称窗口或 Host 已 ready。
+
+**Alternatives considered:** 继续只接受环境变量会把产品正常路径变成机器私有配置；让 CLI 直接依赖 Electron 会污染公共入口；解析任意 Workspace 路径会扩大信任面；新增第二套 IPC 会与已有 single-instance 和 discovery 重复。以上方案均不采用。
+
 ### 3. 激活结果必须等待操作系统接受请求
 
 `DesktopLauncher.activate()` 改为异步。进程 adapter 只有在 child `spawn` 事件后返回 requested；`error`、超时或无 handler 分别映射为有界 unavailable reason。Launcher 不等待窗口永久存活，也不把 Desktop Host ready 变成 Change Run Gate；Receiver discovery 和 Observation Delivery 继续独立表达本地遥测是否 ready。
@@ -52,13 +56,19 @@ Windows 安装包登记版本化 `repoctopus://activate/<encoded-context>` 协�
 - `unavailable`: Windows 支持环境缺少有效目标或请求失败；
 - `unsupported`: 当前平台不在正式支持矩阵。
 
-即使结果不可用，Run 创建结果仍成功。调用方收到 warning，Trajectory 记录结果类别，远端 OTLP 继续独立投递。
+`started` 与 `activated` 都表示请求已被操作系统接受；前者表示请求前没有有效 discovery，后者表示请求前已有通过安全校验的实例。它们都不表示 Renderer 已绘制、窗口已聚焦或 Host 已 ready。即使结果不可用，Run 创建结果仍成功。调用方收到 warning，Trajectory 记录结果类别，远端 OTLP 继续独立投递。
+
+**Alternatives considered:** 等待窗口或 Host ready 会把本地 UI 变成 Change Run Gate；只返回单一 `requested` 虽然简单，却丢失已有实例转交这一项有用、可验证的运行事实；仅监听 child `exit` 无法区分正常的第二实例退出和启动失败。因此采用“安全 discovery 前置分类 + OS 接受确认”的有界语义。
 
 ### 4. 诊断与遥测只记录稳定类别
 
 `WorkflowRuns` 把 Launcher 结果追加到原 `RuntimeResult.diagnostics`：成功使用 info，不可用或不支持使用 warning。诊断 code 固定为 `desktop.activation.started|activated|unavailable|unsupported`，message 不含 executable、命令行、token、绝对路径或 URL payload。
 
 Trajectory/Observation 只记录 Workspace/change/Run 关联、目标类别、结果、reason enum 和时间。Metric label 不包含路径、错误正文或自由文本。Launcher 请求发生在 Run 权威事实持久化之后；遥测失败不能反向改变 activation 或 Run。
+
+激活事实由 Runtime 通过 Run Store 的幂等辅助事实接口追加，事件 ID 从 Run 与一次激活意图稳定派生；它不是 phase transition，不改变 lifecycle phase、Work 或 Gate。Observation Delivery 继续只消费持久化 Trajectory，禁止 Launcher 直接向 OTLP 发送第二份事件。
+
+**Alternatives considered:** 直接从 Launcher 发 OTLP 会绕过 outbox、重放与本地/远端同源保证；把 activation 写进生命周期 transition 会让 UI 副作用污染领域状态；只返回 CLI warning 又无法支持事后工作流健康度审计。故采用持久化辅助事实。
 
 ### 5. 测试必须穿过生产入口
 
@@ -70,6 +80,8 @@ Trajectory/Observation 只记录 Workspace/change/Run 关联、目标类别、�
 4. Windows E2E 覆盖首次启动、第二实例上下文转交、窗口聚焦、无 handler warning、进程清理及同一 Run 的 OTLP 接收。
 
 Catalog membership 和直接 `new DesktopLauncher()` 的测试只能作为补充，不能满足生产验收。
+
+**Alternatives considered:** 只测 Launcher 会重演本次“模块正确但生产入口断链”；只做 Windows 打包 E2E 定位成本过高且无法覆盖全部失败枚举。因此保留由纯模块、composition 纵切和安装态 E2E 组成的测试金字塔。
 
 ## Migration Plan
 
