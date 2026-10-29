@@ -632,16 +632,118 @@ describe('managed Change execution production composition', () => {
           currentWork: { kind: 'build.execute' },
           build: { action: 'execute', planRevision: 1 },
         });
-        await next();
-        const afterFirstPackage = await next();
+        let afterFirstPackage: RuntimeResult<RunStatusView>;
+        let afterAllPackages: RuntimeResult<RunStatusView>;
+        if (!multiRepository && executionMode === 'autonomous') {
+          const successAcceptanceInterruption = vi
+            .spyOn(application.context.workDispatcher, 'acceptOutcome')
+            .mockRejectedValueOnce(
+              new Error('simulated interruption after external package submission'),
+            );
+          await expect(next()).rejects.toThrow(
+            'simulated interruption after external package submission',
+          );
+          successAcceptanceInterruption.mockRestore();
+          expect((await status()).state.workExecution).toMatchObject({
+            status: 'submitted',
+            pendingSubmission: { outcome: { status: 'succeeded' } },
+          });
+
+          await restartApplication();
+          const packageCoordinator = Reflect.get(application.context.workflowRuns, 'coordinator') as {
+            acceptChangeObservation: (...args: unknown[]) => Promise<unknown>;
+          };
+          const packageProjectionInterruption = vi
+            .spyOn(packageCoordinator, 'acceptChangeObservation')
+            .mockRejectedValueOnce(
+              new Error('simulated interruption after package Outcome validation'),
+            );
+          await expect(next()).rejects.toThrow(
+            'simulated interruption after package Outcome validation',
+          );
+          packageProjectionInterruption.mockRestore();
+          expect((await status()).state.workExecution).toMatchObject({
+            status: 'validated',
+            acceptedSubmission: { outcome: { status: 'succeeded' } },
+            validatorId: 'build.package-valid',
+          });
+          afterFirstPackage = await next();
+
+          const packageHost = application.context.workExecutionHosts.get(
+            'capturing-work-execution-host',
+          );
+          if (!packageHost) throw new Error('missing managed package Host');
+          const failedInvocation = vi
+            .spyOn(packageHost, 'invoke')
+            .mockImplementationOnce(async (packet, session) => ({
+              schemaVersion: 1,
+              invocationId: session.invocationId,
+              hostId: packageHost.identity.id,
+              packetDigest: packet.identity.packetDigest,
+              status: 'failed',
+              summary: 'simulated implementation finding from an external package Runner',
+              consumedLayerDigests: packet.context.layers
+                .filter((layer) =>
+                  ['action-skill', 'augmentation-skill'].includes(layer.kind),
+                )
+                .map((layer) => layer.digest),
+              findings: [
+                {
+                  kind: 'implementation_failure',
+                  summary: 'retry the bounded package without revising Design',
+                  taskIds: ['1.2'],
+                  requirementIds: ['managed-demo#managed-execution'],
+                },
+              ],
+              completedAt: new Date().toISOString(),
+            }));
+          const failureAcceptanceInterruption = vi
+            .spyOn(application.context.workDispatcher, 'acceptOutcome')
+            .mockRejectedValueOnce(
+              new Error('simulated interruption after failed external package submission'),
+            );
+          await expect(next()).rejects.toThrow(
+            'simulated interruption after failed external package submission',
+          );
+          failedInvocation.mockRestore();
+          failureAcceptanceInterruption.mockRestore();
+          expect((await status()).state.workExecution).toMatchObject({
+            status: 'submitted',
+            pendingSubmission: {
+              outcome: {
+                status: 'failed',
+                findings: [{ kind: 'implementation_failure' }],
+              },
+            },
+          });
+
+          await restartApplication();
+          const acceptedFailure = await next();
+          expect(acceptedFailure.diagnostics).toContainEqual(
+            expect.objectContaining({ code: 'change.work-failure-accepted' }),
+          );
+          expect((await status()).state.workExecution).toMatchObject({
+            status: 'outcome',
+            actionOutcome: { status: 'failed' },
+            hostOutcome: {
+              status: 'failed',
+              findings: [{ kind: 'implementation_failure' }],
+            },
+          });
+          await next();
+          afterAllPackages = await next();
+        } else {
+          await next();
+          afterFirstPackage = await next();
+          await restartApplication();
+          await next();
+          afterAllPackages = await next();
+        }
         expect(afterFirstPackage.value.changeLifecycle).toMatchObject({
           phase: 'build',
           currentWork: { kind: 'build.execute' },
           taskProgress: { completed: 1 },
         });
-        await restartApplication();
-        await next();
-        const afterAllPackages = await next();
         expect(
           afterAllPackages.value.changeLifecycle,
           JSON.stringify(afterAllPackages.diagnostics),
