@@ -31,6 +31,21 @@ Repoctopus MUST 在受支持的 Windows 环境创建或恢复开发 Change Run �
 - **WHEN** 安装协议、显式覆盖和源码启动目标均不可用或操作系统拒绝启动请求
 - **THEN** Change Run 仍成功创建或恢复，调用方收到不含路径和命令正文的 unavailable warning，远端 OTLP 投递继续运行
 
+#### Scenario: 安装协议使用受控系统入口
+
+- **WHEN** Launcher 选择已安装协议目标
+- **THEN** 它只用经过校验的绝对 SystemRoot Explorer 路径和独立 URL 参数调用 Windows，拒绝裸 executable、当前目录、PATH 搜索、shell 字符串或缺失的受控系统文件
+
+#### Scenario: 安装验收穿过真实协议 handler
+
+- **WHEN** Windows 安装 E2E 向已登记的 `repoctopus://` URL 交付第二个 Change Run 上下文
+- **THEN** 请求经 Explorer、当前用户 registry handler、产品 executable 和 single-instance owner 到达既有 Shell；直接把 URL 参数传给产品 executable 不得计为该场景通过
+
+#### Scenario: 公共 CLI 在无 handler 时继续
+
+- **WHEN** 进程级 public CLI 在没有源码 Desktop artifact、显式覆盖和已安装协议 handler 的隔离环境创建 Change Run
+- **THEN** CLI 返回 `desktop.activation.unavailable`，权威 Run 仍被持久化且远端 OTLP 继续接收同一 Run 的观测事实
+
 #### Scenario: 未正式支持的平台启动 Run
 
 - **WHEN** 用户在未正式支持的平台开始开发 Change Run

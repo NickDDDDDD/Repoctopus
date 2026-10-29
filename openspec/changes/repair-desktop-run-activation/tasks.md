@@ -89,3 +89,41 @@
       **Acceptance:** 工作树干净、无临时进程或调试残留、远端分支包含验证提交
       **Verification:** 检查进程、临时路径、git status 与远端 branch OID
       **Requirements:** desktop-observability-dashboard#Windows-开发-Run-自动激活单实例桌面应用
+
+## 6. Build Check 返工闭环
+
+- [ ] 6.1 正式化并验证已持久化外部 Host Outcome 的稳定内容幂等重放。
+      **Blocked by:** None
+      **Acceptance:** 同一 invocation 的等价重放保留原 `completedAt`、不重复 `work.host-completed` 并继续 Validator；status、summary、layers、result、findings 或 delegation receipts 任一漂移均 fail closed
+      **Verification:** 运行 ManagedWorkExecutor 等价/冲突参数化测试与中断恢复进程测试
+      **Requirements:** managed-work-execution#受管-Work-必须从原执行断点恢复
+- [ ] 6.2 抽取中立的 receiver health contract、serializer/parser 与有界响应规则，让 producer 和 discovery consumer 共享。
+      **Blocked by:** None
+      **Acceptance:** 单一 protocol 常量和 parser 拒绝未知字段/版本、错误 pid、content type 与超限响应；producer 不再复制 response shape
+      **Verification:** 运行 shared contract、OTLP receiver 与 discovery fallback 测试，并检查重复协议字符串为零
+      **Requirements:** desktop-observability-dashboard#Windows-开发-Run-自动激活单实例桌面应用
+- [ ] 6.3 建立 `DesktopInstanceProbe` seam，由 Project composition 注入 receiver discovery adapter，移除 Launcher 对 `app/desktop/host` 的反向依赖。
+      **Blocked by:** 6.2
+      **Acceptance:** `services/desktop-launcher.ts` 不导入或构造 Host 实现；生产 composition 与测试 adapter 均穿过同一窄 interface；安全 discovery 行为保持不变
+      **Verification:** 运行 Launcher/composition/discovery 测试与 architecture source-boundary 检查
+      **Requirements:** plugin-composition#生产组合中的桌面-Launcher-必须被权威用例消费
+- [ ] 6.4 将安装协议目标限制为经过验证的绝对 SystemRoot Explorer 路径，禁止裸 executable 与 PATH/current-directory 解析。
+      **Blocked by:** None
+      **Acceptance:** 有效 SystemRoot 产生绝对 target；缺失、相对、不可访问或伪造系统根返回 bounded unavailable；所有调用仍使用参数数组且诊断不泄漏路径
+      **Verification:** 运行 Windows target-resolution 表驱动测试、Launcher process 测试与 lint/typecheck
+      **Requirements:** desktop-observability-dashboard#Windows-开发-Run-自动激活单实例桌面应用
+- [ ] 6.5 修改 Windows 安装 E2E，使第二实例请求穿过 Explorer、真实 registry protocol handler、产品 executable 与 single-instance owner。
+      **Blocked by:** 6.3, 6.4
+      **Acceptance:** 测试不再把 URL 直接传给 `Repoctopus.exe`；既有 Shell 收到正确 Run 上下文且只有一个有效 Host/Receiver；精确 registry 状态在 finally 恢复
+      **Verification:** 构建/安装当前包并运行 Windows protocol-handler E2E、package check 与残留检查
+      **Requirements:** desktop-observability-dashboard#Windows-开发-Run-自动激活单实例桌面应用
+- [ ] 6.6 增加 public CLI 无 handler 的进程级验收，证明 warning、Run 持久化和远端 OTLP 独立继续。
+      **Blocked by:** 6.3, 6.4
+      **Acceptance:** 隔离环境没有 source target、override 或 handler 时返回 `desktop.activation.unavailable`；同一命令仍创建权威 Change Run并向捕获 receiver 投递非桌面依赖的远端事实
+      **Verification:** 运行 public CLI tracer E2E，并核对退出码、诊断、Run checkpoint、OTLP payload 与 teardown
+      **Requirements:** desktop-observability-dashboard#Windows-开发-Run-自动激活单实例桌面应用, development-telemetry#桌面激活结果形成有界观测事实
+- [ ] 6.7 重新运行完整验证、更新 Evidence/验证报告并清理所有本轮临时进程、registry、安装目录、日志和 payload 后推送验证 HEAD。
+      **Blocked by:** 6.1, 6.2, 6.3, 6.4, 6.5, 6.6
+      **Acceptance:** OpenSpec strict、类型、lint、架构、provenance、单元、package/tracer/Windows E2E 与 mutation 全部通过；报告绑定新实现 commit/包摘要；工作树和外部临时状态干净且远端 OID 等于 HEAD
+      **Verification:** 运行正式 verify/package/tracer/desktop 命令、干净 checkout、mutation、残留和 Git/remote 检查并保存 Evidence
+      **Requirements:** desktop-observability-dashboard#Windows-开发-Run-自动激活单实例桌面应用, managed-work-execution#受管-Work-必须从原执行断点恢复

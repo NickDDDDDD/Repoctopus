@@ -15,3 +15,8 @@ Project composition MUST 只在存在生产调用路径和纵切验收时声明 
 
 - **WHEN** 插件 descriptor 和 composition snapshot 包含 Launcher 但公共 Change Run 入口没有生产调用或纵切测试
 - **THEN** 架构或验收检查失败，不得把该能力报告为已交付
+
+#### Scenario: Launcher 探测已有桌面实例
+
+- **WHEN** Project composition 构造 Desktop Launcher
+- **THEN** composition 通过窄 `DesktopInstanceProbe` interface 注入 receiver discovery adapter，Launcher Service 不导入、不构造 `app/desktop/host` 实现，producer 与 consumer 从中立 shared 模块使用同一个版本化 health contract/parser

@@ -41,11 +41,21 @@ Launcher 接受 Product Root、平台、环境和可替换的 process adapter，
 
 Windows 安装包登记版本化 `repoctopus://activate/<encoded-context>` 协议。Electron Main 使用与现有 `--repoctopus-launch` 相同的解析、上限和 schema 校验，再交给 single-instance owner；协议不是第二套业务上下文。显式 executable override 继续使用参数形式，便于测试和受控部署。
 
-安装态协议调用使用 Windows `explorer.exe` 和独立参数数组，让操作系统解析已登记 handler；不得经 `cmd /c start`、PowerShell 命令插值或任意 shell 字符串启动。Launcher 在调用前用现有、同用户且通过进程身份与监听端口校验的 receiver discovery 作为 `DesktopInstanceProbe`：有效实例存在时，操作系统接受请求后结果为 `activated`；不存在时为 `started`。该分类只描述请求前实例状态与请求被接受，不声称窗口或 Host 已 ready。
+安装态协议调用从可信 `SystemRoot` 解析并验证绝对 `explorer.exe`，再用独立参数数组让操作系统解析已登记 handler；不得使用裸 executable 名称、当前目录或 `PATH` 搜索，也不得经 `cmd /c start`、PowerShell 命令插值或任意 shell 字符串启动。`SystemRoot` 缺失、非绝对或受控文件不存在时返回 unavailable，而不是回退到 `C:\Windows` 猜测。
 
 **Alternatives considered:** 继续只接受环境变量会把产品正常路径变成机器私有配置；让 CLI 直接依赖 Electron 会污染公共入口；解析任意 Workspace 路径会扩大信任面；新增第二套 IPC 会与已有 single-instance 和 discovery 重复。以上方案均不采用。
 
-### 3. 激活结果必须等待操作系统接受请求
+### 3. Launcher 只依赖注入的实例探测 seam
+
+`DesktopLauncher` 只消费一个窄的 `DesktopInstanceProbe` interface，不构造或导入 `app/desktop/host` 实现。Project composition 在应用边界把基于 receiver discovery 的 adapter 注入 Launcher；测试用 adapter 穿过相同 seam。这样 Launcher Service 仍可独立验证，Desktop Host 的文件、ACL、进程身份与端口所有权策略保留在平台 adapter 内。
+
+Receiver 的 `/health` producer 与 discovery fallback consumer 共用 `app/desktop/shared` 中的版本化 health contract、serializer/parser 和字节上限。解析器拒绝未知字段、未知版本、非正整数 pid、错误 content type 和超限响应；producer 不再手写重复常量。该 shared 模块只描述协议数据，不依赖 HTTP server、discovery、Service 或 Electron。
+
+有效实例存在时，操作系统接受请求后 Launcher 结果为 `activated`；不存在时为 `started`。该分类只描述请求前实例状态与请求被接受，不声称窗口或 Host 已 ready。
+
+**Alternatives considered:** 让 Service 直接 `new DesktopReceiverDiscovery()` 会反转 service → app/host 依赖；把 discovery 整体移入 Service 会把平台安全策略泄漏进 Launcher；producer/consumer 分别维护字符串与 shape 会让单边升级静默退化。故采用注入 seam 与中立 shared contract。
+
+### 4. 激活结果必须等待操作系统接受请求
 
 `DesktopLauncher.activate()` 改为异步。进程 adapter 只有在 child `spawn` 事件后返回 requested；`error`、超时或无 handler 分别映射为有界 unavailable reason。Launcher 不等待窗口永久存活，也不把 Desktop Host ready 变成 Change Run Gate；Receiver discovery 和 Observation Delivery 继续独立表达本地遥测是否 ready。
 
@@ -60,7 +70,7 @@ Windows 安装包登记版本化 `repoctopus://activate/<encoded-context>` 协�
 
 **Alternatives considered:** 等待窗口或 Host ready 会把本地 UI 变成 Change Run Gate；只返回单一 `requested` 虽然简单，却丢失已有实例转交这一项有用、可验证的运行事实；仅监听 child `exit` 无法区分正常的第二实例退出和启动失败。因此采用“安全 discovery 前置分类 + OS 接受确认”的有界语义。
 
-### 4. 诊断与遥测只记录稳定类别
+### 5. 诊断与遥测只记录稳定类别
 
 `WorkflowRuns` 把 Launcher 结果追加到原 `RuntimeResult.diagnostics`：成功使用 info，不可用或不支持使用 warning。诊断 code 固定为 `desktop.activation.started|activated|unavailable|unsupported`，message 不含 executable、命令行、token、绝对路径或 URL payload。
 
@@ -70,30 +80,41 @@ Trajectory/Observation 只记录 Workspace/change/Run 关联、目标类别、�
 
 **Alternatives considered:** 直接从 Launcher 发 OTLP 会绕过 outbox、重放与本地/远端同源保证；把 activation 写进生命周期 transition 会让 UI 副作用污染领域状态；只返回 CLI warning 又无法支持事后工作流健康度审计。故采用持久化辅助事实。
 
-### 5. 测试必须穿过生产入口
+### 6. 测试必须穿过生产入口
 
 测试分四层：
 
 1. red characterization 证明旧实现中 `run start` 不调用 Launcher，且环境变量是唯一解析路径；
 2. 纯解析/进程 adapter 测试覆盖 override、源码目标、安装协议、异步 spawn error、超时和不支持平台；
 3. `bootProjectComposition → run.change.start → WorkflowRuns` 集成测试捕获精确上下文、诊断和 Run 非阻断语义；
-4. Windows E2E 覆盖首次启动、第二实例上下文转交、窗口聚焦、无 handler warning、进程清理及同一 Run 的 OTLP 接收。
+4. Windows 安装 E2E 先启动已安装 primary instance，再通过绝对 Explorer 路径打开 `repoctopus://` URL，证明 registry handler → product executable → single-instance owner 的真实链路；把 URL 直接传给 `Repoctopus.exe` 不构成协议验收；
+5. 进程级 public CLI case 在隔离且可恢复的 handler 状态下证明无 handler 时返回 `desktop.activation.unavailable`，同时权威 Run 创建成功且远端 OTLP 继续投递。
 
 Catalog membership 和直接 `new DesktopLauncher()` 的测试只能作为补充，不能满足生产验收。
 
 **Alternatives considered:** 只测 Launcher 会重演本次“模块正确但生产入口断链”；只做 Windows 打包 E2E 定位成本过高且无法覆盖全部失败枚举。因此保留由纯模块、composition 纵切和安装态 E2E 组成的测试金字塔。
 
+### 7. 已持久化 Host Outcome 使用稳定内容幂等重放
+
+`ManagedWorkExecutor.acceptExternalOutcome()` 可能在 `markHostCompleted` 已提交、但 Skill/Delegation fact、Action Outcome 或 Validator 尚未完成时被新进程重放。Runtime 先核对 invocation、Host 与 packet identity，再把输入构造成 proposed Outcome；若 checkpoint 已有 Outcome，则比较除 Runtime 生成的 `completedAt` 之外的全部稳定字段。稳定内容完全相同就复用原对象和原时间、不再次写 `work.host-completed`，继续后续 fact 与 Validator；status、summary、consumed layers、result、findings 或 delegation receipts 任一漂移都 fail closed。
+
+该等价规则只用于同一 invocation 的恢复，不把不同 attempt、epoch、packet 或 Host 合并，也不承诺任意自由文本规范化。它补足现有“Outcome 后 Validator 前中断”要求，而不是建立第二套 completion authority。
+
+**Alternatives considered:** 把 `completedAt` 纳入比较会让每次合法恢复都冲突；无条件接受 checkpoint 中的 Outcome 会隐藏调用方提交漂移；再次写 Host completion 会重复 Trajectory。故只忽略 Runtime 自己生成的时间字段，并对其余内容做 canonical equality。
+
 ## Migration Plan
 
 1. 先定义目标解析契约与 URL/argument context schema，使首个 Work Package 能在自身写入边界内独立 green。
-2. 重构 Launcher 为异步深模块，并给 Project composition 注入 Product Root 身份。
-3. 在已经存在可替换 Launcher seam 后编写 red production-entry characterization，并在同一个 runtime-integration Work Package 内接通 `WorkflowRuns.startChange()`、diagnostics 与 Trajectory/OTLP 映射。
-4. 增加安装协议和源码构建产物，完成 Windows 首次/二次启动 E2E。
-5. 删除“仅环境变量才可启动”的正常路径假设，更新文档和验证报告。
+2. 抽取 shared receiver health contract 和 `DesktopInstanceProbe` interface，由 composition 注入 discovery adapter；Launcher 不再依赖 Desktop Host 实现。
+3. 重构 Launcher 为异步深模块，给 Project composition 注入 Product Root 身份，并只通过校验后的绝对 SystemRoot Explorer 启动安装协议。
+4. 在已经存在可替换 Launcher seam 后编写 red production-entry characterization，并在同一个 runtime-integration Work Package 内接通 `WorkflowRuns.startChange()`、diagnostics 与 Trajectory/OTLP 映射。
+5. 增加安装协议和源码构建产物，让 Windows E2E 穿过真实协议 handler，并用 public CLI 证明无 handler 时 Run/远端 OTLP 继续。
+6. 固定并验证已持久化外部 Host Outcome 的稳定内容重放语义。
+7. 删除“仅环境变量才可启动”的正常路径假设，更新文档和验证报告。
 
 Build Plan 不得把只有跨越 `WorkflowRuns` 生产入口后才能 green 的测试放入仅授权 Launcher/Shared 文件的前置包。任务编号表达规格追踪身份，不表达执行顺序；`Blocked by` 才是 Runtime 生成 Work Package 的权威依赖。
 
-回滚以 Git commit 为边界。若安装协议在 Windows 上不能可靠传递有界上下文，停止发布协议部分，保留源码直接启动和明确 unavailable 诊断，不回退到静默或命令字符串拼接。
+回滚以 Git commit 为边界。若安装协议在 Windows 上不能可靠传递有界上下文，停止发布协议部分，保留源码直接启动和明确 unavailable 诊断，不回退到静默、裸 executable 或命令字符串拼接。若 Host Outcome 稳定等价规则被证明过宽，只回滚该比较与复用提交并恢复严格冲突；不得删除既有 checkpoint/Outcome，也不得通过重放 Host 副作用“修复”历史状态。
 
 ## Risks / Trade-offs
 
@@ -101,6 +122,8 @@ Build Plan 不得把只有跨越 `WorkflowRuns` 生产入口后才能 green 的�
 - **构建 CLI 时同时构建 Desktop 增加耗时**：换取源码自举的确定性。桌面依赖下载仍由显式安装/prepare 管理，不在每次 Run 临时构建。
 - **操作系统协议只证明请求被接受**：Receiver readiness 由现有 discovery/telemetry 独立呈现，不把 UI 可用性伪装成 Run Gate。
 - **已有实例与首次启动存在竞态**：Electron single-instance lock 是唯一 Shell owner；重复请求只交付上下文，不能创建第二个有效 Host/Receiver。
+- **Windows handler E2E 会触碰当前用户 registry**：测试必须先快照既有值、只操作精确 `HKCU\Software\Classes\repoctopus` 测试范围并在 finally 恢复；发现非测试安装或无法证明可恢复时跳过破坏性步骤并 fail closed，不能删除未知用户配置。
+- **Outcome 等价比较遗漏未来字段**：canonical comparison 默认包含所有字段，未来新增稳定字段会自动参与冲突判断；只有显式列出的 Runtime 时间字段可忽略。
 
 ## Assumptions and STOP Conditions
 
@@ -110,3 +133,5 @@ Build Plan 不得把只有跨越 `WorkflowRuns` 生产入口后才能 green 的�
 - **ASSUMPTION — NSIS 协议登记可在首个正式支持的 Windows 10/11 x64 环境稳定工作**：必须以干净安装 E2E 证明，不能只检查 builder 配置。
 - **STOP — 激活需要 shell 字符串拼接**：若实现只能通过未转义命令字符串启动 URL 或 executable，停止并改用参数数组或受支持 OS API。
 - **STOP — 激活污染领域状态**：若接入要求把 GUI readiness 变成 phase Gate、Run status 或 Engine dependency，停止并保持应用级 best-effort 边界。
+- **STOP — 协议 E2E 绕过 handler**：若测试只把 URL 作为 `Repoctopus.exe` 参数传入，停止并改为真实 Explorer/registry handler 链路。
+- **STOP — Outcome 重放需要再次调用 Host**：若恢复无法在原 invocation 与持久 Outcome 上继续，停止并进入 reconcile，不能重放未知外部副作用。
