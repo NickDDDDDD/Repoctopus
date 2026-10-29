@@ -102,14 +102,14 @@ function lifecycleState(snapshot: ChangeLifecycleSnapshot): ChangeLifecycleState
 }
 
 interface WorkExecutionRetirementFact {
-  reason: 'workspace-intent-revision';
+  reason: 'workspace-intent-revision' | 'lifecycle-work-changed';
   retiredWorkId: string;
   retiredCheckEpoch: number;
   nextWorkId: string | null;
   nextCheckEpoch: number;
 }
 
-function retireWorkspaceIntentExecution(
+function retireMismatchedExecution(
   state: RunState,
   snapshot: ChangeLifecycleSnapshot,
   observation: ChangeLifecycleObservation,
@@ -117,9 +117,6 @@ function retireWorkspaceIntentExecution(
   const execution = state.workExecution;
   if (
     !execution ||
-    !['workspace-intent-revision-required', 'workspace-intent-revised'].includes(
-      observation.kind,
-    ) ||
     (execution.workId === snapshot.currentWork?.workId &&
       execution.checkEpoch === snapshot.checkEpoch)
   ) {
@@ -130,7 +127,11 @@ function retireWorkspaceIntentExecution(
   return {
     state: stateWithoutExecution,
     fact: {
-      reason: 'workspace-intent-revision',
+      reason: ['workspace-intent-revision-required', 'workspace-intent-revised'].includes(
+        observation.kind,
+      )
+        ? 'workspace-intent-revision'
+        : 'lifecycle-work-changed',
       retiredWorkId: execution.workId,
       retiredCheckEpoch: execution.checkEpoch,
       nextWorkId: snapshot.currentWork?.workId ?? null,
@@ -485,7 +486,7 @@ export class WorkflowRunCoordinator {
       if (!reduced.fact) return { value: undefined };
       const timestamp = this.clock().toISOString();
       const { status, ...changeLifecycle } = reduced.snapshot;
-      const retirement = retireWorkspaceIntentExecution(state, reduced.snapshot, observation);
+      const retirement = retireMismatchedExecution(state, reduced.snapshot, observation);
       const nextState: RunState = {
         ...retirement.state,
         status,

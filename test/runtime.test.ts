@@ -3,7 +3,9 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { WorkflowRunCoordinator } from '../domains/runtime/workflow-runs.js';
 import { createChangeLifecycleSnapshot } from '../domains/change-lifecycle/definition.js';
 import {
+  createBuildConfigurationProposal,
   createBuildProtocolState,
+  createExecutionWorkspaceBinding,
   createExecutionWorkspaceIntent,
 } from '../domains/change-lifecycle/build-protocol.js';
 import { createBuildActionWork } from '../domains/change-lifecycle/build-work.js';
@@ -189,7 +191,152 @@ describe('Repoctopus runtime', () => {
     });
 
     await runtime.acceptChangeObservation(runId, observation);
-    expect((await store.loadTrajectory(runId))).toHaveLength(trajectory.length);
+    expect(await store.loadTrajectory(runId)).toHaveLength(trajectory.length);
+  });
+
+  it('retires a completed execution whenever the lifecycle replaces its current Work', async () => {
+    const workspace = await temporaryDirectory('repoctopus-lifecycle-execution-runtime-');
+    cleanup.push(workspace);
+    const store = new FileRuntimeStore(workspace);
+    const runtime = new WorkflowRunCoordinator(store, { async export() {} }, compositionFixture());
+    const runId = 'change-team-configure-wait';
+    const intent = createExecutionWorkspaceIntent({
+      workspaceId: 'team',
+      changeId: 'configure-wait',
+      isolation: 'current',
+    });
+    const planningDigest = `sha256:${'1'.repeat(64)}` as const;
+    const configureWork = createBuildActionWork({
+      runId,
+      checkEpoch: 4,
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      kind: 'build.configure',
+      actionSkill: {
+        schemaVersion: 1,
+        name: 'repoctopus-build-configure',
+        provider: 'repoctopus-builtins',
+        invocation: { modelInvocable: true, userInvocable: false },
+        contentDigest: `sha256:${'2'.repeat(64)}`,
+        resourceManifestDigest: `sha256:${'3'.repeat(64)}`,
+      },
+      augmentationSkills: [],
+      compositionDigest: compositionFixture().compositionDigest,
+      projectConfigDigest: `sha256:${'4'.repeat(64)}`,
+      projectSnapshotDigest: projectFixture({ projectId: 'team' }).digest,
+      workspaceRepositoryId: 'workspace',
+      repositoryIds: ['workspace'],
+      stableInput: { planningDigest },
+    });
+    await runtime.start({
+      workflow: workflowFixture(),
+      projectSnapshot: projectFixture({ projectId: 'team' }),
+      runId,
+      changeLifecycle: {
+        ...createChangeLifecycleSnapshot({
+          identity: { workspaceId: 'team', changeId: 'configure-wait', runId },
+        }),
+        revision: 4,
+        checkEpoch: 4,
+        phase: 'build',
+        status: 'running',
+        currentWork: configureWork,
+        workspaceIntent: intent,
+        planningDigest,
+        buildProtocol: createBuildProtocolState({ runId, planningDigest, workspaceIntent: intent }),
+      },
+    });
+    const checkpoint: WorkExecutionCheckpoint = {
+      schemaVersion: 2,
+      workId: configureWork.workId,
+      attempt: 1,
+      checkEpoch: 4,
+      intentId: 'intent-configure-wait',
+      claimToken: `sha256:${'5'.repeat(64)}`,
+      inputDigest: configureWork.inputDigest,
+      packet: {
+        schemaVersion: 1,
+        packetId: `sha256:${'6'.repeat(64)}`,
+        packetDigest: `sha256:${'7'.repeat(64)}`,
+        contextDigest: `sha256:${'8'.repeat(64)}`,
+      },
+      status: 'validated',
+      continuation: 'ask',
+      updatedAt: '2026-10-30T00:00:00.000Z',
+    };
+    await store.commitGuarded(runId, ({ state, trajectory }) => {
+      const nextState = {
+        ...state,
+        workExecution: checkpoint,
+        stateVersion: state.stateVersion + 1,
+        updatedAt: checkpoint.updatedAt,
+      };
+      return {
+        state: nextState,
+        event: {
+          schemaVersion: 1,
+          sequence: trajectory.length + 1,
+          eventId: 'seed-validated-build-configure',
+          timestamp: checkpoint.updatedAt,
+          type: 'validator.completed',
+          runId,
+          stateVersion: nextState.stateVersion,
+          compositionDigest: nextState.composition.compositionDigest,
+          data: { workId: configureWork.workId },
+        },
+        value: undefined,
+      };
+    });
+    const binding = createExecutionWorkspaceBinding({
+      intent,
+      repositories: [
+        {
+          repositoryId: 'workspace',
+          checkoutPath: 'C:/workspace',
+          branch: 'main',
+          head: '1'.repeat(40),
+          worktreeId: null,
+          workspaceOwned: true,
+        },
+      ],
+    });
+    const proposal = createBuildConfigurationProposal({
+      intent,
+      binding,
+      executionMode: 'autonomous',
+      tddMode: 'tdd',
+      reviewMode: 'standard',
+      hostId: 'external:cli:test',
+      hostCapabilities: ['build.autonomous', 'repository.read'],
+    });
+
+    await runtime.acceptChangeObservation(runId, {
+      kind: 'build-configuration-proposed',
+      proposal,
+      requestId: 'configuration:test',
+      reason: 'Approve the immutable Build execution configuration',
+    });
+
+    const waiting = await store.loadRun(runId);
+    expect(waiting).not.toHaveProperty('workExecution');
+    expect(waiting).toMatchObject({
+      status: 'waiting',
+      changeLifecycle: {
+        phase: 'build',
+        checkEpoch: 5,
+        currentWork: null,
+        waitCondition: { waitId: 'build-configuration:configuration:test' },
+      },
+    });
+    expect((await store.loadTrajectory(runId)).at(-1)?.data).toMatchObject({
+      observationKind: 'build-configuration-proposed',
+      executionRetirement: {
+        reason: 'lifecycle-work-changed',
+        retiredWorkId: configureWork.workId,
+        retiredCheckEpoch: 4,
+        nextWorkId: null,
+        nextCheckEpoch: 5,
+      },
+    });
   });
 
   it('binds the first Skill use to Run, Checkpoint, and Trajectory idempotently', async () => {

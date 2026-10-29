@@ -1399,6 +1399,24 @@ export class WorkflowRuns extends Service {
           const current = state;
           if (state.changeLifecycle.phase === 'open') {
             if (!state.changeLifecycle.currentWork) {
+              const wait = state.changeLifecycle.waitCondition;
+              if (
+                state.status === 'waiting' &&
+                wait?.kind === 'human-decision' &&
+                wait.waitId.startsWith('workspace-intent:')
+              ) {
+                return {
+                  value: await this.coordinator.status(runId),
+                  diagnostics: [
+                    {
+                      level: 'info',
+                      code: 'change.workspace-intent-decision-pending',
+                      message:
+                        'Workspace intent revision is waiting for its trusted Human Decision',
+                    },
+                  ],
+                };
+              }
               return this.advanceOpenGate(state, signal);
             }
             if (

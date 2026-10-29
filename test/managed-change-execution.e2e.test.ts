@@ -1,8 +1,9 @@
 import { execFile } from 'node:child_process';
-import { mkdir, readdir, rename, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
+import { build } from 'esbuild';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { bootProjectComposition } from '../app/boot/bootstrap.js';
@@ -455,19 +456,13 @@ describe('managed Change execution production composition', () => {
             status: 'blocked',
             currentWork: null,
           },
-          continuation: { reason: 'validator-pending' },
+          continuation: { reason: 'transition-pending' },
         });
-        expect((await status()).state.workExecution).toMatchObject({
-          status: 'outcome',
-          workId: designWorkId,
-        });
+        expect((await status()).state.workExecution).toBeUndefined();
         const waiting = await next();
         transientDesignFailure.mockRestore();
         expect(waiting.value.changeLifecycle).toMatchObject({ phase: 'design', status: 'waiting' });
-        expect((await status()).state.workExecution).toMatchObject({
-          status: 'outcome',
-          workId: designWorkId,
-        });
+        expect((await status()).state.workExecution).toBeUndefined();
         const approval = await application.context.commandRouter.execute<
           { changeId: string },
           SpecificationApprovalState | null
@@ -585,14 +580,7 @@ describe('managed Change execution production composition', () => {
           });
           afterPlanValidation = await next();
           const accepted = await status();
-          expect(accepted.state.workExecution).toMatchObject({
-            workId: planInvocation.packet.work.workId,
-            attempt: planInvocation.packet.claim.attempt,
-            checkEpoch: planInvocation.packet.claim.checkEpoch,
-            status: 'validated',
-            acceptedSubmission: { submissionId: 'corrected-build-plan-1' },
-          });
-          expect(accepted.state.workExecution?.rejectedSubmissions).toHaveLength(1);
+          expect(accepted.state.workExecution).toBeUndefined();
         }
         capture = installHost();
         let afterPlan: RunStatusView;
@@ -680,12 +668,7 @@ describe('managed Change execution production composition', () => {
           );
           nextWorkPersistenceInterruption.mockRestore();
           afterFirstPackage = await status();
-          expect(afterFirstPackage.state.workExecution).toMatchObject({
-            status: 'validated',
-          });
-          expect(afterFirstPackage.state.workExecution?.workId).not.toBe(
-            afterFirstPackage.changeLifecycle?.currentWork?.workId,
-          );
+          expect(afterFirstPackage.state.workExecution).toBeUndefined();
 
           await restartApplication();
 
@@ -843,13 +826,7 @@ describe('managed Change execution production composition', () => {
           });
           afterCheck = await next();
           const accepted = await status();
-          expect(accepted.state.workExecution).toMatchObject({
-            workId: checkInvocation.packet.work.workId,
-            attempt: checkInvocation.packet.claim.attempt,
-            checkEpoch: checkInvocation.packet.claim.checkEpoch,
-            status: 'validated',
-            acceptedSubmission: { submissionId: 'corrected-build-check-1' },
-          });
+          expect(accepted.state.workExecution).toBeUndefined();
         }
         expect(afterCheck.value.changeLifecycle).toMatchObject({
           phase: 'verify',
@@ -1289,6 +1266,7 @@ describe('managed Change execution production composition', () => {
     );
     for (const key of environmentKeys) process.env[key] = environment[key];
 
+    let decisionDriver: string | null = null;
     let application = await bootProjectComposition(productRoot, workspace);
     const installHost = () =>
       installCapturingWorkExecutionHost({
@@ -1473,16 +1451,31 @@ describe('managed Change execution production composition', () => {
         expect(pulled.result?.state.workExecution).toBeUndefined();
       }
 
-      const decisionDriver = path.join(
+      const decisionDriverSource = path.join(
         productRoot,
         'test',
         'fixtures',
-        'workspace-intent-recovery-driver.mjs',
+        'workspace-intent-recovery-driver.ts',
       );
+      decisionDriver = path.join(
+        productRoot,
+        '.repoctopus',
+        `workspace-intent-recovery-driver-${path.basename(root)}.mjs`,
+      );
+      await mkdir(path.dirname(decisionDriver), { recursive: true });
+      await build({
+        entryPoints: [decisionDriverSource],
+        outfile: decisionDriver,
+        bundle: true,
+        packages: 'external',
+        platform: 'node',
+        target: 'node22',
+        format: 'esm',
+      });
       for (let index = 0; index < 2; index += 1) {
         const invalid = await execFileAsync(
           process.execPath,
-          [decisionDriver, workspace, runId, 'current'],
+          [decisionDriver, workspace, runId, 'current', productRoot],
           { cwd: workspace, env: environment, maxBuffer: 1024 * 1024 },
         );
         expect(JSON.parse(invalid.stdout)).toMatchObject({
@@ -1496,7 +1489,7 @@ describe('managed Change execution production composition', () => {
       }
       const revised = await execFileAsync(
         process.execPath,
-        [decisionDriver, workspace, runId, 'worktree'],
+        [decisionDriver, workspace, runId, 'worktree', productRoot],
         { cwd: workspace, env: environment, maxBuffer: 1024 * 1024 },
       );
       expect(JSON.parse(revised.stdout)).toMatchObject({
@@ -1524,6 +1517,7 @@ describe('managed Change execution production composition', () => {
     } finally {
       capture.dispose();
       await application.close();
+      if (decisionDriver) await rm(decisionDriver, { force: true });
       for (const key of environmentKeys) {
         const previous = previousEnvironment[key];
         if (previous === undefined) delete process.env[key];

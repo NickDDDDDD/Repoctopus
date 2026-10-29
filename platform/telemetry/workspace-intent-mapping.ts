@@ -14,7 +14,7 @@ const BOUNDED_BINDING_ERROR_CODES = new Set([
   'worktree-ownership-missing',
 ]);
 const BOUNDED_ISOLATIONS = new Set(['current', 'branch', 'worktree']);
-const BOUNDED_RETIREMENT_REASONS = new Set(['workspace-intent-revision']);
+const BOUNDED_RETIREMENT_REASONS = new Set(['workspace-intent-revision', 'lifecycle-work-changed']);
 
 function record(value: unknown): Record<string, unknown> | undefined {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
