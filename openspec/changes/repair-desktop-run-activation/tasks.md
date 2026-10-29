@@ -3,12 +3,12 @@
 ## 1. 固定断链并定义启动契约
 
 - [ ] 1.1 增加生产入口 characterization test，证明 `run.change.start` 当前未调用 Launcher、未返回 Desktop diagnostic，且 catalog membership 不能满足验收。
-      **Blocked by:** None
+      **Blocked by:** 2.2, 2.3
       **Acceptance:** 新断言在旧实现上失败，并精确定位 `WorkflowRuns.startChange` 到 Launcher 的缺失调用
       **Verification:** 单独运行该测试并保存 red 失败摘要；实现后重跑为 green
       **Requirements:** desktop-observability-dashboard#Windows-开发-Run-自动激活单实例桌面应用
 - [ ] 1.2 定义 `DesktopLaunchTarget`、`DesktopActivationResult`、reason enum 和稳定诊断映射，限制所有字段与文本上限。
-      **Blocked by:** 1.1
+      **Blocked by:** None
       **Acceptance:** schema/类型测试拒绝路径、命令正文和未知 reason；四类结果具有确定诊断 code
       **Verification:** 运行 Launcher 契约测试与 TypeScript typecheck
       **Requirements:** development-telemetry#桌面激活结果形成有界观测事实
@@ -39,7 +39,7 @@
 ## 3. 接通 Change Run 生产入口
 
 - [ ] 3.1 在 `WorkflowRuns.startChange()` 成功创建/恢复 Run 后调用 Launcher，并传递 Runtime 确认的 Workspace/change/run identity。
-      **Blocked by:** 2.2, 2.3
+      **Blocked by:** 1.1
       **Acceptance:** composition 集成测试从 `run.change.start` 捕获一次精确调用；generic run、status、doctor 和参数错误零调用
       **Verification:** 运行生产 Command Router → WorkflowRuns → Launcher 纵切测试
       **Requirements:** desktop-observability-dashboard#Windows-开发-Run-自动激活单实例桌面应用, plugin-composition#生产组合中的桌面-Launcher-必须被权威用例消费

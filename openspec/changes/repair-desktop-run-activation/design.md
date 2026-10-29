@@ -85,11 +85,13 @@ Catalog membership 和直接 `new DesktopLauncher()` 的测试只能作为补充
 
 ## Migration Plan
 
-1. 先增加失败的生产入口测试和目标解析契约。
+1. 先定义目标解析契约与 URL/argument context schema，使首个 Work Package 能在自身写入边界内独立 green。
 2. 重构 Launcher 为异步深模块，并给 Project composition 注入 Product Root 身份。
-3. 在 `WorkflowRuns.startChange()` 接入 activation 与 diagnostics，再增加 Trajectory/OTLP 映射。
+3. 在已经存在可替换 Launcher seam 后编写 red production-entry characterization，并在同一个 runtime-integration Work Package 内接通 `WorkflowRuns.startChange()`、diagnostics 与 Trajectory/OTLP 映射。
 4. 增加安装协议和源码构建产物，完成 Windows 首次/二次启动 E2E。
 5. 删除“仅环境变量才可启动”的正常路径假设，更新文档和验证报告。
+
+Build Plan 不得把只有跨越 `WorkflowRuns` 生产入口后才能 green 的测试放入仅授权 Launcher/Shared 文件的前置包。任务编号表达规格追踪身份，不表达执行顺序；`Blocked by` 才是 Runtime 生成 Work Package 的权威依赖。
 
 回滚以 Git commit 为边界。若安装协议在 Windows 上不能可靠传递有界上下文，停止发布协议部分，保留源码直接启动和明确 unavailable 诊断，不回退到静默或命令字符串拼接。
 
