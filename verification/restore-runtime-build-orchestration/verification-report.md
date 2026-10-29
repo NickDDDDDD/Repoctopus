@@ -3,10 +3,10 @@
 ## Reproducible subject
 
 - Change: `restore-runtime-build-orchestration`
-- Tested implementation commit: `e37a13920de6853ef856d1fd93c77fb5ee954499`
+- Tested implementation commit: `55612914685abc51e62ee2d776f4435d1be9bbed`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `935488`
-- Package SHA-256: `6c9f9fb15aa9746c0acaf43df62b812ee66a2d5f3747d396ac120d3806937334`
+- Package bytes: `935751`
+- Package SHA-256: `26d75a3789de6fdf0e58a2f05085be0be95e0e723b5fa045a026254de2f32d45`
 - Lifecycle definition: `repoctopus-change@4.2.0`
 - Lifecycle definition digest: `sha256:c84278b1e82a0146759486ef68808c4027d03d211481793149af53e1b720e7fb`
 - Verification runId: `change-verification-workspace-restore-runtime-build-orchestration-9fda2eb7bf05fdf5`
@@ -62,6 +62,12 @@ Runtime invalidated the stale verification, returned through the ordinary Build 
 and retained the historical invalidation in Build Protocol. Acceptance of the replacement Plan now
 clears the transient `verificationInvalidation`, so the next Plan Evidence Work is a valid snapshot
 instead of a permanent invariant failure.
+
+Plan and Check additionally recover the crash window between accepted Outcome validation and
+lifecycle projection. A `validated` checkpoint is reusable only when its validator identity,
+accepted submission, succeeded Action Outcome and receipt all match the current Work. Runtime then
+replays only the deterministic lifecycle projection; it never invokes the Host or repeats its side
+effects. End-to-end fault injection covers both boundaries across application restart.
 
 ## Runtime authority
 
