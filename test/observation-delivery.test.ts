@@ -86,7 +86,11 @@ describe('desktop observation delivery slice', () => {
         runId: 'run-1',
       });
       expect(launch.status).toBe('unavailable');
-      expect(typeof launch.warning).toBe('string');
+      expect(launch).toEqual({
+        status: 'unavailable',
+        targetKind: 'none',
+        reason: 'target-unavailable',
+      });
     } finally {
       await Promise.all([remoteServer.close(), desktopServer.close()]);
       await context.fiber.dispose();
