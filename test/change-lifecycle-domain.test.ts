@@ -1064,6 +1064,46 @@ describe('Change lifecycle domain', () => {
       verificationInvalidation: { kind: 'implementation-drift' },
     });
     expect(afterVerify.snapshot.identity.runId).toBe(initialSnapshot().identity.runId);
+
+    const revisedPlan = createBuildPlan({
+      runId: initialSnapshot().identity.runId,
+      revision: 2,
+      configuration,
+      planningDigest: tasks.digest,
+      tasks,
+      candidate: {
+        packages: [
+          {
+            packageKey: 'implementation',
+            taskIds: ['1.1'],
+            repositoryIds: ['workspace'],
+            writeScopes: [{ repositoryId: 'workspace', paths: ['src/**'] }],
+            acceptanceRefs: tasks.tasks[0]!.acceptanceCriteria.map(
+              (criterion) => criterion.acceptanceId,
+            ),
+            expectedOutcomes: ['managed-behavior-passes'],
+            validatorProfile: 'build.package-valid',
+            dependsOn: [],
+          },
+        ],
+      },
+    });
+    const afterReplan = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current: afterVerify.snapshot,
+      observation: { kind: 'build-plan-accepted', plan: revisedPlan },
+    });
+    expect(afterReplan.snapshot).toMatchObject({
+      phase: 'build',
+      currentWork: null,
+      buildProtocol: {
+        currentAction: 'plan-evidence',
+        plan: { revision: 2 },
+        invalidations: [{ source: 'verify' }],
+      },
+    });
+    expect(afterReplan.snapshot.verificationInput).toBeUndefined();
+    expect(afterReplan.snapshot.verificationInvalidation).toBeUndefined();
   });
 
   it('keeps execution status orthogonal to every active phase', () => {

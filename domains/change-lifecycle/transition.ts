@@ -1154,6 +1154,7 @@ export function evolveChangeLifecycle(options: {
         currentWork: null,
         waitCondition: null,
         blocker: null,
+        verificationInvalidation: null,
         buildProtocol,
       },
     });
