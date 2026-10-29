@@ -36,6 +36,7 @@ describe('project composition assembly', () => {
         'delivery-file',
         'specification-openspec',
         'consistency-reconciler',
+        'desktop-instance-probe',
         'desktop-launcher',
         'observation-delivery',
       ]),

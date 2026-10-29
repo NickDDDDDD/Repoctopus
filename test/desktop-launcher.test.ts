@@ -4,10 +4,8 @@ import path from 'node:path';
 import { Context } from '@deepseek-ai/cordis';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  DesktopLauncher,
-  type DesktopProcessAdapter,
-} from '../services/desktop-launcher.js';
+import { DesktopLauncher, type DesktopProcessAdapter } from '../services/desktop-launcher.js';
+import type { DesktopInstanceProbe } from '../app/desktop/shared/instance-probe.js';
 
 const launchContext = {
   schemaVersion: 1 as const,
@@ -35,16 +33,23 @@ function harness(options: LauncherHarnessOptions = {}) {
   const productRoot = path.resolve('C:\\repoctopus-product');
   const process = options.process ?? vi.fn();
   const existingPaths = new Set(options.existingPaths ?? []);
+  const environment = options.environment ?? { SystemRoot: 'C:\\Windows' };
+  const instanceProbe: DesktopInstanceProbe = {
+    isAvailable: () => Promise.resolve(options.existingInstance ?? false),
+  };
   const launcher = new DesktopLauncher(context, {
     productRoot,
-    environment: options.environment ?? {},
+    environment,
     platform: 'win32',
     process,
-    pathExists: (candidate) =>
-      Promise.resolve(existingPaths.has(path.relative(productRoot, candidate))),
-    probeExistingInstance: () => Promise.resolve(options.existingInstance ?? false),
-    protocolHandlerAvailable: () =>
-      Promise.resolve(options.protocolHandlerAvailable ?? true),
+    pathExists: (candidate) => {
+      if (candidate === path.win32.join(environment.SystemRoot ?? '', 'explorer.exe')) {
+        return Promise.resolve(existingPaths.has('system-explorer') || existingPaths.size === 0);
+      }
+      return Promise.resolve(existingPaths.has(path.relative(productRoot, candidate)));
+    },
+    instanceProbe,
+    protocolHandlerAvailable: () => Promise.resolve(options.protocolHandlerAvailable ?? true),
     launchDeadlineMs: options.launchDeadlineMs ?? 50,
   });
   return { context, launcher, process, productRoot };
@@ -81,26 +86,29 @@ describe('DesktopLauncher', () => {
       name: 'installed protocol',
       options: {},
       expectedKind: 'installed-protocol',
-      expectedExecutable: 'explorer.exe',
+      expectedExecutable: 'C:\\Windows\\explorer.exe',
     },
-  ])('uses the fixed target priority for $name', async ({ options, expectedKind, expectedExecutable }) => {
-    const child = new FakeChild();
-    const process = vi.fn<DesktopProcessAdapter>(() => child);
-    const instance = harness({ ...options, process });
-    const activation = instance.launcher.activate(launchContext);
-    await vi.waitFor(() => expect(process).toHaveBeenCalledOnce());
-    child.emit('spawn');
+  ])(
+    'uses the fixed target priority for $name',
+    async ({ options, expectedKind, expectedExecutable }) => {
+      const child = new FakeChild();
+      const process = vi.fn<DesktopProcessAdapter>(() => child);
+      const instance = harness({ ...options, process });
+      const activation = instance.launcher.activate(launchContext);
+      await vi.waitFor(() => expect(process).toHaveBeenCalledOnce());
+      child.emit('spawn');
 
-    await expect(activation).resolves.toEqual({
-      status: 'started',
-      targetKind: expectedKind,
-      reason: 'new-instance',
-    });
-    expect(process).toHaveBeenCalledOnce();
-    expect(process.mock.calls[0]?.[0]).toBe(expectedExecutable);
-    expect(process.mock.calls[0]?.[1]).toEqual(expect.any(Array));
-    await instance.context.fiber.dispose();
-  });
+      await expect(activation).resolves.toEqual({
+        status: 'started',
+        targetKind: expectedKind,
+        reason: 'new-instance',
+      });
+      expect(process).toHaveBeenCalledOnce();
+      expect(process.mock.calls[0]?.[0]).toBe(expectedExecutable);
+      expect(process.mock.calls[0]?.[1]).toEqual(expect.any(Array));
+      await instance.context.fiber.dispose();
+    },
+  );
 
   it('returns a bounded missing-artifact result instead of leaking Product Root paths', async () => {
     const instance = harness({
@@ -126,6 +134,27 @@ describe('DesktopLauncher', () => {
     await instance.context.fiber.dispose();
   });
 
+  it.each([
+    ['missing SystemRoot', {}, []],
+    ['relative SystemRoot', { SystemRoot: 'Windows' }, []],
+    [
+      'conflicting SystemRoot variables',
+      { SystemRoot: 'C:\\Windows', SYSTEMROOT: 'D:\\Windows' },
+      [],
+    ],
+    ['inaccessible explorer', { SystemRoot: 'D:\\Windows' }, ['unrelated']],
+  ])('rejects an unsafe installed target with %s', async (_name, environment, existingPaths) => {
+    const instance = harness({ environment, existingPaths });
+
+    await expect(instance.launcher.activate(launchContext)).resolves.toEqual({
+      status: 'unavailable',
+      targetKind: 'installed-protocol',
+      reason: 'target-unavailable',
+    });
+    expect(instance.process).not.toHaveBeenCalled();
+    await instance.context.fiber.dispose();
+  });
+
   it('reports activated only when secure discovery found an existing instance', async () => {
     const child = new FakeChild();
     const process = vi.fn(() => child);
@@ -146,9 +175,9 @@ describe('DesktopLauncher', () => {
 
   it('maps synchronous throws and asynchronous errors exactly once', async () => {
     const thrown = harness({
-      process: (() => {
+      process: () => {
         throw new Error('private executable path');
-      }),
+      },
     });
     await expect(thrown.launcher.activate(launchContext)).resolves.toEqual({
       status: 'unavailable',
@@ -200,6 +229,7 @@ describe('DesktopLauncher', () => {
       productRoot: path.resolve('C:\\repoctopus-product'),
       platform: 'linux',
       process,
+      instanceProbe: { isAvailable: () => Promise.resolve(false) },
     });
     await expect(launcher.activate(launchContext)).resolves.toEqual({
       status: 'unsupported',

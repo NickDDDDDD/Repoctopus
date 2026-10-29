@@ -157,11 +157,8 @@ function projectSelections(
     { id: 'action-manual' },
     { id: 'action-work-contributors' },
     { id: 'workflow-source-file' },
-    runtimeSelection(
-      'desktop-launcher',
-      { productRoot },
-      { productRoot: PRODUCT_ROOT_IDENTITY },
-    ),
+    { id: 'desktop-instance-probe' },
+    runtimeSelection('desktop-launcher', { productRoot }, { productRoot: PRODUCT_ROOT_IDENTITY }),
     runtimeSelection(
       'observation-delivery',
       { workspaceRoot },
@@ -243,6 +240,7 @@ const BASE_REQUIRED_SERVICES = [
   'consistencyReview',
   'commandRouter',
   'delivery',
+  'desktopInstanceProbe',
   'evidenceAdapters',
   'evidenceCoordinator',
   'executionWorkspace',

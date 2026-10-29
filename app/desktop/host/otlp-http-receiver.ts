@@ -1,6 +1,8 @@
 import { timingSafeEqual } from 'node:crypto';
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 
+import { serializeDesktopReceiverHealth } from '../shared/receiver-health.js';
+
 export type OtlpSignal = 'trace' | 'log' | 'metric';
 
 export interface DesktopOtlpExport {
@@ -21,7 +23,6 @@ const SIGNAL_BY_PATH: Readonly<Record<string, OtlpSignal>> = {
   '/v1/logs': 'log',
   '/v1/metrics': 'metric',
 };
-const HEALTH_PROTOCOL = 'repoctopus.desktop.receiver-health/v1' as const;
 
 function response(response: ServerResponse, status: number, code: string): void {
   response.writeHead(status, {
@@ -45,9 +46,7 @@ function health(response: ServerResponse): void {
     'cache-control': 'no-store',
     connection: 'close',
   });
-  response.end(
-    JSON.stringify({ schemaVersion: 1, protocolVersion: HEALTH_PROTOCOL, pid: process.pid }),
-  );
+  response.end(serializeDesktopReceiverHealth(process.pid));
 }
 
 function requestContentType(request: IncomingMessage): 'json' | 'protobuf' | null {

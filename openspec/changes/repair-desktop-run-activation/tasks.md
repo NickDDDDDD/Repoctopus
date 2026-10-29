@@ -92,7 +92,7 @@
 
 ## 6. Build Check 返工闭环
 
-- [ ] 6.1 正式化并验证已持久化外部 Host Outcome 的稳定内容幂等重放。
+- [x] 6.1 正式化并验证已持久化外部 Host Outcome 的稳定内容幂等重放。
       **Blocked by:** None
       **Acceptance:** 同一 invocation 的等价重放保留原 `completedAt`、不重复 `work.host-completed` 并继续 Validator；status、summary、layers、result、findings 或 delegation receipts 任一漂移均 fail closed
       **Verification:** 运行 ManagedWorkExecutor 等价/冲突参数化测试与中断恢复进程测试

@@ -12,6 +12,7 @@ import {
   type ProcessOwnership,
 } from '../../../platform/process/process-identity.js';
 import type { DesktopReceiverConnection } from '../../../services/desktop-receiver.js';
+import { parseDesktopReceiverHealth } from '../shared/receiver-health.js';
 
 const execute = promisify(execFile);
 const PROTOCOL = 'repoctopus.desktop.receiver-discovery/v1' as const;
@@ -160,21 +161,11 @@ function windowsSecurity(environment: NodeJS.ProcessEnv): DesktopDiscoverySecuri
           cache: 'no-store',
           signal: AbortSignal.timeout(2_000),
         });
-        if (!response.ok || response.headers.get('content-type') !== 'application/json')
-          return null;
+        if (!response.ok) return null;
         const source = await response.text();
-        if (Buffer.byteLength(source, 'utf8') > 1_024) return null;
-        const value = JSON.parse(source) as Record<string, unknown>;
-        if (
-          Object.keys(value).sort().join(',') !== 'pid,protocolVersion,schemaVersion' ||
-          value.schemaVersion !== 1 ||
-          value.protocolVersion !== 'repoctopus.desktop.receiver-health/v1' ||
-          !Number.isSafeInteger(value.pid) ||
-          Number(value.pid) <= 0
-        ) {
-          return null;
-        }
-        return Number(value.pid);
+        return (
+          parseDesktopReceiverHealth(response.headers.get('content-type'), source)?.pid ?? null
+        );
       } catch {
         return null;
       }

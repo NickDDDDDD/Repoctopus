@@ -11,7 +11,7 @@ import {
   desktopLaunchContextUrl,
   type DesktopLaunchContext,
 } from '../app/desktop/shared/launch-context.js';
-import { DesktopReceiverDiscovery } from '../app/desktop/host/receiver-discovery.js';
+import type { DesktopInstanceProbe } from '../app/desktop/shared/instance-probe.js';
 
 export const DESKTOP_ACTIVATION_STATUSES = [
   'started',
@@ -55,7 +55,7 @@ export type DesktopLaunchTarget =
     }
   | {
       kind: 'installed-protocol';
-      executable: 'explorer.exe';
+      executable: string;
       arguments: readonly [string];
     };
 
@@ -81,8 +81,8 @@ export interface DesktopLauncherConfig {
   platform?: NodeJS.Platform;
   process?: DesktopProcessAdapter;
   pathExists?: (candidate: string) => Promise<boolean>;
-  probeExistingInstance?: () => Promise<boolean>;
-  protocolHandlerAvailable?: () => Promise<boolean>;
+  instanceProbe?: DesktopInstanceProbe;
+  protocolHandlerAvailable?: (systemRoot: string) => Promise<boolean>;
   launchDeadlineMs?: number;
 }
 
@@ -182,8 +182,8 @@ async function fileExists(candidate: string): Promise<boolean> {
 
 async function windowsProtocolHandlerAvailable(
   environment: NodeJS.ProcessEnv,
+  systemRoot: string,
 ): Promise<boolean> {
-  const systemRoot = environment.SystemRoot ?? environment.SYSTEMROOT ?? 'C:\\Windows';
   try {
     await executeFile(
       path.join(systemRoot, 'System32', 'reg.exe'),
@@ -194,6 +194,17 @@ async function windowsProtocolHandlerAvailable(
   } catch {
     return false;
   }
+}
+
+function windowsSystemRoot(environment: NodeJS.ProcessEnv): string | null {
+  const primary = environment.SystemRoot?.trim();
+  const secondary = environment.SYSTEMROOT?.trim();
+  if (primary && secondary && primary.toLowerCase() !== secondary.toLowerCase()) return null;
+  const candidate = primary || secondary;
+  if (!candidate || !path.win32.isAbsolute(candidate)) return null;
+  const normalized = path.win32.normalize(candidate);
+  if (normalized === path.win32.parse(normalized).root) return null;
+  return normalized;
 }
 
 type TargetResolution =
@@ -209,19 +220,18 @@ function unavailable(
 
 /** Best-effort application boundary: launcher failure is observability loss, never workflow failure. */
 export class DesktopLauncher extends Service {
+  static inject = ['desktopInstanceProbe'];
+
   private readonly environment: NodeJS.ProcessEnv;
   private readonly platform: NodeJS.Platform;
   private readonly productRoot: string;
   private readonly process: DesktopProcessAdapter;
   private readonly pathExists: (candidate: string) => Promise<boolean>;
-  private readonly probeExistingInstance: () => Promise<boolean>;
-  private readonly protocolHandlerAvailable: () => Promise<boolean>;
+  private readonly instanceProbe: DesktopInstanceProbe;
+  private readonly protocolHandlerAvailable: (systemRoot: string) => Promise<boolean>;
   private readonly launchDeadlineMs: number;
 
-  constructor(
-    context: Context,
-    config: DesktopLauncherConfig,
-  ) {
+  constructor(context: Context, config: DesktopLauncherConfig) {
     super(context, 'desktopLauncher');
     if (!config || !path.isAbsolute(config.productRoot)) {
       throw new Error('Desktop Launcher productRoot must be an absolute path');
@@ -231,22 +241,11 @@ export class DesktopLauncher extends Service {
     this.productRoot = path.resolve(config.productRoot);
     this.process = config.process ?? defaultProcessAdapter;
     this.pathExists = config.pathExists ?? fileExists;
-    this.probeExistingInstance =
-      config.probeExistingInstance ??
-      (async () => {
-        try {
-          const discovery = new DesktopReceiverDiscovery({
-            environment: this.environment,
-            platform: this.platform,
-          });
-          return (await discovery.discover()).status === 'available';
-        } catch {
-          return false;
-        }
-      });
+    this.instanceProbe = config.instanceProbe ??
+      context.get('desktopInstanceProbe') ?? { isAvailable: () => Promise.resolve(false) };
     this.protocolHandlerAvailable =
       config.protocolHandlerAvailable ??
-      (() => windowsProtocolHandlerAvailable(this.environment));
+      ((systemRoot) => windowsProtocolHandlerAvailable(this.environment, systemRoot));
     this.launchDeadlineMs = config.launchDeadlineMs ?? DEFAULT_LAUNCH_DEADLINE_MS;
     if (!Number.isSafeInteger(this.launchDeadlineMs) || this.launchDeadlineMs <= 0) {
       throw new Error('Desktop Launcher launchDeadlineMs must be a positive safe integer');
@@ -266,7 +265,7 @@ export class DesktopLauncher extends Service {
         reason: resolution.reason,
       };
     }
-    const existingInstance = await this.probeExistingInstance();
+    const existingInstance = await this.instanceProbe.isAvailable();
     return this.requestActivation(resolution.target, existingInstance);
   }
 
@@ -308,14 +307,22 @@ export class DesktopLauncher extends Service {
     if (electronExists || mainExists) {
       return unavailable('source', 'development-artifact-missing');
     }
-    if (!(await this.protocolHandlerAvailable())) {
+    const systemRoot = windowsSystemRoot(this.environment);
+    if (systemRoot === null) {
+      return unavailable('installed-protocol', 'target-unavailable');
+    }
+    const explorer = path.win32.join(systemRoot, 'explorer.exe');
+    if (!path.win32.isAbsolute(explorer) || !(await this.pathExists(explorer))) {
+      return unavailable('installed-protocol', 'target-unavailable');
+    }
+    if (!(await this.protocolHandlerAvailable(systemRoot))) {
       return unavailable('installed-protocol', 'protocol-handler-unavailable');
     }
     return {
       status: 'resolved',
       target: {
         kind: 'installed-protocol',
-        executable: 'explorer.exe',
+        executable: explorer,
         arguments: [desktopLaunchContextUrl(launchContext)],
       },
     };
