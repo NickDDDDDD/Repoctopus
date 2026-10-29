@@ -35,7 +35,7 @@
       **Blocked by:** 3.1
       **Acceptance:** rejected history、claim 与 correction 能力跨重启保留；Dashboard/OTLP 可还原纠正次数和最终结果
       **Requirements:** managed-work-execution#被校验拒绝的-host-submission-必须保持当前-work-可纠正
-- [ ] 3.3 运行严格 OpenSpec、相关 Vitest、typecheck、lint、generated/architecture/provenance 检查和完整 `npm run verify`；更新验证证据并清理临时文件。
+- [x] 3.3 运行严格 OpenSpec、相关 Vitest、typecheck、lint、generated/architecture/provenance 检查和完整 `npm run verify`；更新验证证据并清理临时文件。
       **Blocked by:** 3.2
       **Acceptance:** 所有命令通过，分支提交均已推送，当前 desktop Run 可通过受控恢复继续而无需 Store 手术
       **Requirements:** managed-work-execution#被校验拒绝的-host-submission-必须保持当前-work-可纠正

@@ -3,12 +3,12 @@
 ## Reproducible subject
 
 - Change: `restore-runtime-build-orchestration`
-- Tested implementation commit: `9e1629000aed1b303e63db124d844a0432f8d36c`
+- Tested implementation commit: `5f6bb675086f0004b007f2a7cea18fe9cd85c8a9`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `923759`
-- Package SHA-256: `22140997f5f5b09e85fc92f899d0242afd7ce3effa4a9dbce54fd2c7ca8914f2`
+- Package bytes: `932086`
+- Package SHA-256: `b82004e11d2c5185c8073d524df079f1bc222767119bfaca4e2da9d7e6dcc3b1`
 - Lifecycle definition: `repoctopus-change@4.2.0`
-- Lifecycle definition digest: `sha256:4bef956969843eb8862947abdedaf5de59d8aa34237debc3387996b8944e8952`
+- Lifecycle definition digest: `sha256:ce90da179b201e1824b559bf7a65a87e5b186a6a0bf82a70da0a907d12f94203`
 - Verification runId: `change-verification-workspace-restore-runtime-build-orchestration-9fda2eb7bf05fdf5`
 - Black-box runId: `change-managed-blackbox-managed-blackbox-a56af5c947f984ce`
 - Build Configuration: `build-configuration:984df01c5c917e6286a1e112`
@@ -26,8 +26,8 @@ Run on Windows with Node.js `24.21.0`:
 ```text
 npm run verify
   TypeScript, desktop TypeScript, ESLint, generated output, brand and architecture checks passed
-  141 test files passed; 541 tests passed and 1 skipped
-  provenance passed; OpenSpec strict validation passed 14 items with 0 failures
+  142 test files passed; 550 tests passed and 2 skipped
+  provenance passed; OpenSpec strict validation passed 15 items with 0 failures
   this report's commit ancestry and npm package checksum were reproduced
 
 npm run test:package-e2e
@@ -45,6 +45,13 @@ contract. Its final installed self-host replay exposed and fixed a batched proje
 defect without changing Runtime Action authority, lifecycle transitions, immutable Work bindings,
 or the DSH-derived Host-process slice. Provenance, multi-process tracer and managed black-box
 regressions all pass against the pinned product commit above.
+
+Build Plan Outcome correction now separates immutable Host submission from accepted Action Outcome.
+The Runtime validates candidate structure, authoritative Tasks, frozen inputs and lifecycle Validator
+before terminal acceptance. Correctable rejection keeps the same Work, claim, attempt, checkEpoch,
+invocation and packet; a new submission identity can correct it across process restart. Legacy
+premature terminal Plan outcomes recover through a guarded, idempotent migration only when the same
+deterministic rejection can be reproduced; incompatible states halt as `migration_required`.
 
 ## Runtime authority
 
@@ -82,7 +89,7 @@ Crash and response-loss coverage proves:
 
 ## Telemetry and anti-cheating evidence
 
-Trajectory and OTLP mappings cover phase, Build Action, Work claim, Host invocation, protected tool, Skill resolution/delivery/consumption, Validator, approval, Plan revision, delegation, continuation, and invalidation. Metric labels are bounded to action, execution mode, TDD mode, review mode, isolation, result, and known categories. Run, Task, package, repository, digest, free-form Skill, and Agent identities are excluded from metric labels.
+Trajectory and OTLP mappings cover phase, Build Action, Work claim, Host invocation, submission, rejection, correction, acceptance, processing error, protected tool, Skill resolution/delivery/consumption, Validator, approval, Plan revision, delegation, continuation, and invalidation. Metric labels are bounded to action, execution mode, TDD mode, review mode, isolation, result, reason code, and known categories. Run, Work, submission, Task, package, repository, digest, free-form Skill, diagnostic, and Agent identities are excluded from metric labels.
 
 Acceptance tests reject all known bypasses: legacy `task.implement`, Build adoption, special Repair Work, Task reopening, Host-selected next Action, mode switching, review disabling, out-of-scope Skills, repository escape, missing delegation receipts, unconsumed Skill content, and a fifth planning artifact.
 
