@@ -23,7 +23,7 @@ Desktop Host 在 `127.0.0.1` 的随机端口接收 OTLP/HTTP，并为每次 Host
 - 文件由当前 Windows 用户拥有，且 ACL 收紧到该用户；
 - 记录处于 freshness 窗口内；
 - PID 的进程创建身份仍与发布者一致；
-- 回环监听端口仍由该 PID 拥有。
+- 回环监听端口仍由该 PID 拥有；若 Windows 网络 compartment 隐藏端口表，Receiver 必须用短期 token 证明同一 PID。
 
 伪造、过期、进程复用、端口劫持或错误凭据都会 fail closed。Renderer 启用 sandbox 与 `contextIsolation`，关闭 Node integration，使用封闭 CSP；Preload 只公开固定的版本化 IPC allowlist。Cordis composition、Receiver 与 Projection 只存在于独立 Desktop Host，不在 Electron Main 或 Renderer 中运行。
 
@@ -53,3 +53,5 @@ Host 先将允许列表内的 envelope 追加到本地 journal，再发布新的
 4. 若 snapshot 或 journal 损坏，保留诊断后可清理本地投影目录并由仍在保留期内的 envelope 重建。
 
 首个正式支持范围是 Windows 10/11 x64。macOS、Linux 和 Windows ARM64 在本 change 中不承诺安装、托盘或生命周期支持。
+
+源码与安装态启动步骤见[启动或恢复 Desktop Dashboard](desktop-activation.md)。

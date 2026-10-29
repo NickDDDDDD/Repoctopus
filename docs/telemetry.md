@@ -14,7 +14,7 @@ node bin/repoctopus.js evidence run --workspace . --profile verify --json
 
 也可以分别使用 `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`、`OTEL_EXPORTER_OTLP_LOGS_ENDPOINT` 和 `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT`。两种方式都发送 Trace、Log、Metric；三个信号携带相同 envelope identity 与允许列表语义。
 
-开发中的 Desktop Host 通过 discovery 设置本机会话端点和短期凭据；手工冒烟可显式设置：
+正常的 Change Run 会自动启动或激活 Desktop，Runtime 再从受保护的 discovery 取得本机会话端点和短期凭据。只有在隔离的 Receiver 冒烟测试中才显式设置：
 
 ```powershell
 $env:REPOCTOPUS_DESKTOP_OTLP_ENDPOINT = 'http://127.0.0.1:4319'
@@ -22,6 +22,8 @@ $env:REPOCTOPUS_DESKTOP_OTLP_TOKEN = '<session-token>'
 ```
 
 只配置远端时只有 `remote` 目的地；同时配置上面两个变量时增加 `desktop` 目的地；设置 `REPOCTOPUS_DESKTOP_OTLP_MODE=paused` 会暂停并保留有界积压，设置为 `removed` 或清空 Desktop 端点会移除本地目的地。没有配置任何端点时事实仍然可以落入本地 envelope store，工作流结果不受影响。
+
+源码和安装态激活方法见[启动或恢复 Desktop Dashboard](desktop-activation.md)。桌面不可用只影响本地观测，不改变 Change Run 或远端目的地。
 
 ## 先落盘，再导出
 

@@ -130,7 +130,7 @@
       "source": "domains/comet-classic/classic-guard.ts",
       "sourceSha256": "9d34982be2edce5a1ceb067310b4e82610beb6a874cd1ddbfa0fb5898ac36108",
       "target": "domains/runtime/workflow-runs.ts",
-      "sha256": "213d52fb5a5a84c80ec8058a0ccd5c7a74279cc117ed75517a78d34da58adc01",
+      "sha256": "b4cc6cae964cbd48a290e1d8d22a93e422d3a364ae245f1632d170818b29a1ef",
       "adoption": "modified"
     },
     {
