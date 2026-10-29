@@ -56,17 +56,17 @@
 
 ## 4. 闭合源码自举与 Windows 安装
 
-- [ ] 4.1 让标准源码构建生成 Desktop runtime artifact，并验证固定 Electron executable 的 Product Root 解析。
+- [x] 4.1 让标准源码构建生成 Desktop runtime artifact，并验证固定 Electron executable 的 Product Root 解析。
       **Blocked by:** 2.1
       **Acceptance:** 干净 `npm ci && npm run build` 后无需 `REPOCTOPUS_DESKTOP_EXECUTABLE` 即可解析开发启动目标；生成检查能发现 stale artifact
       **Verification:** 在临时 checkout 运行干净安装、标准 build 与 generated check
       **Requirements:** desktop-observability-dashboard#Windows-开发-Run-自动激活单实例桌面应用
-- [ ] 4.2 在 NSIS 配置登记 Repoctopus 激活协议，并让 Electron Main 把首次/第二实例 URL 上下文交给同一 single-instance owner。
+- [x] 4.2 在 NSIS 配置登记 Repoctopus 激活协议，并让 Electron Main 把首次/第二实例 URL 上下文交给同一 single-instance owner。
       **Blocked by:** 1.3, 2.2
       **Acceptance:** package contents/config 检查和 Windows 安装 E2E 证明首次启动与已有实例均聚焦正确 change，且只存在一个有效 Host/Receiver
       **Verification:** 运行 desktop package check 与 Windows install/second-instance E2E
       **Requirements:** desktop-observability-dashboard#Windows-开发-Run-自动激活单实例桌面应用
-- [ ] 4.3 建立公共 CLI 自举 tracer：启动真实 Change Run、观察 Desktop 进程/上下文/Receiver，并验证 Dashboard 关闭时 Run 与远端 OTLP 不受影响。
+- [x] 4.3 建立公共 CLI 自举 tracer：启动真实 Change Run、观察 Desktop 进程/上下文/Receiver，并验证 Dashboard 关闭时 Run 与远端 OTLP 不受影响。
       **Blocked by:** 3.4, 4.1, 4.2
       **Acceptance:** 进程外测试覆盖首次启动、二次转交、无 handler warning 和远端继续投递；测试结束无 Electron/Host/receiver/discovery 临时残留
       **Verification:** 运行公共 CLI tracer E2E，并执行 teardown 后进程/文件残留断言
