@@ -92,6 +92,11 @@ import {
 } from '../domains/delivery/publication-receipt.js';
 import { lifecycleContributorSnapshot } from '../domains/change-lifecycle/contributors.js';
 import { createLifecyclePhaseWork } from '../domains/change-lifecycle/phase-work.js';
+import {
+  desktopActivationDiagnostic,
+  parseDesktopActivationResult,
+  type DesktopActivationResult,
+} from './desktop-launcher.js';
 
 export interface StartChangeRunInput {
   workspaceId: string;
@@ -167,6 +172,7 @@ export class WorkflowRuns extends Service {
     'actionStore',
     'compositionIdentity',
     'delivery',
+    'desktopLauncher',
     'evidenceCoordinator',
     'executionWorkspace',
     'lifecycleDefinitions',
@@ -345,7 +351,47 @@ export class WorkflowRuns extends Service {
         await this.coordinator.bindSkill(runId, skill);
       }
       await this.ctx.workExecutionAuthority.recordWorkCreated(runId, lifecycle.currentWork);
-      return { ...started, value: await this.coordinator.status(runId) };
+      const activationState = await this.ctx.runStore.loadRun(runId);
+      const activationIntentId = `sha256:${createHash('sha256')
+        .update(`${runId}\0${activationState.stateVersion}\0desktop.activation`)
+        .digest('hex')}` as const;
+      let activation: DesktopActivationResult;
+      try {
+        activation = parseDesktopActivationResult(
+          await this.ctx.desktopLauncher.activate({
+            schemaVersion: 1,
+            workspaceId,
+            changeId,
+            runId,
+          }),
+        );
+      } catch {
+        activation = {
+          status: 'unavailable',
+          targetKind: 'none',
+          reason: 'target-unavailable',
+        };
+      }
+      const diagnostics: RuntimeDiagnostic[] = [
+        ...started.diagnostics,
+        desktopActivationDiagnostic(activation),
+      ];
+      try {
+        diagnostics.push(
+          ...(await this.coordinator.recordDesktopActivation(runId, activationIntentId, {
+            result: activation.status,
+            targetKind: activation.targetKind,
+            reason: activation.reason,
+          })),
+        );
+      } catch {
+        diagnostics.push({
+          level: 'warning',
+          code: 'desktop.activation.observation-unavailable',
+          message: 'Repoctopus Desktop activation observation could not be persisted',
+        });
+      }
+      return { value: await this.coordinator.status(runId), diagnostics };
     });
   }
 

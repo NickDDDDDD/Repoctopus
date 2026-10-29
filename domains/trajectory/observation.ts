@@ -110,6 +110,8 @@ const ATTRIBUTE_KEYS = [
   'oldestAgeMs',
   'warningCode',
   'droppedEnvelopes',
+  'targetKind',
+  'reason',
 ] as const;
 
 function digest(value: unknown): `sha256:${string}` {

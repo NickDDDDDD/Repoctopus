@@ -4,7 +4,11 @@ import { decide, recordOutcome, startRun } from '../engine/loop.js';
 import type { ActionOutcome, EngineAction, RunState, RunTriggerSnapshot } from '../engine/types.js';
 import { reconcileProjectSnapshots } from '../project/snapshot.js';
 import type { ProjectSnapshot } from '../project/types.js';
-import type { TrajectoryEvent, TrajectoryEventType } from '../trajectory/types.js';
+import type {
+  DesktopActivationFact,
+  TrajectoryEvent,
+  TrajectoryEventType,
+} from '../trajectory/types.js';
 import type { WorkflowPackage } from '../workflow-contract/types.js';
 import type { CompositionIdentitySnapshot } from '../composition/types.js';
 import { compareCompositions } from '../composition/compatibility.js';
@@ -648,6 +652,44 @@ export class WorkflowRunCoordinator {
     });
     await this.flushTelemetry(runId);
     return result;
+  }
+
+  /** Persists one idempotent application-side fact without changing lifecycle phase or Work. */
+  async recordDesktopActivation(
+    runId: string,
+    intentId: `sha256:${string}`,
+    fact: DesktopActivationFact,
+  ): Promise<RuntimeDiagnostic[]> {
+    if (!/^sha256:[a-f0-9]{64}$/u.test(intentId)) {
+      throw new Error('Desktop activation intent identity must be a sha256 digest');
+    }
+    await this.prepareWritableComposition(runId);
+    await this.store.commitGuarded(runId, ({ state, trajectory }) => {
+      this.assertWritableComposition(state);
+      const eventId = stableEventId(runId, intentId, 'desktop.activation');
+      if (trajectory.some((candidate) => candidate.eventId === eventId)) {
+        return { value: undefined };
+      }
+      const timestamp = this.clock().toISOString();
+      const nextState: RunState = {
+        ...state,
+        stateVersion: state.stateVersion + 1,
+        updatedAt: timestamp,
+      };
+      return {
+        state: nextState,
+        event: event({
+          eventId,
+          sequence: trajectory.length + 1,
+          timestamp,
+          type: 'desktop.activation',
+          state: nextState,
+          data: { ...fact },
+        }),
+        value: undefined,
+      };
+    });
+    return this.flushTelemetry(runId);
   }
 
   async next(
