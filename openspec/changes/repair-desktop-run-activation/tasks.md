@@ -74,17 +74,17 @@
 
 ## 5. 验证与交付
 
-- [ ] 5.1 更新 Desktop、自举、构建和故障诊断文档，删除正常使用必须手配 executable 的暗示。
+- [x] 5.1 更新 Desktop、自举、构建和故障诊断文档，删除正常使用必须手配 executable 的暗示。
       **Blocked by:** 4.3
       **Acceptance:** 文档命令在干净源码环境和安装环境可执行，明确 unsupported/unavailable 不阻断 Run
       **Verification:** 按文档从干净源码 checkout 和已安装应用各执行一次启动路径
       **Requirements:** desktop-observability-dashboard#Windows-开发-Run-自动激活单实例桌面应用
-- [ ] 5.2 运行 OpenSpec strict、类型、lint、架构、provenance、单元、package/tracer E2E 和 Windows Desktop 验证。
+- [x] 5.2 运行 OpenSpec strict、类型、lint、架构、provenance、单元、package/tracer E2E 和 Windows Desktop 验证。
       **Blocked by:** 5.1
       **Acceptance:** 全部正式检查通过；受控删除 `WorkflowRuns` 调用会使生产入口测试失败，证明测试对原断链敏感
       **Verification:** 保存正式验证命令、退出码与 mutation 失败摘要到 Evidence/验证报告
       **Requirements:** plugin-composition#生产组合中的桌面-Launcher-必须被权威用例消费
-- [ ] 5.3 清理临时安装目录、Electron/Host 进程、receiver、discovery、日志和 payload，提交并推送验证 HEAD。
+- [x] 5.3 清理临时安装目录、Electron/Host 进程、receiver、discovery、日志和 payload，提交并推送验证 HEAD。
       **Blocked by:** 5.2
       **Acceptance:** 工作树干净、无临时进程或调试残留、远端分支包含验证提交
       **Verification:** 检查进程、临时路径、git status 与远端 branch OID
