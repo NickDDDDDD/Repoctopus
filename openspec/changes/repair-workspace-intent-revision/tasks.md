@@ -53,9 +53,9 @@
       **Blocked by:** 2.3, 3.5
       **Acceptance:** trace 可解释 from/to phase、error code、isolation 与 retirement；Metric label 不含路径、branch、digest、错误文本或 run/work/change identity
       **Requirements:** development-telemetry#workspace-intent-修订必须可观测且保持低基数
-- [ ] 4.2 增加跨进程 E2E，完整复现当前自举故障并证明同 Run 从错误 current 恢复为 worktree Design Work。
+- [ ] 4.2 修复 Open orchestration 对 intent-revision 子状态的错误推进，并增加跨进程 E2E，完整复现当前自举故障且证明同 Run 从错误 current 恢复为 worktree Design Work。
       **Blocked by:** 4.1
-      **Acceptance:** 重启前后 runId 唯一，旧 Build Configure Work 不复活，重复 pull/decision 幂等且无需编辑 Store
+      **Acceptance:** `workspace-intent:*` wait 上重复 `run next` 保持同一 waitId/checkEpoch且不生成 `open-approval:*`；重启前后 runId 唯一，旧 Build Configure Work 不复活，无效/重复 decision 幂等且无需编辑 Store
       **Requirements:** change-lifecycle#execution-workspace-intent-必须可验证并可在同一-run-修订; managed-work-execution#intent-修订必须同步退役不匹配的-execution-checkpoint; managed-work-execution#外部-build-execute-outcome-必须经过统一的两阶段消费; managed-work-execution#活动-run-必须通过精确-adoption-contract-采纳新的受保护语义
 - [ ] 4.3 运行 strict OpenSpec、相关 Vitest、typecheck、lint、architecture/provenance/generated 检查和完整 `npm run verify`，更新正式验证报告并清理临时输出。
       **Blocked by:** 4.2

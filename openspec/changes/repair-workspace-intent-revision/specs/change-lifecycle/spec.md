@@ -21,6 +21,11 @@ Repoctopus MUST 在接受 Open approval 前取得可信用户对 `current|branch
 - **WHEN** 未批准 Build Configuration 的 Configure Work 发现 Open intent 与真实 checkout 的 isolation/ownership facts 不兼容
 - **THEN** Runtime 在同一 runId 受保护地返回 Open wait，清除旧 intent、Tasks、Build Protocol 与 Verify/Archive 输入；可信用户选择的新 intent 再次绑定成功后进入新的 Design Work
 
+#### Scenario: Intent 修订 wait 被重复 pull
+
+- **WHEN** Run 正在 Open 的 `workspace-intent:*` Human Decision wait 中且调用方重复执行 `run next`
+- **THEN** Runtime 原样返回同一 waitId 与 checkEpoch，不创建或替换为普通 `open-approval:*` wait；只有匹配 request 的可信 isolation 决定可以推进到新的 Design Work
+
 #### Scenario: Binding failure 不是 isolation 问题
 
 - **WHEN** Build Configure 发现 remote repository identity 或 repository topology 与冻结 project snapshot 不一致

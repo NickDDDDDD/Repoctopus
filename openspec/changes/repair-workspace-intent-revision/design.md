@@ -110,6 +110,12 @@ Build Plan 不按文档章节机械切包，而按“能否在冻结 write scope
 
 本 Change 又修改了当前 Run 正在使用的受保护 lifecycle/Runtime composition。为避免“代码已正确但当前 Run 永远因 composition drift 无法采纳”的自举死锁，builtin catalog 必须只声明精确的 `{previous codeDigest, previous descriptorDigest}` 对；lifecycle definition/validator/extension contributor 只声明当前活动 Run 的直接前驱 version。任何未列出的 digest 或 version 仍为 `migration_required`。这不是长期旧版本兼容层，而是一次性的活动 Run adoption contract；新实现一旦接管，状态机只执行 4.3 的唯一语义。
 
+### 9. Workspace-intent wait 是 Open gate 的受保护子状态
+
+Build→Open intent revision 创建的 `workspace-intent:*` Human Decision 不是普通 Open planning approval。`run next` 在该 wait 尚未被可信决定消费时，必须原样返回当前 continuation；它不得调用通用 `advanceOpenGate()`，不得把 wait 替换为 `open-approval:*`，也不得递增 checkEpoch。只有 `decideChange()` 对匹配 request 的有效 isolation 决定可以离开该子状态并物化新的 Design Work。
+
+该规则放在 `WorkflowRuns` 的 Open orchestration 边界，而不是让 CLI 或领域 Store 猜测调用顺序。领域 transition 仍负责验证 observation 合法性；Service 负责在 pull-based 调用中选择与当前 wait 相符的唯一 Action。这样重复 pull、进程重启和 Dashboard/status 读取都保持只读幂等，且不会绕过 Workspace intent 的专用决策协议。
+
 ## 模块边界
 
 - `services/execution-workspace`: binding 深模块与稳定错误分类。
@@ -126,7 +132,7 @@ Build Plan 不按文档章节机械切包，而按“能否在冻结 write scope
 - 领域测试证明 Build Configure 只能在无副作用边界返回 Open，并清除依赖旧 intent 的全部下游状态。
 - Service 测试证明 linked worktree + current 在 Open 决策前被拒绝且 approval/lifecycle 均未写入。
 - E2E 复现已有坏 Run：Build Configure Outcome → `current-linked-worktree/intent-revision` → Open wait → 选择 worktree → Design Work；runId 不变且旧 checkpoint 不再是当前状态。
-- 重复 `next`、重复错误观察和无效 isolation 决策不产生第二个 wait、Work 或 retirement event。
+- 在 `workspace-intent:*` wait 上重复 `next` 保持 waitId、checkEpoch 与 trajectory 不变，不生成通用 `open-approval:*` wait；重复错误观察和无效 isolation 决策不产生第二个 wait、Work 或 retirement event。
 - 外部 Runner 提交的 Build Execute 成功 Outcome 经 accepted→validated 后才完成 package；失败 Outcome 的 finding 经同一路径进入 recovery，重启和重复 pull 均幂等。
 - composition 对比只对活动 Run 的精确直接前驱实现/version 返回 compatible；任意相邻但未声明的 digest/version 仍返回 `migration_required`。
 - OTLP 契约、strict OpenSpec、typecheck、lint、architecture/provenance/generated 检查和完整 `npm run verify` 全部通过。
