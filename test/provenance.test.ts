@@ -163,7 +163,7 @@ describe('third-party provenance', () => {
     const result = await checkProvenance(root);
     expect(result.valid).toBe(false);
     expect(result.findings).toContain(
-      'DSH package lock mismatch: @deepseek-ai/dsh-skill@0.2.1-rc.3',
+      'DSH package lock mismatch: @deepseek-ai/dsh-skill@0.2.1-rc.5',
     );
   });
 

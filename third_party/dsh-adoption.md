@@ -1,10 +1,10 @@
 # DSH 能力采用报告
 
-本报告固定 DeepSeek Harness 发布 `dsh-v0.2.1-rc.3`、提交 `1f81c047fc48fa190a683e469daa699857e9afe8`，并已审计 2026-10-24 的 `master` 提交 `22ddee3792402c3e70ec5f86a63c3e3e895a2f60`。发布依赖与默认分支审计身份分开记录，避免把未发布源码冒充 npm 版本。机器可检查数据见 `dsh-adoption.json`，跨能力审计见 `upstream-alignment-audit.md`。
+本报告固定 DeepSeek Harness 发布 `dsh-v0.2.1-rc.5`、提交 `b830ec950faba0a46dda564be3e2d854afed94f1`，并已审计 2026-10-30 的 `master` 提交 `ce7073d51254c26cd63b22a60835b8f948deb447`。发布依赖与默认分支审计身份分开记录，避免把未发布源码冒充 npm 版本。机器可检查数据见 `dsh-adoption.json`，跨能力审计见 `upstream-alignment-audit.md`。
 
 ## Skill Registry
 
-固定提交中的 `packages/skill/skill/src/index.ts` 已发布为 `@deepseek-ai/dsh-skill@0.2.1-rc.3`。Repoctopus 直接使用该包，保留 `ctx.skills`、Provider 注册、作用域覆盖、rank 裁决、不完整发现、取消、缓存失效和 Cordis Effect 撤销语义。rc.2→rc.3 在已采用 Skill、Filesystem Skill、Cordis 和 Loader 源码面没有行为变化，发布差异只有包版本元数据。
+固定提交中的 `packages/skill/skill/src/index.ts` 已发布为 `@deepseek-ai/dsh-skill@0.2.1-rc.5`。Repoctopus 直接使用该包，保留 `ctx.skills`、Provider 注册、作用域覆盖、rank 裁决、不完整发现、取消、缓存失效和 Cordis Effect 撤销语义。rc.3→rc.5 在已采用 Skill、Filesystem Skill、Cordis 和 Loader 源码面没有行为变化；已登记桌面参考面只变更 `apps/desktop/package.json` 的发布版本元数据。
 
 使用精确版本和 npm overrides 后，闭包包含 13 个安装项：Repoctopus 已固定的 Cordis、Loader、Cosmokit、Schemastery，8 个 DSH 包和 Zod。闭包不含 Agent、Session、Workspace 或 Webhook Runtime。上游已经删除 `dsh-invariants`，Repoctopus 同步移除该包，而不是保留幽灵依赖。没有因为闭包较深而重写 Registry。
 
@@ -36,11 +36,11 @@ Electron `44.9.3` 没有 lifecycle install script；它在首次解析包且本�
 
 ## 漂移控制
 
-- `package.json` 固定所有 DSH 包的精确 `0.2.1-rc.3` 版本，并用 overrides 阻止内部范围漂移。
+- `package.json` 固定所有 DSH 包的精确 `0.2.1-rc.5` 版本，并用 overrides 阻止内部范围漂移。
 
-## 2026-10-24 默认分支增量
+## 2026-10-30 默认分支增量
 
-`master` 在 rc.3 之后继续前进。Skill Registry 与 Filesystem Skill 的行为源码没有变化；Desktop 增加 Windows 网络进程监督、打包缓存、安装器本地化与文件拖放等能力。Cordis `fiber.ts` 和 Loader resolver 也有未发布变化。Repoctopus 本轮不把这些未发布改动写入标记为官方 npm 快照的 `third_party/cordis*`，待对应发布版本出现后再升级；桌面变化作为后续打包与恢复审计输入，不混入 Change 生命周期设计。
+`master` 在 rc.5 之后继续快速前进。已登记面中 Desktop 的 `main.ts`、`host-process.ts` 和启动测试已有未发布变化；Filesystem Skill 增加“单个根目录发现失败时保留其余根目录、同时标记观察不完整”的容错语义。Repoctopus 本轮不把这些未发布改动写入发布快照或产品实现：前者等待正式发布，后者作为后续 Skill Provider 可靠性候选，避免在版本刷新 Change 中夹带行为变更。
 - `package-lock.json` 固定 npm tarball integrity。
 - `check:provenance` 校验固定 commit、包版本、锁文件完整性、禁止包和适配目标。
 - `check:upstream` 每天比较默认分支、固定标签与当前审计提交；只报告漂移，不自动改变可复现基线。
