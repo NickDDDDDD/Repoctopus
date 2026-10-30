@@ -90,7 +90,34 @@ node bin/repoctopus.js change reconcile --workspace . --change <change-id> --jso
 
 候选来自已完成 Change 的 Publication Receipt，不按 MR 作者过滤。检查结果为 `unchanged`、结构化审查请求或暂时不可用诊断；它不会回退已完成 Run。影响结论是 `no-spec-impact`、`spec-update-required` 或 `uncertain`。后两者需要可信用户参与；需要修正规格时创建引用原 Change、Receipt 与受影响 MR 的普通后续 Change。
 
-## 4. 数据边界
+## 4. 已知自举限制与后续收紧
+
+> **Deferred decision — 尚未实现：** 等核心工作流经过更多完整自举验证后，再用独立 OpenSpec change 实现本节描述的严格绑定和恢复策略。本节记录后续约束，不改变当前 Runtime、CLI 或 Specification Provider 行为。
+
+Repoctopus 最终应采用 Comet 的正常路径原则：Change 从 Open 开始就绑定唯一权威 Run；Runtime 选择当前 Action、验证 Outcome 并推进 phase；Archive 只能在 Run、Verify Evidence、人工授权和输入快照均有效时调用 Specification Provider。OpenSpec change 存在但找不到对应 Run 时，正常团队模式应返回结构化 `unmanaged-change`，不得静默退回裸 `openspec archive`、根据文件猜测 phase，或补造一个终态 Run。
+
+现在不立即启用这一 fail-closed 约束。Repoctopus 仍处于自举和核心工作流加固阶段；如果 Runtime、Run binding 或恢复协议本身出现缺陷，完全禁止 Provider 级恢复会让维护者无法用当前代码修复当前工作流，形成自举死锁。
+
+后续设计必须区分两种策略：
+
+| 策略         | 适用场景                             | 约束                                                                                                                                                            |
+| ------------ | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 严格受管模式 | 团队日常开发和稳定自举               | Change 必须解析到唯一 Run；所有阶段推进和 Archive 都由 Runtime 授权；缺失、冲突或漂移一律 fail closed                                                           |
+| 自举恢复模式 | Runtime 自身故障导致正常路径不可恢复 | 仅维护者显式启用；要求可信人工确认并记录原因、Change、提交和恢复结果；不自动推断 phase，不伪造 Run、Evidence 或 Publication Receipt，不作为 CLI 的隐式 fallback |
+
+实现严格模式前，独立 Change 至少应同时完成以下能力：
+
+- Open/create 原子建立 `changeId → runId` 绑定，避免规格目录和生命周期状态独立产生；
+- 为已有 Change 提供显式 adopt/migrate 流程；迁移完成后返回 continuation 并停止，不在同一次调用中继续 Archive；
+- Archive preflight 重新绑定 phase、revision、分支/HEAD、Evidence、人工授权和 Provider 输入快照；
+- Archive 使用可恢复事务或 Journal，中断后恢复原事务，不重新猜测或生成状态；
+- 自举恢复产生独立、可审计的 Recovery Receipt，并明确标记结果不等价于受管 Run 完成；
+- 黑盒自举测试覆盖正常路径、Run 缺失、状态漂移、迁移停点、Archive 中断和恢复模式误用；
+- 用多个真实 Change 完整通过 Open、Design、Build、Verify、Archive 后，再评估是否把严格模式设为默认。
+
+在该 Change 实现前，维护者可以在获得明确人工批准后执行必要的 Provider 级恢复，但必须在验证报告或后续问题记录中说明原因和边界。产品命令不得把这种人工恢复包装成成功的受管生命周期。
+
+## 5. 数据边界
 
 | 数据                                        | 权威位置                       | 运维要求                             |
 | ------------------------------------------- | ------------------------------ | ------------------------------------ |
@@ -103,7 +130,7 @@ node bin/repoctopus.js change reconcile --workspace . --change <change-id> --jso
 
 删除 `.repoctopus/` 会丢失本机恢复和幂等事实，不能作为重试手段。全新 clone 不会凭空重建未同步的本地历史；团队应通过受控备份、共享工作目录或后续显式迁移保存仍需恢复的状态。
 
-## 5. 上游关系
+## 6. 上游关系
 
 - Cordis / Loader 是唯一应用 Runtime 和插件生命周期内核。
 - DSH 提供固定版本 Skill Registry；其 Agent、Session、Workspace 和 Webhook Runtime 不进入产品运行时。
