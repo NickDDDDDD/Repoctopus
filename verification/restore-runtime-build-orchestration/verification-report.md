@@ -3,7 +3,7 @@
 ## Reproducible subject
 
 - Change: `restore-runtime-build-orchestration`
-- Tested implementation commit: `d43890736820d375c475cc9632a22e9f82896114`
+- Tested implementation commit: `d0bc374146bfec6c27bba2ff96dd4dff13a34900`
 - Package: `repoctopus@0.1.0`
 - Package bytes: `939590`
 - Package SHA-256: `8a7178b005b0d2998a4e3d1b844dbfe6f8d769dfd40d2108b64e8fddb76334bb`
