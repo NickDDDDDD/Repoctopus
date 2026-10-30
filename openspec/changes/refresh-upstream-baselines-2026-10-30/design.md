@@ -98,3 +98,13 @@ DSH `master` 的 `ce7073d…` 只进入 `auditedBranchCommit` 和分支增量审
 - 上游已登记来源路径消失或语义被替换，且无法从审计证据唯一决定新的映射。
 - 规格、设计、架构边界或用户已确认的“本 Change 不采用产品行为”发生冲突。
 - 发现升级会改变公共契约、持久数据、安全边界或团队工作流行为；该部分必须转入独立普通 Change 并经审查。
+
+## Deferred Core Reliability Findings
+
+本 Change 的 Open 自举在未修改 Runtime Store、未伪造 delta spec 的情况下稳定复现了以下缺陷。它们不属于上游基线更新范围，不在本 Change 临时修补；后续 `harden-core-workflow-reliability` Change 必须把这些案例加入坏案例账本、生产入口回归测试和真实外部 Host 验收。
+
+1. **外部 Host Outcome 错误地重建可变上下文。** Open Work 在领取时已冻结 packet；Host 按该 packet 创建并提交规划文件后，`run work-outcome` 重新组装已经变化的 Specification Context，最终报出 `Work execution context digest does not match the persisted intent identity`。正确语义应验证领取时持久化的 packet、invocation 与 Outcome 绑定，不能要求执行副作用后的当前上下文仍等于执行前输入。
+2. **Open Gate 未承认 Provider 的合法 skipped 工件。** OpenSpec `1.14.3` 的 strict validation 明确认可 `.openspec.yaml` 中的 `skip_specs: true`，并把 `specs` 标记为 `skipped`；Repoctopus `inspect` 却投影为 `delta-specs: missing`，Open Gate 又硬编码要求四类工件全部 `ready`。后续修复应由 Specification Provider 将官方“已跳过且满足”语义规范化为稳定领域状态和摘要，而不是创建伪 delta spec 或让 Workflow 识别 OpenSpec 专有字段。
+3. **成功校验包含错误级诊断。** Provider 将 OpenSpec 的 `INFO` 项映射成 `error`，同时仍返回 `valid: true`。这会让遥测、Dashboard 和后续审计得到互相矛盾的健康信号；后续修复应保留上游 severity，并增加“成功结果不得含 error 诊断”的领域不变量。
+
+当前 Open 规划提交 `a06f615` 已公开推送，OpenSpec 官方 strict validation 与 Repoctopus strict validation 均通过。该事实只证明规划内容有效，不把受阻的 Runtime Run 伪装成已经完成；后续可靠性 Change 修复并验证恢复语义后，再决定从原 checkpoint 恢复还是以相同已发布规划启动新 Run。
