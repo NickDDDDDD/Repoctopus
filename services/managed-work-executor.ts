@@ -133,6 +133,26 @@ export class ManagedWorkExecutor extends Service {
     super(context, 'managedWorkExecutor');
   }
 
+  private async rejectInvalidConfigureResult(input: {
+    intent: WorkClaimResult['intent'];
+    workKind: WorkClaimResult['packet']['work']['kind'];
+    outcome: WorkExecutionHostOutcome;
+  }): Promise<boolean> {
+    if (
+      input.workKind !== 'build.configure' ||
+      input.outcome.status !== 'succeeded' ||
+      input.outcome.result?.kind === 'build-configuration-candidate'
+    ) {
+      return false;
+    }
+    await this.ctx.workExecutionAuthority.rejectHostSubmission({
+      intent: input.intent,
+      reasonCode: 'output-invalid',
+      diagnostic: 'Build Configure Host must return a structured build-configuration-candidate',
+    });
+    return true;
+  }
+
   async execute(request: WorkClaimRequest): Promise<ManagedWorkExecutionResult> {
     const claim = await this.ctx.workDispatcher.claim(request);
     const host = this.ctx.workExecutionHosts.select(claim.packet);
@@ -198,6 +218,15 @@ export class ManagedWorkExecutor extends Service {
       'consumed',
       hostOutcome.consumedLayerDigests,
     );
+    if (
+      await this.rejectInvalidConfigureResult({
+        intent: claim.intent,
+        workKind: claim.packet.work.kind,
+        outcome: hostOutcome,
+      })
+    ) {
+      return { invocation, hostOutcome, acceptance: null };
+    }
     if (hostOutcome.status === 'unknown') {
       await this.ctx.workExecutionAuthority.markHostUnknown(claim.intent, hostOutcome.summary);
       return { invocation, hostOutcome, acceptance: null };
@@ -307,6 +336,15 @@ export class ManagedWorkExecutor extends Service {
       'consumed',
       hostOutcome.consumedLayerDigests,
     );
+    if (
+      await this.rejectInvalidConfigureResult({
+        intent,
+        workKind: packet.packet.work.kind,
+        outcome: hostOutcome,
+      })
+    ) {
+      return { invocation, hostOutcome, acceptance: null };
+    }
     if (hostOutcome.status === 'unknown') {
       await this.ctx.workExecutionAuthority.markHostUnknown(intent, input.summary);
       return { invocation, hostOutcome, acceptance: null };

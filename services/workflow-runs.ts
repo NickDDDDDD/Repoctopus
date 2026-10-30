@@ -1779,9 +1779,58 @@ export class WorkflowRuns extends Service {
               if (!hostOutcome) throw new Error('Build Configure Host Outcome is missing');
               const configurationCandidate = hostOutcome.result;
               if (configurationCandidate?.kind !== 'build-configuration-candidate') {
-                throw new Error(
-                  'Build Configure Host must return a structured build-configuration-candidate',
-                );
+                const projectConfigDigest = current.trigger?.facts.projectConfigDigest;
+                const specificationRoot = current.trigger?.facts.specificationRoot as
+                  | { repositoryId?: unknown }
+                  | undefined;
+                if (
+                  typeof projectConfigDigest !== 'string' ||
+                  !/^sha256:[a-f0-9]{64}$/u.test(projectConfigDigest) ||
+                  typeof specificationRoot?.repositoryId !== 'string'
+                ) {
+                  throw new Error('Build Configure retry trigger identities are missing');
+                }
+                const skills = await this.resolveLifecycleWorkSkills('build.configure', signal);
+                const retryWork = createBuildActionWork({
+                  runId,
+                  checkEpoch: lifecycle.checkEpoch + 1,
+                  definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+                  kind: 'build.configure',
+                  actionSkill: skills.actionSkill,
+                  augmentationSkills: skills.augmentationSkills,
+                  compositionDigest: current.composition.compositionDigest,
+                  projectConfigDigest: projectConfigDigest as `sha256:${string}`,
+                  projectSnapshotDigest: current.projectSnapshotDigest,
+                  workspaceRepositoryId: specificationRoot.repositoryId,
+                  repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
+                  stableInput: {
+                    reason: 'configuration-output-invalid',
+                    priorWorkId: lifecycle.currentWork.workId,
+                  },
+                });
+                for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
+                  await this.coordinator.bindSkill(runId, skill);
+                }
+                const retried = await this.coordinator.acceptChangeObservation(runId, {
+                  kind: 'build-configuration-retry-required',
+                  reason:
+                    'Build Configure Host did not return a structured build-configuration-candidate',
+                  work: retryWork,
+                });
+                await this.ctx.workExecutionAuthority.recordWorkCreated(runId, retryWork);
+                return {
+                  ...retried,
+                  value: await this.coordinator.status(runId),
+                  diagnostics: [
+                    ...retried.diagnostics,
+                    {
+                      level: 'warning',
+                      code: 'change.build-configuration-outcome-rejected',
+                      message:
+                        'Build Configure will retry because the prior Host Outcome was incomplete',
+                    },
+                  ],
+                };
               }
               const invocationHost = current.workExecution.hostInvocation?.host;
               if (!invocationHost || invocationHost.id !== hostOutcome.hostId) {

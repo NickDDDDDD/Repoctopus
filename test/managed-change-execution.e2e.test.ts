@@ -189,6 +189,8 @@ describe('managed Change execution production composition', () => {
       for (const key of environmentKeys) process.env[key] = environment[key];
       let application = await bootProjectComposition(productRoot, workspace);
       try {
+        let invalidConfigurationSubmitted = false;
+        let correctedConfigurationResult: WorkExecutionResult | undefined;
         let invalidPlanSubmitted = false;
         let correctedPlanResult: WorkExecutionResult | undefined;
         let invalidCheckSubmitted = false;
@@ -272,12 +274,18 @@ describe('managed Change execution production composition', () => {
                 } | null;
               };
               if (packet.work.kind === 'build.configure') {
-                return {
+                const candidate = {
                   schemaVersion: 1,
                   kind: 'build-configuration-candidate',
                   executionMode,
                   tddMode: 'tdd',
-                };
+                } satisfies WorkExecutionResult;
+                correctedConfigurationResult = candidate;
+                if (!multiRepository && executionMode === 'autonomous' && !invalidConfigurationSubmitted) {
+                  invalidConfigurationSubmitted = true;
+                  return undefined;
+                }
+                return candidate;
               }
               if (packet.work.kind === 'build.plan') {
                 const candidate = {
@@ -485,10 +493,39 @@ describe('managed Change execution production composition', () => {
           currentWork: { kind: 'build.configure' },
         });
         await next();
+        const configurationInvocation = capture.invocations.findLast(
+          (entry) => entry.packet.work.kind === 'build.configure',
+        );
         invocationKinds.push(...capture.invocations.map((item) => item.packet.work.kind));
         capture.dispose();
         await application.close();
         application = await bootProjectComposition(productRoot, workspace);
+        if (!multiRepository && executionMode === 'autonomous') {
+          if (!configurationInvocation || !correctedConfigurationResult) {
+            throw new Error('missing captured Build Configuration correction context');
+          }
+          expect((await status()).state.workExecution).toMatchObject({
+            workId: configurationInvocation.packet.work.workId,
+            status: 'invoking',
+            continuation: 'awaiting-correction',
+            pendingSubmission: null,
+            rejectedSubmissions: [{ rejection: { reasonCode: 'output-invalid' } }],
+          });
+          await application.context.managedWorkExecutor.acceptExternalOutcome({
+            schemaVersion: 3,
+            runId,
+            submissionId: 'corrected-build-configuration-1',
+            invocationId: configurationInvocation.session.invocationId,
+            hostId: 'capturing-work-execution-host',
+            packetDigest: configurationInvocation.session.packetDigest,
+            status: 'succeeded',
+            summary: 'Corrected Build Configuration selects an executable mode',
+            consumedLayerDigests: configurationInvocation.packet.context.layers
+              .filter((layer) => ['action-skill', 'augmentation-skill'].includes(layer.kind))
+              .map((layer) => layer.digest),
+            result: correctedConfigurationResult,
+          });
+        }
         const configurationWait = await next();
         capture = installHost();
         expect(configurationWait.value.changeLifecycle).toMatchObject({
