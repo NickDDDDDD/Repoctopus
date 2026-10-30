@@ -10,6 +10,7 @@ import {
   createDeliveryPublishWork,
   createSpecificationCloseWork,
 } from '../domains/change-lifecycle/archive-input.js';
+import { createVerifyWork } from '../domains/change-lifecycle/verify-work.js';
 import {
   BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
   createChangeLifecycleSnapshot,
@@ -92,6 +93,16 @@ const prSkill: SkillUsageSnapshot = {
 const archiveSkill: SkillUsageSnapshot = {
   ...prSkill,
   name: 'repoctopus-archive-change',
+};
+
+const verifySkill: SkillUsageSnapshot = {
+  ...prSkill,
+  name: 'repoctopus-verify-change',
+};
+
+const codeReviewSkill: SkillUsageSnapshot = {
+  ...prSkill,
+  name: 'code-review',
 };
 
 function archivePhaseContext(provider: SpecificationClosureResult['provider']) {
@@ -283,6 +294,53 @@ function archiveState(actionSkill: SkillUsageSnapshot = prSkill) {
 }
 
 describe('Archive publication terminal lifecycle', () => {
+  it('returns a frozen specification.close Work to Verify before closure side effects', () => {
+    const { preflight } = archiveState();
+    const verificationInput = {
+      ...preflight.verificationInput!,
+      checkEpoch: preflight.checkEpoch + 1,
+      evidenceProfile: {
+        ...preflight.verificationInput!.evidenceProfile,
+        fingerprintDigest: digest('c'),
+      },
+      digest: digest('d'),
+    };
+    const work = createVerifyWork({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      checkEpoch: preflight.checkEpoch + 1,
+      verification: verificationInput,
+      actionSkill: verifySkill,
+      augmentationSkills: [codeReviewSkill],
+      workspaceRepositoryId: 'workspace',
+      repositoryIds: ['workspace', 'app'],
+    });
+
+    const result = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current: preflight,
+      observation: {
+        kind: 'archive-reverify-required',
+        reason: 'Verification input changed after Archive Work was frozen',
+        verificationInput,
+        work,
+      },
+    });
+
+    expect(result.snapshot).toMatchObject({
+      phase: 'verify',
+      status: 'running',
+      checkEpoch: preflight.checkEpoch + 1,
+      currentWork: { workId: work.workId, kind: 'evidence.verify' },
+      verificationInput: { digest: verificationInput.digest },
+    });
+    expect(result.snapshot.archiveDeliveryInput).toBeUndefined();
+    expect(result.snapshot.specificationClosure).toBeUndefined();
+    expect(result.fact).toMatchObject({
+      transitionId: 'archive.reverify',
+      supersededWorkId: preflight.currentWork?.workId,
+    });
+  });
+
   it('rebinds only the approved Change branch OID before publication and preserves the closure', () => {
     const { closed, archive, closure } = archiveState();
     const correctedArchive = createArchiveDeliveryInput({
@@ -508,6 +566,103 @@ describe('Archive publication terminal lifecycle', () => {
     expect(status.changeLifecycle?.nextActions).toEqual([]);
   });
 
+  it('revalidates a frozen specification.close Work before consulting its Host outcome', async () => {
+    const root = await temporaryDirectory('repoctopus-archive-close-stale-');
+    cleanup.push(root);
+    const workspace = await createGitRepository(root, 'workspace');
+    await writeFile(
+      path.join(workspace, 'repoctopus.yaml'),
+      JSON.stringify({
+        apiVersion: 'repoctopus/v1alpha1',
+        kind: 'RepoctopusWorkspace',
+        workspace: { id: 'archive-close-stale', repositoryId: 'workspace' },
+        repositories: [{ id: 'workspace', path: '.' }],
+        profiles: [
+          {
+            id: 'verification',
+            nodes: [
+              {
+                id: 'check',
+                type: 'command',
+                repository: 'workspace',
+                executable: process.execPath,
+                args: ['-e', 'process.exit(0)'],
+              },
+            ],
+          },
+        ],
+      }),
+    );
+    const app = await bootProjectComposition(path.resolve(import.meta.dirname, '..'), workspace);
+    try {
+      const archiveDefinition = await app.context.skills.get('repoctopus-archive-change', {
+        cwd: workspace,
+      });
+      if (!archiveDefinition) throw new Error('Expected Archive Skill');
+      const boundArchiveSkill = await snapshotSkillDefinition(archiveDefinition);
+      const { preflight } = archiveState();
+      const project = {
+        ...projectFixture(),
+        root: workspace,
+        repositories: [
+          {
+            ...projectFixture().repositories[0]!,
+            id: 'workspace',
+            name: 'workspace',
+            path: workspace,
+            remoteIdentity: 'team/workspace',
+          },
+        ],
+      };
+      const runtime = new WorkflowRunCoordinator(
+        app.context.runStore,
+        { export: () => Promise.resolve() },
+        app.context.compositionIdentity.current(),
+      );
+      await runtime.start({
+        workflow: workflowFixture(),
+        projectSnapshot: project,
+        runId: preflight.identity.runId,
+        changeLifecycle: {
+          ...preflight,
+          currentWork: { ...preflight.currentWork!, actionSkill: boundArchiveSkill },
+        },
+      });
+      await runtime.bindSkill(preflight.identity.runId, boundArchiveSkill);
+      const prepareClosure = vi.spyOn(app.context.specification, 'prepareClosure');
+      const close = vi.spyOn(app.context.specification, 'close');
+
+      const result = await app.context.workflowRuns.executeArchiveDelivery({
+        runId: preflight.identity.runId,
+        project,
+        policy,
+        executor: {
+          actorId: 'archive-user',
+          runnerId: 'archive-runner',
+          source: 'runner',
+          authenticated: true,
+        },
+      });
+
+      expect(result.value).toMatchObject({
+        stage: 'reverify-required',
+        publication: null,
+        receipt: null,
+        run: {
+          changeLifecycle: {
+            phase: 'verify',
+            currentWork: { kind: 'evidence.verify' },
+          },
+        },
+      });
+      expect(result.value.run.changeLifecycle?.archiveDeliveryInput).toBeUndefined();
+      expect(prepareClosure).not.toHaveBeenCalled();
+      expect(close).not.toHaveBeenCalled();
+    } finally {
+      await app.close();
+    }
+  });
+
   it('requires managed Host outcomes for specification.close before creating delivery.publish', async () => {
     const root = await temporaryDirectory('repoctopus-archive-close-managed-');
     cleanup.push(root);
@@ -521,7 +676,7 @@ describe('Archive publication terminal lifecycle', () => {
         repositories: [{ id: 'workspace', path: '.' }],
         profiles: [
           {
-            id: 'verify',
+            id: 'verification',
             nodes: [
               {
                 id: 'check',
@@ -574,6 +729,11 @@ describe('Archive publication terminal lifecycle', () => {
         },
       });
       await runtime.bindSkill(preflight.identity.runId, boundArchiveSkill);
+      const currentEvidence = await app.context.evidenceCoordinator.plan('verification');
+      vi.spyOn(app.context.evidenceCoordinator, 'plan').mockResolvedValue({
+        ...currentEvidence,
+        fingerprint: { ...currentEvidence.fingerprint, digest: digest('8') },
+      });
       vi.spyOn(app.context.specification, 'prepareClosure').mockResolvedValue({
         apiVersion: 'repoctopus.specification/v1alpha1',
         kind: 'SpecificationClosurePlan',

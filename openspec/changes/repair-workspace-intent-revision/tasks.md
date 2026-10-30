@@ -61,3 +61,17 @@
       **Blocked by:** 4.2
       **Acceptance:** 所有命令通过，分支每次提交均已 push，Store registration 最终恢复到当前主开发 worktree且临时文件已清理
       **Requirements:** development-telemetry#workspace-intent-修订必须可观测且保持低基数
+
+## 5. 修复 Archive 冻结输入漂移
+
+- [ ] 5.1 增加领域与 Service 回归，证明已冻结的 `specification.close` Work 在 Evidence 指纹漂移后不能执行关闭副作用。
+      **Acceptance:** 领域 transition 从带 Archive input 的 close Work 返回 Verify并清除冻结输入；Service 在 Specification provider 零调用下返回 `reverify-required`
+      **Requirements:** change-lifecycle#archive-关闭前必须重验冻结输入
+- [ ] 5.2 抽取并复用 Archive reverify 编排，在 close 副作用的最后责任点重新比较指纹并由同一 Run CAS 退役旧 execution checkpoint。
+      **Blocked by:** 5.1
+      **Acceptance:** prepare 与 execute 共用唯一的 reverify 物化逻辑；Closure/Receipt 已存在时不能倒退；planning semantic drift 仍交给既有 Verify→Design
+      **Requirements:** change-lifecycle#archive-关闭前必须重验冻结输入
+- [ ] 5.3 更新精确活动 Run adoption、正式 Evidence 和验证报告，运行完整验证并通过正式状态机恢复当前自举 Run。
+      **Blocked by:** 5.2
+      **Acceptance:** 仅当前直接前驱 digest/version 可采纳；strict OpenSpec、相关 Vitest、typecheck、lint、architecture/provenance/generated、完整 verify 全部通过，当前 Run 不编辑 Store 即返回 Verify
+      **Requirements:** change-lifecycle#archive-关闭前必须重验冻结输入

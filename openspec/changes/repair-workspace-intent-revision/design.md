@@ -116,12 +116,21 @@ Build→Open intent revision 创建的 `workspace-intent:*` Human Decision 不�
 
 该规则放在 `WorkflowRuns` 的 Open orchestration 边界，而不是让 CLI 或领域 Store 猜测调用顺序。领域 transition 仍负责验证 observation 合法性；Service 负责在 pull-based 调用中选择与当前 wait 相符的唯一 Action。这样重复 pull、进程重启和 Dashboard/status 读取都保持只读幂等，且不会绕过 Workspace intent 的专用决策协议。
 
+### 10. Archive 在执行关闭副作用前再次验证 Evidence 指纹
+
+`prepareArchiveDelivery()` 的指纹检查只能保护 `specification.close` Work 创建时刻，不能保护 Work 等待 Host Outcome、人工操作或后续提交期间的变化。`executeArchiveDelivery()` 因而必须在消费 close Work 并调用 Specification provider 前重新规划同一 Evidence Profile，并把当前指纹与冻结的 `VerificationInput` 比较。
+
+若指纹已漂移且尚无 Specification Closure 或 Publication Receipt，Runtime 复用 `archive-reverify-required` transition：清除冻结的 Archive input，以新的 Verification input 和 `evidence.verify` Work 返回 Verify，并由同一 Run CAS 退役旧 close execution checkpoint。随后既有 Verify 编排会检查 planning semantic digest；规划语义变化继续返回 Design，只有实现或 Evidence 变化则留在 Verify。这样不增加平行恢复状态，也不让 Agent 选择 phase。
+
+该检查是关闭副作用前的最后责任点。已经产生 Closure 或开始 publication 后不得倒退或回滚，而应继续既有 journal/reconciliation 路径。
+
 ## 模块边界
 
 - `services/execution-workspace`: binding 深模块与稳定错误分类。
 - `domains/change-lifecycle`: intent revision observations、wait 与纯 transition 不变量。
 - `domains/runtime`: lifecycle transition 与 execution retirement 的单 CAS 投影。
 - `services/workflow-runs`: Open prevalidation、Build failure 编排和 Human Decision 后的 Design Work 物化。
+- `services/workflow-runs`: 同时负责 Archive close 副作用边界的新鲜度检查，并复用既有 reverify Work 物化逻辑。
 - `plugins/builtin-catalog`: 受保护实现只接受精确直接前驱 digest pair，不提供通配兼容。
 - `plugins/lifecycle/*-contributor`: 声明当前活动 Run 直接前驱 version 可采纳唯一新语义。
 - `app/cli`: 只负责收集可信 isolation 决策，不选择 phase 或直接写 Store。
@@ -135,6 +144,7 @@ Build→Open intent revision 创建的 `workspace-intent:*` Human Decision 不�
 - 在 `workspace-intent:*` wait 上重复 `next` 保持 waitId、checkEpoch 与 trajectory 不变，不生成通用 `open-approval:*` wait；重复错误观察和无效 isolation 决策不产生第二个 wait、Work 或 retirement event。
 - 外部 Runner 提交的 Build Execute 成功 Outcome 经 accepted→validated 后才完成 package；失败 Outcome 的 finding 经同一路径进入 recovery，重启和重复 pull 均幂等。
 - composition 对比只对活动 Run 的精确直接前驱实现/version 返回 compatible；任意相邻但未声明的 digest/version 仍返回 `migration_required`。
+- Archive 测试证明冻结 close Work 后的源树漂移会先返回 Verify、清除 Archive input并退役旧 execution；Specification provider 在此路径上零调用，规划语义漂移随后仍由 Verify 返回 Design。
 - OTLP 契约、strict OpenSpec、typecheck、lint、architecture/provenance/generated 检查和完整 `npm run verify` 全部通过。
 
 ## 回退

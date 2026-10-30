@@ -40,3 +40,24 @@ Repoctopus MUST 在接受 Open approval 前验证可信用户选择的 `current|
 
 - **WHEN** 调用方试图通过再次 `run start` 绕过错误的 intent
 - **THEN** Runtime 恢复由 Workspace/change identity 确定的原 Run，要求走正式 intent 修订 transition，不创建第二个 Run
+
+## ADDED Requirements
+
+### Requirement: Archive 关闭前必须重验冻结输入
+
+Repoctopus MUST 在执行 `specification.close` 或 publication 副作用前比较当前 Evidence 指纹与冻结的 Verification Input。若 close Work 冻结后指纹漂移且尚未产生 Closure 或 Publication Receipt，Runtime MUST 退役旧 close execution、清除 Archive input并在同一 Run 返回 Verify；若 Verify 发现 planning semantic digest 变化，MUST 再走既有 Verify→Design transition。副作用已经开始后 MUST 使用既有 journal/reconciliation，不得回滚或伪造重验。
+
+#### Scenario: Close Work 冻结后源树漂移
+
+- **WHEN** `specification.close` Work 已创建或验证，但当前 Evidence 指纹与冻结 Verification Input 不同
+- **THEN** Runtime 在调用 Specification provider 前返回 Verify、创建新的 `evidence.verify` Work并退役旧 execution checkpoint
+
+#### Scenario: 漂移同时改变规划语义
+
+- **WHEN** Archive 返回 Verify 后发现 OpenSpec planning semantic digest 与已批准快照不同
+- **THEN** Runtime 复用既有 Verify→Design transition，不在 Archive 直接建立第二套规划恢复路径
+
+#### Scenario: Closure 已经产生
+
+- **WHEN** Specification Closure 或 Publication Receipt 已存在
+- **THEN** Runtime 不回退到 Verify，而继续既有 publication journal/reconciliation 流程
