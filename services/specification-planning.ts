@@ -13,6 +13,7 @@ import type {
   SpecificationApprovalDecisionResponse,
   SpecificationApprovalState,
   SpecificationValidation,
+  SpecificationArtifact,
   PlanningSnapshot,
   SpecificationApprovalMigrationPlan,
 } from '../domains/specification/types.js';
@@ -40,6 +41,10 @@ export interface DesignGateAssessment {
   validation?: SpecificationValidation;
   snapshot?: PlanningSnapshot;
   approval?: SpecificationApprovalState;
+  observation?: {
+    artifacts: SpecificationArtifact[];
+    validation: SpecificationValidation;
+  };
 }
 
 export class SpecificationPlanning extends Service {
@@ -86,6 +91,10 @@ export class SpecificationPlanning extends Service {
       };
     }
     const { manifest, validation, current } = collected;
+    const observation = {
+      artifacts: structuredClone(manifest.change.artifacts),
+      validation: structuredClone(validation),
+    };
     const { change, schema, specificationRoot } = manifest;
     const evidenceDigests = [schema.digest, change.changeDigest, validation.validationDigest];
     if (!change.planningComplete) {
@@ -94,6 +103,7 @@ export class SpecificationPlanning extends Service {
         reason: 'Specification planning is incomplete',
         evidenceDigests,
         validation,
+        observation,
       };
     }
     if (!validation.strict || !validation.valid) {
@@ -102,6 +112,7 @@ export class SpecificationPlanning extends Service {
         reason: 'Specification planning requires successful strict validation',
         evidenceDigests,
         validation,
+        observation,
       };
     }
     let snapshot: PlanningSnapshot;
@@ -123,6 +134,7 @@ export class SpecificationPlanning extends Service {
         reason: error instanceof Error ? error.message : 'Specification planning manifest failed',
         evidenceDigests,
         validation,
+        observation,
       };
     }
     const next = requestSpecificationApproval({
@@ -147,6 +159,7 @@ export class SpecificationPlanning extends Service {
         validation,
         snapshot,
         approval: next,
+        observation,
       };
     }
     if (next.status === 'changes_requested' || next.status === 'rejected') {
@@ -160,6 +173,7 @@ export class SpecificationPlanning extends Service {
         validation,
         snapshot,
         approval: next,
+        observation,
       };
     }
     return {
@@ -169,6 +183,7 @@ export class SpecificationPlanning extends Service {
       validation,
       snapshot,
       approval: next,
+      observation,
     };
   }
 

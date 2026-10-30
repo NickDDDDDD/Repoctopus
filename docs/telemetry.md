@@ -64,6 +64,8 @@ Trajectory、Attempt、Receipt、Artifact、Bundle、Gate 和轻量 Archive 事�
 
 Build 的每个已提交边界使用同一条 Trajectory 和 OTLP 管道。`work.*` 事件携带有界的 `buildAction`、execution mode、TDD mode、review mode 和 isolation；`change.lifecycle.transitioned` 携带 Configure approval、Plan revision、Plan Evidence、Check 和 invalidation 的稳定身份；`skill.resolved|delivered|consumed`、`validator.completed` 与 `delegation.completed` 保留父 Work、invocation 和 package 关联。Host 自述不会合成成功事件，事件只在本地 Run 提交后导出。
 
+核心可靠性还使用四个有界事件：`work.packet-stored` 只记录 `created | reused`，`work.packet-recovered` 只记录 `recovered | missing | corrupt | legacy`；`specification.artifacts-observed` 只记录 Proposal、Specs、Design、Tasks 的 `ready | skipped | missing`；`specification.validation-observed` 只记录 valid、最高严重级、三级计数和 contract-conflict。Trace/Log 可以携带 run/work/attempt/epoch 与摘要关联，Metric 只使用上述固定枚举，不使用 changeId、digest、路径、诊断 code/message 或 packet 正文作为 label。遥测提交失败不改变 claim、恢复或 Gate 结果。
+
 Trace 和 Log 可以使用 run、Work、configuration、plan、package、invocation、Skill digest 与 delegation execution identity 进行单次运行重建。Metric 只使用以下有界枚举：
 
 - phase、event type、Work kind 和结果；

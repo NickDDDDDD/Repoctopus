@@ -104,7 +104,7 @@ describe('Work execution Host submission identity', () => {
         currentWork: { workId: intent.workId },
       },
       workExecution: {
-        schemaVersion: 2,
+        schemaVersion: 3,
         workId: intent.workId,
         attempt: intent.attempt,
         checkEpoch: intent.checkEpoch,
@@ -209,7 +209,7 @@ describe('Work execution Host submission identity', () => {
         currentWork: { workId: intent.workId },
       },
       workExecution: {
-        schemaVersion: 2,
+        schemaVersion: 3,
         workId: intent.workId,
         attempt: intent.attempt,
         checkEpoch: intent.checkEpoch,
@@ -294,7 +294,7 @@ describe('Work execution Host submission identity', () => {
         currentWork: { workId: intent.workId, kind: 'build.plan' },
       },
       workExecution: {
-        schemaVersion: 2,
+        schemaVersion: 3,
         workId: intent.workId,
         attempt: intent.attempt,
         checkEpoch: intent.checkEpoch,

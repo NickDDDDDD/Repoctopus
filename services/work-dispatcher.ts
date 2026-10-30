@@ -200,7 +200,22 @@ export class WorkDispatcher extends Service {
   }
 
   async resumeClaim(runId: string): Promise<WorkClaimResult> {
-    return this.ctx.workExecutionAuthority.loadAuthoritativePacket(runId);
+    try {
+      const result = await this.ctx.workExecutionAuthority.loadAuthoritativePacket(runId);
+      try {
+        await this.ctx.workExecutionAuthority.recordPacketRecovery(runId, 'recovered');
+      } catch {
+        // Packet recovery succeeded; an observation failure must not trigger re-execution.
+      }
+      return result;
+    } catch (error) {
+      try {
+        await this.ctx.workExecutionAuthority.recordPacketRecoveryFailure(runId, error);
+      } catch {
+        // Preserve the original packet failure and its continuation classification.
+      }
+      throw error;
+    }
   }
 
   async acceptOutcome(input: ClaimedActionOutcome): Promise<WorkOutcomeAcceptance> {

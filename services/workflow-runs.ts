@@ -880,6 +880,16 @@ export class WorkflowRuns extends Service {
         projectConfigDigest: projectConfigDigest as `sha256:${string}`,
         ...(signal ? { signal } : {}),
       });
+      if (assessment.observation) {
+        try {
+          await this.ctx.workExecutionAuthority.recordSpecificationObservations({
+            runId: state.runId,
+            ...assessment.observation,
+          });
+        } catch {
+          // Provider facts still decide the Gate when the observation sink is unavailable.
+        }
+      }
     } catch (error) {
       assessment = {
         status: 'blocked',
@@ -1115,6 +1125,19 @@ export class WorkflowRuns extends Service {
       this.ctx.specification.inspect(lifecycle.identity.changeId, signal),
       this.ctx.workExecutionAuthority.loadIntent(state.runId),
     ]);
+    const providerValidation = await this.ctx.specification.validate(lifecycle.identity.changeId, {
+      strict: true,
+      ...(signal ? { signal } : {}),
+    });
+    try {
+      await this.ctx.workExecutionAuthority.recordSpecificationObservations({
+        runId: state.runId,
+        artifacts: change.artifacts,
+        validation: providerValidation,
+      });
+    } catch {
+      // Provider facts still decide the Gate when the observation sink is unavailable.
+    }
     if (
       receipt.intentId !== execution.intentId ||
       receipt.outcome !== 'succeeded' ||

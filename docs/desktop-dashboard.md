@@ -2,6 +2,8 @@
 
 Repoctopus Desktop Dashboard 是 Windows x64 上的本地工作流观测界面。它与团队 SigNoZ 消费同一套标准 OTLP envelope，但用途不同：Desktop 聚焦当前 change 的即时状态，SigNoZ 用于团队历史、趋势和流程改进。Desktop 不查询 SigNoZ，也不扫描 Workspace、Git 或 OpenSpec 文件补造状态。
 
+当前 change 的投影除五阶段、Work、Skill、Wait 和 Evidence 外，还直接消费 packet recovery 与 Specification Provider 观测：四类工件分别显示 `ready | skipped | missing`，验证显示最高严重级与 contract-conflict。`skipped` 是 Provider 明确证明的满足状态，不显示为缺失或错误；这些事实与 SigNoZ 来自同一个持久 Trajectory envelope。
+
 ## 状态含义
 
 界面只显示 Receiver 已接受的权威事实。缺少事实时显示“尚未上报”，而不是根据阶段顺序或文案猜测。

@@ -9,6 +9,7 @@ import type {
   WorkExecutionPacket,
 } from '../domains/work-execution/types.js';
 import { ManagedWorkExecutor } from '../services/managed-work-executor.js';
+import { WorkDispatcher } from '../services/work-dispatcher.js';
 import { WorkExecutionAuthority } from '../services/work-execution-authority.js';
 
 const digest = (character: string) => `sha256:${character.repeat(64)}` as const;
@@ -66,6 +67,28 @@ function recoveryAuthority(run: RunState, input: { active?: boolean; corrupt?: b
 }
 
 describe('Work execution recovery classification', () => {
+  it('redelivers the authoritative frozen packet without invoking the context assembler', async () => {
+    const packet = { identity: checkpoint('claimed').packet } as WorkExecutionPacket;
+    const loadAuthoritativePacket = vi.fn().mockResolvedValue({ intent: {}, packet });
+    const recordPacketRecovery = vi.fn().mockResolvedValue(undefined);
+    const assemble = vi.fn();
+    const dispatcher = Object.create(WorkDispatcher.prototype) as WorkDispatcher;
+    Object.defineProperty(dispatcher, 'ctx', {
+      value: {
+        workContextAssembler: { assemble },
+        workExecutionAuthority: { loadAuthoritativePacket, recordPacketRecovery },
+      },
+    });
+
+    await expect(dispatcher.resumeClaim('run-recovery')).resolves.toEqual({
+      intent: {},
+      packet,
+    });
+    expect(loadAuthoritativePacket).toHaveBeenCalledWith('run-recovery');
+    expect(recordPacketRecovery).toHaveBeenCalledWith('run-recovery', 'recovered');
+    expect(assemble).not.toHaveBeenCalled();
+  });
+
   it.each([
     ['claimed', 'execute', 'claim-redelivery'],
     ['context-delivered', 'execute', 'claim-redelivery'],
@@ -146,6 +169,49 @@ describe('Work execution recovery classification', () => {
 });
 
 describe('Work execution epoch authority', () => {
+  it('never binds a claim before immutable packet persistence succeeds', async () => {
+    const currentWork = {
+      workId: 'build:1.1',
+      inputDigest: digest('b'),
+      checkEpoch: 4,
+      phase: 'build',
+      kind: 'build.execute',
+    };
+    const run = {
+      ...state({}),
+      stateVersion: 10,
+      composition: { compositionDigest: digest('9') },
+      changeLifecycle: { phase: 'build', checkEpoch: 4, currentWork, waitCondition: null },
+    } as unknown as RunState;
+    const packet = {
+      identity: checkpoint('claimed').packet,
+      claim: {
+        runId: run.runId,
+        workId: currentWork.workId,
+        attempt: 1,
+        checkEpoch: currentWork.checkEpoch,
+        intentId: 'intent-1',
+        claimToken: digest('a'),
+        inputDigest: currentWork.inputDigest,
+      },
+      work: currentWork,
+      context: { digest: checkpoint('claimed').packet.contextDigest },
+    } as unknown as WorkExecutionPacket;
+    const commitGuarded = vi.fn();
+    const authority = Object.create(WorkExecutionAuthority.prototype) as WorkExecutionAuthority;
+    Object.defineProperty(authority, 'ctx', {
+      value: {
+        runStore: { commitGuarded },
+        workExecutionPacketStore: {
+          save: vi.fn().mockRejectedValue(new Error('packet persistence failed')),
+        },
+      },
+    });
+
+    await expect(authority.bindClaim(packet)).rejects.toThrow('packet persistence failed');
+    expect(commitGuarded).not.toHaveBeenCalled();
+  });
+
   it('accepts a higher attempt when Runtime reissues the same semantic Work in a newer epoch', async () => {
     const previous = checkpoint('validated');
     const currentWork = {

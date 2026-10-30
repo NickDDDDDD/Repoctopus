@@ -75,7 +75,7 @@ CLI → short-lived Project composition → completed Publication Receipts → a
 
 ## Run、Engine 与 RunStore
 
-Run 是跨进程持久化 Aggregate，不对应一个长期 Fiber。每个命令可以创建新的 App 与 Service Fiber，再从 RunStore、Transition Journal 和 Checkpoint 恢复。
+Run 是跨进程持久化 Aggregate，不对应一个长期 Fiber。每个命令可以创建新的 App 与 Service Fiber，再从 RunStore、Transition Journal、Checkpoint 和不可变 packet store 恢复。这个边界采用 Comet reserve/execute/commit 的思想：锁内确定并绑定意图，锁外调用 Host，锁内按原身份提交结果；Repoctopus 没有引入 Comet SDK 或第二套状态目录。
 
 Engine 只根据 Workflow、Run State 和已经核对的事实计算下一状态。RunStore 负责同一 Run 的写锁、状态版本、Journal、原子提交、Trajectory、Checkpoint、幂等和崩溃重放。WorkflowRuns 负责应用用例与 Engine 调用，不得绕过 RunStore 写入状态。
 
@@ -83,8 +83,8 @@ Engine 只根据 Workflow、Run State 和已经核对的事实计算下一状态
 
 外部副作用不能占用 Run 锁。`run next` 是 Runner 发起的 pull-based 入口，Runtime 根据当前 lifecycle snapshot 选择 Work；Host 和 Agent 都不能指定目标 phase、Work 或 Skill。执行链路为：
 
-1. ActionStore 先保存不可变 Intent；Run CAS 再把唯一 attempt 和 packet identity 绑定为权威 claim。CAS 前的孤立内容没有执行权。
-2. WorkContextAssembler 交付完整且深冻结的 packet；Run 同步记录 `context-delivered`，正文不进入 Run、日志或遥测。
+1. ActionStore 先保存不可变 Intent，按 Run 隔离的 packet store 再原子保存完整且深冻结的 packet；Run CAS 最后把唯一 attempt 和 packet identity 绑定为权威 claim。CAS 前的孤立内容没有执行权。
+2. WorkContextAssembler 只在首次 claim 装配 packet；恢复按 checkpoint identity 读取同一 packet，绝不从已变化的 Skill、Provider 或规划文件重组。Run 同步记录 `context-delivered`，正文不进入 Run、日志或遥测。
 3. 唯一 `WorkExecutionHost` preflight 后取得短生命周期 session，通过 Guard 受保护的 repository/process/specification/Git/platform 操作执行当前 Action。
 4. Outcome 必须匹配 invocation、Host、packet 和原 claim；Action Receipt 保存后仍须由当前 Work 的 Validator 接受，Agent 不能直接改 phase。
 5. Runtime 在同一响应选择下一 continuation。`auto_transition` 只决定客户端是否继续拉取下一项，不改变 transition 合法性。
