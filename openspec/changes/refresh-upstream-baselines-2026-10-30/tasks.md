@@ -38,11 +38,11 @@
 
 ## 5. 集成验证与清理
 
-- [ ] 5.1 运行 `npm exec -- openspec validate refresh-upstream-baselines-2026-10-30 --strict`、`npm run check:upstream`、`npm run check:provenance`、依赖审计和架构检查，并把每项命令结果收集为正式 Evidence。
+- [x] 5.1 运行 `npm exec -- openspec validate refresh-upstream-baselines-2026-10-30 --strict`、`npm run check:upstream`、`npm run check:provenance`、依赖审计和架构检查，并把每项命令结果收集为正式 Evidence。
       **Acceptance:** 所列生产命令全部返回成功，正式 Evidence 记录命令、退出码、输入身份和摘要。
-- [ ] 5.2 运行格式、类型、构建和全量测试入口，确认 Windows 路径、CLI 与现有五阶段工作流没有回归，并将结果写入正式验证报告。
+- [x] 5.2 运行格式、类型、构建和全量测试入口，确认 Windows 路径、CLI 与现有五阶段工作流没有回归，并将结果写入正式验证报告。
       **Acceptance:** 格式、类型、构建和全量测试全绿，验证报告可从固定提交复现结果。
-- [ ] 5.3 再次查询两个远端头以区分“执行期间的新漂移”和本次冻结边界，清除临时 checkout、下载物与调试日志，并以干净的 `git status` 和 Evidence 清单验证只保留正式产出。
+- [x] 5.3 再次查询两个远端头以区分“执行期间的新漂移”和本次冻结边界，清除临时 checkout、下载物与调试日志，并以干净的 `git status` 和 Evidence 清单验证只保留正式产出。
       **Acceptance:** 结束时远端事实被记录，临时产物已删除，提交后的工作树干净且只保留正式 OpenSpec、审计和 Evidence。
 
 ## Workflow follow-up
