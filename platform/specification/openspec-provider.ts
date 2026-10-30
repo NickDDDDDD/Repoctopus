@@ -75,6 +75,7 @@ interface ShowResult {
 interface StatusResult {
   isPlanningComplete?: unknown;
   artifactPaths?: Record<string, { existingOutputPaths?: unknown }>;
+  artifacts?: Array<{ id?: unknown; status?: unknown }>;
 }
 
 interface ValidationResult {
@@ -156,16 +157,26 @@ function diagnostics(value: unknown): SpecificationDiagnostic[] {
   if (!Array.isArray(value)) return [];
   return value.map((issue, index) => {
     const record = issue && typeof issue === 'object' ? (issue as Record<string, unknown>) : {};
+    const level = typeof record.level === 'string' ? record.level.toLowerCase() : null;
+    const artifactId = typeof record.path === 'string' ? record.path : undefined;
+    if (level !== 'info' && level !== 'warning' && level !== 'error') {
+      return {
+        code: 'openspec.diagnostic-level-invalid',
+        severity: 'error',
+        message: `OpenSpec returned an unsupported diagnostic level at issue ${index + 1}`,
+        ...(artifactId ? { artifactId } : {}),
+      };
+    }
     return {
       code: typeof record.code === 'string' ? record.code : `openspec.issue.${index + 1}`,
-      severity: record.severity === 'warning' ? 'warning' : 'error',
+      severity: level,
       message:
         typeof record.message === 'string'
           ? record.message
           : typeof record.path === 'string'
             ? `OpenSpec validation failed at ${record.path}`
             : 'OpenSpec validation failed',
-      ...(typeof record.path === 'string' ? { artifactId: record.path } : {}),
+      ...(artifactId ? { artifactId } : {}),
     };
   });
 }
@@ -644,27 +655,66 @@ export class OpenSpecProvider extends Specification {
       ),
       this.json<StatusResult>(workspace, ['status', '--change', id], signal),
     ]);
+    const metadataFile = path.join(workspace, 'openspec', 'changes', id, '.openspec.yaml');
+    const metadata = (await exists(metadataFile))
+      ? (parseYaml(await readFile(metadataFile, 'utf8')) as unknown)
+      : null;
+    const metadataDigest = metadata === null ? null : sha256(metadata);
+    const officialStatuses = new Map<string, string>();
+    for (const entry of status.artifacts ?? []) {
+      if (typeof entry.id !== 'string' || typeof entry.status !== 'string') {
+        throw new Error('OpenSpec returned an invalid artifact status');
+      }
+      if (officialStatuses.has(entry.id)) {
+        throw new Error(`OpenSpec returned duplicate artifact status: ${entry.id}`);
+      }
+      if (!['ready', 'blocked', 'done', 'skipped'].includes(entry.status)) {
+        throw new Error(`OpenSpec returned an unsupported artifact status: ${entry.status}`);
+      }
+      officialStatuses.set(entry.id, entry.status);
+    }
+    const artifactIds = new Set([
+      ...Object.keys(status.artifactPaths ?? {}),
+      ...officialStatuses.keys(),
+    ]);
     const artifacts = (
       await Promise.all(
-        Object.entries(status.artifactPaths ?? {}).map(
-          async ([artifactId, artifact]): Promise<SpecificationArtifact | undefined> => {
-            const kind = artifactKind(artifactId);
-            if (!kind) return undefined;
-            const outputs = artifact.existingOutputPaths;
-            const digest =
-              kind === 'tasks'
-                ? Array.isArray(outputs) && outputs.length === 0
-                  ? null
-                  : (await this.taskSetFromPaths(workspace, id, outputs)).digest
-                : await artifactDigest(workspace, outputs);
+        [...artifactIds].map(async (artifactId): Promise<SpecificationArtifact | undefined> => {
+          const kind = artifactKind(artifactId);
+          if (!kind) return undefined;
+          const outputs = status.artifactPaths?.[artifactId]?.existingOutputPaths;
+          if (officialStatuses.get(artifactId) === 'skipped') {
+            if (Array.isArray(outputs) && outputs.length > 0) {
+              throw new Error(`OpenSpec skipped artifact has output paths: ${artifactId}`);
+            }
             return {
               id: artifactId,
               kind,
-              status: digest ? 'ready' : 'missing',
-              ...(digest ? { digest } : {}),
+              status: 'skipped',
+              digest: sha256({
+                schemaVersion: 1,
+                provider: this.identity(),
+                changeId: id,
+                artifactId,
+                kind,
+                status: 'skipped',
+                metadataDigest,
+              }),
             };
-          },
-        ),
+          }
+          const digest =
+            kind === 'tasks'
+              ? Array.isArray(outputs) && outputs.length === 0
+                ? null
+                : (await this.taskSetFromPaths(workspace, id, outputs)).digest
+              : await artifactDigest(workspace, outputs);
+          return {
+            id: artifactId,
+            kind,
+            status: digest ? 'ready' : 'missing',
+            ...(digest ? { digest } : {}),
+          };
+        }),
       )
     )
       .filter((artifact): artifact is SpecificationArtifact => artifact !== undefined)
@@ -676,11 +726,6 @@ export class OpenSpecProvider extends Specification {
           .filter((spec): spec is string => typeof spec === 'string' && spec.length > 0),
       ),
     ].sort();
-    const metadataFile = path.join(workspace, 'openspec', 'changes', id, '.openspec.yaml');
-    const metadata = (await exists(metadataFile))
-      ? (parseYaml(await readFile(metadataFile, 'utf8')) as unknown)
-      : null;
-    const metadataDigest = metadata === null ? null : sha256(metadata);
     const retirementEnabled =
       metadata !== null &&
       typeof metadata === 'object' &&
@@ -748,6 +793,14 @@ export class OpenSpecProvider extends Specification {
     const item = parsed.items?.find((candidate) => candidate.id === changeId) ?? parsed.items?.[0];
     const findings = diagnostics(item?.issues);
     let valid = result.exitCode === 0 && item?.valid === true;
+    if (valid && findings.some(({ severity }) => severity === 'error')) {
+      valid = false;
+      findings.push({
+        code: 'openspec.validation-contract-conflict',
+        severity: 'error',
+        message: 'OpenSpec reported a valid result containing an error diagnostic',
+      });
+    }
     if (valid && options.strict !== false) {
       const tasks = await this.tasksAt(workspace, changeId, options.signal);
       try {

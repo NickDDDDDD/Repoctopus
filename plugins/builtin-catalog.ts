@@ -25,6 +25,7 @@ import { FileDeliveryProvider } from './delivery/file-delivery-provider.js';
 import { GitProjectProvider } from './project/git-project-provider.js';
 import { GitExecutionWorkspaceProvider } from './project/git-execution-workspace-provider.js';
 import { FileRunStoreProvider } from './run/file-run-store-provider.js';
+import { FileWorkExecutionPacketStoreProvider } from './run/file-work-execution-packet-store-provider.js';
 import { FileWorkflowSourceProvider } from './run/file-workflow-source-provider.js';
 import { WorkflowTelemetryProvider } from './run/workflow-telemetry-provider.js';
 import { CommandRouter } from '../services/command-router.js';
@@ -597,6 +598,28 @@ const definitions: readonly BuiltinDefinition[] = [
   },
   {
     descriptor: {
+      id: 'work-execution-packet-store-file',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['work-execution-packet-store-write'],
+      permissions: ['filesystem'],
+      stateSchemas: { 'work-execution-packet': '1' },
+    },
+    plugin: FileWorkExecutionPacketStoreProvider,
+    sourceFiles: [
+      'domains/work-execution/ports.ts',
+      'domains/work-execution/types.ts',
+      'services/work-execution-packet-store.ts',
+      'plugins/run/file-work-execution-packet-store-provider.ts',
+      'platform/runtime/file-work-execution-packet-store.ts',
+    ],
+  },
+  {
+    descriptor: {
       id: 'work-execution-authority',
       version: VERSION,
       contractVersion: PLUGIN_CONTRACT_VERSION,
@@ -606,14 +629,7 @@ const definitions: readonly BuiltinDefinition[] = [
       compositions: ['project'],
       authorities: ['work-execution-state'],
       permissions: [],
-      stateSchemas: { 'work-execution': '1' },
-      compatibleImplementations: [
-        {
-          codeDigest: 'sha256:bb5ed1fa9ea6fe418102fc13e558f630efa80400e4dde11612bed411c0608d71',
-          descriptorDigest:
-            'sha256:8a5f106a29257672c585da2de20f6dd1c7bfcef4c432b23fa9ec918c7a533f23',
-        },
-      ],
+      stateSchemas: { 'work-execution': '2' },
     },
     plugin: WorkExecutionAuthority,
     sourceFiles: [

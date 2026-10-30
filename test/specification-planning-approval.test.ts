@@ -101,6 +101,30 @@ describe('specification planning approval', () => {
     expect(() => assertPlanningSnapshot(first)).not.toThrow();
   });
 
+  it('accepts an official skipped planning artifact with a stable digest', () => {
+    const input = planningInput();
+    const specs = input.change.artifacts.find((artifact) => artifact.kind === 'delta-specs')!;
+    specs.status = 'skipped';
+
+    const snapshot = createPlanningSnapshot(input);
+    expect(snapshot.artifacts.find((artifact) => artifact.kind === 'delta-specs')).toEqual({
+      id: 'specs',
+      kind: 'delta-specs',
+      digest: digest('3'),
+    });
+  });
+
+  it('rejects missing or undigested planning artifacts', () => {
+    const missing = planningInput();
+    missing.change.artifacts.find((artifact) => artifact.kind === 'delta-specs')!.status =
+      'missing';
+    expect(() => createPlanningSnapshot(missing)).toThrow(/not satisfied: delta-specs/iu);
+
+    const undigested = planningInput();
+    delete undigested.change.artifacts.find((artifact) => artifact.kind === 'delta-specs')!.digest;
+    expect(() => createPlanningSnapshot(undigested)).toThrow(/not satisfied: delta-specs/iu);
+  });
+
   it.each([
     [
       'change',

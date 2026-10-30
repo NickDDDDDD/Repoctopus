@@ -13,6 +13,7 @@ import type {
   WorkExecutionCheckpoint,
   WorkExecutionHostInvocation,
   WorkExecutionHostOutcome,
+  WorkClaimResult,
   WorkExecutionPacket,
   WorkExecutionRecovery,
 } from '../domains/work-execution/types.js';
@@ -105,13 +106,20 @@ function assertSameClaim(checkpoint: WorkExecutionCheckpoint, intent: ActionInte
 }
 
 export class WorkExecutionAuthority extends Service {
-  static inject = ['runStore', 'actionStore', 'workExecutionSessions', 'workflowTelemetry'];
+  static inject = [
+    'runStore',
+    'actionStore',
+    'workExecutionPacketStore',
+    'workExecutionSessions',
+    'workflowTelemetry',
+  ];
 
   constructor(context: Context) {
     super(context, 'workExecutionAuthority');
   }
 
   async bindClaim(packet: WorkExecutionPacket): Promise<WorkExecutionCheckpoint> {
+    await this.ctx.workExecutionPacketStore.save(packet);
     const result = await this.ctx.runStore.commitGuarded(
       packet.claim.runId,
       ({ state, trajectory }) => {
@@ -146,7 +154,7 @@ export class WorkExecutionAuthority extends Service {
         }
         const timestamp = new Date().toISOString();
         const checkpoint: WorkExecutionCheckpoint = {
-          schemaVersion: 2,
+          schemaVersion: 3,
           workId: packet.claim.workId,
           attempt: packet.claim.attempt,
           checkEpoch: packet.claim.checkEpoch,
@@ -769,6 +777,9 @@ export class WorkExecutionAuthority extends Service {
     const state = await this.ctx.runStore.loadRun(runId);
     const claim = state.workExecution;
     if (!claim) throw new Error(`Run has no authoritative Work claim: ${runId}`);
+    if (claim.schemaVersion !== 3) {
+      throw new Error('Legacy Work execution checkpoint requires migration');
+    }
     const intent = await this.ctx.actionStore.loadIntent(runId, claim.workId, claim.attempt);
     assertSameClaim(claim, intent);
     const expectedIdempotencyKey = rawDigest(
@@ -794,6 +805,34 @@ export class WorkExecutionAuthority extends Service {
       throw new Error('Authoritative Action intent content drifted from the Work packet');
     }
     return intent;
+  }
+
+  async loadAuthoritativePacket(runId: string): Promise<WorkClaimResult> {
+    const state = await this.ctx.runStore.loadRun(runId);
+    const checkpoint = state.workExecution;
+    if (!checkpoint) throw new Error(`Run has no authoritative Work claim: ${runId}`);
+    if (checkpoint.schemaVersion !== 3) {
+      throw new Error('Legacy Work execution checkpoint requires migration');
+    }
+    const intent = await this.loadIntent(runId);
+    const packet = await this.ctx.workExecutionPacketStore.load(runId, checkpoint.packet);
+    assertActivePacket(state, packet);
+    assertSameClaim(checkpoint, intent);
+    if (
+      packet.claim.intentId !== intent.intentId ||
+      packet.claim.runId !== intent.runId ||
+      packet.claim.workId !== intent.workId ||
+      packet.claim.attempt !== intent.attempt ||
+      packet.claim.checkEpoch !== intent.checkEpoch ||
+      packet.claim.claimToken !== intent.claimToken ||
+      packet.claim.inputDigest !== intent.inputDigest ||
+      packet.claim.compositionDigest !== intent.compositionDigest
+    ) {
+      throw new Error(
+        'Stored Work execution packet does not match the authoritative Action intent',
+      );
+    }
+    return { intent, packet };
   }
 
   async continuation(runId: string): Promise<WorkContinuationKind> {
@@ -828,8 +867,11 @@ export class WorkExecutionAuthority extends Service {
         ? result('execute', 'work-unclaimed')
         : result('wait', 'transition-pending');
     }
+    if (current.schemaVersion !== 3) {
+      return result('reconcile', 'migration-required');
+    }
     try {
-      await this.loadIntent(runId);
+      await this.loadAuthoritativePacket(runId);
     } catch {
       return result('reconcile', 'content-missing-or-corrupt');
     }

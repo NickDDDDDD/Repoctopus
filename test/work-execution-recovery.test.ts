@@ -15,7 +15,7 @@ const digest = (character: string) => `sha256:${character.repeat(64)}` as const;
 
 function checkpoint(status: WorkExecutionCheckpoint['status']): WorkExecutionCheckpoint {
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     workId: 'build:1.1',
     attempt: 1,
     checkEpoch: 4,
@@ -59,9 +59,9 @@ function recoveryAuthority(run: RunState, input: { active?: boolean; corrupt?: b
       workExecutionSessions: { isActive: vi.fn().mockReturnValue(input.active ?? false) },
     },
   });
-  authority.loadIntent = input.corrupt
+  authority.loadAuthoritativePacket = input.corrupt
     ? vi.fn().mockRejectedValue(new Error('corrupt'))
-    : vi.fn().mockResolvedValue({});
+    : vi.fn().mockResolvedValue({ intent: {}, packet: {} });
   return authority;
 }
 
@@ -195,6 +195,9 @@ describe('Work execution epoch authority', () => {
     Object.defineProperty(authority, 'ctx', {
       value: {
         runStore: { commitGuarded },
+        workExecutionPacketStore: {
+          save: vi.fn().mockResolvedValue({ status: 'created', packet }),
+        },
       },
     });
 
