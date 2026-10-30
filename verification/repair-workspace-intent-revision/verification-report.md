@@ -5,9 +5,9 @@
 - Change: `repair-workspace-intent-revision`
 - Run: `change-repoctopus-repair-workspace-intent-revision-441f7bac1d922ebd`
 - Branch: `codex/repair-workspace-intent-revision`
-- Product implementation boundary: `70102a630e06d4995ddbf1db7a5d6e2c695eb626`
+- Product implementation boundary: `6e152126deb1e53d740567102ee912aedef743f4`
 - Build configuration: autonomous execution, TDD, standard review, worktree isolation
-- Build plan: `build-plan:f97fbe8a826c773742994433`
+- Build plan: `build-plan:a0cebf93eae460df69a08ec8`
 
 ## Behavior verified
 
@@ -17,6 +17,7 @@
 4. Protected self-hosting adoption accepts only the active Run's exact direct predecessor implementation pair; undeclared implementations still require migration.
 5. Execution retirement remains observable through bounded trajectory and OTLP attributes without introducing high-cardinality Metric labels.
 6. Archive revalidates the frozen Evidence fingerprint immediately before `specification.close`; drift returns the same Run to Verify, retires even a validated close checkpoint, and performs no Specification provider side effect.
+7. Incomplete Build Configure Host output is rejected before Action Outcome acceptance and remains correctable on the same invocation; a legacy accepted incomplete Outcome is retired through an authoritative Configure retry.
 
 ## TDD evidence
 
@@ -26,6 +27,7 @@
 - Verification identity refresh: commit `d438907` aligned pinned lifecycle evidence with `repoctopus-change@4.3.0` and refreshed the Comet-derived target digest.
 - Archive RED: commit `511f94f` pinned the missing frozen-close transition and side-effect-boundary checks.
 - Archive GREEN: commit `70102a6` reused the existing reverify path at execution time, advanced the protected lifecycle to `repoctopus-change@4.4.0`, and limited adoption to the active Run's exact direct predecessor.
+- Configure recovery: commit `6e15212` aligned Configure with Plan/Check submission correction and added a bounded retry path for already accepted legacy Outcomes.
 
 ## Verification commands
 
@@ -42,7 +44,7 @@ npm run verify
   managed execution package report reproduced commit and SHA-256
 
 npx vitest run test/managed-change-execution.e2e.test.ts
-  4 tests passed, including the real cross-process recovery fixture
+  4 tests passed, including the real cross-process recovery and Configure correction fixtures
 
 npx vitest run test/runtime.test.ts test/telemetry-mapping.test.ts test/change-lifecycle-domain.test.ts test/execution-workspace.test.ts
   39 tests passed
@@ -51,7 +53,7 @@ npx vitest run test/composition-compatibility.test.ts
   5 tests passed
 ```
 
-The full suite initially exposed two stale `4.2.0` verification expectations after the lifecycle definition had moved to `4.3.0`; those pins and the reproducible package report were refreshed and then passed. Archive close freshness subsequently advanced the definition to `4.4.0` with only the active `4.3.0` definition and exact protected plugin identities declared adoptable. A later full-suite run exceeded the former 120-second budget for one subprocess-heavy lifecycle scenario without an assertion failure. The scenario budget is now 240 seconds, while its behavior and assertions are unchanged; the final complete verification passed.
+The full suite initially exposed two stale `4.2.0` verification expectations after the lifecycle definition had moved to `4.3.0`; those pins and the reproducible package report were refreshed and then passed. Archive close freshness subsequently advanced the definition to `4.4.0` with only the active `4.3.0` definition and exact protected plugin identities declared adoptable. A later full-suite run exceeded the former 120-second budget for one subprocess-heavy lifecycle scenario without an assertion failure. The scenario budget is now 240 seconds, while its behavior and assertions are unchanged. The final self-host pass then exposed the asymmetric Configure correction path; after that defect was fixed, the complete verification passed again on the current product boundary.
 
 ## Store and repository checks
 

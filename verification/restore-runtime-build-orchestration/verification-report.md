@@ -3,10 +3,10 @@
 ## Reproducible subject
 
 - Change: `restore-runtime-build-orchestration`
-- Tested implementation commit: `70102a630e06d4995ddbf1db7a5d6e2c695eb626`
+- Tested implementation commit: `6e152126deb1e53d740567102ee912aedef743f4`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `939332`
-- Package SHA-256: `dc5aa870e01ae19945ac50da1fb5a354a2cf67fd03d62870ba627b0ba89d2afa`
+- Package bytes: `939816`
+- Package SHA-256: `ebdaf5a0ffff310693e3390f615ae1b151113383bb86c19aa227d29d3c6919e6`
 - Lifecycle definition: `repoctopus-change@4.4.0`
 - Lifecycle definition digest: `sha256:f0f3483f703115cdda4de783ab989c97ce3e65c308abf6f21ed5bda2e9913677`
 - Verification runId: `change-verification-workspace-restore-runtime-build-orchestration-9fda2eb7bf05fdf5`
@@ -115,6 +115,8 @@ Crash and response-loss coverage proves:
 Trajectory and OTLP mappings cover phase, Build Action, Work claim, Host invocation, submission, rejection, correction, acceptance, processing error, protected tool, Skill resolution/delivery/consumption, Validator, approval, Plan revision, delegation, continuation, and invalidation. Metric labels are bounded to action, execution mode, TDD mode, review mode, isolation, result, reason code, and known categories. Run, Work, submission, Task, package, repository, digest, free-form Skill, diagnostic, and Agent identities are excluded from metric labels.
 
 Acceptance tests reject all known bypasses: legacy `task.implement`, Build adoption, special Repair Work, Task reopening, Host-selected next Action, mode switching, review disabling, out-of-scope Skills, repository escape, missing delegation receipts, unconsumed Skill content, and a fifth planning artifact.
+
+Build Configuration uses the same immutable submission-correction boundary as Plan and Check. A fresh incomplete Host result is rejected before Action Outcome acceptance and can be corrected against the same invocation. A legacy accepted incomplete Outcome is retired through an authoritative Configure retry without editing Run Store state; the managed black-box fixture covers both paths.
 
 ## Verdict
 
