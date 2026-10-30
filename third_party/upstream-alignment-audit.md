@@ -7,7 +7,7 @@
 | 上游 | 旧发布 | 采用发布 | 已审计分支头 | 关系 |
 | --- | --- | --- | --- | --- |
 | DSH | `dsh-v0.2.1-rc.3` / `1f81c047fc48fa190a683e469daa699857e9afe8` | `dsh-v0.2.1-rc.5` / `b830ec950faba0a46dda564be3e2d854afed94f1` | `master` / `ce7073d51254c26cd63b22a60835b8f948deb447` | rc.3 → rc.5 → master 均为祖先链 |
-| Comet | `0.5.0` / `aeb1a6598034e28ce46b8422d4dbd8785e607bd7` | `0.5.1` / `35c9860b77b42bafa0c2d80d8d695889f888a924` | `master` / `4901cac9330f5ffe289abfa6daf8412bfa190dc0` | 0.5.0 → 0.5.1 → master 均为祖先链 |
+| Comet | `0.5.0` / `aeb1a6598034e28ce46b8422d4dbd8785e607bd7` | `0.5.1` / `35c9860b77b42bafa0c2d80d8d695889f888a924` | `master` / `9208b4beef7a71e45b1bbf734eee50af63e4059b` | 0.5.0 → 0.5.1 → master 均为祖先链 |
 
 两个上游许可证均为 MIT 且发布间文本摘要不变。基线 schema v2 明确区分：`pinnedTagCommit` 是产品采用和 provenance 的来源，`auditedBranchCommit` 只是每日漂移与候选审计边界。
 
@@ -58,7 +58,7 @@
 
 ### Comet 0.5.1 → master
 
-只有 `4901cac`：允许 Comet Native 在 Shape 确认前重定向 declared Specs，确认后仍受保护。Repoctopus 使用 OpenSpec Provider 与自己的规划批准摘要，不使用 Native Shape 状态根，因此不采用实现；保留“批准前可纠正、批准后旧批准失效”的交叉证据。
+该区间有两个修复：`4901cac` 允许 Comet Native 在 Shape 确认前重定向 declared Specs，确认后仍受保护；`9208b4b` 用原始 size/hash 证明 UTF-8 BOM 字节身份后再接受 candidate check，且不改写文件。Repoctopus 不使用 Native Shape 状态根，也没有这条未登记 Native candidate 路径，因此两者都不复制实现；分别保留“批准前可纠正、批准后旧批准失效”和“规范化前证明原始字节身份”的参考原则。
 
 ## 能力覆盖矩阵
 
