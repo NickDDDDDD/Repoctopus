@@ -41,6 +41,8 @@ Comet 0.5.1 的恢复审计给出的成熟约束是：锁内保留意图、锁�
 
 按 Run 隔离而不是全局去重，牺牲少量磁盘空间，换取明确的所有权、清理边界和无需引用计数的故障模型。目录属于本地私有 Runtime 状态并由现有 `.gitignore` 边界保护；它不是共享 Run 事实，也不进入 trajectory/checkpoint。终态 Run 的普通保留/清理策略同时覆盖 packet 内容，当前 Change 不新增独立 GC。
 
+组合层新增唯一内建插件 `work-execution-packet-store-file`，拥有独立 `work-execution-packet-store-write` authority、filesystem permission 与 `work-execution-packet: 1` state schema；Project composition 把 `workExecutionPacketStore` 列为 required service。`WorkExecutionCheckpoint` 一次升级到 schema 3，`work-execution-authority` 的 descriptor state schema 同步升级且不声明旧实现兼容。packet 自身保持现有 schema 2，存储 envelope 使用 schema 1；这区分了“执行包格式”和“Run 如何保证其可恢复”两个版本边界。
+
 备选方案：
 
 - **恢复时重新组装并比较摘要**：已经被真实自举证明错误；当前 Work 的合法写入会改变重组输入。
@@ -82,7 +84,7 @@ Comet 0.5.1 的恢复审计给出的成熟约束是：锁内保留意图、锁�
 - `skipped`：Provider 根据当前 schema 和官方状态明确确认该类工件不适用；digest 绑定 Provider identity、changeId、artifact kind、官方 skip 状态和相关 metadata identity。
 - `missing`：适用工件没有有效内容；不得带满足 digest。
 
-OpenSpec `status --json` 的 `artifactPaths` 继续用于验证实际内容；顶层 artifact 状态只用于识别官方 `skipped`，不能把“依赖已满足、可以开始写”的 `ready` 误认为内容已完成。Provider 要求四个官方 artifact kind 各有且只有一个规范化投影。`planningComplete` 和 strict validation 仍由 OpenSpec 官方结果提供。
+OpenSpec 1.14.3 的真实输出中，`status --json` 通过 `artifacts[].id/status` 报告 `specs: skipped`，同时 `artifactPaths.specs.existingOutputPaths` 为空。Adapter 因此继续用 `artifactPaths` 验证实际内容，只从顶层 `artifacts` 识别官方 `skipped`；不能把顶层“依赖已满足、可以开始写”的 `ready` 误认为内容已完成。Provider 要求四个官方 artifact kind 各有且只有一个规范化投影。`planningComplete` 和 strict validation 仍由 OpenSpec 官方结果提供。
 
 Planning approval 保持四个 `PlanningArtifactSnapshot`，但接受 `ready` 或 `skipped` 的稳定 digest。这样审批语义仍绑定四类协议，且不会伪造不存在的 delta-spec 文件。Workflow 的 Open Gate 删除固定 Set + `status === ready` 逻辑，改为调用领域 helper 检查 Provider-normalized satisfaction。
 
@@ -94,7 +96,7 @@ Planning approval 保持四个 `PlanningArtifactSnapshot`，但接受 `ready` �
 
 ### 5. 诊断严重级别保持原义并建立一致性不变量
 
-领域严重级别扩展为 `info | warning | error`。OpenSpec adapter 对输入做大小写归一化，只接受这三个明确值；未知值形成 Provider contract error 并使校验无效。最终结果遵守：
+领域严重级别扩展为 `info | warning | error`。OpenSpec 1.14.3 的真实校验输出使用 `items[].issues[].level = INFO|WARNING|ERROR`；Adapter 读取 `level`、做大小写归一化并只接受这三个明确值，不再读取不存在的 `severity` 后把所有值降成 error。未知值形成 Provider contract error 并使校验无效。最终结果遵守：
 
 ```text
 valid = processExitSuccess
@@ -119,11 +121,12 @@ Open Gate、planning manifest、planning approval、Design validator 和 Archive
 
 ### 7. 遥测记录决策结果，不记录敏感内容或高基数细节
 
-在现有 Trajectory/OTLP 管道中增加或扩展有界事件：
+在现有 Trajectory/OTLP 管道中增加四个有界事件：
 
-- packet 保存/恢复结果：`created | reused | recovered | missing | corrupt | legacy`；属性只含 runId、work kind、attempt、checkEpoch、packet digest 和结果分类。
-- Provider 工件观察：每类 `ready | skipped | missing`，artifact kind 为固定枚举；不含路径、正文或 metadata。
-- Provider 校验摘要：`valid`、最高 severity、info/warning/error 计数和 `contract-conflict` 布尔值；不把任意诊断 message 作为 Metric label。
+- `work.packet-stored`：`created | reused`；只在 packet 内容写入或幂等命中后记录。
+- `work.packet-recovered`：`recovered | missing | corrupt | legacy`；只表达按 checkpoint 读取的结果，不表示 Host 已执行。
+- `specification.artifacts-observed`：一次记录四类固定 artifact kind 的 `ready | skipped | missing`，不含路径、正文或 metadata。
+- `specification.validation-observed`：记录 `valid`、最高 severity、info/warning/error 计数和 `contract-conflict` 布尔值；不把任意诊断 message 作为 Metric label。
 
 Trace/Event 保留精确关联；Metrics 只使用固定枚举，不使用 changeId、digest、路径或诊断代码作为 label。Desktop 与 SigNoz 继续消费同一 OTLP 事实，不查询 packet store 或 RunStore。
 

@@ -33,7 +33,7 @@
       **Blocked by:** 2.1
       **Acceptance:** 文件只出现在 `.repoctopus/runs/<runId>/packets/`；同内容幂等、同 digest 异内容拒绝、无临时残留
       **Requirements:** managed-work-execution#持久事实只保存执行上下文身份
-- [ ] 2.3 把 packet store 注册到应用组合和测试 harness，验证 Cordis 生命周期、唯一 Provider 与缺失 Provider boot failure。
+- [ ] 2.3 将 `work-execution-packet-store-file` 以独立 authority/state schema 注册到应用组合和测试 harness，把 `workExecutionPacketStore` 加入 required services，并验证 Cordis 生命周期、唯一 Provider 与缺失 Provider boot failure。
       **Blocked by:** 2.2
       **Acceptance:** 生产和测试 composition 都解析唯一实现；重复/缺失实现启动失败且错误可定位
       **Requirements:** managed-work-execution#受管-work-必须从原执行断点恢复
@@ -64,7 +64,7 @@
       **Blocked by:** 3.2
       **Acceptance:** invoking/unknown/outcome/validated 四个断点均不重新组装或重复 invoke；伪造 packet digest/Host/invocation 被拒绝
       **Requirements:** managed-work-execution#受管-work-必须从原执行断点恢复
-- [ ] 3.4 对缺失/损坏 packet 与旧 checkpoint 返回精确 `content-missing-or-corrupt` 或 `migration_required` continuation，并删除任何旧重组兼容分支。
+- [ ] 3.4 将 WorkExecutionCheckpoint 一次升级到 schema 3；对缺失/损坏 packet 与旧 checkpoint 返回精确 `content-missing-or-corrupt` 或 `migration_required` continuation，并删除任何旧重组兼容分支。
       **Blocked by:** 3.3
       **Acceptance:** 负向测试证明 Runtime 保留原 claim、没有新 attempt/Host/Outcome/Store 修改，代码搜索不存在 legacy packet reconstruction
       **Requirements:** managed-work-execution#持久事实只保存执行上下文身份, managed-work-execution#受管-work-必须从原执行断点恢复
@@ -79,7 +79,7 @@
 
 ## 4. Specification Provider 归一化
 
-- [ ] 4.1 扩展 OpenSpec status parser，窄解析官方 artifact `skipped`，继续用实际输出路径证明 ready，并拒绝重复、未知或矛盾状态。
+- [ ] 4.1 扩展 OpenSpec status parser，窄解析 `artifacts[].id/status` 中的官方 `skipped`，继续用 `artifactPaths.*.existingOutputPaths` 证明 ready，并拒绝重复、未知或矛盾状态。
       **Blocked by:** 1.5
       **Acceptance:** 官方 skip fixture 投影 skipped；空但可开始写的 ready 状态不被误当完成；未知状态 fail closed
       **Requirements:** specification-authority#规格操作使用稳定领域契约
@@ -87,7 +87,7 @@
       **Blocked by:** 4.1
       **Acceptance:** 等价官方输出 digest 稳定，metadata 变化使旧 approval 失效，missing 不获得满足 digest
       **Requirements:** specification-authority#规格操作使用稳定领域契约, specification-authority#规格校验是推进前置事实
-- [ ] 4.3 修正诊断映射，大小写无关地保留 info/warning/error，未知 severity 形成 contract error，并通过 fixture 矩阵。
+- [ ] 4.3 修正诊断映射，读取 `issues[].level` 并大小写无关地保留 info/warning/error，未知 level 形成 contract error，并通过 fixture 矩阵。
       **Blocked by:** 1.5
       **Acceptance:** INFO 不阻断、WARNING 可见、ERROR 阻断、未知值 fail closed且原 code/message/path 在安全边界内保留
       **Requirements:** specification-authority#规格操作使用稳定领域契约
@@ -106,11 +106,11 @@
 
 ## 5. 遥测与可观测一致性
 
-- [ ] 5.1 为 packet create/reuse/recover/missing/corrupt/legacy 记录有界 Trajectory 事实并接入 OTLP 映射。
+- [ ] 5.1 通过 `work.packet-stored` 与 `work.packet-recovered` 为 create/reuse/recover/missing/corrupt/legacy 记录有界 Trajectory 事实并接入 OTLP 映射。
       **Blocked by:** 3.4
       **Acceptance:** 事件绑定 run/work/attempt/epoch/packet digest 和固定结果枚举，不含 packet 正文、路径、Prompt 或任意错误消息 label
       **Requirements:** managed-work-execution#受管-work-必须从原执行断点恢复
-- [ ] 5.2 为 Provider artifact ready/skipped/missing 与 validation severity counts/contract-conflict 记录有界事实并接入相同 OTLP 管道。
+- [ ] 5.2 通过 `specification.artifacts-observed` 与 `specification.validation-observed` 为 artifact ready/skipped/missing 和 validation severity counts/contract-conflict 记录有界事实，并接入相同 OTLP 管道。
       **Blocked by:** 4.5
       **Acceptance:** artifact kind/status 与 severity 是固定枚举，Metric labels 无 changeId/digest/path/诊断 code/message 高基数字段
       **Requirements:** specification-authority#规格操作使用稳定领域契约, specification-authority#规格校验是推进前置事实
