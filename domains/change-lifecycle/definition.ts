@@ -54,14 +54,8 @@ function validatorProfile(id: string) {
 export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
   schemaVersion: 3,
   id: 'repoctopus-change',
-  version: '4.2.0',
-  compatibleDigests: [
-    'sha256:ce90da179b201e1824b559bf7a65a87e5b186a6a0bf82a70da0a907d12f94203',
-    'sha256:4bef956969843eb8862947abdedaf5de59d8aa34237debc3387996b8944e8952',
-    'sha256:3890da04d20fb364e363a976b21877f0198ca22da3c00af4de302de0f48b430b',
-    'sha256:8be6236a13ddf44b9174517779cc4992b718a1ebff41cb3b69860c6a86e1c8d5',
-    'sha256:989d74305a3e1a9783cc2ee317c7e889bde6c587cb74e2de117e4c41c3e0e44f',
-  ],
+  version: '4.4.0',
+  compatibleDigests: ['sha256:2d4fe66568481105e1586620c4f1ad6abf0df3d86b84e4bbb08b9eaf22737f6c'],
   phases: [
     {
       phase: 'open',
@@ -288,6 +282,14 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       requiredValidatorProfile: 'open.intake-ready',
     },
     {
+      id: 'open.workspace-intent-revised',
+      kind: 'advance',
+      from: { phase: 'open', statuses: ['waiting'] },
+      to: { phase: 'design', status: 'running' },
+      trigger: 'trusted-execution-workspace-intent-revised',
+      requiredValidatorProfile: 'open.intake-ready',
+    },
+    {
       id: 'open.invalid',
       kind: 'self',
       from: { phase: 'open', statuses: ['running', 'waiting', 'blocked'] },
@@ -325,6 +327,14 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       from: { phase: 'build', statuses: ['running'] },
       to: { phase: 'build', status: 'waiting' },
       trigger: 'configuration-proposal-validated',
+      requiredValidatorProfile: 'build.configuration-approved',
+    },
+    {
+      id: 'build.workspace-intent-revision-required',
+      kind: 'fallback',
+      from: { phase: 'build', statuses: ['running'] },
+      to: { phase: 'open', status: 'waiting' },
+      trigger: 'configuration-binding-requires-workspace-intent-revision',
       requiredValidatorProfile: 'build.configuration-approved',
     },
     {
@@ -716,8 +726,8 @@ function assertProtectedPath(
     (transition) =>
       transition.kind === kind && transition.from.phase === from && transition.to.phase === to,
   );
-  if (matches.length !== 1) {
-    throw new Error(`Lifecycle definition requires exactly one protected ${from} -> ${to} path`);
+  if (matches.length === 0) {
+    throw new Error(`Lifecycle definition requires a protected ${from} -> ${to} path`);
   }
 }
 

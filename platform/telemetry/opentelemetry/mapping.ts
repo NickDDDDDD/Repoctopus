@@ -2,6 +2,10 @@ import type { Attributes } from '@opentelemetry/api';
 
 import type { TelemetryBatch } from '../../../domains/runtime/types.js';
 import type { TrajectoryEvent } from '../../../domains/trajectory/types.js';
+import {
+  workspaceIntentMetricAttributes,
+  workspaceIntentTraceAttributes,
+} from '../workspace-intent-mapping.js';
 
 const SAFE_DATA_KEYS = new Set([
   'actionId',
@@ -228,6 +232,7 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
   }
   addEvidenceCorrelation(attributes, event);
   if (event.type === 'change.lifecycle.transitioned') {
+    Object.assign(attributes, workspaceIntentTraceAttributes(event));
     const observationKind = scalar(event.data.observationKind);
     if (observationKind !== undefined) {
       attributes['repoctopus.lifecycle.observation.kind'] = observationKind;
@@ -360,6 +365,7 @@ export function workflowEventMetricAttributes(
   return {
     'repoctopus.event.type': event.type,
     'repoctopus.workflow.name': batch.run.workflowName,
+    ...workspaceIntentMetricAttributes(event),
   };
 }
 

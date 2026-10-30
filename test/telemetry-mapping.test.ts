@@ -13,6 +13,7 @@ import {
 import {
   executionMetricAttributes,
   safeEventAttributes,
+  workflowEventMetricAttributes,
 } from '../platform/telemetry/opentelemetry/mapping.js';
 import { compositionFixture, projectFixture, workflowFixture } from './helpers/fixtures.js';
 
@@ -330,5 +331,167 @@ describe('telemetry mapping', () => {
       'repoctopus.execution.reason.code': 'outcome-rejected',
     });
     expect(JSON.stringify(metric)).not.toMatch(/submission-private|sha256:|Private Task|C:\//u);
+  });
+
+  it('exports bounded workspace intent recovery facts without high-cardinality Metric labels', () => {
+    const workflow = workflowFixture();
+    const project = projectFixture();
+    const base = startRun({
+      workflow,
+      runId: 'run-workspace-intent-telemetry',
+      projectSnapshotDigest: project.digest,
+      composition: compositionFixture(),
+      timestamp: '2026-01-01T00:00:00.000Z',
+      traceId: '5'.repeat(32),
+    });
+    const initial = createChangeLifecycleSnapshot({
+      identity: {
+        workspaceId: project.projectId,
+        changeId: 'change-workspace-intent-telemetry',
+        runId: base.runId,
+      },
+    });
+    const run = { ...base, changeLifecycle: initial };
+    const event: TrajectoryEvent = {
+      schemaVersion: 1,
+      sequence: 12,
+      eventId: 'workspace-intent-revision-required',
+      timestamp: '2026-01-01T00:12:00.000Z',
+      type: 'change.lifecycle.transitioned',
+      runId: run.runId,
+      stateVersion: 12,
+      compositionDigest: run.composition.compositionDigest,
+      data: {
+        changeLifecycleTransition: {
+          schemaVersion: 2,
+          transitionId: 'build.workspace-intent-revision-required',
+          definition: initial.definition,
+          revision: 12,
+          from: { phase: 'build', status: 'running', checkEpoch: 11 },
+          to: { phase: 'open', status: 'waiting', checkEpoch: 12 },
+          workId: null,
+          waitId: 'workspace-intent:request-1',
+          work: null,
+          wait: { waitId: 'workspace-intent:request-1', kind: 'human-decision' },
+          workspaceIntentRevision: {
+            errorCode: 'current-linked-worktree',
+            previousIsolation: 'current',
+          },
+        },
+        observationKind: 'workspace-intent-revision-required',
+        observation: {
+          kind: 'workspace-intent-revision-required',
+          errorCode: 'current-linked-worktree',
+          previousIsolation: 'current',
+          reason: 'Private failure at C:/private/repository on branch secret-feature',
+          proposalDigest: `sha256:${'c'.repeat(64)}`,
+        },
+        executionRetirement: {
+          reason: 'workspace-intent-revision',
+          retiredWorkId: 'build.configure:private-work-identity',
+          retiredCheckEpoch: 11,
+          nextWorkId: null,
+          nextCheckEpoch: 12,
+        },
+      },
+    };
+    const batch: TelemetryBatch = {
+      run,
+      workflow,
+      projectSnapshot: project,
+      events: [event],
+      trajectory: [event],
+    };
+
+    const records = acceptedChangeLifecycleTelemetry(batch, event);
+    expect(records).toHaveLength(4);
+    expect(records[0]?.attributes).toMatchObject({
+      'repoctopus.change.phase.before': 'build',
+      'repoctopus.change.phase': 'open',
+      'repoctopus.workspace.binding.error.code': 'current-linked-worktree',
+      'repoctopus.workspace.binding.recovery': 'intent-revision',
+      'repoctopus.workspace.isolation.previous': 'current',
+      'repoctopus.execution.retired': true,
+      'repoctopus.execution.retirement.reason': 'workspace-intent-revision',
+      'repoctopus.execution.retirement.work.id': 'build.configure:private-work-identity',
+      'repoctopus.execution.retirement.check_epoch': 11,
+      'repoctopus.execution.next.check_epoch': 12,
+    });
+    expect(JSON.stringify(records)).not.toMatch(
+      /C:\/private|secret-feature|Private failure|sha256:c/u,
+    );
+
+    const metric = workflowEventMetricAttributes(batch, event);
+    expect(metric).toEqual({
+      'repoctopus.event.type': 'change.lifecycle.transitioned',
+      'repoctopus.workflow.name': batch.run.workflowName,
+      'repoctopus.change.phase.before': 'build',
+      'repoctopus.change.phase': 'open',
+      'repoctopus.workspace.binding.error.code': 'current-linked-worktree',
+      'repoctopus.workspace.binding.recovery': 'intent-revision',
+      'repoctopus.workspace.isolation.previous': 'current',
+      'repoctopus.workspace.isolation.current': 'none',
+      'repoctopus.execution.retired': true,
+      'repoctopus.execution.retirement.reason': 'workspace-intent-revision',
+    });
+    expect(JSON.stringify(metric)).not.toMatch(
+      /run-workspace|change-workspace|private-work|sha256:|C:\/private|secret-feature|Private failure/u,
+    );
+
+    const resumed: TrajectoryEvent = {
+      ...event,
+      sequence: 13,
+      eventId: 'workspace-intent-revised',
+      stateVersion: 13,
+      data: {
+        changeLifecycleTransition: {
+          schemaVersion: 2,
+          transitionId: 'open.workspace-intent-revised',
+          definition: initial.definition,
+          revision: 13,
+          from: { phase: 'open', status: 'waiting', checkEpoch: 12 },
+          to: { phase: 'design', status: 'running', checkEpoch: 13 },
+          workId: 'specification.plan:next-private-work-identity',
+          waitId: null,
+          work: null,
+          wait: null,
+          workspaceIntentRevision: {
+            errorCode: 'current-linked-worktree',
+            previousIsolation: 'current',
+            nextIsolation: 'worktree',
+          },
+        },
+        observationKind: 'workspace-intent-revised',
+        observation: {
+          kind: 'workspace-intent-revised',
+          actorId: 'private-person-identity',
+          intent: {
+            isolation: 'worktree',
+            targetBranch: 'secret-feature',
+            semanticDigest: `sha256:${'d'.repeat(64)}`,
+          },
+        },
+        executionRetirement: {
+          reason: 'workspace-intent-revision',
+          retiredWorkId: 'build.configure:private-work-identity',
+          retiredCheckEpoch: 11,
+          nextWorkId: 'specification.plan:next-private-work-identity',
+          nextCheckEpoch: 13,
+        },
+      },
+    };
+    const resumedBatch = { ...batch, events: [resumed], trajectory: [event, resumed] };
+    expect(acceptedChangeLifecycleTelemetry(resumedBatch, resumed)[0]?.attributes).toMatchObject({
+      'repoctopus.change.phase.before': 'open',
+      'repoctopus.change.phase': 'design',
+      'repoctopus.workspace.isolation.previous': 'current',
+      'repoctopus.workspace.isolation.current': 'worktree',
+      'repoctopus.execution.next.work.id': 'specification.plan:next-private-work-identity',
+    });
+    const resumedMetric = workflowEventMetricAttributes(resumedBatch, resumed);
+    expect(resumedMetric['repoctopus.workspace.isolation.current']).toBe('worktree');
+    expect(JSON.stringify(resumedMetric)).not.toMatch(
+      /private-person|next-private-work|secret-feature|sha256:/u,
+    );
   });
 });

@@ -1,3 +1,5 @@
+import path from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import { compareCompositions } from '../domains/composition/compatibility.js';
@@ -5,6 +7,7 @@ import type {
   CompositionIdentitySnapshot,
   PluginImplementationIdentity,
 } from '../domains/composition/types.js';
+import { createRepoctopusBuiltinCatalog } from '../plugins/builtin-catalog.js';
 
 const digest = (character: string): `sha256:${string}` => `sha256:${character.repeat(64)}`;
 
@@ -81,5 +84,55 @@ describe('composition compatibility', () => {
         composition(digest('2'), [afterPlugin]),
       ),
     ).toMatchObject({ status: 'migration_required' });
+  });
+
+  it('limits protected self-hosting adoption to the active Run direct predecessor', async () => {
+    const catalog = await createRepoctopusBuiltinCatalog(path.resolve(import.meta.dirname, '..'));
+    const expected = new Map([
+      [
+        'workflow-runs',
+        {
+          codeDigest: 'sha256:24235a25f865ec4309b2967ff67cbb8aad7b8d563896b97bf3b311d26f814596',
+          descriptorDigest:
+            'sha256:7ad498f589335e914db2419a995c737619e02cdc1503d1c2d84b11e0c7872064',
+        },
+      ],
+      [
+        'managed-work-executor',
+        {
+          codeDigest: 'sha256:a3d18d9854d176ad2a88b8597dc3fa80b6e64ce68faefe1d83c09ae6af62a9ba',
+          descriptorDigest:
+            'sha256:4e5f48cad130c375be7acc2abdbf3ff67fd9659f11a06f0a62120218bf6865fa',
+        },
+      ],
+      [
+        'lifecycle-definition-builtin',
+        {
+          codeDigest: 'sha256:86232bbff896a11e5e922e60f9c0b2a6e755c0e7d3624717227d6882e1fe2d01',
+          descriptorDigest:
+            'sha256:e8146a5f4cc7824dfdf37f685fdff74e16808c3f2365ad86f53c2eb3d2f9034d',
+        },
+      ],
+      [
+        'lifecycle-validator-builtin',
+        {
+          codeDigest: 'sha256:4805d959c0b2e3732aa1daffcc689934a660ce226db7efc7a4d6f87cdfb688a0',
+          descriptorDigest:
+            'sha256:357249984ada9aae4b8f8f2df4373110570ce326991a33970876394f253917b1',
+        },
+      ],
+      [
+        'lifecycle-extension-builtin',
+        {
+          codeDigest: 'sha256:b29078511a9eff1f796513e755b006c65377e917dd6e3cf05b429db560ac0593',
+          descriptorDigest:
+            'sha256:25a81afeeff570caaa23f277244930e34d9037e1b913ecd267a737089e46f16a',
+        },
+      ],
+    ]);
+
+    for (const [pluginId, predecessor] of expected) {
+      expect(catalog.get(pluginId)?.descriptor.compatibleImplementations).toEqual([predecessor]);
+    }
   });
 });

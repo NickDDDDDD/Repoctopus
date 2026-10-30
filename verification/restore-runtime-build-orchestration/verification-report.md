@@ -3,12 +3,12 @@
 ## Reproducible subject
 
 - Change: `restore-runtime-build-orchestration`
-- Tested implementation commit: `55612914685abc51e62ee2d776f4435d1be9bbed`
+- Tested implementation commit: `6e152126deb1e53d740567102ee912aedef743f4`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `935751`
-- Package SHA-256: `26d75a3789de6fdf0e58a2f05085be0be95e0e723b5fa045a026254de2f32d45`
-- Lifecycle definition: `repoctopus-change@4.2.0`
-- Lifecycle definition digest: `sha256:c84278b1e82a0146759486ef68808c4027d03d211481793149af53e1b720e7fb`
+- Package bytes: `939816`
+- Package SHA-256: `ebdaf5a0ffff310693e3390f615ae1b151113383bb86c19aa227d29d3c6919e6`
+- Lifecycle definition: `repoctopus-change@4.4.0`
+- Lifecycle definition digest: `sha256:f0f3483f703115cdda4de783ab989c97ce3e65c308abf6f21ed5bda2e9913677`
 - Verification runId: `change-verification-workspace-restore-runtime-build-orchestration-9fda2eb7bf05fdf5`
 - Black-box runId: `change-managed-blackbox-managed-blackbox-a56af5c947f984ce`
 - Build Configuration: `build-configuration:984df01c5c917e6286a1e112`
@@ -26,7 +26,7 @@ Run on Windows with Node.js `24.21.0`:
 ```text
 npm run verify
   TypeScript, desktop TypeScript, ESLint, generated output, brand and architecture checks passed
-  142 test files passed; 551 tests passed and 2 skipped
+  142 test files passed; 563 tests passed and 2 skipped
   provenance passed; OpenSpec strict validation passed 15 items with 0 failures
   this report's commit ancestry and npm package checksum were reproduced
 
@@ -62,6 +62,13 @@ Runtime invalidated the stale verification, returned through the ordinary Build 
 and retained the historical invalidation in Build Protocol. Acceptance of the replacement Plan now
 clears the transient `verificationInvalidation`, so the next Plan Evidence Work is a valid snapshot
 instead of a permanent invariant failure.
+
+Archive now repeats that freshness guarantee at the last responsible moment before
+`specification.close`. A close Work whose frozen Evidence fingerprint no longer matches the
+repository is atomically replaced by a new Verify Work before any Specification provider call. The
+old validated execution checkpoint is retired while its submitted Outcome remains in trajectory;
+planning semantic drift continues through the existing Verify-to-Design path instead of a second
+Archive recovery protocol. Closure or publication receipts remain terminal side-effect boundaries.
 
 Plan and Check additionally recover the crash window between accepted Outcome validation and
 lifecycle projection. A `validated` checkpoint is reusable only when its validator identity,
@@ -108,6 +115,8 @@ Crash and response-loss coverage proves:
 Trajectory and OTLP mappings cover phase, Build Action, Work claim, Host invocation, submission, rejection, correction, acceptance, processing error, protected tool, Skill resolution/delivery/consumption, Validator, approval, Plan revision, delegation, continuation, and invalidation. Metric labels are bounded to action, execution mode, TDD mode, review mode, isolation, result, reason code, and known categories. Run, Work, submission, Task, package, repository, digest, free-form Skill, diagnostic, and Agent identities are excluded from metric labels.
 
 Acceptance tests reject all known bypasses: legacy `task.implement`, Build adoption, special Repair Work, Task reopening, Host-selected next Action, mode switching, review disabling, out-of-scope Skills, repository escape, missing delegation receipts, unconsumed Skill content, and a fifth planning artifact.
+
+Build Configuration uses the same immutable submission-correction boundary as Plan and Check. A fresh incomplete Host result is rejected before Action Outcome acceptance and can be corrected against the same invocation. A legacy accepted incomplete Outcome is retired through an authoritative Configure retry without editing Run Store state; the managed black-box fixture covers both paths.
 
 ## Verdict
 

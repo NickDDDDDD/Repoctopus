@@ -66,7 +66,12 @@ export async function reviewHumanDecision(options: {
   details: readonly string[];
   input: NodeJS.ReadableStream;
   output: NodeJS.WritableStream;
-}): Promise<{ decision: SpecificationApprovalDecision; comment?: string }> {
+  selectIsolation?: boolean;
+}): Promise<{
+  decision: SpecificationApprovalDecision;
+  comment?: string;
+  isolation?: ExecutionIsolation;
+}> {
   const terminal = createInterface({ input: options.input, output: options.output });
   try {
     options.output.write(
@@ -83,8 +88,29 @@ export async function reviewHumanDecision(options: {
             : (() => {
                 throw new Error('Decision must be 1, 2, or 3');
               })();
+    let isolation: ExecutionIsolation | undefined;
+    if (options.selectIsolation && decision === 'approve') {
+      options.output.write(
+        '\nReplacement execution isolation:\n1) Current checkout\n2) Branch checkout\n3) Linked worktree\n',
+      );
+      const isolationAnswer = (await terminal.question('Isolation [1-3]: ')).trim();
+      isolation =
+        isolationAnswer === '1'
+          ? 'current'
+          : isolationAnswer === '2'
+            ? 'branch'
+            : isolationAnswer === '3'
+              ? 'worktree'
+              : (() => {
+                  throw new Error('Isolation must be 1, 2, or 3');
+                })();
+    }
     const comment = (await terminal.question('Comment (optional): ')).trim();
-    return { decision, ...(comment ? { comment } : {}) };
+    return {
+      decision,
+      ...(isolation ? { isolation } : {}),
+      ...(comment ? { comment } : {}),
+    };
   } finally {
     terminal.close();
   }

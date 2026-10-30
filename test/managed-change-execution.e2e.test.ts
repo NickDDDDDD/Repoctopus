@@ -1,8 +1,9 @@
 import { execFile } from 'node:child_process';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
+import { build } from 'esbuild';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { bootProjectComposition } from '../app/boot/bootstrap.js';
@@ -188,6 +189,8 @@ describe('managed Change execution production composition', () => {
       for (const key of environmentKeys) process.env[key] = environment[key];
       let application = await bootProjectComposition(productRoot, workspace);
       try {
+        let invalidConfigurationSubmitted = false;
+        let correctedConfigurationResult: WorkExecutionResult | undefined;
         let invalidPlanSubmitted = false;
         let correctedPlanResult: WorkExecutionResult | undefined;
         let invalidCheckSubmitted = false;
@@ -271,12 +274,18 @@ describe('managed Change execution production composition', () => {
                 } | null;
               };
               if (packet.work.kind === 'build.configure') {
-                return {
+                const candidate = {
                   schemaVersion: 1,
                   kind: 'build-configuration-candidate',
                   executionMode,
                   tddMode: 'tdd',
-                };
+                } satisfies WorkExecutionResult;
+                correctedConfigurationResult = candidate;
+                if (!multiRepository && executionMode === 'autonomous' && !invalidConfigurationSubmitted) {
+                  invalidConfigurationSubmitted = true;
+                  return undefined;
+                }
+                return candidate;
               }
               if (packet.work.kind === 'build.plan') {
                 const candidate = {
@@ -455,19 +464,13 @@ describe('managed Change execution production composition', () => {
             status: 'blocked',
             currentWork: null,
           },
-          continuation: { reason: 'validator-pending' },
+          continuation: { reason: 'transition-pending' },
         });
-        expect((await status()).state.workExecution).toMatchObject({
-          status: 'outcome',
-          workId: designWorkId,
-        });
+        expect((await status()).state.workExecution).toBeUndefined();
         const waiting = await next();
         transientDesignFailure.mockRestore();
         expect(waiting.value.changeLifecycle).toMatchObject({ phase: 'design', status: 'waiting' });
-        expect((await status()).state.workExecution).toMatchObject({
-          status: 'outcome',
-          workId: designWorkId,
-        });
+        expect((await status()).state.workExecution).toBeUndefined();
         const approval = await application.context.commandRouter.execute<
           { changeId: string },
           SpecificationApprovalState | null
@@ -490,10 +493,39 @@ describe('managed Change execution production composition', () => {
           currentWork: { kind: 'build.configure' },
         });
         await next();
+        const configurationInvocation = capture.invocations.findLast(
+          (entry) => entry.packet.work.kind === 'build.configure',
+        );
         invocationKinds.push(...capture.invocations.map((item) => item.packet.work.kind));
         capture.dispose();
         await application.close();
         application = await bootProjectComposition(productRoot, workspace);
+        if (!multiRepository && executionMode === 'autonomous') {
+          if (!configurationInvocation || !correctedConfigurationResult) {
+            throw new Error('missing captured Build Configuration correction context');
+          }
+          expect((await status()).state.workExecution).toMatchObject({
+            workId: configurationInvocation.packet.work.workId,
+            status: 'invoking',
+            continuation: 'awaiting-correction',
+            pendingSubmission: null,
+            rejectedSubmissions: [{ rejection: { reasonCode: 'output-invalid' } }],
+          });
+          await application.context.managedWorkExecutor.acceptExternalOutcome({
+            schemaVersion: 3,
+            runId,
+            submissionId: 'corrected-build-configuration-1',
+            invocationId: configurationInvocation.session.invocationId,
+            hostId: 'capturing-work-execution-host',
+            packetDigest: configurationInvocation.session.packetDigest,
+            status: 'succeeded',
+            summary: 'Corrected Build Configuration selects an executable mode',
+            consumedLayerDigests: configurationInvocation.packet.context.layers
+              .filter((layer) => ['action-skill', 'augmentation-skill'].includes(layer.kind))
+              .map((layer) => layer.digest),
+            result: correctedConfigurationResult,
+          });
+        }
         const configurationWait = await next();
         capture = installHost();
         expect(configurationWait.value.changeLifecycle).toMatchObject({
@@ -585,14 +617,7 @@ describe('managed Change execution production composition', () => {
           });
           afterPlanValidation = await next();
           const accepted = await status();
-          expect(accepted.state.workExecution).toMatchObject({
-            workId: planInvocation.packet.work.workId,
-            attempt: planInvocation.packet.claim.attempt,
-            checkEpoch: planInvocation.packet.claim.checkEpoch,
-            status: 'validated',
-            acceptedSubmission: { submissionId: 'corrected-build-plan-1' },
-          });
-          expect(accepted.state.workExecution?.rejectedSubmissions).toHaveLength(1);
+          expect(accepted.state.workExecution).toBeUndefined();
         }
         capture = installHost();
         let afterPlan: RunStatusView;
@@ -632,16 +657,133 @@ describe('managed Change execution production composition', () => {
           currentWork: { kind: 'build.execute' },
           build: { action: 'execute', planRevision: 1 },
         });
-        await next();
-        const afterFirstPackage = await next();
-        expect(afterFirstPackage.value.changeLifecycle).toMatchObject({
+        let afterFirstPackage: RunStatusView;
+        let afterAllPackages: RuntimeResult<RunStatusView>;
+        if (!multiRepository && executionMode === 'autonomous') {
+          const successAcceptanceInterruption = vi
+            .spyOn(application.context.workDispatcher, 'acceptOutcome')
+            .mockRejectedValueOnce(
+              new Error('simulated interruption after external package submission'),
+            );
+          await expect(next()).rejects.toThrow(
+            'simulated interruption after external package submission',
+          );
+          successAcceptanceInterruption.mockRestore();
+          expect((await status()).state.workExecution).toMatchObject({
+            status: 'submitted',
+            pendingSubmission: { outcome: { status: 'succeeded' } },
+          });
+
+          await restartApplication();
+          const packageCoordinator = Reflect.get(
+            application.context.workflowRuns,
+            'coordinator',
+          ) as {
+            acceptChangeObservation: (...args: unknown[]) => Promise<unknown>;
+          };
+          const packageProjectionInterruption = vi
+            .spyOn(packageCoordinator, 'acceptChangeObservation')
+            .mockRejectedValueOnce(
+              new Error('simulated interruption after package Outcome validation'),
+            );
+          await expect(next()).rejects.toThrow(
+            'simulated interruption after package Outcome validation',
+          );
+          packageProjectionInterruption.mockRestore();
+          expect((await status()).state.workExecution).toMatchObject({
+            status: 'validated',
+            acceptedSubmission: { outcome: { status: 'succeeded' } },
+            validatorId: 'build.package-valid',
+          });
+          const nextWorkPersistenceInterruption = vi
+            .spyOn(application.context.workExecutionAuthority, 'recordWorkCreated')
+            .mockRejectedValueOnce(
+              new Error('simulated interruption after next package transition'),
+            );
+          await expect(next()).rejects.toThrow(
+            'simulated interruption after next package transition',
+          );
+          nextWorkPersistenceInterruption.mockRestore();
+          afterFirstPackage = await status();
+          expect(afterFirstPackage.state.workExecution).toBeUndefined();
+
+          await restartApplication();
+
+          const packageHost = application.context.workExecutionHosts.get(
+            'capturing-work-execution-host',
+          );
+          if (!packageHost) throw new Error('missing managed package Host');
+          const failedInvocation = vi
+            .spyOn(packageHost, 'invoke')
+            .mockImplementationOnce((packet, session) =>
+              Promise.resolve({
+                schemaVersion: 1,
+                invocationId: session.invocationId,
+                hostId: packageHost.identity.id,
+                packetDigest: packet.identity.packetDigest,
+                status: 'failed',
+                summary: 'simulated implementation finding from an external package Runner',
+                consumedLayerDigests: packet.context.layers
+                  .filter((layer) => ['action-skill', 'augmentation-skill'].includes(layer.kind))
+                  .map((layer) => layer.digest),
+                findings: [
+                  {
+                    kind: 'implementation_failure',
+                    summary: 'retry the bounded package without revising Design',
+                    taskIds: ['1.2'],
+                    requirementIds: ['managed-demo#managed-execution'],
+                  },
+                ],
+                completedAt: new Date().toISOString(),
+              }),
+            );
+          const failureAcceptanceInterruption = vi
+            .spyOn(application.context.workDispatcher, 'acceptOutcome')
+            .mockRejectedValueOnce(
+              new Error('simulated interruption after failed external package submission'),
+            );
+          await expect(next()).rejects.toThrow(
+            'simulated interruption after failed external package submission',
+          );
+          failedInvocation.mockRestore();
+          failureAcceptanceInterruption.mockRestore();
+          expect((await status()).state.workExecution).toMatchObject({
+            status: 'submitted',
+            pendingSubmission: {
+              outcome: {
+                status: 'failed',
+                findings: [{ kind: 'implementation_failure' }],
+              },
+            },
+          });
+
+          await restartApplication();
+          const acceptedFailure = await next();
+          expect(acceptedFailure.diagnostics).toContainEqual(
+            expect.objectContaining({ code: 'change.work-failure-accepted' }),
+          );
+          expect((await status()).state.workExecution).toMatchObject({
+            status: 'outcome',
+            actionOutcome: { status: 'failed' },
+            hostOutcome: {
+              status: 'failed',
+              findings: [{ kind: 'implementation_failure' }],
+            },
+          });
+          await next();
+          afterAllPackages = await next();
+        } else {
+          await next();
+          afterFirstPackage = (await next()).value;
+          await restartApplication();
+          await next();
+          afterAllPackages = await next();
+        }
+        expect(afterFirstPackage.changeLifecycle).toMatchObject({
           phase: 'build',
           currentWork: { kind: 'build.execute' },
           taskProgress: { completed: 1 },
         });
-        await restartApplication();
-        await next();
-        const afterAllPackages = await next();
         expect(
           afterAllPackages.value.changeLifecycle,
           JSON.stringify(afterAllPackages.diagnostics),
@@ -721,13 +863,7 @@ describe('managed Change execution production composition', () => {
           });
           afterCheck = await next();
           const accepted = await status();
-          expect(accepted.state.workExecution).toMatchObject({
-            workId: checkInvocation.packet.work.workId,
-            attempt: checkInvocation.packet.claim.attempt,
-            checkEpoch: checkInvocation.packet.claim.checkEpoch,
-            status: 'validated',
-            acceptedSubmission: { submissionId: 'corrected-build-check-1' },
-          });
+          expect(accepted.state.workExecution).toBeUndefined();
         }
         expect(afterCheck.value.changeLifecycle).toMatchObject({
           phase: 'verify',
@@ -1063,6 +1199,367 @@ describe('managed Change execution production composition', () => {
         }
       }
     },
-    120_000,
+    240_000,
   );
+
+  it('recovers one persisted Run from current to worktree across process restarts', async () => {
+    const root = await temporaryDirectory('repoctopus-workspace-intent-recovery-');
+    cleanup.push(root);
+    const remote = path.join(root, 'workspace.git');
+    await mkdir(remote);
+    await execFileAsync('git', ['init', '--bare', '--initial-branch=main'], { cwd: remote });
+    const workspace = await createGitRepository(root, 'workspace', remote);
+    await execFileAsync('git', ['push', '--set-upstream', 'origin', 'main'], { cwd: workspace });
+    await execFileAsync('git', ['switch', '-c', 'spec/intent-recovery-e2e'], {
+      cwd: workspace,
+    });
+    await execFileAsync('git', ['push', '--set-upstream', 'origin', 'spec/intent-recovery-e2e'], {
+      cwd: workspace,
+    });
+    const environment = await createOpenSpecStoreEnvironment(
+      root,
+      workspace,
+      'intent-recovery-e2e',
+    );
+    const changeRoot = path.join(workspace, 'openspec', 'changes', 'intent-recovery-e2e');
+    await mkdir(path.join(changeRoot, 'specs', 'workspace-recovery'), { recursive: true });
+    await Promise.all([
+      writeFile(path.join(workspace, '.gitignore'), '.repoctopus/\n'),
+      writeFile(
+        path.join(workspace, 'repoctopus.yaml'),
+        JSON.stringify({
+          apiVersion: 'repoctopus/v1alpha1',
+          kind: 'RepoctopusWorkspace',
+          workspace: { id: 'intent-recovery-e2e', repositoryId: 'workspace' },
+          repositories: [{ id: 'workspace', path: '.' }],
+          profiles: [
+            {
+              id: 'verify',
+              nodes: [
+                {
+                  id: 'workspace-check',
+                  type: 'command',
+                  repository: 'workspace',
+                  covers: ['*'],
+                  executable: process.execPath,
+                  args: ['-e', 'process.exit(0)'],
+                },
+              ],
+            },
+          ],
+          specificationProvider: {
+            id: 'specification-openspec',
+            store: { id: 'intent-recovery-e2e', repositoryId: 'workspace' },
+          },
+        }),
+      ),
+      writeFile(
+        path.join(changeRoot, 'proposal.md'),
+        '# Proposal\n\n## Why\n\nProve same-Run Workspace recovery.\n\n## What Changes\n\n- Recover a persisted current intent to worktree isolation.\n\n## Capabilities\n\n### New Capabilities\n\n- `workspace-recovery`: recover one Run.\n\n### Modified Capabilities\n\n## Impact\n\n- Runtime recovery only.\n',
+      ),
+      writeFile(
+        path.join(changeRoot, 'design.md'),
+        '# Design\n\n## Context\n\nA checkout can become a linked worktree after approval.\n\n## Goals / Non-Goals\n\n**Goals:**\n- Preserve one Run while revising isolation.\n\n**Non-Goals:**\n- Edit Runtime Store files.\n\n## Decisions\n\nUse the protected Workspace intent decision.\n',
+      ),
+      writeFile(
+        path.join(changeRoot, 'tasks.md'),
+        '# Tasks\n\n- [ ] 1.1 Prove same-Run recovery.\n  **Acceptance:** The Run reaches worktree-backed Design.\n  **Requirements:** workspace-recovery#same-run-recovery\n',
+      ),
+      writeFile(
+        path.join(changeRoot, 'specs', 'workspace-recovery', 'spec.md'),
+        '# Workspace Recovery Delta\n\n## ADDED Requirements\n\n### Requirement: Same Run recovery\n\nThe Runtime MUST preserve the Run identity while revising Workspace isolation.\n\n#### Scenario: Current checkout becomes linked\n\n- **WHEN** Build Configure cannot bind current isolation\n- **THEN** the same Run returns through Open to worktree-backed Design\n',
+      ),
+    ]);
+    await execFileAsync('git', ['add', '.'], { cwd: workspace });
+    await execFileAsync('git', ['commit', '-m', 'test: prepare workspace recovery change'], {
+      cwd: workspace,
+    });
+    await execFileAsync('git', ['push'], { cwd: workspace });
+
+    const started = await runCli<RunStatusView>({
+      packageRoot: productRoot,
+      cwd: workspace,
+      environment,
+      args: [
+        'run',
+        'start',
+        '--workspace',
+        workspace,
+        '--change',
+        'intent-recovery-e2e',
+        '--target',
+        'main',
+      ],
+    });
+    const runId = started.runId!;
+    const environmentKeys = [
+      'XDG_DATA_HOME',
+      'XDG_CONFIG_HOME',
+      'OPENSPEC_NO_UPDATE_CHECK',
+      'OPENSPEC_TELEMETRY',
+    ] as const;
+    const previousEnvironment = Object.fromEntries(
+      environmentKeys.map((key) => [key, process.env[key]]),
+    );
+    for (const key of environmentKeys) process.env[key] = environment[key];
+
+    let decisionDriver: string | null = null;
+    let application = await bootProjectComposition(productRoot, workspace);
+    const installHost = () =>
+      installCapturingWorkExecutionHost({
+        context: application.context,
+        workspace,
+        repositories: { workspace },
+        operations: () => [],
+        result(packet) {
+          return packet.work.kind === 'build.configure'
+            ? {
+                schemaVersion: 1,
+                kind: 'build-configuration-candidate',
+                executionMode: 'autonomous',
+                tddMode: 'tdd',
+              }
+            : undefined;
+        },
+      });
+    let capture = installHost();
+    const next = () =>
+      application.context.commandRouter.execute<{ runId: string }, RuntimeResult<RunStatusView>>(
+        'run.next',
+        { runId },
+      );
+    const status = () =>
+      application.context.commandRouter.execute<{ runId: string }, RunStatusView>('run.status', {
+        runId,
+      });
+    const advanceUntil = async (
+      predicate: (view: RunStatusView) => boolean,
+      limit = 10,
+    ): Promise<RunStatusView> => {
+      let latest: RunStatusView | null = null;
+      for (let index = 0; index < limit; index += 1) {
+        const view = (await next()).value;
+        latest = view;
+        if (predicate(view)) return view;
+      }
+      throw new Error(
+        `Managed recovery fixture did not reach its expected boundary: ${JSON.stringify({
+          phase: latest?.changeLifecycle?.phase,
+          status: latest?.changeLifecycle?.status,
+          work: latest?.changeLifecycle?.currentWork?.kind,
+          wait: latest?.changeLifecycle?.waitCondition?.kind,
+          continuation: latest?.continuation,
+        })}`,
+      );
+    };
+
+    try {
+      const openWait = await advanceUntil(
+        (view) =>
+          view.changeLifecycle?.phase === 'open' && view.changeLifecycle.status === 'waiting',
+      );
+      expect(openWait.state.runId).toBe(runId);
+      const openApproval = await application.context.commandRouter.execute<
+        { changeId: string; approvalPhase: 'open' },
+        SpecificationApprovalState | null
+      >('specification.approval.status', {
+        changeId: 'intent-recovery-e2e',
+        approvalPhase: 'open',
+      });
+      if (!openApproval || openApproval.status !== 'awaiting_approval') {
+        throw new Error('Missing Open approval for Workspace recovery fixture');
+      }
+      await application.context.commandRouter.execute('run.change.decide', {
+        runId,
+        response: {
+          apiVersion: 'repoctopus/v1alpha1',
+          kind: 'HumanDecisionResponse',
+          requestId: openApproval.decisionRequest.requestId,
+          proposalHash: openApproval.decisionRequest.proposalHash,
+          decision: 'approve',
+        },
+        actor: { actorId: 'cross-process-test', source: 'ide', authenticated: true },
+        isolation: 'current',
+      });
+      expect((await next()).value.changeLifecycle).toMatchObject({
+        phase: 'design',
+        currentWork: { kind: 'specification.plan' },
+        workspaceIntent: { isolation: 'current' },
+      });
+      capture.dispose();
+      await application.close();
+      const mainCheckout = path.join(root, 'workspace-main');
+      await rename(workspace, mainCheckout);
+      await execFileAsync('git', ['switch', 'main'], { cwd: mainCheckout });
+      await execFileAsync('git', ['worktree', 'add', workspace, 'spec/intent-recovery-e2e'], {
+        cwd: mainCheckout,
+      });
+      await rename(path.join(mainCheckout, '.repoctopus'), path.join(workspace, '.repoctopus'));
+      application = await bootProjectComposition(productRoot, workspace);
+      capture = installHost();
+
+      const designWait = await advanceUntil(
+        (view) =>
+          view.changeLifecycle?.phase === 'design' && view.changeLifecycle.status === 'waiting',
+      );
+      expect(designWait.changeLifecycle?.workspaceIntent?.isolation).toBe('current');
+      const designApproval = await application.context.commandRouter.execute<
+        { changeId: string; approvalPhase: 'design' },
+        SpecificationApprovalState | null
+      >('specification.approval.status', {
+        changeId: 'intent-recovery-e2e',
+        approvalPhase: 'design',
+      });
+      if (!designApproval || designApproval.status !== 'awaiting_approval') {
+        throw new Error('Missing Design approval for Workspace recovery fixture');
+      }
+      await application.context.commandRouter.execute('run.change.decide', {
+        runId,
+        response: {
+          apiVersion: 'repoctopus/v1alpha1',
+          kind: 'HumanDecisionResponse',
+          requestId: designApproval.decisionRequest.requestId,
+          proposalHash: designApproval.decisionRequest.proposalHash,
+          decision: 'approve',
+        },
+        actor: { actorId: 'cross-process-test', source: 'ide', authenticated: true },
+      });
+      const configure = await advanceUntil(
+        (view) => view.changeLifecycle?.currentWork?.kind === 'build.configure',
+      );
+      const configureWorkId = configure.changeLifecycle!.currentWork!.workId;
+      await next();
+      expect((await status()).state.workExecution).toMatchObject({
+        workId: configureWorkId,
+        status: 'outcome',
+      });
+      capture.dispose();
+      await application.close();
+
+      let recoveryView: RunStatusView | null = null;
+      for (let index = 0; index < 4; index += 1) {
+        const resumed = await runCli<RunStatusView>({
+          packageRoot: productRoot,
+          cwd: workspace,
+          environment,
+          args: ['run', 'next', '--workspace', workspace, '--run', runId],
+        });
+        recoveryView = resumed.result;
+        if (
+          recoveryView?.changeLifecycle?.phase === 'open' &&
+          recoveryView.changeLifecycle.status === 'waiting'
+        ) {
+          break;
+        }
+      }
+      expect(recoveryView).toMatchObject({
+        state: { runId },
+        changeLifecycle: {
+          phase: 'open',
+          status: 'waiting',
+          currentWork: null,
+          waitCondition: {
+            kind: 'human-decision',
+            workspaceIntentRevision: {
+              errorCode: 'current-linked-worktree',
+              previousIsolation: 'current',
+            },
+          },
+        },
+      });
+      expect(recoveryView!.changeLifecycle).not.toHaveProperty('workspaceIntent');
+      expect(recoveryView!.state.workExecution).toBeUndefined();
+      const revisionEpoch = recoveryView!.changeLifecycle!.checkEpoch;
+      const revisionWaitId = recoveryView!.changeLifecycle!.waitCondition!.waitId;
+
+      for (let index = 0; index < 2; index += 1) {
+        const pulled = await runCli<RunStatusView>({
+          packageRoot: productRoot,
+          cwd: workspace,
+          environment,
+          args: ['run', 'next', '--workspace', workspace, '--run', runId],
+        });
+        expect(pulled.result?.changeLifecycle).toMatchObject({
+          phase: 'open',
+          status: 'waiting',
+          checkEpoch: revisionEpoch,
+          waitCondition: { waitId: revisionWaitId },
+        });
+        expect(pulled.result?.state.workExecution).toBeUndefined();
+      }
+
+      const decisionDriverSource = path.join(
+        productRoot,
+        'test',
+        'fixtures',
+        'workspace-intent-recovery-driver.ts',
+      );
+      decisionDriver = path.join(
+        productRoot,
+        '.repoctopus',
+        `workspace-intent-recovery-driver-${path.basename(root)}.mjs`,
+      );
+      await mkdir(path.dirname(decisionDriver), { recursive: true });
+      await build({
+        entryPoints: [decisionDriverSource],
+        outfile: decisionDriver,
+        bundle: true,
+        packages: 'external',
+        platform: 'node',
+        target: 'node22',
+        format: 'esm',
+      });
+      for (let index = 0; index < 2; index += 1) {
+        const invalid = await execFileAsync(
+          process.execPath,
+          [decisionDriver, workspace, runId, 'current', productRoot],
+          { cwd: workspace, env: environment, maxBuffer: 1024 * 1024 },
+        );
+        expect(JSON.parse(invalid.stdout)).toMatchObject({
+          ok: false,
+          errorCode: 'current-linked-worktree',
+          runId,
+          phase: 'open',
+          checkEpoch: revisionEpoch,
+          waitId: revisionWaitId,
+        });
+      }
+      const revised = await execFileAsync(
+        process.execPath,
+        [decisionDriver, workspace, runId, 'worktree', productRoot],
+        { cwd: workspace, env: environment, maxBuffer: 1024 * 1024 },
+      );
+      expect(JSON.parse(revised.stdout)).toMatchObject({
+        ok: true,
+        runId,
+        phase: 'design',
+        isolation: 'worktree',
+      });
+      const finalStatus = await runCli<RunStatusView>({
+        packageRoot: productRoot,
+        cwd: workspace,
+        environment,
+        args: ['run', 'status', '--workspace', workspace, '--run', runId],
+      });
+      expect(finalStatus.result).toMatchObject({
+        state: { runId },
+        changeLifecycle: {
+          phase: 'design',
+          currentWork: { kind: 'specification.plan' },
+          workspaceIntent: { isolation: 'worktree' },
+        },
+      });
+      expect(finalStatus.result!.changeLifecycle!.currentWork!.workId).not.toBe(configureWorkId);
+      expect(await readdir(path.join(workspace, '.repoctopus', 'runs'))).toEqual([runId]);
+    } finally {
+      capture.dispose();
+      await application.close();
+      if (decisionDriver) await rm(decisionDriver, { force: true });
+      for (const key of environmentKeys) {
+        const previous = previousEnvironment[key];
+        if (previous === undefined) delete process.env[key];
+        else process.env[key] = previous;
+      }
+    }
+  }, 120_000);
 });
