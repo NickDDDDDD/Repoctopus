@@ -115,6 +115,7 @@
       "targets": [
         "domains/runtime/**",
         "platform/runtime/file-runtime-store.ts",
+        "platform/runtime/file-work-execution-packet-store.ts",
         "platform/runtime/recoverable-file-lock.ts",
         "platform/runtime/recoverable-file-transition.ts"
       ],
