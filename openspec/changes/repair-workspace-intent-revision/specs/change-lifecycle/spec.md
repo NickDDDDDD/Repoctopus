@@ -4,7 +4,7 @@
 
 ### Requirement: Open 在规划批准前固定执行隔离意图
 
-Repoctopus MUST 在接受 Open approval 前取得可信用户对 `current|branch|worktree` 的一次选择，并使用冻结的 project snapshot、repository topology 与 checkout facts 验证候选 `ExecutionWorkspaceIntent` 后，才把模式、目标分支语义和 Workspace/change identity 固定到同一 Run；无效选择不得改变 lifecycle 或 Specification approval Store。本机 checkout 绝对路径不得进入 OpenSpec 工件或可移植语义摘要。Build Configure MUST 复核实际 binding，并由 binding 权威模块把失败分类为 `intent-revision | binding-retry | halt`，任何调用方不得解析错误文本或在批准后静默换成另一模式；若未批准 Build Configuration 时得到 `intent-revision`，Runtime MUST 在同一确定性 Run 中受保护地返回 Open 取得新的 isolation 决策，清除依赖旧 intent 的下游状态，并在新 intent 验证通过后进入新的 Design Work，不得要求创建第二个 Run或编辑 Store。
+Repoctopus MUST 在接受 Open approval 前验证可信用户选择的 `current|branch|worktree` 与冻结的 project snapshot、repository topology 和 checkout facts 兼容，再把 `ExecutionWorkspaceIntent` 固定到同一 Run；无效选择不得写入 lifecycle 或 Specification approval Store，本机绝对路径不得进入可移植语义。Build Configure MUST 由 binding 权威把失败分类为 `intent-revision | binding-retry | halt`，调用方不得解析错误文本或静默降级。只有未批准 Build Configuration 的 `intent-revision` 可以在同一 Run 返回 Open；新意图获批前必须清除依赖旧意图的下游状态，随后创建新的 Design Work。
 
 #### Scenario: Open 尚未选择隔离方式
 
