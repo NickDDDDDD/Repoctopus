@@ -769,9 +769,9 @@ const definitions: readonly BuiltinDefinition[] = [
       stateSchemas: {},
       compatibleImplementations: [
         {
-          codeDigest: 'sha256:8b99fc9ca8ea36d4952b20741dac62cf822c4704bcdc201fda5b9a0a535bf55a',
+          codeDigest: 'sha256:86232bbff896a11e5e922e60f9c0b2a6e755c0e7d3624717227d6882e1fe2d01',
           descriptorDigest:
-            'sha256:c2049f720c486144228f07112a64a457795c348036a31280c7d62c58aa2eaac1',
+            'sha256:e8146a5f4cc7824dfdf37f685fdff74e16808c3f2365ad86f53c2eb3d2f9034d',
         },
       ],
     },
@@ -813,9 +813,9 @@ const definitions: readonly BuiltinDefinition[] = [
       stateSchemas: {},
       compatibleImplementations: [
         {
-          codeDigest: 'sha256:67b7d80a851b429bfde3f5699d957cd712f7f1865f6bb2eca68ccf2608fa44b3',
+          codeDigest: 'sha256:4805d959c0b2e3732aa1daffcc689934a660ce226db7efc7a4d6f87cdfb688a0',
           descriptorDigest:
-            'sha256:f5a40d82d0df959838a43ec23c65007020b5dd7afae4209463c86010703713fb',
+            'sha256:357249984ada9aae4b8f8f2df4373110570ce326991a33970876394f253917b1',
         },
       ],
     },
@@ -855,9 +855,9 @@ const definitions: readonly BuiltinDefinition[] = [
       stateSchemas: {},
       compatibleImplementations: [
         {
-          codeDigest: 'sha256:7786aa1ece19d2fe7d61a2608fc858e1dd3dca68d1ef9b3ba59f8790b1a0f28b',
+          codeDigest: 'sha256:b29078511a9eff1f796513e755b006c65377e917dd6e3cf05b429db560ac0593',
           descriptorDigest:
-            'sha256:48aea53f06e3c0c5c37684d1cc7287ed8eef21635c04805689a0e734ce2fdcff',
+            'sha256:25a81afeeff570caaa23f277244930e34d9037e1b913ecd267a737089e46f16a',
         },
       ],
     },
@@ -1081,9 +1081,9 @@ const definitions: readonly BuiltinDefinition[] = [
       stateSchemas: { run: '1' },
       compatibleImplementations: [
         {
-          codeDigest: 'sha256:12118b68015780ca5257800e0b0429db0519a123d6decfb478c9856988392fd7',
+          codeDigest: 'sha256:c0f8a1a4c7499b9ce6286785d48e0a3d76e213318d7b7bd0e4fbc1a6bdb14455',
           descriptorDigest:
-            'sha256:60d2fb33c4ac65ba4bc03ee7161d502fd15211ef5265a8203bb5c04384f42933',
+            'sha256:2029fa86f7dd900fbdadc597140dfd3acf7a4c4488620a830bc2c75b0ad1676a',
         },
       ],
     },

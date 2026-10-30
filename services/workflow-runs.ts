@@ -147,6 +147,7 @@ export interface ExecuteArchiveDeliveryInput {
 export interface ExecuteArchiveDeliveryResult {
   stage:
     | 'specification-closed'
+    | 'reverify-required'
     | 'intent-corrected'
     | 'definition-recovered'
     | 'planning-revision-required'
@@ -3335,6 +3336,94 @@ export class WorkflowRuns extends Service {
     });
   }
 
+  private async reverifyArchiveIfFingerprintChanged(
+    runId: string,
+    state: RunState,
+    lifecycle: ChangeLifecycleState,
+    signal?: AbortSignal,
+  ): Promise<RuntimeResult<RunStatusView> | null> {
+    if (
+      lifecycle.phase !== 'archive' ||
+      !lifecycle.verificationInput ||
+      lifecycle.specificationClosure ||
+      lifecycle.publicationReceipt
+    ) {
+      return null;
+    }
+    const refreshed = await this.ctx.evidenceCoordinator.plan(
+      lifecycle.verificationInput.evidenceProfile.id,
+    );
+    if (
+      refreshed.fingerprint.digest === lifecycle.verificationInput.evidenceProfile.fingerprintDigest
+    ) {
+      return null;
+    }
+    const projectConfigDigest = state.trigger?.facts.projectConfigDigest;
+    const specificationRoot = state.trigger?.facts.specificationRoot as
+      | { repositoryId?: unknown }
+      | undefined;
+    if (
+      typeof projectConfigDigest !== 'string' ||
+      !/^sha256:[a-f0-9]{64}$/u.test(projectConfigDigest) ||
+      typeof specificationRoot?.repositoryId !== 'string'
+    ) {
+      throw new Error('Archive reverify trigger identities are missing');
+    }
+    const skills = await this.resolveLifecycleWorkSkills('evidence.verify', signal);
+    const verificationInput = createVerificationInput({
+      runId,
+      checkEpoch: lifecycle.checkEpoch + 1,
+      tasks: lifecycle.tasks ?? [],
+      fingerprint: refreshed.fingerprint,
+      plan: refreshed.plan,
+      projectConfigDigest: projectConfigDigest as `sha256:${string}`,
+      compositionDigest: state.composition.compositionDigest,
+      skills: [
+        ...(state.skillUsageSnapshots ?? []),
+        skills.actionSkill,
+        ...skills.augmentationSkills,
+      ].filter(
+        (skill, index, all) =>
+          all.findIndex(
+            (candidate) => candidate.name === skill.name && candidate.provider === skill.provider,
+          ) === index,
+      ),
+    });
+    const work = createVerifyWork({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      checkEpoch: lifecycle.checkEpoch + 1,
+      verification: verificationInput,
+      actionSkill: skills.actionSkill,
+      augmentationSkills: skills.augmentationSkills,
+      workspaceRepositoryId: specificationRoot.repositoryId,
+      repositoryIds: refreshed.fingerprint.manifest.repositories.map(
+        (repository) => repository.repositoryId,
+      ),
+    });
+    for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
+      await this.coordinator.bindSkill(runId, skill);
+    }
+    const fallback = await this.coordinator.acceptChangeObservation(runId, {
+      kind: 'archive-reverify-required',
+      reason: 'Verification input changed before Archive side effects',
+      verificationInput,
+      work,
+    });
+    await this.ctx.workExecutionAuthority.recordWorkCreated(runId, work);
+    return {
+      ...fallback,
+      value: await this.coordinator.status(runId),
+      diagnostics: [
+        ...fallback.diagnostics,
+        {
+          level: 'warning',
+          code: 'change.archive-reverify',
+          message: 'Archive returned to Verify before any closure or publication side effect',
+        },
+      ],
+    };
+  }
+
   prepareArchiveDelivery(
     input: PrepareArchiveDeliveryInput,
     signal?: AbortSignal,
@@ -3354,79 +3443,13 @@ export class WorkflowRuns extends Service {
       ) {
         throw new Error(`Change Run is not ready to plan Archive Delivery: ${input.runId}`);
       }
-      const refreshed = await this.ctx.evidenceCoordinator.plan(
-        lifecycle.verificationInput.evidenceProfile.id,
+      const reverify = await this.reverifyArchiveIfFingerprintChanged(
+        input.runId,
+        state,
+        lifecycle,
+        signal,
       );
-      if (
-        refreshed.fingerprint.digest !==
-        lifecycle.verificationInput.evidenceProfile.fingerprintDigest
-      ) {
-        const projectConfigDigest = state.trigger?.facts.projectConfigDigest;
-        const specificationRoot = state.trigger?.facts.specificationRoot as
-          | { repositoryId?: unknown }
-          | undefined;
-        if (
-          typeof projectConfigDigest !== 'string' ||
-          !/^sha256:[a-f0-9]{64}$/u.test(projectConfigDigest) ||
-          typeof specificationRoot?.repositoryId !== 'string'
-        ) {
-          throw new Error('Archive reverify trigger identities are missing');
-        }
-        const skills = await this.resolveLifecycleWorkSkills('evidence.verify', signal);
-        const verificationInput = createVerificationInput({
-          runId: input.runId,
-          checkEpoch: lifecycle.checkEpoch + 1,
-          tasks: lifecycle.tasks ?? [],
-          fingerprint: refreshed.fingerprint,
-          plan: refreshed.plan,
-          projectConfigDigest: projectConfigDigest as `sha256:${string}`,
-          compositionDigest: state.composition.compositionDigest,
-          skills: [
-            ...(state.skillUsageSnapshots ?? []),
-            skills.actionSkill,
-            ...skills.augmentationSkills,
-          ].filter(
-            (skill, index, all) =>
-              all.findIndex(
-                (candidate) =>
-                  candidate.name === skill.name && candidate.provider === skill.provider,
-              ) === index,
-          ),
-        });
-        const work = createVerifyWork({
-          definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-          checkEpoch: lifecycle.checkEpoch + 1,
-          verification: verificationInput,
-          actionSkill: skills.actionSkill,
-          augmentationSkills: skills.augmentationSkills,
-          workspaceRepositoryId: specificationRoot.repositoryId,
-          repositoryIds: refreshed.fingerprint.manifest.repositories.map(
-            (repository) => repository.repositoryId,
-          ),
-        });
-        for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
-          await this.coordinator.bindSkill(input.runId, skill);
-        }
-        const fallback = await this.coordinator.acceptChangeObservation(input.runId, {
-          kind: 'archive-reverify-required',
-          reason: 'Verification input changed before Archive side effects',
-          verificationInput,
-          work,
-        });
-        await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, work);
-        return {
-          ...fallback,
-          value: await this.coordinator.status(input.runId),
-          diagnostics: [
-            ...fallback.diagnostics,
-            {
-              level: 'warning',
-              code: 'change.archive-reverify',
-              message: 'Archive returned to Verify before any closure or publication side effect',
-            },
-          ],
-        };
-      }
+      if (reverify) return reverify;
       if (!evidence.bundle || !evidence.bundle.verificationReport) {
         throw new Error('Archive Delivery requires a completed formal verification report');
       }
@@ -3555,6 +3578,25 @@ export class WorkflowRuns extends Service {
         !archive
       ) {
         throw new Error(`Change Run has no active Archive Delivery Work: ${input.runId}`);
+      }
+      if (workKind === 'specification.close') {
+        const reverify = await this.reverifyArchiveIfFingerprintChanged(
+          input.runId,
+          state,
+          lifecycle,
+          signal,
+        );
+        if (reverify) {
+          return {
+            value: {
+              stage: 'reverify-required',
+              publication: null,
+              receipt: null,
+              run: reverify.value,
+            },
+            diagnostics: reverify.diagnostics,
+          };
+        }
       }
       if (deliveryPolicyDigest(input.policy) !== archive.publicationPolicyDigest) {
         throw new Error('Archive Delivery policy changed after Work planning');

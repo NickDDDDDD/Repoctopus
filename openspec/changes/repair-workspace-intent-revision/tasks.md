@@ -64,10 +64,10 @@
 
 ## 5. 修复 Archive 冻结输入漂移
 
-- [ ] 5.1 增加领域与 Service 回归，证明已冻结的 `specification.close` Work 在 Evidence 指纹漂移后不能执行关闭副作用。
+- [x] 5.1 增加领域与 Service 回归，证明已冻结的 `specification.close` Work 在 Evidence 指纹漂移后不能执行关闭副作用。
       **Acceptance:** 领域 transition 从带 Archive input 的 close Work 返回 Verify并清除冻结输入；Service 在 Specification provider 零调用下返回 `reverify-required`
       **Requirements:** change-lifecycle#archive-关闭前必须重验冻结输入
-- [ ] 5.2 抽取并复用 Archive reverify 编排，在 close 副作用的最后责任点重新比较指纹并由同一 Run CAS 退役旧 execution checkpoint。
+- [x] 5.2 抽取并复用 Archive reverify 编排，在 close 副作用的最后责任点重新比较指纹并由同一 Run CAS 退役旧 execution checkpoint。
       **Blocked by:** 5.1
       **Acceptance:** prepare 与 execute 共用唯一的 reverify 物化逻辑；Closure/Receipt 已存在时不能倒退；planning semantic drift 仍交给既有 Verify→Design
       **Requirements:** change-lifecycle#archive-关闭前必须重验冻结输入

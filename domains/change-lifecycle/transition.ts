@@ -1749,11 +1749,15 @@ export function evolveChangeLifecycle(options: {
     });
   }
   if (observation.kind === 'archive-reverify-required') {
+    const beforePreflight = current.currentWork === null && !current.archiveDeliveryInput;
+    const frozenSpecificationClose =
+      current.currentWork?.kind === 'specification.close' &&
+      current.archiveDeliveryInput !== undefined &&
+      current.currentWork.inputDigest === current.archiveDeliveryInput.digest;
     if (
       current.phase !== 'archive' ||
       current.status !== 'running' ||
-      current.currentWork !== null ||
-      current.archiveDeliveryInput ||
+      (!beforePreflight && !frozenSpecificationClose) ||
       current.specificationClosure ||
       current.publicationReceipt ||
       observation.work.phase !== 'verify' ||
@@ -1771,6 +1775,7 @@ export function evolveChangeLifecycle(options: {
         waitCondition: null,
         blocker: null,
         verificationInput: observation.verificationInput,
+        archiveDeliveryInput: null,
       },
     });
   }
