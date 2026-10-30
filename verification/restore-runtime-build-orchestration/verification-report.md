@@ -3,12 +3,12 @@
 ## Reproducible subject
 
 - Change: `restore-runtime-build-orchestration`
-- Tested implementation commit: `d0bc374146bfec6c27bba2ff96dd4dff13a34900`
+- Tested implementation commit: `70102a630e06d4995ddbf1db7a5d6e2c695eb626`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `939590`
-- Package SHA-256: `8a7178b005b0d2998a4e3d1b844dbfe6f8d769dfd40d2108b64e8fddb76334bb`
-- Lifecycle definition: `repoctopus-change@4.3.0`
-- Lifecycle definition digest: `sha256:2d4fe66568481105e1586620c4f1ad6abf0df3d86b84e4bbb08b9eaf22737f6c`
+- Package bytes: `939332`
+- Package SHA-256: `dc5aa870e01ae19945ac50da1fb5a354a2cf67fd03d62870ba627b0ba89d2afa`
+- Lifecycle definition: `repoctopus-change@4.4.0`
+- Lifecycle definition digest: `sha256:f0f3483f703115cdda4de783ab989c97ce3e65c308abf6f21ed5bda2e9913677`
 - Verification runId: `change-verification-workspace-restore-runtime-build-orchestration-9fda2eb7bf05fdf5`
 - Black-box runId: `change-managed-blackbox-managed-blackbox-a56af5c947f984ce`
 - Build Configuration: `build-configuration:984df01c5c917e6286a1e112`
@@ -26,7 +26,7 @@ Run on Windows with Node.js `24.21.0`:
 ```text
 npm run verify
   TypeScript, desktop TypeScript, ESLint, generated output, brand and architecture checks passed
-  142 test files passed; 551 tests passed and 2 skipped
+  142 test files passed; 563 tests passed and 2 skipped
   provenance passed; OpenSpec strict validation passed 15 items with 0 failures
   this report's commit ancestry and npm package checksum were reproduced
 
@@ -62,6 +62,13 @@ Runtime invalidated the stale verification, returned through the ordinary Build 
 and retained the historical invalidation in Build Protocol. Acceptance of the replacement Plan now
 clears the transient `verificationInvalidation`, so the next Plan Evidence Work is a valid snapshot
 instead of a permanent invariant failure.
+
+Archive now repeats that freshness guarantee at the last responsible moment before
+`specification.close`. A close Work whose frozen Evidence fingerprint no longer matches the
+repository is atomically replaced by a new Verify Work before any Specification provider call. The
+old validated execution checkpoint is retired while its submitted Outcome remains in trajectory;
+planning semantic drift continues through the existing Verify-to-Design path instead of a second
+Archive recovery protocol. Closure or publication receipts remain terminal side-effect boundaries.
 
 Plan and Check additionally recover the crash window between accepted Outcome validation and
 lifecycle projection. A `validated` checkpoint is reusable only when its validator identity,
