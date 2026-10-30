@@ -3,10 +3,11 @@
 ## Reproducible subject
 
 - Change: `restore-runtime-build-orchestration`
-- Tested implementation commit: `6e152126deb1e53d740567102ee912aedef743f4`
+- Tested implementation commit: `94000524dd651ad80615665478fab0a53e763ebf`
+- Latest packaged change: `refresh-upstream-baselines-2026-10-30`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `939816`
-- Package SHA-256: `ebdaf5a0ffff310693e3390f615ae1b151113383bb86c19aa227d29d3c6919e6`
+- Package bytes: `941895`
+- Package SHA-256: `f36414d2b9a6c0241ed2da50aeb23661c1338c67a550617fa6b31653ab2c3702`
 - Lifecycle definition: `repoctopus-change@4.4.0`
 - Lifecycle definition digest: `sha256:f0f3483f703115cdda4de783ab989c97ce3e65c308abf6f21ed5bda2e9913677`
 - Verification runId: `change-verification-workspace-restore-runtime-build-orchestration-9fda2eb7bf05fdf5`
@@ -26,7 +27,7 @@ Run on Windows with Node.js `24.21.0`:
 ```text
 npm run verify
   TypeScript, desktop TypeScript, ESLint, generated output, brand and architecture checks passed
-  142 test files passed; 563 tests passed and 2 skipped
+  142 test files passed; 568 tests passed and 2 skipped
   provenance passed; OpenSpec strict validation passed 15 items with 0 failures
   this report's commit ancestry and npm package checksum were reproduced
 

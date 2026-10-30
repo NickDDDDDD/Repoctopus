@@ -3,12 +3,12 @@
 ## 固定基线
 
 - 上游：`https://github.com/rpamis/comet.git`
-- 版本：`0.5.0`
-- Commit：`aeb1a6598034e28ce46b8422d4dbd8785e607bd7`
+- 版本：`0.5.1`
+- Commit：`35c9860b77b42bafa0c2d80d8d695889f888a924`
 - 许可证：MIT，原文保存在同目录 `LICENSE`
-- 2026-10-24 复核：`master` 与 `0.5.0` 标签均指向固定提交。0.4.5→0.5.0 的完整增量审计见 `0.5.0-audit.md`。
+- 2026-10-30 复核：采用发布为 `0.5.1`，另行审计 `master` 到 `4901cac9330f5ffe289abfa6daf8412bfa190dc0`。0.5.0→0.5.1 及发布后分支尾部的完整增量审计见 `0.5.1-audit.md`。
 
-最初采用发生在 0.4.5 基线；当前来源摘要已经逐文件移动到 0.5.0。目标文件仍按 Repoctopus 的产品边界保持修改版，不能把来源基线移动理解为盲目覆盖本地实现。
+最初采用发生在 0.4.5 基线；当前来源摘要已经逐文件移动到 0.5.1。目标文件仍按 Repoctopus 的产品边界保持修改版，不能把来源基线移动理解为盲目覆盖本地实现。
 
 ## 已采用并改造
 
@@ -33,7 +33,7 @@
 
 机器可检查的上游和目标 SHA-256 记录在 `source-manifest.json`。
 
-0.5.0 复核确认 Workflow Application、Classic SDK 五阶段、proposal/approval hash、稳定 Task ID、Action claim 与写作用域是 Change 生命周期的成熟参考；异步命令进程树清理已立即采用。完整增量决定见 `0.5.0-audit.md`，跨上游能力矩阵见 `../upstream-alignment-audit.md`。
+0.5.0 复核确认 Workflow Application、Classic SDK 五阶段、proposal/approval hash、稳定 Task ID、Action claim 与写作用域是 Change 生命周期的成熟参考；异步命令进程树清理已立即采用。0.5.1 进一步证明有效 timeout 必须进入可复用检查身份，未知 lock 必须通过精确观察 token 恢复；本次只更新来源身份，相关 Runtime 行为留给独立可靠性 Change。完整增量决定见 `0.5.0-audit.md` 与 `0.5.1-audit.md`，跨上游能力矩阵见 `../upstream-alignment-audit.md`。
 
 2026-10-25 的验收闭包复核继续采用以下行为不变量，但没有复制新源码：Classic `classic-tasks.ts` 的 expected-revision Task 投影只把 checkbox 当作完成声明；Native `native-acceptance.ts` / `native-verification-evidence.ts` 的内容身份、精确 Acceptance Trace、未知/重复/缺失拒绝和 required Receipt 门禁，映射到 `domains/specification/tasks.ts`、`domains/change-lifecycle/verification-input.ts` 与 `domains/evidence/acceptance-trace.ts`；`native-sdk-supervisor-archive.ts` 的 Archive 前重检由 Repoctopus 的 Verify Gate identity 与后续 Archive preflight 分工承担。OpenSpec `tasks.md` 仍是唯一 Task/Acceptance 权威，Evidence Bundle 只保存运行事实；不采用 Comet 产品 shell、Classic/Native 双状态根、verification 文档权威或单仓目录布局。
 
