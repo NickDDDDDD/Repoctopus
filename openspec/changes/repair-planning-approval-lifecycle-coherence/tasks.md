@@ -11,13 +11,13 @@
 
 ## 2. 原子化 lifecycle 与 execution checkpoint
 
-- [ ] 2.1 扩展 planning invalidation observation，使其携带 Runtime 物化的 `specification.plan` Work，并在一次领域 transition 中回到 Design、替换 Work、递增 epoch、清除下游输入。
+- [ ] 2.1 扩展 planning invalidation observation，使其绑定 `expectedRevision/fromPhase` 并携带 Runtime 物化的 `specification.plan` Work，在一次领域 transition 中回到 Design、替换 Work、递增 epoch、清除下游输入。
       **Blocked by:** 1.1
       **Acceptance:** Build、Verify 与无副作用 Archive 的纯领域测试均得到完整 Design checkpoint，不出现 `design/currentWork=null` 中间态
       **Requirements:** change-lifecycle#规划授权失效必须原子恢复-design-checkpoint
-- [ ] 2.2 在 Coordinator 的同一 Run CAS 中退役与新 lifecycle current Work/epoch 不匹配的 `workExecution`，并保留 trajectory 审计事实。
+- [ ] 2.2 复用并加固 Coordinator 已有的通用同-CAS retirement，使 planning invalidation 后与新 lifecycle current Work/epoch 不匹配的 `workExecution` 被退役，并保留 trajectory 审计事实。
       **Blocked by:** 1.2, 2.1
-      **Acceptance:** transition commit 后 Run state 不含陈旧 checkpoint；旧 claim/Outcome/Receipt 事件仍可读取且没有第二次副作用
+      **Acceptance:** 不新增 planning 专用删除路径；transition commit 后 Run state 不含陈旧 checkpoint，旧 claim/Outcome/Receipt 事件仍可读取且没有第二次副作用
       **Requirements:** managed-work-execution#只有匹配当前-lifecycle-work-的-execution-checkpoint-才可续行
 - [ ] 2.3 为遗留 torn state 增加只读 recovery 防线，优先投影 lifecycle current Work，不加载或续行旧 intent。
       **Blocked by:** 2.2

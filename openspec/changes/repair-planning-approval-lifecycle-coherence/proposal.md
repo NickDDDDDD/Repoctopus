@@ -7,12 +7,12 @@
 1. Verify 收尾提交改变规划语义后，Design approval 已刷新为 `awaiting_approval`，但 lifecycle 仍处于 Archive；Archive preflight 正确阻止副作用，却只能抛出“缺少有效批准”，没有把 Run 恢复到 Design。
 2. lifecycle 已回到 Design 且 `currentWork` 为空，但 `workExecution` 仍保留旧 `build.plan` checkpoint，恢复投影因而报告旧 Work、旧 `checkEpoch` 和 `validator-pending` continuation。
 
-Comet 0.5.1 的成熟恢复语义是：修订命令绑定当前 revision，阶段回退、下游证据失效和下一 Action 在同一次 CAS 中发布；查询只诊断，不暗中推进。Repoctopus 需要把这一不变量适配到 OpenSpec Provider、多仓 Change Run 与 Work Descriptor，而不是分别修补 Archive 和 Desktop。
+Comet 0.5.1 的成熟恢复语义是：Classic 修订命令绑定 `expectedRevision/fromPhase`，Native continuation 绑定 `stateVersion/expectedAction`；阶段回退、下游证据失效和下一 Action 在同一次 CAS 中发布，查询只诊断、不暗中推进。Repoctopus 已有 lifecycle transition 时通用退役不匹配 execution checkpoint 的 CAS 能力，但规划返工尚未在该 transition 中提供下一 Work，遗留 checkpoint 的读取也尚未 fail closed。需要把 Comet 的 revision fencing 与 same-CAS next Action 不变量适配到 OpenSpec Provider、多仓 Change Run 与 Work Descriptor，而不是分别修补 Archive 和 Desktop。
 
 ## What Changes
 
 - 让规划语义或批准授权失效成为受保护 lifecycle observation；Build、Verify 和 Archive 在继续受保护工作前先以只读方式观察当前 Provider 语义。
-- 回到 Design 时在一次 Run CAS 中同时发布 Design phase、替代 `specification.plan` Work、新 `checkEpoch`、下游证据失效和旧 execution checkpoint 退役。
+- 回到 Design 时在一次 revision-bound Run CAS 中同时发布 Design phase、替代 `specification.plan` Work、新 `checkEpoch`、下游证据失效，并复用已有通用规则退役旧 execution checkpoint。
 - `workExecution` 只有在 `workId` 与 `checkEpoch` 同时匹配 lifecycle current Work 时才可作为当前 checkpoint 或 continuation；历史事实继续保存在 trajectory。
 - Archive 在规格关闭、Git 发布或 MR 创建前发现漂移时返回显式 `planning-revision-required`，而不是只抛出缺少批准。
 - status/Dashboard 保持只读并只投影 lifecycle 当前 Work；旧 checkpoint 或跨 Store 中断由下一次 `run next/resume` 受保护 pull 通过 CAS 幂等退役，不由查询偷偷改变 phase，也不让后续 claim 撞上遗留 checkpoint。

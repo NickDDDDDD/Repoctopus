@@ -6,7 +6,7 @@ Repoctopus 已有正确的五阶段领域转换，也能在 Build/Verify 发现 
 
 - `SpecificationPlanning.assess()` 同时观察 Provider 并写 approval Store。`WorkflowRuns.next()` 在 Build/Verify 也先调用它，可能先使 approval 失效，再在另一次 Run CAS 中修改 lifecycle。
 - Archive preflight 直接读取 approval Store；发现失效只抛错，不提交 lifecycle observation。
-- `WorkflowRunCoordinator.acceptChangeObservation()` 只替换 `changeLifecycle`，不会在 current Work/epoch 变化时同时退役 `state.workExecution`。
+- `WorkflowRunCoordinator.acceptChangeObservation()` 已经在 current Work/epoch 变化时通过同一 Run CAS 退役不匹配的 `state.workExecution`；但规划漂移 transition 仍先发布 `Design/currentWork=null`，没有利用这条通用规则直接安装下一 Work。
 - `WorkExecutionAuthority.recovery()` 优先读取任何现存 `workExecution`，没有先证明它仍匹配 lifecycle current Work。
 
 因此 approval Store、lifecycle 和 execution projection 会短暂或永久表达不同的“当前状态”。把三个存储放进一个物理事务既不符合 Provider 可替换边界，也无法覆盖进程在外部观察后崩溃的情况。
@@ -54,26 +54,26 @@ observeAuthority(input): Promise<{
 
 这避免“先改 approval Store、后改 Run”的人为撕裂。若进程在只读观察后退出，任何权威状态都未改变；若在 Run CAS 后退出，Run 已经包含完整 Design continuation。
 
-### 2. 一个 observation 携带替代 Design Work
+### 2. Revision-bound observation 携带替代 Design Work
 
-把现有 `planning-semantic-drift` 泛化为 `planning-authority-invalidated`，并要求 observation 携带 `invalidationKind`、观察证据和 Runtime 创建的 `specification.plan` Work。领域转换通过既有 snapshot 不变量验证 Work 的 phase、kind、definition、输入身份和新 epoch，并在一次 transition 中：
+把现有 `planning-semantic-drift` 泛化为 `planning-authority-invalidated`，并要求 observation 携带 `expectedRevision`、`fromPhase`、`invalidationKind`、观察证据和 Runtime 创建的 `specification.plan` Work。Coordinator 在 CAS 内重新读取 Run 后必须校验 expected revision/phase；陈旧 Runner 得到 revision conflict 并重读当前 Action，不能把过时观察应用到新状态。领域转换通过既有 snapshot 不变量验证 Work 的 phase、kind、definition、输入身份和新 epoch，并在一次 transition 中：
 
 - phase 设为 Design；
 - current Work 设为新的 `specification.plan`；
 - 清除 wait/blocker、Tasks、Build Protocol、planning digest、Verification Input/Invalidation、Archive input 和未完成 Closure；
 - 记录 superseded planning/work/task evidence。
 
-不再先产生 `design/currentWork=null`，再依赖下一次 pull 补 Work。Comet 0.5.1 的 revision-bound command + same-CAS next Action 是这一决定的上游参考。
+不再先产生 `design/currentWork=null`，再依赖下一次 pull 补 Work。这里对应 Comet Classic 的 `expectedRevision/fromPhase + revise-design handoff`，也对应 Native 的 `stateVersion/expectedAction` continuation fencing；借用其并发和恢复不变量，不引入 Comet SDK 或单仓存储模型。
 
-### 3. Run CAS 同时退役不匹配的 execution checkpoint
+### 3. 复用 Run CAS 的通用 execution checkpoint 退役
 
-`WorkflowRunCoordinator.acceptChangeObservation()` 在领域 transition 产出新 lifecycle 后，通过一个内部 `executionMatchesLifecycle()` 判定比较旧 `workExecution`：
+当前 `WorkflowRunCoordinator.acceptChangeObservation()` 已在领域 transition 产出新 lifecycle 后，通过内部判定比较旧 `workExecution`：
 
 - 若新 current Work 的 `workId` 和 `checkEpoch` 都与 checkpoint 相同，则保留；
 - 否则从当前 Run state 移除 `workExecution`，并在同一个 `change.lifecycle.transitioned` trajectory event 中记录低基数 retirement fact 与旧 work/epoch trace correlation；
 - 历史 claim、submission、Outcome、Receipt 和 Validator 事件不删除，仍可审计。
 
-该规则适用于所有 lifecycle transitions，而不是只修 planning drift。它消除了“phase 已变、旧 checkpoint 仍当前”的结构性可能，也让新 Work claim 不需要依靠“旧 epoch 更小”来覆盖陈旧投影。
+本 Change 不再实现第二套 retirement，而是为 planning invalidation 接入并加回归保护：同一 observation 直接给出新 Design Work，因此既有规则可在同一 CAS 退役旧 checkpoint。若已有通用实现缺少所需审计字段，只做事实补强，不建立 planning 专用删除路径。
 
 ### 4. Recovery 对遗留撕裂 fail closed 并投影当前 lifecycle
 
@@ -83,7 +83,7 @@ observeAuthority(input): Promise<{
 - 无 current Work时返回 `wait/transition-pending`；
 - 返回低基数 `checkpoint-superseded` reason，但不得加载旧 intent 或返回旧 validator-pending。
 
-第二层是命令侧收敛：`run next/resume` 在选择 Action 前调用 `reconcileCurrentCheckpoint()`。该方法使用 Run CAS 再次检查同一不变量；仍不匹配时移除旧 checkpoint 并写入一次幂等 `recovery.reconciled` trajectory fact。这样 status 查询始终不写 Store，而实际 Runtime pull 会在新 claim 前消除遗留阻塞。相同 state revision 上的并发 Runner 只会有一个提交成功，其他 Runner 重读后得到已收敛状态。
+第二层是命令侧收敛：`run next/resume` 在选择 Action 前调用 `reconcileCurrentCheckpoint()`。该方法使用 revision-bound Run CAS 再次检查同一不变量；仍不匹配时移除旧 checkpoint 并写入一次幂等 `recovery.reconciled` trajectory fact。这样 status 查询始终不写 Store，而实际 Runtime pull 会在新 claim 前消除遗留阻塞。相同 state revision 上的并发 Runner 只会有一个提交成功，其他 Runner 重读后得到已收敛状态与当前 expected Action。
 
 ### 5. Archive preflight 返回显式恢复结果
 
