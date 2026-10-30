@@ -3,12 +3,12 @@
 ## Reproducible subject
 
 - Change: `restore-runtime-build-orchestration`
-- Tested implementation commit: `55612914685abc51e62ee2d776f4435d1be9bbed`
+- Tested implementation commit: `d43890736820d375c475cc9632a22e9f82896114`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `935751`
-- Package SHA-256: `26d75a3789de6fdf0e58a2f05085be0be95e0e723b5fa045a026254de2f32d45`
-- Lifecycle definition: `repoctopus-change@4.2.0`
-- Lifecycle definition digest: `sha256:c84278b1e82a0146759486ef68808c4027d03d211481793149af53e1b720e7fb`
+- Package bytes: `939590`
+- Package SHA-256: `8a7178b005b0d2998a4e3d1b844dbfe6f8d769dfd40d2108b64e8fddb76334bb`
+- Lifecycle definition: `repoctopus-change@4.3.0`
+- Lifecycle definition digest: `sha256:2d4fe66568481105e1586620c4f1ad6abf0df3d86b84e4bbb08b9eaf22737f6c`
 - Verification runId: `change-verification-workspace-restore-runtime-build-orchestration-9fda2eb7bf05fdf5`
 - Black-box runId: `change-managed-blackbox-managed-blackbox-a56af5c947f984ce`
 - Build Configuration: `build-configuration:984df01c5c917e6286a1e112`

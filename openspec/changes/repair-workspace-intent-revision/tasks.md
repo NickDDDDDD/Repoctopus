@@ -57,7 +57,7 @@
       **Blocked by:** 4.1
       **Acceptance:** `workspace-intent:*` wait 上重复 `run next` 保持同一 waitId/checkEpoch且不生成 `open-approval:*`；重启前后 runId 唯一，旧 Build Configure Work 不复活，无效/重复 decision 幂等且无需编辑 Store
       **Requirements:** change-lifecycle#execution-workspace-intent-必须可验证并可在同一-run-修订; managed-work-execution#intent-修订必须同步退役不匹配的-execution-checkpoint; managed-work-execution#外部-build-execute-outcome-必须经过统一的两阶段消费; managed-work-execution#活动-run-必须通过精确-adoption-contract-采纳新的受保护语义
-- [ ] 4.3 运行 strict OpenSpec、相关 Vitest、typecheck、lint、architecture/provenance/generated 检查和完整 `npm run verify`，更新正式验证报告并清理临时输出。
+- [x] 4.3 运行 strict OpenSpec、相关 Vitest、typecheck、lint、architecture/provenance/generated 检查和完整 `npm run verify`，更新正式验证报告并清理临时输出。
       **Blocked by:** 4.2
       **Acceptance:** 所有命令通过，分支每次提交均已 push，Store registration 最终恢复到当前主开发 worktree且临时文件已清理
       **Requirements:** development-telemetry#workspace-intent-修订必须可观测且保持低基数

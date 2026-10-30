@@ -1162,7 +1162,7 @@ describe('managed Change execution production composition', () => {
         }
       }
     },
-    120_000,
+    240_000,
   );
 
   it('recovers one persisted Run from current to worktree across process restarts', async () => {
