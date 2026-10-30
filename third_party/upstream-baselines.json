@@ -17,9 +17,9 @@
       "repository": "https://github.com/rpamis/comet.git",
       "branch": "master",
       "auditedBranchCommit": "4901cac9330f5ffe289abfa6daf8412bfa190dc0",
-      "pinnedTag": "0.5.0",
-      "pinnedTagCommit": "aeb1a6598034e28ce46b8422d4dbd8785e607bd7",
-      "version": "0.5.0",
+      "pinnedTag": "0.5.1",
+      "pinnedTagCommit": "35c9860b77b42bafa0c2d80d8d695889f888a924",
+      "version": "0.5.1",
       "provenance": "third_party/comet/source-manifest.json"
     }
   ]
