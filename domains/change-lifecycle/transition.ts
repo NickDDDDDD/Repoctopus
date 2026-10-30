@@ -338,7 +338,8 @@ export interface ChangeLifecycleTransitionFact {
   work?: Pick<WorkDescriptor, 'workId' | 'kind' | 'taskId' | 'validatorProfile'> | null;
   wait?: Pick<WaitCondition, 'waitId' | 'kind'> | null;
   invalidation?: {
-    kind: 'planning-semantic-drift';
+    kind: 'planning-authority-invalidated';
+    invalidationKind: 'semantic' | 'approval-authority';
     supersededPlanningDigest: `sha256:${string}`;
     observedPlanningDigest: `sha256:${string}`;
     supersededWorkId: string | null;
@@ -379,10 +380,14 @@ export type ChangeLifecycleObservation =
       work: WorkDescriptor;
     }
   | {
-      kind: 'planning-semantic-drift';
+      kind: 'planning-authority-invalidated';
+      expectedRevision: number;
+      fromPhase: 'build' | 'verify' | 'archive';
+      invalidationKind: 'semantic' | 'approval-authority';
       reason: string;
       evidenceIds: readonly string[];
       inputDigest: `sha256:${string}`;
+      work: WorkDescriptor;
     }
   | {
       kind: 'design-gate';
@@ -938,14 +943,27 @@ export function evolveChangeLifecycle(options: {
       },
     });
   }
-  if (observation.kind === 'planning-semantic-drift') {
-    if (current.phase !== 'build' && current.phase !== 'verify') {
+  if (observation.kind === 'planning-authority-invalidated') {
+    if (
+      observation.expectedRevision !== current.revision ||
+      observation.fromPhase !== current.phase
+    ) {
+      throw new Error('Planning authority observation belongs to a stale lifecycle revision');
+    }
+    if (!['build', 'verify', 'archive'].includes(current.phase)) {
       throw new Error(
-        `Planning semantic drift is not valid from ${current.phase}/${current.status}`,
+        `Planning authority invalidation is not valid from ${current.phase}/${current.status}`,
       );
     }
     if (!current.planningDigest) {
-      throw new Error('Active Build or Verify Work has no approved planning digest');
+      throw new Error('Active later-phase Work has no approved planning digest');
+    }
+    if (
+      observation.work.phase !== 'design' ||
+      observation.work.kind !== 'specification.plan' ||
+      observation.work.checkEpoch !== current.checkEpoch + 1
+    ) {
+      throw new Error('Planning authority invalidation requires the next Design Work');
     }
     const supersededPlanningDigest = current.planningDigest;
     const supersededWorkId = current.currentWork?.workId ?? null;
@@ -954,9 +972,13 @@ export function evolveChangeLifecycle(options: {
       definition: options.definition,
       current,
       transitionId:
-        current.phase === 'build' ? 'build.semantic-plan-drift' : 'verify.semantic-plan-drift',
+        current.phase === 'build'
+          ? 'build.semantic-plan-drift'
+          : current.phase === 'verify'
+            ? 'verify.semantic-plan-drift'
+            : 'archive.planning-drift',
       next: {
-        currentWork: null,
+        currentWork: observation.work,
         waitCondition: null,
         blocker: null,
         tasks: [],
@@ -964,10 +986,14 @@ export function evolveChangeLifecycle(options: {
         planningDigest: null,
         verificationInput: null,
         verificationInvalidation: null,
+        archiveDeliveryInput: null,
+        specificationClosure: null,
+        publicationReceipt: null,
       },
     });
     reduced.fact.invalidation = {
-      kind: 'planning-semantic-drift',
+      kind: 'planning-authority-invalidated',
+      invalidationKind: observation.invalidationKind,
       supersededPlanningDigest,
       observedPlanningDigest: observation.inputDigest,
       supersededWorkId,
@@ -1917,7 +1943,8 @@ export function evolveChangeLifecycle(options: {
       },
     });
     reduced.fact.invalidation = {
-      kind: 'planning-semantic-drift',
+      kind: 'planning-authority-invalidated',
+      invalidationKind: 'semantic',
       supersededPlanningDigest: current.planningDigest ?? current.archiveDeliveryInput.digest,
       observedPlanningDigest: observation.observedPlanningDigest,
       supersededWorkId: current.currentWork.workId,

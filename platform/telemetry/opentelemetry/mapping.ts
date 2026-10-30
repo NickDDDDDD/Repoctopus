@@ -108,6 +108,7 @@ const EXECUTION_EVENTS = new Set<TrajectoryEvent['type']>([
   'continuation.selected',
   'specification.artifacts-observed',
   'specification.validation-observed',
+  'recovery.reconciled',
 ]);
 
 function safeExecutionId(value: string): boolean {
@@ -266,6 +267,12 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
     const observation = event.data.observation;
     if (observation && typeof observation === 'object') {
       const record = observation as Record<string, unknown>;
+      if (
+        record.invalidationKind === 'semantic' ||
+        record.invalidationKind === 'approval-authority'
+      ) {
+        attributes['repoctopus.planning.invalidation.kind'] = record.invalidationKind;
+      }
       const configuration = record.configuration;
       if (configuration && typeof configuration === 'object') {
         const value = configuration as Record<string, unknown>;
@@ -333,6 +340,7 @@ const BOUNDED_REASON_CODES = new Set([
   'output-invalid',
   'outcome-rejected',
   'outcome-processing-error',
+  'checkpoint-superseded',
 ]);
 
 export function executionMetricAttributes(event: TrajectoryEvent): Attributes | null {
@@ -424,6 +432,16 @@ export function workflowEventMetricAttributes(
       typeof severity === 'string' && BOUNDED_SEVERITIES.has(severity) ? severity : 'unknown';
     result['repoctopus.specification.validation.contract_conflict'] =
       event.data.contractConflict === true;
+  }
+  if (event.type === 'change.lifecycle.transitioned') {
+    const observation = event.data.observation;
+    const invalidationKind =
+      observation && typeof observation === 'object'
+        ? (observation as Record<string, unknown>).invalidationKind
+        : undefined;
+    if (invalidationKind === 'semantic' || invalidationKind === 'approval-authority') {
+      result['repoctopus.planning.invalidation.kind'] = invalidationKind;
+    }
   }
   return result;
 }

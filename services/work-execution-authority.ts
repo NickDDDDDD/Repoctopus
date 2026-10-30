@@ -109,6 +109,15 @@ function assertSameClaim(checkpoint: WorkExecutionCheckpoint, intent: ActionInte
   }
 }
 
+function executionMatchesLifecycle(state: RunState, execution: WorkExecutionCheckpoint): boolean {
+  const lifecycle = state.changeLifecycle;
+  if (!lifecycle) return true;
+  return (
+    lifecycle.currentWork?.workId === execution.workId &&
+    lifecycle.checkEpoch === execution.checkEpoch
+  );
+}
+
 function hasErrorCode(error: unknown, code: string): boolean {
   let current = error;
   for (let depth = 0; depth < 4 && current instanceof Error; depth += 1) {
@@ -1013,14 +1022,19 @@ export class WorkExecutionAuthority extends Service {
     const state = await this.ctx.runStore.loadRun(runId);
     if (state.status === 'completed') return 'done';
     if (state.changeLifecycle?.waitCondition?.kind === 'human-decision') return 'ask';
-    if (!state.workExecution) return state.changeLifecycle?.currentWork ? 'execute' : 'wait';
-    if (state.workExecution.status === 'outcome') return 'execute';
-    return state.workExecution.continuation;
+    const execution = state.workExecution;
+    if (!execution || !executionMatchesLifecycle(state, execution)) {
+      return state.changeLifecycle?.currentWork ? 'execute' : 'wait';
+    }
+    if (execution.status === 'outcome') return 'execute';
+    return execution.continuation;
   }
 
   async recovery(runId: string): Promise<WorkExecutionRecovery> {
     const state = await this.ctx.runStore.loadRun(runId);
-    const current = state.workExecution;
+    const persisted = state.workExecution;
+    const superseded = Boolean(persisted && !executionMatchesLifecycle(state, persisted));
+    const current = superseded ? undefined : persisted;
     const result = (
       continuation: WorkContinuationKind,
       reason: WorkExecutionRecovery['reason'],
@@ -1035,6 +1049,11 @@ export class WorkExecutionAuthority extends Service {
     if (state.status === 'completed') return result('done', 'terminal');
     if (state.changeLifecycle?.waitCondition?.kind === 'human-decision') {
       return result('ask', 'human-decision');
+    }
+    if (superseded) {
+      return state.changeLifecycle?.currentWork
+        ? result('execute', 'checkpoint-superseded')
+        : result('wait', 'checkpoint-superseded');
     }
     if (!current) {
       return state.changeLifecycle?.currentWork
@@ -1089,6 +1108,47 @@ export class WorkExecutionAuthority extends Service {
         : result('execute', 'validator-pending');
     }
     return result('execute', 'transition-pending');
+  }
+
+  async reconcileCurrentCheckpoint(runId: string): Promise<boolean> {
+    const reconciled = await this.ctx.runStore.commitGuarded(runId, ({ state, trajectory }) => {
+      const current = state.workExecution;
+      if (!current || executionMatchesLifecycle(state, current)) return { value: false };
+      const timestamp = new Date().toISOString();
+      const nextState = structuredClone(state);
+      delete nextState.workExecution;
+      nextState.stateVersion = state.stateVersion + 1;
+      nextState.updatedAt = timestamp;
+      return {
+        state: nextState,
+        event: executionEvent({
+          state: nextState,
+          sequence: trajectory.length + 1,
+          timestamp,
+          type: 'recovery.reconciled',
+          identity: [
+            'checkpoint-superseded',
+            current.workId,
+            String(current.checkEpoch),
+            state.changeLifecycle?.currentWork?.workId ?? 'none',
+            String(state.changeLifecycle?.checkEpoch ?? 0),
+          ],
+          data: {
+            phase: state.changeLifecycle?.phase ?? 'unknown',
+            workKind: state.changeLifecycle?.currentWork?.kind ?? 'unknown',
+            continuation: state.changeLifecycle?.currentWork ? 'execute' : 'wait',
+            reasonCode: 'checkpoint-superseded',
+            retiredWorkId: current.workId,
+            retiredCheckEpoch: current.checkEpoch,
+            nextWorkId: state.changeLifecycle?.currentWork?.workId ?? null,
+            nextCheckEpoch: state.changeLifecycle?.checkEpoch ?? null,
+          },
+        }),
+        value: true,
+      };
+    });
+    if (reconciled) await this.flushTelemetry(runId);
+    return reconciled;
   }
 
   async recordContinuation(runId: string, recovery: WorkExecutionRecovery): Promise<void> {

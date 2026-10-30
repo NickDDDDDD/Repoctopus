@@ -565,5 +565,26 @@ describe('telemetry mapping', () => {
     expect(JSON.stringify(resumedMetric)).not.toMatch(
       /private-person|next-private-work|secret-feature|sha256:/u,
     );
+
+    const planningInvalidation: TrajectoryEvent = {
+      ...event,
+      eventId: 'planning-authority-invalidated',
+      data: {
+        ...event.data,
+        observationKind: 'planning-authority-invalidated',
+        observation: {
+          kind: 'planning-authority-invalidated',
+          invalidationKind: 'approval-authority',
+          reason: 'private approval reason',
+          inputDigest: `sha256:${'f'.repeat(64)}`,
+        },
+      },
+    };
+    const planningMetric = workflowEventMetricAttributes(
+      { ...batch, events: [planningInvalidation], trajectory: [planningInvalidation] },
+      planningInvalidation,
+    );
+    expect(planningMetric['repoctopus.planning.invalidation.kind']).toBe('approval-authority');
+    expect(JSON.stringify(planningMetric)).not.toMatch(/private approval|sha256:f/u);
   });
 });

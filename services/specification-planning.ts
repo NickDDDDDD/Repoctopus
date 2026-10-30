@@ -1,6 +1,7 @@
 import { Service, type Context } from '@deepseek-ai/cordis';
 
 import {
+  assertSpecificationApprovalState,
   createPlanningSnapshot,
   createSpecificationApprovalMigrationPlan,
   recordSpecificationApprovalDecision,
@@ -45,6 +46,22 @@ export interface DesignGateAssessment {
     artifacts: SpecificationArtifact[];
     validation: SpecificationValidation;
   };
+}
+
+export interface PlanningAuthorityObservation {
+  status: 'authorized' | 'invalid';
+  invalidationKind: 'semantic' | 'approval-authority' | null;
+  planningDigest: `sha256:${string}`;
+  reasonCode:
+    | 'authorized'
+    | 'planning-incomplete'
+    | 'strict-validation-failed'
+    | 'semantic-drift'
+    | 'approval-missing'
+    | 'approval-stale';
+  reason: string;
+  evidenceDigests: `sha256:${string}`[];
+  snapshot: PlanningSnapshot | null;
 }
 
 export class SpecificationPlanning extends Service {
@@ -187,7 +204,129 @@ export class SpecificationPlanning extends Service {
     };
   }
 
-  private async collect(input: PrepareSpecificationApprovalInput) {
+  async observeAuthority(
+    input: Omit<PrepareSpecificationApprovalInput, 'changeBranch'> & {
+      changeBranch?: ChangeBranchReference;
+      expectedPlanningDigest: `sha256:${string}`;
+    },
+  ): Promise<PlanningAuthorityObservation> {
+    let collected: Awaited<ReturnType<SpecificationPlanning['collect']>>;
+    try {
+      collected = await this.collect({ ...input, approvalPhase: 'design' });
+    } catch (error) {
+      return {
+        status: 'invalid',
+        invalidationKind: 'semantic',
+        planningDigest: input.expectedPlanningDigest,
+        reasonCode: 'strict-validation-failed',
+        reason:
+          error instanceof Error ? error.message : 'Specification planning observation failed',
+        evidenceDigests: [],
+        snapshot: null,
+      };
+    }
+    const { manifest, validation, current } = collected;
+    const evidenceDigests = [
+      manifest.semanticDigest,
+      manifest.change.changeDigest,
+      validation.validationDigest,
+    ];
+    const invalid = (
+      invalidationKind: 'semantic' | 'approval-authority',
+      reasonCode: Exclude<PlanningAuthorityObservation['reasonCode'], 'authorized'>,
+      reason: string,
+      snapshot: PlanningSnapshot | null = null,
+    ): PlanningAuthorityObservation => ({
+      status: 'invalid',
+      invalidationKind,
+      planningDigest: manifest.semanticDigest,
+      reasonCode,
+      reason,
+      evidenceDigests,
+      snapshot,
+    });
+    if (!manifest.change.planningComplete) {
+      return invalid('semantic', 'planning-incomplete', 'Specification planning is incomplete');
+    }
+    if (!validation.strict || !validation.valid) {
+      return invalid(
+        'semantic',
+        'strict-validation-failed',
+        'Specification planning requires successful strict validation',
+      );
+    }
+    if (manifest.semanticDigest !== input.expectedPlanningDigest) {
+      return invalid(
+        'semantic',
+        'semantic-drift',
+        'Specification planning semantics changed after Design approval',
+      );
+    }
+    const changeBranch = input.changeBranch ?? current?.snapshot.changeBranch;
+    if (!changeBranch) {
+      return invalid(
+        'approval-authority',
+        'approval-missing',
+        'Design planning approval is missing',
+      );
+    }
+    const snapshot = createPlanningSnapshot({
+      change: manifest.change,
+      validation,
+      schema: manifest.schema,
+      specificationRoot: manifest.specificationRoot,
+      changeBranch,
+      compositionDigest: input.compositionDigest,
+      projectConfigDigest: input.projectConfigDigest,
+      planningManifest: manifest,
+      approvalPhase: 'design',
+    });
+    if (!current) {
+      return invalid(
+        'approval-authority',
+        'approval-missing',
+        'Design planning approval is missing',
+        snapshot,
+      );
+    }
+    try {
+      assertSpecificationApprovalState(current);
+    } catch {
+      return invalid(
+        'approval-authority',
+        'approval-stale',
+        'Design planning approval is invalid',
+        snapshot,
+      );
+    }
+    if (
+      current.status !== 'approved' ||
+      current.decision?.decision !== 'approve' ||
+      !current.decision.approvalHash ||
+      current.snapshot.digest !== snapshot.digest ||
+      current.decision.snapshotDigest !== snapshot.digest
+    ) {
+      return invalid(
+        'approval-authority',
+        'approval-stale',
+        'Design planning approval no longer authorizes the current planning snapshot',
+        snapshot,
+      );
+    }
+    return {
+      status: 'authorized',
+      invalidationKind: null,
+      planningDigest: manifest.semanticDigest,
+      reasonCode: 'authorized',
+      reason: 'Specification planning remains strictly valid and approved',
+      evidenceDigests: [...evidenceDigests, snapshot.digest, current.decision.approvalHash],
+      snapshot,
+    };
+  }
+
+  private async collect(
+    input: Pick<PrepareSpecificationApprovalInput, 'changeId' | 'approvalPhase' | 'signal'>,
+  ) {
     const [manifest, validation, current] = await Promise.all([
       this.ctx.specification.planningManifest(input.changeId, input.signal),
       this.ctx.specification.validate(input.changeId, {
