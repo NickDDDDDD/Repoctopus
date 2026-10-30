@@ -73,6 +73,7 @@ import {
 import { createVerifyWork } from '../domains/change-lifecycle/verify-work.js';
 import { acceptVerifyGate, rejectVerifyGate } from '../domains/change-lifecycle/verify-gate.js';
 import type { SpecificationTask } from '../domains/specification/types.js';
+import { normalizePlanningArtifacts } from '../domains/specification/artifacts.js';
 import type {
   ChangeLifecycleState,
   ChangeRunProjection,
@@ -879,6 +880,16 @@ export class WorkflowRuns extends Service {
         projectConfigDigest: projectConfigDigest as `sha256:${string}`,
         ...(signal ? { signal } : {}),
       });
+      if (assessment.observation) {
+        try {
+          await this.ctx.workExecutionAuthority.recordSpecificationObservations({
+            runId: state.runId,
+            ...assessment.observation,
+          });
+        } catch {
+          // Provider facts still decide the Gate when the observation sink is unavailable.
+        }
+      }
     } catch (error) {
       assessment = {
         status: 'blocked',
@@ -1114,7 +1125,19 @@ export class WorkflowRuns extends Service {
       this.ctx.specification.inspect(lifecycle.identity.changeId, signal),
       this.ctx.workExecutionAuthority.loadIntent(state.runId),
     ]);
-    const requiredArtifacts = new Set(['proposal', 'delta-specs', 'design', 'tasks']);
+    const providerValidation = await this.ctx.specification.validate(lifecycle.identity.changeId, {
+      strict: true,
+      ...(signal ? { signal } : {}),
+    });
+    try {
+      await this.ctx.workExecutionAuthority.recordSpecificationObservations({
+        runId: state.runId,
+        artifacts: change.artifacts,
+        validation: providerValidation,
+      });
+    } catch {
+      // Provider facts still decide the Gate when the observation sink is unavailable.
+    }
     if (
       receipt.intentId !== execution.intentId ||
       receipt.outcome !== 'succeeded' ||
@@ -1122,15 +1145,16 @@ export class WorkflowRuns extends Service {
     ) {
       throw new Error('Open Provider validation is not bound to the authoritative Work Outcome');
     }
-    if (
-      change.artifacts.filter(
-        (artifact) => requiredArtifacts.has(artifact.kind) && artifact.status === 'ready',
-      ).length !== requiredArtifacts.size
-    ) {
+    try {
+      normalizePlanningArtifacts(change);
+    } catch (error) {
       const blocked = await this.coordinator.acceptChangeObservation(state.runId, {
         kind: 'open-gate',
         result: 'blocked',
-        reason: 'Open Provider validation requires the complete four-artifact OpenSpec set',
+        reason:
+          error instanceof Error
+            ? error.message
+            : 'Open Provider validation requires the satisfied four-artifact protocol',
         evidenceIds: change.artifacts.flatMap((artifact) =>
           artifact.digest ? [artifact.digest] : [],
         ),

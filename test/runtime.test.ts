@@ -120,7 +120,7 @@ describe('Repoctopus runtime', () => {
       changeLifecycle: lifecycle,
     });
     const checkpoint: WorkExecutionCheckpoint = {
-      schemaVersion: 2,
+      schemaVersion: 3,
       workId: configureWork.workId,
       attempt: 1,
       checkEpoch: 4,
@@ -246,7 +246,7 @@ describe('Repoctopus runtime', () => {
       },
     });
     const checkpoint: WorkExecutionCheckpoint = {
-      schemaVersion: 2,
+      schemaVersion: 3,
       workId: configureWork.workId,
       attempt: 1,
       checkEpoch: 4,

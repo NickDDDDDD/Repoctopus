@@ -19,6 +19,8 @@ export type TrajectoryEventType =
   | 'run.resumed'
   | 'recovery.reconciled'
   | 'work.created'
+  | 'work.packet-stored'
+  | 'work.packet-recovered'
   | 'work.claimed'
   | 'work.context-delivered'
   | 'work.host-started'
@@ -40,6 +42,8 @@ export type TrajectoryEventType =
   | 'wait.ended'
   | 'reconcile.started'
   | 'reconcile.completed'
+  | 'specification.artifacts-observed'
+  | 'specification.validation-observed'
   | 'continuation.selected';
 
 export interface TrajectoryEvent {

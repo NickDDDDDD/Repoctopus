@@ -273,6 +273,78 @@ describe('telemetry mapping', () => {
     expect(JSON.stringify(metric)).not.toMatch(/work-package|repository/u);
   });
 
+  it('exports only bounded packet and Specification reliability dimensions', () => {
+    const workflow = workflowFixture();
+    const project = projectFixture();
+    const run = startRun({
+      workflow,
+      runId: 'run-reliability-telemetry',
+      projectSnapshotDigest: project.digest,
+      composition: compositionFixture(),
+      timestamp: '2026-01-01T00:00:00.000Z',
+      traceId: '8'.repeat(32),
+    });
+    const base: Omit<TrajectoryEvent, 'type' | 'data' | 'eventId'> = {
+      schemaVersion: 1,
+      sequence: 2,
+      timestamp: '2026-01-01T00:00:01.000Z',
+      runId: run.runId,
+      stateVersion: 2,
+      compositionDigest: run.composition.compositionDigest,
+    };
+    const packet: TrajectoryEvent = {
+      ...base,
+      eventId: 'packet-recovered',
+      type: 'work.packet-recovered',
+      data: {
+        result: 'corrupt',
+        packetDigest: `sha256:${'a'.repeat(64)}`,
+        error: 'private C:/packet/path',
+      },
+    };
+    const specification: TrajectoryEvent = {
+      ...base,
+      eventId: 'specification-observed',
+      type: 'specification.validation-observed',
+      data: {
+        valid: false,
+        highestSeverity: 'error',
+        infoCount: 1,
+        warningCount: 2,
+        errorCount: 3,
+        contractConflict: true,
+        diagnostic: 'private provider message',
+      },
+    };
+    const batch: TelemetryBatch = {
+      run,
+      workflow,
+      projectSnapshot: project,
+      events: [packet, specification],
+      trajectory: [packet, specification],
+    };
+    expect(workflowEventMetricAttributes(batch, packet)).toMatchObject({
+      'repoctopus.packet.result': 'corrupt',
+    });
+    expect(workflowEventMetricAttributes(batch, specification)).toMatchObject({
+      'repoctopus.specification.validation.valid': false,
+      'repoctopus.specification.validation.highest_severity': 'error',
+      'repoctopus.specification.validation.contract_conflict': true,
+    });
+    expect(safeEventAttributes(batch, specification)).toMatchObject({
+      'repoctopus.execution.highestSeverity': 'error',
+      'repoctopus.execution.errorCount': 3,
+    });
+    expect(
+      JSON.stringify([
+        workflowEventMetricAttributes(batch, packet),
+        workflowEventMetricAttributes(batch, specification),
+        safeEventAttributes(batch, packet),
+        safeEventAttributes(batch, specification),
+      ]),
+    ).not.toMatch(/private|C:\//u);
+  });
+
   it('exports correction facts while keeping identity and diagnostics out of Metric labels', () => {
     const workflow = workflowFixture();
     const project = projectFixture();

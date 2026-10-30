@@ -27,9 +27,9 @@ node bin/repoctopus.js run status --workspace . --run <run-id> --json
 
 ## 受管 Work 与 continuation
 
-`run next` 每次只解析 Runtime 已选定的当前 Action，并返回 `execute | ask | wait | reconcile | done`。完整 `WorkExecutionPacket` 按 Runtime contract、阶段 action Skill、Specification Provider protocol、augmentation Skills、Method Profile、change inputs 的固定顺序装配；正文只交给短生命周期 Host，Run 仅保存 packet/context digest。
+`run next` 每次只解析 Runtime 已选定的当前 Action，并返回 `execute | ask | wait | reconcile | done`。完整 `WorkExecutionPacket` 按 Runtime contract、阶段 action Skill、Specification Provider protocol、augmentation Skills、Method Profile、change inputs 的固定顺序装配。claim 前，Runtime 先把深冻结 packet 以 create-or-verify 方式写入 `.repoctopus/runs/<runId>/packets/<packetDigest>.json`，再通过 Run CAS 绑定唯一 identity，最后才允许 Host 取得正文。Run、checkpoint、trajectory、日志和 OTLP 只保存 packet/context digest；私有 packet 文件是唯一正文恢复源。
 
-claim、context delivery、Host invocation、Outcome、Validator 与 lifecycle transition 都写入同一个 Run aggregate 和追加式 trajectory。ActionStore 只是先写的不可变内容库，不拥有 attempt 或下一步。恢复分类遵循以下边界：未调用可重交同一 attempt；活跃 Host 返回 `wait`；未知副作用返回 `reconcile`；可证明未执行才创建下一 attempt；已有 Outcome 从 Validator 继续；Human Decision 保留原 proposal hash。
+claim、context delivery、Host invocation、Outcome、Validator 与 lifecycle transition 都写入同一个 Run aggregate 和追加式 trajectory。ActionStore 和 packet store 是先写的不可变内容库，不拥有 attempt 或下一步；CAS 前的孤立内容没有执行权。恢复始终按 checkpoint identity 读取原 packet，不重新读取当前 Skill、Provider 指令或 OpenSpec 文件。恢复分类遵循以下边界：未调用可重交同一 attempt；活跃 Host 返回 `wait`；未知副作用返回 `reconcile`；可证明未执行才创建下一 attempt；已有 Outcome 从 Validator 继续；Human Decision 保留原 proposal hash。旧 checkpoint 或缺失/损坏 packet 明确进入 `migration-required` 或 `content-missing-or-corrupt`，不得用当前内容重组兼容。
 
 进程外 Host 的 Outcome 必须同时匹配原 invocation ID、Host ID 和 packet digest。受保护操作还必须携带活动 session identity；跨 Run/Work、过期 session、越仓或越 scope 操作全部 fail closed。Repoctopus 不是 OS 沙箱，旁路文件变化只能成为 drift，不能形成受管 Receipt。
 
@@ -37,11 +37,11 @@ claim、context delivery、Host invocation、Outcome、Validator 与 lifecycle t
 
 Build phase 固定执行 `Configure → Plan → Plan Evidence → Execute → Check`。Runtime 选择当前 Action；Host 只能执行当前 Work 并返回结构化 Outcome。`auto_transition` 只决定 Runner 是否继续调用 `run next`，不允许 Host 跳过 Action 或直接进入 Verify。
 
-| Action        | Runtime 接受的结果                                                                    |
-| ------------- | ------------------------------------------------------------------------------------- |
-| Configure     | Runner 提供的 checkout facts、Host 能力和 `current\|branch\|worktree` 隔离绑定       |
+| Action        | Runtime 接受的结果                                                                     |
+| ------------- | -------------------------------------------------------------------------------------- |
+| Configure     | Runner 提供的 checkout facts、Host 能力和 `current\|branch\|worktree` 隔离绑定         |
 | Plan          | OpenSpec Tasks 到有界 Work Packages 的执行投影，包括依赖、仓库、write scope 和验收引用 |
-| Plan Evidence | Task coverage、DAG、配置、Host、Skill 和隔离校验；高风险计划建立 Human Decision       |
+| Plan Evidence | Task coverage、DAG、配置、Host、Skill 和隔离校验；高风险计划建立 Human Decision        |
 | Execute       | 当前 package 的验收、测试、实现和可选受管子代理委派 Evidence                           |
 | Check         | 全部 package、Task acceptance、测试、独立 standard review 和仓库事实                   |
 

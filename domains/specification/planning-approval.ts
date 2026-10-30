@@ -3,7 +3,6 @@ import { createHash, randomUUID } from 'node:crypto';
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import type {
   ChangeBranchReference,
-  PlanningArtifactSnapshot,
   PlanningSpecificationRoot,
   PlanningSnapshot,
   SpecificationApprovalProposal,
@@ -22,8 +21,8 @@ import {
   assertSpecificationPlanningManifest,
   createSpecificationPlanningManifest,
 } from './planning-manifest.js';
+import { normalizePlanningArtifacts, REQUIRED_PLANNING_ARTIFACTS } from './artifacts.js';
 
-const REQUIRED_PLANNING_ARTIFACTS = ['proposal', 'design', 'delta-specs', 'tasks'] as const;
 const SHA256_DIGEST = /^sha256:[a-f0-9]{64}$/u;
 const GIT_OID = /^[a-f0-9]{40}(?:[a-f0-9]{24})?$/u;
 
@@ -60,25 +59,6 @@ function planningSnapshotDigest(snapshot: Omit<PlanningSnapshot, 'digest'>): `sh
   void _publication;
   void _remoteOid;
   return sha256({ ...semantic, changeBranch: branchIdentity });
-}
-
-function normalizePlanningArtifacts(change: SpecificationChange): PlanningArtifactSnapshot[] {
-  const planning = change.artifacts.filter((artifact) => artifact.kind !== 'verification');
-  const byKind = new Map(planning.map((artifact) => [artifact.kind, artifact]));
-  if (
-    planning.length !== REQUIRED_PLANNING_ARTIFACTS.length ||
-    byKind.size !== REQUIRED_PLANNING_ARTIFACTS.length
-  ) {
-    throw new Error('Specification planning requires exactly four planning artifacts');
-  }
-  return REQUIRED_PLANNING_ARTIFACTS.map((kind) => {
-    const artifact = byKind.get(kind);
-    if (!artifact || artifact.status !== 'ready' || !artifact.digest) {
-      throw new Error(`Specification planning artifact is not ready: ${kind}`);
-    }
-    assertDigest(artifact.digest, `Specification planning artifact ${kind}`);
-    return { id: artifact.id, kind, digest: artifact.digest };
-  }).sort((left, right) => left.id.localeCompare(right.id));
 }
 
 function assertSchemaInstructions(schema: SpecificationSchemaInstructions): void {

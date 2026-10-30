@@ -5,6 +5,10 @@ import { Service, type Context } from '@deepseek-ai/cordis';
 import type { ActionIntent, ActionReceipt, ClaimedActionOutcome } from '../domains/action/types.js';
 import type { RunState } from '../domains/engine/types.js';
 import type { WorkDescriptor } from '../domains/change-lifecycle/transition.js';
+import type {
+  SpecificationArtifact,
+  SpecificationValidation,
+} from '../domains/specification/types.js';
 import type { TrajectoryEvent, TrajectoryEventType } from '../domains/trajectory/types.js';
 import type {
   AgentCoordinationCheckpoint,
@@ -13,6 +17,7 @@ import type {
   WorkExecutionCheckpoint,
   WorkExecutionHostInvocation,
   WorkExecutionHostOutcome,
+  WorkClaimResult,
   WorkExecutionPacket,
   WorkExecutionRecovery,
 } from '../domains/work-execution/types.js';
@@ -104,14 +109,30 @@ function assertSameClaim(checkpoint: WorkExecutionCheckpoint, intent: ActionInte
   }
 }
 
+function hasErrorCode(error: unknown, code: string): boolean {
+  let current = error;
+  for (let depth = 0; depth < 4 && current instanceof Error; depth += 1) {
+    if ((current as NodeJS.ErrnoException).code === code) return true;
+    current = current.cause;
+  }
+  return false;
+}
+
 export class WorkExecutionAuthority extends Service {
-  static inject = ['runStore', 'actionStore', 'workExecutionSessions', 'workflowTelemetry'];
+  static inject = [
+    'runStore',
+    'actionStore',
+    'workExecutionPacketStore',
+    'workExecutionSessions',
+    'workflowTelemetry',
+  ];
 
   constructor(context: Context) {
     super(context, 'workExecutionAuthority');
   }
 
   async bindClaim(packet: WorkExecutionPacket): Promise<WorkExecutionCheckpoint> {
+    const stored = await this.ctx.workExecutionPacketStore.save(packet);
     const result = await this.ctx.runStore.commitGuarded(
       packet.claim.runId,
       ({ state, trajectory }) => {
@@ -146,7 +167,7 @@ export class WorkExecutionAuthority extends Service {
         }
         const timestamp = new Date().toISOString();
         const checkpoint: WorkExecutionCheckpoint = {
-          schemaVersion: 2,
+          schemaVersion: 3,
           workId: packet.claim.workId,
           attempt: packet.claim.attempt,
           checkEpoch: packet.claim.checkEpoch,
@@ -188,8 +209,169 @@ export class WorkExecutionAuthority extends Service {
         };
       },
     );
+    try {
+      await this.recordEvent(
+        packet.claim.runId,
+        packet.claim.intentId,
+        'work.packet-stored',
+        {
+          phase: packet.work.phase,
+          workId: packet.work.workId,
+          workKind: packet.work.kind,
+          attempt: packet.claim.attempt,
+          checkEpoch: packet.claim.checkEpoch,
+          packetDigest: packet.identity.packetDigest,
+          result: stored.status,
+        },
+        [packet.identity.packetDigest, stored.status],
+      );
+    } catch {
+      // The packet and authoritative claim are already durable. Observability cannot
+      // turn a successful bind into an apparent failure that a Runner might replay.
+    }
     await this.flushTelemetry(packet.claim.runId);
     return result;
+  }
+
+  async recordPacketRecovery(
+    runId: string,
+    result: 'recovered' | 'missing' | 'corrupt' | 'legacy',
+  ): Promise<void> {
+    await this.ctx.runStore.commitGuarded(runId, ({ state, trajectory }) => {
+      const execution = state.workExecution;
+      if (!execution) throw new Error(`Run has no authoritative Work claim: ${runId}`);
+      const eventId = digest(
+        runId,
+        'work.packet-recovered',
+        execution.workId,
+        String(execution.attempt),
+        execution.packet.packetDigest,
+        result,
+      );
+      if (trajectory.some((event) => event.eventId === eventId)) return { value: undefined };
+      const timestamp = new Date().toISOString();
+      const nextState: RunState = {
+        ...state,
+        stateVersion: state.stateVersion + 1,
+        updatedAt: timestamp,
+      };
+      return {
+        state: nextState,
+        event: executionEvent({
+          state: nextState,
+          sequence: trajectory.length + 1,
+          timestamp,
+          type: 'work.packet-recovered',
+          identity: [
+            execution.workId,
+            String(execution.attempt),
+            execution.packet.packetDigest,
+            result,
+          ],
+          data: {
+            phase: state.changeLifecycle?.phase,
+            workId: execution.workId,
+            workKind: state.changeLifecycle?.currentWork?.kind,
+            attempt: execution.attempt,
+            checkEpoch: execution.checkEpoch,
+            packetDigest: execution.packet.packetDigest,
+            result,
+          },
+        }),
+        value: undefined,
+      };
+    });
+    await this.flushTelemetry(runId);
+  }
+
+  async recordPacketRecoveryFailure(runId: string, error: unknown): Promise<void> {
+    const state = await this.ctx.runStore.loadRun(runId);
+    await this.recordPacketRecovery(
+      runId,
+      state.workExecution?.schemaVersion !== 3
+        ? 'legacy'
+        : hasErrorCode(error, 'ENOENT')
+          ? 'missing'
+          : 'corrupt',
+    );
+  }
+
+  async recordSpecificationObservations(input: {
+    runId: string;
+    artifacts: readonly SpecificationArtifact[];
+    validation: SpecificationValidation;
+  }): Promise<void> {
+    const status = (kind: SpecificationArtifact['kind']): SpecificationArtifact['status'] =>
+      input.artifacts.find((artifact) => artifact.kind === kind)?.status ?? 'missing';
+    const artifactStatuses = {
+      proposalStatus: status('proposal'),
+      specsStatus: status('delta-specs'),
+      designStatus: status('design'),
+      tasksStatus: status('tasks'),
+    } as const;
+    const counts = { info: 0, warning: 0, error: 0 };
+    for (const diagnostic of input.validation.diagnostics) counts[diagnostic.severity] += 1;
+    const highestSeverity =
+      counts.error > 0
+        ? 'error'
+        : counts.warning > 0
+          ? 'warning'
+          : counts.info > 0
+            ? 'info'
+            : 'none';
+    const contractConflict = input.validation.diagnostics.some(
+      ({ code }) => code === 'openspec.validation-contract-conflict',
+    );
+    const observations = [
+      {
+        type: 'specification.artifacts-observed' as const,
+        identity: Object.values(artifactStatuses),
+        data: artifactStatuses,
+      },
+      {
+        type: 'specification.validation-observed' as const,
+        identity: [input.validation.validationDigest],
+        data: {
+          valid: input.validation.valid,
+          highestSeverity,
+          infoCount: counts.info,
+          warningCount: counts.warning,
+          errorCount: counts.error,
+          contractConflict,
+        },
+      },
+    ];
+    for (const observation of observations) {
+      await this.ctx.runStore.commitGuarded(input.runId, ({ state, trajectory }) => {
+        const eventId = digest(input.runId, observation.type, ...observation.identity);
+        if (trajectory.some((event) => event.eventId === eventId)) return { value: undefined };
+        const timestamp = new Date().toISOString();
+        const nextState: RunState = {
+          ...state,
+          stateVersion: state.stateVersion + 1,
+          updatedAt: timestamp,
+        };
+        return {
+          state: nextState,
+          event: executionEvent({
+            state: nextState,
+            sequence: trajectory.length + 1,
+            timestamp,
+            type: observation.type,
+            identity: observation.identity,
+            data: {
+              phase: state.changeLifecycle?.phase,
+              workId: state.workExecution?.workId,
+              workKind: state.changeLifecycle?.currentWork?.kind,
+              attempt: state.workExecution?.attempt,
+              ...observation.data,
+            },
+          }),
+          value: undefined,
+        };
+      });
+    }
+    await this.flushTelemetry(input.runId);
   }
 
   async recordWorkCreated(runId: string, work: WorkDescriptor): Promise<void> {
@@ -769,6 +951,9 @@ export class WorkExecutionAuthority extends Service {
     const state = await this.ctx.runStore.loadRun(runId);
     const claim = state.workExecution;
     if (!claim) throw new Error(`Run has no authoritative Work claim: ${runId}`);
+    if (claim.schemaVersion !== 3) {
+      throw new Error('Legacy Work execution checkpoint requires migration');
+    }
     const intent = await this.ctx.actionStore.loadIntent(runId, claim.workId, claim.attempt);
     assertSameClaim(claim, intent);
     const expectedIdempotencyKey = rawDigest(
@@ -794,6 +979,34 @@ export class WorkExecutionAuthority extends Service {
       throw new Error('Authoritative Action intent content drifted from the Work packet');
     }
     return intent;
+  }
+
+  async loadAuthoritativePacket(runId: string): Promise<WorkClaimResult> {
+    const state = await this.ctx.runStore.loadRun(runId);
+    const checkpoint = state.workExecution;
+    if (!checkpoint) throw new Error(`Run has no authoritative Work claim: ${runId}`);
+    if (checkpoint.schemaVersion !== 3) {
+      throw new Error('Legacy Work execution checkpoint requires migration');
+    }
+    const intent = await this.loadIntent(runId);
+    const packet = await this.ctx.workExecutionPacketStore.load(runId, checkpoint.packet);
+    assertActivePacket(state, packet);
+    assertSameClaim(checkpoint, intent);
+    if (
+      packet.claim.intentId !== intent.intentId ||
+      packet.claim.runId !== intent.runId ||
+      packet.claim.workId !== intent.workId ||
+      packet.claim.attempt !== intent.attempt ||
+      packet.claim.checkEpoch !== intent.checkEpoch ||
+      packet.claim.claimToken !== intent.claimToken ||
+      packet.claim.inputDigest !== intent.inputDigest ||
+      packet.claim.compositionDigest !== intent.compositionDigest
+    ) {
+      throw new Error(
+        'Stored Work execution packet does not match the authoritative Action intent',
+      );
+    }
+    return { intent, packet };
   }
 
   async continuation(runId: string): Promise<WorkContinuationKind> {
@@ -828,10 +1041,28 @@ export class WorkExecutionAuthority extends Service {
         ? result('execute', 'work-unclaimed')
         : result('wait', 'transition-pending');
     }
+    if (current.schemaVersion !== 3) {
+      try {
+        await this.recordPacketRecovery(runId, 'legacy');
+      } catch {
+        // Recovery classification remains authoritative when observation is unavailable.
+      }
+      return result('reconcile', 'migration-required');
+    }
     try {
-      await this.loadIntent(runId);
-    } catch {
+      await this.loadAuthoritativePacket(runId);
+    } catch (error) {
+      try {
+        await this.recordPacketRecoveryFailure(runId, error);
+      } catch {
+        // Recovery classification remains authoritative when observation is unavailable.
+      }
       return result('reconcile', 'content-missing-or-corrupt');
+    }
+    try {
+      await this.recordPacketRecovery(runId, 'recovered');
+    } catch {
+      // Recovery classification remains authoritative when observation is unavailable.
     }
     if (current.status === 'claimed' || current.status === 'context-delivered') {
       return result('execute', 'claim-redelivery');

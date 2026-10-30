@@ -56,6 +56,68 @@ describe('desktop change projection', () => {
     expect(recovered.delta?.version).toBe(4);
   });
 
+  it('projects packet recovery and Specification status from the shared OTLP facts', () => {
+    const facts = [
+      observation(1, {
+        eventType: 'work.packet-recovered',
+        correlation: {
+          workspaceId: 'team-platform',
+          changeId: 'dashboard',
+          phase: 'open',
+          workId: 'open:1',
+          attempt: 1,
+          recovery: 'work.packet-recovered',
+        },
+        attributes: { result: 'recovered' },
+      }),
+      observation(2, {
+        eventType: 'specification.artifacts-observed',
+        correlation: { workspaceId: 'team-platform', changeId: 'dashboard', phase: 'open' },
+        attributes: {
+          proposalStatus: 'ready',
+          specsStatus: 'skipped',
+          designStatus: 'ready',
+          tasksStatus: 'ready',
+        },
+      }),
+      observation(3, {
+        eventType: 'specification.validation-observed',
+        correlation: { workspaceId: 'team-platform', changeId: 'dashboard', phase: 'open' },
+        attributes: {
+          valid: true,
+          highestSeverity: 'info',
+          infoCount: 1,
+          warningCount: 0,
+          errorCount: 0,
+          contractConflict: false,
+        },
+      }),
+    ];
+    const snapshot = facts.reduce(
+      (current, item) => reduceChangeProjection(current, item).snapshot,
+      createEmptyChangeProjection(),
+    );
+    const change = snapshot.changes[0]!;
+    expect(change.recoveries).toEqual([
+      expect.objectContaining({ kind: 'recovery', eventId: 'event-1' }),
+    ]);
+    expect(change.specification).toEqual({
+      artifacts: { proposal: 'ready', specs: 'skipped', design: 'ready', tasks: 'ready' },
+      validation: {
+        valid: true,
+        highestSeverity: 'info',
+        infoCount: 1,
+        warningCount: 0,
+        errorCount: 0,
+        contractConflict: false,
+        observedAt: facts[2]!.observedAt,
+      },
+    });
+    expect(change.health.quality.reasons).not.toContainEqual(
+      expect.objectContaining({ code: 'specification-artifact-missing' }),
+    );
+  });
+
   it('projects the complete semantic dashboard read model without renderer inference', () => {
     const facts: ObservationEnvelope[] = [
       observation(1, {

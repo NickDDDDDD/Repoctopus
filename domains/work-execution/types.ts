@@ -34,6 +34,7 @@ export interface WorkExecutionRecovery {
     | 'validator-pending'
     | 'transition-pending'
     | 'content-missing-or-corrupt'
+    | 'migration-required'
     | 'project-drift';
 }
 
@@ -243,7 +244,7 @@ export interface ExternalWorkExecutionOutcome {
 }
 
 export interface WorkExecutionCheckpoint {
-  schemaVersion: 2;
+  schemaVersion: 3;
   workId: string;
   attempt: number;
   checkEpoch: number;
@@ -381,4 +382,9 @@ export function assertPacketIdentity(packet: WorkExecutionPacket): void {
   if (rebuilt.identity.packetDigest !== packet.identity.packetDigest) {
     throw new Error('Work execution packet identity does not match its content');
   }
+}
+
+export function restoreWorkExecutionPacket(packet: WorkExecutionPacket): WorkExecutionPacket {
+  assertPacketIdentity(packet);
+  return deepFreeze(structuredClone(packet));
 }
