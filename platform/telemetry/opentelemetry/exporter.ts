@@ -193,8 +193,8 @@ export class OpenTelemetryExporter implements TelemetryPort {
               context: parentContext,
             });
             eventCounter.add(1, {
+              ...workflowEventMetricAttributes(batch, item),
               'repoctopus.event.type': record.eventName,
-              'repoctopus.workflow.name': batch.run.workflowName,
             });
           }
           continue;

@@ -7,8 +7,7 @@ import type {
   SpecificationPlanningManifest,
   SpecificationSchemaInstructions,
 } from './types.js';
-
-const PLANNING_KINDS = ['proposal', 'design', 'delta-specs', 'tasks'] as const;
+import { normalizePlanningArtifacts } from './artifacts.js';
 
 function sha256(value: unknown): `sha256:${string}` {
   return `sha256:${createHash('sha256').update(canonicalJson(value)).digest('hex')}`;
@@ -22,14 +21,8 @@ export function createSpecificationPlanningManifest(input: {
   if (canonicalJson(input.change.provider) !== canonicalJson(input.schema.provider)) {
     throw new Error('Planning manifest Provider and schema identities do not match');
   }
+  normalizePlanningArtifacts(input.change);
   const artifacts = input.change.artifacts.filter((artifact) => artifact.kind !== 'verification');
-  if (
-    artifacts.length !== PLANNING_KINDS.length ||
-    new Set(artifacts.map((artifact) => artifact.kind)).size !== PLANNING_KINDS.length ||
-    PLANNING_KINDS.some((kind) => !artifacts.some((artifact) => artifact.kind === kind))
-  ) {
-    throw new Error('Planning manifest requires exactly four official planning artifacts');
-  }
   const change = structuredClone(input.change);
   change.artifacts = [...artifacts].sort((left, right) => left.kind.localeCompare(right.kind));
   change.affectedCapabilities = [...new Set(change.affectedCapabilities)].sort();

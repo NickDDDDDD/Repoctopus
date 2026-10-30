@@ -712,6 +712,115 @@ Use the official OpenSpec retirement metadata.
     await context.fiber.dispose();
   });
 
+  it('preserves the official skipped artifact and INFO diagnostic for skip_specs changes', async () => {
+    const fixture = await openSpecFixture();
+    await writeFile(
+      path.join(fixture.workspace, 'openspec', 'changes', 'sample', '.openspec.yaml'),
+      'schema: spec-driven\nskip_specs: true\n',
+    );
+    await rm(path.join(fixture.workspace, 'openspec', 'changes', 'sample', 'specs'), {
+      recursive: true,
+      force: true,
+    });
+    await commitFixture(fixture.workspace, 'skip delta specs');
+    const context = new Context();
+    const fiber = context.plugin(OpenSpecProvider, {
+      workspaceRoot: fixture.workspace,
+      specificationRoot: fixture.specificationRoot,
+      process: fixture.process,
+    });
+    await fiber;
+
+    const inspected = await context.specification.inspect('sample');
+    const skipped = inspected.artifacts.find(({ kind }) => kind === 'delta-specs');
+    expect(skipped).toMatchObject({
+      id: 'specs',
+      kind: 'delta-specs',
+      status: 'skipped',
+    });
+    expect(skipped?.digest).toMatch(/^sha256:[a-f0-9]{64}$/u);
+    const validation = await context.specification.validate('sample', { strict: true });
+    expect(validation.valid).toBe(true);
+    const skipDiagnostic = validation.diagnostics.find(({ message }) =>
+      message.includes('skip_specs'),
+    );
+    expect(skipDiagnostic?.severity).toBe('info');
+    const manifest = await context.specification.planningManifest('sample');
+    expect(() => assertSpecificationPlanningManifest(manifest)).not.toThrow();
+    await context.fiber.dispose();
+  }, 30_000);
+
+  it('normalizes OpenSpec diagnostic levels and rejects valid results containing errors', async () => {
+    const issueSets = [
+      [{ level: 'INFO', code: 'info', message: 'informational' }],
+      [{ level: 'WARNING', code: 'warning', message: 'warning' }],
+      [{ level: 'ERROR', code: 'error', message: 'error' }],
+      [{ level: 'NOTICE', code: 'notice', message: 'unknown' }],
+    ];
+    let selected = 0;
+    const process: SpecificationProcessPort = {
+      execute(args) {
+        if (args[0] === 'context') {
+          return Promise.resolve({
+            exitCode: 0,
+            stdout: JSON.stringify({
+              root: { path: productRoot, source: 'store', store_id: 'repoctopus-test' },
+              status: [],
+            }),
+            stderr: '',
+          });
+        }
+        if (args[0] === 'validate') {
+          return Promise.resolve({
+            exitCode: 0,
+            stdout: JSON.stringify({
+              items: [{ id: 'sample', valid: true, issues: issueSets[selected] }],
+            }),
+            stderr: '',
+          });
+        }
+        return Promise.reject(new Error(`Unexpected OpenSpec command: ${args.join(' ')}`));
+      },
+    };
+    const context = new Context();
+    const fiber = context.plugin(OpenSpecProvider, {
+      workspaceRoot: productRoot,
+      specificationRoot: {
+        schemaVersion: 1,
+        kind: 'SpecificationRoot',
+        storeId: 'repoctopus-test',
+        repositoryId: 'workspace',
+      },
+      process,
+    });
+    await fiber;
+
+    const info = await context.specification.validate('sample', { strict: false });
+    expect(info).toMatchObject({ valid: true, diagnostics: [{ severity: 'info' }] });
+    selected = 1;
+    const warning = await context.specification.validate('sample', { strict: false });
+    expect(warning).toMatchObject({ valid: true, diagnostics: [{ severity: 'warning' }] });
+    selected = 2;
+    const error = await context.specification.validate('sample', { strict: false });
+    expect(error.valid).toBe(false);
+    expect(error.diagnostics.map(({ code }) => code)).toEqual([
+      'error',
+      'openspec.validation-contract-conflict',
+    ]);
+    selected = 3;
+    const unknown = await context.specification.validate('sample', { strict: false });
+    expect(unknown.valid).toBe(false);
+    expect(unknown.diagnostics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'openspec.diagnostic-level-invalid',
+          severity: 'error',
+        }),
+      ]),
+    );
+    await context.fiber.dispose();
+  });
+
   it('rejects missing structured Task Acceptance during strict Provider validation', async () => {
     const fixture = await openSpecFixture();
     await writeFile(

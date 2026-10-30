@@ -1,0 +1,152 @@
+# Design
+
+## Context
+
+`ExecutionWorkspaceIntent` 在 Open 人工决策中创建，但当前 `WorkflowRuns.decideChange()` 先把 intent 写入 lifecycle，随后才记录 OpenSpec approval；它没有调用 `ExecutionWorkspaceService.bind()` 验证真实 checkout。Build Configure 首次绑定时才会发现问题，而该异常路径没有 lifecycle observation。
+
+当前一个 Change 只有一个确定性 Run：`changeRunId({ workspaceId, changeId })`。因此“废弃旧 Run 再启动一个”既不符合身份模型，也会由 `startOrResume()` 恢复旧状态。正确修复必须留在同一 Run 的权威状态机内。
+
+## Goals / Non-Goals
+
+**Goals:**
+
+- 初次 isolation 选择在任何 Open 权威写入前用真实 checkout facts 验证。
+- Build Configure 对可修订 binding failure 返回 Open 人工决策，而不是永久抛错。
+- isolation 修订保留同一 runId，清除所有依赖旧 intent 的下游状态，并重新经过 Design。
+- current Work、checkEpoch 与 workExecution 在每次 transition 后保持一致。
+- status/Dashboard 只读，重复 pull/decision 幂等且可审计。
+
+**Non-Goals:**
+
+- 跨过 Human Decision 自动把 `current` 改成 `worktree`。
+- 把 remote identity、仓库集合或 project snapshot 漂移包装成 isolation 选择。
+- 保留已批准 Build Configuration 或已发生实现/发布副作用后原地切换 isolation。
+
+## Decisions
+
+### 1. Execution Workspace binding 返回稳定分类
+
+在 `services/execution-workspace` 深模块定义 `ExecutionWorkspaceBindingError`。它隐藏具体判定，并只向调用者暴露稳定的小接口：
+
+```ts
+class ExecutionWorkspaceBindingError extends Error {
+  readonly code: ExecutionWorkspaceBindingErrorCode;
+  readonly recovery: 'intent-revision' | 'binding-retry' | 'halt';
+}
+```
+
+`code` 使用受限枚举，例如：
+
+- `current-linked-worktree`；
+- `current-checkout-mismatch`；
+- `branch-mismatch`；
+- `worktree-ownership-missing`；
+- `remote-identity-drift`；
+- `repository-topology-drift`。
+
+恢复类别遵循“能否在保持批准 intent 的前提下修复”而不是简单按错误 code 分组：
+
+- 注册 checkout 本身是 linked worktree但 intent 为 `current` 时，必须改变 intent，分类为 `intent-revision`；
+- checkout path、branch 或 worktree ownership facts 只是 Runner binding 不正确时，分类为 `binding-retry`，保留原 intent；
+- remote identity 与 repository topology 漂移分类为 `halt`。
+
+`WorkflowRuns` 只判断 `recovery`，code 用于诊断与遥测，不维护第二份策略表。
+
+### 2. Open decision 先验证，后写两个权威
+
+`decideChange()` 从 Run trigger 读取冻结的 `executionCheckouts` 与 project snapshot，创建候选 intent 后先调用 `ExecutionWorkspaceService.bind()`。验证成功后才依次提交 lifecycle `open-workspace-intent-selected` 与 Specification approval decision；验证失败时两者都不变，用户可对同一 request 重试选择。
+
+这保持现有 Open 决策界面，但消除“批准后才发现模式物理上不可用”的时间差。绝对路径仍只属于本地 binding，不进入 planning digest 或 OpenSpec 工件。
+
+### 3. Build binding failure 使用显式 Build → Open wait
+
+当 active Work 是未批准配置的 `build.configure`，且 binding error 的 `recovery` 为 `intent-revision` 时，Runtime 根据 `{runId, lifecycle revision, old intent digest, error code}` 生成稳定 request/proposal digest，并创建 `workspace-intent-revision-required` observation。领域 transition：
+
+- phase 由 Build 回到 Open，status 为 waiting；
+- current Work 清空并创建 `workspace-intent:*` Human Decision wait；
+- 删除旧 `workspaceIntent`、Tasks、Build Protocol、planning digest、completion claim、Verification/Archive 输入与未完成 Closure；
+- 保留 Change identity、Open planning artifacts 和历史 trajectory；
+- 在 transition fact 记录旧 isolation、error code 与受控 evidence identity，不记录异常文本或路径。
+
+该 transition 只允许在 Build Configure 尚未批准、没有 Build Plan/package completion/Verify/Archive 副作用时触发。
+
+### 4. 新 intent 决策直接进入 Design Work
+
+CLI 在 `workspace-intent:*` wait 中展示失败分类、旧 isolation 和三个模式，再要求可信用户选择。现有 `DecideChangeRunInput.isolation` 继续作为唯一输入，不建立第二套命令 DTO。Service 再次绑定验证候选 intent；成功后物化新的 `specification.plan` Work，并提交 `workspace-intent-revised` observation，在一次 transition 中：
+
+- phase 设为 Design、status 为 running；
+- 保存新 intent；
+- 设置新 Design Work 与递增 checkEpoch；
+- 结束 wait，Design 后续仍需普通 planning Human Decision。
+
+拒绝决定进入 Open blocked；无效选择在任何 transition 前失败并保持原 wait，可用同一 request 重试。OpenSpec approval Store 不伪造新的规格决定，因为这里批准的是 execution intent；已批准且未变化的 Open planning digest 保留，重新进入 Design 后按普通规则刷新受 branch/plan snapshot 约束的 Design gate。
+
+### 5. Runtime CAS 维护 current execution 不变量
+
+`WorkflowRunCoordinator.acceptChangeObservation()` 在领域 transition 产生新 lifecycle 后调用纯函数 `executionMatchesLifecycle(currentWork, checkpoint)`。`workId/checkEpoch` 完全匹配才保留，否则在同一 Run CAS 中省略 checkpoint，并在同一个 `change.lifecycle.transitioned` event 写入 `executionRetirement` fact；claim、Outcome、Receipt 等历史事件不删除。该函数属于 Runtime state 投影，不新增 Adapter seam。
+
+这是恢复旧 Build Configure Outcome并允许新 Design Work claim 的必要条件，也是所有 lifecycle transition 都应满足的通用不变量，而不是 isolation 专用清理。
+
+### 6. 遥测使用有界事实
+
+trajectory/OTLP 记录 binding error code、from/to phase、旧/新 isolation、旧/新 work kind、checkEpoch 与 execution 是否退役。Metric label 只允许 phase、work kind、binding error code、isolation 与 boolean；路径、branch、digest、run/work/change identity 和错误文本只可作为受控 trace correlation 或完全省略。
+
+### 7. Build Package 以可独立闭环为边界
+
+Build Plan 不按文档章节机械切包，而按“能否在冻结 write scope 内完成 red → green → regression”切包。一个 package 引用的全部 Task、Acceptance 与阻塞依赖必须能够由该 package 的 repository binding 和 write scope 独立完成；如果回归测试描述的是跨层行为，package 必须同时覆盖测试 seam 与使该行为成立的权威模块，不能把测试先放入一个无法转绿的包，再期待后续包补实现。
+
+本 Change 的 binding error、Open prevalidation、Build recovery、可信 isolation decision 与 execution retirement 共同构成一个跨层恢复闭环。它们应作为同一个核心实现 package，write scope 覆盖 `services/execution-workspace.ts`、`services/workflow-runs.ts`、`domains/change-lifecycle/**`、`domains/runtime/**`、`app/cli/main.ts` 与相关测试。
+
+核心语义完成后，必须有一个 adoption package 让当前自举 Run 能安全消费这些语义。该 package 同时覆盖 `services/workflow-runs.ts`、`plugins/builtin-catalog.ts`、`plugins/lifecycle/builtin-definition-contributor.ts`、`plugins/lifecycle/builtin-extension-contributor.ts`、`plugins/lifecycle/builtin-validator-contributor.ts` 与相关测试，不能把 protected implementation adoption、contributor version adoption 或外部 Outcome 消费拆到 scope 之外。遥测/E2E 和最终验证仍可作为依赖该 adoption 闭环的后续 package。Runtime 接受 Build Plan 前的结构校验不能替代 Host 对 package 可完成性的判断；执行时发现范围不闭合必须走正式 planning finding，不得越界修改。
+
+### 8. 外部 Runner Outcome 与自举 adoption 必须闭环
+
+`Build Execute` 与 `Build Plan`/`Build Check` 使用同一套外部 Host 协议。Host submission 只表示 Runner 已提交结果，Runtime 必须显式接受 submission，再运行 validator 并写入 accepted/validated 状态：
+
+- `submitted/succeeded` 先转为 accepted，再由 package validator 验证并推进；
+- `submitted/failed` 先转为 accepted，finding 成为后续 recovery 的权威输入；
+- 重复 `next`、进程重启或重复读取不得重复接受、重复完成 Task 或跳过 validator；
+- 旧内嵌 Host 的 `outcome` 只保留为同一消费函数的输入兼容形态，不得成为外部 Runner 的隐式要求。
+
+本 Change 又修改了当前 Run 正在使用的受保护 lifecycle/Runtime composition。为避免“代码已正确但当前 Run 永远因 composition drift 无法采纳”的自举死锁，builtin catalog 必须只声明精确的 `{previous codeDigest, previous descriptorDigest}` 对；lifecycle definition/validator/extension contributor 只声明当前活动 Run 的直接前驱 version。任何未列出的 digest 或 version 仍为 `migration_required`。这不是长期旧版本兼容层，而是一次性的活动 Run adoption contract；新实现一旦接管，状态机只执行 4.3 的唯一语义。
+
+### 9. Workspace-intent wait 是 Open gate 的受保护子状态
+
+Build→Open intent revision 创建的 `workspace-intent:*` Human Decision 不是普通 Open planning approval。`run next` 在该 wait 尚未被可信决定消费时，必须原样返回当前 continuation；它不得调用通用 `advanceOpenGate()`，不得把 wait 替换为 `open-approval:*`，也不得递增 checkEpoch。只有 `decideChange()` 对匹配 request 的有效 isolation 决定可以离开该子状态并物化新的 Design Work。
+
+该规则放在 `WorkflowRuns` 的 Open orchestration 边界，而不是让 CLI 或领域 Store 猜测调用顺序。领域 transition 仍负责验证 observation 合法性；Service 负责在 pull-based 调用中选择与当前 wait 相符的唯一 Action。这样重复 pull、进程重启和 Dashboard/status 读取都保持只读幂等，且不会绕过 Workspace intent 的专用决策协议。
+
+### 10. Archive 在执行关闭副作用前再次验证 Evidence 指纹
+
+`prepareArchiveDelivery()` 的指纹检查只能保护 `specification.close` Work 创建时刻，不能保护 Work 等待 Host Outcome、人工操作或后续提交期间的变化。`executeArchiveDelivery()` 因而必须在消费 close Work 并调用 Specification provider 前重新规划同一 Evidence Profile，并把当前指纹与冻结的 `VerificationInput` 比较。
+
+若指纹已漂移且尚无 Specification Closure 或 Publication Receipt，Runtime 复用 `archive-reverify-required` transition：清除冻结的 Archive input，以新的 Verification input 和 `evidence.verify` Work 返回 Verify，并由同一 Run CAS 退役旧 close execution checkpoint。随后既有 Verify 编排会检查 planning semantic digest；规划语义变化继续返回 Design，只有实现或 Evidence 变化则留在 Verify。这样不增加平行恢复状态，也不让 Agent 选择 phase。
+
+该检查是关闭副作用前的最后责任点。已经产生 Closure 或开始 publication 后不得倒退或回滚，而应继续既有 journal/reconciliation 路径。
+
+## 模块边界
+
+- `services/execution-workspace`: binding 深模块与稳定错误分类。
+- `domains/change-lifecycle`: intent revision observations、wait 与纯 transition 不变量。
+- `domains/runtime`: lifecycle transition 与 execution retirement 的单 CAS 投影。
+- `services/workflow-runs`: Open prevalidation、Build failure 编排和 Human Decision 后的 Design Work 物化。
+- `services/workflow-runs`: 同时负责 Archive close 副作用边界的新鲜度检查，并复用既有 reverify Work 物化逻辑。
+- `plugins/builtin-catalog`: 受保护实现只接受精确直接前驱 digest pair，不提供通配兼容。
+- `plugins/lifecycle/*-contributor`: 声明当前活动 Run 直接前驱 version 可采纳唯一新语义。
+- `app/cli`: 只负责收集可信 isolation 决策，不选择 phase 或直接写 Store。
+- `platform/telemetry`: 从 trajectory facts 映射 OTLP，不解析异常消息。
+
+## 验证
+
+- 领域测试证明 Build Configure 只能在无副作用边界返回 Open，并清除依赖旧 intent 的全部下游状态。
+- Service 测试证明 linked worktree + current 在 Open 决策前被拒绝且 approval/lifecycle 均未写入。
+- E2E 复现已有坏 Run：Build Configure Outcome → `current-linked-worktree/intent-revision` → Open wait → 选择 worktree → Design Work；runId 不变且旧 checkpoint 不再是当前状态。
+- 在 `workspace-intent:*` wait 上重复 `next` 保持 waitId、checkEpoch 与 trajectory 不变，不生成通用 `open-approval:*` wait；重复错误观察和无效 isolation 决策不产生第二个 wait、Work 或 retirement event。
+- 外部 Runner 提交的 Build Execute 成功 Outcome 经 accepted→validated 后才完成 package；失败 Outcome 的 finding 经同一路径进入 recovery，重启和重复 pull 均幂等。
+- composition 对比只对活动 Run 的精确直接前驱实现/version 返回 compatible；任意相邻但未声明的 digest/version 仍返回 `migration_required`。
+- Archive 测试证明冻结 close Work 后的源树漂移会先返回 Verify、清除 Archive input并退役旧 execution；Specification provider 在此路径上零调用，规划语义漂移随后仍由 Verify 返回 Design。
+- OTLP 契约、strict OpenSpec、typecheck、lint、architecture/provenance/generated 检查和完整 `npm run verify` 全部通过。
+
+## 回退
+
+本 Change 不增加持久 schema generation。回退代码会重新造成无法修订的 Run，因此不支持保留旧行为；已进入 `workspace-intent:*` wait 的 Run 必须继续使用新代码完成决策。

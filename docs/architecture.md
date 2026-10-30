@@ -75,7 +75,7 @@ CLI → short-lived Project composition → completed Publication Receipts → a
 
 ## Run、Engine 与 RunStore
 
-Run 是跨进程持久化 Aggregate，不对应一个长期 Fiber。每个命令可以创建新的 App 与 Service Fiber，再从 RunStore、Transition Journal 和 Checkpoint 恢复。
+Run 是跨进程持久化 Aggregate，不对应一个长期 Fiber。每个命令可以创建新的 App 与 Service Fiber，再从 RunStore、Transition Journal、Checkpoint 和不可变 packet store 恢复。这个边界采用 Comet reserve/execute/commit 的思想：锁内确定并绑定意图，锁外调用 Host，锁内按原身份提交结果；Repoctopus 没有引入 Comet SDK 或第二套状态目录。
 
 Engine 只根据 Workflow、Run State 和已经核对的事实计算下一状态。RunStore 负责同一 Run 的写锁、状态版本、Journal、原子提交、Trajectory、Checkpoint、幂等和崩溃重放。WorkflowRuns 负责应用用例与 Engine 调用，不得绕过 RunStore 写入状态。
 
@@ -83,8 +83,8 @@ Engine 只根据 Workflow、Run State 和已经核对的事实计算下一状态
 
 外部副作用不能占用 Run 锁。`run next` 是 Runner 发起的 pull-based 入口，Runtime 根据当前 lifecycle snapshot 选择 Work；Host 和 Agent 都不能指定目标 phase、Work 或 Skill。执行链路为：
 
-1. ActionStore 先保存不可变 Intent；Run CAS 再把唯一 attempt 和 packet identity 绑定为权威 claim。CAS 前的孤立内容没有执行权。
-2. WorkContextAssembler 交付完整且深冻结的 packet；Run 同步记录 `context-delivered`，正文不进入 Run、日志或遥测。
+1. ActionStore 先保存不可变 Intent，按 Run 隔离的 packet store 再原子保存完整且深冻结的 packet；Run CAS 最后把唯一 attempt 和 packet identity 绑定为权威 claim。CAS 前的孤立内容没有执行权。
+2. WorkContextAssembler 只在首次 claim 装配 packet；恢复按 checkpoint identity 读取同一 packet，绝不从已变化的 Skill、Provider 或规划文件重组。Run 同步记录 `context-delivered`，正文不进入 Run、日志或遥测。
 3. 唯一 `WorkExecutionHost` preflight 后取得短生命周期 session，通过 Guard 受保护的 repository/process/specification/Git/platform 操作执行当前 Action。
 4. Outcome 必须匹配 invocation、Host、packet 和原 claim；Action Receipt 保存后仍须由当前 Work 的 Validator 接受，Agent 不能直接改 phase。
 5. Runtime 在同一响应选择下一 continuation。`auto_transition` 只决定客户端是否继续拉取下一项，不改变 transition 合法性。
@@ -137,8 +137,8 @@ App Boot 关闭时先把 Loader composition 更新为空并等待子 Fiber 的�
 
 ## 与上游来源的关系
 
-Cordis Core 4.0.5 与 Plugin Loader 1.0.6 的未修改发布快照位于 `third_party/`，固定在 DSH `dsh-v0.2.1-rc.4` 对应提交。DSH 的 Skill Registry 作为精确版本依赖使用；DSH Agent、Session、Workspace 和 fire-and-forget Webhook Runtime 不进入产品运行时。默认分支审计身份与发布依赖身份分开固定，未发布的 Cordis/Loader 源码不会伪装成 npm 发布快照。
+Cordis Core 4.0.5 与 Plugin Loader 1.0.6 的未修改发布快照位于 `third_party/`，固定在 DSH `dsh-v0.2.1-rc.5` 对应提交。DSH 的 Skill Registry 作为精确版本依赖使用；DSH Agent、Session、Workspace 和 fire-and-forget Webhook Runtime 不进入产品运行时。默认分支审计身份与发布依赖身份分开固定，未发布的 Cordis/Loader 源码不会伪装成 npm 发布快照。
 
-Comet `0.5.1` / 固定 `master` 提交是 Engine、受保护转换、文件安全、Evidence、Journal、Checkpoint、恢复、Receipt 和 Change 生命周期的源码或行为来源，不是 Repoctopus 的运行时父应用。Repoctopus 按团队 Workspace、多仓、Publication Receipt 和 Cordis 组合边界选择采用、改写或原生实现。OpenSpec 是可替换 Specification Provider 的当前实现；Matt Skills 是固定内容来源。机器身份、逐文件摘要和采用方式分别记录在 `third_party/cordis-upstream.json`、`third_party/dsh-adoption.json`、`third_party/comet/source-manifest.json` 与 Matt Skills manifest；0.5.1 增量判断见[Comet 审计](../third_party/comet/0.5.1-audit.md)，跨上游能力判断见[上游对齐审计](../third_party/upstream-alignment-audit.md)。
+Comet `0.5.1` / 独立审计的 `master` 提交是 Engine、受保护转换、文件安全、Evidence、Journal、Checkpoint、恢复、Receipt 和 Change 生命周期的源码或行为来源，不是 Repoctopus 的运行时父应用。Repoctopus 按团队 Workspace、多仓、Publication Receipt 和 Cordis 组合边界选择采用、改写或原生实现。OpenSpec 是可替换 Specification Provider 的当前实现；Matt Skills 是固定内容来源。机器身份、逐文件摘要和采用方式分别记录在 `third_party/cordis-upstream.json`、`third_party/dsh-adoption.json`、`third_party/comet/source-manifest.json` 与 Matt Skills manifest；0.5.1 增量判断见[Comet 审计](../third_party/comet/0.5.1-audit.md)，跨上游能力判断见[上游对齐审计](../third_party/upstream-alignment-audit.md)。
 
 Change lifecycle 的扩展面使用四类有类型的 Cordis 契约：Lifecycle Definition、Work Contributor、Validator Contributor 和 Lifecycle Extension。它们分别注册、卸载并进入 composition/Run 身份快照；Extension 只能声明 definition 已开放的 checkpoint，不能取得核心 transition 权限。这里没有另建通用 Capability Resolver，也没有把 Comet Workflow Application shell 搬进产品；DSH 仅使用已固定发布包和已登记的 Cordis 发布快照，不引用未发布的 Agent、Session 或应用源码。

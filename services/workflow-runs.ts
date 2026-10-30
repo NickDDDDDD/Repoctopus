@@ -59,9 +59,13 @@ import {
   validateBuildPlan,
   type BuildConfiguration,
   type ExecutionWorkspaceBinding,
+  type ExecutionWorkspaceIntent,
   type ExecutionIsolation,
 } from '../domains/change-lifecycle/build-protocol.js';
-import type { ExecutionCheckoutRequest } from './execution-workspace.js';
+import {
+  ExecutionWorkspaceBindingError,
+  type ExecutionCheckoutRequest,
+} from './execution-workspace.js';
 import {
   createVerificationInput,
   rebaseVerificationInput,
@@ -69,6 +73,7 @@ import {
 import { createVerifyWork } from '../domains/change-lifecycle/verify-work.js';
 import { acceptVerifyGate, rejectVerifyGate } from '../domains/change-lifecycle/verify-gate.js';
 import type { SpecificationTask } from '../domains/specification/types.js';
+import { normalizePlanningArtifacts } from '../domains/specification/artifacts.js';
 import type {
   ChangeLifecycleState,
   ChangeRunProjection,
@@ -143,6 +148,7 @@ export interface ExecuteArchiveDeliveryInput {
 export interface ExecuteArchiveDeliveryResult {
   stage:
     | 'specification-closed'
+    | 'reverify-required'
     | 'intent-corrected'
     | 'definition-recovered'
     | 'planning-revision-required'
@@ -376,6 +382,92 @@ export class WorkflowRuns extends Service {
     return this.operations.run({ cancellable: false, signal }, async () => {
       const state = await this.ctx.runStore.loadRun(input.runId);
       const lifecycle = state.changeLifecycle;
+      if (
+        lifecycle?.phase === 'open' &&
+        state.status === 'waiting' &&
+        lifecycle.waitCondition?.kind === 'human-decision' &&
+        lifecycle.waitCondition.waitId.startsWith('workspace-intent:')
+      ) {
+        const wait = lifecycle.waitCondition;
+        if (!input.actor.authenticated) {
+          throw new Error('Workspace intent revision requires a trusted actor');
+        }
+        if (
+          input.response.requestId !== wait.requestId ||
+          input.response.proposalHash !== wait.proposalDigest
+        ) {
+          throw new Error('Workspace intent revision does not match the current proposal');
+        }
+        if (input.response.decision !== 'approve') {
+          return this.coordinator.status(input.runId);
+        }
+        if (!input.isolation) {
+          throw new Error(
+            'Workspace intent revision requires current, branch, or worktree isolation',
+          );
+        }
+        const projectSnapshot = await this.ctx.runStore.loadProjectSnapshot(input.runId);
+        const target = state.trigger?.facts.targetBranch as { targetBranch?: unknown } | undefined;
+        const intent = createExecutionWorkspaceIntent({
+          workspaceId: lifecycle.identity.workspaceId,
+          changeId: lifecycle.identity.changeId,
+          isolation: input.isolation,
+          ...(input.isolation === 'branch' && typeof target?.targetBranch === 'string'
+            ? { targetBranch: target.targetBranch }
+            : {}),
+        });
+
+        // Binding is a read-only precondition. No lifecycle, approval, Skill, or Work state is
+        // written until the replacement intent is proven against the frozen checkout snapshot.
+        await this.bindExecutionWorkspaceIntent(state, intent, projectSnapshot);
+
+        const projectConfigDigest = state.trigger?.facts.projectConfigDigest;
+        const specificationRoot = state.trigger?.facts.specificationRoot as
+          | { repositoryId?: unknown }
+          | undefined;
+        if (
+          typeof projectConfigDigest !== 'string' ||
+          !/^sha256:[a-f0-9]{64}$/u.test(projectConfigDigest) ||
+          typeof specificationRoot?.repositoryId !== 'string'
+        ) {
+          throw new Error('Workspace intent revision trigger identities are missing');
+        }
+        const skills = await this.resolveLifecycleWorkSkills('specification.plan', signal);
+        const work = createLifecyclePhaseWork({
+          runId: input.runId,
+          checkEpoch: lifecycle.checkEpoch + 1,
+          changeId: lifecycle.identity.changeId,
+          definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+          kind: 'specification.plan',
+          actionSkill: skills.actionSkill,
+          augmentationSkills: skills.augmentationSkills,
+          compositionDigest: state.composition.compositionDigest,
+          projectSnapshotDigest: state.projectSnapshotDigest,
+          projectConfigDigest: projectConfigDigest as `sha256:${string}`,
+          workspaceRepositoryId: specificationRoot.repositoryId,
+          repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
+        });
+        for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
+          await this.coordinator.bindSkill(input.runId, skill);
+        }
+        const decided = await this.coordinator.acceptChangeObservation(input.runId, {
+          kind: 'workspace-intent-revised',
+          requestId: input.response.requestId,
+          proposalDigest: input.response.proposalHash,
+          actorId: input.actor.actorId,
+          intent,
+          work,
+        });
+        await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, work);
+        await this.ctx.workExecutionAuthority.recordWaitBoundary({
+          runId: input.runId,
+          waitId: wait.waitId,
+          stage: 'ended',
+          kind: 'human-decision',
+          reason: wait.reason,
+        });
+        return this.coordinator.status(decided.value.state.runId);
+      }
       if (
         lifecycle?.phase === 'build' &&
         state.status === 'waiting' &&
@@ -676,6 +768,8 @@ export class WorkflowRuns extends Service {
             ? { targetBranch: target.targetBranch }
             : {}),
         });
+        const projectSnapshot = await this.ctx.runStore.loadProjectSnapshot(input.runId);
+        await this.bindExecutionWorkspaceIntent(state, intent, projectSnapshot);
         await this.coordinator.acceptChangeObservation(input.runId, {
           kind: 'open-workspace-intent-selected',
           intent,
@@ -786,6 +880,16 @@ export class WorkflowRuns extends Service {
         projectConfigDigest: projectConfigDigest as `sha256:${string}`,
         ...(signal ? { signal } : {}),
       });
+      if (assessment.observation) {
+        try {
+          await this.ctx.workExecutionAuthority.recordSpecificationObservations({
+            runId: state.runId,
+            ...assessment.observation,
+          });
+        } catch {
+          // Provider facts still decide the Gate when the observation sink is unavailable.
+        }
+      }
     } catch (error) {
       assessment = {
         status: 'blocked',
@@ -899,17 +1003,14 @@ export class WorkflowRuns extends Service {
     }
   }
 
-  private async bindExecutionWorkspace(
+  private async bindExecutionWorkspaceIntent(
     state: RunState,
-    lifecycle: NonNullable<RunState['changeLifecycle']>,
+    intent: ExecutionWorkspaceIntent,
     projectSnapshot: ProjectSnapshot,
   ): Promise<ExecutionWorkspaceBinding> {
     const checkoutInput = state.trigger?.facts.executionCheckouts;
     if (!Array.isArray(checkoutInput)) {
       throw new Error('Runner did not provide execution checkout bindings');
-    }
-    if (!lifecycle.workspaceIntent) {
-      throw new Error('Build requires the approved Workspace intent');
     }
     const checkouts = checkoutInput.map((entry) => {
       if (
@@ -923,10 +1024,21 @@ export class WorkflowRuns extends Service {
       return entry as { repositoryId: string; checkoutPath: string };
     });
     return this.ctx.executionWorkspace.bind({
-      intent: lifecycle.workspaceIntent,
+      intent,
       project: projectSnapshot,
       checkouts,
     });
+  }
+
+  private async bindExecutionWorkspace(
+    state: RunState,
+    lifecycle: NonNullable<RunState['changeLifecycle']>,
+    projectSnapshot: ProjectSnapshot,
+  ): Promise<ExecutionWorkspaceBinding> {
+    if (!lifecycle.workspaceIntent) {
+      throw new Error('Build requires the approved Workspace intent');
+    }
+    return this.bindExecutionWorkspaceIntent(state, lifecycle.workspaceIntent, projectSnapshot);
   }
 
   private async assertFrozenExecutionWorkspace(
@@ -1013,7 +1125,19 @@ export class WorkflowRuns extends Service {
       this.ctx.specification.inspect(lifecycle.identity.changeId, signal),
       this.ctx.workExecutionAuthority.loadIntent(state.runId),
     ]);
-    const requiredArtifacts = new Set(['proposal', 'delta-specs', 'design', 'tasks']);
+    const providerValidation = await this.ctx.specification.validate(lifecycle.identity.changeId, {
+      strict: true,
+      ...(signal ? { signal } : {}),
+    });
+    try {
+      await this.ctx.workExecutionAuthority.recordSpecificationObservations({
+        runId: state.runId,
+        artifacts: change.artifacts,
+        validation: providerValidation,
+      });
+    } catch {
+      // Provider facts still decide the Gate when the observation sink is unavailable.
+    }
     if (
       receipt.intentId !== execution.intentId ||
       receipt.outcome !== 'succeeded' ||
@@ -1021,15 +1145,16 @@ export class WorkflowRuns extends Service {
     ) {
       throw new Error('Open Provider validation is not bound to the authoritative Work Outcome');
     }
-    if (
-      change.artifacts.filter(
-        (artifact) => requiredArtifacts.has(artifact.kind) && artifact.status === 'ready',
-      ).length !== requiredArtifacts.size
-    ) {
+    try {
+      normalizePlanningArtifacts(change);
+    } catch (error) {
       const blocked = await this.coordinator.acceptChangeObservation(state.runId, {
         kind: 'open-gate',
         result: 'blocked',
-        reason: 'Open Provider validation requires the complete four-artifact OpenSpec set',
+        reason:
+          error instanceof Error
+            ? error.message
+            : 'Open Provider validation requires the satisfied four-artifact protocol',
         evidenceIds: change.artifacts.flatMap((artifact) =>
           artifact.digest ? [artifact.digest] : [],
         ),
@@ -1183,6 +1308,31 @@ export class WorkflowRuns extends Service {
         if (state.changeLifecycle) {
           const work = state.changeLifecycle.currentWork;
           const execution = state.workExecution;
+          if (
+            work &&
+            execution?.workId === work.workId &&
+            execution.status === 'submitted' &&
+            execution.pendingSubmission?.outcome.status === 'failed'
+          ) {
+            const intent = await this.ctx.workExecutionAuthority.loadIntent(runId);
+            await this.ctx.workDispatcher.acceptOutcome(
+              this.ctx.workDispatcher.outcome(
+                intent,
+                'failed',
+                execution.pendingSubmission.outcome.summary,
+              ),
+            );
+            return {
+              value: await this.coordinator.status(runId),
+              diagnostics: [
+                {
+                  level: 'warning',
+                  code: 'change.work-failure-accepted',
+                  message: `Accepted the failed ${work.kind} submission for Runtime recovery`,
+                },
+              ],
+            };
+          }
           const designFinding = execution?.hostOutcome?.findings?.find(
             (finding) =>
               finding.kind === 'design_assumption_invalid' ||
@@ -1274,6 +1424,24 @@ export class WorkflowRuns extends Service {
           const current = state;
           if (state.changeLifecycle.phase === 'open') {
             if (!state.changeLifecycle.currentWork) {
+              const wait = state.changeLifecycle.waitCondition;
+              if (
+                state.status === 'waiting' &&
+                wait?.kind === 'human-decision' &&
+                wait.waitId.startsWith('workspace-intent:')
+              ) {
+                return {
+                  value: await this.coordinator.status(runId),
+                  diagnostics: [
+                    {
+                      level: 'info',
+                      code: 'change.workspace-intent-decision-pending',
+                      message:
+                        'Workspace intent revision is waiting for its trusted Human Decision',
+                    },
+                  ],
+                };
+              }
               return this.advanceOpenGate(state, signal);
             }
             if (
@@ -1635,9 +1803,58 @@ export class WorkflowRuns extends Service {
               if (!hostOutcome) throw new Error('Build Configure Host Outcome is missing');
               const configurationCandidate = hostOutcome.result;
               if (configurationCandidate?.kind !== 'build-configuration-candidate') {
-                throw new Error(
-                  'Build Configure Host must return a structured build-configuration-candidate',
-                );
+                const projectConfigDigest = current.trigger?.facts.projectConfigDigest;
+                const specificationRoot = current.trigger?.facts.specificationRoot as
+                  | { repositoryId?: unknown }
+                  | undefined;
+                if (
+                  typeof projectConfigDigest !== 'string' ||
+                  !/^sha256:[a-f0-9]{64}$/u.test(projectConfigDigest) ||
+                  typeof specificationRoot?.repositoryId !== 'string'
+                ) {
+                  throw new Error('Build Configure retry trigger identities are missing');
+                }
+                const skills = await this.resolveLifecycleWorkSkills('build.configure', signal);
+                const retryWork = createBuildActionWork({
+                  runId,
+                  checkEpoch: lifecycle.checkEpoch + 1,
+                  definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+                  kind: 'build.configure',
+                  actionSkill: skills.actionSkill,
+                  augmentationSkills: skills.augmentationSkills,
+                  compositionDigest: current.composition.compositionDigest,
+                  projectConfigDigest: projectConfigDigest as `sha256:${string}`,
+                  projectSnapshotDigest: current.projectSnapshotDigest,
+                  workspaceRepositoryId: specificationRoot.repositoryId,
+                  repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
+                  stableInput: {
+                    reason: 'configuration-output-invalid',
+                    priorWorkId: lifecycle.currentWork.workId,
+                  },
+                });
+                for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
+                  await this.coordinator.bindSkill(runId, skill);
+                }
+                const retried = await this.coordinator.acceptChangeObservation(runId, {
+                  kind: 'build-configuration-retry-required',
+                  reason:
+                    'Build Configure Host did not return a structured build-configuration-candidate',
+                  work: retryWork,
+                });
+                await this.ctx.workExecutionAuthority.recordWorkCreated(runId, retryWork);
+                return {
+                  ...retried,
+                  value: await this.coordinator.status(runId),
+                  diagnostics: [
+                    ...retried.diagnostics,
+                    {
+                      level: 'warning',
+                      code: 'change.build-configuration-outcome-rejected',
+                      message:
+                        'Build Configure will retry because the prior Host Outcome was incomplete',
+                    },
+                  ],
+                };
               }
               const invocationHost = current.workExecution.hostInvocation?.host;
               if (!invocationHost || invocationHost.id !== hostOutcome.hostId) {
@@ -1704,11 +1921,60 @@ export class WorkflowRuns extends Service {
                   ],
                 };
               }
-              const binding = await this.bindExecutionWorkspace(
-                current,
-                lifecycle,
-                projectSnapshot,
-              );
+              let binding: ExecutionWorkspaceBinding;
+              try {
+                binding = await this.bindExecutionWorkspace(current, lifecycle, projectSnapshot);
+              } catch (error) {
+                if (
+                  !(error instanceof ExecutionWorkspaceBindingError) ||
+                  error.recovery !== 'intent-revision'
+                ) {
+                  throw error;
+                }
+                const proposalDigest = `sha256:${createHash('sha256')
+                  .update(
+                    canonicalJson({
+                      schemaVersion: 1,
+                      runId,
+                      lifecycleRevision: lifecycle.revision,
+                      checkEpoch: lifecycle.checkEpoch,
+                      workId: lifecycle.currentWork.workId,
+                      workspaceIntentDigest: lifecycle.workspaceIntent.semanticDigest,
+                      errorCode: error.code,
+                    }),
+                  )
+                  .digest('hex')}` as const;
+                const requestId = `workspace-intent-revision:${proposalDigest.slice(-24)}`;
+                const reason = `Execution Workspace binding requires isolation revision (${error.code})`;
+                const revised = await this.coordinator.acceptChangeObservation(runId, {
+                  kind: 'workspace-intent-revision-required',
+                  requestId,
+                  proposalDigest,
+                  reason,
+                  evidenceIds: [`execution-workspace-binding:${error.code}`],
+                  errorCode: error.code,
+                  previousIsolation: lifecycle.workspaceIntent.isolation,
+                });
+                await this.ctx.workExecutionAuthority.recordWaitBoundary({
+                  runId,
+                  waitId: `workspace-intent:${requestId}`,
+                  stage: 'started',
+                  kind: 'human-decision',
+                  reason,
+                });
+                return {
+                  ...revised,
+                  value: await this.coordinator.status(runId),
+                  diagnostics: [
+                    ...revised.diagnostics,
+                    {
+                      level: 'warning',
+                      code: 'change.workspace-intent-revision-required',
+                      message: reason,
+                    },
+                  ],
+                };
+              }
               const proposal = createBuildConfigurationProposal({
                 intent: lifecycle.workspaceIntent,
                 binding,
@@ -2013,25 +2279,40 @@ export class WorkflowRuns extends Service {
               await this.ctx.workExecutionAuthority.recordWorkCreated(runId, nextWork);
               return { ...evidenced, value: await this.coordinator.status(runId) };
             }
+            const executeExecution = current.workExecution;
+            const executeExecutionIsCurrent =
+              executeExecution !== undefined &&
+              executeExecution.workId === lifecycle.currentWork?.workId &&
+              executeExecution.checkEpoch === lifecycle.currentWork?.checkEpoch;
+            const executeHostOutcome =
+              !executeExecution || !executeExecutionIsCurrent
+                ? undefined
+                : executeExecution.status === 'submitted'
+                  ? executeExecution.pendingSubmission?.outcome
+                  : executeExecution.status === 'validated' &&
+                      executeExecution.validatorId === lifecycle.currentWork?.validatorProfile.id &&
+                      executeExecution.actionOutcome?.status === 'succeeded' &&
+                      executeExecution.receiptId
+                    ? executeExecution.acceptedSubmission?.outcome
+                    : executeExecution.status === 'outcome' &&
+                        executeExecution.actionOutcome?.status === 'succeeded'
+                      ? executeExecution.hostOutcome
+                      : undefined;
             if (
               lifecycle.phase === 'build' &&
               lifecycle.currentWork?.kind === 'build.execute' &&
-              current.workExecution?.status === 'outcome' &&
-              current.workExecution.actionOutcome?.status === 'succeeded'
+              executeHostOutcome?.status === 'succeeded'
             ) {
               const protocol = lifecycle.buildProtocol;
               const configuration = protocol?.configuration;
               const plan = protocol?.plan;
-              const result = current.workExecution.hostOutcome?.result;
-              const invocationId = current.workExecution.hostOutcome?.invocationId;
+              const result = executeHostOutcome.result;
+              const invocationId = executeHostOutcome.invocationId;
               if (!protocol || !configuration || !plan || !invocationId) {
                 throw new Error('Build Execute Outcome has no current Plan');
               }
-              const invocationHost = current.workExecution.hostInvocation?.host;
-              if (
-                !invocationHost ||
-                invocationHost.id !== current.workExecution.hostOutcome!.hostId
-              ) {
+              const invocationHost = executeExecution?.hostInvocation?.host;
+              if (!invocationHost || invocationHost.id !== executeHostOutcome.hostId) {
                 throw new Error('Build Execute Host does not match the persisted invocation');
               }
               this.assertFrozenBuildHost(configuration, invocationHost);
@@ -2051,9 +2332,7 @@ export class WorkflowRuns extends Service {
                 (candidate) => candidate.packageId === result.packageId,
               );
               if (!workPackage) throw new Error('Build Execute package is absent from the Plan');
-              const implementerExecutionIds = (
-                current.workExecution.hostOutcome?.delegationReceipts ?? []
-              )
+              const implementerExecutionIds = (executeHostOutcome.delegationReceipts ?? [])
                 .filter(
                   (receipt) => receipt.role === 'implementer' && receipt.status === 'succeeded',
                 )
@@ -2087,6 +2366,12 @@ export class WorkflowRuns extends Service {
               });
               if (!validation.accepted) {
                 throw new Error(`Build Package Validator rejected: ${validation.diagnostic}`);
+              }
+              if (executeExecution?.status === 'submitted') {
+                const intent = await this.ctx.workExecutionAuthority.loadIntent(runId);
+                await this.ctx.workDispatcher.acceptOutcome(
+                  this.ctx.workDispatcher.outcome(intent, 'succeeded', executeHostOutcome.summary),
+                );
               }
               await this.ctx.workExecutionAuthority.markValidated({
                 intent: await this.ctx.workExecutionAuthority.loadIntent(runId),
@@ -3124,6 +3409,94 @@ export class WorkflowRuns extends Service {
     });
   }
 
+  private async reverifyArchiveIfFingerprintChanged(
+    runId: string,
+    state: RunState,
+    lifecycle: ChangeLifecycleState,
+    signal?: AbortSignal,
+  ): Promise<RuntimeResult<RunStatusView> | null> {
+    if (
+      lifecycle.phase !== 'archive' ||
+      !lifecycle.verificationInput ||
+      lifecycle.specificationClosure ||
+      lifecycle.publicationReceipt
+    ) {
+      return null;
+    }
+    const refreshed = await this.ctx.evidenceCoordinator.plan(
+      lifecycle.verificationInput.evidenceProfile.id,
+    );
+    if (
+      refreshed.fingerprint.digest === lifecycle.verificationInput.evidenceProfile.fingerprintDigest
+    ) {
+      return null;
+    }
+    const projectConfigDigest = state.trigger?.facts.projectConfigDigest;
+    const specificationRoot = state.trigger?.facts.specificationRoot as
+      | { repositoryId?: unknown }
+      | undefined;
+    if (
+      typeof projectConfigDigest !== 'string' ||
+      !/^sha256:[a-f0-9]{64}$/u.test(projectConfigDigest) ||
+      typeof specificationRoot?.repositoryId !== 'string'
+    ) {
+      throw new Error('Archive reverify trigger identities are missing');
+    }
+    const skills = await this.resolveLifecycleWorkSkills('evidence.verify', signal);
+    const verificationInput = createVerificationInput({
+      runId,
+      checkEpoch: lifecycle.checkEpoch + 1,
+      tasks: lifecycle.tasks ?? [],
+      fingerprint: refreshed.fingerprint,
+      plan: refreshed.plan,
+      projectConfigDigest: projectConfigDigest as `sha256:${string}`,
+      compositionDigest: state.composition.compositionDigest,
+      skills: [
+        ...(state.skillUsageSnapshots ?? []),
+        skills.actionSkill,
+        ...skills.augmentationSkills,
+      ].filter(
+        (skill, index, all) =>
+          all.findIndex(
+            (candidate) => candidate.name === skill.name && candidate.provider === skill.provider,
+          ) === index,
+      ),
+    });
+    const work = createVerifyWork({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      checkEpoch: lifecycle.checkEpoch + 1,
+      verification: verificationInput,
+      actionSkill: skills.actionSkill,
+      augmentationSkills: skills.augmentationSkills,
+      workspaceRepositoryId: specificationRoot.repositoryId,
+      repositoryIds: refreshed.fingerprint.manifest.repositories.map(
+        (repository) => repository.repositoryId,
+      ),
+    });
+    for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
+      await this.coordinator.bindSkill(runId, skill);
+    }
+    const fallback = await this.coordinator.acceptChangeObservation(runId, {
+      kind: 'archive-reverify-required',
+      reason: 'Verification input changed before Archive side effects',
+      verificationInput,
+      work,
+    });
+    await this.ctx.workExecutionAuthority.recordWorkCreated(runId, work);
+    return {
+      ...fallback,
+      value: await this.coordinator.status(runId),
+      diagnostics: [
+        ...fallback.diagnostics,
+        {
+          level: 'warning',
+          code: 'change.archive-reverify',
+          message: 'Archive returned to Verify before any closure or publication side effect',
+        },
+      ],
+    };
+  }
+
   prepareArchiveDelivery(
     input: PrepareArchiveDeliveryInput,
     signal?: AbortSignal,
@@ -3143,79 +3516,13 @@ export class WorkflowRuns extends Service {
       ) {
         throw new Error(`Change Run is not ready to plan Archive Delivery: ${input.runId}`);
       }
-      const refreshed = await this.ctx.evidenceCoordinator.plan(
-        lifecycle.verificationInput.evidenceProfile.id,
+      const reverify = await this.reverifyArchiveIfFingerprintChanged(
+        input.runId,
+        state,
+        lifecycle,
+        signal,
       );
-      if (
-        refreshed.fingerprint.digest !==
-        lifecycle.verificationInput.evidenceProfile.fingerprintDigest
-      ) {
-        const projectConfigDigest = state.trigger?.facts.projectConfigDigest;
-        const specificationRoot = state.trigger?.facts.specificationRoot as
-          | { repositoryId?: unknown }
-          | undefined;
-        if (
-          typeof projectConfigDigest !== 'string' ||
-          !/^sha256:[a-f0-9]{64}$/u.test(projectConfigDigest) ||
-          typeof specificationRoot?.repositoryId !== 'string'
-        ) {
-          throw new Error('Archive reverify trigger identities are missing');
-        }
-        const skills = await this.resolveLifecycleWorkSkills('evidence.verify', signal);
-        const verificationInput = createVerificationInput({
-          runId: input.runId,
-          checkEpoch: lifecycle.checkEpoch + 1,
-          tasks: lifecycle.tasks ?? [],
-          fingerprint: refreshed.fingerprint,
-          plan: refreshed.plan,
-          projectConfigDigest: projectConfigDigest as `sha256:${string}`,
-          compositionDigest: state.composition.compositionDigest,
-          skills: [
-            ...(state.skillUsageSnapshots ?? []),
-            skills.actionSkill,
-            ...skills.augmentationSkills,
-          ].filter(
-            (skill, index, all) =>
-              all.findIndex(
-                (candidate) =>
-                  candidate.name === skill.name && candidate.provider === skill.provider,
-              ) === index,
-          ),
-        });
-        const work = createVerifyWork({
-          definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-          checkEpoch: lifecycle.checkEpoch + 1,
-          verification: verificationInput,
-          actionSkill: skills.actionSkill,
-          augmentationSkills: skills.augmentationSkills,
-          workspaceRepositoryId: specificationRoot.repositoryId,
-          repositoryIds: refreshed.fingerprint.manifest.repositories.map(
-            (repository) => repository.repositoryId,
-          ),
-        });
-        for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
-          await this.coordinator.bindSkill(input.runId, skill);
-        }
-        const fallback = await this.coordinator.acceptChangeObservation(input.runId, {
-          kind: 'archive-reverify-required',
-          reason: 'Verification input changed before Archive side effects',
-          verificationInput,
-          work,
-        });
-        await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, work);
-        return {
-          ...fallback,
-          value: await this.coordinator.status(input.runId),
-          diagnostics: [
-            ...fallback.diagnostics,
-            {
-              level: 'warning',
-              code: 'change.archive-reverify',
-              message: 'Archive returned to Verify before any closure or publication side effect',
-            },
-          ],
-        };
-      }
+      if (reverify) return reverify;
       if (!evidence.bundle || !evidence.bundle.verificationReport) {
         throw new Error('Archive Delivery requires a completed formal verification report');
       }
@@ -3344,6 +3651,25 @@ export class WorkflowRuns extends Service {
         !archive
       ) {
         throw new Error(`Change Run has no active Archive Delivery Work: ${input.runId}`);
+      }
+      if (workKind === 'specification.close') {
+        const reverify = await this.reverifyArchiveIfFingerprintChanged(
+          input.runId,
+          state,
+          lifecycle,
+          signal,
+        );
+        if (reverify) {
+          return {
+            value: {
+              stage: 'reverify-required',
+              publication: null,
+              receipt: null,
+              run: reverify.value,
+            },
+            diagnostics: reverify.diagnostics,
+          };
+        }
       }
       if (deliveryPolicyDigest(input.policy) !== archive.publicationPolicyDigest) {
         throw new Error('Archive Delivery policy changed after Work planning');

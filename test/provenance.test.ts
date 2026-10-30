@@ -163,7 +163,7 @@ describe('third-party provenance', () => {
     const result = await checkProvenance(root);
     expect(result.valid).toBe(false);
     expect(result.findings).toContain(
-      'DSH package lock mismatch: @deepseek-ai/dsh-skill@0.2.1-rc.4',
+      'DSH package lock mismatch: @deepseek-ai/dsh-skill@0.2.1-rc.5',
     );
   });
 
@@ -191,7 +191,11 @@ describe('third-party provenance', () => {
     const root = await provenanceFixture();
     const baselinePath = path.join(root, 'third_party', 'upstream-baselines.json');
     const baseline = JSON.parse(await readFile(baselinePath, 'utf8')) as {
-      upstreams: Array<{ id: string; pinnedCommit: string; pinnedTagCommit: string }>;
+      upstreams: Array<{
+        id: string;
+        auditedBranchCommit: string;
+        pinnedTagCommit: string;
+      }>;
     };
     baseline.upstreams.find((entry) => entry.id === 'dsh')!.pinnedTagCommit =
       'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
@@ -200,5 +204,40 @@ describe('third-party provenance', () => {
     const result = await checkProvenance(root);
     expect(result.valid).toBe(false);
     expect(result.findings).toContain('DSH baseline disagrees with DSH or Cordis provenance');
+  });
+
+  it('uses the immutable Comet release commit as the adopted source identity', async () => {
+    const root = await provenanceFixture();
+    const baselinePath = path.join(root, 'third_party', 'upstream-baselines.json');
+    const baseline = JSON.parse(await readFile(baselinePath, 'utf8')) as {
+      upstreams: Array<{
+        id: string;
+        auditedBranchCommit: string;
+        pinnedTagCommit: string;
+      }>;
+    };
+    const comet = baseline.upstreams.find((entry) => entry.id === 'comet')!;
+    comet.auditedBranchCommit = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+    await writeFile(baselinePath, JSON.stringify(baseline, null, 2));
+
+    expect((await checkProvenance(root)).valid).toBe(true);
+
+    comet.pinnedTagCommit = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+    await writeFile(baselinePath, JSON.stringify(baseline, null, 2));
+    const result = await checkProvenance(root);
+    expect(result.valid).toBe(false);
+    expect(result.findings).toContain('Comet baseline disagrees with Comet provenance');
+  });
+
+  it('rejects the ambiguous upstream baseline schema version 1 contract', async () => {
+    const root = await provenanceFixture();
+    const baselinePath = path.join(root, 'third_party', 'upstream-baselines.json');
+    const baseline = JSON.parse(await readFile(baselinePath, 'utf8')) as { schemaVersion: number };
+    baseline.schemaVersion = 1;
+    await writeFile(baselinePath, JSON.stringify(baseline, null, 2));
+
+    const result = await checkProvenance(root);
+    expect(result.valid).toBe(false);
+    expect(result.findings).toContain('Invalid upstream baseline manifest');
   });
 });

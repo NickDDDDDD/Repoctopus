@@ -2,6 +2,10 @@ import type { Attributes } from '@opentelemetry/api';
 
 import type { TelemetryBatch } from '../../../domains/runtime/types.js';
 import type { TrajectoryEvent } from '../../../domains/trajectory/types.js';
+import {
+  workspaceIntentMetricAttributes,
+  workspaceIntentTraceAttributes,
+} from '../workspace-intent-mapping.js';
 
 const SAFE_DATA_KEYS = new Set([
   'actionId',
@@ -56,6 +60,16 @@ const EXECUTION_DATA_KEYS = new Set([
   'reasonCode',
   'rejectedSubmissionCount',
   'legacyRecovery',
+  'proposalStatus',
+  'specsStatus',
+  'designStatus',
+  'tasksStatus',
+  'valid',
+  'highestSeverity',
+  'infoCount',
+  'warningCount',
+  'errorCount',
+  'contractConflict',
 ]);
 
 const SENSITIVE_KEY =
@@ -68,6 +82,8 @@ const SAFE_EXECUTION_ID = /^[a-zA-Z0-9][a-zA-Z0-9._:@/-]{0,255}$/u;
 const DIGEST = /^sha256:[a-f0-9]{64}$/u;
 const EXECUTION_EVENTS = new Set<TrajectoryEvent['type']>([
   'work.created',
+  'work.packet-stored',
+  'work.packet-recovered',
   'work.claimed',
   'work.context-delivered',
   'work.host-started',
@@ -90,6 +106,8 @@ const EXECUTION_EVENTS = new Set<TrajectoryEvent['type']>([
   'reconcile.started',
   'reconcile.completed',
   'continuation.selected',
+  'specification.artifacts-observed',
+  'specification.validation-observed',
 ]);
 
 function safeExecutionId(value: string): boolean {
@@ -179,6 +197,18 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
       } else if (key === 'result' && typeof value === 'string' && !BOUNDED_RESULTS.has(value)) {
         normalized = 'unknown';
       } else if (
+        key.endsWith('Status') &&
+        typeof value === 'string' &&
+        !BOUNDED_ARTIFACT_STATUSES.has(value)
+      ) {
+        normalized = 'unknown';
+      } else if (
+        key === 'highestSeverity' &&
+        typeof value === 'string' &&
+        !BOUNDED_SEVERITIES.has(value)
+      ) {
+        normalized = 'unknown';
+      } else if (
         key === 'reasonCode' &&
         typeof value === 'string' &&
         !BOUNDED_REASON_CODES.has(value)
@@ -228,6 +258,7 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
   }
   addEvidenceCorrelation(attributes, event);
   if (event.type === 'change.lifecycle.transitioned') {
+    Object.assign(attributes, workspaceIntentTraceAttributes(event));
     const observationKind = scalar(event.data.observationKind);
     if (observationKind !== undefined) {
       attributes['repoctopus.lifecycle.observation.kind'] = observationKind;
@@ -289,7 +320,15 @@ const BOUNDED_RESULTS = new Set([
   'rejected',
   'implementation-failure',
   'evidence-unavailable',
+  'created',
+  'reused',
+  'recovered',
+  'missing',
+  'corrupt',
+  'legacy',
 ]);
+const BOUNDED_ARTIFACT_STATUSES = new Set(['ready', 'skipped', 'missing']);
+const BOUNDED_SEVERITIES = new Set(['none', 'info', 'warning', 'error']);
 const BOUNDED_REASON_CODES = new Set([
   'output-invalid',
   'outcome-rejected',
@@ -357,10 +396,36 @@ export function workflowEventMetricAttributes(
   batch: TelemetryBatch,
   event: TrajectoryEvent,
 ): Attributes {
-  return {
+  const result: Attributes = {
     'repoctopus.event.type': event.type,
     'repoctopus.workflow.name': batch.run.workflowName,
+    ...workspaceIntentMetricAttributes(event),
   };
+  if (event.type === 'work.packet-stored' || event.type === 'work.packet-recovered') {
+    const packetResult = event.data.result;
+    const allowed =
+      event.type === 'work.packet-stored'
+        ? new Set(['created', 'reused'])
+        : new Set(['recovered', 'missing', 'corrupt', 'legacy']);
+    result['repoctopus.packet.result'] =
+      typeof packetResult === 'string' && allowed.has(packetResult) ? packetResult : 'unknown';
+  }
+  if (event.type === 'specification.artifacts-observed') {
+    for (const key of ['proposalStatus', 'specsStatus', 'designStatus', 'tasksStatus'] as const) {
+      const value = event.data[key];
+      result[`repoctopus.specification.artifact.${key}`] =
+        typeof value === 'string' && BOUNDED_ARTIFACT_STATUSES.has(value) ? value : 'unknown';
+    }
+  }
+  if (event.type === 'specification.validation-observed') {
+    const severity = event.data.highestSeverity;
+    result['repoctopus.specification.validation.valid'] = event.data.valid === true;
+    result['repoctopus.specification.validation.highest_severity'] =
+      typeof severity === 'string' && BOUNDED_SEVERITIES.has(severity) ? severity : 'unknown';
+    result['repoctopus.specification.validation.contract_conflict'] =
+      event.data.contractConflict === true;
+  }
+  return result;
 }
 
 export function workflowStepMetricAttributes(

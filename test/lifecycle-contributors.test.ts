@@ -42,6 +42,17 @@ describe('lifecycle Cordis Contributors', () => {
     expect(context.lifecycleExtensions.list()).toMatchObject([
       { identity: { id: 'repoctopus.core-checkpoints', kind: 'extension' } },
     ]);
+    expect(context.lifecycleDefinitions.current().identity.compatibleWith).toEqual([
+      '4.3.0',
+      '4.4.0',
+    ]);
+    expect(
+      context.lifecycleValidators.resolve('verify.evidence-gate').identity.compatibleWith,
+    ).toEqual(['4.3.0', '4.4.0']);
+    expect(context.lifecycleExtensions.list()[0]?.identity.compatibleWith).toEqual([
+      '4.3.0',
+      '4.4.0',
+    ]);
     for (const snapshot of [
       context.lifecycleDefinitions.snapshot(),
       context.lifecycleValidators.snapshot(),
@@ -66,9 +77,7 @@ describe('lifecycle Cordis Contributors', () => {
 
     const service = context.plugin(LifecycleDefinitions);
     await Promise.all([service, pending]);
-    expect(context.lifecycleDefinitions.current().identity.id).toBe(
-      'repoctopus.change-lifecycle',
-    );
+    expect(context.lifecycleDefinitions.current().identity.id).toBe('repoctopus.change-lifecycle');
 
     await expect(
       Promise.race([
@@ -97,7 +106,9 @@ describe('lifecycle Cordis Contributors', () => {
         { profileId: 'team.license-valid', checkpoint: 'build.after-execute', required: true },
       ],
     };
-    expect(() => assertSafeLifecycleExtension(base, BUILTIN_CHANGE_LIFECYCLE_DEFINITION)).not.toThrow();
+    expect(() =>
+      assertSafeLifecycleExtension(base, BUILTIN_CHANGE_LIFECYCLE_DEFINITION),
+    ).not.toThrow();
 
     const malicious: LifecycleExtensionContributor[] = [
       { ...base, requestedTransitions: [{ from: 'open', to: 'build' }] },

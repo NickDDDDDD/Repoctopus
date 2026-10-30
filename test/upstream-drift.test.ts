@@ -10,48 +10,67 @@ const execFileAsync = promisify(execFile);
 const productRoot = path.resolve(import.meta.dirname, '..');
 const script = path.join(productRoot, 'scripts', 'check-upstream-drift.mjs');
 const temporaryRoots: string[] = [];
-const dshBranchCommit = 'f3803c96974ad4a94195fb97e5c637e9c2a3afe3';
-const dshReleaseCommit = '504a01a9578abc2c6f1fb896b1dc322c9fe24f66';
-const cometCommit = '35c9860b77b42bafa0c2d80d8d695889f888a924';
+const dshBranchCommit = '22ddee3792402c3e70ec5f86a63c3e3e895a2f60';
+const dshReleaseCommit = '1f81c047fc48fa190a683e469daa699857e9afe8';
+const cometCommit = 'aeb1a6598034e28ce46b8422d4dbd8785e607bd7';
 
 afterEach(async () => {
   await Promise.all(temporaryRoots.splice(0).map((root) => rm(root, { recursive: true })));
 });
 
-async function fixture(overrides: Record<string, string> = {}): Promise<NodeJS.ProcessEnv> {
+interface FixtureOverrides {
+  dshBranch?: string;
+  dshTag?: string;
+  mutateManifest?: (manifest: UpstreamBaselineFixture) => void;
+}
+
+interface UpstreamBaselineFixture {
+  schemaVersion: number;
+  upstreams: Array<{
+    id: string;
+    repository: string;
+    branch: string;
+    auditedBranchCommit: string;
+    pinnedTag: string;
+    pinnedTagCommit: string;
+  }>;
+}
+
+async function fixture(overrides: FixtureOverrides = {}): Promise<NodeJS.ProcessEnv> {
   const root = await mkdtemp(path.join(tmpdir(), 'repoctopus-upstream-drift-'));
   temporaryRoots.push(root);
-  const manifest = {
-    schemaVersion: 1,
+  const manifest: UpstreamBaselineFixture = {
+    schemaVersion: 2,
     upstreams: [
       {
         id: 'dsh',
         repository: 'https://invalid.example/dsh.git',
         branch: 'master',
-        pinnedCommit: dshBranchCommit,
-        pinnedTag: 'dsh-v0.2.1-rc.4',
+        auditedBranchCommit: dshBranchCommit,
+        pinnedTag: 'dsh-v0.2.1-rc.3',
         pinnedTagCommit: dshReleaseCommit,
       },
       {
         id: 'comet',
         repository: 'https://invalid.example/comet.git',
         branch: 'master',
-        pinnedCommit: cometCommit,
-        pinnedTag: '0.5.1',
+        auditedBranchCommit: cometCommit,
+        pinnedTag: '0.5.0',
         pinnedTagCommit: cometCommit,
       },
     ],
   };
   const refs = {
     dsh: {
-      'refs/heads/master': overrides.dsh ?? dshBranchCommit,
-      'refs/tags/dsh-v0.2.1-rc.4': dshReleaseCommit,
+      'refs/heads/master': overrides.dshBranch ?? dshBranchCommit,
+      'refs/tags/dsh-v0.2.1-rc.3': overrides.dshTag ?? dshReleaseCommit,
     },
     comet: {
-      'refs/heads/master': overrides.comet ?? cometCommit,
-      'refs/tags/0.5.1': cometCommit,
+      'refs/heads/master': cometCommit,
+      'refs/tags/0.5.0': cometCommit,
     },
   };
+  overrides.mutateManifest?.(manifest);
   const manifestPath = path.join(root, 'baselines.json');
   const refsPath = path.join(root, 'refs.json');
   await Promise.all([
@@ -66,13 +85,15 @@ async function fixture(overrides: Record<string, string> = {}): Promise<NodeJS.P
 }
 
 describe('daily upstream drift check', () => {
-  it('accepts branch and release tags that still resolve to the pinned commits', async () => {
+  it('accepts independently audited branch and immutable release commits', async () => {
     const { stdout } = await execFileAsync(process.execPath, [script, '--json'], {
       cwd: productRoot,
       env: await fixture(),
     });
     expect(stdout).toContain('"status": "current"');
     expect(stdout.match(/"status": "current"/gu)).toHaveLength(2);
+    expect(stdout).toContain(`"auditedBranchCommit": "${dshBranchCommit}"`);
+    expect(stdout).toContain(`"pinnedTagCommit": "${dshReleaseCommit}"`);
   });
 
   it('fails when an upstream branch advances beyond the audited baseline', async () => {
@@ -80,13 +101,62 @@ describe('daily upstream drift check', () => {
     try {
       await execFileAsync(process.execPath, [script], {
         cwd: productRoot,
-        env: await fixture({ dsh: advanced }),
+        env: await fixture({ dshBranch: advanced }),
       });
       expect.unreachable('drift check should fail');
     } catch (error: unknown) {
       const failure = error as Error & { code?: number; stdout?: string };
       expect(failure.code).toBe(1);
       expect(failure.stdout).toContain(`dsh: drifted (branch advanced to ${advanced})`);
+    }
+  });
+
+  it('fails when an immutable release tag moves', async () => {
+    const moved = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+    try {
+      await execFileAsync(process.execPath, [script], {
+        cwd: productRoot,
+        env: await fixture({ dshTag: moved }),
+      });
+      expect.unreachable('drift check should fail');
+    } catch (error: unknown) {
+      const failure = error as Error & { code?: number; stdout?: string };
+      expect(failure.code).toBe(1);
+      expect(failure.stdout).toContain(`dsh: drifted (tag resolves to ${moved})`);
+    }
+  });
+
+  it('rejects the ambiguous schema version 1 contract', async () => {
+    try {
+      await execFileAsync(process.execPath, [script], {
+        cwd: productRoot,
+        env: await fixture({
+          mutateManifest: (manifest) => {
+            manifest.schemaVersion = 1;
+          },
+        }),
+      });
+      expect.unreachable('schema validation should fail');
+    } catch (error: unknown) {
+      const failure = error as Error & { stderr?: string };
+      expect(failure.stderr).toContain('Invalid upstream baseline manifest');
+    }
+  });
+
+  it('rejects a baseline without an audited branch commit', async () => {
+    try {
+      await execFileAsync(process.execPath, [script], {
+        cwd: productRoot,
+        env: await fixture({
+          mutateManifest: (manifest) => {
+            manifest.upstreams[0]!.auditedBranchCommit = '';
+          },
+        }),
+      });
+      expect.unreachable('baseline validation should fail');
+    } catch (error: unknown) {
+      const failure = error as Error & { stderr?: string };
+      expect(failure.stderr).toContain('Invalid upstream baseline: dsh');
     }
   });
 });

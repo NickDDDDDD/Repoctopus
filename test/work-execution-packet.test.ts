@@ -1,4 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { readdir, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+
+import { afterEach, describe, expect, it } from 'vitest';
 
 import type { ActionIntent } from '../domains/action/types.js';
 import type { WorkExecutionContext } from '../domains/change-lifecycle/work-context.js';
@@ -7,9 +10,16 @@ import {
   assertPacketIdentity,
   createWorkExecutionPacket,
 } from '../domains/work-execution/types.js';
-import { compositionFixture } from './helpers/fixtures.js';
+import { FileWorkExecutionPacketStore } from '../platform/runtime/file-work-execution-packet-store.js';
+import {
+  compositionFixture,
+  removeTemporaryDirectory,
+  temporaryDirectory,
+} from './helpers/fixtures.js';
 
 const digest = (character: string) => `sha256:${character.repeat(64)}` as const;
+const cleanup: string[] = [];
+afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
 
 function fixture() {
   const context: WorkExecutionContext = {
@@ -78,7 +88,7 @@ function fixture() {
     schemaVersion: 3,
     intentId: 'intent-1',
     idempotencyKey: 'idempotency-1',
-    runId: 'run-1',
+    runId: 'run-001',
     workId: work.workId,
     attempt: 1,
     checkEpoch: work.checkEpoch,
@@ -150,5 +160,80 @@ describe('WorkExecutionPacket', () => {
     const packet = createWorkExecutionPacket({ intent, work, context });
     expect(JSON.stringify(packet)).toContain('Runtime owns transitions.');
     expect(JSON.stringify(intent)).not.toContain('Runtime owns transitions.');
+  });
+
+  it('stores immutable packet content by Run and digest with idempotent concurrent saves', async () => {
+    const root = await temporaryDirectory('repoctopus-packet-store-');
+    cleanup.push(root);
+    const { intent, work, context } = fixture();
+    const packet = createWorkExecutionPacket({ intent, work, context });
+    const store = new FileWorkExecutionPacketStore(root);
+
+    const results = await Promise.all([store.save(packet), store.save(packet)]);
+    expect(results.map(({ status }) => status).sort()).toEqual(['created', 'reused']);
+    const loaded = await store.load(intent.runId, packet.identity);
+    expect(loaded).toEqual(packet);
+    expect(Object.isFrozen(loaded)).toBe(true);
+    expect(Object.isFrozen(loaded.context.layers[0])).toBe(true);
+    const files = await readdir(path.join(root, '.repoctopus', 'runs', intent.runId, 'packets'));
+    expect(files).toEqual([`${packet.identity.packetDigest.slice('sha256:'.length)}.json`]);
+  });
+
+  it('fails closed for corrupt content and unsafe Run identities', async () => {
+    const root = await temporaryDirectory('repoctopus-packet-store-corrupt-');
+    cleanup.push(root);
+    const { intent, work, context } = fixture();
+    const packet = createWorkExecutionPacket({ intent, work, context });
+    const store = new FileWorkExecutionPacketStore(root);
+    await store.save(packet);
+    const file = path.join(
+      root,
+      '.repoctopus',
+      'runs',
+      intent.runId,
+      'packets',
+      `${packet.identity.packetDigest.slice('sha256:'.length)}.json`,
+    );
+    await writeFile(
+      file,
+      JSON.stringify({
+        ...packet,
+        context: {
+          ...packet.context,
+          layers: packet.context.layers.map((layer, index) =>
+            index === 0 ? { ...layer, content: 'tampered' } : layer,
+          ),
+        },
+      }),
+    );
+
+    await expect(store.load(intent.runId, packet.identity)).rejects.toThrow(
+      /packet identity does not match its content/iu,
+    );
+    await expect(store.load('../escape', packet.identity)).rejects.toThrow(/Invalid run id/iu);
+  });
+
+  it('distinguishes missing and truncated packet content without creating fallback files', async () => {
+    const root = await temporaryDirectory('repoctopus-packet-store-missing-');
+    cleanup.push(root);
+    const { intent, work, context } = fixture();
+    const packet = createWorkExecutionPacket({ intent, work, context });
+    const store = new FileWorkExecutionPacketStore(root);
+    await expect(store.load(intent.runId, packet.identity)).rejects.toMatchObject({
+      code: 'ENOENT',
+    });
+
+    await store.save(packet);
+    const file = path.join(
+      root,
+      '.repoctopus',
+      'runs',
+      intent.runId,
+      'packets',
+      `${packet.identity.packetDigest.slice('sha256:'.length)}.json`,
+    );
+    await writeFile(file, '{"schemaVersion":2');
+    await expect(store.load(intent.runId, packet.identity)).rejects.toBeInstanceOf(SyntaxError);
+    expect(await readdir(path.dirname(file))).toEqual([path.basename(file)]);
   });
 });

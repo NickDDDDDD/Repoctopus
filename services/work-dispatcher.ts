@@ -63,7 +63,8 @@ function createChangeInputs(input: {
           planEvidence: protocol.planEvidence,
           packageCompletions: protocol.packageCompletions,
           currentPackage:
-            plan?.packages.find((candidate) => candidate.packageId === input.work.packageId) ?? null,
+            plan?.packages.find((candidate) => candidate.packageId === input.work.packageId) ??
+            null,
         }
       : null,
     archiveDeliveryInput: input.lifecycle.archiveDeliveryInput ?? null,
@@ -199,28 +200,22 @@ export class WorkDispatcher extends Service {
   }
 
   async resumeClaim(runId: string): Promise<WorkClaimResult> {
-    const state = await this.ctx.runStore.loadRun(runId);
-    const work = state.changeLifecycle?.currentWork;
-    const checkpoint = state.workExecution;
-    if (!work || !checkpoint || checkpoint.workId !== work.workId) {
-      throw new Error('Run has no authoritative Work claim to resume');
+    try {
+      const result = await this.ctx.workExecutionAuthority.loadAuthoritativePacket(runId);
+      try {
+        await this.ctx.workExecutionAuthority.recordPacketRecovery(runId, 'recovered');
+      } catch {
+        // Packet recovery succeeded; an observation failure must not trigger re-execution.
+      }
+      return result;
+    } catch (error) {
+      try {
+        await this.ctx.workExecutionAuthority.recordPacketRecoveryFailure(runId, error);
+      } catch {
+        // Preserve the original packet failure and its continuation classification.
+      }
+      throw error;
     }
-    const intent = await this.ctx.workExecutionAuthority.loadIntent(runId);
-    const context = await this.ctx.workContextAssembler.assemble({
-      work,
-      changeId: state.changeLifecycle!.identity.changeId,
-      changeInputs: createChangeInputs({
-        runId: state.runId,
-        lifecycle: state.changeLifecycle!,
-        work,
-      }),
-      diagnostic: work.phase === 'build' && checkpoint.attempt > 1,
-    });
-    const packet = createWorkExecutionPacket({ intent, work, context });
-    if (packet.identity.packetDigest !== checkpoint.packet.packetDigest) {
-      throw new Error('Reassembled Work packet drifted from the authoritative claim');
-    }
-    return { intent, packet };
   }
 
   async acceptOutcome(input: ClaimedActionOutcome): Promise<WorkOutcomeAcceptance> {
