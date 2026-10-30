@@ -465,7 +465,15 @@ for (const packageEntry of cordisManifest.packages ?? []) {
 const upstreamBaselines = JSON.parse(
   await readFile(path.join(root, 'third_party', 'upstream-baselines.json'), 'utf8'),
 );
-if (upstreamBaselines.schemaVersion !== 1 || !Array.isArray(upstreamBaselines.upstreams)) {
+if (
+  upstreamBaselines.schemaVersion !== 2 ||
+  !Array.isArray(upstreamBaselines.upstreams) ||
+  upstreamBaselines.upstreams.some(
+    (entry) =>
+      !/^[a-f0-9]{40}$/u.test(entry.auditedBranchCommit ?? '') ||
+      !/^[a-f0-9]{40}$/u.test(entry.pinnedTagCommit ?? ''),
+  )
+) {
   findings.push('Invalid third_party/upstream-baselines.json');
 } else {
   const dshBaseline = upstreamBaselines.upstreams.find((entry) => entry.id === 'dsh');
@@ -476,7 +484,7 @@ if (upstreamBaselines.schemaVersion !== 1 || !Array.isArray(upstreamBaselines.up
   ) {
     findings.push('DSH baseline disagrees with DSH or Cordis provenance');
   }
-  if (cometBaseline?.pinnedCommit !== manifest.upstream.commit) {
+  if (cometBaseline?.pinnedTagCommit !== manifest.upstream.commit) {
     findings.push('Comet baseline disagrees with Comet provenance');
   }
 }

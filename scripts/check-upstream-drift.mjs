@@ -30,7 +30,7 @@ for (const upstream of manifest.upstreams) {
   const tagCommit = refs[`${tagRef}^{}`] ?? refs[tagRef];
   const findings = [];
   if (!branchCommit) findings.push(`missing branch ${branchRef}`);
-  else if (branchCommit !== upstream.pinnedCommit) {
+  else if (branchCommit !== upstream.auditedBranchCommit) {
     findings.push(`branch advanced to ${branchCommit}`);
   }
   if (!tagCommit) findings.push(`missing tag ${tagRef}`);
@@ -39,7 +39,8 @@ for (const upstream of manifest.upstreams) {
   }
   results.push({
     id: upstream.id,
-    pinnedCommit: upstream.pinnedCommit,
+    auditedBranchCommit: upstream.auditedBranchCommit,
+    pinnedTagCommit: upstream.pinnedTagCommit,
     branchCommit,
     tagCommit,
     status: findings.length === 0 ? 'current' : 'drifted',
@@ -53,7 +54,10 @@ if (process.argv.includes('--json')) {
   );
 } else {
   for (const result of results) {
-    const detail = result.findings.length === 0 ? result.pinnedCommit : result.findings.join('; ');
+    const detail =
+      result.findings.length === 0
+        ? `branch ${result.auditedBranchCommit}; release ${result.pinnedTagCommit}`
+        : result.findings.join('; ');
     process.stdout.write(`${result.id}: ${result.status} (${detail})\n`);
   }
 }
@@ -91,7 +95,7 @@ async function remoteRefs(upstream) {
 
 function assertManifest(value) {
   if (
-    value?.schemaVersion !== 1 ||
+    value?.schemaVersion !== 2 ||
     !Array.isArray(value.upstreams) ||
     value.upstreams.length === 0
   ) {
@@ -105,7 +109,7 @@ function assertManifest(value) {
       typeof upstream.repository !== 'string' ||
       typeof upstream.branch !== 'string' ||
       typeof upstream.pinnedTag !== 'string' ||
-      !/^[a-f0-9]{40}$/u.test(upstream.pinnedCommit ?? '') ||
+      !/^[a-f0-9]{40}$/u.test(upstream.auditedBranchCommit ?? '') ||
       !/^[a-f0-9]{40}$/u.test(upstream.pinnedTagCommit ?? '')
     ) {
       throw new Error(`Invalid upstream baseline: ${upstream?.id ?? '(missing id)'}`);
