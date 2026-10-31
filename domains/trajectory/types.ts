@@ -19,10 +19,17 @@ export type TrajectoryEventType =
   | 'run.resumed'
   | 'recovery.reconciled'
   | 'work.created'
+  | 'work.packet-stored'
+  | 'work.packet-recovered'
   | 'work.claimed'
   | 'work.context-delivered'
   | 'work.host-started'
   | 'work.host-completed'
+  | 'work.outcome-submitted'
+  | 'work.outcome-corrected'
+  | 'work.outcome-rejected'
+  | 'work.outcome-accepted'
+  | 'work.outcome-processing-error'
   | 'delegation.completed'
   | 'work.completed'
   | 'skill.resolved'
@@ -35,7 +42,24 @@ export type TrajectoryEventType =
   | 'wait.ended'
   | 'reconcile.started'
   | 'reconcile.completed'
+  | 'desktop.activation'
+  | 'specification.artifacts-observed'
+  | 'specification.validation-observed'
   | 'continuation.selected';
+
+export interface DesktopActivationFact {
+  result: 'started' | 'activated' | 'unavailable' | 'unsupported';
+  targetKind: 'override' | 'source' | 'installed-protocol' | 'none';
+  reason:
+    | 'new-instance'
+    | 'existing-instance'
+    | 'target-unavailable'
+    | 'development-artifact-missing'
+    | 'protocol-handler-unavailable'
+    | 'launch-rejected'
+    | 'launch-timeout'
+    | 'platform-unsupported';
+}
 
 export interface TrajectoryEvent {
   schemaVersion: 1;

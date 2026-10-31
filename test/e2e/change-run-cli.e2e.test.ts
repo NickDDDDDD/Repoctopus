@@ -98,9 +98,17 @@ describe('Change Run CLI', () => {
       },
       phase: 'open',
       status: 'running',
-      definition: { id: 'repoctopus-change', version: '4.2.0' },
+      definition: { id: 'repoctopus-change', version: '4.4.0' },
     });
-    expect(second.result?.changeLifecycle).toEqual(first.result?.changeLifecycle);
+    const firstLifecycle = first.result!.changeLifecycle!;
+    const secondLifecycle = second.result!.changeLifecycle!;
+    expect(secondLifecycle).toMatchObject({
+      identity: firstLifecycle.identity,
+      definition: firstLifecycle.definition,
+      phase: firstLifecycle.phase,
+      status: firstLifecycle.status,
+      currentWork: firstLifecycle.currentWork,
+    });
 
     const status = await runCli<RunStatusView>({
       packageRoot,

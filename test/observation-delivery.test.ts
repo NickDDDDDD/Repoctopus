@@ -78,15 +78,25 @@ describe('desktop observation delivery slice', () => {
       const failed = await delivery.replay({ id: 'offline', endpoint: 'http://127.0.0.1:1' });
       expect(failed).toMatchObject({ delivered: 0 });
       expect(failed.warning).toBeTruthy();
-      const launcher = new DesktopLauncher(context, { environment: {} });
-      const launch = launcher.activate({
+      const launcher = new DesktopLauncher(context, {
+        productRoot: path.resolve(import.meta.dirname, '..'),
+        environment: {},
+        platform: 'win32',
+        pathExists: () => Promise.resolve(false),
+        registryQuery: () => Promise.reject(new Error('Registry unavailable in test')),
+      });
+      const launch = await launcher.activate({
         schemaVersion: 1,
         workspaceId: 'team-platform',
         changeId: 'dashboard',
         runId: 'run-1',
       });
       expect(launch.status).toBe('unavailable');
-      expect(typeof launch.warning).toBe('string');
+      expect(launch).toEqual({
+        status: 'unavailable',
+        targetKind: 'installed-protocol',
+        reason: 'target-unavailable',
+      });
     } finally {
       await Promise.all([remoteServer.close(), desktopServer.close()]);
       await context.fiber.dispose();

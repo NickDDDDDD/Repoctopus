@@ -22,17 +22,22 @@ Repoctopus MUST 在成功持久化当前 Work claim 后向获授权宿主返回�
 
 ### Requirement: 持久事实只保存执行上下文身份
 
-Repoctopus MUST 在 Run、ActionIntent、Receipt、日志和遥测中只持久化执行包 schema、各层 source/digest、整体 digest、所属 runId、Work attempt 和 checkEpoch；Skill 正文、Provider instructions、Prompt、绝对路径和不受控 change 输入不得写入这些共享事实。
+Repoctopus MUST 在 Run、ActionIntent、Receipt、日志和遥测中只持久化执行包 schema、各层 source/digest、整体 digest、所属 runId、Work attempt 和 checkEpoch；完整 `WorkExecutionPacket` 只能写入按 packet digest 寻址、不可变且不进入共享事实的私有内容存储。Skill 正文、Provider instructions、Prompt、绝对路径和不受控 change 输入不得写入共享 Run、日志或遥测。
 
 #### Scenario: 进程在交付执行包后退出
 
 - **WHEN** claim 已保存而宿主在提交 Outcome 前退出
-- **THEN** 恢复方使用同一 runId、attempt 和 epoch 重新解析并核对完整上下文，内容一致才重新交付原 attempt，不从日志或 Run 文件恢复正文
+- **THEN** 恢复方按 Run 中的 packet identity 从私有内容存储读取、校验并重新交付原 packet 和原 attempt，不从当前项目文件、日志或 Run 文件重组正文
 
 #### Scenario: Skill 正文在恢复前漂移
 
-- **WHEN** 重新解析的任一层 digest 与已持久化执行包 identity 不同
-- **THEN** Runtime 阻断当前 Work、记录结构化差异并使同一 Run 进入 `migration_required` 或声明的兼容恢复，不把新正文注入旧 claim且不创建新 generation
+- **WHEN** claim 后当前 Skill、Provider instructions 或 Change 内容与冻结 packet 不同
+- **THEN** Runtime 仍用原 packet 恢复原 attempt，并把当前内容漂移留给后续 Work 或显式兼容检查，不把新正文注入旧 claim且不创建新 generation
+
+#### Scenario: 私有 packet 内容缺失或损坏
+
+- **WHEN** Run checkpoint 引用的 packet 无法按 digest 读取或内容身份校验失败
+- **THEN** Runtime fail closed、保留原 claim并返回 `content-missing-or-corrupt` 或 `migration_required`，不重组 packet、不再次调用 Host且不猜测 Outcome
 
 #### Scenario: Work 结果跨越阶段边界
 
@@ -88,27 +93,27 @@ Repoctopus MUST 让受管 Outcome 绑定执行包 digest、Host identity、执�
 
 ### Requirement: 受管 Work 必须从原执行断点恢复
 
-Repoctopus MUST 把当前 Work attempt、checkEpoch、claim、执行包、Host invocation、Outcome、Validator、Human Decision 和 lifecycle transition 的有界 identity 纳入同一个权威 Change Run aggregate/checkpoint，并通过 Run CAS 与可恢复 journal 提交每个执行边界；ActionStore 或其他投影不得拥有 attempt、claim、完成状态或 continuation。进程、Agent 或 Runner 中断后必须从原 Run 边界产生 `execute`、`ask`、`wait`、`reconcile` 或 `done` continuation，不得创建替代 generation，也不得仅凭 phase、旁路文件存在或会话记忆重新开始。
+Repoctopus MUST 把当前 Work attempt、checkEpoch、claim、执行包 identity、Host invocation、Outcome、Validator、Human Decision 和 lifecycle transition 的有界 identity 纳入同一个权威 Change Run aggregate/checkpoint，并把完整执行包保存为该 identity 指向的不可变私有内容；ActionStore、packet 内容存储或其他投影不得拥有 attempt、claim、完成状态或 continuation。进程、Agent 或 Runner 中断后必须从原 Run 边界产生 `execute`、`ask`、`wait`、`reconcile` 或 `done` continuation，不得创建替代 generation，也不得仅凭 phase、旁路文件存在、可变内容重组或会话记忆重新开始。
 
 #### Scenario: Action 内容写入后 Run claim 前中断
 
-- **WHEN** 不可变 ActionIntent 已写入内容库，但绑定其 identity 的 Run CAS 尚未成功
-- **THEN** 该内容是可忽略或可清理的孤立记录，不构成 claim，新 Runner 只按权威 Run 尝试领取且不得把 ActionStore latest 当作当前 attempt
+- **WHEN** 不可变 ActionIntent 或 packet 内容已写入内容库，但绑定其 identity 的 Run CAS 尚未成功
+- **THEN** 这些内容是可忽略或可清理的孤立记录，不构成 claim，新 Runner 只按权威 Run 尝试领取且不得把内容库 latest 当作当前 attempt
 
 #### Scenario: Run claim 成功后响应丢失
 
 - **WHEN** Run checkpoint 已绑定 claim、packet、attempt 和 epoch identity，但领取响应在返回宿主前丢失
-- **THEN** 新 Runner 从同一 Run 恢复原 attempt，并在摘要与 epoch 一致时重新交付同一 packet，不创建第二个 claim
+- **THEN** 新 Runner 从私有内容存储读取并验证同一 packet，恢复原 attempt且不创建第二个 claim
 
 #### Scenario: Run 引用的 Action 内容损坏
 
-- **WHEN** 权威 Run 引用的 ActionIntent、Outcome 或 Receipt 内容缺失、损坏或摘要不匹配
-- **THEN** Runtime fail closed 并返回 reconcile/repair 诊断，不从其他 Action 文件、最新时间或 checkbox 猜测执行结果
+- **WHEN** 权威 Run 引用的 ActionIntent、packet、Outcome 或 Receipt 内容缺失、损坏或摘要不匹配
+- **THEN** Runtime fail closed 并返回 reconcile/repair 诊断，不从其他 Action 文件、当前项目内容、最新时间或 checkbox 猜测执行结果
 
 #### Scenario: Host 调用后连接中断
 
 - **WHEN** checkpoint 已记录原 Host invocation，但 Runtime 未取得可验证 Outcome
-- **THEN** 新 Runner 保留同一 Work attempt、epoch 和 scope，返回 reconcile 或等待原 Host，不自动再次调用 Agent或重发外部副作用
+- **THEN** 新 Runner 保留同一 Work attempt、epoch、packet 和 scope，先观察原 Host并返回 reconcile 或等待，不自动再次调用 Agent或重发外部副作用
 
 #### Scenario: Outcome 后 Validator 前中断
 
@@ -137,8 +142,27 @@ Repoctopus MUST 把当前 Work attempt、checkEpoch、claim、执行包、Host i
 
 #### Scenario: 恢复时多仓或执行组合漂移
 
-- **WHEN** repository commit/path binding、definition、composition、Skill、Specification Provider 或 packet digest 与 checkpoint 不一致
+- **WHEN** repository commit/path binding、definition、composition、Specification Provider 或 packet identity 与 checkpoint 不一致
 - **THEN** Runtime 在同一 Run 返回结构化 reconcile 或 `migration_required` 状态并保留原执行事实，不把漂移解释为未执行后重跑
+
+#### Scenario: claim 后 Skill 或规划内容发生合法变化
+
+- **WHEN** 原 packet identity 和私有内容完整，但当前 Skill 或规划文件因本 Work 的受管写入而变化
+- **THEN** Runtime 不重新组装旧 packet、不把该变化误判为旧 claim 损坏，并继续从 Host invocation、Outcome 或 Validator 的真实断点恢复
+
+### Requirement: 外部 Host Outcome 重放必须保持内容幂等
+
+Repoctopus MUST 以 invocation identity 和稳定内容恢复已经持久化的外部 Host Outcome；Runtime 生成的完成时间不得使等价重放冲突，任何调用方提供的稳定字段漂移都必须 fail closed。
+
+#### Scenario: 相同外部 Host Outcome 重复提交
+
+- **WHEN** 同一 invocation 的外部 Outcome 已持久化，恢复进程再次提交相同 status、summary、consumed Skill layers、result、findings 与 delegation receipts，但产生了新的提交时间
+- **THEN** Runtime 复用原 Outcome 与原 `completedAt`，不再次记录 Host completion，并继续原 fact、Action Outcome 与 Validator 边界
+
+#### Scenario: 重放的外部 Host Outcome 内容漂移
+
+- **WHEN** 同一 invocation 的重复 Outcome 在 status、summary、consumed Skill layers、result、findings 或 delegation receipts 任一稳定字段上不同
+- **THEN** Runtime 拒绝该提交并保留原持久 Outcome，不重新调用 Host、不覆盖 checkpoint 且不推进 Work
 
 ### Requirement: Agent coordination checkpoint 不得成为完成权威
 
@@ -300,3 +324,113 @@ Build Check MUST 对当前 Build Plan revision 的 required Work Package complet
 
 - **WHEN** standard Review 由实现当前包的同一 Agent execution 自评，或 Host 不能提供与 implementation execution 区分的受管 reviewer identity
 - **THEN** Build Check 保持 blocked，不把自评、自由文本 reviewer 名称或同一 invocation 的角色声明作为独立审查
+
+### Requirement: 被校验拒绝的 Host submission 必须保持当前 Work 可纠正
+
+Runtime MUST 将 Host submission 与 accepted Action Outcome 建模为不同事实。当前 Work 的结构、领域或 Validator 校验通过前，submission MUST NOT 绑定为终态 Action Outcome或推进 lifecycle。对于可纠正拒绝，Runtime MUST 保留相同 `workId`、claim、attempt、`checkEpoch`、Host invocation、packet digest 与冻结输入，追加有界且不可变的 rejected submission，并允许原 invocation 使用新的 submission identity 提交修正版。Runtime MUST NOT 为首次候选拒绝创建新 Work、覆盖旧提交、重新执行外部副作用、跳过 Validator 或要求手改 Run Store。
+
+#### Scenario: Build Plan candidate 遗漏已批准 Task
+
+- **WHEN** Host 为当前 `build.plan` Work 提交结构化 candidate，但至少一个 OpenSpec Task 或 acceptance criterion 未被 Work Package 覆盖
+- **THEN** Runtime 记录 `outcome-rejected`，保持同一 Work/claim/attempt/checkEpoch/invocation 可纠正，不绑定终态 Outcome，也不创建 Execute 或新的 Plan Work
+
+#### Scenario: 使用新 submission identity 提交修正版
+
+- **WHEN** 原 invocation 在一次 candidate 被拒绝后，使用新的 submission identity 提交覆盖完整且通过 Validator 的候选
+- **THEN** Runtime 接受该 submission，原子绑定唯一终态 Action Outcome与 validator fact，并按 lifecycle 规则进入 Plan Evidence或 Execute
+
+#### Scenario: submission identity 重放与冲突
+
+- **WHEN** Host 重复提交相同 submission identity
+- **THEN** 相同 payload digest 的提交幂等返回原结果，不同 payload digest 的提交返回 conflict，且两者都不覆盖已记录事实
+
+#### Scenario: 拒绝后进程重启
+
+- **WHEN** Runtime 已持久化 rejected submission 后退出并重新启动
+- **THEN** 恢复仍暴露原 Work、claim、attempt、checkEpoch 与 invocation，并允许新的 submission identity 纠正，不重新调用 Host或创建新 Work
+
+#### Scenario: 未知 Outcome 处理错误
+
+- **WHEN** submission 处理遭遇 Store、Provider、Skill、CAS 或未分类程序错误，而不是确定性的候选或 Validator 拒绝
+- **THEN** Runtime fail closed、记录 `outcome-processing-error` 诊断并停止自动推进，不把故障伪装成 Agent 可纠正候选
+
+#### Scenario: 恢复预修复卡住的 Plan Run
+
+- **WHEN** Runtime 能证明旧 checkpoint 的 Plan Outcome 已被提前终态化、lifecycle 尚未接受 Plan、候选可重现确定性拒绝且所有冻结身份兼容
+- **THEN** Runtime 通过幂等兼容恢复保留旧 Outcome 为 rejected submission并恢复同一 Work的纠正入口；若任一条件无法证明则进入 `migration_required`
+
+### Requirement: Intent 修订必须同步退役不匹配的 execution checkpoint
+
+当 Workspace intent 修订 transition 替换或清除 lifecycle current Work 时，Runtime MUST 通过统一的 current execution 判定，在同一次 Run CAS 中比较新 current Work 与 `workExecution` 的 `workId/checkEpoch`；不完全匹配的 checkpoint MUST 从当前 Run state 退役，并在同一 transition event 记录 retirement fact，历史 claim、Host invocation、Outcome、Receipt 与 Validator facts MUST 保留在 trajectory。新的 Design Work MUST 可正常 claim，旧 Build Configure Host MUST NOT 被重放或继续投影为当前 continuation。
+
+#### Scenario: Build Configure Outcome 后返回 Open
+
+- **WHEN** Build Configure Host 已提交成功 Outcome但 binding 证明旧 intent 不可用
+- **THEN** Build→Open transition 同一 CAS 清除当前 execution checkpoint并记录 retirement，Open wait 不返回旧 validator-pending
+
+#### Scenario: 新 Design Work 建立
+
+- **WHEN** 用户批准新的可绑定 intent并由 Runtime 创建 `specification.plan` Work
+- **THEN** Run 只包含新 Work/epoch 的当前身份，旧 Build Configure execution 仅作为 trajectory 历史可读
+
+#### Scenario: Transition 未替换 current Work
+
+- **WHEN** lifecycle transition 后 current Work 的 `workId/checkEpoch` 仍与 execution checkpoint 完全一致
+- **THEN** Runtime 保留 checkpoint且不记录虚假的 retirement
+
+### Requirement: 外部 Build Execute Outcome 必须经过统一的两阶段消费
+
+外部 Runner 为 `build.execute` Work 提交 Outcome 后，Runtime MUST 先把 `submitted` submission 显式接受为当前 attempt 的 Host 结果，再运行 package validator 并决定 validated success、finding recovery 或 halt；成功 submission MUST NOT 在 validator 前完成 package，失败 submission 的结构化 finding MUST NOT 因缺少旧内嵌 Host `outcome` 投影而丢失。重复 `next`、进程重启和同一 submission 重放 MUST 保持幂等，不得重复完成 Specification Task、Receipt 或 package。
+
+#### Scenario: 外部 Runner 提交成功 Outcome
+
+- **WHEN** 当前 Build Execute attempt 收到匹配 invocation/packet/context 的 `submitted/succeeded`
+- **THEN** Runtime 接受该 submission并运行 package validator，只有 validator accepted 后才标记 Task 与 package 完成
+
+#### Scenario: 外部 Runner 提交失败 Outcome
+
+- **WHEN** 当前 Build Execute attempt 收到包含结构化 planning 或 implementation finding 的 `submitted/failed`
+- **THEN** Runtime 接受该 submission并把 finding 交给正式 recovery 选择，不要求伪造旧内嵌 Host `outcome`
+
+#### Scenario: 重启后重复消费同一 submission
+
+- **WHEN** Runtime 在接受或验证 submission 后重启并再次执行 `next`
+- **THEN** 已接受、已验证和已完成的事实不会重复写入，当前 continuation 从持久状态确定
+
+### Requirement: 活动 Run 必须通过精确 adoption contract 采纳新的受保护语义
+
+当自举 Change 修改当前 Run 使用的受保护 lifecycle/Runtime implementation 时，composition catalog MUST 只为该活动 Run 的唯一直接前驱声明精确 `{codeDigest, descriptorDigest}` adoption pair，相关 lifecycle contributor MUST 只声明直接前驱 version 可采用当前唯一语义；未明确列出的 digest pair 或 version MUST 保持 `migration_required`。该 contract MUST NOT 建立长期并行旧行为、通配 digest 或绕过 migration 检查的 Store 编辑路径。
+
+#### Scenario: 当前活动 Run 采纳直接前驱
+
+- **WHEN** 持久 Run 的 protected implementation digest pair 与 contributor version 精确匹配本 Change 声明的直接前驱
+- **THEN** composition comparison 返回 compatible且 Run 可由新代码继续执行唯一的新 transition 语义
+
+#### Scenario: 未声明的实现漂移
+
+- **WHEN** 任一 code digest、descriptor digest 或 contributor version 不在精确 adoption contract 中
+- **THEN** composition comparison 返回 `migration_required`，不得因只匹配其中一个 digest 或相邻版本而放行
+
+### Requirement: 只有匹配当前 lifecycle Work 的 execution checkpoint 才可续行
+
+Runtime MUST 仅把 `workId` 与 `checkEpoch` 同时匹配 Change lifecycle current Work 的 `workExecution` 视为当前 execution checkpoint。Lifecycle transition 替换或清除 current Work 时，Runtime MUST 在同一次 Run CAS 中退役不匹配的 checkpoint，并把历史 claim、submission、Outcome、Receipt 与 Validator 事实保留在 trajectory。读取遗留 torn state 时，recovery MUST 以 lifecycle current Work 为准，MUST NOT 加载旧 intent、返回旧 continuation、重放旧 Host 或让 status 查询修改业务状态；下一次受保护 `run next/resume` MUST 在新 claim 前通过幂等 CAS 退役该 checkpoint。
+
+#### Scenario: Build 回到 Design
+
+- **WHEN** Build planning drift transition 选择新的 Design Work，而 Run state 仍含旧 Build checkpoint
+- **THEN** transition commit 同时移除旧 checkpoint，recovery 返回新 Design Work 的未领取执行入口，不返回旧 Build `validator-pending`
+
+#### Scenario: Lifecycle 清除 current Work 等待 transition
+
+- **WHEN** current Work 已被合法清除且旧 execution checkpoint 尚存在于遗留持久状态
+- **THEN** recovery 返回 `transition-pending` 并把旧 checkpoint 标记为 superseded diagnostic，不把旧 Work 恢复为当前 Work
+
+#### Scenario: Runtime pull 收敛遗留 torn checkpoint
+
+- **WHEN** status 已只读识别出旧 checkpoint 与 lifecycle current Work 或 epoch 不匹配，随后 Runner 调用 `run next` 或 `resume`
+- **THEN** Runtime 在选择下一 Action 或允许 claim 之前用一次幂等 CAS 移除旧 checkpoint并记录 `recovery.reconciled`；并发重复 pull 不产生第二次退役事实
+
+#### Scenario: 审计历史仍可读取
+
+- **WHEN** execution checkpoint 因 lifecycle transition 被退役
+- **THEN** trajectory 仍保留原 claim、Host submission、Outcome、Receipt、Validator 和退役关联，Dashboard 可以解释历史但不能将其投影为当前执行

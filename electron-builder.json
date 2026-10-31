@@ -49,6 +49,12 @@
       "name": "Repoctopus Contributors"
     }
   },
+  "protocols": [
+    {
+      "name": "Repoctopus Change Activation",
+      "schemes": ["repoctopus"]
+    }
+  ],
   "win": {
     "icon": "app/desktop/resources/icon.ico",
     "target": [
@@ -60,6 +66,7 @@
     "artifactName": "Repoctopus-Desktop-${version}-${arch}-Setup.${ext}"
   },
   "nsis": {
+    "include": "app/desktop/resources/installer.nsh",
     "oneClick": false,
     "allowToChangeInstallationDirectory": true,
     "createDesktopShortcut": true,

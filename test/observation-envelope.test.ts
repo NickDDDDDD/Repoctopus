@@ -116,6 +116,42 @@ describe('ObservationEnvelope', () => {
     );
   });
 
+  it('preserves bounded packet and Specification observations without sensitive content', () => {
+    const recovered = createObservationEnvelope(
+      event('work.packet-recovered', {
+        phase: 'open',
+        workId: 'open:1',
+        attempt: 1,
+        result: 'recovered',
+        packetDigest: `sha256:${'b'.repeat(64)}`,
+        prompt: 'private packet body',
+        path: 'C:\\private\\packet.json',
+      }),
+      context,
+    );
+    expect(recovered.correlation.recovery).toBe('work.packet-recovered');
+    expect(recovered.attributes.result).toBe('recovered');
+    expect(JSON.stringify(recovered)).not.toMatch(/private packet|packet\.json|prompt|path/u);
+
+    const artifacts = createObservationEnvelope(
+      event('specification.artifacts-observed', {
+        proposalStatus: 'ready',
+        specsStatus: 'skipped',
+        designStatus: 'ready',
+        tasksStatus: 'missing',
+        metadata: 'private provider metadata',
+      }),
+      context,
+    );
+    expect(artifacts.attributes).toMatchObject({
+      proposalStatus: 'ready',
+      specsStatus: 'skipped',
+      designStatus: 'ready',
+      tasksStatus: 'missing',
+    });
+    expect(JSON.stringify(artifacts)).not.toContain('private provider metadata');
+  });
+
   it('derives Build action, fallback and Skill state from authoritative persisted facts', () => {
     const planEvidence = createObservationEnvelope(
       event('change.lifecycle.transitioned', {

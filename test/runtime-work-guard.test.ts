@@ -106,7 +106,7 @@ function run(work = designWork()): RunState {
       validationDigest: digest('s'),
     },
     workExecution: {
-      schemaVersion: 1,
+      schemaVersion: 3,
       workId: claim.workId,
       attempt: claim.attempt,
       checkEpoch: claim.checkEpoch,

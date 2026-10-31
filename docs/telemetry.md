@@ -14,7 +14,7 @@ node bin/repoctopus.js evidence run --workspace . --profile verify --json
 
 也可以分别使用 `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`、`OTEL_EXPORTER_OTLP_LOGS_ENDPOINT` 和 `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT`。两种方式都发送 Trace、Log、Metric；三个信号携带相同 envelope identity 与允许列表语义。
 
-开发中的 Desktop Host 通过 discovery 设置本机会话端点和短期凭据；手工冒烟可显式设置：
+正常的 Change Run 会自动启动或激活 Desktop，Runtime 再从受保护的 discovery 取得本机会话端点和短期凭据。只有在隔离的 Receiver 冒烟测试中才显式设置：
 
 ```powershell
 $env:REPOCTOPUS_DESKTOP_OTLP_ENDPOINT = 'http://127.0.0.1:4319'
@@ -22,6 +22,8 @@ $env:REPOCTOPUS_DESKTOP_OTLP_TOKEN = '<session-token>'
 ```
 
 只配置远端时只有 `remote` 目的地；同时配置上面两个变量时增加 `desktop` 目的地；设置 `REPOCTOPUS_DESKTOP_OTLP_MODE=paused` 会暂停并保留有界积压，设置为 `removed` 或清空 Desktop 端点会移除本地目的地。没有配置任何端点时事实仍然可以落入本地 envelope store，工作流结果不受影响。
+
+源码和安装态激活方法见[启动或恢复 Desktop Dashboard](desktop-activation.md)。桌面不可用只影响本地观测，不改变 Change Run 或远端目的地。
 
 ## 先落盘，再导出
 
@@ -63,6 +65,8 @@ Trajectory、Attempt、Receipt、Artifact、Bundle、Gate 和轻量 Archive 事�
 | `repoctopus.action.receipt.id`                  | Runtime Action Dispatcher Receipt    |
 
 Build 的每个已提交边界使用同一条 Trajectory 和 OTLP 管道。`work.*` 事件携带有界的 `buildAction`、execution mode、TDD mode、review mode 和 isolation；`change.lifecycle.transitioned` 携带 Configure approval、Plan revision、Plan Evidence、Check 和 invalidation 的稳定身份；`skill.resolved|delivered|consumed`、`validator.completed` 与 `delegation.completed` 保留父 Work、invocation 和 package 关联。Host 自述不会合成成功事件，事件只在本地 Run 提交后导出。
+
+核心可靠性还使用四个有界事件：`work.packet-stored` 只记录 `created | reused`，`work.packet-recovered` 只记录 `recovered | missing | corrupt | legacy`；`specification.artifacts-observed` 只记录 Proposal、Specs、Design、Tasks 的 `ready | skipped | missing`；`specification.validation-observed` 只记录 valid、最高严重级、三级计数和 contract-conflict。Trace/Log 可以携带 run/work/attempt/epoch 与摘要关联，Metric 只使用上述固定枚举，不使用 changeId、digest、路径、诊断 code/message 或 packet 正文作为 label。遥测提交失败不改变 claim、恢复或 Gate 结果。
 
 Trace 和 Log 可以使用 run、Work、configuration、plan、package、invocation、Skill digest 与 delegation execution identity 进行单次运行重建。Metric 只使用以下有界枚举：
 

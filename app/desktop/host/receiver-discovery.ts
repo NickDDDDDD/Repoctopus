@@ -12,6 +12,7 @@ import {
   type ProcessOwnership,
 } from '../../../platform/process/process-identity.js';
 import type { DesktopReceiverConnection } from '../../../services/desktop-receiver.js';
+import { parseDesktopReceiverHealth } from '../shared/receiver-health.js';
 
 const execute = promisify(execFile);
 const PROTOCOL = 'repoctopus.desktop.receiver-discovery/v1' as const;
@@ -39,7 +40,7 @@ export interface DesktopDiscoverySecurity {
   secureDirectory(directory: string): Promise<void>;
   secureFile(file: string): Promise<void>;
   isCurrentUserOwner(file: string): Promise<boolean>;
-  listeningProcessId(endpoint: string): Promise<number | null>;
+  listeningProcessId(endpoint: string, sessionToken: string): Promise<number | null>;
 }
 
 export type DesktopReceiverDiscoveryResult =
@@ -124,7 +125,7 @@ function windowsSecurity(environment: NodeJS.ProcessEnv): DesktopDiscoverySecuri
         )) === 'owned'
       );
     },
-    async listeningProcessId(endpoint) {
+    async listeningProcessId(endpoint, sessionToken) {
       const expected = `127.0.0.1:${new URL(endpoint).port}`;
       const systemRoot = environment.SystemRoot ?? environment.SYSTEMROOT ?? 'C:\\Windows';
       const result = await execute(
@@ -144,18 +145,46 @@ function windowsSecurity(environment: NodeJS.ProcessEnv): DesktopDiscoverySecuri
           fields.length === 5 &&
           fields[0]?.toUpperCase() === 'TCP' &&
           fields[1] === expected &&
-          fields[3]?.toUpperCase() === 'LISTENING' &&
+          // Windows localizes the textual state column (for example, LISTENING
+          // is not emitted in English on every machine). A TCP listener is the
+          // only netstat row whose remote endpoint is the wildcard zero tuple;
+          // established connections on the same local port have a real peer.
+          fields[2] === '0.0.0.0:0' &&
           /^\d+$/u.test(fields[4] ?? '')
         ) {
           owners.add(Number(fields[4]));
         }
       }
-      return owners.size === 1 ? [...owners][0]! : null;
+      if (owners.size === 1) return [...owners][0]!;
+      if (owners.size > 1) return null;
+
+      try {
+        const response = await fetch(new URL('/health', endpoint), {
+          method: 'GET',
+          headers: { authorization: `Bearer ${sessionToken}` },
+          cache: 'no-store',
+          signal: AbortSignal.timeout(2_000),
+        });
+        if (!response.ok) return null;
+        const source = await response.text();
+        return (
+          parseDesktopReceiverHealth(response.headers.get('content-type'), source)?.pid ?? null
+        );
+      } catch {
+        return null;
+      }
     },
   };
 }
 
-function defaultRoot(environment: NodeJS.ProcessEnv): string {
+export function resolveDesktopReceiverDiscoveryRoot(environment: NodeJS.ProcessEnv): string {
+  const override = environment.REPOCTOPUS_DESKTOP_DISCOVERY_ROOT?.trim();
+  if (override) {
+    if (!path.isAbsolute(override)) {
+      throw new Error('REPOCTOPUS_DESKTOP_DISCOVERY_ROOT must be an absolute path');
+    }
+    return path.resolve(override);
+  }
   const localAppData = environment.LOCALAPPDATA;
   if (!localAppData || !path.isAbsolute(localAppData)) {
     throw new Error('LOCALAPPDATA is required for Windows Desktop discovery');
@@ -225,9 +254,7 @@ export class DesktopReceiverDiscovery {
     const environment = options.environment ?? process.env;
     this.platform = options.platform ?? process.platform;
     this.pid = options.pid ?? process.pid;
-    this.root = path.resolve(
-      options.root ?? environment.REPOCTOPUS_DESKTOP_DISCOVERY_ROOT ?? defaultRoot(environment),
-    );
+    this.root = path.resolve(options.root ?? resolveDesktopReceiverDiscoveryRoot(environment));
     this.file = path.join(this.root, 'desktop-receiver.json');
     this.maxAgeMs = options.maxAgeMs ?? DEFAULT_DISCOVERY_MAX_AGE_MS;
     if (!Number.isSafeInteger(this.maxAgeMs) || this.maxAgeMs <= 0) {
@@ -292,7 +319,10 @@ export class DesktopReceiverDiscovery {
       if ((await this.inspectOwnership(record.pid, record.processIdentity)) !== 'matched') {
         return { status: 'unavailable', reason: 'process-mismatch' };
       }
-      if ((await this.security.listeningProcessId(record.endpoint)) !== record.pid) {
+      if (
+        (await this.security.listeningProcessId(record.endpoint, record.sessionToken)) !==
+        record.pid
+      ) {
         return { status: 'unavailable', reason: 'port-owner-mismatch' };
       }
       return {

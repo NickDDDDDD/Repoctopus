@@ -9,13 +9,14 @@ import type {
   WorkExecutionPacket,
 } from '../domains/work-execution/types.js';
 import { ManagedWorkExecutor } from '../services/managed-work-executor.js';
+import { WorkDispatcher } from '../services/work-dispatcher.js';
 import { WorkExecutionAuthority } from '../services/work-execution-authority.js';
 
 const digest = (character: string) => `sha256:${character.repeat(64)}` as const;
 
 function checkpoint(status: WorkExecutionCheckpoint['status']): WorkExecutionCheckpoint {
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     workId: 'build:1.1',
     attempt: 1,
     checkEpoch: 4,
@@ -45,6 +46,7 @@ function state(input: {
     status: input.runStatus ?? 'running',
     changeLifecycle: {
       currentWork: input.currentWork === false ? null : { workId: 'build:1.1' },
+      checkEpoch: 4,
       waitCondition: input.humanDecision ? { kind: 'human-decision' } : null,
     },
     ...(input.execution ? { workExecution: input.execution } : {}),
@@ -59,23 +61,136 @@ function recoveryAuthority(run: RunState, input: { active?: boolean; corrupt?: b
       workExecutionSessions: { isActive: vi.fn().mockReturnValue(input.active ?? false) },
     },
   });
-  authority.loadIntent = input.corrupt
+  authority.loadAuthoritativePacket = input.corrupt
     ? vi.fn().mockRejectedValue(new Error('corrupt'))
-    : vi.fn().mockResolvedValue({});
+    : vi.fn().mockResolvedValue({ intent: {}, packet: {} });
   return authority;
 }
 
 describe('Work execution recovery classification', () => {
+  it('redelivers the authoritative frozen packet without invoking the context assembler', async () => {
+    const packet = { identity: checkpoint('claimed').packet } as WorkExecutionPacket;
+    const loadAuthoritativePacket = vi.fn().mockResolvedValue({ intent: {}, packet });
+    const recordPacketRecovery = vi.fn().mockResolvedValue(undefined);
+    const assemble = vi.fn();
+    const dispatcher = Object.create(WorkDispatcher.prototype) as WorkDispatcher;
+    Object.defineProperty(dispatcher, 'ctx', {
+      value: {
+        workContextAssembler: { assemble },
+        workExecutionAuthority: { loadAuthoritativePacket, recordPacketRecovery },
+      },
+    });
+
+    await expect(dispatcher.resumeClaim('run-recovery')).resolves.toEqual({
+      intent: {},
+      packet,
+    });
+    expect(loadAuthoritativePacket).toHaveBeenCalledWith('run-recovery');
+    expect(recordPacketRecovery).toHaveBeenCalledWith('run-recovery', 'recovered');
+    expect(assemble).not.toHaveBeenCalled();
+  });
+
   it.each([
     ['claimed', 'execute', 'claim-redelivery'],
     ['context-delivered', 'execute', 'claim-redelivery'],
     ['unknown', 'reconcile', 'host-result-unknown'],
     ['not-executed', 'execute', 'host-not-executed'],
+    ['submitted', 'execute', 'validator-pending'],
     ['validated', 'execute', 'transition-pending'],
   ] as const)('classifies %s without guessing completion', async (status, continuation, reason) => {
     await expect(
       recoveryAuthority(state({ execution: checkpoint(status) })).recovery('run-recovery'),
     ).resolves.toMatchObject({ continuation, reason, workId: 'build:1.1', attempt: 1 });
+  });
+
+  it('keeps rejected submissions on the same Work awaiting a corrected payload', async () => {
+    await expect(
+      recoveryAuthority(
+        state({
+          execution: {
+            ...checkpoint('invoking'),
+            continuation: 'awaiting-correction',
+          },
+        }),
+      ).recovery('run-recovery'),
+    ).resolves.toMatchObject({
+      continuation: 'awaiting-correction',
+      reason: 'outcome-rejected',
+      workId: 'build:1.1',
+      attempt: 1,
+    });
+  });
+
+  it('projects the lifecycle Work instead of a superseded execution checkpoint', async () => {
+    const run = state({ execution: checkpoint('outcome') });
+    run.changeLifecycle = {
+      ...run.changeLifecycle!,
+      checkEpoch: 5,
+      currentWork: { workId: 'design:replacement' },
+    } as never;
+    const authority = recoveryAuthority(run);
+
+    await expect(authority.recovery('run-recovery')).resolves.toMatchObject({
+      continuation: 'execute',
+      reason: 'checkpoint-superseded',
+      workId: 'design:replacement',
+      attempt: null,
+      checkEpoch: 5,
+    });
+    await expect(authority.continuation('run-recovery')).resolves.toBe('execute');
+  });
+
+  it('reconciles a superseded checkpoint once before the next protected pull', async () => {
+    let run = {
+      ...state({ execution: checkpoint('outcome') }),
+      stateVersion: 10,
+      composition: { compositionDigest: digest('9') },
+      changeLifecycle: {
+        ...state({}).changeLifecycle!,
+        phase: 'design',
+        checkEpoch: 5,
+        currentWork: { workId: 'design:replacement', kind: 'specification.plan' },
+      },
+    } as unknown as RunState;
+    const trajectory: TrajectoryEvent[] = [];
+    const commitGuarded = vi.fn(
+      (
+        _runId: string,
+        commit: (input: { state: RunState; trajectory: TrajectoryEvent[] }) => {
+          state?: RunState;
+          event?: TrajectoryEvent;
+          value: boolean;
+        },
+      ) => {
+        const result = commit({ state: run, trajectory });
+        if (result.state) run = result.state;
+        if (result.event) trajectory.push(result.event);
+        return Promise.resolve(result.value);
+      },
+    );
+    const authority = Object.create(WorkExecutionAuthority.prototype) as WorkExecutionAuthority;
+    Object.defineProperty(authority, 'ctx', {
+      value: {
+        runStore: {
+          commitGuarded,
+          loadRun: vi.fn(() => Promise.resolve(run)),
+        },
+      },
+    });
+
+    await expect(authority.reconcileCurrentCheckpoint(run.runId)).resolves.toBe(true);
+    await expect(authority.reconcileCurrentCheckpoint(run.runId)).resolves.toBe(false);
+    expect(run.workExecution).toBeUndefined();
+    expect(trajectory).toHaveLength(1);
+    expect(trajectory[0]).toMatchObject({
+      type: 'recovery.reconciled',
+      data: {
+        reasonCode: 'checkpoint-superseded',
+        retiredWorkId: 'build:1.1',
+        nextWorkId: 'design:replacement',
+        nextCheckEpoch: 5,
+      },
+    });
   });
 
   it('distinguishes active, unknown, failed, validator, human and corrupt boundaries', async () => {
@@ -127,6 +242,49 @@ describe('Work execution recovery classification', () => {
 });
 
 describe('Work execution epoch authority', () => {
+  it('never binds a claim before immutable packet persistence succeeds', async () => {
+    const currentWork = {
+      workId: 'build:1.1',
+      inputDigest: digest('b'),
+      checkEpoch: 4,
+      phase: 'build',
+      kind: 'build.execute',
+    };
+    const run = {
+      ...state({}),
+      stateVersion: 10,
+      composition: { compositionDigest: digest('9') },
+      changeLifecycle: { phase: 'build', checkEpoch: 4, currentWork, waitCondition: null },
+    } as unknown as RunState;
+    const packet = {
+      identity: checkpoint('claimed').packet,
+      claim: {
+        runId: run.runId,
+        workId: currentWork.workId,
+        attempt: 1,
+        checkEpoch: currentWork.checkEpoch,
+        intentId: 'intent-1',
+        claimToken: digest('a'),
+        inputDigest: currentWork.inputDigest,
+      },
+      work: currentWork,
+      context: { digest: checkpoint('claimed').packet.contextDigest },
+    } as unknown as WorkExecutionPacket;
+    const commitGuarded = vi.fn();
+    const authority = Object.create(WorkExecutionAuthority.prototype) as WorkExecutionAuthority;
+    Object.defineProperty(authority, 'ctx', {
+      value: {
+        runStore: { commitGuarded },
+        workExecutionPacketStore: {
+          save: vi.fn().mockRejectedValue(new Error('packet persistence failed')),
+        },
+      },
+    });
+
+    await expect(authority.bindClaim(packet)).rejects.toThrow('packet persistence failed');
+    expect(commitGuarded).not.toHaveBeenCalled();
+  });
+
   it('accepts a higher attempt when Runtime reissues the same semantic Work in a newer epoch', async () => {
     const previous = checkpoint('validated');
     const currentWork = {
@@ -176,6 +334,9 @@ describe('Work execution epoch authority', () => {
     Object.defineProperty(authority, 'ctx', {
       value: {
         runStore: { commitGuarded },
+        workExecutionPacketStore: {
+          save: vi.fn().mockResolvedValue({ status: 'created', packet }),
+        },
       },
     });
 
@@ -210,7 +371,7 @@ describe('Managed Host reconciliation', () => {
     const marks = {
       unknown: vi.fn(),
       notExecuted: vi.fn(),
-      completed: vi.fn(),
+      completed: vi.fn().mockResolvedValue({ status: 'submitted' }),
     };
     const host = {
       identity: invocation.host,

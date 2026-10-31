@@ -21,6 +21,8 @@ npx openspec store doctor <store-id> --json
 
 OpenSpec 的 spec-driven schema 使用 Proposal、Delta Specs、Design 和 Tasks 四类规划产物。Repoctopus 只读取 Provider 状态明确声明的产物，不根据目录中出现的其他 Markdown 文件推断第五类产物。
 
+Provider 把四类工件规范化为 `ready | skipped | missing`。`ready` 必须由官方输出路径和内容摘要证明；`skipped` 只接受 OpenSpec 官方 status 明确声明，并生成绑定 Provider、change、artifact 与 change metadata 的稳定语义摘要；`missing` 永远不能满足规划 Gate。因而 `skip_specs: true` 的内部架构 change 可以合法省略 Delta Specs，但不会把任意缺文件误当成完成。OpenSpec `issues[].level` 大小写无关地映射为 `info | warning | error`；未知 level 或 `valid=true` 同时包含 error 会作为 Provider contract conflict fail closed。
+
 普通设计决定、实施约束和偏差写入当前 change 的 `design.md`，测试结果进入 Evidence 和正式验证报告。需要长期约束多个组件、难以回退或影响公共契约、持久数据、安全及团队边界的架构变更，应为该工作单独建立一个普通 change；这不是特殊的 change 类型。该 change 的 Design 记录背景、备选方案、取舍、迁移与回退方式，并通过正常评审确认。纯内部架构调整没有改变可观察行为时，OpenSpec change 使用 `skip_specs: true`，不虚构 delta spec；行为契约改变时才同时更新 delta specs。归档后的 change 保留决策历史，`docs/architecture.md` 只描述当前架构，不再维护独立 ADR 或实施日志权威。
 
 ## 检查与校验变更

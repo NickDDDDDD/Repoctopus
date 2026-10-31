@@ -2,7 +2,10 @@ import { PassThrough } from 'node:stream';
 
 import { describe, expect, it } from 'vitest';
 
-import { reviewSpecificationApproval } from '../app/cli/specification-approval-decision.js';
+import {
+  reviewHumanDecision,
+  reviewSpecificationApproval,
+} from '../app/cli/specification-approval-decision.js';
 import type { SpecificationApprovalDecisionRequest } from '../domains/specification/types.js';
 import { specificationSchemaFixture } from './helpers/fixtures.js';
 
@@ -80,5 +83,27 @@ describe('interactive specification approval', () => {
     const reviewed = reviewSpecificationApproval({ request, input, output });
     input.end('yes\n');
     await expect(reviewed).rejects.toThrow(/must be 1, 2, or 3/iu);
+  });
+
+  it('collects a replacement isolation only for an approved lifecycle decision', async () => {
+    const input = new PassThrough();
+    const output = new PassThrough();
+    const reviewed = reviewHumanDecision({
+      title: 'Revise execution isolation',
+      proposalHash: request.proposalHash,
+      details: ['Previous isolation: current'],
+      input,
+      output,
+      selectIsolation: true,
+    });
+    input.write('1\n');
+    setTimeout(() => input.write('3\n'), 5);
+    setTimeout(() => input.write('use linked worktree\n'), 10);
+    await expect(reviewed).resolves.toEqual({
+      decision: 'approve',
+      isolation: 'worktree',
+      comment: 'use linked worktree',
+    });
+    input.end();
   });
 });

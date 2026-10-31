@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 
 import { Service, type Context } from '@deepseek-ai/cordis';
 
@@ -27,7 +27,10 @@ function assertBoundedExecutionResult(outcome: WorkExecutionHostOutcome): void {
     throw new Error('Build Plan candidate exceeds the package bound');
   }
   const receipts = outcome.delegationReceipts ?? [];
-  if (receipts.length > 64 || new Set(receipts.map((receipt) => receipt.receiptId)).size !== receipts.length) {
+  if (
+    receipts.length > 64 ||
+    new Set(receipts.map((receipt) => receipt.receiptId)).size !== receipts.length
+  ) {
     throw new Error('Delegation receipts are duplicated or exceed the bounded receipt count');
   }
   for (const receipt of receipts) {
@@ -50,28 +53,28 @@ function assertBoundedExecutionResult(outcome: WorkExecutionHostOutcome): void {
     outcome.result.kind === 'build-configuration-candidate'
       ? [...common, 'executionMode', 'tddMode']
       : outcome.result.kind === 'build-plan-candidate'
-      ? [...common, 'packages']
-      : outcome.result.kind === 'build-package-completion'
-        ? [
-            ...common,
-            'packageId',
-            'acceptanceEvidenceIds',
-            'testEvidenceIds',
-            'tddEvidence',
-            'repositoryDigest',
-            'implementationDigest',
-          ]
-        : outcome.result.kind === 'build-check-candidate'
+        ? [...common, 'packages']
+        : outcome.result.kind === 'build-package-completion'
           ? [
               ...common,
-              'completedPackageIds',
-              'acceptedTaskIds',
+              'packageId',
+              'acceptanceEvidenceIds',
               'testEvidenceIds',
+              'tddEvidence',
               'repositoryDigest',
               'implementationDigest',
-              'reviewerExecutionId',
             ]
-          : [];
+          : outcome.result.kind === 'build-check-candidate'
+            ? [
+                ...common,
+                'completedPackageIds',
+                'acceptedTaskIds',
+                'testEvidenceIds',
+                'repositoryDigest',
+                'implementationDigest',
+                'reviewerExecutionId',
+              ]
+            : [];
   if (
     outcome.result.schemaVersion !== 1 ||
     allowed.length === 0 ||
@@ -85,6 +88,17 @@ function invocationId(packetDigest: string, hostId: string): string {
   return `sha256:${createHash('sha256')
     .update(`work-host-invocation\0${packetDigest}\0${hostId}`)
     .digest('hex')}`;
+}
+
+function sameHostOutcome(
+  left: WorkExecutionHostOutcome,
+  right: WorkExecutionHostOutcome,
+): boolean {
+  const leftStable: Record<string, unknown> = { ...left };
+  const rightStable: Record<string, unknown> = { ...right };
+  delete leftStable.completedAt;
+  delete rightStable.completedAt;
+  return canonicalJson(leftStable) === canonicalJson(rightStable);
 }
 
 function assertConsumedExecutionSkills(
@@ -128,6 +142,26 @@ export class ManagedWorkExecutor extends Service {
 
   constructor(context: Context) {
     super(context, 'managedWorkExecutor');
+  }
+
+  private async rejectInvalidConfigureResult(input: {
+    intent: WorkClaimResult['intent'];
+    workKind: WorkClaimResult['packet']['work']['kind'];
+    outcome: WorkExecutionHostOutcome;
+  }): Promise<boolean> {
+    if (
+      input.workKind !== 'build.configure' ||
+      input.outcome.status !== 'succeeded' ||
+      input.outcome.result?.kind === 'build-configuration-candidate'
+    ) {
+      return false;
+    }
+    await this.ctx.workExecutionAuthority.rejectHostSubmission({
+      intent: input.intent,
+      reasonCode: 'output-invalid',
+      diagnostic: 'Build Configure Host must return a structured build-configuration-candidate',
+    });
+    return true;
   }
 
   async execute(request: WorkClaimRequest): Promise<ManagedWorkExecutionResult> {
@@ -184,15 +218,35 @@ export class ManagedWorkExecutor extends Service {
     assertBoundedExecutionResult(hostOutcome);
     assertManagedDelegation(claim.packet, host.identity, hostOutcome);
     assertConsumedExecutionSkills(claim.packet, hostOutcome);
-    await this.ctx.workExecutionAuthority.markHostCompleted(claim.intent, hostOutcome);
+    const submission = await this.ctx.workExecutionAuthority.markHostCompleted(
+      claim.intent,
+      hostOutcome,
+      randomUUID(),
+    );
     await this.ctx.workExecutionAuthority.recordDelegationFacts(claim.packet, hostOutcome);
     await this.ctx.workExecutionAuthority.recordSkillFacts(
       claim.packet,
       'consumed',
       hostOutcome.consumedLayerDigests,
     );
+    if (
+      await this.rejectInvalidConfigureResult({
+        intent: claim.intent,
+        workKind: claim.packet.work.kind,
+        outcome: hostOutcome,
+      })
+    ) {
+      return { invocation, hostOutcome, acceptance: null };
+    }
     if (hostOutcome.status === 'unknown') {
       await this.ctx.workExecutionAuthority.markHostUnknown(claim.intent, hostOutcome.summary);
+      return { invocation, hostOutcome, acceptance: null };
+    }
+    if (
+      (['build.plan', 'build.check'].includes(claim.packet.work.kind) &&
+        hostOutcome.status === 'succeeded') ||
+      submission.status === 'outcome'
+    ) {
       return { invocation, hostOutcome, acceptance: null };
     }
     const acceptance = await this.ctx.workDispatcher.acceptOutcome(
@@ -232,13 +286,10 @@ export class ManagedWorkExecutor extends Service {
       }
     }
     const claim = await this.ctx.workDispatcher.claim(request);
-    const host = this.externalHostIdentity(
-      request.executor,
-      [
-        ...claim.packet.hostRequirement.capabilities,
-        ...(request.hostCapabilities ?? []),
-      ],
-    );
+    const host = this.externalHostIdentity(request.executor, [
+      ...claim.packet.hostRequirement.capabilities,
+      ...(request.hostCapabilities ?? []),
+    ]);
     const invocation: WorkExecutionHostInvocation = {
       schemaVersion: 1,
       invocationId: invocationId(claim.packet.identity.packetDigest, host.id),
@@ -265,7 +316,7 @@ export class ManagedWorkExecutor extends Service {
     ) {
       throw new Error('External Host Outcome does not match the authoritative invocation');
     }
-    const hostOutcome: WorkExecutionHostOutcome = {
+    const proposedOutcome: WorkExecutionHostOutcome = {
       schemaVersion: 1,
       invocationId: input.invocationId,
       hostId: input.hostId,
@@ -280,20 +331,47 @@ export class ManagedWorkExecutor extends Service {
         : {}),
       completedAt: new Date().toISOString(),
     };
+    const persistedOutcome = state.workExecution?.hostOutcome;
+    if (persistedOutcome && !sameHostOutcome(persistedOutcome, proposedOutcome)) {
+      throw new Error('External Host Outcome conflicts with the persisted invocation result');
+    }
+    const hostOutcome = persistedOutcome ?? proposedOutcome;
     assertBoundedWorkExecutionFindings(hostOutcome);
     assertBoundedExecutionResult(hostOutcome);
     const packet = await this.ctx.workDispatcher.resumeClaim(input.runId);
     assertManagedDelegation(packet.packet, invocation.host, hostOutcome);
     assertConsumedExecutionSkills(packet.packet, hostOutcome);
-    await this.ctx.workExecutionAuthority.markHostCompleted(intent, hostOutcome);
+    const submission = persistedOutcome
+      ? state.workExecution
+      : await this.ctx.workExecutionAuthority.markHostCompleted(
+          intent,
+          hostOutcome,
+          input.submissionId,
+        );
     await this.ctx.workExecutionAuthority.recordDelegationFacts(packet.packet, hostOutcome);
     await this.ctx.workExecutionAuthority.recordSkillFacts(
       packet.packet,
       'consumed',
       hostOutcome.consumedLayerDigests,
     );
+    if (
+      await this.rejectInvalidConfigureResult({
+        intent,
+        workKind: packet.packet.work.kind,
+        outcome: hostOutcome,
+      })
+    ) {
+      return { invocation, hostOutcome, acceptance: null };
+    }
     if (hostOutcome.status === 'unknown') {
       await this.ctx.workExecutionAuthority.markHostUnknown(intent, input.summary);
+      return { invocation, hostOutcome, acceptance: null };
+    }
+    if (
+      (['build.plan', 'build.check'].includes(packet.packet.work.kind) &&
+        hostOutcome.status === 'succeeded') ||
+      submission.status === 'outcome'
+    ) {
       return { invocation, hostOutcome, acceptance: null };
     }
     const acceptance = await this.ctx.workDispatcher.acceptOutcome(
@@ -338,13 +416,24 @@ export class ManagedWorkExecutor extends Service {
     const packet = await this.ctx.workDispatcher.resumeClaim(runId);
     assertManagedDelegation(packet.packet, invocation.host, outcome);
     assertConsumedExecutionSkills(packet.packet, outcome);
-    await this.ctx.workExecutionAuthority.markHostCompleted(intent, outcome);
+    const submission = await this.ctx.workExecutionAuthority.markHostCompleted(
+      intent,
+      outcome,
+      `reconcile:${invocation.invocationId}`,
+    );
     await this.ctx.workExecutionAuthority.recordDelegationFacts(packet.packet, outcome);
     await this.ctx.workExecutionAuthority.recordSkillFacts(
       packet.packet,
       'consumed',
       outcome.consumedLayerDigests,
     );
+    if (
+      (['build.plan', 'build.check'].includes(packet.packet.work.kind) &&
+        outcome.status === 'succeeded') ||
+      submission.status === 'outcome'
+    ) {
+      return { invocation, hostOutcome: outcome, acceptance: null };
+    }
     const acceptance = await this.ctx.workDispatcher.acceptOutcome(
       this.ctx.workDispatcher.outcome(
         intent,

@@ -315,12 +315,17 @@ Change Run MUST 为 Open、Design、Build、Verify 和 Archive 的每次前进�
 
 ### Requirement: Change Run continuation 必须来自同一权威 checkpoint
 
-Runtime、CLI、Dashboard 和 Telemetry MUST 从同一持久 Change Run checkpoint 投影当前 phase/status、Work attempt、Wait、blocker 和 `execute|ask|wait|reconcile|done` continuation；恢复方不得根据阶段名、OpenSpec目录、Git diff或历史对话另行推断下一动作。
+Runtime、CLI、Dashboard 和 Telemetry MUST 从同一持久 Change Run checkpoint 投影当前 phase/status、Work attempt、packet identity、Wait、blocker 和 `execute|ask|wait|reconcile|done` continuation；恢复方不得根据阶段名、OpenSpec目录、Git diff、当前可变内容或历史对话另行推断下一动作。
 
 #### Scenario: 新 Runner恢复活动 Change
 
 - **WHEN** 原 Runner退出且另一个 Runner加载同一 Run
-- **THEN** 新 Runner得到与 checkpoint一致的当前 Work/Wait 和 continuation，并在完成兼容性与多仓核对前不创建第二个 attempt
+- **THEN** 新 Runner得到与 checkpoint一致的当前 Work/Wait 和 continuation，并在完成 packet、兼容性与多仓核对前不创建第二个 attempt
+
+#### Scenario: 当前 Work 已改变规划文件
+
+- **WHEN** 当前 Work 的 packet 已冻结且该 Work 在中断前按授权改变了 Change 规划文件
+- **THEN** 新 Runner继续使用 checkpoint 引用的原 packet 与 attempt，不从已改变文件构造另一 continuation或执行包
 
 ### Requirement: `run next` 必须是 pull-based continuation 入口
 
@@ -362,12 +367,17 @@ Change Run MUST 维护从零开始且只由 Runtime 写入的 `checkEpoch`；每
 
 ### Requirement: Open 与 Design 必须分别形成受审查边界
 
-Change Run MUST 把 Open 和 Design 实现为两个独立的受管阶段。Open 必须在核对仓库、现有规格和输入事实后创建或修复 proposal、delta specs、design、tasks 四类 OpenSpec 工件，经严格 Provider 校验后建立绑定其语义摘要的 Human Decision；只有可信批准才能进入 Design。Design 必须从已批准 Open 基线深化同一四类工件，经独立校验和第二个 Human Decision 批准后才能进入 Build。两个批准不得互相替代、合并或由 `auto_transition`、文件存在和 checkbox 状态推断。
+Change Run MUST 把 Open 和 Design 实现为两个独立的受管阶段。Open 必须在核对仓库、现有规格和输入事实后创建或修复 proposal、delta specs、design、tasks 四类 OpenSpec 工件协议，经 Provider 确认各类为 `ready` 或依据官方 schema 规则为 `skipped`，并在严格校验后建立绑定其语义摘要的 Human Decision；只有可信批准才能进入 Design。Design 必须从已批准 Open 基线深化同一四类工件，经独立校验和第二个 Human Decision 批准后才能进入 Build。两个批准不得互相替代、合并或由 `auto_transition`、文件存在和 checkbox 状态推断。
 
 #### Scenario: Open 四类工件通过严格校验
 
-- **WHEN** Open Work 交付四类官方工件且 Specification Provider strict validation 接受当前语义摘要
+- **WHEN** Open Work 交付当前 schema 适用的官方工件，Provider 对四类协议均报告已满足且 strict validation 接受当前语义摘要
 - **THEN** Runtime 在 Open 建立稳定 Human Decision 并停止；在收到绑定该摘要的可信批准前不得创建 Design Work或转换 phase
+
+#### Scenario: Open 官方跳过 Delta Specs
+
+- **WHEN** Provider 依据当前 schema 与 Change 元数据把 Delta Specs 规范化为带稳定 identity 的 `skipped`，其余适用工件为 `ready`
+- **THEN** Runtime 把四类工件协议视为已满足并继续严格校验，不自行读取元数据、查找第四个文件或把 `skipped` 改写为 `missing`
 
 #### Scenario: Open 被拒绝或要求修订
 
@@ -377,7 +387,7 @@ Change Run MUST 把 Open 和 Design 实现为两个独立的受管阶段。Open 
 #### Scenario: Design 深化同一 OpenSpec 工件
 
 - **WHEN** 已批准 Open 进入 Design并补足工程边界、决策、验证策略或可执行 Tasks
-- **THEN** Design 只更新同一 Change 的四类 OpenSpec 工件，严格校验后建立独立 Human Decision，不创建第五份 Design Doc、Build Plan、ADR 或 implementation notes
+- **THEN** Design 只更新同一 Change 的四类 OpenSpec 工件协议，严格校验后建立独立 Human Decision，不创建第五份 Design Doc、Build Plan、ADR 或 implementation notes
 
 #### Scenario: 只有 Open approval
 
@@ -420,17 +430,42 @@ Runtime MUST 根据持久化的有界失败分类和当前副作用边界选择 
 
 ### Requirement: Open 在规划批准前固定执行隔离意图
 
-Repoctopus MUST 在接受 Open approval 前取得可信用户对 `current|branch|worktree` 的一次选择，并把模式、目标分支语义和 Workspace/change identity 作为 `ExecutionWorkspaceIntent` 固定到同一 Run；本机 checkout 绝对路径不得进入 OpenSpec 工件或可移植语义摘要。Build Configure MUST 复核实际 binding，任何调用方不得在批准后静默换成另一模式。
+Repoctopus MUST 在接受 Open approval 前验证可信用户选择的 `current|branch|worktree` 与冻结的 project snapshot、repository topology 和 checkout facts 兼容，再把 `ExecutionWorkspaceIntent` 固定到同一 Run；无效选择不得写入 lifecycle 或 Specification approval Store，本机绝对路径不得进入可移植语义。Build Configure MUST 由 binding 权威把失败分类为 `intent-revision | binding-retry | halt`，调用方不得解析错误文本或静默降级。只有未批准 Build Configuration 的 `intent-revision` 可以在同一 Run 返回 Open；新意图获批前必须清除依赖旧意图的下游状态，随后创建新的 Design Work。
 
 #### Scenario: Open 尚未选择隔离方式
 
 - **WHEN** 四类 OpenSpec 工件已有效但当前 Run 没有可信 isolation 决定
 - **THEN** Runtime 保持 `phase=open,status=waiting` 并展示三个模式的实际影响，不创建 Design Work
 
+#### Scenario: Open 选择与 checkout facts 不兼容
+
+- **WHEN** 当前注册 checkout 是 linked worktree而用户在 Open 决策中选择 `current`
+- **THEN** Runtime 在写入 lifecycle intent 或 Specification approval 之前拒绝该选择并保持同一 Human Decision request 可重试
+
 #### Scenario: Build 发现 binding 与 Open 意图不一致
 
-- **WHEN** Open 批准 worktree，但 Runner 提供 current checkout 或无法证明 worktree 与目标仓库/分支的关系
-- **THEN** Build Configure 阻断并返回可定位诊断；修复 binding 可在原意图下重试，改变 isolation 必须返回 Open 取得新批准
+- **WHEN** 未批准 Build Configuration 的 Configure Work 发现 Open intent 与真实 checkout 的 isolation/ownership facts 不兼容
+- **THEN** Runtime 在同一 runId 受保护地返回 Open wait，清除旧 intent、Tasks、Build Protocol 与 Verify/Archive 输入；可信用户选择的新 intent 再次绑定成功后进入新的 Design Work
+
+#### Scenario: Intent 修订 wait 被重复 pull
+
+- **WHEN** Run 正在 Open 的 `workspace-intent:*` Human Decision wait 中且调用方重复执行 `run next`
+- **THEN** Runtime 原样返回同一 waitId 与 checkEpoch，不创建或替换为普通 `open-approval:*` wait；只有匹配 request 的可信 isolation 决定可以推进到新的 Design Work
+
+#### Scenario: Binding failure 不是 isolation 问题
+
+- **WHEN** Build Configure 发现 remote repository identity 或 repository topology 与冻结 project snapshot 不一致
+- **THEN** Runtime fail closed并报告不可通过 isolation 修订解决的诊断，不提供自动降级或误导性的模式选择
+
+#### Scenario: Binding 可在原 intent 下修复
+
+- **WHEN** intent 本身合法但 Runner 提供了错误 checkout path、branch 或缺少 worktree ownership facts
+- **THEN** binding 权威返回 `binding-retry`，Runtime 保持 Build 和原 intent并要求修复 binding，不返回 Open要求用户改变模式
+
+#### Scenario: 同一 Change 被再次启动
+
+- **WHEN** 调用方试图通过再次 `run start` 绕过错误的 intent
+- **THEN** Runtime 恢复由 Workspace/change identity 确定的原 Run，要求走正式 intent 修订 transition，不创建第二个 Run
 
 ### Requirement: Build 使用固定的受管内部协议
 
@@ -498,3 +533,46 @@ Build Configure MUST 生成并冻结版本化配置，且本版本仅允许 `exe
 
 - **WHEN** finding 缺少 requirement、Task 或 Work Package 关联，Runtime 无法安全计算返工范围
 - **THEN** Runtime 建立 Human Decision 或使用 definition 声明的保守 plan invalidation，并记录依据
+
+### Requirement: Archive 关闭前必须重验冻结输入
+
+Repoctopus MUST 在执行 `specification.close` 或 publication 副作用前比较当前 Evidence 指纹与冻结的 Verification Input。若 close Work 冻结后指纹漂移且尚未产生 Closure 或 Publication Receipt，Runtime MUST 退役旧 close execution、清除 Archive input并在同一 Run 返回 Verify；若 Verify 发现 planning semantic digest 变化，MUST 再走既有 Verify→Design transition。副作用已经开始后 MUST 使用既有 journal/reconciliation，不得回滚或伪造重验。
+
+#### Scenario: Close Work 冻结后源树漂移
+
+- **WHEN** `specification.close` Work 已创建或验证，但当前 Evidence 指纹与冻结 Verification Input 不同
+- **THEN** Runtime 在调用 Specification provider 前返回 Verify、创建新的 `evidence.verify` Work并退役旧 execution checkpoint
+
+#### Scenario: 漂移同时改变规划语义
+
+- **WHEN** Archive 返回 Verify 后发现 OpenSpec planning semantic digest 与已批准快照不同
+- **THEN** Runtime 复用既有 Verify→Design transition，不在 Archive 直接建立第二套规划恢复路径
+
+#### Scenario: Closure 已经产生
+
+- **WHEN** Specification Closure 或 Publication Receipt 已存在
+- **THEN** Runtime 不回退到 Verify，而继续既有 publication journal/reconciliation 流程
+
+### Requirement: 规划授权失效必须原子恢复 Design checkpoint
+
+当 Build、Verify 或尚未发生不可逆副作用的 Archive 观察到当前 Specification Provider 的规划语义或 trusted Design approval 不再授权 lifecycle 的 `planningDigest` 时，Runtime MUST 通过一个带 `semantic | approval-authority` 分类的受保护 transition 回到 Design。该 transition MUST 在同一次权威 Run 提交中设置新的 `specification.plan` Work 与 `checkEpoch`，清除旧 Tasks、Build Protocol、Verification、Archive 输入和未完成 Closure，并退役不匹配的新旧 execution checkpoint；Runtime MUST NOT 暂停在缺少当前 Work 的 Design 中间态、复用旧 approval、创建第二个 Run 或要求手改 Store。
+
+#### Scenario: Verify 收尾提交改变规划语义
+
+- **WHEN** Change 已进入 Archive，但 Verify 收尾提交改变 Proposal、Design、Delta Specs、Tasks 语义或 Change metadata
+- **THEN** 下一个受保护 Runtime pull 在任何关闭或发布副作用前一次提交 Design phase、新 `specification.plan` Work、新 epoch 与下游证据失效事实
+
+#### Scenario: 当前 approval 不再有效但语义摘要相同
+
+- **WHEN** Archive preflight 能读取相同 planning semantic digest，但无法证明与该 Run 绑定的 trusted Design approval 仍有效
+- **THEN** Runtime fail closed 并回到新的 Design approval Work，不把 lifecycle 中的旧 planning digest 单独视为发布授权
+
+#### Scenario: 重复观察相同失效
+
+- **WHEN** 进程在恢复提交后退出，另一个 Runner 对同一 revision 再次观察相同规划失效
+- **THEN** Runtime 返回已经存在的 Design checkpoint 或明确 revision conflict，不创建第二个 Work、第二次 invalidation 或重复副作用
+
+#### Scenario: 陈旧 Runner 提交失效观察
+
+- **WHEN** planning invalidation observation 的 `expectedRevision/fromPhase` 不再匹配 CAS 内读取的当前 Run
+- **THEN** Runtime 拒绝该陈旧观察并要求调用方重读当前 Action，不覆盖较新的 phase、Work 或批准结果

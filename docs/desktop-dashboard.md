@@ -2,6 +2,8 @@
 
 Repoctopus Desktop Dashboard 是 Windows x64 上的本地工作流观测界面。它与团队 SigNoZ 消费同一套标准 OTLP envelope，但用途不同：Desktop 聚焦当前 change 的即时状态，SigNoZ 用于团队历史、趋势和流程改进。Desktop 不查询 SigNoZ，也不扫描 Workspace、Git 或 OpenSpec 文件补造状态。
 
+当前 change 的投影除五阶段、Work、Skill、Wait 和 Evidence 外，还直接消费 packet recovery 与 Specification Provider 观测：四类工件分别显示 `ready | skipped | missing`，验证显示最高严重级与 contract-conflict。`skipped` 是 Provider 明确证明的满足状态，不显示为缺失或错误；这些事实与 SigNoZ 来自同一个持久 Trajectory envelope。
+
 ## 状态含义
 
 界面只显示 Receiver 已接受的权威事实。缺少事实时显示“尚未上报”，而不是根据阶段顺序或文案猜测。
@@ -23,7 +25,7 @@ Desktop Host 在 `127.0.0.1` 的随机端口接收 OTLP/HTTP，并为每次 Host
 - 文件由当前 Windows 用户拥有，且 ACL 收紧到该用户；
 - 记录处于 freshness 窗口内；
 - PID 的进程创建身份仍与发布者一致；
-- 回环监听端口仍由该 PID 拥有。
+- 回环监听端口仍由该 PID 拥有；若 Windows 网络 compartment 隐藏端口表，Receiver 必须用短期 token 证明同一 PID。
 
 伪造、过期、进程复用、端口劫持或错误凭据都会 fail closed。Renderer 启用 sandbox 与 `contextIsolation`，关闭 Node integration，使用封闭 CSP；Preload 只公开固定的版本化 IPC allowlist。Cordis composition、Receiver 与 Projection 只存在于独立 Desktop Host，不在 Electron Main 或 Renderer 中运行。
 
@@ -53,3 +55,5 @@ Host 先将允许列表内的 envelope 追加到本地 journal，再发布新的
 4. 若 snapshot 或 journal 损坏，保留诊断后可清理本地投影目录并由仍在保留期内的 envelope 重建。
 
 首个正式支持范围是 Windows 10/11 x64。macOS、Linux 和 Windows ARM64 在本 change 中不承诺安装、托盘或生命周期支持。
+
+源码与安装态启动步骤见[启动或恢复 Desktop Dashboard](desktop-activation.md)。

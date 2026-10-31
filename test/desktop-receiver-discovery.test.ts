@@ -1,11 +1,14 @@
 import { mkdtemp, rm, stat } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
+import { promisify } from 'node:util';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
 import {
   DesktopReceiverDiscovery,
+  resolveDesktopReceiverDiscoveryRoot,
   type DesktopDiscoverySecurity,
 } from '../app/desktop/host/receiver-discovery.js';
 import { DesktopOtlpHttpReceiver } from '../app/desktop/host/otlp-http-receiver.js';
@@ -70,6 +73,24 @@ async function fixture() {
 }
 
 describe('desktop receiver discovery', () => {
+  it('uses the same LocalAppData root for the Runtime probe and Desktop publisher', () => {
+    expect(
+      resolveDesktopReceiverDiscoveryRoot({ LOCALAPPDATA: 'C:\\Users\\worker\\AppData\\Local' }),
+    ).toBe('C:\\Users\\worker\\AppData\\Local\\Repoctopus\\discovery');
+    expect(
+      resolveDesktopReceiverDiscoveryRoot({
+        LOCALAPPDATA: 'C:\\ignored',
+        REPOCTOPUS_DESKTOP_DISCOVERY_ROOT: 'D:\\Repoctopus\\receiver',
+      }),
+    ).toBe('D:\\Repoctopus\\receiver');
+    expect(() =>
+      resolveDesktopReceiverDiscoveryRoot({
+        LOCALAPPDATA: 'C:\\Users\\worker\\AppData\\Local',
+        REPOCTOPUS_DESKTOP_DISCOVERY_ROOT: 'relative',
+      }),
+    ).toThrow('REPOCTOPUS_DESKTOP_DISCOVERY_ROOT must be an absolute path');
+  });
+
   it('exposes a credential only after owner, freshness, process and port checks', async () => {
     const test = await fixture();
     await expect(test.discovery.discover()).resolves.toEqual({
@@ -121,7 +142,7 @@ describe('desktop receiver discovery', () => {
 
   it.runIf(process.platform === 'win32')(
     'validates the real Windows owner, process identity and listening port',
-    async () => {
+    async ({ skip }) => {
       const root = await mkdtemp(path.join(os.tmpdir(), 'repoctopus-discovery-real-'));
       roots.push(root);
       const token = 'real-windows-session-token-with-at-least-32-characters';
@@ -130,6 +151,17 @@ describe('desktop receiver discovery', () => {
         onExport: () => undefined,
       });
       const endpoint = await receiver.start();
+      const systemRoot = process.env.SystemRoot ?? process.env.SYSTEMROOT ?? 'C:\\Windows';
+      const netstat = await promisify(execFile)(
+        path.join(systemRoot, 'System32', 'netstat.exe'),
+        ['-ano', '-p', 'tcp'],
+        { windowsHide: true },
+      );
+      if (!netstat.stdout.includes(`127.0.0.1:${new URL(endpoint).port}`)) {
+        await receiver.stop();
+        skip('The execution environment does not expose Node sockets in the Windows owner table');
+        return;
+      }
       const discovery = new DesktopReceiverDiscovery({ root });
       try {
         const handle = await discovery.publish({ schemaVersion: 1, endpoint, sessionToken: token });
