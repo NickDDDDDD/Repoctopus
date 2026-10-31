@@ -33,6 +33,34 @@ async function waitFor<T>(probe: () => Promise<T | null>, timeoutMs = 20_000): P
   throw new Error('Desktop activation E2E condition timed out');
 }
 
+function processIsAlive(processId: number): boolean {
+  try {
+    process.kill(processId, 0);
+    return true;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ESRCH') return false;
+    throw error;
+  }
+}
+
+async function terminateProcessTree(processId: number): Promise<void> {
+  let terminationError: unknown;
+  await executeFile('taskkill.exe', ['/pid', String(processId), '/t', '/f'], {
+    windowsHide: true,
+  }).catch((error: unknown) => {
+    terminationError = error;
+  });
+  const stopped = await waitFor(
+    () => Promise.resolve(processIsAlive(processId) ? null : true),
+    5_000,
+  ).catch(() => false);
+  if (!stopped) {
+    if (terminationError instanceof Error) throw terminationError;
+    if (terminationError) throw new Error('Desktop process termination failed');
+    throw new Error(`Desktop process ${processId} did not terminate`);
+  }
+}
+
 async function shellProcessForContext(
   contextArgument: string,
   environment: NodeJS.ProcessEnv,
@@ -46,7 +74,7 @@ async function shellProcessForContext(
   );
   return waitFor(async () => {
     const script =
-      '$p=Get-CimInstance Win32_Process | Where-Object {$_.CommandLine -and $_.CommandLine.Contains($env:REPOCTOPUS_CONTEXT)} | Select-Object -First 1 ProcessId,ExecutablePath; if($p){$p|ConvertTo-Json -Compress}';
+      '$p=Get-CimInstance Win32_Process | Where-Object {$_.CommandLine -and $_.CommandLine.Contains($env:REPOCTOPUS_CONTEXT) -and $_.CommandLine -notmatch "(?:^|\\s)--type="} | Select-Object -First 1 ProcessId,ExecutablePath; if($p){$p|ConvertTo-Json -Compress}';
     const { stdout } = await executeFile(
       powershell,
       ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', script],
@@ -407,9 +435,7 @@ describe('public Change Run Desktop activation', () => {
         expect(discovery.pid).toBeGreaterThan(0);
 
         const beforeClose = paths.length;
-        await executeFile('taskkill.exe', ['/pid', String(shell.processId), '/t', '/f'], {
-          windowsHide: true,
-        });
+        await terminateProcessTree(shell.processId);
         await waitFor(async () => {
           const result = await new DesktopReceiverDiscovery({ environment }).discover();
           return result.status === 'unavailable' && result.reason === 'process-mismatch'
@@ -428,9 +454,7 @@ describe('public Change Run Desktop activation', () => {
         expect(new Set(paths)).toEqual(new Set(['/v1/traces', '/v1/logs', '/v1/metrics']));
       } finally {
         if (shell) {
-          await executeFile('taskkill.exe', ['/pid', String(shell.processId), '/t', '/f'], {
-            windowsHide: true,
-          }).catch(() => undefined);
+          await terminateProcessTree(shell.processId).catch(() => undefined);
         }
         await new Promise<void>((resolve, reject) =>
           collector.close((error) => (error ? reject(error) : resolve())),
