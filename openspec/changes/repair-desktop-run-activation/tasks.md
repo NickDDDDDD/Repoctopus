@@ -117,7 +117,7 @@
       **Acceptance:** 测试不注入 executable override、不硬编码安装路径且不伪造 registry；首个 URI 经冷启动 `argv` 到达 Shell，第二个 URI 经 `second-instance` 选择正确 Run；协议/App Paths 原状态在 finally 精确恢复且只有一个有效 Host/Receiver
       **Verification:** 构建/安装当前包并运行 Windows installed-activation E2E、package check 与 registry/进程/目录残留检查
       **Requirements:** desktop-observability-dashboard#Windows-开发-Run-自动激活单实例桌面应用
-- [ ] 6.6 增加 public CLI 无 handler 的进程级验收，证明 warning、Run 持久化和远端 OTLP 独立继续。
+- [x] 6.6 增加 public CLI 无 handler 的进程级验收，证明 warning、Run 持久化和远端 OTLP 独立继续。
       **Blocked by:** 6.3, 6.4
       **Acceptance:** 隔离环境没有 source target、override、App Paths 或 handler 时返回 `desktop.activation.unavailable`；同一命令仍创建权威 Change Run并向捕获 receiver 投递非桌面依赖的远端事实
       **Verification:** 运行 public CLI tracer E2E，并核对退出码、诊断、Run checkpoint、OTLP payload 与 teardown
