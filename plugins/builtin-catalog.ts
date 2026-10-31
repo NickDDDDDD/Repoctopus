@@ -833,9 +833,9 @@ const definitions: readonly BuiltinDefinition[] = [
       stateSchemas: {},
       compatibleImplementations: [
         {
-          codeDigest: 'sha256:86232bbff896a11e5e922e60f9c0b2a6e755c0e7d3624717227d6882e1fe2d01',
+          codeDigest: 'sha256:cbd905ece097359b2d0529c7bf65ae4e07c0df48b08761618a2efed71620441f',
           descriptorDigest:
-            'sha256:e8146a5f4cc7824dfdf37f685fdff74e16808c3f2365ad86f53c2eb3d2f9034d',
+            'sha256:c4f16b784d4f3d542e38eb5847fc3ca18d81afdc559a8de3aa6cab6aa64bca04',
         },
       ],
     },

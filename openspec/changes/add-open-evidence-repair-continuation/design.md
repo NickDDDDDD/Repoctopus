@@ -90,6 +90,7 @@ Trajectory/OTLP 记录：失败来源、是否为确定性无效、旧/新 Work 
 - `services/workflow-runs`: 物化 repair Work并编排 Provider Evidence，不解释 Provider 私有结构。
 - `services/work-execution-authority`: 继续负责 current checkpoint、恢复和 continuation，不新增 Open 专用 Store。
 - `platform/telemetry`: 从 trajectory 事实生成标准 OTLP，不反推文件状态。
+- `plugins/builtin-catalog`: 仅为本次活动 Run 登记 `lifecycle-definition-builtin` 的精确直接前驱 implementation pair，使同版本的新增 Open transition 可通过正式 composition compatibility 路径自举；不保留更早前驱或通配兼容。
 
 ## 验证
 
@@ -97,6 +98,7 @@ Trajectory/OTLP 记录：失败来源、是否为确定性无效、旧/新 Work 
 - 覆盖四类确定性拒绝、Provider 抛错、批准后有效摘要漂移、批准后 strict invalid、并发 revision 冲突和重启恢复。
 - 证明 repair transition 与旧 execution 退役同一 CAS，新 Work packet 包含正确 Action Skill/augmentation 内容。
 - 证明重复 `run next/resume` 不增加 Work、epoch、批准请求或 Host invocation。
+- 证明新 lifecycle contributor 只接受当前活动 Run 冻结的唯一直接前驱 `{codeDigest, descriptorDigest}`，其他受保护实现仍为 `migration_required`。
 - 验证 Dashboard/OTLP 只消费权威 trajectory，完整运行严格 OpenSpec、类型、Lint、架构检查和 `npm run verify`。
 
 ## 回退
