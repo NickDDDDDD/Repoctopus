@@ -13,7 +13,7 @@ if (!npmCli) throw new Error('npm_execpath is required to reproduce the package 
 const reportPath = path.join(
   root,
   'verification',
-  'harden-core-workflow-reliability',
+  'repair-planning-approval-lifecycle-coherence',
   'verification-report.md',
 );
 const report = await readFile(reportPath, 'utf8');

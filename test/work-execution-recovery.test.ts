@@ -46,6 +46,7 @@ function state(input: {
     status: input.runStatus ?? 'running',
     changeLifecycle: {
       currentWork: input.currentWork === false ? null : { workId: 'build:1.1' },
+      checkEpoch: 4,
       waitCondition: input.humanDecision ? { kind: 'human-decision' } : null,
     },
     ...(input.execution ? { workExecution: input.execution } : {}),
@@ -117,6 +118,78 @@ describe('Work execution recovery classification', () => {
       reason: 'outcome-rejected',
       workId: 'build:1.1',
       attempt: 1,
+    });
+  });
+
+  it('projects the lifecycle Work instead of a superseded execution checkpoint', async () => {
+    const run = state({ execution: checkpoint('outcome') });
+    run.changeLifecycle = {
+      ...run.changeLifecycle!,
+      checkEpoch: 5,
+      currentWork: { workId: 'design:replacement' },
+    } as never;
+    const authority = recoveryAuthority(run);
+
+    await expect(authority.recovery('run-recovery')).resolves.toMatchObject({
+      continuation: 'execute',
+      reason: 'checkpoint-superseded',
+      workId: 'design:replacement',
+      attempt: null,
+      checkEpoch: 5,
+    });
+    await expect(authority.continuation('run-recovery')).resolves.toBe('execute');
+  });
+
+  it('reconciles a superseded checkpoint once before the next protected pull', async () => {
+    let run = {
+      ...state({ execution: checkpoint('outcome') }),
+      stateVersion: 10,
+      composition: { compositionDigest: digest('9') },
+      changeLifecycle: {
+        ...state({}).changeLifecycle!,
+        phase: 'design',
+        checkEpoch: 5,
+        currentWork: { workId: 'design:replacement', kind: 'specification.plan' },
+      },
+    } as unknown as RunState;
+    const trajectory: TrajectoryEvent[] = [];
+    const commitGuarded = vi.fn(
+      (
+        _runId: string,
+        commit: (input: { state: RunState; trajectory: TrajectoryEvent[] }) => {
+          state?: RunState;
+          event?: TrajectoryEvent;
+          value: boolean;
+        },
+      ) => {
+        const result = commit({ state: run, trajectory });
+        if (result.state) run = result.state;
+        if (result.event) trajectory.push(result.event);
+        return Promise.resolve(result.value);
+      },
+    );
+    const authority = Object.create(WorkExecutionAuthority.prototype) as WorkExecutionAuthority;
+    Object.defineProperty(authority, 'ctx', {
+      value: {
+        runStore: {
+          commitGuarded,
+          loadRun: vi.fn(() => Promise.resolve(run)),
+        },
+      },
+    });
+
+    await expect(authority.reconcileCurrentCheckpoint(run.runId)).resolves.toBe(true);
+    await expect(authority.reconcileCurrentCheckpoint(run.runId)).resolves.toBe(false);
+    expect(run.workExecution).toBeUndefined();
+    expect(trajectory).toHaveLength(1);
+    expect(trajectory[0]).toMatchObject({
+      type: 'recovery.reconciled',
+      data: {
+        reasonCode: 'checkpoint-superseded',
+        retiredWorkId: 'build:1.1',
+        nextWorkId: 'design:replacement',
+        nextCheckEpoch: 5,
+      },
     });
   });
 

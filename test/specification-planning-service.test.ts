@@ -185,4 +185,63 @@ describe('SpecificationPlanning service', () => {
     });
     await running.context.fiber.dispose();
   });
+
+  it('observes later-phase planning authority without refreshing the approval store', async () => {
+    const workspace = await temporaryDirectory('repoctopus-spec-planning-observe-');
+    cleanup.push(workspace);
+    const running = app(workspace);
+    const prepared = await running.planning.prepare(prepareInput());
+    const approved = await running.planning.decide({
+      changeId: prepared.changeId,
+      response: {
+        apiVersion: 'repoctopus/v1alpha1',
+        kind: 'HumanDecisionResponse',
+        requestId: prepared.decisionRequest.requestId,
+        proposalHash: prepared.decisionRequest.proposalHash,
+        decision: 'approve',
+      },
+      actor: { actorId: 'user', source: 'cli', authenticated: true },
+    });
+    const expectedPlanningDigest = approved.snapshot.planningManifestDigest!;
+
+    await expect(
+      running.planning.observeAuthority({
+        ...prepareInput(),
+        expectedPlanningDigest,
+      }),
+    ).resolves.toMatchObject({
+      status: 'authorized',
+      invalidationKind: null,
+      planningDigest: expectedPlanningDigest,
+      reasonCode: 'authorized',
+    });
+
+    running.specification.proposalDigest = digest('9');
+    await expect(
+      running.planning.observeAuthority({
+        ...prepareInput(),
+        expectedPlanningDigest,
+      }),
+    ).resolves.toMatchObject({
+      status: 'invalid',
+      invalidationKind: 'semantic',
+      reasonCode: 'semantic-drift',
+    });
+    expect(await running.planning.status(prepared.changeId)).toEqual(approved);
+
+    running.specification.proposalDigest = digest('1');
+    await expect(
+      running.planning.observeAuthority({
+        ...prepareInput(),
+        changeBranch: { ...prepareInput().changeBranch, targetBranch: 'release' },
+        expectedPlanningDigest,
+      }),
+    ).resolves.toMatchObject({
+      status: 'invalid',
+      invalidationKind: 'approval-authority',
+      reasonCode: 'approval-stale',
+    });
+    expect(await running.planning.status(prepared.changeId)).toEqual(approved);
+    await running.context.fiber.dispose();
+  });
 });

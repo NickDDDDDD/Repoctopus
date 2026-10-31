@@ -1,0 +1,128 @@
+# Design
+
+## Context
+
+Repoctopus 已有正确的五阶段领域转换，也能在 Build/Verify 发现 `planning-semantic-drift` 后回到 Design；缺口在组合边界：
+
+- `SpecificationPlanning.assess()` 同时观察 Provider 并写 approval Store。`WorkflowRuns.next()` 在 Build/Verify 也先调用它，可能先使 approval 失效，再在另一次 Run CAS 中修改 lifecycle。
+- Archive preflight 直接读取 approval Store；发现失效只抛错，不提交 lifecycle observation。
+- `WorkflowRunCoordinator.acceptChangeObservation()` 已经在 current Work/epoch 变化时通过同一 Run CAS 退役不匹配的 `state.workExecution`；但规划漂移 transition 仍先发布 `Design/currentWork=null`，没有利用这条通用规则直接安装下一 Work。
+- `WorkExecutionAuthority.recovery()` 优先读取任何现存 `workExecution`，没有先证明它仍匹配 lifecycle current Work。
+
+因此 approval Store、lifecycle 和 execution projection 会短暂或永久表达不同的“当前状态”。把三个存储放进一个物理事务既不符合 Provider 可替换边界，也无法覆盖进程在外部观察后崩溃的情况。
+
+## Goals / Non-Goals
+
+**Goals:**
+
+- Change Run 始终是 phase、current Work、checkEpoch 与 continuation 的唯一权威。
+- later phase 的规划检查只读，不在 lifecycle transition 之前刷新 approval Store。
+- phase 回退、替代 Work 与当前 execution 退役在同一次 Run CAS 中完成。
+- Archive 在任何规格关闭或发布副作用前幂等收敛到 Design。
+- status 保持只读，冷启动和重复 pull 得到同一 checkpoint。
+
+**Non-Goals:**
+
+- 跨 RunStore 与任意 Specification Provider Store 建立分布式事务。
+- 自动批准更新后的规格或复用旧 approval hash。
+- 从 Git、目录或 Dashboard 投影反推 phase。
+
+## Decisions
+
+### 1. Later phase 使用只读 Planning Authority Observation
+
+新增内部观察结果，组合：
+
+- Provider `planningManifest.semanticDigest`；
+- strict validation 状态与 evidence digests；
+- 当前 Design approval 的 decision/proposal/snapshot 身份；
+- lifecycle 已批准的 `planningDigest`。
+
+在 `SpecificationPlanning` 深模块上新增一个只读接口，而不是让 `WorkflowRuns` 拼接 Provider 与 approval Store 细节：
+
+```ts
+observeAuthority(input): Promise<{
+  status: 'authorized' | 'invalid';
+  invalidationKind: 'semantic' | 'approval-authority' | null;
+  planningDigest: `sha256:${string}`;
+  reasonCode: string;
+  evidenceDigests: readonly `sha256:${string}`[];
+}>
+```
+
+该接口复用 `SpecificationPlanning` 内部的 manifest、strict validation 与 approval 读取，但绝不调用 `requestSpecificationApproval()` 或 `store.commit()`。Build、Verify 和 Archive 不再通过 `assess()` 刷新 proposal；它们比较 Provider 语义与 lifecycle planning digest，Archive 还要求当前 approval decision、snapshot、composition、project config 与 Change branch identity 继续有效。只有回到 Design 后，正式 Design gate 才调用 `assess()` 创建或刷新批准请求。
+
+这避免“先改 approval Store、后改 Run”的人为撕裂。若进程在只读观察后退出，任何权威状态都未改变；若在 Run CAS 后退出，Run 已经包含完整 Design continuation。
+
+### 2. Revision-bound observation 携带替代 Design Work
+
+把现有 `planning-semantic-drift` 泛化为 `planning-authority-invalidated`，并要求 observation 携带 `expectedRevision`、`fromPhase`、`invalidationKind`、观察证据和 Runtime 创建的 `specification.plan` Work。Coordinator 在 CAS 内重新读取 Run 后必须校验 expected revision/phase；陈旧 Runner 得到 revision conflict 并重读当前 Action，不能把过时观察应用到新状态。领域转换通过既有 snapshot 不变量验证 Work 的 phase、kind、definition、输入身份和新 epoch，并在一次 transition 中：
+
+- phase 设为 Design；
+- current Work 设为新的 `specification.plan`；
+- 清除 wait/blocker、Tasks、Build Protocol、planning digest、Verification Input/Invalidation、Archive input 和未完成 Closure；
+- 记录 superseded planning/work/task evidence。
+
+不再先产生 `design/currentWork=null`，再依赖下一次 pull 补 Work。这里对应 Comet Classic 的 `expectedRevision/fromPhase + revise-design handoff`，也对应 Native 的 `stateVersion/expectedAction` continuation fencing；借用其并发和恢复不变量，不引入 Comet SDK 或单仓存储模型。
+
+### 3. 复用 Run CAS 的通用 execution checkpoint 退役
+
+当前 `WorkflowRunCoordinator.acceptChangeObservation()` 已在领域 transition 产出新 lifecycle 后，通过内部判定比较旧 `workExecution`：
+
+- 若新 current Work 的 `workId` 和 `checkEpoch` 都与 checkpoint 相同，则保留；
+- 否则从当前 Run state 移除 `workExecution`，并在同一个 `change.lifecycle.transitioned` trajectory event 中记录低基数 retirement fact 与旧 work/epoch trace correlation；
+- 历史 claim、submission、Outcome、Receipt 和 Validator 事件不删除，仍可审计。
+
+本 Change 不再实现第二套 retirement，而是为 planning invalidation 接入并加回归保护：同一 observation 直接给出新 Design Work，因此既有规则可在同一 CAS 退役旧 checkpoint。若已有通用实现缺少所需审计字段，只做事实补强，不建立 planning 专用删除路径。
+
+### 4. Recovery 对遗留撕裂 fail closed 并投影当前 lifecycle
+
+为尚未经过新 CAS 规则的持久状态保留两层防线。第一层是只读 `recovery()`：它首先证明 checkpoint 与 lifecycle current Work/epoch 完全匹配。若不匹配：
+
+- 有 current Work 时返回该 Work 的 `execute/work-unclaimed`；
+- 无 current Work时返回 `wait/transition-pending`；
+- 返回低基数 `checkpoint-superseded` reason，但不得加载旧 intent 或返回旧 validator-pending。
+
+第二层是命令侧收敛：`run next/resume` 在选择 Action 前调用 `reconcileCurrentCheckpoint()`。该方法使用 revision-bound Run CAS 再次检查同一不变量；仍不匹配时移除旧 checkpoint 并写入一次幂等 `recovery.reconciled` trajectory fact。这样 status 查询始终不写 Store，而实际 Runtime pull 会在新 claim 前消除遗留阻塞。相同 state revision 上的并发 Runner 只会有一个提交成功，其他 Runner 重读后得到已收敛状态与当前 expected Action。
+
+### 5. Archive preflight 返回显式恢复结果
+
+`prepareArchiveDelivery()` 在 Evidence 检查之后、创建 Archive Work 之前执行 Planning Authority Observation。若 planning digest、strict validation 或 approval authority 不再有效：
+
+1. 创建新的 Design Work；
+2. 提交 planning invalidation observation；
+3. 返回 `planning-revision-required` 与新的 Run projection；
+4. 不创建 Closure candidate、不调用 Git push/MR，也不修改业务仓。
+
+已经存在 Archive side effect 的恢复继续使用现有窄范围 Journal 和 `archive-planning-drift` 边界，本 Change 不扩大远端补偿协议。
+
+### 6. Telemetry 记录事实而不是错误文本
+
+trajectory/OTLP 记录：失效来源 `semantic | approval-authority`、from/to phase、旧/新 work kind、旧/新 checkEpoch、是否退役 execution。`change.lifecycle.transitioned` 覆盖正常原子恢复，`recovery.reconciled` 覆盖遗留 torn state。新增 planning recovery counter 只使用 phase、work kind、invalidation kind 与 retirement boolean；run/work identity 只用于 trace correlation，reason 文本、digest 和绝对路径不进入 Metric label。Dashboard 从同一 Run trajectory 展示恢复，不独立推断。
+
+## 模块边界
+
+- `domains/change-lifecycle`: planning invalidation observation 与纯 transition 不变量。
+- `domains/runtime`: lifecycle 与 current execution 的原子 Run state 投影。
+- `domains/work-execution`: current-checkpoint 判定与 recovery reason。
+- `services/specification-planning`: 深模块接口内的只读 Planning Authority Observation，隐藏 Provider/approval Store 组合细节。
+- `services/workflow-runs`: Design Work 物化和受保护命令编排，不直接解释 approval Store。
+- `services/work-execution-authority`: legacy read defense、命令侧 CAS 收敛与 continuation 投影。
+- `platform/telemetry`: 消费 trajectory 事实，不解析异常消息。
+
+## 自举执行约束
+
+当前 Change 在 Repoctopus 管理的 Git linked worktree 中自举开发，因此 Execution Workspace intent 必须选择 `worktree` isolation。`current` 只适用于注册 checkout 本身不是 linked worktree 的场景；Runtime 必须继续拒绝把 linked worktree 绑定为 `current`，不得为了自举便利放宽该所有权不变量。本约束只修正本次 Run 的配置选择，不改变产品的三种 isolation 模型。
+
+## 验证
+
+- 先增加失败回归，分别复现 Archive approval/lifecycle 撕裂和 Design/old Build continuation 撕裂。
+- 领域测试证明 drift transition 一次得到 Design + Work + 新 epoch，并清除所有下游输入。
+- Coordinator 测试证明 transition 与 execution 退役同一 CAS，trajectory 保留旧事实。
+- Service/E2E 测试证明 Archive 在副作用前返回 `planning-revision-required`，重复 pull 幂等，重新批准后可继续。
+- 冷启动测试证明旧 torn checkpoint 不会投影成当前 continuation，且下一次 Runtime pull 会在 claim 前把它幂等退役。
+- OTLP 契约、严格 OpenSpec、typecheck、lint、相关 Vitest 与完整 `npm run verify` 全部通过。
+
+## 回退
+
+本 Change 不引入持久 schema generation。若回退代码，旧实现可能再次把历史 `workExecution` 当作当前 checkpoint，因此不支持向旧行为兼容回退；应保留新代码或从 trajectory 重新投影当前 Run。

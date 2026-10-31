@@ -11,6 +11,7 @@ import {
   createSpecificationCloseWork,
 } from '../domains/change-lifecycle/archive-input.js';
 import { createVerifyWork } from '../domains/change-lifecycle/verify-work.js';
+import { createLifecyclePhaseWork } from '../domains/change-lifecycle/phase-work.js';
 import {
   BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
   createChangeLifecycleSnapshot,
@@ -95,6 +96,16 @@ const archiveSkill: SkillUsageSnapshot = {
   name: 'repoctopus-archive-change',
 };
 
+const designSkill: SkillUsageSnapshot = {
+  ...prSkill,
+  name: 'repoctopus-design-change',
+};
+
+const codebaseDesignSkill: SkillUsageSnapshot = {
+  ...prSkill,
+  name: 'codebase-design',
+};
+
 const verifySkill: SkillUsageSnapshot = {
   ...prSkill,
   name: 'repoctopus-verify-change',
@@ -177,6 +188,7 @@ function archiveState(actionSkill: SkillUsageSnapshot = prSkill) {
     }),
     phase: 'archive' as const,
     status: 'running' as const,
+    planningDigest: digest('f'),
     tasks: [
       {
         taskId: '1.1',
@@ -312,10 +324,59 @@ function archiveState(actionSkill: SkillUsageSnapshot = prSkill) {
       },
     ],
   });
-  return { preflight: preflight.snapshot, closed: closed.snapshot, archive, closure, receipt };
+  return {
+    initial,
+    preflight: preflight.snapshot,
+    closed: closed.snapshot,
+    archive,
+    closure,
+    receipt,
+  };
 }
 
 describe('Archive publication terminal lifecycle', () => {
+  it('returns an unstarted Archive checkpoint directly to a revision-bound Design Work', () => {
+    const { initial } = archiveState();
+    const work = createLifecyclePhaseWork({
+      runId: initial.identity.runId,
+      checkEpoch: initial.checkEpoch + 1,
+      changeId: initial.identity.changeId,
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      kind: 'specification.plan',
+      actionSkill: designSkill,
+      augmentationSkills: [codebaseDesignSkill],
+      compositionDigest: digest('6'),
+      projectSnapshotDigest: digest('7'),
+      projectConfigDigest: digest('5'),
+      workspaceRepositoryId: 'workspace',
+      repositoryIds: ['workspace', 'app'],
+    });
+    const revised = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current: initial,
+      observation: {
+        kind: 'planning-authority-invalidated',
+        expectedRevision: initial.revision,
+        fromPhase: 'archive',
+        invalidationKind: 'approval-authority',
+        reason: 'Design approval no longer authorizes the planning snapshot',
+        evidenceIds: [digest('8')],
+        inputDigest: digest('f'),
+        work,
+      },
+    });
+
+    expect(revised.snapshot).toMatchObject({
+      phase: 'design',
+      status: 'running',
+      currentWork: { workId: work.workId, kind: 'specification.plan' },
+      tasks: [],
+    });
+    expect(revised.snapshot.planningDigest).toBeUndefined();
+    expect(revised.snapshot.verificationInput).toBeUndefined();
+    expect(revised.snapshot.archiveDeliveryInput).toBeUndefined();
+  });
+
   it('returns a frozen specification.close Work to Verify before closure side effects', () => {
     const { preflight } = archiveState();
     const verificationInput = {
@@ -466,7 +527,8 @@ describe('Archive publication terminal lifecycle', () => {
     expect(revised.snapshot.specificationClosure).toBeUndefined();
     expect(revised.snapshot.verificationInput).toBeUndefined();
     expect(revised.fact?.invalidation).toMatchObject({
-      kind: 'planning-semantic-drift',
+      kind: 'planning-authority-invalidated',
+      invalidationKind: 'semantic',
       supersededWorkId: closed.currentWork?.workId,
     });
   });

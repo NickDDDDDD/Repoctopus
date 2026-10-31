@@ -434,23 +434,33 @@ describe('Change lifecycle domain', () => {
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
       current: approved.snapshot,
       observation: {
-        kind: 'planning-semantic-drift',
+        kind: 'planning-authority-invalidated',
+        expectedRevision: approved.snapshot.revision,
+        fromPhase: 'build',
+        invalidationKind: 'semantic',
         reason: 'Design artifact changed',
         evidenceIds: [digest('n')],
         inputDigest: digest('z'),
+        work: phaseWork(
+          'design',
+          'specification.plan',
+          approved.snapshot.checkEpoch + 1,
+          digest('z'),
+        ),
       },
     });
     expect(invalidated.snapshot).toMatchObject({
       phase: 'design',
       status: 'running',
-      currentWork: null,
+      currentWork: { kind: 'specification.plan' },
       tasks: [],
     });
     expect(invalidated.snapshot.planningDigest).toBeUndefined();
     expect(invalidated.fact).toMatchObject({
       transitionId: 'build.semantic-plan-drift',
       invalidation: {
-        kind: 'planning-semantic-drift',
+        kind: 'planning-authority-invalidated',
+        invalidationKind: 'semantic',
         supersededPlanningDigest: digest('i'),
         observedPlanningDigest: digest('z'),
         supersededWorkId: configureWork.workId,
@@ -458,6 +468,28 @@ describe('Change lifecycle domain', () => {
         evidenceIds: [digest('n')],
       },
     });
+
+    expect(() =>
+      evolveChangeLifecycle({
+        definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+        current: approved.snapshot,
+        observation: {
+          kind: 'planning-authority-invalidated',
+          expectedRevision: approved.snapshot.revision - 1,
+          fromPhase: 'build',
+          invalidationKind: 'semantic',
+          reason: 'Stale observation',
+          evidenceIds: [],
+          inputDigest: digest('z'),
+          work: phaseWork(
+            'design',
+            'specification.plan',
+            approved.snapshot.checkEpoch + 1,
+            digest('z'),
+          ),
+        },
+      }),
+    ).toThrow(/stale lifecycle revision/u);
 
     const blocked = evolveChangeLifecycle({
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,

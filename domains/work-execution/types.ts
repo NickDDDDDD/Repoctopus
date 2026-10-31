@@ -32,6 +32,7 @@ export interface WorkExecutionRecovery {
     | 'outcome-rejected'
     | 'outcome-processing-error'
     | 'validator-pending'
+    | 'checkpoint-superseded'
     | 'transition-pending'
     | 'content-missing-or-corrupt'
     | 'migration-required'
