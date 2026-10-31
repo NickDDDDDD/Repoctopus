@@ -3,7 +3,7 @@
 ## Reproducible subject
 
 - Change: `repair-desktop-run-activation`
-- Tested implementation commit: `d13803785875bacf85d42be31eede8977d57ba93`
+- Tested implementation commit: `015fcc20d81bb8d2108b88f4f6493c45c8cc17ea`
 - Package: `repoctopus@0.1.0`
 - Package bytes: `970662`
 - Package SHA-256: `150fcb75a451010b845cae8805a58afa6101b0e27015d0314eece028b3dbb63d`
@@ -102,13 +102,14 @@ Launcher 测试覆盖同步 throw、异步 `error`、`spawn`、timeout、缺少�
 
 ## Findings corrected during verification
 
-验证发现并修复了五个仅在真实边界出现的问题：
+验证发现并修复了六个仅在真实边界出现的问题：
 
 1. Electron 原先把 Receiver discovery 写入 roaming AppData，而 Runtime 从 local AppData 读取；现在双方使用同一个导出解析器。
 2. electron-builder 的顶层 protocol 配置没有为当前 NSIS 安装路径产生所需登记；现在由受控 `installer.nsh` 明确安装和卸载 handler。
 3. Codex 所在 Windows 网络 compartment 可能隐藏 loopback listener；现在只有通过认证且 PID 身份匹配时才允许 discovery fallback。
 4. Windows Explorer 接受 `repoctopus://` 启动请求并不保证稳定分派；现在 Runtime 只从标准 App Paths 读取并校验产品 executable，再直接传入 URI 参数。
 5. 伪造 `SystemRoot` 会破坏 Windows Node 的系统随机数初始化；无 handler 测试改为 CLI-only Product Root 加精确注册表快照/恢复，既保持真实公共入口，也不伪造操作系统根。
+6. 全量并行测试中 `taskkill /t` 可能在主 Shell 已退出后，因为某个 descendant 同时结束而返回非零；测试现在只选择不含 `--type=` 的 Electron 主进程，并以主 PID 实际消失作为 teardown 成功权威，不再让已完成的清理冒充产品失败。
 
 此外，Package 3 修改了 Comet-adopted `domains/runtime/workflow-runs.ts`，但原 Build Plan 没有把 `third_party/comet/source-manifest.json` 纳入对应写入范围。验证没有绕过 provenance：只刷新了该本地派生文件的 SHA-256，上游来源身份保持不变。报告新鲜度检查器也仍固定在上一项 Change；本次仅将其验证对象前移到当前实现提交。这两项都记录为 Build Plan 元数据遗漏，未扩张产品需求。
 
