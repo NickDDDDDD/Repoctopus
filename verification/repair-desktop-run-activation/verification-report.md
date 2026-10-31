@@ -3,10 +3,10 @@
 ## Reproducible subject
 
 - Change: `repair-desktop-run-activation`
-- Tested implementation commit: `015fcc20d81bb8d2108b88f4f6493c45c8cc17ea`
+- Tested implementation commit: `a3a49b953908538e4850ed55120a02157487b89a`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `970662`
-- Package SHA-256: `150fcb75a451010b845cae8805a58afa6101b0e27015d0314eece028b3dbb63d`
+- Package bytes: `986855`
+- Package SHA-256: `0770df489e06c88efb0d3a56e000e3ff7ccc77c8b3d2a1b7aba2d45d7321a7f7`
 - Platform: Windows `10.0.26300` x64
 - Node.js: `24.21.0`
 - Change Run: `change-repoctopus-repair-desktop-run-activation-dde9532e7e8f7a45`
@@ -35,11 +35,11 @@ Dashboard 仍是非阻塞的本地可观测性表面。`unavailable` 和 `unsupp
 
 ```text
 npm run verify
-  147 test files passed
-  625 tests passed; 2 skipped
+  150 test files passed
+  649 tests passed; 2 skipped
   TypeScript, Desktop TypeScript, ESLint, generated output, brand,
   architecture, provenance, dashboard salvage and report checks passed
-  OpenSpec strict validation passed 15 items with 0 failures
+  OpenSpec strict validation passed 19 items with 0 failures
 
 npm run test:package-e2e
   1 test file and 1 test passed
@@ -57,7 +57,7 @@ npm run package:desktop
   Windows x64 NSIS installer built successfully
 
 npm run check:desktop-package
-  verified 6 package entries, 14 resources and a 116496963-byte installer
+  verified 6 package entries, 14 resources and a 116497593-byte installer
 
 npm run test:desktop-package-e2e
   install-candidate, run-activation, otlp-receiver, single-instance,
@@ -66,6 +66,8 @@ npm run test:desktop-package-e2e
 ```
 
 `npm run verify` 在报告创建前的第一次闭环中，所有测试和静态检查均已通过，最终仅由报告新鲜度守卫按预期拒绝。报告与检查器前移后重新执行整条命令，证明该守卫不是被跳过，而是以当前产品提交和包摘要重新闭合。
+
+本次前移同时覆盖 `add-auditable-team-skill-composition`：项目组合、冻结 Skill composition、OTLP/Desktop 角色投影都已进入同一生产包。具体的团队 binding、恢复漂移和反作弊 Evidence 见 `verification/add-auditable-team-skill-composition/verification-report.md`。
 
 ## Clean checkout and documented paths
 
