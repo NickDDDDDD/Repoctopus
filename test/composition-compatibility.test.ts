@@ -92,41 +92,41 @@ describe('composition compatibility', () => {
       [
         'workflow-runs',
         {
-          codeDigest: 'sha256:813eeece9d54323afbc72b2e99ba7b7899a10f7cad9ab506e7551adc12d6a860',
+          codeDigest: 'sha256:96042e2130ff164ee6ebd11454845ea187b716c53a671e6bf9b2f4b06023aa4e',
           descriptorDigest:
-            'sha256:7d6d0eb8c3ff06bbb2b86e14c004625b047ff2ea9dbfa946878a4db9eb38b0ce',
+            'sha256:f7f4c9c9230cfdae87777061f4f6ccd4c8d0d4b22184f5cdbeae704d0211035c',
         },
       ],
       [
         'managed-work-executor',
         {
-          codeDigest: 'sha256:864cd1727e33214c9bfa6c748c75e91f6faaf2f5d89ed2dc73278dfde8fb0a63',
+          codeDigest: 'sha256:c38a70dc4a63da197f47f52a9c9e444394ed144fa43d9d84245c3e533dc2b028',
           descriptorDigest:
-            'sha256:5882235cb7dc97cf8d7cc225c78504f13d7859a57c1b5f2ad7cd334357aa0619',
+            'sha256:d7802dbbc31c42eacff6c200254b6873735978d9bf5cd4905338cd1b9b9f6375',
         },
       ],
       [
         'lifecycle-definition-builtin',
         {
-          codeDigest: 'sha256:cbd905ece097359b2d0529c7bf65ae4e07c0df48b08761618a2efed71620441f',
+          codeDigest: 'sha256:7ac8af2578dec4a4e45d5cef811656d0280b2af26b792e2a03b8ed4d64b869ce',
           descriptorDigest:
-            'sha256:c4f16b784d4f3d542e38eb5847fc3ca18d81afdc559a8de3aa6cab6aa64bca04',
+            'sha256:b37cd79d98e09c8d36f3c77315e316c877e9f2da78494c61f07273b5f5d171d2',
         },
       ],
       [
         'lifecycle-validator-builtin',
         {
-          codeDigest: 'sha256:1ddbda5413183c53a569109426b52101c7b11a81b078796375cebd7ed592ec64',
+          codeDigest: 'sha256:fcd874bea2ec44fe16e58ea2628017ba3a614ee54ce95bcf9e339c817f90f09f',
           descriptorDigest:
-            'sha256:717cb188db5e3b6d0112b711a840a220d59a003b2528758ce71c7365cc90a2eb',
+            'sha256:fb3edf9da190de8f6a459a2c975874bc453ee3fde8e52f57fd234b4316fb18e7',
         },
       ],
       [
         'lifecycle-extension-builtin',
         {
-          codeDigest: 'sha256:999c22698474db633b225ea62d05eb5216930ac40c87f59b954cbcc353bd3d19',
+          codeDigest: 'sha256:f0ef03c66bb3ee2e51ac910a1ad0071674044d0afb1f5724670c5054fd50a02a',
           descriptorDigest:
-            'sha256:b7d4c5d962c61768e4de0da74bde5faf7ff607018cb91df25f34b2ed43318fce',
+            'sha256:27231ac5e21cddddf63064ef5a4125fc274f15ddb10b71c4d8190cf892842d40',
         },
       ],
     ]);
