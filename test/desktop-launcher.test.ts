@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { DesktopLauncher, type DesktopProcessAdapter } from '../services/desktop-launcher.js';
 import type { DesktopInstanceProbe } from '../app/desktop/shared/instance-probe.js';
+import { desktopLaunchContextUrl } from '../app/desktop/shared/launch-context.js';
 
 const launchContext = {
   schemaVersion: 1 as const,
@@ -23,6 +24,8 @@ interface LauncherHarnessOptions {
   environment?: NodeJS.ProcessEnv;
   existingInstance?: boolean;
   existingPaths?: readonly string[];
+  installedExecutable?: string | null;
+  installedExecutableAccessible?: boolean;
   protocolHandlerAvailable?: boolean;
   process?: DesktopProcessAdapter;
   launchDeadlineMs?: number;
@@ -34,6 +37,29 @@ function harness(options: LauncherHarnessOptions = {}) {
   const process = options.process ?? vi.fn();
   const existingPaths = new Set(options.existingPaths ?? []);
   const environment = options.environment ?? { SystemRoot: 'C:\\Windows' };
+  const installedExecutable =
+    options.installedExecutable === undefined
+      ? 'C:\\Program Files\\Repoctopus\\Repoctopus.exe'
+      : options.installedExecutable;
+  const registryQuery = vi.fn(
+    (_executable: string, arguments_: readonly string[]): Promise<string> => {
+      const key = arguments_[1];
+      if (key?.includes('App Paths')) {
+        if (installedExecutable === null) {
+          return Promise.reject(new Error('App Paths value is unavailable'));
+        }
+        return Promise.resolve(
+          `HKEY_CURRENT_USER\\${key}\n    (Default)    REG_SZ    ${installedExecutable}\n`,
+        );
+      }
+      if (options.protocolHandlerAvailable === false) {
+        return Promise.reject(new Error('Protocol handler is unavailable'));
+      }
+      return Promise.resolve(
+        `HKEY_CLASSES_ROOT\\repoctopus\\shell\\open\\command\n    (Default)    REG_SZ    handler\n`,
+      );
+    },
+  );
   const instanceProbe: DesktopInstanceProbe = {
     isAvailable: () => Promise.resolve(options.existingInstance ?? false),
   };
@@ -43,16 +69,16 @@ function harness(options: LauncherHarnessOptions = {}) {
     platform: 'win32',
     process,
     pathExists: (candidate) => {
-      if (candidate === path.win32.join(environment.SystemRoot ?? '', 'explorer.exe')) {
-        return Promise.resolve(existingPaths.has('system-explorer') || existingPaths.size === 0);
+      if (installedExecutable && candidate === path.win32.normalize(installedExecutable)) {
+        return Promise.resolve(options.installedExecutableAccessible ?? true);
       }
       return Promise.resolve(existingPaths.has(path.relative(productRoot, candidate)));
     },
     instanceProbe,
-    protocolHandlerAvailable: () => Promise.resolve(options.protocolHandlerAvailable ?? true),
+    registryQuery,
     launchDeadlineMs: options.launchDeadlineMs ?? 50,
   });
-  return { context, launcher, process, productRoot };
+  return { context, launcher, process, productRoot, registryQuery };
 }
 
 afterEach(() => vi.useRealTimers());
@@ -86,7 +112,7 @@ describe('DesktopLauncher', () => {
       name: 'installed protocol',
       options: {},
       expectedKind: 'installed-protocol',
-      expectedExecutable: 'C:\\Windows\\explorer.exe',
+      expectedExecutable: 'C:\\Program Files\\Repoctopus\\Repoctopus.exe',
     },
   ])(
     'uses the fixed target priority for $name',
@@ -105,10 +131,40 @@ describe('DesktopLauncher', () => {
       });
       expect(process).toHaveBeenCalledOnce();
       expect(process.mock.calls[0]?.[0]).toBe(expectedExecutable);
-      expect(process.mock.calls[0]?.[1]).toEqual(expect.any(Array));
+      expect(process.mock.calls[0]?.[1]).toEqual(
+        expectedKind === 'installed-protocol'
+          ? [desktopLaunchContextUrl(launchContext)]
+          : expect.any(Array),
+      );
       await instance.context.fiber.dispose();
     },
   );
+
+  it('queries only the exact App Paths and protocol keys through absolute SystemRoot reg.exe', async () => {
+    const child = new FakeChild();
+    const process = vi.fn<DesktopProcessAdapter>(() => child);
+    const instance = harness({ process });
+    const activation = instance.launcher.activate(launchContext);
+    await vi.waitFor(() => expect(process).toHaveBeenCalledOnce());
+    child.emit('spawn');
+    await activation;
+
+    expect(instance.registryQuery.mock.calls).toEqual([
+      [
+        'C:\\Windows\\System32\\reg.exe',
+        [
+          'query',
+          'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\Repoctopus.exe',
+          '/ve',
+        ],
+      ],
+      [
+        'C:\\Windows\\System32\\reg.exe',
+        ['query', 'HKCR\\repoctopus\\shell\\open\\command', '/ve'],
+      ],
+    ]);
+    await instance.context.fiber.dispose();
+  });
 
   it('returns a bounded missing-artifact result instead of leaking Product Root paths', async () => {
     const instance = harness({
@@ -135,25 +191,48 @@ describe('DesktopLauncher', () => {
   });
 
   it.each([
-    ['missing SystemRoot', {}, []],
-    ['relative SystemRoot', { SystemRoot: 'Windows' }, []],
+    ['missing SystemRoot', {}, undefined, undefined],
+    ['relative SystemRoot', { SystemRoot: 'Windows' }, undefined, undefined],
     [
       'conflicting SystemRoot variables',
       { SystemRoot: 'C:\\Windows', SYSTEMROOT: 'D:\\Windows' },
-      [],
+      undefined,
+      undefined,
     ],
-    ['inaccessible explorer', { SystemRoot: 'D:\\Windows' }, ['unrelated']],
-  ])('rejects an unsafe installed target with %s', async (_name, environment, existingPaths) => {
-    const instance = harness({ environment, existingPaths });
+    ['missing App Paths value', { SystemRoot: 'C:\\Windows' }, null, undefined],
+    ['relative App Paths value', { SystemRoot: 'C:\\Windows' }, 'Repoctopus.exe', undefined],
+    [
+      'wrong executable basename',
+      { SystemRoot: 'C:\\Windows' },
+      'C:\\Program Files\\Repoctopus\\other.exe',
+      undefined,
+    ],
+    [
+      'inaccessible executable',
+      { SystemRoot: 'C:\\Windows' },
+      'C:\\Program Files\\Repoctopus\\Repoctopus.exe',
+      false,
+    ],
+  ])(
+    'rejects an unsafe installed target with %s',
+    async (_name, environment, installedExecutable, installedExecutableAccessible) => {
+      const instance = harness({
+        environment,
+        ...(installedExecutable !== undefined ? { installedExecutable } : {}),
+        ...(installedExecutableAccessible !== undefined
+          ? { installedExecutableAccessible }
+          : {}),
+      });
 
-    await expect(instance.launcher.activate(launchContext)).resolves.toEqual({
-      status: 'unavailable',
-      targetKind: 'installed-protocol',
-      reason: 'target-unavailable',
-    });
-    expect(instance.process).not.toHaveBeenCalled();
-    await instance.context.fiber.dispose();
-  });
+      await expect(instance.launcher.activate(launchContext)).resolves.toEqual({
+        status: 'unavailable',
+        targetKind: 'installed-protocol',
+        reason: 'target-unavailable',
+      });
+      expect(instance.process).not.toHaveBeenCalled();
+      await instance.context.fiber.dispose();
+    },
+  );
 
   it('reports activated only when secure discovery found an existing instance', async () => {
     const child = new FakeChild();

@@ -75,6 +75,11 @@ export type DesktopProcessAdapter = (
   options: { detached: true; stdio: 'ignore'; windowsHide: true },
 ) => DesktopProcessHandle;
 
+export type WindowsRegistryQuery = (
+  executable: string,
+  arguments_: readonly string[],
+) => Promise<string>;
+
 export interface DesktopLauncherConfig {
   productRoot: string;
   environment?: NodeJS.ProcessEnv;
@@ -82,7 +87,7 @@ export interface DesktopLauncherConfig {
   process?: DesktopProcessAdapter;
   pathExists?: (candidate: string) => Promise<boolean>;
   instanceProbe?: DesktopInstanceProbe;
-  protocolHandlerAvailable?: (systemRoot: string) => Promise<boolean>;
+  registryQuery?: WindowsRegistryQuery;
   launchDeadlineMs?: number;
 }
 
@@ -180,16 +185,53 @@ async function fileExists(candidate: string): Promise<boolean> {
   }
 }
 
-async function windowsProtocolHandlerAvailable(
+function defaultWindowsRegistryQuery(
   environment: NodeJS.ProcessEnv,
-  systemRoot: string,
+): WindowsRegistryQuery {
+  return async (executable, arguments_) => {
+    const result = await executeFile(executable, [...arguments_], {
+      env: environment,
+      windowsHide: true,
+      timeout: 5_000,
+    });
+    return String(result.stdout);
+  };
+}
+
+const WINDOWS_APP_PATH_KEY =
+  'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\Repoctopus.exe';
+const WINDOWS_PROTOCOL_COMMAND_KEY = 'HKCR\\repoctopus\\shell\\open\\command';
+
+function registryStringValue(stdout: string): string | null {
+  const values = stdout
+    .split(/\r?\n/u)
+    .map((line) => /^\s*.+?\s+REG_SZ\s+(.+?)\s*$/u.exec(line)?.[1]?.trim() ?? null)
+    .filter((value): value is string => Boolean(value));
+  return values.length === 1 ? values[0]! : null;
+}
+
+async function windowsAppPathExecutable(
+  registryQuery: WindowsRegistryQuery,
+  registryExecutable: string,
+): Promise<string | null> {
+  try {
+    const stdout = await registryQuery(registryExecutable, [
+      'query',
+      WINDOWS_APP_PATH_KEY,
+      '/ve',
+    ]);
+    return registryStringValue(stdout);
+  } catch {
+    return null;
+  }
+}
+
+async function windowsProtocolHandlerAvailable(
+  registryQuery: WindowsRegistryQuery,
+  registryExecutable: string,
 ): Promise<boolean> {
   try {
-    await executeFile(
-      path.join(systemRoot, 'System32', 'reg.exe'),
-      ['query', 'HKCR\\repoctopus\\shell\\open\\command', '/ve'],
-      { env: environment, windowsHide: true, timeout: 5_000 },
-    );
+    await registryQuery(registryExecutable, ['query', WINDOWS_PROTOCOL_COMMAND_KEY, '/ve']);
     return true;
   } catch {
     return false;
@@ -228,7 +270,7 @@ export class DesktopLauncher extends Service {
   private readonly process: DesktopProcessAdapter;
   private readonly pathExists: (candidate: string) => Promise<boolean>;
   private readonly instanceProbe: DesktopInstanceProbe;
-  private readonly protocolHandlerAvailable: (systemRoot: string) => Promise<boolean>;
+  private readonly registryQuery: WindowsRegistryQuery;
   private readonly launchDeadlineMs: number;
 
   constructor(context: Context, config: DesktopLauncherConfig) {
@@ -243,9 +285,7 @@ export class DesktopLauncher extends Service {
     this.pathExists = config.pathExists ?? fileExists;
     this.instanceProbe = config.instanceProbe ??
       context.get('desktopInstanceProbe') ?? { isAvailable: () => Promise.resolve(false) };
-    this.protocolHandlerAvailable =
-      config.protocolHandlerAvailable ??
-      ((systemRoot) => windowsProtocolHandlerAvailable(this.environment, systemRoot));
+    this.registryQuery = config.registryQuery ?? defaultWindowsRegistryQuery(this.environment);
     this.launchDeadlineMs = config.launchDeadlineMs ?? DEFAULT_LAUNCH_DEADLINE_MS;
     if (!Number.isSafeInteger(this.launchDeadlineMs) || this.launchDeadlineMs <= 0) {
       throw new Error('Desktop Launcher launchDeadlineMs must be a positive safe integer');
@@ -311,18 +351,29 @@ export class DesktopLauncher extends Service {
     if (systemRoot === null) {
       return unavailable('installed-protocol', 'target-unavailable');
     }
-    const explorer = path.win32.join(systemRoot, 'explorer.exe');
-    if (!path.win32.isAbsolute(explorer) || !(await this.pathExists(explorer))) {
+    const registryExecutable = path.win32.join(systemRoot, 'System32', 'reg.exe');
+    const installedExecutable = await windowsAppPathExecutable(
+      this.registryQuery,
+      registryExecutable,
+    );
+    if (!installedExecutable || !path.win32.isAbsolute(installedExecutable)) {
       return unavailable('installed-protocol', 'target-unavailable');
     }
-    if (!(await this.protocolHandlerAvailable(systemRoot))) {
+    const normalizedExecutable = path.win32.normalize(installedExecutable);
+    if (
+      path.win32.basename(normalizedExecutable).toLowerCase() !== 'repoctopus.exe' ||
+      !(await this.pathExists(normalizedExecutable))
+    ) {
+      return unavailable('installed-protocol', 'target-unavailable');
+    }
+    if (!(await windowsProtocolHandlerAvailable(this.registryQuery, registryExecutable))) {
       return unavailable('installed-protocol', 'protocol-handler-unavailable');
     }
     return {
       status: 'resolved',
       target: {
         kind: 'installed-protocol',
-        executable: explorer,
+        executable: normalizedExecutable,
         arguments: [desktopLaunchContextUrl(launchContext)],
       },
     };

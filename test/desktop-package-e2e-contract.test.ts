@@ -60,6 +60,15 @@ describe('installed Windows desktop end-to-end contract', () => {
       { name: 'Repoctopus Change Activation', schemes: ['repoctopus'] },
     ]);
     expect(configuration.nsis?.include).toBe('app/desktop/resources/installer.nsh');
+    const installer = await readFile(
+      path.join(root, 'app', 'desktop', 'resources', 'installer.nsh'),
+      'utf8',
+    );
+    expect(installer).toContain(
+      'Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\Repoctopus.exe',
+    );
+    expect(installer).toContain('$INSTDIR\\Repoctopus.exe');
+    expect(installer).toContain('DeleteRegKey SHCTX');
     const packageCheck = await readFile(
       path.join(root, 'scripts', 'check-desktop-package.mjs'),
       'utf8',

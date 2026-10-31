@@ -107,7 +107,7 @@
       **Acceptance:** `services/desktop-launcher.ts` 不导入或构造 Host 实现；生产 composition 与测试 adapter 均穿过同一窄 interface；安全 discovery 行为保持不变
       **Verification:** 运行 Launcher/composition/discovery 测试与 architecture source-boundary 检查
       **Requirements:** plugin-composition#生产组合中的桌面-Launcher-必须被权威用例消费
-- [ ] 6.4 用 Windows 标准 `App Paths` 替换 Explorer 安装目标，并直接启动经过校验的 `Repoctopus.exe` 与受控 URI 参数。
+- [x] 6.4 用 Windows 标准 `App Paths` 替换 Explorer 安装目标，并直接启动经过校验的 `Repoctopus.exe` 与受控 URI 参数。
       **Blocked by:** None
       **Acceptance:** 安装器在当前 scope 登记协议与 `App Paths\Repoctopus.exe`；Launcher 仅通过绝对 `reg.exe` 读取默认值并校验绝对路径、basename、可访问性和 handler；缺失或伪造登记返回 bounded unavailable；启动使用 executable + URI 参数数组且诊断不泄漏路径
       **Verification:** 运行 installer contract、Windows registry target-resolution 表驱动测试、Launcher process 测试与 lint/typecheck

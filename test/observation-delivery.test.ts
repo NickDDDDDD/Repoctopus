@@ -83,7 +83,7 @@ describe('desktop observation delivery slice', () => {
         environment: {},
         platform: 'win32',
         pathExists: () => Promise.resolve(false),
-        protocolHandlerAvailable: () => Promise.resolve(false),
+        registryQuery: () => Promise.reject(new Error('Registry unavailable in test')),
       });
       const launch = await launcher.activate({
         schemaVersion: 1,
@@ -95,7 +95,7 @@ describe('desktop observation delivery slice', () => {
       expect(launch).toEqual({
         status: 'unavailable',
         targetKind: 'installed-protocol',
-        reason: 'protocol-handler-unavailable',
+        reason: 'target-unavailable',
       });
     } finally {
       await Promise.all([remoteServer.close(), desktopServer.close()]);
