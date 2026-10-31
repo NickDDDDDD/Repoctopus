@@ -1,4 +1,6 @@
 const ARGUMENT_PREFIX = '--repoctopus-launch=';
+const URL_PROTOCOL = 'repoctopus:';
+const URL_HOST = 'activate';
 const MAX_ENCODED_CHARS = 2_048;
 const MAX_ID_CHARS = 256;
 
@@ -46,11 +48,15 @@ export function encodeDesktopLaunchContext(context: DesktopLaunchContext): strin
 }
 
 export function decodeDesktopLaunchContext(encoded: string): DesktopLaunchContext {
-  if (!encoded || encoded.length > MAX_ENCODED_CHARS) {
+  if (!encoded || encoded.length > MAX_ENCODED_CHARS || !/^[A-Za-z0-9_-]+$/u.test(encoded)) {
     throw new Error('Desktop launch context is missing or oversized');
   }
   try {
-    return parseDesktopLaunchContext(JSON.parse(Buffer.from(encoded, 'base64url').toString('utf8')));
+    const decoded = Buffer.from(encoded, 'base64url');
+    if (decoded.toString('base64url') !== encoded) {
+      throw new Error('Desktop launch context is malformed');
+    }
+    return parseDesktopLaunchContext(JSON.parse(decoded.toString('utf8')));
   } catch (error) {
     if (error instanceof Error && error.message.startsWith('Desktop launch')) throw error;
     if (error instanceof Error && error.message.startsWith('Unsupported')) throw error;
@@ -62,9 +68,34 @@ export function desktopLaunchContextArgument(context: DesktopLaunchContext): str
   return `${ARGUMENT_PREFIX}${encodeDesktopLaunchContext(context)}`;
 }
 
+export function desktopLaunchContextUrl(context: DesktopLaunchContext): string {
+  return `${URL_PROTOCOL}//${URL_HOST}/${encodeDesktopLaunchContext(context)}`;
+}
+
+export function desktopLaunchContextFromUrl(value: string): DesktopLaunchContext {
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch (error) {
+    throw new Error('Desktop launch protocol URL is malformed', { cause: error });
+  }
+  if (url.protocol !== URL_PROTOCOL) throw new Error('Desktop launch protocol is unsupported');
+  if (url.host !== URL_HOST) throw new Error('Desktop launch protocol host is invalid');
+  if (url.username || url.password || url.port) {
+    throw new Error('Desktop launch protocol authority is invalid');
+  }
+  if (url.search) throw new Error('Desktop launch protocol query is not allowed');
+  if (url.hash) throw new Error('Desktop launch protocol fragment is not allowed');
+  const match = url.pathname.match(/^\/([^/]+)$/u);
+  if (!match) throw new Error('Desktop launch protocol path is invalid');
+  return decodeDesktopLaunchContext(match[1]!);
+}
+
 export function desktopLaunchContextFromArguments(
   arguments_: readonly string[],
 ): DesktopLaunchContext | null {
   const argument = arguments_.find((candidate) => candidate.startsWith(ARGUMENT_PREFIX));
-  return argument ? decodeDesktopLaunchContext(argument.slice(ARGUMENT_PREFIX.length)) : null;
+  if (argument) return decodeDesktopLaunchContext(argument.slice(ARGUMENT_PREFIX.length));
+  const protocolUrl = arguments_.find((candidate) => candidate.startsWith(`${URL_PROTOCOL}//`));
+  return protocolUrl ? desktopLaunchContextFromUrl(protocolUrl) : null;
 }

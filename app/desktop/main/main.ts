@@ -35,6 +35,7 @@ import {
   parseDesktopLaunchContext,
   type DesktopLaunchContext,
 } from '../shared/launch-context.js';
+import { resolveDesktopReceiverDiscoveryRoot } from '../host/receiver-discovery.js';
 
 const moduleDirectory = path.dirname(fileURLToPath(import.meta.url));
 const hostEntry = app.isPackaged
@@ -101,7 +102,7 @@ const controller = new DesktopBackendController(
       environment: {
         ...process.env,
         REPOCTOPUS_DESKTOP_DATA_ROOT: path.join(userDataRoot, 'desktop'),
-        REPOCTOPUS_DESKTOP_DISCOVERY_ROOT: path.join(userDataRoot, 'discovery'),
+        REPOCTOPUS_DESKTOP_DISCOVERY_ROOT: resolveDesktopReceiverDiscoveryRoot(process.env),
       },
       onReady: (ready) => {
         hostReady = ready;

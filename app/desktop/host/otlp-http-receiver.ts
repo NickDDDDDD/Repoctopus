@@ -1,6 +1,8 @@
 import { timingSafeEqual } from 'node:crypto';
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 
+import { serializeDesktopReceiverHealth } from '../shared/receiver-health.js';
+
 export type OtlpSignal = 'trace' | 'log' | 'metric';
 
 export interface DesktopOtlpExport {
@@ -36,6 +38,15 @@ function authorized(header: string | undefined, expected: string): boolean {
   const supplied = Buffer.from(header.slice('Bearer '.length), 'utf8');
   const target = Buffer.from(expected, 'utf8');
   return supplied.length === target.length && timingSafeEqual(supplied, target);
+}
+
+function health(response: ServerResponse): void {
+  response.writeHead(200, {
+    'content-type': 'application/json',
+    'cache-control': 'no-store',
+    connection: 'close',
+  });
+  response.end(serializeDesktopReceiverHealth(process.pid));
 }
 
 function requestContentType(request: IncomingMessage): 'json' | 'protobuf' | null {
@@ -111,6 +122,14 @@ export class DesktopOtlpHttpReceiver {
   }
 
   private async accept(request: IncomingMessage, outgoing: ServerResponse): Promise<void> {
+    if (request.url === '/health') {
+      if (request.method !== 'GET') return response(outgoing, 405, 'method-not-allowed');
+      if (!authorized(request.headers.authorization, this.options.sessionToken)) {
+        return response(outgoing, 401, 'unauthorized');
+      }
+      request.resume();
+      return health(outgoing);
+    }
     const signal = SIGNAL_BY_PATH[request.url ?? ''];
     if (signal === undefined) return response(outgoing, 404, 'not-found');
     if (request.method !== 'POST') return response(outgoing, 405, 'method-not-allowed');

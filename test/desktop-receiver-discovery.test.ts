@@ -8,6 +8,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import {
   DesktopReceiverDiscovery,
+  resolveDesktopReceiverDiscoveryRoot,
   type DesktopDiscoverySecurity,
 } from '../app/desktop/host/receiver-discovery.js';
 import { DesktopOtlpHttpReceiver } from '../app/desktop/host/otlp-http-receiver.js';
@@ -72,6 +73,24 @@ async function fixture() {
 }
 
 describe('desktop receiver discovery', () => {
+  it('uses the same LocalAppData root for the Runtime probe and Desktop publisher', () => {
+    expect(
+      resolveDesktopReceiverDiscoveryRoot({ LOCALAPPDATA: 'C:\\Users\\worker\\AppData\\Local' }),
+    ).toBe('C:\\Users\\worker\\AppData\\Local\\Repoctopus\\discovery');
+    expect(
+      resolveDesktopReceiverDiscoveryRoot({
+        LOCALAPPDATA: 'C:\\ignored',
+        REPOCTOPUS_DESKTOP_DISCOVERY_ROOT: 'D:\\Repoctopus\\receiver',
+      }),
+    ).toBe('D:\\Repoctopus\\receiver');
+    expect(() =>
+      resolveDesktopReceiverDiscoveryRoot({
+        LOCALAPPDATA: 'C:\\Users\\worker\\AppData\\Local',
+        REPOCTOPUS_DESKTOP_DISCOVERY_ROOT: 'relative',
+      }),
+    ).toThrow('REPOCTOPUS_DESKTOP_DISCOVERY_ROOT must be an absolute path');
+  });
+
   it('exposes a credential only after owner, freshness, process and port checks', async () => {
     const test = await fixture();
     await expect(test.discovery.discover()).resolves.toEqual({

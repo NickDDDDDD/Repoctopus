@@ -63,6 +63,7 @@ import { DesktopApplication } from '../services/desktop-application.js';
 import { DesktopProjection } from '../services/desktop-projection.js';
 import { DesktopReceiver } from '../services/desktop-receiver.js';
 import { DesktopLauncher } from '../services/desktop-launcher.js';
+import { DesktopReceiverInstanceProbe } from '../app/desktop/host/receiver-instance-probe.js';
 import { ObservationDelivery } from '../services/observation-delivery.js';
 import { SpecificationPlanning } from '../services/specification-planning.js';
 import { ConsistencyReconciler } from '../services/consistency-reconciler.js';
@@ -121,6 +122,27 @@ const evidenceAdapterDefinitions: readonly EvidenceAdapterDefinition[] = [
 const definitions: readonly BuiltinDefinition[] = [
   {
     descriptor: {
+      id: 'desktop-instance-probe',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: [],
+      permissions: ['filesystem', 'network', 'process'],
+      stateSchemas: {},
+    },
+    plugin: DesktopReceiverInstanceProbe,
+    sourceFiles: [
+      'app/desktop/host/receiver-instance-probe.ts',
+      'app/desktop/host/receiver-discovery.ts',
+      'app/desktop/shared/instance-probe.ts',
+      'app/desktop/shared/receiver-health.ts',
+    ],
+  },
+  {
+    descriptor: {
       id: 'desktop-launcher',
       version: VERSION,
       contractVersion: PLUGIN_CONTRACT_VERSION,
@@ -129,11 +151,15 @@ const definitions: readonly BuiltinDefinition[] = [
       source: 'builtin',
       compositions: ['project'],
       authorities: ['desktop-launch'],
-      permissions: ['process'],
+      permissions: ['filesystem', 'process'],
       stateSchemas: {},
     },
     plugin: DesktopLauncher,
-    sourceFiles: ['services/desktop-launcher.ts', 'app/desktop/shared/launch-context.ts'],
+    sourceFiles: [
+      'services/desktop-launcher.ts',
+      'app/desktop/shared/launch-context.ts',
+      'app/desktop/shared/instance-probe.ts',
+    ],
   },
   {
     descriptor: {
@@ -190,6 +216,7 @@ const definitions: readonly BuiltinDefinition[] = [
       'services/desktop-receiver.ts',
       'app/desktop/host/otlp-http-receiver.ts',
       'app/desktop/host/otlp-envelope-codec.ts',
+      'app/desktop/shared/receiver-health.ts',
     ],
   },
   {

@@ -7,6 +7,8 @@ import {
   decodeDesktopLaunchContext,
   desktopLaunchContextArgument,
   desktopLaunchContextFromArguments,
+  desktopLaunchContextFromUrl,
+  desktopLaunchContextUrl,
   encodeDesktopLaunchContext,
 } from '../app/desktop/shared/launch-context.js';
 import { isDesktopHostEvent, isDesktopShellCommand } from '../app/desktop/shared/host-protocol.js';
@@ -39,6 +41,24 @@ describe('Desktop versioned protocol', () => {
     expect(() => encodeDesktopLaunchContext({ ...context, runId: 'r'.repeat(300) })).toThrow(
       /runId/u,
     );
+  });
+
+  it('round-trips the same context through the installed protocol URL', () => {
+    const url = desktopLaunchContextUrl(context);
+    expect(url).toMatch(/^repoctopus:\/\/activate\//u);
+    expect(desktopLaunchContextFromUrl(url)).toEqual(context);
+    expect(() => desktopLaunchContextFromUrl('https://activate.invalid/context')).toThrow(
+      /protocol/u,
+    );
+    expect(() => desktopLaunchContextFromUrl('repoctopus://other/context')).toThrow(/host/u);
+    expect(() => desktopLaunchContextFromUrl(`${url}?command=secret`)).toThrow(/query/u);
+    expect(() =>
+      desktopLaunchContextFromUrl(
+        `repoctopus://activate/${Buffer.from(
+          JSON.stringify({ ...context, schemaVersion: 2 }),
+        ).toString('base64url')}`,
+      ),
+    ).toThrow(/version/u);
   });
 
   it('fails closed for unknown, oversized, or malformed Host and Renderer payloads', () => {
@@ -88,6 +108,8 @@ describe('Desktop versioned protocol', () => {
     );
     listener?.({}, [desktopLaunchContextArgument(context)], '.', {});
     expect(activate).toHaveBeenCalledWith(context);
+    listener?.({}, [desktopLaunchContextUrl(context)], '.', {});
+    expect(activate).toHaveBeenLastCalledWith(context);
     listener?.({}, ['--repoctopus-launch=not-base64'], '.', {});
     expect(activate).toHaveBeenLastCalledWith(null);
   });

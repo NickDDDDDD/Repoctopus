@@ -66,6 +66,8 @@ node bin/repoctopus.js run next --workspace . --run <run-id> --json
 
 `run start` 在创建新 Run 前执行一次有界 consistency reconcile。平台暂时不可用只产生警告，不阻断新任务；命令不会启动 listener 或 Timer。
 
+在 Windows x64 上，成功创建或恢复 Change Run 后，Runtime 会自动启动或激活 Desktop Dashboard 并转交当前 Run 上下文。源码正常路径只要求先运行标准 `npm run build`；不需要配置 Desktop executable。`unavailable` 或 `unsupported` 诊断不回滚 Run，也不停止远端 OTLP。完整步骤见[启动或恢复 Desktop Dashboard](desktop-activation.md)。
+
 同一 Workspace/change 的 `run start` 总是创建或恢复同一个稳定 runId，不接受 mode 或代次参数。Open 和 Design 分别产生独立 Human Decision。Design 批准后，Runtime 先执行 Build Configure；Runner 必须先准备 `current`、`branch` 或 `worktree` checkout，并提供每个仓库的精确路径和 Git facts。Runtime 本版只校验并冻结 binding，不创建或切换 checkout。
 
 Build Configure 的 Human Decision 冻结 execution mode、TDD mode、standard review、Host 能力和隔离。随后 Runtime 从 OpenSpec Tasks 产生 Run-local BuildPlan，执行 Plan Evidence、当前 Work Package 和 Build Check。每次 `run next` 只拉取 Runtime 当前 continuation。内嵌 Host 由同一短生命周期 App 注册；外部 Agent/Runner 使用 `run work-claim`/`run work-outcome` 的 Host-bound 协议：claim 通过 `--host-capabilities build.autonomous`（或受证明的 `subagent.dispatch.attested`）声明 Runner 能力，Outcome 通过 `--submission-id <new-id> --result-file <result.json>` 提交受 Runtime schema 校验的结构化 Build 结果。Invocation 中的 Host 快照是跨 CLI 进程的权威身份，后续校验不依赖原进程仍在运行。电脑关闭不需要守护进程：下一位具备 Workspace 状态的 Runner 从同一个 checkpoint 恢复；若原调用结果未知，必须先 `run work-reconcile`，不能自动重放。
@@ -113,4 +115,4 @@ node bin/repoctopus.js change reconcile --workspace . --change <change-id> --jso
 
 机器固定基线见 `third_party/upstream-baselines.json`。`npm run check:upstream` 联网检查上游漂移但不自动升级；移动基线必须重新执行采用审计、来源摘要和完整验证。
 
-后续阅读：[交付治理](delivery.md)、[状态与恢复](runtime-state.md)、[插件内核架构](architecture.md)、[OpenTelemetry 与本地 Desktop](telemetry.md)。
+后续阅读：[交付治理](delivery.md)、[状态与恢复](runtime-state.md)、[插件内核架构](architecture.md)、[启动或恢复 Desktop Dashboard](desktop-activation.md)、[OpenTelemetry 与本地 Desktop](telemetry.md)。

@@ -90,6 +90,17 @@ function invocationId(packetDigest: string, hostId: string): string {
     .digest('hex')}`;
 }
 
+function sameHostOutcome(
+  left: WorkExecutionHostOutcome,
+  right: WorkExecutionHostOutcome,
+): boolean {
+  const leftStable: Record<string, unknown> = { ...left };
+  const rightStable: Record<string, unknown> = { ...right };
+  delete leftStable.completedAt;
+  delete rightStable.completedAt;
+  return canonicalJson(leftStable) === canonicalJson(rightStable);
+}
+
 function assertConsumedExecutionSkills(
   packet: WorkExecutionPacket,
   outcome: Pick<WorkExecutionHostOutcome, 'status' | 'consumedLayerDigests'>,
@@ -305,7 +316,7 @@ export class ManagedWorkExecutor extends Service {
     ) {
       throw new Error('External Host Outcome does not match the authoritative invocation');
     }
-    const hostOutcome: WorkExecutionHostOutcome = {
+    const proposedOutcome: WorkExecutionHostOutcome = {
       schemaVersion: 1,
       invocationId: input.invocationId,
       hostId: input.hostId,
@@ -320,16 +331,23 @@ export class ManagedWorkExecutor extends Service {
         : {}),
       completedAt: new Date().toISOString(),
     };
+    const persistedOutcome = state.workExecution?.hostOutcome;
+    if (persistedOutcome && !sameHostOutcome(persistedOutcome, proposedOutcome)) {
+      throw new Error('External Host Outcome conflicts with the persisted invocation result');
+    }
+    const hostOutcome = persistedOutcome ?? proposedOutcome;
     assertBoundedWorkExecutionFindings(hostOutcome);
     assertBoundedExecutionResult(hostOutcome);
     const packet = await this.ctx.workDispatcher.resumeClaim(input.runId);
     assertManagedDelegation(packet.packet, invocation.host, hostOutcome);
     assertConsumedExecutionSkills(packet.packet, hostOutcome);
-    const submission = await this.ctx.workExecutionAuthority.markHostCompleted(
-      intent,
-      hostOutcome,
-      input.submissionId,
-    );
+    const submission = persistedOutcome
+      ? state.workExecution
+      : await this.ctx.workExecutionAuthority.markHostCompleted(
+          intent,
+          hostOutcome,
+          input.submissionId,
+        );
     await this.ctx.workExecutionAuthority.recordDelegationFacts(packet.packet, hostOutcome);
     await this.ctx.workExecutionAuthority.recordSkillFacts(
       packet.packet,

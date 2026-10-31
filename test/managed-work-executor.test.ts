@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import type {
+  ExternalWorkExecutionOutcome,
   WorkExecutionHost,
   WorkExecutionHostOutcome,
   WorkExecutionPacket,
@@ -159,7 +160,158 @@ function executor(
   return { service, authority, workDispatcher };
 }
 
+function externalReplayHarness() {
+  const packet = frozenPacket();
+  const persistedOutcome: WorkExecutionHostOutcome = {
+    schemaVersion: 1,
+    invocationId: 'invocation-1',
+    hostId: 'external:cli:codex-root',
+    packetDigest: packet.identity.packetDigest,
+    status: 'succeeded',
+    summary: 'package completed',
+    consumedLayerDigests: [digest('1'), digest('2')],
+    findings: [
+      {
+        kind: 'implementation_failure',
+        summary: 'A bounded finding remains stable across transport retries.',
+        taskIds: ['6.1'],
+      },
+    ],
+    result: {
+      schemaVersion: 1,
+      kind: 'build-package-completion',
+      packageId: 'package-1',
+      acceptanceEvidenceIds: ['acceptance-1'],
+      testEvidenceIds: ['test-1'],
+      repositoryDigest: digest('5'),
+      implementationDigest: digest('6'),
+    },
+    delegationReceipts: [
+      {
+        schemaVersion: 1,
+        receiptId: 'receipt-1',
+        parentInvocationId: 'invocation-1',
+        coordinatorHostId: 'external:cli:codex-root',
+        executionId: 'subagent-1',
+        role: 'implementer',
+        packageId: 'package-1',
+        status: 'succeeded',
+        outcomeDigest: digest('7'),
+      },
+    ],
+    completedAt: '2026-10-28T00:00:00.000Z',
+  };
+  const markHostCompleted = vi.fn();
+  const acceptOutcome = vi.fn().mockResolvedValue({ accepted: true });
+  const service = Object.create(ManagedWorkExecutor.prototype) as ManagedWorkExecutor;
+  Object.defineProperty(service, 'ctx', {
+    value: {
+      runStore: {
+        loadRun: vi.fn().mockResolvedValue({
+          workExecution: {
+            hostInvocation: {
+              invocationId: persistedOutcome.invocationId,
+              host: {
+                schemaVersion: 1,
+                id: persistedOutcome.hostId,
+                version: '1',
+                codeDigest: digest('8'),
+                capabilities: ['subagent.dispatch.attested'],
+                actionKinds: ['agent'],
+                reconcile: false,
+              },
+              packet: { packetDigest: persistedOutcome.packetDigest },
+            },
+            packet: { packetDigest: persistedOutcome.packetDigest },
+            hostOutcome: persistedOutcome,
+          },
+        }),
+      },
+      workExecutionAuthority: {
+        loadIntent: vi.fn().mockResolvedValue({}),
+        markHostCompleted,
+        recordDelegationFacts: vi.fn(),
+        recordSkillFacts: vi.fn(),
+      },
+      workDispatcher: {
+        resumeClaim: vi.fn().mockResolvedValue({ packet }),
+        outcome: vi.fn().mockReturnValue({}),
+        acceptOutcome,
+      },
+    },
+  });
+  const input: ExternalWorkExecutionOutcome = {
+    schemaVersion: 3,
+    runId: 'run-1',
+    submissionId: 'submission-1',
+    invocationId: persistedOutcome.invocationId,
+    hostId: persistedOutcome.hostId,
+    packetDigest: persistedOutcome.packetDigest,
+    status: persistedOutcome.status,
+    summary: persistedOutcome.summary,
+    consumedLayerDigests: persistedOutcome.consumedLayerDigests,
+    findings: persistedOutcome.findings!,
+    result: persistedOutcome.result!,
+    delegationReceipts: persistedOutcome.delegationReceipts!,
+  };
+  return { acceptOutcome, input, markHostCompleted, persistedOutcome, service };
+}
+
 describe('Managed Work Executor Build contract', () => {
+  it.each([
+    ['status', (input: ExternalWorkExecutionOutcome) => ({ ...input, status: 'failed' as const })],
+    ['summary', (input: ExternalWorkExecutionOutcome) => ({ ...input, summary: 'drifted' })],
+    [
+      'consumed layers',
+      (input: ExternalWorkExecutionOutcome) => ({
+        ...input,
+        consumedLayerDigests: [digest('1')],
+      }),
+    ],
+    [
+      'result',
+      (input: ExternalWorkExecutionOutcome) => ({
+        ...input,
+        result: {
+          ...(input.result as Extract<WorkExecutionResult, { kind: 'build-package-completion' }>),
+          implementationDigest: digest('9'),
+        },
+      }),
+    ],
+    [
+      'findings',
+      (input: ExternalWorkExecutionOutcome) => ({
+        ...input,
+        findings: [{ ...input.findings![0]!, summary: 'drifted finding' }],
+      }),
+    ],
+    [
+      'delegation receipts',
+      (input: ExternalWorkExecutionOutcome) => ({
+        ...input,
+        delegationReceipts: [{ ...input.delegationReceipts![0]!, outcomeDigest: digest('9') }],
+      }),
+    ],
+  ] as const)('fails closed when replayed Host Outcome %s drift', async (_field, mutate) => {
+    const { input, service } = externalReplayHarness();
+
+    await expect(service.acceptExternalOutcome(mutate(input))).rejects.toThrow(
+      /conflicts with the persisted invocation result/u,
+    );
+  });
+
+  it('reuses the persisted Host completion timestamp without emitting another completion', async () => {
+    const { acceptOutcome, input, markHostCompleted, persistedOutcome, service } =
+      externalReplayHarness();
+
+    const result = await service.acceptExternalOutcome(input);
+
+    expect(result.hostOutcome).toBe(persistedOutcome);
+    expect(result.hostOutcome.completedAt).toBe('2026-10-28T00:00:00.000Z');
+    expect(markHostCompleted).not.toHaveBeenCalled();
+    expect(acceptOutcome).toHaveBeenCalledOnce();
+  });
+
   it('persists external Runner capabilities beyond the current Work requirement', async () => {
     const packet = frozenPacket();
     const service = Object.create(ManagedWorkExecutor.prototype) as ManagedWorkExecutor;

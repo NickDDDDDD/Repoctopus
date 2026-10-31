@@ -3,6 +3,7 @@ import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { compileProjectComposition } from '../app/boot/project-composition.js';
+import { compositionIdentity } from '../app/boot/composition.js';
 import { createRepoctopusBuiltinCatalog } from '../plugins/builtin-catalog.js';
 import { loadProjectConfig } from '../platform/project-configuration/file-config.js';
 import { removeTemporaryDirectory, temporaryDirectory } from './helpers/fixtures.js';
@@ -35,6 +36,7 @@ describe('project composition assembly', () => {
         'delivery-file',
         'specification-openspec',
         'consistency-reconciler',
+        'desktop-instance-probe',
         'desktop-launcher',
         'observation-delivery',
       ]),
@@ -47,5 +49,16 @@ describe('project composition assembly', () => {
         'post-merge-coordinator',
       ]),
     );
+    const desktopLauncher = composition.entries.find((entry) => entry.id === 'desktop-launcher');
+    expect(desktopLauncher?.config).toEqual({
+      productRoot: path.resolve(import.meta.dirname, '..'),
+    });
+    expect(desktopLauncher?.identityConfig).toEqual({
+      productRoot: '@repoctopus/product-root',
+    });
+    const launcherIdentity = compositionIdentity(composition).plugins.find(
+      (plugin) => plugin.id === 'desktop-launcher',
+    );
+    expect(JSON.stringify(launcherIdentity)).not.toContain(path.resolve(import.meta.dirname, '..'));
   });
 });

@@ -110,6 +110,8 @@ const ATTRIBUTE_KEYS = [
   'oldestAgeMs',
   'warningCode',
   'droppedEnvelopes',
+  'targetKind',
+  'reason',
   'proposalStatus',
   'specsStatus',
   'designStatus',

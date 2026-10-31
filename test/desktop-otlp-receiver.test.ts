@@ -3,6 +3,29 @@ import { describe, expect, it } from 'vitest';
 import { DesktopOtlpHttpReceiver } from '../app/desktop/host/otlp-http-receiver.js';
 
 describe('Desktop OTLP/HTTP receiver', () => {
+  it('proves the receiver process identity only to a token holder', async () => {
+    const token = 'a-session-token-with-at-least-32-characters';
+    const receiver = new DesktopOtlpHttpReceiver({
+      sessionToken: token,
+      onExport: () => undefined,
+    });
+    const endpoint = await receiver.start();
+    try {
+      const unauthorized = await fetch(`${endpoint}/health`);
+      expect(unauthorized.status).toBe(401);
+      const authorized = await fetch(`${endpoint}/health`, {
+        headers: { authorization: `Bearer ${token}` },
+      });
+      expect(await authorized.json()).toEqual({
+        schemaVersion: 1,
+        protocolVersion: 'repoctopus.desktop.receiver-health/v1',
+        pid: process.pid,
+      });
+    } finally {
+      await receiver.stop();
+    }
+  });
+
   it('accepts authenticated trace, log and metric JSON only on loopback', async () => {
     const received: string[] = [];
     const receiver = new DesktopOtlpHttpReceiver({
