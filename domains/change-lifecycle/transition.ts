@@ -270,6 +270,7 @@ export interface ChangeLifecycleState {
   workspaceIntent?: ExecutionWorkspaceIntent;
   buildProtocol?: BuildProtocolState;
   openApprovalDigest?: `sha256:${string}`;
+  openApprovalInvalidated?: boolean;
   planningDigest?: `sha256:${string}`;
   adoptedCompletionClaimDigest?: `sha256:${string}`;
   verificationInput?: VerificationInput;
@@ -726,6 +727,9 @@ export function assertChangeLifecycleSnapshot(
   if (!blockerStatuses.has(snapshot.status) && snapshot.blocker !== null) {
     throw new Error(`${snapshot.status} Change Run may not carry a blocker`);
   }
+  if (snapshot.openApprovalInvalidated && snapshot.phase !== 'open') {
+    throw new Error('Only an Open Change Run may require a fresh Open approval');
+  }
   if (
     snapshot.status === 'completed' &&
     (snapshot.phase !== 'archive' || snapshot.currentWork !== null)
@@ -746,6 +750,7 @@ export function applyChangeLifecycleTransition(options: {
     workspaceIntent?: ExecutionWorkspaceIntent | null;
     buildProtocol?: BuildProtocolState | null;
     openApprovalDigest?: `sha256:${string}` | null;
+    openApprovalInvalidated?: boolean | null;
     planningDigest?: `sha256:${string}` | null;
     adoptedCompletionClaimDigest?: `sha256:${string}` | null;
     verificationInput?: VerificationInput | null;
@@ -812,6 +817,10 @@ export function applyChangeLifecycleTransition(options: {
   if (options.next.openApprovalDigest === null) delete snapshot.openApprovalDigest;
   else if (options.next.openApprovalDigest) {
     snapshot.openApprovalDigest = options.next.openApprovalDigest;
+  }
+  if (options.next.openApprovalInvalidated === null) delete snapshot.openApprovalInvalidated;
+  else if (options.next.openApprovalInvalidated !== undefined) {
+    snapshot.openApprovalInvalidated = options.next.openApprovalInvalidated;
   }
   if (options.next.verificationInput === null) delete snapshot.verificationInput;
   else if (options.next.verificationInput) {
@@ -902,6 +911,7 @@ export function evolveChangeLifecycle(options: {
         waitCondition: null,
         blocker: null,
         openApprovalDigest: null,
+        openApprovalInvalidated: true,
       },
     });
     return {
@@ -932,7 +942,12 @@ export function evolveChangeLifecycle(options: {
       definition: options.definition,
       current,
       transitionId: 'open.work-ready',
-      next: { currentWork: observation.work, waitCondition: null, blocker: null },
+      next: {
+        currentWork: observation.work,
+        waitCondition: null,
+        blocker: null,
+        openApprovalInvalidated: true,
+      },
     });
   }
   if (observation.kind === 'open-workspace-intent-selected') {
@@ -991,6 +1006,7 @@ export function evolveChangeLifecycle(options: {
           waitCondition: null,
           blocker: null,
           openApprovalDigest: observation.inputDigest,
+          openApprovalInvalidated: null,
         },
       });
     }
@@ -1019,7 +1035,13 @@ export function evolveChangeLifecycle(options: {
         definition: options.definition,
         current,
         transitionId: 'open.await-approval',
-        next: { currentWork: null, waitCondition, blocker: null, openApprovalDigest: null },
+        next: {
+          currentWork: null,
+          waitCondition,
+          blocker: null,
+          openApprovalDigest: null,
+          openApprovalInvalidated: null,
+        },
       });
     }
     return applyChangeLifecycleTransition({

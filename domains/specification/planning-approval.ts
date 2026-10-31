@@ -353,6 +353,7 @@ export function requestSpecificationApproval(input: {
   snapshot: PlanningSnapshot;
   timestamp: string;
   requestId?: string;
+  forceNewRequest?: boolean;
 }): SpecificationApprovalState {
   assertPlanningSnapshot(input.snapshot);
   const current = input.current;
@@ -365,6 +366,18 @@ export function requestSpecificationApproval(input: {
   }
   const currentCompatibility = current ? specificationApprovalCompatibility(current) : null;
   if (
+    input.forceNewRequest === true &&
+    currentCompatibility?.status === 'current' &&
+    current?.snapshot.digest === input.snapshot.digest &&
+    current.status === 'awaiting_approval' &&
+    current.decision === null &&
+    input.requestId &&
+    current.decisionRequest.requestId === input.requestId
+  ) {
+    return structuredClone(current);
+  }
+  if (
+    input.forceNewRequest !== true &&
     currentCompatibility?.status === 'current' &&
     current?.snapshot.digest === input.snapshot.digest
   ) {

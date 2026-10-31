@@ -84,6 +84,7 @@ function lifecycleState(snapshot: ChangeLifecycleSnapshot): ChangeLifecycleState
       : {}),
     ...(snapshot.buildProtocol ? { buildProtocol: structuredClone(snapshot.buildProtocol) } : {}),
     ...(snapshot.openApprovalDigest ? { openApprovalDigest: snapshot.openApprovalDigest } : {}),
+    ...(snapshot.openApprovalInvalidated ? { openApprovalInvalidated: true } : {}),
     ...(snapshot.planningDigest ? { planningDigest: snapshot.planningDigest } : {}),
     ...(snapshot.adoptedCompletionClaimDigest
       ? { adoptedCompletionClaimDigest: snapshot.adoptedCompletionClaimDigest }

@@ -70,6 +70,10 @@ Provider 调用抛错、Store/CAS 失败、Skill 解析失败或没有结构化 
 
 这对应 Comet 的 `full.open.revalidate → full.open` 回环。新的 Open Work完成并通过 Evidence 后，Specification Planning 才为新摘要建立新的 Human Decision。
 
+`open-repair-required` 还会持久化 `openApprovalInvalidated=true`。即使修复后工件恰好恢复成旧摘要，Planning 也必须用由 Run/revision 派生的确定性 request id 创建一次新请求；若 Approval Store 已写入而 Run CAS 尚未完成，重试复用同一请求，不能产生 request storm。新请求进入 lifecycle wait 后清除此标志。
+
+批准后重验使用已批准 snapshot 中冻结的 `changeBranch` 作为发布身份，而不先要求当前 checkout clean；否则本地规格漂移会被错误分类成 Provider unavailable。只有重验确认摘要未变、准备真正推进 Design 时，常规 planning assessment 才重新读取 live branch facts并执行洁净度约束。
+
 ### 5. Runtime projection 只展示权威动作
 
 `lifecycleNextActions()` 不再从 `open/blocked/currentWork=null` 推断 `open.repair`。Open 有 current Work 时展示该 Work；等待决定时展示 review；观察未知时 continuation 来自现存 execution/reconcile。没有持久化 Work、Wait 或 reconciliation 的状态不得显示可点击 repair 动作。

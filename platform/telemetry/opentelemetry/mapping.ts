@@ -352,6 +352,7 @@ const BOUNDED_REASON_CODES = new Set([
   'outcome-rejected',
   'outcome-processing-error',
   'checkpoint-superseded',
+  'open-observation-unavailable',
 ]);
 const BOUNDED_OPEN_REPAIR_SOURCES = new Set([
   'provider-artifacts',

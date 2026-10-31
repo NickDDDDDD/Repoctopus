@@ -328,6 +328,7 @@ describe('Change lifecycle domain', () => {
       blocker: null,
     });
     expect(repaired.snapshot).not.toHaveProperty('openApprovalDigest');
+    expect(repaired.snapshot.openApprovalInvalidated).toBe(true);
     expect(repaired.fact).toMatchObject({
       transitionId: 'open.repair-required',
       openRepair: {

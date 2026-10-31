@@ -31,6 +31,7 @@ export interface PrepareSpecificationApprovalInput {
   compositionDigest: `sha256:${string}`;
   projectConfigDigest: `sha256:${string}`;
   requestId?: string;
+  forceNewApproval?: boolean;
   now?: () => Date;
   signal?: AbortSignal;
 }
@@ -179,6 +180,7 @@ export class SpecificationPlanning extends Service {
       snapshot,
       timestamp: (input.now ?? (() => new Date()))().toISOString(),
       ...(input.requestId ? { requestId: input.requestId } : {}),
+      ...(input.forceNewApproval ? { forceNewRequest: true } : {}),
     });
     if (current?.stateVersion !== next.stateVersion) {
       await this.store.commit(next, current?.stateVersion ?? null);

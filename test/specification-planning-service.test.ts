@@ -167,6 +167,29 @@ describe('SpecificationPlanning service', () => {
       }),
     ).resolves.toMatchObject({ status: 'unavailable', evidenceDigests: [] });
     expect(await running.planning.status(prepared.changeId, 'open')).toEqual(approved);
+
+    running.specification.unavailable = false;
+    running.specification.proposalDigest = digest('1');
+    const refreshed = await running.planning.assess({
+      ...input,
+      requestId: 'request-after-repair',
+      forceNewApproval: true,
+    });
+    expect(refreshed).toMatchObject({
+      status: 'waiting',
+      approval: {
+        status: 'awaiting_approval',
+        decision: null,
+        decisionRequest: { requestId: 'request-after-repair' },
+      },
+    });
+    expect(
+      await running.planning.assess({
+        ...input,
+        requestId: 'request-after-repair',
+        forceNewApproval: true,
+      }),
+    ).toEqual(refreshed);
     await running.context.fiber.dispose();
   });
 

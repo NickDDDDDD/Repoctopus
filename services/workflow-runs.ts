@@ -938,6 +938,12 @@ export class WorkflowRuns extends Service {
         changeBranch,
         compositionDigest: state.composition.compositionDigest,
         projectConfigDigest: base.projectConfigDigest,
+        ...(approvalPhase === 'open' && lifecycle.openApprovalInvalidated
+          ? {
+              forceNewApproval: true,
+              requestId: `open-repair:${state.runId}:${lifecycle.revision}`,
+            }
+          : {}),
         ...(signal ? { signal } : {}),
       });
       if (assessment.observation) {
@@ -1504,11 +1510,11 @@ export class WorkflowRuns extends Service {
       lifecycle.waitCondition?.kind === 'human-decision'
     ) {
       let approval: SpecificationApprovalState | null;
-      let context: Awaited<ReturnType<WorkflowRuns['loadChangePlanningContext']>>;
+      let base: Awaited<ReturnType<WorkflowRuns['loadChangePlanningBase']>>;
       try {
-        [approval, context] = await Promise.all([
+        [approval, base] = await Promise.all([
           this.ctx.specificationPlanning.status(lifecycle.identity.changeId, 'open'),
-          this.loadChangePlanningContext(state, lifecycle, 'open'),
+          this.loadChangePlanningBase(state, lifecycle, 'open'),
         ]);
       } catch (error) {
         return this.openObservationUnavailable(state.runId, error);
@@ -1517,9 +1523,9 @@ export class WorkflowRuns extends Service {
         const revalidation = await this.ctx.specificationPlanning.revalidateOpenApproval({
           changeId: lifecycle.identity.changeId,
           approvalPhase: 'open',
-          changeBranch: context.changeBranch,
+          changeBranch: approval.snapshot.changeBranch,
           compositionDigest: state.composition.compositionDigest,
-          projectConfigDigest: context.projectConfigDigest,
+          projectConfigDigest: base.projectConfigDigest,
           expectedSnapshotDigest: lifecycle.waitCondition.inputDigest,
           ...(signal ? { signal } : {}),
         });
@@ -3540,7 +3546,11 @@ export class WorkflowRuns extends Service {
         reason: beforeWait.reason,
       });
     }
-    const continuation = await this.ctx.workExecutionAuthority.recovery(runId);
+    const recoveredContinuation = await this.ctx.workExecutionAuthority.recovery(runId);
+    const continuation =
+      result.value.continuation?.reason === 'open-observation-unavailable'
+        ? result.value.continuation
+        : recoveredContinuation;
     await this.ctx.workExecutionAuthority.recordContinuation(runId, continuation);
     return {
       ...result,

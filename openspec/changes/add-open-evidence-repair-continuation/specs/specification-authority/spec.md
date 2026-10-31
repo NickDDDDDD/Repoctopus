@@ -50,6 +50,11 @@ Open 和 Design 的 succeeded Host submission MUST 由当前 Specification Provi
 - **WHEN** Open决定写入后任一受控规划语义变化，即使新的工件仍然 strict valid
 - **THEN** Runtime使旧批准不可用于推进并返回 Open Work；不得直接为未执行 Open方法的新摘要创建审批
 
+#### Scenario: Repair 恢复成旧摘要
+
+- **WHEN** 批准后漂移已经被权威观察，后续 Open repair 又把工件恢复成旧批准的相同语义摘要
+- **THEN** Runtime仍必须建立一个确定且幂等的新 Human Decision请求，不得因最终字节相同而复用已被漂移事实撤销的旧决定
+
 #### Scenario: 批准后重验未知
 
 - **WHEN** Runtime无法证明当前摘要匹配或确定性不匹配

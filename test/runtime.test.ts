@@ -149,6 +149,7 @@ describe('Repoctopus runtime', () => {
     });
 
     expect(accepted.value.state).not.toHaveProperty('workExecution');
+    expect(accepted.value.state.changeLifecycle?.openApprovalInvalidated).toBe(true);
     expect(accepted.value.changeLifecycle).toMatchObject({
       phase: 'open',
       status: 'running',
