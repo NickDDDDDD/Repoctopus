@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "upstream": {
     "repository": "https://github.com/rpamis/comet.git",
-    "commit": "aeb1a6598034e28ce46b8422d4dbd8785e607bd7",
-    "version": "0.5.0",
+    "commit": "35c9860b77b42bafa0c2d80d8d695889f888a924",
+    "version": "0.5.1",
     "license": "MIT"
   },
   "files": [
@@ -107,7 +107,7 @@
     },
     {
       "source": "domains/comet-native/native-lock.ts",
-      "sourceSha256": "86ad1cea4cdeea8bbf86b404694821b02473aff42c44b808eca6e8a06694d400",
+      "sourceSha256": "8fe4a70a635d1c2446dc41798e3a60843e2f26297c84e90ec1c14e017c50ff0a",
       "target": "platform/runtime/resource-lease.ts",
       "sha256": "967e202fef2302e4a8125ee44d72ac8f000a214bf7c512c66acfdc9703859672",
       "adoption": "modified"
@@ -121,7 +121,7 @@
     },
     {
       "source": "domains/comet-classic/classic-command-checks.ts",
-      "sourceSha256": "dbe7f0a86ac1ce15ac7b18b402d5dffa3dfb1ae4f93787cbbbc7314cc2118b8b",
+      "sourceSha256": "49079dd0379c7d4c0ccaa9c043a5ba995f102483daa9bbe4f866270a3625ff78",
       "target": "domains/runtime/evidence-guard.ts",
       "sha256": "bf742298d46ccd8572ed8759d8f0890c01e1c9ab0027ff519835f7f0c9b05aeb",
       "adoption": "modified"
@@ -130,7 +130,7 @@
       "source": "domains/comet-classic/classic-guard.ts",
       "sourceSha256": "9d34982be2edce5a1ceb067310b4e82610beb6a874cd1ddbfa0fb5898ac36108",
       "target": "domains/runtime/workflow-runs.ts",
-      "sha256": "b4cc6cae964cbd48a290e1d8d22a93e422d3a364ae245f1632d170818b29a1ef",
+      "sha256": "c031eeaa98c4dae74e9ae209c7e811a7f19854c30267af7bb197250ec72d8bdb",
       "adoption": "modified"
     },
     {

@@ -134,6 +134,7 @@ const CLI_FLAGS = new Set([
   'receipt',
   'input-digest',
   'invocation-id',
+  'submission-id',
   'host-id',
   'packet-digest',
   'consumed-layers',
@@ -1175,8 +1176,9 @@ async function runWorkOutcome(parsed: ParsedArguments): Promise<CliEnvelope<unkn
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
     const result = await app.context.commandRouter.execute('run.work.outcome', {
-      schemaVersion: 1,
+      schemaVersion: 3,
       runId,
+      submissionId: stringFlag(parsed, 'submission-id', { required: true })!,
       invocationId: stringFlag(parsed, 'invocation-id', { required: true })!,
       hostId: stringFlag(parsed, 'host-id', { required: true })!,
       packetDigest: qualifiedSha256(
@@ -1231,6 +1233,51 @@ async function runDecide(parsed: ParsedArguments): Promise<CliEnvelope<unknown>>
       lifecycle.waitCondition?.kind !== 'human-decision'
     ) {
       throw new Error('Change Run is not waiting for a lifecycle Human Decision');
+    }
+    if (
+      lifecycle.phase === 'open' &&
+      lifecycle.waitCondition.waitId.startsWith('workspace-intent:')
+    ) {
+      const revision = lifecycle.waitCondition.workspaceIntentRevision;
+      if (!revision) {
+        throw new Error('Workspace intent revision metadata is missing');
+      }
+      const selected = await reviewLifecycleDecision({
+        title: `Revise execution isolation: ${lifecycle.identity.changeId}`,
+        proposalHash: lifecycle.waitCondition.proposalDigest,
+        details: [
+          lifecycle.waitCondition.reason,
+          `Binding error: ${revision.errorCode}`,
+          `Previous isolation: ${revision.previousIsolation}`,
+          'The replacement is validated before the Run can return to Design.',
+        ],
+        input: process.stdin,
+        output: process.stdout,
+        selectIsolation: true,
+      });
+      const result = await app.context.commandRouter.execute('run.change.decide', {
+        runId,
+        response: {
+          apiVersion: 'repoctopus/v1alpha1',
+          kind: 'HumanDecisionResponse',
+          requestId: lifecycle.waitCondition.requestId,
+          proposalHash: lifecycle.waitCondition.proposalDigest,
+          decision: selected.decision,
+          ...(selected.comment ? { comment: selected.comment } : {}),
+        },
+        actor: {
+          actorId: userInfo().username,
+          source: 'cli',
+          authenticated: true,
+        },
+        ...(selected.isolation ? { isolation: selected.isolation } : {}),
+      });
+      return successEnvelope({
+        command: 'run decide',
+        runId,
+        result,
+        nextActions: [`repoctopus run next --run ${runId}`],
+      });
     }
     if (
       lifecycle.phase === 'build' &&

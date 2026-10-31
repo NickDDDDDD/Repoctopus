@@ -16,7 +16,7 @@ export type SpecificationArtifactKind =
 export interface SpecificationArtifact {
   id: string;
   kind: SpecificationArtifactKind;
-  status: 'ready' | 'missing';
+  status: 'ready' | 'skipped' | 'missing';
   digest?: `sha256:${string}`;
 }
 
@@ -80,7 +80,7 @@ export interface CompleteSpecificationTaskResult {
 
 export interface SpecificationDiagnostic {
   code: string;
-  severity: 'warning' | 'error';
+  severity: 'info' | 'warning' | 'error';
   message: string;
   artifactId?: string;
 }

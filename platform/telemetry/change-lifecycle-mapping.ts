@@ -7,6 +7,7 @@ import {
 } from '../../domains/change-lifecycle/transition.js';
 import type { TelemetryBatch } from '../../domains/runtime/types.js';
 import type { TrajectoryEvent } from '../../domains/trajectory/types.js';
+import { workspaceIntentTraceAttributes } from './workspace-intent-mapping.js';
 
 export type ChangeLifecycleTelemetrySignal = 'phase' | 'status' | 'work' | 'wait';
 
@@ -85,6 +86,7 @@ function commonAttributes(
     'repoctopus.change.phase': fact.to.phase,
     'repoctopus.change.status.before': fact.from.status,
     'repoctopus.change.status': fact.to.status,
+    ...workspaceIntentTraceAttributes(event),
   };
 }
 

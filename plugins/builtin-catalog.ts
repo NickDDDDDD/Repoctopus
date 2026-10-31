@@ -25,6 +25,7 @@ import { FileDeliveryProvider } from './delivery/file-delivery-provider.js';
 import { GitProjectProvider } from './project/git-project-provider.js';
 import { GitExecutionWorkspaceProvider } from './project/git-execution-workspace-provider.js';
 import { FileRunStoreProvider } from './run/file-run-store-provider.js';
+import { FileWorkExecutionPacketStoreProvider } from './run/file-work-execution-packet-store-provider.js';
 import { FileWorkflowSourceProvider } from './run/file-workflow-source-provider.js';
 import { WorkflowTelemetryProvider } from './run/workflow-telemetry-provider.js';
 import { CommandRouter } from '../services/command-router.js';
@@ -624,6 +625,28 @@ const definitions: readonly BuiltinDefinition[] = [
   },
   {
     descriptor: {
+      id: 'work-execution-packet-store-file',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['work-execution-packet-store-write'],
+      permissions: ['filesystem'],
+      stateSchemas: { 'work-execution-packet': '1' },
+    },
+    plugin: FileWorkExecutionPacketStoreProvider,
+    sourceFiles: [
+      'domains/work-execution/ports.ts',
+      'domains/work-execution/types.ts',
+      'services/work-execution-packet-store.ts',
+      'plugins/run/file-work-execution-packet-store-provider.ts',
+      'platform/runtime/file-work-execution-packet-store.ts',
+    ],
+  },
+  {
+    descriptor: {
       id: 'work-execution-authority',
       version: VERSION,
       contractVersion: PLUGIN_CONTRACT_VERSION,
@@ -633,14 +656,7 @@ const definitions: readonly BuiltinDefinition[] = [
       compositions: ['project'],
       authorities: ['work-execution-state'],
       permissions: [],
-      stateSchemas: { 'work-execution': '1' },
-      compatibleImplementations: [
-        {
-          codeDigest: 'sha256:bb5ed1fa9ea6fe418102fc13e558f630efa80400e4dde11612bed411c0608d71',
-          descriptorDigest:
-            'sha256:8a5f106a29257672c585da2de20f6dd1c7bfcef4c432b23fa9ec918c7a533f23',
-        },
-      ],
+      stateSchemas: { 'work-execution': '2' },
     },
     plugin: WorkExecutionAuthority,
     sourceFiles: [
@@ -713,6 +729,13 @@ const definitions: readonly BuiltinDefinition[] = [
       authorities: ['managed-work-execution'],
       permissions: [],
       stateSchemas: {},
+      compatibleImplementations: [
+        {
+          codeDigest: 'sha256:a3d18d9854d176ad2a88b8597dc3fa80b6e64ce68faefe1d83c09ae6af62a9ba',
+          descriptorDigest:
+            'sha256:4e5f48cad130c375be7acc2abdbf3ff67fd9659f11a06f0a62120218bf6865fa',
+        },
+      ],
     },
     plugin: ManagedWorkExecutor,
     sourceFiles: [
@@ -789,14 +812,9 @@ const definitions: readonly BuiltinDefinition[] = [
       stateSchemas: {},
       compatibleImplementations: [
         {
-          codeDigest: 'sha256:2926551cac3ad5a47cb6e6f4a285425c150caac2d82c1c4d291f8ec9f7251436',
+          codeDigest: 'sha256:86232bbff896a11e5e922e60f9c0b2a6e755c0e7d3624717227d6882e1fe2d01',
           descriptorDigest:
-            'sha256:9dfa238c84298c5fd26500cf0519e605afe70bb2508f48d87554609c48d00930',
-        },
-        {
-          codeDigest: 'sha256:ccd3c55bc617831309b4acc220ff0ab85daa1f52f1d036d16da2eb81f2f01e25',
-          descriptorDigest:
-            'sha256:50a53cf313733271140de690dc4a6949ea04507f44cae75b18b7846fc6b7a1ca',
+            'sha256:e8146a5f4cc7824dfdf37f685fdff74e16808c3f2365ad86f53c2eb3d2f9034d',
         },
       ],
     },
@@ -838,14 +856,9 @@ const definitions: readonly BuiltinDefinition[] = [
       stateSchemas: {},
       compatibleImplementations: [
         {
-          codeDigest: 'sha256:cb472a770aacb43e7b73c8969531889b294af30c06e66e99c086908a70db34dc',
+          codeDigest: 'sha256:4805d959c0b2e3732aa1daffcc689934a660ce226db7efc7a4d6f87cdfb688a0',
           descriptorDigest:
-            'sha256:a87e4735dd873231d22125896f04cc5bcbd03074858d437309009feac4f76da2',
-        },
-        {
-          codeDigest: 'sha256:cdd4a7fc826169ddc38a1fe76716e59891c8bcbba97312604a8ae31a01d1a064',
-          descriptorDigest:
-            'sha256:d787876afcb2173b484ae27b050d6b89a50dd4d4dd16f030ab2416ec2becff02',
+            'sha256:357249984ada9aae4b8f8f2df4373110570ce326991a33970876394f253917b1',
         },
       ],
     },
@@ -885,14 +898,9 @@ const definitions: readonly BuiltinDefinition[] = [
       stateSchemas: {},
       compatibleImplementations: [
         {
-          codeDigest: 'sha256:18359f2ee893508d1f4f4903c6479d3272abfb036e74f8694bedec7873541f03',
+          codeDigest: 'sha256:b29078511a9eff1f796513e755b006c65377e917dd6e3cf05b429db560ac0593',
           descriptorDigest:
-            'sha256:efa84ce4e4bbfaad450dfe6628f396aebfd7e411725c3cb42ee5d4db8ea129d6',
-        },
-        {
-          codeDigest: 'sha256:b86cd92087acf6c70bc5e4dfc7a08e9a2732a53c0111328b66396e6b18d660e4',
-          descriptorDigest:
-            'sha256:5a2a9e443841bc41e9c4634f3a8aa29d6c17bade967c260bbe739653a17d705f',
+            'sha256:25a81afeeff570caaa23f277244930e34d9037e1b913ecd267a737089e46f16a',
         },
       ],
     },
@@ -1116,14 +1124,9 @@ const definitions: readonly BuiltinDefinition[] = [
       stateSchemas: { run: '1' },
       compatibleImplementations: [
         {
-          codeDigest: 'sha256:b402fe98d8867d618a421d4aa06e71f7428aa235bd8e918ada71f9e70f0fcb04',
+          codeDigest: 'sha256:24235a25f865ec4309b2967ff67cbb8aad7b8d563896b97bf3b311d26f814596',
           descriptorDigest:
-            'sha256:f2e5447d57b4f4e81e8ab2adc0941f28bf1555e6915a5efe6f5c5e6b201ca3a5',
-        },
-        {
-          codeDigest: 'sha256:9a53c8d23a6964b54a43e1b33c0e4d6a75edb52a44ff330715994bede9eeaa73',
-          descriptorDigest:
-            'sha256:b91fad7967cdd2ff81ea86d4b94ce482858bda40d8df95a4a7e3aa032b4ab387',
+            'sha256:7ad498f589335e914db2419a995c737619e02cdc1503d1c2d84b11e0c7872064',
         },
       ],
     },

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { createExecutionWorkspaceIntent } from '../domains/change-lifecycle/build-protocol.js';
 import {
@@ -9,8 +9,10 @@ import { evolveChangeLifecycle } from '../domains/change-lifecycle/transition.js
 import type { ProjectSnapshot } from '../domains/project/types.js';
 import {
   bindExecutionWorkspace,
+  ExecutionWorkspaceBindingError,
   type ExecutionCheckoutFacts,
 } from '../services/execution-workspace.js';
+import { WorkflowRuns } from '../services/workflow-runs.js';
 
 const sha = (value: string): `sha256:${string}` =>
   `sha256:${value.padEnd(64, value).slice(0, 64)}`;
@@ -130,6 +132,108 @@ describe('Execution Workspace binding', () => {
     ).rejects.toThrow(/ownership facts/u);
   });
 
+  it('classifies a linked checkout selected as current as an intent revision', async () => {
+    const intent = createExecutionWorkspaceIntent({
+      workspaceId: 'team',
+      changeId: 'change',
+      isolation: 'current',
+    });
+
+    await expect(
+      bindExecutionWorkspace(
+        {
+          intent,
+          project: project(),
+          checkouts: [{ repositoryId: 'workspace', checkoutPath: 'C:\\workspace' }],
+        },
+        () => Promise.resolve(facts({ worktreeId: 'linked-worktree' })),
+      ),
+    ).rejects.toMatchObject({
+      name: 'ExecutionWorkspaceBindingError',
+      code: 'current-linked-worktree',
+      recovery: 'intent-revision',
+    });
+  });
+
+  it('classifies retryable binding facts separately from terminal identity drift', async () => {
+    const current = createExecutionWorkspaceIntent({
+      workspaceId: 'team',
+      changeId: 'change',
+      isolation: 'current',
+    });
+    const branch = createExecutionWorkspaceIntent({
+      workspaceId: 'team',
+      changeId: 'change',
+      isolation: 'branch',
+      targetBranch: 'feature',
+    });
+    const worktree = createExecutionWorkspaceIntent({
+      workspaceId: 'team',
+      changeId: 'change',
+      isolation: 'worktree',
+    });
+
+    await expect(
+      bindExecutionWorkspace(
+        {
+          intent: current,
+          project: project(),
+          checkouts: [{ repositoryId: 'workspace', checkoutPath: 'C:\\other' }],
+        },
+        () => Promise.resolve(facts({ checkoutPath: 'C:\\other' })),
+      ),
+    ).rejects.toMatchObject({
+      code: 'current-checkout-mismatch',
+      recovery: 'binding-retry',
+    });
+    await expect(
+      bindExecutionWorkspace(
+        {
+          intent: branch,
+          project: project(),
+          checkouts: [{ repositoryId: 'workspace', checkoutPath: 'C:\\branch' }],
+        },
+        () => Promise.resolve(facts({ checkoutPath: 'C:\\branch', branch: 'other' })),
+      ),
+    ).rejects.toMatchObject({ code: 'branch-mismatch', recovery: 'binding-retry' });
+    await expect(
+      bindExecutionWorkspace(
+        {
+          intent: worktree,
+          project: project(),
+          checkouts: [{ repositoryId: 'workspace', checkoutPath: 'C:\\worktree' }],
+        },
+        () => Promise.resolve(facts({ checkoutPath: 'C:\\worktree' })),
+      ),
+    ).rejects.toMatchObject({
+      code: 'worktree-ownership-missing',
+      recovery: 'binding-retry',
+    });
+    await expect(
+      bindExecutionWorkspace(
+        { intent: worktree, project: project(), checkouts: [] },
+        () => Promise.resolve(facts()),
+      ),
+    ).rejects.toMatchObject({ code: 'repository-topology-drift', recovery: 'halt' });
+    await expect(
+      bindExecutionWorkspace(
+        {
+          intent: worktree,
+          project: project(),
+          checkouts: [{ repositoryId: 'workspace', checkoutPath: 'C:\\worktree' }],
+        },
+        () =>
+          Promise.resolve(
+            facts({
+              checkoutPath: 'C:\\worktree',
+              remoteIdentity: 'github.com/other/workspace',
+              worktreeId: 'wt-1',
+            }),
+          ),
+      ),
+    ).rejects.toMatchObject({ code: 'remote-identity-drift', recovery: 'halt' });
+  });
+
   it('freezes the complete multi-repository topology across restart inspection', async () => {
     const multiRepositoryProject: ProjectSnapshot = {
       ...project(),
@@ -242,5 +346,81 @@ describe('Execution Workspace binding', () => {
         },
       }),
     ).toThrow(/cannot replace/u);
+  });
+
+  it('validates an Open isolation before writing lifecycle or specification approval state', async () => {
+    const intentWait = {
+      schemaVersion: 1 as const,
+      kind: 'human-decision' as const,
+      waitId: 'open-approval:request-1',
+      requestId: 'request-1',
+      proposalDigest: sha('b'),
+      inputDigest: sha('a'),
+      reason: 'review',
+    };
+    const lifecycle = {
+      ...createChangeLifecycleSnapshot({
+        identity: { workspaceId: 'team', changeId: 'change', runId: 'run-1' },
+      }),
+      status: 'waiting' as const,
+      currentWork: null,
+      waitCondition: intentWait,
+    };
+    const acceptChangeObservation = vi.fn();
+    const decideSpecification = vi.fn();
+    const bind = vi.fn().mockRejectedValue(
+      new ExecutionWorkspaceBindingError(
+        'Current isolation cannot bind a linked worktree',
+        'current-linked-worktree',
+        'intent-revision',
+      ),
+    );
+    const service = Object.create(WorkflowRuns.prototype) as WorkflowRuns;
+    Object.defineProperties(service, {
+      operations: {
+        value: { run: (_options: unknown, operation: () => Promise<unknown>) => operation() },
+      },
+      coordinator: { value: { acceptChangeObservation } },
+      ctx: {
+        value: {
+          runStore: {
+            loadRun: vi.fn().mockResolvedValue({
+              runId: 'run-1',
+              status: 'waiting',
+              changeLifecycle: lifecycle,
+              trigger: {
+                facts: {
+                  executionCheckouts: [
+                    { repositoryId: 'workspace', checkoutPath: 'C:\\workspace' },
+                  ],
+                },
+              },
+            }),
+            loadProjectSnapshot: vi.fn().mockResolvedValue(project()),
+          },
+          executionWorkspace: { bind },
+          specificationPlanning: { decide: decideSpecification },
+        },
+      },
+    });
+
+    await expect(
+      service.decideChange({
+        runId: 'run-1',
+        response: {
+          apiVersion: 'repoctopus/v1alpha1',
+          kind: 'HumanDecisionResponse',
+          requestId: 'request-1',
+          proposalHash: sha('b'),
+          decision: 'approve',
+        },
+        actor: { actorId: 'trusted-user', source: 'cli', authenticated: true },
+        isolation: 'current',
+      }),
+    ).rejects.toMatchObject({ code: 'current-linked-worktree' });
+
+    expect(bind).toHaveBeenCalledOnce();
+    expect(acceptChangeObservation).not.toHaveBeenCalled();
+    expect(decideSpecification).not.toHaveBeenCalled();
   });
 });

@@ -131,6 +131,24 @@ export interface ProjectedDestinationHealth {
   observedAt: string;
 }
 
+export interface ProjectedSpecification {
+  artifacts: {
+    proposal: 'ready' | 'skipped' | 'missing' | 'unknown';
+    specs: 'ready' | 'skipped' | 'missing' | 'unknown';
+    design: 'ready' | 'skipped' | 'missing' | 'unknown';
+    tasks: 'ready' | 'skipped' | 'missing' | 'unknown';
+  };
+  validation: {
+    valid: boolean;
+    highestSeverity: 'none' | 'info' | 'warning' | 'error' | 'unknown';
+    infoCount: number;
+    warningCount: number;
+    errorCount: number;
+    contractConflict: boolean;
+    observedAt: string;
+  } | null;
+}
+
 export interface ProjectedHealthReason {
   code: string;
   phase?: ChangePhase;
@@ -176,6 +194,7 @@ export interface ProjectedChange {
   evidence: ProjectedEvidence[];
   recoveries: ProjectedRecovery[];
   destinations: ProjectedDestinationHealth[];
+  specification: ProjectedSpecification;
   health: ProjectedHealth;
   displayState: DashboardDisplayState;
   latestSequence: number;
@@ -624,6 +643,36 @@ function projectDestination(change: ProjectedChange, envelope: ObservationEnvelo
   change.destinations.sort((left, right) => left.destinationId.localeCompare(right.destinationId));
 }
 
+function projectSpecification(change: ProjectedChange, envelope: ObservationEnvelope): void {
+  const artifactStatus = (key: string): ProjectedSpecification['artifacts']['proposal'] => {
+    const value = stringAttribute(envelope.attributes, key);
+    return value === 'ready' || value === 'skipped' || value === 'missing' ? value : 'unknown';
+  };
+  if (envelope.eventType === 'specification.artifacts-observed') {
+    change.specification.artifacts = {
+      proposal: artifactStatus('proposalStatus'),
+      specs: artifactStatus('specsStatus'),
+      design: artifactStatus('designStatus'),
+      tasks: artifactStatus('tasksStatus'),
+    };
+  }
+  if (envelope.eventType === 'specification.validation-observed') {
+    const severity = stringAttribute(envelope.attributes, 'highestSeverity');
+    change.specification.validation = {
+      valid: booleanAttribute(envelope.attributes, 'valid') === true,
+      highestSeverity:
+        severity === 'none' || severity === 'info' || severity === 'warning' || severity === 'error'
+          ? severity
+          : 'unknown',
+      infoCount: numberAttribute(envelope.attributes, 'infoCount') ?? 0,
+      warningCount: numberAttribute(envelope.attributes, 'warningCount') ?? 0,
+      errorCount: numberAttribute(envelope.attributes, 'errorCount') ?? 0,
+      contractConflict: booleanAttribute(envelope.attributes, 'contractConflict') === true,
+      observedAt: envelope.observedAt,
+    };
+  }
+}
+
 function healthStatus(
   reasons: readonly ProjectedHealthReason[],
   criticalCodes: readonly string[],
@@ -695,6 +744,19 @@ function projectHealth(
   }
   if (change.recoveries.some((recovery) => recovery.kind === 'fallback')) {
     qualityReasons.push({ code: 'verification-rework', count: change.recoveries.length });
+  }
+  const specification = change.specification;
+  if (Object.values(specification.artifacts).includes('missing')) {
+    qualityReasons.push({ code: 'specification-artifact-missing' });
+  }
+  if (
+    specification.validation?.valid === false ||
+    specification.validation?.highestSeverity === 'error'
+  ) {
+    qualityReasons.push({ code: 'specification-validation-failed' });
+  }
+  if (specification.validation?.contractConflict === true) {
+    qualityReasons.push({ code: 'specification-contract-conflict' });
   }
   change.health.quality =
     change.evidence.length === 0 && change.recoveries.length === 0
@@ -788,6 +850,15 @@ function createProjectedChange(envelope: ObservationEnvelope): ProjectedChange |
     evidence: [],
     recoveries: [],
     destinations: [],
+    specification: {
+      artifacts: {
+        proposal: 'unknown',
+        specs: 'unknown',
+        design: 'unknown',
+        tasks: 'unknown',
+      },
+      validation: null,
+    },
     health: emptyHealth(),
     displayState: 'sparse',
     latestSequence: 0,
@@ -827,6 +898,7 @@ function projectChange(
   projectEvidence(change, envelope);
   projectRecovery(change, envelope);
   projectDestination(change, envelope);
+  projectSpecification(change, envelope);
   return change;
 }
 

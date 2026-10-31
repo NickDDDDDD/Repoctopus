@@ -45,7 +45,7 @@ export interface ChangeLifecyclePhaseDefinition {
   extensionCheckpoints: readonly string[];
 }
 
-export type ChangeLifecycleTransitionKind = 'advance' | 'self' | 'fallback' | 'complete';
+export type ChangeLifecycleTransitionKind = 'advance' | 'self' | 'fallback' | 'halt' | 'complete';
 
 export interface ChangeLifecycleTransitionDefinition {
   id: string;
@@ -211,6 +211,11 @@ export interface HumanDecisionWaitCondition extends WaitConditionBase {
   kind: 'human-decision';
   requestId: string;
   proposalDigest: `sha256:${string}`;
+  workspaceIntentRevision?: {
+    errorCode: string;
+    previousIsolation: ExecutionIsolation;
+    evidenceIds: readonly string[];
+  };
 }
 
 export interface RetryWaitCondition extends WaitConditionBase {
@@ -333,12 +338,18 @@ export interface ChangeLifecycleTransitionFact {
   work?: Pick<WorkDescriptor, 'workId' | 'kind' | 'taskId' | 'validatorProfile'> | null;
   wait?: Pick<WaitCondition, 'waitId' | 'kind'> | null;
   invalidation?: {
-    kind: 'planning-semantic-drift';
+    kind: 'planning-authority-invalidated';
+    invalidationKind: 'semantic' | 'approval-authority';
     supersededPlanningDigest: `sha256:${string}`;
     observedPlanningDigest: `sha256:${string}`;
     supersededWorkId: string | null;
     supersededTaskRevisions: readonly `sha256:${string}`[];
     evidenceIds: readonly string[];
+  };
+  workspaceIntentRevision?: {
+    errorCode: string;
+    previousIsolation: ExecutionIsolation;
+    nextIsolation?: ExecutionIsolation;
   };
 }
 
@@ -369,10 +380,14 @@ export type ChangeLifecycleObservation =
       work: WorkDescriptor;
     }
   | {
-      kind: 'planning-semantic-drift';
+      kind: 'planning-authority-invalidated';
+      expectedRevision: number;
+      fromPhase: 'build' | 'verify' | 'archive';
+      invalidationKind: 'semantic' | 'approval-authority';
       reason: string;
       evidenceIds: readonly string[];
       inputDigest: `sha256:${string}`;
+      work: WorkDescriptor;
     }
   | {
       kind: 'design-gate';
@@ -391,6 +406,23 @@ export type ChangeLifecycleObservation =
       proposal: BuildConfigurationProposal;
       requestId: string;
       reason: string;
+    }
+  | {
+      kind: 'workspace-intent-revision-required';
+      requestId: string;
+      proposalDigest: `sha256:${string}`;
+      reason: string;
+      evidenceIds: readonly string[];
+      errorCode: string;
+      previousIsolation: ExecutionIsolation;
+    }
+  | {
+      kind: 'workspace-intent-revised';
+      requestId: string;
+      proposalDigest: `sha256:${string}`;
+      actorId: string;
+      intent: ExecutionWorkspaceIntent;
+      work: WorkDescriptor;
     }
   | {
       kind: 'build-configuration-retry-required';
@@ -414,6 +446,11 @@ export type ChangeLifecycleObservation =
       kind: 'build-plan-retry-required';
       reason: string;
       work: WorkDescriptor;
+    }
+  | {
+      kind: 'work-execution-migration-required';
+      reason: string;
+      evidenceIds: readonly string[];
     }
   | {
       kind: 'build-plan-evidence-accepted';
@@ -613,13 +650,27 @@ export function assertChangeLifecycleSnapshot(
       snapshot.currentWork?.kind !== 'build.plan' ||
       snapshot.verificationInput)
   ) {
-    throw new Error('Verification invalidation requires an active Build Plan revision without input');
+    throw new Error(
+      'Verification invalidation requires an active Build Plan revision without input',
+    );
   }
   if (snapshot.status === 'waiting' && snapshot.waitCondition === null) {
     throw new Error('Waiting Change Run requires a durable WaitCondition');
   }
   if (snapshot.status !== 'waiting' && snapshot.waitCondition !== null) {
     throw new Error('Only a waiting Change Run may carry a WaitCondition');
+  }
+  if (
+    snapshot.waitCondition?.kind === 'human-decision' &&
+    snapshot.waitCondition.workspaceIntentRevision &&
+    (!snapshot.waitCondition.waitId.startsWith('workspace-intent:') ||
+      !snapshot.waitCondition.workspaceIntentRevision.errorCode.trim() ||
+      !['current', 'branch', 'worktree'].includes(
+        snapshot.waitCondition.workspaceIntentRevision.previousIsolation,
+      ) ||
+      snapshot.waitCondition.workspaceIntentRevision.evidenceIds.length === 0)
+  ) {
+    throw new Error('Workspace intent revision WaitCondition is malformed');
   }
   if (blockerStatuses.has(snapshot.status) && snapshot.blocker === null) {
     throw new Error(`${snapshot.status} Change Run requires a blocker`);
@@ -892,14 +943,27 @@ export function evolveChangeLifecycle(options: {
       },
     });
   }
-  if (observation.kind === 'planning-semantic-drift') {
-    if (current.phase !== 'build' && current.phase !== 'verify') {
+  if (observation.kind === 'planning-authority-invalidated') {
+    if (
+      observation.expectedRevision !== current.revision ||
+      observation.fromPhase !== current.phase
+    ) {
+      throw new Error('Planning authority observation belongs to a stale lifecycle revision');
+    }
+    if (!['build', 'verify', 'archive'].includes(current.phase)) {
       throw new Error(
-        `Planning semantic drift is not valid from ${current.phase}/${current.status}`,
+        `Planning authority invalidation is not valid from ${current.phase}/${current.status}`,
       );
     }
     if (!current.planningDigest) {
-      throw new Error('Active Build or Verify Work has no approved planning digest');
+      throw new Error('Active later-phase Work has no approved planning digest');
+    }
+    if (
+      observation.work.phase !== 'design' ||
+      observation.work.kind !== 'specification.plan' ||
+      observation.work.checkEpoch !== current.checkEpoch + 1
+    ) {
+      throw new Error('Planning authority invalidation requires the next Design Work');
     }
     const supersededPlanningDigest = current.planningDigest;
     const supersededWorkId = current.currentWork?.workId ?? null;
@@ -908,9 +972,13 @@ export function evolveChangeLifecycle(options: {
       definition: options.definition,
       current,
       transitionId:
-        current.phase === 'build' ? 'build.semantic-plan-drift' : 'verify.semantic-plan-drift',
+        current.phase === 'build'
+          ? 'build.semantic-plan-drift'
+          : current.phase === 'verify'
+            ? 'verify.semantic-plan-drift'
+            : 'archive.planning-drift',
       next: {
-        currentWork: null,
+        currentWork: observation.work,
         waitCondition: null,
         blocker: null,
         tasks: [],
@@ -918,10 +986,14 @@ export function evolveChangeLifecycle(options: {
         planningDigest: null,
         verificationInput: null,
         verificationInvalidation: null,
+        archiveDeliveryInput: null,
+        specificationClosure: null,
+        publicationReceipt: null,
       },
     });
     reduced.fact.invalidation = {
-      kind: 'planning-semantic-drift',
+      kind: 'planning-authority-invalidated',
+      invalidationKind: observation.invalidationKind,
       supersededPlanningDigest,
       observedPlanningDigest: observation.inputDigest,
       supersededWorkId,
@@ -985,6 +1057,118 @@ export function evolveChangeLifecycle(options: {
         buildProtocol,
       },
     });
+  }
+  if (observation.kind === 'workspace-intent-revision-required') {
+    const existingWait = current.waitCondition;
+    if (
+      current.phase === 'open' &&
+      current.status === 'waiting' &&
+      existingWait?.kind === 'human-decision' &&
+      existingWait.waitId === `workspace-intent:${observation.requestId}` &&
+      existingWait.requestId === observation.requestId &&
+      existingWait.proposalDigest === observation.proposalDigest &&
+      existingWait.workspaceIntentRevision?.errorCode === observation.errorCode &&
+      existingWait.workspaceIntentRevision.previousIsolation === observation.previousIsolation
+    ) {
+      return { snapshot: structuredClone(current), fact: null };
+    }
+    const protocol = current.buildProtocol;
+    if (
+      current.phase !== 'build' ||
+      current.status !== 'running' ||
+      current.currentWork?.kind !== 'build.configure' ||
+      !current.workspaceIntent ||
+      !protocol ||
+      protocol.currentAction !== 'configure' ||
+      protocol.configuration ||
+      protocol.plan ||
+      protocol.packageCompletions.length > 0 ||
+      !observation.requestId.trim() ||
+      !observation.reason.trim() ||
+      !observation.errorCode.trim() ||
+      observation.previousIsolation !== current.workspaceIntent.isolation
+    ) {
+      throw new Error(
+        'Workspace intent revision requires an unapproved active Build Configure Action',
+      );
+    }
+    const reduced = applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'build.workspace-intent-revision-required',
+      next: {
+        currentWork: null,
+        waitCondition: {
+          schemaVersion: 1,
+          kind: 'human-decision',
+          waitId: `workspace-intent:${observation.requestId}`,
+          requestId: observation.requestId,
+          proposalDigest: observation.proposalDigest,
+          inputDigest: observation.proposalDigest,
+          reason: observation.reason,
+          workspaceIntentRevision: {
+            errorCode: observation.errorCode,
+            previousIsolation: observation.previousIsolation,
+            evidenceIds: [...observation.evidenceIds],
+          },
+        },
+        blocker: null,
+        tasks: [],
+        workspaceIntent: null,
+        buildProtocol: null,
+        planningDigest: null,
+        adoptedCompletionClaimDigest: null,
+        verificationInput: null,
+        verificationInvalidation: null,
+        archiveDeliveryInput: null,
+        specificationClosure: null,
+        publicationReceipt: null,
+      },
+    });
+    reduced.fact.workspaceIntentRevision = {
+      errorCode: observation.errorCode,
+      previousIsolation: observation.previousIsolation,
+    };
+    return reduced;
+  }
+  if (observation.kind === 'workspace-intent-revised') {
+    const wait = current.waitCondition;
+    const revision = wait?.kind === 'human-decision' ? wait.workspaceIntentRevision : undefined;
+    if (
+      current.phase !== 'open' ||
+      current.status !== 'waiting' ||
+      wait?.kind !== 'human-decision' ||
+      !wait.waitId.startsWith('workspace-intent:') ||
+      wait.requestId !== observation.requestId ||
+      wait.proposalDigest !== observation.proposalDigest ||
+      !revision ||
+      current.workspaceIntent ||
+      current.buildProtocol ||
+      observation.intent.workspaceId !== current.identity.workspaceId ||
+      observation.intent.changeId !== current.identity.changeId ||
+      observation.work.phase !== 'design' ||
+      observation.work.kind !== 'specification.plan' ||
+      !observation.actorId.trim()
+    ) {
+      throw new Error('Workspace intent revision does not match the current Human Decision');
+    }
+    const reduced = applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'open.workspace-intent-revised',
+      next: {
+        currentWork: observation.work,
+        waitCondition: null,
+        blocker: null,
+        workspaceIntent: observation.intent,
+      },
+    });
+    reduced.fact.workspaceIntentRevision = {
+      errorCode: revision.errorCode,
+      previousIsolation: revision.previousIsolation,
+      nextIsolation: observation.intent.isolation,
+    };
+    return reduced;
   }
   if (observation.kind === 'build-configuration-retry-required') {
     if (
@@ -1097,6 +1281,34 @@ export function evolveChangeLifecycle(options: {
       },
     });
   }
+  if (observation.kind === 'work-execution-migration-required') {
+    if (
+      current.phase !== 'build' ||
+      current.status !== 'running' ||
+      !['build.plan', 'build.check'].includes(current.currentWork?.kind ?? '') ||
+      !observation.reason.trim()
+    ) {
+      throw new Error('Work execution migration is not valid from the current lifecycle state');
+    }
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId:
+        current.currentWork?.kind === 'build.check'
+          ? 'build.check-work-execution-migration-required'
+          : 'build.work-execution-migration-required',
+      next: {
+        currentWork: null,
+        waitCondition: null,
+        blocker: {
+          code: 'work-execution.migration-required',
+          message: observation.reason,
+          evidenceIds: [...observation.evidenceIds],
+          sinceRevision: current.revision + 1,
+        },
+      },
+    });
+  }
   if (observation.kind === 'build-plan-accepted') {
     if (
       current.phase !== 'build' ||
@@ -1119,6 +1331,7 @@ export function evolveChangeLifecycle(options: {
         currentWork: null,
         waitCondition: null,
         blocker: null,
+        verificationInvalidation: null,
         buildProtocol,
       },
     });
@@ -1205,11 +1418,12 @@ export function evolveChangeLifecycle(options: {
         ? { kind: 'plan-evidence-accepted', evidence: observation.evidence }
         : { kind: 'plan-rejected' },
     );
-    const expectedKind = observation.decision === 'approve'
-      ? buildProtocol.currentAction === 'check'
-        ? 'build.check'
-        : 'build.execute'
-      : 'build.plan';
+    const expectedKind =
+      observation.decision === 'approve'
+        ? buildProtocol.currentAction === 'check'
+          ? 'build.check'
+          : 'build.execute'
+        : 'build.plan';
     if (observation.work.kind !== expectedKind) {
       throw new Error('Plan decision Work does not match the Runtime-selected Action');
     }
@@ -1561,11 +1775,15 @@ export function evolveChangeLifecycle(options: {
     });
   }
   if (observation.kind === 'archive-reverify-required') {
+    const beforePreflight = current.currentWork === null && !current.archiveDeliveryInput;
+    const frozenSpecificationClose =
+      current.currentWork?.kind === 'specification.close' &&
+      current.archiveDeliveryInput !== undefined &&
+      current.currentWork.inputDigest === current.archiveDeliveryInput.digest;
     if (
       current.phase !== 'archive' ||
       current.status !== 'running' ||
-      current.currentWork !== null ||
-      current.archiveDeliveryInput ||
+      (!beforePreflight && !frozenSpecificationClose) ||
       current.specificationClosure ||
       current.publicationReceipt ||
       observation.work.phase !== 'verify' ||
@@ -1583,6 +1801,7 @@ export function evolveChangeLifecycle(options: {
         waitCondition: null,
         blocker: null,
         verificationInput: observation.verificationInput,
+        archiveDeliveryInput: null,
       },
     });
   }
@@ -1724,7 +1943,8 @@ export function evolveChangeLifecycle(options: {
       },
     });
     reduced.fact.invalidation = {
-      kind: 'planning-semantic-drift',
+      kind: 'planning-authority-invalidated',
+      invalidationKind: 'semantic',
       supersededPlanningDigest: current.planningDigest ?? current.archiveDeliveryInput.digest,
       observedPlanningDigest: observation.observedPlanningDigest,
       supersededWorkId: current.currentWork.workId,

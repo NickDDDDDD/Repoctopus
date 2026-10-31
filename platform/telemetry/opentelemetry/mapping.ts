@@ -2,6 +2,10 @@ import type { Attributes } from '@opentelemetry/api';
 
 import type { TelemetryBatch } from '../../../domains/runtime/types.js';
 import type { TrajectoryEvent } from '../../../domains/trajectory/types.js';
+import {
+  workspaceIntentMetricAttributes,
+  workspaceIntentTraceAttributes,
+} from '../workspace-intent-mapping.js';
 
 const SAFE_DATA_KEYS = new Set([
   'actionId',
@@ -51,6 +55,21 @@ const EXECUTION_DATA_KEYS = new Set([
   'executionId',
   'delegationRole',
   'findingClassification',
+  'submissionId',
+  'submissionDigest',
+  'reasonCode',
+  'rejectedSubmissionCount',
+  'legacyRecovery',
+  'proposalStatus',
+  'specsStatus',
+  'designStatus',
+  'tasksStatus',
+  'valid',
+  'highestSeverity',
+  'infoCount',
+  'warningCount',
+  'errorCount',
+  'contractConflict',
 ]);
 
 const SENSITIVE_KEY =
@@ -63,10 +82,17 @@ const SAFE_EXECUTION_ID = /^[a-zA-Z0-9][a-zA-Z0-9._:@/-]{0,255}$/u;
 const DIGEST = /^sha256:[a-f0-9]{64}$/u;
 const EXECUTION_EVENTS = new Set<TrajectoryEvent['type']>([
   'work.created',
+  'work.packet-stored',
+  'work.packet-recovered',
   'work.claimed',
   'work.context-delivered',
   'work.host-started',
   'work.host-completed',
+  'work.outcome-submitted',
+  'work.outcome-corrected',
+  'work.outcome-rejected',
+  'work.outcome-accepted',
+  'work.outcome-processing-error',
   'delegation.completed',
   'work.completed',
   'skill.resolved',
@@ -80,6 +106,9 @@ const EXECUTION_EVENTS = new Set<TrajectoryEvent['type']>([
   'reconcile.started',
   'reconcile.completed',
   'continuation.selected',
+  'specification.artifacts-observed',
+  'specification.validation-observed',
+  'recovery.reconciled',
 ]);
 
 function safeExecutionId(value: string): boolean {
@@ -169,6 +198,24 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
       } else if (key === 'result' && typeof value === 'string' && !BOUNDED_RESULTS.has(value)) {
         normalized = 'unknown';
       } else if (
+        key.endsWith('Status') &&
+        typeof value === 'string' &&
+        !BOUNDED_ARTIFACT_STATUSES.has(value)
+      ) {
+        normalized = 'unknown';
+      } else if (
+        key === 'highestSeverity' &&
+        typeof value === 'string' &&
+        !BOUNDED_SEVERITIES.has(value)
+      ) {
+        normalized = 'unknown';
+      } else if (
+        key === 'reasonCode' &&
+        typeof value === 'string' &&
+        !BOUNDED_REASON_CODES.has(value)
+      ) {
+        normalized = 'unknown';
+      } else if (
         key === 'findingKind' &&
         typeof value === 'string' &&
         ![
@@ -212,6 +259,7 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
   }
   addEvidenceCorrelation(attributes, event);
   if (event.type === 'change.lifecycle.transitioned') {
+    Object.assign(attributes, workspaceIntentTraceAttributes(event));
     const observationKind = scalar(event.data.observationKind);
     if (observationKind !== undefined) {
       attributes['repoctopus.lifecycle.observation.kind'] = observationKind;
@@ -219,6 +267,12 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
     const observation = event.data.observation;
     if (observation && typeof observation === 'object') {
       const record = observation as Record<string, unknown>;
+      if (
+        record.invalidationKind === 'semantic' ||
+        record.invalidationKind === 'approval-authority'
+      ) {
+        attributes['repoctopus.planning.invalidation.kind'] = record.invalidationKind;
+      }
       const configuration = record.configuration;
       if (configuration && typeof configuration === 'object') {
         const value = configuration as Record<string, unknown>;
@@ -273,6 +327,20 @@ const BOUNDED_RESULTS = new Set([
   'rejected',
   'implementation-failure',
   'evidence-unavailable',
+  'created',
+  'reused',
+  'recovered',
+  'missing',
+  'corrupt',
+  'legacy',
+]);
+const BOUNDED_ARTIFACT_STATUSES = new Set(['ready', 'skipped', 'missing']);
+const BOUNDED_SEVERITIES = new Set(['none', 'info', 'warning', 'error']);
+const BOUNDED_REASON_CODES = new Set([
+  'output-invalid',
+  'outcome-rejected',
+  'outcome-processing-error',
+  'checkpoint-superseded',
 ]);
 
 export function executionMetricAttributes(event: TrajectoryEvent): Attributes | null {
@@ -282,9 +350,15 @@ export function executionMetricAttributes(event: TrajectoryEvent): Attributes | 
   const result = typeof event.data.result === 'string' ? event.data.result : 'unknown';
   const continuation =
     typeof event.data.continuation === 'string' &&
-    ['execute', 'ask', 'wait', 'reconcile', 'done'].includes(event.data.continuation)
+    ['execute', 'ask', 'wait', 'reconcile', 'awaiting-correction', 'done'].includes(
+      event.data.continuation,
+    )
       ? event.data.continuation
       : 'unknown';
+  const reasonCode =
+    typeof event.data.reasonCode === 'string' && BOUNDED_REASON_CODES.has(event.data.reasonCode)
+      ? event.data.reasonCode
+      : 'none';
   const buildAction =
     typeof event.data.buildAction === 'string' &&
     ['configure', 'plan', 'execute', 'check'].includes(event.data.buildAction)
@@ -310,6 +384,7 @@ export function executionMetricAttributes(event: TrajectoryEvent): Attributes | 
     'repoctopus.execution.work.kind': BOUNDED_WORK_KINDS.has(workKind) ? workKind : 'custom',
     'repoctopus.execution.result': BOUNDED_RESULTS.has(result) ? result : 'unknown',
     'repoctopus.execution.continuation': continuation,
+    'repoctopus.execution.reason.code': reasonCode,
     'repoctopus.build.action': buildAction,
     'repoctopus.build.execution.mode': executionMode,
     'repoctopus.build.tdd.mode': tddMode,
@@ -318,17 +393,57 @@ export function executionMetricAttributes(event: TrajectoryEvent): Attributes | 
 }
 
 export function eventSeverity(type: TrajectoryEvent['type']): number {
-  return type === 'recovery.reconciled' ? 13 : 9;
+  return type === 'recovery.reconciled' ||
+    type === 'work.outcome-rejected' ||
+    type === 'work.outcome-processing-error'
+    ? 13
+    : 9;
 }
 
 export function workflowEventMetricAttributes(
   batch: TelemetryBatch,
   event: TrajectoryEvent,
 ): Attributes {
-  return {
+  const result: Attributes = {
     'repoctopus.event.type': event.type,
     'repoctopus.workflow.name': batch.run.workflowName,
+    ...workspaceIntentMetricAttributes(event),
   };
+  if (event.type === 'work.packet-stored' || event.type === 'work.packet-recovered') {
+    const packetResult = event.data.result;
+    const allowed =
+      event.type === 'work.packet-stored'
+        ? new Set(['created', 'reused'])
+        : new Set(['recovered', 'missing', 'corrupt', 'legacy']);
+    result['repoctopus.packet.result'] =
+      typeof packetResult === 'string' && allowed.has(packetResult) ? packetResult : 'unknown';
+  }
+  if (event.type === 'specification.artifacts-observed') {
+    for (const key of ['proposalStatus', 'specsStatus', 'designStatus', 'tasksStatus'] as const) {
+      const value = event.data[key];
+      result[`repoctopus.specification.artifact.${key}`] =
+        typeof value === 'string' && BOUNDED_ARTIFACT_STATUSES.has(value) ? value : 'unknown';
+    }
+  }
+  if (event.type === 'specification.validation-observed') {
+    const severity = event.data.highestSeverity;
+    result['repoctopus.specification.validation.valid'] = event.data.valid === true;
+    result['repoctopus.specification.validation.highest_severity'] =
+      typeof severity === 'string' && BOUNDED_SEVERITIES.has(severity) ? severity : 'unknown';
+    result['repoctopus.specification.validation.contract_conflict'] =
+      event.data.contractConflict === true;
+  }
+  if (event.type === 'change.lifecycle.transitioned') {
+    const observation = event.data.observation;
+    const invalidationKind =
+      observation && typeof observation === 'object'
+        ? (observation as Record<string, unknown>).invalidationKind
+        : undefined;
+    if (invalidationKind === 'semantic' || invalidationKind === 'approval-authority') {
+      result['repoctopus.planning.invalidation.kind'] = invalidationKind;
+    }
+  }
+  return result;
 }
 
 export function workflowStepMetricAttributes(

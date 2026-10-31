@@ -112,6 +112,16 @@ const ATTRIBUTE_KEYS = [
   'droppedEnvelopes',
   'targetKind',
   'reason',
+  'proposalStatus',
+  'specsStatus',
+  'designStatus',
+  'tasksStatus',
+  'valid',
+  'highestSeverity',
+  'infoCount',
+  'warningCount',
+  'errorCount',
+  'contractConflict',
 ] as const;
 
 function digest(value: unknown): `sha256:${string}` {
@@ -243,7 +253,9 @@ function correlation(event: TrajectoryEvent, context: ObservationContext): Obser
   assign(
     'recovery',
     id(event.data.recovery) ??
-      (event.type === 'recovery.reconciled' || event.type === 'run.resumed'
+      (event.type === 'recovery.reconciled' ||
+      event.type === 'run.resumed' ||
+      event.type === 'work.packet-recovered'
         ? event.type
         : undefined),
   );

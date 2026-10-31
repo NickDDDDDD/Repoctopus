@@ -12,7 +12,7 @@ import { ManagedWorkExecutor } from '../services/managed-work-executor.js';
 
 const digest = (character: string) => `sha256:${character.repeat(64)}` as const;
 
-function frozenPacket(): WorkExecutionPacket {
+function frozenPacket(kind = 'build.execute'): WorkExecutionPacket {
   const packet = {
     schemaVersion: 2,
     identity: {
@@ -32,7 +32,7 @@ function frozenPacket(): WorkExecutionPacket {
       compositionDigest: digest('f'),
     },
     work: {
-      kind: 'build.execute',
+      kind,
       packageId: 'package-1',
     },
     context: {
@@ -68,8 +68,9 @@ function executor(
   resultOverride?: Record<string, unknown>,
   delegationReceiptsOverride?: WorkExecutionHostOutcome['delegationReceipts'],
   invokeError?: Error,
+  workKind = 'build.execute',
 ) {
-  const packet = frozenPacket();
+  const packet = frozenPacket(workKind);
   const intent = {
     runId: 'run-1',
     workId: 'work-1',
@@ -79,7 +80,7 @@ function executor(
   const authority = {
     markHostStarted: vi.fn(),
     markHostUnknown: vi.fn(),
-    markHostCompleted: vi.fn(),
+    markHostCompleted: vi.fn().mockResolvedValue({ status: 'submitted' }),
     recordDelegationFacts: vi.fn(),
     recordSkillFacts: vi.fn(),
   };
@@ -136,13 +137,14 @@ function executor(
     }),
   };
   const service = Object.create(ManagedWorkExecutor.prototype) as ManagedWorkExecutor;
+  const workDispatcher = {
+    claim: vi.fn().mockResolvedValue({ packet, intent }),
+    outcome: vi.fn().mockReturnValue({}),
+    acceptOutcome: vi.fn().mockResolvedValue({ accepted: true }),
+  };
   Object.defineProperty(service, 'ctx', {
     value: {
-      workDispatcher: {
-        claim: vi.fn().mockResolvedValue({ packet, intent }),
-        outcome: vi.fn().mockReturnValue({}),
-        acceptOutcome: vi.fn().mockResolvedValue({ accepted: true }),
-      },
+      workDispatcher,
       workExecutionHosts: { select: vi.fn().mockReturnValue(host) },
       workExecutionSessions: {
         open: vi.fn((input: Omit<WorkExecutionSessionIdentity, 'schemaVersion' | 'sessionId'>) => ({
@@ -155,7 +157,7 @@ function executor(
       workExecutionAuthority: authority,
     },
   });
-  return { service, authority };
+  return { service, authority, workDispatcher };
 }
 
 function externalReplayHarness() {
@@ -239,8 +241,9 @@ function externalReplayHarness() {
     },
   });
   const input: ExternalWorkExecutionOutcome = {
-    schemaVersion: 2,
+    schemaVersion: 3,
     runId: 'run-1',
+    submissionId: 'submission-1',
     invocationId: persistedOutcome.invocationId,
     hostId: persistedOutcome.hostId,
     packetDigest: persistedOutcome.packetDigest,
@@ -409,6 +412,47 @@ describe('Managed Work Executor Build contract', () => {
       digest('2'),
     ]);
     expect(authority.markHostUnknown).not.toHaveBeenCalled();
+  });
+
+  it('records a Build Plan submission without accepting a terminal Action Outcome', async () => {
+    const { service, authority, workDispatcher } = executor(
+      { schemaVersion: 1, kind: 'build-plan-candidate', packages: [] },
+      undefined,
+      undefined,
+      'build.plan',
+    );
+
+    await expect(service.execute({} as never)).resolves.toMatchObject({
+      hostOutcome: { status: 'succeeded' },
+      acceptance: null,
+    });
+    expect(authority.markHostCompleted).toHaveBeenCalledOnce();
+    expect(workDispatcher.acceptOutcome).not.toHaveBeenCalled();
+  });
+
+  it('records a Build Check submission without accepting a terminal Action Outcome', async () => {
+    const { service, authority, workDispatcher } = executor(
+      {
+        schemaVersion: 1,
+        kind: 'build-check-candidate',
+        completedPackageIds: ['package-1'],
+        acceptedTaskIds: ['1.1'],
+        testEvidenceIds: ['test-1'],
+        repositoryDigest: digest('5'),
+        implementationDigest: digest('6'),
+        reviewerExecutionId: 'reviewer-1',
+      },
+      undefined,
+      undefined,
+      'build.check',
+    );
+
+    await expect(service.execute({} as never)).resolves.toMatchObject({
+      hostOutcome: { status: 'succeeded' },
+      acceptance: null,
+    });
+    expect(authority.markHostCompleted).toHaveBeenCalledOnce();
+    expect(workDispatcher.acceptOutcome).not.toHaveBeenCalled();
   });
 
   it('rejects a Host-selected next Action as an unsupported result field', async () => {

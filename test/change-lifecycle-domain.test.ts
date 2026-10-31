@@ -434,23 +434,33 @@ describe('Change lifecycle domain', () => {
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
       current: approved.snapshot,
       observation: {
-        kind: 'planning-semantic-drift',
+        kind: 'planning-authority-invalidated',
+        expectedRevision: approved.snapshot.revision,
+        fromPhase: 'build',
+        invalidationKind: 'semantic',
         reason: 'Design artifact changed',
         evidenceIds: [digest('n')],
         inputDigest: digest('z'),
+        work: phaseWork(
+          'design',
+          'specification.plan',
+          approved.snapshot.checkEpoch + 1,
+          digest('z'),
+        ),
       },
     });
     expect(invalidated.snapshot).toMatchObject({
       phase: 'design',
       status: 'running',
-      currentWork: null,
+      currentWork: { kind: 'specification.plan' },
       tasks: [],
     });
     expect(invalidated.snapshot.planningDigest).toBeUndefined();
     expect(invalidated.fact).toMatchObject({
       transitionId: 'build.semantic-plan-drift',
       invalidation: {
-        kind: 'planning-semantic-drift',
+        kind: 'planning-authority-invalidated',
+        invalidationKind: 'semantic',
         supersededPlanningDigest: digest('i'),
         observedPlanningDigest: digest('z'),
         supersededWorkId: configureWork.workId,
@@ -458,6 +468,28 @@ describe('Change lifecycle domain', () => {
         evidenceIds: [digest('n')],
       },
     });
+
+    expect(() =>
+      evolveChangeLifecycle({
+        definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+        current: approved.snapshot,
+        observation: {
+          kind: 'planning-authority-invalidated',
+          expectedRevision: approved.snapshot.revision - 1,
+          fromPhase: 'build',
+          invalidationKind: 'semantic',
+          reason: 'Stale observation',
+          evidenceIds: [],
+          inputDigest: digest('z'),
+          work: phaseWork(
+            'design',
+            'specification.plan',
+            approved.snapshot.checkEpoch + 1,
+            digest('z'),
+          ),
+        },
+      }),
+    ).toThrow(/stale lifecycle revision/u);
 
     const blocked = evolveChangeLifecycle({
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
@@ -755,6 +787,119 @@ describe('Change lifecycle domain', () => {
     expect(retried.fact).toMatchObject({ transitionId: 'build.configuration-retry' });
   });
 
+  it('returns an unapproved Build Configure to an Open workspace-intent revision wait', () => {
+    const intent = createExecutionWorkspaceIntent({
+      workspaceId: initialSnapshot().identity.workspaceId,
+      changeId: initialSnapshot().identity.changeId,
+      isolation: 'current',
+    });
+    const protocol = createBuildProtocolState({
+      runId: initialSnapshot().identity.runId,
+      planningDigest: digest('p'),
+      workspaceIntent: intent,
+    });
+    const configureWork = phaseWork('build', 'build.configure', 4, digest('c'));
+
+    const revision = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current: builtinSnapshot({
+        revision: 4,
+        checkEpoch: 4,
+        phase: 'build',
+        currentWork: configureWork,
+        tasks: [buildTask],
+        workspaceIntent: intent,
+        planningDigest: digest('p'),
+        buildProtocol: protocol,
+      }),
+      observation: {
+        kind: 'workspace-intent-revision-required',
+        requestId: 'workspace-intent-revision-1',
+        proposalDigest: digest('r'),
+        reason: 'Current isolation cannot bind a linked worktree.',
+        evidenceIds: ['binding-error-1'],
+        errorCode: 'current-linked-worktree',
+        previousIsolation: 'current',
+      } as never,
+    });
+
+    expect(revision.snapshot).toMatchObject({
+      phase: 'open',
+      status: 'waiting',
+      checkEpoch: 5,
+      currentWork: null,
+      tasks: [],
+      waitCondition: {
+        kind: 'human-decision',
+        waitId: 'workspace-intent:workspace-intent-revision-1',
+        requestId: 'workspace-intent-revision-1',
+        proposalDigest: digest('r'),
+      },
+    });
+    expect(revision.snapshot).not.toHaveProperty('workspaceIntent');
+    expect(revision.snapshot).not.toHaveProperty('buildProtocol');
+    expect(revision.snapshot).not.toHaveProperty('planningDigest');
+    expect(revision.fact).toMatchObject({
+      transitionId: 'build.workspace-intent-revision-required',
+      workspaceIntentRevision: {
+        errorCode: 'current-linked-worktree',
+        previousIsolation: 'current',
+      },
+    });
+
+    const duplicate = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current: revision.snapshot,
+      observation: {
+        kind: 'workspace-intent-revision-required',
+        requestId: 'workspace-intent-revision-1',
+        proposalDigest: digest('r'),
+        reason: 'Current isolation cannot bind a linked worktree.',
+        evidenceIds: ['binding-error-1'],
+        errorCode: 'current-linked-worktree',
+        previousIsolation: 'current',
+      },
+    });
+    expect(duplicate.fact).toBeNull();
+    expect(duplicate.snapshot).toEqual(revision.snapshot);
+
+    const replacementIntent = createExecutionWorkspaceIntent({
+      workspaceId: initialSnapshot().identity.workspaceId,
+      changeId: initialSnapshot().identity.changeId,
+      isolation: 'worktree',
+    });
+    const designWork = phaseWork('design', 'specification.plan', 6, digest('d'));
+    const revised = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current: revision.snapshot,
+      observation: {
+        kind: 'workspace-intent-revised',
+        requestId: 'workspace-intent-revision-1',
+        proposalDigest: digest('r'),
+        actorId: 'trusted-user',
+        intent: replacementIntent,
+        work: designWork,
+      } as never,
+    });
+
+    expect(revised.snapshot).toMatchObject({
+      phase: 'design',
+      status: 'running',
+      checkEpoch: 6,
+      workspaceIntent: replacementIntent,
+      currentWork: { workId: designWork.workId, kind: 'specification.plan' },
+      waitCondition: null,
+    });
+    expect(revised.snapshot.identity.runId).toBe(revision.snapshot.identity.runId);
+    expect(revised.fact).toMatchObject({
+      transitionId: 'open.workspace-intent-revised',
+      workspaceIntentRevision: {
+        previousIsolation: 'current',
+        nextIsolation: 'worktree',
+      },
+    });
+  });
+
   it('retries Build Plan without accepting an Outcome from a drifted Host', () => {
     const intent = createExecutionWorkspaceIntent({
       workspaceId: initialSnapshot().identity.workspaceId,
@@ -827,6 +972,28 @@ describe('Change lifecycle domain', () => {
       buildProtocol: { currentAction: 'plan', actionAttempt: 2 },
     });
     expect(retried.fact).toMatchObject({ transitionId: 'build.plan-retry' });
+
+    const migrationRequired = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current: retried.snapshot,
+      observation: {
+        kind: 'work-execution-migration-required',
+        reason: 'The legacy terminal Outcome cannot be proven compatible.',
+        evidenceIds: ['legacy-outcome-1'],
+      },
+    });
+    expect(migrationRequired.snapshot).toMatchObject({
+      phase: 'build',
+      status: 'migration_required',
+      currentWork: null,
+      blocker: {
+        code: 'work-execution.migration-required',
+        evidenceIds: ['legacy-outcome-1'],
+      },
+    });
+    expect(migrationRequired.fact).toMatchObject({
+      transitionId: 'build.work-execution-migration-required',
+    });
   });
 
   it('routes Build Check and Verify implementation findings through ordinary Plan revision', () => {
@@ -1042,6 +1209,46 @@ describe('Change lifecycle domain', () => {
       verificationInvalidation: { kind: 'implementation-drift' },
     });
     expect(afterVerify.snapshot.identity.runId).toBe(initialSnapshot().identity.runId);
+
+    const revisedPlan = createBuildPlan({
+      runId: initialSnapshot().identity.runId,
+      revision: 2,
+      configuration,
+      planningDigest: tasks.digest,
+      tasks,
+      candidate: {
+        packages: [
+          {
+            packageKey: 'implementation',
+            taskIds: ['1.1'],
+            repositoryIds: ['workspace'],
+            writeScopes: [{ repositoryId: 'workspace', paths: ['src/**'] }],
+            acceptanceRefs: tasks.tasks[0]!.acceptanceCriteria.map(
+              (criterion) => criterion.acceptanceId,
+            ),
+            expectedOutcomes: ['managed-behavior-passes'],
+            validatorProfile: 'build.package-valid',
+            dependsOn: [],
+          },
+        ],
+      },
+    });
+    const afterReplan = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current: afterVerify.snapshot,
+      observation: { kind: 'build-plan-accepted', plan: revisedPlan },
+    });
+    expect(afterReplan.snapshot).toMatchObject({
+      phase: 'build',
+      currentWork: null,
+      buildProtocol: {
+        currentAction: 'plan-evidence',
+        plan: { revision: 2 },
+        invalidations: [{ source: 'verify' }],
+      },
+    });
+    expect(afterReplan.snapshot.verificationInput).toBeUndefined();
+    expect(afterReplan.snapshot.verificationInvalidation).toBeUndefined();
   });
 
   it('keeps execution status orthogonal to every active phase', () => {
