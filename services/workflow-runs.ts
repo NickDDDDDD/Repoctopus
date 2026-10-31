@@ -2185,6 +2185,7 @@ export class WorkflowRuns extends Service {
             }
             if (
               lifecycle.phase === 'build' &&
+              lifecycle.currentWork === null &&
               lifecycle.verificationInvalidation &&
               (lifecycle.tasks ?? []).every((task) => task.status === 'completed')
             ) {
