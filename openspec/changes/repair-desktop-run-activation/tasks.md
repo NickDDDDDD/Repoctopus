@@ -122,7 +122,7 @@
       **Acceptance:** 隔离环境没有 source target、override、App Paths 或 handler 时返回 `desktop.activation.unavailable`；同一命令仍创建权威 Change Run并向捕获 receiver 投递非桌面依赖的远端事实
       **Verification:** 运行 public CLI tracer E2E，并核对退出码、诊断、Run checkpoint、OTLP payload 与 teardown
       **Requirements:** desktop-observability-dashboard#Windows-开发-Run-自动激活单实例桌面应用, development-telemetry#桌面激活结果形成有界观测事实
-- [ ] 6.7 重新运行完整验证、更新 Evidence/验证报告并清理所有本轮临时进程、registry、安装目录、日志和 payload 后推送验证 HEAD。
+- [x] 6.7 重新运行完整验证、更新 Evidence/验证报告并清理所有本轮临时进程、registry、安装目录、日志和 payload 后推送验证 HEAD。
       **Blocked by:** 6.1, 6.2, 6.3, 6.4, 6.5, 6.6
       **Acceptance:** OpenSpec strict、类型、lint、架构、provenance、单元、package/tracer/Windows E2E 与 mutation 全部通过；报告绑定新实现 commit/包摘要；工作树和外部临时状态干净且远端 OID 等于 HEAD
       **Verification:** 运行正式 verify/package/tracer/desktop 命令、干净 checkout、mutation、残留和 Git/remote 检查并保存 Evidence
