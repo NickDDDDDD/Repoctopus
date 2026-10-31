@@ -196,7 +196,7 @@ Repoctopus MUST 通过独立内置 Skill Provider 提供 Open、Design、Build�
 
 ### Requirement: 阶段 Work 必须装填固定且唯一的 Skill 组合
 
-Lifecycle definition MUST 声明并由 Runtime 根据 phase、Action kind 和冻结 Build Configuration 计算唯一有序组合。Open 固定 `repoctopus-open-change + grilling`，Design 固定 `repoctopus-design-change + codebase-design`；Build 必须使用对应 Configure、Plan、Execute 或 Check action Skill，Execute 仅按 TDD 配置有条件增加 Matt `tdd`，Check 固定增加 Matt `code-review`。execution mode 作为 action input 决定 Repoctopus 协调协议，不作为外部 augmentation Skill。Runtime MUST 在 claim 前解析唯一 Provider、资源、调用策略与 provenance，并向 Host 交付真实内容；调用方、Agent 和 Host不得跳过、替换、重排或额外装填另一规划权威。
+Lifecycle definition MUST 声明不可替换的 Action Skill、固定内置 augmentation 与显式 augmentation slot；Runtime MUST 根据 phase、Action kind 和共享 `EffectiveSkillComposition` 计算唯一有序组合，并在 claim 前解析 Provider、资源、调用策略和 provenance，向 Host 交付真实内容。Open 默认 `repoctopus-open-change + grilling`，Design 默认 `repoctopus-design-change + codebase-design`，Build 使用对应 Configure、Plan、Execute 或 Check Action。execution mode 只能作为 Action input；调用方、Agent 和 Host 不得跳过或替换 Action、重排组合或装填未绑定的 execution Skill。
 
 #### Scenario: Open 的 grilling 没有未决 frontier
 
@@ -210,18 +210,18 @@ Lifecycle definition MUST 声明并由 Runtime 根据 phase、Action kind 和冻
 
 #### Scenario: grilling Provider 缺失或歧义
 
-- **WHEN** composition 无法为规范名 `grilling` 解析恰好一个满足约束的 Provider，或只能依赖未声明的开发机全局安装
-- **THEN** Runtime 在领取 Open Work 前 fail closed并报告 Provider/provenance 差异，不降级成无 augmentation 的 Open
+- **WHEN** composition 无法为某个团队 binding 解析恰好一个满足 contract 的 Provider，或只能依赖未登记的开发机全局安装
+- **THEN** Runtime 在领取 Work 前 fail closed 并报告 binding、Provider 和 provenance 差异，不降级为忽略团队方法
 
 #### Scenario: Execute 请求外部 execution Skill
 
-- **WHEN** 调用方请求为 autonomous 或 subagent 模式装填 Superpowers `subagent-driven-development`、`executing-plans` 或其他未固定 execution Skill
-- **THEN** Runtime 拒绝请求并返回 Repoctopus Execute action 与 Matt augmentation 的冻结组合 identity，不把外部 Skill 当作隐藏的模式实现
+- **WHEN** 调用方请求为 autonomous 或 subagent 模式装填未绑定的外部 execution Skill
+- **THEN** Runtime 拒绝请求并返回核心 Execute Action 与有效 composition 的冻结 identity，不把外部 Skill 当作隐藏模式实现
 
 #### Scenario: 调用方修改阶段组合
 
-- **WHEN** 调用方请求 Open 不加载 `grilling`、Design 跳过 `codebase-design`、Build Execute 额外加载 `codebase-design`、忽略配置中的 TDD/subagent 选择或任意重排
-- **THEN** Runtime 拒绝请求并返回 definition 与配置共同冻结的组合 identity
+- **WHEN** 调用方请求跳过内置 augmentation、替换 Action、增删团队 binding 或任意重排
+- **THEN** Runtime 拒绝请求并返回 definition 与 effective composition 共同冻结的组合 identity
 
 ### Requirement: OpenSpec 四类工件必须保持唯一规划权威
 
@@ -241,3 +241,41 @@ Open 和 Design MUST 共同维护同一 Change 下的 proposal、delta specs、d
 
 - **WHEN** Workspace 通过 OpenSpec Store 管理多个业务仓的同一 Change
 - **THEN** Open 与 Design 仍只更新 Store 中该 Change 的四类权威工件；BuildPlan 可记录各包的 repository binding，但不得产生每仓第二套 spec/ticket
+
+### Requirement: 团队绑定编译为唯一有效 Skill composition
+
+Repoctopus MUST 由纯 Compiler 把固定 lifecycle definition、共享团队 binding 与活动 Skill catalog 编译为唯一有序 `EffectiveSkillComposition`。第一版只允许 `guidance` 和 definition 显式 replaceable augmentation slot 的 `augmentation-replacement`；Action Skill 永远不可替换。Runtime MUST 在 Work claim 前解析唯一 Provider、验证 capability/invocation/resource contract、冻结 composition digest，并拒绝调用方、Agent 或 Host 增删、替换、重排或临时加载另一组合。
+
+#### Scenario: 团队追加工程 guidance
+
+- **WHEN** 有效配置把两个只读 guidance Skill 绑定到同一 Work
+- **THEN** Runtime 按 `(order,bindingId)` 稳定顺序交付完整正文和资源，保留 action、内置 augmentation 与 team guidance 角色，且 guidance 不获得额外 write scope、产物或 transition 权限
+
+#### Scenario: 团队替换 augmentation
+
+- **WHEN** definition 把某 augmentation 声明为 replaceable slot，团队 Skill 满足同一 capability、invocation 和 resource contract
+- **THEN** Compiler 为该 slot 选择唯一 replacement 并冻结其 Provider/provenance；内置 Action 与其他 augmentation 不变
+
+#### Scenario: 团队尝试替换 Action
+
+- **WHEN** 配置、调用方或 Host 请求替换任一 Repoctopus-owned Action Skill
+- **THEN** composition compile 或 Work guard fail closed，并返回不可替换的 definition identity
+
+#### Scenario: 活动 Run 的团队 binding 漂移
+
+- **WHEN** Run 恢复时共享 binding 或实际使用的 Provider 内容与冻结 composition 不兼容
+- **THEN** Runtime 使尚未接受的 Work 失效并进入显式 drift/migration 诊断，不静默采用新组合或创建第二 Run
+
+### Requirement: 团队 Skill 消费只依据当前 packet 回执
+
+Repoctopus MUST 分别记录团队 Skill 的 resolved、delivered 和 consumed 事实。`consumed` 只有在当前 Host invocation 的回执包含匹配 packet/layer digest 时产生；Work 成功、文件存在、最终命令通过或 SkillUsageSnapshot MUST NOT 反推 consumed，也 MUST NOT 把 consumed 表述为方法已执行。
+
+#### Scenario: Host 未消费 team guidance
+
+- **WHEN** packet 包含 team guidance，但 Host outcome 没有确认其当前 layer digest
+- **THEN** 该层保持 delivered，Work 的其他成功结果不得补写 consumed
+
+#### Scenario: Host 回报旧层摘要
+
+- **WHEN** Host outcome 引用上一 revision 或另一个 Work 的 layer digest
+- **THEN** Runtime 拒绝该消费声明并保留可定位诊断，不污染当前组合状态
