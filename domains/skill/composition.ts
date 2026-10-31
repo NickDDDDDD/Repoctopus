@@ -110,7 +110,7 @@ export function createEffectiveWorkSkillComposition(input: {
     workKind: input.workKind,
     layers: input.layers.map((layer) => structuredClone(stableLayer(layer))),
   };
-  return deepFreeze({ ...stable, digest: digest(stable) }) as EffectiveWorkSkillComposition;
+  return deepFreeze({ ...stable, digest: digest(stable) });
 }
 
 export function compileEffectiveSkillComposition(input: {
@@ -250,5 +250,5 @@ export function compileEffectiveSkillComposition(input: {
     definition: { id: input.definition.id, version: input.definition.version },
     works,
   };
-  return deepFreeze({ ...stable, digest: digest(stable) }) as EffectiveSkillComposition;
+  return deepFreeze({ ...stable, digest: digest(stable) });
 }

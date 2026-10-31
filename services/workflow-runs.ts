@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 
 import { Service, type Context } from '@deepseek-ai/cordis';
-import { isModelInvocable, type SkillDefinition } from '@deepseek-ai/dsh-skill';
+import type { SkillDefinition } from '@deepseek-ai/dsh-skill';
 
 import type { ActionOutcome, RunState, RunTriggerSnapshot } from '../domains/engine/types.js';
 import type { ProjectSnapshot } from '../domains/project/types.js';
@@ -21,6 +21,10 @@ import {
 } from '../domains/skill/types.js';
 import { snapshotSkillDefinition } from '../platform/skill/snapshot.js';
 import type {
+  EffectiveSkillComposition,
+  EffectiveWorkSkillComposition,
+} from '../domains/skill/composition.js';
+import type {
   SpecificationCompatibility,
   SpecificationApprovalActor,
   SpecificationApprovalDecisionResponse,
@@ -36,7 +40,6 @@ import {
   BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
   createChangeLifecycleSnapshot,
 } from '../domains/change-lifecycle/definition.js';
-import { lifecycleWorkDefinition } from '../domains/change-lifecycle/work-definition.js';
 import {
   changeRunId,
   createChangeRunHostWorkflow,
@@ -1123,8 +1126,8 @@ export class WorkflowRuns extends Service {
   ): Promise<{
     actionSkill: SkillUsageSnapshot;
     augmentationSkills: SkillUsageSnapshot[];
-    skillComposition: import('../domains/skill/composition.js').EffectiveWorkSkillComposition;
-    effectiveComposition: import('../domains/skill/composition.js').EffectiveSkillComposition;
+    skillComposition: EffectiveWorkSkillComposition;
+    effectiveComposition: EffectiveSkillComposition;
   }> {
     const resolved = await this.ctx.teamSkillComposition.resolveWork(
       BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
