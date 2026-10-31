@@ -190,6 +190,7 @@ export class WorkflowRuns extends Service {
     'project',
     'runStore',
     'skills',
+    'teamSkillComposition',
     'specification',
     'specificationPlanning',
     'workflowTelemetry',
@@ -313,6 +314,7 @@ export class WorkflowRuns extends Service {
         },
       });
       const openSkills = await this.resolveLifecycleWorkSkills('change.intake', signal);
+      lifecycle.skillCompositionDigest = openSkills.effectiveComposition.digest;
       lifecycle.currentWork = createLifecyclePhaseWork({
         runId,
         checkEpoch: lifecycle.checkEpoch,
@@ -321,6 +323,7 @@ export class WorkflowRuns extends Service {
         kind: 'change.intake',
         actionSkill: openSkills.actionSkill,
         augmentationSkills: openSkills.augmentationSkills,
+        skillComposition: openSkills.skillComposition,
         compositionDigest: this.ctx.compositionIdentity.current().compositionDigest,
         projectSnapshotDigest: input.projectSnapshot.digest,
         projectConfigDigest: input.projectConfigDigest,
@@ -355,9 +358,18 @@ export class WorkflowRuns extends Service {
         },
         changeLifecycle: lifecycle,
       });
-      for (const skill of [openSkills.actionSkill, ...openSkills.augmentationSkills]) {
+      const frozenSkills = new Map(
+        openSkills.effectiveComposition.works.flatMap((work) =>
+          work.layers.map((layer) => [layer.skill.name, layer.skill] as const),
+        ),
+      );
+      for (const skill of frozenSkills.values()) {
         await this.coordinator.bindSkill(runId, skill);
       }
+      await this.ctx.workExecutionAuthority.recordSkillComposition(
+        runId,
+        openSkills.effectiveComposition,
+      );
       await this.ctx.workExecutionAuthority.recordWorkCreated(runId, lifecycle.currentWork);
       const activationState = await this.ctx.runStore.loadRun(runId);
       const activationIntentId = `sha256:${createHash('sha256')
@@ -489,6 +501,7 @@ export class WorkflowRuns extends Service {
           kind: 'specification.plan',
           actionSkill: skills.actionSkill,
           augmentationSkills: skills.augmentationSkills,
+          skillComposition: skills.skillComposition,
           compositionDigest: state.composition.compositionDigest,
           projectSnapshotDigest: state.projectSnapshotDigest,
           projectConfigDigest: projectConfigDigest as `sha256:${string}`,
@@ -565,6 +578,7 @@ export class WorkflowRuns extends Service {
           kind,
           actionSkill: skills.actionSkill,
           augmentationSkills: skills.augmentationSkills,
+          skillComposition: skills.skillComposition,
           compositionDigest: state.composition.compositionDigest,
           projectConfigDigest: projectConfigDigest as `sha256:${string}`,
           projectSnapshotDigest: state.projectSnapshotDigest,
@@ -678,6 +692,7 @@ export class WorkflowRuns extends Service {
           kind,
           actionSkill: skills.actionSkill,
           augmentationSkills: skills.augmentationSkills,
+          skillComposition: skills.skillComposition,
           compositionDigest: state.composition.compositionDigest,
           projectConfigDigest: projectConfigDigest as `sha256:${string}`,
           projectSnapshotDigest: state.projectSnapshotDigest,
@@ -758,6 +773,7 @@ export class WorkflowRuns extends Service {
             kind: 'specification.plan',
             actionSkill: skills.actionSkill,
             augmentationSkills: skills.augmentationSkills,
+            skillComposition: skills.skillComposition,
             compositionDigest: state.composition.compositionDigest,
             projectSnapshotDigest: state.projectSnapshotDigest,
             projectConfigDigest: projectConfigDigest as `sha256:${string}`,
@@ -1065,6 +1081,7 @@ export class WorkflowRuns extends Service {
       kind: 'specification.plan',
       actionSkill: skills.actionSkill,
       augmentationSkills: skills.augmentationSkills,
+      skillComposition: skills.skillComposition,
       compositionDigest: state.composition.compositionDigest,
       projectSnapshotDigest: state.projectSnapshotDigest,
       projectConfigDigest,
@@ -1106,28 +1123,20 @@ export class WorkflowRuns extends Service {
   ): Promise<{
     actionSkill: SkillUsageSnapshot;
     augmentationSkills: SkillUsageSnapshot[];
+    skillComposition: import('../domains/skill/composition.js').EffectiveWorkSkillComposition;
+    effectiveComposition: import('../domains/skill/composition.js').EffectiveSkillComposition;
   }> {
-    const work = lifecycleWorkDefinition(BUILTIN_CHANGE_LIFECYCLE_DEFINITION, kind);
-    if (!work.actionSkill) {
-      throw new Error(`Lifecycle Work has no executable action Skill: ${kind}`);
-    }
-    const resolve = async (name: string): Promise<SkillUsageSnapshot> => {
-      const definition = await this.ctx.skills.get(name, {
-        cwd: this.workspaceRoot,
-        ...(signal ? { signal } : {}),
-      });
-      if (!definition || !isModelInvocable(definition)) {
-        throw new Error(`Lifecycle executable Skill is unavailable: ${name}`);
-      }
-      return snapshotSkillDefinition(definition);
-    };
+    const resolved = await this.ctx.teamSkillComposition.resolveWork(
+      BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      kind,
+      signal,
+      configuredAugmentationNames,
+    );
     return {
-      actionSkill: await resolve(work.actionSkill.name),
-      augmentationSkills: await Promise.all(
-        [...work.augmentationSkills.map((skill) => skill.name), ...configuredAugmentationNames].map(
-          (name) => resolve(name),
-        ),
-      ),
+      actionSkill: resolved.actionSkill,
+      augmentationSkills: resolved.augmentationSkills,
+      skillComposition: resolved.skillComposition,
+      effectiveComposition: resolved.effectiveComposition,
     };
   }
 
@@ -1236,6 +1245,7 @@ export class WorkflowRuns extends Service {
       kind: 'specification.plan',
       actionSkill: skills.actionSkill,
       augmentationSkills: skills.augmentationSkills,
+      skillComposition: skills.skillComposition,
       compositionDigest: state.composition.compositionDigest,
       projectSnapshotDigest: state.projectSnapshotDigest,
       projectConfigDigest: projectConfigDigest as `sha256:${string}`,
@@ -1357,6 +1367,7 @@ export class WorkflowRuns extends Service {
         kind: 'change.intake',
         actionSkill: skills.actionSkill,
         augmentationSkills: skills.augmentationSkills,
+        skillComposition: skills.skillComposition,
         compositionDigest: state.composition.compositionDigest,
         projectSnapshotDigest: state.projectSnapshotDigest,
         projectConfigDigest: evaluated.projectConfigDigest,
@@ -1390,6 +1401,7 @@ export class WorkflowRuns extends Service {
         kind: 'specification.plan',
         actionSkill: skills.actionSkill,
         augmentationSkills: skills.augmentationSkills,
+        skillComposition: skills.skillComposition,
         compositionDigest: state.composition.compositionDigest,
         projectSnapshotDigest: state.projectSnapshotDigest,
         projectConfigDigest: evaluated.projectConfigDigest,
@@ -1840,6 +1852,7 @@ export class WorkflowRuns extends Service {
                 kind: 'build.configure',
                 actionSkill: skills.actionSkill,
                 augmentationSkills: skills.augmentationSkills,
+                skillComposition: skills.skillComposition,
                 compositionDigest: current.composition.compositionDigest,
                 projectConfigDigest,
                 projectSnapshotDigest: current.projectSnapshotDigest,
@@ -1887,6 +1900,7 @@ export class WorkflowRuns extends Service {
                 kind: 'build.plan',
                 actionSkill: skills.actionSkill,
                 augmentationSkills: skills.augmentationSkills,
+                skillComposition: skills.skillComposition,
                 compositionDigest: current.composition.compositionDigest,
                 projectConfigDigest,
                 projectSnapshotDigest: current.projectSnapshotDigest,
@@ -1978,6 +1992,7 @@ export class WorkflowRuns extends Service {
                   kind: 'build.configure',
                   actionSkill: skills.actionSkill,
                   augmentationSkills: skills.augmentationSkills,
+                  skillComposition: skills.skillComposition,
                   compositionDigest: current.composition.compositionDigest,
                   projectConfigDigest: projectConfigDigest as `sha256:${string}`,
                   projectSnapshotDigest: current.projectSnapshotDigest,
@@ -2043,6 +2058,7 @@ export class WorkflowRuns extends Service {
                   kind: 'build.configure',
                   actionSkill: skills.actionSkill,
                   augmentationSkills: skills.augmentationSkills,
+                  skillComposition: skills.skillComposition,
                   compositionDigest: current.composition.compositionDigest,
                   projectConfigDigest: projectConfigDigest as `sha256:${string}`,
                   projectSnapshotDigest: current.projectSnapshotDigest,
@@ -2212,6 +2228,7 @@ export class WorkflowRuns extends Service {
                   kind: 'build.plan',
                   actionSkill: planSkills.actionSkill,
                   augmentationSkills: planSkills.augmentationSkills,
+                  skillComposition: planSkills.skillComposition,
                   compositionDigest: current.composition.compositionDigest,
                   projectConfigDigest,
                   projectSnapshotDigest: current.projectSnapshotDigest,
@@ -2400,6 +2417,7 @@ export class WorkflowRuns extends Service {
                 kind: nextKind,
                 actionSkill: skills.actionSkill,
                 augmentationSkills: skills.augmentationSkills,
+                skillComposition: skills.skillComposition,
                 compositionDigest: current.composition.compositionDigest,
                 projectConfigDigest,
                 projectSnapshotDigest: current.projectSnapshotDigest,
@@ -2585,6 +2603,7 @@ export class WorkflowRuns extends Service {
                 kind: nextKind,
                 actionSkill: skills.actionSkill,
                 augmentationSkills: skills.augmentationSkills,
+                skillComposition: skills.skillComposition,
                 compositionDigest: current.composition.compositionDigest,
                 projectConfigDigest,
                 projectSnapshotDigest: current.projectSnapshotDigest,
@@ -2997,6 +3016,7 @@ export class WorkflowRuns extends Service {
                   kind: 'build.plan',
                   actionSkill: planSkills.actionSkill,
                   augmentationSkills: planSkills.augmentationSkills,
+                  skillComposition: planSkills.skillComposition,
                   compositionDigest: current.composition.compositionDigest,
                   projectConfigDigest,
                   projectSnapshotDigest: current.projectSnapshotDigest,
@@ -3058,6 +3078,7 @@ export class WorkflowRuns extends Service {
                 verification: verificationInput,
                 actionSkill: verifySkills.actionSkill,
                 augmentationSkills: verifySkills.augmentationSkills,
+                skillComposition: verifySkills.skillComposition,
                 workspaceRepositoryId,
                 repositoryIds: evidencePlan.fingerprint.manifest.repositories.map(
                   (repository) => repository.repositoryId,
@@ -3107,6 +3128,7 @@ export class WorkflowRuns extends Service {
                 definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
                 actionSkill: skills.actionSkill,
                 augmentationSkills: skills.augmentationSkills,
+                skillComposition: skills.skillComposition,
                 taskSet,
                 approvalHash,
                 compositionDigest: current.composition.compositionDigest,
@@ -3340,6 +3362,7 @@ export class WorkflowRuns extends Service {
         verification: verificationInput,
         actionSkill: skills.actionSkill,
         augmentationSkills: skills.augmentationSkills,
+        skillComposition: skills.skillComposition,
         workspaceRepositoryId: specificationRoot.repositoryId,
         repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
       });
@@ -3374,6 +3397,7 @@ export class WorkflowRuns extends Service {
       kind: 'build.plan',
       actionSkill: skills.actionSkill,
       augmentationSkills: skills.augmentationSkills,
+      skillComposition: skills.skillComposition,
       compositionDigest: state.composition.compositionDigest,
       projectConfigDigest: projectConfigDigest as `sha256:${string}`,
       projectSnapshotDigest: state.projectSnapshotDigest,
@@ -3624,6 +3648,7 @@ export class WorkflowRuns extends Service {
       verification: verificationInput,
       actionSkill: skills.actionSkill,
       augmentationSkills: skills.augmentationSkills,
+      skillComposition: skills.skillComposition,
       workspaceRepositoryId: specificationRoot.repositoryId,
       repositoryIds: refreshed.fingerprint.manifest.repositories.map(
         (repository) => repository.repositoryId,
@@ -3746,6 +3771,7 @@ export class WorkflowRuns extends Service {
         checkEpoch: lifecycle.checkEpoch + 1,
         archive: archiveInput,
         actionSkill: archiveSkills.actionSkill,
+        skillComposition: archiveSkills.skillComposition,
         workspaceRepositoryId: input.intent.changeBranch.repositoryId,
         repositoryIds,
       });
@@ -3784,6 +3810,7 @@ export class WorkflowRuns extends Service {
           archive: lifecycle.archiveDeliveryInput,
           closure: lifecycle.specificationClosure,
           actionSkill: skills.actionSkill,
+          skillComposition: skills.skillComposition,
           workspaceRepositoryId: lifecycle.archiveDeliveryInput.changeBranch.repositoryId,
           repositoryIds: input.project.repositories.map((repository) => repository.id),
         });
@@ -3897,6 +3924,7 @@ export class WorkflowRuns extends Service {
           archive,
           closure,
           actionSkill: skills.actionSkill,
+          skillComposition: skills.skillComposition,
           workspaceRepositoryId: archive.changeBranch.repositoryId,
           repositoryIds: input.project.repositories.map((repository) => repository.id),
         });
@@ -4015,6 +4043,7 @@ export class WorkflowRuns extends Service {
             kind: 'specification.plan',
             actionSkill: skills.actionSkill,
             augmentationSkills: skills.augmentationSkills,
+            skillComposition: skills.skillComposition,
             compositionDigest: state.composition.compositionDigest,
             projectSnapshotDigest: state.projectSnapshotDigest,
             projectConfigDigest,
@@ -4074,6 +4103,7 @@ export class WorkflowRuns extends Service {
           archive: correctedArchive,
           closure,
           actionSkill: skills.actionSkill,
+          skillComposition: skills.skillComposition,
           workspaceRepositoryId: correctedArchive.changeBranch.repositoryId,
           repositoryIds: input.project.repositories.map((repository) => repository.id),
         });

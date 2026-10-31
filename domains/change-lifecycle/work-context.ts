@@ -9,6 +9,10 @@ import type {
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import { BUILTIN_METHOD_PROFILE_REGISTRY, type MethodRuleDefinition } from './method-profile.js';
 import type { WorkDescriptor } from './transition.js';
+import {
+  createEffectiveWorkSkillComposition,
+  type EffectiveSkillLayerRole,
+} from '../skill/composition.js';
 
 export const WORK_CONTEXT_LAYER_ORDER = [
   'runtime-contract',
@@ -34,6 +38,9 @@ export interface WorkContextLayer {
   source: string;
   content: string;
   digest: `sha256:${string}`;
+  skillRole?: EffectiveSkillLayerRole;
+  bindingId?: string | null;
+  slotId?: string | null;
 }
 
 export interface WorkExecutionContext {
@@ -51,7 +58,15 @@ function canonicalDigest(value: unknown): `sha256:${string}` {
   return sha256(canonicalJson(value));
 }
 
-function layer(kind: WorkContextLayerKind, source: string, content: string): WorkContextLayer {
+function layer(
+  kind: WorkContextLayerKind,
+  source: string,
+  content: string,
+  skill?: Pick<
+    NonNullable<WorkDescriptor['skillComposition']>['layers'][number],
+    'role' | 'bindingId' | 'slotId'
+  >,
+): WorkContextLayer {
   if (!content.trim()) throw new Error(`Work context layer is empty: ${kind}/${source}`);
   return {
     kind,
@@ -59,6 +74,7 @@ function layer(kind: WorkContextLayerKind, source: string, content: string): Wor
     source,
     content,
     digest: sha256(content),
+    ...(skill ? { skillRole: skill.role, bindingId: skill.bindingId, slotId: skill.slotId } : {}),
   };
 }
 
@@ -87,12 +103,43 @@ export function assembleWorkExecutionContext(input: {
   diagnosticSkill?: ResolvedWorkContextSkill;
   changeInputs: unknown;
 }): WorkExecutionContext {
+  const frozenSkillComposition =
+    input.work.skillComposition ??
+    createEffectiveWorkSkillComposition({
+      workKind: input.work.kind,
+      layers: [
+        ...(input.work.actionSkill
+          ? [
+              {
+                role: 'action' as const,
+                origin: 'builtin' as const,
+                order: 0,
+                bindingId: null,
+                slotId: null,
+                skill: input.work.actionSkill,
+              },
+            ]
+          : []),
+        ...input.work.augmentationSkills.map((skill, index) => ({
+          role: 'builtin-augmentation' as const,
+          origin: 'builtin' as const,
+          order: index + 1,
+          bindingId: null,
+          slotId: null,
+          skill,
+        })),
+      ],
+    });
   const layers: WorkContextLayer[] = [
     layer('runtime-contract', 'repoctopus-runtime', input.runtimeContract),
   ];
   if (input.work.actionSkill) {
     const action = assertSkill(input.work.actionSkill, input.actionSkill, 'action');
-    layers.push(layer('action-skill', action.snapshot.name, action.content));
+    const compositionLayer = frozenSkillComposition.layers.find(
+      (candidate) => candidate.role === 'action',
+    );
+    if (!compositionLayer) throw new Error('Work context action composition is missing');
+    layers.push(layer('action-skill', action.snapshot.name, action.content, compositionLayer));
   } else if (input.actionSkill) {
     throw new Error('Work context contains a second, undeclared action owner');
   }
@@ -164,7 +211,20 @@ export function assembleWorkExecutionContext(input: {
         `Augmentation Skill conflicts with the Specification artifact protocol: ${augmentation.snapshot.name}`,
       );
     }
-    layers.push(layer('augmentation-skill', augmentation.snapshot.name, augmentation.content));
+    const compositionLayer = frozenSkillComposition.layers.filter(
+      (candidate) => candidate.role !== 'action',
+    )[index];
+    if (!compositionLayer || compositionLayer.skill.name !== augmentation.snapshot.name) {
+      throw new Error(`Work context augmentation composition is drifted at index ${index}`);
+    }
+    layers.push(
+      layer(
+        'augmentation-skill',
+        augmentation.snapshot.name,
+        augmentation.content,
+        compositionLayer,
+      ),
+    );
   });
   if (input.diagnosticSkill) {
     if (input.work.phase !== 'build' || input.diagnosticSkill.snapshot.name !== 'diagnosing-bugs') {

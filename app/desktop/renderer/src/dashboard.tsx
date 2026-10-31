@@ -335,6 +335,14 @@ function SkillDetails({ change }: { change: ProjectedChange }) {
   const skills = change.currentWork
     ? change.skills.filter((skill) => skill.workId === change.currentWork?.workId)
     : [];
+  const roleLabel = (role: ProjectedChange['skills'][number]['role']) =>
+    ({
+      action: 'Action Skill',
+      augmentation: 'Legacy augmentation',
+      'builtin-augmentation': 'Built-in augmentation',
+      'team-guidance': 'Team guidance',
+      'team-replacement': 'Team replacement',
+    })[role];
   return (
     <section className="detail-section" aria-labelledby="skill-heading">
       <div className="section-heading section-heading--compact">
@@ -352,7 +360,7 @@ function SkillDetails({ change }: { change: ProjectedChange }) {
             <div className="skill-row" role="listitem" key={`${skill.role}:${skill.name}`}>
               <div>
                 <p>{skill.name}</p>
-                <span>{skill.role === 'action' ? 'Action Skill' : 'Augmentation Skill'}</span>
+                <span>{roleLabel(skill.role)}</span>
               </div>
               <div className="skill-stages" aria-label={`${skill.name} 生命周期`}>
                 {(['resolved', 'delivered', 'consumed'] as const).map((stage) => (

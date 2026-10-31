@@ -5,6 +5,7 @@ import { Service, type Context } from '@deepseek-ai/cordis';
 import type { ActionIntent, ActionReceipt, ClaimedActionOutcome } from '../domains/action/types.js';
 import type { RunState } from '../domains/engine/types.js';
 import type { WorkDescriptor } from '../domains/change-lifecycle/transition.js';
+import type { EffectiveSkillComposition } from '../domains/skill/composition.js';
 import type {
   SpecificationArtifact,
   SpecificationValidation,
@@ -419,6 +420,73 @@ export class WorkExecutionAuthority extends Service {
     await this.flushTelemetry(runId);
   }
 
+  async recordSkillComposition(
+    runId: string,
+    composition: EffectiveSkillComposition,
+  ): Promise<void> {
+    const observations: Array<{
+      type: TrajectoryEventType;
+      identity: readonly string[];
+      data: Record<string, unknown>;
+    }> = [
+      {
+        type: 'skill-composition.compiled',
+        identity: [composition.digest],
+        data: {
+          skillCompositionDigest: composition.digest,
+          result: 'compiled',
+          workCount: composition.works.length,
+          layerCount: composition.works.reduce((total, work) => total + work.layers.length, 0),
+        },
+      },
+      ...composition.works.flatMap((work) =>
+        work.layers
+          .filter((layer) => layer.origin === 'team')
+          .map((layer) => ({
+            type: 'skill-binding.resolved' as const,
+            identity: [work.workKind, layer.bindingId!, layer.skill.contentDigest],
+            data: {
+              workKind: work.workKind,
+              skillName: layer.skill.name,
+              skillRole: layer.role,
+              bindingId: layer.bindingId,
+              slotId: layer.slotId ?? undefined,
+              skillCompositionDigest: composition.digest,
+              result: 'resolved',
+            },
+          })),
+      ),
+    ];
+    for (const observation of observations) {
+      await this.ctx.runStore.commitGuarded(runId, ({ state, trajectory }) => {
+        if (state.changeLifecycle?.skillCompositionDigest !== composition.digest) {
+          throw new Error('Skill composition event does not match the frozen Change Run');
+        }
+        const eventId = digest(runId, observation.type, ...observation.identity);
+        if (trajectory.some((event) => event.eventId === eventId)) return { value: undefined };
+        const timestamp = new Date().toISOString();
+        const nextState: RunState = {
+          ...state,
+          stateVersion: state.stateVersion + 1,
+          updatedAt: timestamp,
+        };
+        return {
+          state: nextState,
+          event: executionEvent({
+            state: nextState,
+            sequence: trajectory.length + 1,
+            timestamp,
+            type: observation.type,
+            identity: observation.identity,
+            data: observation.data,
+          }),
+          value: undefined,
+        };
+      });
+    }
+    await this.flushTelemetry(runId);
+  }
+
   async markContextDelivered(packet: WorkExecutionPacket): Promise<WorkExecutionCheckpoint> {
     return this.transition(
       packet.claim.runId,
@@ -459,7 +527,10 @@ export class WorkExecutionAuthority extends Service {
           attempt: packet.claim.attempt,
           packetDigest: packet.identity.packetDigest,
           skillName: layer.source,
-          skillRole: layer.kind === 'action-skill' ? 'action' : 'augmentation',
+          skillRole: layer.skillRole ?? (layer.kind === 'action-skill' ? 'action' : 'augmentation'),
+          bindingId: layer.bindingId ?? undefined,
+          slotId: layer.slotId ?? undefined,
+          skillCompositionDigest: packet.work.skillComposition?.digest,
           result: stage,
         },
         [layer.digest, stage],

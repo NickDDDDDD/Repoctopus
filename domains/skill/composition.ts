@@ -81,6 +81,18 @@ function stableLayer(layer: EffectiveSkillLayer) {
   };
 }
 
+export function createEffectiveWorkSkillComposition(input: {
+  workKind: string;
+  layers: readonly EffectiveSkillLayer[];
+}): EffectiveWorkSkillComposition {
+  const stable = {
+    schemaVersion: 1 as const,
+    workKind: input.workKind,
+    layers: input.layers.map((layer) => structuredClone(stableLayer(layer))),
+  };
+  return deepFreeze({ ...stable, digest: digest(stable) }) as EffectiveWorkSkillComposition;
+}
+
 export function compileEffectiveSkillComposition(input: {
   definition: ChangeLifecycleDefinition;
   bindings: readonly TeamSkillBindingConfig[];
@@ -208,12 +220,7 @@ export function compileEffectiveSkillComposition(input: {
           skill: structuredClone(entry.snapshot),
         });
       }
-      const stable = {
-        schemaVersion: 1 as const,
-        workKind: work.kind,
-        layers: layers.map(stableLayer),
-      };
-      return { ...stable, digest: digest(stable) };
+      return createEffectiveWorkSkillComposition({ workKind: work.kind, layers });
     })
     .sort((left, right) => left.workKind.localeCompare(right.workKind));
   const stable = {

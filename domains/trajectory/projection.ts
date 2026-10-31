@@ -3,6 +3,7 @@ import type {
   ObservationBuildAction,
   ObservationEnvelope,
   ObservationScalar,
+  ObservationSkillRole,
 } from './observation.js';
 
 export const PROJECTION_BUILD_ACTIONS = [
@@ -75,8 +76,11 @@ export interface ProjectedWork {
 
 export interface ProjectedSkill {
   name: string;
-  role: 'action' | 'augmentation';
+  role: ObservationSkillRole;
   workId: string;
+  bindingId: string | null;
+  slotId: string | null;
+  compositionDigest: string | null;
   state: 'not-reported' | 'resolved' | 'delivered' | 'consumed' | 'failed';
   resolvedAt: string | null;
   deliveredAt: string | null;
@@ -506,6 +510,9 @@ function projectSkill(change: ProjectedChange, envelope: ObservationEnvelope): v
       name: skillName,
       role: skillRole,
       workId,
+      bindingId: envelope.correlation.bindingId ?? null,
+      slotId: envelope.correlation.slotId ?? null,
+      compositionDigest: envelope.correlation.skillCompositionDigest ?? null,
       state: 'not-reported',
       resolvedAt: null,
       deliveredAt: null,
@@ -513,6 +520,10 @@ function projectSkill(change: ProjectedChange, envelope: ObservationEnvelope): v
       failedAt: null,
     };
     change.skills.push(skill);
+  } else {
+    skill.bindingId ??= envelope.correlation.bindingId ?? null;
+    skill.slotId ??= envelope.correlation.slotId ?? null;
+    skill.compositionDigest ??= envelope.correlation.skillCompositionDigest ?? null;
   }
   const reported = stringAttribute(envelope.attributes, 'skillState');
   const failed = resultState(stringAttribute(envelope.attributes, 'result')) === 'failed';

@@ -104,6 +104,17 @@ function projectSelections(
     { id: 'skill-registry' },
     ...selectedProviders,
     runtimeSelection(
+      'team-skill-composition',
+      {
+        workspaceRoot,
+        bindings: config.shared.lifecycle?.skillBindings.bindings ?? [],
+      },
+      {
+        workspaceRoot: WORKSPACE_ROOT_IDENTITY,
+        bindings: config.shared.lifecycle?.skillBindings.bindings ?? [],
+      },
+    ),
+    runtimeSelection(
       'skill-provider-consistency-method',
       { productRoot },
       { productRoot: PRODUCT_ROOT_IDENTITY },
@@ -258,6 +269,7 @@ const BASE_REQUIRED_SERVICES = [
   'runtimeWorkGuard',
   'managedWorkExecutor',
   'skills',
+  'teamSkillComposition',
   'specification',
   'specificationPlanning',
   'workflowRuns',

@@ -2,6 +2,10 @@ import { createHash } from 'node:crypto';
 
 import type { SpecificationTask, SpecificationTaskSet } from '../specification/types.js';
 import type { SkillUsageSnapshot } from '../skill/types.js';
+import {
+  createEffectiveWorkSkillComposition,
+  type EffectiveWorkSkillComposition,
+} from '../skill/composition.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import type { ChangeLifecycleDefinition, WorkDescriptor } from './transition.js';
 import { materializeLifecycleWorkBinding } from './work-definition.js';
@@ -35,6 +39,7 @@ export function createInitialBuildWork(facts: {
   definition: ChangeLifecycleDefinition;
   actionSkill: SkillUsageSnapshot;
   augmentationSkills: readonly SkillUsageSnapshot[];
+  skillComposition?: EffectiveWorkSkillComposition;
   taskSet: SpecificationTaskSet;
   approvalHash: `sha256:${string}`;
   compositionDigest: `sha256:${string}`;
@@ -75,12 +80,51 @@ export function createBuildActionWork(facts: {
   writeScopes?: readonly { repositoryId: string; paths: readonly string[] }[];
   taskId?: string;
   taskRevision?: `sha256:${string}`;
+  skillComposition?: EffectiveWorkSkillComposition;
 }): WorkDescriptor {
+  const composition = buildActionSkillComposition({
+    action: facts.kind.slice('build.'.length) as Exclude<BuildActionKind, 'plan-evidence'>,
+    ...(facts.tddMode ? { tddMode: facts.tddMode } : {}),
+  });
+  const augmentationNames = facts.augmentationSkills.map((skill) => skill.name);
+  if (facts.actionSkill.name !== composition.actionSkill) {
+    throw new Error(`Build Action Skill does not match frozen policy: ${facts.kind}`);
+  }
+  if (
+    (facts.kind === 'build.execute' && !facts.tddMode) ||
+    JSON.stringify(augmentationNames) !== JSON.stringify(composition.augmentationSkills)
+  ) {
+    throw new Error(`Build Action augmentation Skills do not match frozen policy: ${facts.kind}`);
+  }
+  const skillComposition =
+    facts.skillComposition ??
+    createEffectiveWorkSkillComposition({
+      workKind: facts.kind,
+      layers: [
+        {
+          role: 'action',
+          origin: 'builtin',
+          order: 0,
+          bindingId: null,
+          slotId: null,
+          skill: facts.actionSkill,
+        },
+        ...facts.augmentationSkills.map((skill, index) => ({
+          role: 'builtin-augmentation' as const,
+          origin: 'builtin' as const,
+          order: index + 1,
+          bindingId: null,
+          slotId: null,
+          skill,
+        })),
+      ],
+    });
   const binding = materializeLifecycleWorkBinding({
     definition: facts.definition,
     kind: facts.kind,
     actionSkill: facts.actionSkill,
-    augmentationSkills: [],
+    augmentationSkills: facts.augmentationSkills,
+    skillComposition,
     workspaceRepositoryId: facts.workspaceRepositoryId,
     repositoryIds: facts.repositoryIds,
   });
@@ -97,20 +141,6 @@ export function createBuildActionWork(facts: {
     tddMode: facts.tddMode ?? null,
   };
   const inputDigest = sha256(stableInput);
-  const composition = buildActionSkillComposition({
-    action: facts.kind.slice('build.'.length) as Exclude<BuildActionKind, 'plan-evidence'>,
-    ...(facts.tddMode ? { tddMode: facts.tddMode } : {}),
-  });
-  const augmentationNames = facts.augmentationSkills.map((skill) => skill.name);
-  if (facts.actionSkill.name !== composition.actionSkill) {
-    throw new Error(`Build Action Skill does not match frozen policy: ${facts.kind}`);
-  }
-  if (
-    facts.kind === 'build.execute' && !facts.tddMode ||
-    JSON.stringify(augmentationNames) !== JSON.stringify(composition.augmentationSkills)
-  ) {
-    throw new Error(`Build Action augmentation Skills do not match frozen policy: ${facts.kind}`);
-  }
   const writeScopes = facts.writeScopes
     ? facts.writeScopes.map((scope) => {
         if (!facts.repositoryIds.includes(scope.repositoryId) || scope.paths.length === 0) {

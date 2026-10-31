@@ -54,8 +54,7 @@ function validatorProfile(id: string) {
 export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
   schemaVersion: 3,
   id: 'repoctopus-change',
-  version: '4.4.0',
-  compatibleDigests: ['sha256:2d4fe66568481105e1586620c4f1ad6abf0df3d86b84e4bbb08b9eaf22737f6c'],
+  version: '4.5.0',
   phases: [
     {
       phase: 'open',
@@ -105,6 +104,14 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       phase: 'open',
       actionSkill: { name: 'repoctopus-open-change' },
       augmentationSkills: [{ name: 'grilling' }],
+      augmentationSlots: [
+        {
+          id: 'open-method',
+          defaultSkill: { name: 'grilling' },
+          replaceable: true,
+          contract: { modelInvocable: true, artifactProtocolOwner: false },
+        },
+      ],
       methodProfile: BUILTIN_METHOD_PROFILE_REGISTRY.snapshot('repoctopus.open', '1.0.0'),
       capabilities: ['repository.read', 'specification.read', 'specification.write'],
       sideEffectClass: 'specification-write',
@@ -127,6 +134,14 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       phase: 'design',
       actionSkill: { name: 'repoctopus-design-change' },
       augmentationSkills: [{ name: 'codebase-design' }],
+      augmentationSlots: [
+        {
+          id: 'design-method',
+          defaultSkill: { name: 'codebase-design' },
+          replaceable: true,
+          contract: { modelInvocable: true, artifactProtocolOwner: false },
+        },
+      ],
       methodProfile: BUILTIN_METHOD_PROFILE_REGISTRY.snapshot('repoctopus.design', '1.0.0'),
       capabilities: ['repository.read', 'specification.read', 'specification.write'],
       sideEffectClass: 'specification-write',
@@ -207,6 +222,14 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       phase: 'verify',
       actionSkill: { name: 'repoctopus-verify-change' },
       augmentationSkills: [{ name: 'code-review' }],
+      augmentationSlots: [
+        {
+          id: 'verify-review',
+          defaultSkill: { name: 'code-review' },
+          replaceable: true,
+          contract: { modelInvocable: true, artifactProtocolOwner: false },
+        },
+      ],
       methodProfile: BUILTIN_METHOD_PROFILE_REGISTRY.snapshot('repoctopus.verify', '1.0.0'),
       capabilities: ['evidence.write', 'process.execute', 'repository.read'],
       sideEffectClass: 'process',
@@ -804,6 +827,26 @@ export function assertChangeLifecycleDefinition(
         );
       }
     }
+    const slots = work.augmentationSlots ?? [];
+    if (slots.length > 0) {
+      assertUniqueNonEmpty(
+        slots.map((slot) => slot.id),
+        `Lifecycle Work ${work.kind} augmentation slots`,
+      );
+    }
+    for (const slot of slots) {
+      const matches = work.augmentationSkills.filter(
+        (skill) => skill.name === slot.defaultSkill.name,
+      );
+      if (matches.length !== 1) {
+        throw new Error(
+          `Lifecycle Work ${work.kind} augmentation slot ${slot.id} must own exactly one built-in augmentation`,
+        );
+      }
+      if (slot.contract.modelInvocable !== true || slot.contract.artifactProtocolOwner !== false) {
+        throw new Error(`Lifecycle Work ${work.kind} augmentation slot contract is unsupported`);
+      }
+    }
     assertNonEmpty(work.methodProfile.id, `Lifecycle Work ${work.kind} Method Profile`);
     assertNonEmpty(
       work.methodProfile.version,
@@ -1012,6 +1055,13 @@ function normalizeWork(
     phase: work.phase,
     ...(work.actionSkill ? { actionSkill: structuredClone(work.actionSkill) } : {}),
     augmentationSkills: structuredClone(work.augmentationSkills),
+    ...(work.augmentationSlots?.length
+      ? {
+          augmentationSlots: [...work.augmentationSlots]
+            .sort((left, right) => left.id.localeCompare(right.id))
+            .map((slot) => structuredClone(slot)),
+        }
+      : {}),
     methodProfile: structuredClone(work.methodProfile),
     capabilities: [...work.capabilities].sort(),
     sideEffectClass: work.sideEffectClass,

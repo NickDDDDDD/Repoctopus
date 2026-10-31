@@ -71,6 +71,7 @@ import consistencyContributor from './command/consistency-contributor.js';
 import consistencyMethodProvider from './skill/consistency-method-provider.js';
 import lifecycleSkillProvider from './skill/lifecycle-skill-provider.js';
 import { ConsistencyReviewService } from '../services/consistency-review.js';
+import { TeamSkillComposition } from '../services/team-skill-composition.js';
 
 interface BuiltinDefinition {
   descriptor: Omit<PluginDescriptor, 'codeDigest'>;
@@ -371,6 +372,26 @@ const definitions: readonly BuiltinDefinition[] = [
       'plugins/skill/matt-skill-provider.ts',
       'third_party/matt-skills/method-adoptions.json',
       'third_party/matt-skills/source-manifest.json',
+    ],
+  },
+  {
+    descriptor: {
+      id: 'team-skill-composition',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: ['team-skill-composition'],
+      permissions: ['filesystem'],
+      stateSchemas: {},
+    },
+    plugin: TeamSkillComposition,
+    sourceFiles: [
+      'services/team-skill-composition.ts',
+      'domains/skill/composition.ts',
+      'platform/skill/snapshot.ts',
     ],
   },
   {
