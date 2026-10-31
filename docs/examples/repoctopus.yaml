@@ -44,6 +44,21 @@ delivery:
 skillProviders:
   - id: skill-provider-matt
   - id: skill-provider-filesystem
+lifecycle:
+  skillBindings:
+    schemaVersion: 1
+    bindings:
+      - id: team-design-guidance
+        target: specification.plan
+        role: guidance
+        skill: team-code-guidance
+        order: 20
+      - id: team-design-method
+        target: specification.plan
+        role: augmentation-replacement
+        skill: team-codebase-design
+        slot: design-method
+        order: 10
 specificationProvider:
   id: specification-openspec
   store:

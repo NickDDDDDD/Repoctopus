@@ -3,7 +3,10 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
 
-import { parseSharedProjectConfig } from '../domains/project-configuration/config.js';
+import {
+  parseLocalProjectConfig,
+  parseSharedProjectConfig,
+} from '../domains/project-configuration/config.js';
 
 async function fixture(): Promise<Record<string, unknown>> {
   return parse(
@@ -120,5 +123,15 @@ describe('project configuration', () => {
     };
 
     expect(() => parseSharedProjectConfig(input)).toThrow(/lifecycle\.skillBindings/iu);
+  });
+
+  it('forbids local configuration from changing the shared team Skill composition', () => {
+    expect(() =>
+      parseLocalProjectConfig({
+        apiVersion: 'repoctopus/v1alpha1',
+        kind: 'RepoctopusLocal',
+        lifecycle: { skillBindings: { schemaVersion: 1, bindings: [] } },
+      }),
+    ).toThrow(/unknown field.*lifecycle|lifecycle.*unknown field/iu);
   });
 });

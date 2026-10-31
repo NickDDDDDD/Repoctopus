@@ -208,12 +208,21 @@ describe('ObservationEnvelope', () => {
           phase: 'build',
           workId: 'build.execute:4',
           skillName: 'tdd',
-          skillRole: 'augmentation',
+          skillRole: 'team-guidance',
+          bindingId: 'team-tdd-guidance',
+          slotId: 'design-method',
+          skillCompositionDigest: `sha256:${'d'.repeat(64)}`,
           result: 'succeeded',
         }),
         context,
       );
       expect(skill.attributes.skillState).toBe(state);
+      expect(skill.correlation).toMatchObject({
+        skillRole: 'team-guidance',
+        bindingId: 'team-tdd-guidance',
+        slotId: 'design-method',
+        skillCompositionDigest: `sha256:${'d'.repeat(64)}`,
+      });
       expect(JSON.stringify(skill)).not.toMatch(/skillContent|prompt|internalThought/u);
     }
   });

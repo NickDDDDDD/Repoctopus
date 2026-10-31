@@ -12,6 +12,7 @@ export interface SkillCompositionCatalogEntry {
   source: SkillSource;
   artifactProtocolOwner: boolean;
   artifactKinds: readonly string[];
+  requestedCapabilities: readonly string[];
 }
 
 export type EffectiveSkillLayerRole =
@@ -67,6 +68,25 @@ function assertTeamSkill(
   }
   if (entry.artifactProtocolOwner) {
     throw new Error(`Team Skill ${binding.skill} may not own the artifact protocol`);
+  }
+  const unsafe = entry.requestedCapabilities.filter(
+    (capability) => !['repository.read', 'specification.read'].includes(capability),
+  );
+  if (unsafe.length > 0) {
+    throw new Error(
+      `Team Skill ${binding.skill} requests capabilities outside the read-only method contract`,
+    );
+  }
+}
+
+function assertCoreSkill(entry: SkillCompositionCatalogEntry, role: 'action' | 'augmentation') {
+  if (entry.source === 'user-agents' || entry.source === 'user-dsh') {
+    throw new Error(`Lifecycle ${role} Skill ${entry.snapshot.name} resolves from a user source`);
+  }
+  if (role === 'action' && entry.source !== 'bundled' && entry.source !== 'runtime') {
+    throw new Error(
+      `Lifecycle Action Skill ${entry.snapshot.name} may not be replaced by a Provider`,
+    );
   }
 }
 
@@ -125,6 +145,7 @@ export function compileEffectiveSkillComposition(input: {
       if (work.actionSkill && !action) {
         throw new Error(`Lifecycle Action Skill is unavailable: ${work.actionSkill.name}`);
       }
+      if (action) assertCoreSkill(action, 'action');
       const slots = work.augmentationSlots ?? [];
       const slotIds = slots.map((slot) => slot.id);
       if (new Set(slotIds).size !== slotIds.length) {
@@ -170,6 +191,7 @@ export function compileEffectiveSkillComposition(input: {
         const builtin = catalogByName.get(reference.name);
         if (!builtin)
           throw new Error(`Lifecycle augmentation Skill is unavailable: ${reference.name}`);
+        assertCoreSkill(builtin, 'augmentation');
         const slot = slots.find((candidate) => candidate.defaultSkill.name === reference.name);
         const replacement = slot ? replacementBySlot.get(slot.id) : undefined;
         if (replacement) {

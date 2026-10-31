@@ -39,6 +39,7 @@ describe('project composition assembly', () => {
         'desktop-instance-probe',
         'desktop-launcher',
         'observation-delivery',
+        'team-skill-composition',
       ]),
     );
     expect(ids).not.toEqual(
@@ -60,5 +61,13 @@ describe('project composition assembly', () => {
       (plugin) => plugin.id === 'desktop-launcher',
     );
     expect(JSON.stringify(launcherIdentity)).not.toContain(path.resolve(import.meta.dirname, '..'));
+    const teamComposition = composition.entries.find(
+      (entry) => entry.id === 'team-skill-composition',
+    );
+    expect(teamComposition?.config).toEqual({ workspaceRoot, bindings: [] });
+    expect(teamComposition?.identityConfig).toEqual({
+      workspaceRoot: '@repoctopus/workspace-root',
+      bindings: [],
+    });
   });
 });

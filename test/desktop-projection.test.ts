@@ -169,7 +169,9 @@ describe('desktop change projection', () => {
             workId: 'build.execute:dashboard',
             attempt: 2,
             skillName: 'tdd',
-            skillRole: 'augmentation',
+            skillRole: 'team-guidance',
+            bindingId: 'team-tdd-guidance',
+            skillCompositionDigest: `sha256:${'d'.repeat(64)}`,
           },
           attributes: { skillState, result: 'succeeded' },
         }),
@@ -267,7 +269,9 @@ describe('desktop change projection', () => {
     expect(change.skills).toContainEqual(
       expect.objectContaining({
         name: 'tdd',
-        role: 'augmentation',
+        role: 'team-guidance',
+        bindingId: 'team-tdd-guidance',
+        compositionDigest: `sha256:${'d'.repeat(64)}`,
         workId: 'build.execute:dashboard',
         state: 'consumed',
       }),

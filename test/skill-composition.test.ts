@@ -27,6 +27,7 @@ function catalogEntry(
     source: options.source ?? 'project-agents',
     artifactProtocolOwner: options.artifactProtocolOwner ?? false,
     artifactKinds: options.artifactKinds ?? [],
+    requestedCapabilities: options.requestedCapabilities ?? [],
   };
 }
 
@@ -198,6 +199,7 @@ describe('effective team Skill composition', () => {
         snapshot: { invocation: { modelInvocable: false, userInvocable: true } } as never,
       }),
       catalogEntry('team-guidance', { artifactProtocolOwner: true }),
+      catalogEntry('team-guidance', { requestedCapabilities: ['repository.write'] }),
     ]) {
       expect(() =>
         compileEffectiveSkillComposition({
@@ -209,6 +211,24 @@ describe('effective team Skill composition', () => {
           ],
         }),
       ).toThrow(/team Skill|model-invocable|artifact protocol/iu);
+    }
+  });
+
+  it('rejects personal same-name lifecycle Skills and Provider replacement of an Action', () => {
+    for (const candidate of [
+      catalogEntry('codebase-design', { source: 'user-agents' }),
+      catalogEntry('repoctopus-design-change', { source: 'project-agents' }),
+    ]) {
+      expect(() =>
+        compileEffectiveSkillComposition({
+          definition: definition(),
+          bindings: [],
+          catalog: [
+            ...catalog.filter((entry) => entry.snapshot.name !== candidate.snapshot.name),
+            candidate,
+          ],
+        }),
+      ).toThrow(/user source|may not be replaced/iu);
     }
   });
 });

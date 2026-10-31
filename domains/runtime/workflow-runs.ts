@@ -69,6 +69,9 @@ function lifecycleState(snapshot: ChangeLifecycleSnapshot): ChangeLifecycleState
     schemaVersion: snapshot.schemaVersion,
     identity: structuredClone(snapshot.identity),
     definition: structuredClone(snapshot.definition),
+    ...(snapshot.skillCompositionDigest
+      ? { skillCompositionDigest: snapshot.skillCompositionDigest }
+      : {}),
     revision: snapshot.revision,
     checkEpoch: snapshot.checkEpoch,
     phase: snapshot.phase,
@@ -79,9 +82,7 @@ function lifecycleState(snapshot: ChangeLifecycleSnapshot): ChangeLifecycleState
     ...(snapshot.workspaceIntent
       ? { workspaceIntent: structuredClone(snapshot.workspaceIntent) }
       : {}),
-    ...(snapshot.buildProtocol
-      ? { buildProtocol: structuredClone(snapshot.buildProtocol) }
-      : {}),
+    ...(snapshot.buildProtocol ? { buildProtocol: structuredClone(snapshot.buildProtocol) } : {}),
     ...(snapshot.openApprovalDigest ? { openApprovalDigest: snapshot.openApprovalDigest } : {}),
     ...(snapshot.planningDigest ? { planningDigest: snapshot.planningDigest } : {}),
     ...(snapshot.adoptedCompletionClaimDigest
@@ -518,9 +519,7 @@ export class WorkflowRunCoordinator {
             changeLifecycleTransition: reduced.fact,
             observationKind: observation.kind,
             observation: structuredClone(observation),
-            ...(retirement.fact
-              ? { executionRetirement: structuredClone(retirement.fact) }
-              : {}),
+            ...(retirement.fact ? { executionRetirement: structuredClone(retirement.fact) } : {}),
           },
         }),
         value: undefined,

@@ -69,6 +69,7 @@ function executor(
   delegationReceiptsOverride?: WorkExecutionHostOutcome['delegationReceipts'],
   invokeError?: Error,
   workKind = 'build.execute',
+  consumedLayerDigests: readonly `sha256:${string}`[] = [digest('1'), digest('2')],
 ) {
   const packet = frozenPacket(workKind);
   const intent = {
@@ -104,7 +105,7 @@ function executor(
         packetDigest: packet.identity.packetDigest,
         status: 'succeeded' as const,
         summary: 'delegated package completed',
-        consumedLayerDigests: [digest('1'), digest('2')],
+        consumedLayerDigests,
         result: (resultOverride ?? {
           schemaVersion: 1,
           kind: 'build-package-completion',
@@ -412,6 +413,22 @@ describe('Managed Work Executor Build contract', () => {
       digest('2'),
     ]);
     expect(authority.markHostUnknown).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['an old or unknown layer', [digest('1'), digest('2'), digest('9')]],
+    ['a missing team layer', [digest('1')]],
+  ] as const)('rejects successful completion that claims %s', async (_label, consumed) => {
+    const { service, authority } = executor(
+      undefined,
+      undefined,
+      undefined,
+      'build.execute',
+      consumed,
+    );
+
+    await expect(service.execute({} as never)).rejects.toThrow(/consumption of every delivered/u);
+    expect(authority.markHostCompleted).not.toHaveBeenCalled();
   });
 
   it('records a Build Plan submission without accepting a terminal Action Outcome', async () => {

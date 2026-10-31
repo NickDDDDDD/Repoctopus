@@ -40,6 +40,7 @@ Archive 不等待任何 MR 合入，也不执行 merge。最终 Change MR 是 Wo
 - `repositories` 使用稳定逻辑 ID，路径都相对 Workspace；
 - `workspace.repositoryId` 指向保存 OpenSpec change 和最终 Change MR 的仓库；
 - `skillProviders` 与 `specificationProvider` 是团队准入的插件；
+- `lifecycle.skillBindings` 只引用项目 Provider 中受评审的逻辑 Skill，并只使用允许的 guidance/replacement slot；
 - `specificationProvider.store` 声明唯一 OpenSpec Store identity；
 - `delivery.publication` 声明 GitHub remote、API 地址、模板和 Credential 引用；
 - Evidence profile 覆盖所有需要验证的业务仓。

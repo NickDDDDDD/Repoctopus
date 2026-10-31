@@ -21,16 +21,22 @@ interface Config {
 function protocolMetadata(definition: SkillDefinition): {
   artifactProtocolOwner: boolean;
   artifactKinds: string[];
+  requestedCapabilities: string[];
 } {
   const metadata = definition.metadata?.repoctopus;
   if (!metadata || typeof metadata !== 'object') {
-    return { artifactProtocolOwner: false, artifactKinds: [] };
+    return { artifactProtocolOwner: false, artifactKinds: [], requestedCapabilities: [] };
   }
   const record = metadata as Record<string, unknown>;
   return {
     artifactProtocolOwner: record.artifactProtocolOwner === true,
     artifactKinds: Array.isArray(record.artifactKinds)
       ? record.artifactKinds.filter((kind): kind is string => typeof kind === 'string')
+      : [],
+    requestedCapabilities: Array.isArray(record.capabilities)
+      ? record.capabilities.filter(
+          (capability): capability is string => typeof capability === 'string',
+        )
       : [],
   };
 }
@@ -84,14 +90,20 @@ export class TeamSkillComposition extends Service {
     if (!compiled) throw new Error(`Skill composition has no lifecycle Work: ${kind}`);
 
     const dynamic = await Promise.all(
-      dynamicBuiltinNames.map(async (name, index) => ({
-        role: 'builtin-augmentation' as const,
-        origin: 'builtin' as const,
-        order: compiled.layers.length + index,
-        bindingId: null,
-        slotId: null,
-        skill: (await this.resolveCatalogEntry(name, signal)).snapshot,
-      })),
+      dynamicBuiltinNames.map(async (name, index) => {
+        const entry = await this.resolveCatalogEntry(name, signal);
+        if (entry.source === 'user-agents' || entry.source === 'user-dsh') {
+          throw new Error(`Lifecycle augmentation Skill ${name} resolves from a user source`);
+        }
+        return {
+          role: 'builtin-augmentation' as const,
+          origin: 'builtin' as const,
+          order: compiled.layers.length + index,
+          bindingId: null,
+          slotId: null,
+          skill: entry.snapshot,
+        };
+      }),
     );
     const firstGuidance = compiled.layers.findIndex((layer) => layer.role === 'team-guidance');
     const insertion = firstGuidance < 0 ? compiled.layers.length : firstGuidance;

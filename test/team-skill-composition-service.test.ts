@@ -22,7 +22,7 @@ function provider(
     ...(work.actionSkill ? [work.actionSkill.name] : []),
     ...work.augmentationSkills.map((skill) => skill.name),
   ]);
-  const candidates = [...new Set([...builtins, 'team-guide', 'team-design'])].map(
+  const candidates = [...new Set([...builtins, 'tdd', 'team-guide', 'team-design'])].map(
     (name): SkillCandidate => ({
       name,
       description: `${name} description`,
@@ -48,13 +48,16 @@ function provider(
   };
 }
 
-async function service(input: Parameters<typeof provider>[0] = {}) {
+async function service(
+  input: Parameters<typeof provider>[0] = {},
+  workspaceRoot = 'C:/portable/workspace',
+) {
   const context = new Context();
   contexts.push(context);
   await context.plugin(SkillRegistry);
   context.skills.registerProvider(() => provider(input));
   return new TeamSkillComposition(context, {
-    workspaceRoot: 'C:/portable/workspace',
+    workspaceRoot,
     bindings: [
       {
         id: 'design-guide',
@@ -70,6 +73,13 @@ async function service(input: Parameters<typeof provider>[0] = {}) {
         skill: 'team-design',
         order: 10,
         slot: 'design-method',
+      },
+      {
+        id: 'build-guide',
+        target: 'build.execute',
+        role: 'guidance',
+        skill: 'team-guide',
+        order: 20,
       },
     ],
   });
@@ -124,11 +134,56 @@ describe('TeamSkillComposition service', () => {
     );
   });
 
+  it('materializes Open, Design and Build packets from one frozen composition', async () => {
+    const composition = await service();
+    const open = await composition.resolveWork(
+      BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      'change.intake',
+    );
+    const design = await composition.resolveWork(
+      BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      'specification.plan',
+    );
+    const build = await composition.resolveWork(
+      BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      'build.execute',
+      undefined,
+      ['tdd'],
+    );
+
+    expect(open.skillComposition.layers.map((layer) => layer.role)).toEqual([
+      'action',
+      'builtin-augmentation',
+    ]);
+    expect(design.skillComposition.layers.map((layer) => layer.role)).toEqual([
+      'action',
+      'team-replacement',
+      'team-guidance',
+    ]);
+    expect(build.skillComposition.layers.map((layer) => [layer.role, layer.skill.name])).toEqual([
+      ['action', 'repoctopus-build-execute'],
+      ['builtin-augmentation', 'tdd'],
+      ['team-guidance', 'team-guide'],
+    ]);
+    expect(new Set([open, design, build].map((item) => item.effectiveComposition.digest))).toEqual(
+      new Set([open.effectiveComposition.digest]),
+    );
+  });
+
   it('changes the frozen digest when active Provider content drifts', async () => {
     const first = await service({ teamContent: 'team guide v1' });
     const second = await service({ teamContent: 'team guide v2' });
     await expect(first.compile(BUILTIN_CHANGE_LIFECYCLE_DEFINITION)).resolves.not.toEqual(
       await second.compile(BUILTIN_CHANGE_LIFECYCLE_DEFINITION),
+    );
+  });
+
+  it('keeps the composition identity stable across checkout parent directories', async () => {
+    const first = await service({}, 'C:/agent-a/team-platform');
+    const second = await service({}, 'D:/agent-b/team-platform');
+
+    expect((await first.compile(BUILTIN_CHANGE_LIFECYCLE_DEFINITION)).digest).toBe(
+      (await second.compile(BUILTIN_CHANGE_LIFECYCLE_DEFINITION)).digest,
     );
   });
 });
