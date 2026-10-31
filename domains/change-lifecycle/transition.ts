@@ -97,6 +97,16 @@ export interface LifecycleSkillReference {
   name: string;
 }
 
+export interface LifecycleAugmentationSlotDefinition {
+  id: string;
+  defaultSkill: LifecycleSkillReference;
+  replaceable: boolean;
+  contract: {
+    modelInvocable: true;
+    artifactProtocolOwner: false;
+  };
+}
+
 export interface LifecycleWriteScopeDefinition {
   repositorySelector: 'workspace' | 'all-repositories';
   paths: readonly string[];
@@ -115,6 +125,7 @@ export interface ChangeLifecycleWorkDefinition {
   phase: ChangePhase;
   actionSkill?: LifecycleSkillReference;
   augmentationSkills: readonly LifecycleSkillReference[];
+  augmentationSlots?: readonly LifecycleAugmentationSlotDefinition[];
   methodProfile: MethodProfileSnapshot;
   capabilities: readonly string[];
   sideEffectClass: WorkSideEffectClass;

@@ -22,6 +22,8 @@ import {
   type SpecificationNodeConfig,
   type VisualNodeConfig,
   type TeamPluginConfig,
+  type TeamSkillBindingConfig,
+  type TeamSkillBindingsConfig,
 } from './types.js';
 
 export class ProjectConfigError extends Error {
@@ -58,6 +60,13 @@ function positiveInteger(value: unknown, field: string, fallback: number): numbe
   if (value === undefined) return fallback;
   if (!Number.isSafeInteger(value) || Number(value) <= 0) {
     throw new ProjectConfigError('expected a positive integer', field);
+  }
+  return Number(value);
+}
+
+function nonNegativeInteger(value: unknown, field: string): number {
+  if (!Number.isSafeInteger(value) || Number(value) < 0) {
+    throw new ProjectConfigError('expected a non-negative integer', field);
   }
   return Number(value);
 }
@@ -122,6 +131,58 @@ function storeIdentifier(value: unknown, field: string): string {
     throw new ProjectConfigError('expected a lowercase kebab-case Store id', field);
   }
   return parsed;
+}
+
+function skillName(value: unknown, field: string): string {
+  const parsed = string(value, field);
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(parsed)) {
+    throw new ProjectConfigError('expected a kebab-case Skill name', field);
+  }
+  return parsed;
+}
+
+function parseTeamSkillBindings(value: unknown): TeamSkillBindingsConfig {
+  const field = 'lifecycle.skillBindings';
+  const root = object(value, field);
+  exactKeys(root, ['schemaVersion', 'bindings'], field);
+  if (root.schemaVersion !== 1) {
+    throw new ProjectConfigError('unsupported schemaVersion', `${field}.schemaVersion`);
+  }
+  if (!Array.isArray(root.bindings) || root.bindings.length === 0) {
+    throw new ProjectConfigError('expected at least one binding', `${field}.bindings`);
+  }
+  const bindings = root.bindings.map((value, index): TeamSkillBindingConfig => {
+    const itemField = `${field}.bindings[${index}]`;
+    const binding = object(value, itemField);
+    exactKeys(binding, ['id', 'target', 'role', 'skill', 'order', 'slot'], itemField);
+    if (binding.role !== 'guidance' && binding.role !== 'augmentation-replacement') {
+      throw new ProjectConfigError(
+        'expected guidance or augmentation-replacement',
+        `${itemField}.role`,
+      );
+    }
+    const role: TeamSkillBindingConfig['role'] = binding.role;
+    const slot =
+      binding.slot === undefined ? undefined : identifier(binding.slot, `${itemField}.slot`);
+    if (role === 'guidance' && slot !== undefined) {
+      throw new ProjectConfigError('guidance cannot target a slot', `${itemField}.slot`);
+    }
+    if (role === 'augmentation-replacement' && slot === undefined) {
+      throw new ProjectConfigError('augmentation-replacement requires a slot', `${itemField}.slot`);
+    }
+    return {
+      id: identifier(binding.id, `${itemField}.id`),
+      target: identifier(binding.target, `${itemField}.target`),
+      role,
+      skill: skillName(binding.skill, `${itemField}.skill`),
+      order: nonNegativeInteger(binding.order, `${itemField}.order`),
+      ...(slot === undefined ? {} : { slot }),
+    };
+  });
+  if (new Set(bindings.map((binding) => binding.id)).size !== bindings.length) {
+    throw new ProjectConfigError('binding ids must be unique', `${field}.bindings`);
+  }
+  return { schemaVersion: 1, bindings };
 }
 
 function nodeBase(node: Record<string, unknown>, field: string) {
@@ -493,6 +554,7 @@ export function parseSharedProjectConfig(value: unknown): SharedProjectConfig {
       'delivery',
       'skillProviders',
       'specificationProvider',
+      'lifecycle',
     ],
     'config',
   );
@@ -657,6 +719,15 @@ export function parseSharedProjectConfig(value: unknown): SharedProjectConfig {
     }
     composition = { plugins };
   }
+  let lifecycle: SharedProjectConfig['lifecycle'];
+  if (root.lifecycle !== undefined) {
+    const value = object(root.lifecycle, 'lifecycle');
+    exactKeys(value, ['skillBindings'], 'lifecycle');
+    if (value.skillBindings === undefined) {
+      throw new ProjectConfigError('skillBindings is required', 'lifecycle.skillBindings');
+    }
+    lifecycle = { skillBindings: parseTeamSkillBindings(value.skillBindings) };
+  }
 
   return {
     apiVersion: PROJECT_CONFIG_API_VERSION,
@@ -672,6 +743,7 @@ export function parseSharedProjectConfig(value: unknown): SharedProjectConfig {
     ...(delivery ? { delivery } : {}),
     ...(skillProviders ? { skillProviders } : {}),
     ...(specificationProvider ? { specificationProvider } : {}),
+    ...(lifecycle ? { lifecycle } : {}),
   };
 }
 
