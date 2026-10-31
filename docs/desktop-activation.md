@@ -33,7 +33,7 @@
 
 ## 使用已安装应用
 
-Windows 安装器登记 `repoctopus://` 用户级协议。安装完成后，在没有源码 Electron artifact 的 CLI Product Root 运行同一条 `run start` 命令；Runtime 会通过协议启动应用或把上下文转交给现有实例。
+Windows 安装器同时登记 `repoctopus://` 用户级协议和标准 `App Paths\\Repoctopus.exe`。安装完成后，在没有源码 Electron artifact 的 CLI Product Root 运行同一条 `run start` 命令；Runtime 通过绝对 `SystemRoot\\System32\\reg.exe` 读取 App Paths，校验产品 executable 和协议 handler，再直接以独立 URI 参数启动应用或把上下文转交给现有实例。
 
 若要在发布前验证安装路径：
 
@@ -50,14 +50,14 @@ Windows 安装器登记 `repoctopus://` 用户级协议。安装完成后，在�
    npm run test:desktop-package-e2e
    ```
 
-该测试验证协议注册、首次启动、第二实例转交、托盘恢复、完整退出和卸载清理。测试会拒绝覆盖已存在的 Repoctopus 协议处理器。
+该测试验证协议与 App Paths 登记、首次启动、第二实例转交、托盘恢复、完整退出和卸载清理。测试开始前会分别导出既有用户级注册项，测试结束或失败时删除测试登记并逐字节验证原状态已经恢复。
 
 ## 处理不可用或不支持结果
 
 Desktop activation 是应用级的 best-effort 副作用，不是 Change 生命周期 Gate。`unavailable` 或 `unsupported` 只产生 warning；已经创建或恢复的 Run、当前 Work 和远端 OTLP 目的地继续运行。
 
 1. 运行 `npm run build`，确认源码 `dist/desktop/main.js` 与固定 Electron executable 同时存在。
-2. 对安装态运行 `reg.exe query HKCR\repoctopus\shell\open\command /ve`，确认处理器指向有效的 `Repoctopus.exe` 并转交 `%1`。
+2. 对安装态运行 `reg.exe query "HKCU\Software\Microsoft\Windows\CurrentVersion\App Paths\Repoctopus.exe" /ve`，确认默认值是可访问的绝对 `Repoctopus.exe` 路径；再运行 `reg.exe query HKCR\repoctopus\shell\open\command /ve`，确认协议处理器存在并转交 `%1`。
 3. 检查系统托盘，确认窗口不是以 `tray` 偏好隐藏。
 4. 运行 `node bin/repoctopus.js run status --workspace . --run <run-id> --json`，确认 Run 仍处于权威状态。
 5. 修复本地桌面后再次运行 `run start`；稳定 Run identity 会恢复同一 Run，不会创建平行生命周期。

@@ -25,11 +25,18 @@ describe('installed Windows desktop end-to-end contract', () => {
     expect(script).toContain('REPOCTOPUS_DESKTOP_E2E_EVIDENCE');
     expect(script).toContain('isolatedUserData: true');
     expect(script).toContain('isolatedDiscovery: true');
-    expect(script).toContain("path.join(systemRoot, 'explorer.exe')");
-    expect(script).toContain('await launchExplorer(launchUrl(');
+    expect(script).toContain("path.join(systemRoot, 'System32', 'reg.exe')");
+    expect(script).toContain(
+      'HKCU\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\Repoctopus.exe',
+    );
+    expect(script).toContain('await readInstalledExecutable()');
+    expect(script).toContain('launchUrl(options.changeId, options.runId)');
     expect(script).toContain("child.once('spawn'");
+    expect(script).not.toContain('launchExplorer');
+    expect(script).not.toContain("const executable = path.join(installRoot, 'Repoctopus.exe')");
+    expect(script).not.toContain('REPOCTOPUS_DESKTOP_EXECUTABLE');
     expect(script).not.toContain("transport: 'url'");
-    expect(script).toContain("'restore-protocol-registration'");
+    expect(script).toContain("'restore-registry-state'");
     expect(script).toContain("'export'");
     expect(script).toContain("'import'");
   });

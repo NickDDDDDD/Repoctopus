@@ -112,7 +112,7 @@
       **Acceptance:** 安装器在当前 scope 登记协议与 `App Paths\Repoctopus.exe`；Launcher 仅通过绝对 `reg.exe` 读取默认值并校验绝对路径、basename、可访问性和 handler；缺失或伪造登记返回 bounded unavailable；启动使用 executable + URI 参数数组且诊断不泄漏路径
       **Verification:** 运行 installer contract、Windows registry target-resolution 表驱动测试、Launcher process 测试与 lint/typecheck
       **Requirements:** desktop-observability-dashboard#Windows-开发-Run-自动激活单实例桌面应用
-- [ ] 6.5 修改 Windows 安装 E2E，使冷启动和第二实例请求穿过真实 `App Paths` 发现、产品 executable 与 single-instance owner。
+- [x] 6.5 修改 Windows 安装 E2E，使冷启动和第二实例请求穿过真实 `App Paths` 发现、产品 executable 与 single-instance owner。
       **Blocked by:** 6.3, 6.4
       **Acceptance:** 测试不注入 executable override、不硬编码安装路径且不伪造 registry；首个 URI 经冷启动 `argv` 到达 Shell，第二个 URI 经 `second-instance` 选择正确 Run；协议/App Paths 原状态在 finally 精确恢复且只有一个有效 Host/Receiver
       **Verification:** 构建/安装当前包并运行 Windows installed-activation E2E、package check 与 registry/进程/目录残留检查
