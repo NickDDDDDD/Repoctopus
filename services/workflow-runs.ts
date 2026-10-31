@@ -1685,6 +1685,7 @@ export class WorkflowRuns extends Service {
     confirmations: ReadonlySet<string> = new Set(),
     signal?: AbortSignal,
   ): Promise<RuntimeResult<RunStatusView>> {
+    await this.coordinator.recoverChangeLifecycleDefinition(runId);
     await this.ctx.workExecutionAuthority.reconcileCurrentCheckpoint(runId);
     const preflight = await this.ctx.runStore.loadRun(runId);
     const preflightLifecycle = preflight.changeLifecycle;

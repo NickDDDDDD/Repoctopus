@@ -85,7 +85,7 @@ Trajectory/OTLP 记录：失败来源、是否为确定性无效、旧/新 Work 
 ## 模块边界
 
 - `domains/change-lifecycle`: Open repair observation、transition 与不可变式。
-- `domains/runtime`: 同 CAS lifecycle/execution replacement、权威 next-action projection。
+- `domains/runtime`: 同 CAS lifecycle/execution replacement、权威 next-action projection；在写入 observation 前按 composition adoption → definition recovery 顺序恢复唯一直接前驱。
 - `services/specification-planning`: 区分有效、确定性无效与 observation unavailable，提供批准后只读重验结果。
 - `services/workflow-runs`: 物化 repair Work并编排 Provider Evidence，不解释 Provider 私有结构。
 - `services/work-execution-authority`: 继续负责 current checkpoint、恢复和 continuation，不新增 Open 专用 Store。
@@ -99,6 +99,7 @@ Trajectory/OTLP 记录：失败来源、是否为确定性无效、旧/新 Work 
 - 证明 repair transition 与旧 execution 退役同一 CAS，新 Work packet 包含正确 Action Skill/augmentation 内容。
 - 证明重复 `run next/resume` 不增加 Work、epoch、批准请求或 Host invocation。
 - 证明受影响的 lifecycle/Runtime contributors 都只接受当前活动 Run 冻结的唯一直接前驱 `{codeDigest, descriptorDigest}`，其他受保护实现仍为 `migration_required`。
+- 证明 `run next` 在构造 planning observation 前先恢复兼容 definition，绝不以恢复前 revision 提交 observation。
 - 验证 Dashboard/OTLP 只消费权威 trajectory，完整运行严格 OpenSpec、类型、Lint、架构检查和 `npm run verify`。
 
 ## 回退

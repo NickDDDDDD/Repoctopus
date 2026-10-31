@@ -433,6 +433,7 @@ export class WorkflowRunCoordinator {
   }
 
   async recoverChangeLifecycleDefinition(runId: string): Promise<void> {
+    await this.prepareWritableComposition(runId);
     await this.store.commitGuarded(runId, ({ state, trajectory }) => {
       if (!state.changeLifecycle) return { value: undefined };
       const recovered = recoverChangeLifecycleSnapshot({

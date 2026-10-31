@@ -620,6 +620,125 @@ describe('Repoctopus runtime', () => {
     await expect(incompatible.next('run-composition-drift')).rejects.toThrow(/migration_required/i);
   });
 
+  it('adopts the compatible composition before restoring its direct predecessor definition', async () => {
+    const workspace = await temporaryDirectory('repoctopus-definition-recovery-order-');
+    cleanup.push(workspace);
+    const store = new FileRuntimeStore(workspace);
+    const predecessor = {
+      codeDigest: `sha256:${'1'.repeat(64)}` as const,
+      descriptorDigest: `sha256:${'2'.repeat(64)}` as const,
+    };
+    const previousComposition = compositionFixture({
+      compositionDigest: `sha256:${'3'.repeat(64)}`,
+      plugins: [
+        {
+          id: 'lifecycle-definition-builtin',
+          version: '0.1.0',
+          configDigest: `sha256:${'4'.repeat(64)}`,
+          ...predecessor,
+          authorities: ['lifecycle-definition'],
+          stateSchemas: {},
+        },
+      ],
+    });
+    const currentComposition = compositionFixture({
+      compositionDigest: `sha256:${'5'.repeat(64)}`,
+      plugins: [
+        {
+          id: 'lifecycle-definition-builtin',
+          version: '0.1.0',
+          configDigest: `sha256:${'4'.repeat(64)}`,
+          codeDigest: `sha256:${'6'.repeat(64)}`,
+          descriptorDigest: `sha256:${'7'.repeat(64)}`,
+          authorities: ['lifecycle-definition'],
+          stateSchemas: {},
+          compatibleImplementations: [predecessor],
+        },
+      ],
+    });
+    const runId = 'change-team-definition-recovery-order';
+    const lifecycle = createChangeLifecycleSnapshot({
+      identity: { workspaceId: 'team', changeId: 'definition-recovery-order', runId },
+    });
+    const initial = new WorkflowRunCoordinator(
+      store,
+      { async export() {} },
+      previousComposition,
+    );
+    await initial.start({
+      workflow: workflowFixture(),
+      projectSnapshot: projectFixture({ projectId: 'team' }),
+      runId,
+      changeLifecycle: lifecycle,
+    });
+    const predecessorDefinitionDigest =
+      'sha256:ce969dbd7c17972b3cd438c585c7f0aebbeca046327ce2808659fdd8351a54f3' as const;
+    let seededRevision = 0;
+    await store.commitGuarded(runId, ({ state, trajectory }) => {
+      const revision = state.changeLifecycle!.revision + 1;
+      seededRevision = revision;
+      const timestamp = '2026-11-01T00:00:00.000Z';
+      const nextState = {
+        ...state,
+        status: 'migration_required' as const,
+        changeLifecycle: {
+          ...state.changeLifecycle!,
+          definition: {
+            id: BUILTIN_CHANGE_LIFECYCLE_DEFINITION.id,
+            version: BUILTIN_CHANGE_LIFECYCLE_DEFINITION.version,
+            digest: predecessorDefinitionDigest,
+          },
+          revision,
+          blocker: {
+            code: 'change-lifecycle.definition-drift',
+            message: 'seed direct predecessor definition drift',
+            evidenceIds: [predecessorDefinitionDigest, lifecycle.definition.digest],
+            sinceRevision: revision,
+          },
+        },
+        stateVersion: state.stateVersion + 1,
+        updatedAt: timestamp,
+      };
+      return {
+        state: nextState,
+        event: {
+          schemaVersion: 1 as const,
+          sequence: trajectory.length + 1,
+          eventId: 'seed-definition-drift',
+          timestamp,
+          type: 'change.lifecycle.transitioned' as const,
+          runId,
+          stateVersion: nextState.stateVersion,
+          compositionDigest: state.composition.compositionDigest,
+          data: { reason: 'seed-definition-drift' },
+        },
+        value: undefined,
+      };
+    });
+
+    const upgraded = new WorkflowRunCoordinator(
+      new FileRuntimeStore(workspace),
+      { async export() {} },
+      currentComposition,
+    );
+    await upgraded.recoverChangeLifecycleDefinition(runId);
+
+    const recovered = await store.loadRun(runId);
+    expect(recovered.composition.compositionDigest).toBe(currentComposition.compositionDigest);
+    expect(recovered.status).toBe('running');
+    expect(recovered.changeLifecycle).toMatchObject({
+      revision: seededRevision + 1,
+      definition: { digest: lifecycle.definition.digest },
+      blocker: null,
+    });
+    const trajectory = await store.loadTrajectory(runId);
+    expect(trajectory.slice(-2).map((entry) => entry.type)).toEqual([
+      'composition.changed',
+      'change.lifecycle.transitioned',
+    ]);
+    expect(trajectory.at(-1)?.data.reason).toBe('compatible-definition-upgrade');
+  });
+
   it('upgrades compatible lifecycle Contributors and blocks incompatible recovery drift', async () => {
     const workspace = await temporaryDirectory('repoctopus-lifecycle-contributor-drift-');
     cleanup.push(workspace);
