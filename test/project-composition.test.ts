@@ -30,6 +30,9 @@ describe('project composition assembly', () => {
       await createRepoctopusBuiltinCatalog(path.resolve(import.meta.dirname, '..')),
     );
     const ids = composition.entries.map((entry) => entry.id);
+    expect(compositionIdentity(composition).compositionDigest).toBe(
+      'sha256:e79d55b33bb04bc6e43a80585ea69fe9022b69ad2ab60ff6b2762abc33a6e109',
+    );
     expect(ids).toEqual(
       expect.arrayContaining([
         'workflow-runs',
@@ -39,6 +42,7 @@ describe('project composition assembly', () => {
         'desktop-instance-probe',
         'desktop-launcher',
         'observation-delivery',
+        'team-skill-composition',
       ]),
     );
     expect(ids).not.toEqual(
@@ -60,5 +64,13 @@ describe('project composition assembly', () => {
       (plugin) => plugin.id === 'desktop-launcher',
     );
     expect(JSON.stringify(launcherIdentity)).not.toContain(path.resolve(import.meta.dirname, '..'));
+    const teamComposition = composition.entries.find(
+      (entry) => entry.id === 'team-skill-composition',
+    );
+    expect(teamComposition?.config).toEqual({ workspaceRoot, bindings: [] });
+    expect(teamComposition?.identityConfig).toEqual({
+      workspaceRoot: '@repoctopus/workspace-root',
+      bindings: [],
+    });
   });
 });

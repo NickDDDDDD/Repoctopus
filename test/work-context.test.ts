@@ -14,6 +14,7 @@ import {
 } from '../domains/change-lifecycle/work-definition.js';
 import type { WorkDescriptor } from '../domains/change-lifecycle/transition.js';
 import type { SkillUsageSnapshot } from '../domains/skill/types.js';
+import { createEffectiveWorkSkillComposition } from '../domains/skill/composition.js';
 import type {
   SpecificationArtifactContext,
   SpecificationPhaseContext,
@@ -49,11 +50,41 @@ function skill(
 
 function work(kind: string): WorkDescriptor {
   const definition = lifecycleWorkDefinition(BUILTIN_CHANGE_LIFECYCLE_DEFINITION, kind);
+  const augmentationSkills =
+    kind === 'build.execute'
+      ? [snapshot('tdd')]
+      : definition.augmentationSkills.map((reference) => snapshot(reference.name));
+  const skillComposition = createEffectiveWorkSkillComposition({
+    workKind: kind,
+    layers: [
+      ...(definition.actionSkill
+        ? [
+            {
+              role: 'action' as const,
+              origin: 'builtin' as const,
+              order: 0,
+              bindingId: null,
+              slotId: null,
+              skill: snapshot(definition.actionSkill.name),
+            },
+          ]
+        : []),
+      ...augmentationSkills.map((skill, index) => ({
+        role: 'builtin-augmentation' as const,
+        origin: 'builtin' as const,
+        order: index + 1,
+        bindingId: null,
+        slotId: null,
+        skill,
+      })),
+    ],
+  });
   const binding = materializeLifecycleWorkBinding({
     definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
     kind,
     ...(definition.actionSkill ? { actionSkill: snapshot(definition.actionSkill.name) } : {}),
-    augmentationSkills: definition.augmentationSkills.map((reference) => snapshot(reference.name)),
+    augmentationSkills,
+    skillComposition,
     workspaceRepositoryId: 'workspace',
     repositoryIds: ['workspace', 'backend'],
   });
@@ -64,7 +95,6 @@ function work(kind: string): WorkDescriptor {
     ...binding,
     inputDigest: digest(`${kind} input`),
   };
-  if (kind === 'build.execute') descriptor.augmentationSkills = [snapshot('tdd')];
   return descriptor;
 }
 
@@ -209,6 +239,88 @@ describe('Work execution context', () => {
         .filter((entry) => entry.kind === 'augmentation-skill')
         .map((entry) => entry.source),
     ).toEqual(['tdd', 'diagnosing-bugs']);
+  });
+
+  it('preserves team binding roles from the frozen Work composition', () => {
+    const action = snapshot('repoctopus-design-change');
+    const replacement = snapshot('team-codebase-design');
+    const guidance = snapshot('team-guidance');
+    const skillComposition = createEffectiveWorkSkillComposition({
+      workKind: 'specification.plan',
+      layers: [
+        {
+          role: 'action',
+          origin: 'builtin',
+          order: 0,
+          bindingId: null,
+          slotId: null,
+          skill: action,
+        },
+        {
+          role: 'team-replacement',
+          origin: 'team',
+          order: 1,
+          bindingId: 'team-design-method',
+          slotId: 'design-method',
+          skill: replacement,
+        },
+        {
+          role: 'team-guidance',
+          origin: 'team',
+          order: 20,
+          bindingId: 'team-guidance',
+          slotId: null,
+          skill: guidance,
+        },
+      ],
+    });
+    const binding = materializeLifecycleWorkBinding({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      kind: 'specification.plan',
+      actionSkill: action,
+      augmentationSkills: [replacement, guidance],
+      skillComposition,
+      workspaceRepositoryId: 'workspace',
+      repositoryIds: ['workspace'],
+    });
+    const descriptor: WorkDescriptor = {
+      schemaVersion: 2,
+      workId: 'design:team-composition',
+      checkEpoch: 0,
+      ...binding,
+      inputDigest: digest('team composition input'),
+    };
+    const context = assemble(descriptor);
+
+    expect(
+      context.layers
+        .filter((layer) => layer.kind === 'action-skill' || layer.kind === 'augmentation-skill')
+        .map(({ source, skillRole, bindingId, slotId }) => ({
+          source,
+          skillRole,
+          bindingId,
+          slotId,
+        })),
+    ).toEqual([
+      {
+        source: 'repoctopus-design-change',
+        skillRole: 'action',
+        bindingId: null,
+        slotId: null,
+      },
+      {
+        source: 'team-codebase-design',
+        skillRole: 'team-replacement',
+        bindingId: 'team-design-method',
+        slotId: 'design-method',
+      },
+      {
+        source: 'team-guidance',
+        skillRole: 'team-guidance',
+        bindingId: 'team-guidance',
+        slotId: null,
+      },
+    ]);
   });
 
   it('fails before execution for a missing dependency, second owner, or artifact conflict', () => {

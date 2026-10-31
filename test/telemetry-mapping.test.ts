@@ -345,6 +345,62 @@ describe('telemetry mapping', () => {
     ).not.toMatch(/private|C:\//u);
   });
 
+  it('keeps team Skill correlation in Trace attributes and out of Metric labels', () => {
+    const workflow = workflowFixture();
+    const project = projectFixture();
+    const run = startRun({
+      workflow,
+      runId: 'run-team-skill-telemetry',
+      projectSnapshotDigest: project.digest,
+      composition: compositionFixture(),
+      timestamp: '2026-01-01T00:00:00.000Z',
+      traceId: '9'.repeat(32),
+    });
+    const event: TrajectoryEvent = {
+      schemaVersion: 1,
+      sequence: 2,
+      eventId: 'team-skill-delivered',
+      timestamp: '2026-01-01T00:00:01.000Z',
+      type: 'skill.delivered',
+      runId: run.runId,
+      stateVersion: 2,
+      compositionDigest: run.composition.compositionDigest,
+      data: {
+        phase: 'design',
+        workId: 'specification.plan:1',
+        workKind: 'specification.plan',
+        skillName: 'company-private-method',
+        skillRole: 'team-guidance',
+        bindingId: 'team-design-guidance',
+        slotId: 'design-method',
+        skillOrder: 2,
+        replacedSkillName: 'codebase-design',
+        skillCompositionDigest: `sha256:${'d'.repeat(64)}`,
+        result: 'delivered',
+      },
+    };
+    const batch: TelemetryBatch = {
+      run,
+      workflow,
+      projectSnapshot: project,
+      events: [event],
+      trajectory: [event],
+    };
+
+    expect(safeEventAttributes(batch, event)).toMatchObject({
+      'repoctopus.execution.skillName': 'custom',
+      'repoctopus.execution.skillRole': 'team-guidance',
+      'repoctopus.execution.bindingId': 'team-design-guidance',
+      'repoctopus.execution.slotId': 'design-method',
+      'repoctopus.execution.skillOrder': 2,
+      'repoctopus.execution.replacedSkillName': 'codebase-design',
+      'repoctopus.execution.skillCompositionDigest': `sha256:${'d'.repeat(64)}`,
+    });
+    expect(JSON.stringify(executionMetricAttributes(event))).not.toMatch(
+      /company-private|team-design-guidance|design-method|sha256:/u,
+    );
+  });
+
   it('exports correction facts while keeping identity and diagnostics out of Metric labels', () => {
     const workflow = workflowFixture();
     const project = projectFixture();

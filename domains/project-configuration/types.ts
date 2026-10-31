@@ -111,6 +111,22 @@ export interface SpecificationProviderReference extends CapabilityProviderRefere
   };
 }
 
+export type TeamSkillBindingRole = 'guidance' | 'augmentation-replacement';
+
+export interface TeamSkillBindingConfig {
+  id: string;
+  target: string;
+  role: TeamSkillBindingRole;
+  skill: string;
+  order: number;
+  slot?: string;
+}
+
+export interface TeamSkillBindingsConfig {
+  schemaVersion: 1;
+  bindings: TeamSkillBindingConfig[];
+}
+
 export interface SharedProjectConfig {
   apiVersion: typeof PROJECT_CONFIG_API_VERSION;
   kind: 'RepoctopusWorkspace';
@@ -127,6 +143,7 @@ export interface SharedProjectConfig {
   delivery?: Omit<DeliveryPolicy, 'apiVersion' | 'kind'>;
   skillProviders?: CapabilityProviderReference[];
   specificationProvider?: SpecificationProviderReference;
+  lifecycle?: { skillBindings: TeamSkillBindingsConfig };
 }
 
 export interface LocalProjectConfig {

@@ -90,10 +90,7 @@ function invocationId(packetDigest: string, hostId: string): string {
     .digest('hex')}`;
 }
 
-function sameHostOutcome(
-  left: WorkExecutionHostOutcome,
-  right: WorkExecutionHostOutcome,
-): boolean {
+function sameHostOutcome(left: WorkExecutionHostOutcome, right: WorkExecutionHostOutcome): boolean {
   const leftStable: Record<string, unknown> = { ...left };
   const rightStable: Record<string, unknown> = { ...right };
   delete leftStable.completedAt;
@@ -101,24 +98,35 @@ function sameHostOutcome(
   return canonicalJson(leftStable) === canonicalJson(rightStable);
 }
 
-function assertConsumedExecutionSkills(
+interface SkillConsumptionValidationFailure {
+  reasonCode: 'missing-layer' | 'unknown-layer' | 'layer-set-mismatch';
+  missingLayerDigests: readonly `sha256:${string}`[];
+  unknownLayerDigests: readonly `sha256:${string}`[];
+}
+
+function validateConsumedExecutionSkills(
   packet: WorkExecutionPacket,
   outcome: Pick<WorkExecutionHostOutcome, 'status' | 'consumedLayerDigests'>,
-): void {
-  if (outcome.status !== 'succeeded') return;
+): SkillConsumptionValidationFailure | null {
+  if (outcome.status !== 'succeeded') return null;
   const required = packet.context.layers
     .filter((layer) => layer.kind === 'action-skill' || layer.kind === 'augmentation-skill')
     .map((layer) => layer.digest);
   const eligible = new Set(required);
   const consumed = new Set(outcome.consumedLayerDigests);
-  if (
-    required.some((layerDigest) => !consumed.has(layerDigest)) ||
-    [...consumed].some((layerDigest) => !eligible.has(layerDigest))
-  ) {
-    throw new Error(
-      'Successful Work Execution Host Outcome must prove consumption of every delivered action and augmentation Skill layer',
-    );
-  }
+  const missingLayerDigests = required.filter((layerDigest) => !consumed.has(layerDigest));
+  const unknownLayerDigests = [...consumed].filter((layerDigest) => !eligible.has(layerDigest));
+  if (missingLayerDigests.length === 0 && unknownLayerDigests.length === 0) return null;
+  return {
+    reasonCode:
+      missingLayerDigests.length > 0 && unknownLayerDigests.length > 0
+        ? 'layer-set-mismatch'
+        : missingLayerDigests.length > 0
+          ? 'missing-layer'
+          : 'unknown-layer',
+    missingLayerDigests,
+    unknownLayerDigests,
+  };
 }
 
 export interface ManagedWorkExecutionResult {
@@ -142,6 +150,21 @@ export class ManagedWorkExecutor extends Service {
 
   constructor(context: Context) {
     super(context, 'managedWorkExecutor');
+  }
+
+  private async assertConsumedExecutionSkills(
+    packet: WorkExecutionPacket,
+    outcome: Pick<WorkExecutionHostOutcome, 'status' | 'consumedLayerDigests' | 'invocationId'>,
+  ): Promise<void> {
+    const failure = validateConsumedExecutionSkills(packet, outcome);
+    if (!failure) return;
+    await this.ctx.workExecutionAuthority.recordSkillConsumptionRejected(packet, {
+      ...failure,
+      invocationId: outcome.invocationId,
+    });
+    throw new Error(
+      'Successful Work Execution Host Outcome must prove consumption of every delivered action and augmentation Skill layer',
+    );
   }
 
   private async rejectInvalidConfigureResult(input: {
@@ -217,7 +240,7 @@ export class ManagedWorkExecutor extends Service {
     assertBoundedWorkExecutionFindings(hostOutcome);
     assertBoundedExecutionResult(hostOutcome);
     assertManagedDelegation(claim.packet, host.identity, hostOutcome);
-    assertConsumedExecutionSkills(claim.packet, hostOutcome);
+    await this.assertConsumedExecutionSkills(claim.packet, hostOutcome);
     const submission = await this.ctx.workExecutionAuthority.markHostCompleted(
       claim.intent,
       hostOutcome,
@@ -340,7 +363,7 @@ export class ManagedWorkExecutor extends Service {
     assertBoundedExecutionResult(hostOutcome);
     const packet = await this.ctx.workDispatcher.resumeClaim(input.runId);
     assertManagedDelegation(packet.packet, invocation.host, hostOutcome);
-    assertConsumedExecutionSkills(packet.packet, hostOutcome);
+    await this.assertConsumedExecutionSkills(packet.packet, hostOutcome);
     const submission = persistedOutcome
       ? state.workExecution
       : await this.ctx.workExecutionAuthority.markHostCompleted(
@@ -415,7 +438,7 @@ export class ManagedWorkExecutor extends Service {
     assertBoundedExecutionResult(outcome);
     const packet = await this.ctx.workDispatcher.resumeClaim(runId);
     assertManagedDelegation(packet.packet, invocation.host, outcome);
-    assertConsumedExecutionSkills(packet.packet, outcome);
+    await this.assertConsumedExecutionSkills(packet.packet, outcome);
     const submission = await this.ctx.workExecutionAuthority.markHostCompleted(
       intent,
       outcome,

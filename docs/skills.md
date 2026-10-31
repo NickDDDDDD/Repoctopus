@@ -1,6 +1,6 @@
 # Skills 接入与投影
 
-Repoctopus 使用 DSH Skill Registry 解析 Skill，并通过 Cordis Provider 接入具体 Skill 来源。工作流只依赖唯一的 `ctx.skills` Service，因此你可以替换 TDD、诊断或评审方法，而不需要修改 Runtime 或 Workflow。
+Repoctopus 使用 DSH Skill Registry 解析 Skill，并通过 Cordis Provider 接入具体 Skill 来源。工作流只依赖唯一的 `ctx.skills` Service；团队生命周期组合另由共享配置显式声明，并在创建 Run 时冻结，不能由个人目录或调用参数改变。
 
 ## 查看有效 Skill
 
@@ -17,7 +17,7 @@ node bin/repoctopus.js skill get --workspace . --audience user --name tdd --json
 
 ## Provider 优先级
 
-同名 Skill 只保留优先级最高的定义。
+同名 Skill 只保留优先级最高的定义。该规则用于目录发现，不等于同名 Skill 自动获得团队生命周期权限。
 
 | 优先级 | 来源                         | 用途                         |
 | -----: | ---------------------------- | ---------------------------- |
@@ -31,25 +31,51 @@ node bin/repoctopus.js skill get --workspace . --audience user --name tdd --json
 
 Change lifecycle definition 为每个 Work kind 固定一个 action Skill、有序 augmentation Skills、独立 Method Profile、能力、side-effect class、写入范围、输出契约、Validator 和 checkpoint。Runtime 解析并冻结真实正文，把它们装入不可变执行包而不只记录名称；Method Profile 不经过 Skill Registry，也不能由调用方参数替换或伪装成 Skill。
 
-| Work                         | 固定 Skill 组合                                         |
-| ---------------------------- | ------------------------------------------------------- |
-| Open                         | `repoctopus-open-change + grilling`                     |
-| Design                       | `repoctopus-design-change + codebase-design`            |
-| Build Configure              | `repoctopus-build-configure`                            |
-| Build Plan                   | `repoctopus-build-plan`                                 |
-| Build Execute，`tddMode=tdd` | `repoctopus-build-execute + tdd`                        |
-| Build Execute，`direct`      | `repoctopus-build-execute`                              |
-| Build Check                  | `repoctopus-build-check + code-review`                  |
-| Verify                       | `repoctopus-verify-change + code-review`                |
-| Archive close/publish        | `repoctopus-archive-change` / `pr`                      |
+## 团队生命周期组合
+
+团队在受版本控制的 `repoctopus.yaml` 中声明 guidance 或显式 slot replacement：
+
+```yaml
+lifecycle:
+  skillBindings:
+    schemaVersion: 1
+    bindings:
+      - id: team-design-guidance
+        target: specification.plan
+        role: guidance
+        skill: team-code-guidance
+        order: 20
+      - id: team-design-method
+        target: specification.plan
+        role: augmentation-replacement
+        skill: team-codebase-design
+        slot: design-method
+        order: 10
+```
+
+`guidance` 在内置方法层之后追加只读团队方法；`augmentation-replacement` 只能替换 lifecycle definition 已公开的 slot。当前 slot 为 `open-method`、`design-method` 和 `verify-review`。Action 没有 slot，因此不能替换。未知 Work/slot、重复 binding、非模型可调用 Skill、个人来源、产物协议所有者或请求写入能力的团队 Skill 会在首个 claim 前 fail closed。
+
+配置只保存逻辑 Skill 名，不保存 Provider 路径或模块。Skill 必须由团队批准的项目 Provider 解析；`.repoctopus/local.yaml` 与用户级 Skill 目录不能新增、删除或重排 binding。Runtime 将规范化层、Provider 内容/资源摘要和角色编译为 `EffectiveSkillComposition`，其摘要进入 Cordis composition、Run 和 Work input。恢复时内容漂移会阻止新 claim，不会静默切换方法。
+
+| Work                         | 固定 Skill 组合                              |
+| ---------------------------- | -------------------------------------------- |
+| Open                         | `repoctopus-open-change + grilling`          |
+| Design                       | `repoctopus-design-change + codebase-design` |
+| Build Configure              | `repoctopus-build-configure`                 |
+| Build Plan                   | `repoctopus-build-plan`                      |
+| Build Execute，`tddMode=tdd` | `repoctopus-build-execute + tdd`             |
+| Build Execute，`direct`      | `repoctopus-build-execute`                   |
+| Build Check                  | `repoctopus-build-check + code-review`       |
+| Verify                       | `repoctopus-verify-change + code-review`     |
+| Archive close/publish        | `repoctopus-archive-change` / `pr`           |
 
 Execution mode 是 Repoctopus action input，不是另一个 Skill。`subagent-driven-development` 要求 Host 具有 `subagent.dispatch.attested`，并为当前 package 返回结构化 delegation receipts；`autonomous` 禁止未声明的子调用。两种模式使用相同的 Runtime、Validator 和 Verify 边界，不依赖 Superpowers。
 
-Skill 在 Runtime 接受当前 Work 时装配，而不是在 change 开始时把所有 Skill 一次性塞进上下文。固定顺序为 Runtime contract → action Skill → Provider protocol → augmentations → Method Profile → change inputs。Host 必须明确回报真正读取的 action/augmentation layer digest；Runtime 只据此记录 `skill.consumed`，不会从 Work 成功反推所有 Skill 已被使用。
+Runtime 在 change 开始时冻结并绑定有效组合身份，但只把当前 Work 的层装入上下文。固定顺序为 Runtime contract → action Skill → Provider protocol → 内置 augmentation / replacement → team guidance → Method Profile → change inputs。Host 必须明确回报当前 packet 中真正读取的 Skill layer digest；Runtime 拒绝缺失、未知或旧层，只据此记录 `skill.consumed`。`consumed` 是有界回执，不证明 Agent 遵循了方法内容。
 
 内置 Method Profile Registry 以 `id + version + digest` 固定已审核规则；每条规则同时绑定上游 source digest、适用 phase、官方 artifact kind，以及 `context`、`deterministic-validator`、`review-rubric` 或 `human-decision` enforcement。上下文装配只输出这些 Repoctopus-owned 规则，不读取或注入原始 `to-spec`/`to-tickets` 正文。即使项目或用户目录定义同名 Skill，lifecycle definition validation 也会在 Work 创建前拒绝它。
 
-## 替换 Skill
+## 提供项目 Skill
 
 在项目中创建 `.agents/skills/tdd/SKILL.md`：
 
@@ -64,7 +90,7 @@ description: 团队的测试驱动开发方法
 先写一个能证明需求的失败测试，再写最少实现使其通过。
 ```
 
-再次执行 `skill get`，返回的 Provider 应为 `project-user-files`。正在运行的 Run 已经绑定旧版本时，Repoctopus 在同一 runId 上判断兼容性：可兼容则重新领取当前 Work，不可证明兼容则返回只读 `migration_required`；未被该 Run 使用的 Skill 变化不会阻塞推进。
+再次执行 `skill get`，返回的 Provider 应为 `project-user-files`。要让该 Skill 进入团队生命周期，还必须在 `lifecycle.skillBindings` 中显式引用；同名文件不能替换 Action。正在运行的 Run 已经绑定旧版本时，Repoctopus 在同一 runId 上判断兼容性：摘要相同才继续，不兼容内容漂移返回只读诊断。
 
 ## 投影到 IDE
 

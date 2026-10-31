@@ -5,6 +5,7 @@ import { deliveryPolicyDigest } from '../delivery/snapshot.js';
 import type { DeliveryIntentV3, DeliveryPolicy } from '../delivery/types.js';
 import { assertDeliveryIntentV3, normalizeDeliveryIntentV3 } from '../delivery/v3.js';
 import type { SkillUsageSnapshot } from '../skill/types.js';
+import type { EffectiveWorkSkillComposition } from '../skill/composition.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import type { ChangeLifecycleDefinition, WorkDescriptor } from './transition.js';
 import { materializeLifecycleWorkBinding } from './work-definition.js';
@@ -81,6 +82,7 @@ export function createSpecificationCloseWork(facts: {
   checkEpoch: number;
   archive: ArchiveDeliveryInput;
   actionSkill: SkillUsageSnapshot;
+  skillComposition?: EffectiveWorkSkillComposition;
   workspaceRepositoryId: string;
   repositoryIds: readonly string[];
 }): WorkDescriptor {
@@ -89,6 +91,7 @@ export function createSpecificationCloseWork(facts: {
     kind: 'specification.close',
     actionSkill: facts.actionSkill,
     augmentationSkills: [],
+    ...(facts.skillComposition ? { skillComposition: facts.skillComposition } : {}),
     workspaceRepositoryId: facts.workspaceRepositoryId,
     repositoryIds: facts.repositoryIds,
   });
@@ -107,6 +110,7 @@ export function createDeliveryPublishWork(facts: {
   archive: ArchiveDeliveryInput;
   closure: { closureId: `sha256:${string}`; planDigest: `sha256:${string}` };
   actionSkill: SkillUsageSnapshot;
+  skillComposition?: EffectiveWorkSkillComposition;
   workspaceRepositoryId: string;
   repositoryIds: readonly string[];
 }): WorkDescriptor {
@@ -115,6 +119,7 @@ export function createDeliveryPublishWork(facts: {
     kind: 'delivery.publish',
     actionSkill: facts.actionSkill,
     augmentationSkills: [],
+    ...(facts.skillComposition ? { skillComposition: facts.skillComposition } : {}),
     workspaceRepositoryId: facts.workspaceRepositoryId,
     repositoryIds: facts.repositoryIds,
   });

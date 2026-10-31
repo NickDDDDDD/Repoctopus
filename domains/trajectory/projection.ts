@@ -3,6 +3,7 @@ import type {
   ObservationBuildAction,
   ObservationEnvelope,
   ObservationScalar,
+  ObservationSkillRole,
 } from './observation.js';
 
 export const PROJECTION_BUILD_ACTIONS = [
@@ -75,13 +76,19 @@ export interface ProjectedWork {
 
 export interface ProjectedSkill {
   name: string;
-  role: 'action' | 'augmentation';
+  role: ObservationSkillRole;
   workId: string;
+  bindingId: string | null;
+  slotId: string | null;
+  order: number | null;
+  replacedSkillName: string | null;
+  compositionDigest: string | null;
   state: 'not-reported' | 'resolved' | 'delivered' | 'consumed' | 'failed';
   resolvedAt: string | null;
   deliveredAt: string | null;
   consumedAt: string | null;
   failedAt: string | null;
+  failureReason: string | null;
 }
 
 export interface ProjectedDecision {
@@ -506,19 +513,32 @@ function projectSkill(change: ProjectedChange, envelope: ObservationEnvelope): v
       name: skillName,
       role: skillRole,
       workId,
+      bindingId: envelope.correlation.bindingId ?? null,
+      slotId: envelope.correlation.slotId ?? null,
+      order: envelope.correlation.skillOrder ?? null,
+      replacedSkillName: envelope.correlation.replacedSkillName ?? null,
+      compositionDigest: envelope.correlation.skillCompositionDigest ?? null,
       state: 'not-reported',
       resolvedAt: null,
       deliveredAt: null,
       consumedAt: null,
       failedAt: null,
+      failureReason: null,
     };
     change.skills.push(skill);
+  } else {
+    skill.bindingId ??= envelope.correlation.bindingId ?? null;
+    skill.slotId ??= envelope.correlation.slotId ?? null;
+    skill.order ??= envelope.correlation.skillOrder ?? null;
+    skill.replacedSkillName ??= envelope.correlation.replacedSkillName ?? null;
+    skill.compositionDigest ??= envelope.correlation.skillCompositionDigest ?? null;
   }
   const reported = stringAttribute(envelope.attributes, 'skillState');
   const failed = resultState(stringAttribute(envelope.attributes, 'result')) === 'failed';
   if (failed) {
     skill.state = 'failed';
     skill.failedAt = envelope.observedAt;
+    skill.failureReason = stringAttribute(envelope.attributes, 'reasonCode') ?? 'validation-failed';
   } else if (reported === 'resolved') {
     skill.state = reported;
     skill.resolvedAt = envelope.observedAt;
@@ -532,7 +552,7 @@ function projectSkill(change: ProjectedChange, envelope: ObservationEnvelope): v
   change.skills.sort(
     (left, right) =>
       left.workId.localeCompare(right.workId) ||
-      left.role.localeCompare(right.role) ||
+      (left.order ?? Number.MAX_SAFE_INTEGER) - (right.order ?? Number.MAX_SAFE_INTEGER) ||
       left.name.localeCompare(right.name),
   );
 }

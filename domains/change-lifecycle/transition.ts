@@ -1,4 +1,5 @@
 import type { SkillUsageSnapshot } from '../skill/types.js';
+import type { EffectiveWorkSkillComposition } from '../skill/composition.js';
 import type { SpecificationArtifactKind } from '../specification/types.js';
 import type { SpecificationTask } from '../specification/types.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
@@ -97,6 +98,16 @@ export interface LifecycleSkillReference {
   name: string;
 }
 
+export interface LifecycleAugmentationSlotDefinition {
+  id: string;
+  defaultSkill: LifecycleSkillReference;
+  replaceable: boolean;
+  contract: {
+    modelInvocable: true;
+    artifactProtocolOwner: false;
+  };
+}
+
 export interface LifecycleWriteScopeDefinition {
   repositorySelector: 'workspace' | 'all-repositories';
   paths: readonly string[];
@@ -115,6 +126,7 @@ export interface ChangeLifecycleWorkDefinition {
   phase: ChangePhase;
   actionSkill?: LifecycleSkillReference;
   augmentationSkills: readonly LifecycleSkillReference[];
+  augmentationSlots?: readonly LifecycleAugmentationSlotDefinition[];
   methodProfile: MethodProfileSnapshot;
   capabilities: readonly string[];
   sideEffectClass: WorkSideEffectClass;
@@ -185,6 +197,7 @@ export interface WorkDescriptor {
   taskRevision?: `sha256:${string}`;
   actionSkill?: SkillUsageSnapshot;
   augmentationSkills: readonly SkillUsageSnapshot[];
+  skillComposition?: EffectiveWorkSkillComposition;
   methodProfile: MethodProfileSnapshot;
   capabilities: readonly string[];
   sideEffectClass: WorkSideEffectClass;
@@ -246,6 +259,7 @@ export interface ChangeLifecycleState {
   schemaVersion: 2;
   identity: ChangeRunIdentity;
   definition: ChangeLifecycleDefinitionSnapshot;
+  skillCompositionDigest?: `sha256:${string}`;
   revision: number;
   checkEpoch: number;
   phase: ChangePhase;
@@ -601,6 +615,12 @@ export function assertChangeLifecycleSnapshot(
   }
   if (!Number.isSafeInteger(snapshot.checkEpoch) || snapshot.checkEpoch < 0) {
     throw new Error('Change lifecycle checkEpoch must be a non-negative safe integer');
+  }
+  if (
+    snapshot.skillCompositionDigest !== undefined &&
+    !/^sha256:[a-f0-9]{64}$/u.test(snapshot.skillCompositionDigest)
+  ) {
+    throw new Error('Change lifecycle Skill composition digest is invalid');
   }
   if (snapshot.currentWork && snapshot.currentWork.phase !== snapshot.phase) {
     throw new Error('Current Work phase does not match the Change phase');

@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 
 import type { SkillUsageSnapshot } from '../skill/types.js';
+import type { EffectiveWorkSkillComposition } from '../skill/composition.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import type { ChangeLifecycleDefinition, WorkDescriptor } from './transition.js';
 import { materializeLifecycleWorkBinding } from './work-definition.js';
@@ -13,6 +14,7 @@ export function createLifecyclePhaseWork(input: {
   kind: 'change.intake' | 'specification.plan';
   actionSkill: SkillUsageSnapshot;
   augmentationSkills: readonly SkillUsageSnapshot[];
+  skillComposition?: EffectiveWorkSkillComposition;
   compositionDigest: `sha256:${string}`;
   projectSnapshotDigest: string;
   projectConfigDigest: `sha256:${string}`;
@@ -24,6 +26,7 @@ export function createLifecyclePhaseWork(input: {
     kind: input.kind,
     actionSkill: input.actionSkill,
     augmentationSkills: input.augmentationSkills,
+    ...(input.skillComposition ? { skillComposition: input.skillComposition } : {}),
     workspaceRepositoryId: input.workspaceRepositoryId,
     repositoryIds: input.repositoryIds,
   });
@@ -36,6 +39,7 @@ export function createLifecyclePhaseWork(input: {
     definitionVersion: input.definition.version,
     actionSkill: input.actionSkill,
     augmentationSkills: input.augmentationSkills,
+    skillComposition: input.skillComposition ?? null,
     compositionDigest: input.compositionDigest,
     projectSnapshotDigest: input.projectSnapshotDigest,
     projectConfigDigest: input.projectConfigDigest,

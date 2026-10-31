@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 
 import { Service, type Context } from '@deepseek-ai/cordis';
-import { isModelInvocable, type SkillDefinition } from '@deepseek-ai/dsh-skill';
+import type { SkillDefinition } from '@deepseek-ai/dsh-skill';
 
 import type { ActionOutcome, RunState, RunTriggerSnapshot } from '../domains/engine/types.js';
 import type { ProjectSnapshot } from '../domains/project/types.js';
@@ -21,6 +21,10 @@ import {
 } from '../domains/skill/types.js';
 import { snapshotSkillDefinition } from '../platform/skill/snapshot.js';
 import type {
+  EffectiveSkillComposition,
+  EffectiveWorkSkillComposition,
+} from '../domains/skill/composition.js';
+import type {
   SpecificationCompatibility,
   SpecificationApprovalActor,
   SpecificationApprovalDecisionResponse,
@@ -36,7 +40,6 @@ import {
   BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
   createChangeLifecycleSnapshot,
 } from '../domains/change-lifecycle/definition.js';
-import { lifecycleWorkDefinition } from '../domains/change-lifecycle/work-definition.js';
 import {
   changeRunId,
   createChangeRunHostWorkflow,
@@ -190,6 +193,7 @@ export class WorkflowRuns extends Service {
     'project',
     'runStore',
     'skills',
+    'teamSkillComposition',
     'specification',
     'specificationPlanning',
     'workflowTelemetry',
@@ -313,6 +317,7 @@ export class WorkflowRuns extends Service {
         },
       });
       const openSkills = await this.resolveLifecycleWorkSkills('change.intake', signal);
+      lifecycle.skillCompositionDigest = openSkills.effectiveComposition.digest;
       lifecycle.currentWork = createLifecyclePhaseWork({
         runId,
         checkEpoch: lifecycle.checkEpoch,
@@ -321,6 +326,7 @@ export class WorkflowRuns extends Service {
         kind: 'change.intake',
         actionSkill: openSkills.actionSkill,
         augmentationSkills: openSkills.augmentationSkills,
+        skillComposition: openSkills.skillComposition,
         compositionDigest: this.ctx.compositionIdentity.current().compositionDigest,
         projectSnapshotDigest: input.projectSnapshot.digest,
         projectConfigDigest: input.projectConfigDigest,
@@ -355,9 +361,18 @@ export class WorkflowRuns extends Service {
         },
         changeLifecycle: lifecycle,
       });
-      for (const skill of [openSkills.actionSkill, ...openSkills.augmentationSkills]) {
+      const frozenSkills = new Map(
+        openSkills.effectiveComposition.works.flatMap((work) =>
+          work.layers.map((layer) => [layer.skill.name, layer.skill] as const),
+        ),
+      );
+      for (const skill of frozenSkills.values()) {
         await this.coordinator.bindSkill(runId, skill);
       }
+      await this.ctx.workExecutionAuthority.recordSkillComposition(
+        runId,
+        openSkills.effectiveComposition,
+      );
       await this.ctx.workExecutionAuthority.recordWorkCreated(runId, lifecycle.currentWork);
       const activationState = await this.ctx.runStore.loadRun(runId);
       const activationIntentId = `sha256:${createHash('sha256')
@@ -480,7 +495,12 @@ export class WorkflowRuns extends Service {
         ) {
           throw new Error('Workspace intent revision trigger identities are missing');
         }
-        const skills = await this.resolveLifecycleWorkSkills('specification.plan', signal);
+        const skills = await this.resolveLifecycleWorkSkills(
+          'specification.plan',
+          signal,
+          [],
+          input.runId,
+        );
         const work = createLifecyclePhaseWork({
           runId: input.runId,
           checkEpoch: lifecycle.checkEpoch + 1,
@@ -489,6 +509,7 @@ export class WorkflowRuns extends Service {
           kind: 'specification.plan',
           actionSkill: skills.actionSkill,
           augmentationSkills: skills.augmentationSkills,
+          skillComposition: skills.skillComposition,
           compositionDigest: state.composition.compositionDigest,
           projectSnapshotDigest: state.projectSnapshotDigest,
           projectConfigDigest: projectConfigDigest as `sha256:${string}`,
@@ -549,7 +570,7 @@ export class WorkflowRuns extends Service {
         }
         const approved = input.response.decision === 'approve';
         const kind = approved ? 'build.plan' : 'build.configure';
-        const skills = await this.resolveLifecycleWorkSkills(kind, signal);
+        const skills = await this.resolveLifecycleWorkSkills(kind, signal, [], input.runId);
         const configuration = approved
           ? acceptBuildConfiguration({
               proposal,
@@ -565,6 +586,7 @@ export class WorkflowRuns extends Service {
           kind,
           actionSkill: skills.actionSkill,
           augmentationSkills: skills.augmentationSkills,
+          skillComposition: skills.skillComposition,
           compositionDigest: state.composition.compositionDigest,
           projectConfigDigest: projectConfigDigest as `sha256:${string}`,
           projectSnapshotDigest: state.projectSnapshotDigest,
@@ -670,6 +692,7 @@ export class WorkflowRuns extends Service {
           kind,
           signal,
           composition.augmentationSkills,
+          input.runId,
         );
         const work = createBuildActionWork({
           runId: input.runId,
@@ -678,6 +701,7 @@ export class WorkflowRuns extends Service {
           kind,
           actionSkill: skills.actionSkill,
           augmentationSkills: skills.augmentationSkills,
+          skillComposition: skills.skillComposition,
           compositionDigest: state.composition.compositionDigest,
           projectConfigDigest: projectConfigDigest as `sha256:${string}`,
           projectSnapshotDigest: state.projectSnapshotDigest,
@@ -749,7 +773,12 @@ export class WorkflowRuns extends Service {
           ) {
             throw new Error('Design fallback trigger identities are missing');
           }
-          const skills = await this.resolveLifecycleWorkSkills('specification.plan', signal);
+          const skills = await this.resolveLifecycleWorkSkills(
+            'specification.plan',
+            signal,
+            [],
+            input.runId,
+          );
           designWork = createLifecyclePhaseWork({
             runId: input.runId,
             checkEpoch: lifecycle.checkEpoch + 1,
@@ -758,6 +787,7 @@ export class WorkflowRuns extends Service {
             kind: 'specification.plan',
             actionSkill: skills.actionSkill,
             augmentationSkills: skills.augmentationSkills,
+            skillComposition: skills.skillComposition,
             compositionDigest: state.composition.compositionDigest,
             projectSnapshotDigest: state.projectSnapshotDigest,
             projectConfigDigest: projectConfigDigest as `sha256:${string}`,
@@ -1056,7 +1086,12 @@ export class WorkflowRuns extends Service {
     if (!observation.invalidationKind) {
       throw new Error('Authorized planning cannot trigger a Design revision');
     }
-    const skills = await this.resolveLifecycleWorkSkills('specification.plan', signal);
+    const skills = await this.resolveLifecycleWorkSkills(
+      'specification.plan',
+      signal,
+      [],
+      state.runId,
+    );
     const work = createLifecyclePhaseWork({
       runId: state.runId,
       checkEpoch: lifecycle.checkEpoch + 1,
@@ -1065,6 +1100,7 @@ export class WorkflowRuns extends Service {
       kind: 'specification.plan',
       actionSkill: skills.actionSkill,
       augmentationSkills: skills.augmentationSkills,
+      skillComposition: skills.skillComposition,
       compositionDigest: state.composition.compositionDigest,
       projectSnapshotDigest: state.projectSnapshotDigest,
       projectConfigDigest,
@@ -1103,31 +1139,39 @@ export class WorkflowRuns extends Service {
     kind: string,
     signal?: AbortSignal,
     configuredAugmentationNames: readonly string[] = [],
+    runId?: string,
   ): Promise<{
     actionSkill: SkillUsageSnapshot;
     augmentationSkills: SkillUsageSnapshot[];
+    skillComposition: EffectiveWorkSkillComposition;
+    effectiveComposition: EffectiveSkillComposition;
   }> {
-    const work = lifecycleWorkDefinition(BUILTIN_CHANGE_LIFECYCLE_DEFINITION, kind);
-    if (!work.actionSkill) {
-      throw new Error(`Lifecycle Work has no executable action Skill: ${kind}`);
-    }
-    const resolve = async (name: string): Promise<SkillUsageSnapshot> => {
-      const definition = await this.ctx.skills.get(name, {
-        cwd: this.workspaceRoot,
-        ...(signal ? { signal } : {}),
-      });
-      if (!definition || !isModelInvocable(definition)) {
-        throw new Error(`Lifecycle executable Skill is unavailable: ${name}`);
+    let resolved;
+    try {
+      resolved = await this.ctx.teamSkillComposition.resolveWork(
+        BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+        kind,
+        signal,
+        configuredAugmentationNames,
+      );
+    } catch (error) {
+      signal?.throwIfAborted();
+      if (runId) {
+        const message = error instanceof Error ? error.message : String(error);
+        const reasonCode = /unavailable|resolves .*more than once|provider/iu.test(message)
+          ? 'provider-unavailable'
+          : /contract|capabilit|model-invocable|artifact protocol/iu.test(message)
+            ? 'contract-invalid'
+            : 'composition-invalid';
+        await this.ctx.workExecutionAuthority.recordSkillCompositionRejected(runId, reasonCode);
       }
-      return snapshotSkillDefinition(definition);
-    };
+      throw error;
+    }
     return {
-      actionSkill: await resolve(work.actionSkill.name),
-      augmentationSkills: await Promise.all(
-        [...work.augmentationSkills.map((skill) => skill.name), ...configuredAugmentationNames].map(
-          (name) => resolve(name),
-        ),
-      ),
+      actionSkill: resolved.actionSkill,
+      augmentationSkills: resolved.augmentationSkills,
+      skillComposition: resolved.skillComposition,
+      effectiveComposition: resolved.effectiveComposition,
     };
   }
 
@@ -1227,7 +1271,12 @@ export class WorkflowRuns extends Service {
     ) {
       throw new Error('Design Work trigger identities are missing');
     }
-    const skills = await this.resolveLifecycleWorkSkills('specification.plan', signal);
+    const skills = await this.resolveLifecycleWorkSkills(
+      'specification.plan',
+      signal,
+      [],
+      state.runId,
+    );
     const work = createLifecyclePhaseWork({
       runId: state.runId,
       checkEpoch: lifecycle.checkEpoch + 1,
@@ -1236,6 +1285,7 @@ export class WorkflowRuns extends Service {
       kind: 'specification.plan',
       actionSkill: skills.actionSkill,
       augmentationSkills: skills.augmentationSkills,
+      skillComposition: skills.skillComposition,
       compositionDigest: state.composition.compositionDigest,
       projectSnapshotDigest: state.projectSnapshotDigest,
       projectConfigDigest: projectConfigDigest as `sha256:${string}`,
@@ -1348,7 +1398,12 @@ export class WorkflowRuns extends Service {
     const evaluated = await this.assessChangePlanning(state, lifecycle, 'open', signal);
     const assessment = evaluated.assessment;
     if (assessment.approval?.status === 'changes_requested') {
-      const skills = await this.resolveLifecycleWorkSkills('change.intake', signal);
+      const skills = await this.resolveLifecycleWorkSkills(
+        'change.intake',
+        signal,
+        [],
+        state.runId,
+      );
       const revisionWork = createLifecyclePhaseWork({
         runId: state.runId,
         checkEpoch: lifecycle.checkEpoch + 1,
@@ -1357,6 +1412,7 @@ export class WorkflowRuns extends Service {
         kind: 'change.intake',
         actionSkill: skills.actionSkill,
         augmentationSkills: skills.augmentationSkills,
+        skillComposition: skills.skillComposition,
         compositionDigest: state.composition.compositionDigest,
         projectSnapshotDigest: state.projectSnapshotDigest,
         projectConfigDigest: evaluated.projectConfigDigest,
@@ -1381,7 +1437,12 @@ export class WorkflowRuns extends Service {
         .digest('hex')}` as const);
     let designWork: WorkDescriptor | undefined;
     if (assessment.status === 'approved') {
-      const skills = await this.resolveLifecycleWorkSkills('specification.plan', signal);
+      const skills = await this.resolveLifecycleWorkSkills(
+        'specification.plan',
+        signal,
+        [],
+        state.runId,
+      );
       designWork = createLifecyclePhaseWork({
         runId: state.runId,
         checkEpoch: lifecycle.checkEpoch + 1,
@@ -1390,6 +1451,7 @@ export class WorkflowRuns extends Service {
         kind: 'specification.plan',
         actionSkill: skills.actionSkill,
         augmentationSkills: skills.augmentationSkills,
+        skillComposition: skills.skillComposition,
         compositionDigest: state.composition.compositionDigest,
         projectSnapshotDigest: state.projectSnapshotDigest,
         projectConfigDigest: evaluated.projectConfigDigest,
@@ -1832,7 +1894,12 @@ export class WorkflowRuns extends Service {
               lifecycle.currentWork === null &&
               lifecycle.buildProtocol?.currentAction === 'configure'
             ) {
-              const skills = await this.resolveLifecycleWorkSkills('build.configure', signal);
+              const skills = await this.resolveLifecycleWorkSkills(
+                'build.configure',
+                signal,
+                [],
+                runId,
+              );
               const work = createBuildActionWork({
                 runId,
                 checkEpoch: lifecycle.checkEpoch + 1,
@@ -1840,6 +1907,7 @@ export class WorkflowRuns extends Service {
                 kind: 'build.configure',
                 actionSkill: skills.actionSkill,
                 augmentationSkills: skills.augmentationSkills,
+                skillComposition: skills.skillComposition,
                 compositionDigest: current.composition.compositionDigest,
                 projectConfigDigest,
                 projectSnapshotDigest: current.projectSnapshotDigest,
@@ -1879,7 +1947,7 @@ export class WorkflowRuns extends Service {
               lifecycle.buildProtocol.configuration
             ) {
               const configuration = lifecycle.buildProtocol.configuration;
-              const skills = await this.resolveLifecycleWorkSkills('build.plan', signal);
+              const skills = await this.resolveLifecycleWorkSkills('build.plan', signal, [], runId);
               const work = createBuildActionWork({
                 runId,
                 checkEpoch: lifecycle.checkEpoch + 1,
@@ -1887,6 +1955,7 @@ export class WorkflowRuns extends Service {
                 kind: 'build.plan',
                 actionSkill: skills.actionSkill,
                 augmentationSkills: skills.augmentationSkills,
+                skillComposition: skills.skillComposition,
                 compositionDigest: current.composition.compositionDigest,
                 projectConfigDigest,
                 projectSnapshotDigest: current.projectSnapshotDigest,
@@ -1970,7 +2039,12 @@ export class WorkflowRuns extends Service {
                 ) {
                   throw new Error('Build Configure retry trigger identities are missing');
                 }
-                const skills = await this.resolveLifecycleWorkSkills('build.configure', signal);
+                const skills = await this.resolveLifecycleWorkSkills(
+                  'build.configure',
+                  signal,
+                  [],
+                  runId,
+                );
                 const retryWork = createBuildActionWork({
                   runId,
                   checkEpoch: lifecycle.checkEpoch + 1,
@@ -1978,6 +2052,7 @@ export class WorkflowRuns extends Service {
                   kind: 'build.configure',
                   actionSkill: skills.actionSkill,
                   augmentationSkills: skills.augmentationSkills,
+                  skillComposition: skills.skillComposition,
                   compositionDigest: current.composition.compositionDigest,
                   projectConfigDigest: projectConfigDigest as `sha256:${string}`,
                   projectSnapshotDigest: current.projectSnapshotDigest,
@@ -2035,7 +2110,12 @@ export class WorkflowRuns extends Service {
                 ) {
                   throw new Error('Build Configure retry trigger identities are missing');
                 }
-                const skills = await this.resolveLifecycleWorkSkills('build.configure', signal);
+                const skills = await this.resolveLifecycleWorkSkills(
+                  'build.configure',
+                  signal,
+                  [],
+                  runId,
+                );
                 const retryWork = createBuildActionWork({
                   runId,
                   checkEpoch: lifecycle.checkEpoch + 1,
@@ -2043,6 +2123,7 @@ export class WorkflowRuns extends Service {
                   kind: 'build.configure',
                   actionSkill: skills.actionSkill,
                   augmentationSkills: skills.augmentationSkills,
+                  skillComposition: skills.skillComposition,
                   compositionDigest: current.composition.compositionDigest,
                   projectConfigDigest: projectConfigDigest as `sha256:${string}`,
                   projectSnapshotDigest: current.projectSnapshotDigest,
@@ -2204,7 +2285,12 @@ export class WorkflowRuns extends Service {
                   (capability) => !invocationHost.capabilities.includes(capability),
                 )
               ) {
-                const planSkills = await this.resolveLifecycleWorkSkills('build.plan', signal);
+                const planSkills = await this.resolveLifecycleWorkSkills(
+                  'build.plan',
+                  signal,
+                  [],
+                  runId,
+                );
                 const retryWork = createBuildActionWork({
                   runId,
                   checkEpoch: lifecycle.checkEpoch + 1,
@@ -2212,6 +2298,7 @@ export class WorkflowRuns extends Service {
                   kind: 'build.plan',
                   actionSkill: planSkills.actionSkill,
                   augmentationSkills: planSkills.augmentationSkills,
+                  skillComposition: planSkills.skillComposition,
                   compositionDigest: current.composition.compositionDigest,
                   projectConfigDigest,
                   projectSnapshotDigest: current.projectSnapshotDigest,
@@ -2392,6 +2479,7 @@ export class WorkflowRuns extends Service {
                 nextKind,
                 signal,
                 composition.augmentationSkills,
+                runId,
               );
               const nextWork = createBuildActionWork({
                 runId,
@@ -2400,6 +2488,7 @@ export class WorkflowRuns extends Service {
                 kind: nextKind,
                 actionSkill: skills.actionSkill,
                 augmentationSkills: skills.augmentationSkills,
+                skillComposition: skills.skillComposition,
                 compositionDigest: current.composition.compositionDigest,
                 projectConfigDigest,
                 projectSnapshotDigest: current.projectSnapshotDigest,
@@ -2577,6 +2666,7 @@ export class WorkflowRuns extends Service {
                 nextKind,
                 signal,
                 composition.augmentationSkills,
+                runId,
               );
               const nextWork = createBuildActionWork({
                 runId,
@@ -2585,6 +2675,7 @@ export class WorkflowRuns extends Service {
                 kind: nextKind,
                 actionSkill: skills.actionSkill,
                 augmentationSkills: skills.augmentationSkills,
+                skillComposition: skills.skillComposition,
                 compositionDigest: current.composition.compositionDigest,
                 projectConfigDigest,
                 projectSnapshotDigest: current.projectSnapshotDigest,
@@ -2989,7 +3080,12 @@ export class WorkflowRuns extends Service {
                   packageCompletions: protocol.packageCompletions,
                   reason: checkEvidence.findings.map((finding) => finding.summary).join('; '),
                 });
-                const planSkills = await this.resolveLifecycleWorkSkills('build.plan', signal);
+                const planSkills = await this.resolveLifecycleWorkSkills(
+                  'build.plan',
+                  signal,
+                  [],
+                  runId,
+                );
                 const planWork = createBuildActionWork({
                   runId,
                   checkEpoch: lifecycle.checkEpoch + 1,
@@ -2997,6 +3093,7 @@ export class WorkflowRuns extends Service {
                   kind: 'build.plan',
                   actionSkill: planSkills.actionSkill,
                   augmentationSkills: planSkills.augmentationSkills,
+                  skillComposition: planSkills.skillComposition,
                   compositionDigest: current.composition.compositionDigest,
                   projectConfigDigest,
                   projectSnapshotDigest: current.projectSnapshotDigest,
@@ -3030,7 +3127,12 @@ export class WorkflowRuns extends Service {
                 throw new Error('Verification Evidence Profile identity is missing');
               }
               const evidencePlan = await this.ctx.evidenceCoordinator.plan(profileId);
-              const verifySkills = await this.resolveLifecycleWorkSkills('evidence.verify', signal);
+              const verifySkills = await this.resolveLifecycleWorkSkills(
+                'evidence.verify',
+                signal,
+                [],
+                runId,
+              );
               const boundSkills = [
                 ...(current.skillUsageSnapshots ?? []),
                 verifySkills.actionSkill,
@@ -3058,6 +3160,7 @@ export class WorkflowRuns extends Service {
                 verification: verificationInput,
                 actionSkill: verifySkills.actionSkill,
                 augmentationSkills: verifySkills.augmentationSkills,
+                skillComposition: verifySkills.skillComposition,
                 workspaceRepositoryId,
                 repositoryIds: evidencePlan.fingerprint.manifest.repositories.map(
                   (repository) => repository.repositoryId,
@@ -3100,13 +3203,19 @@ export class WorkflowRuns extends Service {
               if (!lifecycle.workspaceIntent) {
                 throw new Error('Approved Open has no Execution Workspace intent');
               }
-              const skills = await this.resolveLifecycleWorkSkills('build.configure', signal);
+              const skills = await this.resolveLifecycleWorkSkills(
+                'build.configure',
+                signal,
+                [],
+                runId,
+              );
               const initial = createInitialBuildWork({
                 runId,
                 checkEpoch: lifecycle.checkEpoch + 1,
                 definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
                 actionSkill: skills.actionSkill,
                 augmentationSkills: skills.augmentationSkills,
+                skillComposition: skills.skillComposition,
                 taskSet,
                 approvalHash,
                 compositionDigest: current.composition.compositionDigest,
@@ -3329,7 +3438,12 @@ export class WorkflowRuns extends Service {
       throw new Error('Verify failure continuation trigger identities are missing');
     }
     if (result === 'evidence-unavailable') {
-      const skills = await this.resolveLifecycleWorkSkills('evidence.verify', signal);
+      const skills = await this.resolveLifecycleWorkSkills(
+        'evidence.verify',
+        signal,
+        [],
+        state.runId,
+      );
       const verificationInput = rebaseVerificationInput(
         lifecycle.verificationInput,
         lifecycle.checkEpoch + 1,
@@ -3340,6 +3454,7 @@ export class WorkflowRuns extends Service {
         verification: verificationInput,
         actionSkill: skills.actionSkill,
         augmentationSkills: skills.augmentationSkills,
+        skillComposition: skills.skillComposition,
         workspaceRepositoryId: specificationRoot.repositoryId,
         repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
       });
@@ -3366,7 +3481,7 @@ export class WorkflowRuns extends Service {
       packageCompletions: protocol.packageCompletions,
       reason: 'Verify rejected the current implementation; conservatively revise all packages',
     });
-    const skills = await this.resolveLifecycleWorkSkills('build.plan', signal);
+    const skills = await this.resolveLifecycleWorkSkills('build.plan', signal, [], state.runId);
     const work = createBuildActionWork({
       runId: state.runId,
       checkEpoch: lifecycle.checkEpoch + 1,
@@ -3374,6 +3489,7 @@ export class WorkflowRuns extends Service {
       kind: 'build.plan',
       actionSkill: skills.actionSkill,
       augmentationSkills: skills.augmentationSkills,
+      skillComposition: skills.skillComposition,
       compositionDigest: state.composition.compositionDigest,
       projectConfigDigest: projectConfigDigest as `sha256:${string}`,
       projectSnapshotDigest: state.projectSnapshotDigest,
@@ -3598,7 +3714,7 @@ export class WorkflowRuns extends Service {
     ) {
       throw new Error('Archive reverify trigger identities are missing');
     }
-    const skills = await this.resolveLifecycleWorkSkills('evidence.verify', signal);
+    const skills = await this.resolveLifecycleWorkSkills('evidence.verify', signal, [], runId);
     const verificationInput = createVerificationInput({
       runId,
       checkEpoch: lifecycle.checkEpoch + 1,
@@ -3624,6 +3740,7 @@ export class WorkflowRuns extends Service {
       verification: verificationInput,
       actionSkill: skills.actionSkill,
       augmentationSkills: skills.augmentationSkills,
+      skillComposition: skills.skillComposition,
       workspaceRepositoryId: specificationRoot.repositoryId,
       repositoryIds: refreshed.fingerprint.manifest.repositories.map(
         (repository) => repository.repositoryId,
@@ -3740,12 +3857,18 @@ export class WorkflowRuns extends Service {
             (repositoryId): repositoryId is string => typeof repositoryId === 'string',
           )
         : [];
-      const archiveSkills = await this.resolveLifecycleWorkSkills('specification.close', signal);
+      const archiveSkills = await this.resolveLifecycleWorkSkills(
+        'specification.close',
+        signal,
+        [],
+        input.runId,
+      );
       const work = createSpecificationCloseWork({
         definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
         checkEpoch: lifecycle.checkEpoch + 1,
         archive: archiveInput,
         actionSkill: archiveSkills.actionSkill,
+        skillComposition: archiveSkills.skillComposition,
         workspaceRepositoryId: input.intent.changeBranch.repositoryId,
         repositoryIds,
       });
@@ -3777,13 +3900,19 @@ export class WorkflowRuns extends Service {
         lifecycle.specificationClosure &&
         !lifecycle.publicationReceipt
       ) {
-        const skills = await this.resolveLifecycleWorkSkills('delivery.publish', signal);
+        const skills = await this.resolveLifecycleWorkSkills(
+          'delivery.publish',
+          signal,
+          [],
+          input.runId,
+        );
         const restoredWork = createDeliveryPublishWork({
           definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
           checkEpoch: lifecycle.checkEpoch + 1,
           archive: lifecycle.archiveDeliveryInput,
           closure: lifecycle.specificationClosure,
           actionSkill: skills.actionSkill,
+          skillComposition: skills.skillComposition,
           workspaceRepositoryId: lifecycle.archiveDeliveryInput.changeBranch.repositoryId,
           repositoryIds: input.project.repositories.map((repository) => repository.id),
         });
@@ -3890,13 +4019,19 @@ export class WorkflowRuns extends Service {
           ...(signal ? { signal } : {}),
         });
         closure = await this.ctx.specification.close(plan, signal);
-        const skills = await this.resolveLifecycleWorkSkills('delivery.publish', signal);
+        const skills = await this.resolveLifecycleWorkSkills(
+          'delivery.publish',
+          signal,
+          [],
+          input.runId,
+        );
         const publishWork = createDeliveryPublishWork({
           definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
           checkEpoch: lifecycle.checkEpoch + 1,
           archive,
           closure,
           actionSkill: skills.actionSkill,
+          skillComposition: skills.skillComposition,
           workspaceRepositoryId: archive.changeBranch.repositoryId,
           repositoryIds: input.project.repositories.map((repository) => repository.id),
         });
@@ -4006,7 +4141,12 @@ export class WorkflowRuns extends Service {
               cause: correctedError,
             });
           }
-          const skills = await this.resolveLifecycleWorkSkills('specification.plan', signal);
+          const skills = await this.resolveLifecycleWorkSkills(
+            'specification.plan',
+            signal,
+            [],
+            input.runId,
+          );
           const designWork = createLifecyclePhaseWork({
             runId: input.runId,
             checkEpoch: lifecycle.checkEpoch + 1,
@@ -4015,6 +4155,7 @@ export class WorkflowRuns extends Service {
             kind: 'specification.plan',
             actionSkill: skills.actionSkill,
             augmentationSkills: skills.augmentationSkills,
+            skillComposition: skills.skillComposition,
             compositionDigest: state.composition.compositionDigest,
             projectSnapshotDigest: state.projectSnapshotDigest,
             projectConfigDigest,
@@ -4067,13 +4208,19 @@ export class WorkflowRuns extends Service {
             archive.evidenceCompositionDigest ??
             (verificationCompositionDigest as `sha256:${string}`),
         });
-        const skills = await this.resolveLifecycleWorkSkills('delivery.publish', signal);
+        const skills = await this.resolveLifecycleWorkSkills(
+          'delivery.publish',
+          signal,
+          [],
+          input.runId,
+        );
         const correctedWork = createDeliveryPublishWork({
           definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
           checkEpoch: lifecycle.checkEpoch + 1,
           archive: correctedArchive,
           closure,
           actionSkill: skills.actionSkill,
+          skillComposition: skills.skillComposition,
           workspaceRepositoryId: correctedArchive.changeBranch.repositoryId,
           repositoryIds: input.project.repositories.map((repository) => repository.id),
         });
@@ -4221,6 +4368,12 @@ export class WorkflowRuns extends Service {
         skillCompatibility.status === 'drifted' ||
         specificationCompatibility.status === 'drifted'
       ) {
+        if (skillCompatibility.status === 'drifted') {
+          await this.ctx.workExecutionAuthority.recordSkillCompositionDrift(
+            options.runId,
+            skillCompatibility.changedSkills.length,
+          );
+        }
         const reconciliation = reconcileProjectSnapshots(
           previousProjectSnapshot,
           options.currentProjectSnapshot,
@@ -4293,26 +4446,47 @@ export class WorkflowRuns extends Service {
     signal?: AbortSignal,
   ): Promise<SkillCompatibility> {
     const state = await this.ctx.runStore.loadRun(runId);
-    const changedSkills: string[] = [];
+    const changedSkills = new Set<string>();
+    const frozenComposition = state.changeLifecycle?.skillCompositionDigest;
+    if (frozenComposition) {
+      try {
+        const currentComposition = await this.ctx.teamSkillComposition.compile(
+          BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+          signal,
+        );
+        if (currentComposition.digest !== frozenComposition) {
+          changedSkills.add('effective-composition');
+        }
+      } catch {
+        signal?.throwIfAborted();
+        changedSkills.add('effective-composition');
+      }
+    }
     for (const expected of state.skillUsageSnapshots ?? []) {
       signal?.throwIfAborted();
-      const definition = await this.ctx.skills.get(expected.name, {
-        cwd: this.workspaceRoot,
-        signal,
-      });
+      const definition = await this.ctx.skills
+        .get(expected.name, {
+          cwd: this.workspaceRoot,
+          signal,
+        })
+        .catch(() => {
+          signal?.throwIfAborted();
+          return undefined;
+        });
       if (!definition) {
-        changedSkills.push(expected.name);
+        changedSkills.add(expected.name);
         continue;
       }
       const current = await snapshotSkillDefinition(definition);
-      if (!sameSkillUsageSnapshot(expected, current)) changedSkills.push(expected.name);
+      if (!sameSkillUsageSnapshot(expected, current)) changedSkills.add(expected.name);
     }
-    return changedSkills.length === 0
+    const changed = [...changedSkills].sort();
+    return changed.length === 0
       ? { status: 'same', changedSkills: [], reason: 'used Skill snapshots are unchanged' }
       : {
           status: 'drifted',
-          changedSkills,
-          reason: `used Skill snapshots changed: ${changedSkills.join(', ')}`,
+          changedSkills: changed,
+          reason: `used Skill snapshots or effective composition changed: ${changed.join(', ')}`,
         };
   }
 
@@ -4322,6 +4496,10 @@ export class WorkflowRuns extends Service {
   ): Promise<SkillCompatibility> {
     const compatibility = await this.skillCompatibility(runId, signal);
     if (compatibility.status === 'drifted') {
+      await this.ctx.workExecutionAuthority.recordSkillCompositionDrift(
+        runId,
+        compatibility.changedSkills.length,
+      );
       throw new Error(
         `Run ${runId} requires a Human Decision or a new Run because ${compatibility.reason}`,
       );

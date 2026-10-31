@@ -510,6 +510,12 @@ footer {
   color: var(--muted);
   font-size: 0.625rem;
 }
+.skill-row .skill-row__failure {
+  grid-column: 1 / -1;
+  color: var(--error);
+  font-size: 0.6875rem;
+  font-weight: 500;
+}
 .skill-stages {
   display: flex;
   align-items: center;

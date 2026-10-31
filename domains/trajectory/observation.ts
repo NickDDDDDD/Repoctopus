@@ -12,6 +12,12 @@ export type { ChangePhase } from '../change-lifecycle/transition.js';
 export type ObservationBuildAction = 'configure' | 'plan' | 'plan-evidence' | 'execute' | 'check';
 export type ContinuationKind = 'execute' | 'ask' | 'wait' | 'reconcile' | 'done';
 export type ObservationScalar = string | number | boolean;
+export type ObservationSkillRole =
+  | 'action'
+  | 'augmentation'
+  | 'builtin-augmentation'
+  | 'team-guidance'
+  | 'team-replacement';
 
 export interface ObservationContext {
   workspaceId?: string;
@@ -35,7 +41,12 @@ export interface ObservationCorrelation {
   validatorId?: string;
   continuation?: ContinuationKind;
   skillName?: string;
-  skillRole?: 'action' | 'augmentation';
+  skillRole?: ObservationSkillRole;
+  bindingId?: string;
+  slotId?: string;
+  skillOrder?: number;
+  replacedSkillName?: string;
+  skillCompositionDigest?: string;
   decisionId?: string;
   decisionKind?: string;
   evidenceAttemptId?: string;
@@ -122,6 +133,8 @@ const ATTRIBUTE_KEYS = [
   'warningCount',
   'errorCount',
   'contractConflict',
+  'reasonCode',
+  'changedSkillCount',
 ] as const;
 
 function digest(value: unknown): `sha256:${string}` {
@@ -235,7 +248,27 @@ function correlation(event: TrajectoryEvent, context: ObservationContext): Obser
   assign('continuation', continuation(event.data.continuation));
   assign('skillName', id(event.data.skillName));
   const role = event.data.skillRole;
-  assign('skillRole', role === 'action' || role === 'augmentation' ? role : undefined);
+  assign(
+    'skillRole',
+    role === 'action' ||
+      role === 'augmentation' ||
+      role === 'builtin-augmentation' ||
+      role === 'team-guidance' ||
+      role === 'team-replacement'
+      ? role
+      : undefined,
+  );
+  assign('bindingId', id(event.data.bindingId));
+  assign('slotId', id(event.data.slotId));
+  assign('skillOrder', integer(event.data.skillOrder));
+  assign('replacedSkillName', id(event.data.replacedSkillName));
+  assign(
+    'skillCompositionDigest',
+    typeof event.data.skillCompositionDigest === 'string' &&
+      DIGEST.test(event.data.skillCompositionDigest)
+      ? event.data.skillCompositionDigest
+      : undefined,
+  );
   const waitKind = id(event.data.waitKind) ?? id(wait?.kind);
   assign(
     'decisionId',

@@ -1,5 +1,9 @@
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import type { SkillUsageSnapshot } from '../skill/types.js';
+import {
+  createEffectiveWorkSkillComposition,
+  type EffectiveWorkSkillComposition,
+} from '../skill/composition.js';
 import type {
   ChangeLifecycleDefinition,
   ChangeLifecycleWorkDefinition,
@@ -22,6 +26,7 @@ export function materializeLifecycleWorkBinding(input: {
   kind: string;
   actionSkill?: SkillUsageSnapshot;
   augmentationSkills: readonly SkillUsageSnapshot[];
+  skillComposition?: EffectiveWorkSkillComposition;
   workspaceRepositoryId: string;
   repositoryIds: readonly string[];
 }): Pick<
@@ -30,6 +35,7 @@ export function materializeLifecycleWorkBinding(input: {
   | 'kind'
   | 'actionSkill'
   | 'augmentationSkills'
+  | 'skillComposition'
   | 'methodProfile'
   | 'capabilities'
   | 'sideEffectClass'
@@ -43,7 +49,52 @@ export function materializeLifecycleWorkBinding(input: {
   if (work.actionSkill?.name !== input.actionSkill?.name) {
     throw new Error(`Lifecycle Work action Skill does not match definition: ${work.kind}`);
   }
-  const expectedAugmentations = work.augmentationSkills.map((skill) => skill.name);
+  const skillComposition =
+    input.skillComposition ??
+    createEffectiveWorkSkillComposition({
+      workKind: work.kind,
+      layers: [
+        ...(input.actionSkill
+          ? [
+              {
+                role: 'action' as const,
+                origin: 'builtin' as const,
+                order: 0,
+                bindingId: null,
+                slotId: null,
+                replacedSkillName: null,
+                skill: input.actionSkill,
+              },
+            ]
+          : []),
+        ...input.augmentationSkills.map((skill, index) => ({
+          role: 'builtin-augmentation' as const,
+          origin: 'builtin' as const,
+          order: index + 1,
+          bindingId: null,
+          slotId:
+            work.augmentationSlots?.find((slot) => slot.defaultSkill.name === skill.name)?.id ??
+            null,
+          replacedSkillName: null,
+          skill,
+        })),
+      ],
+    });
+  if (skillComposition.workKind !== work.kind) {
+    throw new Error(`Skill composition belongs to another lifecycle Work: ${work.kind}`);
+  }
+  const actionLayers = skillComposition.layers.filter((layer) => layer.role === 'action');
+  if (
+    actionLayers.length !== (input.actionSkill ? 1 : 0) ||
+    actionLayers[0]?.skill.name !== input.actionSkill?.name
+  ) {
+    throw new Error(`Lifecycle Work action Skill composition is invalid: ${work.kind}`);
+  }
+  const expectedAugmentations = input.skillComposition
+    ? skillComposition.layers
+        .filter((layer) => layer.role !== 'action')
+        .map((layer) => layer.skill.name)
+    : work.augmentationSkills.map((skill) => skill.name);
   const actualAugmentations = input.augmentationSkills.map((skill) => skill.name);
   if (canonicalJson(expectedAugmentations) !== canonicalJson(actualAugmentations)) {
     throw new Error(`Lifecycle Work augmentation Skills do not match definition: ${work.kind}`);
@@ -57,18 +108,18 @@ export function materializeLifecycleWorkBinding(input: {
     kind: work.kind,
     ...(input.actionSkill ? { actionSkill: structuredClone(input.actionSkill) } : {}),
     augmentationSkills: structuredClone(input.augmentationSkills),
+    skillComposition: structuredClone(skillComposition),
     methodProfile: structuredClone(work.methodProfile),
     capabilities: [...work.capabilities],
     sideEffectClass: work.sideEffectClass,
     writeScopes: work.writeScopes.flatMap((scope) =>
-      (scope.repositorySelector === 'workspace'
-        ? [input.workspaceRepositoryId]
-        : repositories
-      ).map((repositoryId) => ({
-        repositoryId,
-        paths: [...scope.paths],
-        operations: [...scope.operations],
-      })),
+      (scope.repositorySelector === 'workspace' ? [input.workspaceRepositoryId] : repositories).map(
+        (repositoryId) => ({
+          repositoryId,
+          paths: [...scope.paths],
+          operations: [...scope.operations],
+        }),
+      ),
     ),
     outputContract: structuredClone(work.outputContract),
     validatorProfile: structuredClone(work.validatorProfile),

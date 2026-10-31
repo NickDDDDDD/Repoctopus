@@ -98,7 +98,7 @@ describe('Change Run CLI', () => {
       },
       phase: 'open',
       status: 'running',
-      definition: { id: 'repoctopus-change', version: '4.4.0' },
+      definition: { id: 'repoctopus-change', version: '4.5.0' },
     });
     const firstLifecycle = first.result!.changeLifecycle!;
     const secondLifecycle = second.result!.changeLifecycle!;

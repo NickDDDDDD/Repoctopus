@@ -64,7 +64,7 @@ Trajectory、Attempt、Receipt、Artifact、Bundle、Gate 和轻量 Archive 事�
 | `repoctopus.evidence.*`                         | Evidence Attempt、Bundle、Gate 关联  |
 | `repoctopus.action.receipt.id`                  | Runtime Action Dispatcher Receipt    |
 
-Build 的每个已提交边界使用同一条 Trajectory 和 OTLP 管道。`work.*` 事件携带有界的 `buildAction`、execution mode、TDD mode、review mode 和 isolation；`change.lifecycle.transitioned` 携带 Configure approval、Plan revision、Plan Evidence、Check 和 invalidation 的稳定身份；`skill.resolved|delivered|consumed`、`validator.completed` 与 `delegation.completed` 保留父 Work、invocation 和 package 关联。Host 自述不会合成成功事件，事件只在本地 Run 提交后导出。
+Build 的每个已提交边界使用同一条 Trajectory 和 OTLP 管道。`work.*` 事件携带有界的 `buildAction`、execution mode、TDD mode、review mode 和 isolation；`change.lifecycle.transitioned` 携带 Configure approval、Plan revision、Plan Evidence、Check 和 invalidation 的稳定身份；`skill-composition.compiled|rejected|drifted`、`skill-binding.resolved` 与 `skill.resolved|delivered|consumed|consumption-rejected` 保留组合、binding/slot、冻结顺序、replacement identity、角色、父 Work 与 invocation 关联。角色区分 Action、内置 augmentation、team guidance 和 team replacement。Host 自述不会合成成功事件，`consumed` 只表示回执摘要属于当前 packet，不代表方法被正确执行；缺失、未知或旧 layer 只生成有界失败类别并阻止 Outcome。事件只在本地 Run 提交后导出。
 
 核心可靠性还使用四个有界事件：`work.packet-stored` 只记录 `created | reused`，`work.packet-recovered` 只记录 `recovered | missing | corrupt | legacy`；`specification.artifacts-observed` 只记录 Proposal、Specs、Design、Tasks 的 `ready | skipped | missing`；`specification.validation-observed` 只记录 valid、最高严重级、三级计数和 contract-conflict。Trace/Log 可以携带 run/work/attempt/epoch 与摘要关联，Metric 只使用上述固定枚举，不使用 changeId、digest、路径、诊断 code/message 或 packet 正文作为 label。遥测提交失败不改变 claim、恢复或 Gate 结果。
 
@@ -76,7 +76,7 @@ Trace 和 Log 可以使用 run、Work、configuration、plan、package、invocat
 - `tdd|direct` TDD mode；
 - `current|branch|worktree` isolation。
 
-Metric 不使用 run、Task、package、repository、plan、digest、自由 Skill 名称或 Agent identity 作为 label。未知值统一降级为 `unknown`、`custom` 或 `none`，因此恶意或新插件输入不会产生无界时间序列。
+Metric 不使用 run、Task、package、repository、plan、composition/binding digest、自由 Skill 名称、binding ID、slot ID 或 Agent identity 作为 label。这些高基数值仅进入受允许列表保护的 Trace/Event 关联。未知值统一降级为 `unknown`、`custom` 或 `none`，因此恶意或新插件输入不会产生无界时间序列。
 
 Archive 仍使用同一 Run 和相同字段；不创建独立 Post-merge Run，不输出 Webhook、等待远端合入或 `repoctopus.post_merge.*` 平行语义。Publication Receipt 被同一 Run 接受时上报完成；后续 consistency reconcile 只上报有界的检查结果、变化类别和审查状态，不回写历史 phase。
 
