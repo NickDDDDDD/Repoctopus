@@ -92,17 +92,17 @@ describe('composition compatibility', () => {
       [
         'workflow-runs',
         {
-          codeDigest: 'sha256:24235a25f865ec4309b2967ff67cbb8aad7b8d563896b97bf3b311d26f814596',
+          codeDigest: 'sha256:813eeece9d54323afbc72b2e99ba7b7899a10f7cad9ab506e7551adc12d6a860',
           descriptorDigest:
-            'sha256:7ad498f589335e914db2419a995c737619e02cdc1503d1c2d84b11e0c7872064',
+            'sha256:7d6d0eb8c3ff06bbb2b86e14c004625b047ff2ea9dbfa946878a4db9eb38b0ce',
         },
       ],
       [
         'managed-work-executor',
         {
-          codeDigest: 'sha256:a3d18d9854d176ad2a88b8597dc3fa80b6e64ce68faefe1d83c09ae6af62a9ba',
+          codeDigest: 'sha256:864cd1727e33214c9bfa6c748c75e91f6faaf2f5d89ed2dc73278dfde8fb0a63',
           descriptorDigest:
-            'sha256:4e5f48cad130c375be7acc2abdbf3ff67fd9659f11a06f0a62120218bf6865fa',
+            'sha256:5882235cb7dc97cf8d7cc225c78504f13d7859a57c1b5f2ad7cd334357aa0619',
         },
       ],
       [
@@ -116,17 +116,17 @@ describe('composition compatibility', () => {
       [
         'lifecycle-validator-builtin',
         {
-          codeDigest: 'sha256:4805d959c0b2e3732aa1daffcc689934a660ce226db7efc7a4d6f87cdfb688a0',
+          codeDigest: 'sha256:1ddbda5413183c53a569109426b52101c7b11a81b078796375cebd7ed592ec64',
           descriptorDigest:
-            'sha256:357249984ada9aae4b8f8f2df4373110570ce326991a33970876394f253917b1',
+            'sha256:717cb188db5e3b6d0112b711a840a220d59a003b2528758ce71c7365cc90a2eb',
         },
       ],
       [
         'lifecycle-extension-builtin',
         {
-          codeDigest: 'sha256:b29078511a9eff1f796513e755b006c65377e917dd6e3cf05b429db560ac0593',
+          codeDigest: 'sha256:999c22698474db633b225ea62d05eb5216930ac40c87f59b954cbcc353bd3d19',
           descriptorDigest:
-            'sha256:25a81afeeff570caaa23f277244930e34d9037e1b913ecd267a737089e46f16a',
+            'sha256:b7d4c5d962c61768e4de0da74bde5faf7ff607018cb91df25f34b2ed43318fce',
         },
       ],
     ]);

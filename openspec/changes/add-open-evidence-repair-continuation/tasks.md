@@ -54,7 +54,7 @@
 
 - [ ] 5.1 用本 Change 的正式 Run重放 `invalid → repair Work → valid → Open Human Decision → post-approval revalidation → Design`，并验证真实 Skill delivered/consumed telemetry。
       **Blocked by:** 4.2, 4.3
-      **Acceptance:** 不编辑 Run Store、不创建第二个 Run；Trajectory逐步证明 Provider Evidence、repair Work、可信决定、重验和转换，Action Skill与 augmentation正文均真实交付；`lifecycle-definition-builtin` 只登记该 Run 的精确直接前驱 implementation pair，其他前驱继续要求 migration。
+      **Acceptance:** 不编辑 Run Store、不创建第二个 Run；Trajectory逐步证明 Provider Evidence、repair Work、可信决定、重验和转换，Action Skill与 augmentation正文均真实交付；所有受影响的 protected lifecycle/Runtime contributors 只登记该 Run 的精确直接前驱 implementation pair，其他前驱继续要求 migration。
       **Requirements:** change-lifecycle#open-校验失败必须形成可执行恢复回环; development-telemetry#open-evidence-恢复必须形成可重放观测事实
 - [ ] 5.2 运行严格 OpenSpec、相关 Vitest、typecheck、lint、architecture/provenance/generated检查和完整 `npm run verify`，更新正式验证报告并清理临时输出。
       **Blocked by:** 5.1
