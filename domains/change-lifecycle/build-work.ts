@@ -86,13 +86,17 @@ export function createBuildActionWork(facts: {
     action: facts.kind.slice('build.'.length) as Exclude<BuildActionKind, 'plan-evidence'>,
     ...(facts.tddMode ? { tddMode: facts.tddMode } : {}),
   });
-  const augmentationNames = facts.augmentationSkills.map((skill) => skill.name);
+  const builtinAugmentationNames = facts.skillComposition
+    ? facts.skillComposition.layers
+        .filter((layer) => layer.role === 'builtin-augmentation')
+        .map((layer) => layer.skill.name)
+    : facts.augmentationSkills.map((skill) => skill.name);
   if (facts.actionSkill.name !== composition.actionSkill) {
     throw new Error(`Build Action Skill does not match frozen policy: ${facts.kind}`);
   }
   if (
     (facts.kind === 'build.execute' && !facts.tddMode) ||
-    JSON.stringify(augmentationNames) !== JSON.stringify(composition.augmentationSkills)
+    JSON.stringify(builtinAugmentationNames) !== JSON.stringify(composition.augmentationSkills)
   ) {
     throw new Error(`Build Action augmentation Skills do not match frozen policy: ${facts.kind}`);
   }

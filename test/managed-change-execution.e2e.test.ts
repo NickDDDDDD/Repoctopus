@@ -111,6 +111,20 @@ describe('managed Change execution production composition', () => {
       });
       const environment = await createOpenSpecStoreEnvironment(root, workspace, 'managed-blackbox');
       await writeFile(path.join(workspace, '.gitignore'), '.repoctopus/\n');
+      await mkdir(path.join(workspace, '.agents', 'skills', 'team-build-guidance'), {
+        recursive: true,
+      });
+      await mkdir(path.join(workspace, '.agents', 'skills', 'team-design-method'), {
+        recursive: true,
+      });
+      await writeFile(
+        path.join(workspace, '.agents', 'skills', 'team-build-guidance', 'SKILL.md'),
+        '---\nname: team-build-guidance\ndescription: Team Build guidance used by the production E2E.\n---\n\nPreserve the Runtime-owned Work contract and report bounded evidence.\n',
+      );
+      await writeFile(
+        path.join(workspace, '.agents', 'skills', 'team-design-method', 'SKILL.md'),
+        '---\nname: team-design-method\ndescription: Team Design method used by the production E2E.\n---\n\nValidate design decisions against repository facts before editing artifacts.\n',
+      );
       await writeFile(
         path.join(workspace, 'repoctopus.yaml'),
         JSON.stringify({
@@ -152,6 +166,28 @@ describe('managed Change execution production composition', () => {
           specificationProvider: {
             id: 'specification-openspec',
             store: { id: 'managed-blackbox', repositoryId: 'workspace' },
+          },
+          lifecycle: {
+            skillBindings: {
+              schemaVersion: 1,
+              bindings: [
+                {
+                  id: 'team-design-method',
+                  target: 'specification.plan',
+                  role: 'augmentation-replacement',
+                  skill: 'team-design-method',
+                  slot: 'design-method',
+                  order: 10,
+                },
+                {
+                  id: 'team-build-guidance',
+                  target: 'build.execute',
+                  role: 'guidance',
+                  skill: 'team-build-guidance',
+                  order: 20,
+                },
+              ],
+            },
           },
         }),
       );
@@ -203,6 +239,21 @@ describe('managed Change execution production composition', () => {
             capabilities:
               executionMode === 'subagent-driven-development' ? ['subagent.dispatch.attested'] : [],
             operations(packet) {
+              const roles = packet.context.layers
+                .filter((layer) => ['action-skill', 'augmentation-skill'].includes(layer.kind))
+                .map((layer) => [layer.skillRole, layer.source]);
+              if (packet.work.kind === 'change.intake') {
+                expect(roles).toEqual([
+                  ['action', 'repoctopus-open-change'],
+                  ['builtin-augmentation', 'grilling'],
+                ]);
+              }
+              if (packet.work.kind === 'specification.plan') {
+                expect(roles).toEqual([
+                  ['action', 'repoctopus-design-change'],
+                  ['team-replacement', 'team-design-method'],
+                ]);
+              }
               if (
                 packet.work.kind === 'change.intake' ||
                 packet.work.kind === 'specification.plan'
@@ -239,6 +290,14 @@ describe('managed Change execution production composition', () => {
                 ];
               }
               if (packet.work.kind === 'build.execute') {
+                expect(roles.slice(0, 3)).toEqual([
+                  ['action', 'repoctopus-build-execute'],
+                  ['builtin-augmentation', 'tdd'],
+                  ['team-guidance', 'team-build-guidance'],
+                ]);
+                expect(roles.slice(3)).toEqual(
+                  packet.claim.attempt > 1 ? [[undefined, 'diagnosing-bugs']] : [],
+                );
                 const inputs = JSON.parse(
                   packet.context.layers.find((layer) => layer.kind === 'change-inputs')!.content,
                 ) as { build: { currentPackage: { repositoryIds: string[] } } };
@@ -281,7 +340,11 @@ describe('managed Change execution production composition', () => {
                   tddMode: 'tdd',
                 } satisfies WorkExecutionResult;
                 correctedConfigurationResult = candidate;
-                if (!multiRepository && executionMode === 'autonomous' && !invalidConfigurationSubmitted) {
+                if (
+                  !multiRepository &&
+                  executionMode === 'autonomous' &&
+                  !invalidConfigurationSubmitted
+                ) {
                   invalidConfigurationSubmitted = true;
                   return undefined;
                 }

@@ -8,6 +8,7 @@ import {
   createBuildActionWork,
 } from '../domains/change-lifecycle/build-work.js';
 import type { SkillUsageSnapshot } from '../domains/skill/types.js';
+import { createEffectiveWorkSkillComposition } from '../domains/skill/composition.js';
 
 const digest = (value: string) =>
   `sha256:${createHash('sha256').update(value).digest('hex')}` as const;
@@ -87,5 +88,70 @@ describe('Build Work policy', () => {
       /frozen policy/u,
     );
     expect(() => executeWork({ tddMode: 'tdd', augmentations: [] })).toThrow(/frozen policy/u);
+  });
+
+  it('keeps the approved TDD layer while accepting frozen team guidance', () => {
+    const action = skill('repoctopus-build-execute');
+    const tdd = skill('tdd');
+    const guidance = skill('team-build-guidance');
+    const work = createBuildActionWork({
+      runId: 'run-team-build-work',
+      checkEpoch: 4,
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      kind: 'build.execute',
+      actionSkill: action,
+      augmentationSkills: [tdd, guidance],
+      skillComposition: createEffectiveWorkSkillComposition({
+        workKind: 'build.execute',
+        layers: [
+          {
+            role: 'action',
+            origin: 'builtin',
+            order: 0,
+            bindingId: null,
+            slotId: null,
+            skill: action,
+          },
+          {
+            role: 'builtin-augmentation',
+            origin: 'builtin',
+            order: 1,
+            bindingId: null,
+            slotId: null,
+            skill: tdd,
+          },
+          {
+            role: 'team-guidance',
+            origin: 'team',
+            order: 2,
+            bindingId: 'team-build-guidance',
+            slotId: null,
+            skill: guidance,
+          },
+        ],
+      }),
+      compositionDigest: digest('composition'),
+      projectConfigDigest: digest('project-config'),
+      projectSnapshotDigest: digest('project-snapshot'),
+      workspaceRepositoryId: 'workspace',
+      repositoryIds: ['workspace'],
+      configurationId: 'configuration-1',
+      planId: 'plan-1',
+      planRevision: 1,
+      packageId: 'package-1',
+      executionMode: 'autonomous',
+      tddMode: 'tdd',
+      writeScopes: [{ repositoryId: 'workspace', paths: ['domains/**'] }],
+      stableInput: { packageDigest: digest('package') },
+    });
+
+    expect(work.augmentationSkills.map((entry) => entry.name)).toEqual([
+      'tdd',
+      'team-build-guidance',
+    ]);
+    expect(work.skillComposition?.layers.at(-1)).toMatchObject({
+      role: 'team-guidance',
+      bindingId: 'team-build-guidance',
+    });
   });
 });
