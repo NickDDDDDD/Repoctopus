@@ -111,6 +111,7 @@ export function createBuildActionWork(facts: {
           order: 0,
           bindingId: null,
           slotId: null,
+          replacedSkillName: null,
           skill: facts.actionSkill,
         },
         ...facts.augmentationSkills.map((skill, index) => ({
@@ -119,6 +120,7 @@ export function createBuildActionWork(facts: {
           order: index + 1,
           bindingId: null,
           slotId: null,
+          replacedSkillName: null,
           skill,
         })),
       ],

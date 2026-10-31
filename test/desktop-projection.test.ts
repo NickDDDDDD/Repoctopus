@@ -407,4 +407,76 @@ describe('desktop change projection', () => {
       expect.objectContaining({ code: 'work-stalled', workId: 'work-stalled' }),
     );
   });
+
+  it('keeps frozen Skill order and projects replacement and consumption validation facts', () => {
+    const facts = [
+      observation(1, {
+        eventType: 'skill.delivered',
+        correlation: {
+          workspaceId: 'team-platform',
+          changeId: 'skill-validation',
+          phase: 'design',
+          workId: 'specification.plan:1',
+          skillName: 'team-design-method',
+          skillRole: 'team-replacement',
+          bindingId: 'team-design-replacement',
+          slotId: 'design-method',
+          skillOrder: 1,
+          replacedSkillName: 'codebase-design',
+        },
+        attributes: { skillState: 'delivered', result: 'delivered' },
+      }),
+      observation(2, {
+        eventType: 'skill.delivered',
+        correlation: {
+          workspaceId: 'team-platform',
+          changeId: 'skill-validation',
+          phase: 'design',
+          workId: 'specification.plan:1',
+          skillName: 'repoctopus-design-change',
+          skillRole: 'action',
+          skillOrder: 0,
+        },
+        attributes: { skillState: 'delivered', result: 'delivered' },
+      }),
+      observation(3, {
+        eventType: 'skill.consumption-rejected',
+        correlation: {
+          workspaceId: 'team-platform',
+          changeId: 'skill-validation',
+          phase: 'design',
+          workId: 'specification.plan:1',
+          skillName: 'team-design-method',
+          skillRole: 'team-replacement',
+          bindingId: 'team-design-replacement',
+          slotId: 'design-method',
+          skillOrder: 1,
+          replacedSkillName: 'codebase-design',
+        },
+        attributes: {
+          skillState: 'consumption-rejected',
+          result: 'failed',
+          reasonCode: 'missing-layer',
+        },
+      }),
+    ];
+
+    const snapshot = facts.reduce(
+      (current, fact) => reduceChangeProjection(current, fact).snapshot,
+      createEmptyChangeProjection(),
+    );
+
+    expect(snapshot.changes[0]?.skills.map(({ name }) => name)).toEqual([
+      'repoctopus-design-change',
+      'team-design-method',
+    ]);
+    expect(snapshot.changes[0]?.skills[1]).toMatchObject({
+      role: 'team-replacement',
+      bindingId: 'team-design-replacement',
+      slotId: 'design-method',
+      replacedSkillName: 'codebase-design',
+      state: 'failed',
+      failureReason: 'missing-layer',
+    });
+  });
 });

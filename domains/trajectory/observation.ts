@@ -44,6 +44,8 @@ export interface ObservationCorrelation {
   skillRole?: ObservationSkillRole;
   bindingId?: string;
   slotId?: string;
+  skillOrder?: number;
+  replacedSkillName?: string;
   skillCompositionDigest?: string;
   decisionId?: string;
   decisionKind?: string;
@@ -131,6 +133,8 @@ const ATTRIBUTE_KEYS = [
   'warningCount',
   'errorCount',
   'contractConflict',
+  'reasonCode',
+  'changedSkillCount',
 ] as const;
 
 function digest(value: unknown): `sha256:${string}` {
@@ -256,6 +260,8 @@ function correlation(event: TrajectoryEvent, context: ObservationContext): Obser
   );
   assign('bindingId', id(event.data.bindingId));
   assign('slotId', id(event.data.slotId));
+  assign('skillOrder', integer(event.data.skillOrder));
+  assign('replacedSkillName', id(event.data.replacedSkillName));
   assign(
     'skillCompositionDigest',
     typeof event.data.skillCompositionDigest === 'string' &&

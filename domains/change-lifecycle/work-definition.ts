@@ -62,6 +62,7 @@ export function materializeLifecycleWorkBinding(input: {
                 order: 0,
                 bindingId: null,
                 slotId: null,
+                replacedSkillName: null,
                 skill: input.actionSkill,
               },
             ]
@@ -74,6 +75,7 @@ export function materializeLifecycleWorkBinding(input: {
           slotId:
             work.augmentationSlots?.find((slot) => slot.defaultSkill.name === skill.name)?.id ??
             null,
+          replacedSkillName: null,
           skill,
         })),
       ],

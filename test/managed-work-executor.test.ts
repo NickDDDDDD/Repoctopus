@@ -84,6 +84,7 @@ function executor(
     markHostCompleted: vi.fn().mockResolvedValue({ status: 'submitted' }),
     recordDelegationFacts: vi.fn(),
     recordSkillFacts: vi.fn(),
+    recordSkillConsumptionRejected: vi.fn(),
   };
   const host: WorkExecutionHost = {
     identity: {
@@ -429,6 +430,12 @@ describe('Managed Work Executor Build contract', () => {
 
     await expect(service.execute({} as never)).rejects.toThrow(/consumption of every delivered/u);
     expect(authority.markHostCompleted).not.toHaveBeenCalled();
+    expect(authority.recordSkillConsumptionRejected).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        reasonCode: consumed.length === 1 ? 'missing-layer' : 'unknown-layer',
+      }),
+    );
   });
 
   it('records a Build Plan submission without accepting a terminal Action Outcome', async () => {

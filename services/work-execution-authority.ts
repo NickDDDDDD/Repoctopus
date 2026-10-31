@@ -451,6 +451,8 @@ export class WorkExecutionAuthority extends Service {
               skillRole: layer.role,
               bindingId: layer.bindingId,
               slotId: layer.slotId ?? undefined,
+              skillOrder: layer.position,
+              replacedSkillName: layer.replacedSkillName ?? undefined,
               skillCompositionDigest: composition.digest,
               result: 'resolved',
             },
@@ -485,6 +487,74 @@ export class WorkExecutionAuthority extends Service {
       });
     }
     await this.flushTelemetry(runId);
+  }
+
+  async recordSkillCompositionDrift(runId: string, changedSkillCount: number): Promise<void> {
+    const recorded = await this.ctx.runStore.commitGuarded(runId, ({ state, trajectory }) => {
+      const compositionDigest = state.changeLifecycle?.skillCompositionDigest;
+      if (!compositionDigest) return { value: false };
+      const eventId = digest(runId, 'skill-composition.drifted', compositionDigest);
+      if (trajectory.some((event) => event.eventId === eventId)) return { value: false };
+      const timestamp = new Date().toISOString();
+      const nextState: RunState = {
+        ...state,
+        stateVersion: state.stateVersion + 1,
+        updatedAt: timestamp,
+      };
+      return {
+        state: nextState,
+        event: executionEvent({
+          state: nextState,
+          sequence: trajectory.length + 1,
+          timestamp,
+          type: 'skill-composition.drifted',
+          identity: [compositionDigest],
+          data: {
+            skillCompositionDigest: compositionDigest,
+            result: 'blocked',
+            reasonCode: 'provider-drift',
+            changedSkillCount,
+          },
+        }),
+        value: true,
+      };
+    });
+    if (recorded) await this.flushTelemetry(runId);
+  }
+
+  async recordSkillCompositionRejected(
+    runId: string,
+    reasonCode: 'provider-unavailable' | 'contract-invalid' | 'composition-invalid',
+  ): Promise<void> {
+    const recorded = await this.ctx.runStore.commitGuarded(runId, ({ state, trajectory }) => {
+      const compositionDigest = state.changeLifecycle?.skillCompositionDigest;
+      if (!compositionDigest) return { value: false };
+      const eventId = digest(runId, 'skill-composition.rejected', compositionDigest, reasonCode);
+      if (trajectory.some((event) => event.eventId === eventId)) return { value: false };
+      const timestamp = new Date().toISOString();
+      const nextState: RunState = {
+        ...state,
+        stateVersion: state.stateVersion + 1,
+        updatedAt: timestamp,
+      };
+      return {
+        state: nextState,
+        event: executionEvent({
+          state: nextState,
+          sequence: trajectory.length + 1,
+          timestamp,
+          type: 'skill-composition.rejected',
+          identity: [compositionDigest, reasonCode],
+          data: {
+            skillCompositionDigest: compositionDigest,
+            result: 'blocked',
+            reasonCode,
+          },
+        }),
+        value: true,
+      };
+    });
+    if (recorded) await this.flushTelemetry(runId);
   }
 
   async markContextDelivered(packet: WorkExecutionPacket): Promise<WorkExecutionCheckpoint> {
@@ -530,10 +600,54 @@ export class WorkExecutionAuthority extends Service {
           skillRole: layer.skillRole ?? (layer.kind === 'action-skill' ? 'action' : 'augmentation'),
           bindingId: layer.bindingId ?? undefined,
           slotId: layer.slotId ?? undefined,
+          skillOrder: layer.skillOrder,
+          replacedSkillName: layer.replacedSkillName ?? undefined,
           skillCompositionDigest: packet.work.skillComposition?.digest,
           result: stage,
         },
         [layer.digest, stage],
+      );
+    }
+  }
+
+  async recordSkillConsumptionRejected(
+    packet: WorkExecutionPacket,
+    failure: {
+      reasonCode: 'missing-layer' | 'unknown-layer' | 'layer-set-mismatch';
+      invocationId: string;
+      missingLayerDigests: readonly `sha256:${string}`[];
+      unknownLayerDigests: readonly `sha256:${string}`[];
+    },
+  ): Promise<void> {
+    const missing = new Set(failure.missingLayerDigests);
+    const eligible = packet.context.layers.filter(
+      (layer) => layer.kind === 'action-skill' || layer.kind === 'augmentation-skill',
+    );
+    const affected =
+      missing.size > 0 ? eligible.filter((layer) => missing.has(layer.digest)) : eligible;
+    for (const layer of affected) {
+      await this.recordEvent(
+        packet.claim.runId,
+        packet.claim.intentId,
+        'skill.consumption-rejected',
+        {
+          phase: packet.work.phase,
+          workId: packet.work.workId,
+          workKind: packet.work.kind,
+          attempt: packet.claim.attempt,
+          packetDigest: packet.identity.packetDigest,
+          invocationId: failure.invocationId,
+          skillName: layer.source,
+          skillRole: layer.skillRole ?? (layer.kind === 'action-skill' ? 'action' : 'augmentation'),
+          bindingId: layer.bindingId ?? undefined,
+          slotId: layer.slotId ?? undefined,
+          skillOrder: layer.skillOrder,
+          replacedSkillName: layer.replacedSkillName ?? undefined,
+          skillCompositionDigest: packet.work.skillComposition?.digest,
+          result: 'failed',
+          reasonCode: failure.reasonCode,
+        },
+        [layer.digest, failure.reasonCode],
       );
     }
   }

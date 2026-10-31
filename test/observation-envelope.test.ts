@@ -211,6 +211,8 @@ describe('ObservationEnvelope', () => {
           skillRole: 'team-guidance',
           bindingId: 'team-tdd-guidance',
           slotId: 'design-method',
+          skillOrder: 2,
+          replacedSkillName: 'codebase-design',
           skillCompositionDigest: `sha256:${'d'.repeat(64)}`,
           result: 'succeeded',
         }),
@@ -221,6 +223,8 @@ describe('ObservationEnvelope', () => {
         skillRole: 'team-guidance',
         bindingId: 'team-tdd-guidance',
         slotId: 'design-method',
+        skillOrder: 2,
+        replacedSkillName: 'codebase-design',
         skillCompositionDigest: `sha256:${'d'.repeat(64)}`,
       });
       expect(JSON.stringify(skill)).not.toMatch(/skillContent|prompt|internalThought/u);

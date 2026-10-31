@@ -373,6 +373,8 @@ describe('telemetry mapping', () => {
         skillRole: 'team-guidance',
         bindingId: 'team-design-guidance',
         slotId: 'design-method',
+        skillOrder: 2,
+        replacedSkillName: 'codebase-design',
         skillCompositionDigest: `sha256:${'d'.repeat(64)}`,
         result: 'delivered',
       },
@@ -390,6 +392,8 @@ describe('telemetry mapping', () => {
       'repoctopus.execution.skillRole': 'team-guidance',
       'repoctopus.execution.bindingId': 'team-design-guidance',
       'repoctopus.execution.slotId': 'design-method',
+      'repoctopus.execution.skillOrder': 2,
+      'repoctopus.execution.replacedSkillName': 'codebase-design',
       'repoctopus.execution.skillCompositionDigest': `sha256:${'d'.repeat(64)}`,
     });
     expect(JSON.stringify(executionMetricAttributes(event))).not.toMatch(

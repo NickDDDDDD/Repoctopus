@@ -101,6 +101,7 @@ export class TeamSkillComposition extends Service {
           order: compiled.layers.length + index,
           bindingId: null,
           slotId: null,
+          replacedSkillName: null,
           skill: entry.snapshot,
         };
       }),

@@ -16,7 +16,7 @@ Repoctopus Desktop Dashboard 是 Windows x64 上的本地工作流观测界面�
 | 缺口 `gap`              | 序列中存在明确缺失                    | 不把缺失区间解释为成功；等待重放或查看健康原因 |
 | 尚未上报 `not-reported` | 对应事实从未到达                      | 这是未知，不等于未执行或失败                   |
 
-Dashboard 分别展示五阶段、Build 的五个 action、当前 Work、Skill 装填/消费、Evidence、Human Decision 和四类可解释健康。Skill 链使用相同 OTLP 事实区分 Action、内置 augmentation、team guidance 与 team replacement，并展示 resolved/delivered/consumed；`consumed` 只表示 Runtime 校验了当前 packet layer digest，不是方法执行证明。四类健康不合成总分。
+Dashboard 分别展示五阶段、Build 的五个 action、当前 Work、Skill 装填/消费、Evidence、Human Decision 和四类可解释健康。Skill 链使用相同 OTLP 事实按冻结顺序区分 Action、内置 augmentation、team guidance 与 team replacement，并展示 resolved/delivered/consumed；replacement 同时显示 slot、团队 binding 和被替换的内置默认 Skill。消费证明不匹配时显示有界失败类别，不把 Work 或 Skill 表示为成功。`consumed` 只表示 Runtime 校验了当前 packet layer digest，不是方法执行证明。四类健康不合成总分。
 
 ## 本地接收与安全边界
 

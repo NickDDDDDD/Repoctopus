@@ -41,6 +41,8 @@ export interface WorkContextLayer {
   skillRole?: EffectiveSkillLayerRole;
   bindingId?: string | null;
   slotId?: string | null;
+  skillOrder?: number;
+  replacedSkillName?: string | null;
 }
 
 export interface WorkExecutionContext {
@@ -64,7 +66,7 @@ function layer(
   content: string,
   skill?: Pick<
     NonNullable<WorkDescriptor['skillComposition']>['layers'][number],
-    'role' | 'bindingId' | 'slotId'
+    'role' | 'bindingId' | 'slotId' | 'position' | 'replacedSkillName'
   >,
 ): WorkContextLayer {
   if (!content.trim()) throw new Error(`Work context layer is empty: ${kind}/${source}`);
@@ -74,7 +76,15 @@ function layer(
     source,
     content,
     digest: sha256(content),
-    ...(skill ? { skillRole: skill.role, bindingId: skill.bindingId, slotId: skill.slotId } : {}),
+    ...(skill
+      ? {
+          skillRole: skill.role,
+          bindingId: skill.bindingId,
+          slotId: skill.slotId,
+          skillOrder: skill.position,
+          replacedSkillName: skill.replacedSkillName,
+        }
+      : {}),
   };
 }
 
@@ -116,6 +126,7 @@ export function assembleWorkExecutionContext(input: {
                 order: 0,
                 bindingId: null,
                 slotId: null,
+                replacedSkillName: null,
                 skill: input.work.actionSkill,
               },
             ]
@@ -126,6 +137,7 @@ export function assembleWorkExecutionContext(input: {
           order: index + 1,
           bindingId: null,
           slotId: null,
+          replacedSkillName: null,
           skill,
         })),
       ],

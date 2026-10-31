@@ -22,13 +22,22 @@ export type EffectiveSkillLayerRole =
   | 'team-replacement';
 
 export interface EffectiveSkillLayer {
+  position: number;
   role: EffectiveSkillLayerRole;
   origin: 'builtin' | 'team';
   order: number;
   bindingId: string | null;
   slotId: string | null;
+  replacedSkillName: string | null;
   skill: SkillUsageSnapshot;
 }
+
+export type EffectiveSkillLayerInput = Omit<
+  EffectiveSkillLayer,
+  'position' | 'replacedSkillName'
+> & {
+  replacedSkillName?: string | null;
+};
 
 export interface EffectiveWorkSkillComposition {
   schemaVersion: 1;
@@ -92,23 +101,29 @@ function assertCoreSkill(entry: SkillCompositionCatalogEntry, role: 'action' | '
 
 function stableLayer(layer: EffectiveSkillLayer) {
   return {
+    position: layer.position,
     role: layer.role,
     origin: layer.origin,
     order: layer.order,
     bindingId: layer.bindingId,
     slotId: layer.slotId,
+    replacedSkillName: layer.replacedSkillName,
     skill: layer.skill,
   };
 }
 
 export function createEffectiveWorkSkillComposition(input: {
   workKind: string;
-  layers: readonly EffectiveSkillLayer[];
+  layers: readonly EffectiveSkillLayerInput[];
 }): EffectiveWorkSkillComposition {
   const stable = {
     schemaVersion: 1 as const,
     workKind: input.workKind,
-    layers: input.layers.map((layer) => structuredClone(stableLayer(layer))),
+    layers: input.layers.map((layer, position) =>
+      structuredClone(
+        stableLayer({ ...layer, position, replacedSkillName: layer.replacedSkillName ?? null }),
+      ),
+    ),
   };
   return deepFreeze({ ...stable, digest: digest(stable) });
 }
@@ -176,7 +191,7 @@ export function compileEffectiveSkillComposition(input: {
         replacementBySlot.set(slot.id, replacement);
       }
 
-      const layers: EffectiveSkillLayer[] = [];
+      const layers: EffectiveSkillLayerInput[] = [];
       if (action) {
         layers.push({
           role: 'action',
@@ -184,6 +199,7 @@ export function compileEffectiveSkillComposition(input: {
           order: 0,
           bindingId: null,
           slotId: null,
+          replacedSkillName: null,
           skill: structuredClone(action.snapshot),
         });
       }
@@ -209,6 +225,7 @@ export function compileEffectiveSkillComposition(input: {
             order: index + 1,
             bindingId: replacement.id,
             slotId: slot.id,
+            replacedSkillName: builtin.snapshot.name,
             skill: structuredClone(entry.snapshot),
           });
           return;
@@ -219,6 +236,7 @@ export function compileEffectiveSkillComposition(input: {
           order: index + 1,
           bindingId: null,
           slotId: slot?.id ?? null,
+          replacedSkillName: null,
           skill: structuredClone(builtin.snapshot),
         });
       });
@@ -239,6 +257,7 @@ export function compileEffectiveSkillComposition(input: {
           order: binding.order,
           bindingId: binding.id,
           slotId: null,
+          replacedSkillName: null,
           skill: structuredClone(entry.snapshot),
         });
       }
