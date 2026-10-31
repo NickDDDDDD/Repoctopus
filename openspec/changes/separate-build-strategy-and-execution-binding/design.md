@@ -4,6 +4,12 @@
 
 `BuildConfigurationProposal` 当前把稳定策略和 `bindingDigest`、`bindingStateDigest`、`hostId`、`hostCapabilities` 共同加入 semantic digest，随后建立 `build-configuration:*` Human Decision。该模型让机器事实变化与用户语义变化共享失效规则。
 
+### 固定上游证据
+
+2026-11-01 重新核对固定的 Comet `0.5.1`（`35c9860b77b42bafa0c2d80d8d695889f888a924`）与默认分支审计头（`9208b4beef7a71e45b1bbf734eee50af63e4059b`）；版本、标签和分支均未漂移。Comet Classic 的成熟边界是：Resolver 先选择 `configure`，有效配置才进入 `plan`；计划形成后必须记录与当前 plan ref 相符的 Plan Evidence，之后才能 Execute；恢复时保留有效配置和计划，只处理缺失、无效或用户明确要求改变的字段。
+
+Comet 的 Compat 路径把 `build_mode`、TDD、review 与 isolation 作为一次语义配置，Native SDK 路径也用 proposal hash 防止批准与配置输出错配。Repoctopus 采用这些不变量，但不复制 Comet 的单仓状态文件或额外 Build Plan 文档：OpenSpec Tasks 仍是任务权威，Run-local BuildPlan 只是执行投影；已批准的人/团队选择进入 Strategy，Host、checkout 与 HEAD 等可重建事实进入 Binding。
+
 ## Decisions
 
 ### 1. Strategy 只包含稳定选择
@@ -33,6 +39,12 @@ Binding/HEAD 变化重建 Binding 和 Plan Evidence；Strategy/composition 未�
 ### 7. 观测与桌面只展示有效决定
 
 Trajectory/OTLP 分别记录 strategy proposed/approved/reused/invalidated、binding validated/drifted、decision created/reused/superseded 和 plan preflight finding。Desktop 只显示当前有效 Human Decision，并将自动 Binding 验证与人工等待分开。
+
+## Risks / Trade-offs
+
+- [Strategy 提前进入 Design approval 后，Build Configure 不再提供第二次常规确认] → Design proposal 必须展示完整 Strategy 和 composition identity；真实语义变化使旧批准失效，不能由 Configure 静默改写。
+- [Binding 允许跨 Host 或正常 HEAD 变化重建，错误实现可能把越权漂移当成兼容变化] → Validator 分别核对 repository identity、Workspace ownership、isolation intent、branch/worktree ownership 与 capability，Plan Evidence 只精确失效依赖旧 Binding 的结果。
+- [OpenSpec Store 的本机注册表同一 Store ID 只指向一个 checkout，自举切换 worktree 时会 fail closed] → 当前流程只通过 OpenSpec 官方 unregister/register 做显式、可逆重绑定，不编辑 registry 或 Run 状态；Store 多 checkout 协调属于独立问题，不混入 Strategy/Binding 协议。
 
 ## Migration and Rollback
 
