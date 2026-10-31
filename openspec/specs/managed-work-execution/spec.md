@@ -150,6 +150,20 @@ Repoctopus MUST 把当前 Work attempt、checkEpoch、claim、执行包 identity
 - **WHEN** 原 packet identity 和私有内容完整，但当前 Skill 或规划文件因本 Work 的受管写入而变化
 - **THEN** Runtime 不重新组装旧 packet、不把该变化误判为旧 claim 损坏，并继续从 Host invocation、Outcome 或 Validator 的真实断点恢复
 
+### Requirement: 外部 Host Outcome 重放必须保持内容幂等
+
+Repoctopus MUST 以 invocation identity 和稳定内容恢复已经持久化的外部 Host Outcome；Runtime 生成的完成时间不得使等价重放冲突，任何调用方提供的稳定字段漂移都必须 fail closed。
+
+#### Scenario: 相同外部 Host Outcome 重复提交
+
+- **WHEN** 同一 invocation 的外部 Outcome 已持久化，恢复进程再次提交相同 status、summary、consumed Skill layers、result、findings 与 delegation receipts，但产生了新的提交时间
+- **THEN** Runtime 复用原 Outcome 与原 `completedAt`，不再次记录 Host completion，并继续原 fact、Action Outcome 与 Validator 边界
+
+#### Scenario: 重放的外部 Host Outcome 内容漂移
+
+- **WHEN** 同一 invocation 的重复 Outcome 在 status、summary、consumed Skill layers、result、findings 或 delegation receipts 任一稳定字段上不同
+- **THEN** Runtime 拒绝该提交并保留原持久 Outcome，不重新调用 Host、不覆盖 checkpoint 且不推进 Work
+
 ### Requirement: Agent coordination checkpoint 不得成为完成权威
 
 Repoctopus MAY 保存用于上下文压缩、Agent handoff 或子任务协调的有界 progress checkpoint，但它 MUST 与 Engine checkpoint、OpenSpec 工件和 completion evidence 分离；其存在、缺失或 checkbox 状态不得授权写入、形成 Receipt、完成 Task 或推进 phase。
