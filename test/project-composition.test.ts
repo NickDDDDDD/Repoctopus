@@ -30,6 +30,9 @@ describe('project composition assembly', () => {
       await createRepoctopusBuiltinCatalog(path.resolve(import.meta.dirname, '..')),
     );
     const ids = composition.entries.map((entry) => entry.id);
+    expect(compositionIdentity(composition).compositionDigest).toBe(
+      'sha256:a59c1b3d6cc09b4678ce03a0fa20e9329c351fdae9f5a5c41f01e1b4943f9b36',
+    );
     expect(ids).toEqual(
       expect.arrayContaining([
         'workflow-runs',

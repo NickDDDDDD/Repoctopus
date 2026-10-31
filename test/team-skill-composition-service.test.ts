@@ -125,6 +125,9 @@ describe('TeamSkillComposition service', () => {
       'team-guide',
     ]);
     expect(resolved.effectiveComposition.digest).toMatch(/^sha256:[a-f0-9]{64}$/u);
+    expect(resolved.effectiveComposition.digest).toBe(
+      'sha256:c9c41028a88a519dbe7bdb700617f4ad0002f14b5ffe52db7b84348224eda761',
+    );
   });
 
   it('rejects a team binding that resolves only from a personal Skill source', async () => {
