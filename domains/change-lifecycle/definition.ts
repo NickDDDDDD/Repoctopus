@@ -321,6 +321,14 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       requiredValidatorProfile: 'open.intake-ready',
     },
     {
+      id: 'open.repair-required',
+      kind: 'self',
+      from: { phase: 'open', statuses: ['running', 'waiting', 'blocked'] },
+      to: { phase: 'open', status: 'running' },
+      trigger: 'open-evidence-rejected',
+      requiredValidatorProfile: 'open.intake-ready',
+    },
+    {
       id: 'design.work-ready',
       kind: 'self',
       from: { phase: 'design', statuses: ['running', 'waiting', 'blocked'] },

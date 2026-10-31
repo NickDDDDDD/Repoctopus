@@ -353,6 +353,18 @@ const BOUNDED_REASON_CODES = new Set([
   'outcome-processing-error',
   'checkpoint-superseded',
 ]);
+const BOUNDED_OPEN_REPAIR_SOURCES = new Set([
+  'provider-artifacts',
+  'strict-validation',
+  'lifecycle-validator',
+  'approval-drift',
+]);
+const BOUNDED_OPEN_REPAIR_REASON_CODES = new Set([
+  'provider-artifacts-invalid',
+  'strict-validation-invalid',
+  'lifecycle-validator-rejected',
+  'approval-drift',
+]);
 
 export function executionMetricAttributes(event: TrajectoryEvent): Attributes | null {
   if (!EXECUTION_EVENTS.has(event.type)) return null;
@@ -452,6 +464,22 @@ export function workflowEventMetricAttributes(
         : undefined;
     if (invalidationKind === 'semantic' || invalidationKind === 'approval-authority') {
       result['repoctopus.planning.invalidation.kind'] = invalidationKind;
+    }
+    const repair = event.data.changeLifecycleTransition?.openRepair;
+    if (repair) {
+      const source = repair.source;
+      const reasonCode = repair.reasonCode;
+      result['repoctopus.open.repair.source'] =
+        typeof source === 'string' && BOUNDED_OPEN_REPAIR_SOURCES.has(source)
+          ? source
+          : 'unknown';
+      result['repoctopus.open.repair.reason_code'] =
+        typeof reasonCode === 'string' && BOUNDED_OPEN_REPAIR_REASON_CODES.has(reasonCode)
+          ? reasonCode
+          : 'unknown';
+      result['repoctopus.open.repair.result'] = 'dispatched';
+      result['repoctopus.open.repair.execution_retired'] =
+        event.data.executionRetirement !== undefined;
     }
   }
   return result;

@@ -29,6 +29,7 @@ class TestSpecification extends Specification {
     protocolVersion: 'repoctopus.specification/v1alpha1',
   };
   proposalDigest = digest('1');
+  unavailable = false;
 
   identity(): SpecificationProviderIdentity {
     return this.provider;
@@ -52,6 +53,7 @@ class TestSpecification extends Specification {
   }
 
   inspect(changeId: string): Promise<SpecificationChange> {
+    if (this.unavailable) return Promise.reject(new Error('provider unavailable'));
     return Promise.resolve({
       apiVersion: 'repoctopus.specification/v1alpha1',
       kind: 'SpecificationChange',
@@ -118,6 +120,56 @@ function prepareInput() {
 }
 
 describe('SpecificationPlanning service', () => {
+  it('revalidates an approved Open snapshot without refreshing approval state', async () => {
+    const workspace = await temporaryDirectory('repoctopus-open-revalidation-');
+    cleanup.push(workspace);
+    const running = app(workspace);
+    const input = { ...prepareInput(), approvalPhase: 'open' as const };
+    const prepared = await running.planning.prepare(input);
+    const approved = await running.planning.decide({
+      changeId: prepared.changeId,
+      approvalPhase: 'open',
+      response: {
+        apiVersion: 'repoctopus/v1alpha1',
+        kind: 'HumanDecisionResponse',
+        requestId: prepared.decisionRequest.requestId,
+        proposalHash: prepared.decisionRequest.proposalHash,
+        decision: 'approve',
+      },
+      actor: { actorId: 'user', source: 'cli', authenticated: true },
+    });
+
+    await expect(
+      running.planning.revalidateOpenApproval({
+        ...input,
+        expectedSnapshotDigest: approved.snapshot.digest,
+      }),
+    ).resolves.toMatchObject({ status: 'accepted' });
+
+    running.specification.proposalDigest = digest('9');
+    await expect(
+      running.planning.revalidateOpenApproval({
+        ...input,
+        expectedSnapshotDigest: approved.snapshot.digest,
+      }),
+    ).resolves.toMatchObject({
+      status: 'invalid',
+      source: 'approval-drift',
+      reasonCode: 'approval-drift',
+    });
+    expect(await running.planning.status(prepared.changeId, 'open')).toEqual(approved);
+
+    running.specification.unavailable = true;
+    await expect(
+      running.planning.revalidateOpenApproval({
+        ...input,
+        expectedSnapshotDigest: approved.snapshot.digest,
+      }),
+    ).resolves.toMatchObject({ status: 'unavailable', evidenceDigests: [] });
+    expect(await running.planning.status(prepared.changeId, 'open')).toEqual(approved);
+    await running.context.fiber.dispose();
+  });
+
   it('persists, recovers, and idempotently reuses a pending planning approval', async () => {
     const workspace = await temporaryDirectory('repoctopus-spec-planning-');
     cleanup.push(workspace);

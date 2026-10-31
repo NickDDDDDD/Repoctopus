@@ -9,6 +9,7 @@ import {
   createExecutionWorkspaceIntent,
 } from '../domains/change-lifecycle/build-protocol.js';
 import { createBuildActionWork } from '../domains/change-lifecycle/build-work.js';
+import { createLifecyclePhaseWork } from '../domains/change-lifecycle/phase-work.js';
 import { BUILTIN_CHANGE_LIFECYCLE_DEFINITION } from '../domains/change-lifecycle/definition.js';
 import type { WorkExecutionCheckpoint } from '../domains/work-execution/types.js';
 import {
@@ -47,6 +48,130 @@ describe('Repoctopus runtime', () => {
     definition.steps[1]!.action.evidenceProfile = 'verify';
     return createWorkflowPackage(definition);
   }
+
+  it('atomically retires the rejected Open execution when repair Work becomes authoritative', async () => {
+    const workspace = await temporaryDirectory('repoctopus-open-repair-runtime-');
+    cleanup.push(workspace);
+    const store = new FileRuntimeStore(workspace);
+    const runtime = new WorkflowRunCoordinator(store, { async export() {} }, compositionFixture());
+    const runId = 'change-team-open-repair';
+    const actionSkill = {
+      schemaVersion: 1 as const,
+      name: 'repoctopus-open-change',
+      provider: 'repoctopus-builtins',
+      invocation: { modelInvocable: true, userInvocable: false },
+      contentDigest: `sha256:${'1'.repeat(64)}` as const,
+      resourceManifestDigest: `sha256:${'2'.repeat(64)}` as const,
+    };
+    const augmentationSkill = {
+      schemaVersion: 1 as const,
+      name: 'grilling',
+      provider: 'matt-builtins',
+      invocation: { modelInvocable: true, userInvocable: true },
+      contentDigest: `sha256:${'8'.repeat(64)}` as const,
+      resourceManifestDigest: `sha256:${'9'.repeat(64)}` as const,
+    };
+    const createOpenWork = (checkEpoch: number) =>
+      createLifecyclePhaseWork({
+        runId,
+        checkEpoch,
+        changeId: 'open-repair',
+        definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+        kind: 'change.intake',
+        actionSkill,
+        augmentationSkills: [augmentationSkill],
+        compositionDigest: compositionFixture().compositionDigest,
+        projectSnapshotDigest: projectFixture({ projectId: 'team' }).digest,
+        projectConfigDigest: `sha256:${'3'.repeat(64)}`,
+        workspaceRepositoryId: 'workspace',
+        repositoryIds: ['workspace'],
+      });
+    const originalWork = createOpenWork(0);
+    const repairWork = createOpenWork(1);
+    await runtime.start({
+      workflow: workflowFixture(),
+      projectSnapshot: projectFixture({ projectId: 'team' }),
+      runId,
+      changeLifecycle: {
+        ...createChangeLifecycleSnapshot({
+          identity: { workspaceId: 'team', changeId: 'open-repair', runId },
+        }),
+        currentWork: originalWork,
+      },
+    });
+    const checkpoint: WorkExecutionCheckpoint = {
+      schemaVersion: 3,
+      workId: originalWork.workId,
+      attempt: 1,
+      checkEpoch: 0,
+      intentId: 'intent-open-repair',
+      claimToken: `sha256:${'4'.repeat(64)}`,
+      inputDigest: originalWork.inputDigest,
+      packet: {
+        schemaVersion: 1,
+        packetId: `sha256:${'5'.repeat(64)}`,
+        packetDigest: `sha256:${'6'.repeat(64)}`,
+        contextDigest: `sha256:${'7'.repeat(64)}`,
+      },
+      status: 'outcome',
+      continuation: 'execute',
+      updatedAt: '2026-11-01T00:00:00.000Z',
+    };
+    await store.commitGuarded(runId, ({ state, trajectory }) => ({
+      state: {
+        ...state,
+        workExecution: checkpoint,
+        stateVersion: state.stateVersion + 1,
+        updatedAt: checkpoint.updatedAt,
+      },
+      event: {
+        schemaVersion: 1,
+        sequence: trajectory.length + 1,
+        eventId: 'seed-open-outcome',
+        timestamp: checkpoint.updatedAt,
+        type: 'work.completed',
+        runId,
+        stateVersion: state.stateVersion + 1,
+        compositionDigest: state.composition.compositionDigest,
+        data: { workId: originalWork.workId },
+      },
+      value: undefined,
+    }));
+
+    const accepted = await runtime.acceptChangeObservation(runId, {
+      kind: 'open-repair-required',
+      expectedRevision: 0,
+      source: 'strict-validation',
+      reasonCode: 'strict-validation-invalid',
+      evidenceIds: [`sha256:${'8'.repeat(64)}`],
+      inputDigest: repairWork.inputDigest,
+      work: repairWork,
+    });
+
+    expect(accepted.value.state).not.toHaveProperty('workExecution');
+    expect(accepted.value.changeLifecycle).toMatchObject({
+      phase: 'open',
+      status: 'running',
+      checkEpoch: 1,
+      currentWork: { workId: repairWork.workId },
+      nextActions: [{ id: repairWork.workId, kind: 'work' }],
+    });
+    expect((await store.loadTrajectory(runId)).at(-1)?.data).toMatchObject({
+      observationKind: 'open-repair-required',
+      changeLifecycleTransition: {
+        openRepair: {
+          source: 'strict-validation',
+          previousCheckEpoch: 0,
+          nextCheckEpoch: 1,
+        },
+      },
+      executionRetirement: {
+        reason: 'lifecycle-work-changed',
+        retiredWorkId: originalWork.workId,
+        nextWorkId: repairWork.workId,
+      },
+    });
+  });
 
   it('retires a mismatched execution checkpoint atomically with workspace intent revision', async () => {
     const workspace = await temporaryDirectory('repoctopus-intent-revision-runtime-');

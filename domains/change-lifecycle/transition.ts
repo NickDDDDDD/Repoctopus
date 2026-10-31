@@ -365,11 +365,39 @@ export interface ChangeLifecycleTransitionFact {
     previousIsolation: ExecutionIsolation;
     nextIsolation?: ExecutionIsolation;
   };
+  openRepair?: {
+    source: OpenRepairSource;
+    reasonCode: OpenRepairReasonCode;
+    previousCheckEpoch: number;
+    nextCheckEpoch: number;
+    evidenceIds: readonly string[];
+  };
 }
+
+export type OpenRepairSource =
+  | 'provider-artifacts'
+  | 'strict-validation'
+  | 'lifecycle-validator'
+  | 'approval-drift';
+
+export type OpenRepairReasonCode =
+  | 'provider-artifacts-invalid'
+  | 'strict-validation-invalid'
+  | 'lifecycle-validator-rejected'
+  | 'approval-drift';
 
 export type ChangeLifecycleObservation =
   | {
       kind: 'open-work-ready';
+      work: WorkDescriptor;
+    }
+  | {
+      kind: 'open-repair-required';
+      expectedRevision: number;
+      source: OpenRepairSource;
+      reasonCode: OpenRepairReasonCode;
+      evidenceIds: readonly string[];
+      inputDigest: `sha256:${string}`;
       work: WorkDescriptor;
     }
   | {
@@ -842,6 +870,54 @@ export function evolveChangeLifecycle(options: {
   observation: ChangeLifecycleObservation;
 }): ChangeLifecycleReduction {
   const { current, observation } = options;
+  if (observation.kind === 'open-repair-required') {
+    if (
+      current.phase === 'open' &&
+      current.status === 'running' &&
+      current.currentWork?.workId === observation.work.workId &&
+      current.currentWork.checkEpoch === observation.work.checkEpoch
+    ) {
+      return { snapshot: structuredClone(current), fact: null };
+    }
+    if (observation.expectedRevision !== current.revision) {
+      throw new Error('Open repair observation belongs to a stale lifecycle revision');
+    }
+    if (
+      current.phase !== 'open' ||
+      !['running', 'waiting', 'blocked'].includes(current.status) ||
+      observation.work.phase !== 'open' ||
+      observation.work.kind !== 'change.intake' ||
+      observation.work.checkEpoch !== current.checkEpoch + 1 ||
+      observation.work.inputDigest !== observation.inputDigest ||
+      observation.evidenceIds.length === 0
+    ) {
+      throw new Error(`Open repair is not valid from ${current.phase}/${current.status}`);
+    }
+    const reduced = applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'open.repair-required',
+      next: {
+        currentWork: observation.work,
+        waitCondition: null,
+        blocker: null,
+        openApprovalDigest: null,
+      },
+    });
+    return {
+      snapshot: reduced.snapshot,
+      fact: {
+        ...reduced.fact,
+        openRepair: {
+          source: observation.source,
+          reasonCode: observation.reasonCode,
+          previousCheckEpoch: current.checkEpoch,
+          nextCheckEpoch: reduced.snapshot.checkEpoch,
+          evidenceIds: [...observation.evidenceIds],
+        },
+      },
+    };
+  }
   if (observation.kind === 'open-work-ready') {
     if (
       current.phase !== 'open' ||
