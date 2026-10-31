@@ -64,6 +64,7 @@ const EXECUTION_DATA_KEYS = new Set([
   'submissionId',
   'submissionDigest',
   'reasonCode',
+  'hostReplayed',
   'rejectedSubmissionCount',
   'legacyRecovery',
   'proposalStatus',
@@ -344,6 +345,7 @@ const BOUNDED_RESULTS = new Set([
   'missing',
   'corrupt',
   'legacy',
+  'reconcile',
 ]);
 const BOUNDED_ARTIFACT_STATUSES = new Set(['ready', 'skipped', 'missing']);
 const BOUNDED_SEVERITIES = new Set(['none', 'info', 'warning', 'error']);
@@ -409,6 +411,9 @@ export function executionMetricAttributes(event: TrajectoryEvent): Attributes | 
     'repoctopus.execution.result': BOUNDED_RESULTS.has(result) ? result : 'unknown',
     'repoctopus.execution.continuation': continuation,
     'repoctopus.execution.reason.code': reasonCode,
+    ...(typeof event.data.hostReplayed === 'boolean'
+      ? { 'repoctopus.execution.host.replayed': event.data.hostReplayed }
+      : {}),
     'repoctopus.build.action': buildAction,
     'repoctopus.build.execution.mode': executionMode,
     'repoctopus.build.tdd.mode': tddMode,

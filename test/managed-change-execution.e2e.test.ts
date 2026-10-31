@@ -519,6 +519,22 @@ describe('managed Change execution production composition', () => {
           expect(unavailableResult.value.state.workExecution?.hostInvocation?.invocationId).toBe(
             repairedInvocation.invocationId,
           );
+          const unavailableInspection = await application.context.commandRouter.execute<
+            { runId: string },
+            RunStoreInspection
+          >('run.inspect', { runId });
+          expect(
+            [...unavailableInspection.trajectory]
+              .reverse()
+              .find((event) => event.type === 'continuation.selected'),
+          ).toMatchObject({
+            data: {
+              continuation: 'reconcile',
+              result: 'reconcile',
+              reasonCode: 'open-observation-unavailable',
+              hostReplayed: false,
+            },
+          });
         }
         expect((await next()).value.changeLifecycle).toMatchObject({
           phase: 'open',

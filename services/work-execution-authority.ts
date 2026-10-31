@@ -1338,6 +1338,9 @@ export class WorkExecutionAuthority extends Service {
 
   async recordContinuation(runId: string, recovery: WorkExecutionRecovery): Promise<void> {
     await this.ctx.runStore.commitGuarded(runId, ({ state, trajectory }) => {
+      const openObservationUnavailable =
+        recovery.continuation === 'reconcile' &&
+        recovery.reason === 'open-observation-unavailable';
       const eventId = digest(
         runId,
         'continuation.selected',
@@ -1371,6 +1374,13 @@ export class WorkExecutionAuthority extends Service {
             reason: recovery.reason,
             workId: recovery.workId,
             attempt: recovery.attempt,
+            ...(openObservationUnavailable
+              ? {
+                  result: 'reconcile',
+                  reasonCode: 'open-observation-unavailable',
+                  hostReplayed: false,
+                }
+              : {}),
           },
         }),
         value: undefined,

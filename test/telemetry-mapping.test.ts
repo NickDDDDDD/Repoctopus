@@ -358,6 +358,33 @@ describe('telemetry mapping', () => {
     expect(JSON.stringify(metric)).not.toMatch(/work-package|repository/u);
   });
 
+  it('maps unavailable Open continuation as reconciliation without Host replay', () => {
+    const event: TrajectoryEvent = {
+      schemaVersion: 1,
+      sequence: 3,
+      eventId: 'open-provider-unavailable',
+      timestamp: '2026-01-01T00:00:02.000Z',
+      type: 'continuation.selected',
+      runId: 'run-open-provider-unavailable',
+      stateVersion: 3,
+      compositionDigest: `sha256:${'a'.repeat(64)}`,
+      data: {
+        continuation: 'reconcile',
+        reason: 'open-observation-unavailable',
+        result: 'reconcile',
+        reasonCode: 'open-observation-unavailable',
+        hostReplayed: false,
+      },
+    };
+
+    expect(executionMetricAttributes(event)).toMatchObject({
+      'repoctopus.execution.result': 'reconcile',
+      'repoctopus.execution.continuation': 'reconcile',
+      'repoctopus.execution.reason.code': 'open-observation-unavailable',
+      'repoctopus.execution.host.replayed': false,
+    });
+  });
+
   it('exports only bounded packet and Specification reliability dimensions', () => {
     const workflow = workflowFixture();
     const project = projectFixture();
