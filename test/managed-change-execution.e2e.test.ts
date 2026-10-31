@@ -1053,6 +1053,74 @@ describe('managed Change execution production composition', () => {
         });
         await restartApplication();
         await next();
+        if (!multiRepository && executionMode === 'autonomous') {
+          const inputDrift = vi
+            .spyOn(application.context.evidenceCoordinator, 'runOrResume')
+            .mockRejectedValueOnce(
+              new Error('input fingerprint changed before Evidence execution'),
+            );
+          let failedVerify: RuntimeResult<VerifyChangeRunResult>;
+          try {
+            failedVerify = await application.context.commandRouter.execute<
+              { runId: string },
+              RuntimeResult<VerifyChangeRunResult>
+            >('run.work.verify', { runId });
+          } finally {
+            inputDrift.mockRestore();
+          }
+          expect(failedVerify.value).toMatchObject({
+            gate: 'blocked',
+            run: {
+              changeLifecycle: {
+                phase: 'build',
+                currentWork: { kind: 'build.plan' },
+                verificationInvalidation: { kind: 'implementation-drift' },
+              },
+            },
+          });
+
+          const dispatchedPlan = await next();
+          expect(dispatchedPlan.value).toMatchObject({
+            changeLifecycle: { phase: 'build', currentWork: { kind: 'build.plan' } },
+            continuation: { reason: 'validator-pending' },
+          });
+          const acceptedPlan = await next();
+          expect(acceptedPlan.value.changeLifecycle).toMatchObject({
+            phase: 'build',
+            currentWork: { kind: 'build.execute' },
+          });
+          expect(
+            acceptedPlan.value.state.changeLifecycle?.verificationInvalidation,
+          ).toBeUndefined();
+
+          const repairWorkId = acceptedPlan.value.changeLifecycle?.currentWork?.workId;
+          const repairEpoch = acceptedPlan.value.changeLifecycle?.checkEpoch;
+          const invocationCount = capture.invocations.length;
+          const resumed = await application.context.workflowRuns.resume({
+            runId,
+            currentProjectSnapshot: await application.context.runStore.loadProjectSnapshot(runId),
+          });
+          expect(resumed.value.changeLifecycle).toMatchObject({
+            currentWork: { workId: repairWorkId },
+            checkEpoch: repairEpoch,
+          });
+          expect(capture.invocations).toHaveLength(invocationCount);
+
+          let repairedBuild = await next();
+          for (
+            let transition = 0;
+            transition < 7 && repairedBuild.value.changeLifecycle?.phase !== 'verify';
+            transition += 1
+          ) {
+            repairedBuild = await next();
+          }
+          expect(repairedBuild.value.changeLifecycle).toMatchObject({
+            phase: 'verify',
+            currentWork: { kind: 'evidence.verify' },
+          });
+          await restartApplication();
+          await next();
+        }
         const originalRunOrResume = application.context.evidenceCoordinator.runOrResume.bind(
           application.context.evidenceCoordinator,
         );
@@ -1349,6 +1417,15 @@ describe('managed Change execution production composition', () => {
           'build.execute',
           'build.check',
           'evidence.verify',
+          ...(!multiRepository && executionMode === 'autonomous'
+            ? [
+                'build.plan',
+                'build.execute',
+                'build.execute',
+                'build.check',
+                'evidence.verify',
+              ]
+            : []),
           'specification.close',
           'delivery.publish',
         ]);

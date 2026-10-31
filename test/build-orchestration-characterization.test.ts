@@ -69,15 +69,4 @@ describe('managed Build protocol characterization', () => {
     expect(production).not.toContain('real reopened Repair Work');
     expect(service).not.toContain('const reopened = taskSet.tasks.map');
   });
-
-  it('never lets stale Verify input preempt an active Build repair Work', async () => {
-    const service = await readFile(
-      new URL('../services/workflow-runs.ts', import.meta.url),
-      'utf8',
-    );
-
-    expect(service).toMatch(
-      /lifecycle\.phase === 'build'\s*&&\s*lifecycle\.currentWork === null\s*&&\s*lifecycle\.verificationInvalidation/u,
-    );
-  });
 });
