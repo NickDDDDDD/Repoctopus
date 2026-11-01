@@ -2,6 +2,8 @@
 comet_change: stabilize-runtime-continuation
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-01-stabilize-runtime-continuation
+status: final
 ---
 
 # Design

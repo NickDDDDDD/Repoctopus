@@ -2,6 +2,7 @@
 change: stabilize-runtime-continuation
 design-doc: openspec/changes/stabilize-runtime-continuation/design.md
 base-ref: 0ddd667ea9a0b8be9f8192a3608d2ef526dea4cb
+archived-with: 2026-11-01-stabilize-runtime-continuation
 ---
 
 # Stabilize Runtime Continuation Build Plan
