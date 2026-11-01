@@ -121,6 +121,10 @@ describe('published package', () => {
     expect(packagedPaths).toContain('docs/schemas/project-config.schema.json');
     expect(packagedPaths).toContain('docs/schemas/delivery-intent.schema.json');
     expect(packagedPaths).toContain('docs/examples/repoctopus.gitignore');
+    expect(packagedPaths).toContain('docs/telemetry-reference.md');
+    expect(packagedPaths).not.toEqual(
+      expect.arrayContaining([expect.stringMatching(/^docs\/superpowers\//u)]),
+    );
     expect(packagedPaths).not.toEqual(
       expect.arrayContaining([
         expect.stringMatching(/(^|\/)test\//u),
