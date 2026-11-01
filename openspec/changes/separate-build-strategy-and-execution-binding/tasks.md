@@ -6,6 +6,8 @@
       **Acceptance:** 新测试分别证明四类旧行为会失败，且失败原因绑定重复决定、机器事实漂移、返工复用或缺失 preflight，而不是无关环境错误。
 - [ ] 1.2 定义 `BuildStrategy`、`ExecutionBinding`、独立 digest/失效规则和预发布 schema 切换；运行领域单测。
       **Acceptance:** 领域测试证明 Strategy 与 Binding 使用独立身份、摘要和失效规则，旧可写 `BuildConfiguration` schema 不再进入生产路径。
+- [ ] 1.3 在不改变行为的前提下拆分主规格中超长的“规划授权失效必须原子恢复 Design checkpoint” Requirement，使全仓 OpenSpec strict validation 恢复为通过。
+      **Acceptance:** `openspec validate change-lifecycle --type spec --strict` 与 `openspec validate --all --strict` 都通过，拆分后的 scenarios 与原有授权、精确失效和权威正交语义一致。
 
 ## 2. Strategy 与 Design approval
 
