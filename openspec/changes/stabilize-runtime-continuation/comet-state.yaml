@@ -31,7 +31,7 @@ classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v2
-  hash: c4da3a53f78d65b638ec05beb0c0c825ff4b22b2ca718c7b5d8b6512d89c6c24
+  hash: 1336de02b918962805975930791acbcf69291396ef0251195b30bab18cd19d85
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -80,8 +80,8 @@ run_checkpoint:
       verifyMode: null
       verifyResult: pass
       workflow: full
-    status: running
-    sequence: 35
+    status: waiting
+    sequence: 36
     actions:
       - attempt: 1
         claim:
@@ -969,6 +969,14 @@ run_checkpoint:
         stepId: full.verify.check
         type: call_tool
       - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-47c1bd947cfd0d3dd2e0119d84edae9d39f59cc8d54d0e8a5378e994a077a4a0
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
         id: stabilize-runtime-continuation:35
         input:
           input:
@@ -978,14 +986,29 @@ run_checkpoint:
               ref: 3b997206-b91e-477e-b58f-c98230efd881
           outputs: {}
         inputHash: bfbde07eb079f32bbd79cd6a0b9b34e3bb70da9bd313f7d8e7ff30125023754f
+        outcome:
+          actionId: stabilize-runtime-continuation:35
+          attempt: 1
+          claimToken: portable-47c1bd947cfd0d3dd2e0119d84edae9d39f59cc8d54d0e8a5378e994a077a4a0
+          inputHash: bfbde07eb079f32bbd79cd6a0b9b34e3bb70da9bd313f7d8e7ff30125023754f
+          outcomeId: e458a9f8-bba2-440b-8838-1a5b7945ce7b
+          output:
+            summary: 完成 Runtime continuation 稳定性重构并通过全部 48 项任务、独立高风险复核、Build Check 与完整
+              Verify。归档将把 stabilize-runtime-continuation 的 OpenSpec delta
+              合入主规格并移动 Change；当前分支 codex/stabilize-runtime-comet-alignment
+              已逐提交推送。交付目标尚未授权：不自动 push 新归档提交、不创建 PR、不合入主分支，等待用户选择。
+            targetBranch: codex/stabilize-runtime-comet-alignment
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: 6a58da52d9b067d5b9e2400983927ef11c78f3f4bddfd23d5002a979c77c6452
+            outcomeId: e458a9f8-bba2-440b-8838-1a5b7945ce7b
         reconciliations: []
         ref: comet-archive
         requiredCapabilities: []
         retry: manual
         runId: stabilize-runtime-continuation
-        status: pending
+        status: succeeded
         stepId: full.archive.prepare
         type: invoke_skill
     commands:
@@ -1187,6 +1210,31 @@ run_checkpoint:
           id: classic-design-6b2666151eb449c1e3647d0e29073bfe81e5e1215df75d268dc082ba5f768fbb-approved
           choice: approved
           proposalHash: 6b2666151eb449c1e3647d0e29073bfe81e5e1215df75d268dc082ba5f768fbb
+      - id: stabilize-runtime-continuation:36
+        stepId: full.archive.confirm
+        sequence: 36
+        status: pending
+        proposal:
+          input:
+            change: stabilize-runtime-continuation
+            changeDir: openspec/changes/stabilize-runtime-continuation
+            workspaceBaseline:
+              ref: 3b997206-b91e-477e-b58f-c98230efd881
+          outputs:
+            full.archive.prepare:
+              summary: 完成 Runtime continuation 稳定性重构并通过全部 48 项任务、独立高风险复核、Build Check 与完整
+                Verify。归档将把 stabilize-runtime-continuation 的 OpenSpec delta
+                合入主规格并移动 Change；当前分支 codex/stabilize-runtime-comet-alignment
+                已逐提交推送。交付目标尚未授权：不自动 push 新归档提交、不创建 PR、不合入主分支，等待用户选择。
+              targetBranch: codex/stabilize-runtime-comet-alignment
+        proposalHash: d16227449a8a3168b5ceb45b16a493ebf6d9c8b28c177334509c2d51baa6dc33
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
     evidenceWaits:
       - id: stabilize-runtime-continuation:2
         stepId: full.open.evidence
@@ -1303,8 +1351,8 @@ run_checkpoint:
     outputs: {}
     children: []
     lineage: []
-  sourceRevision: 59
-  sourceHash: 4ac9923b684672c167c542f3079e4cb6fa7920732c6c885217ddb68f6d3203b0
+  sourceRevision: 61
+  sourceHash: 0f6877df6244e062e797f34470ef8108f5fe468148cdbc83b89529636e1d6fb0
   pool:
     version: 3
     values:
@@ -1887,6 +1935,13 @@ run_checkpoint:
         value:
           contentHash: 66ae4749179f862f4106dabee0f948779b81aa98d92aed6bf0ca2dcf36106408
           ref: .comet/runtime/classic-sdk-checks/8b2b0e2d69121e295b3650b731dae47d7587a395ecb45e12b1f2b79e86263e42/8a8f1bcc-1928-4d21-8ef5-56d0a2fa1e43.log
+      - sequence: 35
+        value:
+          summary: 完成 Runtime continuation 稳定性重构并通过全部 48 项任务、独立高风险复核、Build Check 与完整
+            Verify。归档将把 stabilize-runtime-continuation 的 OpenSpec delta 合入主规格并移动
+            Change；当前分支 codex/stabilize-runtime-comet-alignment
+            已逐提交推送。交付目标尚未授权：不自动 push 新归档提交、不创建 PR、不合入主分支，等待用户选择。
+          targetBranch: codex/stabilize-runtime-comet-alignment
     nodes:
       - key: full.open
         value: 0
@@ -2608,45 +2663,50 @@ run_checkpoint:
         left: 142
         right: 133
         height: 4
-      - key: full.build.check
-        value: 54
-        left: null
-        right: null
-        height: 1
-      - key: full.build.configure
-        value: 27
+      - key: full.archive.prepare
+        value: 60
         left: null
         right: null
         height: 1
       - key: full.build.check.evidence
         value: 55
-        left: 144
-        right: 145
-        height: 2
-      - key: full.build.execute
-        value: 53
         left: null
         right: null
         height: 1
-      - key: full.build.plan.evidence
-        value: 52
+      - key: full.build.check
+        value: 54
+        left: 144
+        right: 145
+        height: 2
+      - key: full.build.confirm
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 51
         left: null
         right: null
         height: 1
       - key: full.design.confirm
         value: 39
-        left: 148
+        left: null
         right: null
-        height: 2
-      - key: full.build.plan
-        value: 51
-        left: 147
+        height: 1
+      - key: full.build.plan.evidence
+        value: 52
+        left: 148
         right: 149
-        height: 3
-      - key: full.build.confirm
-        value: 28
-        left: 146
+        height: 2
+      - key: full.build.execute
+        value: 53
+        left: 147
         right: 150
+        height: 3
+      - key: full.build.configure
+        value: 27
+        left: 146
+        right: 151
         height: 4
       - key: full.design.evidence
         value: 42
@@ -2655,7 +2715,7 @@ run_checkpoint:
         height: 1
       - key: full.design.handoff
         value: 40
-        left: 152
+        left: 153
         right: 136
         height: 2
       - key: full.open.evidence
@@ -2670,8 +2730,8 @@ run_checkpoint:
         height: 1
       - key: full.open.revalidate
         value: 36
-        left: 154
-        right: 155
+        left: 155
+        right: 156
         height: 2
       - key: full.verify.run
         value: 57
@@ -2681,22 +2741,22 @@ run_checkpoint:
       - key: full.verify.report.evidence
         value: 56
         left: null
-        right: 157
+        right: 158
         height: 2
       - key: full.verify.check.evidence
         value: 59
-        left: 156
-        right: 158
+        left: 157
+        right: 159
         height: 3
       - key: full.open.confirm
         value: 34
-        left: 153
-        right: 159
+        left: 154
+        right: 160
         height: 4
       - key: full.design.document
         value: 41
-        left: 151
-        right: 160
+        left: 152
+        right: 161
         height: 5
       - key: full.open.evidence
         value: 35
@@ -2706,7 +2766,7 @@ run_checkpoint:
       - key: full.open
         value: 33
         left: null
-        right: 162
+        right: 163
         height: 2
       - key: full.design.handoff
         value: 32
@@ -2725,13 +2785,13 @@ run_checkpoint:
         height: 1
       - key: full.open.evidence
         value: 35
-        left: 165
-        right: 166
+        left: 166
+        right: 167
         height: 2
       - key: full.open
         value: 33
-        left: 164
-        right: 167
+        left: 165
+        right: 168
         height: 3
       - key: full.build.configure
         value: 27
@@ -2750,24 +2810,94 @@ run_checkpoint:
         height: 1
       - key: full.design.evidence
         value: 31
-        left: 170
-        right: 171
+        left: 171
+        right: 172
         height: 2
       - key: full.design.confirm
         value: 29
-        left: 169
-        right: 172
+        left: 170
+        right: 173
         height: 3
       - key: full.open
         value: 33
-        left: 173
-        right: 167
+        left: 174
+        right: 168
         height: 4
       - key: full.design.handoff
         value: 40
         left: null
         right: null
         height: 1
+      - key: full.archive.prepare
+        value: 60
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 54
+        left: 177
+        right: 178
+        height: 2
+      - key: full.build.plan
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 52
+        left: 180
+        right: 181
+        height: 2
+      - key: full.build.execute
+        value: 53
+        left: 179
+        right: 182
+        height: 3
+      - key: full.design.evidence
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.check
+        value: 58
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 40
+        left: 184
+        right: 185
+        height: 2
+      - key: full.verify.run
+        value: 57
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 56
+        left: null
+        right: 187
+        height: 2
+      - key: full.verify.check.evidence
+        value: 59
+        left: 186
+        right: 188
+        height: 3
+      - key: full.design.document
+        value: 41
+        left: 183
+        right: 189
+        height: 4
       - key: full.open
         value: 33
         left: null
@@ -2785,8 +2915,8 @@ run_checkpoint:
         height: 1
       - key: full.design.document
         value: 30
-        left: 177
-        right: 178
+        left: 192
+        right: 193
         height: 2
       - key: full.open.confirm
         value: 34
@@ -2800,13 +2930,13 @@ run_checkpoint:
         height: 1
       - key: full.open.evidence
         value: 35
-        left: 180
-        right: 181
+        left: 195
+        right: 196
         height: 2
       - key: full.open
         value: 33
-        left: 179
-        right: 182
+        left: 194
+        right: 197
         height: 3
       - key: full.build.configure
         value: 27
@@ -2820,8 +2950,8 @@ run_checkpoint:
         height: 1
       - key: full.build.confirm
         value: 28
-        left: 184
-        right: 185
+        left: 199
+        right: 200
         height: 2
       - key: full.design.document
         value: 30
@@ -2835,18 +2965,18 @@ run_checkpoint:
         height: 1
       - key: full.design.evidence
         value: 31
-        left: 187
-        right: 188
+        left: 202
+        right: 203
         height: 2
       - key: full.design.confirm
         value: 29
-        left: 186
-        right: 189
+        left: 201
+        right: 204
         height: 3
       - key: full.open
         value: 33
-        left: 190
-        right: 182
+        left: 205
+        right: 197
         height: 4
       - key: full.design.confirm
         value: 39
@@ -2860,8 +2990,8 @@ run_checkpoint:
         height: 1
       - key: full.design.document
         value: 41
-        left: 192
-        right: 193
+        left: 207
+        right: 208
         height: 2
       - key: full.build.plan
         value: 43
@@ -2870,7 +3000,7 @@ run_checkpoint:
         height: 1
       - key: full.design.confirm
         value: 39
-        left: 195
+        left: 210
         right: null
         height: 2
       - key: full.design.evidence
@@ -2880,13 +3010,13 @@ run_checkpoint:
         height: 1
       - key: full.design.handoff
         value: 40
-        left: 197
+        left: 212
         right: null
         height: 2
       - key: full.design.document
         value: 41
-        left: 196
-        right: 198
+        left: 211
+        right: 213
         height: 3
       - key: full.build.execute
         value: 45
@@ -2896,7 +3026,7 @@ run_checkpoint:
       - key: full.build.check
         value: 46
         left: null
-        right: 200
+        right: 215
         height: 2
       - key: full.build.plan.evidence
         value: 44
@@ -2905,18 +3035,18 @@ run_checkpoint:
         height: 1
       - key: full.design.confirm
         value: 39
-        left: 202
+        left: 217
         right: null
         height: 2
       - key: full.build.plan
         value: 43
-        left: 201
-        right: 203
+        left: 216
+        right: 218
         height: 3
       - key: full.design.document
         value: 41
-        left: 204
-        right: 198
+        left: 219
+        right: 213
         height: 4
       - key: full.build.check
         value: 46
@@ -2930,13 +3060,13 @@ run_checkpoint:
         height: 1
       - key: full.build.check.evidence
         value: 47
-        left: 206
-        right: 207
+        left: 221
+        right: 222
         height: 2
       - key: full.build.plan
         value: 43
-        left: 208
-        right: 203
+        left: 223
+        right: 218
         height: 3
       - key: full.verify.run
         value: 49
@@ -2945,18 +3075,18 @@ run_checkpoint:
         height: 1
       - key: full.design.handoff
         value: 40
-        left: 197
-        right: 210
+        left: 212
+        right: 225
         height: 2
       - key: full.design.document
         value: 41
-        left: 209
-        right: 211
+        left: 224
+        right: 226
         height: 4
       - key: full.build.plan
         value: 51
-        left: 208
-        right: 203
+        left: 223
+        right: 218
         height: 3
       - key: full.verify.check
         value: 50
@@ -2970,18 +3100,18 @@ run_checkpoint:
         height: 1
       - key: full.verify.report.evidence
         value: 48
-        left: 214
-        right: 215
+        left: 229
+        right: 230
         height: 2
       - key: full.design.handoff
         value: 40
-        left: 197
-        right: 216
+        left: 212
+        right: 231
         height: 3
       - key: full.design.document
         value: 41
-        left: 213
-        right: 217
+        left: 228
+        right: 232
         height: 4
       - key: full.build.check
         value: 54
@@ -2995,8 +3125,8 @@ run_checkpoint:
         height: 1
       - key: full.build.check.evidence
         value: 47
-        left: 219
-        right: 220
+        left: 234
+        right: 235
         height: 2
       - key: full.build.plan.evidence
         value: 52
@@ -3005,28 +3135,28 @@ run_checkpoint:
         height: 1
       - key: full.design.confirm
         value: 39
-        left: 222
+        left: 237
         right: null
         height: 2
       - key: full.build.plan
         value: 51
-        left: 221
-        right: 223
+        left: 236
+        right: 238
         height: 3
       - key: full.design.document
         value: 41
-        left: 224
-        right: 217
+        left: 239
+        right: 232
         height: 4
       - key: full.build.check.evidence
         value: 55
-        left: 219
-        right: 220
+        left: 234
+        right: 235
         height: 2
       - key: full.build.plan
         value: 51
-        left: 226
-        right: 223
+        left: 241
+        right: 238
         height: 3
       - key: full.verify.run
         value: 57
@@ -3035,18 +3165,18 @@ run_checkpoint:
         height: 1
       - key: full.verify.report.evidence
         value: 48
-        left: 214
-        right: 228
+        left: 229
+        right: 243
         height: 2
       - key: full.design.handoff
         value: 40
-        left: 197
-        right: 229
+        left: 212
+        right: 244
         height: 3
       - key: full.design.document
         value: 41
-        left: 227
-        right: 230
+        left: 242
+        right: 245
         height: 4
       - key: full.verify.check
         value: 58
@@ -3055,18 +3185,18 @@ run_checkpoint:
         height: 1
       - key: full.verify.report.evidence
         value: 56
-        left: 232
-        right: 228
+        left: 247
+        right: 243
         height: 2
       - key: full.design.handoff
         value: 40
-        left: 197
-        right: 233
+        left: 212
+        right: 248
         height: 3
       - key: full.design.document
         value: 41
-        left: 227
-        right: 234
+        left: 242
+        right: 249
         height: 4
     maps:
       - null
@@ -3104,22 +3234,23 @@ run_checkpoint:
       - 134
       - 138
       - 143
-      - 161
-      - 163
-      - 168
-      - 174
+      - 162
+      - 164
+      - 169
       - 175
       - 176
-      - 183
+      - 190
       - 191
-      - 194
-      - 199
-      - 205
-      - 212
-      - 218
-      - 225
-      - 231
-      - 235
+      - 198
+      - 206
+      - 209
+      - 214
+      - 220
+      - 227
+      - 233
+      - 240
+      - 246
+      - 250
     bindings:
       - path:
           - actions
@@ -3365,59 +3496,64 @@ run_checkpoint:
           - results
         map: 39
       - path:
-          - evidenceWaits
-          - "0"
+          - waits
+          - "4"
           - results
         map: 40
       - path:
           - evidenceWaits
-          - "1"
+          - "0"
           - results
         map: 41
       - path:
           - evidenceWaits
-          - "2"
+          - "1"
           - results
         map: 42
       - path:
           - evidenceWaits
-          - "3"
+          - "2"
           - results
         map: 43
       - path:
           - evidenceWaits
-          - "4"
+          - "3"
           - results
         map: 44
       - path:
           - evidenceWaits
-          - "5"
+          - "4"
           - results
         map: 45
       - path:
           - evidenceWaits
-          - "6"
+          - "5"
           - results
         map: 46
       - path:
           - evidenceWaits
-          - "7"
+          - "6"
           - results
         map: 47
       - path:
           - evidenceWaits
-          - "8"
+          - "7"
           - results
         map: 48
       - path:
           - evidenceWaits
-          - "9"
+          - "8"
           - results
         map: 49
       - path:
           - evidenceWaits
-          - "10"
+          - "9"
           - results
         map: 50
-  storageHash: b7e8a749705e9b33e13193a87de28d55157e5e9fda8de08f7541b450b1842751
+      - path:
+          - evidenceWaits
+          - "10"
+          - results
+        map: 51
+  storageHash: f28f492b54285d166403d6a89ff8f13c2c8c2af1dc6e00aca605d5b36d88e20d
 check_epoch: 7
