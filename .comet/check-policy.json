@@ -1,0 +1,48 @@
+{
+  "version": 2,
+  "commands": [
+    {
+      "argv": ["npm.cmd", "run", "verify"],
+      "cwd": ".",
+      "files": [
+        ".comet/check-policy.json",
+        ".gitattributes",
+        ".github/**",
+        ".gitignore",
+        ".openspec-store/**",
+        ".prettierignore",
+        ".prettierrc",
+        "README.md",
+        "app/**",
+        "bin/**",
+        "deploy/**",
+        "docs/**",
+        "domains/**",
+        "electron-builder.json",
+        "eslint.config.js",
+        "openspec/**",
+        "package-lock.json",
+        "package.json",
+        "platform/**",
+        "plugins/**",
+        "repoctopus.yaml",
+        "scripts/**",
+        "services/**",
+        "skills/**",
+        "test/**",
+        "third_party/**",
+        "tsconfig.json",
+        "verification/**",
+        "vitest.config.ts",
+        "workflows/**"
+      ],
+      "outputs": [
+        "node_modules/.modules.yaml",
+        "node_modules/.package-lock.json",
+        "node_modules/.pnpm/lock.yaml"
+      ],
+      "git": "all",
+      "taskCheckboxes": "ignore"
+    }
+  ]
+}
