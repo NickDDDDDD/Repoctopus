@@ -94,9 +94,19 @@ export interface ProjectedSkill {
 export interface ProjectedDecision {
   decisionId: string;
   kind: string;
-  state: 'waiting' | 'resolved';
+  state: 'waiting' | 'resolved' | 'superseded';
+  reuseCount: number;
   startedAt: string;
   endedAt: string | null;
+}
+
+export interface ProjectedBindingRevalidation {
+  eventId: string;
+  state: 'validated' | 'drifted' | 'rejected';
+  reasonClass: string | null;
+  bindingId: string | null;
+  bindingRevision: number | null;
+  observedAt: string;
 }
 
 export interface ProjectedArtifact {
@@ -192,12 +202,17 @@ export interface ProjectedChange {
   hostId: string | null;
   validatorId: string | null;
   continuation: string | null;
+  strategyId: string | null;
+  strategyRevision: number | null;
+  executionBindingId: string | null;
+  executionBindingRevision: number | null;
   phases: ProjectedPhase[];
   buildActions: ProjectedBuildAction[];
   works: ProjectedWork[];
   currentWork: ProjectedWork | null;
   skills: ProjectedSkill[];
   decisions: ProjectedDecision[];
+  bindingRevalidations: ProjectedBindingRevalidation[];
   evidence: ProjectedEvidence[];
   recoveries: ProjectedRecovery[];
   destinations: ProjectedDestinationHealth[];
@@ -558,14 +573,24 @@ function projectSkill(change: ProjectedChange, envelope: ObservationEnvelope): v
 }
 
 function projectDecision(change: ProjectedChange, envelope: ObservationEnvelope): void {
+  for (const existing of change.decisions) existing.reuseCount ??= 0;
   const decisionId = envelope.correlation.decisionId;
   if (decisionId === undefined) return;
   let decision = change.decisions.find((candidate) => candidate.decisionId === decisionId);
+  if (envelope.eventType === 'wait.started') {
+    for (const current of change.decisions) {
+      if (current.decisionId !== decisionId && current.state === 'waiting') {
+        current.state = 'superseded';
+        current.endedAt = envelope.observedAt;
+      }
+    }
+  }
   if (decision === undefined) {
     decision = {
       decisionId,
       kind: envelope.correlation.decisionKind ?? 'not-reported',
       state: envelope.eventType === 'wait.ended' ? 'resolved' : 'waiting',
+      reuseCount: 0,
       startedAt: envelope.observedAt,
       endedAt: envelope.eventType === 'wait.ended' ? envelope.observedAt : null,
     };
@@ -573,7 +598,51 @@ function projectDecision(change: ProjectedChange, envelope: ObservationEnvelope)
   } else if (envelope.eventType === 'wait.ended') {
     decision.state = 'resolved';
     decision.endedAt = envelope.observedAt;
+  } else if (envelope.eventType === 'wait.started') {
+    decision.reuseCount += 1;
+    decision.state = 'waiting';
+    decision.endedAt = null;
   }
+}
+
+function projectBuildIdentity(change: ProjectedChange, envelope: ObservationEnvelope): void {
+  if (envelope.correlation.strategyId !== undefined) {
+    change.strategyId = envelope.correlation.strategyId;
+    change.strategyRevision = envelope.correlation.strategyRevision ?? change.strategyRevision;
+  }
+  const buildEvent = stringAttribute(envelope.attributes, 'buildEvent');
+  if (
+    envelope.correlation.bindingId !== undefined &&
+    (buildEvent !== null || envelope.correlation.strategyId !== undefined)
+  ) {
+    change.executionBindingId = envelope.correlation.bindingId;
+    change.executionBindingRevision =
+      envelope.correlation.bindingRevision ?? change.executionBindingRevision;
+  }
+  const state =
+    buildEvent === 'build.binding.validated'
+      ? 'validated'
+      : buildEvent === 'build.binding.drifted'
+        ? 'drifted'
+        : buildEvent === 'build.binding.rejected'
+          ? 'rejected'
+          : null;
+  if (state === null) return;
+  if (
+    change.bindingRevalidations.some(
+      (candidate) => candidate.eventId === envelope.identity.eventId,
+    )
+  ) {
+    return;
+  }
+  change.bindingRevalidations.push({
+    eventId: envelope.identity.eventId,
+    state,
+    reasonClass: stringAttribute(envelope.attributes, 'reasonClass'),
+    bindingId: envelope.correlation.bindingId ?? change.executionBindingId,
+    bindingRevision: envelope.correlation.bindingRevision ?? change.executionBindingRevision,
+    observedAt: envelope.observedAt,
+  });
 }
 
 function projectEvidence(change: ProjectedChange, envelope: ObservationEnvelope): void {
@@ -861,12 +930,17 @@ function createProjectedChange(envelope: ObservationEnvelope): ProjectedChange |
     hostId: null,
     validatorId: null,
     continuation: null,
+    strategyId: null,
+    strategyRevision: null,
+    executionBindingId: null,
+    executionBindingRevision: null,
     phases: emptyPhases(),
     buildActions: emptyBuildActions(),
     works: [],
     currentWork: null,
     skills: [],
     decisions: [],
+    bindingRevalidations: [],
     evidence: [],
     recoveries: [],
     destinations: [],
@@ -892,6 +966,11 @@ function projectChange(
 ): ProjectedChange | undefined {
   const change = current ?? createProjectedChange(envelope);
   if (change === undefined || envelope.identity.sequence < change.latestSequence) return change;
+  change.strategyId ??= null;
+  change.strategyRevision ??= null;
+  change.executionBindingId ??= null;
+  change.executionBindingRevision ??= null;
+  change.bindingRevalidations ??= [];
   const value = <T>(next: T | undefined, previous: T | null): T | null =>
     next === undefined ? previous : next;
   change.phase = value(envelope.correlation.phase, change.phase);
@@ -915,6 +994,7 @@ function projectChange(
   projectBuildAction(change, envelope);
   projectSkill(change, envelope);
   projectDecision(change, envelope);
+  projectBuildIdentity(change, envelope);
   projectEvidence(change, envelope);
   projectRecovery(change, envelope);
   projectDestination(change, envelope);

@@ -43,6 +43,9 @@ export interface ObservationCorrelation {
   skillName?: string;
   skillRole?: ObservationSkillRole;
   bindingId?: string;
+  strategyId?: string;
+  strategyRevision?: number;
+  bindingRevision?: number;
   slotId?: string;
   skillOrder?: number;
   replacedSkillName?: string;
@@ -135,6 +138,11 @@ const ATTRIBUTE_KEYS = [
   'contractConflict',
   'reasonCode',
   'changedSkillCount',
+  'strategyRevision',
+  'bindingRevision',
+  'decisionStatus',
+  'reasonClass',
+  'buildEvent',
 ] as const;
 
 function digest(value: unknown): `sha256:${string}` {
@@ -207,7 +215,9 @@ function inferredBuildAction(event: TrajectoryEvent): ObservationBuildAction | u
   const observationKind = id(event.data.observationKind);
   if (!observationKind) return undefined;
   if (observationKind.includes('plan-evidence')) return 'plan-evidence';
-  if (observationKind.includes('configuration')) return 'configure';
+  if (observationKind.includes('configuration') || observationKind.includes('binding')) {
+    return 'configure';
+  }
   if (observationKind.includes('package')) return 'execute';
   if (observationKind.includes('check')) return 'check';
   if (observationKind.includes('plan')) return 'plan';
@@ -234,6 +244,9 @@ function correlation(event: TrajectoryEvent, context: ObservationContext): Obser
   assign('workId', id(event.data.workId) ?? id(work?.workId));
   assign('workKind', id(event.data.workKind) ?? id(work?.kind));
   const observation = record(event.data.observation);
+  const buildProtocol = record(observation?.buildProtocol);
+  const strategy = record(observation?.strategy) ?? record(buildProtocol?.strategy);
+  const binding = record(observation?.binding) ?? record(buildProtocol?.binding);
   const invalidation = record(observation?.invalidation);
   const completion = record(observation?.completion);
   assign(
@@ -258,7 +271,10 @@ function correlation(event: TrajectoryEvent, context: ObservationContext): Obser
       ? role
       : undefined,
   );
-  assign('bindingId', id(event.data.bindingId));
+  assign('strategyId', id(event.data.strategyId) ?? id(strategy?.strategyId));
+  assign('strategyRevision', integer(event.data.strategyRevision) ?? integer(strategy?.revision));
+  assign('bindingId', id(event.data.bindingId) ?? id(binding?.bindingId));
+  assign('bindingRevision', integer(event.data.bindingRevision) ?? integer(binding?.revision));
   assign('slotId', id(event.data.slotId));
   assign('skillOrder', integer(event.data.skillOrder));
   assign('replacedSkillName', id(event.data.replacedSkillName));
@@ -313,6 +329,32 @@ function attributes(event: TrajectoryEvent, context: ObservationContext) {
   const invalidation = record(observation?.invalidation);
   const findingKind = scalar(invalidation?.classification);
   if (findingKind !== undefined) result.findingKind = findingKind;
+  const observationKindValue = event.data.observationKind;
+  const buildEvent =
+    observationKindValue === 'build-binding-accepted'
+      ? 'build.binding.validated'
+      : observationKindValue === 'build-binding-revalidation-required'
+        ? 'build.binding.drifted'
+        : observationKindValue === 'build-binding-retry-required'
+          ? 'build.binding.rejected'
+          : observationKindValue === 'build-plan-evidence-accepted'
+            ? 'build.plan.preflight.accepted'
+            : observationKindValue === 'build-plan-retry-required'
+              ? 'build.plan.preflight.rejected'
+              : undefined;
+  if (buildEvent) result.buildEvent = buildEvent;
+  const reasonClass = scalar(observation?.reasonCode);
+  if (
+    typeof reasonClass === 'string' &&
+    ['host', 'capability', 'checkout', 'head', 'path'].includes(reasonClass)
+  ) {
+    result.reasonClass = reasonClass;
+  }
+  if (event.type === 'wait.started' && event.data.waitKind === 'human-decision') {
+    result.decisionStatus = 'created';
+  } else if (event.type === 'wait.ended' && event.data.waitKind === 'human-decision') {
+    result.decisionStatus = 'resolved';
+  }
   if (event.type.startsWith('skill.')) result.skillState = event.type.slice('skill.'.length);
   const transition = nestedTransition(event);
   const transitionId = scalar(transition?.transitionId);

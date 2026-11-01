@@ -51,7 +51,11 @@ const EXECUTION_DATA_KEYS = new Set([
   'findingCount',
   'findingKind',
   'buildAction',
-  'configurationId',
+  'strategyId',
+  'strategyRevision',
+  'bindingRevision',
+  'decisionStatus',
+  'reasonClass',
   'planId',
   'planRevision',
   'packageId',
@@ -287,16 +291,61 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
       ) {
         attributes['repoctopus.planning.invalidation.kind'] = record.invalidationKind;
       }
-      const configuration = record.configuration;
-      if (configuration && typeof configuration === 'object') {
-        const value = configuration as Record<string, unknown>;
+      const buildProtocol =
+        record.buildProtocol && typeof record.buildProtocol === 'object'
+          ? (record.buildProtocol as Record<string, unknown>)
+          : undefined;
+      const strategySource = record.strategy ?? buildProtocol?.strategy;
+      const strategy =
+        strategySource && typeof strategySource === 'object'
+          ? (strategySource as Record<string, unknown>)
+          : undefined;
+      if (strategy) {
+        const value = strategy;
         for (const key of ['executionMode', 'tddMode', 'reviewMode', 'isolation'] as const) {
-          const safe = scalar(value[key]);
+          const sourceKey = key === 'isolation' ? 'isolationIntent' : key;
+          const safe = scalar(value[sourceKey]);
           if (safe !== undefined) attributes[`repoctopus.build.${key}`] = safe;
         }
-        if (typeof value.configurationId === 'string' && safeExecutionId(value.configurationId)) {
-          attributes['repoctopus.build.configuration.id'] = value.configurationId;
+        if (typeof value.strategyId === 'string' && safeExecutionId(value.strategyId)) {
+          attributes['repoctopus.build.strategy.id'] = value.strategyId;
         }
+        if (typeof value.revision === 'number' && Number.isSafeInteger(value.revision)) {
+          attributes['repoctopus.build.strategy.revision'] = value.revision;
+        }
+      }
+      const bindingSource = record.binding ?? buildProtocol?.binding;
+      const binding =
+        bindingSource && typeof bindingSource === 'object'
+          ? (bindingSource as Record<string, unknown>)
+          : undefined;
+      if (binding) {
+        if (typeof binding.bindingId === 'string' && safeExecutionId(binding.bindingId)) {
+          attributes['repoctopus.build.binding.id'] = binding.bindingId;
+        }
+        if (typeof binding.revision === 'number' && Number.isSafeInteger(binding.revision)) {
+          attributes['repoctopus.build.binding.revision'] = binding.revision;
+        }
+      }
+      const rawObservationKind = event.data.observationKind;
+      const semanticEvent =
+        rawObservationKind === 'build-binding-accepted'
+          ? 'build.binding.validated'
+          : rawObservationKind === 'build-binding-revalidation-required'
+            ? 'build.binding.drifted'
+            : rawObservationKind === 'build-binding-retry-required'
+              ? 'build.binding.rejected'
+              : rawObservationKind === 'build-plan-evidence-accepted'
+                ? 'build.plan.preflight.accepted'
+                : rawObservationKind === 'build-plan-retry-required'
+                  ? 'build.plan.preflight.rejected'
+                  : undefined;
+      if (semanticEvent) attributes['repoctopus.build.event'] = semanticEvent;
+      if (
+        typeof record.reasonCode === 'string' &&
+        ['host', 'capability', 'checkout', 'head', 'path'].includes(record.reasonCode)
+      ) {
+        attributes['repoctopus.build.reason.class'] = record.reasonCode;
       }
       const plan = record.plan;
       if (plan && typeof plan === 'object') {
@@ -316,6 +365,12 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
           attributes['repoctopus.build.finding.classification'] = classification;
         }
       }
+    }
+  }
+  if (event.type === 'wait.started' || event.type === 'wait.ended') {
+    if (event.data.waitKind === 'human-decision') {
+      attributes['repoctopus.human_decision.event'] =
+        event.type === 'wait.started' ? 'created' : 'resolved';
     }
   }
   return attributes;
