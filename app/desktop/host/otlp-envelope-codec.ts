@@ -99,10 +99,165 @@ function skillResult(envelope: ObservationEnvelope): string | undefined {
     : undefined;
 }
 
+const EXECUTION_EVENT_TYPES = new Set([
+  'work.created',
+  'work.packet-stored',
+  'work.packet-recovered',
+  'work.claimed',
+  'work.context-delivered',
+  'work.host-started',
+  'work.host-completed',
+  'work.outcome-submitted',
+  'work.outcome-corrected',
+  'work.outcome-rejected',
+  'work.outcome-accepted',
+  'work.outcome-processing-error',
+  'delegation.completed',
+  'work.completed',
+  'skill.resolved',
+  'skill.delivered',
+  'skill.consumed',
+  'skill.consumption-rejected',
+  'skill.outcome-recorded',
+  'skill-composition.compiled',
+  'skill-composition.rejected',
+  'skill-composition.drifted',
+  'skill-binding.resolved',
+  'tool.started',
+  'tool.completed',
+  'validator.completed',
+  'wait.started',
+  'wait.ended',
+  'reconcile.started',
+  'reconcile.completed',
+  'continuation.selected',
+  'specification.artifacts-observed',
+  'specification.validation-observed',
+  'recovery.reconciled',
+]);
+
+function metricValue(envelope: ObservationEnvelope, key: string, fallback: OtlpScalar): OtlpScalar {
+  return envelope.attributes[key] ?? fallback;
+}
+
+function legacyMetricProjections(envelope: ObservationEnvelope): MetricProjection[] {
+  const projections: MetricProjection[] = [];
+  const workflowName = envelope.attributes.workflowName;
+  if (typeof workflowName === 'string') {
+    projections.push({
+      name: 'repoctopus.workflow.events',
+      value: 1,
+      kind: 'sum',
+      observedAt: envelope.observedAt,
+      attributes: keyValues({
+        'repoctopus.event.type': envelope.eventType,
+        'repoctopus.workflow.name': workflowName,
+      }),
+    });
+    const duration = envelope.attributes.durationMs;
+    if (typeof duration === 'number' && duration >= 0) {
+      projections.push({
+        name: 'repoctopus.workflow.step.duration',
+        value: duration,
+        kind: 'gauge',
+        observedAt: envelope.observedAt,
+        attributes: keyValues({
+          'repoctopus.workflow.name': workflowName,
+          'repoctopus.event.result': metricValue(envelope, 'result', 'unknown'),
+        }),
+      });
+    }
+  }
+
+  if (EXECUTION_EVENT_TYPES.has(envelope.eventType)) {
+    const attributes = keyValues({
+      'repoctopus.execution.event.type': envelope.eventType,
+      'repoctopus.execution.phase': envelope.correlation.phase ?? 'unknown',
+      'repoctopus.execution.work.kind': envelope.correlation.workKind ?? 'custom',
+      'repoctopus.execution.result': metricValue(envelope, 'result', 'unknown'),
+      'repoctopus.execution.continuation': envelope.correlation.continuation ?? 'unknown',
+    });
+    projections.push({
+      name: 'repoctopus.work.execution.events',
+      value: 1,
+      kind: 'sum',
+      observedAt: envelope.observedAt,
+      attributes,
+    });
+    const duration = envelope.attributes.durationMs;
+    if (typeof duration === 'number' && duration >= 0) {
+      projections.push({
+        name: 'repoctopus.work.execution.duration',
+        value: duration,
+        kind: 'gauge',
+        observedAt: envelope.observedAt,
+        attributes: keyValues({
+          'repoctopus.execution.event.type': envelope.eventType,
+          'repoctopus.execution.phase': envelope.correlation.phase ?? 'unknown',
+          'repoctopus.execution.work.kind': envelope.correlation.workKind ?? 'custom',
+          'repoctopus.execution.result': metricValue(envelope, 'result', 'unknown'),
+        }),
+      });
+    }
+  }
+
+  if (envelope.eventType.startsWith('evidence.')) {
+    projections.push({
+      name: 'repoctopus.evidence.events',
+      value: 1,
+      kind: 'sum',
+      observedAt: envelope.observedAt,
+      attributes: keyValues({ 'repoctopus.evidence.event.type': envelope.eventType }),
+    });
+    const duration = envelope.attributes.durationMs;
+    if (envelope.eventType === 'evidence.node.completed' && typeof duration === 'number') {
+      projections.push({
+        name: 'repoctopus.evidence.node.duration',
+        value: Math.max(0, duration),
+        kind: 'gauge',
+        observedAt: envelope.observedAt,
+        attributes: keyValues({
+          'repoctopus.evidence.adapter': metricValue(envelope, 'adapter', 'unknown'),
+          'repoctopus.evidence.status': metricValue(envelope, 'status', 'unknown'),
+        }),
+      });
+    }
+  }
+
+  if (envelope.eventType.startsWith('application.')) {
+    projections.push({
+      name: 'repoctopus.lifecycle.events',
+      value: 1,
+      kind: 'sum',
+      observedAt: envelope.observedAt,
+      attributes: keyValues({
+        'repoctopus.lifecycle.type': envelope.eventType,
+        'repoctopus.lifecycle.phase': metricValue(envelope, 'lifecycle', 'unknown'),
+        'repoctopus.lifecycle.result': metricValue(envelope, 'result', 'unknown'),
+      }),
+    });
+  }
+
+  if (envelope.eventType.startsWith('delivery.')) {
+    projections.push({
+      name: 'repoctopus.delivery.events',
+      value: 1,
+      kind: 'sum',
+      observedAt: envelope.observedAt,
+      attributes: keyValues({
+        'repoctopus.delivery.event.type': envelope.eventType,
+        'repoctopus.delivery.state': metricValue(envelope, 'deliveryState', 'unknown'),
+      }),
+    });
+  }
+  return projections;
+}
+
 function specializedMetricProjections(envelope: ObservationEnvelope): MetricProjection[] {
   const projections: MetricProjection[] = [];
   const result = skillResult(envelope);
   if (result) {
+    const correctionKind = envelope.attributes.correctionKind;
     projections.push({
       name: 'repoctopus.skill.usage',
       value: 1,
@@ -112,6 +267,9 @@ function specializedMetricProjections(envelope: ObservationEnvelope): MetricProj
         'repoctopus.skill.role': skillRole(envelope.correlation.skillRole),
         'repoctopus.skill.category': boundedCategory(envelope.attributes.skillCategory),
         'repoctopus.skill.result': result,
+        ...(result === 'corrected' && typeof correctionKind === 'string'
+          ? { 'repoctopus.skill.correction.kind': correctionKind }
+          : {}),
       }),
     });
   }
@@ -194,6 +352,7 @@ function metricProjections(envelopes: readonly ObservationEnvelope[]): MetricPro
       observedAt: envelope.observedAt,
       attributes: metricAttributes(envelope),
     },
+    ...legacyMetricProjections(envelope),
     ...specializedMetricProjections(envelope),
   ]);
 }

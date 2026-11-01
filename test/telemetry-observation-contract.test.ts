@@ -16,9 +16,29 @@ describe('telemetry observation contract', () => {
     expect(new Set(TELEMETRY_ATTRIBUTES.map((item) => item.name)).size).toBe(
       TELEMETRY_ATTRIBUTES.length,
     );
-    expect(TELEMETRY_SIGNALS.some((item) => item.name === 'repoctopus.skill.usage')).toBe(true);
-    expect(TELEMETRY_SIGNALS.some((item) => item.name === 'repoctopus.rule.evaluation')).toBe(true);
-    expect(TELEMETRY_SIGNALS.some((item) => item.name === 'repoctopus.workflow.run')).toBe(true);
+    const metrics = new Set(
+      TELEMETRY_SIGNALS.filter((item) => item.kind === 'metric').map((item) => item.name),
+    );
+    expect(metrics).toEqual(
+      new Set([
+        'repoctopus.observation',
+        'repoctopus.workflow.events',
+        'repoctopus.workflow.step.duration',
+        'repoctopus.work.execution.events',
+        'repoctopus.work.execution.duration',
+        'repoctopus.evidence.events',
+        'repoctopus.evidence.node.duration',
+        'repoctopus.lifecycle.events',
+        'repoctopus.delivery.events',
+        'repoctopus.skill.usage',
+        'repoctopus.rule.evaluation',
+        'repoctopus.workflow.run',
+        'repoctopus.workflow.run.duration',
+      ]),
+    );
+    expect(
+      TELEMETRY_ATTRIBUTES.find((item) => item.name === 'repoctopus.skill.correction.kind')?.values,
+    ).toEqual(['changes-requested', 'outcome-rejection', 'task-reopen', 'repair-work']);
   });
 
   it('classifies all 22 recommended metrics without manufacturing unavailable facts', () => {

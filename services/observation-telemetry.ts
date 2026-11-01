@@ -138,7 +138,7 @@ export class DeliveryObservationTelemetry
 {
   async export(state: DeliveryState, event: DeliveryEvent): Promise<void> {
     await this.delivery.append([
-      createDeliveryObservationEnvelope(event, { changeId: state.changeId }),
+      createDeliveryObservationEnvelope(event, { changeId: state.changeId }, state),
     ]);
     await this.deliver();
   }

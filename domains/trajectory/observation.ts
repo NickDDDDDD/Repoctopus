@@ -156,6 +156,9 @@ export const OBSERVATION_ATTRIBUTE_KEYS = [
   'workflowVersion',
   'workflowRunResult',
   'workflowRunDurationMs',
+  'durationMs',
+  'correctionKind',
+  'deliveryState',
 ] as const;
 
 function digest(value: unknown): `sha256:${string}` {
@@ -494,6 +497,7 @@ export function createEvidenceObservationEnvelopes(
 export function createDeliveryObservationEnvelope(
   event: DeliveryEvent,
   context: ObservationContext = {},
+  state?: { status: string },
 ): ObservationEnvelope {
   const workspaceId = id(context.workspaceId);
   return canonicalEnvelope({
@@ -506,14 +510,17 @@ export function createDeliveryObservationEnvelope(
       ...(workspaceId ? { workspaceId } : {}),
       changeId: event.changeId,
     },
-    attributes: safeAttributes(event.data, [
-      'actionType',
-      'decision',
-      'mergedCount',
-      'mergeRequestCount',
-      'repositoryCount',
-      'result',
-    ]),
+    attributes: {
+      ...safeAttributes(event.data, [
+        'actionType',
+        'decision',
+        'mergedCount',
+        'mergeRequestCount',
+        'repositoryCount',
+        'result',
+      ]),
+      ...(scalar(state?.status) === undefined ? {} : { deliveryState: scalar(state?.status)! }),
+    },
   });
 }
 

@@ -31,6 +31,12 @@ import {
 import type { WorkExecutionSubmissionRejectionCode } from '../domains/work-execution/types.js';
 import { canonicalJson } from '../domains/workflow-contract/canonical.js';
 
+export type SkillHumanCorrectionKind =
+  | 'changes-requested'
+  | 'outcome-rejection'
+  | 'task-reopen'
+  | 'repair-work';
+
 function digest(...parts: readonly string[]): `sha256:${string}` {
   return `sha256:${createHash('sha256').update(parts.join('\0')).digest('hex')}`;
 }
@@ -624,7 +630,11 @@ export class WorkExecutionAuthority extends Service {
     outcome: WorkExecutionHostOutcome,
     result: 'completed' | 'error' | 'corrected',
     sourceIdentity: string,
+    correctionKind?: SkillHumanCorrectionKind,
   ): Promise<void> {
+    if ((result === 'corrected') !== (correctionKind !== undefined)) {
+      throw new Error('Skill correction facts require one bounded correction kind');
+    }
     const consumed = new Set(outcome.consumedLayerDigests);
     const layers = packet.context.layers.filter(
       (layer) =>
@@ -649,10 +659,45 @@ export class WorkExecutionAuthority extends Service {
           skillCategory:
             skillRole === 'team-guidance' || skillRole === 'team-replacement' ? 'team' : 'builtin',
           result,
+          ...(correctionKind ? { correctionKind } : {}),
         },
         [layer.digest, result, sourceIdentity],
       );
     }
+  }
+
+  /**
+   * Materializes a formal correction while the corrected Work checkpoint is still authoritative.
+   * Exporters must not infer correction ownership from neighboring events.
+   */
+  async recordCurrentSkillCorrection(
+    runId: string,
+    correctionKind: SkillHumanCorrectionKind,
+    sourceIdentity: string,
+  ): Promise<boolean> {
+    const state = await this.ctx.runStore.loadRun(runId);
+    const execution = state.workExecution;
+    if (!execution?.hostOutcome || execution.status === 'invoking') return false;
+    if (execution.schemaVersion !== 3) return false;
+    const packet = await this.ctx.workExecutionPacketStore.load(runId, execution.packet);
+    if (
+      packet.identity.packetDigest !== execution.packet.packetDigest ||
+      packet.identity.contextDigest !== execution.packet.contextDigest ||
+      packet.claim.runId !== runId ||
+      packet.claim.workId !== execution.workId ||
+      packet.claim.attempt !== execution.attempt ||
+      packet.claim.checkEpoch !== execution.checkEpoch
+    ) {
+      return false;
+    }
+    await this.recordSkillOutcomeFacts(
+      packet,
+      execution.hostOutcome,
+      'corrected',
+      sourceIdentity,
+      correctionKind,
+    );
+    return true;
   }
 
   async recordSkillConsumptionRejected(
@@ -986,7 +1031,13 @@ export class WorkExecutionAuthority extends Service {
         [submissionId],
       );
       const packet = await this.loadAuthoritativePacket(intent.runId);
-      await this.recordSkillOutcomeFacts(packet.packet, outcome, 'corrected', submissionId);
+      await this.recordSkillOutcomeFacts(
+        packet.packet,
+        outcome,
+        'corrected',
+        submissionId,
+        'outcome-rejection',
+      );
     }
     return result;
   }

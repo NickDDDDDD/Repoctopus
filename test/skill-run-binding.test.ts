@@ -267,7 +267,13 @@ describe('Skill-to-Work measurement binding', () => {
 
     await authority.recordSkillOutcomeFacts(packet, outcome, 'completed', 'outcome-1');
     await authority.recordSkillOutcomeFacts(packet, outcome, 'completed', 'outcome-1');
-    await authority.recordSkillOutcomeFacts(packet, outcome, 'corrected', 'repair-1');
+    await authority.recordSkillOutcomeFacts(
+      packet,
+      outcome,
+      'corrected',
+      'repair-1',
+      'repair-work',
+    );
 
     const facts = trajectory().filter((event) => event.type === 'skill.outcome-recorded');
     expect(facts).toHaveLength(4);
@@ -279,5 +285,30 @@ describe('Skill-to-Work measurement binding', () => {
     ]);
     expect(facts.every((event) => event.data.invocationId === 'invocation-1')).toBe(true);
     expect(new Set(facts.map((event) => event.eventId)).size).toBe(4);
+    expect(
+      facts
+        .filter((event) => event.data.result === 'corrected')
+        .every((event) => event.data.correctionKind === 'repair-work'),
+    ).toBe(true);
   });
+
+  it.each(['changes-requested', 'outcome-rejection', 'task-reopen', 'repair-work'] as const)(
+    'records only the bounded %s correction category',
+    async (correctionKind) => {
+      const { authority, trajectory } = measurementHarness();
+      await authority.recordSkillOutcomeFacts(
+        measurementPacket(),
+        measurementOutcome(),
+        'corrected',
+        correctionKind,
+        correctionKind,
+      );
+
+      expect(
+        trajectory()
+          .filter((event) => event.type === 'skill.outcome-recorded')
+          .map((event) => event.data.correctionKind),
+      ).toEqual([correctionKind, correctionKind]);
+    },
+  );
 });
