@@ -367,6 +367,9 @@ export function createBuildPlan(input: {
   const acceptanceIds = new Set<string>(
     input.tasks.tasks.flatMap((task) => task.acceptanceCriteria.map((item) => item.acceptanceId)),
   );
+  const taskRevisions = new Map(
+    input.tasks.tasks.map((task) => [task.taskId, task.taskRevision] as const),
+  );
   const prepared = input.candidate.packages.map((candidate) => {
     const stable = {
       schemaVersion: 1 as const,
@@ -407,23 +410,50 @@ export function createBuildPlan(input: {
     if (stable.writeScopes.some((scope) => !stable.repositoryIds.includes(scope.repositoryId))) {
       throw new Error('Build Plan write scope exceeds package repository bindings');
     }
-    const packageDigest = digest(stable);
     return {
       ...stable,
-      packageId: `work-package:${packageDigest.slice(-24)}`,
       dependsOnKeys: unique(candidate.dependsOn, 'Package dependencies'),
-      digest: packageDigest,
     };
   });
-  const byKey = new Map(prepared.map((entry) => [entry.packageKey, entry.packageId]));
-  const packages: WorkPackage[] = prepared.map(({ dependsOnKeys, ...entry }) => ({
-    ...entry,
-    dependsOn: dependsOnKeys.map((key) => {
-      const packageId = byKey.get(key);
-      if (!packageId) throw new Error(`Build Plan references unknown package dependency: ${key}`);
-      return packageId;
-    }),
-  }));
+  const byKey = new Map(prepared.map((entry) => [entry.packageKey, entry] as const));
+  const resolving = new Set<string>();
+  const resolved = new Map<string, WorkPackage>();
+  const materialize = (packageKey: string): WorkPackage => {
+    const existing = resolved.get(packageKey);
+    if (existing) return existing;
+    if (resolving.has(packageKey)) {
+      throw new Error('Build Plan package dependency cycle detected');
+    }
+    const candidate = byKey.get(packageKey);
+    if (!candidate) {
+      throw new Error(`Build Plan references unknown package dependency: ${packageKey}`);
+    }
+    resolving.add(packageKey);
+    const dependencies = candidate.dependsOnKeys.map(materialize);
+    resolving.delete(packageKey);
+    const { dependsOnKeys: _dependsOnKeys, ...stable } = candidate;
+    void _dependsOnKeys;
+    const packageDigest = digest({
+      ...stable,
+      taskRevisions: stable.taskIds.map((taskId) => ({
+        taskId,
+        taskRevision: taskRevisions.get(taskId)!,
+      })),
+      dependencies: dependencies.map((dependency) => ({
+        packageId: dependency.packageId,
+        digest: dependency.digest,
+      })),
+    });
+    const workPackage: WorkPackage = {
+      ...stable,
+      packageId: `work-package:${packageDigest.slice(-24)}`,
+      dependsOn: dependencies.map((dependency) => dependency.packageId),
+      digest: packageDigest,
+    };
+    resolved.set(packageKey, workPackage);
+    return workPackage;
+  };
+  const packages = prepared.map((entry) => materialize(entry.packageKey));
   assertAcyclic(packages);
   const covered = new Set(packages.flatMap((entry) => entry.taskIds));
   if ([...taskIds].some((taskId) => !covered.has(taskId))) {

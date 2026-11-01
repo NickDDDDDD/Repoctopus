@@ -253,6 +253,84 @@ describe('Build protocol domain', () => {
     },
   );
 
+  it('changes package identity for Task revisions and propagates dependency identity changes', () => {
+    const configuration = approvedConfiguration();
+    const tasks = parseSpecificationTasks(
+      'managed-build',
+      '- [ ] 1.1 Build the foundation.\n  **Acceptance:** Foundation works.\n- [ ] 1.2 Integrate the feature.\n  **Acceptance:** Integration works.\n',
+    );
+    const candidate = {
+      packages: [
+        {
+          packageKey: 'foundation',
+          taskIds: ['1.1'],
+          repositoryIds: ['workspace'],
+          writeScopes: [{ repositoryId: 'workspace', paths: ['src/foundation/**'] }],
+          acceptanceRefs: tasks.tasks[0]!.acceptanceCriteria.map((item) => item.acceptanceId),
+          expectedOutcomes: ['foundation-ready'],
+          validatorProfile: 'build.package-valid',
+          dependsOn: [] as string[],
+        },
+        {
+          packageKey: 'integration',
+          taskIds: ['1.2'],
+          repositoryIds: ['workspace'],
+          writeScopes: [{ repositoryId: 'workspace', paths: ['src/integration/**'] }],
+          acceptanceRefs: tasks.tasks[1]!.acceptanceCriteria.map((item) => item.acceptanceId),
+          expectedOutcomes: ['integration-ready'],
+          validatorProfile: 'build.package-valid',
+          dependsOn: ['foundation'],
+        },
+      ],
+    };
+    const original = createBuildPlan({
+      runId: 'run-package-identity',
+      revision: 1,
+      configuration,
+      planningDigest: tasks.digest,
+      tasks,
+      candidate,
+    });
+    const revisedTasks = parseSpecificationTasks(
+      'managed-build',
+      '- [ ] 1.1 Build the hardened foundation.\n  **Acceptance:** Foundation works.\n- [ ] 1.2 Integrate the feature.\n  **Acceptance:** Integration works.\n',
+    );
+    const revised = createBuildPlan({
+      runId: 'run-package-identity',
+      revision: 2,
+      configuration,
+      planningDigest: revisedTasks.digest,
+      tasks: revisedTasks,
+      candidate: {
+        packages: candidate.packages.map((workPackage, index) => ({
+          ...workPackage,
+          acceptanceRefs: revisedTasks.tasks[index]!.acceptanceCriteria.map(
+            (item) => item.acceptanceId,
+          ),
+        })),
+      },
+    });
+    expect(revised.packages[0]!.digest).not.toBe(original.packages[0]!.digest);
+    expect(revised.packages[1]!.digest).not.toBe(original.packages[1]!.digest);
+
+    const detached = createBuildPlan({
+      runId: 'run-package-identity',
+      revision: 3,
+      configuration,
+      planningDigest: tasks.digest,
+      tasks,
+      candidate: {
+        packages: candidate.packages.map((workPackage) =>
+          workPackage.packageKey === 'integration'
+            ? { ...workPackage, dependsOn: [] }
+            : workPackage,
+        ),
+      },
+    });
+    expect(detached.packages[0]!.digest).toBe(original.packages[0]!.digest);
+    expect(detached.packages[1]!.digest).not.toBe(original.packages[1]!.digest);
+  });
+
   it('normalizes workspace and configuration input into stable immutable digests', () => {
     const first = approvedConfiguration();
     const second = approvedConfiguration();
