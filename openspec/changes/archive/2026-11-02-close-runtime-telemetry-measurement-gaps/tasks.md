@@ -48,7 +48,7 @@
 
 - [x] 7.1 用 mock OTLP receiver 跑一个包含 Skill consumed、机器 Rule receipt、人工返工和最终成功的完整 Run，运行 `npx vitest run test/e2e/telemetry-measurement.e2e.test.ts` 验证三类信号可关联、去重且能复算 9 项指标。（Requirements: development-telemetry#Skill效果度量必须绑定可验证执行事实, development-telemetry#Rule度量只接受机器可验证评估, development-telemetry#工作流健康和效率度量必须可复算） <!-- comet-task:1a13d186-5ef0-4232-8675-8f69f8f1a8fe -->
 - [x] 7.2 运行隐私与基数回归 `npx vitest run test/telemetry-mapping.test.ts test/e2e/telemetry-measurement.e2e.test.ts`，验证 header、凭据、路径、自由文本和未登记 identity 不进入公开属性或 Metric labels。（Requirements: development-telemetry#标准OTLP部署配置必须完整生效, development-telemetry#Metric标签必须保持有界且身份可下钻） <!-- comet-task:63fabcf2-0fd5-4f80-84c6-1df2519dba08 -->
-- [ ] 7.3 执行 `npm run verify`，确认类型检查、Lint、构建、全量测试、生成物、架构、来源和 OpenSpec 严格校验全部通过，并把命令和结果记录到正式验证 Evidence。（Requirements: development-telemetry#遥测公开契约必须完整可发现并防止漂移） <!-- comet-task:869583d0-7204-4192-bfe4-fea7bd27be78 -->
+- [x] 7.3 执行 `npm run verify`，确认类型检查、Lint、构建、全量测试、生成物、架构、来源和 OpenSpec 严格校验全部通过，并把命令和结果记录到正式验证 Evidence。（Requirements: development-telemetry#遥测公开契约必须完整可发现并防止漂移） <!-- comet-task:869583d0-7204-4192-bfe4-fea7bd27be78 -->
 
 ## Workflow follow-up
 

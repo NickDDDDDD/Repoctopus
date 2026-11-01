@@ -2,6 +2,8 @@
 comet_change: close-runtime-telemetry-measurement-gaps
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-02-close-runtime-telemetry-measurement-gaps
+status: final
 ---
 
 # Design
