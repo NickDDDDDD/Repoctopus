@@ -2,6 +2,9 @@ node_modules/
 dist/
 coverage/
 .repoctopus/
+/.comet/current-change.json
+/.comet/runtime
+**/.comet-state.lock/
 *.tgz
 *.log
 
