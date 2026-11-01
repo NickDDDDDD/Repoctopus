@@ -9,6 +9,8 @@ export const SPECIFICATION_PUBLICATION_JOURNAL_API_VERSION =
 export type SpecificationPublicationJournalState =
   | 'prepared'
   | 'committed'
+  | 'push-invoking'
+  | 'push-unknown'
   | 'pushed'
   | 'mr-invoking'
   | 'mr-unknown'
@@ -159,6 +161,8 @@ export function assertSpecificationPublicationJournal(
   const states: readonly SpecificationPublicationJournalState[] = [
     'prepared',
     'committed',
+    'push-invoking',
+    'push-unknown',
     'pushed',
     'mr-invoking',
     'mr-unknown',
@@ -208,7 +212,9 @@ function advance(
     SpecificationPublicationJournalState[]
   > = {
     prepared: ['committed'],
-    committed: ['pushed'],
+    committed: ['push-invoking', 'pushed'],
+    'push-invoking': ['push-unknown', 'pushed'],
+    'push-unknown': ['pushed'],
     pushed: ['mr-invoking', 'completed'],
     'mr-invoking': ['mr-unknown', 'completed'],
     'mr-unknown': ['completed'],
@@ -253,6 +259,20 @@ export function recordSpecificationPublicationPush(
 ): SpecificationPublicationJournal {
   if (!current.publishedOid) throw new Error('Specification publication has no committed OID');
   return advance(current, 'pushed', { publishedOid: current.publishedOid });
+}
+
+export function recordSpecificationPushInvocation(
+  current: SpecificationPublicationJournal,
+): SpecificationPublicationJournal {
+  if (!current.publishedOid) throw new Error('Specification publication has no committed OID');
+  return advance(current, 'push-invoking', { publishedOid: current.publishedOid });
+}
+
+export function recordSpecificationPushUnknown(
+  current: SpecificationPublicationJournal,
+): SpecificationPublicationJournal {
+  if (!current.publishedOid) throw new Error('Specification publication has no committed OID');
+  return advance(current, 'push-unknown', { publishedOid: current.publishedOid });
 }
 
 export function recordSpecificationMergeRequestInvocation(

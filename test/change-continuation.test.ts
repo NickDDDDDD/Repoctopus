@@ -110,6 +110,41 @@ describe('committed lifecycle continuation projector', () => {
     });
   });
 
+  it('projects persisted external publication uncertainty without Host inference', () => {
+    const lifecycle = snapshot({
+      phase: 'archive',
+      currentWork: {
+        workId: 'delivery.publish:abc',
+        schemaVersion: 2,
+        checkEpoch: 2,
+        phase: 'archive',
+        kind: 'delivery.publish',
+      } as ChangeLifecycleSnapshot['currentWork'],
+    });
+    const checkpoint = {
+      schemaVersion: 1,
+      runId: 'run',
+      stateVersion: 9,
+      trajectoryOffset: 4,
+      changeLifecycle: lifecycle,
+      workExecution: {
+        schemaVersion: 3,
+        workId: 'delivery.publish:abc',
+        attempt: 1,
+        checkEpoch: 2,
+        status: 'unknown',
+        continuation: 'reconcile',
+        unknownKind: 'external-side-effect',
+      },
+    } as unknown as Checkpoint;
+
+    expect(projectCommittedContinuation(checkpoint, [])).toMatchObject({
+      continuation: 'reconcile',
+      reason: 'external-result-unknown',
+      workId: 'delivery.publish:abc',
+    });
+  });
+
   it('ignores a stale continuation fact after the committed Work changes', () => {
     const lifecycle = snapshot({
       checkEpoch: 3,

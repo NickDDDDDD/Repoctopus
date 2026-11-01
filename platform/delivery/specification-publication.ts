@@ -6,6 +6,8 @@ import {
   recordSpecificationPublicationCommit,
   recordSpecificationPublicationCompletion,
   recordSpecificationPublicationPush,
+  recordSpecificationPushInvocation,
+  recordSpecificationPushUnknown,
   type SpecificationPublicationJournal,
   type SpecificationPublicationJournalStore,
 } from '../../domains/delivery/specification-publication-journal.js';
@@ -63,6 +65,18 @@ async function remoteOid(cwd: string, remote: string, branch: string): Promise<s
   return output.split(/\s+/u)[0] || null;
 }
 
+export interface SpecificationPublicationGitPort {
+  observeRemoteOid(cwd: string, remote: string, branch: string): Promise<string | null>;
+  push(cwd: string, remote: string, oid: string, branch: string): Promise<void>;
+}
+
+const DEFAULT_PUBLICATION_GIT: SpecificationPublicationGitPort = {
+  observeRemoteOid: remoteOid,
+  async push(cwd, remote, oid, branch) {
+    await git(cwd, ['push', remote, `${oid}:refs/heads/${branch}`]);
+  },
+};
+
 function mergeRequestInput(request: SpecificationPublicationRequest): MergeRequestInput {
   return {
     repositoryId: request.changeBranch.repositoryId,
@@ -92,6 +106,7 @@ export class SpecificationPublicationAdapter {
     private readonly mergeRequests: MergeRequestPort,
     private readonly injectFault?: (point: SpecificationPublicationFaultPoint) => void,
     private readonly clock: () => Date = () => new Date(),
+    private readonly publicationGit: SpecificationPublicationGitPort = DEFAULT_PUBLICATION_GIT,
   ) {}
 
   private async exactMergeRequests(
@@ -123,7 +138,7 @@ export class SpecificationPublicationAdapter {
     if (!result || !journal.publishedOid) {
       throw new Error('Completed Specification publication Journal is incomplete');
     }
-    const observedRemote = await remoteOid(
+    const observedRemote = await this.publicationGit.observeRemoteOid(
       request.workspaceRoot,
       journal.intent.remote,
       journal.intent.sourceBranch,
@@ -285,21 +300,90 @@ export class SpecificationPublicationAdapter {
     }
 
     if (journal.state === 'committed') {
-      const observed = await remoteOid(checkout.root, journal.intent.remote, sourceBranch);
+      const observed = await this.publicationGit.observeRemoteOid(
+        checkout.root,
+        journal.intent.remote,
+        sourceBranch,
+      );
       if (observed && observed !== journal.publishedOid) {
         throw new Error('Specification publication remote branch drifted');
       }
-      if (!observed) {
-        await git(checkout.root, [
-          'push',
-          journal.intent.remote,
-          `${journal.publishedOid}:refs/heads/${sourceBranch}`,
-        ]);
-        const published = await remoteOid(checkout.root, journal.intent.remote, sourceBranch);
+      if (observed === journal.publishedOid) {
+        const pushed = recordSpecificationPublicationPush(journal);
+        await stores.compareAndSet(pushed, journal.digest);
+        journal = pushed;
+      } else {
+        const invoking = recordSpecificationPushInvocation(journal);
+        await stores.compareAndSet(invoking, journal.digest);
+        journal = invoking;
+        let published: string | null = null;
+        let failure: unknown;
+        try {
+          await this.publicationGit.push(
+            checkout.root,
+            journal.intent.remote,
+            journal.publishedOid!,
+            sourceBranch,
+          );
+          published = await this.publicationGit.observeRemoteOid(
+            checkout.root,
+            journal.intent.remote,
+            sourceBranch,
+          );
+        } catch (error) {
+          failure = error;
+          try {
+            published = await this.publicationGit.observeRemoteOid(
+              checkout.root,
+              journal.intent.remote,
+              sourceBranch,
+            );
+          } catch {
+            // The persisted invoking state owns recovery when observation is unavailable.
+          }
+        }
         if (published !== journal.publishedOid) {
-          throw new Error('Specification publication remote OID drifted');
+          const unknown = recordSpecificationPushUnknown(journal);
+          await stores.compareAndSet(unknown, journal.digest);
+          journal = unknown;
+          throw new PublicationResultUnknownError(
+            `specification:${request.runId}`,
+            'push',
+            'Specification push result is unknown',
+            failure === undefined ? {} : { cause: failure },
+          );
         }
         this.injectFault?.('after-push');
+        const pushed = recordSpecificationPublicationPush(journal);
+        await stores.compareAndSet(pushed, journal.digest);
+        journal = pushed;
+      }
+    }
+
+    if (journal.state === 'push-invoking' || journal.state === 'push-unknown') {
+      let observed: string | null = null;
+      let failure: unknown;
+      try {
+        observed = await this.publicationGit.observeRemoteOid(
+          checkout.root,
+          journal.intent.remote,
+          sourceBranch,
+        );
+      } catch (error) {
+        failure = error;
+      }
+      if (observed !== journal.publishedOid) {
+        if (journal.state === 'push-invoking') {
+          const unknown = recordSpecificationPushUnknown(journal);
+          await stores.compareAndSet(unknown, journal.digest);
+          journal = unknown;
+        }
+        throw new PublicationResultUnknownError(
+          `specification:${request.runId}`,
+          'push',
+          'Specification push result remains unknown',
+          failure === undefined ? {} : { cause: failure },
+        );
       }
       const pushed = recordSpecificationPublicationPush(journal);
       await stores.compareAndSet(pushed, journal.digest);

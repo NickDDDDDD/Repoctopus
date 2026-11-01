@@ -14,6 +14,7 @@ import { PublicationResultUnknownError } from '../domains/delivery/publication-r
 import type { SpecificationClosureResult } from '../domains/specification/types.js';
 import {
   SpecificationPublicationAdapter,
+  type SpecificationPublicationGitPort,
   type SpecificationPublicationFaultPoint,
 } from '../platform/delivery/specification-publication.js';
 import { GitSpecificationCheckoutManager } from '../platform/git/specification-checkout.js';
@@ -169,6 +170,41 @@ async function expectPublished(
 }
 
 describe('Specification publication adapter', () => {
+  it('never repeats a Specification push while its result is unknown', async () => {
+    const setup = await fixture();
+    let observable = false;
+    let pushedOid: string | null = null;
+    const push = vi.fn(async (cwd: string, remote: string, oid: string, branch: string) => {
+      pushedOid = oid;
+      await execFileAsync('git', ['push', remote, `${oid}:refs/heads/${branch}`], { cwd });
+      throw new Error('push response and immediate observation unavailable');
+    });
+    const publicationGit: SpecificationPublicationGitPort = {
+      observeRemoteOid: () => Promise.resolve(observable ? pushedOid : null),
+      push,
+    };
+    const adapter = () =>
+      new SpecificationPublicationAdapter(
+        setup.mergeRequests,
+        undefined,
+        undefined,
+        publicationGit,
+      );
+
+    await expect(adapter().publish(setup.request)).rejects.toBeInstanceOf(
+      PublicationResultUnknownError,
+    );
+    await expect(adapter().publish(setup.request)).rejects.toBeInstanceOf(
+      PublicationResultUnknownError,
+    );
+    expect(push).toHaveBeenCalledOnce();
+
+    observable = true;
+    const recovered = await adapter().publish(setup.request);
+    await expectPublished(setup, recovered);
+    expect(push).toHaveBeenCalledOnce();
+  });
+
   it('reconciles an uncertain merge-request creation without invoking create again', async () => {
     const setup = await fixture();
     const mergeRequest: MergeRequestIdentity = {

@@ -8,6 +8,8 @@ import {
   recordSpecificationPublicationCommit,
   recordSpecificationPublicationCompletion,
   recordSpecificationPublicationPush,
+  recordSpecificationPushInvocation,
+  recordSpecificationPushUnknown,
 } from '../domains/delivery/specification-publication-journal.js';
 
 const oid = 'a'.repeat(40);
@@ -34,7 +36,9 @@ describe('Specification publication Journal', () => {
   it('persists merge-request invocation and uncertainty before completion', () => {
     const prepared = createSpecificationPublicationJournal(intent);
     const committed = recordSpecificationPublicationCommit(prepared, oid);
-    const pushed = recordSpecificationPublicationPush(committed);
+    const pushInvoking = recordSpecificationPushInvocation(committed);
+    const pushUnknown = recordSpecificationPushUnknown(pushInvoking);
+    const pushed = recordSpecificationPublicationPush(pushUnknown);
     const invoking = recordSpecificationMergeRequestInvocation(pushed);
     const unknown = recordSpecificationMergeRequestUnknown(invoking);
     const completed = recordSpecificationPublicationCompletion(unknown, {
@@ -59,6 +63,8 @@ describe('Specification publication Journal', () => {
     expect([
       prepared.state,
       committed.state,
+      pushInvoking.state,
+      pushUnknown.state,
       pushed.state,
       invoking.state,
       unknown.state,
@@ -66,6 +72,8 @@ describe('Specification publication Journal', () => {
     ]).toEqual([
       'prepared',
       'committed',
+      'push-invoking',
+      'push-unknown',
       'pushed',
       'mr-invoking',
       'mr-unknown',
@@ -75,12 +83,14 @@ describe('Specification publication Journal', () => {
       new Set([
         prepared.digest,
         committed.digest,
+        pushInvoking.digest,
+        pushUnknown.digest,
         pushed.digest,
         invoking.digest,
         unknown.digest,
         completed.digest,
       ]).size,
-    ).toBe(6);
+    ).toBe(8);
     expect(() => recordSpecificationPublicationPush(prepared)).toThrow(/no committed OID/i);
     expect(() => recordSpecificationPublicationCommit(committed, oid)).toThrow(
       /cannot move committed -> committed/i,

@@ -9,6 +9,7 @@ const RECOVERY_REASONS = new Set<WorkExecutionRecovery['reason']>([
   'claim-redelivery',
   'host-active',
   'host-result-unknown',
+  'external-result-unknown',
   'host-not-executed',
   'work-failed',
   'outcome-rejected',
@@ -120,7 +121,14 @@ export function projectCommittedContinuation(
       ? result('awaiting-correction', 'outcome-rejected')
       : result('wait', 'host-active');
   }
-  if (current.status === 'unknown') return result('reconcile', 'host-result-unknown');
+  if (current.status === 'unknown') {
+    return result(
+      'reconcile',
+      current.unknownKind === 'external-side-effect'
+        ? 'external-result-unknown'
+        : 'host-result-unknown',
+    );
+  }
   if (current.status === 'not-executed') return result('execute', 'host-not-executed');
   if (current.status === 'outcome') {
     return current.actionOutcome?.status === 'failed'
