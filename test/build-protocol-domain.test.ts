@@ -527,6 +527,120 @@ describe('Build protocol domain', () => {
     expect(plan.packages[1]!.dependsOn).toEqual([plan.packages[0]!.packageId]);
   });
 
+  it('fails Plan preflight closed for tampered Task, acceptance, repository, scope and digest facts', () => {
+    const configuration = approvedConfiguration();
+    const tasks = parseSpecificationTasks(
+      'managed-build',
+      '- [ ] 1.1 Implement the bounded change.\n  **Acceptance:** Bounded behavior passes.\n',
+    );
+    const plan = createBuildPlan({
+      runId: 'run-preflight',
+      revision: 1,
+      configuration,
+      planningDigest: tasks.digest,
+      tasks,
+      candidate: {
+        packages: [
+          {
+            packageKey: 'bounded',
+            taskIds: ['1.1'],
+            repositoryIds: ['workspace'],
+            writeScopes: [{ repositoryId: 'workspace', paths: ['domains/**'] }],
+            acceptanceRefs: tasks.tasks[0]!.acceptanceCriteria.map((item) => item.acceptanceId),
+            expectedOutcomes: ['bounded-tests-pass'],
+            validatorProfile: 'build.package-valid',
+            dependsOn: [],
+          },
+        ],
+      },
+    });
+    const variants = [
+      { ...plan, packages: [{ ...plan.packages[0]!, taskIds: ['missing-task'] }] },
+      { ...plan, packages: [{ ...plan.packages[0]!, acceptanceRefs: ['missing-acceptance'] }] },
+      { ...plan, packages: [{ ...plan.packages[0]!, repositoryIds: ['unbound'] }] },
+      {
+        ...plan,
+        packages: [
+          {
+            ...plan.packages[0]!,
+            writeScopes: [{ repositoryId: 'unbound', paths: ['outside/**'] }],
+          },
+        ],
+      },
+      { ...plan, digest: sha('f') },
+    ];
+    for (const candidate of variants) {
+      const validation = validateBuildPlanV2({
+        plan: candidate,
+        strategy: configuration.strategy,
+        binding: configuration.binding,
+        tasks,
+      });
+      expect(validation.accepted).toBe(false);
+      expect(() =>
+        createPlanEvidenceV2({
+          plan: candidate,
+          strategy: configuration.strategy,
+          binding: configuration.binding,
+          validation,
+          compositionCheckpointDigest: sha('c'),
+          reportOwnerId: 'team-platform',
+        }),
+      ).toThrow(/Rejected Build Plan/iu);
+    }
+  });
+
+  it('binds Plan Evidence to Host, scopes, dependencies, validators and terminal report ownership', () => {
+    const configuration = approvedConfiguration();
+    const tasks = parseSpecificationTasks(
+      'managed-build',
+      '- [ ] 1.1 Implement it.\n  **Acceptance:** It passes.\n',
+    );
+    const plan = createBuildPlan({
+      runId: 'run-plan-evidence',
+      revision: 1,
+      configuration,
+      planningDigest: tasks.digest,
+      tasks,
+      candidate: {
+        packages: [
+          {
+            packageKey: 'implementation',
+            taskIds: ['1.1'],
+            repositoryIds: ['workspace'],
+            writeScopes: [{ repositoryId: 'workspace', paths: ['domains/**'] }],
+            acceptanceRefs: tasks.tasks[0]!.acceptanceCriteria.map((item) => item.acceptanceId),
+            expectedOutcomes: ['tests-pass'],
+            validatorProfile: 'build.package-valid',
+            dependsOn: [],
+          },
+        ],
+      },
+    });
+    const validation = validateBuildPlan({ plan, configuration, tasks });
+    const evidence = createPlanEvidence({ plan, configuration, validation });
+    expect(evidence).toMatchObject({
+      hostCapabilityDigest: configuration.binding.host.capabilityDigest,
+      taskIds: ['1.1'],
+      validatorProfiles: ['build.package-valid'],
+      reviewMode: 'standard',
+      reportOwnerId: 'team-platform',
+    });
+    expect(evidence.acceptanceRefs).toEqual(plan.packages[0]!.acceptanceRefs);
+    expect(evidence.writeScopeDigest).toMatch(/^sha256:[a-f0-9]{64}$/u);
+    expect(evidence.dependencyDigest).toMatch(/^sha256:[a-f0-9]{64}$/u);
+    expect(() =>
+      createPlanEvidenceV2({
+        plan,
+        strategy: configuration.strategy,
+        binding: configuration.binding,
+        validation,
+        compositionCheckpointDigest: sha('c'),
+        reportOwnerId: ' ',
+      }),
+    ).toThrow(/report owner/iu);
+  });
+
   it('supports Task splitting, strongly-coupled Task merging, and deterministic cross-repository risk', () => {
     const configuration = approvedConfiguration({
       repositoryIds: ['workspace', 'backend'],

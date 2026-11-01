@@ -589,6 +589,40 @@ export function validateBuildPlan(input: {
   } catch (error) {
     diagnostics.push(error instanceof Error ? error.message : String(error));
   }
+  try {
+    const packageKeys = new Map(
+      input.plan.packages.map((workPackage) => [workPackage.packageId, workPackage.packageKey]),
+    );
+    const reconstructed = createBuildPlan({
+      runId: input.plan.runId,
+      revision: input.plan.revision,
+      strategy: input.strategy,
+      binding: input.binding,
+      planningDigest: input.plan.planningDigest,
+      tasks: input.tasks,
+      candidate: {
+        packages: input.plan.packages.map((workPackage) => ({
+          packageKey: workPackage.packageKey,
+          taskIds: workPackage.taskIds,
+          repositoryIds: workPackage.repositoryIds,
+          writeScopes: workPackage.writeScopes,
+          acceptanceRefs: workPackage.acceptanceRefs,
+          expectedOutcomes: workPackage.expectedOutcomes,
+          validatorProfile: workPackage.validatorProfile,
+          dependsOn: workPackage.dependsOn.map((packageId) => {
+            const packageKey = packageKeys.get(packageId);
+            if (!packageKey) throw new Error('Build Plan references an unknown package dependency');
+            return packageKey;
+          }),
+        })),
+      },
+    });
+    if (canonicalJson(reconstructed) !== canonicalJson(input.plan)) {
+      diagnostics.push('Build Plan canonical package, scope, acceptance, or digest facts drifted');
+    }
+  } catch (error) {
+    diagnostics.push(error instanceof Error ? error.message : String(error));
+  }
   return deepFreeze({
     accepted: diagnostics.length === 0,
     diagnostics,
@@ -970,10 +1004,17 @@ export interface PlanEvidence {
   strategyDigest: Digest;
   bindingId: string;
   bindingStateDigest: Digest;
+  hostCapabilityDigest: Digest;
   taskSetDigest: Digest;
   compositionCheckpointDigest: Digest;
   reportOwnerId: string;
   repositoryIds: readonly string[];
+  taskIds: readonly string[];
+  acceptanceRefs: readonly string[];
+  validatorProfiles: readonly string[];
+  writeScopeDigest: Digest;
+  dependencyDigest: Digest;
+  reviewMode: BuildReviewMode;
   validationDigest: Digest;
   risk: BuildPlanRisk;
   accepted: true;
@@ -1110,6 +1151,7 @@ export function createPlanEvidence(input: {
     strategyDigest: input.strategy.semanticDigest,
     bindingId: input.binding.bindingId,
     bindingStateDigest: input.binding.stateDigest,
+    hostCapabilityDigest: input.binding.host.capabilityDigest,
     taskSetDigest: input.plan.taskSetDigest,
     compositionCheckpointDigest: input.compositionCheckpointDigest,
     reportOwnerId: text(input.reportOwnerId, 'Plan terminal report owner'),
@@ -1117,6 +1159,31 @@ export function createPlanEvidence(input: {
       input.binding.repositories.map((repository) => repository.repositoryId),
       'Plan Evidence repositories',
     ),
+    taskIds: unique(
+      [...new Set(input.plan.packages.flatMap((workPackage) => workPackage.taskIds))],
+      'Plan Evidence Task identities',
+    ),
+    acceptanceRefs: unique(
+      [...new Set(input.plan.packages.flatMap((workPackage) => workPackage.acceptanceRefs))],
+      'Plan Evidence acceptance references',
+    ),
+    validatorProfiles: unique(
+      [...new Set(input.plan.packages.map((workPackage) => workPackage.validatorProfile))],
+      'Plan Evidence validator profiles',
+    ),
+    writeScopeDigest: digest(
+      input.plan.packages.map((workPackage) => ({
+        packageId: workPackage.packageId,
+        writeScopes: workPackage.writeScopes,
+      })),
+    ),
+    dependencyDigest: digest(
+      input.plan.packages.map((workPackage) => ({
+        packageId: workPackage.packageId,
+        dependsOn: workPackage.dependsOn,
+      })),
+    ),
+    reviewMode: input.strategy.reviewMode,
     validationDigest: input.validation.inputDigest,
     risk: assessBuildPlanRisk(input.plan),
     accepted: true as const,
