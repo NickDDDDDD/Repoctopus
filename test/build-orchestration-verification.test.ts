@@ -101,8 +101,8 @@ describe('managed Build verification subject', () => {
       configurationId: 'build-configuration:984df01c5c917e6286a1e112',
       configurationDigest:
         'sha256:af6f56776fd582eca909f27e86f0d22804d82cd7984df01c5c917e6286a1e112',
-      planId: 'build-plan:4e6fa164e2fe59548e6c1164',
-      planDigest: 'sha256:f3191d33ce636a38a19ae7f397f7faee898d483b4e6fa164e2fe59548e6c1164',
+      planId: 'build-plan:8bf9212ab473dd6fd62f4dad',
+      planDigest: 'sha256:18a60cf28483c14808c524f98621f4f31ae5d0ec8bf9212ab473dd6fd62f4dad',
       taskSetDigest: 'sha256:d96a472d5f9b11f299872af949d92193398bfe295dc727cd7f7eeefb6629cc2f',
     });
   });
