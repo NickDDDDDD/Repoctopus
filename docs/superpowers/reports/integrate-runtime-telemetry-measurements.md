@@ -8,7 +8,7 @@
 
 - Repoctopus 正式验证报告：`verification/integrate-runtime-telemetry-measurements/verification-report.md`
 - 核心产品实现边界：`d345063a0e2e0dd4c90926498017fb1014f21a76`
-- 正式报告提交：`f6ae46e`
+- 报告新鲜度边界：`90bdacf9bc9d8e1bdf4c8f484b2e4fc79002cb4b`
 - 控制器：`@rpamis/comet@0.5.1`
 - 独立复核：canonical outbox 单一权威、OTLP 标准配置、Skill/Rule/Run 事实绑定、22 项覆盖矩阵、低基数指标、隐私过滤、Desktop/远端协议一致性和生成文档防漂移均通过，阻断项为 0。
 

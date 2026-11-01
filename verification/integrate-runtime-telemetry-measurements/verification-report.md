@@ -3,7 +3,8 @@
 ## Reproducible subject
 
 - Change: `integrate-runtime-telemetry-measurements`
-- Tested implementation commit: `d345063a0e2e0dd4c90926498017fb1014f21a76`
+- Tested implementation commit: `90bdacf9bc9d8e1bdf4c8f484b2e4fc79002cb4b`
+- Core packaged implementation commit: `d345063a0e2e0dd4c90926498017fb1014f21a76`
 - Package: `repoctopus@0.1.0`
 - Package bytes: `1107246`
 - Package SHA-256: `f2dc6257a7cd1e4936ad8f31e4195f4c8542c19d7717fca24e8d19f619bcb37c`
