@@ -3,7 +3,7 @@
 ## Reproducible subject
 
 - Change: `stabilize-runtime-continuation`
-- Tested implementation commit: `6967ec5ad6f3a43b7bafe5da1b873ccd025cd543`
+- Tested implementation commit: `3c0d18fa69bd6deceb8de30fa995c68a8ea41436`
 - Package: `repoctopus@0.1.0`
 - Package bytes: `1023660`
 - Package SHA-256: `3a4b1c3aa9d42542a6baa22c62eec7904604d6a3277fb7a4ef3e126c6b8cdd80`
