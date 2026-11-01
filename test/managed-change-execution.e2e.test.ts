@@ -906,10 +906,14 @@ describe('managed Change execution production composition', () => {
           });
         }
         await restartApplication();
-        await next();
-        const planInvocation = capture.invocations.findLast(
-          (entry) => entry.packet.work.kind === 'build.plan',
-        );
+        let planInvocation: (typeof capture.invocations)[number] | undefined;
+        for (let step = 0; step < 6 && !planInvocation; step += 1) {
+          const advanced = await next();
+          expect(advanced.value.changeLifecycle?.waitCondition).toBeNull();
+          planInvocation = capture.invocations.findLast(
+            (entry) => entry.packet.work.kind === 'build.plan',
+          );
+        }
         invocationKinds.push(...capture.invocations.map((item) => item.packet.work.kind));
         capture.dispose();
         await application.close();
@@ -1581,9 +1585,14 @@ describe('managed Change execution production composition', () => {
             : []),
           'specification.plan',
           'build.configure',
+          ...(multiRepository && executionMode === 'autonomous'
+            ? ['build.configure']
+            : []),
           'build.plan',
           'build.execute',
           'build.execute',
+          'build.configure',
+          'build.plan',
           'build.check',
           'evidence.verify',
           ...(!multiRepository && executionMode === 'autonomous'
