@@ -4,11 +4,11 @@
 
 ### Requirement: Build Configuration 只允许受支持的固定策略
 
-Repoctopus MUST 把 Build 的稳定人类/团队语义建模为版本化 `BuildStrategy`，仅允许 `executionMode=autonomous|subagent-driven-development`、`tddMode=tdd|direct`、`reviewMode=standard`、`isolationIntent=current|branch|worktree` 和冻结的 Skill composition identity。Design Human Decision MUST 绑定完整 Strategy semantic digest；Build Configure MUST 只解析和验证独立 `ExecutionBinding`，不得因兼容 Host 更换、能力重探测、正常 HEAD 变化、同 isolation 下修复 checkout、进程恢复或同摘要返工而重复请求批准。
+Repoctopus MUST 把 Build 的稳定人类/团队语义建模为版本化 `BuildStrategy`，仅允许 `executionMode=autonomous|subagent-driven-development`、`tddMode=tdd|direct`、`reviewMode=standard` 和 `isolationIntent=current|branch|worktree`。Design Human Decision MUST 绑定完整 Strategy semantic digest，但不得把实际 Skill composition 的代码、版本或配置身份并入批准摘要；Build Configure MUST 只解析和验证独立 `ExecutionBinding`，不得因兼容 Host 更换、能力重探测、正常 HEAD 变化、同 isolation 下修复 checkout、兼容 composition adoption、进程恢复或同摘要返工而重复请求批准。
 
 #### Scenario: 用户批准受支持的配置
 
-- **WHEN** Runtime 根据已批准 Open、仓库拓扑、Tasks、有效 composition 和用户选择提出合法 BuildStrategy，且可信用户批准 Design 语义摘要
+- **WHEN** Runtime 根据已批准 Open、仓库拓扑、Tasks 和用户选择提出合法 BuildStrategy，当前 composition 能兼容执行该策略，且可信用户批准 Design 语义摘要
 - **THEN** Run 固定 Strategy identity/digest，后续 Configure、Plan、Work、Check 和遥测都引用该 Strategy，不再创建常规 Build Configuration approval
 
 #### Scenario: 兼容 Host 或 checkout 变化
@@ -40,9 +40,9 @@ Repoctopus MUST 把 Build 的稳定人类/团队语义建模为版本化 `BuildS
 
 ### Requirement: Build 策略只在语义改变时请求人工决定
 
-Repoctopus MUST 以 `decisionKind + semanticDigest` 判定 Human Decision 的创建、复用和失效。正常 Change 固定保留 Open 与 Design 两个审查边界；Design approval 同时绑定 BuildStrategy 与有效 Skill composition。相同摘要的重试、re-entry、恢复和机器事实变化 MUST NOT 产生重复待处理请求。
+Repoctopus MUST 以 `decisionKind + semanticDigest` 判定 Human Decision 的创建、复用和失效。正常 Change 固定保留 Open 与 Design 两个审查边界；Design approval 绑定 BuildStrategy，但实际 Skill composition identity 只能由独立 compatibility authority 处理。相同摘要的重试、re-entry、恢复、兼容 composition adoption 和机器事实变化 MUST NOT 产生重复待处理请求。
 
 #### Scenario: 同摘要返工重新进入 Build
 
-- **WHEN** Verify finding 返回 Build，而 Strategy 和 composition 摘要均未改变
+- **WHEN** Verify finding 返回 Build，Strategy 摘要未改变且当前 composition 与既有 checkpoint 兼容
 - **THEN** Runtime 复用原批准并从 Plan revision/ExecutionBinding 验证继续，不创建新的配置确认

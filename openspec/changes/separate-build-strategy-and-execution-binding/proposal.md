@@ -9,7 +9,7 @@
 ## What Changes
 
 - 用 `BuildStrategy + ExecutionBinding` 替代预发布 `BuildConfiguration`。
-- 将完整 Strategy 和有效 Skill composition identity 纳入 Design proposal/approval。
+- 将完整 Strategy 纳入 Design proposal/approval；实际 Skill composition 继续由独立兼容性权威验证，不进入规划批准摘要。
 - Build Configure 只解析、验证和冻结 ExecutionBinding，不建立常规人工批准。
 - 按 `decisionKind + semanticDigest` 复用/失效 Human Decision。
 - 加强 Plan Evidence，在 Execute 前核对 Tasks、验收、仓库/write scope、报告归属、Host capability、Strategy、Binding 和 composition。
@@ -26,7 +26,7 @@
 
 ## Dependencies
 
-该 Change 在数据结构上引用有效 Skill composition identity；实施时应基于 `add-auditable-team-skill-composition` 的最终合同。它不依赖 required check 或 Method Receipt 才能完成基本切换。
+该 Change 的 Plan Evidence 和 Work input 引用当前有效 Skill composition identity；实施时应基于 `add-auditable-team-skill-composition` 的最终合同，但不得把实现代码/配置身份并入 Strategy approval。它不依赖 required check 或 Method Receipt 才能完成基本切换。
 
 ## 非目标
 

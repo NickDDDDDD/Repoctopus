@@ -9,8 +9,8 @@
 
 ## 2. Strategy 与 Design approval
 
-- [ ] 2.1 从 Open/Design 输入产生完整 Strategy proposal，并把 Strategy/composition 摘要纳入 planning snapshot 与 Design approval；运行 planning authority tests。
-      **Acceptance:** Planning authority 测试证明 Design proposal 和批准同时绑定完整 Strategy 与有效 composition，任一语义变化都会使旧批准失效。
+- [ ] 2.1 从 Open/Design 输入产生完整 Strategy proposal，并把 Strategy 摘要纳入 planning snapshot 与 Design approval；运行 planning authority 与 composition compatibility tests。
+      **Acceptance:** Planning authority 测试证明 Design proposal 和批准绑定完整 Strategy；composition 实现身份不进入 approval semantic digest，兼容 adoption 不刷新批准，不兼容变化进入 `migration_required`。
 - [ ] 2.2 实现 `decisionKind + semanticDigest` 创建、复用、supersede 和失效规则；运行重试、恢复、返工和真实语义变化测试。
       **Acceptance:** 重试、恢复和同摘要返工只记录 reused；真实语义变化建立唯一新决定并把旧决定标记 superseded。
 
