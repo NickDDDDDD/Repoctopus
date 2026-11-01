@@ -25,13 +25,13 @@ archive_confirmation: null
 archived: false
 bound_branch: codex/separate-build-strategy-execution-binding-v2
 direct_override: null
-handoff_context: null
-handoff_hash: null
+handoff_context: openspec/changes/separate-build-strategy-and-execution-binding/.comet/handoff/design-context.json
+handoff_hash: 6badac2a85a13630b7f135f1d577e587064481510feee34e66d595ffcb9fb756
 classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: dffef7b2bc0dcf6240b1254aaaeabb7eb2234e5f7aa0c7b63da09ab6c2d04e22
+  hash: 1ed5d3f90597b4b326f01a24637c265baadc56e1adb32a323bc0b5a39aedd5c8
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -65,8 +65,8 @@ run_checkpoint:
       createdAt: 2026-11-01
       designDoc: null
       directOverride: null
-      handoffContext: null
-      handoffHash: null
+      handoffContext: openspec/changes/separate-build-strategy-and-execution-binding/.comet/handoff/design-context.json
+      handoffHash: 6badac2a85a13630b7f135f1d577e587064481510feee34e66d595ffcb9fb756
       isolation: current
       language: zh-CN
       phase: design
@@ -80,8 +80,8 @@ run_checkpoint:
       verifyMode: null
       verifyResult: pending
       workflow: full
-    status: running
-    sequence: 5
+    status: waiting
+    sequence: 6
     actions:
       - attempt: 1
         claim:
@@ -181,6 +181,14 @@ run_checkpoint:
         stepId: full.open.revalidate
         type: call_tool
       - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-bc99f8fcfc71d1263fc19cfe7aa2b7b32464e3c8c6c5560809f2f254a1d82ef7
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: separate-build-strategy-and-execution-binding:5
         input:
           input:
@@ -211,14 +219,47 @@ run_checkpoint:
             full.open.revalidate:
               contentHash: 40148561d8aaef98354786ecd8aafed0044e0208fdc06b6d289127810ff183df
         inputHash: d0d48a81f6eba2bb6d29d0a1491418e8a954ccbf00ccabef9c479335366fe6d8
+        outcome:
+          actionId: separate-build-strategy-and-execution-binding:5
+          attempt: 1
+          claimToken: portable-bc99f8fcfc71d1263fc19cfe7aa2b7b32464e3c8c6c5560809f2f254a1d82ef7
+          inputHash: d0d48a81f6eba2bb6d29d0a1491418e8a954ccbf00ccabef9c479335366fe6d8
+          outcomeId: f65afac1-f626-4a08-aa48-6f4b44fa0c2d
+          output:
+            handoffContext: openspec/changes/separate-build-strategy-and-execution-binding/.comet/handoff/design-context.json
+            handoffHash: 6badac2a85a13630b7f135f1d577e587064481510feee34e66d595ffcb9fb756
+            proposal: "Design completed: replace the mixed BuildConfiguration authority with
+              an approved portable BuildStrategy plus automatically validated
+              ExecutionBinding; retain Comet Configure to Plan to Execute to
+              Check ordering, exact proposal identity, evidence-before-effect,
+              and incremental recovery; keep actual Cordis composition under the
+              independent compatibility authority; remove the regular Build
+              Configure approval and all legacy writable configuration paths;
+              bind Plan Evidence to Tasks, strategy, binding, composition,
+              topology, write scope, report ownership, validators, and risk; use
+              a dependency matrix for precise invalidation; cover schema
+              cutover, red-to-green domain/service/E2E tests, telemetry, desktop
+              projection, and strict OpenSpec validation. Spec Patch: no new
+              capability scope beyond the Open-corrected proposal and delta
+              specs; design.md now supplies exact schemas, transitions, deletion
+              list, and verification matrix."
+            requirementsEvidence:
+              contentHash: dfe1f02ae5ebefcc8c6d1fe9c3fe2662a525c23de6f8a36a9ed7f73c1acde6c0
+              ref: openspec/changes/separate-build-strategy-and-execution-binding
+            sourceEvidence:
+              contentHash: ff2a159c789a5ff01d470c0ed7b0d5a5c23f08bc97a3a6ca497232d05c090c2a
+              ref: openspec/changes/separate-build-strategy-and-execution-binding
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: 3c94f2c0961af89808772f82e9e25e58e56c940bcdb3312f758ea13b0f458e28
+            outcomeId: f65afac1-f626-4a08-aa48-6f4b44fa0c2d
         reconciliations: []
         ref: comet-design
         requiredCapabilities: []
         retry: manual
         runId: separate-build-strategy-and-execution-binding
-        status: pending
+        status: succeeded
         stepId: full.design.handoff
         type: invoke_skill
     actionContexts:
@@ -320,6 +361,103 @@ run_checkpoint:
           id: classic-open-40148561d8aaef98354786ecd8aafed0044e0208fdc06b6d289127810ff183df
           choice: approved
           proposalHash: 9ed2a44c7a0af83e00865492a6a74b195273f63bd9da4ad03c387776a5644a80
+      - id: separate-build-strategy-and-execution-binding:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: pending
+        proposal:
+          input:
+            change: separate-build-strategy-and-execution-binding
+            changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+            workspaceBaseline:
+              ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/separate-build-strategy-and-execution-binding/.comet/handoff/design-context.json
+              handoffHash: 6badac2a85a13630b7f135f1d577e587064481510feee34e66d595ffcb9fb756
+              proposal: "Design completed: replace the mixed BuildConfiguration authority with
+                an approved portable BuildStrategy plus automatically validated
+                ExecutionBinding; retain Comet Configure to Plan to Execute to
+                Check ordering, exact proposal identity, evidence-before-effect,
+                and incremental recovery; keep actual Cordis composition under
+                the independent compatibility authority; remove the regular
+                Build Configure approval and all legacy writable configuration
+                paths; bind Plan Evidence to Tasks, strategy, binding,
+                composition, topology, write scope, report ownership,
+                validators, and risk; use a dependency matrix for precise
+                invalidation; cover schema cutover, red-to-green
+                domain/service/E2E tests, telemetry, desktop projection, and
+                strict OpenSpec validation. Spec Patch: no new capability scope
+                beyond the Open-corrected proposal and delta specs; design.md
+                now supplies exact schemas, transitions, deletion list, and
+                verification matrix."
+              requirementsEvidence:
+                contentHash: dfe1f02ae5ebefcc8c6d1fe9c3fe2662a525c23de6f8a36a9ed7f73c1acde6c0
+                ref: openspec/changes/separate-build-strategy-and-execution-binding
+              sourceEvidence:
+                contentHash: ff2a159c789a5ff01d470c0ed7b0d5a5c23f08bc97a3a6ca497232d05c090c2a
+                ref: openspec/changes/separate-build-strategy-and-execution-binding
+        proposalHash: 631f20e9884095eaf4feed5cc59f08e9f97af7e898b6b6dff12172d7516a9d7b
+        choices:
+          - approved
+          - rejected
+        results:
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/separate-build-strategy-and-execution-binding/.comet/handoff/design-context.json
+              handoffHash: 6badac2a85a13630b7f135f1d577e587064481510feee34e66d595ffcb9fb756
+              proposal: "Design completed: replace the mixed BuildConfiguration authority with
+                an approved portable BuildStrategy plus automatically validated
+                ExecutionBinding; retain Comet Configure to Plan to Execute to
+                Check ordering, exact proposal identity, evidence-before-effect,
+                and incremental recovery; keep actual Cordis composition under
+                the independent compatibility authority; remove the regular
+                Build Configure approval and all legacy writable configuration
+                paths; bind Plan Evidence to Tasks, strategy, binding,
+                composition, topology, write scope, report ownership,
+                validators, and risk; use a dependency matrix for precise
+                invalidation; cover schema cutover, red-to-green
+                domain/service/E2E tests, telemetry, desktop projection, and
+                strict OpenSpec validation. Spec Patch: no new capability scope
+                beyond the Open-corrected proposal and delta specs; design.md
+                now supplies exact schemas, transitions, deletion list, and
+                verification matrix."
+              requirementsEvidence:
+                contentHash: dfe1f02ae5ebefcc8c6d1fe9c3fe2662a525c23de6f8a36a9ed7f73c1acde6c0
+                ref: openspec/changes/separate-build-strategy-and-execution-binding
+              sourceEvidence:
+                contentHash: ff2a159c789a5ff01d470c0ed7b0d5a5c23f08bc97a3a6ca497232d05c090c2a
+                ref: openspec/changes/separate-build-strategy-and-execution-binding
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: separate-build-strategy-and-execution-binding
+                  changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+                  workspaceBaseline:
+                    ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 40148561d8aaef98354786ecd8aafed0044e0208fdc06b6d289127810ff183df
+                    ref: openspec/changes/separate-build-strategy-and-execution-binding
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 40148561d8aaef98354786ecd8aafed0044e0208fdc06b6d289127810ff183df
+              ref: openspec/changes/separate-build-strategy-and-execution-binding
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 40148561d8aaef98354786ecd8aafed0044e0208fdc06b6d289127810ff183df
     evidenceWaits:
       - id: separate-build-strategy-and-execution-binding:2
         stepId: full.open.evidence
@@ -338,6 +476,32 @@ run_checkpoint:
     ready: []
     joins: {}
     outputs:
+      full.design.handoff:
+        sequence: 5
+        value:
+          handoffContext: openspec/changes/separate-build-strategy-and-execution-binding/.comet/handoff/design-context.json
+          handoffHash: 6badac2a85a13630b7f135f1d577e587064481510feee34e66d595ffcb9fb756
+          proposal: "Design completed: replace the mixed BuildConfiguration authority with
+            an approved portable BuildStrategy plus automatically validated
+            ExecutionBinding; retain Comet Configure to Plan to Execute to Check
+            ordering, exact proposal identity, evidence-before-effect, and
+            incremental recovery; keep actual Cordis composition under the
+            independent compatibility authority; remove the regular Build
+            Configure approval and all legacy writable configuration paths; bind
+            Plan Evidence to Tasks, strategy, binding, composition, topology,
+            write scope, report ownership, validators, and risk; use a
+            dependency matrix for precise invalidation; cover schema cutover,
+            red-to-green domain/service/E2E tests, telemetry, desktop
+            projection, and strict OpenSpec validation. Spec Patch: no new
+            capability scope beyond the Open-corrected proposal and delta specs;
+            design.md now supplies exact schemas, transitions, deletion list,
+            and verification matrix."
+          requirementsEvidence:
+            contentHash: dfe1f02ae5ebefcc8c6d1fe9c3fe2662a525c23de6f8a36a9ed7f73c1acde6c0
+            ref: openspec/changes/separate-build-strategy-and-execution-binding
+          sourceEvidence:
+            contentHash: ff2a159c789a5ff01d470c0ed7b0d5a5c23f08bc97a3a6ca497232d05c090c2a
+            ref: openspec/changes/separate-build-strategy-and-execution-binding
       full.open:
         sequence: 1
         value:
@@ -369,6 +533,6 @@ run_checkpoint:
           contentHash: 40148561d8aaef98354786ecd8aafed0044e0208fdc06b6d289127810ff183df
     children: []
     lineage: []
-  sourceRevision: 7
-  sourceHash: 2dfece67510ef64999735d1d577ad1a2a92b4ee89905952c7425ab06e32e4145
+  sourceRevision: 9
+  sourceHash: 05e15a7220ec1c5bed9fa5f778e479db4516a2b347b9a0b4628afbe3e2b63ce0
 check_epoch: 1

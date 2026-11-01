@@ -1,0 +1,18 @@
+{
+  "change": "separate-build-strategy-and-execution-binding",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "6badac2a85a13630b7f135f1d577e587064481510feee34e66d595ffcb9fb756",
+  "files": [
+    { "path": "openspec/changes/separate-build-strategy-and-execution-binding/proposal.md", "sha256": "d52c1fb4281592bf5208ff077b09f71e40ff577fdbecbc48f19fe9d7da5f81fd" },
+    { "path": "openspec/changes/separate-build-strategy-and-execution-binding/design.md", "sha256": "dc6ee4779f9b66684e349a2599d8b0c703ed395f2ce4957c58c4816bf3940d73" },
+    { "path": "openspec/changes/separate-build-strategy-and-execution-binding/tasks.md", "sha256": "e94ae1953f72c451fae1a9c687e9e37a95b44307bd53f82a719314bd35c43f19" },
+    { "path": "openspec/changes/separate-build-strategy-and-execution-binding/specs/change-lifecycle/spec.md", "sha256": "ce6c4536dd34f6b7c6d6b5bc81117e688f0a0956cad42d6e18a848531fc407c6" },
+    { "path": "openspec/changes/separate-build-strategy-and-execution-binding/specs/desktop-observability-dashboard/spec.md", "sha256": "b2b5e962fd043bcb0f04c2a64af028b1619232b068467ed5f1779e8e62fa787f" },
+    { "path": "openspec/changes/separate-build-strategy-and-execution-binding/specs/development-telemetry/spec.md", "sha256": "06cda2278cacef168fb2faeeeffb65c2469b15482712d8c5e3174ecae49f3e5e" },
+    { "path": "openspec/changes/separate-build-strategy-and-execution-binding/specs/managed-work-execution/spec.md", "sha256": "5d930d2fe670ef955d3818420c0e5128fb9544b570970453bf5b6fc73cd1ba34" }
+  ]
+}
