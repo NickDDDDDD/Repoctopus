@@ -73,6 +73,21 @@ node bin/repoctopus.js run next --workspace . --run <run-id> --json
 
 Build Configure 的 Human Decision 冻结 execution mode、TDD mode、standard review、Host 能力和隔离。随后 Runtime 从 OpenSpec Tasks 产生 Run-local BuildPlan，执行 Plan Evidence、当前 Work Package 和 Build Check。每次 `run next` 只拉取 Runtime 当前 continuation。内嵌 Host 由同一短生命周期 App 注册；外部 Agent/Runner 使用 `run work-claim`/`run work-outcome` 的 Host-bound 协议：claim 通过 `--host-capabilities build.autonomous`（或受证明的 `subagent.dispatch.attested`）声明 Runner 能力，Outcome 通过 `--submission-id <new-id> --result-file <result.json>` 提交受 Runtime schema 校验的结构化 Build 结果。Invocation 中的 Host 快照是跨 CLI 进程的权威身份，后续校验不依赖原进程仍在运行。电脑关闭不需要守护进程：下一位具备 Workspace 状态的 Runner 从同一个 checkpoint 恢复；若原调用结果未知，必须先 `run work-reconcile`，不能自动重放。
 
+### 恢复 Design 返工
+
+当 Runtime 返回 Design 时，先按投影执行当前 `specification.plan` Work。不要删除 `.repoctopus/`、修改 `comet-state.yaml`、重建 Run 或手工把 phase 改回 Build。
+
+新 Design 批准后，Runtime 会检查暂停的 Build 候选：
+
+1. Workspace intent、repository binding 和 Host 策略仍相同则保留 Configuration；否则回到 Configure。
+2. Runtime 总是重新接受一份绑定新 planning/task identity 的 Plan。旧 Plan 只作为不可执行候选。
+3. 新 Plan 的 package ID、digest 和依赖仍匹配时保留 completion；其他 package 重新执行。
+4. Plan Evidence、Build Check 和 Verify Evidence 只有在完整输入仍相同时才保留。
+
+如果 `run next` 在相同 checkpoint 上重复调用，它会返回同一 Work 或 Wait，不会重新创建整套 Build Protocol。未知 Host 或发布结果先运行 reconciliation；只有 Adapter 明确证明未执行时才增加 attempt。
+
+`run status` 始终是只读投影，不会为了显示下一步而重新校验 packet、探测 Host 或写恢复事件。需要动态确认外部执行结果时，使用投影返回的 `reconcile` continuation 进入 `run work-reconcile`；不要用反复查询状态代替 reconciliation。
+
 `work-outcome` 只提交候选事实，不代表 Runtime 已经接受 Action Outcome。Runtime 会先执行当前 Work 的结构、领域和 Validator 校验；可纠正拒绝会返回 `awaiting-correction`，并保留同一 Work、claim、attempt、checkEpoch、invocation 与冻结 packet。Runner 必须使用新的 `submission-id` 提交修正版；相同 ID 与相同内容是幂等重放，相同 ID 改变内容是冲突。Store、Provider 或未知处理错误保留原 submission 等待 Runtime 重试，不应伪装成 Agent 可纠正错误。
 
 Archive 使用两个公共入口：

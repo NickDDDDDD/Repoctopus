@@ -1,0 +1,4 @@
+schema: spec-driven
+created: 2026-11-01
+goal: 以 Comet 0.5.1/HEAD 的成熟 Runtime 不变量为行为基线，修复 Repoctopus 的重复审批、全量 Build
+  Protocol 重建和不精确 continuation，使核心 Runtime 达到首个稳定版本门槛

@@ -38,18 +38,21 @@ function explicitlyAccepts(
   previous: PluginImplementationIdentity,
   current: PluginImplementationIdentity,
 ): boolean {
+  const predecessors = current.compatibleImplementations ?? [];
   return (
-    current.compatibleImplementations?.some(
-      (implementation) =>
-        implementation.codeDigest === previous.codeDigest &&
-        implementation.descriptorDigest === previous.descriptorDigest,
-    ) ?? false
+    predecessors.length === 1 &&
+    predecessors[0]?.codeDigest === previous.codeDigest &&
+    predecessors[0].descriptorDigest === previous.descriptorDigest
   );
 }
 
 export function compareCompositions(
   previous: CompositionIdentitySnapshot,
   current: CompositionIdentitySnapshot,
+  dependencyClosure?: {
+    pluginIds: readonly string[];
+    authorities: readonly string[];
+  },
 ): CompositionCompatibility {
   if (previous.compositionDigest === current.compositionDigest) {
     return { status: 'same', changedPluginIds: [], reason: 'composition digest is unchanged' };
@@ -57,7 +60,7 @@ export function compareCompositions(
 
   const previousById = new Map(previous.plugins.map((plugin) => [plugin.id, plugin]));
   const currentById = new Map(current.plugins.map((plugin) => [plugin.id, plugin]));
-  const changedPluginIds = [...new Set([...previousById.keys(), ...currentById.keys()])]
+  const allChangedPluginIds = [...new Set([...previousById.keys(), ...currentById.keys()])]
     .filter((id) => {
       const before = previousById.get(id);
       const after = currentById.get(id);
@@ -70,6 +73,20 @@ export function compareCompositions(
       );
     })
     .sort();
+  const requiredPluginIds = new Set(dependencyClosure?.pluginIds ?? []);
+  const requiredAuthorities = new Set(dependencyClosure?.authorities ?? []);
+  const changedPluginIds = dependencyClosure
+    ? allChangedPluginIds.filter((id) => {
+        const before = previousById.get(id);
+        const after = currentById.get(id);
+        return (
+          requiredPluginIds.has(id) ||
+          [...(before?.authorities ?? []), ...(after?.authorities ?? [])].some((authority) =>
+            requiredAuthorities.has(authority),
+          )
+        );
+      })
+    : allChangedPluginIds;
 
   for (const id of changedPluginIds) {
     const before = previousById.get(id);

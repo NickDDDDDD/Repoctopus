@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { isAbsolute } from 'node:path';
 
 import type { SpecificationTaskSet } from '../specification/types.js';
+import type { RuntimeIdentityKind } from '../runtime/identity.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
 
 export type Digest = `sha256:${string}`;
@@ -366,6 +367,9 @@ export function createBuildPlan(input: {
   const acceptanceIds = new Set<string>(
     input.tasks.tasks.flatMap((task) => task.acceptanceCriteria.map((item) => item.acceptanceId)),
   );
+  const taskRevisions = new Map(
+    input.tasks.tasks.map((task) => [task.taskId, task.taskRevision] as const),
+  );
   const prepared = input.candidate.packages.map((candidate) => {
     const stable = {
       schemaVersion: 1 as const,
@@ -394,7 +398,10 @@ export function createBuildPlan(input: {
     if (stable.repositoryIds.length === 0 || stable.writeScopes.length === 0) {
       throw new Error('Build Plan package requires repository and write scope boundaries');
     }
-    if (new Set(stable.writeScopes.map((scope) => scope.repositoryId)).size !== stable.writeScopes.length) {
+    if (
+      new Set(stable.writeScopes.map((scope) => scope.repositoryId)).size !==
+      stable.writeScopes.length
+    ) {
       throw new Error('Build Plan package contains duplicate repository write scopes');
     }
     if (stable.repositoryIds.some((repositoryId) => !repositoryIds.has(repositoryId))) {
@@ -403,23 +410,50 @@ export function createBuildPlan(input: {
     if (stable.writeScopes.some((scope) => !stable.repositoryIds.includes(scope.repositoryId))) {
       throw new Error('Build Plan write scope exceeds package repository bindings');
     }
-    const packageDigest = digest(stable);
     return {
       ...stable,
-      packageId: `work-package:${packageDigest.slice(-24)}`,
       dependsOnKeys: unique(candidate.dependsOn, 'Package dependencies'),
-      digest: packageDigest,
     };
   });
-  const byKey = new Map(prepared.map((entry) => [entry.packageKey, entry.packageId]));
-  const packages: WorkPackage[] = prepared.map(({ dependsOnKeys, ...entry }) => ({
-    ...entry,
-    dependsOn: dependsOnKeys.map((key) => {
-      const packageId = byKey.get(key);
-      if (!packageId) throw new Error(`Build Plan references unknown package dependency: ${key}`);
-      return packageId;
-    }),
-  }));
+  const byKey = new Map(prepared.map((entry) => [entry.packageKey, entry] as const));
+  const resolving = new Set<string>();
+  const resolved = new Map<string, WorkPackage>();
+  const materialize = (packageKey: string): WorkPackage => {
+    const existing = resolved.get(packageKey);
+    if (existing) return existing;
+    if (resolving.has(packageKey)) {
+      throw new Error('Build Plan package dependency cycle detected');
+    }
+    const candidate = byKey.get(packageKey);
+    if (!candidate) {
+      throw new Error(`Build Plan references unknown package dependency: ${packageKey}`);
+    }
+    resolving.add(packageKey);
+    const dependencies = candidate.dependsOnKeys.map(materialize);
+    resolving.delete(packageKey);
+    const { dependsOnKeys: _dependsOnKeys, ...stable } = candidate;
+    void _dependsOnKeys;
+    const packageDigest = digest({
+      ...stable,
+      taskRevisions: stable.taskIds.map((taskId) => ({
+        taskId,
+        taskRevision: taskRevisions.get(taskId)!,
+      })),
+      dependencies: dependencies.map((dependency) => ({
+        packageId: dependency.packageId,
+        digest: dependency.digest,
+      })),
+    });
+    const workPackage: WorkPackage = {
+      ...stable,
+      packageId: `work-package:${packageDigest.slice(-24)}`,
+      dependsOn: dependencies.map((dependency) => dependency.packageId),
+      digest: packageDigest,
+    };
+    resolved.set(packageKey, workPackage);
+    return workPackage;
+  };
+  const packages = prepared.map((entry) => materialize(entry.packageKey));
   assertAcyclic(packages);
   const covered = new Set(packages.flatMap((entry) => entry.taskIds));
   if ([...taskIds].some((taskId) => !covered.has(taskId))) {
@@ -432,11 +466,11 @@ export function createBuildPlan(input: {
         .flatMap((workPackage) => workPackage.acceptanceRefs),
     );
     if (
-      task.acceptanceCriteria.some(
-        (criterion) => !coveredAcceptance.has(criterion.acceptanceId),
-      )
+      task.acceptanceCriteria.some((criterion) => !coveredAcceptance.has(criterion.acceptanceId))
     ) {
-      throw new Error(`Build Plan does not cover every acceptance criterion for Task ${task.taskId}`);
+      throw new Error(
+        `Build Plan does not cover every acceptance criterion for Task ${task.taskId}`,
+      );
     }
   }
   const stable = {
@@ -502,7 +536,7 @@ export interface BuildProtocolState {
   planningDigest: Digest;
   workspaceIntent: ExecutionWorkspaceIntent;
   currentAction: BuildActionKind | null;
-  status: 'active' | 'ready-for-verify';
+  status: 'active' | 'ready-for-verify' | 'suspended-for-design';
   actionAttempt: number;
   configurationProposal: BuildConfigurationProposal | null;
   configuration: BuildConfiguration | null;
@@ -512,7 +546,16 @@ export interface BuildProtocolState {
   packageCompletions: readonly PackageCompletionEvidence[];
   checkEvidence: BuildCheckEvidence | null;
   invalidations: readonly BuildInvalidation[];
+  suspension: BuildProtocolSuspension | null;
   revision: number;
+}
+
+export interface BuildProtocolSuspension {
+  schemaVersion: 1;
+  supersededPlanningDigest: Digest;
+  observedPlanningDigest: Digest;
+  reasonCode: string;
+  invalidatedIdentities: readonly RuntimeIdentityKind[];
 }
 
 export type BuildProtocolObservation =
@@ -547,14 +590,133 @@ export function createBuildProtocolState(input: {
     packageCompletions: [],
     checkEvidence: null,
     invalidations: [],
+    suspension: null,
     revision: 0,
   });
+}
+
+export function suspendBuildProtocolForDesign(
+  state: BuildProtocolState,
+  input: {
+    observedPlanningDigest: Digest;
+    reasonCode: string;
+    invalidatedIdentities: readonly RuntimeIdentityKind[];
+  },
+): BuildProtocolState {
+  if (state.status === 'suspended-for-design') {
+    if (
+      state.suspension?.observedPlanningDigest === input.observedPlanningDigest &&
+      state.suspension.reasonCode === input.reasonCode
+    ) {
+      return state;
+    }
+    throw new Error('Build Protocol is already suspended for a different Design observation');
+  }
+  if (!SHA256.test(input.observedPlanningDigest)) {
+    throw new Error('Observed planning digest is invalid');
+  }
+  const reasonCode = text(input.reasonCode, 'Build suspension reason');
+  const invalidatedIdentities = unique(
+    input.invalidatedIdentities,
+    'Build suspension invalidated identities',
+  ) as RuntimeIdentityKind[];
+  return deepFreeze({
+    ...state,
+    currentAction: null,
+    status: 'suspended-for-design',
+    actionAttempt: 1,
+    suspension: {
+      schemaVersion: 1,
+      supersededPlanningDigest: state.planningDigest,
+      observedPlanningDigest: input.observedPlanningDigest,
+      reasonCode,
+      invalidatedIdentities,
+    },
+    revision: state.revision + 1,
+  });
+}
+
+export function revalidateSuspendedBuildProtocol(
+  state: BuildProtocolState,
+  input: {
+    planningDigest: Digest;
+    configurationCompatible: boolean;
+    planCompatible: boolean;
+    retainedPackageIds: readonly string[];
+  },
+): BuildProtocolState {
+  if (state.status !== 'suspended-for-design' || !state.suspension) {
+    throw new Error('Build Protocol is not suspended for Design revalidation');
+  }
+  if (!SHA256.test(input.planningDigest)) throw new Error('Planning digest is invalid');
+  const retained = new Set(unique(input.retainedPackageIds, 'Retained package identities'));
+  if (!input.configurationCompatible || !state.configuration) {
+    return deepFreeze({
+      ...state,
+      planningDigest: input.planningDigest,
+      currentAction: 'configure',
+      status: 'active',
+      actionAttempt: 1,
+      configurationProposal: null,
+      configuration: null,
+      plan: null,
+      planEvidence: null,
+      packageCompletions: [],
+      checkEvidence: null,
+      suspension: null,
+      revision: state.revision + 1,
+    });
+  }
+  const planCompatible =
+    input.planCompatible &&
+    state.plan !== null &&
+    state.plan.planningDigest === input.planningDigest;
+  const packageCompletions = state.packageCompletions.filter(
+    (completion) =>
+      retained.has(completion.packageId) &&
+      state.plan?.packages.some(
+        (workPackage) =>
+          workPackage.packageId === completion.packageId &&
+          workPackage.digest === completion.packageDigest,
+      ),
+  );
+  return deepFreeze({
+    ...state,
+    planningDigest: input.planningDigest,
+    currentAction: 'plan',
+    status: 'active',
+    actionAttempt: 1,
+    plan: state.plan,
+    planEvidence: planCompatible ? state.planEvidence : null,
+    packageCompletions,
+    checkEvidence: null,
+    suspension: null,
+    revision: state.revision + 1,
+  });
+}
+
+export function canRetainSuspendedBuildConfiguration(
+  state: BuildProtocolState | undefined,
+  input: {
+    workspaceIntent: ExecutionWorkspaceIntent;
+    repositoryIds: readonly string[];
+  },
+): boolean {
+  if (state?.status !== 'suspended-for-design' || !state.configuration) return false;
+  return (
+    state.configuration.workspaceIntent.semanticDigest === input.workspaceIntent.semanticDigest &&
+    canonicalJson([...state.configuration.repositoryIds].sort()) ===
+      canonicalJson([...input.repositoryIds].sort())
+  );
 }
 
 export function advanceBuildProtocol(
   state: BuildProtocolState,
   observation: BuildProtocolObservation,
 ): BuildProtocolState {
+  if (state.status === 'suspended-for-design') {
+    throw new Error('Build Protocol is suspended for Design and cannot accept runnable Actions');
+  }
   if (observation.kind === 'retry') {
     if (observation.action !== state.currentAction) {
       throw new Error('Retry does not match the current Runtime-selected Action');
@@ -926,7 +1088,8 @@ export function createBuildInvalidation(input: {
   if (
     affectedPackageIds.length === 0 ||
     affectedPackageIds.some(
-      (packageId) => !input.plan.packages.some((workPackage) => workPackage.packageId === packageId),
+      (packageId) =>
+        !input.plan.packages.some((workPackage) => workPackage.packageId === packageId),
     )
   ) {
     throw new Error('Build invalidation requires current Plan package identities');

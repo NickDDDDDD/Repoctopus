@@ -5,7 +5,9 @@ import type {
   PublicationJournal,
   PublicationJournalStore,
 } from '../../domains/delivery/publication-journal.js';
+import { assertPublicationJournal } from '../../domains/delivery/publication-journal.js';
 import { atomicWriteJson } from '../filesystem/atomic-write.js';
+import { withRecoverableFileLock } from '../runtime/recoverable-file-lock.js';
 
 export class FilePublicationJournalStore implements PublicationJournalStore {
   constructor(private readonly workspaceRoot: string) {}
@@ -25,7 +27,11 @@ export class FilePublicationJournalStore implements PublicationJournalStore {
 
   async load(runId: string): Promise<PublicationJournal | null> {
     try {
-      return JSON.parse(await readFile(this.file(runId), 'utf8')) as PublicationJournal;
+      const journal = JSON.parse(
+        await readFile(this.file(runId), 'utf8'),
+      ) as PublicationJournal;
+      assertPublicationJournal(journal);
+      return journal;
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') return null;
       throw error;
@@ -33,13 +39,16 @@ export class FilePublicationJournalStore implements PublicationJournalStore {
   }
 
   async create(journal: PublicationJournal): Promise<void> {
-    const current = await this.load(journal.runId);
-    if (current) {
-      if (current.digest === journal.digest) return;
-      throw new Error('Publication Journal already exists with another identity');
-    }
-    await atomicWriteJson(this.file(journal.runId), journal, {
-      containedRoot: this.workspaceRoot,
+    assertPublicationJournal(journal);
+    await withRecoverableFileLock(`${this.file(journal.runId)}.lock`, async () => {
+      const current = await this.load(journal.runId);
+      if (current) {
+        if (current.digest === journal.digest) return;
+        throw new Error('Publication Journal already exists with another identity');
+      }
+      await atomicWriteJson(this.file(journal.runId), journal, {
+        containedRoot: this.workspaceRoot,
+      });
     });
   }
 
@@ -47,12 +56,15 @@ export class FilePublicationJournalStore implements PublicationJournalStore {
     journal: PublicationJournal,
     expectedDigest: `sha256:${string}`,
   ): Promise<void> {
-    const current = await this.load(journal.runId);
-    if (!current || current.digest !== expectedDigest) {
-      throw new Error('Publication Journal changed concurrently');
-    }
-    await atomicWriteJson(this.file(journal.runId), journal, {
-      containedRoot: this.workspaceRoot,
+    assertPublicationJournal(journal);
+    await withRecoverableFileLock(`${this.file(journal.runId)}.lock`, async () => {
+      const current = await this.load(journal.runId);
+      if (!current || current.digest !== expectedDigest) {
+        throw new Error('Publication Journal changed concurrently');
+      }
+      await atomicWriteJson(this.file(journal.runId), journal, {
+        containedRoot: this.workspaceRoot,
+      });
     });
   }
 }

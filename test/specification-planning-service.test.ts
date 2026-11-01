@@ -1,4 +1,6 @@
 import { Context } from '@deepseek-ai/cordis';
+import { readFile, writeFile } from 'node:fs/promises';
+import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import type {
@@ -112,14 +114,39 @@ function prepareInput() {
       targetBranch: 'main',
       remoteOid: '1'.repeat(40),
     },
-    compositionDigest: digest('c'),
-    projectConfigDigest: digest('d'),
     requestId: 'request-1',
     now: () => new Date('2026-10-22T00:00:00.000Z'),
   } as const;
 }
 
 describe('SpecificationPlanning service', () => {
+  it('rejects a pre-release approval without rewriting or dual-reading the Store', async () => {
+    const workspace = await temporaryDirectory('repoctopus-spec-planning-migration-');
+    cleanup.push(workspace);
+    const running = app(workspace);
+    await running.planning.prepare(prepareInput());
+    const stateFile = path.join(
+      workspace,
+      '.repoctopus',
+      'specification-approvals',
+      'planning-approval',
+      'design',
+      'state.json',
+    );
+    const legacy = JSON.parse(await readFile(stateFile, 'utf8')) as {
+      snapshot: { schemaVersion: number };
+    };
+    legacy.snapshot.schemaVersion = 1;
+    const bytes = `${JSON.stringify(legacy, null, 2)}\n`;
+    await writeFile(stateFile, bytes);
+
+    await expect(running.planning.status('planning-approval')).rejects.toThrow(
+      /legacy planning snapshot requires migration/iu,
+    );
+    expect(await readFile(stateFile, 'utf8')).toBe(bytes);
+    await running.context.fiber.dispose();
+  });
+
   it('revalidates an approved Open snapshot without refreshing approval state', async () => {
     const workspace = await temporaryDirectory('repoctopus-open-revalidation-');
     cleanup.push(workspace);
@@ -197,7 +224,11 @@ describe('SpecificationPlanning service', () => {
     const workspace = await temporaryDirectory('repoctopus-spec-planning-');
     cleanup.push(workspace);
     const first = app(workspace);
-    const prepared = await first.planning.prepare(prepareInput());
+    const [prepared, concurrent] = await Promise.all([
+      first.planning.prepare(prepareInput()),
+      first.planning.prepare(prepareInput()),
+    ]);
+    expect(concurrent).toEqual(prepared);
     expect(prepared).toMatchObject({
       stateVersion: 0,
       status: 'awaiting_approval',
@@ -238,12 +269,21 @@ describe('SpecificationPlanning service', () => {
       }),
     ).rejects.toThrow(/not trusted/u);
 
-    const approved = await running.planning.decide({
-      changeId: prepared.changeId,
-      response,
-      actor: { actorId: 'user', source: 'cli', authenticated: true },
-      now: () => new Date('2026-10-22T00:01:00.000Z'),
-    });
+    const [approved, concurrentApproval] = await Promise.all([
+      running.planning.decide({
+        changeId: prepared.changeId,
+        response,
+        actor: { actorId: 'user', source: 'cli', authenticated: true },
+        now: () => new Date('2026-10-22T00:01:00.000Z'),
+      }),
+      running.planning.decide({
+        changeId: prepared.changeId,
+        response,
+        actor: { actorId: 'user', source: 'cli', authenticated: true },
+        now: () => new Date('2026-10-22T00:01:00.000Z'),
+      }),
+    ]);
+    expect(concurrentApproval).toEqual(approved);
     expect(approved).toMatchObject({ status: 'approved', stateVersion: 1 });
 
     running.specification.proposalDigest = digest('9');
@@ -277,7 +317,7 @@ describe('SpecificationPlanning service', () => {
       },
       actor: { actorId: 'user', source: 'cli', authenticated: true },
     });
-    const expectedPlanningDigest = approved.snapshot.planningManifestDigest!;
+    const expectedPlanningDigest = approved.snapshot.planningManifestDigest;
 
     await expect(
       running.planning.observeAuthority({
@@ -286,8 +326,27 @@ describe('SpecificationPlanning service', () => {
       }),
     ).resolves.toMatchObject({
       status: 'authorized',
+      observationKind: 'same',
       invalidationKind: null,
       planningDigest: expectedPlanningDigest,
+      reasonCode: 'authorized',
+    });
+
+    await expect(
+      running.planning.observeAuthority({
+        ...prepareInput(),
+        changeBranch: {
+          ...prepareInput().changeBranch,
+          remoteIdentity: 'HTTPS://GitHub.com/team/workspace.git',
+          sourceBranch: 'spec/republished-change',
+          remoteOid: '2'.repeat(40),
+        },
+        expectedPlanningDigest,
+      }),
+    ).resolves.toMatchObject({
+      status: 'authorized',
+      observationKind: 'publication',
+      invalidationKind: null,
       reasonCode: 'authorized',
     });
 
@@ -299,6 +358,7 @@ describe('SpecificationPlanning service', () => {
       }),
     ).resolves.toMatchObject({
       status: 'invalid',
+      observationKind: 'semantic',
       invalidationKind: 'semantic',
       reasonCode: 'semantic-drift',
     });
@@ -313,6 +373,7 @@ describe('SpecificationPlanning service', () => {
       }),
     ).resolves.toMatchObject({
       status: 'invalid',
+      observationKind: 'approval-authority',
       invalidationKind: 'approval-authority',
       reasonCode: 'approval-stale',
     });

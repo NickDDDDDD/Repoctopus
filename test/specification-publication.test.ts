@@ -2,7 +2,7 @@ import { execFile } from 'node:child_process';
 import { mkdir, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { MergeRequestPort } from '../domains/delivery/ports.js';
 import type {
@@ -10,9 +10,11 @@ import type {
   SpecificationPublicationResult,
 } from '../domains/delivery/specification-publication.js';
 import type { MergeRequestIdentity } from '../domains/delivery/types.js';
+import { PublicationResultUnknownError } from '../domains/delivery/publication-result-unknown.js';
 import type { SpecificationClosureResult } from '../domains/specification/types.js';
 import {
   SpecificationPublicationAdapter,
+  type SpecificationPublicationGitPort,
   type SpecificationPublicationFaultPoint,
 } from '../platform/delivery/specification-publication.js';
 import { GitSpecificationCheckoutManager } from '../platform/git/specification-checkout.js';
@@ -168,6 +170,71 @@ async function expectPublished(
 }
 
 describe('Specification publication adapter', () => {
+  it('never repeats a Specification push while its result is unknown', async () => {
+    const setup = await fixture();
+    let observable = false;
+    let pushedOid: string | null = null;
+    const push = vi.fn(async (cwd: string, remote: string, oid: string, branch: string) => {
+      pushedOid = oid;
+      await execFileAsync('git', ['push', remote, `${oid}:refs/heads/${branch}`], { cwd });
+      throw new Error('push response and immediate observation unavailable');
+    });
+    const publicationGit: SpecificationPublicationGitPort = {
+      observeRemoteOid: () => Promise.resolve(observable ? pushedOid : null),
+      push,
+    };
+    const adapter = () =>
+      new SpecificationPublicationAdapter(
+        setup.mergeRequests,
+        undefined,
+        undefined,
+        publicationGit,
+      );
+
+    await expect(adapter().publish(setup.request)).rejects.toBeInstanceOf(
+      PublicationResultUnknownError,
+    );
+    await expect(adapter().publish(setup.request)).rejects.toBeInstanceOf(
+      PublicationResultUnknownError,
+    );
+    expect(push).toHaveBeenCalledOnce();
+
+    observable = true;
+    const recovered = await adapter().publish(setup.request);
+    await expectPublished(setup, recovered);
+    expect(push).toHaveBeenCalledOnce();
+  });
+
+  it('reconciles an uncertain merge-request creation without invoking create again', async () => {
+    const setup = await fixture();
+    const mergeRequest: MergeRequestIdentity = {
+      provider: 'github',
+      repositoryId: 'workspace',
+      number: 17,
+      url: 'https://github.com/team/workspace/pull/17',
+    };
+    let observable = false;
+    const create = vi.fn().mockRejectedValue(new Error('create response unavailable'));
+    setup.mergeRequests.create = create;
+    setup.mergeRequests.find = () => Promise.resolve(observable ? mergeRequest : null);
+    setup.mergeRequests.findAll = () => Promise.resolve(observable ? [mergeRequest] : []);
+
+    await expect(
+      new SpecificationPublicationAdapter(setup.mergeRequests).publish(setup.request),
+    ).rejects.toBeInstanceOf(PublicationResultUnknownError);
+    await expect(
+      new SpecificationPublicationAdapter(setup.mergeRequests).publish(setup.request),
+    ).rejects.toBeInstanceOf(PublicationResultUnknownError);
+    expect(create).toHaveBeenCalledOnce();
+
+    observable = true;
+    const recovered = await new SpecificationPublicationAdapter(setup.mergeRequests).publish(
+      setup.request,
+    );
+    await expectPublished(setup, recovered, 'recovered');
+    expect(create).toHaveBeenCalledOnce();
+  });
+
   it('publishes the isolated archive candidate without mutating the developer branch', async () => {
     const setup = await fixture();
     const result = await new SpecificationPublicationAdapter(setup.mergeRequests).publish(

@@ -68,6 +68,136 @@ function recoveryAuthority(run: RunState, input: { active?: boolean; corrupt?: b
 }
 
 describe('Work execution recovery classification', () => {
+  it('grants a durable Host invocation to exactly one concurrent Runner', async () => {
+    const initial = checkpoint('context-delivered');
+    let run = {
+      ...state({ execution: initial }),
+      stateVersion: 7,
+      composition: { compositionDigest: digest('9') },
+      updatedAt: '2026-10-25T00:00:00.000Z',
+    } as RunState;
+    const trajectory: TrajectoryEvent[] = [];
+    const authority = Object.create(WorkExecutionAuthority.prototype) as WorkExecutionAuthority;
+    Object.defineProperty(authority, 'ctx', {
+      value: {
+        runStore: {
+          commitGuarded: vi.fn(
+            <T>(
+              _runId: string,
+              reduce: (input: { state: RunState; trajectory: TrajectoryEvent[] }) => {
+                state?: RunState;
+                event?: TrajectoryEvent;
+                value: T;
+              },
+            ): Promise<T> => {
+              const result = reduce({ state: run, trajectory });
+              if (result.state) run = result.state;
+              if (result.event) trajectory.push(result.event);
+              return Promise.resolve(result.value);
+            },
+          ),
+        },
+      },
+    });
+    const invocation: WorkExecutionHostInvocation = {
+      schemaVersion: 1,
+      invocationId: digest('f'),
+      host: {
+        schemaVersion: 1,
+        id: 'coordinator-1',
+        version: '1',
+        codeDigest: digest('1'),
+        capabilities: [],
+        actionKinds: ['agent'],
+        reconcile: true,
+      },
+      packet: initial.packet,
+      startedAt: '2026-10-25T00:01:00.000Z',
+    };
+    const intent = {
+      runId: run.runId,
+      workId: initial.workId,
+      attempt: initial.attempt,
+      checkEpoch: initial.checkEpoch,
+      intentId: initial.intentId,
+    } as never;
+
+    const results = await Promise.all([
+      authority.markHostStarted(intent, invocation),
+      authority.markHostStarted(intent, { ...invocation, startedAt: '2026-10-25T00:02:00.000Z' }),
+    ]);
+
+    expect(results.map((result) => result.acquired)).toEqual([true, false]);
+    expect(run.stateVersion).toBe(8);
+    expect(run.workExecution).toMatchObject({
+      status: 'invoking',
+      hostInvocation: { invocationId: invocation.invocationId },
+    });
+    expect(trajectory.filter((event) => event.type === 'work.host-started')).toHaveLength(1);
+  });
+
+  it('projects external publication uncertainty as reconcile until observation succeeds', async () => {
+    let run = {
+      ...state({ execution: checkpoint('validated') }),
+      stateVersion: 7,
+      composition: { compositionDigest: digest('9') },
+      updatedAt: '2026-10-25T00:00:00.000Z',
+    } as RunState;
+    const trajectory: TrajectoryEvent[] = [];
+    const authority = Object.create(WorkExecutionAuthority.prototype) as WorkExecutionAuthority;
+    Object.defineProperty(authority, 'ctx', {
+      value: {
+        runStore: {
+          loadRun: vi.fn(() => Promise.resolve(run)),
+          commitGuarded: vi.fn(
+            <T>(
+              _runId: string,
+              reduce: (input: { state: RunState; trajectory: TrajectoryEvent[] }) => {
+                state?: RunState;
+                event?: TrajectoryEvent;
+                value: T;
+              },
+            ): Promise<T> => {
+              const result = reduce({ state: run, trajectory });
+              if (result.state) run = result.state;
+              if (result.event) trajectory.push(result.event);
+              return Promise.resolve(result.value);
+            },
+          ),
+        },
+        workExecutionSessions: { isActive: vi.fn().mockReturnValue(false) },
+      },
+    });
+    authority.loadAuthoritativePacket = vi.fn().mockResolvedValue({ intent: {}, packet: {} });
+    const intent = {
+      runId: run.runId,
+      workId: run.workExecution!.workId,
+      attempt: run.workExecution!.attempt,
+      checkEpoch: run.workExecution!.checkEpoch,
+      intentId: run.workExecution!.intentId,
+    } as never;
+
+    await authority.markExternalSideEffectUnknown(intent, 'merge request response unavailable');
+    await expect(authority.recovery(run.runId)).resolves.toMatchObject({
+      continuation: 'reconcile',
+      reason: 'external-result-unknown',
+    });
+    expect(run.workExecution).toMatchObject({
+      status: 'unknown',
+      continuation: 'reconcile',
+      unknownKind: 'external-side-effect',
+    });
+
+    await authority.markExternalSideEffectObserved(intent);
+    expect(run.workExecution).toMatchObject({ status: 'validated', continuation: 'execute' });
+    expect(run.workExecution?.unknownKind).toBeUndefined();
+    expect(
+      trajectory
+        .map((event) => event.type)
+        .filter((type) => type === 'reconcile.started' || type === 'reconcile.completed'),
+    ).toEqual(['reconcile.started', 'reconcile.completed']);
+  });
+
   it('redelivers the authoritative frozen packet without invoking the context assembler', async () => {
     const packet = { identity: checkpoint('claimed').packet } as WorkExecutionPacket;
     const loadAuthoritativePacket = vi.fn().mockResolvedValue({ intent: {}, packet });
@@ -191,6 +321,57 @@ describe('Work execution recovery classification', () => {
         nextCheckEpoch: 5,
       },
     });
+  });
+
+  it('persists duplicate continuation pulls as suppressed dispatch facts without replaying Work', async () => {
+    let run = {
+      ...state({ execution: checkpoint('claimed') }),
+      stateVersion: 10,
+      composition: { compositionDigest: digest('9') },
+    } as unknown as RunState;
+    const trajectory: TrajectoryEvent[] = [];
+    const authority = Object.create(WorkExecutionAuthority.prototype) as WorkExecutionAuthority;
+    Object.defineProperty(authority, 'ctx', {
+      value: {
+        runStore: {
+          commitGuarded: (
+            _runId: string,
+            commit: (input: { state: RunState; trajectory: TrajectoryEvent[] }) => {
+              state?: RunState;
+              event?: TrajectoryEvent;
+              value: undefined;
+            },
+          ) => {
+            const result = commit({ state: run, trajectory });
+            if (result.state) run = result.state;
+            if (result.event) trajectory.push(result.event);
+            return Promise.resolve(result.value);
+          },
+        },
+      },
+    });
+    const recovery = {
+      schemaVersion: 2 as const,
+      continuation: 'execute' as const,
+      workId: 'build:1.1',
+      attempt: 1,
+      checkEpoch: 4,
+      reason: 'claim-redelivery' as const,
+    };
+
+    await authority.recordContinuation(run.runId, recovery);
+    await authority.recordContinuation(run.runId, recovery);
+
+    expect(trajectory).toHaveLength(2);
+    expect(trajectory[0]).toMatchObject({
+      type: 'continuation.selected',
+      data: { result: 'selected', dispatchSuppressed: false },
+    });
+    expect(trajectory[1]).toMatchObject({
+      type: 'continuation.selected',
+      data: { result: 'suppressed', dispatchSuppressed: true },
+    });
+    expect(run.workExecution).toEqual(checkpoint('claimed'));
   });
 
   it('distinguishes active, unknown, failed, validator, human and corrupt boundaries', async () => {

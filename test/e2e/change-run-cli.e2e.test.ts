@@ -117,6 +117,22 @@ describe('Change Run CLI', () => {
       environment,
     });
     expect(status.result?.changeLifecycle).toMatchObject({ phase: 'open', status: 'running' });
+    expect(status.result?.continuation).toMatchObject({
+      schemaVersion: 2,
+      continuation: 'execute',
+      reason: 'work-unclaimed',
+      attempt: null,
+      checkEpoch: 0,
+    });
+    expect(typeof status.result?.continuation?.workId).toBe('string');
+    const repeatedStatus = await runCli<RunStatusView>({
+      packageRoot,
+      cwd: workspace,
+      args: ['run', 'status', '--workspace', workspace, '--run', first.runId!],
+      environment,
+    });
+    expect(repeatedStatus.result?.continuation).toEqual(status.result?.continuation);
+    expect(repeatedStatus.result?.trajectoryLength).toBe(status.result?.trajectoryLength);
     expect(status.result?.state.trigger?.facts).toMatchObject({
       specificationRoot: {
         storeId: 'team-platform',

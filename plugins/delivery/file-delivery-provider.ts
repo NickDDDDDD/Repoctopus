@@ -25,6 +25,7 @@ import { canonicalJson } from '../../domains/workflow-contract/canonical.js';
 import { FileDeliveryEvidence } from '../../platform/delivery/file-delivery-evidence.js';
 import { SpecificationPublicationAdapter } from '../../platform/delivery/specification-publication.js';
 import { FileDeliveryStore } from '../../platform/delivery/file-delivery-store.js';
+import { FilePublicationJournalStore } from '../../platform/delivery/file-publication-journal-store.js';
 import {
   deliveryStateSchemaVersion,
   FileDeliveryV3Store,
@@ -93,6 +94,7 @@ export class FileDeliveryProvider extends Delivery {
       git,
       mergeRequests,
       new FileDeliveryEvidence(this.config.workspaceRoot),
+      new FilePublicationJournalStore(this.config.workspaceRoot),
       this.ctx.compositionIdentity.current().compositionDigest,
       undefined,
     );
@@ -143,8 +145,7 @@ export class FileDeliveryProvider extends Delivery {
       approval.status !== 'approved' ||
       approval.decision?.decision !== 'approve' ||
       approval.snapshot.changeId !== intent.changeId ||
-      approval.snapshot.compositionDigest !== planningCompositionDigest ||
-      approval.snapshot.projectConfigDigest !== this.config.projectConfigDigest ||
+      this.ctx.compositionIdentity.current().compositionDigest !== planningCompositionDigest ||
       canonicalJson(branchCoordinates(approval.snapshot.changeBranch)) !==
         canonicalJson(branchCoordinates(intent.changeBranch)) ||
       canonicalJson(currentChangeBranch) !== canonicalJson(intent.changeBranch)

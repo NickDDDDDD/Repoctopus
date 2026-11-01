@@ -7,6 +7,10 @@ import type {
   MergeRequestPort,
 } from '../domains/delivery/ports.js';
 import { DeliveryServiceV3 } from '../domains/delivery/service-v3.js';
+import type {
+  PublicationJournal,
+  PublicationJournalStore,
+} from '../domains/delivery/publication-journal.js';
 import type { DeliveryIntentV3, DeliveryPolicy } from '../domains/delivery/types.js';
 import type { ProjectSnapshot } from '../domains/project/types.js';
 import { TEST_COMPOSITION_DIGEST } from './helpers/fixtures.js';
@@ -129,16 +133,31 @@ describe('Delivery v3 Archive publication', () => {
     const evidence: DeliveryEvidencePort = {
       assertSatisfied: vi.fn(() => Promise.resolve()),
     };
+    let publicationJournal: PublicationJournal | null = null;
+    const publicationJournalStore: PublicationJournalStore = {
+      load: () => Promise.resolve(publicationJournal),
+      create: (journal) => {
+        publicationJournal = structuredClone(journal);
+        return Promise.resolve();
+      },
+      compareAndSet: (journal, expectedDigest) => {
+        if (publicationJournal?.digest !== expectedDigest) throw new Error('CAS conflict');
+        publicationJournal = structuredClone(journal);
+        return Promise.resolve();
+      },
+    };
     const service = new DeliveryServiceV3(
       store,
       git,
       mergeRequests,
       evidence,
+      publicationJournalStore,
       TEST_COMPOSITION_DIGEST,
     );
 
     await expect(
       service.publishArchive({
+        runId: 'run-archive-cleanliness',
         project,
         intent,
         policy,

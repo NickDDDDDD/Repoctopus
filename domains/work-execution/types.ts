@@ -27,6 +27,7 @@ export interface WorkExecutionRecovery {
     | 'claim-redelivery'
     | 'host-active'
     | 'host-result-unknown'
+    | 'external-result-unknown'
     | 'host-not-executed'
     | 'work-failed'
     | 'outcome-rejected'
@@ -263,6 +264,7 @@ export interface WorkExecutionCheckpoint {
     | 'not-executed'
     | 'outcome'
     | 'validated';
+  unknownKind?: 'host-result' | 'external-side-effect' | undefined;
   hostInvocation?: WorkExecutionHostInvocation;
   pendingSubmission?: WorkExecutionSubmission | null;
   rejectedSubmissions?: readonly RejectedWorkExecutionSubmission[];

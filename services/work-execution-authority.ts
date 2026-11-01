@@ -28,6 +28,7 @@ import {
   createWorkExecutionSubmission,
 } from '../domains/work-execution/submission.js';
 import type { WorkExecutionSubmissionRejectionCode } from '../domains/work-execution/types.js';
+import { canonicalJson } from '../domains/workflow-contract/canonical.js';
 
 function digest(...parts: readonly string[]): `sha256:${string}` {
   return `sha256:${createHash('sha256').update(parts.join('\0')).digest('hex')}`;
@@ -706,23 +707,72 @@ export class WorkExecutionAuthority extends Service {
   async markHostStarted(
     intent: ActionIntent,
     invocation: WorkExecutionHostInvocation,
-  ): Promise<WorkExecutionCheckpoint> {
-    const result = await this.transition(
+  ): Promise<{ acquired: boolean; checkpoint: WorkExecutionCheckpoint }> {
+    const result = await this.ctx.runStore.commitGuarded(
       intent.runId,
-      intent.intentId,
-      ['context-delivered'],
-      'work.host-started',
-      'invoking',
-      'wait',
-      {
-        workId: intent.workId,
-        attempt: intent.attempt,
-        invocationId: invocation.invocationId,
-        hostId: invocation.host.id,
-        packetDigest: invocation.packet.packetDigest,
+      ({ state, trajectory }) => {
+        const current = state.workExecution;
+        if (!current || current.intentId !== intent.intentId) {
+          throw new Error('Host start does not match the authoritative Run claim');
+        }
+        if (
+          state.changeLifecycle &&
+          (state.changeLifecycle.checkEpoch !== current.checkEpoch ||
+            state.changeLifecycle.currentWork?.workId !== current.workId)
+        ) {
+          throw new Error('Stale Host start cannot cross a lifecycle checkEpoch boundary');
+        }
+        if (current.hostInvocation) {
+          const stable = (value: WorkExecutionHostInvocation) => ({
+            invocationId: value.invocationId,
+            host: value.host,
+            packet: value.packet,
+          });
+          if (canonicalJson(stable(current.hostInvocation)) !== canonicalJson(stable(invocation))) {
+            throw new Error('Host invocation conflicts with the persisted execution owner');
+          }
+          return {
+            value: { acquired: false, checkpoint: structuredClone(current) },
+          };
+        }
+        if (current.status !== 'context-delivered') {
+          throw new Error(`Work execution cannot move from ${current.status} to invoking`);
+        }
+        const timestamp = new Date().toISOString();
+        const checkpoint: WorkExecutionCheckpoint = {
+          ...current,
+          status: 'invoking',
+          continuation: 'wait',
+          hostInvocation: structuredClone(invocation),
+          updatedAt: timestamp,
+        };
+        const nextState: RunState = {
+          ...state,
+          workExecution: checkpoint,
+          stateVersion: state.stateVersion + 1,
+          updatedAt: timestamp,
+        };
+        return {
+          state: nextState,
+          event: executionEvent({
+            state: nextState,
+            sequence: trajectory.length + 1,
+            timestamp,
+            type: 'work.host-started',
+            identity: [current.workId, String(current.attempt), invocation.invocationId],
+            data: {
+              workId: intent.workId,
+              attempt: intent.attempt,
+              invocationId: invocation.invocationId,
+              hostId: invocation.host.id,
+              packetDigest: invocation.packet.packetDigest,
+            },
+          }),
+          value: { acquired: true, checkpoint: structuredClone(checkpoint) },
+        };
       },
-      { hostInvocation: structuredClone(invocation) },
     );
+    if (result.acquired) await this.flushTelemetry(intent.runId);
     return result;
   }
 
@@ -735,6 +785,50 @@ export class WorkExecutionAuthority extends Service {
       'unknown',
       'reconcile',
       { workId: intent.workId, attempt: intent.attempt, reason: summary },
+      { unknownKind: 'host-result' },
+    );
+  }
+
+  async markExternalSideEffectUnknown(
+    intent: ActionIntent,
+    summary: string,
+  ): Promise<WorkExecutionCheckpoint> {
+    return this.transition(
+      intent.runId,
+      intent.intentId,
+      ['validated'],
+      'reconcile.started',
+      'unknown',
+      'reconcile',
+      {
+        workId: intent.workId,
+        attempt: intent.attempt,
+        reason: summary,
+        uncertainty: 'external-side-effect',
+      },
+      { unknownKind: 'external-side-effect' },
+    );
+  }
+
+  async markExternalSideEffectObserved(intent: ActionIntent): Promise<WorkExecutionCheckpoint> {
+    const state = await this.ctx.runStore.loadRun(intent.runId);
+    if (state.workExecution?.unknownKind !== 'external-side-effect') {
+      throw new Error('External side-effect reconciliation requires its persisted uncertainty');
+    }
+    return this.transition(
+      intent.runId,
+      intent.intentId,
+      ['unknown'],
+      'reconcile.completed',
+      'validated',
+      'execute',
+      {
+        workId: intent.workId,
+        attempt: intent.attempt,
+        result: 'observed',
+        uncertainty: 'external-side-effect',
+      },
+      { unknownKind: undefined },
     );
   }
 
@@ -930,112 +1024,6 @@ export class WorkExecutionAuthority extends Service {
         };
       },
     );
-    return result;
-  }
-
-  async recoverLegacyRejectedOutcome(input: {
-    intent: ActionIntent;
-    diagnostic: string;
-  }): Promise<WorkExecutionCheckpoint> {
-    const result = await this.ctx.runStore.commitGuarded(
-      input.intent.runId,
-      ({ state, trajectory }) => {
-        const current = state.workExecution;
-        if (!current || current.intentId !== input.intent.intentId) {
-          throw new Error('Legacy Work recovery does not match the authoritative Run claim');
-        }
-        assertSameClaim(current, input.intent);
-        const existing = current.rejectedSubmissions?.find((submission) =>
-          submission.submissionId.startsWith('legacy:'),
-        );
-        if (
-          existing &&
-          current.status === 'invoking' &&
-          current.continuation === 'awaiting-correction'
-        ) {
-          return { value: structuredClone(current) };
-        }
-        const legacySubmissionId = `legacy:${rawDigest(
-          input.intent.runId,
-          input.intent.intentId,
-          current.actionOutcome?.outcomeId ?? 'missing',
-        )}`;
-        if (
-          current.status !== 'outcome' ||
-          current.acceptedSubmission ||
-          !current.hostOutcome ||
-          !current.actionOutcome ||
-          current.actionOutcome.status !== 'succeeded'
-        ) {
-          throw new Error('Legacy Work recovery requires an unaccepted terminal success Outcome');
-        }
-        const submission = createWorkExecutionSubmission(legacySubmissionId, current.hostOutcome);
-        const timestamp = new Date().toISOString();
-        const rejectedSubmissions = appendRejectedWorkExecutionSubmission(
-          current.rejectedSubmissions ?? [],
-          submission,
-          {
-            reasonCode: 'outcome-rejected',
-            diagnostic: input.diagnostic,
-            rejectedAt: timestamp,
-          },
-        );
-        const {
-          hostOutcome: _legacyHostOutcome,
-          actionOutcome: _legacyActionOutcome,
-          receiptId: _legacyReceiptId,
-          validatorId: _legacyValidatorId,
-          acceptedSubmission: _legacyAcceptedSubmission,
-          pendingSubmission: _legacyPendingSubmission,
-          ...preserved
-        } = current;
-        void _legacyHostOutcome;
-        void _legacyActionOutcome;
-        void _legacyReceiptId;
-        void _legacyValidatorId;
-        void _legacyAcceptedSubmission;
-        void _legacyPendingSubmission;
-        const checkpoint: WorkExecutionCheckpoint = {
-          ...preserved,
-          status: 'invoking',
-          continuation: 'awaiting-correction',
-          pendingSubmission: null,
-          rejectedSubmissions,
-          updatedAt: timestamp,
-        };
-        const nextState: RunState = {
-          ...state,
-          workExecution: checkpoint,
-          stateVersion: state.stateVersion + 1,
-          updatedAt: timestamp,
-        };
-        return {
-          state: nextState,
-          event: executionEvent({
-            state: nextState,
-            sequence: trajectory.length + 1,
-            timestamp,
-            type: 'work.outcome-rejected',
-            identity: [current.workId, String(current.attempt), legacySubmissionId],
-            data: {
-              phase: state.changeLifecycle?.phase,
-              workId: current.workId,
-              workKind: state.changeLifecycle?.currentWork?.kind,
-              attempt: current.attempt,
-              checkEpoch: current.checkEpoch,
-              submissionId: legacySubmissionId,
-              submissionDigest: submission.payloadDigest,
-              reasonCode: 'outcome-rejected',
-              diagnostic: input.diagnostic,
-              continuation: 'awaiting-correction',
-              legacyRecovery: true,
-            },
-          }),
-          value: structuredClone(checkpoint),
-        };
-      },
-    );
-    await this.flushTelemetry(input.intent.runId);
     return result;
   }
 
@@ -1285,7 +1273,14 @@ export class WorkExecutionAuthority extends Service {
         ? result('wait', 'host-active')
         : result('reconcile', 'host-result-unknown');
     }
-    if (current.status === 'unknown') return result('reconcile', 'host-result-unknown');
+    if (current.status === 'unknown') {
+      return result(
+        'reconcile',
+        current.unknownKind === 'external-side-effect'
+          ? 'external-result-unknown'
+          : 'host-result-unknown',
+      );
+    }
     if (current.status === 'not-executed') return result('execute', 'host-not-executed');
     if (current.status === 'outcome') {
       return current.actionOutcome?.status === 'failed'
@@ -1339,8 +1334,7 @@ export class WorkExecutionAuthority extends Service {
   async recordContinuation(runId: string, recovery: WorkExecutionRecovery): Promise<void> {
     await this.ctx.runStore.commitGuarded(runId, ({ state, trajectory }) => {
       const openObservationUnavailable =
-        recovery.continuation === 'reconcile' &&
-        recovery.reason === 'open-observation-unavailable';
+        recovery.continuation === 'reconcile' && recovery.reason === 'open-observation-unavailable';
       const eventId = digest(
         runId,
         'continuation.selected',
@@ -1349,8 +1343,41 @@ export class WorkExecutionAuthority extends Service {
         recovery.continuation,
         recovery.reason,
       );
-      if (trajectory.some((event) => event.eventId === eventId)) return { value: undefined };
       const timestamp = new Date().toISOString();
+      if (trajectory.some((event) => event.eventId === eventId)) {
+        const nextState: RunState = {
+          ...state,
+          stateVersion: state.stateVersion + 1,
+          updatedAt: timestamp,
+        };
+        return {
+          state: nextState,
+          event: executionEvent({
+            state: nextState,
+            sequence: trajectory.length + 1,
+            timestamp,
+            type: 'continuation.selected',
+            identity: [
+              recovery.workId ?? 'none',
+              String(recovery.attempt ?? 0),
+              recovery.continuation,
+              recovery.reason,
+              'suppressed',
+              String(state.stateVersion),
+            ],
+            data: {
+              continuation: recovery.continuation,
+              reason: recovery.reason,
+              workId: recovery.workId,
+              attempt: recovery.attempt,
+              checkEpoch: recovery.checkEpoch,
+              result: 'suppressed',
+              dispatchSuppressed: true,
+            },
+          }),
+          value: undefined,
+        };
+      }
       const nextState: RunState = {
         ...state,
         stateVersion: state.stateVersion + 1,
@@ -1374,6 +1401,9 @@ export class WorkExecutionAuthority extends Service {
             reason: recovery.reason,
             workId: recovery.workId,
             attempt: recovery.attempt,
+            checkEpoch: recovery.checkEpoch,
+            result: 'selected',
+            dispatchSuppressed: false,
             ...(openObservationUnavailable
               ? {
                   result: 'reconcile',

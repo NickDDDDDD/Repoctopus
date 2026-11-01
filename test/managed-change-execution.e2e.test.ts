@@ -7,11 +7,13 @@ import { build } from 'esbuild';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { bootProjectComposition } from '../app/boot/bootstrap.js';
+import { compositionIdentity } from '../app/boot/composition.js';
 import type { DeliveryIntentV3, DeliveryPolicy } from '../domains/delivery/types.js';
 import type { RunStatusView, RuntimeResult } from '../domains/runtime/types.js';
 import type { RunStoreInspection } from '../domains/runtime/types.js';
 import type { SpecificationApprovalState } from '../domains/specification/types.js';
 import type { WorkExecutionResult } from '../domains/work-execution/types.js';
+import { FileRuntimeStore } from '../platform/runtime/file-runtime-store.js';
 import type {
   ExecuteArchiveDeliveryResult,
   VerifyChangeRunResult,
@@ -471,6 +473,72 @@ describe('managed Change execution production composition', () => {
               runId,
             },
           );
+        const productionComposition = compositionIdentity(application.composition);
+        const seedPreviousComposition = async (options: {
+          label: string;
+          pluginId: string;
+          codeDigest: `sha256:${string}`;
+          descriptorDigest: `sha256:${string}`;
+        }) => {
+          const store = new FileRuntimeStore(workspace);
+          await store.commitGuarded(runId, ({ state, trajectory }) => {
+            const timestamp = new Date().toISOString();
+            const composition = structuredClone(productionComposition);
+            composition.compositionDigest = `sha256:${options.label.padEnd(64, '0')}`;
+            const plugin = composition.plugins.find((entry) => entry.id === options.pluginId);
+            if (!plugin) throw new Error(`missing production plugin ${options.pluginId}`);
+            plugin.codeDigest = options.codeDigest;
+            plugin.descriptorDigest = options.descriptorDigest;
+            const nextState = {
+              ...state,
+              composition,
+              stateVersion: state.stateVersion + 1,
+              updatedAt: timestamp,
+            };
+            return {
+              state: nextState,
+              event: {
+                schemaVersion: 1 as const,
+                sequence: trajectory.length + 1,
+                eventId: `fixture:${options.label}:${state.stateVersion + 1}`,
+                timestamp,
+                type: 'run.resumed' as const,
+                runId,
+                stateVersion: nextState.stateVersion,
+                compositionDigest: composition.compositionDigest,
+                data: { fixture: 'production-cli-composition-predecessor', label: options.label },
+              },
+              value: undefined,
+            };
+          });
+        };
+        const restoreProductionComposition = async (label: string) => {
+          const store = new FileRuntimeStore(workspace);
+          await store.commitGuarded(runId, ({ state, trajectory }) => {
+            const timestamp = new Date().toISOString();
+            const nextState = {
+              ...state,
+              composition: structuredClone(productionComposition),
+              stateVersion: state.stateVersion + 1,
+              updatedAt: timestamp,
+            };
+            return {
+              state: nextState,
+              event: {
+                schemaVersion: 1 as const,
+                sequence: trajectory.length + 1,
+                eventId: `fixture:${label}:${state.stateVersion + 1}`,
+                timestamp,
+                type: 'run.resumed' as const,
+                runId,
+                stateVersion: nextState.stateVersion,
+                compositionDigest: productionComposition.compositionDigest,
+                data: { fixture: 'restore-production-composition', label },
+              },
+              value: undefined,
+            };
+          });
+        };
 
         expect((await next()).value).toMatchObject({
           changeLifecycle: { phase: 'open', currentWork: { kind: 'change.intake' } },
@@ -574,8 +642,6 @@ describe('managed Change execution production composition', () => {
               changeId: 'managed-blackbox',
               approvalPhase: 'open',
               changeBranch: openApproval.snapshot.changeBranch,
-              compositionDigest: openApproval.snapshot.compositionDigest,
-              projectConfigDigest: openApproval.snapshot.projectConfigDigest,
               expectedSnapshotDigest: openApproval.snapshot.digest,
             }),
           ).toMatchObject({
@@ -623,7 +689,88 @@ describe('managed Change execution production composition', () => {
             isolation: 'current',
           });
         }
-        const designWork = await next();
+        let designWork: RuntimeResult<RunStatusView>;
+        if (!multiRepository && executionMode === 'autonomous') {
+          const approvedOpenBeforeAdoption = await application.context.commandRouter.execute<
+            { changeId: string; approvalPhase: 'open' },
+            SpecificationApprovalState | null
+          >('specification.approval.status', {
+            changeId: 'managed-blackbox',
+            approvalPhase: 'open',
+          });
+          if (!approvedOpenBeforeAdoption || approvedOpenBeforeAdoption.status !== 'approved') {
+            throw new Error('missing approved Open request before compatible adoption');
+          }
+          invocationKinds.push(...capture.invocations.map((item) => item.packet.work.kind));
+          capture.dispose();
+          await application.close();
+          await seedPreviousComposition({
+            label: 'c1',
+            pluginId: 'workflow-telemetry-otel',
+            codeDigest: `sha256:${'1'.repeat(64)}`,
+            descriptorDigest: `sha256:${'2'.repeat(64)}`,
+          });
+          const compatible = await runCli<RunStatusView>({
+            packageRoot: productRoot,
+            cwd: workspace,
+            environment,
+            args: ['run', 'next', '--workspace', workspace, '--run', runId],
+          });
+          if (!compatible.result) throw new Error('missing compatible CLI adoption result');
+          designWork = { value: compatible.result, diagnostics: [] };
+          const compatibleTrajectory = await new FileRuntimeStore(workspace).loadTrajectory(runId);
+          expect(
+            compatibleTrajectory.filter(
+              (event) =>
+                event.type === 'composition.changed' &&
+                event.data.previousCompositionDigest === `sha256:${'c1'.padEnd(64, '0')}`,
+            ),
+          ).toHaveLength(1);
+
+          application = await bootProjectComposition(productRoot, workspace);
+          capture = installHost();
+          const retainedOpenApproval = await application.context.commandRouter.execute<
+            { changeId: string; approvalPhase: 'open' },
+            SpecificationApprovalState | null
+          >('specification.approval.status', {
+            changeId: 'managed-blackbox',
+            approvalPhase: 'open',
+          });
+          expect(retainedOpenApproval).toMatchObject({
+            decisionRequest: { requestId: approvedOpenBeforeAdoption.decisionRequest.requestId },
+          });
+
+          invocationKinds.push(...capture.invocations.map((item) => item.packet.work.kind));
+          capture.dispose();
+          await application.close();
+          await seedPreviousComposition({
+            label: 'd1',
+            pluginId: 'workflow-runs',
+            codeDigest: `sha256:${'3'.repeat(64)}`,
+            descriptorDigest: `sha256:${'4'.repeat(64)}`,
+          });
+          const beforeIncompatibleStatus = await new FileRuntimeStore(workspace).loadTrajectory(
+            runId,
+          );
+          const incompatible = await runCli<RunStatusView>({
+            packageRoot: productRoot,
+            cwd: workspace,
+            environment,
+            args: ['run', 'status', '--workspace', workspace, '--run', runId],
+          });
+          expect(incompatible.result?.compositionCompatibility).toMatchObject({
+            status: 'migration_required',
+            changedPluginIds: ['workflow-runs'],
+          });
+          expect(await new FileRuntimeStore(workspace).loadTrajectory(runId)).toEqual(
+            beforeIncompatibleStatus,
+          );
+          await restoreProductionComposition('d1');
+          application = await bootProjectComposition(productRoot, workspace);
+          capture = installHost();
+        } else {
+          designWork = await next();
+        }
         expect(designWork.value.changeLifecycle).toMatchObject({
           phase: 'design',
           currentWork: { kind: 'specification.plan' },
@@ -720,6 +867,44 @@ describe('managed Change execution production composition', () => {
         const configurationDecision = configurationWait.value.changeLifecycle!.waitCondition!;
         if (configurationDecision.kind !== 'human-decision') {
           throw new Error('missing Build Configuration decision');
+        }
+        if (multiRepository && executionMode === 'autonomous') {
+          await writeFile(
+            path.join(workspace, 'publication-marker.txt'),
+            'Publication-only source OID update.\n',
+          );
+          await execFileAsync('git', ['add', 'publication-marker.txt'], { cwd: workspace });
+          await execFileAsync('git', ['commit', '-m', 'chore: advance specification publication'], {
+            cwd: workspace,
+          });
+          await execFileAsync('git', ['push'], { cwd: workspace });
+          invocationKinds.push(...capture.invocations.map((item) => item.packet.work.kind));
+          capture.dispose();
+          await application.close();
+          const publicationOnly = await runCli<RunStatusView>({
+            packageRoot: productRoot,
+            cwd: workspace,
+            environment,
+            args: ['run', 'status', '--workspace', workspace, '--run', runId],
+          });
+          expect(publicationOnly.result?.specificationCompatibility).toMatchObject({
+            status: 'same',
+          });
+          expect(publicationOnly.result?.changeLifecycle).toMatchObject({
+            phase: 'build',
+            status: 'waiting',
+            waitCondition: { kind: 'human-decision', requestId: configurationDecision.requestId },
+          });
+          expect(publicationOnly.result?.changeLifecycle?.phase).not.toBe('design');
+          application = await bootProjectComposition(productRoot, workspace);
+          capture = installHost();
+          const retainedDesignApproval = await application.context.commandRouter.execute<
+            { changeId: string },
+            SpecificationApprovalState | null
+          >('specification.approval.status', { changeId: 'managed-blackbox' });
+          expect(retainedDesignApproval).toMatchObject({
+            decisionRequest: { requestId: approval.decisionRequest.requestId },
+          });
         }
         await restartApplication();
         const planned = await application.context.commandRouter.execute<
@@ -1418,13 +1603,7 @@ describe('managed Change execution production composition', () => {
           'build.check',
           'evidence.verify',
           ...(!multiRepository && executionMode === 'autonomous'
-            ? [
-                'build.plan',
-                'build.execute',
-                'build.execute',
-                'build.check',
-                'evidence.verify',
-              ]
+            ? ['build.plan', 'build.execute', 'build.execute', 'build.check', 'evidence.verify']
             : []),
           'specification.close',
           'delivery.publish',
@@ -1714,7 +1893,14 @@ describe('managed Change execution production composition', () => {
           break;
         }
       }
-      expect(recoveryView).toMatchObject({
+      expect(
+        recoveryView,
+        JSON.stringify({
+          lifecycle: recoveryView?.changeLifecycle,
+          reason: recoveryView?.reason,
+          continuation: recoveryView?.continuation,
+        }),
+      ).toMatchObject({
         state: { runId },
         changeLifecycle: {
           phase: 'open',

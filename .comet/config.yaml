@@ -1,0 +1,20 @@
+# Stable bootstrap controller for changes that modify Repoctopus Runtime itself.
+# OpenSpec remains the specification authority at the repository root; Comet
+# owns only the development lifecycle and recovery checkpoints for these changes.
+schema: comet.project.v1
+default_workflow: classic
+workflows:
+  - classic
+ambient_resume: true
+memory:
+  learning: false
+  retrieval: false
+knowledge:
+  provider: local
+classic:
+  artifact_layout: legacy
+  language: zh-CN
+  context_compression: off
+  review_mode: thorough
+  auto_transition: true
+  check_timeout_ms: 900000

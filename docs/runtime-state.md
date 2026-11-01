@@ -25,9 +25,34 @@ node bin/repoctopus.js run status --workspace . --run <run-id> --json
 
 可选的 `agent-coordination.json` 只保存有界的 handoff/上下文压缩提示。它不进入 Run、Checkpoint 或 OpenSpec 四类工件，不能授权写入、声明 Task 完成或覆盖真实 execution checkpoint；缺失或 stale 只意味着 Runner 要重新核对事实。
 
+## 身份分层与失效范围
+
+Runtime 不再用一个聚合 planning snapshot 授权所有后续状态。Change Run v2 分别保存 planning semantic、validation observation、approval authority、composition、Build Configuration、Build Plan、execution checkpoint、verification input 和 publication provenance 身份。每个身份只有一个领域 owner；代码固定的依赖矩阵决定哪些后继事实依赖它。
+
+`next`、`resume`、CLI JSON 和 Desktop 投影只读取已提交 checkpoint。它们不会扫描 OpenSpec、Git diff 或最新 packet 来猜下一步。相同 revision 的重复调用返回同一 Work、Wait 或 reconciliation；相同 idempotency key 携带不同 payload 时返回冲突。
+
+Design 返工会把现有 Build Protocol 标记为 `suspended-for-design`。该候选保留 Configuration、Plan 和 package completion，但不可 claim 或 dispatch。新 Design 批准后，Runtime 从 Configuration 开始逐层重验；配置仍兼容时直接回到 Plan，新 Plan 只保留 package identity 和输入都匹配的 completion。无法证明精确范围时，Runtime 使用保守失效或 Human Decision，不静默采用旧 completion。
+
+预发布旧 Run 保持只读并返回 `migration_required`。当前 Store 只验证当前 schema，不使用第二套 legacy reader 解释旧授权；审计工具可以保留和导出原始字节，但不能把它转换成当前执行权。Runtime 不提供 v1/v2 双读、自动转换、Store 修复命令或用当前内容重组旧 packet。
+
 ## 受管 Work 与 continuation
 
 `run next` 每次只解析 Runtime 已选定的当前 Action，并返回 `execute | ask | wait | reconcile | done`。完整 `WorkExecutionPacket` 按 Runtime contract、阶段 action Skill、Specification Provider protocol、augmentation Skills、Method Profile、change inputs 的固定顺序装配。claim 前，Runtime 先把深冻结 packet 以 create-or-verify 方式写入 `.repoctopus/runs/<runId>/packets/<packetDigest>.json`，再通过 Run CAS 绑定唯一 identity，最后才允许 Host 取得正文。Run、checkpoint、trajectory、日志和 OTLP 只保存 packet/context digest；私有 packet 文件是唯一正文恢复源。
+
+`run status --json` 的 `result.continuation` 是版本化公共合同。它只投影已经提交的 checkpoint 和最新匹配的 `continuation.selected` 事实；状态查询不会读取 packet 正文、探测 Host、扫描 Git 或追加 trajectory。以下示例表示 Runtime 已提交一个尚未 claim 的 Build Work：
+
+```json
+{
+  "schemaVersion": 2,
+  "continuation": "execute",
+  "workId": "build.execute:example",
+  "attempt": null,
+  "checkEpoch": 4,
+  "reason": "work-unclaimed"
+}
+```
+
+`reconcile`、`awaiting-correction` 和 `ask` 同时产生有界 CLI diagnostic code。`reason` 只能取公开枚举，不能包含路径、Provider 正文或自由错误消息。真正的 `next` 或 `resume` 才执行 packet/Host 动态核验；Runtime 先把选择提交为 trajectory fact，再让 CLI、Desktop 与 OTLP 读取同一结果。
 
 claim、context delivery、Host invocation、Outcome、Validator 与 lifecycle transition 都写入同一个 Run aggregate 和追加式 trajectory。ActionStore 和 packet store 是先写的不可变内容库，不拥有 attempt 或下一步；CAS 前的孤立内容没有执行权。恢复始终按 checkpoint identity 读取原 packet，不重新读取当前 Skill、Provider 指令或 OpenSpec 文件。恢复分类遵循以下边界：未调用可重交同一 attempt；活跃 Host 返回 `wait`；未知副作用返回 `reconcile`；可证明未执行才创建下一 attempt；已有 Outcome 从 Validator 继续；Human Decision 保留原 proposal hash。旧 checkpoint 或缺失/损坏 packet 明确进入 `migration-required` 或 `content-missing-or-corrupt`，不得用当前内容重组兼容。
 
@@ -63,7 +88,7 @@ Build phase 固定执行 `Configure → Plan → Plan Evidence → Execute → C
 
 ## Composition 兼容
 
-Run、Checkpoint 和 Trajectory 保存完整 composition 身份。写转换前，WorkflowRuns 比较当前组合：摘要相同则继续；只涉及明确兼容的无状态 Contributor 或配置摘要变化时记录 `composition.changed`；受保护 Provider、状态 Schema 或权威能力变化时返回 `migration_required`。后一种状态仍允许 `status` 和 `doctor` 读取，不允许 `next`、`record` 或 `resume` 写入。
+Run、Checkpoint 和 Trajectory 保存完整 composition 身份。写转换前，WorkflowRuns 只比较当前 checkpoint dependency closure 中实际使用的 Provider、Contributor、definition、code 和 config identity：摘要相同则继续；catalog 精确声明唯一直接前驱且 checkpoint 范围匹配时记录一次 adoption；无法证明兼容时返回 `migration_required`。未进入 closure 的 Contributor 变化不影响 continuation，已经 claim 的 Work 始终使用原 packet。`migration_required` 仍允许 `status` 和 `doctor` 读取，不允许 `next`、`record` 或 `resume` 写入。
 
 普通插件重载由 Cordis Loader 先卸载旧 Fiber，再激活新 Fiber。Run 不依赖旧 Fiber 的内存对象，恢复依据始终是 Store、Journal 与 Checkpoint。
 

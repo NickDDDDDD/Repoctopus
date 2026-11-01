@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type {
   ExternalWorkExecutionOutcome,
   WorkExecutionHost,
+  WorkExecutionHostInvocation,
   WorkExecutionHostOutcome,
   WorkExecutionPacket,
   WorkExecutionResult,
@@ -79,13 +80,60 @@ function executor(
     checkEpoch: 4,
   };
   const authority = {
-    markHostStarted: vi.fn(),
+    markHostStarted: vi
+      .fn()
+      .mockImplementation((_intent: unknown, invocation: WorkExecutionHostInvocation) =>
+      Promise.resolve({
+        acquired: true,
+        checkpoint: { hostInvocation: invocation },
+      }),
+    ),
     markHostUnknown: vi.fn(),
     markHostCompleted: vi.fn().mockResolvedValue({ status: 'submitted' }),
     recordDelegationFacts: vi.fn(),
     recordSkillFacts: vi.fn(),
     recordSkillConsumptionRejected: vi.fn(),
   };
+  const invoke = vi.fn((_packet: WorkExecutionPacket, session: WorkExecutionSessionIdentity) => {
+    if (invokeError) return Promise.reject(invokeError);
+    return Promise.resolve({
+      schemaVersion: 1 as const,
+      invocationId: session.invocationId,
+      hostId: 'coordinator-1',
+      packetDigest: packet.identity.packetDigest,
+      status: 'succeeded' as const,
+      summary: 'delegated package completed',
+      consumedLayerDigests,
+      result: (resultOverride ?? {
+        schemaVersion: 1,
+        kind: 'build-package-completion',
+        packageId: 'package-1',
+        acceptanceEvidenceIds: ['acceptance-1'],
+        testEvidenceIds: ['test-1'],
+        tddEvidence: {
+          redEvidenceId: 'red-1',
+          greenEvidenceId: 'green-1',
+          regressionEvidenceId: 'regression-1',
+        },
+        repositoryDigest: digest('5'),
+        implementationDigest: digest('6'),
+      }) as WorkExecutionResult,
+      delegationReceipts: delegationReceiptsOverride ?? [
+        {
+          schemaVersion: 1 as const,
+          receiptId: 'receipt-1',
+          parentInvocationId: session.invocationId,
+          coordinatorHostId: 'coordinator-1',
+          executionId: 'subagent-implementation-1',
+          role: 'implementer' as const,
+          packageId: 'package-1',
+          status: 'succeeded' as const,
+          outcomeDigest: digest('7'),
+        },
+      ],
+      completedAt: '2026-10-28T00:00:00.000Z',
+    } satisfies WorkExecutionHostOutcome);
+  });
   const host: WorkExecutionHost = {
     identity: {
       schemaVersion: 1 as const,
@@ -97,46 +145,7 @@ function executor(
       reconcile: true,
     },
     preflight: vi.fn().mockResolvedValue({ accepted: true }),
-    invoke: vi.fn((_packet: WorkExecutionPacket, session: WorkExecutionSessionIdentity) => {
-      if (invokeError) return Promise.reject(invokeError);
-      return Promise.resolve({
-        schemaVersion: 1 as const,
-        invocationId: session.invocationId,
-        hostId: 'coordinator-1',
-        packetDigest: packet.identity.packetDigest,
-        status: 'succeeded' as const,
-        summary: 'delegated package completed',
-        consumedLayerDigests,
-        result: (resultOverride ?? {
-          schemaVersion: 1,
-          kind: 'build-package-completion',
-          packageId: 'package-1',
-          acceptanceEvidenceIds: ['acceptance-1'],
-          testEvidenceIds: ['test-1'],
-          tddEvidence: {
-            redEvidenceId: 'red-1',
-            greenEvidenceId: 'green-1',
-            regressionEvidenceId: 'regression-1',
-          },
-          repositoryDigest: digest('5'),
-          implementationDigest: digest('6'),
-        }) as WorkExecutionResult,
-        delegationReceipts: delegationReceiptsOverride ?? [
-          {
-            schemaVersion: 1 as const,
-            receiptId: 'receipt-1',
-            parentInvocationId: session.invocationId,
-            coordinatorHostId: 'coordinator-1',
-            executionId: 'subagent-implementation-1',
-            role: 'implementer' as const,
-            packageId: 'package-1',
-            status: 'succeeded' as const,
-            outcomeDigest: digest('7'),
-          },
-        ],
-        completedAt: '2026-10-28T00:00:00.000Z',
-      } satisfies WorkExecutionHostOutcome);
-    }),
+    invoke,
   };
   const service = Object.create(ManagedWorkExecutor.prototype) as ManagedWorkExecutor;
   const workDispatcher = {
@@ -159,7 +168,7 @@ function executor(
       workExecutionAuthority: authority,
     },
   });
-  return { service, authority, workDispatcher };
+  return { service, authority, host, invoke, workDispatcher };
 }
 
 function externalReplayHarness() {
@@ -260,6 +269,25 @@ function externalReplayHarness() {
 }
 
 describe('Managed Work Executor Build contract', () => {
+  it('does not invoke the Host when another Runner owns the durable invocation', async () => {
+    const { service, authority, invoke } = executor();
+    authority.markHostStarted.mockImplementation(
+      (_intent: unknown, invocation: WorkExecutionHostInvocation) =>
+      Promise.resolve({
+        acquired: false,
+        checkpoint: { hostInvocation: invocation },
+      }),
+    );
+
+    await expect(service.execute({} as never)).resolves.toMatchObject({
+      executionAcquired: false,
+      hostOutcome: null,
+      acceptance: null,
+    });
+    expect(invoke).not.toHaveBeenCalled();
+    expect(authority.markHostCompleted).not.toHaveBeenCalled();
+  });
+
   it.each([
     ['status', (input: ExternalWorkExecutionOutcome) => ({ ...input, status: 'failed' as const })],
     ['summary', (input: ExternalWorkExecutionOutcome) => ({ ...input, summary: 'drifted' })],
@@ -308,6 +336,8 @@ describe('Managed Work Executor Build contract', () => {
 
     const result = await service.acceptExternalOutcome(input);
 
+    expect(result.executionAcquired).toBe(true);
+    if (!result.executionAcquired) throw new Error('Expected replay acceptance to be acquired');
     expect(result.hostOutcome).toBe(persistedOutcome);
     expect(result.hostOutcome.completedAt).toBe('2026-10-28T00:00:00.000Z');
     expect(markHostCompleted).not.toHaveBeenCalled();
@@ -317,7 +347,14 @@ describe('Managed Work Executor Build contract', () => {
   it('persists external Runner capabilities beyond the current Work requirement', async () => {
     const packet = frozenPacket();
     const service = Object.create(ManagedWorkExecutor.prototype) as ManagedWorkExecutor;
-    const markHostStarted = vi.fn();
+    const markHostStarted = vi
+      .fn()
+      .mockImplementation((_intent: unknown, invocation: WorkExecutionHostInvocation) =>
+      Promise.resolve({
+        acquired: true,
+        checkpoint: { hostInvocation: invocation },
+      }),
+    );
     Object.defineProperty(service, 'ctx', {
       value: {
         workDispatcher: {

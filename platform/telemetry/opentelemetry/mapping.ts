@@ -2,6 +2,7 @@ import type { Attributes } from '@opentelemetry/api';
 
 import type { TelemetryBatch } from '../../../domains/runtime/types.js';
 import type { TrajectoryEvent } from '../../../domains/trajectory/types.js';
+import type { RuntimeStabilityFact } from '../../../domains/runtime/stability.js';
 import {
   workspaceIntentMetricAttributes,
   workspaceIntentTraceAttributes,
@@ -65,6 +66,7 @@ const EXECUTION_DATA_KEYS = new Set([
   'submissionDigest',
   'reasonCode',
   'hostReplayed',
+  'dispatchSuppressed',
   'rejectedSubmissionCount',
   'legacyRecovery',
   'proposalStatus',
@@ -346,6 +348,10 @@ const BOUNDED_RESULTS = new Set([
   'corrupt',
   'legacy',
   'reconcile',
+  'selected',
+  'suppressed',
+  'not-executed',
+  'executed',
 ]);
 const BOUNDED_ARTIFACT_STATUSES = new Set(['ready', 'skipped', 'missing']);
 const BOUNDED_SEVERITIES = new Set(['none', 'info', 'warning', 'error']);
@@ -463,6 +469,23 @@ export function workflowEventMetricAttributes(
       event.data.contractConflict === true;
   }
   if (event.type === 'change.lifecycle.transitioned') {
+    const transitionInvalidation = event.data.changeLifecycleTransition?.invalidation;
+    if (transitionInvalidation) {
+      const classification = transitionInvalidation.classification;
+      const disposition = transitionInvalidation.disposition;
+      const scope = transitionInvalidation.scope;
+      const continuation = transitionInvalidation.continuation;
+      if (classification === 'semantic' || classification === 'approval-authority') {
+        result['repoctopus.runtime.invalidation.classification'] = classification;
+      }
+      if (disposition === 'invalidate') {
+        result['repoctopus.runtime.invalidation.disposition'] = disposition;
+      }
+      if (scope === 'exact') result['repoctopus.runtime.invalidation.scope'] = scope;
+      if (continuation === 'design') {
+        result['repoctopus.runtime.invalidation.continuation'] = continuation;
+      }
+    }
     const observation = event.data.observation;
     const invalidationKind =
       observation && typeof observation === 'object'
@@ -476,9 +499,7 @@ export function workflowEventMetricAttributes(
       const source = repair.source;
       const reasonCode = repair.reasonCode;
       result['repoctopus.open.repair.source'] =
-        typeof source === 'string' && BOUNDED_OPEN_REPAIR_SOURCES.has(source)
-          ? source
-          : 'unknown';
+        typeof source === 'string' && BOUNDED_OPEN_REPAIR_SOURCES.has(source) ? source : 'unknown';
       result['repoctopus.open.repair.reason_code'] =
         typeof reasonCode === 'string' && BOUNDED_OPEN_REPAIR_REASON_CODES.has(reasonCode)
           ? reasonCode
@@ -489,6 +510,24 @@ export function workflowEventMetricAttributes(
     }
   }
   return result;
+}
+
+export function runtimeStabilityMetricAttributes(fact: RuntimeStabilityFact): Attributes {
+  return {
+    'repoctopus.runtime.stability.kind': fact.kind,
+    'repoctopus.runtime.stability.authority': fact.authority,
+    'repoctopus.runtime.stability.result': fact.result,
+    ...(fact.kind === 'invalidation'
+      ? {
+          'repoctopus.runtime.invalidation.classification': fact.classification,
+          'repoctopus.runtime.invalidation.scope': fact.result,
+          'repoctopus.runtime.invalidation.continuation': fact.continuation,
+        }
+      : {}),
+    ...(fact.kind === 'dispatch'
+      ? { 'repoctopus.runtime.stability.continuation': fact.continuation }
+      : {}),
+  };
 }
 
 export function workflowStepMetricAttributes(

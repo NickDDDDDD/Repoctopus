@@ -24,7 +24,8 @@ import type {
   PlanEvidence,
   PackageCompletionEvidence,
 } from './build-protocol.js';
-import { advanceBuildProtocol } from './build-protocol.js';
+import { advanceBuildProtocol, suspendBuildProtocolForDesign } from './build-protocol.js';
+import { runtimeInvalidationScope } from '../runtime/invalidation.js';
 
 export const CHANGE_PHASES = ['open', 'design', 'build', 'verify', 'archive'] as const;
 export type ChangePhase = (typeof CHANGE_PHASES)[number];
@@ -355,11 +356,24 @@ export interface ChangeLifecycleTransitionFact {
   invalidation?: {
     kind: 'planning-authority-invalidated';
     invalidationKind: 'semantic' | 'approval-authority';
+    classification: 'semantic' | 'approval-authority';
+    disposition: 'invalidate';
+    scope: 'exact';
+    continuation: 'design';
+    retainedCount: number;
+    invalidatedCount: number;
+    protocolDisposition: 'suspended' | 'none';
+    completionBeforeCount: number;
     supersededPlanningDigest: `sha256:${string}`;
     observedPlanningDigest: `sha256:${string}`;
     supersededWorkId: string | null;
     supersededTaskRevisions: readonly `sha256:${string}`[];
     evidenceIds: readonly string[];
+  };
+  buildRevalidation?: {
+    protocolDisposition: 'retained-configuration' | 'rebuilt-configuration';
+    completionBeforeCount: number;
+    completionRetainedCount: number;
   };
   workspaceIntentRevision?: {
     errorCode: string;
@@ -603,13 +617,6 @@ export type ChangeLifecycleObservation =
       reason: string;
     }
   | {
-      kind: 'archive-planning-drift';
-      work: WorkDescriptor;
-      observedPlanningDigest: `sha256:${string}`;
-      reason: string;
-      evidenceIds: readonly string[];
-    }
-  | {
       kind: 'archive-work-restored';
       work: WorkDescriptor;
       reason: string;
@@ -675,7 +682,10 @@ export function assertChangeLifecycleSnapshot(
   }
   if (
     snapshot.buildProtocol &&
-    (!['build', 'verify', 'archive'].includes(snapshot.phase) ||
+    (!(
+      ['build', 'verify', 'archive'].includes(snapshot.phase) ||
+      (snapshot.phase === 'design' && snapshot.buildProtocol.status === 'suspended-for-design')
+    ) ||
       snapshot.buildProtocol.runId !== snapshot.identity.runId ||
       snapshot.buildProtocol.workspaceIntent.semanticDigest !==
         snapshot.workspaceIntent?.semanticDigest)
@@ -1086,6 +1096,20 @@ export function evolveChangeLifecycle(options: {
     const supersededPlanningDigest = current.planningDigest;
     const supersededWorkId = current.currentWork?.workId ?? null;
     const supersededTaskRevisions = (current.tasks ?? []).map((task) => task.taskRevision).sort();
+    const buildProtocol = current.buildProtocol
+      ? suspendBuildProtocolForDesign(current.buildProtocol, {
+          observedPlanningDigest: observation.inputDigest,
+          reasonCode:
+            observation.invalidationKind === 'semantic'
+              ? 'semantic-drift'
+              : 'approval-authority-drift',
+          invalidatedIdentities: [
+            observation.invalidationKind === 'semantic'
+              ? 'planning-semantic'
+              : 'approval-authority',
+          ],
+        })
+      : undefined;
     const reduced = applyChangeLifecycleTransition({
       definition: options.definition,
       current,
@@ -1099,8 +1123,7 @@ export function evolveChangeLifecycle(options: {
         currentWork: observation.work,
         waitCondition: null,
         blocker: null,
-        tasks: [],
-        buildProtocol: null,
+        buildProtocol: buildProtocol ?? null,
         planningDigest: null,
         verificationInput: null,
         verificationInvalidation: null,
@@ -1109,9 +1132,20 @@ export function evolveChangeLifecycle(options: {
         publicationReceipt: null,
       },
     });
+    const invalidationScope = runtimeInvalidationScope([
+      observation.invalidationKind === 'semantic' ? 'planning-semantic' : 'approval-authority',
+    ]);
     reduced.fact.invalidation = {
       kind: 'planning-authority-invalidated',
       invalidationKind: observation.invalidationKind,
+      classification: observation.invalidationKind,
+      disposition: 'invalidate',
+      scope: 'exact',
+      continuation: 'design',
+      retainedCount: invalidationScope.retainedIdentities.length,
+      invalidatedCount: invalidationScope.invalidatedIdentities.length,
+      protocolDisposition: buildProtocol ? 'suspended' : 'none',
+      completionBeforeCount: current.buildProtocol?.packageCompletions.length ?? 0,
       supersededPlanningDigest,
       observedPlanningDigest: observation.inputDigest,
       supersededWorkId,
@@ -1708,6 +1742,13 @@ export function evolveChangeLifecycle(options: {
       if (observation.work?.phase !== 'design' || observation.work.kind !== 'specification.plan') {
         throw new Error('Approved Design revision requires Runtime-selected Design Work');
       }
+      const buildProtocol = current.buildProtocol
+        ? suspendBuildProtocolForDesign(current.buildProtocol, {
+            observedPlanningDigest: wait.proposalDigest,
+            reasonCode: 'build-design-revision',
+            invalidatedIdentities: ['planning-semantic'],
+          })
+        : undefined;
       return applyChangeLifecycleTransition({
         definition: options.definition,
         current,
@@ -1716,8 +1757,7 @@ export function evolveChangeLifecycle(options: {
           currentWork: observation.work,
           waitCondition: null,
           blocker: null,
-          tasks: [],
-          buildProtocol: null,
+          buildProtocol: buildProtocol ?? null,
           planningDigest: null,
           adoptedCompletionClaimDigest: null,
           verificationInput: null,
@@ -2030,47 +2070,6 @@ export function evolveChangeLifecycle(options: {
       },
     });
   }
-  if (observation.kind === 'archive-planning-drift') {
-    if (
-      current.phase !== 'archive' ||
-      current.status !== 'running' ||
-      current.currentWork?.kind !== 'delivery.publish' ||
-      !current.archiveDeliveryInput ||
-      !current.specificationClosure ||
-      current.publicationReceipt ||
-      observation.work.phase !== 'design' ||
-      observation.work.kind !== 'specification.plan' ||
-      !observation.reason.trim()
-    ) {
-      throw new Error('Archive planning drift is not valid before the publication boundary');
-    }
-    const reduced = applyChangeLifecycleTransition({
-      definition: options.definition,
-      current,
-      transitionId: 'archive.planning-drift',
-      next: {
-        currentWork: observation.work,
-        waitCondition: null,
-        blocker: null,
-        tasks: [],
-        planningDigest: null,
-        verificationInput: null,
-        verificationInvalidation: null,
-        archiveDeliveryInput: null,
-        specificationClosure: null,
-      },
-    });
-    reduced.fact.invalidation = {
-      kind: 'planning-authority-invalidated',
-      invalidationKind: 'semantic',
-      supersededPlanningDigest: current.planningDigest ?? current.archiveDeliveryInput.digest,
-      observedPlanningDigest: observation.observedPlanningDigest,
-      supersededWorkId: current.currentWork.workId,
-      supersededTaskRevisions: (current.tasks ?? []).map((task) => task.taskRevision).sort(),
-      evidenceIds: [...observation.evidenceIds],
-    };
-    return reduced;
-  }
   if (observation.kind === 'archive-work-restored') {
     if (
       current.phase !== 'archive' ||
@@ -2171,15 +2170,17 @@ export function evolveChangeLifecycle(options: {
     if (!observation.tasks || observation.tasks.length === 0) {
       throw new Error('Approved Design gate requires a fixed Task projection');
     }
-    if (
-      !observation.work ||
-      observation.work.kind !== 'build.configure' ||
-      !observation.buildProtocol ||
-      observation.buildProtocol.currentAction !== 'configure'
-    ) {
-      throw new Error('Approved Design gate requires Runtime-selected Build Configure');
+    const approvedBuildProtocol = observation.buildProtocol;
+    const expectedWorkKind =
+      approvedBuildProtocol?.currentAction === 'configure'
+        ? 'build.configure'
+        : approvedBuildProtocol?.currentAction === 'plan'
+          ? 'build.plan'
+          : null;
+    if (!observation.work || !expectedWorkKind || observation.work.kind !== expectedWorkKind) {
+      throw new Error('Approved Design gate requires the Runtime-selected Build Action');
     }
-    return applyChangeLifecycleTransition({
+    const reduced = applyChangeLifecycleTransition({
       definition: options.definition,
       current,
       transitionId: 'design.approved',
@@ -2188,10 +2189,22 @@ export function evolveChangeLifecycle(options: {
         waitCondition: null,
         blocker: null,
         tasks: observation.tasks,
-        buildProtocol: observation.buildProtocol,
+        buildProtocol: approvedBuildProtocol!,
         planningDigest: observation.inputDigest,
       },
     });
+    if (current.buildProtocol?.status === 'suspended-for-design') {
+      reduced.fact.buildRevalidation = {
+        protocolDisposition:
+          current.buildProtocol.configuration?.configurationId ===
+          approvedBuildProtocol!.configuration?.configurationId
+            ? 'retained-configuration'
+            : 'rebuilt-configuration',
+        completionBeforeCount: current.buildProtocol.packageCompletions.length,
+        completionRetainedCount: approvedBuildProtocol!.packageCompletions.length,
+      };
+    }
+    return reduced;
   }
   if (observation.result === 'waiting') {
     if (!observation.requestId?.trim() || !observation.proposalDigest) {

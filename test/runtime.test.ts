@@ -12,6 +12,7 @@ import { createBuildActionWork } from '../domains/change-lifecycle/build-work.js
 import { createLifecyclePhaseWork } from '../domains/change-lifecycle/phase-work.js';
 import { BUILTIN_CHANGE_LIFECYCLE_DEFINITION } from '../domains/change-lifecycle/definition.js';
 import type { WorkExecutionCheckpoint } from '../domains/work-execution/types.js';
+import { parseSpecificationTasks } from '../domains/specification/tasks.js';
 import {
   lifecycleContributorIdentity,
   lifecycleContributorSnapshot,
@@ -172,6 +173,170 @@ describe('Repoctopus runtime', () => {
         nextWorkId: repairWork.workId,
       },
     });
+  });
+
+  it('commits planning invalidation, suspended Build state, and execution retirement exactly once', async () => {
+    const workspace = await temporaryDirectory('repoctopus-planning-invalidation-runtime-');
+    cleanup.push(workspace);
+    const store = new FileRuntimeStore(workspace);
+    const runtime = new WorkflowRunCoordinator(store, { async export() {} }, compositionFixture());
+    const runId = 'change-team-planning-invalidation';
+    const intent = createExecutionWorkspaceIntent({
+      workspaceId: 'team',
+      changeId: 'planning-invalidation',
+      isolation: 'current',
+    });
+    const tasks = parseSpecificationTasks(
+      'planning-invalidation',
+      '- [ ] 1.1 Preserve the accepted Task.\n  **Acceptance:** The Task remains inspectable during Design repair.\n',
+    );
+    const configureWork = createBuildActionWork({
+      runId,
+      checkEpoch: 4,
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      kind: 'build.configure',
+      actionSkill: {
+        schemaVersion: 1,
+        name: 'repoctopus-build-configure',
+        provider: 'repoctopus-builtins',
+        invocation: { modelInvocable: true, userInvocable: false },
+        contentDigest: `sha256:${'2'.repeat(64)}`,
+        resourceManifestDigest: `sha256:${'3'.repeat(64)}`,
+      },
+      augmentationSkills: [],
+      compositionDigest: compositionFixture().compositionDigest,
+      projectConfigDigest: `sha256:${'4'.repeat(64)}`,
+      projectSnapshotDigest: projectFixture({ projectId: 'team' }).digest,
+      workspaceRepositoryId: 'workspace',
+      repositoryIds: ['workspace'],
+      stableInput: { planningDigest: tasks.digest },
+    });
+    const designWork = createLifecyclePhaseWork({
+      runId,
+      checkEpoch: 5,
+      changeId: 'planning-invalidation',
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      kind: 'specification.plan',
+      actionSkill: {
+        schemaVersion: 1,
+        name: 'repoctopus-design-change',
+        provider: 'repoctopus-builtins',
+        invocation: { modelInvocable: true, userInvocable: false },
+        contentDigest: `sha256:${'5'.repeat(64)}`,
+        resourceManifestDigest: `sha256:${'6'.repeat(64)}`,
+      },
+      augmentationSkills: [
+        {
+          schemaVersion: 1,
+          name: 'codebase-design',
+          provider: 'matt-builtins',
+          invocation: { modelInvocable: true, userInvocable: true },
+          contentDigest: `sha256:${'d'.repeat(64)}`,
+          resourceManifestDigest: `sha256:${'e'.repeat(64)}`,
+        },
+      ],
+      compositionDigest: compositionFixture().compositionDigest,
+      projectSnapshotDigest: projectFixture({ projectId: 'team' }).digest,
+      projectConfigDigest: `sha256:${'4'.repeat(64)}`,
+      workspaceRepositoryId: 'workspace',
+      repositoryIds: ['workspace'],
+    });
+    await runtime.start({
+      workflow: workflowFixture(),
+      projectSnapshot: projectFixture({ projectId: 'team' }),
+      runId,
+      changeLifecycle: {
+        ...createChangeLifecycleSnapshot({
+          identity: { workspaceId: 'team', changeId: 'planning-invalidation', runId },
+        }),
+        revision: 4,
+        checkEpoch: 4,
+        phase: 'build',
+        currentWork: configureWork,
+        tasks: tasks.tasks,
+        workspaceIntent: intent,
+        planningDigest: tasks.digest,
+        buildProtocol: createBuildProtocolState({
+          runId,
+          planningDigest: tasks.digest,
+          workspaceIntent: intent,
+        }),
+      },
+    });
+    const checkpoint: WorkExecutionCheckpoint = {
+      schemaVersion: 3,
+      workId: configureWork.workId,
+      attempt: 1,
+      checkEpoch: 4,
+      intentId: 'intent-planning-invalidation',
+      claimToken: `sha256:${'7'.repeat(64)}`,
+      inputDigest: configureWork.inputDigest,
+      packet: {
+        schemaVersion: 1,
+        packetId: `sha256:${'8'.repeat(64)}`,
+        packetDigest: `sha256:${'9'.repeat(64)}`,
+        contextDigest: `sha256:${'a'.repeat(64)}`,
+      },
+      status: 'outcome',
+      continuation: 'execute',
+      updatedAt: '2026-11-01T00:00:00.000Z',
+    };
+    await store.commitGuarded(runId, ({ state, trajectory }) => ({
+      state: {
+        ...state,
+        workExecution: checkpoint,
+        stateVersion: state.stateVersion + 1,
+        updatedAt: checkpoint.updatedAt,
+      },
+      event: {
+        schemaVersion: 1,
+        sequence: trajectory.length + 1,
+        eventId: 'seed-planning-invalidation-outcome',
+        timestamp: checkpoint.updatedAt,
+        type: 'work.completed',
+        runId,
+        stateVersion: state.stateVersion + 1,
+        compositionDigest: state.composition.compositionDigest,
+        data: { workId: configureWork.workId },
+      },
+      value: undefined,
+    }));
+    const observation = {
+      kind: 'planning-authority-invalidated' as const,
+      expectedRevision: 4,
+      fromPhase: 'build' as const,
+      invalidationKind: 'semantic' as const,
+      reason: 'Design semantic changed',
+      evidenceIds: [`sha256:${'b'.repeat(64)}`],
+      inputDigest: `sha256:${'c'.repeat(64)}` as const,
+      work: designWork,
+    };
+
+    await Promise.all([
+      runtime.acceptChangeObservation(runId, observation),
+      runtime.acceptChangeObservation(runId, observation),
+    ]);
+    const trajectory = await store.loadTrajectory(runId);
+    const state = await store.loadRun(runId);
+    expect(state).not.toHaveProperty('workExecution');
+    expect(state.changeLifecycle).toMatchObject({
+      phase: 'design',
+      checkEpoch: 5,
+      currentWork: { workId: designWork.workId },
+      tasks: [{ taskId: tasks.tasks[0]!.taskId }],
+      buildProtocol: { status: 'suspended-for-design', currentAction: null },
+    });
+    expect(trajectory.at(-1)?.data).toMatchObject({
+      observationKind: 'planning-authority-invalidated',
+      changeLifecycleTransition: {
+        invalidation: { classification: 'semantic', scope: 'exact' },
+      },
+      executionRetirement: {
+        retiredWorkId: configureWork.workId,
+        nextWorkId: designWork.workId,
+      },
+    });
+    expect(await store.loadTrajectory(runId)).toHaveLength(trajectory.length);
   });
 
   it('retires a mismatched execution checkpoint atomically with workspace intent revision', async () => {
@@ -617,7 +782,16 @@ describe('Repoctopus runtime', () => {
     expect(
       (await incompatible.status('run-composition-drift')).compositionCompatibility.status,
     ).toBe('migration_required');
+    const beforeRejectedWrite = await new FileRuntimeStore(workspace).loadTrajectory(
+      'run-composition-drift',
+    );
     await expect(incompatible.next('run-composition-drift')).rejects.toThrow(/migration_required/i);
+    expect(
+      (await incompatible.status('run-composition-drift')).compositionCompatibility.status,
+    ).toBe('migration_required');
+    expect(await new FileRuntimeStore(workspace).loadTrajectory('run-composition-drift')).toEqual(
+      beforeRejectedWrite,
+    );
   });
 
   it('adopts the compatible composition before restoring its direct predecessor definition', async () => {
@@ -660,11 +834,7 @@ describe('Repoctopus runtime', () => {
     const lifecycle = createChangeLifecycleSnapshot({
       identity: { workspaceId: 'team', changeId: 'definition-recovery-order', runId },
     });
-    const initial = new WorkflowRunCoordinator(
-      store,
-      { async export() {} },
-      previousComposition,
-    );
+    const initial = new WorkflowRunCoordinator(store, { async export() {} }, previousComposition);
     await initial.start({
       workflow: workflowFixture(),
       projectSnapshot: projectFixture({ projectId: 'team' }),
@@ -989,13 +1159,20 @@ describe('Repoctopus runtime', () => {
       runId: 'run-reconcile',
     });
     const current = projectFixture({ root: 'C:/different-project' });
-    const resumed = await runtime.resume({
-      runId: 'run-reconcile',
-      currentProjectSnapshot: current,
-    });
+    const [resumed, replayedResume] = await Promise.all([
+      runtime.resume({
+        runId: 'run-reconcile',
+        currentProjectSnapshot: current,
+      }),
+      runtime.resume({
+        runId: 'run-reconcile',
+        currentProjectSnapshot: current,
+      }),
+    ]);
     expect(resumed.value.reconciliation.changed).toBe(true);
     expect(resumed.value.state.reconciliationRequired).toBe(true);
     expect(resumed.value.nextAction).toBeNull();
+    expect(replayedResume.value.trajectoryLength).toBe(resumed.value.trajectoryLength);
     const blocked = await runtime.next('run-reconcile');
     expect(blocked.value.nextAction).toBeNull();
     expect(blocked.diagnostics[0]?.message).toMatch(/reconciliation/i);

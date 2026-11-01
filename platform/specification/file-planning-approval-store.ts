@@ -47,7 +47,7 @@ function planningApprovalState(value: unknown): SpecificationApprovalState {
   ) {
     throw new Error('Invalid specification approval state');
   }
-  assertSpecificationApprovalState(state, { allowLegacy: true });
+  assertSpecificationApprovalState(state);
   return state;
 }
 

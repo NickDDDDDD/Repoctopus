@@ -1,14 +1,23 @@
 import type { PublicationReceiptItem } from '../../domains/delivery/publication-receipt.js';
 import {
   createSpecificationPublicationJournal,
+  recordSpecificationMergeRequestInvocation,
+  recordSpecificationMergeRequestUnknown,
   recordSpecificationPublicationCommit,
   recordSpecificationPublicationCompletion,
   recordSpecificationPublicationPush,
+  recordSpecificationPushInvocation,
+  recordSpecificationPushUnknown,
   type SpecificationPublicationJournal,
   type SpecificationPublicationJournalStore,
 } from '../../domains/delivery/specification-publication-journal.js';
 import type { MergeRequestInput, MergeRequestPort } from '../../domains/delivery/ports.js';
-import { observeOrCreateMergeRequest } from '../../domains/delivery/stable-publication.js';
+import {
+  observeMergeRequest,
+  observeOrCreateMergeRequest,
+  type StableMergeRequestResult,
+} from '../../domains/delivery/stable-publication.js';
+import { PublicationResultUnknownError } from '../../domains/delivery/publication-result-unknown.js';
 import type {
   SpecificationPublicationRequest,
   SpecificationPublicationResult,
@@ -56,6 +65,18 @@ async function remoteOid(cwd: string, remote: string, branch: string): Promise<s
   return output.split(/\s+/u)[0] || null;
 }
 
+export interface SpecificationPublicationGitPort {
+  observeRemoteOid(cwd: string, remote: string, branch: string): Promise<string | null>;
+  push(cwd: string, remote: string, oid: string, branch: string): Promise<void>;
+}
+
+const DEFAULT_PUBLICATION_GIT: SpecificationPublicationGitPort = {
+  observeRemoteOid: remoteOid,
+  async push(cwd, remote, oid, branch) {
+    await git(cwd, ['push', remote, `${oid}:refs/heads/${branch}`]);
+  },
+};
+
 function mergeRequestInput(request: SpecificationPublicationRequest): MergeRequestInput {
   return {
     repositoryId: request.changeBranch.repositoryId,
@@ -85,6 +106,7 @@ export class SpecificationPublicationAdapter {
     private readonly mergeRequests: MergeRequestPort,
     private readonly injectFault?: (point: SpecificationPublicationFaultPoint) => void,
     private readonly clock: () => Date = () => new Date(),
+    private readonly publicationGit: SpecificationPublicationGitPort = DEFAULT_PUBLICATION_GIT,
   ) {}
 
   private async exactMergeRequests(
@@ -116,7 +138,7 @@ export class SpecificationPublicationAdapter {
     if (!result || !journal.publishedOid) {
       throw new Error('Completed Specification publication Journal is incomplete');
     }
-    const observedRemote = await remoteOid(
+    const observedRemote = await this.publicationGit.observeRemoteOid(
       request.workspaceRoot,
       journal.intent.remote,
       journal.intent.sourceBranch,
@@ -134,6 +156,26 @@ export class SpecificationPublicationAdapter {
       throw new Error('Completed Specification publication merge request drifted');
     }
     return structuredClone(result);
+  }
+
+  private publicationItem(
+    journal: SpecificationPublicationJournal,
+    mr: StableMergeRequestResult,
+    provenance: PublicationReceiptItem['provenance'] = mr.provenance,
+  ): PublicationReceiptItem {
+    return {
+      publicationId: `specification:${journal.intent.runId}`,
+      role: 'specification',
+      repositoryId: journal.intent.repositoryId,
+      remoteIdentity: journal.intent.remoteIdentity,
+      remote: journal.intent.remote,
+      sourceBranch: journal.intent.sourceBranch,
+      targetBranch: journal.intent.targetBranch,
+      publishedOid: journal.publishedOid!,
+      mergeRequest: mr.identity,
+      provenance,
+      verifiedAt: this.clock().toISOString(),
+    };
   }
 
   private async adoptOrCommit(
@@ -258,56 +300,185 @@ export class SpecificationPublicationAdapter {
     }
 
     if (journal.state === 'committed') {
-      const observed = await remoteOid(checkout.root, journal.intent.remote, sourceBranch);
+      const observed = await this.publicationGit.observeRemoteOid(
+        checkout.root,
+        journal.intent.remote,
+        sourceBranch,
+      );
       if (observed && observed !== journal.publishedOid) {
         throw new Error('Specification publication remote branch drifted');
       }
-      if (!observed) {
-        await git(checkout.root, [
-          'push',
-          journal.intent.remote,
-          `${journal.publishedOid}:refs/heads/${sourceBranch}`,
-        ]);
-        const published = await remoteOid(checkout.root, journal.intent.remote, sourceBranch);
+      if (observed === journal.publishedOid) {
+        const pushed = recordSpecificationPublicationPush(journal);
+        await stores.compareAndSet(pushed, journal.digest);
+        journal = pushed;
+      } else {
+        const invoking = recordSpecificationPushInvocation(journal);
+        await stores.compareAndSet(invoking, journal.digest);
+        journal = invoking;
+        let published: string | null = null;
+        let failure: unknown;
+        try {
+          await this.publicationGit.push(
+            checkout.root,
+            journal.intent.remote,
+            journal.publishedOid!,
+            sourceBranch,
+          );
+          published = await this.publicationGit.observeRemoteOid(
+            checkout.root,
+            journal.intent.remote,
+            sourceBranch,
+          );
+        } catch (error) {
+          failure = error;
+          try {
+            published = await this.publicationGit.observeRemoteOid(
+              checkout.root,
+              journal.intent.remote,
+              sourceBranch,
+            );
+          } catch {
+            // The persisted invoking state owns recovery when observation is unavailable.
+          }
+        }
         if (published !== journal.publishedOid) {
-          throw new Error('Specification publication remote OID drifted');
+          const unknown = recordSpecificationPushUnknown(journal);
+          await stores.compareAndSet(unknown, journal.digest);
+          journal = unknown;
+          throw new PublicationResultUnknownError(
+            `specification:${request.runId}`,
+            'push',
+            'Specification push result is unknown',
+            failure === undefined ? {} : { cause: failure },
+          );
         }
         this.injectFault?.('after-push');
+        const pushed = recordSpecificationPublicationPush(journal);
+        await stores.compareAndSet(pushed, journal.digest);
+        journal = pushed;
+      }
+    }
+
+    if (journal.state === 'push-invoking' || journal.state === 'push-unknown') {
+      let observed: string | null = null;
+      let failure: unknown;
+      try {
+        observed = await this.publicationGit.observeRemoteOid(
+          checkout.root,
+          journal.intent.remote,
+          sourceBranch,
+        );
+      } catch (error) {
+        failure = error;
+      }
+      if (observed !== journal.publishedOid) {
+        if (journal.state === 'push-invoking') {
+          const unknown = recordSpecificationPushUnknown(journal);
+          await stores.compareAndSet(unknown, journal.digest);
+          journal = unknown;
+        }
+        throw new PublicationResultUnknownError(
+          `specification:${request.runId}`,
+          'push',
+          'Specification push result remains unknown',
+          failure === undefined ? {} : { cause: failure },
+        );
       }
       const pushed = recordSpecificationPublicationPush(journal);
       await stores.compareAndSet(pushed, journal.digest);
       journal = pushed;
     }
 
+    const mrInput = mergeRequestInput(request);
+    const mrIdentity = () => ({
+      changeId: request.changeId,
+      runId: request.runId,
+      repositoryId: request.changeBranch.repositoryId,
+      remoteIdentity: request.changeBranch.remoteIdentity,
+      sourceBranch,
+      targetBranch: request.changeBranch.targetBranch,
+      publishedOid: journal!.publishedOid!,
+    });
+
     if (journal.state === 'pushed') {
-      const mr = await observeOrCreateMergeRequest({
+      const existing = await observeMergeRequest({
         port: this.mergeRequests,
-        request: mergeRequestInput(request),
-        identity: {
-          changeId: request.changeId,
-          runId: request.runId,
-          repositoryId: request.changeBranch.repositoryId,
-          remoteIdentity: request.changeBranch.remoteIdentity,
-          sourceBranch,
-          targetBranch: request.changeBranch.targetBranch,
-          publishedOid: journal.publishedOid!,
-        },
+        request: mrInput,
+        identity: mrIdentity(),
       });
-      this.injectFault?.('after-mr');
-      const item: PublicationReceiptItem = {
-        publicationId: `specification:${request.runId}`,
-        role: 'specification',
-        repositoryId: request.changeBranch.repositoryId,
-        remoteIdentity: request.changeBranch.remoteIdentity,
-        remote: request.remote,
-        sourceBranch,
-        targetBranch: request.changeBranch.targetBranch,
-        publishedOid: journal.publishedOid!,
-        mergeRequest: mr.identity,
-        provenance: mr.provenance === 'human-created' ? 'recovered' : mr.provenance,
-        verifiedAt: this.clock().toISOString(),
-      };
-      const completed = recordSpecificationPublicationCompletion(journal, item);
+      if (existing) {
+        const completed = recordSpecificationPublicationCompletion(
+          journal,
+          this.publicationItem(journal, existing, 'human-created'),
+        );
+        await stores.compareAndSet(completed, journal.digest);
+        journal = completed;
+      } else {
+        const invoking = recordSpecificationMergeRequestInvocation(journal);
+        await stores.compareAndSet(invoking, journal.digest);
+        journal = invoking;
+        try {
+          const mr = await observeOrCreateMergeRequest({
+            port: this.mergeRequests,
+            request: mrInput,
+            identity: mrIdentity(),
+          });
+          this.injectFault?.('after-mr');
+          const completed = recordSpecificationPublicationCompletion(
+            journal,
+            this.publicationItem(journal, mr),
+          );
+          await stores.compareAndSet(completed, journal.digest);
+          journal = completed;
+        } catch (error) {
+          if (error instanceof PublicationResultUnknownError) {
+            const unknown = recordSpecificationMergeRequestUnknown(journal);
+            await stores.compareAndSet(unknown, journal.digest);
+            journal = unknown;
+          }
+          throw error;
+        }
+      }
+    }
+
+    if (journal.state === 'mr-invoking' || journal.state === 'mr-unknown') {
+      let observed: StableMergeRequestResult | null;
+      try {
+        observed = await observeMergeRequest({
+          port: this.mergeRequests,
+          request: mrInput,
+          identity: mrIdentity(),
+        });
+      } catch (error) {
+        if (journal.state === 'mr-invoking') {
+          const unknown = recordSpecificationMergeRequestUnknown(journal);
+          await stores.compareAndSet(unknown, journal.digest);
+          journal = unknown;
+        }
+        throw new PublicationResultUnknownError(
+          `specification:${request.runId}`,
+          'merge-request',
+          'Specification merge request observation is unavailable after invocation',
+          { cause: error },
+        );
+      }
+      if (!observed) {
+        if (journal.state === 'mr-invoking') {
+          const unknown = recordSpecificationMergeRequestUnknown(journal);
+          await stores.compareAndSet(unknown, journal.digest);
+          journal = unknown;
+        }
+        throw new PublicationResultUnknownError(
+          `specification:${request.runId}`,
+          'merge-request',
+          'Specification merge request result remains unknown',
+        );
+      }
+      const completed = recordSpecificationPublicationCompletion(
+        journal,
+        this.publicationItem(journal, observed, 'recovered'),
+      );
       await stores.compareAndSet(completed, journal.digest);
       journal = completed;
     }

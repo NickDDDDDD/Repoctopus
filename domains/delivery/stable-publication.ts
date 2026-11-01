@@ -1,5 +1,6 @@
 import type { MergeRequestInput, MergeRequestPort } from './ports.js';
 import type { PublicationProvenance } from './publication-receipt.js';
+import { PublicationResultUnknownError } from './publication-result-unknown.js';
 import type { MergeRequestIdentity, MergeRequestStatus } from './types.js';
 
 export interface StablePublicationIdentity {
@@ -64,25 +65,41 @@ async function observe(
   return exact;
 }
 
+export async function observeMergeRequest(input: {
+  port: MergeRequestPort;
+  request: MergeRequestInput;
+  identity: StablePublicationIdentity;
+}): Promise<StableMergeRequestResult | null> {
+  const exact = await observe(input.port, input.request, input.identity);
+  return exact.length === 1 ? { ...exact[0]!, provenance: 'human-created' } : null;
+}
+
 export async function observeOrCreateMergeRequest(input: {
   port: MergeRequestPort;
   request: MergeRequestInput;
   identity: StablePublicationIdentity;
 }): Promise<StableMergeRequestResult> {
-  const existing = await observe(input.port, input.request, input.identity);
-  if (existing.length === 1) {
-    return { ...existing[0]!, provenance: 'human-created' };
-  }
+  const existing = await observeMergeRequest(input);
+  if (existing) return existing;
 
   let created: MergeRequestIdentity;
   try {
     created = await input.port.create(input.request);
+    const status = await input.port.status(created);
+    assertExactStatus(status, input.identity);
+    return { identity: created, status, provenance: 'runtime-created' };
   } catch (error) {
-    const recovered = await observe(input.port, input.request, input.identity);
-    if (recovered.length !== 1) throw error;
-    return { ...recovered[0]!, provenance: 'recovered' };
+    try {
+      const recovered = await observeMergeRequest(input);
+      if (recovered) return { ...recovered, provenance: 'recovered' };
+    } catch {
+      // The caller persists the unknown boundary before it may attempt reconciliation.
+    }
+    throw new PublicationResultUnknownError(
+      `merge-request:${input.identity.repositoryId}`,
+      'merge-request',
+      `Merge request publication result is unknown: ${input.identity.repositoryId}`,
+      { cause: error },
+    );
   }
-  const status = await input.port.status(created);
-  assertExactStatus(status, input.identity);
-  return { identity: created, status, provenance: 'runtime-created' };
 }

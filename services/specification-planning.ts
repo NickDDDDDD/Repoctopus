@@ -28,8 +28,6 @@ export interface PrepareSpecificationApprovalInput {
   changeId: string;
   approvalPhase?: 'open' | 'design';
   changeBranch: ChangeBranchReference;
-  compositionDigest: `sha256:${string}`;
-  projectConfigDigest: `sha256:${string}`;
   requestId?: string;
   forceNewApproval?: boolean;
   now?: () => Date;
@@ -52,14 +50,8 @@ export interface DesignGateAssessment {
 export interface OpenApprovalRevalidation {
   status: 'accepted' | 'invalid' | 'unavailable';
   reason: string;
-  source?:
-    | 'provider-artifacts'
-    | 'strict-validation'
-    | 'approval-drift';
-  reasonCode?:
-    | 'provider-artifacts-invalid'
-    | 'strict-validation-invalid'
-    | 'approval-drift';
+  source?: 'provider-artifacts' | 'strict-validation' | 'approval-drift';
+  reasonCode?: 'provider-artifacts-invalid' | 'strict-validation-invalid' | 'approval-drift';
   evidenceDigests: `sha256:${string}`[];
   validation?: SpecificationValidation;
   snapshot?: PlanningSnapshot;
@@ -71,6 +63,7 @@ export interface OpenApprovalRevalidation {
 
 export interface PlanningAuthorityObservation {
   status: 'authorized' | 'invalid';
+  observationKind: 'same' | 'semantic' | 'approval-authority' | 'publication' | 'unknown';
   invalidationKind: 'semantic' | 'approval-authority' | null;
   planningDigest: `sha256:${string}`;
   reasonCode:
@@ -161,8 +154,6 @@ export class SpecificationPlanning extends Service {
         schema,
         specificationRoot,
         changeBranch: input.changeBranch,
-        compositionDigest: input.compositionDigest,
-        projectConfigDigest: input.projectConfigDigest,
         planningManifest: manifest,
         approvalPhase: input.approvalPhase ?? 'design',
       });
@@ -175,7 +166,7 @@ export class SpecificationPlanning extends Service {
         observation,
       };
     }
-    const next = requestSpecificationApproval({
+    let next = requestSpecificationApproval({
       current,
       snapshot,
       timestamp: (input.now ?? (() => new Date()))().toISOString(),
@@ -183,7 +174,20 @@ export class SpecificationPlanning extends Service {
       ...(input.forceNewApproval ? { forceNewRequest: true } : {}),
     });
     if (current?.stateVersion !== next.stateVersion) {
-      await this.store.commit(next, current?.stateVersion ?? null);
+      try {
+        await this.store.commit(next, current?.stateVersion ?? null);
+      } catch (error) {
+        const latest = await this.store.load(input.changeId, input.approvalPhase ?? 'design');
+        if (
+          !latest ||
+          latest.snapshot.digest !== next.snapshot.digest ||
+          latest.decisionRequest.requestId !== next.decisionRequest.requestId ||
+          latest.decisionRequest.proposalHash !== next.decisionRequest.proposalHash
+        ) {
+          throw error;
+        }
+        next = latest;
+      }
     }
     if (
       next.status === 'approved' &&
@@ -238,9 +242,7 @@ export class SpecificationPlanning extends Service {
       return {
         status: 'unavailable',
         reason:
-          error instanceof Error
-            ? error.message
-            : 'Open approval revalidation is unavailable',
+          error instanceof Error ? error.message : 'Open approval revalidation is unavailable',
         evidenceDigests: [],
       };
     }
@@ -264,10 +266,7 @@ export class SpecificationPlanning extends Service {
       source,
       reasonCode,
       reason,
-      evidenceDigests: [
-        ...evidenceDigests,
-        ...(snapshot ? [snapshot.digest] : []),
-      ],
+      evidenceDigests: [...evidenceDigests, ...(snapshot ? [snapshot.digest] : [])],
       validation,
       ...(snapshot ? { snapshot } : {}),
       observation,
@@ -294,8 +293,6 @@ export class SpecificationPlanning extends Service {
         schema: manifest.schema,
         specificationRoot: manifest.specificationRoot,
         changeBranch: input.changeBranch,
-        compositionDigest: input.compositionDigest,
-        projectConfigDigest: input.projectConfigDigest,
         planningManifest: manifest,
         approvalPhase: 'open',
       });
@@ -325,11 +322,7 @@ export class SpecificationPlanning extends Service {
     return {
       status: 'accepted',
       reason: 'Current Open planning still matches the trusted approval',
-      evidenceDigests: [
-        ...evidenceDigests,
-        snapshot.digest,
-        current.decision.approvalHash,
-      ],
+      evidenceDigests: [...evidenceDigests, snapshot.digest, current.decision.approvalHash],
       validation,
       snapshot,
       observation,
@@ -348,6 +341,7 @@ export class SpecificationPlanning extends Service {
     } catch (error) {
       return {
         status: 'invalid',
+        observationKind: 'unknown',
         invalidationKind: 'semantic',
         planningDigest: input.expectedPlanningDigest,
         reasonCode: 'strict-validation-failed',
@@ -370,6 +364,7 @@ export class SpecificationPlanning extends Service {
       snapshot: PlanningSnapshot | null = null,
     ): PlanningAuthorityObservation => ({
       status: 'invalid',
+      observationKind: invalidationKind,
       invalidationKind,
       planningDigest: manifest.semanticDigest,
       reasonCode,
@@ -408,8 +403,6 @@ export class SpecificationPlanning extends Service {
       schema: manifest.schema,
       specificationRoot: manifest.specificationRoot,
       changeBranch,
-      compositionDigest: input.compositionDigest,
-      projectConfigDigest: input.projectConfigDigest,
       planningManifest: manifest,
       approvalPhase: 'design',
     });
@@ -447,6 +440,10 @@ export class SpecificationPlanning extends Service {
     }
     return {
       status: 'authorized',
+      observationKind:
+        current.snapshot.publicationProvenanceDigest === snapshot.publicationProvenanceDigest
+          ? 'same'
+          : 'publication',
       invalidationKind: null,
       planningDigest: manifest.semanticDigest,
       reasonCode: 'authorized',
@@ -479,13 +476,28 @@ export class SpecificationPlanning extends Service {
   }): Promise<SpecificationApprovalState> {
     const current = await this.store.load(input.changeId, input.approvalPhase ?? 'design');
     if (!current) throw new Error(`Specification approval does not exist: ${input.changeId}`);
-    const next = recordSpecificationApprovalDecision({
+    let next = recordSpecificationApprovalDecision({
       state: current,
       response: input.response,
       actor: input.actor,
       timestamp: (input.now ?? (() => new Date()))().toISOString(),
     });
-    await this.store.commit(next, current.stateVersion);
+    try {
+      await this.store.commit(next, current.stateVersion);
+    } catch (error) {
+      const latest = await this.store.load(input.changeId, input.approvalPhase ?? 'design');
+      if (
+        !latest ||
+        latest.decision?.requestId !== next.decision?.requestId ||
+        latest.decision?.proposalHash !== next.decision?.proposalHash ||
+        latest.decision?.decision !== next.decision?.decision ||
+        latest.decision?.actorId !== next.decision?.actorId ||
+        latest.decision?.source !== next.decision?.source
+      ) {
+        throw error;
+      }
+      next = latest;
+    }
     return next;
   }
 }

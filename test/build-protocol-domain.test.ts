@@ -4,6 +4,7 @@ import {
   acceptBuildConfiguration,
   advanceBuildProtocol,
   assessBuildPlanRisk,
+  canRetainSuspendedBuildConfiguration,
   createBuildCheckEvidence,
   createBuildConfigurationProposal,
   createBuildInvalidation,
@@ -13,17 +14,21 @@ import {
   createExecutionWorkspaceIntent,
   createPackageCompletionEvidence,
   createPlanEvidence,
+  revalidateSuspendedBuildProtocol,
+  suspendBuildProtocolForDesign,
   validateBuildPlan,
 } from '../domains/change-lifecycle/build-protocol.js';
 import { parseSpecificationTasks } from '../domains/specification/tasks.js';
 
 const sha = (value: string): `sha256:${string}` => `sha256:${value.padEnd(64, value).slice(0, 64)}`;
 
-function approvedConfiguration(options: {
-  repositoryIds?: readonly string[];
-  executionMode?: 'autonomous' | 'subagent-driven-development';
-  tddMode?: 'tdd' | 'direct';
-} = {}) {
+function approvedConfiguration(
+  options: {
+    repositoryIds?: readonly string[];
+    executionMode?: 'autonomous' | 'subagent-driven-development';
+    tddMode?: 'tdd' | 'direct';
+  } = {},
+) {
   const repositoryIds = options.repositoryIds ?? ['workspace'];
   const executionMode = options.executionMode ?? 'autonomous';
   const intent = createExecutionWorkspaceIntent({
@@ -34,15 +39,16 @@ function approvedConfiguration(options: {
   });
   const binding = createExecutionWorkspaceBinding({
     intent,
-    repositories: repositoryIds.map((repositoryId, index) =>
-      ({
-        repositoryId,
-        checkoutPath: `C:\\work\\repoctopus-managed-build-${repositoryId}`,
-        branch: 'codex/managed-build',
-        head: `${index}`.padEnd(40, 'a'),
-        worktreeId: `wt-managed-build-${repositoryId}`,
-        workspaceOwned: true,
-      }) as const,
+    repositories: repositoryIds.map(
+      (repositoryId, index) =>
+        ({
+          repositoryId,
+          checkoutPath: `C:\\work\\repoctopus-managed-build-${repositoryId}`,
+          branch: 'codex/managed-build',
+          head: `${index}`.padEnd(40, 'a'),
+          worktreeId: `wt-managed-build-${repositoryId}`,
+          workspaceOwned: true,
+        }) as const,
     ),
   });
   const proposal = createBuildConfigurationProposal({
@@ -67,6 +73,264 @@ function approvedConfiguration(options: {
 }
 
 describe('Build protocol domain', () => {
+  it('suspends Design-revision candidates without making them runnable and revalidates by layer', () => {
+    const configuration = approvedConfiguration();
+    let state = createBuildProtocolState({
+      runId: 'run-suspended-design',
+      planningDigest: sha('a'),
+      workspaceIntent: configuration.workspaceIntent,
+    });
+    state = advanceBuildProtocol(state, {
+      kind: 'configuration-proposed',
+      proposal: configuration,
+    });
+    state = advanceBuildProtocol(state, { kind: 'configuration-approved', configuration });
+
+    const suspended = suspendBuildProtocolForDesign(state, {
+      observedPlanningDigest: sha('b'),
+      reasonCode: 'semantic-drift',
+      invalidatedIdentities: ['planning-semantic', 'build-plan'],
+    });
+    expect(suspended).toMatchObject({
+      status: 'suspended-for-design',
+      currentAction: null,
+      configuration: { configurationId: configuration.configurationId },
+      suspension: { supersededPlanningDigest: sha('a'), observedPlanningDigest: sha('b') },
+    });
+    expect(() => advanceBuildProtocol(suspended, { kind: 'retry', action: 'plan' })).toThrow(
+      /suspended/iu,
+    );
+    expect(
+      canRetainSuspendedBuildConfiguration(suspended, {
+        workspaceIntent: configuration.workspaceIntent,
+        repositoryIds: configuration.repositoryIds,
+      }),
+    ).toBe(true);
+    expect(
+      canRetainSuspendedBuildConfiguration(suspended, {
+        workspaceIntent: configuration.workspaceIntent,
+        repositoryIds: [...configuration.repositoryIds, 'new-repository'],
+      }),
+    ).toBe(false);
+
+    const revalidated = revalidateSuspendedBuildProtocol(suspended, {
+      planningDigest: sha('b'),
+      configurationCompatible: true,
+      planCompatible: false,
+      retainedPackageIds: [],
+    });
+    expect(revalidated).toMatchObject({
+      status: 'active',
+      currentAction: 'plan',
+      planningDigest: sha('b'),
+      configuration: { configurationId: configuration.configurationId },
+      plan: null,
+      suspension: null,
+    });
+  });
+
+  it.each([
+    ['single-repository', ['workspace']],
+    ['multi-repository', ['workspace', 'worker']],
+  ] as const)(
+    'retains only unaffected completion evidence and repository bindings in a %s revision',
+    (_label, repositoryIds) => {
+      const configuration = approvedConfiguration({ repositoryIds, tddMode: 'direct' });
+      const originalTasks = parseSpecificationTasks(
+        'managed-build',
+        '- [ ] 1.1 Preserve the stable package.\n  **Acceptance:** Stable behavior remains.\n- [ ] 1.2 Revise the changed package.\n  **Acceptance:** Changed behavior works.\n',
+      );
+      const packageCandidate = (taskIndex: number, expectedOutcome: string) => {
+        const repositoryId = repositoryIds[Math.min(taskIndex, repositoryIds.length - 1)]!;
+        return {
+          packageKey: `package-${taskIndex + 1}`,
+          taskIds: [originalTasks.tasks[taskIndex]!.taskId],
+          repositoryIds: [repositoryId],
+          writeScopes: [{ repositoryId, paths: [`src/package-${taskIndex + 1}/**`] }],
+          acceptanceRefs: originalTasks.tasks[taskIndex]!.acceptanceCriteria.map(
+            (criterion) => criterion.acceptanceId,
+          ),
+          expectedOutcomes: [expectedOutcome],
+          validatorProfile: 'build.package-valid',
+          dependsOn: [] as string[],
+        };
+      };
+      const firstPlan = createBuildPlan({
+        runId: 'run-local-revalidation',
+        revision: 1,
+        configuration,
+        planningDigest: originalTasks.digest,
+        tasks: originalTasks,
+        candidate: {
+          packages: [packageCandidate(0, 'stable-output'), packageCandidate(1, 'old-output')],
+        },
+      });
+      let state = createBuildProtocolState({
+        runId: 'run-local-revalidation',
+        planningDigest: originalTasks.digest,
+        workspaceIntent: configuration.workspaceIntent,
+      });
+      state = advanceBuildProtocol(state, {
+        kind: 'configuration-proposed',
+        proposal: configuration,
+      });
+      state = advanceBuildProtocol(state, { kind: 'configuration-approved', configuration });
+      state = advanceBuildProtocol(state, { kind: 'plan-accepted', plan: firstPlan });
+      state = advanceBuildProtocol(state, {
+        kind: 'plan-evidence-accepted',
+        evidence: createPlanEvidence({
+          plan: firstPlan,
+          configuration,
+          validation: validateBuildPlan({ plan: firstPlan, configuration, tasks: originalTasks }),
+        }),
+      });
+      for (const [index, workPackage] of firstPlan.packages.entries()) {
+        state = advanceBuildProtocol(state, {
+          kind: 'package-completed',
+          completion: createPackageCompletionEvidence({
+            workPackage,
+            executionId: `execution-${index + 1}`,
+            acceptanceEvidenceIds: [`acceptance-${index + 1}`],
+            testEvidenceIds: [`test-${index + 1}`],
+            tddMode: 'direct',
+            repositoryDigest: sha(String(index + 1)),
+            implementationDigest: sha(String(index + 3)),
+          }),
+        });
+      }
+
+      const revisedTasks = parseSpecificationTasks(
+        'managed-build',
+        '- [ ] 1.1 Preserve the stable package.\n  **Acceptance:** Stable behavior remains.\n- [ ] 1.2 Revise the changed package with stricter behavior.\n  **Acceptance:** Changed behavior works.\n',
+      );
+      state = revalidateSuspendedBuildProtocol(
+        suspendBuildProtocolForDesign(state, {
+          observedPlanningDigest: revisedTasks.digest,
+          reasonCode: 'semantic-drift',
+          invalidatedIdentities: ['planning-semantic', 'build-plan'],
+        }),
+        {
+          planningDigest: revisedTasks.digest,
+          configurationCompatible: true,
+          planCompatible: false,
+          retainedPackageIds: firstPlan.packages.map((workPackage) => workPackage.packageId),
+        },
+      );
+      const revisedPlan = createBuildPlan({
+        runId: 'run-local-revalidation',
+        revision: 2,
+        configuration,
+        planningDigest: revisedTasks.digest,
+        tasks: revisedTasks,
+        candidate: {
+          packages: [
+            {
+              ...packageCandidate(0, 'stable-output'),
+              acceptanceRefs: revisedTasks.tasks[0]!.acceptanceCriteria.map(
+                (criterion) => criterion.acceptanceId,
+              ),
+            },
+            {
+              ...packageCandidate(1, 'new-output'),
+              taskIds: [revisedTasks.tasks[1]!.taskId],
+              acceptanceRefs: revisedTasks.tasks[1]!.acceptanceCriteria.map(
+                (criterion) => criterion.acceptanceId,
+              ),
+            },
+          ],
+        },
+      });
+      state = advanceBuildProtocol(state, { kind: 'plan-accepted', plan: revisedPlan });
+
+      expect(state.packageCompletions).toHaveLength(1);
+      expect(state.packageCompletions[0]?.packageId).toBe(revisedPlan.packages[0]?.packageId);
+      expect(state.configuration?.bindingDigest).toBe(configuration.bindingDigest);
+      expect(state.configuration?.repositoryIds).toEqual([...repositoryIds].sort());
+      expect(revisedPlan.packages[1]?.repositoryIds).toEqual([
+        repositoryIds[Math.min(1, repositoryIds.length - 1)],
+      ]);
+      expect(state.currentAction).toBe('plan-evidence');
+    },
+  );
+
+  it('changes package identity for Task revisions and propagates dependency identity changes', () => {
+    const configuration = approvedConfiguration();
+    const tasks = parseSpecificationTasks(
+      'managed-build',
+      '- [ ] 1.1 Build the foundation.\n  **Acceptance:** Foundation works.\n- [ ] 1.2 Integrate the feature.\n  **Acceptance:** Integration works.\n',
+    );
+    const candidate = {
+      packages: [
+        {
+          packageKey: 'foundation',
+          taskIds: ['1.1'],
+          repositoryIds: ['workspace'],
+          writeScopes: [{ repositoryId: 'workspace', paths: ['src/foundation/**'] }],
+          acceptanceRefs: tasks.tasks[0]!.acceptanceCriteria.map((item) => item.acceptanceId),
+          expectedOutcomes: ['foundation-ready'],
+          validatorProfile: 'build.package-valid',
+          dependsOn: [] as string[],
+        },
+        {
+          packageKey: 'integration',
+          taskIds: ['1.2'],
+          repositoryIds: ['workspace'],
+          writeScopes: [{ repositoryId: 'workspace', paths: ['src/integration/**'] }],
+          acceptanceRefs: tasks.tasks[1]!.acceptanceCriteria.map((item) => item.acceptanceId),
+          expectedOutcomes: ['integration-ready'],
+          validatorProfile: 'build.package-valid',
+          dependsOn: ['foundation'],
+        },
+      ],
+    };
+    const original = createBuildPlan({
+      runId: 'run-package-identity',
+      revision: 1,
+      configuration,
+      planningDigest: tasks.digest,
+      tasks,
+      candidate,
+    });
+    const revisedTasks = parseSpecificationTasks(
+      'managed-build',
+      '- [ ] 1.1 Build the hardened foundation.\n  **Acceptance:** Foundation works.\n- [ ] 1.2 Integrate the feature.\n  **Acceptance:** Integration works.\n',
+    );
+    const revised = createBuildPlan({
+      runId: 'run-package-identity',
+      revision: 2,
+      configuration,
+      planningDigest: revisedTasks.digest,
+      tasks: revisedTasks,
+      candidate: {
+        packages: candidate.packages.map((workPackage, index) => ({
+          ...workPackage,
+          acceptanceRefs: revisedTasks.tasks[index]!.acceptanceCriteria.map(
+            (item) => item.acceptanceId,
+          ),
+        })),
+      },
+    });
+    expect(revised.packages[0]!.digest).not.toBe(original.packages[0]!.digest);
+    expect(revised.packages[1]!.digest).not.toBe(original.packages[1]!.digest);
+
+    const detached = createBuildPlan({
+      runId: 'run-package-identity',
+      revision: 3,
+      configuration,
+      planningDigest: tasks.digest,
+      tasks,
+      candidate: {
+        packages: candidate.packages.map((workPackage) =>
+          workPackage.packageKey === 'integration'
+            ? { ...workPackage, dependsOn: [] }
+            : workPackage,
+        ),
+      },
+    });
+    expect(detached.packages[0]!.digest).toBe(original.packages[0]!.digest);
+    expect(detached.packages[1]!.digest).not.toBe(original.packages[1]!.digest);
+  });
+
   it('normalizes workspace and configuration input into stable immutable digests', () => {
     const first = approvedConfiguration();
     const second = approvedConfiguration();
@@ -322,7 +586,10 @@ describe('Build protocol domain', () => {
       planningDigest: tasks.digest,
       workspaceIntent: configuration.workspaceIntent,
     });
-    state = advanceBuildProtocol(state, { kind: 'configuration-proposed', proposal: configuration });
+    state = advanceBuildProtocol(state, {
+      kind: 'configuration-proposed',
+      proposal: configuration,
+    });
     state = advanceBuildProtocol(state, { kind: 'configuration-approved', configuration });
     state = advanceBuildProtocol(state, { kind: 'plan-accepted', plan: plan1 });
     state = advanceBuildProtocol(state, {
@@ -607,14 +874,15 @@ describe('Build protocol domain', () => {
       configuration,
     });
     expect(configured.currentAction).toBe('plan');
+    expect(() => advanceBuildProtocol(configured, { kind: 'retry', action: 'execute' })).toThrow(
+      /current Runtime-selected Action/u,
+    );
     expect(() =>
-      advanceBuildProtocol(configured, { kind: 'retry', action: 'execute' }),
-    ).toThrow(/current Runtime-selected Action/u);
-    expect(() =>
-      advanceBuildProtocol(
-        configured,
-        { kind: 'host-outcome', action: 'execute', accepted: true } as never,
-      ),
+      advanceBuildProtocol(configured, {
+        kind: 'host-outcome',
+        action: 'execute',
+        accepted: true,
+      } as never),
     ).toThrow(/Unsupported Build protocol observation/u);
   });
 

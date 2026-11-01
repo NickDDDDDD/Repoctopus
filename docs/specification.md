@@ -66,9 +66,11 @@ BuildPlan 保存 package DAG、repository binding、write scope、acceptance ref
 
 `planningGuidance` 把已审核的方法规则只读映射到 Provider 声明的四类官方工件：已解决上下文被综合进现有工件，最少公共测试缝进入 Design，tracer-bullet、验收验证和 expand/migrate/contract 顺序进入 Tasks。该指导明确禁止额外规划工件和 tracker 发布；它不复制 OpenSpec 模板，也不执行原始 `to-spec`/`to-tickets` Skill。
 
-批准只授权按照该语义快照进入实施。产物、Provider、配置或目标分支变化时，下一次准备或实施门禁都会生成新请求，旧批准不能沿用。Change 分支每次仍必须已公开、工作区干净且本地 HEAD 与远端 OID 一致，但 OID 单独记录为 publication provenance：只推送非规划 commit 会刷新发布来源而不撤销相同规划语义的批准，规划内容变化即使仍在同一分支也会失效。后续 Delivery approval 单独授权 Business MR 和最终 Change MR 的发布；全部远端身份形成完整 Publication Receipt 后原 Run 完成，所有 MR 仍由人或托管平台合入。因此三个事实不能互相替代：
+批准只授权当前 `PlanningSemanticIdentity`。四类工件、Provider/schema、Specification Root、受影响能力、planning policy 或目标分支改变时，下一次门禁会生成新请求；完整 Cordis composition、无关项目配置、source branch 表示或 published OID 不属于规划语义。严格校验结果使用独立 validation observation identity，Human Decision 使用独立 approval authority identity。
 
-Build 或 Verify 每次继续前都会重新核对 planning semantic digest。发生变化时，Runtime 追加 `planning-semantic-drift` invalidation、清除当前 Work 与任务 revision 快照并返回 Design；Trajectory 保留被替代的 planning digest、Work ID、Task revisions 和证据身份。官方 Tasks checkbox 的完成状态已经从 planning digest 排除，因此有效的任务完成更新不会误触发回退。
+Change 分支每次仍必须已公开、工作区干净且本地 HEAD 与远端 OID 一致。stable repository ID 优先标识仓库；平台 Adapter 只按平台明确规则规范化 remote，无法证明等价时返回 publication reconciliation。推送非规划 commit 只刷新 `PublicationProvenanceIdentity`，不会撤销相同规划语义的批准。后续 Delivery approval 单独授权 Business MR 和最终 Change MR 的发布；全部远端身份形成完整 Publication Receipt 后原 Run 完成，所有 MR 仍由人或托管平台合入。因此三个事实不能互相替代：
+
+Build 或 Verify 每次继续前都会重新核对 planning semantic identity。发生变化时，Runtime 追加有界 invalidation fact、退役当前 execution，并把 Build Protocol 暂停为不可调度候选后返回 Design；它不删除 Tasks、Configuration、Plan 或 completion。新批准按 Configuration → Plan → package completion → Evidence 重验，只失效依赖变化输入的后继。Trajectory 和 OTLP 记录 classification、disposition、scope、retained/invalidated counts 与 continuation。官方 Tasks checkbox 不进入 planning semantic identity，因此有效的任务完成更新不会触发返工。
 
 旧版未分 Open/Design scope 的 planning approval 不参与当前定位；当前协议只读取按 phase 隔离的新状态，旧文件保持字节不变并可由审计工具只读查看。
 

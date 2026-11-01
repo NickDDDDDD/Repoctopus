@@ -38,6 +38,10 @@ import {
   type ChangeLifecycleState,
 } from '../change-lifecycle/transition.js';
 import {
+  projectCommittedContinuation,
+  projectLifecycleNextActions,
+} from '../change-lifecycle/continuation.js';
+import {
   compareLifecycleContributorSnapshots,
   type LifecycleContributorSnapshot,
 } from '../change-lifecycle/contributors.js';
@@ -107,6 +111,27 @@ function lifecycleState(snapshot: ChangeLifecycleSnapshot): ChangeLifecycleState
   };
 }
 
+function compositionDependencyClosure(state: RunState): {
+  pluginIds: string[];
+  authorities: string[];
+} {
+  const work = state.changeLifecycle?.currentWork;
+  return {
+    pluginIds: [
+      work?.actionSkill?.provider,
+      ...(work?.augmentationSkills.map((skill) => skill.provider) ?? []),
+      ...(work?.skillComposition?.layers.map((layer) => layer.skill.provider) ?? []),
+    ].filter((value): value is string => Boolean(value)),
+    authorities: [
+      'run-store-write',
+      'workflow-transition',
+      'lifecycle-definition',
+      'lifecycle-validator',
+      ...(work?.capabilities ?? []),
+    ],
+  };
+}
+
 interface WorkExecutionRetirementFact {
   reason: 'workspace-intent-revision' | 'lifecycle-work-changed';
   retiredWorkId: string;
@@ -144,92 +169,6 @@ function retireMismatchedExecution(
       nextCheckEpoch: snapshot.checkEpoch,
     },
   };
-}
-
-function lifecycleNextActions(snapshot: ChangeLifecycleSnapshot) {
-  if (['completed', 'failed', 'migration_required'].includes(snapshot.status)) return [];
-  if (snapshot.phase === 'open') {
-    if (snapshot.currentWork) {
-      return [
-        {
-          id: snapshot.currentWork.workId,
-          kind: 'work' as const,
-          label: `Run ${snapshot.currentWork.kind}`,
-        },
-      ];
-    }
-    if (snapshot.status === 'waiting') {
-      return [{ id: 'open.review', kind: 'decision' as const, label: 'Review Open baseline' }];
-    }
-    if (snapshot.status === 'blocked') return [];
-    return [];
-  }
-  if (snapshot.phase === 'design' && snapshot.status === 'waiting') {
-    return [{ id: 'design.review', kind: 'decision' as const, label: 'Review planning decision' }];
-  }
-  if (snapshot.phase === 'design' && snapshot.status === 'blocked') {
-    return [{ id: 'design.repair', kind: 'repair' as const, label: 'Repair planning artifacts' }];
-  }
-  if (snapshot.phase === 'design') {
-    return [{ id: 'design.evaluate', kind: 'work' as const, label: 'Evaluate Design gate' }];
-  }
-  if (snapshot.phase === 'build' && snapshot.currentWork) {
-    return [
-      {
-        id: snapshot.currentWork.workId,
-        kind: 'work' as const,
-        label: `Run ${snapshot.currentWork.kind}`,
-      },
-    ];
-  }
-  if (snapshot.phase === 'build' && snapshot.status === 'waiting') {
-    return [{ id: 'build.review', kind: 'decision' as const, label: 'Review Build decision' }];
-  }
-  if (snapshot.phase === 'build' && snapshot.status === 'blocked') {
-    return [{ id: 'build.blocked', kind: 'wait' as const, label: 'Resolve Build blocker' }];
-  }
-  if (snapshot.phase === 'build') {
-    return [
-      {
-        id: 'build.prepare-verification',
-        kind: 'work' as const,
-        label: 'Prepare immutable verification input',
-      },
-    ];
-  }
-  if (snapshot.phase === 'verify' && snapshot.currentWork?.kind === 'evidence.verify') {
-    return [
-      {
-        id: snapshot.currentWork.workId,
-        kind: 'work' as const,
-        label: 'Run the required Evidence profile',
-      },
-    ];
-  }
-  if (snapshot.phase === 'archive' && snapshot.currentWork?.kind === 'specification.close') {
-    return [
-      {
-        id: snapshot.currentWork.workId,
-        kind: 'work' as const,
-        label: 'Close the verified Specification change',
-      },
-    ];
-  }
-  if (snapshot.phase === 'archive' && snapshot.currentWork?.kind === 'delivery.publish') {
-    return [
-      {
-        id: snapshot.currentWork.workId,
-        kind: 'work' as const,
-        label: 'Publish all merge requests and accept the Publication Receipt',
-      },
-    ];
-  }
-  if (snapshot.phase === 'archive' && snapshot.currentWork === null) {
-    return [
-      { id: 'archive.prepare', kind: 'work' as const, label: 'Prepare Archive Delivery input' },
-    ];
-  }
-  return [];
 }
 
 function event(options: {
@@ -369,7 +308,11 @@ export class WorkflowRunCoordinator {
         ? { ...pendingStep.action, id: state.pendingActionId, stepId: pendingStep.id }
         : null;
     const workflowDrift = await this.inspectWorkflowDrift(state);
-    const compositionCompatibility = compareCompositions(state.composition, this.composition);
+    const compositionCompatibility = compareCompositions(
+      state.composition,
+      this.composition,
+      compositionDependencyClosure(state),
+    );
     const lifecycleContributorCompatibility =
       state.lifecycleContributorSnapshot && this.lifecycleContributors
         ? compareLifecycleContributorSnapshots(
@@ -407,7 +350,7 @@ export class WorkflowRunCoordinator {
               acceptedBundleIds: [...state.acceptedEvidenceBundleIds],
               latestAttemptId: latestVerifyObservation?.attemptId ?? null,
             },
-            nextActions: lifecycleNextActions({
+            nextActions: projectLifecycleNextActions({
               ...structuredClone(state.changeLifecycle),
               status: state.status,
             }),
@@ -419,6 +362,9 @@ export class WorkflowRunCoordinator {
           },
         )
       : undefined;
+    const continuation = state.changeLifecycle
+      ? projectCommittedContinuation(checkpoint, trajectory)
+      : undefined;
     return {
       state,
       checkpoint,
@@ -428,6 +374,7 @@ export class WorkflowRunCoordinator {
       compositionCompatibility,
       ...(lifecycleContributorCompatibility ? { lifecycleContributorCompatibility } : {}),
       ...(changeLifecycle ? { changeLifecycle } : {}),
+      ...(continuation ? { continuation } : {}),
       ...(preview?.reason ? { reason: preview.reason } : {}),
     };
   }
@@ -481,6 +428,17 @@ export class WorkflowRunCoordinator {
     await this.recoverChangeLifecycleDefinition(runId);
     await this.store.commitGuarded(runId, ({ state, trajectory }) => {
       if (!state.changeLifecycle) throw new Error(`Run is not a Change Run: ${runId}`);
+      const observationDigest = createHash('sha256')
+        .update(canonicalJson(observation))
+        .digest('hex');
+      const replayed = trajectory.some(
+        (entry) =>
+          entry.type === 'change.lifecycle.transitioned' &&
+          (entry.data.observationDigest === observationDigest ||
+            (entry.data.observation !== undefined &&
+              canonicalJson(entry.data.observation) === canonicalJson(observation))),
+      );
+      if (replayed) return { value: undefined };
       if (
         (observation.kind === 'verify-gate-satisfied' ||
           observation.kind === 'verify-gate-rejected') &&
@@ -515,11 +473,7 @@ export class WorkflowRunCoordinator {
       return {
         state: nextState,
         event: event({
-          eventId: stableEventId(
-            runId,
-            String(reduced.fact.revision),
-            createHash('sha256').update(canonicalJson(observation)).digest('hex'),
-          ),
+          eventId: stableEventId(runId, String(reduced.fact.revision), observationDigest),
           sequence: trajectory.length + 1,
           timestamp,
           type: 'change.lifecycle.transitioned',
@@ -527,6 +481,7 @@ export class WorkflowRunCoordinator {
           data: {
             changeLifecycleTransition: reduced.fact,
             observationKind: observation.kind,
+            observationDigest,
             observation: structuredClone(observation),
             ...(retirement.fact ? { executionRetirement: structuredClone(retirement.fact) } : {}),
           },
@@ -877,35 +832,44 @@ export class WorkflowRunCoordinator {
   }): Promise<RuntimeResult<ResumeView>> {
     const recovered = await this.store.recover(options.runId);
     await this.prepareWritableComposition(options.runId);
-    const [state, previousSnapshot, trajectory] = await Promise.all([
-      this.store.loadRun(options.runId),
-      this.store.loadProjectSnapshot(options.runId),
-      this.store.loadTrajectory(options.runId),
-    ]);
-    this.assertWritableComposition(state);
+    const previousSnapshot = await this.store.loadProjectSnapshot(options.runId);
     const reconciliation = reconcileProjectSnapshots(
       previousSnapshot,
       options.currentProjectSnapshot,
     );
-    const timestamp = this.clock().toISOString();
-    const nextState: RunState = {
-      ...state,
-      reconciliationRequired: state.reconciliationRequired || reconciliation.changed,
-      stateVersion: state.stateVersion + 1,
-      updatedAt: timestamp,
-    };
-    const resumed = event({
-      eventId: this.uuid(),
-      sequence: trajectory.length + 1,
-      timestamp,
-      type: reconciliation.changed ? 'recovery.reconciled' : 'run.resumed',
-      state: nextState,
-      data: { recoveredTransition: recovered, reconciliation },
-    });
-    await this.store.commit({
-      state: nextState,
-      event: resumed,
-      previousStateVersion: state.stateVersion,
+    await this.store.commitGuarded(options.runId, ({ state, trajectory }) => {
+      this.assertWritableComposition(state);
+      const resumeBasis = [...trajectory]
+        .reverse()
+        .find((entry) => entry.type !== 'run.resumed' && entry.type !== 'recovery.reconciled');
+      const resumeEventId = stableEventId(
+        options.runId,
+        resumeBasis?.eventId ?? 'run-start',
+        options.currentProjectSnapshot.digest,
+        reconciliation.changed ? 'recovery.reconciled' : 'run.resumed',
+      );
+      if (trajectory.some((entry) => entry.eventId === resumeEventId)) {
+        return { value: undefined };
+      }
+      const timestamp = this.clock().toISOString();
+      const nextState: RunState = {
+        ...state,
+        reconciliationRequired: state.reconciliationRequired || reconciliation.changed,
+        stateVersion: state.stateVersion + 1,
+        updatedAt: timestamp,
+      };
+      return {
+        state: nextState,
+        event: event({
+          eventId: resumeEventId,
+          sequence: trajectory.length + 1,
+          timestamp,
+          type: reconciliation.changed ? 'recovery.reconciled' : 'run.resumed',
+          state: nextState,
+          data: { recoveredTransition: recovered, reconciliation },
+        }),
+        value: undefined,
+      };
     });
     const diagnostics: RuntimeDiagnostic[] = reconciliation.changed
       ? [
@@ -948,7 +912,11 @@ export class WorkflowRunCoordinator {
       this.store.loadRun(runId),
       this.store.loadTrajectory(runId),
     ]);
-    const compatibility = compareCompositions(state.composition, this.composition);
+    const compatibility = compareCompositions(
+      state.composition,
+      this.composition,
+      compositionDependencyClosure(state),
+    );
     const contributorCompatibility =
       state.lifecycleContributorSnapshot && this.lifecycleContributors
         ? compareLifecycleContributorSnapshots(

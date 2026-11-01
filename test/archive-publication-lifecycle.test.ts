@@ -21,6 +21,7 @@ import {
   createPublicationReceipt,
   PUBLICATION_RECEIPT_API_VERSION,
 } from '../domains/delivery/publication-receipt.js';
+import { PublicationResultUnknownError } from '../domains/delivery/publication-result-unknown.js';
 import type { DeliveryIntentV3, DeliveryPolicy } from '../domains/delivery/types.js';
 import type { SkillUsageSnapshot } from '../domains/skill/types.js';
 import type { SpecificationClosureResult } from '../domains/specification/types.js';
@@ -370,7 +371,7 @@ describe('Archive publication terminal lifecycle', () => {
       phase: 'design',
       status: 'running',
       currentWork: { workId: work.workId, kind: 'specification.plan' },
-      tasks: [],
+      tasks: [{ taskId: '1.1' }],
     });
     expect(revised.snapshot.planningDigest).toBeUndefined();
     expect(revised.snapshot.verificationInput).toBeUndefined();
@@ -509,9 +510,12 @@ describe('Archive publication terminal lifecycle', () => {
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
       current: closed,
       observation: {
-        kind: 'archive-planning-drift',
+        kind: 'planning-authority-invalidated',
+        expectedRevision: closed.revision,
+        fromPhase: 'archive',
+        invalidationKind: 'semantic',
         work,
-        observedPlanningDigest: digest('e'),
+        inputDigest: digest('e'),
         reason: 'live Change branch advanced before remote publication',
         evidenceIds: [archive.digest, closure.closureId],
       },
@@ -521,7 +525,7 @@ describe('Archive publication terminal lifecycle', () => {
       status: 'running',
       checkEpoch: closed.checkEpoch + 1,
       currentWork: { kind: 'specification.plan' },
-      tasks: [],
+      tasks: closed.tasks,
     });
     expect(revised.snapshot.archiveDeliveryInput).toBeUndefined();
     expect(revised.snapshot.specificationClosure).toBeUndefined();
@@ -1041,7 +1045,13 @@ describe('Archive publication terminal lifecycle', () => {
       });
       const publishSpecification = vi
         .spyOn(app.context.delivery, 'publishSpecification')
-        .mockRejectedValueOnce(new Error('fault:after-push'))
+        .mockRejectedValueOnce(
+          new PublicationResultUnknownError(
+            `specification:${closed.identity.runId}`,
+            'merge-request',
+            'specification merge request response unavailable',
+          ),
+        )
         .mockResolvedValue({
           expectedPublishedOid: specification.publishedOid,
           item: specification,
@@ -1085,9 +1095,14 @@ describe('Archive publication terminal lifecycle', () => {
           executor,
           attempt: 1,
         }),
-      ).rejects.toThrow('fault:after-push');
+      ).rejects.toBeInstanceOf(PublicationResultUnknownError);
       await expect(app.context.runStore.loadRun(closed.identity.runId)).resolves.toMatchObject({
         status: 'running',
+        workExecution: {
+          status: 'unknown',
+          continuation: 'reconcile',
+          unknownKind: 'external-side-effect',
+        },
         changeLifecycle: {
           currentWork: { kind: 'delivery.publish' },
           specificationClosure: { closureId: closed.specificationClosure?.closureId },

@@ -11,7 +11,9 @@ const root = path.resolve(import.meta.dirname, '..');
 const npmCli = process.env.npm_execpath;
 if (!npmCli) throw new Error('npm_execpath is required to reproduce the package archive');
 const evidenceOnly = (file) =>
-  file.startsWith('openspec/') || file.startsWith('verification/');
+  file.startsWith('.comet/') ||
+  file.startsWith('openspec/') ||
+  file.startsWith('verification/');
 const verificationRoot = path.join(root, 'verification');
 const reportPaths = (await readdir(verificationRoot, { withFileTypes: true }))
   .filter((entry) => entry.isDirectory())
