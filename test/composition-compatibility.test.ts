@@ -60,6 +60,24 @@ describe('composition compatibility', () => {
     });
   });
 
+  it('ignores changed protected plugins outside the current checkpoint dependency closure', () => {
+    const before = composition(digest('1'), [
+      plugin('workflow-runs', 'a', ['workflow-transition'], { run: '1' }),
+      plugin('unused-provider', 'a', ['specification-authority'], { state: '1' }),
+    ]);
+    const after = composition(digest('2'), [
+      plugin('workflow-runs', 'a', ['workflow-transition'], { run: '1' }),
+      plugin('unused-provider', 'b', ['specification-authority'], { state: '1' }),
+    ]);
+
+    expect(
+      compareCompositions(before, after, {
+        pluginIds: ['workflow-runs'],
+        authorities: ['workflow-transition'],
+      }),
+    ).toMatchObject({ status: 'compatible', changedPluginIds: [] });
+  });
+
   it('accepts an exact predecessor declaration for a protected compatible patch', () => {
     const beforePlugin = plugin('workflow-runs', 'a', ['workflow-transition'], { run: '1' });
     const afterPlugin = plugin('workflow-runs', 'b', ['workflow-transition'], { run: '1' }, [
@@ -77,6 +95,20 @@ describe('composition compatibility', () => {
     const beforePlugin = plugin('workflow-runs', 'a', ['workflow-transition'], { run: '1' });
     const afterPlugin = plugin('workflow-runs', 'b', ['workflow-transition'], { run: '1' }, [
       { codeDigest: digest('c'), descriptorDigest: beforePlugin.descriptorDigest },
+    ]);
+    expect(
+      compareCompositions(
+        composition(digest('1'), [beforePlugin]),
+        composition(digest('2'), [afterPlugin]),
+      ),
+    ).toMatchObject({ status: 'migration_required' });
+  });
+
+  it('rejects multi-predecessor adoption for a protected checkpoint dependency', () => {
+    const beforePlugin = plugin('workflow-runs', 'a', ['workflow-transition'], { run: '1' });
+    const afterPlugin = plugin('workflow-runs', 'b', ['workflow-transition'], { run: '1' }, [
+      { codeDigest: beforePlugin.codeDigest, descriptorDigest: beforePlugin.descriptorDigest },
+      { codeDigest: digest('c'), descriptorDigest: digest('d') },
     ]);
     expect(
       compareCompositions(

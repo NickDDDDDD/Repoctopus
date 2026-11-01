@@ -370,7 +370,7 @@ describe('Archive publication terminal lifecycle', () => {
       phase: 'design',
       status: 'running',
       currentWork: { workId: work.workId, kind: 'specification.plan' },
-      tasks: [],
+      tasks: [{ taskId: '1.1' }],
     });
     expect(revised.snapshot.planningDigest).toBeUndefined();
     expect(revised.snapshot.verificationInput).toBeUndefined();

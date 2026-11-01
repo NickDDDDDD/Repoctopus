@@ -236,6 +236,45 @@ describe('specification planning approval', () => {
     });
   });
 
+  it('keeps planning semantics stable across composition, full config, and remote representation changes', () => {
+    const baseline = createPlanningSnapshot(planningInput());
+    const changes: Array<{
+      mutate: (input: ReturnType<typeof planningInput>) => void;
+      publicationChanged: boolean;
+    }> = [
+      {
+        mutate: (input) => {
+          input.compositionDigest = digest('e');
+        },
+        publicationChanged: false,
+      },
+      {
+        mutate: (input) => {
+          input.projectConfigDigest = digest('f');
+        },
+        publicationChanged: false,
+      },
+      {
+        mutate: (input) => {
+          input.changeBranch.remoteIdentity = 'HTTPS://GitHub.com/team/workspace.git';
+          input.changeBranch.sourceBranch = 'spec/republished-change';
+          input.changeBranch.remoteOid = '2'.repeat(40);
+        },
+        publicationChanged: true,
+      },
+    ];
+
+    for (const { mutate, publicationChanged } of changes) {
+      const changed = planningInput();
+      mutate(changed);
+      const observed = createPlanningSnapshot(changed);
+      expect(observed.digest).toBe(baseline.digest);
+      expect(observed.publicationProvenanceDigest === baseline.publicationProvenanceDigest).toBe(
+        !publicationChanged,
+      );
+    }
+  });
+
   it('rejects incomplete, unvalidated, or unpublished planning facts', () => {
     const missing = planningInput();
     missing.change.artifacts = missing.change.artifacts.filter(
@@ -254,6 +293,21 @@ describe('specification planning approval', () => {
 
   it('creates the versioned human decision request and rejects snapshot tampering', async () => {
     const snapshot = createPlanningSnapshot(planningInput());
+    const stableRequest = createSpecificationApprovalRequest(snapshot);
+    expect(createSpecificationApprovalRequest(snapshot)).toEqual(stableRequest);
+    expect(stableRequest.requestId).toBe(
+      `specification-approval:design:${snapshot.identityBasis.approvalAuthority!.digest.slice(-24)}`,
+    );
+
+    const revisedInput = planningInput();
+    revisedInput.change.changeDigest = digest('e');
+    revisedInput.change.artifacts = revisedInput.change.artifacts.map((artifact) =>
+      artifact.kind === 'design' ? { ...artifact, digest: digest('e') } : artifact,
+    );
+    expect(
+      createSpecificationApprovalRequest(createPlanningSnapshot(revisedInput)).requestId,
+    ).not.toBe(stableRequest.requestId);
+
     const request = createSpecificationApprovalRequest(snapshot, 'approval-request');
     expect(request).toMatchObject({
       apiVersion: 'repoctopus/v1alpha1',
@@ -281,7 +335,7 @@ describe('specification planning approval', () => {
     ) as { oneOf: Array<{ properties: { decisionType?: { const: string } } }> };
     expect(schema.oneOf[0]?.properties.decisionType?.const).toBe('specification-approval');
 
-    const tampered = { ...snapshot, projectConfigDigest: digest('e') };
+    const tampered = { ...snapshot, changeDigest: digest('e') };
     expect(() => createSpecificationApprovalRequest(tampered)).toThrow(/digest is invalid/u);
   });
 
@@ -426,7 +480,7 @@ describe('specification planning approval', () => {
     expect(() => assertSpecificationApprovalState(decided)).not.toThrow();
   });
 
-  it('replaces a readable legacy approval with a new pending decision', () => {
+  it('keeps a legacy approval read-only instead of silently migrating its authority', () => {
     const currentSnapshot = createPlanningSnapshot(planningInput());
     const current = requestSpecificationApproval({
       current: null,
@@ -451,34 +505,13 @@ describe('specification planning approval', () => {
     delete legacyRequest.schema;
     legacyRequest.snapshotDigest = legacySnapshot.digest;
 
-    const migrated = requestSpecificationApproval({
-      current: legacy as unknown as SpecificationApprovalState,
-      snapshot: currentSnapshot,
-      requestId: 'migration-decision',
-      timestamp: '2026-10-24T00:01:00.000Z',
-    });
-    expect(migrated).toMatchObject({
-      status: 'awaiting_approval',
-      stateVersion: current.stateVersion + 1,
-      decision: null,
-      decisionRequest: {
+    expect(() =>
+      requestSpecificationApproval({
+        current: legacy as unknown as SpecificationApprovalState,
+        snapshot: currentSnapshot,
         requestId: 'migration-decision',
-        proposal: { semanticDigest: currentSnapshot.digest },
-      },
-    });
-    expect(migrated.decisionRequest.proposalHash).toMatch(/^sha256:[a-f0-9]{64}$/u);
-    const approved = recordSpecificationApprovalDecision({
-      state: migrated,
-      response: {
-        apiVersion: 'repoctopus/v1alpha1',
-        kind: 'HumanDecisionResponse',
-        requestId: migrated.decisionRequest.requestId,
-        proposalHash: migrated.decisionRequest.proposalHash,
-        decision: 'approve',
-      },
-      actor: { actorId: 'migration-reviewer', source: 'cli', authenticated: true },
-      timestamp: '2026-10-24T00:02:00.000Z',
-    });
-    expect(approved.status).toBe('approved');
+        timestamp: '2026-10-24T00:01:00.000Z',
+      }),
+    ).toThrow(/identity|migration/iu);
   });
 });

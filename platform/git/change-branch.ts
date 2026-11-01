@@ -1,7 +1,7 @@
 import type { ChangeBranchReference } from '../../domains/specification/types.js';
 import type { TargetBranchSnapshot } from '../../domains/project/types.js';
 import { execute } from '../process/execute.js';
-import { normalizeRemoteIdentity } from './remote-identity.js';
+import { normalizePublicationRepositoryIdentity } from './remote-identity.js';
 
 async function git(cwd: string, args: string[]): Promise<string> {
   return (await execute('git', args, { cwd })).stdout.trim();
@@ -27,7 +27,10 @@ export async function inspectRemoteTargetBranch(input: {
   return {
     repositoryId: input.repositoryId,
     remote: input.remote,
-    remoteIdentity: normalizeRemoteIdentity(remoteUrl),
+    remoteIdentity: normalizePublicationRepositoryIdentity({
+      stableRepositoryId: input.repositoryId,
+      remote: remoteUrl,
+    }).value,
     targetBranch: input.targetBranch,
     remoteOid: targetOid,
   };
@@ -97,7 +100,10 @@ export async function inspectRemoteChangeBranch(input: {
   if (!targetOid) throw new Error(`Change target branch is not published: ${input.targetBranch}`);
   return {
     repositoryId: input.repositoryId,
-    remoteIdentity: normalizeRemoteIdentity(remoteUrl),
+    remoteIdentity: normalizePublicationRepositoryIdentity({
+      stableRepositoryId: input.repositoryId,
+      remote: remoteUrl,
+    }).value,
     sourceBranch: input.sourceBranch,
     targetBranch: input.targetBranch,
     remoteOid: sourceOid,

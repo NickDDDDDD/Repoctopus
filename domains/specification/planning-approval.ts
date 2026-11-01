@@ -1,6 +1,7 @@
-import { createHash, randomUUID } from 'node:crypto';
+import { createHash } from 'node:crypto';
 
 import { canonicalJson } from '../workflow-contract/canonical.js';
+import { createRuntimeIdentity } from '../runtime/identity.js';
 import type {
   ChangeBranchReference,
   PlanningSpecificationRoot,
@@ -49,16 +50,20 @@ function normalizeBranch(branch: ChangeBranchReference): ChangeBranchReference {
   return structuredClone(branch);
 }
 
-function publicationProvenanceDigest(branch: ChangeBranchReference): `sha256:${string}` {
-  return sha256({ kind: 'ChangeBranchPublication', changeBranch: branch });
-}
-
 function planningSnapshotDigest(snapshot: Omit<PlanningSnapshot, 'digest'>): `sha256:${string}` {
-  const { publicationProvenanceDigest: _publication, changeBranch, ...semantic } = snapshot;
-  const { remoteOid: _remoteOid, ...branchIdentity } = changeBranch;
-  void _publication;
-  void _remoteOid;
-  return sha256({ ...semantic, changeBranch: branchIdentity });
+  return createRuntimeIdentity('planning-semantic', {
+    changeId: snapshot.changeId,
+    approvalPhase: snapshot.approvalPhase,
+    provider: snapshot.provider,
+    schemaDigest: snapshot.schema?.digest,
+    specificationRoot: snapshot.specificationRoot,
+    changeDigest: snapshot.changeDigest,
+    artifacts: snapshot.artifacts,
+    affectedCapabilities: snapshot.affectedCapabilities,
+    targetBranch: snapshot.changeBranch.targetBranch,
+    planningManifestDigest: snapshot.planningManifestDigest,
+    planningPolicyDigest: snapshot.planningPolicyDigest,
+  }).digest;
 }
 
 function assertSchemaInstructions(schema: SpecificationSchemaInstructions): void {
@@ -91,6 +96,7 @@ export function createPlanningSnapshot(input: {
   projectConfigDigest: `sha256:${string}`;
   approvalPhase?: 'open' | 'design';
   planningManifest?: SpecificationPlanningManifest;
+  planningPolicyDigest?: `sha256:${string}`;
 }): PlanningSnapshot {
   const manifest =
     input.planningManifest ??
@@ -132,7 +138,38 @@ export function createPlanningSnapshot(input: {
     throw new Error('Specification Root identity is required');
   }
   const changeBranch = normalizeBranch(input.changeBranch);
-  const stable = {
+  const artifacts = normalizePlanningArtifacts(input.change);
+  const affectedCapabilities = [...new Set(input.change.affectedCapabilities)].sort();
+  const planningPolicyDigest =
+    input.planningPolicyDigest ?? sha256({ kind: 'PlanningPolicy', schemaVersion: 1 });
+  assertDigest(planningPolicyDigest, 'Planning policy');
+  const planningSemantic = createRuntimeIdentity('planning-semantic', {
+    changeId: input.change.changeId,
+    approvalPhase: input.approvalPhase ?? 'design',
+    provider: input.change.provider,
+    schemaDigest: input.schema.digest,
+    specificationRoot: input.specificationRoot,
+    changeDigest: input.change.changeDigest,
+    artifacts,
+    affectedCapabilities,
+    targetBranch: changeBranch.targetBranch,
+    planningManifestDigest: manifest.semanticDigest,
+    planningPolicyDigest,
+  });
+  const validationObservation = createRuntimeIdentity('validation-observation', {
+    planningSemantic: planningSemantic.digest,
+    validationDigest: input.validation.validationDigest,
+    strict: input.validation.strict,
+    valid: input.validation.valid,
+  });
+  const approvalAuthority = createRuntimeIdentity('approval-authority', {
+    planningSemantic: planningSemantic.digest,
+    approvalPhase: input.approvalPhase ?? 'design',
+  });
+  const publicationProvenance = createRuntimeIdentity('publication-provenance', {
+    changeBranch,
+  });
+  const stable: Omit<PlanningSnapshot, 'digest'> = {
     schemaVersion: 1 as const,
     changeId: input.change.changeId,
     approvalPhase: input.approvalPhase ?? 'design',
@@ -141,13 +178,21 @@ export function createPlanningSnapshot(input: {
     specificationRoot: structuredClone(input.specificationRoot),
     changeDigest: input.change.changeDigest,
     validationDigest: input.validation.validationDigest,
-    artifacts: normalizePlanningArtifacts(input.change),
-    affectedCapabilities: [...new Set(input.change.affectedCapabilities)].sort(),
+    artifacts,
+    affectedCapabilities,
     changeBranch,
-    publicationProvenanceDigest: publicationProvenanceDigest(changeBranch),
+    publicationProvenanceDigest: publicationProvenance.digest,
     compositionDigest: input.compositionDigest,
     projectConfigDigest: input.projectConfigDigest,
     planningManifestDigest: manifest.semanticDigest,
+    planningPolicyDigest,
+    identityBasis: {
+      schemaVersion: 1,
+      planningSemantic,
+      validationObservation,
+      approvalAuthority,
+      publicationProvenance,
+    },
   };
   return { ...stable, digest: planningSnapshotDigest(stable) };
 }
@@ -158,6 +203,9 @@ export function assertPlanningSnapshot(
 ): void {
   const { digest, ...stable } = snapshot;
   assertDigest(digest, 'Planning snapshot');
+  if (!snapshot.identityBasis?.planningSemantic) {
+    throw new Error('Planning snapshot requires a typed identity basis');
+  }
   if (snapshot.approvalPhase !== 'open' && snapshot.approvalPhase !== 'design') {
     throw new Error('Planning snapshot approval phase is invalid');
   }
@@ -173,9 +221,36 @@ export function assertPlanningSnapshot(
     }
   } else {
     assertDigest(snapshot.publicationProvenanceDigest, 'Publication provenance');
-    if (publicationProvenanceDigest(branch) !== snapshot.publicationProvenanceDigest) {
+    if (
+      createRuntimeIdentity('publication-provenance', { changeBranch: branch }).digest !==
+      snapshot.publicationProvenanceDigest
+    ) {
       throw new Error('Planning snapshot publication provenance digest is invalid');
     }
+  }
+  if (snapshot.identityBasis.planningSemantic.digest !== digest) {
+    throw new Error('Planning snapshot semantic identity is invalid');
+  }
+  const expectedValidation = createRuntimeIdentity('validation-observation', {
+    planningSemantic: digest,
+    validationDigest: snapshot.validationDigest,
+    strict: true,
+    valid: true,
+  });
+  if (snapshot.identityBasis.validationObservation?.digest !== expectedValidation.digest) {
+    throw new Error('Planning snapshot validation observation identity is invalid');
+  }
+  const expectedApproval = createRuntimeIdentity('approval-authority', {
+    planningSemantic: digest,
+    approvalPhase: snapshot.approvalPhase,
+  });
+  if (snapshot.identityBasis.approvalAuthority?.digest !== expectedApproval.digest) {
+    throw new Error('Planning snapshot approval authority identity is invalid');
+  }
+  if (
+    snapshot.identityBasis.publicationProvenance?.digest !== snapshot.publicationProvenanceDigest
+  ) {
+    throw new Error('Planning snapshot publication provenance identity is invalid');
   }
   if (
     snapshot.artifacts.length !== REQUIRED_PLANNING_ARTIFACTS.length ||
@@ -191,7 +266,7 @@ export function assertPlanningSnapshot(
 
 export function createSpecificationApprovalRequest(
   snapshot: PlanningSnapshot,
-  requestId: string = randomUUID(),
+  requestId: string = `specification-approval:${snapshot.approvalPhase}:${snapshot.identityBasis.approvalAuthority?.digest.slice(-24) ?? 'missing-authority'}`,
 ): SpecificationApprovalDecisionRequest {
   assertPlanningSnapshot(snapshot);
   if (!snapshot.schema) {

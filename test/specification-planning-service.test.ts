@@ -286,8 +286,29 @@ describe('SpecificationPlanning service', () => {
       }),
     ).resolves.toMatchObject({
       status: 'authorized',
+      observationKind: 'same',
       invalidationKind: null,
       planningDigest: expectedPlanningDigest,
+      reasonCode: 'authorized',
+    });
+
+    await expect(
+      running.planning.observeAuthority({
+        ...prepareInput(),
+        compositionDigest: digest('e'),
+        projectConfigDigest: digest('f'),
+        changeBranch: {
+          ...prepareInput().changeBranch,
+          remoteIdentity: 'HTTPS://GitHub.com/team/workspace.git',
+          sourceBranch: 'spec/republished-change',
+          remoteOid: '2'.repeat(40),
+        },
+        expectedPlanningDigest,
+      }),
+    ).resolves.toMatchObject({
+      status: 'authorized',
+      observationKind: 'publication',
+      invalidationKind: null,
       reasonCode: 'authorized',
     });
 
@@ -299,6 +320,7 @@ describe('SpecificationPlanning service', () => {
       }),
     ).resolves.toMatchObject({
       status: 'invalid',
+      observationKind: 'semantic',
       invalidationKind: 'semantic',
       reasonCode: 'semantic-drift',
     });
@@ -313,6 +335,7 @@ describe('SpecificationPlanning service', () => {
       }),
     ).resolves.toMatchObject({
       status: 'invalid',
+      observationKind: 'approval-authority',
       invalidationKind: 'approval-authority',
       reasonCode: 'approval-stale',
     });

@@ -62,6 +62,7 @@ import {
   createExecutionWorkspaceIntent,
   createPlanEvidence,
   createPackageCompletionEvidence,
+  revalidateSuspendedBuildProtocol,
   validateBuildPlan,
   type BuildConfiguration,
   type ExecutionWorkspaceBinding,
@@ -94,11 +95,7 @@ import {
 } from '../domains/change-lifecycle/archive-input.js';
 import type { DeliveryIntentV3, DeliveryPolicy } from '../domains/delivery/types.js';
 import { deliveryPolicyDigest } from '../domains/delivery/snapshot.js';
-import type {
-  ActionIntent,
-  ActionReceipt,
-  WorkExecutorIdentity,
-} from '../domains/action/types.js';
+import type { ActionIntent, ActionReceipt, WorkExecutorIdentity } from '../domains/action/types.js';
 import type { WorkExecutionHostIdentity } from '../domains/work-execution/types.js';
 import type { ArchivePublicationResult } from '../domains/delivery/service-v3.js';
 import {
@@ -1071,6 +1068,7 @@ export class WorkflowRuns extends Service {
       const reason = error instanceof Error ? error.message : 'Planning semantic inspection failed';
       return {
         status: 'invalid',
+        observationKind: 'unknown',
         invalidationKind: 'semantic',
         planningDigest: `sha256:${createHash('sha256')
           .update(canonicalJson({ kind: 'planning-semantic-inspection-failed', reason }))
@@ -1505,10 +1503,7 @@ export class WorkflowRuns extends Service {
     if (!lifecycle || lifecycle.phase !== 'open') {
       throw new Error('Open gate requires an Open Change Run');
     }
-    if (
-      state.status === 'waiting' &&
-      lifecycle.waitCondition?.kind === 'human-decision'
-    ) {
+    if (state.status === 'waiting' && lifecycle.waitCondition?.kind === 'human-decision') {
       let approval: SpecificationApprovalState | null;
       let base: Awaited<ReturnType<WorkflowRuns['loadChangePlanningBase']>>;
       try {
@@ -1607,15 +1602,12 @@ export class WorkflowRuns extends Service {
     }
     if (assessment.status === 'blocked') {
       const strictInvalid =
-        assessment.validation &&
-        (!assessment.validation.strict || !assessment.validation.valid);
+        assessment.validation && (!assessment.validation.strict || !assessment.validation.valid);
       return this.dispatchOpenRepair({
         state,
         lifecycle,
         source: strictInvalid ? 'strict-validation' : 'provider-artifacts',
-        reasonCode: strictInvalid
-          ? 'strict-validation-invalid'
-          : 'provider-artifacts-invalid',
+        reasonCode: strictInvalid ? 'strict-validation-invalid' : 'provider-artifacts-invalid',
         evidenceIds: assessment.evidenceDigests,
         ...(signal ? { signal } : {}),
       });
@@ -3396,38 +3388,85 @@ export class WorkflowRuns extends Service {
               if (!lifecycle.workspaceIntent) {
                 throw new Error('Approved Open has no Execution Workspace intent');
               }
-              const skills = await this.resolveLifecycleWorkSkills(
-                'build.configure',
-                signal,
-                [],
-                runId,
-              );
-              const initial = createInitialBuildWork({
-                runId,
-                checkEpoch: lifecycle.checkEpoch + 1,
-                definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-                actionSkill: skills.actionSkill,
-                augmentationSkills: skills.augmentationSkills,
-                skillComposition: skills.skillComposition,
-                taskSet,
-                approvalHash,
-                compositionDigest: current.composition.compositionDigest,
-                projectConfigDigest,
-                projectSnapshotDigest: current.projectSnapshotDigest,
-                workspaceRepositoryId,
-                repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
-              });
               const planningDigest =
                 assessment.snapshot?.planningManifestDigest ??
                 assessment.validation.validationDigest;
-              build = {
-                ...initial,
-                protocol: createBuildProtocolState({
-                  runId,
+              const suspended = lifecycle.buildProtocol;
+              const canRetainConfiguration =
+                suspended?.status === 'suspended-for-design' &&
+                suspended.configuration !== null &&
+                suspended.configuration.workspaceIntent.semanticDigest ===
+                  lifecycle.workspaceIntent.semanticDigest &&
+                canonicalJson([...suspended.configuration.repositoryIds].sort()) ===
+                  canonicalJson(
+                    projectSnapshot.repositories.map((repository) => repository.id).sort(),
+                  );
+              const workKind = canRetainConfiguration ? 'build.plan' : 'build.configure';
+              const skills = await this.resolveLifecycleWorkSkills(workKind, signal, [], runId);
+              if (canRetainConfiguration) {
+                const configuration = suspended.configuration!;
+                const protocol = revalidateSuspendedBuildProtocol(suspended, {
                   planningDigest,
-                  workspaceIntent: lifecycle.workspaceIntent,
-                }),
-              };
+                  configurationCompatible: true,
+                  planCompatible:
+                    suspended.plan?.planningDigest === planningDigest &&
+                    suspended.plan.taskSetDigest === taskSet.digest,
+                  retainedPackageIds: suspended.packageCompletions.map(
+                    (completion) => completion.packageId,
+                  ),
+                });
+                build = {
+                  tasks: structuredClone(taskSet.tasks),
+                  protocol,
+                  work: createBuildActionWork({
+                    runId,
+                    checkEpoch: lifecycle.checkEpoch + 1,
+                    definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+                    kind: 'build.plan',
+                    actionSkill: skills.actionSkill,
+                    augmentationSkills: skills.augmentationSkills,
+                    skillComposition: skills.skillComposition,
+                    compositionDigest: current.composition.compositionDigest,
+                    projectConfigDigest,
+                    projectSnapshotDigest: current.projectSnapshotDigest,
+                    workspaceRepositoryId,
+                    repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
+                    stableInput: {
+                      planningDigest,
+                      taskSetDigest: taskSet.digest,
+                      configurationId: configuration.configurationId,
+                      candidatePlanDigest: suspended.plan?.digest ?? null,
+                    },
+                    configurationId: configuration.configurationId,
+                    executionMode: configuration.executionMode,
+                    tddMode: configuration.tddMode,
+                  }),
+                };
+              } else {
+                const initial = createInitialBuildWork({
+                  runId,
+                  checkEpoch: lifecycle.checkEpoch + 1,
+                  definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+                  actionSkill: skills.actionSkill,
+                  augmentationSkills: skills.augmentationSkills,
+                  skillComposition: skills.skillComposition,
+                  taskSet,
+                  approvalHash,
+                  compositionDigest: current.composition.compositionDigest,
+                  projectConfigDigest,
+                  projectSnapshotDigest: current.projectSnapshotDigest,
+                  workspaceRepositoryId,
+                  repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
+                });
+                build = {
+                  ...initial,
+                  protocol: createBuildProtocolState({
+                    runId,
+                    planningDigest,
+                    workspaceIntent: lifecycle.workspaceIntent,
+                  }),
+                };
+              }
               for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
                 await this.coordinator.bindSkill(runId, skill);
               }

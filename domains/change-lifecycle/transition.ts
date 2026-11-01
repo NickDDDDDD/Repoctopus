@@ -24,7 +24,7 @@ import type {
   PlanEvidence,
   PackageCompletionEvidence,
 } from './build-protocol.js';
-import { advanceBuildProtocol } from './build-protocol.js';
+import { advanceBuildProtocol, suspendBuildProtocolForDesign } from './build-protocol.js';
 
 export const CHANGE_PHASES = ['open', 'design', 'build', 'verify', 'archive'] as const;
 export type ChangePhase = (typeof CHANGE_PHASES)[number];
@@ -355,6 +355,12 @@ export interface ChangeLifecycleTransitionFact {
   invalidation?: {
     kind: 'planning-authority-invalidated';
     invalidationKind: 'semantic' | 'approval-authority';
+    classification: 'semantic' | 'approval-authority';
+    disposition: 'invalidate';
+    scope: 'exact';
+    continuation: 'design';
+    retainedCount: number;
+    invalidatedCount: number;
     supersededPlanningDigest: `sha256:${string}`;
     observedPlanningDigest: `sha256:${string}`;
     supersededWorkId: string | null;
@@ -675,7 +681,10 @@ export function assertChangeLifecycleSnapshot(
   }
   if (
     snapshot.buildProtocol &&
-    (!['build', 'verify', 'archive'].includes(snapshot.phase) ||
+    (!(
+      ['build', 'verify', 'archive'].includes(snapshot.phase) ||
+      (snapshot.phase === 'design' && snapshot.buildProtocol.status === 'suspended-for-design')
+    ) ||
       snapshot.buildProtocol.runId !== snapshot.identity.runId ||
       snapshot.buildProtocol.workspaceIntent.semanticDigest !==
         snapshot.workspaceIntent?.semanticDigest)
@@ -1086,6 +1095,20 @@ export function evolveChangeLifecycle(options: {
     const supersededPlanningDigest = current.planningDigest;
     const supersededWorkId = current.currentWork?.workId ?? null;
     const supersededTaskRevisions = (current.tasks ?? []).map((task) => task.taskRevision).sort();
+    const buildProtocol = current.buildProtocol
+      ? suspendBuildProtocolForDesign(current.buildProtocol, {
+          observedPlanningDigest: observation.inputDigest,
+          reasonCode:
+            observation.invalidationKind === 'semantic'
+              ? 'semantic-drift'
+              : 'approval-authority-drift',
+          invalidatedIdentities: [
+            observation.invalidationKind === 'semantic'
+              ? 'planning-semantic'
+              : 'approval-authority',
+          ],
+        })
+      : undefined;
     const reduced = applyChangeLifecycleTransition({
       definition: options.definition,
       current,
@@ -1099,8 +1122,7 @@ export function evolveChangeLifecycle(options: {
         currentWork: observation.work,
         waitCondition: null,
         blocker: null,
-        tasks: [],
-        buildProtocol: null,
+        buildProtocol: buildProtocol ?? null,
         planningDigest: null,
         verificationInput: null,
         verificationInvalidation: null,
@@ -1112,6 +1134,12 @@ export function evolveChangeLifecycle(options: {
     reduced.fact.invalidation = {
       kind: 'planning-authority-invalidated',
       invalidationKind: observation.invalidationKind,
+      classification: observation.invalidationKind,
+      disposition: 'invalidate',
+      scope: 'exact',
+      continuation: 'design',
+      retainedCount: observation.invalidationKind === 'semantic' ? 4 : 8,
+      invalidatedCount: observation.invalidationKind === 'semantic' ? 5 : 1,
       supersededPlanningDigest,
       observedPlanningDigest: observation.inputDigest,
       supersededWorkId,
@@ -2063,6 +2091,12 @@ export function evolveChangeLifecycle(options: {
     reduced.fact.invalidation = {
       kind: 'planning-authority-invalidated',
       invalidationKind: 'semantic',
+      classification: 'semantic',
+      disposition: 'invalidate',
+      scope: 'exact',
+      continuation: 'design',
+      retainedCount: 4,
+      invalidatedCount: 5,
       supersededPlanningDigest: current.planningDigest ?? current.archiveDeliveryInput.digest,
       observedPlanningDigest: observation.observedPlanningDigest,
       supersededWorkId: current.currentWork.workId,
@@ -2171,13 +2205,15 @@ export function evolveChangeLifecycle(options: {
     if (!observation.tasks || observation.tasks.length === 0) {
       throw new Error('Approved Design gate requires a fixed Task projection');
     }
-    if (
-      !observation.work ||
-      observation.work.kind !== 'build.configure' ||
-      !observation.buildProtocol ||
-      observation.buildProtocol.currentAction !== 'configure'
-    ) {
-      throw new Error('Approved Design gate requires Runtime-selected Build Configure');
+    const approvedBuildProtocol = observation.buildProtocol;
+    const expectedWorkKind =
+      approvedBuildProtocol?.currentAction === 'configure'
+        ? 'build.configure'
+        : approvedBuildProtocol?.currentAction === 'plan'
+          ? 'build.plan'
+          : null;
+    if (!observation.work || !expectedWorkKind || observation.work.kind !== expectedWorkKind) {
+      throw new Error('Approved Design gate requires the Runtime-selected Build Action');
     }
     return applyChangeLifecycleTransition({
       definition: options.definition,
@@ -2188,7 +2224,7 @@ export function evolveChangeLifecycle(options: {
         waitCondition: null,
         blocker: null,
         tasks: observation.tasks,
-        buildProtocol: observation.buildProtocol,
+        buildProtocol: approvedBuildProtocol!,
         planningDigest: observation.inputDigest,
       },
     });

@@ -52,14 +52,8 @@ export interface DesignGateAssessment {
 export interface OpenApprovalRevalidation {
   status: 'accepted' | 'invalid' | 'unavailable';
   reason: string;
-  source?:
-    | 'provider-artifacts'
-    | 'strict-validation'
-    | 'approval-drift';
-  reasonCode?:
-    | 'provider-artifacts-invalid'
-    | 'strict-validation-invalid'
-    | 'approval-drift';
+  source?: 'provider-artifacts' | 'strict-validation' | 'approval-drift';
+  reasonCode?: 'provider-artifacts-invalid' | 'strict-validation-invalid' | 'approval-drift';
   evidenceDigests: `sha256:${string}`[];
   validation?: SpecificationValidation;
   snapshot?: PlanningSnapshot;
@@ -71,6 +65,7 @@ export interface OpenApprovalRevalidation {
 
 export interface PlanningAuthorityObservation {
   status: 'authorized' | 'invalid';
+  observationKind: 'same' | 'semantic' | 'approval-authority' | 'publication' | 'unknown';
   invalidationKind: 'semantic' | 'approval-authority' | null;
   planningDigest: `sha256:${string}`;
   reasonCode:
@@ -238,9 +233,7 @@ export class SpecificationPlanning extends Service {
       return {
         status: 'unavailable',
         reason:
-          error instanceof Error
-            ? error.message
-            : 'Open approval revalidation is unavailable',
+          error instanceof Error ? error.message : 'Open approval revalidation is unavailable',
         evidenceDigests: [],
       };
     }
@@ -264,10 +257,7 @@ export class SpecificationPlanning extends Service {
       source,
       reasonCode,
       reason,
-      evidenceDigests: [
-        ...evidenceDigests,
-        ...(snapshot ? [snapshot.digest] : []),
-      ],
+      evidenceDigests: [...evidenceDigests, ...(snapshot ? [snapshot.digest] : [])],
       validation,
       ...(snapshot ? { snapshot } : {}),
       observation,
@@ -325,11 +315,7 @@ export class SpecificationPlanning extends Service {
     return {
       status: 'accepted',
       reason: 'Current Open planning still matches the trusted approval',
-      evidenceDigests: [
-        ...evidenceDigests,
-        snapshot.digest,
-        current.decision.approvalHash,
-      ],
+      evidenceDigests: [...evidenceDigests, snapshot.digest, current.decision.approvalHash],
       validation,
       snapshot,
       observation,
@@ -348,6 +334,7 @@ export class SpecificationPlanning extends Service {
     } catch (error) {
       return {
         status: 'invalid',
+        observationKind: 'unknown',
         invalidationKind: 'semantic',
         planningDigest: input.expectedPlanningDigest,
         reasonCode: 'strict-validation-failed',
@@ -370,6 +357,7 @@ export class SpecificationPlanning extends Service {
       snapshot: PlanningSnapshot | null = null,
     ): PlanningAuthorityObservation => ({
       status: 'invalid',
+      observationKind: invalidationKind,
       invalidationKind,
       planningDigest: manifest.semanticDigest,
       reasonCode,
@@ -447,6 +435,10 @@ export class SpecificationPlanning extends Service {
     }
     return {
       status: 'authorized',
+      observationKind:
+        current.snapshot.publicationProvenanceDigest === snapshot.publicationProvenanceDigest
+          ? 'same'
+          : 'publication',
       invalidationKind: null,
       planningDigest: manifest.semanticDigest,
       reasonCode: 'authorized',

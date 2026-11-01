@@ -25,6 +25,16 @@ node bin/repoctopus.js run status --workspace . --run <run-id> --json
 
 可选的 `agent-coordination.json` 只保存有界的 handoff/上下文压缩提示。它不进入 Run、Checkpoint 或 OpenSpec 四类工件，不能授权写入、声明 Task 完成或覆盖真实 execution checkpoint；缺失或 stale 只意味着 Runner 要重新核对事实。
 
+## 身份分层与失效范围
+
+Runtime 不再用一个聚合 planning snapshot 授权所有后续状态。Change Run v2 分别保存 planning semantic、validation observation、approval authority、composition、Build Configuration、Build Plan、execution checkpoint、verification input 和 publication provenance 身份。每个身份只有一个领域 owner；代码固定的依赖矩阵决定哪些后继事实依赖它。
+
+`next`、`resume`、CLI JSON 和 Desktop 投影只读取已提交 checkpoint。它们不会扫描 OpenSpec、Git diff 或最新 packet 来猜下一步。相同 revision 的重复调用返回同一 Work、Wait 或 reconciliation；相同 idempotency key 携带不同 payload 时返回冲突。
+
+Design 返工会把现有 Build Protocol 标记为 `suspended-for-design`。该候选保留 Configuration、Plan 和 package completion，但不可 claim 或 dispatch。新 Design 批准后，Runtime 从 Configuration 开始逐层重验；配置仍兼容时直接回到 Plan，新 Plan 只保留 package identity 和输入都匹配的 completion。无法证明精确范围时，Runtime 使用保守失效或 Human Decision，不静默采用旧 completion。
+
+预发布旧 Run 保持只读并返回 `migration_required`。Runtime 不提供 v1/v2 双读、自动转换、Store 修复命令或用当前内容重组旧 packet。
+
 ## 受管 Work 与 continuation
 
 `run next` 每次只解析 Runtime 已选定的当前 Action，并返回 `execute | ask | wait | reconcile | done`。完整 `WorkExecutionPacket` 按 Runtime contract、阶段 action Skill、Specification Provider protocol、augmentation Skills、Method Profile、change inputs 的固定顺序装配。claim 前，Runtime 先把深冻结 packet 以 create-or-verify 方式写入 `.repoctopus/runs/<runId>/packets/<packetDigest>.json`，再通过 Run CAS 绑定唯一 identity，最后才允许 Host 取得正文。Run、checkpoint、trajectory、日志和 OTLP 只保存 packet/context digest；私有 packet 文件是唯一正文恢复源。
@@ -63,7 +73,7 @@ Build phase 固定执行 `Configure → Plan → Plan Evidence → Execute → C
 
 ## Composition 兼容
 
-Run、Checkpoint 和 Trajectory 保存完整 composition 身份。写转换前，WorkflowRuns 比较当前组合：摘要相同则继续；只涉及明确兼容的无状态 Contributor 或配置摘要变化时记录 `composition.changed`；受保护 Provider、状态 Schema 或权威能力变化时返回 `migration_required`。后一种状态仍允许 `status` 和 `doctor` 读取，不允许 `next`、`record` 或 `resume` 写入。
+Run、Checkpoint 和 Trajectory 保存完整 composition 身份。写转换前，WorkflowRuns 只比较当前 checkpoint dependency closure 中实际使用的 Provider、Contributor、definition、code 和 config identity：摘要相同则继续；catalog 精确声明唯一直接前驱且 checkpoint 范围匹配时记录一次 adoption；无法证明兼容时返回 `migration_required`。未进入 closure 的 Contributor 变化不影响 continuation，已经 claim 的 Work 始终使用原 packet。`migration_required` 仍允许 `status` 和 `doctor` 读取，不允许 `next`、`record` 或 `resume` 写入。
 
 普通插件重载由 Cordis Loader 先卸载旧 Fiber，再激活新 Fiber。Run 不依赖旧 Fiber 的内存对象，恢复依据始终是 Store、Journal 与 Checkpoint。
 

@@ -1,3 +1,5 @@
+import type { RuntimeIdentityBasis } from '../runtime/identity.js';
+
 export const SPECIFICATION_API_VERSION = 'repoctopus.specification/v1alpha1' as const;
 
 export interface SpecificationProviderIdentity {
@@ -228,6 +230,8 @@ export interface PlanningSnapshot {
   compositionDigest: `sha256:${string}`;
   projectConfigDigest: `sha256:${string}`;
   planningManifestDigest?: `sha256:${string}`;
+  planningPolicyDigest: `sha256:${string}`;
+  identityBasis: RuntimeIdentityBasis;
   digest: `sha256:${string}`;
 }
 

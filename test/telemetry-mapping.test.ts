@@ -740,6 +740,24 @@ describe('telemetry mapping', () => {
       data: {
         ...event.data,
         observationKind: 'planning-authority-invalidated',
+        changeLifecycleTransition: {
+          ...event.data.changeLifecycleTransition!,
+          invalidation: {
+            kind: 'planning-authority-invalidated',
+            invalidationKind: 'approval-authority',
+            classification: 'approval-authority',
+            disposition: 'invalidate',
+            scope: 'exact',
+            continuation: 'design',
+            retainedCount: 8,
+            invalidatedCount: 1,
+            supersededPlanningDigest: `sha256:${'a'.repeat(64)}`,
+            observedPlanningDigest: `sha256:${'b'.repeat(64)}`,
+            supersededWorkId: 'build.plan:private-work',
+            supersededTaskRevisions: [`sha256:${'c'.repeat(64)}`],
+            evidenceIds: [`sha256:${'d'.repeat(64)}`],
+          },
+        },
         observation: {
           kind: 'planning-authority-invalidated',
           invalidationKind: 'approval-authority',
@@ -753,6 +771,14 @@ describe('telemetry mapping', () => {
       planningInvalidation,
     );
     expect(planningMetric['repoctopus.planning.invalidation.kind']).toBe('approval-authority');
+    expect(planningMetric).toMatchObject({
+      'repoctopus.runtime.invalidation.classification': 'approval-authority',
+      'repoctopus.runtime.invalidation.disposition': 'invalidate',
+      'repoctopus.runtime.invalidation.scope': 'exact',
+      'repoctopus.runtime.invalidation.continuation': 'design',
+      'repoctopus.runtime.invalidation.retained_count': 8,
+      'repoctopus.runtime.invalidation.invalidated_count': 1,
+    });
     expect(JSON.stringify(planningMetric)).not.toMatch(/private approval|sha256:f/u);
   });
 });

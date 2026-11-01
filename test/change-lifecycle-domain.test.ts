@@ -538,12 +538,12 @@ describe('Change lifecycle domain', () => {
         invalidationKind: 'semantic',
         reason: 'Design artifact changed',
         evidenceIds: [digest('n')],
-        inputDigest: digest('z'),
+        inputDigest: digest('f'),
         work: phaseWork(
           'design',
           'specification.plan',
           approved.snapshot.checkEpoch + 1,
-          digest('z'),
+          digest('f'),
         ),
       },
     });
@@ -551,16 +551,28 @@ describe('Change lifecycle domain', () => {
       phase: 'design',
       status: 'running',
       currentWork: { kind: 'specification.plan' },
-      tasks: [],
+      tasks: [{ taskId: buildTask.taskId }],
+      buildProtocol: {
+        status: 'suspended-for-design',
+        currentAction: null,
+        suspension: {
+          supersededPlanningDigest: digest('i'),
+          observedPlanningDigest: digest('f'),
+        },
+      },
     });
     expect(invalidated.snapshot.planningDigest).toBeUndefined();
+    const recovered = JSON.parse(JSON.stringify(invalidated.snapshot)) as ChangeLifecycleSnapshot;
+    expect(() => assertChangeLifecycleSnapshot(recovered)).not.toThrow();
+    expect(recovered.currentWork?.kind).toBe('specification.plan');
+    expect(recovered.buildProtocol?.currentAction).toBeNull();
     expect(invalidated.fact).toMatchObject({
       transitionId: 'build.semantic-plan-drift',
       invalidation: {
         kind: 'planning-authority-invalidated',
         invalidationKind: 'semantic',
         supersededPlanningDigest: digest('i'),
-        observedPlanningDigest: digest('z'),
+        observedPlanningDigest: digest('f'),
         supersededWorkId: configureWork.workId,
         supersededTaskRevisions: [buildTask.taskRevision],
         evidenceIds: [digest('n')],
@@ -578,12 +590,12 @@ describe('Change lifecycle domain', () => {
           invalidationKind: 'semantic',
           reason: 'Stale observation',
           evidenceIds: [],
-          inputDigest: digest('z'),
+          inputDigest: digest('f'),
           work: phaseWork(
             'design',
             'specification.plan',
             approved.snapshot.checkEpoch + 1,
-            digest('z'),
+            digest('f'),
           ),
         },
       }),

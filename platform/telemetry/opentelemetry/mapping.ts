@@ -463,6 +463,31 @@ export function workflowEventMetricAttributes(
       event.data.contractConflict === true;
   }
   if (event.type === 'change.lifecycle.transitioned') {
+    const transitionInvalidation = event.data.changeLifecycleTransition?.invalidation;
+    if (transitionInvalidation) {
+      const classification = transitionInvalidation.classification;
+      const disposition = transitionInvalidation.disposition;
+      const scope = transitionInvalidation.scope;
+      const continuation = transitionInvalidation.continuation;
+      if (classification === 'semantic' || classification === 'approval-authority') {
+        result['repoctopus.runtime.invalidation.classification'] = classification;
+      }
+      if (disposition === 'invalidate') {
+        result['repoctopus.runtime.invalidation.disposition'] = disposition;
+      }
+      if (scope === 'exact') result['repoctopus.runtime.invalidation.scope'] = scope;
+      if (continuation === 'design') {
+        result['repoctopus.runtime.invalidation.continuation'] = continuation;
+      }
+      if (Number.isSafeInteger(transitionInvalidation.retainedCount)) {
+        result['repoctopus.runtime.invalidation.retained_count'] =
+          transitionInvalidation.retainedCount;
+      }
+      if (Number.isSafeInteger(transitionInvalidation.invalidatedCount)) {
+        result['repoctopus.runtime.invalidation.invalidated_count'] =
+          transitionInvalidation.invalidatedCount;
+      }
+    }
     const observation = event.data.observation;
     const invalidationKind =
       observation && typeof observation === 'object'
@@ -476,9 +501,7 @@ export function workflowEventMetricAttributes(
       const source = repair.source;
       const reasonCode = repair.reasonCode;
       result['repoctopus.open.repair.source'] =
-        typeof source === 'string' && BOUNDED_OPEN_REPAIR_SOURCES.has(source)
-          ? source
-          : 'unknown';
+        typeof source === 'string' && BOUNDED_OPEN_REPAIR_SOURCES.has(source) ? source : 'unknown';
       result['repoctopus.open.repair.reason_code'] =
         typeof reasonCode === 'string' && BOUNDED_OPEN_REPAIR_REASON_CODES.has(reasonCode)
           ? reasonCode
