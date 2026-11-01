@@ -187,6 +187,156 @@ export function createExecutionWorkspaceBinding(input: {
   });
 }
 
+/**
+ * Stable, human-reviewable Build choices. Machine observations deliberately do
+ * not belong here: changing Runner, checkout path or HEAD must not invalidate a
+ * decision that still means the same thing to the team.
+ */
+export interface BuildStrategy {
+  schemaVersion: 1;
+  strategyId: string;
+  revision: number;
+  executionMode: BuildExecutionMode;
+  tddMode: BuildTddMode;
+  reviewMode: BuildReviewMode;
+  isolationIntent: ExecutionIsolation;
+  semanticDigest: Digest;
+}
+
+export function createBuildStrategy(input: {
+  runId: string;
+  revision: number;
+  executionMode: BuildExecutionMode;
+  tddMode: BuildTddMode;
+  reviewMode: BuildReviewMode;
+  isolationIntent: ExecutionIsolation;
+}): BuildStrategy {
+  const runId = text(input.runId, 'Run identity');
+  if (!Number.isSafeInteger(input.revision) || input.revision < 1) {
+    throw new Error('Build Strategy revision must be a positive safe integer');
+  }
+  if (!EXECUTION_MODES.has(input.executionMode)) {
+    throw new Error('Unsupported Build execution mode');
+  }
+  if (!TDD_MODES.has(input.tddMode)) throw new Error('Unsupported Build TDD mode');
+  if (input.reviewMode !== 'standard') throw new Error('Build review mode must be standard');
+  if (!ISOLATIONS.has(input.isolationIntent)) {
+    throw new Error('Unsupported Build isolation intent');
+  }
+  const stable = {
+    schemaVersion: 1 as const,
+    executionMode: input.executionMode,
+    tddMode: input.tddMode,
+    reviewMode: input.reviewMode,
+    isolationIntent: input.isolationIntent,
+  };
+  const semanticDigest = digest(stable);
+  return deepFreeze({
+    ...stable,
+    strategyId: `build-strategy:${digest({ runId, semanticDigest }).slice(-24)}`,
+    revision: input.revision,
+    semanticDigest,
+  });
+}
+
+export interface ExecutionBindingRepository {
+  repositoryId: string;
+  branchRef: string;
+  headRevision: string;
+  isolation: ExecutionIsolation;
+  workspaceOwnerId: string;
+  worktreeId: string | null;
+}
+
+/**
+ * Portable execution observation. Local absolute paths are held behind the
+ * opaque localOverlayRef and are never copied into this value.
+ */
+export interface ExecutionBinding {
+  schemaVersion: 1;
+  bindingId: string;
+  revision: number;
+  strategyDigest: Digest;
+  host: {
+    hostId: string;
+    capabilityDigest: Digest;
+  };
+  repositories: readonly ExecutionBindingRepository[];
+  semanticDigest: Digest;
+  stateDigest: Digest;
+  localOverlayRef: string;
+}
+
+export function createExecutionBinding(input: {
+  strategy: BuildStrategy;
+  revision: number;
+  hostId: string;
+  hostCapabilities: readonly string[];
+  workspaceBinding: ExecutionWorkspaceBinding;
+  workspaceOwnerId: string;
+  localOverlayRef: string;
+}): ExecutionBinding {
+  if (!Number.isSafeInteger(input.revision) || input.revision < 1) {
+    throw new Error('Execution Binding revision must be a positive safe integer');
+  }
+  if (input.workspaceBinding.isolation !== input.strategy.isolationIntent) {
+    throw new Error('Execution Binding isolation does not match the approved Build Strategy');
+  }
+  const hostCapabilities = unique(input.hostCapabilities, 'Host capabilities');
+  const requiredCapability =
+    input.strategy.executionMode === 'autonomous'
+      ? 'build.autonomous'
+      : 'subagent.dispatch.attested';
+  if (!hostCapabilities.includes(requiredCapability)) {
+    throw new Error(`Selected execution mode requires ${requiredCapability}`);
+  }
+  for (const capability of ['process.execute', 'repository.write']) {
+    if (!hostCapabilities.includes(capability)) {
+      throw new Error(`Execution Binding requires ${capability}`);
+    }
+  }
+  const localOverlayRef = text(input.localOverlayRef, 'Local overlay reference');
+  if (isAbsolute(localOverlayRef) || /^[a-z]:[\\/]/iu.test(localOverlayRef)) {
+    throw new Error('Local overlay reference must be opaque, not an absolute path');
+  }
+  const workspaceOwnerId = text(input.workspaceOwnerId, 'Workspace owner identity');
+  const capabilityDigest = digest(hostCapabilities);
+  const repositories = input.workspaceBinding.repositories.map((repository) => ({
+    repositoryId: repository.repositoryId,
+    branchRef: repository.branch,
+    headRevision: repository.head,
+    isolation: input.workspaceBinding.isolation,
+    workspaceOwnerId,
+    worktreeId: repository.worktreeId,
+  }));
+  const portableSemantics = {
+    schemaVersion: 1 as const,
+    strategyDigest: input.strategy.semanticDigest,
+    capabilityDigest,
+    repositories: repositories.map(({ headRevision: _headRevision, ...repository }) => repository),
+  };
+  const semanticDigest = digest(portableSemantics);
+  const stateDigest = digest({
+    ...portableSemantics,
+    hostId: text(input.hostId, 'Host identity'),
+    repositories,
+  });
+  return deepFreeze({
+    schemaVersion: 1 as const,
+    bindingId: `execution-binding:${digest({ semanticDigest, stateDigest, revision: input.revision }).slice(-24)}`,
+    revision: input.revision,
+    strategyDigest: input.strategy.semanticDigest,
+    host: {
+      hostId: text(input.hostId, 'Host identity'),
+      capabilityDigest,
+    },
+    repositories,
+    semanticDigest,
+    stateDigest,
+    localOverlayRef,
+  });
+}
+
 export interface BuildConfigurationProposal {
   schemaVersion: 1;
   workspaceIntent: ExecutionWorkspaceIntent;
