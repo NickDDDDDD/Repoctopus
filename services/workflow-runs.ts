@@ -1215,24 +1215,101 @@ export class WorkflowRuns extends Service {
     return this.bindExecutionWorkspaceIntent(state, lifecycle.workspaceIntent, projectSnapshot);
   }
 
-  private async assertFrozenExecutionWorkspace(
+  private async executionBindingDrift(
     state: RunState,
     lifecycle: NonNullable<RunState['changeLifecycle']>,
     projectSnapshot: ProjectSnapshot,
     executionBinding: ExecutionBinding,
-  ): Promise<void> {
+    invocationHost: WorkExecutionHostIdentity,
+  ): Promise<'host' | 'capability' | 'checkout' | 'head' | 'path' | null> {
     const observed = await this.bindExecutionWorkspace(state, lifecycle, projectSnapshot);
-    const observedRepositories = observed.repositories.map((repository) => ({
-      repositoryId: repository.repositoryId,
-      branchRef: repository.branch,
-      headRevision: repository.head,
-      isolation: observed.isolation,
+    const candidate = createExecutionBinding({
+      strategy: lifecycle.buildProtocol!.strategy,
+      revision: executionBinding.revision + 1,
+      hostId: invocationHost.id,
+      hostCapabilities: invocationHost.capabilities,
+      workspaceBinding: observed,
       workspaceOwnerId: lifecycle.workspaceIntent!.workspaceId,
-      worktreeId: repository.worktreeId,
-    }));
-    if (canonicalJson(observedRepositories) !== canonicalJson(executionBinding.repositories)) {
-      throw new Error('Execution Binding state drifted; Build Configure must run again');
+      localOverlayRef: `execution-workspace:${observed.localDigest.slice(-24)}`,
+    });
+    if (candidate.host.hostId !== executionBinding.host.hostId) return 'host';
+    if (candidate.host.capabilityDigest !== executionBinding.host.capabilityDigest) {
+      return 'capability';
     }
+    const withoutHead = (binding: ExecutionBinding) =>
+      binding.repositories.map(({ headRevision: _headRevision, ...repository }) => repository);
+    if (canonicalJson(withoutHead(candidate)) !== canonicalJson(withoutHead(executionBinding))) {
+      return 'checkout';
+    }
+    if (canonicalJson(candidate.repositories) !== canonicalJson(executionBinding.repositories)) {
+      return 'head';
+    }
+    if (candidate.localOverlayRef !== executionBinding.localOverlayRef) return 'path';
+    return null;
+  }
+
+  private async dispatchExecutionBindingRevalidation(input: {
+    state: RunState;
+    lifecycle: NonNullable<RunState['changeLifecycle']>;
+    projectSnapshot: ProjectSnapshot;
+    projectConfigDigest: `sha256:${string}`;
+    workspaceRepositoryId: string;
+    reasonCode: 'host' | 'capability' | 'checkout' | 'head' | 'path';
+    signal?: AbortSignal;
+  }) {
+    const protocol = input.lifecycle.buildProtocol!;
+    const strategy = protocol.strategy;
+    const skills = await this.resolveLifecycleWorkSkills(
+      'build.configure',
+      input.signal,
+      [],
+      input.state.runId,
+    );
+    const work = createBuildActionWork({
+      runId: input.state.runId,
+      checkEpoch: input.lifecycle.checkEpoch + 1,
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      kind: 'build.configure',
+      actionSkill: skills.actionSkill,
+      augmentationSkills: skills.augmentationSkills,
+      skillComposition: skills.skillComposition,
+      compositionDigest: input.state.composition.compositionDigest,
+      projectConfigDigest: input.projectConfigDigest,
+      projectSnapshotDigest: input.state.projectSnapshotDigest,
+      workspaceRepositoryId: input.workspaceRepositoryId,
+      repositoryIds: input.projectSnapshot.repositories.map((repository) => repository.id),
+      strategyId: strategy.strategyId,
+      executionMode: strategy.executionMode,
+      tddMode: strategy.tddMode,
+      stableInput: {
+        reason: 'execution-binding-drift',
+        reasonCode: input.reasonCode,
+        previousBindingId: protocol.binding!.bindingId,
+      },
+    });
+    for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
+      await this.coordinator.bindSkill(input.state.runId, skill);
+    }
+    const reason = `Execution Binding ${input.reasonCode} drift requires automatic revalidation`;
+    const transitioned = await this.coordinator.acceptChangeObservation(input.state.runId, {
+      kind: 'build-binding-revalidation-required',
+      reasonCode: input.reasonCode,
+      reason,
+      work,
+    });
+    await this.ctx.workExecutionAuthority.recordWorkCreated(input.state.runId, work);
+    return {
+      ...transitioned,
+      value: await this.coordinator.status(input.state.runId),
+      diagnostics: [
+        ...transitioned.diagnostics,
+        {
+          level: 'warning' as const,
+          code: 'change.build-binding-revalidation-required',
+          message: reason,
+        },
+      ],
+    };
   }
 
   private async createDesignWork(
@@ -2361,12 +2438,24 @@ export class WorkflowRuns extends Service {
                 throw new Error('Build Plan Host does not match the persisted invocation');
               }
               this.assertBuildHostCapabilities(strategy, invocationHost);
-              await this.assertFrozenExecutionWorkspace(
+              const bindingDrift = await this.executionBindingDrift(
                 current,
                 lifecycle,
                 projectSnapshot,
                 binding,
+                invocationHost,
               );
+              if (bindingDrift) {
+                return this.dispatchExecutionBindingRevalidation({
+                  state: current,
+                  lifecycle,
+                  projectSnapshot,
+                  projectConfigDigest,
+                  workspaceRepositoryId,
+                  reasonCode: bindingDrift,
+                  ...(signal ? { signal } : {}),
+                });
+              }
               const rejectSubmission = async (
                 reasonCode: 'output-invalid' | 'outcome-rejected' | 'outcome-processing-error',
                 diagnostic: string,
@@ -2592,12 +2681,24 @@ export class WorkflowRuns extends Service {
                 throw new Error('Build Execute Host does not match the persisted invocation');
               }
               this.assertBuildHostCapabilities(strategy, invocationHost);
-              await this.assertFrozenExecutionWorkspace(
+              const bindingDrift = await this.executionBindingDrift(
                 current,
                 lifecycle,
                 projectSnapshot,
                 binding,
+                invocationHost,
               );
+              if (bindingDrift) {
+                return this.dispatchExecutionBindingRevalidation({
+                  state: current,
+                  lifecycle,
+                  projectSnapshot,
+                  projectConfigDigest,
+                  workspaceRepositoryId,
+                  reasonCode: bindingDrift,
+                  ...(signal ? { signal } : {}),
+                });
+              }
               if (
                 result?.kind !== 'build-package-completion' ||
                 result.packageId !== lifecycle.currentWork.packageId
@@ -2808,12 +2909,24 @@ export class WorkflowRuns extends Service {
                 throw new Error('Build Check Host does not match the persisted invocation');
               }
               this.assertBuildHostCapabilities(strategy, invocationHost);
-              await this.assertFrozenExecutionWorkspace(
+              const bindingDrift = await this.executionBindingDrift(
                 current,
                 lifecycle,
                 projectSnapshot,
                 binding,
+                invocationHost,
               );
+              if (bindingDrift) {
+                return this.dispatchExecutionBindingRevalidation({
+                  state: current,
+                  lifecycle,
+                  projectSnapshot,
+                  projectConfigDigest,
+                  workspaceRepositoryId,
+                  reasonCode: bindingDrift,
+                  ...(signal ? { signal } : {}),
+                });
+              }
               const rejectSubmission = async (
                 reasonCode: 'output-invalid' | 'outcome-rejected' | 'outcome-processing-error',
                 diagnostic: string,

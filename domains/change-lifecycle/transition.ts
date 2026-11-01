@@ -463,6 +463,12 @@ export type ChangeLifecycleObservation =
     }
   | { kind: 'build-binding-accepted'; binding: ExecutionBinding; work: WorkDescriptor }
   | {
+      kind: 'build-binding-revalidation-required';
+      reasonCode: 'host' | 'capability' | 'checkout' | 'head' | 'path';
+      reason: string;
+      work: WorkDescriptor;
+    }
+  | {
       kind: 'workspace-intent-revision-required';
       requestId: string;
       proposalDigest: `sha256:${string}`;
@@ -1324,6 +1330,34 @@ export function evolveChangeLifecycle(options: {
       definition: options.definition,
       current,
       transitionId: 'build.binding-retry',
+      next: {
+        currentWork: observation.work,
+        waitCondition: null,
+        blocker: null,
+        buildProtocol,
+      },
+    });
+  }
+  if (observation.kind === 'build-binding-revalidation-required') {
+    if (
+      current.phase !== 'build' ||
+      current.status !== 'running' ||
+      !current.buildProtocol?.binding ||
+      current.buildProtocol.currentAction === 'configure' ||
+      observation.work.phase !== 'build' ||
+      observation.work.kind !== 'build.configure' ||
+      !observation.reason.trim()
+    ) {
+      throw new Error('Execution Binding drift requires an accepted non-Configure Build Action');
+    }
+    const buildProtocol = advanceBuildProtocol(current.buildProtocol, {
+      kind: 'binding-revalidation-required',
+      reasonCode: observation.reasonCode,
+    });
+    return applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'build.binding-revalidation-required',
       next: {
         currentWork: observation.work,
         waitCondition: null,

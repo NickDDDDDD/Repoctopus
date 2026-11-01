@@ -1167,4 +1167,32 @@ describe('Build protocol domain', () => {
     expect(retry.actionAttempt).toBe(2);
     expect(checked.status).toBe('ready-for-verify');
   });
+
+  it('revalidates compatible machine drift without changing Strategy or discarding completions', () => {
+    const configuration = approvedConfiguration();
+    const initial = createBuildProtocolState({
+      runId: 'run-binding-drift',
+      planningDigest: sha('a'),
+      strategy: configuration.strategy,
+    });
+    const configured = advanceBuildProtocol(initial, {
+      kind: 'binding-accepted',
+      binding: configuration.binding,
+    });
+    const drifted = advanceBuildProtocol(configured, {
+      kind: 'binding-revalidation-required',
+      reasonCode: 'head',
+    });
+    expect(drifted).toMatchObject({
+      currentAction: 'configure',
+      status: 'active',
+      strategy: { strategyId: configuration.strategy.strategyId },
+      binding: null,
+      plan: null,
+      planEvidence: null,
+      checkEvidence: null,
+    });
+    expect(drifted.bindingHistory).toEqual([configuration.binding]);
+    expect(drifted.invalidations).toEqual([]);
+  });
 });

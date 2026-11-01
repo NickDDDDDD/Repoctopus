@@ -665,6 +665,7 @@ export interface BuildProtocolSuspension {
 
 export type BuildProtocolObservation =
   | { kind: 'binding-accepted'; binding: ExecutionBinding }
+  | { kind: 'binding-revalidation-required'; reasonCode: string }
   | { kind: 'plan-accepted'; plan: BuildPlan }
   | { kind: 'plan-evidence-accepted'; evidence: PlanEvidence }
   | { kind: 'plan-rejected' }
@@ -845,6 +846,23 @@ export function advanceBuildProtocol(
       actionAttempt: 1,
       binding: observation.binding,
       bindingHistory: [...state.bindingHistory, observation.binding],
+      revision: state.revision + 1,
+    });
+  }
+  if (observation.kind === 'binding-revalidation-required') {
+    if (state.currentAction === 'configure' || !state.binding) {
+      throw new Error('Execution Binding revalidation requires an accepted Binding');
+    }
+    text(observation.reasonCode, 'Execution Binding drift reason');
+    return deepFreeze({
+      ...state,
+      currentAction: 'configure',
+      status: 'active',
+      actionAttempt: 1,
+      binding: null,
+      plan: null,
+      planEvidence: null,
+      checkEvidence: null,
       revision: state.revision + 1,
     });
   }
