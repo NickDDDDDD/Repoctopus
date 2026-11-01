@@ -129,7 +129,6 @@ export const OBSERVATION_ATTRIBUTE_KEYS = [
   'warningCode',
   'droppedEnvelopes',
   'targetKind',
-  'reason',
   'proposalStatus',
   'specsStatus',
   'designStatus',

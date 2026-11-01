@@ -67,7 +67,7 @@ function metricAttributes(envelope: ObservationEnvelope) {
   if (envelope.correlation.skillRole) {
     values['repoctopus.skill.role'] = envelope.correlation.skillRole;
   }
-  for (const key of ['result', 'status', 'reasonCode', 'findingKind'] as const) {
+  for (const key of ['result', 'status', 'findingKind'] as const) {
     const value = envelope.attributes[key];
     if (value !== undefined) values[observationAttributeOtlpName(key)] = value;
   }
