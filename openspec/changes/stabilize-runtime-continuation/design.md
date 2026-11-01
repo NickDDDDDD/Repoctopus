@@ -58,19 +58,13 @@ Remote identity 由 Git/平台 adapter 规范化：stable repository ID 优先�
 
 **替代方案：继续在一个 snapshot digest 中排除更多字段。** 拒绝。字段黑名单会随着新能力继续泄漏；按授权职责建模才能让新增字段默认不跨域生效。
 
-### 2. 在纯领域层增加显式 Dependency-aware Invalidation Planner
+### 2. Lifecycle reducer 使用固定的 Dependency-aware Invalidation Closure
 
-新增纯函数 planner，输入为旧 typed identity basis、当前权威 observations、current checkpoint、副作用边界和 lifecycle definition；它使用由代码和测试固定的依赖矩阵，输出为：
+不建立脱离生产 transition 的通用 planner。每个受保护的 lifecycle observation 由对应 reducer 显式决定 `classification`、`disposition`、successor Action 和低基数 reason code；reducer 只调用纯函数 `runtimeInvalidationScope()`，按代码和测试固定的 identity dependency matrix 计算 retained/invalidated identity 集合。这样分类与推进权仍属于同一个 CAS transition，不会出现“planner 测试通过、生产路径却没有调用”的第二套权威。
 
-- `classification`: `semantic | approval-authority | composition | build-input | verification-input | publication | unknown`；
-- `disposition`: `continue | reconcile | invalidate | migration_required`；
-- retained/invalidated identity 集合；
-- Runtime 允许的唯一 successor Action；
-- 低基数 reason code。
+`runtimeInvalidationScope()` 不读取文件、Git、Cordis 或网络，不创建 Human Decision，也不直接写 Run。`WorkflowRuns` 在锁外收集带 identity 的 observations，lifecycle reducer 在一次 `RunStore.commitGuarded()` 内按 expected revision 验证 observation、计算依赖闭包并提交 transition。陈旧 observation 只返回 revision conflict。
 
-Planner 不读取文件、Git、Cordis 或网络，不创建 Human Decision，也不直接写 Run。`WorkflowRuns` 在锁外收集带 identity 的 observations，在一次 `RunStore.transaction()` 内按 expected revision 重算/核对 planner 输出并提交 transition。陈旧 observation 只返回 revision conflict。
-
-Build Protocol 增加 `suspended-for-design` 状态和 invalidation ledger。返回 Design 时，旧 Build 状态保留为同一 Run 内不可执行的候选，而不是被删除。新 Design approval 后，planner 逐层重新验证：
+Build Protocol 增加 `suspended-for-design` 状态和 invalidation ledger。返回 Design 时，旧 Build 状态保留为同一 Run 内不可执行的候选，而不是被删除。新 Design approval 后，受保护 reducer 逐层重新验证：
 
 1. configuration 输入仍相同则保留，否则回 Configure；
 2. Plan 对新 planning/Task identity 仍完整则保留，否则回 Plan；
@@ -90,7 +84,7 @@ Build Protocol 增加 `suspended-for-design` 状态和 invalidation ledger。返
 - Run revision 与 lifecycle phase/status；
 - current Work、attempt、`checkEpoch`；
 - packet/invocation/Outcome/Validator/Human Decision identity；
-- invalidation planner 的已提交结果。
+- lifecycle reducer 已提交的 invalidation fact。
 
 它不扫描 OpenSpec 目录、Git diff 或“最新”Action 文件来推断下一步。相同命令的稳定 submission/request/invalidation key 已存在时返回原结果；不同 payload 使用同一 key 时 conflict。可纠正 Host submission 继续使用原 invocation 和新 submission ID，不新建 Work。
 
@@ -126,7 +120,7 @@ Archive 已开始的 Specification/Git/platform 副作用永不回滚到 Design�
 
 ### 6. 遥测来自同一 transition fact
 
-每次 planner/CAS 提交生成一个版本化 transition fact，同时映射 Trajectory 和规范 OTLP envelope。新增有界字段：authority、classification、disposition、scope (`exact|conservative|none`)、retained/invalidated counts、checkpoint outcome、dispatch suppression、reconciliation result。具体 identity 只进入 Trace/Event 允许列表，不进入 Metric label。
+每次 reducer/CAS 提交生成一个版本化 transition fact，同时映射 Trajectory 和规范 OTLP envelope。新增有界字段：authority、classification、disposition、scope (`exact|conservative|none`)、retained/invalidated counts、checkpoint outcome、dispatch suppression、reconciliation result。具体 identity 只进入 Trace/Event 允许列表，不进入 Metric label。
 
 稳定性指标包括：重复批准率、Build Protocol 重建率、精确失效率、completion 保留率、checkpoint 恢复结果、reconcile 数量和 duplicate dispatch suppression。Desktop 与远端 SigNoz 消费相同 envelope，不新增查询 Store 的旁路。
 
@@ -139,7 +133,7 @@ Archive 已开始的 Specification/Git/platform 副作用永不回滚到 Design�
 - checkpoint revision 过期时显式 reconcile，不重跑实现；-相同 state revision 派生唯一 continuation；
 - CAS restore 拒绝归属、固定材料或嵌套 revision 漂移；-未知副作用不自动 retry。
 
-TDD 顺序先保存当前重复 approval/全量清空的失败黑盒，再实现 identity split、planner、persistence 和 adapter。验收必须通过公共 CLI 与生产 composition，并交叉核对 Run、Trajectory、受保护文件和 OTLP test receiver；只测 reducer 或最终 phase 不算通过。
+TDD 顺序先保存当前重复 approval/全量清空的失败黑盒，再实现 identity split、reducer 内 dependency closure、persistence 和 adapter。验收必须通过公共 CLI 与生产 composition，并交叉核对 Run、Trajectory、受保护文件和 OTLP test receiver；只测 reducer 或最终 phase 不算通过。
 
 ## Risks / Trade-offs
 
@@ -153,7 +147,7 @@ TDD 顺序先保存当前重复 approval/全量清空的失败黑盒，再实现
 ## Migration Plan
 
 1. 先增加 v2 schema、identity constructors、显式 dependency matrix 与失败回归测试，不切换生产写路径。
-2. 实现 invalidation planner、continuation projector 和 composition adoption 判定，并用 property/contract tests 固定纯领域行为。
+2. 实现 reducer 内的 invalidation dependency closure、continuation projector 和 composition adoption 判定，并用 property/contract tests 固定纯领域行为。
 3. 一次切换新 Run 写入、Planning/Build/Recovery/Telemetry adapter；删除旧聚合 planning invalidation 与全量清空分支。
 4. 旧预发布活动 Run 标记 `migration_required` 并保持只读；不执行自动转换。当前 Runtime 自身的开发继续由外部 Comet controller 管理，直到生产黑盒门槛通过。
 5. 运行崩溃注入、并发 CAS、多仓、OpenSpec strict validation、CLI/production composition 与 OTLP receiver 验收，再进行独立 review。
