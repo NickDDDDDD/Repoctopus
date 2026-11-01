@@ -11,6 +11,7 @@ import type {
   SpecificationValidation,
 } from '../domains/specification/types.js';
 import type { TrajectoryEvent, TrajectoryEventType } from '../domains/trajectory/types.js';
+import { createRuleEvaluationReceipt } from '../domains/telemetry/rule-evaluation.js';
 import type {
   AgentCoordinationCheckpoint,
   AgentCoordinationCheckpointView,
@@ -29,6 +30,12 @@ import {
 } from '../domains/work-execution/submission.js';
 import type { WorkExecutionSubmissionRejectionCode } from '../domains/work-execution/types.js';
 import { canonicalJson } from '../domains/workflow-contract/canonical.js';
+
+export type SkillHumanCorrectionKind =
+  | 'changes-requested'
+  | 'outcome-rejection'
+  | 'task-reopen'
+  | 'repair-work';
 
 function digest(...parts: readonly string[]): `sha256:${string}` {
   return `sha256:${createHash('sha256').update(parts.join('\0')).digest('hex')}`;
@@ -581,6 +588,7 @@ export class WorkExecutionAuthority extends Service {
     packet: WorkExecutionPacket,
     stage: 'resolved' | 'delivered' | 'consumed',
     consumedLayerDigests?: readonly `sha256:${string}`[],
+    invocationId?: string,
   ): Promise<void> {
     const eligible = packet.context.layers.filter(
       (layer) =>
@@ -600,6 +608,11 @@ export class WorkExecutionAuthority extends Service {
           packetDigest: packet.identity.packetDigest,
           skillName: layer.source,
           skillRole: layer.skillRole ?? (layer.kind === 'action-skill' ? 'action' : 'augmentation'),
+          skillCategory:
+            layer.skillRole === 'team-guidance' || layer.skillRole === 'team-replacement'
+              ? 'team'
+              : 'builtin',
+          ...(invocationId ? { invocationId } : {}),
           bindingId: layer.bindingId ?? undefined,
           slotId: layer.slotId ?? undefined,
           skillOrder: layer.skillOrder,
@@ -610,6 +623,81 @@ export class WorkExecutionAuthority extends Service {
         [layer.digest, stage],
       );
     }
+  }
+
+  async recordSkillOutcomeFacts(
+    packet: WorkExecutionPacket,
+    outcome: WorkExecutionHostOutcome,
+    result: 'completed' | 'error' | 'corrected',
+    sourceIdentity: string,
+    correctionKind?: SkillHumanCorrectionKind,
+  ): Promise<void> {
+    if ((result === 'corrected') !== (correctionKind !== undefined)) {
+      throw new Error('Skill correction facts require one bounded correction kind');
+    }
+    const consumed = new Set(outcome.consumedLayerDigests);
+    const layers = packet.context.layers.filter(
+      (layer) =>
+        (layer.kind === 'action-skill' || layer.kind === 'augmentation-skill') &&
+        consumed.has(layer.digest),
+    );
+    for (const layer of layers) {
+      const skillRole =
+        layer.skillRole ?? (layer.kind === 'action-skill' ? 'action' : 'augmentation');
+      await this.recordEvent(
+        packet.claim.runId,
+        packet.claim.intentId,
+        'skill.outcome-recorded',
+        {
+          phase: packet.work.phase,
+          workId: packet.work.workId,
+          workKind: packet.work.kind,
+          attempt: packet.claim.attempt,
+          invocationId: outcome.invocationId,
+          skillName: layer.source,
+          skillRole,
+          skillCategory:
+            skillRole === 'team-guidance' || skillRole === 'team-replacement' ? 'team' : 'builtin',
+          result,
+          ...(correctionKind ? { correctionKind } : {}),
+        },
+        [layer.digest, result, sourceIdentity],
+      );
+    }
+  }
+
+  /**
+   * Materializes a formal correction while the corrected Work checkpoint is still authoritative.
+   * Exporters must not infer correction ownership from neighboring events.
+   */
+  async recordCurrentSkillCorrection(
+    runId: string,
+    correctionKind: SkillHumanCorrectionKind,
+    sourceIdentity: string,
+  ): Promise<boolean> {
+    const state = await this.ctx.runStore.loadRun(runId);
+    const execution = state.workExecution;
+    if (!execution?.hostOutcome || execution.status === 'invoking') return false;
+    if (execution.schemaVersion !== 3) return false;
+    const packet = await this.ctx.workExecutionPacketStore.load(runId, execution.packet);
+    if (
+      packet.identity.packetDigest !== execution.packet.packetDigest ||
+      packet.identity.contextDigest !== execution.packet.contextDigest ||
+      packet.claim.runId !== runId ||
+      packet.claim.workId !== execution.workId ||
+      packet.claim.attempt !== execution.attempt ||
+      packet.claim.checkEpoch !== execution.checkEpoch
+    ) {
+      return false;
+    }
+    await this.recordSkillOutcomeFacts(
+      packet,
+      execution.hostOutcome,
+      'corrected',
+      sourceIdentity,
+      correctionKind,
+    );
+    return true;
   }
 
   async recordSkillConsumptionRejected(
@@ -942,6 +1030,14 @@ export class WorkExecutionAuthority extends Service {
         },
         [submissionId],
       );
+      const packet = await this.loadAuthoritativePacket(intent.runId);
+      await this.recordSkillOutcomeFacts(
+        packet.packet,
+        outcome,
+        'corrected',
+        submissionId,
+        'outcome-rejection',
+      );
     }
     return result;
   }
@@ -1022,6 +1118,15 @@ export class WorkExecutionAuthority extends Service {
         };
       },
     );
+    if (result.hostOutcome) {
+      const packet = await this.loadAuthoritativePacket(input.intent.runId);
+      await this.recordSkillOutcomeFacts(
+        packet.packet,
+        result.hostOutcome,
+        'error',
+        `${result.hostOutcome.invocationId}:${input.reasonCode}`,
+      );
+    }
     return result;
   }
 
@@ -1100,6 +1205,15 @@ export class WorkExecutionAuthority extends Service {
       },
       [input.outcome.outcomeId],
     );
+    const packet = await this.loadAuthoritativePacket(input.intent.runId);
+    if (result.hostOutcome) {
+      await this.recordSkillOutcomeFacts(
+        packet.packet,
+        result.hostOutcome,
+        input.outcome.status === 'succeeded' ? 'completed' : 'error',
+        input.outcome.outcomeId,
+      );
+    }
     await this.flushTelemetry(input.intent.runId);
     return result;
   }
@@ -1109,6 +1223,23 @@ export class WorkExecutionAuthority extends Service {
     validatorId: string;
     continuation: WorkContinuationKind;
   }): Promise<WorkExecutionCheckpoint> {
+    const ruleEvaluation = createRuleEvaluationReceipt({
+      runId: input.intent.runId,
+      workId: input.intent.workId,
+      attempt: input.intent.attempt,
+      checkEpoch: input.intent.checkEpoch,
+      rule: {
+        id: input.validatorId,
+        version: '1',
+        digest: digest('validator-rule', input.validatorId),
+        category: 'builtin',
+      },
+      evaluator: { id: input.validatorId, version: '1' },
+      applicable: true,
+      expected: true,
+      triggered: true,
+      result: 'passed',
+    });
     return this.transition(
       input.intent.runId,
       input.intent.intentId,
@@ -1122,6 +1253,16 @@ export class WorkExecutionAuthority extends Service {
         validatorId: input.validatorId,
         result: 'accepted',
         continuation: input.continuation,
+        ruleEvaluation,
+        ruleId: ruleEvaluation.rule.id,
+        ruleDigest: ruleEvaluation.rule.digest,
+        ruleCategory: ruleEvaluation.rule.category,
+        evaluatorId: ruleEvaluation.evaluator.id,
+        evaluatorVersion: ruleEvaluation.evaluator.version,
+        ruleApplicable: ruleEvaluation.applicable,
+        ruleExpected: ruleEvaluation.expected,
+        ruleTriggered: ruleEvaluation.triggered,
+        ruleResult: ruleEvaluation.result,
       },
       { validatorId: input.validatorId },
     );

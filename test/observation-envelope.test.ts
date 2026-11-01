@@ -273,7 +273,9 @@ describe('ObservationEnvelope', () => {
       buildEvent: 'build.binding.drifted',
       reasonClass: 'head',
     });
-    expect(JSON.stringify(envelope)).not.toMatch(/C:\\\\workspace|semanticDigest|stateDigest|localOverlayRef/u);
+    expect(JSON.stringify(envelope)).not.toMatch(
+      /C:\\\\workspace|semanticDigest|stateDigest|localOverlayRef/u,
+    );
   });
 
   it('normalizes Evidence, Delivery and application facts through the same canonical envelope', () => {
@@ -316,8 +318,10 @@ describe('ObservationEnvelope', () => {
         data: { result: 'succeeded', webhook: 'private', post_merge: true },
       },
       context,
+      { status: 'completed' },
     );
     expect(delivery.attributes.result).toBe('succeeded');
+    expect(delivery.attributes.deliveryState).toBe('completed');
     expect(JSON.stringify(delivery)).not.toMatch(/webhook|post_merge/u);
 
     const application = createApplicationObservationEnvelope({

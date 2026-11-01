@@ -1,18 +1,34 @@
 # OpenTelemetry
 
-Repoctopus 通过标准 OTLP/HTTP 导出适配自部署 SigNoz 等后端。领域层先把每个已持久化事实映射为一份规范 `ObservationEnvelope`；远端后端和本地 Desktop 只做协议编码、传输与独立确认，不再各自解释领域对象。
+Repoctopus 通过标准 OTLP/HTTP 向自部署的 SigNoz 等后端发送数据。本文说明如何配置投递，以及 Runtime 如何保证本地 Desktop 与远端后端消费同一套事实。完整字段、信号、单位、基数和指标公式见[遥测 schema v1 参考](telemetry-reference.md)。
 
 ## 配置
 
-设置标准环境变量后启动 CLI：
+使用标准 OpenTelemetry 环境变量配置 Collector 地址、认证、超时和 Resource。字段名属于公开协议，不是部署配置；Repoctopus 不提供字段别名，也不要求 Collector Transform 改名。
+
+| 变量                                                                                                            | 作用                                                                         | 优先级                                              |
+| --------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | --------------------------------------------------- |
+| `OTEL_EXPORTER_OTLP_ENDPOINT`                                                                                   | 三类信号的总端点；Runtime 自动追加 `/v1/traces`、`/v1/logs` 和 `/v1/metrics` | 低于按信号端点                                      |
+| `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`、`OTEL_EXPORTER_OTLP_LOGS_ENDPOINT`、`OTEL_EXPORTER_OTLP_METRICS_ENDPOINT` | 单独覆盖一个信号的完整 URL                                                   | 最高                                                |
+| `OTEL_EXPORTER_OTLP_HEADERS`                                                                                    | URL 编码的公共请求头，如 `authorization=Bearer%20token`                      | 低于按信号 headers                                  |
+| `OTEL_EXPORTER_OTLP_TRACES_HEADERS`、`OTEL_EXPORTER_OTLP_LOGS_HEADERS`、`OTEL_EXPORTER_OTLP_METRICS_HEADERS`    | 单独覆盖一个信号的请求头                                                     | 最高                                                |
+| `OTEL_EXPORTER_OTLP_TIMEOUT`                                                                                    | 公共请求超时，单位为毫秒，默认 `5000`                                        | 低于按信号 timeout                                  |
+| `OTEL_EXPORTER_OTLP_TRACES_TIMEOUT`、`OTEL_EXPORTER_OTLP_LOGS_TIMEOUT`、`OTEL_EXPORTER_OTLP_METRICS_TIMEOUT`    | 单独覆盖一个信号的超时                                                       | 最高                                                |
+| `OTEL_SERVICE_NAME`                                                                                             | 覆盖默认服务名 `repoctopus-runtime`                                          | 高于 `OTEL_RESOURCE_ATTRIBUTES` 中的 `service.name` |
+| `OTEL_RESOURCE_ATTRIBUTES`                                                                                      | 逗号分隔、URL 编码的 Resource 属性                                           | 不能覆盖固定产品名和 schema 版本                    |
+
+在 PowerShell 中设置变量后启动 CLI：
 
 ```powershell
 $env:OTEL_EXPORTER_OTLP_ENDPOINT = 'http://signoz.example.internal:4318'
+$env:OTEL_EXPORTER_OTLP_HEADERS = 'authorization=Bearer%20replace-with-secret'
+$env:OTEL_SERVICE_NAME = 'team-platform-repoctopus'
+$env:OTEL_RESOURCE_ATTRIBUTES = 'service.namespace=developer-platform,deployment.environment.name=production'
 $env:REPOCTOPUS_ENVIRONMENT = 'development'
 node bin/repoctopus.js evidence run --workspace . --profile verify --json
 ```
 
-也可以分别使用 `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`、`OTEL_EXPORTER_OTLP_LOGS_ENDPOINT` 和 `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT`。两种方式都发送 Trace、Log、Metric；三个信号携带相同 envelope identity 与允许列表语义。
+命令完成后，Collector 会收到 Trace、Log 和 Metric。三个信号携带同一 envelope identity 与允许列表语义；认证 header 只用于 HTTP 请求，不进入领域状态、日志属性或配置摘要。只配置按信号端点时，Runtime 只发送已配置的信号。没有配置任何远端端点时，远端导出保持关闭，Run 和 Evidence 继续执行。
 
 正常的 Change Run 会自动启动或激活 Desktop，Runtime 再从受保护的 discovery 取得本机会话端点和短期凭据。只有在隔离的 Receiver 冒烟测试中才显式设置：
 
@@ -21,7 +37,7 @@ $env:REPOCTOPUS_DESKTOP_OTLP_ENDPOINT = 'http://127.0.0.1:4319'
 $env:REPOCTOPUS_DESKTOP_OTLP_TOKEN = '<session-token>'
 ```
 
-只配置远端时只有 `remote` 目的地；同时配置上面两个变量时增加 `desktop` 目的地；设置 `REPOCTOPUS_DESKTOP_OTLP_MODE=paused` 会暂停并保留有界积压，设置为 `removed` 或清空 Desktop 端点会移除本地目的地。没有配置任何端点时事实仍然可以落入本地 envelope store，工作流结果不受影响。
+只配置远端时只有 `remote` 目的地；同时配置上面两个 Desktop 变量时增加 `desktop` 目的地。设置 `REPOCTOPUS_DESKTOP_OTLP_MODE=paused` 会暂停并保留有界积压；设置为 `removed` 或清空 Desktop 端点会移除本地目的地。没有配置任何端点时，事实仍然可以落入本地 envelope store，工作流结果不受影响。
 
 源码和安装态激活方法见[启动或恢复 Desktop Dashboard](desktop-activation.md)。桌面不可用只影响本地观测，不改变 Change Run 或远端目的地。
 

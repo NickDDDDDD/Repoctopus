@@ -1,0 +1,27 @@
+{
+  "change": "integrate-runtime-telemetry-measurements",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "b4be3b51cf5f1ca937041f56f7cd7183811dbe97ab0da26f6c141642723a537b",
+  "files": [
+    {
+      "path": "openspec/changes/integrate-runtime-telemetry-measurements/proposal.md",
+      "sha256": "35e2ea8f8508563bedb31acb98f05925edd347e7bc949cd63ad5d80bdcb3218c"
+    },
+    {
+      "path": "openspec/changes/integrate-runtime-telemetry-measurements/design.md",
+      "sha256": "d5bdc2e961f5ebe6f35985a1667fccde9e15fe0a2b8ef62a3b9e9b50451dee34"
+    },
+    {
+      "path": "openspec/changes/integrate-runtime-telemetry-measurements/tasks.md",
+      "sha256": "e24541c5f6811b172980a2cf2bc6e9f86201c5ab8f5fc2fecff9b4de9f7fd8e1"
+    },
+    {
+      "path": "openspec/changes/integrate-runtime-telemetry-measurements/specs/development-telemetry/spec.md",
+      "sha256": "a5c73458a90e19f56052f6445f39868df27cc2f47af2277586f45f6aaf6aeea0"
+    }
+  ]
+}

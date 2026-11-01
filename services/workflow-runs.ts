@@ -1572,6 +1572,11 @@ export class WorkflowRuns extends Service {
     for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
       await this.coordinator.bindSkill(input.state.runId, skill);
     }
+    await this.ctx.workExecutionAuthority.recordCurrentSkillCorrection(
+      input.state.runId,
+      'repair-work',
+      `open-repair:${input.lifecycle.revision}:${input.source}:${input.reasonCode}`,
+    );
     const repaired = await this.coordinator.acceptChangeObservation(input.state.runId, {
       kind: 'open-repair-required',
       expectedRevision: input.lifecycle.revision,
@@ -1660,6 +1665,11 @@ export class WorkflowRuns extends Service {
       for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
         await this.coordinator.bindSkill(state.runId, skill);
       }
+      await this.ctx.workExecutionAuthority.recordCurrentSkillCorrection(
+        state.runId,
+        'changes-requested',
+        `open-approval:${assessment.approval.snapshot.digest}`,
+      );
       const revised = await this.coordinator.acceptChangeObservation(state.runId, {
         kind: 'open-work-ready',
         work: revisionWork,
@@ -2041,6 +2051,11 @@ export class WorkflowRuns extends Service {
             lifecycle.currentWork === null &&
             assessment.approval?.status === 'changes_requested'
           ) {
+            await this.ctx.workExecutionAuthority.recordCurrentSkillCorrection(
+              runId,
+              'changes-requested',
+              `design-approval:${assessment.approval.snapshot.digest}`,
+            );
             return this.createDesignWork(current, signal);
           }
           if (lifecycle.phase === 'build' || lifecycle.phase === 'verify') {
@@ -3243,6 +3258,11 @@ export class WorkflowRuns extends Service {
                 for (const skill of [planSkills.actionSkill, ...planSkills.augmentationSkills]) {
                   await this.coordinator.bindSkill(runId, skill);
                 }
+                await this.ctx.workExecutionAuthority.recordCurrentSkillCorrection(
+                  runId,
+                  'repair-work',
+                  `build-check:${checkEvidence.evidenceId}`,
+                );
                 const revised = await this.coordinator.acceptChangeObservation(runId, {
                   kind: 'build-check-rejected',
                   evidence: checkEvidence,

@@ -445,7 +445,7 @@ describe('Managed Work Executor Build contract', () => {
     expect(authority.recordSkillFacts).toHaveBeenCalledWith(expect.anything(), 'consumed', [
       digest('1'),
       digest('2'),
-    ]);
+    ], expect.stringMatching(/^sha256:[a-f0-9]{64}$/u));
     expect(authority.markHostUnknown).not.toHaveBeenCalled();
   });
 

@@ -12,6 +12,7 @@ const npmCli = process.env.npm_execpath;
 if (!npmCli) throw new Error('npm_execpath is required to reproduce the package archive');
 const evidenceOnly = (file) =>
   file.startsWith('.comet/') ||
+  file.startsWith('docs/superpowers/') ||
   file.startsWith('openspec/') ||
   file.startsWith('verification/');
 const verificationRoot = path.join(root, 'verification');
@@ -27,9 +28,7 @@ for (const reportPath of reportPaths) {
     continue;
   }
   const commit = report.match(/Tested implementation commit: `([a-f0-9]{40})`/u)?.[1];
-  const expectedPackage = report
-    .match(/Package SHA-256: `([a-f0-9]{64})`/u)?.[1]
-    ?.toLowerCase();
+  const expectedPackage = report.match(/Package SHA-256: `([a-f0-9]{64})`/u)?.[1]?.toLowerCase();
   if (!commit || !expectedPackage) continue;
   try {
     await execute('git', ['merge-base', '--is-ancestor', commit, 'HEAD'], { cwd: root });

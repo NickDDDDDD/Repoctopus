@@ -251,9 +251,9 @@
     {
       "id": "telemetry",
       "disposition": "repoctopus-native",
-      "targets": ["platform/telemetry/**"],
+      "targets": ["domains/telemetry/**", "platform/telemetry/**"],
       "upstream": ["platform/process/runtime-metrics.ts"],
-      "rationale": "使用 OTel 允许列表导出稳定 Evidence 与交付身份，不复用 Comet 的进程内指标模型。"
+      "rationale": "机器目录和领域 Receipt 定义规范观测事实；平台只把 canonical envelope 以 OTel 允许列表投递，不复用 Comet 的进程内指标模型。"
     },
     {
       "id": "cli",

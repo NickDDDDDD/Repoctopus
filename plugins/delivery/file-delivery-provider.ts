@@ -36,7 +36,6 @@ import {
   EnvironmentCredentialProvider,
   GitHubMergeRequestAdapter,
 } from '../../platform/github/merge-request.js';
-import { deliveryTelemetryFromEnvironment } from '../../platform/telemetry/opentelemetry/exporter.js';
 import { Delivery, type DeliveryPreparation } from '../../services/delivery.js';
 import { DeliveryObservationTelemetry } from '../../services/observation-telemetry.js';
 import {
@@ -75,9 +74,7 @@ export class FileDeliveryProvider extends Delivery {
       ),
       new FileDeliveryEvidence(this.config.workspaceRoot),
       undefined,
-      this.ctx.get('observationDelivery')
-        ? new DeliveryObservationTelemetry(this.ctx.observationDelivery, environment)
-        : deliveryTelemetryFromEnvironment(environment),
+      new DeliveryObservationTelemetry(this.ctx.observationDelivery, environment),
       this.ctx.compositionIdentity.current().compositionDigest,
     );
   }

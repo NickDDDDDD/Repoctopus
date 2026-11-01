@@ -51,6 +51,7 @@ export class LifecycleDiagnostics extends Service {
   private readonly entries: LifecycleDiagnostic[] = [];
   private readonly events: LifecycleTelemetryEvent[] = [];
   private exported = 0;
+  private canonicalTelemetry?: LifecycleTelemetryPort;
 
   constructor(
     context: Context,
@@ -80,14 +81,18 @@ export class LifecycleDiagnostics extends Service {
     return this.events.map((event) => ({ ...event }));
   }
 
+  bindCanonicalTelemetry(): void {
+    const observationDelivery = this.ctx.get('observationDelivery');
+    if (observationDelivery) {
+      this.canonicalTelemetry = new LifecycleObservationTelemetry(observationDelivery, process.env);
+    }
+  }
+
   async flush(): Promise<void> {
     const pending = this.events.slice(this.exported);
     if (pending.length === 0) return;
 
-    const observationDelivery = this.ctx.get('observationDelivery');
-    const telemetry = observationDelivery
-      ? new LifecycleObservationTelemetry(observationDelivery, process.env)
-      : this.telemetry;
+    const telemetry = this.canonicalTelemetry ?? this.telemetry;
 
     const attempts = 2;
     for (let attempt = 1; attempt <= attempts; attempt += 1) {

@@ -15,6 +15,10 @@ export interface ObservationDestination {
   endpoint?: string;
   signalEndpoints?: Partial<Record<'trace' | 'log' | 'metric', string>>;
   headers?: Readonly<Record<string, string>>;
+  signalHeaders?: Partial<Record<'trace' | 'log' | 'metric', Readonly<Record<string, string>>>>;
+  timeoutMillis?: number;
+  signalTimeouts?: Partial<Record<'trace' | 'log' | 'metric', number>>;
+  resourceAttributes?: Readonly<Record<string, string | number | boolean>>;
 }
 
 export interface ObservationDeliveryResult {
@@ -49,8 +53,12 @@ export class ObservationDelivery extends Service {
     const pending = await store.pending(destination.id);
     if (pending.length === 0) return { destinationId: destination.id, delivered: 0 };
     try {
+      const activeSignals = (['trace', 'log', 'metric'] as const).filter(
+        (signal) => destination.signalEndpoints?.[signal]?.trim() || destination.endpoint?.trim(),
+      );
+      if (activeSignals.length === 0) throw new Error('unavailable:missing-endpoint');
       await Promise.all(
-        (['trace', 'log', 'metric'] as const).map(async (signal) => {
+        activeSignals.map(async (signal) => {
           const route = signal === 'trace' ? 'traces' : signal === 'log' ? 'logs' : 'metrics';
           const signalEndpoint = destination.signalEndpoints?.[signal]?.trim();
           const baseEndpoint = destination.endpoint?.trim().replace(/\/$/u, '');
@@ -60,10 +68,16 @@ export class ObservationDelivery extends Service {
             method: 'POST',
             headers: {
               'content-type': 'application/json',
-              ...(destination.headers ?? {}),
+              ...(destination.signalHeaders?.[signal] ?? destination.headers ?? {}),
             },
-            body: encodeObservationOtlpJson(pending, signal),
-            signal: AbortSignal.timeout(5_000),
+            body: encodeObservationOtlpJson(pending, signal, {
+              ...(destination.resourceAttributes
+                ? { resourceAttributes: destination.resourceAttributes }
+                : {}),
+            }),
+            signal: AbortSignal.timeout(
+              destination.signalTimeouts?.[signal] ?? destination.timeoutMillis ?? 5_000,
+            ),
           });
           if (!response.ok) throw new Error(`rejected:${response.status}`);
         }),

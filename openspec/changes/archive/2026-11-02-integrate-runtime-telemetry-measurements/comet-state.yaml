@@ -1,0 +1,3890 @@
+# comet-execution: managed-run
+change_id: 1ab8ce30-bddb-4a85-b9a6-4652d93303ac
+workflow: full
+language: zh-CN
+phase: archive
+context_compression: off
+build_mode: autonomous
+build_pause: null
+subagent_dispatch: null
+tdd_mode: tdd
+review_mode: thorough
+isolation: current
+verify_mode: null
+auto_transition: true
+base_ref: a819b3754cedd0d18c7e7be584d82f17a3c8aa88
+design_doc: openspec/changes/archive/2026-11-02-integrate-runtime-telemetry-measurements/design.md
+plan: docs/superpowers/plans/2026-11-02-integrate-runtime-telemetry-measurements.md
+verify_result: pass
+verify_failures: 0
+verification_report: docs/superpowers/reports/integrate-runtime-telemetry-measurements.md
+branch_status: pending
+created_at: 2026-11-01
+verified_at: 2026-11-01
+archive_confirmation: confirmed
+archived: true
+bound_branch: codex/integrate-telemetry-main
+direct_override: false
+handoff_context: openspec/changes/archive/2026-11-02-integrate-runtime-telemetry-measurements/.comet/handoff/design-context.json
+handoff_hash: b4be3b51cf5f1ca937041f56f7cd7183811dbe97ab0da26f6c141642723a537b
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v2
+  hash: 81d40535dd6c5a830bd8363544c4ff1afaadc51d3f199d1482b7b2f3c2e5a53e
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: integrate-runtime-telemetry-measurements
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: 4f9273debb0d5002093d77c9444e30a1a4e2a87090906d6deada40c7cf41ce10
+    input:
+      change: integrate-runtime-telemetry-measurements
+      changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+      workspaceBaseline:
+        ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+    state:
+      archiveConfirmation: confirmed
+      archived: true
+      autoTransition: true
+      baseRef: a819b3754cedd0d18c7e7be584d82f17a3c8aa88
+      boundBranch: codex/integrate-telemetry-main
+      branchStatus: pending
+      buildMode: autonomous
+      buildPause: null
+      checkEpoch: 10
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-01
+      designDoc: openspec/changes/archive/2026-11-02-integrate-runtime-telemetry-measurements/design.md
+      directOverride: false
+      handoffContext: openspec/changes/archive/2026-11-02-integrate-runtime-telemetry-measurements/.comet/handoff/design-context.json
+      handoffHash: b4be3b51cf5f1ca937041f56f7cd7183811dbe97ab0da26f6c141642723a537b
+      isolation: current
+      language: zh-CN
+      phase: archive
+      plan: docs/superpowers/plans/2026-11-02-integrate-runtime-telemetry-measurements.md
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: tdd
+      verificationReport: docs/superpowers/reports/integrate-runtime-telemetry-measurements.md
+      verifiedAt: 2026-11-01
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pass
+      workflow: full
+    status: running
+    sequence: 36
+    actions:
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-9b6bac4c809b8081bd75df7743483915c1b97b60401cd63a14157e7046e3f5f1
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: integrate-runtime-telemetry-measurements:1
+        input:
+          input:
+            change: integrate-runtime-telemetry-measurements
+            changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+            workspaceBaseline:
+              ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+          outputs: {}
+        inputHash: 1d195e999dfed34804b43cb39c809948e3b9b7a26d9236ed7b576dc1dac7d3bc
+        outcome:
+          actionId: integrate-runtime-telemetry-measurements:1
+          attempt: 1
+          claimToken: portable-9b6bac4c809b8081bd75df7743483915c1b97b60401cd63a14157e7046e3f5f1
+          inputHash: 1d195e999dfed34804b43cb39c809948e3b9b7a26d9236ed7b576dc1dac7d3bc
+          outcomeId: bba5088f-42b0-4731-a17d-d983dd0a03ff
+          output:
+            event: open-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 969ec2b30b2c8426a81c6a4fec30f069f94a96c6afdec6ca8e1f41faf83becaf
+            outcomeId: bba5088f-42b0-4731-a17d-d983dd0a03ff
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: integrate-runtime-telemetry-measurements
+        status: succeeded
+        stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-0e57d99e550f52c962edc868f73bf44178228d43210dc257568c221a344e4c4d
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: integrate-runtime-telemetry-measurements:4
+        input:
+          input:
+            change: integrate-runtime-telemetry-measurements
+            changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+            workspaceBaseline:
+              ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+          outputs: {}
+        inputHash: 2e77344f99546953c842bba5568a201bd4e2e8dd06839f0d24c5e212c6ebedd0
+        outcome:
+          actionId: integrate-runtime-telemetry-measurements:4
+          attempt: 1
+          claimToken: portable-0e57d99e550f52c962edc868f73bf44178228d43210dc257568c221a344e4c4d
+          inputHash: 2e77344f99546953c842bba5568a201bd4e2e8dd06839f0d24c5e212c6ebedd0
+          outcomeId: integrate-runtime-telemetry-measurements:4:1:executor-result
+          output:
+            contentHash: e5d3ce12eb80d37583a00fd45be93a2f80ffabd8f3392934c47208af1833c2e7
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 41187afcdffdaee3e02d3aff6ea12a52077c0c8b7b68434e5a9c755e0534ea6c
+            outcomeId: integrate-runtime-telemetry-measurements:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: integrate-runtime-telemetry-measurements
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-dcf1fd568804606671f1f7736e58cced2c492ef619df9c0100d3c4e6fd5c5f50
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: integrate-runtime-telemetry-measurements:5
+        input:
+          input:
+            change: integrate-runtime-telemetry-measurements
+            changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+            workspaceBaseline:
+              ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+          outputs: {}
+        inputHash: c51258f03ba2e6f78d47c930a895fbac3e84082080fff1634af7fcc3dc186311
+        outcome:
+          actionId: integrate-runtime-telemetry-measurements:5
+          attempt: 1
+          claimToken: portable-dcf1fd568804606671f1f7736e58cced2c492ef619df9c0100d3c4e6fd5c5f50
+          inputHash: c51258f03ba2e6f78d47c930a895fbac3e84082080fff1634af7fcc3dc186311
+          outcomeId: cf5244a6-0762-40d3-a8fe-8de413bf8889
+          output:
+            handoffContext: openspec/changes/integrate-runtime-telemetry-measurements/.comet/handoff/design-context.json
+            handoffHash: b4be3b51cf5f1ca937041f56f7cd7183811dbe97ab0da26f6c141642723a537b
+            proposal: 推荐采用 canonical directory-first projection：保留每个已持久化领域事实的一份 canonical
+              envelope，由唯一机器目录驱动唯一 OTLP projection；同一编码同时保留 Desktop 可逆 envelope
+              属性并输出 SigNoz 可查询的标准 Resource、允许列表 Event/Span attributes 与有界
+              Metrics，Desktop 和远端只允许 endpoint、认证及独立 Delivery Cursor 不同。保留
+              observationDestinationsFromEnvironment 的目的地所有权，补齐按信号
+              header/timeout、OTEL_SERVICE_NAME 与 OTEL_RESOURCE_ATTRIBUTES
+              优先级。Skill outcome 和 Rule evaluation 必须先形成稳定 additive domain
+              fact，exporter 不根据相邻事件或最终状态推断。22 项指标中 9 项以
+              direct/derived/optional-evaluator 方式支持，13 项明确为外部系统范围，缺失保持
+              unknown；数据字典由机器目录生成并防漂移。旧直连 OpenTelemetry exporters 没有生产
+              composition 调用者且绕过 outbox，先迁移其有效测试再删除，不为未发布入口保留兼容层。放弃两套 exporter
+              并存，因为会产生两套 mapping/重试/字段权威；放弃只查询 JSON
+              envelope，因为无法提供可移植原生查询和低基数约束。主要风险是 payload 增长、删除旧测试覆盖、OTLP
+              环境优先级和双目的地语义漂移，分别以体积/隐私/基数测试、先迁移后删除、表驱动配置测试和 dual-destination E2E
+              控制。无需 Spec Patch：当前主规格已要求每个领域事实一份 canonical envelope、同一
+              mapping/payload 服务 Desktop 与远端且目的地不得重新解释。
+            requirementsEvidence:
+              contentHash: b3ddfc09483d6f50fc3fe970489fc2f864b7460726a5cde3fbfd980fe08d289f
+              ref: openspec/changes/integrate-runtime-telemetry-measurements
+            sourceEvidence:
+              contentHash: df37a2a06943ff45b5db3f2147b28fa92dd946b287b476e5eb4c64a7898a78bb
+              ref: openspec/changes/integrate-runtime-telemetry-measurements
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: fe3ff2cd7cc430573aae5b6c00c583e0aabc3a1ad47c2dda687adac51bf62a01
+            outcomeId: cf5244a6-0762-40d3-a8fe-8de413bf8889
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: integrate-runtime-telemetry-measurements
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-b08e0a21cd9e425c60432d92395a5e4941713e9b0aa7ffa216b85d5fda920098
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: integrate-runtime-telemetry-measurements:7
+        input:
+          input:
+            change: integrate-runtime-telemetry-measurements
+            changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+            workspaceBaseline:
+              ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+          outputs: {}
+        inputHash: 06060c39df21005bab832918fa55d62ea99714f703121c9aaab77caf4f3df0db
+        outcome:
+          actionId: integrate-runtime-telemetry-measurements:7
+          attempt: 1
+          claimToken: portable-b08e0a21cd9e425c60432d92395a5e4941713e9b0aa7ffa216b85d5fda920098
+          inputHash: 06060c39df21005bab832918fa55d62ea99714f703121c9aaab77caf4f3df0db
+          outcomeId: 5412a48e-ca09-4eb4-9f47-fdd6182ce799
+          output:
+            designDoc: openspec/changes/integrate-runtime-telemetry-measurements/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: efd5c86f1e867171d270e4dedeee089d6487b4785f3a27203d7c27d0f14c2fc4
+            outcomeId: 5412a48e-ca09-4eb4-9f47-fdd6182ce799
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: integrate-runtime-telemetry-measurements
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-626af2b7cb04f72d45553a6a07671b5474658d82f2e7ae9b95e4ff403225b301
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: integrate-runtime-telemetry-measurements:9
+        input:
+          input:
+            change: integrate-runtime-telemetry-measurements
+            changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+            workspaceBaseline:
+              ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+          outputs: {}
+        inputHash: 282ef586598a3c1dfed2c4d890661c1503d60d8441d12d14a886e9ad43c5ed91
+        outcome:
+          actionId: integrate-runtime-telemetry-measurements:9
+          attempt: 1
+          claimToken: portable-626af2b7cb04f72d45553a6a07671b5474658d82f2e7ae9b95e4ff403225b301
+          inputHash: 282ef586598a3c1dfed2c4d890661c1503d60d8441d12d14a886e9ad43c5ed91
+          outcomeId: 45c42ecd-9244-4a6b-a077-33ef9a27e73a
+          output:
+            boundBranch: codex/integrate-telemetry-main
+            buildMode: autonomous
+            directOverride: false
+            isolation: current
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: a39b6b3604170008912b2f8c8bb6fd5baec37de45334fb66dbe8769a16925b78
+            outcomeId: 45c42ecd-9244-4a6b-a077-33ef9a27e73a
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: integrate-runtime-telemetry-measurements
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-825b7d2806c6641a863274e5fbf912ccccabf6cf16ee736278c51535dc67300b
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: integrate-runtime-telemetry-measurements:11
+        input:
+          input:
+            change: integrate-runtime-telemetry-measurements
+            changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+            workspaceBaseline:
+              ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+          outputs: {}
+        inputHash: ef52d2604f653b0f4626d3bab2fc01985862a43f40893f072dfa337aeaf0edb2
+        outcome:
+          actionId: integrate-runtime-telemetry-measurements:11
+          attempt: 1
+          claimToken: portable-825b7d2806c6641a863274e5fbf912ccccabf6cf16ee736278c51535dc67300b
+          inputHash: ef52d2604f653b0f4626d3bab2fc01985862a43f40893f072dfa337aeaf0edb2
+          outcomeId: 825fe92b-606b-444b-acb4-c5cf9b2c43f3
+          output:
+            designEvidence:
+              contentHash: d5bdc2e961f5ebe6f35985a1667fccde9e15fe0a2b8ef62a3b9e9b50451dee34
+              ref: openspec/changes/integrate-runtime-telemetry-measurements/design.md
+            plan: docs/superpowers/plans/2026-11-02-integrate-runtime-telemetry-measurements.md
+            planEvidence:
+              contentHash: 7d72e4706c4bc05cfd07691ed84a6286dfa8a36426e8db8e5517ffe7f68edad2
+              ref: docs/superpowers/plans/2026-11-02-integrate-runtime-telemetry-measurements.md
+            taskRevision: e24541c5f6811b172980a2cf2bc6e9f86201c5ab8f5fc2fecff9b4de9f7fd8e1
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: db6b02f229b69494e0a92400c6f1bb07d570d7333d0543718d5d0fe9f38b2908
+            outcomeId: 825fe92b-606b-444b-acb4-c5cf9b2c43f3
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: integrate-runtime-telemetry-measurements
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: classic-builder/integrate-runtime-telemetry-measurements:13/1
+          token: portable-0c06b803d155b3fe10be1da88e586e298c91ca5c856f25d4a50c01eb773f0861
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: integrate-runtime-telemetry-measurements:13
+        input:
+          input:
+            change: integrate-runtime-telemetry-measurements
+            changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+            workspaceBaseline:
+              ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+          outputs: {}
+        inputHash: eec0998252711e105921e2b207f5afe6d90abc691752912573ad44895da8a65e
+        outcome:
+          actionId: integrate-runtime-telemetry-measurements:13
+          attempt: 1
+          claimToken: portable-0c06b803d155b3fe10be1da88e586e298c91ca5c856f25d4a50c01eb773f0861
+          inputHash: eec0998252711e105921e2b207f5afe6d90abc691752912573ad44895da8a65e
+          outcomeId: 02c878b4-8f8a-43a1-8119-49b437209a8b
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: ee396b4c7b2c12f06305ebb14e2bce00c3d72169a03bb5ecdc3514767bf668d9
+            outcomeId: 02c878b4-8f8a-43a1-8119-49b437209a8b
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: integrate-runtime-telemetry-measurements
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-b62bde88d86425e5c4672e0c6561c027ccb3b86a7b00f47af4d735c64eed0c82
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: integrate-runtime-telemetry-measurements:14
+        input:
+          input:
+            change: integrate-runtime-telemetry-measurements
+            changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+            workspaceBaseline:
+              ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+          outputs: {}
+        inputHash: 8df6eb4a8cfb6c9af062bc5cee89f3524969c15931eccb46d4936ec11239a340
+        outcome:
+          actionId: integrate-runtime-telemetry-measurements:14
+          attempt: 1
+          claimToken: portable-b62bde88d86425e5c4672e0c6561c027ccb3b86a7b00f47af4d735c64eed0c82
+          inputHash: 8df6eb4a8cfb6c9af062bc5cee89f3524969c15931eccb46d4936ec11239a340
+          outcomeId: 8d9b7f04-a870-4e8a-9767-cbcc55729244
+          output:
+            argv:
+              - npm
+              - run
+              - check:managed-execution-report
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: fb11a45349915a2e55370808188812ad8c702d0020f2d8c2430f802c0a14fda2
+            cwd: .
+            environment: 4bb19ecbf5a0601a5af5c90db74838589152eb683bfec90daee06d33d90b20b5
+            exitCode: 0
+            inputAfter: 85ed8b414cd2a6e3d9f39ababf192a9508a4ca4bf5673ec2e094fc7593f61c6b
+            inputBefore: 85ed8b414cd2a6e3d9f39ababf192a9508a4ca4bf5673ec2e094fc7593f61c6b
+            manifestHash: a32c4298859b0e8c5f582d5a56ec9afa9c3468cb99c3ef1264bda613819974fc
+            manifestRef: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/4680bd31-7378-4503-a671-0e3b4b514ec8.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/80af3bed-ee9f-44d4-92ec-bf9102b79b0a.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 19dbd01274eeb690469ab4860624a62241ff94056765f09a467a46535883a555
+            outcomeId: 8d9b7f04-a870-4e8a-9767-cbcc55729244
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: integrate-runtime-telemetry-measurements
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-e17c4b13637ec19ee17b7f13a7c63e04de95a49571237de75c23ec089797fef5
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: integrate-runtime-telemetry-measurements:16
+        input:
+          input:
+            change: integrate-runtime-telemetry-measurements
+            changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+            workspaceBaseline:
+              ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+          outputs: {}
+        inputHash: fe73e36709983515911ea1bc7b66eac97e4da1514b3d6812ef29a5a354e084c7
+        outcome:
+          actionId: integrate-runtime-telemetry-measurements:16
+          attempt: 1
+          claimToken: portable-e17c4b13637ec19ee17b7f13a7c63e04de95a49571237de75c23ec089797fef5
+          inputHash: fe73e36709983515911ea1bc7b66eac97e4da1514b3d6812ef29a5a354e084c7
+          outcomeId: f145760b-840b-4a68-ac54-9f2da7b9b4f1
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/integrate-runtime-telemetry-measurements.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 7dcda4d47f5517bdac65b8e445815132647e72467ffbc8fb58ee85f452c368eb
+            outcomeId: f145760b-840b-4a68-ac54-9f2da7b9b4f1
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: integrate-runtime-telemetry-measurements
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-6a23504cd534231f1575d73998d695173ee47c03819b8b1bd1e76244fa275538
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: integrate-runtime-telemetry-measurements:18
+        input:
+          input:
+            change: integrate-runtime-telemetry-measurements
+            changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+            workspaceBaseline:
+              ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+          outputs: {}
+        inputHash: 567ad1b35c509426521f205c08f0e6fed2da3107805267ae094f685a09c5fc8d
+        outcome:
+          actionId: integrate-runtime-telemetry-measurements:18
+          attempt: 1
+          claimToken: portable-6a23504cd534231f1575d73998d695173ee47c03819b8b1bd1e76244fa275538
+          inputHash: 567ad1b35c509426521f205c08f0e6fed2da3107805267ae094f685a09c5fc8d
+          outcomeId: d90de7f4-ea86-4b63-a968-36c177b41660
+          output:
+            argv:
+              - pwsh
+              - -NoProfile
+              - -Command
+              - $verifySource = "C:\Users\User\Desktop\PP\Repoctopus\.codex";
+                $verifyDestination =
+                "C:\Users\User\AppData\Local\Temp\repoctopus-comet-codex-guard";
+                if (Test-Path -LiteralPath $verifyDestination) { throw
+                "Temporary Comet destination already exists" }; Move-Item
+                -LiteralPath $verifySource -Destination $verifyDestination;
+                $verifyExit = 1; try { npm run verify; $verifyExit =
+                $LASTEXITCODE } finally { if (Test-Path -LiteralPath
+                $verifyDestination) { Move-Item -LiteralPath $verifyDestination
+                -Destination $verifySource } }; exit $verifyExit
+            changedDuringExecution: []
+            checkEpoch: 3
+            contentHash: 623a596452ba3060056e200966bcd596c6f3243d6d1191ebca44f01182c9863e
+            cwd: .
+            deliveryInputs: {}
+            environment: d79142869fed552a825c6029777b41af37558f6564609729c2fd6f614477b354
+            exitCode: 0
+            inputAfter: 252247cf0171c878985ac1f6e582db2fcf5ce25485ebada00b3a7239b0344323
+            inputBefore: 252247cf0171c878985ac1f6e582db2fcf5ce25485ebada00b3a7239b0344323
+            manifestHash: c0a3ede7b8b7d87bdb0a669b7b4c0b0dbf2e3e8433bf865261210fff8b746b78
+            manifestRef: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/221a77d2-921f-450b-8cf0-d8c02c4c445a.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/4040929c-8a55-4654-9be8-c0052667d195.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 3abb264a0fbb7671064d9a0b3b4da3f132ec08fe1acfe63f4866fcf70772df8b
+            outcomeId: d90de7f4-ea86-4b63-a968-36c177b41660
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: integrate-runtime-telemetry-measurements
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-8b5080b8e19f71505e56a1988aba720e2639cbc031af774e872fc96135e352c6
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: integrate-runtime-telemetry-measurements:20
+        input:
+          input:
+            change: integrate-runtime-telemetry-measurements
+            changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+            workspaceBaseline:
+              ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+          outputs: {}
+        inputHash: be4611c78b4eed586210e121841bd4c46d9f674e9d0b1bdb3417bab6e02be760
+        outcome:
+          actionId: integrate-runtime-telemetry-measurements:20
+          attempt: 1
+          claimToken: portable-8b5080b8e19f71505e56a1988aba720e2639cbc031af774e872fc96135e352c6
+          inputHash: be4611c78b4eed586210e121841bd4c46d9f674e9d0b1bdb3417bab6e02be760
+          outcomeId: 4c9b22d9-d112-4860-ad1f-cb5fbd053471
+          output:
+            summary: 归档已验证的 Runtime 遥测补齐 Change：发布 schema v1 机器目录与生成参考手册，标准化 OTLP/SigNoz
+              配置，统一 canonical outbox 投影，补齐 9 项可观察指标并明确 13 项范围外指标；33/33
+              任务完成，Comet Verify Guard 与完整 npm run verify 均通过，分支已持续推送到 origin。
+            targetBranch: codex/integrate-telemetry-main
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 877002296138683716b612b753b986f87b193e5ecbf46b6c2785f8ea693e565e
+            outcomeId: 4c9b22d9-d112-4860-ad1f-cb5fbd053471
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: integrate-runtime-telemetry-measurements
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-5c44cafee9150ead5990d762ea014beeb9d4ad2fa1ced87de1e80842538a9e17
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: integrate-runtime-telemetry-measurements:22
+        input:
+          input:
+            change: integrate-runtime-telemetry-measurements
+            changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+            workspaceBaseline:
+              ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+          outputs: {}
+        inputHash: cae09500c5df20bd23120577442eb8d6bd34c96277cc687a33f0920e898d389a
+        outcome:
+          actionId: integrate-runtime-telemetry-measurements:22
+          attempt: 1
+          claimToken: portable-5c44cafee9150ead5990d762ea014beeb9d4ad2fa1ced87de1e80842538a9e17
+          inputHash: cae09500c5df20bd23120577442eb8d6bd34c96277cc687a33f0920e898d389a
+          outcomeId: ddde8b22-4bbf-4a4f-bc55-5f88e67b3f74
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/integrate-runtime-telemetry-measurements.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 717e46d9dd2235e104d38d9ea6a28236bd6dc404fbad6c2240722a38c6509141
+            outcomeId: ddde8b22-4bbf-4a4f-bc55-5f88e67b3f74
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: integrate-runtime-telemetry-measurements
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-cfdc0471a9d8376411d2e7413c785dac6793aa18415c350e4875b6946a0b68b2
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: integrate-runtime-telemetry-measurements:24
+        input:
+          input:
+            change: integrate-runtime-telemetry-measurements
+            changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+            workspaceBaseline:
+              ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+          outputs: {}
+        inputHash: cae09500c5df20bd23120577442eb8d6bd34c96277cc687a33f0920e898d389a
+        outcome:
+          actionId: integrate-runtime-telemetry-measurements:24
+          attempt: 1
+          claimToken: portable-cfdc0471a9d8376411d2e7413c785dac6793aa18415c350e4875b6946a0b68b2
+          inputHash: cae09500c5df20bd23120577442eb8d6bd34c96277cc687a33f0920e898d389a
+          outcomeId: f2055fb7-1ded-496f-97ab-4f6bb8209e6a
+          output:
+            argv:
+              - npm
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 5
+            contentHash: f5316d340900438790d86b272b05b064abae810c58f2735c1982c3a5b71b631d
+            cwd: .
+            deliveryInputs: {}
+            environment: 86c61b75590ddc6304a66088f8fe2dae1970f6f7283ae80c9ced5aa09e98069e
+            exitCode: 0
+            inputAfter: af206006c9b79e4f94083c2a1e1d658312dccce92c9c7b0396e2a196c27a09a9
+            inputBefore: af206006c9b79e4f94083c2a1e1d658312dccce92c9c7b0396e2a196c27a09a9
+            manifestHash: 3a5cf7f3604fe0a83216516236916ce41acd96983206bbd3149b262e08356fe7
+            manifestRef: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/69f38205-bbb8-4297-ae42-3abe2e3d8e50.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/910786d9-455c-47ca-a829-c70e5e52cca9.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 36b4db2562b473b7024ba7668136afe556a961ed957e5cbdc06e66c462d679c4
+            outcomeId: f2055fb7-1ded-496f-97ab-4f6bb8209e6a
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: integrate-runtime-telemetry-measurements
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-7cd53d5cb0e56a6db6093cf5abf49672821a4ae569751e3e1da534d61f45a03d
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: integrate-runtime-telemetry-measurements:26
+        input:
+          input:
+            change: integrate-runtime-telemetry-measurements
+            changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+            workspaceBaseline:
+              ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+          outputs: {}
+        inputHash: 4928032b5bb99c24843c7a9d0f615154287d2008edc2b2ee17da2541e615cf46
+        outcome:
+          actionId: integrate-runtime-telemetry-measurements:26
+          attempt: 1
+          claimToken: portable-7cd53d5cb0e56a6db6093cf5abf49672821a4ae569751e3e1da534d61f45a03d
+          inputHash: 4928032b5bb99c24843c7a9d0f615154287d2008edc2b2ee17da2541e615cf46
+          outcomeId: f3016197-8db1-49d9-96d7-777645eaaeb9
+          output:
+            remote: origin
+            summary: 归档已验证的 Runtime 遥测补齐 Change：发布 schema v1 机器目录与生成参考手册，标准化 OTLP/SigNoz
+              配置，统一 canonical outbox 投影，补齐 9 项可观察指标并明确 13 项范围外指标；33/33
+              任务完成，Comet Verify Guard 与完整 npm run verify 均通过，归档提交将立即推送到 origin。
+            targetBranch: codex/integrate-telemetry-main
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 073c3ecd1f4f7f1644fa9fb632e17a4b48a5ee56ef7e50d3c38a48edb9dc1d81
+            outcomeId: f3016197-8db1-49d9-96d7-777645eaaeb9
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: integrate-runtime-telemetry-measurements
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-fab9cd285f6bce068c7e04c08c5577a6de0464e035f5223e8411e9290d201a49
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: integrate-runtime-telemetry-measurements:28
+        input:
+          input:
+            change: integrate-runtime-telemetry-measurements
+            changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+            workspaceBaseline:
+              ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+          outputs: {}
+        inputHash: fe178842e3b00f08fc66acb5bcca36883ef42697cfe50f2de7722230c2774222
+        outcome:
+          actionId: integrate-runtime-telemetry-measurements:28
+          attempt: 1
+          claimToken: portable-fab9cd285f6bce068c7e04c08c5577a6de0464e035f5223e8411e9290d201a49
+          inputHash: fe178842e3b00f08fc66acb5bcca36883ef42697cfe50f2de7722230c2774222
+          outcomeId: 265c639a-4444-4336-bcbb-9856d2572068
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/integrate-runtime-telemetry-measurements.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: b8b58759f3881f76e3f53e53cd2977fdc5cd79bab279aa6a6747f48b2b9c395b
+            outcomeId: 265c639a-4444-4336-bcbb-9856d2572068
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: integrate-runtime-telemetry-measurements
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-970214038a043aa5b20fc2e09c3d3601019178eafcec690c3236e9bd87caf62a
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: integrate-runtime-telemetry-measurements:30
+        input:
+          input:
+            change: integrate-runtime-telemetry-measurements
+            changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+            workspaceBaseline:
+              ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+          outputs: {}
+        inputHash: fe178842e3b00f08fc66acb5bcca36883ef42697cfe50f2de7722230c2774222
+        outcome:
+          actionId: integrate-runtime-telemetry-measurements:30
+          attempt: 1
+          claimToken: portable-970214038a043aa5b20fc2e09c3d3601019178eafcec690c3236e9bd87caf62a
+          inputHash: fe178842e3b00f08fc66acb5bcca36883ef42697cfe50f2de7722230c2774222
+          outcomeId: f929145a-c859-4d56-9531-f4ae11b0297b
+          output:
+            argv:
+              - npm
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 7
+            contentHash: 7d6a45d6235a8f91ea933b41f6cb728213bd126c4763a8cf4132b5d3bb7be1ad
+            cwd: .
+            deliveryInputs: {}
+            environment: 86c61b75590ddc6304a66088f8fe2dae1970f6f7283ae80c9ced5aa09e98069e
+            exitCode: 0
+            inputAfter: af206006c9b79e4f94083c2a1e1d658312dccce92c9c7b0396e2a196c27a09a9
+            inputBefore: af206006c9b79e4f94083c2a1e1d658312dccce92c9c7b0396e2a196c27a09a9
+            manifestHash: 3a5cf7f3604fe0a83216516236916ce41acd96983206bbd3149b262e08356fe7
+            manifestRef: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/f6d2725a-7d7d-4459-aa45-c2f83c31ad89.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/4514964b-3647-418e-9060-012a6050e065.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 54ccc60cea7259b67fd6b810d82edbcd8424583a6b06a14aeff0164b8ea29f24
+            outcomeId: f929145a-c859-4d56-9531-f4ae11b0297b
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: integrate-runtime-telemetry-measurements
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-da8ef1e2ed29f5d7b589c9a72dfc2bc808f901abd2d7c12473f66bafcb8185b5
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: integrate-runtime-telemetry-measurements:32
+        input:
+          input:
+            change: integrate-runtime-telemetry-measurements
+            changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+            workspaceBaseline:
+              ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+          outputs: {}
+        inputHash: 71f3b8c3aa26476f130c49258adc82a93eb74dcc95fa629bc152afef9f3a5c74
+        outcome:
+          actionId: integrate-runtime-telemetry-measurements:32
+          attempt: 1
+          claimToken: portable-da8ef1e2ed29f5d7b589c9a72dfc2bc808f901abd2d7c12473f66bafcb8185b5
+          inputHash: 71f3b8c3aa26476f130c49258adc82a93eb74dcc95fa629bc152afef9f3a5c74
+          outcomeId: de2a18f8-40cf-4766-9b39-dd9841d32efd
+          output:
+            remote: origin
+            summary: 归档已验证的 Runtime 遥测补齐 Change：发布 schema v1 机器目录与生成参考手册，标准化 OTLP/SigNoz
+              配置，统一 canonical outbox 投影，补齐 9 项可观察指标并明确 13 项范围外指标；33/33
+              任务完成，Comet Verify Guard 与完整 npm run verify 均通过，归档提交将立即推送到 origin。
+            targetBranch: codex/integrate-telemetry-main
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 152ccd988623bc577dc71cbc842a3273812261791e8180c13dcf81a858d312c1
+            outcomeId: de2a18f8-40cf-4766-9b39-dd9841d32efd
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: integrate-runtime-telemetry-measurements
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive-preflight
+          token: portable-7191fdbca32e7550151d3a19d6468c013374f8b86ae90e8dd2c8dda134ac2cb4
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: integrate-runtime-telemetry-measurements:34
+        input:
+          input:
+            change: integrate-runtime-telemetry-measurements
+            changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+            workspaceBaseline:
+              ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+          outputs: {}
+        inputHash: 5fca82730942e840c51f336632dfee8f21a115e0355a1351c4ca442ca37acd70
+        outcome:
+          actionId: integrate-runtime-telemetry-measurements:34
+          attempt: 1
+          claimToken: portable-7191fdbca32e7550151d3a19d6468c013374f8b86ae90e8dd2c8dda134ac2cb4
+          inputHash: 5fca82730942e840c51f336632dfee8f21a115e0355a1351c4ca442ca37acd70
+          outcomeId: 664adfa3-a9d9-41ad-bfca-e819552d473a
+          output:
+            baseCommit: 207e60751f4c5f04c8de87279c94f5583daedf5b
+            deliveryAction: push
+            remote: origin
+            remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+            targetBranch: codex/integrate-telemetry-main
+            verifiedBranch: codex/integrate-telemetry-main
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: b8542c26fdf9917ab5eb598a96a08fbdd7fb4a8b72626a694d4878d5dd38faac
+            outcomeId: 664adfa3-a9d9-41ad-bfca-e819552d473a
+        reconciliations: []
+        ref: classic-archive-preflight
+        requiredCapabilities: []
+        retry: manual
+        runId: integrate-runtime-telemetry-measurements
+        status: succeeded
+        stepId: full.archive.preflight
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive
+          token: portable-eb1fd4d5aa1ef5fb0742f5558090042a620f7df71a0281bee10bc411a638138b
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: integrate-runtime-telemetry-measurements:35
+        input:
+          input:
+            change: integrate-runtime-telemetry-measurements
+            changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+            workspaceBaseline:
+              ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+          outputs: {}
+        inputHash: 6893b1bc90dca98ab84dab1c3277d14f1b24e9396b740b1f3e06870c35c5818d
+        outcome:
+          actionId: integrate-runtime-telemetry-measurements:35
+          artifacts:
+            - sha256: 9b2be8d256e05e86f0af0f081c748a0367ca9e90832c45040111fd550739145a
+              uri: openspec/changes/archive/2026-11-02-integrate-runtime-telemetry-measurements/.comet/archive-manifest.json
+          attempt: 1
+          claimToken: portable-eb1fd4d5aa1ef5fb0742f5558090042a620f7df71a0281bee10bc411a638138b
+          inputHash: 6893b1bc90dca98ab84dab1c3277d14f1b24e9396b740b1f3e06870c35c5818d
+          outcomeId: e928a138-9ebe-4f49-9842-afbfe4b430be
+          output:
+            archiveDirectory: openspec/changes/archive/2026-11-02-integrate-runtime-telemetry-measurements
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: dc536fa73b41fb8114f6954fea44ff215808590976a38ad7b74c22f38cb355a1
+            outcomeId: e928a138-9ebe-4f49-9842-afbfe4b430be
+        reconciliations: []
+        ref: classic-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: integrate-runtime-telemetry-measurements
+        status: succeeded
+        stepId: full.archive.execute
+        type: call_tool
+      - attempt: 1
+        id: integrate-runtime-telemetry-measurements:36
+        input:
+          input:
+            change: integrate-runtime-telemetry-measurements
+            changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+            workspaceBaseline:
+              ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+          outputs: {}
+        inputHash: 0b9bb871ddc4cb3611d82ae328b23d1f7162bd6c10a1d6f6aec70227a053fc1c
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: integrate-runtime-telemetry-measurements
+        status: pending
+        stepId: full.archive.deliver
+        type: invoke_skill
+    actionContexts:
+      integrate-runtime-telemetry-measurements:1:
+        results: {}
+        sequence: 1
+      integrate-runtime-telemetry-measurements:11:
+        results: {}
+        sequence: 11
+      integrate-runtime-telemetry-measurements:13:
+        results: {}
+        sequence: 13
+      integrate-runtime-telemetry-measurements:14:
+        results: {}
+        sequence: 14
+      integrate-runtime-telemetry-measurements:16:
+        results: {}
+        sequence: 16
+      integrate-runtime-telemetry-measurements:18:
+        results: {}
+        sequence: 18
+      integrate-runtime-telemetry-measurements:20:
+        results: {}
+        sequence: 20
+      integrate-runtime-telemetry-measurements:22:
+        results: {}
+        sequence: 22
+      integrate-runtime-telemetry-measurements:24:
+        results: {}
+        sequence: 24
+      integrate-runtime-telemetry-measurements:26:
+        results: {}
+        sequence: 26
+      integrate-runtime-telemetry-measurements:28:
+        results: {}
+        sequence: 28
+      integrate-runtime-telemetry-measurements:30:
+        results: {}
+        sequence: 30
+      integrate-runtime-telemetry-measurements:32:
+        results: {}
+        sequence: 32
+      integrate-runtime-telemetry-measurements:34:
+        results: {}
+        sequence: 34
+      integrate-runtime-telemetry-measurements:35:
+        results: {}
+        sequence: 35
+      integrate-runtime-telemetry-measurements:36:
+        results: {}
+        sequence: 36
+      integrate-runtime-telemetry-measurements:4:
+        results: {}
+        sequence: 4
+      integrate-runtime-telemetry-measurements:5:
+        results: {}
+        sequence: 5
+      integrate-runtime-telemetry-measurements:7:
+        results: {}
+        sequence: 7
+      integrate-runtime-telemetry-measurements:9:
+        results: {}
+        sequence: 9
+    waits:
+      - id: integrate-runtime-telemetry-measurements:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: integrate-runtime-telemetry-measurements
+            changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+            workspaceBaseline:
+              ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: e5d3ce12eb80d37583a00fd45be93a2f80ffabd8f3392934c47208af1833c2e7
+              ref: openspec/changes/integrate-runtime-telemetry-measurements
+        proposalHash: 704c16c795439a706fd08c420c474518973dd41f9a43e21e8667a1e25eb54355
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-open-e5d3ce12eb80d37583a00fd45be93a2f80ffabd8f3392934c47208af1833c2e7
+          choice: approved
+          proposalHash: 704c16c795439a706fd08c420c474518973dd41f9a43e21e8667a1e25eb54355
+      - id: integrate-runtime-telemetry-measurements:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: resolved
+        proposal:
+          input:
+            change: integrate-runtime-telemetry-measurements
+            changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+            workspaceBaseline:
+              ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/integrate-runtime-telemetry-measurements/.comet/handoff/design-context.json
+              handoffHash: b4be3b51cf5f1ca937041f56f7cd7183811dbe97ab0da26f6c141642723a537b
+              proposal: 推荐采用 canonical directory-first projection：保留每个已持久化领域事实的一份 canonical
+                envelope，由唯一机器目录驱动唯一 OTLP projection；同一编码同时保留 Desktop 可逆
+                envelope 属性并输出 SigNoz 可查询的标准 Resource、允许列表 Event/Span attributes
+                与有界 Metrics，Desktop 和远端只允许 endpoint、认证及独立 Delivery Cursor 不同。保留
+                observationDestinationsFromEnvironment 的目的地所有权，补齐按信号
+                header/timeout、OTEL_SERVICE_NAME 与 OTEL_RESOURCE_ATTRIBUTES
+                优先级。Skill outcome 和 Rule evaluation 必须先形成稳定 additive domain
+                fact，exporter 不根据相邻事件或最终状态推断。22 项指标中 9 项以
+                direct/derived/optional-evaluator 方式支持，13 项明确为外部系统范围，缺失保持
+                unknown；数据字典由机器目录生成并防漂移。旧直连 OpenTelemetry exporters 没有生产
+                composition 调用者且绕过 outbox，先迁移其有效测试再删除，不为未发布入口保留兼容层。放弃两套 exporter
+                并存，因为会产生两套 mapping/重试/字段权威；放弃只查询 JSON
+                envelope，因为无法提供可移植原生查询和低基数约束。主要风险是 payload 增长、删除旧测试覆盖、OTLP
+                环境优先级和双目的地语义漂移，分别以体积/隐私/基数测试、先迁移后删除、表驱动配置测试和 dual-destination
+                E2E 控制。无需 Spec Patch：当前主规格已要求每个领域事实一份 canonical envelope、同一
+                mapping/payload 服务 Desktop 与远端且目的地不得重新解释。
+              requirementsEvidence:
+                contentHash: b3ddfc09483d6f50fc3fe970489fc2f864b7460726a5cde3fbfd980fe08d289f
+                ref: openspec/changes/integrate-runtime-telemetry-measurements
+              sourceEvidence:
+                contentHash: df37a2a06943ff45b5db3f2147b28fa92dd946b287b476e5eb4c64a7898a78bb
+                ref: openspec/changes/integrate-runtime-telemetry-measurements
+        proposalHash: b3638edca3a48982b8be6196cbbce60b35becb84597d3b284c5023a7f2bdd450
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-design-b3638edca3a48982b8be6196cbbce60b35becb84597d3b284c5023a7f2bdd450-approved
+          choice: approved
+          proposalHash: b3638edca3a48982b8be6196cbbce60b35becb84597d3b284c5023a7f2bdd450
+      - id: integrate-runtime-telemetry-measurements:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: integrate-runtime-telemetry-measurements
+            changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+            workspaceBaseline:
+              ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+          outputs:
+            full.build.configure:
+              boundBranch: codex/integrate-telemetry-main
+              buildMode: autonomous
+              directOverride: false
+              isolation: current
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: ab1d01faf5e1d33db4977d2d5978ca9a30da9083ddffd75ecc0c17d446e41705
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: e9157891-0cff-40ed-859f-0104a37e94ef
+          choice: approved
+          proposalHash: ab1d01faf5e1d33db4977d2d5978ca9a30da9083ddffd75ecc0c17d446e41705
+      - id: integrate-runtime-telemetry-measurements:21
+        stepId: full.archive.confirm
+        sequence: 21
+        status: resolved
+        proposal:
+          input:
+            change: integrate-runtime-telemetry-measurements
+            changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+            workspaceBaseline:
+              ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+          outputs:
+            full.archive.prepare:
+              summary: 归档已验证的 Runtime 遥测补齐 Change：发布 schema v1 机器目录与生成参考手册，标准化 OTLP/SigNoz
+                配置，统一 canonical outbox 投影，补齐 9 项可观察指标并明确 13 项范围外指标；33/33
+                任务完成，Comet Verify Guard 与完整 npm run verify 均通过，分支已持续推送到 origin。
+              targetBranch: codex/integrate-telemetry-main
+        proposalHash: 2460b8a10262a3a7efa9e8cad5fe17110dcf47f1ff1ef29c2345476c67cf98e2
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-2460b8a10262a3a7efa9e8cad5fe17110dcf47f1ff1ef29c2345476c67cf98e2-reverify
+          choice: reverify
+          proposalHash: 2460b8a10262a3a7efa9e8cad5fe17110dcf47f1ff1ef29c2345476c67cf98e2
+      - id: integrate-runtime-telemetry-measurements:27
+        stepId: full.archive.confirm
+        sequence: 27
+        status: resolved
+        proposal:
+          input:
+            change: integrate-runtime-telemetry-measurements
+            changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+            workspaceBaseline:
+              ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+          outputs:
+            full.archive.prepare:
+              remote: origin
+              summary: 归档已验证的 Runtime 遥测补齐 Change：发布 schema v1 机器目录与生成参考手册，标准化 OTLP/SigNoz
+                配置，统一 canonical outbox 投影，补齐 9 项可观察指标并明确 13 项范围外指标；33/33
+                任务完成，Comet Verify Guard 与完整 npm run verify 均通过，归档提交将立即推送到
+                origin。
+              targetBranch: codex/integrate-telemetry-main
+        proposalHash: de85bd5ab70ab5a1848e5ee317a433ae4bfa804a7819db72117314e1fe230356
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-de85bd5ab70ab5a1848e5ee317a433ae4bfa804a7819db72117314e1fe230356-reverify
+          choice: reverify
+          proposalHash: de85bd5ab70ab5a1848e5ee317a433ae4bfa804a7819db72117314e1fe230356
+      - id: integrate-runtime-telemetry-measurements:33
+        stepId: full.archive.confirm
+        sequence: 33
+        status: resolved
+        proposal:
+          input:
+            change: integrate-runtime-telemetry-measurements
+            changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+            workspaceBaseline:
+              ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+          outputs:
+            full.archive.prepare:
+              remote: origin
+              summary: 归档已验证的 Runtime 遥测补齐 Change：发布 schema v1 机器目录与生成参考手册，标准化 OTLP/SigNoz
+                配置，统一 canonical outbox 投影，补齐 9 项可观察指标并明确 13 项范围外指标；33/33
+                任务完成，Comet Verify Guard 与完整 npm run verify 均通过，归档提交将立即推送到
+                origin。
+              targetBranch: codex/integrate-telemetry-main
+        proposalHash: de85bd5ab70ab5a1848e5ee317a433ae4bfa804a7819db72117314e1fe230356
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-de85bd5ab70ab5a1848e5ee317a433ae4bfa804a7819db72117314e1fe230356-push
+          choice: push
+          proposalHash: de85bd5ab70ab5a1848e5ee317a433ae4bfa804a7819db72117314e1fe230356
+    evidenceWaits:
+      - id: integrate-runtime-telemetry-measurements:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/integrate-runtime-telemetry-measurements
+          contentHash: e5d3ce12eb80d37583a00fd45be93a2f80ffabd8f3392934c47208af1833c2e7
+          submissionId: 372aee8f-7758-4508-85ed-d6e62c9549d2
+      - id: integrate-runtime-telemetry-measurements:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/integrate-runtime-telemetry-measurements/design.md
+          contentHash: d5bdc2e961f5ebe6f35985a1667fccde9e15fe0a2b8ef62a3b9e9b50451dee34
+          submissionId: 4cc501bc-44c5-4df4-8b57-f3ba73298564
+      - id: integrate-runtime-telemetry-measurements:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-02-integrate-runtime-telemetry-measurements.md
+          contentHash: 7d72e4706c4bc05cfd07691ed84a6286dfa8a36426e8db8e5517ffe7f68edad2
+          submissionId: f9e602b9-942d-4dcc-b9a0-2e7641d89877
+      - id: integrate-runtime-telemetry-measurements:15
+        stepId: full.build.check.evidence
+        sequence: 15
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/80af3bed-ee9f-44d4-92ec-bf9102b79b0a.log
+          contentHash: fb11a45349915a2e55370808188812ad8c702d0020f2d8c2430f802c0a14fda2
+          submissionId: d59404e6-721f-44bc-8de9-68192a3ef0c3
+      - id: integrate-runtime-telemetry-measurements:17
+        stepId: full.verify.report.evidence
+        sequence: 17
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/integrate-runtime-telemetry-measurements.md
+          contentHash: 47e542aef4699880c27eb51d0e911548e4a7c7f7fc94d3c309ea969cbcba5ccb
+          submissionId: 1bf1ca9c-de8d-4f5a-b6fc-10cced30a0ef
+      - id: integrate-runtime-telemetry-measurements:19
+        stepId: full.verify.check.evidence
+        sequence: 19
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/4040929c-8a55-4654-9be8-c0052667d195.log
+          contentHash: 623a596452ba3060056e200966bcd596c6f3243d6d1191ebca44f01182c9863e
+          submissionId: 77f34579-32cd-4933-8f4d-b357d422e1a8
+      - id: integrate-runtime-telemetry-measurements:23
+        stepId: full.verify.report.evidence
+        sequence: 23
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/integrate-runtime-telemetry-measurements.md
+          contentHash: 47e542aef4699880c27eb51d0e911548e4a7c7f7fc94d3c309ea969cbcba5ccb
+          submissionId: bf7459d6-487b-40bb-bf2c-3490eafc2d6c
+      - id: integrate-runtime-telemetry-measurements:25
+        stepId: full.verify.check.evidence
+        sequence: 25
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/910786d9-455c-47ca-a829-c70e5e52cca9.log
+          contentHash: f5316d340900438790d86b272b05b064abae810c58f2735c1982c3a5b71b631d
+          submissionId: 043f55a8-1f33-4195-9c72-d97a5fdb4140
+      - id: integrate-runtime-telemetry-measurements:29
+        stepId: full.verify.report.evidence
+        sequence: 29
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/integrate-runtime-telemetry-measurements.md
+          contentHash: 47e542aef4699880c27eb51d0e911548e4a7c7f7fc94d3c309ea969cbcba5ccb
+          submissionId: e5250b73-3e7d-4011-827c-e25bbcdb6cc8
+      - id: integrate-runtime-telemetry-measurements:31
+        stepId: full.verify.check.evidence
+        sequence: 31
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/4514964b-3647-418e-9060-012a6050e065.log
+          contentHash: 7d6a45d6235a8f91ea933b41f6cb728213bd126c4763a8cf4132b5d3bb7be1ad
+          submissionId: cea6793c-496a-4a26-b2f5-655ad870c6b9
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 55
+  sourceHash: 9cf415c5f31211f3d66d68d15414a3e82bd8dbf63ee3a129b31732d9332e32a8
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: integrate-runtime-telemetry-measurements
+            changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+            workspaceBaseline:
+              ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: e5d3ce12eb80d37583a00fd45be93a2f80ffabd8f3392934c47208af1833c2e7
+              ref: openspec/changes/integrate-runtime-telemetry-measurements
+      - contentHash: e5d3ce12eb80d37583a00fd45be93a2f80ffabd8f3392934c47208af1833c2e7
+        ref: openspec/changes/integrate-runtime-telemetry-measurements
+      - contentHash: e5d3ce12eb80d37583a00fd45be93a2f80ffabd8f3392934c47208af1833c2e7
+      - choice: approved
+        proposal:
+          input:
+            change: integrate-runtime-telemetry-measurements
+            changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+            workspaceBaseline:
+              ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/integrate-runtime-telemetry-measurements/.comet/handoff/design-context.json
+              handoffHash: b4be3b51cf5f1ca937041f56f7cd7183811dbe97ab0da26f6c141642723a537b
+              proposal: 推荐采用 canonical directory-first projection：保留每个已持久化领域事实的一份 canonical
+                envelope，由唯一机器目录驱动唯一 OTLP projection；同一编码同时保留 Desktop 可逆
+                envelope 属性并输出 SigNoz 可查询的标准 Resource、允许列表 Event/Span attributes
+                与有界 Metrics，Desktop 和远端只允许 endpoint、认证及独立 Delivery Cursor 不同。保留
+                observationDestinationsFromEnvironment 的目的地所有权，补齐按信号
+                header/timeout、OTEL_SERVICE_NAME 与 OTEL_RESOURCE_ATTRIBUTES
+                优先级。Skill outcome 和 Rule evaluation 必须先形成稳定 additive domain
+                fact，exporter 不根据相邻事件或最终状态推断。22 项指标中 9 项以
+                direct/derived/optional-evaluator 方式支持，13 项明确为外部系统范围，缺失保持
+                unknown；数据字典由机器目录生成并防漂移。旧直连 OpenTelemetry exporters 没有生产
+                composition 调用者且绕过 outbox，先迁移其有效测试再删除，不为未发布入口保留兼容层。放弃两套 exporter
+                并存，因为会产生两套 mapping/重试/字段权威；放弃只查询 JSON
+                envelope，因为无法提供可移植原生查询和低基数约束。主要风险是 payload 增长、删除旧测试覆盖、OTLP
+                环境优先级和双目的地语义漂移，分别以体积/隐私/基数测试、先迁移后删除、表驱动配置测试和 dual-destination
+                E2E 控制。无需 Spec Patch：当前主规格已要求每个领域事实一份 canonical envelope、同一
+                mapping/payload 服务 Desktop 与远端且目的地不得重新解释。
+              requirementsEvidence:
+                contentHash: b3ddfc09483d6f50fc3fe970489fc2f864b7460726a5cde3fbfd980fe08d289f
+                ref: openspec/changes/integrate-runtime-telemetry-measurements
+              sourceEvidence:
+                contentHash: df37a2a06943ff45b5db3f2147b28fa92dd946b287b476e5eb4c64a7898a78bb
+                ref: openspec/changes/integrate-runtime-telemetry-measurements
+      - handoffContext: openspec/changes/integrate-runtime-telemetry-measurements/.comet/handoff/design-context.json
+        handoffHash: b4be3b51cf5f1ca937041f56f7cd7183811dbe97ab0da26f6c141642723a537b
+        proposal: 推荐采用 canonical directory-first projection：保留每个已持久化领域事实的一份 canonical
+          envelope，由唯一机器目录驱动唯一 OTLP projection；同一编码同时保留 Desktop 可逆 envelope
+          属性并输出 SigNoz 可查询的标准 Resource、允许列表 Event/Span attributes 与有界
+          Metrics，Desktop 和远端只允许 endpoint、认证及独立 Delivery Cursor 不同。保留
+          observationDestinationsFromEnvironment 的目的地所有权，补齐按信号
+          header/timeout、OTEL_SERVICE_NAME 与 OTEL_RESOURCE_ATTRIBUTES 优先级。Skill
+          outcome 和 Rule evaluation 必须先形成稳定 additive domain fact，exporter
+          不根据相邻事件或最终状态推断。22 项指标中 9 项以 direct/derived/optional-evaluator 方式支持，13
+          项明确为外部系统范围，缺失保持 unknown；数据字典由机器目录生成并防漂移。旧直连 OpenTelemetry exporters
+          没有生产 composition 调用者且绕过 outbox，先迁移其有效测试再删除，不为未发布入口保留兼容层。放弃两套 exporter
+          并存，因为会产生两套 mapping/重试/字段权威；放弃只查询 JSON
+          envelope，因为无法提供可移植原生查询和低基数约束。主要风险是 payload 增长、删除旧测试覆盖、OTLP
+          环境优先级和双目的地语义漂移，分别以体积/隐私/基数测试、先迁移后删除、表驱动配置测试和 dual-destination E2E
+          控制。无需 Spec Patch：当前主规格已要求每个领域事实一份 canonical envelope、同一
+          mapping/payload 服务 Desktop 与远端且目的地不得重新解释。
+        requirementsEvidence:
+          contentHash: b3ddfc09483d6f50fc3fe970489fc2f864b7460726a5cde3fbfd980fe08d289f
+          ref: openspec/changes/integrate-runtime-telemetry-measurements
+        sourceEvidence:
+          contentHash: df37a2a06943ff45b5db3f2147b28fa92dd946b287b476e5eb4c64a7898a78bb
+          ref: openspec/changes/integrate-runtime-telemetry-measurements
+      - designDoc: openspec/changes/integrate-runtime-telemetry-measurements/design.md
+      - contentHash: d5bdc2e961f5ebe6f35985a1667fccde9e15fe0a2b8ef62a3b9e9b50451dee34
+        ref: openspec/changes/integrate-runtime-telemetry-measurements/design.md
+      - boundBranch: codex/integrate-telemetry-main
+        buildMode: autonomous
+        directOverride: false
+        isolation: current
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: integrate-runtime-telemetry-measurements
+            changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+            workspaceBaseline:
+              ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+          outputs:
+            full.build.configure:
+              boundBranch: codex/integrate-telemetry-main
+              buildMode: autonomous
+              directOverride: false
+              isolation: current
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: d5bdc2e961f5ebe6f35985a1667fccde9e15fe0a2b8ef62a3b9e9b50451dee34
+          ref: openspec/changes/integrate-runtime-telemetry-measurements/design.md
+        plan: docs/superpowers/plans/2026-11-02-integrate-runtime-telemetry-measurements.md
+        planEvidence:
+          contentHash: 7d72e4706c4bc05cfd07691ed84a6286dfa8a36426e8db8e5517ffe7f68edad2
+          ref: docs/superpowers/plans/2026-11-02-integrate-runtime-telemetry-measurements.md
+        taskRevision: e24541c5f6811b172980a2cf2bc6e9f86201c5ab8f5fc2fecff9b4de9f7fd8e1
+      - contentHash: 7d72e4706c4bc05cfd07691ed84a6286dfa8a36426e8db8e5517ffe7f68edad2
+        ref: docs/superpowers/plans/2026-11-02-integrate-runtime-telemetry-measurements.md
+      - event: build-complete
+      - argv:
+          - npm
+          - run
+          - check:managed-execution-report
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: fb11a45349915a2e55370808188812ad8c702d0020f2d8c2430f802c0a14fda2
+        cwd: .
+        environment: 4bb19ecbf5a0601a5af5c90db74838589152eb683bfec90daee06d33d90b20b5
+        exitCode: 0
+        inputAfter: 85ed8b414cd2a6e3d9f39ababf192a9508a4ca4bf5673ec2e094fc7593f61c6b
+        inputBefore: 85ed8b414cd2a6e3d9f39ababf192a9508a4ca4bf5673ec2e094fc7593f61c6b
+        manifestHash: a32c4298859b0e8c5f582d5a56ec9afa9c3468cb99c3ef1264bda613819974fc
+        manifestRef: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/4680bd31-7378-4503-a671-0e3b4b514ec8.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/80af3bed-ee9f-44d4-92ec-bf9102b79b0a.log
+        reusable: false
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 900000
+      - contentHash: fb11a45349915a2e55370808188812ad8c702d0020f2d8c2430f802c0a14fda2
+        ref: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/80af3bed-ee9f-44d4-92ec-bf9102b79b0a.log
+      - contentHash: 47e542aef4699880c27eb51d0e911548e4a7c7f7fc94d3c309ea969cbcba5ccb
+        ref: docs/superpowers/reports/integrate-runtime-telemetry-measurements.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/integrate-runtime-telemetry-measurements.md
+      - argv:
+          - pwsh
+          - -NoProfile
+          - -Command
+          - $verifySource = "C:\Users\User\Desktop\PP\Repoctopus\.codex";
+            $verifyDestination =
+            "C:\Users\User\AppData\Local\Temp\repoctopus-comet-codex-guard"; if
+            (Test-Path -LiteralPath $verifyDestination) { throw "Temporary Comet
+            destination already exists" }; Move-Item -LiteralPath $verifySource
+            -Destination $verifyDestination; $verifyExit = 1; try { npm run
+            verify; $verifyExit = $LASTEXITCODE } finally { if (Test-Path
+            -LiteralPath $verifyDestination) { Move-Item -LiteralPath
+            $verifyDestination -Destination $verifySource } }; exit $verifyExit
+        changedDuringExecution: []
+        checkEpoch: 3
+        contentHash: 623a596452ba3060056e200966bcd596c6f3243d6d1191ebca44f01182c9863e
+        cwd: .
+        deliveryInputs: {}
+        environment: d79142869fed552a825c6029777b41af37558f6564609729c2fd6f614477b354
+        exitCode: 0
+        inputAfter: 252247cf0171c878985ac1f6e582db2fcf5ce25485ebada00b3a7239b0344323
+        inputBefore: 252247cf0171c878985ac1f6e582db2fcf5ce25485ebada00b3a7239b0344323
+        manifestHash: c0a3ede7b8b7d87bdb0a669b7b4c0b0dbf2e3e8433bf865261210fff8b746b78
+        manifestRef: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/221a77d2-921f-450b-8cf0-d8c02c4c445a.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/4040929c-8a55-4654-9be8-c0052667d195.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 900000
+      - contentHash: 623a596452ba3060056e200966bcd596c6f3243d6d1191ebca44f01182c9863e
+        ref: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/4040929c-8a55-4654-9be8-c0052667d195.log
+      - choice: reverify
+        proposal:
+          input:
+            change: integrate-runtime-telemetry-measurements
+            changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+            workspaceBaseline:
+              ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+          outputs:
+            full.archive.prepare:
+              summary: 归档已验证的 Runtime 遥测补齐 Change：发布 schema v1 机器目录与生成参考手册，标准化 OTLP/SigNoz
+                配置，统一 canonical outbox 投影，补齐 9 项可观察指标并明确 13 项范围外指标；33/33
+                任务完成，Comet Verify Guard 与完整 npm run verify 均通过，分支已持续推送到 origin。
+              targetBranch: codex/integrate-telemetry-main
+      - summary: 归档已验证的 Runtime 遥测补齐 Change：发布 schema v1 机器目录与生成参考手册，标准化 OTLP/SigNoz
+          配置，统一 canonical outbox 投影，补齐 9 项可观察指标并明确 13 项范围外指标；33/33 任务完成，Comet
+          Verify Guard 与完整 npm run verify 均通过，分支已持续推送到 origin。
+        targetBranch: codex/integrate-telemetry-main
+      - argv:
+          - npm
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 5
+        contentHash: f5316d340900438790d86b272b05b064abae810c58f2735c1982c3a5b71b631d
+        cwd: .
+        deliveryInputs: {}
+        environment: 86c61b75590ddc6304a66088f8fe2dae1970f6f7283ae80c9ced5aa09e98069e
+        exitCode: 0
+        inputAfter: af206006c9b79e4f94083c2a1e1d658312dccce92c9c7b0396e2a196c27a09a9
+        inputBefore: af206006c9b79e4f94083c2a1e1d658312dccce92c9c7b0396e2a196c27a09a9
+        manifestHash: 3a5cf7f3604fe0a83216516236916ce41acd96983206bbd3149b262e08356fe7
+        manifestRef: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/69f38205-bbb8-4297-ae42-3abe2e3d8e50.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/910786d9-455c-47ca-a829-c70e5e52cca9.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 900000
+      - contentHash: f5316d340900438790d86b272b05b064abae810c58f2735c1982c3a5b71b631d
+        ref: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/910786d9-455c-47ca-a829-c70e5e52cca9.log
+      - choice: reverify
+        proposal:
+          input:
+            change: integrate-runtime-telemetry-measurements
+            changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+            workspaceBaseline:
+              ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+          outputs:
+            full.archive.prepare:
+              remote: origin
+              summary: 归档已验证的 Runtime 遥测补齐 Change：发布 schema v1 机器目录与生成参考手册，标准化 OTLP/SigNoz
+                配置，统一 canonical outbox 投影，补齐 9 项可观察指标并明确 13 项范围外指标；33/33
+                任务完成，Comet Verify Guard 与完整 npm run verify 均通过，归档提交将立即推送到
+                origin。
+              targetBranch: codex/integrate-telemetry-main
+      - remote: origin
+        summary: 归档已验证的 Runtime 遥测补齐 Change：发布 schema v1 机器目录与生成参考手册，标准化 OTLP/SigNoz
+          配置，统一 canonical outbox 投影，补齐 9 项可观察指标并明确 13 项范围外指标；33/33 任务完成，Comet
+          Verify Guard 与完整 npm run verify 均通过，归档提交将立即推送到 origin。
+        targetBranch: codex/integrate-telemetry-main
+      - argv:
+          - npm
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 7
+        contentHash: 7d6a45d6235a8f91ea933b41f6cb728213bd126c4763a8cf4132b5d3bb7be1ad
+        cwd: .
+        deliveryInputs: {}
+        environment: 86c61b75590ddc6304a66088f8fe2dae1970f6f7283ae80c9ced5aa09e98069e
+        exitCode: 0
+        inputAfter: af206006c9b79e4f94083c2a1e1d658312dccce92c9c7b0396e2a196c27a09a9
+        inputBefore: af206006c9b79e4f94083c2a1e1d658312dccce92c9c7b0396e2a196c27a09a9
+        manifestHash: 3a5cf7f3604fe0a83216516236916ce41acd96983206bbd3149b262e08356fe7
+        manifestRef: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/f6d2725a-7d7d-4459-aa45-c2f83c31ad89.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/4514964b-3647-418e-9060-012a6050e065.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 900000
+      - contentHash: 7d6a45d6235a8f91ea933b41f6cb728213bd126c4763a8cf4132b5d3bb7be1ad
+        ref: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/4514964b-3647-418e-9060-012a6050e065.log
+      - choice: push
+        proposal:
+          input:
+            change: integrate-runtime-telemetry-measurements
+            changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+            workspaceBaseline:
+              ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+          outputs:
+            full.archive.prepare:
+              remote: origin
+              summary: 归档已验证的 Runtime 遥测补齐 Change：发布 schema v1 机器目录与生成参考手册，标准化 OTLP/SigNoz
+                配置，统一 canonical outbox 投影，补齐 9 项可观察指标并明确 13 项范围外指标；33/33
+                任务完成，Comet Verify Guard 与完整 npm run verify 均通过，归档提交将立即推送到
+                origin。
+              targetBranch: codex/integrate-telemetry-main
+      - baseCommit: 207e60751f4c5f04c8de87279c94f5583daedf5b
+        deliveryAction: push
+        remote: origin
+        remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+        targetBranch: codex/integrate-telemetry-main
+        verifiedBranch: codex/integrate-telemetry-main
+      - archiveDirectory: openspec/changes/archive/2026-11-02-integrate-runtime-telemetry-measurements
+      - sequence: 9
+        value:
+          boundBranch: codex/integrate-telemetry-main
+          buildMode: autonomous
+          directOverride: false
+          isolation: current
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      - sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: integrate-runtime-telemetry-measurements
+              changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+              workspaceBaseline:
+                ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+            outputs:
+              full.build.configure:
+                boundBranch: codex/integrate-telemetry-main
+                buildMode: autonomous
+                directOverride: false
+                isolation: current
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      - sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: integrate-runtime-telemetry-measurements
+              changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+              workspaceBaseline:
+                ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/integrate-runtime-telemetry-measurements/.comet/handoff/design-context.json
+                handoffHash: b4be3b51cf5f1ca937041f56f7cd7183811dbe97ab0da26f6c141642723a537b
+                proposal: 推荐采用 canonical directory-first projection：保留每个已持久化领域事实的一份 canonical
+                  envelope，由唯一机器目录驱动唯一 OTLP projection；同一编码同时保留 Desktop 可逆
+                  envelope 属性并输出 SigNoz 可查询的标准 Resource、允许列表 Event/Span
+                  attributes 与有界 Metrics，Desktop 和远端只允许 endpoint、认证及独立 Delivery
+                  Cursor 不同。保留 observationDestinationsFromEnvironment
+                  的目的地所有权，补齐按信号 header/timeout、OTEL_SERVICE_NAME 与
+                  OTEL_RESOURCE_ATTRIBUTES 优先级。Skill outcome 和 Rule evaluation
+                  必须先形成稳定 additive domain fact，exporter 不根据相邻事件或最终状态推断。22 项指标中 9
+                  项以 direct/derived/optional-evaluator 方式支持，13 项明确为外部系统范围，缺失保持
+                  unknown；数据字典由机器目录生成并防漂移。旧直连 OpenTelemetry exporters 没有生产
+                  composition 调用者且绕过 outbox，先迁移其有效测试再删除，不为未发布入口保留兼容层。放弃两套
+                  exporter 并存，因为会产生两套 mapping/重试/字段权威；放弃只查询 JSON
+                  envelope，因为无法提供可移植原生查询和低基数约束。主要风险是 payload 增长、删除旧测试覆盖、OTLP
+                  环境优先级和双目的地语义漂移，分别以体积/隐私/基数测试、先迁移后删除、表驱动配置测试和 dual-destination
+                  E2E 控制。无需 Spec Patch：当前主规格已要求每个领域事实一份 canonical envelope、同一
+                  mapping/payload 服务 Desktop 与远端且目的地不得重新解释。
+                requirementsEvidence:
+                  contentHash: b3ddfc09483d6f50fc3fe970489fc2f864b7460726a5cde3fbfd980fe08d289f
+                  ref: openspec/changes/integrate-runtime-telemetry-measurements
+                sourceEvidence:
+                  contentHash: df37a2a06943ff45b5db3f2147b28fa92dd946b287b476e5eb4c64a7898a78bb
+                  ref: openspec/changes/integrate-runtime-telemetry-measurements
+      - sequence: 7
+        value:
+          designDoc: openspec/changes/integrate-runtime-telemetry-measurements/design.md
+      - sequence: 8
+        value:
+          contentHash: d5bdc2e961f5ebe6f35985a1667fccde9e15fe0a2b8ef62a3b9e9b50451dee34
+          ref: openspec/changes/integrate-runtime-telemetry-measurements/design.md
+      - sequence: 5
+        value:
+          handoffContext: openspec/changes/integrate-runtime-telemetry-measurements/.comet/handoff/design-context.json
+          handoffHash: b4be3b51cf5f1ca937041f56f7cd7183811dbe97ab0da26f6c141642723a537b
+          proposal: 推荐采用 canonical directory-first projection：保留每个已持久化领域事实的一份 canonical
+            envelope，由唯一机器目录驱动唯一 OTLP projection；同一编码同时保留 Desktop 可逆 envelope
+            属性并输出 SigNoz 可查询的标准 Resource、允许列表 Event/Span attributes 与有界
+            Metrics，Desktop 和远端只允许 endpoint、认证及独立 Delivery Cursor 不同。保留
+            observationDestinationsFromEnvironment 的目的地所有权，补齐按信号
+            header/timeout、OTEL_SERVICE_NAME 与 OTEL_RESOURCE_ATTRIBUTES
+            优先级。Skill outcome 和 Rule evaluation 必须先形成稳定 additive domain
+            fact，exporter 不根据相邻事件或最终状态推断。22 项指标中 9 项以
+            direct/derived/optional-evaluator 方式支持，13 项明确为外部系统范围，缺失保持
+            unknown；数据字典由机器目录生成并防漂移。旧直连 OpenTelemetry exporters 没有生产 composition
+            调用者且绕过 outbox，先迁移其有效测试再删除，不为未发布入口保留兼容层。放弃两套 exporter 并存，因为会产生两套
+            mapping/重试/字段权威；放弃只查询 JSON envelope，因为无法提供可移植原生查询和低基数约束。主要风险是
+            payload 增长、删除旧测试覆盖、OTLP 环境优先级和双目的地语义漂移，分别以体积/隐私/基数测试、先迁移后删除、表驱动配置测试和
+            dual-destination E2E 控制。无需 Spec Patch：当前主规格已要求每个领域事实一份 canonical
+            envelope、同一 mapping/payload 服务 Desktop 与远端且目的地不得重新解释。
+          requirementsEvidence:
+            contentHash: b3ddfc09483d6f50fc3fe970489fc2f864b7460726a5cde3fbfd980fe08d289f
+            ref: openspec/changes/integrate-runtime-telemetry-measurements
+          sourceEvidence:
+            contentHash: df37a2a06943ff45b5db3f2147b28fa92dd946b287b476e5eb4c64a7898a78bb
+            ref: openspec/changes/integrate-runtime-telemetry-measurements
+      - sequence: 1
+        value:
+          event: open-complete
+      - sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: integrate-runtime-telemetry-measurements
+              changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+              workspaceBaseline:
+                ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: e5d3ce12eb80d37583a00fd45be93a2f80ffabd8f3392934c47208af1833c2e7
+                ref: openspec/changes/integrate-runtime-telemetry-measurements
+      - sequence: 2
+        value:
+          contentHash: e5d3ce12eb80d37583a00fd45be93a2f80ffabd8f3392934c47208af1833c2e7
+          ref: openspec/changes/integrate-runtime-telemetry-measurements
+      - sequence: 4
+        value:
+          contentHash: e5d3ce12eb80d37583a00fd45be93a2f80ffabd8f3392934c47208af1833c2e7
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: d5bdc2e961f5ebe6f35985a1667fccde9e15fe0a2b8ef62a3b9e9b50451dee34
+            ref: openspec/changes/integrate-runtime-telemetry-measurements/design.md
+          plan: docs/superpowers/plans/2026-11-02-integrate-runtime-telemetry-measurements.md
+          planEvidence:
+            contentHash: 7d72e4706c4bc05cfd07691ed84a6286dfa8a36426e8db8e5517ffe7f68edad2
+            ref: docs/superpowers/plans/2026-11-02-integrate-runtime-telemetry-measurements.md
+          taskRevision: e24541c5f6811b172980a2cf2bc6e9f86201c5ab8f5fc2fecff9b4de9f7fd8e1
+      - sequence: 12
+        value:
+          contentHash: 7d72e4706c4bc05cfd07691ed84a6286dfa8a36426e8db8e5517ffe7f68edad2
+          ref: docs/superpowers/plans/2026-11-02-integrate-runtime-telemetry-measurements.md
+      - sequence: 13
+        value:
+          event: build-complete
+      - sequence: 14
+        value:
+          argv:
+            - npm
+            - run
+            - check:managed-execution-report
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: fb11a45349915a2e55370808188812ad8c702d0020f2d8c2430f802c0a14fda2
+          cwd: .
+          environment: 4bb19ecbf5a0601a5af5c90db74838589152eb683bfec90daee06d33d90b20b5
+          exitCode: 0
+          inputAfter: 85ed8b414cd2a6e3d9f39ababf192a9508a4ca4bf5673ec2e094fc7593f61c6b
+          inputBefore: 85ed8b414cd2a6e3d9f39ababf192a9508a4ca4bf5673ec2e094fc7593f61c6b
+          manifestHash: a32c4298859b0e8c5f582d5a56ec9afa9c3468cb99c3ef1264bda613819974fc
+          manifestRef: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/4680bd31-7378-4503-a671-0e3b4b514ec8.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/80af3bed-ee9f-44d4-92ec-bf9102b79b0a.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 900000
+      - sequence: 15
+        value:
+          contentHash: fb11a45349915a2e55370808188812ad8c702d0020f2d8c2430f802c0a14fda2
+          ref: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/80af3bed-ee9f-44d4-92ec-bf9102b79b0a.log
+      - sequence: 17
+        value:
+          contentHash: 47e542aef4699880c27eb51d0e911548e4a7c7f7fc94d3c309ea969cbcba5ccb
+          ref: docs/superpowers/reports/integrate-runtime-telemetry-measurements.md
+      - sequence: 16
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/integrate-runtime-telemetry-measurements.md
+      - sequence: 18
+        value:
+          argv:
+            - pwsh
+            - -NoProfile
+            - -Command
+            - $verifySource = "C:\Users\User\Desktop\PP\Repoctopus\.codex";
+              $verifyDestination =
+              "C:\Users\User\AppData\Local\Temp\repoctopus-comet-codex-guard";
+              if (Test-Path -LiteralPath $verifyDestination) { throw "Temporary
+              Comet destination already exists" }; Move-Item -LiteralPath
+              $verifySource -Destination $verifyDestination; $verifyExit = 1;
+              try { npm run verify; $verifyExit = $LASTEXITCODE } finally { if
+              (Test-Path -LiteralPath $verifyDestination) { Move-Item
+              -LiteralPath $verifyDestination -Destination $verifySource } };
+              exit $verifyExit
+          changedDuringExecution: []
+          checkEpoch: 3
+          contentHash: 623a596452ba3060056e200966bcd596c6f3243d6d1191ebca44f01182c9863e
+          cwd: .
+          deliveryInputs: {}
+          environment: d79142869fed552a825c6029777b41af37558f6564609729c2fd6f614477b354
+          exitCode: 0
+          inputAfter: 252247cf0171c878985ac1f6e582db2fcf5ce25485ebada00b3a7239b0344323
+          inputBefore: 252247cf0171c878985ac1f6e582db2fcf5ce25485ebada00b3a7239b0344323
+          manifestHash: c0a3ede7b8b7d87bdb0a669b7b4c0b0dbf2e3e8433bf865261210fff8b746b78
+          manifestRef: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/221a77d2-921f-450b-8cf0-d8c02c4c445a.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/4040929c-8a55-4654-9be8-c0052667d195.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 900000
+      - sequence: 19
+        value:
+          contentHash: 623a596452ba3060056e200966bcd596c6f3243d6d1191ebca44f01182c9863e
+          ref: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/4040929c-8a55-4654-9be8-c0052667d195.log
+      - sequence: 21
+        value:
+          choice: reverify
+          proposal:
+            input:
+              change: integrate-runtime-telemetry-measurements
+              changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+              workspaceBaseline:
+                ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+            outputs:
+              full.archive.prepare:
+                summary: 归档已验证的 Runtime 遥测补齐 Change：发布 schema v1 机器目录与生成参考手册，标准化 OTLP/SigNoz
+                  配置，统一 canonical outbox 投影，补齐 9 项可观察指标并明确 13 项范围外指标；33/33
+                  任务完成，Comet Verify Guard 与完整 npm run verify 均通过，分支已持续推送到
+                  origin。
+                targetBranch: codex/integrate-telemetry-main
+      - sequence: 20
+        value:
+          summary: 归档已验证的 Runtime 遥测补齐 Change：发布 schema v1 机器目录与生成参考手册，标准化 OTLP/SigNoz
+            配置，统一 canonical outbox 投影，补齐 9 项可观察指标并明确 13 项范围外指标；33/33 任务完成，Comet
+            Verify Guard 与完整 npm run verify 均通过，分支已持续推送到 origin。
+          targetBranch: codex/integrate-telemetry-main
+      - sequence: 23
+        value:
+          contentHash: 47e542aef4699880c27eb51d0e911548e4a7c7f7fc94d3c309ea969cbcba5ccb
+          ref: docs/superpowers/reports/integrate-runtime-telemetry-measurements.md
+      - sequence: 22
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/integrate-runtime-telemetry-measurements.md
+      - sequence: 24
+        value:
+          argv:
+            - npm
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 5
+          contentHash: f5316d340900438790d86b272b05b064abae810c58f2735c1982c3a5b71b631d
+          cwd: .
+          deliveryInputs: {}
+          environment: 86c61b75590ddc6304a66088f8fe2dae1970f6f7283ae80c9ced5aa09e98069e
+          exitCode: 0
+          inputAfter: af206006c9b79e4f94083c2a1e1d658312dccce92c9c7b0396e2a196c27a09a9
+          inputBefore: af206006c9b79e4f94083c2a1e1d658312dccce92c9c7b0396e2a196c27a09a9
+          manifestHash: 3a5cf7f3604fe0a83216516236916ce41acd96983206bbd3149b262e08356fe7
+          manifestRef: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/69f38205-bbb8-4297-ae42-3abe2e3d8e50.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/910786d9-455c-47ca-a829-c70e5e52cca9.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 900000
+      - sequence: 25
+        value:
+          contentHash: f5316d340900438790d86b272b05b064abae810c58f2735c1982c3a5b71b631d
+          ref: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/910786d9-455c-47ca-a829-c70e5e52cca9.log
+      - sequence: 27
+        value:
+          choice: reverify
+          proposal:
+            input:
+              change: integrate-runtime-telemetry-measurements
+              changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+              workspaceBaseline:
+                ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+            outputs:
+              full.archive.prepare:
+                remote: origin
+                summary: 归档已验证的 Runtime 遥测补齐 Change：发布 schema v1 机器目录与生成参考手册，标准化 OTLP/SigNoz
+                  配置，统一 canonical outbox 投影，补齐 9 项可观察指标并明确 13 项范围外指标；33/33
+                  任务完成，Comet Verify Guard 与完整 npm run verify 均通过，归档提交将立即推送到
+                  origin。
+                targetBranch: codex/integrate-telemetry-main
+      - sequence: 26
+        value:
+          remote: origin
+          summary: 归档已验证的 Runtime 遥测补齐 Change：发布 schema v1 机器目录与生成参考手册，标准化 OTLP/SigNoz
+            配置，统一 canonical outbox 投影，补齐 9 项可观察指标并明确 13 项范围外指标；33/33 任务完成，Comet
+            Verify Guard 与完整 npm run verify 均通过，归档提交将立即推送到 origin。
+          targetBranch: codex/integrate-telemetry-main
+      - sequence: 29
+        value:
+          contentHash: 47e542aef4699880c27eb51d0e911548e4a7c7f7fc94d3c309ea969cbcba5ccb
+          ref: docs/superpowers/reports/integrate-runtime-telemetry-measurements.md
+      - sequence: 28
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/integrate-runtime-telemetry-measurements.md
+      - sequence: 30
+        value:
+          argv:
+            - npm
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 7
+          contentHash: 7d6a45d6235a8f91ea933b41f6cb728213bd126c4763a8cf4132b5d3bb7be1ad
+          cwd: .
+          deliveryInputs: {}
+          environment: 86c61b75590ddc6304a66088f8fe2dae1970f6f7283ae80c9ced5aa09e98069e
+          exitCode: 0
+          inputAfter: af206006c9b79e4f94083c2a1e1d658312dccce92c9c7b0396e2a196c27a09a9
+          inputBefore: af206006c9b79e4f94083c2a1e1d658312dccce92c9c7b0396e2a196c27a09a9
+          manifestHash: 3a5cf7f3604fe0a83216516236916ce41acd96983206bbd3149b262e08356fe7
+          manifestRef: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/f6d2725a-7d7d-4459-aa45-c2f83c31ad89.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/4514964b-3647-418e-9060-012a6050e065.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 900000
+      - sequence: 31
+        value:
+          contentHash: 7d6a45d6235a8f91ea933b41f6cb728213bd126c4763a8cf4132b5d3bb7be1ad
+          ref: .comet/runtime/classic-sdk-checks/bbfe614ad3819031d386b92e188b015d03a60b7e1895e24ff9cbee81e698ac26/4514964b-3647-418e-9060-012a6050e065.log
+      - sequence: 33
+        value:
+          choice: push
+          proposal:
+            input:
+              change: integrate-runtime-telemetry-measurements
+              changeDir: openspec/changes/integrate-runtime-telemetry-measurements
+              workspaceBaseline:
+                ref: ab690a71-5f67-4768-ae1f-ba1b795f14fb
+            outputs:
+              full.archive.prepare:
+                remote: origin
+                summary: 归档已验证的 Runtime 遥测补齐 Change：发布 schema v1 机器目录与生成参考手册，标准化 OTLP/SigNoz
+                  配置，统一 canonical outbox 投影，补齐 9 项可观察指标并明确 13 项范围外指标；33/33
+                  任务完成，Comet Verify Guard 与完整 npm run verify 均通过，归档提交将立即推送到
+                  origin。
+                targetBranch: codex/integrate-telemetry-main
+      - sequence: 32
+        value:
+          remote: origin
+          summary: 归档已验证的 Runtime 遥测补齐 Change：发布 schema v1 机器目录与生成参考手册，标准化 OTLP/SigNoz
+            配置，统一 canonical outbox 投影，补齐 9 项可观察指标并明确 13 项范围外指标；33/33 任务完成，Comet
+            Verify Guard 与完整 npm run verify 均通过，归档提交将立即推送到 origin。
+          targetBranch: codex/integrate-telemetry-main
+      - sequence: 34
+        value:
+          baseCommit: 207e60751f4c5f04c8de87279c94f5583daedf5b
+          deliveryAction: push
+          remote: origin
+          remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+          targetBranch: codex/integrate-telemetry-main
+          verifiedBranch: codex/integrate-telemetry-main
+      - sequence: 35
+        value:
+          archiveDirectory: openspec/changes/archive/2026-11-02-integrate-runtime-telemetry-measurements
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 27
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 10
+        left: 28
+        right: 29
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 30
+        right: 25
+        height: 4
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 32
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 34
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 35
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 25
+        height: 5
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: null
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 40
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 41
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 42
+        height: 5
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 45
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 17
+        left: 44
+        right: 46
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 47
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 48
+        height: 5
+      - key: full.archive.confirm
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 20
+        left: 50
+        right: 51
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 33
+        right: 27
+        height: 2
+      - key: full.build.check.evidence
+        value: 14
+        left: 52
+        right: 53
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 54
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 55
+        right: 48
+        height: 5
+      - key: full.verify.check.evidence
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 57
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 21
+        left: 44
+        right: 58
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 59
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 55
+        right: 60
+        height: 5
+      - key: full.archive.confirm
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 24
+        left: 62
+        right: 51
+        height: 2
+      - key: full.build.check.evidence
+        value: 14
+        left: 63
+        right: 53
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 64
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 65
+        right: 60
+        height: 5
+      - key: full.verify.check.evidence
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 67
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 25
+        left: 44
+        right: 68
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 69
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 65
+        right: 70
+        height: 5
+      - key: full.archive.confirm
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 24
+        left: 72
+        right: 51
+        height: 2
+      - key: full.build.check.evidence
+        value: 14
+        left: 73
+        right: 53
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 74
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 75
+        right: 70
+        height: 5
+      - key: full.archive.preflight
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 27
+        left: null
+        right: 77
+        height: 2
+      - key: full.archive.prepare
+        value: 24
+        left: 78
+        right: 51
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 53
+        right: 29
+        height: 3
+      - key: full.build.check.evidence
+        value: 14
+        left: 79
+        right: 80
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 81
+        right: 70
+        height: 5
+      - key: full.archive.confirm
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 29
+        left: 83
+        right: 84
+        height: 2
+      - key: full.archive.prepare
+        value: 24
+        left: 85
+        right: 51
+        height: 3
+      - key: full.build.check.evidence
+        value: 14
+        left: 86
+        right: 80
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 87
+        right: 70
+        height: 5
+      - key: full.build.configure
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 31
+        left: 89
+        right: 90
+        height: 2
+      - key: full.design.evidence
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 35
+        left: 92
+        right: 93
+        height: 2
+      - key: full.open.revalidate
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 38
+        left: null
+        right: 95
+        height: 2
+      - key: full.open.confirm
+        value: 37
+        left: 94
+        right: 96
+        height: 3
+      - key: full.design.document
+        value: 33
+        left: 91
+        right: 97
+        height: 4
+      - key: full.build.plan
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 41
+        left: 99
+        right: 100
+        height: 2
+      - key: full.build.confirm
+        value: 31
+        left: 89
+        right: 101
+        height: 3
+      - key: full.design.document
+        value: 33
+        left: 102
+        right: 97
+        height: 4
+      - key: full.build.execute
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 31
+        left: 89
+        right: 104
+        height: 2
+      - key: full.build.plan.evidence
+        value: 41
+        left: null
+        right: 100
+        height: 2
+      - key: full.build.plan
+        value: 40
+        left: 105
+        right: 106
+        height: 3
+      - key: full.design.document
+        value: 33
+        left: 107
+        right: 97
+        height: 4
+      - key: full.build.check
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 44
+        left: 109
+        right: 110
+        height: 2
+      - key: full.build.confirm
+        value: 31
+        left: 111
+        right: 104
+        height: 3
+      - key: full.build.plan
+        value: 40
+        left: 112
+        right: 106
+        height: 4
+      - key: full.design.document
+        value: 33
+        left: 113
+        right: 97
+        height: 5
+      - key: full.open.evidence
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 45
+        left: null
+        right: 116
+        height: 2
+      - key: full.open.revalidate
+        value: 39
+        left: 115
+        right: 117
+        height: 3
+      - key: full.open.confirm
+        value: 37
+        left: 94
+        right: 118
+        height: 4
+      - key: full.design.document
+        value: 33
+        left: 113
+        right: 119
+        height: 5
+      - key: full.open.revalidate
+        value: 39
+        left: 115
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 45
+        left: 122
+        right: 116
+        height: 2
+      - key: full.verify.check
+        value: 47
+        left: 121
+        right: 123
+        height: 3
+      - key: full.open.confirm
+        value: 37
+        left: 94
+        right: 124
+        height: 4
+      - key: full.design.document
+        value: 33
+        left: 113
+        right: 125
+        height: 5
+      - key: full.archive.confirm
+        value: 49
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 50
+        left: 127
+        right: 128
+        height: 2
+      - key: full.build.confirm
+        value: 31
+        left: 110
+        right: 104
+        height: 2
+      - key: full.build.check.evidence
+        value: 44
+        left: 129
+        right: 130
+        height: 3
+      - key: full.build.plan
+        value: 40
+        left: 131
+        right: 106
+        height: 4
+      - key: full.design.document
+        value: 33
+        left: 132
+        right: 125
+        height: 5
+      - key: full.verify.run
+        value: 52
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 51
+        left: 122
+        right: 134
+        height: 2
+      - key: full.verify.check
+        value: 47
+        left: 121
+        right: 135
+        height: 3
+      - key: full.open.confirm
+        value: 37
+        left: 94
+        right: 136
+        height: 4
+      - key: full.design.document
+        value: 33
+        left: 132
+        right: 137
+        height: 5
+      - key: full.verify.check.evidence
+        value: 54
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 51
+        left: 139
+        right: 134
+        height: 2
+      - key: full.verify.check
+        value: 53
+        left: 121
+        right: 140
+        height: 3
+      - key: full.open.confirm
+        value: 37
+        left: 94
+        right: 141
+        height: 4
+      - key: full.design.document
+        value: 33
+        left: 132
+        right: 142
+        height: 5
+      - key: full.archive.confirm
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 56
+        left: 144
+        right: 128
+        height: 2
+      - key: full.build.check.evidence
+        value: 44
+        left: 145
+        right: 130
+        height: 3
+      - key: full.build.plan
+        value: 40
+        left: 146
+        right: 106
+        height: 4
+      - key: full.design.document
+        value: 33
+        left: 147
+        right: 142
+        height: 5
+      - key: full.verify.run
+        value: 58
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 57
+        left: 139
+        right: 149
+        height: 2
+      - key: full.verify.check
+        value: 53
+        left: 121
+        right: 150
+        height: 3
+      - key: full.open.confirm
+        value: 37
+        left: 94
+        right: 151
+        height: 4
+      - key: full.design.document
+        value: 33
+        left: 147
+        right: 152
+        height: 5
+      - key: full.verify.check.evidence
+        value: 60
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 57
+        left: 154
+        right: 149
+        height: 2
+      - key: full.verify.check
+        value: 59
+        left: 121
+        right: 155
+        height: 3
+      - key: full.open.confirm
+        value: 37
+        left: 94
+        right: 156
+        height: 4
+      - key: full.design.document
+        value: 33
+        left: 147
+        right: 157
+        height: 5
+      - key: full.archive.confirm
+        value: 61
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 62
+        left: 159
+        right: 128
+        height: 2
+      - key: full.build.check.evidence
+        value: 44
+        left: 160
+        right: 130
+        height: 3
+      - key: full.build.plan
+        value: 40
+        left: 161
+        right: 106
+        height: 4
+      - key: full.design.document
+        value: 33
+        left: 162
+        right: 157
+        height: 5
+      - key: full.archive.preflight
+        value: 63
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 61
+        left: null
+        right: 164
+        height: 2
+      - key: full.archive.prepare
+        value: 62
+        left: 165
+        right: 128
+        height: 3
+      - key: full.build.plan
+        value: 40
+        left: 130
+        right: 106
+        height: 3
+      - key: full.build.check.evidence
+        value: 44
+        left: 166
+        right: 167
+        height: 4
+      - key: full.design.document
+        value: 33
+        left: 168
+        right: 157
+        height: 5
+      - key: full.archive.confirm
+        value: 61
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 63
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 64
+        left: 170
+        right: 171
+        height: 2
+      - key: full.archive.prepare
+        value: 62
+        left: 172
+        right: 128
+        height: 3
+      - key: full.build.check.evidence
+        value: 44
+        left: 173
+        right: 167
+        height: 4
+      - key: full.design.document
+        value: 33
+        left: 174
+        right: 157
+        height: 5
+      - key: full.open
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 37
+        left: 176
+        right: 177
+        height: 2
+      - key: full.open.revalidate
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 38
+        left: null
+        right: 179
+        height: 2
+      - key: full.open.confirm
+        value: 37
+        left: 176
+        right: 180
+        height: 3
+      - key: full.design.confirm
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 35
+        left: 182
+        right: 183
+        height: 2
+      - key: full.open.confirm
+        value: 37
+        left: 184
+        right: 180
+        height: 3
+      - key: full.design.confirm
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 33
+        left: 186
+        right: 187
+        height: 2
+      - key: full.design.handoff
+        value: 35
+        left: 188
+        right: 183
+        height: 3
+      - key: full.open.confirm
+        value: 37
+        left: 189
+        right: 180
+        height: 4
+      - key: full.open.evidence
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 36
+        left: null
+        right: 191
+        height: 2
+      - key: full.design.handoff
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 38
+        left: 194
+        right: 195
+        height: 2
+      - key: full.open
+        value: 36
+        left: 193
+        right: 196
+        height: 3
+      - key: full.build.configure
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 34
+        left: 199
+        right: 200
+        height: 2
+      - key: full.design.confirm
+        value: 32
+        left: 198
+        right: 201
+        height: 3
+      - key: full.open
+        value: 36
+        left: 202
+        right: 196
+        height: 4
+      - key: full.archive.prepare
+        value: 50
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 43
+        left: 204
+        right: 205
+        height: 2
+      - key: full.build.confirm
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 40
+        left: null
+        right: 208
+        height: 2
+      - key: full.build.execute
+        value: 42
+        left: 207
+        right: 209
+        height: 3
+      - key: full.build.configure
+        value: 30
+        left: 206
+        right: 210
+        height: 4
+      - key: full.open.revalidate
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 38
+        left: 194
+        right: 212
+        height: 2
+      - key: full.verify.check.evidence
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 45
+        left: 214
+        right: 215
+        height: 2
+      - key: full.verify.check
+        value: 47
+        left: 213
+        right: 216
+        height: 3
+      - key: full.open
+        value: 36
+        left: 201
+        right: 217
+        height: 4
+      - key: full.design.confirm
+        value: 32
+        left: 211
+        right: 218
+        height: 5
+      - key: full.archive.confirm
+        value: 49
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 56
+        left: 220
+        right: null
+        height: 2
+      - key: full.build.check
+        value: 43
+        left: 221
+        right: 205
+        height: 3
+      - key: full.build.configure
+        value: 30
+        left: 222
+        right: 210
+        height: 4
+      - key: full.verify.check.evidence
+        value: 54
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 52
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 51
+        left: 224
+        right: 225
+        height: 2
+      - key: full.verify.check
+        value: 53
+        left: 213
+        right: 226
+        height: 3
+      - key: full.open
+        value: 36
+        left: 201
+        right: 227
+        height: 4
+      - key: full.design.confirm
+        value: 32
+        left: 223
+        right: 228
+        height: 5
+      - key: full.archive.confirm
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 62
+        left: 230
+        right: null
+        height: 2
+      - key: full.build.check
+        value: 43
+        left: 231
+        right: 205
+        height: 3
+      - key: full.build.configure
+        value: 30
+        left: 232
+        right: 210
+        height: 4
+      - key: full.verify.check.evidence
+        value: 60
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 58
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 57
+        left: 234
+        right: 235
+        height: 2
+      - key: full.verify.check
+        value: 59
+        left: 213
+        right: 236
+        height: 3
+      - key: full.open
+        value: 36
+        left: 201
+        right: 237
+        height: 4
+      - key: full.design.confirm
+        value: 32
+        left: 233
+        right: 238
+        height: 5
+      - key: full.open
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 33
+        left: 241
+        right: 242
+        height: 2
+      - key: full.open.confirm
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 38
+        left: 244
+        right: 245
+        height: 2
+      - key: full.open
+        value: 36
+        left: 243
+        right: 246
+        height: 3
+      - key: full.build.configure
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 31
+        left: 248
+        right: 249
+        height: 2
+      - key: full.design.document
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 34
+        left: 251
+        right: 252
+        height: 2
+      - key: full.design.confirm
+        value: 32
+        left: 250
+        right: 253
+        height: 3
+      - key: full.open
+        value: 36
+        left: 254
+        right: 246
+        height: 4
+      - key: full.build.check
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 30
+        left: 256
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 40
+        left: 258
+        right: 259
+        height: 2
+      - key: full.build.confirm
+        value: 31
+        left: 257
+        right: 260
+        height: 3
+      - key: full.open
+        value: 36
+        left: 253
+        right: 246
+        height: 3
+      - key: full.design.confirm
+        value: 32
+        left: 261
+        right: 262
+        height: 4
+      - key: full.build.check
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 44
+        left: 264
+        right: 265
+        height: 2
+      - key: full.build.confirm
+        value: 31
+        left: 266
+        right: 260
+        height: 3
+      - key: full.verify.run
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 39
+        left: null
+        right: 268
+        height: 2
+      - key: full.open.evidence
+        value: 38
+        left: 244
+        right: 269
+        height: 3
+      - key: full.open
+        value: 36
+        left: 253
+        right: 270
+        height: 4
+      - key: full.design.confirm
+        value: 32
+        left: 267
+        right: 271
+        height: 5
+      - key: full.open.revalidate
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 38
+        left: 244
+        right: 273
+        height: 2
+      - key: full.verify.report.evidence
+        value: 45
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 46
+        left: 275
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 47
+        left: 274
+        right: 276
+        height: 3
+      - key: full.open
+        value: 36
+        left: 253
+        right: 277
+        height: 4
+      - key: full.design.confirm
+        value: 32
+        left: 267
+        right: 278
+        height: 5
+      - key: full.archive.confirm
+        value: 49
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 50
+        left: 280
+        right: 281
+        height: 2
+      - key: full.build.check.evidence
+        value: 44
+        left: 282
+        right: 265
+        height: 3
+      - key: full.build.confirm
+        value: 31
+        left: 283
+        right: 260
+        height: 4
+      - key: full.verify.check.evidence
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 52
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 45
+        left: 285
+        right: 286
+        height: 2
+      - key: full.verify.check
+        value: 47
+        left: 274
+        right: 287
+        height: 3
+      - key: full.open
+        value: 36
+        left: 253
+        right: 288
+        height: 4
+      - key: full.design.confirm
+        value: 32
+        left: 284
+        right: 289
+        height: 5
+      - key: full.verify.report.evidence
+        value: 51
+        left: 285
+        right: 286
+        height: 2
+      - key: full.verify.check
+        value: 53
+        left: 274
+        right: 291
+        height: 3
+      - key: full.open
+        value: 36
+        left: 253
+        right: 292
+        height: 4
+      - key: full.design.confirm
+        value: 32
+        left: 284
+        right: 293
+        height: 5
+      - key: full.archive.confirm
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 56
+        left: 295
+        right: 281
+        height: 2
+      - key: full.build.check.evidence
+        value: 44
+        left: 296
+        right: 265
+        height: 3
+      - key: full.build.confirm
+        value: 31
+        left: 297
+        right: 260
+        height: 4
+      - key: full.verify.check.evidence
+        value: 54
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 58
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 51
+        left: 299
+        right: 300
+        height: 2
+      - key: full.verify.check
+        value: 53
+        left: 274
+        right: 301
+        height: 3
+      - key: full.open
+        value: 36
+        left: 253
+        right: 302
+        height: 4
+      - key: full.design.confirm
+        value: 32
+        left: 298
+        right: 303
+        height: 5
+      - key: full.verify.report.evidence
+        value: 57
+        left: 299
+        right: 300
+        height: 2
+      - key: full.verify.check
+        value: 59
+        left: 274
+        right: 305
+        height: 3
+      - key: full.open
+        value: 36
+        left: 253
+        right: 306
+        height: 4
+      - key: full.design.confirm
+        value: 32
+        left: 298
+        right: 307
+        height: 5
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 31
+      - 37
+      - 43
+      - 49
+      - 56
+      - 61
+      - 66
+      - 71
+      - 76
+      - 82
+      - 88
+      - 98
+      - 103
+      - 108
+      - 114
+      - 120
+      - 126
+      - 133
+      - 138
+      - 143
+      - 148
+      - 153
+      - 158
+      - 163
+      - 169
+      - 175
+      - 178
+      - 181
+      - 185
+      - 190
+      - 192
+      - 197
+      - 203
+      - 219
+      - 229
+      - 239
+      - 240
+      - 247
+      - 255
+      - 263
+      - 272
+      - 279
+      - 290
+      - 294
+      - 304
+      - 308
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "13"
+          - input
+          - outputs
+        map: 12
+      - path:
+          - actions
+          - "14"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actions
+          - "15"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actions
+          - "16"
+          - input
+          - outputs
+        map: 14
+      - path:
+          - actions
+          - "17"
+          - input
+          - outputs
+        map: 15
+      - path:
+          - actions
+          - "18"
+          - input
+          - outputs
+        map: 16
+      - path:
+          - actions
+          - "19"
+          - input
+          - outputs
+        map: 17
+      - path:
+          - actionContexts
+          - integrate-runtime-telemetry-measurements:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - integrate-runtime-telemetry-measurements:11
+          - results
+        map: 18
+      - path:
+          - actionContexts
+          - integrate-runtime-telemetry-measurements:13
+          - results
+        map: 19
+      - path:
+          - actionContexts
+          - integrate-runtime-telemetry-measurements:14
+          - results
+        map: 20
+      - path:
+          - actionContexts
+          - integrate-runtime-telemetry-measurements:16
+          - results
+        map: 21
+      - path:
+          - actionContexts
+          - integrate-runtime-telemetry-measurements:18
+          - results
+        map: 22
+      - path:
+          - actionContexts
+          - integrate-runtime-telemetry-measurements:20
+          - results
+        map: 23
+      - path:
+          - actionContexts
+          - integrate-runtime-telemetry-measurements:22
+          - results
+        map: 24
+      - path:
+          - actionContexts
+          - integrate-runtime-telemetry-measurements:24
+          - results
+        map: 25
+      - path:
+          - actionContexts
+          - integrate-runtime-telemetry-measurements:26
+          - results
+        map: 26
+      - path:
+          - actionContexts
+          - integrate-runtime-telemetry-measurements:28
+          - results
+        map: 27
+      - path:
+          - actionContexts
+          - integrate-runtime-telemetry-measurements:30
+          - results
+        map: 28
+      - path:
+          - actionContexts
+          - integrate-runtime-telemetry-measurements:32
+          - results
+        map: 29
+      - path:
+          - actionContexts
+          - integrate-runtime-telemetry-measurements:34
+          - results
+        map: 30
+      - path:
+          - actionContexts
+          - integrate-runtime-telemetry-measurements:35
+          - results
+        map: 31
+      - path:
+          - actionContexts
+          - integrate-runtime-telemetry-measurements:36
+          - results
+        map: 32
+      - path:
+          - actionContexts
+          - integrate-runtime-telemetry-measurements:4
+          - results
+        map: 33
+      - path:
+          - actionContexts
+          - integrate-runtime-telemetry-measurements:5
+          - results
+        map: 34
+      - path:
+          - actionContexts
+          - integrate-runtime-telemetry-measurements:7
+          - results
+        map: 35
+      - path:
+          - actionContexts
+          - integrate-runtime-telemetry-measurements:9
+          - results
+        map: 36
+      - path:
+          - outputs
+        map: 32
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 37
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 38
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 39
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 40
+      - path:
+          - waits
+          - "4"
+          - results
+        map: 41
+      - path:
+          - waits
+          - "5"
+          - results
+        map: 42
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 43
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 44
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 45
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 46
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 47
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 48
+      - path:
+          - evidenceWaits
+          - "6"
+          - results
+        map: 49
+      - path:
+          - evidenceWaits
+          - "7"
+          - results
+        map: 50
+      - path:
+          - evidenceWaits
+          - "8"
+          - results
+        map: 51
+      - path:
+          - evidenceWaits
+          - "9"
+          - results
+        map: 52
+  storageHash: 71f01edc917a188ed626994be600bed47d39b6ee173ddd8bb9d499f09e5e9781
+check_epoch: 10

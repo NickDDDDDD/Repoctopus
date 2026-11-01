@@ -40,6 +40,7 @@ export type TrajectoryEventType =
   | 'skill.delivered'
   | 'skill.consumed'
   | 'skill.consumption-rejected'
+  | 'skill.outcome-recorded'
   | 'tool.started'
   | 'tool.completed'
   | 'validator.completed'

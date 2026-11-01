@@ -42,6 +42,10 @@ export interface ObservationCorrelation {
   continuation?: ContinuationKind;
   skillName?: string;
   skillRole?: ObservationSkillRole;
+  ruleId?: string;
+  ruleDigest?: string;
+  evaluatorId?: string;
+  evaluatorVersion?: string;
   bindingId?: string;
   strategyId?: string;
   strategyRevision?: number;
@@ -88,7 +92,7 @@ const BUILD_ACTIONS = new Set<ObservationBuildAction>([
   'check',
 ]);
 const CONTINUATIONS = new Set<ContinuationKind>(['execute', 'ask', 'wait', 'reconcile', 'done']);
-const ATTRIBUTE_KEYS = [
+export const OBSERVATION_ATTRIBUTE_KEYS = [
   'result',
   'checkEpoch',
   'stateVersion',
@@ -125,7 +129,6 @@ const ATTRIBUTE_KEYS = [
   'warningCode',
   'droppedEnvelopes',
   'targetKind',
-  'reason',
   'proposalStatus',
   'specsStatus',
   'designStatus',
@@ -143,7 +146,32 @@ const ATTRIBUTE_KEYS = [
   'decisionStatus',
   'reasonClass',
   'buildEvent',
+  'skillCategory',
+  'ruleCategory',
+  'ruleApplicable',
+  'ruleExpected',
+  'ruleTriggered',
+  'ruleResult',
+  'workflowName',
+  'workflowVersion',
+  'workflowRunResult',
+  'workflowRunDurationMs',
+  'durationMs',
+  'correctionKind',
+  'deliveryState',
+  'reason',
 ] as const;
+
+const DESKTOP_ACTIVATION_REASONS = new Set([
+  'new-instance',
+  'existing-instance',
+  'target-unavailable',
+  'development-artifact-missing',
+  'protocol-handler-unavailable',
+  'launch-rejected',
+  'launch-timeout',
+  'platform-unsupported',
+]);
 
 function digest(value: unknown): `sha256:${string}` {
   return `sha256:${createHash('sha256').update(canonicalJson(value)).digest('hex')}`;
@@ -271,6 +299,15 @@ function correlation(event: TrajectoryEvent, context: ObservationContext): Obser
       ? role
       : undefined,
   );
+  assign('ruleId', id(event.data.ruleId));
+  assign(
+    'ruleDigest',
+    typeof event.data.ruleDigest === 'string' && DIGEST.test(event.data.ruleDigest)
+      ? event.data.ruleDigest
+      : undefined,
+  );
+  assign('evaluatorId', id(event.data.evaluatorId));
+  assign('evaluatorVersion', id(event.data.evaluatorVersion));
   assign('strategyId', id(event.data.strategyId) ?? id(strategy?.strategyId));
   assign('strategyRevision', integer(event.data.strategyRevision) ?? integer(strategy?.revision));
   assign('bindingId', id(event.data.bindingId) ?? id(binding?.bindingId));
@@ -319,9 +356,17 @@ function attributes(event: TrajectoryEvent, context: ObservationContext) {
   if (workflowVersion !== undefined) result.workflowVersion = workflowVersion;
   result.stateVersion = event.stateVersion;
   if (DIGEST.test(event.compositionDigest)) result.compositionDigest = event.compositionDigest;
-  for (const key of ATTRIBUTE_KEYS) {
+  for (const key of OBSERVATION_ATTRIBUTE_KEYS) {
+    if (key === 'reason') continue;
     const value = scalar(event.data[key]);
     if (value !== undefined) result[key] = value;
+  }
+  if (
+    event.type === 'desktop.activation' &&
+    typeof event.data.reason === 'string' &&
+    DESKTOP_ACTIVATION_REASONS.has(event.data.reason)
+  ) {
+    result.reason = event.data.reason;
   }
   const observationKind = scalar(event.data.observationKind);
   if (observationKind !== undefined) result.observationKind = observationKind;
@@ -472,6 +517,7 @@ export function createEvidenceObservationEnvelopes(
 export function createDeliveryObservationEnvelope(
   event: DeliveryEvent,
   context: ObservationContext = {},
+  state?: { status: string },
 ): ObservationEnvelope {
   const workspaceId = id(context.workspaceId);
   return canonicalEnvelope({
@@ -484,14 +530,17 @@ export function createDeliveryObservationEnvelope(
       ...(workspaceId ? { workspaceId } : {}),
       changeId: event.changeId,
     },
-    attributes: safeAttributes(event.data, [
-      'actionType',
-      'decision',
-      'mergedCount',
-      'mergeRequestCount',
-      'repositoryCount',
-      'result',
-    ]),
+    attributes: {
+      ...safeAttributes(event.data, [
+        'actionType',
+        'decision',
+        'mergedCount',
+        'mergeRequestCount',
+        'repositoryCount',
+        'result',
+      ]),
+      ...(scalar(state?.status) === undefined ? {} : { deliveryState: scalar(state?.status)! }),
+    },
   });
 }
 

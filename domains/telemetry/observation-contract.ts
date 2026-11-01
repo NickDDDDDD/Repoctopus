@@ -1,0 +1,1421 @@
+import {
+  OBSERVATION_ATTRIBUTE_KEYS,
+  type ObservationCorrelation,
+} from '../trajectory/observation.js';
+
+export type TelemetrySignalKind = 'resource' | 'span' | 'event' | 'metric';
+export type TelemetryScalarType = 'string' | 'integer' | 'number' | 'boolean';
+export type TelemetryCardinality = 'fixed' | 'low' | 'high';
+export type TelemetryPrivacy = 'public' | 'internal-id' | 'digest';
+
+export interface TelemetryAttributeDefinition {
+  name: string;
+  type: TelemetryScalarType;
+  required: boolean;
+  source: string;
+  cardinality: TelemetryCardinality;
+  privacy: TelemetryPrivacy;
+  values?: readonly string[];
+  description: string;
+}
+
+export interface TelemetrySignalDefinition {
+  kind: TelemetrySignalKind;
+  name: string;
+  unit: string | null;
+  attributes: readonly string[];
+  description: string;
+}
+
+export type MetricCoverageStatus = 'direct' | 'derived' | 'optional-evaluator' | 'out-of-scope';
+
+export interface MetricCoverageDefinition {
+  id: string;
+  module: string;
+  name: string;
+  status: MetricCoverageStatus;
+  authoritativeSource: string;
+  formula: string | null;
+  missingSemantics: 'unknown';
+  externalDependency: string | null;
+}
+
+function attribute(
+  name: string,
+  type: TelemetryScalarType,
+  source: string,
+  cardinality: TelemetryCardinality,
+  privacy: TelemetryPrivacy,
+  description: string,
+  options: { required?: boolean; values?: readonly string[] } = {},
+): TelemetryAttributeDefinition {
+  return {
+    name,
+    type,
+    required: options.required ?? false,
+    source,
+    cardinality,
+    privacy,
+    ...(options.values ? { values: options.values } : {}),
+    description,
+  };
+}
+
+export const OBSERVATION_CORRELATION_KEYS = [
+  'workspaceId',
+  'changeId',
+  'phase',
+  'buildAction',
+  'workId',
+  'workKind',
+  'packageId',
+  'taskId',
+  'taskRevision',
+  'attempt',
+  'hostId',
+  'validatorId',
+  'continuation',
+  'skillName',
+  'skillRole',
+  'ruleId',
+  'ruleDigest',
+  'evaluatorId',
+  'evaluatorVersion',
+  'bindingId',
+  'strategyId',
+  'strategyRevision',
+  'bindingRevision',
+  'slotId',
+  'skillOrder',
+  'replacedSkillName',
+  'skillCompositionDigest',
+  'decisionId',
+  'decisionKind',
+  'evidenceAttemptId',
+  'recovery',
+  'invocationId',
+  'parentWorkId',
+  'receiptId',
+  'artifactId',
+  'gateId',
+  'destinationId',
+] as const satisfies readonly (keyof ObservationCorrelation)[];
+
+function snakeCase(value: string): string {
+  return value.replace(/[A-Z]/gu, (character) => `_${character.toLowerCase()}`);
+}
+
+export function observationCorrelationOtlpName(key: string): string {
+  return `repoctopus.observation.correlation.${snakeCase(key)}`;
+}
+
+export function observationAttributeOtlpName(key: string): string {
+  return `repoctopus.observation.attribute.${snakeCase(key)}`;
+}
+
+const CORRELATION_NUMBERS = new Set<string>([
+  'attempt',
+  'strategyRevision',
+  'bindingRevision',
+  'skillOrder',
+]);
+const CORRELATION_DIGESTS = new Set<string>(['skillCompositionDigest', 'ruleDigest']);
+const CORRELATION_BOUNDED = new Set<string>([
+  'phase',
+  'buildAction',
+  'workKind',
+  'continuation',
+  'skillRole',
+  'decisionKind',
+  'recovery',
+]);
+const OBSERVATION_NUMBER_KEYS = new Set<string>([
+  'checkEpoch',
+  'stateVersion',
+  'planRevision',
+  'findingCount',
+  'artifactSize',
+  'revision',
+  'backlog',
+  'oldestAgeMs',
+  'droppedEnvelopes',
+  'infoCount',
+  'warningCount',
+  'errorCount',
+  'changedSkillCount',
+  'strategyRevision',
+  'bindingRevision',
+  'workflowRunDurationMs',
+  'durationMs',
+]);
+const OBSERVATION_BOOLEAN_KEYS = new Set<string>([
+  'redacted',
+  'valid',
+  'contractConflict',
+  'ruleApplicable',
+  'ruleExpected',
+  'ruleTriggered',
+]);
+const OBSERVATION_ENUMS: Readonly<Record<string, readonly string[]>> = {
+  correctionKind: ['changes-requested', 'outcome-rejection', 'task-reopen', 'repair-work'],
+  deliveryState: [
+    'development',
+    'verification_required',
+    'awaiting_approval',
+    'approved',
+    'publishing',
+    'partially_published',
+    'in_review',
+    'merged',
+    'rejected',
+    'repair_required',
+  ],
+  reason: [
+    'new-instance',
+    'existing-instance',
+    'target-unavailable',
+    'development-artifact-missing',
+    'protocol-handler-unavailable',
+    'launch-rejected',
+    'launch-timeout',
+    'platform-unsupported',
+  ],
+};
+
+export const TELEMETRY_ATTRIBUTES = [
+  attribute(
+    'repoctopus.observation.envelope',
+    'string',
+    'canonical-envelope',
+    'high',
+    'internal-id',
+    'Desktop 可逆消费使用的规范 envelope JSON',
+  ),
+  attribute(
+    'repoctopus.observation.schema_version',
+    'integer',
+    'canonical-envelope',
+    'fixed',
+    'public',
+    '规范观测 envelope schema 版本',
+    { required: true },
+  ),
+  attribute(
+    'repoctopus.observation.envelope_id',
+    'string',
+    'canonical-envelope',
+    'high',
+    'internal-id',
+    '稳定 envelope 身份',
+    { required: true },
+  ),
+  attribute(
+    'repoctopus.observation.digest',
+    'string',
+    'canonical-envelope',
+    'high',
+    'digest',
+    '规范 envelope 内容摘要',
+    { required: true },
+  ),
+  ...OBSERVATION_CORRELATION_KEYS.map((key) =>
+    attribute(
+      observationCorrelationOtlpName(key),
+      CORRELATION_NUMBERS.has(key) ? 'integer' : 'string',
+      'canonical-envelope.correlation',
+      CORRELATION_BOUNDED.has(key) ? 'low' : 'high',
+      CORRELATION_DIGESTS.has(key)
+        ? 'digest'
+        : CORRELATION_BOUNDED.has(key)
+          ? 'public'
+          : 'internal-id',
+      `规范观测关联字段 ${key}`,
+    ),
+  ),
+  ...OBSERVATION_ATTRIBUTE_KEYS.map((key) =>
+    attribute(
+      observationAttributeOtlpName(key),
+      OBSERVATION_BOOLEAN_KEYS.has(key)
+        ? 'boolean'
+        : OBSERVATION_NUMBER_KEYS.has(key)
+          ? 'integer'
+          : 'string',
+      'canonical-envelope.attributes',
+      OBSERVATION_NUMBER_KEYS.has(key) ? 'high' : 'low',
+      'public',
+      `规范观测允许列表字段 ${key}`,
+      OBSERVATION_ENUMS[key] ? { values: OBSERVATION_ENUMS[key] } : {},
+    ),
+  ),
+  attribute('service.name', 'string', 'shared-resource-factory', 'low', 'public', 'OTel 服务名'),
+  attribute('service.version', 'string', 'package', 'low', 'public', 'Repoctopus 版本'),
+  attribute(
+    'service.namespace',
+    'string',
+    'OTEL_RESOURCE_ATTRIBUTES',
+    'low',
+    'public',
+    '部署服务命名空间',
+  ),
+  attribute(
+    'deployment.environment.name',
+    'string',
+    'OTEL_RESOURCE_ATTRIBUTES',
+    'low',
+    'public',
+    '部署环境',
+  ),
+  attribute(
+    'repoctopus.product.name',
+    'string',
+    'shared-resource-factory',
+    'fixed',
+    'public',
+    '固定产品身份',
+    { required: true, values: ['repoctopus'] },
+  ),
+  attribute(
+    'repoctopus.telemetry.schema',
+    'string',
+    'observation-contract',
+    'fixed',
+    'public',
+    '公开遥测协议版本',
+    { required: true, values: ['1'] },
+  ),
+  attribute(
+    'repoctopus.project.id',
+    'string',
+    'project-snapshot',
+    'high',
+    'internal-id',
+    '项目身份',
+  ),
+  attribute('repoctopus.run.id', 'string', 'run-state', 'high', 'internal-id', '逻辑 Run 身份'),
+  attribute(
+    'repoctopus.change.id',
+    'string',
+    'change-lifecycle',
+    'high',
+    'internal-id',
+    'Change 身份',
+  ),
+  attribute(
+    'repoctopus.workflow.name',
+    'string',
+    'workflow-package',
+    'low',
+    'public',
+    '工作流名称',
+  ),
+  attribute(
+    'repoctopus.workflow.version',
+    'string',
+    'workflow-package',
+    'low',
+    'public',
+    '工作流版本',
+  ),
+  attribute(
+    'repoctopus.workflow.digest',
+    'string',
+    'workflow-package',
+    'high',
+    'digest',
+    '工作流摘要',
+  ),
+  attribute('repoctopus.composition.digest', 'string', 'composition', 'high', 'digest', '组合摘要'),
+  attribute('repoctopus.event.id', 'string', 'trajectory', 'high', 'internal-id', '稳定事件身份'),
+  attribute(
+    'repoctopus.event.sequence',
+    'integer',
+    'trajectory',
+    'high',
+    'public',
+    'Run 内事件序号',
+  ),
+  attribute('repoctopus.event.type', 'string', 'trajectory', 'low', 'public', '事件类型'),
+  attribute('repoctopus.event.result', 'string', 'trajectory', 'low', 'public', '事件结果'),
+  attribute(
+    'repoctopus.measurement.id',
+    'string',
+    'measurement-projection',
+    'high',
+    'internal-id',
+    '稳定测量事实身份',
+  ),
+  attribute('repoctopus.state.version', 'integer', 'run-state', 'high', 'public', '状态版本'),
+  attribute('repoctopus.stage.name', 'string', 'run-state', 'low', 'public', '当前工作流步骤'),
+  attribute(
+    'repoctopus.repository.count',
+    'integer',
+    'project-snapshot',
+    'low',
+    'public',
+    '仓库数量',
+  ),
+  attribute('repoctopus.action.type', 'string', 'trajectory', 'low', 'public', 'Action 类型'),
+  attribute('repoctopus.action.ref', 'string', 'trajectory', 'low', 'internal-id', 'Action 引用'),
+  attribute(
+    'repoctopus.action.duration_ms',
+    'number',
+    'trajectory',
+    'high',
+    'public',
+    'Action 耗时',
+  ),
+  attribute(
+    'repoctopus.action.retry_count',
+    'integer',
+    'run-state',
+    'low',
+    'public',
+    'Action 重试次数',
+  ),
+  attribute(
+    'repoctopus.action.receipt.id',
+    'string',
+    'action-receipt',
+    'high',
+    'internal-id',
+    'Action Receipt 身份',
+  ),
+  ...['actionId', 'recoveredTransition', 'repositoryCount', 'workflowName', 'workflowVersion'].map(
+    (name) =>
+      attribute(
+        `repoctopus.event.${name}`,
+        name === 'repositoryCount' ? 'integer' : 'string',
+        'trajectory',
+        name === 'repositoryCount' ? 'low' : 'high',
+        name === 'repositoryCount' ? 'public' : 'internal-id',
+        `允许列表事件字段 ${name}`,
+      ),
+  ),
+  attribute(
+    'repoctopus.execution.phase',
+    'string',
+    'trajectory',
+    'fixed',
+    'public',
+    '生命周期阶段',
+  ),
+  attribute('repoctopus.execution.work.kind', 'string', 'trajectory', 'low', 'public', 'Work 类别'),
+  attribute(
+    'repoctopus.execution.event.type',
+    'string',
+    'trajectory',
+    'low',
+    'public',
+    '执行事件类型',
+  ),
+  attribute('repoctopus.execution.result', 'string', 'trajectory', 'low', 'public', '执行结果'),
+  attribute(
+    'repoctopus.execution.continuation',
+    'string',
+    'runtime',
+    'fixed',
+    'public',
+    '续行类别',
+  ),
+  attribute(
+    'repoctopus.execution.workId',
+    'string',
+    'trajectory',
+    'high',
+    'internal-id',
+    'Work 身份',
+  ),
+  attribute(
+    'repoctopus.execution.attempt',
+    'integer',
+    'trajectory',
+    'high',
+    'public',
+    'Work 尝试次数',
+  ),
+  attribute(
+    'repoctopus.execution.invocationId',
+    'string',
+    'trajectory',
+    'high',
+    'internal-id',
+    'Host 调用身份',
+  ),
+  attribute(
+    'repoctopus.execution.packetDigest',
+    'string',
+    'work-packet',
+    'high',
+    'digest',
+    '执行包摘要',
+  ),
+  attribute(
+    'repoctopus.execution.validatorId',
+    'string',
+    'validator',
+    'low',
+    'internal-id',
+    'Validator 身份',
+  ),
+  ...[
+    'workKind',
+    'intentId',
+    'hostId',
+    'outcomeId',
+    'receiptId',
+    'operationKind',
+    'operationId',
+    'waitId',
+    'reconcileId',
+    'recovery',
+    'findingKind',
+  ].map((name) =>
+    attribute(
+      `repoctopus.execution.${name}`,
+      'string',
+      'trajectory',
+      name.endsWith('Kind') || name === 'recovery' ? 'low' : 'high',
+      name.endsWith('Kind') || name === 'recovery' ? 'public' : 'internal-id',
+      `受管执行字段 ${name}`,
+    ),
+  ),
+  ...['checkEpoch', 'layerCount', 'durationMs', 'findingCount'].map((name) =>
+    attribute(
+      `repoctopus.execution.${name}`,
+      name === 'durationMs' ? 'number' : 'integer',
+      'trajectory',
+      name === 'layerCount' || name === 'findingCount' ? 'low' : 'high',
+      'public',
+      `受管执行数值 ${name}`,
+    ),
+  ),
+  attribute(
+    'repoctopus.execution.contextDigest',
+    'string',
+    'work-packet',
+    'high',
+    'digest',
+    '执行上下文摘要',
+  ),
+  attribute(
+    'repoctopus.execution.skillRole',
+    'string',
+    'skill-layer',
+    'fixed',
+    'public',
+    '原始 Skill 角色',
+  ),
+  attribute(
+    'repoctopus.execution.skillCategory',
+    'string',
+    'skill-layer',
+    'fixed',
+    'public',
+    '原始 Skill 类别',
+  ),
+  attribute(
+    'repoctopus.execution.skillName',
+    'string',
+    'skill-layer',
+    'high',
+    'internal-id',
+    '精确 Skill 身份',
+  ),
+  attribute('repoctopus.skill.role', 'string', 'skill-layer', 'fixed', 'public', 'Skill 角色', {
+    values: ['action', 'augmentation'],
+  }),
+  attribute(
+    'repoctopus.skill.category',
+    'string',
+    'skill-layer',
+    'fixed',
+    'public',
+    'Skill 来源类别',
+    {
+      values: ['builtin', 'team', 'custom'],
+    },
+  ),
+  attribute(
+    'repoctopus.skill.result',
+    'string',
+    'measurement-projection',
+    'low',
+    'public',
+    'Skill 使用结果',
+    {
+      values: ['consumed', 'completed', 'error', 'corrected'],
+    },
+  ),
+  attribute(
+    'repoctopus.skill.correction.kind',
+    'string',
+    'measurement-projection',
+    'fixed',
+    'public',
+    '与 Skill 结果绑定的正式人工修正类别',
+    {
+      values: ['changes-requested', 'outcome-rejection', 'task-reopen', 'repair-work'],
+    },
+  ),
+  attribute(
+    'repoctopus.skill.id',
+    'string',
+    'skill-layer',
+    'high',
+    'internal-id',
+    '安全 Skill 身份',
+  ),
+  attribute(
+    'repoctopus.rule.category',
+    'string',
+    'rule-receipt',
+    'fixed',
+    'public',
+    'Rule 来源类别',
+    {
+      values: ['builtin', 'team', 'custom'],
+    },
+  ),
+  attribute('repoctopus.rule.result', 'string', 'rule-receipt', 'low', 'public', 'Rule 评估结果', {
+    values: ['expected', 'triggered', 'passed', 'violated', 'unknown'],
+  }),
+  attribute('repoctopus.rule.id', 'string', 'rule-receipt', 'high', 'internal-id', 'Rule 身份'),
+  attribute('repoctopus.rule.digest', 'string', 'rule-receipt', 'high', 'digest', 'Rule 摘要'),
+  attribute(
+    'repoctopus.rule.evaluator.id',
+    'string',
+    'rule-receipt',
+    'high',
+    'internal-id',
+    'Evaluator 身份',
+  ),
+  attribute(
+    'repoctopus.rule.evaluator.version',
+    'string',
+    'rule-receipt',
+    'low',
+    'public',
+    'Evaluator 版本',
+  ),
+  attribute(
+    'repoctopus.workflow.run.result',
+    'string',
+    'change-lifecycle',
+    'fixed',
+    'public',
+    'Run 结果',
+    {
+      values: ['started', 'completed', 'failed'],
+    },
+  ),
+  attribute(
+    'repoctopus.workflow.run.duration_ms',
+    'number',
+    'measurement-projection',
+    'high',
+    'public',
+    '逻辑 Run 的权威终态耗时',
+  ),
+  attribute(
+    'repoctopus.change.phase',
+    'string',
+    'change-lifecycle',
+    'fixed',
+    'public',
+    'Change 阶段',
+  ),
+  attribute(
+    'repoctopus.change.status',
+    'string',
+    'change-lifecycle',
+    'fixed',
+    'public',
+    'Change 状态',
+  ),
+  attribute(
+    'repoctopus.change.check_epoch',
+    'integer',
+    'change-lifecycle',
+    'high',
+    'public',
+    '检查纪元',
+  ),
+  attribute(
+    'repoctopus.change.check_epoch.before',
+    'integer',
+    'change-lifecycle',
+    'high',
+    'public',
+    '变更前检查纪元',
+  ),
+  attribute(
+    'repoctopus.change.phase.before',
+    'string',
+    'change-lifecycle',
+    'fixed',
+    'public',
+    '变更前阶段',
+  ),
+  attribute(
+    'repoctopus.change.status.before',
+    'string',
+    'change-lifecycle',
+    'fixed',
+    'public',
+    '变更前状态',
+  ),
+  attribute(
+    'repoctopus.change.transition.id',
+    'string',
+    'change-lifecycle',
+    'low',
+    'internal-id',
+    '生命周期转换身份',
+  ),
+  attribute(
+    'repoctopus.change.transition.revision',
+    'integer',
+    'change-lifecycle',
+    'high',
+    'public',
+    '生命周期转换修订',
+  ),
+  attribute(
+    'repoctopus.change.work.active',
+    'boolean',
+    'change-lifecycle',
+    'fixed',
+    'public',
+    '是否存在当前 Work',
+  ),
+  attribute(
+    'repoctopus.change.work.id',
+    'string',
+    'change-lifecycle',
+    'high',
+    'internal-id',
+    '当前 Work 身份',
+  ),
+  attribute(
+    'repoctopus.change.work.kind',
+    'string',
+    'change-lifecycle',
+    'low',
+    'public',
+    '当前 Work 类别',
+  ),
+  attribute(
+    'repoctopus.change.task.id',
+    'string',
+    'change-lifecycle',
+    'high',
+    'internal-id',
+    '当前任务身份',
+  ),
+  attribute(
+    'repoctopus.change.validator.id',
+    'string',
+    'change-lifecycle',
+    'low',
+    'internal-id',
+    '当前 Validator 身份',
+  ),
+  attribute(
+    'repoctopus.change.validator.version',
+    'string',
+    'change-lifecycle',
+    'low',
+    'public',
+    '当前 Validator 版本',
+  ),
+  attribute(
+    'repoctopus.change.validator.digest',
+    'string',
+    'change-lifecycle',
+    'high',
+    'digest',
+    '当前 Validator 摘要',
+  ),
+  attribute(
+    'repoctopus.change.wait.active',
+    'boolean',
+    'change-lifecycle',
+    'fixed',
+    'public',
+    '是否存在当前等待',
+  ),
+  attribute(
+    'repoctopus.change.wait.id',
+    'string',
+    'change-lifecycle',
+    'high',
+    'internal-id',
+    '当前等待身份',
+  ),
+  attribute(
+    'repoctopus.change.wait.kind',
+    'string',
+    'change-lifecycle',
+    'low',
+    'public',
+    '当前等待类别',
+  ),
+  attribute(
+    'repoctopus.change.wait.reason_category',
+    'string',
+    'change-lifecycle',
+    'low',
+    'public',
+    '有界等待原因类别',
+  ),
+  attribute(
+    'repoctopus.evidence.attempt.id',
+    'string',
+    'evidence',
+    'high',
+    'internal-id',
+    'Evidence 尝试身份',
+  ),
+  attribute(
+    'repoctopus.evidence.event.type',
+    'string',
+    'evidence',
+    'low',
+    'public',
+    'Evidence 事件类型',
+  ),
+  attribute(
+    'repoctopus.evidence.event.id',
+    'string',
+    'evidence',
+    'high',
+    'internal-id',
+    'Evidence 事件身份',
+  ),
+  attribute(
+    'repoctopus.evidence.event.sequence',
+    'integer',
+    'evidence',
+    'high',
+    'public',
+    'Evidence 事件序号',
+  ),
+  attribute(
+    'repoctopus.evidence.profile.id',
+    'string',
+    'evidence',
+    'low',
+    'internal-id',
+    'Evidence Profile 身份',
+  ),
+  attribute(
+    'repoctopus.evidence.adapter',
+    'string',
+    'evidence',
+    'low',
+    'public',
+    'Evidence Adapter',
+  ),
+  attribute('repoctopus.evidence.status', 'string', 'evidence', 'low', 'public', 'Evidence 状态'),
+  ...[
+    'artifactDigest',
+    'artifactType',
+    'bundleId',
+    'freshness',
+    'gateStatus',
+    'inputFingerprint',
+    'mediaType',
+    'nodeId',
+    'outcome',
+    'profileId',
+    'receiptId',
+    'sourceReceiptId',
+    'trust',
+  ].map((name) =>
+    attribute(
+      `repoctopus.evidence.${name}`,
+      'string',
+      'evidence',
+      ['artifactType', 'freshness', 'gateStatus', 'mediaType', 'outcome', 'trust'].includes(name)
+        ? 'low'
+        : 'high',
+      name.endsWith('Digest') || name === 'inputFingerprint' ? 'digest' : 'internal-id',
+      `Evidence 字段 ${name}`,
+    ),
+  ),
+  attribute(
+    'repoctopus.evidence.artifactSize',
+    'number',
+    'evidence',
+    'high',
+    'public',
+    'Evidence Artifact 大小',
+  ),
+  attribute(
+    'repoctopus.evidence.durationMs',
+    'number',
+    'evidence',
+    'high',
+    'public',
+    'Evidence 耗时',
+  ),
+  attribute(
+    'repoctopus.evidence.redacted',
+    'boolean',
+    'evidence',
+    'fixed',
+    'public',
+    'Evidence 是否脱敏',
+  ),
+  attribute(
+    'repoctopus.evidence.bundle.id',
+    'string',
+    'evidence-gate',
+    'high',
+    'internal-id',
+    'Evidence Bundle 身份',
+  ),
+  attribute(
+    'repoctopus.evidence.gate.status',
+    'string',
+    'evidence-gate',
+    'low',
+    'public',
+    'Evidence Gate 状态',
+  ),
+  attribute(
+    'repoctopus.lifecycle.type',
+    'string',
+    'lifecycle',
+    'fixed',
+    'public',
+    'App 生命周期类型',
+  ),
+  attribute(
+    'repoctopus.lifecycle.phase',
+    'string',
+    'lifecycle',
+    'fixed',
+    'public',
+    'App 生命周期阶段',
+  ),
+  attribute(
+    'repoctopus.lifecycle.result',
+    'string',
+    'lifecycle',
+    'fixed',
+    'public',
+    'App 生命周期结果',
+  ),
+  attribute('repoctopus.boot.id', 'string', 'lifecycle', 'high', 'internal-id', '应用启动身份'),
+  attribute('repoctopus.plugin.id', 'string', 'lifecycle', 'low', 'internal-id', '插件身份'),
+  attribute('repoctopus.service.name', 'string', 'lifecycle', 'low', 'public', '生命周期服务名'),
+  attribute(
+    'repoctopus.operation.remaining',
+    'integer',
+    'lifecycle',
+    'low',
+    'public',
+    '未完成操作数',
+  ),
+  attribute(
+    'repoctopus.operation.recoverability',
+    'string',
+    'lifecycle',
+    'low',
+    'public',
+    '操作恢复类别',
+  ),
+  attribute(
+    'repoctopus.delivery.event.type',
+    'string',
+    'delivery',
+    'fixed',
+    'public',
+    'Delivery 事件类型',
+  ),
+  attribute('repoctopus.delivery.state', 'string', 'delivery', 'fixed', 'public', 'Delivery 状态'),
+  attribute(
+    'repoctopus.delivery.change.id',
+    'string',
+    'delivery',
+    'high',
+    'internal-id',
+    'Delivery Change 身份',
+  ),
+  attribute(
+    'repoctopus.delivery.event.id',
+    'string',
+    'delivery',
+    'high',
+    'internal-id',
+    'Delivery 事件身份',
+  ),
+  attribute(
+    'repoctopus.delivery.state.version',
+    'integer',
+    'delivery',
+    'high',
+    'public',
+    'Delivery 状态版本',
+  ),
+  attribute(
+    'repoctopus.delivery.repository.count',
+    'integer',
+    'delivery',
+    'low',
+    'public',
+    'Delivery 仓库数量',
+  ),
+  ...['actionId', 'actionType', 'decision', 'result', 'snapshotDigest'].map((name) =>
+    attribute(
+      `repoctopus.delivery.${name}`,
+      'string',
+      'delivery',
+      ['actionType', 'decision', 'result'].includes(name) ? 'low' : 'high',
+      name === 'snapshotDigest' ? 'digest' : 'internal-id',
+      `Delivery 字段 ${name}`,
+    ),
+  ),
+  ...['mergedCount', 'mergeRequestCount', 'repositoryCount'].map((name) =>
+    attribute(
+      `repoctopus.delivery.${name}`,
+      'integer',
+      'delivery',
+      'low',
+      'public',
+      `Delivery 计数 ${name}`,
+    ),
+  ),
+] as const satisfies readonly TelemetryAttributeDefinition[];
+
+const COMMON_RUN_ATTRIBUTES = [
+  'repoctopus.run.id',
+  'repoctopus.event.id',
+  'repoctopus.event.sequence',
+  'repoctopus.event.type',
+] as const;
+
+export const TELEMETRY_SIGNALS = [
+  {
+    kind: 'metric',
+    name: 'repoctopus.observation',
+    unit: '{event}',
+    attributes: [
+      'repoctopus.event.type',
+      'repoctopus.execution.phase',
+      'repoctopus.execution.work.kind',
+      'repoctopus.skill.role',
+      'repoctopus.observation.attribute.result',
+      'repoctopus.observation.attribute.status',
+      'repoctopus.observation.attribute.finding_kind',
+    ],
+    description: 'Canonical observation envelope count',
+  },
+  {
+    kind: 'resource',
+    name: 'repoctopus.resource',
+    unit: null,
+    attributes: [
+      'service.name',
+      'service.version',
+      'deployment.environment.name',
+      'repoctopus.product.name',
+      'repoctopus.telemetry.schema',
+    ],
+    description: '全部 Repoctopus OTLP 信号共享的 Resource',
+  },
+  {
+    kind: 'span',
+    name: 'repoctopus.<observation-event-type>',
+    unit: null,
+    attributes: COMMON_RUN_ATTRIBUTES,
+    description: '每个 canonical observation 对应的可下钻 Span',
+  },
+  {
+    kind: 'event',
+    name: 'repoctopus.<trajectory-event-type>',
+    unit: null,
+    attributes: COMMON_RUN_ATTRIBUTES,
+    description: '允许列表中的 Runtime trajectory 事件',
+  },
+  {
+    kind: 'event',
+    name: 'repoctopus.change.*',
+    unit: null,
+    attributes: [
+      'repoctopus.run.id',
+      'repoctopus.observation.correlation.change_id',
+      'repoctopus.observation.correlation.phase',
+      'repoctopus.observation.attribute.to_status',
+    ],
+    description: 'Change phase/status/work/wait 事件',
+  },
+  {
+    kind: 'event',
+    name: 'repoctopus.evidence.*',
+    unit: null,
+    attributes: ['repoctopus.run.id', 'repoctopus.observation.correlation.evidence_attempt_id'],
+    description: 'Evidence 事件',
+  },
+  {
+    kind: 'event',
+    name: 'repoctopus.application.*',
+    unit: null,
+    attributes: ['repoctopus.run.id', 'repoctopus.observation.attribute.lifecycle'],
+    description: '应用与插件生命周期事件',
+  },
+  {
+    kind: 'event',
+    name: 'repoctopus.delivery.*',
+    unit: null,
+    attributes: ['repoctopus.event.type', 'repoctopus.observation.attribute.delivery_state'],
+    description: 'Delivery 事件',
+  },
+  {
+    kind: 'metric',
+    name: 'repoctopus.workflow.events',
+    unit: '{event}',
+    attributes: ['repoctopus.event.type', 'repoctopus.workflow.name'],
+    description: '工作流事件数',
+  },
+  {
+    kind: 'metric',
+    name: 'repoctopus.workflow.step.duration',
+    unit: 'ms',
+    attributes: ['repoctopus.workflow.name', 'repoctopus.event.result'],
+    description: '工作流步骤耗时',
+  },
+  {
+    kind: 'metric',
+    name: 'repoctopus.work.execution.events',
+    unit: '{event}',
+    attributes: [
+      'repoctopus.execution.event.type',
+      'repoctopus.execution.phase',
+      'repoctopus.execution.work.kind',
+      'repoctopus.execution.result',
+      'repoctopus.execution.continuation',
+    ],
+    description: '受管执行事件数',
+  },
+  {
+    kind: 'metric',
+    name: 'repoctopus.work.execution.duration',
+    unit: 'ms',
+    attributes: [
+      'repoctopus.execution.event.type',
+      'repoctopus.execution.phase',
+      'repoctopus.execution.work.kind',
+      'repoctopus.execution.result',
+    ],
+    description: '受管执行耗时',
+  },
+  {
+    kind: 'metric',
+    name: 'repoctopus.evidence.events',
+    unit: '{event}',
+    attributes: ['repoctopus.evidence.event.type'],
+    description: 'Evidence 事件数',
+  },
+  {
+    kind: 'metric',
+    name: 'repoctopus.evidence.node.duration',
+    unit: 'ms',
+    attributes: ['repoctopus.evidence.adapter', 'repoctopus.evidence.status'],
+    description: 'Evidence 节点耗时',
+  },
+  {
+    kind: 'metric',
+    name: 'repoctopus.lifecycle.events',
+    unit: '{event}',
+    attributes: [
+      'repoctopus.lifecycle.type',
+      'repoctopus.lifecycle.phase',
+      'repoctopus.lifecycle.result',
+    ],
+    description: 'App 生命周期事件数',
+  },
+  {
+    kind: 'metric',
+    name: 'repoctopus.delivery.events',
+    unit: '{event}',
+    attributes: ['repoctopus.delivery.event.type', 'repoctopus.delivery.state'],
+    description: 'Delivery 事件数',
+  },
+  {
+    kind: 'metric',
+    name: 'repoctopus.skill.usage',
+    unit: '{event}',
+    attributes: [
+      'repoctopus.skill.role',
+      'repoctopus.skill.category',
+      'repoctopus.skill.result',
+      'repoctopus.skill.correction.kind',
+    ],
+    description: 'Skill consumed 与关联 Work 结果计数',
+  },
+  {
+    kind: 'metric',
+    name: 'repoctopus.rule.evaluation',
+    unit: '{event}',
+    attributes: ['repoctopus.rule.category', 'repoctopus.rule.result'],
+    description: '机器可验证 Rule evaluation 计数',
+  },
+  {
+    kind: 'metric',
+    name: 'repoctopus.workflow.run',
+    unit: '{run}',
+    attributes: [
+      'repoctopus.workflow.name',
+      'repoctopus.workflow.version',
+      'repoctopus.workflow.run.result',
+    ],
+    description: '逻辑工作流 Run 计数',
+  },
+  {
+    kind: 'metric',
+    name: 'repoctopus.workflow.run.duration',
+    unit: 'ms',
+    attributes: [
+      'repoctopus.workflow.name',
+      'repoctopus.workflow.version',
+      'repoctopus.workflow.run.result',
+    ],
+    description: '完成或失败 Run 的权威周期',
+  },
+] as const satisfies readonly TelemetrySignalDefinition[];
+
+function coverage(
+  input: Omit<MetricCoverageDefinition, 'missingSemantics'>,
+): MetricCoverageDefinition {
+  return { ...input, missingSemantics: 'unknown' };
+}
+
+export const METRIC_COVERAGE = [
+  coverage({
+    id: 'context-relevance',
+    module: '上下文工程',
+    name: '上下文相关性评分',
+    status: 'out-of-scope',
+    authoritativeSource: '外部人工或自动评测集',
+    formula: null,
+    externalDependency: '带评分标准的抽样评测系统',
+  }),
+  coverage({
+    id: 'retrieval-hit-5',
+    module: '上下文工程',
+    name: '检索命中率 Hit@5',
+    status: 'out-of-scope',
+    authoritativeSource: '检索结果与黄金答案',
+    formula: null,
+    externalDependency: 'RAG 检索日志和黄金集',
+  }),
+  coverage({
+    id: 'retrieval-recall',
+    module: '知识库建设',
+    name: '检索召回率 Recall@5/10',
+    status: 'out-of-scope',
+    authoritativeSource: '检索结果与黄金答案',
+    formula: null,
+    externalDependency: 'RAG 检索日志和黄金集',
+  }),
+  coverage({
+    id: 'retrieval-precision',
+    module: '知识库建设',
+    name: '检索精准率 Precision@5',
+    status: 'out-of-scope',
+    authoritativeSource: '逐文档相关性标签',
+    formula: null,
+    externalDependency: 'RAG 相关性评测集',
+  }),
+  coverage({
+    id: 'answer-accuracy',
+    module: '知识库建设',
+    name: '答案准确率',
+    status: 'out-of-scope',
+    authoritativeSource: '答案正确性评测',
+    formula: null,
+    externalDependency: '人工或自动答案评测系统',
+  }),
+  coverage({
+    id: 'hallucination-rate',
+    module: '知识库建设',
+    name: '幻觉率',
+    status: 'out-of-scope',
+    authoritativeSource: '回答依据与事实核验',
+    formula: null,
+    externalDependency: '引用和事实核验系统',
+  }),
+  coverage({
+    id: 'knowledge-resolution-rate',
+    module: '知识库建设',
+    name: '知识问题解决率',
+    status: 'out-of-scope',
+    authoritativeSource: '用户解决状态',
+    formula: null,
+    externalDependency: '知识问答反馈系统',
+  }),
+  coverage({
+    id: 'skill-completion-rate',
+    module: 'Skills管理',
+    name: 'Skill 任务完成率',
+    status: 'derived',
+    authoritativeSource: 'Skill consumed receipt + 同一 Work accepted outcome',
+    formula: 'completed / consumed',
+    externalDependency: null,
+  }),
+  coverage({
+    id: 'human-correction-rate',
+    module: 'Skills管理',
+    name: '人工修正率',
+    status: 'derived',
+    authoritativeSource: 'Skill consumed receipt + 同一 Work 正式 correction fact',
+    formula: 'corrected / consumed',
+    externalDependency: null,
+  }),
+  coverage({
+    id: 'skill-error-rate',
+    module: 'Skills管理',
+    name: 'Skill 错误率',
+    status: 'derived',
+    authoritativeSource: 'Skill consumed receipt + 同一 Work failed/rejected outcome',
+    formula: 'error / consumed',
+    externalDependency: null,
+  }),
+  coverage({
+    id: 'skill-reuse-rate',
+    module: 'Skills管理',
+    name: 'Skill 复用率',
+    status: 'derived',
+    authoritativeSource: '按安全 Skill identity 去重的 consumed receipt',
+    formula: 'skills_with_count_gt_1 / consumed_skills',
+    externalDependency: null,
+  }),
+  coverage({
+    id: 'rule-hit-rate',
+    module: 'Rules管理',
+    name: '规则命中率',
+    status: 'optional-evaluator',
+    authoritativeSource: 'Rule applicability + Evaluator receipt',
+    formula: 'triggered / expected',
+    externalDependency: null,
+  }),
+  coverage({
+    id: 'rule-violation-rate',
+    module: 'Rules管理',
+    name: '违规生成率',
+    status: 'optional-evaluator',
+    authoritativeSource: 'Rule applicability + Evaluator receipt',
+    formula: 'violated / evaluated',
+    externalDependency: null,
+  }),
+  coverage({
+    id: 'rule-update-frequency',
+    module: 'Rules管理',
+    name: '规则更新频率',
+    status: 'out-of-scope',
+    authoritativeSource: '规则编辑审计记录',
+    formula: null,
+    externalDependency: '规则注册表的新增修改下线审计',
+  }),
+  coverage({
+    id: 'workflow-failure-rate',
+    module: '工作流编排',
+    name: '工作流失败率',
+    status: 'derived',
+    authoritativeSource: '唯一逻辑 Run 终态',
+    formula: 'failed_runs / terminal_runs',
+    externalDependency: null,
+  }),
+  coverage({
+    id: 'workflow-reuse-count',
+    module: '工作流编排',
+    name: '流程复用次数',
+    status: 'direct',
+    authoritativeSource: '按 workflow identity 去重的 Run started fact',
+    formula: 'run_count by workflow and window',
+    externalDependency: null,
+  }),
+  coverage({
+    id: 'completion-adoption-rate',
+    module: '采纳率',
+    name: '补全采纳率',
+    status: 'out-of-scope',
+    authoritativeSource: 'IDE 推荐与采纳事件',
+    formula: null,
+    externalDependency: 'IDE 补全遥测',
+  }),
+  coverage({
+    id: 'ai-code-rate',
+    module: '采纳率',
+    name: 'AI 出码率',
+    status: 'out-of-scope',
+    authoritativeSource: '代码归因与最终保留行',
+    formula: null,
+    externalDependency: '代码归因系统',
+  }),
+  coverage({
+    id: 'active-user-ratio',
+    module: '采纳率',
+    name: '活跃用户占比',
+    status: 'out-of-scope',
+    authoritativeSource: '团队名册与身份化使用记录',
+    formula: null,
+    externalDependency: '身份和人员目录系统',
+  }),
+  coverage({
+    id: 'training-coverage',
+    module: '团队培训',
+    name: '培训覆盖率',
+    status: 'out-of-scope',
+    authoritativeSource: '应参训人与培训完成记录',
+    formula: null,
+    externalDependency: '培训管理系统',
+  }),
+  coverage({
+    id: 'certification-pass-rate',
+    module: '团队培训',
+    name: '认证通过率',
+    status: 'out-of-scope',
+    authoritativeSource: '认证考试记录',
+    formula: null,
+    externalDependency: '认证系统',
+  }),
+  coverage({
+    id: 'efficiency-improvement-rate',
+    module: '团队培训',
+    name: '效率提升率',
+    status: 'derived',
+    authoritativeSource: '相同 workflow/version 的权威完成周期',
+    formula: '(baseline_duration - current_duration) / baseline_duration',
+    externalDependency: null,
+  }),
+] as const satisfies readonly MetricCoverageDefinition[];
+
+export function validateObservationContract(): string[] {
+  const issues: string[] = [];
+  const attributeNames = new Set<string>();
+  for (const item of TELEMETRY_ATTRIBUTES) {
+    if (attributeNames.has(item.name)) issues.push(`duplicate attribute: ${item.name}`);
+    attributeNames.add(item.name);
+  }
+  const signalNames = new Set<string>();
+  for (const item of TELEMETRY_SIGNALS) {
+    const identity = `${item.kind}:${item.name}`;
+    if (signalNames.has(identity)) issues.push(`duplicate signal: ${identity}`);
+    signalNames.add(identity);
+    for (const name of item.attributes) {
+      if (!attributeNames.has(name)) issues.push(`unknown attribute ${name} on ${identity}`);
+    }
+  }
+  const metricIds = new Set<string>();
+  for (const item of METRIC_COVERAGE) {
+    if (metricIds.has(item.id)) issues.push(`duplicate metric coverage: ${item.id}`);
+    metricIds.add(item.id);
+    if (item.status === 'out-of-scope' && !item.externalDependency) {
+      issues.push(`out-of-scope metric has no external dependency: ${item.id}`);
+    }
+  }
+  return issues;
+}

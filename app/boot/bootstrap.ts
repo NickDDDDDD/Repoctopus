@@ -4,7 +4,6 @@ import { createRepoctopusBuiltinCatalog } from '../../plugins/builtin-catalog.js
 import { loadProjectConfig } from '../../platform/project-configuration/file-config.js';
 import { mergePluginCatalogs } from './descriptor.js';
 import { admitTeamPlugins, importTeamPlugins } from './team-plugins.js';
-import { lifecycleTelemetryFromEnvironment } from '../../platform/telemetry/opentelemetry/exporter.js';
 import { compileProjectComposition } from './project-composition.js';
 
 export async function bootBootstrapComposition(productRoot: string): Promise<RunningApp> {
@@ -22,11 +21,16 @@ export async function bootBootstrapComposition(productRoot: string): Promise<Run
         { id: 'browser-maintenance' },
         { id: 'maintenance-command', config: { productRoot } },
       ],
-      requiredServices: ['browserMaintenance', 'commandRouter', 'project', 'projectOnboarding'],
+      requiredServices: [
+        'browserMaintenance',
+        'commandRouter',
+        'project',
+        'projectOnboarding',
+      ],
     },
     catalog,
   );
-  return bootApp({ composition, catalog, lifecycleTelemetry: lifecycleTelemetryFromEnvironment() });
+  return bootApp({ composition, catalog });
 }
 
 export async function bootDesktopComposition(productRoot: string): Promise<RunningApp> {
@@ -41,11 +45,15 @@ export async function bootDesktopComposition(productRoot: string): Promise<Runni
         { id: 'desktop-receiver-service' },
         { id: 'desktop-application' },
       ],
-      requiredServices: ['desktopApplication', 'desktopProjection', 'desktopReceiver'],
+      requiredServices: [
+        'desktopApplication',
+        'desktopProjection',
+        'desktopReceiver',
+      ],
     },
     catalog,
   );
-  return bootApp({ composition, catalog, lifecycleTelemetry: lifecycleTelemetryFromEnvironment() });
+  return bootApp({ composition, catalog });
 }
 
 export async function bootProjectComposition(
@@ -57,5 +65,5 @@ export async function bootProjectComposition(
   const admitted = await admitTeamPlugins(workspaceRoot, config.shared.composition?.plugins ?? []);
   const catalog = mergePluginCatalogs(builtinCatalog, await importTeamPlugins(admitted));
   const composition = compileProjectComposition(productRoot, workspaceRoot, config, catalog);
-  return bootApp({ composition, catalog, lifecycleTelemetry: lifecycleTelemetryFromEnvironment() });
+  return bootApp({ composition, catalog });
 }

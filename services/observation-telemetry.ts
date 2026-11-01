@@ -16,43 +16,43 @@ import {
 } from '../domains/trajectory/observation.js';
 import type { ObservationDelivery, ObservationDestination } from './observation-delivery.js';
 import type { LifecycleTelemetryEvent, LifecycleTelemetryPort } from './lifecycle-diagnostics.js';
-
-function headers(value: string | undefined): Readonly<Record<string, string>> | undefined {
-  if (!value?.trim()) return undefined;
-  const result: Record<string, string> = {};
-  for (const entry of value.split(',')) {
-    const separator = entry.indexOf('=');
-    if (separator < 1) continue;
-    const key = entry.slice(0, separator).trim();
-    const headerValue = entry.slice(separator + 1).trim();
-    if (key && headerValue && !/[\r\n]/u.test(`${key}${headerValue}`)) result[key] = headerValue;
-  }
-  return Object.keys(result).length > 0 ? result : undefined;
-}
+import {
+  createRepoctopusResource,
+  resolveOtlpDeployment,
+} from '../platform/telemetry/opentelemetry/config.js';
 
 /** Transport-only destination configuration. Domain mapping is complete before this boundary. */
 export function observationDestinationsFromEnvironment(
   environment: NodeJS.ProcessEnv,
 ): readonly ObservationDestination[] {
   const destinations: ObservationDestination[] = [];
+  const deployment = resolveOtlpDeployment(environment);
   const remote = environment.OTEL_EXPORTER_OTLP_ENDPOINT?.trim();
   const signalEndpoints = {
-    trace: environment.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT?.trim(),
-    log: environment.OTEL_EXPORTER_OTLP_LOGS_ENDPOINT?.trim(),
-    metric: environment.OTEL_EXPORTER_OTLP_METRICS_ENDPOINT?.trim(),
+    ...(deployment.traces.url ? { trace: deployment.traces.url } : {}),
+    ...(deployment.logs.url ? { log: deployment.logs.url } : {}),
+    ...(deployment.metrics.url ? { metric: deployment.metrics.url } : {}),
   };
-  const configuredSignalEndpoints = Object.fromEntries(
-    Object.entries(signalEndpoints).filter((entry): entry is [string, string] => Boolean(entry[1])),
-  ) as Partial<Record<'trace' | 'log' | 'metric', string>>;
-  if (remote || Object.keys(configuredSignalEndpoints).length > 0) {
-    const remoteHeaders = headers(environment.OTEL_EXPORTER_OTLP_HEADERS);
+  if (deployment.enabled) {
+    const resource = createRepoctopusResource('repoctopus-runtime', '0.1.0', environment);
     destinations.push({
       id: 'remote',
       ...(remote ? { endpoint: remote } : {}),
-      ...(Object.keys(configuredSignalEndpoints).length > 0
-        ? { signalEndpoints: configuredSignalEndpoints }
-        : {}),
-      ...(remoteHeaders ? { headers: remoteHeaders } : {}),
+      ...(Object.keys(signalEndpoints).length > 0 ? { signalEndpoints } : {}),
+      signalHeaders: {
+        trace: deployment.traces.headers,
+        log: deployment.logs.headers,
+        metric: deployment.metrics.headers,
+      },
+      signalTimeouts: {
+        trace: deployment.traces.timeoutMillis,
+        log: deployment.logs.timeoutMillis,
+        metric: deployment.metrics.timeoutMillis,
+      },
+      timeoutMillis: deployment.traces.timeoutMillis,
+      resourceAttributes: resource.attributes as Readonly<
+        Record<string, string | number | boolean>
+      >,
     });
   }
   const desktop = environment.REPOCTOPUS_DESKTOP_OTLP_ENDPOINT?.trim();
@@ -61,6 +61,9 @@ export function observationDestinationsFromEnvironment(
     destinations.push({
       id: 'desktop',
       endpoint: desktop,
+      timeoutMillis: 5_000,
+      resourceAttributes: createRepoctopusResource('repoctopus-runtime', '0.1.0', environment)
+        .attributes as Readonly<Record<string, string | number | boolean>>,
       ...(token ? { headers: { authorization: `Bearer ${token}` } } : {}),
     });
   }
@@ -135,7 +138,7 @@ export class DeliveryObservationTelemetry
 {
   async export(state: DeliveryState, event: DeliveryEvent): Promise<void> {
     await this.delivery.append([
-      createDeliveryObservationEnvelope(event, { changeId: state.changeId }),
+      createDeliveryObservationEnvelope(event, { changeId: state.changeId }, state),
     ]);
     await this.deliver();
   }
