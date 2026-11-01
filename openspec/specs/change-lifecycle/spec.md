@@ -560,12 +560,21 @@ Repoctopus MUST 在执行 `specification.close` 或 publication 副作用前比�
 
 ### Requirement: 规划授权失效必须原子恢复 Design checkpoint
 
-当 Build、Verify 或尚未发生不可逆副作用的 Archive 观察到当前 Specification Provider 的规划语义或 trusted Design approval 不再授权 lifecycle 的 planning identity 时，Runtime MUST 通过带 `semantic | approval-authority` 分类的受保护 transition 原子回到 Design，并在同一次 Run 提交中设置新的 `specification.plan` Work、递增 `checkEpoch`、退役不匹配的 execution checkpoint，且按依赖关系保留或失效 Tasks、Build Configuration、Plan、Package completion、Verification、Archive 与 Closure 输入。Runtime MUST NOT 将 composition、执行进度或仅 publication provenance 的变化误分类为 planning invalidation，也不得留下无 current Work 的 Design 中间态、复用无效 approval、创建第二个 Run 或要求手改 Store。
+当 Build、Verify 或尚未发生不可逆副作用的 Archive 观察到当前 Specification Provider 的规划语义或 trusted Design approval 不再授权 lifecycle 的 planning identity 时，Runtime MUST 通过带 `semantic | approval-authority` 分类的受保护 transition 原子回到 Design。Runtime MUST 在同一次 Run 提交中设置新的 `specification.plan` Work、递增 `checkEpoch`、退役不匹配的 execution checkpoint，并按依赖关系保留或失效 Tasks、Build Configuration、Plan、Package completion、Verification、Archive 与 Closure 输入。
 
 #### Scenario: Verify 收尾提交改变规划语义
 
 - **WHEN** Change 已进入 Archive，但 Verify 收尾提交改变 Proposal、Design、Delta Specs、Tasks 语义或 Change metadata
 - **THEN** 下一个受保护 Runtime pull 在任何关闭或发布副作用前一次提交 Design phase、新 `specification.plan` Work、新 epoch 与精确下游失效事实
+
+### Requirement: 非规划权威变化不得触发 Design 恢复
+
+Runtime MUST NOT 将 composition、执行进度或仅 publication provenance 的变化误分类为 planning invalidation。规划授权失效的恢复不得留下无 current Work 的 Design 中间态、复用无效 approval、创建第二个 Run或要求手改 Store。
+
+#### Scenario: Publication provenance 单独变化
+
+- **WHEN** 当前规格语义和 trusted Design approval 仍有效，但 source commit 或其他 publication provenance 发生变化
+- **THEN** Runtime 保留当前 planning authority，不回到 Design，也不创建新的规划批准请求
 
 #### Scenario: 当前 approval 不再有效但语义摘要相同
 
