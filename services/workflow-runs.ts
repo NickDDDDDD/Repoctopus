@@ -867,6 +867,7 @@ export class WorkflowRuns extends Service {
       });
       assessment = await this.ctx.specificationPlanning.assess({
         changeId: lifecycle.identity.changeId,
+        decisionRunId: state.runId,
         approvalPhase,
         changeBranch,
         ...(approvalPhase === 'design'

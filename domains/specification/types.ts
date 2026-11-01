@@ -298,6 +298,14 @@ export interface SpecificationApprovalRecord {
   comment?: string;
 }
 
+export interface SpecificationApprovalDecisionHistoryEntry {
+  requestId: string;
+  proposalHash: `sha256:${string}`;
+  semanticDigest: `sha256:${string}`;
+  status: 'superseded';
+  supersededAt: string;
+}
+
 export type SpecificationApprovalStatus =
   | 'awaiting_approval'
   | 'approved'
@@ -313,6 +321,7 @@ export interface SpecificationApprovalState {
   snapshot: PlanningSnapshot;
   decisionRequest: SpecificationApprovalDecisionRequest;
   decision: SpecificationApprovalRecord | null;
+  decisionHistory?: SpecificationApprovalDecisionHistoryEntry[];
   updatedAt: string;
 }
 

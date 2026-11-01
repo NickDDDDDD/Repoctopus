@@ -31,6 +31,23 @@ function sha256(value: unknown): `sha256:${string}` {
   return `sha256:${createHash('sha256').update(canonicalJson(value)).digest('hex')}`;
 }
 
+/** Stable Human Decision identity. Machine observations must never participate. */
+export function createHumanDecisionId(input: {
+  runId: string;
+  decisionKind: string;
+  semanticDigest: `sha256:${string}`;
+}): string {
+  if (!input.runId.trim() || !input.decisionKind.trim()) {
+    throw new Error('Human Decision identity requires a Run and decision kind');
+  }
+  assertDigest(input.semanticDigest, 'Human Decision semantic digest');
+  return `human-decision:${sha256({
+    runId: input.runId,
+    decisionKind: input.decisionKind,
+    semanticDigest: input.semanticDigest,
+  }).slice(-24)}`;
+}
+
 function assertDigest(value: string, label: string): asserts value is `sha256:${string}` {
   if (!SHA256_DIGEST.test(value)) throw new Error(`${label} must be a SHA-256 digest`);
 }
@@ -264,7 +281,11 @@ export function assertPlanningSnapshot(snapshot: PlanningSnapshot): void {
 
 export function createSpecificationApprovalRequest(
   snapshot: PlanningSnapshot,
-  requestId: string = `specification-approval:${snapshot.approvalPhase}:${snapshot.identityBasis.approvalAuthority?.digest.slice(-24) ?? 'missing-authority'}`,
+  requestId: string = createHumanDecisionId({
+    runId: snapshot.changeId,
+    decisionKind: `specification-approval.${snapshot.approvalPhase}`,
+    semanticDigest: snapshot.digest,
+  }),
 ): SpecificationApprovalDecisionRequest {
   assertPlanningSnapshot(snapshot);
   if (!requestId.trim()) throw new Error('Specification approval request ID is required');
@@ -391,6 +412,21 @@ export function assertSpecificationApprovalState(state: SpecificationApprovalSta
       throw new Error('Specification approval hash is invalid');
     }
   }
+  const historyIds = new Set<string>();
+  for (const entry of state.decisionHistory ?? []) {
+    if (
+      !entry.requestId.trim() ||
+      !SHA256_DIGEST.test(entry.proposalHash) ||
+      !SHA256_DIGEST.test(entry.semanticDigest) ||
+      entry.status !== 'superseded' ||
+      !entry.supersededAt.trim() ||
+      entry.requestId === request.requestId ||
+      historyIds.has(entry.requestId)
+    ) {
+      throw new Error('Specification approval decision history is invalid');
+    }
+    historyIds.add(entry.requestId);
+  }
   const expectedStatus = state.decision
     ? state.decision.decision === 'approve'
       ? 'approved'
@@ -408,6 +444,7 @@ export function requestSpecificationApproval(input: {
   snapshot: PlanningSnapshot;
   timestamp: string;
   requestId?: string;
+  decisionRunId?: string;
   forceNewRequest?: boolean;
 }): SpecificationApprovalState {
   assertPlanningSnapshot(input.snapshot);
@@ -455,7 +492,15 @@ export function requestSpecificationApproval(input: {
       updatedAt: input.timestamp,
     };
   }
-  const decisionRequest = createSpecificationApprovalRequest(input.snapshot, input.requestId);
+  const decisionRequest = createSpecificationApprovalRequest(
+    input.snapshot,
+    input.requestId ??
+      createHumanDecisionId({
+        runId: input.decisionRunId ?? input.snapshot.changeId,
+        decisionKind: `specification-approval.${input.snapshot.approvalPhase}`,
+        semanticDigest: input.snapshot.digest,
+      }),
+  );
   if (
     current?.decisionRequest.requestId === decisionRequest.requestId &&
     current.decisionRequest.proposalHash !== decisionRequest.proposalHash
@@ -471,6 +516,20 @@ export function requestSpecificationApproval(input: {
     snapshot: structuredClone(input.snapshot),
     decisionRequest,
     decision: null,
+    decisionHistory: [
+      ...(current?.decisionHistory ?? []).map((entry) => structuredClone(entry)),
+      ...(current
+        ? [
+            {
+              requestId: current.decisionRequest.requestId,
+              proposalHash: current.decisionRequest.proposalHash,
+              semanticDigest: current.snapshot.digest,
+              status: 'superseded' as const,
+              supersededAt: input.timestamp,
+            },
+          ]
+        : []),
+    ],
     updatedAt: input.timestamp,
   };
 }

@@ -26,6 +26,7 @@ export interface SpecificationPlanningConfig {
 
 export interface PrepareSpecificationApprovalInput {
   changeId: string;
+  decisionRunId?: string;
   approvalPhase?: 'open' | 'design';
   changeBranch: ChangeBranchReference;
   requestId?: string;
@@ -173,6 +174,7 @@ export class SpecificationPlanning extends Service {
       snapshot,
       timestamp: (input.now ?? (() => new Date()))().toISOString(),
       ...(input.requestId ? { requestId: input.requestId } : {}),
+      ...(input.decisionRunId ? { decisionRunId: input.decisionRunId } : {}),
       ...(input.forceNewApproval ? { forceNewRequest: true } : {}),
     });
     if (current?.stateVersion !== next.stateVersion) {
