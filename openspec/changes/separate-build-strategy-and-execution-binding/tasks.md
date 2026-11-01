@@ -36,5 +36,5 @@
       **Acceptance:** 遥测测试覆盖全部新增事件、离线复算和有界枚举，并证明不会导出绝对路径、正文或高基数摘要片段。
 - [x] 5.2 更新 Desktop projection/UI，区分人工语义决定、自动 Binding 重验和历史复用/失效；运行 reducer、组件与 Windows 测试。 <!-- comet-task:993c22b8-3dd0-4c63-a740-0f6458135214 -->
       **Acceptance:** Reducer、组件与 Windows 测试证明当前有效决定只有一张待处理卡片，自动重验和历史决定具有不同的确定性展示状态。
-- [ ] 5.3 更新文档，用真实单仓、多仓和跨 Runner 恢复执行 E2E，运行 `npm run spec:validate`、`npm run verify` 并生成正式验证报告。 <!-- comet-task:9773fc73-5b85-4c9d-bbbe-8da3f958b931 -->
+- [x] 5.3 更新文档，用真实单仓、多仓和跨 Runner 恢复执行 E2E，运行 `npm run spec:validate`、`npm run verify` 并生成正式验证报告。 <!-- comet-task:9773fc73-5b85-4c9d-bbbe-8da3f958b931 -->
       **Acceptance:** 文档命令可复现，三类 E2E、`npm run spec:validate` 与 `npm run verify` 全部成功，正式验证报告绑定最终提交和 Evidence。
