@@ -50,7 +50,7 @@
 - [x] 6.1 为 planner result、retained/invalidated counts、checkpoint recovery、dispatch suppression 和 reconciliation 定义版本化领域事实，并用 schema/allowlist tests 验证无路径、正文或自由错误泄漏 <!-- comet-task:9e08d44a-30ec-4797-b448-109629e8885d -->
 - [x] 6.2 将新事实映射到规范 OTLP Trace/Event，限制 Metric labels 为有界 authority/classification/scope/result/continuation，并运行 telemetry mapping cardinality tests <!-- comet-task:24d0e706-da6b-45ea-8d0a-a5dec0a554b2 -->
 - [x] 6.3 实现重复批准率、Protocol 重建率、精确失效率、completion 保留率、checkpoint 恢复与 duplicate dispatch suppression 指标，并用持久事件复算测试验证 <!-- comet-task:8ab84e75-0362-47c0-8e13-2c4e5485dd76 -->
-- [ ] 6.4 扩展 OTLP test receiver 纵切验收，证明本地 Desktop 与远端目的地消费同一 envelope 且失败不回滚 Run <!-- comet-task:739daf07-a69a-4a8e-a6b5-c13dd06e835a -->
+- [x] 6.4 扩展 OTLP test receiver 纵切验收，证明本地 Desktop 与远端目的地消费同一 envelope 且失败不回滚 Run <!-- comet-task:739daf07-a69a-4a8e-a6b5-c13dd06e835a -->
 - [ ] 6.5 更新 `docs/telemetry.md` 的稳定性指标、解释边界和 SigNoz 查询维度，并运行 `npm run format:check` <!-- comet-task:e21c0e16-466f-4aab-8b50-a38ae543ff87 -->
 
 ## 7. 生产纵切与多仓恢复验收

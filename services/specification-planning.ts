@@ -28,8 +28,6 @@ export interface PrepareSpecificationApprovalInput {
   changeId: string;
   approvalPhase?: 'open' | 'design';
   changeBranch: ChangeBranchReference;
-  compositionDigest: `sha256:${string}`;
-  projectConfigDigest: `sha256:${string}`;
   requestId?: string;
   forceNewApproval?: boolean;
   now?: () => Date;
@@ -156,8 +154,6 @@ export class SpecificationPlanning extends Service {
         schema,
         specificationRoot,
         changeBranch: input.changeBranch,
-        compositionDigest: input.compositionDigest,
-        projectConfigDigest: input.projectConfigDigest,
         planningManifest: manifest,
         approvalPhase: input.approvalPhase ?? 'design',
       });
@@ -297,8 +293,6 @@ export class SpecificationPlanning extends Service {
         schema: manifest.schema,
         specificationRoot: manifest.specificationRoot,
         changeBranch: input.changeBranch,
-        compositionDigest: input.compositionDigest,
-        projectConfigDigest: input.projectConfigDigest,
         planningManifest: manifest,
         approvalPhase: 'open',
       });
@@ -409,8 +403,6 @@ export class SpecificationPlanning extends Service {
       schema: manifest.schema,
       specificationRoot: manifest.specificationRoot,
       changeBranch,
-      compositionDigest: input.compositionDigest,
-      projectConfigDigest: input.projectConfigDigest,
       planningManifest: manifest,
       approvalPhase: 'design',
     });

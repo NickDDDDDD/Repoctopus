@@ -430,9 +430,6 @@ export class WorkflowRuns extends Service {
         ...status,
         skillCompatibility: await this.skillCompatibility(runId, signal),
         specificationCompatibility: await this.specificationCompatibility(runId),
-        ...(status.state.changeLifecycle
-          ? { continuation: await this.ctx.workExecutionAuthority.recovery(runId) }
-          : {}),
       };
     });
   }
@@ -934,8 +931,6 @@ export class WorkflowRuns extends Service {
         changeId: lifecycle.identity.changeId,
         approvalPhase,
         changeBranch,
-        compositionDigest: state.composition.compositionDigest,
-        projectConfigDigest: base.projectConfigDigest,
         ...(approvalPhase === 'open' && lifecycle.openApprovalInvalidated
           ? {
               forceNewApproval: true,
@@ -1059,8 +1054,6 @@ export class WorkflowRuns extends Service {
       const observation = await this.ctx.specificationPlanning.observeAuthority({
         changeId: lifecycle.identity.changeId,
         approvalPhase: 'design',
-        compositionDigest: state.composition.compositionDigest,
-        projectConfigDigest: context.projectConfigDigest,
         expectedPlanningDigest: lifecycle.planningDigest,
         ...(signal ? { signal } : {}),
       });
@@ -1506,12 +1499,8 @@ export class WorkflowRuns extends Service {
     }
     if (state.status === 'waiting' && lifecycle.waitCondition?.kind === 'human-decision') {
       let approval: SpecificationApprovalState | null;
-      let base: Awaited<ReturnType<WorkflowRuns['loadChangePlanningBase']>>;
       try {
-        [approval, base] = await Promise.all([
-          this.ctx.specificationPlanning.status(lifecycle.identity.changeId, 'open'),
-          this.loadChangePlanningBase(state, lifecycle, 'open'),
-        ]);
+        approval = await this.ctx.specificationPlanning.status(lifecycle.identity.changeId, 'open');
       } catch (error) {
         return this.openObservationUnavailable(state.runId, error);
       }
@@ -1520,8 +1509,6 @@ export class WorkflowRuns extends Service {
           changeId: lifecycle.identity.changeId,
           approvalPhase: 'open',
           changeBranch: approval.snapshot.changeBranch,
-          compositionDigest: state.composition.compositionDigest,
-          projectConfigDigest: base.projectConfigDigest,
           expectedSnapshotDigest: lifecycle.waitCondition.inputDigest,
           ...(signal ? { signal } : {}),
         });
@@ -1696,7 +1683,7 @@ export class WorkflowRuns extends Service {
       await this.ctx.workExecutionAuthority.recordContinuation(runId, continuation);
       return {
         diagnostics: verified.diagnostics,
-        value: { ...verified.value.run, continuation },
+        value: await this.coordinator.status(runId),
       };
     }
     const beforeNext = await this.ctx.runStore.loadRun(runId);
@@ -3602,7 +3589,6 @@ export class WorkflowRuns extends Service {
         ...(result.value.specificationCompatibility
           ? { specificationCompatibility: result.value.specificationCompatibility }
           : {}),
-        continuation,
       },
     };
   }
@@ -4051,8 +4037,6 @@ export class WorkflowRuns extends Service {
         changeId: lifecycle.identity.changeId,
         approvalPhase: 'design',
         changeBranch: input.intent.changeBranch,
-        compositionDigest: state.composition.compositionDigest,
-        projectConfigDigest: projectConfigDigest as `sha256:${string}`,
         expectedPlanningDigest: lifecycle.planningDigest,
         ...(signal ? { signal } : {}),
       });
@@ -4067,11 +4051,10 @@ export class WorkflowRuns extends Service {
           signal,
         );
       }
-      const planningSnapshot = planningAuthority.snapshot!;
       await this.ctx.delivery.validateArchiveIntent(
         input.intent,
         input.policy,
-        planningSnapshot.compositionDigest,
+        state.composition.compositionDigest,
         signal,
       );
       const archiveInput = createArchiveDeliveryInput({
@@ -4083,7 +4066,7 @@ export class WorkflowRuns extends Service {
         verificationReport: evidence.bundle.verificationReport,
         intent: input.intent,
         policy: input.policy,
-        planningCompositionDigest: planningSnapshot.compositionDigest,
+        planningCompositionDigest: state.composition.compositionDigest,
         evidenceCompositionDigest: lifecycle.verificationInput
           .compositionDigest as `sha256:${string}`,
       });
@@ -4307,8 +4290,7 @@ export class WorkflowRuns extends Service {
         lifecycle.identity.changeId,
         'design',
       );
-      const planningCompositionDigest =
-        archive.planningCompositionDigest ?? planningApproval?.snapshot.compositionDigest;
+      const planningCompositionDigest = archive.planningCompositionDigest;
       if (!planningCompositionDigest) {
         throw new Error('Archive Delivery is missing its planning composition identity');
       }
@@ -4325,8 +4307,6 @@ export class WorkflowRuns extends Service {
           planningApproval.status !== 'approved' ||
           planningApproval.decision?.decision !== 'approve' ||
           planningApproval.snapshot.changeId !== lifecycle.identity.changeId ||
-          planningApproval.snapshot.projectConfigDigest !==
-            state.trigger?.facts.projectConfigDigest ||
           canonicalJson(deliveryBranchCoordinates(archive.changeBranch)) !==
             canonicalJson(deliveryBranchCoordinates(planningApproval.snapshot.changeBranch)) ||
           archive.changeBranch.remoteOid === closure.candidate.baseOid
@@ -4359,7 +4339,7 @@ export class WorkflowRuns extends Service {
           await this.ctx.delivery.validateArchiveIntent(
             correctedIntent,
             input.policy,
-            planningApproval.snapshot.compositionDigest,
+            planningCompositionDigest,
             signal,
           );
         } catch (correctedError) {
@@ -4393,7 +4373,7 @@ export class WorkflowRuns extends Service {
             skillComposition: skills.skillComposition,
             compositionDigest: state.composition.compositionDigest,
             projectSnapshotDigest: state.projectSnapshotDigest,
-            projectConfigDigest,
+            projectConfigDigest: projectConfigDigest as `sha256:${string}`,
             workspaceRepositoryId: specificationRoot.repositoryId,
             repositoryIds: input.project.repositories.map((repository) => repository.id),
           });
@@ -4438,7 +4418,7 @@ export class WorkflowRuns extends Service {
           verificationReport: archive.verificationReport,
           intent: correctedIntent,
           policy: input.policy,
-          planningCompositionDigest: planningApproval.snapshot.compositionDigest,
+          planningCompositionDigest,
           evidenceCompositionDigest:
             archive.evidenceCompositionDigest ??
             (verificationCompositionDigest as `sha256:${string}`),

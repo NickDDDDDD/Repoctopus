@@ -574,8 +574,6 @@ describe('managed Change execution production composition', () => {
               changeId: 'managed-blackbox',
               approvalPhase: 'open',
               changeBranch: openApproval.snapshot.changeBranch,
-              compositionDigest: openApproval.snapshot.compositionDigest,
-              projectConfigDigest: openApproval.snapshot.projectConfigDigest,
               expectedSnapshotDigest: openApproval.snapshot.digest,
             }),
           ).toMatchObject({
@@ -1418,13 +1416,7 @@ describe('managed Change execution production composition', () => {
           'build.check',
           'evidence.verify',
           ...(!multiRepository && executionMode === 'autonomous'
-            ? [
-                'build.plan',
-                'build.execute',
-                'build.execute',
-                'build.check',
-                'evidence.verify',
-              ]
+            ? ['build.plan', 'build.execute', 'build.execute', 'build.check', 'evidence.verify']
             : []),
           'specification.close',
           'delivery.publish',

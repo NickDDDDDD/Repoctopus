@@ -112,8 +112,6 @@ function prepareInput() {
       targetBranch: 'main',
       remoteOid: '1'.repeat(40),
     },
-    compositionDigest: digest('c'),
-    projectConfigDigest: digest('d'),
     requestId: 'request-1',
     now: () => new Date('2026-10-22T00:00:00.000Z'),
   } as const;
@@ -290,7 +288,7 @@ describe('SpecificationPlanning service', () => {
       },
       actor: { actorId: 'user', source: 'cli', authenticated: true },
     });
-    const expectedPlanningDigest = approved.snapshot.planningManifestDigest!;
+    const expectedPlanningDigest = approved.snapshot.planningManifestDigest;
 
     await expect(
       running.planning.observeAuthority({
@@ -308,8 +306,6 @@ describe('SpecificationPlanning service', () => {
     await expect(
       running.planning.observeAuthority({
         ...prepareInput(),
-        compositionDigest: digest('e'),
-        projectConfigDigest: digest('f'),
         changeBranch: {
           ...prepareInput().changeBranch,
           remoteIdentity: 'HTTPS://GitHub.com/team/workspace.git',

@@ -35,6 +35,7 @@ import {
   type ParsedArguments,
 } from './arguments.js';
 import { failureEnvelope, successEnvelope, type CliEnvelope } from './envelope.js';
+import { continuationDiagnostics } from './continuation-diagnostics.js';
 import type { EvidenceCoordinator } from '../../services/evidence-coordinator.js';
 import type { BrowserMaintenance } from '../../services/browser-maintenance.js';
 import type {
@@ -926,7 +927,11 @@ async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
         command: 'run start',
         runId: result.value.state.runId,
         result: result.value,
-        diagnostics: [...result.diagnostics, ...reconciliation.diagnostics],
+        diagnostics: [
+          ...result.diagnostics,
+          ...continuationDiagnostics(result.value.continuation),
+          ...reconciliation.diagnostics,
+        ],
         nextActions: nextActions(result.value),
       });
     }
@@ -1011,6 +1016,7 @@ async function runStatus(parsed: ParsedArguments): Promise<CliEnvelope<unknown>>
       command: 'run status',
       runId,
       result: status,
+      diagnostics: continuationDiagnostics(status.continuation),
       nextActions: nextActions(status),
     });
   } finally {
@@ -1031,7 +1037,7 @@ async function runNext(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> {
       command: 'run next',
       runId,
       result: result.value,
-      diagnostics: result.diagnostics,
+      diagnostics: [...result.diagnostics, ...continuationDiagnostics(result.value.continuation)],
       nextActions: nextActions(result.value),
     });
   } finally {

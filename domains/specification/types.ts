@@ -215,21 +215,19 @@ export interface PlanningSpecificationRoot {
 }
 
 export interface PlanningSnapshot {
-  schemaVersion: 1;
+  schemaVersion: 2;
   changeId: string;
   approvalPhase: 'open' | 'design';
   provider: SpecificationProviderIdentity;
-  schema?: SpecificationSchemaInstructions;
-  specificationRoot?: PlanningSpecificationRoot;
+  schema: SpecificationSchemaInstructions;
+  specificationRoot: PlanningSpecificationRoot;
   changeDigest: `sha256:${string}`;
   validationDigest: `sha256:${string}`;
   artifacts: PlanningArtifactSnapshot[];
   affectedCapabilities: string[];
   changeBranch: ChangeBranchReference;
   publicationProvenanceDigest: `sha256:${string}`;
-  compositionDigest: `sha256:${string}`;
-  projectConfigDigest: `sha256:${string}`;
-  planningManifestDigest?: `sha256:${string}`;
+  planningManifestDigest: `sha256:${string}`;
   planningPolicyDigest: `sha256:${string}`;
   identityBasis: RuntimeIdentityBasis;
   digest: `sha256:${string}`;

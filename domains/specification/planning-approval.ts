@@ -92,8 +92,6 @@ export function createPlanningSnapshot(input: {
   schema: SpecificationSchemaInstructions;
   specificationRoot: PlanningSpecificationRoot;
   changeBranch: ChangeBranchReference;
-  compositionDigest: `sha256:${string}`;
-  projectConfigDigest: `sha256:${string}`;
   approvalPhase?: 'open' | 'design';
   planningManifest?: SpecificationPlanningManifest;
   planningPolicyDigest?: `sha256:${string}`;
@@ -131,8 +129,6 @@ export function createPlanningSnapshot(input: {
   }
   assertDigest(input.change.changeDigest, 'Specification change');
   assertDigest(input.validation.validationDigest, 'Specification validation');
-  assertDigest(input.compositionDigest, 'Composition');
-  assertDigest(input.projectConfigDigest, 'Project configuration');
   assertSchemaInstructions(input.schema);
   if (!input.specificationRoot.storeId.trim() || !input.specificationRoot.repositoryId.trim()) {
     throw new Error('Specification Root identity is required');
@@ -170,7 +166,7 @@ export function createPlanningSnapshot(input: {
     changeBranch,
   });
   const stable: Omit<PlanningSnapshot, 'digest'> = {
-    schemaVersion: 1 as const,
+    schemaVersion: 2 as const,
     changeId: input.change.changeId,
     approvalPhase: input.approvalPhase ?? 'design',
     provider: structuredClone(input.change.provider),
@@ -182,8 +178,6 @@ export function createPlanningSnapshot(input: {
     affectedCapabilities,
     changeBranch,
     publicationProvenanceDigest: publicationProvenance.digest,
-    compositionDigest: input.compositionDigest,
-    projectConfigDigest: input.projectConfigDigest,
     planningManifestDigest: manifest.semanticDigest,
     planningPolicyDigest,
     identityBasis: {
@@ -197,10 +191,7 @@ export function createPlanningSnapshot(input: {
   return { ...stable, digest: planningSnapshotDigest(stable) };
 }
 
-export function assertPlanningSnapshot(
-  snapshot: PlanningSnapshot,
-  options: { allowLegacy?: boolean } = {},
-): void {
+export function assertPlanningSnapshot(snapshot: PlanningSnapshot): void {
   const { digest, ...stable } = snapshot;
   assertDigest(digest, 'Planning snapshot');
   if (!snapshot.identityBasis?.planningSemantic) {
@@ -209,24 +200,20 @@ export function assertPlanningSnapshot(
   if (snapshot.approvalPhase !== 'open' && snapshot.approvalPhase !== 'design') {
     throw new Error('Planning snapshot approval phase is invalid');
   }
-  const legacyPublication = typeof snapshot.publicationProvenanceDigest !== 'string';
-  if ((legacyPublication ? sha256(stable) : planningSnapshotDigest(stable)) !== digest) {
+  if (snapshot.schemaVersion !== 2) {
+    throw new Error('Legacy planning snapshot requires migration');
+  }
+  if (planningSnapshotDigest(stable) !== digest) {
     throw new Error('Planning snapshot digest is invalid');
   }
-  if (snapshot.schema) assertSchemaInstructions(snapshot.schema);
+  assertSchemaInstructions(snapshot.schema);
   const branch = normalizeBranch(snapshot.changeBranch);
-  if (legacyPublication) {
-    if (options.allowLegacy !== true) {
-      throw new Error('Legacy planning snapshot requires publication provenance migration');
-    }
-  } else {
-    assertDigest(snapshot.publicationProvenanceDigest, 'Publication provenance');
-    if (
-      createRuntimeIdentity('publication-provenance', { changeBranch: branch }).digest !==
-      snapshot.publicationProvenanceDigest
-    ) {
-      throw new Error('Planning snapshot publication provenance digest is invalid');
-    }
+  assertDigest(snapshot.publicationProvenanceDigest, 'Publication provenance');
+  if (
+    createRuntimeIdentity('publication-provenance', { changeBranch: branch }).digest !==
+    snapshot.publicationProvenanceDigest
+  ) {
+    throw new Error('Planning snapshot publication provenance digest is invalid');
   }
   if (snapshot.identityBasis.planningSemantic.digest !== digest) {
     throw new Error('Planning snapshot semantic identity is invalid');
@@ -269,12 +256,6 @@ export function createSpecificationApprovalRequest(
   requestId: string = `specification-approval:${snapshot.approvalPhase}:${snapshot.identityBasis.approvalAuthority?.digest.slice(-24) ?? 'missing-authority'}`,
 ): SpecificationApprovalDecisionRequest {
   assertPlanningSnapshot(snapshot);
-  if (!snapshot.schema) {
-    throw new Error('Legacy planning snapshot requires schema instructions migration');
-  }
-  if (!snapshot.specificationRoot) {
-    throw new Error('Legacy planning snapshot requires Specification Root migration');
-  }
   if (!requestId.trim()) throw new Error('Specification approval request ID is required');
   const proposal = createSpecificationApprovalProposal(snapshot);
   const proposalHash = hashApprovalProposal(proposal);
@@ -301,9 +282,6 @@ export function createSpecificationApprovalProposal(
   snapshot: PlanningSnapshot,
 ): SpecificationApprovalProposal {
   assertPlanningSnapshot(snapshot);
-  if (!snapshot.schema || !snapshot.specificationRoot) {
-    throw new Error('Current approval proposal requires schema and Specification Root identity');
-  }
   return {
     schemaVersion: 1,
     kind: 'SpecificationApprovalProposal',
@@ -334,7 +312,6 @@ export function specificationApprovalCompatibility(state: SpecificationApprovalS
     assertSpecificationApprovalState(state);
     return { status: 'current', reason: 'Planning approval uses the current semantic schema' };
   } catch (error) {
-    assertSpecificationApprovalState(state, { allowLegacy: true });
     return {
       status: 'migration_required',
       reason:
@@ -367,22 +344,13 @@ export function createSpecificationApprovalMigrationPlan(
   return { ...stable, planDigest: sha256(stable) };
 }
 
-export function assertSpecificationApprovalState(
-  state: SpecificationApprovalState,
-  options: { allowLegacy?: boolean } = {},
-): void {
-  assertPlanningSnapshot(state.snapshot, options.allowLegacy === true ? { allowLegacy: true } : {});
+export function assertSpecificationApprovalState(state: SpecificationApprovalState): void {
+  assertPlanningSnapshot(state.snapshot);
   const request = state.decisionRequest as SpecificationApprovalDecisionRequest & {
     proposal?: SpecificationApprovalProposal;
     proposalHash?: `sha256:${string}`;
   };
-  if (
-    !request.proposal ||
-    !request.proposalHash ||
-    !state.snapshot.schema ||
-    !state.snapshot.specificationRoot
-  ) {
-    if (options.allowLegacy === true) return;
+  if (!request.proposal || !request.proposalHash) {
     throw new Error('Legacy specification approval requires migration');
   }
   const expectedProposal = createSpecificationApprovalProposal(state.snapshot);
@@ -440,6 +408,9 @@ export function requestSpecificationApproval(input: {
     throw new Error('Specification approval state belongs to another change');
   }
   const currentCompatibility = current ? specificationApprovalCompatibility(current) : null;
+  if (currentCompatibility?.status === 'migration_required') {
+    throw new Error(currentCompatibility.reason);
+  }
   if (
     input.forceNewRequest === true &&
     currentCompatibility?.status === 'current' &&

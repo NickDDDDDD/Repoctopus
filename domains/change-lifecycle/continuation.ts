@@ -1,4 +1,134 @@
+import type { Checkpoint, TrajectoryEvent } from '../trajectory/types.js';
+import type { WorkExecutionRecovery } from '../work-execution/types.js';
 import type { ChangeLifecycleSnapshot, ChangeNextAction } from './transition.js';
+
+const RECOVERY_REASONS = new Set<WorkExecutionRecovery['reason']>([
+  'terminal',
+  'human-decision',
+  'work-unclaimed',
+  'claim-redelivery',
+  'host-active',
+  'host-result-unknown',
+  'host-not-executed',
+  'work-failed',
+  'outcome-rejected',
+  'outcome-processing-error',
+  'validator-pending',
+  'checkpoint-superseded',
+  'transition-pending',
+  'content-missing-or-corrupt',
+  'open-observation-unavailable',
+  'migration-required',
+  'project-drift',
+]);
+
+function isRecoveryReason(value: unknown): value is WorkExecutionRecovery['reason'] {
+  return (
+    typeof value === 'string' && RECOVERY_REASONS.has(value as WorkExecutionRecovery['reason'])
+  );
+}
+
+function matchesCurrentCheckpoint(
+  event: TrajectoryEvent,
+  checkpoint: Checkpoint,
+  workId: string | null,
+): boolean {
+  if (event.type !== 'continuation.selected' || event.stateVersion > checkpoint.stateVersion) {
+    return false;
+  }
+  const selectedWorkId = typeof event.data.workId === 'string' ? event.data.workId : null;
+  return selectedWorkId === workId;
+}
+
+/**
+ * Projects the public continuation solely from committed Run evidence.
+ *
+ * Dynamic packet and Host checks belong to `next`/`resume`. Once those checks select a
+ * continuation, the Runtime commits `continuation.selected`; subsequent readers replay that fact
+ * instead of repeating I/O or inferring from the working tree.
+ */
+export function projectCommittedContinuation(
+  checkpoint: Checkpoint,
+  trajectory: readonly TrajectoryEvent[],
+): WorkExecutionRecovery | undefined {
+  const lifecycle = checkpoint.changeLifecycle;
+  if (!lifecycle) return undefined;
+  const execution = checkpoint.workExecution;
+  const executionMatches = Boolean(
+    execution &&
+    lifecycle.currentWork?.workId === execution.workId &&
+    lifecycle.checkEpoch === execution.checkEpoch,
+  );
+  const current = executionMatches ? execution : undefined;
+  const workId = current?.workId ?? lifecycle.currentWork?.workId ?? null;
+  const attempt = current?.attempt ?? null;
+  const checkEpoch = current?.checkEpoch ?? lifecycle.checkEpoch;
+  const result = (
+    continuation: WorkExecutionRecovery['continuation'],
+    reason: WorkExecutionRecovery['reason'],
+  ): WorkExecutionRecovery => ({
+    schemaVersion: 2,
+    continuation,
+    workId,
+    attempt,
+    checkEpoch,
+    reason,
+  });
+
+  const selected = [...trajectory]
+    .reverse()
+    .find((event) => matchesCurrentCheckpoint(event, checkpoint, workId));
+  if (
+    selected &&
+    typeof selected.data.continuation === 'string' &&
+    ['execute', 'ask', 'wait', 'reconcile', 'awaiting-correction', 'done'].includes(
+      selected.data.continuation,
+    ) &&
+    isRecoveryReason(selected.data.reason)
+  ) {
+    return result(
+      selected.data.continuation as WorkExecutionRecovery['continuation'],
+      selected.data.reason,
+    );
+  }
+
+  if (checkpoint.runStatus === 'completed') return result('done', 'terminal');
+  if (lifecycle.waitCondition?.kind === 'human-decision') {
+    return result('ask', 'human-decision');
+  }
+  if (execution && !executionMatches) {
+    return lifecycle.currentWork
+      ? result('execute', 'checkpoint-superseded')
+      : result('wait', 'checkpoint-superseded');
+  }
+  if (!current) {
+    return lifecycle.currentWork
+      ? result('execute', 'work-unclaimed')
+      : result('wait', 'transition-pending');
+  }
+  if (current.schemaVersion !== 3) return result('reconcile', 'migration-required');
+  if (current.status === 'claimed' || current.status === 'context-delivered') {
+    return result('execute', 'claim-redelivery');
+  }
+  if (current.status === 'submitted') {
+    return current.continuation === 'execute'
+      ? result('execute', 'validator-pending')
+      : result('execute', 'outcome-processing-error');
+  }
+  if (current.status === 'invoking') {
+    return current.continuation === 'awaiting-correction'
+      ? result('awaiting-correction', 'outcome-rejected')
+      : result('wait', 'host-active');
+  }
+  if (current.status === 'unknown') return result('reconcile', 'host-result-unknown');
+  if (current.status === 'not-executed') return result('execute', 'host-not-executed');
+  if (current.status === 'outcome') {
+    return current.actionOutcome?.status === 'failed'
+      ? result('execute', 'work-failed')
+      : result('execute', 'validator-pending');
+  }
+  return result('execute', 'transition-pending');
+}
 
 export function projectLifecycleNextActions(
   snapshot: ChangeLifecycleSnapshot,

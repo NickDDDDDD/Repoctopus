@@ -37,7 +37,10 @@ import {
   type ChangeLifecycleSnapshot,
   type ChangeLifecycleState,
 } from '../change-lifecycle/transition.js';
-import { projectLifecycleNextActions } from '../change-lifecycle/continuation.js';
+import {
+  projectCommittedContinuation,
+  projectLifecycleNextActions,
+} from '../change-lifecycle/continuation.js';
 import {
   compareLifecycleContributorSnapshots,
   type LifecycleContributorSnapshot,
@@ -359,6 +362,9 @@ export class WorkflowRunCoordinator {
           },
         )
       : undefined;
+    const continuation = state.changeLifecycle
+      ? projectCommittedContinuation(checkpoint, trajectory)
+      : undefined;
     return {
       state,
       checkpoint,
@@ -368,6 +374,7 @@ export class WorkflowRunCoordinator {
       compositionCompatibility,
       ...(lifecycleContributorCompatibility ? { lifecycleContributorCompatibility } : {}),
       ...(changeLifecycle ? { changeLifecycle } : {}),
+      ...(continuation ? { continuation } : {}),
       ...(preview?.reason ? { reason: preview.reason } : {}),
     };
   }

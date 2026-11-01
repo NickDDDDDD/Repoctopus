@@ -11,6 +11,7 @@ import {
   createSpecificationApprovalRequest,
   recordSpecificationApprovalDecision,
   requestSpecificationApproval,
+  specificationApprovalCompatibility,
 } from '../domains/specification/planning-approval.js';
 import { canonicalJson } from '../domains/workflow-contract/canonical.js';
 import type {
@@ -76,8 +77,6 @@ function planningInput() {
       repositoryId: 'workspace',
     },
     changeBranch: structuredClone(branch),
-    compositionDigest: digest('c'),
-    projectConfigDigest: digest('d'),
   };
 }
 
@@ -236,43 +235,18 @@ describe('specification planning approval', () => {
     });
   });
 
-  it('keeps planning semantics stable across composition, full config, and remote representation changes', () => {
+  it('keeps planning authority separate from composition, full config, and publication representation', () => {
     const baseline = createPlanningSnapshot(planningInput());
-    const changes: Array<{
-      mutate: (input: ReturnType<typeof planningInput>) => void;
-      publicationChanged: boolean;
-    }> = [
-      {
-        mutate: (input) => {
-          input.compositionDigest = digest('e');
-        },
-        publicationChanged: false,
-      },
-      {
-        mutate: (input) => {
-          input.projectConfigDigest = digest('f');
-        },
-        publicationChanged: false,
-      },
-      {
-        mutate: (input) => {
-          input.changeBranch.remoteIdentity = 'HTTPS://GitHub.com/team/workspace.git';
-          input.changeBranch.sourceBranch = 'spec/republished-change';
-          input.changeBranch.remoteOid = '2'.repeat(40);
-        },
-        publicationChanged: true,
-      },
-    ];
+    expect(baseline).not.toHaveProperty('compositionDigest');
+    expect(baseline).not.toHaveProperty('projectConfigDigest');
 
-    for (const { mutate, publicationChanged } of changes) {
-      const changed = planningInput();
-      mutate(changed);
-      const observed = createPlanningSnapshot(changed);
-      expect(observed.digest).toBe(baseline.digest);
-      expect(observed.publicationProvenanceDigest === baseline.publicationProvenanceDigest).toBe(
-        !publicationChanged,
-      );
-    }
+    const changed = planningInput();
+    changed.changeBranch.remoteIdentity = 'HTTPS://GitHub.com/team/workspace.git';
+    changed.changeBranch.sourceBranch = 'spec/republished-change';
+    changed.changeBranch.remoteOid = '2'.repeat(40);
+    const observed = createPlanningSnapshot(changed);
+    expect(observed.digest).toBe(baseline.digest);
+    expect(observed.publicationProvenanceDigest).not.toBe(baseline.publicationProvenanceDigest);
   });
 
   it('rejects incomplete, unvalidated, or unpublished planning facts', () => {
@@ -315,7 +289,7 @@ describe('specification planning approval', () => {
       decisionType: 'specification-approval',
       requestId: 'approval-request',
       snapshotDigest: snapshot.digest,
-      schema: { digest: snapshot.schema!.digest },
+      schema: { digest: snapshot.schema.digest },
       changeBranch: branch,
       options: ['approve', 'revise', 'reject'],
     });
@@ -503,7 +477,7 @@ describe('specification planning approval', () => {
     expect(() => assertSpecificationApprovalState(decided)).not.toThrow();
   });
 
-  it('keeps a legacy approval read-only instead of silently migrating its authority', () => {
+  it('classifies a pre-release approval as migration_required without a legacy reader', () => {
     const currentSnapshot = createPlanningSnapshot(planningInput());
     const current = requestSpecificationApproval({
       current: null,
@@ -528,6 +502,9 @@ describe('specification planning approval', () => {
     delete legacyRequest.schema;
     legacyRequest.snapshotDigest = legacySnapshot.digest;
 
+    expect(
+      specificationApprovalCompatibility(legacy as unknown as SpecificationApprovalState),
+    ).toMatchObject({ status: 'migration_required' });
     expect(() =>
       requestSpecificationApproval({
         current: legacy as unknown as SpecificationApprovalState,
@@ -535,6 +512,6 @@ describe('specification planning approval', () => {
         requestId: 'migration-decision',
         timestamp: '2026-10-24T00:01:00.000Z',
       }),
-    ).toThrow(/identity|migration/iu);
+    ).toThrow(/digest|migration/iu);
   });
 });

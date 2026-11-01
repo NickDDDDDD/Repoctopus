@@ -1375,6 +1375,7 @@ export class WorkExecutionAuthority extends Service {
               reason: recovery.reason,
               workId: recovery.workId,
               attempt: recovery.attempt,
+              checkEpoch: recovery.checkEpoch,
               result: 'suppressed',
               dispatchSuppressed: true,
             },
@@ -1405,6 +1406,7 @@ export class WorkExecutionAuthority extends Service {
             reason: recovery.reason,
             workId: recovery.workId,
             attempt: recovery.attempt,
+            checkEpoch: recovery.checkEpoch,
             result: 'selected',
             dispatchSuppressed: false,
             ...(openObservationUnavailable
