@@ -280,6 +280,7 @@ export class ManagedWorkExecutor extends Service {
       claim.packet,
       'consumed',
       hostOutcome.consumedLayerDigests,
+      hostOutcome.invocationId,
     );
     if (
       await this.rejectInvalidConfigureResult({
@@ -405,6 +406,7 @@ export class ManagedWorkExecutor extends Service {
       packet.packet,
       'consumed',
       hostOutcome.consumedLayerDigests,
+      hostOutcome.invocationId,
     );
     if (
       await this.rejectInvalidConfigureResult({
@@ -478,6 +480,7 @@ export class ManagedWorkExecutor extends Service {
       packet.packet,
       'consumed',
       outcome.consumedLayerDigests,
+      outcome.invocationId,
     );
     if (
       (['build.plan', 'build.check'].includes(packet.packet.work.kind) &&

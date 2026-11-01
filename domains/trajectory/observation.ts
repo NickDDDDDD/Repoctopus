@@ -42,6 +42,10 @@ export interface ObservationCorrelation {
   continuation?: ContinuationKind;
   skillName?: string;
   skillRole?: ObservationSkillRole;
+  ruleId?: string;
+  ruleDigest?: string;
+  evaluatorId?: string;
+  evaluatorVersion?: string;
   bindingId?: string;
   strategyId?: string;
   strategyRevision?: number;
@@ -88,7 +92,7 @@ const BUILD_ACTIONS = new Set<ObservationBuildAction>([
   'check',
 ]);
 const CONTINUATIONS = new Set<ContinuationKind>(['execute', 'ask', 'wait', 'reconcile', 'done']);
-const ATTRIBUTE_KEYS = [
+export const OBSERVATION_ATTRIBUTE_KEYS = [
   'result',
   'checkEpoch',
   'stateVersion',
@@ -143,6 +147,16 @@ const ATTRIBUTE_KEYS = [
   'decisionStatus',
   'reasonClass',
   'buildEvent',
+  'skillCategory',
+  'ruleCategory',
+  'ruleApplicable',
+  'ruleExpected',
+  'ruleTriggered',
+  'ruleResult',
+  'workflowName',
+  'workflowVersion',
+  'workflowRunResult',
+  'workflowRunDurationMs',
 ] as const;
 
 function digest(value: unknown): `sha256:${string}` {
@@ -271,6 +285,15 @@ function correlation(event: TrajectoryEvent, context: ObservationContext): Obser
       ? role
       : undefined,
   );
+  assign('ruleId', id(event.data.ruleId));
+  assign(
+    'ruleDigest',
+    typeof event.data.ruleDigest === 'string' && DIGEST.test(event.data.ruleDigest)
+      ? event.data.ruleDigest
+      : undefined,
+  );
+  assign('evaluatorId', id(event.data.evaluatorId));
+  assign('evaluatorVersion', id(event.data.evaluatorVersion));
   assign('strategyId', id(event.data.strategyId) ?? id(strategy?.strategyId));
   assign('strategyRevision', integer(event.data.strategyRevision) ?? integer(strategy?.revision));
   assign('bindingId', id(event.data.bindingId) ?? id(binding?.bindingId));
@@ -319,7 +342,7 @@ function attributes(event: TrajectoryEvent, context: ObservationContext) {
   if (workflowVersion !== undefined) result.workflowVersion = workflowVersion;
   result.stateVersion = event.stateVersion;
   if (DIGEST.test(event.compositionDigest)) result.compositionDigest = event.compositionDigest;
-  for (const key of ATTRIBUTE_KEYS) {
+  for (const key of OBSERVATION_ATTRIBUTE_KEYS) {
     const value = scalar(event.data[key]);
     if (value !== undefined) result[key] = value;
   }

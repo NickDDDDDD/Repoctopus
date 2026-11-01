@@ -234,6 +234,7 @@ export class WorkflowRunCoordinator {
       data: {
         workflowName: state.workflowName,
         workflowVersion: state.workflowVersion,
+        workflowRunResult: 'started',
         workflowDigest: state.workflowDigest,
         projectSnapshotDigest: state.projectSnapshotDigest,
         compositionDigest: state.composition.compositionDigest,
@@ -484,6 +485,17 @@ export class WorkflowRunCoordinator {
             observationDigest,
             observation: structuredClone(observation),
             ...(retirement.fact ? { executionRetirement: structuredClone(retirement.fact) } : {}),
+            ...(status === 'completed' || status === 'failed'
+              ? {
+                  workflowName: state.workflowName,
+                  workflowVersion: state.workflowVersion,
+                  workflowRunResult: status,
+                  workflowRunDurationMs: Math.max(
+                    0,
+                    Date.parse(timestamp) - Date.parse(state.createdAt),
+                  ),
+                }
+              : {}),
           },
         }),
         value: undefined,
@@ -818,6 +830,17 @@ export class WorkflowRunCoordinator {
             ? { correlationReceiptId: options.correlationReceiptId }
             : {}),
           ...(evidenceGate ? { evidenceGate } : {}),
+          ...(nextState.status === 'completed' || nextState.status === 'failed'
+            ? {
+                workflowName: state.workflowName,
+                workflowVersion: state.workflowVersion,
+                workflowRunResult: nextState.status,
+                workflowRunDurationMs: Math.max(
+                  0,
+                  Date.parse(timestamp) - Date.parse(state.createdAt),
+                ),
+              }
+            : {}),
         },
       });
       return { state: nextState, event: completed, value: undefined };

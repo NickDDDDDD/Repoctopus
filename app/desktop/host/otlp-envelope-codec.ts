@@ -3,23 +3,247 @@ import {
   isObservationEnvelope,
   type ObservationEnvelope,
 } from '../../../domains/trajectory/observation.js';
+import {
+  observationAttributeOtlpName,
+  observationCorrelationOtlpName,
+} from '../../../domains/telemetry/observation-contract.js';
 
 const ENVELOPE_ATTRIBUTE = 'repoctopus.observation.envelope';
 
-function attribute(envelope: ObservationEnvelope) {
-  return [{ key: ENVELOPE_ATTRIBUTE, value: { stringValue: JSON.stringify(envelope) } }];
+type OtlpScalar = string | number | boolean;
+
+function otlpValue(value: OtlpScalar) {
+  if (typeof value === 'string') return { stringValue: value };
+  if (typeof value === 'boolean') return { boolValue: value };
+  return Number.isSafeInteger(value) ? { intValue: String(value) } : { doubleValue: value };
+}
+
+function keyValues(values: Readonly<Record<string, OtlpScalar>>) {
+  return Object.entries(values)
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([key, value]) => ({ key, value: otlpValue(value) }));
+}
+
+function isOtlpScalar(value: unknown): value is OtlpScalar {
+  return (
+    typeof value === 'string' ||
+    typeof value === 'boolean' ||
+    (typeof value === 'number' && Number.isFinite(value))
+  );
+}
+
+function eventAttributes(envelope: ObservationEnvelope) {
+  const values: Record<string, OtlpScalar> = {
+    [ENVELOPE_ATTRIBUTE]: JSON.stringify(envelope),
+    'repoctopus.observation.schema_version': envelope.schemaVersion,
+    'repoctopus.observation.envelope_id': envelope.envelopeId,
+    'repoctopus.observation.digest': envelope.digest,
+    'repoctopus.event.id': envelope.identity.eventId,
+    'repoctopus.event.sequence': envelope.identity.sequence,
+    'repoctopus.event.type': envelope.eventType,
+    'repoctopus.run.id': envelope.identity.runId,
+  };
+  for (const [key, value] of Object.entries(envelope.correlation)) {
+    if (isOtlpScalar(value)) {
+      values[observationCorrelationOtlpName(key)] = value;
+    }
+  }
+  for (const [key, value] of Object.entries(envelope.attributes)) {
+    values[observationAttributeOtlpName(key)] = value;
+  }
+  return keyValues(values);
+}
+
+function metricAttributes(envelope: ObservationEnvelope) {
+  const values: Record<string, OtlpScalar> = {
+    'repoctopus.event.type': envelope.eventType,
+  };
+  if (envelope.correlation.phase) {
+    values['repoctopus.execution.phase'] = envelope.correlation.phase;
+  }
+  if (envelope.correlation.workKind) {
+    values['repoctopus.execution.work.kind'] = envelope.correlation.workKind;
+  }
+  if (envelope.correlation.skillRole) {
+    values['repoctopus.skill.role'] = envelope.correlation.skillRole;
+  }
+  for (const key of ['result', 'status', 'reasonCode', 'findingKind'] as const) {
+    const value = envelope.attributes[key];
+    if (value !== undefined) values[observationAttributeOtlpName(key)] = value;
+  }
+  return keyValues(values);
+}
+
+type MetricProjection = {
+  name: string;
+  value: number;
+  kind: 'sum' | 'gauge';
+  observedAt: string;
+  attributes: ReturnType<typeof keyValues>;
+};
+
+function boundedCategory(value: unknown): 'builtin' | 'team' | 'custom' {
+  return value === 'builtin' || value === 'team' ? value : 'custom';
+}
+
+function skillRole(value: unknown): 'action' | 'augmentation' {
+  return value === 'action' ? 'action' : 'augmentation';
+}
+
+function skillResult(envelope: ObservationEnvelope): string | undefined {
+  if (envelope.eventType === 'skill.consumed') return 'consumed';
+  if (envelope.eventType !== 'skill.outcome-recorded') return undefined;
+  const result = envelope.attributes.result;
+  return result === 'completed' || result === 'error' || result === 'corrected'
+    ? result
+    : undefined;
+}
+
+function specializedMetricProjections(envelope: ObservationEnvelope): MetricProjection[] {
+  const projections: MetricProjection[] = [];
+  const result = skillResult(envelope);
+  if (result) {
+    projections.push({
+      name: 'repoctopus.skill.usage',
+      value: 1,
+      kind: 'sum',
+      observedAt: envelope.observedAt,
+      attributes: keyValues({
+        'repoctopus.skill.role': skillRole(envelope.correlation.skillRole),
+        'repoctopus.skill.category': boundedCategory(envelope.attributes.skillCategory),
+        'repoctopus.skill.result': result,
+      }),
+    });
+  }
+
+  if (
+    envelope.eventType === 'validator.completed' &&
+    envelope.correlation.ruleId &&
+    envelope.correlation.evaluatorId &&
+    typeof envelope.attributes.ruleApplicable === 'boolean' &&
+    typeof envelope.attributes.ruleExpected === 'boolean' &&
+    typeof envelope.attributes.ruleTriggered === 'boolean'
+  ) {
+    const ruleResults: string[] = [];
+    if (envelope.attributes.ruleApplicable && envelope.attributes.ruleExpected) {
+      ruleResults.push('expected');
+    }
+    if (envelope.attributes.ruleApplicable && envelope.attributes.ruleTriggered) {
+      ruleResults.push('triggered');
+    }
+    const evaluated = envelope.attributes.ruleResult;
+    if (evaluated === 'passed' || evaluated === 'violated' || evaluated === 'unknown') {
+      ruleResults.push(evaluated);
+    }
+    for (const ruleResult of ruleResults) {
+      projections.push({
+        name: 'repoctopus.rule.evaluation',
+        value: 1,
+        kind: 'sum',
+        observedAt: envelope.observedAt,
+        attributes: keyValues({
+          'repoctopus.rule.category': boundedCategory(envelope.attributes.ruleCategory),
+          'repoctopus.rule.result': ruleResult,
+        }),
+      });
+    }
+  }
+
+  const workflowResult = envelope.attributes.workflowRunResult;
+  const workflowName = envelope.attributes.workflowName;
+  const workflowVersion = envelope.attributes.workflowVersion;
+  if (
+    (workflowResult === 'started' ||
+      workflowResult === 'completed' ||
+      workflowResult === 'failed') &&
+    typeof workflowName === 'string' &&
+    typeof workflowVersion === 'string'
+  ) {
+    const attributes = keyValues({
+      'repoctopus.workflow.name': workflowName,
+      'repoctopus.workflow.version': workflowVersion,
+      'repoctopus.workflow.run.result': workflowResult,
+    });
+    projections.push({
+      name: 'repoctopus.workflow.run',
+      value: 1,
+      kind: 'sum',
+      observedAt: envelope.observedAt,
+      attributes,
+    });
+    const duration = envelope.attributes.workflowRunDurationMs;
+    if (workflowResult !== 'started' && typeof duration === 'number' && duration >= 0) {
+      projections.push({
+        name: 'repoctopus.workflow.run.duration',
+        value: duration,
+        kind: 'gauge',
+        observedAt: envelope.observedAt,
+        attributes,
+      });
+    }
+  }
+  return projections;
+}
+
+function metricProjections(envelopes: readonly ObservationEnvelope[]): MetricProjection[] {
+  return envelopes.flatMap((envelope) => [
+    {
+      name: 'repoctopus.observation',
+      value: 1,
+      kind: 'sum' as const,
+      observedAt: envelope.observedAt,
+      attributes: metricAttributes(envelope),
+    },
+    ...specializedMetricProjections(envelope),
+  ]);
+}
+
+function encodeMetrics(envelopes: readonly ObservationEnvelope[]) {
+  const groups = new Map<string, MetricProjection[]>();
+  for (const projection of metricProjections(envelopes)) {
+    const key = `${projection.kind}:${projection.name}`;
+    groups.set(key, [...(groups.get(key) ?? []), projection]);
+  }
+  return [...groups.values()].map((items) => {
+    const first = items[0]!;
+    const dataPoints = items.map((item) => {
+      const point = {
+        timeUnixNano: String(BigInt(new Date(item.observedAt).getTime()) * 1_000_000n),
+        attributes: item.attributes,
+      };
+      return item.kind === 'gauge'
+        ? { ...point, asDouble: item.value }
+        : { ...point, asInt: String(item.value) };
+    });
+    return first.kind === 'gauge'
+      ? { name: first.name, gauge: { dataPoints } }
+      : {
+          name: first.name,
+          sum: { aggregationTemporality: 1, isMonotonic: true, dataPoints },
+        };
+  });
+}
+
+function resource(attributes: Readonly<Record<string, string | number | boolean>> | undefined) {
+  return attributes ? { attributes: keyValues(attributes) } : undefined;
 }
 
 /** Minimal standard OTLP/HTTP JSON payload used by both local and remote destinations. */
 export function encodeObservationOtlpJson(
   envelopes: readonly ObservationEnvelope[],
   signal: OtlpSignal,
+  options: {
+    resourceAttributes?: Readonly<Record<string, string | number | boolean>>;
+  } = {},
 ): Uint8Array {
   if (signal === 'log') {
     return Buffer.from(
       JSON.stringify({
         resourceLogs: [
           {
+            ...(resource(options.resourceAttributes)
+              ? { resource: resource(options.resourceAttributes) }
+              : {}),
             scopeLogs: [
               {
                 scope: { name: 'repoctopus-runtime', version: '0.1.0' },
@@ -29,7 +253,7 @@ export function encodeObservationOtlpJson(
                   ),
                   eventName: `repoctopus.${envelope.eventType}`,
                   body: { stringValue: 'Repoctopus observation' },
-                  attributes: attribute(envelope),
+                  attributes: eventAttributes(envelope),
                 })),
               },
             ],
@@ -43,6 +267,9 @@ export function encodeObservationOtlpJson(
       JSON.stringify({
         resourceSpans: [
           {
+            ...(resource(options.resourceAttributes)
+              ? { resource: resource(options.resourceAttributes) }
+              : {}),
             scopeSpans: [
               {
                 scope: { name: 'repoctopus-runtime', version: '0.1.0' },
@@ -56,7 +283,7 @@ export function encodeObservationOtlpJson(
                   endTimeUnixNano: String(
                     BigInt(new Date(envelope.observedAt).getTime()) * 1_000_000n,
                   ),
-                  attributes: attribute(envelope),
+                  attributes: eventAttributes(envelope),
                 })),
               },
             ],
@@ -69,25 +296,13 @@ export function encodeObservationOtlpJson(
     JSON.stringify({
       resourceMetrics: [
         {
+          ...(resource(options.resourceAttributes)
+            ? { resource: resource(options.resourceAttributes) }
+            : {}),
           scopeMetrics: [
             {
               scope: { name: 'repoctopus-runtime', version: '0.1.0' },
-              metrics: [
-                {
-                  name: 'repoctopus.observation',
-                  sum: {
-                    aggregationTemporality: 1,
-                    isMonotonic: true,
-                    dataPoints: envelopes.map((envelope) => ({
-                      asInt: '1',
-                      timeUnixNano: String(
-                        BigInt(new Date(envelope.observedAt).getTime()) * 1_000_000n,
-                      ),
-                      attributes: attribute(envelope),
-                    })),
-                  },
-                },
-              ],
+              metrics: encodeMetrics(envelopes),
             },
           ],
         },

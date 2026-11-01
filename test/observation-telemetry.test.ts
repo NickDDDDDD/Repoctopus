@@ -4,11 +4,18 @@ import { observationDestinationsFromEnvironment } from '../services/observation-
 
 describe('canonical observation destination configuration', () => {
   it('covers remote-only, remote-plus-desktop, desktop-disabled and signal-specific OTLP modes', () => {
-    expect(
-      observationDestinationsFromEnvironment({
-        OTEL_EXPORTER_OTLP_ENDPOINT: 'http://collector:4318',
-      }),
-    ).toEqual([{ id: 'remote', endpoint: 'http://collector:4318' }]);
+    const [remoteOnly] = observationDestinationsFromEnvironment({
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://collector:4318',
+    });
+    expect(remoteOnly).toMatchObject({
+      id: 'remote',
+      endpoint: 'http://collector:4318',
+      timeoutMillis: 5_000,
+    });
+    expect(remoteOnly?.resourceAttributes).toMatchObject({
+      'service.name': 'repoctopus-runtime',
+      'repoctopus.product.name': 'repoctopus',
+    });
 
     expect(
       observationDestinationsFromEnvironment({
@@ -17,12 +24,13 @@ describe('canonical observation destination configuration', () => {
         REPOCTOPUS_DESKTOP_OTLP_TOKEN: 'session-token',
       }),
     ).toEqual([
-      { id: 'remote', endpoint: 'http://collector:4318' },
-      {
+      expect.objectContaining({ id: 'remote', endpoint: 'http://collector:4318' }),
+      expect.objectContaining({
         id: 'desktop',
         endpoint: 'http://127.0.0.1:4319',
         headers: { authorization: 'Bearer session-token' },
-      },
+        timeoutMillis: 5_000,
+      }),
     ]);
 
     expect(
@@ -39,14 +47,41 @@ describe('canonical observation destination configuration', () => {
         OTEL_EXPORTER_OTLP_METRICS_ENDPOINT: 'http://collector:4318/custom-metrics',
       }),
     ).toEqual([
-      {
+      expect.objectContaining({
         id: 'remote',
         signalEndpoints: {
           trace: 'http://collector:4318/custom-traces',
           log: 'http://collector:4318/custom-logs',
           metric: 'http://collector:4318/custom-metrics',
         },
-      },
+      }),
     ]);
+  });
+
+  it('applies signal-specific headers and timeouts without exposing secrets as resources', () => {
+    const [remote] = observationDestinationsFromEnvironment({
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'https://collector.example/otel',
+      OTEL_EXPORTER_OTLP_HEADERS: 'authorization=Bearer%20shared',
+      OTEL_EXPORTER_OTLP_METRICS_HEADERS: 'x-signal=metrics',
+      OTEL_EXPORTER_OTLP_TIMEOUT: '7000',
+      OTEL_EXPORTER_OTLP_LOGS_TIMEOUT: '9000',
+      OTEL_SERVICE_NAME: 'company-repoctopus',
+      OTEL_RESOURCE_ATTRIBUTES: 'service.namespace=developer-platform',
+    });
+    expect(remote).toMatchObject({
+      id: 'remote',
+      signalHeaders: {
+        trace: { authorization: 'Bearer shared' },
+        log: { authorization: 'Bearer shared' },
+        metric: { 'x-signal': 'metrics' },
+      },
+      signalTimeouts: { trace: 7000, log: 9000, metric: 7000 },
+      resourceAttributes: {
+        'service.name': 'company-repoctopus',
+        'service.namespace': 'developer-platform',
+        'repoctopus.product.name': 'repoctopus',
+      },
+    });
+    expect(JSON.stringify(remote?.resourceAttributes)).not.toMatch(/Bearer|collector/u);
   });
 });
