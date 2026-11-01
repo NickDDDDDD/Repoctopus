@@ -313,7 +313,13 @@ export function createExecutionBinding(input: {
     schemaVersion: 1 as const,
     strategyDigest: input.strategy.semanticDigest,
     capabilityDigest,
-    repositories: repositories.map(({ headRevision: _headRevision, ...repository }) => repository),
+    repositories: repositories.map((repository) => ({
+      repositoryId: repository.repositoryId,
+      branchRef: repository.branchRef,
+      isolation: repository.isolation,
+      workspaceOwnerId: repository.workspaceOwnerId,
+      worktreeId: repository.worktreeId,
+    })),
   };
   const semanticDigest = digest(portableSemantics);
   const stateDigest = digest({

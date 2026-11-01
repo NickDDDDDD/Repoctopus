@@ -146,7 +146,11 @@ describe('specification approval CLI', () => {
 
     const prepared = await runCli<{
       status: string;
-      snapshot: { artifacts: unknown[]; changeBranch: { sourceBranch: string; remoteOid: string } };
+      snapshot: {
+        artifacts: unknown[];
+        buildStrategyDigest: string;
+        changeBranch: { sourceBranch: string; remoteOid: string };
+      };
     }>({
       packageRoot,
       cwd: workspace,
@@ -175,6 +179,7 @@ describe('specification approval CLI', () => {
     });
     expect(prepared.result?.snapshot.artifacts).toHaveLength(4);
     expect(prepared.result?.snapshot.changeBranch.remoteOid).toMatch(/^[a-f0-9]{40}$/u);
+    expect(prepared.result?.snapshot.buildStrategyDigest).toMatch(/^sha256:[a-f0-9]{64}$/u);
 
     const status = await runCli({
       packageRoot,

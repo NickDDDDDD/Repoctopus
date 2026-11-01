@@ -53,6 +53,11 @@ import {
 } from './specification-approval-decision.js';
 import { changeProjection, renderChangeProjection } from './change-run-view.js';
 import type { ConsistencyReconciliationResult } from '../../services/consistency-reconciler.js';
+import {
+  createBuildStrategy,
+  type BuildExecutionMode,
+  type BuildTddMode,
+} from '../../domains/change-lifecycle/build-protocol.js';
 
 const DIST_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PRODUCT_ROOT =
@@ -611,11 +616,24 @@ async function specificationApprovalPrepare(
   });
   const app = await bootProjectComposition(PRODUCT_ROOT, workspace);
   try {
+    const decisionRunId = `specification-approval:${config.shared.workspace.id}:${changeId}`;
+    const buildStrategy = createBuildStrategy({
+      runId: decisionRunId,
+      revision: 1,
+      executionMode: stringFlag(parsed, 'execution-mode', {
+        fallback: 'autonomous',
+      }) as BuildExecutionMode,
+      tddMode: stringFlag(parsed, 'tdd-mode', { fallback: 'tdd' }) as BuildTddMode,
+      reviewMode: 'standard',
+      isolationIntent: 'current',
+    });
     const result = await app.context.commandRouter.execute<unknown, SpecificationApprovalState>(
       'specification.approval.prepare',
       {
         changeId,
         changeBranch,
+        decisionRunId,
+        buildStrategyDigest: buildStrategy.semanticDigest,
         compositionDigest: app.composition.compositionDigest,
         projectConfigDigest: qualifiedSha256(config.effectiveDigest, 'Project configuration'),
       },

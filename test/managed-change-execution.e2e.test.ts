@@ -1746,13 +1746,14 @@ describe('managed Change execution production composition', () => {
         repositories: { workspace },
         operations: () => [],
         result(packet) {
+          const inputs = JSON.parse(
+            packet.context.layers.find((layer) => layer.kind === 'change-inputs')!.content,
+          ) as { build: { strategy: { semanticDigest: `sha256:${string}` } } };
           return packet.work.kind === 'build.configure'
             ? {
                 schemaVersion: 1,
                 kind: 'execution-binding-candidate',
-                strategyDigest: JSON.parse(
-                  packet.context.layers.find((layer) => layer.kind === 'change-inputs')!.content,
-                ).build.strategy.semanticDigest,
+                strategyDigest: inputs.build.strategy.semanticDigest,
               }
             : undefined;
         },

@@ -1233,7 +1233,13 @@ export class WorkflowRuns extends Service {
       localOverlayRef: `execution-workspace:${observed.localDigest.slice(-24)}`,
     });
     const withoutHead = (binding: ExecutionBinding) =>
-      binding.repositories.map(({ headRevision: _headRevision, ...repository }) => repository);
+      binding.repositories.map((repository) => ({
+        repositoryId: repository.repositoryId,
+        branchRef: repository.branchRef,
+        isolation: repository.isolation,
+        workspaceOwnerId: repository.workspaceOwnerId,
+        worktreeId: repository.worktreeId,
+      }));
     if (canonicalJson(withoutHead(candidate)) !== canonicalJson(withoutHead(executionBinding))) {
       return 'checkout';
     }
@@ -1264,8 +1270,17 @@ export class WorkflowRuns extends Service {
       worktreeId: repository.worktreeId,
     }));
     const withoutHead = (entries: readonly ExecutionBinding['repositories'][number][]) =>
-      entries.map(({ headRevision: _headRevision, ...repository }) => repository);
-    if (canonicalJson(withoutHead(repositories)) !== canonicalJson(withoutHead(executionBinding.repositories))) {
+      entries.map((repository) => ({
+        repositoryId: repository.repositoryId,
+        branchRef: repository.branchRef,
+        isolation: repository.isolation,
+        workspaceOwnerId: repository.workspaceOwnerId,
+        worktreeId: repository.worktreeId,
+      }));
+    if (
+      canonicalJson(withoutHead(repositories)) !==
+      canonicalJson(withoutHead(executionBinding.repositories))
+    ) {
       return 'checkout';
     }
     if (canonicalJson(repositories) !== canonicalJson(executionBinding.repositories)) return 'head';

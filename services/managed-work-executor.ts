@@ -314,7 +314,18 @@ export class ManagedWorkExecutor extends Service {
   async claimExternal(request: WorkClaimRequest): Promise<ExternalWorkClaimResult> {
     const state = await this.ctx.runStore.loadRun(request.runId);
     const lifecycle = state.changeLifecycle;
-    const work = lifecycle?.currentWork;
+    const expectedBinding = lifecycle?.buildProtocol?.binding;
+    const externalHostId = `external:${request.executor.source}:${request.executor.runnerId}`;
+    if (
+      lifecycle?.phase === 'build' &&
+      lifecycle.currentWork?.kind !== 'build.configure' &&
+      expectedBinding &&
+      expectedBinding.host.hostId !== externalHostId
+    ) {
+      throw new Error(
+        'External Runner does not match the current Execution Binding Host; Build Configure must revalidate it before claim',
+      );
+    }
     const claim = await this.ctx.workDispatcher.claim(request);
     const host = this.externalHostIdentity(request.executor, [
       ...claim.packet.hostRequirement.capabilities,

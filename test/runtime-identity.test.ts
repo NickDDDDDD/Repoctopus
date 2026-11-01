@@ -14,7 +14,11 @@ describe('Runtime identity basis', () => {
 
     expect(second).toEqual(first);
     expect(first).toMatchObject({ owner: 'specification-planning' });
-    expect(IDENTITY_DEPENDENCIES['execution-checkpoint']).toEqual(['build-plan', 'composition']);
+    expect(IDENTITY_DEPENDENCIES['execution-checkpoint']).toEqual([
+      'build-plan',
+      'execution-binding',
+      'composition',
+    ]);
 
     const basis: RuntimeIdentityBasis = {
       schemaVersion: 1,
