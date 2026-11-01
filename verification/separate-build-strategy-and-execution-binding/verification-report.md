@@ -3,10 +3,10 @@
 ## Reproducible subject
 
 - Change: `separate-build-strategy-and-execution-binding`
-- Tested implementation commit: `5f382e0fc0750eb9311153bdc9b9e712496e2778`
+- Tested implementation commit: `6c29228a14e39a01e90501ac1d1b4d0a9cb4e7d9`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `1040179`
-- Package SHA-256: `a29eee9e0e6b990f22d158dc935d6287cbca7cd4bb81e210d84c08337c084f4c`
+- Package bytes: `1040182`
+- Package SHA-256: `0ec04788a0332539384280183b912991b01dfb29bd47d3c7f978ab95465b16e9`
 - Controller: `@rpamis/comet@0.5.1`
 - Platform: Windows x64
 - Node.js: `24.21.0`
@@ -79,6 +79,8 @@ Trajectory and OTLP distinguish stable Strategy selection from Binding creation 
 The Desktop projection renders Strategy identity and choices separately from Binding identity, revision, Host, and repository state. Binding drift is visible as a revalidation event rather than a misleading Strategy change or repeated approval.
 
 The packaged Comet Classic handoff at `docs/superpowers/reports/separate-build-strategy-and-execution-binding.md` binds the independent Verify review to this report without creating another specification or task authority. Because that handoff is part of the npm package, the package boundary and checksum above were recomputed after it was committed.
+
+The final package boundary also includes the archived Build Plan metadata. The Change is stored at `openspec/changes/archive/2026-11-01-separate-build-strategy-and-execution-binding`, its four delta specifications are merged into the main specification set, and post-archive strict validation passes 17 items with no failures.
 
 ## Cleanup
 
