@@ -1,11 +1,16 @@
 import { createServer } from 'node:http';
+import { mkdtemp, rm } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 
+import { Context } from '@deepseek-ai/cordis';
 import { describe, expect, it } from 'vitest';
 
 import { startRun } from '../../domains/engine/loop.js';
 import type { TelemetryBatch } from '../../domains/runtime/types.js';
 import type { TrajectoryEvent } from '../../domains/trajectory/types.js';
-import { OpenTelemetryExporter } from '../../platform/telemetry/opentelemetry/exporter.js';
+import { ObservationDelivery } from '../../services/observation-delivery.js';
+import { WorkflowObservationTelemetry } from '../../services/observation-telemetry.js';
 import { compositionFixture, projectFixture, workflowFixture } from '../helpers/fixtures.js';
 
 function event(
@@ -41,8 +46,8 @@ describe('managed execution OTLP protocol', () => {
     await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
     const address = server.address();
     if (!address || typeof address === 'string') throw new Error('OTLP receiver did not bind');
-    const previous = process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
-    process.env.OTEL_EXPORTER_OTLP_ENDPOINT = `http://127.0.0.1:${address.port}`;
+    const directory = await mkdtemp(path.join(os.tmpdir(), 'repoctopus-managed-otlp-'));
+    const context = new Context();
     try {
       const workflow = workflowFixture();
       const projectSnapshot = projectFixture();
@@ -143,33 +148,31 @@ describe('managed execution OTLP protocol', () => {
         events: trajectory,
         trajectory,
       };
-      const exporter = new OpenTelemetryExporter({ timeoutMillis: 5_000, environment: 'test' });
-      await exporter.export(batch);
-      await exporter.export(batch);
+      const delivery = new ObservationDelivery(context, { workspaceRoot: directory });
+      const telemetry = new WorkflowObservationTelemetry(delivery, {
+        OTEL_EXPORTER_OTLP_ENDPOINT: `http://127.0.0.1:${address.port}`,
+        OTEL_RESOURCE_ATTRIBUTES: 'deployment.environment.name=test',
+      });
+      await telemetry.export(batch);
+      await telemetry.export(batch);
 
       expect(new Set(requests.map((request) => request.path))).toEqual(
         new Set(['/v1/traces', '/v1/logs', '/v1/metrics']),
       );
       const payload = Buffer.concat(requests.map((request) => request.body)).toString('latin1');
       expect(payload).toContain('repoctopus.work.claimed');
-      expect(payload).toContain('repoctopus.work.execution.events');
-      expect(payload).toContain('repoctopus.host');
-      expect(payload).toContain('repoctopus.tool');
+      expect(payload).toContain('repoctopus.observation');
+      expect(payload).toContain('repoctopus.work.host-started');
+      expect(payload).toContain('repoctopus.tool.completed');
       expect(payload).not.toContain(secret);
       expect(payload).not.toContain('C:\\secret');
-      const traces = requests.filter((request) => request.path === '/v1/traces');
-      expect(traces.length).toBeGreaterThan(0);
-      expect(traces.length % 2).toBe(0);
-      const replayOffset = traces.length / 2;
-      for (let index = 0; index < replayOffset; index += 1) {
-        expect(traces[index]!.body.equals(traces[index + replayOffset]!.body)).toBe(true);
-      }
+      expect(requests).toHaveLength(3);
     } finally {
-      if (previous === undefined) delete process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
-      else process.env.OTEL_EXPORTER_OTLP_ENDPOINT = previous;
       await new Promise<void>((resolve, reject) =>
         server.close((error) => (error ? reject(error) : resolve())),
       );
+      await context.fiber.dispose();
+      await rm(directory, { recursive: true, force: true });
     }
   });
 });

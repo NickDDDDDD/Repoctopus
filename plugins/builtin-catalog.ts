@@ -179,6 +179,7 @@ const definitions: readonly BuiltinDefinition[] = [
     sourceFiles: [
       'services/observation-delivery.ts',
       'services/observation-pipeline.ts',
+      'domains/telemetry/observation-contract.ts',
       'domains/trajectory/observation.ts',
       'app/desktop/host/otlp-envelope-codec.ts',
     ],
@@ -682,6 +683,7 @@ const definitions: readonly BuiltinDefinition[] = [
     plugin: WorkExecutionAuthority,
     sourceFiles: [
       'domains/work-execution/types.ts',
+      'domains/telemetry/rule-evaluation.ts',
       'services/work-execution-authority.ts',
       'platform/runtime/file-runtime-store.ts',
     ],
@@ -1023,7 +1025,7 @@ const definitions: readonly BuiltinDefinition[] = [
       'services/workflow-support.ts',
       'services/observation-telemetry.ts',
       'plugins/run/workflow-telemetry-provider.ts',
-      'platform/telemetry/opentelemetry/exporter.ts',
+      'platform/telemetry/opentelemetry/config.ts',
     ],
   },
   {

@@ -194,6 +194,7 @@ export async function bootApp(options: BootOptions): Promise<RunningApp> {
     phase: 'active',
     result: 'succeeded',
   });
+  lifecycleDiagnostics.bindCanonicalTelemetry();
 
   let closed = false;
   return {

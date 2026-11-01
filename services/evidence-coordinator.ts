@@ -40,7 +40,6 @@ import {
   ResourceLeaseConflictError,
 } from '../platform/runtime/resource-lease.js';
 import { FileEvidenceTelemetryOutbox } from '../platform/telemetry/evidence-outbox.js';
-import { evidenceTelemetryFromEnvironment } from '../platform/telemetry/opentelemetry/evidence-exporter.js';
 import { EvidenceObservationTelemetry } from './observation-telemetry.js';
 import { bindOperationOwnership, type OperationOwnership } from './operation-ownership.js';
 
@@ -176,7 +175,7 @@ export class EvidenceCoordinator extends Service {
       config.telemetry ??
       (observationDelivery
         ? new EvidenceObservationTelemetry(observationDelivery, config.environment ?? process.env)
-        : evidenceTelemetryFromEnvironment(config.environment ?? process.env));
+        : { async export() {} });
     this.store = new FileEvidenceStore(this.workspace);
     this.journal = new FileEvidenceJournal(this.workspace);
     this.leases = new FileResourceLeaseManager(this.workspace);
