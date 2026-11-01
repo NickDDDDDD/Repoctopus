@@ -60,7 +60,7 @@
 - [x] 7.3 运行单仓与多仓黑盒：Design 修改一个仓的 Task/Plan 后只重做受影响 Work Package，其他仓 completion/证据保持有效且 repository binding 不漂移 <!-- comet-task:959dc25a-fc35-4985-afc7-a1bed0dd1e48 -->
 - [x] 7.4 运行 Open、Design、Build Configure/Plan/Execute/Check、Verify、Archive 前置的中断恢复矩阵，交叉核对 Run、Trajectory、packet、受保护文件和 OTLP receiver <!-- comet-task:0f7fb55a-f510-4fb8-a2d2-d3dc7954aafe -->
 - [x] 7.5 运行并发 Runner/CAS 测试，证明相同 checkpoint 只产生一个 claim、一个 Human Decision、一个 invalidation 和一个外部副作用 intent <!-- comet-task:ebfb5802-4c21-4b6f-8f72-54fe5aaf0a49 -->
-- [ ] 7.6 通过生产 CLI 验证 composition compatible adoption 不重复批准、不兼容升级进入 `migration_required`、publication-only 更新不返回 Design <!-- comet-task:d786c49e-70ff-4dc0-a65e-135b53fd427c -->
+- [x] 7.6 通过生产 CLI 验证 composition compatible adoption 不重复批准、不兼容升级进入 `migration_required`、publication-only 更新不返回 Design <!-- comet-task:d786c49e-70ff-4dc0-a65e-135b53fd427c -->
 - [x] 7.7 若实施实质复制 Comet 源码则更新第三方来源清单、固定 commit/路径/摘要/许可证并运行 `npm run check:provenance`；若仅行为重建则记录审计结论并验证清单无需新增快照 <!-- comet-task:1949872e-230f-4046-a120-1a21df0e907b -->
 
 ## 8. 删除旧语义并完成验证
