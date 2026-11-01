@@ -17,3 +17,4 @@ classic:
   context_compression: off
   review_mode: thorough
   auto_transition: true
+  check_timeout_ms: 900000
