@@ -11,9 +11,7 @@ const root = path.resolve(import.meta.dirname, '..');
 const npmCli = process.env.npm_execpath;
 if (!npmCli) throw new Error('npm_execpath is required to reproduce the package archive');
 const evidenceOnly = (file) =>
-  file.startsWith('openspec/') ||
-  file.startsWith('verification/') ||
-  file === 'scripts/check-managed-execution-report.mjs';
+  file.startsWith('openspec/') || file.startsWith('verification/');
 const verificationRoot = path.join(root, 'verification');
 const reportPaths = (await readdir(verificationRoot, { withFileTypes: true }))
   .filter((entry) => entry.isDirectory())
@@ -47,6 +45,7 @@ for (const reportPath of reportPaths) {
   );
   reports.push({
     reportPath,
+    relativePath: path.relative(root, reportPath).split(path.sep).join('/'),
     commit,
     expectedPackage,
     distance,
@@ -55,10 +54,16 @@ for (const reportPath of reportPaths) {
 }
 const eligible = reports
   .filter((report) => report.disallowed.length === 0)
-  .sort((left, right) => left.distance - right.distance);
+  .sort(
+    (left, right) =>
+      left.distance - right.distance || left.relativePath.localeCompare(right.relativePath, 'en'),
+  );
 const selected = eligible[0];
 if (!selected) {
-  const closest = reports.sort((left, right) => left.distance - right.distance)[0];
+  const closest = reports.sort(
+    (left, right) =>
+      left.distance - right.distance || left.relativePath.localeCompare(right.relativePath, 'en'),
+  )[0];
   const suffix = closest
     ? `; closest report is stale for packaged product changes: ${closest.disallowed.join(', ')}`
     : '';
