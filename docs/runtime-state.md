@@ -66,11 +66,13 @@ Build phase 固定执行 `Configure → Plan → Plan Evidence → Execute → C
 | ------------- | -------------------------------------------------------------------------------------- |
 | Configure     | Runner 提供的 checkout facts、Host 能力和 `current\|branch\|worktree` 隔离绑定         |
 | Plan          | OpenSpec Tasks 到有界 Work Packages 的执行投影，包括依赖、仓库、write scope 和验收引用 |
-| Plan Evidence | Task coverage、DAG、配置、Host、Skill 和隔离校验；高风险计划建立 Human Decision        |
+| Plan Evidence | Task/acceptance coverage、DAG、Strategy、Binding、Host、scope、composition 和报告 owner 校验；有界高风险计划建立 Human Decision |
 | Execute       | 当前 package 的验收、测试、实现和可选受管子代理委派 Evidence                           |
 | Check         | 全部 package、Task acceptance、测试、独立 standard review 和仓库事实                   |
 
-`BuildConfiguration` 冻结 `autonomous|subagent-driven-development`、`tdd|direct`、standard review、Host 能力、checkout identity 和 Configure 时的初始 repository state。Runtime 本版不创建、切换或删除 checkout；Runner 先准备 checkout，再把精确 binding facts 交给 Configure。实现提交可以改变 HEAD，但 repository、路径、branch 和 worktree ownership 不能漂移。Host、能力、配置、计划或 checkout identity 漂移时，Runtime fail closed。
+`BuildStrategy` 冻结经过 Design 批准的稳定语义：`autonomous|subagent-driven-development`、`tdd|direct`、standard review 与 `current|branch|worktree` 隔离意图。`ExecutionBinding` 只记录 Runtime 在 Configure 观察并验证的 Host capability、repository/branch/HEAD、ownership 和 opaque local overlay reference；绝对路径只保存在本机 overlay，不进入可移植状态或 OTLP。Configure 成功后自动进入 Plan，不建立第二次常规人工批准。
+
+Runtime 本版不创建、切换或删除 checkout；Runner 先准备 checkout，再把当前事实交给 Configure。同一 Strategy 下兼容的 Host、能力、HEAD、checkout 或路径漂移会自动选择新的 Configure Work，建立新 Binding revision，并只失效依赖旧 Binding state 的 Plan/Evidence/未执行 Work。Strategy 不变时复用原 Design 决定；不兼容 Host、越界 ownership、错误 isolation 或不兼容 composition 仍然 fail closed。
 
 `tasks.md` 是需求分解与完成 claim 的语义权威。`BuildPlan` 是 Run 内的执行投影，可以把一个 Task 拆成多个 package，或把多个强耦合 Task 合为一个 package；它不会写回 OpenSpec，也不是第五类规划工件。Plan revision 只使受影响 package 的 Evidence 失效，保留摘要仍匹配的 completion。Task checkbox 一旦完成就保持完成；最新 Plan 和 Check Evidence 决定当前实现是否仍有效。
 

@@ -81,7 +81,6 @@ function approvedConfiguration(
     intent,
     workspaceIntent: intent,
     semanticDigest: strategy.semanticDigest,
-    configurationId: strategy.strategyId,
     bindingDigest: executionBinding.stateDigest,
     repositoryIds: executionBinding.repositories.map((entry) => entry.repositoryId),
     hostCapabilities: [
@@ -405,7 +404,7 @@ describe('Build protocol domain', () => {
     const second = approvedConfiguration();
 
     expect(first.semanticDigest).toBe(second.semanticDigest);
-    expect(first.configurationId).toBe(second.configurationId);
+    expect(first.strategy.strategyId).toBe(second.strategy.strategyId);
     expect(first.bindingDigest).toBe(second.bindingDigest);
     expect(() => {
       (first.binding.repositories as unknown as Array<{ repositoryId: string }>).push({

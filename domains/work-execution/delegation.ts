@@ -16,8 +16,8 @@ export function assertManagedDelegation(
   let executionMode: unknown;
   try {
     executionMode = (
-      JSON.parse(layer.content) as { build?: { configuration?: { executionMode?: unknown } } }
-    ).build?.configuration?.executionMode;
+      JSON.parse(layer.content) as { build?: { strategy?: { executionMode?: unknown } } }
+    ).build?.strategy?.executionMode;
   } catch {
     throw new Error('Build Execute packet has malformed Change inputs');
   }

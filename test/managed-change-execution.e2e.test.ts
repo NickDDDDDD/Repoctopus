@@ -212,6 +212,8 @@ describe('managed Change execution production composition', () => {
           'managed-blackbox',
           '--target',
           'main',
+          '--execution-mode',
+          executionMode,
         ],
       });
       const runId = started.runId!;
@@ -843,31 +845,27 @@ describe('managed Change execution production composition', () => {
           await application.context.managedWorkExecutor.acceptExternalOutcome({
             schemaVersion: 3,
             runId,
-            submissionId: 'corrected-build-configuration-1',
+            submissionId: 'corrected-execution-binding-1',
             invocationId: configurationInvocation.session.invocationId,
             hostId: 'capturing-work-execution-host',
             packetDigest: configurationInvocation.session.packetDigest,
             status: 'succeeded',
-            summary: 'Corrected Build Configuration selects an executable mode',
+            summary: 'Corrected Execution Binding reports the current machine observation',
             consumedLayerDigests: configurationInvocation.packet.context.layers
               .filter((layer) => ['action-skill', 'augmentation-skill'].includes(layer.kind))
               .map((layer) => layer.digest),
             result: correctedConfigurationResult,
           });
         }
-        const configurationWait = await next();
+        const planned = await next();
         capture = installHost();
-        expect(configurationWait.value.changeLifecycle).toMatchObject({
+        expect(planned.value.changeLifecycle).toMatchObject({
           phase: 'build',
-          status: 'waiting',
-          currentWork: null,
-          waitCondition: { kind: 'human-decision' },
-          build: { action: 'configure' },
+          status: 'running',
+          currentWork: { kind: 'build.plan' },
+          waitCondition: null,
+          build: { action: 'plan' },
         });
-        const configurationDecision = configurationWait.value.changeLifecycle!.waitCondition!;
-        if (configurationDecision.kind !== 'human-decision') {
-          throw new Error('missing Build Configuration decision');
-        }
         if (multiRepository && executionMode === 'autonomous') {
           await writeFile(
             path.join(workspace, 'publication-marker.txt'),
@@ -892,8 +890,9 @@ describe('managed Change execution production composition', () => {
           });
           expect(publicationOnly.result?.changeLifecycle).toMatchObject({
             phase: 'build',
-            status: 'waiting',
-            waitCondition: { kind: 'human-decision', requestId: configurationDecision.requestId },
+            status: 'running',
+            currentWork: { kind: 'build.plan' },
+            waitCondition: null,
           });
           expect(publicationOnly.result?.changeLifecycle?.phase).not.toBe('design');
           application = await bootProjectComposition(productRoot, workspace);
@@ -907,25 +906,6 @@ describe('managed Change execution production composition', () => {
           });
         }
         await restartApplication();
-        const planned = await application.context.commandRouter.execute<
-          Parameters<typeof application.context.workflowRuns.decideChange>[0],
-          RunStatusView
-        >('run.change.decide', {
-          runId,
-          response: {
-            apiVersion: 'repoctopus/v1alpha1',
-            kind: 'HumanDecisionResponse',
-            requestId: configurationDecision.requestId,
-            proposalHash: configurationDecision.proposalDigest,
-            decision: 'approve',
-          },
-          actor: { actorId: 'managed-test-user', source: 'cli', authenticated: true },
-        });
-        expect(planned.changeLifecycle).toMatchObject({
-          phase: 'build',
-          currentWork: { kind: 'build.plan' },
-          build: { action: 'plan' },
-        });
         await next();
         const planInvocation = capture.invocations.findLast(
           (entry) => entry.packet.work.kind === 'build.plan',
@@ -1179,10 +1159,14 @@ describe('managed Change execution production composition', () => {
           });
           await execFileAsync('git', ['push'], { cwd: workerRepository });
         }
-        await next();
-        const checkInvocation = capture.invocations.findLast(
-          (entry) => entry.packet.work.kind === 'build.check',
-        );
+        let checkInvocation: (typeof capture.invocations)[number] | undefined;
+        for (let step = 0; step < 8 && !checkInvocation; step += 1) {
+          const advanced = await next();
+          expect(advanced.value.changeLifecycle?.waitCondition).toBeNull();
+          checkInvocation = capture.invocations.findLast(
+            (entry) => entry.packet.work.kind === 'build.check',
+          );
+        }
         let afterCheck = await next();
         if (!multiRepository && executionMode === 'autonomous') {
           if (!checkInvocation || !correctedCheckResult) {

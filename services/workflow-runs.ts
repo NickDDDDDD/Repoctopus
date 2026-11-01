@@ -1232,10 +1232,6 @@ export class WorkflowRuns extends Service {
       workspaceOwnerId: lifecycle.workspaceIntent!.workspaceId,
       localOverlayRef: `execution-workspace:${observed.localDigest.slice(-24)}`,
     });
-    if (candidate.host.hostId !== executionBinding.host.hostId) return 'host';
-    if (candidate.host.capabilityDigest !== executionBinding.host.capabilityDigest) {
-      return 'capability';
-    }
     const withoutHead = (binding: ExecutionBinding) =>
       binding.repositories.map(({ headRevision: _headRevision, ...repository }) => repository);
     if (canonicalJson(withoutHead(candidate)) !== canonicalJson(withoutHead(executionBinding))) {
@@ -1245,7 +1241,36 @@ export class WorkflowRuns extends Service {
       return 'head';
     }
     if (candidate.localOverlayRef !== executionBinding.localOverlayRef) return 'path';
+    if (candidate.host.hostId !== executionBinding.host.hostId) return 'host';
+    if (candidate.host.capabilityDigest !== executionBinding.host.capabilityDigest) {
+      return 'capability';
+    }
     return null;
+  }
+
+  private async executionWorkspaceDrift(
+    state: RunState,
+    lifecycle: NonNullable<RunState['changeLifecycle']>,
+    projectSnapshot: ProjectSnapshot,
+    executionBinding: ExecutionBinding,
+  ): Promise<'checkout' | 'head' | 'path' | null> {
+    const observed = await this.bindExecutionWorkspace(state, lifecycle, projectSnapshot);
+    const repositories = observed.repositories.map((repository) => ({
+      repositoryId: repository.repositoryId,
+      branchRef: repository.branch,
+      headRevision: repository.head,
+      isolation: observed.isolation,
+      workspaceOwnerId: lifecycle.workspaceIntent!.workspaceId,
+      worktreeId: repository.worktreeId,
+    }));
+    const withoutHead = (entries: readonly ExecutionBinding['repositories'][number][]) =>
+      entries.map(({ headRevision: _headRevision, ...repository }) => repository);
+    if (canonicalJson(withoutHead(repositories)) !== canonicalJson(withoutHead(executionBinding.repositories))) {
+      return 'checkout';
+    }
+    if (canonicalJson(repositories) !== canonicalJson(executionBinding.repositories)) return 'head';
+    const overlayRef = `execution-workspace:${observed.localDigest.slice(-24)}`;
+    return overlayRef === executionBinding.localOverlayRef ? null : 'path';
   }
 
   private async dispatchExecutionBindingRevalidation(input: {
@@ -1832,6 +1857,32 @@ export class WorkflowRuns extends Service {
               ['claimed', 'context-delivered', 'not-executed'].includes(execution.status) ||
               (execution.status === 'outcome' && execution.actionOutcome?.status === 'failed'));
           if (dispatchable) {
+            const lifecycle = state.changeLifecycle;
+            const protocol = lifecycle.buildProtocol;
+            if (
+              lifecycle.phase === 'build' &&
+              work.kind !== 'build.configure' &&
+              protocol?.binding
+            ) {
+              const base = await this.loadChangePlanningBase(state, lifecycle, 'design');
+              const workspaceDrift = await this.executionWorkspaceDrift(
+                state,
+                lifecycle,
+                base.projectSnapshot,
+                protocol.binding,
+              );
+              if (workspaceDrift) {
+                return this.dispatchExecutionBindingRevalidation({
+                  state,
+                  lifecycle,
+                  projectSnapshot: base.projectSnapshot,
+                  projectConfigDigest: base.projectConfigDigest,
+                  workspaceRepositoryId: base.workspaceRepositoryId,
+                  reasonCode: workspaceDrift,
+                  ...(signal ? { signal } : {}),
+                });
+              }
+            }
             const adapter =
               work.kind === 'delivery.publish'
                 ? 'git'
@@ -2499,7 +2550,7 @@ export class WorkflowRuns extends Service {
               try {
                 plan = createBuildPlan({
                   runId,
-                  revision: (protocol.plan?.revision ?? 0) + 1,
+                  revision: (protocol.plans.at(-1)?.revision ?? 0) + 1,
                   strategy,
                   binding,
                   planningDigest: lifecycle.planningDigest!,
@@ -2564,8 +2615,11 @@ export class WorkflowRuns extends Service {
                 compositionCheckpointDigest: current.composition.compositionDigest,
                 reportOwnerId: lifecycle.identity.workspaceId,
               });
-              if (evidence.risk.level === 'high') {
-                const requestId = `plan:${evidence.validationDigest.slice(-24)}`;
+              if (
+                evidence.risk.level === 'high' &&
+                !protocol.approvedRiskDigests.includes(evidence.riskDecisionDigest)
+              ) {
+                const requestId = `plan:${evidence.riskDecisionDigest.slice(-24)}`;
                 const awaiting = await this.coordinator.acceptChangeObservation(runId, {
                   kind: 'build-plan-approval-required',
                   evidence,
@@ -3935,6 +3989,7 @@ export class WorkflowRuns extends Service {
         approvalPhase: 'design',
         changeBranch: input.intent.changeBranch,
         expectedPlanningDigest: lifecycle.planningDigest,
+        buildStrategyDigest: this.buildStrategy(state, lifecycle).semanticDigest,
         ...(signal ? { signal } : {}),
       });
       if (planningAuthority.status === 'invalid') {

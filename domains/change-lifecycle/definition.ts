@@ -54,7 +54,7 @@ function validatorProfile(id: string) {
 export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
   schemaVersion: 3,
   id: 'repoctopus-change',
-  version: '4.6.0',
+  version: '4.7.0',
   phases: [
     {
       phase: 'open',
@@ -374,6 +374,14 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       from: { phase: 'build', statuses: ['running'] },
       to: { phase: 'build', status: 'running' },
       trigger: 'execution-binding-validation-retry',
+      requiredValidatorProfile: 'build.binding-valid',
+    },
+    {
+      id: 'build.binding-revalidation-required',
+      kind: 'self',
+      from: { phase: 'build', statuses: ['running'] },
+      to: { phase: 'build', status: 'running' },
+      trigger: 'execution-binding-state-drifted',
       requiredValidatorProfile: 'build.binding-valid',
     },
     {

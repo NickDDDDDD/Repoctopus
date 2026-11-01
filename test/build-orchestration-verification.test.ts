@@ -12,7 +12,7 @@ import { changeRunId } from '../domains/change-lifecycle/host-workflow.js';
 import { parseSpecificationTasks } from '../domains/specification/tasks.js';
 
 describe('managed Build verification subject', () => {
-  it('pins a reproducible definition, configuration, plan, and Run identity', () => {
+  it('pins a reproducible definition, Strategy, Binding, Plan, and Run identity', () => {
     const intent = createExecutionWorkspaceIntent({
       workspaceId: 'verification-workspace',
       changeId: 'restore-runtime-build-orchestration',
@@ -99,8 +99,8 @@ describe('managed Build verification subject', () => {
     };
 
     expect(subject).toEqual({
-      definition: 'repoctopus-change@4.6.0',
-      definitionDigest: 'sha256:a6c06825948cb3b31a8d50210eeb744522b5cbe5a30e52e9f90904b8b7c51923',
+      definition: 'repoctopus-change@4.7.0',
+      definitionDigest: 'sha256:8d2d951299cd9dbdc91bb7aaca960501311c1aed45123512c83dade34d19d2d1',
       runId: 'change-verification-workspace-restore-runtime-build-orchestration-9fda2eb7bf05fdf5',
       blackBoxRunId: 'change-managed-blackbox-managed-blackbox-a56af5c947f984ce',
       strategyId: 'build-strategy:426031405571f2b72e439071',

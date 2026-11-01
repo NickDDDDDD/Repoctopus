@@ -1529,7 +1529,11 @@ export function evolveChangeLifecycle(options: {
     const buildProtocol = advanceBuildProtocol(
       current.buildProtocol,
       observation.decision === 'approve'
-        ? { kind: 'plan-evidence-accepted', evidence: observation.evidence }
+        ? {
+            kind: 'plan-evidence-accepted',
+            evidence: observation.evidence,
+            approvedRiskDigest: observation.evidence.riskDecisionDigest,
+          }
         : { kind: 'plan-rejected' },
     );
     const expectedKind =

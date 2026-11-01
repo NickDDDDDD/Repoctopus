@@ -651,6 +651,7 @@ export interface BuildProtocolState {
   packageCompletions: readonly PackageCompletionEvidence[];
   checkEvidence: BuildCheckEvidence | null;
   invalidations: readonly BuildInvalidation[];
+  approvedRiskDigests: readonly Digest[];
   suspension: BuildProtocolSuspension | null;
   revision: number;
 }
@@ -667,7 +668,11 @@ export type BuildProtocolObservation =
   | { kind: 'binding-accepted'; binding: ExecutionBinding }
   | { kind: 'binding-revalidation-required'; reasonCode: string }
   | { kind: 'plan-accepted'; plan: BuildPlan }
-  | { kind: 'plan-evidence-accepted'; evidence: PlanEvidence }
+  | {
+      kind: 'plan-evidence-accepted';
+      evidence: PlanEvidence;
+      approvedRiskDigest?: Digest;
+    }
   | { kind: 'plan-rejected' }
   | { kind: 'package-completed'; completion: PackageCompletionEvidence }
   | { kind: 'check-accepted'; evidence: BuildCheckEvidence }
@@ -696,6 +701,7 @@ export function createBuildProtocolState(input: {
     packageCompletions: [],
     checkEvidence: null,
     invalidations: [],
+    approvedRiskDigests: [],
     suspension: null,
     revision: 0,
   });
@@ -876,7 +882,7 @@ export function advanceBuildProtocol(
     ) {
       throw new Error('Plan does not bind the current Strategy and Execution Binding');
     }
-    const expectedRevision = (state.plan?.revision ?? 0) + 1;
+    const expectedRevision = (state.plans.at(-1)?.revision ?? 0) + 1;
     if (observation.plan.revision !== expectedRevision) {
       throw new Error('Build Plan revision is not monotonic');
     }
@@ -900,6 +906,12 @@ export function advanceBuildProtocol(
     });
   }
   if (observation.kind === 'plan-evidence-accepted') {
+    if (
+      observation.approvedRiskDigest !== undefined &&
+      observation.approvedRiskDigest !== observation.evidence.riskDecisionDigest
+    ) {
+      throw new Error('Plan risk approval does not bind the current semantic risk decision');
+    }
     if (state.currentAction !== 'plan-evidence') {
       throw new Error('Plan Evidence does not match the current Runtime-selected Action');
     }
@@ -919,6 +931,9 @@ export function advanceBuildProtocol(
       currentAction: allCompleted ? 'check' : 'execute',
       actionAttempt: 1,
       planEvidence: observation.evidence,
+      approvedRiskDigests: observation.approvedRiskDigest
+        ? [...new Set([...state.approvedRiskDigests, observation.approvedRiskDigest])].sort()
+        : state.approvedRiskDigests,
       revision: state.revision + 1,
     });
   }
@@ -1035,6 +1050,7 @@ export interface PlanEvidence {
   reviewMode: BuildReviewMode;
   validationDigest: Digest;
   risk: BuildPlanRisk;
+  riskDecisionDigest: Digest;
   accepted: true;
 }
 
@@ -1204,6 +1220,24 @@ export function createPlanEvidence(input: {
     reviewMode: input.strategy.reviewMode,
     validationDigest: input.validation.inputDigest,
     risk: assessBuildPlanRisk(input.plan),
+    riskDecisionDigest: digest({
+      strategyDigest: input.strategy.semanticDigest,
+      taskSetDigest: input.plan.taskSetDigest,
+      planningDigest: input.plan.planningDigest,
+      reportOwnerId: input.reportOwnerId,
+      reviewMode: input.strategy.reviewMode,
+      packages: input.plan.packages.map((workPackage) => ({
+        packageKey: workPackage.packageKey,
+        taskIds: workPackage.taskIds,
+        repositoryIds: workPackage.repositoryIds,
+        writeScopes: workPackage.writeScopes,
+        acceptanceRefs: workPackage.acceptanceRefs,
+        expectedOutcomes: workPackage.expectedOutcomes,
+        validatorProfile: workPackage.validatorProfile,
+        dependsOn: workPackage.dependsOn,
+      })),
+      risk: assessBuildPlanRisk(input.plan).digest,
+    }),
     accepted: true as const,
   };
   return deepFreeze({
