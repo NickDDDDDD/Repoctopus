@@ -6,6 +6,8 @@ import path from 'node:path';
 import process from 'node:process';
 import { promisify } from 'node:util';
 
+import { isLifecycleEvidenceOnlyChange } from './managed-execution-report-boundary.mjs';
+
 const execute = promisify(execFile);
 const root = path.resolve(import.meta.dirname, '..');
 const npmCli = process.env.npm_execpath;
@@ -30,11 +32,7 @@ const changed = (
   .trim()
   .split(/\r?\n/u)
   .filter(Boolean);
-const evidenceOnly = (file) =>
-  file.startsWith('openspec/') ||
-  file.startsWith('verification/') ||
-  file === 'scripts/check-managed-execution-report.mjs';
-const disallowed = changed.filter((file) => !evidenceOnly(file));
+const disallowed = changed.filter((file) => !isLifecycleEvidenceOnlyChange(file));
 if (disallowed.length > 0) {
   throw new Error(
     `Lifecycle verification report is stale for packaged product changes: ${disallowed.join(', ')}`,
