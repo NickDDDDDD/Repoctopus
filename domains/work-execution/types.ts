@@ -166,9 +166,8 @@ export interface RejectedWorkExecutionSubmission extends WorkExecutionSubmission
 export type WorkExecutionResult =
   | {
       schemaVersion: 1;
-      kind: 'build-configuration-candidate';
-      executionMode: 'autonomous' | 'subagent-driven-development';
-      tddMode: 'tdd' | 'direct';
+      kind: 'execution-binding-candidate';
+      strategyDigest: `sha256:${string}`;
     }
   | {
       schemaVersion: 1;

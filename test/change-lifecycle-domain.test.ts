@@ -20,10 +20,10 @@ import {
   createChangeLifecycleSnapshot,
 } from '../domains/change-lifecycle/definition.js';
 import {
-  acceptBuildConfiguration,
   advanceBuildProtocol,
   createBuildCheckEvidence,
-  createBuildConfigurationProposal,
+  createBuildStrategy,
+  createExecutionBinding,
   createBuildInvalidation,
   createBuildPlan,
   createBuildProtocolState,
@@ -35,7 +35,20 @@ import {
 } from '../domains/change-lifecycle/build-protocol.js';
 import { parseSpecificationTasks } from '../domains/specification/tasks.js';
 
-const digest = (value: string): `sha256:${string}` => `sha256:${value.repeat(64).slice(0, 64)}`;
+const digest = (value: string): `sha256:${string}` => {
+  const hex = Buffer.from(value).toString('hex') || '0';
+  return `sha256:${hex.repeat(64).slice(0, 64)}`;
+};
+
+const strategyFor = (intent: ReturnType<typeof createExecutionWorkspaceIntent>) =>
+  createBuildStrategy({
+    runId: initialSnapshot().identity.runId,
+    revision: 1,
+    executionMode: 'autonomous',
+    tddMode: 'tdd',
+    reviewMode: 'standard',
+    isolationIntent: intent.isolation,
+  });
 
 const definition: ChangeLifecycleDefinition = {
   schemaVersion: 3,
@@ -505,7 +518,7 @@ describe('Change lifecycle domain', () => {
     const buildProtocol = createBuildProtocolState({
       runId: initialSnapshot().identity.runId,
       planningDigest: digest('i'),
-      workspaceIntent: intent,
+      strategy: strategyFor(intent),
     });
     const approved = evolveChangeLifecycle({
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
@@ -720,7 +733,7 @@ describe('Change lifecycle domain', () => {
     const activeBuildProtocol = createBuildProtocolState({
       runId: initialSnapshot().identity.runId,
       planningDigest: digest('p'),
-      workspaceIntent: designRevisionIntent,
+      strategy: strategyFor(designRevisionIntent),
     });
     const activeBuild = builtinSnapshot({
       revision: 4,
@@ -866,7 +879,7 @@ describe('Change lifecycle domain', () => {
     const protocol = createBuildProtocolState({
       runId: initialSnapshot().identity.runId,
       planningDigest: digest('p'),
-      workspaceIntent: intent,
+      strategy: strategyFor(intent),
     });
     const configureWork = phaseWork('build', 'build.configure', 4, digest('c'));
     const retryWork = phaseWork('build', 'build.configure', 5, digest('r'));
@@ -884,7 +897,7 @@ describe('Change lifecycle domain', () => {
         buildProtocol: protocol,
       }),
       observation: {
-        kind: 'build-configuration-retry-required',
+        kind: 'build-binding-retry-required',
         reason: 'The Configure Host did not attest the selected execution capability.',
         work: retryWork,
       },
@@ -898,7 +911,7 @@ describe('Change lifecycle domain', () => {
       tasks: [{ taskId: buildTask.taskId }],
       buildProtocol: { currentAction: 'configure', actionAttempt: 2 },
     });
-    expect(retried.fact).toMatchObject({ transitionId: 'build.configuration-retry' });
+    expect(retried.fact).toMatchObject({ transitionId: 'build.binding-retry' });
   });
 
   it('returns an unapproved Build Configure to an Open workspace-intent revision wait', () => {
@@ -910,7 +923,7 @@ describe('Change lifecycle domain', () => {
     const protocol = createBuildProtocolState({
       runId: initialSnapshot().identity.runId,
       planningDigest: digest('p'),
-      workspaceIntent: intent,
+      strategy: strategyFor(intent),
     });
     const configureWork = phaseWork('build', 'build.configure', 4, digest('c'));
 
@@ -1014,7 +1027,7 @@ describe('Change lifecycle domain', () => {
     });
   });
 
-  it('retries Build Plan without accepting an Outcome from a drifted Host', () => {
+  it('retries Build Plan without accepting an invalid Outcome', () => {
     const intent = createExecutionWorkspaceIntent({
       workspaceId: initialSnapshot().identity.workspaceId,
       changeId: initialSnapshot().identity.changeId,
@@ -1033,29 +1046,31 @@ describe('Change lifecycle domain', () => {
         },
       ],
     });
-    const proposal = createBuildConfigurationProposal({
-      intent,
-      binding,
+    const strategy = createBuildStrategy({
+      runId: initialSnapshot().identity.runId,
+      revision: 1,
       executionMode: 'autonomous',
       tddMode: 'tdd',
       reviewMode: 'standard',
+      isolationIntent: intent.isolation,
+    });
+    const executionBinding = createExecutionBinding({
+      strategy,
+      revision: 1,
       hostId: 'external:cli:codex-root',
-      hostCapabilities: ['build.autonomous', 'repository.read', 'repository.write'],
+      hostCapabilities: ['build.autonomous', 'process.execute', 'repository.write'],
+      workspaceBinding: binding,
+      workspaceOwnerId: intent.workspaceId,
+      localOverlayRef: 'execution-workspace:test',
     });
     let protocol = createBuildProtocolState({
       runId: initialSnapshot().identity.runId,
       planningDigest: digest('p'),
-      workspaceIntent: intent,
+      strategy,
     });
-    protocol = advanceBuildProtocol(protocol, { kind: 'configuration-proposed', proposal });
     protocol = advanceBuildProtocol(protocol, {
-      kind: 'configuration-approved',
-      configuration: acceptBuildConfiguration({
-        proposal,
-        requestId: 'configuration-decision',
-        actorId: 'trusted-user',
-        decidedAt: '2026-10-28T00:00:00.000Z',
-      }),
+      kind: 'binding-accepted',
+      binding: executionBinding,
     });
     const retryWork = phaseWork('build', 'build.plan', 6, digest('b'));
 
@@ -1073,7 +1088,7 @@ describe('Change lifecycle domain', () => {
       }),
       observation: {
         kind: 'build-plan-retry-required',
-        reason: 'The Plan Outcome came from a Host outside the approved Configuration.',
+        reason: 'The Plan Outcome failed deterministic validation.',
         work: retryWork,
       },
     });
@@ -1134,25 +1149,28 @@ describe('Change lifecycle domain', () => {
         },
       ],
     });
-    const proposal = createBuildConfigurationProposal({
-      intent,
-      binding,
+    const strategy = createBuildStrategy({
+      runId: initialSnapshot().identity.runId,
+      revision: 1,
       executionMode: 'autonomous',
       tddMode: 'direct',
       reviewMode: 'standard',
-      hostId: 'managed-host',
-      hostCapabilities: ['build.autonomous'],
+      isolationIntent: intent.isolation,
     });
-    const configuration = acceptBuildConfiguration({
-      proposal,
-      requestId: 'configuration-decision',
-      actorId: 'trusted-user',
-      decidedAt: '2026-10-28T00:00:00.000Z',
+    const executionBinding = createExecutionBinding({
+      strategy,
+      revision: 1,
+      hostId: 'managed-host',
+      hostCapabilities: ['build.autonomous', 'process.execute', 'repository.write'],
+      workspaceBinding: binding,
+      workspaceOwnerId: intent.workspaceId,
+      localOverlayRef: 'execution-workspace:test',
     });
     const plan = createBuildPlan({
       runId: initialSnapshot().identity.runId,
       revision: 1,
-      configuration,
+      strategy,
+      binding: executionBinding,
       planningDigest: tasks.digest,
       tasks,
       candidate: {
@@ -1174,8 +1192,11 @@ describe('Change lifecycle domain', () => {
     });
     const planEvidence = createPlanEvidence({
       plan,
-      configuration,
-      validation: validateBuildPlan({ plan, configuration, tasks }),
+      strategy,
+      binding: executionBinding,
+      validation: validateBuildPlan({ plan, strategy, binding: executionBinding, tasks }),
+      compositionCheckpointDigest: digest('c'),
+      reportOwnerId: 'team-platform',
     });
     const completion = createPackageCompletionEvidence({
       workPackage: plan.packages[0]!,
@@ -1183,16 +1204,18 @@ describe('Change lifecycle domain', () => {
       acceptanceEvidenceIds: ['acceptance-1'],
       testEvidenceIds: ['test-1'],
       tddMode: 'direct',
-      repositoryDigest: configuration.bindingDigest,
+      repositoryDigest: executionBinding.stateDigest,
       implementationDigest: digest('a'),
     });
     let protocol = createBuildProtocolState({
       runId: initialSnapshot().identity.runId,
       planningDigest: tasks.digest,
-      workspaceIntent: intent,
+      strategy,
     });
-    protocol = advanceBuildProtocol(protocol, { kind: 'configuration-proposed', proposal });
-    protocol = advanceBuildProtocol(protocol, { kind: 'configuration-approved', configuration });
+    protocol = advanceBuildProtocol(protocol, {
+      kind: 'binding-accepted',
+      binding: executionBinding,
+    });
     protocol = advanceBuildProtocol(protocol, { kind: 'plan-accepted', plan });
     protocol = advanceBuildProtocol(protocol, {
       kind: 'plan-evidence-accepted',
@@ -1210,9 +1233,10 @@ describe('Change lifecycle domain', () => {
       summary: 'Implementation behavior failed the managed check.',
     };
     const rejectedCheck = createBuildCheckEvidence({
-      configurationDigest: configuration.semanticDigest,
+      strategyDigest: strategy.semanticDigest,
+      bindingStateDigest: executionBinding.stateDigest,
       planDigest: plan.digest,
-      repositoryDigest: configuration.bindingDigest,
+      repositoryDigest: executionBinding.stateDigest,
       implementationDigest: digest('b'),
       completedPackageIds: [plan.packages[0]!.packageId],
       acceptedTaskIds: ['1.1'],
@@ -1327,7 +1351,8 @@ describe('Change lifecycle domain', () => {
     const revisedPlan = createBuildPlan({
       runId: initialSnapshot().identity.runId,
       revision: 2,
-      configuration,
+      strategy,
+      binding: executionBinding,
       planningDigest: tasks.digest,
       tasks,
       candidate: {

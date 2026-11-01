@@ -1,0 +1,3268 @@
+# comet-execution: managed-run
+change_id: c682a45f-37fb-477c-8bd1-6d1853b3a445
+workflow: full
+language: zh-CN
+phase: archive
+context_compression: off
+build_mode: autonomous
+build_pause: null
+subagent_dispatch: null
+tdd_mode: tdd
+review_mode: thorough
+isolation: current
+verify_mode: null
+auto_transition: true
+base_ref: bafbb1b94627e4ade3692a6a04f0e8f7f31c6542
+design_doc: openspec/changes/archive/2026-11-01-separate-build-strategy-and-execution-binding/design.md
+plan: docs/superpowers/plans/2026-11-01-separate-build-strategy-and-execution-binding.md
+verify_result: pass
+verify_failures: 0
+verification_report: docs/superpowers/reports/separate-build-strategy-and-execution-binding.md
+branch_status: pending
+created_at: 2026-11-01
+verified_at: 2026-11-01
+archive_confirmation: confirmed
+archived: true
+bound_branch: codex/separate-build-strategy-execution-binding-v2
+direct_override: false
+handoff_context: openspec/changes/archive/2026-11-01-separate-build-strategy-and-execution-binding/.comet/handoff/design-context.json
+handoff_hash: 6badac2a85a13630b7f135f1d577e587064481510feee34e66d595ffcb9fb756
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v2
+  hash: 083cf19b33a88b4105b4bb8274fbbd7a7ac56d3c5970554bc98869fa7a99ab2e
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: separate-build-strategy-and-execution-binding
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: 94164a86a54e82dde66dbfc9836807f31ccd8a08f21cb6cf9ff9ebc50cbb5ff2
+    input:
+      change: separate-build-strategy-and-execution-binding
+      changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+      workspaceBaseline:
+        ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+    state:
+      archiveConfirmation: confirmed
+      archived: true
+      autoTransition: true
+      baseRef: bafbb1b94627e4ade3692a6a04f0e8f7f31c6542
+      boundBranch: codex/separate-build-strategy-execution-binding-v2
+      branchStatus: pending
+      buildMode: autonomous
+      buildPause: null
+      checkEpoch: 8
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-01
+      designDoc: openspec/changes/archive/2026-11-01-separate-build-strategy-and-execution-binding/design.md
+      directOverride: false
+      handoffContext: openspec/changes/archive/2026-11-01-separate-build-strategy-and-execution-binding/.comet/handoff/design-context.json
+      handoffHash: 6badac2a85a13630b7f135f1d577e587064481510feee34e66d595ffcb9fb756
+      isolation: current
+      language: zh-CN
+      phase: archive
+      plan: docs/superpowers/plans/2026-11-01-separate-build-strategy-and-execution-binding.md
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: tdd
+      verificationReport: docs/superpowers/reports/separate-build-strategy-and-execution-binding.md
+      verifiedAt: 2026-11-01
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pass
+      workflow: full
+    status: running
+    sequence: 30
+    actions:
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-4b30690c757a4f7fac815a84899710650159339096b6ce6ef8b7e99b3eeecee0
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: separate-build-strategy-and-execution-binding:1
+        input:
+          input:
+            change: separate-build-strategy-and-execution-binding
+            changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+            workspaceBaseline:
+              ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+          outputs: {}
+        inputHash: 099bbae60198facbe289ba0780253b98aa52f3d3dec9f311afbb0816cb26de43
+        outcome:
+          actionId: separate-build-strategy-and-execution-binding:1
+          attempt: 1
+          claimToken: portable-4b30690c757a4f7fac815a84899710650159339096b6ce6ef8b7e99b3eeecee0
+          inputHash: 099bbae60198facbe289ba0780253b98aa52f3d3dec9f311afbb0816cb26de43
+          outcomeId: 2b61fb7b-c3bd-4288-8c26-9f2d4e87a852
+          output:
+            event: open-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: ffcc4a14f21b5ca3b84e53b49423af474175e26cfff6080a5a2826d15d790e1e
+            outcomeId: 2b61fb7b-c3bd-4288-8c26-9f2d4e87a852
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: separate-build-strategy-and-execution-binding
+        status: succeeded
+        stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-c741a77fc955015d54f3950eda46802ed029fd6b51e7eaaddddb4260aabd2a5a
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: separate-build-strategy-and-execution-binding:4
+        input:
+          input:
+            change: separate-build-strategy-and-execution-binding
+            changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+            workspaceBaseline:
+              ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+          outputs: {}
+        inputHash: 1222ab6e747df1931004e64c8daa737daaf6a35dc14ccb4c7b6e83a30f182c8f
+        outcome:
+          actionId: separate-build-strategy-and-execution-binding:4
+          attempt: 1
+          claimToken: portable-c741a77fc955015d54f3950eda46802ed029fd6b51e7eaaddddb4260aabd2a5a
+          inputHash: 1222ab6e747df1931004e64c8daa737daaf6a35dc14ccb4c7b6e83a30f182c8f
+          outcomeId: separate-build-strategy-and-execution-binding:4:1:executor-result
+          output:
+            contentHash: 40148561d8aaef98354786ecd8aafed0044e0208fdc06b6d289127810ff183df
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 0711f717dc96aae407345c5a6538e604daf4802d26a0fcfa441bd950409a6a9f
+            outcomeId: separate-build-strategy-and-execution-binding:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: separate-build-strategy-and-execution-binding
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-bc99f8fcfc71d1263fc19cfe7aa2b7b32464e3c8c6c5560809f2f254a1d82ef7
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: separate-build-strategy-and-execution-binding:5
+        input:
+          input:
+            change: separate-build-strategy-and-execution-binding
+            changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+            workspaceBaseline:
+              ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+          outputs: {}
+        inputHash: d0d48a81f6eba2bb6d29d0a1491418e8a954ccbf00ccabef9c479335366fe6d8
+        outcome:
+          actionId: separate-build-strategy-and-execution-binding:5
+          attempt: 1
+          claimToken: portable-bc99f8fcfc71d1263fc19cfe7aa2b7b32464e3c8c6c5560809f2f254a1d82ef7
+          inputHash: d0d48a81f6eba2bb6d29d0a1491418e8a954ccbf00ccabef9c479335366fe6d8
+          outcomeId: f65afac1-f626-4a08-aa48-6f4b44fa0c2d
+          output:
+            handoffContext: openspec/changes/separate-build-strategy-and-execution-binding/.comet/handoff/design-context.json
+            handoffHash: 6badac2a85a13630b7f135f1d577e587064481510feee34e66d595ffcb9fb756
+            proposal: "Design completed: replace the mixed BuildConfiguration authority with
+              an approved portable BuildStrategy plus automatically validated
+              ExecutionBinding; retain Comet Configure to Plan to Execute to
+              Check ordering, exact proposal identity, evidence-before-effect,
+              and incremental recovery; keep actual Cordis composition under the
+              independent compatibility authority; remove the regular Build
+              Configure approval and all legacy writable configuration paths;
+              bind Plan Evidence to Tasks, strategy, binding, composition,
+              topology, write scope, report ownership, validators, and risk; use
+              a dependency matrix for precise invalidation; cover schema
+              cutover, red-to-green domain/service/E2E tests, telemetry, desktop
+              projection, and strict OpenSpec validation. Spec Patch: no new
+              capability scope beyond the Open-corrected proposal and delta
+              specs; design.md now supplies exact schemas, transitions, deletion
+              list, and verification matrix."
+            requirementsEvidence:
+              contentHash: dfe1f02ae5ebefcc8c6d1fe9c3fe2662a525c23de6f8a36a9ed7f73c1acde6c0
+              ref: openspec/changes/separate-build-strategy-and-execution-binding
+            sourceEvidence:
+              contentHash: ff2a159c789a5ff01d470c0ed7b0d5a5c23f08bc97a3a6ca497232d05c090c2a
+              ref: openspec/changes/separate-build-strategy-and-execution-binding
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 3c94f2c0961af89808772f82e9e25e58e56c940bcdb3312f758ea13b0f458e28
+            outcomeId: f65afac1-f626-4a08-aa48-6f4b44fa0c2d
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: separate-build-strategy-and-execution-binding
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-9d721fb31f6c26b922fb9e4fa70d897340256a5036787801cdec7ef723b08881
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: separate-build-strategy-and-execution-binding:7
+        input:
+          input:
+            change: separate-build-strategy-and-execution-binding
+            changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+            workspaceBaseline:
+              ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+          outputs: {}
+        inputHash: fdc91dcb583dd5a93157d7095269dcfea8f4f65e81e3c4e95a32bed39b4fe031
+        outcome:
+          actionId: separate-build-strategy-and-execution-binding:7
+          attempt: 1
+          claimToken: portable-9d721fb31f6c26b922fb9e4fa70d897340256a5036787801cdec7ef723b08881
+          inputHash: fdc91dcb583dd5a93157d7095269dcfea8f4f65e81e3c4e95a32bed39b4fe031
+          outcomeId: 41ac1f45-136a-4e7a-900a-a26e409b36a7
+          output:
+            designDoc: openspec/changes/separate-build-strategy-and-execution-binding/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 73e2b9c08de8e406754f4031b6d962535c53be8fbeaf623422d81d35bfebc9d4
+            outcomeId: 41ac1f45-136a-4e7a-900a-a26e409b36a7
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: separate-build-strategy-and-execution-binding
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-945bef4f980272b06bda4aaee2f29060f9f0926bd706a5434b602e76b015debc
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: separate-build-strategy-and-execution-binding:9
+        input:
+          input:
+            change: separate-build-strategy-and-execution-binding
+            changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+            workspaceBaseline:
+              ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+          outputs: {}
+        inputHash: b255ed2296090a615c9877aa9de86a57076efc5c78ae66eb40a70ba8b56a3fd5
+        outcome:
+          actionId: separate-build-strategy-and-execution-binding:9
+          attempt: 1
+          claimToken: portable-945bef4f980272b06bda4aaee2f29060f9f0926bd706a5434b602e76b015debc
+          inputHash: b255ed2296090a615c9877aa9de86a57076efc5c78ae66eb40a70ba8b56a3fd5
+          outcomeId: ebdbabee-b924-42ab-84bf-acdaf8d4af82
+          output:
+            boundBranch: codex/separate-build-strategy-execution-binding-v2
+            buildMode: autonomous
+            directOverride: false
+            isolation: current
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 445637ce517dcff2634485fcf7d168d13b0893ccc5aa80d6f7933397bc736b69
+            outcomeId: ebdbabee-b924-42ab-84bf-acdaf8d4af82
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: separate-build-strategy-and-execution-binding
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-4dad6ab5ee708ad74cf8dbe8520a5469cbf163e6fa0c3311a0e0ff5e75748e32
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: separate-build-strategy-and-execution-binding:11
+        input:
+          input:
+            change: separate-build-strategy-and-execution-binding
+            changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+            workspaceBaseline:
+              ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+          outputs: {}
+        inputHash: c6682be3ff6c68d455114ebf034c2c579ee753d3dfab9cdb5a3bfcb12afd0727
+        outcome:
+          actionId: separate-build-strategy-and-execution-binding:11
+          attempt: 1
+          claimToken: portable-4dad6ab5ee708ad74cf8dbe8520a5469cbf163e6fa0c3311a0e0ff5e75748e32
+          inputHash: c6682be3ff6c68d455114ebf034c2c579ee753d3dfab9cdb5a3bfcb12afd0727
+          outcomeId: 326e156b-b071-4ca3-b595-c920c2b851ce
+          output:
+            designEvidence:
+              contentHash: 6beacd116cf27e2c20ee46a64de5a23663454033b4a9764b2e219247ee8df544
+              ref: openspec/changes/separate-build-strategy-and-execution-binding/design.md
+            plan: docs/superpowers/plans/2026-11-01-separate-build-strategy-and-execution-binding.md
+            planEvidence:
+              contentHash: e7bcc695c9ae4d2d7e674e3623367675b698ec377c135c0ffa20a3c82c680165
+              ref: docs/superpowers/plans/2026-11-01-separate-build-strategy-and-execution-binding.md
+            taskRevision: e94ae1953f72c451fae1a9c687e9e37a95b44307bd53f82a719314bd35c43f19
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: c3f518524dcde1d93a74ca7d3b5196f9c5143e5afa5bbd8e2c28a2d7baa4dd1f
+            outcomeId: 326e156b-b071-4ca3-b595-c920c2b851ce
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: separate-build-strategy-and-execution-binding
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: classic-builder/separate-build-strategy-and-execution-binding:13/1
+          token: portable-71f503f6fadfd4208f9d8b2170ee8b03ac7367e9c833f99e94ae75a0454be5af
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: separate-build-strategy-and-execution-binding:13
+        input:
+          input:
+            change: separate-build-strategy-and-execution-binding
+            changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+            workspaceBaseline:
+              ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+          outputs: {}
+        inputHash: 607669f14d96b908819aebd104dd74f0270a2715580dc593850ea73adccb5741
+        outcome:
+          actionId: separate-build-strategy-and-execution-binding:13
+          attempt: 1
+          claimToken: portable-71f503f6fadfd4208f9d8b2170ee8b03ac7367e9c833f99e94ae75a0454be5af
+          inputHash: 607669f14d96b908819aebd104dd74f0270a2715580dc593850ea73adccb5741
+          outcomeId: 1a5b0b90-c20b-47df-8568-6e0896e91781
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 7d42fdc9781fab2593e70486642d628c98ac3e4f206c4cad643f1319ef8b76f9
+            outcomeId: 1a5b0b90-c20b-47df-8568-6e0896e91781
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: separate-build-strategy-and-execution-binding
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-ec15780043be981b8fd68b7a314d658ea4aa83d0fa817faf670e94ca2f0c41a5
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: separate-build-strategy-and-execution-binding:14
+        input:
+          input:
+            change: separate-build-strategy-and-execution-binding
+            changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+            workspaceBaseline:
+              ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+          outputs: {}
+        inputHash: 149b154c60b4caf708603320eeb34de502525910516c28730d3bbfbecef9b1c0
+        outcome:
+          actionId: separate-build-strategy-and-execution-binding:14
+          attempt: 1
+          claimToken: portable-ec15780043be981b8fd68b7a314d658ea4aa83d0fa817faf670e94ca2f0c41a5
+          inputHash: 149b154c60b4caf708603320eeb34de502525910516c28730d3bbfbecef9b1c0
+          outcomeId: aec8f05f-2c5e-4ed2-9c18-4c2d22644c20
+          output:
+            argv:
+              - npm
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: 52a24cd972f7b9c7e7bfd71ac1670b0284159e9b797353e858b2cc032e17248d
+            cwd: .
+            environment: 1d626212cb0d187610b71b77e9c5426bdc97a5a10d6120768aeda4ffe0e11e56
+            exitCode: 0
+            inputAfter: 2ca45abdc9f5d9c4e167b778becc331ffc8d61b9636e2dafd4bf4579f3563e35
+            inputBefore: 2ca45abdc9f5d9c4e167b778becc331ffc8d61b9636e2dafd4bf4579f3563e35
+            manifestHash: a4800da08ac59227380f2422d51e958fa116b56299df96c64e77b9302b2c02ca
+            manifestRef: .comet/runtime/classic-sdk-checks/d9fa9a59c64a3c1071e7a7f17bd3907ddbd432a0ff5eaffb278f8fc47d8cc4dd/986e9b77-7227-4b20-b020-88775552231c.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/d9fa9a59c64a3c1071e7a7f17bd3907ddbd432a0ff5eaffb278f8fc47d8cc4dd/3f873433-5c6e-4e3b-813f-556e0b19fd3d.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: e9417d958700a1d240c7113ead55d2edad82618a77a94b6993ef27f07035cc9a
+            outcomeId: aec8f05f-2c5e-4ed2-9c18-4c2d22644c20
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: separate-build-strategy-and-execution-binding
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-a0cfda3b566fc6be505b263cbd66192d62bbc2d3e3a7adcefa6998c457ec3e17
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: separate-build-strategy-and-execution-binding:16
+        input:
+          input:
+            change: separate-build-strategy-and-execution-binding
+            changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+            workspaceBaseline:
+              ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+          outputs: {}
+        inputHash: b3413963ed5efa4240200301a7aa53f10fee9948f0b36ed7e99d05ec9a2fbf49
+        outcome:
+          actionId: separate-build-strategy-and-execution-binding:16
+          attempt: 1
+          claimToken: portable-a0cfda3b566fc6be505b263cbd66192d62bbc2d3e3a7adcefa6998c457ec3e17
+          inputHash: b3413963ed5efa4240200301a7aa53f10fee9948f0b36ed7e99d05ec9a2fbf49
+          outcomeId: 9fda7f87-7318-4d67-8b4f-a4eeabfa74a7
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/separate-build-strategy-and-execution-binding.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 579ae81a01054a8d9d9a5c9baca9211f00191d40524494a1f7b9ced59c6adc0e
+            outcomeId: 9fda7f87-7318-4d67-8b4f-a4eeabfa74a7
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: separate-build-strategy-and-execution-binding
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-fc48ed2168353373ca61d3f209357f0786c47b7c1e9f9f6d13a05bb983b1ac02
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: separate-build-strategy-and-execution-binding:18
+        input:
+          input:
+            change: separate-build-strategy-and-execution-binding
+            changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+            workspaceBaseline:
+              ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+          outputs: {}
+        inputHash: 54c1e4e0e182ad0850d17b19c4244f8594fef9a64a710aa7fedba84af962d2c2
+        outcome:
+          actionId: separate-build-strategy-and-execution-binding:18
+          attempt: 1
+          claimToken: portable-fc48ed2168353373ca61d3f209357f0786c47b7c1e9f9f6d13a05bb983b1ac02
+          inputHash: 54c1e4e0e182ad0850d17b19c4244f8594fef9a64a710aa7fedba84af962d2c2
+          outcomeId: 4879caeb-178f-45b8-9e05-a25ff889ee0c
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 3
+            contentHash: 7ff7ac2d640958b1f1311a30ec4bf4319e99b45a2dcd4beef9e4be0b6279800e
+            cwd: .
+            deliveryInputs: {}
+            environment: 4d71bfe2c9b89009a4d0cc1c64c769e9a439ae407844f3b7e57032aed2a1239f
+            exitCode: 0
+            inputAfter: c55d3c1c4c6f89d8c284f783c28723cfcb72aee14c6d57e108226e4b35e74c13
+            inputBefore: c55d3c1c4c6f89d8c284f783c28723cfcb72aee14c6d57e108226e4b35e74c13
+            manifestHash: 6c10ec18936af360aa913f1eff6fd9e8a04d694a37bc19b8b668c2daacd42069
+            manifestRef: .comet/runtime/classic-sdk-checks/d9fa9a59c64a3c1071e7a7f17bd3907ddbd432a0ff5eaffb278f8fc47d8cc4dd/f83cee51-8679-46b7-b0d9-f402b69d9877.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/d9fa9a59c64a3c1071e7a7f17bd3907ddbd432a0ff5eaffb278f8fc47d8cc4dd/9400afdf-fb3f-4ee8-91ec-177f531c1e38.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 1b007ab8b76aeceb6461d1cafe4db5583184a1a2af698190e4cb75f0d0f837a0
+            outcomeId: 4879caeb-178f-45b8-9e05-a25ff889ee0c
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: separate-build-strategy-and-execution-binding
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-82ceba584a0dc04dee9314f0934a5d161659eed720110099c8e1bf87ea97eb7d
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: separate-build-strategy-and-execution-binding:20
+        input:
+          input:
+            change: separate-build-strategy-and-execution-binding
+            changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+            workspaceBaseline:
+              ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+          outputs: {}
+        inputHash: 58ea76929172b0e0cf16fa95272303d8dfc3ab56ff46105d2fd12fdf83fd5d17
+        outcome:
+          actionId: separate-build-strategy-and-execution-binding:20
+          attempt: 1
+          claimToken: portable-82ceba584a0dc04dee9314f0934a5d161659eed720110099c8e1bf87ea97eb7d
+          inputHash: 58ea76929172b0e0cf16fa95272303d8dfc3ab56ff46105d2fd12fdf83fd5d17
+          outcomeId: db1eb6f4-047c-446c-86c7-b9236c6c1337
+          output:
+            summary: 完成 BuildStrategy 与 ExecutionBinding 权威拆分：Design approval 只绑定稳定
+              Strategy，Configure 自动重验 Host/checkout/HEAD Binding；Plan
+              Evidence、外部 Runner fencing、精确失效、决定复用、OTLP 与 Desktop 投影均完成。12/12
+              任务完成，158 个测试文件、708 个测试通过、2 个跳过，OpenSpec 18/18，正式包摘要与 Build/Verify
+              收据均已复现。归档将把本 Change 的 delta specs 合入主规格并保留验证证据；不创建或合入 MR。
+            targetBranch: codex/separate-build-strategy-execution-binding-v2
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 190e1b40b9ac0de8fd6a4b962bd330e789e3a9c58ab9a38acab3e92a835ed24c
+            outcomeId: db1eb6f4-047c-446c-86c7-b9236c6c1337
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: separate-build-strategy-and-execution-binding
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-d62f28fde42123ef2f08ac8e45b52f7c2004a3d4db52fc5a8bfbeda67e94f411
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: separate-build-strategy-and-execution-binding:22
+        input:
+          input:
+            change: separate-build-strategy-and-execution-binding
+            changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+            workspaceBaseline:
+              ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+          outputs: {}
+        inputHash: 8459865f568bfe702ebc9602c91e47f36011c418cb44c3fdcce958b8bb5a2dd0
+        outcome:
+          actionId: separate-build-strategy-and-execution-binding:22
+          attempt: 1
+          claimToken: portable-d62f28fde42123ef2f08ac8e45b52f7c2004a3d4db52fc5a8bfbeda67e94f411
+          inputHash: 8459865f568bfe702ebc9602c91e47f36011c418cb44c3fdcce958b8bb5a2dd0
+          outcomeId: b6553bf2-a6e0-4316-806d-d8e7fe1c1742
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/separate-build-strategy-and-execution-binding.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 9a5d71028b9120f2283020d3b84bd866e75cc6add3c10a7a5a02f98bbe6fd1f4
+            outcomeId: b6553bf2-a6e0-4316-806d-d8e7fe1c1742
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: separate-build-strategy-and-execution-binding
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-11dd8857a26f53305aba2d708dba45c60e3bef6826ae61771183ad63d840380d
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: separate-build-strategy-and-execution-binding:24
+        input:
+          input:
+            change: separate-build-strategy-and-execution-binding
+            changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+            workspaceBaseline:
+              ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+          outputs: {}
+        inputHash: 8459865f568bfe702ebc9602c91e47f36011c418cb44c3fdcce958b8bb5a2dd0
+        outcome:
+          actionId: separate-build-strategy-and-execution-binding:24
+          attempt: 1
+          claimToken: portable-11dd8857a26f53305aba2d708dba45c60e3bef6826ae61771183ad63d840380d
+          inputHash: 8459865f568bfe702ebc9602c91e47f36011c418cb44c3fdcce958b8bb5a2dd0
+          outcomeId: 08171412-79bd-42f7-b1f0-e24cded7908a
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 5
+            contentHash: ff1b89c626ca507b95981edcf1ebaa7a5ebd717d85e698e6033e23167475fe75
+            cwd: .
+            deliveryInputs: {}
+            environment: 4d71bfe2c9b89009a4d0cc1c64c769e9a439ae407844f3b7e57032aed2a1239f
+            exitCode: 0
+            inputAfter: 621fd56f55c4e9a25b3107cce0c6e703bcf14d0c76397f08382f66c2dcbe2e32
+            inputBefore: 621fd56f55c4e9a25b3107cce0c6e703bcf14d0c76397f08382f66c2dcbe2e32
+            manifestHash: d98f94fe3cd6cb90c681dd8eb4ffd4f80a69ca02f7dbe72bb9a44f8e9519ecb0
+            manifestRef: .comet/runtime/classic-sdk-checks/d9fa9a59c64a3c1071e7a7f17bd3907ddbd432a0ff5eaffb278f8fc47d8cc4dd/fd6ae7ca-66bd-4fc2-8b1f-8cf2bb633cd1.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/d9fa9a59c64a3c1071e7a7f17bd3907ddbd432a0ff5eaffb278f8fc47d8cc4dd/d13da7c4-551c-4dc8-a1c4-740cc8724564.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: f5ec1ab8025af85d5e440f6517187bc981f2d646836757f9c2cf8faa53ae8f87
+            outcomeId: 08171412-79bd-42f7-b1f0-e24cded7908a
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: separate-build-strategy-and-execution-binding
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-e41e0366e4ff1ec61e34384aa48fccfae4663715cec52ae63e8b22da4369448a
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: separate-build-strategy-and-execution-binding:26
+        input:
+          input:
+            change: separate-build-strategy-and-execution-binding
+            changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+            workspaceBaseline:
+              ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+          outputs: {}
+        inputHash: 1815b509061fe25f17cc76675d1092e5a50c63c6f9d6967ead6990f53b516fd1
+        outcome:
+          actionId: separate-build-strategy-and-execution-binding:26
+          attempt: 1
+          claimToken: portable-e41e0366e4ff1ec61e34384aa48fccfae4663715cec52ae63e8b22da4369448a
+          inputHash: 1815b509061fe25f17cc76675d1092e5a50c63c6f9d6967ead6990f53b516fd1
+          outcomeId: df3d1f98-4c79-440f-8531-dc0e2f8a8d55
+          output:
+            summary: 完成 BuildStrategy 与 ExecutionBinding 权威拆分：Design approval 只绑定稳定
+              Strategy，Configure 自动重验 Host/checkout/HEAD Binding；Plan
+              Evidence、外部 Runner fencing、精确失效、决定复用、OTLP 与 Desktop 投影均完成。12/12
+              任务完成，158 个测试文件、708 个测试通过、2 个跳过，OpenSpec 18/18，正式包摘要与 Build/Verify
+              收据均已复现。归档将把本 Change 的 delta specs 合入主规格并保留验证证据；不创建或合入 MR。
+            targetBranch: codex/separate-build-strategy-execution-binding-v2
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: f381fc7f01fa2f5999139373140a1300c6ee17cfc208ecf66a1fd44c5576f999
+            outcomeId: df3d1f98-4c79-440f-8531-dc0e2f8a8d55
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: separate-build-strategy-and-execution-binding
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive-preflight
+          token: portable-950a254c8ea4b2943dd643c8241065f55455ca44f8b42f1678ffbfa559db393f
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: separate-build-strategy-and-execution-binding:28
+        input:
+          input:
+            change: separate-build-strategy-and-execution-binding
+            changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+            workspaceBaseline:
+              ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+          outputs: {}
+        inputHash: e0c8334f3dd2ef8027f1e189407f9a6037d98200139c6e2955d18a078ad6ff78
+        outcome:
+          actionId: separate-build-strategy-and-execution-binding:28
+          attempt: 1
+          claimToken: portable-950a254c8ea4b2943dd643c8241065f55455ca44f8b42f1678ffbfa559db393f
+          inputHash: e0c8334f3dd2ef8027f1e189407f9a6037d98200139c6e2955d18a078ad6ff78
+          outcomeId: 435c8b3c-a8b7-403f-9913-b1bdd90b873e
+          output:
+            baseCommit: 5c222524f95a8ac804085e49c79d8e2b3a4efafc
+            deliveryAction: local
+            targetBranch: codex/separate-build-strategy-execution-binding-v2
+            verifiedBranch: codex/separate-build-strategy-execution-binding-v2
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: c8af1484b674c5bad6914fc7eaa8c9b82e55c9e8107196a89788948006d1357f
+            outcomeId: 435c8b3c-a8b7-403f-9913-b1bdd90b873e
+        reconciliations: []
+        ref: classic-archive-preflight
+        requiredCapabilities: []
+        retry: manual
+        runId: separate-build-strategy-and-execution-binding
+        status: succeeded
+        stepId: full.archive.preflight
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive
+          token: portable-2d3c6416c8aaccc5ec4557d69fabe68ede1aafd835f783107a574b37fe453c4b
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: separate-build-strategy-and-execution-binding:29
+        input:
+          input:
+            change: separate-build-strategy-and-execution-binding
+            changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+            workspaceBaseline:
+              ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+          outputs: {}
+        inputHash: bb2d2648337c5f91e5b3ee997fefbf05b5e0bcad7296d358aa29c959e241bcaf
+        outcome:
+          actionId: separate-build-strategy-and-execution-binding:29
+          artifacts:
+            - sha256: b0986fd8b96b80346332fd2553839152b31bc2686e075846e0635bee89419b47
+              uri: openspec/changes/archive/2026-11-01-separate-build-strategy-and-execution-binding/.comet/archive-manifest.json
+          attempt: 1
+          claimToken: portable-2d3c6416c8aaccc5ec4557d69fabe68ede1aafd835f783107a574b37fe453c4b
+          inputHash: bb2d2648337c5f91e5b3ee997fefbf05b5e0bcad7296d358aa29c959e241bcaf
+          outcomeId: 84a8cfef-cf36-4d3f-89cd-0c5336b07003
+          output:
+            archiveDirectory: openspec/changes/archive/2026-11-01-separate-build-strategy-and-execution-binding
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: c5850cf755124ab7359b35bed1976c63679c2a2820fe3c33517961118a814617
+            outcomeId: 84a8cfef-cf36-4d3f-89cd-0c5336b07003
+        reconciliations: []
+        ref: classic-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: separate-build-strategy-and-execution-binding
+        status: succeeded
+        stepId: full.archive.execute
+        type: call_tool
+      - attempt: 1
+        id: separate-build-strategy-and-execution-binding:30
+        input:
+          input:
+            change: separate-build-strategy-and-execution-binding
+            changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+            workspaceBaseline:
+              ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+          outputs: {}
+        inputHash: 2a4094d5f1c6c3d6267ab77039ba0ac94b0f13dbe27a0c97368e718de6067e6f
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: separate-build-strategy-and-execution-binding
+        status: pending
+        stepId: full.archive.deliver
+        type: invoke_skill
+    actionContexts:
+      separate-build-strategy-and-execution-binding:1:
+        results: {}
+        sequence: 1
+      separate-build-strategy-and-execution-binding:11:
+        results: {}
+        sequence: 11
+      separate-build-strategy-and-execution-binding:13:
+        results: {}
+        sequence: 13
+      separate-build-strategy-and-execution-binding:14:
+        results: {}
+        sequence: 14
+      separate-build-strategy-and-execution-binding:16:
+        results: {}
+        sequence: 16
+      separate-build-strategy-and-execution-binding:18:
+        results: {}
+        sequence: 18
+      separate-build-strategy-and-execution-binding:20:
+        results: {}
+        sequence: 20
+      separate-build-strategy-and-execution-binding:22:
+        results: {}
+        sequence: 22
+      separate-build-strategy-and-execution-binding:24:
+        results: {}
+        sequence: 24
+      separate-build-strategy-and-execution-binding:26:
+        results: {}
+        sequence: 26
+      separate-build-strategy-and-execution-binding:28:
+        results: {}
+        sequence: 28
+      separate-build-strategy-and-execution-binding:29:
+        results: {}
+        sequence: 29
+      separate-build-strategy-and-execution-binding:30:
+        results: {}
+        sequence: 30
+      separate-build-strategy-and-execution-binding:4:
+        results: {}
+        sequence: 4
+      separate-build-strategy-and-execution-binding:5:
+        results: {}
+        sequence: 5
+      separate-build-strategy-and-execution-binding:7:
+        results: {}
+        sequence: 7
+      separate-build-strategy-and-execution-binding:9:
+        results: {}
+        sequence: 9
+    waits:
+      - id: separate-build-strategy-and-execution-binding:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: separate-build-strategy-and-execution-binding
+            changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+            workspaceBaseline:
+              ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 40148561d8aaef98354786ecd8aafed0044e0208fdc06b6d289127810ff183df
+              ref: openspec/changes/separate-build-strategy-and-execution-binding
+        proposalHash: 9ed2a44c7a0af83e00865492a6a74b195273f63bd9da4ad03c387776a5644a80
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-open-40148561d8aaef98354786ecd8aafed0044e0208fdc06b6d289127810ff183df
+          choice: approved
+          proposalHash: 9ed2a44c7a0af83e00865492a6a74b195273f63bd9da4ad03c387776a5644a80
+      - id: separate-build-strategy-and-execution-binding:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: resolved
+        proposal:
+          input:
+            change: separate-build-strategy-and-execution-binding
+            changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+            workspaceBaseline:
+              ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/separate-build-strategy-and-execution-binding/.comet/handoff/design-context.json
+              handoffHash: 6badac2a85a13630b7f135f1d577e587064481510feee34e66d595ffcb9fb756
+              proposal: "Design completed: replace the mixed BuildConfiguration authority with
+                an approved portable BuildStrategy plus automatically validated
+                ExecutionBinding; retain Comet Configure to Plan to Execute to
+                Check ordering, exact proposal identity, evidence-before-effect,
+                and incremental recovery; keep actual Cordis composition under
+                the independent compatibility authority; remove the regular
+                Build Configure approval and all legacy writable configuration
+                paths; bind Plan Evidence to Tasks, strategy, binding,
+                composition, topology, write scope, report ownership,
+                validators, and risk; use a dependency matrix for precise
+                invalidation; cover schema cutover, red-to-green
+                domain/service/E2E tests, telemetry, desktop projection, and
+                strict OpenSpec validation. Spec Patch: no new capability scope
+                beyond the Open-corrected proposal and delta specs; design.md
+                now supplies exact schemas, transitions, deletion list, and
+                verification matrix."
+              requirementsEvidence:
+                contentHash: dfe1f02ae5ebefcc8c6d1fe9c3fe2662a525c23de6f8a36a9ed7f73c1acde6c0
+                ref: openspec/changes/separate-build-strategy-and-execution-binding
+              sourceEvidence:
+                contentHash: ff2a159c789a5ff01d470c0ed7b0d5a5c23f08bc97a3a6ca497232d05c090c2a
+                ref: openspec/changes/separate-build-strategy-and-execution-binding
+        proposalHash: 631f20e9884095eaf4feed5cc59f08e9f97af7e898b6b6dff12172d7516a9d7b
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-design-631f20e9884095eaf4feed5cc59f08e9f97af7e898b6b6dff12172d7516a9d7b-approved
+          choice: approved
+          proposalHash: 631f20e9884095eaf4feed5cc59f08e9f97af7e898b6b6dff12172d7516a9d7b
+      - id: separate-build-strategy-and-execution-binding:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: separate-build-strategy-and-execution-binding
+            changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+            workspaceBaseline:
+              ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+          outputs:
+            full.build.configure:
+              boundBranch: codex/separate-build-strategy-execution-binding-v2
+              buildMode: autonomous
+              directOverride: false
+              isolation: current
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: aab3ca9c1dff22f32e10fbabcfed58ae3970b86832cd88b8f4ae47e2c7f8a866
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-build-aab3ca9c1dff22f32e10fbabcfed58ae3970b86832cd88b8f4ae47e2c7f8a866-approved
+          choice: approved
+          proposalHash: aab3ca9c1dff22f32e10fbabcfed58ae3970b86832cd88b8f4ae47e2c7f8a866
+      - id: separate-build-strategy-and-execution-binding:21
+        stepId: full.archive.confirm
+        sequence: 21
+        status: resolved
+        proposal:
+          input:
+            change: separate-build-strategy-and-execution-binding
+            changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+            workspaceBaseline:
+              ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+          outputs:
+            full.archive.prepare:
+              summary: 完成 BuildStrategy 与 ExecutionBinding 权威拆分：Design approval 只绑定稳定
+                Strategy，Configure 自动重验 Host/checkout/HEAD Binding；Plan
+                Evidence、外部 Runner fencing、精确失效、决定复用、OTLP 与 Desktop 投影均完成。12/12
+                任务完成，158 个测试文件、708 个测试通过、2 个跳过，OpenSpec 18/18，正式包摘要与
+                Build/Verify 收据均已复现。归档将把本 Change 的 delta specs
+                合入主规格并保留验证证据；不创建或合入 MR。
+              targetBranch: codex/separate-build-strategy-execution-binding-v2
+        proposalHash: 791cbbe2cab2d104270cf0da02fb753178200fb70becc697135b73cdc3ace8af
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-791cbbe2cab2d104270cf0da02fb753178200fb70becc697135b73cdc3ace8af-reverify
+          choice: reverify
+          proposalHash: 791cbbe2cab2d104270cf0da02fb753178200fb70becc697135b73cdc3ace8af
+      - id: separate-build-strategy-and-execution-binding:27
+        stepId: full.archive.confirm
+        sequence: 27
+        status: resolved
+        proposal:
+          input:
+            change: separate-build-strategy-and-execution-binding
+            changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+            workspaceBaseline:
+              ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+          outputs:
+            full.archive.prepare:
+              summary: 完成 BuildStrategy 与 ExecutionBinding 权威拆分：Design approval 只绑定稳定
+                Strategy，Configure 自动重验 Host/checkout/HEAD Binding；Plan
+                Evidence、外部 Runner fencing、精确失效、决定复用、OTLP 与 Desktop 投影均完成。12/12
+                任务完成，158 个测试文件、708 个测试通过、2 个跳过，OpenSpec 18/18，正式包摘要与
+                Build/Verify 收据均已复现。归档将把本 Change 的 delta specs
+                合入主规格并保留验证证据；不创建或合入 MR。
+              targetBranch: codex/separate-build-strategy-execution-binding-v2
+        proposalHash: 791cbbe2cab2d104270cf0da02fb753178200fb70becc697135b73cdc3ace8af
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-791cbbe2cab2d104270cf0da02fb753178200fb70becc697135b73cdc3ace8af-local
+          choice: local
+          proposalHash: 791cbbe2cab2d104270cf0da02fb753178200fb70becc697135b73cdc3ace8af
+    evidenceWaits:
+      - id: separate-build-strategy-and-execution-binding:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/separate-build-strategy-and-execution-binding
+          contentHash: 40148561d8aaef98354786ecd8aafed0044e0208fdc06b6d289127810ff183df
+          submissionId: 9fc11980-10e9-411d-8c43-c0dc8a62e2db
+      - id: separate-build-strategy-and-execution-binding:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/separate-build-strategy-and-execution-binding/design.md
+          contentHash: 6beacd116cf27e2c20ee46a64de5a23663454033b4a9764b2e219247ee8df544
+          submissionId: 6090c733-bd0d-412a-8e8e-95c6ad89e662
+      - id: separate-build-strategy-and-execution-binding:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-01-separate-build-strategy-and-execution-binding.md
+          contentHash: e7bcc695c9ae4d2d7e674e3623367675b698ec377c135c0ffa20a3c82c680165
+          submissionId: 43abc5de-7779-47f8-bc2d-c13192e070ca
+      - id: separate-build-strategy-and-execution-binding:15
+        stepId: full.build.check.evidence
+        sequence: 15
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/d9fa9a59c64a3c1071e7a7f17bd3907ddbd432a0ff5eaffb278f8fc47d8cc4dd/3f873433-5c6e-4e3b-813f-556e0b19fd3d.log
+          contentHash: 52a24cd972f7b9c7e7bfd71ac1670b0284159e9b797353e858b2cc032e17248d
+          submissionId: 0744a114-09ca-44de-9470-3bf12196a25d
+      - id: separate-build-strategy-and-execution-binding:17
+        stepId: full.verify.report.evidence
+        sequence: 17
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/separate-build-strategy-and-execution-binding.md
+          contentHash: 2d7610dbaa073039a8cb803ce29f700bccddf7f61089cee6b212705c1d2ae7d4
+          submissionId: 9b383d30-5844-4097-8cc7-5de559e7c07a
+      - id: separate-build-strategy-and-execution-binding:19
+        stepId: full.verify.check.evidence
+        sequence: 19
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/d9fa9a59c64a3c1071e7a7f17bd3907ddbd432a0ff5eaffb278f8fc47d8cc4dd/9400afdf-fb3f-4ee8-91ec-177f531c1e38.log
+          contentHash: 7ff7ac2d640958b1f1311a30ec4bf4319e99b45a2dcd4beef9e4be0b6279800e
+          submissionId: 0d4ee361-1ead-48d4-bbd5-8c0fbe2f424f
+      - id: separate-build-strategy-and-execution-binding:23
+        stepId: full.verify.report.evidence
+        sequence: 23
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/separate-build-strategy-and-execution-binding.md
+          contentHash: 2d7610dbaa073039a8cb803ce29f700bccddf7f61089cee6b212705c1d2ae7d4
+          submissionId: 46cadc46-d5bd-4ed6-a8c8-46cd0bbeb9b0
+      - id: separate-build-strategy-and-execution-binding:25
+        stepId: full.verify.check.evidence
+        sequence: 25
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/d9fa9a59c64a3c1071e7a7f17bd3907ddbd432a0ff5eaffb278f8fc47d8cc4dd/d13da7c4-551c-4dc8-a1c4-740cc8724564.log
+          contentHash: ff1b89c626ca507b95981edcf1ebaa7a5ebd717d85e698e6033e23167475fe75
+          submissionId: 57a25e15-ce26-4834-b093-e214be178ab6
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 46
+  sourceHash: 2318715786e1db8313d7c79d39182bdf48f2ccabf45d9c0802f2537dcbdd0c67
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: separate-build-strategy-and-execution-binding
+            changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+            workspaceBaseline:
+              ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 40148561d8aaef98354786ecd8aafed0044e0208fdc06b6d289127810ff183df
+              ref: openspec/changes/separate-build-strategy-and-execution-binding
+      - contentHash: 40148561d8aaef98354786ecd8aafed0044e0208fdc06b6d289127810ff183df
+        ref: openspec/changes/separate-build-strategy-and-execution-binding
+      - contentHash: 40148561d8aaef98354786ecd8aafed0044e0208fdc06b6d289127810ff183df
+      - choice: approved
+        proposal:
+          input:
+            change: separate-build-strategy-and-execution-binding
+            changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+            workspaceBaseline:
+              ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/separate-build-strategy-and-execution-binding/.comet/handoff/design-context.json
+              handoffHash: 6badac2a85a13630b7f135f1d577e587064481510feee34e66d595ffcb9fb756
+              proposal: "Design completed: replace the mixed BuildConfiguration authority with
+                an approved portable BuildStrategy plus automatically validated
+                ExecutionBinding; retain Comet Configure to Plan to Execute to
+                Check ordering, exact proposal identity, evidence-before-effect,
+                and incremental recovery; keep actual Cordis composition under
+                the independent compatibility authority; remove the regular
+                Build Configure approval and all legacy writable configuration
+                paths; bind Plan Evidence to Tasks, strategy, binding,
+                composition, topology, write scope, report ownership,
+                validators, and risk; use a dependency matrix for precise
+                invalidation; cover schema cutover, red-to-green
+                domain/service/E2E tests, telemetry, desktop projection, and
+                strict OpenSpec validation. Spec Patch: no new capability scope
+                beyond the Open-corrected proposal and delta specs; design.md
+                now supplies exact schemas, transitions, deletion list, and
+                verification matrix."
+              requirementsEvidence:
+                contentHash: dfe1f02ae5ebefcc8c6d1fe9c3fe2662a525c23de6f8a36a9ed7f73c1acde6c0
+                ref: openspec/changes/separate-build-strategy-and-execution-binding
+              sourceEvidence:
+                contentHash: ff2a159c789a5ff01d470c0ed7b0d5a5c23f08bc97a3a6ca497232d05c090c2a
+                ref: openspec/changes/separate-build-strategy-and-execution-binding
+      - handoffContext: openspec/changes/separate-build-strategy-and-execution-binding/.comet/handoff/design-context.json
+        handoffHash: 6badac2a85a13630b7f135f1d577e587064481510feee34e66d595ffcb9fb756
+        proposal: "Design completed: replace the mixed BuildConfiguration authority with
+          an approved portable BuildStrategy plus automatically validated
+          ExecutionBinding; retain Comet Configure to Plan to Execute to Check
+          ordering, exact proposal identity, evidence-before-effect, and
+          incremental recovery; keep actual Cordis composition under the
+          independent compatibility authority; remove the regular Build
+          Configure approval and all legacy writable configuration paths; bind
+          Plan Evidence to Tasks, strategy, binding, composition, topology,
+          write scope, report ownership, validators, and risk; use a dependency
+          matrix for precise invalidation; cover schema cutover, red-to-green
+          domain/service/E2E tests, telemetry, desktop projection, and strict
+          OpenSpec validation. Spec Patch: no new capability scope beyond the
+          Open-corrected proposal and delta specs; design.md now supplies exact
+          schemas, transitions, deletion list, and verification matrix."
+        requirementsEvidence:
+          contentHash: dfe1f02ae5ebefcc8c6d1fe9c3fe2662a525c23de6f8a36a9ed7f73c1acde6c0
+          ref: openspec/changes/separate-build-strategy-and-execution-binding
+        sourceEvidence:
+          contentHash: ff2a159c789a5ff01d470c0ed7b0d5a5c23f08bc97a3a6ca497232d05c090c2a
+          ref: openspec/changes/separate-build-strategy-and-execution-binding
+      - designDoc: openspec/changes/separate-build-strategy-and-execution-binding/design.md
+      - contentHash: 6beacd116cf27e2c20ee46a64de5a23663454033b4a9764b2e219247ee8df544
+        ref: openspec/changes/separate-build-strategy-and-execution-binding/design.md
+      - boundBranch: codex/separate-build-strategy-execution-binding-v2
+        buildMode: autonomous
+        directOverride: false
+        isolation: current
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: separate-build-strategy-and-execution-binding
+            changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+            workspaceBaseline:
+              ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+          outputs:
+            full.build.configure:
+              boundBranch: codex/separate-build-strategy-execution-binding-v2
+              buildMode: autonomous
+              directOverride: false
+              isolation: current
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: 6beacd116cf27e2c20ee46a64de5a23663454033b4a9764b2e219247ee8df544
+          ref: openspec/changes/separate-build-strategy-and-execution-binding/design.md
+        plan: docs/superpowers/plans/2026-11-01-separate-build-strategy-and-execution-binding.md
+        planEvidence:
+          contentHash: e7bcc695c9ae4d2d7e674e3623367675b698ec377c135c0ffa20a3c82c680165
+          ref: docs/superpowers/plans/2026-11-01-separate-build-strategy-and-execution-binding.md
+        taskRevision: e94ae1953f72c451fae1a9c687e9e37a95b44307bd53f82a719314bd35c43f19
+      - contentHash: e7bcc695c9ae4d2d7e674e3623367675b698ec377c135c0ffa20a3c82c680165
+        ref: docs/superpowers/plans/2026-11-01-separate-build-strategy-and-execution-binding.md
+      - event: build-complete
+      - argv:
+          - npm
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: 52a24cd972f7b9c7e7bfd71ac1670b0284159e9b797353e858b2cc032e17248d
+        cwd: .
+        environment: 1d626212cb0d187610b71b77e9c5426bdc97a5a10d6120768aeda4ffe0e11e56
+        exitCode: 0
+        inputAfter: 2ca45abdc9f5d9c4e167b778becc331ffc8d61b9636e2dafd4bf4579f3563e35
+        inputBefore: 2ca45abdc9f5d9c4e167b778becc331ffc8d61b9636e2dafd4bf4579f3563e35
+        manifestHash: a4800da08ac59227380f2422d51e958fa116b56299df96c64e77b9302b2c02ca
+        manifestRef: .comet/runtime/classic-sdk-checks/d9fa9a59c64a3c1071e7a7f17bd3907ddbd432a0ff5eaffb278f8fc47d8cc4dd/986e9b77-7227-4b20-b020-88775552231c.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/d9fa9a59c64a3c1071e7a7f17bd3907ddbd432a0ff5eaffb278f8fc47d8cc4dd/3f873433-5c6e-4e3b-813f-556e0b19fd3d.log
+        reusable: false
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 900000
+      - contentHash: 52a24cd972f7b9c7e7bfd71ac1670b0284159e9b797353e858b2cc032e17248d
+        ref: .comet/runtime/classic-sdk-checks/d9fa9a59c64a3c1071e7a7f17bd3907ddbd432a0ff5eaffb278f8fc47d8cc4dd/3f873433-5c6e-4e3b-813f-556e0b19fd3d.log
+      - contentHash: 2d7610dbaa073039a8cb803ce29f700bccddf7f61089cee6b212705c1d2ae7d4
+        ref: docs/superpowers/reports/separate-build-strategy-and-execution-binding.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/separate-build-strategy-and-execution-binding.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 3
+        contentHash: 7ff7ac2d640958b1f1311a30ec4bf4319e99b45a2dcd4beef9e4be0b6279800e
+        cwd: .
+        deliveryInputs: {}
+        environment: 4d71bfe2c9b89009a4d0cc1c64c769e9a439ae407844f3b7e57032aed2a1239f
+        exitCode: 0
+        inputAfter: c55d3c1c4c6f89d8c284f783c28723cfcb72aee14c6d57e108226e4b35e74c13
+        inputBefore: c55d3c1c4c6f89d8c284f783c28723cfcb72aee14c6d57e108226e4b35e74c13
+        manifestHash: 6c10ec18936af360aa913f1eff6fd9e8a04d694a37bc19b8b668c2daacd42069
+        manifestRef: .comet/runtime/classic-sdk-checks/d9fa9a59c64a3c1071e7a7f17bd3907ddbd432a0ff5eaffb278f8fc47d8cc4dd/f83cee51-8679-46b7-b0d9-f402b69d9877.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/d9fa9a59c64a3c1071e7a7f17bd3907ddbd432a0ff5eaffb278f8fc47d8cc4dd/9400afdf-fb3f-4ee8-91ec-177f531c1e38.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 900000
+      - contentHash: 7ff7ac2d640958b1f1311a30ec4bf4319e99b45a2dcd4beef9e4be0b6279800e
+        ref: .comet/runtime/classic-sdk-checks/d9fa9a59c64a3c1071e7a7f17bd3907ddbd432a0ff5eaffb278f8fc47d8cc4dd/9400afdf-fb3f-4ee8-91ec-177f531c1e38.log
+      - choice: reverify
+        proposal:
+          input:
+            change: separate-build-strategy-and-execution-binding
+            changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+            workspaceBaseline:
+              ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+          outputs:
+            full.archive.prepare:
+              summary: 完成 BuildStrategy 与 ExecutionBinding 权威拆分：Design approval 只绑定稳定
+                Strategy，Configure 自动重验 Host/checkout/HEAD Binding；Plan
+                Evidence、外部 Runner fencing、精确失效、决定复用、OTLP 与 Desktop 投影均完成。12/12
+                任务完成，158 个测试文件、708 个测试通过、2 个跳过，OpenSpec 18/18，正式包摘要与
+                Build/Verify 收据均已复现。归档将把本 Change 的 delta specs
+                合入主规格并保留验证证据；不创建或合入 MR。
+              targetBranch: codex/separate-build-strategy-execution-binding-v2
+      - summary: 完成 BuildStrategy 与 ExecutionBinding 权威拆分：Design approval 只绑定稳定
+          Strategy，Configure 自动重验 Host/checkout/HEAD Binding；Plan Evidence、外部
+          Runner fencing、精确失效、决定复用、OTLP 与 Desktop 投影均完成。12/12 任务完成，158 个测试文件、708
+          个测试通过、2 个跳过，OpenSpec 18/18，正式包摘要与 Build/Verify 收据均已复现。归档将把本 Change 的
+          delta specs 合入主规格并保留验证证据；不创建或合入 MR。
+        targetBranch: codex/separate-build-strategy-execution-binding-v2
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 5
+        contentHash: ff1b89c626ca507b95981edcf1ebaa7a5ebd717d85e698e6033e23167475fe75
+        cwd: .
+        deliveryInputs: {}
+        environment: 4d71bfe2c9b89009a4d0cc1c64c769e9a439ae407844f3b7e57032aed2a1239f
+        exitCode: 0
+        inputAfter: 621fd56f55c4e9a25b3107cce0c6e703bcf14d0c76397f08382f66c2dcbe2e32
+        inputBefore: 621fd56f55c4e9a25b3107cce0c6e703bcf14d0c76397f08382f66c2dcbe2e32
+        manifestHash: d98f94fe3cd6cb90c681dd8eb4ffd4f80a69ca02f7dbe72bb9a44f8e9519ecb0
+        manifestRef: .comet/runtime/classic-sdk-checks/d9fa9a59c64a3c1071e7a7f17bd3907ddbd432a0ff5eaffb278f8fc47d8cc4dd/fd6ae7ca-66bd-4fc2-8b1f-8cf2bb633cd1.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/d9fa9a59c64a3c1071e7a7f17bd3907ddbd432a0ff5eaffb278f8fc47d8cc4dd/d13da7c4-551c-4dc8-a1c4-740cc8724564.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 900000
+      - contentHash: ff1b89c626ca507b95981edcf1ebaa7a5ebd717d85e698e6033e23167475fe75
+        ref: .comet/runtime/classic-sdk-checks/d9fa9a59c64a3c1071e7a7f17bd3907ddbd432a0ff5eaffb278f8fc47d8cc4dd/d13da7c4-551c-4dc8-a1c4-740cc8724564.log
+      - choice: local
+        proposal:
+          input:
+            change: separate-build-strategy-and-execution-binding
+            changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+            workspaceBaseline:
+              ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+          outputs:
+            full.archive.prepare:
+              summary: 完成 BuildStrategy 与 ExecutionBinding 权威拆分：Design approval 只绑定稳定
+                Strategy，Configure 自动重验 Host/checkout/HEAD Binding；Plan
+                Evidence、外部 Runner fencing、精确失效、决定复用、OTLP 与 Desktop 投影均完成。12/12
+                任务完成，158 个测试文件、708 个测试通过、2 个跳过，OpenSpec 18/18，正式包摘要与
+                Build/Verify 收据均已复现。归档将把本 Change 的 delta specs
+                合入主规格并保留验证证据；不创建或合入 MR。
+              targetBranch: codex/separate-build-strategy-execution-binding-v2
+      - baseCommit: 5c222524f95a8ac804085e49c79d8e2b3a4efafc
+        deliveryAction: local
+        targetBranch: codex/separate-build-strategy-execution-binding-v2
+        verifiedBranch: codex/separate-build-strategy-execution-binding-v2
+      - archiveDirectory: openspec/changes/archive/2026-11-01-separate-build-strategy-and-execution-binding
+      - sequence: 9
+        value:
+          boundBranch: codex/separate-build-strategy-execution-binding-v2
+          buildMode: autonomous
+          directOverride: false
+          isolation: current
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      - sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: separate-build-strategy-and-execution-binding
+              changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+              workspaceBaseline:
+                ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+            outputs:
+              full.build.configure:
+                boundBranch: codex/separate-build-strategy-execution-binding-v2
+                buildMode: autonomous
+                directOverride: false
+                isolation: current
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      - sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: separate-build-strategy-and-execution-binding
+              changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+              workspaceBaseline:
+                ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/separate-build-strategy-and-execution-binding/.comet/handoff/design-context.json
+                handoffHash: 6badac2a85a13630b7f135f1d577e587064481510feee34e66d595ffcb9fb756
+                proposal: "Design completed: replace the mixed BuildConfiguration authority with
+                  an approved portable BuildStrategy plus automatically
+                  validated ExecutionBinding; retain Comet Configure to Plan to
+                  Execute to Check ordering, exact proposal identity,
+                  evidence-before-effect, and incremental recovery; keep actual
+                  Cordis composition under the independent compatibility
+                  authority; remove the regular Build Configure approval and all
+                  legacy writable configuration paths; bind Plan Evidence to
+                  Tasks, strategy, binding, composition, topology, write scope,
+                  report ownership, validators, and risk; use a dependency
+                  matrix for precise invalidation; cover schema cutover,
+                  red-to-green domain/service/E2E tests, telemetry, desktop
+                  projection, and strict OpenSpec validation. Spec Patch: no new
+                  capability scope beyond the Open-corrected proposal and delta
+                  specs; design.md now supplies exact schemas, transitions,
+                  deletion list, and verification matrix."
+                requirementsEvidence:
+                  contentHash: dfe1f02ae5ebefcc8c6d1fe9c3fe2662a525c23de6f8a36a9ed7f73c1acde6c0
+                  ref: openspec/changes/separate-build-strategy-and-execution-binding
+                sourceEvidence:
+                  contentHash: ff2a159c789a5ff01d470c0ed7b0d5a5c23f08bc97a3a6ca497232d05c090c2a
+                  ref: openspec/changes/separate-build-strategy-and-execution-binding
+      - sequence: 7
+        value:
+          designDoc: openspec/changes/separate-build-strategy-and-execution-binding/design.md
+      - sequence: 8
+        value:
+          contentHash: 6beacd116cf27e2c20ee46a64de5a23663454033b4a9764b2e219247ee8df544
+          ref: openspec/changes/separate-build-strategy-and-execution-binding/design.md
+      - sequence: 5
+        value:
+          handoffContext: openspec/changes/separate-build-strategy-and-execution-binding/.comet/handoff/design-context.json
+          handoffHash: 6badac2a85a13630b7f135f1d577e587064481510feee34e66d595ffcb9fb756
+          proposal: "Design completed: replace the mixed BuildConfiguration authority with
+            an approved portable BuildStrategy plus automatically validated
+            ExecutionBinding; retain Comet Configure to Plan to Execute to Check
+            ordering, exact proposal identity, evidence-before-effect, and
+            incremental recovery; keep actual Cordis composition under the
+            independent compatibility authority; remove the regular Build
+            Configure approval and all legacy writable configuration paths; bind
+            Plan Evidence to Tasks, strategy, binding, composition, topology,
+            write scope, report ownership, validators, and risk; use a
+            dependency matrix for precise invalidation; cover schema cutover,
+            red-to-green domain/service/E2E tests, telemetry, desktop
+            projection, and strict OpenSpec validation. Spec Patch: no new
+            capability scope beyond the Open-corrected proposal and delta specs;
+            design.md now supplies exact schemas, transitions, deletion list,
+            and verification matrix."
+          requirementsEvidence:
+            contentHash: dfe1f02ae5ebefcc8c6d1fe9c3fe2662a525c23de6f8a36a9ed7f73c1acde6c0
+            ref: openspec/changes/separate-build-strategy-and-execution-binding
+          sourceEvidence:
+            contentHash: ff2a159c789a5ff01d470c0ed7b0d5a5c23f08bc97a3a6ca497232d05c090c2a
+            ref: openspec/changes/separate-build-strategy-and-execution-binding
+      - sequence: 1
+        value:
+          event: open-complete
+      - sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: separate-build-strategy-and-execution-binding
+              changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+              workspaceBaseline:
+                ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: 40148561d8aaef98354786ecd8aafed0044e0208fdc06b6d289127810ff183df
+                ref: openspec/changes/separate-build-strategy-and-execution-binding
+      - sequence: 2
+        value:
+          contentHash: 40148561d8aaef98354786ecd8aafed0044e0208fdc06b6d289127810ff183df
+          ref: openspec/changes/separate-build-strategy-and-execution-binding
+      - sequence: 4
+        value:
+          contentHash: 40148561d8aaef98354786ecd8aafed0044e0208fdc06b6d289127810ff183df
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: 6beacd116cf27e2c20ee46a64de5a23663454033b4a9764b2e219247ee8df544
+            ref: openspec/changes/separate-build-strategy-and-execution-binding/design.md
+          plan: docs/superpowers/plans/2026-11-01-separate-build-strategy-and-execution-binding.md
+          planEvidence:
+            contentHash: e7bcc695c9ae4d2d7e674e3623367675b698ec377c135c0ffa20a3c82c680165
+            ref: docs/superpowers/plans/2026-11-01-separate-build-strategy-and-execution-binding.md
+          taskRevision: e94ae1953f72c451fae1a9c687e9e37a95b44307bd53f82a719314bd35c43f19
+      - sequence: 12
+        value:
+          contentHash: e7bcc695c9ae4d2d7e674e3623367675b698ec377c135c0ffa20a3c82c680165
+          ref: docs/superpowers/plans/2026-11-01-separate-build-strategy-and-execution-binding.md
+      - sequence: 13
+        value:
+          event: build-complete
+      - sequence: 14
+        value:
+          argv:
+            - npm
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: 52a24cd972f7b9c7e7bfd71ac1670b0284159e9b797353e858b2cc032e17248d
+          cwd: .
+          environment: 1d626212cb0d187610b71b77e9c5426bdc97a5a10d6120768aeda4ffe0e11e56
+          exitCode: 0
+          inputAfter: 2ca45abdc9f5d9c4e167b778becc331ffc8d61b9636e2dafd4bf4579f3563e35
+          inputBefore: 2ca45abdc9f5d9c4e167b778becc331ffc8d61b9636e2dafd4bf4579f3563e35
+          manifestHash: a4800da08ac59227380f2422d51e958fa116b56299df96c64e77b9302b2c02ca
+          manifestRef: .comet/runtime/classic-sdk-checks/d9fa9a59c64a3c1071e7a7f17bd3907ddbd432a0ff5eaffb278f8fc47d8cc4dd/986e9b77-7227-4b20-b020-88775552231c.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/d9fa9a59c64a3c1071e7a7f17bd3907ddbd432a0ff5eaffb278f8fc47d8cc4dd/3f873433-5c6e-4e3b-813f-556e0b19fd3d.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 900000
+      - sequence: 15
+        value:
+          contentHash: 52a24cd972f7b9c7e7bfd71ac1670b0284159e9b797353e858b2cc032e17248d
+          ref: .comet/runtime/classic-sdk-checks/d9fa9a59c64a3c1071e7a7f17bd3907ddbd432a0ff5eaffb278f8fc47d8cc4dd/3f873433-5c6e-4e3b-813f-556e0b19fd3d.log
+      - sequence: 17
+        value:
+          contentHash: 2d7610dbaa073039a8cb803ce29f700bccddf7f61089cee6b212705c1d2ae7d4
+          ref: docs/superpowers/reports/separate-build-strategy-and-execution-binding.md
+      - sequence: 16
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/separate-build-strategy-and-execution-binding.md
+      - sequence: 18
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 3
+          contentHash: 7ff7ac2d640958b1f1311a30ec4bf4319e99b45a2dcd4beef9e4be0b6279800e
+          cwd: .
+          deliveryInputs: {}
+          environment: 4d71bfe2c9b89009a4d0cc1c64c769e9a439ae407844f3b7e57032aed2a1239f
+          exitCode: 0
+          inputAfter: c55d3c1c4c6f89d8c284f783c28723cfcb72aee14c6d57e108226e4b35e74c13
+          inputBefore: c55d3c1c4c6f89d8c284f783c28723cfcb72aee14c6d57e108226e4b35e74c13
+          manifestHash: 6c10ec18936af360aa913f1eff6fd9e8a04d694a37bc19b8b668c2daacd42069
+          manifestRef: .comet/runtime/classic-sdk-checks/d9fa9a59c64a3c1071e7a7f17bd3907ddbd432a0ff5eaffb278f8fc47d8cc4dd/f83cee51-8679-46b7-b0d9-f402b69d9877.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/d9fa9a59c64a3c1071e7a7f17bd3907ddbd432a0ff5eaffb278f8fc47d8cc4dd/9400afdf-fb3f-4ee8-91ec-177f531c1e38.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 900000
+      - sequence: 19
+        value:
+          contentHash: 7ff7ac2d640958b1f1311a30ec4bf4319e99b45a2dcd4beef9e4be0b6279800e
+          ref: .comet/runtime/classic-sdk-checks/d9fa9a59c64a3c1071e7a7f17bd3907ddbd432a0ff5eaffb278f8fc47d8cc4dd/9400afdf-fb3f-4ee8-91ec-177f531c1e38.log
+      - sequence: 21
+        value:
+          choice: reverify
+          proposal:
+            input:
+              change: separate-build-strategy-and-execution-binding
+              changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+              workspaceBaseline:
+                ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+            outputs:
+              full.archive.prepare:
+                summary: 完成 BuildStrategy 与 ExecutionBinding 权威拆分：Design approval 只绑定稳定
+                  Strategy，Configure 自动重验 Host/checkout/HEAD Binding；Plan
+                  Evidence、外部 Runner fencing、精确失效、决定复用、OTLP 与 Desktop
+                  投影均完成。12/12 任务完成，158 个测试文件、708 个测试通过、2 个跳过，OpenSpec
+                  18/18，正式包摘要与 Build/Verify 收据均已复现。归档将把本 Change 的 delta specs
+                  合入主规格并保留验证证据；不创建或合入 MR。
+                targetBranch: codex/separate-build-strategy-execution-binding-v2
+      - sequence: 20
+        value:
+          summary: 完成 BuildStrategy 与 ExecutionBinding 权威拆分：Design approval 只绑定稳定
+            Strategy，Configure 自动重验 Host/checkout/HEAD Binding；Plan Evidence、外部
+            Runner fencing、精确失效、决定复用、OTLP 与 Desktop 投影均完成。12/12 任务完成，158
+            个测试文件、708 个测试通过、2 个跳过，OpenSpec 18/18，正式包摘要与 Build/Verify
+            收据均已复现。归档将把本 Change 的 delta specs 合入主规格并保留验证证据；不创建或合入 MR。
+          targetBranch: codex/separate-build-strategy-execution-binding-v2
+      - sequence: 23
+        value:
+          contentHash: 2d7610dbaa073039a8cb803ce29f700bccddf7f61089cee6b212705c1d2ae7d4
+          ref: docs/superpowers/reports/separate-build-strategy-and-execution-binding.md
+      - sequence: 22
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/separate-build-strategy-and-execution-binding.md
+      - sequence: 24
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 5
+          contentHash: ff1b89c626ca507b95981edcf1ebaa7a5ebd717d85e698e6033e23167475fe75
+          cwd: .
+          deliveryInputs: {}
+          environment: 4d71bfe2c9b89009a4d0cc1c64c769e9a439ae407844f3b7e57032aed2a1239f
+          exitCode: 0
+          inputAfter: 621fd56f55c4e9a25b3107cce0c6e703bcf14d0c76397f08382f66c2dcbe2e32
+          inputBefore: 621fd56f55c4e9a25b3107cce0c6e703bcf14d0c76397f08382f66c2dcbe2e32
+          manifestHash: d98f94fe3cd6cb90c681dd8eb4ffd4f80a69ca02f7dbe72bb9a44f8e9519ecb0
+          manifestRef: .comet/runtime/classic-sdk-checks/d9fa9a59c64a3c1071e7a7f17bd3907ddbd432a0ff5eaffb278f8fc47d8cc4dd/fd6ae7ca-66bd-4fc2-8b1f-8cf2bb633cd1.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/d9fa9a59c64a3c1071e7a7f17bd3907ddbd432a0ff5eaffb278f8fc47d8cc4dd/d13da7c4-551c-4dc8-a1c4-740cc8724564.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 900000
+      - sequence: 25
+        value:
+          contentHash: ff1b89c626ca507b95981edcf1ebaa7a5ebd717d85e698e6033e23167475fe75
+          ref: .comet/runtime/classic-sdk-checks/d9fa9a59c64a3c1071e7a7f17bd3907ddbd432a0ff5eaffb278f8fc47d8cc4dd/d13da7c4-551c-4dc8-a1c4-740cc8724564.log
+      - sequence: 27
+        value:
+          choice: local
+          proposal:
+            input:
+              change: separate-build-strategy-and-execution-binding
+              changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+              workspaceBaseline:
+                ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+            outputs:
+              full.archive.prepare:
+                summary: 完成 BuildStrategy 与 ExecutionBinding 权威拆分：Design approval 只绑定稳定
+                  Strategy，Configure 自动重验 Host/checkout/HEAD Binding；Plan
+                  Evidence、外部 Runner fencing、精确失效、决定复用、OTLP 与 Desktop
+                  投影均完成。12/12 任务完成，158 个测试文件、708 个测试通过、2 个跳过，OpenSpec
+                  18/18，正式包摘要与 Build/Verify 收据均已复现。归档将把本 Change 的 delta specs
+                  合入主规格并保留验证证据；不创建或合入 MR。
+                targetBranch: codex/separate-build-strategy-execution-binding-v2
+      - sequence: 26
+        value:
+          summary: 完成 BuildStrategy 与 ExecutionBinding 权威拆分：Design approval 只绑定稳定
+            Strategy，Configure 自动重验 Host/checkout/HEAD Binding；Plan Evidence、外部
+            Runner fencing、精确失效、决定复用、OTLP 与 Desktop 投影均完成。12/12 任务完成，158
+            个测试文件、708 个测试通过、2 个跳过，OpenSpec 18/18，正式包摘要与 Build/Verify
+            收据均已复现。归档将把本 Change 的 delta specs 合入主规格并保留验证证据；不创建或合入 MR。
+          targetBranch: codex/separate-build-strategy-execution-binding-v2
+      - sequence: 28
+        value:
+          baseCommit: 5c222524f95a8ac804085e49c79d8e2b3a4efafc
+          deliveryAction: local
+          targetBranch: codex/separate-build-strategy-execution-binding-v2
+          verifiedBranch: codex/separate-build-strategy-execution-binding-v2
+      - sequence: 29
+        value:
+          archiveDirectory: openspec/changes/archive/2026-11-01-separate-build-strategy-and-execution-binding
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 27
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 10
+        left: 28
+        right: 29
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 30
+        right: 25
+        height: 4
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 32
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 34
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 35
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 25
+        height: 5
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: null
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 40
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 41
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 42
+        height: 5
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 45
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 17
+        left: 44
+        right: 46
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 47
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 48
+        height: 5
+      - key: full.archive.confirm
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 20
+        left: 50
+        right: 51
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 33
+        right: 27
+        height: 2
+      - key: full.build.check.evidence
+        value: 14
+        left: 52
+        right: 53
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 54
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 55
+        right: 48
+        height: 5
+      - key: full.verify.check.evidence
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 57
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 21
+        left: 44
+        right: 58
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 59
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 55
+        right: 60
+        height: 5
+      - key: full.archive.confirm
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 20
+        left: 62
+        right: 51
+        height: 2
+      - key: full.build.check.evidence
+        value: 14
+        left: 63
+        right: 53
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 64
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 65
+        right: 60
+        height: 5
+      - key: full.archive.preflight
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 23
+        left: null
+        right: 67
+        height: 2
+      - key: full.archive.prepare
+        value: 20
+        left: 68
+        right: 51
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 53
+        right: 29
+        height: 3
+      - key: full.build.check.evidence
+        value: 14
+        left: 69
+        right: 70
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 71
+        right: 60
+        height: 5
+      - key: full.archive.confirm
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 25
+        left: 73
+        right: 74
+        height: 2
+      - key: full.archive.prepare
+        value: 20
+        left: 75
+        right: 51
+        height: 3
+      - key: full.build.check.evidence
+        value: 14
+        left: 76
+        right: 70
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 77
+        right: 60
+        height: 5
+      - key: full.build.configure
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 27
+        left: 79
+        right: 80
+        height: 2
+      - key: full.design.evidence
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 31
+        left: 82
+        right: 83
+        height: 2
+      - key: full.open.revalidate
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 34
+        left: null
+        right: 85
+        height: 2
+      - key: full.open.confirm
+        value: 33
+        left: 84
+        right: 86
+        height: 3
+      - key: full.design.document
+        value: 29
+        left: 81
+        right: 87
+        height: 4
+      - key: full.build.plan
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 37
+        left: 89
+        right: 90
+        height: 2
+      - key: full.build.confirm
+        value: 27
+        left: 79
+        right: 91
+        height: 3
+      - key: full.design.document
+        value: 29
+        left: 92
+        right: 87
+        height: 4
+      - key: full.build.execute
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 27
+        left: 79
+        right: 94
+        height: 2
+      - key: full.build.plan.evidence
+        value: 37
+        left: null
+        right: 90
+        height: 2
+      - key: full.build.plan
+        value: 36
+        left: 95
+        right: 96
+        height: 3
+      - key: full.design.document
+        value: 29
+        left: 97
+        right: 87
+        height: 4
+      - key: full.build.check
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 40
+        left: 99
+        right: 100
+        height: 2
+      - key: full.build.confirm
+        value: 27
+        left: 101
+        right: 94
+        height: 3
+      - key: full.build.plan
+        value: 36
+        left: 102
+        right: 96
+        height: 4
+      - key: full.design.document
+        value: 29
+        left: 103
+        right: 87
+        height: 5
+      - key: full.open.evidence
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 41
+        left: null
+        right: 106
+        height: 2
+      - key: full.open.revalidate
+        value: 35
+        left: 105
+        right: 107
+        height: 3
+      - key: full.open.confirm
+        value: 33
+        left: 84
+        right: 108
+        height: 4
+      - key: full.design.document
+        value: 29
+        left: 103
+        right: 109
+        height: 5
+      - key: full.open.revalidate
+        value: 35
+        left: 105
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 41
+        left: 112
+        right: 106
+        height: 2
+      - key: full.verify.check
+        value: 43
+        left: 111
+        right: 113
+        height: 3
+      - key: full.open.confirm
+        value: 33
+        left: 84
+        right: 114
+        height: 4
+      - key: full.design.document
+        value: 29
+        left: 103
+        right: 115
+        height: 5
+      - key: full.archive.confirm
+        value: 45
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 46
+        left: 117
+        right: 118
+        height: 2
+      - key: full.build.confirm
+        value: 27
+        left: 100
+        right: 94
+        height: 2
+      - key: full.build.check.evidence
+        value: 40
+        left: 119
+        right: 120
+        height: 3
+      - key: full.build.plan
+        value: 36
+        left: 121
+        right: 96
+        height: 4
+      - key: full.design.document
+        value: 29
+        left: 122
+        right: 115
+        height: 5
+      - key: full.verify.run
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 47
+        left: 112
+        right: 124
+        height: 2
+      - key: full.verify.check
+        value: 43
+        left: 111
+        right: 125
+        height: 3
+      - key: full.open.confirm
+        value: 33
+        left: 84
+        right: 126
+        height: 4
+      - key: full.design.document
+        value: 29
+        left: 122
+        right: 127
+        height: 5
+      - key: full.verify.check.evidence
+        value: 50
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 47
+        left: 129
+        right: 124
+        height: 2
+      - key: full.verify.check
+        value: 49
+        left: 111
+        right: 130
+        height: 3
+      - key: full.open.confirm
+        value: 33
+        left: 84
+        right: 131
+        height: 4
+      - key: full.design.document
+        value: 29
+        left: 122
+        right: 132
+        height: 5
+      - key: full.archive.confirm
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 52
+        left: 134
+        right: 118
+        height: 2
+      - key: full.build.check.evidence
+        value: 40
+        left: 135
+        right: 120
+        height: 3
+      - key: full.build.plan
+        value: 36
+        left: 136
+        right: 96
+        height: 4
+      - key: full.design.document
+        value: 29
+        left: 137
+        right: 132
+        height: 5
+      - key: full.archive.preflight
+        value: 53
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 51
+        left: null
+        right: 139
+        height: 2
+      - key: full.archive.prepare
+        value: 52
+        left: 140
+        right: 118
+        height: 3
+      - key: full.build.plan
+        value: 36
+        left: 120
+        right: 96
+        height: 3
+      - key: full.build.check.evidence
+        value: 40
+        left: 141
+        right: 142
+        height: 4
+      - key: full.design.document
+        value: 29
+        left: 143
+        right: 132
+        height: 5
+      - key: full.archive.confirm
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 53
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 54
+        left: 145
+        right: 146
+        height: 2
+      - key: full.archive.prepare
+        value: 52
+        left: 147
+        right: 118
+        height: 3
+      - key: full.build.check.evidence
+        value: 40
+        left: 148
+        right: 142
+        height: 4
+      - key: full.design.document
+        value: 29
+        left: 149
+        right: 132
+        height: 5
+      - key: full.open
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 33
+        left: 151
+        right: 152
+        height: 2
+      - key: full.open.revalidate
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 34
+        left: null
+        right: 154
+        height: 2
+      - key: full.open.confirm
+        value: 33
+        left: 151
+        right: 155
+        height: 3
+      - key: full.design.confirm
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 31
+        left: 157
+        right: 158
+        height: 2
+      - key: full.open.confirm
+        value: 33
+        left: 159
+        right: 155
+        height: 3
+      - key: full.design.confirm
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 29
+        left: 161
+        right: 162
+        height: 2
+      - key: full.design.handoff
+        value: 31
+        left: 163
+        right: 158
+        height: 3
+      - key: full.open.confirm
+        value: 33
+        left: 164
+        right: 155
+        height: 4
+      - key: full.open.evidence
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 32
+        left: null
+        right: 166
+        height: 2
+      - key: full.design.handoff
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 34
+        left: 169
+        right: 170
+        height: 2
+      - key: full.open
+        value: 32
+        left: 168
+        right: 171
+        height: 3
+      - key: full.build.configure
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 30
+        left: 174
+        right: 175
+        height: 2
+      - key: full.design.confirm
+        value: 28
+        left: 173
+        right: 176
+        height: 3
+      - key: full.open
+        value: 32
+        left: 177
+        right: 171
+        height: 4
+      - key: full.archive.prepare
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 39
+        left: 179
+        right: 180
+        height: 2
+      - key: full.build.confirm
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 36
+        left: null
+        right: 183
+        height: 2
+      - key: full.build.execute
+        value: 38
+        left: 182
+        right: 184
+        height: 3
+      - key: full.build.configure
+        value: 26
+        left: 181
+        right: 185
+        height: 4
+      - key: full.open.revalidate
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 34
+        left: 169
+        right: 187
+        height: 2
+      - key: full.verify.check.evidence
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 41
+        left: 189
+        right: 190
+        height: 2
+      - key: full.verify.check
+        value: 43
+        left: 188
+        right: 191
+        height: 3
+      - key: full.open
+        value: 32
+        left: 176
+        right: 192
+        height: 4
+      - key: full.design.confirm
+        value: 28
+        left: 186
+        right: 193
+        height: 5
+      - key: full.archive.confirm
+        value: 45
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 52
+        left: 195
+        right: null
+        height: 2
+      - key: full.build.check
+        value: 39
+        left: 196
+        right: 180
+        height: 3
+      - key: full.build.configure
+        value: 26
+        left: 197
+        right: 185
+        height: 4
+      - key: full.verify.check.evidence
+        value: 50
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 47
+        left: 199
+        right: 200
+        height: 2
+      - key: full.verify.check
+        value: 49
+        left: 188
+        right: 201
+        height: 3
+      - key: full.open
+        value: 32
+        left: 176
+        right: 202
+        height: 4
+      - key: full.design.confirm
+        value: 28
+        left: 198
+        right: 203
+        height: 5
+      - key: full.open
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 29
+        left: 206
+        right: 207
+        height: 2
+      - key: full.open.confirm
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 34
+        left: 209
+        right: 210
+        height: 2
+      - key: full.open
+        value: 32
+        left: 208
+        right: 211
+        height: 3
+      - key: full.build.configure
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 27
+        left: 213
+        right: 214
+        height: 2
+      - key: full.design.document
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 30
+        left: 216
+        right: 217
+        height: 2
+      - key: full.design.confirm
+        value: 28
+        left: 215
+        right: 218
+        height: 3
+      - key: full.open
+        value: 32
+        left: 219
+        right: 211
+        height: 4
+      - key: full.build.check
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 26
+        left: 221
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 36
+        left: 223
+        right: 224
+        height: 2
+      - key: full.build.confirm
+        value: 27
+        left: 222
+        right: 225
+        height: 3
+      - key: full.open
+        value: 32
+        left: 218
+        right: 211
+        height: 3
+      - key: full.design.confirm
+        value: 28
+        left: 226
+        right: 227
+        height: 4
+      - key: full.build.check
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 40
+        left: 229
+        right: 230
+        height: 2
+      - key: full.build.confirm
+        value: 27
+        left: 231
+        right: 225
+        height: 3
+      - key: full.verify.run
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 35
+        left: null
+        right: 233
+        height: 2
+      - key: full.open.evidence
+        value: 34
+        left: 209
+        right: 234
+        height: 3
+      - key: full.open
+        value: 32
+        left: 218
+        right: 235
+        height: 4
+      - key: full.design.confirm
+        value: 28
+        left: 232
+        right: 236
+        height: 5
+      - key: full.open.revalidate
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 34
+        left: 209
+        right: 238
+        height: 2
+      - key: full.verify.report.evidence
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 42
+        left: 240
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 43
+        left: 239
+        right: 241
+        height: 3
+      - key: full.open
+        value: 32
+        left: 218
+        right: 242
+        height: 4
+      - key: full.design.confirm
+        value: 28
+        left: 232
+        right: 243
+        height: 5
+      - key: full.archive.confirm
+        value: 45
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 46
+        left: 245
+        right: 246
+        height: 2
+      - key: full.build.check.evidence
+        value: 40
+        left: 247
+        right: 230
+        height: 3
+      - key: full.build.confirm
+        value: 27
+        left: 248
+        right: 225
+        height: 4
+      - key: full.verify.check.evidence
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 41
+        left: 250
+        right: 251
+        height: 2
+      - key: full.verify.check
+        value: 43
+        left: 239
+        right: 252
+        height: 3
+      - key: full.open
+        value: 32
+        left: 218
+        right: 253
+        height: 4
+      - key: full.design.confirm
+        value: 28
+        left: 249
+        right: 254
+        height: 5
+      - key: full.verify.report.evidence
+        value: 47
+        left: 250
+        right: 251
+        height: 2
+      - key: full.verify.check
+        value: 49
+        left: 239
+        right: 256
+        height: 3
+      - key: full.open
+        value: 32
+        left: 218
+        right: 257
+        height: 4
+      - key: full.design.confirm
+        value: 28
+        left: 249
+        right: 258
+        height: 5
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 31
+      - 37
+      - 43
+      - 49
+      - 56
+      - 61
+      - 66
+      - 72
+      - 78
+      - 88
+      - 93
+      - 98
+      - 104
+      - 110
+      - 116
+      - 123
+      - 128
+      - 133
+      - 138
+      - 144
+      - 150
+      - 153
+      - 156
+      - 160
+      - 165
+      - 167
+      - 172
+      - 178
+      - 194
+      - 204
+      - 205
+      - 212
+      - 220
+      - 228
+      - 237
+      - 244
+      - 255
+      - 259
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "13"
+          - input
+          - outputs
+        map: 12
+      - path:
+          - actions
+          - "14"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actions
+          - "15"
+          - input
+          - outputs
+        map: 14
+      - path:
+          - actions
+          - "16"
+          - input
+          - outputs
+        map: 15
+      - path:
+          - actionContexts
+          - separate-build-strategy-and-execution-binding:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - separate-build-strategy-and-execution-binding:11
+          - results
+        map: 16
+      - path:
+          - actionContexts
+          - separate-build-strategy-and-execution-binding:13
+          - results
+        map: 17
+      - path:
+          - actionContexts
+          - separate-build-strategy-and-execution-binding:14
+          - results
+        map: 18
+      - path:
+          - actionContexts
+          - separate-build-strategy-and-execution-binding:16
+          - results
+        map: 19
+      - path:
+          - actionContexts
+          - separate-build-strategy-and-execution-binding:18
+          - results
+        map: 20
+      - path:
+          - actionContexts
+          - separate-build-strategy-and-execution-binding:20
+          - results
+        map: 21
+      - path:
+          - actionContexts
+          - separate-build-strategy-and-execution-binding:22
+          - results
+        map: 22
+      - path:
+          - actionContexts
+          - separate-build-strategy-and-execution-binding:24
+          - results
+        map: 23
+      - path:
+          - actionContexts
+          - separate-build-strategy-and-execution-binding:26
+          - results
+        map: 24
+      - path:
+          - actionContexts
+          - separate-build-strategy-and-execution-binding:28
+          - results
+        map: 25
+      - path:
+          - actionContexts
+          - separate-build-strategy-and-execution-binding:29
+          - results
+        map: 26
+      - path:
+          - actionContexts
+          - separate-build-strategy-and-execution-binding:30
+          - results
+        map: 27
+      - path:
+          - actionContexts
+          - separate-build-strategy-and-execution-binding:4
+          - results
+        map: 28
+      - path:
+          - actionContexts
+          - separate-build-strategy-and-execution-binding:5
+          - results
+        map: 29
+      - path:
+          - actionContexts
+          - separate-build-strategy-and-execution-binding:7
+          - results
+        map: 30
+      - path:
+          - actionContexts
+          - separate-build-strategy-and-execution-binding:9
+          - results
+        map: 31
+      - path:
+          - outputs
+        map: 27
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 32
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 33
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 34
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 35
+      - path:
+          - waits
+          - "4"
+          - results
+        map: 36
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 37
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 38
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 39
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 40
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 41
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 42
+      - path:
+          - evidenceWaits
+          - "6"
+          - results
+        map: 43
+      - path:
+          - evidenceWaits
+          - "7"
+          - results
+        map: 44
+  storageHash: f862df114f17516618e13872c1f301effeff396c8f4af0f9f045ae3f7da19bea
+check_epoch: 8

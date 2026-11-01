@@ -44,7 +44,7 @@ function frozenPacket(kind = 'build.execute'): WorkExecutionPacket {
           kind: 'change-inputs',
           digest: digest('3'),
           content: JSON.stringify({
-            build: { configuration: { executionMode: 'subagent-driven-development' } },
+            build: { strategy: { executionMode: 'subagent-driven-development' } },
           }),
         },
       ],
@@ -410,11 +410,7 @@ describe('Managed Work Executor Build contract', () => {
                 capabilities: ['repository.read', 'specification.read'],
               },
               buildProtocol: {
-                configuration: {
-                  hostId: 'external:cli:codex-root',
-                  hostCapabilities: ['build.autonomous', 'repository.read', 'repository.write'],
-                  executionMode: 'autonomous',
-                },
+                binding: { host: { hostId: 'external:cli:codex-root' } },
               },
             },
           }),
@@ -434,7 +430,7 @@ describe('Managed Work Executor Build contract', () => {
           authenticated: true,
         },
       }),
-    ).rejects.toThrow(/Host approved by the Build Configuration/u);
+    ).rejects.toThrow(/Execution Binding Host/u);
     expect(claim).not.toHaveBeenCalled();
   });
 

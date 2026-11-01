@@ -4,7 +4,7 @@
 
 ### Requirement: Build 策略绑定与人工等待必须可观测
 
-Repoctopus MUST 分别记录 BuildStrategy proposed/approved/reused/invalidated、ExecutionBinding validated/drifted、Human Decision created/reused/superseded 和 Plan preflight finding，并保留 phase、Build action、strategy/binding revision、composition identity、reason class 与 duration 关联。相同 semantic digest 的恢复或返工 MUST 产生 decision reused 而不是新的 approval request；Metric labels MUST 只使用有界策略、结果和原因枚举。
+Repoctopus MUST 分别记录 BuildStrategy proposed/approved/reused/invalidated、ExecutionBinding validated/drifted、Human Decision created/reused/superseded 和 Plan preflight finding，并保留 phase、Build action、strategy/binding revision、独立 composition identity、reason class 与 duration 关联。Composition identity MUST 只用于兼容性、执行和 Evidence 关联，不得成为 Strategy approval semantic digest。相同 Strategy semantic digest 的恢复、兼容 adoption 或返工 MUST 产生 decision reused 而不是新的 approval request；Metric labels MUST 只使用有界策略、结果和原因枚举。
 
 #### Scenario: Configure 自动重验 binding
 

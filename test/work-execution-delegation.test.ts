@@ -17,7 +17,7 @@ function packet(mode: 'autonomous' | 'subagent-driven-development'): WorkExecuti
       layers: [
         {
           kind: 'change-inputs',
-          content: JSON.stringify({ build: { configuration: { executionMode: mode } } }),
+          content: JSON.stringify({ build: { strategy: { executionMode: mode } } }),
         },
       ],
     },

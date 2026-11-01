@@ -4,7 +4,7 @@
 
 ### Requirement: 人工等待只展示当前有效语义决定
 
-桌面应用 MUST 从标准 OTLP 投影当前有效 Human Decision，并展示 phase、decision kind、有界 reason、创建时间和其绑定的 Strategy/composition/Plan revision；相同 semantic digest 的重试、恢复或返工不得产生重复待处理卡片。界面 MUST 区分真正需要用户选择、Runtime 正在自动重验 ExecutionBinding，以及历史已复用/失效决定。
+桌面应用 MUST 从标准 OTLP 投影当前有效 Human Decision，并展示 phase、decision kind、有界 reason、创建时间和其绑定的 Strategy/Plan revision；实际 composition compatibility 作为独立状态展示，不得伪装成人工决定输入。相同 semantic digest 的重试、恢复或返工不得产生重复待处理卡片。界面 MUST 区分真正需要用户选择、Runtime 正在自动重验 ExecutionBinding/composition，以及历史已复用/失效决定。
 
 #### Scenario: Build Configure 重验 checkout
 

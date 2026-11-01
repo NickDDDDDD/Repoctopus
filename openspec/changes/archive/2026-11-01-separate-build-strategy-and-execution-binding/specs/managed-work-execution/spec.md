@@ -4,7 +4,7 @@
 
 ### Requirement: Build Configure 产生可批准的不可变配置
 
-Runtime MUST 从已通过 Design Human Decision 的版本化 `BuildStrategy` 读取 execution/TDD/review/isolation intent 与有效 Skill composition identity，并根据当前 Run、仓库拓扑、隔离事实与 Host capabilities 解析独立 `ExecutionBinding`。Strategy 以稳定 identity、semantic digest 和 approval Evidence 固定；Binding 以 repository/branch/head/worktree ownership、capability digest、可移植 semantic digest 和只在本地保存的 path/local digest 固定。Agent 与 Host不得增删策略字段、以执行行为反向改写 Strategy，或把机器绑定变化变成人工选择。
+Runtime MUST 从已通过 Design Human Decision 的版本化 `BuildStrategy` 读取 execution/TDD/review/isolation intent，并根据当前 Run、仓库拓扑、隔离事实与 Host capabilities 解析独立 `ExecutionBinding`。Strategy 以稳定 identity、semantic digest 和 approval Evidence 固定；Binding 以 repository/branch/head/worktree ownership、capability digest、可移植 semantic digest 和只在本地保存的 path/local digest 固定；实际 Skill composition identity 由独立 compatibility authority 固定和验证。Agent 与 Host不得增删策略字段、以执行行为反向改写 Strategy，或把机器绑定/composition 变化变成人工策略选择。
 
 #### Scenario: 多仓任务选择 subagent 模式
 
@@ -48,7 +48,7 @@ Runtime MUST 在创建 Execute Work 前验证 BuildPlan 对批准 Tasks、验收
 #### Scenario: 计划输入漂移
 
 - **WHEN** Tasks、验收、仓库拓扑、Strategy、Binding、能力快照、Skill composition 或计划 identity 与 Plan Evidence 输入不一致
-- **THEN** Runtime 使旧 Evidence 失效并返回 Plan revision 或 Design，不复用旧批准开始执行
+- **THEN** Runtime 使旧 Evidence 失效并按变化权威返回 Plan revision、Design 或 `migration_required`；composition 漂移不得单独刷新 Strategy approval
 
 ## ADDED Requirements
 

@@ -72,6 +72,71 @@ describe('telemetry mapping', () => {
     );
   });
 
+  it('exports bounded Strategy and Binding lifecycle facts without raw digests or paths', () => {
+    const workflow = workflowFixture();
+    const project = projectFixture();
+    const run = startRun({
+      workflow,
+      runId: 'run-binding-telemetry',
+      projectSnapshotDigest: project.digest,
+      composition: compositionFixture(),
+      timestamp: '2026-11-01T00:00:00.000Z',
+      traceId: '8'.repeat(32),
+    });
+    const event: TrajectoryEvent = {
+      schemaVersion: 1,
+      sequence: 2,
+      eventId: 'binding-drifted',
+      timestamp: run.createdAt,
+      type: 'change.lifecycle.transitioned',
+      runId: run.runId,
+      stateVersion: 2,
+      compositionDigest: run.composition.compositionDigest,
+      data: {
+        observationKind: 'build-binding-revalidation-required',
+        observation: {
+          kind: 'build-binding-revalidation-required',
+          reasonCode: 'path',
+          reason: 'private C:/workspace/path',
+          buildProtocol: {
+            strategy: {
+              strategyId: 'build-strategy:stable',
+              revision: 1,
+              executionMode: 'autonomous',
+              tddMode: 'tdd',
+              reviewMode: 'standard',
+              isolationIntent: 'worktree',
+              semanticDigest: `sha256:${'a'.repeat(64)}`,
+            },
+            binding: {
+              bindingId: 'execution-binding:previous',
+              revision: 4,
+              stateDigest: `sha256:${'b'.repeat(64)}`,
+              localOverlayRef: 'execution-workspace:private',
+            },
+          },
+        },
+      },
+    };
+    const attributes = safeEventAttributes(
+      { run, workflow, projectSnapshot: project, events: [event], trajectory: [event] },
+      event,
+    );
+    expect(attributes).toMatchObject({
+      'repoctopus.build.event': 'build.binding.drifted',
+      'repoctopus.build.reason.class': 'path',
+      'repoctopus.build.strategy.id': 'build-strategy:stable',
+      'repoctopus.build.strategy.revision': 1,
+      'repoctopus.build.binding.id': 'execution-binding:previous',
+      'repoctopus.build.binding.revision': 4,
+      'repoctopus.build.executionMode': 'autonomous',
+      'repoctopus.build.tddMode': 'tdd',
+      'repoctopus.build.reviewMode': 'standard',
+      'repoctopus.build.isolation': 'worktree',
+    });
+    expect(JSON.stringify(attributes)).not.toMatch(/C:\/workspace|semanticDigest|stateDigest|localOverlayRef|sha256:[ab]/u);
+  });
+
   it('projects one accepted Change transition identically for Desktop and remote OTLP', () => {
     const workflow = workflowFixture();
     const project = projectFixture();

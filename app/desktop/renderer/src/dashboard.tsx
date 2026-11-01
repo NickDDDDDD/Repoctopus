@@ -398,6 +398,7 @@ function SkillDetails({ change }: { change: ProjectedChange }) {
 
 function EvidenceDetails({ change }: { change: ProjectedChange }) {
   const waiting = change.decisions.filter((decision) => decision.state === 'waiting');
+  const latestBinding = change.bindingRevalidations.at(-1) ?? null;
   const latestEvidence = change.evidence.at(-1) ?? null;
   return (
     <section className="detail-section" aria-labelledby="evidence-heading">
@@ -412,6 +413,25 @@ function EvidenceDetails({ change }: { change: ProjectedChange }) {
         items={[
           ['Human Decision', waiting[0]?.decisionId ?? null],
           ['Decision 类别', waiting[0]?.kind ?? null],
+          ['Strategy', change.strategyId ?? null],
+          [
+            'Execution Binding',
+            change.executionBindingId
+              ? `${change.executionBindingId} · r${change.executionBindingRevision ?? '?'}`
+              : null,
+          ],
+          [
+            'Binding 自动重验',
+            latestBinding
+              ? `${latestBinding.state}${latestBinding.reasonClass ? ` · ${latestBinding.reasonClass}` : ''}`
+              : null,
+          ],
+          [
+            'Decision 历史',
+            change.decisions.length > 0
+              ? `${change.decisions.filter((decision) => decision.state === 'resolved').length} resolved · ${change.decisions.filter((decision) => decision.state === 'superseded').length} superseded · ${change.decisions.reduce((total, decision) => total + decision.reuseCount, 0)} reused`
+              : null,
+          ],
           ['Evidence Attempt', latestEvidence?.attemptId ?? null],
           ['Gate', latestEvidence?.gateStatus ?? null],
           ['Artifact', latestEvidence?.artifacts.at(-1)?.artifactType ?? null],

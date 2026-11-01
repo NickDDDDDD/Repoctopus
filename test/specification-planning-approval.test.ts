@@ -8,6 +8,7 @@ import {
   assertPlanningSnapshot,
   assertSpecificationApprovalState,
   createPlanningSnapshot,
+  createHumanDecisionId,
   createSpecificationApprovalRequest,
   recordSpecificationApprovalDecision,
   requestSpecificationApproval,
@@ -77,6 +78,7 @@ function planningInput() {
       repositoryId: 'workspace',
     },
     changeBranch: structuredClone(branch),
+    buildStrategyDigest: digest('c'),
   };
 }
 
@@ -270,7 +272,11 @@ describe('specification planning approval', () => {
     const stableRequest = createSpecificationApprovalRequest(snapshot);
     expect(createSpecificationApprovalRequest(snapshot)).toEqual(stableRequest);
     expect(stableRequest.requestId).toBe(
-      `specification-approval:design:${snapshot.identityBasis.approvalAuthority!.digest.slice(-24)}`,
+      createHumanDecisionId({
+        runId: snapshot.changeId,
+        decisionKind: 'specification-approval.design',
+        semanticDigest: snapshot.digest,
+      }),
     );
 
     const revisedInput = planningInput();
@@ -449,6 +455,43 @@ describe('specification planning approval', () => {
         timestamp: '2026-10-24T00:01:00.000Z',
       }),
     ).toThrow(/idempotency key conflicts/iu);
+  });
+
+  it('reuses the same semantic decision and supersedes it only when semantics change', () => {
+    const snapshot = createPlanningSnapshot(planningInput());
+    const first = requestSpecificationApproval({
+      current: null,
+      snapshot,
+      decisionRunId: 'run-approval',
+      timestamp: '2026-10-24T00:00:00.000Z',
+    });
+    const retried = requestSpecificationApproval({
+      current: first,
+      snapshot,
+      decisionRunId: 'run-approval',
+      timestamp: '2026-10-24T00:01:00.000Z',
+    });
+    expect(retried).toEqual(first);
+
+    const revised = planningInput();
+    revised.change.artifacts.find((artifact) => artifact.kind === 'design')!.digest = digest('e');
+    const next = requestSpecificationApproval({
+      current: retried,
+      snapshot: createPlanningSnapshot(revised),
+      decisionRunId: 'run-approval',
+      timestamp: '2026-10-24T00:02:00.000Z',
+    });
+    expect(next.decisionRequest.requestId).not.toBe(first.decisionRequest.requestId);
+    expect(next.decisionHistory).toEqual([
+      {
+        requestId: first.decisionRequest.requestId,
+        proposalHash: first.decisionRequest.proposalHash,
+        semanticDigest: first.snapshot.digest,
+        status: 'superseded',
+        supersededAt: '2026-10-24T00:02:00.000Z',
+      },
+    ]);
+    expect(() => assertSpecificationApprovalState(next)).not.toThrow();
   });
 
   it.each([

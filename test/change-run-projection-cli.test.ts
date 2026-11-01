@@ -83,7 +83,9 @@ describe('Change Run CLI projection', () => {
       build: {
         action: 'execute',
         actionAttempt: 2,
-        configurationId: 'build-configuration:123',
+        strategyId: 'build-strategy:123',
+        bindingId: 'execution-binding:456',
+        bindingRevision: 2,
         executionMode: 'subagent-driven-development',
         tddMode: 'tdd',
         isolation: 'worktree',

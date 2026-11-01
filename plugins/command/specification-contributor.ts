@@ -14,6 +14,8 @@ interface Input {
   targetBaselineDigest?: `sha256:${string}`;
   plan?: unknown;
   runId?: string;
+  decisionRunId?: string;
+  buildStrategyDigest?: `sha256:${string}`;
   changeBranch?: ChangeBranchReference;
   response?: SpecificationApprovalDecisionResponse;
   actor?: SpecificationApprovalActor;
@@ -24,13 +26,15 @@ const plugin = ((context: Context) => {
     context.commandRouter.register({
       name: 'specification.approval.prepare',
       execute({ input, signal }) {
-        const { changeId, changeBranch } = input as Input;
+        const { changeId, changeBranch, decisionRunId, buildStrategyDigest } = input as Input;
         if (!changeId?.trim() || !changeBranch) {
           throw new Error('Specification approval preparation requires change and branch facts');
         }
         return context.specificationPlanning.prepare({
           changeId,
           changeBranch,
+          ...(decisionRunId ? { decisionRunId } : {}),
+          ...(buildStrategyDigest ? { buildStrategyDigest } : {}),
           signal,
         });
       },

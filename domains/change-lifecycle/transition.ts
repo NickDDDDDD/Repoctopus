@@ -10,8 +10,7 @@ import { assertPublicationReceipt } from '../delivery/publication-receipt.js';
 import type { SpecificationClosureResult } from '../specification/types.js';
 import type {
   BuildActionKind,
-  BuildConfiguration,
-  BuildConfigurationProposal,
+  ExecutionBinding,
   BuildInvalidation,
   BuildCheckEvidence,
   BuildExecutionMode,
@@ -120,7 +119,8 @@ export interface ChangeLifecycleWorkDefinition {
   buildAction?: BuildActionKind;
   executionMode?: BuildExecutionMode;
   tddMode?: BuildTddMode;
-  configurationId?: string;
+  strategyId?: string;
+  bindingId?: string;
   planId?: string;
   planRevision?: number;
   packageId?: string;
@@ -190,7 +190,8 @@ export interface WorkDescriptor {
   phase: ChangePhase;
   kind: string;
   buildAction?: BuildActionKind;
-  configurationId?: string;
+  strategyId?: string;
+  bindingId?: string;
   planId?: string;
   planRevision?: number;
   packageId?: string;
@@ -330,7 +331,9 @@ export interface ChangeRunProjection extends ChangeLifecycleSnapshot {
 export interface ChangeBuildSummary {
   action: BuildActionKind | null;
   actionAttempt: number;
-  configurationId: string | null;
+  strategyId: string;
+  bindingId: string | null;
+  bindingRevision: number | null;
   executionMode: BuildExecutionMode | null;
   tddMode: BuildTddMode | null;
   isolation: ExecutionIsolation;
@@ -371,7 +374,7 @@ export interface ChangeLifecycleTransitionFact {
     evidenceIds: readonly string[];
   };
   buildRevalidation?: {
-    protocolDisposition: 'retained-configuration' | 'rebuilt-configuration';
+    protocolDisposition: 'retained-binding' | 'rebuilt-binding';
     completionBeforeCount: number;
     completionRetainedCount: number;
   };
@@ -458,11 +461,12 @@ export type ChangeLifecycleObservation =
       work?: WorkDescriptor;
       buildProtocol?: BuildProtocolState;
     }
+  | { kind: 'build-binding-accepted'; binding: ExecutionBinding; work: WorkDescriptor }
   | {
-      kind: 'build-configuration-proposed';
-      proposal: BuildConfigurationProposal;
-      requestId: string;
+      kind: 'build-binding-revalidation-required';
+      reasonCode: 'host' | 'capability' | 'checkout' | 'head' | 'path';
       reason: string;
+      work: WorkDescriptor;
     }
   | {
       kind: 'workspace-intent-revision-required';
@@ -482,17 +486,8 @@ export type ChangeLifecycleObservation =
       work: WorkDescriptor;
     }
   | {
-      kind: 'build-configuration-retry-required';
+      kind: 'build-binding-retry-required';
       reason: string;
-      work: WorkDescriptor;
-    }
-  | {
-      kind: 'build-configuration-decision';
-      decision: 'approve' | 'reject';
-      requestId: string;
-      proposalDigest: `sha256:${string}`;
-      actorId: string;
-      configuration?: BuildConfiguration;
       work: WorkDescriptor;
     }
   | {
@@ -687,8 +682,7 @@ export function assertChangeLifecycleSnapshot(
       (snapshot.phase === 'design' && snapshot.buildProtocol.status === 'suspended-for-design')
     ) ||
       snapshot.buildProtocol.runId !== snapshot.identity.runId ||
-      snapshot.buildProtocol.workspaceIntent.semanticDigest !==
-        snapshot.workspaceIntent?.semanticDigest)
+      snapshot.buildProtocol.strategy.isolationIntent !== snapshot.workspaceIntent?.isolation)
   ) {
     throw new Error('Build protocol state does not match the Change Run');
   }
@@ -1175,36 +1169,29 @@ export function evolveChangeLifecycle(options: {
       },
     });
   }
-  if (observation.kind === 'build-configuration-proposed') {
+  if (observation.kind === 'build-binding-accepted') {
     if (
       current.phase !== 'build' ||
       current.status !== 'running' ||
       current.currentWork?.kind !== 'build.configure' ||
       !current.buildProtocol ||
-      current.buildProtocol.currentAction !== 'configure'
+      current.buildProtocol.currentAction !== 'configure' ||
+      observation.work.phase !== 'build' ||
+      observation.work.kind !== 'build.plan'
     ) {
-      throw new Error('Build Configuration proposal requires the active Configure Action');
+      throw new Error('Execution Binding acceptance requires the active Configure Action');
     }
     const buildProtocol = advanceBuildProtocol(current.buildProtocol, {
-      kind: 'configuration-proposed',
-      proposal: observation.proposal,
+      kind: 'binding-accepted',
+      binding: observation.binding,
     });
-    const waitCondition: HumanDecisionWaitCondition = {
-      schemaVersion: 1,
-      kind: 'human-decision',
-      waitId: `build-configuration:${observation.requestId}`,
-      requestId: observation.requestId,
-      proposalDigest: observation.proposal.semanticDigest,
-      inputDigest: observation.proposal.semanticDigest,
-      reason: observation.reason,
-    };
     return applyChangeLifecycleTransition({
       definition: options.definition,
       current,
-      transitionId: 'build.configuration-awaiting-approval',
+      transitionId: 'build.binding-accepted',
       next: {
-        currentWork: null,
-        waitCondition,
+        currentWork: observation.work,
+        waitCondition: null,
         blocker: null,
         buildProtocol,
       },
@@ -1232,7 +1219,7 @@ export function evolveChangeLifecycle(options: {
       !current.workspaceIntent ||
       !protocol ||
       protocol.currentAction !== 'configure' ||
-      protocol.configuration ||
+      protocol.binding ||
       protocol.plan ||
       protocol.packageCompletions.length > 0 ||
       !observation.requestId.trim() ||
@@ -1322,7 +1309,7 @@ export function evolveChangeLifecycle(options: {
     };
     return reduced;
   }
-  if (observation.kind === 'build-configuration-retry-required') {
+  if (observation.kind === 'build-binding-retry-required') {
     if (
       current.phase !== 'build' ||
       current.status !== 'running' ||
@@ -1333,7 +1320,7 @@ export function evolveChangeLifecycle(options: {
       observation.work.kind !== 'build.configure' ||
       !observation.reason.trim()
     ) {
-      throw new Error('Build Configuration retry requires the active Configure Action');
+      throw new Error('Execution Binding retry requires the active Configure Action');
     }
     const buildProtocol = advanceBuildProtocol(current.buildProtocol, {
       kind: 'retry',
@@ -1342,7 +1329,7 @@ export function evolveChangeLifecycle(options: {
     return applyChangeLifecycleTransition({
       definition: options.definition,
       current,
-      transitionId: 'build.configuration-retry',
+      transitionId: 'build.binding-retry',
       next: {
         currentWork: observation.work,
         waitCondition: null,
@@ -1351,51 +1338,26 @@ export function evolveChangeLifecycle(options: {
       },
     });
   }
-  if (observation.kind === 'build-configuration-decision') {
-    const wait = current.waitCondition;
+  if (observation.kind === 'build-binding-revalidation-required') {
     if (
       current.phase !== 'build' ||
-      current.status !== 'waiting' ||
-      wait?.kind !== 'human-decision' ||
-      !wait.waitId.startsWith('build-configuration:') ||
-      wait.requestId !== observation.requestId ||
-      wait.proposalDigest !== observation.proposalDigest ||
-      !current.buildProtocol ||
-      !observation.actorId.trim()
+      current.status !== 'running' ||
+      !current.buildProtocol?.binding ||
+      current.buildProtocol.currentAction === 'configure' ||
+      observation.work.phase !== 'build' ||
+      observation.work.kind !== 'build.configure' ||
+      !observation.reason.trim()
     ) {
-      throw new Error('Build Configuration decision does not match the current proposal');
-    }
-    if (observation.decision === 'approve') {
-      if (!observation.configuration || observation.work.kind !== 'build.plan') {
-        throw new Error('Approved Build Configuration requires Runtime-selected Plan Work');
-      }
-      const buildProtocol = advanceBuildProtocol(current.buildProtocol, {
-        kind: 'configuration-approved',
-        configuration: observation.configuration,
-      });
-      return applyChangeLifecycleTransition({
-        definition: options.definition,
-        current,
-        transitionId: 'build.configuration-approved',
-        next: {
-          currentWork: observation.work,
-          waitCondition: null,
-          blocker: null,
-          buildProtocol,
-        },
-      });
-    }
-    if (observation.work.kind !== 'build.configure') {
-      throw new Error('Rejected Build Configuration requires another Configure Work');
+      throw new Error('Execution Binding drift requires an accepted non-Configure Build Action');
     }
     const buildProtocol = advanceBuildProtocol(current.buildProtocol, {
-      kind: 'retry',
-      action: 'configure',
+      kind: 'binding-revalidation-required',
+      reasonCode: observation.reasonCode,
     });
     return applyChangeLifecycleTransition({
       definition: options.definition,
       current,
-      transitionId: 'build.configuration-rejected',
+      transitionId: 'build.binding-revalidation-required',
       next: {
         currentWork: observation.work,
         waitCondition: null,
@@ -1567,7 +1529,11 @@ export function evolveChangeLifecycle(options: {
     const buildProtocol = advanceBuildProtocol(
       current.buildProtocol,
       observation.decision === 'approve'
-        ? { kind: 'plan-evidence-accepted', evidence: observation.evidence }
+        ? {
+            kind: 'plan-evidence-accepted',
+            evidence: observation.evidence,
+            approvedRiskDigest: observation.evidence.riskDecisionDigest,
+          }
         : { kind: 'plan-rejected' },
     );
     const expectedKind =
@@ -2196,10 +2162,9 @@ export function evolveChangeLifecycle(options: {
     if (current.buildProtocol?.status === 'suspended-for-design') {
       reduced.fact.buildRevalidation = {
         protocolDisposition:
-          current.buildProtocol.configuration?.configurationId ===
-          approvedBuildProtocol!.configuration?.configurationId
-            ? 'retained-configuration'
-            : 'rebuilt-configuration',
+          current.buildProtocol.binding?.bindingId === approvedBuildProtocol!.binding?.bindingId
+            ? 'retained-binding'
+            : 'rebuilt-binding',
         completionBeforeCount: current.buildProtocol.packageCompletions.length,
         completionRetainedCount: approvedBuildProtocol!.packageCompletions.length,
       };
@@ -2286,10 +2251,12 @@ export function projectChangeRun(
     ? {
         action: protocol.currentAction,
         actionAttempt: protocol.actionAttempt,
-        configurationId: protocol.configuration?.configurationId ?? null,
-        executionMode: protocol.configuration?.executionMode ?? null,
-        tddMode: protocol.configuration?.tddMode ?? null,
-        isolation: protocol.workspaceIntent.isolation,
+        strategyId: protocol.strategy.strategyId,
+        bindingId: protocol.binding?.bindingId ?? null,
+        bindingRevision: protocol.binding?.revision ?? null,
+        executionMode: protocol.strategy.executionMode,
+        tddMode: protocol.strategy.tddMode,
+        isolation: protocol.strategy.isolationIntent,
         planId: protocol.plan?.planId ?? null,
         planRevision: protocol.plan?.revision ?? null,
         packageId: snapshot.currentWork?.packageId ?? null,

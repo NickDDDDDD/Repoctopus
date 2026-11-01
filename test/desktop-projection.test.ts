@@ -479,4 +479,61 @@ describe('desktop change projection', () => {
       failureReason: 'missing-layer',
     });
   });
+
+  it('separates the single active Human Decision from automatic Binding history', () => {
+    const facts = [
+      observation(1, {
+        eventType: 'wait.started',
+        correlation: {
+          workspaceId: 'team-platform',
+          changeId: 'decision-binding',
+          phase: 'design',
+          decisionId: 'decision:old',
+          decisionKind: 'specification-approval.design',
+        },
+      }),
+      observation(2, {
+        eventType: 'wait.started',
+        correlation: {
+          workspaceId: 'team-platform',
+          changeId: 'decision-binding',
+          phase: 'design',
+          decisionId: 'decision:new',
+          decisionKind: 'specification-approval.design',
+        },
+      }),
+      observation(3, {
+        eventType: 'change.lifecycle.transitioned',
+        correlation: {
+          workspaceId: 'team-platform',
+          changeId: 'decision-binding',
+          phase: 'build',
+          buildAction: 'configure',
+          strategyId: 'build-strategy:stable',
+          strategyRevision: 1,
+          bindingId: 'execution-binding:2',
+          bindingRevision: 2,
+        },
+        attributes: { buildEvent: 'build.binding.drifted', reasonClass: 'head' },
+      }),
+    ];
+    const snapshot = facts.reduce(
+      (current, fact) => reduceChangeProjection(current, fact).snapshot,
+      createEmptyChangeProjection(),
+    );
+    const change = snapshot.changes[0]!;
+    expect(change.decisions.filter((decision) => decision.state === 'waiting')).toHaveLength(1);
+    expect(change.decisions.find((decision) => decision.decisionId === 'decision:old')?.state).toBe(
+      'superseded',
+    );
+    expect(change).toMatchObject({
+      strategyId: 'build-strategy:stable',
+      strategyRevision: 1,
+      executionBindingId: 'execution-binding:2',
+      executionBindingRevision: 2,
+      bindingRevalidations: [
+        expect.objectContaining({ state: 'drifted', reasonClass: 'head' }),
+      ],
+    });
+  });
 });

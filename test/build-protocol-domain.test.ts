@@ -1,26 +1,29 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  acceptBuildConfiguration,
   advanceBuildProtocol,
   assessBuildPlanRisk,
-  canRetainSuspendedBuildConfiguration,
+  canRetainSuspendedExecutionBinding,
   createBuildCheckEvidence,
-  createBuildConfigurationProposal,
+  createBuildStrategy,
+  createExecutionBinding,
   createBuildInvalidation,
-  createBuildPlan,
+  createBuildPlan as createBuildPlanV2,
   createBuildProtocolState,
   createExecutionWorkspaceBinding,
   createExecutionWorkspaceIntent,
   createPackageCompletionEvidence,
-  createPlanEvidence,
+  createPlanEvidence as createPlanEvidenceV2,
   revalidateSuspendedBuildProtocol,
   suspendBuildProtocolForDesign,
-  validateBuildPlan,
+  validateBuildPlan as validateBuildPlanV2,
 } from '../domains/change-lifecycle/build-protocol.js';
 import { parseSpecificationTasks } from '../domains/specification/tasks.js';
 
-const sha = (value: string): `sha256:${string}` => `sha256:${value.padEnd(64, value).slice(0, 64)}`;
+const sha = (value: string): `sha256:${string}` => {
+  const hex = Buffer.from(value).toString('hex') || '0';
+  return `sha256:${hex.repeat(64).slice(0, 64)}`;
+};
 
 function approvedConfiguration(
   options: {
@@ -51,24 +54,84 @@ function approvedConfiguration(
         }) as const,
     ),
   });
-  const proposal = createBuildConfigurationProposal({
-    intent,
-    binding,
+  const strategy = createBuildStrategy({
+    runId: 'run-managed-build',
+    revision: 1,
     executionMode,
     tddMode: options.tddMode ?? 'tdd',
     reviewMode: 'standard',
+    isolationIntent: intent.isolation,
+  });
+  const executionBinding = createExecutionBinding({
+    strategy,
+    revision: 1,
     hostId: 'codex-local',
     hostCapabilities: [
       executionMode === 'autonomous' ? 'build.autonomous' : 'subagent.dispatch.attested',
       'process.execute',
       'repository.write',
     ],
+    workspaceBinding: binding,
+    workspaceOwnerId: intent.workspaceId,
+    localOverlayRef: 'execution-workspace:test',
   });
-  return acceptBuildConfiguration({
-    proposal,
-    requestId: 'decision-configure-1',
-    actorId: 'user-1',
-    decidedAt: '2026-10-28T00:00:00.000Z',
+  return {
+    strategy,
+    binding: executionBinding,
+    intent,
+    workspaceIntent: intent,
+    semanticDigest: strategy.semanticDigest,
+    bindingDigest: executionBinding.stateDigest,
+    repositoryIds: executionBinding.repositories.map((entry) => entry.repositoryId),
+    hostCapabilities: [
+      executionMode === 'autonomous' ? 'build.autonomous' : 'subagent.dispatch.attested',
+      'process.execute',
+      'repository.write',
+    ],
+  };
+}
+
+type BuildFixture = ReturnType<typeof approvedConfiguration>;
+
+function createBuildPlan(
+  input: Omit<Parameters<typeof createBuildPlanV2>[0], 'strategy' | 'binding'> & {
+    configuration: BuildFixture;
+  },
+) {
+  const { configuration, ...rest } = input;
+  return createBuildPlanV2({
+    ...rest,
+    strategy: configuration.strategy,
+    binding: configuration.binding,
+  });
+}
+
+function validateBuildPlan(
+  input: Omit<Parameters<typeof validateBuildPlanV2>[0], 'strategy' | 'binding'> & {
+    configuration: BuildFixture;
+  },
+) {
+  const { configuration, ...rest } = input;
+  return validateBuildPlanV2({
+    ...rest,
+    strategy: configuration.strategy,
+    binding: configuration.binding,
+  });
+}
+
+function createPlanEvidence(
+  input: Omit<
+    Parameters<typeof createPlanEvidenceV2>[0],
+    'strategy' | 'binding' | 'compositionCheckpointDigest' | 'reportOwnerId'
+  > & { configuration: BuildFixture },
+) {
+  const { configuration, ...rest } = input;
+  return createPlanEvidenceV2({
+    ...rest,
+    strategy: configuration.strategy,
+    binding: configuration.binding,
+    compositionCheckpointDigest: sha('c'),
+    reportOwnerId: 'team-platform',
   });
 }
 
@@ -78,13 +141,12 @@ describe('Build protocol domain', () => {
     let state = createBuildProtocolState({
       runId: 'run-suspended-design',
       planningDigest: sha('a'),
-      workspaceIntent: configuration.workspaceIntent,
+      strategy: configuration.strategy,
     });
     state = advanceBuildProtocol(state, {
-      kind: 'configuration-proposed',
-      proposal: configuration,
+      kind: 'binding-accepted',
+      binding: configuration.binding,
     });
-    state = advanceBuildProtocol(state, { kind: 'configuration-approved', configuration });
 
     const suspended = suspendBuildProtocolForDesign(state, {
       observedPlanningDigest: sha('b'),
@@ -94,28 +156,32 @@ describe('Build protocol domain', () => {
     expect(suspended).toMatchObject({
       status: 'suspended-for-design',
       currentAction: null,
-      configuration: { configurationId: configuration.configurationId },
+      binding: { bindingId: configuration.binding.bindingId },
       suspension: { supersededPlanningDigest: sha('a'), observedPlanningDigest: sha('b') },
     });
     expect(() => advanceBuildProtocol(suspended, { kind: 'retry', action: 'plan' })).toThrow(
       /suspended/iu,
     );
     expect(
-      canRetainSuspendedBuildConfiguration(suspended, {
-        workspaceIntent: configuration.workspaceIntent,
-        repositoryIds: configuration.repositoryIds,
+      canRetainSuspendedExecutionBinding(suspended, {
+        strategy: configuration.strategy,
+        repositoryIds: configuration.binding.repositories.map((entry) => entry.repositoryId),
       }),
     ).toBe(true);
     expect(
-      canRetainSuspendedBuildConfiguration(suspended, {
-        workspaceIntent: configuration.workspaceIntent,
-        repositoryIds: [...configuration.repositoryIds, 'new-repository'],
+      canRetainSuspendedExecutionBinding(suspended, {
+        strategy: configuration.strategy,
+        repositoryIds: [
+          ...configuration.binding.repositories.map((entry) => entry.repositoryId),
+          'new-repository',
+        ],
       }),
     ).toBe(false);
 
     const revalidated = revalidateSuspendedBuildProtocol(suspended, {
       planningDigest: sha('b'),
-      configurationCompatible: true,
+      strategy: configuration.strategy,
+      bindingCompatible: true,
       planCompatible: false,
       retainedPackageIds: [],
     });
@@ -123,7 +189,7 @@ describe('Build protocol domain', () => {
       status: 'active',
       currentAction: 'plan',
       planningDigest: sha('b'),
-      configuration: { configurationId: configuration.configurationId },
+      binding: { bindingId: configuration.binding.bindingId },
       plan: null,
       suspension: null,
     });
@@ -168,13 +234,12 @@ describe('Build protocol domain', () => {
       let state = createBuildProtocolState({
         runId: 'run-local-revalidation',
         planningDigest: originalTasks.digest,
-        workspaceIntent: configuration.workspaceIntent,
+        strategy: configuration.strategy,
       });
       state = advanceBuildProtocol(state, {
-        kind: 'configuration-proposed',
-        proposal: configuration,
+        kind: 'binding-accepted',
+        binding: configuration.binding,
       });
-      state = advanceBuildProtocol(state, { kind: 'configuration-approved', configuration });
       state = advanceBuildProtocol(state, { kind: 'plan-accepted', plan: firstPlan });
       state = advanceBuildProtocol(state, {
         kind: 'plan-evidence-accepted',
@@ -211,7 +276,8 @@ describe('Build protocol domain', () => {
         }),
         {
           planningDigest: revisedTasks.digest,
-          configurationCompatible: true,
+          strategy: configuration.strategy,
+          bindingCompatible: true,
           planCompatible: false,
           retainedPackageIds: firstPlan.packages.map((workPackage) => workPackage.packageId),
         },
@@ -244,8 +310,10 @@ describe('Build protocol domain', () => {
 
       expect(state.packageCompletions).toHaveLength(1);
       expect(state.packageCompletions[0]?.packageId).toBe(revisedPlan.packages[0]?.packageId);
-      expect(state.configuration?.bindingDigest).toBe(configuration.bindingDigest);
-      expect(state.configuration?.repositoryIds).toEqual([...repositoryIds].sort());
+      expect(state.binding?.bindingId).toBe(configuration.binding.bindingId);
+      expect(state.binding?.repositories.map((entry) => entry.repositoryId)).toEqual(
+        [...repositoryIds].sort(),
+      );
       expect(revisedPlan.packages[1]?.repositoryIds).toEqual([
         repositoryIds[Math.min(1, repositoryIds.length - 1)],
       ]);
@@ -336,10 +404,12 @@ describe('Build protocol domain', () => {
     const second = approvedConfiguration();
 
     expect(first.semanticDigest).toBe(second.semanticDigest);
-    expect(first.configurationId).toBe(second.configurationId);
+    expect(first.strategy.strategyId).toBe(second.strategy.strategyId);
     expect(first.bindingDigest).toBe(second.bindingDigest);
     expect(() => {
-      (first.hostCapabilities as string[]).push('unsafe');
+      (first.binding.repositories as unknown as Array<{ repositoryId: string }>).push({
+        repositoryId: 'unsafe',
+      });
     }).toThrow();
 
     const intent = createExecutionWorkspaceIntent({
@@ -386,15 +456,23 @@ describe('Build protocol domain', () => {
       ],
     });
 
+    const strategy = createBuildStrategy({
+      runId: 'run-invalid',
+      revision: 1,
+      executionMode: 'subagent-driven-development',
+      tddMode: 'direct',
+      reviewMode: 'standard',
+      isolationIntent: 'current',
+    });
     expect(() =>
-      createBuildConfigurationProposal({
-        intent,
-        binding,
-        executionMode: 'subagent-driven-development',
-        tddMode: 'direct',
-        reviewMode: 'standard',
+      createExecutionBinding({
+        strategy,
+        revision: 1,
         hostId: 'plain-host',
         hostCapabilities: ['process.execute'],
+        workspaceBinding: binding,
+        workspaceOwnerId: intent.workspaceId,
+        localOverlayRef: 'execution-workspace:test',
       }),
     ).toThrow(/subagent\.dispatch\.attested/u);
   });
@@ -446,6 +524,120 @@ describe('Build protocol domain', () => {
     expect(validateBuildPlan({ plan, configuration, tasks }).accepted).toBe(true);
     expect(plan.packages.map((item) => item.packageId)).toHaveLength(2);
     expect(plan.packages[1]!.dependsOn).toEqual([plan.packages[0]!.packageId]);
+  });
+
+  it('fails Plan preflight closed for tampered Task, acceptance, repository, scope and digest facts', () => {
+    const configuration = approvedConfiguration();
+    const tasks = parseSpecificationTasks(
+      'managed-build',
+      '- [ ] 1.1 Implement the bounded change.\n  **Acceptance:** Bounded behavior passes.\n',
+    );
+    const plan = createBuildPlan({
+      runId: 'run-preflight',
+      revision: 1,
+      configuration,
+      planningDigest: tasks.digest,
+      tasks,
+      candidate: {
+        packages: [
+          {
+            packageKey: 'bounded',
+            taskIds: ['1.1'],
+            repositoryIds: ['workspace'],
+            writeScopes: [{ repositoryId: 'workspace', paths: ['domains/**'] }],
+            acceptanceRefs: tasks.tasks[0]!.acceptanceCriteria.map((item) => item.acceptanceId),
+            expectedOutcomes: ['bounded-tests-pass'],
+            validatorProfile: 'build.package-valid',
+            dependsOn: [],
+          },
+        ],
+      },
+    });
+    const variants = [
+      { ...plan, packages: [{ ...plan.packages[0]!, taskIds: ['missing-task'] }] },
+      { ...plan, packages: [{ ...plan.packages[0]!, acceptanceRefs: ['missing-acceptance'] }] },
+      { ...plan, packages: [{ ...plan.packages[0]!, repositoryIds: ['unbound'] }] },
+      {
+        ...plan,
+        packages: [
+          {
+            ...plan.packages[0]!,
+            writeScopes: [{ repositoryId: 'unbound', paths: ['outside/**'] }],
+          },
+        ],
+      },
+      { ...plan, digest: sha('f') },
+    ];
+    for (const candidate of variants) {
+      const validation = validateBuildPlanV2({
+        plan: candidate,
+        strategy: configuration.strategy,
+        binding: configuration.binding,
+        tasks,
+      });
+      expect(validation.accepted).toBe(false);
+      expect(() =>
+        createPlanEvidenceV2({
+          plan: candidate,
+          strategy: configuration.strategy,
+          binding: configuration.binding,
+          validation,
+          compositionCheckpointDigest: sha('c'),
+          reportOwnerId: 'team-platform',
+        }),
+      ).toThrow(/Rejected Build Plan/iu);
+    }
+  });
+
+  it('binds Plan Evidence to Host, scopes, dependencies, validators and terminal report ownership', () => {
+    const configuration = approvedConfiguration();
+    const tasks = parseSpecificationTasks(
+      'managed-build',
+      '- [ ] 1.1 Implement it.\n  **Acceptance:** It passes.\n',
+    );
+    const plan = createBuildPlan({
+      runId: 'run-plan-evidence',
+      revision: 1,
+      configuration,
+      planningDigest: tasks.digest,
+      tasks,
+      candidate: {
+        packages: [
+          {
+            packageKey: 'implementation',
+            taskIds: ['1.1'],
+            repositoryIds: ['workspace'],
+            writeScopes: [{ repositoryId: 'workspace', paths: ['domains/**'] }],
+            acceptanceRefs: tasks.tasks[0]!.acceptanceCriteria.map((item) => item.acceptanceId),
+            expectedOutcomes: ['tests-pass'],
+            validatorProfile: 'build.package-valid',
+            dependsOn: [],
+          },
+        ],
+      },
+    });
+    const validation = validateBuildPlan({ plan, configuration, tasks });
+    const evidence = createPlanEvidence({ plan, configuration, validation });
+    expect(evidence).toMatchObject({
+      hostCapabilityDigest: configuration.binding.host.capabilityDigest,
+      taskIds: ['1.1'],
+      validatorProfiles: ['build.package-valid'],
+      reviewMode: 'standard',
+      reportOwnerId: 'team-platform',
+    });
+    expect(evidence.acceptanceRefs).toEqual(plan.packages[0]!.acceptanceRefs);
+    expect(evidence.writeScopeDigest).toMatch(/^sha256:[a-f0-9]{64}$/u);
+    expect(evidence.dependencyDigest).toMatch(/^sha256:[a-f0-9]{64}$/u);
+    expect(() =>
+      createPlanEvidenceV2({
+        plan,
+        strategy: configuration.strategy,
+        binding: configuration.binding,
+        validation,
+        compositionCheckpointDigest: sha('c'),
+        reportOwnerId: ' ',
+      }),
+    ).toThrow(/report owner/iu);
   });
 
   it('supports Task splitting, strongly-coupled Task merging, and deterministic cross-repository risk', () => {
@@ -584,13 +776,12 @@ describe('Build protocol domain', () => {
     let state = createBuildProtocolState({
       runId: 'run-revision',
       planningDigest: tasks.digest,
-      workspaceIntent: configuration.workspaceIntent,
+      strategy: configuration.strategy,
     });
     state = advanceBuildProtocol(state, {
-      kind: 'configuration-proposed',
-      proposal: configuration,
+      kind: 'binding-accepted',
+      binding: configuration.binding,
     });
-    state = advanceBuildProtocol(state, { kind: 'configuration-approved', configuration });
     state = advanceBuildProtocol(state, { kind: 'plan-accepted', plan: plan1 });
     state = advanceBuildProtocol(state, {
       kind: 'plan-evidence-accepted',
@@ -825,7 +1016,8 @@ describe('Build protocol domain', () => {
 
   it('requires bounded Build Check evidence and an independent standard reviewer', () => {
     const base = {
-      configurationDigest: sha('a'),
+      strategyDigest: sha('a'),
+      bindingStateDigest: sha('e'),
       planDigest: sha('b'),
       repositoryDigest: sha('c'),
       implementationDigest: sha('d'),
@@ -862,16 +1054,12 @@ describe('Build protocol domain', () => {
     const initial = createBuildProtocolState({
       runId: 'run-1',
       planningDigest: sha('a'),
-      workspaceIntent: configuration.workspaceIntent,
+      strategy: configuration.strategy,
     });
     expect(initial.currentAction).toBe('configure');
-    const proposed = advanceBuildProtocol(initial, {
-      kind: 'configuration-proposed',
-      proposal: configuration,
-    });
-    const configured = advanceBuildProtocol(proposed, {
-      kind: 'configuration-approved',
-      configuration,
+    const configured = advanceBuildProtocol(initial, {
+      kind: 'binding-accepted',
+      binding: configuration.binding,
     });
     expect(configured.currentAction).toBe('plan');
     expect(() => advanceBuildProtocol(configured, { kind: 'retry', action: 'execute' })).toThrow(
@@ -916,15 +1104,11 @@ describe('Build protocol domain', () => {
     const initial = createBuildProtocolState({
       runId: 'run-1',
       planningDigest: tasks.digest,
-      workspaceIntent: configuration.workspaceIntent,
+      strategy: configuration.strategy,
     });
-    const proposed = advanceBuildProtocol(initial, {
-      kind: 'configuration-proposed',
-      proposal: configuration,
-    });
-    const configured = advanceBuildProtocol(proposed, {
-      kind: 'configuration-approved',
-      configuration,
+    const configured = advanceBuildProtocol(initial, {
+      kind: 'binding-accepted',
+      binding: configuration.binding,
     });
     const planned = advanceBuildProtocol(configured, { kind: 'plan-accepted', plan });
     const evidence = createPlanEvidence({
@@ -953,7 +1137,8 @@ describe('Build protocol domain', () => {
     });
     const executed = advanceBuildProtocol(retry, { kind: 'package-completed', completion });
     const check = createBuildCheckEvidence({
-      configurationDigest: configuration.semanticDigest,
+      strategyDigest: configuration.strategy.semanticDigest,
+      bindingStateDigest: configuration.binding.stateDigest,
       planDigest: plan.digest,
       repositoryDigest: sha('b'),
       implementationDigest: sha('c'),
@@ -980,5 +1165,33 @@ describe('Build protocol domain', () => {
     ]).toEqual(['configure', 'plan', 'plan-evidence', 'execute', 'execute', 'check', null]);
     expect(retry.actionAttempt).toBe(2);
     expect(checked.status).toBe('ready-for-verify');
+  });
+
+  it('revalidates compatible machine drift without changing Strategy or discarding completions', () => {
+    const configuration = approvedConfiguration();
+    const initial = createBuildProtocolState({
+      runId: 'run-binding-drift',
+      planningDigest: sha('a'),
+      strategy: configuration.strategy,
+    });
+    const configured = advanceBuildProtocol(initial, {
+      kind: 'binding-accepted',
+      binding: configuration.binding,
+    });
+    const drifted = advanceBuildProtocol(configured, {
+      kind: 'binding-revalidation-required',
+      reasonCode: 'head',
+    });
+    expect(drifted).toMatchObject({
+      currentAction: 'configure',
+      status: 'active',
+      strategy: { strategyId: configuration.strategy.strategyId },
+      binding: null,
+      plan: null,
+      planEvidence: null,
+      checkEvidence: null,
+    });
+    expect(drifted.bindingHistory).toEqual([configuration.binding]);
+    expect(drifted.invalidations).toEqual([]);
   });
 });

@@ -3,7 +3,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { WorkflowRunCoordinator } from '../domains/runtime/workflow-runs.js';
 import { createChangeLifecycleSnapshot } from '../domains/change-lifecycle/definition.js';
 import {
-  createBuildConfigurationProposal,
+  createBuildStrategy,
+  createExecutionBinding,
   createBuildProtocolState,
   createExecutionWorkspaceBinding,
   createExecutionWorkspaceIntent,
@@ -30,6 +31,16 @@ import {
 
 const cleanup: string[] = [];
 afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
+
+const strategyFor = (runId: string, intent: ReturnType<typeof createExecutionWorkspaceIntent>) =>
+  createBuildStrategy({
+    runId,
+    revision: 1,
+    executionMode: 'autonomous',
+    tddMode: 'tdd',
+    reviewMode: 'standard',
+    isolationIntent: intent.isolation,
+  });
 
 class FlakyTelemetry implements TelemetryPort {
   attempts = 0;
@@ -259,7 +270,7 @@ describe('Repoctopus runtime', () => {
         buildProtocol: createBuildProtocolState({
           runId,
           planningDigest: tasks.digest,
-          workspaceIntent: intent,
+          strategy: strategyFor(runId, intent),
         }),
       },
     });
@@ -383,7 +394,11 @@ describe('Repoctopus runtime', () => {
       currentWork: configureWork,
       workspaceIntent: intent,
       planningDigest,
-      buildProtocol: createBuildProtocolState({ runId, planningDigest, workspaceIntent: intent }),
+      buildProtocol: createBuildProtocolState({
+        runId,
+        planningDigest,
+        strategy: strategyFor(runId, intent),
+      }),
     };
     await runtime.start({
       workflow: workflowFixture(),
@@ -485,7 +500,7 @@ describe('Repoctopus runtime', () => {
     expect(await store.loadTrajectory(runId)).toHaveLength(trajectory.length);
   });
 
-  it('retires a completed execution whenever the lifecycle replaces its current Work', async () => {
+  it('retires Configure execution when an accepted Binding installs Plan Work', async () => {
     const workspace = await temporaryDirectory('repoctopus-lifecycle-execution-runtime-');
     cleanup.push(workspace);
     const store = new FileRuntimeStore(workspace);
@@ -533,7 +548,11 @@ describe('Repoctopus runtime', () => {
         currentWork: configureWork,
         workspaceIntent: intent,
         planningDigest,
-        buildProtocol: createBuildProtocolState({ runId, planningDigest, workspaceIntent: intent }),
+        buildProtocol: createBuildProtocolState({
+          runId,
+          planningDigest,
+          strategy: strategyFor(runId, intent),
+        }),
       },
     });
     const checkpoint: WorkExecutionCheckpoint = {
@@ -551,7 +570,7 @@ describe('Repoctopus runtime', () => {
         contextDigest: `sha256:${'8'.repeat(64)}`,
       },
       status: 'validated',
-      continuation: 'ask',
+      continuation: 'execute',
       updatedAt: '2026-10-30T00:00:00.000Z',
     };
     await store.commitGuarded(runId, ({ state, trajectory }) => {
@@ -590,41 +609,62 @@ describe('Repoctopus runtime', () => {
         },
       ],
     });
-    const proposal = createBuildConfigurationProposal({
-      intent,
-      binding,
-      executionMode: 'autonomous',
-      tddMode: 'tdd',
-      reviewMode: 'standard',
+    const strategy = strategyFor(runId, intent);
+    const executionBinding = createExecutionBinding({
+      strategy,
+      revision: 1,
       hostId: 'external:cli:test',
-      hostCapabilities: ['build.autonomous', 'repository.read'],
+      hostCapabilities: ['build.autonomous', 'process.execute', 'repository.write'],
+      workspaceBinding: binding,
+      workspaceOwnerId: intent.workspaceId,
+      localOverlayRef: 'execution-workspace:test',
+    });
+    const planWork = createBuildActionWork({
+      runId,
+      checkEpoch: 5,
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      kind: 'build.plan',
+      actionSkill: {
+        ...configureWork.actionSkill!,
+        name: 'repoctopus-build-plan',
+      },
+      augmentationSkills: [],
+      compositionDigest: compositionFixture().compositionDigest,
+      projectConfigDigest: `sha256:${'4'.repeat(64)}`,
+      projectSnapshotDigest: projectFixture({ projectId: 'team' }).digest,
+      workspaceRepositoryId: 'workspace',
+      repositoryIds: ['workspace'],
+      strategyId: strategy.strategyId,
+      bindingId: executionBinding.bindingId,
+      executionMode: strategy.executionMode,
+      tddMode: strategy.tddMode,
+      stableInput: { bindingStateDigest: executionBinding.stateDigest },
     });
 
     await runtime.acceptChangeObservation(runId, {
-      kind: 'build-configuration-proposed',
-      proposal,
-      requestId: 'configuration:test',
-      reason: 'Approve the immutable Build execution configuration',
+      kind: 'build-binding-accepted',
+      binding: executionBinding,
+      work: planWork,
     });
 
-    const waiting = await store.loadRun(runId);
-    expect(waiting).not.toHaveProperty('workExecution');
-    expect(waiting).toMatchObject({
-      status: 'waiting',
+    const advanced = await store.loadRun(runId);
+    expect(advanced).not.toHaveProperty('workExecution');
+    expect(advanced).toMatchObject({
+      status: 'running',
       changeLifecycle: {
         phase: 'build',
         checkEpoch: 5,
-        currentWork: null,
-        waitCondition: { waitId: 'build-configuration:configuration:test' },
+        currentWork: { kind: 'build.plan', workId: planWork.workId },
+        waitCondition: null,
       },
     });
     expect((await store.loadTrajectory(runId)).at(-1)?.data).toMatchObject({
-      observationKind: 'build-configuration-proposed',
+      observationKind: 'build-binding-accepted',
       executionRetirement: {
         reason: 'lifecycle-work-changed',
         retiredWorkId: configureWork.workId,
         retiredCheckEpoch: 4,
-        nextWorkId: null,
+        nextWorkId: planWork.workId,
         nextCheckEpoch: 5,
       },
     });
@@ -794,7 +834,7 @@ describe('Repoctopus runtime', () => {
     );
   });
 
-  it('adopts the compatible composition before restoring its direct predecessor definition', async () => {
+  it('adopts compatible composition but refuses a pre-cutover lifecycle definition', async () => {
     const workspace = await temporaryDirectory('repoctopus-definition-recovery-order-');
     cleanup.push(workspace);
     const store = new FileRuntimeStore(workspace);
@@ -895,18 +935,14 @@ describe('Repoctopus runtime', () => {
 
     const recovered = await store.loadRun(runId);
     expect(recovered.composition.compositionDigest).toBe(currentComposition.compositionDigest);
-    expect(recovered.status).toBe('running');
+    expect(recovered.status).toBe('migration_required');
     expect(recovered.changeLifecycle).toMatchObject({
-      revision: seededRevision + 1,
-      definition: { digest: lifecycle.definition.digest },
-      blocker: null,
+      revision: seededRevision,
+      definition: { digest: predecessorDefinitionDigest },
+      blocker: { code: 'change-lifecycle.definition-drift' },
     });
     const trajectory = await store.loadTrajectory(runId);
-    expect(trajectory.slice(-2).map((entry) => entry.type)).toEqual([
-      'composition.changed',
-      'change.lifecycle.transitioned',
-    ]);
-    expect(trajectory.at(-1)?.data.reason).toBe('compatible-definition-upgrade');
+    expect(trajectory.at(-1)?.type).toBe('composition.changed');
   });
 
   it('upgrades compatible lifecycle Contributors and blocks incompatible recovery drift', async () => {

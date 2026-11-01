@@ -31,6 +31,23 @@ function sha256(value: unknown): `sha256:${string}` {
   return `sha256:${createHash('sha256').update(canonicalJson(value)).digest('hex')}`;
 }
 
+/** Stable Human Decision identity. Machine observations must never participate. */
+export function createHumanDecisionId(input: {
+  runId: string;
+  decisionKind: string;
+  semanticDigest: `sha256:${string}`;
+}): string {
+  if (!input.runId.trim() || !input.decisionKind.trim()) {
+    throw new Error('Human Decision identity requires a Run and decision kind');
+  }
+  assertDigest(input.semanticDigest, 'Human Decision semantic digest');
+  return `human-decision:${sha256({
+    runId: input.runId,
+    decisionKind: input.decisionKind,
+    semanticDigest: input.semanticDigest,
+  }).slice(-24)}`;
+}
+
 function assertDigest(value: string, label: string): asserts value is `sha256:${string}` {
   if (!SHA256_DIGEST.test(value)) throw new Error(`${label} must be a SHA-256 digest`);
 }
@@ -63,6 +80,7 @@ function planningSnapshotDigest(snapshot: Omit<PlanningSnapshot, 'digest'>): `sh
     targetBranch: snapshot.changeBranch.targetBranch,
     planningManifestDigest: snapshot.planningManifestDigest,
     planningPolicyDigest: snapshot.planningPolicyDigest,
+    buildStrategyDigest: snapshot.buildStrategyDigest,
   }).digest;
 }
 
@@ -95,6 +113,7 @@ export function createPlanningSnapshot(input: {
   approvalPhase?: 'open' | 'design';
   planningManifest?: SpecificationPlanningManifest;
   planningPolicyDigest?: `sha256:${string}`;
+  buildStrategyDigest?: `sha256:${string}`;
 }): PlanningSnapshot {
   const manifest =
     input.planningManifest ??
@@ -139,9 +158,16 @@ export function createPlanningSnapshot(input: {
   const planningPolicyDigest =
     input.planningPolicyDigest ?? sha256({ kind: 'PlanningPolicy', schemaVersion: 1 });
   assertDigest(planningPolicyDigest, 'Planning policy');
+  const approvalPhase = input.approvalPhase ?? 'design';
+  const buildStrategyDigest =
+    approvalPhase === 'design' ? (input.buildStrategyDigest ?? null) : null;
+  if (approvalPhase === 'design' && !buildStrategyDigest) {
+    throw new Error('Design planning requires an approved Build Strategy proposal');
+  }
+  if (buildStrategyDigest) assertDigest(buildStrategyDigest, 'Build Strategy');
   const planningSemantic = createRuntimeIdentity('planning-semantic', {
     changeId: input.change.changeId,
-    approvalPhase: input.approvalPhase ?? 'design',
+    approvalPhase,
     provider: input.change.provider,
     schemaDigest: input.schema.digest,
     specificationRoot: input.specificationRoot,
@@ -151,6 +177,7 @@ export function createPlanningSnapshot(input: {
     targetBranch: changeBranch.targetBranch,
     planningManifestDigest: manifest.semanticDigest,
     planningPolicyDigest,
+    buildStrategyDigest,
   });
   const validationObservation = createRuntimeIdentity('validation-observation', {
     planningSemantic: planningSemantic.digest,
@@ -160,15 +187,15 @@ export function createPlanningSnapshot(input: {
   });
   const approvalAuthority = createRuntimeIdentity('approval-authority', {
     planningSemantic: planningSemantic.digest,
-    approvalPhase: input.approvalPhase ?? 'design',
+    approvalPhase,
   });
   const publicationProvenance = createRuntimeIdentity('publication-provenance', {
     changeBranch,
   });
   const stable: Omit<PlanningSnapshot, 'digest'> = {
-    schemaVersion: 2 as const,
+    schemaVersion: 3 as const,
     changeId: input.change.changeId,
-    approvalPhase: input.approvalPhase ?? 'design',
+    approvalPhase,
     provider: structuredClone(input.change.provider),
     schema: structuredClone(input.schema),
     specificationRoot: structuredClone(input.specificationRoot),
@@ -180,6 +207,7 @@ export function createPlanningSnapshot(input: {
     publicationProvenanceDigest: publicationProvenance.digest,
     planningManifestDigest: manifest.semanticDigest,
     planningPolicyDigest,
+    buildStrategyDigest,
     identityBasis: {
       schemaVersion: 1,
       planningSemantic,
@@ -200,7 +228,7 @@ export function assertPlanningSnapshot(snapshot: PlanningSnapshot): void {
   if (snapshot.approvalPhase !== 'open' && snapshot.approvalPhase !== 'design') {
     throw new Error('Planning snapshot approval phase is invalid');
   }
-  if (snapshot.schemaVersion !== 2) {
+  if (snapshot.schemaVersion !== 3) {
     throw new Error('Legacy planning snapshot requires migration');
   }
   if (planningSnapshotDigest(stable) !== digest) {
@@ -253,7 +281,11 @@ export function assertPlanningSnapshot(snapshot: PlanningSnapshot): void {
 
 export function createSpecificationApprovalRequest(
   snapshot: PlanningSnapshot,
-  requestId: string = `specification-approval:${snapshot.approvalPhase}:${snapshot.identityBasis.approvalAuthority?.digest.slice(-24) ?? 'missing-authority'}`,
+  requestId: string = createHumanDecisionId({
+    runId: snapshot.changeId,
+    decisionKind: `specification-approval.${snapshot.approvalPhase}`,
+    semanticDigest: snapshot.digest,
+  }),
 ): SpecificationApprovalDecisionRequest {
   assertPlanningSnapshot(snapshot);
   if (!requestId.trim()) throw new Error('Specification approval request ID is required');
@@ -293,6 +325,7 @@ export function createSpecificationApprovalProposal(
     semanticDigest: snapshot.digest,
     affectedCapabilities: [...snapshot.affectedCapabilities].sort(),
     targetBranch: snapshot.changeBranch.targetBranch,
+    buildStrategyDigest: snapshot.buildStrategyDigest,
   };
 }
 
@@ -379,6 +412,21 @@ export function assertSpecificationApprovalState(state: SpecificationApprovalSta
       throw new Error('Specification approval hash is invalid');
     }
   }
+  const historyIds = new Set<string>();
+  for (const entry of state.decisionHistory ?? []) {
+    if (
+      !entry.requestId.trim() ||
+      !SHA256_DIGEST.test(entry.proposalHash) ||
+      !SHA256_DIGEST.test(entry.semanticDigest) ||
+      entry.status !== 'superseded' ||
+      !entry.supersededAt.trim() ||
+      entry.requestId === request.requestId ||
+      historyIds.has(entry.requestId)
+    ) {
+      throw new Error('Specification approval decision history is invalid');
+    }
+    historyIds.add(entry.requestId);
+  }
   const expectedStatus = state.decision
     ? state.decision.decision === 'approve'
       ? 'approved'
@@ -396,6 +444,7 @@ export function requestSpecificationApproval(input: {
   snapshot: PlanningSnapshot;
   timestamp: string;
   requestId?: string;
+  decisionRunId?: string;
   forceNewRequest?: boolean;
 }): SpecificationApprovalState {
   assertPlanningSnapshot(input.snapshot);
@@ -443,7 +492,15 @@ export function requestSpecificationApproval(input: {
       updatedAt: input.timestamp,
     };
   }
-  const decisionRequest = createSpecificationApprovalRequest(input.snapshot, input.requestId);
+  const decisionRequest = createSpecificationApprovalRequest(
+    input.snapshot,
+    input.requestId ??
+      createHumanDecisionId({
+        runId: input.decisionRunId ?? input.snapshot.changeId,
+        decisionKind: `specification-approval.${input.snapshot.approvalPhase}`,
+        semanticDigest: input.snapshot.digest,
+      }),
+  );
   if (
     current?.decisionRequest.requestId === decisionRequest.requestId &&
     current.decisionRequest.proposalHash !== decisionRequest.proposalHash
@@ -459,6 +516,20 @@ export function requestSpecificationApproval(input: {
     snapshot: structuredClone(input.snapshot),
     decisionRequest,
     decision: null,
+    decisionHistory: [
+      ...(current?.decisionHistory ?? []).map((entry) => structuredClone(entry)),
+      ...(current
+        ? [
+            {
+              requestId: current.decisionRequest.requestId,
+              proposalHash: current.decisionRequest.proposalHash,
+              semanticDigest: current.snapshot.digest,
+              status: 'superseded' as const,
+              supersededAt: input.timestamp,
+            },
+          ]
+        : []),
+    ],
     updatedAt: input.timestamp,
   };
 }

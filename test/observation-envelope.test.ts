@@ -231,6 +231,51 @@ describe('ObservationEnvelope', () => {
     }
   });
 
+  it('projects Strategy and automatic Binding revalidation without portable paths or digests', () => {
+    const envelope = createObservationEnvelope(
+      event('change.lifecycle.transitioned', {
+        observationKind: 'build-binding-revalidation-required',
+        changeLifecycleTransition: {
+          transitionId: 'build.binding-revalidation-required',
+          revision: 4,
+          to: { phase: 'build', status: 'running' },
+          work: null,
+          wait: null,
+        },
+        observation: {
+          kind: 'build-binding-revalidation-required',
+          reasonCode: 'head',
+          reason: 'private C:\\workspace\\path',
+          buildProtocol: {
+            strategy: {
+              strategyId: 'build-strategy:stable',
+              revision: 2,
+              semanticDigest: `sha256:${'b'.repeat(64)}`,
+            },
+            binding: {
+              bindingId: 'execution-binding:old',
+              revision: 3,
+              stateDigest: `sha256:${'c'.repeat(64)}`,
+              localOverlayRef: 'execution-workspace:private',
+            },
+          },
+        },
+      }),
+      context,
+    );
+    expect(envelope.correlation).toMatchObject({
+      strategyId: 'build-strategy:stable',
+      strategyRevision: 2,
+      bindingId: 'execution-binding:old',
+      bindingRevision: 3,
+    });
+    expect(envelope.attributes).toMatchObject({
+      buildEvent: 'build.binding.drifted',
+      reasonClass: 'head',
+    });
+    expect(JSON.stringify(envelope)).not.toMatch(/C:\\\\workspace|semanticDigest|stateDigest|localOverlayRef/u);
+  });
+
   it('normalizes Evidence, Delivery and application facts through the same canonical envelope', () => {
     const evidenceBatch: EvidenceTelemetryBatch = {
       schemaVersion: 1,

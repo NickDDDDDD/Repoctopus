@@ -528,3 +528,17 @@ Telemetry Provider MUST 从持久事件派生重复批准率、Build Protocol �
 
 - **WHEN** 某个旧 Run 没有计算指标所需的版本化事件
 - **THEN** Provider 标记数据不可用，不从现有文件或终态猜测成功、失效或重复次数
+
+### Requirement: Build 策略绑定与人工等待必须可观测
+
+Repoctopus MUST 分别记录 BuildStrategy proposed/approved/reused/invalidated、ExecutionBinding validated/drifted、Human Decision created/reused/superseded 和 Plan preflight finding，并保留 phase、Build action、strategy/binding revision、独立 composition identity、reason class 与 duration 关联。Composition identity MUST 只用于兼容性、执行和 Evidence 关联，不得成为 Strategy approval semantic digest。相同 Strategy semantic digest 的恢复、兼容 adoption 或返工 MUST 产生 decision reused 而不是新的 approval request；Metric labels MUST 只使用有界策略、结果和原因枚举。
+
+#### Scenario: Configure 自动重验 binding
+
+- **WHEN** Host 或 checkout 变化但批准 Strategy 语义未变，Runtime 接受新 ExecutionBinding
+- **THEN** Trace 表示 binding revision 和受影响 Evidence invalidation，approval count 不增加且不导出 checkout 路径
+
+#### Scenario: Plan 提前阻断越界写入
+
+- **WHEN** Plan Evidence 发现 package write scope 超出任务或仓库边界
+- **THEN** Trace 在 Execute 前记录有界 planning finding，使团队可计算 preflight catch rate，Metric 不使用路径文本作为 label

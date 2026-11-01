@@ -26,10 +26,12 @@ export interface SpecificationPlanningConfig {
 
 export interface PrepareSpecificationApprovalInput {
   changeId: string;
+  decisionRunId?: string;
   approvalPhase?: 'open' | 'design';
   changeBranch: ChangeBranchReference;
   requestId?: string;
   forceNewApproval?: boolean;
+  buildStrategyDigest?: `sha256:${string}`;
   now?: () => Date;
   signal?: AbortSignal;
 }
@@ -156,6 +158,7 @@ export class SpecificationPlanning extends Service {
         changeBranch: input.changeBranch,
         planningManifest: manifest,
         approvalPhase: input.approvalPhase ?? 'design',
+        ...(input.buildStrategyDigest ? { buildStrategyDigest: input.buildStrategyDigest } : {}),
       });
     } catch (error) {
       return {
@@ -171,6 +174,7 @@ export class SpecificationPlanning extends Service {
       snapshot,
       timestamp: (input.now ?? (() => new Date()))().toISOString(),
       ...(input.requestId ? { requestId: input.requestId } : {}),
+      ...(input.decisionRunId ? { decisionRunId: input.decisionRunId } : {}),
       ...(input.forceNewApproval ? { forceNewRequest: true } : {}),
     });
     if (current?.stateVersion !== next.stateVersion) {
@@ -405,6 +409,7 @@ export class SpecificationPlanning extends Service {
       changeBranch,
       planningManifest: manifest,
       approvalPhase: 'design',
+      ...(input.buildStrategyDigest ? { buildStrategyDigest: input.buildStrategyDigest } : {}),
     });
     if (!current) {
       return invalid(

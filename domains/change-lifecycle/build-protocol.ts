@@ -187,100 +187,159 @@ export function createExecutionWorkspaceBinding(input: {
   });
 }
 
-export interface BuildConfigurationProposal {
+/**
+ * Stable, human-reviewable Build choices. Machine observations deliberately do
+ * not belong here: changing Runner, checkout path or HEAD must not invalidate a
+ * decision that still means the same thing to the team.
+ */
+export interface BuildStrategy {
   schemaVersion: 1;
-  workspaceIntent: ExecutionWorkspaceIntent;
+  strategyId: string;
+  revision: number;
   executionMode: BuildExecutionMode;
   tddMode: BuildTddMode;
   reviewMode: BuildReviewMode;
-  isolation: ExecutionIsolation;
-  bindingDigest: Digest;
-  bindingSemanticDigest: Digest;
-  bindingStateDigest: Digest;
-  repositoryIds: readonly string[];
-  hostId: string;
-  hostCapabilities: readonly string[];
+  isolationIntent: ExecutionIsolation;
   semanticDigest: Digest;
-  proposalId: string;
 }
 
-export interface BuildConfiguration extends BuildConfigurationProposal {
-  configurationId: string;
-  approval: {
-    requestId: string;
-    actorId: string;
-    decidedAt: string;
-    proposalDigest: Digest;
-  };
-}
-
-export function createBuildConfigurationProposal(input: {
-  intent: ExecutionWorkspaceIntent;
-  binding: ExecutionWorkspaceBinding;
+export function createBuildStrategy(input: {
+  runId: string;
+  revision: number;
   executionMode: BuildExecutionMode;
   tddMode: BuildTddMode;
   reviewMode: BuildReviewMode;
-  hostId: string;
-  hostCapabilities: readonly string[];
-}): BuildConfigurationProposal {
-  if (!EXECUTION_MODES.has(input.executionMode))
+  isolationIntent: ExecutionIsolation;
+}): BuildStrategy {
+  const runId = text(input.runId, 'Run identity');
+  if (!Number.isSafeInteger(input.revision) || input.revision < 1) {
+    throw new Error('Build Strategy revision must be a positive safe integer');
+  }
+  if (!EXECUTION_MODES.has(input.executionMode)) {
     throw new Error('Unsupported Build execution mode');
+  }
   if (!TDD_MODES.has(input.tddMode)) throw new Error('Unsupported Build TDD mode');
   if (input.reviewMode !== 'standard') throw new Error('Build review mode must be standard');
-  if (
-    input.binding.intentDigest !== input.intent.semanticDigest ||
-    input.binding.isolation !== input.intent.isolation
-  ) {
-    throw new Error('Execution workspace binding does not match the approved intent');
-  }
-  const hostCapabilities = unique(input.hostCapabilities, 'Host capabilities');
-  const requiredCapability =
-    input.executionMode === 'autonomous' ? 'build.autonomous' : 'subagent.dispatch.attested';
-  if (!hostCapabilities.includes(requiredCapability)) {
-    throw new Error(`Selected execution mode requires ${requiredCapability}`);
+  if (!ISOLATIONS.has(input.isolationIntent)) {
+    throw new Error('Unsupported Build isolation intent');
   }
   const stable = {
     schemaVersion: 1 as const,
-    workspaceIntent: input.intent,
     executionMode: input.executionMode,
     tddMode: input.tddMode,
     reviewMode: input.reviewMode,
-    isolation: input.intent.isolation,
-    bindingDigest: input.binding.localDigest,
-    bindingSemanticDigest: input.binding.semanticDigest,
-    bindingStateDigest: input.binding.stateDigest,
-    repositoryIds: unique(
-      input.binding.repositories.map((repository) => repository.repositoryId),
-      'Build Configuration repositories',
-    ),
-    hostId: text(input.hostId, 'Host identity'),
-    hostCapabilities,
+    isolationIntent: input.isolationIntent,
   };
   const semanticDigest = digest(stable);
   return deepFreeze({
     ...stable,
+    strategyId: `build-strategy:${digest({ runId, semanticDigest }).slice(-24)}`,
+    revision: input.revision,
     semanticDigest,
-    proposalId: `build-configuration-proposal:${semanticDigest.slice(-24)}`,
   });
 }
 
-export function acceptBuildConfiguration(input: {
-  proposal: BuildConfigurationProposal;
-  requestId: string;
-  actorId: string;
-  decidedAt: string;
-}): BuildConfiguration {
-  const decidedAt = new Date(input.decidedAt);
-  if (Number.isNaN(decidedAt.valueOf())) throw new Error('Configuration approval time is invalid');
+export interface ExecutionBindingRepository {
+  repositoryId: string;
+  branchRef: string;
+  headRevision: string;
+  isolation: ExecutionIsolation;
+  workspaceOwnerId: string;
+  worktreeId: string | null;
+}
+
+/**
+ * Portable execution observation. Local absolute paths are held behind the
+ * opaque localOverlayRef and are never copied into this value.
+ */
+export interface ExecutionBinding {
+  schemaVersion: 1;
+  bindingId: string;
+  revision: number;
+  strategyDigest: Digest;
+  host: {
+    hostId: string;
+    capabilityDigest: Digest;
+  };
+  repositories: readonly ExecutionBindingRepository[];
+  semanticDigest: Digest;
+  stateDigest: Digest;
+  localOverlayRef: string;
+}
+
+export function createExecutionBinding(input: {
+  strategy: BuildStrategy;
+  revision: number;
+  hostId: string;
+  hostCapabilities: readonly string[];
+  workspaceBinding: ExecutionWorkspaceBinding;
+  workspaceOwnerId: string;
+  localOverlayRef: string;
+}): ExecutionBinding {
+  if (!Number.isSafeInteger(input.revision) || input.revision < 1) {
+    throw new Error('Execution Binding revision must be a positive safe integer');
+  }
+  if (input.workspaceBinding.isolation !== input.strategy.isolationIntent) {
+    throw new Error('Execution Binding isolation does not match the approved Build Strategy');
+  }
+  const hostCapabilities = unique(input.hostCapabilities, 'Host capabilities');
+  const requiredCapability =
+    input.strategy.executionMode === 'autonomous'
+      ? 'build.autonomous'
+      : 'subagent.dispatch.attested';
+  if (!hostCapabilities.includes(requiredCapability)) {
+    throw new Error(`Selected execution mode requires ${requiredCapability}`);
+  }
+  for (const capability of ['process.execute', 'repository.write']) {
+    if (!hostCapabilities.includes(capability)) {
+      throw new Error(`Execution Binding requires ${capability}`);
+    }
+  }
+  const localOverlayRef = text(input.localOverlayRef, 'Local overlay reference');
+  if (isAbsolute(localOverlayRef) || /^[a-z]:[\\/]/iu.test(localOverlayRef)) {
+    throw new Error('Local overlay reference must be opaque, not an absolute path');
+  }
+  const workspaceOwnerId = text(input.workspaceOwnerId, 'Workspace owner identity');
+  const capabilityDigest = digest(hostCapabilities);
+  const repositories = input.workspaceBinding.repositories.map((repository) => ({
+    repositoryId: repository.repositoryId,
+    branchRef: repository.branch,
+    headRevision: repository.head,
+    isolation: input.workspaceBinding.isolation,
+    workspaceOwnerId,
+    worktreeId: repository.worktreeId,
+  }));
+  const portableSemantics = {
+    schemaVersion: 1 as const,
+    strategyDigest: input.strategy.semanticDigest,
+    capabilityDigest,
+    repositories: repositories.map((repository) => ({
+      repositoryId: repository.repositoryId,
+      branchRef: repository.branchRef,
+      isolation: repository.isolation,
+      workspaceOwnerId: repository.workspaceOwnerId,
+      worktreeId: repository.worktreeId,
+    })),
+  };
+  const semanticDigest = digest(portableSemantics);
+  const stateDigest = digest({
+    ...portableSemantics,
+    hostId: text(input.hostId, 'Host identity'),
+    repositories,
+  });
   return deepFreeze({
-    ...input.proposal,
-    configurationId: `build-configuration:${input.proposal.semanticDigest.slice(-24)}`,
-    approval: {
-      requestId: text(input.requestId, 'Decision request identity'),
-      actorId: text(input.actorId, 'Decision actor identity'),
-      decidedAt: decidedAt.toISOString(),
-      proposalDigest: input.proposal.semanticDigest,
+    schemaVersion: 1 as const,
+    bindingId: `execution-binding:${digest({ semanticDigest, stateDigest, revision: input.revision }).slice(-24)}`,
+    revision: input.revision,
+    strategyDigest: input.strategy.semanticDigest,
+    host: {
+      hostId: text(input.hostId, 'Host identity'),
+      capabilityDigest,
     },
+    repositories,
+    semanticDigest,
+    stateDigest,
+    localOverlayRef,
   });
 }
 
@@ -319,8 +378,10 @@ export interface BuildPlan {
   runId: string;
   planId: string;
   revision: number;
-  configurationId: string;
-  configurationDigest: Digest;
+  strategyId: string;
+  strategyDigest: Digest;
+  bindingId: string;
+  bindingStateDigest: Digest;
   planningDigest: Digest;
   taskSetDigest: Digest;
   packages: readonly WorkPackage[];
@@ -347,7 +408,8 @@ function assertAcyclic(packages: readonly WorkPackage[]): void {
 export function createBuildPlan(input: {
   runId: string;
   revision: number;
-  configuration: BuildConfiguration;
+  strategy: BuildStrategy;
+  binding: ExecutionBinding;
   planningDigest: Digest;
   tasks: SpecificationTaskSet;
   candidate: { packages: readonly WorkPackageCandidate[] };
@@ -363,7 +425,12 @@ export function createBuildPlan(input: {
   if (new Set(keys).size !== keys.length)
     throw new Error('Build Plan contains duplicate package key');
   const taskIds = new Set(input.tasks.tasks.map((task) => task.taskId));
-  const repositoryIds = new Set(input.configuration.repositoryIds);
+  if (input.binding.strategyDigest !== input.strategy.semanticDigest) {
+    throw new Error('Execution Binding does not belong to the approved Build Strategy');
+  }
+  const repositoryIds = new Set(
+    input.binding.repositories.map((repository) => repository.repositoryId),
+  );
   const acceptanceIds = new Set<string>(
     input.tasks.tasks.flatMap((task) => task.acceptanceCriteria.map((item) => item.acceptanceId)),
   );
@@ -477,8 +544,10 @@ export function createBuildPlan(input: {
     schemaVersion: 1 as const,
     runId: text(input.runId, 'Run identity'),
     revision: input.revision,
-    configurationId: input.configuration.configurationId,
-    configurationDigest: input.configuration.semanticDigest,
+    strategyId: input.strategy.strategyId,
+    strategyDigest: input.strategy.semanticDigest,
+    bindingId: input.binding.bindingId,
+    bindingStateDigest: input.binding.stateDigest,
     planningDigest: input.planningDigest,
     taskSetDigest: input.tasks.digest,
     packages,
@@ -499,15 +568,22 @@ export interface BuildPlanValidation {
 
 export function validateBuildPlan(input: {
   plan: BuildPlan;
-  configuration: BuildConfiguration;
+  strategy: BuildStrategy;
+  binding: ExecutionBinding;
   tasks: SpecificationTaskSet;
 }): BuildPlanValidation {
   const diagnostics: string[] = [];
-  if (input.plan.configurationId !== input.configuration.configurationId) {
-    diagnostics.push('configuration identity drifted');
+  if (input.plan.strategyId !== input.strategy.strategyId) {
+    diagnostics.push('Strategy identity drifted');
   }
-  if (input.plan.configurationDigest !== input.configuration.semanticDigest) {
-    diagnostics.push('configuration digest drifted');
+  if (input.plan.strategyDigest !== input.strategy.semanticDigest) {
+    diagnostics.push('Strategy digest drifted');
+  }
+  if (input.plan.bindingId !== input.binding.bindingId) {
+    diagnostics.push('Execution Binding identity drifted');
+  }
+  if (input.plan.bindingStateDigest !== input.binding.stateDigest) {
+    diagnostics.push('Execution Binding state drifted');
   }
   if (input.plan.taskSetDigest !== input.tasks.digest) diagnostics.push('Task set drifted');
   const taskIds = new Set(input.tasks.tasks.map((task) => task.taskId));
@@ -519,33 +595,69 @@ export function validateBuildPlan(input: {
   } catch (error) {
     diagnostics.push(error instanceof Error ? error.message : String(error));
   }
+  try {
+    const packageKeys = new Map(
+      input.plan.packages.map((workPackage) => [workPackage.packageId, workPackage.packageKey]),
+    );
+    const reconstructed = createBuildPlan({
+      runId: input.plan.runId,
+      revision: input.plan.revision,
+      strategy: input.strategy,
+      binding: input.binding,
+      planningDigest: input.plan.planningDigest,
+      tasks: input.tasks,
+      candidate: {
+        packages: input.plan.packages.map((workPackage) => ({
+          packageKey: workPackage.packageKey,
+          taskIds: workPackage.taskIds,
+          repositoryIds: workPackage.repositoryIds,
+          writeScopes: workPackage.writeScopes,
+          acceptanceRefs: workPackage.acceptanceRefs,
+          expectedOutcomes: workPackage.expectedOutcomes,
+          validatorProfile: workPackage.validatorProfile,
+          dependsOn: workPackage.dependsOn.map((packageId) => {
+            const packageKey = packageKeys.get(packageId);
+            if (!packageKey) throw new Error('Build Plan references an unknown package dependency');
+            return packageKey;
+          }),
+        })),
+      },
+    });
+    if (canonicalJson(reconstructed) !== canonicalJson(input.plan)) {
+      diagnostics.push('Build Plan canonical package, scope, acceptance, or digest facts drifted');
+    }
+  } catch (error) {
+    diagnostics.push(error instanceof Error ? error.message : String(error));
+  }
   return deepFreeze({
     accepted: diagnostics.length === 0,
     diagnostics,
     inputDigest: digest({
       plan: input.plan.digest,
-      configuration: input.configuration.semanticDigest,
+      strategy: input.strategy.semanticDigest,
+      binding: input.binding.stateDigest,
       tasks: input.tasks.digest,
     }),
   });
 }
 
 export interface BuildProtocolState {
-  schemaVersion: 1;
+  schemaVersion: 2;
   runId: string;
   planningDigest: Digest;
-  workspaceIntent: ExecutionWorkspaceIntent;
+  strategy: BuildStrategy;
+  binding: ExecutionBinding | null;
+  bindingHistory: readonly ExecutionBinding[];
   currentAction: BuildActionKind | null;
   status: 'active' | 'ready-for-verify' | 'suspended-for-design';
   actionAttempt: number;
-  configurationProposal: BuildConfigurationProposal | null;
-  configuration: BuildConfiguration | null;
   plans: readonly BuildPlan[];
   plan: BuildPlan | null;
   planEvidence: PlanEvidence | null;
   packageCompletions: readonly PackageCompletionEvidence[];
   checkEvidence: BuildCheckEvidence | null;
   invalidations: readonly BuildInvalidation[];
+  approvedRiskDigests: readonly Digest[];
   suspension: BuildProtocolSuspension | null;
   revision: number;
 }
@@ -559,10 +671,14 @@ export interface BuildProtocolSuspension {
 }
 
 export type BuildProtocolObservation =
-  | { kind: 'configuration-proposed'; proposal: BuildConfigurationProposal }
-  | { kind: 'configuration-approved'; configuration: BuildConfiguration }
+  | { kind: 'binding-accepted'; binding: ExecutionBinding }
+  | { kind: 'binding-revalidation-required'; reasonCode: string }
   | { kind: 'plan-accepted'; plan: BuildPlan }
-  | { kind: 'plan-evidence-accepted'; evidence: PlanEvidence }
+  | {
+      kind: 'plan-evidence-accepted';
+      evidence: PlanEvidence;
+      approvedRiskDigest?: Digest;
+    }
   | { kind: 'plan-rejected' }
   | { kind: 'package-completed'; completion: PackageCompletionEvidence }
   | { kind: 'check-accepted'; evidence: BuildCheckEvidence }
@@ -572,24 +688,26 @@ export type BuildProtocolObservation =
 export function createBuildProtocolState(input: {
   runId: string;
   planningDigest: Digest;
-  workspaceIntent: ExecutionWorkspaceIntent;
+  strategy: BuildStrategy;
 }): BuildProtocolState {
+  if (!SHA256.test(input.planningDigest)) throw new Error('Planning digest is invalid');
   return deepFreeze({
-    schemaVersion: 1,
+    schemaVersion: 2,
     runId: text(input.runId, 'Run identity'),
     planningDigest: input.planningDigest,
-    workspaceIntent: input.workspaceIntent,
+    strategy: input.strategy,
+    binding: null,
+    bindingHistory: [],
     currentAction: 'configure',
     status: 'active',
     actionAttempt: 1,
-    configurationProposal: null,
-    configuration: null,
     plans: [],
     plan: null,
     planEvidence: null,
     packageCompletions: [],
     checkEvidence: null,
     invalidations: [],
+    approvedRiskDigests: [],
     suspension: null,
     revision: 0,
   });
@@ -640,7 +758,8 @@ export function revalidateSuspendedBuildProtocol(
   state: BuildProtocolState,
   input: {
     planningDigest: Digest;
-    configurationCompatible: boolean;
+    strategy: BuildStrategy;
+    bindingCompatible: boolean;
     planCompatible: boolean;
     retainedPackageIds: readonly string[];
   },
@@ -650,15 +769,16 @@ export function revalidateSuspendedBuildProtocol(
   }
   if (!SHA256.test(input.planningDigest)) throw new Error('Planning digest is invalid');
   const retained = new Set(unique(input.retainedPackageIds, 'Retained package identities'));
-  if (!input.configurationCompatible || !state.configuration) {
+  const strategyCompatible = input.strategy.semanticDigest === state.strategy.semanticDigest;
+  if (!strategyCompatible || !input.bindingCompatible || !state.binding) {
     return deepFreeze({
       ...state,
       planningDigest: input.planningDigest,
+      strategy: input.strategy,
       currentAction: 'configure',
       status: 'active',
       actionAttempt: 1,
-      configurationProposal: null,
-      configuration: null,
+      binding: null,
       plan: null,
       planEvidence: null,
       packageCompletions: [],
@@ -695,18 +815,20 @@ export function revalidateSuspendedBuildProtocol(
   });
 }
 
-export function canRetainSuspendedBuildConfiguration(
+export function canRetainSuspendedExecutionBinding(
   state: BuildProtocolState | undefined,
   input: {
-    workspaceIntent: ExecutionWorkspaceIntent;
+    strategy: BuildStrategy;
     repositoryIds: readonly string[];
   },
 ): boolean {
-  if (state?.status !== 'suspended-for-design' || !state.configuration) return false;
+  if (state?.status !== 'suspended-for-design' || !state.binding) return false;
   return (
-    state.configuration.workspaceIntent.semanticDigest === input.workspaceIntent.semanticDigest &&
-    canonicalJson([...state.configuration.repositoryIds].sort()) ===
-      canonicalJson([...input.repositoryIds].sort())
+    state.strategy.semanticDigest === input.strategy.semanticDigest &&
+    state.binding.strategyDigest === input.strategy.semanticDigest &&
+    canonicalJson(
+      state.binding.repositories.map((repository) => repository.repositoryId).sort(),
+    ) === canonicalJson([...input.repositoryIds].sort())
   );
 }
 
@@ -723,43 +845,36 @@ export function advanceBuildProtocol(
     }
     return deepFreeze({ ...state, actionAttempt: state.actionAttempt + 1 });
   }
-  if (observation.kind === 'configuration-proposed') {
-    if (state.currentAction !== 'configure' || state.configuration) {
-      throw new Error('Configuration proposal does not match the current Runtime-selected Action');
-    }
-    if (
-      observation.proposal.workspaceIntent.semanticDigest !== state.workspaceIntent.semanticDigest
-    ) {
-      throw new Error('Configuration proposal changed the Workspace intent');
-    }
-    return deepFreeze({
-      ...state,
-      configurationProposal: observation.proposal,
-      revision: state.revision + 1,
-    });
-  }
-  if (observation.kind === 'configuration-approved') {
+  if (observation.kind === 'binding-accepted') {
     if (state.currentAction !== 'configure') {
-      throw new Error('Configuration approval does not match the current Runtime-selected Action');
+      throw new Error('Execution Binding does not match the current Runtime-selected Action');
     }
-    if (
-      observation.configuration.workspaceIntent.semanticDigest !==
-      state.workspaceIntent.semanticDigest
-    ) {
-      throw new Error('Configuration approval changed the Workspace intent');
-    }
-    if (
-      !state.configurationProposal ||
-      observation.configuration.semanticDigest !== state.configurationProposal.semanticDigest
-    ) {
-      throw new Error('Configuration approval does not match the active proposal');
+    if (observation.binding.strategyDigest !== state.strategy.semanticDigest) {
+      throw new Error('Execution Binding changed the approved Build Strategy');
     }
     return deepFreeze({
       ...state,
       currentAction: 'plan',
       actionAttempt: 1,
-      configurationProposal: state.configurationProposal,
-      configuration: observation.configuration,
+      binding: observation.binding,
+      bindingHistory: [...state.bindingHistory, observation.binding],
+      revision: state.revision + 1,
+    });
+  }
+  if (observation.kind === 'binding-revalidation-required') {
+    if (state.currentAction === 'configure' || !state.binding) {
+      throw new Error('Execution Binding revalidation requires an accepted Binding');
+    }
+    text(observation.reasonCode, 'Execution Binding drift reason');
+    return deepFreeze({
+      ...state,
+      currentAction: 'configure',
+      status: 'active',
+      actionAttempt: 1,
+      binding: null,
+      plan: null,
+      planEvidence: null,
+      checkEvidence: null,
       revision: state.revision + 1,
     });
   }
@@ -767,10 +882,13 @@ export function advanceBuildProtocol(
     if (state.currentAction !== 'plan') {
       throw new Error('Plan does not match the current Runtime-selected Action');
     }
-    if (observation.plan.configurationId !== state.configuration?.configurationId) {
-      throw new Error('Plan does not bind the frozen Build Configuration');
+    if (
+      observation.plan.strategyDigest !== state.strategy.semanticDigest ||
+      observation.plan.bindingId !== state.binding?.bindingId
+    ) {
+      throw new Error('Plan does not bind the current Strategy and Execution Binding');
     }
-    const expectedRevision = (state.plan?.revision ?? 0) + 1;
+    const expectedRevision = (state.plans.at(-1)?.revision ?? 0) + 1;
     if (observation.plan.revision !== expectedRevision) {
       throw new Error('Build Plan revision is not monotonic');
     }
@@ -794,6 +912,12 @@ export function advanceBuildProtocol(
     });
   }
   if (observation.kind === 'plan-evidence-accepted') {
+    if (
+      observation.approvedRiskDigest !== undefined &&
+      observation.approvedRiskDigest !== observation.evidence.riskDecisionDigest
+    ) {
+      throw new Error('Plan risk approval does not bind the current semantic risk decision');
+    }
     if (state.currentAction !== 'plan-evidence') {
       throw new Error('Plan Evidence does not match the current Runtime-selected Action');
     }
@@ -813,6 +937,9 @@ export function advanceBuildProtocol(
       currentAction: allCompleted ? 'check' : 'execute',
       actionAttempt: 1,
       planEvidence: observation.evidence,
+      approvedRiskDigests: observation.approvedRiskDigest
+        ? [...new Set([...state.approvedRiskDigests, observation.approvedRiskDigest])].sort()
+        : state.approvedRiskDigests,
       revision: state.revision + 1,
     });
   }
@@ -867,7 +994,8 @@ export function advanceBuildProtocol(
       throw new Error('Build Check Evidence does not match the active Check Action');
     }
     if (
-      observation.evidence.configurationDigest !== state.configuration?.semanticDigest ||
+      observation.evidence.strategyDigest !== state.strategy.semanticDigest ||
+      observation.evidence.bindingStateDigest !== state.binding?.stateDigest ||
       observation.evidence.planDigest !== state.plan?.digest
     ) {
       throw new Error('Build Check Evidence input drifted');
@@ -882,8 +1010,8 @@ export function advanceBuildProtocol(
     });
   }
   if (observation.kind === 'revision-required') {
-    if (!state.plan || !state.configuration) {
-      throw new Error('Build Plan revision requires an accepted Plan and Configuration');
+    if (!state.plan || !state.binding) {
+      throw new Error('Build Plan revision requires an accepted Plan and Execution Binding');
     }
     if (observation.invalidation.planDigest !== state.plan.digest) {
       throw new Error('Build invalidation does not bind the current Plan');
@@ -912,9 +1040,23 @@ export interface PlanEvidence {
   schemaVersion: 1;
   evidenceId: string;
   planDigest: Digest;
-  configurationDigest: Digest;
+  strategyDigest: Digest;
+  bindingId: string;
+  bindingStateDigest: Digest;
+  hostCapabilityDigest: Digest;
+  taskSetDigest: Digest;
+  compositionCheckpointDigest: Digest;
+  reportOwnerId: string;
+  repositoryIds: readonly string[];
+  taskIds: readonly string[];
+  acceptanceRefs: readonly string[];
+  validatorProfiles: readonly string[];
+  writeScopeDigest: Digest;
+  dependencyDigest: Digest;
+  reviewMode: BuildReviewMode;
   validationDigest: Digest;
   risk: BuildPlanRisk;
+  riskDecisionDigest: Digest;
   accepted: true;
 }
 
@@ -1019,16 +1161,25 @@ export function createPackageCompletionEvidence(input: {
 
 export function createPlanEvidence(input: {
   plan: BuildPlan;
-  configuration: BuildConfiguration;
+  strategy: BuildStrategy;
+  binding: ExecutionBinding;
   validation: BuildPlanValidation;
+  compositionCheckpointDigest: Digest;
+  reportOwnerId: string;
 }): PlanEvidence {
   if (!input.validation.accepted) throw new Error('Rejected Build Plan cannot produce Evidence');
+  if (!SHA256.test(input.compositionCheckpointDigest)) {
+    throw new Error('Plan Evidence composition checkpoint digest is invalid');
+  }
   if (
-    input.plan.configurationDigest !== input.configuration.semanticDigest ||
+    input.plan.strategyDigest !== input.strategy.semanticDigest ||
+    input.plan.bindingId !== input.binding.bindingId ||
+    input.plan.bindingStateDigest !== input.binding.stateDigest ||
     input.validation.inputDigest !==
       digest({
         plan: input.plan.digest,
-        configuration: input.configuration.semanticDigest,
+        strategy: input.strategy.semanticDigest,
+        binding: input.binding.stateDigest,
         tasks: input.plan.taskSetDigest,
       })
   ) {
@@ -1037,9 +1188,62 @@ export function createPlanEvidence(input: {
   const stable = {
     schemaVersion: 1 as const,
     planDigest: input.plan.digest,
-    configurationDigest: input.configuration.semanticDigest,
+    strategyDigest: input.strategy.semanticDigest,
+    bindingId: input.binding.bindingId,
+    bindingStateDigest: input.binding.stateDigest,
+    hostCapabilityDigest: input.binding.host.capabilityDigest,
+    taskSetDigest: input.plan.taskSetDigest,
+    compositionCheckpointDigest: input.compositionCheckpointDigest,
+    reportOwnerId: text(input.reportOwnerId, 'Plan terminal report owner'),
+    repositoryIds: unique(
+      input.binding.repositories.map((repository) => repository.repositoryId),
+      'Plan Evidence repositories',
+    ),
+    taskIds: unique(
+      [...new Set(input.plan.packages.flatMap((workPackage) => workPackage.taskIds))],
+      'Plan Evidence Task identities',
+    ),
+    acceptanceRefs: unique(
+      [...new Set(input.plan.packages.flatMap((workPackage) => workPackage.acceptanceRefs))],
+      'Plan Evidence acceptance references',
+    ),
+    validatorProfiles: unique(
+      [...new Set(input.plan.packages.map((workPackage) => workPackage.validatorProfile))],
+      'Plan Evidence validator profiles',
+    ),
+    writeScopeDigest: digest(
+      input.plan.packages.map((workPackage) => ({
+        packageId: workPackage.packageId,
+        writeScopes: workPackage.writeScopes,
+      })),
+    ),
+    dependencyDigest: digest(
+      input.plan.packages.map((workPackage) => ({
+        packageId: workPackage.packageId,
+        dependsOn: workPackage.dependsOn,
+      })),
+    ),
+    reviewMode: input.strategy.reviewMode,
     validationDigest: input.validation.inputDigest,
     risk: assessBuildPlanRisk(input.plan),
+    riskDecisionDigest: digest({
+      strategyDigest: input.strategy.semanticDigest,
+      taskSetDigest: input.plan.taskSetDigest,
+      planningDigest: input.plan.planningDigest,
+      reportOwnerId: input.reportOwnerId,
+      reviewMode: input.strategy.reviewMode,
+      packages: input.plan.packages.map((workPackage) => ({
+        packageKey: workPackage.packageKey,
+        taskIds: workPackage.taskIds,
+        repositoryIds: workPackage.repositoryIds,
+        writeScopes: workPackage.writeScopes,
+        acceptanceRefs: workPackage.acceptanceRefs,
+        expectedOutcomes: workPackage.expectedOutcomes,
+        validatorProfile: workPackage.validatorProfile,
+        dependsOn: workPackage.dependsOn,
+      })),
+      risk: assessBuildPlanRisk(input.plan).digest,
+    }),
     accepted: true as const,
   };
   return deepFreeze({
@@ -1132,7 +1336,8 @@ export function createBuildInvalidation(input: {
 export interface BuildCheckEvidence {
   schemaVersion: 1;
   evidenceId: string;
-  configurationDigest: Digest;
+  strategyDigest: Digest;
+  bindingStateDigest: Digest;
   planDigest: Digest;
   repositoryDigest: Digest;
   implementationDigest: Digest;
@@ -1149,7 +1354,8 @@ export function createBuildCheckEvidence(
   input: Omit<BuildCheckEvidence, 'schemaVersion' | 'evidenceId' | 'accepted' | 'digest'>,
 ): BuildCheckEvidence {
   if (
-    !SHA256.test(input.configurationDigest) ||
+    !SHA256.test(input.strategyDigest) ||
+    !SHA256.test(input.bindingStateDigest) ||
     !SHA256.test(input.planDigest) ||
     !SHA256.test(input.repositoryDigest) ||
     !SHA256.test(input.implementationDigest)

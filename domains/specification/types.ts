@@ -215,7 +215,7 @@ export interface PlanningSpecificationRoot {
 }
 
 export interface PlanningSnapshot {
-  schemaVersion: 2;
+  schemaVersion: 3;
   changeId: string;
   approvalPhase: 'open' | 'design';
   provider: SpecificationProviderIdentity;
@@ -229,6 +229,7 @@ export interface PlanningSnapshot {
   publicationProvenanceDigest: `sha256:${string}`;
   planningManifestDigest: `sha256:${string}`;
   planningPolicyDigest: `sha256:${string}`;
+  buildStrategyDigest: `sha256:${string}` | null;
   identityBasis: RuntimeIdentityBasis;
   digest: `sha256:${string}`;
 }
@@ -246,6 +247,7 @@ export interface SpecificationApprovalProposal {
   semanticDigest: `sha256:${string}`;
   affectedCapabilities: string[];
   targetBranch: string;
+  buildStrategyDigest: `sha256:${string}` | null;
 }
 
 export interface SpecificationApprovalDecisionRequest {
@@ -296,6 +298,14 @@ export interface SpecificationApprovalRecord {
   comment?: string;
 }
 
+export interface SpecificationApprovalDecisionHistoryEntry {
+  requestId: string;
+  proposalHash: `sha256:${string}`;
+  semanticDigest: `sha256:${string}`;
+  status: 'superseded';
+  supersededAt: string;
+}
+
 export type SpecificationApprovalStatus =
   | 'awaiting_approval'
   | 'approved'
@@ -311,6 +321,7 @@ export interface SpecificationApprovalState {
   snapshot: PlanningSnapshot;
   decisionRequest: SpecificationApprovalDecisionRequest;
   decision: SpecificationApprovalRecord | null;
+  decisionHistory?: SpecificationApprovalDecisionHistoryEntry[];
   updatedAt: string;
 }
 

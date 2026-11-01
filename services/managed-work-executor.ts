@@ -51,8 +51,8 @@ function assertBoundedExecutionResult(outcome: WorkExecutionHostOutcome): void {
   if (!outcome.result) return;
   const common = ['schemaVersion', 'kind'];
   const allowed =
-    outcome.result.kind === 'build-configuration-candidate'
-      ? [...common, 'executionMode', 'tddMode']
+    outcome.result.kind === 'execution-binding-candidate'
+      ? [...common, 'strategyDigest']
       : outcome.result.kind === 'build-plan-candidate'
         ? [...common, 'packages']
         : outcome.result.kind === 'build-package-completion'
@@ -144,18 +144,17 @@ export type ManagedWorkExecutionResult =
       acceptance: null;
     };
 
-export type ExternalWorkClaimResult =
-  WorkClaimResult &
+export type ExternalWorkClaimResult = WorkClaimResult &
   (
     | {
-      executionAcquired: true;
-      invocation: WorkExecutionHostInvocation;
-    }
+        executionAcquired: true;
+        invocation: WorkExecutionHostInvocation;
+      }
     | {
-      executionAcquired: false;
-      invocation: WorkExecutionHostInvocation;
-      recovery: WorkExecutionRecovery;
-    }
+        executionAcquired: false;
+        invocation: WorkExecutionHostInvocation;
+        recovery: WorkExecutionRecovery;
+      }
   );
 
 export class ManagedWorkExecutor extends Service {
@@ -194,14 +193,14 @@ export class ManagedWorkExecutor extends Service {
     if (
       input.workKind !== 'build.configure' ||
       input.outcome.status !== 'succeeded' ||
-      input.outcome.result?.kind === 'build-configuration-candidate'
+      input.outcome.result?.kind === 'execution-binding-candidate'
     ) {
       return false;
     }
     await this.ctx.workExecutionAuthority.rejectHostSubmission({
       intent: input.intent,
       reasonCode: 'output-invalid',
-      diagnostic: 'Build Configure Host must return a structured build-configuration-candidate',
+      diagnostic: 'Build Configure Host must return a structured execution-binding-candidate',
     });
     return true;
   }
@@ -315,28 +314,17 @@ export class ManagedWorkExecutor extends Service {
   async claimExternal(request: WorkClaimRequest): Promise<ExternalWorkClaimResult> {
     const state = await this.ctx.runStore.loadRun(request.runId);
     const lifecycle = state.changeLifecycle;
-    const work = lifecycle?.currentWork;
-    const configuration = lifecycle?.buildProtocol?.configuration;
+    const expectedBinding = lifecycle?.buildProtocol?.binding;
+    const externalHostId = `external:${request.executor.source}:${request.executor.runnerId}`;
     if (
       lifecycle?.phase === 'build' &&
-      work?.kind.startsWith('build.') &&
-      work.kind !== 'build.configure' &&
-      configuration
+      lifecycle.currentWork?.kind !== 'build.configure' &&
+      expectedBinding &&
+      expectedBinding.host.hostId !== externalHostId
     ) {
-      const anticipatedHost = this.externalHostIdentity(request.executor, [
-        ...work.capabilities,
-        ...(request.hostCapabilities ?? []),
-      ]);
-      if (
-        anticipatedHost.id !== configuration.hostId ||
-        configuration.hostCapabilities.some(
-          (capability) => !anticipatedHost.capabilities.includes(capability),
-        )
-      ) {
-        throw new Error(
-          'External Runner does not match the Host approved by the Build Configuration',
-        );
-      }
+      throw new Error(
+        'External Runner does not match the current Execution Binding Host; Build Configure must revalidate it before claim',
+      );
     }
     const claim = await this.ctx.workDispatcher.claim(request);
     const host = this.externalHostIdentity(request.executor, [
