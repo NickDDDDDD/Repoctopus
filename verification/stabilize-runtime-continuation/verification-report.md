@@ -3,10 +3,10 @@
 ## Reproducible subject
 
 - Change: `stabilize-runtime-continuation`
-- Tested implementation commit: `fab5b5f4efba3ce913a92ca7a0359443f6a0a9a0`
+- Tested implementation commit: `a92f91388acac924a87db782b7af3a065ec46d71`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `1012983`
-- Package SHA-256: `5808d629e01eab7f48ee32c608c0e549da471d7fb82b62a618ef2f05dad2c976`
+- Package bytes: `1022539`
+- Package SHA-256: `fadec780465fda0e823ef658662b26913191bf5441b8bab7cf4f523473fdbb60`
 - Controller: `@rpamis/comet@0.5.1`
 - Platform: Windows x64
 - Node.js: `24.21.0`
@@ -22,7 +22,8 @@ The tested implementation commit is the packaged-product boundary. Later commits
 5. A compatible composition implementation change records one adoption without rebuilding a Human Decision. A protected incompatible change is readable as `migration_required` but cannot write.
 6. Publication-only source OID changes do not change Specification Compatibility or return a Build Run to Design.
 7. Pre-release checkpoints and Planning snapshots that do not satisfy the current schema remain byte-preserving and read-only. Runtime does not use a generation, dual reader, fallback adapter, Store repair command, or current-content reconstruction.
-8. Run mutation, Work claim, Human Decision, invalidation, and side-effect intent use revision/state-version fencing. Concurrent pulls converge on one committed fact.
+8. Run mutation, Work claim, Human Decision, invalidation, Host invocation ownership, and side-effect intent use revision/state-version fencing. Concurrent Runners converge on one committed invocation; a losing Runner does not call the Host.
+9. Business push, Business MR, and Specification MR publication persist `invoking` before the external call. An unknown result projects `reconcile / external-result-unknown`; continuation observes the exact OID/MR and never repeats the uncertain side effect.
 
 ## Verification evidence
 
@@ -43,7 +44,7 @@ Executed on Windows with Node.js `24.21.0`:
 ```text
 npm run typecheck && npm run lint && npm test
   156 test files passed
-  694 tests passed; 2 skipped
+  695 tests passed; 2 skipped
   CLI and Desktop production builds passed
 
 npx vitest run test/managed-change-execution.e2e.test.ts
@@ -54,14 +55,14 @@ npm run spec:validate
   19 strict OpenSpec items passed; 0 failed
 
 npm run check:architecture
-  275 production sources and 21 capability owners verified
+  276 production sources and 21 capability owners verified
 
 npm run check:provenance
   20 Comet-derived files, 60 immutable Cordis files, 33 Matt Skill files,
   8 fixed DSH packages, and 5 DSH Desktop references verified
 ```
 
-The first `npm run verify` attempt passed type checks, lint, builds, all 156 test files, generated-output checks, naming, architecture, provenance, Dashboard salvage, and strict OpenSpec validation. The final report freshness gate then correctly rejected the previously published report because this Change modified packaged-product files. This report binds the new package boundary; a subsequent complete `npm run verify` must reproduce its checksum before the Change can pass Verify.
+The final pre-report `npm run verify` passed type checks, lint, builds, all 156 test files, generated-output checks, naming, architecture, provenance, Dashboard salvage, and strict OpenSpec validation. The report freshness gate then correctly rejected the previous package boundary because the independent review fixes changed packaged-product files. This report binds the corrected package; a subsequent complete `npm run verify` must reproduce its checksum before the Change can pass Verify.
 
 ## Telemetry evidence
 
