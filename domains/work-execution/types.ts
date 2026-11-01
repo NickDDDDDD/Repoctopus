@@ -35,6 +35,7 @@ export interface WorkExecutionRecovery {
     | 'checkpoint-superseded'
     | 'transition-pending'
     | 'content-missing-or-corrupt'
+    | 'open-observation-unavailable'
     | 'migration-required'
     | 'project-drift';
 }

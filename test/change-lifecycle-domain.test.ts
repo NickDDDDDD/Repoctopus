@@ -284,6 +284,104 @@ function verificationInput(checkEpoch: number, value: string): VerificationInput
 }
 
 describe('Change lifecycle domain', () => {
+  it('atomically replaces a rejected Open checkpoint with one revision-bound repair Work', () => {
+    const current: ChangeLifecycleSnapshot = {
+      ...createChangeLifecycleSnapshot({ identity: initialSnapshot().identity }),
+      revision: 4,
+      checkEpoch: 4,
+      phase: 'open',
+      status: 'blocked',
+      currentWork: null,
+      waitCondition: null,
+      blocker: {
+        code: 'open.planning-invalid',
+        message: 'Task acceptance is missing',
+        evidenceIds: [digest('e')],
+        sinceRevision: 4,
+      },
+      openApprovalDigest: digest('a'),
+    };
+    const repairWork = phaseWork('open', 'change.intake', 5, digest('r'));
+    const observation = {
+      kind: 'open-repair-required' as const,
+      expectedRevision: 4,
+      source: 'strict-validation' as const,
+      reasonCode: 'strict-validation-invalid' as const,
+      evidenceIds: [digest('e')],
+      inputDigest: digest('r'),
+      work: repairWork,
+    };
+
+    const repaired = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current,
+      observation,
+    });
+
+    expect(repaired.snapshot).toMatchObject({
+      revision: 5,
+      checkEpoch: 5,
+      phase: 'open',
+      status: 'running',
+      currentWork: { workId: repairWork.workId, kind: 'change.intake', checkEpoch: 5 },
+      waitCondition: null,
+      blocker: null,
+    });
+    expect(repaired.snapshot).not.toHaveProperty('openApprovalDigest');
+    expect(repaired.snapshot.openApprovalInvalidated).toBe(true);
+    expect(repaired.fact).toMatchObject({
+      transitionId: 'open.repair-required',
+      openRepair: {
+        source: 'strict-validation',
+        reasonCode: 'strict-validation-invalid',
+        previousCheckEpoch: 4,
+        nextCheckEpoch: 5,
+      },
+    });
+
+    expect(
+      evolveChangeLifecycle({
+        definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+        current: repaired.snapshot,
+        observation,
+      }).fact,
+    ).toBeNull();
+    expect(() =>
+      evolveChangeLifecycle({
+        definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+        current: repaired.snapshot,
+        observation: {
+          ...observation,
+          work: phaseWork('open', 'change.intake', 6, digest('s')),
+        },
+      }),
+    ).toThrow('stale lifecycle revision');
+  });
+
+  it.each([
+    ['provider-artifacts', 'provider-artifacts-invalid'],
+    ['strict-validation', 'strict-validation-invalid'],
+    ['lifecycle-validator', 'lifecycle-validator-rejected'],
+    ['approval-drift', 'approval-drift'],
+  ] as const)('accepts bounded %s Open repair sources only', (source, reasonCode) => {
+    const current = createChangeLifecycleSnapshot({ identity: initialSnapshot().identity });
+    const work = phaseWork('open', 'change.intake', 1, digest('r'));
+    const repaired = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current,
+      observation: {
+        kind: 'open-repair-required',
+        expectedRevision: current.revision,
+        source,
+        reasonCode,
+        evidenceIds: [digest('e')],
+        inputDigest: digest('r'),
+        work,
+      },
+    });
+    expect(repaired.snapshot.currentWork?.workId).toBe(work.workId);
+  });
+
   it('owns Open and Design gate decisions in the canonical reducer', () => {
     const { taskId, taskRevision, ...workWithoutTask } = buildWork;
     void taskId;

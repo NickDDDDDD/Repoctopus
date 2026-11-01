@@ -84,6 +84,7 @@ function lifecycleState(snapshot: ChangeLifecycleSnapshot): ChangeLifecycleState
       : {}),
     ...(snapshot.buildProtocol ? { buildProtocol: structuredClone(snapshot.buildProtocol) } : {}),
     ...(snapshot.openApprovalDigest ? { openApprovalDigest: snapshot.openApprovalDigest } : {}),
+    ...(snapshot.openApprovalInvalidated ? { openApprovalInvalidated: true } : {}),
     ...(snapshot.planningDigest ? { planningDigest: snapshot.planningDigest } : {}),
     ...(snapshot.adoptedCompletionClaimDigest
       ? { adoptedCompletionClaimDigest: snapshot.adoptedCompletionClaimDigest }
@@ -148,13 +149,20 @@ function retireMismatchedExecution(
 function lifecycleNextActions(snapshot: ChangeLifecycleSnapshot) {
   if (['completed', 'failed', 'migration_required'].includes(snapshot.status)) return [];
   if (snapshot.phase === 'open') {
+    if (snapshot.currentWork) {
+      return [
+        {
+          id: snapshot.currentWork.workId,
+          kind: 'work' as const,
+          label: `Run ${snapshot.currentWork.kind}`,
+        },
+      ];
+    }
     if (snapshot.status === 'waiting') {
       return [{ id: 'open.review', kind: 'decision' as const, label: 'Review Open baseline' }];
     }
-    if (snapshot.status === 'blocked') {
-      return [{ id: 'open.repair', kind: 'repair' as const, label: 'Repair Open artifacts' }];
-    }
-    return [{ id: 'change.continue', kind: 'work' as const, label: 'Validate Open intake' }];
+    if (snapshot.status === 'blocked') return [];
+    return [];
   }
   if (snapshot.phase === 'design' && snapshot.status === 'waiting') {
     return [{ id: 'design.review', kind: 'decision' as const, label: 'Review planning decision' }];
@@ -425,6 +433,7 @@ export class WorkflowRunCoordinator {
   }
 
   async recoverChangeLifecycleDefinition(runId: string): Promise<void> {
+    await this.prepareWritableComposition(runId);
     await this.store.commitGuarded(runId, ({ state, trajectory }) => {
       if (!state.changeLifecycle) return { value: undefined };
       const recovered = recoverChangeLifecycleSnapshot({

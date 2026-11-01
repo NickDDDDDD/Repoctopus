@@ -170,6 +170,91 @@ describe('telemetry mapping', () => {
     );
   });
 
+  it('exports bounded Open repair facts without evidence or identity labels in Metrics', () => {
+    const workflow = workflowFixture();
+    const project = projectFixture();
+    const baseRun = startRun({
+      workflow,
+      runId: 'run-open-repair-telemetry',
+      projectSnapshotDigest: project.digest,
+      composition: compositionFixture(),
+      timestamp: '2026-11-01T00:00:00.000Z',
+      traceId: '3'.repeat(32),
+    });
+    const initial = createChangeLifecycleSnapshot({
+      identity: {
+        workspaceId: project.projectId,
+        changeId: 'open-repair-telemetry',
+        runId: baseRun.runId,
+      },
+    });
+    const run = { ...baseRun, changeLifecycle: initial };
+    const event: TrajectoryEvent = {
+      schemaVersion: 1,
+      sequence: 3,
+      eventId: 'open-repair-dispatched',
+      timestamp: '2026-11-01T00:01:00.000Z',
+      type: 'change.lifecycle.transitioned',
+      runId: run.runId,
+      stateVersion: 3,
+      compositionDigest: run.composition.compositionDigest,
+      data: {
+        changeLifecycleTransition: {
+          schemaVersion: 2,
+          transitionId: 'open.repair-required',
+          definition: initial.definition,
+          revision: 1,
+          from: { phase: 'open', status: 'blocked', checkEpoch: 0 },
+          to: { phase: 'open', status: 'running', checkEpoch: 1 },
+          workId: 'private-work-id',
+          waitId: null,
+          work: null,
+          wait: null,
+          openRepair: {
+            source: 'strict-validation',
+            reasonCode: 'strict-validation-invalid',
+            previousCheckEpoch: 0,
+            nextCheckEpoch: 1,
+            evidenceIds: ['private-evidence-digest'],
+          },
+        },
+        observationKind: 'open-repair-required',
+        executionRetirement: {
+          reason: 'lifecycle-work-changed',
+          retiredWorkId: 'private-old-work-id',
+          retiredCheckEpoch: 0,
+          nextWorkId: 'private-work-id',
+          nextCheckEpoch: 1,
+        },
+      },
+    };
+    const batch: TelemetryBatch = {
+      run,
+      workflow,
+      projectSnapshot: project,
+      events: [event],
+      trajectory: [event],
+    };
+
+    const records = acceptedChangeLifecycleTelemetry(batch, event);
+    expect(records[0]?.attributes).toMatchObject({
+      'repoctopus.open.repair.source': 'strict-validation',
+      'repoctopus.open.repair.reason_code': 'strict-validation-invalid',
+      'repoctopus.open.repair.result': 'dispatched',
+      'repoctopus.open.repair.execution_retired': true,
+    });
+    expect(JSON.stringify(records)).not.toContain('private-evidence-digest');
+    expect(workflowEventMetricAttributes(batch, event)).toMatchObject({
+      'repoctopus.open.repair.source': 'strict-validation',
+      'repoctopus.open.repair.reason_code': 'strict-validation-invalid',
+      'repoctopus.open.repair.result': 'dispatched',
+      'repoctopus.open.repair.execution_retired': true,
+    });
+    expect(JSON.stringify(workflowEventMetricAttributes(batch, event))).not.toMatch(
+      /run-open-repair-telemetry|open-repair-telemetry|private-work|private-evidence/u,
+    );
+  });
+
   it('exports managed execution identities without content and bounds Metric labels', () => {
     const workflow = workflowFixture();
     const project = projectFixture();
@@ -271,6 +356,33 @@ describe('telemetry mapping', () => {
       'repoctopus.build.isolation': 'worktree',
     });
     expect(JSON.stringify(metric)).not.toMatch(/work-package|repository/u);
+  });
+
+  it('maps unavailable Open continuation as reconciliation without Host replay', () => {
+    const event: TrajectoryEvent = {
+      schemaVersion: 1,
+      sequence: 3,
+      eventId: 'open-provider-unavailable',
+      timestamp: '2026-01-01T00:00:02.000Z',
+      type: 'continuation.selected',
+      runId: 'run-open-provider-unavailable',
+      stateVersion: 3,
+      compositionDigest: `sha256:${'a'.repeat(64)}`,
+      data: {
+        continuation: 'reconcile',
+        reason: 'open-observation-unavailable',
+        result: 'reconcile',
+        reasonCode: 'open-observation-unavailable',
+        hostReplayed: false,
+      },
+    };
+
+    expect(executionMetricAttributes(event)).toMatchObject({
+      'repoctopus.execution.result': 'reconcile',
+      'repoctopus.execution.continuation': 'reconcile',
+      'repoctopus.execution.reason.code': 'open-observation-unavailable',
+      'repoctopus.execution.host.replayed': false,
+    });
   });
 
   it('exports only bounded packet and Specification reliability dimensions', () => {

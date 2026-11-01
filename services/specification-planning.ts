@@ -31,6 +31,7 @@ export interface PrepareSpecificationApprovalInput {
   compositionDigest: `sha256:${string}`;
   projectConfigDigest: `sha256:${string}`;
   requestId?: string;
+  forceNewApproval?: boolean;
   now?: () => Date;
   signal?: AbortSignal;
 }
@@ -42,6 +43,26 @@ export interface DesignGateAssessment {
   validation?: SpecificationValidation;
   snapshot?: PlanningSnapshot;
   approval?: SpecificationApprovalState;
+  observation?: {
+    artifacts: SpecificationArtifact[];
+    validation: SpecificationValidation;
+  };
+}
+
+export interface OpenApprovalRevalidation {
+  status: 'accepted' | 'invalid' | 'unavailable';
+  reason: string;
+  source?:
+    | 'provider-artifacts'
+    | 'strict-validation'
+    | 'approval-drift';
+  reasonCode?:
+    | 'provider-artifacts-invalid'
+    | 'strict-validation-invalid'
+    | 'approval-drift';
+  evidenceDigests: `sha256:${string}`[];
+  validation?: SpecificationValidation;
+  snapshot?: PlanningSnapshot;
   observation?: {
     artifacts: SpecificationArtifact[];
     validation: SpecificationValidation;
@@ -159,6 +180,7 @@ export class SpecificationPlanning extends Service {
       snapshot,
       timestamp: (input.now ?? (() => new Date()))().toISOString(),
       ...(input.requestId ? { requestId: input.requestId } : {}),
+      ...(input.forceNewApproval ? { forceNewRequest: true } : {}),
     });
     if (current?.stateVersion !== next.stateVersion) {
       await this.store.commit(next, current?.stateVersion ?? null);
@@ -200,6 +222,116 @@ export class SpecificationPlanning extends Service {
       validation,
       snapshot,
       approval: next,
+      observation,
+    };
+  }
+
+  async revalidateOpenApproval(
+    input: PrepareSpecificationApprovalInput & {
+      expectedSnapshotDigest: `sha256:${string}`;
+    },
+  ): Promise<OpenApprovalRevalidation> {
+    let collected: Awaited<ReturnType<SpecificationPlanning['collect']>>;
+    try {
+      collected = await this.collect({ ...input, approvalPhase: 'open' });
+    } catch (error) {
+      return {
+        status: 'unavailable',
+        reason:
+          error instanceof Error
+            ? error.message
+            : 'Open approval revalidation is unavailable',
+        evidenceDigests: [],
+      };
+    }
+    const { manifest, validation, current } = collected;
+    const observation = {
+      artifacts: structuredClone(manifest.change.artifacts),
+      validation: structuredClone(validation),
+    };
+    const evidenceDigests = [
+      manifest.schema.digest,
+      manifest.change.changeDigest,
+      validation.validationDigest,
+    ];
+    const invalid = (
+      source: NonNullable<OpenApprovalRevalidation['source']>,
+      reasonCode: NonNullable<OpenApprovalRevalidation['reasonCode']>,
+      reason: string,
+      snapshot?: PlanningSnapshot,
+    ): OpenApprovalRevalidation => ({
+      status: 'invalid',
+      source,
+      reasonCode,
+      reason,
+      evidenceDigests: [
+        ...evidenceDigests,
+        ...(snapshot ? [snapshot.digest] : []),
+      ],
+      validation,
+      ...(snapshot ? { snapshot } : {}),
+      observation,
+    });
+    if (!manifest.change.planningComplete) {
+      return invalid(
+        'provider-artifacts',
+        'provider-artifacts-invalid',
+        'Open planning artifacts are incomplete after approval',
+      );
+    }
+    if (!validation.strict || !validation.valid) {
+      return invalid(
+        'strict-validation',
+        'strict-validation-invalid',
+        'Open planning no longer passes strict validation',
+      );
+    }
+    let snapshot: PlanningSnapshot;
+    try {
+      snapshot = createPlanningSnapshot({
+        change: manifest.change,
+        validation,
+        schema: manifest.schema,
+        specificationRoot: manifest.specificationRoot,
+        changeBranch: input.changeBranch,
+        compositionDigest: input.compositionDigest,
+        projectConfigDigest: input.projectConfigDigest,
+        planningManifest: manifest,
+        approvalPhase: 'open',
+      });
+    } catch (error) {
+      return invalid(
+        'provider-artifacts',
+        'provider-artifacts-invalid',
+        error instanceof Error ? error.message : 'Open planning manifest is invalid',
+      );
+    }
+    if (
+      !current ||
+      current.status !== 'approved' ||
+      current.decision?.decision !== 'approve' ||
+      !current.decision.approvalHash ||
+      current.snapshot.digest !== input.expectedSnapshotDigest ||
+      current.decision.snapshotDigest !== input.expectedSnapshotDigest ||
+      snapshot.digest !== input.expectedSnapshotDigest
+    ) {
+      return invalid(
+        'approval-drift',
+        'approval-drift',
+        'Current Open planning no longer matches the approved snapshot',
+        snapshot,
+      );
+    }
+    return {
+      status: 'accepted',
+      reason: 'Current Open planning still matches the trusted approval',
+      evidenceDigests: [
+        ...evidenceDigests,
+        snapshot.digest,
+        current.decision.approvalHash,
+      ],
+      validation,
+      snapshot,
       observation,
     };
   }

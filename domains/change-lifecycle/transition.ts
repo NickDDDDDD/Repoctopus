@@ -270,6 +270,7 @@ export interface ChangeLifecycleState {
   workspaceIntent?: ExecutionWorkspaceIntent;
   buildProtocol?: BuildProtocolState;
   openApprovalDigest?: `sha256:${string}`;
+  openApprovalInvalidated?: boolean;
   planningDigest?: `sha256:${string}`;
   adoptedCompletionClaimDigest?: `sha256:${string}`;
   verificationInput?: VerificationInput;
@@ -365,11 +366,39 @@ export interface ChangeLifecycleTransitionFact {
     previousIsolation: ExecutionIsolation;
     nextIsolation?: ExecutionIsolation;
   };
+  openRepair?: {
+    source: OpenRepairSource;
+    reasonCode: OpenRepairReasonCode;
+    previousCheckEpoch: number;
+    nextCheckEpoch: number;
+    evidenceIds: readonly string[];
+  };
 }
+
+export type OpenRepairSource =
+  | 'provider-artifacts'
+  | 'strict-validation'
+  | 'lifecycle-validator'
+  | 'approval-drift';
+
+export type OpenRepairReasonCode =
+  | 'provider-artifacts-invalid'
+  | 'strict-validation-invalid'
+  | 'lifecycle-validator-rejected'
+  | 'approval-drift';
 
 export type ChangeLifecycleObservation =
   | {
       kind: 'open-work-ready';
+      work: WorkDescriptor;
+    }
+  | {
+      kind: 'open-repair-required';
+      expectedRevision: number;
+      source: OpenRepairSource;
+      reasonCode: OpenRepairReasonCode;
+      evidenceIds: readonly string[];
+      inputDigest: `sha256:${string}`;
       work: WorkDescriptor;
     }
   | {
@@ -698,6 +727,9 @@ export function assertChangeLifecycleSnapshot(
   if (!blockerStatuses.has(snapshot.status) && snapshot.blocker !== null) {
     throw new Error(`${snapshot.status} Change Run may not carry a blocker`);
   }
+  if (snapshot.openApprovalInvalidated && snapshot.phase !== 'open') {
+    throw new Error('Only an Open Change Run may require a fresh Open approval');
+  }
   if (
     snapshot.status === 'completed' &&
     (snapshot.phase !== 'archive' || snapshot.currentWork !== null)
@@ -718,6 +750,7 @@ export function applyChangeLifecycleTransition(options: {
     workspaceIntent?: ExecutionWorkspaceIntent | null;
     buildProtocol?: BuildProtocolState | null;
     openApprovalDigest?: `sha256:${string}` | null;
+    openApprovalInvalidated?: boolean | null;
     planningDigest?: `sha256:${string}` | null;
     adoptedCompletionClaimDigest?: `sha256:${string}` | null;
     verificationInput?: VerificationInput | null;
@@ -785,6 +818,10 @@ export function applyChangeLifecycleTransition(options: {
   else if (options.next.openApprovalDigest) {
     snapshot.openApprovalDigest = options.next.openApprovalDigest;
   }
+  if (options.next.openApprovalInvalidated === null) delete snapshot.openApprovalInvalidated;
+  else if (options.next.openApprovalInvalidated !== undefined) {
+    snapshot.openApprovalInvalidated = options.next.openApprovalInvalidated;
+  }
   if (options.next.verificationInput === null) delete snapshot.verificationInput;
   else if (options.next.verificationInput) {
     snapshot.verificationInput = structuredClone(options.next.verificationInput);
@@ -842,6 +879,55 @@ export function evolveChangeLifecycle(options: {
   observation: ChangeLifecycleObservation;
 }): ChangeLifecycleReduction {
   const { current, observation } = options;
+  if (observation.kind === 'open-repair-required') {
+    if (
+      current.phase === 'open' &&
+      current.status === 'running' &&
+      current.currentWork?.workId === observation.work.workId &&
+      current.currentWork.checkEpoch === observation.work.checkEpoch
+    ) {
+      return { snapshot: structuredClone(current), fact: null };
+    }
+    if (observation.expectedRevision !== current.revision) {
+      throw new Error('Open repair observation belongs to a stale lifecycle revision');
+    }
+    if (
+      current.phase !== 'open' ||
+      !['running', 'waiting', 'blocked'].includes(current.status) ||
+      observation.work.phase !== 'open' ||
+      observation.work.kind !== 'change.intake' ||
+      observation.work.checkEpoch !== current.checkEpoch + 1 ||
+      observation.work.inputDigest !== observation.inputDigest ||
+      observation.evidenceIds.length === 0
+    ) {
+      throw new Error(`Open repair is not valid from ${current.phase}/${current.status}`);
+    }
+    const reduced = applyChangeLifecycleTransition({
+      definition: options.definition,
+      current,
+      transitionId: 'open.repair-required',
+      next: {
+        currentWork: observation.work,
+        waitCondition: null,
+        blocker: null,
+        openApprovalDigest: null,
+        openApprovalInvalidated: true,
+      },
+    });
+    return {
+      snapshot: reduced.snapshot,
+      fact: {
+        ...reduced.fact,
+        openRepair: {
+          source: observation.source,
+          reasonCode: observation.reasonCode,
+          previousCheckEpoch: current.checkEpoch,
+          nextCheckEpoch: reduced.snapshot.checkEpoch,
+          evidenceIds: [...observation.evidenceIds],
+        },
+      },
+    };
+  }
   if (observation.kind === 'open-work-ready') {
     if (
       current.phase !== 'open' ||
@@ -856,7 +942,12 @@ export function evolveChangeLifecycle(options: {
       definition: options.definition,
       current,
       transitionId: 'open.work-ready',
-      next: { currentWork: observation.work, waitCondition: null, blocker: null },
+      next: {
+        currentWork: observation.work,
+        waitCondition: null,
+        blocker: null,
+        openApprovalInvalidated: true,
+      },
     });
   }
   if (observation.kind === 'open-workspace-intent-selected') {
@@ -915,6 +1006,7 @@ export function evolveChangeLifecycle(options: {
           waitCondition: null,
           blocker: null,
           openApprovalDigest: observation.inputDigest,
+          openApprovalInvalidated: null,
         },
       });
     }
@@ -943,7 +1035,13 @@ export function evolveChangeLifecycle(options: {
         definition: options.definition,
         current,
         transitionId: 'open.await-approval',
-        next: { currentWork: null, waitCondition, blocker: null, openApprovalDigest: null },
+        next: {
+          currentWork: null,
+          waitCondition,
+          blocker: null,
+          openApprovalDigest: null,
+          openApprovalInvalidated: null,
+        },
       });
     }
     return applyChangeLifecycleTransition({

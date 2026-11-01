@@ -31,6 +31,7 @@ import type {
   SpecificationApprovalState,
   ChangeBranchReference,
   SpecificationClosurePlan,
+  SpecificationChange,
   SpecificationUsageSnapshot,
   SpecificationValidation,
 } from '../domains/specification/types.js';
@@ -82,6 +83,8 @@ import { normalizePlanningArtifacts } from '../domains/specification/artifacts.j
 import type {
   ChangeLifecycleState,
   ChangeRunProjection,
+  OpenRepairReasonCode,
+  OpenRepairSource,
   WorkDescriptor,
 } from '../domains/change-lifecycle/transition.js';
 import {
@@ -91,7 +94,11 @@ import {
 } from '../domains/change-lifecycle/archive-input.js';
 import type { DeliveryIntentV3, DeliveryPolicy } from '../domains/delivery/types.js';
 import { deliveryPolicyDigest } from '../domains/delivery/snapshot.js';
-import type { WorkExecutorIdentity } from '../domains/action/types.js';
+import type {
+  ActionIntent,
+  ActionReceipt,
+  WorkExecutorIdentity,
+} from '../domains/action/types.js';
 import type { WorkExecutionHostIdentity } from '../domains/work-execution/types.js';
 import type { ArchivePublicationResult } from '../domains/delivery/service-v3.js';
 import {
@@ -931,6 +938,12 @@ export class WorkflowRuns extends Service {
         changeBranch,
         compositionDigest: state.composition.compositionDigest,
         projectConfigDigest: base.projectConfigDigest,
+        ...(approvalPhase === 'open' && lifecycle.openApprovalInvalidated
+          ? {
+              forceNewApproval: true,
+              requestId: `open-repair:${state.runId}:${lifecycle.revision}`,
+            }
+          : {}),
         ...(signal ? { signal } : {}),
       });
       if (assessment.observation) {
@@ -1321,15 +1334,23 @@ export class WorkflowRuns extends Service {
     ) {
       throw new Error('Open Work is not ready for Provider validation');
     }
-    const [receipt, change, intent] = await Promise.all([
-      this.ctx.actionStore.loadReceipt(state.runId, execution.receiptId),
-      this.ctx.specification.inspect(lifecycle.identity.changeId, signal),
-      this.ctx.workExecutionAuthority.loadIntent(state.runId),
-    ]);
-    const providerValidation = await this.ctx.specification.validate(lifecycle.identity.changeId, {
-      strict: true,
-      ...(signal ? { signal } : {}),
-    });
+    let receipt: ActionReceipt;
+    let change: SpecificationChange;
+    let intent: ActionIntent;
+    let providerValidation: SpecificationValidation;
+    try {
+      [receipt, change, intent, providerValidation] = await Promise.all([
+        this.ctx.actionStore.loadReceipt(state.runId, execution.receiptId),
+        this.ctx.specification.inspect(lifecycle.identity.changeId, signal),
+        this.ctx.workExecutionAuthority.loadIntent(state.runId),
+        this.ctx.specification.validate(lifecycle.identity.changeId, {
+          strict: true,
+          ...(signal ? { signal } : {}),
+        }),
+      ]);
+    } catch (error) {
+      return this.openObservationUnavailable(state.runId, error);
+    }
     try {
       await this.ctx.workExecutionAuthority.recordSpecificationObservations({
         runId: state.runId,
@@ -1346,22 +1367,30 @@ export class WorkflowRuns extends Service {
     ) {
       throw new Error('Open Provider validation is not bound to the authoritative Work Outcome');
     }
+    if (!providerValidation.strict || !providerValidation.valid) {
+      return this.dispatchOpenRepair({
+        state,
+        lifecycle,
+        source: 'strict-validation',
+        reasonCode: 'strict-validation-invalid',
+        evidenceIds: [change.changeDigest, providerValidation.validationDigest],
+        ...(signal ? { signal } : {}),
+      });
+    }
     try {
       normalizePlanningArtifacts(change);
-    } catch (error) {
-      const blocked = await this.coordinator.acceptChangeObservation(state.runId, {
-        kind: 'open-gate',
-        result: 'blocked',
-        reason:
-          error instanceof Error
-            ? error.message
-            : 'Open Provider validation requires the satisfied four-artifact protocol',
-        evidenceIds: change.artifacts.flatMap((artifact) =>
-          artifact.digest ? [artifact.digest] : [],
-        ),
-        inputDigest: change.changeDigest,
+    } catch {
+      return this.dispatchOpenRepair({
+        state,
+        lifecycle,
+        source: 'provider-artifacts',
+        reasonCode: 'provider-artifacts-invalid',
+        evidenceIds: [
+          change.changeDigest,
+          ...change.artifacts.flatMap((artifact) => (artifact.digest ? [artifact.digest] : [])),
+        ],
+        ...(signal ? { signal } : {}),
       });
-      return { ...blocked, value: await this.coordinator.status(state.runId) };
     }
     const validator = this.ctx.lifecycleValidators.resolve(work.validatorProfile.id);
     const validation = await validator.validate({
@@ -1370,14 +1399,14 @@ export class WorkflowRuns extends Service {
       fact: { receiptId: receipt.receiptId, changeDigest: change.changeDigest },
     });
     if (!validation.accepted) {
-      const blocked = await this.coordinator.acceptChangeObservation(state.runId, {
-        kind: 'open-gate',
-        result: 'blocked',
-        reason: `Open Validator rejected: ${validation.diagnostic}`,
+      return this.dispatchOpenRepair({
+        state,
+        lifecycle,
+        source: 'lifecycle-validator',
+        reasonCode: 'lifecycle-validator-rejected',
         evidenceIds: [receipt.receiptId, change.changeDigest],
-        inputDigest: change.changeDigest,
+        ...(signal ? { signal } : {}),
       });
-      return { ...blocked, value: await this.coordinator.status(state.runId) };
     }
     await this.ctx.workExecutionAuthority.markValidated({
       intent,
@@ -1387,6 +1416,87 @@ export class WorkflowRuns extends Service {
     return this.advanceOpenGate(state, signal);
   }
 
+  private async openObservationUnavailable(
+    runId: string,
+    error: unknown,
+  ): Promise<RuntimeResult<RunStatusView>> {
+    const value = await this.coordinator.status(runId);
+    const execution = value.state.workExecution;
+    const lifecycle = value.state.changeLifecycle;
+    return {
+      value: {
+        ...value,
+        continuation: {
+          schemaVersion: 2,
+          continuation: 'reconcile',
+          workId: execution?.workId ?? lifecycle?.currentWork?.workId ?? null,
+          attempt: execution?.attempt ?? null,
+          checkEpoch: execution?.checkEpoch ?? lifecycle?.checkEpoch ?? null,
+          reason: 'open-observation-unavailable',
+        },
+      },
+      diagnostics: [
+        {
+          level: 'warning',
+          code: 'runtime.open-observation-unavailable',
+          message:
+            error instanceof Error
+              ? `Open Provider observation is unavailable: ${error.message}`
+              : 'Open Provider observation is unavailable',
+        },
+      ],
+    };
+  }
+
+  private async dispatchOpenRepair(input: {
+    state: RunState;
+    lifecycle: ChangeLifecycleState;
+    source: OpenRepairSource;
+    reasonCode: OpenRepairReasonCode;
+    evidenceIds: readonly string[];
+    signal?: AbortSignal;
+  }): Promise<RuntimeResult<RunStatusView>> {
+    let base: Awaited<ReturnType<WorkflowRuns['loadChangePlanningBase']>>;
+    let skills: Awaited<ReturnType<WorkflowRuns['resolveLifecycleWorkSkills']>>;
+    try {
+      [base, skills] = await Promise.all([
+        this.loadChangePlanningBase(input.state, input.lifecycle, 'open'),
+        this.resolveLifecycleWorkSkills('change.intake', input.signal, [], input.state.runId),
+      ]);
+    } catch (error) {
+      return this.openObservationUnavailable(input.state.runId, error);
+    }
+    const work = createLifecyclePhaseWork({
+      runId: input.state.runId,
+      checkEpoch: input.lifecycle.checkEpoch + 1,
+      changeId: input.lifecycle.identity.changeId,
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      kind: 'change.intake',
+      actionSkill: skills.actionSkill,
+      augmentationSkills: skills.augmentationSkills,
+      skillComposition: skills.skillComposition,
+      compositionDigest: input.state.composition.compositionDigest,
+      projectSnapshotDigest: input.state.projectSnapshotDigest,
+      projectConfigDigest: base.projectConfigDigest,
+      workspaceRepositoryId: base.workspaceRepositoryId,
+      repositoryIds: base.projectSnapshot.repositories.map((repository) => repository.id),
+    });
+    for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
+      await this.coordinator.bindSkill(input.state.runId, skill);
+    }
+    const repaired = await this.coordinator.acceptChangeObservation(input.state.runId, {
+      kind: 'open-repair-required',
+      expectedRevision: input.lifecycle.revision,
+      source: input.source,
+      reasonCode: input.reasonCode,
+      evidenceIds: [...new Set(input.evidenceIds)],
+      inputDigest: work.inputDigest,
+      work,
+    });
+    await this.ctx.workExecutionAuthority.recordWorkCreated(input.state.runId, work);
+    return { ...repaired, value: await this.coordinator.status(input.state.runId) };
+  }
+
   private async advanceOpenGate(
     state: RunState,
     signal?: AbortSignal,
@@ -1394,6 +1504,55 @@ export class WorkflowRuns extends Service {
     const lifecycle = state.changeLifecycle;
     if (!lifecycle || lifecycle.phase !== 'open') {
       throw new Error('Open gate requires an Open Change Run');
+    }
+    if (
+      state.status === 'waiting' &&
+      lifecycle.waitCondition?.kind === 'human-decision'
+    ) {
+      let approval: SpecificationApprovalState | null;
+      let base: Awaited<ReturnType<WorkflowRuns['loadChangePlanningBase']>>;
+      try {
+        [approval, base] = await Promise.all([
+          this.ctx.specificationPlanning.status(lifecycle.identity.changeId, 'open'),
+          this.loadChangePlanningBase(state, lifecycle, 'open'),
+        ]);
+      } catch (error) {
+        return this.openObservationUnavailable(state.runId, error);
+      }
+      if (approval?.status === 'approved') {
+        const revalidation = await this.ctx.specificationPlanning.revalidateOpenApproval({
+          changeId: lifecycle.identity.changeId,
+          approvalPhase: 'open',
+          changeBranch: approval.snapshot.changeBranch,
+          compositionDigest: state.composition.compositionDigest,
+          projectConfigDigest: base.projectConfigDigest,
+          expectedSnapshotDigest: lifecycle.waitCondition.inputDigest,
+          ...(signal ? { signal } : {}),
+        });
+        if (revalidation.observation) {
+          try {
+            await this.ctx.workExecutionAuthority.recordSpecificationObservations({
+              runId: state.runId,
+              ...revalidation.observation,
+            });
+          } catch {
+            // Provider facts remain authoritative when the observation sink is unavailable.
+          }
+        }
+        if (revalidation.status === 'unavailable') {
+          return this.openObservationUnavailable(state.runId, new Error(revalidation.reason));
+        }
+        if (revalidation.status === 'invalid') {
+          return this.dispatchOpenRepair({
+            state,
+            lifecycle,
+            source: revalidation.source ?? 'approval-drift',
+            reasonCode: revalidation.reasonCode ?? 'approval-drift',
+            evidenceIds: revalidation.evidenceDigests,
+            ...(signal ? { signal } : {}),
+          });
+        }
+      }
     }
     const evaluated = await this.assessChangePlanning(state, lifecycle, 'open', signal);
     const assessment = evaluated.assessment;
@@ -1428,6 +1587,38 @@ export class WorkflowRuns extends Service {
       });
       await this.ctx.workExecutionAuthority.recordWorkCreated(state.runId, revisionWork);
       return { ...revised, value: await this.coordinator.status(state.runId) };
+    }
+    if (assessment.status === 'blocked' && !assessment.observation) {
+      return this.openObservationUnavailable(state.runId, new Error(assessment.reason));
+    }
+    if (
+      state.status === 'waiting' &&
+      lifecycle.waitCondition?.kind === 'human-decision' &&
+      assessment.status !== 'approved'
+    ) {
+      return this.dispatchOpenRepair({
+        state,
+        lifecycle,
+        source: 'approval-drift',
+        reasonCode: 'approval-drift',
+        evidenceIds: assessment.evidenceDigests,
+        ...(signal ? { signal } : {}),
+      });
+    }
+    if (assessment.status === 'blocked') {
+      const strictInvalid =
+        assessment.validation &&
+        (!assessment.validation.strict || !assessment.validation.valid);
+      return this.dispatchOpenRepair({
+        state,
+        lifecycle,
+        source: strictInvalid ? 'strict-validation' : 'provider-artifacts',
+        reasonCode: strictInvalid
+          ? 'strict-validation-invalid'
+          : 'provider-artifacts-invalid',
+        evidenceIds: assessment.evidenceDigests,
+        ...(signal ? { signal } : {}),
+      });
     }
     const inputDigest =
       assessment.snapshot?.digest ??
@@ -1494,6 +1685,7 @@ export class WorkflowRuns extends Service {
     confirmations: ReadonlySet<string> = new Set(),
     signal?: AbortSignal,
   ): Promise<RuntimeResult<RunStatusView>> {
+    await this.coordinator.recoverChangeLifecycleDefinition(runId);
     await this.ctx.workExecutionAuthority.reconcileCurrentCheckpoint(runId);
     const preflight = await this.ctx.runStore.loadRun(runId);
     const preflightLifecycle = preflight.changeLifecycle;
@@ -1993,6 +2185,7 @@ export class WorkflowRuns extends Service {
             }
             if (
               lifecycle.phase === 'build' &&
+              lifecycle.currentWork === null &&
               lifecycle.verificationInvalidation &&
               (lifecycle.tasks ?? []).every((task) => task.status === 'completed')
             ) {
@@ -3355,7 +3548,11 @@ export class WorkflowRuns extends Service {
         reason: beforeWait.reason,
       });
     }
-    const continuation = await this.ctx.workExecutionAuthority.recovery(runId);
+    const recoveredContinuation = await this.ctx.workExecutionAuthority.recovery(runId);
+    const continuation =
+      result.value.continuation?.reason === 'open-observation-unavailable'
+        ? result.value.continuation
+        : recoveredContinuation;
     await this.ctx.workExecutionAuthority.recordContinuation(runId, continuation);
     return {
       ...result,

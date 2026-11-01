@@ -64,6 +64,7 @@ const EXECUTION_DATA_KEYS = new Set([
   'submissionId',
   'submissionDigest',
   'reasonCode',
+  'hostReplayed',
   'rejectedSubmissionCount',
   'legacyRecovery',
   'proposalStatus',
@@ -344,6 +345,7 @@ const BOUNDED_RESULTS = new Set([
   'missing',
   'corrupt',
   'legacy',
+  'reconcile',
 ]);
 const BOUNDED_ARTIFACT_STATUSES = new Set(['ready', 'skipped', 'missing']);
 const BOUNDED_SEVERITIES = new Set(['none', 'info', 'warning', 'error']);
@@ -352,6 +354,19 @@ const BOUNDED_REASON_CODES = new Set([
   'outcome-rejected',
   'outcome-processing-error',
   'checkpoint-superseded',
+  'open-observation-unavailable',
+]);
+const BOUNDED_OPEN_REPAIR_SOURCES = new Set([
+  'provider-artifacts',
+  'strict-validation',
+  'lifecycle-validator',
+  'approval-drift',
+]);
+const BOUNDED_OPEN_REPAIR_REASON_CODES = new Set([
+  'provider-artifacts-invalid',
+  'strict-validation-invalid',
+  'lifecycle-validator-rejected',
+  'approval-drift',
 ]);
 
 export function executionMetricAttributes(event: TrajectoryEvent): Attributes | null {
@@ -396,6 +411,9 @@ export function executionMetricAttributes(event: TrajectoryEvent): Attributes | 
     'repoctopus.execution.result': BOUNDED_RESULTS.has(result) ? result : 'unknown',
     'repoctopus.execution.continuation': continuation,
     'repoctopus.execution.reason.code': reasonCode,
+    ...(typeof event.data.hostReplayed === 'boolean'
+      ? { 'repoctopus.execution.host.replayed': event.data.hostReplayed }
+      : {}),
     'repoctopus.build.action': buildAction,
     'repoctopus.build.execution.mode': executionMode,
     'repoctopus.build.tdd.mode': tddMode,
@@ -452,6 +470,22 @@ export function workflowEventMetricAttributes(
         : undefined;
     if (invalidationKind === 'semantic' || invalidationKind === 'approval-authority') {
       result['repoctopus.planning.invalidation.kind'] = invalidationKind;
+    }
+    const repair = event.data.changeLifecycleTransition?.openRepair;
+    if (repair) {
+      const source = repair.source;
+      const reasonCode = repair.reasonCode;
+      result['repoctopus.open.repair.source'] =
+        typeof source === 'string' && BOUNDED_OPEN_REPAIR_SOURCES.has(source)
+          ? source
+          : 'unknown';
+      result['repoctopus.open.repair.reason_code'] =
+        typeof reasonCode === 'string' && BOUNDED_OPEN_REPAIR_REASON_CODES.has(reasonCode)
+          ? reasonCode
+          : 'unknown';
+      result['repoctopus.open.repair.result'] = 'dispatched';
+      result['repoctopus.open.repair.execution_retired'] =
+        event.data.executionRetirement !== undefined;
     }
   }
   return result;

@@ -71,6 +71,7 @@ function commonAttributes(
   fact: ChangeLifecycleTransitionFact,
 ): Attributes {
   const changeId = batch.run.changeLifecycle?.identity.changeId;
+  const openRepair = fact.openRepair;
   return {
     'repoctopus.project.id': batch.projectSnapshot.projectId,
     'repoctopus.run.id': batch.run.runId,
@@ -86,6 +87,15 @@ function commonAttributes(
     'repoctopus.change.phase': fact.to.phase,
     'repoctopus.change.status.before': fact.from.status,
     'repoctopus.change.status': fact.to.status,
+    ...(openRepair
+      ? {
+          'repoctopus.open.repair.source': openRepair.source,
+          'repoctopus.open.repair.reason_code': openRepair.reasonCode,
+          'repoctopus.open.repair.result': 'dispatched',
+          'repoctopus.open.repair.execution_retired':
+            event.data.executionRetirement !== undefined,
+        }
+      : {}),
     ...workspaceIntentTraceAttributes(event),
   };
 }

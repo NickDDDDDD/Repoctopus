@@ -55,6 +55,9 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
   schemaVersion: 3,
   id: 'repoctopus-change',
   version: '4.5.0',
+  compatibleDigests: [
+    'sha256:ce969dbd7c17972b3cd438c585c7f0aebbeca046327ce2808659fdd8351a54f3',
+  ],
   phases: [
     {
       phase: 'open',
@@ -318,6 +321,14 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       from: { phase: 'open', statuses: ['running', 'waiting', 'blocked'] },
       to: { phase: 'open', status: 'blocked' },
       trigger: 'open-incomplete-or-invalid',
+      requiredValidatorProfile: 'open.intake-ready',
+    },
+    {
+      id: 'open.repair-required',
+      kind: 'self',
+      from: { phase: 'open', statuses: ['running', 'waiting', 'blocked'] },
+      to: { phase: 'open', status: 'running' },
+      trigger: 'open-evidence-rejected',
       requiredValidatorProfile: 'open.intake-ready',
     },
     {

@@ -476,6 +476,66 @@ describe('managed Change execution production composition', () => {
           changeLifecycle: { phase: 'open', currentWork: { kind: 'change.intake' } },
           continuation: { reason: 'validator-pending' },
         });
+        if (!multiRepository && executionMode === 'autonomous') {
+          const beforeRepair = await status();
+          const originalWorkId = beforeRepair.changeLifecycle?.currentWork?.workId;
+          await writeFile(
+            path.join(workspace, 'openspec', 'changes', 'managed-blackbox', 'tasks.md'),
+            '# Tasks\n\n- [ ] 1.1 Missing acceptance evidence.\n',
+          );
+          const repaired = (await next()).value;
+          expect(repaired.state.workExecution).toBeUndefined();
+          expect(repaired.changeLifecycle).toMatchObject({
+            phase: 'open',
+            status: 'running',
+            currentWork: { kind: 'change.intake' },
+            nextActions: [{ kind: 'work' }],
+          });
+          expect(repaired.changeLifecycle?.currentWork?.workId).not.toBe(originalWorkId);
+
+          await next();
+          const repairedOutcome = await status();
+          const repairedInvocation = repairedOutcome.state.workExecution?.hostInvocation;
+          expect(repairedOutcome.state.workExecution).toMatchObject({
+            status: 'outcome',
+            actionOutcome: { status: 'succeeded' },
+          });
+          if (!repairedInvocation) throw new Error('missing repaired Open invocation');
+          const unavailable = vi
+            .spyOn(application.context.specification, 'inspect')
+            .mockRejectedValueOnce(new Error('simulated Provider outage'));
+          const unavailableResult = await next();
+          unavailable.mockRestore();
+          expect(unavailableResult.value).toMatchObject({
+            changeLifecycle: {
+              phase: 'open',
+              currentWork: { workId: repairedOutcome.changeLifecycle?.currentWork?.workId },
+            },
+            continuation: {
+              continuation: 'reconcile',
+              reason: 'open-observation-unavailable',
+            },
+          });
+          expect(unavailableResult.value.state.workExecution?.hostInvocation?.invocationId).toBe(
+            repairedInvocation.invocationId,
+          );
+          const unavailableInspection = await application.context.commandRouter.execute<
+            { runId: string },
+            RunStoreInspection
+          >('run.inspect', { runId });
+          expect(
+            [...unavailableInspection.trajectory]
+              .reverse()
+              .find((event) => event.type === 'continuation.selected'),
+          ).toMatchObject({
+            data: {
+              continuation: 'reconcile',
+              result: 'reconcile',
+              reasonCode: 'open-observation-unavailable',
+              hostReplayed: false,
+            },
+          });
+        }
         expect((await next()).value.changeLifecycle).toMatchObject({
           phase: 'open',
           status: 'waiting',
@@ -504,6 +564,65 @@ describe('managed Change execution production composition', () => {
           actor: { actorId: 'managed-test-user', source: 'cli', authenticated: true },
           isolation: 'current',
         });
+        if (!multiRepository && executionMode === 'autonomous') {
+          await writeFile(
+            path.join(workspace, 'openspec', 'changes', 'managed-blackbox', 'tasks.md'),
+            '# Tasks\n\n- [ ] 1.1 Write the changed managed output.\n  **Acceptance:** changed output exists\n  **Requirements:** managed-demo#managed-execution\n- [ ] 1.2 Write the second managed output.\n  **Acceptance:** second output exists\n  **Requirements:** managed-demo#managed-execution\n',
+          );
+          expect(
+            await application.context.specificationPlanning.revalidateOpenApproval({
+              changeId: 'managed-blackbox',
+              approvalPhase: 'open',
+              changeBranch: openApproval.snapshot.changeBranch,
+              compositionDigest: openApproval.snapshot.compositionDigest,
+              projectConfigDigest: openApproval.snapshot.projectConfigDigest,
+              expectedSnapshotDigest: openApproval.snapshot.digest,
+            }),
+          ).toMatchObject({
+            status: 'invalid',
+            source: 'approval-drift',
+            reasonCode: 'approval-drift',
+          });
+          const drifted = await next();
+          expect(drifted.value.changeLifecycle).toMatchObject({
+            phase: 'open',
+            status: 'running',
+            currentWork: { kind: 'change.intake' },
+          });
+          expect(drifted.value.state.workExecution).toBeUndefined();
+          await next();
+          const refreshedWait = await next();
+          expect(refreshedWait.value.changeLifecycle).toMatchObject({
+            phase: 'open',
+            status: 'waiting',
+            currentWork: null,
+          });
+          const refreshedApproval = await application.context.commandRouter.execute<
+            { changeId: string; approvalPhase: 'open' },
+            SpecificationApprovalState | null
+          >('specification.approval.status', {
+            changeId: 'managed-blackbox',
+            approvalPhase: 'open',
+          });
+          if (!refreshedApproval || refreshedApproval.status !== 'awaiting_approval') {
+            throw new Error('missing refreshed Open approval after drift');
+          }
+          expect(refreshedApproval.decisionRequest.requestId).not.toBe(
+            openApproval.decisionRequest.requestId,
+          );
+          await application.context.commandRouter.execute('run.change.decide', {
+            runId,
+            response: {
+              apiVersion: 'repoctopus/v1alpha1',
+              kind: 'HumanDecisionResponse',
+              requestId: refreshedApproval.decisionRequest.requestId,
+              proposalHash: refreshedApproval.decisionRequest.proposalHash,
+              decision: 'approve',
+            },
+            actor: { actorId: 'managed-test-user', source: 'cli', authenticated: true },
+            isolation: 'current',
+          });
+        }
         const designWork = await next();
         expect(designWork.value.changeLifecycle).toMatchObject({
           phase: 'design',
@@ -934,6 +1053,74 @@ describe('managed Change execution production composition', () => {
         });
         await restartApplication();
         await next();
+        if (!multiRepository && executionMode === 'autonomous') {
+          const inputDrift = vi
+            .spyOn(application.context.evidenceCoordinator, 'runOrResume')
+            .mockRejectedValueOnce(
+              new Error('input fingerprint changed before Evidence execution'),
+            );
+          let failedVerify: RuntimeResult<VerifyChangeRunResult>;
+          try {
+            failedVerify = await application.context.commandRouter.execute<
+              { runId: string },
+              RuntimeResult<VerifyChangeRunResult>
+            >('run.work.verify', { runId });
+          } finally {
+            inputDrift.mockRestore();
+          }
+          expect(failedVerify.value).toMatchObject({
+            gate: 'blocked',
+            run: {
+              changeLifecycle: {
+                phase: 'build',
+                currentWork: { kind: 'build.plan' },
+                verificationInvalidation: { kind: 'implementation-drift' },
+              },
+            },
+          });
+
+          const dispatchedPlan = await next();
+          expect(dispatchedPlan.value).toMatchObject({
+            changeLifecycle: { phase: 'build', currentWork: { kind: 'build.plan' } },
+            continuation: { reason: 'validator-pending' },
+          });
+          const acceptedPlan = await next();
+          expect(acceptedPlan.value.changeLifecycle).toMatchObject({
+            phase: 'build',
+            currentWork: { kind: 'build.execute' },
+          });
+          expect(
+            acceptedPlan.value.state.changeLifecycle?.verificationInvalidation,
+          ).toBeUndefined();
+
+          const repairWorkId = acceptedPlan.value.changeLifecycle?.currentWork?.workId;
+          const repairEpoch = acceptedPlan.value.changeLifecycle?.checkEpoch;
+          const invocationCount = capture.invocations.length;
+          const resumed = await application.context.workflowRuns.resume({
+            runId,
+            currentProjectSnapshot: await application.context.runStore.loadProjectSnapshot(runId),
+          });
+          expect(resumed.value.changeLifecycle).toMatchObject({
+            currentWork: { workId: repairWorkId },
+            checkEpoch: repairEpoch,
+          });
+          expect(capture.invocations).toHaveLength(invocationCount);
+
+          let repairedBuild = await next();
+          for (
+            let transition = 0;
+            transition < 7 && repairedBuild.value.changeLifecycle?.phase !== 'verify';
+            transition += 1
+          ) {
+            repairedBuild = await next();
+          }
+          expect(repairedBuild.value.changeLifecycle).toMatchObject({
+            phase: 'verify',
+            currentWork: { kind: 'evidence.verify' },
+          });
+          await restartApplication();
+          await next();
+        }
         const originalRunOrResume = application.context.evidenceCoordinator.runOrResume.bind(
           application.context.evidenceCoordinator,
         );
@@ -1220,6 +1407,9 @@ describe('managed Change execution production composition', () => {
         invocationKinds.push(...capture.invocations.map((item) => item.packet.work.kind));
         expect(invocationKinds).toEqual([
           'change.intake',
+          ...(!multiRepository && executionMode === 'autonomous'
+            ? ['change.intake', 'change.intake']
+            : []),
           'specification.plan',
           'build.configure',
           'build.plan',
@@ -1227,6 +1417,15 @@ describe('managed Change execution production composition', () => {
           'build.execute',
           'build.check',
           'evidence.verify',
+          ...(!multiRepository && executionMode === 'autonomous'
+            ? [
+                'build.plan',
+                'build.execute',
+                'build.execute',
+                'build.check',
+                'evidence.verify',
+              ]
+            : []),
           'specification.close',
           'delivery.publish',
         ]);
