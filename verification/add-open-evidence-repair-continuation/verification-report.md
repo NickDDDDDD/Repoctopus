@@ -3,7 +3,7 @@
 ## Reproducible subject
 
 - Change: `add-open-evidence-repair-continuation`
-- Tested implementation commit: `2a82232241ed0c009eef5b3778e42e246e785203`
+- Tested implementation commit: `1b5e723cbc54342b506016dae657941ca348492f`
 - Package: `repoctopus@0.1.0`
 - Package bytes: `990977`
 - Package SHA-256: `ac72560e72d203948bc21b9c4955c0e41fb95f4a94d475089a0fa1d635678059`
@@ -11,7 +11,7 @@
 - Platform: Windows x64
 - Node.js: `24.21.0`
 
-The tested commit is the packaged product boundary. Later commits may change only OpenSpec state, verification evidence, or the managed-report checker. The checker discovers the nearest ancestor report that has no later packaged-product changes, then reproduces the package checksum from the current checkout.
+The tested commit is the packaged product and checker boundary. Later commits may change only OpenSpec state or verification evidence. The checker discovers the nearest ancestor report that has no later product or checker changes, then reproduces the package checksum from the current checkout. It orders equal-distance candidates by normalized repository-relative path so selection is deterministic across filesystems.
 
 ## Runtime invariants proved
 
@@ -35,7 +35,18 @@ TypeScript, Desktop TypeScript, ESLint, CLI/Desktop builds, generated output,
 brand, architecture, provenance, Dashboard salvage and strict OpenSpec passed
 ```
 
-Only the stale historical managed-report pin failed. The current report and generic nearest-valid-report checker close that evidence boundary without weakening the package checksum or allowing product changes after the pinned implementation commit.
+Only the stale historical managed-report pin failed. After replacing that pin with the generic nearest-valid-report checker, the complete command succeeded on the tested implementation commit:
+
+```text
+npm run verify
+150 test files passed
+659 tests passed; 2 skipped
+TypeScript, Desktop TypeScript, ESLint, CLI/Desktop builds, generated output,
+brand, architecture, provenance, Dashboard salvage, strict OpenSpec and
+managed lifecycle report reproduction passed
+```
+
+The checker is part of the pinned boundary and cannot authorize later changes to itself. It reproduces the package checksum and rejects any later product or checker change; only OpenSpec state and verification evidence may follow the tested commit.
 
 Additional focused checks passed:
 
