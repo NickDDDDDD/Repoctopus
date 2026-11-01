@@ -24,3 +24,93 @@ verified_at: null
 archive_confirmation: null
 archived: false
 bound_branch: codex/separate-build-strategy-execution-binding-v2
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: 5bc488b92c3a69cdb143784c8509daa56952b14b6b7f5a54ad7ad32ae445cda4
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: separate-build-strategy-and-execution-binding
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: 94164a86a54e82dde66dbfc9836807f31ccd8a08f21cb6cf9ff9ebc50cbb5ff2
+    input:
+      change: separate-build-strategy-and-execution-binding
+      changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+      workspaceBaseline:
+        ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: bafbb1b94627e4ade3692a6a04f0e8f7f31c6542
+      boundBranch: codex/separate-build-strategy-execution-binding-v2
+      branchStatus: pending
+      buildMode: null
+      buildPause: null
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-01
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: current
+      language: zh-CN
+      phase: open
+      plan: null
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: null
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: running
+    sequence: 1
+    actions:
+      - attempt: 1
+        id: separate-build-strategy-and-execution-binding:1
+        input:
+          input:
+            change: separate-build-strategy-and-execution-binding
+            changeDir: openspec/changes/separate-build-strategy-and-execution-binding
+            workspaceBaseline:
+              ref: 5869d1e1-68e7-4ca4-a102-1572147f5259
+          outputs: {}
+        inputHash: 099bbae60198facbe289ba0780253b98aa52f3d3dec9f311afbb0816cb26de43
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: separate-build-strategy-and-execution-binding
+        status: pending
+        stepId: full.open
+        type: invoke_skill
+    actionContexts:
+      separate-build-strategy-and-execution-binding:1:
+        results: {}
+        sequence: 1
+    waits: []
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 1
+  sourceHash: d5be1340b8e5c99249497dd8cb6cc8fc6baee52f673297a39110bed487cef72a
