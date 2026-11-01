@@ -1,3 +1,8 @@
+---
+comet_change: separate-build-strategy-and-execution-binding
+role: technical-design
+canonical_spec: openspec
+---
 # Design
 
 ## Context
