@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "lastAuditedOn": "2026-10-30",
+  "lastAuditedOn": "2026-11-01",
   "upstreams": [
     {
       "id": "dsh",
@@ -16,7 +16,7 @@
       "id": "comet",
       "repository": "https://github.com/rpamis/comet.git",
       "branch": "master",
-      "auditedBranchCommit": "9208b4beef7a71e45b1bbf734eee50af63e4059b",
+      "auditedBranchCommit": "63d2ba736a24090ee826c012b5963a579ca5fb8c",
       "pinnedTag": "0.5.1",
       "pinnedTagCommit": "35c9860b77b42bafa0c2d80d8d695889f888a924",
       "version": "0.5.1",

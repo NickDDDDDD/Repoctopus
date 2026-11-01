@@ -1,13 +1,13 @@
 # DSH / Comet 全量上游对齐审计
 
-审计日期：2026-10-30。机器基线见 `upstream-baselines.json`；本报告按 Repoctopus 产品能力逐域闭合，并分别审计旧发布→新发布、新发布→默认分支头。这里的“全量”表示所有相关能力都有采用、拒绝或延后结论，不表示复制上游的全部代码。
+审计日期：2026-11-01。机器基线见 `upstream-baselines.json`；本报告按 Repoctopus 产品能力逐域闭合，并分别审计旧发布→新发布、新发布→默认分支头。这里的“全量”表示所有相关能力都有采用、拒绝或延后结论，不表示复制上游的全部代码。
 
 ## 固定事实
 
 | 上游 | 旧发布 | 采用发布 | 已审计分支头 | 关系 |
 | --- | --- | --- | --- | --- |
 | DSH | `dsh-v0.2.1-rc.3` / `1f81c047fc48fa190a683e469daa699857e9afe8` | `dsh-v0.2.1-rc.5` / `b830ec950faba0a46dda564be3e2d854afed94f1` | `master` / `ce7073d51254c26cd63b22a60835b8f948deb447` | rc.3 → rc.5 → master 均为祖先链 |
-| Comet | `0.5.0` / `aeb1a6598034e28ce46b8422d4dbd8785e607bd7` | `0.5.1` / `35c9860b77b42bafa0c2d80d8d695889f888a924` | `master` / `9208b4beef7a71e45b1bbf734eee50af63e4059b` | 0.5.0 → 0.5.1 → master 均为祖先链 |
+| Comet | `0.5.0` / `aeb1a6598034e28ce46b8422d4dbd8785e607bd7` | `0.5.1` / `35c9860b77b42bafa0c2d80d8d695889f888a924` | `master` / `63d2ba736a24090ee826c012b5963a579ca5fb8c` | 0.5.0 → 0.5.1 → master 均为祖先链 |
 
 两个上游许可证均为 MIT 且发布间文本摘要不变。基线 schema v2 明确区分：`pinnedTagCommit` 是产品采用和 provenance 的来源，`auditedBranchCommit` 只是每日漂移与候选审计边界。
 
@@ -58,7 +58,7 @@
 
 ### Comet 0.5.1 → master
 
-该区间有两个修复：`4901cac` 允许 Comet Native 在 Shape 确认前重定向 declared Specs，确认后仍受保护；`9208b4b` 用原始 size/hash 证明 UTF-8 BOM 字节身份后再接受 candidate check，且不改写文件。Repoctopus 不使用 Native Shape 状态根，也没有这条未登记 Native candidate 路径，因此两者都不复制实现；分别保留“批准前可纠正、批准后旧批准失效”和“规范化前证明原始字节身份”的参考原则。
+该区间先后包含三个变更：`4901cac` 允许 Comet Native 在 Shape 确认前重定向 declared Specs，确认后仍受保护；`9208b4b` 用原始 size/hash 证明 UTF-8 BOM 字节身份后再接受 candidate check，且不改写文件；`63d2ba7` 增加 MiniMax Code 平台检测、安装文档和集成测试。Repoctopus 不使用 Native Shape 状态根，也没有该未登记 Native candidate 路径，因此前两项不复制实现，只保留“批准前可纠正、批准后旧批准失效”和“规范化前证明原始字节身份”的参考原则。MiniMax 变更没有修改 Comet Classic、Runtime SDK、Engine 或生命周期状态机，且 Repoctopus Host 由外部 Agent 与 Cordis 边界承载，因此只推进默认分支审计身份，不升级固定的 `0.5.1` 采用版本，也不复制平台适配。
 
 ## 能力覆盖矩阵
 
