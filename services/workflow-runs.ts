@@ -1915,151 +1915,27 @@ export class WorkflowRuns extends Service {
               current.workExecution?.status === 'outcome' &&
               !current.workExecution.acceptedSubmission
             ) {
-              const protocol = lifecycle.buildProtocol;
-              const configuration = protocol?.configuration;
-              const checkpoint = current.workExecution;
-              const hostOutcome = checkpoint.hostOutcome;
-              const actionOutcome = checkpoint.actionOutcome;
-              const migrationRequired = async (reason: string) => {
-                const migrated = await this.coordinator.acceptChangeObservation(runId, {
-                  kind: 'work-execution-migration-required',
-                  reason,
-                  evidenceIds: actionOutcome?.outcomeId ? [actionOutcome.outcomeId] : [],
-                });
-                return {
-                  ...migrated,
-                  value: await this.coordinator.status(runId),
-                  diagnostics: [
-                    ...migrated.diagnostics,
-                    {
-                      level: 'error' as const,
-                      code: 'change.build-plan-legacy-migration-required',
-                      message: reason,
-                    },
-                  ],
-                };
-              };
-              if (
-                !protocol ||
-                !configuration ||
-                protocol.currentAction !== 'plan' ||
-                !hostOutcome ||
-                hostOutcome.status !== 'succeeded' ||
-                actionOutcome?.status !== 'succeeded' ||
-                checkpoint.pendingSubmission ||
-                checkpoint.validatorId
-              ) {
-                return migrationRequired(
-                  'Legacy Build Plan checkpoint is not an unaccepted terminal Plan Outcome',
-                );
-              }
-              const invocationHost = checkpoint.hostInvocation?.host;
-              if (
-                !invocationHost ||
-                invocationHost.id !== hostOutcome.hostId ||
-                hostOutcome.invocationId !== checkpoint.hostInvocation?.invocationId ||
-                hostOutcome.packetDigest !== checkpoint.packet.packetDigest ||
-                invocationHost.id !== configuration.hostId ||
-                configuration.hostCapabilities.some(
-                  (capability) => !invocationHost.capabilities.includes(capability),
-                )
-              ) {
-                return migrationRequired(
-                  'Legacy Build Plan Host, invocation, packet, or frozen Configuration identity is incompatible',
-                );
-              }
-              try {
-                this.assertFrozenBuildHost(configuration, invocationHost);
-                await this.assertFrozenExecutionWorkspace(
-                  current,
-                  lifecycle,
-                  projectSnapshot,
-                  configuration,
-                );
-              } catch (error) {
-                return migrationRequired(
-                  `Legacy Build Plan frozen identity cannot be proven: ${error instanceof Error ? error.message : String(error)}`,
-                );
-              }
-              const recoverRejected = async (diagnostic: string) => {
-                const intent = await this.ctx.workExecutionAuthority.loadIntent(runId);
-                await this.ctx.workExecutionAuthority.recoverLegacyRejectedOutcome({
-                  intent,
-                  diagnostic,
-                });
-                return {
-                  value: await this.coordinator.status(runId),
-                  diagnostics: [
-                    {
-                      level: 'warning' as const,
-                      code: 'change.build-plan-legacy-outcome-recovered',
-                      message: diagnostic,
-                    },
-                  ],
-                };
-              };
-              const result = hostOutcome.result;
-              if (result?.kind !== 'build-plan-candidate') {
-                return recoverRejected(
-                  'Legacy Build Plan Host must return a structured build-plan-candidate',
-                );
-              }
-              let taskSet;
-              try {
-                taskSet = await this.ctx.specification.tasks(lifecycle.identity.changeId, signal);
-              } catch (error) {
-                return migrationRequired(
-                  `Legacy Build Plan Task authority could not reproduce validation: ${error instanceof Error ? error.message : String(error)}`,
-                );
-              }
-              let legacyPlan;
-              try {
-                legacyPlan = createBuildPlan({
-                  runId,
-                  revision: (protocol.plan?.revision ?? 0) + 1,
-                  configuration,
-                  planningDigest: lifecycle.planningDigest!,
-                  tasks: taskSet,
-                  candidate: { packages: result.packages },
-                });
-              } catch (error) {
-                return recoverRejected(
-                  `Legacy Build Plan candidate rejected: ${error instanceof Error ? error.message : String(error)}`,
-                );
-              }
-              const legacyPlanValidation = validateBuildPlan({
-                plan: legacyPlan,
-                configuration,
-                tasks: taskSet,
+              const reason =
+                'Pre-release Build Plan checkpoint has no accepted submission and requires migration';
+              const migrated = await this.coordinator.acceptChangeObservation(runId, {
+                kind: 'work-execution-migration-required',
+                reason,
+                evidenceIds: current.workExecution.actionOutcome?.outcomeId
+                  ? [current.workExecution.actionOutcome.outcomeId]
+                  : [],
               });
-              if (!legacyPlanValidation.accepted) {
-                return recoverRejected(
-                  `Legacy Build Plan rejected: ${legacyPlanValidation.diagnostics.join('; ')}`,
-                );
-              }
-              const validator = this.ctx.lifecycleValidators.resolve(
-                lifecycle.currentWork.validatorProfile.id,
-              );
-              let legacyValidation;
-              try {
-                legacyValidation = await validator.validate({
-                  profileId: lifecycle.currentWork.validatorProfile.id,
-                  work: lifecycle.currentWork,
-                  fact: legacyPlanValidation,
-                });
-              } catch (error) {
-                return migrationRequired(
-                  `Legacy Build Plan Validator could not reproduce validation: ${error instanceof Error ? error.message : String(error)}`,
-                );
-              }
-              if (!legacyValidation.accepted) {
-                return recoverRejected(
-                  `Legacy Build Plan Validator rejected: ${legacyValidation.diagnostic}`,
-                );
-              }
-              return migrationRequired(
-                'Legacy Build Plan Outcome is valid under the current authority, so its prior stuck state cannot be deterministically reproduced',
-              );
+              return {
+                ...migrated,
+                value: await this.coordinator.status(runId),
+                diagnostics: [
+                  ...migrated.diagnostics,
+                  {
+                    level: 'error' as const,
+                    code: 'change.build-plan-migration-required',
+                    message: reason,
+                  },
+                ],
+              };
             }
             if (
               lifecycle.phase === 'build' &&
@@ -2896,117 +2772,27 @@ export class WorkflowRuns extends Service {
               current.workExecution?.status === 'outcome' &&
               !current.workExecution.acceptedSubmission
             ) {
-              const protocol = lifecycle.buildProtocol;
-              const configuration = protocol?.configuration;
-              const plan = protocol?.plan;
-              const checkpoint = current.workExecution;
-              const hostOutcome = checkpoint.hostOutcome;
-              const actionOutcome = checkpoint.actionOutcome;
-              const migrationRequired = async (reason: string) => {
-                const migrated = await this.coordinator.acceptChangeObservation(runId, {
-                  kind: 'work-execution-migration-required',
-                  reason,
-                  evidenceIds: actionOutcome?.outcomeId ? [actionOutcome.outcomeId] : [],
-                });
-                return {
-                  ...migrated,
-                  value: await this.coordinator.status(runId),
-                  diagnostics: [
-                    ...migrated.diagnostics,
-                    {
-                      level: 'error' as const,
-                      code: 'change.build-check-legacy-migration-required',
-                      message: reason,
-                    },
-                  ],
-                };
+              const reason =
+                'Pre-release Build Check checkpoint has no accepted submission and requires migration';
+              const migrated = await this.coordinator.acceptChangeObservation(runId, {
+                kind: 'work-execution-migration-required',
+                reason,
+                evidenceIds: current.workExecution.actionOutcome?.outcomeId
+                  ? [current.workExecution.actionOutcome.outcomeId]
+                  : [],
+              });
+              return {
+                ...migrated,
+                value: await this.coordinator.status(runId),
+                diagnostics: [
+                  ...migrated.diagnostics,
+                  {
+                    level: 'error' as const,
+                    code: 'change.build-check-migration-required',
+                    message: reason,
+                  },
+                ],
               };
-              if (
-                !protocol ||
-                !configuration ||
-                !plan ||
-                protocol.currentAction !== 'check' ||
-                !hostOutcome ||
-                hostOutcome.status !== 'succeeded' ||
-                actionOutcome?.status !== 'succeeded' ||
-                checkpoint.pendingSubmission ||
-                checkpoint.validatorId
-              ) {
-                return migrationRequired(
-                  'Legacy Build Check checkpoint is not an unaccepted terminal Check Outcome',
-                );
-              }
-              const invocationHost = checkpoint.hostInvocation?.host;
-              if (
-                !invocationHost ||
-                invocationHost.id !== hostOutcome.hostId ||
-                hostOutcome.invocationId !== checkpoint.hostInvocation?.invocationId ||
-                hostOutcome.packetDigest !== checkpoint.packet.packetDigest ||
-                invocationHost.id !== configuration.hostId ||
-                configuration.hostCapabilities.some(
-                  (capability) => !invocationHost.capabilities.includes(capability),
-                )
-              ) {
-                return migrationRequired(
-                  'Legacy Build Check Host, invocation, packet, or frozen Configuration identity is incompatible',
-                );
-              }
-              try {
-                this.assertFrozenBuildHost(configuration, invocationHost);
-                await this.assertFrozenExecutionWorkspace(
-                  current,
-                  lifecycle,
-                  projectSnapshot,
-                  configuration,
-                );
-              } catch (error) {
-                return migrationRequired(
-                  `Legacy Build Check frozen identity cannot be proven: ${error instanceof Error ? error.message : String(error)}`,
-                );
-              }
-              const result = hostOutcome.result;
-              const expectedPackages = plan.packages.map((entry) => entry.packageId).sort();
-              const expectedTasks = [
-                ...new Set(plan.packages.flatMap((entry) => entry.taskIds)),
-              ].sort();
-              const deterministicRejection =
-                result?.kind !== 'build-check-candidate'
-                  ? 'Legacy Build Check Host must return a structured check candidate'
-                  : result.reviewerExecutionId !== hostOutcome.invocationId
-                    ? 'Legacy Build Check reviewer identity does not match the managed invocation'
-                    : protocol.packageCompletions.some(
-                          (completion) => completion.executionId === result.reviewerExecutionId,
-                        )
-                      ? 'Legacy Build Check requires an independent reviewer execution'
-                      : canonicalJson([...result.completedPackageIds].sort()) !==
-                          canonicalJson(expectedPackages)
-                        ? 'Legacy Build Check does not cover every required package'
-                        : canonicalJson([...result.acceptedTaskIds].sort()) !==
-                            canonicalJson(expectedTasks)
-                          ? 'Legacy Build Check does not cover every Task acceptance'
-                          : result.repositoryDigest !== configuration.bindingDigest
-                            ? 'Legacy Build Check repository binding drifted'
-                            : null;
-              if (deterministicRejection) {
-                const intent = await this.ctx.workExecutionAuthority.loadIntent(runId);
-                await this.ctx.workExecutionAuthority.recoverLegacyRejectedOutcome({
-                  intent,
-                  diagnostic: deterministicRejection,
-                });
-                return {
-                  value: await this.coordinator.status(runId),
-                  diagnostics: [
-                    {
-                      level: 'warning' as const,
-                      code: 'change.build-check-legacy-outcome-recovered',
-                      message: deterministicRejection,
-                    },
-                  ],
-                };
-              }
-              return migrationRequired(
-                'Legacy Build Check Outcome is valid under current deterministic checks, so its prior stuck state cannot be reproduced',
-              );
             }
             const checkExecution = current.workExecution;
             const checkHostOutcome =
@@ -4381,9 +4167,12 @@ export class WorkflowRuns extends Service {
             await this.coordinator.bindSkill(input.runId, skill);
           }
           const revised = await this.coordinator.acceptChangeObservation(input.runId, {
-            kind: 'archive-planning-drift',
+            kind: 'planning-authority-invalidated',
+            expectedRevision: lifecycle.revision,
+            fromPhase: 'archive',
+            invalidationKind: 'semantic',
             work: designWork,
-            observedPlanningDigest: planningApproval.snapshot.digest,
+            inputDigest: planningApproval.snapshot.digest,
             reason:
               correctedError instanceof Error
                 ? correctedError.message

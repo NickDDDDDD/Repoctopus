@@ -129,115 +129,129 @@ describe('Build protocol domain', () => {
     });
   });
 
-  it('retains only completion evidence whose package identity survives a revised Design', () => {
-    const configuration = approvedConfiguration({ tddMode: 'direct' });
-    const originalTasks = parseSpecificationTasks(
-      'managed-build',
-      '- [ ] 1.1 Preserve the stable package.\n  **Acceptance:** Stable behavior remains.\n- [ ] 1.2 Revise the changed package.\n  **Acceptance:** Changed behavior works.\n',
-    );
-    const packageCandidate = (taskIndex: number, expectedOutcome: string) => ({
-      packageKey: `package-${taskIndex + 1}`,
-      taskIds: [originalTasks.tasks[taskIndex]!.taskId],
-      repositoryIds: ['workspace'],
-      writeScopes: [{ repositoryId: 'workspace', paths: [`src/package-${taskIndex + 1}/**`] }],
-      acceptanceRefs: originalTasks.tasks[taskIndex]!.acceptanceCriteria.map(
-        (criterion) => criterion.acceptanceId,
-      ),
-      expectedOutcomes: [expectedOutcome],
-      validatorProfile: 'build.package-valid',
-      dependsOn: [] as string[],
-    });
-    const firstPlan = createBuildPlan({
-      runId: 'run-local-revalidation',
-      revision: 1,
-      configuration,
-      planningDigest: originalTasks.digest,
-      tasks: originalTasks,
-      candidate: {
-        packages: [packageCandidate(0, 'stable-output'), packageCandidate(1, 'old-output')],
-      },
-    });
-    let state = createBuildProtocolState({
-      runId: 'run-local-revalidation',
-      planningDigest: originalTasks.digest,
-      workspaceIntent: configuration.workspaceIntent,
-    });
-    state = advanceBuildProtocol(state, {
-      kind: 'configuration-proposed',
-      proposal: configuration,
-    });
-    state = advanceBuildProtocol(state, { kind: 'configuration-approved', configuration });
-    state = advanceBuildProtocol(state, { kind: 'plan-accepted', plan: firstPlan });
-    state = advanceBuildProtocol(state, {
-      kind: 'plan-evidence-accepted',
-      evidence: createPlanEvidence({
-        plan: firstPlan,
+  it.each([
+    ['single-repository', ['workspace']],
+    ['multi-repository', ['workspace', 'worker']],
+  ] as const)(
+    'retains only unaffected completion evidence and repository bindings in a %s revision',
+    (_label, repositoryIds) => {
+      const configuration = approvedConfiguration({ repositoryIds, tddMode: 'direct' });
+      const originalTasks = parseSpecificationTasks(
+        'managed-build',
+        '- [ ] 1.1 Preserve the stable package.\n  **Acceptance:** Stable behavior remains.\n- [ ] 1.2 Revise the changed package.\n  **Acceptance:** Changed behavior works.\n',
+      );
+      const packageCandidate = (taskIndex: number, expectedOutcome: string) => {
+        const repositoryId = repositoryIds[Math.min(taskIndex, repositoryIds.length - 1)]!;
+        return {
+          packageKey: `package-${taskIndex + 1}`,
+          taskIds: [originalTasks.tasks[taskIndex]!.taskId],
+          repositoryIds: [repositoryId],
+          writeScopes: [{ repositoryId, paths: [`src/package-${taskIndex + 1}/**`] }],
+          acceptanceRefs: originalTasks.tasks[taskIndex]!.acceptanceCriteria.map(
+            (criterion) => criterion.acceptanceId,
+          ),
+          expectedOutcomes: [expectedOutcome],
+          validatorProfile: 'build.package-valid',
+          dependsOn: [] as string[],
+        };
+      };
+      const firstPlan = createBuildPlan({
+        runId: 'run-local-revalidation',
+        revision: 1,
         configuration,
-        validation: validateBuildPlan({ plan: firstPlan, configuration, tasks: originalTasks }),
-      }),
-    });
-    for (const [index, workPackage] of firstPlan.packages.entries()) {
+        planningDigest: originalTasks.digest,
+        tasks: originalTasks,
+        candidate: {
+          packages: [packageCandidate(0, 'stable-output'), packageCandidate(1, 'old-output')],
+        },
+      });
+      let state = createBuildProtocolState({
+        runId: 'run-local-revalidation',
+        planningDigest: originalTasks.digest,
+        workspaceIntent: configuration.workspaceIntent,
+      });
       state = advanceBuildProtocol(state, {
-        kind: 'package-completed',
-        completion: createPackageCompletionEvidence({
-          workPackage,
-          executionId: `execution-${index + 1}`,
-          acceptanceEvidenceIds: [`acceptance-${index + 1}`],
-          testEvidenceIds: [`test-${index + 1}`],
-          tddMode: 'direct',
-          repositoryDigest: sha(String(index + 1)),
-          implementationDigest: sha(String(index + 3)),
+        kind: 'configuration-proposed',
+        proposal: configuration,
+      });
+      state = advanceBuildProtocol(state, { kind: 'configuration-approved', configuration });
+      state = advanceBuildProtocol(state, { kind: 'plan-accepted', plan: firstPlan });
+      state = advanceBuildProtocol(state, {
+        kind: 'plan-evidence-accepted',
+        evidence: createPlanEvidence({
+          plan: firstPlan,
+          configuration,
+          validation: validateBuildPlan({ plan: firstPlan, configuration, tasks: originalTasks }),
         }),
       });
-    }
+      for (const [index, workPackage] of firstPlan.packages.entries()) {
+        state = advanceBuildProtocol(state, {
+          kind: 'package-completed',
+          completion: createPackageCompletionEvidence({
+            workPackage,
+            executionId: `execution-${index + 1}`,
+            acceptanceEvidenceIds: [`acceptance-${index + 1}`],
+            testEvidenceIds: [`test-${index + 1}`],
+            tddMode: 'direct',
+            repositoryDigest: sha(String(index + 1)),
+            implementationDigest: sha(String(index + 3)),
+          }),
+        });
+      }
 
-    const revisedTasks = parseSpecificationTasks(
-      'managed-build',
-      '- [ ] 1.1 Preserve the stable package.\n  **Acceptance:** Stable behavior remains.\n- [ ] 1.2 Revise the changed package with stricter behavior.\n  **Acceptance:** Changed behavior works.\n',
-    );
-    state = revalidateSuspendedBuildProtocol(
-      suspendBuildProtocolForDesign(state, {
-        observedPlanningDigest: revisedTasks.digest,
-        reasonCode: 'semantic-drift',
-        invalidatedIdentities: ['planning-semantic', 'build-plan'],
-      }),
-      {
+      const revisedTasks = parseSpecificationTasks(
+        'managed-build',
+        '- [ ] 1.1 Preserve the stable package.\n  **Acceptance:** Stable behavior remains.\n- [ ] 1.2 Revise the changed package with stricter behavior.\n  **Acceptance:** Changed behavior works.\n',
+      );
+      state = revalidateSuspendedBuildProtocol(
+        suspendBuildProtocolForDesign(state, {
+          observedPlanningDigest: revisedTasks.digest,
+          reasonCode: 'semantic-drift',
+          invalidatedIdentities: ['planning-semantic', 'build-plan'],
+        }),
+        {
+          planningDigest: revisedTasks.digest,
+          configurationCompatible: true,
+          planCompatible: false,
+          retainedPackageIds: firstPlan.packages.map((workPackage) => workPackage.packageId),
+        },
+      );
+      const revisedPlan = createBuildPlan({
+        runId: 'run-local-revalidation',
+        revision: 2,
+        configuration,
         planningDigest: revisedTasks.digest,
-        configurationCompatible: true,
-        planCompatible: false,
-        retainedPackageIds: firstPlan.packages.map((workPackage) => workPackage.packageId),
-      },
-    );
-    const revisedPlan = createBuildPlan({
-      runId: 'run-local-revalidation',
-      revision: 2,
-      configuration,
-      planningDigest: revisedTasks.digest,
-      tasks: revisedTasks,
-      candidate: {
-        packages: [
-          {
-            ...packageCandidate(0, 'stable-output'),
-            acceptanceRefs: revisedTasks.tasks[0]!.acceptanceCriteria.map(
-              (criterion) => criterion.acceptanceId,
-            ),
-          },
-          {
-            ...packageCandidate(1, 'new-output'),
-            taskIds: [revisedTasks.tasks[1]!.taskId],
-            acceptanceRefs: revisedTasks.tasks[1]!.acceptanceCriteria.map(
-              (criterion) => criterion.acceptanceId,
-            ),
-          },
-        ],
-      },
-    });
-    state = advanceBuildProtocol(state, { kind: 'plan-accepted', plan: revisedPlan });
+        tasks: revisedTasks,
+        candidate: {
+          packages: [
+            {
+              ...packageCandidate(0, 'stable-output'),
+              acceptanceRefs: revisedTasks.tasks[0]!.acceptanceCriteria.map(
+                (criterion) => criterion.acceptanceId,
+              ),
+            },
+            {
+              ...packageCandidate(1, 'new-output'),
+              taskIds: [revisedTasks.tasks[1]!.taskId],
+              acceptanceRefs: revisedTasks.tasks[1]!.acceptanceCriteria.map(
+                (criterion) => criterion.acceptanceId,
+              ),
+            },
+          ],
+        },
+      });
+      state = advanceBuildProtocol(state, { kind: 'plan-accepted', plan: revisedPlan });
 
-    expect(state.packageCompletions).toHaveLength(1);
-    expect(state.packageCompletions[0]?.packageId).toBe(revisedPlan.packages[0]?.packageId);
-    expect(state.currentAction).toBe('plan-evidence');
-  });
+      expect(state.packageCompletions).toHaveLength(1);
+      expect(state.packageCompletions[0]?.packageId).toBe(revisedPlan.packages[0]?.packageId);
+      expect(state.configuration?.bindingDigest).toBe(configuration.bindingDigest);
+      expect(state.configuration?.repositoryIds).toEqual([...repositoryIds].sort());
+      expect(revisedPlan.packages[1]?.repositoryIds).toEqual([
+        repositoryIds[Math.min(1, repositoryIds.length - 1)],
+      ]);
+      expect(state.currentAction).toBe('plan-evidence');
+    },
+  );
 
   it('normalizes workspace and configuration input into stable immutable digests', () => {
     const first = approvedConfiguration();

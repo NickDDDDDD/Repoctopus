@@ -617,13 +617,6 @@ export type ChangeLifecycleObservation =
       reason: string;
     }
   | {
-      kind: 'archive-planning-drift';
-      work: WorkDescriptor;
-      observedPlanningDigest: `sha256:${string}`;
-      reason: string;
-      evidenceIds: readonly string[];
-    }
-  | {
       kind: 'archive-work-restored';
       work: WorkDescriptor;
       reason: string;
@@ -1749,6 +1742,13 @@ export function evolveChangeLifecycle(options: {
       if (observation.work?.phase !== 'design' || observation.work.kind !== 'specification.plan') {
         throw new Error('Approved Design revision requires Runtime-selected Design Work');
       }
+      const buildProtocol = current.buildProtocol
+        ? suspendBuildProtocolForDesign(current.buildProtocol, {
+            observedPlanningDigest: wait.proposalDigest,
+            reasonCode: 'build-design-revision',
+            invalidatedIdentities: ['planning-semantic'],
+          })
+        : undefined;
       return applyChangeLifecycleTransition({
         definition: options.definition,
         current,
@@ -1757,8 +1757,7 @@ export function evolveChangeLifecycle(options: {
           currentWork: observation.work,
           waitCondition: null,
           blocker: null,
-          tasks: [],
-          buildProtocol: null,
+          buildProtocol: buildProtocol ?? null,
           planningDigest: null,
           adoptedCompletionClaimDigest: null,
           verificationInput: null,
@@ -2070,56 +2069,6 @@ export function evolveChangeLifecycle(options: {
         archiveDeliveryInput: observation.archiveInput,
       },
     });
-  }
-  if (observation.kind === 'archive-planning-drift') {
-    if (
-      current.phase !== 'archive' ||
-      current.status !== 'running' ||
-      current.currentWork?.kind !== 'delivery.publish' ||
-      !current.archiveDeliveryInput ||
-      !current.specificationClosure ||
-      current.publicationReceipt ||
-      observation.work.phase !== 'design' ||
-      observation.work.kind !== 'specification.plan' ||
-      !observation.reason.trim()
-    ) {
-      throw new Error('Archive planning drift is not valid before the publication boundary');
-    }
-    const reduced = applyChangeLifecycleTransition({
-      definition: options.definition,
-      current,
-      transitionId: 'archive.planning-drift',
-      next: {
-        currentWork: observation.work,
-        waitCondition: null,
-        blocker: null,
-        tasks: [],
-        planningDigest: null,
-        verificationInput: null,
-        verificationInvalidation: null,
-        archiveDeliveryInput: null,
-        specificationClosure: null,
-      },
-    });
-    const invalidationScope = runtimeInvalidationScope(['planning-semantic']);
-    reduced.fact.invalidation = {
-      kind: 'planning-authority-invalidated',
-      invalidationKind: 'semantic',
-      classification: 'semantic',
-      disposition: 'invalidate',
-      scope: 'exact',
-      continuation: 'design',
-      retainedCount: invalidationScope.retainedIdentities.length,
-      invalidatedCount: invalidationScope.invalidatedIdentities.length,
-      protocolDisposition: 'none',
-      completionBeforeCount: 0,
-      supersededPlanningDigest: current.planningDigest ?? current.archiveDeliveryInput.digest,
-      observedPlanningDigest: observation.observedPlanningDigest,
-      supersededWorkId: current.currentWork.workId,
-      supersededTaskRevisions: (current.tasks ?? []).map((task) => task.taskRevision).sort(),
-      evidenceIds: [...observation.evidenceIds],
-    };
-    return reduced;
   }
   if (observation.kind === 'archive-work-restored') {
     if (

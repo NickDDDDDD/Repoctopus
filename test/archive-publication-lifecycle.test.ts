@@ -509,9 +509,12 @@ describe('Archive publication terminal lifecycle', () => {
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
       current: closed,
       observation: {
-        kind: 'archive-planning-drift',
+        kind: 'planning-authority-invalidated',
+        expectedRevision: closed.revision,
+        fromPhase: 'archive',
+        invalidationKind: 'semantic',
         work,
-        observedPlanningDigest: digest('e'),
+        inputDigest: digest('e'),
         reason: 'live Change branch advanced before remote publication',
         evidenceIds: [archive.digest, closure.closureId],
       },
@@ -521,7 +524,7 @@ describe('Archive publication terminal lifecycle', () => {
       status: 'running',
       checkEpoch: closed.checkEpoch + 1,
       currentWork: { kind: 'specification.plan' },
-      tasks: [],
+      tasks: closed.tasks,
     });
     expect(revised.snapshot.archiveDeliveryInput).toBeUndefined();
     expect(revised.snapshot.specificationClosure).toBeUndefined();

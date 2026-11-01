@@ -1,4 +1,6 @@
 import { Context } from '@deepseek-ai/cordis';
+import { readFile, writeFile } from 'node:fs/promises';
+import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import type {
@@ -118,6 +120,33 @@ function prepareInput() {
 }
 
 describe('SpecificationPlanning service', () => {
+  it('rejects a pre-release approval without rewriting or dual-reading the Store', async () => {
+    const workspace = await temporaryDirectory('repoctopus-spec-planning-migration-');
+    cleanup.push(workspace);
+    const running = app(workspace);
+    await running.planning.prepare(prepareInput());
+    const stateFile = path.join(
+      workspace,
+      '.repoctopus',
+      'specification-approvals',
+      'planning-approval',
+      'design',
+      'state.json',
+    );
+    const legacy = JSON.parse(await readFile(stateFile, 'utf8')) as {
+      snapshot: { schemaVersion: number };
+    };
+    legacy.snapshot.schemaVersion = 1;
+    const bytes = `${JSON.stringify(legacy, null, 2)}\n`;
+    await writeFile(stateFile, bytes);
+
+    await expect(running.planning.status('planning-approval')).rejects.toThrow(
+      /legacy planning snapshot requires migration/iu,
+    );
+    expect(await readFile(stateFile, 'utf8')).toBe(bytes);
+    await running.context.fiber.dispose();
+  });
+
   it('revalidates an approved Open snapshot without refreshing approval state', async () => {
     const workspace = await temporaryDirectory('repoctopus-open-revalidation-');
     cleanup.push(workspace);

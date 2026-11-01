@@ -57,7 +57,7 @@
 
 - [x] 7.1 将 typed identity basis、Planner、Planning、Build、Recovery、Composition 和 Telemetry 通过 Cordis production composition 接通，并用公共 CLI 启动 fresh Run 验证无测试旁路 <!-- comet-task:67020eb2-6b7e-4f05-81f5-e445fd0a64d1 -->
 - [x] 7.2 建立 adapted Comet parity fixtures，验证 checkbox 不改 revision、stable ID 恢复、stale checkpoint reconcile、唯一 continuation、CAS 漂移拒绝和 unknown 不 retry <!-- comet-task:92167e9d-1821-4485-a2b6-2b4b6d968108 -->
-- [ ] 7.3 运行单仓与多仓黑盒：Design 修改一个仓的 Task/Plan 后只重做受影响 Work Package，其他仓 completion/证据保持有效且 repository binding 不漂移 <!-- comet-task:959dc25a-fc35-4985-afc7-a1bed0dd1e48 -->
+- [x] 7.3 运行单仓与多仓黑盒：Design 修改一个仓的 Task/Plan 后只重做受影响 Work Package，其他仓 completion/证据保持有效且 repository binding 不漂移 <!-- comet-task:959dc25a-fc35-4985-afc7-a1bed0dd1e48 -->
 - [x] 7.4 运行 Open、Design、Build Configure/Plan/Execute/Check、Verify、Archive 前置的中断恢复矩阵，交叉核对 Run、Trajectory、packet、受保护文件和 OTLP receiver <!-- comet-task:0f7fb55a-f510-4fb8-a2d2-d3dc7954aafe -->
 - [x] 7.5 运行并发 Runner/CAS 测试，证明相同 checkpoint 只产生一个 claim、一个 Human Decision、一个 invalidation 和一个外部副作用 intent <!-- comet-task:ebfb5802-4c21-4b6f-8f72-54fe5aaf0a49 -->
 - [ ] 7.6 通过生产 CLI 验证 composition compatible adoption 不重复批准、不兼容升级进入 `migration_required`、publication-only 更新不返回 Design <!-- comet-task:d786c49e-70ff-4dc0-a65e-135b53fd427c -->
@@ -65,8 +65,8 @@
 
 ## 8. 删除旧语义并完成验证
 
-- [ ] 8.1 删除旧 PlanningSnapshot 聚合授权、全量 Build Protocol 清空、跨域 composition→planning drift 和重复 proposal 构造分支，并用 `rg` 与 architecture tests 证明无生产引用 <!-- comet-task:5a8f9678-370e-42cd-a863-24dace56a676 -->
-- [ ] 8.2 删除或重写依赖旧预发布 schema/全量失效的 fixtures，不增加 generation、双读、fallback adapter 或 Store 修复命令，并运行 migration/read-only tests <!-- comet-task:d9b7f7ec-5be0-43e8-9f72-ca4485aa8fa1 -->
+- [x] 8.1 删除旧 PlanningSnapshot 聚合授权、全量 Build Protocol 清空、跨域 composition→planning drift 和重复 proposal 构造分支，并用 `rg` 与 architecture tests 证明无生产引用 <!-- comet-task:5a8f9678-370e-42cd-a863-24dace56a676 -->
+- [x] 8.2 删除或重写依赖旧预发布 schema/全量失效的 fixtures，不增加 generation、双读、fallback adapter 或 Store 修复命令，并运行 migration/read-only tests <!-- comet-task:d9b7f7ec-5be0-43e8-9f72-ca4485aa8fa1 -->
 - [ ] 8.3 更新 `docs/specification.md`、`docs/runtime-state.md`、`docs/self-hosting.md`、`docs/telemetry.md` 的最终公共行为，使用文档中的命令执行一次可复现验收 <!-- comet-task:08a88783-5f1b-47cf-aad6-c35ae9a32cb5 -->
 - [ ] 8.4 运行 `npm run typecheck && npm run lint && npm test`，修复所有 Runtime、领域和服务回归 <!-- comet-task:7843b6f1-2c1b-4f0c-98a5-bf5fc9bfb593 -->
 - [ ] 8.5 运行 `npm run verify` 与 `npx --yes --package=@rpamis/comet@0.5.1 comet classic openspec -- validate stabilize-runtime-continuation --strict`，保存正式 Verification Evidence 并确认无临时日志/调试文件残留 <!-- comet-task:5411ed42-b3c3-4595-a9ec-9c3a3c54d77c -->

@@ -767,9 +767,13 @@ describe('Change lifecycle domain', () => {
       status: 'running',
       checkEpoch: 6,
       currentWork: { workId: designWork.workId },
-      tasks: [],
+      tasks: [buildTask],
+      buildProtocol: {
+        status: 'suspended-for-design',
+        currentAction: null,
+        suspension: { reasonCode: 'build-design-revision' },
+      },
     });
-    expect(designApproved.snapshot.buildProtocol).toBeUndefined();
     const exhausted = evolveChangeLifecycle({
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
       current: activeBuild,
