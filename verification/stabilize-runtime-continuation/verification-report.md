@@ -3,10 +3,10 @@
 ## Reproducible subject
 
 - Change: `stabilize-runtime-continuation`
-- Tested implementation commit: `3c0d18fa69bd6deceb8de30fa995c68a8ea41436`
+- Tested implementation commit: `e0ee918ef05a879bd345cea147657e86f706e5a5`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `1023660`
-- Package SHA-256: `3a4b1c3aa9d42542a6baa22c62eec7904604d6a3277fb7a4ef3e126c6b8cdd80`
+- Package bytes: `1024665`
+- Package SHA-256: `3f086c3683361e68b34552954b88defe75f1b961390275dfafc41c83d3d3ed9f`
 - Controller: `@rpamis/comet@0.5.1`
 - Platform: Windows x64
 - Node.js: `24.21.0`
