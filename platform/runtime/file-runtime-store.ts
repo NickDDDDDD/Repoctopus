@@ -14,7 +14,7 @@ import type {
 import type { WorkflowPackage } from '../../domains/workflow-contract/types.js';
 import type { AgentCoordinationCheckpoint } from '../../domains/work-execution/types.js';
 import { atomicWriteJson, atomicWriteText } from '../filesystem/atomic-write.js';
-import { assertRunId, isLegacyLifecycleGenerationRunId, runPaths, type RunPaths } from './paths.js';
+import { assertRunId, runPaths, type RunPaths } from './paths.js';
 import {
   RecoverableFileTransition,
   type FileTransitionContext,
@@ -365,7 +365,6 @@ export class FileRuntimeStore {
     const accepted = new Set<string>();
     for (const entry of entries) {
       if (!entry.isDirectory() || entry.isSymbolicLink()) continue;
-      if (isLegacyLifecycleGenerationRunId(entry.name)) continue;
       const paths = this.paths(entry.name);
       if (await exists(paths.transitionJournal)) {
         return { deferred: true, acceptedBundleIds: [] };
@@ -375,12 +374,26 @@ export class FileRuntimeStore {
       if (
         checkpoint.schemaVersion !== 1 ||
         checkpoint.runId !== entry.name ||
+        !Number.isSafeInteger(checkpoint.stateVersion) ||
+        checkpoint.stateVersion < 0 ||
+        typeof checkpoint.workflowDigest !== 'string' ||
+        checkpoint.workflowDigest.length === 0 ||
+        typeof checkpoint.compositionDigest !== 'string' ||
+        checkpoint.compositionDigest.length === 0 ||
+        !Number.isSafeInteger(checkpoint.trajectoryOffset) ||
+        checkpoint.trajectoryOffset < 0 ||
+        typeof checkpoint.projectSnapshotDigest !== 'string' ||
+        checkpoint.projectSnapshotDigest.length === 0 ||
+        typeof checkpoint.artifactManifestDigest !== 'string' ||
+        checkpoint.artifactManifestDigest.length === 0 ||
         !Array.isArray(checkpoint.acceptedEvidenceBundleIds) ||
         checkpoint.acceptedEvidenceBundleIds.some(
           (bundleId) => typeof bundleId !== 'string' || bundleId.length === 0,
-        )
+        ) ||
+        typeof checkpoint.createdAt !== 'string' ||
+        checkpoint.createdAt.length === 0
       ) {
-        throw new Error(`Invalid Runtime checkpoint evidence roots: ${entry.name}`);
+        throw new Error(`Invalid current Runtime checkpoint schema: ${entry.name}`);
       }
       for (const bundleId of checkpoint.acceptedEvidenceBundleIds) accepted.add(bundleId);
     }
