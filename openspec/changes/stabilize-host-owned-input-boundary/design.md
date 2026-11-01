@@ -2,7 +2,6 @@
 comet_change: stabilize-host-owned-input-boundary
 role: technical-design
 canonical_spec: openspec
-status: draft
 ---
 
 # Design
@@ -72,7 +71,7 @@ Git ignore 可以让当前指纹看不到文件，但同时让影响执行的规
 
 分类器默认拒绝，未知未跟踪路径仍是产品 dirty 输入。规则只接受仓库相对、正斜杠规范化、无 `..` 的精确文件或受限根路径；不提供任意否定规则和用户自定义通配绕过。
 
-策略由 composition/Host integration Contributor 提供，Git Adapter 只执行已编译策略。领域模型只认识 owner 和类别，不认识 Comet、Codex 等品牌。
+策略由 composition/Host integration Contributor 提供，Git Adapter 只执行已编译策略。领域模型只认识 owner 和类别，不认识 Comet、Codex 等品牌。Builtin integration 可以在插件层登记已知 Host 路径，团队插件可以通过现有 admission 与 composition 机制增加受审查规则；公共配置不开放任意 exclude glob。
 
 ### 2. 控制面不是被忽略，而是单独内容寻址
 
@@ -97,6 +96,8 @@ manifest 规范排序后计算 digest。Evidence fingerprint 和 Verification In
 - 未跟踪但未知的路径继续进入产品 dirty fingerprint；
 - ignored Runtime 状态维持既有边界，不被本 Change 重新枚举。
 
+已登记控制面规则必须直接枚举自己的精确文件或受限根，不能只依赖 `git ls-files --others --exclude-standard`，因为用户可能已经把 Host 文件加入本地 ignore。控制面枚举仍要看见这些执行输入；纯 Runtime 状态则继续由现有 ignore/Store 规则排除。
+
 首次选择、文件哈希和最终选择必须同时核对 product set、control-plane set、HEAD、tree 和 policy digest；任一集合变化都抛出 `RepositoryFingerprintChangedError`。
 
 ### 4. 架构治理检查产品面，不检查开发机物理存在性
@@ -108,7 +109,7 @@ manifest 规范排序后计算 digest。Evidence fingerprint 和 Verification In
 - 生产扫描目标引用旧标记或旧路径；
 - 本地路径与登记的 control-plane 规则不一致或类型不安全。
 
-只有未跟踪、未打包、由当前 Host policy 接纳并能形成稳定控制面摘要的本地安装路径可以存在。架构检查和 Evidence 分类共享同一策略编译器，避免两套路径语义漂移。
+架构治理不复刻 Runtime 的 control-plane manifest 编译器：它只用 `git ls-tree`/`git ls-files`、生产 source manifest 和 package contract 证明 external-exclusive 路径没有进入产品面。Evidence 分类器负责证明未跟踪本地文件是否属于受信控制面；未登记文件即使通过“未进入产品面”的架构检查，也仍会作为 unknown product dirty input 进入 Evidence。两套检查通过共享的 ownership rule schema 与交叉契约测试保持语义一致，而不是让 Node 脚本依赖构建后的 Runtime 状态。
 
 ### 5. composition 绑定策略提供者，Verification Input 绑定实际内容
 
@@ -121,6 +122,8 @@ composition identity 保存 Host input policy Contributor 的稳定 id、version
 
 不建立第二份生命周期状态；这些摘要沿用现有 Evidence fingerprint、Verification Input 和 Gate 比较链路。
 
+本项目尚未正式发布，因此 Evidence fingerprint manifest 从 schema v1 直接升级到 v2，Verification Input 从 v2 直接升级到 v3。旧开发 Evidence 明确报 unsupported schema 并重新采集，不做双读、双写或隐式迁移。
+
 ### 6. 首版内置规则保持最小且显式
 
 首版只登记 Repoctopus 自举已经真实遇到、且能够证明由外部 Host 安装的输入类别，例如 Host hooks/rules、Agent skill installation、Agent instruction entry 和 Skill lock。每条规则必须声明是否影响执行、预期文件类型、owner，以及该路径是仅限外部安装还是允许团队版本化。
@@ -132,6 +135,31 @@ composition identity 保存 Host input policy Contributor 的稳定 id、version
 每个已登记 Repository 使用相同策略编译规则但生成独立 product/control-plane fingerprint；Workspace Evidence 按 repository id 规范排序聚合。一个仓库发生 control-plane 漂移只失效引用该仓库的输入，但 Verify Profile 的完整仓库集合仍保持 fail-closed。
 
 Repository override、worktree 和 sibling repository 不得通过绝对路径或 symlink 共享同一控制面文件对象；检测到 root 外解析或重复不安全映射时拒绝采集。
+
+## Implementation Boundaries
+
+实现按现有领域、Service、Plugin 和平台端口分层：
+
+- `domains/evidence/repository-input-policy.ts`：纯值对象、规则规范化、分类结果与稳定摘要，不访问文件系统或 Git；
+- `services/repository-input-policies.ts`：Cordis registry，接纳 Contributor、保证规则 owner/identity 唯一并提供 composition snapshot；
+- `plugins/evidence/*-repository-input-policy.ts`：在插件层声明已知 Host integration 规则，外部品牌和具体路径只能出现在这里或机器治理配置；
+- `platform/git/evidence-fingerprint.ts`：读取 Git 身份、枚举规则限定路径、执行 race-safe hashing 与 root containment，返回 product/control-plane 分区；
+- `domains/evidence/fingerprint.ts`：规范化 Evidence fingerprint schema v2；
+- `services/evidence-coordinator.ts`：从 registry 取得 policy 并按登记仓库协调采集，不拥有路径规则；
+- `domains/change-lifecycle/verification-input.ts`：把每仓 policy/control-plane digest 投影到 Verification Input v3；
+- `scripts/architecture-governance.json` 与 `scripts/check-architecture.mjs`：只校验产品跟踪面、生产引用和发布边界，不读取 Cordis Runtime 状态。
+
+`EvidenceCoordinator` 继续是 Evidence Gate 的唯一协调者，`WorkflowRuns` 继续只接受现有 Gate；Repository Input Policy 不获得阶段推进、Run 写入或 Archive 决策权限。
+
+## Stop Conditions
+
+出现以下任一情况必须停止 Build 并回到 Design/规格评审，不得自行选择：
+
+- 现有 Plugin Descriptor/Team Plugin admission 无法在不扩大公共排除配置的前提下表达 policy Contributor；
+- package contract 与 Git tracked identity 对同一路径给出不可消解的不同所有权；
+- 某个 Host 输入会影响执行但无法获得稳定内容摘要或 Provider identity；
+- 多仓 root、worktree 或 symlink 使同一文件无法唯一归属一个 Repository；
+- 为通过 Archive 必须增加专用生命周期分支、搬移文件或跳过 Evidence 重验。
 
 ## Risks / Trade-offs
 

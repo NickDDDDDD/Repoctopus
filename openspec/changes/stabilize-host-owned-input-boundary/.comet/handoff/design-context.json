@@ -1,0 +1,16 @@
+{
+  "change": "stabilize-host-owned-input-boundary",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "085ac2a9c558ab44428343492ada8a66292268edc25fc3710fadbfa4929edd43",
+  "files": [
+    { "path": "openspec/changes/stabilize-host-owned-input-boundary/proposal.md", "sha256": "09baf893a6038871991dc4581cfa9f4316f41befff0d2844a4e28dd5979efa03" },
+    { "path": "openspec/changes/stabilize-host-owned-input-boundary/design.md", "sha256": "cfaafa9cca978b19b763b9d6992f853cb39dfeaab9a4669b745007db66a754db" },
+    { "path": "openspec/changes/stabilize-host-owned-input-boundary/tasks.md", "sha256": "91cc1ca54e838099c0dcfc2a0be53b78d3054d3061b8201cc9031e2e176a5a00" },
+    { "path": "openspec/changes/stabilize-host-owned-input-boundary/specs/implementation-evidence/spec.md", "sha256": "51d5ecbb2910b4eb1c02785d8b74be67a2c96b21f0593a788dc0fad8129751b2" },
+    { "path": "openspec/changes/stabilize-host-owned-input-boundary/specs/runtime-foundation/spec.md", "sha256": "5c034d0188b716f60cbd72c4a18aacf240691e23759cf26b5eb7fd2cf146b9a6" }
+  ]
+}
