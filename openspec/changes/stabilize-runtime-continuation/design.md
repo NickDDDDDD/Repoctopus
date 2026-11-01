@@ -1,3 +1,9 @@
+---
+comet_change: stabilize-runtime-continuation
+role: technical-design
+canonical_spec: openspec
+---
+
 # Design
 
 ## Context
