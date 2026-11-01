@@ -14,8 +14,9 @@ describe('Runtime invalidation dependency closure', () => {
         'verification-input',
       ],
       retainedIdentities: [
-        'build-configuration',
+        'build-strategy',
         'composition',
+        'execution-binding',
         'publication-provenance',
       ],
     });
@@ -26,9 +27,10 @@ describe('Runtime invalidation dependency closure', () => {
       invalidatedIdentities: ['publication-provenance'],
       retainedIdentities: [
         'approval-authority',
-        'build-configuration',
         'build-plan',
+        'build-strategy',
         'composition',
+        'execution-binding',
         'execution-checkpoint',
         'planning-semantic',
         'validation-observation',

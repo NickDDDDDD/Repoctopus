@@ -7,7 +7,8 @@ export type RuntimeIdentityKind =
   | 'validation-observation'
   | 'approval-authority'
   | 'composition'
-  | 'build-configuration'
+  | 'build-strategy'
+  | 'execution-binding'
   | 'build-plan'
   | 'execution-checkpoint'
   | 'verification-input'
@@ -18,7 +19,8 @@ export const RUNTIME_IDENTITY_KINDS: readonly RuntimeIdentityKind[] = [
   'validation-observation',
   'approval-authority',
   'composition',
-  'build-configuration',
+  'build-strategy',
+  'execution-binding',
   'build-plan',
   'execution-checkpoint',
   'verification-input',
@@ -30,7 +32,8 @@ export type RuntimeIdentityOwner =
   | 'specification-validation'
   | 'human-decision'
   | 'cordis-composition'
-  | 'build-configuration'
+  | 'build-strategy'
+  | 'execution-binding'
   | 'build-plan'
   | 'work-execution'
   | 'verification-authority'
@@ -48,7 +51,8 @@ export const IDENTITY_OWNERS = {
   'validation-observation': 'specification-validation',
   'approval-authority': 'human-decision',
   composition: 'cordis-composition',
-  'build-configuration': 'build-configuration',
+  'build-strategy': 'build-strategy',
+  'execution-binding': 'execution-binding',
   'build-plan': 'build-plan',
   'execution-checkpoint': 'work-execution',
   'verification-input': 'verification-authority',
@@ -60,9 +64,10 @@ export const IDENTITY_DEPENDENCIES = {
   'validation-observation': ['planning-semantic'],
   'approval-authority': ['planning-semantic'],
   composition: [],
-  'build-configuration': ['composition'],
-  'build-plan': ['planning-semantic', 'build-configuration'],
-  'execution-checkpoint': ['build-plan', 'composition'],
+  'build-strategy': [],
+  'execution-binding': ['build-strategy', 'composition'],
+  'build-plan': ['planning-semantic', 'build-strategy', 'execution-binding', 'composition'],
+  'execution-checkpoint': ['build-plan', 'execution-binding', 'composition'],
   'verification-input': ['planning-semantic', 'build-plan'],
   'publication-provenance': [],
 } as const satisfies Record<RuntimeIdentityKind, readonly RuntimeIdentityKind[]>;
@@ -72,7 +77,8 @@ const BASIS_FIELDS = {
   validationObservation: 'validation-observation',
   approvalAuthority: 'approval-authority',
   composition: 'composition',
-  buildConfiguration: 'build-configuration',
+  buildStrategy: 'build-strategy',
+  executionBinding: 'execution-binding',
   buildPlan: 'build-plan',
   executionCheckpoint: 'execution-checkpoint',
   verificationInput: 'verification-input',
@@ -87,7 +93,8 @@ export interface RuntimeIdentityBasis {
   validationObservation?: RuntimeIdentity;
   approvalAuthority?: RuntimeIdentity;
   composition?: RuntimeIdentity;
-  buildConfiguration?: RuntimeIdentity;
+  buildStrategy?: RuntimeIdentity;
+  executionBinding?: RuntimeIdentity;
   buildPlan?: RuntimeIdentity;
   executionCheckpoint?: RuntimeIdentity;
   verificationInput?: RuntimeIdentity;
