@@ -146,6 +146,7 @@ const OBSERVATION_NUMBER_KEYS = new Set<string>([
   'strategyRevision',
   'bindingRevision',
   'workflowRunDurationMs',
+  'durationMs',
 ]);
 const OBSERVATION_BOOLEAN_KEYS = new Set<string>([
   'redacted',
@@ -155,6 +156,31 @@ const OBSERVATION_BOOLEAN_KEYS = new Set<string>([
   'ruleExpected',
   'ruleTriggered',
 ]);
+const OBSERVATION_ENUMS: Readonly<Record<string, readonly string[]>> = {
+  correctionKind: ['changes-requested', 'outcome-rejection', 'task-reopen', 'repair-work'],
+  deliveryState: [
+    'development',
+    'verification_required',
+    'awaiting_approval',
+    'approved',
+    'publishing',
+    'partially_published',
+    'in_review',
+    'merged',
+    'rejected',
+    'repair_required',
+  ],
+  reason: [
+    'new-instance',
+    'existing-instance',
+    'target-unavailable',
+    'development-artifact-missing',
+    'protocol-handler-unavailable',
+    'launch-rejected',
+    'launch-timeout',
+    'platform-unsupported',
+  ],
+};
 
 export const TELEMETRY_ATTRIBUTES = [
   attribute(
@@ -218,6 +244,7 @@ export const TELEMETRY_ATTRIBUTES = [
       OBSERVATION_NUMBER_KEYS.has(key) ? 'high' : 'low',
       'public',
       `规范观测允许列表字段 ${key}`,
+      OBSERVATION_ENUMS[key] ? { values: OBSERVATION_ENUMS[key] } : {},
     ),
   ),
   attribute('service.name', 'string', 'shared-resource-factory', 'low', 'public', 'OTel 服务名'),

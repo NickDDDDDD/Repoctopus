@@ -159,7 +159,19 @@ export const OBSERVATION_ATTRIBUTE_KEYS = [
   'durationMs',
   'correctionKind',
   'deliveryState',
+  'reason',
 ] as const;
+
+const DESKTOP_ACTIVATION_REASONS = new Set([
+  'new-instance',
+  'existing-instance',
+  'target-unavailable',
+  'development-artifact-missing',
+  'protocol-handler-unavailable',
+  'launch-rejected',
+  'launch-timeout',
+  'platform-unsupported',
+]);
 
 function digest(value: unknown): `sha256:${string}` {
   return `sha256:${createHash('sha256').update(canonicalJson(value)).digest('hex')}`;
@@ -345,8 +357,16 @@ function attributes(event: TrajectoryEvent, context: ObservationContext) {
   result.stateVersion = event.stateVersion;
   if (DIGEST.test(event.compositionDigest)) result.compositionDigest = event.compositionDigest;
   for (const key of OBSERVATION_ATTRIBUTE_KEYS) {
+    if (key === 'reason') continue;
     const value = scalar(event.data[key]);
     if (value !== undefined) result[key] = value;
+  }
+  if (
+    event.type === 'desktop.activation' &&
+    typeof event.data.reason === 'string' &&
+    DESKTOP_ACTIVATION_REASONS.has(event.data.reason)
+  ) {
+    result.reason = event.data.reason;
   }
   const observationKind = scalar(event.data.observationKind);
   if (observationKind !== undefined) result.observationKind = observationKind;
