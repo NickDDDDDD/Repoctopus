@@ -3,10 +3,10 @@
 ## Reproducible subject
 
 - Change: `stabilize-runtime-continuation`
-- Tested implementation commit: `a92f91388acac924a87db782b7af3a065ec46d71`
+- Tested implementation commit: `6967ec5ad6f3a43b7bafe5da1b873ccd025cd543`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `1022539`
-- Package SHA-256: `fadec780465fda0e823ef658662b26913191bf5441b8bab7cf4f523473fdbb60`
+- Package bytes: `1023660`
+- Package SHA-256: `3a4b1c3aa9d42542a6baa22c62eec7904604d6a3277fb7a4ef3e126c6b8cdd80`
 - Controller: `@rpamis/comet@0.5.1`
 - Platform: Windows x64
 - Node.js: `24.21.0`
@@ -23,7 +23,7 @@ The tested implementation commit is the packaged-product boundary. Later commits
 6. Publication-only source OID changes do not change Specification Compatibility or return a Build Run to Design.
 7. Pre-release checkpoints and Planning snapshots that do not satisfy the current schema remain byte-preserving and read-only. Runtime does not use a generation, dual reader, fallback adapter, Store repair command, or current-content reconstruction.
 8. Run mutation, Work claim, Human Decision, invalidation, Host invocation ownership, and side-effect intent use revision/state-version fencing. Concurrent Runners converge on one committed invocation; a losing Runner does not call the Host.
-9. Business push, Business MR, and Specification MR publication persist `invoking` before the external call. An unknown result projects `reconcile / external-result-unknown`; continuation observes the exact OID/MR and never repeats the uncertain side effect.
+9. Business push/MR and Specification push/MR publication persist `invoking` before every external call. An unknown result projects `reconcile / external-result-unknown`; continuation observes the exact OID/MR and never repeats the uncertain side effect.
 
 ## Verification evidence
 
@@ -44,7 +44,7 @@ Executed on Windows with Node.js `24.21.0`:
 ```text
 npm run typecheck && npm run lint && npm test
   156 test files passed
-  695 tests passed; 2 skipped
+  696 tests passed; 2 skipped
   CLI and Desktop production builds passed
 
 npx vitest run test/managed-change-execution.e2e.test.ts
