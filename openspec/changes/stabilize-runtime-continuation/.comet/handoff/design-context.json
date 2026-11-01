@@ -1,0 +1,20 @@
+{
+  "change": "stabilize-runtime-continuation",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "6522ff2a569f30749af6b1be7777fde9933efeeb4abb94d1e341dc3ee37b7093",
+  "files": [
+    { "path": "openspec/changes/stabilize-runtime-continuation/proposal.md", "sha256": "d383717cb933c58926d6fc9d399cd73f2c9fd4c6212f9d7c2209d5f07956c94e" },
+    { "path": "openspec/changes/stabilize-runtime-continuation/design.md", "sha256": "7b2244956b6c0b3cd9dfd704844a1ce0638f65e570c1c161d483061adb56f798" },
+    { "path": "openspec/changes/stabilize-runtime-continuation/tasks.md", "sha256": "7ef041ffae16bad8840b713245f8a67ac8b8cb40f9cac96e666f7a340e67c924" },
+    { "path": "openspec/changes/stabilize-runtime-continuation/.openspec.yaml", "sha256": "dc6f4741968abfb0a9dacf7d64270b68e1dfee87dd63e5ad4e447d8bfd8a901e" },
+    { "path": "openspec/changes/stabilize-runtime-continuation/specs/change-lifecycle/spec.md", "sha256": "0031eb83f34218b818e944d39b8a028b280b6a3f7ca9c16ba5dbb31237b2e509" },
+    { "path": "openspec/changes/stabilize-runtime-continuation/specs/development-telemetry/spec.md", "sha256": "8985579a2f9bdfc136ad43b363c5558825908a8b0c5a308249d1c65df75a41fc" },
+    { "path": "openspec/changes/stabilize-runtime-continuation/specs/managed-work-execution/spec.md", "sha256": "26bde4c5149ffdea0e3e6f4be208eff018bc42c68abf23a8e8d5b6ee5d73b682" },
+    { "path": "openspec/changes/stabilize-runtime-continuation/specs/plugin-composition/spec.md", "sha256": "cb1e4b873d7ee42bea07fadfe2c88722ccf71fa87d12d90d040077d1dc97dc3c" },
+    { "path": "openspec/changes/stabilize-runtime-continuation/specs/specification-authority/spec.md", "sha256": "6006b58218201de98e8e05f6a594e9b2dd04ef3b5632892a73591906ee554894" }
+  ]
+}

@@ -31,9 +31,9 @@ Comet 0.5.1 的 Classic Runtime 提供了可验证的参考不变量：Task revi
 
 ## Decisions
 
-### 1. 用分层身份图替代聚合 planning snapshot 的跨域授权
+### 1. 用分层身份与显式依赖矩阵替代聚合 planning snapshot 的跨域授权
 
-Change Run v2 保存下列相互独立、内容寻址的身份；边只从消费者指向其实际输入：
+Change Run v2 保存下列相互独立、内容寻址的身份。依赖关系由固定类型字段和领域 reducer 显式声明，不建设可配置的通用图引擎：
 
 | 身份                            | 由谁产生                 | 只授权什么                                                                                                    |
 | ------------------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------- |
@@ -52,9 +52,9 @@ Remote identity 由 Git/平台 adapter 规范化：stable repository ID 优先�
 
 **替代方案：继续在一个 snapshot digest 中排除更多字段。** 拒绝。字段黑名单会随着新能力继续泄漏；按授权职责建模才能让新增字段默认不跨域生效。
 
-### 2. 在纯领域层增加 Dependency-aware Invalidation Planner
+### 2. 在纯领域层增加显式 Dependency-aware Invalidation Planner
 
-新增纯函数 planner，输入为旧 identity graph、当前权威 observations、current checkpoint、副作用边界和 lifecycle definition；输出为：
+新增纯函数 planner，输入为旧 typed identity basis、当前权威 observations、current checkpoint、副作用边界和 lifecycle definition；它使用由代码和测试固定的依赖矩阵，输出为：
 
 - `classification`: `semantic | approval-authority | composition | build-input | verification-input | publication | unknown`；
 - `disposition`: `continue | reconcile | invalidate | migration_required`；
@@ -73,7 +73,9 @@ Build Protocol 增加 `suspended-for-design` 状态和 invalidation ledger。返
 
 无法证明安全最小范围时使用 definition 声明的保守失效或 Human Decision，并记录原因；不得静默假设兼容。
 
-**替代方案：Design 回退继续删除 Build Protocol，再从 trajectory 推断可保留事实。** 拒绝。Trajectory 是审计历史，不应成为第二个当前状态 reducer；删除后重建也会再次引入重复批准和歧义 continuation。
+**替代方案一：建设通用 identity graph/规则引擎。** 拒绝。当前身份种类有限且属于核心安全不变量；可配置图会引入解析、迁移和错误配置面，偏离 Comet 的显式状态与 revision 模式。
+
+**替代方案二：Design 回退继续删除 Build Protocol，再从 trajectory 推断可保留事实。** 拒绝。Trajectory 是审计历史，不应成为第二个当前状态 reducer；删除后重建也会再次引入重复批准和歧义 continuation。
 
 ### 3. Continuation 只从已提交 checkpoint 产生
 
@@ -135,7 +137,7 @@ TDD 顺序先保存当前重复 approval/全量清空的失败黑盒，再实现
 
 ## Risks / Trade-offs
 
-- **[身份图增加状态模型复杂度]** → 每个 identity 由单一领域 owner 产生；依赖边使用有界枚举和 schema validator，禁止任意字符串关系。
+- **[分层身份增加状态模型复杂度]** → 每个 identity 由单一领域 owner 产生；依赖使用固定类型字段和穷尽式 reducer，不提供任意字符串边或用户可配置规则。
 - **[错误保留陈旧 completion]** → 默认 fail closed；只有完整输入依赖相同或显式 compatibility validator 通过才保留，未知范围走保守失效/Human Decision。
 - **[Design 阶段携带 suspended Build 造成双权威]** → suspended protocol 不可调度；current phase/current Work 仍是唯一执行权威，Build 事实仅作为待重新验证候选。
 - **[精确 adoption 被滥用为长期兼容层]** → 仅允许唯一直接前驱和有界 checkpoint；无通配、无 generation、无多版本执行分支，后续清除已无活动引用的 adoption。
@@ -144,7 +146,7 @@ TDD 顺序先保存当前重复 approval/全量清空的失败黑盒，再实现
 
 ## Migration Plan
 
-1. 先增加 v2 schema、identity constructors、dependency validator 与失败回归测试，不切换生产写路径。
+1. 先增加 v2 schema、identity constructors、显式 dependency matrix 与失败回归测试，不切换生产写路径。
 2. 实现 invalidation planner、continuation projector 和 composition adoption 判定，并用 property/contract tests 固定纯领域行为。
 3. 一次切换新 Run 写入、Planning/Build/Recovery/Telemetry adapter；删除旧聚合 planning invalidation 与全量清空分支。
 4. 旧预发布活动 Run 标记 `migration_required` 并保持只读；不执行自动转换。当前 Runtime 自身的开发继续由外部 Comet controller 管理，直到生产黑盒门槛通过。

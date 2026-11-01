@@ -2,7 +2,7 @@
 change_id: 0a3dc604-c502-4c90-aa54-43dfe47d7ba3
 workflow: full
 language: zh-CN
-phase: open
+phase: design
 context_compression: off
 build_mode: null
 build_pause: null
@@ -25,13 +25,13 @@ archive_confirmation: null
 archived: false
 bound_branch: codex/stabilize-runtime-comet-alignment
 direct_override: null
-handoff_context: null
-handoff_hash: null
+handoff_context: openspec/changes/stabilize-runtime-continuation/.comet/handoff/design-context.json
+handoff_hash: 6522ff2a569f30749af6b1be7777fde9933efeeb4abb94d1e341dc3ee37b7093
 classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: a83f429636411ab090f77a857d54e4362507d9dd5ff8ba6687cf16033ebaea32
+  hash: 9a87833cc5cea6bdff48fec3b0ec43e61dca960e09a0d07a6ca1d42fd8036636
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -58,17 +58,18 @@ run_checkpoint:
       branchStatus: pending
       buildMode: null
       buildPause: null
+      checkEpoch: 1
       classicMigration: null
       classicProfile: null
       contextCompression: off
       createdAt: 2026-11-01
       designDoc: null
       directOverride: null
-      handoffContext: null
-      handoffHash: null
+      handoffContext: openspec/changes/stabilize-runtime-continuation/.comet/handoff/design-context.json
+      handoffHash: 6522ff2a569f30749af6b1be7777fde9933efeeb4abb94d1e341dc3ee37b7093
       isolation: current
       language: zh-CN
-      phase: open
+      phase: design
       plan: null
       reviewMode: thorough
       subagentDispatch: null
@@ -79,10 +80,18 @@ run_checkpoint:
       verifyMode: null
       verifyResult: pending
       workflow: full
-    status: running
-    sequence: 1
+    status: waiting
+    sequence: 6
     actions:
       - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-f2c2abaa85d8fdcf385aef510663ce989bfa65c844ae51f490ada70f3cddd136
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: stabilize-runtime-continuation:1
         input:
           input:
@@ -92,25 +101,424 @@ run_checkpoint:
               ref: 3b997206-b91e-477e-b58f-c98230efd881
           outputs: {}
         inputHash: 2195bd27940fb3cd6681c35a97c7ad88c43e3bc7ecabfee8970f5d59b940a7aa
+        outcome:
+          actionId: stabilize-runtime-continuation:1
+          attempt: 1
+          claimToken: portable-f2c2abaa85d8fdcf385aef510663ce989bfa65c844ae51f490ada70f3cddd136
+          inputHash: 2195bd27940fb3cd6681c35a97c7ad88c43e3bc7ecabfee8970f5d59b940a7aa
+          outcomeId: ea79b4a3-3726-4181-91dd-470006a026e3
+          output:
+            event: open-complete
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: 9180afa544b783d4e7a5a425d3dd02206aafce83e29ff79221574b31eab37527
+            outcomeId: ea79b4a3-3726-4181-91dd-470006a026e3
         reconciliations: []
         ref: comet-open
         requiredCapabilities: []
         retry: manual
         runId: stabilize-runtime-continuation
-        status: pending
+        status: succeeded
         stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-99316a53c0d9daa1ebafb6492090b094f0058aa1e3c230ff6aace64fc359d283
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-runtime-continuation:4
+        input:
+          input:
+            change: stabilize-runtime-continuation
+            changeDir: openspec/changes/stabilize-runtime-continuation
+            workspaceBaseline:
+              ref: 3b997206-b91e-477e-b58f-c98230efd881
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-runtime-continuation
+                  changeDir: openspec/changes/stabilize-runtime-continuation
+                  workspaceBaseline:
+                    ref: 3b997206-b91e-477e-b58f-c98230efd881
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 9492d4bebb50edd07bc59ed8680edcb858b972e1742421cf85db90d90ca2605e
+                    ref: openspec/changes/stabilize-runtime-continuation
+            full.open.evidence:
+              contentHash: 9492d4bebb50edd07bc59ed8680edcb858b972e1742421cf85db90d90ca2605e
+              ref: openspec/changes/stabilize-runtime-continuation
+        inputHash: 5939f3785af9acf622fae4400e6454c90b3d8f12f091427fd438ca446c240010
+        outcome:
+          actionId: stabilize-runtime-continuation:4
+          attempt: 1
+          claimToken: portable-99316a53c0d9daa1ebafb6492090b094f0058aa1e3c230ff6aace64fc359d283
+          inputHash: 5939f3785af9acf622fae4400e6454c90b3d8f12f091427fd438ca446c240010
+          outcomeId: stabilize-runtime-continuation:4:1:executor-result
+          output:
+            contentHash: 9492d4bebb50edd07bc59ed8680edcb858b972e1742421cf85db90d90ca2605e
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: e2b67c539debb85d604dc86456eaef7072f8167f1c1c75135eb6338380cef0c5
+            outcomeId: stabilize-runtime-continuation:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-runtime-continuation
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-d7a496cd73044ce43214ae52d30a8b94fa12b71f444617dfa96eb4dba2569005
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-runtime-continuation:5
+        input:
+          input:
+            change: stabilize-runtime-continuation
+            changeDir: openspec/changes/stabilize-runtime-continuation
+            workspaceBaseline:
+              ref: 3b997206-b91e-477e-b58f-c98230efd881
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-runtime-continuation
+                  changeDir: openspec/changes/stabilize-runtime-continuation
+                  workspaceBaseline:
+                    ref: 3b997206-b91e-477e-b58f-c98230efd881
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 9492d4bebb50edd07bc59ed8680edcb858b972e1742421cf85db90d90ca2605e
+                    ref: openspec/changes/stabilize-runtime-continuation
+            full.open.evidence:
+              contentHash: 9492d4bebb50edd07bc59ed8680edcb858b972e1742421cf85db90d90ca2605e
+              ref: openspec/changes/stabilize-runtime-continuation
+            full.open.revalidate:
+              contentHash: 9492d4bebb50edd07bc59ed8680edcb858b972e1742421cf85db90d90ca2605e
+        inputHash: d01acbb76db6e00ebad8b3aa726a1589341651977e416206ab62e602edd5581a
+        outcome:
+          actionId: stabilize-runtime-continuation:5
+          attempt: 1
+          claimToken: portable-d7a496cd73044ce43214ae52d30a8b94fa12b71f444617dfa96eb4dba2569005
+          inputHash: d01acbb76db6e00ebad8b3aa726a1589341651977e416206ab62e602edd5581a
+          outcomeId: 6a1dc431-7978-4fff-9162-cbcf5d9bcf3d
+          output:
+            handoffContext: openspec/changes/stabilize-runtime-continuation/.comet/handoff/design-context.json
+            handoffHash: 6522ff2a569f30749af6b1be7777fde9933efeeb4abb94d1e341dc3ee37b7093
+            proposal: 候选设计：以类型化身份 basis 和代码固定的依赖矩阵拆分 planning
+              semantic、approval、composition、Build
+              configuration/plan、execution、verification 与 publication；纯领域
+              invalidation planner 只退役实际依赖变化身份的事实，Design 返工保留不可调度的 Build
+              候选并在新批准后逐层重验；continuation 只由 revision-bound checkpoint/CAS
+              投影，未知副作用先 reconcile；composition 使用精确直接前驱 adoption 或
+              migration_required；Trajectory/OTLP 记录失效范围与重复派发抑制。取舍：不建设通用 identity
+              graph/规则引擎，不从 trajectory 重建当前状态，不以重复人工批准代替技术兼容性；用显式 reducer
+              和较多契约测试换取可审计性与首版稳定性。风险：错误保留陈旧 completion、suspended Build
+              双权威、adoption 滥用和遥测基数；分别通过完整输入匹配且默认 fail closed、current phase/Work
+              唯一调度权、精确单前驱 adoption、低基数 labels 控制。Spec Patch：无；Open
+              已批准的行为契约不变，本阶段只收敛实现设计与任务表。
+            requirementsEvidence:
+              contentHash: 7b839450c56de8c4d9bd6511f5399087f39a1eb62104a76b0a70f76b974c68dd
+              ref: openspec/changes/stabilize-runtime-continuation
+            sourceEvidence:
+              contentHash: 299980c38adb35586d42f3740ca06b3727aad9e62b832bfe5ca991d723ee4010
+              ref: openspec/changes/stabilize-runtime-continuation
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: a5040de940cbfd8c505f255b2bbefca0a9cb01b6502eafe77abd12f5db80e5a6
+            outcomeId: 6a1dc431-7978-4fff-9162-cbcf5d9bcf3d
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-runtime-continuation
+        status: succeeded
+        stepId: full.design.handoff
         type: invoke_skill
     actionContexts:
       stabilize-runtime-continuation:1:
         results: {}
         sequence: 1
-    waits: []
+      stabilize-runtime-continuation:4:
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-runtime-continuation
+                  changeDir: openspec/changes/stabilize-runtime-continuation
+                  workspaceBaseline:
+                    ref: 3b997206-b91e-477e-b58f-c98230efd881
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 9492d4bebb50edd07bc59ed8680edcb858b972e1742421cf85db90d90ca2605e
+                    ref: openspec/changes/stabilize-runtime-continuation
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 9492d4bebb50edd07bc59ed8680edcb858b972e1742421cf85db90d90ca2605e
+              ref: openspec/changes/stabilize-runtime-continuation
+        sequence: 4
+      stabilize-runtime-continuation:5:
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-runtime-continuation
+                  changeDir: openspec/changes/stabilize-runtime-continuation
+                  workspaceBaseline:
+                    ref: 3b997206-b91e-477e-b58f-c98230efd881
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 9492d4bebb50edd07bc59ed8680edcb858b972e1742421cf85db90d90ca2605e
+                    ref: openspec/changes/stabilize-runtime-continuation
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 9492d4bebb50edd07bc59ed8680edcb858b972e1742421cf85db90d90ca2605e
+              ref: openspec/changes/stabilize-runtime-continuation
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 9492d4bebb50edd07bc59ed8680edcb858b972e1742421cf85db90d90ca2605e
+        sequence: 5
+    waits:
+      - id: stabilize-runtime-continuation:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-runtime-continuation
+            changeDir: openspec/changes/stabilize-runtime-continuation
+            workspaceBaseline:
+              ref: 3b997206-b91e-477e-b58f-c98230efd881
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 9492d4bebb50edd07bc59ed8680edcb858b972e1742421cf85db90d90ca2605e
+              ref: openspec/changes/stabilize-runtime-continuation
+        proposalHash: 819e3f4e9eda3bb49fcf51c8c30d08d1696f6f89e019e90f27b144c1f6098b79
+        choices:
+          - approved
+          - rejected
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 9492d4bebb50edd07bc59ed8680edcb858b972e1742421cf85db90d90ca2605e
+              ref: openspec/changes/stabilize-runtime-continuation
+        decision:
+          id: classic-open-9492d4bebb50edd07bc59ed8680edcb858b972e1742421cf85db90d90ca2605e
+          choice: approved
+          proposalHash: 819e3f4e9eda3bb49fcf51c8c30d08d1696f6f89e019e90f27b144c1f6098b79
+      - id: stabilize-runtime-continuation:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: pending
+        proposal:
+          input:
+            change: stabilize-runtime-continuation
+            changeDir: openspec/changes/stabilize-runtime-continuation
+            workspaceBaseline:
+              ref: 3b997206-b91e-477e-b58f-c98230efd881
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-runtime-continuation/.comet/handoff/design-context.json
+              handoffHash: 6522ff2a569f30749af6b1be7777fde9933efeeb4abb94d1e341dc3ee37b7093
+              proposal: 候选设计：以类型化身份 basis 和代码固定的依赖矩阵拆分 planning
+                semantic、approval、composition、Build
+                configuration/plan、execution、verification 与 publication；纯领域
+                invalidation planner 只退役实际依赖变化身份的事实，Design 返工保留不可调度的 Build
+                候选并在新批准后逐层重验；continuation 只由 revision-bound checkpoint/CAS
+                投影，未知副作用先 reconcile；composition 使用精确直接前驱 adoption 或
+                migration_required；Trajectory/OTLP 记录失效范围与重复派发抑制。取舍：不建设通用
+                identity graph/规则引擎，不从 trajectory 重建当前状态，不以重复人工批准代替技术兼容性；用显式
+                reducer 和较多契约测试换取可审计性与首版稳定性。风险：错误保留陈旧 completion、suspended Build
+                双权威、adoption 滥用和遥测基数；分别通过完整输入匹配且默认 fail closed、current
+                phase/Work 唯一调度权、精确单前驱 adoption、低基数 labels 控制。Spec Patch：无；Open
+                已批准的行为契约不变，本阶段只收敛实现设计与任务表。
+              requirementsEvidence:
+                contentHash: 7b839450c56de8c4d9bd6511f5399087f39a1eb62104a76b0a70f76b974c68dd
+                ref: openspec/changes/stabilize-runtime-continuation
+              sourceEvidence:
+                contentHash: 299980c38adb35586d42f3740ca06b3727aad9e62b832bfe5ca991d723ee4010
+                ref: openspec/changes/stabilize-runtime-continuation
+        proposalHash: 484aaecb9a9508f929a2da4ead16f51eebca38831d22029ac88a5d13af94c263
+        choices:
+          - approved
+          - rejected
+        results:
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/stabilize-runtime-continuation/.comet/handoff/design-context.json
+              handoffHash: 6522ff2a569f30749af6b1be7777fde9933efeeb4abb94d1e341dc3ee37b7093
+              proposal: 候选设计：以类型化身份 basis 和代码固定的依赖矩阵拆分 planning
+                semantic、approval、composition、Build
+                configuration/plan、execution、verification 与 publication；纯领域
+                invalidation planner 只退役实际依赖变化身份的事实，Design 返工保留不可调度的 Build
+                候选并在新批准后逐层重验；continuation 只由 revision-bound checkpoint/CAS
+                投影，未知副作用先 reconcile；composition 使用精确直接前驱 adoption 或
+                migration_required；Trajectory/OTLP 记录失效范围与重复派发抑制。取舍：不建设通用
+                identity graph/规则引擎，不从 trajectory 重建当前状态，不以重复人工批准代替技术兼容性；用显式
+                reducer 和较多契约测试换取可审计性与首版稳定性。风险：错误保留陈旧 completion、suspended Build
+                双权威、adoption 滥用和遥测基数；分别通过完整输入匹配且默认 fail closed、current
+                phase/Work 唯一调度权、精确单前驱 adoption、低基数 labels 控制。Spec Patch：无；Open
+                已批准的行为契约不变，本阶段只收敛实现设计与任务表。
+              requirementsEvidence:
+                contentHash: 7b839450c56de8c4d9bd6511f5399087f39a1eb62104a76b0a70f76b974c68dd
+                ref: openspec/changes/stabilize-runtime-continuation
+              sourceEvidence:
+                contentHash: 299980c38adb35586d42f3740ca06b3727aad9e62b832bfe5ca991d723ee4010
+                ref: openspec/changes/stabilize-runtime-continuation
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-runtime-continuation
+                  changeDir: openspec/changes/stabilize-runtime-continuation
+                  workspaceBaseline:
+                    ref: 3b997206-b91e-477e-b58f-c98230efd881
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 9492d4bebb50edd07bc59ed8680edcb858b972e1742421cf85db90d90ca2605e
+                    ref: openspec/changes/stabilize-runtime-continuation
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 9492d4bebb50edd07bc59ed8680edcb858b972e1742421cf85db90d90ca2605e
+              ref: openspec/changes/stabilize-runtime-continuation
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 9492d4bebb50edd07bc59ed8680edcb858b972e1742421cf85db90d90ca2605e
+    evidenceWaits:
+      - id: stabilize-runtime-continuation:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+        receipt:
+          ref: openspec/changes/stabilize-runtime-continuation
+          contentHash: 9492d4bebb50edd07bc59ed8680edcb858b972e1742421cf85db90d90ca2605e
+          submissionId: ceb2c586-863a-457c-b03b-c226b014e847
     ready: []
     joins: {}
-    outputs: {}
+    outputs:
+      full.design.handoff:
+        sequence: 5
+        value:
+          handoffContext: openspec/changes/stabilize-runtime-continuation/.comet/handoff/design-context.json
+          handoffHash: 6522ff2a569f30749af6b1be7777fde9933efeeb4abb94d1e341dc3ee37b7093
+          proposal: 候选设计：以类型化身份 basis 和代码固定的依赖矩阵拆分 planning
+            semantic、approval、composition、Build
+            configuration/plan、execution、verification 与 publication；纯领域
+            invalidation planner 只退役实际依赖变化身份的事实，Design 返工保留不可调度的 Build
+            候选并在新批准后逐层重验；continuation 只由 revision-bound checkpoint/CAS 投影，未知副作用先
+            reconcile；composition 使用精确直接前驱 adoption 或
+            migration_required；Trajectory/OTLP 记录失效范围与重复派发抑制。取舍：不建设通用 identity
+            graph/规则引擎，不从 trajectory 重建当前状态，不以重复人工批准代替技术兼容性；用显式 reducer
+            和较多契约测试换取可审计性与首版稳定性。风险：错误保留陈旧 completion、suspended Build
+            双权威、adoption 滥用和遥测基数；分别通过完整输入匹配且默认 fail closed、current phase/Work
+            唯一调度权、精确单前驱 adoption、低基数 labels 控制。Spec Patch：无；Open
+            已批准的行为契约不变，本阶段只收敛实现设计与任务表。
+          requirementsEvidence:
+            contentHash: 7b839450c56de8c4d9bd6511f5399087f39a1eb62104a76b0a70f76b974c68dd
+            ref: openspec/changes/stabilize-runtime-continuation
+          sourceEvidence:
+            contentHash: 299980c38adb35586d42f3740ca06b3727aad9e62b832bfe5ca991d723ee4010
+            ref: openspec/changes/stabilize-runtime-continuation
+      full.open:
+        sequence: 1
+        value:
+          event: open-complete
+      full.open.confirm:
+        sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: stabilize-runtime-continuation
+              changeDir: openspec/changes/stabilize-runtime-continuation
+              workspaceBaseline:
+                ref: 3b997206-b91e-477e-b58f-c98230efd881
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: 9492d4bebb50edd07bc59ed8680edcb858b972e1742421cf85db90d90ca2605e
+                ref: openspec/changes/stabilize-runtime-continuation
+      full.open.evidence:
+        sequence: 2
+        value:
+          contentHash: 9492d4bebb50edd07bc59ed8680edcb858b972e1742421cf85db90d90ca2605e
+          ref: openspec/changes/stabilize-runtime-continuation
+      full.open.revalidate:
+        sequence: 4
+        value:
+          contentHash: 9492d4bebb50edd07bc59ed8680edcb858b972e1742421cf85db90d90ca2605e
     children: []
     lineage: []
-  sourceRevision: 1
-  sourceHash: de9707efd50429663606eb2de4a69cd80ffd302dd21bb2c187cdb7aa5c641787
+  sourceRevision: 9
+  sourceHash: d9ce1113a61835121f4627c753b70c8fcb8e139fbf2af183d198f6f7bfb3224e
+check_epoch: 1
