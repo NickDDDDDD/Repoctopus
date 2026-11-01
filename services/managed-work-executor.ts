@@ -12,6 +12,7 @@ import type {
   WorkExecutionHostInvocation,
   WorkExecutionHostIdentity,
   WorkExecutionHostOutcome,
+  WorkExecutionRecovery,
   WorkClaimResult,
   WorkExecutionPacket,
 } from '../domains/work-execution/types.js';
@@ -129,15 +130,33 @@ function validateConsumedExecutionSkills(
   };
 }
 
-export interface ManagedWorkExecutionResult {
-  invocation: WorkExecutionHostInvocation;
-  hostOutcome: WorkExecutionHostOutcome;
-  acceptance: WorkOutcomeAcceptance | null;
-}
+export type ManagedWorkExecutionResult =
+  | {
+      executionAcquired: true;
+      invocation: WorkExecutionHostInvocation;
+      hostOutcome: WorkExecutionHostOutcome;
+      acceptance: WorkOutcomeAcceptance | null;
+    }
+  | {
+      executionAcquired: false;
+      invocation: WorkExecutionHostInvocation;
+      hostOutcome: null;
+      acceptance: null;
+    };
 
-export interface ExternalWorkClaimResult extends WorkClaimResult {
-  invocation: WorkExecutionHostInvocation;
-}
+export type ExternalWorkClaimResult =
+  WorkClaimResult &
+  (
+    | {
+      executionAcquired: true;
+      invocation: WorkExecutionHostInvocation;
+    }
+    | {
+      executionAcquired: false;
+      invocation: WorkExecutionHostInvocation;
+      recovery: WorkExecutionRecovery;
+    }
+  );
 
 export class ManagedWorkExecutor extends Service {
   static inject = [
@@ -204,7 +223,18 @@ export class ManagedWorkExecutor extends Service {
       packet: structuredClone(claim.packet.identity),
       startedAt,
     };
-    await this.ctx.workExecutionAuthority.markHostStarted(claim.intent, invocation);
+    const acquisition = await this.ctx.workExecutionAuthority.markHostStarted(
+      claim.intent,
+      invocation,
+    );
+    if (!acquisition.acquired) {
+      return {
+        executionAcquired: false,
+        invocation: acquisition.checkpoint.hostInvocation!,
+        hostOutcome: null,
+        acceptance: null,
+      };
+    }
     const session = this.ctx.workExecutionSessions.open({
       runId: claim.intent.runId,
       workId: claim.intent.workId,
@@ -259,18 +289,18 @@ export class ManagedWorkExecutor extends Service {
         outcome: hostOutcome,
       })
     ) {
-      return { invocation, hostOutcome, acceptance: null };
+      return { executionAcquired: true, invocation, hostOutcome, acceptance: null };
     }
     if (hostOutcome.status === 'unknown') {
       await this.ctx.workExecutionAuthority.markHostUnknown(claim.intent, hostOutcome.summary);
-      return { invocation, hostOutcome, acceptance: null };
+      return { executionAcquired: true, invocation, hostOutcome, acceptance: null };
     }
     if (
       (['build.plan', 'build.check'].includes(claim.packet.work.kind) &&
         hostOutcome.status === 'succeeded') ||
       submission.status === 'outcome'
     ) {
-      return { invocation, hostOutcome, acceptance: null };
+      return { executionAcquired: true, invocation, hostOutcome, acceptance: null };
     }
     const acceptance = await this.ctx.workDispatcher.acceptOutcome(
       this.ctx.workDispatcher.outcome(
@@ -279,7 +309,7 @@ export class ManagedWorkExecutor extends Service {
         hostOutcome.summary,
       ),
     );
-    return { invocation, hostOutcome, acceptance };
+    return { executionAcquired: true, invocation, hostOutcome, acceptance };
   }
 
   async claimExternal(request: WorkClaimRequest): Promise<ExternalWorkClaimResult> {
@@ -320,8 +350,19 @@ export class ManagedWorkExecutor extends Service {
       packet: structuredClone(claim.packet.identity),
       startedAt: new Date().toISOString(),
     };
-    await this.ctx.workExecutionAuthority.markHostStarted(claim.intent, invocation);
-    return { ...claim, invocation };
+    const acquisition = await this.ctx.workExecutionAuthority.markHostStarted(
+      claim.intent,
+      invocation,
+    );
+    if (!acquisition.acquired) {
+      return {
+        ...claim,
+        executionAcquired: false,
+        invocation: acquisition.checkpoint.hostInvocation!,
+        recovery: await this.ctx.workExecutionAuthority.recovery(request.runId),
+      };
+    }
+    return { ...claim, executionAcquired: true, invocation };
   }
 
   async acceptExternalOutcome(
@@ -384,18 +425,18 @@ export class ManagedWorkExecutor extends Service {
         outcome: hostOutcome,
       })
     ) {
-      return { invocation, hostOutcome, acceptance: null };
+      return { executionAcquired: true, invocation, hostOutcome, acceptance: null };
     }
     if (hostOutcome.status === 'unknown') {
       await this.ctx.workExecutionAuthority.markHostUnknown(intent, input.summary);
-      return { invocation, hostOutcome, acceptance: null };
+      return { executionAcquired: true, invocation, hostOutcome, acceptance: null };
     }
     if (
       (['build.plan', 'build.check'].includes(packet.packet.work.kind) &&
         hostOutcome.status === 'succeeded') ||
       submission.status === 'outcome'
     ) {
-      return { invocation, hostOutcome, acceptance: null };
+      return { executionAcquired: true, invocation, hostOutcome, acceptance: null };
     }
     const acceptance = await this.ctx.workDispatcher.acceptOutcome(
       this.ctx.workDispatcher.outcome(
@@ -404,7 +445,7 @@ export class ManagedWorkExecutor extends Service {
         input.summary,
       ),
     );
-    return { invocation, hostOutcome, acceptance };
+    return { executionAcquired: true, invocation, hostOutcome, acceptance };
   }
 
   async reconcile(runId: string): Promise<ManagedWorkExecutionResult | null> {
@@ -455,7 +496,7 @@ export class ManagedWorkExecutor extends Service {
         outcome.status === 'succeeded') ||
       submission.status === 'outcome'
     ) {
-      return { invocation, hostOutcome: outcome, acceptance: null };
+      return { executionAcquired: true, invocation, hostOutcome: outcome, acceptance: null };
     }
     const acceptance = await this.ctx.workDispatcher.acceptOutcome(
       this.ctx.workDispatcher.outcome(
@@ -464,7 +505,7 @@ export class ManagedWorkExecutor extends Service {
         outcome.summary,
       ),
     );
-    return { invocation, hostOutcome: outcome, acceptance };
+    return { executionAcquired: true, invocation, hostOutcome: outcome, acceptance };
   }
 
   private externalHostIdentity(

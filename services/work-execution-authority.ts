@@ -28,6 +28,7 @@ import {
   createWorkExecutionSubmission,
 } from '../domains/work-execution/submission.js';
 import type { WorkExecutionSubmissionRejectionCode } from '../domains/work-execution/types.js';
+import { canonicalJson } from '../domains/workflow-contract/canonical.js';
 
 function digest(...parts: readonly string[]): `sha256:${string}` {
   return `sha256:${createHash('sha256').update(parts.join('\0')).digest('hex')}`;
@@ -706,23 +707,72 @@ export class WorkExecutionAuthority extends Service {
   async markHostStarted(
     intent: ActionIntent,
     invocation: WorkExecutionHostInvocation,
-  ): Promise<WorkExecutionCheckpoint> {
-    const result = await this.transition(
+  ): Promise<{ acquired: boolean; checkpoint: WorkExecutionCheckpoint }> {
+    const result = await this.ctx.runStore.commitGuarded(
       intent.runId,
-      intent.intentId,
-      ['context-delivered'],
-      'work.host-started',
-      'invoking',
-      'wait',
-      {
-        workId: intent.workId,
-        attempt: intent.attempt,
-        invocationId: invocation.invocationId,
-        hostId: invocation.host.id,
-        packetDigest: invocation.packet.packetDigest,
+      ({ state, trajectory }) => {
+        const current = state.workExecution;
+        if (!current || current.intentId !== intent.intentId) {
+          throw new Error('Host start does not match the authoritative Run claim');
+        }
+        if (
+          state.changeLifecycle &&
+          (state.changeLifecycle.checkEpoch !== current.checkEpoch ||
+            state.changeLifecycle.currentWork?.workId !== current.workId)
+        ) {
+          throw new Error('Stale Host start cannot cross a lifecycle checkEpoch boundary');
+        }
+        if (current.hostInvocation) {
+          const stable = (value: WorkExecutionHostInvocation) => ({
+            invocationId: value.invocationId,
+            host: value.host,
+            packet: value.packet,
+          });
+          if (canonicalJson(stable(current.hostInvocation)) !== canonicalJson(stable(invocation))) {
+            throw new Error('Host invocation conflicts with the persisted execution owner');
+          }
+          return {
+            value: { acquired: false, checkpoint: structuredClone(current) },
+          };
+        }
+        if (current.status !== 'context-delivered') {
+          throw new Error(`Work execution cannot move from ${current.status} to invoking`);
+        }
+        const timestamp = new Date().toISOString();
+        const checkpoint: WorkExecutionCheckpoint = {
+          ...current,
+          status: 'invoking',
+          continuation: 'wait',
+          hostInvocation: structuredClone(invocation),
+          updatedAt: timestamp,
+        };
+        const nextState: RunState = {
+          ...state,
+          workExecution: checkpoint,
+          stateVersion: state.stateVersion + 1,
+          updatedAt: timestamp,
+        };
+        return {
+          state: nextState,
+          event: executionEvent({
+            state: nextState,
+            sequence: trajectory.length + 1,
+            timestamp,
+            type: 'work.host-started',
+            identity: [current.workId, String(current.attempt), invocation.invocationId],
+            data: {
+              workId: intent.workId,
+              attempt: intent.attempt,
+              invocationId: invocation.invocationId,
+              hostId: invocation.host.id,
+              packetDigest: invocation.packet.packetDigest,
+            },
+          }),
+          value: { acquired: true, checkpoint: structuredClone(checkpoint) },
+        };
       },
-      { hostInvocation: structuredClone(invocation) },
     );
+    if (result.acquired) await this.flushTelemetry(intent.runId);
     return result;
   }
 

@@ -68,6 +68,74 @@ function recoveryAuthority(run: RunState, input: { active?: boolean; corrupt?: b
 }
 
 describe('Work execution recovery classification', () => {
+  it('grants a durable Host invocation to exactly one concurrent Runner', async () => {
+    const initial = checkpoint('context-delivered');
+    let run = {
+      ...state({ execution: initial }),
+      stateVersion: 7,
+      composition: { compositionDigest: digest('9') },
+      updatedAt: '2026-10-25T00:00:00.000Z',
+    } as RunState;
+    const trajectory: TrajectoryEvent[] = [];
+    const authority = Object.create(WorkExecutionAuthority.prototype) as WorkExecutionAuthority;
+    Object.defineProperty(authority, 'ctx', {
+      value: {
+        runStore: {
+          commitGuarded: vi.fn(
+            <T>(
+              _runId: string,
+              reduce: (input: { state: RunState; trajectory: TrajectoryEvent[] }) => {
+                state?: RunState;
+                event?: TrajectoryEvent;
+                value: T;
+              },
+            ): Promise<T> => {
+              const result = reduce({ state: run, trajectory });
+              if (result.state) run = result.state;
+              if (result.event) trajectory.push(result.event);
+              return Promise.resolve(result.value);
+            },
+          ),
+        },
+      },
+    });
+    const invocation: WorkExecutionHostInvocation = {
+      schemaVersion: 1,
+      invocationId: digest('f'),
+      host: {
+        schemaVersion: 1,
+        id: 'coordinator-1',
+        version: '1',
+        codeDigest: digest('1'),
+        capabilities: [],
+        actionKinds: ['agent'],
+        reconcile: true,
+      },
+      packet: initial.packet,
+      startedAt: '2026-10-25T00:01:00.000Z',
+    };
+    const intent = {
+      runId: run.runId,
+      workId: initial.workId,
+      attempt: initial.attempt,
+      checkEpoch: initial.checkEpoch,
+      intentId: initial.intentId,
+    } as never;
+
+    const results = await Promise.all([
+      authority.markHostStarted(intent, invocation),
+      authority.markHostStarted(intent, { ...invocation, startedAt: '2026-10-25T00:02:00.000Z' }),
+    ]);
+
+    expect(results.map((result) => result.acquired)).toEqual([true, false]);
+    expect(run.stateVersion).toBe(8);
+    expect(run.workExecution).toMatchObject({
+      status: 'invoking',
+      hostInvocation: { invocationId: invocation.invocationId },
+    });
+    expect(trajectory.filter((event) => event.type === 'work.host-started')).toHaveLength(1);
+  });
+
   it('redelivers the authoritative frozen packet without invoking the context assembler', async () => {
     const packet = { identity: checkpoint('claimed').packet } as WorkExecutionPacket;
     const loadAuthoritativePacket = vi.fn().mockResolvedValue({ intent: {}, packet });

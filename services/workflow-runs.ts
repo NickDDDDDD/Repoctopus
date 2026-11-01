@@ -1784,7 +1784,7 @@ export class WorkflowRuns extends Service {
                   : work.capabilities.includes('specification.write')
                     ? 'specification'
                     : 'manual';
-            await this.ctx.managedWorkExecutor.execute({
+            const dispatched = await this.ctx.managedWorkExecutor.execute({
               runId,
               adapter,
               ...(execution?.workId === work.workId ? { attempt: execution.attempt + 1 } : {}),
@@ -1795,6 +1795,19 @@ export class WorkflowRuns extends Service {
                 authenticated: true,
               },
             });
+            if (!dispatched.executionAcquired) {
+              return {
+                value: await this.coordinator.status(runId),
+                diagnostics: [
+                  {
+                    level: 'info',
+                    code: 'change.work-host-already-invoking',
+                    message:
+                      'Another Runner owns the persisted Host invocation; this pull did not execute the Host',
+                  },
+                ],
+              };
+            }
             return {
               value: await this.coordinator.status(runId),
               diagnostics: [
