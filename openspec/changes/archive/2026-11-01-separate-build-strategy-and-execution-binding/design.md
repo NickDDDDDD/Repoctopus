@@ -2,6 +2,8 @@
 comet_change: separate-build-strategy-and-execution-binding
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-01-separate-build-strategy-and-execution-binding
+status: final
 ---
 # Design
 

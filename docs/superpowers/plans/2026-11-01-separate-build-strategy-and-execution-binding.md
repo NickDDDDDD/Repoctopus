@@ -2,6 +2,7 @@
 change: separate-build-strategy-and-execution-binding
 design-doc: openspec/changes/separate-build-strategy-and-execution-binding/design.md
 base-ref: bafbb1b94627e4ade3692a6a04f0e8f7f31c6542
+archived-with: 2026-11-01-separate-build-strategy-and-execution-binding
 ---
 
 # Separate Build Strategy and Execution Binding Build Plan
