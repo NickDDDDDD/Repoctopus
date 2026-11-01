@@ -260,6 +260,7 @@ export interface ChangeLifecycleTransitionFact {
   revision: number;
   from: { phase: ChangePhase; status: RunStatus; checkEpoch: number };
   to: { phase: ChangePhase; status: RunStatus; checkEpoch: number };
+  previousWorkId?: string | null;
   workId: string | null;
   waitId: string | null;
   work?: Pick<WorkDescriptor, 'workId' | 'kind' | 'taskId' | 'validatorProfile'> | null;
@@ -614,6 +615,7 @@ export function applyChangeLifecycleTransition(options: {
         checkEpoch: options.current.checkEpoch,
       },
       to: { phase: snapshot.phase, status: snapshot.status, checkEpoch: snapshot.checkEpoch },
+      previousWorkId: options.current.currentWork?.workId ?? null,
       workId: snapshot.currentWork?.workId ?? null,
       waitId: snapshot.waitCondition?.waitId ?? null,
       work: snapshot.currentWork

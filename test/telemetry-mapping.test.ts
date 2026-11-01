@@ -6,6 +6,7 @@ import { createChangeLifecycleSnapshot } from '../domains/change-lifecycle/defin
 import { startRun } from '../domains/engine/loop.js';
 import type { TelemetryBatch } from '../domains/runtime/types.js';
 import type { TrajectoryEvent } from '../domains/trajectory/types.js';
+import { TELEMETRY_ATTRIBUTES } from '../domains/telemetry/observation-contract.js';
 import {
   acceptedChangeLifecycleTelemetry,
   projectChangeLifecycleTelemetry,
@@ -236,5 +237,10 @@ describe('telemetry mapping', () => {
       'repoctopus.execution.result': 'succeeded',
       'repoctopus.execution.continuation': 'unknown',
     });
+    const publicAttributes = new Set(TELEMETRY_ATTRIBUTES.map((item) => item.name));
+    expect(Object.keys(attributes).filter((name) => !publicAttributes.has(name))).toEqual([]);
+    expect(
+      Object.keys(executionMetricAttributes(event)!).filter((name) => !publicAttributes.has(name)),
+    ).toEqual([]);
   });
 });

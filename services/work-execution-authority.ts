@@ -4,6 +4,7 @@ import { Service, type Context } from '@deepseek-ai/cordis';
 
 import type { ActionIntent, ActionReceipt, ClaimedActionOutcome } from '../domains/action/types.js';
 import type { RunState } from '../domains/engine/types.js';
+import { createRuleEvaluationReceipt } from '../domains/telemetry/rule-evaluation.js';
 import type { WorkDescriptor } from '../domains/change-lifecycle/transition.js';
 import type { TrajectoryEvent, TrajectoryEventType } from '../domains/trajectory/types.js';
 import type {
@@ -23,6 +24,11 @@ function digest(...parts: readonly string[]): `sha256:${string}` {
 
 function rawDigest(...parts: readonly string[]): string {
   return createHash('sha256').update(parts.join('\0')).digest('hex');
+}
+
+function skillCategory(provider: string): 'builtin' | 'team' | 'custom' {
+  if (provider === 'repoctopus-lifecycle' || provider === 'matt-builtins') return 'builtin';
+  return provider.startsWith('team-') || provider.startsWith('team:') ? 'team' : 'custom';
 }
 
 function executionEvent(input: {
@@ -220,6 +226,7 @@ export class WorkExecutionAuthority extends Service {
     packet: WorkExecutionPacket,
     stage: 'resolved' | 'delivered' | 'consumed',
     consumedLayerDigests?: readonly `sha256:${string}`[],
+    invocationId?: string,
   ): Promise<void> {
     const eligible = packet.context.layers.filter(
       (layer) =>
@@ -227,6 +234,16 @@ export class WorkExecutionAuthority extends Service {
         (stage !== 'consumed' || consumedLayerDigests?.includes(layer.digest)),
     );
     for (const layer of eligible) {
+      const snapshot =
+        packet.work.actionSkill?.name === layer.source
+          ? packet.work.actionSkill
+          : packet.work.augmentationSkills.find((candidate) => candidate.name === layer.source);
+      const provider =
+        snapshot?.provider ?? (layer.source === 'diagnosing-bugs' ? 'matt-builtins' : null);
+      if (!provider) throw new Error(`Skill layer has no authoritative snapshot: ${layer.source}`);
+      if (stage === 'consumed' && !invocationId) {
+        throw new Error('Consumed Skill fact requires the authoritative Host invocation');
+      }
       await this.recordEvent(
         packet.claim.runId,
         packet.claim.intentId,
@@ -237,8 +254,10 @@ export class WorkExecutionAuthority extends Service {
           workKind: packet.work.kind,
           attempt: packet.claim.attempt,
           packetDigest: packet.identity.packetDigest,
+          ...(invocationId ? { invocationId } : {}),
           skillName: layer.source,
           skillRole: layer.kind === 'action-skill' ? 'action' : 'augmentation',
+          skillCategory: skillCategory(provider),
           result: stage,
         },
         [layer.digest, stage],
@@ -390,14 +409,80 @@ export class WorkExecutionAuthority extends Service {
       'validator.completed',
       'validated',
       input.continuation,
-      {
-        workId: input.intent.workId,
-        attempt: input.intent.attempt,
-        validatorId: input.validatorId,
-        result: 'accepted',
-        continuation: input.continuation,
+      (state, current) => {
+        const profile = state.changeLifecycle?.currentWork?.validatorProfile;
+        if (!profile || profile.id !== input.validatorId) {
+          throw new Error('Validator result does not match the active Work profile');
+        }
+        return {
+          workId: input.intent.workId,
+          attempt: input.intent.attempt,
+          validatorId: input.validatorId,
+          result: 'accepted',
+          continuation: input.continuation,
+          ruleEvaluation: createRuleEvaluationReceipt({
+            runId: input.intent.runId,
+            workId: input.intent.workId,
+            attempt: input.intent.attempt,
+            checkEpoch: current.checkEpoch,
+            rule: {
+              id: profile.id,
+              version: profile.version,
+              digest: profile.digest,
+              category: 'builtin',
+            },
+            evaluator: { id: profile.id, version: profile.version },
+            applicable: true,
+            expected: true,
+            triggered: true,
+            result: 'passed',
+          }),
+        };
       },
       { validatorId: input.validatorId },
+    );
+  }
+
+  async markValidationRejected(input: {
+    intent: ActionIntent;
+    validatorId: string;
+  }): Promise<void> {
+    await this.recordEvent(
+      input.intent.runId,
+      input.intent.intentId,
+      'validator.completed',
+      (state, current) => {
+        const profile = state.changeLifecycle?.currentWork?.validatorProfile;
+        if (!profile || profile.id !== input.validatorId) {
+          throw new Error('Validator result does not match the active Work profile');
+        }
+        return {
+          workId: input.intent.workId,
+          attempt: input.intent.attempt,
+          checkEpoch: current.checkEpoch,
+          validatorId: input.validatorId,
+          result: 'rejected',
+          continuation: 'execute',
+          ruleEvaluation: createRuleEvaluationReceipt({
+            runId: input.intent.runId,
+            workId: input.intent.workId,
+            attempt: input.intent.attempt,
+            checkEpoch: current.checkEpoch,
+            rule: {
+              id: profile.id,
+              version: profile.version,
+              digest: profile.digest,
+              category: 'builtin',
+            },
+            evaluator: { id: profile.id, version: profile.version },
+            applicable: true,
+            expected: true,
+            triggered: true,
+            result: 'violated',
+          }),
+        };
+      },
+      [input.validatorId, String(input.intent.checkEpoch), 'rejected'],
     );
   }
 
@@ -619,7 +704,9 @@ export class WorkExecutionAuthority extends Service {
     type: TrajectoryEventType,
     status: WorkExecutionCheckpoint['status'],
     continuation: WorkContinuationKind,
-    data: Record<string, unknown>,
+    data:
+      | Record<string, unknown>
+      | ((state: RunState, current: WorkExecutionCheckpoint) => Record<string, unknown>),
     additions: Partial<WorkExecutionCheckpoint> = {},
   ): Promise<WorkExecutionCheckpoint> {
     const result = await this.ctx.runStore.commitGuarded(runId, ({ state, trajectory }) => {
@@ -638,6 +725,7 @@ export class WorkExecutionAuthority extends Service {
         if (current.status === status) return { value: structuredClone(current) };
         throw new Error(`Work execution cannot move from ${current.status} to ${status}`);
       }
+      const eventData = typeof data === 'function' ? data(state, current) : data;
       const timestamp = new Date().toISOString();
       const checkpoint: WorkExecutionCheckpoint = {
         ...current,
@@ -660,7 +748,7 @@ export class WorkExecutionAuthority extends Service {
           timestamp,
           type,
           identity: [current.workId, String(current.attempt), intentId, status],
-          data,
+          data: eventData,
         }),
         value: structuredClone(checkpoint),
       };
@@ -673,7 +761,9 @@ export class WorkExecutionAuthority extends Service {
     runId: string,
     intentId: string,
     type: TrajectoryEventType,
-    data: Record<string, unknown>,
+    data:
+      | Record<string, unknown>
+      | ((state: RunState, current: WorkExecutionCheckpoint) => Record<string, unknown>),
     identity: readonly string[],
   ): Promise<void> {
     await this.ctx.runStore.commitGuarded(runId, ({ state, trajectory }) => {
@@ -693,6 +783,7 @@ export class WorkExecutionAuthority extends Service {
         return { value: undefined };
       }
       const timestamp = new Date().toISOString();
+      const eventData = typeof data === 'function' ? data(state, current) : data;
       const nextState: RunState = {
         ...state,
         stateVersion: state.stateVersion + 1,
@@ -706,7 +797,7 @@ export class WorkExecutionAuthority extends Service {
           timestamp,
           type,
           identity: [current.workId, String(current.attempt), ...identity],
-          data,
+          data: eventData,
         }),
         value: undefined,
       };

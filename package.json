@@ -40,9 +40,10 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "build:desktop": "node scripts/build-desktop.mjs",
+    "generate:telemetry-reference": "node scripts/generate-telemetry-reference.mjs",
     "desktop:prepare": "node scripts/prepare-desktop.mjs",
     "desktop:smoke": "npm run desktop:prepare && npm run build:desktop && electron scripts/smoke-desktop.mjs",
-    "check:generated": "node scripts/build.mjs --check",
+    "check:generated": "node scripts/build.mjs --check && node scripts/generate-telemetry-reference.mjs --check",
     "check:brand": "node scripts/check-brand.mjs",
     "check:architecture": "node scripts/check-architecture.mjs",
     "check:provenance": "node scripts/check-provenance.mjs",

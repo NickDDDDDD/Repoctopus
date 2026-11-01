@@ -30,6 +30,7 @@ const EXECUTION_DATA_KEYS = new Set([
   'validatorId',
   'result',
   'skillRole',
+  'skillCategory',
   'skillName',
   'operationKind',
   'operationId',
@@ -168,23 +169,13 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
       ) {
         normalized = 'unknown';
       } else if (
-        key === 'skillName' &&
+        key === 'skillCategory' &&
         typeof value === 'string' &&
-        ![
-          'repoctopus-open-change',
-          'repoctopus-design-change',
-          'repoctopus-build-task',
-          'repoctopus-verify-change',
-          'repoctopus-archive-change',
-          'grilling',
-          'tdd',
-          'codebase-design',
-          'diagnosing-bugs',
-          'code-review',
-          'pr',
-        ].includes(value)
+        !['builtin', 'team', 'custom'].includes(value)
       ) {
         normalized = 'custom';
+      } else if (key === 'skillName' && typeof value === 'string' && !safeExecutionId(value)) {
+        continue;
       }
       const safe = scalar(normalized);
       if (safe !== undefined) attributes[`repoctopus.execution.${key}`] = safe;

@@ -717,6 +717,10 @@ export class WorkflowRuns extends Service {
       fact: { receiptId: receipt.receiptId, changeDigest: change.changeDigest },
     });
     if (!validation.accepted) {
+      await this.ctx.workExecutionAuthority.markValidationRejected({
+        intent,
+        validatorId: work.validatorProfile.id,
+      });
       const blocked = await this.coordinator.acceptChangeObservation(state.runId, {
         kind: 'open-gate',
         result: 'blocked',
@@ -1259,6 +1263,10 @@ export class WorkflowRuns extends Service {
               },
             });
             if (!validation.accepted) {
+              await this.ctx.workExecutionAuthority.markValidationRejected({
+                intent: await this.ctx.workExecutionAuthority.loadIntent(runId),
+                validatorId: lifecycle.currentWork.validatorProfile.id,
+              });
               throw new Error(`Design Validator rejected: ${validation.diagnostic}`);
             }
             await this.ctx.workExecutionAuthority.markValidated({
@@ -1575,6 +1583,10 @@ export class WorkflowRuns extends Service {
         },
       });
       if (!validatorResult.accepted) {
+        await this.ctx.workExecutionAuthority.markValidationRejected({
+          intent: await this.ctx.workExecutionAuthority.loadIntent(input.runId),
+          validatorId: lifecycle.currentWork.validatorProfile.id,
+        });
         throw new Error(`Build Validator rejected: ${validatorResult.diagnostic}`);
       }
       await this.ctx.workExecutionAuthority.markValidated({
@@ -1645,6 +1657,10 @@ export class WorkflowRuns extends Service {
           fact: { receiptId: execution.receiptId, review: 'host-succeeded' },
         });
         if (!validation.accepted) {
+          await this.ctx.workExecutionAuthority.markValidationRejected({
+            intent: await this.ctx.workExecutionAuthority.loadIntent(input.runId),
+            validatorId: current.currentWork.validatorProfile.id,
+          });
           throw new Error(`Verify Validator rejected: ${validation.diagnostic}`);
         }
         await this.ctx.workExecutionAuthority.markValidated({
@@ -2017,6 +2033,10 @@ export class WorkflowRuns extends Service {
           },
         });
         if (!validation.accepted) {
+          await this.ctx.workExecutionAuthority.markValidationRejected({
+            intent: await this.ctx.workExecutionAuthority.loadIntent(input.runId),
+            validatorId: currentWork.validatorProfile.id,
+          });
           throw new Error(`Archive Validator rejected: ${validation.diagnostic}`);
         }
         await this.ctx.workExecutionAuthority.markValidated({

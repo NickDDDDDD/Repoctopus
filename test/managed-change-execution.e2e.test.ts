@@ -551,9 +551,8 @@ describe('managed Change execution production composition', () => {
           publicationId: 'specification',
           role: 'specification',
           repositoryId: 'workspace',
-          remoteIdentity: project.repositories.find(
-            (repository) => repository.id === 'workspace',
-          )!.remoteIdentity!,
+          remoteIdentity: project.repositories.find((repository) => repository.id === 'workspace')!
+            .remoteIdentity!,
           remote: 'origin',
           sourceBranch: 'spec/managed-blackbox',
           targetBranch: 'main',
@@ -618,6 +617,33 @@ describe('managed Change execution production composition', () => {
         cursor = types.indexOf(type as (typeof types)[number], cursor + 1);
         expect(cursor, type).toBeGreaterThan(-1);
       }
+      const consumedSkills = inspection.trajectory.filter(
+        (event) => event.type === 'skill.consumed',
+      );
+      expect(consumedSkills.length).toBeGreaterThan(0);
+      expect(
+        consumedSkills.every(
+          (event) =>
+            typeof event.data.invocationId === 'string' &&
+            ['builtin', 'team', 'custom'].includes(String(event.data.skillCategory)),
+        ),
+      ).toBe(true);
+      const validatorEvents = inspection.trajectory.filter(
+        (event) => event.type === 'validator.completed',
+      );
+      expect(validatorEvents.length).toBeGreaterThan(0);
+      expect(
+        validatorEvents.every((event) => {
+          const receipt = event.data.ruleEvaluation as
+            | { receiptId?: unknown; rule?: { digest?: unknown }; evaluator?: unknown }
+            | undefined;
+          return (
+            typeof receipt?.receiptId === 'string' &&
+            typeof receipt.rule?.digest === 'string' &&
+            receipt.evaluator !== undefined
+          );
+        }),
+      ).toBe(true);
       expect(JSON.stringify(inspection)).not.toContain('Prove managed execution');
       capture.dispose();
     } finally {

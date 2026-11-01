@@ -123,6 +123,7 @@ export class ManagedWorkExecutor extends Service {
       claim.packet,
       'consumed',
       hostOutcome.consumedLayerDigests,
+      hostOutcome.invocationId,
     );
     if (hostOutcome.status === 'unknown') {
       await this.ctx.workExecutionAuthority.markHostUnknown(claim.intent, hostOutcome.summary);
@@ -189,6 +190,7 @@ export class ManagedWorkExecutor extends Service {
       packet.packet,
       'consumed',
       hostOutcome.consumedLayerDigests,
+      hostOutcome.invocationId,
     );
     if (hostOutcome.status === 'unknown') {
       await this.ctx.workExecutionAuthority.markHostUnknown(intent, input.summary);
@@ -239,6 +241,7 @@ export class ManagedWorkExecutor extends Service {
       packet.packet,
       'consumed',
       outcome.consumedLayerDigests,
+      outcome.invocationId,
     );
     const acceptance = await this.ctx.workDispatcher.acceptOutcome(
       this.ctx.workDispatcher.outcome(

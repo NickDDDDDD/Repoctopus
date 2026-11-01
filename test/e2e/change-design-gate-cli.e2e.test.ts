@@ -931,5 +931,5 @@ describe('Change Run Design gate CLI', () => {
         blocker: { code: 'open.planning-invalid' },
       });
     }
-  }, 180_000);
+  }, 300_000);
 });

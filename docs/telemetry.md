@@ -1,18 +1,61 @@
-# OpenTelemetry
+# Configure OpenTelemetry
 
-Repoctopus 通过标准 OTLP HTTP 导出适配自部署 SigNoz 等后端。领域层只产生稳定事实，不依赖具体观测产品。
+本指南帮助你把 Repoctopus 的 Trace、Log 和 Metric 通过标准 OTLP HTTP 上报到 SigNoz 或兼容的 OpenTelemetry Collector。字段名、类型、单位和指标公式见生成的 [Telemetry schema v1 reference](./telemetry-reference.md)。
+
+Repoctopus 不提供字段别名或字段改名配置。你应当在 SigNoz Dashboard 中直接使用 schema v1 字段，这样本地 Desktop Receiver 与远端 SigNoz 会消费同一套事实。
 
 ## 配置
 
-设置标准环境变量后启动 CLI：
+### 使用一个 Collector endpoint
+
+在启动 Repoctopus 的同一进程环境中设置标准变量：
 
 ```powershell
 $env:OTEL_EXPORTER_OTLP_ENDPOINT = 'http://signoz.example.internal:4318'
-$env:REPOCTOPUS_ENVIRONMENT = 'development'
+$env:OTEL_SERVICE_NAME = 'repoctopus-company-platform'
+$env:OTEL_RESOURCE_ATTRIBUTES = 'service.namespace=developer-platform,deployment.environment.name=development'
 node bin/repoctopus.js evidence run --workspace . --profile verify --json
 ```
 
-也可以分别使用 `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`、`OTEL_EXPORTER_OTLP_LOGS_ENDPOINT` 和 `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT`。没有配置端点时使用空实现，不影响本地 Evidence。
+统一 endpoint 会分别追加 `/v1/traces`、`/v1/logs` 和 `/v1/metrics`。如果你的 Collector 暴露不同路径，请分别设置：
+
+- `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`
+- `OTEL_EXPORTER_OTLP_LOGS_ENDPOINT`
+- `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT`
+
+按信号 endpoint 优先于统一 endpoint。只设置一个按信号 endpoint 时，Repoctopus 只启用该信号；它不会猜测其他 endpoint。
+
+### 配置认证和超时
+
+如果 Collector 需要认证，请通过 `OTEL_EXPORTER_OTLP_HEADERS` 传递 URL 编码的键值对。按信号的 `OTEL_EXPORTER_OTLP_<SIGNAL>_HEADERS` 优先于共享 headers。
+
+```powershell
+$env:OTEL_EXPORTER_OTLP_HEADERS = 'authorization=Bearer%20opaque-token,x-tenant=developer-platform'
+$env:OTEL_EXPORTER_OTLP_TIMEOUT = '10000'
+```
+
+你也可以使用 `OTEL_EXPORTER_OTLP_TRACES_TIMEOUT`、`OTEL_EXPORTER_OTLP_LOGS_TIMEOUT` 或 `OTEL_EXPORTER_OTLP_METRICS_TIMEOUT` 覆盖单个信号。超时单位是毫秒。
+
+不要把 endpoint、header 或 token 放进 `OTEL_RESOURCE_ATTRIBUTES`。Resource 属性会随每个信号发送，并用于查询；认证信息只属于 exporter 配置。
+
+### 配置优先级
+
+Repoctopus 按以下顺序解析配置，靠前者优先：
+
+1. 调用方显式传入的 exporter 超时。
+2. 按信号 endpoint、headers 和 timeout。
+3. 共享 endpoint、headers 和 timeout。
+4. SDK 默认超时。
+
+`OTEL_SERVICE_NAME` 覆盖 Repoctopus 的默认服务名。标准 `deployment.environment.name` Resource 属性优先于兼容变量 `REPOCTOPUS_ENVIRONMENT`。固定的 `repoctopus.product.name=repoctopus` 和 `repoctopus.telemetry.schema=1` 不能被部署配置覆盖。
+
+没有配置任何 endpoint 时，Repoctopus 使用空 exporter。Collector 不可用时，业务事实仍先持久化，遥测失败不改变 Work、Evidence 或 Delivery 的结果。
+
+## Schema v1 兼容性
+
+Schema v1 把公开的 Resource、Span、Event/Log、Metric 和 Attribute 名称视为协议。补充可选字段是兼容变更；删除、改名、改变类型/单位，或把高基数 identity 加进 Metric label，必须升级 schema 并经过评审。
+
+生成器从 `domains/telemetry/observation-contract.ts` 生成完整参考。`npm run check:generated` 会在代码目录与参考手册漂移时失败。字段名不是部署参数；本次不支持组织别名、Collector Transform 或 SigNoz 私有 API。
 
 ## 先落盘，再导出
 
