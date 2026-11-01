@@ -38,8 +38,14 @@ import {
   requestDeliveryApprovalV3,
 } from './v3.js';
 import { validateDeliveryPolicy } from './validation.js';
-import { observeOrCreateMergeRequest } from './stable-publication.js';
-import type { PublicationProvenance } from './publication-receipt.js';
+import {
+  ResumablePublicationExecutor,
+  type PublicationItemExecutor,
+  type PublicationJournalItemIntent,
+  type PublicationJournalStore,
+} from './publication-journal.js';
+import { observeMergeRequest, observeOrCreateMergeRequest } from './stable-publication.js';
+import type { PublicationProvenance, PublicationReceiptItem } from './publication-receipt.js';
 
 export interface DeliveryV3Preparation {
   runId?: string;
@@ -140,6 +146,7 @@ export class DeliveryServiceV3 {
     private readonly git: DeliveryGitPort,
     private readonly mergeRequests: MergeRequestPort,
     private readonly evidence: DeliveryEvidencePort,
+    private readonly publicationJournal: PublicationJournalStore,
     private readonly compositionDigest: string,
     private readonly clock: () => Date = () => new Date(),
   ) {}
@@ -203,6 +210,7 @@ export class DeliveryServiceV3 {
   }
 
   async publishArchive(options: DeliveryV3Preparation): Promise<ArchivePublicationResult> {
+    if (!options.runId?.trim()) throw new Error('Archive publication requires a stable Run id');
     this.validate(options.intent, options.policy);
     await this.evidence.assertSatisfied(
       options.evidenceBundleIds,
@@ -229,84 +237,143 @@ export class DeliveryServiceV3 {
       businessDeliveries: facts,
       createdAt: this.clock().toISOString(),
     });
-    const receipts: ArchivePublicationReceipt[] = [];
-    for (const action of snapshot.plan) {
-      const repository = repositories.get(action.deliveryId)!;
-      if (action.type === 'git.push') {
-        let remoteOid: string;
-        let recovered = false;
-        try {
-          remoteOid = await this.git.push(repository, action, options.policy);
-        } catch (error) {
-          const observed = await this.git.inspect(
-            repository,
-            businessIntent(
-              options.intent.businessDeliveries.find(
-                (delivery) => delivery.deliveryId === action.deliveryId,
-              )!,
-            ),
-            options.policy,
-          );
-          if (observed.remoteSourceOid !== action.expectedHead) throw error;
-          remoteOid = observed.remoteSourceOid;
-          recovered = true;
+    const values = {
+      changeId: options.intent.changeId,
+      verificationReport: options.reportContents,
+    };
+    const items: PublicationJournalItemIntent[] = options.intent.businessDeliveries.map(
+      (delivery) => {
+        const repository = repositories.get(delivery.deliveryId)!;
+        const expected = snapshot.businessDeliveries.find(
+          (candidate) => candidate.deliveryId === delivery.deliveryId,
+        )!;
+        if (!repository.remoteIdentity) {
+          throw new Error(`Repository has no remote identity: ${repository.id}`);
         }
-        if (remoteOid !== action.expectedHead) {
-          throw new Error(`Published remote OID drifted: ${action.deliveryId}`);
-        }
-        receipts.push({
-          actionId: action.actionId,
-          deliveryId: action.deliveryId,
-          type: action.type,
-          status: 'succeeded',
-          recovered,
-          remoteOid,
-        });
-        continue;
-      }
-      if (action.type !== 'mr.create_or_update') {
-        throw new Error(`Unsupported Archive publication action: ${action.type}`);
-      }
-      if (!repository.remoteIdentity) {
-        throw new Error(`Repository has no remote identity: ${repository.id}`);
-      }
-      const values = {
-        changeId: options.intent.changeId,
-        verificationReport: options.reportContents,
-      };
-      const request = {
-        repositoryId: repository.id,
-        remoteIdentity: repository.remoteIdentity,
-        sourceBranch: action.sourceBranch,
-        targetBranch: action.targetBranch,
-        title: render(options.policy.publication.mrTitleTemplate, values),
-        body: render(options.policy.publication.mrBodyTemplate, values),
-      };
-      const expected = snapshot.businessDeliveries.find(
-        (delivery) => delivery.deliveryId === action.deliveryId,
-      )!;
-      const observed = await observeOrCreateMergeRequest({
-        port: this.mergeRequests,
-        request,
-        identity: {
-          changeId: options.intent.changeId,
-          runId: options.runId ?? `delivery:${options.intent.changeId}`,
+        return {
+          publicationId: `business:${delivery.deliveryId}`,
+          role: 'business',
+          deliveryId: delivery.deliveryId,
           repositoryId: repository.id,
           remoteIdentity: repository.remoteIdentity,
-          sourceBranch: action.sourceBranch,
-          targetBranch: action.targetBranch,
-          publishedOid: expected.head,
-        },
+          remote: options.policy.publication.remote,
+          sourceBranch: delivery.sourceBranch,
+          targetBranch: delivery.targetBranch,
+          mergeRequestTitle: render(options.policy.publication.mrTitleTemplate, values),
+          mergeRequestBody: render(options.policy.publication.mrBodyTemplate, values),
+          expectedOid: expected.head,
+          operation: 'push-and-create-or-adopt-mr',
+        };
+      },
+    );
+    const resolve = (item: PublicationJournalItemIntent) => {
+      const delivery = options.intent.businessDeliveries.find(
+        (candidate) => candidate.deliveryId === item.deliveryId,
+      )!;
+      const repository = repositories.get(delivery.deliveryId)!;
+      const push = snapshot.plan.find(
+        (action) => action.deliveryId === delivery.deliveryId && action.type === 'git.push',
+      );
+      if (!push || push.type !== 'git.push') {
+        throw new Error(`Business delivery has no push action: ${delivery.deliveryId}`);
+      }
+      const request = {
+        repositoryId: item.repositoryId,
+        remoteIdentity: item.remoteIdentity,
+        sourceBranch: item.sourceBranch,
+        targetBranch: item.targetBranch,
+        title: item.mergeRequestTitle,
+        body: item.mergeRequestBody,
+      };
+      const identity = {
+        changeId: options.intent.changeId,
+        runId: options.runId!,
+        repositoryId: item.repositoryId,
+        remoteIdentity: item.remoteIdentity,
+        sourceBranch: item.sourceBranch,
+        targetBranch: item.targetBranch,
+        publishedOid: item.expectedOid,
+      };
+      return { delivery, repository, push, request, identity };
+    };
+    const receipt = (
+      item: PublicationJournalItemIntent,
+      observed: Awaited<ReturnType<typeof observeMergeRequest>>,
+    ): PublicationReceiptItem | null =>
+      observed
+        ? {
+            publicationId: item.publicationId,
+            role: item.role,
+            ...(item.deliveryId ? { deliveryId: item.deliveryId } : {}),
+            repositoryId: item.repositoryId,
+            remoteIdentity: item.remoteIdentity,
+            remote: item.remote,
+            sourceBranch: item.sourceBranch,
+            targetBranch: item.targetBranch,
+            publishedOid: item.expectedOid,
+            mergeRequest: observed.identity,
+            provenance: observed.provenance,
+            verifiedAt: this.clock().toISOString(),
+          }
+        : null;
+    const adapter: PublicationItemExecutor = {
+      observePush: async (item) => {
+        const { delivery, repository } = resolve(item);
+        return (await this.git.inspect(repository, businessIntent(delivery), options.policy))
+          .remoteSourceOid;
+      },
+      push: (item) => {
+        const { repository, push } = resolve(item);
+        return this.git.push(repository, push, options.policy);
+      },
+      observeMergeRequest: async (item) => {
+        const { request, identity } = resolve(item);
+        return receipt(
+          item,
+          await observeMergeRequest({ port: this.mergeRequests, request, identity }),
+        );
+      },
+      createMergeRequest: async (item) => {
+        const { request, identity } = resolve(item);
+        return receipt(
+          item,
+          await observeOrCreateMergeRequest({ port: this.mergeRequests, request, identity }),
+        )!;
+      },
+    };
+    const journal = await new ResumablePublicationExecutor(
+      this.publicationJournal,
+      adapter,
+    ).publish({ changeId: options.intent.changeId, runId: options.runId, items });
+    const receipts: ArchivePublicationReceipt[] = [];
+    for (const item of journal.items) {
+      if (!item.result || !item.intent.deliveryId) {
+        throw new Error(`Business publication Journal is incomplete: ${item.intent.publicationId}`);
+      }
+      const push = snapshot.plan.find(
+        (action) => action.deliveryId === item.intent.deliveryId && action.type === 'git.push',
+      )!;
+      const mergeRequest = snapshot.plan.find(
+        (action) =>
+          action.deliveryId === item.intent.deliveryId && action.type === 'mr.create_or_update',
+      )!;
+      receipts.push({
+        actionId: push.actionId,
+        deliveryId: item.intent.deliveryId,
+        type: 'git.push',
+        status: 'succeeded',
+        recovered: item.attempts === 0,
+        remoteOid: item.intent.expectedOid,
       });
       receipts.push({
-        actionId: action.actionId,
-        deliveryId: action.deliveryId,
-        type: action.type,
+        actionId: mergeRequest.actionId,
+        deliveryId: item.intent.deliveryId,
+        type: 'mr.create_or_update',
         status: 'succeeded',
-        recovered: observed.provenance !== 'runtime-created',
-        mergeRequest: observed.identity,
-        provenance: observed.provenance,
-        verifiedStatus: observed.status,
+        recovered: item.result.provenance !== 'runtime-created',
+        mergeRequest: item.result.mergeRequest,
+        provenance: item.result.provenance,
+        verifiedStatus: await this.mergeRequests.status(item.result.mergeRequest),
       });
     }
     return { snapshot, receipts };

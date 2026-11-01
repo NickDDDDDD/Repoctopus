@@ -136,6 +136,68 @@ describe('Work execution recovery classification', () => {
     expect(trajectory.filter((event) => event.type === 'work.host-started')).toHaveLength(1);
   });
 
+  it('projects external publication uncertainty as reconcile until observation succeeds', async () => {
+    let run = {
+      ...state({ execution: checkpoint('validated') }),
+      stateVersion: 7,
+      composition: { compositionDigest: digest('9') },
+      updatedAt: '2026-10-25T00:00:00.000Z',
+    } as RunState;
+    const trajectory: TrajectoryEvent[] = [];
+    const authority = Object.create(WorkExecutionAuthority.prototype) as WorkExecutionAuthority;
+    Object.defineProperty(authority, 'ctx', {
+      value: {
+        runStore: {
+          loadRun: vi.fn(() => Promise.resolve(run)),
+          commitGuarded: vi.fn(
+            <T>(
+              _runId: string,
+              reduce: (input: { state: RunState; trajectory: TrajectoryEvent[] }) => {
+                state?: RunState;
+                event?: TrajectoryEvent;
+                value: T;
+              },
+            ): Promise<T> => {
+              const result = reduce({ state: run, trajectory });
+              if (result.state) run = result.state;
+              if (result.event) trajectory.push(result.event);
+              return Promise.resolve(result.value);
+            },
+          ),
+        },
+        workExecutionSessions: { isActive: vi.fn().mockReturnValue(false) },
+      },
+    });
+    authority.loadAuthoritativePacket = vi.fn().mockResolvedValue({ intent: {}, packet: {} });
+    const intent = {
+      runId: run.runId,
+      workId: run.workExecution!.workId,
+      attempt: run.workExecution!.attempt,
+      checkEpoch: run.workExecution!.checkEpoch,
+      intentId: run.workExecution!.intentId,
+    } as never;
+
+    await authority.markExternalSideEffectUnknown(intent, 'merge request response unavailable');
+    await expect(authority.recovery(run.runId)).resolves.toMatchObject({
+      continuation: 'reconcile',
+      reason: 'external-result-unknown',
+    });
+    expect(run.workExecution).toMatchObject({
+      status: 'unknown',
+      continuation: 'reconcile',
+      unknownKind: 'external-side-effect',
+    });
+
+    await authority.markExternalSideEffectObserved(intent);
+    expect(run.workExecution).toMatchObject({ status: 'validated', continuation: 'execute' });
+    expect(run.workExecution?.unknownKind).toBeUndefined();
+    expect(
+      trajectory
+        .map((event) => event.type)
+        .filter((type) => type === 'reconcile.started' || type === 'reconcile.completed'),
+    ).toEqual(['reconcile.started', 'reconcile.completed']);
+  });
+
   it('redelivers the authoritative frozen packet without invoking the context assembler', async () => {
     const packet = { identity: checkpoint('claimed').packet } as WorkExecutionPacket;
     const loadAuthoritativePacket = vi.fn().mockResolvedValue({ intent: {}, packet });

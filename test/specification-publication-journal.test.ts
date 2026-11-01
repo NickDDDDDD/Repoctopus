@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import {
   assertSpecificationPublicationJournal,
   createSpecificationPublicationJournal,
+  recordSpecificationMergeRequestInvocation,
+  recordSpecificationMergeRequestUnknown,
   recordSpecificationPublicationCommit,
   recordSpecificationPublicationCompletion,
   recordSpecificationPublicationPush,
@@ -29,11 +31,13 @@ const intent = {
 };
 
 describe('Specification publication Journal', () => {
-  it('advances only through prepared, committed, pushed, completed', () => {
+  it('persists merge-request invocation and uncertainty before completion', () => {
     const prepared = createSpecificationPublicationJournal(intent);
     const committed = recordSpecificationPublicationCommit(prepared, oid);
     const pushed = recordSpecificationPublicationPush(committed);
-    const completed = recordSpecificationPublicationCompletion(pushed, {
+    const invoking = recordSpecificationMergeRequestInvocation(pushed);
+    const unknown = recordSpecificationMergeRequestUnknown(invoking);
+    const completed = recordSpecificationPublicationCompletion(unknown, {
       publicationId: `specification:${intent.runId}`,
       role: 'specification',
       repositoryId: intent.repositoryId,
@@ -52,21 +56,37 @@ describe('Specification publication Journal', () => {
       verifiedAt: '2026-10-25T00:00:00.000Z',
     });
 
-    expect([prepared.state, committed.state, pushed.state, completed.state]).toEqual([
+    expect([
+      prepared.state,
+      committed.state,
+      pushed.state,
+      invoking.state,
+      unknown.state,
+      completed.state,
+    ]).toEqual([
       'prepared',
       'committed',
       'pushed',
+      'mr-invoking',
+      'mr-unknown',
       'completed',
     ]);
-    expect(new Set([prepared.digest, committed.digest, pushed.digest, completed.digest]).size).toBe(
-      4,
-    );
+    expect(
+      new Set([
+        prepared.digest,
+        committed.digest,
+        pushed.digest,
+        invoking.digest,
+        unknown.digest,
+        completed.digest,
+      ]).size,
+    ).toBe(6);
     expect(() => recordSpecificationPublicationPush(prepared)).toThrow(/no committed OID/i);
     expect(() => recordSpecificationPublicationCommit(committed, oid)).toThrow(
       /cannot move committed -> committed/i,
     );
     expect(() =>
-      recordSpecificationPublicationCompletion(pushed, {
+      recordSpecificationPublicationCompletion(unknown, {
         ...completed.result!,
         publishedOid: 'e'.repeat(40),
       }),

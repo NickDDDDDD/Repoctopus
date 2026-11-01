@@ -7,6 +7,7 @@ import {
   type SpecificationPublicationJournalStore,
 } from '../../domains/delivery/specification-publication-journal.js';
 import { atomicWriteJson } from '../filesystem/atomic-write.js';
+import { withRecoverableFileLock } from '../runtime/recoverable-file-lock.js';
 
 export class FileSpecificationPublicationJournalStore implements SpecificationPublicationJournalStore {
   constructor(private readonly workspaceRoot: string) {}
@@ -39,13 +40,15 @@ export class FileSpecificationPublicationJournalStore implements SpecificationPu
 
   async create(journal: SpecificationPublicationJournal): Promise<void> {
     assertSpecificationPublicationJournal(journal);
-    const existing = await this.load(journal.intent.runId);
-    if (existing) {
-      if (existing.digest === journal.digest) return;
-      throw new Error('Specification publication Journal already exists with another identity');
-    }
-    await atomicWriteJson(this.file(journal.intent.runId), journal, {
-      containedRoot: this.workspaceRoot,
+    await withRecoverableFileLock(`${this.file(journal.intent.runId)}.lock`, async () => {
+      const existing = await this.load(journal.intent.runId);
+      if (existing) {
+        if (existing.digest === journal.digest) return;
+        throw new Error('Specification publication Journal already exists with another identity');
+      }
+      await atomicWriteJson(this.file(journal.intent.runId), journal, {
+        containedRoot: this.workspaceRoot,
+      });
     });
   }
 
@@ -54,12 +57,14 @@ export class FileSpecificationPublicationJournalStore implements SpecificationPu
     expectedDigest: `sha256:${string}`,
   ): Promise<void> {
     assertSpecificationPublicationJournal(journal);
-    const existing = await this.load(journal.intent.runId);
-    if (!existing || existing.digest !== expectedDigest) {
-      throw new Error('Specification publication Journal changed concurrently');
-    }
-    await atomicWriteJson(this.file(journal.intent.runId), journal, {
-      containedRoot: this.workspaceRoot,
+    await withRecoverableFileLock(`${this.file(journal.intent.runId)}.lock`, async () => {
+      const existing = await this.load(journal.intent.runId);
+      if (!existing || existing.digest !== expectedDigest) {
+        throw new Error('Specification publication Journal changed concurrently');
+      }
+      await atomicWriteJson(this.file(journal.intent.runId), journal, {
+        containedRoot: this.workspaceRoot,
+      });
     });
   }
 }

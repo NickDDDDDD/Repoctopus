@@ -21,6 +21,7 @@ import {
   createPublicationReceipt,
   PUBLICATION_RECEIPT_API_VERSION,
 } from '../domains/delivery/publication-receipt.js';
+import { PublicationResultUnknownError } from '../domains/delivery/publication-result-unknown.js';
 import type { DeliveryIntentV3, DeliveryPolicy } from '../domains/delivery/types.js';
 import type { SkillUsageSnapshot } from '../domains/skill/types.js';
 import type { SpecificationClosureResult } from '../domains/specification/types.js';
@@ -1044,7 +1045,13 @@ describe('Archive publication terminal lifecycle', () => {
       });
       const publishSpecification = vi
         .spyOn(app.context.delivery, 'publishSpecification')
-        .mockRejectedValueOnce(new Error('fault:after-push'))
+        .mockRejectedValueOnce(
+          new PublicationResultUnknownError(
+            `specification:${closed.identity.runId}`,
+            'merge-request',
+            'specification merge request response unavailable',
+          ),
+        )
         .mockResolvedValue({
           expectedPublishedOid: specification.publishedOid,
           item: specification,
@@ -1088,9 +1095,14 @@ describe('Archive publication terminal lifecycle', () => {
           executor,
           attempt: 1,
         }),
-      ).rejects.toThrow('fault:after-push');
+      ).rejects.toBeInstanceOf(PublicationResultUnknownError);
       await expect(app.context.runStore.loadRun(closed.identity.runId)).resolves.toMatchObject({
         status: 'running',
+        workExecution: {
+          status: 'unknown',
+          continuation: 'reconcile',
+          unknownKind: 'external-side-effect',
+        },
         changeLifecycle: {
           currentWork: { kind: 'delivery.publish' },
           specificationClosure: { closureId: closed.specificationClosure?.closureId },

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import {
   ResumablePublicationExecutor,
@@ -8,6 +8,7 @@ import {
   type PublicationJournalItemIntent,
   type PublicationJournalStore,
 } from '../domains/delivery/publication-journal.js';
+import { PublicationResultUnknownError } from '../domains/delivery/publication-result-unknown.js';
 import type { PublicationReceiptItem } from '../domains/delivery/publication-receipt.js';
 
 class MemoryStore implements PublicationJournalStore {
@@ -40,6 +41,8 @@ function intent(
     remote: 'origin',
     sourceBranch: `feature/${id}`,
     targetBranch: 'main',
+    mergeRequestTitle: `Publish ${id}`,
+    mergeRequestBody: `Verified ${id}`,
     expectedOid: (repositoryId === 'workspace' ? 'c' : id.charAt(0)).repeat(40),
     operation: 'push-and-create-or-adopt-mr',
   };
@@ -62,70 +65,124 @@ function result(value: PublicationJournalItemIntent): PublicationReceiptItem {
       number: value.publicationId.length,
       url: `https://github.com/${value.remoteIdentity}/pull/${value.publicationId.length}`,
     },
-    provenance: 'recovered',
+    provenance: 'runtime-created',
     verifiedAt: '2026-10-24T00:00:00.000Z',
   };
 }
 
+function adapter(input: {
+  remoteOids: Map<string, string>;
+  mergeRequests: Map<string, PublicationReceiptItem>;
+  push?: PublicationItemExecutor['push'];
+  createMergeRequest?: PublicationItemExecutor['createMergeRequest'];
+}): PublicationItemExecutor {
+  return {
+    observePush: (candidate) =>
+      Promise.resolve(input.remoteOids.get(candidate.publicationId) ?? null),
+    push:
+      input.push ??
+      ((candidate) => {
+        input.remoteOids.set(candidate.publicationId, candidate.expectedOid);
+        return Promise.resolve(candidate.expectedOid);
+      }),
+    observeMergeRequest: (candidate) =>
+      Promise.resolve(input.mergeRequests.get(candidate.publicationId) ?? null),
+    createMergeRequest:
+      input.createMergeRequest ??
+      ((candidate) => {
+        const receipt = result(candidate);
+        input.mergeRequests.set(candidate.publicationId, receipt);
+        return Promise.resolve(receipt);
+      }),
+  };
+}
+
 describe('resumable multi-repository publication', () => {
-  it('continues from the first unconfirmed item with a different short-lived executor', async () => {
+  it('continues by observation without repeating an uncertain push', async () => {
     const items = [
       intent('app', 'app', 'business'),
       intent('backend', 'backend', 'business'),
       intent('specification', 'workspace', 'specification'),
     ];
     const store = new MemoryStore();
-    const remote = new Map<string, PublicationReceiptItem>();
-    const first: PublicationItemExecutor = {
-      observe: (candidate) => Promise.resolve(remote.get(candidate.publicationId) ?? null),
-      execute: (candidate) => {
-        if (candidate.publicationId === 'backend') {
-          return Promise.reject(new Error('backend unavailable'));
-        }
-        const receipt = result(candidate);
-        remote.set(candidate.publicationId, receipt);
-        return Promise.resolve(receipt);
-      },
-    };
+    const remoteOids = new Map<string, string>();
+    const mergeRequests = new Map<string, PublicationReceiptItem>();
+    const firstPush = vi.fn<PublicationItemExecutor['push']>((candidate) => {
+      if (candidate.publicationId === 'backend') {
+        return Promise.reject(new Error('push response and observation unavailable'));
+      }
+      remoteOids.set(candidate.publicationId, candidate.expectedOid);
+      return Promise.resolve(candidate.expectedOid);
+    });
+
     await expect(
-      new ResumablePublicationExecutor(store, first).publish({
-        changeId: 'resume',
-        runId: 'run-resume',
-        items,
-      }),
-    ).rejects.toThrow(/backend/u);
+      new ResumablePublicationExecutor(
+        store,
+        adapter({ remoteOids, mergeRequests, push: firstPush }),
+      ).publish({ changeId: 'resume', runId: 'run-resume', items }),
+    ).rejects.toBeInstanceOf(PublicationResultUnknownError);
     expect(
       Object.fromEntries(
         store.journal!.items.map((item) => [item.intent.publicationId, item.status]),
       ),
-    ).toEqual({ app: 'published', backend: 'failed', specification: 'pending' });
+    ).toEqual({ app: 'published', backend: 'push-unknown', specification: 'pending' });
 
-    const executions: string[] = [];
-    const second: PublicationItemExecutor = {
-      observe: (candidate) => Promise.resolve(remote.get(candidate.publicationId) ?? null),
-      execute: (candidate) => {
-        executions.push(candidate.publicationId);
-        const receipt = result(candidate);
-        remote.set(candidate.publicationId, receipt);
-        if (candidate.publicationId === 'backend') {
-          return Promise.reject(new Error('response lost after publish'));
-        }
-        return Promise.resolve(receipt);
-      },
-    };
-    const completed = await new ResumablePublicationExecutor(store, second).publish({
-      changeId: 'resume',
-      runId: 'run-resume',
-      items,
+    remoteOids.set('backend', items[1]!.expectedOid);
+    const resumedPush = vi.fn<PublicationItemExecutor['push']>((candidate) => {
+      remoteOids.set(candidate.publicationId, candidate.expectedOid);
+      return Promise.resolve(candidate.expectedOid);
     });
-    expect(executions).toEqual(['backend', 'specification']);
-    expect(completed.items.every((item) => item.status === 'published')).toBe(true);
-    expect(remote.size).toBe(3);
-    expect(completed.items.map((item) => item.result?.provenance)).toEqual([
-      'recovered',
-      'recovered',
-      'recovered',
+    const completed = await new ResumablePublicationExecutor(
+      store,
+      adapter({ remoteOids, mergeRequests, push: resumedPush }),
+    ).publish({ changeId: 'resume', runId: 'run-resume', items });
+
+    expect(resumedPush.mock.calls.map(([candidate]) => candidate.publicationId)).toEqual([
+      'specification',
     ]);
+    expect(completed.items.every((item) => item.status === 'published')).toBe(true);
+    expect(completed.items.map((item) => item.result?.provenance)).toEqual([
+      'runtime-created',
+      'runtime-created',
+      'runtime-created',
+    ]);
+  });
+
+  it('never repeats merge-request creation while its result is unknown', async () => {
+    const item = intent('app', 'app', 'business');
+    const store = new MemoryStore();
+    const remoteOids = new Map([[item.publicationId, item.expectedOid]]);
+    const mergeRequests = new Map<string, PublicationReceiptItem>();
+    const firstCreate = vi
+      .fn<PublicationItemExecutor['createMergeRequest']>()
+      .mockRejectedValue(new Error('create response and observation unavailable'));
+
+    await expect(
+      new ResumablePublicationExecutor(
+        store,
+        adapter({ remoteOids, mergeRequests, createMergeRequest: firstCreate }),
+      ).publish({ changeId: 'unknown-mr', runId: 'run-unknown-mr', items: [item] }),
+    ).rejects.toBeInstanceOf(PublicationResultUnknownError);
+    expect(store.journal?.items[0]?.status).toBe('mr-unknown');
+    expect(firstCreate).toHaveBeenCalledOnce();
+
+    const forbiddenCreate = vi.fn<PublicationItemExecutor['createMergeRequest']>();
+    await expect(
+      new ResumablePublicationExecutor(
+        store,
+        adapter({ remoteOids, mergeRequests, createMergeRequest: forbiddenCreate }),
+      ).publish({ changeId: 'unknown-mr', runId: 'run-unknown-mr', items: [item] }),
+    ).rejects.toBeInstanceOf(PublicationResultUnknownError);
+    expect(forbiddenCreate).not.toHaveBeenCalled();
+
+    mergeRequests.set(item.publicationId, result(item));
+    await expect(
+      new ResumablePublicationExecutor(
+        store,
+        adapter({ remoteOids, mergeRequests, createMergeRequest: forbiddenCreate }),
+      ).publish({ changeId: 'unknown-mr', runId: 'run-unknown-mr', items: [item] }),
+    ).resolves.toMatchObject({ items: [{ status: 'published', result: { provenance: 'recovered' } }] });
+    expect(forbiddenCreate).not.toHaveBeenCalled();
   });
 
   it('rejects duplicate stable identities and exposes no destructive publication operation', () => {

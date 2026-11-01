@@ -99,6 +99,7 @@ import { deliveryPolicyDigest } from '../domains/delivery/snapshot.js';
 import type { ActionIntent, ActionReceipt, WorkExecutorIdentity } from '../domains/action/types.js';
 import type { WorkExecutionHostIdentity } from '../domains/work-execution/types.js';
 import type { ArchivePublicationResult } from '../domains/delivery/service-v3.js';
+import { PublicationResultUnknownError } from '../domains/delivery/publication-result-unknown.js';
 import {
   createPublicationReceipt,
   PUBLICATION_RECEIPT_API_VERSION,
@@ -3993,10 +3994,15 @@ export class WorkflowRuns extends Service {
       }
       const currentWork = lifecycle.currentWork!;
       const execution = state.workExecution;
+      const reconcilingExternalPublication =
+        execution?.status === 'unknown' &&
+        execution.unknownKind === 'external-side-effect' &&
+        execution.continuation === 'reconcile';
       if (
         !execution ||
         execution.workId !== currentWork.workId ||
-        !['outcome', 'validated'].includes(execution.status) ||
+        (!['outcome', 'validated'].includes(execution.status) &&
+          !reconcilingExternalPublication) ||
         execution.actionOutcome?.status !== 'succeeded' ||
         execution.hostOutcome?.status !== 'succeeded' ||
         execution.hostOutcome.invocationId !== execution.hostInvocation?.invocationId ||
@@ -4272,23 +4278,24 @@ export class WorkflowRuns extends Service {
           ],
         };
       }
-      const publication = await this.ctx.delivery.publishArchive(
-        {
-          runId: input.runId,
-          project: input.project,
-          intent,
-          policy: input.policy,
-          reportContents: `verification-report:sha256:${archive.verificationReport.sha256}`,
-          evidenceBundleIds: [archive.evidenceBundleId],
-          planningCompositionDigest,
-          evidenceCompositionDigest:
-            archive.evidenceCompositionDigest ??
-            (verificationCompositionDigest as `sha256:${string}`),
-        },
-        signal,
-      );
+      let publication: ArchivePublicationResult;
       let receipt: PublicationReceipt;
-      {
+      try {
+        publication = await this.ctx.delivery.publishArchive(
+          {
+            runId: input.runId,
+            project: input.project,
+            intent,
+            policy: input.policy,
+            reportContents: `verification-report:sha256:${archive.verificationReport.sha256}`,
+            evidenceBundleIds: [archive.evidenceBundleId],
+            planningCompositionDigest,
+            evidenceCompositionDigest:
+              archive.evidenceCompositionDigest ??
+              (verificationCompositionDigest as `sha256:${string}`),
+          },
+          signal,
+        );
         const verifiedAt = new Date().toISOString();
         const businessItems: PublicationReceiptItem[] = archive.businessDeliveries.map(
           (delivery) => {
@@ -4350,6 +4357,19 @@ export class WorkflowRuns extends Service {
           specificationClosure: { closureId: closure.closureId, planDigest: closure.planDigest },
           items: [...businessItems, specification.item],
         });
+      } catch (error) {
+        if (error instanceof PublicationResultUnknownError) {
+          await this.ctx.workExecutionAuthority.markExternalSideEffectUnknown(
+            await this.ctx.workExecutionAuthority.loadIntent(input.runId),
+            error.message,
+          );
+        }
+        throw error;
+      }
+      if (reconcilingExternalPublication) {
+        await this.ctx.workExecutionAuthority.markExternalSideEffectObserved(
+          await this.ctx.workExecutionAuthority.loadIntent(input.runId),
+        );
       }
       const advanced = await this.coordinator.acceptChangeObservation(input.runId, {
         kind: 'archive-publication-receipt-accepted',

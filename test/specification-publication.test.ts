@@ -2,7 +2,7 @@ import { execFile } from 'node:child_process';
 import { mkdir, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { MergeRequestPort } from '../domains/delivery/ports.js';
 import type {
@@ -10,6 +10,7 @@ import type {
   SpecificationPublicationResult,
 } from '../domains/delivery/specification-publication.js';
 import type { MergeRequestIdentity } from '../domains/delivery/types.js';
+import { PublicationResultUnknownError } from '../domains/delivery/publication-result-unknown.js';
 import type { SpecificationClosureResult } from '../domains/specification/types.js';
 import {
   SpecificationPublicationAdapter,
@@ -168,6 +169,36 @@ async function expectPublished(
 }
 
 describe('Specification publication adapter', () => {
+  it('reconciles an uncertain merge-request creation without invoking create again', async () => {
+    const setup = await fixture();
+    const mergeRequest: MergeRequestIdentity = {
+      provider: 'github',
+      repositoryId: 'workspace',
+      number: 17,
+      url: 'https://github.com/team/workspace/pull/17',
+    };
+    let observable = false;
+    const create = vi.fn().mockRejectedValue(new Error('create response unavailable'));
+    setup.mergeRequests.create = create;
+    setup.mergeRequests.find = () => Promise.resolve(observable ? mergeRequest : null);
+    setup.mergeRequests.findAll = () => Promise.resolve(observable ? [mergeRequest] : []);
+
+    await expect(
+      new SpecificationPublicationAdapter(setup.mergeRequests).publish(setup.request),
+    ).rejects.toBeInstanceOf(PublicationResultUnknownError);
+    await expect(
+      new SpecificationPublicationAdapter(setup.mergeRequests).publish(setup.request),
+    ).rejects.toBeInstanceOf(PublicationResultUnknownError);
+    expect(create).toHaveBeenCalledOnce();
+
+    observable = true;
+    const recovered = await new SpecificationPublicationAdapter(setup.mergeRequests).publish(
+      setup.request,
+    );
+    await expectPublished(setup, recovered, 'recovered');
+    expect(create).toHaveBeenCalledOnce();
+  });
+
   it('publishes the isolated archive candidate without mutating the developer branch', async () => {
     const setup = await fixture();
     const result = await new SpecificationPublicationAdapter(setup.mergeRequests).publish(

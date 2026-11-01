@@ -1,6 +1,8 @@
 import type { PublicationReceiptItem } from '../../domains/delivery/publication-receipt.js';
 import {
   createSpecificationPublicationJournal,
+  recordSpecificationMergeRequestInvocation,
+  recordSpecificationMergeRequestUnknown,
   recordSpecificationPublicationCommit,
   recordSpecificationPublicationCompletion,
   recordSpecificationPublicationPush,
@@ -8,7 +10,12 @@ import {
   type SpecificationPublicationJournalStore,
 } from '../../domains/delivery/specification-publication-journal.js';
 import type { MergeRequestInput, MergeRequestPort } from '../../domains/delivery/ports.js';
-import { observeOrCreateMergeRequest } from '../../domains/delivery/stable-publication.js';
+import {
+  observeMergeRequest,
+  observeOrCreateMergeRequest,
+  type StableMergeRequestResult,
+} from '../../domains/delivery/stable-publication.js';
+import { PublicationResultUnknownError } from '../../domains/delivery/publication-result-unknown.js';
 import type {
   SpecificationPublicationRequest,
   SpecificationPublicationResult,
@@ -134,6 +141,26 @@ export class SpecificationPublicationAdapter {
       throw new Error('Completed Specification publication merge request drifted');
     }
     return structuredClone(result);
+  }
+
+  private publicationItem(
+    journal: SpecificationPublicationJournal,
+    mr: StableMergeRequestResult,
+    provenance: PublicationReceiptItem['provenance'] = mr.provenance,
+  ): PublicationReceiptItem {
+    return {
+      publicationId: `specification:${journal.intent.runId}`,
+      role: 'specification',
+      repositoryId: journal.intent.repositoryId,
+      remoteIdentity: journal.intent.remoteIdentity,
+      remote: journal.intent.remote,
+      sourceBranch: journal.intent.sourceBranch,
+      targetBranch: journal.intent.targetBranch,
+      publishedOid: journal.publishedOid!,
+      mergeRequest: mr.identity,
+      provenance,
+      verifiedAt: this.clock().toISOString(),
+    };
   }
 
   private async adoptOrCommit(
@@ -279,35 +306,95 @@ export class SpecificationPublicationAdapter {
       journal = pushed;
     }
 
+    const mrInput = mergeRequestInput(request);
+    const mrIdentity = () => ({
+      changeId: request.changeId,
+      runId: request.runId,
+      repositoryId: request.changeBranch.repositoryId,
+      remoteIdentity: request.changeBranch.remoteIdentity,
+      sourceBranch,
+      targetBranch: request.changeBranch.targetBranch,
+      publishedOid: journal!.publishedOid!,
+    });
+
     if (journal.state === 'pushed') {
-      const mr = await observeOrCreateMergeRequest({
+      const existing = await observeMergeRequest({
         port: this.mergeRequests,
-        request: mergeRequestInput(request),
-        identity: {
-          changeId: request.changeId,
-          runId: request.runId,
-          repositoryId: request.changeBranch.repositoryId,
-          remoteIdentity: request.changeBranch.remoteIdentity,
-          sourceBranch,
-          targetBranch: request.changeBranch.targetBranch,
-          publishedOid: journal.publishedOid!,
-        },
+        request: mrInput,
+        identity: mrIdentity(),
       });
-      this.injectFault?.('after-mr');
-      const item: PublicationReceiptItem = {
-        publicationId: `specification:${request.runId}`,
-        role: 'specification',
-        repositoryId: request.changeBranch.repositoryId,
-        remoteIdentity: request.changeBranch.remoteIdentity,
-        remote: request.remote,
-        sourceBranch,
-        targetBranch: request.changeBranch.targetBranch,
-        publishedOid: journal.publishedOid!,
-        mergeRequest: mr.identity,
-        provenance: mr.provenance === 'human-created' ? 'recovered' : mr.provenance,
-        verifiedAt: this.clock().toISOString(),
-      };
-      const completed = recordSpecificationPublicationCompletion(journal, item);
+      if (existing) {
+        const completed = recordSpecificationPublicationCompletion(
+          journal,
+          this.publicationItem(journal, existing, 'human-created'),
+        );
+        await stores.compareAndSet(completed, journal.digest);
+        journal = completed;
+      } else {
+        const invoking = recordSpecificationMergeRequestInvocation(journal);
+        await stores.compareAndSet(invoking, journal.digest);
+        journal = invoking;
+        try {
+          const mr = await observeOrCreateMergeRequest({
+            port: this.mergeRequests,
+            request: mrInput,
+            identity: mrIdentity(),
+          });
+          this.injectFault?.('after-mr');
+          const completed = recordSpecificationPublicationCompletion(
+            journal,
+            this.publicationItem(journal, mr),
+          );
+          await stores.compareAndSet(completed, journal.digest);
+          journal = completed;
+        } catch (error) {
+          if (error instanceof PublicationResultUnknownError) {
+            const unknown = recordSpecificationMergeRequestUnknown(journal);
+            await stores.compareAndSet(unknown, journal.digest);
+            journal = unknown;
+          }
+          throw error;
+        }
+      }
+    }
+
+    if (journal.state === 'mr-invoking' || journal.state === 'mr-unknown') {
+      let observed: StableMergeRequestResult | null;
+      try {
+        observed = await observeMergeRequest({
+          port: this.mergeRequests,
+          request: mrInput,
+          identity: mrIdentity(),
+        });
+      } catch (error) {
+        if (journal.state === 'mr-invoking') {
+          const unknown = recordSpecificationMergeRequestUnknown(journal);
+          await stores.compareAndSet(unknown, journal.digest);
+          journal = unknown;
+        }
+        throw new PublicationResultUnknownError(
+          `specification:${request.runId}`,
+          'merge-request',
+          'Specification merge request observation is unavailable after invocation',
+          { cause: error },
+        );
+      }
+      if (!observed) {
+        if (journal.state === 'mr-invoking') {
+          const unknown = recordSpecificationMergeRequestUnknown(journal);
+          await stores.compareAndSet(unknown, journal.digest);
+          journal = unknown;
+        }
+        throw new PublicationResultUnknownError(
+          `specification:${request.runId}`,
+          'merge-request',
+          'Specification merge request result remains unknown',
+        );
+      }
+      const completed = recordSpecificationPublicationCompletion(
+        journal,
+        this.publicationItem(journal, observed, 'recovered'),
+      );
       await stores.compareAndSet(completed, journal.digest);
       journal = completed;
     }

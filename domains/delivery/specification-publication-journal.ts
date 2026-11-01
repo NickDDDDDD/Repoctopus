@@ -10,6 +10,8 @@ export type SpecificationPublicationJournalState =
   | 'prepared'
   | 'committed'
   | 'pushed'
+  | 'mr-invoking'
+  | 'mr-unknown'
   | 'completed';
 
 export interface SpecificationPublicationIntent {
@@ -154,12 +156,21 @@ export function createSpecificationPublicationJournal(
 export function assertSpecificationPublicationJournal(
   journal: SpecificationPublicationJournal,
 ): void {
+  const states: readonly SpecificationPublicationJournalState[] = [
+    'prepared',
+    'committed',
+    'pushed',
+    'mr-invoking',
+    'mr-unknown',
+    'completed',
+  ];
   if (
     journal.apiVersion !== SPECIFICATION_PUBLICATION_JOURNAL_API_VERSION ||
     journal.kind !== 'SpecificationPublicationJournal' ||
     journal.schemaVersion !== 2 ||
     !Number.isSafeInteger(journal.stateVersion) ||
-    journal.stateVersion < 1
+    journal.stateVersion < 1 ||
+    !states.includes(journal.state)
   ) {
     throw new Error('Unsupported Specification publication Journal');
   }
@@ -198,7 +209,9 @@ function advance(
   > = {
     prepared: ['committed'],
     committed: ['pushed'],
-    pushed: ['completed'],
+    pushed: ['mr-invoking', 'completed'],
+    'mr-invoking': ['mr-unknown', 'completed'],
+    'mr-unknown': ['completed'],
     completed: [],
   };
   if (!expected[current.state].includes(state)) {
@@ -240,6 +253,20 @@ export function recordSpecificationPublicationPush(
 ): SpecificationPublicationJournal {
   if (!current.publishedOid) throw new Error('Specification publication has no committed OID');
   return advance(current, 'pushed', { publishedOid: current.publishedOid });
+}
+
+export function recordSpecificationMergeRequestInvocation(
+  current: SpecificationPublicationJournal,
+): SpecificationPublicationJournal {
+  if (!current.publishedOid) throw new Error('Specification publication has no pushed OID');
+  return advance(current, 'mr-invoking', { publishedOid: current.publishedOid });
+}
+
+export function recordSpecificationMergeRequestUnknown(
+  current: SpecificationPublicationJournal,
+): SpecificationPublicationJournal {
+  if (!current.publishedOid) throw new Error('Specification publication has no pushed OID');
+  return advance(current, 'mr-unknown', { publishedOid: current.publishedOid });
 }
 
 export function recordSpecificationPublicationCompletion(

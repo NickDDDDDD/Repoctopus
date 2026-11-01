@@ -785,6 +785,50 @@ export class WorkExecutionAuthority extends Service {
       'unknown',
       'reconcile',
       { workId: intent.workId, attempt: intent.attempt, reason: summary },
+      { unknownKind: 'host-result' },
+    );
+  }
+
+  async markExternalSideEffectUnknown(
+    intent: ActionIntent,
+    summary: string,
+  ): Promise<WorkExecutionCheckpoint> {
+    return this.transition(
+      intent.runId,
+      intent.intentId,
+      ['validated'],
+      'reconcile.started',
+      'unknown',
+      'reconcile',
+      {
+        workId: intent.workId,
+        attempt: intent.attempt,
+        reason: summary,
+        uncertainty: 'external-side-effect',
+      },
+      { unknownKind: 'external-side-effect' },
+    );
+  }
+
+  async markExternalSideEffectObserved(intent: ActionIntent): Promise<WorkExecutionCheckpoint> {
+    const state = await this.ctx.runStore.loadRun(intent.runId);
+    if (state.workExecution?.unknownKind !== 'external-side-effect') {
+      throw new Error('External side-effect reconciliation requires its persisted uncertainty');
+    }
+    return this.transition(
+      intent.runId,
+      intent.intentId,
+      ['unknown'],
+      'reconcile.completed',
+      'validated',
+      'execute',
+      {
+        workId: intent.workId,
+        attempt: intent.attempt,
+        result: 'observed',
+        uncertainty: 'external-side-effect',
+      },
+      { unknownKind: undefined },
     );
   }
 
@@ -1229,7 +1273,14 @@ export class WorkExecutionAuthority extends Service {
         ? result('wait', 'host-active')
         : result('reconcile', 'host-result-unknown');
     }
-    if (current.status === 'unknown') return result('reconcile', 'host-result-unknown');
+    if (current.status === 'unknown') {
+      return result(
+        'reconcile',
+        current.unknownKind === 'external-side-effect'
+          ? 'external-result-unknown'
+          : 'host-result-unknown',
+      );
+    }
     if (current.status === 'not-executed') return result('execute', 'host-not-executed');
     if (current.status === 'outcome') {
       return current.actionOutcome?.status === 'failed'
