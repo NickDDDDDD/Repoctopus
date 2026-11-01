@@ -3,10 +3,10 @@
 ## Reproducible subject
 
 - Change: `separate-build-strategy-and-execution-binding`
-- Tested implementation commit: `7e69f378ed9f74ccbe16db4d0fe2f685a2cea2ca`
+- Tested implementation commit: `5f382e0fc0750eb9311153bdc9b9e712496e2778`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `1038648`
-- Package SHA-256: `1dd53c38fd2557698ba9371fd491e251151bb3124c449ec73aa358c849073873`
+- Package bytes: `1040179`
+- Package SHA-256: `a29eee9e0e6b990f22d158dc935d6287cbca7cd4bb81e210d84c08337c084f4c`
 - Controller: `@rpamis/comet@0.5.1`
 - Platform: Windows x64
 - Node.js: `24.21.0`
@@ -77,6 +77,8 @@ npm run check:provenance
 Trajectory and OTLP distinguish stable Strategy selection from Binding creation and revalidation. They also expose bounded Build Action, decision, invalidation reason, phase, outcome, execution mode, TDD mode, review mode, and isolation dimensions. Run, Work, Strategy, Binding, repository, Task, package, digest, path, and free-form diagnostic identities remain Trace/Event values rather than metric labels.
 
 The Desktop projection renders Strategy identity and choices separately from Binding identity, revision, Host, and repository state. Binding drift is visible as a revalidation event rather than a misleading Strategy change or repeated approval.
+
+The packaged Comet Classic handoff at `docs/superpowers/reports/separate-build-strategy-and-execution-binding.md` binds the independent Verify review to this report without creating another specification or task authority. Because that handoff is part of the npm package, the package boundary and checksum above were recomputed after it was committed.
 
 ## Cleanup
 
