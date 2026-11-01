@@ -454,6 +454,29 @@ describe('specification planning approval', () => {
     }
   });
 
+  it('rejects reusing one approval idempotency key for different semantic payloads', () => {
+    const current = requestSpecificationApproval({
+      current: null,
+      snapshot: createPlanningSnapshot(planningInput()),
+      requestId: 'approval-stable-key',
+      timestamp: '2026-10-24T00:00:00.000Z',
+    });
+    const changed = planningInput();
+    changed.change.changeDigest = digest('e');
+    changed.change.artifacts = changed.change.artifacts.map((artifact) =>
+      artifact.kind === 'design' ? { ...artifact, digest: digest('e') } : artifact,
+    );
+
+    expect(() =>
+      requestSpecificationApproval({
+        current,
+        snapshot: createPlanningSnapshot(changed),
+        requestId: 'approval-stable-key',
+        timestamp: '2026-10-24T00:01:00.000Z',
+      }),
+    ).toThrow(/idempotency key conflicts/iu);
+  });
+
   it.each([
     ['revise', 'changes_requested'],
     ['reject', 'rejected'],

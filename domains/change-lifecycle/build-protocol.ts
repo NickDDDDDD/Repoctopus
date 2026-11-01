@@ -665,6 +665,21 @@ export function revalidateSuspendedBuildProtocol(
   });
 }
 
+export function canRetainSuspendedBuildConfiguration(
+  state: BuildProtocolState | undefined,
+  input: {
+    workspaceIntent: ExecutionWorkspaceIntent;
+    repositoryIds: readonly string[];
+  },
+): boolean {
+  if (state?.status !== 'suspended-for-design' || !state.configuration) return false;
+  return (
+    state.configuration.workspaceIntent.semanticDigest === input.workspaceIntent.semanticDigest &&
+    canonicalJson([...state.configuration.repositoryIds].sort()) ===
+      canonicalJson([...input.repositoryIds].sort())
+  );
+}
+
 export function advanceBuildProtocol(
   state: BuildProtocolState,
   observation: BuildProtocolObservation,

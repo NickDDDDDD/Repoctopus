@@ -13,6 +13,18 @@ export type RuntimeIdentityKind =
   | 'verification-input'
   | 'publication-provenance';
 
+export const RUNTIME_IDENTITY_KINDS: readonly RuntimeIdentityKind[] = [
+  'planning-semantic',
+  'validation-observation',
+  'approval-authority',
+  'composition',
+  'build-configuration',
+  'build-plan',
+  'execution-checkpoint',
+  'verification-input',
+  'publication-provenance',
+];
+
 export type RuntimeIdentityOwner =
   | 'specification-planning'
   | 'specification-validation'

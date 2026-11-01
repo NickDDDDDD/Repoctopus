@@ -25,6 +25,7 @@ import type {
   PackageCompletionEvidence,
 } from './build-protocol.js';
 import { advanceBuildProtocol, suspendBuildProtocolForDesign } from './build-protocol.js';
+import { runtimeInvalidationScope } from '../runtime/invalidation.js';
 
 export const CHANGE_PHASES = ['open', 'design', 'build', 'verify', 'archive'] as const;
 export type ChangePhase = (typeof CHANGE_PHASES)[number];
@@ -361,11 +362,18 @@ export interface ChangeLifecycleTransitionFact {
     continuation: 'design';
     retainedCount: number;
     invalidatedCount: number;
+    protocolDisposition: 'suspended' | 'none';
+    completionBeforeCount: number;
     supersededPlanningDigest: `sha256:${string}`;
     observedPlanningDigest: `sha256:${string}`;
     supersededWorkId: string | null;
     supersededTaskRevisions: readonly `sha256:${string}`[];
     evidenceIds: readonly string[];
+  };
+  buildRevalidation?: {
+    protocolDisposition: 'retained-configuration' | 'rebuilt-configuration';
+    completionBeforeCount: number;
+    completionRetainedCount: number;
   };
   workspaceIntentRevision?: {
     errorCode: string;
@@ -1131,6 +1139,9 @@ export function evolveChangeLifecycle(options: {
         publicationReceipt: null,
       },
     });
+    const invalidationScope = runtimeInvalidationScope([
+      observation.invalidationKind === 'semantic' ? 'planning-semantic' : 'approval-authority',
+    ]);
     reduced.fact.invalidation = {
       kind: 'planning-authority-invalidated',
       invalidationKind: observation.invalidationKind,
@@ -1138,8 +1149,10 @@ export function evolveChangeLifecycle(options: {
       disposition: 'invalidate',
       scope: 'exact',
       continuation: 'design',
-      retainedCount: observation.invalidationKind === 'semantic' ? 4 : 8,
-      invalidatedCount: observation.invalidationKind === 'semantic' ? 5 : 1,
+      retainedCount: invalidationScope.retainedIdentities.length,
+      invalidatedCount: invalidationScope.invalidatedIdentities.length,
+      protocolDisposition: buildProtocol ? 'suspended' : 'none',
+      completionBeforeCount: current.buildProtocol?.packageCompletions.length ?? 0,
       supersededPlanningDigest,
       observedPlanningDigest: observation.inputDigest,
       supersededWorkId,
@@ -2088,6 +2101,7 @@ export function evolveChangeLifecycle(options: {
         specificationClosure: null,
       },
     });
+    const invalidationScope = runtimeInvalidationScope(['planning-semantic']);
     reduced.fact.invalidation = {
       kind: 'planning-authority-invalidated',
       invalidationKind: 'semantic',
@@ -2095,8 +2109,10 @@ export function evolveChangeLifecycle(options: {
       disposition: 'invalidate',
       scope: 'exact',
       continuation: 'design',
-      retainedCount: 4,
-      invalidatedCount: 5,
+      retainedCount: invalidationScope.retainedIdentities.length,
+      invalidatedCount: invalidationScope.invalidatedIdentities.length,
+      protocolDisposition: 'none',
+      completionBeforeCount: 0,
       supersededPlanningDigest: current.planningDigest ?? current.archiveDeliveryInput.digest,
       observedPlanningDigest: observation.observedPlanningDigest,
       supersededWorkId: current.currentWork.workId,
@@ -2215,7 +2231,7 @@ export function evolveChangeLifecycle(options: {
     if (!observation.work || !expectedWorkKind || observation.work.kind !== expectedWorkKind) {
       throw new Error('Approved Design gate requires the Runtime-selected Build Action');
     }
-    return applyChangeLifecycleTransition({
+    const reduced = applyChangeLifecycleTransition({
       definition: options.definition,
       current,
       transitionId: 'design.approved',
@@ -2228,6 +2244,18 @@ export function evolveChangeLifecycle(options: {
         planningDigest: observation.inputDigest,
       },
     });
+    if (current.buildProtocol?.status === 'suspended-for-design') {
+      reduced.fact.buildRevalidation = {
+        protocolDisposition:
+          current.buildProtocol.configuration?.configurationId ===
+          approvedBuildProtocol!.configuration?.configurationId
+            ? 'retained-configuration'
+            : 'rebuilt-configuration',
+        completionBeforeCount: current.buildProtocol.packageCompletions.length,
+        completionRetainedCount: approvedBuildProtocol!.packageCompletions.length,
+      };
+    }
+    return reduced;
   }
   if (observation.result === 'waiting') {
     if (!observation.requestId?.trim() || !observation.proposalDigest) {

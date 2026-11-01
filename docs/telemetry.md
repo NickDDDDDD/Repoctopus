@@ -50,25 +50,25 @@ Trajectory、Attempt、Receipt、Artifact、Bundle、Gate 和轻量 Archive 事�
 
 每个 accepted Trajectory 事实只产生一个规范 envelope，再编码为标准 OTLP Trace、Log 和 Metric。Desktop Receiver 与远端 SigNoz 因而消费相同身份与语义，不扫描 Workspace、Git 或 MR 反推阶段。
 
-| 属性                                                | 含义                                 |
-| --------------------------------------------------- | ------------------------------------ |
-| `repoctopus.run.id`                                 | 原 Change Run 根关联 ID              |
-| `repoctopus.change.id`                              | 通过安全格式检查的 change ID         |
-| `repoctopus.change.phase.before` / `.phase`         | accepted transition 前后的 phase     |
-| `repoctopus.change.status.before` / `.status`       | transition 前后的 Run status         |
-| `repoctopus.change.work.active/id/kind`             | 当前 Work；inactive 事件显式清除旧值 |
-| `repoctopus.change.task.id`                         | 当前 Task 的稳定 ID（若有）          |
-| `repoctopus.change.validator.id/version/digest`     | 当前 Validator 的版本身份            |
-| `repoctopus.change.wait.active/id/kind`             | 当前等待；inactive 事件显式清除旧值  |
-| `repoctopus.change.wait.reason_category`            | 有界等待类别，不是自由文本 reason    |
-| `repoctopus.evidence.*`                             | Evidence Attempt、Bundle、Gate 关联  |
-| `repoctopus.action.receipt.id`                      | Runtime Action Dispatcher Receipt    |
-| `repoctopus.runtime.invalidation.classification`    | `semantic` 或 `approval-authority`   |
-| `repoctopus.runtime.invalidation.disposition`       | 当前为有界 `invalidate`              |
-| `repoctopus.runtime.invalidation.scope`             | `exact`；未知范围使用保守路径        |
-| `repoctopus.runtime.invalidation.continuation`      | Runtime 选择的有界后继，如 `design`  |
-| `repoctopus.runtime.invalidation.retained_count`    | 本次保留的 typed identity 数量       |
-| `repoctopus.runtime.invalidation.invalidated_count` | 本次失效的 typed identity 数量       |
+| 属性                                                | 含义                                   |
+| --------------------------------------------------- | -------------------------------------- |
+| `repoctopus.run.id`                                 | 原 Change Run 根关联 ID                |
+| `repoctopus.change.id`                              | 通过安全格式检查的 change ID           |
+| `repoctopus.change.phase.before` / `.phase`         | accepted transition 前后的 phase       |
+| `repoctopus.change.status.before` / `.status`       | transition 前后的 Run status           |
+| `repoctopus.change.work.active/id/kind`             | 当前 Work；inactive 事件显式清除旧值   |
+| `repoctopus.change.task.id`                         | 当前 Task 的稳定 ID（若有）            |
+| `repoctopus.change.validator.id/version/digest`     | 当前 Validator 的版本身份              |
+| `repoctopus.change.wait.active/id/kind`             | 当前等待；inactive 事件显式清除旧值    |
+| `repoctopus.change.wait.reason_category`            | 有界等待类别，不是自由文本 reason      |
+| `repoctopus.evidence.*`                             | Evidence Attempt、Bundle、Gate 关联    |
+| `repoctopus.action.receipt.id`                      | Runtime Action Dispatcher Receipt      |
+| `repoctopus.runtime.invalidation.classification`    | `semantic` 或 `approval-authority`     |
+| `repoctopus.runtime.invalidation.disposition`       | 当前为有界 `invalidate`                |
+| `repoctopus.runtime.invalidation.scope`             | `exact`；未知范围使用保守路径          |
+| `repoctopus.runtime.invalidation.continuation`      | Runtime 选择的有界后继，如 `design`    |
+| `repoctopus.runtime.invalidation.retained_count`    | Trace/Log 中保留的 typed identity 数量 |
+| `repoctopus.runtime.invalidation.invalidated_count` | Trace/Log 中失效的 typed identity 数量 |
 
 Build 的每个已提交边界使用同一条 Trajectory 和 OTLP 管道。`work.*` 事件携带有界的 `buildAction`、execution mode、TDD mode、review mode 和 isolation；`change.lifecycle.transitioned` 携带 Configure approval、Plan revision、Plan Evidence、Check 和 invalidation 的稳定身份；`skill-composition.compiled|rejected|drifted`、`skill-binding.resolved` 与 `skill.resolved|delivered|consumed|consumption-rejected` 保留组合、binding/slot、冻结顺序、replacement identity、角色、父 Work 与 invocation 关联。角色区分 Action、内置 augmentation、team guidance 和 team replacement。Host 自述不会合成成功事件，`consumed` 只表示回执摘要属于当前 packet，不代表方法被正确执行；缺失、未知或旧 layer 只生成有界失败类别并阻止 Outcome。事件只在本地 Run 提交后导出。
 
@@ -86,7 +86,7 @@ Metric 不使用 run、Task、package、repository、plan、composition/binding 
 
 ### Runtime 稳定性指标
 
-团队可以从持久 transition fact 复算以下指标；Dashboard 和 SigNoz 不各自解释本地文件：
+团队可以从持久 Trajectory fact 复算以下指标；Dashboard 和 SigNoz 不各自解释本地文件：
 
 | 指标                           | 计算                                                                   | 用途                           |
 | ------------------------------ | ---------------------------------------------------------------------- | ------------------------------ |
@@ -98,6 +98,8 @@ Metric 不使用 run、Task、package、repository、plan、composition/binding 
 | Duplicate dispatch suppression | 被抑制的重复派发 / 重复 pull                                           | 发现 Runner 重试噪声和幂等质量 |
 
 Metric label 只使用 authority、classification、scope、result 和 continuation 等固定枚举。具体 identity、digest、Work ID 和 reason 只进入 Trace/Event 允许列表，不能作为 SigNoz Metric 维度。
+
+OTLP 使用两个稳定 instrument：`repoctopus.runtime.stability.events` 对每个版本化稳定性 fact 计数，`repoctopus.runtime.stability.items` 记录 retained/invalidated identity 与 completion 数量。后者把数量作为 measurement value；`measure` 只取 `retained-identities | invalidated-identities | completion-before | completion-retained`，不会把任意数值变成 label。SigNoz 中按 `kind`、`authority`、`result`、`classification`、`scope` 或 `continuation` 聚合即可复算上表比率。
 
 Archive 仍使用同一 Run 和相同字段；不创建独立 Post-merge Run，不输出 Webhook、等待远端合入或 `repoctopus.post_merge.*` 平行语义。Publication Receipt 被同一 Run 接受时上报完成；后续 consistency reconcile 只上报有界的检查结果、变化类别和审查状态，不回写历史 phase。
 

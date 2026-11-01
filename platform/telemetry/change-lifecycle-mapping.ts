@@ -72,6 +72,8 @@ function commonAttributes(
 ): Attributes {
   const changeId = batch.run.changeLifecycle?.identity.changeId;
   const openRepair = fact.openRepair;
+  const invalidation = fact.invalidation;
+  const buildRevalidation = fact.buildRevalidation;
   return {
     'repoctopus.project.id': batch.projectSnapshot.projectId,
     'repoctopus.run.id': batch.run.runId,
@@ -92,8 +94,30 @@ function commonAttributes(
           'repoctopus.open.repair.source': openRepair.source,
           'repoctopus.open.repair.reason_code': openRepair.reasonCode,
           'repoctopus.open.repair.result': 'dispatched',
-          'repoctopus.open.repair.execution_retired':
-            event.data.executionRetirement !== undefined,
+          'repoctopus.open.repair.execution_retired': event.data.executionRetirement !== undefined,
+        }
+      : {}),
+    ...(invalidation
+      ? {
+          'repoctopus.runtime.invalidation.classification': invalidation.classification,
+          'repoctopus.runtime.invalidation.disposition': invalidation.disposition,
+          'repoctopus.runtime.invalidation.scope': invalidation.scope,
+          'repoctopus.runtime.invalidation.continuation': invalidation.continuation,
+          'repoctopus.runtime.invalidation.retained_count': invalidation.retainedCount,
+          'repoctopus.runtime.invalidation.invalidated_count': invalidation.invalidatedCount,
+          'repoctopus.runtime.invalidation.protocol_disposition': invalidation.protocolDisposition,
+          'repoctopus.runtime.invalidation.completion_before_count':
+            invalidation.completionBeforeCount,
+        }
+      : {}),
+    ...(buildRevalidation
+      ? {
+          'repoctopus.runtime.revalidation.protocol_disposition':
+            buildRevalidation.protocolDisposition,
+          'repoctopus.runtime.revalidation.completion_before_count':
+            buildRevalidation.completionBeforeCount,
+          'repoctopus.runtime.revalidation.completion_retained_count':
+            buildRevalidation.completionRetainedCount,
         }
       : {}),
     ...workspaceIntentTraceAttributes(event),

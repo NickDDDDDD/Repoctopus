@@ -14,6 +14,10 @@ import {
 import { createHash } from 'node:crypto';
 
 import type { TelemetryBatch, TelemetryPort } from '../../../domains/runtime/types.js';
+import {
+  runtimeStabilityFacts,
+  runtimeStabilityMeasurements,
+} from '../../../domains/runtime/stability.js';
 import type { DeliveryEvent, DeliveryTelemetryPort } from '../../../domains/delivery/ports.js';
 import type { DeliveryState } from '../../../domains/delivery/types.js';
 import { safeDeliveryAttributes } from '../delivery-mapping.js';
@@ -21,6 +25,7 @@ import { acceptedChangeLifecycleTelemetry } from '../change-lifecycle-mapping.js
 import {
   eventSeverity,
   executionMetricAttributes,
+  runtimeStabilityMetricAttributes,
   safeEventAttributes,
   workflowEventMetricAttributes,
   workflowStepMetricAttributes,
@@ -164,6 +169,14 @@ export class OpenTelemetryExporter implements TelemetryPort {
       description: 'Managed Work, Host, tool, Validator, wait, and reconcile duration',
       unit: 'ms',
     });
+    const stabilityCounter = meter.createCounter('repoctopus.runtime.stability.events', {
+      description: 'Committed Runtime stability facts',
+      unit: '{event}',
+    });
+    const stabilityItems = meter.createHistogram('repoctopus.runtime.stability.items', {
+      description: 'Retained or invalidated identities and Build completion counts',
+      unit: '{item}',
+    });
     const parentContext = syntheticParentContext(batch.run.runId, batch.run.traceId);
 
     try {
@@ -181,6 +194,16 @@ export class OpenTelemetryExporter implements TelemetryPort {
         rootSpan.end(new Date(started.timestamp));
       }
       for (const item of batch.events) {
+        for (const fact of runtimeStabilityFacts(batch, item)) {
+          const attributes = runtimeStabilityMetricAttributes(fact);
+          stabilityCounter.add(1, attributes);
+          for (const measurement of runtimeStabilityMeasurements(fact)) {
+            stabilityItems.record(measurement.value, {
+              ...attributes,
+              'repoctopus.runtime.stability.measure': measurement.measure,
+            });
+          }
+        }
         const lifecycleRecords = acceptedChangeLifecycleTelemetry(batch, item);
         if (lifecycleRecords.length > 0) {
           for (const record of lifecycleRecords) {

@@ -193,6 +193,57 @@ describe('Work execution recovery classification', () => {
     });
   });
 
+  it('persists duplicate continuation pulls as suppressed dispatch facts without replaying Work', async () => {
+    let run = {
+      ...state({ execution: checkpoint('claimed') }),
+      stateVersion: 10,
+      composition: { compositionDigest: digest('9') },
+    } as unknown as RunState;
+    const trajectory: TrajectoryEvent[] = [];
+    const authority = Object.create(WorkExecutionAuthority.prototype) as WorkExecutionAuthority;
+    Object.defineProperty(authority, 'ctx', {
+      value: {
+        runStore: {
+          commitGuarded: (
+            _runId: string,
+            commit: (input: { state: RunState; trajectory: TrajectoryEvent[] }) => {
+              state?: RunState;
+              event?: TrajectoryEvent;
+              value: undefined;
+            },
+          ) => {
+            const result = commit({ state: run, trajectory });
+            if (result.state) run = result.state;
+            if (result.event) trajectory.push(result.event);
+            return Promise.resolve(result.value);
+          },
+        },
+      },
+    });
+    const recovery = {
+      schemaVersion: 2 as const,
+      continuation: 'execute' as const,
+      workId: 'build:1.1',
+      attempt: 1,
+      checkEpoch: 4,
+      reason: 'claim-redelivery' as const,
+    };
+
+    await authority.recordContinuation(run.runId, recovery);
+    await authority.recordContinuation(run.runId, recovery);
+
+    expect(trajectory).toHaveLength(2);
+    expect(trajectory[0]).toMatchObject({
+      type: 'continuation.selected',
+      data: { result: 'selected', dispatchSuppressed: false },
+    });
+    expect(trajectory[1]).toMatchObject({
+      type: 'continuation.selected',
+      data: { result: 'suppressed', dispatchSuppressed: true },
+    });
+    expect(run.workExecution).toEqual(checkpoint('claimed'));
+  });
+
   it('distinguishes active, unknown, failed, validator, human and corrupt boundaries', async () => {
     const invocation: WorkExecutionHostInvocation = {
       schemaVersion: 1,

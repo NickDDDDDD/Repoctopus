@@ -62,6 +62,7 @@ import {
   createExecutionWorkspaceIntent,
   createPlanEvidence,
   createPackageCompletionEvidence,
+  canRetainSuspendedBuildConfiguration,
   revalidateSuspendedBuildProtocol,
   validateBuildPlan,
   type BuildConfiguration,
@@ -3392,19 +3393,17 @@ export class WorkflowRuns extends Service {
                 assessment.snapshot?.planningManifestDigest ??
                 assessment.validation.validationDigest;
               const suspended = lifecycle.buildProtocol;
-              const canRetainConfiguration =
-                suspended?.status === 'suspended-for-design' &&
-                suspended.configuration !== null &&
-                suspended.configuration.workspaceIntent.semanticDigest ===
-                  lifecycle.workspaceIntent.semanticDigest &&
-                canonicalJson([...suspended.configuration.repositoryIds].sort()) ===
-                  canonicalJson(
-                    projectSnapshot.repositories.map((repository) => repository.id).sort(),
-                  );
+              const canRetainConfiguration = canRetainSuspendedBuildConfiguration(suspended, {
+                workspaceIntent: lifecycle.workspaceIntent,
+                repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
+              });
               const workKind = canRetainConfiguration ? 'build.plan' : 'build.configure';
               const skills = await this.resolveLifecycleWorkSkills(workKind, signal, [], runId);
               if (canRetainConfiguration) {
-                const configuration = suspended.configuration!;
+                if (!suspended?.configuration) {
+                  throw new Error('Compatible suspended Build configuration is missing');
+                }
+                const configuration = suspended.configuration;
                 const protocol = revalidateSuspendedBuildProtocol(suspended, {
                   planningDigest,
                   configurationCompatible: true,

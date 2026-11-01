@@ -1339,8 +1339,7 @@ export class WorkExecutionAuthority extends Service {
   async recordContinuation(runId: string, recovery: WorkExecutionRecovery): Promise<void> {
     await this.ctx.runStore.commitGuarded(runId, ({ state, trajectory }) => {
       const openObservationUnavailable =
-        recovery.continuation === 'reconcile' &&
-        recovery.reason === 'open-observation-unavailable';
+        recovery.continuation === 'reconcile' && recovery.reason === 'open-observation-unavailable';
       const eventId = digest(
         runId,
         'continuation.selected',
@@ -1349,8 +1348,40 @@ export class WorkExecutionAuthority extends Service {
         recovery.continuation,
         recovery.reason,
       );
-      if (trajectory.some((event) => event.eventId === eventId)) return { value: undefined };
       const timestamp = new Date().toISOString();
+      if (trajectory.some((event) => event.eventId === eventId)) {
+        const nextState: RunState = {
+          ...state,
+          stateVersion: state.stateVersion + 1,
+          updatedAt: timestamp,
+        };
+        return {
+          state: nextState,
+          event: executionEvent({
+            state: nextState,
+            sequence: trajectory.length + 1,
+            timestamp,
+            type: 'continuation.selected',
+            identity: [
+              recovery.workId ?? 'none',
+              String(recovery.attempt ?? 0),
+              recovery.continuation,
+              recovery.reason,
+              'suppressed',
+              String(state.stateVersion),
+            ],
+            data: {
+              continuation: recovery.continuation,
+              reason: recovery.reason,
+              workId: recovery.workId,
+              attempt: recovery.attempt,
+              result: 'suppressed',
+              dispatchSuppressed: true,
+            },
+          }),
+          value: undefined,
+        };
+      }
       const nextState: RunState = {
         ...state,
         stateVersion: state.stateVersion + 1,
@@ -1374,6 +1405,8 @@ export class WorkExecutionAuthority extends Service {
             reason: recovery.reason,
             workId: recovery.workId,
             attempt: recovery.attempt,
+            result: 'selected',
+            dispatchSuppressed: false,
             ...(openObservationUnavailable
               ? {
                   result: 'reconcile',

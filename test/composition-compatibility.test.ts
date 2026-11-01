@@ -104,6 +104,22 @@ describe('composition compatibility', () => {
     ).toMatchObject({ status: 'migration_required' });
   });
 
+  it('rejects adoption when the Runtime configuration identity changed', () => {
+    const beforePlugin = plugin('workflow-runs', 'a', ['workflow-transition'], { run: '1' });
+    const afterPlugin = {
+      ...plugin('workflow-runs', 'b', ['workflow-transition'], { run: '1' }, [
+        { codeDigest: beforePlugin.codeDigest, descriptorDigest: beforePlugin.descriptorDigest },
+      ]),
+      configDigest: digest('f'),
+    };
+    expect(
+      compareCompositions(
+        composition(digest('1'), [beforePlugin]),
+        composition(digest('2'), [afterPlugin]),
+      ),
+    ).toMatchObject({ status: 'migration_required' });
+  });
+
   it('rejects multi-predecessor adoption for a protected checkpoint dependency', () => {
     const beforePlugin = plugin('workflow-runs', 'a', ['workflow-transition'], { run: '1' });
     const afterPlugin = plugin('workflow-runs', 'b', ['workflow-transition'], { run: '1' }, [

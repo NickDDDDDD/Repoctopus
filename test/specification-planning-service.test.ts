@@ -197,7 +197,11 @@ describe('SpecificationPlanning service', () => {
     const workspace = await temporaryDirectory('repoctopus-spec-planning-');
     cleanup.push(workspace);
     const first = app(workspace);
-    const prepared = await first.planning.prepare(prepareInput());
+    const [prepared, concurrent] = await Promise.all([
+      first.planning.prepare(prepareInput()),
+      first.planning.prepare(prepareInput()),
+    ]);
+    expect(concurrent).toEqual(prepared);
     expect(prepared).toMatchObject({
       stateVersion: 0,
       status: 'awaiting_approval',
@@ -238,12 +242,21 @@ describe('SpecificationPlanning service', () => {
       }),
     ).rejects.toThrow(/not trusted/u);
 
-    const approved = await running.planning.decide({
-      changeId: prepared.changeId,
-      response,
-      actor: { actorId: 'user', source: 'cli', authenticated: true },
-      now: () => new Date('2026-10-22T00:01:00.000Z'),
-    });
+    const [approved, concurrentApproval] = await Promise.all([
+      running.planning.decide({
+        changeId: prepared.changeId,
+        response,
+        actor: { actorId: 'user', source: 'cli', authenticated: true },
+        now: () => new Date('2026-10-22T00:01:00.000Z'),
+      }),
+      running.planning.decide({
+        changeId: prepared.changeId,
+        response,
+        actor: { actorId: 'user', source: 'cli', authenticated: true },
+        now: () => new Date('2026-10-22T00:01:00.000Z'),
+      }),
+    ]);
+    expect(concurrentApproval).toEqual(approved);
     expect(approved).toMatchObject({ status: 'approved', stateVersion: 1 });
 
     running.specification.proposalDigest = digest('9');

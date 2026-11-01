@@ -472,6 +472,13 @@ export function requestSpecificationApproval(input: {
       updatedAt: input.timestamp,
     };
   }
+  const decisionRequest = createSpecificationApprovalRequest(input.snapshot, input.requestId);
+  if (
+    current?.decisionRequest.requestId === decisionRequest.requestId &&
+    current.decisionRequest.proposalHash !== decisionRequest.proposalHash
+  ) {
+    throw new Error('Specification approval idempotency key conflicts with another proposal');
+  }
   return {
     schemaVersion: 1,
     changeId: input.snapshot.changeId,
@@ -479,7 +486,7 @@ export function requestSpecificationApproval(input: {
     stateVersion: (current?.stateVersion ?? -1) + 1,
     status: 'awaiting_approval',
     snapshot: structuredClone(input.snapshot),
-    decisionRequest: createSpecificationApprovalRequest(input.snapshot, input.requestId),
+    decisionRequest,
     decision: null,
     updatedAt: input.timestamp,
   };

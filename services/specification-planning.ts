@@ -170,7 +170,7 @@ export class SpecificationPlanning extends Service {
         observation,
       };
     }
-    const next = requestSpecificationApproval({
+    let next = requestSpecificationApproval({
       current,
       snapshot,
       timestamp: (input.now ?? (() => new Date()))().toISOString(),
@@ -178,7 +178,20 @@ export class SpecificationPlanning extends Service {
       ...(input.forceNewApproval ? { forceNewRequest: true } : {}),
     });
     if (current?.stateVersion !== next.stateVersion) {
-      await this.store.commit(next, current?.stateVersion ?? null);
+      try {
+        await this.store.commit(next, current?.stateVersion ?? null);
+      } catch (error) {
+        const latest = await this.store.load(input.changeId, input.approvalPhase ?? 'design');
+        if (
+          !latest ||
+          latest.snapshot.digest !== next.snapshot.digest ||
+          latest.decisionRequest.requestId !== next.decisionRequest.requestId ||
+          latest.decisionRequest.proposalHash !== next.decisionRequest.proposalHash
+        ) {
+          throw error;
+        }
+        next = latest;
+      }
     }
     if (
       next.status === 'approved' &&
@@ -471,13 +484,28 @@ export class SpecificationPlanning extends Service {
   }): Promise<SpecificationApprovalState> {
     const current = await this.store.load(input.changeId, input.approvalPhase ?? 'design');
     if (!current) throw new Error(`Specification approval does not exist: ${input.changeId}`);
-    const next = recordSpecificationApprovalDecision({
+    let next = recordSpecificationApprovalDecision({
       state: current,
       response: input.response,
       actor: input.actor,
       timestamp: (input.now ?? (() => new Date()))().toISOString(),
     });
-    await this.store.commit(next, current.stateVersion);
+    try {
+      await this.store.commit(next, current.stateVersion);
+    } catch (error) {
+      const latest = await this.store.load(input.changeId, input.approvalPhase ?? 'design');
+      if (
+        !latest ||
+        latest.decision?.requestId !== next.decision?.requestId ||
+        latest.decision?.proposalHash !== next.decision?.proposalHash ||
+        latest.decision?.decision !== next.decision?.decision ||
+        latest.decision?.actorId !== next.decision?.actorId ||
+        latest.decision?.source !== next.decision?.source
+      ) {
+        throw error;
+      }
+      next = latest;
+    }
     return next;
   }
 }

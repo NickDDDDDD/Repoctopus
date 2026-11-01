@@ -1,5 +1,6 @@
 import {
   IDENTITY_DEPENDENCIES,
+  RUNTIME_IDENTITY_KINDS,
   runtimeIdentityEntries,
   type RuntimeIdentityBasis,
   type RuntimeIdentityKind,
@@ -63,6 +64,16 @@ function dependentsOf(changed: ReadonlySet<RuntimeIdentityKind>): Set<RuntimeIde
     }
   }
   return invalidated;
+}
+
+export function runtimeInvalidationScope(
+  changedIdentities: readonly RuntimeIdentityKind[],
+): Pick<RuntimeInvalidationPlan, 'retainedIdentities' | 'invalidatedIdentities'> {
+  const invalidated = dependentsOf(new Set(changedIdentities));
+  return {
+    retainedIdentities: RUNTIME_IDENTITY_KINDS.filter((kind) => !invalidated.has(kind)).sort(),
+    invalidatedIdentities: RUNTIME_IDENTITY_KINDS.filter((kind) => invalidated.has(kind)).sort(),
+  };
 }
 
 function decision(

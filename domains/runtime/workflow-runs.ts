@@ -421,6 +421,17 @@ export class WorkflowRunCoordinator {
     await this.recoverChangeLifecycleDefinition(runId);
     await this.store.commitGuarded(runId, ({ state, trajectory }) => {
       if (!state.changeLifecycle) throw new Error(`Run is not a Change Run: ${runId}`);
+      const observationDigest = createHash('sha256')
+        .update(canonicalJson(observation))
+        .digest('hex');
+      const replayed = trajectory.some(
+        (entry) =>
+          entry.type === 'change.lifecycle.transitioned' &&
+          (entry.data.observationDigest === observationDigest ||
+            (entry.data.observation !== undefined &&
+              canonicalJson(entry.data.observation) === canonicalJson(observation))),
+      );
+      if (replayed) return { value: undefined };
       if (
         (observation.kind === 'verify-gate-satisfied' ||
           observation.kind === 'verify-gate-rejected') &&
@@ -455,11 +466,7 @@ export class WorkflowRunCoordinator {
       return {
         state: nextState,
         event: event({
-          eventId: stableEventId(
-            runId,
-            String(reduced.fact.revision),
-            createHash('sha256').update(canonicalJson(observation)).digest('hex'),
-          ),
+          eventId: stableEventId(runId, String(reduced.fact.revision), observationDigest),
           sequence: trajectory.length + 1,
           timestamp,
           type: 'change.lifecycle.transitioned',
@@ -467,6 +474,7 @@ export class WorkflowRunCoordinator {
           data: {
             changeLifecycleTransition: reduced.fact,
             observationKind: observation.kind,
+            observationDigest,
             observation: structuredClone(observation),
             ...(retirement.fact ? { executionRetirement: structuredClone(retirement.fact) } : {}),
           },
@@ -817,35 +825,44 @@ export class WorkflowRunCoordinator {
   }): Promise<RuntimeResult<ResumeView>> {
     const recovered = await this.store.recover(options.runId);
     await this.prepareWritableComposition(options.runId);
-    const [state, previousSnapshot, trajectory] = await Promise.all([
-      this.store.loadRun(options.runId),
-      this.store.loadProjectSnapshot(options.runId),
-      this.store.loadTrajectory(options.runId),
-    ]);
-    this.assertWritableComposition(state);
+    const previousSnapshot = await this.store.loadProjectSnapshot(options.runId);
     const reconciliation = reconcileProjectSnapshots(
       previousSnapshot,
       options.currentProjectSnapshot,
     );
-    const timestamp = this.clock().toISOString();
-    const nextState: RunState = {
-      ...state,
-      reconciliationRequired: state.reconciliationRequired || reconciliation.changed,
-      stateVersion: state.stateVersion + 1,
-      updatedAt: timestamp,
-    };
-    const resumed = event({
-      eventId: this.uuid(),
-      sequence: trajectory.length + 1,
-      timestamp,
-      type: reconciliation.changed ? 'recovery.reconciled' : 'run.resumed',
-      state: nextState,
-      data: { recoveredTransition: recovered, reconciliation },
-    });
-    await this.store.commit({
-      state: nextState,
-      event: resumed,
-      previousStateVersion: state.stateVersion,
+    await this.store.commitGuarded(options.runId, ({ state, trajectory }) => {
+      this.assertWritableComposition(state);
+      const resumeBasis = [...trajectory]
+        .reverse()
+        .find((entry) => entry.type !== 'run.resumed' && entry.type !== 'recovery.reconciled');
+      const resumeEventId = stableEventId(
+        options.runId,
+        resumeBasis?.eventId ?? 'run-start',
+        options.currentProjectSnapshot.digest,
+        reconciliation.changed ? 'recovery.reconciled' : 'run.resumed',
+      );
+      if (trajectory.some((entry) => entry.eventId === resumeEventId)) {
+        return { value: undefined };
+      }
+      const timestamp = this.clock().toISOString();
+      const nextState: RunState = {
+        ...state,
+        reconciliationRequired: state.reconciliationRequired || reconciliation.changed,
+        stateVersion: state.stateVersion + 1,
+        updatedAt: timestamp,
+      };
+      return {
+        state: nextState,
+        event: event({
+          eventId: resumeEventId,
+          sequence: trajectory.length + 1,
+          timestamp,
+          type: reconciliation.changed ? 'recovery.reconciled' : 'run.resumed',
+          state: nextState,
+          data: { recoveredTransition: recovered, reconciliation },
+        }),
+        value: undefined,
+      };
     });
     const diagnostics: RuntimeDiagnostic[] = reconciliation.changed
       ? [

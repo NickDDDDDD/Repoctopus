@@ -1714,7 +1714,14 @@ describe('managed Change execution production composition', () => {
           break;
         }
       }
-      expect(recoveryView).toMatchObject({
+      expect(
+        recoveryView,
+        JSON.stringify({
+          lifecycle: recoveryView?.changeLifecycle,
+          reason: recoveryView?.reason,
+          continuation: recoveryView?.continuation,
+        }),
+      ).toMatchObject({
         state: { runId },
         changeLifecycle: {
           phase: 'open',

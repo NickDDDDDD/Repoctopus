@@ -751,6 +751,8 @@ describe('telemetry mapping', () => {
             continuation: 'design',
             retainedCount: 8,
             invalidatedCount: 1,
+            protocolDisposition: 'suspended',
+            completionBeforeCount: 2,
             supersededPlanningDigest: `sha256:${'a'.repeat(64)}`,
             observedPlanningDigest: `sha256:${'b'.repeat(64)}`,
             supersededWorkId: 'build.plan:private-work',
@@ -776,9 +778,9 @@ describe('telemetry mapping', () => {
       'repoctopus.runtime.invalidation.disposition': 'invalidate',
       'repoctopus.runtime.invalidation.scope': 'exact',
       'repoctopus.runtime.invalidation.continuation': 'design',
-      'repoctopus.runtime.invalidation.retained_count': 8,
-      'repoctopus.runtime.invalidation.invalidated_count': 1,
     });
+    expect(planningMetric).not.toHaveProperty('repoctopus.runtime.invalidation.retained_count');
+    expect(planningMetric).not.toHaveProperty('repoctopus.runtime.invalidation.invalidated_count');
     expect(JSON.stringify(planningMetric)).not.toMatch(/private approval|sha256:f/u);
   });
 });
