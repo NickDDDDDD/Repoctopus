@@ -44,7 +44,7 @@ Executed on Windows with Node.js `24.21.0`:
 ```text
 npm run typecheck && npm run lint && npm test
   156 test files passed
-  696 tests passed; 2 skipped
+  697 tests passed; 2 skipped
   CLI and Desktop production builds passed
 
 npx vitest run test/managed-change-execution.e2e.test.ts
