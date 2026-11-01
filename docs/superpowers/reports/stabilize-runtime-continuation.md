@@ -7,12 +7,11 @@
 ## 权威证据
 
 - Repoctopus 正式验证报告：`verification/stabilize-runtime-continuation/verification-report.md`
-- 被测产品实现提交：`3c0d18fa69bd6deceb8de30fa995c68a8ea41436`
-- 被测 npm 包 SHA-256：`3a4b1c3aa9d42542a6baa22c62eec7904604d6a3277fb7a4ef3e126c6b8cdd80`
+- 核心产品实现边界：`3c0d18fa69bd6deceb8de30fa995c68a8ea41436`
 - 控制器：`@rpamis/comet@0.5.1`
 - 独立复核：identity owner、精确失效范围、未知副作用、CAS 原子性、多仓 binding 与遥测基数均通过，阻断项为 0。
 
-本文件是 Comet Classic Verify 所需的报告入口，只负责把生命周期证据绑定到上述正式报告；它不建立第二套产品验证权威。
+本文件是 Comet Classic Verify 所需的报告入口，只负责把生命周期证据绑定到上述正式报告；它不建立第二套产品验证权威。npm 包摘要只记录在包外的正式报告中，避免本文件对其所在包产生自引用摘要。
 
 ## 当前 Checkpoint 证据
 
