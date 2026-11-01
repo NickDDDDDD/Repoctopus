@@ -69,7 +69,7 @@
 - [x] 8.2 删除或重写依赖旧预发布 schema/全量失效的 fixtures，不增加 generation、双读、fallback adapter 或 Store 修复命令，并运行 migration/read-only tests <!-- comet-task:d9b7f7ec-5be0-43e8-9f72-ca4485aa8fa1 -->
 - [x] 8.3 更新 `docs/specification.md`、`docs/runtime-state.md`、`docs/self-hosting.md`、`docs/telemetry.md` 的最终公共行为，使用文档中的命令执行一次可复现验收 <!-- comet-task:08a88783-5f1b-47cf-aad6-c35ae9a32cb5 -->
 - [x] 8.4 运行 `npm run typecheck && npm run lint && npm test`，修复所有 Runtime、领域和服务回归 <!-- comet-task:7843b6f1-2c1b-4f0c-98a5-bf5fc9bfb593 -->
-- [ ] 8.5 运行 `npm run verify` 与 `npx --yes --package=@rpamis/comet@0.5.1 comet classic openspec -- validate stabilize-runtime-continuation --strict`，保存正式 Verification Evidence 并确认无临时日志/调试文件残留 <!-- comet-task:5411ed42-b3c3-4595-a9ec-9c3a3c54d77c -->
+- [x] 8.5 运行 `npm run verify` 与 `npx --yes --package=@rpamis/comet@0.5.1 comet classic openspec -- validate stabilize-runtime-continuation --strict`，保存正式 Verification Evidence 并确认无临时日志/调试文件残留 <!-- comet-task:5411ed42-b3c3-4595-a9ec-9c3a3c54d77c -->
 - [ ] 8.6 由独立 reviewer 对 identity owner、失效范围、unknown side-effect、CAS 原子性、多仓 binding 和遥测基数做高风险复核，解决全部阻断 finding 后才允许 Archive <!-- comet-task:99fe553e-8039-4503-bc20-5a680f622d7f -->
 
 ## Workflow follow-up
