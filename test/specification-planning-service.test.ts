@@ -115,6 +115,7 @@ function prepareInput() {
       remoteOid: '1'.repeat(40),
     },
     requestId: 'request-1',
+    buildStrategyDigest: digest('c'),
     now: () => new Date('2026-10-22T00:00:00.000Z'),
   } as const;
 }

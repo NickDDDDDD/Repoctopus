@@ -47,6 +47,9 @@ export function createInitialBuildWork(facts: {
   projectSnapshotDigest: string;
   workspaceRepositoryId: string;
   repositoryIds: readonly string[];
+  strategyId: string;
+  executionMode: BuildExecutionMode;
+  tddMode: BuildTddMode;
 }): { tasks: SpecificationTask[]; work: WorkDescriptor } {
   return {
     tasks: structuredClone(facts.taskSet.tasks),
@@ -71,7 +74,8 @@ export function createBuildActionWork(facts: {
   workspaceRepositoryId: string;
   repositoryIds: readonly string[];
   stableInput: unknown;
-  configurationId?: string;
+  strategyId?: string;
+  bindingId?: string;
   planId?: string;
   planRevision?: number;
   packageId?: string;
@@ -174,7 +178,8 @@ export function createBuildActionWork(facts: {
       ? [...new Set([...binding.capabilities, modeCapability])].sort()
       : binding.capabilities,
     buildAction: facts.kind.slice('build.'.length) as NonNullable<WorkDescriptor['buildAction']>,
-    ...(facts.configurationId ? { configurationId: facts.configurationId } : {}),
+    ...(facts.strategyId ? { strategyId: facts.strategyId } : {}),
+    ...(facts.bindingId ? { bindingId: facts.bindingId } : {}),
     ...(facts.planId ? { planId: facts.planId } : {}),
     ...(facts.planRevision !== undefined ? { planRevision: facts.planRevision } : {}),
     ...(facts.packageId ? { packageId: facts.packageId } : {}),

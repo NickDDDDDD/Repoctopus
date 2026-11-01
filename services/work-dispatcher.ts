@@ -58,7 +58,8 @@ function createChangeInputs(input: {
       ? {
           currentAction: protocol.currentAction,
           actionAttempt: protocol.actionAttempt,
-          configuration: protocol.configuration,
+          strategy: protocol.strategy,
+          binding: protocol.binding,
           plan,
           planEvidence: protocol.planEvidence,
           packageCompletions: protocol.packageCompletions,

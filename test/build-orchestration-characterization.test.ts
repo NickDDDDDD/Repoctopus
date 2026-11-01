@@ -28,7 +28,7 @@ describe('managed Build protocol characterization', () => {
     expect(source).not.toContain('readySpecificationTasks');
   });
 
-  it('selects TDD from frozen Build Configuration rather than a fixed phase skill', () => {
+  it('selects TDD from the approved Build Strategy rather than a fixed phase skill', () => {
     const buildWorks = BUILTIN_CHANGE_LIFECYCLE_DEFINITION.works.filter(
       (work) => work.phase === 'build',
     );
@@ -44,7 +44,7 @@ describe('managed Build protocol characterization', () => {
 
     expect(build?.requiredValidatorProfiles).toEqual(
       expect.arrayContaining([
-        'build.configuration-approved',
+        'build.binding-valid',
         'build.plan-valid',
         'build.plan-evidence-valid',
         'build.package-valid',

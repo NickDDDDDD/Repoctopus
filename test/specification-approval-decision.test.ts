@@ -37,6 +37,7 @@ const request: SpecificationApprovalDecisionRequest = {
     semanticDigest: `sha256:${'a'.repeat(64)}`,
     affectedCapabilities: ['delivery-governance'],
     targetBranch: 'main',
+    buildStrategyDigest: `sha256:${'d'.repeat(64)}`,
   },
   proposalHash: `sha256:${'c'.repeat(64)}`,
   provider: {

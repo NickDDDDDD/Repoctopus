@@ -22,7 +22,7 @@ export type RuntimeStabilityFact =
       schemaVersion: 1;
       kind: 'protocol-revalidation';
       authority: 'build-protocol';
-      result: 'retained-configuration' | 'rebuilt-configuration';
+      result: 'retained-binding' | 'rebuilt-binding';
       completionBeforeCount: number;
       completionRetainedCount: number;
     }

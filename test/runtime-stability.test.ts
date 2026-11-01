@@ -81,7 +81,7 @@ describe('Runtime stability facts', () => {
           evidenceIds: [],
         },
         buildRevalidation: {
-          protocolDisposition: 'retained-configuration',
+          protocolDisposition: 'retained-binding',
           completionBeforeCount: 2,
           completionRetainedCount: 1,
         },
@@ -94,7 +94,7 @@ describe('Runtime stability facts', () => {
       { kind: 'invalidation', result: 'exact', retainedCount: 3, invalidatedCount: 6 },
       {
         kind: 'protocol-revalidation',
-        result: 'retained-configuration',
+        result: 'retained-binding',
         completionBeforeCount: 2,
         completionRetainedCount: 1,
       },

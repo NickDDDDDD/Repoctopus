@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  acceptBuildConfiguration,
-  createBuildConfigurationProposal,
+  createBuildStrategy,
+  createExecutionBinding,
   createBuildPlan,
   createExecutionWorkspaceBinding,
   createExecutionWorkspaceIntent,
@@ -31,20 +31,22 @@ describe('managed Build verification subject', () => {
         },
       ],
     });
-    const proposal = createBuildConfigurationProposal({
-      intent,
-      binding,
+    const strategy = createBuildStrategy({
+      runId: 'verification-build-strategy',
+      revision: 1,
       executionMode: 'autonomous',
       tddMode: 'tdd',
       reviewMode: 'standard',
+      isolationIntent: intent.isolation,
+    });
+    const executionBinding = createExecutionBinding({
+      strategy,
+      revision: 1,
       hostId: 'verification-host',
       hostCapabilities: ['build.autonomous', 'process.execute', 'repository.write'],
-    });
-    const configuration = acceptBuildConfiguration({
-      proposal,
-      requestId: 'verification-decision',
-      actorId: 'verification-user',
-      decidedAt: '2026-10-28T00:00:00.000Z',
+      workspaceBinding: binding,
+      workspaceOwnerId: intent.workspaceId,
+      localOverlayRef: 'execution-workspace:verification',
     });
     const tasks = parseSpecificationTasks(
       'restore-runtime-build-orchestration',
@@ -57,7 +59,8 @@ describe('managed Build verification subject', () => {
     const plan = createBuildPlan({
       runId,
       revision: 1,
-      configuration,
+      strategy,
+      binding: executionBinding,
       planningDigest: tasks.digest,
       tasks,
       candidate: {
@@ -86,23 +89,26 @@ describe('managed Build verification subject', () => {
         workspaceId: 'managed-blackbox',
         changeId: 'managed-blackbox',
       }),
-      configurationId: configuration.configurationId,
-      configurationDigest: configuration.semanticDigest,
+      strategyId: strategy.strategyId,
+      strategyDigest: strategy.semanticDigest,
+      bindingId: executionBinding.bindingId,
+      bindingStateDigest: executionBinding.stateDigest,
       planId: plan.planId,
       planDigest: plan.digest,
       taskSetDigest: tasks.digest,
     };
 
     expect(subject).toEqual({
-      definition: 'repoctopus-change@4.5.0',
-      definitionDigest: 'sha256:5252e73b922907deecf113e2e4ec4a6a8b4891cb99c6db93e3cf5e2e107d7028',
+      definition: 'repoctopus-change@4.6.0',
+      definitionDigest: 'sha256:a6c06825948cb3b31a8d50210eeb744522b5cbe5a30e52e9f90904b8b7c51923',
       runId: 'change-verification-workspace-restore-runtime-build-orchestration-9fda2eb7bf05fdf5',
       blackBoxRunId: 'change-managed-blackbox-managed-blackbox-a56af5c947f984ce',
-      configurationId: 'build-configuration:984df01c5c917e6286a1e112',
-      configurationDigest:
-        'sha256:af6f56776fd582eca909f27e86f0d22804d82cd7984df01c5c917e6286a1e112',
-      planId: 'build-plan:8bf9212ab473dd6fd62f4dad',
-      planDigest: 'sha256:18a60cf28483c14808c524f98621f4f31ae5d0ec8bf9212ab473dd6fd62f4dad',
+      strategyId: 'build-strategy:426031405571f2b72e439071',
+      strategyDigest: 'sha256:912ec16c53070e44b5f6dc57005492e6b2d4362853a1253a149341e65cd4c50c',
+      bindingId: 'execution-binding:38201aa2797d809aa8f87132',
+      bindingStateDigest: 'sha256:3efa37049f0cc87038aa0326b723d775c504d8d126d34f50bc4fd21950881257',
+      planId: 'build-plan:d355e8a15bd2bc6d48a2fe92',
+      planDigest: 'sha256:db1a52ae689c3bcdf5988634af0fc5ed70ce59a9d355e8a15bd2bc6d48a2fe92',
       taskSetDigest: 'sha256:d96a472d5f9b11f299872af949d92193398bfe295dc727cd7f7eeefb6629cc2f',
     });
   });

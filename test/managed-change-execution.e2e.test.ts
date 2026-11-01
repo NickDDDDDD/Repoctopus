@@ -323,7 +323,8 @@ describe('managed Change execution production composition', () => {
                   acceptanceCriteria: Array<{ acceptanceId: string }>;
                 }>;
                 build: {
-                  configuration: { bindingDigest: `sha256:${string}` };
+                  strategy: { semanticDigest: `sha256:${string}` };
+                  binding: { stateDigest: `sha256:${string}` } | null;
                   plan: {
                     packages: Array<{
                       packageId: string;
@@ -337,9 +338,8 @@ describe('managed Change execution production composition', () => {
               if (packet.work.kind === 'build.configure') {
                 const candidate = {
                   schemaVersion: 1,
-                  kind: 'build-configuration-candidate',
-                  executionMode,
-                  tddMode: 'tdd',
+                  kind: 'execution-binding-candidate',
+                  strategyDigest: inputs.build!.strategy.semanticDigest,
                 } satisfies WorkExecutionResult;
                 correctedConfigurationResult = candidate;
                 if (
@@ -389,7 +389,7 @@ describe('managed Change execution production composition', () => {
                     greenEvidenceId: `green:${packet.work.packageId}`,
                     regressionEvidenceId: `regression:${packet.work.packageId}`,
                   },
-                  repositoryDigest: inputs.build!.configuration.bindingDigest,
+                  repositoryDigest: inputs.build!.binding!.stateDigest,
                   implementationDigest: `sha256:${'e'.repeat(64)}`,
                 };
               }
@@ -400,7 +400,7 @@ describe('managed Change execution production composition', () => {
                   completedPackageIds: inputs.build!.plan!.packages.map((entry) => entry.packageId),
                   acceptedTaskIds: inputs.tasks.map((task) => task.taskId),
                   testEvidenceIds: ['test:build-check'],
-                  repositoryDigest: inputs.build!.configuration.bindingDigest,
+                  repositoryDigest: inputs.build!.binding!.stateDigest,
                   implementationDigest: `sha256:${'f'.repeat(64)}`,
                   reviewerExecutionId: session.invocationId,
                 } satisfies WorkExecutionResult;
@@ -1756,9 +1756,10 @@ describe('managed Change execution production composition', () => {
           return packet.work.kind === 'build.configure'
             ? {
                 schemaVersion: 1,
-                kind: 'build-configuration-candidate',
-                executionMode: 'autonomous',
-                tddMode: 'tdd',
+                kind: 'execution-binding-candidate',
+                strategyDigest: JSON.parse(
+                  packet.context.layers.find((layer) => layer.kind === 'change-inputs')!.content,
+                ).build.strategy.semanticDigest,
               }
             : undefined;
         },

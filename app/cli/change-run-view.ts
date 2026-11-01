@@ -26,7 +26,8 @@ export function renderChangeProjection(projection: ChangeRunProjection): string[
     const build = projection.build;
     lines.push(
       `Build action: ${build.action ?? '-'} (attempt ${build.actionAttempt})`,
-      `Build configuration: ${build.configurationId ?? '-'}; execution=${build.executionMode ?? '-'}; tdd=${build.tddMode ?? '-'}; isolation=${build.isolation}`,
+      `Build strategy: ${build.strategyId}; execution=${build.executionMode ?? '-'}; tdd=${build.tddMode ?? '-'}; isolation=${build.isolation}`,
+      `Execution binding: ${build.bindingId ?? '-'}${build.bindingRevision === null ? '' : ` (revision ${build.bindingRevision})`}`,
       `Build plan: ${build.planId ?? '-'}${build.planRevision === null ? '' : ` (revision ${build.planRevision})`}`,
       `Build packages: ${build.completedPackages}/${build.totalPackages}${build.packageId ? ` (current ${build.packageId})` : ''}`,
       `Build check: ${build.checkAccepted ? 'accepted' : 'pending'}`,

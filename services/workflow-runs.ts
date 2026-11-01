@@ -53,8 +53,8 @@ import {
   createInitialBuildWork,
 } from '../domains/change-lifecycle/build-work.js';
 import {
-  acceptBuildConfiguration,
-  createBuildConfigurationProposal,
+  createBuildStrategy,
+  createExecutionBinding,
   createBuildCheckEvidence,
   createBuildInvalidation,
   createBuildPlan,
@@ -62,10 +62,13 @@ import {
   createExecutionWorkspaceIntent,
   createPlanEvidence,
   createPackageCompletionEvidence,
-  canRetainSuspendedBuildConfiguration,
+  canRetainSuspendedExecutionBinding,
   revalidateSuspendedBuildProtocol,
   validateBuildPlan,
-  type BuildConfiguration,
+  type BuildStrategy,
+  type ExecutionBinding,
+  type BuildExecutionMode,
+  type BuildTddMode,
   type ExecutionWorkspaceBinding,
   type ExecutionWorkspaceIntent,
   type ExecutionIsolation,
@@ -125,6 +128,8 @@ export interface StartChangeRunInput {
   projectConfigDigest: `sha256:${string}`;
   verificationProfileId: string;
   executionCheckouts: readonly ExecutionCheckoutRequest[];
+  executionMode?: BuildExecutionMode;
+  tddMode?: BuildTddMode;
 }
 
 export interface DecideChangeRunInput {
@@ -280,6 +285,14 @@ export class WorkflowRuns extends Service {
       if (!input.verificationProfileId.trim()) {
         throw new Error('Change Run verification Evidence Profile is required');
       }
+      const executionMode = input.executionMode ?? 'autonomous';
+      const tddMode = input.tddMode ?? 'tdd';
+      if (!['autonomous', 'subagent-driven-development'].includes(executionMode)) {
+        throw new Error('Change Run Build execution mode is invalid');
+      }
+      if (!['tdd', 'direct'].includes(tddMode)) {
+        throw new Error('Change Run Build TDD mode is invalid');
+      }
       if (input.projectSnapshot.projectId !== workspaceId) {
         throw new Error('Change Run project snapshot belongs to another Workspace');
       }
@@ -347,6 +360,12 @@ export class WorkflowRuns extends Service {
         repositoryIds,
         projectConfigDigest: input.projectConfigDigest,
         verificationProfileId: input.verificationProfileId,
+        buildStrategyPreference: {
+          schemaVersion: 1,
+          executionMode,
+          tddMode,
+          reviewMode: 'standard' as const,
+        },
         specificationProvider: this.ctx.specification.identity(),
         executionCheckouts: input.executionCheckouts.map((checkout) => ({
           repositoryId: checkout.repositoryId,
@@ -544,99 +563,6 @@ export class WorkflowRuns extends Service {
         lifecycle?.phase === 'build' &&
         state.status === 'waiting' &&
         lifecycle.waitCondition?.kind === 'human-decision' &&
-        lifecycle.waitCondition.waitId.startsWith('build-configuration:')
-      ) {
-        if (!input.actor.authenticated) {
-          throw new Error('Build Configuration approval requires a trusted actor');
-        }
-        if (
-          input.response.requestId !== lifecycle.waitCondition.requestId ||
-          input.response.proposalHash !== lifecycle.waitCondition.proposalDigest
-        ) {
-          throw new Error('Build Configuration response does not match the current proposal');
-        }
-        const proposal = lifecycle.buildProtocol?.configurationProposal;
-        if (!proposal || proposal.semanticDigest !== input.response.proposalHash) {
-          throw new Error('Build Configuration proposal is missing or stale');
-        }
-        const projectSnapshot = await this.ctx.runStore.loadProjectSnapshot(input.runId);
-        const projectConfigDigest = state.trigger?.facts.projectConfigDigest;
-        const specificationRoot = state.trigger?.facts.specificationRoot as
-          | { repositoryId?: unknown }
-          | undefined;
-        if (
-          typeof projectConfigDigest !== 'string' ||
-          !/^sha256:[a-f0-9]{64}$/u.test(projectConfigDigest) ||
-          typeof specificationRoot?.repositoryId !== 'string'
-        ) {
-          throw new Error('Build Configuration decision trigger identities are missing');
-        }
-        const approved = input.response.decision === 'approve';
-        const kind = approved ? 'build.plan' : 'build.configure';
-        const skills = await this.resolveLifecycleWorkSkills(kind, signal, [], input.runId);
-        const configuration = approved
-          ? acceptBuildConfiguration({
-              proposal,
-              requestId: input.response.requestId,
-              actorId: input.actor.actorId,
-              decidedAt: new Date().toISOString(),
-            })
-          : undefined;
-        const work = createBuildActionWork({
-          runId: input.runId,
-          checkEpoch: lifecycle.checkEpoch + 1,
-          definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-          kind,
-          actionSkill: skills.actionSkill,
-          augmentationSkills: skills.augmentationSkills,
-          skillComposition: skills.skillComposition,
-          compositionDigest: state.composition.compositionDigest,
-          projectConfigDigest: projectConfigDigest as `sha256:${string}`,
-          projectSnapshotDigest: state.projectSnapshotDigest,
-          workspaceRepositoryId: specificationRoot.repositoryId,
-          repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
-          ...(configuration
-            ? { executionMode: configuration.executionMode, tddMode: configuration.tddMode }
-            : {}),
-          stableInput: approved
-            ? {
-                configurationId: configuration!.configurationId,
-                configurationDigest: configuration!.semanticDigest,
-                planningDigest: lifecycle.planningDigest,
-                tasks: lifecycle.tasks?.map(({ taskId, taskRevision }) => ({
-                  taskId,
-                  taskRevision,
-                })),
-              }
-            : { proposalDigest: proposal.semanticDigest, reason: 'configuration-revision' },
-        });
-        for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
-          await this.coordinator.bindSkill(input.runId, skill);
-        }
-        const waitId = lifecycle.waitCondition.waitId;
-        const decided = await this.coordinator.acceptChangeObservation(input.runId, {
-          kind: 'build-configuration-decision',
-          decision: approved ? 'approve' : 'reject',
-          requestId: input.response.requestId,
-          proposalDigest: input.response.proposalHash,
-          actorId: input.actor.actorId,
-          ...(configuration ? { configuration } : {}),
-          work,
-        });
-        await this.ctx.workExecutionAuthority.recordWorkCreated(input.runId, work);
-        await this.ctx.workExecutionAuthority.recordWaitBoundary({
-          runId: input.runId,
-          waitId,
-          stage: 'ended',
-          kind: 'human-decision',
-          reason: lifecycle.waitCondition.reason,
-        });
-        return this.coordinator.status(decided.value.state.runId);
-      }
-      if (
-        lifecycle?.phase === 'build' &&
-        state.status === 'waiting' &&
-        lifecycle.waitCondition?.kind === 'human-decision' &&
         lifecycle.waitCondition.waitId.startsWith('build-plan:')
       ) {
         if (!input.actor.authenticated) {
@@ -649,16 +575,26 @@ export class WorkflowRuns extends Service {
           throw new Error('Build Plan response does not match the current proposal');
         }
         const protocol = lifecycle.buildProtocol;
-        const configuration = protocol?.configuration;
+        const strategy = protocol?.strategy;
+        const binding = protocol?.binding;
         const plan = protocol?.plan;
-        if (!protocol || !configuration || !plan || protocol.currentAction !== 'plan-evidence') {
+        if (
+          !protocol ||
+          !strategy ||
+          !binding ||
+          !plan ||
+          protocol.currentAction !== 'plan-evidence'
+        ) {
           throw new Error('Build Plan approval has no active Plan Evidence');
         }
         const taskSet = await this.ctx.specification.tasks(lifecycle.identity.changeId, signal);
         const evidence = createPlanEvidence({
           plan,
-          configuration,
-          validation: validateBuildPlan({ plan, configuration, tasks: taskSet }),
+          strategy,
+          binding,
+          validation: validateBuildPlan({ plan, strategy, binding, tasks: taskSet }),
+          compositionCheckpointDigest: state.composition.compositionDigest,
+          reportOwnerId: lifecycle.identity.workspaceId,
         });
         if (evidence.validationDigest !== input.response.proposalHash) {
           throw new Error('Build Plan Evidence drifted before the Human Decision');
@@ -689,7 +625,7 @@ export class WorkflowRuns extends Service {
         const kind = approved ? (nextPackage ? 'build.execute' : 'build.check') : 'build.plan';
         const composition = buildActionSkillComposition({
           action: kind.slice('build.'.length) as 'plan' | 'execute' | 'check',
-          tddMode: configuration.tddMode,
+          tddMode: strategy.tddMode,
         });
         const skills = await this.resolveLifecycleWorkSkills(
           kind,
@@ -710,9 +646,10 @@ export class WorkflowRuns extends Service {
           projectSnapshotDigest: state.projectSnapshotDigest,
           workspaceRepositoryId: specificationRoot.repositoryId,
           repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
-          configurationId: configuration.configurationId,
-          executionMode: configuration.executionMode,
-          tddMode: configuration.tddMode,
+          strategyId: strategy.strategyId,
+          bindingId: binding.bindingId,
+          executionMode: strategy.executionMode,
+          tddMode: strategy.tddMode,
           planId: plan.planId,
           planRevision: plan.revision,
           ...(nextPackage
@@ -932,6 +869,9 @@ export class WorkflowRuns extends Service {
         changeId: lifecycle.identity.changeId,
         approvalPhase,
         changeBranch,
+        ...(approvalPhase === 'design'
+          ? { buildStrategyDigest: this.buildStrategy(state, lifecycle).semanticDigest }
+          : {}),
         ...(approvalPhase === 'open' && lifecycle.openApprovalInvalidated
           ? {
               forceNewApproval: true,
@@ -963,6 +903,49 @@ export class WorkflowRuns extends Service {
       projectConfigDigest: base.projectConfigDigest,
       workspaceRepositoryId: base.workspaceRepositoryId,
     };
+  }
+
+  private buildStrategy(state: RunState, lifecycle: ChangeLifecycleState): BuildStrategy {
+    if (!lifecycle.workspaceIntent) {
+      throw new Error('Build Strategy requires the approved Workspace isolation intent');
+    }
+    const preference = state.trigger?.facts.buildStrategyPreference as
+      | {
+          schemaVersion?: unknown;
+          executionMode?: unknown;
+          tddMode?: unknown;
+          reviewMode?: unknown;
+        }
+      | undefined;
+    if (
+      preference?.schemaVersion !== 1 ||
+      (preference.executionMode !== 'autonomous' &&
+        preference.executionMode !== 'subagent-driven-development') ||
+      (preference.tddMode !== 'tdd' && preference.tddMode !== 'direct') ||
+      preference.reviewMode !== 'standard'
+    ) {
+      throw new Error('Change Run is missing its frozen Build Strategy preference');
+    }
+    const current = lifecycle.buildProtocol?.strategy;
+    const candidate = createBuildStrategy({
+      runId: state.runId,
+      revision: current?.revision ?? 1,
+      executionMode: preference.executionMode,
+      tddMode: preference.tddMode,
+      reviewMode: preference.reviewMode,
+      isolationIntent: lifecycle.workspaceIntent.isolation,
+    });
+    if (current && current.semanticDigest !== candidate.semanticDigest) {
+      return createBuildStrategy({
+        runId: state.runId,
+        revision: current.revision + 1,
+        executionMode: candidate.executionMode,
+        tddMode: candidate.tddMode,
+        reviewMode: candidate.reviewMode,
+        isolationIntent: candidate.isolationIntent,
+      });
+    }
+    return candidate;
   }
 
   private async loadChangePlanningBase(
@@ -1056,6 +1039,7 @@ export class WorkflowRuns extends Service {
         changeId: lifecycle.identity.changeId,
         approvalPhase: 'design',
         expectedPlanningDigest: lifecycle.planningDigest,
+        buildStrategyDigest: this.buildStrategy(state, lifecycle).semanticDigest,
         ...(signal ? { signal } : {}),
       });
       return { ...observation, ...context };
@@ -1181,26 +1165,14 @@ export class WorkflowRuns extends Service {
     };
   }
 
-  private assertFrozenBuildHost(
-    configuration: BuildConfiguration,
+  private assertBuildHostCapabilities(
+    strategy: BuildStrategy,
     invocationHost: WorkExecutionHostIdentity,
   ): void {
-    if (invocationHost.id !== configuration.hostId) {
-      throw new Error('Build Host identity drifted from the approved Configuration');
-    }
-    if (
-      configuration.hostCapabilities.some(
-        (capability) => !invocationHost.capabilities.includes(capability),
-      )
-    ) {
-      throw new Error('Build Host capabilities drifted from the approved Configuration');
-    }
     const required =
-      configuration.executionMode === 'autonomous'
-        ? 'build.autonomous'
-        : 'subagent.dispatch.attested';
+      strategy.executionMode === 'autonomous' ? 'build.autonomous' : 'subagent.dispatch.attested';
     if (!invocationHost.capabilities.includes(required)) {
-      throw new Error(`Approved Build Host no longer supports ${required}`);
+      throw new Error(`Build Host does not support the approved Strategy capability ${required}`);
     }
   }
 
@@ -1246,14 +1218,19 @@ export class WorkflowRuns extends Service {
     state: RunState,
     lifecycle: NonNullable<RunState['changeLifecycle']>,
     projectSnapshot: ProjectSnapshot,
-    configuration: BuildConfiguration,
+    executionBinding: ExecutionBinding,
   ): Promise<void> {
-    const binding = await this.bindExecutionWorkspace(state, lifecycle, projectSnapshot);
-    if (
-      binding.localDigest !== configuration.bindingDigest ||
-      binding.semanticDigest !== configuration.bindingSemanticDigest
-    ) {
-      throw new Error('Execution Workspace identity drifted from the approved Configuration');
+    const observed = await this.bindExecutionWorkspace(state, lifecycle, projectSnapshot);
+    const observedRepositories = observed.repositories.map((repository) => ({
+      repositoryId: repository.repositoryId,
+      branchRef: repository.branch,
+      headRevision: repository.head,
+      isolation: observed.isolation,
+      workspaceOwnerId: lifecycle.workspaceIntent!.workspaceId,
+      worktreeId: repository.worktreeId,
+    }));
+    if (canonicalJson(observedRepositories) !== canonicalJson(executionBinding.repositories)) {
+      throw new Error('Execution Binding state drifted; Build Configure must run again');
     }
   }
 
@@ -1975,6 +1952,9 @@ export class WorkflowRuns extends Service {
                 projectSnapshotDigest: current.projectSnapshotDigest,
                 workspaceRepositoryId,
                 repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
+                strategyId: lifecycle.buildProtocol.strategy.strategyId,
+                executionMode: lifecycle.buildProtocol.strategy.executionMode,
+                tddMode: lifecycle.buildProtocol.strategy.tddMode,
                 stableInput: {
                   reason: 'compatible-definition-recovery',
                   actionAttempt: lifecycle.buildProtocol.actionAttempt + 1,
@@ -1984,7 +1964,7 @@ export class WorkflowRuns extends Service {
                 await this.coordinator.bindSkill(runId, skill);
               }
               const restored = await this.coordinator.acceptChangeObservation(runId, {
-                kind: 'build-configuration-retry-required',
+                kind: 'build-binding-retry-required',
                 reason: 'Compatible lifecycle recovery restored interrupted Configure Work',
                 work,
               });
@@ -1996,7 +1976,7 @@ export class WorkflowRuns extends Service {
                   ...restored.diagnostics,
                   {
                     level: 'warning',
-                    code: 'change.build-configuration-work-restored',
+                    code: 'change.build-binding-work-restored',
                     message: 'Compatible lifecycle recovery restored interrupted Configure Work',
                   },
                 ],
@@ -2006,9 +1986,10 @@ export class WorkflowRuns extends Service {
               lifecycle.phase === 'build' &&
               lifecycle.currentWork === null &&
               lifecycle.buildProtocol?.currentAction === 'plan' &&
-              lifecycle.buildProtocol.configuration
+              lifecycle.buildProtocol.binding
             ) {
-              const configuration = lifecycle.buildProtocol.configuration;
+              const strategy = lifecycle.buildProtocol.strategy;
+              const binding = lifecycle.buildProtocol.binding;
               const skills = await this.resolveLifecycleWorkSkills('build.plan', signal, [], runId);
               const work = createBuildActionWork({
                 runId,
@@ -2023,9 +2004,10 @@ export class WorkflowRuns extends Service {
                 projectSnapshotDigest: current.projectSnapshotDigest,
                 workspaceRepositoryId,
                 repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
-                configurationId: configuration.configurationId,
-                executionMode: configuration.executionMode,
-                tddMode: configuration.tddMode,
+                strategyId: strategy.strategyId,
+                bindingId: binding.bindingId,
+                executionMode: strategy.executionMode,
+                tddMode: strategy.tddMode,
                 stableInput: {
                   reason: 'compatible-definition-recovery',
                   actionAttempt: lifecycle.buildProtocol.actionAttempt + 1,
@@ -2089,8 +2071,8 @@ export class WorkflowRuns extends Service {
             ) {
               const hostOutcome = current.workExecution.hostOutcome;
               if (!hostOutcome) throw new Error('Build Configure Host Outcome is missing');
-              const configurationCandidate = hostOutcome.result;
-              if (configurationCandidate?.kind !== 'build-configuration-candidate') {
+              const bindingCandidate = hostOutcome.result;
+              if (bindingCandidate?.kind !== 'execution-binding-candidate') {
                 const projectConfigDigest = current.trigger?.facts.projectConfigDigest;
                 const specificationRoot = current.trigger?.facts.specificationRoot as
                   | { repositoryId?: unknown }
@@ -2121,8 +2103,11 @@ export class WorkflowRuns extends Service {
                   projectSnapshotDigest: current.projectSnapshotDigest,
                   workspaceRepositoryId: specificationRoot.repositoryId,
                   repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
+                  strategyId: lifecycle.buildProtocol!.strategy.strategyId,
+                  executionMode: lifecycle.buildProtocol!.strategy.executionMode,
+                  tddMode: lifecycle.buildProtocol!.strategy.tddMode,
                   stableInput: {
-                    reason: 'configuration-output-invalid',
+                    reason: 'execution-binding-output-invalid',
                     priorWorkId: lifecycle.currentWork.workId,
                   },
                 });
@@ -2130,9 +2115,9 @@ export class WorkflowRuns extends Service {
                   await this.coordinator.bindSkill(runId, skill);
                 }
                 const retried = await this.coordinator.acceptChangeObservation(runId, {
-                  kind: 'build-configuration-retry-required',
+                  kind: 'build-binding-retry-required',
                   reason:
-                    'Build Configure Host did not return a structured build-configuration-candidate',
+                    'Build Configure Host did not return a structured execution-binding-candidate',
                   work: retryWork,
                 });
                 await this.ctx.workExecutionAuthority.recordWorkCreated(runId, retryWork);
@@ -2143,7 +2128,7 @@ export class WorkflowRuns extends Service {
                     ...retried.diagnostics,
                     {
                       level: 'warning',
-                      code: 'change.build-configuration-outcome-rejected',
+                      code: 'change.build-binding-outcome-rejected',
                       message:
                         'Build Configure will retry because the prior Host Outcome was incomplete',
                     },
@@ -2157,8 +2142,12 @@ export class WorkflowRuns extends Service {
               if (!lifecycle.workspaceIntent || !lifecycle.buildProtocol) {
                 throw new Error('Build Configure requires the approved Workspace intent');
               }
+              const strategy = lifecycle.buildProtocol.strategy;
+              if (bindingCandidate.strategyDigest !== strategy.semanticDigest) {
+                throw new Error('Build Configure candidate does not bind the approved Strategy');
+              }
               const requiredCapability =
-                configurationCandidate.executionMode === 'autonomous'
+                strategy.executionMode === 'autonomous'
                   ? 'build.autonomous'
                   : 'subagent.dispatch.attested';
               if (!invocationHost.capabilities.includes(requiredCapability)) {
@@ -2192,10 +2181,13 @@ export class WorkflowRuns extends Service {
                   projectSnapshotDigest: current.projectSnapshotDigest,
                   workspaceRepositoryId: specificationRoot.repositoryId,
                   repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
+                  strategyId: strategy.strategyId,
+                  executionMode: strategy.executionMode,
+                  tddMode: strategy.tddMode,
                   stableInput: {
-                    reason: 'configuration-host-capability-missing',
+                    reason: 'execution-binding-host-capability-missing',
                     priorWorkId: lifecycle.currentWork.workId,
-                    executionMode: configurationCandidate.executionMode,
+                    executionMode: strategy.executionMode,
                     requiredCapability,
                   },
                 });
@@ -2203,7 +2195,7 @@ export class WorkflowRuns extends Service {
                   await this.coordinator.bindSkill(runId, skill);
                 }
                 const retried = await this.coordinator.acceptChangeObservation(runId, {
-                  kind: 'build-configuration-retry-required',
+                  kind: 'build-binding-retry-required',
                   reason: `Configure Host did not attest ${requiredCapability}`,
                   work: retryWork,
                 });
@@ -2215,7 +2207,7 @@ export class WorkflowRuns extends Service {
                     ...retried.diagnostics,
                     {
                       level: 'warning',
-                      code: 'change.build-configuration-host-capability-retry',
+                      code: 'change.build-binding-host-capability-retry',
                       message: `Build Configure will retry with a Host that attests ${requiredCapability}`,
                     },
                   ],
@@ -2275,14 +2267,14 @@ export class WorkflowRuns extends Service {
                   ],
                 };
               }
-              const proposal = createBuildConfigurationProposal({
-                intent: lifecycle.workspaceIntent,
-                binding,
-                executionMode: configurationCandidate.executionMode,
-                tddMode: configurationCandidate.tddMode,
-                reviewMode: 'standard',
+              const executionBinding = createExecutionBinding({
+                strategy,
+                revision: lifecycle.buildProtocol.bindingHistory.length + 1,
                 hostId: invocationHost.id,
                 hostCapabilities: invocationHost.capabilities,
+                workspaceBinding: binding,
+                workspaceOwnerId: lifecycle.workspaceIntent.workspaceId,
+                localOverlayRef: `execution-workspace:${binding.localDigest.slice(-24)}`,
               });
               const validator = this.ctx.lifecycleValidators.resolve(
                 lifecycle.currentWork.validatorProfile.id,
@@ -2290,7 +2282,7 @@ export class WorkflowRuns extends Service {
               const validation = await validator.validate({
                 profileId: lifecycle.currentWork.validatorProfile.id,
                 work: lifecycle.currentWork,
-                fact: proposal,
+                fact: executionBinding,
               });
               if (!validation.accepted) {
                 throw new Error(`Build Configure Validator rejected: ${validation.diagnostic}`);
@@ -2298,23 +2290,47 @@ export class WorkflowRuns extends Service {
               await this.ctx.workExecutionAuthority.markValidated({
                 intent: await this.ctx.workExecutionAuthority.loadIntent(runId),
                 validatorId: lifecycle.currentWork.validatorProfile.id,
-                continuation: 'ask',
+                continuation: 'execute',
               });
-              const requestId = `configuration:${proposal.semanticDigest.slice(-24)}`;
-              const proposed = await this.coordinator.acceptChangeObservation(runId, {
-                kind: 'build-configuration-proposed',
-                proposal,
-                requestId,
-                reason: 'Approve the immutable Build execution configuration',
-              });
-              await this.ctx.workExecutionAuthority.recordWaitBoundary({
+              const planSkills = await this.resolveLifecycleWorkSkills(
+                'build.plan',
+                signal,
+                [],
                 runId,
-                waitId: `build-configuration:${requestId}`,
-                stage: 'started',
-                kind: 'human-decision',
-                reason: 'Approve the immutable Build execution configuration',
+              );
+              const planWork = createBuildActionWork({
+                runId,
+                checkEpoch: lifecycle.checkEpoch + 1,
+                definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+                kind: 'build.plan',
+                actionSkill: planSkills.actionSkill,
+                augmentationSkills: planSkills.augmentationSkills,
+                skillComposition: planSkills.skillComposition,
+                compositionDigest: current.composition.compositionDigest,
+                projectConfigDigest,
+                projectSnapshotDigest: current.projectSnapshotDigest,
+                workspaceRepositoryId,
+                repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
+                strategyId: strategy.strategyId,
+                bindingId: executionBinding.bindingId,
+                executionMode: strategy.executionMode,
+                tddMode: strategy.tddMode,
+                stableInput: {
+                  strategyDigest: strategy.semanticDigest,
+                  bindingStateDigest: executionBinding.stateDigest,
+                  planningDigest: lifecycle.planningDigest,
+                },
               });
-              return { ...proposed, value: await this.coordinator.status(runId) };
+              for (const skill of [planSkills.actionSkill, ...planSkills.augmentationSkills]) {
+                await this.coordinator.bindSkill(runId, skill);
+              }
+              const accepted = await this.coordinator.acceptChangeObservation(runId, {
+                kind: 'build-binding-accepted',
+                binding: executionBinding,
+                work: planWork,
+              });
+              await this.ctx.workExecutionAuthority.recordWorkCreated(runId, planWork);
+              return { ...accepted, value: await this.coordinator.status(runId) };
             }
             const planExecution = current.workExecution;
             const planHostOutcome =
@@ -2332,79 +2348,23 @@ export class WorkflowRuns extends Service {
               planHostOutcome?.status === 'succeeded'
             ) {
               const protocol = lifecycle.buildProtocol;
-              const configuration = protocol?.configuration;
+              const strategy = protocol?.strategy;
+              const binding = protocol?.binding;
               const hostOutcome = planHostOutcome;
               const result = hostOutcome?.result;
-              if (!protocol || !configuration || protocol.currentAction !== 'plan') {
-                throw new Error('Build Plan Outcome has no frozen configuration');
+              if (!protocol || !strategy || !binding || protocol.currentAction !== 'plan') {
+                throw new Error('Build Plan Outcome has no current Strategy and Binding');
               }
               const invocationHost = planExecution?.hostInvocation?.host;
               if (!invocationHost || invocationHost.id !== hostOutcome.hostId) {
                 throw new Error('Build Plan Host does not match the persisted invocation');
               }
-              if (
-                invocationHost.id !== configuration.hostId ||
-                configuration.hostCapabilities.some(
-                  (capability) => !invocationHost.capabilities.includes(capability),
-                )
-              ) {
-                const planSkills = await this.resolveLifecycleWorkSkills(
-                  'build.plan',
-                  signal,
-                  [],
-                  runId,
-                );
-                const retryWork = createBuildActionWork({
-                  runId,
-                  checkEpoch: lifecycle.checkEpoch + 1,
-                  definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-                  kind: 'build.plan',
-                  actionSkill: planSkills.actionSkill,
-                  augmentationSkills: planSkills.augmentationSkills,
-                  skillComposition: planSkills.skillComposition,
-                  compositionDigest: current.composition.compositionDigest,
-                  projectConfigDigest,
-                  projectSnapshotDigest: current.projectSnapshotDigest,
-                  workspaceRepositoryId,
-                  repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
-                  configurationId: configuration.configurationId,
-                  executionMode: configuration.executionMode,
-                  tddMode: configuration.tddMode,
-                  stableInput: {
-                    reason: 'plan-host-drift',
-                    priorWorkId: lifecycle.currentWork.workId,
-                    approvedHostId: configuration.hostId,
-                    observedHostId: invocationHost.id,
-                  },
-                });
-                for (const skill of [planSkills.actionSkill, ...planSkills.augmentationSkills]) {
-                  await this.coordinator.bindSkill(runId, skill);
-                }
-                const retried = await this.coordinator.acceptChangeObservation(runId, {
-                  kind: 'build-plan-retry-required',
-                  reason: 'Build Plan Outcome came from a Host outside the approved Configuration',
-                  work: retryWork,
-                });
-                await this.ctx.workExecutionAuthority.recordWorkCreated(runId, retryWork);
-                return {
-                  ...retried,
-                  value: await this.coordinator.status(runId),
-                  diagnostics: [
-                    ...retried.diagnostics,
-                    {
-                      level: 'warning',
-                      code: 'change.build-plan-host-retry',
-                      message: 'Build Plan will retry with the Host approved by the Configuration',
-                    },
-                  ],
-                };
-              }
-              this.assertFrozenBuildHost(configuration, invocationHost);
+              this.assertBuildHostCapabilities(strategy, invocationHost);
               await this.assertFrozenExecutionWorkspace(
                 current,
                 lifecycle,
                 projectSnapshot,
-                configuration,
+                binding,
               );
               const rejectSubmission = async (
                 reasonCode: 'output-invalid' | 'outcome-rejected' | 'outcome-processing-error',
@@ -2450,7 +2410,8 @@ export class WorkflowRuns extends Service {
                 plan = createBuildPlan({
                   runId,
                   revision: (protocol.plan?.revision ?? 0) + 1,
-                  configuration,
+                  strategy,
+                  binding,
                   planningDigest: lifecycle.planningDigest!,
                   tasks: taskSet,
                   candidate: { packages: result.packages },
@@ -2461,7 +2422,7 @@ export class WorkflowRuns extends Service {
                   `Build Plan candidate rejected: ${error instanceof Error ? error.message : String(error)}`,
                 );
               }
-              const planValidation = validateBuildPlan({ plan, configuration, tasks: taskSet });
+              const planValidation = validateBuildPlan({ plan, strategy, binding, tasks: taskSet });
               if (!planValidation.accepted) {
                 return rejectSubmission(
                   'outcome-rejected',
@@ -2507,8 +2468,11 @@ export class WorkflowRuns extends Service {
               });
               const evidence = createPlanEvidence({
                 plan,
-                configuration,
+                strategy,
+                binding,
                 validation: planValidation,
+                compositionCheckpointDigest: current.composition.compositionDigest,
+                reportOwnerId: lifecycle.identity.workspaceId,
               });
               if (evidence.risk.level === 'high') {
                 const requestId = `plan:${evidence.validationDigest.slice(-24)}`;
@@ -2536,7 +2500,7 @@ export class WorkflowRuns extends Service {
               }
               const composition = buildActionSkillComposition({
                 action: nextPackage ? 'execute' : 'check',
-                tddMode: configuration.tddMode,
+                tddMode: strategy.tddMode,
               });
               const skills = await this.resolveLifecycleWorkSkills(
                 nextKind,
@@ -2557,9 +2521,10 @@ export class WorkflowRuns extends Service {
                 projectSnapshotDigest: current.projectSnapshotDigest,
                 workspaceRepositoryId,
                 repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
-                configurationId: configuration.configurationId,
-                executionMode: configuration.executionMode,
-                tddMode: configuration.tddMode,
+                strategyId: strategy.strategyId,
+                bindingId: binding.bindingId,
+                executionMode: strategy.executionMode,
+                tddMode: strategy.tddMode,
                 planId: plan.planId,
                 planRevision: plan.revision,
                 ...(nextPackage
@@ -2569,7 +2534,8 @@ export class WorkflowRuns extends Service {
                     }
                   : {}),
                 stableInput: {
-                  configurationDigest: configuration.semanticDigest,
+                  strategyDigest: strategy.semanticDigest,
+                  bindingStateDigest: binding.stateDigest,
                   planDigest: plan.digest,
                   ...(nextPackage ? { packageDigest: nextPackage.digest } : {}),
                   planEvidenceId: evidence.evidenceId,
@@ -2612,23 +2578,24 @@ export class WorkflowRuns extends Service {
               executeHostOutcome?.status === 'succeeded'
             ) {
               const protocol = lifecycle.buildProtocol;
-              const configuration = protocol?.configuration;
+              const strategy = protocol?.strategy;
+              const binding = protocol?.binding;
               const plan = protocol?.plan;
               const result = executeHostOutcome.result;
               const invocationId = executeHostOutcome.invocationId;
-              if (!protocol || !configuration || !plan || !invocationId) {
+              if (!protocol || !strategy || !binding || !plan || !invocationId) {
                 throw new Error('Build Execute Outcome has no current Plan');
               }
               const invocationHost = executeExecution?.hostInvocation?.host;
               if (!invocationHost || invocationHost.id !== executeHostOutcome.hostId) {
                 throw new Error('Build Execute Host does not match the persisted invocation');
               }
-              this.assertFrozenBuildHost(configuration, invocationHost);
+              this.assertBuildHostCapabilities(strategy, invocationHost);
               await this.assertFrozenExecutionWorkspace(
                 current,
                 lifecycle,
                 projectSnapshot,
-                configuration,
+                binding,
               );
               if (
                 result?.kind !== 'build-package-completion' ||
@@ -2659,7 +2626,7 @@ export class WorkflowRuns extends Service {
                 executionId: implementationExecutionId,
                 acceptanceEvidenceIds: result.acceptanceEvidenceIds,
                 testEvidenceIds: result.testEvidenceIds,
-                tddMode: configuration.tddMode,
+                tddMode: strategy.tddMode,
                 ...(result.tddEvidence ? { tddEvidence: result.tddEvidence } : {}),
                 repositoryDigest: result.repositoryDigest,
                 implementationDigest: result.implementationDigest,
@@ -2723,7 +2690,7 @@ export class WorkflowRuns extends Service {
               }
               const composition = buildActionSkillComposition({
                 action: nextPackage ? 'execute' : 'check',
-                tddMode: configuration.tddMode,
+                tddMode: strategy.tddMode,
               });
               const skills = await this.resolveLifecycleWorkSkills(
                 nextKind,
@@ -2744,9 +2711,10 @@ export class WorkflowRuns extends Service {
                 projectSnapshotDigest: current.projectSnapshotDigest,
                 workspaceRepositoryId,
                 repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
-                configurationId: configuration.configurationId,
-                executionMode: configuration.executionMode,
-                tddMode: configuration.tddMode,
+                strategyId: strategy.strategyId,
+                bindingId: binding.bindingId,
+                executionMode: strategy.executionMode,
+                tddMode: strategy.tddMode,
                 planId: plan.planId,
                 planRevision: plan.revision,
                 ...(nextPackage
@@ -2757,13 +2725,15 @@ export class WorkflowRuns extends Service {
                   : {}),
                 stableInput: nextPackage
                   ? {
-                      configurationDigest: configuration.semanticDigest,
+                      strategyDigest: strategy.semanticDigest,
+                      bindingStateDigest: binding.stateDigest,
                       planDigest: plan.digest,
                       packageDigest: nextPackage.digest,
                       completedPackageIds: [...completedIds].sort(),
                     }
                   : {
-                      configurationDigest: configuration.semanticDigest,
+                      strategyDigest: strategy.semanticDigest,
+                      bindingStateDigest: binding.stateDigest,
                       planDigest: plan.digest,
                       completedPackageIds: [...completedIds].sort(),
                     },
@@ -2824,23 +2794,24 @@ export class WorkflowRuns extends Service {
               checkHostOutcome?.status === 'succeeded'
             ) {
               const protocol = lifecycle.buildProtocol;
-              const configuration = protocol?.configuration;
+              const strategy = protocol?.strategy;
+              const binding = protocol?.binding;
               const plan = protocol?.plan;
               const hostOutcome = checkHostOutcome;
               const result = hostOutcome?.result;
-              if (!protocol || !configuration || !plan || !hostOutcome) {
+              if (!protocol || !strategy || !binding || !plan || !hostOutcome) {
                 throw new Error('Build Check Outcome has no current Plan');
               }
               const invocationHost = checkExecution?.hostInvocation?.host;
               if (!invocationHost || invocationHost.id !== hostOutcome.hostId) {
                 throw new Error('Build Check Host does not match the persisted invocation');
               }
-              this.assertFrozenBuildHost(configuration, invocationHost);
+              this.assertBuildHostCapabilities(strategy, invocationHost);
               await this.assertFrozenExecutionWorkspace(
                 current,
                 lifecycle,
                 projectSnapshot,
-                configuration,
+                binding,
               );
               const rejectSubmission = async (
                 reasonCode: 'output-invalid' | 'outcome-rejected' | 'outcome-processing-error',
@@ -2909,7 +2880,7 @@ export class WorkflowRuns extends Service {
                   'Build Check does not cover every Task acceptance',
                 );
               }
-              if (result.repositoryDigest !== configuration.bindingDigest) {
+              if (result.repositoryDigest !== binding.stateDigest) {
                 return rejectSubmission(
                   'outcome-rejected',
                   'Build Check repository binding drifted',
@@ -2969,7 +2940,8 @@ export class WorkflowRuns extends Service {
                   )
                   .digest('hex')}`;
                 checkEvidence = createBuildCheckEvidence({
-                  configurationDigest: configuration.semanticDigest,
+                  strategyDigest: strategy.semanticDigest,
+                  bindingStateDigest: binding.stateDigest,
                   planDigest: plan.digest,
                   repositoryDigest: result.repositoryDigest,
                   implementationDigest: result.implementationDigest,
@@ -3072,13 +3044,15 @@ export class WorkflowRuns extends Service {
                   projectSnapshotDigest: current.projectSnapshotDigest,
                   workspaceRepositoryId,
                   repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
-                  configurationId: configuration.configurationId,
-                  executionMode: configuration.executionMode,
-                  tddMode: configuration.tddMode,
+                  strategyId: strategy.strategyId,
+                  bindingId: binding.bindingId,
+                  executionMode: strategy.executionMode,
+                  tddMode: strategy.tddMode,
                   planId: plan.planId,
                   planRevision: plan.revision,
                   stableInput: {
-                    configurationDigest: configuration.semanticDigest,
+                    strategyDigest: strategy.semanticDigest,
+                    bindingStateDigest: binding.stateDigest,
                     planDigest: plan.digest,
                     invalidationDigest: invalidation.digest,
                   },
@@ -3180,20 +3154,22 @@ export class WorkflowRuns extends Service {
                 assessment.snapshot?.planningManifestDigest ??
                 assessment.validation.validationDigest;
               const suspended = lifecycle.buildProtocol;
-              const canRetainConfiguration = canRetainSuspendedBuildConfiguration(suspended, {
-                workspaceIntent: lifecycle.workspaceIntent,
+              const strategy = this.buildStrategy(current, lifecycle);
+              const canRetainBinding = canRetainSuspendedExecutionBinding(suspended, {
+                strategy,
                 repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
               });
-              const workKind = canRetainConfiguration ? 'build.plan' : 'build.configure';
+              const workKind = canRetainBinding ? 'build.plan' : 'build.configure';
               const skills = await this.resolveLifecycleWorkSkills(workKind, signal, [], runId);
-              if (canRetainConfiguration) {
-                if (!suspended?.configuration) {
-                  throw new Error('Compatible suspended Build configuration is missing');
+              if (canRetainBinding) {
+                if (!suspended?.binding) {
+                  throw new Error('Compatible suspended Execution Binding is missing');
                 }
-                const configuration = suspended.configuration;
+                const binding = suspended.binding;
                 const protocol = revalidateSuspendedBuildProtocol(suspended, {
                   planningDigest,
-                  configurationCompatible: true,
+                  strategy,
+                  bindingCompatible: true,
                   planCompatible:
                     suspended.plan?.planningDigest === planningDigest &&
                     suspended.plan.taskSetDigest === taskSet.digest,
@@ -3220,12 +3196,14 @@ export class WorkflowRuns extends Service {
                     stableInput: {
                       planningDigest,
                       taskSetDigest: taskSet.digest,
-                      configurationId: configuration.configurationId,
+                      strategyDigest: strategy.semanticDigest,
+                      bindingStateDigest: binding.stateDigest,
                       candidatePlanDigest: suspended.plan?.digest ?? null,
                     },
-                    configurationId: configuration.configurationId,
-                    executionMode: configuration.executionMode,
-                    tddMode: configuration.tddMode,
+                    strategyId: strategy.strategyId,
+                    bindingId: binding.bindingId,
+                    executionMode: strategy.executionMode,
+                    tddMode: strategy.tddMode,
                   }),
                 };
               } else {
@@ -3243,13 +3221,16 @@ export class WorkflowRuns extends Service {
                   projectSnapshotDigest: current.projectSnapshotDigest,
                   workspaceRepositoryId,
                   repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
+                  strategyId: strategy.strategyId,
+                  executionMode: strategy.executionMode,
+                  tddMode: strategy.tddMode,
                 });
                 build = {
                   ...initial,
                   protocol: createBuildProtocolState({
                     runId,
                     planningDigest,
-                    workspaceIntent: lifecycle.workspaceIntent,
+                    strategy: this.buildStrategy(current, lifecycle),
                   }),
                 };
               }
@@ -3487,13 +3468,14 @@ export class WorkflowRuns extends Service {
     if (
       !lifecycle.planningDigest ||
       !lifecycle.buildProtocol?.plan ||
-      !lifecycle.buildProtocol.configuration
+      !lifecycle.buildProtocol.binding
     ) {
       throw new Error('Build Plan revision requires an approved Design digest');
     }
     const protocol = lifecycle.buildProtocol;
     const plan = protocol.plan!;
-    const configuration = protocol.configuration!;
+    const strategy = protocol.strategy;
+    const binding = protocol.binding!;
     const invalidation = createBuildInvalidation({
       source: 'verify',
       plan,
@@ -3516,9 +3498,10 @@ export class WorkflowRuns extends Service {
       projectSnapshotDigest: state.projectSnapshotDigest,
       workspaceRepositoryId: specificationRoot.repositoryId,
       repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
-      configurationId: configuration.configurationId,
-      executionMode: configuration.executionMode,
-      tddMode: configuration.tddMode,
+      strategyId: strategy.strategyId,
+      bindingId: binding.bindingId,
+      executionMode: strategy.executionMode,
+      tddMode: strategy.tddMode,
       planId: plan.planId,
       planRevision: plan.revision,
       stableInput: {
@@ -4001,8 +3984,7 @@ export class WorkflowRuns extends Service {
       if (
         !execution ||
         execution.workId !== currentWork.workId ||
-        (!['outcome', 'validated'].includes(execution.status) &&
-          !reconcilingExternalPublication) ||
+        (!['outcome', 'validated'].includes(execution.status) && !reconcilingExternalPublication) ||
         execution.actionOutcome?.status !== 'succeeded' ||
         execution.hostOutcome?.status !== 'succeeded' ||
         execution.hostOutcome.invocationId !== execution.hostInvocation?.invocationId ||

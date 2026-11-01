@@ -77,6 +77,7 @@ function planningInput() {
       repositoryId: 'workspace',
     },
     changeBranch: structuredClone(branch),
+    buildStrategyDigest: digest('c'),
   };
 }
 

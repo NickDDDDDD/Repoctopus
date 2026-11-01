@@ -114,6 +114,8 @@ const CLI_FLAGS = new Set([
   'target',
   'remote',
   'profile',
+  'execution-mode',
+  'tdd-mode',
   'workflow',
   'run',
   'attempt',
@@ -906,6 +908,8 @@ async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
           projectConfigDigest: `sha256:${string}`;
           verificationProfileId: string;
           executionCheckouts: Array<{ repositoryId: string; checkoutPath: string }>;
+          executionMode?: 'autonomous' | 'subagent-driven-development';
+          tddMode?: 'tdd' | 'direct';
         },
         RuntimeResult<RunStatusView>
       >('run.change.start', {
@@ -922,6 +926,10 @@ async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
           repositoryId: repository.id,
           checkoutPath: repository.path,
         })),
+        executionMode: stringFlag(parsed, 'execution-mode', {
+          fallback: 'autonomous',
+        }) as 'autonomous' | 'subagent-driven-development',
+        tddMode: stringFlag(parsed, 'tdd-mode', { fallback: 'tdd' }) as 'tdd' | 'direct',
       });
       return successEnvelope({
         command: 'run start',
@@ -1288,34 +1296,23 @@ async function runDecide(parsed: ParsedArguments): Promise<CliEnvelope<unknown>>
     if (
       lifecycle.phase === 'build' &&
       (lifecycle.waitCondition.waitId.startsWith('build-design:') ||
-        lifecycle.waitCondition.waitId.startsWith('build-configuration:') ||
         lifecycle.waitCondition.waitId.startsWith('build-plan:'))
     ) {
-      const configuration = lifecycle.waitCondition.waitId.startsWith('build-configuration:');
       const plan = lifecycle.waitCondition.waitId.startsWith('build-plan:');
       const selected = await reviewLifecycleDecision({
-        title: configuration
-          ? `Approve Build Configuration: ${lifecycle.identity.changeId}`
-          : plan
-            ? `Approve Build Plan: ${lifecycle.identity.changeId}`
-            : `Return Build to Design: ${lifecycle.identity.changeId}`,
+        title: plan
+          ? `Approve Build Plan: ${lifecycle.identity.changeId}`
+          : `Return Build to Design: ${lifecycle.identity.changeId}`,
         proposalHash: lifecycle.waitCondition.proposalDigest,
-        details: configuration
+        details: plan
           ? [
-              `Execution: ${lifecycle.buildProtocol?.configurationProposal?.executionMode ?? '-'}`,
-              `TDD: ${lifecycle.buildProtocol?.configurationProposal?.tddMode ?? '-'}`,
-              `Review: ${lifecycle.buildProtocol?.configurationProposal?.reviewMode ?? '-'}`,
-              `Isolation: ${lifecycle.buildProtocol?.configurationProposal?.isolation ?? '-'}`,
+              lifecycle.waitCondition.reason,
+              `Plan revision: ${lifecycle.buildProtocol?.plan?.revision ?? '-'}`,
             ]
-          : plan
-            ? [
-                lifecycle.waitCondition.reason,
-                `Plan revision: ${lifecycle.buildProtocol?.plan?.revision ?? '-'}`,
-              ]
-            : [
-                lifecycle.waitCondition.reason,
-                'Approval invalidates the old Design approval and Work.',
-              ],
+          : [
+              lifecycle.waitCondition.reason,
+              'Approval invalidates the old Design approval and Work.',
+            ],
         input: process.stdin,
         output: process.stdout,
       });

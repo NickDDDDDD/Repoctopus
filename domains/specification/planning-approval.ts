@@ -63,6 +63,7 @@ function planningSnapshotDigest(snapshot: Omit<PlanningSnapshot, 'digest'>): `sh
     targetBranch: snapshot.changeBranch.targetBranch,
     planningManifestDigest: snapshot.planningManifestDigest,
     planningPolicyDigest: snapshot.planningPolicyDigest,
+    buildStrategyDigest: snapshot.buildStrategyDigest,
   }).digest;
 }
 
@@ -95,6 +96,7 @@ export function createPlanningSnapshot(input: {
   approvalPhase?: 'open' | 'design';
   planningManifest?: SpecificationPlanningManifest;
   planningPolicyDigest?: `sha256:${string}`;
+  buildStrategyDigest?: `sha256:${string}`;
 }): PlanningSnapshot {
   const manifest =
     input.planningManifest ??
@@ -139,9 +141,16 @@ export function createPlanningSnapshot(input: {
   const planningPolicyDigest =
     input.planningPolicyDigest ?? sha256({ kind: 'PlanningPolicy', schemaVersion: 1 });
   assertDigest(planningPolicyDigest, 'Planning policy');
+  const approvalPhase = input.approvalPhase ?? 'design';
+  const buildStrategyDigest =
+    approvalPhase === 'design' ? (input.buildStrategyDigest ?? null) : null;
+  if (approvalPhase === 'design' && !buildStrategyDigest) {
+    throw new Error('Design planning requires an approved Build Strategy proposal');
+  }
+  if (buildStrategyDigest) assertDigest(buildStrategyDigest, 'Build Strategy');
   const planningSemantic = createRuntimeIdentity('planning-semantic', {
     changeId: input.change.changeId,
-    approvalPhase: input.approvalPhase ?? 'design',
+    approvalPhase,
     provider: input.change.provider,
     schemaDigest: input.schema.digest,
     specificationRoot: input.specificationRoot,
@@ -151,6 +160,7 @@ export function createPlanningSnapshot(input: {
     targetBranch: changeBranch.targetBranch,
     planningManifestDigest: manifest.semanticDigest,
     planningPolicyDigest,
+    buildStrategyDigest,
   });
   const validationObservation = createRuntimeIdentity('validation-observation', {
     planningSemantic: planningSemantic.digest,
@@ -160,15 +170,15 @@ export function createPlanningSnapshot(input: {
   });
   const approvalAuthority = createRuntimeIdentity('approval-authority', {
     planningSemantic: planningSemantic.digest,
-    approvalPhase: input.approvalPhase ?? 'design',
+    approvalPhase,
   });
   const publicationProvenance = createRuntimeIdentity('publication-provenance', {
     changeBranch,
   });
   const stable: Omit<PlanningSnapshot, 'digest'> = {
-    schemaVersion: 2 as const,
+    schemaVersion: 3 as const,
     changeId: input.change.changeId,
-    approvalPhase: input.approvalPhase ?? 'design',
+    approvalPhase,
     provider: structuredClone(input.change.provider),
     schema: structuredClone(input.schema),
     specificationRoot: structuredClone(input.specificationRoot),
@@ -180,6 +190,7 @@ export function createPlanningSnapshot(input: {
     publicationProvenanceDigest: publicationProvenance.digest,
     planningManifestDigest: manifest.semanticDigest,
     planningPolicyDigest,
+    buildStrategyDigest,
     identityBasis: {
       schemaVersion: 1,
       planningSemantic,
@@ -200,7 +211,7 @@ export function assertPlanningSnapshot(snapshot: PlanningSnapshot): void {
   if (snapshot.approvalPhase !== 'open' && snapshot.approvalPhase !== 'design') {
     throw new Error('Planning snapshot approval phase is invalid');
   }
-  if (snapshot.schemaVersion !== 2) {
+  if (snapshot.schemaVersion !== 3) {
     throw new Error('Legacy planning snapshot requires migration');
   }
   if (planningSnapshotDigest(stable) !== digest) {
@@ -293,6 +304,7 @@ export function createSpecificationApprovalProposal(
     semanticDigest: snapshot.digest,
     affectedCapabilities: [...snapshot.affectedCapabilities].sort(),
     targetBranch: snapshot.changeBranch.targetBranch,
+    buildStrategyDigest: snapshot.buildStrategyDigest,
   };
 }
 
