@@ -52,6 +52,16 @@ try {
       )
     ).stdout,
   );
+  const packageFiles = packed?.[0]?.files;
+  if (!Array.isArray(packageFiles)) throw new Error('npm pack did not return a package file list');
+  const workflowArtifacts = packageFiles
+    .map((entry) => entry?.path)
+    .filter((entry) => typeof entry === 'string' && entry.startsWith('docs/superpowers/'));
+  if (workflowArtifacts.length > 0) {
+    throw new Error(
+      `Development workflow artifacts must not enter the package: ${workflowArtifacts.join(', ')}`,
+    );
+  }
   const filename = packed?.[0]?.filename;
   if (typeof filename !== 'string') throw new Error('npm pack did not return a package filename');
   const archive = await readFile(path.join(temporary, filename));

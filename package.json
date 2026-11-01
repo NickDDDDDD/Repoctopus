@@ -16,6 +16,7 @@
     "dist",
     "app",
     "docs",
+    "!docs/superpowers/**",
     "domains",
     "platform",
     "plugins",
