@@ -86,6 +86,8 @@ Build Configure 的 Human Decision 冻结 execution mode、TDD mode、standard r
 
 如果 `run next` 在相同 checkpoint 上重复调用，它会返回同一 Work 或 Wait，不会重新创建整套 Build Protocol。未知 Host 或发布结果先运行 reconciliation；只有 Adapter 明确证明未执行时才增加 attempt。
 
+`run status` 始终是只读投影，不会为了显示下一步而重新校验 packet、探测 Host 或写恢复事件。需要动态确认外部执行结果时，使用投影返回的 `reconcile` continuation 进入 `run work-reconcile`；不要用反复查询状态代替 reconciliation。
+
 `work-outcome` 只提交候选事实，不代表 Runtime 已经接受 Action Outcome。Runtime 会先执行当前 Work 的结构、领域和 Validator 校验；可纠正拒绝会返回 `awaiting-correction`，并保留同一 Work、claim、attempt、checkEpoch、invocation 与冻结 packet。Runner 必须使用新的 `submission-id` 提交修正版；相同 ID 与相同内容是幂等重放，相同 ID 改变内容是冲突。Store、Provider 或未知处理错误保留原 submission 等待 Runtime 重试，不应伪装成 Agent 可纠正错误。
 
 Archive 使用两个公共入口：

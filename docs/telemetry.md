@@ -101,6 +101,8 @@ Metric label 只使用 authority、classification、scope、result 和 continuat
 
 OTLP 使用两个稳定 instrument：`repoctopus.runtime.stability.events` 对每个版本化稳定性 fact 计数，`repoctopus.runtime.stability.items` 记录 retained/invalidated identity 与 completion 数量。后者把数量作为 measurement value；`measure` 只取 `retained-identities | invalidated-identities | completion-before | completion-retained`，不会把任意数值变成 label。SigNoz 中按 `kind`、`authority`、`result`、`classification`、`scope` 或 `continuation` 聚合即可复算上表比率。
 
+CLI 与 Desktop 展示的 continuation 也来自已提交 checkpoint。动态 `next`/`resume` 选择先写入 `continuation.selected`，随后 OTLP 才导出同一事实；`run status` 不产生新的恢复事件，因此 Dashboard 刷新频率不会抬高 duplicate pull 或 checkpoint recovery 指标。
+
 Archive 仍使用同一 Run 和相同字段；不创建独立 Post-merge Run，不输出 Webhook、等待远端合入或 `repoctopus.post_merge.*` 平行语义。Publication Receipt 被同一 Run 接受时上报完成；后续 consistency reconcile 只上报有界的检查结果、变化类别和审查状态，不回写历史 phase。
 
 Log 和 Span 可以携带这些高基数关联 ID。Metric 只使用工作流名、事件类型、动作结果、Evidence Adapter、状态等有界维度；它们不使用 Run、change、Attempt、Bundle、Delivery、Envelope 或 Receipt ID，避免时间序列数量随执行次数增长。

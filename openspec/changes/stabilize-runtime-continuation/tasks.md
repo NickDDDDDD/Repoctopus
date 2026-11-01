@@ -6,7 +6,7 @@
 - [x] 1.2 增加 planning invalidation 全量清空 Build Protocol、重复创建批准和重复派发 Work 的生产服务回归测试，并用对应 `workflow-runs`/change lifecycle 测试证明旧行为被捕获 <!-- comet-task:2c460e82-0b53-4c9e-8b99-bfd4282d1a7c -->
 - [x] 1.3 定义版本化 Runtime identity basis、固定类型依赖矩阵和 schema validator，并用单元测试覆盖错误 owner、未知依赖组合、缺失输入和非 SHA-256 identity 拒绝 <!-- comet-task:668ccfb2-6f89-4b9e-83c0-c927c687c713 -->
 - [x] 1.4 定义 Change Run v2 checkpoint 与 suspended Build Protocol 状态，使用序列化 round-trip 和 state invariant 测试证明 current phase/Work 仍是唯一执行权威 <!-- comet-task:0ed0c3ad-b64d-405c-b308-9da9a79bb1dc -->
-- [ ] 1.5 更新 `docs/runtime-state.md` 的身份分层、预发布破坏性边界和旧 Run 只读规则，并用 `npm run format:check` 验证文档格式 <!-- comet-task:270a001b-4815-453b-bf59-3953ac43f598 -->
+- [x] 1.5 更新 `docs/runtime-state.md` 的身份分层、预发布破坏性边界和旧 Run 只读规则，并用 `npm run format:check` 验证文档格式 <!-- comet-task:270a001b-4815-453b-bf59-3953ac43f598 -->
 
 ## 2. 拆分 Specification Planning 与发布身份
 
@@ -25,7 +25,7 @@
 - [x] 3.4 实现新 Design approval 后 Configuration → Plan → Package completion → Evidence 的逐层兼容重验，使用局部 Task/Plan 变化测试证明只失效依赖后继 <!-- comet-task:84791012-882d-4f71-bd2a-13be3c917c92 -->
 - [x] 3.5 将 planning-authority recovery 改为一次 CAS 提交 Design Work、epoch、execution retirement 和 planner 结果，不再无条件删除 Build Protocol，并运行 transition tests <!-- comet-task:b9e6486b-e7e3-4867-af72-33484ff1b4d4 -->
 - [x] 3.6 为无法证明最小范围的情况实现保守 invalidation/Human Decision 路径，并验证不会静默保留 completion 或重开全部 Task <!-- comet-task:308f4d40-d472-47da-8f0b-1ce5e8272ed1 -->
-- [ ] 3.7 更新 `docs/self-hosting.md` 说明 Design 返工、suspended Build 与重新采用流程，并用 `npm run format:check` 验证 <!-- comet-task:84b060d5-8cb8-4f58-87e0-5aac150f8a93 -->
+- [x] 3.7 更新 `docs/self-hosting.md` 说明 Design 返工、suspended Build 与重新采用流程，并用 `npm run format:check` 验证 <!-- comet-task:84b060d5-8cb8-4f58-87e0-5aac150f8a93 -->
 
 ## 4. 收敛单一 Continuation 与 checkpoint 恢复
 
@@ -35,7 +35,7 @@
 - [x] 4.4 实现 observation 后/CAS 前及 CAS 后/响应前的恢复逻辑，使用 fault injection 验证孤立内容无执行权且已提交 transition 不重复 <!-- comet-task:0b75b0e4-18f9-461a-b211-e4c10e401bd0 -->
 - [x] 4.5 实现 unknown invocation reconciliation 状态机，覆盖匹配 Outcome、确定性未执行和仍未知三种结果，并验证未知结果不自动 retry <!-- comet-task:c6041416-5cbf-49fc-adc1-dad3746e9762 -->
 - [x] 4.6 统一 lifecycle current Work 与 execution checkpoint 的兼容判定，使无关 publication 变化保留 checkpoint、受保护输入漂移原子退役，并运行 work execution recovery tests <!-- comet-task:84532c93-f1ea-44c9-997e-f20a3b2596fc -->
-- [ ] 4.7 更新公共 CLI JSON continuation schema/诊断和 `docs/runtime-state.md` 示例，并用 CLI contract tests 与 `npm run typecheck` 验证 <!-- comet-task:99d409c0-aa58-4451-b4a4-2928f77516af -->
+- [x] 4.7 更新公共 CLI JSON continuation schema/诊断和 `docs/runtime-state.md` 示例，并用 CLI contract tests 与 `npm run typecheck` 验证 <!-- comet-task:99d409c0-aa58-4451-b4a4-2928f77516af -->
 
 ## 5. 分离 Composition adoption 与 Planning approval
 
@@ -51,7 +51,7 @@
 - [x] 6.2 将新事实映射到规范 OTLP Trace/Event，限制 Metric labels 为有界 authority/classification/scope/result/continuation，并运行 telemetry mapping cardinality tests <!-- comet-task:24d0e706-da6b-45ea-8d0a-a5dec0a554b2 -->
 - [x] 6.3 实现重复批准率、Protocol 重建率、精确失效率、completion 保留率、checkpoint 恢复与 duplicate dispatch suppression 指标，并用持久事件复算测试验证 <!-- comet-task:8ab84e75-0362-47c0-8e13-2c4e5485dd76 -->
 - [x] 6.4 扩展 OTLP test receiver 纵切验收，证明本地 Desktop 与远端目的地消费同一 envelope 且失败不回滚 Run <!-- comet-task:739daf07-a69a-4a8e-a6b5-c13dd06e835a -->
-- [ ] 6.5 更新 `docs/telemetry.md` 的稳定性指标、解释边界和 SigNoz 查询维度，并运行 `npm run format:check` <!-- comet-task:e21c0e16-466f-4aab-8b50-a38ae543ff87 -->
+- [x] 6.5 更新 `docs/telemetry.md` 的稳定性指标、解释边界和 SigNoz 查询维度，并运行 `npm run format:check` <!-- comet-task:e21c0e16-466f-4aab-8b50-a38ae543ff87 -->
 
 ## 7. 生产纵切与多仓恢复验收
 
