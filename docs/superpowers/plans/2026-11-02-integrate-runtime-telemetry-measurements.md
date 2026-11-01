@@ -2,6 +2,7 @@
 change: integrate-runtime-telemetry-measurements
 design-doc: openspec/changes/integrate-runtime-telemetry-measurements/design.md
 base-ref: a819b3754cedd0d18c7e7be584d82f17a3c8aa88
+archived-with: 2026-11-02-integrate-runtime-telemetry-measurements
 ---
 
 # Integrate Runtime Telemetry Measurements Build Plan

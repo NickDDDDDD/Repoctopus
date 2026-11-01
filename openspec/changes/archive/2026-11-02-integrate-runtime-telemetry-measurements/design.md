@@ -2,6 +2,8 @@
 comet_change: integrate-runtime-telemetry-measurements
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-02-integrate-runtime-telemetry-measurements
+status: final
 ---
 
 # Design
