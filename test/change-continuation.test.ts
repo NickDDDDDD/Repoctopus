@@ -145,6 +145,49 @@ describe('committed lifecycle continuation projector', () => {
     });
   });
 
+  it('projects validated Open Work as a planning-gate reobservation', () => {
+    const lifecycle = snapshot({
+      phase: 'open',
+      currentWork: {
+        workId: 'change.intake:abc',
+        schemaVersion: 2,
+        checkEpoch: 2,
+        phase: 'open',
+        kind: 'change.intake',
+      } as ChangeLifecycleSnapshot['currentWork'],
+    });
+    const checkpoint = {
+      schemaVersion: 1,
+      runId: 'run',
+      stateVersion: 9,
+      trajectoryOffset: 4,
+      runStatus: 'running',
+      changeLifecycle: lifecycle,
+      workExecution: {
+        schemaVersion: 3,
+        workId: 'change.intake:abc',
+        attempt: 1,
+        checkEpoch: 2,
+        status: 'validated',
+        continuation: 'execute',
+      },
+    } as unknown as Checkpoint;
+
+    const continuation = projectCommittedContinuation(checkpoint, []);
+    expect(continuation).toMatchObject({
+      continuation: 'reobserve',
+      reason: 'open-gate-pending',
+      observationStage: 'planning-gate',
+    });
+    expect(projectLifecycleNextActions(lifecycle, continuation)).toEqual([
+      {
+        id: 'change.intake:abc',
+        kind: 'work',
+        label: 'Reobserve Open planning gate',
+      },
+    ]);
+  });
+
   it('ignores a stale continuation fact after the committed Work changes', () => {
     const lifecycle = snapshot({
       checkEpoch: 3,

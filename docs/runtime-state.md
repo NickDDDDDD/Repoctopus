@@ -52,7 +52,9 @@ Design 返工会把现有 Build Protocol 标记为 `suspended-for-design`。该�
 }
 ```
 
-`reobserve` 表示 Host Outcome 已知且保持不变，只需重试 Specification Provider/Store 观察；它保留原 Work、attempt、invocation 与 Outcome，绝不调用 Host reconciliation。`reconcile` 只表示 Host 或外部副作用结果未知。`reconcile`、`awaiting-correction` 和 `ask` 同时产生有界 CLI diagnostic code；`reason` 只能取公开枚举，不能包含路径、Provider 正文或自由错误消息。真正的 `next` 或 `resume` 才执行 packet/Host 动态核验；Runtime 先把选择提交为 trajectory fact，再让 CLI、Desktop 与 OTLP 读取同一结果。
+`reobserve` 表示 Host Outcome 已知且保持不变，只需重试 Specification Provider/Store 观察；它保留原 Work、attempt、check epoch、invocation、Outcome、Receipt 与 Skill consumption，绝不调用 Host reconciliation。Open 的严格 Provider 校验成功后，Work 进入 `validated`，纯 continuation classifier 将其投影为 `reobserve/open-gate-pending`，下一次 `run next` 直接继续 planning gate。某次观测失败仍返回 `reobserve/open-observation-unavailable`，并以 `provider-validation | planning-gate` 标识失败位置。`reconcile` 只表示 Host 或外部副作用结果未知。`reconcile`、`awaiting-correction` 和 `ask` 同时产生有界 CLI diagnostic code；`reason` 只能取公开枚举，不能包含路径、Provider 正文或自由错误消息。真正的 `next` 或 `resume` 才执行 packet/Host 动态核验；Runtime 先把选择提交为 trajectory fact，再让 CLI、Desktop 与 OTLP 读取同一结果。
+
+恢复时，Project Snapshot 差异分为 `same | content | identity`。仅 HEAD/worktree 变化属于 `content`：Runtime 完整报告差异，但由 Open、Design、Build、Verify 或 Archive 各自的 authority 精确重验依赖，不设置全局 `reconciliationRequired`。仓库增删、Project/root、path、remote、branch、拓扑、diagnostics 或无法分类的变化属于 `identity`，继续 fail closed 并要求全局 reconciliation。`changed` 仅供展示，不是阻断条件。
 
 claim、context delivery、Host invocation、Outcome、Validator 与 lifecycle transition 都写入同一个 Run aggregate 和追加式 trajectory。ActionStore 和 packet store 是先写的不可变内容库，不拥有 attempt 或下一步；CAS 前的孤立内容没有执行权。恢复始终按 checkpoint identity 读取原 packet，不重新读取当前 Skill、Provider 指令或 OpenSpec 文件。恢复分类遵循以下边界：未调用可重交同一 attempt；活跃 Host 返回 `wait`；未知副作用返回 `reconcile`；可证明未执行才创建下一 attempt；已有 Outcome 从 Validator 继续；Human Decision 保留原 proposal hash。旧 checkpoint 或缺失/损坏 packet 明确进入 `migration-required` 或 `content-missing-or-corrupt`，不得用当前内容重组兼容。
 

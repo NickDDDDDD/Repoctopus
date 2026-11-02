@@ -2022,13 +2022,24 @@ export class WorkflowRuns extends Service {
             });
             return { ...exhausted, value: await this.coordinator.status(runId) };
           }
+          const classifiedContinuation = work
+            ? classifyWorkContinuation({
+                runStatus: state.status,
+                lifecycle: state.changeLifecycle,
+                ...(execution ? { execution } : {}),
+              })
+            : undefined;
           const dispatchable =
             work &&
             this.ctx.workExecutionHosts.snapshot().hosts.length > 0 &&
-            (!execution ||
-              execution.workId !== work.workId ||
-              ['claimed', 'context-delivered', 'not-executed'].includes(execution.status) ||
-              (execution.status === 'outcome' && execution.actionOutcome?.status === 'failed'));
+            classifiedContinuation?.continuation === 'execute' &&
+            [
+              'work-unclaimed',
+              'checkpoint-superseded',
+              'claim-redelivery',
+              'host-not-executed',
+              'work-failed',
+            ].includes(classifiedContinuation.reason);
           if (dispatchable) {
             const lifecycle = state.changeLifecycle;
             const protocol = lifecycle.buildProtocol;

@@ -1333,14 +1333,12 @@ export class WorkExecutionAuthority extends Service {
 
   async continuation(runId: string): Promise<WorkContinuationKind> {
     const state = await this.ctx.runStore.loadRun(runId);
-    if (state.status === 'completed') return 'done';
-    if (state.changeLifecycle?.waitCondition?.kind === 'human-decision') return 'ask';
-    const execution = state.workExecution;
-    if (!execution || !executionMatchesLifecycle(state, execution)) {
-      return state.changeLifecycle?.currentWork ? 'execute' : 'wait';
-    }
-    if (execution.status === 'outcome') return 'execute';
-    return execution.continuation;
+    if (!state.changeLifecycle) return state.status === 'completed' ? 'done' : 'wait';
+    return classifyWorkContinuation({
+      runStatus: state.status,
+      lifecycle: state.changeLifecycle,
+      ...(state.workExecution ? { execution: state.workExecution } : {}),
+    }).continuation;
   }
 
   async recovery(runId: string): Promise<WorkExecutionRecovery> {

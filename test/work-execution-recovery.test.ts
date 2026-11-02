@@ -395,6 +395,53 @@ describe('Work execution recovery classification', () => {
     expect(run.workExecution).toEqual(checkpoint('claimed'));
   });
 
+  it('counts one unavailable Open observation while suppressing its duplicate dispatch', async () => {
+    let run = {
+      ...state({ execution: checkpoint('validated') }),
+      stateVersion: 10,
+      composition: { compositionDigest: digest('9') },
+    } as unknown as RunState;
+    const trajectory: TrajectoryEvent[] = [];
+    const authority = Object.create(WorkExecutionAuthority.prototype) as WorkExecutionAuthority;
+    Object.defineProperty(authority, 'ctx', {
+      value: {
+        runStore: {
+          commitGuarded: (
+            _runId: string,
+            commit: (input: { state: RunState; trajectory: TrajectoryEvent[] }) => {
+              state?: RunState;
+              event?: TrajectoryEvent;
+              value: undefined;
+            },
+          ) => {
+            const result = commit({ state: run, trajectory });
+            if (result.state) run = result.state;
+            if (result.event) trajectory.push(result.event);
+            return Promise.resolve(result.value);
+          },
+        },
+      },
+    });
+    const recovery = {
+      schemaVersion: 2 as const,
+      continuation: 'reobserve' as const,
+      workId: 'build:1.1',
+      attempt: 1,
+      checkEpoch: 4,
+      reason: 'open-observation-unavailable' as const,
+      observationStage: 'planning-gate' as const,
+    };
+
+    await authority.recordContinuation(run.runId, recovery);
+    await authority.recordContinuation(run.runId, recovery);
+
+    expect(trajectory.map((event) => event.data.result)).toEqual(['unavailable', 'suppressed']);
+    expect(trajectory[0]?.data).toMatchObject({
+      observationStage: 'planning-gate',
+      hostReplayed: false,
+    });
+  });
+
   it('distinguishes active, unknown, failed, validator, human and corrupt boundaries', async () => {
     const invocation: WorkExecutionHostInvocation = {
       schemaVersion: 1,

@@ -294,6 +294,13 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
   }
   addEvidenceCorrelation(attributes, event);
   addProjectReconciliationAttributes(attributes, event);
+  if (
+    event.type === 'continuation.selected' &&
+    (event.data.observationStage === 'provider-validation' ||
+      event.data.observationStage === 'planning-gate')
+  ) {
+    attributes['repoctopus.open.observation.stage'] = event.data.observationStage;
+  }
   if (event.type === 'change.lifecycle.transitioned') {
     Object.assign(attributes, workspaceIntentTraceAttributes(event));
     const observationKind = scalar(event.data.observationKind);

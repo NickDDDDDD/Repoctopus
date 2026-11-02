@@ -348,6 +348,9 @@ export class WorkflowRunCoordinator {
           entry.data.observationKind === 'verify-gate-satisfied' ||
           entry.data.observationKind === 'verify-gate-rejected',
       )?.data.observation as { kind?: string; attemptId?: string } | undefined;
+    const continuation = state.changeLifecycle
+      ? projectCommittedContinuation(checkpoint, trajectory)
+      : undefined;
     const changeLifecycle = state.changeLifecycle
       ? projectChangeRun(
           { ...structuredClone(state.changeLifecycle), status: state.status },
@@ -371,10 +374,13 @@ export class WorkflowRunCoordinator {
               acceptedBundleIds: [...state.acceptedEvidenceBundleIds],
               latestAttemptId: latestVerifyObservation?.attemptId ?? null,
             },
-            nextActions: projectLifecycleNextActions({
-              ...structuredClone(state.changeLifecycle),
-              status: state.status,
-            }),
+            nextActions: projectLifecycleNextActions(
+              {
+                ...structuredClone(state.changeLifecycle),
+                status: state.status,
+              },
+              continuation,
+            ),
             freshness: {
               stateVersion: state.stateVersion,
               trajectoryOffset: trajectory.length,
@@ -382,9 +388,6 @@ export class WorkflowRunCoordinator {
             },
           },
         )
-      : undefined;
-    const continuation = state.changeLifecycle
-      ? projectCommittedContinuation(checkpoint, trajectory)
       : undefined;
     return {
       state,

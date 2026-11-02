@@ -185,10 +185,23 @@ export function projectCommittedContinuation(
 
 export function projectLifecycleNextActions(
   snapshot: ChangeLifecycleSnapshot,
+  continuation?: WorkExecutionRecovery,
 ): readonly ChangeNextAction[] {
   if (['completed', 'failed', 'migration_required'].includes(snapshot.status)) return [];
   if (snapshot.phase === 'open') {
     if (snapshot.currentWork) {
+      if (
+        continuation?.continuation === 'reobserve' &&
+        continuation.reason === 'open-gate-pending'
+      ) {
+        return [
+          {
+            id: snapshot.currentWork.workId,
+            kind: 'work',
+            label: 'Reobserve Open planning gate',
+          },
+        ];
+      }
       return [
         {
           id: snapshot.currentWork.workId,

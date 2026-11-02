@@ -585,6 +585,7 @@ describe('managed Change execution production composition', () => {
             continuation: {
               continuation: 'reobserve',
               reason: 'open-observation-unavailable',
+              observationStage: 'provider-validation',
             },
           });
           expect(unavailableResult.value.state.workExecution?.hostInvocation?.invocationId).toBe(
@@ -623,11 +624,44 @@ describe('managed Change execution production composition', () => {
               currentWork: { workId: repairedOutcome.changeLifecycle?.currentWork?.workId },
             },
             state: { workExecution: { status: 'validated' } },
-            continuation: { continuation: 'reobserve', reason: 'open-observation-unavailable' },
+            continuation: {
+              continuation: 'reobserve',
+              reason: 'open-observation-unavailable',
+              observationStage: 'planning-gate',
+            },
           });
           expect(
             unavailableBranchResult.value.state.workExecution?.hostInvocation?.invocationId,
           ).toBe(repairedInvocation.invocationId);
+          expect(capture.invocations).toHaveLength(invocationCountBeforeReobserve);
+
+          const resumedOpen = await application.context.workflowRuns.resume({
+            runId,
+            currentProjectSnapshot: await application.context.project.snapshot({
+              workspaceId: 'managed-blackbox',
+              workspaceRoot: workspace,
+              workspaceRepositoryId: 'workspace',
+              repositories: [
+                { id: 'workspace', path: workspace },
+                { id: 'app', path: appRepository },
+              ],
+            }),
+          });
+          expect(resumedOpen.value).toMatchObject({
+            reconciliation: {
+              changeClass: 'content',
+              requiresReconciliation: false,
+            },
+            execution: {
+              continuation: 'reobserve',
+              reason: 'open-gate-pending',
+              observationStage: 'planning-gate',
+            },
+            state: { workExecution: { status: 'validated' } },
+          });
+          expect(resumedOpen.value.state.workExecution?.hostInvocation?.invocationId).toBe(
+            repairedInvocation.invocationId,
+          );
           expect(capture.invocations).toHaveLength(invocationCountBeforeReobserve);
 
           const originalAssess = application.context.specificationPlanning.assess.bind(
@@ -645,16 +679,23 @@ describe('managed Change execution production composition', () => {
               currentWork: { workId: repairedOutcome.changeLifecycle?.currentWork?.workId },
             },
             state: { workExecution: { status: 'validated' } },
-            continuation: { continuation: 'reobserve', reason: 'open-observation-unavailable' },
+            continuation: {
+              continuation: 'reobserve',
+              reason: 'open-observation-unavailable',
+              observationStage: 'planning-gate',
+            },
           });
           expect(capture.invocations).toHaveLength(invocationCountBeforeReobserve);
         }
-        expect((await next()).value.changeLifecycle).toMatchObject({
-          phase: 'open',
-          status: 'waiting',
-          currentWork: null,
-          waitCondition: { kind: 'human-decision' },
-        });
+        const [observedOpen, duplicateOpen] = await Promise.all([next(), next()]);
+        for (const observed of [observedOpen, duplicateOpen]) {
+          expect(observed.value.changeLifecycle).toMatchObject({
+            phase: 'open',
+            status: 'waiting',
+            currentWork: null,
+            waitCondition: { kind: 'human-decision' },
+          });
+        }
         if (!multiRepository && executionMode === 'autonomous') {
           expect(
             capture.invocations.filter((item) => item.packet.work.kind === 'change.intake'),

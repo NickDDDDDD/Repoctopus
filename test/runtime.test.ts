@@ -1276,6 +1276,55 @@ describe('Repoctopus runtime', () => {
     );
   });
 
+  it.each([
+    ['branch', { branch: 'feature' }],
+    ['remote', { remoteIdentity: 'example.com/other/project' }],
+    ['topology', null],
+  ] as const)('keeps %s identity drift fail closed', async (label, repositoryPatch) => {
+    const workspace = await temporaryDirectory(`repoctopus-${label}-drift-`);
+    cleanup.push(workspace);
+    const runtime = new WorkflowRunCoordinator(
+      new FileRuntimeStore(workspace),
+      { async export() {} },
+      compositionFixture(),
+      () => new Date('2026-01-01T00:00:00.000Z'),
+      () => `resume-${label}-event`,
+    );
+    const repository = {
+      id: 'repository-1',
+      name: 'workspace',
+      path: 'C:/project',
+      remoteIdentity: 'example.com/team/project',
+      branch: 'main',
+      head: 'a'.repeat(40),
+      worktree: { dirty: false, digest: 'clean', staged: 0, unstaged: 0, untracked: 0 },
+    };
+    const previous = projectFixture({ repositories: [repository] });
+    await runtime.start({
+      workflow: workflowFixture(),
+      projectSnapshot: previous,
+      runId: `run-${label}-drift`,
+    });
+    const current = projectFixture({
+      repositories:
+        repositoryPatch === null
+          ? [repository, { ...repository, id: 'repository-2', name: 'worker' }]
+          : [{ ...repository, ...repositoryPatch }],
+    });
+
+    const resumed = await runtime.resume({
+      runId: `run-${label}-drift`,
+      currentProjectSnapshot: current,
+    });
+
+    expect(resumed.value.reconciliation).toMatchObject({
+      changeClass: 'identity',
+      requiresReconciliation: true,
+    });
+    expect(resumed.value.state.reconciliationRequired).toBe(true);
+    expect(resumed.value.nextAction).toBeNull();
+  });
+
   it('keeps the frozen workflow and reports source drift', async () => {
     const workspace = await temporaryDirectory('repoctopus-workflow-drift-');
     cleanup.push(workspace);
