@@ -2,6 +2,7 @@
 change: recover-open-observation-continuation
 design-doc: openspec/changes/recover-open-observation-continuation/design.md
 base-ref: 2fe7cce58e0016c4b61b40630cec5f7e737d0811
+archived-with: 2026-11-02-recover-open-observation-continuation
 ---
 
 # Recover Open Observation Continuation Build Plan

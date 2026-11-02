@@ -2,6 +2,8 @@
 comet_change: recover-open-observation-continuation
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-02-recover-open-observation-continuation
+status: final
 ---
 
 # Design
@@ -139,4 +141,3 @@ Repoctopus 尚未正式发布，本次采用破坏性修正，不支持旧 `Proj
 2. 用当前验收 Run 的事件序列建立回归 fixture，但不复制或改写其 Store。
 3. 合入后重新创建全新模拟多仓 Change，至少跑通 Open → Human Decision → Design，并继续后续小任务验收。
 4. 若任何实现必须把 `validated` 回退为 `outcome`、重放 Host、通过错误文本分类、忽略真实 identity drift或修改旧 Store，停止 Build并返回 Design 评审。
-
