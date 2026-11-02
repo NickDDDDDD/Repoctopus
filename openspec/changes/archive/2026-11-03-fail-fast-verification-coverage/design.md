@@ -2,6 +2,8 @@
 comet_change: fail-fast-verification-coverage
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-03-fail-fast-verification-coverage
+status: final
 ---
 # Design
 
@@ -72,4 +74,3 @@ Evidence Coordinator 提供只编译 Effective Project Config 和 Evidence Profi
 - [preflight 期间 Tasks 可能变化] → preflight 后重新核对 planning manifest semantic digest；漂移时不写审批请求，下一次调用重新观察。
 - [项目配置随后变化] → Run 继续使用既有 project config digest 与后续兼容/失效规则；Verify 仍以当前不可变 Verification Input 做最终判断。
 - [静态就绪检查无法证明未来 Change 全覆盖] → 精确证明由 Design preflight 负责，两个检查职责不同。
-

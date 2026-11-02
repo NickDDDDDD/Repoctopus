@@ -2,6 +2,7 @@
 change: fail-fast-verification-coverage
 design-doc: openspec/changes/fail-fast-verification-coverage/design.md
 base-ref: cd9722c71ebc2c69f3b8af6d667853db96bbeeb0
+archived-with: 2026-11-03-fail-fast-verification-coverage
 ---
 # Fail-fast verification coverage implementation plan
 

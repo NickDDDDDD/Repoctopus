@@ -1,0 +1,2632 @@
+# comet-execution: managed-run
+change_id: 99ec20a1-fc24-4166-9af1-a9afb2ed2814
+workflow: full
+language: zh-CN
+phase: archive
+context_compression: off
+build_mode: autonomous
+build_pause: null
+subagent_dispatch: null
+tdd_mode: tdd
+review_mode: thorough
+isolation: current
+verify_mode: null
+auto_transition: true
+base_ref: e69b7bf96f33a6f7dbe84b78e62e390476d7bc5c
+design_doc: openspec/changes/archive/2026-11-03-fail-fast-verification-coverage/design.md
+plan: docs/superpowers/plans/2026-11-03-fail-fast-verification-coverage.md
+verify_result: pass
+verify_failures: 0
+verification_report: docs/superpowers/reports/fail-fast-verification-coverage.md
+branch_status: pending
+created_at: 2026-11-02
+verified_at: 2026-11-02
+archive_confirmation: confirmed
+archived: true
+bound_branch: codex/fail-fast-verification-coverage
+direct_override: false
+handoff_context: openspec/changes/archive/2026-11-03-fail-fast-verification-coverage/.comet/handoff/design-context.json
+handoff_hash: beca32308b8465c9c9e48b15bf91246598adce661e9401c62c6147e76a652439
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v2
+  hash: 0020eb69286ec40227730eb99a88742844fb3be571f2e2f3059571ac09f784f1
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: fail-fast-verification-coverage
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: 1620e503e0356801e9e08b9f4b136003d93a1babd7fef3fea49aa5faa251b82a
+    input:
+      change: fail-fast-verification-coverage
+      changeDir: openspec/changes/fail-fast-verification-coverage
+      workspaceBaseline:
+        ref: fc1c0933-677f-4229-b200-a10c2acb5242
+    state:
+      archiveConfirmation: confirmed
+      archived: true
+      autoTransition: true
+      baseRef: e69b7bf96f33a6f7dbe84b78e62e390476d7bc5c
+      boundBranch: codex/fail-fast-verification-coverage
+      branchStatus: pending
+      buildMode: autonomous
+      buildPause: null
+      checkEpoch: 6
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-02
+      designDoc: openspec/changes/archive/2026-11-03-fail-fast-verification-coverage/design.md
+      directOverride: false
+      handoffContext: openspec/changes/archive/2026-11-03-fail-fast-verification-coverage/.comet/handoff/design-context.json
+      handoffHash: beca32308b8465c9c9e48b15bf91246598adce661e9401c62c6147e76a652439
+      isolation: current
+      language: zh-CN
+      phase: archive
+      plan: docs/superpowers/plans/2026-11-03-fail-fast-verification-coverage.md
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: tdd
+      verificationReport: docs/superpowers/reports/fail-fast-verification-coverage.md
+      verifiedAt: 2026-11-02
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pass
+      workflow: full
+    status: running
+    sequence: 24
+    actions:
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-8bd3a8bb85671cd731ccde8f7c613337ccc89a70d7492e8d8684a34b85c79437
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fail-fast-verification-coverage:1
+        input:
+          input:
+            change: fail-fast-verification-coverage
+            changeDir: openspec/changes/fail-fast-verification-coverage
+            workspaceBaseline:
+              ref: fc1c0933-677f-4229-b200-a10c2acb5242
+          outputs: {}
+        inputHash: 38fe35f7cfa90dc16e8333907b893d8bd94ecd90f8c3fdb38f67b90c8c80692f
+        outcome:
+          actionId: fail-fast-verification-coverage:1
+          attempt: 1
+          claimToken: portable-8bd3a8bb85671cd731ccde8f7c613337ccc89a70d7492e8d8684a34b85c79437
+          inputHash: 38fe35f7cfa90dc16e8333907b893d8bd94ecd90f8c3fdb38f67b90c8c80692f
+          outcomeId: 8aff6c3e-b544-4536-8e8c-064cd600dcff
+          output:
+            event: open-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 28db86d9e676ef638521b4dc363d9fd513db4c57928ea5d3f70fefe7c6fcced2
+            outcomeId: 8aff6c3e-b544-4536-8e8c-064cd600dcff
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: fail-fast-verification-coverage
+        status: succeeded
+        stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-7105df8776fc4ce8288f8dbcd92ac2b74da4565989fc64968e35f33407d143f3
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fail-fast-verification-coverage:4
+        input:
+          input:
+            change: fail-fast-verification-coverage
+            changeDir: openspec/changes/fail-fast-verification-coverage
+            workspaceBaseline:
+              ref: fc1c0933-677f-4229-b200-a10c2acb5242
+          outputs: {}
+        inputHash: c954fec806b75c647af1506a540dafaec7958688f7b7862d37ed6d1aed6da3b5
+        outcome:
+          actionId: fail-fast-verification-coverage:4
+          attempt: 1
+          claimToken: portable-7105df8776fc4ce8288f8dbcd92ac2b74da4565989fc64968e35f33407d143f3
+          inputHash: c954fec806b75c647af1506a540dafaec7958688f7b7862d37ed6d1aed6da3b5
+          outcomeId: fail-fast-verification-coverage:4:1:executor-result
+          output:
+            contentHash: b3737f9b29d6e20b4dc0506ae9c71c08f0e03a0bc58dec1606758ea7df81f380
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: f09d85e62eb38613f159f0bb195dc222b9ae836cb319295db55f933e9078f482
+            outcomeId: fail-fast-verification-coverage:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: fail-fast-verification-coverage
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-6c92d9e5949b8d818ea1cc4f858666fba118fad0f743a5f92dc07095bfe4f242
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fail-fast-verification-coverage:5
+        input:
+          input:
+            change: fail-fast-verification-coverage
+            changeDir: openspec/changes/fail-fast-verification-coverage
+            workspaceBaseline:
+              ref: fc1c0933-677f-4229-b200-a10c2acb5242
+          outputs: {}
+        inputHash: 5ca8fc7d4737d6b936efa72e481bf5ebaae6b6c4204ee3fb6947f1aa3d91d129
+        outcome:
+          actionId: fail-fast-verification-coverage:5
+          attempt: 1
+          claimToken: portable-6c92d9e5949b8d818ea1cc4f858666fba118fad0f743a5f92dc07095bfe4f242
+          inputHash: 5ca8fc7d4737d6b936efa72e481bf5ebaae6b6c4204ee3fb6947f1aa3d91d129
+          outcomeId: ab06f8d0-6926-480a-938d-33d6c37ddc5b
+          output:
+            handoffContext: openspec/changes/fail-fast-verification-coverage/.comet/handoff/design-context.json
+            handoffHash: beca32308b8465c9c9e48b15bf91246598adce661e9401c62c6147e76a652439
+            proposal: 推荐方案：采用三层 fail-fast。项目探测为生成的 required 命令写入可审查的 covers:['*']
+              候选；项目接入只对约定默认 verify Profile 做静态可用性门禁；具体 Run 在 Planning Snapshot
+              形成后、Design 审批请求持久化前，用实际 verificationProfileId 和 Tasks 执行纯 coverage
+              preflight。SpecificationPlanning 通过副作用前 preflight hook 编排，preflight
+              后重新核对 planning manifest identity；Evidence Coordinator 提供不计算仓库
+              fingerprint 的 compile 入口；Design 与正式 Verify 复用同一纯
+              resolver。拒绝两个替代方案：仅在 Build Check 后校验仍然过晚；在接入阶段强制所有 Profile 或猜测细粒度
+              selector 会混淆独立 Evidence Profile 并伪造未来语义。
+            requirementsEvidence:
+              contentHash: db233788a73f93fe3ca92abacda3c5d856255aaf7d4bd1760aeed8ff2e36b44b
+              ref: openspec/changes/fail-fast-verification-coverage
+            sourceEvidence:
+              contentHash: e70096a72e9d534e63ff5e72de58d7a413140b70b2cade4bc7fe0395ea5b120e
+              ref: openspec/changes/fail-fast-verification-coverage
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: eb43a3f56285b37767c633ef3ca6f58eeca4f4c53c3d9efef699aa0efba85843
+            outcomeId: ab06f8d0-6926-480a-938d-33d6c37ddc5b
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: fail-fast-verification-coverage
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-fae105e653ea781fc9159c553e6c73942c423086f463fdfa395c72643407b5b8
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fail-fast-verification-coverage:7
+        input:
+          input:
+            change: fail-fast-verification-coverage
+            changeDir: openspec/changes/fail-fast-verification-coverage
+            workspaceBaseline:
+              ref: fc1c0933-677f-4229-b200-a10c2acb5242
+          outputs: {}
+        inputHash: 5b61a8847c91280e4b67f5da4d761716e0838b56bf6f12fdb14987e949667d09
+        outcome:
+          actionId: fail-fast-verification-coverage:7
+          attempt: 1
+          claimToken: portable-fae105e653ea781fc9159c553e6c73942c423086f463fdfa395c72643407b5b8
+          inputHash: 5b61a8847c91280e4b67f5da4d761716e0838b56bf6f12fdb14987e949667d09
+          outcomeId: 1cfc8e27-a270-4109-a385-94a7dce26118
+          output:
+            designDoc: openspec/changes/fail-fast-verification-coverage/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: d105fd96f1d93f8c9c13063c1204e39d6c94562f3ecff14c4fe26754d5d9ed99
+            outcomeId: 1cfc8e27-a270-4109-a385-94a7dce26118
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: fail-fast-verification-coverage
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-d66d5d27c3276fc4a08ee6baa9330dfa488cea70484b629d69ca61d94472cb58
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fail-fast-verification-coverage:9
+        input:
+          input:
+            change: fail-fast-verification-coverage
+            changeDir: openspec/changes/fail-fast-verification-coverage
+            workspaceBaseline:
+              ref: fc1c0933-677f-4229-b200-a10c2acb5242
+          outputs: {}
+        inputHash: 4693c7cac4f842b8736ba04f49e30d311cb62991263716121a44dac6cb95fc9e
+        outcome:
+          actionId: fail-fast-verification-coverage:9
+          attempt: 1
+          claimToken: portable-d66d5d27c3276fc4a08ee6baa9330dfa488cea70484b629d69ca61d94472cb58
+          inputHash: 4693c7cac4f842b8736ba04f49e30d311cb62991263716121a44dac6cb95fc9e
+          outcomeId: 2c103087-fa42-423a-967f-5e1484554106
+          output:
+            boundBranch: codex/fail-fast-verification-coverage
+            buildMode: autonomous
+            directOverride: false
+            isolation: current
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 9fb6e1b7e0c6b4d016c4509e09a9c7b806f6a34feade33393d3d47080701f8fc
+            outcomeId: 2c103087-fa42-423a-967f-5e1484554106
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: fail-fast-verification-coverage
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-d518cee81f35a996c56c9774dd8d4f9e06b0de62772ad3cad20fbf67e4b0f26d
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fail-fast-verification-coverage:11
+        input:
+          input:
+            change: fail-fast-verification-coverage
+            changeDir: openspec/changes/fail-fast-verification-coverage
+            workspaceBaseline:
+              ref: fc1c0933-677f-4229-b200-a10c2acb5242
+          outputs: {}
+        inputHash: 7d5801b3f9b94081399f131c57b639298e69241fc35dc4230367d309faa77fd6
+        outcome:
+          actionId: fail-fast-verification-coverage:11
+          attempt: 1
+          claimToken: portable-d518cee81f35a996c56c9774dd8d4f9e06b0de62772ad3cad20fbf67e4b0f26d
+          inputHash: 7d5801b3f9b94081399f131c57b639298e69241fc35dc4230367d309faa77fd6
+          outcomeId: 86146240-9d01-4ff4-a5be-d4d7238dd440
+          output:
+            designEvidence:
+              contentHash: c9e88053b5039ce7dfbf862e8a40ed2bdfccaa8c4d64d044adc7ecc14551849e
+              ref: openspec/changes/fail-fast-verification-coverage/design.md
+            plan: docs/superpowers/plans/2026-11-03-fail-fast-verification-coverage.md
+            planEvidence:
+              contentHash: a6af2c55b2811da1ee82a1fc4cda5aec34928bf86355ec9c27c3b98cf2cd0f86
+              ref: docs/superpowers/plans/2026-11-03-fail-fast-verification-coverage.md
+            taskRevision: 6a9dadc00006ab430d5bba46d0352a7a37a08a4dda1723a69e88a3fdd635409c
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 46eca2cb7f39ee1ef46fd03adfd4783412970bab80c238dc8943c85ad8ecd331
+            outcomeId: 86146240-9d01-4ff4-a5be-d4d7238dd440
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: fail-fast-verification-coverage
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: codex-20261103-fail-fast-verification-coverage
+          token: portable-703acfdae43c1d7d1fb444c9b6065a76cd866f45f5f96cbbadf549be7e21d877
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fail-fast-verification-coverage:13
+        input:
+          input:
+            change: fail-fast-verification-coverage
+            changeDir: openspec/changes/fail-fast-verification-coverage
+            workspaceBaseline:
+              ref: fc1c0933-677f-4229-b200-a10c2acb5242
+          outputs: {}
+        inputHash: f8a8abe35306b8e5048ca022b6fc5c617d7cfd3e91c5cbd0f7b80902570fac7e
+        outcome:
+          actionId: fail-fast-verification-coverage:13
+          attempt: 1
+          claimToken: portable-703acfdae43c1d7d1fb444c9b6065a76cd866f45f5f96cbbadf549be7e21d877
+          inputHash: f8a8abe35306b8e5048ca022b6fc5c617d7cfd3e91c5cbd0f7b80902570fac7e
+          outcomeId: 974fc60e-545c-4c2a-b5d7-b49de3884dfb
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 3e0f319ffd453417fe448299947801666d723df4426bebaa348d73705e31126d
+            outcomeId: 974fc60e-545c-4c2a-b5d7-b49de3884dfb
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: fail-fast-verification-coverage
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-38d75b6bddf562b24311cb9126be24af1a9ac813b1dcd34699e6fe78e21c8ecd
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fail-fast-verification-coverage:14
+        input:
+          input:
+            change: fail-fast-verification-coverage
+            changeDir: openspec/changes/fail-fast-verification-coverage
+            workspaceBaseline:
+              ref: fc1c0933-677f-4229-b200-a10c2acb5242
+          outputs: {}
+        inputHash: 34442c6f14169f72ac1ea2469c5976ca2983753d33d7cc9f339fc8ad3ac7c7c9
+        outcome:
+          actionId: fail-fast-verification-coverage:14
+          attempt: 1
+          claimToken: portable-38d75b6bddf562b24311cb9126be24af1a9ac813b1dcd34699e6fe78e21c8ecd
+          inputHash: 34442c6f14169f72ac1ea2469c5976ca2983753d33d7cc9f339fc8ad3ac7c7c9
+          outcomeId: 317ffb4f-cc0a-4de6-b9e3-39df7d1515d6
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: e7dd78b73fd5d7dfe4cd4303b7944d63de7b03f0b8805c014dd46d09e8b80b1e
+            cwd: .
+            environment: 4831b64bdf348d7380c515a4eb4477dddf1a212e4e8f916bbd34956d9a8f87c5
+            exitCode: 0
+            inputAfter: a47f4669fc1d4d82b2834cb7635e0091cb639ecb20b669e39b3372ebc218a8d3
+            inputBefore: a47f4669fc1d4d82b2834cb7635e0091cb639ecb20b669e39b3372ebc218a8d3
+            manifestHash: 2e867f1de0415f48adfc3381bb9a3d7e25b52580f3cbe2ccf347992b28c98424
+            manifestRef: .comet/runtime/classic-sdk-checks/32cfd21236091b841d90db1c717e2a08467eab9fea8453df57c5150b47fb740c/8b4f18b9-577d-4f73-ac7d-b0fdd8f05190.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/32cfd21236091b841d90db1c717e2a08467eab9fea8453df57c5150b47fb740c/ffb9b50a-74bb-4efc-8d41-e25e65d78e2b.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 8238fb37633d3acb248266afb56655596a10a78894cb665ff17e9bae2cc5f3c9
+            outcomeId: 317ffb4f-cc0a-4de6-b9e3-39df7d1515d6
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: fail-fast-verification-coverage
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-015fcae583eb88ef3d699ebbdae4fc12a817c6c3ef77d117169902f1848b7dae
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fail-fast-verification-coverage:16
+        input:
+          input:
+            change: fail-fast-verification-coverage
+            changeDir: openspec/changes/fail-fast-verification-coverage
+            workspaceBaseline:
+              ref: fc1c0933-677f-4229-b200-a10c2acb5242
+          outputs: {}
+        inputHash: b685a1f7225c45fadbbef321fd0ae43185146e32467caac46f83753f7baae68a
+        outcome:
+          actionId: fail-fast-verification-coverage:16
+          attempt: 1
+          claimToken: portable-015fcae583eb88ef3d699ebbdae4fc12a817c6c3ef77d117169902f1848b7dae
+          inputHash: b685a1f7225c45fadbbef321fd0ae43185146e32467caac46f83753f7baae68a
+          outcomeId: 4a668ca0-4df6-4174-a46a-c6f75170205a
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/fail-fast-verification-coverage.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 05ca0f1aed35d94e692976ff65da2d011142cf1c3037f8adff1b3b4ec47d65f3
+            outcomeId: 4a668ca0-4df6-4174-a46a-c6f75170205a
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: fail-fast-verification-coverage
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-595b88cb8a589b866a745a2c63a8f546fccb7c1479bfaf8c0c19da2842815b51
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fail-fast-verification-coverage:18
+        input:
+          input:
+            change: fail-fast-verification-coverage
+            changeDir: openspec/changes/fail-fast-verification-coverage
+            workspaceBaseline:
+              ref: fc1c0933-677f-4229-b200-a10c2acb5242
+          outputs: {}
+        inputHash: 1dbe7429b73776b3455a99a84f4866730b96c0366068845c249a90f4ca967719
+        outcome:
+          actionId: fail-fast-verification-coverage:18
+          attempt: 1
+          claimToken: portable-595b88cb8a589b866a745a2c63a8f546fccb7c1479bfaf8c0c19da2842815b51
+          inputHash: 1dbe7429b73776b3455a99a84f4866730b96c0366068845c249a90f4ca967719
+          outcomeId: b83d21c1-fe68-48c9-b50a-39dc710ddaf2
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 3
+            contentHash: 104a7cfa3544987d2bbb9955ca36aa6c216911695c7958f8d577263cbed0bd75
+            cwd: .
+            deliveryInputs: {}
+            environment: 4831b64bdf348d7380c515a4eb4477dddf1a212e4e8f916bbd34956d9a8f87c5
+            exitCode: 0
+            inputAfter: 141a13701437c3f5cf46556f3f70f579da3fb56c8e24a893d362570fa4241b91
+            inputBefore: 141a13701437c3f5cf46556f3f70f579da3fb56c8e24a893d362570fa4241b91
+            manifestHash: 9226a9daab96ed305a3344b12a7983f7fc31c73217d20b02344484b4973a20d8
+            manifestRef: .comet/runtime/classic-sdk-checks/32cfd21236091b841d90db1c717e2a08467eab9fea8453df57c5150b47fb740c/e5383135-6c08-4fb6-ab01-e4c99ec45673.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/32cfd21236091b841d90db1c717e2a08467eab9fea8453df57c5150b47fb740c/c34f9758-d9d9-4bb3-be62-c9d8c6f887d3.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 1133529b71e1e724535c991869f9bc042bd368a60986b46fa84bae024a02c408
+            outcomeId: b83d21c1-fe68-48c9-b50a-39dc710ddaf2
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: fail-fast-verification-coverage
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-6bf959a24a74ea5e26a6fb0e20df67707c68789e9a577aaee0dd0414e06f79dc
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fail-fast-verification-coverage:20
+        input:
+          input:
+            change: fail-fast-verification-coverage
+            changeDir: openspec/changes/fail-fast-verification-coverage
+            workspaceBaseline:
+              ref: fc1c0933-677f-4229-b200-a10c2acb5242
+          outputs: {}
+        inputHash: 0aa3ae3636e5f182c6966e606a819ad067ab60f5094136ce6182c37abf77fc11
+        outcome:
+          actionId: fail-fast-verification-coverage:20
+          attempt: 1
+          claimToken: portable-6bf959a24a74ea5e26a6fb0e20df67707c68789e9a577aaee0dd0414e06f79dc
+          inputHash: 0aa3ae3636e5f182c6966e606a819ad067ab60f5094136ce6182c37abf77fc11
+          outcomeId: 81175779-c8a7-4fa7-a830-aee9ffa23ad9
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: Fail fast when the selected Verification Profile cannot cover the
+              current Acceptance set; add reviewable onboarding candidates, a
+              single deterministic resolver, Design preflight, public Runtime
+              regressions, operator documentation, and reproducible verification
+              evidence.
+            targetBranch: codex/fail-fast-verification-coverage
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: c897bd7e278eaadcf5a54e462b414ec10e472d92849089d6dbbc0dc6d2174319
+            outcomeId: 81175779-c8a7-4fa7-a830-aee9ffa23ad9
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: fail-fast-verification-coverage
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive-preflight
+          token: portable-c664a0bedc60c38a6d3d8df8a9ea2fb454d366b2b4f13ca2b6f336bc7e3d1856
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fail-fast-verification-coverage:22
+        input:
+          input:
+            change: fail-fast-verification-coverage
+            changeDir: openspec/changes/fail-fast-verification-coverage
+            workspaceBaseline:
+              ref: fc1c0933-677f-4229-b200-a10c2acb5242
+          outputs: {}
+        inputHash: fdf4b828bab3601d3ada31887f9cd5a0142e1891d5dfdf758ae92a1bbce1c99e
+        outcome:
+          actionId: fail-fast-verification-coverage:22
+          attempt: 1
+          claimToken: portable-c664a0bedc60c38a6d3d8df8a9ea2fb454d366b2b4f13ca2b6f336bc7e3d1856
+          inputHash: fdf4b828bab3601d3ada31887f9cd5a0142e1891d5dfdf758ae92a1bbce1c99e
+          outcomeId: 8f77438a-9e96-4a93-a149-5e771ebd0cbc
+          output:
+            baseCommit: e9ba214ca6563602874bbf1a8baa7107ec035653
+            deliveryAction: pr
+            prBaseBranch: main
+            remote: origin
+            remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+            targetBranch: codex/fail-fast-verification-coverage
+            verifiedBranch: codex/fail-fast-verification-coverage
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 016339a76264728a8b67fede7293f0429ca508bcd7d92e73a9e2a96d31462d87
+            outcomeId: 8f77438a-9e96-4a93-a149-5e771ebd0cbc
+        reconciliations: []
+        ref: classic-archive-preflight
+        requiredCapabilities: []
+        retry: manual
+        runId: fail-fast-verification-coverage
+        status: succeeded
+        stepId: full.archive.preflight
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive
+          token: portable-bb856f093847f68951c28fe5a1626ba0a64d1d64f9483989a91c4463cd5048ae
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fail-fast-verification-coverage:23
+        input:
+          input:
+            change: fail-fast-verification-coverage
+            changeDir: openspec/changes/fail-fast-verification-coverage
+            workspaceBaseline:
+              ref: fc1c0933-677f-4229-b200-a10c2acb5242
+          outputs: {}
+        inputHash: 055ecd18588930f0ea3488725952b12e0a320f0937a694a8ef3bc9b1615a358f
+        outcome:
+          actionId: fail-fast-verification-coverage:23
+          artifacts:
+            - sha256: 5d78ca50f13ab0bf11d840311628c3ffbbe93a7dd6c9f042a83796acde2fd6ce
+              uri: openspec/changes/archive/2026-11-03-fail-fast-verification-coverage/.comet/archive-manifest.json
+          attempt: 1
+          claimToken: portable-bb856f093847f68951c28fe5a1626ba0a64d1d64f9483989a91c4463cd5048ae
+          inputHash: 055ecd18588930f0ea3488725952b12e0a320f0937a694a8ef3bc9b1615a358f
+          outcomeId: 4955f347-5764-4556-91d8-aa07c2a7835d
+          output:
+            archiveDirectory: openspec/changes/archive/2026-11-03-fail-fast-verification-coverage
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: d60ddcfe3d2e3c8133015fc8ebbfe8132279021682d0af9de843b68196b6b0c7
+            outcomeId: 4955f347-5764-4556-91d8-aa07c2a7835d
+        reconciliations: []
+        ref: classic-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: fail-fast-verification-coverage
+        status: succeeded
+        stepId: full.archive.execute
+        type: call_tool
+      - attempt: 1
+        id: fail-fast-verification-coverage:24
+        input:
+          input:
+            change: fail-fast-verification-coverage
+            changeDir: openspec/changes/fail-fast-verification-coverage
+            workspaceBaseline:
+              ref: fc1c0933-677f-4229-b200-a10c2acb5242
+          outputs: {}
+        inputHash: 69bb01228b591f64e41d9393fa6fb5023ab7b6b3458299545e0879de800fcad2
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: fail-fast-verification-coverage
+        status: pending
+        stepId: full.archive.deliver
+        type: invoke_skill
+    actionContexts:
+      fail-fast-verification-coverage:1:
+        results: {}
+        sequence: 1
+      fail-fast-verification-coverage:11:
+        results: {}
+        sequence: 11
+      fail-fast-verification-coverage:13:
+        results: {}
+        sequence: 13
+      fail-fast-verification-coverage:14:
+        results: {}
+        sequence: 14
+      fail-fast-verification-coverage:16:
+        results: {}
+        sequence: 16
+      fail-fast-verification-coverage:18:
+        results: {}
+        sequence: 18
+      fail-fast-verification-coverage:20:
+        results: {}
+        sequence: 20
+      fail-fast-verification-coverage:22:
+        results: {}
+        sequence: 22
+      fail-fast-verification-coverage:23:
+        results: {}
+        sequence: 23
+      fail-fast-verification-coverage:24:
+        results: {}
+        sequence: 24
+      fail-fast-verification-coverage:4:
+        results: {}
+        sequence: 4
+      fail-fast-verification-coverage:5:
+        results: {}
+        sequence: 5
+      fail-fast-verification-coverage:7:
+        results: {}
+        sequence: 7
+      fail-fast-verification-coverage:9:
+        results: {}
+        sequence: 9
+    waits:
+      - id: fail-fast-verification-coverage:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: fail-fast-verification-coverage
+            changeDir: openspec/changes/fail-fast-verification-coverage
+            workspaceBaseline:
+              ref: fc1c0933-677f-4229-b200-a10c2acb5242
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: b3737f9b29d6e20b4dc0506ae9c71c08f0e03a0bc58dec1606758ea7df81f380
+              ref: openspec/changes/fail-fast-verification-coverage
+        proposalHash: 0345249203deb6311e8426e66c3a7cfd7ba82aeb3c9eb75f2160b45865f68759
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-open-b3737f9b29d6e20b4dc0506ae9c71c08f0e03a0bc58dec1606758ea7df81f380
+          choice: approved
+          proposalHash: 0345249203deb6311e8426e66c3a7cfd7ba82aeb3c9eb75f2160b45865f68759
+      - id: fail-fast-verification-coverage:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: resolved
+        proposal:
+          input:
+            change: fail-fast-verification-coverage
+            changeDir: openspec/changes/fail-fast-verification-coverage
+            workspaceBaseline:
+              ref: fc1c0933-677f-4229-b200-a10c2acb5242
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/fail-fast-verification-coverage/.comet/handoff/design-context.json
+              handoffHash: beca32308b8465c9c9e48b15bf91246598adce661e9401c62c6147e76a652439
+              proposal: 推荐方案：采用三层 fail-fast。项目探测为生成的 required 命令写入可审查的 covers:['*']
+                候选；项目接入只对约定默认 verify Profile 做静态可用性门禁；具体 Run 在 Planning Snapshot
+                形成后、Design 审批请求持久化前，用实际 verificationProfileId 和 Tasks 执行纯
+                coverage preflight。SpecificationPlanning 通过副作用前 preflight hook
+                编排，preflight 后重新核对 planning manifest identity；Evidence
+                Coordinator 提供不计算仓库 fingerprint 的 compile 入口；Design 与正式 Verify
+                复用同一纯 resolver。拒绝两个替代方案：仅在 Build Check 后校验仍然过晚；在接入阶段强制所有 Profile
+                或猜测细粒度 selector 会混淆独立 Evidence Profile 并伪造未来语义。
+              requirementsEvidence:
+                contentHash: db233788a73f93fe3ca92abacda3c5d856255aaf7d4bd1760aeed8ff2e36b44b
+                ref: openspec/changes/fail-fast-verification-coverage
+              sourceEvidence:
+                contentHash: e70096a72e9d534e63ff5e72de58d7a413140b70b2cade4bc7fe0395ea5b120e
+                ref: openspec/changes/fail-fast-verification-coverage
+        proposalHash: b9f2a1d7f089c0dbacc7dacf780e53d85dbadc48e1c5a12d5de7663665a4ef06
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-design-b9f2a1d7f089c0dbacc7dacf780e53d85dbadc48e1c5a12d5de7663665a4ef06-approved
+          choice: approved
+          proposalHash: b9f2a1d7f089c0dbacc7dacf780e53d85dbadc48e1c5a12d5de7663665a4ef06
+      - id: fail-fast-verification-coverage:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: fail-fast-verification-coverage
+            changeDir: openspec/changes/fail-fast-verification-coverage
+            workspaceBaseline:
+              ref: fc1c0933-677f-4229-b200-a10c2acb5242
+          outputs:
+            full.build.configure:
+              boundBranch: codex/fail-fast-verification-coverage
+              buildMode: autonomous
+              directOverride: false
+              isolation: current
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: 8b53d2fa8ea79ef5d4c54457971b5ea8594328120f832748ba1e1a27a421be7b
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-build-8b53d2fa8ea79ef5d4c54457971b5ea8594328120f832748ba1e1a27a421be7b-approved
+          choice: approved
+          proposalHash: 8b53d2fa8ea79ef5d4c54457971b5ea8594328120f832748ba1e1a27a421be7b
+      - id: fail-fast-verification-coverage:21
+        stepId: full.archive.confirm
+        sequence: 21
+        status: resolved
+        proposal:
+          input:
+            change: fail-fast-verification-coverage
+            changeDir: openspec/changes/fail-fast-verification-coverage
+            workspaceBaseline:
+              ref: fc1c0933-677f-4229-b200-a10c2acb5242
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: Fail fast when the selected Verification Profile cannot cover the
+                current Acceptance set; add reviewable onboarding candidates, a
+                single deterministic resolver, Design preflight, public Runtime
+                regressions, operator documentation, and reproducible
+                verification evidence.
+              targetBranch: codex/fail-fast-verification-coverage
+        proposalHash: e17c27a0df847607564a94d8358cdd32afb8703b09cc978ddc390ad738abe93f
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-e17c27a0df847607564a94d8358cdd32afb8703b09cc978ddc390ad738abe93f-pr
+          choice: pr
+          proposalHash: e17c27a0df847607564a94d8358cdd32afb8703b09cc978ddc390ad738abe93f
+    evidenceWaits:
+      - id: fail-fast-verification-coverage:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/fail-fast-verification-coverage
+          contentHash: b3737f9b29d6e20b4dc0506ae9c71c08f0e03a0bc58dec1606758ea7df81f380
+          submissionId: ecef0a99-f518-4b2f-bd91-2afa1179f886
+      - id: fail-fast-verification-coverage:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/fail-fast-verification-coverage/design.md
+          contentHash: c9e88053b5039ce7dfbf862e8a40ed2bdfccaa8c4d64d044adc7ecc14551849e
+          submissionId: 57df23a2-b4da-4b17-a35f-bc933f5fae0b
+      - id: fail-fast-verification-coverage:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-03-fail-fast-verification-coverage.md
+          contentHash: a6af2c55b2811da1ee82a1fc4cda5aec34928bf86355ec9c27c3b98cf2cd0f86
+          submissionId: 8e532891-c4eb-4354-99ec-9ec7403c8de8
+      - id: fail-fast-verification-coverage:15
+        stepId: full.build.check.evidence
+        sequence: 15
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/32cfd21236091b841d90db1c717e2a08467eab9fea8453df57c5150b47fb740c/ffb9b50a-74bb-4efc-8d41-e25e65d78e2b.log
+          contentHash: e7dd78b73fd5d7dfe4cd4303b7944d63de7b03f0b8805c014dd46d09e8b80b1e
+          submissionId: 18732f8c-19f6-4fa1-90da-dd353054b180
+      - id: fail-fast-verification-coverage:17
+        stepId: full.verify.report.evidence
+        sequence: 17
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/fail-fast-verification-coverage.md
+          contentHash: ba4a297013c83721f217c23cad61b00049284ad7276a18b14994ae6e88417b09
+          submissionId: d7659f0f-661e-4f47-9433-bc6835cfa6fd
+      - id: fail-fast-verification-coverage:19
+        stepId: full.verify.check.evidence
+        sequence: 19
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/32cfd21236091b841d90db1c717e2a08467eab9fea8453df57c5150b47fb740c/c34f9758-d9d9-4bb3-be62-c9d8c6f887d3.log
+          contentHash: 104a7cfa3544987d2bbb9955ca36aa6c216911695c7958f8d577263cbed0bd75
+          submissionId: 1cb760d7-b1f3-455c-9d61-883a6c675db3
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 37
+  sourceHash: 765e7541bc791af88341e47a5341690caa48bf372cab173e3300142d7b4090e3
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: fail-fast-verification-coverage
+            changeDir: openspec/changes/fail-fast-verification-coverage
+            workspaceBaseline:
+              ref: fc1c0933-677f-4229-b200-a10c2acb5242
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: b3737f9b29d6e20b4dc0506ae9c71c08f0e03a0bc58dec1606758ea7df81f380
+              ref: openspec/changes/fail-fast-verification-coverage
+      - contentHash: b3737f9b29d6e20b4dc0506ae9c71c08f0e03a0bc58dec1606758ea7df81f380
+        ref: openspec/changes/fail-fast-verification-coverage
+      - contentHash: b3737f9b29d6e20b4dc0506ae9c71c08f0e03a0bc58dec1606758ea7df81f380
+      - choice: approved
+        proposal:
+          input:
+            change: fail-fast-verification-coverage
+            changeDir: openspec/changes/fail-fast-verification-coverage
+            workspaceBaseline:
+              ref: fc1c0933-677f-4229-b200-a10c2acb5242
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/fail-fast-verification-coverage/.comet/handoff/design-context.json
+              handoffHash: beca32308b8465c9c9e48b15bf91246598adce661e9401c62c6147e76a652439
+              proposal: 推荐方案：采用三层 fail-fast。项目探测为生成的 required 命令写入可审查的 covers:['*']
+                候选；项目接入只对约定默认 verify Profile 做静态可用性门禁；具体 Run 在 Planning Snapshot
+                形成后、Design 审批请求持久化前，用实际 verificationProfileId 和 Tasks 执行纯
+                coverage preflight。SpecificationPlanning 通过副作用前 preflight hook
+                编排，preflight 后重新核对 planning manifest identity；Evidence
+                Coordinator 提供不计算仓库 fingerprint 的 compile 入口；Design 与正式 Verify
+                复用同一纯 resolver。拒绝两个替代方案：仅在 Build Check 后校验仍然过晚；在接入阶段强制所有 Profile
+                或猜测细粒度 selector 会混淆独立 Evidence Profile 并伪造未来语义。
+              requirementsEvidence:
+                contentHash: db233788a73f93fe3ca92abacda3c5d856255aaf7d4bd1760aeed8ff2e36b44b
+                ref: openspec/changes/fail-fast-verification-coverage
+              sourceEvidence:
+                contentHash: e70096a72e9d534e63ff5e72de58d7a413140b70b2cade4bc7fe0395ea5b120e
+                ref: openspec/changes/fail-fast-verification-coverage
+      - handoffContext: openspec/changes/fail-fast-verification-coverage/.comet/handoff/design-context.json
+        handoffHash: beca32308b8465c9c9e48b15bf91246598adce661e9401c62c6147e76a652439
+        proposal: 推荐方案：采用三层 fail-fast。项目探测为生成的 required 命令写入可审查的 covers:['*']
+          候选；项目接入只对约定默认 verify Profile 做静态可用性门禁；具体 Run 在 Planning Snapshot
+          形成后、Design 审批请求持久化前，用实际 verificationProfileId 和 Tasks 执行纯 coverage
+          preflight。SpecificationPlanning 通过副作用前 preflight hook 编排，preflight
+          后重新核对 planning manifest identity；Evidence Coordinator 提供不计算仓库
+          fingerprint 的 compile 入口；Design 与正式 Verify 复用同一纯 resolver。拒绝两个替代方案：仅在
+          Build Check 后校验仍然过晚；在接入阶段强制所有 Profile 或猜测细粒度 selector 会混淆独立 Evidence
+          Profile 并伪造未来语义。
+        requirementsEvidence:
+          contentHash: db233788a73f93fe3ca92abacda3c5d856255aaf7d4bd1760aeed8ff2e36b44b
+          ref: openspec/changes/fail-fast-verification-coverage
+        sourceEvidence:
+          contentHash: e70096a72e9d534e63ff5e72de58d7a413140b70b2cade4bc7fe0395ea5b120e
+          ref: openspec/changes/fail-fast-verification-coverage
+      - designDoc: openspec/changes/fail-fast-verification-coverage/design.md
+      - contentHash: c9e88053b5039ce7dfbf862e8a40ed2bdfccaa8c4d64d044adc7ecc14551849e
+        ref: openspec/changes/fail-fast-verification-coverage/design.md
+      - boundBranch: codex/fail-fast-verification-coverage
+        buildMode: autonomous
+        directOverride: false
+        isolation: current
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: fail-fast-verification-coverage
+            changeDir: openspec/changes/fail-fast-verification-coverage
+            workspaceBaseline:
+              ref: fc1c0933-677f-4229-b200-a10c2acb5242
+          outputs:
+            full.build.configure:
+              boundBranch: codex/fail-fast-verification-coverage
+              buildMode: autonomous
+              directOverride: false
+              isolation: current
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: c9e88053b5039ce7dfbf862e8a40ed2bdfccaa8c4d64d044adc7ecc14551849e
+          ref: openspec/changes/fail-fast-verification-coverage/design.md
+        plan: docs/superpowers/plans/2026-11-03-fail-fast-verification-coverage.md
+        planEvidence:
+          contentHash: a6af2c55b2811da1ee82a1fc4cda5aec34928bf86355ec9c27c3b98cf2cd0f86
+          ref: docs/superpowers/plans/2026-11-03-fail-fast-verification-coverage.md
+        taskRevision: 6a9dadc00006ab430d5bba46d0352a7a37a08a4dda1723a69e88a3fdd635409c
+      - contentHash: a6af2c55b2811da1ee82a1fc4cda5aec34928bf86355ec9c27c3b98cf2cd0f86
+        ref: docs/superpowers/plans/2026-11-03-fail-fast-verification-coverage.md
+      - event: build-complete
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: e7dd78b73fd5d7dfe4cd4303b7944d63de7b03f0b8805c014dd46d09e8b80b1e
+        cwd: .
+        environment: 4831b64bdf348d7380c515a4eb4477dddf1a212e4e8f916bbd34956d9a8f87c5
+        exitCode: 0
+        inputAfter: a47f4669fc1d4d82b2834cb7635e0091cb639ecb20b669e39b3372ebc218a8d3
+        inputBefore: a47f4669fc1d4d82b2834cb7635e0091cb639ecb20b669e39b3372ebc218a8d3
+        manifestHash: 2e867f1de0415f48adfc3381bb9a3d7e25b52580f3cbe2ccf347992b28c98424
+        manifestRef: .comet/runtime/classic-sdk-checks/32cfd21236091b841d90db1c717e2a08467eab9fea8453df57c5150b47fb740c/8b4f18b9-577d-4f73-ac7d-b0fdd8f05190.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/32cfd21236091b841d90db1c717e2a08467eab9fea8453df57c5150b47fb740c/ffb9b50a-74bb-4efc-8d41-e25e65d78e2b.log
+        reusable: false
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 900000
+      - contentHash: e7dd78b73fd5d7dfe4cd4303b7944d63de7b03f0b8805c014dd46d09e8b80b1e
+        ref: .comet/runtime/classic-sdk-checks/32cfd21236091b841d90db1c717e2a08467eab9fea8453df57c5150b47fb740c/ffb9b50a-74bb-4efc-8d41-e25e65d78e2b.log
+      - contentHash: ba4a297013c83721f217c23cad61b00049284ad7276a18b14994ae6e88417b09
+        ref: docs/superpowers/reports/fail-fast-verification-coverage.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/fail-fast-verification-coverage.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 3
+        contentHash: 104a7cfa3544987d2bbb9955ca36aa6c216911695c7958f8d577263cbed0bd75
+        cwd: .
+        deliveryInputs: {}
+        environment: 4831b64bdf348d7380c515a4eb4477dddf1a212e4e8f916bbd34956d9a8f87c5
+        exitCode: 0
+        inputAfter: 141a13701437c3f5cf46556f3f70f579da3fb56c8e24a893d362570fa4241b91
+        inputBefore: 141a13701437c3f5cf46556f3f70f579da3fb56c8e24a893d362570fa4241b91
+        manifestHash: 9226a9daab96ed305a3344b12a7983f7fc31c73217d20b02344484b4973a20d8
+        manifestRef: .comet/runtime/classic-sdk-checks/32cfd21236091b841d90db1c717e2a08467eab9fea8453df57c5150b47fb740c/e5383135-6c08-4fb6-ab01-e4c99ec45673.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/32cfd21236091b841d90db1c717e2a08467eab9fea8453df57c5150b47fb740c/c34f9758-d9d9-4bb3-be62-c9d8c6f887d3.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 900000
+      - contentHash: 104a7cfa3544987d2bbb9955ca36aa6c216911695c7958f8d577263cbed0bd75
+        ref: .comet/runtime/classic-sdk-checks/32cfd21236091b841d90db1c717e2a08467eab9fea8453df57c5150b47fb740c/c34f9758-d9d9-4bb3-be62-c9d8c6f887d3.log
+      - choice: pr
+        proposal:
+          input:
+            change: fail-fast-verification-coverage
+            changeDir: openspec/changes/fail-fast-verification-coverage
+            workspaceBaseline:
+              ref: fc1c0933-677f-4229-b200-a10c2acb5242
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: Fail fast when the selected Verification Profile cannot cover the
+                current Acceptance set; add reviewable onboarding candidates, a
+                single deterministic resolver, Design preflight, public Runtime
+                regressions, operator documentation, and reproducible
+                verification evidence.
+              targetBranch: codex/fail-fast-verification-coverage
+      - prBaseBranch: main
+        remote: origin
+        summary: Fail fast when the selected Verification Profile cannot cover the
+          current Acceptance set; add reviewable onboarding candidates, a single
+          deterministic resolver, Design preflight, public Runtime regressions,
+          operator documentation, and reproducible verification evidence.
+        targetBranch: codex/fail-fast-verification-coverage
+      - baseCommit: e9ba214ca6563602874bbf1a8baa7107ec035653
+        deliveryAction: pr
+        prBaseBranch: main
+        remote: origin
+        remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+        targetBranch: codex/fail-fast-verification-coverage
+        verifiedBranch: codex/fail-fast-verification-coverage
+      - archiveDirectory: openspec/changes/archive/2026-11-03-fail-fast-verification-coverage
+      - sequence: 9
+        value:
+          boundBranch: codex/fail-fast-verification-coverage
+          buildMode: autonomous
+          directOverride: false
+          isolation: current
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      - sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: fail-fast-verification-coverage
+              changeDir: openspec/changes/fail-fast-verification-coverage
+              workspaceBaseline:
+                ref: fc1c0933-677f-4229-b200-a10c2acb5242
+            outputs:
+              full.build.configure:
+                boundBranch: codex/fail-fast-verification-coverage
+                buildMode: autonomous
+                directOverride: false
+                isolation: current
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      - sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: fail-fast-verification-coverage
+              changeDir: openspec/changes/fail-fast-verification-coverage
+              workspaceBaseline:
+                ref: fc1c0933-677f-4229-b200-a10c2acb5242
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/fail-fast-verification-coverage/.comet/handoff/design-context.json
+                handoffHash: beca32308b8465c9c9e48b15bf91246598adce661e9401c62c6147e76a652439
+                proposal: 推荐方案：采用三层 fail-fast。项目探测为生成的 required 命令写入可审查的 covers:['*']
+                  候选；项目接入只对约定默认 verify Profile 做静态可用性门禁；具体 Run 在 Planning
+                  Snapshot 形成后、Design 审批请求持久化前，用实际 verificationProfileId 和 Tasks
+                  执行纯 coverage preflight。SpecificationPlanning 通过副作用前 preflight
+                  hook 编排，preflight 后重新核对 planning manifest identity；Evidence
+                  Coordinator 提供不计算仓库 fingerprint 的 compile 入口；Design 与正式 Verify
+                  复用同一纯 resolver。拒绝两个替代方案：仅在 Build Check 后校验仍然过晚；在接入阶段强制所有
+                  Profile 或猜测细粒度 selector 会混淆独立 Evidence Profile 并伪造未来语义。
+                requirementsEvidence:
+                  contentHash: db233788a73f93fe3ca92abacda3c5d856255aaf7d4bd1760aeed8ff2e36b44b
+                  ref: openspec/changes/fail-fast-verification-coverage
+                sourceEvidence:
+                  contentHash: e70096a72e9d534e63ff5e72de58d7a413140b70b2cade4bc7fe0395ea5b120e
+                  ref: openspec/changes/fail-fast-verification-coverage
+      - sequence: 7
+        value:
+          designDoc: openspec/changes/fail-fast-verification-coverage/design.md
+      - sequence: 8
+        value:
+          contentHash: c9e88053b5039ce7dfbf862e8a40ed2bdfccaa8c4d64d044adc7ecc14551849e
+          ref: openspec/changes/fail-fast-verification-coverage/design.md
+      - sequence: 5
+        value:
+          handoffContext: openspec/changes/fail-fast-verification-coverage/.comet/handoff/design-context.json
+          handoffHash: beca32308b8465c9c9e48b15bf91246598adce661e9401c62c6147e76a652439
+          proposal: 推荐方案：采用三层 fail-fast。项目探测为生成的 required 命令写入可审查的 covers:['*']
+            候选；项目接入只对约定默认 verify Profile 做静态可用性门禁；具体 Run 在 Planning Snapshot
+            形成后、Design 审批请求持久化前，用实际 verificationProfileId 和 Tasks 执行纯 coverage
+            preflight。SpecificationPlanning 通过副作用前 preflight hook 编排，preflight
+            后重新核对 planning manifest identity；Evidence Coordinator 提供不计算仓库
+            fingerprint 的 compile 入口；Design 与正式 Verify 复用同一纯
+            resolver。拒绝两个替代方案：仅在 Build Check 后校验仍然过晚；在接入阶段强制所有 Profile 或猜测细粒度
+            selector 会混淆独立 Evidence Profile 并伪造未来语义。
+          requirementsEvidence:
+            contentHash: db233788a73f93fe3ca92abacda3c5d856255aaf7d4bd1760aeed8ff2e36b44b
+            ref: openspec/changes/fail-fast-verification-coverage
+          sourceEvidence:
+            contentHash: e70096a72e9d534e63ff5e72de58d7a413140b70b2cade4bc7fe0395ea5b120e
+            ref: openspec/changes/fail-fast-verification-coverage
+      - sequence: 1
+        value:
+          event: open-complete
+      - sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: fail-fast-verification-coverage
+              changeDir: openspec/changes/fail-fast-verification-coverage
+              workspaceBaseline:
+                ref: fc1c0933-677f-4229-b200-a10c2acb5242
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: b3737f9b29d6e20b4dc0506ae9c71c08f0e03a0bc58dec1606758ea7df81f380
+                ref: openspec/changes/fail-fast-verification-coverage
+      - sequence: 2
+        value:
+          contentHash: b3737f9b29d6e20b4dc0506ae9c71c08f0e03a0bc58dec1606758ea7df81f380
+          ref: openspec/changes/fail-fast-verification-coverage
+      - sequence: 4
+        value:
+          contentHash: b3737f9b29d6e20b4dc0506ae9c71c08f0e03a0bc58dec1606758ea7df81f380
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: c9e88053b5039ce7dfbf862e8a40ed2bdfccaa8c4d64d044adc7ecc14551849e
+            ref: openspec/changes/fail-fast-verification-coverage/design.md
+          plan: docs/superpowers/plans/2026-11-03-fail-fast-verification-coverage.md
+          planEvidence:
+            contentHash: a6af2c55b2811da1ee82a1fc4cda5aec34928bf86355ec9c27c3b98cf2cd0f86
+            ref: docs/superpowers/plans/2026-11-03-fail-fast-verification-coverage.md
+          taskRevision: 6a9dadc00006ab430d5bba46d0352a7a37a08a4dda1723a69e88a3fdd635409c
+      - sequence: 12
+        value:
+          contentHash: a6af2c55b2811da1ee82a1fc4cda5aec34928bf86355ec9c27c3b98cf2cd0f86
+          ref: docs/superpowers/plans/2026-11-03-fail-fast-verification-coverage.md
+      - sequence: 13
+        value:
+          event: build-complete
+      - sequence: 14
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: e7dd78b73fd5d7dfe4cd4303b7944d63de7b03f0b8805c014dd46d09e8b80b1e
+          cwd: .
+          environment: 4831b64bdf348d7380c515a4eb4477dddf1a212e4e8f916bbd34956d9a8f87c5
+          exitCode: 0
+          inputAfter: a47f4669fc1d4d82b2834cb7635e0091cb639ecb20b669e39b3372ebc218a8d3
+          inputBefore: a47f4669fc1d4d82b2834cb7635e0091cb639ecb20b669e39b3372ebc218a8d3
+          manifestHash: 2e867f1de0415f48adfc3381bb9a3d7e25b52580f3cbe2ccf347992b28c98424
+          manifestRef: .comet/runtime/classic-sdk-checks/32cfd21236091b841d90db1c717e2a08467eab9fea8453df57c5150b47fb740c/8b4f18b9-577d-4f73-ac7d-b0fdd8f05190.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/32cfd21236091b841d90db1c717e2a08467eab9fea8453df57c5150b47fb740c/ffb9b50a-74bb-4efc-8d41-e25e65d78e2b.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 900000
+      - sequence: 15
+        value:
+          contentHash: e7dd78b73fd5d7dfe4cd4303b7944d63de7b03f0b8805c014dd46d09e8b80b1e
+          ref: .comet/runtime/classic-sdk-checks/32cfd21236091b841d90db1c717e2a08467eab9fea8453df57c5150b47fb740c/ffb9b50a-74bb-4efc-8d41-e25e65d78e2b.log
+      - sequence: 17
+        value:
+          contentHash: ba4a297013c83721f217c23cad61b00049284ad7276a18b14994ae6e88417b09
+          ref: docs/superpowers/reports/fail-fast-verification-coverage.md
+      - sequence: 16
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/fail-fast-verification-coverage.md
+      - sequence: 18
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 3
+          contentHash: 104a7cfa3544987d2bbb9955ca36aa6c216911695c7958f8d577263cbed0bd75
+          cwd: .
+          deliveryInputs: {}
+          environment: 4831b64bdf348d7380c515a4eb4477dddf1a212e4e8f916bbd34956d9a8f87c5
+          exitCode: 0
+          inputAfter: 141a13701437c3f5cf46556f3f70f579da3fb56c8e24a893d362570fa4241b91
+          inputBefore: 141a13701437c3f5cf46556f3f70f579da3fb56c8e24a893d362570fa4241b91
+          manifestHash: 9226a9daab96ed305a3344b12a7983f7fc31c73217d20b02344484b4973a20d8
+          manifestRef: .comet/runtime/classic-sdk-checks/32cfd21236091b841d90db1c717e2a08467eab9fea8453df57c5150b47fb740c/e5383135-6c08-4fb6-ab01-e4c99ec45673.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/32cfd21236091b841d90db1c717e2a08467eab9fea8453df57c5150b47fb740c/c34f9758-d9d9-4bb3-be62-c9d8c6f887d3.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 900000
+      - sequence: 19
+        value:
+          contentHash: 104a7cfa3544987d2bbb9955ca36aa6c216911695c7958f8d577263cbed0bd75
+          ref: .comet/runtime/classic-sdk-checks/32cfd21236091b841d90db1c717e2a08467eab9fea8453df57c5150b47fb740c/c34f9758-d9d9-4bb3-be62-c9d8c6f887d3.log
+      - sequence: 21
+        value:
+          choice: pr
+          proposal:
+            input:
+              change: fail-fast-verification-coverage
+              changeDir: openspec/changes/fail-fast-verification-coverage
+              workspaceBaseline:
+                ref: fc1c0933-677f-4229-b200-a10c2acb5242
+            outputs:
+              full.archive.prepare:
+                prBaseBranch: main
+                remote: origin
+                summary: Fail fast when the selected Verification Profile cannot cover the
+                  current Acceptance set; add reviewable onboarding candidates,
+                  a single deterministic resolver, Design preflight, public
+                  Runtime regressions, operator documentation, and reproducible
+                  verification evidence.
+                targetBranch: codex/fail-fast-verification-coverage
+      - sequence: 20
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: Fail fast when the selected Verification Profile cannot cover the
+            current Acceptance set; add reviewable onboarding candidates, a
+            single deterministic resolver, Design preflight, public Runtime
+            regressions, operator documentation, and reproducible verification
+            evidence.
+          targetBranch: codex/fail-fast-verification-coverage
+      - sequence: 22
+        value:
+          baseCommit: e9ba214ca6563602874bbf1a8baa7107ec035653
+          deliveryAction: pr
+          prBaseBranch: main
+          remote: origin
+          remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+          targetBranch: codex/fail-fast-verification-coverage
+          verifiedBranch: codex/fail-fast-verification-coverage
+      - sequence: 23
+        value:
+          archiveDirectory: openspec/changes/archive/2026-11-03-fail-fast-verification-coverage
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 27
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 10
+        left: 28
+        right: 29
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 30
+        right: 25
+        height: 4
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 32
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 34
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 35
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 25
+        height: 5
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: null
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 40
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 41
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 42
+        height: 5
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 45
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 17
+        left: 44
+        right: 46
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 47
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 48
+        height: 5
+      - key: full.archive.confirm
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 20
+        left: 50
+        right: 51
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 33
+        right: 27
+        height: 2
+      - key: full.build.check.evidence
+        value: 14
+        left: 52
+        right: 53
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 54
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 55
+        right: 48
+        height: 5
+      - key: full.archive.preflight
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 19
+        left: null
+        right: 57
+        height: 2
+      - key: full.archive.prepare
+        value: 20
+        left: 58
+        right: 51
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 53
+        right: 29
+        height: 3
+      - key: full.build.check.evidence
+        value: 14
+        left: 59
+        right: 60
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 61
+        right: 48
+        height: 5
+      - key: full.archive.confirm
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 22
+        left: 63
+        right: 64
+        height: 2
+      - key: full.archive.prepare
+        value: 20
+        left: 65
+        right: 51
+        height: 3
+      - key: full.build.check.evidence
+        value: 14
+        left: 66
+        right: 60
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 67
+        right: 48
+        height: 5
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 24
+        left: 69
+        right: 70
+        height: 2
+      - key: full.design.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: 72
+        right: 73
+        height: 2
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: 75
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: 74
+        right: 76
+        height: 3
+      - key: full.design.document
+        value: 26
+        left: 71
+        right: 77
+        height: 4
+      - key: full.build.plan
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 34
+        left: 79
+        right: 80
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 69
+        right: 81
+        height: 3
+      - key: full.design.document
+        value: 26
+        left: 82
+        right: 77
+        height: 4
+      - key: full.build.execute
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 24
+        left: 69
+        right: 84
+        height: 2
+      - key: full.build.plan.evidence
+        value: 34
+        left: null
+        right: 80
+        height: 2
+      - key: full.build.plan
+        value: 33
+        left: 85
+        right: 86
+        height: 3
+      - key: full.design.document
+        value: 26
+        left: 87
+        right: 77
+        height: 4
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 37
+        left: 89
+        right: 90
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 91
+        right: 84
+        height: 3
+      - key: full.build.plan
+        value: 33
+        left: 92
+        right: 86
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 93
+        right: 77
+        height: 5
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 38
+        left: null
+        right: 96
+        height: 2
+      - key: full.open.revalidate
+        value: 32
+        left: 95
+        right: 97
+        height: 3
+      - key: full.open.confirm
+        value: 30
+        left: 74
+        right: 98
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 93
+        right: 99
+        height: 5
+      - key: full.open.revalidate
+        value: 32
+        left: 95
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 38
+        left: 102
+        right: 96
+        height: 2
+      - key: full.verify.check
+        value: 40
+        left: 101
+        right: 103
+        height: 3
+      - key: full.open.confirm
+        value: 30
+        left: 74
+        right: 104
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 93
+        right: 105
+        height: 5
+      - key: full.archive.confirm
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 43
+        left: 107
+        right: 108
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 90
+        right: 84
+        height: 2
+      - key: full.build.check.evidence
+        value: 37
+        left: 109
+        right: 110
+        height: 3
+      - key: full.build.plan
+        value: 33
+        left: 111
+        right: 86
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 112
+        right: 105
+        height: 5
+      - key: full.archive.preflight
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 42
+        left: null
+        right: 114
+        height: 2
+      - key: full.archive.prepare
+        value: 43
+        left: 115
+        right: 108
+        height: 3
+      - key: full.build.plan
+        value: 33
+        left: 110
+        right: 86
+        height: 3
+      - key: full.build.check.evidence
+        value: 37
+        left: 116
+        right: 117
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 118
+        right: 105
+        height: 5
+      - key: full.archive.confirm
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 45
+        left: 120
+        right: 121
+        height: 2
+      - key: full.archive.prepare
+        value: 43
+        left: 122
+        right: 108
+        height: 3
+      - key: full.build.check.evidence
+        value: 37
+        left: 123
+        right: 117
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 124
+        right: 105
+        height: 5
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 30
+        left: 126
+        right: 127
+        height: 2
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: 129
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: 126
+        right: 130
+        height: 3
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: 132
+        right: 133
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: 134
+        right: 130
+        height: 3
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 26
+        left: 136
+        right: 137
+        height: 2
+      - key: full.design.handoff
+        value: 28
+        left: 138
+        right: 133
+        height: 3
+      - key: full.open.confirm
+        value: 30
+        left: 139
+        right: 130
+        height: 4
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 29
+        left: null
+        right: 141
+        height: 2
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 144
+        right: 145
+        height: 2
+      - key: full.open
+        value: 29
+        left: 143
+        right: 146
+        height: 3
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 27
+        left: 149
+        right: 150
+        height: 2
+      - key: full.design.confirm
+        value: 25
+        left: 148
+        right: 151
+        height: 3
+      - key: full.open
+        value: 29
+        left: 152
+        right: 146
+        height: 4
+      - key: full.archive.prepare
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 36
+        left: 154
+        right: 155
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 33
+        left: null
+        right: 158
+        height: 2
+      - key: full.build.execute
+        value: 35
+        left: 157
+        right: 159
+        height: 3
+      - key: full.build.configure
+        value: 23
+        left: 156
+        right: 160
+        height: 4
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 144
+        right: 162
+        height: 2
+      - key: full.verify.check.evidence
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 38
+        left: 164
+        right: 165
+        height: 2
+      - key: full.verify.check
+        value: 40
+        left: 163
+        right: 166
+        height: 3
+      - key: full.open
+        value: 29
+        left: 151
+        right: 167
+        height: 4
+      - key: full.design.confirm
+        value: 25
+        left: 161
+        right: 168
+        height: 5
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 26
+        left: 171
+        right: 172
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 174
+        right: 175
+        height: 2
+      - key: full.open
+        value: 29
+        left: 173
+        right: 176
+        height: 3
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 24
+        left: 178
+        right: 179
+        height: 2
+      - key: full.design.document
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 27
+        left: 181
+        right: 182
+        height: 2
+      - key: full.design.confirm
+        value: 25
+        left: 180
+        right: 183
+        height: 3
+      - key: full.open
+        value: 29
+        left: 184
+        right: 176
+        height: 4
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 23
+        left: 186
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 33
+        left: 188
+        right: 189
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 187
+        right: 190
+        height: 3
+      - key: full.open
+        value: 29
+        left: 183
+        right: 176
+        height: 3
+      - key: full.design.confirm
+        value: 25
+        left: 191
+        right: 192
+        height: 4
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 37
+        left: 194
+        right: 195
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 196
+        right: 190
+        height: 3
+      - key: full.verify.run
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: 198
+        height: 2
+      - key: full.open.evidence
+        value: 31
+        left: 174
+        right: 199
+        height: 3
+      - key: full.open
+        value: 29
+        left: 183
+        right: 200
+        height: 4
+      - key: full.design.confirm
+        value: 25
+        left: 197
+        right: 201
+        height: 5
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 174
+        right: 203
+        height: 2
+      - key: full.verify.report.evidence
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 39
+        left: 205
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 40
+        left: 204
+        right: 206
+        height: 3
+      - key: full.open
+        value: 29
+        left: 183
+        right: 207
+        height: 4
+      - key: full.design.confirm
+        value: 25
+        left: 197
+        right: 208
+        height: 5
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 31
+      - 37
+      - 43
+      - 49
+      - 56
+      - 62
+      - 68
+      - 78
+      - 83
+      - 88
+      - 94
+      - 100
+      - 106
+      - 113
+      - 119
+      - 125
+      - 128
+      - 131
+      - 135
+      - 140
+      - 142
+      - 147
+      - 153
+      - 169
+      - 170
+      - 177
+      - 185
+      - 193
+      - 202
+      - 209
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 12
+      - path:
+          - actions
+          - "13"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actionContexts
+          - fail-fast-verification-coverage:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - fail-fast-verification-coverage:11
+          - results
+        map: 14
+      - path:
+          - actionContexts
+          - fail-fast-verification-coverage:13
+          - results
+        map: 15
+      - path:
+          - actionContexts
+          - fail-fast-verification-coverage:14
+          - results
+        map: 16
+      - path:
+          - actionContexts
+          - fail-fast-verification-coverage:16
+          - results
+        map: 17
+      - path:
+          - actionContexts
+          - fail-fast-verification-coverage:18
+          - results
+        map: 18
+      - path:
+          - actionContexts
+          - fail-fast-verification-coverage:20
+          - results
+        map: 19
+      - path:
+          - actionContexts
+          - fail-fast-verification-coverage:22
+          - results
+        map: 20
+      - path:
+          - actionContexts
+          - fail-fast-verification-coverage:23
+          - results
+        map: 21
+      - path:
+          - actionContexts
+          - fail-fast-verification-coverage:24
+          - results
+        map: 22
+      - path:
+          - actionContexts
+          - fail-fast-verification-coverage:4
+          - results
+        map: 23
+      - path:
+          - actionContexts
+          - fail-fast-verification-coverage:5
+          - results
+        map: 24
+      - path:
+          - actionContexts
+          - fail-fast-verification-coverage:7
+          - results
+        map: 25
+      - path:
+          - actionContexts
+          - fail-fast-verification-coverage:9
+          - results
+        map: 26
+      - path:
+          - outputs
+        map: 22
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 27
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 28
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 29
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 30
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 31
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 32
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 33
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 34
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 35
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 36
+  storageHash: 26159e276cda03f76c8a745ed7c9a273a81c8f1ab4b63f90b107cdd772c497f7
+check_epoch: 6
