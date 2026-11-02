@@ -2,6 +2,7 @@
 change: stabilize-runtime-workspace-binding
 design-doc: openspec/changes/stabilize-runtime-workspace-binding/design.md
 base-ref: f26b9e078c333fa9413a4e3ece11f66e6fb17f6e
+archived-with: 2026-11-02-stabilize-runtime-workspace-binding
 ---
 
 # Stabilize Runtime Workspace Binding Build Plan

@@ -2,6 +2,8 @@
 comet_change: stabilize-runtime-workspace-binding
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-02-stabilize-runtime-workspace-binding
+status: final
 ---
 
 # Design
