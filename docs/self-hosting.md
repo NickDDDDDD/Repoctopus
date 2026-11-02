@@ -71,6 +71,8 @@ node bin/repoctopus.js run next --workspace . --run <run-id> --json
 
 同一 Workspace/change 的 `run start` 总是创建或恢复同一个稳定 runId，不接受 mode 或代次参数。Runner 必须先建立并公开 source branch 或 worktree；Runtime 在任何 Run/Skill/Work/Desktop 成功写入前校验 attached source、target、remote 与多仓 topology，并冻结不含 path、HEAD、dirty 状态和时间的 `ChangeStartBinding`。等价重放直接采用 Store 中的 current Work，不重建候选 Work；绑定漂移返回公共 conflict code，且不修改 checkpoint。Runtime 本版只观察和校验，不创建或切换 checkout。
 
+协调仓启动合法并不代表所有业务仓已经可写。Build Plan 形成精确 write scopes 后，Runtime 会在 Plan Evidence 和首个 Execute Work 之前检查每个可写仓的 Binding branch；`main`、`master`、`release/*` 等模式来自启动时冻结的 Delivery Policy，本次 target branch也始终受保护。只读仓不受此限制。若返回 `change.build-plan-protected-branch`，先为诊断列出的仓创建并立即 push source branch/worktree，再对同一 Run 执行下一次 pull；Runtime 会通过 Binding revalidation 回到 Configure，不要修改 Store、伪造新 Plan 或启动另一个 Change。
+
 Open 和 Design 分别产生独立 Human Decision。Open Host Outcome 成功后若 Specification Provider 暂时不可用，Runtime 返回 `reobserve`：下一次 pull 重读 Provider，但保留同一 Work、attempt、check epoch、invocation、Outcome、Receipt 与 Skill consumption；这不是外部结果未知，因此不能执行 `work-reconcile`。严格校验已经成功、后续 planning branch/approval 观测暂时失败时，Work 保持 `validated`，恢复后从 planning gate 继续而不再次调用 Host。Design 批准后，Runtime 才执行 Build Configure。
 
 日常提交造成的 HEAD/worktree 变化是 content drift，不会全局卡住自举 Run；当前阶段仍必须按自己的 frozen input、planning binding、Evidence 或 closure 规则重验。branch、remote、路径、仓库增删与 Workspace/Project 身份变化属于 identity drift，恢复入口保持 fail closed。

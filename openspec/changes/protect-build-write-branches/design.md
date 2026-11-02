@@ -41,7 +41,7 @@ CLI 从有效项目配置读取 `delivery.checkpoint.protectedBranches`，传入
 
 新增 `validateWritableRepositoryBranches`（名称可在实现中等价调整）接收 Build Plan、Execution Binding 和 frozen patterns。它从全部 package `writeScopes.repositoryId` 求唯一集合，逐一定位 Binding repository，再使用统一 `isProtectedBranch` 判断 `branchRef`。输出有界 validation fact：`accepted`、逐仓 finding 与 input digest。
 
-校验放在 `createBuildPlan` 完成且结构/Task coverage 已验证之后、Plan Host submission 终态化和 Plan Evidence/Execute Work 创建之前。只读 repository 即使出现在 `repositoryIds` 也不进入检查集合。若 protected finding 存在，当前 Plan submission 以确定性的 `outcome-rejected` 保留在相同 Work/claim/invocation 上，且 Runtime 不创建 Execute Work。
+校验放在 `createBuildPlan` 完成且结构/Task coverage 已验证之后、Plan Host submission 终态化和 Plan Evidence/Execute Work 创建之前。只读 repository 即使出现在 `repositoryIds` 也不进入检查集合。若 protected finding 存在，当前 Plan submission 以通用、确定性的 `outcome-rejected` 保留在相同 Work/claim/invocation 上，RuntimeResult 返回有界 `change.build-plan-protected-branch` 诊断码，且 Runtime 不创建 Execute Work。不得为该 finding 新增 Work rejection schema 或特殊 lifecycle。
 
 选择 Plan 边界而不是 Configure，是因为 Configure 尚不知道精确写集，提前要求所有仓离开 target 会破坏多仓只读场景；选择 Execute 创建前而不是工具调用 guard，是为了不把非法授权交给 Host。
 
@@ -66,7 +66,7 @@ CLI 从有效项目配置读取 `delivery.checkpoint.protectedBranches`，传入
 
 ## Risks / Trade-offs
 
-- [Risk] Run 输入新增策略导致活动旧 Run identity 不兼容 → 当前 Runtime 未正式发布，采用精确 protected implementation adoption；无法证明输入的旧 Run fail closed，不从当前 YAML 猜策略。
+- [Risk] Run 输入新增策略导致活动旧 Run identity 不兼容 → 新 Run 冻结完整策略；直接前驱 Run 只能从其已冻结 target branch 得到安全下界，不能从当前 YAML 猜策略。受影响 protected implementation 采用精确直接前驱 adoption。
 - [Risk] 全局 protected patterns 不能表达不同仓的独立规则 → 本次先使用已有产品配置权威；未来如需 per-repository policy，必须通过独立 Change 扩展版本化配置和 Run identity。
 - [Risk] Plan submission 被拒绝后用户只切 branch但未公开 → Runtime 可以验证本地 Binding，却无法证明备份安全 → Runner 的准备流程必须同时 push；本次验收显式核对 upstream/remote branch，Runtime 内核暂不接管网络发布。
 - [Trade-off] 读仓可停留在 target branch，随后若计划修订将其变成写仓会再次阻断 → 这是按最小权限延迟检查的预期行为。

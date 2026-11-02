@@ -928,6 +928,7 @@ async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
           executionCheckouts: Array<{ repositoryId: string; checkoutPath: string }>;
           executionMode?: 'autonomous' | 'subagent-driven-development';
           tddMode?: 'tdd' | 'direct';
+          protectedBranches?: readonly string[];
         },
         RuntimeResult<RunStatusView>
       >('run.change.start', {
@@ -948,6 +949,7 @@ async function runStart(parsed: ParsedArguments): Promise<CliEnvelope<unknown>> 
           fallback: 'autonomous',
         }) as 'autonomous' | 'subagent-driven-development',
         tddMode: stringFlag(parsed, 'tdd-mode', { fallback: 'tdd' }) as 'tdd' | 'direct',
+        protectedBranches: config.shared.delivery?.checkpoint.protectedBranches ?? [],
       });
       return successEnvelope({
         command: 'run start',

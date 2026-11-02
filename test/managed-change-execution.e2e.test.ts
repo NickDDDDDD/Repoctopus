@@ -68,9 +68,15 @@ describe('managed Change execution production composition', () => {
       executionMode: 'subagent-driven-development' as const,
       multiRepository: true,
     },
+    {
+      label: 'protected writable repositories fail closed before Execute',
+      executionMode: 'autonomous' as const,
+      multiRepository: true,
+      protectedWriteRepositories: true,
+    },
   ])(
     'executes fresh Open -> Design -> Build -> Verify -> Archive in $label',
-    async ({ executionMode, multiRepository }) => {
+    async ({ executionMode, multiRepository, protectedWriteRepositories = false }) => {
       const root = await temporaryDirectory('repoctopus-managed-change-');
       cleanup.push(root);
       const workspaceRemote = path.join(root, 'workspace.git');
@@ -100,18 +106,24 @@ describe('managed Change execution production composition', () => {
       await execFileAsync('git', ['push', '--set-upstream', 'origin', 'spec/managed-blackbox'], {
         cwd: workspace,
       });
-      await execFileAsync('git', ['switch', '-c', 'feature/managed-blackbox'], {
-        cwd: appRepository,
-      });
-      await execFileAsync('git', ['push', '--set-upstream', 'origin', 'feature/managed-blackbox'], {
-        cwd: appRepository,
-      });
-      await execFileAsync('git', ['switch', '-c', 'feature/managed-blackbox'], {
-        cwd: workerRepository,
-      });
-      await execFileAsync('git', ['push', '--set-upstream', 'origin', 'feature/managed-blackbox'], {
-        cwd: workerRepository,
-      });
+      if (!protectedWriteRepositories) {
+        await execFileAsync('git', ['switch', '-c', 'feature/managed-blackbox'], {
+          cwd: appRepository,
+        });
+        await execFileAsync(
+          'git',
+          ['push', '--set-upstream', 'origin', 'feature/managed-blackbox'],
+          { cwd: appRepository },
+        );
+        await execFileAsync('git', ['switch', '-c', 'feature/managed-blackbox'], {
+          cwd: workerRepository,
+        });
+        await execFileAsync(
+          'git',
+          ['push', '--set-upstream', 'origin', 'feature/managed-blackbox'],
+          { cwd: workerRepository },
+        );
+      }
       const environment = await createOpenSpecStoreEnvironment(root, workspace, 'managed-blackbox');
       await writeFile(path.join(workspace, '.gitignore'), '.repoctopus/\n');
       await mkdir(path.join(workspace, '.agents', 'skills', 'team-build-guidance'), {
@@ -1102,6 +1114,87 @@ describe('managed Change execution production composition', () => {
         await application.close();
         application = await bootProjectComposition(productRoot, workspace);
         let afterPlanValidation = await next();
+        if (protectedWriteRepositories) {
+          const rejected = await status();
+          expect(rejected.state.workExecution).toMatchObject({
+            workId: planInvocation?.packet.work.workId,
+            status: 'invoking',
+            continuation: 'awaiting-correction',
+            pendingSubmission: null,
+            rejectedSubmissions: [{ rejection: { reasonCode: 'outcome-rejected' } }],
+          });
+          expect(afterPlanValidation.diagnostics).toEqual(
+            expect.arrayContaining([
+              expect.objectContaining({ code: 'change.build-plan-protected-branch' }),
+            ]),
+          );
+          expect(rejected.state.workExecution?.actionOutcome).toBeUndefined();
+          expect(rejected.changeLifecycle).toMatchObject({
+            phase: 'build',
+            currentWork: { kind: 'build.plan' },
+            build: { action: 'plan', planId: null },
+          });
+          expect(
+            capture.invocations.some(
+              (invocation) => invocation.packet.work.kind === 'build.execute',
+            ),
+          ).toBe(false);
+          expect(
+            (await application.context.specification.tasks('managed-blackbox')).tasks.every(
+              (task) => task.status === 'pending' && task.completion === null,
+            ),
+          ).toBe(true);
+          const inspection = await application.context.commandRouter.execute<
+            { runId: string },
+            RunStoreInspection
+          >('run.inspect', { runId });
+          expect(
+            inspection.trajectory.findLast((event) => event.type === 'work.outcome-rejected'),
+          ).toMatchObject({
+            data: {
+              workKind: 'build.plan',
+              reasonCode: 'outcome-rejected',
+              continuation: 'awaiting-correction',
+            },
+          });
+          for (const repository of [appRepository, workerRepository]) {
+            await execFileAsync('git', ['switch', '-c', 'feature/protected-write-recovery'], {
+              cwd: repository,
+            });
+            await execFileAsync(
+              'git',
+              ['push', '--set-upstream', 'origin', 'feature/protected-write-recovery'],
+              { cwd: repository },
+            );
+          }
+          const recovered = await next();
+          expect(recovered.value).toMatchObject({
+            changeLifecycle: {
+              phase: 'build',
+              currentWork: { kind: 'build.configure' },
+              build: { action: 'configure', planId: null },
+            },
+          });
+          expect(recovered.value.state.workExecution).toBeUndefined();
+          const recoveredInspection = await application.context.commandRouter.execute<
+            { runId: string },
+            RunStoreInspection
+          >('run.inspect', { runId });
+          expect(
+            recoveredInspection.trajectory.findLast(
+              (event) => event.type === 'change.lifecycle.transitioned',
+            ),
+          ).toMatchObject({
+            data: {
+              changeLifecycleTransition: {
+                transitionId: 'build.binding-revalidation-required',
+              },
+            },
+          });
+          capture.dispose();
+          await application.close();
+          return;
+        }
         if (!multiRepository && executionMode === 'autonomous') {
           if (!planInvocation || !correctedPlanResult) {
             throw new Error('missing captured Build Plan correction context');

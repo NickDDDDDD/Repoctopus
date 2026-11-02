@@ -110,6 +110,7 @@ import {
 } from '../domains/change-lifecycle/archive-input.js';
 import type { DeliveryIntentV3, DeliveryPolicy } from '../domains/delivery/types.js';
 import { deliveryPolicyDigest } from '../domains/delivery/snapshot.js';
+import { normalizeProtectedBranchPatterns } from '../domains/delivery/branch-policy.js';
 import type { ActionIntent, ActionReceipt, WorkExecutorIdentity } from '../domains/action/types.js';
 import type { WorkExecutionHostIdentity } from '../domains/work-execution/types.js';
 import type { ArchivePublicationResult } from '../domains/delivery/service-v3.js';
@@ -141,6 +142,25 @@ export interface StartChangeRunInput {
   executionCheckouts: readonly ExecutionCheckoutRequest[];
   executionMode?: BuildExecutionMode;
   tddMode?: BuildTddMode;
+  protectedBranches?: readonly string[];
+}
+
+function frozenProtectedBranches(state: RunState): readonly string[] {
+  const configured = state.trigger?.facts.protectedBranches;
+  if (
+    configured !== undefined &&
+    (!Array.isArray(configured) || configured.some((pattern) => typeof pattern !== 'string'))
+  ) {
+    throw new Error('Change Run protected branch policy is malformed');
+  }
+  const target = state.trigger?.facts.targetBranch as { targetBranch?: unknown } | undefined;
+  if (typeof target?.targetBranch !== 'string') {
+    throw new Error('Change Run target branch identity is missing');
+  }
+  return normalizeProtectedBranchPatterns(
+    (configured as string[] | undefined) ?? [],
+    target.targetBranch,
+  );
 }
 
 export interface DecideChangeRunInput {
@@ -338,6 +358,10 @@ export class WorkflowRuns extends Service {
         remote: input.remote,
         targetBranch: input.targetBranch,
       });
+      const protectedBranches = normalizeProtectedBranchPatterns(
+        input.protectedBranches ?? [],
+        targetBranch.targetBranch,
+      );
       const runId = changeRunId({ workspaceId, changeId });
       let changeStartBinding: ReturnType<typeof createChangeStartBinding>;
       try {
@@ -391,6 +415,7 @@ export class WorkflowRuns extends Service {
         changeId,
         specificationRoot,
         targetBranch,
+        protectedBranches,
         changeStartBinding,
         repositoryIds,
         projectConfigDigest: input.projectConfigDigest,
@@ -715,11 +740,19 @@ export class WorkflowRuns extends Service {
           throw new Error('Build Plan approval has no active Plan Evidence');
         }
         const taskSet = await this.ctx.specification.tasks(lifecycle.identity.changeId, signal);
+        const protectedBranches = frozenProtectedBranches(state);
         const evidence = createPlanEvidence({
           plan,
           strategy,
           binding,
-          validation: validateBuildPlan({ plan, strategy, binding, tasks: taskSet }),
+          validation: validateBuildPlan({
+            plan,
+            strategy,
+            binding,
+            tasks: taskSet,
+            protectedBranches,
+          }),
+          protectedBranches,
           compositionCheckpointDigest: state.composition.compositionDigest,
           reportOwnerId: lifecycle.identity.workspaceId,
         });
@@ -2248,6 +2281,36 @@ export class WorkflowRuns extends Service {
             if (
               lifecycle.phase === 'build' &&
               lifecycle.currentWork?.kind === 'build.plan' &&
+              lifecycle.buildProtocol?.binding &&
+              current.workExecution?.status === 'invoking' &&
+              current.workExecution.continuation === 'awaiting-correction'
+            ) {
+              const invocationHost = current.workExecution.hostInvocation?.host;
+              if (!invocationHost) {
+                throw new Error('Protected branch recovery requires the persisted Plan Host');
+              }
+              const bindingDrift = await this.executionBindingDrift(
+                current,
+                lifecycle,
+                projectSnapshot,
+                lifecycle.buildProtocol.binding,
+                invocationHost,
+              );
+              if (bindingDrift) {
+                return this.dispatchExecutionBindingRevalidation({
+                  state: current,
+                  lifecycle,
+                  projectSnapshot,
+                  projectConfigDigest,
+                  workspaceRepositoryId,
+                  reasonCode: bindingDrift,
+                  ...(signal ? { signal } : {}),
+                });
+              }
+            }
+            if (
+              lifecycle.phase === 'build' &&
+              lifecycle.currentWork?.kind === 'build.plan' &&
               current.workExecution?.status === 'outcome' &&
               !current.workExecution.acceptedSubmission
             ) {
@@ -2726,6 +2789,7 @@ export class WorkflowRuns extends Service {
               const rejectSubmission = async (
                 reasonCode: 'output-invalid' | 'outcome-rejected' | 'outcome-processing-error',
                 diagnostic: string,
+                diagnosticCode?: string,
               ) => {
                 const intent = await this.ctx.workExecutionAuthority.loadIntent(runId);
                 await this.ctx.workExecutionAuthority.rejectHostSubmission({
@@ -2741,7 +2805,7 @@ export class WorkflowRuns extends Service {
                       code:
                         reasonCode === 'outcome-processing-error'
                           ? 'change.build-plan-outcome-processing-error'
-                          : 'change.build-plan-outcome-rejected',
+                          : (diagnosticCode ?? 'change.build-plan-outcome-rejected'),
                       message: diagnostic,
                     },
                   ],
@@ -2779,11 +2843,21 @@ export class WorkflowRuns extends Service {
                   `Build Plan candidate rejected: ${error instanceof Error ? error.message : String(error)}`,
                 );
               }
-              const planValidation = validateBuildPlan({ plan, strategy, binding, tasks: taskSet });
+              const protectedBranches = frozenProtectedBranches(current);
+              const planValidation = validateBuildPlan({
+                plan,
+                strategy,
+                binding,
+                tasks: taskSet,
+                protectedBranches,
+              });
               if (!planValidation.accepted) {
                 return rejectSubmission(
                   'outcome-rejected',
                   `Build Plan rejected: ${planValidation.diagnostics.join('; ')}`,
+                  planValidation.protectedBranchFindings.length > 0
+                    ? 'change.build-plan-protected-branch'
+                    : undefined,
                 );
               }
               const validator = this.ctx.lifecycleValidators.resolve(
@@ -2828,6 +2902,7 @@ export class WorkflowRuns extends Service {
                 strategy,
                 binding,
                 validation: planValidation,
+                protectedBranches,
                 compositionCheckpointDigest: current.composition.compositionDigest,
                 reportOwnerId: lifecycle.identity.workspaceId,
               });

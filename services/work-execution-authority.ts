@@ -1106,6 +1106,7 @@ export class WorkExecutionAuthority extends Service {
             identity: [current.workId, String(current.attempt), submission.submissionId],
             data: {
               workId: current.workId,
+              workKind: state.changeLifecycle?.currentWork?.kind ?? 'unknown',
               attempt: current.attempt,
               checkEpoch: current.checkEpoch,
               submissionId: submission.submissionId,

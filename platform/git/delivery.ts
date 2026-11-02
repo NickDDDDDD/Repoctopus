@@ -8,19 +8,8 @@ import type {
   PublicationAction,
 } from '../../domains/delivery/types.js';
 import type { RepositorySnapshot } from '../../domains/project/types.js';
+import { isProtectedBranch } from '../../domains/delivery/branch-policy.js';
 import { execute } from '../process/execute.js';
-
-function globPattern(pattern: string): RegExp {
-  const escaped = pattern
-    .replace(/[.+^${}()|[\]\\]/gu, '\\$&')
-    .replaceAll('*', '.*')
-    .replaceAll('?', '.');
-  return new RegExp(`^${escaped}$`);
-}
-
-function protectedBranch(branch: string, patterns: readonly string[]): boolean {
-  return patterns.some((pattern) => globPattern(pattern).test(branch));
-}
 
 async function git(cwd: string, args: string[]): Promise<string> {
   return (await execute('git', args, { cwd })).stdout.trim();
@@ -140,7 +129,7 @@ export class GitDeliveryAdapter {
       throw new Error(
         `Source branch mismatch for ${repository.id}: expected ${intent.sourceBranch}, received ${branch}`,
       );
-    if (protectedBranch(branch, policy.checkpoint.protectedBranches))
+    if (isProtectedBranch(branch, policy.checkpoint.protectedBranches))
       throw new Error(`Protected branch cannot be checkpointed: ${branch}`);
     if (!new RegExp(policy.checkpoint.commitMessagePattern).test(intent.commitMessage))
       throw new Error(`Commit message does not match policy for ${repository.id}`);

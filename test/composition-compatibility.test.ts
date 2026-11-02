@@ -142,15 +142,31 @@ describe('composition compatibility', () => {
         {
           codeDigest: 'sha256:2761b259f1c79963e2dab3eec81463feea5410fedd488969fab42888ab6bbd9e',
           descriptorDigest:
-            'sha256:39674bc846b712fe537c685ab9a05315010878d919fa4b76083f97a676fbe375',
+            'sha256:e67f69088fc94c7afbc408c0311e86f862bcfd966cc0c242e8b251119cdadac0',
+        },
+      ],
+      [
+        'delivery-file',
+        {
+          codeDigest: 'sha256:8ce1ca7a06353931b4dff6dd0a1f7fb45e0a5ef1bf119e4d4eb543a7a44dbb21',
+          descriptorDigest:
+            'sha256:621c769e571765974eade7280ef7dc5db2fcb5c6e6324f70d76dddac4e6bea7e',
+        },
+      ],
+      [
+        'work-execution-authority',
+        {
+          codeDigest: 'sha256:36a643951c7f65a120d0b178f71d47d0c90fa939dd05aab7178065381ad4dcba',
+          descriptorDigest:
+            'sha256:271b4e856d673159d55bf8108527e533caa353b0522b685aa5f662fb72c94b9d',
         },
       ],
       [
         'managed-work-executor',
         {
-          codeDigest: 'sha256:124ea1590f70cff6729b4803c14f50c2711793ea4f863abd4a53cfaec7ade01e',
+          codeDigest: 'sha256:c215f5216f9e445f7c672be6300b6dc0958d3de2b4b9ce35f0fd484228ece3e4',
           descriptorDigest:
-            'sha256:2cfc2afbf6649cbd39c46682d731bc1c035e7c76d5bef37e367b956dd1bf0cbc',
+            'sha256:e076b636b53139ca5d35745410c3bf40b06593f2eb28968730e5c489a080a361',
         },
       ],
       [
@@ -164,9 +180,9 @@ describe('composition compatibility', () => {
       [
         'lifecycle-definition-builtin',
         {
-          codeDigest: 'sha256:ec87a5c1e2dc0ea9aaab7d8ffe9218197bbfc2dca595b513c2ef52566081f5df',
+          codeDigest: 'sha256:d98294bfc6c9c96b3071e2d1ef14a6ee86f16f30da82fa7b13afe7194620a6f6',
           descriptorDigest:
-            'sha256:26019d49292a08e0601d25db9416a22c595779fdea52bb51d0dacdbe705cf036',
+            'sha256:e8785c3e00e4b67dffe2f259598cbc4eb97fc87a7343ed45a9db9d713cd9f0bb',
         },
       ],
       [
