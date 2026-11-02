@@ -3,15 +3,16 @@
 ## Reproducible subject
 
 - Change: `stabilize-host-owned-input-boundary`
-- Tested implementation commit: `d9ae517a0c8b103b94a4ea955ff9762bc298bda5`
+- Tested implementation commit: `097a8bb3a3ddc099c585597778848280a47e757d`
 - Package: `repoctopus@0.1.0`
-- Package bytes: `1115876`
-- Package SHA-256: `7cfa0bd033cb30776405a30ffcd46722c82b9d997699f9d1fa27276596c85208`
+- Package files: `446`
+- Package content bytes: `5236099`
+- Package content SHA-256: `4ae996d616cb1ff6874d02e62f8769748091b7233a7045b988ce1532c8b8713c`
 - Controller: `@rpamis/comet@0.5.1`
 - Platform: Windows x64
 - Node.js: `24.21.0`
 
-The tested implementation commit is the packaged-product boundary. Later commits may contain only OpenSpec state or verification evidence. `check:managed-execution-report` rejects any later packaged-product change and independently reproduces the npm package checksum.
+The tested implementation commit is the packaged-product and report-checker boundary. Later commits may contain only OpenSpec state or verification evidence. `check:managed-execution-report` rejects any later product or checker change and independently reproduces a normalized npm package-content digest. The digest binds every packaged path, entry type, permission, length and content hash while deliberately excluding gzip/tar transport metadata such as timestamps, uid/gid, header order and compressor serialization.
 
 ## Boundary invariants proved
 
@@ -51,8 +52,8 @@ After restoring the Hook, adding unknown `.codex/unknown-product.json` preserved
 ```text
 npm run verify
   TypeScript, Desktop TypeScript, ESLint, CLI build and Desktop build passed
-  170 test files passed
-  761 tests passed; 2 skipped
+  171 test files passed
+  762 tests passed; 2 skipped
   generated output, brand, architecture, provenance and Dashboard salvage passed
   OpenSpec strict validation passed 18 items; 0 failed
   the final report freshness gate correctly rejected the previous package boundary
@@ -73,7 +74,7 @@ npm run check:provenance
   8 fixed DSH packages and 5 DSH Desktop references verified
 ```
 
-The initial TDD runs failed because Repository Input Policy and its registry did not exist. Subsequent focused runs passed policy, fingerprint, multi-repository Coordinator, Verification Input, Archive revalidation, architecture and package boundaries. The complete verification must be rerun after this evidence-only report is committed so the report checker can reproduce the package checksum.
+The initial TDD runs failed because Repository Input Policy and its registry did not exist. Subsequent focused runs passed policy, fingerprint, multi-repository Coordinator, Verification Input, Archive revalidation, architecture and package boundaries. The first formal Build Check exposed one Windows Desktop activation failure that passed five consecutive focused reruns; the next full check passed all 170 test files and exposed the actual deterministic gate defect: the report bound compressed archive bytes instead of semantic package contents. A new red test proved that identical package contents with different tar metadata received different archive hashes. The checker now parses the archive, validates tar headers and safe package paths, sorts entries and binds normalized contents; the complete verification must be rerun after this evidence-only report is committed so the gate can independently reproduce the stable content identity.
 
 ## Diagnostics and telemetry
 
@@ -81,7 +82,7 @@ Ownership conflict, unsupported fingerprint schema, unsafe input, limit and inpu
 
 ## Cleanup
 
-- The temporary npm archive and its directory were removed after hashing.
+- Temporary npm archives and their directories were removed after content hashing.
 - The temporary unknown-product file and Hook mutations were restored after each drift check.
 - Host acceptance inputs remain only until the Change completes Archive; they are not tracked or packaged.
 - No Runtime Store, approval, checkpoint, Git ignore rule or lifecycle state was edited to bypass a gate.
