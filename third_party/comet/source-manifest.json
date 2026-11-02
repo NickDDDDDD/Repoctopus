@@ -116,7 +116,7 @@
       "source": "domains/comet-native/native-snapshot.ts",
       "sourceSha256": "865c7d16b87c6b04f96b404986b8c0bacdda6a4de5aa7e47224488b085a397bf",
       "target": "platform/git/evidence-fingerprint.ts",
-      "sha256": "9d8600b9bab660ae497c159b1ebefb17e1b14d6f85d30db2a1f09107aca59428",
+      "sha256": "71ddfac8f4340945debae9575a19ed3efd91ca20178f1a200aa706b6aaa60a58",
       "adoption": "modified"
     },
     {
