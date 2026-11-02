@@ -1,0 +1,116 @@
+# comet-execution: managed-run
+change_id: 1c0eabda-104e-4218-9b2d-0090bd41f6fb
+workflow: full
+language: zh-CN
+phase: open
+context_compression: off
+build_mode: null
+build_pause: null
+subagent_dispatch: null
+tdd_mode: null
+review_mode: thorough
+isolation: current
+verify_mode: null
+auto_transition: true
+base_ref: 2fe7cce58e0016c4b61b40630cec5f7e737d0811
+design_doc: null
+plan: null
+verify_result: pending
+verify_failures: 0
+verification_report: null
+branch_status: pending
+created_at: 2026-11-02
+verified_at: null
+archive_confirmation: null
+archived: false
+bound_branch: codex/recover-open-observation-continuation
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: 155cf5fa28bac995d5f25c514a0802ccdcc3fde4e01e5820f89d14d4ed631c38
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: recover-open-observation-continuation
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: 52d0a4da79f9fdfe8d1457c34060aa22ac230c1e19cc251d6235c0a64d0c7d29
+    input:
+      change: recover-open-observation-continuation
+      changeDir: openspec/changes/recover-open-observation-continuation
+      workspaceBaseline:
+        ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: 2fe7cce58e0016c4b61b40630cec5f7e737d0811
+      boundBranch: codex/recover-open-observation-continuation
+      branchStatus: pending
+      buildMode: null
+      buildPause: null
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-02
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: current
+      language: zh-CN
+      phase: open
+      plan: null
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: null
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: running
+    sequence: 1
+    actions:
+      - attempt: 1
+        id: recover-open-observation-continuation:1
+        input:
+          input:
+            change: recover-open-observation-continuation
+            changeDir: openspec/changes/recover-open-observation-continuation
+            workspaceBaseline:
+              ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
+          outputs: {}
+        inputHash: 134e8eec3f14271b22587c67076250ae07cb9a50214d8a450ce3e046f624d58e
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-open-observation-continuation
+        status: pending
+        stepId: full.open
+        type: invoke_skill
+    actionContexts:
+      recover-open-observation-continuation:1:
+        results: {}
+        sequence: 1
+    waits: []
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 1
+  sourceHash: c226092fd22ccf62d44697690c6a2b3c2c0ea881be299830641c5f407f6a2169
