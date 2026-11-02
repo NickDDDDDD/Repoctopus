@@ -59,8 +59,8 @@
 
 - [x] 6.1 更新 Runtime/telemetry公开文档，解释 resume、content drift、identity drift与phase authority的职责边界。   <!-- comet-task:ec3be39c-8c8c-4ba7-8881-96b975d55f7b -->
   **Acceptance:** 文档不引入第二套生命周期、migration或后台 daemon，并通过格式/契约检查。
-- [ ] 6.2 运行目标测试、`npm run verify`、Comet OpenSpec strict validation 与 `git diff --check`。   <!-- comet-task:f1bb6b0c-de43-417c-93a4-23f3d5f7f857 -->
+- [x] 6.2 运行目标测试、`npm run verify`、Comet OpenSpec strict validation 与 `git diff --check`。   <!-- comet-task:f1bb6b0c-de43-417c-93a4-23f3d5f7f857 -->
   **Acceptance:** 全部门禁绑定最终 HEAD/tree/config/tool输入通过，失败 Attempt保留在正式 Evidence中但不伪装成功。
-- [ ] 6.3 保存 verification report并清理临时日志、JSON、mock remote和scratch输出。   <!-- comet-task:c15292a2-6f34-40c1-a9cb-f9281956f928 -->
+- [x] 6.3 保存 verification report并清理临时日志、JSON、mock remote和scratch输出。   <!-- comet-task:c15292a2-6f34-40c1-a9cb-f9281956f928 -->
   **Acceptance:** 工作树只包含预期源文件、OpenSpec归档与正式 Evidence；每个提交均已推送远端。
 
