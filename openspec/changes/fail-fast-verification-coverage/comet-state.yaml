@@ -4,17 +4,17 @@ workflow: full
 language: zh-CN
 phase: build
 context_compression: off
-build_mode: null
+build_mode: autonomous
 build_pause: null
 subagent_dispatch: null
-tdd_mode: null
+tdd_mode: tdd
 review_mode: thorough
 isolation: current
 verify_mode: null
 auto_transition: true
 base_ref: e69b7bf96f33a6f7dbe84b78e62e390476d7bc5c
 design_doc: openspec/changes/fail-fast-verification-coverage/design.md
-plan: null
+plan: docs/superpowers/plans/2026-11-03-fail-fast-verification-coverage.md
 verify_result: pending
 verify_failures: 0
 verification_report: null
@@ -24,14 +24,14 @@ verified_at: null
 archive_confirmation: null
 archived: false
 bound_branch: codex/fail-fast-verification-coverage
-direct_override: null
+direct_override: false
 handoff_context: openspec/changes/fail-fast-verification-coverage/.comet/handoff/design-context.json
 handoff_hash: beca32308b8465c9c9e48b15bf91246598adce661e9401c62c6147e76a652439
 classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: 87fdc57483d649c22cc8d7d16c5202ddd48c63ac8e0d4342848a7301e6171428
+  hash: 9c5ce5f74d2ee5f9147cd3c9886584d377ba557d89ccfb717e706b4ad0aa41e9
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -56,7 +56,7 @@ run_checkpoint:
       baseRef: e69b7bf96f33a6f7dbe84b78e62e390476d7bc5c
       boundBranch: codex/fail-fast-verification-coverage
       branchStatus: pending
-      buildMode: null
+      buildMode: autonomous
       buildPause: null
       checkEpoch: 2
       classicMigration: null
@@ -64,24 +64,24 @@ run_checkpoint:
       contextCompression: off
       createdAt: 2026-11-02
       designDoc: openspec/changes/fail-fast-verification-coverage/design.md
-      directOverride: null
+      directOverride: false
       handoffContext: openspec/changes/fail-fast-verification-coverage/.comet/handoff/design-context.json
       handoffHash: beca32308b8465c9c9e48b15bf91246598adce661e9401c62c6147e76a652439
       isolation: current
       language: zh-CN
       phase: build
-      plan: null
+      plan: docs/superpowers/plans/2026-11-03-fail-fast-verification-coverage.md
       reviewMode: thorough
       subagentDispatch: null
-      tddMode: null
+      tddMode: tdd
       verificationReport: null
       verifiedAt: null
       verifyFailures: 0
       verifyMode: null
       verifyResult: pending
       workflow: full
-    status: waiting
-    sequence: 10
+    status: running
+    sequence: 13
     actions:
       - attempt: 1
         claim:
@@ -474,10 +474,530 @@ run_checkpoint:
         status: succeeded
         stepId: full.build.configure
         type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-d518cee81f35a996c56c9774dd8d4f9e06b0de62772ad3cad20fbf67e4b0f26d
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: fail-fast-verification-coverage:11
+        input:
+          input:
+            change: fail-fast-verification-coverage
+            changeDir: openspec/changes/fail-fast-verification-coverage
+            workspaceBaseline:
+              ref: fc1c0933-677f-4229-b200-a10c2acb5242
+          outputs:
+            full.build.configure:
+              boundBranch: codex/fail-fast-verification-coverage
+              buildMode: autonomous
+              directOverride: false
+              isolation: current
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: fail-fast-verification-coverage
+                  changeDir: openspec/changes/fail-fast-verification-coverage
+                  workspaceBaseline:
+                    ref: fc1c0933-677f-4229-b200-a10c2acb5242
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/fail-fast-verification-coverage
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: current
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: fail-fast-verification-coverage
+                  changeDir: openspec/changes/fail-fast-verification-coverage
+                  workspaceBaseline:
+                    ref: fc1c0933-677f-4229-b200-a10c2acb5242
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/fail-fast-verification-coverage/.comet/handoff/design-context.json
+                    handoffHash: beca32308b8465c9c9e48b15bf91246598adce661e9401c62c6147e76a652439
+                    proposal: 推荐方案：采用三层 fail-fast。项目探测为生成的 required 命令写入可审查的 covers:['*']
+                      候选；项目接入只对约定默认 verify Profile 做静态可用性门禁；具体 Run 在 Planning
+                      Snapshot 形成后、Design 审批请求持久化前，用实际 verificationProfileId 和
+                      Tasks 执行纯 coverage preflight。SpecificationPlanning 通过副作用前
+                      preflight hook 编排，preflight 后重新核对 planning manifest
+                      identity；Evidence Coordinator 提供不计算仓库 fingerprint 的
+                      compile 入口；Design 与正式 Verify 复用同一纯 resolver。拒绝两个替代方案：仅在
+                      Build Check 后校验仍然过晚；在接入阶段强制所有 Profile 或猜测细粒度 selector
+                      会混淆独立 Evidence Profile 并伪造未来语义。
+                    requirementsEvidence:
+                      contentHash: db233788a73f93fe3ca92abacda3c5d856255aaf7d4bd1760aeed8ff2e36b44b
+                      ref: openspec/changes/fail-fast-verification-coverage
+                    sourceEvidence:
+                      contentHash: e70096a72e9d534e63ff5e72de58d7a413140b70b2cade4bc7fe0395ea5b120e
+                      ref: openspec/changes/fail-fast-verification-coverage
+            full.design.document:
+              designDoc: openspec/changes/fail-fast-verification-coverage/design.md
+            full.design.evidence:
+              contentHash: c9e88053b5039ce7dfbf862e8a40ed2bdfccaa8c4d64d044adc7ecc14551849e
+              ref: openspec/changes/fail-fast-verification-coverage/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/fail-fast-verification-coverage/.comet/handoff/design-context.json
+              handoffHash: beca32308b8465c9c9e48b15bf91246598adce661e9401c62c6147e76a652439
+              proposal: 推荐方案：采用三层 fail-fast。项目探测为生成的 required 命令写入可审查的 covers:['*']
+                候选；项目接入只对约定默认 verify Profile 做静态可用性门禁；具体 Run 在 Planning Snapshot
+                形成后、Design 审批请求持久化前，用实际 verificationProfileId 和 Tasks 执行纯
+                coverage preflight。SpecificationPlanning 通过副作用前 preflight hook
+                编排，preflight 后重新核对 planning manifest identity；Evidence
+                Coordinator 提供不计算仓库 fingerprint 的 compile 入口；Design 与正式 Verify
+                复用同一纯 resolver。拒绝两个替代方案：仅在 Build Check 后校验仍然过晚；在接入阶段强制所有 Profile
+                或猜测细粒度 selector 会混淆独立 Evidence Profile 并伪造未来语义。
+              requirementsEvidence:
+                contentHash: db233788a73f93fe3ca92abacda3c5d856255aaf7d4bd1760aeed8ff2e36b44b
+                ref: openspec/changes/fail-fast-verification-coverage
+              sourceEvidence:
+                contentHash: e70096a72e9d534e63ff5e72de58d7a413140b70b2cade4bc7fe0395ea5b120e
+                ref: openspec/changes/fail-fast-verification-coverage
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: fail-fast-verification-coverage
+                  changeDir: openspec/changes/fail-fast-verification-coverage
+                  workspaceBaseline:
+                    ref: fc1c0933-677f-4229-b200-a10c2acb5242
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: b3737f9b29d6e20b4dc0506ae9c71c08f0e03a0bc58dec1606758ea7df81f380
+                    ref: openspec/changes/fail-fast-verification-coverage
+            full.open.evidence:
+              contentHash: b3737f9b29d6e20b4dc0506ae9c71c08f0e03a0bc58dec1606758ea7df81f380
+              ref: openspec/changes/fail-fast-verification-coverage
+            full.open.revalidate:
+              contentHash: b3737f9b29d6e20b4dc0506ae9c71c08f0e03a0bc58dec1606758ea7df81f380
+        inputHash: 7d5801b3f9b94081399f131c57b639298e69241fc35dc4230367d309faa77fd6
+        outcome:
+          actionId: fail-fast-verification-coverage:11
+          attempt: 1
+          claimToken: portable-d518cee81f35a996c56c9774dd8d4f9e06b0de62772ad3cad20fbf67e4b0f26d
+          inputHash: 7d5801b3f9b94081399f131c57b639298e69241fc35dc4230367d309faa77fd6
+          outcomeId: 86146240-9d01-4ff4-a5be-d4d7238dd440
+          output:
+            designEvidence:
+              contentHash: c9e88053b5039ce7dfbf862e8a40ed2bdfccaa8c4d64d044adc7ecc14551849e
+              ref: openspec/changes/fail-fast-verification-coverage/design.md
+            plan: docs/superpowers/plans/2026-11-03-fail-fast-verification-coverage.md
+            planEvidence:
+              contentHash: a6af2c55b2811da1ee82a1fc4cda5aec34928bf86355ec9c27c3b98cf2cd0f86
+              ref: docs/superpowers/plans/2026-11-03-fail-fast-verification-coverage.md
+            taskRevision: 6a9dadc00006ab430d5bba46d0352a7a37a08a4dda1723a69e88a3fdd635409c
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 46eca2cb7f39ee1ef46fd03adfd4783412970bab80c238dc8943c85ad8ecd331
+            outcomeId: 86146240-9d01-4ff4-a5be-d4d7238dd440
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: fail-fast-verification-coverage
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        id: fail-fast-verification-coverage:13
+        input:
+          input:
+            change: fail-fast-verification-coverage
+            changeDir: openspec/changes/fail-fast-verification-coverage
+            workspaceBaseline:
+              ref: fc1c0933-677f-4229-b200-a10c2acb5242
+          outputs:
+            full.build.configure:
+              boundBranch: codex/fail-fast-verification-coverage
+              buildMode: autonomous
+              directOverride: false
+              isolation: current
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: fail-fast-verification-coverage
+                  changeDir: openspec/changes/fail-fast-verification-coverage
+                  workspaceBaseline:
+                    ref: fc1c0933-677f-4229-b200-a10c2acb5242
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/fail-fast-verification-coverage
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: current
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.build.plan:
+              designEvidence:
+                contentHash: c9e88053b5039ce7dfbf862e8a40ed2bdfccaa8c4d64d044adc7ecc14551849e
+                ref: openspec/changes/fail-fast-verification-coverage/design.md
+              plan: docs/superpowers/plans/2026-11-03-fail-fast-verification-coverage.md
+              planEvidence:
+                contentHash: a6af2c55b2811da1ee82a1fc4cda5aec34928bf86355ec9c27c3b98cf2cd0f86
+                ref: docs/superpowers/plans/2026-11-03-fail-fast-verification-coverage.md
+              taskRevision: 6a9dadc00006ab430d5bba46d0352a7a37a08a4dda1723a69e88a3fdd635409c
+            full.build.plan.evidence:
+              contentHash: a6af2c55b2811da1ee82a1fc4cda5aec34928bf86355ec9c27c3b98cf2cd0f86
+              ref: docs/superpowers/plans/2026-11-03-fail-fast-verification-coverage.md
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: fail-fast-verification-coverage
+                  changeDir: openspec/changes/fail-fast-verification-coverage
+                  workspaceBaseline:
+                    ref: fc1c0933-677f-4229-b200-a10c2acb5242
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/fail-fast-verification-coverage/.comet/handoff/design-context.json
+                    handoffHash: beca32308b8465c9c9e48b15bf91246598adce661e9401c62c6147e76a652439
+                    proposal: 推荐方案：采用三层 fail-fast。项目探测为生成的 required 命令写入可审查的 covers:['*']
+                      候选；项目接入只对约定默认 verify Profile 做静态可用性门禁；具体 Run 在 Planning
+                      Snapshot 形成后、Design 审批请求持久化前，用实际 verificationProfileId 和
+                      Tasks 执行纯 coverage preflight。SpecificationPlanning 通过副作用前
+                      preflight hook 编排，preflight 后重新核对 planning manifest
+                      identity；Evidence Coordinator 提供不计算仓库 fingerprint 的
+                      compile 入口；Design 与正式 Verify 复用同一纯 resolver。拒绝两个替代方案：仅在
+                      Build Check 后校验仍然过晚；在接入阶段强制所有 Profile 或猜测细粒度 selector
+                      会混淆独立 Evidence Profile 并伪造未来语义。
+                    requirementsEvidence:
+                      contentHash: db233788a73f93fe3ca92abacda3c5d856255aaf7d4bd1760aeed8ff2e36b44b
+                      ref: openspec/changes/fail-fast-verification-coverage
+                    sourceEvidence:
+                      contentHash: e70096a72e9d534e63ff5e72de58d7a413140b70b2cade4bc7fe0395ea5b120e
+                      ref: openspec/changes/fail-fast-verification-coverage
+            full.design.document:
+              designDoc: openspec/changes/fail-fast-verification-coverage/design.md
+            full.design.evidence:
+              contentHash: c9e88053b5039ce7dfbf862e8a40ed2bdfccaa8c4d64d044adc7ecc14551849e
+              ref: openspec/changes/fail-fast-verification-coverage/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/fail-fast-verification-coverage/.comet/handoff/design-context.json
+              handoffHash: beca32308b8465c9c9e48b15bf91246598adce661e9401c62c6147e76a652439
+              proposal: 推荐方案：采用三层 fail-fast。项目探测为生成的 required 命令写入可审查的 covers:['*']
+                候选；项目接入只对约定默认 verify Profile 做静态可用性门禁；具体 Run 在 Planning Snapshot
+                形成后、Design 审批请求持久化前，用实际 verificationProfileId 和 Tasks 执行纯
+                coverage preflight。SpecificationPlanning 通过副作用前 preflight hook
+                编排，preflight 后重新核对 planning manifest identity；Evidence
+                Coordinator 提供不计算仓库 fingerprint 的 compile 入口；Design 与正式 Verify
+                复用同一纯 resolver。拒绝两个替代方案：仅在 Build Check 后校验仍然过晚；在接入阶段强制所有 Profile
+                或猜测细粒度 selector 会混淆独立 Evidence Profile 并伪造未来语义。
+              requirementsEvidence:
+                contentHash: db233788a73f93fe3ca92abacda3c5d856255aaf7d4bd1760aeed8ff2e36b44b
+                ref: openspec/changes/fail-fast-verification-coverage
+              sourceEvidence:
+                contentHash: e70096a72e9d534e63ff5e72de58d7a413140b70b2cade4bc7fe0395ea5b120e
+                ref: openspec/changes/fail-fast-verification-coverage
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: fail-fast-verification-coverage
+                  changeDir: openspec/changes/fail-fast-verification-coverage
+                  workspaceBaseline:
+                    ref: fc1c0933-677f-4229-b200-a10c2acb5242
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: b3737f9b29d6e20b4dc0506ae9c71c08f0e03a0bc58dec1606758ea7df81f380
+                    ref: openspec/changes/fail-fast-verification-coverage
+            full.open.evidence:
+              contentHash: b3737f9b29d6e20b4dc0506ae9c71c08f0e03a0bc58dec1606758ea7df81f380
+              ref: openspec/changes/fail-fast-verification-coverage
+            full.open.revalidate:
+              contentHash: b3737f9b29d6e20b4dc0506ae9c71c08f0e03a0bc58dec1606758ea7df81f380
+        inputHash: f8a8abe35306b8e5048ca022b6fc5c617d7cfd3e91c5cbd0f7b80902570fac7e
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: fail-fast-verification-coverage
+        status: pending
+        stepId: full.build.execute
+        type: invoke_skill
     actionContexts:
       fail-fast-verification-coverage:1:
         results: {}
         sequence: 1
+      fail-fast-verification-coverage:11:
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/fail-fast-verification-coverage
+              buildMode: autonomous
+              directOverride: false
+              isolation: current
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fail-fast-verification-coverage
+                  changeDir: openspec/changes/fail-fast-verification-coverage
+                  workspaceBaseline:
+                    ref: fc1c0933-677f-4229-b200-a10c2acb5242
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/fail-fast-verification-coverage
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: current
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fail-fast-verification-coverage
+                  changeDir: openspec/changes/fail-fast-verification-coverage
+                  workspaceBaseline:
+                    ref: fc1c0933-677f-4229-b200-a10c2acb5242
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/fail-fast-verification-coverage/.comet/handoff/design-context.json
+                    handoffHash: beca32308b8465c9c9e48b15bf91246598adce661e9401c62c6147e76a652439
+                    proposal: 推荐方案：采用三层 fail-fast。项目探测为生成的 required 命令写入可审查的 covers:['*']
+                      候选；项目接入只对约定默认 verify Profile 做静态可用性门禁；具体 Run 在 Planning
+                      Snapshot 形成后、Design 审批请求持久化前，用实际 verificationProfileId 和
+                      Tasks 执行纯 coverage preflight。SpecificationPlanning 通过副作用前
+                      preflight hook 编排，preflight 后重新核对 planning manifest
+                      identity；Evidence Coordinator 提供不计算仓库 fingerprint 的
+                      compile 入口；Design 与正式 Verify 复用同一纯 resolver。拒绝两个替代方案：仅在
+                      Build Check 后校验仍然过晚；在接入阶段强制所有 Profile 或猜测细粒度 selector
+                      会混淆独立 Evidence Profile 并伪造未来语义。
+                    requirementsEvidence:
+                      contentHash: db233788a73f93fe3ca92abacda3c5d856255aaf7d4bd1760aeed8ff2e36b44b
+                      ref: openspec/changes/fail-fast-verification-coverage
+                    sourceEvidence:
+                      contentHash: e70096a72e9d534e63ff5e72de58d7a413140b70b2cade4bc7fe0395ea5b120e
+                      ref: openspec/changes/fail-fast-verification-coverage
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/fail-fast-verification-coverage/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: c9e88053b5039ce7dfbf862e8a40ed2bdfccaa8c4d64d044adc7ecc14551849e
+              ref: openspec/changes/fail-fast-verification-coverage/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/fail-fast-verification-coverage/.comet/handoff/design-context.json
+              handoffHash: beca32308b8465c9c9e48b15bf91246598adce661e9401c62c6147e76a652439
+              proposal: 推荐方案：采用三层 fail-fast。项目探测为生成的 required 命令写入可审查的 covers:['*']
+                候选；项目接入只对约定默认 verify Profile 做静态可用性门禁；具体 Run 在 Planning Snapshot
+                形成后、Design 审批请求持久化前，用实际 verificationProfileId 和 Tasks 执行纯
+                coverage preflight。SpecificationPlanning 通过副作用前 preflight hook
+                编排，preflight 后重新核对 planning manifest identity；Evidence
+                Coordinator 提供不计算仓库 fingerprint 的 compile 入口；Design 与正式 Verify
+                复用同一纯 resolver。拒绝两个替代方案：仅在 Build Check 后校验仍然过晚；在接入阶段强制所有 Profile
+                或猜测细粒度 selector 会混淆独立 Evidence Profile 并伪造未来语义。
+              requirementsEvidence:
+                contentHash: db233788a73f93fe3ca92abacda3c5d856255aaf7d4bd1760aeed8ff2e36b44b
+                ref: openspec/changes/fail-fast-verification-coverage
+              sourceEvidence:
+                contentHash: e70096a72e9d534e63ff5e72de58d7a413140b70b2cade4bc7fe0395ea5b120e
+                ref: openspec/changes/fail-fast-verification-coverage
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fail-fast-verification-coverage
+                  changeDir: openspec/changes/fail-fast-verification-coverage
+                  workspaceBaseline:
+                    ref: fc1c0933-677f-4229-b200-a10c2acb5242
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: b3737f9b29d6e20b4dc0506ae9c71c08f0e03a0bc58dec1606758ea7df81f380
+                    ref: openspec/changes/fail-fast-verification-coverage
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: b3737f9b29d6e20b4dc0506ae9c71c08f0e03a0bc58dec1606758ea7df81f380
+              ref: openspec/changes/fail-fast-verification-coverage
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: b3737f9b29d6e20b4dc0506ae9c71c08f0e03a0bc58dec1606758ea7df81f380
+        sequence: 11
+      fail-fast-verification-coverage:13:
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/fail-fast-verification-coverage
+              buildMode: autonomous
+              directOverride: false
+              isolation: current
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fail-fast-verification-coverage
+                  changeDir: openspec/changes/fail-fast-verification-coverage
+                  workspaceBaseline:
+                    ref: fc1c0933-677f-4229-b200-a10c2acb5242
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/fail-fast-verification-coverage
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: current
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: c9e88053b5039ce7dfbf862e8a40ed2bdfccaa8c4d64d044adc7ecc14551849e
+                ref: openspec/changes/fail-fast-verification-coverage/design.md
+              plan: docs/superpowers/plans/2026-11-03-fail-fast-verification-coverage.md
+              planEvidence:
+                contentHash: a6af2c55b2811da1ee82a1fc4cda5aec34928bf86355ec9c27c3b98cf2cd0f86
+                ref: docs/superpowers/plans/2026-11-03-fail-fast-verification-coverage.md
+              taskRevision: 6a9dadc00006ab430d5bba46d0352a7a37a08a4dda1723a69e88a3fdd635409c
+          full.build.plan.evidence:
+            sequence: 12
+            value:
+              contentHash: a6af2c55b2811da1ee82a1fc4cda5aec34928bf86355ec9c27c3b98cf2cd0f86
+              ref: docs/superpowers/plans/2026-11-03-fail-fast-verification-coverage.md
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fail-fast-verification-coverage
+                  changeDir: openspec/changes/fail-fast-verification-coverage
+                  workspaceBaseline:
+                    ref: fc1c0933-677f-4229-b200-a10c2acb5242
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/fail-fast-verification-coverage/.comet/handoff/design-context.json
+                    handoffHash: beca32308b8465c9c9e48b15bf91246598adce661e9401c62c6147e76a652439
+                    proposal: 推荐方案：采用三层 fail-fast。项目探测为生成的 required 命令写入可审查的 covers:['*']
+                      候选；项目接入只对约定默认 verify Profile 做静态可用性门禁；具体 Run 在 Planning
+                      Snapshot 形成后、Design 审批请求持久化前，用实际 verificationProfileId 和
+                      Tasks 执行纯 coverage preflight。SpecificationPlanning 通过副作用前
+                      preflight hook 编排，preflight 后重新核对 planning manifest
+                      identity；Evidence Coordinator 提供不计算仓库 fingerprint 的
+                      compile 入口；Design 与正式 Verify 复用同一纯 resolver。拒绝两个替代方案：仅在
+                      Build Check 后校验仍然过晚；在接入阶段强制所有 Profile 或猜测细粒度 selector
+                      会混淆独立 Evidence Profile 并伪造未来语义。
+                    requirementsEvidence:
+                      contentHash: db233788a73f93fe3ca92abacda3c5d856255aaf7d4bd1760aeed8ff2e36b44b
+                      ref: openspec/changes/fail-fast-verification-coverage
+                    sourceEvidence:
+                      contentHash: e70096a72e9d534e63ff5e72de58d7a413140b70b2cade4bc7fe0395ea5b120e
+                      ref: openspec/changes/fail-fast-verification-coverage
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/fail-fast-verification-coverage/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: c9e88053b5039ce7dfbf862e8a40ed2bdfccaa8c4d64d044adc7ecc14551849e
+              ref: openspec/changes/fail-fast-verification-coverage/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/fail-fast-verification-coverage/.comet/handoff/design-context.json
+              handoffHash: beca32308b8465c9c9e48b15bf91246598adce661e9401c62c6147e76a652439
+              proposal: 推荐方案：采用三层 fail-fast。项目探测为生成的 required 命令写入可审查的 covers:['*']
+                候选；项目接入只对约定默认 verify Profile 做静态可用性门禁；具体 Run 在 Planning Snapshot
+                形成后、Design 审批请求持久化前，用实际 verificationProfileId 和 Tasks 执行纯
+                coverage preflight。SpecificationPlanning 通过副作用前 preflight hook
+                编排，preflight 后重新核对 planning manifest identity；Evidence
+                Coordinator 提供不计算仓库 fingerprint 的 compile 入口；Design 与正式 Verify
+                复用同一纯 resolver。拒绝两个替代方案：仅在 Build Check 后校验仍然过晚；在接入阶段强制所有 Profile
+                或猜测细粒度 selector 会混淆独立 Evidence Profile 并伪造未来语义。
+              requirementsEvidence:
+                contentHash: db233788a73f93fe3ca92abacda3c5d856255aaf7d4bd1760aeed8ff2e36b44b
+                ref: openspec/changes/fail-fast-verification-coverage
+              sourceEvidence:
+                contentHash: e70096a72e9d534e63ff5e72de58d7a413140b70b2cade4bc7fe0395ea5b120e
+                ref: openspec/changes/fail-fast-verification-coverage
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fail-fast-verification-coverage
+                  changeDir: openspec/changes/fail-fast-verification-coverage
+                  workspaceBaseline:
+                    ref: fc1c0933-677f-4229-b200-a10c2acb5242
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: b3737f9b29d6e20b4dc0506ae9c71c08f0e03a0bc58dec1606758ea7df81f380
+                    ref: openspec/changes/fail-fast-verification-coverage
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: b3737f9b29d6e20b4dc0506ae9c71c08f0e03a0bc58dec1606758ea7df81f380
+              ref: openspec/changes/fail-fast-verification-coverage
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: b3737f9b29d6e20b4dc0506ae9c71c08f0e03a0bc58dec1606758ea7df81f380
+        sequence: 13
       fail-fast-verification-coverage:4:
         results:
           full.open:
@@ -830,7 +1350,7 @@ run_checkpoint:
       - id: fail-fast-verification-coverage:10
         stepId: full.build.confirm
         sequence: 10
-        status: pending
+        status: resolved
         proposal:
           input:
             change: fail-fast-verification-coverage
@@ -947,6 +1467,10 @@ run_checkpoint:
             sequence: 4
             value:
               contentHash: b3737f9b29d6e20b4dc0506ae9c71c08f0e03a0bc58dec1606758ea7df81f380
+        decision:
+          id: classic-build-8b53d2fa8ea79ef5d4c54457971b5ea8594328120f832748ba1e1a27a421be7b-approved
+          choice: approved
+          proposalHash: 8b53d2fa8ea79ef5d4c54457971b5ea8594328120f832748ba1e1a27a421be7b
     evidenceWaits:
       - id: fail-fast-verification-coverage:2
         stepId: full.open.evidence
@@ -1053,6 +1577,142 @@ run_checkpoint:
           ref: openspec/changes/fail-fast-verification-coverage/design.md
           contentHash: c9e88053b5039ce7dfbf862e8a40ed2bdfccaa8c4d64d044adc7ecc14551849e
           submissionId: 57df23a2-b4da-4b17-a35f-bc933f5fae0b
+      - id: fail-fast-verification-coverage:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/fail-fast-verification-coverage
+              buildMode: autonomous
+              directOverride: false
+              isolation: current
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fail-fast-verification-coverage
+                  changeDir: openspec/changes/fail-fast-verification-coverage
+                  workspaceBaseline:
+                    ref: fc1c0933-677f-4229-b200-a10c2acb5242
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/fail-fast-verification-coverage
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: current
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: c9e88053b5039ce7dfbf862e8a40ed2bdfccaa8c4d64d044adc7ecc14551849e
+                ref: openspec/changes/fail-fast-verification-coverage/design.md
+              plan: docs/superpowers/plans/2026-11-03-fail-fast-verification-coverage.md
+              planEvidence:
+                contentHash: a6af2c55b2811da1ee82a1fc4cda5aec34928bf86355ec9c27c3b98cf2cd0f86
+                ref: docs/superpowers/plans/2026-11-03-fail-fast-verification-coverage.md
+              taskRevision: 6a9dadc00006ab430d5bba46d0352a7a37a08a4dda1723a69e88a3fdd635409c
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fail-fast-verification-coverage
+                  changeDir: openspec/changes/fail-fast-verification-coverage
+                  workspaceBaseline:
+                    ref: fc1c0933-677f-4229-b200-a10c2acb5242
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/fail-fast-verification-coverage/.comet/handoff/design-context.json
+                    handoffHash: beca32308b8465c9c9e48b15bf91246598adce661e9401c62c6147e76a652439
+                    proposal: 推荐方案：采用三层 fail-fast。项目探测为生成的 required 命令写入可审查的 covers:['*']
+                      候选；项目接入只对约定默认 verify Profile 做静态可用性门禁；具体 Run 在 Planning
+                      Snapshot 形成后、Design 审批请求持久化前，用实际 verificationProfileId 和
+                      Tasks 执行纯 coverage preflight。SpecificationPlanning 通过副作用前
+                      preflight hook 编排，preflight 后重新核对 planning manifest
+                      identity；Evidence Coordinator 提供不计算仓库 fingerprint 的
+                      compile 入口；Design 与正式 Verify 复用同一纯 resolver。拒绝两个替代方案：仅在
+                      Build Check 后校验仍然过晚；在接入阶段强制所有 Profile 或猜测细粒度 selector
+                      会混淆独立 Evidence Profile 并伪造未来语义。
+                    requirementsEvidence:
+                      contentHash: db233788a73f93fe3ca92abacda3c5d856255aaf7d4bd1760aeed8ff2e36b44b
+                      ref: openspec/changes/fail-fast-verification-coverage
+                    sourceEvidence:
+                      contentHash: e70096a72e9d534e63ff5e72de58d7a413140b70b2cade4bc7fe0395ea5b120e
+                      ref: openspec/changes/fail-fast-verification-coverage
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/fail-fast-verification-coverage/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: c9e88053b5039ce7dfbf862e8a40ed2bdfccaa8c4d64d044adc7ecc14551849e
+              ref: openspec/changes/fail-fast-verification-coverage/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/fail-fast-verification-coverage/.comet/handoff/design-context.json
+              handoffHash: beca32308b8465c9c9e48b15bf91246598adce661e9401c62c6147e76a652439
+              proposal: 推荐方案：采用三层 fail-fast。项目探测为生成的 required 命令写入可审查的 covers:['*']
+                候选；项目接入只对约定默认 verify Profile 做静态可用性门禁；具体 Run 在 Planning Snapshot
+                形成后、Design 审批请求持久化前，用实际 verificationProfileId 和 Tasks 执行纯
+                coverage preflight。SpecificationPlanning 通过副作用前 preflight hook
+                编排，preflight 后重新核对 planning manifest identity；Evidence
+                Coordinator 提供不计算仓库 fingerprint 的 compile 入口；Design 与正式 Verify
+                复用同一纯 resolver。拒绝两个替代方案：仅在 Build Check 后校验仍然过晚；在接入阶段强制所有 Profile
+                或猜测细粒度 selector 会混淆独立 Evidence Profile 并伪造未来语义。
+              requirementsEvidence:
+                contentHash: db233788a73f93fe3ca92abacda3c5d856255aaf7d4bd1760aeed8ff2e36b44b
+                ref: openspec/changes/fail-fast-verification-coverage
+              sourceEvidence:
+                contentHash: e70096a72e9d534e63ff5e72de58d7a413140b70b2cade4bc7fe0395ea5b120e
+                ref: openspec/changes/fail-fast-verification-coverage
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fail-fast-verification-coverage
+                  changeDir: openspec/changes/fail-fast-verification-coverage
+                  workspaceBaseline:
+                    ref: fc1c0933-677f-4229-b200-a10c2acb5242
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: b3737f9b29d6e20b4dc0506ae9c71c08f0e03a0bc58dec1606758ea7df81f380
+                    ref: openspec/changes/fail-fast-verification-coverage
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: b3737f9b29d6e20b4dc0506ae9c71c08f0e03a0bc58dec1606758ea7df81f380
+              ref: openspec/changes/fail-fast-verification-coverage
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: b3737f9b29d6e20b4dc0506ae9c71c08f0e03a0bc58dec1606758ea7df81f380
+        receipt:
+          ref: docs/superpowers/plans/2026-11-03-fail-fast-verification-coverage.md
+          contentHash: a6af2c55b2811da1ee82a1fc4cda5aec34928bf86355ec9c27c3b98cf2cd0f86
+          submissionId: 8e532891-c4eb-4354-99ec-9ec7403c8de8
     ready: []
     joins: {}
     outputs:
@@ -1066,6 +1726,41 @@ run_checkpoint:
           reviewMode: thorough
           subagentDispatch: null
           tddMode: tdd
+      full.build.confirm:
+        sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: fail-fast-verification-coverage
+              changeDir: openspec/changes/fail-fast-verification-coverage
+              workspaceBaseline:
+                ref: fc1c0933-677f-4229-b200-a10c2acb5242
+            outputs:
+              full.build.configure:
+                boundBranch: codex/fail-fast-verification-coverage
+                buildMode: autonomous
+                directOverride: false
+                isolation: current
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      full.build.plan:
+        sequence: 11
+        value:
+          designEvidence:
+            contentHash: c9e88053b5039ce7dfbf862e8a40ed2bdfccaa8c4d64d044adc7ecc14551849e
+            ref: openspec/changes/fail-fast-verification-coverage/design.md
+          plan: docs/superpowers/plans/2026-11-03-fail-fast-verification-coverage.md
+          planEvidence:
+            contentHash: a6af2c55b2811da1ee82a1fc4cda5aec34928bf86355ec9c27c3b98cf2cd0f86
+            ref: docs/superpowers/plans/2026-11-03-fail-fast-verification-coverage.md
+          taskRevision: 6a9dadc00006ab430d5bba46d0352a7a37a08a4dda1723a69e88a3fdd635409c
+      full.build.plan.evidence:
+        sequence: 12
+        value:
+          contentHash: a6af2c55b2811da1ee82a1fc4cda5aec34928bf86355ec9c27c3b98cf2cd0f86
+          ref: docs/superpowers/plans/2026-11-03-fail-fast-verification-coverage.md
       full.design.confirm:
         sequence: 6
         value:
@@ -1153,6 +1848,6 @@ run_checkpoint:
           contentHash: b3737f9b29d6e20b4dc0506ae9c71c08f0e03a0bc58dec1606758ea7df81f380
     children: []
     lineage: []
-  sourceRevision: 15
-  sourceHash: 3e56a43e02e3b6db6d1db9895029f365151cbc6837026043f22172ef1e6389b6
+  sourceRevision: 19
+  sourceHash: 75b77b0f2a78b37e4eb423a717e37cdae46642a15d268955562661e5d16d9cf7
 check_epoch: 2
