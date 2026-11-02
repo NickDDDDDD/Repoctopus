@@ -1,3 +1,8 @@
+---
+comet_change: fail-fast-verification-coverage
+role: technical-design
+canonical_spec: openspec
+---
 # Design
 
 ## Context
