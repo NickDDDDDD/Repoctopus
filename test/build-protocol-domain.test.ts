@@ -26,13 +26,25 @@ describe('Execution Binding capability contract', () => {
   it.each([
     [
       'autonomous',
-      ['build.autonomous', 'process.execute', 'repository.write'],
-      ['process.execute', 'repository.write'],
+      [
+        'build.autonomous',
+        'process.execute',
+        'repository.read',
+        'repository.write',
+        'specification.read',
+      ],
+      ['process.execute', 'repository.write', 'specification.read'],
     ],
     [
       'subagent-driven-development',
-      ['process.execute', 'repository.write', 'subagent.dispatch.attested'],
-      ['process.execute', 'repository.write'],
+      [
+        'process.execute',
+        'repository.read',
+        'repository.write',
+        'specification.read',
+        'subagent.dispatch.attested',
+      ],
+      ['process.execute', 'repository.write', 'specification.read'],
     ],
   ] as const)(
     'uses one complete %s capability set for preflight and checkpoint recovery',
@@ -97,7 +109,9 @@ function approvedConfiguration(
     hostCapabilities: [
       executionMode === 'autonomous' ? 'build.autonomous' : 'subagent.dispatch.attested',
       'process.execute',
+      'repository.read',
       'repository.write',
+      'specification.read',
     ],
     workspaceBinding: binding,
     workspaceOwnerId: intent.workspaceId,
@@ -114,7 +128,9 @@ function approvedConfiguration(
     hostCapabilities: [
       executionMode === 'autonomous' ? 'build.autonomous' : 'subagent.dispatch.attested',
       'process.execute',
+      'repository.read',
       'repository.write',
+      'specification.read',
     ],
   };
 }
@@ -497,7 +513,12 @@ describe('Build protocol domain', () => {
         strategy,
         revision: 1,
         hostId: 'plain-host',
-        hostCapabilities: ['process.execute'],
+        hostCapabilities: [
+          'process.execute',
+          'repository.read',
+          'repository.write',
+          'specification.read',
+        ],
         workspaceBinding: binding,
         workspaceOwnerId: intent.workspaceId,
         localOverlayRef: 'execution-workspace:test',
