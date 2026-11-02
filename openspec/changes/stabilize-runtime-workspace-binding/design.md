@@ -1,3 +1,9 @@
+---
+comet_change: stabilize-runtime-workspace-binding
+role: technical-design
+canonical_spec: openspec
+---
+
 # Design
 
 ## Context

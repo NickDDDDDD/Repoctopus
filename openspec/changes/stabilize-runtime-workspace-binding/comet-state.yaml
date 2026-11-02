@@ -2,19 +2,19 @@
 change_id: 78fe64fe-2b74-4510-adab-3ed476c9da94
 workflow: full
 language: zh-CN
-phase: design
+phase: build
 context_compression: off
-build_mode: null
+build_mode: autonomous
 build_pause: null
 subagent_dispatch: null
-tdd_mode: null
+tdd_mode: tdd
 review_mode: thorough
 isolation: branch
 verify_mode: null
 auto_transition: true
 base_ref: f26b9e078c333fa9413a4e3ece11f66e6fb17f6e
-design_doc: null
-plan: null
+design_doc: openspec/changes/stabilize-runtime-workspace-binding/design.md
+plan: docs/superpowers/plans/2026-11-02-stabilize-runtime-workspace-binding.md
 verify_result: pending
 verify_failures: 0
 verification_report: null
@@ -24,14 +24,14 @@ verified_at: null
 archive_confirmation: null
 archived: false
 bound_branch: codex/stabilize-runtime-workspace-binding
-direct_override: null
+direct_override: false
 handoff_context: openspec/changes/stabilize-runtime-workspace-binding/.comet/handoff/design-context.json
 handoff_hash: 5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4
 classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: 9d2961101ecd288cdfc8e746f14b8261e94e62c406091d8c0585855c5b6a643c
+  hash: fb8fd8163260207d428b15673037d504843746b8d055b4c0f18c616dc9efb38d
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -56,32 +56,32 @@ run_checkpoint:
       baseRef: f26b9e078c333fa9413a4e3ece11f66e6fb17f6e
       boundBranch: codex/stabilize-runtime-workspace-binding
       branchStatus: pending
-      buildMode: null
+      buildMode: autonomous
       buildPause: null
-      checkEpoch: 1
+      checkEpoch: 2
       classicMigration: null
       classicProfile: null
       contextCompression: off
       createdAt: 2026-11-02
-      designDoc: null
-      directOverride: null
+      designDoc: openspec/changes/stabilize-runtime-workspace-binding/design.md
+      directOverride: false
       handoffContext: openspec/changes/stabilize-runtime-workspace-binding/.comet/handoff/design-context.json
       handoffHash: 5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4
       isolation: branch
       language: zh-CN
-      phase: design
-      plan: null
+      phase: build
+      plan: docs/superpowers/plans/2026-11-02-stabilize-runtime-workspace-binding.md
       reviewMode: thorough
       subagentDispatch: null
-      tddMode: null
+      tddMode: tdd
       verificationReport: null
       verifiedAt: null
       verifyFailures: 0
       verifyMode: null
       verifyResult: pending
       workflow: full
-    status: waiting
-    sequence: 6
+    status: running
+    sequence: 13
     actions:
       - attempt: 1
         claim:
@@ -257,10 +257,773 @@ run_checkpoint:
         status: succeeded
         stepId: full.design.handoff
         type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-29d5217eb5b1f9121cb0f80c2123e84d2f82a0bdcd14a530e046096356bec26f
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-runtime-workspace-binding:7
+        input:
+          input:
+            change: stabilize-runtime-workspace-binding
+            changeDir: openspec/changes/stabilize-runtime-workspace-binding
+            workspaceBaseline:
+              ref: a624b498-a205-469b-afad-3576be798bc2
+          outputs:
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-runtime-workspace-binding
+                  changeDir: openspec/changes/stabilize-runtime-workspace-binding
+                  workspaceBaseline:
+                    ref: a624b498-a205-469b-afad-3576be798bc2
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-runtime-workspace-binding/.comet/handoff/design-context.json
+                    handoffHash: 5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4
+                    proposal: 方案：在 Run Store 首次写入前，由纯领域 ChangeStartBinding 从 Workspace Repository 与
+                      target facts 派生稳定语义绑定；绑定只包含
+                      repository/remote/topology/source/target，排除
+                      path、HEAD、worktree 与时间。Coordinator startOrResume 返回强类型
+                      started|resumed disposition，只有 started 记录初始 Skill、Work 与首次
+                      activation；resumed 使用 Store 中的 authoritative Work。Open
+                      observation 区分 strict invalid、Provider 暂时不可用和 Host
+                      外部结果未知：暂时不可用在原 Outcome/attempt/invocation 上 reobserve，不调用
+                      Host reconcile。创建前拒绝写 canonical observation outbox，已有 Run
+                      的复用、冲突和重观察从 trajectory 投影。Runner 仍负责
+                      branch/worktree，Runtime 不执行 Git checkout。
+                    requirementsEvidence:
+                      contentHash: feed9c9d2d59ed4be75a7f9ff74d5c83e0e7fdac03194c73d29ef6427a892820
+                      ref: openspec/changes/stabilize-runtime-workspace-binding
+                    sourceEvidence:
+                      contentHash: ba8fbbf0cf4e05fc064e7fde41ef884d0654111907a7e0126cfe66d370fd716d
+                      ref: openspec/changes/stabilize-runtime-workspace-binding
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-runtime-workspace-binding/.comet/handoff/design-context.json
+              handoffHash: 5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4
+              proposal: 方案：在 Run Store 首次写入前，由纯领域 ChangeStartBinding 从 Workspace Repository 与
+                target facts 派生稳定语义绑定；绑定只包含
+                repository/remote/topology/source/target，排除 path、HEAD、worktree
+                与时间。Coordinator startOrResume 返回强类型 started|resumed
+                disposition，只有 started 记录初始 Skill、Work 与首次 activation；resumed 使用
+                Store 中的 authoritative Work。Open observation 区分 strict
+                invalid、Provider 暂时不可用和 Host 外部结果未知：暂时不可用在原
+                Outcome/attempt/invocation 上 reobserve，不调用 Host reconcile。创建前拒绝写
+                canonical observation outbox，已有 Run 的复用、冲突和重观察从 trajectory
+                投影。Runner 仍负责 branch/worktree，Runtime 不执行 Git checkout。
+              requirementsEvidence:
+                contentHash: feed9c9d2d59ed4be75a7f9ff74d5c83e0e7fdac03194c73d29ef6427a892820
+                ref: openspec/changes/stabilize-runtime-workspace-binding
+              sourceEvidence:
+                contentHash: ba8fbbf0cf4e05fc064e7fde41ef884d0654111907a7e0126cfe66d370fd716d
+                ref: openspec/changes/stabilize-runtime-workspace-binding
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-runtime-workspace-binding
+                  changeDir: openspec/changes/stabilize-runtime-workspace-binding
+                  workspaceBaseline:
+                    ref: a624b498-a205-469b-afad-3576be798bc2
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+                    ref: openspec/changes/stabilize-runtime-workspace-binding
+            full.open.evidence:
+              contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+              ref: openspec/changes/stabilize-runtime-workspace-binding
+            full.open.revalidate:
+              contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+        inputHash: 00cefa6e83823d98ab04016386ca0c16595bdd9e71710dc012315410876e249a
+        outcome:
+          actionId: stabilize-runtime-workspace-binding:7
+          attempt: 1
+          claimToken: portable-29d5217eb5b1f9121cb0f80c2123e84d2f82a0bdcd14a530e046096356bec26f
+          inputHash: 00cefa6e83823d98ab04016386ca0c16595bdd9e71710dc012315410876e249a
+          outcomeId: e57cdb0e-f3ce-488e-ab7d-21b31e74ed21
+          output:
+            designDoc: openspec/changes/stabilize-runtime-workspace-binding/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 549c9fd4e917b12e24fc718168bd98d8f2a6f4f72995cc026359bd5b2de99e27
+            outcomeId: e57cdb0e-f3ce-488e-ab7d-21b31e74ed21
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-runtime-workspace-binding
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-01122b77775c2f36514e85dfda9ed3f08b1807579b1b8b8e34c91beac8f5e418
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-runtime-workspace-binding:9
+        input:
+          input:
+            change: stabilize-runtime-workspace-binding
+            changeDir: openspec/changes/stabilize-runtime-workspace-binding
+            workspaceBaseline:
+              ref: a624b498-a205-469b-afad-3576be798bc2
+          outputs:
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-runtime-workspace-binding
+                  changeDir: openspec/changes/stabilize-runtime-workspace-binding
+                  workspaceBaseline:
+                    ref: a624b498-a205-469b-afad-3576be798bc2
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-runtime-workspace-binding/.comet/handoff/design-context.json
+                    handoffHash: 5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4
+                    proposal: 方案：在 Run Store 首次写入前，由纯领域 ChangeStartBinding 从 Workspace Repository 与
+                      target facts 派生稳定语义绑定；绑定只包含
+                      repository/remote/topology/source/target，排除
+                      path、HEAD、worktree 与时间。Coordinator startOrResume 返回强类型
+                      started|resumed disposition，只有 started 记录初始 Skill、Work 与首次
+                      activation；resumed 使用 Store 中的 authoritative Work。Open
+                      observation 区分 strict invalid、Provider 暂时不可用和 Host
+                      外部结果未知：暂时不可用在原 Outcome/attempt/invocation 上 reobserve，不调用
+                      Host reconcile。创建前拒绝写 canonical observation outbox，已有 Run
+                      的复用、冲突和重观察从 trajectory 投影。Runner 仍负责
+                      branch/worktree，Runtime 不执行 Git checkout。
+                    requirementsEvidence:
+                      contentHash: feed9c9d2d59ed4be75a7f9ff74d5c83e0e7fdac03194c73d29ef6427a892820
+                      ref: openspec/changes/stabilize-runtime-workspace-binding
+                    sourceEvidence:
+                      contentHash: ba8fbbf0cf4e05fc064e7fde41ef884d0654111907a7e0126cfe66d370fd716d
+                      ref: openspec/changes/stabilize-runtime-workspace-binding
+            full.design.document:
+              designDoc: openspec/changes/stabilize-runtime-workspace-binding/design.md
+            full.design.evidence:
+              contentHash: 1aec2ab05a27f69c69c69127c34f424745999359f64bc57733e89f1ba42289c7
+              ref: openspec/changes/stabilize-runtime-workspace-binding/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-runtime-workspace-binding/.comet/handoff/design-context.json
+              handoffHash: 5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4
+              proposal: 方案：在 Run Store 首次写入前，由纯领域 ChangeStartBinding 从 Workspace Repository 与
+                target facts 派生稳定语义绑定；绑定只包含
+                repository/remote/topology/source/target，排除 path、HEAD、worktree
+                与时间。Coordinator startOrResume 返回强类型 started|resumed
+                disposition，只有 started 记录初始 Skill、Work 与首次 activation；resumed 使用
+                Store 中的 authoritative Work。Open observation 区分 strict
+                invalid、Provider 暂时不可用和 Host 外部结果未知：暂时不可用在原
+                Outcome/attempt/invocation 上 reobserve，不调用 Host reconcile。创建前拒绝写
+                canonical observation outbox，已有 Run 的复用、冲突和重观察从 trajectory
+                投影。Runner 仍负责 branch/worktree，Runtime 不执行 Git checkout。
+              requirementsEvidence:
+                contentHash: feed9c9d2d59ed4be75a7f9ff74d5c83e0e7fdac03194c73d29ef6427a892820
+                ref: openspec/changes/stabilize-runtime-workspace-binding
+              sourceEvidence:
+                contentHash: ba8fbbf0cf4e05fc064e7fde41ef884d0654111907a7e0126cfe66d370fd716d
+                ref: openspec/changes/stabilize-runtime-workspace-binding
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-runtime-workspace-binding
+                  changeDir: openspec/changes/stabilize-runtime-workspace-binding
+                  workspaceBaseline:
+                    ref: a624b498-a205-469b-afad-3576be798bc2
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+                    ref: openspec/changes/stabilize-runtime-workspace-binding
+            full.open.evidence:
+              contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+              ref: openspec/changes/stabilize-runtime-workspace-binding
+            full.open.revalidate:
+              contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+        inputHash: 913a60adab267332854a542225f93073c62630946b212a25a8b650f697cf3daf
+        outcome:
+          actionId: stabilize-runtime-workspace-binding:9
+          attempt: 1
+          claimToken: portable-01122b77775c2f36514e85dfda9ed3f08b1807579b1b8b8e34c91beac8f5e418
+          inputHash: 913a60adab267332854a542225f93073c62630946b212a25a8b650f697cf3daf
+          outcomeId: 9477b79a-af37-487e-9d52-efc1d01dc68b
+          output:
+            boundBranch: codex/stabilize-runtime-workspace-binding
+            buildMode: autonomous
+            directOverride: false
+            isolation: branch
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 0ad75a9581bcd8402cd45ea7c4f10a14acb7f8560f11dd72156c8b2d367dac7c
+            outcomeId: 9477b79a-af37-487e-9d52-efc1d01dc68b
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-runtime-workspace-binding
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-3bba57718c02f36441e9e50df7a72cd24750e0af89609b2db60c07f9c3fa4f85
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-runtime-workspace-binding:11
+        input:
+          input:
+            change: stabilize-runtime-workspace-binding
+            changeDir: openspec/changes/stabilize-runtime-workspace-binding
+            workspaceBaseline:
+              ref: a624b498-a205-469b-afad-3576be798bc2
+          outputs:
+            full.build.configure:
+              boundBranch: codex/stabilize-runtime-workspace-binding
+              buildMode: autonomous
+              directOverride: false
+              isolation: branch
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-runtime-workspace-binding
+                  changeDir: openspec/changes/stabilize-runtime-workspace-binding
+                  workspaceBaseline:
+                    ref: a624b498-a205-469b-afad-3576be798bc2
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/stabilize-runtime-workspace-binding
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: branch
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-runtime-workspace-binding
+                  changeDir: openspec/changes/stabilize-runtime-workspace-binding
+                  workspaceBaseline:
+                    ref: a624b498-a205-469b-afad-3576be798bc2
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-runtime-workspace-binding/.comet/handoff/design-context.json
+                    handoffHash: 5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4
+                    proposal: 方案：在 Run Store 首次写入前，由纯领域 ChangeStartBinding 从 Workspace Repository 与
+                      target facts 派生稳定语义绑定；绑定只包含
+                      repository/remote/topology/source/target，排除
+                      path、HEAD、worktree 与时间。Coordinator startOrResume 返回强类型
+                      started|resumed disposition，只有 started 记录初始 Skill、Work 与首次
+                      activation；resumed 使用 Store 中的 authoritative Work。Open
+                      observation 区分 strict invalid、Provider 暂时不可用和 Host
+                      外部结果未知：暂时不可用在原 Outcome/attempt/invocation 上 reobserve，不调用
+                      Host reconcile。创建前拒绝写 canonical observation outbox，已有 Run
+                      的复用、冲突和重观察从 trajectory 投影。Runner 仍负责
+                      branch/worktree，Runtime 不执行 Git checkout。
+                    requirementsEvidence:
+                      contentHash: feed9c9d2d59ed4be75a7f9ff74d5c83e0e7fdac03194c73d29ef6427a892820
+                      ref: openspec/changes/stabilize-runtime-workspace-binding
+                    sourceEvidence:
+                      contentHash: ba8fbbf0cf4e05fc064e7fde41ef884d0654111907a7e0126cfe66d370fd716d
+                      ref: openspec/changes/stabilize-runtime-workspace-binding
+            full.design.document:
+              designDoc: openspec/changes/stabilize-runtime-workspace-binding/design.md
+            full.design.evidence:
+              contentHash: 1aec2ab05a27f69c69c69127c34f424745999359f64bc57733e89f1ba42289c7
+              ref: openspec/changes/stabilize-runtime-workspace-binding/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-runtime-workspace-binding/.comet/handoff/design-context.json
+              handoffHash: 5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4
+              proposal: 方案：在 Run Store 首次写入前，由纯领域 ChangeStartBinding 从 Workspace Repository 与
+                target facts 派生稳定语义绑定；绑定只包含
+                repository/remote/topology/source/target，排除 path、HEAD、worktree
+                与时间。Coordinator startOrResume 返回强类型 started|resumed
+                disposition，只有 started 记录初始 Skill、Work 与首次 activation；resumed 使用
+                Store 中的 authoritative Work。Open observation 区分 strict
+                invalid、Provider 暂时不可用和 Host 外部结果未知：暂时不可用在原
+                Outcome/attempt/invocation 上 reobserve，不调用 Host reconcile。创建前拒绝写
+                canonical observation outbox，已有 Run 的复用、冲突和重观察从 trajectory
+                投影。Runner 仍负责 branch/worktree，Runtime 不执行 Git checkout。
+              requirementsEvidence:
+                contentHash: feed9c9d2d59ed4be75a7f9ff74d5c83e0e7fdac03194c73d29ef6427a892820
+                ref: openspec/changes/stabilize-runtime-workspace-binding
+              sourceEvidence:
+                contentHash: ba8fbbf0cf4e05fc064e7fde41ef884d0654111907a7e0126cfe66d370fd716d
+                ref: openspec/changes/stabilize-runtime-workspace-binding
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-runtime-workspace-binding
+                  changeDir: openspec/changes/stabilize-runtime-workspace-binding
+                  workspaceBaseline:
+                    ref: a624b498-a205-469b-afad-3576be798bc2
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+                    ref: openspec/changes/stabilize-runtime-workspace-binding
+            full.open.evidence:
+              contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+              ref: openspec/changes/stabilize-runtime-workspace-binding
+            full.open.revalidate:
+              contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+        inputHash: 675e2ef891c94928c4ce4358a1e90317fb94c2dd5c278eddc6e80a336083366d
+        outcome:
+          actionId: stabilize-runtime-workspace-binding:11
+          attempt: 1
+          claimToken: portable-3bba57718c02f36441e9e50df7a72cd24750e0af89609b2db60c07f9c3fa4f85
+          inputHash: 675e2ef891c94928c4ce4358a1e90317fb94c2dd5c278eddc6e80a336083366d
+          outcomeId: 1e3f95de-b5c2-43b0-aa02-3d887d49444e
+          output:
+            designEvidence:
+              contentHash: 1aec2ab05a27f69c69c69127c34f424745999359f64bc57733e89f1ba42289c7
+              ref: openspec/changes/stabilize-runtime-workspace-binding/design.md
+            plan: docs/superpowers/plans/2026-11-02-stabilize-runtime-workspace-binding.md
+            planEvidence:
+              contentHash: 231920acfe84c3362d26d3684311f50c2154389ececf24ba2b30a0fc989316e8
+              ref: docs/superpowers/plans/2026-11-02-stabilize-runtime-workspace-binding.md
+            taskRevision: 3462fd36d9aeb37d8537281e845632af7023e28e0b9a5e37a395a06226b2f36a
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: d67b8797c6a45279ab6f184be7d1d38fffb36c71a70491b0de9fbc522e782e3f
+            outcomeId: 1e3f95de-b5c2-43b0-aa02-3d887d49444e
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-runtime-workspace-binding
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        id: stabilize-runtime-workspace-binding:13
+        input:
+          input:
+            change: stabilize-runtime-workspace-binding
+            changeDir: openspec/changes/stabilize-runtime-workspace-binding
+            workspaceBaseline:
+              ref: a624b498-a205-469b-afad-3576be798bc2
+          outputs:
+            full.build.configure:
+              boundBranch: codex/stabilize-runtime-workspace-binding
+              buildMode: autonomous
+              directOverride: false
+              isolation: branch
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-runtime-workspace-binding
+                  changeDir: openspec/changes/stabilize-runtime-workspace-binding
+                  workspaceBaseline:
+                    ref: a624b498-a205-469b-afad-3576be798bc2
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/stabilize-runtime-workspace-binding
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: branch
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.build.plan:
+              designEvidence:
+                contentHash: 1aec2ab05a27f69c69c69127c34f424745999359f64bc57733e89f1ba42289c7
+                ref: openspec/changes/stabilize-runtime-workspace-binding/design.md
+              plan: docs/superpowers/plans/2026-11-02-stabilize-runtime-workspace-binding.md
+              planEvidence:
+                contentHash: 231920acfe84c3362d26d3684311f50c2154389ececf24ba2b30a0fc989316e8
+                ref: docs/superpowers/plans/2026-11-02-stabilize-runtime-workspace-binding.md
+              taskRevision: 3462fd36d9aeb37d8537281e845632af7023e28e0b9a5e37a395a06226b2f36a
+            full.build.plan.evidence:
+              contentHash: 231920acfe84c3362d26d3684311f50c2154389ececf24ba2b30a0fc989316e8
+              ref: docs/superpowers/plans/2026-11-02-stabilize-runtime-workspace-binding.md
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-runtime-workspace-binding
+                  changeDir: openspec/changes/stabilize-runtime-workspace-binding
+                  workspaceBaseline:
+                    ref: a624b498-a205-469b-afad-3576be798bc2
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-runtime-workspace-binding/.comet/handoff/design-context.json
+                    handoffHash: 5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4
+                    proposal: 方案：在 Run Store 首次写入前，由纯领域 ChangeStartBinding 从 Workspace Repository 与
+                      target facts 派生稳定语义绑定；绑定只包含
+                      repository/remote/topology/source/target，排除
+                      path、HEAD、worktree 与时间。Coordinator startOrResume 返回强类型
+                      started|resumed disposition，只有 started 记录初始 Skill、Work 与首次
+                      activation；resumed 使用 Store 中的 authoritative Work。Open
+                      observation 区分 strict invalid、Provider 暂时不可用和 Host
+                      外部结果未知：暂时不可用在原 Outcome/attempt/invocation 上 reobserve，不调用
+                      Host reconcile。创建前拒绝写 canonical observation outbox，已有 Run
+                      的复用、冲突和重观察从 trajectory 投影。Runner 仍负责
+                      branch/worktree，Runtime 不执行 Git checkout。
+                    requirementsEvidence:
+                      contentHash: feed9c9d2d59ed4be75a7f9ff74d5c83e0e7fdac03194c73d29ef6427a892820
+                      ref: openspec/changes/stabilize-runtime-workspace-binding
+                    sourceEvidence:
+                      contentHash: ba8fbbf0cf4e05fc064e7fde41ef884d0654111907a7e0126cfe66d370fd716d
+                      ref: openspec/changes/stabilize-runtime-workspace-binding
+            full.design.document:
+              designDoc: openspec/changes/stabilize-runtime-workspace-binding/design.md
+            full.design.evidence:
+              contentHash: 1aec2ab05a27f69c69c69127c34f424745999359f64bc57733e89f1ba42289c7
+              ref: openspec/changes/stabilize-runtime-workspace-binding/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-runtime-workspace-binding/.comet/handoff/design-context.json
+              handoffHash: 5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4
+              proposal: 方案：在 Run Store 首次写入前，由纯领域 ChangeStartBinding 从 Workspace Repository 与
+                target facts 派生稳定语义绑定；绑定只包含
+                repository/remote/topology/source/target，排除 path、HEAD、worktree
+                与时间。Coordinator startOrResume 返回强类型 started|resumed
+                disposition，只有 started 记录初始 Skill、Work 与首次 activation；resumed 使用
+                Store 中的 authoritative Work。Open observation 区分 strict
+                invalid、Provider 暂时不可用和 Host 外部结果未知：暂时不可用在原
+                Outcome/attempt/invocation 上 reobserve，不调用 Host reconcile。创建前拒绝写
+                canonical observation outbox，已有 Run 的复用、冲突和重观察从 trajectory
+                投影。Runner 仍负责 branch/worktree，Runtime 不执行 Git checkout。
+              requirementsEvidence:
+                contentHash: feed9c9d2d59ed4be75a7f9ff74d5c83e0e7fdac03194c73d29ef6427a892820
+                ref: openspec/changes/stabilize-runtime-workspace-binding
+              sourceEvidence:
+                contentHash: ba8fbbf0cf4e05fc064e7fde41ef884d0654111907a7e0126cfe66d370fd716d
+                ref: openspec/changes/stabilize-runtime-workspace-binding
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-runtime-workspace-binding
+                  changeDir: openspec/changes/stabilize-runtime-workspace-binding
+                  workspaceBaseline:
+                    ref: a624b498-a205-469b-afad-3576be798bc2
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+                    ref: openspec/changes/stabilize-runtime-workspace-binding
+            full.open.evidence:
+              contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+              ref: openspec/changes/stabilize-runtime-workspace-binding
+            full.open.revalidate:
+              contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+        inputHash: 850211d8665bad5e1dacba8901f3ae1d858b54f6570bd77e27e2772ea3201166
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-runtime-workspace-binding
+        status: pending
+        stepId: full.build.execute
+        type: invoke_skill
     actionContexts:
       stabilize-runtime-workspace-binding:1:
         results: {}
         sequence: 1
+      stabilize-runtime-workspace-binding:11:
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/stabilize-runtime-workspace-binding
+              buildMode: autonomous
+              directOverride: false
+              isolation: branch
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-runtime-workspace-binding
+                  changeDir: openspec/changes/stabilize-runtime-workspace-binding
+                  workspaceBaseline:
+                    ref: a624b498-a205-469b-afad-3576be798bc2
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/stabilize-runtime-workspace-binding
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: branch
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-runtime-workspace-binding
+                  changeDir: openspec/changes/stabilize-runtime-workspace-binding
+                  workspaceBaseline:
+                    ref: a624b498-a205-469b-afad-3576be798bc2
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-runtime-workspace-binding/.comet/handoff/design-context.json
+                    handoffHash: 5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4
+                    proposal: 方案：在 Run Store 首次写入前，由纯领域 ChangeStartBinding 从 Workspace Repository 与
+                      target facts 派生稳定语义绑定；绑定只包含
+                      repository/remote/topology/source/target，排除
+                      path、HEAD、worktree 与时间。Coordinator startOrResume 返回强类型
+                      started|resumed disposition，只有 started 记录初始 Skill、Work 与首次
+                      activation；resumed 使用 Store 中的 authoritative Work。Open
+                      observation 区分 strict invalid、Provider 暂时不可用和 Host
+                      外部结果未知：暂时不可用在原 Outcome/attempt/invocation 上 reobserve，不调用
+                      Host reconcile。创建前拒绝写 canonical observation outbox，已有 Run
+                      的复用、冲突和重观察从 trajectory 投影。Runner 仍负责
+                      branch/worktree，Runtime 不执行 Git checkout。
+                    requirementsEvidence:
+                      contentHash: feed9c9d2d59ed4be75a7f9ff74d5c83e0e7fdac03194c73d29ef6427a892820
+                      ref: openspec/changes/stabilize-runtime-workspace-binding
+                    sourceEvidence:
+                      contentHash: ba8fbbf0cf4e05fc064e7fde41ef884d0654111907a7e0126cfe66d370fd716d
+                      ref: openspec/changes/stabilize-runtime-workspace-binding
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/stabilize-runtime-workspace-binding/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 1aec2ab05a27f69c69c69127c34f424745999359f64bc57733e89f1ba42289c7
+              ref: openspec/changes/stabilize-runtime-workspace-binding/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/stabilize-runtime-workspace-binding/.comet/handoff/design-context.json
+              handoffHash: 5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4
+              proposal: 方案：在 Run Store 首次写入前，由纯领域 ChangeStartBinding 从 Workspace Repository 与
+                target facts 派生稳定语义绑定；绑定只包含
+                repository/remote/topology/source/target，排除 path、HEAD、worktree
+                与时间。Coordinator startOrResume 返回强类型 started|resumed
+                disposition，只有 started 记录初始 Skill、Work 与首次 activation；resumed 使用
+                Store 中的 authoritative Work。Open observation 区分 strict
+                invalid、Provider 暂时不可用和 Host 外部结果未知：暂时不可用在原
+                Outcome/attempt/invocation 上 reobserve，不调用 Host reconcile。创建前拒绝写
+                canonical observation outbox，已有 Run 的复用、冲突和重观察从 trajectory
+                投影。Runner 仍负责 branch/worktree，Runtime 不执行 Git checkout。
+              requirementsEvidence:
+                contentHash: feed9c9d2d59ed4be75a7f9ff74d5c83e0e7fdac03194c73d29ef6427a892820
+                ref: openspec/changes/stabilize-runtime-workspace-binding
+              sourceEvidence:
+                contentHash: ba8fbbf0cf4e05fc064e7fde41ef884d0654111907a7e0126cfe66d370fd716d
+                ref: openspec/changes/stabilize-runtime-workspace-binding
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-runtime-workspace-binding
+                  changeDir: openspec/changes/stabilize-runtime-workspace-binding
+                  workspaceBaseline:
+                    ref: a624b498-a205-469b-afad-3576be798bc2
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+                    ref: openspec/changes/stabilize-runtime-workspace-binding
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+              ref: openspec/changes/stabilize-runtime-workspace-binding
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+        sequence: 11
+      stabilize-runtime-workspace-binding:13:
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/stabilize-runtime-workspace-binding
+              buildMode: autonomous
+              directOverride: false
+              isolation: branch
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-runtime-workspace-binding
+                  changeDir: openspec/changes/stabilize-runtime-workspace-binding
+                  workspaceBaseline:
+                    ref: a624b498-a205-469b-afad-3576be798bc2
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/stabilize-runtime-workspace-binding
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: branch
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: 1aec2ab05a27f69c69c69127c34f424745999359f64bc57733e89f1ba42289c7
+                ref: openspec/changes/stabilize-runtime-workspace-binding/design.md
+              plan: docs/superpowers/plans/2026-11-02-stabilize-runtime-workspace-binding.md
+              planEvidence:
+                contentHash: 231920acfe84c3362d26d3684311f50c2154389ececf24ba2b30a0fc989316e8
+                ref: docs/superpowers/plans/2026-11-02-stabilize-runtime-workspace-binding.md
+              taskRevision: 3462fd36d9aeb37d8537281e845632af7023e28e0b9a5e37a395a06226b2f36a
+          full.build.plan.evidence:
+            sequence: 12
+            value:
+              contentHash: 231920acfe84c3362d26d3684311f50c2154389ececf24ba2b30a0fc989316e8
+              ref: docs/superpowers/plans/2026-11-02-stabilize-runtime-workspace-binding.md
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-runtime-workspace-binding
+                  changeDir: openspec/changes/stabilize-runtime-workspace-binding
+                  workspaceBaseline:
+                    ref: a624b498-a205-469b-afad-3576be798bc2
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-runtime-workspace-binding/.comet/handoff/design-context.json
+                    handoffHash: 5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4
+                    proposal: 方案：在 Run Store 首次写入前，由纯领域 ChangeStartBinding 从 Workspace Repository 与
+                      target facts 派生稳定语义绑定；绑定只包含
+                      repository/remote/topology/source/target，排除
+                      path、HEAD、worktree 与时间。Coordinator startOrResume 返回强类型
+                      started|resumed disposition，只有 started 记录初始 Skill、Work 与首次
+                      activation；resumed 使用 Store 中的 authoritative Work。Open
+                      observation 区分 strict invalid、Provider 暂时不可用和 Host
+                      外部结果未知：暂时不可用在原 Outcome/attempt/invocation 上 reobserve，不调用
+                      Host reconcile。创建前拒绝写 canonical observation outbox，已有 Run
+                      的复用、冲突和重观察从 trajectory 投影。Runner 仍负责
+                      branch/worktree，Runtime 不执行 Git checkout。
+                    requirementsEvidence:
+                      contentHash: feed9c9d2d59ed4be75a7f9ff74d5c83e0e7fdac03194c73d29ef6427a892820
+                      ref: openspec/changes/stabilize-runtime-workspace-binding
+                    sourceEvidence:
+                      contentHash: ba8fbbf0cf4e05fc064e7fde41ef884d0654111907a7e0126cfe66d370fd716d
+                      ref: openspec/changes/stabilize-runtime-workspace-binding
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/stabilize-runtime-workspace-binding/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 1aec2ab05a27f69c69c69127c34f424745999359f64bc57733e89f1ba42289c7
+              ref: openspec/changes/stabilize-runtime-workspace-binding/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/stabilize-runtime-workspace-binding/.comet/handoff/design-context.json
+              handoffHash: 5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4
+              proposal: 方案：在 Run Store 首次写入前，由纯领域 ChangeStartBinding 从 Workspace Repository 与
+                target facts 派生稳定语义绑定；绑定只包含
+                repository/remote/topology/source/target，排除 path、HEAD、worktree
+                与时间。Coordinator startOrResume 返回强类型 started|resumed
+                disposition，只有 started 记录初始 Skill、Work 与首次 activation；resumed 使用
+                Store 中的 authoritative Work。Open observation 区分 strict
+                invalid、Provider 暂时不可用和 Host 外部结果未知：暂时不可用在原
+                Outcome/attempt/invocation 上 reobserve，不调用 Host reconcile。创建前拒绝写
+                canonical observation outbox，已有 Run 的复用、冲突和重观察从 trajectory
+                投影。Runner 仍负责 branch/worktree，Runtime 不执行 Git checkout。
+              requirementsEvidence:
+                contentHash: feed9c9d2d59ed4be75a7f9ff74d5c83e0e7fdac03194c73d29ef6427a892820
+                ref: openspec/changes/stabilize-runtime-workspace-binding
+              sourceEvidence:
+                contentHash: ba8fbbf0cf4e05fc064e7fde41ef884d0654111907a7e0126cfe66d370fd716d
+                ref: openspec/changes/stabilize-runtime-workspace-binding
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-runtime-workspace-binding
+                  changeDir: openspec/changes/stabilize-runtime-workspace-binding
+                  workspaceBaseline:
+                    ref: a624b498-a205-469b-afad-3576be798bc2
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+                    ref: openspec/changes/stabilize-runtime-workspace-binding
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+              ref: openspec/changes/stabilize-runtime-workspace-binding
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+        sequence: 13
       stabilize-runtime-workspace-binding:4:
         results:
           full.open:
@@ -321,6 +1084,183 @@ run_checkpoint:
             value:
               contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
         sequence: 5
+      stabilize-runtime-workspace-binding:7:
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-runtime-workspace-binding
+                  changeDir: openspec/changes/stabilize-runtime-workspace-binding
+                  workspaceBaseline:
+                    ref: a624b498-a205-469b-afad-3576be798bc2
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-runtime-workspace-binding/.comet/handoff/design-context.json
+                    handoffHash: 5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4
+                    proposal: 方案：在 Run Store 首次写入前，由纯领域 ChangeStartBinding 从 Workspace Repository 与
+                      target facts 派生稳定语义绑定；绑定只包含
+                      repository/remote/topology/source/target，排除
+                      path、HEAD、worktree 与时间。Coordinator startOrResume 返回强类型
+                      started|resumed disposition，只有 started 记录初始 Skill、Work 与首次
+                      activation；resumed 使用 Store 中的 authoritative Work。Open
+                      observation 区分 strict invalid、Provider 暂时不可用和 Host
+                      外部结果未知：暂时不可用在原 Outcome/attempt/invocation 上 reobserve，不调用
+                      Host reconcile。创建前拒绝写 canonical observation outbox，已有 Run
+                      的复用、冲突和重观察从 trajectory 投影。Runner 仍负责
+                      branch/worktree，Runtime 不执行 Git checkout。
+                    requirementsEvidence:
+                      contentHash: feed9c9d2d59ed4be75a7f9ff74d5c83e0e7fdac03194c73d29ef6427a892820
+                      ref: openspec/changes/stabilize-runtime-workspace-binding
+                    sourceEvidence:
+                      contentHash: ba8fbbf0cf4e05fc064e7fde41ef884d0654111907a7e0126cfe66d370fd716d
+                      ref: openspec/changes/stabilize-runtime-workspace-binding
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/stabilize-runtime-workspace-binding/.comet/handoff/design-context.json
+              handoffHash: 5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4
+              proposal: 方案：在 Run Store 首次写入前，由纯领域 ChangeStartBinding 从 Workspace Repository 与
+                target facts 派生稳定语义绑定；绑定只包含
+                repository/remote/topology/source/target，排除 path、HEAD、worktree
+                与时间。Coordinator startOrResume 返回强类型 started|resumed
+                disposition，只有 started 记录初始 Skill、Work 与首次 activation；resumed 使用
+                Store 中的 authoritative Work。Open observation 区分 strict
+                invalid、Provider 暂时不可用和 Host 外部结果未知：暂时不可用在原
+                Outcome/attempt/invocation 上 reobserve，不调用 Host reconcile。创建前拒绝写
+                canonical observation outbox，已有 Run 的复用、冲突和重观察从 trajectory
+                投影。Runner 仍负责 branch/worktree，Runtime 不执行 Git checkout。
+              requirementsEvidence:
+                contentHash: feed9c9d2d59ed4be75a7f9ff74d5c83e0e7fdac03194c73d29ef6427a892820
+                ref: openspec/changes/stabilize-runtime-workspace-binding
+              sourceEvidence:
+                contentHash: ba8fbbf0cf4e05fc064e7fde41ef884d0654111907a7e0126cfe66d370fd716d
+                ref: openspec/changes/stabilize-runtime-workspace-binding
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-runtime-workspace-binding
+                  changeDir: openspec/changes/stabilize-runtime-workspace-binding
+                  workspaceBaseline:
+                    ref: a624b498-a205-469b-afad-3576be798bc2
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+                    ref: openspec/changes/stabilize-runtime-workspace-binding
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+              ref: openspec/changes/stabilize-runtime-workspace-binding
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+        sequence: 7
+      stabilize-runtime-workspace-binding:9:
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-runtime-workspace-binding
+                  changeDir: openspec/changes/stabilize-runtime-workspace-binding
+                  workspaceBaseline:
+                    ref: a624b498-a205-469b-afad-3576be798bc2
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-runtime-workspace-binding/.comet/handoff/design-context.json
+                    handoffHash: 5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4
+                    proposal: 方案：在 Run Store 首次写入前，由纯领域 ChangeStartBinding 从 Workspace Repository 与
+                      target facts 派生稳定语义绑定；绑定只包含
+                      repository/remote/topology/source/target，排除
+                      path、HEAD、worktree 与时间。Coordinator startOrResume 返回强类型
+                      started|resumed disposition，只有 started 记录初始 Skill、Work 与首次
+                      activation；resumed 使用 Store 中的 authoritative Work。Open
+                      observation 区分 strict invalid、Provider 暂时不可用和 Host
+                      外部结果未知：暂时不可用在原 Outcome/attempt/invocation 上 reobserve，不调用
+                      Host reconcile。创建前拒绝写 canonical observation outbox，已有 Run
+                      的复用、冲突和重观察从 trajectory 投影。Runner 仍负责
+                      branch/worktree，Runtime 不执行 Git checkout。
+                    requirementsEvidence:
+                      contentHash: feed9c9d2d59ed4be75a7f9ff74d5c83e0e7fdac03194c73d29ef6427a892820
+                      ref: openspec/changes/stabilize-runtime-workspace-binding
+                    sourceEvidence:
+                      contentHash: ba8fbbf0cf4e05fc064e7fde41ef884d0654111907a7e0126cfe66d370fd716d
+                      ref: openspec/changes/stabilize-runtime-workspace-binding
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/stabilize-runtime-workspace-binding/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 1aec2ab05a27f69c69c69127c34f424745999359f64bc57733e89f1ba42289c7
+              ref: openspec/changes/stabilize-runtime-workspace-binding/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/stabilize-runtime-workspace-binding/.comet/handoff/design-context.json
+              handoffHash: 5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4
+              proposal: 方案：在 Run Store 首次写入前，由纯领域 ChangeStartBinding 从 Workspace Repository 与
+                target facts 派生稳定语义绑定；绑定只包含
+                repository/remote/topology/source/target，排除 path、HEAD、worktree
+                与时间。Coordinator startOrResume 返回强类型 started|resumed
+                disposition，只有 started 记录初始 Skill、Work 与首次 activation；resumed 使用
+                Store 中的 authoritative Work。Open observation 区分 strict
+                invalid、Provider 暂时不可用和 Host 外部结果未知：暂时不可用在原
+                Outcome/attempt/invocation 上 reobserve，不调用 Host reconcile。创建前拒绝写
+                canonical observation outbox，已有 Run 的复用、冲突和重观察从 trajectory
+                投影。Runner 仍负责 branch/worktree，Runtime 不执行 Git checkout。
+              requirementsEvidence:
+                contentHash: feed9c9d2d59ed4be75a7f9ff74d5c83e0e7fdac03194c73d29ef6427a892820
+                ref: openspec/changes/stabilize-runtime-workspace-binding
+              sourceEvidence:
+                contentHash: ba8fbbf0cf4e05fc064e7fde41ef884d0654111907a7e0126cfe66d370fd716d
+                ref: openspec/changes/stabilize-runtime-workspace-binding
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-runtime-workspace-binding
+                  changeDir: openspec/changes/stabilize-runtime-workspace-binding
+                  workspaceBaseline:
+                    ref: a624b498-a205-469b-afad-3576be798bc2
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+                    ref: openspec/changes/stabilize-runtime-workspace-binding
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+              ref: openspec/changes/stabilize-runtime-workspace-binding
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+        sequence: 9
     waits:
       - id: stabilize-runtime-workspace-binding:3
         stepId: full.open.confirm
@@ -359,7 +1299,7 @@ run_checkpoint:
       - id: stabilize-runtime-workspace-binding:6
         stepId: full.design.confirm
         sequence: 6
-        status: pending
+        status: resolved
         proposal:
           input:
             change: stabilize-runtime-workspace-binding
@@ -441,6 +1381,138 @@ run_checkpoint:
             sequence: 4
             value:
               contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+        decision:
+          id: classic-design-dc6747a198525a00296a4f6166ef567f4302cfb1a87ca9ada1e9a4c52cf246d7-approved
+          choice: approved
+          proposalHash: dc6747a198525a00296a4f6166ef567f4302cfb1a87ca9ada1e9a4c52cf246d7
+      - id: stabilize-runtime-workspace-binding:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-runtime-workspace-binding
+            changeDir: openspec/changes/stabilize-runtime-workspace-binding
+            workspaceBaseline:
+              ref: a624b498-a205-469b-afad-3576be798bc2
+          outputs:
+            full.build.configure:
+              boundBranch: codex/stabilize-runtime-workspace-binding
+              buildMode: autonomous
+              directOverride: false
+              isolation: branch
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: 919bfbdddcbe61b552704a57e6f994ccaa009eb83180b94bffe007910a6d4554
+        choices:
+          - approved
+          - rejected
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/stabilize-runtime-workspace-binding
+              buildMode: autonomous
+              directOverride: false
+              isolation: branch
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-runtime-workspace-binding
+                  changeDir: openspec/changes/stabilize-runtime-workspace-binding
+                  workspaceBaseline:
+                    ref: a624b498-a205-469b-afad-3576be798bc2
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-runtime-workspace-binding/.comet/handoff/design-context.json
+                    handoffHash: 5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4
+                    proposal: 方案：在 Run Store 首次写入前，由纯领域 ChangeStartBinding 从 Workspace Repository 与
+                      target facts 派生稳定语义绑定；绑定只包含
+                      repository/remote/topology/source/target，排除
+                      path、HEAD、worktree 与时间。Coordinator startOrResume 返回强类型
+                      started|resumed disposition，只有 started 记录初始 Skill、Work 与首次
+                      activation；resumed 使用 Store 中的 authoritative Work。Open
+                      observation 区分 strict invalid、Provider 暂时不可用和 Host
+                      外部结果未知：暂时不可用在原 Outcome/attempt/invocation 上 reobserve，不调用
+                      Host reconcile。创建前拒绝写 canonical observation outbox，已有 Run
+                      的复用、冲突和重观察从 trajectory 投影。Runner 仍负责
+                      branch/worktree，Runtime 不执行 Git checkout。
+                    requirementsEvidence:
+                      contentHash: feed9c9d2d59ed4be75a7f9ff74d5c83e0e7fdac03194c73d29ef6427a892820
+                      ref: openspec/changes/stabilize-runtime-workspace-binding
+                    sourceEvidence:
+                      contentHash: ba8fbbf0cf4e05fc064e7fde41ef884d0654111907a7e0126cfe66d370fd716d
+                      ref: openspec/changes/stabilize-runtime-workspace-binding
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/stabilize-runtime-workspace-binding/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 1aec2ab05a27f69c69c69127c34f424745999359f64bc57733e89f1ba42289c7
+              ref: openspec/changes/stabilize-runtime-workspace-binding/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/stabilize-runtime-workspace-binding/.comet/handoff/design-context.json
+              handoffHash: 5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4
+              proposal: 方案：在 Run Store 首次写入前，由纯领域 ChangeStartBinding 从 Workspace Repository 与
+                target facts 派生稳定语义绑定；绑定只包含
+                repository/remote/topology/source/target，排除 path、HEAD、worktree
+                与时间。Coordinator startOrResume 返回强类型 started|resumed
+                disposition，只有 started 记录初始 Skill、Work 与首次 activation；resumed 使用
+                Store 中的 authoritative Work。Open observation 区分 strict
+                invalid、Provider 暂时不可用和 Host 外部结果未知：暂时不可用在原
+                Outcome/attempt/invocation 上 reobserve，不调用 Host reconcile。创建前拒绝写
+                canonical observation outbox，已有 Run 的复用、冲突和重观察从 trajectory
+                投影。Runner 仍负责 branch/worktree，Runtime 不执行 Git checkout。
+              requirementsEvidence:
+                contentHash: feed9c9d2d59ed4be75a7f9ff74d5c83e0e7fdac03194c73d29ef6427a892820
+                ref: openspec/changes/stabilize-runtime-workspace-binding
+              sourceEvidence:
+                contentHash: ba8fbbf0cf4e05fc064e7fde41ef884d0654111907a7e0126cfe66d370fd716d
+                ref: openspec/changes/stabilize-runtime-workspace-binding
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-runtime-workspace-binding
+                  changeDir: openspec/changes/stabilize-runtime-workspace-binding
+                  workspaceBaseline:
+                    ref: a624b498-a205-469b-afad-3576be798bc2
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+                    ref: openspec/changes/stabilize-runtime-workspace-binding
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+              ref: openspec/changes/stabilize-runtime-workspace-binding
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+        decision:
+          id: 5b3efa26-3287-44d8-bc4b-e4fee7556ce7
+          choice: approved
+          proposalHash: 919bfbdddcbe61b552704a57e6f994ccaa009eb83180b94bffe007910a6d4554
     evidenceWaits:
       - id: stabilize-runtime-workspace-binding:2
         stepId: full.open.evidence
@@ -456,9 +1528,329 @@ run_checkpoint:
           ref: openspec/changes/stabilize-runtime-workspace-binding
           contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
           submissionId: cc35f03b-bcc9-44fe-ac40-c2514bc0a7ff
+      - id: stabilize-runtime-workspace-binding:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-runtime-workspace-binding
+                  changeDir: openspec/changes/stabilize-runtime-workspace-binding
+                  workspaceBaseline:
+                    ref: a624b498-a205-469b-afad-3576be798bc2
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-runtime-workspace-binding/.comet/handoff/design-context.json
+                    handoffHash: 5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4
+                    proposal: 方案：在 Run Store 首次写入前，由纯领域 ChangeStartBinding 从 Workspace Repository 与
+                      target facts 派生稳定语义绑定；绑定只包含
+                      repository/remote/topology/source/target，排除
+                      path、HEAD、worktree 与时间。Coordinator startOrResume 返回强类型
+                      started|resumed disposition，只有 started 记录初始 Skill、Work 与首次
+                      activation；resumed 使用 Store 中的 authoritative Work。Open
+                      observation 区分 strict invalid、Provider 暂时不可用和 Host
+                      外部结果未知：暂时不可用在原 Outcome/attempt/invocation 上 reobserve，不调用
+                      Host reconcile。创建前拒绝写 canonical observation outbox，已有 Run
+                      的复用、冲突和重观察从 trajectory 投影。Runner 仍负责
+                      branch/worktree，Runtime 不执行 Git checkout。
+                    requirementsEvidence:
+                      contentHash: feed9c9d2d59ed4be75a7f9ff74d5c83e0e7fdac03194c73d29ef6427a892820
+                      ref: openspec/changes/stabilize-runtime-workspace-binding
+                    sourceEvidence:
+                      contentHash: ba8fbbf0cf4e05fc064e7fde41ef884d0654111907a7e0126cfe66d370fd716d
+                      ref: openspec/changes/stabilize-runtime-workspace-binding
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/stabilize-runtime-workspace-binding/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/stabilize-runtime-workspace-binding/.comet/handoff/design-context.json
+              handoffHash: 5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4
+              proposal: 方案：在 Run Store 首次写入前，由纯领域 ChangeStartBinding 从 Workspace Repository 与
+                target facts 派生稳定语义绑定；绑定只包含
+                repository/remote/topology/source/target，排除 path、HEAD、worktree
+                与时间。Coordinator startOrResume 返回强类型 started|resumed
+                disposition，只有 started 记录初始 Skill、Work 与首次 activation；resumed 使用
+                Store 中的 authoritative Work。Open observation 区分 strict
+                invalid、Provider 暂时不可用和 Host 外部结果未知：暂时不可用在原
+                Outcome/attempt/invocation 上 reobserve，不调用 Host reconcile。创建前拒绝写
+                canonical observation outbox，已有 Run 的复用、冲突和重观察从 trajectory
+                投影。Runner 仍负责 branch/worktree，Runtime 不执行 Git checkout。
+              requirementsEvidence:
+                contentHash: feed9c9d2d59ed4be75a7f9ff74d5c83e0e7fdac03194c73d29ef6427a892820
+                ref: openspec/changes/stabilize-runtime-workspace-binding
+              sourceEvidence:
+                contentHash: ba8fbbf0cf4e05fc064e7fde41ef884d0654111907a7e0126cfe66d370fd716d
+                ref: openspec/changes/stabilize-runtime-workspace-binding
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-runtime-workspace-binding
+                  changeDir: openspec/changes/stabilize-runtime-workspace-binding
+                  workspaceBaseline:
+                    ref: a624b498-a205-469b-afad-3576be798bc2
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+                    ref: openspec/changes/stabilize-runtime-workspace-binding
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+              ref: openspec/changes/stabilize-runtime-workspace-binding
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+        receipt:
+          ref: openspec/changes/stabilize-runtime-workspace-binding/design.md
+          contentHash: 1aec2ab05a27f69c69c69127c34f424745999359f64bc57733e89f1ba42289c7
+          submissionId: 62005740-e613-489d-9813-9da20a320818
+      - id: stabilize-runtime-workspace-binding:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/stabilize-runtime-workspace-binding
+              buildMode: autonomous
+              directOverride: false
+              isolation: branch
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-runtime-workspace-binding
+                  changeDir: openspec/changes/stabilize-runtime-workspace-binding
+                  workspaceBaseline:
+                    ref: a624b498-a205-469b-afad-3576be798bc2
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/stabilize-runtime-workspace-binding
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: branch
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: 1aec2ab05a27f69c69c69127c34f424745999359f64bc57733e89f1ba42289c7
+                ref: openspec/changes/stabilize-runtime-workspace-binding/design.md
+              plan: docs/superpowers/plans/2026-11-02-stabilize-runtime-workspace-binding.md
+              planEvidence:
+                contentHash: 231920acfe84c3362d26d3684311f50c2154389ececf24ba2b30a0fc989316e8
+                ref: docs/superpowers/plans/2026-11-02-stabilize-runtime-workspace-binding.md
+              taskRevision: 3462fd36d9aeb37d8537281e845632af7023e28e0b9a5e37a395a06226b2f36a
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-runtime-workspace-binding
+                  changeDir: openspec/changes/stabilize-runtime-workspace-binding
+                  workspaceBaseline:
+                    ref: a624b498-a205-469b-afad-3576be798bc2
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-runtime-workspace-binding/.comet/handoff/design-context.json
+                    handoffHash: 5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4
+                    proposal: 方案：在 Run Store 首次写入前，由纯领域 ChangeStartBinding 从 Workspace Repository 与
+                      target facts 派生稳定语义绑定；绑定只包含
+                      repository/remote/topology/source/target，排除
+                      path、HEAD、worktree 与时间。Coordinator startOrResume 返回强类型
+                      started|resumed disposition，只有 started 记录初始 Skill、Work 与首次
+                      activation；resumed 使用 Store 中的 authoritative Work。Open
+                      observation 区分 strict invalid、Provider 暂时不可用和 Host
+                      外部结果未知：暂时不可用在原 Outcome/attempt/invocation 上 reobserve，不调用
+                      Host reconcile。创建前拒绝写 canonical observation outbox，已有 Run
+                      的复用、冲突和重观察从 trajectory 投影。Runner 仍负责
+                      branch/worktree，Runtime 不执行 Git checkout。
+                    requirementsEvidence:
+                      contentHash: feed9c9d2d59ed4be75a7f9ff74d5c83e0e7fdac03194c73d29ef6427a892820
+                      ref: openspec/changes/stabilize-runtime-workspace-binding
+                    sourceEvidence:
+                      contentHash: ba8fbbf0cf4e05fc064e7fde41ef884d0654111907a7e0126cfe66d370fd716d
+                      ref: openspec/changes/stabilize-runtime-workspace-binding
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/stabilize-runtime-workspace-binding/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 1aec2ab05a27f69c69c69127c34f424745999359f64bc57733e89f1ba42289c7
+              ref: openspec/changes/stabilize-runtime-workspace-binding/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/stabilize-runtime-workspace-binding/.comet/handoff/design-context.json
+              handoffHash: 5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4
+              proposal: 方案：在 Run Store 首次写入前，由纯领域 ChangeStartBinding 从 Workspace Repository 与
+                target facts 派生稳定语义绑定；绑定只包含
+                repository/remote/topology/source/target，排除 path、HEAD、worktree
+                与时间。Coordinator startOrResume 返回强类型 started|resumed
+                disposition，只有 started 记录初始 Skill、Work 与首次 activation；resumed 使用
+                Store 中的 authoritative Work。Open observation 区分 strict
+                invalid、Provider 暂时不可用和 Host 外部结果未知：暂时不可用在原
+                Outcome/attempt/invocation 上 reobserve，不调用 Host reconcile。创建前拒绝写
+                canonical observation outbox，已有 Run 的复用、冲突和重观察从 trajectory
+                投影。Runner 仍负责 branch/worktree，Runtime 不执行 Git checkout。
+              requirementsEvidence:
+                contentHash: feed9c9d2d59ed4be75a7f9ff74d5c83e0e7fdac03194c73d29ef6427a892820
+                ref: openspec/changes/stabilize-runtime-workspace-binding
+              sourceEvidence:
+                contentHash: ba8fbbf0cf4e05fc064e7fde41ef884d0654111907a7e0126cfe66d370fd716d
+                ref: openspec/changes/stabilize-runtime-workspace-binding
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-runtime-workspace-binding
+                  changeDir: openspec/changes/stabilize-runtime-workspace-binding
+                  workspaceBaseline:
+                    ref: a624b498-a205-469b-afad-3576be798bc2
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+                    ref: openspec/changes/stabilize-runtime-workspace-binding
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+              ref: openspec/changes/stabilize-runtime-workspace-binding
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+        receipt:
+          ref: docs/superpowers/plans/2026-11-02-stabilize-runtime-workspace-binding.md
+          contentHash: 231920acfe84c3362d26d3684311f50c2154389ececf24ba2b30a0fc989316e8
+          submissionId: 4d06e602-2727-4fde-b25c-2376abb79b66
     ready: []
     joins: {}
     outputs:
+      full.build.configure:
+        sequence: 9
+        value:
+          boundBranch: codex/stabilize-runtime-workspace-binding
+          buildMode: autonomous
+          directOverride: false
+          isolation: branch
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      full.build.confirm:
+        sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: stabilize-runtime-workspace-binding
+              changeDir: openspec/changes/stabilize-runtime-workspace-binding
+              workspaceBaseline:
+                ref: a624b498-a205-469b-afad-3576be798bc2
+            outputs:
+              full.build.configure:
+                boundBranch: codex/stabilize-runtime-workspace-binding
+                buildMode: autonomous
+                directOverride: false
+                isolation: branch
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      full.build.plan:
+        sequence: 11
+        value:
+          designEvidence:
+            contentHash: 1aec2ab05a27f69c69c69127c34f424745999359f64bc57733e89f1ba42289c7
+            ref: openspec/changes/stabilize-runtime-workspace-binding/design.md
+          plan: docs/superpowers/plans/2026-11-02-stabilize-runtime-workspace-binding.md
+          planEvidence:
+            contentHash: 231920acfe84c3362d26d3684311f50c2154389ececf24ba2b30a0fc989316e8
+            ref: docs/superpowers/plans/2026-11-02-stabilize-runtime-workspace-binding.md
+          taskRevision: 3462fd36d9aeb37d8537281e845632af7023e28e0b9a5e37a395a06226b2f36a
+      full.build.plan.evidence:
+        sequence: 12
+        value:
+          contentHash: 231920acfe84c3362d26d3684311f50c2154389ececf24ba2b30a0fc989316e8
+          ref: docs/superpowers/plans/2026-11-02-stabilize-runtime-workspace-binding.md
+      full.design.confirm:
+        sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: stabilize-runtime-workspace-binding
+              changeDir: openspec/changes/stabilize-runtime-workspace-binding
+              workspaceBaseline:
+                ref: a624b498-a205-469b-afad-3576be798bc2
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/stabilize-runtime-workspace-binding/.comet/handoff/design-context.json
+                handoffHash: 5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4
+                proposal: 方案：在 Run Store 首次写入前，由纯领域 ChangeStartBinding 从 Workspace Repository 与
+                  target facts 派生稳定语义绑定；绑定只包含
+                  repository/remote/topology/source/target，排除 path、HEAD、worktree
+                  与时间。Coordinator startOrResume 返回强类型 started|resumed
+                  disposition，只有 started 记录初始 Skill、Work 与首次 activation；resumed
+                  使用 Store 中的 authoritative Work。Open observation 区分 strict
+                  invalid、Provider 暂时不可用和 Host 外部结果未知：暂时不可用在原
+                  Outcome/attempt/invocation 上 reobserve，不调用 Host
+                  reconcile。创建前拒绝写 canonical observation outbox，已有 Run
+                  的复用、冲突和重观察从 trajectory 投影。Runner 仍负责 branch/worktree，Runtime
+                  不执行 Git checkout。
+                requirementsEvidence:
+                  contentHash: feed9c9d2d59ed4be75a7f9ff74d5c83e0e7fdac03194c73d29ef6427a892820
+                  ref: openspec/changes/stabilize-runtime-workspace-binding
+                sourceEvidence:
+                  contentHash: ba8fbbf0cf4e05fc064e7fde41ef884d0654111907a7e0126cfe66d370fd716d
+                  ref: openspec/changes/stabilize-runtime-workspace-binding
+      full.design.document:
+        sequence: 7
+        value:
+          designDoc: openspec/changes/stabilize-runtime-workspace-binding/design.md
+      full.design.evidence:
+        sequence: 8
+        value:
+          contentHash: 1aec2ab05a27f69c69c69127c34f424745999359f64bc57733e89f1ba42289c7
+          ref: openspec/changes/stabilize-runtime-workspace-binding/design.md
       full.design.handoff:
         sequence: 5
         value:
@@ -511,6 +1903,6 @@ run_checkpoint:
           contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
     children: []
     lineage: []
-  sourceRevision: 9
-  sourceHash: 9be035bd70a539a8aa1264846d9dda687b256a8a593023342047cdc2886fe481
-check_epoch: 1
+  sourceRevision: 19
+  sourceHash: 47efad38b79c009c9da4331d475c7c3ab8585882609491c2a7f0968d57525f19
+check_epoch: 2
