@@ -56,7 +56,10 @@ export function createChangeStartBinding(input: {
 
   const sourceRemoteIdentity = workspaceRepository.remoteIdentity?.trim();
   const targetRemoteIdentity = input.targetBranch.remoteIdentity.trim();
-  if (!sourceRemoteIdentity || !targetRemoteIdentity || sourceRemoteIdentity !== targetRemoteIdentity) {
+  const targetMatchesWorkspace =
+    targetRemoteIdentity === sourceRemoteIdentity ||
+    targetRemoteIdentity === input.workspaceRepositoryId;
+  if (!sourceRemoteIdentity || !targetRemoteIdentity || !targetMatchesWorkspace) {
     throw new ChangeStartBindingError('remote-identity-mismatch');
   }
 

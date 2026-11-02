@@ -57,10 +57,26 @@ export interface StartWorkflowRunOptions {
 
 export type IdempotentStartWorkflowRunOptions = StartWorkflowRunOptions & { runId: string };
 
+export interface IdempotentStartWorkflowRunResult {
+  disposition: 'started' | 'resumed';
+  status: RunStatusView;
+}
+
 export class RunIdentityConflictError extends Error {
+  readonly code: string = 'runtime.run-identity-conflict';
+
   constructor(runId: string, field: string) {
     super(`Run identity conflict for ${runId}: ${field} changed`);
     this.name = 'RunIdentityConflictError';
+  }
+}
+
+export class WorkspaceBindingConflictError extends RunIdentityConflictError {
+  override readonly code = 'runtime.workspace-binding-conflict';
+
+  constructor(runId: string) {
+    super(runId, 'workspace binding');
+    this.name = 'WorkspaceBindingConflictError';
   }
 }
 
@@ -267,9 +283,13 @@ export class WorkflowRunCoordinator {
 
   async startOrResume(
     options: IdempotentStartWorkflowRunOptions,
-  ): Promise<RuntimeResult<RunStatusView>> {
+  ): Promise<RuntimeResult<IdempotentStartWorkflowRunResult>> {
     try {
-      return await this.start(options);
+      const started = await this.start(options);
+      return {
+        value: { disposition: 'started', status: started.value },
+        diagnostics: started.diagnostics,
+      };
     } catch (startError) {
       let existing: RunStatusView;
       try {
@@ -281,7 +301,7 @@ export class WorkflowRunCoordinator {
       if (existing.state.changeLifecycle)
         await this.recoverChangeLifecycleDefinition(options.runId);
       return {
-        value: await this.status(options.runId),
+        value: { disposition: 'resumed', status: await this.status(options.runId) },
         diagnostics: [
           {
             level: 'info',
@@ -517,6 +537,11 @@ export class WorkflowRunCoordinator {
     }
     if (state.workflowSource !== (options.workflowSource ?? null)) {
       throw new RunIdentityConflictError(options.runId, 'workflow source');
+    }
+    const existingBinding = state.trigger?.facts.changeStartBinding;
+    const candidateBinding = options.trigger?.facts.changeStartBinding;
+    if (canonicalJson(existingBinding ?? null) !== canonicalJson(candidateBinding ?? null)) {
+      throw new WorkspaceBindingConflictError(options.runId);
     }
     if (canonicalJson(state.trigger ?? null) !== canonicalJson(options.trigger ?? null)) {
       throw new RunIdentityConflictError(options.runId, 'trigger facts');

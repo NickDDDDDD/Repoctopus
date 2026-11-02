@@ -92,6 +92,7 @@ import type {
   OpenRepairSource,
   WorkDescriptor,
 } from '../domains/change-lifecycle/transition.js';
+import { createChangeStartBinding } from '../domains/change-lifecycle/start-binding.js';
 import {
   createArchiveDeliveryInput,
   createDeliveryPublishWork,
@@ -264,7 +265,7 @@ export class WorkflowRuns extends Service {
       trigger?: RunTriggerSnapshot;
     },
     signal?: AbortSignal,
-  ): Promise<RuntimeResult<RunStatusView>> {
+  ): ReturnType<WorkflowRunCoordinator['startOrResume']> {
     return this.operations.run({ cancellable: false, signal }, () =>
       this.coordinator.startOrResume(options),
     );
@@ -328,6 +329,11 @@ export class WorkflowRuns extends Service {
         targetBranch: input.targetBranch,
       });
       const runId = changeRunId({ workspaceId, changeId });
+      const changeStartBinding = createChangeStartBinding({
+        projectSnapshot: input.projectSnapshot,
+        workspaceRepositoryId: input.workspaceRepositoryId,
+        targetBranch,
+      });
       const lifecycle = createChangeLifecycleSnapshot({
         identity: {
           workspaceId,
@@ -357,6 +363,7 @@ export class WorkflowRuns extends Service {
         changeId,
         specificationRoot,
         targetBranch,
+        changeStartBinding,
         repositoryIds,
         projectConfigDigest: input.projectConfigDigest,
         verificationProfileId: input.verificationProfileId,
@@ -386,6 +393,9 @@ export class WorkflowRuns extends Service {
         },
         changeLifecycle: lifecycle,
       });
+      if (started.value.disposition === 'resumed') {
+        return { value: started.value.status, diagnostics: started.diagnostics };
+      }
       const frozenSkills = new Map(
         openSkills.effectiveComposition.works.flatMap((work) =>
           work.layers.map((layer) => [layer.skill.name, layer.skill] as const),

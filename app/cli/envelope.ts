@@ -29,6 +29,14 @@ export function successEnvelope<T>(options: {
 }
 
 export function failureEnvelope(command: string, error: unknown): CliEnvelope<never> {
+  const publicCode =
+    error &&
+    typeof error === 'object' &&
+    'code' in error &&
+    typeof error.code === 'string' &&
+    /^(?:runtime|specification)\.[a-z0-9.-]+$/u.test(error.code)
+      ? error.code
+      : 'cli.command-failed';
   return {
     protocolVersion: 1,
     ok: false,
@@ -38,7 +46,7 @@ export function failureEnvelope(command: string, error: unknown): CliEnvelope<ne
     diagnostics: [
       {
         level: 'error',
-        code: 'cli.command-failed',
+        code: publicCode,
         message: error instanceof Error ? error.message : String(error),
       },
     ],
