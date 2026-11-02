@@ -6,6 +6,7 @@ import type { SkillDefinition } from '@deepseek-ai/dsh-skill';
 import type { ActionOutcome, RunState, RunTriggerSnapshot } from '../domains/engine/types.js';
 import type { ProjectSnapshot } from '../domains/project/types.js';
 import { reconcileProjectSnapshots } from '../domains/project/snapshot.js';
+import { classifyWorkContinuation } from '../domains/change-lifecycle/continuation.js';
 import {
   WorkflowRunCoordinator,
   WorkspaceBindingConflictError,
@@ -976,12 +977,14 @@ export class WorkflowRuns extends Service {
     signal?: AbortSignal,
   ): Promise<{
     assessment: DesignGateAssessment;
+    observationUnavailable?: Error;
     projectSnapshot: ProjectSnapshot;
     projectConfigDigest: `sha256:${string}`;
     workspaceRepositoryId: string;
   }> {
     const base = await this.loadChangePlanningBase(state, lifecycle, approvalPhase);
     let assessment: DesignGateAssessment;
+    let observationUnavailable: Error | undefined;
     try {
       const changeBranch = await this.ctx.project.changeBranch({
         repositoryId: base.workspaceRepositoryId,
@@ -1016,14 +1019,17 @@ export class WorkflowRuns extends Service {
         }
       }
     } catch (error) {
+      observationUnavailable =
+        error instanceof Error ? error : new Error(`${approvalPhase} gate assessment failed`);
       assessment = {
         status: 'blocked',
-        reason: error instanceof Error ? error.message : `${approvalPhase} gate assessment failed`,
+        reason: observationUnavailable.message,
         evidenceDigests: [],
       };
     }
     return {
       assessment,
+      ...(observationUnavailable ? { observationUnavailable } : {}),
       projectSnapshot: base.projectSnapshot,
       projectConfigDigest: base.projectConfigDigest,
       workspaceRepositoryId: base.workspaceRepositoryId,
@@ -1562,7 +1568,7 @@ export class WorkflowRuns extends Service {
       ]);
     } catch (error) {
       if (error instanceof ChangeStartBindingError) throw error;
-      return this.openObservationUnavailable(state.runId, error);
+      return this.openObservationUnavailable(state.runId, error, 'provider-validation');
     }
     try {
       await this.ctx.workExecutionAuthority.recordSpecificationObservations({
@@ -1632,6 +1638,7 @@ export class WorkflowRuns extends Service {
   private async openObservationUnavailable(
     runId: string,
     error: unknown,
+    observationStage: 'provider-validation' | 'planning-gate',
   ): Promise<RuntimeResult<RunStatusView>> {
     const value = await this.coordinator.status(runId);
     const execution = value.state.workExecution;
@@ -1646,6 +1653,7 @@ export class WorkflowRuns extends Service {
           attempt: execution?.attempt ?? null,
           checkEpoch: execution?.checkEpoch ?? lifecycle?.checkEpoch ?? null,
           reason: 'open-observation-unavailable',
+          observationStage,
         },
       },
       diagnostics: [
@@ -1677,7 +1685,7 @@ export class WorkflowRuns extends Service {
         this.resolveLifecycleWorkSkills('change.intake', input.signal, [], input.state.runId),
       ]);
     } catch (error) {
-      return this.openObservationUnavailable(input.state.runId, error);
+      return this.openObservationUnavailable(input.state.runId, error, 'provider-validation');
     }
     const work = createLifecyclePhaseWork({
       runId: input.state.runId,
@@ -1728,7 +1736,7 @@ export class WorkflowRuns extends Service {
       try {
         approval = await this.ctx.specificationPlanning.status(lifecycle.identity.changeId, 'open');
       } catch (error) {
-        return this.openObservationUnavailable(state.runId, error);
+        return this.openObservationUnavailable(state.runId, error, 'planning-gate');
       }
       if (approval?.status === 'approved') {
         const revalidation = await this.ctx.specificationPlanning.revalidateOpenApproval({
@@ -1749,7 +1757,11 @@ export class WorkflowRuns extends Service {
           }
         }
         if (revalidation.status === 'unavailable') {
-          return this.openObservationUnavailable(state.runId, new Error(revalidation.reason));
+          return this.openObservationUnavailable(
+            state.runId,
+            new Error(revalidation.reason),
+            'planning-gate',
+          );
         }
         if (revalidation.status === 'invalid') {
           return this.dispatchOpenRepair({
@@ -1764,6 +1776,13 @@ export class WorkflowRuns extends Service {
       }
     }
     const evaluated = await this.assessChangePlanning(state, lifecycle, 'open', signal);
+    if (evaluated.observationUnavailable) {
+      return this.openObservationUnavailable(
+        state.runId,
+        evaluated.observationUnavailable,
+        'planning-gate',
+      );
+    }
     const assessment = evaluated.assessment;
     if (assessment.approval?.status === 'changes_requested') {
       const skills = await this.resolveLifecycleWorkSkills(
@@ -1803,7 +1822,11 @@ export class WorkflowRuns extends Service {
       return { ...revised, value: await this.coordinator.status(state.runId) };
     }
     if (assessment.status === 'blocked' && !assessment.observation) {
-      return this.openObservationUnavailable(state.runId, new Error(assessment.reason));
+      return this.openObservationUnavailable(
+        state.runId,
+        new Error(assessment.reason),
+        'planning-gate',
+      );
     }
     if (
       state.status === 'waiting' &&
@@ -2105,6 +2128,17 @@ export class WorkflowRuns extends Service {
               state.workExecution.actionOutcome?.status === 'succeeded'
             ) {
               return this.validateOpenWork(state, signal);
+            }
+            const continuation = classifyWorkContinuation({
+              runStatus: state.status,
+              lifecycle: state.changeLifecycle,
+              ...(state.workExecution ? { execution: state.workExecution } : {}),
+            });
+            if (
+              continuation.continuation === 'reobserve' &&
+              continuation.reason === 'open-gate-pending'
+            ) {
+              return this.advanceOpenGate(state, signal);
             }
             return {
               value: await this.coordinator.status(runId),
@@ -4742,7 +4776,9 @@ export class WorkflowRuns extends Service {
                 status.state.workExecution?.checkEpoch ??
                 status.state.changeLifecycle?.checkEpoch ??
                 null,
-              reason: reconciliation.changed ? 'project-drift' : 'content-missing-or-corrupt',
+              reason: reconciliation.requiresReconciliation
+                ? 'project-drift'
+                : 'content-missing-or-corrupt',
             },
           },
           diagnostics: [
@@ -4760,7 +4796,7 @@ export class WorkflowRuns extends Service {
       await this.ctx.workExecutionAuthority.reconcileCurrentCheckpoint(options.runId);
       const result = await this.coordinator.resume(options);
       let execution = await this.ctx.workExecutionAuthority.recovery(options.runId);
-      if (result.value.reconciliation.changed) {
+      if (result.value.reconciliation.requiresReconciliation) {
         execution = { ...execution, continuation: 'reconcile', reason: 'project-drift' };
       } else if (
         execution.continuation === 'execute' &&

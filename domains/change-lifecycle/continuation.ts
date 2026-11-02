@@ -1,6 +1,11 @@
 import type { Checkpoint, TrajectoryEvent } from '../trajectory/types.js';
-import type { WorkExecutionRecovery } from '../work-execution/types.js';
-import type { ChangeLifecycleSnapshot, ChangeNextAction } from './transition.js';
+import type { WorkExecutionCheckpoint, WorkExecutionRecovery } from '../work-execution/types.js';
+import type {
+  ChangeLifecycleSnapshot,
+  ChangeLifecycleState,
+  ChangeNextAction,
+  RunStatus,
+} from './transition.js';
 
 const RECOVERY_REASONS = new Set<WorkExecutionRecovery['reason']>([
   'terminal',
@@ -17,6 +22,7 @@ const RECOVERY_REASONS = new Set<WorkExecutionRecovery['reason']>([
   'validator-pending',
   'checkpoint-superseded',
   'transition-pending',
+  'open-gate-pending',
   'content-missing-or-corrupt',
   'open-observation-unavailable',
   'migration-required',
@@ -41,6 +47,91 @@ function matchesCurrentCheckpoint(
   return selectedWorkId === workId;
 }
 
+export interface WorkContinuationClassificationInput {
+  runStatus: RunStatus;
+  lifecycle: ChangeLifecycleState;
+  execution?: WorkExecutionCheckpoint;
+  invokingHostActive?: boolean;
+}
+
+/**
+ * Classifies the next Runtime-owned continuation from persisted Work identity only.
+ *
+ * Provider and packet reads happen before this function and may fail closed separately. Keeping
+ * this table pure lets `next`, `resume`, recovery and read-only projections share one state model.
+ */
+export function classifyWorkContinuation(
+  input: WorkContinuationClassificationInput,
+): WorkExecutionRecovery {
+  const executionMatches = Boolean(
+    input.execution &&
+    input.lifecycle.currentWork?.workId === input.execution.workId &&
+    input.lifecycle.checkEpoch === input.execution.checkEpoch,
+  );
+  const current = executionMatches ? input.execution : undefined;
+  const result = (
+    continuation: WorkExecutionRecovery['continuation'],
+    reason: WorkExecutionRecovery['reason'],
+  ): WorkExecutionRecovery => ({
+    schemaVersion: 2,
+    continuation,
+    workId: current?.workId ?? input.lifecycle.currentWork?.workId ?? null,
+    attempt: current?.attempt ?? null,
+    checkEpoch: current?.checkEpoch ?? input.lifecycle.checkEpoch,
+    reason,
+  });
+
+  if (input.runStatus === 'completed') return result('done', 'terminal');
+  if (input.lifecycle.waitCondition?.kind === 'human-decision') {
+    return result('ask', 'human-decision');
+  }
+  if (input.execution && !executionMatches) {
+    return input.lifecycle.currentWork
+      ? result('execute', 'checkpoint-superseded')
+      : result('wait', 'checkpoint-superseded');
+  }
+  if (!current) {
+    return input.lifecycle.currentWork
+      ? result('execute', 'work-unclaimed')
+      : result('wait', 'transition-pending');
+  }
+  if (current.schemaVersion !== 3) return result('reconcile', 'migration-required');
+  if (current.status === 'claimed' || current.status === 'context-delivered') {
+    return result('execute', 'claim-redelivery');
+  }
+  if (current.status === 'submitted') {
+    return current.continuation === 'execute'
+      ? result('execute', 'validator-pending')
+      : result('execute', 'outcome-processing-error');
+  }
+  if (current.status === 'invoking') {
+    if (current.continuation === 'awaiting-correction') {
+      return result('awaiting-correction', 'outcome-rejected');
+    }
+    return input.invokingHostActive === false
+      ? result('reconcile', 'host-result-unknown')
+      : result('wait', 'host-active');
+  }
+  if (current.status === 'unknown') {
+    return result(
+      'reconcile',
+      current.unknownKind === 'external-side-effect'
+        ? 'external-result-unknown'
+        : 'host-result-unknown',
+    );
+  }
+  if (current.status === 'not-executed') return result('execute', 'host-not-executed');
+  if (current.status === 'outcome') {
+    return current.actionOutcome?.status === 'failed'
+      ? result('execute', 'work-failed')
+      : result('execute', 'validator-pending');
+  }
+  if (current.status === 'validated' && input.lifecycle.phase === 'open') {
+    return { ...result('reobserve', 'open-gate-pending'), observationStage: 'planning-gate' };
+  }
+  return result('execute', 'transition-pending');
+}
+
 /**
  * Projects the public continuation solely from committed Run evidence.
  *
@@ -54,16 +145,12 @@ export function projectCommittedContinuation(
 ): WorkExecutionRecovery | undefined {
   const lifecycle = checkpoint.changeLifecycle;
   if (!lifecycle) return undefined;
-  const execution = checkpoint.workExecution;
-  const executionMatches = Boolean(
-    execution &&
-    lifecycle.currentWork?.workId === execution.workId &&
-    lifecycle.checkEpoch === execution.checkEpoch,
-  );
-  const current = executionMatches ? execution : undefined;
-  const workId = current?.workId ?? lifecycle.currentWork?.workId ?? null;
-  const attempt = current?.attempt ?? null;
-  const checkEpoch = current?.checkEpoch ?? lifecycle.checkEpoch;
+  const classified = classifyWorkContinuation({
+    runStatus: checkpoint.runStatus ?? 'running',
+    lifecycle,
+    ...(checkpoint.workExecution ? { execution: checkpoint.workExecution } : {}),
+  });
+  const workId = classified.workId;
   const result = (
     continuation: WorkExecutionRecovery['continuation'],
     reason: WorkExecutionRecovery['reason'],
@@ -71,8 +158,8 @@ export function projectCommittedContinuation(
     schemaVersion: 2,
     continuation,
     workId,
-    attempt,
-    checkEpoch,
+    attempt: classified.attempt,
+    checkEpoch: classified.checkEpoch,
     reason,
   });
 
@@ -93,49 +180,7 @@ export function projectCommittedContinuation(
     );
   }
 
-  if (checkpoint.runStatus === 'completed') return result('done', 'terminal');
-  if (lifecycle.waitCondition?.kind === 'human-decision') {
-    return result('ask', 'human-decision');
-  }
-  if (execution && !executionMatches) {
-    return lifecycle.currentWork
-      ? result('execute', 'checkpoint-superseded')
-      : result('wait', 'checkpoint-superseded');
-  }
-  if (!current) {
-    return lifecycle.currentWork
-      ? result('execute', 'work-unclaimed')
-      : result('wait', 'transition-pending');
-  }
-  if (current.schemaVersion !== 3) return result('reconcile', 'migration-required');
-  if (current.status === 'claimed' || current.status === 'context-delivered') {
-    return result('execute', 'claim-redelivery');
-  }
-  if (current.status === 'submitted') {
-    return current.continuation === 'execute'
-      ? result('execute', 'validator-pending')
-      : result('execute', 'outcome-processing-error');
-  }
-  if (current.status === 'invoking') {
-    return current.continuation === 'awaiting-correction'
-      ? result('awaiting-correction', 'outcome-rejected')
-      : result('wait', 'host-active');
-  }
-  if (current.status === 'unknown') {
-    return result(
-      'reconcile',
-      current.unknownKind === 'external-side-effect'
-        ? 'external-result-unknown'
-        : 'host-result-unknown',
-    );
-  }
-  if (current.status === 'not-executed') return result('execute', 'host-not-executed');
-  if (current.status === 'outcome') {
-    return current.actionOutcome?.status === 'failed'
-      ? result('execute', 'work-failed')
-      : result('execute', 'validator-pending');
-  }
-  return result('execute', 'transition-pending');
+  return classified;
 }
 
 export function projectLifecycleNextActions(

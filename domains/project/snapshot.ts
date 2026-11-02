@@ -55,9 +55,34 @@ export function reconcileProjectSnapshots(
         : [];
     })
     .sort((left, right) => left.repositoryId.localeCompare(right.repositoryId));
+  const changed = previous.digest !== current.digest;
+  const repositoryNamesChanged = [...currentById.entries()].some(
+    ([id, repository]) => previousById.get(id)?.name !== repository.name,
+  );
+  const diagnosticsChanged =
+    canonicalJson(previous.diagnostics) !== canonicalJson(current.diagnostics);
+  const identityChanged =
+    changed &&
+    (previous.projectId !== current.projectId ||
+      previous.root !== current.root ||
+      diagnosticsChanged ||
+      repositoryNamesChanged ||
+      added.length > 0 ||
+      removed.length > 0 ||
+      changedRepositories.some((repository) =>
+        repository.fields.some((field) => ['path', 'remoteIdentity', 'branch'].includes(field)),
+      ) ||
+      changedRepositories.length === 0);
+  const changeClass: ProjectReconciliation['changeClass'] = !changed
+    ? 'same'
+    : identityChanged
+      ? 'identity'
+      : 'content';
 
   return {
-    changed: previous.digest !== current.digest,
+    changed,
+    changeClass,
+    requiresReconciliation: changeClass === 'identity',
     previousDigest: previous.digest,
     currentDigest: current.digest,
     added,

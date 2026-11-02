@@ -607,6 +607,47 @@ describe('managed Change execution production composition', () => {
             },
           });
           expect(capture.invocations).toHaveLength(invocationCountBeforeReobserve);
+
+          const originalChangeBranch = application.context.project.changeBranch.bind(
+            application.context.project,
+          );
+          const unavailableBranch = vi
+            .spyOn(application.context.project, 'changeBranch')
+            .mockRejectedValueOnce(new Error('simulated published branch timeout'))
+            .mockImplementation(originalChangeBranch);
+          const unavailableBranchResult = await next();
+          unavailableBranch.mockRestore();
+          expect(unavailableBranchResult.value).toMatchObject({
+            changeLifecycle: {
+              phase: 'open',
+              currentWork: { workId: repairedOutcome.changeLifecycle?.currentWork?.workId },
+            },
+            state: { workExecution: { status: 'validated' } },
+            continuation: { continuation: 'reobserve', reason: 'open-observation-unavailable' },
+          });
+          expect(
+            unavailableBranchResult.value.state.workExecution?.hostInvocation?.invocationId,
+          ).toBe(repairedInvocation.invocationId);
+          expect(capture.invocations).toHaveLength(invocationCountBeforeReobserve);
+
+          const originalAssess = application.context.specificationPlanning.assess.bind(
+            application.context.specificationPlanning,
+          );
+          const unavailablePlanning = vi
+            .spyOn(application.context.specificationPlanning, 'assess')
+            .mockRejectedValueOnce(new Error('simulated planning Provider timeout'))
+            .mockImplementation(originalAssess);
+          const unavailablePlanningResult = await next();
+          unavailablePlanning.mockRestore();
+          expect(unavailablePlanningResult.value).toMatchObject({
+            changeLifecycle: {
+              phase: 'open',
+              currentWork: { workId: repairedOutcome.changeLifecycle?.currentWork?.workId },
+            },
+            state: { workExecution: { status: 'validated' } },
+            continuation: { continuation: 'reobserve', reason: 'open-observation-unavailable' },
+          });
+          expect(capture.invocations).toHaveLength(invocationCountBeforeReobserve);
         }
         expect((await next()).value.changeLifecycle).toMatchObject({
           phase: 'open',

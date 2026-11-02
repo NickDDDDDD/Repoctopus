@@ -226,11 +226,32 @@ describe('Work execution recovery classification', () => {
     ['unknown', 'reconcile', 'host-result-unknown'],
     ['not-executed', 'execute', 'host-not-executed'],
     ['submitted', 'execute', 'validator-pending'],
-    ['validated', 'execute', 'transition-pending'],
   ] as const)('classifies %s without guessing completion', async (status, continuation, reason) => {
     await expect(
       recoveryAuthority(state({ execution: checkpoint(status) })).recovery('run-recovery'),
     ).resolves.toMatchObject({ continuation, reason, workId: 'build:1.1', attempt: 1 });
+  });
+
+  it('reobserves the Open gate after the Work has already been validated', async () => {
+    const run = state({ execution: checkpoint('validated') });
+    run.changeLifecycle = { ...run.changeLifecycle!, phase: 'open' } as never;
+
+    await expect(recoveryAuthority(run).recovery('run-recovery')).resolves.toMatchObject({
+      continuation: 'reobserve',
+      reason: 'open-gate-pending',
+      workId: 'build:1.1',
+      attempt: 1,
+    });
+  });
+
+  it('keeps non-Open validated Work on the transition continuation', async () => {
+    const run = state({ execution: checkpoint('validated') });
+    run.changeLifecycle = { ...run.changeLifecycle!, phase: 'design' } as never;
+
+    await expect(recoveryAuthority(run).recovery('run-recovery')).resolves.toMatchObject({
+      continuation: 'execute',
+      reason: 'transition-pending',
+    });
   });
 
   it('keeps rejected submissions on the same Work awaiting a corrected payload', async () => {

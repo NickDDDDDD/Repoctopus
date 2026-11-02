@@ -1188,7 +1188,19 @@ describe('Repoctopus runtime', () => {
       () => new Date('2026-01-01T00:00:00.000Z'),
       () => 'resume-event',
     );
-    const previous = projectFixture();
+    const previous = projectFixture({
+      repositories: [
+        {
+          id: 'repository-1',
+          name: 'workspace',
+          path: 'C:/project',
+          remoteIdentity: 'example.com/team/project',
+          branch: 'main',
+          head: 'a'.repeat(40),
+          worktree: { dirty: false, digest: 'clean', staged: 0, unstaged: 0, untracked: 0 },
+        },
+      ],
+    });
     await runtime.start({
       workflow: workflowFixture(),
       projectSnapshot: previous,
@@ -1212,6 +1224,56 @@ describe('Repoctopus runtime', () => {
     const blocked = await runtime.next('run-reconcile');
     expect(blocked.value.nextAction).toBeNull();
     expect(blocked.diagnostics[0]?.message).toMatch(/reconciliation/i);
+  });
+
+  it('reports content drift without globally blocking the recovered continuation', async () => {
+    const workspace = await temporaryDirectory('repoctopus-content-drift-');
+    cleanup.push(workspace);
+    const runtime = new WorkflowRunCoordinator(
+      new FileRuntimeStore(workspace),
+      { async export() {} },
+      compositionFixture(),
+      () => new Date('2026-01-01T00:00:00.000Z'),
+      () => 'resume-content-event',
+    );
+    const previous = projectFixture({
+      repositories: [
+        {
+          id: 'repository-1',
+          name: 'workspace',
+          path: 'C:/project',
+          remoteIdentity: 'example.com/team/project',
+          branch: 'main',
+          head: 'a'.repeat(40),
+          worktree: { dirty: false, digest: 'clean', staged: 0, unstaged: 0, untracked: 0 },
+        },
+      ],
+    });
+    await runtime.start({
+      workflow: workflowFixture(),
+      projectSnapshot: previous,
+      runId: 'run-content-drift',
+    });
+    const current = projectFixture({
+      repositories: previous.repositories.map((repository, index) =>
+        index === 0 ? { ...repository, head: 'b'.repeat(40) } : repository,
+      ),
+    });
+
+    const resumed = await runtime.resume({
+      runId: 'run-content-drift',
+      currentProjectSnapshot: current,
+    });
+
+    expect(resumed.value.reconciliation).toMatchObject({
+      changed: true,
+      changeClass: 'content',
+      requiresReconciliation: false,
+    });
+    expect(resumed.value.state.reconciliationRequired).toBe(false);
+    expect(resumed.diagnostics.map((diagnostic) => diagnostic.code)).not.toContain(
+      'runtime.project-changed',
+    );
   });
 
   it('keeps the frozen workflow and reports source drift', async () => {

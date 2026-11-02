@@ -170,6 +170,23 @@ function addEvidenceCorrelation(attributes: Attributes, event: TrajectoryEvent):
   }
 }
 
+function addProjectReconciliationAttributes(attributes: Attributes, event: TrajectoryEvent): void {
+  if (event.type !== 'run.resumed' && event.type !== 'recovery.reconciled') return;
+  const reconciliation = event.data.reconciliation;
+  if (!reconciliation || typeof reconciliation !== 'object') return;
+  const record = reconciliation as Record<string, unknown>;
+  if (
+    record.changeClass === 'same' ||
+    record.changeClass === 'content' ||
+    record.changeClass === 'identity'
+  ) {
+    attributes['repoctopus.project.reconciliation.class'] = record.changeClass;
+  }
+  if (typeof record.requiresReconciliation === 'boolean') {
+    attributes['repoctopus.project.reconciliation.required'] = record.requiresReconciliation;
+  }
+}
+
 export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEvent): Attributes {
   const attributes: Attributes = {
     'repoctopus.project.id': batch.projectSnapshot.projectId,
@@ -276,6 +293,7 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
     attributes['repoctopus.action.receipt.id'] = actionReceiptId;
   }
   addEvidenceCorrelation(attributes, event);
+  addProjectReconciliationAttributes(attributes, event);
   if (event.type === 'change.lifecycle.transitioned') {
     Object.assign(attributes, workspaceIntentTraceAttributes(event));
     const observationKind = scalar(event.data.observationKind);
@@ -417,6 +435,7 @@ const BOUNDED_REASON_CODES = new Set([
   'outcome-processing-error',
   'checkpoint-superseded',
   'open-observation-unavailable',
+  'open-gate-pending',
 ]);
 const BOUNDED_OPEN_REPAIR_SOURCES = new Set([
   'provider-artifacts',
@@ -473,6 +492,10 @@ export function executionMetricAttributes(event: TrajectoryEvent): Attributes | 
     'repoctopus.execution.result': BOUNDED_RESULTS.has(result) ? result : 'unknown',
     'repoctopus.execution.continuation': continuation,
     'repoctopus.execution.reason.code': reasonCode,
+    ...(event.data.observationStage === 'provider-validation' ||
+    event.data.observationStage === 'planning-gate'
+      ? { 'repoctopus.open.observation.stage': event.data.observationStage }
+      : {}),
     ...(typeof event.data.hostReplayed === 'boolean'
       ? { 'repoctopus.execution.host.replayed': event.data.hostReplayed }
       : {}),
@@ -500,6 +523,7 @@ export function workflowEventMetricAttributes(
     'repoctopus.workflow.name': batch.run.workflowName,
     ...workspaceIntentMetricAttributes(event),
   };
+  addProjectReconciliationAttributes(result, event);
   if (event.type === 'work.packet-stored' || event.type === 'work.packet-recovered') {
     const packetResult = event.data.result;
     const allowed =

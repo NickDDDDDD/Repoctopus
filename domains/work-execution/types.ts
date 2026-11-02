@@ -21,6 +21,7 @@ export interface WorkExecutionRecovery {
   workId: string | null;
   attempt: number | null;
   checkEpoch: number | null;
+  observationStage?: 'provider-validation' | 'planning-gate';
   reason:
     | 'terminal'
     | 'human-decision'
@@ -36,6 +37,7 @@ export interface WorkExecutionRecovery {
     | 'validator-pending'
     | 'checkpoint-superseded'
     | 'transition-pending'
+    | 'open-gate-pending'
     | 'content-missing-or-corrupt'
     | 'open-observation-unavailable'
     | 'migration-required'

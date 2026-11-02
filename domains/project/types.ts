@@ -46,6 +46,8 @@ export interface RepositoryDifference {
 
 export interface ProjectReconciliation {
   changed: boolean;
+  changeClass: 'same' | 'content' | 'identity';
+  requiresReconciliation: boolean;
   previousDigest: string;
   currentDigest: string;
   added: string[];
