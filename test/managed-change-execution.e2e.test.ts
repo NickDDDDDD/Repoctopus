@@ -952,6 +952,23 @@ describe('managed Change execution production composition', () => {
           expect(plan).not.toHaveBeenCalled();
           expect(run).not.toHaveBeenCalled();
           expect(
+            capture.invocations.some((item) => item.packet.work.kind.startsWith('build.')),
+          ).toBe(false);
+          expect(
+            (await application.context.specification.tasks('managed-blackbox')).tasks.every(
+              (task) => task.status === 'pending' && task.completion === null,
+            ),
+          ).toBe(true);
+          let evidenceAttempts: string[] = [];
+          try {
+            evidenceAttempts = await readdir(
+              path.join(workspace, '.repoctopus', 'evidence', 'runs'),
+            );
+          } catch (error) {
+            if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+          }
+          expect(evidenceAttempts).toHaveLength(0);
+          expect(
             await application.context.commandRouter.execute<
               { changeId: string; approvalPhase: 'design' },
               SpecificationApprovalState | null
