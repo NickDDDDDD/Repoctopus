@@ -48,18 +48,19 @@ Repoctopus 不复制 Comet 的单仓存储或 Runtime SDK。可复用的是三�
 
 ### 1. Open continuation 由 Work execution checkpoint 路由
 
-提取单一 Open continuation resolver（命名可按现有领域术语调整），对当前 `change.intake` Work 使用以下穷尽规则：
+从现有 `WorkExecutionAuthority.recovery()` 抽出纯 continuation classifier，由 recovery 与 `WorkflowRuns.next()` 共同调用；不再新增第三套状态判断。classifier 对当前 `change.intake` Work 使用以下穷尽规则：
 
 | Work execution | Runtime 行为 |
 | --- | --- |
 | 无 execution / 未领取 | 返回 `execute`，允许 Host claim |
 | claimed/context-delivered/invoking | 返回 `wait` 或既有 recovery，不重派 |
 | outcome+succeeded | 执行第一层 Outcome/Provider validation |
-| validated | 跳过 Host 与第一层 validation，直接执行 `advanceOpenGate` |
+| validated + Open intake | 返回 `reobserve/open-gate-pending`，跳过 Host 与第一层 validation，直接执行 `advanceOpenGate` |
+| validated + 其他 phase Work | 返回该 phase 已声明的 transition continuation；未声明组合 fail closed |
 | outcome+failed/rejected | 按现有 repair/retry 权威处理 |
 | unknown external result | 仅此类进入 Host reconciliation |
 
-`run next`、恢复后的 next-action 投影和 managed execution 必须复用同一 resolver，不能各自用 `phase + currentWork` 的临时条件分支。`auto_transition` 只决定是否在一次 pull 内继续调用下一合法步骤，不改变上述状态合法性。
+`run next`、`WorkExecutionAuthority.recovery()`、恢复后的 next-action 投影和 managed execution 必须复用同一 classifier，不能各自用 `phase + currentWork` 的临时条件分支。`open-gate-pending` 表示当前持久 checkpoint需要继续 gate；发生暂时故障的那次响应仍使用 `open-observation-unavailable`，trajectory据此区分“待观察状态”与“一次失败观察”。`auto_transition` 只决定是否在一次 pull 内继续调用下一合法步骤，不改变上述状态合法性。
 
 选择从 `validated` 直接进入 gate，而不是把 execution 改回 `outcome`，是为了保留第一层 validator receipt，避免重复 strict validation、副作用统计和 Skill Outcome 事件；选择不清空 `currentWork`，是为了让同一 Work identity 继续承载 gate checkpoint，直到 Open gate 原子接受 waiting/repair/design transition。
 

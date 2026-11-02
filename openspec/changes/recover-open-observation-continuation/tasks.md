@@ -11,12 +11,12 @@
 
 ## 2. 建立可穷尽的 Open continuation
 
-- [ ] 2.1 为 Open continuation resolver 增加表驱动领域测试，覆盖无 execution、claimed、context-delivered、outcome succeeded/failed、validated 与 unknown external result。   <!-- comet-task:ab0dc4db-dede-40a3-92aa-e99525b5c1c5 -->
-  **Acceptance:** 每个 Work execution status 恰好映射一个合法 continuation，只有 unknown external result映射 Host reconciliation。
-- [ ] 2.2 实现并接入单一 resolver，让 `validated` 直接进入 `advanceOpenGate`，不回退为 `outcome`、不清空 validator receipt。   <!-- comet-task:a4b4deff-59e3-4d96-81a6-041a20cd3464 -->
-  **Acceptance:** 1.1/1.2 与 resolver 测试转绿，现有首次 validation 与 repair 路径保持通过。
-- [ ] 2.3 让 managed execution、`run next` 与恢复后的 next-action 投影复用相同 resolver，删除重复的 phase/status 猜测分支。   <!-- comet-task:8e03f9d7-a8ac-4c2d-aa1b-33196188960d -->
-  **Acceptance:** TypeScript 穷尽检查通过，CLI 不再对 `validated + reobserve` 输出“Execute Open intake Work”。
+- [ ] 2.1 为纯 Work continuation classifier 增加表驱动领域测试，覆盖无 execution、claimed、context-delivered、outcome succeeded/failed、Open validated、其他 phase validated与 unknown external result。   <!-- comet-task:ab0dc4db-dede-40a3-92aa-e99525b5c1c5 -->
+  **Acceptance:** 每个合法 Work execution组合恰好映射一个 continuation，Open validated为 `reobserve/open-gate-pending`，只有 unknown external result映射 Host reconciliation。
+- [ ] 2.2 从现有 `WorkExecutionAuthority.recovery()` 抽出并接入单一 classifier，让 Open `validated` 直接进入 `advanceOpenGate`，不回退为 `outcome`、不清空 validator receipt。   <!-- comet-task:a4b4deff-59e3-4d96-81a6-041a20cd3464 -->
+  **Acceptance:** 1.1/1.2 与 classifier测试转绿，现有首次 validation、repair和其他 phase恢复路径保持通过。
+- [ ] 2.3 让 managed execution、`run next`、`WorkExecutionAuthority.recovery()` 与恢复后的 next-action投影复用相同 classifier，删除重复的 phase/status猜测分支。   <!-- comet-task:8e03f9d7-a8ac-4c2d-aa1b-33196188960d -->
+  **Acceptance:** TypeScript穷尽检查通过，CLI不再对 `validated + reobserve` 输出“Execute Open intake Work”，状态视图能区分 `open-gate-pending` 与当次 `open-observation-unavailable`。
 - [ ] 2.4 为重复/并发 pull 增加 CAS 测试。   <!-- comet-task:a9e8fe50-56dc-47c3-aca6-eb36e108a0c5 -->
   **Acceptance:** Provider 恢复后最多创建一张 Open approval卡或一个 Design Work；Work、attempt、checkEpoch、Host invocation 与 Skill consumption均不重复。
 

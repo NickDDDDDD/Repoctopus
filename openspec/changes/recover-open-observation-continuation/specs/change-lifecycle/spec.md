@@ -19,7 +19,7 @@ Runtime MUST 将创建前工作区输入无效、Provider 明确返回的规格�
 #### Scenario: planning observation 恢复
 
 - **WHEN** 上述 Run 在 Provider 恢复后执行下一次受保护 `run next`
-- **THEN** Runtime 直接从 `validated` checkpoint 重试 planning gate，成功后进入唯一 Open Human Decision或已批准的 Design continuation，Host invocation 与 Skill consumption 计数不变
+- **THEN** Runtime 将持久状态投影为 `reobserve/open-gate-pending`，直接从 `validated` checkpoint重试 planning gate，成功后进入唯一 Open Human Decision或已批准的 Design continuation，Host invocation 与 Skill consumption计数不变
 
 #### Scenario: planning observation 连续不可用
 
