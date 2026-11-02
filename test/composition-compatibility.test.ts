@@ -140,25 +140,33 @@ describe('composition compatibility', () => {
       [
         'workflow-runs',
         {
-          codeDigest: 'sha256:9da4dbb9040aa152848323ab5acb5c2be5441bb220ec31858a040867bf241183',
+          codeDigest: 'sha256:2761b259f1c79963e2dab3eec81463feea5410fedd488969fab42888ab6bbd9e',
           descriptorDigest:
-            'sha256:ff6451f1c2c5dd9fbf711cb487b1c256d2b5782099c75743966deb2af1653818',
+            'sha256:39674bc846b712fe537c685ab9a05315010878d919fa4b76083f97a676fbe375',
         },
       ],
       [
         'managed-work-executor',
         {
-          codeDigest: 'sha256:c38a70dc4a63da197f47f52a9c9e444394ed144fa43d9d84245c3e533dc2b028',
+          codeDigest: 'sha256:124ea1590f70cff6729b4803c14f50c2711793ea4f863abd4a53cfaec7ade01e',
           descriptorDigest:
-            'sha256:d7802dbbc31c42eacff6c200254b6873735978d9bf5cd4905338cd1b9b9f6375',
+            'sha256:2cfc2afbf6649cbd39c46682d731bc1c035e7c76d5bef37e367b956dd1bf0cbc',
+        },
+      ],
+      [
+        'work-dispatcher',
+        {
+          codeDigest: 'sha256:8871a99bb63291306173606554b1e9fc6a019cd261159350dbc7af5aa44f7135',
+          descriptorDigest:
+            'sha256:9ea17bc9df73f75b5c596e19167b91d89438914b99e92350f434accd6f3924c0',
         },
       ],
       [
         'lifecycle-definition-builtin',
         {
-          codeDigest: 'sha256:d87d3d92a1e86aa55072bb289a1c1292ca499d092f85ee6e6df4348edd578413',
+          codeDigest: 'sha256:ec87a5c1e2dc0ea9aaab7d8ffe9218197bbfc2dca595b513c2ef52566081f5df',
           descriptorDigest:
-            'sha256:b5de20ca5e52a5ec99cf1f6a02cf4d3705360c95fd176ad692ace94b5723c161',
+            'sha256:26019d49292a08e0601d25db9416a22c595779fdea52bb51d0dacdbe705cf036',
         },
       ],
       [

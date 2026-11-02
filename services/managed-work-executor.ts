@@ -19,6 +19,7 @@ import type {
 import { assertManagedDelegation } from '../domains/work-execution/delegation.js';
 import { assertBoundedWorkExecutionFindings } from '../domains/work-execution/findings.js';
 import { canonicalJson } from '../domains/workflow-contract/canonical.js';
+import { assertHostSupportsWork } from './work-dispatcher.js';
 
 function assertBoundedExecutionResult(outcome: WorkExecutionHostOutcome): void {
   if (outcome.result && canonicalJson(outcome.result).length > 1024 * 1024) {
@@ -315,6 +316,10 @@ export class ManagedWorkExecutor extends Service {
   async claimExternal(request: WorkClaimRequest): Promise<ExternalWorkClaimResult> {
     const state = await this.ctx.runStore.loadRun(request.runId);
     const lifecycle = state.changeLifecycle;
+    const hostCapabilities = [...new Set(request.hostCapabilities ?? [])].sort();
+    if (lifecycle?.currentWork) {
+      assertHostSupportsWork(hostCapabilities, lifecycle.currentWork);
+    }
     const expectedBinding = lifecycle?.buildProtocol?.binding;
     const externalHostId = `external:${request.executor.source}:${request.executor.runnerId}`;
     if (
@@ -327,11 +332,8 @@ export class ManagedWorkExecutor extends Service {
         'External Runner does not match the current Execution Binding Host; Build Configure must revalidate it before claim',
       );
     }
-    const claim = await this.ctx.workDispatcher.claim(request);
-    const host = this.externalHostIdentity(request.executor, [
-      ...claim.packet.hostRequirement.capabilities,
-      ...(request.hostCapabilities ?? []),
-    ]);
+    const claim = await this.ctx.workDispatcher.claim({ ...request, hostCapabilities });
+    const host = this.externalHostIdentity(request.executor, hostCapabilities);
     const invocation: WorkExecutionHostInvocation = {
       schemaVersion: 1,
       invocationId: invocationId(claim.packet.identity.packetDigest, host.id),

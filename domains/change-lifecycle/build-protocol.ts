@@ -274,7 +274,9 @@ export function executionBindingRequiredCapabilities(
     [
       executionMode === 'autonomous' ? 'build.autonomous' : 'subagent.dispatch.attested',
       'process.execute',
+      'repository.read',
       'repository.write',
+      'specification.read',
     ].sort(),
   );
 }

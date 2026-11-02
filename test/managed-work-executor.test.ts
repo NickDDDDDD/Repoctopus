@@ -83,11 +83,11 @@ function executor(
     markHostStarted: vi
       .fn()
       .mockImplementation((_intent: unknown, invocation: WorkExecutionHostInvocation) =>
-      Promise.resolve({
-        acquired: true,
-        checkpoint: { hostInvocation: invocation },
-      }),
-    ),
+        Promise.resolve({
+          acquired: true,
+          checkpoint: { hostInvocation: invocation },
+        }),
+      ),
     markHostUnknown: vi.fn(),
     markHostCompleted: vi.fn().mockResolvedValue({ status: 'submitted' }),
     recordDelegationFacts: vi.fn(),
@@ -273,10 +273,10 @@ describe('Managed Work Executor Build contract', () => {
     const { service, authority, invoke } = executor();
     authority.markHostStarted.mockImplementation(
       (_intent: unknown, invocation: WorkExecutionHostInvocation) =>
-      Promise.resolve({
-        acquired: false,
-        checkpoint: { hostInvocation: invocation },
-      }),
+        Promise.resolve({
+          acquired: false,
+          checkpoint: { hostInvocation: invocation },
+        }),
     );
 
     await expect(service.execute({} as never)).resolves.toMatchObject({
@@ -344,17 +344,17 @@ describe('Managed Work Executor Build contract', () => {
     expect(acceptOutcome).toHaveBeenCalledOnce();
   });
 
-  it('persists external Runner capabilities beyond the current Work requirement', async () => {
+  it('persists exactly the external Runner capabilities declared independently of one Work', async () => {
     const packet = frozenPacket();
     const service = Object.create(ManagedWorkExecutor.prototype) as ManagedWorkExecutor;
     const markHostStarted = vi
       .fn()
       .mockImplementation((_intent: unknown, invocation: WorkExecutionHostInvocation) =>
-      Promise.resolve({
-        acquired: true,
-        checkpoint: { hostInvocation: invocation },
-      }),
-    );
+        Promise.resolve({
+          acquired: true,
+          checkpoint: { hostInvocation: invocation },
+        }),
+      );
     Object.defineProperty(service, 'ctx', {
       value: {
         workDispatcher: {
@@ -364,14 +364,25 @@ describe('Managed Work Executor Build contract', () => {
           }),
         },
         workExecutionAuthority: { markHostStarted },
-        runStore: { loadRun: vi.fn().mockResolvedValue({ changeLifecycle: null }) },
+        runStore: {
+          loadRun: vi.fn().mockResolvedValue({
+            changeLifecycle: {
+              phase: 'build',
+              currentWork: {
+                kind: 'build.configure',
+                capabilities: ['subagent.dispatch.attested'],
+              },
+              buildProtocol: { binding: null },
+            },
+          }),
+        },
       },
     });
 
     const claimed = await service.claimExternal({
       runId: 'run-1',
       adapter: 'manual',
-      hostCapabilities: ['build.autonomous'],
+      hostCapabilities: ['subagent.dispatch.attested', 'build.autonomous'],
       executor: {
         actorId: 'user-1',
         runnerId: 'codex-root',
@@ -388,6 +399,48 @@ describe('Managed Work Executor Build contract', () => {
       expect.anything(),
       expect.objectContaining({ host: claimed.invocation.host }),
     );
+  });
+
+  it('rejects an under-capable external Runner before persisting the Work claim', async () => {
+    const claim = vi.fn();
+    const markHostStarted = vi.fn();
+    const service = Object.create(ManagedWorkExecutor.prototype) as ManagedWorkExecutor;
+    Object.defineProperty(service, 'ctx', {
+      value: {
+        workDispatcher: { claim },
+        workExecutionAuthority: { markHostStarted },
+        runStore: {
+          loadRun: vi.fn().mockResolvedValue({
+            changeLifecycle: {
+              phase: 'build',
+              currentWork: {
+                kind: 'build.plan',
+                capabilities: ['build.autonomous', 'repository.read', 'specification.read'],
+              },
+              buildProtocol: {
+                binding: { host: { hostId: 'external:cli:codex-root' } },
+              },
+            },
+          }),
+        },
+      },
+    });
+
+    await expect(
+      service.claimExternal({
+        runId: 'run-1',
+        adapter: 'manual',
+        hostCapabilities: ['build.autonomous', 'repository.read'],
+        executor: {
+          actorId: 'user-1',
+          runnerId: 'codex-root',
+          source: 'cli',
+          authenticated: true,
+        },
+      }),
+    ).rejects.toThrow(/missing specification\.read/u);
+    expect(claim).not.toHaveBeenCalled();
+    expect(markHostStarted).not.toHaveBeenCalled();
   });
 
   it('rejects Build claims from a Runner outside the approved Host before persisting a claim', async () => {
@@ -422,7 +475,12 @@ describe('Managed Work Executor Build contract', () => {
       service.claimExternal({
         runId: 'run-1',
         adapter: 'manual',
-        hostCapabilities: ['build.autonomous', 'repository.read', 'repository.write'],
+        hostCapabilities: [
+          'build.autonomous',
+          'repository.read',
+          'repository.write',
+          'specification.read',
+        ],
         executor: {
           actorId: 'user-1',
           runnerId: 'cli:ephemeral-pid',
@@ -442,10 +500,12 @@ describe('Managed Work Executor Build contract', () => {
     });
     expect(authority.markHostCompleted).toHaveBeenCalledOnce();
     expect(authority.recordDelegationFacts).toHaveBeenCalledOnce();
-    expect(authority.recordSkillFacts).toHaveBeenCalledWith(expect.anything(), 'consumed', [
-      digest('1'),
-      digest('2'),
-    ], expect.stringMatching(/^sha256:[a-f0-9]{64}$/u));
+    expect(authority.recordSkillFacts).toHaveBeenCalledWith(
+      expect.anything(),
+      'consumed',
+      [digest('1'), digest('2')],
+      expect.stringMatching(/^sha256:[a-f0-9]{64}$/u),
+    );
     expect(authority.markHostUnknown).not.toHaveBeenCalled();
   });
 

@@ -39,6 +39,21 @@ function assertContributorSupportsWork(contributor: WorkContributor, work: WorkD
   }
 }
 
+export function assertHostSupportsWork(
+  hostCapabilities: readonly string[],
+  work: WorkDescriptor,
+): void {
+  const available = new Set(
+    hostCapabilities.map((capability) => capability.trim()).filter(Boolean),
+  );
+  const missing = work.capabilities.filter((capability) => !available.has(capability));
+  if (missing.length > 0) {
+    throw new Error(
+      `External Work Execution Host cannot claim ${work.workId}; missing ${missing.join(', ')}`,
+    );
+  }
+}
+
 function createChangeInputs(input: {
   runId: string;
   lifecycle: ChangeLifecycleState;
@@ -156,6 +171,9 @@ export class WorkDispatcher extends Service {
       throw new Error('Work claim requires an authenticated actor and Runner identity');
     }
     assertContributorSupportsWork(contributor, work);
+    if (request.hostCapabilities !== undefined) {
+      assertHostSupportsWork(request.hostCapabilities, work);
+    }
     const executionContext = await this.ctx.workContextAssembler.assemble({
       work,
       changeId: state.changeLifecycle!.identity.changeId,

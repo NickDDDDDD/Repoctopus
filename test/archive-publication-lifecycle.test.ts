@@ -43,6 +43,13 @@ afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory
 
 const digest = (character: string) => `sha256:${character.repeat(64)}` as const;
 
+const archiveHostCapabilities = [
+  'git.publish',
+  'platform.mutate',
+  'repository.read',
+  'specification.write',
+] as const;
+
 const policy: DeliveryPolicy = {
   apiVersion: 'repoctopus/v1alpha1',
   kind: 'DeliveryPolicy',
@@ -735,6 +742,7 @@ describe('Archive publication terminal lifecycle', () => {
       const claim = await app.context.managedWorkExecutor.claimExternal({
         runId: preflight.identity.runId,
         adapter: 'specification',
+        hostCapabilities: archiveHostCapabilities,
         executor: {
           actorId: 'archive-user',
           runnerId: 'archive-runner',
@@ -909,6 +917,7 @@ describe('Archive publication terminal lifecycle', () => {
       const claim = await app.context.managedWorkExecutor.claimExternal({
         runId: preflight.identity.runId,
         adapter: 'specification',
+        hostCapabilities: archiveHostCapabilities,
         executor: {
           actorId: 'archive-user',
           runnerId: 'archive-runner',
@@ -1071,6 +1080,7 @@ describe('Archive publication terminal lifecycle', () => {
       const publicationClaim = await app.context.managedWorkExecutor.claimExternal({
         runId: closed.identity.runId,
         adapter: 'git',
+        hostCapabilities: archiveHostCapabilities,
         executor,
       });
       await app.context.managedWorkExecutor.acceptExternalOutcome({

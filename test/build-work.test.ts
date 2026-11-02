@@ -79,7 +79,13 @@ describe('Build Work policy', () => {
       const work = configureWork(executionMode);
 
       expect(work.capabilities).toEqual(
-        [modeCapability, 'process.execute', 'repository.read', 'repository.write'].sort(),
+        [
+          modeCapability,
+          'process.execute',
+          'repository.read',
+          'repository.write',
+          'specification.read',
+        ].sort(),
       );
       expect(work.sideEffectClass).toBe('none');
       expect(work.writeScopes).toEqual([]);
