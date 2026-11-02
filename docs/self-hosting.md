@@ -71,7 +71,9 @@ node bin/repoctopus.js run next --workspace . --run <run-id> --json
 
 同一 Workspace/change 的 `run start` 总是创建或恢复同一个稳定 runId，不接受 mode 或代次参数。Runner 必须先建立并公开 source branch 或 worktree；Runtime 在任何 Run/Skill/Work/Desktop 成功写入前校验 attached source、target、remote 与多仓 topology，并冻结不含 path、HEAD、dirty 状态和时间的 `ChangeStartBinding`。等价重放直接采用 Store 中的 current Work，不重建候选 Work；绑定漂移返回公共 conflict code，且不修改 checkpoint。Runtime 本版只观察和校验，不创建或切换 checkout。
 
-Open 和 Design 分别产生独立 Human Decision。Open Host Outcome 成功后若 Specification Provider 暂时不可用，Runtime 返回 `reobserve`：下一次 pull 重读 Provider，但保留同一 attempt、invocation 与 Outcome；这不是外部结果未知，因此不能执行 `work-reconcile`。Design 批准后，Runtime 才执行 Build Configure。
+Open 和 Design 分别产生独立 Human Decision。Open Host Outcome 成功后若 Specification Provider 暂时不可用，Runtime 返回 `reobserve`：下一次 pull 重读 Provider，但保留同一 Work、attempt、check epoch、invocation、Outcome、Receipt 与 Skill consumption；这不是外部结果未知，因此不能执行 `work-reconcile`。严格校验已经成功、后续 planning branch/approval 观测暂时失败时，Work 保持 `validated`，恢复后从 planning gate 继续而不再次调用 Host。Design 批准后，Runtime 才执行 Build Configure。
+
+日常提交造成的 HEAD/worktree 变化是 content drift，不会全局卡住自举 Run；当前阶段仍必须按自己的 frozen input、planning binding、Evidence 或 closure 规则重验。branch、remote、路径、仓库增删与 Workspace/Project 身份变化属于 identity drift，恢复入口保持 fail closed。
 
 Build Configure 的 Human Decision 冻结 execution mode、TDD mode、standard review、Host 能力和隔离。随后 Runtime 从 OpenSpec Tasks 产生 Run-local BuildPlan，执行 Plan Evidence、当前 Work Package 和 Build Check。每次 `run next` 只拉取 Runtime 当前 continuation。内嵌 Host 由同一短生命周期 App 注册；外部 Agent/Runner 使用 `run work-claim`/`run work-outcome` 的 Host-bound 协议：claim 通过 `--host-capabilities build.autonomous`（或受证明的 `subagent.dispatch.attested`）声明 Runner 能力，Outcome 通过 `--submission-id <new-id> --result-file <result.json>` 提交受 Runtime schema 校验的结构化 Build 结果。Invocation 中的 Host 快照是跨 CLI 进程的权威身份，后续校验不依赖原进程仍在运行。电脑关闭不需要守护进程：下一位具备 Workspace 状态的 Runner 从同一个 checkpoint 恢复；若原调用结果未知，必须先 `run work-reconcile`，不能自动重放。
 

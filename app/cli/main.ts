@@ -1468,7 +1468,7 @@ async function runResume(parsed: ParsedArguments): Promise<CliEnvelope<unknown>>
       runId,
       result: result.value,
       diagnostics: result.diagnostics,
-      nextActions: result.value.reconciliation.changed
+      nextActions: result.value.reconciliation.requiresReconciliation
         ? ['inspect reconciliation and start a new run or restore the repository state']
         : nextActions(result.value),
     });

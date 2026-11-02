@@ -68,6 +68,20 @@ function recoveryAuthority(run: RunState, input: { active?: boolean; corrupt?: b
 }
 
 describe('Work execution recovery classification', () => {
+  it('keeps generic workflow Runs outside the Change Work classifier', async () => {
+    const generic = state({});
+    delete generic.changeLifecycle;
+
+    await expect(recoveryAuthority(generic).recovery('run-recovery')).resolves.toEqual({
+      schemaVersion: 2,
+      continuation: 'wait',
+      workId: null,
+      attempt: null,
+      checkEpoch: null,
+      reason: 'transition-pending',
+    });
+  });
+
   it('grants a durable Host invocation to exactly one concurrent Runner', async () => {
     const initial = checkpoint('context-delivered');
     let run = {
@@ -226,11 +240,32 @@ describe('Work execution recovery classification', () => {
     ['unknown', 'reconcile', 'host-result-unknown'],
     ['not-executed', 'execute', 'host-not-executed'],
     ['submitted', 'execute', 'validator-pending'],
-    ['validated', 'execute', 'transition-pending'],
   ] as const)('classifies %s without guessing completion', async (status, continuation, reason) => {
     await expect(
       recoveryAuthority(state({ execution: checkpoint(status) })).recovery('run-recovery'),
     ).resolves.toMatchObject({ continuation, reason, workId: 'build:1.1', attempt: 1 });
+  });
+
+  it('reobserves the Open gate after the Work has already been validated', async () => {
+    const run = state({ execution: checkpoint('validated') });
+    run.changeLifecycle = { ...run.changeLifecycle!, phase: 'open' } as never;
+
+    await expect(recoveryAuthority(run).recovery('run-recovery')).resolves.toMatchObject({
+      continuation: 'reobserve',
+      reason: 'open-gate-pending',
+      workId: 'build:1.1',
+      attempt: 1,
+    });
+  });
+
+  it('keeps non-Open validated Work on the transition continuation', async () => {
+    const run = state({ execution: checkpoint('validated') });
+    run.changeLifecycle = { ...run.changeLifecycle!, phase: 'design' } as never;
+
+    await expect(recoveryAuthority(run).recovery('run-recovery')).resolves.toMatchObject({
+      continuation: 'execute',
+      reason: 'transition-pending',
+    });
   });
 
   it('keeps rejected submissions on the same Work awaiting a corrected payload', async () => {
@@ -372,6 +407,53 @@ describe('Work execution recovery classification', () => {
       data: { result: 'suppressed', dispatchSuppressed: true },
     });
     expect(run.workExecution).toEqual(checkpoint('claimed'));
+  });
+
+  it('counts one unavailable Open observation while suppressing its duplicate dispatch', async () => {
+    let run = {
+      ...state({ execution: checkpoint('validated') }),
+      stateVersion: 10,
+      composition: { compositionDigest: digest('9') },
+    } as unknown as RunState;
+    const trajectory: TrajectoryEvent[] = [];
+    const authority = Object.create(WorkExecutionAuthority.prototype) as WorkExecutionAuthority;
+    Object.defineProperty(authority, 'ctx', {
+      value: {
+        runStore: {
+          commitGuarded: (
+            _runId: string,
+            commit: (input: { state: RunState; trajectory: TrajectoryEvent[] }) => {
+              state?: RunState;
+              event?: TrajectoryEvent;
+              value: undefined;
+            },
+          ) => {
+            const result = commit({ state: run, trajectory });
+            if (result.state) run = result.state;
+            if (result.event) trajectory.push(result.event);
+            return Promise.resolve(result.value);
+          },
+        },
+      },
+    });
+    const recovery = {
+      schemaVersion: 2 as const,
+      continuation: 'reobserve' as const,
+      workId: 'build:1.1',
+      attempt: 1,
+      checkEpoch: 4,
+      reason: 'open-observation-unavailable' as const,
+      observationStage: 'planning-gate' as const,
+    };
+
+    await authority.recordContinuation(run.runId, recovery);
+    await authority.recordContinuation(run.runId, recovery);
+
+    expect(trajectory.map((event) => event.data.result)).toEqual(['unavailable', 'suppressed']);
+    expect(trajectory[0]?.data).toMatchObject({
+      observationStage: 'planning-gate',
+      hostReplayed: false,
+    });
   });
 
   it('distinguishes active, unknown, failed, validator, human and corrupt boundaries', async () => {

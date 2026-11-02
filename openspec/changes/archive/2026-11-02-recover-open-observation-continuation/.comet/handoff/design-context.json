@@ -1,0 +1,17 @@
+{
+  "change": "recover-open-observation-continuation",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb",
+  "files": [
+    { "path": "openspec/changes/recover-open-observation-continuation/proposal.md", "sha256": "4bfde76453c242bee581c314fbc66388ca3d0ce6b100f68daefffdd67b2a35d2" },
+    { "path": "openspec/changes/recover-open-observation-continuation/design.md", "sha256": "0c0d87fb39f52f983739e656b8b0cbadb085184999926e87f5c2d8175e682bc4" },
+    { "path": "openspec/changes/recover-open-observation-continuation/tasks.md", "sha256": "6b38de094a421b25bb8bce3caf67c2147f60e96bf4a86a9a2912b32f73c967e8" },
+    { "path": "openspec/changes/recover-open-observation-continuation/specs/change-lifecycle/spec.md", "sha256": "1268882b433c684d663535ea30bb3ccb4ce9c81eedbbe731107b6a3bbb92d2c7" },
+    { "path": "openspec/changes/recover-open-observation-continuation/specs/development-telemetry/spec.md", "sha256": "fca77e644a2e5d8c4777df70a956daec982611a0359a6f14eb853335c49880d0" },
+    { "path": "openspec/changes/recover-open-observation-continuation/specs/runtime-foundation/spec.md", "sha256": "3f38925e25ed11902179357ad23a01938b97417f13e75957a01bdd7aaa43da1e" }
+  ]
+}

@@ -16,7 +16,7 @@ const cleanup: string[] = [];
 afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
 
 describe('multi-process runtime and OTLP delivery', () => {
-  it('resumes a durable run, blocks changed repositories and exports all OTLP signals', async () => {
+  it('resumes a durable run, reports content drift and exports all OTLP signals', async () => {
     const paths: string[] = [];
     const server = createServer((request, response) => {
       paths.push(request.url ?? '');
@@ -112,7 +112,11 @@ describe('multi-process runtime and OTLP delivery', () => {
       await writeFile(path.join(front, 'changed.txt'), 'worktree changed');
       const resumed = await runCli<{
         state: { reconciliationRequired: boolean };
-        reconciliation: { changed: boolean };
+        reconciliation: {
+          changed: boolean;
+          changeClass: 'same' | 'content' | 'identity';
+          requiresReconciliation: boolean;
+        };
       }>({
         packageRoot: repositoryRoot,
         cwd: workspace,
@@ -120,8 +124,12 @@ describe('multi-process runtime and OTLP delivery', () => {
         args: ['run', 'resume', '--workspace', workspace, '--run', 'run-e2e-runtime'],
       });
       expect(resumed.result).toMatchObject({
-        state: { reconciliationRequired: true },
-        reconciliation: { changed: true },
+        state: { reconciliationRequired: false },
+        reconciliation: {
+          changed: true,
+          changeClass: 'content',
+          requiresReconciliation: false,
+        },
       });
       const doctor = await runCli({
         packageRoot: repositoryRoot,

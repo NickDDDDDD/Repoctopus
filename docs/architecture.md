@@ -95,7 +95,9 @@ Build phase 在该执行链内固定使用 `Configure → Plan → Plan Evidence
 
 受管子代理不会创建并列 Run 或并行 `currentWork`。具有 `subagent.dispatch.attested` 的协调 Host 在父 invocation 下返回 package-bound delegation receipts；Runtime 校验 execution identity、role、结果和父调用，再把它们写入同一 Trajectory。Autonomous Host 返回 delegation receipt 会被拒绝。
 
-Intent 与 Receipt 独立保存在 `.repoctopus/actions/`，但 `RunState.workExecution` 是 claim、attempt、Host、Outcome、Validator 和 continuation 的唯一权威。同一 claim 重放返回原 packet identity；已保存 Outcome/Receipt 在响应丢失后从 Validator 或 transition 边界继续，不重复 Host。Specification Provider 暂时不可观察时使用 `reobserve` 重读原 Outcome 对应的规格事实，不调用 Host；只有未知外部执行结果才保持 `reconcile`，且只有 Host 能证明 `not-executed` 才允许新 attempt。
+Intent 与 Receipt 独立保存在 `.repoctopus/actions/`，但 `RunState.workExecution` 是 claim、attempt、Host、Outcome、Validator 和 continuation 的唯一权威。同一 claim 重放返回原 packet identity；已保存 Outcome/Receipt 在响应丢失后由单一纯 continuation classifier 从 Validator 或 transition 边界继续，不重复 Host。Open Work 已 `validated` 但 planning gate 尚未完成时固定为 `reobserve/open-gate-pending`；Specification Provider 暂时不可观察时使用 `reobserve/open-observation-unavailable` 重读原 Outcome 对应事实，不调用 Host。只有未知外部执行结果才保持 `reconcile`，且只有 Host 能证明 `not-executed` 才允许新 attempt。
+
+Project Snapshot reconciliation 区分内容变化和身份变化。HEAD/worktree 内容变化只触发阶段 authority 的精确失效与重验；仓库集合、Project/root、path、remote、branch、拓扑或 diagnostics 等身份变化才设置全局 reconciliation blocker。这样正常提交不会把同一 Change 误判为换了项目，同时真正的执行边界漂移仍然 fail closed。
 
 ## Evidence 与 Gate
 

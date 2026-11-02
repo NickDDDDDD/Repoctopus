@@ -5,6 +5,7 @@ import { Service, type Context } from '@deepseek-ai/cordis';
 import type { ActionIntent, ActionReceipt, ClaimedActionOutcome } from '../domains/action/types.js';
 import type { RunState } from '../domains/engine/types.js';
 import type { WorkDescriptor } from '../domains/change-lifecycle/transition.js';
+import { classifyWorkContinuation } from '../domains/change-lifecycle/continuation.js';
 import type { EffectiveSkillComposition } from '../domains/skill/composition.js';
 import type {
   SpecificationArtifact,
@@ -1332,45 +1333,45 @@ export class WorkExecutionAuthority extends Service {
 
   async continuation(runId: string): Promise<WorkContinuationKind> {
     const state = await this.ctx.runStore.loadRun(runId);
-    if (state.status === 'completed') return 'done';
-    if (state.changeLifecycle?.waitCondition?.kind === 'human-decision') return 'ask';
-    const execution = state.workExecution;
-    if (!execution || !executionMatchesLifecycle(state, execution)) {
-      return state.changeLifecycle?.currentWork ? 'execute' : 'wait';
-    }
-    if (execution.status === 'outcome') return 'execute';
-    return execution.continuation;
+    if (!state.changeLifecycle) return state.status === 'completed' ? 'done' : 'wait';
+    return classifyWorkContinuation({
+      runStatus: state.status,
+      lifecycle: state.changeLifecycle,
+      ...(state.workExecution ? { execution: state.workExecution } : {}),
+    }).continuation;
   }
 
   async recovery(runId: string): Promise<WorkExecutionRecovery> {
     const state = await this.ctx.runStore.loadRun(runId);
+    const lifecycle = state.changeLifecycle;
+    if (!lifecycle) {
+      return {
+        schemaVersion: 2,
+        continuation: state.status === 'completed' ? 'done' : 'wait',
+        workId: null,
+        attempt: null,
+        checkEpoch: null,
+        reason: state.status === 'completed' ? 'terminal' : 'transition-pending',
+      };
+    }
     const persisted = state.workExecution;
     const superseded = Boolean(persisted && !executionMatchesLifecycle(state, persisted));
     const current = superseded ? undefined : persisted;
-    const result = (
-      continuation: WorkContinuationKind,
-      reason: WorkExecutionRecovery['reason'],
-    ): WorkExecutionRecovery => ({
-      schemaVersion: 2,
-      continuation,
-      workId: current?.workId ?? state.changeLifecycle?.currentWork?.workId ?? null,
-      attempt: current?.attempt ?? null,
-      checkEpoch: current?.checkEpoch ?? state.changeLifecycle?.checkEpoch ?? null,
-      reason,
-    });
-    if (state.status === 'completed') return result('done', 'terminal');
-    if (state.changeLifecycle?.waitCondition?.kind === 'human-decision') {
-      return result('ask', 'human-decision');
+    const classify = (invokingHostActive?: boolean) =>
+      classifyWorkContinuation({
+        runStatus: state.status,
+        lifecycle,
+        ...(persisted ? { execution: persisted } : {}),
+        ...(invokingHostActive === undefined ? {} : { invokingHostActive }),
+      });
+    if (state.status === 'completed' || lifecycle.waitCondition?.kind === 'human-decision') {
+      return classify();
     }
     if (superseded) {
-      return state.changeLifecycle?.currentWork
-        ? result('execute', 'checkpoint-superseded')
-        : result('wait', 'checkpoint-superseded');
+      return classify();
     }
     if (!current) {
-      return state.changeLifecycle?.currentWork
-        ? result('execute', 'work-unclaimed')
-        : result('wait', 'transition-pending');
+      return classify();
     }
     if (current.schemaVersion !== 3) {
       try {
@@ -1378,7 +1379,7 @@ export class WorkExecutionAuthority extends Service {
       } catch {
         // Recovery classification remains authoritative when observation is unavailable.
       }
-      return result('reconcile', 'migration-required');
+      return classify();
     }
     try {
       await this.loadAuthoritativePacket(runId);
@@ -1388,45 +1389,25 @@ export class WorkExecutionAuthority extends Service {
       } catch {
         // Recovery classification remains authoritative when observation is unavailable.
       }
-      return result('reconcile', 'content-missing-or-corrupt');
+      return {
+        ...classify(),
+        continuation: 'reconcile',
+        reason: 'content-missing-or-corrupt',
+      };
     }
     try {
       await this.recordPacketRecovery(runId, 'recovered');
     } catch {
       // Recovery classification remains authoritative when observation is unavailable.
     }
-    if (current.status === 'claimed' || current.status === 'context-delivered') {
-      return result('execute', 'claim-redelivery');
-    }
-    if (current.status === 'submitted') {
-      return current.continuation === 'execute'
-        ? result('execute', 'validator-pending')
-        : result('execute', 'outcome-processing-error');
-    }
     if (current.status === 'invoking') {
-      if (current.continuation === 'awaiting-correction') {
-        return result('awaiting-correction', 'outcome-rejected');
-      }
-      return current.hostInvocation &&
-        this.ctx.workExecutionSessions.isActive(current.hostInvocation.invocationId)
-        ? result('wait', 'host-active')
-        : result('reconcile', 'host-result-unknown');
-    }
-    if (current.status === 'unknown') {
-      return result(
-        'reconcile',
-        current.unknownKind === 'external-side-effect'
-          ? 'external-result-unknown'
-          : 'host-result-unknown',
+      const active = Boolean(
+        current.hostInvocation &&
+        this.ctx.workExecutionSessions.isActive(current.hostInvocation.invocationId),
       );
+      return classify(active);
     }
-    if (current.status === 'not-executed') return result('execute', 'host-not-executed');
-    if (current.status === 'outcome') {
-      return current.actionOutcome?.status === 'failed'
-        ? result('execute', 'work-failed')
-        : result('execute', 'validator-pending');
-    }
-    return result('execute', 'transition-pending');
+    return classify();
   }
 
   async reconcileCurrentCheckpoint(runId: string): Promise<boolean> {
@@ -1481,6 +1462,7 @@ export class WorkExecutionAuthority extends Service {
         String(recovery.attempt ?? 0),
         recovery.continuation,
         recovery.reason,
+        recovery.observationStage ?? 'none',
       );
       const timestamp = new Date().toISOString();
       if (trajectory.some((event) => event.eventId === eventId)) {
@@ -1510,6 +1492,7 @@ export class WorkExecutionAuthority extends Service {
               workId: recovery.workId,
               attempt: recovery.attempt,
               checkEpoch: recovery.checkEpoch,
+              ...(recovery.observationStage ? { observationStage: recovery.observationStage } : {}),
               result: 'suppressed',
               dispatchSuppressed: true,
             },
@@ -1534,6 +1517,7 @@ export class WorkExecutionAuthority extends Service {
             String(recovery.attempt ?? 0),
             recovery.continuation,
             recovery.reason,
+            recovery.observationStage ?? 'none',
           ],
           data: {
             continuation: recovery.continuation,
@@ -1541,6 +1525,7 @@ export class WorkExecutionAuthority extends Service {
             workId: recovery.workId,
             attempt: recovery.attempt,
             checkEpoch: recovery.checkEpoch,
+            ...(recovery.observationStage ? { observationStage: recovery.observationStage } : {}),
             result: 'selected',
             dispatchSuppressed: false,
             ...(openObservationUnavailable

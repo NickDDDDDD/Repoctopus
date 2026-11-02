@@ -348,6 +348,9 @@ export class WorkflowRunCoordinator {
           entry.data.observationKind === 'verify-gate-satisfied' ||
           entry.data.observationKind === 'verify-gate-rejected',
       )?.data.observation as { kind?: string; attemptId?: string } | undefined;
+    const continuation = state.changeLifecycle
+      ? projectCommittedContinuation(checkpoint, trajectory)
+      : undefined;
     const changeLifecycle = state.changeLifecycle
       ? projectChangeRun(
           { ...structuredClone(state.changeLifecycle), status: state.status },
@@ -371,10 +374,13 @@ export class WorkflowRunCoordinator {
               acceptedBundleIds: [...state.acceptedEvidenceBundleIds],
               latestAttemptId: latestVerifyObservation?.attemptId ?? null,
             },
-            nextActions: projectLifecycleNextActions({
-              ...structuredClone(state.changeLifecycle),
-              status: state.status,
-            }),
+            nextActions: projectLifecycleNextActions(
+              {
+                ...structuredClone(state.changeLifecycle),
+                status: state.status,
+              },
+              continuation,
+            ),
             freshness: {
               stateVersion: state.stateVersion,
               trajectoryOffset: trajectory.length,
@@ -382,9 +388,6 @@ export class WorkflowRunCoordinator {
             },
           },
         )
-      : undefined;
-    const continuation = state.changeLifecycle
-      ? projectCommittedContinuation(checkpoint, trajectory)
       : undefined;
     return {
       state,
@@ -894,7 +897,7 @@ export class WorkflowRunCoordinator {
         options.runId,
         resumeBasis?.eventId ?? 'run-start',
         options.currentProjectSnapshot.digest,
-        reconciliation.changed ? 'recovery.reconciled' : 'run.resumed',
+        reconciliation.requiresReconciliation ? 'recovery.reconciled' : 'run.resumed',
       );
       if (trajectory.some((entry) => entry.eventId === resumeEventId)) {
         return { value: undefined };
@@ -902,7 +905,8 @@ export class WorkflowRunCoordinator {
       const timestamp = this.clock().toISOString();
       const nextState: RunState = {
         ...state,
-        reconciliationRequired: state.reconciliationRequired || reconciliation.changed,
+        reconciliationRequired:
+          state.reconciliationRequired || reconciliation.requiresReconciliation,
         stateVersion: state.stateVersion + 1,
         updatedAt: timestamp,
       };
@@ -912,14 +916,14 @@ export class WorkflowRunCoordinator {
           eventId: resumeEventId,
           sequence: trajectory.length + 1,
           timestamp,
-          type: reconciliation.changed ? 'recovery.reconciled' : 'run.resumed',
+          type: reconciliation.requiresReconciliation ? 'recovery.reconciled' : 'run.resumed',
           state: nextState,
           data: { recoveredTransition: recovered, reconciliation },
         }),
         value: undefined,
       };
     });
-    const diagnostics: RuntimeDiagnostic[] = reconciliation.changed
+    const diagnostics: RuntimeDiagnostic[] = reconciliation.requiresReconciliation
       ? [
           {
             level: 'warning',
@@ -928,7 +932,16 @@ export class WorkflowRunCoordinator {
               'Project repositories changed after the checkpoint; dependent decisions require reconciliation',
           },
         ]
-      : [];
+      : reconciliation.changeClass === 'content'
+        ? [
+            {
+              level: 'info',
+              code: 'runtime.project-content-changed',
+              message:
+                'Project content changed after the checkpoint; phase authority will revalidate dependent evidence',
+            },
+          ]
+        : [];
     diagnostics.push(...(await this.flushTelemetry(options.runId)));
     return {
       value: { ...(await this.status(options.runId)), reconciliation },

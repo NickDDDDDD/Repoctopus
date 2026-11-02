@@ -1,6 +1,11 @@
 import type { Checkpoint, TrajectoryEvent } from '../trajectory/types.js';
-import type { WorkExecutionRecovery } from '../work-execution/types.js';
-import type { ChangeLifecycleSnapshot, ChangeNextAction } from './transition.js';
+import type { WorkExecutionCheckpoint, WorkExecutionRecovery } from '../work-execution/types.js';
+import type {
+  ChangeLifecycleSnapshot,
+  ChangeLifecycleState,
+  ChangeNextAction,
+  RunStatus,
+} from './transition.js';
 
 const RECOVERY_REASONS = new Set<WorkExecutionRecovery['reason']>([
   'terminal',
@@ -17,6 +22,7 @@ const RECOVERY_REASONS = new Set<WorkExecutionRecovery['reason']>([
   'validator-pending',
   'checkpoint-superseded',
   'transition-pending',
+  'open-gate-pending',
   'content-missing-or-corrupt',
   'open-observation-unavailable',
   'migration-required',
@@ -41,69 +47,51 @@ function matchesCurrentCheckpoint(
   return selectedWorkId === workId;
 }
 
+export interface WorkContinuationClassificationInput {
+  runStatus: RunStatus;
+  lifecycle: ChangeLifecycleState;
+  execution?: WorkExecutionCheckpoint;
+  invokingHostActive?: boolean;
+}
+
 /**
- * Projects the public continuation solely from committed Run evidence.
+ * Classifies the next Runtime-owned continuation from persisted Work identity only.
  *
- * Dynamic packet and Host checks belong to `next`/`resume`. Once those checks select a
- * continuation, the Runtime commits `continuation.selected`; subsequent readers replay that fact
- * instead of repeating I/O or inferring from the working tree.
+ * Provider and packet reads happen before this function and may fail closed separately. Keeping
+ * this table pure lets `next`, `resume`, recovery and read-only projections share one state model.
  */
-export function projectCommittedContinuation(
-  checkpoint: Checkpoint,
-  trajectory: readonly TrajectoryEvent[],
-): WorkExecutionRecovery | undefined {
-  const lifecycle = checkpoint.changeLifecycle;
-  if (!lifecycle) return undefined;
-  const execution = checkpoint.workExecution;
+export function classifyWorkContinuation(
+  input: WorkContinuationClassificationInput,
+): WorkExecutionRecovery {
   const executionMatches = Boolean(
-    execution &&
-    lifecycle.currentWork?.workId === execution.workId &&
-    lifecycle.checkEpoch === execution.checkEpoch,
+    input.execution &&
+    input.lifecycle.currentWork?.workId === input.execution.workId &&
+    input.lifecycle.checkEpoch === input.execution.checkEpoch,
   );
-  const current = executionMatches ? execution : undefined;
-  const workId = current?.workId ?? lifecycle.currentWork?.workId ?? null;
-  const attempt = current?.attempt ?? null;
-  const checkEpoch = current?.checkEpoch ?? lifecycle.checkEpoch;
+  const current = executionMatches ? input.execution : undefined;
   const result = (
     continuation: WorkExecutionRecovery['continuation'],
     reason: WorkExecutionRecovery['reason'],
   ): WorkExecutionRecovery => ({
     schemaVersion: 2,
     continuation,
-    workId,
-    attempt,
-    checkEpoch,
+    workId: current?.workId ?? input.lifecycle.currentWork?.workId ?? null,
+    attempt: current?.attempt ?? null,
+    checkEpoch: current?.checkEpoch ?? input.lifecycle.checkEpoch,
     reason,
   });
 
-  const selected = [...trajectory]
-    .reverse()
-    .find((event) => matchesCurrentCheckpoint(event, checkpoint, workId));
-  if (
-    selected &&
-    typeof selected.data.continuation === 'string' &&
-    ['execute', 'reobserve', 'ask', 'wait', 'reconcile', 'awaiting-correction', 'done'].includes(
-      selected.data.continuation,
-    ) &&
-    isRecoveryReason(selected.data.reason)
-  ) {
-    return result(
-      selected.data.continuation as WorkExecutionRecovery['continuation'],
-      selected.data.reason,
-    );
-  }
-
-  if (checkpoint.runStatus === 'completed') return result('done', 'terminal');
-  if (lifecycle.waitCondition?.kind === 'human-decision') {
+  if (input.runStatus === 'completed') return result('done', 'terminal');
+  if (input.lifecycle.waitCondition?.kind === 'human-decision') {
     return result('ask', 'human-decision');
   }
-  if (execution && !executionMatches) {
-    return lifecycle.currentWork
+  if (input.execution && !executionMatches) {
+    return input.lifecycle.currentWork
       ? result('execute', 'checkpoint-superseded')
       : result('wait', 'checkpoint-superseded');
   }
   if (!current) {
-    return lifecycle.currentWork
+    return input.lifecycle.currentWork
       ? result('execute', 'work-unclaimed')
       : result('wait', 'transition-pending');
   }
@@ -117,8 +105,11 @@ export function projectCommittedContinuation(
       : result('execute', 'outcome-processing-error');
   }
   if (current.status === 'invoking') {
-    return current.continuation === 'awaiting-correction'
-      ? result('awaiting-correction', 'outcome-rejected')
+    if (current.continuation === 'awaiting-correction') {
+      return result('awaiting-correction', 'outcome-rejected');
+    }
+    return input.invokingHostActive === false
+      ? result('reconcile', 'host-result-unknown')
       : result('wait', 'host-active');
   }
   if (current.status === 'unknown') {
@@ -135,15 +126,86 @@ export function projectCommittedContinuation(
       ? result('execute', 'work-failed')
       : result('execute', 'validator-pending');
   }
+  if (current.status === 'validated' && input.lifecycle.phase === 'open') {
+    return { ...result('reobserve', 'open-gate-pending'), observationStage: 'planning-gate' };
+  }
   return result('execute', 'transition-pending');
+}
+
+/**
+ * Projects the public continuation solely from committed Run evidence.
+ *
+ * Dynamic packet and Host checks belong to `next`/`resume`. Once those checks select a
+ * continuation, the Runtime commits `continuation.selected`; subsequent readers replay that fact
+ * instead of repeating I/O or inferring from the working tree.
+ */
+export function projectCommittedContinuation(
+  checkpoint: Checkpoint,
+  trajectory: readonly TrajectoryEvent[],
+): WorkExecutionRecovery | undefined {
+  const lifecycle = checkpoint.changeLifecycle;
+  if (!lifecycle) return undefined;
+  const classified = classifyWorkContinuation({
+    runStatus: checkpoint.runStatus ?? 'running',
+    lifecycle,
+    ...(checkpoint.workExecution ? { execution: checkpoint.workExecution } : {}),
+  });
+  const workId = classified.workId;
+  const result = (
+    continuation: WorkExecutionRecovery['continuation'],
+    reason: WorkExecutionRecovery['reason'],
+  ): WorkExecutionRecovery => ({
+    schemaVersion: 2,
+    continuation,
+    workId,
+    attempt: classified.attempt,
+    checkEpoch: classified.checkEpoch,
+    reason,
+  });
+
+  const selected = [...trajectory]
+    .reverse()
+    .find((event) => matchesCurrentCheckpoint(event, checkpoint, workId));
+  if (
+    selected &&
+    typeof selected.data.continuation === 'string' &&
+    ['execute', 'reobserve', 'ask', 'wait', 'reconcile', 'awaiting-correction', 'done'].includes(
+      selected.data.continuation,
+    ) &&
+    isRecoveryReason(selected.data.reason)
+  ) {
+    const projected = result(
+      selected.data.continuation as WorkExecutionRecovery['continuation'],
+      selected.data.reason,
+    );
+    return selected.data.observationStage === 'provider-validation' ||
+      selected.data.observationStage === 'planning-gate'
+      ? { ...projected, observationStage: selected.data.observationStage }
+      : projected;
+  }
+
+  return classified;
 }
 
 export function projectLifecycleNextActions(
   snapshot: ChangeLifecycleSnapshot,
+  continuation?: WorkExecutionRecovery,
 ): readonly ChangeNextAction[] {
   if (['completed', 'failed', 'migration_required'].includes(snapshot.status)) return [];
   if (snapshot.phase === 'open') {
     if (snapshot.currentWork) {
+      if (
+        continuation?.continuation === 'reobserve' &&
+        continuation.reason === 'open-gate-pending'
+      ) {
+        return [
+          {
+            id: snapshot.currentWork.workId,
+            kind: 'work',
+            label: 'Reobserve Open planning gate',
+          },
+        ];
+      }
       return [
         {
           id: snapshot.currentWork.workId,

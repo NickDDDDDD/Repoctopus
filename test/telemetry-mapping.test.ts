@@ -441,6 +441,7 @@ describe('telemetry mapping', () => {
         result: 'unavailable',
         reasonCode: 'open-observation-unavailable',
         hostReplayed: false,
+        observationStage: 'planning-gate',
       },
     };
 
@@ -449,7 +450,55 @@ describe('telemetry mapping', () => {
       'repoctopus.execution.continuation': 'reobserve',
       'repoctopus.execution.reason.code': 'open-observation-unavailable',
       'repoctopus.execution.host.replayed': false,
+      'repoctopus.open.observation.stage': 'planning-gate',
     });
+  });
+
+  it('maps bounded project reconciliation classes without repository details', () => {
+    const workflow = workflowFixture();
+    const project = projectFixture();
+    const run = startRun({
+      workflow,
+      runId: 'run-project-content-resumed',
+      projectSnapshotDigest: project.digest,
+      composition: compositionFixture(),
+      timestamp: '2026-01-01T00:00:00.000Z',
+      traceId: '9'.repeat(32),
+    });
+    const event: TrajectoryEvent = {
+      schemaVersion: 1,
+      sequence: 4,
+      eventId: 'project-content-resumed',
+      timestamp: '2026-01-01T00:00:03.000Z',
+      type: 'run.resumed',
+      runId: run.runId,
+      stateVersion: 4,
+      compositionDigest: run.composition.compositionDigest,
+      data: {
+        reconciliation: {
+          changeClass: 'content',
+          requiresReconciliation: false,
+          changedRepositories: [{ repositoryName: 'private-name' }],
+        },
+      },
+    };
+    const batch: TelemetryBatch = {
+      run,
+      workflow,
+      projectSnapshot: project,
+      events: [event],
+      trajectory: [event],
+    };
+
+    expect(workflowEventMetricAttributes(batch, event)).toMatchObject({
+      'repoctopus.project.reconciliation.class': 'content',
+      'repoctopus.project.reconciliation.required': false,
+    });
+    expect(safeEventAttributes(batch, event)).toMatchObject({
+      'repoctopus.project.reconciliation.class': 'content',
+      'repoctopus.project.reconciliation.required': false,
+    });
+    expect(JSON.stringify(safeEventAttributes(batch, event))).not.toContain('private-name');
   });
 
   it('exports only bounded packet and Specification reliability dimensions', () => {
