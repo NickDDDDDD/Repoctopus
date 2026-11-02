@@ -9,7 +9,12 @@ import {
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import type { ChangeLifecycleDefinition, WorkDescriptor } from './transition.js';
 import { materializeLifecycleWorkBinding } from './work-definition.js';
-import type { BuildActionKind, BuildExecutionMode, BuildTddMode } from './build-protocol.js';
+import {
+  executionBindingRequiredCapabilities,
+  type BuildActionKind,
+  type BuildExecutionMode,
+  type BuildTddMode,
+} from './build-protocol.js';
 
 function sha256(value: unknown): `sha256:${string}` {
   return `sha256:${createHash('sha256').update(canonicalJson(value)).digest('hex')}`;
@@ -169,14 +174,18 @@ export function createBuildActionWork(facts: {
       : facts.executionMode === 'autonomous'
         ? 'build.autonomous'
         : null;
+  const hostCapabilities =
+    facts.kind === 'build.configure' && facts.executionMode
+      ? executionBindingRequiredCapabilities(facts.executionMode)
+      : modeCapability
+        ? [modeCapability]
+        : [];
   return {
     schemaVersion: 2,
     workId: `${facts.kind}:${inputDigest.slice('sha256:'.length, 19)}`,
     checkEpoch: facts.checkEpoch,
     ...binding,
-    capabilities: modeCapability
-      ? [...new Set([...binding.capabilities, modeCapability])].sort()
-      : binding.capabilities,
+    capabilities: [...new Set([...binding.capabilities, ...hostCapabilities])].sort(),
     buildAction: facts.kind.slice('build.'.length) as NonNullable<WorkDescriptor['buildAction']>,
     ...(facts.strategyId ? { strategyId: facts.strategyId } : {}),
     ...(facts.bindingId ? { bindingId: facts.bindingId } : {}),

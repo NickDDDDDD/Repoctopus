@@ -49,7 +49,43 @@ function executeWork(input: { tddMode: 'tdd' | 'direct'; augmentations: readonly
   });
 }
 
+function configureWork(executionMode: 'autonomous' | 'subagent-driven-development') {
+  return createBuildActionWork({
+    runId: 'run-build-configure-work',
+    checkEpoch: 4,
+    definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+    kind: 'build.configure',
+    actionSkill: skill('repoctopus-build-configure'),
+    augmentationSkills: [],
+    compositionDigest: digest('composition'),
+    projectConfigDigest: digest('project-config'),
+    projectSnapshotDigest: digest('project-snapshot'),
+    workspaceRepositoryId: 'workspace',
+    repositoryIds: ['workspace'],
+    strategyId: 'strategy-1',
+    executionMode,
+    tddMode: 'tdd',
+    stableInput: { taskSetDigest: digest('tasks') },
+  });
+}
+
 describe('Build Work policy', () => {
+  it.each([
+    ['autonomous', 'build.autonomous'],
+    ['subagent-driven-development', 'subagent.dispatch.attested'],
+  ] as const)(
+    'declares the complete %s Execution Binding capability contract before Configure claim',
+    (executionMode, modeCapability) => {
+      const work = configureWork(executionMode);
+
+      expect(work.capabilities).toEqual(
+        [modeCapability, 'process.execute', 'repository.read', 'repository.write'].sort(),
+      );
+      expect(work.sideEffectClass).toBe('none');
+      expect(work.writeScopes).toEqual([]);
+    },
+  );
+
   it('derives the exact ordered Skill composition from Action and frozen TDD mode', () => {
     expect(buildActionSkillComposition({ action: 'configure' })).toEqual({
       actionSkill: 'repoctopus-build-configure',

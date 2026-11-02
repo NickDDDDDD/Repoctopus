@@ -65,6 +65,7 @@ import {
   createBuildPlan,
   createBuildProtocolState,
   createExecutionWorkspaceIntent,
+  missingExecutionBindingCapabilities,
   createPlanEvidence,
   createPackageCompletionEvidence,
   canRetainSuspendedExecutionBinding,
@@ -2490,11 +2491,11 @@ export class WorkflowRuns extends Service {
               if (bindingCandidate.strategyDigest !== strategy.semanticDigest) {
                 throw new Error('Build Configure candidate does not bind the approved Strategy');
               }
-              const requiredCapability =
-                strategy.executionMode === 'autonomous'
-                  ? 'build.autonomous'
-                  : 'subagent.dispatch.attested';
-              if (!invocationHost.capabilities.includes(requiredCapability)) {
+              const missingCapabilities = missingExecutionBindingCapabilities(
+                strategy.executionMode,
+                invocationHost.capabilities,
+              );
+              if (missingCapabilities.length > 0) {
                 const projectConfigDigest = current.trigger?.facts.projectConfigDigest;
                 const specificationRoot = current.trigger?.facts.specificationRoot as
                   | { repositoryId?: unknown }
@@ -2532,7 +2533,7 @@ export class WorkflowRuns extends Service {
                     reason: 'execution-binding-host-capability-missing',
                     priorWorkId: lifecycle.currentWork.workId,
                     executionMode: strategy.executionMode,
-                    requiredCapability,
+                    missingCapabilities,
                   },
                 });
                 for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
@@ -2540,7 +2541,7 @@ export class WorkflowRuns extends Service {
                 }
                 const retried = await this.coordinator.acceptChangeObservation(runId, {
                   kind: 'build-binding-retry-required',
-                  reason: `Configure Host did not attest ${requiredCapability}`,
+                  reason: `Configure Host did not attest ${missingCapabilities.join(', ')}`,
                   work: retryWork,
                 });
                 await this.ctx.workExecutionAuthority.recordWorkCreated(runId, retryWork);
@@ -2552,7 +2553,7 @@ export class WorkflowRuns extends Service {
                     {
                       level: 'warning',
                       code: 'change.build-binding-host-capability-retry',
-                      message: `Build Configure will retry with a Host that attests ${requiredCapability}`,
+                      message: `Build Configure will retry with a Host that attests ${missingCapabilities.join(', ')}`,
                     },
                   ],
                 };

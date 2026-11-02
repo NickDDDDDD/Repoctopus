@@ -140,9 +140,9 @@ describe('composition compatibility', () => {
       [
         'workflow-runs',
         {
-          codeDigest: 'sha256:f9186483739094842a60aaec6e2289e1b9a95f0be17860d52a069e41fa8f6372',
+          codeDigest: 'sha256:9da4dbb9040aa152848323ab5acb5c2be5441bb220ec31858a040867bf241183',
           descriptorDigest:
-            'sha256:058e2165adecee6df7f00ab094ceac9fd6281904ba3cbcb51a85d8c66514c2b6',
+            'sha256:ff6451f1c2c5dd9fbf711cb487b1c256d2b5782099c75743966deb2af1653818',
         },
       ],
       [
@@ -156,9 +156,9 @@ describe('composition compatibility', () => {
       [
         'lifecycle-definition-builtin',
         {
-          codeDigest: 'sha256:7ac8af2578dec4a4e45d5cef811656d0280b2af26b792e2a03b8ed4d64b869ce',
+          codeDigest: 'sha256:d87d3d92a1e86aa55072bb289a1c1292ca499d092f85ee6e6df4348edd578413',
           descriptorDigest:
-            'sha256:b37cd79d98e09c8d36f3c77315e316c877e9f2da78494c61f07273b5f5d171d2',
+            'sha256:b5de20ca5e52a5ec99cf1f6a02cf4d3705360c95fd176ad692ace94b5723c161',
         },
       ],
       [

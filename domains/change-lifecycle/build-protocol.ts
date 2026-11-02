@@ -267,6 +267,30 @@ export interface ExecutionBinding {
   localOverlayRef: string;
 }
 
+export function executionBindingRequiredCapabilities(
+  executionMode: BuildExecutionMode,
+): readonly string[] {
+  return Object.freeze(
+    [
+      executionMode === 'autonomous' ? 'build.autonomous' : 'subagent.dispatch.attested',
+      'process.execute',
+      'repository.write',
+    ].sort(),
+  );
+}
+
+export function missingExecutionBindingCapabilities(
+  executionMode: BuildExecutionMode,
+  hostCapabilities: readonly string[],
+): readonly string[] {
+  const available = new Set(hostCapabilities);
+  return Object.freeze(
+    executionBindingRequiredCapabilities(executionMode).filter(
+      (capability) => !available.has(capability),
+    ),
+  );
+}
+
 export function createExecutionBinding(input: {
   strategy: BuildStrategy;
   revision: number;
@@ -283,17 +307,12 @@ export function createExecutionBinding(input: {
     throw new Error('Execution Binding isolation does not match the approved Build Strategy');
   }
   const hostCapabilities = unique(input.hostCapabilities, 'Host capabilities');
-  const requiredCapability =
-    input.strategy.executionMode === 'autonomous'
-      ? 'build.autonomous'
-      : 'subagent.dispatch.attested';
-  if (!hostCapabilities.includes(requiredCapability)) {
-    throw new Error(`Selected execution mode requires ${requiredCapability}`);
-  }
-  for (const capability of ['process.execute', 'repository.write']) {
-    if (!hostCapabilities.includes(capability)) {
-      throw new Error(`Execution Binding requires ${capability}`);
-    }
+  const missingCapabilities = missingExecutionBindingCapabilities(
+    input.strategy.executionMode,
+    hostCapabilities,
+  );
+  if (missingCapabilities.length > 0) {
+    throw new Error(`Execution Binding requires ${missingCapabilities.join(', ')}`);
   }
   const localOverlayRef = text(input.localOverlayRef, 'Local overlay reference');
   if (isAbsolute(localOverlayRef) || /^[a-z]:[\\/]/iu.test(localOverlayRef)) {
