@@ -134,7 +134,9 @@ describe('telemetry mapping', () => {
       'repoctopus.build.reviewMode': 'standard',
       'repoctopus.build.isolation': 'worktree',
     });
-    expect(JSON.stringify(attributes)).not.toMatch(/C:\/workspace|semanticDigest|stateDigest|localOverlayRef|sha256:[ab]/u);
+    expect(JSON.stringify(attributes)).not.toMatch(
+      /C:\/workspace|semanticDigest|stateDigest|localOverlayRef|sha256:[ab]/u,
+    );
   });
 
   it('projects one accepted Change transition identically for Desktop and remote OTLP', () => {
@@ -423,7 +425,7 @@ describe('telemetry mapping', () => {
     expect(JSON.stringify(metric)).not.toMatch(/work-package|repository/u);
   });
 
-  it('maps unavailable Open continuation as reconciliation without Host replay', () => {
+  it('maps unavailable Open continuation as reobservation without Host replay', () => {
     const event: TrajectoryEvent = {
       schemaVersion: 1,
       sequence: 3,
@@ -434,17 +436,17 @@ describe('telemetry mapping', () => {
       stateVersion: 3,
       compositionDigest: `sha256:${'a'.repeat(64)}`,
       data: {
-        continuation: 'reconcile',
+        continuation: 'reobserve',
         reason: 'open-observation-unavailable',
-        result: 'reconcile',
+        result: 'unavailable',
         reasonCode: 'open-observation-unavailable',
         hostReplayed: false,
       },
     };
 
     expect(executionMetricAttributes(event)).toMatchObject({
-      'repoctopus.execution.result': 'reconcile',
-      'repoctopus.execution.continuation': 'reconcile',
+      'repoctopus.execution.result': 'unavailable',
+      'repoctopus.execution.continuation': 'reobserve',
       'repoctopus.execution.reason.code': 'open-observation-unavailable',
       'repoctopus.execution.host.replayed': false,
     });

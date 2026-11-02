@@ -95,6 +95,7 @@ describe('Change Run Desktop activation production slice', () => {
         targetKind: 'source',
         reason: 'new-instance',
       });
+      const appendObservations = vi.spyOn(app.context.observationDelivery, 'append');
       let persistedBeforeExport = false;
       const exportTelemetry = app.context.workflowTelemetry.export.bind(
         app.context.workflowTelemetry,
@@ -201,6 +202,37 @@ describe('Change Run Desktop activation production slice', () => {
       expect(activate).toHaveBeenCalledOnce();
       expect(recordComposition).toHaveBeenCalledOnce();
       expect(recordWork).toHaveBeenCalledOnce();
+      const startObservations = appendObservations.mock.calls
+        .flatMap(([envelopes]) => envelopes)
+        .filter((envelope) => envelope.eventType === 'platform.change-start');
+      expect(startObservations.map((envelope) => envelope.attributes)).toEqual([
+        expect.objectContaining({
+          result: 'rejected',
+          bindingError: 'source-target-equal',
+          runCreated: false,
+          workCreated: false,
+          checkpointChanged: false,
+          recovery: 'none',
+        }),
+        expect.objectContaining({
+          result: 'created',
+          bindingError: 'none',
+          runCreated: true,
+          workCreated: true,
+          checkpointChanged: true,
+          recovery: 'none',
+        }),
+        expect.objectContaining({
+          result: 'reused',
+          bindingError: 'none',
+          runCreated: false,
+          workCreated: false,
+          checkpointChanged: false,
+          recovery: 'resumed',
+        }),
+      ]);
+      expect(JSON.stringify(startObservations)).not.toContain('change/activation-slice');
+      expect(JSON.stringify(startObservations)).not.toContain(remote);
 
       await app.context.workflowRuns.status(runId);
       await app.context.workflowRuns.start({

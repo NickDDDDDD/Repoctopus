@@ -574,6 +574,7 @@ describe('managed Change execution production composition', () => {
           const unavailable = vi
             .spyOn(application.context.specification, 'inspect')
             .mockRejectedValueOnce(new Error('simulated Provider outage'));
+          const invocationCountBeforeReobserve = capture.invocations.length;
           const unavailableResult = await next();
           unavailable.mockRestore();
           expect(unavailableResult.value).toMatchObject({
@@ -582,7 +583,7 @@ describe('managed Change execution production composition', () => {
               currentWork: { workId: repairedOutcome.changeLifecycle?.currentWork?.workId },
             },
             continuation: {
-              continuation: 'reconcile',
+              continuation: 'reobserve',
               reason: 'open-observation-unavailable',
             },
           });
@@ -599,12 +600,13 @@ describe('managed Change execution production composition', () => {
               .find((event) => event.type === 'continuation.selected'),
           ).toMatchObject({
             data: {
-              continuation: 'reconcile',
-              result: 'reconcile',
+              continuation: 'reobserve',
+              result: 'unavailable',
               reasonCode: 'open-observation-unavailable',
               hostReplayed: false,
             },
           });
+          expect(capture.invocations).toHaveLength(invocationCountBeforeReobserve);
         }
         expect((await next()).value.changeLifecycle).toMatchObject({
           phase: 'open',
@@ -612,6 +614,11 @@ describe('managed Change execution production composition', () => {
           currentWork: null,
           waitCondition: { kind: 'human-decision' },
         });
+        if (!multiRepository && executionMode === 'autonomous') {
+          expect(
+            capture.invocations.filter((item) => item.packet.work.kind === 'change.intake'),
+          ).toHaveLength(2);
+        }
         const openApproval = await application.context.commandRouter.execute<
           { changeId: string; approvalPhase: 'open' },
           SpecificationApprovalState | null
@@ -1585,9 +1592,7 @@ describe('managed Change execution production composition', () => {
             : []),
           'specification.plan',
           'build.configure',
-          ...(multiRepository && executionMode === 'autonomous'
-            ? ['build.configure']
-            : []),
+          ...(multiRepository && executionMode === 'autonomous' ? ['build.configure'] : []),
           'build.plan',
           'build.execute',
           'build.execute',

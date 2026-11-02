@@ -23,6 +23,7 @@ import {
   createSpecificationPlanningManifest,
 } from './planning-manifest.js';
 import { normalizePlanningArtifacts, REQUIRED_PLANNING_ARTIFACTS } from './artifacts.js';
+import { ChangeStartBindingError } from '../change-lifecycle/start-binding.js';
 
 const SHA256_DIGEST = /^sha256:[a-f0-9]{64}$/u;
 const GIT_OID = /^[a-f0-9]{40}(?:[a-f0-9]{24})?$/u;
@@ -59,7 +60,7 @@ function normalizeBranch(branch: ChangeBranchReference): ChangeBranchReference {
     }
   }
   if (branch.sourceBranch === branch.targetBranch) {
-    throw new Error('Change branch source and target branches must differ');
+    throw new ChangeStartBindingError('source-target-equal');
   }
   if (!GIT_OID.test(branch.remoteOid)) {
     throw new Error('Change branch remote OID must be a published Git commit');

@@ -37,7 +37,14 @@ export type RuntimeStabilityFact =
       kind: 'dispatch';
       authority: 'runtime';
       result: 'selected' | 'suppressed';
-      continuation: 'execute' | 'ask' | 'wait' | 'reconcile' | 'awaiting-correction' | 'done';
+      continuation:
+        | 'execute'
+        | 'reobserve'
+        | 'ask'
+        | 'wait'
+        | 'reconcile'
+        | 'awaiting-correction'
+        | 'done';
     }
   | {
       schemaVersion: 1;
@@ -57,6 +64,7 @@ export interface RuntimeStabilityMeasurement {
 
 const CONTINUATIONS = new Set([
   'execute',
+  'reobserve',
   'ask',
   'wait',
   'reconcile',

@@ -8,6 +8,7 @@ import { canonicalJson } from '../workflow-contract/canonical.js';
 
 export type WorkContinuationKind =
   | 'execute'
+  | 'reobserve'
   | 'ask'
   | 'wait'
   | 'reconcile'
