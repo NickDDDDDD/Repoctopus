@@ -271,6 +271,14 @@ describe('public Change Run Desktop activation', () => {
         cwd: workspace,
       });
       await executeFile('git', ['push'], { cwd: workspace });
+      await executeFile('git', ['switch', '-c', 'spec/desktop-unavailable-e2e'], {
+        cwd: workspace,
+      });
+      await executeFile(
+        'git',
+        ['push', '--set-upstream', 'origin', 'spec/desktop-unavailable-e2e'],
+        { cwd: workspace },
+      );
 
       try {
         const started = await runCli<RunStatusView>({
@@ -385,6 +393,14 @@ describe('public Change Run Desktop activation', () => {
         cwd: workspace,
       });
       await executeFile('git', ['push'], { cwd: workspace });
+      await executeFile('git', ['switch', '-c', 'spec/desktop-activation-e2e'], {
+        cwd: workspace,
+      });
+      await executeFile(
+        'git',
+        ['push', '--set-upstream', 'origin', 'spec/desktop-activation-e2e'],
+        { cwd: workspace },
+      );
 
       const context = {
         schemaVersion: 1 as const,
