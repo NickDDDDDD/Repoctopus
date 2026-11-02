@@ -1,0 +1,16 @@
+{
+  "change": "stabilize-runtime-workspace-binding",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4",
+  "files": [
+    { "path": "openspec/changes/stabilize-runtime-workspace-binding/proposal.md", "sha256": "160e57cce19991a01e072733e80df3262df767df5c94f3522b2c1778fab72236" },
+    { "path": "openspec/changes/stabilize-runtime-workspace-binding/design.md", "sha256": "8a290765917d8bd37054e2429b25cc2f65bec5b9565955f2bbb4094152d035fc" },
+    { "path": "openspec/changes/stabilize-runtime-workspace-binding/tasks.md", "sha256": "3462fd36d9aeb37d8537281e845632af7023e28e0b9a5e37a395a06226b2f36a" },
+    { "path": "openspec/changes/stabilize-runtime-workspace-binding/specs/change-lifecycle/spec.md", "sha256": "d64c58ab26304f2c9adef2a72f407127831e4a55acd04198ab4ec8bbdbdbe6c2" },
+    { "path": "openspec/changes/stabilize-runtime-workspace-binding/specs/development-telemetry/spec.md", "sha256": "b304f8fb556ea50d44f7466baea2a5f39d5716dd2a8d72057ea5313609ef9b76" }
+  ]
+}

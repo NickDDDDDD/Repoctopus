@@ -76,7 +76,7 @@ describe('Change Run Desktop activation production slice', () => {
     for (const key of environmentKeys) process.env[key] = environment[key];
     const app = await bootProjectComposition(productRoot, workspace);
     try {
-      const projectSnapshot = await app.context.commandRouter.execute<
+      let projectSnapshot = await app.context.commandRouter.execute<
         {
           workspaceId: string;
           workspaceRoot: string;
@@ -95,6 +95,7 @@ describe('Change Run Desktop activation production slice', () => {
         targetKind: 'source',
         reason: 'new-instance',
       });
+      const appendObservations = vi.spyOn(app.context.observationDelivery, 'append');
       let persistedBeforeExport = false;
       const exportTelemetry = app.context.workflowTelemetry.export.bind(
         app.context.workflowTelemetry,
@@ -119,6 +120,37 @@ describe('Change Run Desktop activation production slice', () => {
         verificationProfileId: 'verify',
         executionCheckouts: [{ repositoryId: 'workspace', checkoutPath: workspace }],
       };
+
+      const initialize = vi.spyOn(app.context.runStore, 'initialize');
+      const recordComposition = vi.spyOn(
+        app.context.workExecutionAuthority,
+        'recordSkillComposition',
+      );
+      const recordWork = vi.spyOn(app.context.workExecutionAuthority, 'recordWorkCreated');
+      await expect(app.context.workflowRuns.startChange(input)).rejects.toMatchObject({
+        code: 'runtime.workspace-binding.source-target-equal',
+      });
+      expect(initialize).not.toHaveBeenCalled();
+      expect(recordComposition).not.toHaveBeenCalled();
+      expect(recordWork).not.toHaveBeenCalled();
+      expect(activate).not.toHaveBeenCalled();
+
+      await executeFile('git', ['switch', '-c', 'change/activation-slice'], { cwd: workspace });
+      projectSnapshot = await app.context.commandRouter.execute<
+        {
+          workspaceId: string;
+          workspaceRoot: string;
+          workspaceRepositoryId: string;
+          repositories: Array<{ id: string; path: string }>;
+        },
+        ProjectSnapshot
+      >('workspace.snapshot', {
+        workspaceId: 'desktop-run',
+        workspaceRoot: workspace,
+        workspaceRepositoryId: 'workspace',
+        repositories: [{ id: 'workspace', path: workspace }],
+      });
+      input.projectSnapshot = projectSnapshot;
 
       const started = await app.context.commandRouter.execute<
         StartChangeRunInput,
@@ -161,6 +193,46 @@ describe('Change Run Desktop activation production slice', () => {
       });
       expect(JSON.stringify(envelope)).not.toContain(workspace);
       expect(persistedBeforeExport).toBe(true);
+
+      const replayed = await app.context.workflowRuns.startChange(input);
+      expect(replayed.value.state.runId).toBe(runId);
+      expect(replayed.value.changeLifecycle?.currentWork?.workId).toBe(
+        started.value.changeLifecycle?.currentWork?.workId,
+      );
+      expect(activate).toHaveBeenCalledOnce();
+      expect(recordComposition).toHaveBeenCalledOnce();
+      expect(recordWork).toHaveBeenCalledOnce();
+      const startObservations = appendObservations.mock.calls
+        .flatMap(([envelopes]) => envelopes)
+        .filter((envelope) => envelope.eventType === 'platform.change-start');
+      expect(startObservations.map((envelope) => envelope.attributes)).toEqual([
+        expect.objectContaining({
+          result: 'rejected',
+          bindingError: 'source-target-equal',
+          runCreated: false,
+          workCreated: false,
+          checkpointChanged: false,
+          recovery: 'none',
+        }),
+        expect.objectContaining({
+          result: 'created',
+          bindingError: 'none',
+          runCreated: true,
+          workCreated: true,
+          checkpointChanged: true,
+          recovery: 'none',
+        }),
+        expect.objectContaining({
+          result: 'reused',
+          bindingError: 'none',
+          runCreated: false,
+          workCreated: false,
+          checkpointChanged: false,
+          recovery: 'resumed',
+        }),
+      ]);
+      expect(JSON.stringify(startObservations)).not.toContain('change/activation-slice');
+      expect(JSON.stringify(startObservations)).not.toContain(remote);
 
       await app.context.workflowRuns.status(runId);
       await app.context.workflowRuns.start({

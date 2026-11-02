@@ -407,6 +407,7 @@ const BOUNDED_RESULTS = new Set([
   'suppressed',
   'not-executed',
   'executed',
+  'unavailable',
 ]);
 const BOUNDED_ARTIFACT_STATUSES = new Set(['ready', 'skipped', 'missing']);
 const BOUNDED_SEVERITIES = new Set(['none', 'info', 'warning', 'error']);
@@ -437,7 +438,7 @@ export function executionMetricAttributes(event: TrajectoryEvent): Attributes | 
   const result = typeof event.data.result === 'string' ? event.data.result : 'unknown';
   const continuation =
     typeof event.data.continuation === 'string' &&
-    ['execute', 'ask', 'wait', 'reconcile', 'awaiting-correction', 'done'].includes(
+    ['execute', 'reobserve', 'ask', 'wait', 'reconcile', 'awaiting-correction', 'done'].includes(
       event.data.continuation,
     )
       ? event.data.continuation

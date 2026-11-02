@@ -1,0 +1,3082 @@
+# comet-execution: managed-run
+change_id: 78fe64fe-2b74-4510-adab-3ed476c9da94
+workflow: full
+language: zh-CN
+phase: archive
+context_compression: off
+build_mode: autonomous
+build_pause: null
+subagent_dispatch: null
+tdd_mode: tdd
+review_mode: thorough
+isolation: branch
+verify_mode: null
+auto_transition: true
+base_ref: f26b9e078c333fa9413a4e3ece11f66e6fb17f6e
+design_doc: openspec/changes/archive/2026-11-02-stabilize-runtime-workspace-binding/design.md
+plan: docs/superpowers/plans/2026-11-02-stabilize-runtime-workspace-binding.md
+verify_result: pass
+verify_failures: 0
+verification_report: docs/superpowers/reports/stabilize-runtime-workspace-binding.md
+branch_status: pending
+created_at: 2026-11-02
+verified_at: 2026-11-02
+archive_confirmation: confirmed
+archived: true
+bound_branch: codex/stabilize-runtime-workspace-binding
+direct_override: false
+handoff_context: openspec/changes/archive/2026-11-02-stabilize-runtime-workspace-binding/.comet/handoff/design-context.json
+handoff_hash: 5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v2
+  hash: 734b1f0f8c0b06acfa4f6e04db1f5460123fcdfe918630563a9c5e0b32fcc435
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: stabilize-runtime-workspace-binding
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+    definitionHashes:
+      '["comet-classic-full","1"]': 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+    initialStateHash: 452ba7216c48cdcde42437e1722fcab02c7c1f81e498393826d0c745a0840d9a
+    input:
+      change: stabilize-runtime-workspace-binding
+      changeDir: openspec/changes/stabilize-runtime-workspace-binding
+      workspaceBaseline:
+        ref: a624b498-a205-469b-afad-3576be798bc2
+    state:
+      archiveConfirmation: confirmed
+      archived: true
+      autoTransition: true
+      baseRef: f26b9e078c333fa9413a4e3ece11f66e6fb17f6e
+      boundBranch: codex/stabilize-runtime-workspace-binding
+      branchStatus: pending
+      buildMode: autonomous
+      buildPause: null
+      checkEpoch: 7
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-02
+      designDoc: openspec/changes/archive/2026-11-02-stabilize-runtime-workspace-binding/design.md
+      directOverride: false
+      handoffContext: openspec/changes/archive/2026-11-02-stabilize-runtime-workspace-binding/.comet/handoff/design-context.json
+      handoffHash: 5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4
+      isolation: branch
+      language: zh-CN
+      phase: archive
+      plan: docs/superpowers/plans/2026-11-02-stabilize-runtime-workspace-binding.md
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: tdd
+      verificationReport: docs/superpowers/reports/stabilize-runtime-workspace-binding.md
+      verifiedAt: 2026-11-02
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pass
+      workflow: full
+    status: running
+    sequence: 30
+    actions:
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-7a71b5222bf8a630031995b8adf58f86dd1b586b838f3f38220079588e98e9a6
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-runtime-workspace-binding:1
+        input:
+          input:
+            change: stabilize-runtime-workspace-binding
+            changeDir: openspec/changes/stabilize-runtime-workspace-binding
+            workspaceBaseline:
+              ref: a624b498-a205-469b-afad-3576be798bc2
+          outputs: {}
+        inputHash: 37f0454c76afa200b9ac9598ba0b177931a17706f21be982c9dbd39855134e12
+        outcome:
+          actionId: stabilize-runtime-workspace-binding:1
+          attempt: 1
+          claimToken: portable-7a71b5222bf8a630031995b8adf58f86dd1b586b838f3f38220079588e98e9a6
+          inputHash: 37f0454c76afa200b9ac9598ba0b177931a17706f21be982c9dbd39855134e12
+          outcomeId: d572725a-a52c-4abd-830e-a21099a2bf2d
+          output:
+            event: open-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 674667b401124fd84a386d22747c7cd77d932ec9889f2fe4ffff65aec327c0fd
+            outcomeId: d572725a-a52c-4abd-830e-a21099a2bf2d
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-runtime-workspace-binding
+        status: succeeded
+        stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-c21907a2fc54934453608cddebb289d27efba39e119547423795f1dc2a07bae9
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-runtime-workspace-binding:4
+        input:
+          input:
+            change: stabilize-runtime-workspace-binding
+            changeDir: openspec/changes/stabilize-runtime-workspace-binding
+            workspaceBaseline:
+              ref: a624b498-a205-469b-afad-3576be798bc2
+          outputs: {}
+        inputHash: 1d69354522eee7f40e7ef9750b8d42810919bda8bae817c6d30726103f60d2cb
+        outcome:
+          actionId: stabilize-runtime-workspace-binding:4
+          attempt: 1
+          claimToken: portable-c21907a2fc54934453608cddebb289d27efba39e119547423795f1dc2a07bae9
+          inputHash: 1d69354522eee7f40e7ef9750b8d42810919bda8bae817c6d30726103f60d2cb
+          outcomeId: stabilize-runtime-workspace-binding:4:1:executor-result
+          output:
+            contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 03296b384b8a180b38160c5d14576ccc8957c6c560f21cf26da737689142b6f9
+            outcomeId: stabilize-runtime-workspace-binding:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-runtime-workspace-binding
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-e9ad1e8c0d3e5f550f3b0d1d81d09fa68910fdb1cefdcbb9d7656f26fdf56492
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-runtime-workspace-binding:5
+        input:
+          input:
+            change: stabilize-runtime-workspace-binding
+            changeDir: openspec/changes/stabilize-runtime-workspace-binding
+            workspaceBaseline:
+              ref: a624b498-a205-469b-afad-3576be798bc2
+          outputs: {}
+        inputHash: 98b44150676c7f37a5c7fae6f6b286388204ccc3b08a1f7b5d5753699ca5fce8
+        outcome:
+          actionId: stabilize-runtime-workspace-binding:5
+          attempt: 1
+          claimToken: portable-e9ad1e8c0d3e5f550f3b0d1d81d09fa68910fdb1cefdcbb9d7656f26fdf56492
+          inputHash: 98b44150676c7f37a5c7fae6f6b286388204ccc3b08a1f7b5d5753699ca5fce8
+          outcomeId: eafb9e7d-8761-4da1-8dbf-b912292504d2
+          output:
+            handoffContext: openspec/changes/stabilize-runtime-workspace-binding/.comet/handoff/design-context.json
+            handoffHash: 5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4
+            proposal: 方案：在 Run Store 首次写入前，由纯领域 ChangeStartBinding 从 Workspace Repository 与
+              target facts 派生稳定语义绑定；绑定只包含
+              repository/remote/topology/source/target，排除 path、HEAD、worktree
+              与时间。Coordinator startOrResume 返回强类型 started|resumed disposition，只有
+              started 记录初始 Skill、Work 与首次 activation；resumed 使用 Store 中的
+              authoritative Work。Open observation 区分 strict invalid、Provider
+              暂时不可用和 Host 外部结果未知：暂时不可用在原 Outcome/attempt/invocation 上
+              reobserve，不调用 Host reconcile。创建前拒绝写 canonical observation
+              outbox，已有 Run 的复用、冲突和重观察从 trajectory 投影。Runner 仍负责
+              branch/worktree，Runtime 不执行 Git checkout。
+            requirementsEvidence:
+              contentHash: feed9c9d2d59ed4be75a7f9ff74d5c83e0e7fdac03194c73d29ef6427a892820
+              ref: openspec/changes/stabilize-runtime-workspace-binding
+            sourceEvidence:
+              contentHash: ba8fbbf0cf4e05fc064e7fde41ef884d0654111907a7e0126cfe66d370fd716d
+              ref: openspec/changes/stabilize-runtime-workspace-binding
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 277ab569e8411ca13af14237bcf3e208304701a3109ebe313e08c9b414478d13
+            outcomeId: eafb9e7d-8761-4da1-8dbf-b912292504d2
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-runtime-workspace-binding
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-29d5217eb5b1f9121cb0f80c2123e84d2f82a0bdcd14a530e046096356bec26f
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-runtime-workspace-binding:7
+        input:
+          input:
+            change: stabilize-runtime-workspace-binding
+            changeDir: openspec/changes/stabilize-runtime-workspace-binding
+            workspaceBaseline:
+              ref: a624b498-a205-469b-afad-3576be798bc2
+          outputs: {}
+        inputHash: 00cefa6e83823d98ab04016386ca0c16595bdd9e71710dc012315410876e249a
+        outcome:
+          actionId: stabilize-runtime-workspace-binding:7
+          attempt: 1
+          claimToken: portable-29d5217eb5b1f9121cb0f80c2123e84d2f82a0bdcd14a530e046096356bec26f
+          inputHash: 00cefa6e83823d98ab04016386ca0c16595bdd9e71710dc012315410876e249a
+          outcomeId: e57cdb0e-f3ce-488e-ab7d-21b31e74ed21
+          output:
+            designDoc: openspec/changes/stabilize-runtime-workspace-binding/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 549c9fd4e917b12e24fc718168bd98d8f2a6f4f72995cc026359bd5b2de99e27
+            outcomeId: e57cdb0e-f3ce-488e-ab7d-21b31e74ed21
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-runtime-workspace-binding
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-01122b77775c2f36514e85dfda9ed3f08b1807579b1b8b8e34c91beac8f5e418
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-runtime-workspace-binding:9
+        input:
+          input:
+            change: stabilize-runtime-workspace-binding
+            changeDir: openspec/changes/stabilize-runtime-workspace-binding
+            workspaceBaseline:
+              ref: a624b498-a205-469b-afad-3576be798bc2
+          outputs: {}
+        inputHash: 913a60adab267332854a542225f93073c62630946b212a25a8b650f697cf3daf
+        outcome:
+          actionId: stabilize-runtime-workspace-binding:9
+          attempt: 1
+          claimToken: portable-01122b77775c2f36514e85dfda9ed3f08b1807579b1b8b8e34c91beac8f5e418
+          inputHash: 913a60adab267332854a542225f93073c62630946b212a25a8b650f697cf3daf
+          outcomeId: 9477b79a-af37-487e-9d52-efc1d01dc68b
+          output:
+            boundBranch: codex/stabilize-runtime-workspace-binding
+            buildMode: autonomous
+            directOverride: false
+            isolation: branch
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 0ad75a9581bcd8402cd45ea7c4f10a14acb7f8560f11dd72156c8b2d367dac7c
+            outcomeId: 9477b79a-af37-487e-9d52-efc1d01dc68b
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-runtime-workspace-binding
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-3bba57718c02f36441e9e50df7a72cd24750e0af89609b2db60c07f9c3fa4f85
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-runtime-workspace-binding:11
+        input:
+          input:
+            change: stabilize-runtime-workspace-binding
+            changeDir: openspec/changes/stabilize-runtime-workspace-binding
+            workspaceBaseline:
+              ref: a624b498-a205-469b-afad-3576be798bc2
+          outputs: {}
+        inputHash: 675e2ef891c94928c4ce4358a1e90317fb94c2dd5c278eddc6e80a336083366d
+        outcome:
+          actionId: stabilize-runtime-workspace-binding:11
+          attempt: 1
+          claimToken: portable-3bba57718c02f36441e9e50df7a72cd24750e0af89609b2db60c07f9c3fa4f85
+          inputHash: 675e2ef891c94928c4ce4358a1e90317fb94c2dd5c278eddc6e80a336083366d
+          outcomeId: 1e3f95de-b5c2-43b0-aa02-3d887d49444e
+          output:
+            designEvidence:
+              contentHash: 1aec2ab05a27f69c69c69127c34f424745999359f64bc57733e89f1ba42289c7
+              ref: openspec/changes/stabilize-runtime-workspace-binding/design.md
+            plan: docs/superpowers/plans/2026-11-02-stabilize-runtime-workspace-binding.md
+            planEvidence:
+              contentHash: 231920acfe84c3362d26d3684311f50c2154389ececf24ba2b30a0fc989316e8
+              ref: docs/superpowers/plans/2026-11-02-stabilize-runtime-workspace-binding.md
+            taskRevision: 3462fd36d9aeb37d8537281e845632af7023e28e0b9a5e37a395a06226b2f36a
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: d67b8797c6a45279ab6f184be7d1d38fffb36c71a70491b0de9fbc522e782e3f
+            outcomeId: 1e3f95de-b5c2-43b0-aa02-3d887d49444e
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-runtime-workspace-binding
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: classic-builder/stabilize-runtime-workspace-binding:13/1
+          token: portable-06730abec6f5c7fb70182f32e17688fe5560a7a38b9c438da11b9abd8cb9d2b1
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-runtime-workspace-binding:13
+        input:
+          input:
+            change: stabilize-runtime-workspace-binding
+            changeDir: openspec/changes/stabilize-runtime-workspace-binding
+            workspaceBaseline:
+              ref: a624b498-a205-469b-afad-3576be798bc2
+          outputs: {}
+        inputHash: 850211d8665bad5e1dacba8901f3ae1d858b54f6570bd77e27e2772ea3201166
+        outcome:
+          actionId: stabilize-runtime-workspace-binding:13
+          attempt: 1
+          claimToken: portable-06730abec6f5c7fb70182f32e17688fe5560a7a38b9c438da11b9abd8cb9d2b1
+          inputHash: 850211d8665bad5e1dacba8901f3ae1d858b54f6570bd77e27e2772ea3201166
+          outcomeId: 9c9a389a-4a58-4407-8f11-138d6ad8de43
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: ebe0c1bd3a187db5937b92ce4c506d7db03427734ac02c82ce46e4071e24f3ae
+            outcomeId: 9c9a389a-4a58-4407-8f11-138d6ad8de43
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-runtime-workspace-binding
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-a63cf8dff56dc91cd9e1a9093a1102e4fb7ba237aa18d7da539091470ddf3adf
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-runtime-workspace-binding:14
+        input:
+          input:
+            change: stabilize-runtime-workspace-binding
+            changeDir: openspec/changes/stabilize-runtime-workspace-binding
+            workspaceBaseline:
+              ref: a624b498-a205-469b-afad-3576be798bc2
+          outputs: {}
+        inputHash: 96b73262f6f12760488c4b69c4a8402cb46c357ab58d89268e2ced9a332a2229
+        outcome:
+          actionId: stabilize-runtime-workspace-binding:14
+          attempt: 1
+          claimToken: portable-a63cf8dff56dc91cd9e1a9093a1102e4fb7ba237aa18d7da539091470ddf3adf
+          inputHash: 96b73262f6f12760488c4b69c4a8402cb46c357ab58d89268e2ced9a332a2229
+          outcomeId: faefec4c-4b5f-402e-8de9-3924b427f271
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: 26a65f3591042ebe19620405e649fdeff35c8fd9e551a57cde97048d79255ef5
+            cwd: .
+            environment: 557c6064b4a2ae9d639f8e30632cc20fbb7781a3b164a5d8d1e155279ef5332b
+            exitCode: 0
+            inputAfter: db4f1904a4e4508334d105535518e961aa5b6c09e656b7d2d27f048dc9bdabec
+            inputBefore: db4f1904a4e4508334d105535518e961aa5b6c09e656b7d2d27f048dc9bdabec
+            manifestHash: b8a8679a8d706da046a312099f71e3110d93d377c78e0a6b2c7da730b7d14629
+            manifestRef: .comet/runtime/classic-sdk-checks/22e232235ca4927a7c51ff961eaeaeeedd1c5fdc00f3867ed3e96d5bd962ab32/fc331832-3efd-4167-b52e-ce35226c3ba4.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/22e232235ca4927a7c51ff961eaeaeeedd1c5fdc00f3867ed3e96d5bd962ab32/e11bee96-0ca6-4fb4-b89c-11c3267c8954.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: da7f7f9d52b2b269ab46e8f510c4c27f8b9af629c5a87d516238c49bf5182aae
+            outcomeId: faefec4c-4b5f-402e-8de9-3924b427f271
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-runtime-workspace-binding
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-78b798ff3320a8c072cdc2d21a42eb834f5b0f9d5465735b654eefe7d79d017d
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-runtime-workspace-binding:16
+        input:
+          input:
+            change: stabilize-runtime-workspace-binding
+            changeDir: openspec/changes/stabilize-runtime-workspace-binding
+            workspaceBaseline:
+              ref: a624b498-a205-469b-afad-3576be798bc2
+          outputs: {}
+        inputHash: 6775432ac546ba6a2c92960dc247876b73da071e1159f7669af57a8f8a328375
+        outcome:
+          actionId: stabilize-runtime-workspace-binding:16
+          attempt: 1
+          claimToken: portable-78b798ff3320a8c072cdc2d21a42eb834f5b0f9d5465735b654eefe7d79d017d
+          inputHash: 6775432ac546ba6a2c92960dc247876b73da071e1159f7669af57a8f8a328375
+          outcomeId: aace9e83-8103-4eda-bc53-4900965a0afd
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/stabilize-runtime-workspace-binding.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 657c976f9d0ea2e952d95100dff7debaed7a1c0e2b94d79098daa8dda92e43cd
+            outcomeId: aace9e83-8103-4eda-bc53-4900965a0afd
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-runtime-workspace-binding
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-d758aa6a27d000778730d67ed0abd6d9b8e85bb0d3e3a84eb40a392aa23bf88d
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-runtime-workspace-binding:18
+        input:
+          input:
+            change: stabilize-runtime-workspace-binding
+            changeDir: openspec/changes/stabilize-runtime-workspace-binding
+            workspaceBaseline:
+              ref: a624b498-a205-469b-afad-3576be798bc2
+          outputs: {}
+        inputHash: a6f2319c3f653ddc525bce232f3f3743ed2f2bfe35c05d1246adbee1ee8b1149
+        outcome:
+          actionId: stabilize-runtime-workspace-binding:18
+          attempt: 1
+          claimToken: portable-d758aa6a27d000778730d67ed0abd6d9b8e85bb0d3e3a84eb40a392aa23bf88d
+          inputHash: a6f2319c3f653ddc525bce232f3f3743ed2f2bfe35c05d1246adbee1ee8b1149
+          outcomeId: 1b2cc6d0-5a66-42c4-b8be-837114bda74c
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 3
+            contentHash: e2b4a2d4c81f751287dea3b59d96c175cbd4988eda67ef97d25b4308c2f2add6
+            cwd: .
+            deliveryInputs: {}
+            environment: 557c6064b4a2ae9d639f8e30632cc20fbb7781a3b164a5d8d1e155279ef5332b
+            exitCode: 0
+            inputAfter: b57893281c2e676175fa6c0b47d4c5a90ef6d2a1d72cdbbd5c614e53c8d508aa
+            inputBefore: b57893281c2e676175fa6c0b47d4c5a90ef6d2a1d72cdbbd5c614e53c8d508aa
+            manifestHash: 999d7470e6d951fc33452885a3c078a9c383d628916109eb727e3440a9e85d9d
+            manifestRef: .comet/runtime/classic-sdk-checks/22e232235ca4927a7c51ff961eaeaeeedd1c5fdc00f3867ed3e96d5bd962ab32/f3eaffef-7150-400d-a87b-1bc64201af8e.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/22e232235ca4927a7c51ff961eaeaeeedd1c5fdc00f3867ed3e96d5bd962ab32/dd5fb3e6-135b-463d-bb97-cfd95443bdea.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: bcec4587bb3fb43f4e6f23d1a62b26e41a405f7a79ca830c3dfa407765cb768b
+            outcomeId: 1b2cc6d0-5a66-42c4-b8be-837114bda74c
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-runtime-workspace-binding
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-96184915661b548e526b1bd76a6a2a1b517fe8e572f1fd3116cbf8f25dec0417
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-runtime-workspace-binding:20
+        input:
+          input:
+            change: stabilize-runtime-workspace-binding
+            changeDir: openspec/changes/stabilize-runtime-workspace-binding
+            workspaceBaseline:
+              ref: a624b498-a205-469b-afad-3576be798bc2
+          outputs: {}
+        inputHash: 20190b028d09babf7130117d2276c28569bbc9cdc0656fe87b5023f717f717df
+        outcome:
+          actionId: stabilize-runtime-workspace-binding:20
+          attempt: 1
+          claimToken: portable-96184915661b548e526b1bd76a6a2a1b517fe8e572f1fd3116cbf8f25dec0417
+          inputHash: 20190b028d09babf7130117d2276c28569bbc9cdc0656fe87b5023f717f717df
+          outcomeId: f9186a60-0535-491e-a4df-f33b8a32e71f
+          output:
+            summary: 归档已验证的 Runtime workspace binding、幂等启动、Open reobserve 与遥测修复；保留 Runner 管理
+              checkout 的边界，并将 OpenSpec delta 合入主规格。
+            targetBranch: codex/stabilize-runtime-workspace-binding
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 8798e4a4ac74650989456beff1e94512dd2a059fb1c0b26476e132aae7b46b7d
+            outcomeId: f9186a60-0535-491e-a4df-f33b8a32e71f
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-runtime-workspace-binding
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-983a5534340eac6c68d4b957e830a659d3bc81c3f33cfe0bf8c92eb92300b0fc
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-runtime-workspace-binding:22
+        input:
+          activation:
+            expectedRevision: 32
+            fromPhase: archive
+          input:
+            change: stabilize-runtime-workspace-binding
+            changeDir: openspec/changes/stabilize-runtime-workspace-binding
+            workspaceBaseline:
+              ref: a624b498-a205-469b-afad-3576be798bc2
+          outputs: {}
+        inputHash: e10a7a4c8d916446404de2adf5cc39646f495c11928ed139786baf6a6a1ba351
+        outcome:
+          actionId: stabilize-runtime-workspace-binding:22
+          attempt: 1
+          claimToken: portable-983a5534340eac6c68d4b957e830a659d3bc81c3f33cfe0bf8c92eb92300b0fc
+          inputHash: e10a7a4c8d916446404de2adf5cc39646f495c11928ed139786baf6a6a1ba351
+          outcomeId: 342db42b-9743-4730-9899-5ab4ff0f8c61
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/stabilize-runtime-workspace-binding.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 87a09faeb4527f7717667d8181b3b056e19e422dc4b110be2d179e643efe724d
+            outcomeId: 342db42b-9743-4730-9899-5ab4ff0f8c61
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-runtime-workspace-binding
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-fc436b15c4a6f3fed42a8971d33a72db53dbcd4cb0e1ddf6e65ccba999c5972b
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-runtime-workspace-binding:24
+        input:
+          input:
+            change: stabilize-runtime-workspace-binding
+            changeDir: openspec/changes/stabilize-runtime-workspace-binding
+            workspaceBaseline:
+              ref: a624b498-a205-469b-afad-3576be798bc2
+          outputs: {}
+        inputHash: bca3f4c6fea128b1b277d52d9376466c34d0d322cafd483bd98df477eb78a440
+        outcome:
+          actionId: stabilize-runtime-workspace-binding:24
+          attempt: 1
+          claimToken: portable-fc436b15c4a6f3fed42a8971d33a72db53dbcd4cb0e1ddf6e65ccba999c5972b
+          inputHash: bca3f4c6fea128b1b277d52d9376466c34d0d322cafd483bd98df477eb78a440
+          outcomeId: 3aba9692-9df6-4825-a66b-42978b40b329
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 4
+            contentHash: ef4f91a36cf4b08e0c72e7b798d7c79f9467a16c4f3f3987e25374156892a40f
+            cwd: .
+            deliveryInputs: {}
+            environment: 557c6064b4a2ae9d639f8e30632cc20fbb7781a3b164a5d8d1e155279ef5332b
+            exitCode: 0
+            inputAfter: 5715b866978583e186810cd90354708b3f79cd31e43b4c1eee7fa7271cd38fb3
+            inputBefore: 5715b866978583e186810cd90354708b3f79cd31e43b4c1eee7fa7271cd38fb3
+            manifestHash: d09e191b41fb83276fcd2c5506d9bdd3749802c9211c69c88ee90ab38304beeb
+            manifestRef: .comet/runtime/classic-sdk-checks/22e232235ca4927a7c51ff961eaeaeeedd1c5fdc00f3867ed3e96d5bd962ab32/8da28e78-6209-4874-878a-5a73b300faf7.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/22e232235ca4927a7c51ff961eaeaeeedd1c5fdc00f3867ed3e96d5bd962ab32/60a0ba27-2ebc-44a6-a37f-a64941f2f48d.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 3546c0a8f37847bd99194c5ae432c481425d04e8e794dd6f80375ab185ce463f
+            outcomeId: 3aba9692-9df6-4825-a66b-42978b40b329
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-runtime-workspace-binding
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-3fbddef21e56783a84c40270c0b3b6a6019eee7cf0b0360d825bb3cd14b6b8a6
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-runtime-workspace-binding:26
+        input:
+          input:
+            change: stabilize-runtime-workspace-binding
+            changeDir: openspec/changes/stabilize-runtime-workspace-binding
+            workspaceBaseline:
+              ref: a624b498-a205-469b-afad-3576be798bc2
+          outputs: {}
+        inputHash: e10d848c6c7847632318dc0a696e04e4b3e033643c46ea44bd115b31abfab36f
+        outcome:
+          actionId: stabilize-runtime-workspace-binding:26
+          attempt: 1
+          claimToken: portable-3fbddef21e56783a84c40270c0b3b6a6019eee7cf0b0360d825bb3cd14b6b8a6
+          inputHash: e10d848c6c7847632318dc0a696e04e4b3e033643c46ea44bd115b31abfab36f
+          outcomeId: 6cf276c4-b583-4714-bf3f-63d0094c55ec
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: 稳定 Runtime Change 启动工作区绑定：在创建 Run 前冻结稳定仓库身份与分支拓扑，重复启动复用同一
+              Work，漂移返回有界错误，Open Provider 不可用采用同 Work reobserve；23 项任务与全量 verify
+              已通过。归档 OpenSpec 变更并推送到 origin，随后合入 main。
+            targetBranch: codex/stabilize-runtime-workspace-binding
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 67377f8fc197b7a37e4a5f21ced03c5678dcf058267282a7975a1cdd0185f20d
+            outcomeId: 6cf276c4-b583-4714-bf3f-63d0094c55ec
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-runtime-workspace-binding
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive-preflight
+          token: portable-73a549180907580e7e833daa114d8db7ad42937463bdb8f6bb470ed889b13111
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-runtime-workspace-binding:28
+        input:
+          input:
+            change: stabilize-runtime-workspace-binding
+            changeDir: openspec/changes/stabilize-runtime-workspace-binding
+            workspaceBaseline:
+              ref: a624b498-a205-469b-afad-3576be798bc2
+          outputs: {}
+        inputHash: 2d162291585ca2c3edec800246e42683ce68fda72324ce4f8f8f8cfe9d319cb1
+        outcome:
+          actionId: stabilize-runtime-workspace-binding:28
+          attempt: 1
+          claimToken: portable-73a549180907580e7e833daa114d8db7ad42937463bdb8f6bb470ed889b13111
+          inputHash: 2d162291585ca2c3edec800246e42683ce68fda72324ce4f8f8f8cfe9d319cb1
+          outcomeId: 23c88d0f-02c3-4553-8cd5-9a35f5fa7647
+          output:
+            baseCommit: 146e63611bfea30dbdc995819c5be99fe7e15314
+            deliveryAction: push
+            prBaseBranch: main
+            remote: origin
+            remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+            targetBranch: codex/stabilize-runtime-workspace-binding
+            verifiedBranch: codex/stabilize-runtime-workspace-binding
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 774b4300ddb52a3dde397338800b8b3afd7f7fc931bd2d665f2c7b065899764f
+            outcomeId: 23c88d0f-02c3-4553-8cd5-9a35f5fa7647
+        reconciliations: []
+        ref: classic-archive-preflight
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-runtime-workspace-binding
+        status: succeeded
+        stepId: full.archive.preflight
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive
+          token: portable-f575df0e30ab26ad7fbc22f2b9f349a115c8eae1d2f5154c4bbb976547aa84d8
+        executionOrigin:
+          workflow:
+            hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-runtime-workspace-binding:29
+        input:
+          input:
+            change: stabilize-runtime-workspace-binding
+            changeDir: openspec/changes/stabilize-runtime-workspace-binding
+            workspaceBaseline:
+              ref: a624b498-a205-469b-afad-3576be798bc2
+          outputs: {}
+        inputHash: c14a9f80beb6ef1440e4dedd015d37360151b02b1aca1c002fc04464247f1574
+        outcome:
+          actionId: stabilize-runtime-workspace-binding:29
+          artifacts:
+            - sha256: 0a9d8185d3ad9ca68c40e0eabf4afaf7d65aade6234c4dbb2302025a83530099
+              uri: openspec/changes/archive/2026-11-02-stabilize-runtime-workspace-binding/.comet/archive-manifest.json
+          attempt: 1
+          claimToken: portable-f575df0e30ab26ad7fbc22f2b9f349a115c8eae1d2f5154c4bbb976547aa84d8
+          inputHash: c14a9f80beb6ef1440e4dedd015d37360151b02b1aca1c002fc04464247f1574
+          outcomeId: 1c7a7261-dc3c-4b73-bdc1-b1ec53dbac4a
+          output:
+            archiveDirectory: openspec/changes/archive/2026-11-02-stabilize-runtime-workspace-binding
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 7dcdb1d30bf99f064c26cab6d668ceaf992cbc8cfcdd9926fb2f7b61fd737d72
+            outcomeId: 1c7a7261-dc3c-4b73-bdc1-b1ec53dbac4a
+        reconciliations: []
+        ref: classic-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-runtime-workspace-binding
+        status: succeeded
+        stepId: full.archive.execute
+        type: call_tool
+      - attempt: 1
+        id: stabilize-runtime-workspace-binding:30
+        input:
+          input:
+            change: stabilize-runtime-workspace-binding
+            changeDir: openspec/changes/stabilize-runtime-workspace-binding
+            workspaceBaseline:
+              ref: a624b498-a205-469b-afad-3576be798bc2
+          outputs: {}
+        inputHash: a55ca8a2614bbe353f8cdcd431c83d3e6e0bc941ee28c6e9c7eb4eaf8adef10b
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-runtime-workspace-binding
+        status: pending
+        stepId: full.archive.deliver
+        type: invoke_skill
+    commands:
+      - id: d4e140e78c1dac45e6c40fce877cab8e00801577168f0a5239e1dd98de97d477
+        name: reopen-verification
+        inputHash: 5134092f096496b1b57a4fd8177cf4af7b8a3e3575a6cd7700483b65927ec3a9
+        actionId: stabilize-runtime-workspace-binding:22
+    actionContexts:
+      stabilize-runtime-workspace-binding:1:
+        results: {}
+        sequence: 1
+      stabilize-runtime-workspace-binding:11:
+        results: {}
+        sequence: 11
+      stabilize-runtime-workspace-binding:13:
+        results: {}
+        sequence: 13
+      stabilize-runtime-workspace-binding:14:
+        results: {}
+        sequence: 14
+      stabilize-runtime-workspace-binding:16:
+        results: {}
+        sequence: 16
+      stabilize-runtime-workspace-binding:18:
+        results: {}
+        sequence: 18
+      stabilize-runtime-workspace-binding:20:
+        results: {}
+        sequence: 20
+      stabilize-runtime-workspace-binding:22:
+        results: {}
+        sequence: 22
+      stabilize-runtime-workspace-binding:24:
+        results: {}
+        sequence: 24
+      stabilize-runtime-workspace-binding:26:
+        results: {}
+        sequence: 26
+      stabilize-runtime-workspace-binding:28:
+        results: {}
+        sequence: 28
+      stabilize-runtime-workspace-binding:29:
+        results: {}
+        sequence: 29
+      stabilize-runtime-workspace-binding:30:
+        results: {}
+        sequence: 30
+      stabilize-runtime-workspace-binding:4:
+        results: {}
+        sequence: 4
+      stabilize-runtime-workspace-binding:5:
+        results: {}
+        sequence: 5
+      stabilize-runtime-workspace-binding:7:
+        results: {}
+        sequence: 7
+      stabilize-runtime-workspace-binding:9:
+        results: {}
+        sequence: 9
+    waits:
+      - id: stabilize-runtime-workspace-binding:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-runtime-workspace-binding
+            changeDir: openspec/changes/stabilize-runtime-workspace-binding
+            workspaceBaseline:
+              ref: a624b498-a205-469b-afad-3576be798bc2
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+              ref: openspec/changes/stabilize-runtime-workspace-binding
+        proposalHash: e5e7a0fc422e5e665a382acd66c4151ef749ff5dfd3aa2d15006ce04638c2835
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-open-ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+          choice: approved
+          proposalHash: e5e7a0fc422e5e665a382acd66c4151ef749ff5dfd3aa2d15006ce04638c2835
+      - id: stabilize-runtime-workspace-binding:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-runtime-workspace-binding
+            changeDir: openspec/changes/stabilize-runtime-workspace-binding
+            workspaceBaseline:
+              ref: a624b498-a205-469b-afad-3576be798bc2
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-runtime-workspace-binding/.comet/handoff/design-context.json
+              handoffHash: 5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4
+              proposal: 方案：在 Run Store 首次写入前，由纯领域 ChangeStartBinding 从 Workspace Repository 与
+                target facts 派生稳定语义绑定；绑定只包含
+                repository/remote/topology/source/target，排除 path、HEAD、worktree
+                与时间。Coordinator startOrResume 返回强类型 started|resumed
+                disposition，只有 started 记录初始 Skill、Work 与首次 activation；resumed 使用
+                Store 中的 authoritative Work。Open observation 区分 strict
+                invalid、Provider 暂时不可用和 Host 外部结果未知：暂时不可用在原
+                Outcome/attempt/invocation 上 reobserve，不调用 Host reconcile。创建前拒绝写
+                canonical observation outbox，已有 Run 的复用、冲突和重观察从 trajectory
+                投影。Runner 仍负责 branch/worktree，Runtime 不执行 Git checkout。
+              requirementsEvidence:
+                contentHash: feed9c9d2d59ed4be75a7f9ff74d5c83e0e7fdac03194c73d29ef6427a892820
+                ref: openspec/changes/stabilize-runtime-workspace-binding
+              sourceEvidence:
+                contentHash: ba8fbbf0cf4e05fc064e7fde41ef884d0654111907a7e0126cfe66d370fd716d
+                ref: openspec/changes/stabilize-runtime-workspace-binding
+        proposalHash: dc6747a198525a00296a4f6166ef567f4302cfb1a87ca9ada1e9a4c52cf246d7
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-design-dc6747a198525a00296a4f6166ef567f4302cfb1a87ca9ada1e9a4c52cf246d7-approved
+          choice: approved
+          proposalHash: dc6747a198525a00296a4f6166ef567f4302cfb1a87ca9ada1e9a4c52cf246d7
+      - id: stabilize-runtime-workspace-binding:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-runtime-workspace-binding
+            changeDir: openspec/changes/stabilize-runtime-workspace-binding
+            workspaceBaseline:
+              ref: a624b498-a205-469b-afad-3576be798bc2
+          outputs:
+            full.build.configure:
+              boundBranch: codex/stabilize-runtime-workspace-binding
+              buildMode: autonomous
+              directOverride: false
+              isolation: branch
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: 919bfbdddcbe61b552704a57e6f994ccaa009eb83180b94bffe007910a6d4554
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: 5b3efa26-3287-44d8-bc4b-e4fee7556ce7
+          choice: approved
+          proposalHash: 919bfbdddcbe61b552704a57e6f994ccaa009eb83180b94bffe007910a6d4554
+      - id: stabilize-runtime-workspace-binding:21
+        stepId: full.archive.confirm
+        sequence: 21
+        status: cancelled
+        proposal:
+          input:
+            change: stabilize-runtime-workspace-binding
+            changeDir: openspec/changes/stabilize-runtime-workspace-binding
+            workspaceBaseline:
+              ref: a624b498-a205-469b-afad-3576be798bc2
+          outputs:
+            full.archive.prepare:
+              summary: 归档已验证的 Runtime workspace binding、幂等启动、Open reobserve 与遥测修复；保留 Runner 管理
+                checkout 的边界，并将 OpenSpec delta 合入主规格。
+              targetBranch: codex/stabilize-runtime-workspace-binding
+        proposalHash: 5c8acb754c29805d51fcda68b036f57471bf495e335c6d26ea4fc7f5b892a0f9
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+      - id: stabilize-runtime-workspace-binding:27
+        stepId: full.archive.confirm
+        sequence: 27
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-runtime-workspace-binding
+            changeDir: openspec/changes/stabilize-runtime-workspace-binding
+            workspaceBaseline:
+              ref: a624b498-a205-469b-afad-3576be798bc2
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 稳定 Runtime Change 启动工作区绑定：在创建 Run 前冻结稳定仓库身份与分支拓扑，重复启动复用同一
+                Work，漂移返回有界错误，Open Provider 不可用采用同 Work reobserve；23 项任务与全量
+                verify 已通过。归档 OpenSpec 变更并推送到 origin，随后合入 main。
+              targetBranch: codex/stabilize-runtime-workspace-binding
+        proposalHash: d6e53ab95910d4682b059fd771bcc50f2e5f8bc41ebe1c59355a2669864168a2
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-d6e53ab95910d4682b059fd771bcc50f2e5f8bc41ebe1c59355a2669864168a2-push
+          choice: push
+          proposalHash: d6e53ab95910d4682b059fd771bcc50f2e5f8bc41ebe1c59355a2669864168a2
+    evidenceWaits:
+      - id: stabilize-runtime-workspace-binding:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/stabilize-runtime-workspace-binding
+          contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+          submissionId: cc35f03b-bcc9-44fe-ac40-c2514bc0a7ff
+      - id: stabilize-runtime-workspace-binding:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/stabilize-runtime-workspace-binding/design.md
+          contentHash: 1aec2ab05a27f69c69c69127c34f424745999359f64bc57733e89f1ba42289c7
+          submissionId: 62005740-e613-489d-9813-9da20a320818
+      - id: stabilize-runtime-workspace-binding:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-02-stabilize-runtime-workspace-binding.md
+          contentHash: 231920acfe84c3362d26d3684311f50c2154389ececf24ba2b30a0fc989316e8
+          submissionId: 4d06e602-2727-4fde-b25c-2376abb79b66
+      - id: stabilize-runtime-workspace-binding:15
+        stepId: full.build.check.evidence
+        sequence: 15
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/22e232235ca4927a7c51ff961eaeaeeedd1c5fdc00f3867ed3e96d5bd962ab32/e11bee96-0ca6-4fb4-b89c-11c3267c8954.log
+          contentHash: 26a65f3591042ebe19620405e649fdeff35c8fd9e551a57cde97048d79255ef5
+          submissionId: 1116fbb1-0c75-4cc1-bf4c-1f467671f5e5
+      - id: stabilize-runtime-workspace-binding:17
+        stepId: full.verify.report.evidence
+        sequence: 17
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/stabilize-runtime-workspace-binding.md
+          contentHash: 2e56ec14e93fbb0e06dc32aae227b31902ebe8df51174cb904180a89b34bbbdf
+          submissionId: cee3f4d8-930f-4cd2-8d42-a2ac6d3c75ee
+      - id: stabilize-runtime-workspace-binding:19
+        stepId: full.verify.check.evidence
+        sequence: 19
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/22e232235ca4927a7c51ff961eaeaeeedd1c5fdc00f3867ed3e96d5bd962ab32/dd5fb3e6-135b-463d-bb97-cfd95443bdea.log
+          contentHash: e2b4a2d4c81f751287dea3b59d96c175cbd4988eda67ef97d25b4308c2f2add6
+          submissionId: 860a6ce6-00df-4a1c-9886-37023f7d8014
+      - id: stabilize-runtime-workspace-binding:23
+        stepId: full.verify.report.evidence
+        sequence: 23
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/stabilize-runtime-workspace-binding.md
+          contentHash: 2e56ec14e93fbb0e06dc32aae227b31902ebe8df51174cb904180a89b34bbbdf
+          submissionId: f9c5b208-7bf6-4222-993c-c70f117f47a3
+      - id: stabilize-runtime-workspace-binding:25
+        stepId: full.verify.check.evidence
+        sequence: 25
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/22e232235ca4927a7c51ff961eaeaeeedd1c5fdc00f3867ed3e96d5bd962ab32/60a0ba27-2ebc-44a6-a37f-a64941f2f48d.log
+          contentHash: ef4f91a36cf4b08e0c72e7b798d7c79f9467a16c4f3f3987e25374156892a40f
+          submissionId: 6b390884-208b-4599-b672-512390beb944
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 46
+  sourceHash: cee3fa869f436e9b9f245ab95ad5821c15aea6ba2192711c8b833a6c8283b472
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: stabilize-runtime-workspace-binding
+            changeDir: openspec/changes/stabilize-runtime-workspace-binding
+            workspaceBaseline:
+              ref: a624b498-a205-469b-afad-3576be798bc2
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+              ref: openspec/changes/stabilize-runtime-workspace-binding
+      - contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+        ref: openspec/changes/stabilize-runtime-workspace-binding
+      - contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+      - choice: approved
+        proposal:
+          input:
+            change: stabilize-runtime-workspace-binding
+            changeDir: openspec/changes/stabilize-runtime-workspace-binding
+            workspaceBaseline:
+              ref: a624b498-a205-469b-afad-3576be798bc2
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-runtime-workspace-binding/.comet/handoff/design-context.json
+              handoffHash: 5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4
+              proposal: 方案：在 Run Store 首次写入前，由纯领域 ChangeStartBinding 从 Workspace Repository 与
+                target facts 派生稳定语义绑定；绑定只包含
+                repository/remote/topology/source/target，排除 path、HEAD、worktree
+                与时间。Coordinator startOrResume 返回强类型 started|resumed
+                disposition，只有 started 记录初始 Skill、Work 与首次 activation；resumed 使用
+                Store 中的 authoritative Work。Open observation 区分 strict
+                invalid、Provider 暂时不可用和 Host 外部结果未知：暂时不可用在原
+                Outcome/attempt/invocation 上 reobserve，不调用 Host reconcile。创建前拒绝写
+                canonical observation outbox，已有 Run 的复用、冲突和重观察从 trajectory
+                投影。Runner 仍负责 branch/worktree，Runtime 不执行 Git checkout。
+              requirementsEvidence:
+                contentHash: feed9c9d2d59ed4be75a7f9ff74d5c83e0e7fdac03194c73d29ef6427a892820
+                ref: openspec/changes/stabilize-runtime-workspace-binding
+              sourceEvidence:
+                contentHash: ba8fbbf0cf4e05fc064e7fde41ef884d0654111907a7e0126cfe66d370fd716d
+                ref: openspec/changes/stabilize-runtime-workspace-binding
+      - handoffContext: openspec/changes/stabilize-runtime-workspace-binding/.comet/handoff/design-context.json
+        handoffHash: 5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4
+        proposal: 方案：在 Run Store 首次写入前，由纯领域 ChangeStartBinding 从 Workspace Repository 与
+          target facts 派生稳定语义绑定；绑定只包含
+          repository/remote/topology/source/target，排除 path、HEAD、worktree
+          与时间。Coordinator startOrResume 返回强类型 started|resumed disposition，只有
+          started 记录初始 Skill、Work 与首次 activation；resumed 使用 Store 中的
+          authoritative Work。Open observation 区分 strict invalid、Provider 暂时不可用和
+          Host 外部结果未知：暂时不可用在原 Outcome/attempt/invocation 上 reobserve，不调用 Host
+          reconcile。创建前拒绝写 canonical observation outbox，已有 Run 的复用、冲突和重观察从
+          trajectory 投影。Runner 仍负责 branch/worktree，Runtime 不执行 Git checkout。
+        requirementsEvidence:
+          contentHash: feed9c9d2d59ed4be75a7f9ff74d5c83e0e7fdac03194c73d29ef6427a892820
+          ref: openspec/changes/stabilize-runtime-workspace-binding
+        sourceEvidence:
+          contentHash: ba8fbbf0cf4e05fc064e7fde41ef884d0654111907a7e0126cfe66d370fd716d
+          ref: openspec/changes/stabilize-runtime-workspace-binding
+      - designDoc: openspec/changes/stabilize-runtime-workspace-binding/design.md
+      - contentHash: 1aec2ab05a27f69c69c69127c34f424745999359f64bc57733e89f1ba42289c7
+        ref: openspec/changes/stabilize-runtime-workspace-binding/design.md
+      - boundBranch: codex/stabilize-runtime-workspace-binding
+        buildMode: autonomous
+        directOverride: false
+        isolation: branch
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: stabilize-runtime-workspace-binding
+            changeDir: openspec/changes/stabilize-runtime-workspace-binding
+            workspaceBaseline:
+              ref: a624b498-a205-469b-afad-3576be798bc2
+          outputs:
+            full.build.configure:
+              boundBranch: codex/stabilize-runtime-workspace-binding
+              buildMode: autonomous
+              directOverride: false
+              isolation: branch
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: 1aec2ab05a27f69c69c69127c34f424745999359f64bc57733e89f1ba42289c7
+          ref: openspec/changes/stabilize-runtime-workspace-binding/design.md
+        plan: docs/superpowers/plans/2026-11-02-stabilize-runtime-workspace-binding.md
+        planEvidence:
+          contentHash: 231920acfe84c3362d26d3684311f50c2154389ececf24ba2b30a0fc989316e8
+          ref: docs/superpowers/plans/2026-11-02-stabilize-runtime-workspace-binding.md
+        taskRevision: 3462fd36d9aeb37d8537281e845632af7023e28e0b9a5e37a395a06226b2f36a
+      - contentHash: 231920acfe84c3362d26d3684311f50c2154389ececf24ba2b30a0fc989316e8
+        ref: docs/superpowers/plans/2026-11-02-stabilize-runtime-workspace-binding.md
+      - event: build-complete
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: 26a65f3591042ebe19620405e649fdeff35c8fd9e551a57cde97048d79255ef5
+        cwd: .
+        environment: 557c6064b4a2ae9d639f8e30632cc20fbb7781a3b164a5d8d1e155279ef5332b
+        exitCode: 0
+        inputAfter: db4f1904a4e4508334d105535518e961aa5b6c09e656b7d2d27f048dc9bdabec
+        inputBefore: db4f1904a4e4508334d105535518e961aa5b6c09e656b7d2d27f048dc9bdabec
+        manifestHash: b8a8679a8d706da046a312099f71e3110d93d377c78e0a6b2c7da730b7d14629
+        manifestRef: .comet/runtime/classic-sdk-checks/22e232235ca4927a7c51ff961eaeaeeedd1c5fdc00f3867ed3e96d5bd962ab32/fc331832-3efd-4167-b52e-ce35226c3ba4.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/22e232235ca4927a7c51ff961eaeaeeedd1c5fdc00f3867ed3e96d5bd962ab32/e11bee96-0ca6-4fb4-b89c-11c3267c8954.log
+        reusable: false
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 900000
+      - contentHash: 26a65f3591042ebe19620405e649fdeff35c8fd9e551a57cde97048d79255ef5
+        ref: .comet/runtime/classic-sdk-checks/22e232235ca4927a7c51ff961eaeaeeedd1c5fdc00f3867ed3e96d5bd962ab32/e11bee96-0ca6-4fb4-b89c-11c3267c8954.log
+      - contentHash: 2e56ec14e93fbb0e06dc32aae227b31902ebe8df51174cb904180a89b34bbbdf
+        ref: docs/superpowers/reports/stabilize-runtime-workspace-binding.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/stabilize-runtime-workspace-binding.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 3
+        contentHash: e2b4a2d4c81f751287dea3b59d96c175cbd4988eda67ef97d25b4308c2f2add6
+        cwd: .
+        deliveryInputs: {}
+        environment: 557c6064b4a2ae9d639f8e30632cc20fbb7781a3b164a5d8d1e155279ef5332b
+        exitCode: 0
+        inputAfter: b57893281c2e676175fa6c0b47d4c5a90ef6d2a1d72cdbbd5c614e53c8d508aa
+        inputBefore: b57893281c2e676175fa6c0b47d4c5a90ef6d2a1d72cdbbd5c614e53c8d508aa
+        manifestHash: 999d7470e6d951fc33452885a3c078a9c383d628916109eb727e3440a9e85d9d
+        manifestRef: .comet/runtime/classic-sdk-checks/22e232235ca4927a7c51ff961eaeaeeedd1c5fdc00f3867ed3e96d5bd962ab32/f3eaffef-7150-400d-a87b-1bc64201af8e.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/22e232235ca4927a7c51ff961eaeaeeedd1c5fdc00f3867ed3e96d5bd962ab32/dd5fb3e6-135b-463d-bb97-cfd95443bdea.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 900000
+      - contentHash: e2b4a2d4c81f751287dea3b59d96c175cbd4988eda67ef97d25b4308c2f2add6
+        ref: .comet/runtime/classic-sdk-checks/22e232235ca4927a7c51ff961eaeaeeedd1c5fdc00f3867ed3e96d5bd962ab32/dd5fb3e6-135b-463d-bb97-cfd95443bdea.log
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 4
+        contentHash: ef4f91a36cf4b08e0c72e7b798d7c79f9467a16c4f3f3987e25374156892a40f
+        cwd: .
+        deliveryInputs: {}
+        environment: 557c6064b4a2ae9d639f8e30632cc20fbb7781a3b164a5d8d1e155279ef5332b
+        exitCode: 0
+        inputAfter: 5715b866978583e186810cd90354708b3f79cd31e43b4c1eee7fa7271cd38fb3
+        inputBefore: 5715b866978583e186810cd90354708b3f79cd31e43b4c1eee7fa7271cd38fb3
+        manifestHash: d09e191b41fb83276fcd2c5506d9bdd3749802c9211c69c88ee90ab38304beeb
+        manifestRef: .comet/runtime/classic-sdk-checks/22e232235ca4927a7c51ff961eaeaeeedd1c5fdc00f3867ed3e96d5bd962ab32/8da28e78-6209-4874-878a-5a73b300faf7.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/22e232235ca4927a7c51ff961eaeaeeedd1c5fdc00f3867ed3e96d5bd962ab32/60a0ba27-2ebc-44a6-a37f-a64941f2f48d.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 900000
+      - contentHash: ef4f91a36cf4b08e0c72e7b798d7c79f9467a16c4f3f3987e25374156892a40f
+        ref: .comet/runtime/classic-sdk-checks/22e232235ca4927a7c51ff961eaeaeeedd1c5fdc00f3867ed3e96d5bd962ab32/60a0ba27-2ebc-44a6-a37f-a64941f2f48d.log
+      - choice: push
+        proposal:
+          input:
+            change: stabilize-runtime-workspace-binding
+            changeDir: openspec/changes/stabilize-runtime-workspace-binding
+            workspaceBaseline:
+              ref: a624b498-a205-469b-afad-3576be798bc2
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: 稳定 Runtime Change 启动工作区绑定：在创建 Run 前冻结稳定仓库身份与分支拓扑，重复启动复用同一
+                Work，漂移返回有界错误，Open Provider 不可用采用同 Work reobserve；23 项任务与全量
+                verify 已通过。归档 OpenSpec 变更并推送到 origin，随后合入 main。
+              targetBranch: codex/stabilize-runtime-workspace-binding
+      - prBaseBranch: main
+        remote: origin
+        summary: 稳定 Runtime Change 启动工作区绑定：在创建 Run 前冻结稳定仓库身份与分支拓扑，重复启动复用同一
+          Work，漂移返回有界错误，Open Provider 不可用采用同 Work reobserve；23 项任务与全量 verify
+          已通过。归档 OpenSpec 变更并推送到 origin，随后合入 main。
+        targetBranch: codex/stabilize-runtime-workspace-binding
+      - baseCommit: 146e63611bfea30dbdc995819c5be99fe7e15314
+        deliveryAction: push
+        prBaseBranch: main
+        remote: origin
+        remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+        targetBranch: codex/stabilize-runtime-workspace-binding
+        verifiedBranch: codex/stabilize-runtime-workspace-binding
+      - archiveDirectory: openspec/changes/archive/2026-11-02-stabilize-runtime-workspace-binding
+      - sequence: 9
+        value:
+          boundBranch: codex/stabilize-runtime-workspace-binding
+          buildMode: autonomous
+          directOverride: false
+          isolation: branch
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      - sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: stabilize-runtime-workspace-binding
+              changeDir: openspec/changes/stabilize-runtime-workspace-binding
+              workspaceBaseline:
+                ref: a624b498-a205-469b-afad-3576be798bc2
+            outputs:
+              full.build.configure:
+                boundBranch: codex/stabilize-runtime-workspace-binding
+                buildMode: autonomous
+                directOverride: false
+                isolation: branch
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      - sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: stabilize-runtime-workspace-binding
+              changeDir: openspec/changes/stabilize-runtime-workspace-binding
+              workspaceBaseline:
+                ref: a624b498-a205-469b-afad-3576be798bc2
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/stabilize-runtime-workspace-binding/.comet/handoff/design-context.json
+                handoffHash: 5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4
+                proposal: 方案：在 Run Store 首次写入前，由纯领域 ChangeStartBinding 从 Workspace Repository 与
+                  target facts 派生稳定语义绑定；绑定只包含
+                  repository/remote/topology/source/target，排除 path、HEAD、worktree
+                  与时间。Coordinator startOrResume 返回强类型 started|resumed
+                  disposition，只有 started 记录初始 Skill、Work 与首次 activation；resumed
+                  使用 Store 中的 authoritative Work。Open observation 区分 strict
+                  invalid、Provider 暂时不可用和 Host 外部结果未知：暂时不可用在原
+                  Outcome/attempt/invocation 上 reobserve，不调用 Host
+                  reconcile。创建前拒绝写 canonical observation outbox，已有 Run
+                  的复用、冲突和重观察从 trajectory 投影。Runner 仍负责 branch/worktree，Runtime
+                  不执行 Git checkout。
+                requirementsEvidence:
+                  contentHash: feed9c9d2d59ed4be75a7f9ff74d5c83e0e7fdac03194c73d29ef6427a892820
+                  ref: openspec/changes/stabilize-runtime-workspace-binding
+                sourceEvidence:
+                  contentHash: ba8fbbf0cf4e05fc064e7fde41ef884d0654111907a7e0126cfe66d370fd716d
+                  ref: openspec/changes/stabilize-runtime-workspace-binding
+      - sequence: 7
+        value:
+          designDoc: openspec/changes/stabilize-runtime-workspace-binding/design.md
+      - sequence: 8
+        value:
+          contentHash: 1aec2ab05a27f69c69c69127c34f424745999359f64bc57733e89f1ba42289c7
+          ref: openspec/changes/stabilize-runtime-workspace-binding/design.md
+      - sequence: 5
+        value:
+          handoffContext: openspec/changes/stabilize-runtime-workspace-binding/.comet/handoff/design-context.json
+          handoffHash: 5a92941bb8a81164244c190b2ec25e3072b3622920a01ee6c44f4150de527de4
+          proposal: 方案：在 Run Store 首次写入前，由纯领域 ChangeStartBinding 从 Workspace Repository 与
+            target facts 派生稳定语义绑定；绑定只包含
+            repository/remote/topology/source/target，排除 path、HEAD、worktree
+            与时间。Coordinator startOrResume 返回强类型 started|resumed disposition，只有
+            started 记录初始 Skill、Work 与首次 activation；resumed 使用 Store 中的
+            authoritative Work。Open observation 区分 strict invalid、Provider
+            暂时不可用和 Host 外部结果未知：暂时不可用在原 Outcome/attempt/invocation 上
+            reobserve，不调用 Host reconcile。创建前拒绝写 canonical observation outbox，已有
+            Run 的复用、冲突和重观察从 trajectory 投影。Runner 仍负责 branch/worktree，Runtime 不执行
+            Git checkout。
+          requirementsEvidence:
+            contentHash: feed9c9d2d59ed4be75a7f9ff74d5c83e0e7fdac03194c73d29ef6427a892820
+            ref: openspec/changes/stabilize-runtime-workspace-binding
+          sourceEvidence:
+            contentHash: ba8fbbf0cf4e05fc064e7fde41ef884d0654111907a7e0126cfe66d370fd716d
+            ref: openspec/changes/stabilize-runtime-workspace-binding
+      - sequence: 1
+        value:
+          event: open-complete
+      - sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: stabilize-runtime-workspace-binding
+              changeDir: openspec/changes/stabilize-runtime-workspace-binding
+              workspaceBaseline:
+                ref: a624b498-a205-469b-afad-3576be798bc2
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+                ref: openspec/changes/stabilize-runtime-workspace-binding
+      - sequence: 2
+        value:
+          contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+          ref: openspec/changes/stabilize-runtime-workspace-binding
+      - sequence: 4
+        value:
+          contentHash: ad240f43459af04783941644dc73f710e60ed70833f299a8875d393425fa0c4d
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: 1aec2ab05a27f69c69c69127c34f424745999359f64bc57733e89f1ba42289c7
+            ref: openspec/changes/stabilize-runtime-workspace-binding/design.md
+          plan: docs/superpowers/plans/2026-11-02-stabilize-runtime-workspace-binding.md
+          planEvidence:
+            contentHash: 231920acfe84c3362d26d3684311f50c2154389ececf24ba2b30a0fc989316e8
+            ref: docs/superpowers/plans/2026-11-02-stabilize-runtime-workspace-binding.md
+          taskRevision: 3462fd36d9aeb37d8537281e845632af7023e28e0b9a5e37a395a06226b2f36a
+      - sequence: 12
+        value:
+          contentHash: 231920acfe84c3362d26d3684311f50c2154389ececf24ba2b30a0fc989316e8
+          ref: docs/superpowers/plans/2026-11-02-stabilize-runtime-workspace-binding.md
+      - sequence: 13
+        value:
+          event: build-complete
+      - sequence: 14
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: 26a65f3591042ebe19620405e649fdeff35c8fd9e551a57cde97048d79255ef5
+          cwd: .
+          environment: 557c6064b4a2ae9d639f8e30632cc20fbb7781a3b164a5d8d1e155279ef5332b
+          exitCode: 0
+          inputAfter: db4f1904a4e4508334d105535518e961aa5b6c09e656b7d2d27f048dc9bdabec
+          inputBefore: db4f1904a4e4508334d105535518e961aa5b6c09e656b7d2d27f048dc9bdabec
+          manifestHash: b8a8679a8d706da046a312099f71e3110d93d377c78e0a6b2c7da730b7d14629
+          manifestRef: .comet/runtime/classic-sdk-checks/22e232235ca4927a7c51ff961eaeaeeedd1c5fdc00f3867ed3e96d5bd962ab32/fc331832-3efd-4167-b52e-ce35226c3ba4.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/22e232235ca4927a7c51ff961eaeaeeedd1c5fdc00f3867ed3e96d5bd962ab32/e11bee96-0ca6-4fb4-b89c-11c3267c8954.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 900000
+      - sequence: 15
+        value:
+          contentHash: 26a65f3591042ebe19620405e649fdeff35c8fd9e551a57cde97048d79255ef5
+          ref: .comet/runtime/classic-sdk-checks/22e232235ca4927a7c51ff961eaeaeeedd1c5fdc00f3867ed3e96d5bd962ab32/e11bee96-0ca6-4fb4-b89c-11c3267c8954.log
+      - sequence: 17
+        value:
+          contentHash: 2e56ec14e93fbb0e06dc32aae227b31902ebe8df51174cb904180a89b34bbbdf
+          ref: docs/superpowers/reports/stabilize-runtime-workspace-binding.md
+      - sequence: 16
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/stabilize-runtime-workspace-binding.md
+      - sequence: 18
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 3
+          contentHash: e2b4a2d4c81f751287dea3b59d96c175cbd4988eda67ef97d25b4308c2f2add6
+          cwd: .
+          deliveryInputs: {}
+          environment: 557c6064b4a2ae9d639f8e30632cc20fbb7781a3b164a5d8d1e155279ef5332b
+          exitCode: 0
+          inputAfter: b57893281c2e676175fa6c0b47d4c5a90ef6d2a1d72cdbbd5c614e53c8d508aa
+          inputBefore: b57893281c2e676175fa6c0b47d4c5a90ef6d2a1d72cdbbd5c614e53c8d508aa
+          manifestHash: 999d7470e6d951fc33452885a3c078a9c383d628916109eb727e3440a9e85d9d
+          manifestRef: .comet/runtime/classic-sdk-checks/22e232235ca4927a7c51ff961eaeaeeedd1c5fdc00f3867ed3e96d5bd962ab32/f3eaffef-7150-400d-a87b-1bc64201af8e.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/22e232235ca4927a7c51ff961eaeaeeedd1c5fdc00f3867ed3e96d5bd962ab32/dd5fb3e6-135b-463d-bb97-cfd95443bdea.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 900000
+      - sequence: 19
+        value:
+          contentHash: e2b4a2d4c81f751287dea3b59d96c175cbd4988eda67ef97d25b4308c2f2add6
+          ref: .comet/runtime/classic-sdk-checks/22e232235ca4927a7c51ff961eaeaeeedd1c5fdc00f3867ed3e96d5bd962ab32/dd5fb3e6-135b-463d-bb97-cfd95443bdea.log
+      - sequence: 23
+        value:
+          contentHash: 2e56ec14e93fbb0e06dc32aae227b31902ebe8df51174cb904180a89b34bbbdf
+          ref: docs/superpowers/reports/stabilize-runtime-workspace-binding.md
+      - sequence: 22
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/stabilize-runtime-workspace-binding.md
+      - sequence: 24
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 4
+          contentHash: ef4f91a36cf4b08e0c72e7b798d7c79f9467a16c4f3f3987e25374156892a40f
+          cwd: .
+          deliveryInputs: {}
+          environment: 557c6064b4a2ae9d639f8e30632cc20fbb7781a3b164a5d8d1e155279ef5332b
+          exitCode: 0
+          inputAfter: 5715b866978583e186810cd90354708b3f79cd31e43b4c1eee7fa7271cd38fb3
+          inputBefore: 5715b866978583e186810cd90354708b3f79cd31e43b4c1eee7fa7271cd38fb3
+          manifestHash: d09e191b41fb83276fcd2c5506d9bdd3749802c9211c69c88ee90ab38304beeb
+          manifestRef: .comet/runtime/classic-sdk-checks/22e232235ca4927a7c51ff961eaeaeeedd1c5fdc00f3867ed3e96d5bd962ab32/8da28e78-6209-4874-878a-5a73b300faf7.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/22e232235ca4927a7c51ff961eaeaeeedd1c5fdc00f3867ed3e96d5bd962ab32/60a0ba27-2ebc-44a6-a37f-a64941f2f48d.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 900000
+      - sequence: 25
+        value:
+          contentHash: ef4f91a36cf4b08e0c72e7b798d7c79f9467a16c4f3f3987e25374156892a40f
+          ref: .comet/runtime/classic-sdk-checks/22e232235ca4927a7c51ff961eaeaeeedd1c5fdc00f3867ed3e96d5bd962ab32/60a0ba27-2ebc-44a6-a37f-a64941f2f48d.log
+      - sequence: 27
+        value:
+          choice: push
+          proposal:
+            input:
+              change: stabilize-runtime-workspace-binding
+              changeDir: openspec/changes/stabilize-runtime-workspace-binding
+              workspaceBaseline:
+                ref: a624b498-a205-469b-afad-3576be798bc2
+            outputs:
+              full.archive.prepare:
+                prBaseBranch: main
+                remote: origin
+                summary: 稳定 Runtime Change 启动工作区绑定：在创建 Run 前冻结稳定仓库身份与分支拓扑，重复启动复用同一
+                  Work，漂移返回有界错误，Open Provider 不可用采用同 Work reobserve；23 项任务与全量
+                  verify 已通过。归档 OpenSpec 变更并推送到 origin，随后合入 main。
+                targetBranch: codex/stabilize-runtime-workspace-binding
+      - sequence: 26
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: 稳定 Runtime Change 启动工作区绑定：在创建 Run 前冻结稳定仓库身份与分支拓扑，重复启动复用同一
+            Work，漂移返回有界错误，Open Provider 不可用采用同 Work reobserve；23 项任务与全量 verify
+            已通过。归档 OpenSpec 变更并推送到 origin，随后合入 main。
+          targetBranch: codex/stabilize-runtime-workspace-binding
+      - sequence: 28
+        value:
+          baseCommit: 146e63611bfea30dbdc995819c5be99fe7e15314
+          deliveryAction: push
+          prBaseBranch: main
+          remote: origin
+          remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+          targetBranch: codex/stabilize-runtime-workspace-binding
+          verifiedBranch: codex/stabilize-runtime-workspace-binding
+      - sequence: 29
+        value:
+          archiveDirectory: openspec/changes/archive/2026-11-02-stabilize-runtime-workspace-binding
+      - sequence: 20
+        value:
+          summary: 归档已验证的 Runtime workspace binding、幂等启动、Open reobserve 与遥测修复；保留 Runner 管理
+            checkout 的边界，并将 OpenSpec delta 合入主规格。
+          targetBranch: codex/stabilize-runtime-workspace-binding
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 27
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 10
+        left: 28
+        right: 29
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 30
+        right: 25
+        height: 4
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 32
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 34
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 35
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 25
+        height: 5
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: null
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 40
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 41
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 42
+        height: 5
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 45
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 17
+        left: 44
+        right: 46
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 47
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 48
+        height: 5
+      - key: full.verify.run
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: null
+        right: 50
+        height: 2
+      - key: full.verify.check.evidence
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.check
+        value: 19
+        left: null
+        right: 52
+        height: 2
+      - key: full.verify.report.evidence
+        value: 15
+        left: 53
+        right: 50
+        height: 3
+      - key: full.archive.prepare
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 21
+        left: null
+        right: 55
+        height: 2
+      - key: full.verify.report.evidence
+        value: 15
+        left: 52
+        right: 50
+        height: 2
+      - key: full.verify.check
+        value: 19
+        left: 56
+        right: 57
+        height: 3
+      - key: full.archive.confirm
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 23
+        left: 59
+        right: 60
+        height: 2
+      - key: full.verify.check
+        value: 19
+        left: 61
+        right: 57
+        height: 3
+      - key: full.archive.execute
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 21
+        left: null
+        right: 63
+        height: 2
+      - key: full.archive.preflight
+        value: 23
+        left: 64
+        right: 60
+        height: 3
+      - key: full.verify.check
+        value: 19
+        left: 65
+        right: 57
+        height: 4
+      - key: full.build.configure
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 26
+        left: 67
+        right: 68
+        height: 2
+      - key: full.design.evidence
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 30
+        left: 70
+        right: 71
+        height: 2
+      - key: full.open.revalidate
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 33
+        left: null
+        right: 73
+        height: 2
+      - key: full.open.confirm
+        value: 32
+        left: 72
+        right: 74
+        height: 3
+      - key: full.design.document
+        value: 28
+        left: 69
+        right: 75
+        height: 4
+      - key: full.build.plan
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 36
+        left: 77
+        right: 78
+        height: 2
+      - key: full.build.confirm
+        value: 26
+        left: 67
+        right: 79
+        height: 3
+      - key: full.design.document
+        value: 28
+        left: 80
+        right: 75
+        height: 4
+      - key: full.build.execute
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 26
+        left: 67
+        right: 82
+        height: 2
+      - key: full.build.plan.evidence
+        value: 36
+        left: null
+        right: 78
+        height: 2
+      - key: full.build.plan
+        value: 35
+        left: 83
+        right: 84
+        height: 3
+      - key: full.design.document
+        value: 28
+        left: 85
+        right: 75
+        height: 4
+      - key: full.build.check
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 39
+        left: 87
+        right: 88
+        height: 2
+      - key: full.build.confirm
+        value: 26
+        left: 89
+        right: 82
+        height: 3
+      - key: full.build.plan
+        value: 35
+        left: 90
+        right: 84
+        height: 4
+      - key: full.design.document
+        value: 28
+        left: 91
+        right: 75
+        height: 5
+      - key: full.open.evidence
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 40
+        left: null
+        right: 94
+        height: 2
+      - key: full.open.revalidate
+        value: 34
+        left: 93
+        right: 95
+        height: 3
+      - key: full.open.confirm
+        value: 32
+        left: 72
+        right: 96
+        height: 4
+      - key: full.design.document
+        value: 28
+        left: 91
+        right: 97
+        height: 5
+      - key: full.open.revalidate
+        value: 34
+        left: 93
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 40
+        left: 100
+        right: 94
+        height: 2
+      - key: full.verify.check
+        value: 42
+        left: 99
+        right: 101
+        height: 3
+      - key: full.open.confirm
+        value: 32
+        left: 72
+        right: 102
+        height: 4
+      - key: full.design.document
+        value: 28
+        left: 91
+        right: 103
+        height: 5
+      - key: full.verify.run
+        value: 45
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 44
+        left: null
+        right: 105
+        height: 2
+      - key: full.verify.check.evidence
+        value: 47
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.check
+        value: 46
+        left: null
+        right: 107
+        height: 2
+      - key: full.verify.report.evidence
+        value: 44
+        left: 108
+        right: 105
+        height: 3
+      - key: full.archive.prepare
+        value: 49
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 48
+        left: null
+        right: 110
+        height: 2
+      - key: full.verify.report.evidence
+        value: 44
+        left: 107
+        right: 105
+        height: 2
+      - key: full.verify.check
+        value: 46
+        left: 111
+        right: 112
+        height: 3
+      - key: full.archive.confirm
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 49
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 50
+        left: 114
+        right: 115
+        height: 2
+      - key: full.verify.check
+        value: 46
+        left: 116
+        right: 112
+        height: 3
+      - key: full.archive.execute
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 48
+        left: null
+        right: 118
+        height: 2
+      - key: full.archive.preflight
+        value: 50
+        left: 119
+        right: 115
+        height: 3
+      - key: full.verify.check
+        value: 46
+        left: 120
+        right: 112
+        height: 4
+      - key: full.open
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 32
+        left: 122
+        right: 123
+        height: 2
+      - key: full.open.revalidate
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 33
+        left: null
+        right: 125
+        height: 2
+      - key: full.open.confirm
+        value: 32
+        left: 122
+        right: 126
+        height: 3
+      - key: full.design.confirm
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 30
+        left: 128
+        right: 129
+        height: 2
+      - key: full.open.confirm
+        value: 32
+        left: 130
+        right: 126
+        height: 3
+      - key: full.design.confirm
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 28
+        left: 132
+        right: 133
+        height: 2
+      - key: full.design.handoff
+        value: 30
+        left: 134
+        right: 129
+        height: 3
+      - key: full.open.confirm
+        value: 32
+        left: 135
+        right: 126
+        height: 4
+      - key: full.archive.confirm
+        value: 48
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 50
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 51
+        left: 137
+        right: 138
+        height: 2
+      - key: full.build.check
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 39
+        left: 140
+        right: 141
+        height: 2
+      - key: full.archive.prepare
+        value: 49
+        left: 139
+        right: 142
+        height: 3
+      - key: full.build.execute
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 27
+        left: 145
+        right: null
+        height: 2
+      - key: full.build.plan
+        value: 35
+        left: 144
+        right: 146
+        height: 3
+      - key: full.build.confirm
+        value: 26
+        left: 143
+        right: 147
+        height: 4
+      - key: full.design.handoff
+        value: 30
+        left: 133
+        right: 129
+        height: 2
+      - key: full.open.evidence
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.check
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 34
+        left: 150
+        right: 151
+        height: 2
+      - key: full.verify.run
+        value: 45
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 44
+        left: null
+        right: 153
+        height: 2
+      - key: full.verify.check.evidence
+        value: 47
+        left: 152
+        right: 154
+        height: 3
+      - key: full.open.confirm
+        value: 32
+        left: 149
+        right: 155
+        height: 4
+      - key: full.design.document
+        value: 28
+        left: 148
+        right: 156
+        height: 5
+      - key: full.open.evidence
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 31
+        left: null
+        right: 158
+        height: 2
+      - key: full.design.handoff
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 33
+        left: 161
+        right: 162
+        height: 2
+      - key: full.open
+        value: 31
+        left: 160
+        right: 163
+        height: 3
+      - key: full.build.configure
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 29
+        left: 166
+        right: 167
+        height: 2
+      - key: full.design.confirm
+        value: 27
+        left: 165
+        right: 168
+        height: 3
+      - key: full.open
+        value: 31
+        left: 169
+        right: 163
+        height: 4
+      - key: full.archive.prepare
+        value: 52
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 38
+        left: 171
+        right: 172
+        height: 2
+      - key: full.build.confirm
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 35
+        left: null
+        right: 175
+        height: 2
+      - key: full.build.execute
+        value: 37
+        left: 174
+        right: 176
+        height: 3
+      - key: full.build.configure
+        value: 25
+        left: 173
+        right: 177
+        height: 4
+      - key: full.open.revalidate
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 33
+        left: 161
+        right: 179
+        height: 2
+      - key: full.verify.check.evidence
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 40
+        left: 181
+        right: 182
+        height: 2
+      - key: full.verify.check
+        value: 42
+        left: 180
+        right: 183
+        height: 3
+      - key: full.open
+        value: 31
+        left: 168
+        right: 184
+        height: 4
+      - key: full.design.confirm
+        value: 27
+        left: 178
+        right: 185
+        height: 5
+      - key: full.archive.prepare
+        value: 49
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.check.evidence
+        value: 47
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 45
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 44
+        left: 188
+        right: 189
+        height: 2
+      - key: full.verify.check
+        value: 46
+        left: 187
+        right: 190
+        height: 3
+      - key: full.open
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 28
+        left: 193
+        right: 194
+        height: 2
+      - key: full.open.confirm
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 33
+        left: 196
+        right: 197
+        height: 2
+      - key: full.open
+        value: 31
+        left: 195
+        right: 198
+        height: 3
+      - key: full.build.configure
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 26
+        left: 200
+        right: 201
+        height: 2
+      - key: full.design.document
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 29
+        left: 203
+        right: 204
+        height: 2
+      - key: full.design.confirm
+        value: 27
+        left: 202
+        right: 205
+        height: 3
+      - key: full.open
+        value: 31
+        left: 206
+        right: 198
+        height: 4
+      - key: full.build.check
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 25
+        left: 208
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 35
+        left: 210
+        right: 211
+        height: 2
+      - key: full.build.confirm
+        value: 26
+        left: 209
+        right: 212
+        height: 3
+      - key: full.open
+        value: 31
+        left: 205
+        right: 198
+        height: 3
+      - key: full.design.confirm
+        value: 27
+        left: 213
+        right: 214
+        height: 4
+      - key: full.build.check
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 39
+        left: 216
+        right: 217
+        height: 2
+      - key: full.build.confirm
+        value: 26
+        left: 218
+        right: 212
+        height: 3
+      - key: full.verify.run
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 34
+        left: null
+        right: 220
+        height: 2
+      - key: full.open.evidence
+        value: 33
+        left: 196
+        right: 221
+        height: 3
+      - key: full.open
+        value: 31
+        left: 205
+        right: 222
+        height: 4
+      - key: full.design.confirm
+        value: 27
+        left: 219
+        right: 223
+        height: 5
+      - key: full.open.revalidate
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 33
+        left: 196
+        right: 225
+        height: 2
+      - key: full.verify.report.evidence
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 41
+        left: 227
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 42
+        left: 226
+        right: 228
+        height: 3
+      - key: full.open
+        value: 31
+        left: 205
+        right: 229
+        height: 4
+      - key: full.design.confirm
+        value: 27
+        left: 219
+        right: 230
+        height: 5
+      - key: full.verify.run
+        value: 45
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.check
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 45
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 44
+        left: 233
+        right: 234
+        height: 2
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 31
+      - 37
+      - 43
+      - 49
+      - 51
+      - 54
+      - 58
+      - 62
+      - 66
+      - 76
+      - 81
+      - 86
+      - 92
+      - 98
+      - 104
+      - 106
+      - 109
+      - 113
+      - 117
+      - 121
+      - 124
+      - 127
+      - 131
+      - 136
+      - 157
+      - 159
+      - 164
+      - 170
+      - 186
+      - 191
+      - 192
+      - 199
+      - 207
+      - 215
+      - 224
+      - 231
+      - 232
+      - 235
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "13"
+          - input
+          - outputs
+        map: 12
+      - path:
+          - actions
+          - "14"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actions
+          - "15"
+          - input
+          - outputs
+        map: 14
+      - path:
+          - actions
+          - "16"
+          - input
+          - outputs
+        map: 15
+      - path:
+          - actionContexts
+          - stabilize-runtime-workspace-binding:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - stabilize-runtime-workspace-binding:11
+          - results
+        map: 16
+      - path:
+          - actionContexts
+          - stabilize-runtime-workspace-binding:13
+          - results
+        map: 17
+      - path:
+          - actionContexts
+          - stabilize-runtime-workspace-binding:14
+          - results
+        map: 18
+      - path:
+          - actionContexts
+          - stabilize-runtime-workspace-binding:16
+          - results
+        map: 19
+      - path:
+          - actionContexts
+          - stabilize-runtime-workspace-binding:18
+          - results
+        map: 20
+      - path:
+          - actionContexts
+          - stabilize-runtime-workspace-binding:20
+          - results
+        map: 21
+      - path:
+          - actionContexts
+          - stabilize-runtime-workspace-binding:22
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - stabilize-runtime-workspace-binding:24
+          - results
+        map: 22
+      - path:
+          - actionContexts
+          - stabilize-runtime-workspace-binding:26
+          - results
+        map: 23
+      - path:
+          - actionContexts
+          - stabilize-runtime-workspace-binding:28
+          - results
+        map: 24
+      - path:
+          - actionContexts
+          - stabilize-runtime-workspace-binding:29
+          - results
+        map: 25
+      - path:
+          - actionContexts
+          - stabilize-runtime-workspace-binding:30
+          - results
+        map: 26
+      - path:
+          - actionContexts
+          - stabilize-runtime-workspace-binding:4
+          - results
+        map: 27
+      - path:
+          - actionContexts
+          - stabilize-runtime-workspace-binding:5
+          - results
+        map: 28
+      - path:
+          - actionContexts
+          - stabilize-runtime-workspace-binding:7
+          - results
+        map: 29
+      - path:
+          - actionContexts
+          - stabilize-runtime-workspace-binding:9
+          - results
+        map: 30
+      - path:
+          - outputs
+        map: 31
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 32
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 33
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 34
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 35
+      - path:
+          - waits
+          - "4"
+          - results
+        map: 36
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 37
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 38
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 39
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 40
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 41
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 42
+      - path:
+          - evidenceWaits
+          - "6"
+          - results
+        map: 43
+      - path:
+          - evidenceWaits
+          - "7"
+          - results
+        map: 44
+  storageHash: 6c044783e35110cfa28878452e8a872873059100f5435fd781e1e8b32be042ae
+check_epoch: 7

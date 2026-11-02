@@ -10,7 +10,7 @@ export const OBSERVATION_SCHEMA_VERSION = 1 as const;
 
 export type { ChangePhase } from '../change-lifecycle/transition.js';
 export type ObservationBuildAction = 'configure' | 'plan' | 'plan-evidence' | 'execute' | 'check';
-export type ContinuationKind = 'execute' | 'ask' | 'wait' | 'reconcile' | 'done';
+export type ContinuationKind = 'execute' | 'reobserve' | 'ask' | 'wait' | 'reconcile' | 'done';
 export type ObservationScalar = string | number | boolean;
 export type ObservationSkillRole =
   | 'action'
@@ -91,7 +91,14 @@ const BUILD_ACTIONS = new Set<ObservationBuildAction>([
   'execute',
   'check',
 ]);
-const CONTINUATIONS = new Set<ContinuationKind>(['execute', 'ask', 'wait', 'reconcile', 'done']);
+const CONTINUATIONS = new Set<ContinuationKind>([
+  'execute',
+  'reobserve',
+  'ask',
+  'wait',
+  'reconcile',
+  'done',
+]);
 export const OBSERVATION_ATTRIBUTE_KEYS = [
   'result',
   'checkEpoch',
@@ -573,6 +580,13 @@ export function createApplicationObservationEnvelope(input: {
       'lifecycle',
       'result',
       'status',
+      'bindingError',
+      'runCreated',
+      'workCreated',
+      'checkpointChanged',
+      'recovery',
+      'hostReplayed',
+      'observation',
     ]),
   });
 }

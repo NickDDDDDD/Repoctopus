@@ -82,7 +82,7 @@ export function projectCommittedContinuation(
   if (
     selected &&
     typeof selected.data.continuation === 'string' &&
-    ['execute', 'ask', 'wait', 'reconcile', 'awaiting-correction', 'done'].includes(
+    ['execute', 'reobserve', 'ask', 'wait', 'reconcile', 'awaiting-correction', 'done'].includes(
       selected.data.continuation,
     ) &&
     isRecoveryReason(selected.data.reason)

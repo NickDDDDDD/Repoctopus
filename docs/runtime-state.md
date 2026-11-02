@@ -37,7 +37,7 @@ Design 返工会把现有 Build Protocol 标记为 `suspended-for-design`。该�
 
 ## 受管 Work 与 continuation
 
-`run next` 每次只解析 Runtime 已选定的当前 Action，并返回 `execute | ask | wait | reconcile | done`。完整 `WorkExecutionPacket` 按 Runtime contract、阶段 action Skill、Specification Provider protocol、augmentation Skills、Method Profile、change inputs 的固定顺序装配。claim 前，Runtime 先把深冻结 packet 以 create-or-verify 方式写入 `.repoctopus/runs/<runId>/packets/<packetDigest>.json`，再通过 Run CAS 绑定唯一 identity，最后才允许 Host 取得正文。Run、checkpoint、trajectory、日志和 OTLP 只保存 packet/context digest；私有 packet 文件是唯一正文恢复源。
+`run next` 每次只解析 Runtime 已选定的当前 Action，并返回 `execute | reobserve | ask | wait | reconcile | done`。完整 `WorkExecutionPacket` 按 Runtime contract、阶段 action Skill、Specification Provider protocol、augmentation Skills、Method Profile、change inputs 的固定顺序装配。claim 前，Runtime 先把深冻结 packet 以 create-or-verify 方式写入 `.repoctopus/runs/<runId>/packets/<packetDigest>.json`，再通过 Run CAS 绑定唯一 identity，最后才允许 Host 取得正文。Run、checkpoint、trajectory、日志和 OTLP 只保存 packet/context digest；私有 packet 文件是唯一正文恢复源。
 
 `run status --json` 的 `result.continuation` 是版本化公共合同。它只投影已经提交的 checkpoint 和最新匹配的 `continuation.selected` 事实；状态查询不会读取 packet 正文、探测 Host、扫描 Git 或追加 trajectory。以下示例表示 Runtime 已提交一个尚未 claim 的 Build Work：
 
@@ -52,7 +52,7 @@ Design 返工会把现有 Build Protocol 标记为 `suspended-for-design`。该�
 }
 ```
 
-`reconcile`、`awaiting-correction` 和 `ask` 同时产生有界 CLI diagnostic code。`reason` 只能取公开枚举，不能包含路径、Provider 正文或自由错误消息。真正的 `next` 或 `resume` 才执行 packet/Host 动态核验；Runtime 先把选择提交为 trajectory fact，再让 CLI、Desktop 与 OTLP 读取同一结果。
+`reobserve` 表示 Host Outcome 已知且保持不变，只需重试 Specification Provider/Store 观察；它保留原 Work、attempt、invocation 与 Outcome，绝不调用 Host reconciliation。`reconcile` 只表示 Host 或外部副作用结果未知。`reconcile`、`awaiting-correction` 和 `ask` 同时产生有界 CLI diagnostic code；`reason` 只能取公开枚举，不能包含路径、Provider 正文或自由错误消息。真正的 `next` 或 `resume` 才执行 packet/Host 动态核验；Runtime 先把选择提交为 trajectory fact，再让 CLI、Desktop 与 OTLP 读取同一结果。
 
 claim、context delivery、Host invocation、Outcome、Validator 与 lifecycle transition 都写入同一个 Run aggregate 和追加式 trajectory。ActionStore 和 packet store 是先写的不可变内容库，不拥有 attempt 或下一步；CAS 前的孤立内容没有执行权。恢复始终按 checkpoint identity 读取原 packet，不重新读取当前 Skill、Provider 指令或 OpenSpec 文件。恢复分类遵循以下边界：未调用可重交同一 attempt；活跃 Host 返回 `wait`；未知副作用返回 `reconcile`；可证明未执行才创建下一 attempt；已有 Outcome 从 Validator 继续；Human Decision 保留原 proposal hash。旧 checkpoint 或缺失/损坏 packet 明确进入 `migration-required` 或 `content-missing-or-corrupt`，不得用当前内容重组兼容。
 
@@ -62,13 +62,13 @@ claim、context delivery、Host invocation、Outcome、Validator 与 lifecycle t
 
 Build phase 固定执行 `Configure → Plan → Plan Evidence → Execute → Check`。Runtime 选择当前 Action；Host 只能执行当前 Work 并返回结构化 Outcome。`auto_transition` 只决定 Runner 是否继续调用 `run next`，不允许 Host 跳过 Action 或直接进入 Verify。
 
-| Action        | Runtime 接受的结果                                                                     |
-| ------------- | -------------------------------------------------------------------------------------- |
-| Configure     | Runner 提供的 checkout facts、Host 能力和 `current\|branch\|worktree` 隔离绑定         |
-| Plan          | OpenSpec Tasks 到有界 Work Packages 的执行投影，包括依赖、仓库、write scope 和验收引用 |
+| Action        | Runtime 接受的结果                                                                                                              |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Configure     | Runner 提供的 checkout facts、Host 能力和 `current\|branch\|worktree` 隔离绑定                                                  |
+| Plan          | OpenSpec Tasks 到有界 Work Packages 的执行投影，包括依赖、仓库、write scope 和验收引用                                          |
 | Plan Evidence | Task/acceptance coverage、DAG、Strategy、Binding、Host、scope、composition 和报告 owner 校验；有界高风险计划建立 Human Decision |
-| Execute       | 当前 package 的验收、测试、实现和可选受管子代理委派 Evidence                           |
-| Check         | 全部 package、Task acceptance、测试、独立 standard review 和仓库事实                   |
+| Execute       | 当前 package 的验收、测试、实现和可选受管子代理委派 Evidence                                                                    |
+| Check         | 全部 package、Task acceptance、测试、独立 standard review 和仓库事实                                                            |
 
 `BuildStrategy` 冻结经过 Design 批准的稳定语义：`autonomous|subagent-driven-development`、`tdd|direct`、standard review 与 `current|branch|worktree` 隔离意图。`ExecutionBinding` 只记录 Runtime 在 Configure 观察并验证的 Host capability、repository/branch/HEAD、ownership 和 opaque local overlay reference；绝对路径只保存在本机 overlay，不进入可移植状态或 OTLP。Configure 成功后自动进入 Plan，不建立第二次常规人工批准。
 

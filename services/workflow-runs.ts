@@ -6,7 +6,10 @@ import type { SkillDefinition } from '@deepseek-ai/dsh-skill';
 import type { ActionOutcome, RunState, RunTriggerSnapshot } from '../domains/engine/types.js';
 import type { ProjectSnapshot } from '../domains/project/types.js';
 import { reconcileProjectSnapshots } from '../domains/project/snapshot.js';
-import { WorkflowRunCoordinator } from '../domains/runtime/workflow-runs.js';
+import {
+  WorkflowRunCoordinator,
+  WorkspaceBindingConflictError,
+} from '../domains/runtime/workflow-runs.js';
 import type {
   ResumeView,
   RunStatusView,
@@ -37,6 +40,7 @@ import type {
 } from '../domains/specification/types.js';
 import { bindOperationOwnership, type OperationOwnership } from './operation-ownership.js';
 import { canonicalJson } from '../domains/workflow-contract/canonical.js';
+import { createApplicationObservationEnvelope } from '../domains/trajectory/observation.js';
 import {
   BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
   createChangeLifecycleSnapshot,
@@ -92,6 +96,10 @@ import type {
   OpenRepairSource,
   WorkDescriptor,
 } from '../domains/change-lifecycle/transition.js';
+import {
+  ChangeStartBindingError,
+  createChangeStartBinding,
+} from '../domains/change-lifecycle/start-binding.js';
 import {
   createArchiveDeliveryInput,
   createDeliveryPublishWork,
@@ -264,7 +272,7 @@ export class WorkflowRuns extends Service {
       trigger?: RunTriggerSnapshot;
     },
     signal?: AbortSignal,
-  ): Promise<RuntimeResult<RunStatusView>> {
+  ): ReturnType<WorkflowRunCoordinator['startOrResume']> {
     return this.operations.run({ cancellable: false, signal }, () =>
       this.coordinator.startOrResume(options),
     );
@@ -328,6 +336,29 @@ export class WorkflowRuns extends Service {
         targetBranch: input.targetBranch,
       });
       const runId = changeRunId({ workspaceId, changeId });
+      let changeStartBinding: ReturnType<typeof createChangeStartBinding>;
+      try {
+        changeStartBinding = createChangeStartBinding({
+          projectSnapshot: input.projectSnapshot,
+          workspaceRepositoryId: input.workspaceRepositoryId,
+          targetBranch,
+        });
+      } catch (error) {
+        if (error instanceof ChangeStartBindingError) {
+          await this.recordChangeStartObservation({
+            runId,
+            workspaceId,
+            changeId,
+            result: 'rejected',
+            bindingError: error.code.slice('runtime.workspace-binding.'.length),
+            runCreated: false,
+            workCreated: false,
+            checkpointChanged: false,
+            recovery: 'none',
+          });
+        }
+        throw error;
+      }
       const lifecycle = createChangeLifecycleSnapshot({
         identity: {
           workspaceId,
@@ -357,6 +388,7 @@ export class WorkflowRuns extends Service {
         changeId,
         specificationRoot,
         targetBranch,
+        changeStartBinding,
         repositoryIds,
         projectConfigDigest: input.projectConfigDigest,
         verificationProfileId: input.verificationProfileId,
@@ -372,20 +404,52 @@ export class WorkflowRuns extends Service {
           checkoutPath: checkout.checkoutPath,
         })),
       };
-      const started = await this.coordinator.startOrResume({
-        workflow: createChangeRunHostWorkflow(),
-        projectSnapshot: input.projectSnapshot,
-        runId,
-        trigger: {
-          schemaVersion: 1,
-          kind: 'change.open',
-          identityDigest: `sha256:${createHash('sha256')
-            .update(canonicalJson(triggerFacts))
-            .digest('hex')}`,
-          facts: triggerFacts,
-        },
-        changeLifecycle: lifecycle,
-      });
+      let started: Awaited<ReturnType<WorkflowRunCoordinator['startOrResume']>>;
+      try {
+        started = await this.coordinator.startOrResume({
+          workflow: createChangeRunHostWorkflow(),
+          projectSnapshot: input.projectSnapshot,
+          runId,
+          trigger: {
+            schemaVersion: 1,
+            kind: 'change.open',
+            identityDigest: `sha256:${createHash('sha256')
+              .update(canonicalJson(triggerFacts))
+              .digest('hex')}`,
+            facts: triggerFacts,
+          },
+          changeLifecycle: lifecycle,
+        });
+      } catch (error) {
+        if (error instanceof WorkspaceBindingConflictError) {
+          await this.recordChangeStartObservation({
+            runId,
+            workspaceId,
+            changeId,
+            result: 'conflict',
+            bindingError: 'binding-drift',
+            runCreated: false,
+            workCreated: false,
+            checkpointChanged: false,
+            recovery: 'rejected',
+          });
+        }
+        throw error;
+      }
+      if (started.value.disposition === 'resumed') {
+        await this.recordChangeStartObservation({
+          runId,
+          workspaceId,
+          changeId,
+          result: 'reused',
+          bindingError: 'none',
+          runCreated: false,
+          workCreated: false,
+          checkpointChanged: false,
+          recovery: 'resumed',
+        });
+        return { value: started.value.status, diagnostics: started.diagnostics };
+      }
       const frozenSkills = new Map(
         openSkills.effectiveComposition.works.flatMap((work) =>
           work.layers.map((layer) => [layer.skill.name, layer.skill] as const),
@@ -399,6 +463,17 @@ export class WorkflowRuns extends Service {
         openSkills.effectiveComposition,
       );
       await this.ctx.workExecutionAuthority.recordWorkCreated(runId, lifecycle.currentWork);
+      await this.recordChangeStartObservation({
+        runId,
+        workspaceId,
+        changeId,
+        result: 'created',
+        bindingError: 'none',
+        runCreated: true,
+        workCreated: true,
+        checkpointChanged: true,
+        recovery: 'none',
+      });
       const activationState = await this.ctx.runStore.loadRun(runId);
       const activationIntentId = `sha256:${createHash('sha256')
         .update(`${runId}\0${activationState.stateVersion}\0desktop.activation`)
@@ -441,6 +516,55 @@ export class WorkflowRuns extends Service {
       }
       return { value: await this.coordinator.status(runId), diagnostics };
     });
+  }
+
+  private async recordChangeStartObservation(input: {
+    runId: string;
+    workspaceId: string;
+    changeId: string;
+    result: 'rejected' | 'created' | 'reused' | 'conflict';
+    bindingError: string;
+    runCreated: boolean;
+    workCreated: boolean;
+    checkpointChanged: boolean;
+    recovery: 'none' | 'resumed' | 'rejected';
+  }): Promise<void> {
+    try {
+      const delivery = this.ctx.get('observationDelivery');
+      if (!delivery) return;
+      const observedAt = new Date().toISOString();
+      await delivery.append([
+        createApplicationObservationEnvelope({
+          eventId: createHash('sha256')
+            .update(
+              canonicalJson({
+                runId: input.runId,
+                result: input.result,
+                bindingError: input.bindingError,
+                runCreated: input.runCreated,
+                workCreated: input.workCreated,
+                checkpointChanged: input.checkpointChanged,
+                recovery: input.recovery,
+              }),
+            )
+            .digest('hex'),
+          runId: input.runId,
+          observedAt,
+          eventType: 'platform.change-start',
+          context: { workspaceId: input.workspaceId, changeId: input.changeId },
+          attributes: {
+            result: input.result,
+            bindingError: input.bindingError,
+            runCreated: input.runCreated,
+            workCreated: input.workCreated,
+            checkpointChanged: input.checkpointChanged,
+            recovery: input.recovery,
+          },
+        }),
+      ]);
+    } catch {
+      // Canonical observation delivery is best-effort and never changes Runtime authority.
+    }
   }
 
   status(runId: string, signal?: AbortSignal): Promise<RunStatusView> {
@@ -1437,6 +1561,7 @@ export class WorkflowRuns extends Service {
         }),
       ]);
     } catch (error) {
+      if (error instanceof ChangeStartBindingError) throw error;
       return this.openObservationUnavailable(state.runId, error);
     }
     try {
@@ -1516,7 +1641,7 @@ export class WorkflowRuns extends Service {
         ...value,
         continuation: {
           schemaVersion: 2,
-          continuation: 'reconcile',
+          continuation: 'reobserve',
           workId: execution?.workId ?? lifecycle?.currentWork?.workId ?? null,
           attempt: execution?.attempt ?? null,
           checkEpoch: execution?.checkEpoch ?? lifecycle?.checkEpoch ?? null,
