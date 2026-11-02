@@ -174,10 +174,14 @@ export function projectCommittedContinuation(
     ) &&
     isRecoveryReason(selected.data.reason)
   ) {
-    return result(
+    const projected = result(
       selected.data.continuation as WorkExecutionRecovery['continuation'],
       selected.data.reason,
     );
+    return selected.data.observationStage === 'provider-validation' ||
+      selected.data.observationStage === 'planning-gate'
+      ? { ...projected, observationStage: selected.data.observationStage }
+      : projected;
   }
 
   return classified;

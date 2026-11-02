@@ -110,6 +110,58 @@ describe('committed lifecycle continuation projector', () => {
     });
   });
 
+  it('retains the bounded Open observation stage when replaying a committed selection', () => {
+    const lifecycle = snapshot({
+      phase: 'open',
+      currentWork: {
+        workId: 'change.intake:abc',
+        schemaVersion: 2,
+        checkEpoch: 2,
+        phase: 'open',
+        kind: 'change.intake',
+      } as ChangeLifecycleSnapshot['currentWork'],
+    });
+    const checkpoint = {
+      schemaVersion: 1,
+      runId: 'run',
+      stateVersion: 9,
+      trajectoryOffset: 4,
+      changeLifecycle: lifecycle,
+      workExecution: {
+        schemaVersion: 3,
+        workId: 'change.intake:abc',
+        attempt: 1,
+        checkEpoch: 2,
+        status: 'validated',
+        continuation: 'execute',
+      },
+    } as unknown as Checkpoint;
+    const trajectory: TrajectoryEvent[] = [
+      {
+        schemaVersion: 1,
+        sequence: 1,
+        eventId: 'continuation:open-unavailable',
+        timestamp: '2026-11-01T00:00:00.000Z',
+        type: 'continuation.selected',
+        runId: 'run',
+        stateVersion: 9,
+        compositionDigest: `sha256:${'a'.repeat(64)}`,
+        data: {
+          continuation: 'reobserve',
+          reason: 'open-observation-unavailable',
+          observationStage: 'provider-validation',
+          workId: 'change.intake:abc',
+        },
+      },
+    ];
+
+    expect(projectCommittedContinuation(checkpoint, trajectory)).toMatchObject({
+      continuation: 'reobserve',
+      reason: 'open-observation-unavailable',
+      observationStage: 'provider-validation',
+    });
+  });
+
   it('projects persisted external publication uncertainty without Host inference', () => {
     const lifecycle = snapshot({
       phase: 'archive',
