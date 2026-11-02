@@ -1,0 +1,17 @@
+{
+  "change": "fail-fast-verification-coverage",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "beca32308b8465c9c9e48b15bf91246598adce661e9401c62c6147e76a652439",
+  "files": [
+    { "path": "openspec/changes/fail-fast-verification-coverage/proposal.md", "sha256": "164a4aa0de19644633665d35bd7e25e04033ce95fe7086a15789ed8df87a9740" },
+    { "path": "openspec/changes/fail-fast-verification-coverage/design.md", "sha256": "b1d147cf4f4b5e049e5222eb82cb387531d21c7567f66f7a5de17e1332a270b2" },
+    { "path": "openspec/changes/fail-fast-verification-coverage/tasks.md", "sha256": "6a9dadc00006ab430d5bba46d0352a7a37a08a4dda1723a69e88a3fdd635409c" },
+    { "path": "openspec/changes/fail-fast-verification-coverage/.openspec.yaml", "sha256": "b6d27c089c6ee9596ce0433bd8f7f771b477758efe1ce7f7a7505af47316ecd0" },
+    { "path": "openspec/changes/fail-fast-verification-coverage/specs/implementation-evidence/spec.md", "sha256": "8d0307c286667c63d318fae65029f29d406ec4110da5a3f0bec863671f5731de" },
+    { "path": "openspec/changes/fail-fast-verification-coverage/specs/project-configuration/spec.md", "sha256": "ff54ccadc0890e073c611ab31440ca168ef8c603e7320e9e8dbe1beac567a0fe" }
+  ]
+}

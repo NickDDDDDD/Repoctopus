@@ -25,13 +25,13 @@ archive_confirmation: null
 archived: false
 bound_branch: codex/fail-fast-verification-coverage
 direct_override: null
-handoff_context: null
-handoff_hash: null
+handoff_context: openspec/changes/fail-fast-verification-coverage/.comet/handoff/design-context.json
+handoff_hash: beca32308b8465c9c9e48b15bf91246598adce661e9401c62c6147e76a652439
 classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: 3a94414e1fa29eb6810a11e834c96cdda24bf3466847c0862d0f26feca6df42c
+  hash: e0e0f8f754682d7622dedd00045417ce2045c45a286920e1aeacc1b9b2bd1a40
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -65,8 +65,8 @@ run_checkpoint:
       createdAt: 2026-11-02
       designDoc: null
       directOverride: null
-      handoffContext: null
-      handoffHash: null
+      handoffContext: openspec/changes/fail-fast-verification-coverage/.comet/handoff/design-context.json
+      handoffHash: beca32308b8465c9c9e48b15bf91246598adce661e9401c62c6147e76a652439
       isolation: current
       language: zh-CN
       phase: design
@@ -80,8 +80,8 @@ run_checkpoint:
       verifyMode: null
       verifyResult: pending
       workflow: full
-    status: running
-    sequence: 5
+    status: waiting
+    sequence: 6
     actions:
       - attempt: 1
         claim:
@@ -181,6 +181,14 @@ run_checkpoint:
         stepId: full.open.revalidate
         type: call_tool
       - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-6c92d9e5949b8d818ea1cc4f858666fba118fad0f743a5f92dc07095bfe4f242
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: fail-fast-verification-coverage:5
         input:
           input:
@@ -211,14 +219,40 @@ run_checkpoint:
             full.open.revalidate:
               contentHash: b3737f9b29d6e20b4dc0506ae9c71c08f0e03a0bc58dec1606758ea7df81f380
         inputHash: 5ca8fc7d4737d6b936efa72e481bf5ebaae6b6c4204ee3fb6947f1aa3d91d129
+        outcome:
+          actionId: fail-fast-verification-coverage:5
+          attempt: 1
+          claimToken: portable-6c92d9e5949b8d818ea1cc4f858666fba118fad0f743a5f92dc07095bfe4f242
+          inputHash: 5ca8fc7d4737d6b936efa72e481bf5ebaae6b6c4204ee3fb6947f1aa3d91d129
+          outcomeId: ab06f8d0-6926-480a-938d-33d6c37ddc5b
+          output:
+            handoffContext: openspec/changes/fail-fast-verification-coverage/.comet/handoff/design-context.json
+            handoffHash: beca32308b8465c9c9e48b15bf91246598adce661e9401c62c6147e76a652439
+            proposal: 推荐方案：采用三层 fail-fast。项目探测为生成的 required 命令写入可审查的 covers:['*']
+              候选；项目接入只对约定默认 verify Profile 做静态可用性门禁；具体 Run 在 Planning Snapshot
+              形成后、Design 审批请求持久化前，用实际 verificationProfileId 和 Tasks 执行纯 coverage
+              preflight。SpecificationPlanning 通过副作用前 preflight hook 编排，preflight
+              后重新核对 planning manifest identity；Evidence Coordinator 提供不计算仓库
+              fingerprint 的 compile 入口；Design 与正式 Verify 复用同一纯
+              resolver。拒绝两个替代方案：仅在 Build Check 后校验仍然过晚；在接入阶段强制所有 Profile 或猜测细粒度
+              selector 会混淆独立 Evidence Profile 并伪造未来语义。
+            requirementsEvidence:
+              contentHash: db233788a73f93fe3ca92abacda3c5d856255aaf7d4bd1760aeed8ff2e36b44b
+              ref: openspec/changes/fail-fast-verification-coverage
+            sourceEvidence:
+              contentHash: e70096a72e9d534e63ff5e72de58d7a413140b70b2cade4bc7fe0395ea5b120e
+              ref: openspec/changes/fail-fast-verification-coverage
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: eb43a3f56285b37767c633ef3ca6f58eeca4f4c53c3d9efef699aa0efba85843
+            outcomeId: ab06f8d0-6926-480a-938d-33d6c37ddc5b
         reconciliations: []
         ref: comet-design
         requiredCapabilities: []
         retry: manual
         runId: fail-fast-verification-coverage
-        status: pending
+        status: succeeded
         stepId: full.design.handoff
         type: invoke_skill
     actionContexts:
@@ -320,6 +354,87 @@ run_checkpoint:
           id: classic-open-b3737f9b29d6e20b4dc0506ae9c71c08f0e03a0bc58dec1606758ea7df81f380
           choice: approved
           proposalHash: 0345249203deb6311e8426e66c3a7cfd7ba82aeb3c9eb75f2160b45865f68759
+      - id: fail-fast-verification-coverage:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: pending
+        proposal:
+          input:
+            change: fail-fast-verification-coverage
+            changeDir: openspec/changes/fail-fast-verification-coverage
+            workspaceBaseline:
+              ref: fc1c0933-677f-4229-b200-a10c2acb5242
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/fail-fast-verification-coverage/.comet/handoff/design-context.json
+              handoffHash: beca32308b8465c9c9e48b15bf91246598adce661e9401c62c6147e76a652439
+              proposal: 推荐方案：采用三层 fail-fast。项目探测为生成的 required 命令写入可审查的 covers:['*']
+                候选；项目接入只对约定默认 verify Profile 做静态可用性门禁；具体 Run 在 Planning Snapshot
+                形成后、Design 审批请求持久化前，用实际 verificationProfileId 和 Tasks 执行纯
+                coverage preflight。SpecificationPlanning 通过副作用前 preflight hook
+                编排，preflight 后重新核对 planning manifest identity；Evidence
+                Coordinator 提供不计算仓库 fingerprint 的 compile 入口；Design 与正式 Verify
+                复用同一纯 resolver。拒绝两个替代方案：仅在 Build Check 后校验仍然过晚；在接入阶段强制所有 Profile
+                或猜测细粒度 selector 会混淆独立 Evidence Profile 并伪造未来语义。
+              requirementsEvidence:
+                contentHash: db233788a73f93fe3ca92abacda3c5d856255aaf7d4bd1760aeed8ff2e36b44b
+                ref: openspec/changes/fail-fast-verification-coverage
+              sourceEvidence:
+                contentHash: e70096a72e9d534e63ff5e72de58d7a413140b70b2cade4bc7fe0395ea5b120e
+                ref: openspec/changes/fail-fast-verification-coverage
+        proposalHash: b9f2a1d7f089c0dbacc7dacf780e53d85dbadc48e1c5a12d5de7663665a4ef06
+        choices:
+          - approved
+          - rejected
+        results:
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/fail-fast-verification-coverage/.comet/handoff/design-context.json
+              handoffHash: beca32308b8465c9c9e48b15bf91246598adce661e9401c62c6147e76a652439
+              proposal: 推荐方案：采用三层 fail-fast。项目探测为生成的 required 命令写入可审查的 covers:['*']
+                候选；项目接入只对约定默认 verify Profile 做静态可用性门禁；具体 Run 在 Planning Snapshot
+                形成后、Design 审批请求持久化前，用实际 verificationProfileId 和 Tasks 执行纯
+                coverage preflight。SpecificationPlanning 通过副作用前 preflight hook
+                编排，preflight 后重新核对 planning manifest identity；Evidence
+                Coordinator 提供不计算仓库 fingerprint 的 compile 入口；Design 与正式 Verify
+                复用同一纯 resolver。拒绝两个替代方案：仅在 Build Check 后校验仍然过晚；在接入阶段强制所有 Profile
+                或猜测细粒度 selector 会混淆独立 Evidence Profile 并伪造未来语义。
+              requirementsEvidence:
+                contentHash: db233788a73f93fe3ca92abacda3c5d856255aaf7d4bd1760aeed8ff2e36b44b
+                ref: openspec/changes/fail-fast-verification-coverage
+              sourceEvidence:
+                contentHash: e70096a72e9d534e63ff5e72de58d7a413140b70b2cade4bc7fe0395ea5b120e
+                ref: openspec/changes/fail-fast-verification-coverage
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: fail-fast-verification-coverage
+                  changeDir: openspec/changes/fail-fast-verification-coverage
+                  workspaceBaseline:
+                    ref: fc1c0933-677f-4229-b200-a10c2acb5242
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: b3737f9b29d6e20b4dc0506ae9c71c08f0e03a0bc58dec1606758ea7df81f380
+                    ref: openspec/changes/fail-fast-verification-coverage
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: b3737f9b29d6e20b4dc0506ae9c71c08f0e03a0bc58dec1606758ea7df81f380
+              ref: openspec/changes/fail-fast-verification-coverage
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: b3737f9b29d6e20b4dc0506ae9c71c08f0e03a0bc58dec1606758ea7df81f380
     evidenceWaits:
       - id: fail-fast-verification-coverage:2
         stepId: full.open.evidence
@@ -338,6 +453,25 @@ run_checkpoint:
     ready: []
     joins: {}
     outputs:
+      full.design.handoff:
+        sequence: 5
+        value:
+          handoffContext: openspec/changes/fail-fast-verification-coverage/.comet/handoff/design-context.json
+          handoffHash: beca32308b8465c9c9e48b15bf91246598adce661e9401c62c6147e76a652439
+          proposal: 推荐方案：采用三层 fail-fast。项目探测为生成的 required 命令写入可审查的 covers:['*']
+            候选；项目接入只对约定默认 verify Profile 做静态可用性门禁；具体 Run 在 Planning Snapshot
+            形成后、Design 审批请求持久化前，用实际 verificationProfileId 和 Tasks 执行纯 coverage
+            preflight。SpecificationPlanning 通过副作用前 preflight hook 编排，preflight
+            后重新核对 planning manifest identity；Evidence Coordinator 提供不计算仓库
+            fingerprint 的 compile 入口；Design 与正式 Verify 复用同一纯
+            resolver。拒绝两个替代方案：仅在 Build Check 后校验仍然过晚；在接入阶段强制所有 Profile 或猜测细粒度
+            selector 会混淆独立 Evidence Profile 并伪造未来语义。
+          requirementsEvidence:
+            contentHash: db233788a73f93fe3ca92abacda3c5d856255aaf7d4bd1760aeed8ff2e36b44b
+            ref: openspec/changes/fail-fast-verification-coverage
+          sourceEvidence:
+            contentHash: e70096a72e9d534e63ff5e72de58d7a413140b70b2cade4bc7fe0395ea5b120e
+            ref: openspec/changes/fail-fast-verification-coverage
       full.open:
         sequence: 1
         value:
@@ -369,6 +503,6 @@ run_checkpoint:
           contentHash: b3737f9b29d6e20b4dc0506ae9c71c08f0e03a0bc58dec1606758ea7df81f380
     children: []
     lineage: []
-  sourceRevision: 7
-  sourceHash: 3f2827bec72b986609e6f5adc9d6ccd9cb41cd8abedc24761de712c373f0a144
+  sourceRevision: 9
+  sourceHash: 94b3bfadf356dc0651353e34b38030a02dae89f1cfeb10619ca5e7a139924376
 check_epoch: 1
