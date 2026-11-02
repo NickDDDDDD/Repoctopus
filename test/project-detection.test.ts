@@ -232,13 +232,14 @@ describe('project configuration detection', () => {
         expect.objectContaining({ code: 'command-review', repository: 'worker' }),
         expect.objectContaining({
           code: 'acceptance-coverage',
-          message: expect.stringMatching(/workspace-wide.*narrow/iu),
         }),
       ]),
     );
-    expect(draft.unresolved.filter((item) => item.code === 'acceptance-coverage')).toHaveLength(
-      verifyNodes?.length ?? 0,
+    const coverageFindings = draft.unresolved.filter(
+      (item) => item.code === 'acceptance-coverage',
     );
+    expect(coverageFindings).toHaveLength(verifyNodes?.length ?? 0);
+    expect(coverageFindings[0]?.message).toMatch(/workspace-wide.*narrow/iu);
 
     expect(await Promise.all(repositories.map(status))).toEqual(before);
     await Promise.all(
