@@ -10,7 +10,7 @@
   **Acceptance:** 默认 `verify` 缺失、无 required coverage 或 optional-only coverage 时在写正式配置前返回可定位诊断；至少一个 required coverage 节点时正常准备审批；其他独立 Profile 不被误判为 Change Verify Profile
   **Requirements:** project-configuration / Change Verify Profile 必须在审批前静态可用
 
-- [ ] 1.3 提取并测试单一 Acceptance coverage resolver，覆盖通配、Task、Requirement、精确 ID、重复、未知、未覆盖和 optional-only 规则 <!-- comet-task:dbae7715-35c0-4eb9-a55b-0104144dc19d -->
+- [x] 1.3 提取并测试单一 Acceptance coverage resolver，覆盖通配、Task、Requirement、精确 ID、重复、未知、未覆盖和 optional-only 规则 <!-- comet-task:dbae7715-35c0-4eb9-a55b-0104144dc19d -->
   **Acceptance:** Design preflight 与 Verification Input 使用同一纯函数；同一输入产生稳定排序和摘要；既有 Verify coverage 测试保持通过
   **Requirements:** implementation-evidence / Acceptance coverage 使用单一确定性解析权威
 
