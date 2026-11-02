@@ -68,6 +68,20 @@ function recoveryAuthority(run: RunState, input: { active?: boolean; corrupt?: b
 }
 
 describe('Work execution recovery classification', () => {
+  it('keeps generic workflow Runs outside the Change Work classifier', async () => {
+    const generic = state({});
+    delete generic.changeLifecycle;
+
+    await expect(recoveryAuthority(generic).recovery('run-recovery')).resolves.toEqual({
+      schemaVersion: 2,
+      continuation: 'wait',
+      workId: null,
+      attempt: null,
+      checkEpoch: null,
+      reason: 'transition-pending',
+    });
+  });
+
   it('grants a durable Host invocation to exactly one concurrent Runner', async () => {
     const initial = checkpoint('context-delivered');
     let run = {

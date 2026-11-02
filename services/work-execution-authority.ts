@@ -1345,7 +1345,14 @@ export class WorkExecutionAuthority extends Service {
     const state = await this.ctx.runStore.loadRun(runId);
     const lifecycle = state.changeLifecycle;
     if (!lifecycle) {
-      throw new Error(`Run has no Change lifecycle continuation: ${runId}`);
+      return {
+        schemaVersion: 2,
+        continuation: state.status === 'completed' ? 'done' : 'wait',
+        workId: null,
+        attempt: null,
+        checkEpoch: null,
+        reason: state.status === 'completed' ? 'terminal' : 'transition-pending',
+      };
     }
     const persisted = state.workExecution;
     const superseded = Boolean(persisted && !executionMatchesLifecycle(state, persisted));
