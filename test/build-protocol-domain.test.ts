@@ -270,13 +270,10 @@ describe('Build protocol domain', () => {
       tasks,
       protectedBranches: ['main', 'release/*'],
     });
-    expect(rejected).toMatchObject({
-      accepted: false,
-      protectedBranchPolicyDigest: expect.stringMatching(/^sha256:/u),
-    });
-    expect(rejected.diagnostics).toEqual([
-      expect.stringMatching(/web-design.*main.*prepare and publish/iu),
-    ]);
+    expect(rejected.accepted).toBe(false);
+    expect(rejected.protectedBranchPolicyDigest).toMatch(/^sha256:/u);
+    expect(rejected.diagnostics).toHaveLength(1);
+    expect(rejected.diagnostics[0]).toMatch(/web-design.*main.*prepare and publish/iu);
 
     const sourceBinding = createExecutionBinding({
       strategy,
