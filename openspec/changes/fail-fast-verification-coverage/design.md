@@ -34,9 +34,9 @@ Comet 0.5.1 的成熟做法是把配置错误和领域不变量放到副作用�
 
 ### Decision: 配置审批检查静态可用性
 
-项目配置审批准备阶段检查选定的 `verify` Profile：必须存在至少一个 `required: true` 且 `covers` 非空的节点。该检查只证明 Profile 具备承担 Change Acceptance 的可能性，不声称它能覆盖任意具体 Change。
+项目配置审批准备阶段检查约定的默认 `verify` Profile：该 Profile 必须存在，并且至少包含一个 `required: true` 且 `covers` 非空的节点。该检查只证明默认 Profile 具备承担 Change Acceptance 的可能性，不声称它能覆盖任意具体 Change。CLI 为具体 Run 选择的其他 `verificationProfileId` 不由项目接入流程猜测，交给该 Run 的 Design 精确预检判断。
 
-没有 coverage 的 service/前置节点仍然合法；因此不要求每个节点都声明 `covers`。独立 Evidence Profile 也可以没有 Change coverage，静态规则只应用于作为 Change `verificationProfileId` 的 Profile。
+没有 coverage 的 service/前置节点仍然合法；因此不要求每个节点都声明 `covers`。非默认的独立 Evidence Profile 也可以没有 Change coverage；一旦具体 Run 把它选为 `verificationProfileId`，Design preflight 就会按该 Run 的真实 Acceptance Set 检查。
 
 ### Decision: Design gate 做精确只读 coverage preflight
 
@@ -48,7 +48,11 @@ Design Work 成功、Tasks 可解析后，在创建 Design Human Decision 和 Bu
 - `acceptance-<sha256>` 精确匹配；
 - 未知 selector、重复 selector、未覆盖 Acceptance、或只有 optional 节点匹配均阻断。
 
-预检不采集 Evidence，不写 checkbox，不创建 Build Configuration，也不改变 phase。配置修正后，原 Run 可在同一 Design checkpoint 重新观察；无需手改 Store。
+预检不采集 Evidence，不计算仓库 fingerprint，不写 checkbox，不创建 Build Configuration，也不改变 phase。配置修正后，原 Run 可在同一 Design checkpoint 重新观察；无需手改 Store。
+
+接入点不是 Human Decision 之后的补充检查。`SpecificationPlanning.assess()` 在不可变 Planning Snapshot 形成后、调用 `requestSpecificationApproval()` 和 approval store commit 前执行由编排层提供的只读 preflight。preflight 返回 coverage 摘要作为 Design Gate evidence；完成后再次读取 planning manifest，并要求其 semantic digest 与 preflight 前一致。任何 coverage 失败或规划漂移都返回 blocked，不创建可批准请求。
+
+Evidence Coordinator 提供只编译 Effective Project Config 和 Evidence Profile DAG 的只读入口；Design preflight 不复用会同时计算仓库 fingerprint 的正式 `plan()`。正式 Verify 仍在 Build Check 后计算 fingerprint，并用同一编译结果与 coverage resolver 生成 Verification Input。
 
 ### Decision: 提取单一 coverage resolver
 
@@ -60,6 +64,7 @@ Design Work 成功、Tasks 可解析后，在创建 Design Human Decision 和 Bu
 
 - [默认 `*` 使新项目初始验证范围偏大] → 草稿明确标为 unresolved，并允许在批准前收窄；安全默认优先于生成不可完成配置。
 - [Design preflight 会读取当前 Evidence Profile] → 只编译配置和 selector，不执行命令或创建 Attempt；错误保持在 Design。
+- [preflight 期间 Tasks 可能变化] → preflight 后重新核对 planning manifest semantic digest；漂移时不写审批请求，下一次调用重新观察。
 - [项目配置随后变化] → Run 继续使用既有 project config digest 与后续兼容/失效规则；Verify 仍以当前不可变 Verification Input 做最终判断。
 - [静态就绪检查无法证明未来 Change 全覆盖] → 精确证明由 Design preflight 负责，两个检查职责不同。
 

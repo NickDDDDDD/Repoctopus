@@ -6,8 +6,8 @@
   **Acceptance:** 探测候选不再生成空 coverage；finding 清楚说明 workspace-wide coverage 可在批准前收窄；探测仍不写正式配置
   **Requirements:** project-configuration / 探测候选必须提供可审查的 Change coverage
 
-- [ ] 1.2 增加项目审批回归，证明 Change Verify Profile 全部 coverage 为空时不能建立可批准请求，而合法的 required coverage 与无 coverage 前置节点可以共存
-  **Acceptance:** 无 required coverage 时在写正式配置前返回可定位诊断；至少一个 required coverage 节点时正常准备审批；optional-only coverage 不得通过
+- [ ] 1.2 增加项目审批回归，证明默认 `verify` Profile 缺失或全部 coverage 为空时不能建立可批准请求，而合法的 required coverage 与无 coverage 前置节点可以共存
+  **Acceptance:** 默认 `verify` 缺失、无 required coverage 或 optional-only coverage 时在写正式配置前返回可定位诊断；至少一个 required coverage 节点时正常准备审批；其他独立 Profile 不被误判为 Change Verify Profile
   **Requirements:** project-configuration / Change Verify Profile 必须在审批前静态可用
 
 - [ ] 1.3 提取并测试单一 Acceptance coverage resolver，覆盖通配、Task、Requirement、精确 ID、重复、未知、未覆盖和 optional-only 规则
@@ -16,8 +16,8 @@
 
 ## 2. 在 Design→Build 边界 fail-fast
 
-- [ ] 2.1 在 Design gate 接入只读 coverage preflight，在 Human Decision/Build Work 前用当前 Tasks 和 Verification Profile 完成精确解析
-  **Acceptance:** coverage 不完整时 Run 保持 Design、没有 Build Work、没有 Evidence Attempt 或命令执行；错误指出未覆盖 Acceptance 或无效 selector；修正配置后可从同一 Design checkpoint 重试
+- [ ] 2.1 在 Design gate 接入只读 coverage preflight，在 Planning Snapshot 形成后、Human Decision/Build Work 前用当前 Tasks 和实际 Verification Profile 完成精确解析
+  **Acceptance:** coverage 不完整时 Run 保持 Design、没有审批请求、Build Work、Evidence Attempt、仓库 fingerprint 或命令执行；错误指出未覆盖 Acceptance 或无效 selector；preflight 后规划摘要漂移也 fail closed；修正配置后可从同一 Design checkpoint 重试
   **Requirements:** implementation-evidence / Design 完成前必须证明 Verification coverage
 
 - [ ] 2.2 增加真实 Runtime 回归，复现旧行为会在 Build Check 后失败，并证明新行为在进入 Build 前阻断，同时合法 coverage 的 Open→Design→Build 路径不受影响

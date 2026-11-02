@@ -19,7 +19,7 @@
 
 ### Requirement: 用户确认后才能写入共享配置
 
-Repoctopus MUST 把候选配置、Agent 补全内容和现有配置差异作为 Human Decision 输入，只有可信用户确认后才允许生成或更新 `repoctopus.yaml`。作为 Change `verificationProfileId` 的 Profile MUST 在建立审批请求前至少包含一个声明非空 Acceptance coverage 的 required 节点；完全无 coverage 或只有 optional coverage 的候选 MUST 被拒绝。
+Repoctopus MUST 把候选配置、Agent 补全内容和现有配置差异作为 Human Decision 输入，只有可信用户确认后才允许生成或更新 `repoctopus.yaml`。约定的默认 Change `verify` Profile MUST 在建立审批请求前存在，并至少包含一个声明非空 Acceptance coverage 的 required 节点；完全无 coverage 或只有 optional coverage 的候选 MUST 被拒绝。具体 Run 显式选择的其他 `verificationProfileId` MUST 由该 Run 的 Design preflight 精确校验。
 
 #### Scenario: 没有可信确认通道
 

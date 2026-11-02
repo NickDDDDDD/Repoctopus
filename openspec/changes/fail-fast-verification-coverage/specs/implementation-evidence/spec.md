@@ -4,7 +4,7 @@
 
 ### Requirement: Evidence Profile 编译完整 Acceptance Coverage Plan
 
-用于 Change Verify 的 Evidence Profile MUST 显式声明 required 节点覆盖的 Acceptance selector，并在执行任何节点前解析为绑定完整 Acceptance Set、Profile plan、仓库和配置摘要的不可变 coverage plan；缺失、未知、重复或仅由 optional 节点覆盖的 Acceptance 必须阻断执行。相同的确定性 coverage resolver MUST 在 Design 规格与 Tasks 冻结后、创建 Design Human Decision 或 Build Work 前执行只读 preflight；该 preflight 不得运行 Evidence 节点或创建 Attempt。
+用于 Change Verify 的 Evidence Profile MUST 显式声明 required 节点覆盖的 Acceptance selector，并在执行任何节点前解析为绑定完整 Acceptance Set、Profile plan、仓库和配置摘要的不可变 coverage plan；缺失、未知、重复或仅由 optional 节点覆盖的 Acceptance 必须阻断执行。相同的确定性 coverage resolver MUST 在 Design 规格与 Tasks 冻结后、创建 Design Human Decision 或 Build Work 前执行只读 preflight；该 preflight 不得运行 Evidence 节点、创建 Attempt 或计算正式 Verify 仓库 fingerprint。preflight 完成后、写入审批请求前 MUST 重新核对 Planning Manifest identity，防止预检与获批内容来自不同版本。
 
 #### Scenario: Profile 没有覆盖 UI Acceptance
 
@@ -25,6 +25,11 @@
 
 - **WHEN** Design 因 coverage 不完整而阻断，团队通过正常共享配置变更补齐 selector
 - **THEN** Runtime 从原 Design checkpoint 重新执行只读 preflight；不得要求重做已完成 Host Work、手改 Store 或伪造 Evidence Receipt
+
+#### Scenario: preflight 期间 Planning Manifest 漂移
+
+- **WHEN** Runtime 完成 coverage 解析后发现 Tasks 或其他受保护规划产物的 semantic digest 已变化
+- **THEN** Runtime 保持 Design 并丢弃该次预检结果，不创建 Design Human Decision；下一次推进重新观察当前规划
 
 ## ADDED Requirements
 
