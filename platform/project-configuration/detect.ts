@@ -445,9 +445,7 @@ export async function detectProjectConfiguration(input: {
   });
   const current = await optionalExistingConfig(workspace);
   const storeId =
-    input.storeId ??
-    current?.specificationProvider?.store.id ??
-    slug(path.basename(workspace));
+    input.storeId ?? current?.specificationProvider?.store.id ?? slug(path.basename(workspace));
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(storeId)) {
     throw new Error('OpenSpec Store id must be lowercase kebab-case');
   }
@@ -489,6 +487,7 @@ export async function detectProjectConfiguration(input: {
       repository: command.repository,
       dependsOn: [],
       required: true,
+      covers: ['*'],
       executable: command.executable,
       args: command.args,
       cwd: command.cwd,
@@ -496,6 +495,16 @@ export async function detectProjectConfiguration(input: {
       cache: false,
       ...(command.zeroTests ? { zeroTests: command.zeroTests } : {}),
     })),
+  );
+  unresolved.push(
+    ...repositories.flatMap((repository) =>
+      repository.commands.map((command) => ({
+        code: 'acceptance-coverage' as const,
+        repository: repository.id,
+        message: `Detected command ${command.id} uses workspace-wide Acceptance coverage; confirm or narrow the selector before approval`,
+        ...(command.sources[0] ? { source: command.sources[0] } : {}),
+      })),
+    ),
   );
   const workspaceRepository = repositories.find((repository) => repository.path === '.');
   const detectedCandidate: SharedProjectConfig | null =
