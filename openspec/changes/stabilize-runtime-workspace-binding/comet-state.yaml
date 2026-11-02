@@ -1,0 +1,116 @@
+# comet-execution: managed-run
+change_id: 78fe64fe-2b74-4510-adab-3ed476c9da94
+workflow: full
+language: zh-CN
+phase: open
+context_compression: off
+build_mode: null
+build_pause: null
+subagent_dispatch: null
+tdd_mode: null
+review_mode: thorough
+isolation: branch
+verify_mode: null
+auto_transition: true
+base_ref: f26b9e078c333fa9413a4e3ece11f66e6fb17f6e
+design_doc: null
+plan: null
+verify_result: pending
+verify_failures: 0
+verification_report: null
+branch_status: pending
+created_at: 2026-11-02
+verified_at: null
+archive_confirmation: null
+archived: false
+bound_branch: codex/stabilize-runtime-workspace-binding
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: 6a85817b70f272831fe9e86e83e88503ce12ee9b6b409b56cad216053aae832f
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: stabilize-runtime-workspace-binding
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: 452ba7216c48cdcde42437e1722fcab02c7c1f81e498393826d0c745a0840d9a
+    input:
+      change: stabilize-runtime-workspace-binding
+      changeDir: openspec/changes/stabilize-runtime-workspace-binding
+      workspaceBaseline:
+        ref: a624b498-a205-469b-afad-3576be798bc2
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: f26b9e078c333fa9413a4e3ece11f66e6fb17f6e
+      boundBranch: codex/stabilize-runtime-workspace-binding
+      branchStatus: pending
+      buildMode: null
+      buildPause: null
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-02
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: branch
+      language: zh-CN
+      phase: open
+      plan: null
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: null
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: running
+    sequence: 1
+    actions:
+      - attempt: 1
+        id: stabilize-runtime-workspace-binding:1
+        input:
+          input:
+            change: stabilize-runtime-workspace-binding
+            changeDir: openspec/changes/stabilize-runtime-workspace-binding
+            workspaceBaseline:
+              ref: a624b498-a205-469b-afad-3576be798bc2
+          outputs: {}
+        inputHash: 37f0454c76afa200b9ac9598ba0b177931a17706f21be982c9dbd39855134e12
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-runtime-workspace-binding
+        status: pending
+        stepId: full.open
+        type: invoke_skill
+    actionContexts:
+      stabilize-runtime-workspace-binding:1:
+        results: {}
+        sequence: 1
+    waits: []
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 1
+  sourceHash: 1e2d27f7e2ed76d2f54d45363c871954ef65cb114473a24668402f2e467e28ac
