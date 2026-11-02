@@ -79,6 +79,8 @@ Run 是跨进程持久化 Aggregate，不对应一个长期 Fiber。每个命令
 
 Engine 只根据 Workflow、Run State 和已经核对的事实计算下一状态。RunStore 负责同一 Run 的写锁、状态版本、Journal、原子提交、Trajectory、Checkpoint、幂等和崩溃重放。WorkflowRuns 负责应用用例与 Engine 调用，不得绕过 RunStore 写入状态。
 
+Change Run 的 checkout 准备属于 Runner：Runner 先建立并公开 source branch 或 worktree，Project adapter 只观察 Git，Runtime 再以 `ChangeStartBinding` 校验 Workspace Repository、attached source branch、target branch、remote identity 和多仓 topology。该校验发生在 RunStore initialize、Skill/Work 记录和 Desktop activation 之前；Runtime 不执行 `git switch`、创建 branch 或创建 worktree。绑定身份刻意排除本机 path、HEAD、dirty/worktree digest 和观察时间，因此正常开发不会伪装成新 Run；source、target、remote 或 topology 漂移则 fail closed。
+
 ## 受管 Work Execution、Action Intent 与 Receipt
 
 外部副作用不能占用 Run 锁。`run next` 是 Runner 发起的 pull-based 入口，Runtime 根据当前 lifecycle snapshot 选择 Work；Host 和 Agent 都不能指定目标 phase、Work 或 Skill。执行链路为：
@@ -93,7 +95,7 @@ Build phase 在该执行链内固定使用 `Configure → Plan → Plan Evidence
 
 受管子代理不会创建并列 Run 或并行 `currentWork`。具有 `subagent.dispatch.attested` 的协调 Host 在父 invocation 下返回 package-bound delegation receipts；Runtime 校验 execution identity、role、结果和父调用，再把它们写入同一 Trajectory。Autonomous Host 返回 delegation receipt 会被拒绝。
 
-Intent 与 Receipt 独立保存在 `.repoctopus/actions/`，但 `RunState.workExecution` 是 claim、attempt、Host、Outcome、Validator 和 continuation 的唯一权威。同一 claim 重放返回原 packet identity；已保存 Outcome/Receipt 在响应丢失后从 Validator 或 transition 边界继续，不重复 Host。未知外部结果保持 `reconcile`，只有 Host 能证明 `not-executed` 才允许新 attempt。
+Intent 与 Receipt 独立保存在 `.repoctopus/actions/`，但 `RunState.workExecution` 是 claim、attempt、Host、Outcome、Validator 和 continuation 的唯一权威。同一 claim 重放返回原 packet identity；已保存 Outcome/Receipt 在响应丢失后从 Validator 或 transition 边界继续，不重复 Host。Specification Provider 暂时不可观察时使用 `reobserve` 重读原 Outcome 对应的规格事实，不调用 Host；只有未知外部执行结果才保持 `reconcile`，且只有 Host 能证明 `not-executed` 才允许新 attempt。
 
 ## Evidence 与 Gate
 

@@ -265,6 +265,12 @@ describe('specification planning approval', () => {
     const localOnly = planningInput();
     localOnly.changeBranch.remoteOid = '';
     expect(() => createPlanningSnapshot(localOnly)).toThrow(/remoteOid is required/u);
+
+    const targetAsSource = planningInput();
+    targetAsSource.changeBranch.sourceBranch = targetAsSource.changeBranch.targetBranch;
+    expect(() => createPlanningSnapshot(targetAsSource)).toThrowError(
+      expect.objectContaining({ code: 'runtime.workspace-binding.source-target-equal' }),
+    );
   });
 
   it('creates the versioned human decision request and rejects snapshot tampering', async () => {
