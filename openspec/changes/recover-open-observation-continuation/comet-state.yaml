@@ -2,7 +2,7 @@
 change_id: 1c0eabda-104e-4218-9b2d-0090bd41f6fb
 workflow: full
 language: zh-CN
-phase: verify
+phase: archive
 context_compression: off
 build_mode: autonomous
 build_pause: null
@@ -15,13 +15,13 @@ auto_transition: true
 base_ref: 2fe7cce58e0016c4b61b40630cec5f7e737d0811
 design_doc: openspec/changes/recover-open-observation-continuation/design.md
 plan: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
-verify_result: pending
+verify_result: pass
 verify_failures: 0
-verification_report: null
+verification_report: docs/superpowers/reports/recover-open-observation-continuation.md
 branch_status: pending
 created_at: 2026-11-02
-verified_at: null
-archive_confirmation: null
+verified_at: 2026-11-02
+archive_confirmation: pending
 archived: false
 bound_branch: codex/recover-open-observation-continuation
 direct_override: false
@@ -30,8 +30,8 @@ handoff_hash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
 classic_profile: null
 classic_migration: null
 run_checkpoint:
-  schema: comet.workflow-run-checkpoint.v1
-  hash: 12743bfeaaa94a80f20ebe6eeec70254b3797861c80e076a41da470847574f41
+  schema: comet.workflow-run-checkpoint.v2
+  hash: 795d32af973e80074a6cdf428547c177867e8fdb20a71e2fb0d77dbf0e4d539b
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -50,7 +50,7 @@ run_checkpoint:
       workspaceBaseline:
         ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
     state:
-      archiveConfirmation: null
+      archiveConfirmation: pending
       archived: false
       autoTransition: true
       baseRef: 2fe7cce58e0016c4b61b40630cec5f7e737d0811
@@ -58,7 +58,7 @@ run_checkpoint:
       branchStatus: pending
       buildMode: autonomous
       buildPause: null
-      checkEpoch: 3
+      checkEpoch: 4
       classicMigration: null
       classicProfile: null
       contextCompression: off
@@ -69,19 +69,19 @@ run_checkpoint:
       handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
       isolation: current
       language: zh-CN
-      phase: verify
+      phase: archive
       plan: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
       reviewMode: thorough
       subagentDispatch: null
       tddMode: tdd
-      verificationReport: null
-      verifiedAt: null
+      verificationReport: docs/superpowers/reports/recover-open-observation-continuation.md
+      verifiedAt: 2026-11-02
       verifyFailures: 0
       verifyMode: null
-      verifyResult: pending
+      verifyResult: pass
       workflow: full
     status: running
-    sequence: 16
+    sequence: 20
     actions:
       - attempt: 1
         claim:
@@ -138,26 +138,7 @@ run_checkpoint:
             changeDir: openspec/changes/recover-open-observation-continuation
             workspaceBaseline:
               ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-          outputs:
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-                    ref: openspec/changes/recover-open-observation-continuation
-            full.open.evidence:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-              ref: openspec/changes/recover-open-observation-continuation
+          outputs: {}
         inputHash: ab7030c6e3e802727e859dad6c322e3d5c8d938fe94dbaf4989ad54e33709063
         outcome:
           actionId: recover-open-observation-continuation:4
@@ -196,28 +177,7 @@ run_checkpoint:
             changeDir: openspec/changes/recover-open-observation-continuation
             workspaceBaseline:
               ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-          outputs:
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-                    ref: openspec/changes/recover-open-observation-continuation
-            full.open.evidence:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-              ref: openspec/changes/recover-open-observation-continuation
-            full.open.revalidate:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
+          outputs: {}
         inputHash: ffa889512d1908da48ced85ccc12c6d3e43d1116e62f7c3f9c4b2c6d331aea34
         outcome:
           actionId: recover-open-observation-continuation:5
@@ -276,82 +236,7 @@ run_checkpoint:
             changeDir: openspec/changes/recover-open-observation-continuation
             workspaceBaseline:
               ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-          outputs:
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
-                    handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
-                    proposal: 采用单一纯 Work continuation
-                      classifier：WorkExecutionAuthority.recovery、WorkflowRuns.next、managed
-                      execution 与 next-action projection 共用同一状态分类；Open validated
-                      固定投影为 reobserve/open-gate-pending，并直接继续 planning
-                      gate，当次瞬时错误仍记录 open-observation-unavailable。Project
-                      reconciliation 扩展为 same/content/identity 与
-                      requiresReconciliation；HEAD/worktree content drift
-                      完整报告但交给各 phase authority
-                      精确重验，不设置全局阻塞；branch、remote、path、repository
-                      identity、topology 或不可分类差异仍 fail closed。run resume 只恢复事务并投影
-                      continuation，不执行 Provider/Host。测试必须复现 strict validation
-                      已成功后 planning observation 失败的真实窗口，证明原
-                      Work、attempt、checkEpoch、Outcome、receipt、packet、invocation
-                      与 Skill consumption 不变，并回归真实 identity drift 仍阻断。
-                    requirementsEvidence:
-                      contentHash: 5c3f3fcc1812d3d840221cfadfa2321cfb5e58867d4fa7aa7e605f119049fad7
-                      ref: openspec/changes/recover-open-observation-continuation
-                    sourceEvidence:
-                      contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
-                      ref: openspec/changes/recover-open-observation-continuation
-            full.design.handoff:
-              handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
-              handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
-              proposal: 采用单一纯 Work continuation
-                classifier：WorkExecutionAuthority.recovery、WorkflowRuns.next、managed
-                execution 与 next-action projection 共用同一状态分类；Open validated 固定投影为
-                reobserve/open-gate-pending，并直接继续 planning gate，当次瞬时错误仍记录
-                open-observation-unavailable。Project reconciliation 扩展为
-                same/content/identity 与 requiresReconciliation；HEAD/worktree
-                content drift 完整报告但交给各 phase authority
-                精确重验，不设置全局阻塞；branch、remote、path、repository identity、topology
-                或不可分类差异仍 fail closed。run resume 只恢复事务并投影 continuation，不执行
-                Provider/Host。测试必须复现 strict validation 已成功后 planning observation
-                失败的真实窗口，证明原
-                Work、attempt、checkEpoch、Outcome、receipt、packet、invocation 与
-                Skill consumption 不变，并回归真实 identity drift 仍阻断。
-              requirementsEvidence:
-                contentHash: 5c3f3fcc1812d3d840221cfadfa2321cfb5e58867d4fa7aa7e605f119049fad7
-                ref: openspec/changes/recover-open-observation-continuation
-              sourceEvidence:
-                contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
-                ref: openspec/changes/recover-open-observation-continuation
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-                    ref: openspec/changes/recover-open-observation-continuation
-            full.open.evidence:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-              ref: openspec/changes/recover-open-observation-continuation
-            full.open.revalidate:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
+          outputs: {}
         inputHash: 2f98a6236011210e8a6dbddb8b1bb4d9ef488c0ead15b7a8e6ad2351414a9d6d
         outcome:
           actionId: recover-open-observation-continuation:7
@@ -390,87 +275,7 @@ run_checkpoint:
             changeDir: openspec/changes/recover-open-observation-continuation
             workspaceBaseline:
               ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-          outputs:
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
-                    handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
-                    proposal: 采用单一纯 Work continuation
-                      classifier：WorkExecutionAuthority.recovery、WorkflowRuns.next、managed
-                      execution 与 next-action projection 共用同一状态分类；Open validated
-                      固定投影为 reobserve/open-gate-pending，并直接继续 planning
-                      gate，当次瞬时错误仍记录 open-observation-unavailable。Project
-                      reconciliation 扩展为 same/content/identity 与
-                      requiresReconciliation；HEAD/worktree content drift
-                      完整报告但交给各 phase authority
-                      精确重验，不设置全局阻塞；branch、remote、path、repository
-                      identity、topology 或不可分类差异仍 fail closed。run resume 只恢复事务并投影
-                      continuation，不执行 Provider/Host。测试必须复现 strict validation
-                      已成功后 planning observation 失败的真实窗口，证明原
-                      Work、attempt、checkEpoch、Outcome、receipt、packet、invocation
-                      与 Skill consumption 不变，并回归真实 identity drift 仍阻断。
-                    requirementsEvidence:
-                      contentHash: 5c3f3fcc1812d3d840221cfadfa2321cfb5e58867d4fa7aa7e605f119049fad7
-                      ref: openspec/changes/recover-open-observation-continuation
-                    sourceEvidence:
-                      contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
-                      ref: openspec/changes/recover-open-observation-continuation
-            full.design.document:
-              designDoc: openspec/changes/recover-open-observation-continuation/design.md
-            full.design.evidence:
-              contentHash: 0c0d87fb39f52f983739e656b8b0cbadb085184999926e87f5c2d8175e682bc4
-              ref: openspec/changes/recover-open-observation-continuation/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
-              handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
-              proposal: 采用单一纯 Work continuation
-                classifier：WorkExecutionAuthority.recovery、WorkflowRuns.next、managed
-                execution 与 next-action projection 共用同一状态分类；Open validated 固定投影为
-                reobserve/open-gate-pending，并直接继续 planning gate，当次瞬时错误仍记录
-                open-observation-unavailable。Project reconciliation 扩展为
-                same/content/identity 与 requiresReconciliation；HEAD/worktree
-                content drift 完整报告但交给各 phase authority
-                精确重验，不设置全局阻塞；branch、remote、path、repository identity、topology
-                或不可分类差异仍 fail closed。run resume 只恢复事务并投影 continuation，不执行
-                Provider/Host。测试必须复现 strict validation 已成功后 planning observation
-                失败的真实窗口，证明原
-                Work、attempt、checkEpoch、Outcome、receipt、packet、invocation 与
-                Skill consumption 不变，并回归真实 identity drift 仍阻断。
-              requirementsEvidence:
-                contentHash: 5c3f3fcc1812d3d840221cfadfa2321cfb5e58867d4fa7aa7e605f119049fad7
-                ref: openspec/changes/recover-open-observation-continuation
-              sourceEvidence:
-                contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
-                ref: openspec/changes/recover-open-observation-continuation
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-                    ref: openspec/changes/recover-open-observation-continuation
-            full.open.evidence:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-              ref: openspec/changes/recover-open-observation-continuation
-            full.open.revalidate:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
+          outputs: {}
         inputHash: a20aeadf8743e7fbc5883c932cdec72e0ff165640517ca782ea811a9f400bb94
         outcome:
           actionId: recover-open-observation-continuation:9
@@ -515,112 +320,7 @@ run_checkpoint:
             changeDir: openspec/changes/recover-open-observation-continuation
             workspaceBaseline:
               ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-          outputs:
-            full.build.configure:
-              boundBranch: codex/recover-open-observation-continuation
-              buildMode: autonomous
-              directOverride: false
-              isolation: current
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-            full.build.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/recover-open-observation-continuation
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: current
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
-                    handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
-                    proposal: 采用单一纯 Work continuation
-                      classifier：WorkExecutionAuthority.recovery、WorkflowRuns.next、managed
-                      execution 与 next-action projection 共用同一状态分类；Open validated
-                      固定投影为 reobserve/open-gate-pending，并直接继续 planning
-                      gate，当次瞬时错误仍记录 open-observation-unavailable。Project
-                      reconciliation 扩展为 same/content/identity 与
-                      requiresReconciliation；HEAD/worktree content drift
-                      完整报告但交给各 phase authority
-                      精确重验，不设置全局阻塞；branch、remote、path、repository
-                      identity、topology 或不可分类差异仍 fail closed。run resume 只恢复事务并投影
-                      continuation，不执行 Provider/Host。测试必须复现 strict validation
-                      已成功后 planning observation 失败的真实窗口，证明原
-                      Work、attempt、checkEpoch、Outcome、receipt、packet、invocation
-                      与 Skill consumption 不变，并回归真实 identity drift 仍阻断。
-                    requirementsEvidence:
-                      contentHash: 5c3f3fcc1812d3d840221cfadfa2321cfb5e58867d4fa7aa7e605f119049fad7
-                      ref: openspec/changes/recover-open-observation-continuation
-                    sourceEvidence:
-                      contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
-                      ref: openspec/changes/recover-open-observation-continuation
-            full.design.document:
-              designDoc: openspec/changes/recover-open-observation-continuation/design.md
-            full.design.evidence:
-              contentHash: 0c0d87fb39f52f983739e656b8b0cbadb085184999926e87f5c2d8175e682bc4
-              ref: openspec/changes/recover-open-observation-continuation/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
-              handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
-              proposal: 采用单一纯 Work continuation
-                classifier：WorkExecutionAuthority.recovery、WorkflowRuns.next、managed
-                execution 与 next-action projection 共用同一状态分类；Open validated 固定投影为
-                reobserve/open-gate-pending，并直接继续 planning gate，当次瞬时错误仍记录
-                open-observation-unavailable。Project reconciliation 扩展为
-                same/content/identity 与 requiresReconciliation；HEAD/worktree
-                content drift 完整报告但交给各 phase authority
-                精确重验，不设置全局阻塞；branch、remote、path、repository identity、topology
-                或不可分类差异仍 fail closed。run resume 只恢复事务并投影 continuation，不执行
-                Provider/Host。测试必须复现 strict validation 已成功后 planning observation
-                失败的真实窗口，证明原
-                Work、attempt、checkEpoch、Outcome、receipt、packet、invocation 与
-                Skill consumption 不变，并回归真实 identity drift 仍阻断。
-              requirementsEvidence:
-                contentHash: 5c3f3fcc1812d3d840221cfadfa2321cfb5e58867d4fa7aa7e605f119049fad7
-                ref: openspec/changes/recover-open-observation-continuation
-              sourceEvidence:
-                contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
-                ref: openspec/changes/recover-open-observation-continuation
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-                    ref: openspec/changes/recover-open-observation-continuation
-            full.open.evidence:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-              ref: openspec/changes/recover-open-observation-continuation
-            full.open.revalidate:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
+          outputs: {}
         inputHash: f5e8ca903425a1e3e6d5acd9d849a0b45ea4813cc63fc77bc90567315b075a4f
         outcome:
           actionId: recover-open-observation-continuation:11
@@ -667,124 +367,7 @@ run_checkpoint:
             changeDir: openspec/changes/recover-open-observation-continuation
             workspaceBaseline:
               ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-          outputs:
-            full.build.configure:
-              boundBranch: codex/recover-open-observation-continuation
-              buildMode: autonomous
-              directOverride: false
-              isolation: current
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-            full.build.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/recover-open-observation-continuation
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: current
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-            full.build.plan:
-              designEvidence:
-                contentHash: 0c0d87fb39f52f983739e656b8b0cbadb085184999926e87f5c2d8175e682bc4
-                ref: openspec/changes/recover-open-observation-continuation/design.md
-              plan: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
-              planEvidence:
-                contentHash: 699b02b70e55265b6c6aa6e4d2d9ce55522aea4567dd2b633887c9920b2cb42c
-                ref: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
-              taskRevision: 6b38de094a421b25bb8bce3caf67c2147f60e96bf4a86a9a2912b32f73c967e8
-            full.build.plan.evidence:
-              contentHash: 699b02b70e55265b6c6aa6e4d2d9ce55522aea4567dd2b633887c9920b2cb42c
-              ref: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
-                    handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
-                    proposal: 采用单一纯 Work continuation
-                      classifier：WorkExecutionAuthority.recovery、WorkflowRuns.next、managed
-                      execution 与 next-action projection 共用同一状态分类；Open validated
-                      固定投影为 reobserve/open-gate-pending，并直接继续 planning
-                      gate，当次瞬时错误仍记录 open-observation-unavailable。Project
-                      reconciliation 扩展为 same/content/identity 与
-                      requiresReconciliation；HEAD/worktree content drift
-                      完整报告但交给各 phase authority
-                      精确重验，不设置全局阻塞；branch、remote、path、repository
-                      identity、topology 或不可分类差异仍 fail closed。run resume 只恢复事务并投影
-                      continuation，不执行 Provider/Host。测试必须复现 strict validation
-                      已成功后 planning observation 失败的真实窗口，证明原
-                      Work、attempt、checkEpoch、Outcome、receipt、packet、invocation
-                      与 Skill consumption 不变，并回归真实 identity drift 仍阻断。
-                    requirementsEvidence:
-                      contentHash: 5c3f3fcc1812d3d840221cfadfa2321cfb5e58867d4fa7aa7e605f119049fad7
-                      ref: openspec/changes/recover-open-observation-continuation
-                    sourceEvidence:
-                      contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
-                      ref: openspec/changes/recover-open-observation-continuation
-            full.design.document:
-              designDoc: openspec/changes/recover-open-observation-continuation/design.md
-            full.design.evidence:
-              contentHash: 0c0d87fb39f52f983739e656b8b0cbadb085184999926e87f5c2d8175e682bc4
-              ref: openspec/changes/recover-open-observation-continuation/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
-              handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
-              proposal: 采用单一纯 Work continuation
-                classifier：WorkExecutionAuthority.recovery、WorkflowRuns.next、managed
-                execution 与 next-action projection 共用同一状态分类；Open validated 固定投影为
-                reobserve/open-gate-pending，并直接继续 planning gate，当次瞬时错误仍记录
-                open-observation-unavailable。Project reconciliation 扩展为
-                same/content/identity 与 requiresReconciliation；HEAD/worktree
-                content drift 完整报告但交给各 phase authority
-                精确重验，不设置全局阻塞；branch、remote、path、repository identity、topology
-                或不可分类差异仍 fail closed。run resume 只恢复事务并投影 continuation，不执行
-                Provider/Host。测试必须复现 strict validation 已成功后 planning observation
-                失败的真实窗口，证明原
-                Work、attempt、checkEpoch、Outcome、receipt、packet、invocation 与
-                Skill consumption 不变，并回归真实 identity drift 仍阻断。
-              requirementsEvidence:
-                contentHash: 5c3f3fcc1812d3d840221cfadfa2321cfb5e58867d4fa7aa7e605f119049fad7
-                ref: openspec/changes/recover-open-observation-continuation
-              sourceEvidence:
-                contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
-                ref: openspec/changes/recover-open-observation-continuation
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-                    ref: openspec/changes/recover-open-observation-continuation
-            full.open.evidence:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-              ref: openspec/changes/recover-open-observation-continuation
-            full.open.revalidate:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
+          outputs: {}
         inputHash: 568d71a3585b9d12e62ee93360bfad2cbd39c0039c72d57c6ea9aa6acefca835
         outcome:
           actionId: recover-open-observation-continuation:13
@@ -823,126 +406,7 @@ run_checkpoint:
             changeDir: openspec/changes/recover-open-observation-continuation
             workspaceBaseline:
               ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-          outputs:
-            full.build.configure:
-              boundBranch: codex/recover-open-observation-continuation
-              buildMode: autonomous
-              directOverride: false
-              isolation: current
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-            full.build.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/recover-open-observation-continuation
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: current
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-            full.build.execute:
-              event: build-complete
-            full.build.plan:
-              designEvidence:
-                contentHash: 0c0d87fb39f52f983739e656b8b0cbadb085184999926e87f5c2d8175e682bc4
-                ref: openspec/changes/recover-open-observation-continuation/design.md
-              plan: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
-              planEvidence:
-                contentHash: 699b02b70e55265b6c6aa6e4d2d9ce55522aea4567dd2b633887c9920b2cb42c
-                ref: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
-              taskRevision: 6b38de094a421b25bb8bce3caf67c2147f60e96bf4a86a9a2912b32f73c967e8
-            full.build.plan.evidence:
-              contentHash: 699b02b70e55265b6c6aa6e4d2d9ce55522aea4567dd2b633887c9920b2cb42c
-              ref: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
-                    handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
-                    proposal: 采用单一纯 Work continuation
-                      classifier：WorkExecutionAuthority.recovery、WorkflowRuns.next、managed
-                      execution 与 next-action projection 共用同一状态分类；Open validated
-                      固定投影为 reobserve/open-gate-pending，并直接继续 planning
-                      gate，当次瞬时错误仍记录 open-observation-unavailable。Project
-                      reconciliation 扩展为 same/content/identity 与
-                      requiresReconciliation；HEAD/worktree content drift
-                      完整报告但交给各 phase authority
-                      精确重验，不设置全局阻塞；branch、remote、path、repository
-                      identity、topology 或不可分类差异仍 fail closed。run resume 只恢复事务并投影
-                      continuation，不执行 Provider/Host。测试必须复现 strict validation
-                      已成功后 planning observation 失败的真实窗口，证明原
-                      Work、attempt、checkEpoch、Outcome、receipt、packet、invocation
-                      与 Skill consumption 不变，并回归真实 identity drift 仍阻断。
-                    requirementsEvidence:
-                      contentHash: 5c3f3fcc1812d3d840221cfadfa2321cfb5e58867d4fa7aa7e605f119049fad7
-                      ref: openspec/changes/recover-open-observation-continuation
-                    sourceEvidence:
-                      contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
-                      ref: openspec/changes/recover-open-observation-continuation
-            full.design.document:
-              designDoc: openspec/changes/recover-open-observation-continuation/design.md
-            full.design.evidence:
-              contentHash: 0c0d87fb39f52f983739e656b8b0cbadb085184999926e87f5c2d8175e682bc4
-              ref: openspec/changes/recover-open-observation-continuation/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
-              handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
-              proposal: 采用单一纯 Work continuation
-                classifier：WorkExecutionAuthority.recovery、WorkflowRuns.next、managed
-                execution 与 next-action projection 共用同一状态分类；Open validated 固定投影为
-                reobserve/open-gate-pending，并直接继续 planning gate，当次瞬时错误仍记录
-                open-observation-unavailable。Project reconciliation 扩展为
-                same/content/identity 与 requiresReconciliation；HEAD/worktree
-                content drift 完整报告但交给各 phase authority
-                精确重验，不设置全局阻塞；branch、remote、path、repository identity、topology
-                或不可分类差异仍 fail closed。run resume 只恢复事务并投影 continuation，不执行
-                Provider/Host。测试必须复现 strict validation 已成功后 planning observation
-                失败的真实窗口，证明原
-                Work、attempt、checkEpoch、Outcome、receipt、packet、invocation 与
-                Skill consumption 不变，并回归真实 identity drift 仍阻断。
-              requirementsEvidence:
-                contentHash: 5c3f3fcc1812d3d840221cfadfa2321cfb5e58867d4fa7aa7e605f119049fad7
-                ref: openspec/changes/recover-open-observation-continuation
-              sourceEvidence:
-                contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
-                ref: openspec/changes/recover-open-observation-continuation
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-                    ref: openspec/changes/recover-open-observation-continuation
-            full.open.evidence:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-              ref: openspec/changes/recover-open-observation-continuation
-            full.open.revalidate:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
+          outputs: {}
         inputHash: c0df4365878a265fb40761136726b708a6467f76b6474c02591cc610a0c1a11a
         outcome:
           actionId: recover-open-observation-continuation:14
@@ -985,6 +449,14 @@ run_checkpoint:
         stepId: full.build.check
         type: call_tool
       - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-31240fb698d8c31412f19827635c4c799e19fbd7877d3642ee85ca9bdab8509c
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: recover-open-observation-continuation:16
         input:
           input:
@@ -992,1009 +464,142 @@ run_checkpoint:
             changeDir: openspec/changes/recover-open-observation-continuation
             workspaceBaseline:
               ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-          outputs:
-            full.build.check:
-              argv:
-                - npm
-                - run
-                - verify
-              changedDuringExecution: []
-              checkEpoch: 2
-              contentHash: 335297cacdb227c72445352e19605f4a8d3b2c6bf7b494cb6667bdc756d1f333
-              cwd: .
-              environment: d88cf279ad19aedc523c1654a56ccf12918930520d9757715af4852d5e93b5d3
-              exitCode: 0
-              inputAfter: 78713fdcf1745b6db33b590afb3adb9ea99864080af9d0f3a08e02b25d3191c6
-              inputBefore: 78713fdcf1745b6db33b590afb3adb9ea99864080af9d0f3a08e02b25d3191c6
-              manifestHash: f017b0c2b85a08bac972dc7ada7a67caeeb4fe6dde753aae8ebdf5be306514f1
-              manifestRef: .comet/runtime/classic-sdk-checks/04c1b1f81fd9c903072a3cf445e79f615c9687cb96ff2fad39b8b00fa39c986e/70df442d-bd74-4539-853b-c8cf07ae8dfc.manifest
-              receiptRef: .comet/runtime/classic-sdk-checks/04c1b1f81fd9c903072a3cf445e79f615c9687cb96ff2fad39b8b00fa39c986e/63f1280f-ec55-45c3-9001-4b0ee174a79e.log
-              reusable: false
-              reused: false
-              scope: build
-              tier: full
-              timeoutMs: 900000
-            full.build.check.evidence:
-              contentHash: 335297cacdb227c72445352e19605f4a8d3b2c6bf7b494cb6667bdc756d1f333
-              ref: .comet/runtime/classic-sdk-checks/04c1b1f81fd9c903072a3cf445e79f615c9687cb96ff2fad39b8b00fa39c986e/63f1280f-ec55-45c3-9001-4b0ee174a79e.log
-            full.build.configure:
-              boundBranch: codex/recover-open-observation-continuation
-              buildMode: autonomous
-              directOverride: false
-              isolation: current
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-            full.build.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/recover-open-observation-continuation
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: current
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-            full.build.execute:
-              event: build-complete
-            full.build.plan:
-              designEvidence:
-                contentHash: 0c0d87fb39f52f983739e656b8b0cbadb085184999926e87f5c2d8175e682bc4
-                ref: openspec/changes/recover-open-observation-continuation/design.md
-              plan: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
-              planEvidence:
-                contentHash: 699b02b70e55265b6c6aa6e4d2d9ce55522aea4567dd2b633887c9920b2cb42c
-                ref: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
-              taskRevision: 6b38de094a421b25bb8bce3caf67c2147f60e96bf4a86a9a2912b32f73c967e8
-            full.build.plan.evidence:
-              contentHash: 699b02b70e55265b6c6aa6e4d2d9ce55522aea4567dd2b633887c9920b2cb42c
-              ref: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
-            full.design.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
-                    handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
-                    proposal: 采用单一纯 Work continuation
-                      classifier：WorkExecutionAuthority.recovery、WorkflowRuns.next、managed
-                      execution 与 next-action projection 共用同一状态分类；Open validated
-                      固定投影为 reobserve/open-gate-pending，并直接继续 planning
-                      gate，当次瞬时错误仍记录 open-observation-unavailable。Project
-                      reconciliation 扩展为 same/content/identity 与
-                      requiresReconciliation；HEAD/worktree content drift
-                      完整报告但交给各 phase authority
-                      精确重验，不设置全局阻塞；branch、remote、path、repository
-                      identity、topology 或不可分类差异仍 fail closed。run resume 只恢复事务并投影
-                      continuation，不执行 Provider/Host。测试必须复现 strict validation
-                      已成功后 planning observation 失败的真实窗口，证明原
-                      Work、attempt、checkEpoch、Outcome、receipt、packet、invocation
-                      与 Skill consumption 不变，并回归真实 identity drift 仍阻断。
-                    requirementsEvidence:
-                      contentHash: 5c3f3fcc1812d3d840221cfadfa2321cfb5e58867d4fa7aa7e605f119049fad7
-                      ref: openspec/changes/recover-open-observation-continuation
-                    sourceEvidence:
-                      contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
-                      ref: openspec/changes/recover-open-observation-continuation
-            full.design.document:
-              designDoc: openspec/changes/recover-open-observation-continuation/design.md
-            full.design.evidence:
-              contentHash: 0c0d87fb39f52f983739e656b8b0cbadb085184999926e87f5c2d8175e682bc4
-              ref: openspec/changes/recover-open-observation-continuation/design.md
-            full.design.handoff:
-              handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
-              handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
-              proposal: 采用单一纯 Work continuation
-                classifier：WorkExecutionAuthority.recovery、WorkflowRuns.next、managed
-                execution 与 next-action projection 共用同一状态分类；Open validated 固定投影为
-                reobserve/open-gate-pending，并直接继续 planning gate，当次瞬时错误仍记录
-                open-observation-unavailable。Project reconciliation 扩展为
-                same/content/identity 与 requiresReconciliation；HEAD/worktree
-                content drift 完整报告但交给各 phase authority
-                精确重验，不设置全局阻塞；branch、remote、path、repository identity、topology
-                或不可分类差异仍 fail closed。run resume 只恢复事务并投影 continuation，不执行
-                Provider/Host。测试必须复现 strict validation 已成功后 planning observation
-                失败的真实窗口，证明原
-                Work、attempt、checkEpoch、Outcome、receipt、packet、invocation 与
-                Skill consumption 不变，并回归真实 identity drift 仍阻断。
-              requirementsEvidence:
-                contentHash: 5c3f3fcc1812d3d840221cfadfa2321cfb5e58867d4fa7aa7e605f119049fad7
-                ref: openspec/changes/recover-open-observation-continuation
-              sourceEvidence:
-                contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
-                ref: openspec/changes/recover-open-observation-continuation
-            full.open:
-              event: open-complete
-            full.open.confirm:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-                    ref: openspec/changes/recover-open-observation-continuation
-            full.open.evidence:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-              ref: openspec/changes/recover-open-observation-continuation
-            full.open.revalidate:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
+          outputs: {}
         inputHash: c94ddc9eceeee169915c1323d39c57eff285b5649db1fae20fc21cfe37653ca5
+        outcome:
+          actionId: recover-open-observation-continuation:16
+          attempt: 1
+          claimToken: portable-31240fb698d8c31412f19827635c4c799e19fbd7877d3642ee85ca9bdab8509c
+          inputHash: c94ddc9eceeee169915c1323d39c57eff285b5649db1fae20fc21cfe37653ca5
+          outcomeId: 94d242d1-f128-466e-ab07-8200935cb9bc
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/recover-open-observation-continuation.md
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: 24832e3498ee09151f54984b488aca2aa9b235949a35271829dbb7ad3af8e312
+            outcomeId: 94d242d1-f128-466e-ab07-8200935cb9bc
         reconciliations: []
         ref: comet-verify
         requiredCapabilities: []
         retry: manual
         runId: recover-open-observation-continuation
-        status: pending
+        status: succeeded
         stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-0f5d93ea554d80fbf862e92bbf46c15bcec72fabf460a275625b59535daef321
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-open-observation-continuation:18
+        input:
+          input:
+            change: recover-open-observation-continuation
+            changeDir: openspec/changes/recover-open-observation-continuation
+            workspaceBaseline:
+              ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
+          outputs: {}
+        inputHash: 3ef3cf51f705a1bda6124a7324f9a6b6257a37380e6d384f4a217fd80a8e7aea
+        outcome:
+          actionId: recover-open-observation-continuation:18
+          attempt: 1
+          claimToken: portable-0f5d93ea554d80fbf862e92bbf46c15bcec72fabf460a275625b59535daef321
+          inputHash: 3ef3cf51f705a1bda6124a7324f9a6b6257a37380e6d384f4a217fd80a8e7aea
+          outcomeId: 9cfb0103-6d5e-4893-9418-33b2d6a91654
+          output:
+            argv:
+              - npm
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 3
+            contentHash: 07790529dd862a08fa566fa2cf1aff19bcff3339ed60f8871ac2a24492dc53ed
+            cwd: .
+            deliveryInputs: {}
+            environment: d88cf279ad19aedc523c1654a56ccf12918930520d9757715af4852d5e93b5d3
+            exitCode: 0
+            inputAfter: 1ac533097af456ded2c71c04fb1ae461fc8ccc490cedc92d381fffebaaad41f4
+            inputBefore: 1ac533097af456ded2c71c04fb1ae461fc8ccc490cedc92d381fffebaaad41f4
+            manifestHash: afe9d0cbb8470dd3bf2aac4f866def185f595910f13e56e560e2b5602d7302bb
+            manifestRef: .comet/runtime/classic-sdk-checks/04c1b1f81fd9c903072a3cf445e79f615c9687cb96ff2fad39b8b00fa39c986e/de9e10c6-b1c2-4b97-ba45-44718a13190a.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/04c1b1f81fd9c903072a3cf445e79f615c9687cb96ff2fad39b8b00fa39c986e/f44b3db6-4791-4f57-9b4c-c9ac72f19090.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: e60c427c5e778b83309ede681b4a6a3b336db0430aba60bfd86ba66a160f7b9e
+            outcomeId: 9cfb0103-6d5e-4893-9418-33b2d6a91654
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-open-observation-continuation
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        id: recover-open-observation-continuation:20
+        input:
+          input:
+            change: recover-open-observation-continuation
+            changeDir: openspec/changes/recover-open-observation-continuation
+            workspaceBaseline:
+              ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
+          outputs: {}
+        inputHash: a887b757cbb71ed942a5c05051c5cc6e05c4ba3590baa64b5d93de944a94efeb
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-open-observation-continuation
+        status: pending
+        stepId: full.archive.prepare
         type: invoke_skill
     actionContexts:
       recover-open-observation-continuation:1:
         results: {}
         sequence: 1
       recover-open-observation-continuation:11:
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: codex/recover-open-observation-continuation
-              buildMode: autonomous
-              directOverride: false
-              isolation: current
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/recover-open-observation-continuation
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: current
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
-                    handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
-                    proposal: 采用单一纯 Work continuation
-                      classifier：WorkExecutionAuthority.recovery、WorkflowRuns.next、managed
-                      execution 与 next-action projection 共用同一状态分类；Open validated
-                      固定投影为 reobserve/open-gate-pending，并直接继续 planning
-                      gate，当次瞬时错误仍记录 open-observation-unavailable。Project
-                      reconciliation 扩展为 same/content/identity 与
-                      requiresReconciliation；HEAD/worktree content drift
-                      完整报告但交给各 phase authority
-                      精确重验，不设置全局阻塞；branch、remote、path、repository
-                      identity、topology 或不可分类差异仍 fail closed。run resume 只恢复事务并投影
-                      continuation，不执行 Provider/Host。测试必须复现 strict validation
-                      已成功后 planning observation 失败的真实窗口，证明原
-                      Work、attempt、checkEpoch、Outcome、receipt、packet、invocation
-                      与 Skill consumption 不变，并回归真实 identity drift 仍阻断。
-                    requirementsEvidence:
-                      contentHash: 5c3f3fcc1812d3d840221cfadfa2321cfb5e58867d4fa7aa7e605f119049fad7
-                      ref: openspec/changes/recover-open-observation-continuation
-                    sourceEvidence:
-                      contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
-                      ref: openspec/changes/recover-open-observation-continuation
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/recover-open-observation-continuation/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 0c0d87fb39f52f983739e656b8b0cbadb085184999926e87f5c2d8175e682bc4
-              ref: openspec/changes/recover-open-observation-continuation/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
-              handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
-              proposal: 采用单一纯 Work continuation
-                classifier：WorkExecutionAuthority.recovery、WorkflowRuns.next、managed
-                execution 与 next-action projection 共用同一状态分类；Open validated 固定投影为
-                reobserve/open-gate-pending，并直接继续 planning gate，当次瞬时错误仍记录
-                open-observation-unavailable。Project reconciliation 扩展为
-                same/content/identity 与 requiresReconciliation；HEAD/worktree
-                content drift 完整报告但交给各 phase authority
-                精确重验，不设置全局阻塞；branch、remote、path、repository identity、topology
-                或不可分类差异仍 fail closed。run resume 只恢复事务并投影 continuation，不执行
-                Provider/Host。测试必须复现 strict validation 已成功后 planning observation
-                失败的真实窗口，证明原
-                Work、attempt、checkEpoch、Outcome、receipt、packet、invocation 与
-                Skill consumption 不变，并回归真实 identity drift 仍阻断。
-              requirementsEvidence:
-                contentHash: 5c3f3fcc1812d3d840221cfadfa2321cfb5e58867d4fa7aa7e605f119049fad7
-                ref: openspec/changes/recover-open-observation-continuation
-              sourceEvidence:
-                contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
-                ref: openspec/changes/recover-open-observation-continuation
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-                    ref: openspec/changes/recover-open-observation-continuation
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-              ref: openspec/changes/recover-open-observation-continuation
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
+        results: {}
         sequence: 11
       recover-open-observation-continuation:13:
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: codex/recover-open-observation-continuation
-              buildMode: autonomous
-              directOverride: false
-              isolation: current
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/recover-open-observation-continuation
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: current
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: 0c0d87fb39f52f983739e656b8b0cbadb085184999926e87f5c2d8175e682bc4
-                ref: openspec/changes/recover-open-observation-continuation/design.md
-              plan: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
-              planEvidence:
-                contentHash: 699b02b70e55265b6c6aa6e4d2d9ce55522aea4567dd2b633887c9920b2cb42c
-                ref: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
-              taskRevision: 6b38de094a421b25bb8bce3caf67c2147f60e96bf4a86a9a2912b32f73c967e8
-          full.build.plan.evidence:
-            sequence: 12
-            value:
-              contentHash: 699b02b70e55265b6c6aa6e4d2d9ce55522aea4567dd2b633887c9920b2cb42c
-              ref: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
-                    handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
-                    proposal: 采用单一纯 Work continuation
-                      classifier：WorkExecutionAuthority.recovery、WorkflowRuns.next、managed
-                      execution 与 next-action projection 共用同一状态分类；Open validated
-                      固定投影为 reobserve/open-gate-pending，并直接继续 planning
-                      gate，当次瞬时错误仍记录 open-observation-unavailable。Project
-                      reconciliation 扩展为 same/content/identity 与
-                      requiresReconciliation；HEAD/worktree content drift
-                      完整报告但交给各 phase authority
-                      精确重验，不设置全局阻塞；branch、remote、path、repository
-                      identity、topology 或不可分类差异仍 fail closed。run resume 只恢复事务并投影
-                      continuation，不执行 Provider/Host。测试必须复现 strict validation
-                      已成功后 planning observation 失败的真实窗口，证明原
-                      Work、attempt、checkEpoch、Outcome、receipt、packet、invocation
-                      与 Skill consumption 不变，并回归真实 identity drift 仍阻断。
-                    requirementsEvidence:
-                      contentHash: 5c3f3fcc1812d3d840221cfadfa2321cfb5e58867d4fa7aa7e605f119049fad7
-                      ref: openspec/changes/recover-open-observation-continuation
-                    sourceEvidence:
-                      contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
-                      ref: openspec/changes/recover-open-observation-continuation
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/recover-open-observation-continuation/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 0c0d87fb39f52f983739e656b8b0cbadb085184999926e87f5c2d8175e682bc4
-              ref: openspec/changes/recover-open-observation-continuation/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
-              handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
-              proposal: 采用单一纯 Work continuation
-                classifier：WorkExecutionAuthority.recovery、WorkflowRuns.next、managed
-                execution 与 next-action projection 共用同一状态分类；Open validated 固定投影为
-                reobserve/open-gate-pending，并直接继续 planning gate，当次瞬时错误仍记录
-                open-observation-unavailable。Project reconciliation 扩展为
-                same/content/identity 与 requiresReconciliation；HEAD/worktree
-                content drift 完整报告但交给各 phase authority
-                精确重验，不设置全局阻塞；branch、remote、path、repository identity、topology
-                或不可分类差异仍 fail closed。run resume 只恢复事务并投影 continuation，不执行
-                Provider/Host。测试必须复现 strict validation 已成功后 planning observation
-                失败的真实窗口，证明原
-                Work、attempt、checkEpoch、Outcome、receipt、packet、invocation 与
-                Skill consumption 不变，并回归真实 identity drift 仍阻断。
-              requirementsEvidence:
-                contentHash: 5c3f3fcc1812d3d840221cfadfa2321cfb5e58867d4fa7aa7e605f119049fad7
-                ref: openspec/changes/recover-open-observation-continuation
-              sourceEvidence:
-                contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
-                ref: openspec/changes/recover-open-observation-continuation
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-                    ref: openspec/changes/recover-open-observation-continuation
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-              ref: openspec/changes/recover-open-observation-continuation
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
+        results: {}
         sequence: 13
       recover-open-observation-continuation:14:
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: codex/recover-open-observation-continuation
-              buildMode: autonomous
-              directOverride: false
-              isolation: current
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/recover-open-observation-continuation
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: current
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.execute:
-            sequence: 13
-            value:
-              event: build-complete
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: 0c0d87fb39f52f983739e656b8b0cbadb085184999926e87f5c2d8175e682bc4
-                ref: openspec/changes/recover-open-observation-continuation/design.md
-              plan: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
-              planEvidence:
-                contentHash: 699b02b70e55265b6c6aa6e4d2d9ce55522aea4567dd2b633887c9920b2cb42c
-                ref: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
-              taskRevision: 6b38de094a421b25bb8bce3caf67c2147f60e96bf4a86a9a2912b32f73c967e8
-          full.build.plan.evidence:
-            sequence: 12
-            value:
-              contentHash: 699b02b70e55265b6c6aa6e4d2d9ce55522aea4567dd2b633887c9920b2cb42c
-              ref: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
-                    handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
-                    proposal: 采用单一纯 Work continuation
-                      classifier：WorkExecutionAuthority.recovery、WorkflowRuns.next、managed
-                      execution 与 next-action projection 共用同一状态分类；Open validated
-                      固定投影为 reobserve/open-gate-pending，并直接继续 planning
-                      gate，当次瞬时错误仍记录 open-observation-unavailable。Project
-                      reconciliation 扩展为 same/content/identity 与
-                      requiresReconciliation；HEAD/worktree content drift
-                      完整报告但交给各 phase authority
-                      精确重验，不设置全局阻塞；branch、remote、path、repository
-                      identity、topology 或不可分类差异仍 fail closed。run resume 只恢复事务并投影
-                      continuation，不执行 Provider/Host。测试必须复现 strict validation
-                      已成功后 planning observation 失败的真实窗口，证明原
-                      Work、attempt、checkEpoch、Outcome、receipt、packet、invocation
-                      与 Skill consumption 不变，并回归真实 identity drift 仍阻断。
-                    requirementsEvidence:
-                      contentHash: 5c3f3fcc1812d3d840221cfadfa2321cfb5e58867d4fa7aa7e605f119049fad7
-                      ref: openspec/changes/recover-open-observation-continuation
-                    sourceEvidence:
-                      contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
-                      ref: openspec/changes/recover-open-observation-continuation
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/recover-open-observation-continuation/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 0c0d87fb39f52f983739e656b8b0cbadb085184999926e87f5c2d8175e682bc4
-              ref: openspec/changes/recover-open-observation-continuation/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
-              handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
-              proposal: 采用单一纯 Work continuation
-                classifier：WorkExecutionAuthority.recovery、WorkflowRuns.next、managed
-                execution 与 next-action projection 共用同一状态分类；Open validated 固定投影为
-                reobserve/open-gate-pending，并直接继续 planning gate，当次瞬时错误仍记录
-                open-observation-unavailable。Project reconciliation 扩展为
-                same/content/identity 与 requiresReconciliation；HEAD/worktree
-                content drift 完整报告但交给各 phase authority
-                精确重验，不设置全局阻塞；branch、remote、path、repository identity、topology
-                或不可分类差异仍 fail closed。run resume 只恢复事务并投影 continuation，不执行
-                Provider/Host。测试必须复现 strict validation 已成功后 planning observation
-                失败的真实窗口，证明原
-                Work、attempt、checkEpoch、Outcome、receipt、packet、invocation 与
-                Skill consumption 不变，并回归真实 identity drift 仍阻断。
-              requirementsEvidence:
-                contentHash: 5c3f3fcc1812d3d840221cfadfa2321cfb5e58867d4fa7aa7e605f119049fad7
-                ref: openspec/changes/recover-open-observation-continuation
-              sourceEvidence:
-                contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
-                ref: openspec/changes/recover-open-observation-continuation
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-                    ref: openspec/changes/recover-open-observation-continuation
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-              ref: openspec/changes/recover-open-observation-continuation
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
+        results: {}
         sequence: 14
       recover-open-observation-continuation:16:
-        results:
-          full.build.check:
-            sequence: 14
-            value:
-              argv:
-                - npm
-                - run
-                - verify
-              changedDuringExecution: []
-              checkEpoch: 2
-              contentHash: 335297cacdb227c72445352e19605f4a8d3b2c6bf7b494cb6667bdc756d1f333
-              cwd: .
-              environment: d88cf279ad19aedc523c1654a56ccf12918930520d9757715af4852d5e93b5d3
-              exitCode: 0
-              inputAfter: 78713fdcf1745b6db33b590afb3adb9ea99864080af9d0f3a08e02b25d3191c6
-              inputBefore: 78713fdcf1745b6db33b590afb3adb9ea99864080af9d0f3a08e02b25d3191c6
-              manifestHash: f017b0c2b85a08bac972dc7ada7a67caeeb4fe6dde753aae8ebdf5be306514f1
-              manifestRef: .comet/runtime/classic-sdk-checks/04c1b1f81fd9c903072a3cf445e79f615c9687cb96ff2fad39b8b00fa39c986e/70df442d-bd74-4539-853b-c8cf07ae8dfc.manifest
-              receiptRef: .comet/runtime/classic-sdk-checks/04c1b1f81fd9c903072a3cf445e79f615c9687cb96ff2fad39b8b00fa39c986e/63f1280f-ec55-45c3-9001-4b0ee174a79e.log
-              reusable: false
-              reused: false
-              scope: build
-              tier: full
-              timeoutMs: 900000
-          full.build.check.evidence:
-            sequence: 15
-            value:
-              contentHash: 335297cacdb227c72445352e19605f4a8d3b2c6bf7b494cb6667bdc756d1f333
-              ref: .comet/runtime/classic-sdk-checks/04c1b1f81fd9c903072a3cf445e79f615c9687cb96ff2fad39b8b00fa39c986e/63f1280f-ec55-45c3-9001-4b0ee174a79e.log
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: codex/recover-open-observation-continuation
-              buildMode: autonomous
-              directOverride: false
-              isolation: current
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/recover-open-observation-continuation
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: current
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.execute:
-            sequence: 13
-            value:
-              event: build-complete
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: 0c0d87fb39f52f983739e656b8b0cbadb085184999926e87f5c2d8175e682bc4
-                ref: openspec/changes/recover-open-observation-continuation/design.md
-              plan: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
-              planEvidence:
-                contentHash: 699b02b70e55265b6c6aa6e4d2d9ce55522aea4567dd2b633887c9920b2cb42c
-                ref: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
-              taskRevision: 6b38de094a421b25bb8bce3caf67c2147f60e96bf4a86a9a2912b32f73c967e8
-          full.build.plan.evidence:
-            sequence: 12
-            value:
-              contentHash: 699b02b70e55265b6c6aa6e4d2d9ce55522aea4567dd2b633887c9920b2cb42c
-              ref: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
-                    handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
-                    proposal: 采用单一纯 Work continuation
-                      classifier：WorkExecutionAuthority.recovery、WorkflowRuns.next、managed
-                      execution 与 next-action projection 共用同一状态分类；Open validated
-                      固定投影为 reobserve/open-gate-pending，并直接继续 planning
-                      gate，当次瞬时错误仍记录 open-observation-unavailable。Project
-                      reconciliation 扩展为 same/content/identity 与
-                      requiresReconciliation；HEAD/worktree content drift
-                      完整报告但交给各 phase authority
-                      精确重验，不设置全局阻塞；branch、remote、path、repository
-                      identity、topology 或不可分类差异仍 fail closed。run resume 只恢复事务并投影
-                      continuation，不执行 Provider/Host。测试必须复现 strict validation
-                      已成功后 planning observation 失败的真实窗口，证明原
-                      Work、attempt、checkEpoch、Outcome、receipt、packet、invocation
-                      与 Skill consumption 不变，并回归真实 identity drift 仍阻断。
-                    requirementsEvidence:
-                      contentHash: 5c3f3fcc1812d3d840221cfadfa2321cfb5e58867d4fa7aa7e605f119049fad7
-                      ref: openspec/changes/recover-open-observation-continuation
-                    sourceEvidence:
-                      contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
-                      ref: openspec/changes/recover-open-observation-continuation
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/recover-open-observation-continuation/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 0c0d87fb39f52f983739e656b8b0cbadb085184999926e87f5c2d8175e682bc4
-              ref: openspec/changes/recover-open-observation-continuation/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
-              handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
-              proposal: 采用单一纯 Work continuation
-                classifier：WorkExecutionAuthority.recovery、WorkflowRuns.next、managed
-                execution 与 next-action projection 共用同一状态分类；Open validated 固定投影为
-                reobserve/open-gate-pending，并直接继续 planning gate，当次瞬时错误仍记录
-                open-observation-unavailable。Project reconciliation 扩展为
-                same/content/identity 与 requiresReconciliation；HEAD/worktree
-                content drift 完整报告但交给各 phase authority
-                精确重验，不设置全局阻塞；branch、remote、path、repository identity、topology
-                或不可分类差异仍 fail closed。run resume 只恢复事务并投影 continuation，不执行
-                Provider/Host。测试必须复现 strict validation 已成功后 planning observation
-                失败的真实窗口，证明原
-                Work、attempt、checkEpoch、Outcome、receipt、packet、invocation 与
-                Skill consumption 不变，并回归真实 identity drift 仍阻断。
-              requirementsEvidence:
-                contentHash: 5c3f3fcc1812d3d840221cfadfa2321cfb5e58867d4fa7aa7e605f119049fad7
-                ref: openspec/changes/recover-open-observation-continuation
-              sourceEvidence:
-                contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
-                ref: openspec/changes/recover-open-observation-continuation
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-                    ref: openspec/changes/recover-open-observation-continuation
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-              ref: openspec/changes/recover-open-observation-continuation
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
+        results: {}
         sequence: 16
+      recover-open-observation-continuation:18:
+        results: {}
+        sequence: 18
+      recover-open-observation-continuation:20:
+        results: {}
+        sequence: 20
       recover-open-observation-continuation:4:
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-                    ref: openspec/changes/recover-open-observation-continuation
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-              ref: openspec/changes/recover-open-observation-continuation
+        results: {}
         sequence: 4
       recover-open-observation-continuation:5:
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-                    ref: openspec/changes/recover-open-observation-continuation
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-              ref: openspec/changes/recover-open-observation-continuation
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
+        results: {}
         sequence: 5
       recover-open-observation-continuation:7:
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
-                    handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
-                    proposal: 采用单一纯 Work continuation
-                      classifier：WorkExecutionAuthority.recovery、WorkflowRuns.next、managed
-                      execution 与 next-action projection 共用同一状态分类；Open validated
-                      固定投影为 reobserve/open-gate-pending，并直接继续 planning
-                      gate，当次瞬时错误仍记录 open-observation-unavailable。Project
-                      reconciliation 扩展为 same/content/identity 与
-                      requiresReconciliation；HEAD/worktree content drift
-                      完整报告但交给各 phase authority
-                      精确重验，不设置全局阻塞；branch、remote、path、repository
-                      identity、topology 或不可分类差异仍 fail closed。run resume 只恢复事务并投影
-                      continuation，不执行 Provider/Host。测试必须复现 strict validation
-                      已成功后 planning observation 失败的真实窗口，证明原
-                      Work、attempt、checkEpoch、Outcome、receipt、packet、invocation
-                      与 Skill consumption 不变，并回归真实 identity drift 仍阻断。
-                    requirementsEvidence:
-                      contentHash: 5c3f3fcc1812d3d840221cfadfa2321cfb5e58867d4fa7aa7e605f119049fad7
-                      ref: openspec/changes/recover-open-observation-continuation
-                    sourceEvidence:
-                      contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
-                      ref: openspec/changes/recover-open-observation-continuation
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
-              handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
-              proposal: 采用单一纯 Work continuation
-                classifier：WorkExecutionAuthority.recovery、WorkflowRuns.next、managed
-                execution 与 next-action projection 共用同一状态分类；Open validated 固定投影为
-                reobserve/open-gate-pending，并直接继续 planning gate，当次瞬时错误仍记录
-                open-observation-unavailable。Project reconciliation 扩展为
-                same/content/identity 与 requiresReconciliation；HEAD/worktree
-                content drift 完整报告但交给各 phase authority
-                精确重验，不设置全局阻塞；branch、remote、path、repository identity、topology
-                或不可分类差异仍 fail closed。run resume 只恢复事务并投影 continuation，不执行
-                Provider/Host。测试必须复现 strict validation 已成功后 planning observation
-                失败的真实窗口，证明原
-                Work、attempt、checkEpoch、Outcome、receipt、packet、invocation 与
-                Skill consumption 不变，并回归真实 identity drift 仍阻断。
-              requirementsEvidence:
-                contentHash: 5c3f3fcc1812d3d840221cfadfa2321cfb5e58867d4fa7aa7e605f119049fad7
-                ref: openspec/changes/recover-open-observation-continuation
-              sourceEvidence:
-                contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
-                ref: openspec/changes/recover-open-observation-continuation
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-                    ref: openspec/changes/recover-open-observation-continuation
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-              ref: openspec/changes/recover-open-observation-continuation
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
+        results: {}
         sequence: 7
       recover-open-observation-continuation:9:
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
-                    handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
-                    proposal: 采用单一纯 Work continuation
-                      classifier：WorkExecutionAuthority.recovery、WorkflowRuns.next、managed
-                      execution 与 next-action projection 共用同一状态分类；Open validated
-                      固定投影为 reobserve/open-gate-pending，并直接继续 planning
-                      gate，当次瞬时错误仍记录 open-observation-unavailable。Project
-                      reconciliation 扩展为 same/content/identity 与
-                      requiresReconciliation；HEAD/worktree content drift
-                      完整报告但交给各 phase authority
-                      精确重验，不设置全局阻塞；branch、remote、path、repository
-                      identity、topology 或不可分类差异仍 fail closed。run resume 只恢复事务并投影
-                      continuation，不执行 Provider/Host。测试必须复现 strict validation
-                      已成功后 planning observation 失败的真实窗口，证明原
-                      Work、attempt、checkEpoch、Outcome、receipt、packet、invocation
-                      与 Skill consumption 不变，并回归真实 identity drift 仍阻断。
-                    requirementsEvidence:
-                      contentHash: 5c3f3fcc1812d3d840221cfadfa2321cfb5e58867d4fa7aa7e605f119049fad7
-                      ref: openspec/changes/recover-open-observation-continuation
-                    sourceEvidence:
-                      contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
-                      ref: openspec/changes/recover-open-observation-continuation
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/recover-open-observation-continuation/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 0c0d87fb39f52f983739e656b8b0cbadb085184999926e87f5c2d8175e682bc4
-              ref: openspec/changes/recover-open-observation-continuation/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
-              handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
-              proposal: 采用单一纯 Work continuation
-                classifier：WorkExecutionAuthority.recovery、WorkflowRuns.next、managed
-                execution 与 next-action projection 共用同一状态分类；Open validated 固定投影为
-                reobserve/open-gate-pending，并直接继续 planning gate，当次瞬时错误仍记录
-                open-observation-unavailable。Project reconciliation 扩展为
-                same/content/identity 与 requiresReconciliation；HEAD/worktree
-                content drift 完整报告但交给各 phase authority
-                精确重验，不设置全局阻塞；branch、remote、path、repository identity、topology
-                或不可分类差异仍 fail closed。run resume 只恢复事务并投影 continuation，不执行
-                Provider/Host。测试必须复现 strict validation 已成功后 planning observation
-                失败的真实窗口，证明原
-                Work、attempt、checkEpoch、Outcome、receipt、packet、invocation 与
-                Skill consumption 不变，并回归真实 identity drift 仍阻断。
-              requirementsEvidence:
-                contentHash: 5c3f3fcc1812d3d840221cfadfa2321cfb5e58867d4fa7aa7e605f119049fad7
-                ref: openspec/changes/recover-open-observation-continuation
-              sourceEvidence:
-                contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
-                ref: openspec/changes/recover-open-observation-continuation
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-                    ref: openspec/changes/recover-open-observation-continuation
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-              ref: openspec/changes/recover-open-observation-continuation
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
+        results: {}
         sequence: 9
     waits:
       - id: recover-open-observation-continuation:3
@@ -2017,16 +622,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-              ref: openspec/changes/recover-open-observation-continuation
+        results: {}
         decision:
           id: classic-open-3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
           choice: approved
@@ -2068,60 +664,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
-              handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
-              proposal: 采用单一纯 Work continuation
-                classifier：WorkExecutionAuthority.recovery、WorkflowRuns.next、managed
-                execution 与 next-action projection 共用同一状态分类；Open validated 固定投影为
-                reobserve/open-gate-pending，并直接继续 planning gate，当次瞬时错误仍记录
-                open-observation-unavailable。Project reconciliation 扩展为
-                same/content/identity 与 requiresReconciliation；HEAD/worktree
-                content drift 完整报告但交给各 phase authority
-                精确重验，不设置全局阻塞；branch、remote、path、repository identity、topology
-                或不可分类差异仍 fail closed。run resume 只恢复事务并投影 continuation，不执行
-                Provider/Host。测试必须复现 strict validation 已成功后 planning observation
-                失败的真实窗口，证明原
-                Work、attempt、checkEpoch、Outcome、receipt、packet、invocation 与
-                Skill consumption 不变，并回归真实 identity drift 仍阻断。
-              requirementsEvidence:
-                contentHash: 5c3f3fcc1812d3d840221cfadfa2321cfb5e58867d4fa7aa7e605f119049fad7
-                ref: openspec/changes/recover-open-observation-continuation
-              sourceEvidence:
-                contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
-                ref: openspec/changes/recover-open-observation-continuation
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-                    ref: openspec/changes/recover-open-observation-continuation
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-              ref: openspec/changes/recover-open-observation-continuation
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
+        results: {}
         decision:
           id: classic-design-1b08804d9af4c39b70f394b1707c70a755339c388e684b86fdd9352c55a9befa-approved
           choice: approved
@@ -2149,113 +692,7 @@ run_checkpoint:
         choices:
           - approved
           - rejected
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: codex/recover-open-observation-continuation
-              buildMode: autonomous
-              directOverride: false
-              isolation: current
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
-                    handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
-                    proposal: 采用单一纯 Work continuation
-                      classifier：WorkExecutionAuthority.recovery、WorkflowRuns.next、managed
-                      execution 与 next-action projection 共用同一状态分类；Open validated
-                      固定投影为 reobserve/open-gate-pending，并直接继续 planning
-                      gate，当次瞬时错误仍记录 open-observation-unavailable。Project
-                      reconciliation 扩展为 same/content/identity 与
-                      requiresReconciliation；HEAD/worktree content drift
-                      完整报告但交给各 phase authority
-                      精确重验，不设置全局阻塞；branch、remote、path、repository
-                      identity、topology 或不可分类差异仍 fail closed。run resume 只恢复事务并投影
-                      continuation，不执行 Provider/Host。测试必须复现 strict validation
-                      已成功后 planning observation 失败的真实窗口，证明原
-                      Work、attempt、checkEpoch、Outcome、receipt、packet、invocation
-                      与 Skill consumption 不变，并回归真实 identity drift 仍阻断。
-                    requirementsEvidence:
-                      contentHash: 5c3f3fcc1812d3d840221cfadfa2321cfb5e58867d4fa7aa7e605f119049fad7
-                      ref: openspec/changes/recover-open-observation-continuation
-                    sourceEvidence:
-                      contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
-                      ref: openspec/changes/recover-open-observation-continuation
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/recover-open-observation-continuation/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 0c0d87fb39f52f983739e656b8b0cbadb085184999926e87f5c2d8175e682bc4
-              ref: openspec/changes/recover-open-observation-continuation/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
-              handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
-              proposal: 采用单一纯 Work continuation
-                classifier：WorkExecutionAuthority.recovery、WorkflowRuns.next、managed
-                execution 与 next-action projection 共用同一状态分类；Open validated 固定投影为
-                reobserve/open-gate-pending，并直接继续 planning gate，当次瞬时错误仍记录
-                open-observation-unavailable。Project reconciliation 扩展为
-                same/content/identity 与 requiresReconciliation；HEAD/worktree
-                content drift 完整报告但交给各 phase authority
-                精确重验，不设置全局阻塞；branch、remote、path、repository identity、topology
-                或不可分类差异仍 fail closed。run resume 只恢复事务并投影 continuation，不执行
-                Provider/Host。测试必须复现 strict validation 已成功后 planning observation
-                失败的真实窗口，证明原
-                Work、attempt、checkEpoch、Outcome、receipt、packet、invocation 与
-                Skill consumption 不变，并回归真实 identity drift 仍阻断。
-              requirementsEvidence:
-                contentHash: 5c3f3fcc1812d3d840221cfadfa2321cfb5e58867d4fa7aa7e605f119049fad7
-                ref: openspec/changes/recover-open-observation-continuation
-              sourceEvidence:
-                contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
-                ref: openspec/changes/recover-open-observation-continuation
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-                    ref: openspec/changes/recover-open-observation-continuation
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-              ref: openspec/changes/recover-open-observation-continuation
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
+        results: {}
         decision:
           id: 8bafcd34-324c-4e32-8054-290ea5822078
           choice: approved
@@ -2266,11 +703,7 @@ run_checkpoint:
         sequence: 2
         kind: classic-open-artifacts
         status: resolved
-        results:
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
+        results: {}
         receipt:
           ref: openspec/changes/recover-open-observation-continuation
           contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
@@ -2280,98 +713,7 @@ run_checkpoint:
         sequence: 8
         kind: classic-design-document
         status: resolved
-        results:
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
-                    handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
-                    proposal: 采用单一纯 Work continuation
-                      classifier：WorkExecutionAuthority.recovery、WorkflowRuns.next、managed
-                      execution 与 next-action projection 共用同一状态分类；Open validated
-                      固定投影为 reobserve/open-gate-pending，并直接继续 planning
-                      gate，当次瞬时错误仍记录 open-observation-unavailable。Project
-                      reconciliation 扩展为 same/content/identity 与
-                      requiresReconciliation；HEAD/worktree content drift
-                      完整报告但交给各 phase authority
-                      精确重验，不设置全局阻塞；branch、remote、path、repository
-                      identity、topology 或不可分类差异仍 fail closed。run resume 只恢复事务并投影
-                      continuation，不执行 Provider/Host。测试必须复现 strict validation
-                      已成功后 planning observation 失败的真实窗口，证明原
-                      Work、attempt、checkEpoch、Outcome、receipt、packet、invocation
-                      与 Skill consumption 不变，并回归真实 identity drift 仍阻断。
-                    requirementsEvidence:
-                      contentHash: 5c3f3fcc1812d3d840221cfadfa2321cfb5e58867d4fa7aa7e605f119049fad7
-                      ref: openspec/changes/recover-open-observation-continuation
-                    sourceEvidence:
-                      contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
-                      ref: openspec/changes/recover-open-observation-continuation
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/recover-open-observation-continuation/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
-              handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
-              proposal: 采用单一纯 Work continuation
-                classifier：WorkExecutionAuthority.recovery、WorkflowRuns.next、managed
-                execution 与 next-action projection 共用同一状态分类；Open validated 固定投影为
-                reobserve/open-gate-pending，并直接继续 planning gate，当次瞬时错误仍记录
-                open-observation-unavailable。Project reconciliation 扩展为
-                same/content/identity 与 requiresReconciliation；HEAD/worktree
-                content drift 完整报告但交给各 phase authority
-                精确重验，不设置全局阻塞；branch、remote、path、repository identity、topology
-                或不可分类差异仍 fail closed。run resume 只恢复事务并投影 continuation，不执行
-                Provider/Host。测试必须复现 strict validation 已成功后 planning observation
-                失败的真实窗口，证明原
-                Work、attempt、checkEpoch、Outcome、receipt、packet、invocation 与
-                Skill consumption 不变，并回归真实 identity drift 仍阻断。
-              requirementsEvidence:
-                contentHash: 5c3f3fcc1812d3d840221cfadfa2321cfb5e58867d4fa7aa7e605f119049fad7
-                ref: openspec/changes/recover-open-observation-continuation
-              sourceEvidence:
-                contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
-                ref: openspec/changes/recover-open-observation-continuation
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-                    ref: openspec/changes/recover-open-observation-continuation
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-              ref: openspec/changes/recover-open-observation-continuation
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
+        results: {}
         receipt:
           ref: openspec/changes/recover-open-observation-continuation/design.md
           contentHash: 0c0d87fb39f52f983739e656b8b0cbadb085184999926e87f5c2d8175e682bc4
@@ -2381,143 +723,7 @@ run_checkpoint:
         sequence: 12
         kind: classic-build-plan
         status: resolved
-        results:
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: codex/recover-open-observation-continuation
-              buildMode: autonomous
-              directOverride: false
-              isolation: current
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/recover-open-observation-continuation
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: current
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: 0c0d87fb39f52f983739e656b8b0cbadb085184999926e87f5c2d8175e682bc4
-                ref: openspec/changes/recover-open-observation-continuation/design.md
-              plan: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
-              planEvidence:
-                contentHash: 699b02b70e55265b6c6aa6e4d2d9ce55522aea4567dd2b633887c9920b2cb42c
-                ref: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
-              taskRevision: 6b38de094a421b25bb8bce3caf67c2147f60e96bf4a86a9a2912b32f73c967e8
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
-                    handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
-                    proposal: 采用单一纯 Work continuation
-                      classifier：WorkExecutionAuthority.recovery、WorkflowRuns.next、managed
-                      execution 与 next-action projection 共用同一状态分类；Open validated
-                      固定投影为 reobserve/open-gate-pending，并直接继续 planning
-                      gate，当次瞬时错误仍记录 open-observation-unavailable。Project
-                      reconciliation 扩展为 same/content/identity 与
-                      requiresReconciliation；HEAD/worktree content drift
-                      完整报告但交给各 phase authority
-                      精确重验，不设置全局阻塞；branch、remote、path、repository
-                      identity、topology 或不可分类差异仍 fail closed。run resume 只恢复事务并投影
-                      continuation，不执行 Provider/Host。测试必须复现 strict validation
-                      已成功后 planning observation 失败的真实窗口，证明原
-                      Work、attempt、checkEpoch、Outcome、receipt、packet、invocation
-                      与 Skill consumption 不变，并回归真实 identity drift 仍阻断。
-                    requirementsEvidence:
-                      contentHash: 5c3f3fcc1812d3d840221cfadfa2321cfb5e58867d4fa7aa7e605f119049fad7
-                      ref: openspec/changes/recover-open-observation-continuation
-                    sourceEvidence:
-                      contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
-                      ref: openspec/changes/recover-open-observation-continuation
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/recover-open-observation-continuation/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 0c0d87fb39f52f983739e656b8b0cbadb085184999926e87f5c2d8175e682bc4
-              ref: openspec/changes/recover-open-observation-continuation/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
-              handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
-              handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
-              proposal: 采用单一纯 Work continuation
-                classifier：WorkExecutionAuthority.recovery、WorkflowRuns.next、managed
-                execution 与 next-action projection 共用同一状态分类；Open validated 固定投影为
-                reobserve/open-gate-pending，并直接继续 planning gate，当次瞬时错误仍记录
-                open-observation-unavailable。Project reconciliation 扩展为
-                same/content/identity 与 requiresReconciliation；HEAD/worktree
-                content drift 完整报告但交给各 phase authority
-                精确重验，不设置全局阻塞；branch、remote、path、repository identity、topology
-                或不可分类差异仍 fail closed。run resume 只恢复事务并投影 continuation，不执行
-                Provider/Host。测试必须复现 strict validation 已成功后 planning observation
-                失败的真实窗口，证明原
-                Work、attempt、checkEpoch、Outcome、receipt、packet、invocation 与
-                Skill consumption 不变，并回归真实 identity drift 仍阻断。
-              requirementsEvidence:
-                contentHash: 5c3f3fcc1812d3d840221cfadfa2321cfb5e58867d4fa7aa7e605f119049fad7
-                ref: openspec/changes/recover-open-observation-continuation
-              sourceEvidence:
-                contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
-                ref: openspec/changes/recover-open-observation-continuation
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-                    ref: openspec/changes/recover-open-observation-continuation
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-              ref: openspec/changes/recover-open-observation-continuation
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
+        results: {}
         receipt:
           ref: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
           contentHash: 699b02b70e55265b6c6aa6e4d2d9ce55522aea4567dd2b633887c9920b2cb42c
@@ -2527,125 +733,67 @@ run_checkpoint:
         sequence: 15
         kind: classic-build-check
         status: resolved
-        results:
-          full.build.check:
-            sequence: 14
-            value:
-              argv:
-                - npm
-                - run
-                - verify
-              changedDuringExecution: []
-              checkEpoch: 2
-              contentHash: 335297cacdb227c72445352e19605f4a8d3b2c6bf7b494cb6667bdc756d1f333
-              cwd: .
-              environment: d88cf279ad19aedc523c1654a56ccf12918930520d9757715af4852d5e93b5d3
-              exitCode: 0
-              inputAfter: 78713fdcf1745b6db33b590afb3adb9ea99864080af9d0f3a08e02b25d3191c6
-              inputBefore: 78713fdcf1745b6db33b590afb3adb9ea99864080af9d0f3a08e02b25d3191c6
-              manifestHash: f017b0c2b85a08bac972dc7ada7a67caeeb4fe6dde753aae8ebdf5be306514f1
-              manifestRef: .comet/runtime/classic-sdk-checks/04c1b1f81fd9c903072a3cf445e79f615c9687cb96ff2fad39b8b00fa39c986e/70df442d-bd74-4539-853b-c8cf07ae8dfc.manifest
-              receiptRef: .comet/runtime/classic-sdk-checks/04c1b1f81fd9c903072a3cf445e79f615c9687cb96ff2fad39b8b00fa39c986e/63f1280f-ec55-45c3-9001-4b0ee174a79e.log
-              reusable: false
-              reused: false
-              scope: build
-              tier: full
-              timeoutMs: 900000
-          full.build.configure:
-            sequence: 9
-            value:
-              boundBranch: codex/recover-open-observation-continuation
-              buildMode: autonomous
-              directOverride: false
-              isolation: current
-              reviewMode: thorough
-              subagentDispatch: null
-              tddMode: tdd
-          full.build.confirm:
-            sequence: 10
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.build.configure:
-                    boundBranch: codex/recover-open-observation-continuation
-                    buildMode: autonomous
-                    directOverride: false
-                    isolation: current
-                    reviewMode: thorough
-                    subagentDispatch: null
-                    tddMode: tdd
-          full.build.execute:
-            sequence: 13
-            value:
-              event: build-complete
-          full.build.plan:
-            sequence: 11
-            value:
-              designEvidence:
-                contentHash: 0c0d87fb39f52f983739e656b8b0cbadb085184999926e87f5c2d8175e682bc4
-                ref: openspec/changes/recover-open-observation-continuation/design.md
-              plan: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
-              planEvidence:
-                contentHash: 699b02b70e55265b6c6aa6e4d2d9ce55522aea4567dd2b633887c9920b2cb42c
-                ref: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
-              taskRevision: 6b38de094a421b25bb8bce3caf67c2147f60e96bf4a86a9a2912b32f73c967e8
-          full.build.plan.evidence:
-            sequence: 12
-            value:
-              contentHash: 699b02b70e55265b6c6aa6e4d2d9ce55522aea4567dd2b633887c9920b2cb42c
-              ref: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
-          full.design.confirm:
-            sequence: 6
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.design.handoff:
-                    handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
-                    handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
-                    proposal: 采用单一纯 Work continuation
-                      classifier：WorkExecutionAuthority.recovery、WorkflowRuns.next、managed
-                      execution 与 next-action projection 共用同一状态分类；Open validated
-                      固定投影为 reobserve/open-gate-pending，并直接继续 planning
-                      gate，当次瞬时错误仍记录 open-observation-unavailable。Project
-                      reconciliation 扩展为 same/content/identity 与
-                      requiresReconciliation；HEAD/worktree content drift
-                      完整报告但交给各 phase authority
-                      精确重验，不设置全局阻塞；branch、remote、path、repository
-                      identity、topology 或不可分类差异仍 fail closed。run resume 只恢复事务并投影
-                      continuation，不执行 Provider/Host。测试必须复现 strict validation
-                      已成功后 planning observation 失败的真实窗口，证明原
-                      Work、attempt、checkEpoch、Outcome、receipt、packet、invocation
-                      与 Skill consumption 不变，并回归真实 identity drift 仍阻断。
-                    requirementsEvidence:
-                      contentHash: 5c3f3fcc1812d3d840221cfadfa2321cfb5e58867d4fa7aa7e605f119049fad7
-                      ref: openspec/changes/recover-open-observation-continuation
-                    sourceEvidence:
-                      contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
-                      ref: openspec/changes/recover-open-observation-continuation
-          full.design.document:
-            sequence: 7
-            value:
-              designDoc: openspec/changes/recover-open-observation-continuation/design.md
-          full.design.evidence:
-            sequence: 8
-            value:
-              contentHash: 0c0d87fb39f52f983739e656b8b0cbadb085184999926e87f5c2d8175e682bc4
-              ref: openspec/changes/recover-open-observation-continuation/design.md
-          full.design.handoff:
-            sequence: 5
-            value:
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/04c1b1f81fd9c903072a3cf445e79f615c9687cb96ff2fad39b8b00fa39c986e/63f1280f-ec55-45c3-9001-4b0ee174a79e.log
+          contentHash: 335297cacdb227c72445352e19605f4a8d3b2c6bf7b494cb6667bdc756d1f333
+          submissionId: 609478bd-afdd-4431-bde6-36e7b25b6f71
+      - id: recover-open-observation-continuation:17
+        stepId: full.verify.report.evidence
+        sequence: 17
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/recover-open-observation-continuation.md
+          contentHash: df8869f4b13f4532b2e6f0a1ea9772d09f1e27629620ea24c07448e3dec1eed0
+          submissionId: 8a7f3972-ea48-4321-bb30-fa658b772705
+      - id: recover-open-observation-continuation:19
+        stepId: full.verify.check.evidence
+        sequence: 19
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/04c1b1f81fd9c903072a3cf445e79f615c9687cb96ff2fad39b8b00fa39c986e/f44b3db6-4791-4f57-9b4c-c9ac72f19090.log
+          contentHash: 07790529dd862a08fa566fa2cf1aff19bcff3339ed60f8871ac2a24492dc53ed
+          submissionId: d3dc77a3-05e3-46c6-a7e6-f561aa39a421
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 30
+  sourceHash: 26deb48d23ec0a06cb5ee688201f993012f229eefb4e8fdd6be532e05fc67f08
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: recover-open-observation-continuation
+            changeDir: openspec/changes/recover-open-observation-continuation
+            workspaceBaseline:
+              ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
+              ref: openspec/changes/recover-open-observation-continuation
+      - contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
+        ref: openspec/changes/recover-open-observation-continuation
+      - contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
+      - choice: approved
+        proposal:
+          input:
+            change: recover-open-observation-continuation
+            changeDir: openspec/changes/recover-open-observation-continuation
+            workspaceBaseline:
+              ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
+          outputs:
+            full.design.handoff:
               handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
               handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
               proposal: 采用单一纯 Work continuation
@@ -2667,72 +815,113 @@ run_checkpoint:
               sourceEvidence:
                 contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
                 ref: openspec/changes/recover-open-observation-continuation
-          full.open:
-            sequence: 1
-            value:
-              event: open-complete
-          full.open.confirm:
-            sequence: 3
-            value:
-              choice: approved
-              proposal:
-                input:
-                  change: recover-open-observation-continuation
-                  changeDir: openspec/changes/recover-open-observation-continuation
-                  workspaceBaseline:
-                    ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
-                outputs:
-                  full.open:
-                    event: open-complete
-                  full.open.evidence:
-                    contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-                    ref: openspec/changes/recover-open-observation-continuation
-          full.open.evidence:
-            sequence: 2
-            value:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-              ref: openspec/changes/recover-open-observation-continuation
-          full.open.revalidate:
-            sequence: 4
-            value:
-              contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-        receipt:
-          ref: .comet/runtime/classic-sdk-checks/04c1b1f81fd9c903072a3cf445e79f615c9687cb96ff2fad39b8b00fa39c986e/63f1280f-ec55-45c3-9001-4b0ee174a79e.log
-          contentHash: 335297cacdb227c72445352e19605f4a8d3b2c6bf7b494cb6667bdc756d1f333
-          submissionId: 609478bd-afdd-4431-bde6-36e7b25b6f71
-    ready: []
-    joins: {}
-    outputs:
-      full.build.check:
-        sequence: 14
-        value:
-          argv:
-            - npm
-            - run
-            - verify
-          changedDuringExecution: []
-          checkEpoch: 2
-          contentHash: 335297cacdb227c72445352e19605f4a8d3b2c6bf7b494cb6667bdc756d1f333
-          cwd: .
-          environment: d88cf279ad19aedc523c1654a56ccf12918930520d9757715af4852d5e93b5d3
-          exitCode: 0
-          inputAfter: 78713fdcf1745b6db33b590afb3adb9ea99864080af9d0f3a08e02b25d3191c6
-          inputBefore: 78713fdcf1745b6db33b590afb3adb9ea99864080af9d0f3a08e02b25d3191c6
-          manifestHash: f017b0c2b85a08bac972dc7ada7a67caeeb4fe6dde753aae8ebdf5be306514f1
-          manifestRef: .comet/runtime/classic-sdk-checks/04c1b1f81fd9c903072a3cf445e79f615c9687cb96ff2fad39b8b00fa39c986e/70df442d-bd74-4539-853b-c8cf07ae8dfc.manifest
-          receiptRef: .comet/runtime/classic-sdk-checks/04c1b1f81fd9c903072a3cf445e79f615c9687cb96ff2fad39b8b00fa39c986e/63f1280f-ec55-45c3-9001-4b0ee174a79e.log
-          reusable: false
-          reused: false
-          scope: build
-          tier: full
-          timeoutMs: 900000
-      full.build.check.evidence:
-        sequence: 15
-        value:
-          contentHash: 335297cacdb227c72445352e19605f4a8d3b2c6bf7b494cb6667bdc756d1f333
-          ref: .comet/runtime/classic-sdk-checks/04c1b1f81fd9c903072a3cf445e79f615c9687cb96ff2fad39b8b00fa39c986e/63f1280f-ec55-45c3-9001-4b0ee174a79e.log
-      full.build.configure:
-        sequence: 9
+      - handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
+        handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
+        proposal: 采用单一纯 Work continuation
+          classifier：WorkExecutionAuthority.recovery、WorkflowRuns.next、managed
+          execution 与 next-action projection 共用同一状态分类；Open validated 固定投影为
+          reobserve/open-gate-pending，并直接继续 planning gate，当次瞬时错误仍记录
+          open-observation-unavailable。Project reconciliation 扩展为
+          same/content/identity 与 requiresReconciliation；HEAD/worktree content
+          drift 完整报告但交给各 phase authority
+          精确重验，不设置全局阻塞；branch、remote、path、repository identity、topology 或不可分类差异仍
+          fail closed。run resume 只恢复事务并投影 continuation，不执行 Provider/Host。测试必须复现
+          strict validation 已成功后 planning observation 失败的真实窗口，证明原
+          Work、attempt、checkEpoch、Outcome、receipt、packet、invocation 与 Skill
+          consumption 不变，并回归真实 identity drift 仍阻断。
+        requirementsEvidence:
+          contentHash: 5c3f3fcc1812d3d840221cfadfa2321cfb5e58867d4fa7aa7e605f119049fad7
+          ref: openspec/changes/recover-open-observation-continuation
+        sourceEvidence:
+          contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
+          ref: openspec/changes/recover-open-observation-continuation
+      - designDoc: openspec/changes/recover-open-observation-continuation/design.md
+      - contentHash: 0c0d87fb39f52f983739e656b8b0cbadb085184999926e87f5c2d8175e682bc4
+        ref: openspec/changes/recover-open-observation-continuation/design.md
+      - boundBranch: codex/recover-open-observation-continuation
+        buildMode: autonomous
+        directOverride: false
+        isolation: current
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: recover-open-observation-continuation
+            changeDir: openspec/changes/recover-open-observation-continuation
+            workspaceBaseline:
+              ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
+          outputs:
+            full.build.configure:
+              boundBranch: codex/recover-open-observation-continuation
+              buildMode: autonomous
+              directOverride: false
+              isolation: current
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: 0c0d87fb39f52f983739e656b8b0cbadb085184999926e87f5c2d8175e682bc4
+          ref: openspec/changes/recover-open-observation-continuation/design.md
+        plan: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
+        planEvidence:
+          contentHash: 699b02b70e55265b6c6aa6e4d2d9ce55522aea4567dd2b633887c9920b2cb42c
+          ref: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
+        taskRevision: 6b38de094a421b25bb8bce3caf67c2147f60e96bf4a86a9a2912b32f73c967e8
+      - contentHash: 699b02b70e55265b6c6aa6e4d2d9ce55522aea4567dd2b633887c9920b2cb42c
+        ref: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
+      - event: build-complete
+      - argv:
+          - npm
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: 335297cacdb227c72445352e19605f4a8d3b2c6bf7b494cb6667bdc756d1f333
+        cwd: .
+        environment: d88cf279ad19aedc523c1654a56ccf12918930520d9757715af4852d5e93b5d3
+        exitCode: 0
+        inputAfter: 78713fdcf1745b6db33b590afb3adb9ea99864080af9d0f3a08e02b25d3191c6
+        inputBefore: 78713fdcf1745b6db33b590afb3adb9ea99864080af9d0f3a08e02b25d3191c6
+        manifestHash: f017b0c2b85a08bac972dc7ada7a67caeeb4fe6dde753aae8ebdf5be306514f1
+        manifestRef: .comet/runtime/classic-sdk-checks/04c1b1f81fd9c903072a3cf445e79f615c9687cb96ff2fad39b8b00fa39c986e/70df442d-bd74-4539-853b-c8cf07ae8dfc.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/04c1b1f81fd9c903072a3cf445e79f615c9687cb96ff2fad39b8b00fa39c986e/63f1280f-ec55-45c3-9001-4b0ee174a79e.log
+        reusable: false
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 900000
+      - contentHash: 335297cacdb227c72445352e19605f4a8d3b2c6bf7b494cb6667bdc756d1f333
+        ref: .comet/runtime/classic-sdk-checks/04c1b1f81fd9c903072a3cf445e79f615c9687cb96ff2fad39b8b00fa39c986e/63f1280f-ec55-45c3-9001-4b0ee174a79e.log
+      - contentHash: df8869f4b13f4532b2e6f0a1ea9772d09f1e27629620ea24c07448e3dec1eed0
+        ref: docs/superpowers/reports/recover-open-observation-continuation.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/recover-open-observation-continuation.md
+      - argv:
+          - npm
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 3
+        contentHash: 07790529dd862a08fa566fa2cf1aff19bcff3339ed60f8871ac2a24492dc53ed
+        cwd: .
+        deliveryInputs: {}
+        environment: d88cf279ad19aedc523c1654a56ccf12918930520d9757715af4852d5e93b5d3
+        exitCode: 0
+        inputAfter: 1ac533097af456ded2c71c04fb1ae461fc8ccc490cedc92d381fffebaaad41f4
+        inputBefore: 1ac533097af456ded2c71c04fb1ae461fc8ccc490cedc92d381fffebaaad41f4
+        manifestHash: afe9d0cbb8470dd3bf2aac4f866def185f595910f13e56e560e2b5602d7302bb
+        manifestRef: .comet/runtime/classic-sdk-checks/04c1b1f81fd9c903072a3cf445e79f615c9687cb96ff2fad39b8b00fa39c986e/de9e10c6-b1c2-4b97-ba45-44718a13190a.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/04c1b1f81fd9c903072a3cf445e79f615c9687cb96ff2fad39b8b00fa39c986e/f44b3db6-4791-4f57-9b4c-c9ac72f19090.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 900000
+      - contentHash: 07790529dd862a08fa566fa2cf1aff19bcff3339ed60f8871ac2a24492dc53ed
+        ref: .comet/runtime/classic-sdk-checks/04c1b1f81fd9c903072a3cf445e79f615c9687cb96ff2fad39b8b00fa39c986e/f44b3db6-4791-4f57-9b4c-c9ac72f19090.log
+      - sequence: 9
         value:
           boundBranch: codex/recover-open-observation-continuation
           buildMode: autonomous
@@ -2741,8 +930,7 @@ run_checkpoint:
           reviewMode: thorough
           subagentDispatch: null
           tddMode: tdd
-      full.build.confirm:
-        sequence: 10
+      - sequence: 10
         value:
           choice: approved
           proposal:
@@ -2760,28 +948,7 @@ run_checkpoint:
                 reviewMode: thorough
                 subagentDispatch: null
                 tddMode: tdd
-      full.build.execute:
-        sequence: 13
-        value:
-          event: build-complete
-      full.build.plan:
-        sequence: 11
-        value:
-          designEvidence:
-            contentHash: 0c0d87fb39f52f983739e656b8b0cbadb085184999926e87f5c2d8175e682bc4
-            ref: openspec/changes/recover-open-observation-continuation/design.md
-          plan: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
-          planEvidence:
-            contentHash: 699b02b70e55265b6c6aa6e4d2d9ce55522aea4567dd2b633887c9920b2cb42c
-            ref: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
-          taskRevision: 6b38de094a421b25bb8bce3caf67c2147f60e96bf4a86a9a2912b32f73c967e8
-      full.build.plan.evidence:
-        sequence: 12
-        value:
-          contentHash: 699b02b70e55265b6c6aa6e4d2d9ce55522aea4567dd2b633887c9920b2cb42c
-          ref: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
-      full.design.confirm:
-        sequence: 6
+      - sequence: 6
         value:
           choice: approved
           proposal:
@@ -2813,17 +980,14 @@ run_checkpoint:
                 sourceEvidence:
                   contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
                   ref: openspec/changes/recover-open-observation-continuation
-      full.design.document:
-        sequence: 7
+      - sequence: 7
         value:
           designDoc: openspec/changes/recover-open-observation-continuation/design.md
-      full.design.evidence:
-        sequence: 8
+      - sequence: 8
         value:
           contentHash: 0c0d87fb39f52f983739e656b8b0cbadb085184999926e87f5c2d8175e682bc4
           ref: openspec/changes/recover-open-observation-continuation/design.md
-      full.design.handoff:
-        sequence: 5
+      - sequence: 5
         value:
           handoffContext: openspec/changes/recover-open-observation-continuation/.comet/handoff/design-context.json
           handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
@@ -2846,12 +1010,10 @@ run_checkpoint:
           sourceEvidence:
             contentHash: cdf79dd7fc40f33051eadb16af7a28c70d058a4af58985ac41c3fe95f69905c2
             ref: openspec/changes/recover-open-observation-continuation
-      full.open:
-        sequence: 1
+      - sequence: 1
         value:
           event: open-complete
-      full.open.confirm:
-        sequence: 3
+      - sequence: 3
         value:
           choice: approved
           proposal:
@@ -2866,17 +1028,1072 @@ run_checkpoint:
               full.open.evidence:
                 contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
                 ref: openspec/changes/recover-open-observation-continuation
-      full.open.evidence:
-        sequence: 2
+      - sequence: 2
         value:
           contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
           ref: openspec/changes/recover-open-observation-continuation
-      full.open.revalidate:
-        sequence: 4
+      - sequence: 4
         value:
           contentHash: 3d18a00b966fb89bf96ef33756643d2763e5663cfba07ec55199c8f0f388e76a
-    children: []
-    lineage: []
-  sourceRevision: 24
-  sourceHash: 3ffe698509586707cb499925a7bcd3ef2066e8e76f2ea76637a8c18137bbf828
-check_epoch: 3
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: 0c0d87fb39f52f983739e656b8b0cbadb085184999926e87f5c2d8175e682bc4
+            ref: openspec/changes/recover-open-observation-continuation/design.md
+          plan: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
+          planEvidence:
+            contentHash: 699b02b70e55265b6c6aa6e4d2d9ce55522aea4567dd2b633887c9920b2cb42c
+            ref: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
+          taskRevision: 6b38de094a421b25bb8bce3caf67c2147f60e96bf4a86a9a2912b32f73c967e8
+      - sequence: 12
+        value:
+          contentHash: 699b02b70e55265b6c6aa6e4d2d9ce55522aea4567dd2b633887c9920b2cb42c
+          ref: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
+      - sequence: 13
+        value:
+          event: build-complete
+      - sequence: 14
+        value:
+          argv:
+            - npm
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: 335297cacdb227c72445352e19605f4a8d3b2c6bf7b494cb6667bdc756d1f333
+          cwd: .
+          environment: d88cf279ad19aedc523c1654a56ccf12918930520d9757715af4852d5e93b5d3
+          exitCode: 0
+          inputAfter: 78713fdcf1745b6db33b590afb3adb9ea99864080af9d0f3a08e02b25d3191c6
+          inputBefore: 78713fdcf1745b6db33b590afb3adb9ea99864080af9d0f3a08e02b25d3191c6
+          manifestHash: f017b0c2b85a08bac972dc7ada7a67caeeb4fe6dde753aae8ebdf5be306514f1
+          manifestRef: .comet/runtime/classic-sdk-checks/04c1b1f81fd9c903072a3cf445e79f615c9687cb96ff2fad39b8b00fa39c986e/70df442d-bd74-4539-853b-c8cf07ae8dfc.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/04c1b1f81fd9c903072a3cf445e79f615c9687cb96ff2fad39b8b00fa39c986e/63f1280f-ec55-45c3-9001-4b0ee174a79e.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 900000
+      - sequence: 15
+        value:
+          contentHash: 335297cacdb227c72445352e19605f4a8d3b2c6bf7b494cb6667bdc756d1f333
+          ref: .comet/runtime/classic-sdk-checks/04c1b1f81fd9c903072a3cf445e79f615c9687cb96ff2fad39b8b00fa39c986e/63f1280f-ec55-45c3-9001-4b0ee174a79e.log
+      - sequence: 17
+        value:
+          contentHash: df8869f4b13f4532b2e6f0a1ea9772d09f1e27629620ea24c07448e3dec1eed0
+          ref: docs/superpowers/reports/recover-open-observation-continuation.md
+      - sequence: 16
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/recover-open-observation-continuation.md
+      - sequence: 18
+        value:
+          argv:
+            - npm
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 3
+          contentHash: 07790529dd862a08fa566fa2cf1aff19bcff3339ed60f8871ac2a24492dc53ed
+          cwd: .
+          deliveryInputs: {}
+          environment: d88cf279ad19aedc523c1654a56ccf12918930520d9757715af4852d5e93b5d3
+          exitCode: 0
+          inputAfter: 1ac533097af456ded2c71c04fb1ae461fc8ccc490cedc92d381fffebaaad41f4
+          inputBefore: 1ac533097af456ded2c71c04fb1ae461fc8ccc490cedc92d381fffebaaad41f4
+          manifestHash: afe9d0cbb8470dd3bf2aac4f866def185f595910f13e56e560e2b5602d7302bb
+          manifestRef: .comet/runtime/classic-sdk-checks/04c1b1f81fd9c903072a3cf445e79f615c9687cb96ff2fad39b8b00fa39c986e/de9e10c6-b1c2-4b97-ba45-44718a13190a.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/04c1b1f81fd9c903072a3cf445e79f615c9687cb96ff2fad39b8b00fa39c986e/f44b3db6-4791-4f57-9b4c-c9ac72f19090.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 900000
+      - sequence: 19
+        value:
+          contentHash: 07790529dd862a08fa566fa2cf1aff19bcff3339ed60f8871ac2a24492dc53ed
+          ref: .comet/runtime/classic-sdk-checks/04c1b1f81fd9c903072a3cf445e79f615c9687cb96ff2fad39b8b00fa39c986e/f44b3db6-4791-4f57-9b4c-c9ac72f19090.log
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 27
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 10
+        left: 28
+        right: 29
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 30
+        right: 25
+        height: 4
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 32
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 34
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 35
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 25
+        height: 5
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: null
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 40
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 41
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 42
+        height: 5
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 45
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 17
+        left: 44
+        right: 46
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 47
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 48
+        height: 5
+      - key: full.build.configure
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 20
+        left: 50
+        right: 51
+        height: 2
+      - key: full.design.evidence
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 24
+        left: 53
+        right: 54
+        height: 2
+      - key: full.open.revalidate
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 27
+        left: null
+        right: 56
+        height: 2
+      - key: full.open.confirm
+        value: 26
+        left: 55
+        right: 57
+        height: 3
+      - key: full.design.document
+        value: 22
+        left: 52
+        right: 58
+        height: 4
+      - key: full.build.plan
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 30
+        left: 60
+        right: 61
+        height: 2
+      - key: full.build.confirm
+        value: 20
+        left: 50
+        right: 62
+        height: 3
+      - key: full.design.document
+        value: 22
+        left: 63
+        right: 58
+        height: 4
+      - key: full.build.execute
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 20
+        left: 50
+        right: 65
+        height: 2
+      - key: full.build.plan.evidence
+        value: 30
+        left: null
+        right: 61
+        height: 2
+      - key: full.build.plan
+        value: 29
+        left: 66
+        right: 67
+        height: 3
+      - key: full.design.document
+        value: 22
+        left: 68
+        right: 58
+        height: 4
+      - key: full.build.check
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 33
+        left: 70
+        right: 71
+        height: 2
+      - key: full.build.confirm
+        value: 20
+        left: 72
+        right: 65
+        height: 3
+      - key: full.build.plan
+        value: 29
+        left: 73
+        right: 67
+        height: 4
+      - key: full.design.document
+        value: 22
+        left: 74
+        right: 58
+        height: 5
+      - key: full.open.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 34
+        left: null
+        right: 77
+        height: 2
+      - key: full.open.revalidate
+        value: 28
+        left: 76
+        right: 78
+        height: 3
+      - key: full.open.confirm
+        value: 26
+        left: 55
+        right: 79
+        height: 4
+      - key: full.design.document
+        value: 22
+        left: 74
+        right: 80
+        height: 5
+      - key: full.open.revalidate
+        value: 28
+        left: 76
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 34
+        left: 83
+        right: 77
+        height: 2
+      - key: full.verify.check
+        value: 36
+        left: 82
+        right: 84
+        height: 3
+      - key: full.open.confirm
+        value: 26
+        left: 55
+        right: 85
+        height: 4
+      - key: full.design.document
+        value: 22
+        left: 74
+        right: 86
+        height: 5
+      - key: full.open
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 26
+        left: 88
+        right: 89
+        height: 2
+      - key: full.open.revalidate
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 27
+        left: null
+        right: 91
+        height: 2
+      - key: full.open.confirm
+        value: 26
+        left: 88
+        right: 92
+        height: 3
+      - key: full.design.confirm
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 24
+        left: 94
+        right: 95
+        height: 2
+      - key: full.open.confirm
+        value: 26
+        left: 96
+        right: 92
+        height: 3
+      - key: full.design.confirm
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 22
+        left: 98
+        right: 99
+        height: 2
+      - key: full.design.handoff
+        value: 24
+        left: 100
+        right: 95
+        height: 3
+      - key: full.open.confirm
+        value: 26
+        left: 101
+        right: 92
+        height: 4
+      - key: full.open.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 25
+        left: null
+        right: 103
+        height: 2
+      - key: full.design.handoff
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 27
+        left: 106
+        right: 107
+        height: 2
+      - key: full.open
+        value: 25
+        left: 105
+        right: 108
+        height: 3
+      - key: full.build.configure
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 23
+        left: 111
+        right: 112
+        height: 2
+      - key: full.design.confirm
+        value: 21
+        left: 110
+        right: 113
+        height: 3
+      - key: full.open
+        value: 25
+        left: 114
+        right: 108
+        height: 4
+      - key: full.open
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 22
+        left: 117
+        right: 118
+        height: 2
+      - key: full.open.confirm
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 27
+        left: 120
+        right: 121
+        height: 2
+      - key: full.open
+        value: 25
+        left: 119
+        right: 122
+        height: 3
+      - key: full.build.configure
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 20
+        left: 124
+        right: 125
+        height: 2
+      - key: full.design.document
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 23
+        left: 127
+        right: 128
+        height: 2
+      - key: full.design.confirm
+        value: 21
+        left: 126
+        right: 129
+        height: 3
+      - key: full.open
+        value: 25
+        left: 130
+        right: 122
+        height: 4
+      - key: full.build.check
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 19
+        left: 132
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 29
+        left: 134
+        right: 135
+        height: 2
+      - key: full.build.confirm
+        value: 20
+        left: 133
+        right: 136
+        height: 3
+      - key: full.open
+        value: 25
+        left: 129
+        right: 122
+        height: 3
+      - key: full.design.confirm
+        value: 21
+        left: 137
+        right: 138
+        height: 4
+      - key: full.build.check
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 33
+        left: 140
+        right: 141
+        height: 2
+      - key: full.build.confirm
+        value: 20
+        left: 142
+        right: 136
+        height: 3
+      - key: full.verify.run
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 28
+        left: null
+        right: 144
+        height: 2
+      - key: full.open.evidence
+        value: 27
+        left: 120
+        right: 145
+        height: 3
+      - key: full.open
+        value: 25
+        left: 129
+        right: 146
+        height: 4
+      - key: full.design.confirm
+        value: 21
+        left: 143
+        right: 147
+        height: 5
+      - key: full.open.revalidate
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 27
+        left: 120
+        right: 149
+        height: 2
+      - key: full.verify.report.evidence
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 35
+        left: 151
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 36
+        left: 150
+        right: 152
+        height: 3
+      - key: full.open
+        value: 25
+        left: 129
+        right: 153
+        height: 4
+      - key: full.design.confirm
+        value: 21
+        left: 143
+        right: 154
+        height: 5
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 31
+      - 37
+      - 43
+      - 49
+      - 59
+      - 64
+      - 69
+      - 75
+      - 81
+      - 87
+      - 90
+      - 93
+      - 97
+      - 102
+      - 104
+      - 109
+      - 115
+      - 116
+      - 123
+      - 131
+      - 139
+      - 148
+      - 155
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actionContexts
+          - recover-open-observation-continuation:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - recover-open-observation-continuation:11
+          - results
+        map: 11
+      - path:
+          - actionContexts
+          - recover-open-observation-continuation:13
+          - results
+        map: 12
+      - path:
+          - actionContexts
+          - recover-open-observation-continuation:14
+          - results
+        map: 13
+      - path:
+          - actionContexts
+          - recover-open-observation-continuation:16
+          - results
+        map: 14
+      - path:
+          - actionContexts
+          - recover-open-observation-continuation:18
+          - results
+        map: 15
+      - path:
+          - actionContexts
+          - recover-open-observation-continuation:20
+          - results
+        map: 16
+      - path:
+          - actionContexts
+          - recover-open-observation-continuation:4
+          - results
+        map: 17
+      - path:
+          - actionContexts
+          - recover-open-observation-continuation:5
+          - results
+        map: 18
+      - path:
+          - actionContexts
+          - recover-open-observation-continuation:7
+          - results
+        map: 19
+      - path:
+          - actionContexts
+          - recover-open-observation-continuation:9
+          - results
+        map: 20
+      - path:
+          - outputs
+        map: 16
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 21
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 22
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 23
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 24
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 25
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 26
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 27
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 28
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 29
+  storageHash: 1a62dd8f77385fb1bfd74c5ac8803646520728949db1ef640c6dbd6dbf603ee4
+check_epoch: 4
