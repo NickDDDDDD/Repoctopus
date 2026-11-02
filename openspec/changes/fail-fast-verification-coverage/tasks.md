@@ -2,11 +2,11 @@
 
 ## 1. 固定回归与 coverage 领域契约
 
-- [ ] 1.1 增加项目探测回归，证明新生成的 required 命令节点显式使用 `covers: ['*']`，并产生需要人工复核的 coverage finding <!-- comet-task:c120d0c8-62fe-4337-afcd-91aa4fe669ab -->
+- [x] 1.1 增加项目探测回归，证明新生成的 required 命令节点显式使用 `covers: ['*']`，并产生需要人工复核的 coverage finding <!-- comet-task:c120d0c8-62fe-4337-afcd-91aa4fe669ab -->
   **Acceptance:** 探测候选不再生成空 coverage；finding 清楚说明 workspace-wide coverage 可在批准前收窄；探测仍不写正式配置
   **Requirements:** project-configuration / 探测候选必须提供可审查的 Change coverage
 
-- [ ] 1.2 增加项目审批回归，证明默认 `verify` Profile 缺失或全部 coverage 为空时不能建立可批准请求，而合法的 required coverage 与无 coverage 前置节点可以共存 <!-- comet-task:f653c208-76d0-428d-8193-b15d861c760b -->
+- [x] 1.2 增加项目审批回归，证明默认 `verify` Profile 缺失或全部 coverage 为空时不能建立可批准请求，而合法的 required coverage 与无 coverage 前置节点可以共存 <!-- comet-task:f653c208-76d0-428d-8193-b15d861c760b -->
   **Acceptance:** 默认 `verify` 缺失、无 required coverage 或 optional-only coverage 时在写正式配置前返回可定位诊断；至少一个 required coverage 节点时正常准备审批；其他独立 Profile 不被误判为 Change Verify Profile
   **Requirements:** project-configuration / Change Verify Profile 必须在审批前静态可用
 
