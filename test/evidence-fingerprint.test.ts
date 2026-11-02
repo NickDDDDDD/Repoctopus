@@ -359,7 +359,7 @@ describe('evidence fingerprint', () => {
     expect(createEvidenceFingerprint(manifest).digest).toBe(
       createEvidenceFingerprint({ ...manifest, repositories: [...repositories].reverse() }).digest,
     );
-    expect(repositories[0]!.controlPlane.digest).not.toBe(repositories[1]!.controlPlane.digest);
+    expect(repositories[0].controlPlane.digest).not.toBe(repositories[1].controlPlane.digest);
   });
 
   it('rejects a repository whose selected content changes during capture', async () => {

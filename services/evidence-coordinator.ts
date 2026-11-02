@@ -94,9 +94,9 @@ function asContext(value: unknown): EvidenceRunContext {
     record?.fingerprint as { manifest?: { schemaVersion?: unknown } } | undefined
   )?.manifest?.schemaVersion;
   if (fingerprintSchema !== undefined && fingerprintSchema !== 2) {
-    throw new Error(
-      `Unsupported Evidence fingerprint schema: ${String(fingerprintSchema)}; recollect Evidence`,
-    );
+    const actualSchema =
+      typeof fingerprintSchema === 'number' ? fingerprintSchema : typeof fingerprintSchema;
+    throw new Error(`Unsupported Evidence fingerprint schema: ${actualSchema}; recollect Evidence`);
   }
   const binding = record?.workflowBinding;
   if (
