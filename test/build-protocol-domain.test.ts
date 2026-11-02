@@ -12,6 +12,8 @@ import {
   createBuildProtocolState,
   createExecutionWorkspaceBinding,
   createExecutionWorkspaceIntent,
+  executionBindingRequiredCapabilities,
+  missingExecutionBindingCapabilities,
   createPackageCompletionEvidence,
   createPlanEvidence as createPlanEvidenceV2,
   revalidateSuspendedBuildProtocol,
@@ -19,6 +21,32 @@ import {
   validateBuildPlan as validateBuildPlanV2,
 } from '../domains/change-lifecycle/build-protocol.js';
 import { parseSpecificationTasks } from '../domains/specification/tasks.js';
+
+describe('Execution Binding capability contract', () => {
+  it.each([
+    [
+      'autonomous',
+      ['build.autonomous', 'process.execute', 'repository.write'],
+      ['process.execute', 'repository.write'],
+    ],
+    [
+      'subagent-driven-development',
+      ['process.execute', 'repository.write', 'subagent.dispatch.attested'],
+      ['process.execute', 'repository.write'],
+    ],
+  ] as const)(
+    'uses one complete %s capability set for preflight and checkpoint recovery',
+    (executionMode, required, missing) => {
+      expect(executionBindingRequiredCapabilities(executionMode)).toEqual(required);
+      expect(
+        missingExecutionBindingCapabilities(executionMode, [
+          executionMode === 'autonomous' ? 'build.autonomous' : 'subagent.dispatch.attested',
+          'repository.read',
+        ]),
+      ).toEqual(missing);
+    },
+  );
+});
 
 const sha = (value: string): `sha256:${string}` => {
   const hex = Buffer.from(value).toString('hex') || '0';
