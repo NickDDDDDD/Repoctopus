@@ -183,6 +183,13 @@ describe('project configuration detection', () => {
     expect(draft.candidateConfig?.repositories.every((item) => !path.isAbsolute(item.path))).toBe(
       true,
     );
+    const verifyNodes = draft.candidateConfig?.profiles.find(
+      (profile) => profile.id === 'verify',
+    )?.nodes;
+    expect(verifyNodes?.length).toBeGreaterThan(0);
+    expect(
+      verifyNodes?.every((candidate) => candidate.required && candidate.covers?.[0] === '*'),
+    ).toBe(true);
 
     const node = draft.repositories.find((item) => item.name === 'web-front');
     expect(node).toMatchObject({ technologies: ['node'] });
@@ -223,8 +230,16 @@ describe('project configuration detection', () => {
         expect.objectContaining({ code: 'unknown-build', repository: 'notes' }),
         expect.objectContaining({ code: 'command-review', repository: 'backend' }),
         expect.objectContaining({ code: 'command-review', repository: 'worker' }),
+        expect.objectContaining({
+          code: 'acceptance-coverage',
+        }),
       ]),
     );
+    const coverageFindings = draft.unresolved.filter(
+      (item) => item.code === 'acceptance-coverage',
+    );
+    expect(coverageFindings).toHaveLength(verifyNodes?.length ?? 0);
+    expect(coverageFindings[0]?.message).toMatch(/workspace-wide.*narrow/iu);
 
     expect(await Promise.all(repositories.map(status))).toEqual(before);
     await Promise.all(

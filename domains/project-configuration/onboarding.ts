@@ -68,6 +68,18 @@ function projectConfigurationSnapshotDigest(input: {
   return `sha256:${createHash('sha256').update(canonicalJson(input)).digest('hex')}`;
 }
 
+function assertDefaultVerifyProfileReady(candidate: SharedProjectConfig): void {
+  const profile = candidate.profiles.find((item) => item.id === 'verify');
+  const hasRequiredCoverage = profile?.nodes.some(
+    (node) => node.required && (node.covers?.length ?? 0) > 0,
+  );
+  if (!profile || !hasRequiredCoverage) {
+    throw new Error(
+      'Default verify Profile requires at least one required coverage selector before approval',
+    );
+  }
+}
+
 export function createProjectConfigurationDecision(input: {
   draft: ProjectDetectionDraft;
   completedCandidate: unknown;
@@ -75,6 +87,7 @@ export function createProjectConfigurationDecision(input: {
   requestId?: string;
 }): ProjectConfigurationDecisionRequest {
   const candidateConfig = parseSharedProjectConfig(input.completedCandidate);
+  assertDefaultVerifyProfileReady(candidateConfig);
   if (input.draft.storeBinding) {
     const configured = candidateConfig.specificationProvider?.store;
     if (

@@ -37,6 +37,14 @@ Store ID 是团队配置，registration 是每机状态：新成员、CI 节点�
 
 候选必须通过 [项目配置 Schema](schemas/project-config.schema.json)。共享仓库路径使用相对于 workspace 的路径；成员机器上的绝对路径写入 `.repoctopus/local.yaml`。
 
+探测到的 required 命令节点会以 `covers: ['*']` 作为安全候选，并产生
+`acceptance-coverage` unresolved finding。这里的 `*` 表示“当前节点必须覆盖该 change
+的全部 Acceptance”，目的是避免新项目以空 coverage 进入 Build；它不是所有团队的
+推荐终态。批准前应按命令的真实证明范围收窄为 `task:<taskId>`、
+`requirement:<ref>` 或精确 `acceptance-<sha256>` selector。准备审批时，默认 `verify`
+Profile 必须至少有一个声明 coverage 的 required 节点；optional 节点或无 coverage 的
+前置节点不能单独满足这个条件。
+
 ### 团队插件可信边界
 
 团队插件只能在 `repoctopus.yaml` 的 `composition.plugins` 中声明。每项同时指定静态 Descriptor、模块入口和可选领域配置；两个路径都相对于 workspace。Repoctopus 在执行模块前核对插件 ID、契约版本、来源、能力、权限、状态 Schema 和代码摘要，任一项不符都会拒绝启动，模块求值副作用不会发生。

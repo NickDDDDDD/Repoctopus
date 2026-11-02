@@ -9,7 +9,10 @@ import {
   hashProjectConfig,
   parseSharedProjectConfig,
 } from '../domains/project-configuration/config.js';
-import type { ProjectConfigurationDecisionResponse } from '../domains/project-configuration/onboarding.js';
+import {
+  createProjectConfigurationDecision,
+  type ProjectConfigurationDecisionResponse,
+} from '../domains/project-configuration/onboarding.js';
 import {
   createGitRepository,
   removeTemporaryDirectory,
@@ -31,9 +34,7 @@ const registration = {
 };
 const execFileAsync = promisify(execFile);
 
-function applyDecision(
-  input: Parameters<typeof applyProjectConfigurationDecision>[0],
-) {
+function applyDecision(input: Parameters<typeof applyProjectConfigurationDecision>[0]) {
   return applyProjectConfigurationDecision(input, registration);
 }
 
@@ -53,6 +54,85 @@ function response(
 }
 
 describe('project configuration onboarding', () => {
+  it('requires a usable default verify profile before creating an approval request', async () => {
+    const root = await temporaryDirectory('repoctopus-onboarding-coverage-');
+    cleanup.push(root);
+    const workspace = await createGitRepository(root, 'workspace');
+    const frontend = await createGitRepository(root, 'web-front');
+    await writeFile(
+      path.join(frontend, 'package.json'),
+      JSON.stringify({ scripts: { build: 'vite build' } }),
+    );
+    const detected = await detectProjectConfiguration({ workspace, scanRoot: root });
+    const candidate = detected.draft.candidateConfig!;
+    const detectedNode = candidate.profiles.find((profile) => profile.id === 'verify')!.nodes[0]!;
+    const decide = (completedCandidate: unknown) =>
+      createProjectConfigurationDecision({
+        draft: detected.draft,
+        completedCandidate,
+        currentConfig: null,
+        requestId: 'coverage-readiness',
+      });
+
+    expect(() =>
+      decide({
+        ...candidate,
+        profiles: [
+          {
+            id: 'independent-diagnostics',
+            nodes: [{ ...detectedNode, id: 'diagnostics', required: false, covers: [] }],
+          },
+        ],
+      }),
+    ).toThrow(/default verify.*required coverage/iu);
+    expect(() =>
+      decide({
+        ...candidate,
+        profiles: candidate.profiles.map((profile) => ({
+          ...profile,
+          nodes: profile.nodes.map((node) => ({ ...node, covers: [] })),
+        })),
+      }),
+    ).toThrow(/default verify.*required coverage/iu);
+    expect(() =>
+      decide({
+        ...candidate,
+        profiles: [
+          {
+            id: 'verify',
+            nodes: [{ ...detectedNode, required: false, covers: ['*'] }],
+          },
+        ],
+      }),
+    ).toThrow(/default verify.*required coverage/iu);
+
+    const request = decide({
+      ...candidate,
+      profiles: [
+        {
+          id: 'verify',
+          nodes: [
+            { ...detectedNode, id: 'prepare', required: true, covers: [] },
+            {
+              ...detectedNode,
+              id: 'acceptance-gate',
+              dependsOn: ['prepare'],
+              required: true,
+              covers: ['*'],
+            },
+          ],
+        },
+        {
+          id: 'independent-diagnostics',
+          nodes: [{ ...detectedNode, id: 'diagnostics', required: false, covers: [] }],
+        },
+      ],
+    });
+    expect(
+      request.candidateConfig.profiles.find((profile) => profile.id === 'verify'),
+    ).toBeDefined();
+  });
+
   it('keeps an Agent-completed candidate pending until a trusted bound decision approves it', async () => {
     const root = await temporaryDirectory('repoctopus-onboarding-');
     cleanup.push(root);
@@ -82,8 +162,9 @@ describe('project configuration onboarding', () => {
       requestId: 'project-config-request-1',
     });
     const configFile = path.join(workspace, 'repoctopus.yaml');
-    const frontendHead = (await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: frontend }))
-      .stdout.trim();
+    const frontendHead = (
+      await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: frontend })
+    ).stdout.trim();
 
     await expect(access(configFile)).rejects.toMatchObject({ code: 'ENOENT' });
     expect(prepared.request).toMatchObject({
@@ -331,10 +412,7 @@ profiles:
       ),
     ).rejects.toThrow(/pause before pointer write/u);
     await mkdir(path.join(frontend, 'openspec'), { recursive: true });
-    await writeFile(
-      path.join(frontend, 'openspec', 'config.yaml'),
-      'store: another-platform\n',
-    );
+    await writeFile(path.join(frontend, 'openspec', 'config.yaml'), 'store: another-platform\n');
     await expect(applyProjectConfigurationDecision(input, registration)).rejects.toThrow(
       /pointer input drifted/u,
     );

@@ -52,6 +52,14 @@ describe('documented project onboarding flow', () => {
       storeId: 'onboarding-store',
       workspaceRepositoryId: 'workspace',
     });
+    expect(detected.draft.unresolved).toContainEqual(
+      expect.objectContaining({ code: 'acceptance-coverage', repository: 'app' }),
+    );
+    expect(
+      detected.draft.candidateConfig?.profiles
+        .flatMap((profile) => profile.nodes)
+        .find((node) => node.repository === 'app'),
+    ).toMatchObject({ required: true, covers: ['*'] });
     expect(
       detected.draft.storeBinding?.repositories.find(
         (repository) => repository.repositoryId === 'app',
@@ -75,6 +83,7 @@ describe('documented project onboarding flow', () => {
               repository: 'app',
               dependsOn: [],
               required: true,
+              covers: ['*'],
               executable: process.execPath,
               args: ['-e', "process.stdout.write('first evidence')"],
               timeoutMs: 5000,

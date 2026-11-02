@@ -71,7 +71,12 @@ export interface OpenSpecStoreBindingProposal {
 }
 
 export interface DetectionUnresolvedItem {
-  code: 'unknown-build' | 'service-port' | 'health-endpoint' | 'command-review';
+  code:
+    | 'unknown-build'
+    | 'service-port'
+    | 'health-endpoint'
+    | 'command-review'
+    | 'acceptance-coverage';
   repository: string;
   message: string;
   source?: DetectionSource;
