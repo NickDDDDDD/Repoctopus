@@ -51,6 +51,15 @@ npm run check:provenance
 npm run check:dashboard-salvage
 npm run spec:validate
   All passed; strict OpenSpec validation passed 18 items with 0 failures
+
+Production multi-repository acceptance (`agent-lab-runtime-acceptance-round2`)
+  A fresh Run rejected the three-package Plan while web-design, web-plugin and web-front were bound to main
+  The bounded diagnostic named exactly those three writable repositories; read-only backend remained legal on main
+  No Plan Evidence, Execute Work or Task completion was accepted before the rejection
+  The Runner created and immediately pushed codex/support-blocked-task-status-retry in all three writable repositories
+  The next pull observed checkout drift, retired the rejected checkpoint and returned the same Run to Build Configure
+  Reconfiguration bound revision 2 to the three published branches; the reissued Plan reached build.execute for the first package
+  Run: change-agent-lab-workflow-support-blocked-task-status-retry-eaa0be3fbd227256
 ```
 
 The report freshness gate is rerun after this evidence-only metadata update. It must independently reproduce the package identity above; no product or test change is allowed after the tested implementation commit.
@@ -64,6 +73,7 @@ The durable rejection event records bounded `workKind=build.plan`, `reasonCode=o
 - The temporary npm archive used to calculate the normalized package identity was deleted.
 - The temporary plugin-identity tests used to capture direct predecessor digests were deleted from the main worktree, which was verified clean.
 - Production E2E temporary repositories and bare remotes were removed by the fixture cleanup.
+- Temporary external-Host result JSON files used for the real acceptance were deleted after the Run reached its first Execute.
 - No Runtime Store, checkpoint, approval or lifecycle state was edited to bypass a gate.
 
 ## Verdict

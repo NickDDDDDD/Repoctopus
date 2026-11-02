@@ -25,5 +25,5 @@
 
 - [x] 4.1 运行目标领域、Service、Delivery 和恢复测试，确认红测全部转绿。
 - [x] 4.2 运行 typecheck、lint、architecture、严格 OpenSpec validation 和完整测试。
-- [ ] 4.3 在模拟多仓验收中先证明 main-bound 写集 fail closed，再创建并 push 三个业务 source branch，恢复同一 Run 至首个 Execute。
+- [x] 4.3 在模拟多仓验收中先证明 main-bound 写集 fail closed，再创建并 push 三个业务 source branch，恢复同一 Run 至首个 Execute。
 - [ ] 4.4 保存正式验证结果，清理临时日志/scratch，提交、push、合入后继续剩余验收。
