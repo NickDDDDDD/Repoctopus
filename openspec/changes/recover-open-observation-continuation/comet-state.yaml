@@ -2,7 +2,7 @@
 change_id: 1c0eabda-104e-4218-9b2d-0090bd41f6fb
 workflow: full
 language: zh-CN
-phase: archive
+phase: verify
 context_compression: off
 build_mode: autonomous
 build_pause: null
@@ -15,13 +15,13 @@ auto_transition: true
 base_ref: 2fe7cce58e0016c4b61b40630cec5f7e737d0811
 design_doc: openspec/changes/recover-open-observation-continuation/design.md
 plan: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
-verify_result: pass
+verify_result: pending
 verify_failures: 0
-verification_report: docs/superpowers/reports/recover-open-observation-continuation.md
+verification_report: null
 branch_status: pending
 created_at: 2026-11-02
-verified_at: 2026-11-02
-archive_confirmation: pending
+verified_at: null
+archive_confirmation: null
 archived: false
 bound_branch: codex/recover-open-observation-continuation
 direct_override: false
@@ -31,7 +31,7 @@ classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v2
-  hash: 795d32af973e80074a6cdf428547c177867e8fdb20a71e2fb0d77dbf0e4d539b
+  hash: 96a4a473ac6ab85d77925ba512128b73f9380113a0cec9d67d106cf816290518
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -40,9 +40,9 @@ run_checkpoint:
     workflow:
       id: comet-classic-full
       version: "1"
-      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+      hash: 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
     definitionHashes:
-      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+      '["comet-classic-full","1"]': 22f3d34c5ee18da3a0c2d11271ad799bd0ae40e37607cbf90baec05a5e003ee7
     initialStateHash: 52d0a4da79f9fdfe8d1457c34060aa22ac230c1e19cc251d6235c0a64d0c7d29
     input:
       change: recover-open-observation-continuation
@@ -50,7 +50,7 @@ run_checkpoint:
       workspaceBaseline:
         ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
     state:
-      archiveConfirmation: pending
+      archiveConfirmation: null
       archived: false
       autoTransition: true
       baseRef: 2fe7cce58e0016c4b61b40630cec5f7e737d0811
@@ -69,19 +69,19 @@ run_checkpoint:
       handoffHash: af4ff6a3f27156a0a526dc551fef175e469739b7f00ef720af15a56ecbe547bb
       isolation: current
       language: zh-CN
-      phase: archive
+      phase: verify
       plan: docs/superpowers/plans/2026-11-02-recover-open-observation-continuation.md
       reviewMode: thorough
       subagentDispatch: null
       tddMode: tdd
-      verificationReport: docs/superpowers/reports/recover-open-observation-continuation.md
-      verifiedAt: 2026-11-02
+      verificationReport: null
+      verifiedAt: null
       verifyFailures: 0
       verifyMode: null
-      verifyResult: pass
+      verifyResult: pending
       workflow: full
     status: running
-    sequence: 20
+    sequence: 22
     actions:
       - attempt: 1
         claim:
@@ -548,6 +548,14 @@ run_checkpoint:
         stepId: full.verify.check
         type: call_tool
       - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-062e58842297c456ee76c4242666b70e41398dd174939e8dc4b2a8e1ae0c4bb9
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: recover-open-observation-continuation:20
         input:
           input:
@@ -557,16 +565,61 @@ run_checkpoint:
               ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
           outputs: {}
         inputHash: a887b757cbb71ed942a5c05051c5cc6e05c4ba3590baa64b5d93de944a94efeb
+        outcome:
+          actionId: recover-open-observation-continuation:20
+          attempt: 1
+          claimToken: portable-062e58842297c456ee76c4242666b70e41398dd174939e8dc4b2a8e1ae0c4bb9
+          inputHash: a887b757cbb71ed942a5c05051c5cc6e05c4ba3590baa64b5d93de944a94efeb
+          outcomeId: ee78a80a-9096-4e18-9c54-608c3e247ebd
+          output:
+            summary: 完成 Open validated checkpoint 的可恢复重观察：统一 Work continuation classifier，使
+              Provider validation 或 planning gate 瞬时失败后从原 Work 继续且不重放 Host；将
+              Project reconciliation 区分为 content 与 identity drift，content 交由
+              phase authority 精确重验，identity 继续 fail closed；补齐有界 OTLP 维度、Windows
+              production-composition、多仓与并发回归。23 项任务完成，正式 npm run verify 通过并绑定
+              Verify 收据。归档将合并本 Change 的规格增量并保留设计、任务、计划和验证证据；不创建 PR、不合并 main。
+            targetBranch: codex/recover-open-observation-continuation
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: 23d29353bc0f023cc09e0fc1b4c6aa355b7c33281935999e3732ce652c07f7f4
+            outcomeId: ee78a80a-9096-4e18-9c54-608c3e247ebd
         reconciliations: []
         ref: comet-archive
         requiredCapabilities: []
         retry: manual
         runId: recover-open-observation-continuation
-        status: pending
+        status: succeeded
         stepId: full.archive.prepare
         type: invoke_skill
+      - attempt: 1
+        id: recover-open-observation-continuation:22
+        input:
+          activation:
+            expectedRevision: 32
+            fromPhase: archive
+          input:
+            change: recover-open-observation-continuation
+            changeDir: openspec/changes/recover-open-observation-continuation
+            workspaceBaseline:
+              ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
+          outputs: {}
+        inputHash: bf6452e339333243a33a36459ffcb799413b4ece9c86c58b21f95ca30b786266
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-open-observation-continuation
+        status: pending
+        stepId: full.verify.run
+        type: invoke_skill
+    commands:
+      - id: 9a79e544bdf315f2cddee887e05fdfc44208fe969396354a117bb8f59004f05e
+        name: reopen-verification
+        inputHash: 5134092f096496b1b57a4fd8177cf4af7b8a3e3575a6cd7700483b65927ec3a9
+        actionId: recover-open-observation-continuation:22
     actionContexts:
       recover-open-observation-continuation:1:
         results: {}
@@ -589,6 +642,9 @@ run_checkpoint:
       recover-open-observation-continuation:20:
         results: {}
         sequence: 20
+      recover-open-observation-continuation:22:
+        results: {}
+        sequence: 22
       recover-open-observation-continuation:4:
         results: {}
         sequence: 4
@@ -697,6 +753,34 @@ run_checkpoint:
           id: 8bafcd34-324c-4e32-8054-290ea5822078
           choice: approved
           proposalHash: a49b44d80f1b809ca0b5c992e835d4e217a43ca86693aa43cf96c9b8c527855b
+      - id: recover-open-observation-continuation:21
+        stepId: full.archive.confirm
+        sequence: 21
+        status: cancelled
+        proposal:
+          input:
+            change: recover-open-observation-continuation
+            changeDir: openspec/changes/recover-open-observation-continuation
+            workspaceBaseline:
+              ref: 2531bf0a-efc5-463b-af21-02789d60ff4b
+          outputs:
+            full.archive.prepare:
+              summary: 完成 Open validated checkpoint 的可恢复重观察：统一 Work continuation classifier，使
+                Provider validation 或 planning gate 瞬时失败后从原 Work 继续且不重放 Host；将
+                Project reconciliation 区分为 content 与 identity drift，content 交由
+                phase authority 精确重验，identity 继续 fail closed；补齐有界 OTLP
+                维度、Windows production-composition、多仓与并发回归。23 项任务完成，正式 npm run
+                verify 通过并绑定 Verify 收据。归档将合并本 Change 的规格增量并保留设计、任务、计划和验证证据；不创建
+                PR、不合并 main。
+              targetBranch: codex/recover-open-observation-continuation
+        proposalHash: 9a9b7ad96a89797d81543b2c697f9bd9b2612ae2706ffd892f0e011b2d124bcc
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
     evidenceWaits:
       - id: recover-open-observation-continuation:2
         stepId: full.open.evidence
@@ -763,8 +847,8 @@ run_checkpoint:
     outputs: {}
     children: []
     lineage: []
-  sourceRevision: 30
-  sourceHash: 26deb48d23ec0a06cb5ee688201f993012f229eefb4e8fdd6be532e05fc67f08
+  sourceRevision: 33
+  sourceHash: 159981a3dc6b130359653b69ec2900034488d701c7fa5f652a3764d898e942bb
   pool:
     version: 3
     values:
@@ -1113,6 +1197,15 @@ run_checkpoint:
         value:
           contentHash: 07790529dd862a08fa566fa2cf1aff19bcff3339ed60f8871ac2a24492dc53ed
           ref: .comet/runtime/classic-sdk-checks/04c1b1f81fd9c903072a3cf445e79f615c9687cb96ff2fad39b8b00fa39c986e/f44b3db6-4791-4f57-9b4c-c9ac72f19090.log
+      - sequence: 20
+        value:
+          summary: 完成 Open validated checkpoint 的可恢复重观察：统一 Work continuation classifier，使
+            Provider validation 或 planning gate 瞬时失败后从原 Work 继续且不重放 Host；将
+            Project reconciliation 区分为 content 与 identity drift，content 交由 phase
+            authority 精确重验，identity 继续 fail closed；补齐有界 OTLP 维度、Windows
+            production-composition、多仓与并发回归。23 项任务完成，正式 npm run verify 通过并绑定
+            Verify 收据。归档将合并本 Change 的规格增量并保留设计、任务、计划和验证证据；不创建 PR、不合并 main。
+          targetBranch: codex/recover-open-observation-continuation
     nodes:
       - key: full.open
         value: 0
@@ -1629,6 +1722,96 @@ run_checkpoint:
         left: 101
         right: 92
         height: 4
+      - key: full.archive.prepare
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 32
+        left: 103
+        right: 104
+        height: 2
+      - key: full.build.confirm
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 30
+        left: 107
+        right: 108
+        height: 2
+      - key: full.build.execute
+        value: 31
+        left: 106
+        right: 109
+        height: 3
+      - key: full.build.configure
+        value: 19
+        left: 105
+        right: 110
+        height: 4
+      - key: full.design.handoff
+        value: 24
+        left: 99
+        right: 95
+        height: 2
+      - key: full.open.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 28
+        left: 113
+        right: 114
+        height: 2
+      - key: full.verify.run
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 34
+        left: null
+        right: 116
+        height: 2
+      - key: full.verify.check.evidence
+        value: 37
+        left: 115
+        right: 117
+        height: 3
+      - key: full.open.confirm
+        value: 26
+        left: 112
+        right: 118
+        height: 4
+      - key: full.design.document
+        value: 22
+        left: 111
+        right: 119
+        height: 5
       - key: full.open.evidence
         value: 27
         left: null
@@ -1637,7 +1820,7 @@ run_checkpoint:
       - key: full.open
         value: 25
         left: null
-        right: 103
+        right: 121
         height: 2
       - key: full.design.handoff
         value: 24
@@ -1656,13 +1839,13 @@ run_checkpoint:
         height: 1
       - key: full.open.evidence
         value: 27
-        left: 106
-        right: 107
+        left: 124
+        right: 125
         height: 2
       - key: full.open
         value: 25
-        left: 105
-        right: 108
+        left: 123
+        right: 126
         height: 3
       - key: full.build.configure
         value: 19
@@ -1681,18 +1864,18 @@ run_checkpoint:
         height: 1
       - key: full.design.evidence
         value: 23
-        left: 111
-        right: 112
+        left: 129
+        right: 130
         height: 2
       - key: full.design.confirm
         value: 21
-        left: 110
-        right: 113
+        left: 128
+        right: 131
         height: 3
       - key: full.open
         value: 25
-        left: 114
-        right: 108
+        left: 132
+        right: 126
         height: 4
       - key: full.open
         value: 25
@@ -1711,8 +1894,8 @@ run_checkpoint:
         height: 1
       - key: full.design.document
         value: 22
-        left: 117
-        right: 118
+        left: 135
+        right: 136
         height: 2
       - key: full.open.confirm
         value: 26
@@ -1726,13 +1909,13 @@ run_checkpoint:
         height: 1
       - key: full.open.evidence
         value: 27
-        left: 120
-        right: 121
+        left: 138
+        right: 139
         height: 2
       - key: full.open
         value: 25
-        left: 119
-        right: 122
+        left: 137
+        right: 140
         height: 3
       - key: full.build.configure
         value: 19
@@ -1746,8 +1929,8 @@ run_checkpoint:
         height: 1
       - key: full.build.confirm
         value: 20
-        left: 124
-        right: 125
+        left: 142
+        right: 143
         height: 2
       - key: full.design.document
         value: 22
@@ -1761,18 +1944,18 @@ run_checkpoint:
         height: 1
       - key: full.design.evidence
         value: 23
-        left: 127
-        right: 128
+        left: 145
+        right: 146
         height: 2
       - key: full.design.confirm
         value: 21
-        left: 126
-        right: 129
+        left: 144
+        right: 147
         height: 3
       - key: full.open
         value: 25
-        left: 130
-        right: 122
+        left: 148
+        right: 140
         height: 4
       - key: full.build.check
         value: 32
@@ -1781,7 +1964,7 @@ run_checkpoint:
         height: 1
       - key: full.build.configure
         value: 19
-        left: 132
+        left: 150
         right: null
         height: 2
       - key: full.build.execute
@@ -1796,23 +1979,23 @@ run_checkpoint:
         height: 1
       - key: full.build.plan
         value: 29
-        left: 134
-        right: 135
+        left: 152
+        right: 153
         height: 2
       - key: full.build.confirm
         value: 20
-        left: 133
-        right: 136
+        left: 151
+        right: 154
         height: 3
       - key: full.open
         value: 25
-        left: 129
-        right: 122
+        left: 147
+        right: 140
         height: 3
       - key: full.design.confirm
         value: 21
-        left: 137
-        right: 138
+        left: 155
+        right: 156
         height: 4
       - key: full.build.check
         value: 32
@@ -1826,13 +2009,13 @@ run_checkpoint:
         height: 1
       - key: full.build.check.evidence
         value: 33
-        left: 140
-        right: 141
+        left: 158
+        right: 159
         height: 2
       - key: full.build.confirm
         value: 20
-        left: 142
-        right: 136
+        left: 160
+        right: 154
         height: 3
       - key: full.verify.run
         value: 35
@@ -1842,22 +2025,22 @@ run_checkpoint:
       - key: full.open.revalidate
         value: 28
         left: null
-        right: 144
+        right: 162
         height: 2
       - key: full.open.evidence
         value: 27
-        left: 120
-        right: 145
+        left: 138
+        right: 163
         height: 3
       - key: full.open
         value: 25
-        left: 129
-        right: 146
+        left: 147
+        right: 164
         height: 4
       - key: full.design.confirm
         value: 21
-        left: 143
-        right: 147
+        left: 161
+        right: 165
         height: 5
       - key: full.open.revalidate
         value: 28
@@ -1866,8 +2049,8 @@ run_checkpoint:
         height: 1
       - key: full.open.evidence
         value: 27
-        left: 120
-        right: 149
+        left: 138
+        right: 167
         height: 2
       - key: full.verify.report.evidence
         value: 34
@@ -1876,23 +2059,23 @@ run_checkpoint:
         height: 1
       - key: full.verify.run
         value: 35
-        left: 151
+        left: 169
         right: null
         height: 2
       - key: full.verify.check
         value: 36
-        left: 150
-        right: 152
+        left: 168
+        right: 170
         height: 3
       - key: full.open
         value: 25
-        left: 129
-        right: 153
+        left: 147
+        right: 171
         height: 4
       - key: full.design.confirm
         value: 21
-        left: 143
-        right: 154
+        left: 161
+        right: 172
         height: 5
     maps:
       - null
@@ -1916,15 +2099,16 @@ run_checkpoint:
       - 93
       - 97
       - 102
-      - 104
-      - 109
-      - 115
-      - 116
-      - 123
-      - 131
-      - 139
-      - 148
-      - 155
+      - 120
+      - 122
+      - 127
+      - 133
+      - 134
+      - 141
+      - 149
+      - 157
+      - 166
+      - 173
     bindings:
       - path:
           - actions
@@ -1993,6 +2177,12 @@ run_checkpoint:
           - outputs
         map: 10
       - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 0
+      - path:
           - actionContexts
           - recover-open-observation-continuation:1
           - results
@@ -2029,6 +2219,11 @@ run_checkpoint:
         map: 16
       - path:
           - actionContexts
+          - recover-open-observation-continuation:22
+          - results
+        map: 0
+      - path:
+          - actionContexts
           - recover-open-observation-continuation:4
           - results
         map: 17
@@ -2049,51 +2244,56 @@ run_checkpoint:
         map: 20
       - path:
           - outputs
-        map: 16
-      - path:
-          - waits
-          - "0"
-          - results
         map: 21
       - path:
           - waits
-          - "1"
+          - "0"
           - results
         map: 22
       - path:
           - waits
-          - "2"
+          - "1"
           - results
         map: 23
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 24
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 21
       - path:
           - evidenceWaits
           - "0"
           - results
-        map: 24
+        map: 25
       - path:
           - evidenceWaits
           - "1"
           - results
-        map: 25
+        map: 26
       - path:
           - evidenceWaits
           - "2"
           - results
-        map: 26
+        map: 27
       - path:
           - evidenceWaits
           - "3"
           - results
-        map: 27
+        map: 28
       - path:
           - evidenceWaits
           - "4"
           - results
-        map: 28
+        map: 29
       - path:
           - evidenceWaits
           - "5"
           - results
-        map: 29
-  storageHash: 1a62dd8f77385fb1bfd74c5ac8803646520728949db1ef640c6dbd6dbf603ee4
+        map: 30
+  storageHash: af3c66e647a24edeb38784be187792dadd8adbafc174896c79cae97aaf2270a7
 check_epoch: 4
