@@ -36,7 +36,7 @@
 - [x] 5.2 在同一 fixture 切换到 feature branch 后启动成功，再以等价输入重放并断言返回同一 Run、Work 和 attempt <!-- comet-task:84aef510-8809-4098-ab15-ba40c18e5530 -->
 - [x] 5.3 在同一 fixture 启动后切换 source branch，断言 `workspace-binding-conflict` 且原 checkpoint 字节和 trajectory 长度不变 <!-- comet-task:9d135c5f-11ef-4de9-9320-bb821a1ee8aa -->
 - [x] 5.4 完成一次真实 Open Host Outcome，模拟 Provider 首次不可用后恢复，断言 Provider 重观察成功、Host invocation 计数不变且未调用 `work-reconcile` <!-- comet-task:7c47368c-02da-48d8-b6c1-7f4dff74b6b8 -->
-- [ ] 5.5 运行 `npm run verify`、`npx --yes --package=@rpamis/comet@0.5.1 comet classic openspec -- validate stabilize-runtime-workspace-binding --strict` 与 `git diff --check`，保存绑定最终 HEAD/tree/config/tool 输入的正式 Evidence 并清理临时日志和 scratch 输出 <!-- comet-task:0f85079e-eb93-4724-8642-ad0e29facd4c -->
+- [x] 5.5 运行 `npm run verify`、`npx --yes --package=@rpamis/comet@0.5.1 comet classic openspec -- validate stabilize-runtime-workspace-binding --strict` 与 `git diff --check`，保存绑定最终 HEAD/tree/config/tool 输入的正式 Evidence 并清理临时日志和 scratch 输出 <!-- comet-task:0f85079e-eb93-4724-8642-ad0e29facd4c -->
 
 ## Workflow follow-up
 
