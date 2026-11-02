@@ -8,6 +8,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { bootProjectComposition } from '../app/boot/bootstrap.js';
 import { compositionIdentity } from '../app/boot/composition.js';
+import { createProjectSnapshot, reconcileProjectSnapshots } from '../domains/project/snapshot.js';
 import type { DeliveryIntentV3, DeliveryPolicy } from '../domains/delivery/types.js';
 import type { RunStatusView, RuntimeResult } from '../domains/runtime/types.js';
 import type { RunStoreInspection } from '../domains/runtime/types.js';
@@ -635,17 +636,18 @@ describe('managed Change execution production composition', () => {
           ).toBe(repairedInvocation.invocationId);
           expect(capture.invocations).toHaveLength(invocationCountBeforeReobserve);
 
+          const currentOpenSnapshot = await application.context.project.snapshot({
+            workspaceId: 'managed-blackbox',
+            workspaceRoot: workspace,
+            workspaceRepositoryId: 'workspace',
+            repositories: [
+              { id: 'workspace', path: workspace },
+              { id: 'app', path: appRepository },
+            ],
+          });
           const resumedOpen = await application.context.workflowRuns.resume({
             runId,
-            currentProjectSnapshot: await application.context.project.snapshot({
-              workspaceId: 'managed-blackbox',
-              workspaceRoot: workspace,
-              workspaceRepositoryId: 'workspace',
-              repositories: [
-                { id: 'workspace', path: workspace },
-                { id: 'app', path: appRepository },
-              ],
-            }),
+            currentProjectSnapshot: currentOpenSnapshot,
           });
           expect(resumedOpen.value).toMatchObject({
             reconciliation: {
@@ -663,6 +665,42 @@ describe('managed Change execution production composition', () => {
             repairedInvocation.invocationId,
           );
           expect(capture.invocations).toHaveLength(invocationCountBeforeReobserve);
+
+          const identityCandidates = [
+            createProjectSnapshot({
+              ...currentOpenSnapshot,
+              repositories: currentOpenSnapshot.repositories.map((repository) =>
+                repository.id === 'workspace'
+                  ? { ...repository, branch: 'different-branch' }
+                  : repository,
+              ),
+            }),
+            createProjectSnapshot({
+              ...currentOpenSnapshot,
+              repositories: currentOpenSnapshot.repositories.map((repository) =>
+                repository.id === 'workspace'
+                  ? { ...repository, remoteIdentity: 'example.com/other/workspace' }
+                  : repository,
+              ),
+            }),
+            createProjectSnapshot({
+              ...currentOpenSnapshot,
+              repositories: [
+                ...currentOpenSnapshot.repositories,
+                {
+                  ...currentOpenSnapshot.repositories[0]!,
+                  id: 'topology-added',
+                  name: 'topology-added',
+                },
+              ],
+            }),
+          ];
+          for (const candidate of identityCandidates) {
+            expect(reconcileProjectSnapshots(currentOpenSnapshot, candidate)).toMatchObject({
+              changeClass: 'identity',
+              requiresReconciliation: true,
+            });
+          }
 
           const originalAssess = application.context.specificationPlanning.assess.bind(
             application.context.specificationPlanning,
