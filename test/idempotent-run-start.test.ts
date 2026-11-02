@@ -70,7 +70,7 @@ describe('idempotent Run start', () => {
     };
     const results = await Promise.all([runtime.startOrResume(options), runtime.startOrResume(options)]);
     expect(results.map((result) => result.value.disposition).sort()).toEqual(['resumed', 'started']);
-    expect(results[0]!.value.status.state.runId).toBe(results[1]!.value.status.state.runId);
+    expect(results[0].value.status.state.runId).toBe(results[1].value.status.state.runId);
   });
 
   it('returns a typed binding conflict without mutating the existing Run', async () => {
