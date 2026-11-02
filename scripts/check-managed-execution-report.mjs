@@ -1,10 +1,11 @@
 import { execFile } from 'node:child_process';
-import { createHash } from 'node:crypto';
 import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
 import { promisify } from 'node:util';
+
+import { packageContentDigest } from './package-content-digest.mjs';
 
 const execute = promisify(execFile);
 const root = path.resolve(import.meta.dirname, '..');
@@ -28,8 +29,21 @@ for (const reportPath of reportPaths) {
     continue;
   }
   const commit = report.match(/Tested implementation commit: `([a-f0-9]{40})`/u)?.[1];
-  const expectedPackage = report.match(/Package SHA-256: `([a-f0-9]{64})`/u)?.[1]?.toLowerCase();
-  if (!commit || !expectedPackage) continue;
+  const expectedPackage = report
+    .match(/Package content SHA-256: `([a-f0-9]{64})`/u)?.[1]
+    ?.toLowerCase();
+  const expectedFiles = Number(report.match(/Package files: `(\d+)`/u)?.[1]);
+  const expectedBytes = Number(report.match(/Package content bytes: `(\d+)`/u)?.[1]);
+  if (
+    !commit ||
+    !expectedPackage ||
+    !Number.isSafeInteger(expectedFiles) ||
+    expectedFiles <= 0 ||
+    !Number.isSafeInteger(expectedBytes) ||
+    expectedBytes <= 0
+  ) {
+    continue;
+  }
   try {
     await execute('git', ['merge-base', '--is-ancestor', commit, 'HEAD'], { cwd: root });
   } catch {
@@ -49,6 +63,8 @@ for (const reportPath of reportPaths) {
     relativePath: path.relative(root, reportPath).split(path.sep).join('/'),
     commit,
     expectedPackage,
+    expectedFiles,
+    expectedBytes,
     distance,
     disallowed: changed.filter((file) => !evidenceOnly(file)),
   });
@@ -87,10 +103,14 @@ try {
   const filename = packed?.[0]?.filename;
   if (typeof filename !== 'string') throw new Error('npm pack did not return a package filename');
   const archive = await readFile(path.join(temporary, filename));
-  const actual = createHash('sha256').update(archive).digest('hex');
-  if (actual !== selected.expectedPackage) {
+  const actual = packageContentDigest(archive);
+  if (
+    actual.sha256 !== selected.expectedPackage ||
+    actual.files !== selected.expectedFiles ||
+    actual.bytes !== selected.expectedBytes
+  ) {
     throw new Error(
-      `Managed execution report package checksum mismatch: expected ${selected.expectedPackage}, got ${actual}`,
+      `Managed execution report package content mismatch: expected ${selected.expectedPackage} (${selected.expectedFiles} files, ${selected.expectedBytes} bytes), got ${actual.sha256} (${actual.files} files, ${actual.bytes} bytes)`,
     );
   }
 } finally {
@@ -98,5 +118,5 @@ try {
 }
 
 process.stdout.write(
-  `Verified lifecycle report ${path.relative(root, selected.reportPath)} at commit ${selected.commit} and package ${selected.expectedPackage}\n`,
+  `Verified lifecycle report ${path.relative(root, selected.reportPath)} at commit ${selected.commit} and package content ${selected.expectedPackage} (${selected.expectedFiles} files, ${selected.expectedBytes} bytes)\n`,
 );

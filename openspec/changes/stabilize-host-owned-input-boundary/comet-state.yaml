@@ -31,7 +31,7 @@ classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: a5440a3dd31ba8f000776193145ba7208870f0543d4df7256d9ce349ce5493af
+  hash: d76b7165ad0cdfa7832e28a924645fe93f6f5b543ca527b5b8806bf8e465d3d2
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -81,7 +81,7 @@ run_checkpoint:
       verifyResult: pending
       workflow: full
     status: running
-    sequence: 13
+    sequence: 17
     actions:
       - attempt: 1
         claim:
@@ -634,6 +634,15 @@ run_checkpoint:
         stepId: full.build.plan
         type: invoke_skill
       - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: classic-builder/stabilize-host-owned-input-boundary:13/1
+          token: portable-47ad6a9ad5a9d32ef4612cab76cf2ab1d1d1d83bacf8da50d5b779d891fd1608
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: stabilize-host-owned-input-boundary:13
         input:
           input:
@@ -755,6 +764,721 @@ run_checkpoint:
             full.open.revalidate:
               contentHash: 0393aac9843804c2149e63c62bf137e53abd3e5f9ce3b4833544cf6d953636ce
         inputHash: 629ed446e0331e423165140f70a0c13ad7beaeb8d94a12de4a05b0b517fa885a
+        outcome:
+          actionId: stabilize-host-owned-input-boundary:13
+          attempt: 1
+          claimToken: portable-47ad6a9ad5a9d32ef4612cab76cf2ab1d1d1d83bacf8da50d5b779d891fd1608
+          inputHash: 629ed446e0331e423165140f70a0c13ad7beaeb8d94a12de4a05b0b517fa885a
+          outcomeId: 041e3bb1-d89f-4c1d-aa44-ad2dde959e90
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 907e98f992c7788cf198166f5a7b8c65ab683273d16c5d73bb41e0817b844ef9
+            outcomeId: 041e3bb1-d89f-4c1d-aa44-ad2dde959e90
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-host-owned-input-boundary
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 2
+        claim:
+          executorId: comet-classic-check
+          token: portable-0fd748141b1c5119d2ecc149d422944b5387f2cdd5550d181c47818b776cbb7f
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-host-owned-input-boundary:14
+        input:
+          input:
+            change: stabilize-host-owned-input-boundary
+            changeDir: openspec/changes/stabilize-host-owned-input-boundary
+            workspaceBaseline:
+              ref: c40b5c6b-6deb-4bd0-93a5-1d060ec32f5f
+          outputs:
+            full.build.configure:
+              boundBranch: codex/stabilize-host-input-boundary
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-host-owned-input-boundary
+                  changeDir: openspec/changes/stabilize-host-owned-input-boundary
+                  workspaceBaseline:
+                    ref: c40b5c6b-6deb-4bd0-93a5-1d060ec32f5f
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/stabilize-host-input-boundary
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.build.execute:
+              event: build-complete
+            full.build.plan:
+              designEvidence:
+                contentHash: cfaafa9cca978b19b763b9d6992f853cb39dfeaab9a4669b745007db66a754db
+                ref: openspec/changes/stabilize-host-owned-input-boundary/design.md
+              plan: docs/superpowers/plans/2026-11-02-stabilize-host-owned-input-boundary.md
+              planEvidence:
+                contentHash: 8b2572f4b4300b86b61fac5e9633591f13a145bde7b4df7f1eb6101bf9a5e575
+                ref: docs/superpowers/plans/2026-11-02-stabilize-host-owned-input-boundary.md
+              taskRevision: 91cc1ca54e838099c0dcfc2a0be53b78d3054d3061b8201cc9031e2e176a5a00
+            full.build.plan.evidence:
+              contentHash: 8b2572f4b4300b86b61fac5e9633591f13a145bde7b4df7f1eb6101bf9a5e575
+              ref: docs/superpowers/plans/2026-11-02-stabilize-host-owned-input-boundary.md
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-host-owned-input-boundary
+                  changeDir: openspec/changes/stabilize-host-owned-input-boundary
+                  workspaceBaseline:
+                    ref: c40b5c6b-6deb-4bd0-93a5-1d060ec32f5f
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-host-owned-input-boundary/.comet/handoff/design-context.json
+                    handoffHash: 085ac2a9c558ab44428343492ada8a66292268edc25fc3710fadbfa4929edd43
+                    proposal: 采用产品输入与执行控制面输入分区但共同绑定的方案：纯领域 Repository Input Policy 与 Cordis
+                      Contributor registry 负责默认拒绝分类，具体 Host 品牌只存在于 integration
+                      plugin；Git tracked 双用途文件保持产品输入，external-exclusive
+                      路径进入产品面时失败；未跟踪控制面文件形成 race-safe 内容寻址 manifest，未知文件仍是
+                      product dirty；Evidence fingerprint manifest 直接升级
+                      v2、Verification Input 升级 v3，并沿用现有 Bundle/Gate/Archive
+                      重验；架构脚本改为检查 Git、生产源码和发布包产品面，不依赖 Runtime，也不再按物理 lstat 拒绝本地
+                      Host 安装。拒绝仅扩充 gitignore、宽泛跳过点目录、搬移目录和新增生命周期旁路。主要风险由
+                      tracked 优先、external-exclusive 规则、root
+                      containment、枚举上限、多仓归属和交叉契约测试控制；若插件体系无法安全表达
+                      Contributor、输入无法稳定内容寻址或需要 Archive 专用旁路，则停止并返回 Design。
+                    requirementsEvidence:
+                      contentHash: 2b65f6d2fb492fa3770e906968cb16d7c6cd25062224e21d20bf9674158a245f
+                      ref: openspec/changes/stabilize-host-owned-input-boundary
+                    sourceEvidence:
+                      contentHash: 39b74606238a89dd07c1e93fa32146e2a5523361d2f8395aad3f758545ef8191
+                      ref: openspec/changes/stabilize-host-owned-input-boundary
+            full.design.document:
+              designDoc: openspec/changes/stabilize-host-owned-input-boundary/design.md
+            full.design.evidence:
+              contentHash: cfaafa9cca978b19b763b9d6992f853cb39dfeaab9a4669b745007db66a754db
+              ref: openspec/changes/stabilize-host-owned-input-boundary/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-host-owned-input-boundary/.comet/handoff/design-context.json
+              handoffHash: 085ac2a9c558ab44428343492ada8a66292268edc25fc3710fadbfa4929edd43
+              proposal: 采用产品输入与执行控制面输入分区但共同绑定的方案：纯领域 Repository Input Policy 与 Cordis
+                Contributor registry 负责默认拒绝分类，具体 Host 品牌只存在于 integration
+                plugin；Git tracked 双用途文件保持产品输入，external-exclusive
+                路径进入产品面时失败；未跟踪控制面文件形成 race-safe 内容寻址 manifest，未知文件仍是 product
+                dirty；Evidence fingerprint manifest 直接升级 v2、Verification Input
+                升级 v3，并沿用现有 Bundle/Gate/Archive 重验；架构脚本改为检查 Git、生产源码和发布包产品面，不依赖
+                Runtime，也不再按物理 lstat 拒绝本地 Host 安装。拒绝仅扩充
+                gitignore、宽泛跳过点目录、搬移目录和新增生命周期旁路。主要风险由 tracked
+                优先、external-exclusive 规则、root
+                containment、枚举上限、多仓归属和交叉契约测试控制；若插件体系无法安全表达
+                Contributor、输入无法稳定内容寻址或需要 Archive 专用旁路，则停止并返回 Design。
+              requirementsEvidence:
+                contentHash: 2b65f6d2fb492fa3770e906968cb16d7c6cd25062224e21d20bf9674158a245f
+                ref: openspec/changes/stabilize-host-owned-input-boundary
+              sourceEvidence:
+                contentHash: 39b74606238a89dd07c1e93fa32146e2a5523361d2f8395aad3f758545ef8191
+                ref: openspec/changes/stabilize-host-owned-input-boundary
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-host-owned-input-boundary
+                  changeDir: openspec/changes/stabilize-host-owned-input-boundary
+                  workspaceBaseline:
+                    ref: c40b5c6b-6deb-4bd0-93a5-1d060ec32f5f
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 0393aac9843804c2149e63c62bf137e53abd3e5f9ce3b4833544cf6d953636ce
+                    ref: openspec/changes/stabilize-host-owned-input-boundary
+            full.open.evidence:
+              contentHash: 0393aac9843804c2149e63c62bf137e53abd3e5f9ce3b4833544cf6d953636ce
+              ref: openspec/changes/stabilize-host-owned-input-boundary
+            full.open.revalidate:
+              contentHash: 0393aac9843804c2149e63c62bf137e53abd3e5f9ce3b4833544cf6d953636ce
+        inputHash: 6b591244540f43fa841d20dda3a9ad6708e0a2ea187f051886dbb279b78864d9
+        outcome:
+          actionId: stabilize-host-owned-input-boundary:14
+          attempt: 2
+          claimToken: portable-0fd748141b1c5119d2ecc149d422944b5387f2cdd5550d181c47818b776cbb7f
+          inputHash: 6b591244540f43fa841d20dda3a9ad6708e0a2ea187f051886dbb279b78864d9
+          outcomeId: d1ac2b94-7478-4f20-81e4-d0c20931008b
+          output:
+            argv:
+              - npm
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: f14c74658526e210aff0be69d553cc84027eed709bb457e219ade8cc6d3b0d98
+            cwd: .
+            environment: d23d49a6b61a28588b043125697dbf24696291627d9e6f01b93c9b2c960eb5a0
+            exitCode: 1
+            inputAfter: ab0eef2d15c6ed79833d402306856555ea299b89d678be960b2ff59c3e744f69
+            inputBefore: ab0eef2d15c6ed79833d402306856555ea299b89d678be960b2ff59c3e744f69
+            manifestHash: 71655ec346967b5f50ada217a8361c099185828a54a32c5a593777b33d2ef451
+            manifestRef: .comet/runtime/classic-sdk-checks/a6e3398d1ebb371c4eab1bb5352c7d1e87ad0ffa7172a65c761a5e67014d5812/50d6cd5d-5d19-4f0d-a4f2-309117691426.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/a6e3398d1ebb371c4eab1bb5352c7d1e87ad0ffa7172a65c761a5e67014d5812/c66c4221-053e-4584-867b-8e9a1ac25e2a.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 900000
+          status: failed
+        protocolVersion: 1
+        receipts:
+          - hash: 073556846143699210f76366ff056bd18a35f9e47129c6b288a4367b32b4079d
+            outcomeId: d1ac2b94-7478-4f20-81e4-d0c20931008b
+        reconciliations:
+          - attempt: 1
+            evidence:
+              summary: The Comet check command returned CLASSIC_COMMAND_FAILED during its
+                pre-execution input snapshot because node_modules was a
+                Junction. npm was never spawned, and Comet reports the bound
+                check record, receipt, and manifest as missing. The Junction
+                itself was removed without touching its target, then npm ci
+                installed a regular worktree-local node_modules directory.
+            resolution: not-executed
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-host-owned-input-boundary
+        status: failed
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: classic-builder/stabilize-host-owned-input-boundary:15/1
+          token: portable-0562ec2be6c78a03a09250de76248b2ba10b14a9bc916db6afee75e0e88a5c89
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-host-owned-input-boundary:15
+        input:
+          input:
+            change: stabilize-host-owned-input-boundary
+            changeDir: openspec/changes/stabilize-host-owned-input-boundary
+            workspaceBaseline:
+              ref: c40b5c6b-6deb-4bd0-93a5-1d060ec32f5f
+          outputs:
+            full.build.check:
+              argv:
+                - npm
+                - run
+                - verify
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: f14c74658526e210aff0be69d553cc84027eed709bb457e219ade8cc6d3b0d98
+              cwd: .
+              environment: d23d49a6b61a28588b043125697dbf24696291627d9e6f01b93c9b2c960eb5a0
+              exitCode: 1
+              inputAfter: ab0eef2d15c6ed79833d402306856555ea299b89d678be960b2ff59c3e744f69
+              inputBefore: ab0eef2d15c6ed79833d402306856555ea299b89d678be960b2ff59c3e744f69
+              manifestHash: 71655ec346967b5f50ada217a8361c099185828a54a32c5a593777b33d2ef451
+              manifestRef: .comet/runtime/classic-sdk-checks/a6e3398d1ebb371c4eab1bb5352c7d1e87ad0ffa7172a65c761a5e67014d5812/50d6cd5d-5d19-4f0d-a4f2-309117691426.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/a6e3398d1ebb371c4eab1bb5352c7d1e87ad0ffa7172a65c761a5e67014d5812/c66c4221-053e-4584-867b-8e9a1ac25e2a.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 900000
+            full.build.configure:
+              boundBranch: codex/stabilize-host-input-boundary
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-host-owned-input-boundary
+                  changeDir: openspec/changes/stabilize-host-owned-input-boundary
+                  workspaceBaseline:
+                    ref: c40b5c6b-6deb-4bd0-93a5-1d060ec32f5f
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/stabilize-host-input-boundary
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.build.execute:
+              event: build-complete
+            full.build.plan:
+              designEvidence:
+                contentHash: cfaafa9cca978b19b763b9d6992f853cb39dfeaab9a4669b745007db66a754db
+                ref: openspec/changes/stabilize-host-owned-input-boundary/design.md
+              plan: docs/superpowers/plans/2026-11-02-stabilize-host-owned-input-boundary.md
+              planEvidence:
+                contentHash: 8b2572f4b4300b86b61fac5e9633591f13a145bde7b4df7f1eb6101bf9a5e575
+                ref: docs/superpowers/plans/2026-11-02-stabilize-host-owned-input-boundary.md
+              taskRevision: 91cc1ca54e838099c0dcfc2a0be53b78d3054d3061b8201cc9031e2e176a5a00
+            full.build.plan.evidence:
+              contentHash: 8b2572f4b4300b86b61fac5e9633591f13a145bde7b4df7f1eb6101bf9a5e575
+              ref: docs/superpowers/plans/2026-11-02-stabilize-host-owned-input-boundary.md
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-host-owned-input-boundary
+                  changeDir: openspec/changes/stabilize-host-owned-input-boundary
+                  workspaceBaseline:
+                    ref: c40b5c6b-6deb-4bd0-93a5-1d060ec32f5f
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-host-owned-input-boundary/.comet/handoff/design-context.json
+                    handoffHash: 085ac2a9c558ab44428343492ada8a66292268edc25fc3710fadbfa4929edd43
+                    proposal: 采用产品输入与执行控制面输入分区但共同绑定的方案：纯领域 Repository Input Policy 与 Cordis
+                      Contributor registry 负责默认拒绝分类，具体 Host 品牌只存在于 integration
+                      plugin；Git tracked 双用途文件保持产品输入，external-exclusive
+                      路径进入产品面时失败；未跟踪控制面文件形成 race-safe 内容寻址 manifest，未知文件仍是
+                      product dirty；Evidence fingerprint manifest 直接升级
+                      v2、Verification Input 升级 v3，并沿用现有 Bundle/Gate/Archive
+                      重验；架构脚本改为检查 Git、生产源码和发布包产品面，不依赖 Runtime，也不再按物理 lstat 拒绝本地
+                      Host 安装。拒绝仅扩充 gitignore、宽泛跳过点目录、搬移目录和新增生命周期旁路。主要风险由
+                      tracked 优先、external-exclusive 规则、root
+                      containment、枚举上限、多仓归属和交叉契约测试控制；若插件体系无法安全表达
+                      Contributor、输入无法稳定内容寻址或需要 Archive 专用旁路，则停止并返回 Design。
+                    requirementsEvidence:
+                      contentHash: 2b65f6d2fb492fa3770e906968cb16d7c6cd25062224e21d20bf9674158a245f
+                      ref: openspec/changes/stabilize-host-owned-input-boundary
+                    sourceEvidence:
+                      contentHash: 39b74606238a89dd07c1e93fa32146e2a5523361d2f8395aad3f758545ef8191
+                      ref: openspec/changes/stabilize-host-owned-input-boundary
+            full.design.document:
+              designDoc: openspec/changes/stabilize-host-owned-input-boundary/design.md
+            full.design.evidence:
+              contentHash: cfaafa9cca978b19b763b9d6992f853cb39dfeaab9a4669b745007db66a754db
+              ref: openspec/changes/stabilize-host-owned-input-boundary/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-host-owned-input-boundary/.comet/handoff/design-context.json
+              handoffHash: 085ac2a9c558ab44428343492ada8a66292268edc25fc3710fadbfa4929edd43
+              proposal: 采用产品输入与执行控制面输入分区但共同绑定的方案：纯领域 Repository Input Policy 与 Cordis
+                Contributor registry 负责默认拒绝分类，具体 Host 品牌只存在于 integration
+                plugin；Git tracked 双用途文件保持产品输入，external-exclusive
+                路径进入产品面时失败；未跟踪控制面文件形成 race-safe 内容寻址 manifest，未知文件仍是 product
+                dirty；Evidence fingerprint manifest 直接升级 v2、Verification Input
+                升级 v3，并沿用现有 Bundle/Gate/Archive 重验；架构脚本改为检查 Git、生产源码和发布包产品面，不依赖
+                Runtime，也不再按物理 lstat 拒绝本地 Host 安装。拒绝仅扩充
+                gitignore、宽泛跳过点目录、搬移目录和新增生命周期旁路。主要风险由 tracked
+                优先、external-exclusive 规则、root
+                containment、枚举上限、多仓归属和交叉契约测试控制；若插件体系无法安全表达
+                Contributor、输入无法稳定内容寻址或需要 Archive 专用旁路，则停止并返回 Design。
+              requirementsEvidence:
+                contentHash: 2b65f6d2fb492fa3770e906968cb16d7c6cd25062224e21d20bf9674158a245f
+                ref: openspec/changes/stabilize-host-owned-input-boundary
+              sourceEvidence:
+                contentHash: 39b74606238a89dd07c1e93fa32146e2a5523361d2f8395aad3f758545ef8191
+                ref: openspec/changes/stabilize-host-owned-input-boundary
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-host-owned-input-boundary
+                  changeDir: openspec/changes/stabilize-host-owned-input-boundary
+                  workspaceBaseline:
+                    ref: c40b5c6b-6deb-4bd0-93a5-1d060ec32f5f
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 0393aac9843804c2149e63c62bf137e53abd3e5f9ce3b4833544cf6d953636ce
+                    ref: openspec/changes/stabilize-host-owned-input-boundary
+            full.open.evidence:
+              contentHash: 0393aac9843804c2149e63c62bf137e53abd3e5f9ce3b4833544cf6d953636ce
+              ref: openspec/changes/stabilize-host-owned-input-boundary
+            full.open.revalidate:
+              contentHash: 0393aac9843804c2149e63c62bf137e53abd3e5f9ce3b4833544cf6d953636ce
+        inputHash: e1075db66489cefce1f6321f3b70c88ec5b2ebd79aa0104241912c290ba9e958
+        outcome:
+          actionId: stabilize-host-owned-input-boundary:15
+          attempt: 1
+          claimToken: portable-0562ec2be6c78a03a09250de76248b2ba10b14a9bc916db6afee75e0e88a5c89
+          inputHash: e1075db66489cefce1f6321f3b70c88ec5b2ebd79aa0104241912c290ba9e958
+          outcomeId: bd9d4924-fd7b-421a-bc03-435961ecf3e7
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 6c9ffa5b67f49edc247329d0b9d030ef491825023e1cb1e2fc7e9c04b6b85c42
+            outcomeId: bd9d4924-fd7b-421a-bc03-435961ecf3e7
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-host-owned-input-boundary
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-521893309887ac5309fe8b7ff5793b1f4ab73b302bb02c73a2ed4cf41c3d562c
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-host-owned-input-boundary:16
+        input:
+          input:
+            change: stabilize-host-owned-input-boundary
+            changeDir: openspec/changes/stabilize-host-owned-input-boundary
+            workspaceBaseline:
+              ref: c40b5c6b-6deb-4bd0-93a5-1d060ec32f5f
+          outputs:
+            full.build.check:
+              argv:
+                - npm
+                - run
+                - verify
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: f14c74658526e210aff0be69d553cc84027eed709bb457e219ade8cc6d3b0d98
+              cwd: .
+              environment: d23d49a6b61a28588b043125697dbf24696291627d9e6f01b93c9b2c960eb5a0
+              exitCode: 1
+              inputAfter: ab0eef2d15c6ed79833d402306856555ea299b89d678be960b2ff59c3e744f69
+              inputBefore: ab0eef2d15c6ed79833d402306856555ea299b89d678be960b2ff59c3e744f69
+              manifestHash: 71655ec346967b5f50ada217a8361c099185828a54a32c5a593777b33d2ef451
+              manifestRef: .comet/runtime/classic-sdk-checks/a6e3398d1ebb371c4eab1bb5352c7d1e87ad0ffa7172a65c761a5e67014d5812/50d6cd5d-5d19-4f0d-a4f2-309117691426.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/a6e3398d1ebb371c4eab1bb5352c7d1e87ad0ffa7172a65c761a5e67014d5812/c66c4221-053e-4584-867b-8e9a1ac25e2a.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 900000
+            full.build.configure:
+              boundBranch: codex/stabilize-host-input-boundary
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-host-owned-input-boundary
+                  changeDir: openspec/changes/stabilize-host-owned-input-boundary
+                  workspaceBaseline:
+                    ref: c40b5c6b-6deb-4bd0-93a5-1d060ec32f5f
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/stabilize-host-input-boundary
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.build.execute:
+              event: build-complete
+            full.build.plan:
+              designEvidence:
+                contentHash: cfaafa9cca978b19b763b9d6992f853cb39dfeaab9a4669b745007db66a754db
+                ref: openspec/changes/stabilize-host-owned-input-boundary/design.md
+              plan: docs/superpowers/plans/2026-11-02-stabilize-host-owned-input-boundary.md
+              planEvidence:
+                contentHash: 8b2572f4b4300b86b61fac5e9633591f13a145bde7b4df7f1eb6101bf9a5e575
+                ref: docs/superpowers/plans/2026-11-02-stabilize-host-owned-input-boundary.md
+              taskRevision: 91cc1ca54e838099c0dcfc2a0be53b78d3054d3061b8201cc9031e2e176a5a00
+            full.build.plan.evidence:
+              contentHash: 8b2572f4b4300b86b61fac5e9633591f13a145bde7b4df7f1eb6101bf9a5e575
+              ref: docs/superpowers/plans/2026-11-02-stabilize-host-owned-input-boundary.md
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-host-owned-input-boundary
+                  changeDir: openspec/changes/stabilize-host-owned-input-boundary
+                  workspaceBaseline:
+                    ref: c40b5c6b-6deb-4bd0-93a5-1d060ec32f5f
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-host-owned-input-boundary/.comet/handoff/design-context.json
+                    handoffHash: 085ac2a9c558ab44428343492ada8a66292268edc25fc3710fadbfa4929edd43
+                    proposal: 采用产品输入与执行控制面输入分区但共同绑定的方案：纯领域 Repository Input Policy 与 Cordis
+                      Contributor registry 负责默认拒绝分类，具体 Host 品牌只存在于 integration
+                      plugin；Git tracked 双用途文件保持产品输入，external-exclusive
+                      路径进入产品面时失败；未跟踪控制面文件形成 race-safe 内容寻址 manifest，未知文件仍是
+                      product dirty；Evidence fingerprint manifest 直接升级
+                      v2、Verification Input 升级 v3，并沿用现有 Bundle/Gate/Archive
+                      重验；架构脚本改为检查 Git、生产源码和发布包产品面，不依赖 Runtime，也不再按物理 lstat 拒绝本地
+                      Host 安装。拒绝仅扩充 gitignore、宽泛跳过点目录、搬移目录和新增生命周期旁路。主要风险由
+                      tracked 优先、external-exclusive 规则、root
+                      containment、枚举上限、多仓归属和交叉契约测试控制；若插件体系无法安全表达
+                      Contributor、输入无法稳定内容寻址或需要 Archive 专用旁路，则停止并返回 Design。
+                    requirementsEvidence:
+                      contentHash: 2b65f6d2fb492fa3770e906968cb16d7c6cd25062224e21d20bf9674158a245f
+                      ref: openspec/changes/stabilize-host-owned-input-boundary
+                    sourceEvidence:
+                      contentHash: 39b74606238a89dd07c1e93fa32146e2a5523361d2f8395aad3f758545ef8191
+                      ref: openspec/changes/stabilize-host-owned-input-boundary
+            full.design.document:
+              designDoc: openspec/changes/stabilize-host-owned-input-boundary/design.md
+            full.design.evidence:
+              contentHash: cfaafa9cca978b19b763b9d6992f853cb39dfeaab9a4669b745007db66a754db
+              ref: openspec/changes/stabilize-host-owned-input-boundary/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-host-owned-input-boundary/.comet/handoff/design-context.json
+              handoffHash: 085ac2a9c558ab44428343492ada8a66292268edc25fc3710fadbfa4929edd43
+              proposal: 采用产品输入与执行控制面输入分区但共同绑定的方案：纯领域 Repository Input Policy 与 Cordis
+                Contributor registry 负责默认拒绝分类，具体 Host 品牌只存在于 integration
+                plugin；Git tracked 双用途文件保持产品输入，external-exclusive
+                路径进入产品面时失败；未跟踪控制面文件形成 race-safe 内容寻址 manifest，未知文件仍是 product
+                dirty；Evidence fingerprint manifest 直接升级 v2、Verification Input
+                升级 v3，并沿用现有 Bundle/Gate/Archive 重验；架构脚本改为检查 Git、生产源码和发布包产品面，不依赖
+                Runtime，也不再按物理 lstat 拒绝本地 Host 安装。拒绝仅扩充
+                gitignore、宽泛跳过点目录、搬移目录和新增生命周期旁路。主要风险由 tracked
+                优先、external-exclusive 规则、root
+                containment、枚举上限、多仓归属和交叉契约测试控制；若插件体系无法安全表达
+                Contributor、输入无法稳定内容寻址或需要 Archive 专用旁路，则停止并返回 Design。
+              requirementsEvidence:
+                contentHash: 2b65f6d2fb492fa3770e906968cb16d7c6cd25062224e21d20bf9674158a245f
+                ref: openspec/changes/stabilize-host-owned-input-boundary
+              sourceEvidence:
+                contentHash: 39b74606238a89dd07c1e93fa32146e2a5523361d2f8395aad3f758545ef8191
+                ref: openspec/changes/stabilize-host-owned-input-boundary
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-host-owned-input-boundary
+                  changeDir: openspec/changes/stabilize-host-owned-input-boundary
+                  workspaceBaseline:
+                    ref: c40b5c6b-6deb-4bd0-93a5-1d060ec32f5f
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 0393aac9843804c2149e63c62bf137e53abd3e5f9ce3b4833544cf6d953636ce
+                    ref: openspec/changes/stabilize-host-owned-input-boundary
+            full.open.evidence:
+              contentHash: 0393aac9843804c2149e63c62bf137e53abd3e5f9ce3b4833544cf6d953636ce
+              ref: openspec/changes/stabilize-host-owned-input-boundary
+            full.open.revalidate:
+              contentHash: 0393aac9843804c2149e63c62bf137e53abd3e5f9ce3b4833544cf6d953636ce
+        inputHash: e1075db66489cefce1f6321f3b70c88ec5b2ebd79aa0104241912c290ba9e958
+        outcome:
+          actionId: stabilize-host-owned-input-boundary:16
+          attempt: 1
+          claimToken: portable-521893309887ac5309fe8b7ff5793b1f4ab73b302bb02c73a2ed4cf41c3d562c
+          inputHash: e1075db66489cefce1f6321f3b70c88ec5b2ebd79aa0104241912c290ba9e958
+          outcomeId: f16f0f0d-c102-4d9d-b602-de0d21d11800
+          output:
+            argv:
+              - npm
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: 1a73a2b3115bc36bcf81c7860b5d29d66a02ae0aaaaf5ba787c35cc794cf04f8
+            cwd: .
+            environment: d23d49a6b61a28588b043125697dbf24696291627d9e6f01b93c9b2c960eb5a0
+            exitCode: 1
+            inputAfter: ab0eef2d15c6ed79833d402306856555ea299b89d678be960b2ff59c3e744f69
+            inputBefore: ab0eef2d15c6ed79833d402306856555ea299b89d678be960b2ff59c3e744f69
+            manifestHash: 71655ec346967b5f50ada217a8361c099185828a54a32c5a593777b33d2ef451
+            manifestRef: .comet/runtime/classic-sdk-checks/a6e3398d1ebb371c4eab1bb5352c7d1e87ad0ffa7172a65c761a5e67014d5812/caad6f5f-80ee-47ea-838a-f011728ee075.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/a6e3398d1ebb371c4eab1bb5352c7d1e87ad0ffa7172a65c761a5e67014d5812/101b8b15-5c51-436d-a7dc-d65beb0f8892.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 900000
+          status: failed
+        protocolVersion: 1
+        receipts:
+          - hash: 92cb01b2b563c4f0b5c1b1eab0eb09de3094bc4f65177c7a3e8d198f105d71f4
+            outcomeId: f16f0f0d-c102-4d9d-b602-de0d21d11800
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-host-owned-input-boundary
+        status: failed
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        id: stabilize-host-owned-input-boundary:17
+        input:
+          input:
+            change: stabilize-host-owned-input-boundary
+            changeDir: openspec/changes/stabilize-host-owned-input-boundary
+            workspaceBaseline:
+              ref: c40b5c6b-6deb-4bd0-93a5-1d060ec32f5f
+          outputs:
+            full.build.check:
+              argv:
+                - npm
+                - run
+                - verify
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 1a73a2b3115bc36bcf81c7860b5d29d66a02ae0aaaaf5ba787c35cc794cf04f8
+              cwd: .
+              environment: d23d49a6b61a28588b043125697dbf24696291627d9e6f01b93c9b2c960eb5a0
+              exitCode: 1
+              inputAfter: ab0eef2d15c6ed79833d402306856555ea299b89d678be960b2ff59c3e744f69
+              inputBefore: ab0eef2d15c6ed79833d402306856555ea299b89d678be960b2ff59c3e744f69
+              manifestHash: 71655ec346967b5f50ada217a8361c099185828a54a32c5a593777b33d2ef451
+              manifestRef: .comet/runtime/classic-sdk-checks/a6e3398d1ebb371c4eab1bb5352c7d1e87ad0ffa7172a65c761a5e67014d5812/caad6f5f-80ee-47ea-838a-f011728ee075.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/a6e3398d1ebb371c4eab1bb5352c7d1e87ad0ffa7172a65c761a5e67014d5812/101b8b15-5c51-436d-a7dc-d65beb0f8892.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 900000
+            full.build.configure:
+              boundBranch: codex/stabilize-host-input-boundary
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-host-owned-input-boundary
+                  changeDir: openspec/changes/stabilize-host-owned-input-boundary
+                  workspaceBaseline:
+                    ref: c40b5c6b-6deb-4bd0-93a5-1d060ec32f5f
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/stabilize-host-input-boundary
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.build.execute:
+              event: build-complete
+            full.build.plan:
+              designEvidence:
+                contentHash: cfaafa9cca978b19b763b9d6992f853cb39dfeaab9a4669b745007db66a754db
+                ref: openspec/changes/stabilize-host-owned-input-boundary/design.md
+              plan: docs/superpowers/plans/2026-11-02-stabilize-host-owned-input-boundary.md
+              planEvidence:
+                contentHash: 8b2572f4b4300b86b61fac5e9633591f13a145bde7b4df7f1eb6101bf9a5e575
+                ref: docs/superpowers/plans/2026-11-02-stabilize-host-owned-input-boundary.md
+              taskRevision: 91cc1ca54e838099c0dcfc2a0be53b78d3054d3061b8201cc9031e2e176a5a00
+            full.build.plan.evidence:
+              contentHash: 8b2572f4b4300b86b61fac5e9633591f13a145bde7b4df7f1eb6101bf9a5e575
+              ref: docs/superpowers/plans/2026-11-02-stabilize-host-owned-input-boundary.md
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-host-owned-input-boundary
+                  changeDir: openspec/changes/stabilize-host-owned-input-boundary
+                  workspaceBaseline:
+                    ref: c40b5c6b-6deb-4bd0-93a5-1d060ec32f5f
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-host-owned-input-boundary/.comet/handoff/design-context.json
+                    handoffHash: 085ac2a9c558ab44428343492ada8a66292268edc25fc3710fadbfa4929edd43
+                    proposal: 采用产品输入与执行控制面输入分区但共同绑定的方案：纯领域 Repository Input Policy 与 Cordis
+                      Contributor registry 负责默认拒绝分类，具体 Host 品牌只存在于 integration
+                      plugin；Git tracked 双用途文件保持产品输入，external-exclusive
+                      路径进入产品面时失败；未跟踪控制面文件形成 race-safe 内容寻址 manifest，未知文件仍是
+                      product dirty；Evidence fingerprint manifest 直接升级
+                      v2、Verification Input 升级 v3，并沿用现有 Bundle/Gate/Archive
+                      重验；架构脚本改为检查 Git、生产源码和发布包产品面，不依赖 Runtime，也不再按物理 lstat 拒绝本地
+                      Host 安装。拒绝仅扩充 gitignore、宽泛跳过点目录、搬移目录和新增生命周期旁路。主要风险由
+                      tracked 优先、external-exclusive 规则、root
+                      containment、枚举上限、多仓归属和交叉契约测试控制；若插件体系无法安全表达
+                      Contributor、输入无法稳定内容寻址或需要 Archive 专用旁路，则停止并返回 Design。
+                    requirementsEvidence:
+                      contentHash: 2b65f6d2fb492fa3770e906968cb16d7c6cd25062224e21d20bf9674158a245f
+                      ref: openspec/changes/stabilize-host-owned-input-boundary
+                    sourceEvidence:
+                      contentHash: 39b74606238a89dd07c1e93fa32146e2a5523361d2f8395aad3f758545ef8191
+                      ref: openspec/changes/stabilize-host-owned-input-boundary
+            full.design.document:
+              designDoc: openspec/changes/stabilize-host-owned-input-boundary/design.md
+            full.design.evidence:
+              contentHash: cfaafa9cca978b19b763b9d6992f853cb39dfeaab9a4669b745007db66a754db
+              ref: openspec/changes/stabilize-host-owned-input-boundary/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-host-owned-input-boundary/.comet/handoff/design-context.json
+              handoffHash: 085ac2a9c558ab44428343492ada8a66292268edc25fc3710fadbfa4929edd43
+              proposal: 采用产品输入与执行控制面输入分区但共同绑定的方案：纯领域 Repository Input Policy 与 Cordis
+                Contributor registry 负责默认拒绝分类，具体 Host 品牌只存在于 integration
+                plugin；Git tracked 双用途文件保持产品输入，external-exclusive
+                路径进入产品面时失败；未跟踪控制面文件形成 race-safe 内容寻址 manifest，未知文件仍是 product
+                dirty；Evidence fingerprint manifest 直接升级 v2、Verification Input
+                升级 v3，并沿用现有 Bundle/Gate/Archive 重验；架构脚本改为检查 Git、生产源码和发布包产品面，不依赖
+                Runtime，也不再按物理 lstat 拒绝本地 Host 安装。拒绝仅扩充
+                gitignore、宽泛跳过点目录、搬移目录和新增生命周期旁路。主要风险由 tracked
+                优先、external-exclusive 规则、root
+                containment、枚举上限、多仓归属和交叉契约测试控制；若插件体系无法安全表达
+                Contributor、输入无法稳定内容寻址或需要 Archive 专用旁路，则停止并返回 Design。
+              requirementsEvidence:
+                contentHash: 2b65f6d2fb492fa3770e906968cb16d7c6cd25062224e21d20bf9674158a245f
+                ref: openspec/changes/stabilize-host-owned-input-boundary
+              sourceEvidence:
+                contentHash: 39b74606238a89dd07c1e93fa32146e2a5523361d2f8395aad3f758545ef8191
+                ref: openspec/changes/stabilize-host-owned-input-boundary
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-host-owned-input-boundary
+                  changeDir: openspec/changes/stabilize-host-owned-input-boundary
+                  workspaceBaseline:
+                    ref: c40b5c6b-6deb-4bd0-93a5-1d060ec32f5f
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 0393aac9843804c2149e63c62bf137e53abd3e5f9ce3b4833544cf6d953636ce
+                    ref: openspec/changes/stabilize-host-owned-input-boundary
+            full.open.evidence:
+              contentHash: 0393aac9843804c2149e63c62bf137e53abd3e5f9ce3b4833544cf6d953636ce
+              ref: openspec/changes/stabilize-host-owned-input-boundary
+            full.open.revalidate:
+              contentHash: 0393aac9843804c2149e63c62bf137e53abd3e5f9ce3b4833544cf6d953636ce
+        inputHash: c4989bbbafb886fd89050a66686ff60de88b3102c96ddb7e42b668a58a17c1cf
         protocolVersion: 1
         receipts: []
         reconciliations: []
@@ -1031,6 +1755,647 @@ run_checkpoint:
             value:
               contentHash: 0393aac9843804c2149e63c62bf137e53abd3e5f9ce3b4833544cf6d953636ce
         sequence: 13
+      stabilize-host-owned-input-boundary:14:
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/stabilize-host-input-boundary
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-host-owned-input-boundary
+                  changeDir: openspec/changes/stabilize-host-owned-input-boundary
+                  workspaceBaseline:
+                    ref: c40b5c6b-6deb-4bd0-93a5-1d060ec32f5f
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/stabilize-host-input-boundary
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.execute:
+            sequence: 13
+            value:
+              event: build-complete
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: cfaafa9cca978b19b763b9d6992f853cb39dfeaab9a4669b745007db66a754db
+                ref: openspec/changes/stabilize-host-owned-input-boundary/design.md
+              plan: docs/superpowers/plans/2026-11-02-stabilize-host-owned-input-boundary.md
+              planEvidence:
+                contentHash: 8b2572f4b4300b86b61fac5e9633591f13a145bde7b4df7f1eb6101bf9a5e575
+                ref: docs/superpowers/plans/2026-11-02-stabilize-host-owned-input-boundary.md
+              taskRevision: 91cc1ca54e838099c0dcfc2a0be53b78d3054d3061b8201cc9031e2e176a5a00
+          full.build.plan.evidence:
+            sequence: 12
+            value:
+              contentHash: 8b2572f4b4300b86b61fac5e9633591f13a145bde7b4df7f1eb6101bf9a5e575
+              ref: docs/superpowers/plans/2026-11-02-stabilize-host-owned-input-boundary.md
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-host-owned-input-boundary
+                  changeDir: openspec/changes/stabilize-host-owned-input-boundary
+                  workspaceBaseline:
+                    ref: c40b5c6b-6deb-4bd0-93a5-1d060ec32f5f
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-host-owned-input-boundary/.comet/handoff/design-context.json
+                    handoffHash: 085ac2a9c558ab44428343492ada8a66292268edc25fc3710fadbfa4929edd43
+                    proposal: 采用产品输入与执行控制面输入分区但共同绑定的方案：纯领域 Repository Input Policy 与 Cordis
+                      Contributor registry 负责默认拒绝分类，具体 Host 品牌只存在于 integration
+                      plugin；Git tracked 双用途文件保持产品输入，external-exclusive
+                      路径进入产品面时失败；未跟踪控制面文件形成 race-safe 内容寻址 manifest，未知文件仍是
+                      product dirty；Evidence fingerprint manifest 直接升级
+                      v2、Verification Input 升级 v3，并沿用现有 Bundle/Gate/Archive
+                      重验；架构脚本改为检查 Git、生产源码和发布包产品面，不依赖 Runtime，也不再按物理 lstat 拒绝本地
+                      Host 安装。拒绝仅扩充 gitignore、宽泛跳过点目录、搬移目录和新增生命周期旁路。主要风险由
+                      tracked 优先、external-exclusive 规则、root
+                      containment、枚举上限、多仓归属和交叉契约测试控制；若插件体系无法安全表达
+                      Contributor、输入无法稳定内容寻址或需要 Archive 专用旁路，则停止并返回 Design。
+                    requirementsEvidence:
+                      contentHash: 2b65f6d2fb492fa3770e906968cb16d7c6cd25062224e21d20bf9674158a245f
+                      ref: openspec/changes/stabilize-host-owned-input-boundary
+                    sourceEvidence:
+                      contentHash: 39b74606238a89dd07c1e93fa32146e2a5523361d2f8395aad3f758545ef8191
+                      ref: openspec/changes/stabilize-host-owned-input-boundary
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/stabilize-host-owned-input-boundary/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: cfaafa9cca978b19b763b9d6992f853cb39dfeaab9a4669b745007db66a754db
+              ref: openspec/changes/stabilize-host-owned-input-boundary/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/stabilize-host-owned-input-boundary/.comet/handoff/design-context.json
+              handoffHash: 085ac2a9c558ab44428343492ada8a66292268edc25fc3710fadbfa4929edd43
+              proposal: 采用产品输入与执行控制面输入分区但共同绑定的方案：纯领域 Repository Input Policy 与 Cordis
+                Contributor registry 负责默认拒绝分类，具体 Host 品牌只存在于 integration
+                plugin；Git tracked 双用途文件保持产品输入，external-exclusive
+                路径进入产品面时失败；未跟踪控制面文件形成 race-safe 内容寻址 manifest，未知文件仍是 product
+                dirty；Evidence fingerprint manifest 直接升级 v2、Verification Input
+                升级 v3，并沿用现有 Bundle/Gate/Archive 重验；架构脚本改为检查 Git、生产源码和发布包产品面，不依赖
+                Runtime，也不再按物理 lstat 拒绝本地 Host 安装。拒绝仅扩充
+                gitignore、宽泛跳过点目录、搬移目录和新增生命周期旁路。主要风险由 tracked
+                优先、external-exclusive 规则、root
+                containment、枚举上限、多仓归属和交叉契约测试控制；若插件体系无法安全表达
+                Contributor、输入无法稳定内容寻址或需要 Archive 专用旁路，则停止并返回 Design。
+              requirementsEvidence:
+                contentHash: 2b65f6d2fb492fa3770e906968cb16d7c6cd25062224e21d20bf9674158a245f
+                ref: openspec/changes/stabilize-host-owned-input-boundary
+              sourceEvidence:
+                contentHash: 39b74606238a89dd07c1e93fa32146e2a5523361d2f8395aad3f758545ef8191
+                ref: openspec/changes/stabilize-host-owned-input-boundary
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-host-owned-input-boundary
+                  changeDir: openspec/changes/stabilize-host-owned-input-boundary
+                  workspaceBaseline:
+                    ref: c40b5c6b-6deb-4bd0-93a5-1d060ec32f5f
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 0393aac9843804c2149e63c62bf137e53abd3e5f9ce3b4833544cf6d953636ce
+                    ref: openspec/changes/stabilize-host-owned-input-boundary
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 0393aac9843804c2149e63c62bf137e53abd3e5f9ce3b4833544cf6d953636ce
+              ref: openspec/changes/stabilize-host-owned-input-boundary
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 0393aac9843804c2149e63c62bf137e53abd3e5f9ce3b4833544cf6d953636ce
+        sequence: 14
+      stabilize-host-owned-input-boundary:15:
+        results:
+          full.build.check:
+            sequence: 14
+            value:
+              argv:
+                - npm
+                - run
+                - verify
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: f14c74658526e210aff0be69d553cc84027eed709bb457e219ade8cc6d3b0d98
+              cwd: .
+              environment: d23d49a6b61a28588b043125697dbf24696291627d9e6f01b93c9b2c960eb5a0
+              exitCode: 1
+              inputAfter: ab0eef2d15c6ed79833d402306856555ea299b89d678be960b2ff59c3e744f69
+              inputBefore: ab0eef2d15c6ed79833d402306856555ea299b89d678be960b2ff59c3e744f69
+              manifestHash: 71655ec346967b5f50ada217a8361c099185828a54a32c5a593777b33d2ef451
+              manifestRef: .comet/runtime/classic-sdk-checks/a6e3398d1ebb371c4eab1bb5352c7d1e87ad0ffa7172a65c761a5e67014d5812/50d6cd5d-5d19-4f0d-a4f2-309117691426.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/a6e3398d1ebb371c4eab1bb5352c7d1e87ad0ffa7172a65c761a5e67014d5812/c66c4221-053e-4584-867b-8e9a1ac25e2a.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 900000
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/stabilize-host-input-boundary
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-host-owned-input-boundary
+                  changeDir: openspec/changes/stabilize-host-owned-input-boundary
+                  workspaceBaseline:
+                    ref: c40b5c6b-6deb-4bd0-93a5-1d060ec32f5f
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/stabilize-host-input-boundary
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.execute:
+            sequence: 13
+            value:
+              event: build-complete
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: cfaafa9cca978b19b763b9d6992f853cb39dfeaab9a4669b745007db66a754db
+                ref: openspec/changes/stabilize-host-owned-input-boundary/design.md
+              plan: docs/superpowers/plans/2026-11-02-stabilize-host-owned-input-boundary.md
+              planEvidence:
+                contentHash: 8b2572f4b4300b86b61fac5e9633591f13a145bde7b4df7f1eb6101bf9a5e575
+                ref: docs/superpowers/plans/2026-11-02-stabilize-host-owned-input-boundary.md
+              taskRevision: 91cc1ca54e838099c0dcfc2a0be53b78d3054d3061b8201cc9031e2e176a5a00
+          full.build.plan.evidence:
+            sequence: 12
+            value:
+              contentHash: 8b2572f4b4300b86b61fac5e9633591f13a145bde7b4df7f1eb6101bf9a5e575
+              ref: docs/superpowers/plans/2026-11-02-stabilize-host-owned-input-boundary.md
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-host-owned-input-boundary
+                  changeDir: openspec/changes/stabilize-host-owned-input-boundary
+                  workspaceBaseline:
+                    ref: c40b5c6b-6deb-4bd0-93a5-1d060ec32f5f
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-host-owned-input-boundary/.comet/handoff/design-context.json
+                    handoffHash: 085ac2a9c558ab44428343492ada8a66292268edc25fc3710fadbfa4929edd43
+                    proposal: 采用产品输入与执行控制面输入分区但共同绑定的方案：纯领域 Repository Input Policy 与 Cordis
+                      Contributor registry 负责默认拒绝分类，具体 Host 品牌只存在于 integration
+                      plugin；Git tracked 双用途文件保持产品输入，external-exclusive
+                      路径进入产品面时失败；未跟踪控制面文件形成 race-safe 内容寻址 manifest，未知文件仍是
+                      product dirty；Evidence fingerprint manifest 直接升级
+                      v2、Verification Input 升级 v3，并沿用现有 Bundle/Gate/Archive
+                      重验；架构脚本改为检查 Git、生产源码和发布包产品面，不依赖 Runtime，也不再按物理 lstat 拒绝本地
+                      Host 安装。拒绝仅扩充 gitignore、宽泛跳过点目录、搬移目录和新增生命周期旁路。主要风险由
+                      tracked 优先、external-exclusive 规则、root
+                      containment、枚举上限、多仓归属和交叉契约测试控制；若插件体系无法安全表达
+                      Contributor、输入无法稳定内容寻址或需要 Archive 专用旁路，则停止并返回 Design。
+                    requirementsEvidence:
+                      contentHash: 2b65f6d2fb492fa3770e906968cb16d7c6cd25062224e21d20bf9674158a245f
+                      ref: openspec/changes/stabilize-host-owned-input-boundary
+                    sourceEvidence:
+                      contentHash: 39b74606238a89dd07c1e93fa32146e2a5523361d2f8395aad3f758545ef8191
+                      ref: openspec/changes/stabilize-host-owned-input-boundary
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/stabilize-host-owned-input-boundary/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: cfaafa9cca978b19b763b9d6992f853cb39dfeaab9a4669b745007db66a754db
+              ref: openspec/changes/stabilize-host-owned-input-boundary/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/stabilize-host-owned-input-boundary/.comet/handoff/design-context.json
+              handoffHash: 085ac2a9c558ab44428343492ada8a66292268edc25fc3710fadbfa4929edd43
+              proposal: 采用产品输入与执行控制面输入分区但共同绑定的方案：纯领域 Repository Input Policy 与 Cordis
+                Contributor registry 负责默认拒绝分类，具体 Host 品牌只存在于 integration
+                plugin；Git tracked 双用途文件保持产品输入，external-exclusive
+                路径进入产品面时失败；未跟踪控制面文件形成 race-safe 内容寻址 manifest，未知文件仍是 product
+                dirty；Evidence fingerprint manifest 直接升级 v2、Verification Input
+                升级 v3，并沿用现有 Bundle/Gate/Archive 重验；架构脚本改为检查 Git、生产源码和发布包产品面，不依赖
+                Runtime，也不再按物理 lstat 拒绝本地 Host 安装。拒绝仅扩充
+                gitignore、宽泛跳过点目录、搬移目录和新增生命周期旁路。主要风险由 tracked
+                优先、external-exclusive 规则、root
+                containment、枚举上限、多仓归属和交叉契约测试控制；若插件体系无法安全表达
+                Contributor、输入无法稳定内容寻址或需要 Archive 专用旁路，则停止并返回 Design。
+              requirementsEvidence:
+                contentHash: 2b65f6d2fb492fa3770e906968cb16d7c6cd25062224e21d20bf9674158a245f
+                ref: openspec/changes/stabilize-host-owned-input-boundary
+              sourceEvidence:
+                contentHash: 39b74606238a89dd07c1e93fa32146e2a5523361d2f8395aad3f758545ef8191
+                ref: openspec/changes/stabilize-host-owned-input-boundary
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-host-owned-input-boundary
+                  changeDir: openspec/changes/stabilize-host-owned-input-boundary
+                  workspaceBaseline:
+                    ref: c40b5c6b-6deb-4bd0-93a5-1d060ec32f5f
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 0393aac9843804c2149e63c62bf137e53abd3e5f9ce3b4833544cf6d953636ce
+                    ref: openspec/changes/stabilize-host-owned-input-boundary
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 0393aac9843804c2149e63c62bf137e53abd3e5f9ce3b4833544cf6d953636ce
+              ref: openspec/changes/stabilize-host-owned-input-boundary
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 0393aac9843804c2149e63c62bf137e53abd3e5f9ce3b4833544cf6d953636ce
+        sequence: 15
+      stabilize-host-owned-input-boundary:16:
+        results:
+          full.build.check:
+            sequence: 14
+            value:
+              argv:
+                - npm
+                - run
+                - verify
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: f14c74658526e210aff0be69d553cc84027eed709bb457e219ade8cc6d3b0d98
+              cwd: .
+              environment: d23d49a6b61a28588b043125697dbf24696291627d9e6f01b93c9b2c960eb5a0
+              exitCode: 1
+              inputAfter: ab0eef2d15c6ed79833d402306856555ea299b89d678be960b2ff59c3e744f69
+              inputBefore: ab0eef2d15c6ed79833d402306856555ea299b89d678be960b2ff59c3e744f69
+              manifestHash: 71655ec346967b5f50ada217a8361c099185828a54a32c5a593777b33d2ef451
+              manifestRef: .comet/runtime/classic-sdk-checks/a6e3398d1ebb371c4eab1bb5352c7d1e87ad0ffa7172a65c761a5e67014d5812/50d6cd5d-5d19-4f0d-a4f2-309117691426.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/a6e3398d1ebb371c4eab1bb5352c7d1e87ad0ffa7172a65c761a5e67014d5812/c66c4221-053e-4584-867b-8e9a1ac25e2a.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 900000
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/stabilize-host-input-boundary
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-host-owned-input-boundary
+                  changeDir: openspec/changes/stabilize-host-owned-input-boundary
+                  workspaceBaseline:
+                    ref: c40b5c6b-6deb-4bd0-93a5-1d060ec32f5f
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/stabilize-host-input-boundary
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.execute:
+            sequence: 15
+            value:
+              event: build-complete
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: cfaafa9cca978b19b763b9d6992f853cb39dfeaab9a4669b745007db66a754db
+                ref: openspec/changes/stabilize-host-owned-input-boundary/design.md
+              plan: docs/superpowers/plans/2026-11-02-stabilize-host-owned-input-boundary.md
+              planEvidence:
+                contentHash: 8b2572f4b4300b86b61fac5e9633591f13a145bde7b4df7f1eb6101bf9a5e575
+                ref: docs/superpowers/plans/2026-11-02-stabilize-host-owned-input-boundary.md
+              taskRevision: 91cc1ca54e838099c0dcfc2a0be53b78d3054d3061b8201cc9031e2e176a5a00
+          full.build.plan.evidence:
+            sequence: 12
+            value:
+              contentHash: 8b2572f4b4300b86b61fac5e9633591f13a145bde7b4df7f1eb6101bf9a5e575
+              ref: docs/superpowers/plans/2026-11-02-stabilize-host-owned-input-boundary.md
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-host-owned-input-boundary
+                  changeDir: openspec/changes/stabilize-host-owned-input-boundary
+                  workspaceBaseline:
+                    ref: c40b5c6b-6deb-4bd0-93a5-1d060ec32f5f
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-host-owned-input-boundary/.comet/handoff/design-context.json
+                    handoffHash: 085ac2a9c558ab44428343492ada8a66292268edc25fc3710fadbfa4929edd43
+                    proposal: 采用产品输入与执行控制面输入分区但共同绑定的方案：纯领域 Repository Input Policy 与 Cordis
+                      Contributor registry 负责默认拒绝分类，具体 Host 品牌只存在于 integration
+                      plugin；Git tracked 双用途文件保持产品输入，external-exclusive
+                      路径进入产品面时失败；未跟踪控制面文件形成 race-safe 内容寻址 manifest，未知文件仍是
+                      product dirty；Evidence fingerprint manifest 直接升级
+                      v2、Verification Input 升级 v3，并沿用现有 Bundle/Gate/Archive
+                      重验；架构脚本改为检查 Git、生产源码和发布包产品面，不依赖 Runtime，也不再按物理 lstat 拒绝本地
+                      Host 安装。拒绝仅扩充 gitignore、宽泛跳过点目录、搬移目录和新增生命周期旁路。主要风险由
+                      tracked 优先、external-exclusive 规则、root
+                      containment、枚举上限、多仓归属和交叉契约测试控制；若插件体系无法安全表达
+                      Contributor、输入无法稳定内容寻址或需要 Archive 专用旁路，则停止并返回 Design。
+                    requirementsEvidence:
+                      contentHash: 2b65f6d2fb492fa3770e906968cb16d7c6cd25062224e21d20bf9674158a245f
+                      ref: openspec/changes/stabilize-host-owned-input-boundary
+                    sourceEvidence:
+                      contentHash: 39b74606238a89dd07c1e93fa32146e2a5523361d2f8395aad3f758545ef8191
+                      ref: openspec/changes/stabilize-host-owned-input-boundary
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/stabilize-host-owned-input-boundary/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: cfaafa9cca978b19b763b9d6992f853cb39dfeaab9a4669b745007db66a754db
+              ref: openspec/changes/stabilize-host-owned-input-boundary/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/stabilize-host-owned-input-boundary/.comet/handoff/design-context.json
+              handoffHash: 085ac2a9c558ab44428343492ada8a66292268edc25fc3710fadbfa4929edd43
+              proposal: 采用产品输入与执行控制面输入分区但共同绑定的方案：纯领域 Repository Input Policy 与 Cordis
+                Contributor registry 负责默认拒绝分类，具体 Host 品牌只存在于 integration
+                plugin；Git tracked 双用途文件保持产品输入，external-exclusive
+                路径进入产品面时失败；未跟踪控制面文件形成 race-safe 内容寻址 manifest，未知文件仍是 product
+                dirty；Evidence fingerprint manifest 直接升级 v2、Verification Input
+                升级 v3，并沿用现有 Bundle/Gate/Archive 重验；架构脚本改为检查 Git、生产源码和发布包产品面，不依赖
+                Runtime，也不再按物理 lstat 拒绝本地 Host 安装。拒绝仅扩充
+                gitignore、宽泛跳过点目录、搬移目录和新增生命周期旁路。主要风险由 tracked
+                优先、external-exclusive 规则、root
+                containment、枚举上限、多仓归属和交叉契约测试控制；若插件体系无法安全表达
+                Contributor、输入无法稳定内容寻址或需要 Archive 专用旁路，则停止并返回 Design。
+              requirementsEvidence:
+                contentHash: 2b65f6d2fb492fa3770e906968cb16d7c6cd25062224e21d20bf9674158a245f
+                ref: openspec/changes/stabilize-host-owned-input-boundary
+              sourceEvidence:
+                contentHash: 39b74606238a89dd07c1e93fa32146e2a5523361d2f8395aad3f758545ef8191
+                ref: openspec/changes/stabilize-host-owned-input-boundary
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-host-owned-input-boundary
+                  changeDir: openspec/changes/stabilize-host-owned-input-boundary
+                  workspaceBaseline:
+                    ref: c40b5c6b-6deb-4bd0-93a5-1d060ec32f5f
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 0393aac9843804c2149e63c62bf137e53abd3e5f9ce3b4833544cf6d953636ce
+                    ref: openspec/changes/stabilize-host-owned-input-boundary
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 0393aac9843804c2149e63c62bf137e53abd3e5f9ce3b4833544cf6d953636ce
+              ref: openspec/changes/stabilize-host-owned-input-boundary
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 0393aac9843804c2149e63c62bf137e53abd3e5f9ce3b4833544cf6d953636ce
+        sequence: 16
+      stabilize-host-owned-input-boundary:17:
+        results:
+          full.build.check:
+            sequence: 16
+            value:
+              argv:
+                - npm
+                - run
+                - verify
+              changedDuringExecution: []
+              checkEpoch: 2
+              contentHash: 1a73a2b3115bc36bcf81c7860b5d29d66a02ae0aaaaf5ba787c35cc794cf04f8
+              cwd: .
+              environment: d23d49a6b61a28588b043125697dbf24696291627d9e6f01b93c9b2c960eb5a0
+              exitCode: 1
+              inputAfter: ab0eef2d15c6ed79833d402306856555ea299b89d678be960b2ff59c3e744f69
+              inputBefore: ab0eef2d15c6ed79833d402306856555ea299b89d678be960b2ff59c3e744f69
+              manifestHash: 71655ec346967b5f50ada217a8361c099185828a54a32c5a593777b33d2ef451
+              manifestRef: .comet/runtime/classic-sdk-checks/a6e3398d1ebb371c4eab1bb5352c7d1e87ad0ffa7172a65c761a5e67014d5812/caad6f5f-80ee-47ea-838a-f011728ee075.manifest
+              receiptRef: .comet/runtime/classic-sdk-checks/a6e3398d1ebb371c4eab1bb5352c7d1e87ad0ffa7172a65c761a5e67014d5812/101b8b15-5c51-436d-a7dc-d65beb0f8892.log
+              reusable: false
+              reused: false
+              scope: build
+              tier: full
+              timeoutMs: 900000
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/stabilize-host-input-boundary
+              buildMode: autonomous
+              directOverride: false
+              isolation: worktree
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-host-owned-input-boundary
+                  changeDir: openspec/changes/stabilize-host-owned-input-boundary
+                  workspaceBaseline:
+                    ref: c40b5c6b-6deb-4bd0-93a5-1d060ec32f5f
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/stabilize-host-input-boundary
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: worktree
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.execute:
+            sequence: 15
+            value:
+              event: build-complete
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: cfaafa9cca978b19b763b9d6992f853cb39dfeaab9a4669b745007db66a754db
+                ref: openspec/changes/stabilize-host-owned-input-boundary/design.md
+              plan: docs/superpowers/plans/2026-11-02-stabilize-host-owned-input-boundary.md
+              planEvidence:
+                contentHash: 8b2572f4b4300b86b61fac5e9633591f13a145bde7b4df7f1eb6101bf9a5e575
+                ref: docs/superpowers/plans/2026-11-02-stabilize-host-owned-input-boundary.md
+              taskRevision: 91cc1ca54e838099c0dcfc2a0be53b78d3054d3061b8201cc9031e2e176a5a00
+          full.build.plan.evidence:
+            sequence: 12
+            value:
+              contentHash: 8b2572f4b4300b86b61fac5e9633591f13a145bde7b4df7f1eb6101bf9a5e575
+              ref: docs/superpowers/plans/2026-11-02-stabilize-host-owned-input-boundary.md
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-host-owned-input-boundary
+                  changeDir: openspec/changes/stabilize-host-owned-input-boundary
+                  workspaceBaseline:
+                    ref: c40b5c6b-6deb-4bd0-93a5-1d060ec32f5f
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-host-owned-input-boundary/.comet/handoff/design-context.json
+                    handoffHash: 085ac2a9c558ab44428343492ada8a66292268edc25fc3710fadbfa4929edd43
+                    proposal: 采用产品输入与执行控制面输入分区但共同绑定的方案：纯领域 Repository Input Policy 与 Cordis
+                      Contributor registry 负责默认拒绝分类，具体 Host 品牌只存在于 integration
+                      plugin；Git tracked 双用途文件保持产品输入，external-exclusive
+                      路径进入产品面时失败；未跟踪控制面文件形成 race-safe 内容寻址 manifest，未知文件仍是
+                      product dirty；Evidence fingerprint manifest 直接升级
+                      v2、Verification Input 升级 v3，并沿用现有 Bundle/Gate/Archive
+                      重验；架构脚本改为检查 Git、生产源码和发布包产品面，不依赖 Runtime，也不再按物理 lstat 拒绝本地
+                      Host 安装。拒绝仅扩充 gitignore、宽泛跳过点目录、搬移目录和新增生命周期旁路。主要风险由
+                      tracked 优先、external-exclusive 规则、root
+                      containment、枚举上限、多仓归属和交叉契约测试控制；若插件体系无法安全表达
+                      Contributor、输入无法稳定内容寻址或需要 Archive 专用旁路，则停止并返回 Design。
+                    requirementsEvidence:
+                      contentHash: 2b65f6d2fb492fa3770e906968cb16d7c6cd25062224e21d20bf9674158a245f
+                      ref: openspec/changes/stabilize-host-owned-input-boundary
+                    sourceEvidence:
+                      contentHash: 39b74606238a89dd07c1e93fa32146e2a5523361d2f8395aad3f758545ef8191
+                      ref: openspec/changes/stabilize-host-owned-input-boundary
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/stabilize-host-owned-input-boundary/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: cfaafa9cca978b19b763b9d6992f853cb39dfeaab9a4669b745007db66a754db
+              ref: openspec/changes/stabilize-host-owned-input-boundary/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/stabilize-host-owned-input-boundary/.comet/handoff/design-context.json
+              handoffHash: 085ac2a9c558ab44428343492ada8a66292268edc25fc3710fadbfa4929edd43
+              proposal: 采用产品输入与执行控制面输入分区但共同绑定的方案：纯领域 Repository Input Policy 与 Cordis
+                Contributor registry 负责默认拒绝分类，具体 Host 品牌只存在于 integration
+                plugin；Git tracked 双用途文件保持产品输入，external-exclusive
+                路径进入产品面时失败；未跟踪控制面文件形成 race-safe 内容寻址 manifest，未知文件仍是 product
+                dirty；Evidence fingerprint manifest 直接升级 v2、Verification Input
+                升级 v3，并沿用现有 Bundle/Gate/Archive 重验；架构脚本改为检查 Git、生产源码和发布包产品面，不依赖
+                Runtime，也不再按物理 lstat 拒绝本地 Host 安装。拒绝仅扩充
+                gitignore、宽泛跳过点目录、搬移目录和新增生命周期旁路。主要风险由 tracked
+                优先、external-exclusive 规则、root
+                containment、枚举上限、多仓归属和交叉契约测试控制；若插件体系无法安全表达
+                Contributor、输入无法稳定内容寻址或需要 Archive 专用旁路，则停止并返回 Design。
+              requirementsEvidence:
+                contentHash: 2b65f6d2fb492fa3770e906968cb16d7c6cd25062224e21d20bf9674158a245f
+                ref: openspec/changes/stabilize-host-owned-input-boundary
+              sourceEvidence:
+                contentHash: 39b74606238a89dd07c1e93fa32146e2a5523361d2f8395aad3f758545ef8191
+                ref: openspec/changes/stabilize-host-owned-input-boundary
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-host-owned-input-boundary
+                  changeDir: openspec/changes/stabilize-host-owned-input-boundary
+                  workspaceBaseline:
+                    ref: c40b5c6b-6deb-4bd0-93a5-1d060ec32f5f
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 0393aac9843804c2149e63c62bf137e53abd3e5f9ce3b4833544cf6d953636ce
+                    ref: openspec/changes/stabilize-host-owned-input-boundary
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 0393aac9843804c2149e63c62bf137e53abd3e5f9ce3b4833544cf6d953636ce
+              ref: openspec/changes/stabilize-host-owned-input-boundary
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 0393aac9843804c2149e63c62bf137e53abd3e5f9ce3b4833544cf6d953636ce
+        sequence: 17
       stabilize-host-owned-input-boundary:4:
         results:
           full.open:
@@ -1780,6 +3145,29 @@ run_checkpoint:
     ready: []
     joins: {}
     outputs:
+      full.build.check:
+        sequence: 16
+        value:
+          argv:
+            - npm
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: 1a73a2b3115bc36bcf81c7860b5d29d66a02ae0aaaaf5ba787c35cc794cf04f8
+          cwd: .
+          environment: d23d49a6b61a28588b043125697dbf24696291627d9e6f01b93c9b2c960eb5a0
+          exitCode: 1
+          inputAfter: ab0eef2d15c6ed79833d402306856555ea299b89d678be960b2ff59c3e744f69
+          inputBefore: ab0eef2d15c6ed79833d402306856555ea299b89d678be960b2ff59c3e744f69
+          manifestHash: 71655ec346967b5f50ada217a8361c099185828a54a32c5a593777b33d2ef451
+          manifestRef: .comet/runtime/classic-sdk-checks/a6e3398d1ebb371c4eab1bb5352c7d1e87ad0ffa7172a65c761a5e67014d5812/caad6f5f-80ee-47ea-838a-f011728ee075.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/a6e3398d1ebb371c4eab1bb5352c7d1e87ad0ffa7172a65c761a5e67014d5812/101b8b15-5c51-436d-a7dc-d65beb0f8892.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 900000
       full.build.configure:
         sequence: 9
         value:
@@ -1809,6 +3197,10 @@ run_checkpoint:
                 reviewMode: thorough
                 subagentDispatch: null
                 tddMode: tdd
+      full.build.execute:
+        sequence: 15
+        value:
+          event: build-complete
       full.build.plan:
         sequence: 11
         value:
@@ -1917,6 +3309,6 @@ run_checkpoint:
           contentHash: 0393aac9843804c2149e63c62bf137e53abd3e5f9ce3b4833544cf6d953636ce
     children: []
     lineage: []
-  sourceRevision: 19
-  sourceHash: 1e7f4ac5df85caed8580eece1ad50944c4ddc0d6f5ca0bd57c1b933f89b4472c
+  sourceRevision: 30
+  sourceHash: 2abf06308f1932865d49610a1b800ff647584e6eac8f8c4387cd5676de0d6441
 check_epoch: 2
