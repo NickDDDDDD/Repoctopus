@@ -16,17 +16,17 @@
 
 ## 2. 在 Design→Build 边界 fail-fast
 
-- [ ] 2.1 在 Design gate 接入只读 coverage preflight，在 Planning Snapshot 形成后、Human Decision/Build Work 前用当前 Tasks 和实际 Verification Profile 完成精确解析 <!-- comet-task:bd0fae33-6f2e-4af8-8cf6-7cd5549ecfbd -->
+- [x] 2.1 在 Design gate 接入只读 coverage preflight，在 Planning Snapshot 形成后、Human Decision/Build Work 前用当前 Tasks 和实际 Verification Profile 完成精确解析 <!-- comet-task:bd0fae33-6f2e-4af8-8cf6-7cd5549ecfbd -->
   **Acceptance:** coverage 不完整时 Run 保持 Design、没有审批请求、Build Work、Evidence Attempt、仓库 fingerprint 或命令执行；错误指出未覆盖 Acceptance 或无效 selector；preflight 后规划摘要漂移也 fail closed；修正配置后可从同一 Design checkpoint 重试
   **Requirements:** implementation-evidence / Design 完成前必须证明 Verification coverage
 
-- [ ] 2.2 增加真实 Runtime 回归，复现旧行为会在 Build Check 后失败，并证明新行为在进入 Build 前阻断，同时合法 coverage 的 Open→Design→Build 路径不受影响 <!-- comet-task:3fa8819f-ba2d-44fc-9ab5-60eab0e9779f -->
+- [x] 2.2 增加真实 Runtime 回归，复现旧行为会在 Build Check 后失败，并证明新行为在进入 Build 前阻断，同时合法 coverage 的 Open→Design→Build 路径不受影响 <!-- comet-task:3fa8819f-ba2d-44fc-9ab5-60eab0e9779f -->
   **Acceptance:** 回归同时断言 phase、current Work、Task 状态、Evidence Attempt 数量和 Build Work 缺失；合法路径至少推进到 Build Configure
   **Requirements:** implementation-evidence / Design 完成前必须证明 Verification coverage
 
 ## 3. 文档与验证
 
-- [ ] 3.1 更新项目接入和 Evidence 文档，解释生成的 `*` 是待确认的安全候选、细粒度 selector 的收窄方式以及 Design preflight 的失败恢复 <!-- comet-task:dde9bfba-dd86-406c-b77f-8a0ce66d2aba -->
+- [x] 3.1 更新项目接入和 Evidence 文档，解释生成的 `*` 是待确认的安全候选、细粒度 selector 的收窄方式以及 Design preflight 的失败恢复 <!-- comet-task:dde9bfba-dd86-406c-b77f-8a0ce66d2aba -->
   **Acceptance:** 文档不把 `*` 描述为所有团队的最佳实践；明确修改共享配置并重试原 Design checkpoint，不允许手改 Store
   **Requirements:** project-configuration / 探测候选必须提供可审查的 Change coverage; implementation-evidence / Design 完成前必须证明 Verification coverage
 

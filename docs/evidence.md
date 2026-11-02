@@ -62,6 +62,18 @@ Repoctopus 识别 npm 测试生态、Maven Surefire 和 Gradle 的常见结构�
 
 selector 可以是精确 `acceptance-<sha256>`、`task:<taskId>`、`requirement:<ref>` 或显式共享策略 `*`。Runtime 在启动任何命令前，把 selector 解析进不可变 Verification Input；未知、未覆盖或只由 optional 节点覆盖的 Acceptance 会直接阻断。一个 Acceptance 若绑定多个 required 节点，所有节点都必须产生当前输入下 `verified`、`fresh | reused` 且 `passed` 的 Receipt，Trace 才会标记为 passed。
 
+Change Run 还会在 Design 的 Planning Snapshot 已形成、但尚未创建人工审批请求或
+Build Work 时，用当前 Tasks 和该 Run 实际选择的 Verification Profile 执行同一套
+coverage 解析。这个 preflight 只读取并编译配置：不会采集仓库 fingerprint、创建
+Evidence Attempt 或运行节点。coverage 缺失、selector 无效或 preflight 期间规划语义
+发生变化时，Run 保持在原 Design checkpoint，并且不会留下可批准请求。
+
+恢复时应修改 Git 管理的 `repoctopus.yaml`，让 required 节点准确覆盖当前 Acceptance，
+然后对同一 Run 再次执行 `run next`。Runtime 会重新读取 Tasks、Profile 和 Planning
+Snapshot；不要手改 `.repoctopus/` Store、伪造审批或提前执行 Evidence。`*` 适合确实
+验证全部 Acceptance 的端到端门禁；局部测试应使用更细的 Task、Requirement 或精确
+Acceptance selector，避免把没有证明的范围声明为已覆盖。
+
 Profile 可以组合四类节点：
 
 - `command` 运行构建、测试和静态检查；只有确定性命令可以按相同输入指纹复用 Receipt。
