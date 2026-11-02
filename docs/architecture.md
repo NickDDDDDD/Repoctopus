@@ -101,6 +101,13 @@ Evidence 保持 Attempt、Node Journal、Receipt、Artifact、Bundle 与 Gate Pr
 
 命令、服务、浏览器和视觉采集由 Contributor 通过 Effect 登记到 EvidenceAdapters。EvidenceCoordinator 每次执行按当前 composition 创建适配器集合；Contributor 卸载会撤销登记，不存在旁路组合根。公共 Run 入口只通过 Cordis Service 访问 Gate。
 
+Repository 输入所有权也使用一对多 Contributor。`RepositoryInputPolicies` 在 composition
+激活时编译确定性的、内容寻址的策略；EvidenceCoordinator 只消费编译结果，不硬编码
+Codex 或其他 Host 路径。Git Adapter 负责把 product dirty 输入与 control-plane manifest
+分开采集，并在采集前后重复核对选择集和文件内容。策略没有认领的输入默认属于产品；
+只有插件层明确登记的未跟踪 Host 文件才进入控制面。这样 Host 文件可以原位参与执行，
+同时仍受 Evidence freshness 约束，而不会被误当成待交付源码。
+
 ## 生命周期与长任务
 
 Cordis Effect 持有监听器、注册项、Timer、Watcher、进程和浏览器。WorkflowRuns、EvidenceCoordinator 与 Delivery 各自持有已经接纳的操作。Service 卸载时停止接纳新操作；安全操作通过 AbortSignal 取消；已经越过 Journal 边界的操作完成到可恢复点。异步 disposer 只进行有界排空，超时把 `OPERATION_DRAIN_TIMEOUT` 写入 App 生命周期诊断，并保留持久事实供下次启动恢复。

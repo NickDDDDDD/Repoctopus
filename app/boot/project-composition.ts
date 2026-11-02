@@ -181,6 +181,8 @@ function projectSelections(
       { workspaceRoot: WORKSPACE_ROOT_IDENTITY },
     ),
     { id: 'workflow-telemetry-otel' },
+    { id: 'repository-input-policies' },
+    { id: 'repository-input-policy-host' },
     { id: 'evidence-adapters' },
     { id: 'evidence-command-local' },
     runtimeSelection(
@@ -265,6 +267,7 @@ const BASE_REQUIRED_SERVICES = [
   'lifecycleValidators',
   'project',
   'projectOnboarding',
+  'repositoryInputPolicies',
   'runStore',
   'runtimeWorkGuard',
   'managedWorkExecutor',

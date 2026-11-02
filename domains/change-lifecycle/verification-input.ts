@@ -10,7 +10,7 @@ import type {
 import { canonicalJson } from '../workflow-contract/canonical.js';
 
 export interface VerificationInput {
-  schemaVersion: 2;
+  schemaVersion: 3;
   runId: string;
   checkEpoch: number;
   taskRevisions: readonly { taskId: string; taskRevision: `sha256:${string}` }[];
@@ -25,6 +25,8 @@ export interface VerificationInput {
     commit: string;
     tree: string;
     dirtyFilesDigest: `sha256:${string}`;
+    inputPolicyDigest: `sha256:${string}`;
+    controlPlaneInputDigest: `sha256:${string}`;
   }[];
   projectConfigDigest: `sha256:${string}`;
   compositionDigest: string;
@@ -126,6 +128,9 @@ export function createVerificationInput(input: {
   if (input.plan.profileId !== input.fingerprint.manifest.profileId) {
     throw new Error('Verification Evidence Profile and fingerprint do not match');
   }
+  if (input.fingerprint.manifest.schemaVersion !== 2) {
+    throw new Error('Verification input requires Evidence fingerprint schema v2');
+  }
   if (input.plan.nodes.length === 0) {
     throw new Error(`Verification Evidence Profile has no nodes: ${input.plan.profileId}`);
   }
@@ -139,7 +144,7 @@ export function createVerificationInput(input: {
   }
   const acceptance = resolveAcceptanceCoverage(input.tasks, input.plan);
   const stable = {
-    schemaVersion: 2 as const,
+    schemaVersion: 3 as const,
     runId: input.runId,
     checkEpoch: input.checkEpoch,
     taskRevisions: input.tasks
@@ -151,11 +156,19 @@ export function createVerificationInput(input: {
         if (!repository.repositoryId.trim() || !repository.head.trim() || !repository.tree.trim()) {
           throw new Error('Verification repository fingerprint is incomplete');
         }
+        if (
+          !/^sha256:[a-f0-9]{64}$/u.test(repository.inputPolicyDigest) ||
+          !/^sha256:[a-f0-9]{64}$/u.test(repository.controlPlane.digest)
+        ) {
+          throw new Error('Verification repository input policy fingerprint is incomplete');
+        }
         return {
           repositoryId: repository.repositoryId,
           commit: repository.head,
           tree: repository.tree,
           dirtyFilesDigest: sha256(repository.dirtyFiles),
+          inputPolicyDigest: repository.inputPolicyDigest,
+          controlPlaneInputDigest: repository.controlPlane.digest,
         };
       })
       .sort((left, right) => left.repositoryId.localeCompare(right.repositoryId)),

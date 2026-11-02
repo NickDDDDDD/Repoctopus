@@ -162,7 +162,7 @@ describe('single-repository Archive production tracer', () => {
         phase: 'archive' as const,
         status: 'running' as const,
         verificationInput: {
-          schemaVersion: 2 as const,
+          schemaVersion: 3 as const,
           runId: 'run-tracer',
           checkEpoch: 0,
           taskRevisions: [],

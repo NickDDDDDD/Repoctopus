@@ -1,14 +1,18 @@
-import { lstat, readdir, readFile } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
+import { promisify } from 'node:util';
 
 import { evaluateSourceBoundaries } from './architecture-source-boundaries.mjs';
+import { evaluateLegacyWorkflowProductBoundary } from './legacy-workflow-boundary.mjs';
 
 const root = path.resolve(import.meta.dirname, '..');
 const policy = JSON.parse(
   await readFile(path.join(root, 'scripts', 'architecture-governance.json'), 'utf8'),
 );
 const findings = [];
+const execFileAsync = promisify(execFile);
 
 function portable(value) {
   return value.replaceAll('\\', '/');
@@ -94,14 +98,17 @@ for (const entry of sourceManifest.files) {
 
 const legacy = policy.legacyWorkflow;
 const excluded = new Set(legacy.excludedTargets);
-for (const forbidden of legacy.forbiddenPaths) {
-  try {
-    await lstat(path.join(root, forbidden));
-    findings.push(`${forbidden}: legacy workflow path must not exist in Repoctopus`);
-  } catch (error) {
-    if (error.code !== 'ENOENT') throw error;
-  }
-}
+const [headTree, indexTree] = await Promise.all([
+  execFileAsync('git', ['ls-tree', '-r', '--name-only', '-z', 'HEAD'], { cwd: root }),
+  execFileAsync('git', ['ls-files', '-z'], { cwd: root }),
+]);
+findings.push(
+  ...evaluateLegacyWorkflowProductBoundary({
+    rules: legacy.forbiddenPaths,
+    headPaths: headTree.stdout.split('\0').filter(Boolean),
+    indexPaths: indexTree.stdout.split('\0').filter(Boolean),
+  }),
+);
 for (const target of legacy.scanTargets) {
   let files;
   try {

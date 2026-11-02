@@ -7,6 +7,7 @@ import { EvidenceCoordinator } from '../services/evidence-coordinator.js';
 import { CompositionIdentity } from '../services/composition-identity.js';
 import { FileRunStoreProvider } from '../plugins/run/file-run-store-provider.js';
 import { EvidenceAdapters } from '../services/evidence-adapters.js';
+import { RepositoryInputPolicies } from '../services/repository-input-policies.js';
 import {
   localBrowserContributor,
   localCommandContributor,
@@ -93,6 +94,7 @@ describe('Evidence telemetry outbox', () => {
     new CompositionIdentity(context, compositionFixture());
     new FileRunStoreProvider(context, { workspaceRoot: workspace });
     new EvidenceAdapters(context);
+    new RepositoryInputPolicies(context);
     await context.plugin(localCommandContributor);
     await context.plugin(localServiceContributor, { workspaceRoot: workspace });
     await context.plugin(localBrowserContributor, { workspaceRoot: workspace });

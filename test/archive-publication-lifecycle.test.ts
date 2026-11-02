@@ -213,7 +213,7 @@ function archiveState(actionSkill: SkillUsageSnapshot = prSkill) {
       },
     ],
     verificationInput: {
-      schemaVersion: 2 as const,
+      schemaVersion: 3 as const,
       runId: 'run-terminal',
       checkEpoch: 0,
       taskRevisions: [],

@@ -130,6 +130,10 @@ describe('published package', () => {
         expect.stringMatching(/(^|\/)test\//u),
         expect.stringMatching(/(^|\/)openspec\//u),
         expect.stringMatching(/(^|\/)\.repoctopus\//u),
+        expect.stringMatching(/(^|\/)\.codex(?:\/|$)/u),
+        expect.stringMatching(/(^|\/)\.agents(?:\/|$)/u),
+        'AGENTS.md',
+        'skills-lock.json',
       ]),
     );
     const archive = path.join(packDirectory, archives[0]!.filename);

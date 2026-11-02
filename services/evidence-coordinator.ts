@@ -90,6 +90,14 @@ export interface EvidenceTelemetryStatus {
 
 function asContext(value: unknown): EvidenceRunContext {
   const record = value as Partial<EvidenceRunContext> | null;
+  const fingerprintSchema = (
+    record?.fingerprint as { manifest?: { schemaVersion?: unknown } } | undefined
+  )?.manifest?.schemaVersion;
+  if (fingerprintSchema !== undefined && fingerprintSchema !== 2) {
+    throw new Error(
+      `Unsupported Evidence fingerprint schema: ${String(fingerprintSchema)}; recollect Evidence`,
+    );
+  }
   const binding = record?.workflowBinding;
   if (
     !record ||
@@ -98,6 +106,8 @@ function asContext(value: unknown): EvidenceRunContext {
     record.kind !== 'EvidenceRunContext' ||
     typeof record.attemptId !== 'string' ||
     typeof record.profileId !== 'string' ||
+    !record.fingerprint ||
+    fingerprintSchema !== 2 ||
     (record.repositoryOverrides !== undefined &&
       record.repositoryOverrides !== null &&
       (!Array.isArray(record.repositoryOverrides) ||
@@ -156,7 +166,12 @@ export interface EvidenceCoordinatorConfig {
 }
 
 export class EvidenceCoordinator extends Service {
-  static inject = ['compositionIdentity', 'evidenceAdapters', 'runStore'];
+  static inject = [
+    'compositionIdentity',
+    'evidenceAdapters',
+    'repositoryInputPolicies',
+    'runStore',
+  ];
 
   private readonly store: FileEvidenceStore;
   private readonly journal: FileEvidenceJournal;
@@ -245,16 +260,18 @@ export class EvidenceCoordinator extends Service {
     config: EffectiveProjectConfig,
   ): Promise<EvidenceFingerprint> {
     const hasVisualAdapter = this.ctx.evidenceAdapters.has('visual') && !!config.local?.visual;
+    const inputPolicy = this.ctx.repositoryInputPolicies.current();
     const repositories = await Promise.all(
       config.repositories.map((repository) =>
         collectRepositoryFingerprint({
           repositoryId: repository.id,
           root: repository.resolvedPath,
+          policy: inputPolicy,
         }),
       ),
     );
     return createEvidenceFingerprint({
-      schemaVersion: 1,
+      schemaVersion: 2,
       profileId,
       sharedConfigDigest: config.sharedDigest,
       localConfigDigest: config.localDigest,

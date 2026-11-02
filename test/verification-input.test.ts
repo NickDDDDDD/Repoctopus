@@ -56,7 +56,7 @@ const fingerprint: EvidenceFingerprint = {
   algorithm: 'sha256',
   digest: 'fingerprint-1',
   manifest: {
-    schemaVersion: 1,
+    schemaVersion: 2,
     profileId: 'verify',
     sharedConfigDigest: 'shared-1',
     localConfigDigest: null,
@@ -66,6 +66,8 @@ const fingerprint: EvidenceFingerprint = {
         head: 'a'.repeat(40),
         tree: 'b'.repeat(40),
         dirtyFiles: [],
+        inputPolicyDigest: digest('1'),
+        controlPlane: { digest: digest('2'), files: [] },
       },
     ],
     tools: {},
@@ -89,10 +91,58 @@ function create(overrides: Partial<Parameters<typeof createVerificationInput>[0]
 }
 
 describe('Verification input', () => {
+  it('invalidates the input when policy or control-plane content changes', () => {
+    const original = create();
+    const repository = fingerprint.manifest.repositories[0]!;
+    const changedPolicy = create({
+      fingerprint: {
+        ...fingerprint,
+        digest: 'fingerprint-policy',
+        manifest: {
+          ...fingerprint.manifest,
+          repositories: [{ ...repository, inputPolicyDigest: digest('3') }],
+        },
+      },
+    });
+    const changedControlPlane = create({
+      fingerprint: {
+        ...fingerprint,
+        digest: 'fingerprint-control-plane',
+        manifest: {
+          ...fingerprint.manifest,
+          repositories: [
+            {
+              ...repository,
+              controlPlane: { ...repository.controlPlane, digest: digest('4') },
+            },
+          ],
+        },
+      },
+    });
+
+    expect(changedPolicy.digest).not.toBe(original.digest);
+    expect(changedControlPlane.digest).not.toBe(original.digest);
+  });
+
+  it('rejects incomplete repository input policy fingerprints', () => {
+    const repository = fingerprint.manifest.repositories[0]!;
+    expect(() =>
+      create({
+        fingerprint: {
+          ...fingerprint,
+          manifest: {
+            ...fingerprint.manifest,
+            repositories: [{ ...repository, inputPolicyDigest: 'sha256:invalid' }],
+          },
+        },
+      }),
+    ).toThrow(/input policy fingerprint is incomplete/u);
+  });
+
   it('freezes Task, repository, configuration, composition, Skill, and Evidence identities', () => {
     const input = create();
     expect(input).toMatchObject({
-      schemaVersion: 2,
+      schemaVersion: 3,
       taskRevisions: [{ taskId: '1.1', taskRevision: tasks[0]!.taskRevision }],
       acceptanceCriteria: [
         { taskId: '1.1', text: 'The implementation works', requirementRefs: ['runtime#works'] },
@@ -100,7 +150,15 @@ describe('Verification input', () => {
       acceptanceCoverage: [
         { acceptanceId: tasks[0]!.acceptanceCriteria[0]!.acceptanceId, nodeIds: ['test'] },
       ],
-      repositories: [{ repositoryId: 'workspace', commit: 'a'.repeat(40), tree: 'b'.repeat(40) }],
+      repositories: [
+        {
+          repositoryId: 'workspace',
+          commit: 'a'.repeat(40),
+          tree: 'b'.repeat(40),
+          inputPolicyDigest: digest('1'),
+          controlPlaneInputDigest: digest('2'),
+        },
+      ],
       projectConfigDigest: digest('c'),
       compositionDigest: digest('o'),
       skills: [{ name: 'tdd', provider: 'matt-builtins' }],
@@ -256,5 +314,4 @@ describe('Verification input', () => {
       }),
     ).toThrow(/do not match/u);
   });
-
 });

@@ -9,15 +9,28 @@ export interface DirtyFileFingerprint {
   size: number;
 }
 
+export interface ControlPlaneFileFingerprint extends DirtyFileFingerprint {
+  kind: 'file';
+  owner: string;
+  ruleId: string;
+}
+
+export interface ControlPlaneInputFingerprint {
+  digest: `sha256:${string}`;
+  files: ControlPlaneFileFingerprint[];
+}
+
 export interface RepositoryFingerprint {
   repositoryId: string;
   head: string;
   tree: string;
   dirtyFiles: DirtyFileFingerprint[];
+  inputPolicyDigest: `sha256:${string}`;
+  controlPlane: ControlPlaneInputFingerprint;
 }
 
 export interface EvidenceFingerprintManifest {
-  schemaVersion: 1;
+  schemaVersion: 2;
   profileId: string;
   sharedConfigDigest: string;
   localConfigDigest: string | null;
@@ -44,6 +57,12 @@ function normalizedManifest(manifest: EvidenceFingerprintManifest): EvidenceFing
         dirtyFiles: [...repository.dirtyFiles].sort((left, right) =>
           left.path.localeCompare(right.path),
         ),
+        controlPlane: {
+          ...repository.controlPlane,
+          files: [...repository.controlPlane.files].sort((left, right) =>
+            left.path.localeCompare(right.path),
+          ),
+        },
       }))
       .sort((left, right) => left.repositoryId.localeCompare(right.repositoryId)),
     inputArtifactDigests: [...manifest.inputArtifactDigests].sort(),

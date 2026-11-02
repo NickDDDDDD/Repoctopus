@@ -269,7 +269,7 @@ function phaseWork(
 
 function verificationInput(checkEpoch: number, value: string): VerificationInput {
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     runId: initialSnapshot().identity.runId,
     checkEpoch,
     taskRevisions: [{ taskId: buildTask.taskId, taskRevision: buildTask.taskRevision }],
@@ -282,6 +282,8 @@ function verificationInput(checkEpoch: number, value: string): VerificationInput
         commit: 'a'.repeat(40),
         tree: 'b'.repeat(40),
         dirtyFilesDigest: digest('c'),
+        inputPolicyDigest: digest('i'),
+        controlPlaneInputDigest: digest('h'),
       },
     ],
     projectConfigDigest: digest('p'),

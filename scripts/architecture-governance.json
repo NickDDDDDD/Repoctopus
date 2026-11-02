@@ -283,18 +283,34 @@
     ],
     "excludedTargets": ["docs/architecture-review.md"],
     "forbiddenPaths": [
-      ".codex",
-      ".opencode",
-      ".codebuddy",
-      ".codearts",
-      ".context",
-      ".rules",
-      "skills/oh-my-workflow",
-      "scripts/workflow-hook.mjs",
-      "config/workflow-profile.yaml",
-      "workspace/client-adapters.json",
-      "workspace.yaml",
-      "project.local.yaml"
+      { "path": ".codex", "match": "tree", "ownership": "external-exclusive" },
+      { "path": ".opencode", "match": "tree", "ownership": "external-exclusive" },
+      { "path": ".codebuddy", "match": "tree", "ownership": "external-exclusive" },
+      { "path": ".codearts", "match": "tree", "ownership": "external-exclusive" },
+      { "path": ".context", "match": "tree", "ownership": "external-exclusive" },
+      { "path": ".rules", "match": "tree", "ownership": "external-exclusive" },
+      {
+        "path": "skills/oh-my-workflow",
+        "match": "tree",
+        "ownership": "external-exclusive"
+      },
+      {
+        "path": "scripts/workflow-hook.mjs",
+        "match": "file",
+        "ownership": "external-exclusive"
+      },
+      {
+        "path": "config/workflow-profile.yaml",
+        "match": "file",
+        "ownership": "external-exclusive"
+      },
+      {
+        "path": "workspace/client-adapters.json",
+        "match": "file",
+        "ownership": "external-exclusive"
+      },
+      { "path": "workspace.yaml", "match": "file", "ownership": "external-exclusive" },
+      { "path": "project.local.yaml", "match": "file", "ownership": "external-exclusive" }
     ],
     "forbiddenPatterns": [
       "agents-workspace",

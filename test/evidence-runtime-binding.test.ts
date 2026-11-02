@@ -1,4 +1,4 @@
-import { readFile, unlink, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
@@ -8,6 +8,8 @@ import { EvidenceCoordinator } from '../services/evidence-coordinator.js';
 import { CompositionIdentity } from '../services/composition-identity.js';
 import { FileRunStoreProvider } from '../plugins/run/file-run-store-provider.js';
 import { EvidenceAdapters } from '../services/evidence-adapters.js';
+import { RepositoryInputPolicies } from '../services/repository-input-policies.js';
+import builtinHostInputPolicy from '../plugins/evidence/builtin-host-input-policy.js';
 import {
   localBrowserContributor,
   localCommandContributor,
@@ -94,6 +96,8 @@ async function fixture() {
   new CompositionIdentity(context, compositionFixture());
   new FileRunStoreProvider(context, { workspaceRoot: workspace });
   new EvidenceAdapters(context);
+  new RepositoryInputPolicies(context);
+  await context.plugin(builtinHostInputPolicy);
   await context.plugin(localCommandContributor);
   await context.plugin(localServiceContributor, { workspaceRoot: workspace });
   await context.plugin(localBrowserContributor, { workspaceRoot: workspace });
@@ -117,6 +121,41 @@ async function fixture() {
 }
 
 describe('EvidenceCoordinator workflow binding', () => {
+  it('captures the built-in Host policy for every registered repository', async () => {
+    const { app, evidence, workspace } = await fixture();
+    for (const repository of [workspace, app]) {
+      await mkdir(path.join(repository, '.codex'), { recursive: true });
+      await writeFile(path.join(repository, '.codex', 'hooks.json'), `${repository}\n`);
+    }
+
+    const { fingerprint } = await evidence.plan('verify');
+    expect(fingerprint.manifest.repositories).toHaveLength(2);
+    for (const repository of fingerprint.manifest.repositories) {
+      expect(repository.inputPolicyDigest).toMatch(/^sha256:[0-9a-f]{64}$/u);
+      expect(repository.controlPlane.files.map((file) => file.path)).toEqual(['.codex/hooks.json']);
+    }
+  });
+
+  it('applies the same policy to an explicit sibling repository override', async () => {
+    const { app, evidence, runId } = await fixture();
+    await mkdir(path.join(app, '.codex'), { recursive: true });
+    await writeFile(path.join(app, '.codex', 'hooks.json'), '{"override":true}\n');
+
+    await evidence.runForRepositories(
+      'verify',
+      [{ repositoryId: 'app', root: app }],
+      'attempt-sibling-override',
+      runId,
+    );
+    const { context } = await evidence.status('attempt-sibling-override');
+    expect(context.fingerprint.manifest.repositories).toHaveLength(1);
+    expect(context.fingerprint.manifest.repositories[0]).toMatchObject({
+      repositoryId: 'app',
+      dirtyFiles: [],
+      controlPlane: { files: [{ path: '.codex/hooks.json' }] },
+    });
+  });
+
   it('binds an attempt to the exact pending action and commits its bundle with the transition', async () => {
     const { evidence, runtime, runId, waiting } = await fixture();
     const result = await evidence.run('verify', 'attempt-action-bound', runId);
@@ -163,7 +202,13 @@ describe('EvidenceCoordinator workflow binding', () => {
       /Evidence attempt already exists/u,
     );
 
-    const contextFile = path.join(workspace, '.repoctopus', 'evidence', 'runs', `${attemptId}.json`);
+    const contextFile = path.join(
+      workspace,
+      '.repoctopus',
+      'evidence',
+      'runs',
+      `${attemptId}.json`,
+    );
     const context = JSON.parse(await readFile(contextFile, 'utf8')) as Record<string, unknown>;
     await writeFile(
       contextFile,
@@ -177,11 +222,39 @@ describe('EvidenceCoordinator workflow binding', () => {
     expect(recovered.attempt.status).toBe('completed');
   });
 
+  it('rejects persisted Evidence that uses the pre-policy fingerprint schema', async () => {
+    const { evidence, runId, workspace } = await fixture();
+    const attemptId = 'attempt-legacy-fingerprint';
+    await evidence.run('verify', attemptId, runId);
+    const contextFile = path.join(
+      workspace,
+      '.repoctopus',
+      'evidence',
+      'runs',
+      `${attemptId}.json`,
+    );
+    const context = JSON.parse(await readFile(contextFile, 'utf8')) as {
+      fingerprint: { manifest: { schemaVersion: number } };
+    };
+    context.fingerprint.manifest.schemaVersion = 1;
+    await writeFile(contextFile, JSON.stringify(context), 'utf8');
+
+    await expect(evidence.status(attemptId)).rejects.toThrow(
+      /Unsupported Evidence fingerprint schema: 1/u,
+    );
+  });
+
   it('auto-recovers a journaled running attempt instead of executing it again', async () => {
     const { evidence, runId, workspace } = await fixture();
     const attemptId = 'attempt-running-recovery';
     const completed = await evidence.run('verify', attemptId, runId);
-    const contextFile = path.join(workspace, '.repoctopus', 'evidence', 'runs', `${attemptId}.json`);
+    const contextFile = path.join(
+      workspace,
+      '.repoctopus',
+      'evidence',
+      'runs',
+      `${attemptId}.json`,
+    );
     const attemptFile = path.join(
       workspace,
       '.repoctopus',
@@ -224,7 +297,13 @@ describe('EvidenceCoordinator workflow binding', () => {
     const { evidence, runId, workspace } = await fixture();
     const attemptId = 'attempt-terminal-bundle-gap';
     const completed = await evidence.run('verify', attemptId, runId);
-    const contextFile = path.join(workspace, '.repoctopus', 'evidence', 'runs', `${attemptId}.json`);
+    const contextFile = path.join(
+      workspace,
+      '.repoctopus',
+      'evidence',
+      'runs',
+      `${attemptId}.json`,
+    );
     const bundleFile = path.join(
       workspace,
       '.repoctopus',
@@ -252,7 +331,13 @@ describe('EvidenceCoordinator workflow binding', () => {
     const { evidence, runId, workspace } = await fixture();
     const attemptId = 'attempt-superseded-bundle-gap';
     const completed = await evidence.run('verify', attemptId, runId);
-    const contextFile = path.join(workspace, '.repoctopus', 'evidence', 'runs', `${attemptId}.json`);
+    const contextFile = path.join(
+      workspace,
+      '.repoctopus',
+      'evidence',
+      'runs',
+      `${attemptId}.json`,
+    );
     const attemptFile = path.join(
       workspace,
       '.repoctopus',
@@ -294,7 +379,13 @@ describe('EvidenceCoordinator workflow binding', () => {
     const { evidence, runId, workspace } = await fixture();
     const attemptId = 'attempt-prepared-context';
     const completed = await evidence.run('verify', attemptId, runId);
-    const contextFile = path.join(workspace, '.repoctopus', 'evidence', 'runs', `${attemptId}.json`);
+    const contextFile = path.join(
+      workspace,
+      '.repoctopus',
+      'evidence',
+      'runs',
+      `${attemptId}.json`,
+    );
     const attemptFile = path.join(
       workspace,
       '.repoctopus',
@@ -329,13 +420,7 @@ describe('EvidenceCoordinator workflow binding', () => {
       unlink(journalFile),
       ...completed.receipts.map((receipt) =>
         unlink(
-          path.join(
-            workspace,
-            '.repoctopus',
-            'evidence',
-            'receipts',
-            `${receipt.receiptId}.json`,
-          ),
+          path.join(workspace, '.repoctopus', 'evidence', 'receipts', `${receipt.receiptId}.json`),
         ),
       ),
     ]);
@@ -350,7 +435,13 @@ describe('EvidenceCoordinator workflow binding', () => {
     const { evidence, runId, workspace } = await fixture();
     const attemptId = 'attempt-orphaned-journal';
     const completed = await evidence.run('verify', attemptId, runId);
-    const contextFile = path.join(workspace, '.repoctopus', 'evidence', 'runs', `${attemptId}.json`);
+    const contextFile = path.join(
+      workspace,
+      '.repoctopus',
+      'evidence',
+      'runs',
+      `${attemptId}.json`,
+    );
     const attemptFile = path.join(
       workspace,
       '.repoctopus',

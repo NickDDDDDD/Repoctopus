@@ -43,6 +43,8 @@ import {
 } from '../services/lifecycle-contributors.js';
 import { EvidenceCoordinator } from '../services/evidence-coordinator.js';
 import { EvidenceAdapters } from '../services/evidence-adapters.js';
+import { RepositoryInputPolicies } from '../services/repository-input-policies.js';
+import builtinHostInputPolicy from './evidence/builtin-host-input-policy.js';
 import {
   fileVisualContributor,
   localBrowserContributor,
@@ -1027,6 +1029,41 @@ const definitions: readonly BuiltinDefinition[] = [
       'plugins/run/workflow-telemetry-provider.ts',
       'platform/telemetry/opentelemetry/config.ts',
     ],
+  },
+  {
+    descriptor: {
+      id: 'repository-input-policies',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'service-provider',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: [],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: RepositoryInputPolicies,
+    sourceFiles: [
+      'services/repository-input-policies.ts',
+      'domains/evidence/repository-input-policy.ts',
+    ],
+  },
+  {
+    descriptor: {
+      id: 'repository-input-policy-host',
+      version: VERSION,
+      contractVersion: PLUGIN_CONTRACT_VERSION,
+      configSchemaVersion: '1',
+      kind: 'contributor',
+      source: 'builtin',
+      compositions: ['project'],
+      authorities: [],
+      permissions: [],
+      stateSchemas: {},
+    },
+    plugin: builtinHostInputPolicy,
+    sourceFiles: ['plugins/evidence/builtin-host-input-policy.ts'],
   },
   {
     descriptor: {

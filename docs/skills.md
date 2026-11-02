@@ -113,6 +113,6 @@ Codex 投影到 `.agents/skills`，OpenCode 投影到 `.opencode/skills`。Repoc
 .repoctopus/learning/<topic>/
 ```
 
-项目初始化和 Skill 投影都会把 `.repoctopus/` 加入 workspace 的 `.gitignore`。Git Evidence 使用 Git 的忽略规则选择输入，因此不会把个人学习文件放入待提交集合或 Evidence 指纹。Run 只保存 Skill 名称、Provider 和摘要；OpenTelemetry 的允许列表不会导出 Skill 正文或学习文件路径。
+项目初始化和 Skill 投影都会把 `.repoctopus/` 加入 workspace 的 `.gitignore`。该目录是 Runtime Store 边界，由 Run、Evidence 和 Skill Projection Store 自己管理，不进入产品源码 fingerprint。其他已登记 Host 输入即使被本机 Git ignore 隐藏，仍会进入独立 control-plane fingerprint；ignore 不是 Evidence 豁免机制。Run 只保存 Skill 名称、Provider 和摘要；OpenTelemetry 的允许列表不会导出 Skill 正文或学习文件路径。
 
 如果团队希望把学习结论转为共享知识，请评审结论，再通过项目正常的文档路径提交。不要直接提交个人学习目录。

@@ -110,16 +110,22 @@ node bin/repoctopus.js change reconcile --workspace . --change <change-id> --jso
 
 ## 4. 数据边界
 
-| 数据                                        | 权威位置                       | 运维要求                             |
-| ------------------------------------------- | ------------------------------ | ------------------------------------ |
-| 团队配置和 Provider 选择                    | `repoctopus.yaml`              | 进入 Git，只引用 Credential 名称     |
-| 本机覆盖                                    | `repoctopus.local.yaml`        | 不提交，不得扩大共享权限             |
-| Run、Trajectory、Evidence、Action、Delivery | `.repoctopus/`                 | 受限权限、备份和保留策略             |
-| Publication Receipt 与一致性审查            | `.repoctopus/` 对应领域 Store  | 不手工编辑；通过命令恢复             |
-| OpenSpec change 与主规格                    | Workspace Repository           | 由 Specification Provider 关闭和归档 |
-| Token                                       | Credential Provider / 进程环境 | 不落配置、digest、持久状态或 OTel    |
+| 数据                                         | 权威位置                       | 运维要求                                |
+| -------------------------------------------- | ------------------------------ | --------------------------------------- |
+| 团队配置和 Provider 选择                     | `repoctopus.yaml`              | 进入 Git，只引用 Credential 名称        |
+| 本机覆盖                                     | `repoctopus.local.yaml`        | 不提交，不得扩大共享权限                |
+| Run、Trajectory、Evidence、Action、Delivery  | `.repoctopus/`                 | 受限权限、备份和保留策略                |
+| Publication Receipt 与一致性审查             | `.repoctopus/` 对应领域 Store  | 不手工编辑；通过命令恢复                |
+| Host Hook、rules、Skill 与 Agent instruction | 原 Host 约定路径               | 保持原位；由输入策略登记并绑定 Evidence |
+| OpenSpec change 与主规格                     | Workspace Repository           | 由 Specification Provider 关闭和归档    |
+| Token                                        | Credential Provider / 进程环境 | 不落配置、digest、持久状态或 OTel       |
 
 删除 `.repoctopus/` 会丢失本机恢复和幂等事实，不能作为重试手段。全新 clone 不会凭空重建未同步的本地历史；团队应通过受控备份、共享工作目录或后续显式迁移保存仍需恢复的状态。
+
+Host 文件不需要在 Verify 或 Archive 前临时移出 Workspace。已登记的未跟踪 Host 输入会进入
+独立 control-plane fingerprint；未知文件仍按产品 dirty 输入处理，已跟踪的团队 Agent
+instructions/Skills 仍是产品输入。若 Host 内容在 Evidence 后变化，应重新运行验证，而不是
+修改 `.gitignore`、清空状态或绕过 Archive 重验。
 
 ## 5. 上游关系
 
