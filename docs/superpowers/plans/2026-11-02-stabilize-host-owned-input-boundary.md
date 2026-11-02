@@ -2,6 +2,7 @@
 change: stabilize-host-owned-input-boundary
 design-doc: openspec/changes/stabilize-host-owned-input-boundary/design.md
 base-ref: a0a0aec97d85203e3f31d518d34398259d0ec831
+archived-with: 2026-11-02-stabilize-host-owned-input-boundary
 ---
 
 # Stabilize Host-owned Input Boundary Build Plan

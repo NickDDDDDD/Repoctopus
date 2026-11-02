@@ -2,6 +2,8 @@
 comet_change: stabilize-host-owned-input-boundary
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-02-stabilize-host-owned-input-boundary
+status: final
 ---
 
 # Design
