@@ -30,7 +30,7 @@
   **Acceptance:** 文档不把 `*` 描述为所有团队的最佳实践；明确修改共享配置并重试原 Design checkpoint，不允许手改 Store
   **Requirements:** project-configuration / 探测候选必须提供可审查的 Change coverage; implementation-evidence / Design 完成前必须证明 Verification coverage
 
-- [ ] 3.2 运行定向测试、生产 CLI 多仓初始化复现、完整 `npm run verify`、package E2E、tracer E2E、严格 OpenSpec 校验和 Comet 0.5.1 Guard/Check <!-- comet-task:fcc4b227-2a35-473e-8e0e-f1381cb73bdc -->
+- [x] 3.2 运行定向测试、生产 CLI 多仓初始化复现、完整 `npm run verify`、package E2E、tracer E2E、严格 OpenSpec 校验和 Comet 0.5.1 Guard/Check <!-- comet-task:fcc4b227-2a35-473e-8e0e-f1381cb73bdc -->
   **Acceptance:** 旧失败场景在修复前证据可复现、修复后从新初始化项目完成静态和精确 coverage 预检；全部声明检查退出 0；临时项目与日志清理完成
   **Requirements:** project-configuration / Change Verify Profile 必须在审批前静态可用; implementation-evidence / Acceptance coverage 使用单一确定性解析权威
 
