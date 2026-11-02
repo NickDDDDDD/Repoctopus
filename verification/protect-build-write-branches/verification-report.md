@@ -3,7 +3,7 @@
 ## Reproducible subject
 
 - Change: `protect-build-write-branches`
-- Tested implementation commit: `449488830c3341e92d84546d32899c52ad5b0726`
+- Tested implementation commit: `ee38c39bbd352695adae4d9801d5d3d88ee77f53`
 - Package: `repoctopus@0.1.0`
 - Package files: `449`
 - Package content bytes: `5301166`
@@ -37,8 +37,9 @@ npx vitest run test/managed-change-execution.e2e.test.ts -t "in 'protected writa
 
 npm run verify
   TypeScript, Desktop TypeScript, ESLint and CLI/Desktop builds passed
-  175 test files and 812 tests passed; 2 skipped
-  One composition digest snapshot failed because the protected plugin identities intentionally changed
+  176 test files and 813 tests passed; 2 skipped
+  generated output, brand, architecture, provenance, Dashboard salvage and 18 strict OpenSpec items passed
+  The report freshness gate alone rejected the older tested-commit boundary because two final test files were committed later
 
 npx vitest run test/project-composition.test.ts
   1 test file passed; 1 test passed after updating the exact composition snapshot
@@ -52,7 +53,7 @@ npm run spec:validate
   All passed; strict OpenSpec validation passed 18 items with 0 failures
 ```
 
-The final `npm run verify` is rerun after this evidence-only report and the corrected test snapshot are committed. Its report-freshness gate must reproduce the package identity above; no product change is allowed between the tested implementation commit and that rerun.
+The report freshness gate is rerun after this evidence-only metadata update. It must independently reproduce the package identity above; no product or test change is allowed after the tested implementation commit.
 
 ## Telemetry and diagnostics
 
