@@ -121,6 +121,57 @@ function prepareInput() {
 }
 
 describe('SpecificationPlanning service', () => {
+  it('runs preflight before persisting an approval request and rejects manifest drift', async () => {
+    const blockedWorkspace = await temporaryDirectory('repoctopus-spec-preflight-blocked-');
+    cleanup.push(blockedWorkspace);
+    const blocked = app(blockedWorkspace);
+    const blockedAssessment = await blocked.planning.assess({
+      ...prepareInput(),
+      preflight: () => Promise.reject(new Error('Acceptance coverage is incomplete')),
+    });
+    expect(blockedAssessment).toMatchObject({
+      status: 'blocked',
+      reason: 'Acceptance coverage is incomplete',
+    });
+    expect(blockedAssessment.approval).toBeUndefined();
+    expect(await blocked.planning.status('planning-approval')).toBeNull();
+    await blocked.context.fiber.dispose();
+
+    const driftWorkspace = await temporaryDirectory('repoctopus-spec-preflight-drift-');
+    cleanup.push(driftWorkspace);
+    const drifted = app(driftWorkspace);
+    const driftedAssessment = await drifted.planning.assess({
+      ...prepareInput(),
+      preflight: () => {
+        drifted.specification.proposalDigest = digest('9');
+        return Promise.resolve({ evidenceDigests: [digest('d')] });
+      },
+    });
+    expect(driftedAssessment.status).toBe('blocked');
+    expect(driftedAssessment.reason).toMatch(/changed during preflight/iu);
+    expect(driftedAssessment.approval).toBeUndefined();
+    expect(await drifted.planning.status('planning-approval')).toBeNull();
+    await drifted.context.fiber.dispose();
+
+    const readyWorkspace = await temporaryDirectory('repoctopus-spec-preflight-ready-');
+    cleanup.push(readyWorkspace);
+    const ready = app(readyWorkspace);
+    const assessed = await ready.planning.assess({
+      ...prepareInput(),
+      preflight: ({ snapshot }) => {
+        expect(snapshot.changeId).toBe('planning-approval');
+        return Promise.resolve({ evidenceDigests: [digest('d')] });
+      },
+    });
+    expect(assessed).toMatchObject({
+      status: 'waiting',
+      approval: { status: 'awaiting_approval' },
+    });
+    expect(assessed.evidenceDigests).toContain(digest('d'));
+    expect(await ready.planning.status('planning-approval')).toEqual(assessed.approval);
+    await ready.context.fiber.dispose();
+  });
+
   it('rejects a pre-release approval without rewriting or dual-reading the Store', async () => {
     const workspace = await temporaryDirectory('repoctopus-spec-planning-migration-');
     cleanup.push(workspace);

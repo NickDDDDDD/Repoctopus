@@ -925,8 +925,47 @@ describe('managed Change execution production composition', () => {
           continuation: { reason: 'transition-pending' },
         });
         expect((await status()).state.workExecution).toBeUndefined();
-        const waiting = await next();
         transientDesignFailure.mockRestore();
+
+        if (!multiRepository && executionMode === 'autonomous') {
+          const invalidPlan = structuredClone(
+            await application.context.evidenceCoordinator.compile('verify'),
+          );
+          invalidPlan.nodes[0]!.covers = ['task:missing'];
+          const compile = vi
+            .spyOn(application.context.evidenceCoordinator, 'compile')
+            .mockResolvedValue(invalidPlan);
+          const plan = vi.spyOn(application.context.evidenceCoordinator, 'plan');
+          const run = vi.spyOn(application.context.evidenceCoordinator, 'run');
+
+          const coverageBlocked = await next();
+          expect(coverageBlocked.value).toMatchObject({
+            changeLifecycle: {
+              phase: 'design',
+              status: 'blocked',
+              currentWork: null,
+            },
+            continuation: { reason: 'transition-pending' },
+          });
+          expect((await status()).state.workExecution).toBeUndefined();
+          expect(compile).toHaveBeenCalledOnce();
+          expect(plan).not.toHaveBeenCalled();
+          expect(run).not.toHaveBeenCalled();
+          expect(
+            await application.context.commandRouter.execute<
+              { changeId: string; approvalPhase: 'design' },
+              SpecificationApprovalState | null
+            >('specification.approval.status', {
+              changeId: 'managed-blackbox',
+              approvalPhase: 'design',
+            }),
+          ).toBeNull();
+          compile.mockRestore();
+          plan.mockRestore();
+          run.mockRestore();
+        }
+
+        const waiting = await next();
         expect(waiting.value.changeLifecycle).toMatchObject({ phase: 'design', status: 'waiting' });
         expect((await status()).state.workExecution).toBeUndefined();
         const approval = await application.context.commandRouter.execute<

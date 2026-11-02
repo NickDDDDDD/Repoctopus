@@ -367,6 +367,11 @@ export class EvidenceCoordinator extends Service {
     return this.planWithRepositories(profileId, null);
   }
 
+  async compile(profileId: string): Promise<EvidenceExecutionPlan> {
+    const config = await this.effectiveConfig(profileId, null);
+    return compileEvidenceProfile(config, profileId);
+  }
+
   private async planWithRepositories(
     profileId: string,
     repositoryOverrides: readonly EvidenceRepositoryOverride[] | null,

@@ -17,6 +17,7 @@ import type {
   SpecificationArtifact,
   PlanningSnapshot,
   SpecificationApprovalMigrationPlan,
+  SpecificationPlanningManifest,
 } from '../domains/specification/types.js';
 import { FilePlanningApprovalStore } from '../platform/specification/file-planning-approval-store.js';
 
@@ -34,6 +35,11 @@ export interface PrepareSpecificationApprovalInput {
   buildStrategyDigest?: `sha256:${string}`;
   now?: () => Date;
   signal?: AbortSignal;
+  preflight?: (input: {
+    manifest: SpecificationPlanningManifest;
+    validation: SpecificationValidation;
+    snapshot: PlanningSnapshot;
+  }) => Promise<{ evidenceDigests: readonly `sha256:${string}`[] }>;
 }
 
 export interface DesignGateAssessment {
@@ -168,6 +174,36 @@ export class SpecificationPlanning extends Service {
         validation,
         observation,
       };
+    }
+    if (input.preflight) {
+      try {
+        const preflight = await input.preflight({
+          manifest: structuredClone(manifest),
+          validation: structuredClone(validation),
+          snapshot: structuredClone(snapshot),
+        });
+        if (preflight.evidenceDigests.some((digest) => !/^sha256:[a-f0-9]{64}$/u.test(digest))) {
+          throw new Error('Specification planning preflight returned an invalid evidence digest');
+        }
+        const currentManifest = await this.ctx.specification.planningManifest(
+          input.changeId,
+          input.signal,
+        );
+        if (currentManifest.semanticDigest !== manifest.semanticDigest) {
+          throw new Error('Specification planning changed during preflight');
+        }
+        evidenceDigests.push(...new Set(preflight.evidenceDigests));
+      } catch (error) {
+        return {
+          status: 'blocked',
+          reason:
+            error instanceof Error ? error.message : 'Specification planning preflight failed',
+          evidenceDigests,
+          validation,
+          snapshot,
+          observation,
+        };
+      }
     }
     let next = requestSpecificationApproval({
       current,

@@ -86,6 +86,7 @@ import {
   createVerificationInput,
   rebaseVerificationInput,
 } from '../domains/change-lifecycle/verification-input.js';
+import { resolveAcceptanceCoverage } from '../domains/change-lifecycle/acceptance-coverage.js';
 import { createVerifyWork } from '../domains/change-lifecycle/verify-work.js';
 import { acceptVerifyGate, rejectVerifyGate } from '../domains/change-lifecycle/verify-gate.js';
 import type { SpecificationTask } from '../domains/specification/types.js';
@@ -998,7 +999,21 @@ export class WorkflowRuns extends Service {
         approvalPhase,
         changeBranch,
         ...(approvalPhase === 'design'
-          ? { buildStrategyDigest: this.buildStrategy(state, lifecycle).semanticDigest }
+          ? {
+              buildStrategyDigest: this.buildStrategy(state, lifecycle).semanticDigest,
+              preflight: async () => {
+                const profileId = state.trigger?.facts.verificationProfileId;
+                if (typeof profileId !== 'string' || !profileId.trim()) {
+                  throw new Error('Design preflight requires a verification profile');
+                }
+                const [taskSet, plan] = await Promise.all([
+                  this.ctx.specification.tasks(lifecycle.identity.changeId, signal),
+                  this.ctx.evidenceCoordinator.compile(profileId),
+                ]);
+                const coverage = resolveAcceptanceCoverage(taskSet.tasks, plan);
+                return { evidenceDigests: [coverage.acceptanceSetHash] };
+              },
+            }
           : {}),
         ...(approvalPhase === 'open' && lifecycle.openApprovalInvalidated
           ? {
