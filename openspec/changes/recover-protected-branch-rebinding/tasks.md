@@ -53,13 +53,13 @@
 
 ## 5. Real multi-repository acceptance
 
-- [ ] 5.1 用修复分支产品恢复保留的 `add-compact-task-status-v2` Run。   <!-- comet-task:b8d7524d-4025-4758-b0f2-e9023663153a -->
+- [x] 5.1 用修复分支产品恢复保留的 `add-compact-task-status-v2` Run。   <!-- comet-task:b8d7524d-4025-4758-b0f2-e9023663153a -->
   **Acceptance:** 原 Run 从 matching reconciliation poison 回到 Build Configure，无 Store 手改或第二 Run。
   **Requirements:** 三个 source branches 已公开；backend 只读仓继续允许停留在 `main`。
-- [ ] 5.2 完成 Configure 与重新 Plan，证明新 Binding 只接受非 protected 写仓。   <!-- comet-task:a0737be6-885d-401f-8b81-b27c0c377626 -->
+- [x] 5.2 完成 Configure 与重新 Plan，证明新 Binding 只接受非 protected 写仓。   <!-- comet-task:a0737be6-885d-401f-8b81-b27c0c377626 -->
   **Acceptance:** 旧 Plan checkpoint 已失效，新 Plan 可追踪到新 Binding revision。
   **Requirements:** 不跳过 Human Decision、TDD、Review 或 Verify 门禁。
-- [ ] 5.3 继续该小型 Change 至 Verify/Archive 或记录独立非本 Change 阻塞。   <!-- comet-task:7743b0fd-80dd-49ff-bfd4-29c8fa181cdf -->
+- [x] 5.3 继续该小型 Change 至 Verify/Archive 或记录独立非本 Change 阻塞。   <!-- comet-task:7743b0fd-80dd-49ff-bfd4-29c8fa181cdf -->
   **Acceptance:** 恢复路径不再产生 reconciliation/重复 Work；后续问题具有独立结构化诊断。
   **Requirements:** 优先修复核心阻塞，不把无关功能扩进本 Change。
 
