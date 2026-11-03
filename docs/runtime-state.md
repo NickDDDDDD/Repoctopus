@@ -74,6 +74,8 @@ Build phase 固定执行 `Configure → Plan → Plan Evidence → Execute → C
 
 `BuildStrategy` 冻结经过 Design 批准的稳定语义：`autonomous|subagent-driven-development`、`tdd|direct`、standard review 与 `current|branch|worktree` 隔离意图。`ExecutionBinding` 只记录 Runtime 在 Configure 观察并验证的 Host capability、repository/branch/HEAD、ownership 和 opaque local overlay reference；绝对路径只保存在本机 overlay，不进入可移植状态或 OTLP。Configure 成功后自动进入 Plan，不建立第二次常规人工批准。
 
+隔离意图不包含 delivery target branch，也不包含逐仓 branch map。前者属于 `ChangeStartBinding`/Delivery，后者属于可重建的 `ExecutionBinding`；否则协调仓功能分支、只读仓 `main` 和不同名称的业务功能分支会被错误要求同名。Open 只验证 topology、repository identity 和隔离形态。Plan 形成精确 write scopes 后才对可写仓执行 protected-branch 检查；只读仓可以继续停留在 target branch。
+
 Runtime 本版不创建、切换或删除 checkout；Runner 先准备 checkout，再把当前事实交给 Configure。同一 Strategy 下兼容的 Host、能力、HEAD、checkout 或路径漂移会自动选择新的 Configure Work，建立新 Binding revision，并只失效依赖旧 Binding state 的 Plan/Evidence/未执行 Work。Strategy 不变时复用原 Design 决定；不兼容 Host、越界 ownership、错误 isolation 或不兼容 composition 仍然 fail closed。
 
 `tasks.md` 是需求分解与完成 claim 的语义权威。`BuildPlan` 是 Run 内的执行投影，可以把一个 Task 拆成多个 package，或把多个强耦合 Task 合为一个 package；它不会写回 OpenSpec，也不是第五类规划工件。Plan revision 只使受影响 package 的 Evidence 失效，保留摘要仍匹配的 completion。Task checkbox 一旦完成就保持完成；最新 Plan 和 Check Evidence 决定当前实现是否仍有效。
