@@ -4,7 +4,7 @@ import { Service, type Context } from '@deepseek-ai/cordis';
 import type { SkillDefinition } from '@deepseek-ai/dsh-skill';
 
 import type { ActionOutcome, RunState, RunTriggerSnapshot } from '../domains/engine/types.js';
-import type { ProjectSnapshot } from '../domains/project/types.js';
+import type { ProjectReconciliation, ProjectSnapshot } from '../domains/project/types.js';
 import { reconcileProjectSnapshots } from '../domains/project/snapshot.js';
 import { classifyWorkContinuation } from '../domains/change-lifecycle/continuation.js';
 import {
@@ -17,6 +17,11 @@ import type {
   RuntimeDiagnostic,
   RuntimeResult,
 } from '../domains/runtime/types.js';
+import {
+  classifyProtectedBranchRebind,
+  projectReconciliationDigest,
+  type AuthorizedProtectedBranchRebind,
+} from '../domains/runtime/authorized-rebind.js';
 import type { WorkflowPackage } from '../domains/workflow-contract/types.js';
 import {
   sameSkillUsageSnapshot,
@@ -1428,6 +1433,98 @@ export class WorkflowRuns extends Service {
     return null;
   }
 
+  private async authorizedProtectedBranchRebind(
+    state: RunState,
+    lifecycle: NonNullable<RunState['changeLifecycle']>,
+    currentProjectSnapshot: ProjectSnapshot,
+  ): Promise<AuthorizedProtectedBranchRebind | null> {
+    const execution = state.workExecution;
+    const rejectedPlan = [...(execution?.rejectedSubmissions ?? [])]
+      .reverse()
+      .find(
+        (submission) =>
+          submission.rejection.reasonCode === 'outcome-rejected' &&
+          submission.outcome.result?.kind === 'build-plan-candidate',
+      );
+    const result = rejectedPlan?.outcome.result;
+    const previousProjectSnapshot = await this.ctx.runStore.loadProjectSnapshot(state.runId);
+    let poisonReconciliation: ProjectReconciliation | null = null;
+    if (state.reconciliationRequired) {
+      const trajectory = await this.ctx.runStore.loadTrajectory(state.runId);
+      const value = trajectory.findLast((entry) => entry.type === 'recovery.reconciled')?.data
+        .reconciliation;
+      if (value && typeof value === 'object') {
+        poisonReconciliation = value as ProjectReconciliation;
+      }
+    }
+    const classified = classifyProtectedBranchRebind({
+      phase: lifecycle.phase,
+      workKind: lifecycle.currentWork?.kind ?? null,
+      executionStatus: execution?.status ?? null,
+      continuation: execution?.continuation ?? null,
+      candidate: result?.kind === 'build-plan-candidate' ? result : null,
+      binding: lifecycle.buildProtocol?.binding ?? null,
+      protectedBranches: frozenProtectedBranches(state),
+      previousProjectSnapshot,
+      currentProjectSnapshot,
+      reconciliationRequired: state.reconciliationRequired,
+      poisonReconciliation,
+    });
+    if (!classified.authorized) return null;
+    const invocationHost = execution?.hostInvocation?.host;
+    const binding = lifecycle.buildProtocol?.binding;
+    if (!invocationHost || !binding) return null;
+    const drift = await this.executionBindingDrift(
+      state,
+      lifecycle,
+      currentProjectSnapshot,
+      binding,
+      invocationHost,
+    );
+    return drift === 'checkout' ? classified.value : null;
+  }
+
+  private async priorAuthorizedBranchRebind(
+    state: RunState,
+    currentProjectSnapshot: ProjectSnapshot,
+  ): Promise<
+    | {
+        kind: 'authorized-protected-branch-rebind';
+        authorizationDigest: `sha256:${string}`;
+        projectReconciliationDigest: `sha256:${string}`;
+      }
+    | undefined
+  > {
+    const previousProjectSnapshot = await this.ctx.runStore.loadProjectSnapshot(state.runId);
+    const reconciliationDigest = projectReconciliationDigest(
+      reconcileProjectSnapshots(previousProjectSnapshot, currentProjectSnapshot),
+    );
+    const trajectory = await this.ctx.runStore.loadTrajectory(state.runId);
+    const fact = [...trajectory]
+      .reverse()
+      .map((entry) => entry.data.authorizedBranchRebind)
+      .find(
+        (value) =>
+          value &&
+          typeof value === 'object' &&
+          (value as Record<string, unknown>).classification ===
+            'authorized-protected-branch-rebind' &&
+          (value as Record<string, unknown>).projectReconciliationDigest === reconciliationDigest,
+      ) as Record<string, unknown> | undefined;
+    if (
+      !fact ||
+      typeof fact.authorizationDigest !== 'string' ||
+      !/^sha256:[a-f0-9]{64}$/u.test(fact.authorizationDigest)
+    ) {
+      return undefined;
+    }
+    return {
+      kind: 'authorized-protected-branch-rebind',
+      authorizationDigest: fact.authorizationDigest as `sha256:${string}`,
+      projectReconciliationDigest: reconciliationDigest,
+    };
+  }
+
   private async advanceBuildWorkspaceProgress(
     state: RunState,
     lifecycle: NonNullable<RunState['changeLifecycle']>,
@@ -1536,7 +1633,18 @@ export class WorkflowRuns extends Service {
     projectSnapshot: ProjectSnapshot;
     projectConfigDigest: `sha256:${string}`;
     workspaceRepositoryId: string;
-    reasonCode: 'host' | 'capability' | 'checkout' | 'head' | 'path' | 'checkpoint-migration';
+    reasonCode:
+      | 'host'
+      | 'capability'
+      | 'checkout'
+      | 'head'
+      | 'path'
+      | 'checkpoint-migration'
+      | 'protected-branch-correction';
+    authorizedRebind?: {
+      entrypoint: 'next' | 'resume';
+      evidence: AuthorizedProtectedBranchRebind;
+    };
     signal?: AbortSignal;
   }) {
     const protocol = input.lifecycle.buildProtocol!;
@@ -1567,18 +1675,30 @@ export class WorkflowRuns extends Service {
         reason: 'execution-binding-drift',
         reasonCode: input.reasonCode,
         previousBindingId: protocol.binding!.bindingId,
+        ...(input.authorizedRebind
+          ? {
+              authorizationDigest: input.authorizedRebind.evidence.authorizationDigest,
+              correctedRepositoryCount: input.authorizedRebind.evidence.repositoryCount,
+              unresolvedRepositoryCount:
+                input.authorizedRebind.evidence.unresolvedRepositoryIds.length,
+            }
+          : {}),
       },
     });
     for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
       await this.coordinator.bindSkill(input.state.runId, skill);
     }
     const reason = `Execution Binding ${input.reasonCode} drift requires automatic revalidation`;
-    const transitioned = await this.coordinator.acceptChangeObservation(input.state.runId, {
-      kind: 'build-binding-revalidation-required',
-      reasonCode: input.reasonCode,
-      reason,
-      work,
-    });
+    const transitioned = await this.coordinator.acceptChangeObservation(
+      input.state.runId,
+      {
+        kind: 'build-binding-revalidation-required',
+        reasonCode: input.reasonCode,
+        reason,
+        work,
+      },
+      input.authorizedRebind ? { authorizedRebind: input.authorizedRebind } : undefined,
+    );
     await this.ctx.workExecutionAuthority.recordWorkCreated(input.state.runId, work);
     return {
       ...transitioned,
@@ -2364,25 +2484,20 @@ export class WorkflowRuns extends Service {
               current.workExecution?.status === 'invoking' &&
               current.workExecution.continuation === 'awaiting-correction'
             ) {
-              const invocationHost = current.workExecution.hostInvocation?.host;
-              if (!invocationHost) {
-                throw new Error('Protected branch recovery requires the persisted Plan Host');
-              }
-              const bindingDrift = await this.executionBindingDrift(
+              const authorization = await this.authorizedProtectedBranchRebind(
                 current,
                 lifecycle,
                 projectSnapshot,
-                lifecycle.buildProtocol.binding,
-                invocationHost,
               );
-              if (bindingDrift) {
+              if (authorization) {
                 return this.dispatchExecutionBindingRevalidation({
                   state: current,
                   lifecycle,
                   projectSnapshot,
                   projectConfigDigest,
                   workspaceRepositoryId,
-                  reasonCode: bindingDrift,
+                  reasonCode: 'protected-branch-correction',
+                  authorizedRebind: { entrypoint: 'next', evidence: authorization },
                   ...(signal ? { signal } : {}),
                 });
               }
@@ -5076,8 +5191,63 @@ export class WorkflowRuns extends Service {
           ],
         };
       }
+      const currentState = await this.ctx.runStore.loadRun(options.runId);
+      const lifecycle = currentState.changeLifecycle;
+      if (
+        lifecycle?.phase === 'build' &&
+        lifecycle.currentWork?.kind === 'build.plan' &&
+        lifecycle.buildProtocol?.binding &&
+        currentState.workExecution?.status === 'invoking' &&
+        currentState.workExecution.continuation === 'awaiting-correction'
+      ) {
+        const authorization = await this.authorizedProtectedBranchRebind(
+          currentState,
+          lifecycle,
+          options.currentProjectSnapshot,
+        );
+        if (authorization) {
+          const projectConfigDigest = currentState.trigger?.facts.projectConfigDigest;
+          const specificationRoot = currentState.trigger?.facts.specificationRoot as
+            | { repositoryId?: unknown }
+            | undefined;
+          if (
+            typeof projectConfigDigest !== 'string' ||
+            !/^sha256:[a-f0-9]{64}$/u.test(projectConfigDigest) ||
+            typeof specificationRoot?.repositoryId !== 'string'
+          ) {
+            throw new Error('Protected branch recovery trigger identities are missing');
+          }
+          const dispatched = await this.dispatchExecutionBindingRevalidation({
+            state: currentState,
+            lifecycle,
+            projectSnapshot: options.currentProjectSnapshot,
+            projectConfigDigest: projectConfigDigest as `sha256:${string}`,
+            workspaceRepositoryId: specificationRoot.repositoryId,
+            reasonCode: 'protected-branch-correction',
+            authorizedRebind: { entrypoint: 'resume', evidence: authorization },
+            ...(signal ? { signal } : {}),
+          });
+          return {
+            ...dispatched,
+            value: {
+              ...dispatched.value,
+              reconciliation: authorization.reconciliation,
+              skillCompatibility,
+              specificationCompatibility,
+              execution: await this.ctx.workExecutionAuthority.recovery(options.runId),
+            },
+          };
+        }
+      }
       await this.ctx.workExecutionAuthority.reconcileCurrentCheckpoint(options.runId);
-      const result = await this.coordinator.resume(options);
+      const priorAuthorization = await this.priorAuthorizedBranchRebind(
+        currentState,
+        options.currentProjectSnapshot,
+      );
+      const result = await this.coordinator.resume({
+        ...options,
+        ...(priorAuthorization ? { authorizedReconciliation: priorAuthorization } : {}),
+      });
       let execution = await this.ctx.workExecutionAuthority.recovery(options.runId);
       if (result.value.reconciliation.requiresReconciliation) {
         execution = { ...execution, continuation: 'reconcile', reason: 'project-drift' };

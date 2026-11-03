@@ -45,6 +45,10 @@ import {
   compareLifecycleContributorSnapshots,
   type LifecycleContributorSnapshot,
 } from '../change-lifecycle/contributors.js';
+import {
+  projectReconciliationDigest,
+  type AuthorizedProtectedBranchRebind,
+} from './authorized-rebind.js';
 
 export interface StartWorkflowRunOptions {
   workflow: WorkflowPackage;
@@ -448,6 +452,12 @@ export class WorkflowRunCoordinator {
   async acceptChangeObservation(
     runId: string,
     observation: ChangeLifecycleObservation,
+    options?: {
+      authorizedRebind?: {
+        entrypoint: 'next' | 'resume';
+        evidence: AuthorizedProtectedBranchRebind;
+      };
+    },
   ): Promise<RuntimeResult<RunStatusView>> {
     await this.recoverChangeLifecycleDefinition(runId);
     await this.store.commitGuarded(runId, ({ state, trajectory }) => {
@@ -463,6 +473,21 @@ export class WorkflowRunCoordinator {
               canonicalJson(entry.data.observation) === canonicalJson(observation))),
       );
       if (replayed) return { value: undefined };
+      const authorizedRebind = options?.authorizedRebind;
+      if (authorizedRebind) {
+        if (observation.kind !== 'build-binding-revalidation-required') {
+          throw new Error('Authorized branch rebind can only dispatch Binding revalidation');
+        }
+        if (
+          state.changeLifecycle.phase !== 'build' ||
+          state.changeLifecycle.currentWork?.kind !== 'build.plan' ||
+          state.changeLifecycle.buildProtocol?.binding?.bindingId !==
+            authorizedRebind.evidence.bindingId ||
+          state.reconciliationRequired !== authorizedRebind.evidence.poisonRecovery
+        ) {
+          throw new Error('Authorized branch rebind evidence is stale');
+        }
+      }
       if (
         (observation.kind === 'verify-gate-satisfied' ||
           observation.kind === 'verify-gate-rejected') &&
@@ -487,6 +512,7 @@ export class WorkflowRunCoordinator {
         ...retirement.state,
         status,
         changeLifecycle,
+        reconciliationRequired: authorizedRebind ? false : state.reconciliationRequired,
         acceptedEvidenceBundleIds:
           observation.kind === 'verify-gate-satisfied'
             ? [...new Set([...state.acceptedEvidenceBundleIds, observation.bundleId])]
@@ -507,6 +533,21 @@ export class WorkflowRunCoordinator {
             observationKind: observation.kind,
             observationDigest,
             observation: structuredClone(observation),
+            ...(authorizedRebind
+              ? {
+                  authorizedBranchRebind: {
+                    schemaVersion: 1,
+                    entrypoint: authorizedRebind.entrypoint,
+                    classification: authorizedRebind.evidence.kind,
+                    result: 'dispatched',
+                    poisonRecovery: authorizedRebind.evidence.poisonRecovery,
+                    repositoryCount: authorizedRebind.evidence.repositoryCount,
+                    authorizationDigest: authorizedRebind.evidence.authorizationDigest,
+                    projectReconciliationDigest:
+                      authorizedRebind.evidence.projectReconciliationDigest,
+                  },
+                }
+              : {}),
             ...(retirement.fact ? { executionRetirement: structuredClone(retirement.fact) } : {}),
             ...(status === 'completed' || status === 'failed'
               ? {
@@ -880,6 +921,11 @@ export class WorkflowRunCoordinator {
   async resume(options: {
     runId: string;
     currentProjectSnapshot: ProjectSnapshot;
+    authorizedReconciliation?: {
+      kind: 'authorized-protected-branch-rebind';
+      authorizationDigest: `sha256:${string}`;
+      projectReconciliationDigest: `sha256:${string}`;
+    };
   }): Promise<RuntimeResult<ResumeView>> {
     const recovered = await this.store.recover(options.runId);
     await this.prepareWritableComposition(options.runId);
@@ -888,8 +934,30 @@ export class WorkflowRunCoordinator {
       previousSnapshot,
       options.currentProjectSnapshot,
     );
-    await this.store.commitGuarded(options.runId, ({ state, trajectory }) => {
+    const requestedAuthorizedReconciliation =
+      options.authorizedReconciliation?.projectReconciliationDigest ===
+      projectReconciliationDigest(reconciliation)
+        ? options.authorizedReconciliation
+        : undefined;
+    const resumeResult = await this.store.commitGuarded(options.runId, ({ state, trajectory }) => {
       this.assertWritableComposition(state);
+      const authorizedReconciliation = requestedAuthorizedReconciliation
+        ? trajectory.some((entry) => {
+            const fact = entry.data.authorizedBranchRebind;
+            return (
+              fact !== null &&
+              typeof fact === 'object' &&
+              (fact as Record<string, unknown>).classification ===
+                requestedAuthorizedReconciliation.kind &&
+              (fact as Record<string, unknown>).authorizationDigest ===
+                requestedAuthorizedReconciliation.authorizationDigest &&
+              (fact as Record<string, unknown>).projectReconciliationDigest ===
+                requestedAuthorizedReconciliation.projectReconciliationDigest
+            );
+          })
+        : false;
+      const requiresReconciliation =
+        reconciliation.requiresReconciliation && !authorizedReconciliation;
       const resumeBasis = [...trajectory]
         .reverse()
         .find((entry) => entry.type !== 'run.resumed' && entry.type !== 'recovery.reconciled');
@@ -897,16 +965,17 @@ export class WorkflowRunCoordinator {
         options.runId,
         resumeBasis?.eventId ?? 'run-start',
         options.currentProjectSnapshot.digest,
-        reconciliation.requiresReconciliation ? 'recovery.reconciled' : 'run.resumed',
+        requiresReconciliation ? 'recovery.reconciled' : 'run.resumed',
       );
       if (trajectory.some((entry) => entry.eventId === resumeEventId)) {
-        return { value: undefined };
+        return { value: { requiresReconciliation } };
       }
       const timestamp = this.clock().toISOString();
       const nextState: RunState = {
         ...state,
-        reconciliationRequired:
-          state.reconciliationRequired || reconciliation.requiresReconciliation,
+        reconciliationRequired: authorizedReconciliation
+          ? false
+          : state.reconciliationRequired || requiresReconciliation,
         stateVersion: state.stateVersion + 1,
         updatedAt: timestamp,
       };
@@ -916,14 +985,30 @@ export class WorkflowRunCoordinator {
           eventId: resumeEventId,
           sequence: trajectory.length + 1,
           timestamp,
-          type: reconciliation.requiresReconciliation ? 'recovery.reconciled' : 'run.resumed',
+          type: requiresReconciliation ? 'recovery.reconciled' : 'run.resumed',
           state: nextState,
-          data: { recoveredTransition: recovered, reconciliation },
+          data: {
+            recoveredTransition: recovered,
+            reconciliation,
+            ...(authorizedReconciliation && requestedAuthorizedReconciliation
+              ? {
+                  authorizedBranchRebind: {
+                    schemaVersion: 1,
+                    entrypoint: 'resume',
+                    classification: requestedAuthorizedReconciliation.kind,
+                    result: 'idempotent',
+                    authorizationDigest: requestedAuthorizedReconciliation.authorizationDigest,
+                    projectReconciliationDigest:
+                      requestedAuthorizedReconciliation.projectReconciliationDigest,
+                  },
+                }
+              : {}),
+          },
         }),
-        value: undefined,
+        value: { requiresReconciliation },
       };
     });
-    const diagnostics: RuntimeDiagnostic[] = reconciliation.requiresReconciliation
+    const diagnostics: RuntimeDiagnostic[] = resumeResult.requiresReconciliation
       ? [
           {
             level: 'warning',

@@ -9,6 +9,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { bootProjectComposition } from '../app/boot/bootstrap.js';
 import { compositionIdentity } from '../app/boot/composition.js';
 import { createProjectSnapshot, reconcileProjectSnapshots } from '../domains/project/snapshot.js';
+import { WorkflowRunCoordinator } from '../domains/runtime/workflow-runs.js';
 import type { DeliveryIntentV3, DeliveryPolicy } from '../domains/delivery/types.js';
 import type { RunStatusView, RuntimeResult } from '../domains/runtime/types.js';
 import type { RunStoreInspection } from '../domains/runtime/types.js';
@@ -74,9 +75,21 @@ describe('managed Change execution production composition', () => {
       multiRepository: true,
       protectedWriteRepositories: true,
     },
+    {
+      label: 'matching protected branch reconciliation poison recovers in the same Run',
+      executionMode: 'autonomous' as const,
+      multiRepository: true,
+      protectedWriteRepositories: true,
+      prepoisonedProtectedRecovery: true,
+    },
   ])(
     'executes fresh Open -> Design -> Build -> Verify -> Archive in $label',
-    async ({ executionMode, multiRepository, protectedWriteRepositories = false }) => {
+    async ({
+      executionMode,
+      multiRepository,
+      protectedWriteRepositories = false,
+      prepoisonedProtectedRecovery = false,
+    }) => {
       const root = await temporaryDirectory('repoctopus-managed-change-');
       cleanup.push(root);
       const workspaceRemote = path.join(root, 'workspace.git');
@@ -1200,8 +1213,45 @@ describe('managed Change execution production composition', () => {
               { cwd: repository },
             );
           }
-          const recovered = await next();
+          await restartApplication();
+          const correctedSnapshot = await application.context.project.snapshot({
+            workspaceId: 'managed-blackbox',
+            workspaceRoot: workspace,
+            workspaceRepositoryId: 'workspace',
+            repositories: [
+              { id: 'workspace', path: workspace },
+              { id: 'app', path: appRepository },
+              { id: 'worker', path: workerRepository },
+            ],
+          });
+          if (prepoisonedProtectedRecovery) {
+            const previousRuntime = new WorkflowRunCoordinator(
+              new FileRuntimeStore(workspace),
+              { async export() {} },
+              productionComposition,
+            );
+            const poisoned = await previousRuntime.resume({
+              runId,
+              currentProjectSnapshot: correctedSnapshot,
+            });
+            expect(poisoned.value).toMatchObject({
+              state: { reconciliationRequired: true },
+              changeLifecycle: {
+                phase: 'build',
+                currentWork: { kind: 'build.plan' },
+              },
+            });
+          }
+          const recovered = await application.context.workflowRuns.resume({
+            runId,
+            currentProjectSnapshot: correctedSnapshot,
+          });
           expect(recovered.value).toMatchObject({
+            reconciliation: {
+              changeClass: 'identity',
+              requiresReconciliation: true,
+            },
+            state: { reconciliationRequired: false },
             changeLifecycle: {
               phase: 'build',
               currentWork: { kind: 'build.configure' },
@@ -1209,6 +1259,18 @@ describe('managed Change execution production composition', () => {
             },
           });
           expect(recovered.value.state.workExecution).toBeUndefined();
+          const configureWorkId = recovered.value.changeLifecycle?.currentWork?.workId;
+          const replayedRecovery = await application.context.workflowRuns.resume({
+            runId,
+            currentProjectSnapshot: correctedSnapshot,
+          });
+          expect(replayedRecovery.value).toMatchObject({
+            state: { reconciliationRequired: false },
+            changeLifecycle: {
+              phase: 'build',
+              currentWork: { kind: 'build.configure', workId: configureWorkId },
+            },
+          });
           const recoveredInspection = await application.context.commandRouter.execute<
             { runId: string },
             RunStoreInspection
@@ -1222,6 +1284,38 @@ describe('managed Change execution production composition', () => {
               changeLifecycleTransition: {
                 transitionId: 'build.binding-revalidation-required',
               },
+            },
+          });
+          expect(
+            recoveredInspection.trajectory.filter(
+              (event) =>
+                event.type === 'change.lifecycle.transitioned' &&
+                (event.data.authorizedBranchRebind as { result?: unknown } | undefined)?.result ===
+                  'dispatched',
+            ),
+          ).toHaveLength(1);
+          await execFileAsync('git', ['switch', '-c', 'unrelated/resume-drift'], {
+            cwd: workspace,
+          });
+          const unrelatedSnapshot = await application.context.project.snapshot({
+            workspaceId: 'managed-blackbox',
+            workspaceRoot: workspace,
+            workspaceRepositoryId: 'workspace',
+            repositories: [
+              { id: 'workspace', path: workspace },
+              { id: 'app', path: appRepository },
+              { id: 'worker', path: workerRepository },
+            ],
+          });
+          const unrelatedResume = await application.context.workflowRuns.resume({
+            runId,
+            currentProjectSnapshot: unrelatedSnapshot,
+          });
+          expect(unrelatedResume.value).toMatchObject({
+            state: { reconciliationRequired: true },
+            changeLifecycle: {
+              phase: 'build',
+              currentWork: { kind: 'build.configure', workId: configureWorkId },
             },
           });
           capture.dispose();

@@ -92,6 +92,8 @@
 
 Comet 0.5.1 再次确认：等待超时不是执行失败，已派发 verifier 仍是同一任务，未知外部结果必须先观察再决定，lock repair 必须绑定精确 token。Repoctopus 后续核心可靠性 Change 应把这些原则映射到 frozen Work packet、Host Outcome、Specification Provider Gate 与 diagnostics，不应新增 lifecycle generation 或第二套状态权威。
 
+`recover-protected-branch-rebinding` 继续采用该显式 rebind/checkpoint 原则：Runtime 自己要求的 workspace 修正必须绑定前一 rejected Action 的不可变证据并恢复同一 Run，未知漂移仍 fail closed。Repoctopus 的适配点是多仓 Plan 的精确 write-set 与不可变 Work Descriptor；没有复制 Comet 单仓 Store、SDK 或产品状态格式。
+
 当前版本刷新 Change 不做上述 Runtime 修复。原因不是兼容旧设计，而是避免 provenance 变更与行为重构混在一个验证边界中。已发现问题保留在本 Change 的 Design “Deferred Core Reliability Findings” 中，并将在归档后建立独立 Specification Change。
 
 ## 每日漂移策略

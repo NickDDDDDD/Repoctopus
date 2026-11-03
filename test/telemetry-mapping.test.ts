@@ -139,6 +139,63 @@ describe('telemetry mapping', () => {
     );
   });
 
+  it('projects authorized branch rebind telemetry without high-cardinality Metric labels', () => {
+    const workflow = workflowFixture();
+    const project = projectFixture();
+    const run = startRun({
+      workflow,
+      runId: 'run-authorized-rebind',
+      projectSnapshotDigest: project.digest,
+      composition: compositionFixture(),
+      timestamp: '2026-11-04T00:00:00.000Z',
+      traceId: '7'.repeat(32),
+    });
+    const event: TrajectoryEvent = {
+      schemaVersion: 1,
+      sequence: 3,
+      eventId: 'authorized-rebind',
+      timestamp: run.createdAt,
+      type: 'change.lifecycle.transitioned',
+      runId: run.runId,
+      stateVersion: 3,
+      compositionDigest: run.composition.compositionDigest,
+      data: {
+        authorizedBranchRebind: {
+          schemaVersion: 1,
+          entrypoint: 'resume',
+          classification: 'authorized-protected-branch-rebind',
+          result: 'dispatched',
+          poisonRecovery: true,
+          repositoryCount: 2,
+          authorizationDigest: `sha256:${'c'.repeat(64)}`,
+          projectReconciliationDigest: `sha256:${'d'.repeat(64)}`,
+          branch: 'private/feature-name',
+          repositoryId: 'private-repository-id',
+          path: 'C:/private/checkout',
+        },
+      },
+    };
+    const batch = { run, workflow, projectSnapshot: project, events: [event], trajectory: [event] };
+    const trace = safeEventAttributes(batch, event);
+    expect(trace).toMatchObject({
+      'repoctopus.build.rebind.entrypoint': 'resume',
+      'repoctopus.build.rebind.classification': 'authorized-protected-branch-rebind',
+      'repoctopus.build.rebind.result': 'dispatched',
+      'repoctopus.build.rebind.poison_recovery': true,
+      'repoctopus.build.rebind.repository_count': 2,
+      'repoctopus.build.rebind.authorization_digest': `sha256:${'c'.repeat(64)}`,
+    });
+    const metric = workflowEventMetricAttributes(batch, event);
+    expect(metric).toMatchObject({
+      'repoctopus.build.rebind.entrypoint': 'resume',
+      'repoctopus.build.rebind.result': 'dispatched',
+      'repoctopus.build.rebind.poison_recovery': true,
+    });
+    expect(JSON.stringify(metric)).not.toMatch(
+      /private|repository_count|authorization_digest|projectReconciliationDigest|sha256:/u,
+    );
+  });
+
   it('projects one accepted Change transition identically for Desktop and remote OTLP', () => {
     const workflow = workflowFixture();
     const project = projectFixture();
