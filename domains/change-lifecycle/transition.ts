@@ -1999,7 +1999,11 @@ export function evolveChangeLifecycle(options: {
       verificationInputDigest: archive.verificationInputDigest,
       evidenceBundleId: archive.evidenceBundleId,
       verificationReport: archive.verificationReport,
-      changeBranch: { ...archive.changeBranch, remoteOid: '<corrected>' },
+      changeBranch: {
+        ...archive.changeBranch,
+        remoteIdentity: '<corrected>',
+        remoteOid: '<corrected>',
+      },
       businessDeliveries: archive.businessDeliveries,
       businessSplitReason: archive.businessSplitReason,
       publicationPolicyDigest: archive.publicationPolicyDigest,
@@ -2021,8 +2025,10 @@ export function evolveChangeLifecycle(options: {
       observation.archiveInput.changeId !== current.identity.changeId ||
       observation.archiveInput.changeBranch.remoteOid !==
         current.specificationClosure.candidate.baseOid ||
-      observation.archiveInput.changeBranch.remoteOid ===
-        current.archiveDeliveryInput.changeBranch.remoteOid ||
+      (observation.archiveInput.changeBranch.remoteOid ===
+        current.archiveDeliveryInput.changeBranch.remoteOid &&
+        observation.archiveInput.changeBranch.remoteIdentity ===
+          current.archiveDeliveryInput.changeBranch.remoteIdentity) ||
       canonicalJson(stableArchiveIdentity(observation.archiveInput)) !==
         canonicalJson(stableArchiveIdentity(current.archiveDeliveryInput)) ||
       !observation.reason.trim()

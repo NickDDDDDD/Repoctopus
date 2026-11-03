@@ -103,6 +103,8 @@ Metric labels 不包含 repository id、branch、HEAD、path、digest 或诊断�
 
 Change branch inspection 改为复用 Project probe 的 `normalizeRemoteIdentity(remoteUrl)`。这样 `repositoryId` 继续负责 Workspace/业务仓拓扑定位，`remoteIdentity` 只负责证明两个边界观察的是同一个远端仓库；Archive publication 可以在产生任何远端副作用前做精确比较。真正的平台稳定 ID 以后若由受信 Adapter 提供，必须拥有独立来源与类型，不能从配置别名猜测。
 
+对于修复前已经冻结、但尚未产生任何远端 publication 副作用的 Archive，Runtime 只允许从仍有效的 Design approval 重绑定 Change branch 的 `remoteIdentity`，并把 OID 约束为隔离 Closure candidate 的 base OID，然后生成新的 `delivery.publish` Work。repository、source/target branch、业务交付、Evidence、策略或 Closure identity 任一变化仍返回 Design/失败，不把这条恢复路径扩展成通用 intent 改写。
+
 ## Testing Strategy
 
 1. 领域红测：checkpoint 创建、逐包 fast-forward、未授权仓变化、non-fast-forward、幂等不变 HEAD。

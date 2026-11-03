@@ -15,3 +15,8 @@ Repoctopus MUST 让 Planning approval 中的 Change branch 与 Archive publicati
 
 - **WHEN** Archive intent 的 Change branch remote identity 与 Project snapshot 的 Workspace Repository remote identity 不同
 - **THEN** Runtime 在任何 push、MR 或规格关闭发布副作用前 fail closed
+
+#### Scenario: 已冻结 Archive 使用了配置别名
+
+- **WHEN** 修复前的 Archive 已完成本地隔离 Closure、尚未产生远端 publication，且当前有效 Design approval 只把同一路由的配置别名规范化为真实 Git remote identity
+- **THEN** Runtime 可以仅重绑定批准的 remote identity 与 Closure base OID、重发 `delivery.publish` Work，并保持业务交付、Evidence、策略与 Closure identity 不变

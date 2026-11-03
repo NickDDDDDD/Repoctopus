@@ -43,7 +43,7 @@
       **Requirements:** managed-work-execution / Runtime 必须按 Package write scope 推进 workspace revision
 
 - [x] 3.5 统一 Planning approval、Project snapshot 与 Archive publication 的 Workspace Repository remote identity。
-      **Acceptance:** 配置内 repository id 不再冒充平台仓库身份；同一 Git remote 在规划与发布边界产生相同规范化 identity，真实多仓 Archive 不在发布时误报 Workspace Repository 不匹配。
+      **Acceptance:** 配置内 repository id 不再冒充平台仓库身份；同一 Git remote 在规划与发布边界产生相同规范化 identity；尚未产生远端副作用的已冻结 Archive 可用当前批准身份重发 Publish Work，真实多仓 Archive 不在发布时误报 Workspace Repository 不匹配。
       **Requirements:** delivery-governance / Change branch 与 Publication 必须共享同一远端身份
 
 ## 4. 验证与继续真实验收

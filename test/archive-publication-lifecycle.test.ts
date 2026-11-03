@@ -433,7 +433,7 @@ describe('Archive publication terminal lifecycle', () => {
     });
   });
 
-  it('rebinds only the approved Change branch OID before publication and preserves the closure', () => {
+  it('rebinds only the approved Change branch publication identity before publication and preserves the closure', () => {
     const { closed, archive, closure } = archiveState();
     const correctedArchive = createArchiveDeliveryInput({
       runId: archive.runId,
@@ -480,6 +480,51 @@ describe('Archive publication terminal lifecycle', () => {
         changeBranch: { remoteOid: closure.candidate.baseOid },
       },
       specificationClosure: { closureId: closure.closureId },
+    });
+
+    const identityCorrectedArchive = createArchiveDeliveryInput({
+      runId: archive.runId,
+      changeId: archive.changeId,
+      verificationInputDigest: archive.verificationInputDigest,
+      acceptedEvidenceBundleIds: [archive.evidenceBundleId],
+      evidenceBundleId: archive.evidenceBundleId,
+      verificationReport: archive.verificationReport,
+      intent: {
+        ...intent,
+        changeBranch: {
+          ...intent.changeBranch,
+          remoteIdentity: 'github.com/team/workspace',
+          remoteOid: closure.candidate.baseOid,
+        },
+      },
+      policy,
+      planningCompositionDigest: digest('6'),
+      evidenceCompositionDigest: digest('6'),
+    });
+    const identityCorrectionWork = createDeliveryPublishWork({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      checkEpoch: closed.checkEpoch + 1,
+      archive: identityCorrectedArchive,
+      closure,
+      actionSkill: prSkill,
+      workspaceRepositoryId: 'workspace',
+      repositoryIds: ['workspace', 'app'],
+    });
+    const identityCorrected = evolveChangeLifecycle({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current: closed,
+      observation: {
+        kind: 'archive-intent-corrected',
+        priorArchiveInputDigest: archive.digest,
+        archiveInput: identityCorrectedArchive,
+        closure,
+        work: identityCorrectionWork,
+        reason: 'approved canonical remote identity replaces the configuration alias',
+      },
+    });
+    expect(identityCorrected.snapshot.archiveDeliveryInput?.changeBranch).toMatchObject({
+      remoteIdentity: 'github.com/team/workspace',
+      remoteOid: closure.candidate.baseOid,
     });
 
     expect(() =>

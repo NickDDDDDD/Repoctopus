@@ -213,10 +213,9 @@ export interface ExecuteArchiveDeliveryResult {
   run: RunStatusView;
 }
 
-function deliveryBranchCoordinates(branch: DeliveryIntentV3['changeBranch']) {
+function deliveryBranchRoute(branch: DeliveryIntentV3['changeBranch']) {
   return {
     repositoryId: branch.repositoryId,
-    remoteIdentity: branch.remoteIdentity,
     sourceBranch: branch.sourceBranch,
     targetBranch: branch.targetBranch,
   };
@@ -4742,20 +4741,27 @@ export class WorkflowRuns extends Service {
           planningApproval.status !== 'approved' ||
           planningApproval.decision?.decision !== 'approve' ||
           planningApproval.snapshot.changeId !== lifecycle.identity.changeId ||
-          canonicalJson(deliveryBranchCoordinates(archive.changeBranch)) !==
-            canonicalJson(deliveryBranchCoordinates(planningApproval.snapshot.changeBranch)) ||
-          archive.changeBranch.remoteOid === closure.candidate.baseOid
+          canonicalJson(deliveryBranchRoute(archive.changeBranch)) !==
+            canonicalJson(deliveryBranchRoute(planningApproval.snapshot.changeBranch)) ||
+          (archive.changeBranch.remoteOid === closure.candidate.baseOid &&
+            archive.changeBranch.remoteIdentity ===
+              planningApproval.snapshot.changeBranch.remoteIdentity)
         ) {
           throw error;
         }
         const normalizeCorrection = (candidate: DeliveryIntentV3) => ({
           ...candidate,
-          changeBranch: { ...candidate.changeBranch, remoteOid: '<corrected>' },
+          changeBranch: {
+            ...candidate.changeBranch,
+            remoteIdentity: '<corrected>',
+            remoteOid: '<corrected>',
+          },
         });
         const correctedIntent: DeliveryIntentV3 = {
           ...intent,
           changeBranch: {
             ...structuredClone(intent.changeBranch),
+            remoteIdentity: planningApproval.snapshot.changeBranch.remoteIdentity,
             remoteOid: closure.candidate.baseOid,
           },
         };
@@ -4764,7 +4770,7 @@ export class WorkflowRuns extends Service {
           canonicalJson(normalizeCorrection(correctedIntent))
         ) {
           throw new Error(
-            'Archive intent correction may change only the Change branch remote OID',
+            'Archive intent correction may change only the approved Change branch remote identity and OID',
             {
               cause: error,
             },
@@ -4903,7 +4909,7 @@ export class WorkflowRuns extends Service {
               level: 'warning',
               code: 'change.archive-intent-corrected',
               message:
-                'Archive Change branch OID was rebound to the approved closure baseline before publication',
+                'Archive Change branch remote identity and OID were rebound to the approved closure baseline before publication',
             },
           ],
         };
