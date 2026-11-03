@@ -793,7 +793,7 @@ describe('managed Change execution production composition', () => {
             decision: 'approve',
           },
           actor: { actorId: 'managed-test-user', source: 'cli', authenticated: true },
-          isolation: 'current',
+          isolation: 'branch',
         });
         if (!multiRepository && executionMode === 'autonomous') {
           await writeFile(
@@ -849,7 +849,7 @@ describe('managed Change execution production composition', () => {
               decision: 'approve',
             },
             actor: { actorId: 'managed-test-user', source: 'cli', authenticated: true },
-            isolation: 'current',
+            isolation: 'branch',
           });
         }
         let designWork: RuntimeResult<RunStatusView>;
@@ -937,6 +937,17 @@ describe('managed Change execution production composition', () => {
         expect(designWork.value.changeLifecycle).toMatchObject({
           phase: 'design',
           currentWork: { kind: 'specification.plan' },
+          workspaceIntent: { schemaVersion: 2, isolation: 'branch' },
+        });
+        expect(designWork.value.changeLifecycle?.workspaceIntent).not.toHaveProperty(
+          'targetBranch',
+        );
+        expect(designWork.value.state.trigger?.facts).toMatchObject({
+          targetBranch: { targetBranch: 'main' },
+          changeStartBinding: {
+            sourceBranch: 'spec/managed-blackbox',
+            targetBranch: 'main',
+          },
         });
         const designWorkId = designWork.value.changeLifecycle?.currentWork?.workId;
         expect(designWorkId).toBeTruthy();

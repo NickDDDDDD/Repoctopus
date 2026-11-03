@@ -17,7 +17,6 @@ function workspaceBinding(options: {
     workspaceId: 'team-platform',
     changeId: 'strategy-binding',
     isolation,
-    ...(isolation === 'branch' ? { targetBranch: 'codex/strategy-binding' } : {}),
   });
   return {
     intent,

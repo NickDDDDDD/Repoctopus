@@ -34,7 +34,6 @@ export type ExecutionWorkspaceBindingErrorCode =
   | 'remote-identity-drift'
   | 'current-checkout-mismatch'
   | 'current-linked-worktree'
-  | 'branch-mismatch'
   | 'worktree-ownership-missing';
 
 export type ExecutionWorkspaceBindingRecovery = 'intent-revision' | 'binding-retry' | 'halt';
@@ -106,15 +105,6 @@ export async function bindExecutionWorkspace(
             `Current isolation cannot bind a linked worktree: ${request.repositoryId}`,
             'current-linked-worktree',
             'intent-revision',
-          );
-        }
-      }
-      if (input.intent.isolation === 'branch' && input.intent.targetBranch) {
-        if (facts.branch !== input.intent.targetBranch) {
-          throw new ExecutionWorkspaceBindingError(
-            `Branch isolation does not match the approved branch: ${request.repositoryId}`,
-            'branch-mismatch',
-            'binding-retry',
           );
         }
       }
