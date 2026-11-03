@@ -2,6 +2,7 @@
 change: bootstrap-openspec-store-root
 design-doc: openspec/changes/bootstrap-openspec-store-root/design.md
 base-ref: 75bc3b325e04353b88d13b3e15ffa618561bfebe
+archived-with: 2026-11-03-bootstrap-openspec-store-root
 ---
 
 # Bootstrap OpenSpec Store root implementation plan

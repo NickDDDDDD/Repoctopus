@@ -2,7 +2,8 @@
 comet_change: bootstrap-openspec-store-root
 role: technical-design
 canonical_spec: openspec
-status: draft
+archived-with: 2026-11-03-bootstrap-openspec-store-root
+status: final
 ---
 
 # Design
