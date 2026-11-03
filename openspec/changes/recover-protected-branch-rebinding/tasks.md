@@ -74,6 +74,6 @@
 - [x] 6.3 运行定向测试、strict OpenSpec、architecture/provenance/generated 检查和完整 `npm run verify`。   <!-- comet-task:516b03b6-2a9f-4a2c-9964-9ba3be920e2a -->
   **Acceptance:** 所有必需检查通过，Windows 生产 CLI E2E 无 flaky 重试。
   **Requirements:** 失败必须修复根因，不降低门禁或删除负例。
-- [ ] 6.4 清理临时 clone、验收日志和 scratch 输出，保留正式 Run、规格、测试与结构化诊断证据。   <!-- comet-task:5cad9452-0ead-4d67-9b1c-86a12df1c983 -->
+- [x] 6.4 清理临时 clone、验收日志和 scratch 输出，保留正式 Run、规格、测试与结构化诊断证据。   <!-- comet-task:5cad9452-0ead-4d67-9b1c-86a12df1c983 -->
   **Acceptance:** worktree 仅保留有意源码/文档变更，清理内容在最终报告列明。
   **Requirements:** 不删除用户数据、正式 evidence 或未合入分支。
