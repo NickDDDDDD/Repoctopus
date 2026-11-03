@@ -69,6 +69,12 @@ describe('project configuration detection', () => {
       storeId: 'custom-platform',
       workspaceRepositoryId: 'workspace',
       workspaceRoot: workspace,
+      root: {
+        disposition: 'missing-root',
+        storeId: 'custom-platform',
+        workspaceRoot: workspace,
+        providerVersion: '1.14.3',
+      },
     });
     expect(draft.candidateConfig?.specificationProvider).toEqual({
       id: 'specification-openspec',
@@ -235,9 +241,7 @@ describe('project configuration detection', () => {
         }),
       ]),
     );
-    const coverageFindings = draft.unresolved.filter(
-      (item) => item.code === 'acceptance-coverage',
-    );
+    const coverageFindings = draft.unresolved.filter((item) => item.code === 'acceptance-coverage');
     expect(coverageFindings).toHaveLength(verifyNodes?.length ?? 0);
     expect(coverageFindings[0]?.message).toMatch(/workspace-wide.*narrow/iu);
 

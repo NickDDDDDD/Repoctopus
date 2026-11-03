@@ -39,6 +39,8 @@
 
 2026-10-25 的 Archive 恢复复核采用 Comet 0.5.0 archive transaction 与 workspace finish journal 的行为思想：把稳定 Intent 先于副作用持久化，恢复时先观察本地 commit、远端 branch 和 MR，再决定是否继续，并把临时 workspace 的清理放在可证明的终态之后。Repoctopus 将它改造成 OpenSpec 多仓发布协议：Closure Receipt 绑定隔离 checkout/base OID，规格 Journal 明确为 `prepared → committed → pushed → completed`，Business 与 Specification Receipt 最终组合；不复制 Comet 产品命令壳、Classic/Native 双运行时、单仓路径假设或等待远端合入模型。
 
+2026-11-03 的首次项目接入修复采用 Comet 0.5.1 `project-activation.js`、`integrations/openspec.js` 与 `classic-layout-initialization.js` 的行为不变量：先声明初始化所有权，通过官方 OpenSpec 入口物化健康根，外部结果未知时重新观察 checkpoint，最后才发布项目配置。Repoctopus 没有复制这些源码或 Comet 状态文件；本地实现复用 request-scoped Store binding Intent/Receipt、固定 `SpecificationProcessPort`、OpenSpec Store registry 和多仓 pointer 顺序，并拒绝把 Comet 的单仓 Classic layout、自动删除/rollback 或第二套生命周期带入产品。真实 Windows CLI 测试使用隔离 XDG data/config 证明该采用结果。
+
 ## 未直接采用
 
 - 上游 Engine 内的文件存储和手动运行封装没有复制。它们依赖 Skill 和平台文件系统，会破坏 Repoctopus 的纯 Engine 边界。

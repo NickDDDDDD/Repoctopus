@@ -9,6 +9,8 @@ import {
   hashProjectConfig,
   parseSharedProjectConfig,
 } from '../domains/project-configuration/config.js';
+import type { ProjectDetectionDraft } from '../domains/project-configuration/detection.js';
+import { createStoreBindingIntent } from '../domains/project-configuration/store-binding.js';
 import {
   createProjectConfigurationDecision,
   type ProjectConfigurationDecisionResponse,
@@ -24,8 +26,27 @@ import {
   applyProjectConfigurationDecision,
   prepareProjectConfigurationDecision,
 } from '../platform/project-configuration/onboarding.js';
+import { OpenSpecProcess } from '../platform/specification/openspec-process.js';
+import {
+  OpenSpecStoreRegistration,
+  type OpenSpecStoreRegistrationPort,
+} from '../platform/specification/openspec-store-registration.js';
 
 const registration = {
+  inspect: () => Promise.reject(new Error('inspect is not used by this onboarding test double')),
+  prepareRoot: ({
+    expected,
+  }: {
+    expected: NonNullable<ProjectDetectionDraft['storeBinding']>['root'];
+  }) =>
+    Promise.resolve({
+      status:
+        expected.disposition === 'missing-root'
+          ? ('initialized' as const)
+          : ('already-healthy' as const),
+      evidence: expected,
+      evidenceDigest: expected.digest,
+    }),
   ensureRegistered: () =>
     Promise.resolve({
       status: 'registered' as const,
@@ -131,6 +152,26 @@ describe('project configuration onboarding', () => {
     expect(
       request.candidateConfig.profiles.find((profile) => profile.id === 'verify'),
     ).toBeDefined();
+
+    expect(() =>
+      createProjectConfigurationDecision({
+        draft: {
+          ...detected.draft,
+          storeBinding: detected.draft.storeBinding
+            ? {
+                ...detected.draft.storeBinding,
+                root: {
+                  ...detected.draft.storeBinding.root,
+                  disposition: 'partial-or-unhealthy',
+                  diagnosticCode: 'openspec-root-unhealthy',
+                },
+              }
+            : null,
+        },
+        completedCandidate: candidate,
+        currentConfig: null,
+      }),
+    ).toThrow(/root blocks.*unhealthy/iu);
   });
 
   it('keeps an Agent-completed candidate pending until a trusted bound decision approves it', async () => {
@@ -215,7 +256,7 @@ describe('project configuration onboarding', () => {
       configFile,
       configDigest: prepared.request.candidateConfigDigest,
     });
-    expect(applied.bindingReceiptFiles).toHaveLength(2);
+    expect(applied.bindingReceiptFiles).toHaveLength(3);
     expect(await readFile(path.join(frontend, 'openspec', 'config.yaml'), 'utf8')).toBe(
       `store: workspace\n`,
     );
@@ -308,6 +349,7 @@ profiles:
     });
     let registrations = 0;
     const recoverableRegistration = {
+      ...registration,
       ensureRegistered: () => {
         registrations += 1;
         return Promise.resolve({
@@ -355,7 +397,7 @@ profiles:
 
     const recovered = await applyProjectConfigurationDecision(input, recoverableRegistration);
     expect(registrations).toBe(1);
-    expect(recovered.bindingReceiptFiles).toHaveLength(3);
+    expect(recovered.bindingReceiptFiles).toHaveLength(4);
     const pointerReceipts = await Promise.all(
       recovered.bindingReceiptFiles
         .filter((file) => file.includes('pointer-'))
@@ -369,6 +411,147 @@ profiles:
       recovered,
     );
     expect(registrations).toBe(1);
+  });
+
+  it('recovers the same approved transaction when initialization landed before its Receipt', async () => {
+    const root = await temporaryDirectory('repoctopus-onboarding-root-recovery-');
+    cleanup.push(root);
+    const workspace = await createGitRepository(root, 'workspace');
+    const frontend = await createGitRepository(root, 'web-front');
+    await writeFile(
+      path.join(frontend, 'package.json'),
+      JSON.stringify({ scripts: { build: 'vite build' } }),
+    );
+    const environment = {
+      XDG_DATA_HOME: path.join(root, 'xdg-data'),
+      XDG_CONFIG_HOME: path.join(root, 'xdg-config'),
+      OPENSPEC_TELEMETRY: '0',
+      OPENSPEC_NO_UPDATE_CHECK: '1',
+      OPENSPEC_NO_AUTO_CONFIG: '1',
+    };
+    const authority = new OpenSpecStoreRegistration(
+      new OpenSpecProcess(undefined, 60_000, 16 * 1024 * 1024, environment),
+    );
+    const detected = await detectProjectConfiguration({
+      workspace,
+      scanRoot: root,
+      storeId: 'root-recovery',
+      specificationAuthority: authority,
+    });
+    const prepared = await prepareProjectConfigurationDecision({
+      workspace,
+      draftFile: detected.file,
+      completedCandidate: detected.draft.candidateConfig,
+      requestId: 'root-recovery-request',
+    });
+    const input = {
+      workspace,
+      decisionFile: prepared.file,
+      response: response(prepared.request),
+      actor: { actorId: 'user', source: 'cli' as const, authenticated: true },
+      timestamp: '2026-01-01T00:03:00.000Z',
+    };
+    let interrupted = false;
+    const interruptedAuthority: OpenSpecStoreRegistrationPort = {
+      inspect: (request) => authority.inspect(request),
+      ensureRegistered: (request) => authority.ensureRegistered(request),
+      prepareRoot: async (request) => {
+        const result = await authority.prepareRoot(request);
+        if (!interrupted) {
+          interrupted = true;
+          throw new Error('simulated lost initializer result');
+        }
+        return result;
+      },
+    };
+
+    await expect(applyProjectConfigurationDecision(input, interruptedAuthority)).rejects.toThrow(
+      /lost initializer result/u,
+    );
+    expect(await readFile(path.join(workspace, 'openspec', 'config.yaml'), 'utf8')).toContain(
+      'schema: spec-driven',
+    );
+    await expect(access(path.join(workspace, 'repoctopus.yaml'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    });
+    await expect(access(path.join(frontend, 'openspec', 'config.yaml'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    });
+
+    const recovered = await applyProjectConfigurationDecision(input, authority);
+    expect(recovered.bindingReceiptFiles).toHaveLength(3);
+    expect(
+      JSON.parse(
+        await readFile(
+          path.join(
+            workspace,
+            '.repoctopus',
+            'onboarding',
+            'store-bindings',
+            prepared.request.requestId,
+            'prepare-root.receipt.json',
+          ),
+          'utf8',
+        ),
+      ),
+    ).toMatchObject({ result: 'recovered' });
+    expect(await authority.inspect({ storeId: 'root-recovery', workspace })).toMatchObject({
+      disposition: 'registered-exact',
+    });
+  }, 30_000);
+
+  it('continues a matching historical register Intent after adding root preparation', async () => {
+    const root = await temporaryDirectory('repoctopus-onboarding-register-intent-');
+    cleanup.push(root);
+    const workspace = await createGitRepository(root, 'workspace');
+    const frontend = await createGitRepository(root, 'web-front');
+    await writeFile(
+      path.join(frontend, 'package.json'),
+      JSON.stringify({ scripts: { build: 'vite build' } }),
+    );
+    const detected = await detectProjectConfiguration({ workspace, scanRoot: root });
+    const prepared = await prepareProjectConfigurationDecision({
+      workspace,
+      draftFile: detected.file,
+      completedCandidate: detected.draft.candidateConfig,
+      requestId: 'existing-register-intent',
+    });
+    const proposal = prepared.request.storeBinding!;
+    const journal = path.join(
+      workspace,
+      '.repoctopus',
+      'onboarding',
+      'store-bindings',
+      prepared.request.requestId,
+    );
+    await mkdir(journal, { recursive: true });
+    await writeFile(
+      path.join(journal, 'register-store.intent.json'),
+      `${JSON.stringify(
+        createStoreBindingIntent({
+          actionId: 'register-store',
+          requestId: prepared.request.requestId,
+          action: 'register-store',
+          storeId: proposal.storeId,
+          repositoryId: proposal.workspaceRepositoryId,
+        }),
+        null,
+        2,
+      )}\n`,
+    );
+
+    const applied = await applyDecision({
+      workspace,
+      decisionFile: prepared.file,
+      response: response(prepared.request),
+      actor: { actorId: 'user', source: 'cli', authenticated: true },
+      timestamp: '2026-01-01T00:03:00.000Z',
+    });
+    expect(applied.bindingReceiptFiles.map((file) => path.basename(file))).toEqual([
+      'prepare-root.receipt.json',
+      'register-store.receipt.json',
+      'pointer-web-front.receipt.json',
+    ]);
   });
 
   it('rejects pointer input drift and never overwrites another Store', async () => {

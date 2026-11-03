@@ -1,0 +1,17 @@
+{
+  "change": "bootstrap-openspec-store-root",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "0c9375b366cf2d3645ca95ccb35f55bc748e4f3451ed8804423d68d2e63e912e",
+  "files": [
+    { "path": "openspec/changes/bootstrap-openspec-store-root/proposal.md", "sha256": "03b16ee6d0fedbcb2f8a875498a0b50a4c4c48d99fcdcf0168454a0ab7102651" },
+    { "path": "openspec/changes/bootstrap-openspec-store-root/design.md", "sha256": "36457f05e8a9981ca89494ebeff62cadd2656b5cb465f8d0c5dc52f640372c1d" },
+    { "path": "openspec/changes/bootstrap-openspec-store-root/tasks.md", "sha256": "50138c892dbe6747c82958361ae296fc11b52f945e0b25e27006eeb63434b360" },
+    { "path": "openspec/changes/bootstrap-openspec-store-root/.openspec.yaml", "sha256": "b6d27c089c6ee9596ce0433bd8f7f771b477758efe1ce7f7a7505af47316ecd0" },
+    { "path": "openspec/changes/bootstrap-openspec-store-root/specs/project-configuration/spec.md", "sha256": "c9e3eebdb561da16640534846fe051138c52f08e140437887214e0ef54d2f332" },
+    { "path": "openspec/changes/bootstrap-openspec-store-root/specs/specification-authority/spec.md", "sha256": "40ce9b9dbb11bebda725412d93729adc798fb93ae2ed44c9071e3072eb01ef15" }
+  ]
+}

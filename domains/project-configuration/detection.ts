@@ -67,7 +67,27 @@ export interface OpenSpecStoreBindingProposal {
   storeId: string;
   workspaceRepositoryId: string;
   workspaceRoot: string;
+  root: OpenSpecRootEvidence;
   repositories: OpenSpecRepositoryBinding[];
+}
+
+export type OpenSpecRootDisposition =
+  | 'registered-exact'
+  | 'healthy-unregistered'
+  | 'missing-root'
+  | 'partial-or-unhealthy'
+  | 'conflicting-registration';
+
+export interface OpenSpecRootEvidence {
+  disposition: OpenSpecRootDisposition;
+  workspaceRoot: string;
+  storeId: string;
+  providerVersion: string;
+  registeredStoreId: string | null;
+  registeredRoot: string | null;
+  rootManifestDigest: `sha256:${string}` | null;
+  diagnosticCode: string | null;
+  digest: `sha256:${string}`;
 }
 
 export interface DetectionUnresolvedItem {
