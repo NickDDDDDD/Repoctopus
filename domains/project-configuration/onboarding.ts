@@ -89,6 +89,15 @@ export function createProjectConfigurationDecision(input: {
   const candidateConfig = parseSharedProjectConfig(input.completedCandidate);
   assertDefaultVerifyProfileReady(candidateConfig);
   if (input.draft.storeBinding) {
+    if (
+      !['registered-exact', 'healthy-unregistered', 'missing-root'].includes(
+        input.draft.storeBinding.root.disposition,
+      )
+    ) {
+      throw new Error(
+        `OpenSpec Root blocks project configuration approval: ${input.draft.storeBinding.root.diagnosticCode ?? input.draft.storeBinding.root.disposition}`,
+      );
+    }
     const configured = candidateConfig.specificationProvider?.store;
     if (
       !configured ||

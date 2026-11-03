@@ -18,6 +18,10 @@ import type { SharedProjectConfig } from '../../domains/project-configuration/ty
 import { canonicalJson } from '../../domains/workflow-contract/canonical.js';
 import { atomicWriteJson } from '../filesystem/atomic-write.js';
 import { probeProject } from '../git/probe.js';
+import {
+  OpenSpecStoreRegistration,
+  type OpenSpecStoreRegistrationPort,
+} from '../specification/openspec-store-registration.js';
 import { loadProjectConfig } from './file-config.js';
 
 const MAX_DETECTION_FILE_BYTES = 1024 * 1024;
@@ -435,6 +439,7 @@ export async function detectProjectConfiguration(input: {
   storeId?: string;
   skippedPointerRepositoryIds?: readonly string[];
   now?: () => Date;
+  specificationAuthority?: OpenSpecStoreRegistrationPort;
 }): Promise<{ draft: ProjectDetectionDraft; file: string }> {
   const workspace = path.resolve(input.workspace);
   const scanRoot = path.resolve(input.scanRoot);
@@ -449,6 +454,10 @@ export async function detectProjectConfiguration(input: {
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(storeId)) {
     throw new Error('OpenSpec Store id must be lowercase kebab-case');
   }
+  const root = await (input.specificationAuthority ?? new OpenSpecStoreRegistration()).inspect({
+    storeId,
+    workspace,
+  });
   const skipped = new Set(input.skippedPointerRepositoryIds ?? []);
   const ids = new Map<string, number>();
   const identified = snapshot.repositories.map((repository) => {
@@ -543,6 +552,7 @@ export async function detectProjectConfiguration(input: {
         storeId,
         workspaceRepositoryId: workspaceRepository.id,
         workspaceRoot: workspace,
+        root,
         repositories: repositories.map((repository) => structuredClone(repository.openSpec)),
       }
     : null;

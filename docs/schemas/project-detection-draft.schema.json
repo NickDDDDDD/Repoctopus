@@ -84,7 +84,16 @@
     "repository": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "name", "path", "remoteIdentity", "technologies", "commands", "services", "openSpec"],
+      "required": [
+        "id",
+        "name",
+        "path",
+        "remoteIdentity",
+        "technologies",
+        "commands",
+        "services",
+        "openSpec"
+      ],
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
@@ -112,10 +121,27 @@
     "storeRepository": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["repositoryId", "classification", "selection", "configuredStoreId", "pointerDiff", "diagnostic"],
+      "required": [
+        "repositoryId",
+        "classification",
+        "selection",
+        "configuredStoreId",
+        "pointerDiff",
+        "diagnostic"
+      ],
       "properties": {
         "repositoryId": { "type": "string", "minLength": 1 },
-        "classification": { "enum": ["workspace-store", "unconfigured", "same-store", "other-store", "local-authority", "damaged", "read-only"] },
+        "classification": {
+          "enum": [
+            "workspace-store",
+            "unconfigured",
+            "same-store",
+            "other-store",
+            "local-authority",
+            "damaged",
+            "read-only"
+          ]
+        },
         "selection": { "enum": ["install", "keep", "skip", "blocked"] },
         "configuredStoreId": { "type": ["string", "null"] },
         "pointerDiff": { "anyOf": [{ "$ref": "#/$defs/pointerDiff" }, { "type": "null" }] },
@@ -125,12 +151,50 @@
     "storeBinding": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["storeId", "workspaceRepositoryId", "workspaceRoot", "repositories"],
+      "required": ["storeId", "workspaceRepositoryId", "workspaceRoot", "root", "repositories"],
       "properties": {
         "storeId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
         "workspaceRepositoryId": { "type": "string", "minLength": 1 },
         "workspaceRoot": { "type": "string", "minLength": 1 },
+        "root": { "$ref": "#/$defs/storeRoot" },
         "repositories": { "type": "array", "items": { "$ref": "#/$defs/storeRepository" } }
+      }
+    },
+    "storeRoot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "disposition",
+        "workspaceRoot",
+        "storeId",
+        "providerVersion",
+        "registeredStoreId",
+        "registeredRoot",
+        "rootManifestDigest",
+        "diagnosticCode",
+        "digest"
+      ],
+      "properties": {
+        "disposition": {
+          "enum": [
+            "registered-exact",
+            "healthy-unregistered",
+            "missing-root",
+            "partial-or-unhealthy",
+            "conflicting-registration"
+          ]
+        },
+        "workspaceRoot": { "type": "string", "minLength": 1 },
+        "storeId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "providerVersion": { "type": "string", "minLength": 1 },
+        "registeredStoreId": { "type": ["string", "null"] },
+        "registeredRoot": { "type": ["string", "null"] },
+        "rootManifestDigest": {
+          "type": ["string", "null"],
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "diagnosticCode": { "type": ["string", "null"] },
+        "digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }
       }
     },
     "unresolved": {
@@ -139,7 +203,13 @@
       "required": ["code", "repository", "message"],
       "properties": {
         "code": {
-          "enum": ["unknown-build", "service-port", "health-endpoint", "command-review"]
+          "enum": [
+            "unknown-build",
+            "service-port",
+            "health-endpoint",
+            "command-review",
+            "acceptance-coverage"
+          ]
         },
         "repository": { "type": "string" },
         "message": { "type": "string" },

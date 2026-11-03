@@ -25,6 +25,7 @@ import {
   type StoreBindingReceipt,
 } from '../../domains/project-configuration/store-binding.js';
 import {
+  OPENSPEC_ROOT_INITIALIZATION_ARGS,
   OpenSpecStoreRegistration,
   type OpenSpecStoreRegistrationPort,
 } from '../specification/openspec-store-registration.js';
@@ -181,6 +182,67 @@ async function applyStoreBinding(input: {
   );
   const receiptFiles: string[] = [];
   const localStateRoot = path.join(input.workspace, '.repoctopus');
+  if (
+    !['registered-exact', 'healthy-unregistered', 'missing-root'].includes(
+      input.proposal.root.disposition,
+    )
+  ) {
+    throw new Error(
+      `Approved OpenSpec Root is not applicable: ${input.proposal.root.diagnosticCode ?? input.proposal.root.disposition}`,
+    );
+  }
+  const rootIntent = createStoreBindingIntent({
+    actionId: 'prepare-root',
+    requestId: input.requestId,
+    action: 'prepare-root',
+    storeId: input.proposal.storeId,
+    repositoryId: input.proposal.workspaceRepositoryId,
+    root: {
+      disposition: input.proposal.root.disposition as
+        | 'registered-exact'
+        | 'healthy-unregistered'
+        | 'missing-root',
+      providerVersion: input.proposal.root.providerVersion,
+      workspaceRoot: input.proposal.workspaceRoot,
+      initializationArgs: [
+        'init',
+        input.proposal.workspaceRoot,
+        ...OPENSPEC_ROOT_INITIALIZATION_ARGS,
+      ],
+      evidenceDigest: input.proposal.root.digest,
+    },
+  });
+  const previousRootIntent = await existingJson<StoreBindingIntent>(
+    path.join(journalRoot, `${rootIntent.actionId}.intent.json`),
+  );
+  await persistIntent(journalRoot, rootIntent, localStateRoot);
+  const rootReceiptFile = path.join(journalRoot, 'prepare-root.receipt.json');
+  const previousRootReceipt = await existingJson<StoreBindingReceipt>(rootReceiptFile);
+  if (previousRootReceipt) {
+    if (previousRootReceipt.intentDigest !== rootIntent.digest) {
+      throw new Error('Root preparation Receipt belongs to another Intent');
+    }
+    receiptFiles.push(rootReceiptFile);
+  } else {
+    await input.hooks?.afterIntent?.(rootIntent);
+    const prepared = await input.registration.prepareRoot({
+      expected: input.proposal.root,
+      allowRecovery: previousRootIntent !== null,
+    });
+    receiptFiles.push(
+      await persistReceipt(
+        journalRoot,
+        createStoreBindingReceipt({
+          actionId: rootIntent.actionId,
+          intentDigest: rootIntent.digest,
+          result: prepared.status,
+          evidenceDigest: prepared.evidenceDigest,
+          completedAt: input.timestamp,
+        }),
+        localStateRoot,
+      ),
+    );
+  }
   const registrationIntent = createStoreBindingIntent({
     actionId: 'register-store',
     requestId: input.requestId,
@@ -225,7 +287,8 @@ async function applyStoreBinding(input: {
     const repository = input.candidate.repositories.find(
       (candidate) => candidate.id === binding.repositoryId,
     );
-    if (!repository) throw new Error(`Store pointer repository is not configured: ${binding.repositoryId}`);
+    if (!repository)
+      throw new Error(`Store pointer repository is not configured: ${binding.repositoryId}`);
     const repositoryRoot = path.resolve(input.workspace, repository.path);
     const pointer = path.join(repositoryRoot, binding.pointerDiff.path);
     const intent = createStoreBindingIntent({
@@ -327,14 +390,20 @@ export async function loadPendingProjectConfigurationDecision(
   return asStoredDecision(JSON.parse(await readFile(stateFile, 'utf8')) as unknown).request;
 }
 
-export async function applyProjectConfigurationDecision(input: {
-  workspace: string;
-  decisionFile: string;
-  response: ProjectConfigurationDecisionResponse;
-  actor: ProjectConfigurationDecisionActor;
-  timestamp: string;
-  hooks?: { afterIntent?(intent: StoreBindingIntent): Promise<void> | void; afterPointerWrite?(intent: StoreBindingIntent): Promise<void> | void };
-}, registration: OpenSpecStoreRegistrationPort = new OpenSpecStoreRegistration()): Promise<ProjectConfigurationApplyResult> {
+export async function applyProjectConfigurationDecision(
+  input: {
+    workspace: string;
+    decisionFile: string;
+    response: ProjectConfigurationDecisionResponse;
+    actor: ProjectConfigurationDecisionActor;
+    timestamp: string;
+    hooks?: {
+      afterIntent?(intent: StoreBindingIntent): Promise<void> | void;
+      afterPointerWrite?(intent: StoreBindingIntent): Promise<void> | void;
+    };
+  },
+  registration: OpenSpecStoreRegistrationPort = new OpenSpecStoreRegistration(),
+): Promise<ProjectConfigurationApplyResult> {
   const workspace = path.resolve(input.workspace);
   const stateFile = await safeInputFile(workspace, input.decisionFile, 'decisions');
   const state = asStoredDecision(JSON.parse(await readFile(stateFile, 'utf8')) as unknown);
@@ -368,7 +437,10 @@ export async function applyProjectConfigurationDecision(input: {
     };
   }
 
-  if (state.record && (state.record.actorId !== record.actorId || state.record.decision !== 'approve')) {
+  if (
+    state.record &&
+    (state.record.actorId !== record.actorId || state.record.decision !== 'approve')
+  ) {
     throw new Error('Project configuration apply actor does not match the trusted decision');
   }
 

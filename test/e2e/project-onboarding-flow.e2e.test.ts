@@ -1,4 +1,4 @@
-import { writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -6,6 +6,8 @@ import type { ProjectDetectionDraft } from '../../domains/project-configuration/
 import type { ProjectConfigurationDecisionRequest } from '../../domains/project-configuration/onboarding.js';
 import type { SharedProjectConfig } from '../../domains/project-configuration/types.js';
 import { applyProjectConfigurationDecision } from '../../platform/project-configuration/onboarding.js';
+import { OpenSpecProcess } from '../../platform/specification/openspec-process.js';
+import { OpenSpecStoreRegistration } from '../../platform/specification/openspec-store-registration.js';
 import {
   createGitRepository,
   removeTemporaryDirectory,
@@ -28,6 +30,15 @@ describe('documented project onboarding flow', () => {
       JSON.stringify({ scripts: { build: 'placeholder-build' } }),
     );
     const workspace = await createGitRepository(root, 'workspace');
+    const environment = {
+      XDG_DATA_HOME: path.join(root, 'xdg-data'),
+      XDG_CONFIG_HOME: path.join(root, 'xdg-config'),
+      OPENSPEC_TELEMETRY: '0',
+      OPENSPEC_NO_UPDATE_CHECK: '1',
+      OPENSPEC_NO_AUTO_CONFIG: '1',
+    };
+    const openspecProcess = new OpenSpecProcess(undefined, 60_000, 16 * 1024 * 1024, environment);
+    const registration = new OpenSpecStoreRegistration(openspecProcess);
 
     const detection = await runCli({
       packageRoot,
@@ -41,9 +52,8 @@ describe('documented project onboarding flow', () => {
         workspace,
         '--store',
         'onboarding-store',
-        '--skip-pointer',
-        'app',
       ],
+      environment,
     });
     const detected = detection.result as { draft: ProjectDetectionDraft; file: string };
     expect(detection).toMatchObject({ ok: true, command: 'project detect' });
@@ -67,7 +77,7 @@ describe('documented project onboarding flow', () => {
     ).toMatchObject({
       repositoryId: 'app',
       classification: 'unconfigured',
-      selection: 'skip',
+      selection: 'install',
     });
 
     const candidate: SharedProjectConfig = {
@@ -122,30 +132,90 @@ describe('documented project onboarding flow', () => {
       },
     });
 
-    await applyProjectConfigurationDecision({
-      workspace,
-      decisionFile: prepared.file,
-      response: {
-        apiVersion: 'repoctopus/v1alpha1',
-        kind: 'HumanDecisionResponse',
-        requestId: prepared.request.requestId,
-        snapshotDigest: prepared.request.snapshotDigest,
-        decision: 'approve',
+    await applyProjectConfigurationDecision(
+      {
+        workspace,
+        decisionFile: prepared.file,
+        response: {
+          apiVersion: 'repoctopus/v1alpha1',
+          kind: 'HumanDecisionResponse',
+          requestId: prepared.request.requestId,
+          snapshotDigest: prepared.request.snapshotDigest,
+          decision: 'approve',
+        },
+        actor: { actorId: 'fixture-user', source: 'ide', authenticated: true },
+        timestamp: '2026-01-01T00:00:00.000Z',
       },
-      actor: { actorId: 'fixture-user', source: 'ide', authenticated: true },
-      timestamp: '2026-01-01T00:00:00.000Z',
-    }, {
-      ensureRegistered: () =>
-        Promise.resolve({
-          status: 'registered',
-          registrationDigest: `sha256:${'a'.repeat(64)}` as const,
-        }),
+      registration,
+    );
+
+    expect(await registration.inspect({ storeId: 'onboarding-store', workspace })).toMatchObject({
+      disposition: 'registered-exact',
+      registeredRoot: workspace,
     });
+    expect(await readFile(path.join(workspace, 'openspec', 'config.yaml'), 'utf8')).toContain(
+      'schema: spec-driven',
+    );
+    expect(await readFile(path.join(app, 'openspec', 'config.yaml'), 'utf8')).toBe(
+      'store: onboarding-store\n',
+    );
+    const pointerContext = await openspecProcess.execute(['context', '--json'], { cwd: app });
+    expect(pointerContext.exitCode).toBe(0);
+    expect(JSON.parse(pointerContext.stdout)).toMatchObject({
+      root: { store_id: 'onboarding-store', path: workspace },
+    });
+
+    const created = await openspecProcess.execute(
+      [
+        'new',
+        'change',
+        'onboarding-smoke',
+        '--schema',
+        'spec-driven',
+        '--store',
+        'onboarding-store',
+        '--json',
+      ],
+      { cwd: app },
+    );
+    expect(created.exitCode).toBe(0);
+    const changeRoot = path.join(workspace, 'openspec', 'changes', 'onboarding-smoke');
+    await mkdir(path.join(changeRoot, 'specs', 'onboarding-smoke'), { recursive: true });
+    await Promise.all([
+      writeFile(
+        path.join(changeRoot, 'proposal.md'),
+        '# Proposal\n\n## Why\n\n验证首次接入。\n\n## What Changes\n\n- 增加接入验证。\n\n## Capabilities\n\n### New Capabilities\n\n- `onboarding-smoke`: 验证接入。\n\n### Modified Capabilities\n\n无。\n\n## Impact\n\n- 仅测试临时仓。\n',
+      ),
+      writeFile(
+        path.join(changeRoot, 'design.md'),
+        '# Design\n\n## Context\n\n临时验收。\n\n## Goals / Non-Goals\n\n- 验证 Store。\n\n## Decisions\n\n- 使用正式 Store。\n\n## Risks\n\n- 无持久影响。\n',
+      ),
+      writeFile(
+        path.join(changeRoot, 'tasks.md'),
+        '# Tasks\n\n- [ ] 1.1 验证接入\n  **Acceptance:** 严格校验通过。\n',
+      ),
+      writeFile(
+        path.join(changeRoot, 'specs', 'onboarding-smoke', 'spec.md'),
+        '## ADDED Requirements\n\n### Requirement: 接入可消费\n\n系统 MUST 消费登记后的 Store。\n\n#### Scenario: 严格校验\n\n- **WHEN** 创建临时 Change\n- **THEN** OpenSpec 严格校验成功\n',
+      ),
+    ]);
+    const validated = await openspecProcess.execute(
+      ['validate', 'onboarding-smoke', '--strict', '--json', '--store', 'onboarding-store'],
+      { cwd: app },
+    );
+    expect(validated.exitCode, validated.stderr || validated.stdout).toBe(0);
+    const coldProcess = new OpenSpecProcess(undefined, 60_000, 16 * 1024 * 1024, environment);
+    const coldContext = await coldProcess.execute(
+      ['context', '--json', '--store', 'onboarding-store'],
+      { cwd: workspace },
+    );
+    expect(coldContext.exitCode).toBe(0);
 
     const evidence = await runCli({
       packageRoot,
       cwd: workspace,
       args: ['evidence', 'run', '--workspace', workspace, '--profile', 'verify'],
+      environment,
     });
     expect(evidence).toMatchObject({
       protocolVersion: 1,

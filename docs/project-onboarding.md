@@ -27,7 +27,9 @@ $draft
 
 草稿为每条结论保存 `sources` 和 `confidence`。`unresolved` 列出探测无法确认的命令、端口、健康端点或未知构建系统。命令不会创建或覆盖 `repoctopus.yaml`，也不会写入业务仓。
 
-`--store` 是可编辑的 lowercase kebab-case OpenSpec Store ID；省略时优先沿用已有共享配置，否则从 Workspace 名称派生。草稿的 `storeBinding` 明确记录 Workspace 根与逐业务仓分类：未配置、已指向同一 Store、指向其他 Store、本地规格权威、配置损坏或只读。只有安全的未配置仓会得到 `openspec/config.yaml` 的精确 `before/after` pointer diff；冲突不会生成覆盖操作。用户不希望为某个仓安装 pointer 时，可以在候选中把 selection 改为 `skip`，或重新探测时传 `--skip-pointer repo-a,repo-b`。Runtime 仍通过显式 `--store` 使用权威 Store，不依赖业务仓 pointer。
+`--store` 是可编辑的 lowercase kebab-case OpenSpec Store ID；省略时优先沿用已有共享配置，否则从 Workspace 名称派生。草稿的 `storeBinding.root` 会把 Workspace Root 分类为：已精确登记、健康但本机未登记、缺失、部分/不健康或登记冲突，并绑定固定 OpenSpec 版本、根 manifest 与本机 registry Evidence。只有前三类可进入审批；部分根和冲突必须先按诊断处理，Repoctopus 不会覆盖或自动修复。
+
+同一草稿还明确记录逐业务仓分类：未配置、已指向同一 Store、指向其他 Store、本地规格权威、配置损坏或只读。只有安全的未配置仓会得到 `openspec/config.yaml` 的精确 `before/after` pointer diff；冲突不会生成覆盖操作。用户不希望为某个仓安装 pointer 时，可以在候选中把 selection 改为 `skip`，或重新探测时传 `--skip-pointer repo-a,repo-b`。Runtime 仍通过显式 `--store` 使用权威 Store，不依赖业务仓 pointer。
 
 Store ID 是团队配置，registration 是每机状态：新成员、CI 节点和另一台开发机 clone Workspace 后都必须各自登记相同 ID 到各自的绝对路径。pointer 可选且可按仓跳过，它不负责登记，也不改变 Workspace 的 Specification 权威。
 
@@ -74,7 +76,16 @@ node bin/repoctopus.js project review --workspace . --request $request
 
 `project review` 只接受交互式终端。IDE Adapter 可以展示同一版本化请求，但必须提供经过认证且绑定当前 `snapshotDigest` 的响应。选择批准后，Runtime 才原子写入 `repoctopus.yaml`；请求修改或拒绝不会写入正式配置。
 
-审批摘要同时绑定完整 Store binding proposal，不能在等待期间替换 Store ID、Workspace 根、仓库选择或 pointer diff。批准后的 apply 先用 OpenSpec `store register` 核对或登记当前 Workspace checkout，绝不调用会删除目录的 `store remove`。随后为每个选择安装的业务仓分别保存 Intent、重新比较 `openspec/config.yaml` 的 `before` 内容、原子写入并保存 Receipt；一个仓的操作不伪装成跨仓事务。进程若在写入与 Receipt 之间退出，重试会识别完全相同的 `after` 内容并补记 `recovered`，其他内容则作为输入漂移拒绝且不覆盖。生成的 Workspace 配置、Store metadata 和业务仓 pointer 仍是各仓普通 Git 变化，必须走后续正常 Change/Delivery 发布流程，接入 apply 本身不 commit、push 或创建 MR。
+审批摘要同时绑定完整 Store binding proposal，不能在等待期间替换 Store ID、Workspace 根、固定 Provider、Root disposition、仓库选择或 pointer diff。批准后的 apply 严格按以下顺序执行：
+
+1. 先持久化 `prepare-root` Intent。根缺失时调用仓库固定的 OpenSpec 官方 `init`，根健康时保持内容不变；随后重新观察精确 Workspace Root。
+2. 健康证明成立后才执行 `store register`，并通过显式 `context --store <id>` 核对 Store metadata、registry 和 checkout。
+3. 为每个选择安装的业务仓分别保存 Intent，重新比较 `openspec/config.yaml` 的 `before` 内容，原子写入并保存 Receipt。
+4. 所有前置步骤成功后才发布 `repoctopus.yaml` 与完成状态。
+
+流程绝不调用会删除目录的命令，也不使用 `store setup` 或手工拼装 OpenSpec 私有文件。进程若在官方初始化、登记或 pointer 写入与 Receipt 之间退出，重试会从同一 request 的 Intent 和当前真实状态重新观察：只有可证明由该初始化产生的标准 manifest 或完全相同的 pointer 内容才能补记 `recovered`；出现用户文件、部分根、Store 冲突或身份漂移时停止并保留诊断，不覆盖或删除。生成的 Workspace Root、Store metadata 和业务仓 pointer 仍是各仓普通 Git 变化，必须走后续正常 Change/Delivery 发布流程，接入 apply 本身不 commit、push 或创建 MR。
+
+如果看到 `store_register_root_unhealthy`，说明使用的是尚未具备 Root bootstrap 的旧接入路径，或当前 `openspec/` 已是部分根。不要手工修改 `.repoctopus/` journal，也不要删除已有 `openspec/`。升级后重新运行 `project detect`；缺失根会得到可审批的初始化计划，已存在的不健康根则会给出阻断诊断。
 
 需要从本机安全移除登记时，先停止引用该 Workspace 的 CLI/Desktop，运行 `npx openspec context --store <store-id> --json` 核对精确路径，再运行 `npx openspec store unregister <store-id> --json`。该命令不删除 checkout；禁止把 `store remove` 当作清理命令。业务仓 pointer 的删除必须作为普通 Git change 单独评审。
 
