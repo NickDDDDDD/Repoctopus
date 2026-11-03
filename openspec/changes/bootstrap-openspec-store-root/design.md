@@ -1,3 +1,10 @@
+---
+comet_change: bootstrap-openspec-store-root
+role: technical-design
+canonical_spec: openspec
+status: draft
+---
+
 # Design
 
 ## Context
