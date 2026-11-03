@@ -2,7 +2,7 @@
 
 ## 1. 固定真实故障与获批 Root 计划
 
-- [ ] 1.1 用固定 OpenSpec 1.14.3 CLI 在临时非空 Git Workspace 重现 `store_register_root_unhealthy`，建立“无 `openspec/` 时 register 失败”的红测。 <!-- comet-task:a16a9ada-5fac-4865-a293-2acca31d93c2 -->
+- [x] 1.1 用固定 OpenSpec 1.14.3 CLI 在临时非空 Git Workspace 重现 `store_register_root_unhealthy`，建立“无 `openspec/` 时 register 失败”的红测。 <!-- comet-task:a16a9ada-5fac-4865-a293-2acca31d93c2 -->
       **Acceptance:** 测试调用真实安装包 entry而非 FakeProcess，断言错误码/结构化诊断对应缺失健康根，并证明未写业务仓 pointer或 `repoctopus.yaml`。
       **Requirements:** specification-authority#workspace-store-登记必须建立在健康规格根之上
 - [ ] 1.2 在项目探测领域建模 `registered-exact | healthy-unregistered | missing-root | partial-or-unhealthy | conflicting-registration`，把 Provider/version、Workspace/Store identity和允许动作纳入候选摘要。 <!-- comet-task:71440e4c-282c-4f42-86f0-fdf502cfd526 -->

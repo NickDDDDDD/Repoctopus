@@ -4,7 +4,11 @@ import path from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { OpenSpecProcess } from '../platform/specification/openspec-process.js';
+import {
+  OpenSpecProcess,
+  type SpecificationProcessPort,
+  type SpecificationProcessResult,
+} from '../platform/specification/openspec-process.js';
 import {
   OpenSpecStoreRegistration,
   OPENSPEC_ROOT_INITIALIZATION_ARGS,
@@ -105,6 +109,22 @@ describe('OpenSpec Store registration', () => {
       '--no-copilot-cloud',
     ]);
     expect(await optionalFileSnapshot(realRegistry)).toEqual(realRegistryBefore);
+  }, 30_000);
+
+  it('invokes the fixed package entry with the exact approved initialization argv', async () => {
+    const { workspace, process } = await fixture();
+    const calls: string[][] = [];
+    const recordingProcess: SpecificationProcessPort = {
+      async execute(args, options): Promise<SpecificationProcessResult> {
+        calls.push([...args]);
+        return process.execute(args, options);
+      },
+    };
+    const registration = new OpenSpecStoreRegistration(recordingProcess);
+    const missing = await registration.inspect({ storeId: 'team-platform', workspace });
+    await registration.prepareRoot({ expected: missing, allowRecovery: false });
+
+    expect(calls).toContainEqual(['init', workspace, ...OPENSPEC_ROOT_INITIALIZATION_ARGS]);
   }, 30_000);
 
   it('keeps an exact healthy registration idempotent without rewriting the root', async () => {
@@ -219,4 +239,45 @@ describe('OpenSpec Store registration', () => {
       registeredRoot: workspace,
     });
   }, 30_000);
+
+  it('rejects malformed registry output instead of guessing registration state', async () => {
+    const { workspace } = await fixture();
+    const process: SpecificationProcessPort = {
+      execute(): Promise<SpecificationProcessResult> {
+        return Promise.resolve({ exitCode: 0, stdout: '{not-json', stderr: '' });
+      },
+    };
+
+    await expect(
+      new OpenSpecStoreRegistration(process).inspect({ storeId: 'team-platform', workspace }),
+    ).rejects.toThrow(/store list returned invalid json/iu);
+  });
+
+  it('does not accept a healthy doctor result for a parent or sibling root', async () => {
+    const { root, workspace } = await fixture();
+    await mkdir(path.join(workspace, 'openspec'), { recursive: true });
+    await writeFile(path.join(workspace, 'openspec', 'config.yaml'), 'schema: spec-driven\n');
+    const results: SpecificationProcessResult[] = [
+      { exitCode: 0, stdout: JSON.stringify({ stores: [] }), stderr: '' },
+      {
+        exitCode: 0,
+        stdout: JSON.stringify({ root: { path: root, healthy: true }, status: [] }),
+        stderr: '',
+      },
+    ];
+    const process: SpecificationProcessPort = {
+      execute(): Promise<SpecificationProcessResult> {
+        const result = results.shift();
+        if (!result) throw new Error('Unexpected OpenSpec process call');
+        return Promise.resolve(result);
+      },
+    };
+
+    await expect(
+      new OpenSpecStoreRegistration(process).inspect({ storeId: 'team-platform', workspace }),
+    ).resolves.toMatchObject({
+      disposition: 'partial-or-unhealthy',
+      diagnosticCode: 'openspec-root-unhealthy',
+    });
+  });
 });

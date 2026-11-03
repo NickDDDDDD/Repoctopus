@@ -7,6 +7,7 @@ export interface SpecificationProcessResult {
   exitCode: number;
   stdout: string;
   stderr: string;
+  failureKind?: 'aborted' | 'timeout' | 'output-limit' | 'non-zero-exit' | 'spawn-error';
 }
 
 export interface SpecificationProcessPort {
@@ -48,7 +49,7 @@ export class OpenSpecProcess implements SpecificationProcessPort {
     args: readonly string[],
     options: { cwd: string; signal?: AbortSignal },
   ): Promise<SpecificationProcessResult> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const child = execFile(
         process.execPath,
         [this.entry, ...args],
@@ -62,12 +63,24 @@ export class OpenSpecProcess implements SpecificationProcessPort {
           signal: options.signal,
         },
         (error, stdout, stderr) => {
-          if (error && (error as NodeJS.ErrnoException).code === 'ABORT_ERR') {
-            reject(error instanceof Error ? error : new Error('OpenSpec process aborted'));
+          const exitCode = typeof error?.code === 'number' ? error.code : error ? 1 : 0;
+          if (!error) {
+            resolve({ exitCode, stdout, stderr });
             return;
           }
-          const exitCode = typeof error?.code === 'number' ? error.code : error ? 1 : 0;
-          resolve({ exitCode, stdout, stderr });
+          const code = (error as NodeJS.ErrnoException).code;
+          const killed = 'killed' in error && error.killed === true;
+          const failureKind =
+            code === 'ABORT_ERR'
+              ? 'aborted'
+              : code === 'ERR_CHILD_PROCESS_STDIO_MAXBUFFER'
+                ? 'output-limit'
+                : killed
+                  ? 'timeout'
+                  : typeof error.code === 'number'
+                    ? 'non-zero-exit'
+                    : 'spawn-error';
+          resolve({ exitCode, stdout, stderr, failureKind });
         },
       );
       child.stdin?.end();
