@@ -2,7 +2,7 @@
 change_id: e099c483-43fa-4482-a255-dc6664ccf9b4
 workflow: full
 language: zh-CN
-phase: open
+phase: design
 context_compression: off
 build_mode: null
 build_pause: null
@@ -24,3 +24,605 @@ verified_at: null
 archive_confirmation: null
 archived: false
 bound_branch: codex/bootstrap-openspec-store-root
+direct_override: null
+handoff_context: openspec/changes/bootstrap-openspec-store-root/.comet/handoff/design-context.json
+handoff_hash: 0c9375b366cf2d3645ca95ccb35f55bc748e4f3451ed8804423d68d2e63e912e
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: f802f70f0e2c67cfc5cd79df68eaed8f80f3a84c77b34ea2d6f1b00a2e9d3548
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: bootstrap-openspec-store-root
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: fe64eb5dba6c7beee66ac776e6d1d92190cb6489165b072684f93ba767efe01d
+    input:
+      change: bootstrap-openspec-store-root
+      changeDir: openspec/changes/bootstrap-openspec-store-root
+      workspaceBaseline:
+        ref: 87651f74-b019-40f2-84cf-b13ae47fe714
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: 75bc3b325e04353b88d13b3e15ffa618561bfebe
+      boundBranch: codex/bootstrap-openspec-store-root
+      branchStatus: pending
+      buildMode: null
+      buildPause: null
+      checkEpoch: 1
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-03
+      designDoc: null
+      directOverride: null
+      handoffContext: openspec/changes/bootstrap-openspec-store-root/.comet/handoff/design-context.json
+      handoffHash: 0c9375b366cf2d3645ca95ccb35f55bc748e4f3451ed8804423d68d2e63e912e
+      isolation: current
+      language: zh-CN
+      phase: design
+      plan: null
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: null
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: waiting
+    sequence: 6
+    actions:
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-553588dbc933292b8f9fe9cfded3fec90ced9a98f19b51ff196f1a4a8a5682f0
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: bootstrap-openspec-store-root:1
+        input:
+          input:
+            change: bootstrap-openspec-store-root
+            changeDir: openspec/changes/bootstrap-openspec-store-root
+            workspaceBaseline:
+              ref: 87651f74-b019-40f2-84cf-b13ae47fe714
+          outputs: {}
+        inputHash: aa02e9a59f54e8dc85235dc0435f5fd0c9a194bff6cfe34e1e4fbb9b360febe8
+        outcome:
+          actionId: bootstrap-openspec-store-root:1
+          attempt: 1
+          claimToken: portable-553588dbc933292b8f9fe9cfded3fec90ced9a98f19b51ff196f1a4a8a5682f0
+          inputHash: aa02e9a59f54e8dc85235dc0435f5fd0c9a194bff6cfe34e1e4fbb9b360febe8
+          outcomeId: a47e9adf-34da-4bbd-ad02-e8fe3e474dbd
+          output:
+            event: open-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 550befbab07f7cd7710246e616d8bea3538d27f5ded484c26466ef03efd55e12
+            outcomeId: a47e9adf-34da-4bbd-ad02-e8fe3e474dbd
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: bootstrap-openspec-store-root
+        status: succeeded
+        stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-2f4241bf9df257c5bd2b2e6f988ffae084d42bbd3432e44d9392df0378518de3
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: bootstrap-openspec-store-root:4
+        input:
+          input:
+            change: bootstrap-openspec-store-root
+            changeDir: openspec/changes/bootstrap-openspec-store-root
+            workspaceBaseline:
+              ref: 87651f74-b019-40f2-84cf-b13ae47fe714
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: bootstrap-openspec-store-root
+                  changeDir: openspec/changes/bootstrap-openspec-store-root
+                  workspaceBaseline:
+                    ref: 87651f74-b019-40f2-84cf-b13ae47fe714
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 2fa4aa7015e5b97b8c359f28e0c87d9ef8e1f1463e66694c3b3db1672b8fcbbb
+                    ref: openspec/changes/bootstrap-openspec-store-root
+            full.open.evidence:
+              contentHash: 2fa4aa7015e5b97b8c359f28e0c87d9ef8e1f1463e66694c3b3db1672b8fcbbb
+              ref: openspec/changes/bootstrap-openspec-store-root
+        inputHash: 547738e4bab5d1caf1281cddfd9b47b8fc76ec21791098fe67965d58b3ae85ac
+        outcome:
+          actionId: bootstrap-openspec-store-root:4
+          attempt: 1
+          claimToken: portable-2f4241bf9df257c5bd2b2e6f988ffae084d42bbd3432e44d9392df0378518de3
+          inputHash: 547738e4bab5d1caf1281cddfd9b47b8fc76ec21791098fe67965d58b3ae85ac
+          outcomeId: bootstrap-openspec-store-root:4:1:executor-result
+          output:
+            contentHash: 2fa4aa7015e5b97b8c359f28e0c87d9ef8e1f1463e66694c3b3db1672b8fcbbb
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 3e2489e541ccb4c524fee87f1c478d196d1dbcf38941f96220265ad017ee310c
+            outcomeId: bootstrap-openspec-store-root:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: bootstrap-openspec-store-root
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-970ff9876728d5e9bab4e9894000f9923670a03b9f3fb88be3ea336d9681b4a5
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: bootstrap-openspec-store-root:5
+        input:
+          input:
+            change: bootstrap-openspec-store-root
+            changeDir: openspec/changes/bootstrap-openspec-store-root
+            workspaceBaseline:
+              ref: 87651f74-b019-40f2-84cf-b13ae47fe714
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: bootstrap-openspec-store-root
+                  changeDir: openspec/changes/bootstrap-openspec-store-root
+                  workspaceBaseline:
+                    ref: 87651f74-b019-40f2-84cf-b13ae47fe714
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 2fa4aa7015e5b97b8c359f28e0c87d9ef8e1f1463e66694c3b3db1672b8fcbbb
+                    ref: openspec/changes/bootstrap-openspec-store-root
+            full.open.evidence:
+              contentHash: 2fa4aa7015e5b97b8c359f28e0c87d9ef8e1f1463e66694c3b3db1672b8fcbbb
+              ref: openspec/changes/bootstrap-openspec-store-root
+            full.open.revalidate:
+              contentHash: 2fa4aa7015e5b97b8c359f28e0c87d9ef8e1f1463e66694c3b3db1672b8fcbbb
+        inputHash: 0072200a2db679e89709dff834c01f215550d797a25b10eee62b9ab2599475b7
+        outcome:
+          actionId: bootstrap-openspec-store-root:5
+          attempt: 1
+          claimToken: portable-970ff9876728d5e9bab4e9894000f9923670a03b9f3fb88be3ea336d9681b4a5
+          inputHash: 0072200a2db679e89709dff834c01f215550d797a25b10eee62b9ab2599475b7
+          outcomeId: 93f85ad9-9f2e-458a-b666-a40dccd117d5
+          output:
+            handoffContext: openspec/changes/bootstrap-openspec-store-root/.comet/handoff/design-context.json
+            handoffHash: 0c9375b366cf2d3645ca95ccb35f55bc748e4f3451ed8804423d68d2e63e912e
+            proposal: >-
+              推荐采用“Repoctopus 原生可恢复 onboarding 事务”方案：
+
+
+              1. 在获批候选中冻结五种 Root disposition、固定 OpenSpec 1.14.3
+              identity、Workspace/Store identity 与允许动作；apply 前重新观察，漂移即使决定失效。
+
+              2. 复用现有 request-scoped Store binding journal，新增 prepare-root
+              Intent/Receipt 和受限 openspec/ ownership manifest，不建立第二套 lifecycle 或
+              generation。
+
+              3. missing-root 才执行固定 entry 的官方 init；healthy-unregistered 只
+              register；partial/unhealthy 和 registry conflict 一律 fail closed。
+
+              4. 外部结果未知时只从 Intent、当前 Root/registry 和 manifest 重新观察；不依赖
+              stdout、不重复创建、不自动删除或覆盖用户文件。
+
+              5. 发布顺序固定为 prepare-root -> register-store -> business pointers ->
+              repoctopus.yaml，配置最后发布。
+
+              6. 真实 CLI 测试使用临时 XDG_DATA_HOME/XDG_CONFIG_HOME 隔离 Windows
+              registry/config，并验证真实用户 registry 未变化。
+
+
+              拒绝的替代方案：
+
+              - 只在 ensureRegistered 中加“目录不存在就 init”：缺少批准身份、checkpoint 与未知结果恢复。
+
+              - 直接复制 Comet initialization 子系统：会带入其单仓/Classic 状态模型，与 Repoctopus
+              Store、多仓 pointer 和现有 journal 重叠。
+
+              - 使用 openspec store setup：职责过重，并会拒绝已有内容但不健康的仓，无法提供所需的分步审计。
+
+              - 手工创建 openspec/config.yaml：复制 Provider 私有协议，升级时会漂移。
+
+
+              实现边界以当前 design.md 和两个 delta spec 为准；普通实现细节可以在不扩大行为权限的前提下细化，但 Root
+              状态分类、配置最后发布、用户文件保护和真实 CLI 验收不可弱化。
+            requirementsEvidence:
+              contentHash: f13c17e9138e53511fecb264e6ebd1c93c296a7f4e073a48bc68fe343836db62
+              ref: openspec/changes/bootstrap-openspec-store-root
+            sourceEvidence:
+              contentHash: f6c711706bf19c70e863bde029b77c6d9ed83189d4adab5fb91f3bcc8b5d1188
+              ref: openspec/changes/bootstrap-openspec-store-root
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: c4b18318554fb7a5103afeb7be097e256c65cda7ca7a36268425cad219e6d8dc
+            outcomeId: 93f85ad9-9f2e-458a-b666-a40dccd117d5
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: bootstrap-openspec-store-root
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+    actionContexts:
+      bootstrap-openspec-store-root:1:
+        results: {}
+        sequence: 1
+      bootstrap-openspec-store-root:4:
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: bootstrap-openspec-store-root
+                  changeDir: openspec/changes/bootstrap-openspec-store-root
+                  workspaceBaseline:
+                    ref: 87651f74-b019-40f2-84cf-b13ae47fe714
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 2fa4aa7015e5b97b8c359f28e0c87d9ef8e1f1463e66694c3b3db1672b8fcbbb
+                    ref: openspec/changes/bootstrap-openspec-store-root
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 2fa4aa7015e5b97b8c359f28e0c87d9ef8e1f1463e66694c3b3db1672b8fcbbb
+              ref: openspec/changes/bootstrap-openspec-store-root
+        sequence: 4
+      bootstrap-openspec-store-root:5:
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: bootstrap-openspec-store-root
+                  changeDir: openspec/changes/bootstrap-openspec-store-root
+                  workspaceBaseline:
+                    ref: 87651f74-b019-40f2-84cf-b13ae47fe714
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 2fa4aa7015e5b97b8c359f28e0c87d9ef8e1f1463e66694c3b3db1672b8fcbbb
+                    ref: openspec/changes/bootstrap-openspec-store-root
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 2fa4aa7015e5b97b8c359f28e0c87d9ef8e1f1463e66694c3b3db1672b8fcbbb
+              ref: openspec/changes/bootstrap-openspec-store-root
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 2fa4aa7015e5b97b8c359f28e0c87d9ef8e1f1463e66694c3b3db1672b8fcbbb
+        sequence: 5
+    waits:
+      - id: bootstrap-openspec-store-root:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: bootstrap-openspec-store-root
+            changeDir: openspec/changes/bootstrap-openspec-store-root
+            workspaceBaseline:
+              ref: 87651f74-b019-40f2-84cf-b13ae47fe714
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 2fa4aa7015e5b97b8c359f28e0c87d9ef8e1f1463e66694c3b3db1672b8fcbbb
+              ref: openspec/changes/bootstrap-openspec-store-root
+        proposalHash: b91b0eb8305a4e3da7eaef507b4407506eedb5347abdc68372ea4001b1932378
+        choices:
+          - approved
+          - rejected
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 2fa4aa7015e5b97b8c359f28e0c87d9ef8e1f1463e66694c3b3db1672b8fcbbb
+              ref: openspec/changes/bootstrap-openspec-store-root
+        decision:
+          id: classic-open-2fa4aa7015e5b97b8c359f28e0c87d9ef8e1f1463e66694c3b3db1672b8fcbbb
+          choice: approved
+          proposalHash: b91b0eb8305a4e3da7eaef507b4407506eedb5347abdc68372ea4001b1932378
+      - id: bootstrap-openspec-store-root:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: pending
+        proposal:
+          input:
+            change: bootstrap-openspec-store-root
+            changeDir: openspec/changes/bootstrap-openspec-store-root
+            workspaceBaseline:
+              ref: 87651f74-b019-40f2-84cf-b13ae47fe714
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/bootstrap-openspec-store-root/.comet/handoff/design-context.json
+              handoffHash: 0c9375b366cf2d3645ca95ccb35f55bc748e4f3451ed8804423d68d2e63e912e
+              proposal: >-
+                推荐采用“Repoctopus 原生可恢复 onboarding 事务”方案：
+
+
+                1. 在获批候选中冻结五种 Root disposition、固定 OpenSpec 1.14.3
+                identity、Workspace/Store identity 与允许动作；apply 前重新观察，漂移即使决定失效。
+
+                2. 复用现有 request-scoped Store binding journal，新增 prepare-root
+                Intent/Receipt 和受限 openspec/ ownership manifest，不建立第二套 lifecycle
+                或 generation。
+
+                3. missing-root 才执行固定 entry 的官方 init；healthy-unregistered 只
+                register；partial/unhealthy 和 registry conflict 一律 fail closed。
+
+                4. 外部结果未知时只从 Intent、当前 Root/registry 和 manifest 重新观察；不依赖
+                stdout、不重复创建、不自动删除或覆盖用户文件。
+
+                5. 发布顺序固定为 prepare-root -> register-store -> business pointers
+                -> repoctopus.yaml，配置最后发布。
+
+                6. 真实 CLI 测试使用临时 XDG_DATA_HOME/XDG_CONFIG_HOME 隔离 Windows
+                registry/config，并验证真实用户 registry 未变化。
+
+
+                拒绝的替代方案：
+
+                - 只在 ensureRegistered 中加“目录不存在就 init”：缺少批准身份、checkpoint 与未知结果恢复。
+
+                - 直接复制 Comet initialization 子系统：会带入其单仓/Classic 状态模型，与 Repoctopus
+                Store、多仓 pointer 和现有 journal 重叠。
+
+                - 使用 openspec store setup：职责过重，并会拒绝已有内容但不健康的仓，无法提供所需的分步审计。
+
+                - 手工创建 openspec/config.yaml：复制 Provider 私有协议，升级时会漂移。
+
+
+                实现边界以当前 design.md 和两个 delta spec 为准；普通实现细节可以在不扩大行为权限的前提下细化，但
+                Root 状态分类、配置最后发布、用户文件保护和真实 CLI 验收不可弱化。
+              requirementsEvidence:
+                contentHash: f13c17e9138e53511fecb264e6ebd1c93c296a7f4e073a48bc68fe343836db62
+                ref: openspec/changes/bootstrap-openspec-store-root
+              sourceEvidence:
+                contentHash: f6c711706bf19c70e863bde029b77c6d9ed83189d4adab5fb91f3bcc8b5d1188
+                ref: openspec/changes/bootstrap-openspec-store-root
+        proposalHash: 80768a3ae3e2865ea098754d8a37d530340489b18b4f0e9e7940707072882b6c
+        choices:
+          - approved
+          - rejected
+        results:
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/bootstrap-openspec-store-root/.comet/handoff/design-context.json
+              handoffHash: 0c9375b366cf2d3645ca95ccb35f55bc748e4f3451ed8804423d68d2e63e912e
+              proposal: >-
+                推荐采用“Repoctopus 原生可恢复 onboarding 事务”方案：
+
+
+                1. 在获批候选中冻结五种 Root disposition、固定 OpenSpec 1.14.3
+                identity、Workspace/Store identity 与允许动作；apply 前重新观察，漂移即使决定失效。
+
+                2. 复用现有 request-scoped Store binding journal，新增 prepare-root
+                Intent/Receipt 和受限 openspec/ ownership manifest，不建立第二套 lifecycle
+                或 generation。
+
+                3. missing-root 才执行固定 entry 的官方 init；healthy-unregistered 只
+                register；partial/unhealthy 和 registry conflict 一律 fail closed。
+
+                4. 外部结果未知时只从 Intent、当前 Root/registry 和 manifest 重新观察；不依赖
+                stdout、不重复创建、不自动删除或覆盖用户文件。
+
+                5. 发布顺序固定为 prepare-root -> register-store -> business pointers
+                -> repoctopus.yaml，配置最后发布。
+
+                6. 真实 CLI 测试使用临时 XDG_DATA_HOME/XDG_CONFIG_HOME 隔离 Windows
+                registry/config，并验证真实用户 registry 未变化。
+
+
+                拒绝的替代方案：
+
+                - 只在 ensureRegistered 中加“目录不存在就 init”：缺少批准身份、checkpoint 与未知结果恢复。
+
+                - 直接复制 Comet initialization 子系统：会带入其单仓/Classic 状态模型，与 Repoctopus
+                Store、多仓 pointer 和现有 journal 重叠。
+
+                - 使用 openspec store setup：职责过重，并会拒绝已有内容但不健康的仓，无法提供所需的分步审计。
+
+                - 手工创建 openspec/config.yaml：复制 Provider 私有协议，升级时会漂移。
+
+
+                实现边界以当前 design.md 和两个 delta spec 为准；普通实现细节可以在不扩大行为权限的前提下细化，但
+                Root 状态分类、配置最后发布、用户文件保护和真实 CLI 验收不可弱化。
+              requirementsEvidence:
+                contentHash: f13c17e9138e53511fecb264e6ebd1c93c296a7f4e073a48bc68fe343836db62
+                ref: openspec/changes/bootstrap-openspec-store-root
+              sourceEvidence:
+                contentHash: f6c711706bf19c70e863bde029b77c6d9ed83189d4adab5fb91f3bcc8b5d1188
+                ref: openspec/changes/bootstrap-openspec-store-root
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: bootstrap-openspec-store-root
+                  changeDir: openspec/changes/bootstrap-openspec-store-root
+                  workspaceBaseline:
+                    ref: 87651f74-b019-40f2-84cf-b13ae47fe714
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 2fa4aa7015e5b97b8c359f28e0c87d9ef8e1f1463e66694c3b3db1672b8fcbbb
+                    ref: openspec/changes/bootstrap-openspec-store-root
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 2fa4aa7015e5b97b8c359f28e0c87d9ef8e1f1463e66694c3b3db1672b8fcbbb
+              ref: openspec/changes/bootstrap-openspec-store-root
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 2fa4aa7015e5b97b8c359f28e0c87d9ef8e1f1463e66694c3b3db1672b8fcbbb
+    evidenceWaits:
+      - id: bootstrap-openspec-store-root:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+        receipt:
+          ref: openspec/changes/bootstrap-openspec-store-root
+          contentHash: 2fa4aa7015e5b97b8c359f28e0c87d9ef8e1f1463e66694c3b3db1672b8fcbbb
+          submissionId: f6de3e86-2b9f-4fc1-b3a9-532cb67f1a1b
+    ready: []
+    joins: {}
+    outputs:
+      full.design.handoff:
+        sequence: 5
+        value:
+          handoffContext: openspec/changes/bootstrap-openspec-store-root/.comet/handoff/design-context.json
+          handoffHash: 0c9375b366cf2d3645ca95ccb35f55bc748e4f3451ed8804423d68d2e63e912e
+          proposal: >-
+            推荐采用“Repoctopus 原生可恢复 onboarding 事务”方案：
+
+
+            1. 在获批候选中冻结五种 Root disposition、固定 OpenSpec 1.14.3
+            identity、Workspace/Store identity 与允许动作；apply 前重新观察，漂移即使决定失效。
+
+            2. 复用现有 request-scoped Store binding journal，新增 prepare-root
+            Intent/Receipt 和受限 openspec/ ownership manifest，不建立第二套 lifecycle 或
+            generation。
+
+            3. missing-root 才执行固定 entry 的官方 init；healthy-unregistered 只
+            register；partial/unhealthy 和 registry conflict 一律 fail closed。
+
+            4. 外部结果未知时只从 Intent、当前 Root/registry 和 manifest 重新观察；不依赖
+            stdout、不重复创建、不自动删除或覆盖用户文件。
+
+            5. 发布顺序固定为 prepare-root -> register-store -> business pointers ->
+            repoctopus.yaml，配置最后发布。
+
+            6. 真实 CLI 测试使用临时 XDG_DATA_HOME/XDG_CONFIG_HOME 隔离 Windows
+            registry/config，并验证真实用户 registry 未变化。
+
+
+            拒绝的替代方案：
+
+            - 只在 ensureRegistered 中加“目录不存在就 init”：缺少批准身份、checkpoint 与未知结果恢复。
+
+            - 直接复制 Comet initialization 子系统：会带入其单仓/Classic 状态模型，与 Repoctopus
+            Store、多仓 pointer 和现有 journal 重叠。
+
+            - 使用 openspec store setup：职责过重，并会拒绝已有内容但不健康的仓，无法提供所需的分步审计。
+
+            - 手工创建 openspec/config.yaml：复制 Provider 私有协议，升级时会漂移。
+
+
+            实现边界以当前 design.md 和两个 delta spec 为准；普通实现细节可以在不扩大行为权限的前提下细化，但 Root
+            状态分类、配置最后发布、用户文件保护和真实 CLI 验收不可弱化。
+          requirementsEvidence:
+            contentHash: f13c17e9138e53511fecb264e6ebd1c93c296a7f4e073a48bc68fe343836db62
+            ref: openspec/changes/bootstrap-openspec-store-root
+          sourceEvidence:
+            contentHash: f6c711706bf19c70e863bde029b77c6d9ed83189d4adab5fb91f3bcc8b5d1188
+            ref: openspec/changes/bootstrap-openspec-store-root
+      full.open:
+        sequence: 1
+        value:
+          event: open-complete
+      full.open.confirm:
+        sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: bootstrap-openspec-store-root
+              changeDir: openspec/changes/bootstrap-openspec-store-root
+              workspaceBaseline:
+                ref: 87651f74-b019-40f2-84cf-b13ae47fe714
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: 2fa4aa7015e5b97b8c359f28e0c87d9ef8e1f1463e66694c3b3db1672b8fcbbb
+                ref: openspec/changes/bootstrap-openspec-store-root
+      full.open.evidence:
+        sequence: 2
+        value:
+          contentHash: 2fa4aa7015e5b97b8c359f28e0c87d9ef8e1f1463e66694c3b3db1672b8fcbbb
+          ref: openspec/changes/bootstrap-openspec-store-root
+      full.open.revalidate:
+        sequence: 4
+        value:
+          contentHash: 2fa4aa7015e5b97b8c359f28e0c87d9ef8e1f1463e66694c3b3db1672b8fcbbb
+    children: []
+    lineage: []
+  sourceRevision: 9
+  sourceHash: 217786c654f134c84593e9a7ee0f7e6b689e067c882be60a24c768acdab1a984
+check_epoch: 1
