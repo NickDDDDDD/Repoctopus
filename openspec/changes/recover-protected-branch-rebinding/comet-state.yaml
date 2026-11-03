@@ -1,0 +1,116 @@
+# comet-execution: managed-run
+change_id: 814a95a7-a39b-4f59-923f-bd41d3501e08
+workflow: full
+language: zh-CN
+phase: open
+context_compression: off
+build_mode: null
+build_pause: null
+subagent_dispatch: null
+tdd_mode: null
+review_mode: thorough
+isolation: current
+verify_mode: null
+auto_transition: true
+base_ref: d29da01e015a6a2d59768269a96615509aeb879d
+design_doc: null
+plan: null
+verify_result: pending
+verify_failures: 0
+verification_report: null
+branch_status: pending
+created_at: 2026-11-03
+verified_at: null
+archive_confirmation: null
+archived: false
+bound_branch: codex/recover-protected-branch-rebinding
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: 01f6950f28ce015168077dd21938f13f6c1efc2a68b230c0f7e0145aa11cac9d
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: recover-protected-branch-rebinding
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: 70deb11717003b1ce2d61e29813a4bdb0ad2813d87d7f06cde69296d058b2dcb
+    input:
+      change: recover-protected-branch-rebinding
+      changeDir: openspec/changes/recover-protected-branch-rebinding
+      workspaceBaseline:
+        ref: e3121327-2ceb-41cd-95b5-a4a72a59b61d
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: d29da01e015a6a2d59768269a96615509aeb879d
+      boundBranch: codex/recover-protected-branch-rebinding
+      branchStatus: pending
+      buildMode: null
+      buildPause: null
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-03
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: current
+      language: zh-CN
+      phase: open
+      plan: null
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: null
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: running
+    sequence: 1
+    actions:
+      - attempt: 1
+        id: recover-protected-branch-rebinding:1
+        input:
+          input:
+            change: recover-protected-branch-rebinding
+            changeDir: openspec/changes/recover-protected-branch-rebinding
+            workspaceBaseline:
+              ref: e3121327-2ceb-41cd-95b5-a4a72a59b61d
+          outputs: {}
+        inputHash: f7a9107802e22f8f022f4fbb50c05e3a029c61c243f8a6956c8ce7c2be599b3a
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-protected-branch-rebinding
+        status: pending
+        stepId: full.open
+        type: invoke_skill
+    actionContexts:
+      recover-protected-branch-rebinding:1:
+        results: {}
+        sequence: 1
+    waits: []
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 1
+  sourceHash: e9152d03bac4c47fc56fa1f982981ba8c2c01a3752751eb93b2557cfdff33217
