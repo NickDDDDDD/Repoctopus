@@ -33,6 +33,6 @@
 ## 6. Documentation and full verification
 
 - [x] 6.1 更新 Runtime/自举文档，解释 Intent、Binding、ChangeStartBinding 和 Delivery target 的职责边界。 <!-- comet-task:10382a35-d3ab-4bc3-bad9-02454fb45d99 -->
-- [ ] 6.2 运行定向测试、strict OpenSpec、architecture/provenance/generated 检查和完整 `npm run verify`。 <!-- comet-task:7fae3b5d-9230-42d1-8988-3e28be2d23a1 -->
-- [ ] 6.3 清理临时验收日志和 scratch 输出；保留正式 Run、规格、测试与诊断证据。 <!-- comet-task:5b9dc4f6-b939-47ca-a035-8d4438f8422c -->
-- [ ] 6.4 用修复后的产品继续模拟多仓验收；若旧 Run 因 composition identity 不兼容则记录并从同一场景创建新 Run，不添加兼容旁路。 <!-- comet-task:1ee9c804-2040-4b1f-8318-4a0789ce1b86 -->
+- [x] 6.2 运行定向测试、strict OpenSpec、architecture/provenance/generated 检查和完整 `npm run verify`。 <!-- comet-task:7fae3b5d-9230-42d1-8988-3e28be2d23a1 -->
+- [x] 6.3 清理临时验收日志和 scratch 输出；保留正式 Run、规格、测试与诊断证据。 <!-- comet-task:5b9dc4f6-b939-47ca-a035-8d4438f8422c -->
+- [x] 6.4 用修复后的产品继续模拟多仓验收；若旧 Run 因 composition identity 不兼容则记录并从同一场景创建新 Run，不添加兼容旁路。 <!-- comet-task:1ee9c804-2040-4b1f-8318-4a0789ce1b86 -->
