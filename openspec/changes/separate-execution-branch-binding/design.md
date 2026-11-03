@@ -1,3 +1,10 @@
+---
+comet_change: separate-execution-branch-binding
+role: technical-design
+canonical_spec: openspec
+status: draft
+---
+
 # Design
 
 ## Context

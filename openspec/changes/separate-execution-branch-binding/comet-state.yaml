@@ -2,19 +2,19 @@
 change_id: 5ff2c33a-77f1-4652-a95f-23b5a76e7c45
 workflow: full
 language: zh-CN
-phase: design
+phase: build
 context_compression: off
-build_mode: null
+build_mode: autonomous
 build_pause: null
 subagent_dispatch: null
-tdd_mode: null
+tdd_mode: tdd
 review_mode: thorough
 isolation: branch
 verify_mode: null
 auto_transition: true
 base_ref: 1e111d9b59e546630a253a2217629cf18647abcd
-design_doc: null
-plan: null
+design_doc: openspec/changes/separate-execution-branch-binding/design.md
+plan: docs/superpowers/plans/2026-11-03-separate-execution-branch-binding.md
 verify_result: pending
 verify_failures: 0
 verification_report: null
@@ -24,14 +24,14 @@ verified_at: null
 archive_confirmation: null
 archived: false
 bound_branch: codex/separate-execution-branch-binding
-direct_override: null
+direct_override: false
 handoff_context: openspec/changes/separate-execution-branch-binding/.comet/handoff/design-context.json
 handoff_hash: 909b62d072b9ec05d280e3ec9f7bd5ab323a9fdda936b4013408a9855f41bf4a
 classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: 1af4689641ae913f89dda87e69d9615edccf6865d6b2f50a1aa9499cb751808f
+  hash: 01a32768c0b4c9e20349476aa0851c3a86646b7476c14a19b9e666da70e77dd3
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -56,32 +56,32 @@ run_checkpoint:
       baseRef: 1e111d9b59e546630a253a2217629cf18647abcd
       boundBranch: codex/separate-execution-branch-binding
       branchStatus: pending
-      buildMode: null
+      buildMode: autonomous
       buildPause: null
-      checkEpoch: 1
+      checkEpoch: 2
       classicMigration: null
       classicProfile: null
       contextCompression: off
       createdAt: 2026-11-03
-      designDoc: null
-      directOverride: null
+      designDoc: openspec/changes/separate-execution-branch-binding/design.md
+      directOverride: false
       handoffContext: openspec/changes/separate-execution-branch-binding/.comet/handoff/design-context.json
       handoffHash: 909b62d072b9ec05d280e3ec9f7bd5ab323a9fdda936b4013408a9855f41bf4a
       isolation: branch
       language: zh-CN
-      phase: design
-      plan: null
+      phase: build
+      plan: docs/superpowers/plans/2026-11-03-separate-execution-branch-binding.md
       reviewMode: thorough
       subagentDispatch: null
-      tddMode: null
+      tddMode: tdd
       verificationReport: null
       verifiedAt: null
       verifyFailures: 0
       verifyMode: null
       verifyResult: pending
       workflow: full
-    status: waiting
-    sequence: 6
+    status: running
+    sequence: 13
     actions:
       - attempt: 1
         claim:
@@ -252,10 +252,713 @@ run_checkpoint:
         status: succeeded
         stepId: full.design.handoff
         type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-40fcf5cd5d12c918cd93ddfc51c4fab209bccb51e2e938cb03c5ea4c784e3f89
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: separate-execution-branch-binding:7
+        input:
+          input:
+            change: separate-execution-branch-binding
+            changeDir: openspec/changes/separate-execution-branch-binding
+            workspaceBaseline:
+              ref: b81fd641-460b-4996-87ff-eb4f777a5383
+          outputs:
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: separate-execution-branch-binding
+                  changeDir: openspec/changes/separate-execution-branch-binding
+                  workspaceBaseline:
+                    ref: b81fd641-460b-4996-87ff-eb4f777a5383
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/separate-execution-branch-binding/.comet/handoff/design-context.json
+                    handoffHash: 909b62d072b9ec05d280e3ec9f7bd5ab323a9fdda936b4013408a9855f41bf4a
+                    proposal: 采用 isolation-only ExecutionWorkspaceIntent 与逐仓
+                      ExecutionWorkspaceBinding：移除 Intent 的 delivery
+                      targetBranch 和两层共享分支断言；ChangeStartBinding/Delivery 保留
+                      source-target 坐标；Plan 后仍由 protected branch validation
+                      约束精确写仓；删除 branch-mismatch telemetry 枚举；不提供旧 schema
+                      兼容层，并以真实多仓 Open 批准到 Design 的生产 E2E 验证。
+                    requirementsEvidence:
+                      contentHash: 08b1000c8c4848ce08448e2a57e39695f81a3cfec198748ecda88decea145000
+                      ref: openspec/changes/separate-execution-branch-binding
+                    sourceEvidence:
+                      contentHash: aefe3979b4c2aac60784c4adada8f09263a4d015c3651b15a43d80541cc70f5b
+                      ref: openspec/changes/separate-execution-branch-binding
+            full.design.handoff:
+              handoffContext: openspec/changes/separate-execution-branch-binding/.comet/handoff/design-context.json
+              handoffHash: 909b62d072b9ec05d280e3ec9f7bd5ab323a9fdda936b4013408a9855f41bf4a
+              proposal: 采用 isolation-only ExecutionWorkspaceIntent 与逐仓
+                ExecutionWorkspaceBinding：移除 Intent 的 delivery targetBranch
+                和两层共享分支断言；ChangeStartBinding/Delivery 保留 source-target 坐标；Plan
+                后仍由 protected branch validation 约束精确写仓；删除 branch-mismatch
+                telemetry 枚举；不提供旧 schema 兼容层，并以真实多仓 Open 批准到 Design 的生产 E2E 验证。
+              requirementsEvidence:
+                contentHash: 08b1000c8c4848ce08448e2a57e39695f81a3cfec198748ecda88decea145000
+                ref: openspec/changes/separate-execution-branch-binding
+              sourceEvidence:
+                contentHash: aefe3979b4c2aac60784c4adada8f09263a4d015c3651b15a43d80541cc70f5b
+                ref: openspec/changes/separate-execution-branch-binding
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: separate-execution-branch-binding
+                  changeDir: openspec/changes/separate-execution-branch-binding
+                  workspaceBaseline:
+                    ref: b81fd641-460b-4996-87ff-eb4f777a5383
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+                    ref: openspec/changes/separate-execution-branch-binding
+            full.open.evidence:
+              contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+              ref: openspec/changes/separate-execution-branch-binding
+            full.open.revalidate:
+              contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+        inputHash: e03686c7c307d3527ba7f2acc251dfc0e1b4d62672ef7a1475311f388a4ed088
+        outcome:
+          actionId: separate-execution-branch-binding:7
+          attempt: 1
+          claimToken: portable-40fcf5cd5d12c918cd93ddfc51c4fab209bccb51e2e938cb03c5ea4c784e3f89
+          inputHash: e03686c7c307d3527ba7f2acc251dfc0e1b4d62672ef7a1475311f388a4ed088
+          outcomeId: 229c347f-8a7c-4ecd-9075-3d12cd437626
+          output:
+            designDoc: openspec/changes/separate-execution-branch-binding/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 9871c59f16e2b8609fa8494fab5e226176458551c5f80acdff3778377cc9bfd3
+            outcomeId: 229c347f-8a7c-4ecd-9075-3d12cd437626
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: separate-execution-branch-binding
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-1d50f981ff319f657fb40ead6b133cc8de9704acef9df8312a215f77caf8c1fa
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: separate-execution-branch-binding:9
+        input:
+          input:
+            change: separate-execution-branch-binding
+            changeDir: openspec/changes/separate-execution-branch-binding
+            workspaceBaseline:
+              ref: b81fd641-460b-4996-87ff-eb4f777a5383
+          outputs:
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: separate-execution-branch-binding
+                  changeDir: openspec/changes/separate-execution-branch-binding
+                  workspaceBaseline:
+                    ref: b81fd641-460b-4996-87ff-eb4f777a5383
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/separate-execution-branch-binding/.comet/handoff/design-context.json
+                    handoffHash: 909b62d072b9ec05d280e3ec9f7bd5ab323a9fdda936b4013408a9855f41bf4a
+                    proposal: 采用 isolation-only ExecutionWorkspaceIntent 与逐仓
+                      ExecutionWorkspaceBinding：移除 Intent 的 delivery
+                      targetBranch 和两层共享分支断言；ChangeStartBinding/Delivery 保留
+                      source-target 坐标；Plan 后仍由 protected branch validation
+                      约束精确写仓；删除 branch-mismatch telemetry 枚举；不提供旧 schema
+                      兼容层，并以真实多仓 Open 批准到 Design 的生产 E2E 验证。
+                    requirementsEvidence:
+                      contentHash: 08b1000c8c4848ce08448e2a57e39695f81a3cfec198748ecda88decea145000
+                      ref: openspec/changes/separate-execution-branch-binding
+                    sourceEvidence:
+                      contentHash: aefe3979b4c2aac60784c4adada8f09263a4d015c3651b15a43d80541cc70f5b
+                      ref: openspec/changes/separate-execution-branch-binding
+            full.design.document:
+              designDoc: openspec/changes/separate-execution-branch-binding/design.md
+            full.design.evidence:
+              contentHash: a636182d3157e4ddd906a72e2bfc05d507d006b93806cd6c8d8f0c6fdd3f40d9
+              ref: openspec/changes/separate-execution-branch-binding/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/separate-execution-branch-binding/.comet/handoff/design-context.json
+              handoffHash: 909b62d072b9ec05d280e3ec9f7bd5ab323a9fdda936b4013408a9855f41bf4a
+              proposal: 采用 isolation-only ExecutionWorkspaceIntent 与逐仓
+                ExecutionWorkspaceBinding：移除 Intent 的 delivery targetBranch
+                和两层共享分支断言；ChangeStartBinding/Delivery 保留 source-target 坐标；Plan
+                后仍由 protected branch validation 约束精确写仓；删除 branch-mismatch
+                telemetry 枚举；不提供旧 schema 兼容层，并以真实多仓 Open 批准到 Design 的生产 E2E 验证。
+              requirementsEvidence:
+                contentHash: 08b1000c8c4848ce08448e2a57e39695f81a3cfec198748ecda88decea145000
+                ref: openspec/changes/separate-execution-branch-binding
+              sourceEvidence:
+                contentHash: aefe3979b4c2aac60784c4adada8f09263a4d015c3651b15a43d80541cc70f5b
+                ref: openspec/changes/separate-execution-branch-binding
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: separate-execution-branch-binding
+                  changeDir: openspec/changes/separate-execution-branch-binding
+                  workspaceBaseline:
+                    ref: b81fd641-460b-4996-87ff-eb4f777a5383
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+                    ref: openspec/changes/separate-execution-branch-binding
+            full.open.evidence:
+              contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+              ref: openspec/changes/separate-execution-branch-binding
+            full.open.revalidate:
+              contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+        inputHash: 03e4fae8ec90e92756e46019d40c6e1953edf3931408314e29c77418dace61ce
+        outcome:
+          actionId: separate-execution-branch-binding:9
+          attempt: 1
+          claimToken: portable-1d50f981ff319f657fb40ead6b133cc8de9704acef9df8312a215f77caf8c1fa
+          inputHash: 03e4fae8ec90e92756e46019d40c6e1953edf3931408314e29c77418dace61ce
+          outcomeId: 659d79ce-45f0-483e-9e81-f50adab993a9
+          output:
+            boundBranch: codex/separate-execution-branch-binding
+            buildMode: autonomous
+            directOverride: false
+            isolation: branch
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: eaf621eba174d96b6c2ecd5a4f66369d33b8872604bcfaf378084ed38f175c9f
+            outcomeId: 659d79ce-45f0-483e-9e81-f50adab993a9
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: separate-execution-branch-binding
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-4cc0de3798d796267c0f58831ec891ff26e28f5311029231713005cf05953482
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: separate-execution-branch-binding:11
+        input:
+          input:
+            change: separate-execution-branch-binding
+            changeDir: openspec/changes/separate-execution-branch-binding
+            workspaceBaseline:
+              ref: b81fd641-460b-4996-87ff-eb4f777a5383
+          outputs:
+            full.build.configure:
+              boundBranch: codex/separate-execution-branch-binding
+              buildMode: autonomous
+              directOverride: false
+              isolation: branch
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: separate-execution-branch-binding
+                  changeDir: openspec/changes/separate-execution-branch-binding
+                  workspaceBaseline:
+                    ref: b81fd641-460b-4996-87ff-eb4f777a5383
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/separate-execution-branch-binding
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: branch
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: separate-execution-branch-binding
+                  changeDir: openspec/changes/separate-execution-branch-binding
+                  workspaceBaseline:
+                    ref: b81fd641-460b-4996-87ff-eb4f777a5383
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/separate-execution-branch-binding/.comet/handoff/design-context.json
+                    handoffHash: 909b62d072b9ec05d280e3ec9f7bd5ab323a9fdda936b4013408a9855f41bf4a
+                    proposal: 采用 isolation-only ExecutionWorkspaceIntent 与逐仓
+                      ExecutionWorkspaceBinding：移除 Intent 的 delivery
+                      targetBranch 和两层共享分支断言；ChangeStartBinding/Delivery 保留
+                      source-target 坐标；Plan 后仍由 protected branch validation
+                      约束精确写仓；删除 branch-mismatch telemetry 枚举；不提供旧 schema
+                      兼容层，并以真实多仓 Open 批准到 Design 的生产 E2E 验证。
+                    requirementsEvidence:
+                      contentHash: 08b1000c8c4848ce08448e2a57e39695f81a3cfec198748ecda88decea145000
+                      ref: openspec/changes/separate-execution-branch-binding
+                    sourceEvidence:
+                      contentHash: aefe3979b4c2aac60784c4adada8f09263a4d015c3651b15a43d80541cc70f5b
+                      ref: openspec/changes/separate-execution-branch-binding
+            full.design.document:
+              designDoc: openspec/changes/separate-execution-branch-binding/design.md
+            full.design.evidence:
+              contentHash: a636182d3157e4ddd906a72e2bfc05d507d006b93806cd6c8d8f0c6fdd3f40d9
+              ref: openspec/changes/separate-execution-branch-binding/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/separate-execution-branch-binding/.comet/handoff/design-context.json
+              handoffHash: 909b62d072b9ec05d280e3ec9f7bd5ab323a9fdda936b4013408a9855f41bf4a
+              proposal: 采用 isolation-only ExecutionWorkspaceIntent 与逐仓
+                ExecutionWorkspaceBinding：移除 Intent 的 delivery targetBranch
+                和两层共享分支断言；ChangeStartBinding/Delivery 保留 source-target 坐标；Plan
+                后仍由 protected branch validation 约束精确写仓；删除 branch-mismatch
+                telemetry 枚举；不提供旧 schema 兼容层，并以真实多仓 Open 批准到 Design 的生产 E2E 验证。
+              requirementsEvidence:
+                contentHash: 08b1000c8c4848ce08448e2a57e39695f81a3cfec198748ecda88decea145000
+                ref: openspec/changes/separate-execution-branch-binding
+              sourceEvidence:
+                contentHash: aefe3979b4c2aac60784c4adada8f09263a4d015c3651b15a43d80541cc70f5b
+                ref: openspec/changes/separate-execution-branch-binding
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: separate-execution-branch-binding
+                  changeDir: openspec/changes/separate-execution-branch-binding
+                  workspaceBaseline:
+                    ref: b81fd641-460b-4996-87ff-eb4f777a5383
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+                    ref: openspec/changes/separate-execution-branch-binding
+            full.open.evidence:
+              contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+              ref: openspec/changes/separate-execution-branch-binding
+            full.open.revalidate:
+              contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+        inputHash: 7b39c8891d0fcf205e66fea872d31e43f3c756b216bb77304439ed9dc69cfdef
+        outcome:
+          actionId: separate-execution-branch-binding:11
+          attempt: 1
+          claimToken: portable-4cc0de3798d796267c0f58831ec891ff26e28f5311029231713005cf05953482
+          inputHash: 7b39c8891d0fcf205e66fea872d31e43f3c756b216bb77304439ed9dc69cfdef
+          outcomeId: 9329adac-86fa-43fd-ba40-2c07eb0f1ff8
+          output:
+            designEvidence:
+              contentHash: a636182d3157e4ddd906a72e2bfc05d507d006b93806cd6c8d8f0c6fdd3f40d9
+              ref: openspec/changes/separate-execution-branch-binding/design.md
+            plan: docs/superpowers/plans/2026-11-03-separate-execution-branch-binding.md
+            planEvidence:
+              contentHash: 3abd930d4e58b559db15cdac7642f4833e66b0d664426d66863431102f8911ed
+              ref: docs/superpowers/plans/2026-11-03-separate-execution-branch-binding.md
+            taskRevision: 46fe76abbb59b0acfca5fe74a74f21062d5b28d3863c9edce540353f18dca1a7
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 2b054bd7d39d37728533516f3f6b79015aefaba4209092629f5f4f7bdd5d724b
+            outcomeId: 9329adac-86fa-43fd-ba40-2c07eb0f1ff8
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: separate-execution-branch-binding
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        id: separate-execution-branch-binding:13
+        input:
+          input:
+            change: separate-execution-branch-binding
+            changeDir: openspec/changes/separate-execution-branch-binding
+            workspaceBaseline:
+              ref: b81fd641-460b-4996-87ff-eb4f777a5383
+          outputs:
+            full.build.configure:
+              boundBranch: codex/separate-execution-branch-binding
+              buildMode: autonomous
+              directOverride: false
+              isolation: branch
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+            full.build.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: separate-execution-branch-binding
+                  changeDir: openspec/changes/separate-execution-branch-binding
+                  workspaceBaseline:
+                    ref: b81fd641-460b-4996-87ff-eb4f777a5383
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/separate-execution-branch-binding
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: branch
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+            full.build.plan:
+              designEvidence:
+                contentHash: a636182d3157e4ddd906a72e2bfc05d507d006b93806cd6c8d8f0c6fdd3f40d9
+                ref: openspec/changes/separate-execution-branch-binding/design.md
+              plan: docs/superpowers/plans/2026-11-03-separate-execution-branch-binding.md
+              planEvidence:
+                contentHash: 3abd930d4e58b559db15cdac7642f4833e66b0d664426d66863431102f8911ed
+                ref: docs/superpowers/plans/2026-11-03-separate-execution-branch-binding.md
+              taskRevision: 46fe76abbb59b0acfca5fe74a74f21062d5b28d3863c9edce540353f18dca1a7
+            full.build.plan.evidence:
+              contentHash: 3abd930d4e58b559db15cdac7642f4833e66b0d664426d66863431102f8911ed
+              ref: docs/superpowers/plans/2026-11-03-separate-execution-branch-binding.md
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: separate-execution-branch-binding
+                  changeDir: openspec/changes/separate-execution-branch-binding
+                  workspaceBaseline:
+                    ref: b81fd641-460b-4996-87ff-eb4f777a5383
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/separate-execution-branch-binding/.comet/handoff/design-context.json
+                    handoffHash: 909b62d072b9ec05d280e3ec9f7bd5ab323a9fdda936b4013408a9855f41bf4a
+                    proposal: 采用 isolation-only ExecutionWorkspaceIntent 与逐仓
+                      ExecutionWorkspaceBinding：移除 Intent 的 delivery
+                      targetBranch 和两层共享分支断言；ChangeStartBinding/Delivery 保留
+                      source-target 坐标；Plan 后仍由 protected branch validation
+                      约束精确写仓；删除 branch-mismatch telemetry 枚举；不提供旧 schema
+                      兼容层，并以真实多仓 Open 批准到 Design 的生产 E2E 验证。
+                    requirementsEvidence:
+                      contentHash: 08b1000c8c4848ce08448e2a57e39695f81a3cfec198748ecda88decea145000
+                      ref: openspec/changes/separate-execution-branch-binding
+                    sourceEvidence:
+                      contentHash: aefe3979b4c2aac60784c4adada8f09263a4d015c3651b15a43d80541cc70f5b
+                      ref: openspec/changes/separate-execution-branch-binding
+            full.design.document:
+              designDoc: openspec/changes/separate-execution-branch-binding/design.md
+            full.design.evidence:
+              contentHash: a636182d3157e4ddd906a72e2bfc05d507d006b93806cd6c8d8f0c6fdd3f40d9
+              ref: openspec/changes/separate-execution-branch-binding/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/separate-execution-branch-binding/.comet/handoff/design-context.json
+              handoffHash: 909b62d072b9ec05d280e3ec9f7bd5ab323a9fdda936b4013408a9855f41bf4a
+              proposal: 采用 isolation-only ExecutionWorkspaceIntent 与逐仓
+                ExecutionWorkspaceBinding：移除 Intent 的 delivery targetBranch
+                和两层共享分支断言；ChangeStartBinding/Delivery 保留 source-target 坐标；Plan
+                后仍由 protected branch validation 约束精确写仓；删除 branch-mismatch
+                telemetry 枚举；不提供旧 schema 兼容层，并以真实多仓 Open 批准到 Design 的生产 E2E 验证。
+              requirementsEvidence:
+                contentHash: 08b1000c8c4848ce08448e2a57e39695f81a3cfec198748ecda88decea145000
+                ref: openspec/changes/separate-execution-branch-binding
+              sourceEvidence:
+                contentHash: aefe3979b4c2aac60784c4adada8f09263a4d015c3651b15a43d80541cc70f5b
+                ref: openspec/changes/separate-execution-branch-binding
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: separate-execution-branch-binding
+                  changeDir: openspec/changes/separate-execution-branch-binding
+                  workspaceBaseline:
+                    ref: b81fd641-460b-4996-87ff-eb4f777a5383
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+                    ref: openspec/changes/separate-execution-branch-binding
+            full.open.evidence:
+              contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+              ref: openspec/changes/separate-execution-branch-binding
+            full.open.revalidate:
+              contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+        inputHash: 1708e89a3d4bdd44cf1cf9a489d20e1f479035cfb2ec597d38f5c805f8a5843d
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: separate-execution-branch-binding
+        status: pending
+        stepId: full.build.execute
+        type: invoke_skill
     actionContexts:
       separate-execution-branch-binding:1:
         results: {}
         sequence: 1
+      separate-execution-branch-binding:11:
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/separate-execution-branch-binding
+              buildMode: autonomous
+              directOverride: false
+              isolation: branch
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: separate-execution-branch-binding
+                  changeDir: openspec/changes/separate-execution-branch-binding
+                  workspaceBaseline:
+                    ref: b81fd641-460b-4996-87ff-eb4f777a5383
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/separate-execution-branch-binding
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: branch
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: separate-execution-branch-binding
+                  changeDir: openspec/changes/separate-execution-branch-binding
+                  workspaceBaseline:
+                    ref: b81fd641-460b-4996-87ff-eb4f777a5383
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/separate-execution-branch-binding/.comet/handoff/design-context.json
+                    handoffHash: 909b62d072b9ec05d280e3ec9f7bd5ab323a9fdda936b4013408a9855f41bf4a
+                    proposal: 采用 isolation-only ExecutionWorkspaceIntent 与逐仓
+                      ExecutionWorkspaceBinding：移除 Intent 的 delivery
+                      targetBranch 和两层共享分支断言；ChangeStartBinding/Delivery 保留
+                      source-target 坐标；Plan 后仍由 protected branch validation
+                      约束精确写仓；删除 branch-mismatch telemetry 枚举；不提供旧 schema
+                      兼容层，并以真实多仓 Open 批准到 Design 的生产 E2E 验证。
+                    requirementsEvidence:
+                      contentHash: 08b1000c8c4848ce08448e2a57e39695f81a3cfec198748ecda88decea145000
+                      ref: openspec/changes/separate-execution-branch-binding
+                    sourceEvidence:
+                      contentHash: aefe3979b4c2aac60784c4adada8f09263a4d015c3651b15a43d80541cc70f5b
+                      ref: openspec/changes/separate-execution-branch-binding
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/separate-execution-branch-binding/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: a636182d3157e4ddd906a72e2bfc05d507d006b93806cd6c8d8f0c6fdd3f40d9
+              ref: openspec/changes/separate-execution-branch-binding/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/separate-execution-branch-binding/.comet/handoff/design-context.json
+              handoffHash: 909b62d072b9ec05d280e3ec9f7bd5ab323a9fdda936b4013408a9855f41bf4a
+              proposal: 采用 isolation-only ExecutionWorkspaceIntent 与逐仓
+                ExecutionWorkspaceBinding：移除 Intent 的 delivery targetBranch
+                和两层共享分支断言；ChangeStartBinding/Delivery 保留 source-target 坐标；Plan
+                后仍由 protected branch validation 约束精确写仓；删除 branch-mismatch
+                telemetry 枚举；不提供旧 schema 兼容层，并以真实多仓 Open 批准到 Design 的生产 E2E 验证。
+              requirementsEvidence:
+                contentHash: 08b1000c8c4848ce08448e2a57e39695f81a3cfec198748ecda88decea145000
+                ref: openspec/changes/separate-execution-branch-binding
+              sourceEvidence:
+                contentHash: aefe3979b4c2aac60784c4adada8f09263a4d015c3651b15a43d80541cc70f5b
+                ref: openspec/changes/separate-execution-branch-binding
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: separate-execution-branch-binding
+                  changeDir: openspec/changes/separate-execution-branch-binding
+                  workspaceBaseline:
+                    ref: b81fd641-460b-4996-87ff-eb4f777a5383
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+                    ref: openspec/changes/separate-execution-branch-binding
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+              ref: openspec/changes/separate-execution-branch-binding
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+        sequence: 11
+      separate-execution-branch-binding:13:
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/separate-execution-branch-binding
+              buildMode: autonomous
+              directOverride: false
+              isolation: branch
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: separate-execution-branch-binding
+                  changeDir: openspec/changes/separate-execution-branch-binding
+                  workspaceBaseline:
+                    ref: b81fd641-460b-4996-87ff-eb4f777a5383
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/separate-execution-branch-binding
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: branch
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: a636182d3157e4ddd906a72e2bfc05d507d006b93806cd6c8d8f0c6fdd3f40d9
+                ref: openspec/changes/separate-execution-branch-binding/design.md
+              plan: docs/superpowers/plans/2026-11-03-separate-execution-branch-binding.md
+              planEvidence:
+                contentHash: 3abd930d4e58b559db15cdac7642f4833e66b0d664426d66863431102f8911ed
+                ref: docs/superpowers/plans/2026-11-03-separate-execution-branch-binding.md
+              taskRevision: 46fe76abbb59b0acfca5fe74a74f21062d5b28d3863c9edce540353f18dca1a7
+          full.build.plan.evidence:
+            sequence: 12
+            value:
+              contentHash: 3abd930d4e58b559db15cdac7642f4833e66b0d664426d66863431102f8911ed
+              ref: docs/superpowers/plans/2026-11-03-separate-execution-branch-binding.md
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: separate-execution-branch-binding
+                  changeDir: openspec/changes/separate-execution-branch-binding
+                  workspaceBaseline:
+                    ref: b81fd641-460b-4996-87ff-eb4f777a5383
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/separate-execution-branch-binding/.comet/handoff/design-context.json
+                    handoffHash: 909b62d072b9ec05d280e3ec9f7bd5ab323a9fdda936b4013408a9855f41bf4a
+                    proposal: 采用 isolation-only ExecutionWorkspaceIntent 与逐仓
+                      ExecutionWorkspaceBinding：移除 Intent 的 delivery
+                      targetBranch 和两层共享分支断言；ChangeStartBinding/Delivery 保留
+                      source-target 坐标；Plan 后仍由 protected branch validation
+                      约束精确写仓；删除 branch-mismatch telemetry 枚举；不提供旧 schema
+                      兼容层，并以真实多仓 Open 批准到 Design 的生产 E2E 验证。
+                    requirementsEvidence:
+                      contentHash: 08b1000c8c4848ce08448e2a57e39695f81a3cfec198748ecda88decea145000
+                      ref: openspec/changes/separate-execution-branch-binding
+                    sourceEvidence:
+                      contentHash: aefe3979b4c2aac60784c4adada8f09263a4d015c3651b15a43d80541cc70f5b
+                      ref: openspec/changes/separate-execution-branch-binding
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/separate-execution-branch-binding/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: a636182d3157e4ddd906a72e2bfc05d507d006b93806cd6c8d8f0c6fdd3f40d9
+              ref: openspec/changes/separate-execution-branch-binding/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/separate-execution-branch-binding/.comet/handoff/design-context.json
+              handoffHash: 909b62d072b9ec05d280e3ec9f7bd5ab323a9fdda936b4013408a9855f41bf4a
+              proposal: 采用 isolation-only ExecutionWorkspaceIntent 与逐仓
+                ExecutionWorkspaceBinding：移除 Intent 的 delivery targetBranch
+                和两层共享分支断言；ChangeStartBinding/Delivery 保留 source-target 坐标；Plan
+                后仍由 protected branch validation 约束精确写仓；删除 branch-mismatch
+                telemetry 枚举；不提供旧 schema 兼容层，并以真实多仓 Open 批准到 Design 的生产 E2E 验证。
+              requirementsEvidence:
+                contentHash: 08b1000c8c4848ce08448e2a57e39695f81a3cfec198748ecda88decea145000
+                ref: openspec/changes/separate-execution-branch-binding
+              sourceEvidence:
+                contentHash: aefe3979b4c2aac60784c4adada8f09263a4d015c3651b15a43d80541cc70f5b
+                ref: openspec/changes/separate-execution-branch-binding
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: separate-execution-branch-binding
+                  changeDir: openspec/changes/separate-execution-branch-binding
+                  workspaceBaseline:
+                    ref: b81fd641-460b-4996-87ff-eb4f777a5383
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+                    ref: openspec/changes/separate-execution-branch-binding
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+              ref: openspec/changes/separate-execution-branch-binding
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+        sequence: 13
       separate-execution-branch-binding:4:
         results:
           full.open:
@@ -316,6 +1019,163 @@ run_checkpoint:
             value:
               contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
         sequence: 5
+      separate-execution-branch-binding:7:
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: separate-execution-branch-binding
+                  changeDir: openspec/changes/separate-execution-branch-binding
+                  workspaceBaseline:
+                    ref: b81fd641-460b-4996-87ff-eb4f777a5383
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/separate-execution-branch-binding/.comet/handoff/design-context.json
+                    handoffHash: 909b62d072b9ec05d280e3ec9f7bd5ab323a9fdda936b4013408a9855f41bf4a
+                    proposal: 采用 isolation-only ExecutionWorkspaceIntent 与逐仓
+                      ExecutionWorkspaceBinding：移除 Intent 的 delivery
+                      targetBranch 和两层共享分支断言；ChangeStartBinding/Delivery 保留
+                      source-target 坐标；Plan 后仍由 protected branch validation
+                      约束精确写仓；删除 branch-mismatch telemetry 枚举；不提供旧 schema
+                      兼容层，并以真实多仓 Open 批准到 Design 的生产 E2E 验证。
+                    requirementsEvidence:
+                      contentHash: 08b1000c8c4848ce08448e2a57e39695f81a3cfec198748ecda88decea145000
+                      ref: openspec/changes/separate-execution-branch-binding
+                    sourceEvidence:
+                      contentHash: aefe3979b4c2aac60784c4adada8f09263a4d015c3651b15a43d80541cc70f5b
+                      ref: openspec/changes/separate-execution-branch-binding
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/separate-execution-branch-binding/.comet/handoff/design-context.json
+              handoffHash: 909b62d072b9ec05d280e3ec9f7bd5ab323a9fdda936b4013408a9855f41bf4a
+              proposal: 采用 isolation-only ExecutionWorkspaceIntent 与逐仓
+                ExecutionWorkspaceBinding：移除 Intent 的 delivery targetBranch
+                和两层共享分支断言；ChangeStartBinding/Delivery 保留 source-target 坐标；Plan
+                后仍由 protected branch validation 约束精确写仓；删除 branch-mismatch
+                telemetry 枚举；不提供旧 schema 兼容层，并以真实多仓 Open 批准到 Design 的生产 E2E 验证。
+              requirementsEvidence:
+                contentHash: 08b1000c8c4848ce08448e2a57e39695f81a3cfec198748ecda88decea145000
+                ref: openspec/changes/separate-execution-branch-binding
+              sourceEvidence:
+                contentHash: aefe3979b4c2aac60784c4adada8f09263a4d015c3651b15a43d80541cc70f5b
+                ref: openspec/changes/separate-execution-branch-binding
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: separate-execution-branch-binding
+                  changeDir: openspec/changes/separate-execution-branch-binding
+                  workspaceBaseline:
+                    ref: b81fd641-460b-4996-87ff-eb4f777a5383
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+                    ref: openspec/changes/separate-execution-branch-binding
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+              ref: openspec/changes/separate-execution-branch-binding
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+        sequence: 7
+      separate-execution-branch-binding:9:
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: separate-execution-branch-binding
+                  changeDir: openspec/changes/separate-execution-branch-binding
+                  workspaceBaseline:
+                    ref: b81fd641-460b-4996-87ff-eb4f777a5383
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/separate-execution-branch-binding/.comet/handoff/design-context.json
+                    handoffHash: 909b62d072b9ec05d280e3ec9f7bd5ab323a9fdda936b4013408a9855f41bf4a
+                    proposal: 采用 isolation-only ExecutionWorkspaceIntent 与逐仓
+                      ExecutionWorkspaceBinding：移除 Intent 的 delivery
+                      targetBranch 和两层共享分支断言；ChangeStartBinding/Delivery 保留
+                      source-target 坐标；Plan 后仍由 protected branch validation
+                      约束精确写仓；删除 branch-mismatch telemetry 枚举；不提供旧 schema
+                      兼容层，并以真实多仓 Open 批准到 Design 的生产 E2E 验证。
+                    requirementsEvidence:
+                      contentHash: 08b1000c8c4848ce08448e2a57e39695f81a3cfec198748ecda88decea145000
+                      ref: openspec/changes/separate-execution-branch-binding
+                    sourceEvidence:
+                      contentHash: aefe3979b4c2aac60784c4adada8f09263a4d015c3651b15a43d80541cc70f5b
+                      ref: openspec/changes/separate-execution-branch-binding
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/separate-execution-branch-binding/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: a636182d3157e4ddd906a72e2bfc05d507d006b93806cd6c8d8f0c6fdd3f40d9
+              ref: openspec/changes/separate-execution-branch-binding/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/separate-execution-branch-binding/.comet/handoff/design-context.json
+              handoffHash: 909b62d072b9ec05d280e3ec9f7bd5ab323a9fdda936b4013408a9855f41bf4a
+              proposal: 采用 isolation-only ExecutionWorkspaceIntent 与逐仓
+                ExecutionWorkspaceBinding：移除 Intent 的 delivery targetBranch
+                和两层共享分支断言；ChangeStartBinding/Delivery 保留 source-target 坐标；Plan
+                后仍由 protected branch validation 约束精确写仓；删除 branch-mismatch
+                telemetry 枚举；不提供旧 schema 兼容层，并以真实多仓 Open 批准到 Design 的生产 E2E 验证。
+              requirementsEvidence:
+                contentHash: 08b1000c8c4848ce08448e2a57e39695f81a3cfec198748ecda88decea145000
+                ref: openspec/changes/separate-execution-branch-binding
+              sourceEvidence:
+                contentHash: aefe3979b4c2aac60784c4adada8f09263a4d015c3651b15a43d80541cc70f5b
+                ref: openspec/changes/separate-execution-branch-binding
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: separate-execution-branch-binding
+                  changeDir: openspec/changes/separate-execution-branch-binding
+                  workspaceBaseline:
+                    ref: b81fd641-460b-4996-87ff-eb4f777a5383
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+                    ref: openspec/changes/separate-execution-branch-binding
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+              ref: openspec/changes/separate-execution-branch-binding
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+        sequence: 9
     waits:
       - id: separate-execution-branch-binding:3
         stepId: full.open.confirm
@@ -354,7 +1214,7 @@ run_checkpoint:
       - id: separate-execution-branch-binding:6
         stepId: full.design.confirm
         sequence: 6
-        status: pending
+        status: resolved
         proposal:
           input:
             change: separate-execution-branch-binding
@@ -426,6 +1286,128 @@ run_checkpoint:
             sequence: 4
             value:
               contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+        decision:
+          id: classic-design-371fd7cf67cfb9f5ff2008d89101a8f04dd0d9761a174d9292b7ab3ce52499cc-approved
+          choice: approved
+          proposalHash: 371fd7cf67cfb9f5ff2008d89101a8f04dd0d9761a174d9292b7ab3ce52499cc
+      - id: separate-execution-branch-binding:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: separate-execution-branch-binding
+            changeDir: openspec/changes/separate-execution-branch-binding
+            workspaceBaseline:
+              ref: b81fd641-460b-4996-87ff-eb4f777a5383
+          outputs:
+            full.build.configure:
+              boundBranch: codex/separate-execution-branch-binding
+              buildMode: autonomous
+              directOverride: false
+              isolation: branch
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: 844bb22c1d3b88da05541a03da87b9e82fee7ab4f5da18f9006f9e5bc8b8d84b
+        choices:
+          - approved
+          - rejected
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/separate-execution-branch-binding
+              buildMode: autonomous
+              directOverride: false
+              isolation: branch
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: separate-execution-branch-binding
+                  changeDir: openspec/changes/separate-execution-branch-binding
+                  workspaceBaseline:
+                    ref: b81fd641-460b-4996-87ff-eb4f777a5383
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/separate-execution-branch-binding/.comet/handoff/design-context.json
+                    handoffHash: 909b62d072b9ec05d280e3ec9f7bd5ab323a9fdda936b4013408a9855f41bf4a
+                    proposal: 采用 isolation-only ExecutionWorkspaceIntent 与逐仓
+                      ExecutionWorkspaceBinding：移除 Intent 的 delivery
+                      targetBranch 和两层共享分支断言；ChangeStartBinding/Delivery 保留
+                      source-target 坐标；Plan 后仍由 protected branch validation
+                      约束精确写仓；删除 branch-mismatch telemetry 枚举；不提供旧 schema
+                      兼容层，并以真实多仓 Open 批准到 Design 的生产 E2E 验证。
+                    requirementsEvidence:
+                      contentHash: 08b1000c8c4848ce08448e2a57e39695f81a3cfec198748ecda88decea145000
+                      ref: openspec/changes/separate-execution-branch-binding
+                    sourceEvidence:
+                      contentHash: aefe3979b4c2aac60784c4adada8f09263a4d015c3651b15a43d80541cc70f5b
+                      ref: openspec/changes/separate-execution-branch-binding
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/separate-execution-branch-binding/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: a636182d3157e4ddd906a72e2bfc05d507d006b93806cd6c8d8f0c6fdd3f40d9
+              ref: openspec/changes/separate-execution-branch-binding/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/separate-execution-branch-binding/.comet/handoff/design-context.json
+              handoffHash: 909b62d072b9ec05d280e3ec9f7bd5ab323a9fdda936b4013408a9855f41bf4a
+              proposal: 采用 isolation-only ExecutionWorkspaceIntent 与逐仓
+                ExecutionWorkspaceBinding：移除 Intent 的 delivery targetBranch
+                和两层共享分支断言；ChangeStartBinding/Delivery 保留 source-target 坐标；Plan
+                后仍由 protected branch validation 约束精确写仓；删除 branch-mismatch
+                telemetry 枚举；不提供旧 schema 兼容层，并以真实多仓 Open 批准到 Design 的生产 E2E 验证。
+              requirementsEvidence:
+                contentHash: 08b1000c8c4848ce08448e2a57e39695f81a3cfec198748ecda88decea145000
+                ref: openspec/changes/separate-execution-branch-binding
+              sourceEvidence:
+                contentHash: aefe3979b4c2aac60784c4adada8f09263a4d015c3651b15a43d80541cc70f5b
+                ref: openspec/changes/separate-execution-branch-binding
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: separate-execution-branch-binding
+                  changeDir: openspec/changes/separate-execution-branch-binding
+                  workspaceBaseline:
+                    ref: b81fd641-460b-4996-87ff-eb4f777a5383
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+                    ref: openspec/changes/separate-execution-branch-binding
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+              ref: openspec/changes/separate-execution-branch-binding
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+        decision:
+          id: 6ae4de6b-761c-4dbd-a6b1-cf61e90c3cf2
+          choice: approved
+          proposalHash: 844bb22c1d3b88da05541a03da87b9e82fee7ab4f5da18f9006f9e5bc8b8d84b
     evidenceWaits:
       - id: separate-execution-branch-binding:2
         stepId: full.open.evidence
@@ -441,9 +1423,304 @@ run_checkpoint:
           ref: openspec/changes/separate-execution-branch-binding
           contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
           submissionId: d0d401dd-31c0-4bd5-a220-afd8d3d6d63b
+      - id: separate-execution-branch-binding:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: separate-execution-branch-binding
+                  changeDir: openspec/changes/separate-execution-branch-binding
+                  workspaceBaseline:
+                    ref: b81fd641-460b-4996-87ff-eb4f777a5383
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/separate-execution-branch-binding/.comet/handoff/design-context.json
+                    handoffHash: 909b62d072b9ec05d280e3ec9f7bd5ab323a9fdda936b4013408a9855f41bf4a
+                    proposal: 采用 isolation-only ExecutionWorkspaceIntent 与逐仓
+                      ExecutionWorkspaceBinding：移除 Intent 的 delivery
+                      targetBranch 和两层共享分支断言；ChangeStartBinding/Delivery 保留
+                      source-target 坐标；Plan 后仍由 protected branch validation
+                      约束精确写仓；删除 branch-mismatch telemetry 枚举；不提供旧 schema
+                      兼容层，并以真实多仓 Open 批准到 Design 的生产 E2E 验证。
+                    requirementsEvidence:
+                      contentHash: 08b1000c8c4848ce08448e2a57e39695f81a3cfec198748ecda88decea145000
+                      ref: openspec/changes/separate-execution-branch-binding
+                    sourceEvidence:
+                      contentHash: aefe3979b4c2aac60784c4adada8f09263a4d015c3651b15a43d80541cc70f5b
+                      ref: openspec/changes/separate-execution-branch-binding
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/separate-execution-branch-binding/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/separate-execution-branch-binding/.comet/handoff/design-context.json
+              handoffHash: 909b62d072b9ec05d280e3ec9f7bd5ab323a9fdda936b4013408a9855f41bf4a
+              proposal: 采用 isolation-only ExecutionWorkspaceIntent 与逐仓
+                ExecutionWorkspaceBinding：移除 Intent 的 delivery targetBranch
+                和两层共享分支断言；ChangeStartBinding/Delivery 保留 source-target 坐标；Plan
+                后仍由 protected branch validation 约束精确写仓；删除 branch-mismatch
+                telemetry 枚举；不提供旧 schema 兼容层，并以真实多仓 Open 批准到 Design 的生产 E2E 验证。
+              requirementsEvidence:
+                contentHash: 08b1000c8c4848ce08448e2a57e39695f81a3cfec198748ecda88decea145000
+                ref: openspec/changes/separate-execution-branch-binding
+              sourceEvidence:
+                contentHash: aefe3979b4c2aac60784c4adada8f09263a4d015c3651b15a43d80541cc70f5b
+                ref: openspec/changes/separate-execution-branch-binding
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: separate-execution-branch-binding
+                  changeDir: openspec/changes/separate-execution-branch-binding
+                  workspaceBaseline:
+                    ref: b81fd641-460b-4996-87ff-eb4f777a5383
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+                    ref: openspec/changes/separate-execution-branch-binding
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+              ref: openspec/changes/separate-execution-branch-binding
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+        receipt:
+          ref: openspec/changes/separate-execution-branch-binding/design.md
+          contentHash: a636182d3157e4ddd906a72e2bfc05d507d006b93806cd6c8d8f0c6fdd3f40d9
+          submissionId: 812ba0b7-7a7c-4713-90b4-901ff0a8a9ad
+      - id: separate-execution-branch-binding:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results:
+          full.build.configure:
+            sequence: 9
+            value:
+              boundBranch: codex/separate-execution-branch-binding
+              buildMode: autonomous
+              directOverride: false
+              isolation: branch
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+          full.build.confirm:
+            sequence: 10
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: separate-execution-branch-binding
+                  changeDir: openspec/changes/separate-execution-branch-binding
+                  workspaceBaseline:
+                    ref: b81fd641-460b-4996-87ff-eb4f777a5383
+                outputs:
+                  full.build.configure:
+                    boundBranch: codex/separate-execution-branch-binding
+                    buildMode: autonomous
+                    directOverride: false
+                    isolation: branch
+                    reviewMode: thorough
+                    subagentDispatch: null
+                    tddMode: tdd
+          full.build.plan:
+            sequence: 11
+            value:
+              designEvidence:
+                contentHash: a636182d3157e4ddd906a72e2bfc05d507d006b93806cd6c8d8f0c6fdd3f40d9
+                ref: openspec/changes/separate-execution-branch-binding/design.md
+              plan: docs/superpowers/plans/2026-11-03-separate-execution-branch-binding.md
+              planEvidence:
+                contentHash: 3abd930d4e58b559db15cdac7642f4833e66b0d664426d66863431102f8911ed
+                ref: docs/superpowers/plans/2026-11-03-separate-execution-branch-binding.md
+              taskRevision: 46fe76abbb59b0acfca5fe74a74f21062d5b28d3863c9edce540353f18dca1a7
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: separate-execution-branch-binding
+                  changeDir: openspec/changes/separate-execution-branch-binding
+                  workspaceBaseline:
+                    ref: b81fd641-460b-4996-87ff-eb4f777a5383
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/separate-execution-branch-binding/.comet/handoff/design-context.json
+                    handoffHash: 909b62d072b9ec05d280e3ec9f7bd5ab323a9fdda936b4013408a9855f41bf4a
+                    proposal: 采用 isolation-only ExecutionWorkspaceIntent 与逐仓
+                      ExecutionWorkspaceBinding：移除 Intent 的 delivery
+                      targetBranch 和两层共享分支断言；ChangeStartBinding/Delivery 保留
+                      source-target 坐标；Plan 后仍由 protected branch validation
+                      约束精确写仓；删除 branch-mismatch telemetry 枚举；不提供旧 schema
+                      兼容层，并以真实多仓 Open 批准到 Design 的生产 E2E 验证。
+                    requirementsEvidence:
+                      contentHash: 08b1000c8c4848ce08448e2a57e39695f81a3cfec198748ecda88decea145000
+                      ref: openspec/changes/separate-execution-branch-binding
+                    sourceEvidence:
+                      contentHash: aefe3979b4c2aac60784c4adada8f09263a4d015c3651b15a43d80541cc70f5b
+                      ref: openspec/changes/separate-execution-branch-binding
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/separate-execution-branch-binding/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: a636182d3157e4ddd906a72e2bfc05d507d006b93806cd6c8d8f0c6fdd3f40d9
+              ref: openspec/changes/separate-execution-branch-binding/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/separate-execution-branch-binding/.comet/handoff/design-context.json
+              handoffHash: 909b62d072b9ec05d280e3ec9f7bd5ab323a9fdda936b4013408a9855f41bf4a
+              proposal: 采用 isolation-only ExecutionWorkspaceIntent 与逐仓
+                ExecutionWorkspaceBinding：移除 Intent 的 delivery targetBranch
+                和两层共享分支断言；ChangeStartBinding/Delivery 保留 source-target 坐标；Plan
+                后仍由 protected branch validation 约束精确写仓；删除 branch-mismatch
+                telemetry 枚举；不提供旧 schema 兼容层，并以真实多仓 Open 批准到 Design 的生产 E2E 验证。
+              requirementsEvidence:
+                contentHash: 08b1000c8c4848ce08448e2a57e39695f81a3cfec198748ecda88decea145000
+                ref: openspec/changes/separate-execution-branch-binding
+              sourceEvidence:
+                contentHash: aefe3979b4c2aac60784c4adada8f09263a4d015c3651b15a43d80541cc70f5b
+                ref: openspec/changes/separate-execution-branch-binding
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: separate-execution-branch-binding
+                  changeDir: openspec/changes/separate-execution-branch-binding
+                  workspaceBaseline:
+                    ref: b81fd641-460b-4996-87ff-eb4f777a5383
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+                    ref: openspec/changes/separate-execution-branch-binding
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+              ref: openspec/changes/separate-execution-branch-binding
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+        receipt:
+          ref: docs/superpowers/plans/2026-11-03-separate-execution-branch-binding.md
+          contentHash: 3abd930d4e58b559db15cdac7642f4833e66b0d664426d66863431102f8911ed
+          submissionId: 50c2216a-ec3f-47ee-af8b-edca9753e773
     ready: []
     joins: {}
     outputs:
+      full.build.configure:
+        sequence: 9
+        value:
+          boundBranch: codex/separate-execution-branch-binding
+          buildMode: autonomous
+          directOverride: false
+          isolation: branch
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      full.build.confirm:
+        sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: separate-execution-branch-binding
+              changeDir: openspec/changes/separate-execution-branch-binding
+              workspaceBaseline:
+                ref: b81fd641-460b-4996-87ff-eb4f777a5383
+            outputs:
+              full.build.configure:
+                boundBranch: codex/separate-execution-branch-binding
+                buildMode: autonomous
+                directOverride: false
+                isolation: branch
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      full.build.plan:
+        sequence: 11
+        value:
+          designEvidence:
+            contentHash: a636182d3157e4ddd906a72e2bfc05d507d006b93806cd6c8d8f0c6fdd3f40d9
+            ref: openspec/changes/separate-execution-branch-binding/design.md
+          plan: docs/superpowers/plans/2026-11-03-separate-execution-branch-binding.md
+          planEvidence:
+            contentHash: 3abd930d4e58b559db15cdac7642f4833e66b0d664426d66863431102f8911ed
+            ref: docs/superpowers/plans/2026-11-03-separate-execution-branch-binding.md
+          taskRevision: 46fe76abbb59b0acfca5fe74a74f21062d5b28d3863c9edce540353f18dca1a7
+      full.build.plan.evidence:
+        sequence: 12
+        value:
+          contentHash: 3abd930d4e58b559db15cdac7642f4833e66b0d664426d66863431102f8911ed
+          ref: docs/superpowers/plans/2026-11-03-separate-execution-branch-binding.md
+      full.design.confirm:
+        sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: separate-execution-branch-binding
+              changeDir: openspec/changes/separate-execution-branch-binding
+              workspaceBaseline:
+                ref: b81fd641-460b-4996-87ff-eb4f777a5383
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/separate-execution-branch-binding/.comet/handoff/design-context.json
+                handoffHash: 909b62d072b9ec05d280e3ec9f7bd5ab323a9fdda936b4013408a9855f41bf4a
+                proposal: 采用 isolation-only ExecutionWorkspaceIntent 与逐仓
+                  ExecutionWorkspaceBinding：移除 Intent 的 delivery targetBranch
+                  和两层共享分支断言；ChangeStartBinding/Delivery 保留 source-target 坐标；Plan
+                  后仍由 protected branch validation 约束精确写仓；删除 branch-mismatch
+                  telemetry 枚举；不提供旧 schema 兼容层，并以真实多仓 Open 批准到 Design 的生产 E2E
+                  验证。
+                requirementsEvidence:
+                  contentHash: 08b1000c8c4848ce08448e2a57e39695f81a3cfec198748ecda88decea145000
+                  ref: openspec/changes/separate-execution-branch-binding
+                sourceEvidence:
+                  contentHash: aefe3979b4c2aac60784c4adada8f09263a4d015c3651b15a43d80541cc70f5b
+                  ref: openspec/changes/separate-execution-branch-binding
+      full.design.document:
+        sequence: 7
+        value:
+          designDoc: openspec/changes/separate-execution-branch-binding/design.md
+      full.design.evidence:
+        sequence: 8
+        value:
+          contentHash: a636182d3157e4ddd906a72e2bfc05d507d006b93806cd6c8d8f0c6fdd3f40d9
+          ref: openspec/changes/separate-execution-branch-binding/design.md
       full.design.handoff:
         sequence: 5
         value:
@@ -491,6 +1768,6 @@ run_checkpoint:
           contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
     children: []
     lineage: []
-  sourceRevision: 9
-  sourceHash: 37fa01ac01b90dd8e31e1896c603016c2ccceb175495471f098cb4610e95341b
-check_epoch: 1
+  sourceRevision: 19
+  sourceHash: 4f5050e3a6ff9b5f0216ffe1bec1b20fdf00f6c60eca00415eb21a81b40d175f
+check_epoch: 2
