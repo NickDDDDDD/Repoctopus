@@ -48,7 +48,7 @@
 
 ## 4. 验证与继续真实验收
 
-- [ ] 4.1 运行领域、Service、CLI、production composition、telemetry 和 architecture 定向测试。
-- [ ] 4.2 运行完整 `npm run verify`、严格 OpenSpec validation、package/report freshness checks。
-- [ ] 4.3 使用修复后的 Runtime 恢复或重新开始模拟多仓 Change，完成三个 package、Build Check、Verify 和 Archive；每个分支/commit 立即 push。
-- [ ] 4.4 保存正式验证报告、清理临时日志/scratch、提交并 push，准备合入。
+- [x] 4.1 运行领域、Service、CLI、production composition、telemetry 和 architecture 定向测试。
+- [x] 4.2 运行完整 `npm run verify`、严格 OpenSpec validation、package/report freshness checks。
+- [x] 4.3 使用修复后的 Runtime 恢复或重新开始模拟多仓 Change，完成三个 package、Build Check、Verify 和 Archive；每个分支/commit 立即 push。
+- [x] 4.4 保存正式验证报告、清理临时日志/scratch、提交并 push，准备合入。
