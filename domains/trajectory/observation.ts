@@ -391,16 +391,34 @@ function attributes(event: TrajectoryEvent, context: ObservationContext) {
           ? 'build.binding.rejected'
           : observationKindValue === 'build-plan-evidence-accepted'
             ? 'build.plan.preflight.accepted'
-            : observationKindValue === 'build-plan-retry-required'
-              ? 'build.plan.preflight.rejected'
-              : undefined;
+            : observationKindValue === 'build-package-completed'
+              ? 'build.workspace-progress.accepted'
+              : observationKindValue === 'build-plan-retry-required'
+                ? 'build.plan.preflight.rejected'
+                : undefined;
   if (buildEvent) result.buildEvent = buildEvent;
+  const workspaceCheckpoint = record(observation?.workspaceCheckpoint);
+  const checkpointRevision = scalar(workspaceCheckpoint?.revision);
+  if (checkpointRevision !== undefined) result.checkpointRevision = checkpointRevision;
   const reasonClass = scalar(observation?.reasonCode);
   if (
     typeof reasonClass === 'string' &&
-    ['host', 'capability', 'checkout', 'head', 'path'].includes(reasonClass)
+    ['host', 'capability', 'checkout', 'head', 'path', 'checkpoint-migration'].includes(reasonClass)
   ) {
     result.reasonClass = reasonClass;
+  }
+  const workRejectionClass = scalar(event.data.reasonCode);
+  if (
+    typeof workRejectionClass === 'string' &&
+    [
+      'workspace-unauthorized-change',
+      'workspace-non-fast-forward',
+      'workspace-observation-failed',
+      'workspace-identity-drift',
+    ].includes(workRejectionClass)
+  ) {
+    result.buildEvent = 'build.workspace-progress.rejected';
+    result.reasonClass = workRejectionClass;
   }
   if (event.type === 'wait.started' && event.data.waitKind === 'human-decision') {
     result.decisionStatus = 'created';

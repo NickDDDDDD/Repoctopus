@@ -1,6 +1,9 @@
 import type { Context } from '@deepseek-ai/cordis';
 
-import { inspectExecutionCheckout } from '../../platform/git/execution-workspace.js';
+import {
+  inspectExecutionCheckout,
+  isExecutionRevisionAncestor,
+} from '../../platform/git/execution-workspace.js';
 import {
   ExecutionWorkspaceService,
   type ExecutionCheckoutFacts,
@@ -13,5 +16,13 @@ export class GitExecutionWorkspaceProvider extends ExecutionWorkspaceService {
 
   protected inspect(checkoutPath: string): Promise<ExecutionCheckoutFacts> {
     return inspectExecutionCheckout(checkoutPath);
+  }
+
+  protected revisionIsAncestor(
+    checkoutPath: string,
+    ancestor: string,
+    descendant: string,
+  ): Promise<boolean> {
+    return isExecutionRevisionAncestor(checkoutPath, ancestor, descendant);
   }
 }

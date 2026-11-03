@@ -83,6 +83,8 @@ Change Run 的 checkout 准备属于 Runner：Runner 先建立并公开 source b
 
 多仓业务写权限在 Build Plan 后再收紧：Runtime 从全部 package write scopes 求精确可写仓集合，用 Run 启动时冻结的 protected branch patterns 和 target branch 核对当前 Execution Binding。只读仓可以停留在 target branch；任一可写仓匹配受保护模式时，Plan 以通用 `outcome-rejected` 保持可纠正且不创建 Execute Work。Runner 将相关仓切到并公开合法 source branch/worktree 后，下一次 pull 观察 Binding drift、原子退役旧 Plan checkpoint并回到 Configure。Build 前置校验与 Delivery checkpoint 共用 `domains/delivery/branch-policy.ts`，避免开发授权和提交保护产生两套 glob 语义。
 
+Execution Binding 只回答“哪个 Host 可以在哪些 checkout/branch 上执行”，初始 HEAD 是授权基线而不是永远不变的完成版本。Build Protocol 以 Runtime-owned workspace checkpoint 记录实际进度：每个 Package 只能让其 write scope 对应仓库保持不变或 fast-forward，其他仓库必须保持精确 HEAD；合法进度不会触发 Configure，也不会清空 Plan。Build Check 冻结最新 checkpoint，并在接收审查结果前重新观察所有仓库。这样既允许正常 commit/push，又不会把并发修改或历史重写吸收到 Package Evidence。
+
 ## 受管 Work Execution、Action Intent 与 Receipt
 
 外部副作用不能占用 Run 锁。`run next` 是 Runner 发起的 pull-based 入口，Runtime 根据当前 lifecycle snapshot 选择 Work；Host 和 Agent 都不能指定目标 phase、Work 或 Skill。执行链路为：

@@ -278,6 +278,50 @@ describe('ObservationEnvelope', () => {
     );
   });
 
+  it('projects bounded workspace progress without repository revisions or paths', () => {
+    const envelope = createObservationEnvelope(
+      event('change.lifecycle.transitioned', {
+        observationKind: 'build-package-completed',
+        observation: {
+          kind: 'build-package-completed',
+          workspaceCheckpoint: {
+            revision: 3,
+            digest: `sha256:${'a'.repeat(64)}`,
+            repositories: [
+              {
+                repositoryId: 'private-repository',
+                branchRef: 'feature/private',
+                headRevision: 'f'.repeat(40),
+              },
+            ],
+          },
+        },
+      }),
+      context,
+    );
+
+    expect(envelope.attributes).toMatchObject({
+      buildEvent: 'build.workspace-progress.accepted',
+      checkpointRevision: 3,
+    });
+    expect(JSON.stringify(envelope)).not.toMatch(
+      /private-repository|feature\/private|ffffffffffffffff/u,
+    );
+
+    const rejected = createObservationEnvelope(
+      event('work.outcome-rejected', {
+        reasonCode: 'workspace-non-fast-forward',
+        diagnostic: 'private history and C:\\private\\checkout',
+      }),
+      context,
+    );
+    expect(rejected.attributes).toMatchObject({
+      buildEvent: 'build.workspace-progress.rejected',
+      reasonClass: 'workspace-non-fast-forward',
+    });
+    expect(JSON.stringify(rejected)).not.toMatch(/private history|private\\checkout/u);
+  });
+
   it('normalizes Evidence, Delivery and application facts through the same canonical envelope', () => {
     const evidenceBatch: EvidenceTelemetryBatch = {
       schemaVersion: 1,

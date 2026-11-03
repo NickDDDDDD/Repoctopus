@@ -68,6 +68,8 @@ import {
   missingExecutionBindingCapabilities,
   createPlanEvidence,
   createPackageCompletionEvidence,
+  advanceBuildWorkspaceCheckpoint,
+  BuildWorkspaceProgressError,
   canRetainSuspendedExecutionBinding,
   revalidateSuspendedBuildProtocol,
   validateBuildPlan,
@@ -78,6 +80,7 @@ import {
   type ExecutionWorkspaceBinding,
   type ExecutionWorkspaceIntent,
   type ExecutionIsolation,
+  type BuildWorkspaceCheckpoint,
 } from '../domains/change-lifecycle/build-protocol.js';
 import {
   ExecutionWorkspaceBindingError,
@@ -772,6 +775,9 @@ export class WorkflowRuns extends Service {
           throw new Error('Build Plan decision trigger identities are missing');
         }
         const approved = input.response.decision === 'approve';
+        if (approved && !protocol.workspaceCheckpoint) {
+          throw new Error('Build Plan approval requires a Runtime-owned workspace checkpoint');
+        }
         const completedPackageIds = new Set(
           protocol.packageCompletions.map((completion) => completion.packageId),
         );
@@ -819,6 +825,7 @@ export class WorkflowRuns extends Service {
             ? {
                 planEvidenceId: evidence.evidenceId,
                 planDigest: plan.digest,
+                workspaceCheckpointDigest: protocol.workspaceCheckpoint!.digest,
                 ...(nextPackage ? { packageDigest: nextPackage.digest } : {}),
               }
             : { rejectedPlanDigest: plan.digest, reason: 'human-plan-revision' },
@@ -1400,7 +1407,7 @@ export class WorkflowRuns extends Service {
     projectSnapshot: ProjectSnapshot,
     executionBinding: ExecutionBinding,
     invocationHost: WorkExecutionHostIdentity,
-  ): Promise<'host' | 'capability' | 'checkout' | 'head' | 'path' | null> {
+  ): Promise<'host' | 'capability' | 'checkout' | 'path' | null> {
     const observed = await this.bindExecutionWorkspace(state, lifecycle, projectSnapshot);
     const candidate = createExecutionBinding({
       strategy: lifecycle.buildProtocol!.strategy,
@@ -1422,9 +1429,6 @@ export class WorkflowRuns extends Service {
     if (canonicalJson(withoutHead(candidate)) !== canonicalJson(withoutHead(executionBinding))) {
       return 'checkout';
     }
-    if (canonicalJson(candidate.repositories) !== canonicalJson(executionBinding.repositories)) {
-      return 'head';
-    }
     if (candidate.localOverlayRef !== executionBinding.localOverlayRef) return 'path';
     if (candidate.host.hostId !== executionBinding.host.hostId) return 'host';
     if (candidate.host.capabilityDigest !== executionBinding.host.capabilityDigest) {
@@ -1433,12 +1437,81 @@ export class WorkflowRuns extends Service {
     return null;
   }
 
+  private async advanceBuildWorkspaceProgress(
+    state: RunState,
+    lifecycle: NonNullable<RunState['changeLifecycle']>,
+    projectSnapshot: ProjectSnapshot,
+    checkpoint: BuildWorkspaceCheckpoint,
+    writableRepositoryIds: readonly string[],
+  ): Promise<BuildWorkspaceCheckpoint> {
+    const observed = await this.bindExecutionWorkspace(state, lifecycle, projectSnapshot);
+    const currentById = new Map(
+      checkpoint.repositories.map((repository) => [repository.repositoryId, repository] as const),
+    );
+    const relations = Object.fromEntries(
+      await Promise.all(
+        observed.repositories.map(async (repository) => {
+          const current = currentById.get(repository.repositoryId);
+          if (!current) return [repository.repositoryId, 'non-fast-forward'] as const;
+          if (current.headRevision === repository.head) {
+            return [repository.repositoryId, 'unchanged'] as const;
+          }
+          let fastForward: boolean;
+          try {
+            fastForward = await this.ctx.executionWorkspace.isAncestor(
+              repository.checkoutPath,
+              current.headRevision,
+              repository.head,
+            );
+          } catch (error) {
+            throw new BuildWorkspaceProgressError(
+              'Runtime could not establish repository ancestry',
+              'observation-failed',
+              { cause: error },
+            );
+          }
+          return [
+            repository.repositoryId,
+            fastForward ? 'fast-forward' : 'non-fast-forward',
+          ] as const;
+        }),
+      ),
+    );
+    return advanceBuildWorkspaceCheckpoint({
+      current: checkpoint,
+      observed: observed.repositories.map((repository) => ({
+        repositoryId: repository.repositoryId,
+        branchRef: repository.branch,
+        headRevision: repository.head,
+      })),
+      writableRepositoryIds,
+      relations,
+    });
+  }
+
+  private async assertBuildWorkspaceCheckpointCurrent(
+    state: RunState,
+    lifecycle: NonNullable<RunState['changeLifecycle']>,
+    projectSnapshot: ProjectSnapshot,
+    checkpoint: BuildWorkspaceCheckpoint,
+  ): Promise<void> {
+    const observed = await this.bindExecutionWorkspace(state, lifecycle, projectSnapshot);
+    const actual = observed.repositories.map((repository) => ({
+      repositoryId: repository.repositoryId,
+      branchRef: repository.branch,
+      headRevision: repository.head,
+    }));
+    if (canonicalJson(actual) !== canonicalJson(checkpoint.repositories)) {
+      throw new Error('Build workspace changed after the last accepted Package checkpoint');
+    }
+  }
+
   private async executionWorkspaceDrift(
     state: RunState,
     lifecycle: NonNullable<RunState['changeLifecycle']>,
     projectSnapshot: ProjectSnapshot,
     executionBinding: ExecutionBinding,
-  ): Promise<'checkout' | 'head' | 'path' | null> {
+  ): Promise<'checkout' | 'path' | null> {
     const observed = await this.bindExecutionWorkspace(state, lifecycle, projectSnapshot);
     const repositories = observed.repositories.map((repository) => ({
       repositoryId: repository.repositoryId,
@@ -1462,7 +1535,6 @@ export class WorkflowRuns extends Service {
     ) {
       return 'checkout';
     }
-    if (canonicalJson(repositories) !== canonicalJson(executionBinding.repositories)) return 'head';
     const overlayRef = `execution-workspace:${observed.localDigest.slice(-24)}`;
     return overlayRef === executionBinding.localOverlayRef ? null : 'path';
   }
@@ -1473,7 +1545,7 @@ export class WorkflowRuns extends Service {
     projectSnapshot: ProjectSnapshot;
     projectConfigDigest: `sha256:${string}`;
     workspaceRepositoryId: string;
-    reasonCode: 'host' | 'capability' | 'checkout' | 'head' | 'path';
+    reasonCode: 'host' | 'capability' | 'checkout' | 'head' | 'path' | 'checkpoint-migration';
     signal?: AbortSignal;
   }) {
     const protocol = input.lifecycle.buildProtocol!;
@@ -2265,6 +2337,22 @@ export class WorkflowRuns extends Service {
           if ('value' in evaluated) return evaluated;
           let assessment = evaluated.assessment;
           const { projectSnapshot, projectConfigDigest, workspaceRepositoryId } = evaluated;
+          const legacyBuildProtocol = lifecycle.buildProtocol;
+          if (
+            lifecycle.phase === 'build' &&
+            legacyBuildProtocol?.workspaceCheckpoint === undefined &&
+            legacyBuildProtocol?.binding
+          ) {
+            return this.dispatchExecutionBindingRevalidation({
+              state: current,
+              lifecycle,
+              projectSnapshot,
+              projectConfigDigest,
+              workspaceRepositoryId,
+              reasonCode: 'checkpoint-migration',
+              ...(signal ? { signal } : {}),
+            });
+          }
           if (
             lifecycle.phase === 'design' &&
             lifecycle.currentWork === null &&
@@ -2921,6 +3009,11 @@ export class WorkflowRuns extends Service {
               }
               const retainedCompletions =
                 planned.value.state.changeLifecycle?.buildProtocol?.packageCompletions ?? [];
+              const workspaceCheckpoint =
+                planned.value.state.changeLifecycle?.buildProtocol?.workspaceCheckpoint;
+              if (!workspaceCheckpoint) {
+                throw new Error('Build Plan requires a Runtime-owned workspace checkpoint');
+              }
               const completedPackageIds = new Set(
                 retainedCompletions.map((completion) => completion.packageId),
               );
@@ -2971,6 +3064,7 @@ export class WorkflowRuns extends Service {
                 stableInput: {
                   strategyDigest: strategy.semanticDigest,
                   bindingStateDigest: binding.stateDigest,
+                  workspaceCheckpointDigest: workspaceCheckpoint.digest,
                   planDigest: plan.digest,
                   ...(nextPackage ? { packageDigest: nextPackage.digest } : {}),
                   planEvidenceId: evidence.evidenceId,
@@ -3025,6 +3119,19 @@ export class WorkflowRuns extends Service {
               if (!invocationHost || invocationHost.id !== executeHostOutcome.hostId) {
                 throw new Error('Build Execute Host does not match the persisted invocation');
               }
+              if (
+                result?.kind !== 'build-package-completion' ||
+                result.packageId !== lifecycle.currentWork.packageId
+              ) {
+                throw new Error('Build Execute Host must return the current package completion');
+              }
+              const workPackage = plan.packages.find(
+                (candidate) => candidate.packageId === result.packageId,
+              );
+              if (!workPackage) throw new Error('Build Execute package is absent from the Plan');
+              if (!protocol.workspaceCheckpoint) {
+                throw new Error('Build Execute requires a Runtime-owned workspace checkpoint');
+              }
               this.assertBuildHostCapabilities(strategy, invocationHost);
               const bindingDrift = await this.executionBindingDrift(
                 current,
@@ -3044,16 +3151,49 @@ export class WorkflowRuns extends Service {
                   ...(signal ? { signal } : {}),
                 });
               }
-              if (
-                result?.kind !== 'build-package-completion' ||
-                result.packageId !== lifecycle.currentWork.packageId
-              ) {
-                throw new Error('Build Execute Host must return the current package completion');
+              let workspaceCheckpoint: BuildWorkspaceCheckpoint;
+              try {
+                workspaceCheckpoint = await this.advanceBuildWorkspaceProgress(
+                  current,
+                  lifecycle,
+                  projectSnapshot,
+                  protocol.workspaceCheckpoint,
+                  workPackage.writeScopes.map((scope) => scope.repositoryId),
+                );
+              } catch (error) {
+                const progressError =
+                  error instanceof BuildWorkspaceProgressError
+                    ? error
+                    : new BuildWorkspaceProgressError(
+                        'Runtime could not observe Build workspace progress',
+                        'observation-failed',
+                        { cause: error },
+                      );
+                const reasonCode =
+                  progressError.classification === 'unauthorized-head-change'
+                    ? ('workspace-unauthorized-change' as const)
+                    : progressError.classification === 'non-fast-forward'
+                      ? ('workspace-non-fast-forward' as const)
+                      : progressError.classification === 'identity-drift'
+                        ? ('workspace-identity-drift' as const)
+                        : ('workspace-observation-failed' as const);
+                const intent = await this.ctx.workExecutionAuthority.loadIntent(runId);
+                await this.ctx.workExecutionAuthority.rejectHostSubmission({
+                  intent,
+                  reasonCode,
+                  diagnostic: progressError.message,
+                });
+                return {
+                  value: await this.coordinator.status(runId),
+                  diagnostics: [
+                    {
+                      level: 'warning' as const,
+                      code: 'change.build-workspace-progress-rejected',
+                      message: progressError.message,
+                    },
+                  ],
+                };
               }
-              const workPackage = plan.packages.find(
-                (candidate) => candidate.packageId === result.packageId,
-              );
-              if (!workPackage) throw new Error('Build Execute package is absent from the Plan');
               const implementerExecutionIds = (executeHostOutcome.delegationReceipts ?? [])
                 .filter(
                   (receipt) => receipt.role === 'implementer' && receipt.status === 'succeeded',
@@ -3075,7 +3215,7 @@ export class WorkflowRuns extends Service {
                 testEvidenceIds: result.testEvidenceIds,
                 tddMode: strategy.tddMode,
                 ...(result.tddEvidence ? { tddEvidence: result.tddEvidence } : {}),
-                repositoryDigest: result.repositoryDigest,
+                workspaceCheckpointDigest: workspaceCheckpoint.digest,
                 implementationDigest: result.implementationDigest,
               });
               const validator = this.ctx.lifecycleValidators.resolve(
@@ -3174,6 +3314,7 @@ export class WorkflowRuns extends Service {
                   ? {
                       strategyDigest: strategy.semanticDigest,
                       bindingStateDigest: binding.stateDigest,
+                      workspaceCheckpointDigest: workspaceCheckpoint.digest,
                       planDigest: plan.digest,
                       packageDigest: nextPackage.digest,
                       completedPackageIds: [...completedIds].sort(),
@@ -3181,6 +3322,7 @@ export class WorkflowRuns extends Service {
                   : {
                       strategyDigest: strategy.semanticDigest,
                       bindingStateDigest: binding.stateDigest,
+                      workspaceCheckpointDigest: workspaceCheckpoint.digest,
                       planDigest: plan.digest,
                       completedPackageIds: [...completedIds].sort(),
                     },
@@ -3191,6 +3333,7 @@ export class WorkflowRuns extends Service {
               const completed = await this.coordinator.acceptChangeObservation(runId, {
                 kind: 'build-package-completed',
                 completion,
+                workspaceCheckpoint,
                 work: nextWork,
                 tasks: projectedTasks.tasks,
               });
@@ -3246,7 +3389,14 @@ export class WorkflowRuns extends Service {
               const plan = protocol?.plan;
               const hostOutcome = checkHostOutcome;
               const result = hostOutcome?.result;
-              if (!protocol || !strategy || !binding || !plan || !hostOutcome) {
+              if (
+                !protocol ||
+                !strategy ||
+                !binding ||
+                !plan ||
+                !hostOutcome ||
+                !protocol.workspaceCheckpoint
+              ) {
                 throw new Error('Build Check Outcome has no current Plan');
               }
               const invocationHost = checkExecution?.hostInvocation?.host;
@@ -3271,6 +3421,32 @@ export class WorkflowRuns extends Service {
                   reasonCode: bindingDrift,
                   ...(signal ? { signal } : {}),
                 });
+              }
+              try {
+                await this.assertBuildWorkspaceCheckpointCurrent(
+                  current,
+                  lifecycle,
+                  projectSnapshot,
+                  protocol.workspaceCheckpoint,
+                );
+              } catch (error) {
+                const diagnostic = error instanceof Error ? error.message : String(error);
+                const intent = await this.ctx.workExecutionAuthority.loadIntent(runId);
+                await this.ctx.workExecutionAuthority.rejectHostSubmission({
+                  intent,
+                  reasonCode: 'outcome-rejected',
+                  diagnostic,
+                });
+                return {
+                  value: await this.coordinator.status(runId),
+                  diagnostics: [
+                    {
+                      level: 'warning' as const,
+                      code: 'change.build-check-workspace-stale',
+                      message: diagnostic,
+                    },
+                  ],
+                };
               }
               const rejectSubmission = async (
                 reasonCode: 'output-invalid' | 'outcome-rejected' | 'outcome-processing-error',
@@ -3339,12 +3515,6 @@ export class WorkflowRuns extends Service {
                   'Build Check does not cover every Task acceptance',
                 );
               }
-              if (result.repositoryDigest !== binding.stateDigest) {
-                return rejectSubmission(
-                  'outcome-rejected',
-                  'Build Check repository binding drifted',
-                );
-              }
               let checkEvidence: ReturnType<typeof createBuildCheckEvidence>;
               try {
                 const knownTaskIds = new Set((lifecycle.tasks ?? []).map((task) => task.taskId));
@@ -3402,7 +3572,7 @@ export class WorkflowRuns extends Service {
                   strategyDigest: strategy.semanticDigest,
                   bindingStateDigest: binding.stateDigest,
                   planDigest: plan.digest,
-                  repositoryDigest: result.repositoryDigest,
+                  workspaceCheckpointDigest: protocol.workspaceCheckpoint.digest,
                   implementationDigest: result.implementationDigest,
                   completedPackageIds: result.completedPackageIds,
                   acceptedTaskIds: result.acceptedTaskIds,

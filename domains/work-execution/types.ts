@@ -148,7 +148,11 @@ export interface WorkExecutionHostOutcome {
 export type WorkExecutionSubmissionRejectionCode =
   | 'output-invalid'
   | 'outcome-rejected'
-  | 'outcome-processing-error';
+  | 'outcome-processing-error'
+  | 'workspace-unauthorized-change'
+  | 'workspace-non-fast-forward'
+  | 'workspace-observation-failed'
+  | 'workspace-identity-drift';
 
 export interface WorkExecutionSubmission {
   schemaVersion: 1;
@@ -188,7 +192,6 @@ export type WorkExecutionResult =
         greenEvidenceId: string;
         regressionEvidenceId: string;
       };
-      repositoryDigest: `sha256:${string}`;
       implementationDigest: `sha256:${string}`;
     }
   | {
@@ -197,7 +200,6 @@ export type WorkExecutionResult =
       completedPackageIds: readonly string[];
       acceptedTaskIds: readonly string[];
       testEvidenceIds: readonly string[];
-      repositoryDigest: `sha256:${string}`;
       implementationDigest: `sha256:${string}`;
       reviewerExecutionId: string;
     };

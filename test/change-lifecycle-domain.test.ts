@@ -21,6 +21,7 @@ import {
 } from '../domains/change-lifecycle/definition.js';
 import {
   advanceBuildProtocol,
+  advanceBuildWorkspaceCheckpoint,
   createBuildCheckEvidence,
   createBuildStrategy,
   createExecutionBinding,
@@ -1219,15 +1220,6 @@ describe('Change lifecycle domain', () => {
       compositionCheckpointDigest: digest('c'),
       reportOwnerId: 'team-platform',
     });
-    const completion = createPackageCompletionEvidence({
-      workPackage: plan.packages[0]!,
-      executionId: 'implementation-execution',
-      acceptanceEvidenceIds: ['acceptance-1'],
-      testEvidenceIds: ['test-1'],
-      tddMode: 'direct',
-      repositoryDigest: executionBinding.stateDigest,
-      implementationDigest: digest('a'),
-    });
     let protocol = createBuildProtocolState({
       runId: initialSnapshot().identity.runId,
       planningDigest: tasks.digest,
@@ -1242,7 +1234,26 @@ describe('Change lifecycle domain', () => {
       kind: 'plan-evidence-accepted',
       evidence: planEvidence,
     });
-    protocol = advanceBuildProtocol(protocol, { kind: 'package-completed', completion });
+    const workspaceCheckpoint = advanceBuildWorkspaceCheckpoint({
+      current: protocol.workspaceCheckpoint!,
+      observed: protocol.workspaceCheckpoint!.repositories,
+      writableRepositoryIds: ['workspace'],
+      relations: { workspace: 'unchanged' },
+    });
+    const completion = createPackageCompletionEvidence({
+      workPackage: plan.packages[0]!,
+      executionId: 'implementation-execution',
+      acceptanceEvidenceIds: ['acceptance-1'],
+      testEvidenceIds: ['test-1'],
+      tddMode: 'direct',
+      workspaceCheckpointDigest: workspaceCheckpoint.digest,
+      implementationDigest: digest('a'),
+    });
+    protocol = advanceBuildProtocol(protocol, {
+      kind: 'package-completed',
+      completion,
+      workspaceCheckpoint,
+    });
 
     const finding = {
       findingId: 'finding-1',
@@ -1257,7 +1268,7 @@ describe('Change lifecycle domain', () => {
       strategyDigest: strategy.semanticDigest,
       bindingStateDigest: executionBinding.stateDigest,
       planDigest: plan.digest,
-      repositoryDigest: executionBinding.stateDigest,
+      workspaceCheckpointDigest: protocol.workspaceCheckpoint!.digest,
       implementationDigest: digest('b'),
       completedPackageIds: [plan.packages[0]!.packageId],
       acceptedTaskIds: ['1.1'],

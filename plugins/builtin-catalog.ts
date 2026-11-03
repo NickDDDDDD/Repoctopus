@@ -571,6 +571,13 @@ const definitions: readonly BuiltinDefinition[] = [
       authorities: ['execution-workspace-binding'],
       permissions: ['filesystem', 'process'],
       stateSchemas: {},
+      compatibleImplementations: [
+        {
+          codeDigest: 'sha256:a3f9fbd774e4b7ad13a874011331f69319db9acce58edc4ecbd1fcf697473c4f',
+          descriptorDigest:
+            'sha256:437c5b1befe64b8d8d1a9f49eb1d950217bc51a9d6cd7a8424841725d50ec8ff',
+        },
+      ],
     },
     plugin: GitExecutionWorkspaceProvider,
     sourceFiles: [
@@ -659,6 +666,13 @@ const definitions: readonly BuiltinDefinition[] = [
       authorities: ['work-execution-packet-store-write'],
       permissions: ['filesystem'],
       stateSchemas: { 'work-execution-packet': '1' },
+      compatibleImplementations: [
+        {
+          codeDigest: 'sha256:b30981bc7faaf165355b4178366ccf06de0a0ba3a947e481849b64fedbe84ab0',
+          descriptorDigest:
+            'sha256:0afa27bbb7ed289817f2fd7cf0c5fadc18847774df28e42143015ea9bf4d0a05',
+        },
+      ],
     },
     plugin: FileWorkExecutionPacketStoreProvider,
     sourceFiles: [
@@ -682,6 +696,11 @@ const definitions: readonly BuiltinDefinition[] = [
       permissions: [],
       stateSchemas: { 'work-execution': '2' },
       compatibleImplementations: [
+        {
+          codeDigest: 'sha256:cf97d6949b11dcf5b9d4eb8c84a8962bf3aeae9d21675afb0497b1ca5889f74c',
+          descriptorDigest:
+            'sha256:eecfcc944df7ca93fde319036c6a3fe42a31f4c33e75d746ea3305144b7a2dee',
+        },
         {
           codeDigest: 'sha256:36a643951c7f65a120d0b178f71d47d0c90fa939dd05aab7178065381ad4dcba',
           descriptorDigest:
@@ -729,6 +748,13 @@ const definitions: readonly BuiltinDefinition[] = [
       authorities: ['work-execution-host-registry'],
       permissions: [],
       stateSchemas: {},
+      compatibleImplementations: [
+        {
+          codeDigest: 'sha256:02025f31a26c6bbc9fd55fdf75d58e19ff7d43e907eb3b702ef8116975b06fe4',
+          descriptorDigest:
+            'sha256:0d197abb829997893bab869e96e4d1bbbc4902ddaeddddecb852dc301ca767aa',
+        },
+      ],
     },
     plugin: WorkExecutionHosts,
     sourceFiles: ['domains/work-execution/types.ts', 'services/work-execution-hosts.ts'],
@@ -745,6 +771,13 @@ const definitions: readonly BuiltinDefinition[] = [
       authorities: ['work-execution-session'],
       permissions: [],
       stateSchemas: {},
+      compatibleImplementations: [
+        {
+          codeDigest: 'sha256:02025f31a26c6bbc9fd55fdf75d58e19ff7d43e907eb3b702ef8116975b06fe4',
+          descriptorDigest:
+            'sha256:7a0c7292228b2a06c019eec92cf57d3109690e62951be89b5c54bdbf492706e9',
+        },
+      ],
     },
     plugin: WorkExecutionSessions,
     sourceFiles: ['domains/work-execution/types.ts', 'services/work-execution-hosts.ts'],
@@ -762,6 +795,11 @@ const definitions: readonly BuiltinDefinition[] = [
       permissions: [],
       stateSchemas: {},
       compatibleImplementations: [
+        {
+          codeDigest: 'sha256:b6c1c1a06f07f438192c24623a0c8ee5b7026703aa1b187aa2a7dc5322f3396f',
+          descriptorDigest:
+            'sha256:1484807be04f35293ac08ebbea0954fc99975f6c14509cf78a61e71c8b73f830',
+        },
         {
           codeDigest: 'sha256:c215f5216f9e445f7c672be6300b6dc0958d3de2b4b9ce35f0fd484228ece3e4',
           descriptorDigest:
@@ -850,6 +888,11 @@ const definitions: readonly BuiltinDefinition[] = [
       permissions: [],
       stateSchemas: {},
       compatibleImplementations: [
+        {
+          codeDigest: 'sha256:ad89f07de38386eba277c8f94dbf1dbc266bf34e31d24108962f726e495815e1',
+          descriptorDigest:
+            'sha256:a404e2fdd15791971f77456acd3d91969107621e3a510acff9ecc86c5d1950aa',
+        },
         {
           codeDigest: 'sha256:d98294bfc6c9c96b3071e2d1ef14a6ee86f16f30da82fa7b13afe7194620a6f6',
           descriptorDigest:
@@ -1200,6 +1243,11 @@ const definitions: readonly BuiltinDefinition[] = [
       stateSchemas: { run: '1' },
       compatibleImplementations: [
         {
+          codeDigest: 'sha256:ee93faeb562593e8201bf22b7b6869e265bc3f93bdee94b02696aa9ecf8e1425',
+          descriptorDigest:
+            'sha256:01a09bf58eeb16293a58bfc3b572696fd1063aee741ea5a8e816e4b810be9927',
+        },
+        {
           codeDigest: 'sha256:2761b259f1c79963e2dab3eec81463feea5410fedd488969fab42888ab6bbd9e',
           descriptorDigest:
             'sha256:e67f69088fc94c7afbc408c0311e86f862bcfd966cc0c242e8b251119cdadac0',
@@ -1215,6 +1263,7 @@ const definitions: readonly BuiltinDefinition[] = [
       'domains/change-lifecycle/definition.ts',
       'domains/change-lifecycle/host-workflow.ts',
       'domains/change-lifecycle/transition.ts',
+      'domains/change-lifecycle/build-protocol.ts',
       'domains/change-lifecycle/archive-input.ts',
       'domains/change-lifecycle/verification-input.ts',
       'domains/change-lifecycle/verify-work.ts',

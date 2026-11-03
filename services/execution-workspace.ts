@@ -37,10 +37,7 @@ export type ExecutionWorkspaceBindingErrorCode =
   | 'branch-mismatch'
   | 'worktree-ownership-missing';
 
-export type ExecutionWorkspaceBindingRecovery =
-  | 'intent-revision'
-  | 'binding-retry'
-  | 'halt';
+export type ExecutionWorkspaceBindingRecovery = 'intent-revision' | 'binding-retry' | 'halt';
 
 export class ExecutionWorkspaceBindingError extends Error {
   override readonly name = 'ExecutionWorkspaceBindingError';
@@ -147,9 +144,18 @@ export abstract class ExecutionWorkspaceService extends Service {
   }
 
   protected abstract inspect(checkoutPath: string): Promise<ExecutionCheckoutFacts>;
+  protected abstract revisionIsAncestor(
+    checkoutPath: string,
+    ancestor: string,
+    descendant: string,
+  ): Promise<boolean>;
 
   async bind(input: BindExecutionWorkspaceInput): Promise<ExecutionWorkspaceBinding> {
     return bindExecutionWorkspace(input, (checkoutPath) => this.inspect(checkoutPath));
+  }
+
+  async isAncestor(checkoutPath: string, ancestor: string, descendant: string): Promise<boolean> {
+    return this.revisionIsAncestor(checkoutPath, ancestor, descendant);
   }
 }
 

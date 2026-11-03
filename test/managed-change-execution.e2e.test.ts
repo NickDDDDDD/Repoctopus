@@ -404,7 +404,6 @@ describe('managed Change execution production composition', () => {
                     greenEvidenceId: `green:${packet.work.packageId}`,
                     regressionEvidenceId: `regression:${packet.work.packageId}`,
                   },
-                  repositoryDigest: inputs.build!.binding!.stateDigest,
                   implementationDigest: `sha256:${'e'.repeat(64)}`,
                 };
               }
@@ -415,7 +414,6 @@ describe('managed Change execution production composition', () => {
                   completedPackageIds: inputs.build!.plan!.packages.map((entry) => entry.packageId),
                   acceptedTaskIds: inputs.tasks.map((task) => task.taskId),
                   testEvidenceIds: ['test:build-check'],
-                  repositoryDigest: inputs.build!.binding!.stateDigest,
                   implementationDigest: `sha256:${'f'.repeat(64)}`,
                   reviewerExecutionId: session.invocationId,
                 } satisfies WorkExecutionResult;
@@ -451,6 +449,30 @@ describe('managed Change execution production composition', () => {
               ];
             },
             async afterOperations(packet) {
+              if (packet.work.kind === 'build.execute') {
+                const inputs = JSON.parse(
+                  packet.context.layers.find((layer) => layer.kind === 'change-inputs')!.content,
+                ) as { build: { currentPackage: { repositoryIds: string[] } } };
+                const repositoryId = inputs.build.currentPackage.repositoryIds[0]!;
+                const checkout =
+                  repositoryId === 'app'
+                    ? appRepository
+                    : repositoryId === 'worker'
+                      ? workerRepository
+                      : workspace;
+                await execFileAsync('git', ['add', 'src'], { cwd: checkout });
+                const status = await execFileAsync('git', ['status', '--porcelain'], {
+                  cwd: checkout,
+                });
+                if (!status.stdout.trim()) return;
+                await execFileAsync(
+                  'git',
+                  ['commit', '-m', `feat: complete ${packet.work.packageId}`],
+                  { cwd: checkout },
+                );
+                await execFileAsync('git', ['push'], { cwd: checkout });
+                return;
+              }
               if (!['change.intake', 'specification.plan'].includes(packet.work.kind)) return;
               await execFileAsync('git', ['add', 'openspec/changes/managed-blackbox'], {
                 cwd: workspace,
@@ -1420,25 +1442,6 @@ describe('managed Change execution production composition', () => {
           taskProgress: { completed: 2 },
         });
         await restartApplication();
-        await execFileAsync('git', ['add', 'openspec/changes/managed-blackbox/tasks.md'], {
-          cwd: workspace,
-        });
-        await execFileAsync('git', ['commit', '-m', 'spec: record managed task completion'], {
-          cwd: workspace,
-        });
-        await execFileAsync('git', ['push'], { cwd: workspace });
-        await execFileAsync('git', ['add', 'src'], { cwd: appRepository });
-        await execFileAsync('git', ['commit', '-m', 'feat: add managed outputs'], {
-          cwd: appRepository,
-        });
-        await execFileAsync('git', ['push'], { cwd: appRepository });
-        if (multiRepository) {
-          await execFileAsync('git', ['add', 'src'], { cwd: workerRepository });
-          await execFileAsync('git', ['commit', '-m', 'feat: add managed worker output'], {
-            cwd: workerRepository,
-          });
-          await execFileAsync('git', ['push'], { cwd: workerRepository });
-        }
         let checkInvocation: (typeof capture.invocations)[number] | undefined;
         for (let step = 0; step < 8 && !checkInvocation; step += 1) {
           const advanced = await next();
@@ -1640,6 +1643,19 @@ describe('managed Change execution production composition', () => {
           recoveredEvidence.bundle!.bundleId,
         ]);
 
+        await execFileAsync('git', ['add', 'openspec/changes/managed-blackbox/tasks.md'], {
+          cwd: workspace,
+        });
+        const taskStatus = await execFileAsync('git', ['status', '--porcelain'], {
+          cwd: workspace,
+        });
+        if (taskStatus.stdout.trim()) {
+          await execFileAsync('git', ['commit', '-m', 'spec: record managed task completion'], {
+            cwd: workspace,
+          });
+          await execFileAsync('git', ['push'], { cwd: workspace });
+        }
+
         await execFileAsync(
           'git',
           ['remote', 'set-url', 'origin', 'https://github.com/example/workspace.git'],
@@ -1716,12 +1732,35 @@ describe('managed Change execution production composition', () => {
             : {}),
         };
         vi.spyOn(application.context.delivery, 'validateArchiveIntent').mockResolvedValue();
-        await application.context.commandRouter.execute('run.archive.prepare', {
+        let preparedArchive = await application.context.commandRouter.execute<
+          { runId: string; attemptId: string; intent: DeliveryIntentV3; policy: DeliveryPolicy },
+          RuntimeResult<RunStatusView>
+        >('run.archive.prepare', {
           runId,
-          attemptId: acceptedAttemptId,
+          attemptId: acceptedAttemptId!,
           intent,
           policy,
         });
+        if (preparedArchive.value.changeLifecycle?.phase === 'verify') {
+          for (let step = 0; step < 4; step += 1) {
+            const refreshed = await next();
+            if (
+              refreshed.value.changeLifecycle?.phase === 'archive' &&
+              refreshed.value.changeLifecycle.currentWork === null
+            ) {
+              break;
+            }
+          }
+          const refreshedStatus = await status();
+          const refreshedAttemptId = refreshedStatus.changeLifecycle?.evidence.latestAttemptId;
+          if (!refreshedAttemptId) throw new Error('missing refreshed verification attempt');
+          preparedArchive = await application.context.commandRouter.execute('run.archive.prepare', {
+            runId,
+            attemptId: refreshedAttemptId,
+            intent,
+            policy,
+          });
+        }
         await next();
         const closed = await application.context.commandRouter.execute<
           {
@@ -1865,13 +1904,12 @@ describe('managed Change execution production composition', () => {
           'build.plan',
           'build.execute',
           'build.execute',
-          'build.configure',
-          'build.plan',
           'build.check',
           'evidence.verify',
           ...(!multiRepository && executionMode === 'autonomous'
             ? ['build.plan', 'build.execute', 'build.execute', 'build.check', 'evidence.verify']
             : []),
+          'evidence.verify',
           'specification.close',
           'delivery.publish',
         ]);

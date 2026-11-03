@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   advanceBuildProtocol,
+  advanceBuildWorkspaceCheckpoint,
   assessBuildPlanRisk,
   canRetainSuspendedExecutionBinding,
   createBuildCheckEvidence,
@@ -60,10 +61,88 @@ describe('Execution Binding capability contract', () => {
   );
 });
 
+describe('Build workspace checkpoint', () => {
+  it('separates immutable Binding identity from authorized repository progress', () => {
+    const configuration = approvedConfiguration({ repositoryIds: ['app', 'worker'] });
+    const state = advanceBuildProtocol(
+      createBuildProtocolState({
+        runId: 'run-checkpoint',
+        planningDigest: sha('planning'),
+        strategy: configuration.strategy,
+      }),
+      { kind: 'binding-accepted', binding: configuration.binding },
+    );
+    const initial = state.workspaceCheckpoint!;
+    const observed = initial.repositories.map((repository) =>
+      repository.repositoryId === 'app'
+        ? { ...repository, headRevision: 'f'.repeat(40) }
+        : repository,
+    );
+    const advanced = advanceBuildWorkspaceCheckpoint({
+      current: initial,
+      observed,
+      writableRepositoryIds: ['app'],
+      relations: { app: 'fast-forward', worker: 'unchanged' },
+    });
+
+    expect(advanced.revision).toBe(2);
+    expect(advanced.digest).not.toBe(initial.digest);
+    expect(configuration.binding.repositories[0]!.headRevision).not.toBe('f'.repeat(40));
+    expect(JSON.stringify(advanced)).not.toMatch(/checkoutPath|C:\\\\/u);
+  });
+
+  it('rejects unauthorized and non-fast-forward repository progress', () => {
+    const configuration = approvedConfiguration({ repositoryIds: ['app', 'worker'] });
+    const configured = advanceBuildProtocol(
+      createBuildProtocolState({
+        runId: 'run-checkpoint-rejection',
+        planningDigest: sha('planning'),
+        strategy: configuration.strategy,
+      }),
+      { kind: 'binding-accepted', binding: configuration.binding },
+    );
+    const initial = configured.workspaceCheckpoint!;
+    const observed = initial.repositories.map((repository) =>
+      repository.repositoryId === 'worker'
+        ? { ...repository, headRevision: 'e'.repeat(40) }
+        : repository,
+    );
+
+    expect(() =>
+      advanceBuildWorkspaceCheckpoint({
+        current: initial,
+        observed,
+        writableRepositoryIds: ['app'],
+        relations: { app: 'unchanged', worker: 'fast-forward' },
+      }),
+    ).toThrow(/outside the Package write scope/u);
+    expect(() =>
+      advanceBuildWorkspaceCheckpoint({
+        current: initial,
+        observed,
+        writableRepositoryIds: ['worker'],
+        relations: { app: 'unchanged', worker: 'non-fast-forward' },
+      }),
+    ).toThrow(/did not advance by fast-forward/u);
+  });
+});
+
 const sha = (value: string): `sha256:${string}` => {
   const hex = Buffer.from(value).toString('hex') || '0';
   return `sha256:${hex.repeat(64).slice(0, 64)}`;
 };
+
+function nextWorkspaceCheckpoint(state: ReturnType<typeof createBuildProtocolState>) {
+  const current = state.workspaceCheckpoint!;
+  return advanceBuildWorkspaceCheckpoint({
+    current,
+    observed: current.repositories,
+    writableRepositoryIds: current.repositories.map((repository) => repository.repositoryId),
+    relations: Object.fromEntries(
+      current.repositories.map((repository) => [repository.repositoryId, 'unchanged'] as const),
+    ),
+  });
+}
 
 function approvedConfiguration(
   options: {
@@ -448,9 +527,10 @@ describe('Build protocol domain', () => {
             acceptanceEvidenceIds: [`acceptance-${index + 1}`],
             testEvidenceIds: [`test-${index + 1}`],
             tddMode: 'direct',
-            repositoryDigest: sha(String(index + 1)),
+            workspaceCheckpointDigest: nextWorkspaceCheckpoint(state).digest,
             implementationDigest: sha(String(index + 3)),
           }),
+          workspaceCheckpoint: nextWorkspaceCheckpoint(state),
         });
       }
 
@@ -1000,10 +1080,14 @@ describe('Build protocol domain', () => {
         greenEvidenceId: 'model-green',
         regressionEvidenceId: 'model-regression',
       },
-      repositoryDigest: sha('b'),
+      workspaceCheckpointDigest: nextWorkspaceCheckpoint(state).digest,
       implementationDigest: sha('c'),
     });
-    state = advanceBuildProtocol(state, { kind: 'package-completed', completion: modelCompletion });
+    state = advanceBuildProtocol(state, {
+      kind: 'package-completed',
+      completion: modelCompletion,
+      workspaceCheckpoint: nextWorkspaceCheckpoint(state),
+    });
     const invalidation = createBuildInvalidation({
       source: 'build-check',
       plan: plan1,
@@ -1185,7 +1269,7 @@ describe('Build protocol domain', () => {
       workPackage: plan.packages[0]!,
       executionId: 'execution-1',
       acceptanceEvidenceIds: ['acceptance-1'],
-      repositoryDigest: sha('b'),
+      workspaceCheckpointDigest: sha('b'),
       implementationDigest: sha('c'),
     };
 
@@ -1217,7 +1301,7 @@ describe('Build protocol domain', () => {
       strategyDigest: sha('a'),
       bindingStateDigest: sha('e'),
       planDigest: sha('b'),
-      repositoryDigest: sha('c'),
+      workspaceCheckpointDigest: sha('c'),
       implementationDigest: sha('d'),
       completedPackageIds: ['package-1'],
       acceptedTaskIds: ['1.1'],
@@ -1330,15 +1414,19 @@ describe('Build protocol domain', () => {
         greenEvidenceId: 'green-1',
         regressionEvidenceId: 'regression-1',
       },
-      repositoryDigest: sha('b'),
+      workspaceCheckpointDigest: nextWorkspaceCheckpoint(retry).digest,
       implementationDigest: sha('c'),
     });
-    const executed = advanceBuildProtocol(retry, { kind: 'package-completed', completion });
+    const executed = advanceBuildProtocol(retry, {
+      kind: 'package-completed',
+      completion,
+      workspaceCheckpoint: nextWorkspaceCheckpoint(retry),
+    });
     const check = createBuildCheckEvidence({
       strategyDigest: configuration.strategy.semanticDigest,
       bindingStateDigest: configuration.binding.stateDigest,
       planDigest: plan.digest,
-      repositoryDigest: sha('b'),
+      workspaceCheckpointDigest: executed.workspaceCheckpoint!.digest,
       implementationDigest: sha('c'),
       completedPackageIds: [plan.packages[0]!.packageId],
       acceptedTaskIds: ['1.1'],

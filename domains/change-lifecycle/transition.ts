@@ -16,6 +16,7 @@ import type {
   BuildExecutionMode,
   BuildPlan,
   BuildProtocolState,
+  BuildWorkspaceCheckpoint,
   BuildReviewMode,
   BuildTddMode,
   ExecutionIsolation,
@@ -464,7 +465,7 @@ export type ChangeLifecycleObservation =
   | { kind: 'build-binding-accepted'; binding: ExecutionBinding; work: WorkDescriptor }
   | {
       kind: 'build-binding-revalidation-required';
-      reasonCode: 'host' | 'capability' | 'checkout' | 'head' | 'path';
+      reasonCode: 'host' | 'capability' | 'checkout' | 'head' | 'path' | 'checkpoint-migration';
       reason: string;
       work: WorkDescriptor;
     }
@@ -527,6 +528,7 @@ export type ChangeLifecycleObservation =
   | {
       kind: 'build-package-completed';
       completion: PackageCompletionEvidence;
+      workspaceCheckpoint: BuildWorkspaceCheckpoint;
       work: WorkDescriptor;
       tasks: readonly SpecificationTask[];
     }
@@ -1572,6 +1574,7 @@ export function evolveChangeLifecycle(options: {
     const buildProtocol = advanceBuildProtocol(current.buildProtocol, {
       kind: 'package-completed',
       completion: observation.completion,
+      workspaceCheckpoint: observation.workspaceCheckpoint,
     });
     const expectedKind = buildProtocol.currentAction === 'check' ? 'build.check' : 'build.execute';
     if (observation.work.kind !== expectedKind) {

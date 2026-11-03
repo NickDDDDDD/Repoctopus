@@ -63,7 +63,6 @@ function assertBoundedExecutionResult(outcome: WorkExecutionHostOutcome): void {
               'acceptanceEvidenceIds',
               'testEvidenceIds',
               'tddEvidence',
-              'repositoryDigest',
               'implementationDigest',
             ]
           : outcome.result.kind === 'build-check-candidate'
@@ -72,7 +71,6 @@ function assertBoundedExecutionResult(outcome: WorkExecutionHostOutcome): void {
                 'completedPackageIds',
                 'acceptedTaskIds',
                 'testEvidenceIds',
-                'repositoryDigest',
                 'implementationDigest',
                 'reviewerExecutionId',
               ]
