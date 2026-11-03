@@ -509,7 +509,11 @@ describe('Build protocol domain', () => {
         kind: 'binding-accepted',
         binding: configuration.binding,
       });
-      state = advanceBuildProtocol(state, { kind: 'plan-accepted', plan: firstPlan });
+      state = advanceBuildProtocol(state, {
+        kind: 'plan-accepted',
+        plan: firstPlan,
+        workspaceCheckpoint: nextWorkspaceCheckpoint(state),
+      });
       state = advanceBuildProtocol(state, {
         kind: 'plan-evidence-accepted',
         evidence: createPlanEvidence({
@@ -576,7 +580,11 @@ describe('Build protocol domain', () => {
           ],
         },
       });
-      state = advanceBuildProtocol(state, { kind: 'plan-accepted', plan: revisedPlan });
+      state = advanceBuildProtocol(state, {
+        kind: 'plan-accepted',
+        plan: revisedPlan,
+        workspaceCheckpoint: nextWorkspaceCheckpoint(state),
+      });
 
       expect(state.packageCompletions).toHaveLength(1);
       expect(state.packageCompletions[0]?.packageId).toBe(revisedPlan.packages[0]?.packageId);
@@ -1060,7 +1068,11 @@ describe('Build protocol domain', () => {
       kind: 'binding-accepted',
       binding: configuration.binding,
     });
-    state = advanceBuildProtocol(state, { kind: 'plan-accepted', plan: plan1 });
+    state = advanceBuildProtocol(state, {
+      kind: 'plan-accepted',
+      plan: plan1,
+      workspaceCheckpoint: nextWorkspaceCheckpoint(state),
+    });
     state = advanceBuildProtocol(state, {
       kind: 'plan-evidence-accepted',
       evidence: createPlanEvidence({
@@ -1105,7 +1117,11 @@ describe('Build protocol domain', () => {
       tasks,
       candidate: candidate('service-and-regression-pass'),
     });
-    state = advanceBuildProtocol(state, { kind: 'plan-accepted', plan: plan2 });
+    state = advanceBuildProtocol(state, {
+      kind: 'plan-accepted',
+      plan: plan2,
+      workspaceCheckpoint: nextWorkspaceCheckpoint(state),
+    });
 
     expect(state.plans).toHaveLength(2);
     expect(state.packageCompletions).toEqual([modelCompletion]);
@@ -1392,7 +1408,11 @@ describe('Build protocol domain', () => {
       kind: 'binding-accepted',
       binding: configuration.binding,
     });
-    const planned = advanceBuildProtocol(configured, { kind: 'plan-accepted', plan });
+    const planned = advanceBuildProtocol(configured, {
+      kind: 'plan-accepted',
+      plan,
+      workspaceCheckpoint: nextWorkspaceCheckpoint(configured),
+    });
     const evidence = createPlanEvidence({
       plan,
       configuration,

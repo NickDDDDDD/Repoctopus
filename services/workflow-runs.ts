@@ -2981,9 +2981,20 @@ export class WorkflowRuns extends Service {
                   continuation: 'execute',
                 });
               }
+              if (!protocol.workspaceCheckpoint) {
+                throw new Error('Build Plan requires a Runtime-owned workspace checkpoint');
+              }
+              const planWorkspaceCheckpoint = await this.advanceBuildWorkspaceProgress(
+                current,
+                lifecycle,
+                projectSnapshot,
+                protocol.workspaceCheckpoint,
+                [workspaceRepositoryId],
+              );
               const planned = await this.coordinator.acceptChangeObservation(runId, {
                 kind: 'build-plan-accepted',
                 plan,
+                workspaceCheckpoint: planWorkspaceCheckpoint,
               });
               const evidence = createPlanEvidence({
                 plan,
@@ -3178,11 +3189,13 @@ export class WorkflowRuns extends Service {
                         ? ('workspace-identity-drift' as const)
                         : ('workspace-observation-failed' as const);
                 const intent = await this.ctx.workExecutionAuthority.loadIntent(runId);
-                await this.ctx.workExecutionAuthority.rejectHostSubmission({
-                  intent,
-                  reasonCode,
-                  diagnostic: progressError.message,
-                });
+                if (executeExecution?.status === 'submitted') {
+                  await this.ctx.workExecutionAuthority.rejectHostSubmission({
+                    intent,
+                    reasonCode,
+                    diagnostic: progressError.message,
+                  });
+                }
                 return {
                   value: await this.coordinator.status(runId),
                   diagnostics: [

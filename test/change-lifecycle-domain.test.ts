@@ -41,6 +41,18 @@ const digest = (value: string): `sha256:${string}` => {
   return `sha256:${hex.repeat(64).slice(0, 64)}`;
 };
 
+function nextWorkspaceCheckpoint(state: ReturnType<typeof createBuildProtocolState>) {
+  const current = state.workspaceCheckpoint!;
+  return advanceBuildWorkspaceCheckpoint({
+    current,
+    observed: current.repositories,
+    writableRepositoryIds: current.repositories.map((repository) => repository.repositoryId),
+    relations: Object.fromEntries(
+      current.repositories.map((repository) => [repository.repositoryId, 'unchanged'] as const),
+    ),
+  });
+}
+
 const strategyFor = (intent: ReturnType<typeof createExecutionWorkspaceIntent>) =>
   createBuildStrategy({
     runId: initialSnapshot().identity.runId,
@@ -1229,7 +1241,11 @@ describe('Change lifecycle domain', () => {
       kind: 'binding-accepted',
       binding: executionBinding,
     });
-    protocol = advanceBuildProtocol(protocol, { kind: 'plan-accepted', plan });
+    protocol = advanceBuildProtocol(protocol, {
+      kind: 'plan-accepted',
+      plan,
+      workspaceCheckpoint: nextWorkspaceCheckpoint(protocol),
+    });
     protocol = advanceBuildProtocol(protocol, {
       kind: 'plan-evidence-accepted',
       evidence: planEvidence,
@@ -1407,7 +1423,11 @@ describe('Change lifecycle domain', () => {
     const afterReplan = evolveChangeLifecycle({
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
       current: afterVerify.snapshot,
-      observation: { kind: 'build-plan-accepted', plan: revisedPlan },
+      observation: {
+        kind: 'build-plan-accepted',
+        plan: revisedPlan,
+        workspaceCheckpoint: nextWorkspaceCheckpoint(afterVerify.snapshot.buildProtocol!),
+      },
     });
     expect(afterReplan.snapshot).toMatchObject({
       phase: 'build',

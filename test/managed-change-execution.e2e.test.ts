@@ -1307,6 +1307,7 @@ describe('managed Change execution production composition', () => {
           build: { action: 'execute', planRevision: 1 },
         });
         let afterFirstPackage: RunStatusView;
+        let afterFirstPackageDiagnostics: RuntimeResult<RunStatusView>['diagnostics'] = [];
         let afterAllPackages: RuntimeResult<RunStatusView>;
         if (!multiRepository && executionMode === 'autonomous') {
           const successAcceptanceInterruption = vi
@@ -1423,12 +1424,17 @@ describe('managed Change execution production composition', () => {
           afterAllPackages = await next();
         } else {
           await next();
-          afterFirstPackage = (await next()).value;
+          const firstPackageResult = await next();
+          afterFirstPackage = firstPackageResult.value;
+          afterFirstPackageDiagnostics = firstPackageResult.diagnostics;
           await restartApplication();
           await next();
           afterAllPackages = await next();
         }
-        expect(afterFirstPackage.changeLifecycle).toMatchObject({
+        expect(
+          afterFirstPackage.changeLifecycle,
+          JSON.stringify(afterFirstPackageDiagnostics),
+        ).toMatchObject({
           phase: 'build',
           currentWork: { kind: 'build.execute' },
           taskProgress: { completed: 1 },
@@ -1900,7 +1906,6 @@ describe('managed Change execution production composition', () => {
             : []),
           'specification.plan',
           'build.configure',
-          ...(multiRepository && executionMode === 'autonomous' ? ['build.configure'] : []),
           'build.plan',
           'build.execute',
           'build.execute',

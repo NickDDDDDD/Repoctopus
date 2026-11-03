@@ -494,6 +494,7 @@ export type ChangeLifecycleObservation =
   | {
       kind: 'build-plan-accepted';
       plan: BuildPlan;
+      workspaceCheckpoint: BuildWorkspaceCheckpoint;
     }
   | {
       kind: 'build-plan-retry-required';
@@ -1438,6 +1439,7 @@ export function evolveChangeLifecycle(options: {
     const buildProtocol = advanceBuildProtocol(current.buildProtocol, {
       kind: 'plan-accepted',
       plan: observation.plan,
+      workspaceCheckpoint: observation.workspaceCheckpoint,
     });
     return applyChangeLifecycleTransition({
       definition: options.definition,

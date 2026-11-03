@@ -701,11 +701,6 @@ const definitions: readonly BuiltinDefinition[] = [
           descriptorDigest:
             'sha256:eecfcc944df7ca93fde319036c6a3fe42a31f4c33e75d746ea3305144b7a2dee',
         },
-        {
-          codeDigest: 'sha256:36a643951c7f65a120d0b178f71d47d0c90fa939dd05aab7178065381ad4dcba',
-          descriptorDigest:
-            'sha256:271b4e856d673159d55bf8108527e533caa353b0522b685aa5f662fb72c94b9d',
-        },
       ],
     },
     plugin: WorkExecutionAuthority,
@@ -800,11 +795,6 @@ const definitions: readonly BuiltinDefinition[] = [
           descriptorDigest:
             'sha256:1484807be04f35293ac08ebbea0954fc99975f6c14509cf78a61e71c8b73f830',
         },
-        {
-          codeDigest: 'sha256:c215f5216f9e445f7c672be6300b6dc0958d3de2b4b9ce35f0fd484228ece3e4',
-          descriptorDigest:
-            'sha256:e076b636b53139ca5d35745410c3bf40b06593f2eb28968730e5c489a080a361',
-        },
       ],
     },
     plugin: ManagedWorkExecutor,
@@ -892,11 +882,6 @@ const definitions: readonly BuiltinDefinition[] = [
           codeDigest: 'sha256:ad89f07de38386eba277c8f94dbf1dbc266bf34e31d24108962f726e495815e1',
           descriptorDigest:
             'sha256:a404e2fdd15791971f77456acd3d91969107621e3a510acff9ecc86c5d1950aa',
-        },
-        {
-          codeDigest: 'sha256:d98294bfc6c9c96b3071e2d1ef14a6ee86f16f30da82fa7b13afe7194620a6f6',
-          descriptorDigest:
-            'sha256:e8785c3e00e4b67dffe2f259598cbc4eb97fc87a7343ed45a9db9d713cd9f0bb',
         },
       ],
     },
@@ -1246,11 +1231,6 @@ const definitions: readonly BuiltinDefinition[] = [
           codeDigest: 'sha256:ee93faeb562593e8201bf22b7b6869e265bc3f93bdee94b02696aa9ecf8e1425',
           descriptorDigest:
             'sha256:01a09bf58eeb16293a58bfc3b572696fd1063aee741ea5a8e816e4b810be9927',
-        },
-        {
-          codeDigest: 'sha256:2761b259f1c79963e2dab3eec81463feea5410fedd488969fab42888ab6bbd9e',
-          descriptorDigest:
-            'sha256:e67f69088fc94c7afbc408c0311e86f862bcfd966cc0c242e8b251119cdadac0',
         },
       ],
     },

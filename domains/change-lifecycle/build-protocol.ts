@@ -361,13 +361,13 @@ export function advanceBuildWorkspaceCheckpoint(input: {
     }
     if (!writable.has(previous.repositoryId) && relation !== 'unchanged') {
       throw new BuildWorkspaceProgressError(
-        'Build workspace changed outside the Package write scope',
+        `Build workspace changed outside the Package write scope: ${previous.repositoryId}`,
         'unauthorized-head-change',
       );
     }
     if (relation === 'non-fast-forward') {
       throw new BuildWorkspaceProgressError(
-        'Build workspace history did not advance by fast-forward',
+        `Build workspace history did not advance by fast-forward: ${previous.repositoryId}`,
         'non-fast-forward',
       );
     }
@@ -843,7 +843,11 @@ export interface BuildProtocolSuspension {
 export type BuildProtocolObservation =
   | { kind: 'binding-accepted'; binding: ExecutionBinding }
   | { kind: 'binding-revalidation-required'; reasonCode: string }
-  | { kind: 'plan-accepted'; plan: BuildPlan }
+  | {
+      kind: 'plan-accepted';
+      plan: BuildPlan;
+      workspaceCheckpoint: BuildWorkspaceCheckpoint;
+    }
   | {
       kind: 'plan-evidence-accepted';
       evidence: PlanEvidence;
@@ -1070,6 +1074,12 @@ export function advanceBuildProtocol(
     if (observation.plan.revision !== expectedRevision) {
       throw new Error('Build Plan revision is not monotonic');
     }
+    if (
+      !state.workspaceCheckpoint ||
+      observation.workspaceCheckpoint.revision !== state.workspaceCheckpoint.revision + 1
+    ) {
+      throw new Error('Build Plan does not bind the next workspace checkpoint');
+    }
     const packageCompletions = state.packageCompletions.filter((completion) =>
       observation.plan.packages.some(
         (workPackage) =>
@@ -1083,6 +1093,7 @@ export function advanceBuildProtocol(
       actionAttempt: 1,
       plans: [...state.plans, observation.plan],
       plan: observation.plan,
+      workspaceCheckpoint: observation.workspaceCheckpoint,
       planEvidence: null,
       packageCompletions,
       checkEvidence: null,
