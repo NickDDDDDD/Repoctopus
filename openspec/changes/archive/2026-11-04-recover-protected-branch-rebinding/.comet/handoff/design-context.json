@@ -1,0 +1,15 @@
+{
+  "change": "recover-protected-branch-rebinding",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "1f22d59118a3244a6c5cc702ba8d7d7103471c4224ffebdb29882c1f6aade5e6",
+  "files": [
+    { "path": "openspec/changes/recover-protected-branch-rebinding/proposal.md", "sha256": "8574e8bd817dc7d3954376a4daa1824edd5717abd3adc0ac3b6ae2e86babc2b4" },
+    { "path": "openspec/changes/recover-protected-branch-rebinding/design.md", "sha256": "ad04e5dbf5f21d30707bf7a26158b63146e5617806e31cc45362f7643bac78b1" },
+    { "path": "openspec/changes/recover-protected-branch-rebinding/tasks.md", "sha256": "790c5152deba550ef91a8c4838b6d013b785c1a64dea8a12e3759ecb24ff3d54" },
+    { "path": "openspec/changes/recover-protected-branch-rebinding/specs/managed-work-execution/spec.md", "sha256": "b29cbdf2938a57d77d57c5aff8ac70a80a5fc0def5d19fc1d6eb69405a44f27f" }
+  ]
+}

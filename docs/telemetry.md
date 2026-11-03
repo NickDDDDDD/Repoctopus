@@ -119,6 +119,8 @@ OTLP 使用两个稳定 instrument：`repoctopus.runtime.stability.events` 对�
 
 CLI 与 Desktop 展示的 continuation 也来自已提交 checkpoint。动态 `next`/`resume` 选择先写入 `continuation.selected`，随后 OTLP 才导出同一事实；`run status` 不产生新的恢复事件，因此 Dashboard 刷新频率不会抬高 duplicate pull 或 checkpoint recovery 指标。
 
+受保护写仓修正产生 `authorizedBranchRebind` lifecycle fact。Trace/Event 可以查看入口、分类、结果、是否恢复 matching poison、仓库数量和授权摘要；`repoctopus.workflow.events` 的 Metric 只暴露 `entrypoint=next|resume`、`result=dispatched|idempotent` 与 `poison_recovery` 三个低基数维度。branch、repository、path、remote、Run ID 和 digest 不进入 Metric labels；需要定位单次恢复时使用 Trace/Event。
+
 Archive 仍使用同一 Run 和相同字段；不创建独立 Post-merge Run，不输出 Webhook、等待远端合入或 `repoctopus.post_merge.*` 平行语义。Publication Receipt 被同一 Run 接受时上报完成；后续 consistency reconcile 只上报有界的检查结果、变化类别和审查状态，不回写历史 phase。
 
 Log 和 Span 可以携带这些高基数关联 ID。Metric 只使用工作流名、事件类型、动作结果、Evidence Adapter、状态等有界维度；它们不使用 Run、change、Attempt、Bundle、Delivery、Envelope 或 Receipt ID，避免时间序列数量随执行次数增长。

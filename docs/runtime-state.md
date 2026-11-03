@@ -54,7 +54,7 @@ Design 返工会把现有 Build Protocol 标记为 `suspended-for-design`。该�
 
 `reobserve` 表示 Host Outcome 已知且保持不变，只需重试 Specification Provider/Store 观察；它保留原 Work、attempt、check epoch、invocation、Outcome、Receipt 与 Skill consumption，绝不调用 Host reconciliation。Open 的严格 Provider 校验成功后，Work 进入 `validated`，纯 continuation classifier 将其投影为 `reobserve/open-gate-pending`，下一次 `run next` 直接继续 planning gate。某次观测失败仍返回 `reobserve/open-observation-unavailable`，并以 `provider-validation | planning-gate` 标识失败位置。`reconcile` 只表示 Host 或外部副作用结果未知。`reconcile`、`awaiting-correction` 和 `ask` 同时产生有界 CLI diagnostic code；`reason` 只能取公开枚举，不能包含路径、Provider 正文或自由错误消息。真正的 `next` 或 `resume` 才执行 packet/Host 动态核验；Runtime 先把选择提交为 trajectory fact，再让 CLI、Desktop 与 OTLP 读取同一结果。
 
-恢复时，Project Snapshot 差异分为 `same | content | identity`。仅 HEAD/worktree 变化属于 `content`：Runtime 完整报告差异，但由 Open、Design、Build、Verify 或 Archive 各自的 authority 精确重验依赖，不设置全局 `reconciliationRequired`。仓库增删、Project/root、path、remote、branch、拓扑、diagnostics 或无法分类的变化属于 `identity`，继续 fail closed 并要求全局 reconciliation。`changed` 仅供展示，不是阻断条件。
+恢复时，Project Snapshot 差异分为 `same | content | identity`。仅 HEAD/worktree 变化属于 `content`：Runtime 完整报告差异，但由 Open、Design、Build、Verify 或 Archive 各自的 authority 精确重验依赖，不设置全局 `reconciliationRequired`。仓库增删、Project/root、path、remote、branch、拓扑、diagnostics 或无法分类的变化属于 `identity`，默认继续 fail closed 并要求全局 reconciliation。唯一的 branch 例外是 Runtime 已用 rejected Build Plan 明确要求 Runner 修正受保护的精确 write-set：只有 candidate、旧 Binding、保护策略与 branch-only diff 全部吻合时，typed authorized rebind 才能在同一 Run 返回 Configure；它不会把 identity 差异伪装成 `content`。`changed` 仅供展示，不是阻断条件。
 
 claim、context delivery、Host invocation、Outcome、Validator 与 lifecycle transition 都写入同一个 Run aggregate 和追加式 trajectory。ActionStore 和 packet store 是先写的不可变内容库，不拥有 attempt 或下一步；CAS 前的孤立内容没有执行权。恢复始终按 checkpoint identity 读取原 packet，不重新读取当前 Skill、Provider 指令或 OpenSpec 文件。恢复分类遵循以下边界：未调用可重交同一 attempt；活跃 Host 返回 `wait`；未知副作用返回 `reconcile`；可证明未执行才创建下一 attempt；已有 Outcome 从 Validator 继续；Human Decision 保留原 proposal hash。旧 checkpoint 或缺失/损坏 packet 明确进入 `migration-required` 或 `content-missing-or-corrupt`，不得用当前内容重组兼容。
 
@@ -102,7 +102,7 @@ Change Run 还冻结 Lifecycle Definition、Work Contributor、Validator、Exten
 
 ## 恢复时的多仓核对
 
-`run resume` 会重新执行只读 Project Probe，将远端身份、路径、分支、HEAD 和工作树摘要与启动快照比较。没有变化时 Run 可继续；出现任何变化时 Run State 永久标记 `reconciliationRequired`，Engine 直接拒绝产生新动作。
+`run resume` 会重新执行只读 Project Probe，将远端身份、路径、分支、HEAD 和工作树摘要与启动快照比较。`same` 与已由阶段 authority 处理的 `content` 可以继续；未知 identity drift 会设置 sticky `reconciliationRequired`，Engine 拒绝产生新动作。受保护写仓修正使用显式 authorized-rebind/checkpoint 路径：Runtime 证明当前 diff 正是前一 rejected Plan 要求的修正后，记录授权摘要、清除仅与该摘要匹配的 reconciliation 投影、提升 check epoch并派发唯一 Configure Work。重复 `resume` 按相同 evidence 幂等；任何新增无关差异都会重新 fail closed。
 
 第一阶段没有提供“忽略变化继续”的命令。使用者需要恢复原仓库状态；同一活动 change 不会通过创建并列 Run 绕过旧决策。
 

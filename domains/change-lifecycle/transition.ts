@@ -465,7 +465,14 @@ export type ChangeLifecycleObservation =
   | { kind: 'build-binding-accepted'; binding: ExecutionBinding; work: WorkDescriptor }
   | {
       kind: 'build-binding-revalidation-required';
-      reasonCode: 'host' | 'capability' | 'checkout' | 'head' | 'path' | 'checkpoint-migration';
+      reasonCode:
+        | 'host'
+        | 'capability'
+        | 'checkout'
+        | 'head'
+        | 'path'
+        | 'checkpoint-migration'
+        | 'protected-branch-correction';
       reason: string;
       work: WorkDescriptor;
     }

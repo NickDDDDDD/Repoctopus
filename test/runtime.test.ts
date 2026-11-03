@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { WorkflowRunCoordinator } from '../domains/runtime/workflow-runs.js';
+import { projectReconciliationDigest } from '../domains/runtime/authorized-rebind.js';
+import { reconcileProjectSnapshots } from '../domains/project/snapshot.js';
 import { createChangeLifecycleSnapshot } from '../domains/change-lifecycle/definition.js';
 import {
   createBuildStrategy,
@@ -1321,6 +1323,17 @@ describe('Repoctopus runtime', () => {
     const resumed = await runtime.resume({
       runId: `run-${label}-drift`,
       currentProjectSnapshot: current,
+      ...(label === 'branch'
+        ? {
+            authorizedReconciliation: {
+              kind: 'authorized-protected-branch-rebind' as const,
+              authorizationDigest: `sha256:${'f'.repeat(64)}` as const,
+              projectReconciliationDigest: projectReconciliationDigest(
+                reconcileProjectSnapshots(previous, current),
+              ),
+            },
+          }
+        : {}),
     });
 
     expect(resumed.value.reconciliation).toMatchObject({

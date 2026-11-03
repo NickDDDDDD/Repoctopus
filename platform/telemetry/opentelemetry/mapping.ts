@@ -187,6 +187,50 @@ function addProjectReconciliationAttributes(attributes: Attributes, event: Traje
   }
 }
 
+function authorizedBranchRebindFact(event: TrajectoryEvent): Record<string, unknown> | null {
+  const value = event.data.authorizedBranchRebind;
+  return value && typeof value === 'object' ? (value as Record<string, unknown>) : null;
+}
+
+function addAuthorizedBranchRebindTraceAttributes(
+  attributes: Attributes,
+  event: TrajectoryEvent,
+): void {
+  const fact = authorizedBranchRebindFact(event);
+  if (!fact) return;
+  if (fact.entrypoint === 'next' || fact.entrypoint === 'resume') {
+    attributes['repoctopus.build.rebind.entrypoint'] = fact.entrypoint;
+  }
+  if (fact.classification === 'authorized-protected-branch-rebind') {
+    attributes['repoctopus.build.rebind.classification'] = fact.classification;
+  }
+  if (fact.result === 'dispatched' || fact.result === 'idempotent') {
+    attributes['repoctopus.build.rebind.result'] = fact.result;
+  }
+  if (typeof fact.poisonRecovery === 'boolean') {
+    attributes['repoctopus.build.rebind.poison_recovery'] = fact.poisonRecovery;
+  }
+  if (typeof fact.repositoryCount === 'number' && Number.isSafeInteger(fact.repositoryCount)) {
+    attributes['repoctopus.build.rebind.repository_count'] = fact.repositoryCount;
+  }
+  if (typeof fact.authorizationDigest === 'string' && DIGEST.test(fact.authorizationDigest)) {
+    attributes['repoctopus.build.rebind.authorization_digest'] = fact.authorizationDigest;
+  }
+}
+
+function addAuthorizedBranchRebindMetricAttributes(
+  attributes: Attributes,
+  event: TrajectoryEvent,
+): void {
+  const fact = authorizedBranchRebindFact(event);
+  if (!fact) return;
+  attributes['repoctopus.build.rebind.entrypoint'] =
+    fact.entrypoint === 'next' || fact.entrypoint === 'resume' ? fact.entrypoint : 'unknown';
+  attributes['repoctopus.build.rebind.result'] =
+    fact.result === 'dispatched' || fact.result === 'idempotent' ? fact.result : 'unknown';
+  attributes['repoctopus.build.rebind.poison_recovery'] = fact.poisonRecovery === true;
+}
+
 export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEvent): Attributes {
   const attributes: Attributes = {
     'repoctopus.project.id': batch.projectSnapshot.projectId,
@@ -294,6 +338,7 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
   }
   addEvidenceCorrelation(attributes, event);
   addProjectReconciliationAttributes(attributes, event);
+  addAuthorizedBranchRebindTraceAttributes(attributes, event);
   if (
     event.type === 'continuation.selected' &&
     (event.data.observationStage === 'provider-validation' ||
@@ -368,7 +413,9 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
       if (semanticEvent) attributes['repoctopus.build.event'] = semanticEvent;
       if (
         typeof record.reasonCode === 'string' &&
-        ['host', 'capability', 'checkout', 'head', 'path'].includes(record.reasonCode)
+        ['host', 'capability', 'checkout', 'head', 'path', 'protected-branch-correction'].includes(
+          record.reasonCode,
+        )
       ) {
         attributes['repoctopus.build.reason.class'] = record.reasonCode;
       }
@@ -531,6 +578,7 @@ export function workflowEventMetricAttributes(
     ...workspaceIntentMetricAttributes(event),
   };
   addProjectReconciliationAttributes(result, event);
+  addAuthorizedBranchRebindMetricAttributes(result, event);
   if (event.type === 'work.packet-stored' || event.type === 'work.packet-recovered') {
     const packetResult = event.data.result;
     const allowed =
