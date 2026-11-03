@@ -2,7 +2,8 @@
 comet_change: separate-execution-branch-binding
 role: technical-design
 canonical_spec: openspec
-status: draft
+archived-with: 2026-11-04-separate-execution-branch-binding
+status: final
 ---
 
 # Design

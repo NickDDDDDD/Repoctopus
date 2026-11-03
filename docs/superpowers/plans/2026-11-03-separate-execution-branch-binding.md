@@ -2,6 +2,7 @@
 change: separate-execution-branch-binding
 design-doc: openspec/changes/separate-execution-branch-binding/design.md
 base-ref: 1e111d9b59e546630a253a2217629cf18647abcd
+archived-with: 2026-11-04-separate-execution-branch-binding
 ---
 
 # Separate execution branch binding implementation plan
