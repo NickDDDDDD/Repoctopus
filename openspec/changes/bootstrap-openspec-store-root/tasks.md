@@ -54,9 +54,9 @@
 
 ## 4. 真实CLI、多仓验收与文档
 
-- [ ] 4.1 建立隔离OpenSpec home/registry的真实CLI集成夹具，并验证它绝不读取或写入开发者registry。
+- [ ] 4.1 通过临时`XDG_DATA_HOME`/`XDG_CONFIG_HOME`建立隔离OpenSpec registry/config的真实CLI集成夹具，并验证它绝不读取或写入开发者registry。
       **Blocked by:** 3.1
-      **Acceptance:** Windows与CI测试启动前后都证明registry目标位于受控临时目录，失败清理只删除已验证的临时路径；无法证明隔离时验收失败而非退回mock。
+      **Acceptance:** Windows与CI测试启动前后都证明`stores/registry.yaml`与全局配置位于受控临时目录，真实用户registry内容和时间戳不变；失败清理只删除已验证的临时路径，无法证明隔离时验收失败而非退回mock。
       **Requirements:** specification-authority#workspace-store-登记必须建立在健康规格根之上
 - [ ] 4.2 用真实CLI完成全新非空Workspace、健康未登记Root、中断恢复、部分Root和Store冲突的端到端矩阵。
       **Blocked by:** 3.3, 3.4, 4.1

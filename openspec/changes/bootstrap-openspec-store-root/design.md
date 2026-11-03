@@ -28,7 +28,7 @@
 
 ### 1. 候选冻结 Root disposition，而不是在 apply 阶段临时猜测
 
-Store binding proposal 增加规范化 Root disposition 与 Evidence：
+Store binding proposal 增加规范化 Root disposition 与 Evidence。适配器以精确 `<workspace>/openspec` 的文件状态为第一层边界，并在该 Workspace cwd 调用官方结构化 `doctor --json`/`context --json`；任何返回的 Root path 都必须规范化后精确等于 Workspace，父目录中的 nearest root 不能冒充当前根：
 
 - `registered-exact`：registry 中的 `storeId` 已指向当前 Workspace 且 context 有效；
 - `healthy-unregistered`：当前 Workspace 有健康 OpenSpec Root，但该 Runner 尚未登记；
@@ -89,7 +89,7 @@ ownership checkpoint 只覆盖本次初始化涉及的 `openspec/` 路径、规�
 - 预先存在的部分 `openspec/`、Store id 指向其他 checkout、init 后文件漂移均阻断；
 - 多仓 pointer 和 `repoctopus.yaml` 只在根与 registry验证后出现。
 
-测试必须把 OpenSpec registry/home 重定向到临时目录，结束后清理临时根与 registry；不得读写开发者真实 registry。若 OpenSpec 1.14.3 不提供可隔离 registry 的公共环境变量，package E2E 应使用隔离进程用户目录并在测试前证明 context 不可见，不能退回 mock 作为验收。
+测试进程显式设置临时 `XDG_DATA_HOME` 隔离 `stores/registry.yaml`，设置临时 `XDG_CONFIG_HOME` 隔离全局配置，并关闭遥测/更新检查；结束后清理临时根与 registry，不得读写开发者真实 registry。OpenSpec 1.14.3 在 Windows 上也优先采用这两个 XDG 环境变量，测试必须在执行前后证明真实用户 registry 内容与时间戳均未变化，不能退回 mock 作为验收。
 
 ## 模块边界
 
@@ -110,7 +110,7 @@ ownership checkpoint 只覆盖本次初始化涉及的 `openspec/` 路径、规�
 ## 风险与取舍
 
 - **OpenSpec CLI 输出/参数变化：** 只调用固定 1.14.3 entry并把 version纳入 Evidence；升级 Provider必须经过上游对齐 Change。
-- **真实 registry 测试污染机器：** 测试启动前强制隔离 home/registry并在清理时验证目标位于临时目录；无法证明隔离就跳过副作用并使 package验收失败，而不是操作真实 registry。
+- **真实 registry 测试污染机器：** 测试启动前强制隔离 `XDG_DATA_HOME`/`XDG_CONFIG_HOME` 并在清理时验证目标位于临时目录；无法证明隔离就使 package验收失败，而不是操作真实 registry。
 - **初始化后用户立即编辑文件：** ownership/manifest 漂移会停止自动恢复；这是保护用户内容所需的保守边界。
 - **journal 增加复杂度：** 复用现有 request-scoped Intent/Receipt 与原子写入，不引入 lifecycle generation、后台协调器或独立 Store。
 
