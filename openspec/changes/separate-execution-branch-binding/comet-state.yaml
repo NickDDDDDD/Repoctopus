@@ -1,0 +1,116 @@
+# comet-execution: managed-run
+change_id: 5ff2c33a-77f1-4652-a95f-23b5a76e7c45
+workflow: full
+language: zh-CN
+phase: open
+context_compression: off
+build_mode: null
+build_pause: null
+subagent_dispatch: null
+tdd_mode: null
+review_mode: thorough
+isolation: branch
+verify_mode: null
+auto_transition: true
+base_ref: 1e111d9b59e546630a253a2217629cf18647abcd
+design_doc: null
+plan: null
+verify_result: pending
+verify_failures: 0
+verification_report: null
+branch_status: pending
+created_at: 2026-11-03
+verified_at: null
+archive_confirmation: null
+archived: false
+bound_branch: codex/separate-execution-branch-binding
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: 6debfbd601fb3de1d6c2c62b3bde2f24c426e86c9cf54cbb361a14b1efddc4f7
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: separate-execution-branch-binding
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: 0ef81cf42a85054d852ab1d0d5b8d053afa4c7cfeaaf5a6e3fb2b6a8fb9b9b70
+    input:
+      change: separate-execution-branch-binding
+      changeDir: openspec/changes/separate-execution-branch-binding
+      workspaceBaseline:
+        ref: b81fd641-460b-4996-87ff-eb4f777a5383
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: 1e111d9b59e546630a253a2217629cf18647abcd
+      boundBranch: codex/separate-execution-branch-binding
+      branchStatus: pending
+      buildMode: null
+      buildPause: null
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-03
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: branch
+      language: zh-CN
+      phase: open
+      plan: null
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: null
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: running
+    sequence: 1
+    actions:
+      - attempt: 1
+        id: separate-execution-branch-binding:1
+        input:
+          input:
+            change: separate-execution-branch-binding
+            changeDir: openspec/changes/separate-execution-branch-binding
+            workspaceBaseline:
+              ref: b81fd641-460b-4996-87ff-eb4f777a5383
+          outputs: {}
+        inputHash: 5426db906ef6043a2ca2e90f002576ddb14c1e820c8d66a2ae4907f88a96ee84
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: separate-execution-branch-binding
+        status: pending
+        stepId: full.open
+        type: invoke_skill
+    actionContexts:
+      separate-execution-branch-binding:1:
+        results: {}
+        sequence: 1
+    waits: []
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 1
+  sourceHash: 73c7b5a0b51c23cd489a9371592e42acbb8ab98b783e1004349b58917e1071ba
