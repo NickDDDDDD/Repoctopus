@@ -71,7 +71,7 @@
 - [x] 6.2 记录 Comet rebind/checkpoint 原则及 Repoctopus 多仓差异。   <!-- comet-task:7550d8cd-94e0-49c6-8410-b97c2f9a7b5d -->
   **Acceptance:** provenance 指向固定 upstream baseline/公开资料，说明采用的行为而非复制源码。
   **Requirements:** 不引入第二套 spec、plan 或 skill authority。
-- [ ] 6.3 运行定向测试、strict OpenSpec、architecture/provenance/generated 检查和完整 `npm run verify`。   <!-- comet-task:516b03b6-2a9f-4a2c-9964-9ba3be920e2a -->
+- [x] 6.3 运行定向测试、strict OpenSpec、architecture/provenance/generated 检查和完整 `npm run verify`。   <!-- comet-task:516b03b6-2a9f-4a2c-9964-9ba3be920e2a -->
   **Acceptance:** 所有必需检查通过，Windows 生产 CLI E2E 无 flaky 重试。
   **Requirements:** 失败必须修复根因，不降低门禁或删除负例。
 - [ ] 6.4 清理临时 clone、验收日志和 scratch 输出，保留正式 Run、规格、测试与结构化诊断证据。   <!-- comet-task:5cad9452-0ead-4d67-9b1c-86a12df1c983 -->
