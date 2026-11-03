@@ -11,6 +11,7 @@ import {
   removeTemporaryDirectory,
   temporaryDirectory,
 } from '../helpers/fixtures.js';
+import { normalizeRemoteIdentity } from '../../platform/git/remote-identity.js';
 import { runCli } from './cli.js';
 
 const execFileAsync = promisify(execFile);
@@ -149,7 +150,7 @@ describe('specification approval CLI', () => {
       snapshot: {
         artifacts: unknown[];
         buildStrategyDigest: string;
-        changeBranch: { sourceBranch: string; remoteOid: string };
+        changeBranch: { sourceBranch: string; remoteOid: string; remoteIdentity: string };
       };
     }>({
       packageRoot,
@@ -179,6 +180,9 @@ describe('specification approval CLI', () => {
     });
     expect(prepared.result?.snapshot.artifacts).toHaveLength(4);
     expect(prepared.result?.snapshot.changeBranch.remoteOid).toMatch(/^[a-f0-9]{40}$/u);
+    expect(prepared.result?.snapshot.changeBranch.remoteIdentity).toBe(
+      normalizeRemoteIdentity(remote),
+    );
     expect(prepared.result?.snapshot.buildStrategyDigest).toMatch(/^sha256:[a-f0-9]{64}$/u);
 
     const status = await runCli({

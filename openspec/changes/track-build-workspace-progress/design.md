@@ -97,6 +97,12 @@ Verify Evidence 对当前仓库 fingerprint 与 Build Check checkpoint 建立关
 
 Metric labels 不包含 repository id、branch、HEAD、path、digest 或诊断正文；精确仓库 finding 只保留在本地 trajectory/CLI diagnostic。
 
+### 8. Planning 与 Publication 共享远端身份
+
+真实 Archive 暴露了两个边界对 `remoteIdentity` 的不同解释：Planning branch inspection 把 Repoctopus 配置中的 `repositoryId` 当作平台稳定仓库 ID，而 Project snapshot 从 Git remote URL 生成规范化身份。前者只是拓扑内逻辑名称，不是 GitHub repository id，不能替代远端身份。
+
+Change branch inspection 改为复用 Project probe 的 `normalizeRemoteIdentity(remoteUrl)`。这样 `repositoryId` 继续负责 Workspace/业务仓拓扑定位，`remoteIdentity` 只负责证明两个边界观察的是同一个远端仓库；Archive publication 可以在产生任何远端副作用前做精确比较。真正的平台稳定 ID 以后若由受信 Adapter 提供，必须拥有独立来源与类型，不能从配置别名猜测。
+
 ## Testing Strategy
 
 1. 领域红测：checkpoint 创建、逐包 fast-forward、未授权仓变化、non-fast-forward、幂等不变 HEAD。
@@ -105,3 +111,4 @@ Metric labels 不包含 repository id、branch、HEAD、path、digest 或诊断�
 4. Check/Verify：最终 checkpoint 精确匹配才接受 Check；review 期间修改拒绝。
 5. 遥测与隐私：分类可离线复算且无高基数 revision/path label。
 6. 真实验收：恢复模拟多仓 Change，完成三个 package、Build Check、Verify 和 Archive。
+7. Delivery 回归：Planning approval 与 Project snapshot 对同一 Git remote 生成相同 identity，并完成真实 Archive publication。

@@ -42,6 +42,10 @@
       **Acceptance:** 精确前驱 adoption 后，已接受 Outcome 可由同一 packet 继续验证；Intent 内部 composition 或 packet context 被篡改仍拒绝。
       **Requirements:** managed-work-execution / Runtime 必须按 Package write scope 推进 workspace revision
 
+- [x] 3.5 统一 Planning approval、Project snapshot 与 Archive publication 的 Workspace Repository remote identity。
+      **Acceptance:** 配置内 repository id 不再冒充平台仓库身份；同一 Git remote 在规划与发布边界产生相同规范化 identity，真实多仓 Archive 不在发布时误报 Workspace Repository 不匹配。
+      **Requirements:** delivery-governance / Change branch 与 Publication 必须共享同一远端身份
+
 ## 4. 验证与继续真实验收
 
 - [ ] 4.1 运行领域、Service、CLI、production composition、telemetry 和 architecture 定向测试。

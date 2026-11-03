@@ -14,6 +14,7 @@
 - Host 不再为 Package/Check Outcome 声明无法独立证明的 `repositoryDigest`；Runtime 观察 Git facts、校验 ancestry 并生成 checkpoint digest。
 - Build Check 和 Verify 绑定最终 workspace checkpoint；review 期间出现代码变化必须返回 repair，而不能静默吸收。
 - 增加低基数 trajectory/OTLP 事件，区分合法 progress advance、未授权 head change、non-fast-forward 与真正 Binding drift。
+- 统一 Planning approval 与 Archive publication 使用的规范化 Git remote identity，配置内 repository id 只标识 Repoctopus 拓扑，不再冒充远端仓库身份。
 
 ## Capabilities
 
@@ -22,6 +23,7 @@
 - `managed-work-execution`: 分离不可变 Execution Binding 与 Runtime-owned workspace progress。
 - `change-lifecycle`: Package Completion 原子推进 checkpoint，且只失效真正依赖变化的事实。
 - `development-telemetry`: 记录 workspace progress 的接受与拒绝分类。
+- `delivery-governance`: Change branch approval 与 Publication 共享同一 Workspace Repository remote identity。
 
 ## Non-goals
 
