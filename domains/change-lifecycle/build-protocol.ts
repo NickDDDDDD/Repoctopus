@@ -268,6 +268,118 @@ export interface ExecutionBinding {
   localOverlayRef: string;
 }
 
+export interface BuildWorkspaceCheckpointRepository {
+  repositoryId: string;
+  branchRef: string;
+  headRevision: string;
+}
+
+/**
+ * Runtime-owned progress through the bound workspace. Unlike ExecutionBinding,
+ * this value advances after an accepted package and contains no local paths or
+ * Host-provided repository assertions.
+ */
+export interface BuildWorkspaceCheckpoint {
+  schemaVersion: 1;
+  revision: number;
+  repositories: readonly BuildWorkspaceCheckpointRepository[];
+  digest: Digest;
+}
+
+export type BuildWorkspaceHeadRelation = 'unchanged' | 'fast-forward' | 'non-fast-forward';
+export type BuildWorkspaceProgressRejection =
+  | 'unauthorized-head-change'
+  | 'non-fast-forward'
+  | 'identity-drift'
+  | 'observation-failed';
+
+export class BuildWorkspaceProgressError extends Error {
+  override readonly name = 'BuildWorkspaceProgressError';
+
+  constructor(
+    message: string,
+    readonly classification: BuildWorkspaceProgressRejection,
+    options?: ErrorOptions,
+  ) {
+    super(message, options);
+  }
+}
+
+export function createBuildWorkspaceCheckpoint(
+  binding: ExecutionBinding,
+): BuildWorkspaceCheckpoint {
+  const stable = {
+    schemaVersion: 1 as const,
+    revision: 1,
+    repositories: binding.repositories.map((repository) => ({
+      repositoryId: repository.repositoryId,
+      branchRef: repository.branchRef,
+      headRevision: repository.headRevision,
+    })),
+  };
+  return deepFreeze({ ...stable, digest: digest(stable) });
+}
+
+export function advanceBuildWorkspaceCheckpoint(input: {
+  current: BuildWorkspaceCheckpoint;
+  observed: readonly BuildWorkspaceCheckpointRepository[];
+  writableRepositoryIds: readonly string[];
+  relations: Readonly<Record<string, BuildWorkspaceHeadRelation>>;
+}): BuildWorkspaceCheckpoint {
+  const observed = [...input.observed]
+    .map((repository) => ({
+      repositoryId: text(repository.repositoryId, 'Repository identity'),
+      branchRef: text(repository.branchRef, 'Repository branch'),
+      headRevision: text(repository.headRevision, 'Repository head'),
+    }))
+    .sort((left, right) => left.repositoryId.localeCompare(right.repositoryId));
+  if (
+    observed.length !== input.current.repositories.length ||
+    new Set(observed.map((repository) => repository.repositoryId)).size !== observed.length
+  ) {
+    throw new BuildWorkspaceProgressError(
+      'Build workspace repository topology changed',
+      'identity-drift',
+    );
+  }
+  const writable = new Set(unique(input.writableRepositoryIds, 'Writable repository identities'));
+  for (const previous of input.current.repositories) {
+    const next = observed.find((repository) => repository.repositoryId === previous.repositoryId);
+    if (!next || next.branchRef !== previous.branchRef) {
+      throw new BuildWorkspaceProgressError(
+        'Build workspace repository identity changed',
+        'identity-drift',
+      );
+    }
+    const relation = input.relations[previous.repositoryId];
+    if (!relation) throw new Error('Build workspace head relation is missing');
+    if (next.headRevision === previous.headRevision && relation !== 'unchanged') {
+      throw new Error('Build workspace unchanged relation is inconsistent');
+    }
+    if (next.headRevision !== previous.headRevision && relation === 'unchanged') {
+      throw new Error('Build workspace changed head is not classified');
+    }
+    if (!writable.has(previous.repositoryId) && relation !== 'unchanged') {
+      throw new BuildWorkspaceProgressError(
+        `Build workspace changed outside the Package write scope: ${previous.repositoryId}`,
+        'unauthorized-head-change',
+      );
+    }
+    if (relation === 'non-fast-forward') {
+      throw new BuildWorkspaceProgressError(
+        `Build workspace history did not advance by fast-forward: ${previous.repositoryId}`,
+        'non-fast-forward',
+      );
+    }
+  }
+  const stable = {
+    schemaVersion: 1 as const,
+    revision: input.current.revision + 1,
+    repositories: observed,
+  };
+  return deepFreeze({ ...stable, digest: digest(stable) });
+}
+
 export function executionBindingRequiredCapabilities(
   executionMode: BuildExecutionMode,
 ): readonly string[] {
@@ -705,6 +817,7 @@ export interface BuildProtocolState {
   strategy: BuildStrategy;
   binding: ExecutionBinding | null;
   bindingHistory: readonly ExecutionBinding[];
+  workspaceCheckpoint: BuildWorkspaceCheckpoint | null;
   currentAction: BuildActionKind | null;
   status: 'active' | 'ready-for-verify' | 'suspended-for-design';
   actionAttempt: number;
@@ -730,14 +843,22 @@ export interface BuildProtocolSuspension {
 export type BuildProtocolObservation =
   | { kind: 'binding-accepted'; binding: ExecutionBinding }
   | { kind: 'binding-revalidation-required'; reasonCode: string }
-  | { kind: 'plan-accepted'; plan: BuildPlan }
+  | {
+      kind: 'plan-accepted';
+      plan: BuildPlan;
+      workspaceCheckpoint: BuildWorkspaceCheckpoint;
+    }
   | {
       kind: 'plan-evidence-accepted';
       evidence: PlanEvidence;
       approvedRiskDigest?: Digest;
     }
   | { kind: 'plan-rejected' }
-  | { kind: 'package-completed'; completion: PackageCompletionEvidence }
+  | {
+      kind: 'package-completed';
+      completion: PackageCompletionEvidence;
+      workspaceCheckpoint: BuildWorkspaceCheckpoint;
+    }
   | { kind: 'check-accepted'; evidence: BuildCheckEvidence }
   | { kind: 'revision-required'; invalidation: BuildInvalidation }
   | { kind: 'retry'; action: BuildActionKind };
@@ -755,6 +876,7 @@ export function createBuildProtocolState(input: {
     strategy: input.strategy,
     binding: null,
     bindingHistory: [],
+    workspaceCheckpoint: null,
     currentAction: 'configure',
     status: 'active',
     actionAttempt: 1,
@@ -836,6 +958,7 @@ export function revalidateSuspendedBuildProtocol(
       status: 'active',
       actionAttempt: 1,
       binding: null,
+      workspaceCheckpoint: null,
       plan: null,
       planEvidence: null,
       packageCompletions: [],
@@ -915,6 +1038,7 @@ export function advanceBuildProtocol(
       actionAttempt: 1,
       binding: observation.binding,
       bindingHistory: [...state.bindingHistory, observation.binding],
+      workspaceCheckpoint: createBuildWorkspaceCheckpoint(observation.binding),
       revision: state.revision + 1,
     });
   }
@@ -929,6 +1053,7 @@ export function advanceBuildProtocol(
       status: 'active',
       actionAttempt: 1,
       binding: null,
+      workspaceCheckpoint: null,
       plan: null,
       planEvidence: null,
       checkEvidence: null,
@@ -949,6 +1074,12 @@ export function advanceBuildProtocol(
     if (observation.plan.revision !== expectedRevision) {
       throw new Error('Build Plan revision is not monotonic');
     }
+    if (
+      !state.workspaceCheckpoint ||
+      observation.workspaceCheckpoint.revision !== state.workspaceCheckpoint.revision + 1
+    ) {
+      throw new Error('Build Plan does not bind the next workspace checkpoint');
+    }
     const packageCompletions = state.packageCompletions.filter((completion) =>
       observation.plan.packages.some(
         (workPackage) =>
@@ -962,6 +1093,7 @@ export function advanceBuildProtocol(
       actionAttempt: 1,
       plans: [...state.plans, observation.plan],
       plan: observation.plan,
+      workspaceCheckpoint: observation.workspaceCheckpoint,
       planEvidence: null,
       packageCompletions,
       checkEvidence: null,
@@ -1014,7 +1146,12 @@ export function advanceBuildProtocol(
     });
   }
   if (observation.kind === 'package-completed') {
-    if (state.currentAction !== 'execute' || !state.plan || !state.planEvidence) {
+    if (
+      state.currentAction !== 'execute' ||
+      !state.plan ||
+      !state.planEvidence ||
+      !state.workspaceCheckpoint
+    ) {
       throw new Error('Package completion does not match the active Execute Action');
     }
     const workPackage = state.plan.packages.find(
@@ -1034,6 +1171,12 @@ export function advanceBuildProtocol(
     if (state.packageCompletions.some((entry) => entry.packageId === workPackage.packageId)) {
       return state;
     }
+    if (
+      observation.workspaceCheckpoint.revision !== state.workspaceCheckpoint.revision + 1 ||
+      observation.workspaceCheckpoint.digest !== observation.completion.workspaceCheckpointDigest
+    ) {
+      throw new Error('Package completion does not bind the next workspace checkpoint');
+    }
     const packageCompletions = [...state.packageCompletions, observation.completion];
     const allCompleted = state.plan.packages.every((candidate) =>
       packageCompletions.some((completion) => completion.packageId === candidate.packageId),
@@ -1043,6 +1186,7 @@ export function advanceBuildProtocol(
       currentAction: allCompleted ? 'check' : 'execute',
       actionAttempt: 1,
       packageCompletions,
+      workspaceCheckpoint: observation.workspaceCheckpoint,
       revision: state.revision + 1,
     });
   }
@@ -1053,7 +1197,8 @@ export function advanceBuildProtocol(
     if (
       observation.evidence.strategyDigest !== state.strategy.semanticDigest ||
       observation.evidence.bindingStateDigest !== state.binding?.stateDigest ||
-      observation.evidence.planDigest !== state.plan?.digest
+      observation.evidence.planDigest !== state.plan?.digest ||
+      observation.evidence.workspaceCheckpointDigest !== state.workspaceCheckpoint?.digest
     ) {
       throw new Error('Build Check Evidence input drifted');
     }
@@ -1158,7 +1303,7 @@ export interface PackageCompletionEvidence {
     greenEvidenceId: string;
     regressionEvidenceId: string;
   } | null;
-  repositoryDigest: Digest;
+  workspaceCheckpointDigest: Digest;
   implementationDigest: Digest;
   digest: Digest;
 }
@@ -1170,10 +1315,10 @@ export function createPackageCompletionEvidence(input: {
   testEvidenceIds: readonly string[];
   tddMode: BuildTddMode;
   tddEvidence?: PackageCompletionEvidence['tddEvidence'];
-  repositoryDigest: Digest;
+  workspaceCheckpointDigest: Digest;
   implementationDigest: Digest;
 }): PackageCompletionEvidence {
-  if (!SHA256.test(input.repositoryDigest) || !SHA256.test(input.implementationDigest)) {
+  if (!SHA256.test(input.workspaceCheckpointDigest) || !SHA256.test(input.implementationDigest)) {
     throw new Error('Package completion digests are invalid');
   }
   const acceptanceEvidenceIds = unique(
@@ -1205,7 +1350,7 @@ export function createPackageCompletionEvidence(input: {
     acceptanceEvidenceIds,
     testEvidenceIds,
     tddEvidence,
-    repositoryDigest: input.repositoryDigest,
+    workspaceCheckpointDigest: input.workspaceCheckpointDigest,
     implementationDigest: input.implementationDigest,
   };
   const completionDigest = digest(stable);
@@ -1402,7 +1547,7 @@ export interface BuildCheckEvidence {
   strategyDigest: Digest;
   bindingStateDigest: Digest;
   planDigest: Digest;
-  repositoryDigest: Digest;
+  workspaceCheckpointDigest: Digest;
   implementationDigest: Digest;
   completedPackageIds: readonly string[];
   acceptedTaskIds: readonly string[];
@@ -1420,7 +1565,7 @@ export function createBuildCheckEvidence(
     !SHA256.test(input.strategyDigest) ||
     !SHA256.test(input.bindingStateDigest) ||
     !SHA256.test(input.planDigest) ||
-    !SHA256.test(input.repositoryDigest) ||
+    !SHA256.test(input.workspaceCheckpointDigest) ||
     !SHA256.test(input.implementationDigest)
   ) {
     throw new Error('Build Check digests are invalid');

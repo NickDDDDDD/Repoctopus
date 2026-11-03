@@ -21,6 +21,7 @@ import {
 } from '../domains/change-lifecycle/definition.js';
 import {
   advanceBuildProtocol,
+  advanceBuildWorkspaceCheckpoint,
   createBuildCheckEvidence,
   createBuildStrategy,
   createExecutionBinding,
@@ -39,6 +40,18 @@ const digest = (value: string): `sha256:${string}` => {
   const hex = Buffer.from(value).toString('hex') || '0';
   return `sha256:${hex.repeat(64).slice(0, 64)}`;
 };
+
+function nextWorkspaceCheckpoint(state: ReturnType<typeof createBuildProtocolState>) {
+  const current = state.workspaceCheckpoint!;
+  return advanceBuildWorkspaceCheckpoint({
+    current,
+    observed: current.repositories,
+    writableRepositoryIds: current.repositories.map((repository) => repository.repositoryId),
+    relations: Object.fromEntries(
+      current.repositories.map((repository) => [repository.repositoryId, 'unchanged'] as const),
+    ),
+  });
+}
 
 const strategyFor = (intent: ReturnType<typeof createExecutionWorkspaceIntent>) =>
   createBuildStrategy({
@@ -1219,15 +1232,6 @@ describe('Change lifecycle domain', () => {
       compositionCheckpointDigest: digest('c'),
       reportOwnerId: 'team-platform',
     });
-    const completion = createPackageCompletionEvidence({
-      workPackage: plan.packages[0]!,
-      executionId: 'implementation-execution',
-      acceptanceEvidenceIds: ['acceptance-1'],
-      testEvidenceIds: ['test-1'],
-      tddMode: 'direct',
-      repositoryDigest: executionBinding.stateDigest,
-      implementationDigest: digest('a'),
-    });
     let protocol = createBuildProtocolState({
       runId: initialSnapshot().identity.runId,
       planningDigest: tasks.digest,
@@ -1237,12 +1241,35 @@ describe('Change lifecycle domain', () => {
       kind: 'binding-accepted',
       binding: executionBinding,
     });
-    protocol = advanceBuildProtocol(protocol, { kind: 'plan-accepted', plan });
+    protocol = advanceBuildProtocol(protocol, {
+      kind: 'plan-accepted',
+      plan,
+      workspaceCheckpoint: nextWorkspaceCheckpoint(protocol),
+    });
     protocol = advanceBuildProtocol(protocol, {
       kind: 'plan-evidence-accepted',
       evidence: planEvidence,
     });
-    protocol = advanceBuildProtocol(protocol, { kind: 'package-completed', completion });
+    const workspaceCheckpoint = advanceBuildWorkspaceCheckpoint({
+      current: protocol.workspaceCheckpoint!,
+      observed: protocol.workspaceCheckpoint!.repositories,
+      writableRepositoryIds: ['workspace'],
+      relations: { workspace: 'unchanged' },
+    });
+    const completion = createPackageCompletionEvidence({
+      workPackage: plan.packages[0]!,
+      executionId: 'implementation-execution',
+      acceptanceEvidenceIds: ['acceptance-1'],
+      testEvidenceIds: ['test-1'],
+      tddMode: 'direct',
+      workspaceCheckpointDigest: workspaceCheckpoint.digest,
+      implementationDigest: digest('a'),
+    });
+    protocol = advanceBuildProtocol(protocol, {
+      kind: 'package-completed',
+      completion,
+      workspaceCheckpoint,
+    });
 
     const finding = {
       findingId: 'finding-1',
@@ -1257,7 +1284,7 @@ describe('Change lifecycle domain', () => {
       strategyDigest: strategy.semanticDigest,
       bindingStateDigest: executionBinding.stateDigest,
       planDigest: plan.digest,
-      repositoryDigest: executionBinding.stateDigest,
+      workspaceCheckpointDigest: protocol.workspaceCheckpoint!.digest,
       implementationDigest: digest('b'),
       completedPackageIds: [plan.packages[0]!.packageId],
       acceptedTaskIds: ['1.1'],
@@ -1396,7 +1423,11 @@ describe('Change lifecycle domain', () => {
     const afterReplan = evolveChangeLifecycle({
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
       current: afterVerify.snapshot,
-      observation: { kind: 'build-plan-accepted', plan: revisedPlan },
+      observation: {
+        kind: 'build-plan-accepted',
+        plan: revisedPlan,
+        workspaceCheckpoint: nextWorkspaceCheckpoint(afterVerify.snapshot.buildProtocol!),
+      },
     });
     expect(afterReplan.snapshot).toMatchObject({
       phase: 'build',

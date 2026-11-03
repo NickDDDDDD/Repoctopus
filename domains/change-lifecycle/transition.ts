@@ -16,6 +16,7 @@ import type {
   BuildExecutionMode,
   BuildPlan,
   BuildProtocolState,
+  BuildWorkspaceCheckpoint,
   BuildReviewMode,
   BuildTddMode,
   ExecutionIsolation,
@@ -464,7 +465,7 @@ export type ChangeLifecycleObservation =
   | { kind: 'build-binding-accepted'; binding: ExecutionBinding; work: WorkDescriptor }
   | {
       kind: 'build-binding-revalidation-required';
-      reasonCode: 'host' | 'capability' | 'checkout' | 'head' | 'path';
+      reasonCode: 'host' | 'capability' | 'checkout' | 'head' | 'path' | 'checkpoint-migration';
       reason: string;
       work: WorkDescriptor;
     }
@@ -493,6 +494,7 @@ export type ChangeLifecycleObservation =
   | {
       kind: 'build-plan-accepted';
       plan: BuildPlan;
+      workspaceCheckpoint: BuildWorkspaceCheckpoint;
     }
   | {
       kind: 'build-plan-retry-required';
@@ -527,6 +529,7 @@ export type ChangeLifecycleObservation =
   | {
       kind: 'build-package-completed';
       completion: PackageCompletionEvidence;
+      workspaceCheckpoint: BuildWorkspaceCheckpoint;
       work: WorkDescriptor;
       tasks: readonly SpecificationTask[];
     }
@@ -1436,6 +1439,7 @@ export function evolveChangeLifecycle(options: {
     const buildProtocol = advanceBuildProtocol(current.buildProtocol, {
       kind: 'plan-accepted',
       plan: observation.plan,
+      workspaceCheckpoint: observation.workspaceCheckpoint,
     });
     return applyChangeLifecycleTransition({
       definition: options.definition,
@@ -1572,6 +1576,7 @@ export function evolveChangeLifecycle(options: {
     const buildProtocol = advanceBuildProtocol(current.buildProtocol, {
       kind: 'package-completed',
       completion: observation.completion,
+      workspaceCheckpoint: observation.workspaceCheckpoint,
     });
     const expectedKind = buildProtocol.currentAction === 'check' ? 'build.check' : 'build.execute';
     if (observation.work.kind !== expectedKind) {
@@ -1994,7 +1999,11 @@ export function evolveChangeLifecycle(options: {
       verificationInputDigest: archive.verificationInputDigest,
       evidenceBundleId: archive.evidenceBundleId,
       verificationReport: archive.verificationReport,
-      changeBranch: { ...archive.changeBranch, remoteOid: '<corrected>' },
+      changeBranch: {
+        ...archive.changeBranch,
+        remoteIdentity: '<corrected>',
+        remoteOid: '<corrected>',
+      },
       businessDeliveries: archive.businessDeliveries,
       businessSplitReason: archive.businessSplitReason,
       publicationPolicyDigest: archive.publicationPolicyDigest,
@@ -2016,8 +2025,10 @@ export function evolveChangeLifecycle(options: {
       observation.archiveInput.changeId !== current.identity.changeId ||
       observation.archiveInput.changeBranch.remoteOid !==
         current.specificationClosure.candidate.baseOid ||
-      observation.archiveInput.changeBranch.remoteOid ===
-        current.archiveDeliveryInput.changeBranch.remoteOid ||
+      (observation.archiveInput.changeBranch.remoteOid ===
+        current.archiveDeliveryInput.changeBranch.remoteOid &&
+        observation.archiveInput.changeBranch.remoteIdentity ===
+          current.archiveDeliveryInput.changeBranch.remoteIdentity) ||
       canonicalJson(stableArchiveIdentity(observation.archiveInput)) !==
         canonicalJson(stableArchiveIdentity(current.archiveDeliveryInput)) ||
       !observation.reason.trim()

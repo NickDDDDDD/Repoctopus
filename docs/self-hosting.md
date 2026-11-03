@@ -79,6 +79,8 @@ Open 和 Design 分别产生独立 Human Decision。Open Host Outcome 成功后�
 
 Build Configure 的 Human Decision 冻结 execution mode、TDD mode、standard review、Host 能力和隔离。随后 Runtime 从 OpenSpec Tasks 产生 Run-local BuildPlan，执行 Plan Evidence、当前 Work Package 和 Build Check。每次 `run next` 只拉取 Runtime 当前 continuation。内嵌 Host 由同一短生命周期 App 注册；外部 Agent/Runner 使用 `run work-claim`/`run work-outcome` 的 Host-bound 协议。Runner 必须在每次 claim 中声明同一组完整、稳定的 Host 能力，而不是只声明当前 Work 使用的能力；例如 autonomous Build Host 使用 `--host-capabilities build.autonomous,process.execute,repository.read,repository.write,specification.read`，subagent-driven Build Host 将 `build.autonomous` 替换为受证明的 `subagent.dispatch.attested`。Runtime 在持久化 claim 前校验当前 Work 的能力是否为该集合的子集，且不会用当前 Work/packet 反向扩充 Host 身份；Work 的副作用类别和 write scopes 仍逐项限制实际权限。Outcome 通过 `--submission-id <new-id> --result-file <result.json>` 提交受 Runtime schema 校验的结构化 Build 结果。Invocation 中的 Host 快照是跨 CLI 进程的权威身份，后续校验不依赖原进程仍在运行。电脑关闭不需要守护进程：下一位具备 Workspace 状态的 Runner 从同一个 checkpoint 恢复；若原调用结果未知，必须先 `run work-reconcile`，不能自动重放。
 
+Execution Binding 是 Configure 时冻结的授权基线：repository、branch、isolation、worktree owner 与 Host identity 不会因正常开发 commit 改写。Runtime 另行维护 `BuildWorkspaceCheckpoint` 作为逐 Package 的 Git 进度；Runner 负责在授权 write scope 内 commit/push，Runtime 独立观察 HEAD、证明 fast-forward，并原子接受 Package Completion 与下一 checkpoint。Host 的 Package/Check result 不上报 repository digest。未授权仓变化、历史重写或 identity drift 都会 fail closed；Build Check 只接受与最终 checkpoint 精确一致的 workspace。
+
 ### 恢复 Design 返工
 
 当 Runtime 返回 Design 时，先按投影执行当前 `specification.plan` Work。不要删除 `.repoctopus/`、修改 `comet-state.yaml`、重建 Run 或手工把 phase 改回 Build。

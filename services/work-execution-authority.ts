@@ -1296,7 +1296,6 @@ export class WorkExecutionAuthority extends Service {
     }
     if (
       intent.compositionDigest !== intent.composition.compositionDigest ||
-      intent.compositionDigest !== state.composition.compositionDigest ||
       intent.executionContext?.digest !== claim.packet.contextDigest
     ) {
       throw new Error('Authoritative Action intent content drifted from the Work packet');

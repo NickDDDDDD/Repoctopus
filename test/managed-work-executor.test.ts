@@ -115,7 +115,6 @@ function executor(
           greenEvidenceId: 'green-1',
           regressionEvidenceId: 'regression-1',
         },
-        repositoryDigest: digest('5'),
         implementationDigest: digest('6'),
       }) as WorkExecutionResult,
       delegationReceipts: delegationReceiptsOverride ?? [
@@ -194,7 +193,6 @@ function externalReplayHarness() {
       packageId: 'package-1',
       acceptanceEvidenceIds: ['acceptance-1'],
       testEvidenceIds: ['test-1'],
-      repositoryDigest: digest('5'),
       implementationDigest: digest('6'),
     },
     delegationReceipts: [
@@ -555,7 +553,6 @@ describe('Managed Work Executor Build contract', () => {
         completedPackageIds: ['package-1'],
         acceptedTaskIds: ['1.1'],
         testEvidenceIds: ['test-1'],
-        repositoryDigest: digest('5'),
         implementationDigest: digest('6'),
         reviewerExecutionId: 'reviewer-1',
       },
@@ -579,7 +576,6 @@ describe('Managed Work Executor Build contract', () => {
       packageId: 'package-1',
       acceptanceEvidenceIds: ['acceptance-1'],
       testEvidenceIds: ['test-1'],
-      repositoryDigest: digest('5'),
       implementationDigest: digest('6'),
       requestedNextAction: 'check',
     });
