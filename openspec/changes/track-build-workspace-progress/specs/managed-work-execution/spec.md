@@ -35,6 +35,11 @@ Repoctopus MUST 在每个 Package Completion 前重观察全部登记仓库，�
 - **WHEN** Package 实现已经存在于当前 checkpoint HEAD，Host 重新验证并提交完整 Evidence，但没有产生新 commit
 - **THEN** Runtime 可以建立语义等价的下一 checkpoint revision并接受 completion，不要求伪造 HEAD 变化
 
+#### Scenario: 兼容 Runtime adoption 后恢复已派发 Work
+
+- **WHEN** composition compatibility gate 已接受精确直接前驱，Run 采用新 composition，但当前 Work 的 Action Intent 与 Work Packet 是采用前冻结的同一旧 snapshot
+- **THEN** Runtime 必须按 Intent 与 Packet 的冻结身份恢复并验证 Outcome，不得因其 snapshot digest 不等于 Run 当前 composition digest 而重派发或拒绝
+
 ### Requirement: Repository revision Evidence 必须由 Runtime 观察
 
 Repoctopus MUST 从 `build-package-completion` 与 `build-check-candidate` Host result 中排除 repository digest authority。Runtime MUST 通过项目 Git adapter 观察 branch/HEAD、验证 ancestry 并计算 checkpoint digest；Host 只能提交实现、验收、测试、TDD、delegation 与 review Evidence。

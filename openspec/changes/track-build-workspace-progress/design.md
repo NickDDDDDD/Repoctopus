@@ -85,6 +85,8 @@ Verify Evidence 对当前仓库 fingerprint 与 Build Check checkpoint 建立关
 
 本变更不建立通配迁移。受保护 plugin 只声明精确直接前驱实现，并且仅当旧状态仍能安全进入 Configure 重新建立 checkpoint 时允许 adoption。已经处于错误 head-revalidation checkpoint 的验收 Run 可以通过现有 Configure 重新观察当前 HEAD；无法证明状态的 Run 返回 `migration_required`，不得补写 Store。
 
+兼容 adoption 更新 Run 当前 composition 后，已经派发的 Action Intent 与 Work Packet 仍以派发时冻结的 composition snapshot 互相校验。Runtime 不能再要求 Intent 的旧 snapshot digest 等于 Run 已采用的新 composition digest；是否允许 adoption 已由 composition compatibility gate 决定。否则合法升级会在 Outcome 已接受后把同一 packet 错判为内容漂移，破坏 checkpoint 恢复。
+
 ### 7. 遥测
 
 新增或扩展有界事件属性：

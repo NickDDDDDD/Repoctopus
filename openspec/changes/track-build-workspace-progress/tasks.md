@@ -38,6 +38,10 @@
       **Acceptance:** 文档不暗示 Runtime 创建分支或 commit，也不把正常 HEAD 变化描述为 Binding drift。
       **Requirements:** managed-work-execution / Build workspace 进度必须与 Execution Binding 身份分离
 
+- [x] 3.4 保持兼容 adoption 前已派发 Action Intent/Work Packet 的冻结身份，不用 Run 的新 composition digest 反向否定旧 packet。
+      **Acceptance:** 精确前驱 adoption 后，已接受 Outcome 可由同一 packet 继续验证；Intent 内部 composition 或 packet context 被篡改仍拒绝。
+      **Requirements:** managed-work-execution / Runtime 必须按 Package write scope 推进 workspace revision
+
 ## 4. 验证与继续真实验收
 
 - [ ] 4.1 运行领域、Service、CLI、production composition、telemetry 和 architecture 定向测试。
