@@ -2,6 +2,7 @@
 change: recover-protected-branch-rebinding
 design-doc: openspec/changes/recover-protected-branch-rebinding/design.md
 base-ref: d29da01e015a6a2d59768269a96615509aeb879d
+archived-with: 2026-11-04-recover-protected-branch-rebinding
 ---
 
 # Recover protected branch rebinding implementation plan

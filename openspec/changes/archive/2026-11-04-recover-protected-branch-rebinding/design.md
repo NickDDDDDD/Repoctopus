@@ -2,7 +2,8 @@
 comet_change: recover-protected-branch-rebinding
 role: technical-design
 canonical_spec: openspec
-status: draft
+archived-with: 2026-11-04-recover-protected-branch-rebinding
+status: final
 ---
 
 # Design

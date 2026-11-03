@@ -1,0 +1,2675 @@
+# comet-execution: managed-run
+change_id: 814a95a7-a39b-4f59-923f-bd41d3501e08
+workflow: full
+language: zh-CN
+phase: archive
+context_compression: off
+build_mode: autonomous
+build_pause: null
+subagent_dispatch: null
+tdd_mode: tdd
+review_mode: thorough
+isolation: current
+verify_mode: null
+auto_transition: true
+base_ref: d29da01e015a6a2d59768269a96615509aeb879d
+design_doc: openspec/changes/archive/2026-11-04-recover-protected-branch-rebinding/design.md
+plan: docs/superpowers/plans/2026-11-04-recover-protected-branch-rebinding.md
+verify_result: pass
+verify_failures: 0
+verification_report: docs/superpowers/reports/recover-protected-branch-rebinding.md
+branch_status: pending
+created_at: 2026-11-03
+verified_at: 2026-11-03
+archive_confirmation: confirmed
+archived: true
+bound_branch: codex/recover-protected-branch-rebinding
+direct_override: false
+handoff_context: openspec/changes/archive/2026-11-04-recover-protected-branch-rebinding/.comet/handoff/design-context.json
+handoff_hash: 1f22d59118a3244a6c5cc702ba8d7d7103471c4224ffebdb29882c1f6aade5e6
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v2
+  hash: 607a87fc2b1cf3ad166785ad4f67a2a041fbc351810ba0f899940cd2c7542b42
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: recover-protected-branch-rebinding
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: 70deb11717003b1ce2d61e29813a4bdb0ad2813d87d7f06cde69296d058b2dcb
+    input:
+      change: recover-protected-branch-rebinding
+      changeDir: openspec/changes/recover-protected-branch-rebinding
+      workspaceBaseline:
+        ref: e3121327-2ceb-41cd-95b5-a4a72a59b61d
+    state:
+      archiveConfirmation: confirmed
+      archived: true
+      autoTransition: true
+      baseRef: d29da01e015a6a2d59768269a96615509aeb879d
+      boundBranch: codex/recover-protected-branch-rebinding
+      branchStatus: pending
+      buildMode: autonomous
+      buildPause: null
+      checkEpoch: 6
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-03
+      designDoc: openspec/changes/archive/2026-11-04-recover-protected-branch-rebinding/design.md
+      directOverride: false
+      handoffContext: openspec/changes/archive/2026-11-04-recover-protected-branch-rebinding/.comet/handoff/design-context.json
+      handoffHash: 1f22d59118a3244a6c5cc702ba8d7d7103471c4224ffebdb29882c1f6aade5e6
+      isolation: current
+      language: zh-CN
+      phase: archive
+      plan: docs/superpowers/plans/2026-11-04-recover-protected-branch-rebinding.md
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: tdd
+      verificationReport: docs/superpowers/reports/recover-protected-branch-rebinding.md
+      verifiedAt: 2026-11-03
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pass
+      workflow: full
+    status: running
+    sequence: 24
+    actions:
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-85fdb69c5e46098cc326efb65cc9c1491676e23dad6765ed36ea966ba2ada168
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-protected-branch-rebinding:1
+        input:
+          input:
+            change: recover-protected-branch-rebinding
+            changeDir: openspec/changes/recover-protected-branch-rebinding
+            workspaceBaseline:
+              ref: e3121327-2ceb-41cd-95b5-a4a72a59b61d
+          outputs: {}
+        inputHash: f7a9107802e22f8f022f4fbb50c05e3a029c61c243f8a6956c8ce7c2be599b3a
+        outcome:
+          actionId: recover-protected-branch-rebinding:1
+          attempt: 1
+          claimToken: portable-85fdb69c5e46098cc326efb65cc9c1491676e23dad6765ed36ea966ba2ada168
+          inputHash: f7a9107802e22f8f022f4fbb50c05e3a029c61c243f8a6956c8ce7c2be599b3a
+          outcomeId: 5088be59-d421-44a4-9e5f-3da18391efa4
+          output:
+            event: open-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 787535134767b1ce2b80ae27bd70e8999a09e934399557bd5436694c2399711c
+            outcomeId: 5088be59-d421-44a4-9e5f-3da18391efa4
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-protected-branch-rebinding
+        status: succeeded
+        stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-bbb7b3d562bb92e1d863befad40e1c75a5dd5295b574dde6728127cfa7498799
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-protected-branch-rebinding:4
+        input:
+          input:
+            change: recover-protected-branch-rebinding
+            changeDir: openspec/changes/recover-protected-branch-rebinding
+            workspaceBaseline:
+              ref: e3121327-2ceb-41cd-95b5-a4a72a59b61d
+          outputs: {}
+        inputHash: 26465c84ec5095ddea6273e32198465f0c49ebb7ce70cbb8e436bb78d01e5ffa
+        outcome:
+          actionId: recover-protected-branch-rebinding:4
+          attempt: 1
+          claimToken: portable-bbb7b3d562bb92e1d863befad40e1c75a5dd5295b574dde6728127cfa7498799
+          inputHash: 26465c84ec5095ddea6273e32198465f0c49ebb7ce70cbb8e436bb78d01e5ffa
+          outcomeId: recover-protected-branch-rebinding:4:1:executor-result
+          output:
+            contentHash: 97a7261890959623b319de284a8ca5b20cd1662bb8a4ef951c56661ee51b29d8
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 93b2640bca1fecc91b167c8071272c2983dcd79109d43df033a068dae637c1ba
+            outcomeId: recover-protected-branch-rebinding:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-protected-branch-rebinding
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-79352cec75a161b1d8367d43d35a74e44601c372ceec7ea3c7d2234ae04173f4
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-protected-branch-rebinding:5
+        input:
+          input:
+            change: recover-protected-branch-rebinding
+            changeDir: openspec/changes/recover-protected-branch-rebinding
+            workspaceBaseline:
+              ref: e3121327-2ceb-41cd-95b5-a4a72a59b61d
+          outputs: {}
+        inputHash: 4452d7ce912813fbdac411226cfd8eb4f412bcc2ab207b11b45e6fed5caebb26
+        outcome:
+          actionId: recover-protected-branch-rebinding:5
+          attempt: 1
+          claimToken: portable-79352cec75a161b1d8367d43d35a74e44601c372ceec7ea3c7d2234ae04173f4
+          inputHash: 4452d7ce912813fbdac411226cfd8eb4f412bcc2ab207b11b45e6fed5caebb26
+          outcomeId: c70f173a-50d5-49f5-9904-0283849df0a1
+          output:
+            handoffContext: openspec/changes/recover-protected-branch-rebinding/.comet/handoff/design-context.json
+            handoffHash: 1f22d59118a3244a6c5cc702ba8d7d7103471c4224ffebdb29882c1f6aade5e6
+            proposal: 候选 A（推荐）：建立 typed authorized-protected-branch-rebind evidence，从
+              rejected build-plan-candidate、精确 write scopes、旧 Execution
+              Binding、protected policy 与前后 snapshots 证明合法修正；next 与 resume 共用
+              classifier，并在原子转换中清除仅与该授权匹配的 reconciliation poison、提升 epoch、精确失效旧
+              Plan、派发唯一 build.configure。候选 B：通用 reconciliation 忽略 branch
+              drift，风险是未知 checkout 漂移可绕过写入安全，拒绝。候选 C：仅文档要求 Host 永远调用
+              next，无法覆盖进程重启和断点恢复，拒绝。主要风险是授权范围过宽或并发重复恢复；通过 exact
+              write-set、branch-only diff、typed digest、fail-closed 负例和幂等
+              checkpoint 测试控制。Spec Patch 已在 managed-work-execution 中授权：同一 Run
+              恢复，Runner 保留 Git 副作用责任，path/remote/topology/无关 branch 等变化继续
+              reconciliation。
+            requirementsEvidence:
+              contentHash: 22753ccd0c093bf6c23b3a9e238401a5568d867cf819f820e36a90574fad2856
+              ref: openspec/changes/recover-protected-branch-rebinding
+            sourceEvidence:
+              contentHash: 97a7261890959623b319de284a8ca5b20cd1662bb8a4ef951c56661ee51b29d8
+              ref: openspec/changes/recover-protected-branch-rebinding
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 9f2444b5c523524795786f0e752c44c702048f3e2fa40c9a74ce2c020ce601e4
+            outcomeId: c70f173a-50d5-49f5-9904-0283849df0a1
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-protected-branch-rebinding
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-0bdaae9f87c7225bfab2296c1bf6a84283d3ba097227dec61ff9a61e7484c437
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-protected-branch-rebinding:7
+        input:
+          input:
+            change: recover-protected-branch-rebinding
+            changeDir: openspec/changes/recover-protected-branch-rebinding
+            workspaceBaseline:
+              ref: e3121327-2ceb-41cd-95b5-a4a72a59b61d
+          outputs: {}
+        inputHash: b054cbd3883930380dffa341da284facf22fe8c7b8f087bb71d0e3c64de11922
+        outcome:
+          actionId: recover-protected-branch-rebinding:7
+          attempt: 1
+          claimToken: portable-0bdaae9f87c7225bfab2296c1bf6a84283d3ba097227dec61ff9a61e7484c437
+          inputHash: b054cbd3883930380dffa341da284facf22fe8c7b8f087bb71d0e3c64de11922
+          outcomeId: 346f8ccb-609c-4e3e-ac0e-2d4c2647f5e5
+          output:
+            designDoc: openspec/changes/recover-protected-branch-rebinding/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: f9a50b391e15157796b754d8ff06dd9a80d6c699a0c6dced0772bee8bdc03ad5
+            outcomeId: 346f8ccb-609c-4e3e-ac0e-2d4c2647f5e5
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-protected-branch-rebinding
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-fa322f809a82fe1d719e26197590fcbcc49e8259abe39b60f2a31710c1bdfde5
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-protected-branch-rebinding:9
+        input:
+          input:
+            change: recover-protected-branch-rebinding
+            changeDir: openspec/changes/recover-protected-branch-rebinding
+            workspaceBaseline:
+              ref: e3121327-2ceb-41cd-95b5-a4a72a59b61d
+          outputs: {}
+        inputHash: 04fe8029520aec8e51ef18601fe21095bebc7d65f4e8cbd570eded1652470327
+        outcome:
+          actionId: recover-protected-branch-rebinding:9
+          attempt: 1
+          claimToken: portable-fa322f809a82fe1d719e26197590fcbcc49e8259abe39b60f2a31710c1bdfde5
+          inputHash: 04fe8029520aec8e51ef18601fe21095bebc7d65f4e8cbd570eded1652470327
+          outcomeId: d7c87b61-b6d4-4b3b-9ebd-665727edf4fd
+          output:
+            boundBranch: codex/recover-protected-branch-rebinding
+            buildMode: autonomous
+            directOverride: false
+            isolation: current
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: e46a9b5bfc6db84559dd677b740c84d4a100522df106fba9fee4bbb1a6bef1e6
+            outcomeId: d7c87b61-b6d4-4b3b-9ebd-665727edf4fd
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-protected-branch-rebinding
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-2d924bcf9c8cd622b51541131c2c8e89746b207aecf0d998613b75d46545bb4f
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-protected-branch-rebinding:11
+        input:
+          input:
+            change: recover-protected-branch-rebinding
+            changeDir: openspec/changes/recover-protected-branch-rebinding
+            workspaceBaseline:
+              ref: e3121327-2ceb-41cd-95b5-a4a72a59b61d
+          outputs: {}
+        inputHash: b060e093ab19eef1b04b0a7aeca0fbc5881f61cf609ce1b51b44f4cad68ec133
+        outcome:
+          actionId: recover-protected-branch-rebinding:11
+          attempt: 1
+          claimToken: portable-2d924bcf9c8cd622b51541131c2c8e89746b207aecf0d998613b75d46545bb4f
+          inputHash: b060e093ab19eef1b04b0a7aeca0fbc5881f61cf609ce1b51b44f4cad68ec133
+          outcomeId: b9960f4b-87b6-4892-b54d-d1e4d3d93157
+          output:
+            designEvidence:
+              contentHash: ad04e5dbf5f21d30707bf7a26158b63146e5617806e31cc45362f7643bac78b1
+              ref: openspec/changes/recover-protected-branch-rebinding/design.md
+            plan: docs/superpowers/plans/2026-11-04-recover-protected-branch-rebinding.md
+            planEvidence:
+              contentHash: 60eb647ae09bea12729c83acd1e0a6ab21fb99e28d6fa1f63314342f72c2bc39
+              ref: docs/superpowers/plans/2026-11-04-recover-protected-branch-rebinding.md
+            taskRevision: 790c5152deba550ef91a8c4838b6d013b785c1a64dea8a12e3759ecb24ff3d54
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: a9b204e6fa1db3590c8778d53ac67e03a7778f7cf9f93c74e41d9b45a8e14fcd
+            outcomeId: b9960f4b-87b6-4892-b54d-d1e4d3d93157
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-protected-branch-rebinding
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: classic-builder/recover-protected-branch-rebinding:13/1
+          token: portable-327dd6e7d7c00d79b47a23657f2a22f148e8ff692563fba1d33e77b8c3f8b861
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-protected-branch-rebinding:13
+        input:
+          input:
+            change: recover-protected-branch-rebinding
+            changeDir: openspec/changes/recover-protected-branch-rebinding
+            workspaceBaseline:
+              ref: e3121327-2ceb-41cd-95b5-a4a72a59b61d
+          outputs: {}
+        inputHash: 991e3780deeb0cd7b1af4ca78285219156597d2ffeac009275258c24fc496cdd
+        outcome:
+          actionId: recover-protected-branch-rebinding:13
+          attempt: 1
+          claimToken: portable-327dd6e7d7c00d79b47a23657f2a22f148e8ff692563fba1d33e77b8c3f8b861
+          inputHash: 991e3780deeb0cd7b1af4ca78285219156597d2ffeac009275258c24fc496cdd
+          outcomeId: d4148434-5433-43a3-a5fb-683cfc7f80d2
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 7cf4675186780e5dcb5def4e992cb73da46d14990c4a2d1f336597dcdc13839b
+            outcomeId: d4148434-5433-43a3-a5fb-683cfc7f80d2
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-protected-branch-rebinding
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 2
+        claim:
+          executorId: comet-classic-check
+          token: portable-5bc2ceae78747e3cc157c2873036c9601a45f9d666db8f9b4b4da168c05ac683
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-protected-branch-rebinding:14
+        input:
+          input:
+            change: recover-protected-branch-rebinding
+            changeDir: openspec/changes/recover-protected-branch-rebinding
+            workspaceBaseline:
+              ref: e3121327-2ceb-41cd-95b5-a4a72a59b61d
+          outputs: {}
+        inputHash: ff31acdbf07e71118c26d71874bc1bd081b2b12eb8965d49ef462c793b18f645
+        outcome:
+          actionId: recover-protected-branch-rebinding:14
+          attempt: 2
+          claimToken: portable-5bc2ceae78747e3cc157c2873036c9601a45f9d666db8f9b4b4da168c05ac683
+          inputHash: ff31acdbf07e71118c26d71874bc1bd081b2b12eb8965d49ef462c793b18f645
+          outcomeId: 555ace79-39f8-4b84-aa8e-f76667c676c0
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: eb992b5bba91f7312a6daf4a1cc82814037dd8af527bd727981f316599e27af8
+            cwd: .
+            environment: 2c5aad89afdd858a84163186dc48356ff6feebdd353ec692c227039d309c63f5
+            exitCode: 0
+            inputAfter: 7dcb26357cec5ebb2031d03d0bb2293dc43852429b8436760e42fc354fc3853e
+            inputBefore: 7dcb26357cec5ebb2031d03d0bb2293dc43852429b8436760e42fc354fc3853e
+            manifestHash: 863384be2b7d0c95f4c3526ab681692a860fb9715a6c584b7f5917349f76836e
+            manifestRef: .comet/runtime/classic-sdk-checks/387fc45d1c470dcb5129a64979fce68fec9ad655d212b8617b8402807e2dfc5d/f49cd791-3a39-4f2a-9c95-32abb9cc6faa.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/387fc45d1c470dcb5129a64979fce68fec9ad655d212b8617b8402807e2dfc5d/02a536ab-1681-447c-be9b-54fa540e5889.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 1200000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: e621922ec2b27afc51b0c8cce4238e005f75de0d82767b1639a40d766dac571b
+            outcomeId: 555ace79-39f8-4b84-aa8e-f76667c676c0
+        reconciliations:
+          - attempt: 1
+            evidence:
+              summary: The original comet check run was rejected while constructing the
+                Classic input snapshot because node_modules is a junction. The
+                command returned CLASSIC_COMMAND_FAILED before npm.cmd was
+                spawned, emitted no child verification output, created no check
+                receipt or manifest, and recovery reports the claim-bound record
+                missing. Therefore the claimed attempt did not execute the check
+                command.
+            resolution: not-executed
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-protected-branch-rebinding
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-3f25bab4d9ed3e77b6de61f2e175c2c42d409a8f925240602f965800cd700137
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-protected-branch-rebinding:16
+        input:
+          input:
+            change: recover-protected-branch-rebinding
+            changeDir: openspec/changes/recover-protected-branch-rebinding
+            workspaceBaseline:
+              ref: e3121327-2ceb-41cd-95b5-a4a72a59b61d
+          outputs: {}
+        inputHash: abfb52b44bc6cd8c0317d9115131125eab2ffa8fd8a266bfaabf9323ef432567
+        outcome:
+          actionId: recover-protected-branch-rebinding:16
+          attempt: 1
+          claimToken: portable-3f25bab4d9ed3e77b6de61f2e175c2c42d409a8f925240602f965800cd700137
+          inputHash: abfb52b44bc6cd8c0317d9115131125eab2ffa8fd8a266bfaabf9323ef432567
+          outcomeId: 654942b5-56f6-48de-8cfa-d00668755c5c
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/recover-protected-branch-rebinding.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 7d72a748a953567d5e4a0a00d8e7057c8a8cb6397626fb92de146c36da023cbc
+            outcomeId: 654942b5-56f6-48de-8cfa-d00668755c5c
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-protected-branch-rebinding
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-494d3e393f9dc32edc54f0759cadb68078d3d9b32f0738737709c8d0b981ea46
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-protected-branch-rebinding:18
+        input:
+          input:
+            change: recover-protected-branch-rebinding
+            changeDir: openspec/changes/recover-protected-branch-rebinding
+            workspaceBaseline:
+              ref: e3121327-2ceb-41cd-95b5-a4a72a59b61d
+          outputs: {}
+        inputHash: 9f425e917a070c747e5595048ca69903593fe2ea3b695bccf4287230f1c95737
+        outcome:
+          actionId: recover-protected-branch-rebinding:18
+          attempt: 1
+          claimToken: portable-494d3e393f9dc32edc54f0759cadb68078d3d9b32f0738737709c8d0b981ea46
+          inputHash: 9f425e917a070c747e5595048ca69903593fe2ea3b695bccf4287230f1c95737
+          outcomeId: da9389c4-3b2d-48f7-82d2-ff5aa5278bd1
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 3
+            contentHash: 02383102622fe744379b3289389a0d6610396fecfc3a7ac1e0dc888d6e3699b9
+            cwd: .
+            deliveryInputs: {}
+            environment: 2c5aad89afdd858a84163186dc48356ff6feebdd353ec692c227039d309c63f5
+            exitCode: 0
+            inputAfter: 7dcb26357cec5ebb2031d03d0bb2293dc43852429b8436760e42fc354fc3853e
+            inputBefore: 7dcb26357cec5ebb2031d03d0bb2293dc43852429b8436760e42fc354fc3853e
+            manifestHash: 863384be2b7d0c95f4c3526ab681692a860fb9715a6c584b7f5917349f76836e
+            manifestRef: .comet/runtime/classic-sdk-checks/387fc45d1c470dcb5129a64979fce68fec9ad655d212b8617b8402807e2dfc5d/ad890198-c08f-4be7-a980-b717622bb3d0.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/387fc45d1c470dcb5129a64979fce68fec9ad655d212b8617b8402807e2dfc5d/174548e6-3c73-4431-a03a-31011c6d9c06.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: b6d3bf962681ca773a95a2d0b33f11a816f15886379877b93e3db1ea325b0a2e
+            outcomeId: da9389c4-3b2d-48f7-82d2-ff5aa5278bd1
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-protected-branch-rebinding
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-eec7773b2c7cdb7d3780fdfac3fa37a50893014040bc914cd41ca6d19c6e2698
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-protected-branch-rebinding:20
+        input:
+          input:
+            change: recover-protected-branch-rebinding
+            changeDir: openspec/changes/recover-protected-branch-rebinding
+            workspaceBaseline:
+              ref: e3121327-2ceb-41cd-95b5-a4a72a59b61d
+          outputs: {}
+        inputHash: f1a66e219aabece8f4e0ab14c69b9a2e95214c738c2cbafbaf92dabe6a96696e
+        outcome:
+          actionId: recover-protected-branch-rebinding:20
+          attempt: 1
+          claimToken: portable-eec7773b2c7cdb7d3780fdfac3fa37a50893014040bc914cd41ca6d19c6e2698
+          inputHash: f1a66e219aabece8f4e0ab14c69b9a2e95214c738c2cbafbaf92dabe6a96696e
+          outcomeId: 46ccdfbe-064f-4bb8-80ff-8f3356bd10fe
+          output:
+            prBaseBranch: main
+            remote: origin
+            summary: "Archive the verified protected-branch rebinding recovery: preserve
+              same-Run authorized branch-only recovery, fail closed for
+              unrelated drift, exact direct-predecessor workflow-runs
+              compatibility, low-cardinality telemetry, production
+              multi-repository acceptance evidence, and the documented
+              independent Desktop single-instance test-isolation follow-up.
+              Deliver the verified branch through origin to main after OpenSpec
+              archive and final delivery checks."
+            targetBranch: codex/recover-protected-branch-rebinding
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 522838f4ae3cf1ad6ccbc390904b8adce6c9da79d1fd350be3c6caf2f42c80e4
+            outcomeId: 46ccdfbe-064f-4bb8-80ff-8f3356bd10fe
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-protected-branch-rebinding
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive-preflight
+          token: portable-50ca6665af63e58a14c6fd2e7f14dba07a49225a62d29e8ff2cc4653652e7f86
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-protected-branch-rebinding:22
+        input:
+          input:
+            change: recover-protected-branch-rebinding
+            changeDir: openspec/changes/recover-protected-branch-rebinding
+            workspaceBaseline:
+              ref: e3121327-2ceb-41cd-95b5-a4a72a59b61d
+          outputs: {}
+        inputHash: d555a4b92c725b1691ed6358869895d79c729bbc3651f58489eb1157fc7c3b9c
+        outcome:
+          actionId: recover-protected-branch-rebinding:22
+          attempt: 1
+          claimToken: portable-50ca6665af63e58a14c6fd2e7f14dba07a49225a62d29e8ff2cc4653652e7f86
+          inputHash: d555a4b92c725b1691ed6358869895d79c729bbc3651f58489eb1157fc7c3b9c
+          outcomeId: 72085f51-4ce1-4770-aaa2-036abb5283be
+          output:
+            baseCommit: 34a913216ba9532d0e9c1a821570d9ba69408133
+            deliveryAction: pr
+            prBaseBranch: main
+            remote: origin
+            remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+            targetBranch: codex/recover-protected-branch-rebinding
+            verifiedBranch: codex/recover-protected-branch-rebinding
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: a4b02a388f0bfdc9dab84d59694f0ec4103a03b9aa53e639c2fbd8d0631cf4a4
+            outcomeId: 72085f51-4ce1-4770-aaa2-036abb5283be
+        reconciliations: []
+        ref: classic-archive-preflight
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-protected-branch-rebinding
+        status: succeeded
+        stepId: full.archive.preflight
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive
+          token: portable-2d7606d53abe0db925667ff7df7f633a2ec25ad087a54dece52f73c55ee4913a
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-protected-branch-rebinding:23
+        input:
+          input:
+            change: recover-protected-branch-rebinding
+            changeDir: openspec/changes/recover-protected-branch-rebinding
+            workspaceBaseline:
+              ref: e3121327-2ceb-41cd-95b5-a4a72a59b61d
+          outputs: {}
+        inputHash: 7de9b7abd170684b233497698c55745069d607322b2af7d144beb754d0fa0650
+        outcome:
+          actionId: recover-protected-branch-rebinding:23
+          artifacts:
+            - sha256: 453dba493b65d64298e91d26c71d5e1e603c4253a04e4ce5084684cb0dceb0f8
+              uri: openspec/changes/archive/2026-11-04-recover-protected-branch-rebinding/.comet/archive-manifest.json
+          attempt: 1
+          claimToken: portable-2d7606d53abe0db925667ff7df7f633a2ec25ad087a54dece52f73c55ee4913a
+          inputHash: 7de9b7abd170684b233497698c55745069d607322b2af7d144beb754d0fa0650
+          outcomeId: a9a24c7d-669d-4bfa-a276-8b6db46d23c3
+          output:
+            archiveDirectory: openspec/changes/archive/2026-11-04-recover-protected-branch-rebinding
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: dc54d6fe16886f78396556ab41ad4de2606e1b31e92be64bcf2ec6b538512caf
+            outcomeId: a9a24c7d-669d-4bfa-a276-8b6db46d23c3
+        reconciliations: []
+        ref: classic-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-protected-branch-rebinding
+        status: succeeded
+        stepId: full.archive.execute
+        type: call_tool
+      - attempt: 1
+        id: recover-protected-branch-rebinding:24
+        input:
+          input:
+            change: recover-protected-branch-rebinding
+            changeDir: openspec/changes/recover-protected-branch-rebinding
+            workspaceBaseline:
+              ref: e3121327-2ceb-41cd-95b5-a4a72a59b61d
+          outputs: {}
+        inputHash: 4f1d3ebf49737149c5236c7648eab8b17a7b4fe98419e5b8cb95d08cb20f5ce5
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-protected-branch-rebinding
+        status: pending
+        stepId: full.archive.deliver
+        type: invoke_skill
+    actionContexts:
+      recover-protected-branch-rebinding:1:
+        results: {}
+        sequence: 1
+      recover-protected-branch-rebinding:11:
+        results: {}
+        sequence: 11
+      recover-protected-branch-rebinding:13:
+        results: {}
+        sequence: 13
+      recover-protected-branch-rebinding:14:
+        results: {}
+        sequence: 14
+      recover-protected-branch-rebinding:16:
+        results: {}
+        sequence: 16
+      recover-protected-branch-rebinding:18:
+        results: {}
+        sequence: 18
+      recover-protected-branch-rebinding:20:
+        results: {}
+        sequence: 20
+      recover-protected-branch-rebinding:22:
+        results: {}
+        sequence: 22
+      recover-protected-branch-rebinding:23:
+        results: {}
+        sequence: 23
+      recover-protected-branch-rebinding:24:
+        results: {}
+        sequence: 24
+      recover-protected-branch-rebinding:4:
+        results: {}
+        sequence: 4
+      recover-protected-branch-rebinding:5:
+        results: {}
+        sequence: 5
+      recover-protected-branch-rebinding:7:
+        results: {}
+        sequence: 7
+      recover-protected-branch-rebinding:9:
+        results: {}
+        sequence: 9
+    waits:
+      - id: recover-protected-branch-rebinding:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: recover-protected-branch-rebinding
+            changeDir: openspec/changes/recover-protected-branch-rebinding
+            workspaceBaseline:
+              ref: e3121327-2ceb-41cd-95b5-a4a72a59b61d
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 97a7261890959623b319de284a8ca5b20cd1662bb8a4ef951c56661ee51b29d8
+              ref: openspec/changes/recover-protected-branch-rebinding
+        proposalHash: f7d0ed3184ac72bf73583e00c14d0a77586749150788b073cbaa40578a1c33ee
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-open-97a7261890959623b319de284a8ca5b20cd1662bb8a4ef951c56661ee51b29d8
+          choice: approved
+          proposalHash: f7d0ed3184ac72bf73583e00c14d0a77586749150788b073cbaa40578a1c33ee
+      - id: recover-protected-branch-rebinding:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: resolved
+        proposal:
+          input:
+            change: recover-protected-branch-rebinding
+            changeDir: openspec/changes/recover-protected-branch-rebinding
+            workspaceBaseline:
+              ref: e3121327-2ceb-41cd-95b5-a4a72a59b61d
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/recover-protected-branch-rebinding/.comet/handoff/design-context.json
+              handoffHash: 1f22d59118a3244a6c5cc702ba8d7d7103471c4224ffebdb29882c1f6aade5e6
+              proposal: 候选 A（推荐）：建立 typed authorized-protected-branch-rebind evidence，从
+                rejected build-plan-candidate、精确 write scopes、旧 Execution
+                Binding、protected policy 与前后 snapshots 证明合法修正；next 与 resume 共用
+                classifier，并在原子转换中清除仅与该授权匹配的 reconciliation poison、提升
+                epoch、精确失效旧 Plan、派发唯一 build.configure。候选 B：通用 reconciliation 忽略
+                branch drift，风险是未知 checkout 漂移可绕过写入安全，拒绝。候选 C：仅文档要求 Host 永远调用
+                next，无法覆盖进程重启和断点恢复，拒绝。主要风险是授权范围过宽或并发重复恢复；通过 exact
+                write-set、branch-only diff、typed digest、fail-closed 负例和幂等
+                checkpoint 测试控制。Spec Patch 已在 managed-work-execution 中授权：同一 Run
+                恢复，Runner 保留 Git 副作用责任，path/remote/topology/无关 branch 等变化继续
+                reconciliation。
+              requirementsEvidence:
+                contentHash: 22753ccd0c093bf6c23b3a9e238401a5568d867cf819f820e36a90574fad2856
+                ref: openspec/changes/recover-protected-branch-rebinding
+              sourceEvidence:
+                contentHash: 97a7261890959623b319de284a8ca5b20cd1662bb8a4ef951c56661ee51b29d8
+                ref: openspec/changes/recover-protected-branch-rebinding
+        proposalHash: 2a3b4f8e0c20f78046c42a0906c53404493f9114c617271204e19ce56f2c0cca
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-design-2a3b4f8e0c20f78046c42a0906c53404493f9114c617271204e19ce56f2c0cca-approved
+          choice: approved
+          proposalHash: 2a3b4f8e0c20f78046c42a0906c53404493f9114c617271204e19ce56f2c0cca
+      - id: recover-protected-branch-rebinding:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: recover-protected-branch-rebinding
+            changeDir: openspec/changes/recover-protected-branch-rebinding
+            workspaceBaseline:
+              ref: e3121327-2ceb-41cd-95b5-a4a72a59b61d
+          outputs:
+            full.build.configure:
+              boundBranch: codex/recover-protected-branch-rebinding
+              buildMode: autonomous
+              directOverride: false
+              isolation: current
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: be40a5f9523b0f2cbc46cbec0e6f257b6032444ef2ec79656a0a55aed1175280
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: c9670de5-8d5e-45d4-8cd7-5caddc7136f4
+          choice: approved
+          proposalHash: be40a5f9523b0f2cbc46cbec0e6f257b6032444ef2ec79656a0a55aed1175280
+      - id: recover-protected-branch-rebinding:21
+        stepId: full.archive.confirm
+        sequence: 21
+        status: resolved
+        proposal:
+          input:
+            change: recover-protected-branch-rebinding
+            changeDir: openspec/changes/recover-protected-branch-rebinding
+            workspaceBaseline:
+              ref: e3121327-2ceb-41cd-95b5-a4a72a59b61d
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: "Archive the verified protected-branch rebinding recovery: preserve
+                same-Run authorized branch-only recovery, fail closed for
+                unrelated drift, exact direct-predecessor workflow-runs
+                compatibility, low-cardinality telemetry, production
+                multi-repository acceptance evidence, and the documented
+                independent Desktop single-instance test-isolation follow-up.
+                Deliver the verified branch through origin to main after
+                OpenSpec archive and final delivery checks."
+              targetBranch: codex/recover-protected-branch-rebinding
+        proposalHash: 8d4c1878b518776b54ba2a8beeb54b7e62e437e9c9b4f27d3b38f1cdb3fa985a
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-8d4c1878b518776b54ba2a8beeb54b7e62e437e9c9b4f27d3b38f1cdb3fa985a-pr
+          choice: pr
+          proposalHash: 8d4c1878b518776b54ba2a8beeb54b7e62e437e9c9b4f27d3b38f1cdb3fa985a
+    evidenceWaits:
+      - id: recover-protected-branch-rebinding:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/recover-protected-branch-rebinding
+          contentHash: 97a7261890959623b319de284a8ca5b20cd1662bb8a4ef951c56661ee51b29d8
+          submissionId: 854a13fb-217f-49d8-9565-75a3f184a995
+      - id: recover-protected-branch-rebinding:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/recover-protected-branch-rebinding/design.md
+          contentHash: ad04e5dbf5f21d30707bf7a26158b63146e5617806e31cc45362f7643bac78b1
+          submissionId: ff2c5cad-3e39-4f16-b1f5-05f91317ce83
+      - id: recover-protected-branch-rebinding:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-04-recover-protected-branch-rebinding.md
+          contentHash: 60eb647ae09bea12729c83acd1e0a6ab21fb99e28d6fa1f63314342f72c2bc39
+          submissionId: 7aeb9eb5-9865-4a25-985d-8c76a1bb84a0
+      - id: recover-protected-branch-rebinding:15
+        stepId: full.build.check.evidence
+        sequence: 15
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/387fc45d1c470dcb5129a64979fce68fec9ad655d212b8617b8402807e2dfc5d/02a536ab-1681-447c-be9b-54fa540e5889.log
+          contentHash: eb992b5bba91f7312a6daf4a1cc82814037dd8af527bd727981f316599e27af8
+          submissionId: 2eb0ff19-85d8-4fd6-8651-60c0e0479db0
+      - id: recover-protected-branch-rebinding:17
+        stepId: full.verify.report.evidence
+        sequence: 17
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/recover-protected-branch-rebinding.md
+          contentHash: fc4f3bb60c137d11672ea6e7b1950b079881969e684a052b69694e6073a5f0fc
+          submissionId: a592fb45-9ee8-485f-a543-9ec3181d0037
+      - id: recover-protected-branch-rebinding:19
+        stepId: full.verify.check.evidence
+        sequence: 19
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/387fc45d1c470dcb5129a64979fce68fec9ad655d212b8617b8402807e2dfc5d/174548e6-3c73-4431-a03a-31011c6d9c06.log
+          contentHash: 02383102622fe744379b3289389a0d6610396fecfc3a7ac1e0dc888d6e3699b9
+          submissionId: 84f34538-8085-48a9-ad22-e0929b7b9054
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 40
+  sourceHash: 9aba8fa34b604512d932af228703c1cb9d2b10178d9196166ce0a3fdc41d3f48
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: recover-protected-branch-rebinding
+            changeDir: openspec/changes/recover-protected-branch-rebinding
+            workspaceBaseline:
+              ref: e3121327-2ceb-41cd-95b5-a4a72a59b61d
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 97a7261890959623b319de284a8ca5b20cd1662bb8a4ef951c56661ee51b29d8
+              ref: openspec/changes/recover-protected-branch-rebinding
+      - contentHash: 97a7261890959623b319de284a8ca5b20cd1662bb8a4ef951c56661ee51b29d8
+        ref: openspec/changes/recover-protected-branch-rebinding
+      - contentHash: 97a7261890959623b319de284a8ca5b20cd1662bb8a4ef951c56661ee51b29d8
+      - choice: approved
+        proposal:
+          input:
+            change: recover-protected-branch-rebinding
+            changeDir: openspec/changes/recover-protected-branch-rebinding
+            workspaceBaseline:
+              ref: e3121327-2ceb-41cd-95b5-a4a72a59b61d
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/recover-protected-branch-rebinding/.comet/handoff/design-context.json
+              handoffHash: 1f22d59118a3244a6c5cc702ba8d7d7103471c4224ffebdb29882c1f6aade5e6
+              proposal: 候选 A（推荐）：建立 typed authorized-protected-branch-rebind evidence，从
+                rejected build-plan-candidate、精确 write scopes、旧 Execution
+                Binding、protected policy 与前后 snapshots 证明合法修正；next 与 resume 共用
+                classifier，并在原子转换中清除仅与该授权匹配的 reconciliation poison、提升
+                epoch、精确失效旧 Plan、派发唯一 build.configure。候选 B：通用 reconciliation 忽略
+                branch drift，风险是未知 checkout 漂移可绕过写入安全，拒绝。候选 C：仅文档要求 Host 永远调用
+                next，无法覆盖进程重启和断点恢复，拒绝。主要风险是授权范围过宽或并发重复恢复；通过 exact
+                write-set、branch-only diff、typed digest、fail-closed 负例和幂等
+                checkpoint 测试控制。Spec Patch 已在 managed-work-execution 中授权：同一 Run
+                恢复，Runner 保留 Git 副作用责任，path/remote/topology/无关 branch 等变化继续
+                reconciliation。
+              requirementsEvidence:
+                contentHash: 22753ccd0c093bf6c23b3a9e238401a5568d867cf819f820e36a90574fad2856
+                ref: openspec/changes/recover-protected-branch-rebinding
+              sourceEvidence:
+                contentHash: 97a7261890959623b319de284a8ca5b20cd1662bb8a4ef951c56661ee51b29d8
+                ref: openspec/changes/recover-protected-branch-rebinding
+      - handoffContext: openspec/changes/recover-protected-branch-rebinding/.comet/handoff/design-context.json
+        handoffHash: 1f22d59118a3244a6c5cc702ba8d7d7103471c4224ffebdb29882c1f6aade5e6
+        proposal: 候选 A（推荐）：建立 typed authorized-protected-branch-rebind evidence，从
+          rejected build-plan-candidate、精确 write scopes、旧 Execution
+          Binding、protected policy 与前后 snapshots 证明合法修正；next 与 resume 共用
+          classifier，并在原子转换中清除仅与该授权匹配的 reconciliation poison、提升 epoch、精确失效旧
+          Plan、派发唯一 build.configure。候选 B：通用 reconciliation 忽略 branch drift，风险是未知
+          checkout 漂移可绕过写入安全，拒绝。候选 C：仅文档要求 Host 永远调用
+          next，无法覆盖进程重启和断点恢复，拒绝。主要风险是授权范围过宽或并发重复恢复；通过 exact
+          write-set、branch-only diff、typed digest、fail-closed 负例和幂等 checkpoint
+          测试控制。Spec Patch 已在 managed-work-execution 中授权：同一 Run 恢复，Runner 保留 Git
+          副作用责任，path/remote/topology/无关 branch 等变化继续 reconciliation。
+        requirementsEvidence:
+          contentHash: 22753ccd0c093bf6c23b3a9e238401a5568d867cf819f820e36a90574fad2856
+          ref: openspec/changes/recover-protected-branch-rebinding
+        sourceEvidence:
+          contentHash: 97a7261890959623b319de284a8ca5b20cd1662bb8a4ef951c56661ee51b29d8
+          ref: openspec/changes/recover-protected-branch-rebinding
+      - designDoc: openspec/changes/recover-protected-branch-rebinding/design.md
+      - contentHash: ad04e5dbf5f21d30707bf7a26158b63146e5617806e31cc45362f7643bac78b1
+        ref: openspec/changes/recover-protected-branch-rebinding/design.md
+      - boundBranch: codex/recover-protected-branch-rebinding
+        buildMode: autonomous
+        directOverride: false
+        isolation: current
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: recover-protected-branch-rebinding
+            changeDir: openspec/changes/recover-protected-branch-rebinding
+            workspaceBaseline:
+              ref: e3121327-2ceb-41cd-95b5-a4a72a59b61d
+          outputs:
+            full.build.configure:
+              boundBranch: codex/recover-protected-branch-rebinding
+              buildMode: autonomous
+              directOverride: false
+              isolation: current
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: ad04e5dbf5f21d30707bf7a26158b63146e5617806e31cc45362f7643bac78b1
+          ref: openspec/changes/recover-protected-branch-rebinding/design.md
+        plan: docs/superpowers/plans/2026-11-04-recover-protected-branch-rebinding.md
+        planEvidence:
+          contentHash: 60eb647ae09bea12729c83acd1e0a6ab21fb99e28d6fa1f63314342f72c2bc39
+          ref: docs/superpowers/plans/2026-11-04-recover-protected-branch-rebinding.md
+        taskRevision: 790c5152deba550ef91a8c4838b6d013b785c1a64dea8a12e3759ecb24ff3d54
+      - contentHash: 60eb647ae09bea12729c83acd1e0a6ab21fb99e28d6fa1f63314342f72c2bc39
+        ref: docs/superpowers/plans/2026-11-04-recover-protected-branch-rebinding.md
+      - event: build-complete
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: eb992b5bba91f7312a6daf4a1cc82814037dd8af527bd727981f316599e27af8
+        cwd: .
+        environment: 2c5aad89afdd858a84163186dc48356ff6feebdd353ec692c227039d309c63f5
+        exitCode: 0
+        inputAfter: 7dcb26357cec5ebb2031d03d0bb2293dc43852429b8436760e42fc354fc3853e
+        inputBefore: 7dcb26357cec5ebb2031d03d0bb2293dc43852429b8436760e42fc354fc3853e
+        manifestHash: 863384be2b7d0c95f4c3526ab681692a860fb9715a6c584b7f5917349f76836e
+        manifestRef: .comet/runtime/classic-sdk-checks/387fc45d1c470dcb5129a64979fce68fec9ad655d212b8617b8402807e2dfc5d/f49cd791-3a39-4f2a-9c95-32abb9cc6faa.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/387fc45d1c470dcb5129a64979fce68fec9ad655d212b8617b8402807e2dfc5d/02a536ab-1681-447c-be9b-54fa540e5889.log
+        reusable: false
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 1200000
+      - contentHash: eb992b5bba91f7312a6daf4a1cc82814037dd8af527bd727981f316599e27af8
+        ref: .comet/runtime/classic-sdk-checks/387fc45d1c470dcb5129a64979fce68fec9ad655d212b8617b8402807e2dfc5d/02a536ab-1681-447c-be9b-54fa540e5889.log
+      - contentHash: fc4f3bb60c137d11672ea6e7b1950b079881969e684a052b69694e6073a5f0fc
+        ref: docs/superpowers/reports/recover-protected-branch-rebinding.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/recover-protected-branch-rebinding.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 3
+        contentHash: 02383102622fe744379b3289389a0d6610396fecfc3a7ac1e0dc888d6e3699b9
+        cwd: .
+        deliveryInputs: {}
+        environment: 2c5aad89afdd858a84163186dc48356ff6feebdd353ec692c227039d309c63f5
+        exitCode: 0
+        inputAfter: 7dcb26357cec5ebb2031d03d0bb2293dc43852429b8436760e42fc354fc3853e
+        inputBefore: 7dcb26357cec5ebb2031d03d0bb2293dc43852429b8436760e42fc354fc3853e
+        manifestHash: 863384be2b7d0c95f4c3526ab681692a860fb9715a6c584b7f5917349f76836e
+        manifestRef: .comet/runtime/classic-sdk-checks/387fc45d1c470dcb5129a64979fce68fec9ad655d212b8617b8402807e2dfc5d/ad890198-c08f-4be7-a980-b717622bb3d0.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/387fc45d1c470dcb5129a64979fce68fec9ad655d212b8617b8402807e2dfc5d/174548e6-3c73-4431-a03a-31011c6d9c06.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 900000
+      - contentHash: 02383102622fe744379b3289389a0d6610396fecfc3a7ac1e0dc888d6e3699b9
+        ref: .comet/runtime/classic-sdk-checks/387fc45d1c470dcb5129a64979fce68fec9ad655d212b8617b8402807e2dfc5d/174548e6-3c73-4431-a03a-31011c6d9c06.log
+      - choice: pr
+        proposal:
+          input:
+            change: recover-protected-branch-rebinding
+            changeDir: openspec/changes/recover-protected-branch-rebinding
+            workspaceBaseline:
+              ref: e3121327-2ceb-41cd-95b5-a4a72a59b61d
+          outputs:
+            full.archive.prepare:
+              prBaseBranch: main
+              remote: origin
+              summary: "Archive the verified protected-branch rebinding recovery: preserve
+                same-Run authorized branch-only recovery, fail closed for
+                unrelated drift, exact direct-predecessor workflow-runs
+                compatibility, low-cardinality telemetry, production
+                multi-repository acceptance evidence, and the documented
+                independent Desktop single-instance test-isolation follow-up.
+                Deliver the verified branch through origin to main after
+                OpenSpec archive and final delivery checks."
+              targetBranch: codex/recover-protected-branch-rebinding
+      - prBaseBranch: main
+        remote: origin
+        summary: "Archive the verified protected-branch rebinding recovery: preserve
+          same-Run authorized branch-only recovery, fail closed for unrelated
+          drift, exact direct-predecessor workflow-runs compatibility,
+          low-cardinality telemetry, production multi-repository acceptance
+          evidence, and the documented independent Desktop single-instance
+          test-isolation follow-up. Deliver the verified branch through origin
+          to main after OpenSpec archive and final delivery checks."
+        targetBranch: codex/recover-protected-branch-rebinding
+      - baseCommit: 34a913216ba9532d0e9c1a821570d9ba69408133
+        deliveryAction: pr
+        prBaseBranch: main
+        remote: origin
+        remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+        targetBranch: codex/recover-protected-branch-rebinding
+        verifiedBranch: codex/recover-protected-branch-rebinding
+      - archiveDirectory: openspec/changes/archive/2026-11-04-recover-protected-branch-rebinding
+      - sequence: 9
+        value:
+          boundBranch: codex/recover-protected-branch-rebinding
+          buildMode: autonomous
+          directOverride: false
+          isolation: current
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      - sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: recover-protected-branch-rebinding
+              changeDir: openspec/changes/recover-protected-branch-rebinding
+              workspaceBaseline:
+                ref: e3121327-2ceb-41cd-95b5-a4a72a59b61d
+            outputs:
+              full.build.configure:
+                boundBranch: codex/recover-protected-branch-rebinding
+                buildMode: autonomous
+                directOverride: false
+                isolation: current
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      - sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: recover-protected-branch-rebinding
+              changeDir: openspec/changes/recover-protected-branch-rebinding
+              workspaceBaseline:
+                ref: e3121327-2ceb-41cd-95b5-a4a72a59b61d
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/recover-protected-branch-rebinding/.comet/handoff/design-context.json
+                handoffHash: 1f22d59118a3244a6c5cc702ba8d7d7103471c4224ffebdb29882c1f6aade5e6
+                proposal: 候选 A（推荐）：建立 typed authorized-protected-branch-rebind evidence，从
+                  rejected build-plan-candidate、精确 write scopes、旧 Execution
+                  Binding、protected policy 与前后 snapshots 证明合法修正；next 与 resume 共用
+                  classifier，并在原子转换中清除仅与该授权匹配的 reconciliation poison、提升
+                  epoch、精确失效旧 Plan、派发唯一 build.configure。候选 B：通用 reconciliation
+                  忽略 branch drift，风险是未知 checkout 漂移可绕过写入安全，拒绝。候选 C：仅文档要求 Host
+                  永远调用 next，无法覆盖进程重启和断点恢复，拒绝。主要风险是授权范围过宽或并发重复恢复；通过 exact
+                  write-set、branch-only diff、typed digest、fail-closed 负例和幂等
+                  checkpoint 测试控制。Spec Patch 已在 managed-work-execution 中授权：同一
+                  Run 恢复，Runner 保留 Git 副作用责任，path/remote/topology/无关 branch
+                  等变化继续 reconciliation。
+                requirementsEvidence:
+                  contentHash: 22753ccd0c093bf6c23b3a9e238401a5568d867cf819f820e36a90574fad2856
+                  ref: openspec/changes/recover-protected-branch-rebinding
+                sourceEvidence:
+                  contentHash: 97a7261890959623b319de284a8ca5b20cd1662bb8a4ef951c56661ee51b29d8
+                  ref: openspec/changes/recover-protected-branch-rebinding
+      - sequence: 7
+        value:
+          designDoc: openspec/changes/recover-protected-branch-rebinding/design.md
+      - sequence: 8
+        value:
+          contentHash: ad04e5dbf5f21d30707bf7a26158b63146e5617806e31cc45362f7643bac78b1
+          ref: openspec/changes/recover-protected-branch-rebinding/design.md
+      - sequence: 5
+        value:
+          handoffContext: openspec/changes/recover-protected-branch-rebinding/.comet/handoff/design-context.json
+          handoffHash: 1f22d59118a3244a6c5cc702ba8d7d7103471c4224ffebdb29882c1f6aade5e6
+          proposal: 候选 A（推荐）：建立 typed authorized-protected-branch-rebind evidence，从
+            rejected build-plan-candidate、精确 write scopes、旧 Execution
+            Binding、protected policy 与前后 snapshots 证明合法修正；next 与 resume 共用
+            classifier，并在原子转换中清除仅与该授权匹配的 reconciliation poison、提升 epoch、精确失效旧
+            Plan、派发唯一 build.configure。候选 B：通用 reconciliation 忽略 branch
+            drift，风险是未知 checkout 漂移可绕过写入安全，拒绝。候选 C：仅文档要求 Host 永远调用
+            next，无法覆盖进程重启和断点恢复，拒绝。主要风险是授权范围过宽或并发重复恢复；通过 exact
+            write-set、branch-only diff、typed digest、fail-closed 负例和幂等 checkpoint
+            测试控制。Spec Patch 已在 managed-work-execution 中授权：同一 Run 恢复，Runner 保留
+            Git 副作用责任，path/remote/topology/无关 branch 等变化继续 reconciliation。
+          requirementsEvidence:
+            contentHash: 22753ccd0c093bf6c23b3a9e238401a5568d867cf819f820e36a90574fad2856
+            ref: openspec/changes/recover-protected-branch-rebinding
+          sourceEvidence:
+            contentHash: 97a7261890959623b319de284a8ca5b20cd1662bb8a4ef951c56661ee51b29d8
+            ref: openspec/changes/recover-protected-branch-rebinding
+      - sequence: 1
+        value:
+          event: open-complete
+      - sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: recover-protected-branch-rebinding
+              changeDir: openspec/changes/recover-protected-branch-rebinding
+              workspaceBaseline:
+                ref: e3121327-2ceb-41cd-95b5-a4a72a59b61d
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: 97a7261890959623b319de284a8ca5b20cd1662bb8a4ef951c56661ee51b29d8
+                ref: openspec/changes/recover-protected-branch-rebinding
+      - sequence: 2
+        value:
+          contentHash: 97a7261890959623b319de284a8ca5b20cd1662bb8a4ef951c56661ee51b29d8
+          ref: openspec/changes/recover-protected-branch-rebinding
+      - sequence: 4
+        value:
+          contentHash: 97a7261890959623b319de284a8ca5b20cd1662bb8a4ef951c56661ee51b29d8
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: ad04e5dbf5f21d30707bf7a26158b63146e5617806e31cc45362f7643bac78b1
+            ref: openspec/changes/recover-protected-branch-rebinding/design.md
+          plan: docs/superpowers/plans/2026-11-04-recover-protected-branch-rebinding.md
+          planEvidence:
+            contentHash: 60eb647ae09bea12729c83acd1e0a6ab21fb99e28d6fa1f63314342f72c2bc39
+            ref: docs/superpowers/plans/2026-11-04-recover-protected-branch-rebinding.md
+          taskRevision: 790c5152deba550ef91a8c4838b6d013b785c1a64dea8a12e3759ecb24ff3d54
+      - sequence: 12
+        value:
+          contentHash: 60eb647ae09bea12729c83acd1e0a6ab21fb99e28d6fa1f63314342f72c2bc39
+          ref: docs/superpowers/plans/2026-11-04-recover-protected-branch-rebinding.md
+      - sequence: 13
+        value:
+          event: build-complete
+      - sequence: 14
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: eb992b5bba91f7312a6daf4a1cc82814037dd8af527bd727981f316599e27af8
+          cwd: .
+          environment: 2c5aad89afdd858a84163186dc48356ff6feebdd353ec692c227039d309c63f5
+          exitCode: 0
+          inputAfter: 7dcb26357cec5ebb2031d03d0bb2293dc43852429b8436760e42fc354fc3853e
+          inputBefore: 7dcb26357cec5ebb2031d03d0bb2293dc43852429b8436760e42fc354fc3853e
+          manifestHash: 863384be2b7d0c95f4c3526ab681692a860fb9715a6c584b7f5917349f76836e
+          manifestRef: .comet/runtime/classic-sdk-checks/387fc45d1c470dcb5129a64979fce68fec9ad655d212b8617b8402807e2dfc5d/f49cd791-3a39-4f2a-9c95-32abb9cc6faa.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/387fc45d1c470dcb5129a64979fce68fec9ad655d212b8617b8402807e2dfc5d/02a536ab-1681-447c-be9b-54fa540e5889.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 1200000
+      - sequence: 15
+        value:
+          contentHash: eb992b5bba91f7312a6daf4a1cc82814037dd8af527bd727981f316599e27af8
+          ref: .comet/runtime/classic-sdk-checks/387fc45d1c470dcb5129a64979fce68fec9ad655d212b8617b8402807e2dfc5d/02a536ab-1681-447c-be9b-54fa540e5889.log
+      - sequence: 17
+        value:
+          contentHash: fc4f3bb60c137d11672ea6e7b1950b079881969e684a052b69694e6073a5f0fc
+          ref: docs/superpowers/reports/recover-protected-branch-rebinding.md
+      - sequence: 16
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/recover-protected-branch-rebinding.md
+      - sequence: 18
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 3
+          contentHash: 02383102622fe744379b3289389a0d6610396fecfc3a7ac1e0dc888d6e3699b9
+          cwd: .
+          deliveryInputs: {}
+          environment: 2c5aad89afdd858a84163186dc48356ff6feebdd353ec692c227039d309c63f5
+          exitCode: 0
+          inputAfter: 7dcb26357cec5ebb2031d03d0bb2293dc43852429b8436760e42fc354fc3853e
+          inputBefore: 7dcb26357cec5ebb2031d03d0bb2293dc43852429b8436760e42fc354fc3853e
+          manifestHash: 863384be2b7d0c95f4c3526ab681692a860fb9715a6c584b7f5917349f76836e
+          manifestRef: .comet/runtime/classic-sdk-checks/387fc45d1c470dcb5129a64979fce68fec9ad655d212b8617b8402807e2dfc5d/ad890198-c08f-4be7-a980-b717622bb3d0.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/387fc45d1c470dcb5129a64979fce68fec9ad655d212b8617b8402807e2dfc5d/174548e6-3c73-4431-a03a-31011c6d9c06.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 900000
+      - sequence: 19
+        value:
+          contentHash: 02383102622fe744379b3289389a0d6610396fecfc3a7ac1e0dc888d6e3699b9
+          ref: .comet/runtime/classic-sdk-checks/387fc45d1c470dcb5129a64979fce68fec9ad655d212b8617b8402807e2dfc5d/174548e6-3c73-4431-a03a-31011c6d9c06.log
+      - sequence: 21
+        value:
+          choice: pr
+          proposal:
+            input:
+              change: recover-protected-branch-rebinding
+              changeDir: openspec/changes/recover-protected-branch-rebinding
+              workspaceBaseline:
+                ref: e3121327-2ceb-41cd-95b5-a4a72a59b61d
+            outputs:
+              full.archive.prepare:
+                prBaseBranch: main
+                remote: origin
+                summary: "Archive the verified protected-branch rebinding recovery: preserve
+                  same-Run authorized branch-only recovery, fail closed for
+                  unrelated drift, exact direct-predecessor workflow-runs
+                  compatibility, low-cardinality telemetry, production
+                  multi-repository acceptance evidence, and the documented
+                  independent Desktop single-instance test-isolation follow-up.
+                  Deliver the verified branch through origin to main after
+                  OpenSpec archive and final delivery checks."
+                targetBranch: codex/recover-protected-branch-rebinding
+      - sequence: 20
+        value:
+          prBaseBranch: main
+          remote: origin
+          summary: "Archive the verified protected-branch rebinding recovery: preserve
+            same-Run authorized branch-only recovery, fail closed for unrelated
+            drift, exact direct-predecessor workflow-runs compatibility,
+            low-cardinality telemetry, production multi-repository acceptance
+            evidence, and the documented independent Desktop single-instance
+            test-isolation follow-up. Deliver the verified branch through origin
+            to main after OpenSpec archive and final delivery checks."
+          targetBranch: codex/recover-protected-branch-rebinding
+      - sequence: 22
+        value:
+          baseCommit: 34a913216ba9532d0e9c1a821570d9ba69408133
+          deliveryAction: pr
+          prBaseBranch: main
+          remote: origin
+          remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+          targetBranch: codex/recover-protected-branch-rebinding
+          verifiedBranch: codex/recover-protected-branch-rebinding
+      - sequence: 23
+        value:
+          archiveDirectory: openspec/changes/archive/2026-11-04-recover-protected-branch-rebinding
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 27
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 10
+        left: 28
+        right: 29
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 30
+        right: 25
+        height: 4
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 32
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 34
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 35
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 25
+        height: 5
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: null
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 40
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 41
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 42
+        height: 5
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 45
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 17
+        left: 44
+        right: 46
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 47
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 48
+        height: 5
+      - key: full.archive.confirm
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 20
+        left: 50
+        right: 51
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 33
+        right: 27
+        height: 2
+      - key: full.build.check.evidence
+        value: 14
+        left: 52
+        right: 53
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 54
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 55
+        right: 48
+        height: 5
+      - key: full.archive.preflight
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 19
+        left: null
+        right: 57
+        height: 2
+      - key: full.archive.prepare
+        value: 20
+        left: 58
+        right: 51
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 53
+        right: 29
+        height: 3
+      - key: full.build.check.evidence
+        value: 14
+        left: 59
+        right: 60
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 61
+        right: 48
+        height: 5
+      - key: full.archive.confirm
+        value: 19
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 21
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 22
+        left: 63
+        right: 64
+        height: 2
+      - key: full.archive.prepare
+        value: 20
+        left: 65
+        right: 51
+        height: 3
+      - key: full.build.check.evidence
+        value: 14
+        left: 66
+        right: 60
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 67
+        right: 48
+        height: 5
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 24
+        left: 69
+        right: 70
+        height: 2
+      - key: full.design.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: 72
+        right: 73
+        height: 2
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: 75
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: 74
+        right: 76
+        height: 3
+      - key: full.design.document
+        value: 26
+        left: 71
+        right: 77
+        height: 4
+      - key: full.build.plan
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 34
+        left: 79
+        right: 80
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 69
+        right: 81
+        height: 3
+      - key: full.design.document
+        value: 26
+        left: 82
+        right: 77
+        height: 4
+      - key: full.build.execute
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 24
+        left: 69
+        right: 84
+        height: 2
+      - key: full.build.plan.evidence
+        value: 34
+        left: null
+        right: 80
+        height: 2
+      - key: full.build.plan
+        value: 33
+        left: 85
+        right: 86
+        height: 3
+      - key: full.design.document
+        value: 26
+        left: 87
+        right: 77
+        height: 4
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 37
+        left: 89
+        right: 90
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 91
+        right: 84
+        height: 3
+      - key: full.build.plan
+        value: 33
+        left: 92
+        right: 86
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 93
+        right: 77
+        height: 5
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 38
+        left: null
+        right: 96
+        height: 2
+      - key: full.open.revalidate
+        value: 32
+        left: 95
+        right: 97
+        height: 3
+      - key: full.open.confirm
+        value: 30
+        left: 74
+        right: 98
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 93
+        right: 99
+        height: 5
+      - key: full.open.revalidate
+        value: 32
+        left: 95
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 38
+        left: 102
+        right: 96
+        height: 2
+      - key: full.verify.check
+        value: 40
+        left: 101
+        right: 103
+        height: 3
+      - key: full.open.confirm
+        value: 30
+        left: 74
+        right: 104
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 93
+        right: 105
+        height: 5
+      - key: full.archive.confirm
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 43
+        left: 107
+        right: 108
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 90
+        right: 84
+        height: 2
+      - key: full.build.check.evidence
+        value: 37
+        left: 109
+        right: 110
+        height: 3
+      - key: full.build.plan
+        value: 33
+        left: 111
+        right: 86
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 112
+        right: 105
+        height: 5
+      - key: full.archive.preflight
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 42
+        left: null
+        right: 114
+        height: 2
+      - key: full.archive.prepare
+        value: 43
+        left: 115
+        right: 108
+        height: 3
+      - key: full.build.plan
+        value: 33
+        left: 110
+        right: 86
+        height: 3
+      - key: full.build.check.evidence
+        value: 37
+        left: 116
+        right: 117
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 118
+        right: 105
+        height: 5
+      - key: full.archive.confirm
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 45
+        left: 120
+        right: 121
+        height: 2
+      - key: full.archive.prepare
+        value: 43
+        left: 122
+        right: 108
+        height: 3
+      - key: full.build.check.evidence
+        value: 37
+        left: 123
+        right: 117
+        height: 4
+      - key: full.design.document
+        value: 26
+        left: 124
+        right: 105
+        height: 5
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 30
+        left: 126
+        right: 127
+        height: 2
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: 129
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: 126
+        right: 130
+        height: 3
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: 132
+        right: 133
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: 134
+        right: 130
+        height: 3
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 26
+        left: 136
+        right: 137
+        height: 2
+      - key: full.design.handoff
+        value: 28
+        left: 138
+        right: 133
+        height: 3
+      - key: full.open.confirm
+        value: 30
+        left: 139
+        right: 130
+        height: 4
+      - key: full.open.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 29
+        left: null
+        right: 141
+        height: 2
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 144
+        right: 145
+        height: 2
+      - key: full.open
+        value: 29
+        left: 143
+        right: 146
+        height: 3
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 27
+        left: 149
+        right: 150
+        height: 2
+      - key: full.design.confirm
+        value: 25
+        left: 148
+        right: 151
+        height: 3
+      - key: full.open
+        value: 29
+        left: 152
+        right: 146
+        height: 4
+      - key: full.archive.prepare
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 36
+        left: 154
+        right: 155
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 33
+        left: null
+        right: 158
+        height: 2
+      - key: full.build.execute
+        value: 35
+        left: 157
+        right: 159
+        height: 3
+      - key: full.build.configure
+        value: 23
+        left: 156
+        right: 160
+        height: 4
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 144
+        right: 162
+        height: 2
+      - key: full.verify.check.evidence
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 38
+        left: 164
+        right: 165
+        height: 2
+      - key: full.verify.check
+        value: 40
+        left: 163
+        right: 166
+        height: 3
+      - key: full.open
+        value: 29
+        left: 151
+        right: 167
+        height: 4
+      - key: full.design.confirm
+        value: 25
+        left: 161
+        right: 168
+        height: 5
+      - key: full.open
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 26
+        left: 171
+        right: 172
+        height: 2
+      - key: full.open.confirm
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 174
+        right: 175
+        height: 2
+      - key: full.open
+        value: 29
+        left: 173
+        right: 176
+        height: 3
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 24
+        left: 178
+        right: 179
+        height: 2
+      - key: full.design.document
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 27
+        left: 181
+        right: 182
+        height: 2
+      - key: full.design.confirm
+        value: 25
+        left: 180
+        right: 183
+        height: 3
+      - key: full.open
+        value: 29
+        left: 184
+        right: 176
+        height: 4
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 23
+        left: 186
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 33
+        left: 188
+        right: 189
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 187
+        right: 190
+        height: 3
+      - key: full.open
+        value: 29
+        left: 183
+        right: 176
+        height: 3
+      - key: full.design.confirm
+        value: 25
+        left: 191
+        right: 192
+        height: 4
+      - key: full.build.check
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 37
+        left: 194
+        right: 195
+        height: 2
+      - key: full.build.confirm
+        value: 24
+        left: 196
+        right: 190
+        height: 3
+      - key: full.verify.run
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: 198
+        height: 2
+      - key: full.open.evidence
+        value: 31
+        left: 174
+        right: 199
+        height: 3
+      - key: full.open
+        value: 29
+        left: 183
+        right: 200
+        height: 4
+      - key: full.design.confirm
+        value: 25
+        left: 197
+        right: 201
+        height: 5
+      - key: full.open.revalidate
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 31
+        left: 174
+        right: 203
+        height: 2
+      - key: full.verify.report.evidence
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 39
+        left: 205
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 40
+        left: 204
+        right: 206
+        height: 3
+      - key: full.open
+        value: 29
+        left: 183
+        right: 207
+        height: 4
+      - key: full.design.confirm
+        value: 25
+        left: 197
+        right: 208
+        height: 5
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 31
+      - 37
+      - 43
+      - 49
+      - 56
+      - 62
+      - 68
+      - 78
+      - 83
+      - 88
+      - 94
+      - 100
+      - 106
+      - 113
+      - 119
+      - 125
+      - 128
+      - 131
+      - 135
+      - 140
+      - 142
+      - 147
+      - 153
+      - 169
+      - 170
+      - 177
+      - 185
+      - 193
+      - 202
+      - 209
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 12
+      - path:
+          - actions
+          - "13"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actionContexts
+          - recover-protected-branch-rebinding:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - recover-protected-branch-rebinding:11
+          - results
+        map: 14
+      - path:
+          - actionContexts
+          - recover-protected-branch-rebinding:13
+          - results
+        map: 15
+      - path:
+          - actionContexts
+          - recover-protected-branch-rebinding:14
+          - results
+        map: 16
+      - path:
+          - actionContexts
+          - recover-protected-branch-rebinding:16
+          - results
+        map: 17
+      - path:
+          - actionContexts
+          - recover-protected-branch-rebinding:18
+          - results
+        map: 18
+      - path:
+          - actionContexts
+          - recover-protected-branch-rebinding:20
+          - results
+        map: 19
+      - path:
+          - actionContexts
+          - recover-protected-branch-rebinding:22
+          - results
+        map: 20
+      - path:
+          - actionContexts
+          - recover-protected-branch-rebinding:23
+          - results
+        map: 21
+      - path:
+          - actionContexts
+          - recover-protected-branch-rebinding:24
+          - results
+        map: 22
+      - path:
+          - actionContexts
+          - recover-protected-branch-rebinding:4
+          - results
+        map: 23
+      - path:
+          - actionContexts
+          - recover-protected-branch-rebinding:5
+          - results
+        map: 24
+      - path:
+          - actionContexts
+          - recover-protected-branch-rebinding:7
+          - results
+        map: 25
+      - path:
+          - actionContexts
+          - recover-protected-branch-rebinding:9
+          - results
+        map: 26
+      - path:
+          - outputs
+        map: 22
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 27
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 28
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 29
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 30
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 31
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 32
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 33
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 34
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 35
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 36
+  storageHash: 0301cdaf6f91dd29fc0947131252682b1b2f8d7ba35a95b71ba651a7bb934e6b
+check_epoch: 6
