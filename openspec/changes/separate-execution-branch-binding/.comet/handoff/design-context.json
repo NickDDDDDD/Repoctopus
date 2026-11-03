@@ -1,0 +1,15 @@
+{
+  "change": "separate-execution-branch-binding",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "909b62d072b9ec05d280e3ec9f7bd5ab323a9fdda936b4013408a9855f41bf4a",
+  "files": [
+    { "path": "openspec/changes/separate-execution-branch-binding/proposal.md", "sha256": "4df2a078e1502aa5e41b11aeac50626facce05f6e66eca2482d63699ee46202d" },
+    { "path": "openspec/changes/separate-execution-branch-binding/design.md", "sha256": "a39469510ea46406e0b4e46c21a818a145eaebe8c3fcd1bcebf7482be58782e2" },
+    { "path": "openspec/changes/separate-execution-branch-binding/tasks.md", "sha256": "46fe76abbb59b0acfca5fe74a74f21062d5b28d3863c9edce540353f18dca1a7" },
+    { "path": "openspec/changes/separate-execution-branch-binding/specs/change-lifecycle/spec.md", "sha256": "d9a68ce8c5376087c75702be952c6a9f30dc25a2ee16e41c448791df9eb066f4" }
+  ]
+}

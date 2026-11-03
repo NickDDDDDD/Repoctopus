@@ -2,7 +2,7 @@
 change_id: 5ff2c33a-77f1-4652-a95f-23b5a76e7c45
 workflow: full
 language: zh-CN
-phase: open
+phase: design
 context_compression: off
 build_mode: null
 build_pause: null
@@ -25,13 +25,13 @@ archive_confirmation: null
 archived: false
 bound_branch: codex/separate-execution-branch-binding
 direct_override: null
-handoff_context: null
-handoff_hash: null
+handoff_context: openspec/changes/separate-execution-branch-binding/.comet/handoff/design-context.json
+handoff_hash: 909b62d072b9ec05d280e3ec9f7bd5ab323a9fdda936b4013408a9855f41bf4a
 classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: 6debfbd601fb3de1d6c2c62b3bde2f24c426e86c9cf54cbb361a14b1efddc4f7
+  hash: 1af4689641ae913f89dda87e69d9615edccf6865d6b2f50a1aa9499cb751808f
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -58,17 +58,18 @@ run_checkpoint:
       branchStatus: pending
       buildMode: null
       buildPause: null
+      checkEpoch: 1
       classicMigration: null
       classicProfile: null
       contextCompression: off
       createdAt: 2026-11-03
       designDoc: null
       directOverride: null
-      handoffContext: null
-      handoffHash: null
+      handoffContext: openspec/changes/separate-execution-branch-binding/.comet/handoff/design-context.json
+      handoffHash: 909b62d072b9ec05d280e3ec9f7bd5ab323a9fdda936b4013408a9855f41bf4a
       isolation: branch
       language: zh-CN
-      phase: open
+      phase: design
       plan: null
       reviewMode: thorough
       subagentDispatch: null
@@ -79,10 +80,18 @@ run_checkpoint:
       verifyMode: null
       verifyResult: pending
       workflow: full
-    status: running
-    sequence: 1
+    status: waiting
+    sequence: 6
     actions:
       - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-25bf2464ec00cfa49ba29ae60c05672981bc649f650b03a71662cf83f2e040bf
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: separate-execution-branch-binding:1
         input:
           input:
@@ -92,25 +101,396 @@ run_checkpoint:
               ref: b81fd641-460b-4996-87ff-eb4f777a5383
           outputs: {}
         inputHash: 5426db906ef6043a2ca2e90f002576ddb14c1e820c8d66a2ae4907f88a96ee84
+        outcome:
+          actionId: separate-execution-branch-binding:1
+          attempt: 1
+          claimToken: portable-25bf2464ec00cfa49ba29ae60c05672981bc649f650b03a71662cf83f2e040bf
+          inputHash: 5426db906ef6043a2ca2e90f002576ddb14c1e820c8d66a2ae4907f88a96ee84
+          outcomeId: 26306d37-1559-4d7f-ac3e-49dfda4e83b5
+          output:
+            event: open-complete
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: 2880f3f354f05cbec838adb858edd4939668be75a26555b39a8d113acd8edd00
+            outcomeId: 26306d37-1559-4d7f-ac3e-49dfda4e83b5
         reconciliations: []
         ref: comet-open
         requiredCapabilities: []
         retry: manual
         runId: separate-execution-branch-binding
-        status: pending
+        status: succeeded
         stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-c95b14184b7aeffd4d4b6c30f162644d6589c2af54e66de459091df51d752480
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: separate-execution-branch-binding:4
+        input:
+          input:
+            change: separate-execution-branch-binding
+            changeDir: openspec/changes/separate-execution-branch-binding
+            workspaceBaseline:
+              ref: b81fd641-460b-4996-87ff-eb4f777a5383
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: separate-execution-branch-binding
+                  changeDir: openspec/changes/separate-execution-branch-binding
+                  workspaceBaseline:
+                    ref: b81fd641-460b-4996-87ff-eb4f777a5383
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+                    ref: openspec/changes/separate-execution-branch-binding
+            full.open.evidence:
+              contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+              ref: openspec/changes/separate-execution-branch-binding
+        inputHash: 26b5a163667bc806b018bf458c03789cb4e772cbce8bdc0f91fc91b886edbe09
+        outcome:
+          actionId: separate-execution-branch-binding:4
+          attempt: 1
+          claimToken: portable-c95b14184b7aeffd4d4b6c30f162644d6589c2af54e66de459091df51d752480
+          inputHash: 26b5a163667bc806b018bf458c03789cb4e772cbce8bdc0f91fc91b886edbe09
+          outcomeId: separate-execution-branch-binding:4:1:executor-result
+          output:
+            contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 4e2f8ef5d5080718525b871815564f183b991ae4f989d40a0d368621278f0524
+            outcomeId: separate-execution-branch-binding:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: separate-execution-branch-binding
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-040cc4b18366e8ab6ac844eb5083c41bc75472406977a4e5275d7591d3e0ba69
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: separate-execution-branch-binding:5
+        input:
+          input:
+            change: separate-execution-branch-binding
+            changeDir: openspec/changes/separate-execution-branch-binding
+            workspaceBaseline:
+              ref: b81fd641-460b-4996-87ff-eb4f777a5383
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: separate-execution-branch-binding
+                  changeDir: openspec/changes/separate-execution-branch-binding
+                  workspaceBaseline:
+                    ref: b81fd641-460b-4996-87ff-eb4f777a5383
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+                    ref: openspec/changes/separate-execution-branch-binding
+            full.open.evidence:
+              contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+              ref: openspec/changes/separate-execution-branch-binding
+            full.open.revalidate:
+              contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+        inputHash: 6d52249e970a9cd87dc6f1980632aae829dfaf16d95f426f9b9b23c3fce3b28f
+        outcome:
+          actionId: separate-execution-branch-binding:5
+          attempt: 1
+          claimToken: portable-040cc4b18366e8ab6ac844eb5083c41bc75472406977a4e5275d7591d3e0ba69
+          inputHash: 6d52249e970a9cd87dc6f1980632aae829dfaf16d95f426f9b9b23c3fce3b28f
+          outcomeId: 1e802636-0a46-44a9-b0f5-2e53c6cf9e42
+          output:
+            handoffContext: openspec/changes/separate-execution-branch-binding/.comet/handoff/design-context.json
+            handoffHash: 909b62d072b9ec05d280e3ec9f7bd5ab323a9fdda936b4013408a9855f41bf4a
+            proposal: 采用 isolation-only ExecutionWorkspaceIntent 与逐仓
+              ExecutionWorkspaceBinding：移除 Intent 的 delivery targetBranch
+              和两层共享分支断言；ChangeStartBinding/Delivery 保留 source-target 坐标；Plan 后仍由
+              protected branch validation 约束精确写仓；删除 branch-mismatch telemetry
+              枚举；不提供旧 schema 兼容层，并以真实多仓 Open 批准到 Design 的生产 E2E 验证。
+            requirementsEvidence:
+              contentHash: 08b1000c8c4848ce08448e2a57e39695f81a3cfec198748ecda88decea145000
+              ref: openspec/changes/separate-execution-branch-binding
+            sourceEvidence:
+              contentHash: aefe3979b4c2aac60784c4adada8f09263a4d015c3651b15a43d80541cc70f5b
+              ref: openspec/changes/separate-execution-branch-binding
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: c46df2d48c7c1e84f74f3e7b7ce3ea6dc60e1358365942a939c32213d39d2f9c
+            outcomeId: 1e802636-0a46-44a9-b0f5-2e53c6cf9e42
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: separate-execution-branch-binding
+        status: succeeded
+        stepId: full.design.handoff
         type: invoke_skill
     actionContexts:
       separate-execution-branch-binding:1:
         results: {}
         sequence: 1
-    waits: []
+      separate-execution-branch-binding:4:
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: separate-execution-branch-binding
+                  changeDir: openspec/changes/separate-execution-branch-binding
+                  workspaceBaseline:
+                    ref: b81fd641-460b-4996-87ff-eb4f777a5383
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+                    ref: openspec/changes/separate-execution-branch-binding
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+              ref: openspec/changes/separate-execution-branch-binding
+        sequence: 4
+      separate-execution-branch-binding:5:
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: separate-execution-branch-binding
+                  changeDir: openspec/changes/separate-execution-branch-binding
+                  workspaceBaseline:
+                    ref: b81fd641-460b-4996-87ff-eb4f777a5383
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+                    ref: openspec/changes/separate-execution-branch-binding
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+              ref: openspec/changes/separate-execution-branch-binding
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+        sequence: 5
+    waits:
+      - id: separate-execution-branch-binding:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: separate-execution-branch-binding
+            changeDir: openspec/changes/separate-execution-branch-binding
+            workspaceBaseline:
+              ref: b81fd641-460b-4996-87ff-eb4f777a5383
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+              ref: openspec/changes/separate-execution-branch-binding
+        proposalHash: 8d045b97997410b6e68345f27af87e233920d8ccab298d49142af65991023dd7
+        choices:
+          - approved
+          - rejected
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+              ref: openspec/changes/separate-execution-branch-binding
+        decision:
+          id: classic-open-177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+          choice: approved
+          proposalHash: 8d045b97997410b6e68345f27af87e233920d8ccab298d49142af65991023dd7
+      - id: separate-execution-branch-binding:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: pending
+        proposal:
+          input:
+            change: separate-execution-branch-binding
+            changeDir: openspec/changes/separate-execution-branch-binding
+            workspaceBaseline:
+              ref: b81fd641-460b-4996-87ff-eb4f777a5383
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/separate-execution-branch-binding/.comet/handoff/design-context.json
+              handoffHash: 909b62d072b9ec05d280e3ec9f7bd5ab323a9fdda936b4013408a9855f41bf4a
+              proposal: 采用 isolation-only ExecutionWorkspaceIntent 与逐仓
+                ExecutionWorkspaceBinding：移除 Intent 的 delivery targetBranch
+                和两层共享分支断言；ChangeStartBinding/Delivery 保留 source-target 坐标；Plan
+                后仍由 protected branch validation 约束精确写仓；删除 branch-mismatch
+                telemetry 枚举；不提供旧 schema 兼容层，并以真实多仓 Open 批准到 Design 的生产 E2E 验证。
+              requirementsEvidence:
+                contentHash: 08b1000c8c4848ce08448e2a57e39695f81a3cfec198748ecda88decea145000
+                ref: openspec/changes/separate-execution-branch-binding
+              sourceEvidence:
+                contentHash: aefe3979b4c2aac60784c4adada8f09263a4d015c3651b15a43d80541cc70f5b
+                ref: openspec/changes/separate-execution-branch-binding
+        proposalHash: 371fd7cf67cfb9f5ff2008d89101a8f04dd0d9761a174d9292b7ab3ce52499cc
+        choices:
+          - approved
+          - rejected
+        results:
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/separate-execution-branch-binding/.comet/handoff/design-context.json
+              handoffHash: 909b62d072b9ec05d280e3ec9f7bd5ab323a9fdda936b4013408a9855f41bf4a
+              proposal: 采用 isolation-only ExecutionWorkspaceIntent 与逐仓
+                ExecutionWorkspaceBinding：移除 Intent 的 delivery targetBranch
+                和两层共享分支断言；ChangeStartBinding/Delivery 保留 source-target 坐标；Plan
+                后仍由 protected branch validation 约束精确写仓；删除 branch-mismatch
+                telemetry 枚举；不提供旧 schema 兼容层，并以真实多仓 Open 批准到 Design 的生产 E2E 验证。
+              requirementsEvidence:
+                contentHash: 08b1000c8c4848ce08448e2a57e39695f81a3cfec198748ecda88decea145000
+                ref: openspec/changes/separate-execution-branch-binding
+              sourceEvidence:
+                contentHash: aefe3979b4c2aac60784c4adada8f09263a4d015c3651b15a43d80541cc70f5b
+                ref: openspec/changes/separate-execution-branch-binding
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: separate-execution-branch-binding
+                  changeDir: openspec/changes/separate-execution-branch-binding
+                  workspaceBaseline:
+                    ref: b81fd641-460b-4996-87ff-eb4f777a5383
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+                    ref: openspec/changes/separate-execution-branch-binding
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+              ref: openspec/changes/separate-execution-branch-binding
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+    evidenceWaits:
+      - id: separate-execution-branch-binding:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+        receipt:
+          ref: openspec/changes/separate-execution-branch-binding
+          contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+          submissionId: d0d401dd-31c0-4bd5-a220-afd8d3d6d63b
     ready: []
     joins: {}
-    outputs: {}
+    outputs:
+      full.design.handoff:
+        sequence: 5
+        value:
+          handoffContext: openspec/changes/separate-execution-branch-binding/.comet/handoff/design-context.json
+          handoffHash: 909b62d072b9ec05d280e3ec9f7bd5ab323a9fdda936b4013408a9855f41bf4a
+          proposal: 采用 isolation-only ExecutionWorkspaceIntent 与逐仓
+            ExecutionWorkspaceBinding：移除 Intent 的 delivery targetBranch
+            和两层共享分支断言；ChangeStartBinding/Delivery 保留 source-target 坐标；Plan 后仍由
+            protected branch validation 约束精确写仓；删除 branch-mismatch telemetry
+            枚举；不提供旧 schema 兼容层，并以真实多仓 Open 批准到 Design 的生产 E2E 验证。
+          requirementsEvidence:
+            contentHash: 08b1000c8c4848ce08448e2a57e39695f81a3cfec198748ecda88decea145000
+            ref: openspec/changes/separate-execution-branch-binding
+          sourceEvidence:
+            contentHash: aefe3979b4c2aac60784c4adada8f09263a4d015c3651b15a43d80541cc70f5b
+            ref: openspec/changes/separate-execution-branch-binding
+      full.open:
+        sequence: 1
+        value:
+          event: open-complete
+      full.open.confirm:
+        sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: separate-execution-branch-binding
+              changeDir: openspec/changes/separate-execution-branch-binding
+              workspaceBaseline:
+                ref: b81fd641-460b-4996-87ff-eb4f777a5383
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+                ref: openspec/changes/separate-execution-branch-binding
+      full.open.evidence:
+        sequence: 2
+        value:
+          contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
+          ref: openspec/changes/separate-execution-branch-binding
+      full.open.revalidate:
+        sequence: 4
+        value:
+          contentHash: 177eb4c8f6285e0ca13a7edae23808a1788a63d725fd6216dc77de315fb8f64d
     children: []
     lineage: []
-  sourceRevision: 1
-  sourceHash: 73c7b5a0b51c23cd489a9371592e42acbb8ab98b783e1004349b58917e1071ba
+  sourceRevision: 9
+  sourceHash: 37fa01ac01b90dd8e31e1896c603016c2ccceb175495471f098cb4610e95341b
+check_epoch: 1

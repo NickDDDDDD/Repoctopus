@@ -30,6 +30,8 @@
 
 Intent 是可信用户对执行形态的决定：使用注册 checkout、独立 branch checkout，还是 owned worktree。它不是 Git delivery intent，也不是逐仓 Build 授权。
 
+不把逐仓 branch map 固定进 Intent。Open 尚未取得 Build Plan 的 write scopes，业务仓此时可以合法停留在 `main`；若把它冻结为已批准语义，Plan 后为可写仓准备 source branch 将被误判成人工意图变化并反复返回 Open。逐仓 branch 是可重建、可重验的执行事实，归属于 Binding。
+
 ### 2. Binding 是逐仓执行事实权威
 
 `ExecutionWorkspaceService.bind()` 继续从冻结的 checkout 集与 project topology 读取每仓：
@@ -43,6 +45,8 @@ Intent 是可信用户对执行形态的决定：使用注册 checkout、独立 
 不同 repository 的 branch 可以不同。`branch` 模式只验证每个 checkout 能提供合法 attached branch 事实以及模式所需的 ownership 约束，不与 delivery target 或其他仓 branch 比较。`current` 仍要求注册 checkout 且不是 linked worktree；`worktree` 仍要求 ownership facts。
 
 逐仓 branch/head 继续进入 `ExecutionWorkspaceBinding` 的 semantic/local/state digest。Build Configure、恢复和重放通过 Binding 比较发现真实漂移，而不是通过 Intent 中的共享 branch 猜测。
+
+共享 branch 断言目前同时存在于 Service 预检和领域 Binding 构造器；两处必须一起删除。否则只修 Service 会让同一合法输入在领域边界再次失败。
 
 ### 3. Delivery target 保持独立
 
@@ -73,6 +77,17 @@ Open 阶段不知道最终 write scopes，不应要求所有业务仓预先创�
 ### 6. 不保留旧 Intent 兼容层
 
 项目尚未正式发布，本 Change 直接移除错误字段和相关错误分支，不保留 schema 1 双读或 `targetBranch` fallback。当前失败验收 Run 尚未写入 Intent/approval，因此业务事实没有迁移需求；若 composition 保护因代码身份变化阻止原 Run 接管，则保留其诊断证据并以同一场景启动新 Run。
+
+### 7. Error 与 telemetry contract 同步收敛
+
+删除只为共享 branch 断言存在的 `branch-mismatch` error code，并同步更新低基数 telemetry allowlist。真实 branch 在 Build Configure 后变化仍由 Binding drift/revalidation 表达；不把 branch 名、路径或 repository identity 放进 Metric label，也不增加一个语义相同的新错误别名。
+
+## Alternatives Considered
+
+- **把 `ChangeStartBinding.sourceBranch` 应用于全部仓库：拒绝。** 多仓 source branch 名不必相同，只读仓也不应被强迫创建分支；这只是把 `main` 错误替换成另一个共享字符串。
+- **在 Open Intent 固定逐仓 branch map：拒绝。** 它会把 Plan 后的正常 checkout 准备升级成人工意图修订，与现有延迟 write-scope 安全模型冲突。
+- **只跳过 Open 预检：拒绝。** 这会把错误推迟到 Configure，失去 Open 决策的原子校验，并保留领域层错误断言。
+- **选择 isolation-only Intent + per-repository Binding。** 人工语义稳定，执行事实可重建，且与 Comet 的 isolation/change/target 分离原则及 Repoctopus 多仓架构同时一致。
 
 ## Module Boundaries
 
