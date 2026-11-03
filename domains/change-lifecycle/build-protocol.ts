@@ -64,11 +64,10 @@ function deepFreeze<T>(value: T): Readonly<T> {
 }
 
 export interface ExecutionWorkspaceIntent {
-  schemaVersion: 1;
+  schemaVersion: 2;
   workspaceId: string;
   changeId: string;
   isolation: ExecutionIsolation;
-  targetBranch: string | null;
   semanticDigest: Digest;
   intentId: string;
 }
@@ -97,19 +96,13 @@ export function createExecutionWorkspaceIntent(input: {
   workspaceId: string;
   changeId: string;
   isolation: ExecutionIsolation;
-  targetBranch?: string | null;
 }): ExecutionWorkspaceIntent {
   if (!ISOLATIONS.has(input.isolation)) throw new Error('Unsupported execution isolation');
-  const targetBranch = input.targetBranch?.trim() || null;
-  if (input.isolation === 'branch' && !targetBranch) {
-    throw new Error('Branch isolation requires a target branch');
-  }
   const stable = {
-    schemaVersion: 1 as const,
+    schemaVersion: 2 as const,
     workspaceId: text(input.workspaceId, 'Workspace identity'),
     changeId: text(input.changeId, 'Change identity'),
     isolation: input.isolation,
-    targetBranch,
   };
   const semanticDigest = digest(stable);
   return deepFreeze({
@@ -150,9 +143,6 @@ export function createExecutionWorkspaceBinding(input: {
     }
     if (input.intent.isolation === 'current' && repository.worktreeId) {
       throw new Error('Current isolation cannot claim a linked worktree');
-    }
-    if (input.intent.targetBranch && repository.branch !== input.intent.targetBranch) {
-      throw new Error('Repository branch does not match the Workspace intent');
     }
   }
   const portable = {

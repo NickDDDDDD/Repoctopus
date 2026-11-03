@@ -14,8 +14,7 @@ import {
 } from '../services/execution-workspace.js';
 import { WorkflowRuns } from '../services/workflow-runs.js';
 
-const sha = (value: string): `sha256:${string}` =>
-  `sha256:${value.padEnd(64, value).slice(0, 64)}`;
+const sha = (value: string): `sha256:${string}` => `sha256:${value.padEnd(64, value).slice(0, 64)}`;
 
 function project(path = 'C:\\workspace'): ProjectSnapshot {
   return {
@@ -63,19 +62,21 @@ describe('Execution Workspace binding', () => {
       isolation: 'branch' as const,
       path: 'C:\\workspace-branch',
       fact: facts({ checkoutPath: 'C:\\workspace-branch', branch: 'feature' }),
-      targetBranch: 'feature',
     },
     {
       isolation: 'worktree' as const,
       path: 'C:\\workspace-worktree',
-      fact: facts({ checkoutPath: 'C:\\workspace-worktree', branch: 'feature', worktreeId: 'wt-1' }),
+      fact: facts({
+        checkoutPath: 'C:\\workspace-worktree',
+        branch: 'feature',
+        worktreeId: 'wt-1',
+      }),
     },
   ])('validates $isolation checkout facts without creating a checkout', async (example) => {
     const intent = createExecutionWorkspaceIntent({
       workspaceId: 'team',
       changeId: 'change',
       isolation: example.isolation,
-      ...(example.targetBranch ? { targetBranch: example.targetBranch } : {}),
     });
     let inspected = '';
     const binding = await bindExecutionWorkspace(
@@ -102,9 +103,8 @@ describe('Execution Workspace binding', () => {
       isolation: 'worktree',
     });
     await expect(
-      bindExecutionWorkspace(
-        { intent: worktree, project: project(), checkouts: [] },
-        () => Promise.resolve(facts()),
+      bindExecutionWorkspace({ intent: worktree, project: project(), checkouts: [] }, () =>
+        Promise.resolve(facts()),
       ),
     ).rejects.toThrow(/topology/u);
     await expect(
@@ -161,12 +161,6 @@ describe('Execution Workspace binding', () => {
       changeId: 'change',
       isolation: 'current',
     });
-    const branch = createExecutionWorkspaceIntent({
-      workspaceId: 'team',
-      changeId: 'change',
-      isolation: 'branch',
-      targetBranch: 'feature',
-    });
     const worktree = createExecutionWorkspaceIntent({
       workspaceId: 'team',
       changeId: 'change',
@@ -189,16 +183,6 @@ describe('Execution Workspace binding', () => {
     await expect(
       bindExecutionWorkspace(
         {
-          intent: branch,
-          project: project(),
-          checkouts: [{ repositoryId: 'workspace', checkoutPath: 'C:\\branch' }],
-        },
-        () => Promise.resolve(facts({ checkoutPath: 'C:\\branch', branch: 'other' })),
-      ),
-    ).rejects.toMatchObject({ code: 'branch-mismatch', recovery: 'binding-retry' });
-    await expect(
-      bindExecutionWorkspace(
-        {
           intent: worktree,
           project: project(),
           checkouts: [{ repositoryId: 'workspace', checkoutPath: 'C:\\worktree' }],
@@ -210,9 +194,8 @@ describe('Execution Workspace binding', () => {
       recovery: 'binding-retry',
     });
     await expect(
-      bindExecutionWorkspace(
-        { intent: worktree, project: project(), checkouts: [] },
-        () => Promise.resolve(facts()),
+      bindExecutionWorkspace({ intent: worktree, project: project(), checkouts: [] }, () =>
+        Promise.resolve(facts()),
       ),
     ).rejects.toMatchObject({ code: 'repository-topology-drift', recovery: 'halt' });
     await expect(
@@ -232,6 +215,91 @@ describe('Execution Workspace binding', () => {
           ),
       ),
     ).rejects.toMatchObject({ code: 'remote-identity-drift', recovery: 'halt' });
+  });
+
+  it('keeps delivery targets out of the portable isolation intent', () => {
+    const intent = createExecutionWorkspaceIntent({
+      workspaceId: 'team',
+      changeId: 'change',
+      isolation: 'branch',
+    });
+
+    expect(intent).toMatchObject({ schemaVersion: 2, isolation: 'branch' });
+    expect(intent).not.toHaveProperty('targetBranch');
+  });
+
+  it('binds independent branches for every repository in branch isolation', async () => {
+    const branches = new Map([
+      ['workspace', 'codex/add-compact-task-status'],
+      ['backend', 'main'],
+      ['web-design', 'codex/compact-status-badge'],
+      ['web-front', 'main'],
+      ['web-plugin', 'main'],
+    ]);
+    const repositories = [...branches].map(([id, branch], index) => ({
+      ...project().repositories[0]!,
+      id,
+      name: id,
+      path: `C:\\acceptance\\${id}`,
+      remoteIdentity: `github.com/team/${id}`,
+      branch,
+      head: String(index).repeat(40),
+    }));
+    const multiRepositoryProject: ProjectSnapshot = {
+      ...project('C:\\acceptance\\workspace'),
+      repositories,
+    };
+    const intent = createExecutionWorkspaceIntent({
+      workspaceId: 'team',
+      changeId: 'add-compact-task-status',
+      isolation: 'branch',
+    });
+    const checkouts = repositories.map((repository) => ({
+      repositoryId: repository.id,
+      checkoutPath: repository.path,
+    }));
+
+    const binding = await bindExecutionWorkspace(
+      { intent, project: multiRepositoryProject, checkouts },
+      (checkoutPath) => {
+        const repository = repositories.find((candidate) => candidate.path === checkoutPath)!;
+        return Promise.resolve(
+          facts({
+            checkoutPath,
+            branch: branches.get(repository.id)!,
+            head: repository.head,
+            remoteIdentity: repository.remoteIdentity,
+            gitDirectory: `${checkoutPath}\\.git`,
+            commonDirectory: `${checkoutPath}\\.git`,
+          }),
+        );
+      },
+    );
+
+    expect(
+      Object.fromEntries(
+        binding.repositories.map((repository) => [repository.repositoryId, repository.branch]),
+      ),
+    ).toEqual(Object.fromEntries(branches));
+  });
+
+  it('rejects a detached checkout without attached branch facts', async () => {
+    const intent = createExecutionWorkspaceIntent({
+      workspaceId: 'team',
+      changeId: 'change',
+      isolation: 'branch',
+    });
+
+    await expect(
+      bindExecutionWorkspace(
+        {
+          intent,
+          project: project(),
+          checkouts: [{ repositoryId: 'workspace', checkoutPath: 'C:\\branch' }],
+        },
+        () => Promise.resolve(facts({ checkoutPath: 'C:\\branch', branch: '' })),
+      ),
+    ).rejects.toThrow(/branch/iu);
   });
 
   it('freezes the complete multi-repository topology across restart inspection', async () => {
@@ -368,13 +436,15 @@ describe('Execution Workspace binding', () => {
     };
     const acceptChangeObservation = vi.fn();
     const decideSpecification = vi.fn();
-    const bind = vi.fn().mockRejectedValue(
-      new ExecutionWorkspaceBindingError(
-        'Current isolation cannot bind a linked worktree',
-        'current-linked-worktree',
-        'intent-revision',
-      ),
-    );
+    const bind = vi
+      .fn()
+      .mockRejectedValue(
+        new ExecutionWorkspaceBindingError(
+          'Current isolation cannot bind a linked worktree',
+          'current-linked-worktree',
+          'intent-revision',
+        ),
+      );
     const service = Object.create(WorkflowRuns.prototype) as WorkflowRuns;
     Object.defineProperties(service, {
       operations: {

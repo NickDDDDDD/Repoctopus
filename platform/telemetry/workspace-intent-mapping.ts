@@ -10,7 +10,6 @@ const BOUNDED_BINDING_ERROR_CODES = new Set([
   'remote-identity-drift',
   'current-checkout-mismatch',
   'current-linked-worktree',
-  'branch-mismatch',
   'worktree-ownership-missing',
 ]);
 const BOUNDED_ISOLATIONS = new Set(['current', 'branch', 'worktree']);
@@ -27,9 +26,7 @@ function boundedString(value: unknown, allowed: ReadonlySet<string>): string | u
 }
 
 function nonNegativeInteger(value: unknown): number | undefined {
-  return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
-    ? value
-    : undefined;
+  return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 ? value : undefined;
 }
 
 function safeExecutionId(value: unknown): string | undefined {
@@ -79,12 +76,8 @@ export function workspaceIntentTraceAttributes(event: TrajectoryEvent): Attribut
   return {
     ...(facts.fromPhase ? { 'repoctopus.change.phase.before': facts.fromPhase } : {}),
     ...(facts.toPhase ? { 'repoctopus.change.phase': facts.toPhase } : {}),
-    ...(facts.errorCode
-      ? { 'repoctopus.workspace.binding.error.code': facts.errorCode }
-      : {}),
-    ...(facts.recovery
-      ? { 'repoctopus.workspace.binding.recovery': facts.recovery }
-      : {}),
+    ...(facts.errorCode ? { 'repoctopus.workspace.binding.error.code': facts.errorCode } : {}),
+    ...(facts.recovery ? { 'repoctopus.workspace.binding.recovery': facts.recovery } : {}),
     ...(facts.previousIsolation
       ? { 'repoctopus.workspace.isolation.previous': facts.previousIsolation }
       : {}),

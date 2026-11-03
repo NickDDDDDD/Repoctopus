@@ -646,14 +646,10 @@ export class WorkflowRuns extends Service {
           );
         }
         const projectSnapshot = await this.ctx.runStore.loadProjectSnapshot(input.runId);
-        const target = state.trigger?.facts.targetBranch as { targetBranch?: unknown } | undefined;
         const intent = createExecutionWorkspaceIntent({
           workspaceId: lifecycle.identity.workspaceId,
           changeId: lifecycle.identity.changeId,
           isolation: input.isolation,
-          ...(input.isolation === 'branch' && typeof target?.targetBranch === 'string'
-            ? { targetBranch: target.targetBranch }
-            : {}),
         });
 
         // Binding is a read-only precondition. No lifecycle, approval, Skill, or Work state is
@@ -943,14 +939,10 @@ export class WorkflowRuns extends Service {
         if (!input.isolation) {
           throw new Error('Open approval requires current, branch, or worktree isolation');
         }
-        const target = state.trigger?.facts.targetBranch as { targetBranch?: unknown } | undefined;
         const intent = createExecutionWorkspaceIntent({
           workspaceId: lifecycle.identity.workspaceId,
           changeId: lifecycle.identity.changeId,
           isolation: input.isolation,
-          ...(input.isolation === 'branch' && typeof target?.targetBranch === 'string'
-            ? { targetBranch: target.targetBranch }
-            : {}),
         });
         const projectSnapshot = await this.ctx.runStore.loadProjectSnapshot(input.runId);
         await this.bindExecutionWorkspaceIntent(state, intent, projectSnapshot);

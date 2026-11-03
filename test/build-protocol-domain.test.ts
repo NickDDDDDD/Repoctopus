@@ -157,7 +157,6 @@ function approvedConfiguration(
     workspaceId: 'team-platform',
     changeId: 'managed-build',
     isolation: 'worktree',
-    targetBranch: 'codex/managed-build',
   });
   const binding = createExecutionWorkspaceBinding({
     intent,
@@ -694,7 +693,6 @@ describe('Build protocol domain', () => {
       workspaceId: 'team-platform',
       changeId: 'managed-build',
       isolation: 'worktree',
-      targetBranch: 'codex/managed-build',
     });
     const repository = {
       repositoryId: 'workspace',
