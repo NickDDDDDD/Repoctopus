@@ -4,6 +4,7 @@ import { isAbsolute } from 'node:path';
 import type { SpecificationTaskSet } from '../specification/types.js';
 import type { RuntimeIdentityKind } from '../runtime/identity.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
+import { isProtectedBranch, normalizeProtectedBranchPatterns } from '../delivery/branch-policy.js';
 
 export type Digest = `sha256:${string}`;
 export type ExecutionIsolation = 'current' | 'branch' | 'worktree';
@@ -584,6 +585,11 @@ export function createBuildPlan(input: {
 export interface BuildPlanValidation {
   accepted: boolean;
   diagnostics: readonly string[];
+  protectedBranchFindings: readonly {
+    repositoryId: string;
+    branch: string;
+  }[];
+  protectedBranchPolicyDigest: Digest;
   inputDigest: Digest;
 }
 
@@ -592,8 +598,11 @@ export function validateBuildPlan(input: {
   strategy: BuildStrategy;
   binding: ExecutionBinding;
   tasks: SpecificationTaskSet;
+  protectedBranches: readonly string[];
 }): BuildPlanValidation {
   const diagnostics: string[] = [];
+  const protectedBranches = normalizeProtectedBranchPatterns(input.protectedBranches);
+  const protectedBranchPolicyDigest = digest(protectedBranches);
   if (input.plan.strategyId !== input.strategy.strategyId) {
     diagnostics.push('Strategy identity drifted');
   }
@@ -650,14 +659,41 @@ export function validateBuildPlan(input: {
   } catch (error) {
     diagnostics.push(error instanceof Error ? error.message : String(error));
   }
+  const bindings = new Map(
+    input.binding.repositories.map((repository) => [repository.repositoryId, repository] as const),
+  );
+  const writableRepositoryIds = [
+    ...new Set(
+      input.plan.packages.flatMap((workPackage) =>
+        workPackage.writeScopes.map((scope) => scope.repositoryId),
+      ),
+    ),
+  ].sort();
+  const protectedBranchFindings: Array<{ repositoryId: string; branch: string }> = [];
+  for (const repositoryId of writableRepositoryIds) {
+    const repository = bindings.get(repositoryId);
+    if (!repository) {
+      diagnostics.push(`Writable repository has no Execution Binding: ${repositoryId}`);
+      continue;
+    }
+    if (isProtectedBranch(repository.branchRef, protectedBranches)) {
+      protectedBranchFindings.push({ repositoryId, branch: repository.branchRef });
+      diagnostics.push(
+        `Writable repository ${repositoryId} is bound to protected branch ${repository.branchRef}; prepare and publish a source branch, then reconfigure the Execution Binding`,
+      );
+    }
+  }
   return deepFreeze({
     accepted: diagnostics.length === 0,
     diagnostics,
+    protectedBranchFindings,
+    protectedBranchPolicyDigest,
     inputDigest: digest({
       plan: input.plan.digest,
       strategy: input.strategy.semanticDigest,
       binding: input.binding.stateDigest,
       tasks: input.tasks.digest,
+      protectedBranchPolicy: protectedBranchPolicyDigest,
     }),
   });
 }
@@ -1185,6 +1221,7 @@ export function createPlanEvidence(input: {
   strategy: BuildStrategy;
   binding: ExecutionBinding;
   validation: BuildPlanValidation;
+  protectedBranches: readonly string[];
   compositionCheckpointDigest: Digest;
   reportOwnerId: string;
 }): PlanEvidence {
@@ -1192,6 +1229,9 @@ export function createPlanEvidence(input: {
   if (!SHA256.test(input.compositionCheckpointDigest)) {
     throw new Error('Plan Evidence composition checkpoint digest is invalid');
   }
+  const protectedBranchPolicyDigest = digest(
+    normalizeProtectedBranchPatterns(input.protectedBranches),
+  );
   if (
     input.plan.strategyDigest !== input.strategy.semanticDigest ||
     input.plan.bindingId !== input.binding.bindingId ||
@@ -1202,6 +1242,7 @@ export function createPlanEvidence(input: {
         strategy: input.strategy.semanticDigest,
         binding: input.binding.stateDigest,
         tasks: input.plan.taskSetDigest,
+        protectedBranchPolicy: protectedBranchPolicyDigest,
       })
   ) {
     throw new Error('Build Plan Evidence input drifted');
@@ -1213,6 +1254,7 @@ export function createPlanEvidence(input: {
     bindingId: input.binding.bindingId,
     bindingStateDigest: input.binding.stateDigest,
     hostCapabilityDigest: input.binding.host.capabilityDigest,
+    protectedBranchPolicyDigest,
     taskSetDigest: input.plan.taskSetDigest,
     compositionCheckpointDigest: input.compositionCheckpointDigest,
     reportOwnerId: text(input.reportOwnerId, 'Plan terminal report owner'),

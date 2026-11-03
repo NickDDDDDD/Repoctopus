@@ -1208,7 +1208,14 @@ describe('Change lifecycle domain', () => {
       plan,
       strategy,
       binding: executionBinding,
-      validation: validateBuildPlan({ plan, strategy, binding: executionBinding, tasks }),
+      validation: validateBuildPlan({
+        plan,
+        strategy,
+        binding: executionBinding,
+        tasks,
+        protectedBranches: [],
+      }),
+      protectedBranches: [],
       compositionCheckpointDigest: digest('c'),
       reportOwnerId: 'team-platform',
     });

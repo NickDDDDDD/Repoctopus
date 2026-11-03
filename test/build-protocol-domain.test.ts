@@ -151,35 +151,181 @@ function createBuildPlan(
 }
 
 function validateBuildPlan(
-  input: Omit<Parameters<typeof validateBuildPlanV2>[0], 'strategy' | 'binding'> & {
+  input: Omit<
+    Parameters<typeof validateBuildPlanV2>[0],
+    'strategy' | 'binding' | 'protectedBranches'
+  > & {
     configuration: BuildFixture;
+    protectedBranches?: readonly string[];
   },
 ) {
-  const { configuration, ...rest } = input;
+  const { configuration, protectedBranches = [], ...rest } = input;
   return validateBuildPlanV2({
     ...rest,
     strategy: configuration.strategy,
     binding: configuration.binding,
+    protectedBranches,
   });
 }
 
 function createPlanEvidence(
   input: Omit<
     Parameters<typeof createPlanEvidenceV2>[0],
-    'strategy' | 'binding' | 'compositionCheckpointDigest' | 'reportOwnerId'
-  > & { configuration: BuildFixture },
+    'strategy' | 'binding' | 'protectedBranches' | 'compositionCheckpointDigest' | 'reportOwnerId'
+  > & { configuration: BuildFixture; protectedBranches?: readonly string[] },
 ) {
-  const { configuration, ...rest } = input;
+  const { configuration, protectedBranches = [], ...rest } = input;
   return createPlanEvidenceV2({
     ...rest,
     strategy: configuration.strategy,
     binding: configuration.binding,
     compositionCheckpointDigest: sha('c'),
     reportOwnerId: 'team-platform',
+    protectedBranches,
   });
 }
 
 describe('Build protocol domain', () => {
+  it('rejects protected branches only for repositories in the exact Plan write set', () => {
+    const intent = createExecutionWorkspaceIntent({
+      workspaceId: 'team-platform',
+      changeId: 'protected-write-set',
+      isolation: 'current',
+    });
+    const workspaceBinding = createExecutionWorkspaceBinding({
+      intent,
+      repositories: [
+        {
+          repositoryId: 'backend',
+          checkoutPath: 'C:\\work\\backend',
+          branch: 'main',
+          head: '1'.repeat(40),
+          worktreeId: null,
+          workspaceOwned: true,
+        },
+        {
+          repositoryId: 'web-design',
+          checkoutPath: 'C:\\work\\web-design',
+          branch: 'main',
+          head: '2'.repeat(40),
+          worktreeId: null,
+          workspaceOwned: true,
+        },
+      ],
+    });
+    const strategy = createBuildStrategy({
+      runId: 'run-protected-write-set',
+      revision: 1,
+      executionMode: 'autonomous',
+      tddMode: 'tdd',
+      reviewMode: 'standard',
+      isolationIntent: intent.isolation,
+    });
+    const binding = createExecutionBinding({
+      strategy,
+      revision: 1,
+      hostId: 'codex-local',
+      hostCapabilities: [
+        'build.autonomous',
+        'process.execute',
+        'repository.read',
+        'repository.write',
+        'specification.read',
+      ],
+      workspaceBinding,
+      workspaceOwnerId: intent.workspaceId,
+      localOverlayRef: 'execution-workspace:protected-write-set',
+    });
+    const tasks = parseSpecificationTasks(
+      'protected-write-set',
+      '- [ ] 1.1 Update the web design fixture.\n  **Acceptance:** The fixture exposes blocked state.\n',
+    );
+    const plan = createBuildPlanV2({
+      runId: 'run-protected-write-set',
+      revision: 1,
+      strategy,
+      binding,
+      planningDigest: tasks.digest,
+      tasks,
+      candidate: {
+        packages: [
+          {
+            packageKey: 'web-design',
+            taskIds: ['1.1'],
+            repositoryIds: ['backend', 'web-design'],
+            writeScopes: [{ repositoryId: 'web-design', paths: ['src/**'] }],
+            acceptanceRefs: tasks.tasks[0]!.acceptanceCriteria.map((item) => item.acceptanceId),
+            expectedOutcomes: ['blocked-state-is-exposed'],
+            validatorProfile: 'build.package-valid',
+            dependsOn: [],
+          },
+        ],
+      },
+    });
+
+    const rejected = validateBuildPlanV2({
+      plan,
+      strategy,
+      binding,
+      tasks,
+      protectedBranches: ['main', 'release/*'],
+    });
+    expect(rejected.accepted).toBe(false);
+    expect(rejected.protectedBranchPolicyDigest).toMatch(/^sha256:/u);
+    expect(rejected.diagnostics).toHaveLength(1);
+    expect(rejected.diagnostics[0]).toMatch(/web-design.*main.*prepare and publish/iu);
+
+    const sourceBinding = createExecutionBinding({
+      strategy,
+      revision: 2,
+      hostId: 'codex-local',
+      hostCapabilities: [
+        'build.autonomous',
+        'process.execute',
+        'repository.read',
+        'repository.write',
+        'specification.read',
+      ],
+      workspaceBinding: createExecutionWorkspaceBinding({
+        intent,
+        repositories: [
+          workspaceBinding.repositories[0]!,
+          { ...workspaceBinding.repositories[1]!, branch: 'codex/blocked-status' },
+        ],
+      }),
+      workspaceOwnerId: intent.workspaceId,
+      localOverlayRef: 'execution-workspace:protected-write-set-source',
+    });
+    const sourcePlan = createBuildPlanV2({
+      runId: plan.runId,
+      revision: 2,
+      strategy,
+      binding: sourceBinding,
+      planningDigest: tasks.digest,
+      tasks,
+      candidate: {
+        packages: plan.packages.map((workPackage) => ({
+          packageKey: workPackage.packageKey,
+          taskIds: workPackage.taskIds,
+          repositoryIds: workPackage.repositoryIds,
+          writeScopes: workPackage.writeScopes,
+          acceptanceRefs: workPackage.acceptanceRefs,
+          expectedOutcomes: workPackage.expectedOutcomes,
+          validatorProfile: workPackage.validatorProfile,
+          dependsOn: [],
+        })),
+      },
+    });
+    expect(
+      validateBuildPlanV2({
+        plan: sourcePlan,
+        strategy,
+        binding: sourceBinding,
+        tasks,
+        protectedBranches: ['main', 'release/*'],
+      }),
+    ).toMatchObject({ accepted: true, diagnostics: [] });
+  });
   it('suspends Design-revision candidates without making them runnable and revalidates by layer', () => {
     const configuration = approvedConfiguration();
     let state = createBuildProtocolState({
@@ -623,6 +769,7 @@ describe('Build protocol domain', () => {
         strategy: configuration.strategy,
         binding: configuration.binding,
         tasks,
+        protectedBranches: [],
       });
       expect(validation.accepted).toBe(false);
       expect(() =>
@@ -631,6 +778,7 @@ describe('Build protocol domain', () => {
           strategy: configuration.strategy,
           binding: configuration.binding,
           validation,
+          protectedBranches: [],
           compositionCheckpointDigest: sha('c'),
           reportOwnerId: 'team-platform',
         }),
@@ -683,6 +831,7 @@ describe('Build protocol domain', () => {
         strategy: configuration.strategy,
         binding: configuration.binding,
         validation,
+        protectedBranches: [],
         compositionCheckpointDigest: sha('c'),
         reportOwnerId: ' ',
       }),

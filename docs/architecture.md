@@ -81,6 +81,8 @@ Engine 只根据 Workflow、Run State 和已经核对的事实计算下一状态
 
 Change Run 的 checkout 准备属于 Runner：Runner 先建立并公开 source branch 或 worktree，Project adapter 只观察 Git，Runtime 再以 `ChangeStartBinding` 校验 Workspace Repository、attached source branch、target branch、remote identity 和多仓 topology。该校验发生在 RunStore initialize、Skill/Work 记录和 Desktop activation 之前；Runtime 不执行 `git switch`、创建 branch 或创建 worktree。绑定身份刻意排除本机 path、HEAD、dirty/worktree digest 和观察时间，因此正常开发不会伪装成新 Run；source、target、remote 或 topology 漂移则 fail closed。
 
+多仓业务写权限在 Build Plan 后再收紧：Runtime 从全部 package write scopes 求精确可写仓集合，用 Run 启动时冻结的 protected branch patterns 和 target branch 核对当前 Execution Binding。只读仓可以停留在 target branch；任一可写仓匹配受保护模式时，Plan 以通用 `outcome-rejected` 保持可纠正且不创建 Execute Work。Runner 将相关仓切到并公开合法 source branch/worktree 后，下一次 pull 观察 Binding drift、原子退役旧 Plan checkpoint并回到 Configure。Build 前置校验与 Delivery checkpoint 共用 `domains/delivery/branch-policy.ts`，避免开发授权和提交保护产生两套 glob 语义。
+
 ## 受管 Work Execution、Action Intent 与 Receipt
 
 外部副作用不能占用 Run 锁。`run next` 是 Runner 发起的 pull-based 入口，Runtime 根据当前 lifecycle snapshot 选择 Work；Host 和 Agent 都不能指定目标 phase、Work 或 Skill。执行链路为：
