@@ -25,13 +25,13 @@ archive_confirmation: null
 archived: false
 bound_branch: codex/recover-protected-branch-rebinding
 direct_override: null
-handoff_context: null
-handoff_hash: null
+handoff_context: openspec/changes/recover-protected-branch-rebinding/.comet/handoff/design-context.json
+handoff_hash: 1f22d59118a3244a6c5cc702ba8d7d7103471c4224ffebdb29882c1f6aade5e6
 classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: 5525674d518fea77b3616b2df84dd716470e0e1c54c355c12cdaf204db697e01
+  hash: b79ab730b3299a40e13e9fed2f16619e0a6108cedcd898d6f800351ffe76a553
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -65,8 +65,8 @@ run_checkpoint:
       createdAt: 2026-11-03
       designDoc: null
       directOverride: null
-      handoffContext: null
-      handoffHash: null
+      handoffContext: openspec/changes/recover-protected-branch-rebinding/.comet/handoff/design-context.json
+      handoffHash: 1f22d59118a3244a6c5cc702ba8d7d7103471c4224ffebdb29882c1f6aade5e6
       isolation: current
       language: zh-CN
       phase: design
@@ -80,8 +80,8 @@ run_checkpoint:
       verifyMode: null
       verifyResult: pending
       workflow: full
-    status: running
-    sequence: 5
+    status: waiting
+    sequence: 6
     actions:
       - attempt: 1
         claim:
@@ -181,6 +181,14 @@ run_checkpoint:
         stepId: full.open.revalidate
         type: call_tool
       - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-79352cec75a161b1d8367d43d35a74e44601c372ceec7ea3c7d2234ae04173f4
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: recover-protected-branch-rebinding:5
         input:
           input:
@@ -211,14 +219,43 @@ run_checkpoint:
             full.open.revalidate:
               contentHash: 97a7261890959623b319de284a8ca5b20cd1662bb8a4ef951c56661ee51b29d8
         inputHash: 4452d7ce912813fbdac411226cfd8eb4f412bcc2ab207b11b45e6fed5caebb26
+        outcome:
+          actionId: recover-protected-branch-rebinding:5
+          attempt: 1
+          claimToken: portable-79352cec75a161b1d8367d43d35a74e44601c372ceec7ea3c7d2234ae04173f4
+          inputHash: 4452d7ce912813fbdac411226cfd8eb4f412bcc2ab207b11b45e6fed5caebb26
+          outcomeId: c70f173a-50d5-49f5-9904-0283849df0a1
+          output:
+            handoffContext: openspec/changes/recover-protected-branch-rebinding/.comet/handoff/design-context.json
+            handoffHash: 1f22d59118a3244a6c5cc702ba8d7d7103471c4224ffebdb29882c1f6aade5e6
+            proposal: 候选 A（推荐）：建立 typed authorized-protected-branch-rebind evidence，从
+              rejected build-plan-candidate、精确 write scopes、旧 Execution
+              Binding、protected policy 与前后 snapshots 证明合法修正；next 与 resume 共用
+              classifier，并在原子转换中清除仅与该授权匹配的 reconciliation poison、提升 epoch、精确失效旧
+              Plan、派发唯一 build.configure。候选 B：通用 reconciliation 忽略 branch
+              drift，风险是未知 checkout 漂移可绕过写入安全，拒绝。候选 C：仅文档要求 Host 永远调用
+              next，无法覆盖进程重启和断点恢复，拒绝。主要风险是授权范围过宽或并发重复恢复；通过 exact
+              write-set、branch-only diff、typed digest、fail-closed 负例和幂等
+              checkpoint 测试控制。Spec Patch 已在 managed-work-execution 中授权：同一 Run
+              恢复，Runner 保留 Git 副作用责任，path/remote/topology/无关 branch 等变化继续
+              reconciliation。
+            requirementsEvidence:
+              contentHash: 22753ccd0c093bf6c23b3a9e238401a5568d867cf819f820e36a90574fad2856
+              ref: openspec/changes/recover-protected-branch-rebinding
+            sourceEvidence:
+              contentHash: 97a7261890959623b319de284a8ca5b20cd1662bb8a4ef951c56661ee51b29d8
+              ref: openspec/changes/recover-protected-branch-rebinding
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: 9f2444b5c523524795786f0e752c44c702048f3e2fa40c9a74ce2c020ce601e4
+            outcomeId: c70f173a-50d5-49f5-9904-0283849df0a1
         reconciliations: []
         ref: comet-design
         requiredCapabilities: []
         retry: manual
         runId: recover-protected-branch-rebinding
-        status: pending
+        status: succeeded
         stepId: full.design.handoff
         type: invoke_skill
     actionContexts:
@@ -320,6 +357,93 @@ run_checkpoint:
           id: classic-open-97a7261890959623b319de284a8ca5b20cd1662bb8a4ef951c56661ee51b29d8
           choice: approved
           proposalHash: f7d0ed3184ac72bf73583e00c14d0a77586749150788b073cbaa40578a1c33ee
+      - id: recover-protected-branch-rebinding:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: pending
+        proposal:
+          input:
+            change: recover-protected-branch-rebinding
+            changeDir: openspec/changes/recover-protected-branch-rebinding
+            workspaceBaseline:
+              ref: e3121327-2ceb-41cd-95b5-a4a72a59b61d
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/recover-protected-branch-rebinding/.comet/handoff/design-context.json
+              handoffHash: 1f22d59118a3244a6c5cc702ba8d7d7103471c4224ffebdb29882c1f6aade5e6
+              proposal: 候选 A（推荐）：建立 typed authorized-protected-branch-rebind evidence，从
+                rejected build-plan-candidate、精确 write scopes、旧 Execution
+                Binding、protected policy 与前后 snapshots 证明合法修正；next 与 resume 共用
+                classifier，并在原子转换中清除仅与该授权匹配的 reconciliation poison、提升
+                epoch、精确失效旧 Plan、派发唯一 build.configure。候选 B：通用 reconciliation 忽略
+                branch drift，风险是未知 checkout 漂移可绕过写入安全，拒绝。候选 C：仅文档要求 Host 永远调用
+                next，无法覆盖进程重启和断点恢复，拒绝。主要风险是授权范围过宽或并发重复恢复；通过 exact
+                write-set、branch-only diff、typed digest、fail-closed 负例和幂等
+                checkpoint 测试控制。Spec Patch 已在 managed-work-execution 中授权：同一 Run
+                恢复，Runner 保留 Git 副作用责任，path/remote/topology/无关 branch 等变化继续
+                reconciliation。
+              requirementsEvidence:
+                contentHash: 22753ccd0c093bf6c23b3a9e238401a5568d867cf819f820e36a90574fad2856
+                ref: openspec/changes/recover-protected-branch-rebinding
+              sourceEvidence:
+                contentHash: 97a7261890959623b319de284a8ca5b20cd1662bb8a4ef951c56661ee51b29d8
+                ref: openspec/changes/recover-protected-branch-rebinding
+        proposalHash: 2a3b4f8e0c20f78046c42a0906c53404493f9114c617271204e19ce56f2c0cca
+        choices:
+          - approved
+          - rejected
+        results:
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/recover-protected-branch-rebinding/.comet/handoff/design-context.json
+              handoffHash: 1f22d59118a3244a6c5cc702ba8d7d7103471c4224ffebdb29882c1f6aade5e6
+              proposal: 候选 A（推荐）：建立 typed authorized-protected-branch-rebind evidence，从
+                rejected build-plan-candidate、精确 write scopes、旧 Execution
+                Binding、protected policy 与前后 snapshots 证明合法修正；next 与 resume 共用
+                classifier，并在原子转换中清除仅与该授权匹配的 reconciliation poison、提升
+                epoch、精确失效旧 Plan、派发唯一 build.configure。候选 B：通用 reconciliation 忽略
+                branch drift，风险是未知 checkout 漂移可绕过写入安全，拒绝。候选 C：仅文档要求 Host 永远调用
+                next，无法覆盖进程重启和断点恢复，拒绝。主要风险是授权范围过宽或并发重复恢复；通过 exact
+                write-set、branch-only diff、typed digest、fail-closed 负例和幂等
+                checkpoint 测试控制。Spec Patch 已在 managed-work-execution 中授权：同一 Run
+                恢复，Runner 保留 Git 副作用责任，path/remote/topology/无关 branch 等变化继续
+                reconciliation。
+              requirementsEvidence:
+                contentHash: 22753ccd0c093bf6c23b3a9e238401a5568d867cf819f820e36a90574fad2856
+                ref: openspec/changes/recover-protected-branch-rebinding
+              sourceEvidence:
+                contentHash: 97a7261890959623b319de284a8ca5b20cd1662bb8a4ef951c56661ee51b29d8
+                ref: openspec/changes/recover-protected-branch-rebinding
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: recover-protected-branch-rebinding
+                  changeDir: openspec/changes/recover-protected-branch-rebinding
+                  workspaceBaseline:
+                    ref: e3121327-2ceb-41cd-95b5-a4a72a59b61d
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 97a7261890959623b319de284a8ca5b20cd1662bb8a4ef951c56661ee51b29d8
+                    ref: openspec/changes/recover-protected-branch-rebinding
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 97a7261890959623b319de284a8ca5b20cd1662bb8a4ef951c56661ee51b29d8
+              ref: openspec/changes/recover-protected-branch-rebinding
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 97a7261890959623b319de284a8ca5b20cd1662bb8a4ef951c56661ee51b29d8
     evidenceWaits:
       - id: recover-protected-branch-rebinding:2
         stepId: full.open.evidence
@@ -338,6 +462,27 @@ run_checkpoint:
     ready: []
     joins: {}
     outputs:
+      full.design.handoff:
+        sequence: 5
+        value:
+          handoffContext: openspec/changes/recover-protected-branch-rebinding/.comet/handoff/design-context.json
+          handoffHash: 1f22d59118a3244a6c5cc702ba8d7d7103471c4224ffebdb29882c1f6aade5e6
+          proposal: 候选 A（推荐）：建立 typed authorized-protected-branch-rebind evidence，从
+            rejected build-plan-candidate、精确 write scopes、旧 Execution
+            Binding、protected policy 与前后 snapshots 证明合法修正；next 与 resume 共用
+            classifier，并在原子转换中清除仅与该授权匹配的 reconciliation poison、提升 epoch、精确失效旧
+            Plan、派发唯一 build.configure。候选 B：通用 reconciliation 忽略 branch
+            drift，风险是未知 checkout 漂移可绕过写入安全，拒绝。候选 C：仅文档要求 Host 永远调用
+            next，无法覆盖进程重启和断点恢复，拒绝。主要风险是授权范围过宽或并发重复恢复；通过 exact
+            write-set、branch-only diff、typed digest、fail-closed 负例和幂等 checkpoint
+            测试控制。Spec Patch 已在 managed-work-execution 中授权：同一 Run 恢复，Runner 保留
+            Git 副作用责任，path/remote/topology/无关 branch 等变化继续 reconciliation。
+          requirementsEvidence:
+            contentHash: 22753ccd0c093bf6c23b3a9e238401a5568d867cf819f820e36a90574fad2856
+            ref: openspec/changes/recover-protected-branch-rebinding
+          sourceEvidence:
+            contentHash: 97a7261890959623b319de284a8ca5b20cd1662bb8a4ef951c56661ee51b29d8
+            ref: openspec/changes/recover-protected-branch-rebinding
       full.open:
         sequence: 1
         value:
@@ -369,6 +514,6 @@ run_checkpoint:
           contentHash: 97a7261890959623b319de284a8ca5b20cd1662bb8a4ef951c56661ee51b29d8
     children: []
     lineage: []
-  sourceRevision: 7
-  sourceHash: 4aef681b4256971633ba068bcfb6082188393dce303271d8aa6df45da5d8a699
+  sourceRevision: 9
+  sourceHash: 37aace4b994c16de0ced10ba07842a95fe01b94f08426fc0ccf54347f25363e2
 check_epoch: 1
