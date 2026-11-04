@@ -2,7 +2,7 @@
 change_id: ff1b3b07-5b3f-4850-a012-ea553c5f2736
 workflow: full
 language: zh-CN
-phase: design
+phase: build
 context_compression: off
 build_mode: null
 build_pause: null
@@ -13,7 +13,7 @@ isolation: current
 verify_mode: null
 auto_transition: true
 base_ref: 33c0b44996a5ac30bee22f47fe7e70f9386def6b
-design_doc: null
+design_doc: openspec/changes/recover-build-host-capability-drift/design.md
 plan: null
 verify_result: pending
 verify_failures: 0
@@ -31,7 +31,7 @@ classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: 345139d413fed5697bf5eb50672ba5d1093f0d114fe172cdf399d91d07ffa7ef
+  hash: c678f073e00bed586d5ef58ae572cd9cf6004ff8df18dd54efe5fead1e1637c3
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -58,18 +58,18 @@ run_checkpoint:
       branchStatus: pending
       buildMode: null
       buildPause: null
-      checkEpoch: 1
+      checkEpoch: 2
       classicMigration: null
       classicProfile: null
       contextCompression: off
       createdAt: 2026-11-04
-      designDoc: null
+      designDoc: openspec/changes/recover-build-host-capability-drift/design.md
       directOverride: null
       handoffContext: openspec/changes/recover-build-host-capability-drift/.comet/handoff/design-context.json
       handoffHash: 0aa7d0d5bc4bd0ecaca514bfd5dda4efd62c211b5febfff5a5ec78b2c0062f59
       isolation: current
       language: zh-CN
-      phase: design
+      phase: build
       plan: null
       reviewMode: thorough
       subagentDispatch: null
@@ -80,8 +80,8 @@ run_checkpoint:
       verifyMode: null
       verifyResult: pending
       workflow: full
-    status: waiting
-    sequence: 6
+    status: running
+    sequence: 9
     actions:
       - attempt: 1
         claim:
@@ -254,6 +254,196 @@ run_checkpoint:
         status: succeeded
         stepId: full.design.handoff
         type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-0ecd77f3d632c6b55586612a131674fa61e419bb7aa7638603e9df625a99b692
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-build-host-capability-drift:7
+        input:
+          input:
+            change: recover-build-host-capability-drift
+            changeDir: openspec/changes/recover-build-host-capability-drift
+            workspaceBaseline:
+              ref: 333b71e2-9050-4490-9788-a65938ba6acf
+          outputs:
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: recover-build-host-capability-drift
+                  changeDir: openspec/changes/recover-build-host-capability-drift
+                  workspaceBaseline:
+                    ref: 333b71e2-9050-4490-9788-a65938ba6acf
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/recover-build-host-capability-drift/.comet/handoff/design-context.json
+                    handoffHash: 0aa7d0d5bc4bd0ecaca514bfd5dda4efd62c211b5febfff5a5ec78b2c0062f59
+                    proposal: 采用 Work-scoped capability 作为唯一能力权威：ExecutionBinding schema v3 删除跨 Work
+                      capability digest，只保留多仓 Workspace、repository ownership 与
+                      coordinator Host identity；Configure、Plan、Execute、Check 在
+                      claim 前分别验证当前 Work，Outcome 只绑定原 claim，unknown 外部执行只
+                      reconcile 原 Work。预发布旧 Binding Run 进入
+                      migration_required，不保留双读。主要风险是 schema 破坏性切换与 coordinator
+                      Host 边界，需要通过真实外部 Host 单仓/多仓纵向 E2E、重启和 unknown recovery
+                      矩阵验证。
+                    requirementsEvidence:
+                      contentHash: 25bfd413bb8f97b6c25bb9959eaf90a942129fa1b0cc4988722d8a8902b29410
+                      ref: openspec/changes/recover-build-host-capability-drift
+                    sourceEvidence:
+                      contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+                      ref: openspec/changes/recover-build-host-capability-drift
+            full.design.handoff:
+              handoffContext: openspec/changes/recover-build-host-capability-drift/.comet/handoff/design-context.json
+              handoffHash: 0aa7d0d5bc4bd0ecaca514bfd5dda4efd62c211b5febfff5a5ec78b2c0062f59
+              proposal: 采用 Work-scoped capability 作为唯一能力权威：ExecutionBinding schema v3 删除跨 Work
+                capability digest，只保留多仓 Workspace、repository ownership 与
+                coordinator Host identity；Configure、Plan、Execute、Check 在 claim
+                前分别验证当前 Work，Outcome 只绑定原 claim，unknown 外部执行只 reconcile 原
+                Work。预发布旧 Binding Run 进入 migration_required，不保留双读。主要风险是 schema
+                破坏性切换与 coordinator Host 边界，需要通过真实外部 Host 单仓/多仓纵向 E2E、重启和 unknown
+                recovery 矩阵验证。
+              requirementsEvidence:
+                contentHash: 25bfd413bb8f97b6c25bb9959eaf90a942129fa1b0cc4988722d8a8902b29410
+                ref: openspec/changes/recover-build-host-capability-drift
+              sourceEvidence:
+                contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+                ref: openspec/changes/recover-build-host-capability-drift
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: recover-build-host-capability-drift
+                  changeDir: openspec/changes/recover-build-host-capability-drift
+                  workspaceBaseline:
+                    ref: 333b71e2-9050-4490-9788-a65938ba6acf
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+                    ref: openspec/changes/recover-build-host-capability-drift
+            full.open.evidence:
+              contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+              ref: openspec/changes/recover-build-host-capability-drift
+            full.open.revalidate:
+              contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+        inputHash: f42961a0b9bd51ea2919c64c90905475a0bad22165325a3cf6d23dfac33e7784
+        outcome:
+          actionId: recover-build-host-capability-drift:7
+          attempt: 1
+          claimToken: portable-0ecd77f3d632c6b55586612a131674fa61e419bb7aa7638603e9df625a99b692
+          inputHash: f42961a0b9bd51ea2919c64c90905475a0bad22165325a3cf6d23dfac33e7784
+          outcomeId: bc5b4769-1b93-4c6a-b63f-00c9738d86fc
+          output:
+            designDoc: openspec/changes/recover-build-host-capability-drift/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 3182e54bbc159cfd7cfca5e661c84509c8c81c472d4263ff92a63e65cb002c9d
+            outcomeId: bc5b4769-1b93-4c6a-b63f-00c9738d86fc
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-build-host-capability-drift
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        id: recover-build-host-capability-drift:9
+        input:
+          input:
+            change: recover-build-host-capability-drift
+            changeDir: openspec/changes/recover-build-host-capability-drift
+            workspaceBaseline:
+              ref: 333b71e2-9050-4490-9788-a65938ba6acf
+          outputs:
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: recover-build-host-capability-drift
+                  changeDir: openspec/changes/recover-build-host-capability-drift
+                  workspaceBaseline:
+                    ref: 333b71e2-9050-4490-9788-a65938ba6acf
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/recover-build-host-capability-drift/.comet/handoff/design-context.json
+                    handoffHash: 0aa7d0d5bc4bd0ecaca514bfd5dda4efd62c211b5febfff5a5ec78b2c0062f59
+                    proposal: 采用 Work-scoped capability 作为唯一能力权威：ExecutionBinding schema v3 删除跨 Work
+                      capability digest，只保留多仓 Workspace、repository ownership 与
+                      coordinator Host identity；Configure、Plan、Execute、Check 在
+                      claim 前分别验证当前 Work，Outcome 只绑定原 claim，unknown 外部执行只
+                      reconcile 原 Work。预发布旧 Binding Run 进入
+                      migration_required，不保留双读。主要风险是 schema 破坏性切换与 coordinator
+                      Host 边界，需要通过真实外部 Host 单仓/多仓纵向 E2E、重启和 unknown recovery
+                      矩阵验证。
+                    requirementsEvidence:
+                      contentHash: 25bfd413bb8f97b6c25bb9959eaf90a942129fa1b0cc4988722d8a8902b29410
+                      ref: openspec/changes/recover-build-host-capability-drift
+                    sourceEvidence:
+                      contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+                      ref: openspec/changes/recover-build-host-capability-drift
+            full.design.document:
+              designDoc: openspec/changes/recover-build-host-capability-drift/design.md
+            full.design.evidence:
+              contentHash: 6f0658f639f51d561beeb9a417f24c87862c113175899f9e96e0376cda5bf40e
+              ref: openspec/changes/recover-build-host-capability-drift/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/recover-build-host-capability-drift/.comet/handoff/design-context.json
+              handoffHash: 0aa7d0d5bc4bd0ecaca514bfd5dda4efd62c211b5febfff5a5ec78b2c0062f59
+              proposal: 采用 Work-scoped capability 作为唯一能力权威：ExecutionBinding schema v3 删除跨 Work
+                capability digest，只保留多仓 Workspace、repository ownership 与
+                coordinator Host identity；Configure、Plan、Execute、Check 在 claim
+                前分别验证当前 Work，Outcome 只绑定原 claim，unknown 外部执行只 reconcile 原
+                Work。预发布旧 Binding Run 进入 migration_required，不保留双读。主要风险是 schema
+                破坏性切换与 coordinator Host 边界，需要通过真实外部 Host 单仓/多仓纵向 E2E、重启和 unknown
+                recovery 矩阵验证。
+              requirementsEvidence:
+                contentHash: 25bfd413bb8f97b6c25bb9959eaf90a942129fa1b0cc4988722d8a8902b29410
+                ref: openspec/changes/recover-build-host-capability-drift
+              sourceEvidence:
+                contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+                ref: openspec/changes/recover-build-host-capability-drift
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: recover-build-host-capability-drift
+                  changeDir: openspec/changes/recover-build-host-capability-drift
+                  workspaceBaseline:
+                    ref: 333b71e2-9050-4490-9788-a65938ba6acf
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+                    ref: openspec/changes/recover-build-host-capability-drift
+            full.open.evidence:
+              contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+              ref: openspec/changes/recover-build-host-capability-drift
+            full.open.revalidate:
+              contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+        inputHash: 117dd866f86c48c47a82b99881d297c58c489a94410dbc32573a6f4b5431210b
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-build-host-capability-drift
+        status: pending
+        stepId: full.build.configure
+        type: invoke_skill
     actionContexts:
       recover-build-host-capability-drift:1:
         results: {}
@@ -318,6 +508,171 @@ run_checkpoint:
             value:
               contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
         sequence: 5
+      recover-build-host-capability-drift:7:
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: recover-build-host-capability-drift
+                  changeDir: openspec/changes/recover-build-host-capability-drift
+                  workspaceBaseline:
+                    ref: 333b71e2-9050-4490-9788-a65938ba6acf
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/recover-build-host-capability-drift/.comet/handoff/design-context.json
+                    handoffHash: 0aa7d0d5bc4bd0ecaca514bfd5dda4efd62c211b5febfff5a5ec78b2c0062f59
+                    proposal: 采用 Work-scoped capability 作为唯一能力权威：ExecutionBinding schema v3 删除跨 Work
+                      capability digest，只保留多仓 Workspace、repository ownership 与
+                      coordinator Host identity；Configure、Plan、Execute、Check 在
+                      claim 前分别验证当前 Work，Outcome 只绑定原 claim，unknown 外部执行只
+                      reconcile 原 Work。预发布旧 Binding Run 进入
+                      migration_required，不保留双读。主要风险是 schema 破坏性切换与 coordinator
+                      Host 边界，需要通过真实外部 Host 单仓/多仓纵向 E2E、重启和 unknown recovery
+                      矩阵验证。
+                    requirementsEvidence:
+                      contentHash: 25bfd413bb8f97b6c25bb9959eaf90a942129fa1b0cc4988722d8a8902b29410
+                      ref: openspec/changes/recover-build-host-capability-drift
+                    sourceEvidence:
+                      contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+                      ref: openspec/changes/recover-build-host-capability-drift
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/recover-build-host-capability-drift/.comet/handoff/design-context.json
+              handoffHash: 0aa7d0d5bc4bd0ecaca514bfd5dda4efd62c211b5febfff5a5ec78b2c0062f59
+              proposal: 采用 Work-scoped capability 作为唯一能力权威：ExecutionBinding schema v3 删除跨 Work
+                capability digest，只保留多仓 Workspace、repository ownership 与
+                coordinator Host identity；Configure、Plan、Execute、Check 在 claim
+                前分别验证当前 Work，Outcome 只绑定原 claim，unknown 外部执行只 reconcile 原
+                Work。预发布旧 Binding Run 进入 migration_required，不保留双读。主要风险是 schema
+                破坏性切换与 coordinator Host 边界，需要通过真实外部 Host 单仓/多仓纵向 E2E、重启和 unknown
+                recovery 矩阵验证。
+              requirementsEvidence:
+                contentHash: 25bfd413bb8f97b6c25bb9959eaf90a942129fa1b0cc4988722d8a8902b29410
+                ref: openspec/changes/recover-build-host-capability-drift
+              sourceEvidence:
+                contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+                ref: openspec/changes/recover-build-host-capability-drift
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: recover-build-host-capability-drift
+                  changeDir: openspec/changes/recover-build-host-capability-drift
+                  workspaceBaseline:
+                    ref: 333b71e2-9050-4490-9788-a65938ba6acf
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+                    ref: openspec/changes/recover-build-host-capability-drift
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+              ref: openspec/changes/recover-build-host-capability-drift
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+        sequence: 7
+      recover-build-host-capability-drift:9:
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: recover-build-host-capability-drift
+                  changeDir: openspec/changes/recover-build-host-capability-drift
+                  workspaceBaseline:
+                    ref: 333b71e2-9050-4490-9788-a65938ba6acf
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/recover-build-host-capability-drift/.comet/handoff/design-context.json
+                    handoffHash: 0aa7d0d5bc4bd0ecaca514bfd5dda4efd62c211b5febfff5a5ec78b2c0062f59
+                    proposal: 采用 Work-scoped capability 作为唯一能力权威：ExecutionBinding schema v3 删除跨 Work
+                      capability digest，只保留多仓 Workspace、repository ownership 与
+                      coordinator Host identity；Configure、Plan、Execute、Check 在
+                      claim 前分别验证当前 Work，Outcome 只绑定原 claim，unknown 外部执行只
+                      reconcile 原 Work。预发布旧 Binding Run 进入
+                      migration_required，不保留双读。主要风险是 schema 破坏性切换与 coordinator
+                      Host 边界，需要通过真实外部 Host 单仓/多仓纵向 E2E、重启和 unknown recovery
+                      矩阵验证。
+                    requirementsEvidence:
+                      contentHash: 25bfd413bb8f97b6c25bb9959eaf90a942129fa1b0cc4988722d8a8902b29410
+                      ref: openspec/changes/recover-build-host-capability-drift
+                    sourceEvidence:
+                      contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+                      ref: openspec/changes/recover-build-host-capability-drift
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/recover-build-host-capability-drift/design.md
+          full.design.evidence:
+            sequence: 8
+            value:
+              contentHash: 6f0658f639f51d561beeb9a417f24c87862c113175899f9e96e0376cda5bf40e
+              ref: openspec/changes/recover-build-host-capability-drift/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/recover-build-host-capability-drift/.comet/handoff/design-context.json
+              handoffHash: 0aa7d0d5bc4bd0ecaca514bfd5dda4efd62c211b5febfff5a5ec78b2c0062f59
+              proposal: 采用 Work-scoped capability 作为唯一能力权威：ExecutionBinding schema v3 删除跨 Work
+                capability digest，只保留多仓 Workspace、repository ownership 与
+                coordinator Host identity；Configure、Plan、Execute、Check 在 claim
+                前分别验证当前 Work，Outcome 只绑定原 claim，unknown 外部执行只 reconcile 原
+                Work。预发布旧 Binding Run 进入 migration_required，不保留双读。主要风险是 schema
+                破坏性切换与 coordinator Host 边界，需要通过真实外部 Host 单仓/多仓纵向 E2E、重启和 unknown
+                recovery 矩阵验证。
+              requirementsEvidence:
+                contentHash: 25bfd413bb8f97b6c25bb9959eaf90a942129fa1b0cc4988722d8a8902b29410
+                ref: openspec/changes/recover-build-host-capability-drift
+              sourceEvidence:
+                contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+                ref: openspec/changes/recover-build-host-capability-drift
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: recover-build-host-capability-drift
+                  changeDir: openspec/changes/recover-build-host-capability-drift
+                  workspaceBaseline:
+                    ref: 333b71e2-9050-4490-9788-a65938ba6acf
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+                    ref: openspec/changes/recover-build-host-capability-drift
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+              ref: openspec/changes/recover-build-host-capability-drift
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+        sequence: 9
     waits:
       - id: recover-build-host-capability-drift:3
         stepId: full.open.confirm
@@ -356,7 +711,7 @@ run_checkpoint:
       - id: recover-build-host-capability-drift:6
         stepId: full.design.confirm
         sequence: 6
-        status: pending
+        status: resolved
         proposal:
           input:
             change: recover-build-host-capability-drift
@@ -432,6 +787,10 @@ run_checkpoint:
             sequence: 4
             value:
               contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+        decision:
+          id: classic-design-6e4e33f3e8e1f3b6b380f8c75438593a5d2532900ece4495f1894be0cd71dd9c-approved
+          choice: approved
+          proposalHash: 6e4e33f3e8e1f3b6b380f8c75438593a5d2532900ece4495f1894be0cd71dd9c
     evidenceWaits:
       - id: recover-build-host-capability-drift:2
         stepId: full.open.evidence
@@ -447,9 +806,134 @@ run_checkpoint:
           ref: openspec/changes/recover-build-host-capability-drift
           contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
           submissionId: 0a8cc997-82c3-4828-9416-a57309a15c9b
+      - id: recover-build-host-capability-drift:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: recover-build-host-capability-drift
+                  changeDir: openspec/changes/recover-build-host-capability-drift
+                  workspaceBaseline:
+                    ref: 333b71e2-9050-4490-9788-a65938ba6acf
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/recover-build-host-capability-drift/.comet/handoff/design-context.json
+                    handoffHash: 0aa7d0d5bc4bd0ecaca514bfd5dda4efd62c211b5febfff5a5ec78b2c0062f59
+                    proposal: 采用 Work-scoped capability 作为唯一能力权威：ExecutionBinding schema v3 删除跨 Work
+                      capability digest，只保留多仓 Workspace、repository ownership 与
+                      coordinator Host identity；Configure、Plan、Execute、Check 在
+                      claim 前分别验证当前 Work，Outcome 只绑定原 claim，unknown 外部执行只
+                      reconcile 原 Work。预发布旧 Binding Run 进入
+                      migration_required，不保留双读。主要风险是 schema 破坏性切换与 coordinator
+                      Host 边界，需要通过真实外部 Host 单仓/多仓纵向 E2E、重启和 unknown recovery
+                      矩阵验证。
+                    requirementsEvidence:
+                      contentHash: 25bfd413bb8f97b6c25bb9959eaf90a942129fa1b0cc4988722d8a8902b29410
+                      ref: openspec/changes/recover-build-host-capability-drift
+                    sourceEvidence:
+                      contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+                      ref: openspec/changes/recover-build-host-capability-drift
+          full.design.document:
+            sequence: 7
+            value:
+              designDoc: openspec/changes/recover-build-host-capability-drift/design.md
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/recover-build-host-capability-drift/.comet/handoff/design-context.json
+              handoffHash: 0aa7d0d5bc4bd0ecaca514bfd5dda4efd62c211b5febfff5a5ec78b2c0062f59
+              proposal: 采用 Work-scoped capability 作为唯一能力权威：ExecutionBinding schema v3 删除跨 Work
+                capability digest，只保留多仓 Workspace、repository ownership 与
+                coordinator Host identity；Configure、Plan、Execute、Check 在 claim
+                前分别验证当前 Work，Outcome 只绑定原 claim，unknown 外部执行只 reconcile 原
+                Work。预发布旧 Binding Run 进入 migration_required，不保留双读。主要风险是 schema
+                破坏性切换与 coordinator Host 边界，需要通过真实外部 Host 单仓/多仓纵向 E2E、重启和 unknown
+                recovery 矩阵验证。
+              requirementsEvidence:
+                contentHash: 25bfd413bb8f97b6c25bb9959eaf90a942129fa1b0cc4988722d8a8902b29410
+                ref: openspec/changes/recover-build-host-capability-drift
+              sourceEvidence:
+                contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+                ref: openspec/changes/recover-build-host-capability-drift
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: recover-build-host-capability-drift
+                  changeDir: openspec/changes/recover-build-host-capability-drift
+                  workspaceBaseline:
+                    ref: 333b71e2-9050-4490-9788-a65938ba6acf
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+                    ref: openspec/changes/recover-build-host-capability-drift
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+              ref: openspec/changes/recover-build-host-capability-drift
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+        receipt:
+          ref: openspec/changes/recover-build-host-capability-drift/design.md
+          contentHash: 6f0658f639f51d561beeb9a417f24c87862c113175899f9e96e0376cda5bf40e
+          submissionId: 34bfd764-70fc-41f7-a61e-f13ec03c63dd
     ready: []
     joins: {}
     outputs:
+      full.design.confirm:
+        sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: recover-build-host-capability-drift
+              changeDir: openspec/changes/recover-build-host-capability-drift
+              workspaceBaseline:
+                ref: 333b71e2-9050-4490-9788-a65938ba6acf
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/recover-build-host-capability-drift/.comet/handoff/design-context.json
+                handoffHash: 0aa7d0d5bc4bd0ecaca514bfd5dda4efd62c211b5febfff5a5ec78b2c0062f59
+                proposal: 采用 Work-scoped capability 作为唯一能力权威：ExecutionBinding schema v3 删除跨 Work
+                  capability digest，只保留多仓 Workspace、repository ownership 与
+                  coordinator Host identity；Configure、Plan、Execute、Check 在 claim
+                  前分别验证当前 Work，Outcome 只绑定原 claim，unknown 外部执行只 reconcile 原
+                  Work。预发布旧 Binding Run 进入 migration_required，不保留双读。主要风险是 schema
+                  破坏性切换与 coordinator Host 边界，需要通过真实外部 Host 单仓/多仓纵向 E2E、重启和
+                  unknown recovery 矩阵验证。
+                requirementsEvidence:
+                  contentHash: 25bfd413bb8f97b6c25bb9959eaf90a942129fa1b0cc4988722d8a8902b29410
+                  ref: openspec/changes/recover-build-host-capability-drift
+                sourceEvidence:
+                  contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+                  ref: openspec/changes/recover-build-host-capability-drift
+      full.design.document:
+        sequence: 7
+        value:
+          designDoc: openspec/changes/recover-build-host-capability-drift/design.md
+      full.design.evidence:
+        sequence: 8
+        value:
+          contentHash: 6f0658f639f51d561beeb9a417f24c87862c113175899f9e96e0376cda5bf40e
+          ref: openspec/changes/recover-build-host-capability-drift/design.md
       full.design.handoff:
         sequence: 5
         value:
@@ -498,6 +982,6 @@ run_checkpoint:
           contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
     children: []
     lineage: []
-  sourceRevision: 9
-  sourceHash: d38e0cdbe6c7615f9eed3df6714c13bf4380356a1f8a6730f904e5fae6b8e759
-check_epoch: 1
+  sourceRevision: 13
+  sourceHash: 638ff3a8073f485400e5313c25e5ba55a7ac3bf86c699c33ff53835e77523f17
+check_epoch: 2
