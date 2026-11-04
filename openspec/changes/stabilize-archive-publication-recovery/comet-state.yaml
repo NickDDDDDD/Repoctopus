@@ -31,7 +31,7 @@ classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v2
-  hash: 534a6d9b63e4fbbc8f7142ab33c2cd7d9f6fe3e866e3c77ec4ac108752376921
+  hash: 5ce1bcb7ca7d3085aca9f56a6a0009c7af747ed946647558b2cb43db53bc0be6
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -81,7 +81,7 @@ run_checkpoint:
       verifyResult: fail
       workflow: full
     status: running
-    sequence: 19
+    sequence: 21
     actions:
       - attempt: 1
         claim:
@@ -544,7 +544,53 @@ run_checkpoint:
         stepId: full.verify.check
         type: call_tool
       - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-cb3e81203d09d1c95fe2887bea6ad49598cf3c78934bcb39d8c5c07f7c6b8e02
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: stabilize-archive-publication-recovery:19
+        input:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs: {}
+        inputHash: dae0160b2686a694f3168d6be0563c10d7ca08bcbb31bf035323457ac6c43f8a
+        outcome:
+          actionId: stabilize-archive-publication-recovery:19
+          attempt: 1
+          claimToken: portable-cb3e81203d09d1c95fe2887bea6ad49598cf3c78934bcb39d8c5c07f7c6b8e02
+          inputHash: dae0160b2686a694f3168d6be0563c10d7ca08bcbb31bf035323457ac6c43f8a
+          outcomeId: 5db93287-bf5c-438f-afcb-be0e83d179b8
+          output:
+            designEvidence:
+              contentHash: e115d43cc44ede9c4625e649dc0c7dd2fd61f160c92d1a222e018664d9735fb5
+              ref: openspec/changes/stabilize-archive-publication-recovery/design.md
+            plan: docs/superpowers/plans/2026-11-04-stabilize-archive-publication-recovery.md
+            planEvidence:
+              contentHash: ea401cfafa06261c825f8b4d3183192e9fc4fe7d20870c2f77d327c83fde846e
+              ref: docs/superpowers/plans/2026-11-04-stabilize-archive-publication-recovery.md
+            taskRevision: 927d56410b53346595f2fd9937c388883fa01f8af1b1c3c11dead5c1e2f56d91
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: fb7bbbcb5b3d7a5d915b5f3336299e400a732e34c02b57fc8a020447b0505abc
+            outcomeId: 5db93287-bf5c-438f-afcb-be0e83d179b8
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-archive-publication-recovery
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        id: stabilize-archive-publication-recovery:21
         input:
           input:
             change: stabilize-archive-publication-recovery
@@ -561,7 +607,7 @@ run_checkpoint:
         retry: manual
         runId: stabilize-archive-publication-recovery
         status: pending
-        stepId: full.build.plan
+        stepId: full.build.execute
         type: invoke_skill
     actionContexts:
       stabilize-archive-publication-recovery:1:
@@ -585,6 +631,9 @@ run_checkpoint:
       stabilize-archive-publication-recovery:19:
         results: {}
         sequence: 19
+      stabilize-archive-publication-recovery:21:
+        results: {}
+        sequence: 21
       stabilize-archive-publication-recovery:4:
         results: {}
         sequence: 4
@@ -741,13 +790,23 @@ run_checkpoint:
           ref: docs/superpowers/reports/stabilize-archive-publication-recovery.md
           contentHash: 0bd6c741191cf6cbd8a4ef20870da804324ffc416979cce050b33e8829a70980
           submissionId: 7983d193-eded-4b68-a70d-9ead0cf6a872
+      - id: stabilize-archive-publication-recovery:20
+        stepId: full.build.plan.evidence
+        sequence: 20
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-04-stabilize-archive-publication-recovery.md
+          contentHash: ea401cfafa06261c825f8b4d3183192e9fc4fe7d20870c2f77d327c83fde846e
+          submissionId: edb865c4-5fa5-466b-8c93-f05b062fe203
     ready: []
     joins: {}
     outputs: {}
     children: []
     lineage: []
-  sourceRevision: 29
-  sourceHash: c2cdca8ab50a8928cd0d8f3d41bc1605b2b419a607d53c839902c8ae1f908feb
+  sourceRevision: 32
+  sourceHash: 089922df353d0e9a2d4cf0b85e121983a9f8c0dabedd1faf72dc388836ff50a7
   pool:
     version: 3
     values:
@@ -1077,6 +1136,20 @@ run_checkpoint:
           scope: verify
           tier: full
           timeoutMs: 900000
+      - sequence: 19
+        value:
+          designEvidence:
+            contentHash: e115d43cc44ede9c4625e649dc0c7dd2fd61f160c92d1a222e018664d9735fb5
+            ref: openspec/changes/stabilize-archive-publication-recovery/design.md
+          plan: docs/superpowers/plans/2026-11-04-stabilize-archive-publication-recovery.md
+          planEvidence:
+            contentHash: ea401cfafa06261c825f8b4d3183192e9fc4fe7d20870c2f77d327c83fde846e
+            ref: docs/superpowers/plans/2026-11-04-stabilize-archive-publication-recovery.md
+          taskRevision: 927d56410b53346595f2fd9937c388883fa01f8af1b1c3c11dead5c1e2f56d91
+      - sequence: 20
+        value:
+          contentHash: ea401cfafa06261c825f8b4d3183192e9fc4fe7d20870c2f77d327c83fde846e
+          ref: docs/superpowers/plans/2026-11-04-stabilize-archive-publication-recovery.md
     nodes:
       - key: full.open
         value: 0
@@ -1508,6 +1581,21 @@ run_checkpoint:
         left: 73
         right: 84
         height: 5
+      - key: full.build.plan.evidence
+        value: 37
+        left: null
+        right: 60
+        height: 2
+      - key: full.build.plan
+        value: 36
+        left: 72
+        right: 86
+        height: 4
+      - key: full.design.document
+        value: 21
+        left: 87
+        right: 84
+        height: 5
       - key: full.open
         value: 24
         left: null
@@ -1520,8 +1608,8 @@ run_checkpoint:
         height: 1
       - key: full.open.confirm
         value: 25
-        left: 86
-        right: 87
+        left: 89
+        right: 90
         height: 2
       - key: full.open.revalidate
         value: 27
@@ -1531,12 +1619,12 @@ run_checkpoint:
       - key: full.open.evidence
         value: 26
         left: null
-        right: 89
+        right: 92
         height: 2
       - key: full.open.confirm
         value: 25
-        left: 86
-        right: 90
+        left: 89
+        right: 93
         height: 3
       - key: full.design.confirm
         value: 20
@@ -1550,13 +1638,13 @@ run_checkpoint:
         height: 1
       - key: full.design.handoff
         value: 23
-        left: 92
-        right: 93
+        left: 95
+        right: 96
         height: 2
       - key: full.open.confirm
         value: 25
-        left: 94
-        right: 90
+        left: 97
+        right: 93
         height: 3
       - key: full.design.confirm
         value: 20
@@ -1570,18 +1658,18 @@ run_checkpoint:
         height: 1
       - key: full.design.document
         value: 21
-        left: 96
-        right: 97
+        left: 99
+        right: 100
         height: 2
       - key: full.design.handoff
         value: 23
-        left: 98
-        right: 93
+        left: 101
+        right: 96
         height: 3
       - key: full.open.confirm
         value: 25
-        left: 99
-        right: 90
+        left: 102
+        right: 93
         height: 4
       - key: full.open.evidence
         value: 26
@@ -1591,7 +1679,7 @@ run_checkpoint:
       - key: full.open
         value: 24
         left: null
-        right: 101
+        right: 104
         height: 2
       - key: full.design.handoff
         value: 23
@@ -1610,13 +1698,13 @@ run_checkpoint:
         height: 1
       - key: full.open.evidence
         value: 26
-        left: 104
-        right: 105
+        left: 107
+        right: 108
         height: 2
       - key: full.open
         value: 24
-        left: 103
-        right: 106
+        left: 106
+        right: 109
         height: 3
       - key: full.build.configure
         value: 18
@@ -1635,18 +1723,18 @@ run_checkpoint:
         height: 1
       - key: full.design.evidence
         value: 22
-        left: 109
-        right: 110
+        left: 112
+        right: 113
         height: 2
       - key: full.design.confirm
         value: 20
-        left: 108
-        right: 111
+        left: 111
+        right: 114
         height: 3
       - key: full.open
         value: 24
-        left: 112
-        right: 106
+        left: 115
+        right: 109
         height: 4
       - key: full.open
         value: 24
@@ -1665,8 +1753,8 @@ run_checkpoint:
         height: 1
       - key: full.design.document
         value: 21
-        left: 115
-        right: 116
+        left: 118
+        right: 119
         height: 2
       - key: full.open.confirm
         value: 25
@@ -1680,13 +1768,13 @@ run_checkpoint:
         height: 1
       - key: full.open.evidence
         value: 26
-        left: 118
-        right: 119
+        left: 121
+        right: 122
         height: 2
       - key: full.open
         value: 24
-        left: 117
-        right: 120
+        left: 120
+        right: 123
         height: 3
       - key: full.build.configure
         value: 18
@@ -1700,8 +1788,8 @@ run_checkpoint:
         height: 1
       - key: full.build.confirm
         value: 19
-        left: 122
-        right: 123
+        left: 125
+        right: 126
         height: 2
       - key: full.design.document
         value: 21
@@ -1715,18 +1803,18 @@ run_checkpoint:
         height: 1
       - key: full.design.evidence
         value: 22
-        left: 125
-        right: 126
+        left: 128
+        right: 129
         height: 2
       - key: full.design.confirm
         value: 20
-        left: 124
-        right: 127
+        left: 127
+        right: 130
         height: 3
       - key: full.open
         value: 24
-        left: 128
-        right: 120
+        left: 131
+        right: 123
         height: 4
       - key: full.build.check
         value: 31
@@ -1735,7 +1823,7 @@ run_checkpoint:
         height: 1
       - key: full.build.configure
         value: 18
-        left: 130
+        left: 133
         right: null
         height: 2
       - key: full.build.execute
@@ -1750,23 +1838,23 @@ run_checkpoint:
         height: 1
       - key: full.build.plan
         value: 28
-        left: 132
-        right: 133
+        left: 135
+        right: 136
         height: 2
       - key: full.build.confirm
         value: 19
-        left: 131
-        right: 134
+        left: 134
+        right: 137
         height: 3
       - key: full.open
         value: 24
-        left: 127
-        right: 120
+        left: 130
+        right: 123
         height: 3
       - key: full.design.confirm
         value: 20
-        left: 135
-        right: 136
+        left: 138
+        right: 139
         height: 4
       - key: full.build.check
         value: 31
@@ -1780,13 +1868,13 @@ run_checkpoint:
         height: 1
       - key: full.build.check.evidence
         value: 32
-        left: 138
-        right: 139
+        left: 141
+        right: 142
         height: 2
       - key: full.build.confirm
         value: 19
-        left: 140
-        right: 134
+        left: 143
+        right: 137
         height: 3
       - key: full.verify.run
         value: 34
@@ -1796,22 +1884,67 @@ run_checkpoint:
       - key: full.open.revalidate
         value: 27
         left: null
-        right: 142
+        right: 145
         height: 2
       - key: full.open.evidence
         value: 26
-        left: 118
-        right: 143
+        left: 121
+        right: 146
         height: 3
       - key: full.open
         value: 24
-        left: 127
-        right: 144
+        left: 130
+        right: 147
         height: 4
       - key: full.design.confirm
         value: 20
-        left: 141
-        right: 145
+        left: 144
+        right: 148
+        height: 5
+      - key: full.build.plan
+        value: 36
+        left: 135
+        right: 136
+        height: 2
+      - key: full.build.confirm
+        value: 19
+        left: 143
+        right: 150
+        height: 3
+      - key: full.open.revalidate
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 26
+        left: 121
+        right: 152
+        height: 2
+      - key: full.verify.report.evidence
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 34
+        left: 154
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 35
+        left: 153
+        right: 155
+        height: 3
+      - key: full.open
+        value: 24
+        left: 130
+        right: 156
+        height: 4
+      - key: full.design.confirm
+        value: 20
+        left: 151
+        right: 157
         height: 5
     maps:
       - null
@@ -1833,16 +1966,18 @@ run_checkpoint:
       - 85
       - 88
       - 91
-      - 95
-      - 100
-      - 102
-      - 107
-      - 113
-      - 114
-      - 121
-      - 129
-      - 137
-      - 146
+      - 94
+      - 98
+      - 103
+      - 105
+      - 110
+      - 116
+      - 117
+      - 124
+      - 132
+      - 140
+      - 149
+      - 158
     bindings:
       - path:
           - actions
@@ -1911,6 +2046,12 @@ run_checkpoint:
           - outputs
         map: 10
       - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 10
+      - path:
           - actionContexts
           - stabilize-archive-publication-recovery:1
           - results
@@ -1947,66 +2088,76 @@ run_checkpoint:
         map: 16
       - path:
           - actionContexts
-          - stabilize-archive-publication-recovery:4
+          - stabilize-archive-publication-recovery:21
           - results
         map: 17
       - path:
           - actionContexts
-          - stabilize-archive-publication-recovery:5
+          - stabilize-archive-publication-recovery:4
           - results
         map: 18
       - path:
           - actionContexts
-          - stabilize-archive-publication-recovery:7
+          - stabilize-archive-publication-recovery:5
           - results
         map: 19
       - path:
           - actionContexts
-          - stabilize-archive-publication-recovery:9
+          - stabilize-archive-publication-recovery:7
           - results
         map: 20
       - path:
-          - outputs
-        map: 16
-      - path:
-          - waits
-          - "0"
+          - actionContexts
+          - stabilize-archive-publication-recovery:9
           - results
         map: 21
       - path:
+          - outputs
+        map: 17
+      - path:
           - waits
-          - "1"
+          - "0"
           - results
         map: 22
       - path:
           - waits
-          - "2"
+          - "1"
           - results
         map: 23
       - path:
-          - evidenceWaits
-          - "0"
+          - waits
+          - "2"
           - results
         map: 24
       - path:
           - evidenceWaits
-          - "1"
+          - "0"
           - results
         map: 25
       - path:
           - evidenceWaits
-          - "2"
+          - "1"
           - results
         map: 26
       - path:
           - evidenceWaits
-          - "3"
+          - "2"
           - results
         map: 27
       - path:
           - evidenceWaits
-          - "4"
+          - "3"
           - results
         map: 28
-  storageHash: 631c9c8c22020057054741e91e6df957fbed83a5caf37827490680d6fb2556ae
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 29
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 30
+  storageHash: 20cb3768420219845fdf271fe57f26e58f26fbd03c642c411be1e135127fc069
 check_epoch: 4
