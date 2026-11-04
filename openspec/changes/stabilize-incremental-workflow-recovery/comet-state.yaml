@@ -2,7 +2,7 @@
 change_id: e315e531-2e33-49a0-869c-32e6abbf8fa6
 workflow: full
 language: zh-CN
-phase: open
+phase: design
 context_compression: off
 build_mode: null
 build_pause: null
@@ -25,13 +25,13 @@ archive_confirmation: null
 archived: false
 bound_branch: codex/stabilize-incremental-workflow-recovery
 direct_override: null
-handoff_context: null
-handoff_hash: null
+handoff_context: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+handoff_hash: dda980701ac0667f17be86088f02d9509f626fc0355808262bde5319bc2d4175
 classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: c4ec8f848053fe4cc090610f75fd079c7b80dcab78584ba2e8e05a16d9f164c2
+  hash: 594412c4229e2da1817f727ca6d768a02dcc5b4d2eed1b04e8ac2e544d1f5004
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -58,17 +58,18 @@ run_checkpoint:
       branchStatus: pending
       buildMode: null
       buildPause: null
+      checkEpoch: 1
       classicMigration: null
       classicProfile: null
       contextCompression: off
       createdAt: 2026-11-04
       designDoc: null
       directOverride: null
-      handoffContext: null
-      handoffHash: null
+      handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+      handoffHash: dda980701ac0667f17be86088f02d9509f626fc0355808262bde5319bc2d4175
       isolation: current
       language: zh-CN
-      phase: open
+      phase: design
       plan: null
       reviewMode: thorough
       subagentDispatch: null
@@ -79,10 +80,18 @@ run_checkpoint:
       verifyMode: null
       verifyResult: pending
       workflow: full
-    status: running
-    sequence: 1
+    status: waiting
+    sequence: 6
     actions:
       - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-001d29feae53a045c2cb06f9db3aeee7c157f25069aa71c39e54f8c717f55cfe
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: stabilize-incremental-workflow-recovery:1
         input:
           input:
@@ -92,25 +101,408 @@ run_checkpoint:
               ref: 23af2b75-8232-4850-83c2-57806b1476e2
           outputs: {}
         inputHash: e49d85b78a1ad7119d488d748f8ff63c1b9d3ebe842c2d4478812a23a41b47a4
+        outcome:
+          actionId: stabilize-incremental-workflow-recovery:1
+          attempt: 1
+          claimToken: portable-001d29feae53a045c2cb06f9db3aeee7c157f25069aa71c39e54f8c717f55cfe
+          inputHash: e49d85b78a1ad7119d488d748f8ff63c1b9d3ebe842c2d4478812a23a41b47a4
+          outcomeId: b4fbec5d-706c-429f-90d8-bc0bf901d2fd
+          output:
+            event: open-complete
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: fa8b1e9e6e204809ae0d6876cbcf49cfa475bbf3478cb05f7df8e2fddbc48513
+            outcomeId: b4fbec5d-706c-429f-90d8-bc0bf901d2fd
         reconciliations: []
         ref: comet-open
         requiredCapabilities: []
         retry: manual
         runId: stabilize-incremental-workflow-recovery
-        status: pending
+        status: succeeded
         stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-c1c9a517b8aa35839f694b0fa7b6234869ae60d559c141d9ce7939671bd6a155
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-incremental-workflow-recovery:4
+        input:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-incremental-workflow-recovery
+                  changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+                  workspaceBaseline:
+                    ref: 23af2b75-8232-4850-83c2-57806b1476e2
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+                    ref: openspec/changes/stabilize-incremental-workflow-recovery
+            full.open.evidence:
+              contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+              ref: openspec/changes/stabilize-incremental-workflow-recovery
+        inputHash: 131faa1798a6848338617a874f9a3d71ede1411d4e6c2a9394cc4669ecc8e91b
+        outcome:
+          actionId: stabilize-incremental-workflow-recovery:4
+          attempt: 1
+          claimToken: portable-c1c9a517b8aa35839f694b0fa7b6234869ae60d559c141d9ce7939671bd6a155
+          inputHash: 131faa1798a6848338617a874f9a3d71ede1411d4e6c2a9394cc4669ecc8e91b
+          outcomeId: stabilize-incremental-workflow-recovery:4:1:executor-result
+          output:
+            contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 7d7a3201f1de60703419395cf3174b01efa267ead06dd9ea5f5cfdf9fa09275d
+            outcomeId: stabilize-incremental-workflow-recovery:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-incremental-workflow-recovery
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-e4a01bb4a1dd991f1cf9cdef9274808e4ab1a5a3d3f193587de25a05c20dae7b
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-incremental-workflow-recovery:5
+        input:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-incremental-workflow-recovery
+                  changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+                  workspaceBaseline:
+                    ref: 23af2b75-8232-4850-83c2-57806b1476e2
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+                    ref: openspec/changes/stabilize-incremental-workflow-recovery
+            full.open.evidence:
+              contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+              ref: openspec/changes/stabilize-incremental-workflow-recovery
+            full.open.revalidate:
+              contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+        inputHash: ca0a6670f2edb5be213133b4a47ee900cd0c601d6b07312c19549d3ebca4d5b1
+        outcome:
+          actionId: stabilize-incremental-workflow-recovery:5
+          attempt: 1
+          claimToken: portable-e4a01bb4a1dd991f1cf9cdef9274808e4ab1a5a3d3f193587de25a05c20dae7b
+          inputHash: ca0a6670f2edb5be213133b4a47ee900cd0c601d6b07312c19549d3ebca4d5b1
+          outcomeId: 8fce9b6c-fe24-4c62-b00a-4812ab192a1a
+          output:
+            handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+            handoffHash: dda980701ac0667f17be86088f02d9509f626fc0355808262bde5319bc2d4175
+            proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+              Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+              revision、稳定decision identity并由Runtime
+              CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+              Evidence前置验证TDD Package闭包与授权包络，Specification
+              Provider前置验证Requirement映射和Capability
+              Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+              SDK。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制；本轮无Spec Patch。
+            requirementsEvidence:
+              contentHash: c90b57697f3ea8326577a34150cc24df86f0cea51107bcdfe6b8ed856450e4af
+              ref: openspec/changes/stabilize-incremental-workflow-recovery
+            sourceEvidence:
+              contentHash: c958fb24bd5dac90fe8bd4b34ec8c81530f6d84e26bf46c3c98508a0c86c7fbf
+              ref: openspec/changes/stabilize-incremental-workflow-recovery
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 7828782e5c92fedd96556c082d1fdf47fb1991848edca70f7f6c2bfd10674fdd
+            outcomeId: 8fce9b6c-fe24-4c62-b00a-4812ab192a1a
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-incremental-workflow-recovery
+        status: succeeded
+        stepId: full.design.handoff
         type: invoke_skill
     actionContexts:
       stabilize-incremental-workflow-recovery:1:
         results: {}
         sequence: 1
-    waits: []
+      stabilize-incremental-workflow-recovery:4:
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-incremental-workflow-recovery
+                  changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+                  workspaceBaseline:
+                    ref: 23af2b75-8232-4850-83c2-57806b1476e2
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+                    ref: openspec/changes/stabilize-incremental-workflow-recovery
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+              ref: openspec/changes/stabilize-incremental-workflow-recovery
+        sequence: 4
+      stabilize-incremental-workflow-recovery:5:
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-incremental-workflow-recovery
+                  changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+                  workspaceBaseline:
+                    ref: 23af2b75-8232-4850-83c2-57806b1476e2
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+                    ref: openspec/changes/stabilize-incremental-workflow-recovery
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+              ref: openspec/changes/stabilize-incremental-workflow-recovery
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+        sequence: 5
+    waits:
+      - id: stabilize-incremental-workflow-recovery:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+              ref: openspec/changes/stabilize-incremental-workflow-recovery
+        proposalHash: 7870effe2997a351d13141bae9be7db5c222de333af2cf3ecf9ca15950ee446a
+        choices:
+          - approved
+          - rejected
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+              ref: openspec/changes/stabilize-incremental-workflow-recovery
+        decision:
+          id: classic-open-8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+          choice: approved
+          proposalHash: 7870effe2997a351d13141bae9be7db5c222de333af2cf3ecf9ca15950ee446a
+      - id: stabilize-incremental-workflow-recovery:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: pending
+        proposal:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+              handoffHash: dda980701ac0667f17be86088f02d9509f626fc0355808262bde5319bc2d4175
+              proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+                Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+                revision、稳定decision identity并由Runtime
+                CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+                Evidence前置验证TDD Package闭包与授权包络，Specification
+                Provider前置验证Requirement映射和Capability
+                Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+                SDK。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制；本轮无Spec Patch。
+              requirementsEvidence:
+                contentHash: c90b57697f3ea8326577a34150cc24df86f0cea51107bcdfe6b8ed856450e4af
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+              sourceEvidence:
+                contentHash: c958fb24bd5dac90fe8bd4b34ec8c81530f6d84e26bf46c3c98508a0c86c7fbf
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+        proposalHash: 7110582f4258256d4f524b4a451f50fa647eee182f49994047db95214fa8d215
+        choices:
+          - approved
+          - rejected
+        results:
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+              handoffHash: dda980701ac0667f17be86088f02d9509f626fc0355808262bde5319bc2d4175
+              proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+                Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+                revision、稳定decision identity并由Runtime
+                CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+                Evidence前置验证TDD Package闭包与授权包络，Specification
+                Provider前置验证Requirement映射和Capability
+                Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+                SDK。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制；本轮无Spec Patch。
+              requirementsEvidence:
+                contentHash: c90b57697f3ea8326577a34150cc24df86f0cea51107bcdfe6b8ed856450e4af
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+              sourceEvidence:
+                contentHash: c958fb24bd5dac90fe8bd4b34ec8c81530f6d84e26bf46c3c98508a0c86c7fbf
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-incremental-workflow-recovery
+                  changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+                  workspaceBaseline:
+                    ref: 23af2b75-8232-4850-83c2-57806b1476e2
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+                    ref: openspec/changes/stabilize-incremental-workflow-recovery
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+              ref: openspec/changes/stabilize-incremental-workflow-recovery
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+    evidenceWaits:
+      - id: stabilize-incremental-workflow-recovery:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+        receipt:
+          ref: openspec/changes/stabilize-incremental-workflow-recovery
+          contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+          submissionId: e3846add-0a0f-4cba-98d6-973ee40b0a84
     ready: []
     joins: {}
-    outputs: {}
+    outputs:
+      full.design.handoff:
+        sequence: 5
+        value:
+          handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+          handoffHash: dda980701ac0667f17be86088f02d9509f626fc0355808262bde5319bc2d4175
+          proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+            Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+            revision、稳定decision identity并由Runtime
+            CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+            Evidence前置验证TDD Package闭包与授权包络，Specification
+            Provider前置验证Requirement映射和Capability
+            Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+            SDK。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制；本轮无Spec Patch。
+          requirementsEvidence:
+            contentHash: c90b57697f3ea8326577a34150cc24df86f0cea51107bcdfe6b8ed856450e4af
+            ref: openspec/changes/stabilize-incremental-workflow-recovery
+          sourceEvidence:
+            contentHash: c958fb24bd5dac90fe8bd4b34ec8c81530f6d84e26bf46c3c98508a0c86c7fbf
+            ref: openspec/changes/stabilize-incremental-workflow-recovery
+      full.open:
+        sequence: 1
+        value:
+          event: open-complete
+      full.open.confirm:
+        sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: stabilize-incremental-workflow-recovery
+              changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+              workspaceBaseline:
+                ref: 23af2b75-8232-4850-83c2-57806b1476e2
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+      full.open.evidence:
+        sequence: 2
+        value:
+          contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+          ref: openspec/changes/stabilize-incremental-workflow-recovery
+      full.open.revalidate:
+        sequence: 4
+        value:
+          contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
     children: []
     lineage: []
-  sourceRevision: 1
-  sourceHash: 7b050fa859c795852bb6a8580e341521325d14483e7dbe26e85bbeb416aa1611
+  sourceRevision: 9
+  sourceHash: e8b175e3876c94610fe5124c4d695d878b29d68d9fa324a256998f6db3361a84
+check_epoch: 1

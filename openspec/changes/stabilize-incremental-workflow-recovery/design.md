@@ -25,9 +25,9 @@
 
 ## Decisions
 
-### 1. 以纯领域 `RecoveryClassifier` 统一恢复选择
+### 1. 采用 Comet 式有序 Inspector 与显式恢复命令
 
-新增不依赖Store、Git、OpenSpec CLI或Host的领域分类器。输入由当前Run snapshot、已接受checkpoint identities、规范化finding facts、依赖差异和副作用边界组成；输出为不可变`RecoveryDecision`：
+由多个纯领域、权威专属Inspector分别核对Requirements/Design Evidence、Plan Evidence、当前Work执行与Evidence依赖，再由一个薄`RecoveryCoordinator`按固定顺序选择第一个不再有效的权威。Inspector不依赖Store、Git、OpenSpec CLI或Host；Service负责把已观察事实转换为输入。输出为不可变`RecoveryDecision`：
 
 - `revise-design`：批准的Requirement、Design、Task语义或approval authority已变化。
 - `revise-plan`：批准语义不变，但Package边界、依赖、write scope内的测试切面、命令或Plan可行性需要改变。
@@ -35,11 +35,18 @@
 - `invalidate-evidence`：上层事实有效，仅声明的Evidence输入发生变化。
 - `retry-infrastructure`、`reconcile-external`、`halt`：分别处理暂时不可用、外部结果未知和不可恢复冲突。
 
-分类器固定按“规划语义 → Plan → 当前Work → Evidence”比较身份。一次observation只产生一个最高层decision，其`decisionId`由run、expected revision/epoch、observation identity、authority diff与invalidation set规范化计算。Service在RunStore转换锁内重新读取输入并应用decision，重复调用返回既有checkpoint或revision conflict。
+Coordinator固定按“规划语义 → Plan → 当前Work → Evidence”执行Inspector；Requirements drift存在时不再运行Plan drift恢复，和Comet的readiness顺序一致。一次observation只产生一个最高层decision，其`decisionId`由run、expected revision/epoch、observation identity、authority diff与invalidation set规范化计算。Service在RunStore转换锁内重新读取输入并通过显式命令应用decision，重复调用返回既有checkpoint或revision conflict。
 
-选择该方案而不是在`workflow-runs.ts`继续添加条件分支，是因为恢复优先级、幂等身份和失效集合必须可独立穷举测试；Service只负责编排事实采集和原子提交。
+选择该方案而不是单一巨型分类器，是因为各权威拥有不同Evidence合同，单体输入会不断膨胀；选择它而不是在`workflow-runs.ts`继续添加条件分支，是因为恢复顺序、幂等身份和失效集合必须可独立穷举测试。Service只负责编排事实采集和原子提交。
 
-### 2. Host finding 改为事实合同，移除动作式finding
+### 2. 方案比较
+
+- **候选A：有序权威Inspector + 显式Runtime命令（采用）**。最接近Comet 0.5.1的`inspectClassicSdkRevisionReadiness`与revision command模式，同时可复用Repoctopus现有identity graph、多仓Snapshot和Work/Host合同。代价是需要为每层维护独立Evidence输入，但边界清晰。
+- **候选B：一个通用RecoveryClassifier**。表面统一，却会把Specification、Plan、Work、Evidence的不同合同塞进一个不断扩张的输入模型，容易成为新的集中式条件分支，因此不采用。
+- **候选C：保留各阶段Service条件分支，只替换信号名称**。改动小，但仍会重复判定authority drift，无法保证Requirements优先于Plan或同一根因只处理一次，因此不采用。
+- **候选D：直接引入Comet SDK**。能复用实现，但会把Comet的单项目Classic状态、Skill与文档模型带进Repoctopus，破坏多仓OpenSpec Store、Cordis composition和外部Host架构，因此只借鉴语义与测试，不引入依赖。
+
+### 3. Host finding 改为事实合同，移除动作式finding
 
 删除`design_assumption_invalid`与`planning_semantics_changed`。新的有界finding只描述事实层：实现失败、批准权威冲突声明、Plan约束、Evidence不匹配、Evidence基础设施不可用和外部结果未知；同时携带当前Work允许的Requirement、Task、Package与Evidence引用。
 
@@ -47,7 +54,7 @@ Work Execution Validator先校验schema、引用存在性与当前Work关联，�
 
 选择事实合同而不是让Host直接返回四种动作，是为了保持Runtime-authoritative，并防止团队自定义Host或Agent绕过权威比较。
 
-### 3. Lifecycle只物化分类结果，不再建立Build→Design提案Wait
+### 4. Lifecycle只物化分类结果，不再建立Build→Design提案Wait
 
 移除`build.design-revision-required/approved/rejected`协议和`build-design-revision-required`observation。Lifecycle接受领域decision并物化唯一转换：
 
@@ -58,7 +65,7 @@ Work Execution Validator先校验schema、引用存在性与当前Work关联，�
 
 Design返工不再先询问“是否回Design”：如果权威语义已经改变，旧approval客观上已无效；如果没有改变，则不应回Design。真正扩大范围、权限或风险的决定仍由已有Open/Design/Plan授权协议处理。
 
-### 4. Identity graph按权威分层并由decision一次计算失效闭包
+### 5. Identity graph按权威分层并由decision一次计算失效闭包
 
 扩展现有Runtime identity graph，至少区分：
 
@@ -70,37 +77,37 @@ Design返工不再先询问“是否回Design”：如果权威语义已经改�
 
 每个decision先计算保留/失效集合再提交一次transition，禁止Archive先按源码fingerprint回Verify、随后又按planning digest回Design。Task checkbox、普通实现OID和publication provenance不进入planning semantic identity；只有命令策略显式声明Git identity时，commit才进入对应Evidence依赖。
 
-### 5. Build Plan在派发前验证可完成闭包
+### 6. Build Plan在派发前验证可完成闭包
 
 扩展Plan Validator与Plan Evidence：除了Task/Acceptance覆盖、DAG、Binding、write scope与保护分支，还验证每个Package能独立满足其Outcome/Validator合同。`tddMode=tdd`时，一个可完成Package要覆盖同一行为切片的RED、实现、GREEN与相关回归；不能把RED和GREEN拆成两个都声称可完成的Package。`direct`仍要求实现与回归，但不要求RED。
 
 Plan revision在已批准授权包络内自动接受；只有repository/write scope、风险或外部副作用扩大才建立Human Decision。这样错误测试切面会成为`revise-plan`，而不是执行后反复回Design。
 
-### 6. Specification Provider在批准前完成引用与关闭静态预检
+### 7. Specification Provider在批准前完成引用与关闭静态预检
 
 Tasks解析器将Requirement metadata按明确语法规范化，支持半角/全角逗号与分号，并拒绝空token或歧义内容。Provider使用当前主规格与delta导出的稳定Requirement identities验证每个映射，Build Plan只消费解析结果。
 
 Provider在Open/Design严格校验中计算不产生副作用的closure preflight：验证新增capability具有可归档Purpose、delta操作与退役声明能形成唯一关闭计划。Archive仍在隔离checkout重新验证文件与候选结果，但不再首次发现规划时已可确定的错误。
 
-### 7. Evidence使用显式依赖清单而不是仓库级粗指纹
+### 8. Evidence使用显式依赖清单而不是仓库级粗指纹
 
 Verification Input保留完整审计身份，但每个Evidence节点声明实际消费的产品内容、planning semantic、control-plane、工具、环境和可选Git identity。Specification仓中的规划文件由Provider语义投影参与验证；合法checkbox变化只更新完成投影，不改变planning semantic。实现文件仍按真实内容指纹，未知输入继续fail closed。
 
 `invalidate-evidence`沿依赖图只失效受影响Receipt及其下游Bundle/Gate。Evidence Provider不可用保持当前节点blocked/retry，不通过`revise-plan`或`revise-design`隐藏基础设施错误。
 
-### 8. Service、Cordis与平台边界
+### 9. Service、Cordis与平台边界
 
-- **领域模块**：定义finding facts、RecoveryDecision、identity diff、Plan closure与invalidation closure；全部使用纯数据和确定性函数。
-- **WorkflowRuns Service**：在Cordis Effect中观察Specification、Project Snapshot、Build Protocol和Evidence事实，调用领域分类器，并在RunStore CAS/transaction中物化decision。
+- **领域模块**：定义finding facts、分层Inspector、RecoveryDecision、identity diff、Plan closure与invalidation closure；全部使用纯数据和确定性函数。
+- **WorkflowRuns Service**：在Cordis Effect中观察Specification、Project Snapshot、Build Protocol和Evidence事实，调用RecoveryCoordinator，并在RunStore CAS/transaction中物化decision。
 - **Specification/Evidence/Git平台适配器**：只提供可验证事实、Receipt与稳定identity，不选择lifecycle动作。
 - **Cordis composition**：继续负责Provider/Validator/Host能力装配与Effect清理；composition drift走既有兼容或migration判定，不冒充planning drift。
 - **CLI/Runner**：pull当前Action、提交当前Work Outcome和显示Runtime decision；不得拼装等价transition。
 
-### 9. OTLP记录分类效率而不泄露高基数内容
+### 10. OTLP记录分类效率而不泄露高基数内容
 
 新增稳定事件/跨度表达`recovery.observed`、`recovery.classified`、`recovery.applied`和`evidence.invalidated`。允许属性包括source phase/action、decision kind、authority layer、reason code、retained/invalidated计数、attempt与是否重放；finding摘要、路径、Requirement文本、commit、digest和用户内容不作为metric attribute。Trajectory保存完整内容寻址引用，Dashboard可按run/change关联查看。
 
-### 10. 用真实轨迹的脱敏fixture做状态机重放
+### 11. 用真实轨迹的脱敏fixture做状态机重放
 
 将本轮多仓验收中三类Build→Design和Archive双回退压缩为无业务名称的事件fixture。测试从相同初始checkpoint重放，断言：
 
