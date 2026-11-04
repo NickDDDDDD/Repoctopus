@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   createBuildStrategy,
   createExecutionBinding,
+  executionBindingRequiresMigration,
   createExecutionWorkspaceBinding,
   createExecutionWorkspaceIntent,
 } from '../domains/change-lifecycle/build-protocol.js';
@@ -132,5 +133,16 @@ describe('Build Strategy and Execution Binding', () => {
       coordinatorHostId: 'runner-without-dispatch',
     });
     expect(JSON.stringify(binding)).not.toContain('capabilit');
+    expect(executionBindingRequiresMigration(binding)).toBe(false);
+    expect(
+      executionBindingRequiresMigration({
+        ...binding,
+        schemaVersion: 1,
+        host: {
+          hostId: binding.coordinatorHostId,
+          capabilityDigest: `sha256:${'a'.repeat(64)}`,
+        },
+      }),
+    ).toBe(true);
   });
 });

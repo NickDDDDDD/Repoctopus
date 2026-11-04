@@ -65,6 +65,7 @@ import {
 import {
   createBuildStrategy,
   createExecutionBinding,
+  executionBindingRequiresMigration,
   createBuildCheckEvidence,
   createBuildInvalidation,
   createBuildPlan,
@@ -2435,9 +2436,7 @@ export class WorkflowRuns extends Service {
           if (
             lifecycle.phase === 'build' &&
             legacyBuildProtocol?.binding &&
-            Number(
-              (legacyBuildProtocol.binding as unknown as { schemaVersion?: unknown }).schemaVersion,
-            ) !== 3
+            executionBindingRequiresMigration(legacyBuildProtocol.binding)
           ) {
             const reason =
               'Pre-release Execution Binding schema is not compatible with Work-scoped Host capabilities';

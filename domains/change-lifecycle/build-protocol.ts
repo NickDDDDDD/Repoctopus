@@ -255,6 +255,11 @@ export interface ExecutionBinding {
   localOverlayRef: string;
 }
 
+export function executionBindingRequiresMigration(binding: unknown): boolean {
+  if (!binding || typeof binding !== 'object') return true;
+  return (binding as { schemaVersion?: unknown }).schemaVersion !== 3;
+}
+
 export interface BuildWorkspaceCheckpointRepository {
   repositoryId: string;
   branchRef: string;

@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+
 import { describe, expect, it, vi } from 'vitest';
 
 import type { WorkDescriptor } from '../domains/change-lifecycle/transition.js';
@@ -43,6 +46,34 @@ function work(
 }
 
 describe('Work-scoped Host capability authority', () => {
+  it('preserves the real round4 failure boundary as immutable characterization evidence', () => {
+    const fixture = JSON.parse(
+      readFileSync(
+        path.join(import.meta.dirname, 'fixtures', 'build-host-capability-round4-failure.json'),
+        'utf8',
+      ),
+    ) as {
+      failureBoundary: Record<string, unknown>;
+      runStateSha256: string;
+      trajectorySha256: string;
+    };
+
+    expect(fixture.failureBoundary).toMatchObject({
+      workKind: 'build.plan',
+      executionStatus: 'submitted',
+      bindingSchemaVersion: 1,
+      invocationCapabilities: ['build.autonomous', 'repository.read', 'specification.read'],
+      claimPersisted: true,
+      packetPersisted: true,
+      invocationPersisted: true,
+      submissionPersisted: true,
+      planValidatorReached: false,
+      legacyFailureClass: 'cross-work-binding-capability-rebuild',
+    });
+    expect(fixture.runStateSha256).toMatch(/^[a-f0-9]{64}$/u);
+    expect(fixture.trajectorySha256).toMatch(/^[a-f0-9]{64}$/u);
+  });
+
   it.each([
     ['build.configure', ['build.autonomous', 'repository.read', 'specification.read']],
     ['build.plan', ['build.autonomous', 'repository.read', 'specification.read']],
