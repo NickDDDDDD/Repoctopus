@@ -1,3 +1,9 @@
+---
+comet_change: stabilize-archive-publication-recovery
+role: technical-design
+canonical_spec: openspec
+---
+
 # Design
 
 ## Context
