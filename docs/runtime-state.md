@@ -52,6 +52,8 @@ Design 返工会把现有 Build Protocol 标记为 `suspended-for-design`。该�
 }
 ```
 
+终态具有绝对优先级：只要持久 Run 已是 `completed`，投影固定返回 `done/terminal`、空 Work/attempt 和空 next actions。历史 `continuation.selected` 不能覆盖终态。非终态 replay 必须同时匹配当前 Run、state version、Work、attempt 与 check epoch；旧 revision 或旧 epoch 的 null-work 事实只保留为审计历史，不再参与 CLI、Desktop 或 Runtime status 的当前投影。
+
 `reobserve` 表示 Host Outcome 已知且保持不变，只需重试 Specification Provider/Store 观察；它保留原 Work、attempt、check epoch、invocation、Outcome、Receipt 与 Skill consumption，绝不调用 Host reconciliation。Open 的严格 Provider 校验成功后，Work 进入 `validated`，纯 continuation classifier 将其投影为 `reobserve/open-gate-pending`，下一次 `run next` 直接继续 planning gate。某次观测失败仍返回 `reobserve/open-observation-unavailable`，并以 `provider-validation | planning-gate` 标识失败位置。`reconcile` 只表示 Host 或外部副作用结果未知。`reconcile`、`awaiting-correction` 和 `ask` 同时产生有界 CLI diagnostic code；`reason` 只能取公开枚举，不能包含路径、Provider 正文或自由错误消息。真正的 `next` 或 `resume` 才执行 packet/Host 动态核验；Runtime 先把选择提交为 trajectory fact，再让 CLI、Desktop 与 OTLP 读取同一结果。
 
 恢复时，Project Snapshot 差异分为 `same | content | identity`。仅 HEAD/worktree 变化属于 `content`：Runtime 完整报告差异，但由 Open、Design、Build、Verify 或 Archive 各自的 authority 精确重验依赖，不设置全局 `reconciliationRequired`。仓库增删、Project/root、path、remote、branch、拓扑、diagnostics 或无法分类的变化属于 `identity`，默认继续 fail closed 并要求全局 reconciliation。唯一的 branch 例外是 Runtime 已用 rejected Build Plan 明确要求 Runner 修正受保护的精确 write-set：只有 candidate、旧 Binding、保护策略与 branch-only diff 全部吻合时，typed authorized rebind 才能在同一 Run 返回 Configure；它不会把 identity 差异伪装成 `content`。`changed` 仅供展示，不是阻断条件。

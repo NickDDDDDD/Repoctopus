@@ -1,0 +1,16 @@
+{
+  "change": "stabilize-archive-publication-recovery",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "f14618d810380089eb99b634b99dec1cde8d46d02583c7ba387ed7b7d7e6f95c",
+  "files": [
+    { "path": "openspec/changes/stabilize-archive-publication-recovery/proposal.md", "sha256": "9c1c633921f217704896d284f649f77a5ca5d2029745aba4c76eea7011aaf98d" },
+    { "path": "openspec/changes/stabilize-archive-publication-recovery/design.md", "sha256": "d1660b9ad8184276573626904bbb0f6adc31183ce37de0637b9569cd87ef1ee9" },
+    { "path": "openspec/changes/stabilize-archive-publication-recovery/tasks.md", "sha256": "927d56410b53346595f2fd9937c388883fa01f8af1b1c3c11dead5c1e2f56d91" },
+    { "path": "openspec/changes/stabilize-archive-publication-recovery/specs/change-lifecycle/spec.md", "sha256": "cab37aab3a1a366fd1ca920700e94aef2ffae98fbb99b3ea0f1e5f8a732c3fec" },
+    { "path": "openspec/changes/stabilize-archive-publication-recovery/specs/delivery-governance/spec.md", "sha256": "3a43c6bf3ea0e815082c1f85b863c12cd8c1331f9fcf78f6592d5f8a335ac6c6" }
+  ]
+}

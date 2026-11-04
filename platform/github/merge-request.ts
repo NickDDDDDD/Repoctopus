@@ -8,6 +8,7 @@ import type {
   MergeRequestStatus,
   PlatformCapability,
 } from '../../domains/delivery/types.js';
+import type { ExternalEffectCertainty } from '../../domains/delivery/publication-not-applied.js';
 
 interface GitHubPull {
   number: number;
@@ -31,9 +32,11 @@ export class PlatformRequestError extends Error {
       | 'rate_limited'
       | 'temporary'
       | 'invalid_response',
+    public readonly effect: ExternalEffectCertainty,
     message: string,
+    options: ErrorOptions = {},
   ) {
-    super(message);
+    super(message, options);
     this.name = 'PlatformRequestError';
   }
 }
@@ -179,10 +182,20 @@ export class GitHubMergeRequestAdapter implements FinalMergeRequestPort {
   }
 
   private async call<T = unknown>(resource: string, init: RequestInit = {}): Promise<T> {
-    const token = await this.credentials.token();
-    const response = await this.request(
-      new URL(`${this.apiBaseUrl.replace(/\/$/, '')}${resource}`),
-      {
+    let token: string;
+    try {
+      token = await this.credentials.token();
+    } catch (cause) {
+      throw new PlatformRequestError(
+        'authentication',
+        'not-applied',
+        'GitHub credential is unavailable',
+        { cause },
+      );
+    }
+    let response: Response;
+    try {
+      response = await this.request(new URL(`${this.apiBaseUrl.replace(/\/$/, '')}${resource}`), {
         ...init,
         headers: {
           Accept: 'application/vnd.github+json',
@@ -190,8 +203,12 @@ export class GitHubMergeRequestAdapter implements FinalMergeRequestPort {
           'X-GitHub-Api-Version': '2022-11-28',
           ...(init.headers ?? {}),
         },
-      },
-    );
+      });
+    } catch (cause) {
+      throw new PlatformRequestError('temporary', 'unknown', 'GitHub request result is unknown', {
+        cause,
+      });
+    }
     if (!response.ok) {
       let featureUnavailable = false;
       if (response.status === 403) {
@@ -218,12 +235,18 @@ export class GitHubMergeRequestAdapter implements FinalMergeRequestPort {
                 : response.status >= 500
                   ? 'temporary'
                   : 'invalid_response';
-      throw new PlatformRequestError(code, `GitHub request failed with status ${response.status}`);
+      const effect: ExternalEffectCertainty =
+        response.status >= 400 && response.status < 500 ? 'not-applied' : 'unknown';
+      throw new PlatformRequestError(
+        code,
+        effect,
+        `GitHub request failed with status ${response.status}`,
+      );
     }
     try {
       return (await response.json()) as T;
     } catch {
-      throw new PlatformRequestError('invalid_response', 'GitHub returned invalid JSON');
+      throw new PlatformRequestError('invalid_response', 'unknown', 'GitHub returned invalid JSON');
     }
   }
 }

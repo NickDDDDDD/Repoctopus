@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import type { MergeRequestInput, MergeRequestPort } from '../domains/delivery/ports.js';
 import { observeOrCreateMergeRequest } from '../domains/delivery/stable-publication.js';
+import { PublicationNotAppliedError } from '../domains/delivery/publication-not-applied.js';
+import { PublicationResultUnknownError } from '../domains/delivery/publication-result-unknown.js';
 import type { MergeRequestIdentity, MergeRequestStatus } from '../domains/delivery/types.js';
 
 const request: MergeRequestInput = {
@@ -89,6 +91,43 @@ describe('stable external publication recovery', () => {
     });
     expect(result).toMatchObject({ provenance: 'recovered', identity: { number: 2 } });
     expect(adapter.creates).toBe(1);
+  });
+
+  it('separates a rejected create from uncertain post-create verification', async () => {
+    const rejected = port([]);
+    rejected.create = () =>
+      Promise.reject(
+        Object.assign(new Error('request rejected'), {
+          effect: 'not-applied' as const,
+          code: 'permission',
+        }),
+      );
+    const rejectedError = await observeOrCreateMergeRequest({
+      port: rejected,
+      request,
+      identity: expected,
+    }).catch((error: unknown) => error);
+    expect(rejectedError).toBeInstanceOf(PublicationNotAppliedError);
+    expect(String(rejectedError)).toContain('same Archive Work');
+    expect(String(rejectedError)).not.toMatch(/new Run|Store|request rejected/u);
+
+    const verificationFailed = port([]);
+    verificationFailed.status = () =>
+      Promise.reject(
+        Object.assign(new Error('status rejected'), {
+          effect: 'not-applied' as const,
+          code: 'not_found',
+        }),
+      );
+    const unknownError = await observeOrCreateMergeRequest({
+      port: verificationFailed,
+      request,
+      identity: expected,
+    }).catch((error: unknown) => error);
+    expect(unknownError).toBeInstanceOf(PublicationResultUnknownError);
+    expect(String(unknownError)).toContain('observe or adopt the exact MR');
+    expect(String(unknownError)).not.toMatch(/new Run|Store|status rejected/u);
+    expect(verificationFailed.creates).toBe(1);
   });
 
   it('fails closed for ambiguous or OID-mismatched observations', async () => {

@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -151,6 +153,8 @@ describe('committed lifecycle continuation projector', () => {
           reason: 'open-observation-unavailable',
           observationStage: 'provider-validation',
           workId: 'change.intake:abc',
+          attempt: 1,
+          checkEpoch: 2,
         },
       },
     ];
@@ -283,6 +287,111 @@ describe('committed lifecycle continuation projector', () => {
       workId: 'build.check:def',
       attempt: null,
       checkEpoch: 3,
+    });
+  });
+
+  it('gives a completed Run precedence over a stale null-Work continuation fact', () => {
+    const lifecycle = snapshot({
+      phase: 'archive',
+      status: 'completed',
+      currentWork: null,
+    });
+    const checkpoint = {
+      schemaVersion: 1,
+      runId: 'run',
+      stateVersion: 12,
+      trajectoryOffset: 6,
+      runStatus: 'completed',
+      changeLifecycle: lifecycle,
+    } as unknown as Checkpoint;
+    const trajectory: TrajectoryEvent[] = [
+      {
+        schemaVersion: 1,
+        sequence: 5,
+        eventId: 'continuation:stale-archive',
+        timestamp: '2026-11-01T00:00:00.000Z',
+        type: 'continuation.selected',
+        runId: 'run',
+        stateVersion: 11,
+        compositionDigest: `sha256:${'a'.repeat(64)}`,
+        data: {
+          continuation: 'execute',
+          reason: 'transition-pending',
+          workId: null,
+        },
+      },
+    ];
+
+    expect(projectCommittedContinuation(checkpoint, trajectory)).toEqual({
+      schemaVersion: 2,
+      continuation: 'done',
+      reason: 'terminal',
+      workId: null,
+      attempt: null,
+      checkEpoch: 2,
+    });
+    expect(projectLifecycleNextActions(lifecycle)).toEqual([]);
+  });
+
+  it('replays the frozen round5 terminal fixture as terminal only', () => {
+    const fixture = JSON.parse(
+      readFileSync(
+        new URL('./fixtures/archive-publication-round5-terminal.json', import.meta.url),
+        'utf8',
+      ),
+    ) as { checkpoint: Checkpoint; trajectory: TrajectoryEvent[] };
+
+    const continuation = projectCommittedContinuation(fixture.checkpoint, fixture.trajectory);
+    expect(continuation).toEqual({
+      schemaVersion: 2,
+      continuation: 'done',
+      reason: 'terminal',
+      workId: null,
+      attempt: null,
+      checkEpoch: 8,
+    });
+    expect(
+      projectLifecycleNextActions({
+        ...fixture.checkpoint.changeLifecycle!,
+        status: 'completed',
+      }),
+    ).toEqual([]);
+  });
+
+  it('does not replay an older null-Work selection into a newer non-terminal checkpoint', () => {
+    const lifecycle = snapshot({ phase: 'archive', currentWork: null, checkEpoch: 4 });
+    const checkpoint = {
+      schemaVersion: 1,
+      runId: 'run',
+      stateVersion: 12,
+      trajectoryOffset: 6,
+      runStatus: 'running',
+      changeLifecycle: lifecycle,
+    } as unknown as Checkpoint;
+    const trajectory: TrajectoryEvent[] = [
+      {
+        schemaVersion: 1,
+        sequence: 5,
+        eventId: 'continuation:old-null-work',
+        timestamp: '2026-11-01T00:00:00.000Z',
+        type: 'continuation.selected',
+        runId: 'run',
+        stateVersion: 11,
+        compositionDigest: `sha256:${'a'.repeat(64)}`,
+        data: {
+          continuation: 'reconcile',
+          reason: 'project-drift',
+          workId: null,
+          attempt: null,
+          checkEpoch: 3,
+        },
+      },
+    ];
+
+    expect(projectCommittedContinuation(checkpoint, trajectory)).toMatchObject({
+      continuation: 'wait',
+      reason: 'transition-pending',
+      checkEpoch: 4,
     });
   });
 });

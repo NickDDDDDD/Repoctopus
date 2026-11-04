@@ -84,6 +84,9 @@ const EXECUTION_DATA_KEYS = new Set([
   'warningCount',
   'errorCount',
   'contractConflict',
+  'effectStage',
+  'effectCertainty',
+  'effectResult',
 ]);
 
 const SENSITIVE_KEY =
@@ -294,6 +297,24 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
         key === 'reasonCode' &&
         typeof value === 'string' &&
         !BOUNDED_REASON_CODES.has(value)
+      ) {
+        normalized = 'unknown';
+      } else if (
+        key === 'effectStage' &&
+        typeof value === 'string' &&
+        !['push', 'merge-request'].includes(value)
+      ) {
+        normalized = 'unknown';
+      } else if (
+        key === 'effectCertainty' &&
+        typeof value === 'string' &&
+        !['not-applied', 'unknown'].includes(value)
+      ) {
+        normalized = 'unknown';
+      } else if (
+        key === 'effectResult' &&
+        typeof value === 'string' &&
+        !['retryable', 'reconcile'].includes(value)
       ) {
         normalized = 'unknown';
       } else if (
@@ -543,6 +564,18 @@ export function executionMetricAttributes(event: TrajectoryEvent): Attributes | 
     ['current', 'branch', 'worktree'].includes(event.data.isolation)
       ? event.data.isolation
       : 'none';
+  const effectStage =
+    event.data.effectStage === 'push' || event.data.effectStage === 'merge-request'
+      ? event.data.effectStage
+      : undefined;
+  const effectCertainty =
+    event.data.effectCertainty === 'not-applied' || event.data.effectCertainty === 'unknown'
+      ? event.data.effectCertainty
+      : undefined;
+  const effectResult =
+    event.data.effectResult === 'retryable' || event.data.effectResult === 'reconcile'
+      ? event.data.effectResult
+      : undefined;
   return {
     'repoctopus.execution.event.type': event.type,
     'repoctopus.execution.phase': BOUNDED_PHASES.has(phase) ? phase : 'unknown',
@@ -561,6 +594,9 @@ export function executionMetricAttributes(event: TrajectoryEvent): Attributes | 
     'repoctopus.build.execution.mode': executionMode,
     'repoctopus.build.tdd.mode': tddMode,
     'repoctopus.build.isolation': isolation,
+    ...(effectStage ? { 'repoctopus.publication.effect.stage': effectStage } : {}),
+    ...(effectCertainty ? { 'repoctopus.publication.effect.certainty': effectCertainty } : {}),
+    ...(effectResult ? { 'repoctopus.publication.effect.result': effectResult } : {}),
   };
 }
 

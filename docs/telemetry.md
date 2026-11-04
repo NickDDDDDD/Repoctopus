@@ -123,6 +123,8 @@ CLI 与 Desktop 展示的 continuation 也来自已提交 checkpoint。动态 `n
 
 Archive 仍使用同一 Run 和相同字段；不创建独立 Post-merge Run，不输出 Webhook、等待远端合入或 `repoctopus.post_merge.*` 平行语义。Publication Receipt 被同一 Run 接受时上报完成；后续 consistency reconcile 只上报有界的检查结果、变化类别和审查状态，不回写历史 phase。
 
+Archive 外部副作用恢复通过现有 execution event 上报三个低基数维度：`repoctopus.publication.effect.stage=push|merge-request`、`certainty=not-applied|unknown`、`result=retryable|reconcile`。Trace 继续使用原 Run/Work/attempt/epoch 关联；Metric 不包含 repository、branch、path、平台响应正文或自由错误消息。`not-applied` 表示修正平台拒绝后可重拉同一 Work，`unknown` 表示只能观察、采用或进行有权威证据的 reconciliation。
+
 Log 和 Span 可以携带这些高基数关联 ID。Metric 只使用工作流名、事件类型、动作结果、Evidence Adapter、状态等有界维度；它们不使用 Run、change、Attempt、Bundle、Delivery、Envelope 或 Receipt ID，避免时间序列数量随执行次数增长。
 
 ## 隐私边界

@@ -191,7 +191,7 @@ describe('Work execution recovery classification', () => {
       intentId: run.workExecution!.intentId,
     } as never;
 
-    await authority.markExternalSideEffectUnknown(intent, 'merge request response unavailable');
+    await authority.markExternalSideEffectUnknown(intent, 'merge-request');
     await expect(authority.recovery(run.runId)).resolves.toMatchObject({
       continuation: 'reconcile',
       reason: 'external-result-unknown',

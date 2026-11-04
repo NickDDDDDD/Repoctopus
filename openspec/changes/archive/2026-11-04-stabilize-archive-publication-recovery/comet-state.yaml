@@ -1,0 +1,4672 @@
+# comet-execution: managed-run
+change_id: 6a975a9b-2c20-4db9-8695-122359409546
+workflow: full
+language: zh-CN
+phase: archive
+context_compression: off
+build_mode: autonomous
+build_pause: null
+subagent_dispatch: null
+tdd_mode: tdd
+review_mode: thorough
+isolation: current
+verify_mode: null
+auto_transition: true
+base_ref: c4022afc5fa96f153fef9dfd59c31c0d82d30c3a
+design_doc: openspec/changes/archive/2026-11-04-stabilize-archive-publication-recovery/design.md
+plan: docs/superpowers/plans/2026-11-04-stabilize-archive-publication-recovery.md
+verify_result: pass
+verify_failures: 0
+verification_report: docs/superpowers/reports/stabilize-archive-publication-recovery.md
+branch_status: pending
+created_at: 2026-11-04
+verified_at: 2026-11-04
+archive_confirmation: confirmed
+archived: true
+bound_branch: codex/stabilize-archive-publication-recovery
+direct_override: false
+handoff_context: openspec/changes/archive/2026-11-04-stabilize-archive-publication-recovery/.comet/handoff/design-context.json
+handoff_hash: f14618d810380089eb99b634b99dec1cde8d46d02583c7ba387ed7b7d7e6f95c
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v2
+  hash: 89071b1b857a0f7d0c121d86e89a2914b85d55f644acc00be49253c82e1066b0
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: stabilize-archive-publication-recovery
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: ed0b02f7c18964eceffad9b0224573dc38ba65da6b05b9cc9e48e63c6c4f8941
+    input:
+      change: stabilize-archive-publication-recovery
+      changeDir: openspec/changes/stabilize-archive-publication-recovery
+      workspaceBaseline:
+        ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+    state:
+      archiveConfirmation: confirmed
+      archived: true
+      autoTransition: true
+      baseRef: c4022afc5fa96f153fef9dfd59c31c0d82d30c3a
+      boundBranch: codex/stabilize-archive-publication-recovery
+      branchStatus: pending
+      buildMode: autonomous
+      buildPause: null
+      checkEpoch: 12
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-04
+      designDoc: openspec/changes/archive/2026-11-04-stabilize-archive-publication-recovery/design.md
+      directOverride: false
+      handoffContext: openspec/changes/archive/2026-11-04-stabilize-archive-publication-recovery/.comet/handoff/design-context.json
+      handoffHash: f14618d810380089eb99b634b99dec1cde8d46d02583c7ba387ed7b7d7e6f95c
+      isolation: current
+      language: zh-CN
+      phase: archive
+      plan: docs/superpowers/plans/2026-11-04-stabilize-archive-publication-recovery.md
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: tdd
+      verificationReport: docs/superpowers/reports/stabilize-archive-publication-recovery.md
+      verifiedAt: 2026-11-04
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pass
+      workflow: full
+    status: running
+    sequence: 44
+    actions:
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-09e717cf325b0e27a75649732b20774427c752959806745c5bb4c1d03076c331
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-archive-publication-recovery:1
+        input:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs: {}
+        inputHash: 64e9de1c798c74bee16ad0300b83a8300c445298066259280112bcc1057c136b
+        outcome:
+          actionId: stabilize-archive-publication-recovery:1
+          attempt: 1
+          claimToken: portable-09e717cf325b0e27a75649732b20774427c752959806745c5bb4c1d03076c331
+          inputHash: 64e9de1c798c74bee16ad0300b83a8300c445298066259280112bcc1057c136b
+          outcomeId: 85663ef0-a285-4f49-ba66-65f753a971c6
+          output:
+            event: open-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: a036200c1aa0c394f9927360e80337cf6d67890ce10a5ba73d9322c1fe8ddd56
+            outcomeId: 85663ef0-a285-4f49-ba66-65f753a971c6
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-archive-publication-recovery
+        status: succeeded
+        stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-7215e8424b3dc6e2f09735478edbd41e5dd8cc94455204f5b97a0901f80fbbe4
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-archive-publication-recovery:4
+        input:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs: {}
+        inputHash: 47bbf20a06b76a83f154bc772b342072ad3b76c8f466b1997762b961c993e049
+        outcome:
+          actionId: stabilize-archive-publication-recovery:4
+          attempt: 1
+          claimToken: portable-7215e8424b3dc6e2f09735478edbd41e5dd8cc94455204f5b97a0901f80fbbe4
+          inputHash: 47bbf20a06b76a83f154bc772b342072ad3b76c8f466b1997762b961c993e049
+          outcomeId: stabilize-archive-publication-recovery:4:1:executor-result
+          output:
+            contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 5a7da48f231acfa3a46c6123409fd8f29cb7732006e1d69256ca8777f8202f94
+            outcomeId: stabilize-archive-publication-recovery:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-archive-publication-recovery
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-93b52bd6f9c2b58465f74c266fcfc5f8d5811800456344175af2541d7153e1d2
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-archive-publication-recovery:5
+        input:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs: {}
+        inputHash: 35f4ce4690e5a2d6ab327a75b55a1ccb278380d91cc26aab110075008eb2c04b
+        outcome:
+          actionId: stabilize-archive-publication-recovery:5
+          attempt: 1
+          claimToken: portable-93b52bd6f9c2b58465f74c266fcfc5f8d5811800456344175af2541d7153e1d2
+          inputHash: 35f4ce4690e5a2d6ab327a75b55a1ccb278380d91cc26aab110075008eb2c04b
+          outcomeId: 6731dc8c-a38d-4cbd-a27d-7d15b903e893
+          output:
+            handoffContext: openspec/changes/stabilize-archive-publication-recovery/.comet/handoff/design-context.json
+            handoffHash: f14618d810380089eb99b634b99dec1cde8d46d02583c7ba387ed7b7d7e6f95c
+            proposal: 采用单一外部执行确定性合同：GitHub 4xx 明确拒绝映射为 not-applied，5xx、传输中断、2xx
+              解析失败和创建后核验失败映射为 unknown；Delivery 以 PublicationNotAppliedError 与
+              PublicationResultUnknownError 分流，Journal 对 not-applied 原子回到同一
+              stable intent 的 pushed checkpoint 且仅允许下一次显式 pull 最多再 create 一次，对
+              unknown 永久保持 observation-only；WorkflowRuns 只把 unknown 投影为
+              external-result-unknown。completed Run 的 done/terminal 在 trajectory
+              replay 前短路，非终态历史 selection 必须精确匹配当前 revision、epoch、work 和
+              attempt。验证采用失败注入、Journal 重启恢复、打包 CLI 和第五轮 terminal
+              fixture，不访问真实平台、不新增 daemon/webhook/auto-merge/compat layer。
+            requirementsEvidence:
+              contentHash: 4f1d7fc6e8115cf0af2a5c9282c34f361a8dfaeb51d1fef38feb5253fd02ffbf
+              ref: openspec/changes/stabilize-archive-publication-recovery
+            sourceEvidence:
+              contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+              ref: openspec/changes/stabilize-archive-publication-recovery
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 5208ca6f04693e67260f8ff84174b1e2dd556d2bc1eb7afd8b1093d201b10ba5
+            outcomeId: 6731dc8c-a38d-4cbd-a27d-7d15b903e893
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-archive-publication-recovery
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-4030e1ac7533f8b93af7f7a133c171a795eaaee00e4ce9c7da36a2a4807f9cda
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-archive-publication-recovery:7
+        input:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs: {}
+        inputHash: c45f5123043bba1c32044e9e0c2014128263c448038fbf546b8a8fb5d673d70b
+        outcome:
+          actionId: stabilize-archive-publication-recovery:7
+          attempt: 1
+          claimToken: portable-4030e1ac7533f8b93af7f7a133c171a795eaaee00e4ce9c7da36a2a4807f9cda
+          inputHash: c45f5123043bba1c32044e9e0c2014128263c448038fbf546b8a8fb5d673d70b
+          outcomeId: 95f03ed3-19d6-4b6f-aa0e-a78b698e09bf
+          output:
+            designDoc: openspec/changes/stabilize-archive-publication-recovery/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 956c9f10a4d67a3770fa888ebb3d2898f918d6ed4412668f68508612bf6c221c
+            outcomeId: 95f03ed3-19d6-4b6f-aa0e-a78b698e09bf
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-archive-publication-recovery
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-95dd53daccaed2d4428bd8ba64d9a4ba2d0c647725ff9c6238b30f8cc8ff4a68
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-archive-publication-recovery:9
+        input:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs: {}
+        inputHash: 6c1082a581f6f7cb6473d44bf10734a635dd4f8da43fb23982ad98557d4847ca
+        outcome:
+          actionId: stabilize-archive-publication-recovery:9
+          attempt: 1
+          claimToken: portable-95dd53daccaed2d4428bd8ba64d9a4ba2d0c647725ff9c6238b30f8cc8ff4a68
+          inputHash: 6c1082a581f6f7cb6473d44bf10734a635dd4f8da43fb23982ad98557d4847ca
+          outcomeId: fb6f3775-e234-4fbf-8682-64edebd101c5
+          output:
+            boundBranch: codex/stabilize-archive-publication-recovery
+            buildMode: autonomous
+            directOverride: false
+            isolation: current
+            reviewMode: thorough
+            subagentDispatch: null
+            tddMode: tdd
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 93e7f677bb646a64e2f7f8a31aadb766e6cbd6129a4bf034aa8797ac707f5846
+            outcomeId: fb6f3775-e234-4fbf-8682-64edebd101c5
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-archive-publication-recovery
+        status: succeeded
+        stepId: full.build.configure
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-73f32577823b2fecaf518947e85fac0a13df43bf29a7d97233d6219e06fb6a1e
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-archive-publication-recovery:11
+        input:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs: {}
+        inputHash: 521ed031bf37dae99c479863bbad79ae477def395fa42f1b47f8c16cf60c8ee8
+        outcome:
+          actionId: stabilize-archive-publication-recovery:11
+          attempt: 1
+          claimToken: portable-73f32577823b2fecaf518947e85fac0a13df43bf29a7d97233d6219e06fb6a1e
+          inputHash: 521ed031bf37dae99c479863bbad79ae477def395fa42f1b47f8c16cf60c8ee8
+          outcomeId: 53773f27-f5d2-42ec-961c-b8b65f48e1e2
+          output:
+            designEvidence:
+              contentHash: e115d43cc44ede9c4625e649dc0c7dd2fd61f160c92d1a222e018664d9735fb5
+              ref: openspec/changes/stabilize-archive-publication-recovery/design.md
+            plan: docs/superpowers/plans/2026-11-04-stabilize-archive-publication-recovery.md
+            planEvidence:
+              contentHash: ea401cfafa06261c825f8b4d3183192e9fc4fe7d20870c2f77d327c83fde846e
+              ref: docs/superpowers/plans/2026-11-04-stabilize-archive-publication-recovery.md
+            taskRevision: 927d56410b53346595f2fd9937c388883fa01f8af1b1c3c11dead5c1e2f56d91
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: aaf5f03d806ec20ffddb9e308901396874e9d4b9d53b98684f6d1b407ee6ecd7
+            outcomeId: 53773f27-f5d2-42ec-961c-b8b65f48e1e2
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-archive-publication-recovery
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: classic-builder/stabilize-archive-publication-recovery:13/1
+          token: portable-23de799fc613a1bcf748ca55df8c547d72a077c165d5dc6ee5e73facc1aeccce
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-archive-publication-recovery:13
+        input:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs: {}
+        inputHash: 5267a274d3dc8b856ac93c3e6a1dcd68d55ba950315092dc1eb0fc419ba02f07
+        outcome:
+          actionId: stabilize-archive-publication-recovery:13
+          attempt: 1
+          claimToken: portable-23de799fc613a1bcf748ca55df8c547d72a077c165d5dc6ee5e73facc1aeccce
+          inputHash: 5267a274d3dc8b856ac93c3e6a1dcd68d55ba950315092dc1eb0fc419ba02f07
+          outcomeId: ea1a04b0-68a6-47a6-8744-9934894287db
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 8b677c6bc6f5dde7f0481886b7d81375b28c1580cb154c8b9756666bb1335cd1
+            outcomeId: ea1a04b0-68a6-47a6-8744-9934894287db
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-archive-publication-recovery
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-9d95487972f3ecacaee27f4a3a6fe885b21c7ada9acefa2e8a238ce6a416da60
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-archive-publication-recovery:14
+        input:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs: {}
+        inputHash: 72c7a424b36dedd7c42db1594797c13b695aa67be484e606cfdfc6d15290d67f
+        outcome:
+          actionId: stabilize-archive-publication-recovery:14
+          attempt: 1
+          claimToken: portable-9d95487972f3ecacaee27f4a3a6fe885b21c7ada9acefa2e8a238ce6a416da60
+          inputHash: 72c7a424b36dedd7c42db1594797c13b695aa67be484e606cfdfc6d15290d67f
+          outcomeId: f374cb19-d52a-4f94-ad87-8dfc5f65877e
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 2
+            contentHash: d591b03858240e9e5ad36fe2af2bfe4b687a151c2129ad7a101b696d7ef38b14
+            cwd: .
+            environment: 21506b3ae68782caf52f445b7be3a94a0a053c729c0d5e045468b4e86704d659
+            exitCode: 0
+            inputAfter: bf076435539012b95a26e1a83e77d9718aff3b8979b12f2b66c8ad35d7aec888
+            inputBefore: bf076435539012b95a26e1a83e77d9718aff3b8979b12f2b66c8ad35d7aec888
+            manifestHash: 80101d8f5a0be31d2d4a51511ec5bb9b9c0dc5be0a69ebff5bc0e4abc52f7e11
+            manifestRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/954bb981-e894-475b-a1cc-2f9cd4e13ad9.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/9a840524-627b-4ee5-b359-57c9af7bc9ff.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 973b41bd715c584a700e73df88927dfdc264a48725ba9df1f20b97247a21fecb
+            outcomeId: f374cb19-d52a-4f94-ad87-8dfc5f65877e
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-archive-publication-recovery
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-d29380bb98e7e875aea1bb24dfb3bf3ef14f0e76cbe4414af7a76574eea53c63
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-archive-publication-recovery:16
+        input:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs: {}
+        inputHash: e42f406d24bc5d2639a5b3d56492cafb91845fdd51ddf95fd860ca7436895c30
+        outcome:
+          actionId: stabilize-archive-publication-recovery:16
+          attempt: 1
+          claimToken: portable-d29380bb98e7e875aea1bb24dfb3bf3ef14f0e76cbe4414af7a76574eea53c63
+          inputHash: e42f406d24bc5d2639a5b3d56492cafb91845fdd51ddf95fd860ca7436895c30
+          outcomeId: c753cd5a-5d2f-416b-a61a-45de03cee18f
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/stabilize-archive-publication-recovery.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 3adeaf6b1ad9a7bf1d6edad6b658feb77e1bf081d6874703bbcddf20ec14620e
+            outcomeId: c753cd5a-5d2f-416b-a61a-45de03cee18f
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-archive-publication-recovery
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-d33b664764f94b3fa27be9665a5100591d6354e8b87a77fda87931950f14783a
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-archive-publication-recovery:18
+        input:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs: {}
+        inputHash: 967120d04ea2f7efa638886ea72785ea9f0c1711cc640df51b820a6cb2998557
+        outcome:
+          actionId: stabilize-archive-publication-recovery:18
+          attempt: 1
+          claimToken: portable-d33b664764f94b3fa27be9665a5100591d6354e8b87a77fda87931950f14783a
+          inputHash: 967120d04ea2f7efa638886ea72785ea9f0c1711cc640df51b820a6cb2998557
+          outcomeId: 04e16e90-d10e-4a40-a90a-b35692980444
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 3
+            contentHash: d8ad6efb9d2c484655a00a3d7b8cd75bc8d0696dfaf0682fa20d257a70f01ab5
+            cwd: .
+            deliveryInputs: {}
+            environment: 21506b3ae68782caf52f445b7be3a94a0a053c729c0d5e045468b4e86704d659
+            exitCode: 1
+            inputAfter: f37d44e0f6d7c8071f697ecad7a2439c5b2945fa364520c718111a78d7fb6405
+            inputBefore: f37d44e0f6d7c8071f697ecad7a2439c5b2945fa364520c718111a78d7fb6405
+            manifestHash: fd122aef3fed21fd89aad549e961d056402611260d424997268fbbc83e8632ab
+            manifestRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/1fdc63c9-04fd-488b-b9d7-cf3168801cdd.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/13a09616-b217-4edf-9315-b06b5f5f6b5c.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 900000
+          status: failed
+        protocolVersion: 1
+        receipts:
+          - hash: a0037e0cf9c0c0afd3ee1e2624bbb023dd6b10ff9fa7fc223e10341fbf8f75ca
+            outcomeId: 04e16e90-d10e-4a40-a90a-b35692980444
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-archive-publication-recovery
+        status: failed
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-cb3e81203d09d1c95fe2887bea6ad49598cf3c78934bcb39d8c5c07f7c6b8e02
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-archive-publication-recovery:19
+        input:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs: {}
+        inputHash: dae0160b2686a694f3168d6be0563c10d7ca08bcbb31bf035323457ac6c43f8a
+        outcome:
+          actionId: stabilize-archive-publication-recovery:19
+          attempt: 1
+          claimToken: portable-cb3e81203d09d1c95fe2887bea6ad49598cf3c78934bcb39d8c5c07f7c6b8e02
+          inputHash: dae0160b2686a694f3168d6be0563c10d7ca08bcbb31bf035323457ac6c43f8a
+          outcomeId: 5db93287-bf5c-438f-afcb-be0e83d179b8
+          output:
+            designEvidence:
+              contentHash: e115d43cc44ede9c4625e649dc0c7dd2fd61f160c92d1a222e018664d9735fb5
+              ref: openspec/changes/stabilize-archive-publication-recovery/design.md
+            plan: docs/superpowers/plans/2026-11-04-stabilize-archive-publication-recovery.md
+            planEvidence:
+              contentHash: ea401cfafa06261c825f8b4d3183192e9fc4fe7d20870c2f77d327c83fde846e
+              ref: docs/superpowers/plans/2026-11-04-stabilize-archive-publication-recovery.md
+            taskRevision: 927d56410b53346595f2fd9937c388883fa01f8af1b1c3c11dead5c1e2f56d91
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: fb7bbbcb5b3d7a5d915b5f3336299e400a732e34c02b57fc8a020447b0505abc
+            outcomeId: 5db93287-bf5c-438f-afcb-be0e83d179b8
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-archive-publication-recovery
+        status: succeeded
+        stepId: full.build.plan
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          sessionId: classic-builder/stabilize-archive-publication-recovery:21/1
+          token: portable-f2e1818623fb47f1dea3df52ae62fc9764f66cadcddb4f3c0fd8bf027fe96088
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-archive-publication-recovery:21
+        input:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs: {}
+        inputHash: dae0160b2686a694f3168d6be0563c10d7ca08bcbb31bf035323457ac6c43f8a
+        outcome:
+          actionId: stabilize-archive-publication-recovery:21
+          attempt: 1
+          claimToken: portable-f2e1818623fb47f1dea3df52ae62fc9764f66cadcddb4f3c0fd8bf027fe96088
+          inputHash: dae0160b2686a694f3168d6be0563c10d7ca08bcbb31bf035323457ac6c43f8a
+          outcomeId: 3b406d3b-8197-4f0b-b0f2-5f6d5d550140
+          output:
+            event: build-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: d82213447d715121dea06a96070bd9cc439ed22eb417d10a9d95aeeabbe3c3ec
+            outcomeId: 3b406d3b-8197-4f0b-b0f2-5f6d5d550140
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-archive-publication-recovery
+        status: succeeded
+        stepId: full.build.execute
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-58af42c837f63d06db770a4185bd3fd062f4e213892127d5c3d9e2c33936cfec
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-archive-publication-recovery:22
+        input:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs: {}
+        inputHash: dae0160b2686a694f3168d6be0563c10d7ca08bcbb31bf035323457ac6c43f8a
+        outcome:
+          actionId: stabilize-archive-publication-recovery:22
+          attempt: 1
+          claimToken: portable-58af42c837f63d06db770a4185bd3fd062f4e213892127d5c3d9e2c33936cfec
+          inputHash: dae0160b2686a694f3168d6be0563c10d7ca08bcbb31bf035323457ac6c43f8a
+          outcomeId: 4f8ae4d4-8551-492b-b3d0-29dd8a2809f7
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 4
+            contentHash: 08c0d8bce8effdf0e2897ca0712fa7bee67a03aa185f335c50e2483e953b0a41
+            cwd: .
+            environment: 21506b3ae68782caf52f445b7be3a94a0a053c729c0d5e045468b4e86704d659
+            exitCode: 0
+            inputAfter: d32d6981ecadad999b29a9db7aeb9b7ecef9529de61fd529174805281a67709c
+            inputBefore: d32d6981ecadad999b29a9db7aeb9b7ecef9529de61fd529174805281a67709c
+            manifestHash: 26505f545bc81b314d6f20203cfdc008c77c20f09a165fd16a520f09e7777a24
+            manifestRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/ef008eee-41a1-403f-8224-7c91088c9a06.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/476bba13-1644-4b0a-a205-8246077a38fa.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 6aa821d7780b64403c49d62b4b30858c67425411130d76d3f75f9f1c2de6038c
+            outcomeId: 4f8ae4d4-8551-492b-b3d0-29dd8a2809f7
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-archive-publication-recovery
+        status: succeeded
+        stepId: full.build.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-e95cca455bff223e5744b32663b989e28ca02aab2e9ab4d45fceb566d818e6bb
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-archive-publication-recovery:24
+        input:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs: {}
+        inputHash: 98e0c77ada1ff9265a666c2f72be6c07cea82b928543bfbe4ff7dde26954a5f9
+        outcome:
+          actionId: stabilize-archive-publication-recovery:24
+          attempt: 1
+          claimToken: portable-e95cca455bff223e5744b32663b989e28ca02aab2e9ab4d45fceb566d818e6bb
+          inputHash: 98e0c77ada1ff9265a666c2f72be6c07cea82b928543bfbe4ff7dde26954a5f9
+          outcomeId: b9ec048c-8b0e-4e7c-a709-84018b1d7d26
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/stabilize-archive-publication-recovery.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 76be8e4d0884525de61a9e9f1fb3aed78f8de3fdc43f0b08ed283fba17b38714
+            outcomeId: b9ec048c-8b0e-4e7c-a709-84018b1d7d26
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-archive-publication-recovery
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-ac15f4fcff12f808b319fbce7fd8352a1cace757b7efdf2ec6263ea97dc5bb34
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-archive-publication-recovery:26
+        input:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs: {}
+        inputHash: b917be64fd31c1a8652ce5a31954da0861227bafaa31c9ed6e46b32d6241d931
+        outcome:
+          actionId: stabilize-archive-publication-recovery:26
+          attempt: 1
+          claimToken: portable-ac15f4fcff12f808b319fbce7fd8352a1cace757b7efdf2ec6263ea97dc5bb34
+          inputHash: b917be64fd31c1a8652ce5a31954da0861227bafaa31c9ed6e46b32d6241d931
+          outcomeId: 78c5a28a-2640-4897-95f0-a96540d8f259
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 5
+            contentHash: f52cfb13aa05ccba32d12bc24c20cca35b8df5c9faa430909718fd6fafd65b9b
+            cwd: .
+            deliveryInputs: {}
+            environment: 21506b3ae68782caf52f445b7be3a94a0a053c729c0d5e045468b4e86704d659
+            exitCode: 0
+            inputAfter: 82e8e1cbd74e22331e80d8d6e778ae3b04e17f187c3ff28046c0de086473365b
+            inputBefore: 82e8e1cbd74e22331e80d8d6e778ae3b04e17f187c3ff28046c0de086473365b
+            manifestHash: 187813be0151d91ecfaa54574d3c5fd32e1557ec7ae5245a5aad7c7e9cef4ce7
+            manifestRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/ae8b6079-a339-4b48-9e0c-306d8cf9920f.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/67215984-49c4-468b-b883-66236066dd31.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: fd6964c3477c223be647503093c9b4070e11025d1c12b363c587586666a8e03d
+            outcomeId: 78c5a28a-2640-4897-95f0-a96540d8f259
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-archive-publication-recovery
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-97f4ee987adc436257c051b00cc4c446990072c1f962031ccbc8de0ff88f5de1
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-archive-publication-recovery:28
+        input:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs: {}
+        inputHash: d414fcefbd5e9a1a5585636d135df01660e303815df80b273a95019046226d5b
+        outcome:
+          actionId: stabilize-archive-publication-recovery:28
+          attempt: 1
+          claimToken: portable-97f4ee987adc436257c051b00cc4c446990072c1f962031ccbc8de0ff88f5de1
+          inputHash: d414fcefbd5e9a1a5585636d135df01660e303815df80b273a95019046226d5b
+          outcomeId: 94631293-fabb-41cd-8bf6-47bc89eae44b
+          output:
+            summary: 归档已完成的 Archive 发布恢复 Change：明确区分 not-applied 与 unknown，恢复 Journal
+              的确定性重试和观察式恢复，修正终态 continuation 投影，并以失败注入、打包 CLI、完整 Build Check 与独立
+              Verify receipt 证明。归档只合并 OpenSpec delta 并保存变更历史；不创建 PR、不合入
+              main、不等待远端 MR。
+            targetBranch: codex/stabilize-archive-publication-recovery
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 7cd2351dc465eedc25bc1212509b5ebbec16b5ddc14b05a9dc46837bc8578154
+            outcomeId: 94631293-fabb-41cd-8bf6-47bc89eae44b
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-archive-publication-recovery
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-081059a4ed504a3d7cc46bb2058893a2ed3a68b644a7107c2bb22702b0b9f24e
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-archive-publication-recovery:30
+        input:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs: {}
+        inputHash: 47f85f22013b0ff8f26b390cafca20c904e7870ee85ccd7d3bd11deb31f7ec35
+        outcome:
+          actionId: stabilize-archive-publication-recovery:30
+          attempt: 1
+          claimToken: portable-081059a4ed504a3d7cc46bb2058893a2ed3a68b644a7107c2bb22702b0b9f24e
+          inputHash: 47f85f22013b0ff8f26b390cafca20c904e7870ee85ccd7d3bd11deb31f7ec35
+          outcomeId: 9e8cfb5f-147e-4801-914d-3a640af788e3
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/stabilize-archive-publication-recovery.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 2b2cffb5e73bbd65977824a6055056129e04e25bdbca6074321527ceea8bbfb5
+            outcomeId: 9e8cfb5f-147e-4801-914d-3a640af788e3
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-archive-publication-recovery
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-eca9cf163d8fab328ccbeefc36c6bae99de2f1b439c2a7ef74ae98dffae339d0
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-archive-publication-recovery:32
+        input:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs: {}
+        inputHash: 47f85f22013b0ff8f26b390cafca20c904e7870ee85ccd7d3bd11deb31f7ec35
+        outcome:
+          actionId: stabilize-archive-publication-recovery:32
+          attempt: 1
+          claimToken: portable-eca9cf163d8fab328ccbeefc36c6bae99de2f1b439c2a7ef74ae98dffae339d0
+          inputHash: 47f85f22013b0ff8f26b390cafca20c904e7870ee85ccd7d3bd11deb31f7ec35
+          outcomeId: 8d935ca7-2a2a-4c1f-a9c9-97b2ab8976f2
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 7
+            contentHash: b2c93132f8a8996a6c3dc16e60422d294844a384beef3d765a0c2df9fc566389
+            cwd: .
+            deliveryInputs: {}
+            environment: 21506b3ae68782caf52f445b7be3a94a0a053c729c0d5e045468b4e86704d659
+            exitCode: 0
+            inputAfter: a19eae881c73aba866a8f0997a2db7ab7fda22ee2a087ac3cb4b5ab617557c83
+            inputBefore: a19eae881c73aba866a8f0997a2db7ab7fda22ee2a087ac3cb4b5ab617557c83
+            manifestHash: 00b914959dcb210e26e26574367e9775df8ebcc4eee01e7c2eb9bc41cdbde0fa
+            manifestRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/be673ff1-fd4d-487d-9b83-cc791b153bef.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/df3a6791-2344-4180-abb6-a93bf98c317b.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 489ae7f3ecfc28e8e21acac49aa71b140467773ccfe6a6c221e455a58e121ac6
+            outcomeId: 8d935ca7-2a2a-4c1f-a9c9-97b2ab8976f2
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-archive-publication-recovery
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-ec7deca6d9bdb92c96a5db89eb798e7121585ba376972bbd60b354344a10a3e7
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-archive-publication-recovery:34
+        input:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs: {}
+        inputHash: c92dfd4dfc3c12d837a289650943202b59223cbcc9f1d6358a8740e5305b79d7
+        outcome:
+          actionId: stabilize-archive-publication-recovery:34
+          attempt: 1
+          claimToken: portable-ec7deca6d9bdb92c96a5db89eb798e7121585ba376972bbd60b354344a10a3e7
+          inputHash: c92dfd4dfc3c12d837a289650943202b59223cbcc9f1d6358a8740e5305b79d7
+          outcomeId: f3028672-0ff9-43c2-a7bd-eefc8a44ab29
+          output:
+            remote: origin
+            summary: 归档已完成的 Archive 发布恢复 Change：明确区分 not-applied 与 unknown，恢复 Journal
+              的确定性重试和观察式恢复，修正终态 continuation 投影，并以失败注入、打包 CLI、完整 Build Check 与独立
+              Verify receipt 证明。归档将合并 OpenSpec delta、保存变更历史并把归档提交推送到公开功能分支；不创建
+              PR、不合入 main、不等待远端 MR。
+            targetBranch: codex/stabilize-archive-publication-recovery
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 127bde5dda8712dcde124e5b5281a7573731258c3cb62f2a1648c5509a6a3a22
+            outcomeId: f3028672-0ff9-43c2-a7bd-eefc8a44ab29
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-archive-publication-recovery
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-17dd0024fd7765c6e3edc794639f0bd9a52ebabb9f33f7f85a621ee89debd667
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-archive-publication-recovery:36
+        input:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs: {}
+        inputHash: ba2e7d46c72ddca027c86470023a90289b38a6f2964141c3bb4f4c426404b623
+        outcome:
+          actionId: stabilize-archive-publication-recovery:36
+          attempt: 1
+          claimToken: portable-17dd0024fd7765c6e3edc794639f0bd9a52ebabb9f33f7f85a621ee89debd667
+          inputHash: ba2e7d46c72ddca027c86470023a90289b38a6f2964141c3bb4f4c426404b623
+          outcomeId: cca7d870-b101-4905-84d2-19c57e8ef6ae
+          output:
+            event: verification-ready
+            verificationReport: docs/superpowers/reports/stabilize-archive-publication-recovery.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 91ee8c86445c4f3db97537f476889de8f162d4c341b01ecb54fc018f4e86ae46
+            outcomeId: cca7d870-b101-4905-84d2-19c57e8ef6ae
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-archive-publication-recovery
+        status: succeeded
+        stepId: full.verify.run
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-486165af513e1c86df722b017a9583650ea74e13b07f2c2d6642ad42f0cbbdd7
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-archive-publication-recovery:38
+        input:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs: {}
+        inputHash: ba2e7d46c72ddca027c86470023a90289b38a6f2964141c3bb4f4c426404b623
+        outcome:
+          actionId: stabilize-archive-publication-recovery:38
+          attempt: 1
+          claimToken: portable-486165af513e1c86df722b017a9583650ea74e13b07f2c2d6642ad42f0cbbdd7
+          inputHash: ba2e7d46c72ddca027c86470023a90289b38a6f2964141c3bb4f4c426404b623
+          outcomeId: 78e4ec9b-5023-4d79-a053-4a5881d29ae4
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 9
+            contentHash: 0cb5e38479947e4a187786c7f210ac74be441ce11e60643c1b61aa58e6bbbb35
+            cwd: .
+            deliveryInputs: {}
+            environment: 21506b3ae68782caf52f445b7be3a94a0a053c729c0d5e045468b4e86704d659
+            exitCode: 0
+            inputAfter: 253adcc38fd2506ea74ebcea590f31a6901441232a0e0ec37b33791ea1dcd838
+            inputBefore: 253adcc38fd2506ea74ebcea590f31a6901441232a0e0ec37b33791ea1dcd838
+            manifestHash: a1f22c48c90145063e15e46fa1acbc5a648a1002792f631df0a18c38bc7015e8
+            manifestRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/fd9fe644-0fa8-4821-be32-7d66a2dc4192.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/deb6bcd0-2a5b-43c4-a367-d7c0375d71c7.log
+            reusable: false
+            reused: false
+            scope: verify
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 0779b7483429c6543f63f6474d69a0deafa460a6f8396e1af99f6f3fa97e485a
+            outcomeId: 78e4ec9b-5023-4d79-a053-4a5881d29ae4
+        reconciliations: []
+        ref: classic-check
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-archive-publication-recovery
+        status: succeeded
+        stepId: full.verify.check
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-d4542dfec4f8ec27415d19b1dfe6b467e7ab5fb45acce346adb5eb606f17ef9c
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-archive-publication-recovery:40
+        input:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs: {}
+        inputHash: fed1ada776f9e0dc80bcdfeb5073481a1c4e2c56d1ea2916f2e07ec44602b008
+        outcome:
+          actionId: stabilize-archive-publication-recovery:40
+          attempt: 1
+          claimToken: portable-d4542dfec4f8ec27415d19b1dfe6b467e7ab5fb45acce346adb5eb606f17ef9c
+          inputHash: fed1ada776f9e0dc80bcdfeb5073481a1c4e2c56d1ea2916f2e07ec44602b008
+          outcomeId: 7babf4fc-dc99-478a-94e0-0ecdfc52a9b2
+          output:
+            remote: origin
+            summary: 归档已完成的 Archive 发布恢复 Change：明确区分 not-applied 与 unknown，恢复 Journal
+              的确定性重试和观察式恢复，修正终态 continuation 投影，并以失败注入、打包 CLI、完整 Build Check 与独立
+              Verify receipt 证明。归档将合并 OpenSpec delta、保存变更历史并把归档提交推送到公开功能分支；不创建
+              PR、不合入 main、不等待远端 MR。
+            targetBranch: codex/stabilize-archive-publication-recovery
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 2735e46663c742d21284ed5473b4c5416e8c5c8a0923692d5a14e03c2ae46422
+            outcomeId: 7babf4fc-dc99-478a-94e0-0ecdfc52a9b2
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-archive-publication-recovery
+        status: succeeded
+        stepId: full.archive.prepare
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive-preflight
+          token: portable-2aa4244eed4e172466337d0c65f9c340e6ca233197180fadfccc96c92772ff48
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-archive-publication-recovery:42
+        input:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs: {}
+        inputHash: d744278ab5ca74fad686a28682b360b59c8c39decba95b1df0699520a4053afd
+        outcome:
+          actionId: stabilize-archive-publication-recovery:42
+          attempt: 1
+          claimToken: portable-2aa4244eed4e172466337d0c65f9c340e6ca233197180fadfccc96c92772ff48
+          inputHash: d744278ab5ca74fad686a28682b360b59c8c39decba95b1df0699520a4053afd
+          outcomeId: 7b26a175-8b07-4a3a-be8e-eef5e10f68e0
+          output:
+            baseCommit: 53a357b66ec9c088b1f584e6754ea17dff1d041f
+            deliveryAction: push
+            remote: origin
+            remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+            targetBranch: codex/stabilize-archive-publication-recovery
+            verifiedBranch: codex/stabilize-archive-publication-recovery
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: f8cdcd0abf6693596077a29ee3b97668a3bfffadbe3e0cbe6ceb0221c28fe3b4
+            outcomeId: 7b26a175-8b07-4a3a-be8e-eef5e10f68e0
+        reconciliations: []
+        ref: classic-archive-preflight
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-archive-publication-recovery
+        status: succeeded
+        stepId: full.archive.preflight
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-archive
+          token: portable-94e08ad8ee5085c085bfe1e9cfd438537abd60c0f3e625cc4771763f5cc83168
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-archive-publication-recovery:43
+        input:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs: {}
+        inputHash: 2e0753aba201114f8d8267bf17c152fa4cf4a11f5dbd57df72939ed358093a81
+        outcome:
+          actionId: stabilize-archive-publication-recovery:43
+          artifacts:
+            - sha256: ae3badd1e600cbe001bdcda51f5f8f697731c4078d912118415727b1b59edde1
+              uri: openspec/changes/archive/2026-11-04-stabilize-archive-publication-recovery/.comet/archive-manifest.json
+          attempt: 1
+          claimToken: portable-94e08ad8ee5085c085bfe1e9cfd438537abd60c0f3e625cc4771763f5cc83168
+          inputHash: 2e0753aba201114f8d8267bf17c152fa4cf4a11f5dbd57df72939ed358093a81
+          outcomeId: 5452c7d7-d29e-4dff-8fec-11e9b885d225
+          output:
+            archiveDirectory: openspec/changes/archive/2026-11-04-stabilize-archive-publication-recovery
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 5c950aa49d46ba54cc908f410ac83a9a9a430c46b47306854fe9e66ad0ef6851
+            outcomeId: 5452c7d7-d29e-4dff-8fec-11e9b885d225
+        reconciliations: []
+        ref: classic-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-archive-publication-recovery
+        status: succeeded
+        stepId: full.archive.execute
+        type: call_tool
+      - attempt: 1
+        id: stabilize-archive-publication-recovery:44
+        input:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs: {}
+        inputHash: 2fe68e25ebf6d163445438d4d6ddfffc52cce3c7a13a8dd48ad2b4b314646cb7
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-archive
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-archive-publication-recovery
+        status: pending
+        stepId: full.archive.deliver
+        type: invoke_skill
+    actionContexts:
+      stabilize-archive-publication-recovery:1:
+        results: {}
+        sequence: 1
+      stabilize-archive-publication-recovery:11:
+        results: {}
+        sequence: 11
+      stabilize-archive-publication-recovery:13:
+        results: {}
+        sequence: 13
+      stabilize-archive-publication-recovery:14:
+        results: {}
+        sequence: 14
+      stabilize-archive-publication-recovery:16:
+        results: {}
+        sequence: 16
+      stabilize-archive-publication-recovery:18:
+        results: {}
+        sequence: 18
+      stabilize-archive-publication-recovery:19:
+        results: {}
+        sequence: 19
+      stabilize-archive-publication-recovery:21:
+        results: {}
+        sequence: 21
+      stabilize-archive-publication-recovery:22:
+        results: {}
+        sequence: 22
+      stabilize-archive-publication-recovery:24:
+        results: {}
+        sequence: 24
+      stabilize-archive-publication-recovery:26:
+        results: {}
+        sequence: 26
+      stabilize-archive-publication-recovery:28:
+        results: {}
+        sequence: 28
+      stabilize-archive-publication-recovery:30:
+        results: {}
+        sequence: 30
+      stabilize-archive-publication-recovery:32:
+        results: {}
+        sequence: 32
+      stabilize-archive-publication-recovery:34:
+        results: {}
+        sequence: 34
+      stabilize-archive-publication-recovery:36:
+        results: {}
+        sequence: 36
+      stabilize-archive-publication-recovery:38:
+        results: {}
+        sequence: 38
+      stabilize-archive-publication-recovery:4:
+        results: {}
+        sequence: 4
+      stabilize-archive-publication-recovery:40:
+        results: {}
+        sequence: 40
+      stabilize-archive-publication-recovery:42:
+        results: {}
+        sequence: 42
+      stabilize-archive-publication-recovery:43:
+        results: {}
+        sequence: 43
+      stabilize-archive-publication-recovery:44:
+        results: {}
+        sequence: 44
+      stabilize-archive-publication-recovery:5:
+        results: {}
+        sequence: 5
+      stabilize-archive-publication-recovery:7:
+        results: {}
+        sequence: 7
+      stabilize-archive-publication-recovery:9:
+        results: {}
+        sequence: 9
+    waits:
+      - id: stabilize-archive-publication-recovery:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+              ref: openspec/changes/stabilize-archive-publication-recovery
+        proposalHash: c9a7d5766941839e8fc6b65901ba8715badf3cf0cd670bf8c6ebd2968a05049c
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-open-5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+          choice: approved
+          proposalHash: c9a7d5766941839e8fc6b65901ba8715badf3cf0cd670bf8c6ebd2968a05049c
+      - id: stabilize-archive-publication-recovery:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-archive-publication-recovery/.comet/handoff/design-context.json
+              handoffHash: f14618d810380089eb99b634b99dec1cde8d46d02583c7ba387ed7b7d7e6f95c
+              proposal: 采用单一外部执行确定性合同：GitHub 4xx 明确拒绝映射为 not-applied，5xx、传输中断、2xx
+                解析失败和创建后核验失败映射为 unknown；Delivery 以 PublicationNotAppliedError 与
+                PublicationResultUnknownError 分流，Journal 对 not-applied 原子回到同一
+                stable intent 的 pushed checkpoint 且仅允许下一次显式 pull 最多再 create 一次，对
+                unknown 永久保持 observation-only；WorkflowRuns 只把 unknown 投影为
+                external-result-unknown。completed Run 的 done/terminal 在
+                trajectory replay 前短路，非终态历史 selection 必须精确匹配当前
+                revision、epoch、work 和 attempt。验证采用失败注入、Journal 重启恢复、打包 CLI 和第五轮
+                terminal fixture，不访问真实平台、不新增 daemon/webhook/auto-merge/compat
+                layer。
+              requirementsEvidence:
+                contentHash: 4f1d7fc6e8115cf0af2a5c9282c34f361a8dfaeb51d1fef38feb5253fd02ffbf
+                ref: openspec/changes/stabilize-archive-publication-recovery
+              sourceEvidence:
+                contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+                ref: openspec/changes/stabilize-archive-publication-recovery
+        proposalHash: dbca0e872c5aeaab91dc62d5896f35b11f917ac25886528ee46c45b40c0d55b7
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: classic-design-dbca0e872c5aeaab91dc62d5896f35b11f917ac25886528ee46c45b40c0d55b7-approved
+          choice: approved
+          proposalHash: dbca0e872c5aeaab91dc62d5896f35b11f917ac25886528ee46c45b40c0d55b7
+      - id: stabilize-archive-publication-recovery:10
+        stepId: full.build.confirm
+        sequence: 10
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs:
+            full.build.configure:
+              boundBranch: codex/stabilize-archive-publication-recovery
+              buildMode: autonomous
+              directOverride: false
+              isolation: current
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+        proposalHash: 14ea1942224c22e3494ae03e4a7eee8182107d0178d476a991dd1b127316ab19
+        choices:
+          - approved
+          - rejected
+        results: {}
+        decision:
+          id: 94939ec9-d00d-4170-8c81-bd0895abb60d
+          choice: approved
+          proposalHash: 14ea1942224c22e3494ae03e4a7eee8182107d0178d476a991dd1b127316ab19
+      - id: stabilize-archive-publication-recovery:29
+        stepId: full.archive.confirm
+        sequence: 29
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs:
+            full.archive.prepare:
+              summary: 归档已完成的 Archive 发布恢复 Change：明确区分 not-applied 与 unknown，恢复 Journal
+                的确定性重试和观察式恢复，修正终态 continuation 投影，并以失败注入、打包 CLI、完整 Build Check
+                与独立 Verify receipt 证明。归档只合并 OpenSpec delta 并保存变更历史；不创建 PR、不合入
+                main、不等待远端 MR。
+              targetBranch: codex/stabilize-archive-publication-recovery
+        proposalHash: 219978dfd10e8c6c6b76e4b8b58f3e3fc11f8ccdea714e5386080ed7939c7b80
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-219978dfd10e8c6c6b76e4b8b58f3e3fc11f8ccdea714e5386080ed7939c7b80-reverify
+          choice: reverify
+          proposalHash: 219978dfd10e8c6c6b76e4b8b58f3e3fc11f8ccdea714e5386080ed7939c7b80
+      - id: stabilize-archive-publication-recovery:35
+        stepId: full.archive.confirm
+        sequence: 35
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs:
+            full.archive.prepare:
+              remote: origin
+              summary: 归档已完成的 Archive 发布恢复 Change：明确区分 not-applied 与 unknown，恢复 Journal
+                的确定性重试和观察式恢复，修正终态 continuation 投影，并以失败注入、打包 CLI、完整 Build Check
+                与独立 Verify receipt 证明。归档将合并 OpenSpec
+                delta、保存变更历史并把归档提交推送到公开功能分支；不创建 PR、不合入 main、不等待远端 MR。
+              targetBranch: codex/stabilize-archive-publication-recovery
+        proposalHash: 81d4004a137612b4234f1ccc8deb0986e3e57d1766504367d59a1185e6ec71d5
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-81d4004a137612b4234f1ccc8deb0986e3e57d1766504367d59a1185e6ec71d5-reverify
+          choice: reverify
+          proposalHash: 81d4004a137612b4234f1ccc8deb0986e3e57d1766504367d59a1185e6ec71d5
+      - id: stabilize-archive-publication-recovery:41
+        stepId: full.archive.confirm
+        sequence: 41
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs:
+            full.archive.prepare:
+              remote: origin
+              summary: 归档已完成的 Archive 发布恢复 Change：明确区分 not-applied 与 unknown，恢复 Journal
+                的确定性重试和观察式恢复，修正终态 continuation 投影，并以失败注入、打包 CLI、完整 Build Check
+                与独立 Verify receipt 证明。归档将合并 OpenSpec
+                delta、保存变更历史并把归档提交推送到公开功能分支；不创建 PR、不合入 main、不等待远端 MR。
+              targetBranch: codex/stabilize-archive-publication-recovery
+        proposalHash: 81d4004a137612b4234f1ccc8deb0986e3e57d1766504367d59a1185e6ec71d5
+        choices:
+          - local
+          - push
+          - pr
+          - reverify
+          - later
+        results: {}
+        decision:
+          id: classic-archive-81d4004a137612b4234f1ccc8deb0986e3e57d1766504367d59a1185e6ec71d5-push
+          choice: push
+          proposalHash: 81d4004a137612b4234f1ccc8deb0986e3e57d1766504367d59a1185e6ec71d5
+    evidenceWaits:
+      - id: stabilize-archive-publication-recovery:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/stabilize-archive-publication-recovery
+          contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+          submissionId: e6399641-9d94-4df6-acba-2c38a5661582
+      - id: stabilize-archive-publication-recovery:8
+        stepId: full.design.evidence
+        sequence: 8
+        kind: classic-design-document
+        status: resolved
+        results: {}
+        receipt:
+          ref: openspec/changes/stabilize-archive-publication-recovery/design.md
+          contentHash: e115d43cc44ede9c4625e649dc0c7dd2fd61f160c92d1a222e018664d9735fb5
+          submissionId: 09a08ccc-4c03-49b9-aba9-3544d1b22b91
+      - id: stabilize-archive-publication-recovery:12
+        stepId: full.build.plan.evidence
+        sequence: 12
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-04-stabilize-archive-publication-recovery.md
+          contentHash: ea401cfafa06261c825f8b4d3183192e9fc4fe7d20870c2f77d327c83fde846e
+          submissionId: 60600da0-7525-4aea-b3ab-c85643bcc488
+      - id: stabilize-archive-publication-recovery:15
+        stepId: full.build.check.evidence
+        sequence: 15
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/9a840524-627b-4ee5-b359-57c9af7bc9ff.log
+          contentHash: d591b03858240e9e5ad36fe2af2bfe4b687a151c2129ad7a101b696d7ef38b14
+          submissionId: aba3fb70-8a88-44e4-8f4b-0f95d29fdd2b
+      - id: stabilize-archive-publication-recovery:17
+        stepId: full.verify.report.evidence
+        sequence: 17
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/stabilize-archive-publication-recovery.md
+          contentHash: 0bd6c741191cf6cbd8a4ef20870da804324ffc416979cce050b33e8829a70980
+          submissionId: 7983d193-eded-4b68-a70d-9ead0cf6a872
+      - id: stabilize-archive-publication-recovery:20
+        stepId: full.build.plan.evidence
+        sequence: 20
+        kind: classic-build-plan
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/plans/2026-11-04-stabilize-archive-publication-recovery.md
+          contentHash: ea401cfafa06261c825f8b4d3183192e9fc4fe7d20870c2f77d327c83fde846e
+          submissionId: edb865c4-5fa5-466b-8c93-f05b062fe203
+      - id: stabilize-archive-publication-recovery:23
+        stepId: full.build.check.evidence
+        sequence: 23
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/476bba13-1644-4b0a-a205-8246077a38fa.log
+          contentHash: 08c0d8bce8effdf0e2897ca0712fa7bee67a03aa185f335c50e2483e953b0a41
+          submissionId: 4f1d64aa-0443-4649-aa63-64b892d96480
+      - id: stabilize-archive-publication-recovery:25
+        stepId: full.verify.report.evidence
+        sequence: 25
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/stabilize-archive-publication-recovery.md
+          contentHash: 32715ae8b3225a0180d9b799947bd3f0e2cb66e19452d7c4c74e91b3e0faadca
+          submissionId: 976c7419-e492-4758-90a5-0c65a8a6476f
+      - id: stabilize-archive-publication-recovery:27
+        stepId: full.verify.check.evidence
+        sequence: 27
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/67215984-49c4-468b-b883-66236066dd31.log
+          contentHash: f52cfb13aa05ccba32d12bc24c20cca35b8df5c9faa430909718fd6fafd65b9b
+          submissionId: 4586a013-f295-4eb5-b995-2a2e30b3ddae
+      - id: stabilize-archive-publication-recovery:31
+        stepId: full.verify.report.evidence
+        sequence: 31
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/stabilize-archive-publication-recovery.md
+          contentHash: 32715ae8b3225a0180d9b799947bd3f0e2cb66e19452d7c4c74e91b3e0faadca
+          submissionId: 89e0546d-85a0-48aa-b7fe-68ea5e506d02
+      - id: stabilize-archive-publication-recovery:33
+        stepId: full.verify.check.evidence
+        sequence: 33
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/df3a6791-2344-4180-abb6-a93bf98c317b.log
+          contentHash: b2c93132f8a8996a6c3dc16e60422d294844a384beef3d765a0c2df9fc566389
+          submissionId: 422d78ec-8b62-4dbf-a900-bae6f382bf4a
+      - id: stabilize-archive-publication-recovery:37
+        stepId: full.verify.report.evidence
+        sequence: 37
+        kind: classic-verification-report
+        status: resolved
+        results: {}
+        receipt:
+          ref: docs/superpowers/reports/stabilize-archive-publication-recovery.md
+          contentHash: 32715ae8b3225a0180d9b799947bd3f0e2cb66e19452d7c4c74e91b3e0faadca
+          submissionId: 72f086a9-e0d5-432d-9690-12d4394629dc
+      - id: stabilize-archive-publication-recovery:39
+        stepId: full.verify.check.evidence
+        sequence: 39
+        kind: classic-verify-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/deb6bcd0-2a5b-43c4-a367-d7c0375d71c7.log
+          contentHash: 0cb5e38479947e4a187786c7f210ac74be441ce11e60643c1b61aa58e6bbbb35
+          submissionId: 752a79e6-e9a9-42f8-8997-988cfe27a51d
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 68
+  sourceHash: 1cbafdbb7547ed3aacf497873c09fd1238afb49b637bac22a873bc829703cdb2
+  pool:
+    version: 3
+    values:
+      - event: open-complete
+      - choice: approved
+        proposal:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+              ref: openspec/changes/stabilize-archive-publication-recovery
+      - contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+        ref: openspec/changes/stabilize-archive-publication-recovery
+      - contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+      - choice: approved
+        proposal:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-archive-publication-recovery/.comet/handoff/design-context.json
+              handoffHash: f14618d810380089eb99b634b99dec1cde8d46d02583c7ba387ed7b7d7e6f95c
+              proposal: 采用单一外部执行确定性合同：GitHub 4xx 明确拒绝映射为 not-applied，5xx、传输中断、2xx
+                解析失败和创建后核验失败映射为 unknown；Delivery 以 PublicationNotAppliedError 与
+                PublicationResultUnknownError 分流，Journal 对 not-applied 原子回到同一
+                stable intent 的 pushed checkpoint 且仅允许下一次显式 pull 最多再 create 一次，对
+                unknown 永久保持 observation-only；WorkflowRuns 只把 unknown 投影为
+                external-result-unknown。completed Run 的 done/terminal 在
+                trajectory replay 前短路，非终态历史 selection 必须精确匹配当前
+                revision、epoch、work 和 attempt。验证采用失败注入、Journal 重启恢复、打包 CLI 和第五轮
+                terminal fixture，不访问真实平台、不新增 daemon/webhook/auto-merge/compat
+                layer。
+              requirementsEvidence:
+                contentHash: 4f1d7fc6e8115cf0af2a5c9282c34f361a8dfaeb51d1fef38feb5253fd02ffbf
+                ref: openspec/changes/stabilize-archive-publication-recovery
+              sourceEvidence:
+                contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+                ref: openspec/changes/stabilize-archive-publication-recovery
+      - handoffContext: openspec/changes/stabilize-archive-publication-recovery/.comet/handoff/design-context.json
+        handoffHash: f14618d810380089eb99b634b99dec1cde8d46d02583c7ba387ed7b7d7e6f95c
+        proposal: 采用单一外部执行确定性合同：GitHub 4xx 明确拒绝映射为 not-applied，5xx、传输中断、2xx
+          解析失败和创建后核验失败映射为 unknown；Delivery 以 PublicationNotAppliedError 与
+          PublicationResultUnknownError 分流，Journal 对 not-applied 原子回到同一 stable
+          intent 的 pushed checkpoint 且仅允许下一次显式 pull 最多再 create 一次，对 unknown 永久保持
+          observation-only；WorkflowRuns 只把 unknown 投影为
+          external-result-unknown。completed Run 的 done/terminal 在 trajectory
+          replay 前短路，非终态历史 selection 必须精确匹配当前 revision、epoch、work 和
+          attempt。验证采用失败注入、Journal 重启恢复、打包 CLI 和第五轮 terminal fixture，不访问真实平台、不新增
+          daemon/webhook/auto-merge/compat layer。
+        requirementsEvidence:
+          contentHash: 4f1d7fc6e8115cf0af2a5c9282c34f361a8dfaeb51d1fef38feb5253fd02ffbf
+          ref: openspec/changes/stabilize-archive-publication-recovery
+        sourceEvidence:
+          contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+          ref: openspec/changes/stabilize-archive-publication-recovery
+      - designDoc: openspec/changes/stabilize-archive-publication-recovery/design.md
+      - contentHash: e115d43cc44ede9c4625e649dc0c7dd2fd61f160c92d1a222e018664d9735fb5
+        ref: openspec/changes/stabilize-archive-publication-recovery/design.md
+      - boundBranch: codex/stabilize-archive-publication-recovery
+        buildMode: autonomous
+        directOverride: false
+        isolation: current
+        reviewMode: thorough
+        subagentDispatch: null
+        tddMode: tdd
+      - choice: approved
+        proposal:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs:
+            full.build.configure:
+              boundBranch: codex/stabilize-archive-publication-recovery
+              buildMode: autonomous
+              directOverride: false
+              isolation: current
+              reviewMode: thorough
+              subagentDispatch: null
+              tddMode: tdd
+      - designEvidence:
+          contentHash: e115d43cc44ede9c4625e649dc0c7dd2fd61f160c92d1a222e018664d9735fb5
+          ref: openspec/changes/stabilize-archive-publication-recovery/design.md
+        plan: docs/superpowers/plans/2026-11-04-stabilize-archive-publication-recovery.md
+        planEvidence:
+          contentHash: ea401cfafa06261c825f8b4d3183192e9fc4fe7d20870c2f77d327c83fde846e
+          ref: docs/superpowers/plans/2026-11-04-stabilize-archive-publication-recovery.md
+        taskRevision: 927d56410b53346595f2fd9937c388883fa01f8af1b1c3c11dead5c1e2f56d91
+      - contentHash: ea401cfafa06261c825f8b4d3183192e9fc4fe7d20870c2f77d327c83fde846e
+        ref: docs/superpowers/plans/2026-11-04-stabilize-archive-publication-recovery.md
+      - event: build-complete
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 2
+        contentHash: d591b03858240e9e5ad36fe2af2bfe4b687a151c2129ad7a101b696d7ef38b14
+        cwd: .
+        environment: 21506b3ae68782caf52f445b7be3a94a0a053c729c0d5e045468b4e86704d659
+        exitCode: 0
+        inputAfter: bf076435539012b95a26e1a83e77d9718aff3b8979b12f2b66c8ad35d7aec888
+        inputBefore: bf076435539012b95a26e1a83e77d9718aff3b8979b12f2b66c8ad35d7aec888
+        manifestHash: 80101d8f5a0be31d2d4a51511ec5bb9b9c0dc5be0a69ebff5bc0e4abc52f7e11
+        manifestRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/954bb981-e894-475b-a1cc-2f9cd4e13ad9.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/9a840524-627b-4ee5-b359-57c9af7bc9ff.log
+        reusable: false
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 900000
+      - contentHash: d591b03858240e9e5ad36fe2af2bfe4b687a151c2129ad7a101b696d7ef38b14
+        ref: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/9a840524-627b-4ee5-b359-57c9af7bc9ff.log
+      - contentHash: 0bd6c741191cf6cbd8a4ef20870da804324ffc416979cce050b33e8829a70980
+        ref: docs/superpowers/reports/stabilize-archive-publication-recovery.md
+      - event: verification-ready
+        verificationReport: docs/superpowers/reports/stabilize-archive-publication-recovery.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 3
+        contentHash: d8ad6efb9d2c484655a00a3d7b8cd75bc8d0696dfaf0682fa20d257a70f01ab5
+        cwd: .
+        deliveryInputs: {}
+        environment: 21506b3ae68782caf52f445b7be3a94a0a053c729c0d5e045468b4e86704d659
+        exitCode: 1
+        inputAfter: f37d44e0f6d7c8071f697ecad7a2439c5b2945fa364520c718111a78d7fb6405
+        inputBefore: f37d44e0f6d7c8071f697ecad7a2439c5b2945fa364520c718111a78d7fb6405
+        manifestHash: fd122aef3fed21fd89aad549e961d056402611260d424997268fbbc83e8632ab
+        manifestRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/1fdc63c9-04fd-488b-b9d7-cf3168801cdd.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/13a09616-b217-4edf-9315-b06b5f5f6b5c.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 900000
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 4
+        contentHash: 08c0d8bce8effdf0e2897ca0712fa7bee67a03aa185f335c50e2483e953b0a41
+        cwd: .
+        environment: 21506b3ae68782caf52f445b7be3a94a0a053c729c0d5e045468b4e86704d659
+        exitCode: 0
+        inputAfter: d32d6981ecadad999b29a9db7aeb9b7ecef9529de61fd529174805281a67709c
+        inputBefore: d32d6981ecadad999b29a9db7aeb9b7ecef9529de61fd529174805281a67709c
+        manifestHash: 26505f545bc81b314d6f20203cfdc008c77c20f09a165fd16a520f09e7777a24
+        manifestRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/ef008eee-41a1-403f-8224-7c91088c9a06.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/476bba13-1644-4b0a-a205-8246077a38fa.log
+        reusable: false
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 900000
+      - contentHash: 08c0d8bce8effdf0e2897ca0712fa7bee67a03aa185f335c50e2483e953b0a41
+        ref: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/476bba13-1644-4b0a-a205-8246077a38fa.log
+      - contentHash: 32715ae8b3225a0180d9b799947bd3f0e2cb66e19452d7c4c74e91b3e0faadca
+        ref: docs/superpowers/reports/stabilize-archive-publication-recovery.md
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 5
+        contentHash: f52cfb13aa05ccba32d12bc24c20cca35b8df5c9faa430909718fd6fafd65b9b
+        cwd: .
+        deliveryInputs: {}
+        environment: 21506b3ae68782caf52f445b7be3a94a0a053c729c0d5e045468b4e86704d659
+        exitCode: 0
+        inputAfter: 82e8e1cbd74e22331e80d8d6e778ae3b04e17f187c3ff28046c0de086473365b
+        inputBefore: 82e8e1cbd74e22331e80d8d6e778ae3b04e17f187c3ff28046c0de086473365b
+        manifestHash: 187813be0151d91ecfaa54574d3c5fd32e1557ec7ae5245a5aad7c7e9cef4ce7
+        manifestRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/ae8b6079-a339-4b48-9e0c-306d8cf9920f.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/67215984-49c4-468b-b883-66236066dd31.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 900000
+      - contentHash: f52cfb13aa05ccba32d12bc24c20cca35b8df5c9faa430909718fd6fafd65b9b
+        ref: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/67215984-49c4-468b-b883-66236066dd31.log
+      - choice: reverify
+        proposal:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs:
+            full.archive.prepare:
+              summary: 归档已完成的 Archive 发布恢复 Change：明确区分 not-applied 与 unknown，恢复 Journal
+                的确定性重试和观察式恢复，修正终态 continuation 投影，并以失败注入、打包 CLI、完整 Build Check
+                与独立 Verify receipt 证明。归档只合并 OpenSpec delta 并保存变更历史；不创建 PR、不合入
+                main、不等待远端 MR。
+              targetBranch: codex/stabilize-archive-publication-recovery
+      - summary: 归档已完成的 Archive 发布恢复 Change：明确区分 not-applied 与 unknown，恢复 Journal
+          的确定性重试和观察式恢复，修正终态 continuation 投影，并以失败注入、打包 CLI、完整 Build Check 与独立
+          Verify receipt 证明。归档只合并 OpenSpec delta 并保存变更历史；不创建 PR、不合入 main、不等待远端
+          MR。
+        targetBranch: codex/stabilize-archive-publication-recovery
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 7
+        contentHash: b2c93132f8a8996a6c3dc16e60422d294844a384beef3d765a0c2df9fc566389
+        cwd: .
+        deliveryInputs: {}
+        environment: 21506b3ae68782caf52f445b7be3a94a0a053c729c0d5e045468b4e86704d659
+        exitCode: 0
+        inputAfter: a19eae881c73aba866a8f0997a2db7ab7fda22ee2a087ac3cb4b5ab617557c83
+        inputBefore: a19eae881c73aba866a8f0997a2db7ab7fda22ee2a087ac3cb4b5ab617557c83
+        manifestHash: 00b914959dcb210e26e26574367e9775df8ebcc4eee01e7c2eb9bc41cdbde0fa
+        manifestRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/be673ff1-fd4d-487d-9b83-cc791b153bef.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/df3a6791-2344-4180-abb6-a93bf98c317b.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 900000
+      - contentHash: b2c93132f8a8996a6c3dc16e60422d294844a384beef3d765a0c2df9fc566389
+        ref: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/df3a6791-2344-4180-abb6-a93bf98c317b.log
+      - choice: reverify
+        proposal:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs:
+            full.archive.prepare:
+              remote: origin
+              summary: 归档已完成的 Archive 发布恢复 Change：明确区分 not-applied 与 unknown，恢复 Journal
+                的确定性重试和观察式恢复，修正终态 continuation 投影，并以失败注入、打包 CLI、完整 Build Check
+                与独立 Verify receipt 证明。归档将合并 OpenSpec
+                delta、保存变更历史并把归档提交推送到公开功能分支；不创建 PR、不合入 main、不等待远端 MR。
+              targetBranch: codex/stabilize-archive-publication-recovery
+      - remote: origin
+        summary: 归档已完成的 Archive 发布恢复 Change：明确区分 not-applied 与 unknown，恢复 Journal
+          的确定性重试和观察式恢复，修正终态 continuation 投影，并以失败注入、打包 CLI、完整 Build Check 与独立
+          Verify receipt 证明。归档将合并 OpenSpec delta、保存变更历史并把归档提交推送到公开功能分支；不创建
+          PR、不合入 main、不等待远端 MR。
+        targetBranch: codex/stabilize-archive-publication-recovery
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 9
+        contentHash: 0cb5e38479947e4a187786c7f210ac74be441ce11e60643c1b61aa58e6bbbb35
+        cwd: .
+        deliveryInputs: {}
+        environment: 21506b3ae68782caf52f445b7be3a94a0a053c729c0d5e045468b4e86704d659
+        exitCode: 0
+        inputAfter: 253adcc38fd2506ea74ebcea590f31a6901441232a0e0ec37b33791ea1dcd838
+        inputBefore: 253adcc38fd2506ea74ebcea590f31a6901441232a0e0ec37b33791ea1dcd838
+        manifestHash: a1f22c48c90145063e15e46fa1acbc5a648a1002792f631df0a18c38bc7015e8
+        manifestRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/fd9fe644-0fa8-4821-be32-7d66a2dc4192.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/deb6bcd0-2a5b-43c4-a367-d7c0375d71c7.log
+        reusable: false
+        reused: false
+        scope: verify
+        tier: full
+        timeoutMs: 900000
+      - contentHash: 0cb5e38479947e4a187786c7f210ac74be441ce11e60643c1b61aa58e6bbbb35
+        ref: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/deb6bcd0-2a5b-43c4-a367-d7c0375d71c7.log
+      - choice: push
+        proposal:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs:
+            full.archive.prepare:
+              remote: origin
+              summary: 归档已完成的 Archive 发布恢复 Change：明确区分 not-applied 与 unknown，恢复 Journal
+                的确定性重试和观察式恢复，修正终态 continuation 投影，并以失败注入、打包 CLI、完整 Build Check
+                与独立 Verify receipt 证明。归档将合并 OpenSpec
+                delta、保存变更历史并把归档提交推送到公开功能分支；不创建 PR、不合入 main、不等待远端 MR。
+              targetBranch: codex/stabilize-archive-publication-recovery
+      - baseCommit: 53a357b66ec9c088b1f584e6754ea17dff1d041f
+        deliveryAction: push
+        remote: origin
+        remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+        targetBranch: codex/stabilize-archive-publication-recovery
+        verifiedBranch: codex/stabilize-archive-publication-recovery
+      - archiveDirectory: openspec/changes/archive/2026-11-04-stabilize-archive-publication-recovery
+      - sequence: 9
+        value:
+          boundBranch: codex/stabilize-archive-publication-recovery
+          buildMode: autonomous
+          directOverride: false
+          isolation: current
+          reviewMode: thorough
+          subagentDispatch: null
+          tddMode: tdd
+      - sequence: 10
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: stabilize-archive-publication-recovery
+              changeDir: openspec/changes/stabilize-archive-publication-recovery
+              workspaceBaseline:
+                ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+            outputs:
+              full.build.configure:
+                boundBranch: codex/stabilize-archive-publication-recovery
+                buildMode: autonomous
+                directOverride: false
+                isolation: current
+                reviewMode: thorough
+                subagentDispatch: null
+                tddMode: tdd
+      - sequence: 6
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: stabilize-archive-publication-recovery
+              changeDir: openspec/changes/stabilize-archive-publication-recovery
+              workspaceBaseline:
+                ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/stabilize-archive-publication-recovery/.comet/handoff/design-context.json
+                handoffHash: f14618d810380089eb99b634b99dec1cde8d46d02583c7ba387ed7b7d7e6f95c
+                proposal: 采用单一外部执行确定性合同：GitHub 4xx 明确拒绝映射为 not-applied，5xx、传输中断、2xx
+                  解析失败和创建后核验失败映射为 unknown；Delivery 以 PublicationNotAppliedError
+                  与 PublicationResultUnknownError 分流，Journal 对 not-applied
+                  原子回到同一 stable intent 的 pushed checkpoint 且仅允许下一次显式 pull 最多再
+                  create 一次，对 unknown 永久保持 observation-only；WorkflowRuns 只把
+                  unknown 投影为 external-result-unknown。completed Run 的
+                  done/terminal 在 trajectory replay 前短路，非终态历史 selection 必须精确匹配当前
+                  revision、epoch、work 和 attempt。验证采用失败注入、Journal 重启恢复、打包 CLI
+                  和第五轮 terminal fixture，不访问真实平台、不新增
+                  daemon/webhook/auto-merge/compat layer。
+                requirementsEvidence:
+                  contentHash: 4f1d7fc6e8115cf0af2a5c9282c34f361a8dfaeb51d1fef38feb5253fd02ffbf
+                  ref: openspec/changes/stabilize-archive-publication-recovery
+                sourceEvidence:
+                  contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+                  ref: openspec/changes/stabilize-archive-publication-recovery
+      - sequence: 7
+        value:
+          designDoc: openspec/changes/stabilize-archive-publication-recovery/design.md
+      - sequence: 8
+        value:
+          contentHash: e115d43cc44ede9c4625e649dc0c7dd2fd61f160c92d1a222e018664d9735fb5
+          ref: openspec/changes/stabilize-archive-publication-recovery/design.md
+      - sequence: 5
+        value:
+          handoffContext: openspec/changes/stabilize-archive-publication-recovery/.comet/handoff/design-context.json
+          handoffHash: f14618d810380089eb99b634b99dec1cde8d46d02583c7ba387ed7b7d7e6f95c
+          proposal: 采用单一外部执行确定性合同：GitHub 4xx 明确拒绝映射为 not-applied，5xx、传输中断、2xx
+            解析失败和创建后核验失败映射为 unknown；Delivery 以 PublicationNotAppliedError 与
+            PublicationResultUnknownError 分流，Journal 对 not-applied 原子回到同一 stable
+            intent 的 pushed checkpoint 且仅允许下一次显式 pull 最多再 create 一次，对 unknown
+            永久保持 observation-only；WorkflowRuns 只把 unknown 投影为
+            external-result-unknown。completed Run 的 done/terminal 在 trajectory
+            replay 前短路，非终态历史 selection 必须精确匹配当前 revision、epoch、work 和
+            attempt。验证采用失败注入、Journal 重启恢复、打包 CLI 和第五轮 terminal
+            fixture，不访问真实平台、不新增 daemon/webhook/auto-merge/compat layer。
+          requirementsEvidence:
+            contentHash: 4f1d7fc6e8115cf0af2a5c9282c34f361a8dfaeb51d1fef38feb5253fd02ffbf
+            ref: openspec/changes/stabilize-archive-publication-recovery
+          sourceEvidence:
+            contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+            ref: openspec/changes/stabilize-archive-publication-recovery
+      - sequence: 1
+        value:
+          event: open-complete
+      - sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: stabilize-archive-publication-recovery
+              changeDir: openspec/changes/stabilize-archive-publication-recovery
+              workspaceBaseline:
+                ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+                ref: openspec/changes/stabilize-archive-publication-recovery
+      - sequence: 2
+        value:
+          contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+          ref: openspec/changes/stabilize-archive-publication-recovery
+      - sequence: 4
+        value:
+          contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+      - sequence: 11
+        value:
+          designEvidence:
+            contentHash: e115d43cc44ede9c4625e649dc0c7dd2fd61f160c92d1a222e018664d9735fb5
+            ref: openspec/changes/stabilize-archive-publication-recovery/design.md
+          plan: docs/superpowers/plans/2026-11-04-stabilize-archive-publication-recovery.md
+          planEvidence:
+            contentHash: ea401cfafa06261c825f8b4d3183192e9fc4fe7d20870c2f77d327c83fde846e
+            ref: docs/superpowers/plans/2026-11-04-stabilize-archive-publication-recovery.md
+          taskRevision: 927d56410b53346595f2fd9937c388883fa01f8af1b1c3c11dead5c1e2f56d91
+      - sequence: 12
+        value:
+          contentHash: ea401cfafa06261c825f8b4d3183192e9fc4fe7d20870c2f77d327c83fde846e
+          ref: docs/superpowers/plans/2026-11-04-stabilize-archive-publication-recovery.md
+      - sequence: 13
+        value:
+          event: build-complete
+      - sequence: 14
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 2
+          contentHash: d591b03858240e9e5ad36fe2af2bfe4b687a151c2129ad7a101b696d7ef38b14
+          cwd: .
+          environment: 21506b3ae68782caf52f445b7be3a94a0a053c729c0d5e045468b4e86704d659
+          exitCode: 0
+          inputAfter: bf076435539012b95a26e1a83e77d9718aff3b8979b12f2b66c8ad35d7aec888
+          inputBefore: bf076435539012b95a26e1a83e77d9718aff3b8979b12f2b66c8ad35d7aec888
+          manifestHash: 80101d8f5a0be31d2d4a51511ec5bb9b9c0dc5be0a69ebff5bc0e4abc52f7e11
+          manifestRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/954bb981-e894-475b-a1cc-2f9cd4e13ad9.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/9a840524-627b-4ee5-b359-57c9af7bc9ff.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 900000
+      - sequence: 15
+        value:
+          contentHash: d591b03858240e9e5ad36fe2af2bfe4b687a151c2129ad7a101b696d7ef38b14
+          ref: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/9a840524-627b-4ee5-b359-57c9af7bc9ff.log
+      - sequence: 17
+        value:
+          contentHash: 0bd6c741191cf6cbd8a4ef20870da804324ffc416979cce050b33e8829a70980
+          ref: docs/superpowers/reports/stabilize-archive-publication-recovery.md
+      - sequence: 16
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/stabilize-archive-publication-recovery.md
+      - sequence: 18
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 3
+          contentHash: d8ad6efb9d2c484655a00a3d7b8cd75bc8d0696dfaf0682fa20d257a70f01ab5
+          cwd: .
+          deliveryInputs: {}
+          environment: 21506b3ae68782caf52f445b7be3a94a0a053c729c0d5e045468b4e86704d659
+          exitCode: 1
+          inputAfter: f37d44e0f6d7c8071f697ecad7a2439c5b2945fa364520c718111a78d7fb6405
+          inputBefore: f37d44e0f6d7c8071f697ecad7a2439c5b2945fa364520c718111a78d7fb6405
+          manifestHash: fd122aef3fed21fd89aad549e961d056402611260d424997268fbbc83e8632ab
+          manifestRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/1fdc63c9-04fd-488b-b9d7-cf3168801cdd.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/13a09616-b217-4edf-9315-b06b5f5f6b5c.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 900000
+      - sequence: 19
+        value:
+          designEvidence:
+            contentHash: e115d43cc44ede9c4625e649dc0c7dd2fd61f160c92d1a222e018664d9735fb5
+            ref: openspec/changes/stabilize-archive-publication-recovery/design.md
+          plan: docs/superpowers/plans/2026-11-04-stabilize-archive-publication-recovery.md
+          planEvidence:
+            contentHash: ea401cfafa06261c825f8b4d3183192e9fc4fe7d20870c2f77d327c83fde846e
+            ref: docs/superpowers/plans/2026-11-04-stabilize-archive-publication-recovery.md
+          taskRevision: 927d56410b53346595f2fd9937c388883fa01f8af1b1c3c11dead5c1e2f56d91
+      - sequence: 20
+        value:
+          contentHash: ea401cfafa06261c825f8b4d3183192e9fc4fe7d20870c2f77d327c83fde846e
+          ref: docs/superpowers/plans/2026-11-04-stabilize-archive-publication-recovery.md
+      - sequence: 21
+        value:
+          event: build-complete
+      - sequence: 22
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 4
+          contentHash: 08c0d8bce8effdf0e2897ca0712fa7bee67a03aa185f335c50e2483e953b0a41
+          cwd: .
+          environment: 21506b3ae68782caf52f445b7be3a94a0a053c729c0d5e045468b4e86704d659
+          exitCode: 0
+          inputAfter: d32d6981ecadad999b29a9db7aeb9b7ecef9529de61fd529174805281a67709c
+          inputBefore: d32d6981ecadad999b29a9db7aeb9b7ecef9529de61fd529174805281a67709c
+          manifestHash: 26505f545bc81b314d6f20203cfdc008c77c20f09a165fd16a520f09e7777a24
+          manifestRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/ef008eee-41a1-403f-8224-7c91088c9a06.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/476bba13-1644-4b0a-a205-8246077a38fa.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 900000
+      - sequence: 23
+        value:
+          contentHash: 08c0d8bce8effdf0e2897ca0712fa7bee67a03aa185f335c50e2483e953b0a41
+          ref: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/476bba13-1644-4b0a-a205-8246077a38fa.log
+      - sequence: 25
+        value:
+          contentHash: 32715ae8b3225a0180d9b799947bd3f0e2cb66e19452d7c4c74e91b3e0faadca
+          ref: docs/superpowers/reports/stabilize-archive-publication-recovery.md
+      - sequence: 24
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/stabilize-archive-publication-recovery.md
+      - sequence: 26
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 5
+          contentHash: f52cfb13aa05ccba32d12bc24c20cca35b8df5c9faa430909718fd6fafd65b9b
+          cwd: .
+          deliveryInputs: {}
+          environment: 21506b3ae68782caf52f445b7be3a94a0a053c729c0d5e045468b4e86704d659
+          exitCode: 0
+          inputAfter: 82e8e1cbd74e22331e80d8d6e778ae3b04e17f187c3ff28046c0de086473365b
+          inputBefore: 82e8e1cbd74e22331e80d8d6e778ae3b04e17f187c3ff28046c0de086473365b
+          manifestHash: 187813be0151d91ecfaa54574d3c5fd32e1557ec7ae5245a5aad7c7e9cef4ce7
+          manifestRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/ae8b6079-a339-4b48-9e0c-306d8cf9920f.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/67215984-49c4-468b-b883-66236066dd31.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 900000
+      - sequence: 27
+        value:
+          contentHash: f52cfb13aa05ccba32d12bc24c20cca35b8df5c9faa430909718fd6fafd65b9b
+          ref: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/67215984-49c4-468b-b883-66236066dd31.log
+      - sequence: 29
+        value:
+          choice: reverify
+          proposal:
+            input:
+              change: stabilize-archive-publication-recovery
+              changeDir: openspec/changes/stabilize-archive-publication-recovery
+              workspaceBaseline:
+                ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+            outputs:
+              full.archive.prepare:
+                summary: 归档已完成的 Archive 发布恢复 Change：明确区分 not-applied 与 unknown，恢复 Journal
+                  的确定性重试和观察式恢复，修正终态 continuation 投影，并以失败注入、打包 CLI、完整 Build Check
+                  与独立 Verify receipt 证明。归档只合并 OpenSpec delta 并保存变更历史；不创建 PR、不合入
+                  main、不等待远端 MR。
+                targetBranch: codex/stabilize-archive-publication-recovery
+      - sequence: 28
+        value:
+          summary: 归档已完成的 Archive 发布恢复 Change：明确区分 not-applied 与 unknown，恢复 Journal
+            的确定性重试和观察式恢复，修正终态 continuation 投影，并以失败注入、打包 CLI、完整 Build Check 与独立
+            Verify receipt 证明。归档只合并 OpenSpec delta 并保存变更历史；不创建 PR、不合入 main、不等待远端
+            MR。
+          targetBranch: codex/stabilize-archive-publication-recovery
+      - sequence: 31
+        value:
+          contentHash: 32715ae8b3225a0180d9b799947bd3f0e2cb66e19452d7c4c74e91b3e0faadca
+          ref: docs/superpowers/reports/stabilize-archive-publication-recovery.md
+      - sequence: 30
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/stabilize-archive-publication-recovery.md
+      - sequence: 32
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 7
+          contentHash: b2c93132f8a8996a6c3dc16e60422d294844a384beef3d765a0c2df9fc566389
+          cwd: .
+          deliveryInputs: {}
+          environment: 21506b3ae68782caf52f445b7be3a94a0a053c729c0d5e045468b4e86704d659
+          exitCode: 0
+          inputAfter: a19eae881c73aba866a8f0997a2db7ab7fda22ee2a087ac3cb4b5ab617557c83
+          inputBefore: a19eae881c73aba866a8f0997a2db7ab7fda22ee2a087ac3cb4b5ab617557c83
+          manifestHash: 00b914959dcb210e26e26574367e9775df8ebcc4eee01e7c2eb9bc41cdbde0fa
+          manifestRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/be673ff1-fd4d-487d-9b83-cc791b153bef.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/df3a6791-2344-4180-abb6-a93bf98c317b.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 900000
+      - sequence: 33
+        value:
+          contentHash: b2c93132f8a8996a6c3dc16e60422d294844a384beef3d765a0c2df9fc566389
+          ref: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/df3a6791-2344-4180-abb6-a93bf98c317b.log
+      - sequence: 35
+        value:
+          choice: reverify
+          proposal:
+            input:
+              change: stabilize-archive-publication-recovery
+              changeDir: openspec/changes/stabilize-archive-publication-recovery
+              workspaceBaseline:
+                ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+            outputs:
+              full.archive.prepare:
+                remote: origin
+                summary: 归档已完成的 Archive 发布恢复 Change：明确区分 not-applied 与 unknown，恢复 Journal
+                  的确定性重试和观察式恢复，修正终态 continuation 投影，并以失败注入、打包 CLI、完整 Build Check
+                  与独立 Verify receipt 证明。归档将合并 OpenSpec
+                  delta、保存变更历史并把归档提交推送到公开功能分支；不创建 PR、不合入 main、不等待远端 MR。
+                targetBranch: codex/stabilize-archive-publication-recovery
+      - sequence: 34
+        value:
+          remote: origin
+          summary: 归档已完成的 Archive 发布恢复 Change：明确区分 not-applied 与 unknown，恢复 Journal
+            的确定性重试和观察式恢复，修正终态 continuation 投影，并以失败注入、打包 CLI、完整 Build Check 与独立
+            Verify receipt 证明。归档将合并 OpenSpec delta、保存变更历史并把归档提交推送到公开功能分支；不创建
+            PR、不合入 main、不等待远端 MR。
+          targetBranch: codex/stabilize-archive-publication-recovery
+      - sequence: 37
+        value:
+          contentHash: 32715ae8b3225a0180d9b799947bd3f0e2cb66e19452d7c4c74e91b3e0faadca
+          ref: docs/superpowers/reports/stabilize-archive-publication-recovery.md
+      - sequence: 36
+        value:
+          event: verification-ready
+          verificationReport: docs/superpowers/reports/stabilize-archive-publication-recovery.md
+      - sequence: 38
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 9
+          contentHash: 0cb5e38479947e4a187786c7f210ac74be441ce11e60643c1b61aa58e6bbbb35
+          cwd: .
+          deliveryInputs: {}
+          environment: 21506b3ae68782caf52f445b7be3a94a0a053c729c0d5e045468b4e86704d659
+          exitCode: 0
+          inputAfter: 253adcc38fd2506ea74ebcea590f31a6901441232a0e0ec37b33791ea1dcd838
+          inputBefore: 253adcc38fd2506ea74ebcea590f31a6901441232a0e0ec37b33791ea1dcd838
+          manifestHash: a1f22c48c90145063e15e46fa1acbc5a648a1002792f631df0a18c38bc7015e8
+          manifestRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/fd9fe644-0fa8-4821-be32-7d66a2dc4192.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/deb6bcd0-2a5b-43c4-a367-d7c0375d71c7.log
+          reusable: false
+          reused: false
+          scope: verify
+          tier: full
+          timeoutMs: 900000
+      - sequence: 39
+        value:
+          contentHash: 0cb5e38479947e4a187786c7f210ac74be441ce11e60643c1b61aa58e6bbbb35
+          ref: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/deb6bcd0-2a5b-43c4-a367-d7c0375d71c7.log
+      - sequence: 41
+        value:
+          choice: push
+          proposal:
+            input:
+              change: stabilize-archive-publication-recovery
+              changeDir: openspec/changes/stabilize-archive-publication-recovery
+              workspaceBaseline:
+                ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+            outputs:
+              full.archive.prepare:
+                remote: origin
+                summary: 归档已完成的 Archive 发布恢复 Change：明确区分 not-applied 与 unknown，恢复 Journal
+                  的确定性重试和观察式恢复，修正终态 continuation 投影，并以失败注入、打包 CLI、完整 Build Check
+                  与独立 Verify receipt 证明。归档将合并 OpenSpec
+                  delta、保存变更历史并把归档提交推送到公开功能分支；不创建 PR、不合入 main、不等待远端 MR。
+                targetBranch: codex/stabilize-archive-publication-recovery
+      - sequence: 40
+        value:
+          remote: origin
+          summary: 归档已完成的 Archive 发布恢复 Change：明确区分 not-applied 与 unknown，恢复 Journal
+            的确定性重试和观察式恢复，修正终态 continuation 投影，并以失败注入、打包 CLI、完整 Build Check 与独立
+            Verify receipt 证明。归档将合并 OpenSpec delta、保存变更历史并把归档提交推送到公开功能分支；不创建
+            PR、不合入 main、不等待远端 MR。
+          targetBranch: codex/stabilize-archive-publication-recovery
+      - sequence: 42
+        value:
+          baseCommit: 53a357b66ec9c088b1f584e6754ea17dff1d041f
+          deliveryAction: push
+          remote: origin
+          remoteIdentity: 2322744292a9245041896bd3ee7b34d264113a5a35af96915f1f7a195fa7706e
+          targetBranch: codex/stabilize-archive-publication-recovery
+          verifiedBranch: codex/stabilize-archive-publication-recovery
+      - sequence: 43
+        value:
+          archiveDirectory: openspec/changes/archive/2026-11-04-stabilize-archive-publication-recovery
+    nodes:
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 1
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: 3
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 0
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 0
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 5
+        left: 6
+        right: 7
+        height: 2
+      - key: full.open.confirm
+        value: 1
+        left: 8
+        right: 4
+        height: 3
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 7
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 6
+        left: 10
+        right: 11
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 12
+        right: 7
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 13
+        right: 4
+        height: 4
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 16
+        height: 2
+      - key: full.design.handoff
+        value: 5
+        left: 11
+        right: 7
+        height: 2
+      - key: full.design.document
+        value: 6
+        left: 17
+        right: 18
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 19
+        right: 4
+        height: 4
+      - key: full.build.plan
+        value: 10
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 4
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 11
+        left: 21
+        right: 22
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 23
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 4
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 24
+        right: 25
+        height: 4
+      - key: full.build.execute
+        value: 12
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 9
+        left: 15
+        right: 27
+        height: 2
+      - key: full.build.plan.evidence
+        value: 11
+        left: null
+        right: 22
+        height: 2
+      - key: full.build.plan
+        value: 10
+        left: 28
+        right: 29
+        height: 3
+      - key: full.design.document
+        value: 6
+        left: 30
+        right: 25
+        height: 4
+      - key: full.build.check
+        value: 13
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 8
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 14
+        left: 32
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 34
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 35
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 25
+        height: 5
+      - key: full.open.evidence
+        value: 2
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 16
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: null
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 40
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 41
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 42
+        height: 5
+      - key: full.verify.check
+        value: 17
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 15
+        left: 44
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 45
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 46
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 36
+        right: 47
+        height: 5
+      - key: full.build.check
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 19
+        left: 49
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 50
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 51
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 47
+        height: 5
+      - key: full.verify.report.evidence
+        value: 20
+        left: 44
+        right: 39
+        height: 2
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: 54
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 55
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 56
+        height: 5
+      - key: full.open.revalidate
+        value: 3
+        left: 38
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 20
+        left: 59
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 21
+        left: 58
+        right: 60
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 61
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 62
+        height: 5
+      - key: full.archive.confirm
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 18
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 24
+        left: 64
+        right: 65
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 33
+        right: 27
+        height: 2
+      - key: full.build.check.evidence
+        value: 19
+        left: 66
+        right: 67
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 68
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 69
+        right: 62
+        height: 5
+      - key: full.verify.check.evidence
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 20
+        left: 71
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 25
+        left: 58
+        right: 72
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 73
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 69
+        right: 74
+        height: 5
+      - key: full.archive.confirm
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 28
+        left: 76
+        right: 65
+        height: 2
+      - key: full.build.check.evidence
+        value: 19
+        left: 77
+        right: 67
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 78
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 79
+        right: 74
+        height: 5
+      - key: full.verify.check.evidence
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 20
+        left: 81
+        right: 39
+        height: 2
+      - key: full.verify.check
+        value: 29
+        left: 58
+        right: 82
+        height: 3
+      - key: full.open.confirm
+        value: 1
+        left: 18
+        right: 83
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 79
+        right: 84
+        height: 5
+      - key: full.archive.confirm
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 28
+        left: 86
+        right: 65
+        height: 2
+      - key: full.build.check.evidence
+        value: 19
+        left: 87
+        right: 67
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 88
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 89
+        right: 84
+        height: 5
+      - key: full.archive.preflight
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 31
+        left: null
+        right: 91
+        height: 2
+      - key: full.archive.prepare
+        value: 28
+        left: 92
+        right: 65
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 67
+        right: 29
+        height: 3
+      - key: full.build.check.evidence
+        value: 19
+        left: 93
+        right: 94
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 95
+        right: 84
+        height: 5
+      - key: full.archive.confirm
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 33
+        left: 97
+        right: 98
+        height: 2
+      - key: full.archive.prepare
+        value: 28
+        left: 99
+        right: 65
+        height: 3
+      - key: full.build.check.evidence
+        value: 19
+        left: 100
+        right: 94
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 101
+        right: 84
+        height: 5
+      - key: full.build.configure
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 35
+        left: 103
+        right: 104
+        height: 2
+      - key: full.design.evidence
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 39
+        left: 106
+        right: 107
+        height: 2
+      - key: full.open.revalidate
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 42
+        left: null
+        right: 109
+        height: 2
+      - key: full.open.confirm
+        value: 41
+        left: 108
+        right: 110
+        height: 3
+      - key: full.design.document
+        value: 37
+        left: 105
+        right: 111
+        height: 4
+      - key: full.build.plan
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 45
+        left: 113
+        right: 114
+        height: 2
+      - key: full.build.confirm
+        value: 35
+        left: 103
+        right: 115
+        height: 3
+      - key: full.design.document
+        value: 37
+        left: 116
+        right: 111
+        height: 4
+      - key: full.build.execute
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 35
+        left: 103
+        right: 118
+        height: 2
+      - key: full.build.plan.evidence
+        value: 45
+        left: null
+        right: 114
+        height: 2
+      - key: full.build.plan
+        value: 44
+        left: 119
+        right: 120
+        height: 3
+      - key: full.design.document
+        value: 37
+        left: 121
+        right: 111
+        height: 4
+      - key: full.build.check
+        value: 47
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 48
+        left: 123
+        right: 124
+        height: 2
+      - key: full.build.confirm
+        value: 35
+        left: 125
+        right: 118
+        height: 3
+      - key: full.build.plan
+        value: 44
+        left: 126
+        right: 120
+        height: 4
+      - key: full.design.document
+        value: 37
+        left: 127
+        right: 111
+        height: 5
+      - key: full.open.evidence
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 50
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 49
+        left: null
+        right: 130
+        height: 2
+      - key: full.open.revalidate
+        value: 43
+        left: 129
+        right: 131
+        height: 3
+      - key: full.open.confirm
+        value: 41
+        left: 108
+        right: 132
+        height: 4
+      - key: full.design.document
+        value: 37
+        left: 127
+        right: 133
+        height: 5
+      - key: full.verify.check
+        value: 51
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 49
+        left: 135
+        right: 130
+        height: 2
+      - key: full.open.revalidate
+        value: 43
+        left: 129
+        right: 136
+        height: 3
+      - key: full.open.confirm
+        value: 41
+        left: 108
+        right: 137
+        height: 4
+      - key: full.design.document
+        value: 37
+        left: 127
+        right: 138
+        height: 5
+      - key: full.build.plan.evidence
+        value: 53
+        left: null
+        right: 114
+        height: 2
+      - key: full.build.plan
+        value: 52
+        left: 126
+        right: 140
+        height: 4
+      - key: full.design.document
+        value: 37
+        left: 141
+        right: 138
+        height: 5
+      - key: full.build.execute
+        value: 54
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 35
+        left: 125
+        right: 143
+        height: 3
+      - key: full.build.plan
+        value: 52
+        left: 144
+        right: 140
+        height: 4
+      - key: full.design.document
+        value: 37
+        left: 145
+        right: 138
+        height: 5
+      - key: full.build.check
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 56
+        left: 147
+        right: 124
+        height: 2
+      - key: full.build.confirm
+        value: 35
+        left: 148
+        right: 143
+        height: 3
+      - key: full.build.plan
+        value: 52
+        left: 149
+        right: 140
+        height: 4
+      - key: full.design.document
+        value: 37
+        left: 150
+        right: 138
+        height: 5
+      - key: full.verify.run
+        value: 58
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 57
+        left: 135
+        right: 152
+        height: 2
+      - key: full.open.revalidate
+        value: 43
+        left: 129
+        right: 153
+        height: 3
+      - key: full.open.confirm
+        value: 41
+        left: 108
+        right: 154
+        height: 4
+      - key: full.design.document
+        value: 37
+        left: 150
+        right: 155
+        height: 5
+      - key: full.open.revalidate
+        value: 43
+        left: 129
+        right: null
+        height: 2
+      - key: full.verify.check.evidence
+        value: 60
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 57
+        left: 158
+        right: 152
+        height: 2
+      - key: full.verify.check
+        value: 59
+        left: 157
+        right: 159
+        height: 3
+      - key: full.open.confirm
+        value: 41
+        left: 108
+        right: 160
+        height: 4
+      - key: full.design.document
+        value: 37
+        left: 150
+        right: 161
+        height: 5
+      - key: full.archive.confirm
+        value: 61
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 62
+        left: 163
+        right: 164
+        height: 2
+      - key: full.build.confirm
+        value: 35
+        left: 124
+        right: 143
+        height: 2
+      - key: full.build.check.evidence
+        value: 56
+        left: 165
+        right: 166
+        height: 3
+      - key: full.build.plan
+        value: 52
+        left: 167
+        right: 140
+        height: 4
+      - key: full.design.document
+        value: 37
+        left: 168
+        right: 161
+        height: 5
+      - key: full.verify.run
+        value: 64
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 63
+        left: 158
+        right: 170
+        height: 2
+      - key: full.verify.check
+        value: 59
+        left: 157
+        right: 171
+        height: 3
+      - key: full.open.confirm
+        value: 41
+        left: 108
+        right: 172
+        height: 4
+      - key: full.design.document
+        value: 37
+        left: 168
+        right: 173
+        height: 5
+      - key: full.verify.check.evidence
+        value: 66
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 63
+        left: 175
+        right: 170
+        height: 2
+      - key: full.verify.check
+        value: 65
+        left: 157
+        right: 176
+        height: 3
+      - key: full.open.confirm
+        value: 41
+        left: 108
+        right: 177
+        height: 4
+      - key: full.design.document
+        value: 37
+        left: 168
+        right: 178
+        height: 5
+      - key: full.archive.confirm
+        value: 67
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 68
+        left: 180
+        right: 164
+        height: 2
+      - key: full.build.check.evidence
+        value: 56
+        left: 181
+        right: 166
+        height: 3
+      - key: full.build.plan
+        value: 52
+        left: 182
+        right: 140
+        height: 4
+      - key: full.design.document
+        value: 37
+        left: 183
+        right: 178
+        height: 5
+      - key: full.verify.run
+        value: 70
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 69
+        left: 175
+        right: 185
+        height: 2
+      - key: full.verify.check
+        value: 65
+        left: 157
+        right: 186
+        height: 3
+      - key: full.open.confirm
+        value: 41
+        left: 108
+        right: 187
+        height: 4
+      - key: full.design.document
+        value: 37
+        left: 183
+        right: 188
+        height: 5
+      - key: full.open
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 41
+        left: 190
+        right: 191
+        height: 2
+      - key: full.archive.confirm
+        value: 67
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 68
+        left: 193
+        right: 194
+        height: 2
+      - key: full.build.configure
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 56
+        left: 195
+        right: 196
+        height: 3
+      - key: full.build.execute
+        value: 54
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 53
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 52
+        left: 198
+        right: 199
+        height: 2
+      - key: full.design.document
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 38
+        left: 201
+        right: 202
+        height: 2
+      - key: full.design.confirm
+        value: 36
+        left: 200
+        right: 203
+        height: 3
+      - key: full.open.confirm
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 42
+        left: 205
+        right: 206
+        height: 2
+      - key: full.verify.check.evidence
+        value: 72
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 70
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 69
+        left: 208
+        right: 209
+        height: 2
+      - key: full.verify.check
+        value: 71
+        left: 207
+        right: 210
+        height: 3
+      - key: full.open
+        value: 40
+        left: 204
+        right: 211
+        height: 4
+      - key: full.build.confirm
+        value: 35
+        left: 197
+        right: 212
+        height: 5
+      - key: full.archive.confirm
+        value: 73
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 74
+        left: 214
+        right: 194
+        height: 2
+      - key: full.build.check.evidence
+        value: 56
+        left: 215
+        right: 196
+        height: 3
+      - key: full.build.confirm
+        value: 35
+        left: 216
+        right: 212
+        height: 5
+      - key: full.archive.preflight
+        value: 75
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.confirm
+        value: 73
+        left: null
+        right: 218
+        height: 2
+      - key: full.build.check.evidence
+        value: 56
+        left: 194
+        right: 196
+        height: 2
+      - key: full.archive.prepare
+        value: 74
+        left: 219
+        right: 220
+        height: 3
+      - key: full.build.confirm
+        value: 35
+        left: 221
+        right: 212
+        height: 5
+      - key: full.archive.confirm
+        value: 73
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.preflight
+        value: 75
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.execute
+        value: 76
+        left: 223
+        right: 224
+        height: 2
+      - key: full.archive.prepare
+        value: 74
+        left: 225
+        right: 220
+        height: 3
+      - key: full.build.confirm
+        value: 35
+        left: 226
+        right: 212
+        height: 5
+      - key: full.open
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 42
+        left: null
+        right: 229
+        height: 2
+      - key: full.open.confirm
+        value: 41
+        left: 228
+        right: 230
+        height: 3
+      - key: full.design.confirm
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 39
+        left: 232
+        right: 233
+        height: 2
+      - key: full.open.confirm
+        value: 41
+        left: 234
+        right: 230
+        height: 3
+      - key: full.design.confirm
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 38
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 37
+        left: 236
+        right: 237
+        height: 2
+      - key: full.design.handoff
+        value: 39
+        left: 238
+        right: 233
+        height: 3
+      - key: full.open.confirm
+        value: 41
+        left: 239
+        right: 230
+        height: 4
+      - key: full.open.evidence
+        value: 42
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 40
+        left: null
+        right: 241
+        height: 2
+      - key: full.design.handoff
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 42
+        left: 244
+        right: 245
+        height: 2
+      - key: full.open
+        value: 40
+        left: 243
+        right: 246
+        height: 3
+      - key: full.build.configure
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 38
+        left: 249
+        right: 250
+        height: 2
+      - key: full.design.confirm
+        value: 36
+        left: 248
+        right: 251
+        height: 3
+      - key: full.open
+        value: 40
+        left: 252
+        right: 246
+        height: 4
+      - key: full.archive.prepare
+        value: 62
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 56
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 55
+        left: 254
+        right: 255
+        height: 2
+      - key: full.build.confirm
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 53
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 52
+        left: null
+        right: 258
+        height: 2
+      - key: full.build.execute
+        value: 54
+        left: 257
+        right: 259
+        height: 3
+      - key: full.build.configure
+        value: 34
+        left: 256
+        right: 260
+        height: 4
+      - key: full.open.revalidate
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 42
+        left: 244
+        right: 262
+        height: 2
+      - key: full.verify.check.evidence
+        value: 60
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 58
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 57
+        left: 264
+        right: 265
+        height: 2
+      - key: full.verify.check
+        value: 59
+        left: 263
+        right: 266
+        height: 3
+      - key: full.open
+        value: 40
+        left: 251
+        right: 267
+        height: 4
+      - key: full.design.confirm
+        value: 36
+        left: 261
+        right: 268
+        height: 5
+      - key: full.archive.confirm
+        value: 61
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 68
+        left: 270
+        right: null
+        height: 2
+      - key: full.build.check
+        value: 55
+        left: 271
+        right: 255
+        height: 3
+      - key: full.build.configure
+        value: 34
+        left: 272
+        right: 260
+        height: 4
+      - key: full.verify.check.evidence
+        value: 66
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 64
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 63
+        left: 274
+        right: 275
+        height: 2
+      - key: full.verify.check
+        value: 65
+        left: 263
+        right: 276
+        height: 3
+      - key: full.open
+        value: 40
+        left: 251
+        right: 277
+        height: 4
+      - key: full.design.confirm
+        value: 36
+        left: 273
+        right: 278
+        height: 5
+      - key: full.archive.confirm
+        value: 67
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 74
+        left: 280
+        right: null
+        height: 2
+      - key: full.build.check
+        value: 55
+        left: 281
+        right: 255
+        height: 3
+      - key: full.build.configure
+        value: 34
+        left: 282
+        right: 260
+        height: 4
+      - key: full.verify.check.evidence
+        value: 72
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 70
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 69
+        left: 284
+        right: 285
+        height: 2
+      - key: full.verify.check
+        value: 71
+        left: 263
+        right: 286
+        height: 3
+      - key: full.open
+        value: 40
+        left: 251
+        right: 287
+        height: 4
+      - key: full.design.confirm
+        value: 36
+        left: 283
+        right: 288
+        height: 5
+      - key: full.open
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.design.confirm
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 37
+        left: 291
+        right: 292
+        height: 2
+      - key: full.open.confirm
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 42
+        left: 294
+        right: 295
+        height: 2
+      - key: full.open
+        value: 40
+        left: 293
+        right: 296
+        height: 3
+      - key: full.build.configure
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 44
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 35
+        left: 298
+        right: 299
+        height: 2
+      - key: full.design.document
+        value: 37
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 38
+        left: 301
+        right: 302
+        height: 2
+      - key: full.design.confirm
+        value: 36
+        left: 300
+        right: 303
+        height: 3
+      - key: full.open
+        value: 40
+        left: 304
+        right: 296
+        height: 4
+      - key: full.build.check
+        value: 47
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 34
+        left: 306
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 46
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 45
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 44
+        left: 308
+        right: 309
+        height: 2
+      - key: full.build.confirm
+        value: 35
+        left: 307
+        right: 310
+        height: 3
+      - key: full.open
+        value: 40
+        left: 303
+        right: 296
+        height: 3
+      - key: full.design.confirm
+        value: 36
+        left: 311
+        right: 312
+        height: 4
+      - key: full.build.check
+        value: 47
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 34
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 48
+        left: 314
+        right: 315
+        height: 2
+      - key: full.build.confirm
+        value: 35
+        left: 316
+        right: 310
+        height: 3
+      - key: full.verify.run
+        value: 50
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 43
+        left: null
+        right: 318
+        height: 2
+      - key: full.open.evidence
+        value: 42
+        left: 294
+        right: 319
+        height: 3
+      - key: full.open
+        value: 40
+        left: 303
+        right: 320
+        height: 4
+      - key: full.design.confirm
+        value: 36
+        left: 317
+        right: 321
+        height: 5
+      - key: full.build.plan
+        value: 52
+        left: 308
+        right: 309
+        height: 2
+      - key: full.build.confirm
+        value: 35
+        left: 316
+        right: 323
+        height: 3
+      - key: full.open.revalidate
+        value: 43
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 42
+        left: 294
+        right: 325
+        height: 2
+      - key: full.verify.report.evidence
+        value: 49
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 50
+        left: 327
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 51
+        left: 326
+        right: 328
+        height: 3
+      - key: full.open
+        value: 40
+        left: 303
+        right: 329
+        height: 4
+      - key: full.design.confirm
+        value: 36
+        left: 324
+        right: 330
+        height: 5
+      - key: full.build.check
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 48
+        left: 332
+        right: 315
+        height: 2
+      - key: full.build.execute
+        value: 54
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 53
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 52
+        left: 334
+        right: 335
+        height: 2
+      - key: full.build.confirm
+        value: 35
+        left: 333
+        right: 336
+        height: 3
+      - key: full.design.confirm
+        value: 36
+        left: 337
+        right: 330
+        height: 5
+      - key: full.build.check.evidence
+        value: 56
+        left: 332
+        right: 315
+        height: 2
+      - key: full.build.confirm
+        value: 35
+        left: 339
+        right: 336
+        height: 3
+      - key: full.verify.run
+        value: 58
+        left: 327
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 51
+        left: 326
+        right: 341
+        height: 3
+      - key: full.open
+        value: 40
+        left: 303
+        right: 342
+        height: 4
+      - key: full.design.confirm
+        value: 36
+        left: 340
+        right: 343
+        height: 5
+      - key: full.verify.report.evidence
+        value: 57
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 58
+        left: 345
+        right: null
+        height: 2
+      - key: full.verify.check
+        value: 59
+        left: 326
+        right: 346
+        height: 3
+      - key: full.open
+        value: 40
+        left: 303
+        right: 347
+        height: 4
+      - key: full.design.confirm
+        value: 36
+        left: 340
+        right: 348
+        height: 5
+      - key: full.archive.confirm
+        value: 61
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check
+        value: 55
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 62
+        left: 350
+        right: 351
+        height: 2
+      - key: full.build.check.evidence
+        value: 56
+        left: 352
+        right: 315
+        height: 3
+      - key: full.build.confirm
+        value: 35
+        left: 353
+        right: 336
+        height: 4
+      - key: full.verify.check.evidence
+        value: 60
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 64
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 57
+        left: 355
+        right: 356
+        height: 2
+      - key: full.verify.check
+        value: 59
+        left: 326
+        right: 357
+        height: 3
+      - key: full.open
+        value: 40
+        left: 303
+        right: 358
+        height: 4
+      - key: full.design.confirm
+        value: 36
+        left: 354
+        right: 359
+        height: 5
+      - key: full.verify.report.evidence
+        value: 63
+        left: 355
+        right: 356
+        height: 2
+      - key: full.verify.check
+        value: 65
+        left: 326
+        right: 361
+        height: 3
+      - key: full.open
+        value: 40
+        left: 303
+        right: 362
+        height: 4
+      - key: full.design.confirm
+        value: 36
+        left: 354
+        right: 363
+        height: 5
+      - key: full.archive.confirm
+        value: 67
+        left: null
+        right: null
+        height: 1
+      - key: full.archive.prepare
+        value: 68
+        left: 365
+        right: 351
+        height: 2
+      - key: full.build.check.evidence
+        value: 56
+        left: 366
+        right: 315
+        height: 3
+      - key: full.build.confirm
+        value: 35
+        left: 367
+        right: 336
+        height: 4
+      - key: full.verify.check.evidence
+        value: 66
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 70
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.report.evidence
+        value: 63
+        left: 369
+        right: 370
+        height: 2
+      - key: full.verify.check
+        value: 65
+        left: 326
+        right: 371
+        height: 3
+      - key: full.open
+        value: 40
+        left: 303
+        right: 372
+        height: 4
+      - key: full.design.confirm
+        value: 36
+        left: 368
+        right: 373
+        height: 5
+      - key: full.verify.report.evidence
+        value: 69
+        left: 369
+        right: 370
+        height: 2
+      - key: full.verify.check
+        value: 71
+        left: 326
+        right: 375
+        height: 3
+      - key: full.open
+        value: 40
+        left: 303
+        right: 376
+        height: 4
+      - key: full.design.confirm
+        value: 36
+        left: 368
+        right: 377
+        height: 5
+    maps:
+      - null
+      - 2
+      - 5
+      - 9
+      - 14
+      - 20
+      - 26
+      - 31
+      - 37
+      - 43
+      - 48
+      - 53
+      - 57
+      - 63
+      - 70
+      - 75
+      - 80
+      - 85
+      - 90
+      - 96
+      - 102
+      - 112
+      - 117
+      - 122
+      - 128
+      - 134
+      - 139
+      - 142
+      - 146
+      - 151
+      - 156
+      - 162
+      - 169
+      - 174
+      - 179
+      - 184
+      - 189
+      - 192
+      - 213
+      - 217
+      - 222
+      - 227
+      - 231
+      - 235
+      - 240
+      - 242
+      - 247
+      - 253
+      - 269
+      - 279
+      - 289
+      - 290
+      - 297
+      - 305
+      - 313
+      - 322
+      - 331
+      - 338
+      - 344
+      - 349
+      - 360
+      - 364
+      - 374
+      - 378
+    bindings:
+      - path:
+          - actions
+          - "0"
+          - input
+          - outputs
+        map: 0
+      - path:
+          - actions
+          - "1"
+          - input
+          - outputs
+        map: 1
+      - path:
+          - actions
+          - "2"
+          - input
+          - outputs
+        map: 2
+      - path:
+          - actions
+          - "3"
+          - input
+          - outputs
+        map: 3
+      - path:
+          - actions
+          - "4"
+          - input
+          - outputs
+        map: 4
+      - path:
+          - actions
+          - "5"
+          - input
+          - outputs
+        map: 5
+      - path:
+          - actions
+          - "6"
+          - input
+          - outputs
+        map: 6
+      - path:
+          - actions
+          - "7"
+          - input
+          - outputs
+        map: 7
+      - path:
+          - actions
+          - "8"
+          - input
+          - outputs
+        map: 8
+      - path:
+          - actions
+          - "9"
+          - input
+          - outputs
+        map: 9
+      - path:
+          - actions
+          - "10"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "11"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "12"
+          - input
+          - outputs
+        map: 10
+      - path:
+          - actions
+          - "13"
+          - input
+          - outputs
+        map: 11
+      - path:
+          - actions
+          - "14"
+          - input
+          - outputs
+        map: 12
+      - path:
+          - actions
+          - "15"
+          - input
+          - outputs
+        map: 13
+      - path:
+          - actions
+          - "16"
+          - input
+          - outputs
+        map: 14
+      - path:
+          - actions
+          - "17"
+          - input
+          - outputs
+        map: 14
+      - path:
+          - actions
+          - "18"
+          - input
+          - outputs
+        map: 15
+      - path:
+          - actions
+          - "19"
+          - input
+          - outputs
+        map: 16
+      - path:
+          - actions
+          - "20"
+          - input
+          - outputs
+        map: 16
+      - path:
+          - actions
+          - "21"
+          - input
+          - outputs
+        map: 17
+      - path:
+          - actions
+          - "22"
+          - input
+          - outputs
+        map: 18
+      - path:
+          - actions
+          - "23"
+          - input
+          - outputs
+        map: 19
+      - path:
+          - actions
+          - "24"
+          - input
+          - outputs
+        map: 20
+      - path:
+          - actionContexts
+          - stabilize-archive-publication-recovery:1
+          - results
+        map: 0
+      - path:
+          - actionContexts
+          - stabilize-archive-publication-recovery:11
+          - results
+        map: 21
+      - path:
+          - actionContexts
+          - stabilize-archive-publication-recovery:13
+          - results
+        map: 22
+      - path:
+          - actionContexts
+          - stabilize-archive-publication-recovery:14
+          - results
+        map: 23
+      - path:
+          - actionContexts
+          - stabilize-archive-publication-recovery:16
+          - results
+        map: 24
+      - path:
+          - actionContexts
+          - stabilize-archive-publication-recovery:18
+          - results
+        map: 25
+      - path:
+          - actionContexts
+          - stabilize-archive-publication-recovery:19
+          - results
+        map: 26
+      - path:
+          - actionContexts
+          - stabilize-archive-publication-recovery:21
+          - results
+        map: 27
+      - path:
+          - actionContexts
+          - stabilize-archive-publication-recovery:22
+          - results
+        map: 28
+      - path:
+          - actionContexts
+          - stabilize-archive-publication-recovery:24
+          - results
+        map: 29
+      - path:
+          - actionContexts
+          - stabilize-archive-publication-recovery:26
+          - results
+        map: 30
+      - path:
+          - actionContexts
+          - stabilize-archive-publication-recovery:28
+          - results
+        map: 31
+      - path:
+          - actionContexts
+          - stabilize-archive-publication-recovery:30
+          - results
+        map: 32
+      - path:
+          - actionContexts
+          - stabilize-archive-publication-recovery:32
+          - results
+        map: 33
+      - path:
+          - actionContexts
+          - stabilize-archive-publication-recovery:34
+          - results
+        map: 34
+      - path:
+          - actionContexts
+          - stabilize-archive-publication-recovery:36
+          - results
+        map: 35
+      - path:
+          - actionContexts
+          - stabilize-archive-publication-recovery:38
+          - results
+        map: 36
+      - path:
+          - actionContexts
+          - stabilize-archive-publication-recovery:4
+          - results
+        map: 37
+      - path:
+          - actionContexts
+          - stabilize-archive-publication-recovery:40
+          - results
+        map: 38
+      - path:
+          - actionContexts
+          - stabilize-archive-publication-recovery:42
+          - results
+        map: 39
+      - path:
+          - actionContexts
+          - stabilize-archive-publication-recovery:43
+          - results
+        map: 40
+      - path:
+          - actionContexts
+          - stabilize-archive-publication-recovery:44
+          - results
+        map: 41
+      - path:
+          - actionContexts
+          - stabilize-archive-publication-recovery:5
+          - results
+        map: 42
+      - path:
+          - actionContexts
+          - stabilize-archive-publication-recovery:7
+          - results
+        map: 43
+      - path:
+          - actionContexts
+          - stabilize-archive-publication-recovery:9
+          - results
+        map: 44
+      - path:
+          - outputs
+        map: 41
+      - path:
+          - waits
+          - "0"
+          - results
+        map: 45
+      - path:
+          - waits
+          - "1"
+          - results
+        map: 46
+      - path:
+          - waits
+          - "2"
+          - results
+        map: 47
+      - path:
+          - waits
+          - "3"
+          - results
+        map: 48
+      - path:
+          - waits
+          - "4"
+          - results
+        map: 49
+      - path:
+          - waits
+          - "5"
+          - results
+        map: 50
+      - path:
+          - evidenceWaits
+          - "0"
+          - results
+        map: 51
+      - path:
+          - evidenceWaits
+          - "1"
+          - results
+        map: 52
+      - path:
+          - evidenceWaits
+          - "2"
+          - results
+        map: 53
+      - path:
+          - evidenceWaits
+          - "3"
+          - results
+        map: 54
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 55
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 56
+      - path:
+          - evidenceWaits
+          - "6"
+          - results
+        map: 57
+      - path:
+          - evidenceWaits
+          - "7"
+          - results
+        map: 58
+      - path:
+          - evidenceWaits
+          - "8"
+          - results
+        map: 59
+      - path:
+          - evidenceWaits
+          - "9"
+          - results
+        map: 60
+      - path:
+          - evidenceWaits
+          - "10"
+          - results
+        map: 61
+      - path:
+          - evidenceWaits
+          - "11"
+          - results
+        map: 62
+      - path:
+          - evidenceWaits
+          - "12"
+          - results
+        map: 63
+  storageHash: 7ba96b1c7d6ac5c9b555df8682bcedd64797e896cab8f48f08e709ae6044eb8d
+check_epoch: 12

@@ -511,6 +511,64 @@ describe('telemetry mapping', () => {
     });
   });
 
+  it('exports bounded publication effect recovery without repository or error details', () => {
+    const workflow = workflowFixture();
+    const project = projectFixture();
+    const run = startRun({
+      workflow,
+      runId: 'run-publication-recovery',
+      projectSnapshotDigest: project.digest,
+      composition: compositionFixture(),
+      timestamp: '2026-01-01T00:00:00.000Z',
+      traceId: '7'.repeat(32),
+    });
+    const event: TrajectoryEvent = {
+      schemaVersion: 1,
+      sequence: 4,
+      eventId: 'publication-not-applied',
+      timestamp: '2026-01-01T00:00:03.000Z',
+      type: 'reconcile.completed',
+      runId: run.runId,
+      stateVersion: 4,
+      compositionDigest: run.composition.compositionDigest,
+      data: {
+        phase: 'archive',
+        workId: 'delivery.publish:fixture',
+        workKind: 'delivery.publish',
+        attempt: 1,
+        checkEpoch: 5,
+        effectStage: 'merge-request',
+        effectCertainty: 'not-applied',
+        effectResult: 'retryable',
+        result: 'not-executed',
+        repositoryId: 'private-repository',
+        sourceBranch: 'private-branch',
+        errorMessage: 'private response body',
+      },
+    };
+    const batch: TelemetryBatch = {
+      run,
+      workflow,
+      projectSnapshot: project,
+      events: [event],
+      trajectory: [event],
+    };
+
+    expect(safeEventAttributes(batch, event)).toMatchObject({
+      'repoctopus.execution.effectStage': 'merge-request',
+      'repoctopus.execution.effectCertainty': 'not-applied',
+      'repoctopus.execution.effectResult': 'retryable',
+    });
+    expect(executionMetricAttributes(event)).toMatchObject({
+      'repoctopus.publication.effect.stage': 'merge-request',
+      'repoctopus.publication.effect.certainty': 'not-applied',
+      'repoctopus.publication.effect.result': 'retryable',
+    });
+    expect(JSON.stringify(executionMetricAttributes(event))).not.toMatch(
+      /private-repository|private-branch|response body/u,
+    );
+  });
+
   it('maps bounded project reconciliation classes without repository details', () => {
     const workflow = workflowFixture();
     const project = projectFixture();

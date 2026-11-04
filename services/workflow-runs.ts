@@ -123,6 +123,7 @@ import type { ActionIntent, ActionReceipt, WorkExecutorIdentity } from '../domai
 import type { WorkExecutionHostIdentity } from '../domains/work-execution/types.js';
 import type { ArchivePublicationResult } from '../domains/delivery/service-v3.js';
 import { PublicationResultUnknownError } from '../domains/delivery/publication-result-unknown.js';
+import { PublicationNotAppliedError } from '../domains/delivery/publication-not-applied.js';
 import {
   createPublicationReceipt,
   PUBLICATION_RECEIPT_API_VERSION,
@@ -5042,7 +5043,13 @@ export class WorkflowRuns extends Service {
         if (error instanceof PublicationResultUnknownError) {
           await this.ctx.workExecutionAuthority.markExternalSideEffectUnknown(
             await this.ctx.workExecutionAuthority.loadIntent(input.runId),
-            error.message,
+            error.stage,
+          );
+        } else if (error instanceof PublicationNotAppliedError) {
+          await this.ctx.workExecutionAuthority.recordExternalSideEffectNotApplied(
+            await this.ctx.workExecutionAuthority.loadIntent(input.runId),
+            error.stage,
+            error.reason,
           );
         }
         throw error;

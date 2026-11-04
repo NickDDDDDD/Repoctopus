@@ -1,0 +1,48 @@
+{
+  "checkpoint": {
+    "schemaVersion": 1,
+    "runId": "round5-terminal-run",
+    "stateVersion": 12,
+    "trajectoryOffset": 6,
+    "runStatus": "completed",
+    "changeLifecycle": {
+      "schemaVersion": 2,
+      "identity": {
+        "runId": "round5-terminal-run",
+        "workspaceId": "round5-workspace",
+        "changeId": "round5-change"
+      },
+      "definition": {
+        "id": "builtin.change-lifecycle",
+        "version": "1",
+        "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "revision": 11,
+      "checkEpoch": 8,
+      "phase": "archive",
+      "status": "completed",
+      "currentWork": null,
+      "waitCondition": null,
+      "blocker": null
+    }
+  },
+  "trajectory": [
+    {
+      "schemaVersion": 1,
+      "sequence": 5,
+      "eventId": "round5-stale-null-work-selection",
+      "timestamp": "2026-11-04T00:00:00.000Z",
+      "type": "continuation.selected",
+      "runId": "round5-terminal-run",
+      "stateVersion": 11,
+      "compositionDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "data": {
+        "continuation": "execute",
+        "reason": "transition-pending",
+        "workId": null,
+        "attempt": null,
+        "checkEpoch": 7
+      }
+    }
+  ]
+}

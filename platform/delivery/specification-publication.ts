@@ -2,6 +2,7 @@ import type { PublicationReceiptItem } from '../../domains/delivery/publication-
 import {
   createSpecificationPublicationJournal,
   recordSpecificationMergeRequestInvocation,
+  recordSpecificationMergeRequestNotApplied,
   recordSpecificationMergeRequestUnknown,
   recordSpecificationPublicationCommit,
   recordSpecificationPublicationCompletion,
@@ -18,6 +19,7 @@ import {
   type StableMergeRequestResult,
 } from '../../domains/delivery/stable-publication.js';
 import { PublicationResultUnknownError } from '../../domains/delivery/publication-result-unknown.js';
+import { PublicationNotAppliedError } from '../../domains/delivery/publication-not-applied.js';
 import type {
   SpecificationPublicationRequest,
   SpecificationPublicationResult,
@@ -432,7 +434,11 @@ export class SpecificationPublicationAdapter {
           await stores.compareAndSet(completed, journal.digest);
           journal = completed;
         } catch (error) {
-          if (error instanceof PublicationResultUnknownError) {
+          if (error instanceof PublicationNotAppliedError) {
+            const retryable = recordSpecificationMergeRequestNotApplied(journal);
+            await stores.compareAndSet(retryable, journal.digest);
+            journal = retryable;
+          } else if (error instanceof PublicationResultUnknownError) {
             const unknown = recordSpecificationMergeRequestUnknown(journal);
             await stores.compareAndSet(unknown, journal.digest);
             journal = unknown;

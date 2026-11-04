@@ -63,6 +63,19 @@ Archive 不等待 Business MR 或最终 Change MR 合入，也不执行 merge。
 
 隔离 checkout 是非终态恢复资产：commit、push 或 MR 响应窗口失败时保留，只有 Journal 到达 `completed` 且远端事实复核通过后才清理。终态重放不依赖 checkout，也不建立通用 daemon GC。
 
+### 外部副作用确定性
+
+Repoctopus 采用 Comet 0.5.1 的恢复原则：外部调用与本地 checkpoint 不能组成原子事务；结果未知时绝不自动重放，只有平台证据明确证明操作未执行时才允许下一次显式 pull 重试。GitHub MR 创建按实际副作用边界分类：
+
+| 失败位置                                | 确定性        | Journal 与操作者动作                                                                |
+| --------------------------------------- | ------------- | ----------------------------------------------------------------------------------- |
+| create 返回明确 HTTP 4xx                | `not-applied` | 当前 pull 结束，item 原子回到 `pushed`；修正凭据、权限或请求后重拉同一 Archive Work |
+| create 返回 HTTP 5xx 或传输失败         | `unknown`     | 保留 `mr-unknown`，只观察或采用精确 head/base/OID 的 MR，不盲目再次 create          |
+| create 返回 2xx 但响应 JSON 无效        | `unknown`     | 与 lost response 相同，只做观察恢复                                                 |
+| create 已返回 identity，status 核验失败 | `unknown`     | 创建可能已经生效；即使 status 失败表现为 4xx，也不能倒推 create 未执行              |
+
+`not-applied` 不建立新 Run、不更换 publication/operation identity，也不在同一次调用内循环重试。`unknown` 只有在观察到唯一精确 MR 后才能以 `recovered` 完成；零匹配、歧义或 OID mismatch 都继续 fail closed。不要手改 Store、创建并列 Run，或用手工 create 猜测结果；若平台无法观察，必须提供权威的“未执行”证明后再走正式 reconciliation。
+
 ## 最终一致性检查
 
 MR 合入、代码审查或 CI 修复可能发生在 Publication Receipt 之后。显式命令和下一次正常 `run start` 都可以执行有界检查：
