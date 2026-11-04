@@ -2,11 +2,11 @@
 
 ## 1. 恢复语义基线
 
-- [ ] 1.1 固定Comet 0.5.1的revision、plan与evidence invalidation行为参考及MIT采用边界，并用来源审计测试确认Repoctopus没有引入Comet Runtime依赖 <!-- comet-task:a4fd5783-13b7-434f-b0f9-0d71249ec402 -->
+- [x] 1.1 固定Comet 0.5.1的revision、plan与evidence invalidation行为参考及MIT采用边界，并用来源审计测试确认Repoctopus没有引入Comet Runtime依赖 <!-- comet-task:a4fd5783-13b7-434f-b0f9-0d71249ec402 -->
   **Acceptance:** 来源登记精确绑定固定commit和参考文件；依赖图与生产包不包含Comet SDK或Runtime
   **Requirements:** 恢复分类只选择最高受影响权威
 
-- [ ] 1.2 为四种核心恢复处置建立失败优先的领域合同测试，并验证相同observation得到稳定decision identity <!-- comet-task:855f7952-223f-4eb0-8295-4618114fe550 -->
+- [x] 1.2 为四种核心恢复处置建立失败优先的领域合同测试，并验证相同observation得到稳定decision identity <!-- comet-task:855f7952-223f-4eb0-8295-4618114fe550 -->
   **Blocked by:** 1.1
   **Acceptance:** 测试分别覆盖revise-design、revise-plan、continue-build和invalidate-evidence；重复输入得到相同decision identity
   **Requirements:** 失败分类必须决定真实返工路径, 恢复重放必须收敛到同一 checkpoint

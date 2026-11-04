@@ -1,11 +1,37 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "upstream": {
     "repository": "https://github.com/rpamis/comet.git",
     "commit": "35c9860b77b42bafa0c2d80d8d695889f888a924",
     "version": "0.5.1",
     "license": "MIT"
   },
+  "references": [
+    {
+      "role": "revision-readiness",
+      "source": "domains/comet-classic/classic-sdk-revision-readiness.ts",
+      "sourceSha256": "27636b4eb8c2724f5b007fbc8e21471f4294aae6b15b3d2c1f5f667e449f97bd",
+      "adoption": "behavioral-reference"
+    },
+    {
+      "role": "revision-command",
+      "source": "domains/comet-classic/classic-sdk-revision.ts",
+      "sourceSha256": "eda9b0687b81cad719a555e6f5bbab983394c904f734347ad132b87e94c5f684",
+      "adoption": "behavioral-reference"
+    },
+    {
+      "role": "revision-application",
+      "source": "domains/comet-classic/classic-sdk-revision-application.ts",
+      "sourceSha256": "a893844d3376ce283f5c139a210bd5e0d1348718a56b85e68f52fd3975b95681",
+      "adoption": "behavioral-reference"
+    },
+    {
+      "role": "evidence-invalidation",
+      "source": "domains/engine/runtime-service.ts",
+      "sourceSha256": "69c903f5492087bdea6bfb0bd2ce31df594f42d910c0d3bbd721a2ede73fc44e",
+      "adoption": "behavioral-reference"
+    }
+  ],
   "files": [
     {
       "source": "domains/engine/loop.ts",
