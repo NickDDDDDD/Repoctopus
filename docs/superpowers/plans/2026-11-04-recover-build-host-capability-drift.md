@@ -2,6 +2,7 @@
 change: recover-build-host-capability-drift
 design-doc: openspec/changes/recover-build-host-capability-drift/design.md
 base-ref: 33c0b44996a5ac30bee22f47fe7e70f9386def6b
+archived-with: 2026-11-04-recover-build-host-capability-drift
 ---
 
 # Recover Build Host Capability Drift Build Plan

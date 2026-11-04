@@ -2,7 +2,8 @@
 comet_change: recover-build-host-capability-drift
 role: technical-design
 canonical_spec: openspec
-status: draft
+archived-with: 2026-11-04-recover-build-host-capability-drift
+status: final
 ---
 
 # Design
