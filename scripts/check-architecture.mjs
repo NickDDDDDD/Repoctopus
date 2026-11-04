@@ -51,6 +51,15 @@ const productionSourceContents = await Promise.all(
   })),
 );
 
+for (const marker of policy.retiredProductionMarkers ?? []) {
+  const expression = new RegExp(marker, 'u');
+  for (const source of productionSourceContents) {
+    if (expression.test(source.contents)) {
+      findings.push(`${source.path}: contains retired production marker /${marker}/u`);
+    }
+  }
+}
+
 for (const source of productionSources) {
   const owners = policy.capabilities.filter((capability) =>
     capability.targets.some((target) => matches(source, target)),

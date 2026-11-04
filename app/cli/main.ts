@@ -1313,26 +1313,14 @@ async function runDecide(parsed: ParsedArguments): Promise<CliEnvelope<unknown>>
         nextActions: [`repoctopus run next --run ${runId}`],
       });
     }
-    if (
-      lifecycle.phase === 'build' &&
-      (lifecycle.waitCondition.waitId.startsWith('build-design:') ||
-        lifecycle.waitCondition.waitId.startsWith('build-plan:'))
-    ) {
-      const plan = lifecycle.waitCondition.waitId.startsWith('build-plan:');
+    if (lifecycle.phase === 'build' && lifecycle.waitCondition.waitId.startsWith('build-plan:')) {
       const selected = await reviewLifecycleDecision({
-        title: plan
-          ? `Approve Build Plan: ${lifecycle.identity.changeId}`
-          : `Return Build to Design: ${lifecycle.identity.changeId}`,
+        title: `Approve Build Plan: ${lifecycle.identity.changeId}`,
         proposalHash: lifecycle.waitCondition.proposalDigest,
-        details: plan
-          ? [
-              lifecycle.waitCondition.reason,
-              `Plan revision: ${lifecycle.buildProtocol?.plan?.revision ?? '-'}`,
-            ]
-          : [
-              lifecycle.waitCondition.reason,
-              'Approval invalidates the old Design approval and Work.',
-            ],
+        details: [
+          lifecycle.waitCondition.reason,
+          `Plan revision: ${lifecycle.buildProtocol?.plan?.revision ?? '-'}`,
+        ],
         input: process.stdin,
         output: process.stdout,
       });

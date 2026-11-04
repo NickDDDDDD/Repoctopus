@@ -56,6 +56,16 @@ describe('Change lifecycle definition', () => {
     }
   });
 
+  it('does not expose the retired Build Design revision protocol', () => {
+    const transitionIds = BUILTIN_CHANGE_LIFECYCLE_DEFINITION.transitions.map(
+      (transition) => transition.id,
+    );
+
+    expect(transitionIds).not.toContain('build.design-revision-required');
+    expect(transitionIds).not.toContain('build.design-revision-approved');
+    expect(transitionIds).not.toContain('build.design-revision-rejected');
+  });
+
   it('fixes definition identity, version, and normalized content digest at Run creation', () => {
     const prepared = prepareChangeLifecycleDefinition();
     const snapshot = createChangeLifecycleSnapshot({ identity });

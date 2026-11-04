@@ -126,7 +126,7 @@ Run trajectory, telemetry mapping, cardinality/privacy and replay suites before 
 
 Add Runtime Service and CLI integration coverage for cold resume, repeated pull, process interruption, stale expected revision and forged phase/action/candidate requests. Runner tests execute only the exact argv/cwd/env returned by Runtime; hand-written equivalent commands cannot manufacture a valid receipt or transition.
 
-Initialize a fresh acceptance coordination repository and multiple small business repositories through the public Repoctopus CLI. Run one deliberately small change across Open, Design, Build, Verify and Archive, then inject only the bounded recovery scenarios from the replay fixture. Do not reuse the removed legacy `agent-lab-workspace` product.
+Initialize a fresh acceptance coordination repository and multiple small business repositories through the public Repoctopus CLI. Run one deliberately small change across Open, Design, Build, Verify and Archive, then inject only the bounded recovery scenarios from the replay fixture. Do not reuse the removed legacy acceptance product.
 
 Inspect authoritative Run, Work, Skill, Evidence, trajectory and OTLP projections after each scenario. Acceptance requires no unjustified Build-to-Design transition, no double rollback during close, preserved unaffected completions and an explanation for every recovery from both trajectory and telemetry.
 

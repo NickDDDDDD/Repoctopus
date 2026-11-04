@@ -54,7 +54,7 @@ describe('Work execution authoritative packet', () => {
       authorizationSource: {
         kind: 'lifecycle-definition',
         definitionId: 'repoctopus-change',
-        definitionVersion: '4.7.0',
+        definitionVersion: '4.8.0',
       },
       checkpoint: 'build.before-configure',
     };

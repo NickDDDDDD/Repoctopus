@@ -54,7 +54,7 @@ function validatorProfile(id: string) {
 export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
   schemaVersion: 3,
   id: 'repoctopus-change',
-  version: '4.7.0',
+  version: '4.8.0',
   phases: [
     {
       phase: 'open',
@@ -503,30 +503,6 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       to: { phase: 'build', status: 'blocked' },
       trigger: 'bounded-work-attempts-exhausted',
       requiredValidatorProfile: 'build.package-valid',
-    },
-    {
-      id: 'build.design-revision-required',
-      kind: 'self',
-      from: { phase: 'build', statuses: ['running'] },
-      to: { phase: 'build', status: 'waiting' },
-      trigger: 'host-reported-design-assumption-invalid',
-      requiredValidatorProfile: 'build.package-valid',
-    },
-    {
-      id: 'build.design-revision-approved',
-      kind: 'fallback',
-      from: { phase: 'build', statuses: ['waiting'] },
-      to: { phase: 'design', status: 'running' },
-      trigger: 'human-approved-design-revision',
-      requiredValidatorProfile: 'build.plan-valid',
-    },
-    {
-      id: 'build.design-revision-rejected',
-      kind: 'self',
-      from: { phase: 'build', statuses: ['waiting'] },
-      to: { phase: 'build', status: 'blocked' },
-      trigger: 'human-rejected-design-revision',
-      requiredValidatorProfile: 'build.plan-valid',
     },
     {
       id: 'build.task-completed',

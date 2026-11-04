@@ -552,21 +552,6 @@ export type ChangeLifecycleObservation =
       work: WorkDescriptor;
     }
   | {
-      kind: 'build-design-revision-required';
-      requestId: string;
-      proposalDigest: `sha256:${string}`;
-      reason: string;
-      evidenceIds: readonly string[];
-    }
-  | {
-      kind: 'build-design-revision-decision';
-      decision: 'approve' | 'reject';
-      requestId: string;
-      proposalDigest: `sha256:${string}`;
-      actorId: string;
-      work?: WorkDescriptor;
-    }
-  | {
       kind: 'build-retry-exhausted';
       workId: string;
       attempt: number;
@@ -1671,90 +1656,6 @@ export function evolveChangeLifecycle(options: {
         waitCondition: null,
         blocker: null,
         buildProtocol,
-      },
-    });
-  }
-  if (observation.kind === 'build-design-revision-required') {
-    if (
-      current.phase !== 'build' ||
-      current.status !== 'running' ||
-      !current.currentWork ||
-      !observation.reason.trim()
-    ) {
-      throw new Error('Design revision request requires an active Build Work');
-    }
-    return applyChangeLifecycleTransition({
-      definition: options.definition,
-      current,
-      transitionId: 'build.design-revision-required',
-      next: {
-        currentWork: null,
-        waitCondition: {
-          schemaVersion: 1,
-          kind: 'human-decision',
-          waitId: `build-design:${observation.requestId}`,
-          requestId: observation.requestId,
-          proposalDigest: observation.proposalDigest,
-          inputDigest: observation.proposalDigest,
-          reason: observation.reason,
-        },
-        blocker: null,
-      },
-    });
-  }
-  if (observation.kind === 'build-design-revision-decision') {
-    const wait = current.waitCondition;
-    if (
-      current.phase !== 'build' ||
-      current.status !== 'waiting' ||
-      wait?.kind !== 'human-decision' ||
-      !wait.waitId.startsWith('build-design:') ||
-      wait.requestId !== observation.requestId ||
-      wait.proposalDigest !== observation.proposalDigest ||
-      !observation.actorId.trim()
-    ) {
-      throw new Error('Design revision decision does not match the active Build wait');
-    }
-    if (observation.decision === 'approve') {
-      if (observation.work?.phase !== 'design' || observation.work.kind !== 'specification.plan') {
-        throw new Error('Approved Design revision requires Runtime-selected Design Work');
-      }
-      const buildProtocol = current.buildProtocol
-        ? suspendBuildProtocolForDesign(current.buildProtocol, {
-            observedPlanningDigest: wait.proposalDigest,
-            reasonCode: 'build-design-revision',
-            invalidatedIdentities: ['planning-semantic'],
-          })
-        : undefined;
-      return applyChangeLifecycleTransition({
-        definition: options.definition,
-        current,
-        transitionId: 'build.design-revision-approved',
-        next: {
-          currentWork: observation.work,
-          waitCondition: null,
-          blocker: null,
-          buildProtocol: buildProtocol ?? null,
-          planningDigest: null,
-          adoptedCompletionClaimDigest: null,
-          verificationInput: null,
-          verificationInvalidation: null,
-        },
-      });
-    }
-    return applyChangeLifecycleTransition({
-      definition: options.definition,
-      current,
-      transitionId: 'build.design-revision-rejected',
-      next: {
-        currentWork: null,
-        waitCondition: null,
-        blocker: {
-          code: 'build.design-revision-rejected',
-          message: 'Design revision was rejected by the Human Decision',
-          evidenceIds: [observation.proposalDigest],
-          sinceRevision: current.revision + 1,
-        },
       },
     });
   }

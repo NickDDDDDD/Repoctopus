@@ -52,7 +52,7 @@
 
 ## 4. Lifecycle 与 WorkflowRuns 接线
 
-- [ ] 4.1 删除build.design-revision-required/approved/rejected及其Wait、observation和旧遥测枚举，并用可达性测试确认没有遗留生产路径 <!-- comet-task:116ced0e-8601-437c-b7c4-6df4f00403ba -->
+- [x] 4.1 删除build.design-revision-required/approved/rejected及其Wait、observation和旧遥测枚举，并用可达性测试确认没有遗留生产路径 <!-- comet-task:116ced0e-8601-437c-b7c4-6df4f00403ba -->
   **Blocked by:** 3.1
   **Acceptance:** 生产源码与状态定义不再包含旧transition或旧finding；所有核心恢复入口仍可从run next到达
   **Requirements:** 失败分类必须决定真实返工路径, Host 只能报告发现而不能选择阶段

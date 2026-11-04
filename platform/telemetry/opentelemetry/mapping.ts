@@ -322,8 +322,9 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
         typeof value === 'string' &&
         ![
           'implementation_failure',
-          'design_assumption_invalid',
-          'planning_semantics_changed',
+          'authority_conflict',
+          'plan_constraint',
+          'evidence_mismatch',
           'evidence_unavailable',
           'external_result_unknown',
         ].includes(value)

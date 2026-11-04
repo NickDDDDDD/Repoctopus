@@ -739,7 +739,7 @@ describe('Change lifecycle domain', () => {
     ).toThrow(/cannot overflow/u);
   });
 
-  it('keeps design rework, Verify retry, and Archive reverify in one Run', () => {
+  it('keeps bounded Build failure, Verify retry, and Archive reverify in one Run', () => {
     const designRevisionIntent = createExecutionWorkspaceIntent({
       workspaceId: initialSnapshot().identity.workspaceId,
       changeId: initialSnapshot().identity.changeId,
@@ -759,48 +759,6 @@ describe('Change lifecycle domain', () => {
       planningDigest: digest('p'),
       workspaceIntent: designRevisionIntent,
       buildProtocol: activeBuildProtocol,
-    });
-    const designRequired = evolveChangeLifecycle({
-      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-      current: activeBuild,
-      observation: {
-        kind: 'build-design-revision-required',
-        requestId: 'design-1',
-        proposalDigest: digest('d'),
-        reason: 'Repository facts invalidate the approved design',
-        evidenceIds: ['receipt-1'],
-      },
-    });
-    expect(designRequired.snapshot).toMatchObject({
-      phase: 'build',
-      status: 'waiting',
-      checkEpoch: 5,
-      currentWork: null,
-    });
-    const designWork = phaseWork('design', 'specification.plan', 6, digest('d'));
-    const designApproved = evolveChangeLifecycle({
-      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-      current: designRequired.snapshot,
-      observation: {
-        kind: 'build-design-revision-decision',
-        decision: 'approve',
-        requestId: 'design-1',
-        proposalDigest: digest('d'),
-        actorId: 'trusted-user',
-        work: designWork,
-      },
-    });
-    expect(designApproved.snapshot).toMatchObject({
-      phase: 'design',
-      status: 'running',
-      checkEpoch: 6,
-      currentWork: { workId: designWork.workId },
-      tasks: [buildTask],
-      buildProtocol: {
-        status: 'suspended-for-design',
-        currentAction: null,
-        suspension: { reasonCode: 'build-design-revision' },
-      },
     });
     const exhausted = evolveChangeLifecycle({
       definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,

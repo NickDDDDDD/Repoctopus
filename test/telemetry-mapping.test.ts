@@ -72,6 +72,48 @@ describe('telemetry mapping', () => {
     );
   });
 
+  it.each([
+    ['implementation_failure', 'implementation_failure'],
+    ['authority_conflict', 'authority_conflict'],
+    ['plan_constraint', 'plan_constraint'],
+    ['evidence_mismatch', 'evidence_mismatch'],
+    ['evidence_unavailable', 'evidence_unavailable'],
+    ['external_result_unknown', 'external_result_unknown'],
+    ['design_assumption_invalid', 'unknown'],
+    ['planning_semantics_changed', 'unknown'],
+  ] as const)('normalizes execution finding kind %s to %s', (findingKind, expected) => {
+    const workflow = workflowFixture();
+    const project = projectFixture();
+    const run = startRun({
+      workflow,
+      runId: `run-finding-${findingKind}`,
+      projectSnapshotDigest: project.digest,
+      composition: compositionFixture(),
+      timestamp: '2026-11-05T00:00:00.000Z',
+      traceId: '7'.repeat(32),
+    });
+    const event: TrajectoryEvent = {
+      schemaVersion: 1,
+      sequence: 1,
+      eventId: `event-finding-${findingKind}`,
+      timestamp: run.createdAt,
+      type: 'work.host-completed',
+      runId: run.runId,
+      stateVersion: 1,
+      compositionDigest: run.composition.compositionDigest,
+      data: { findingKind },
+    };
+    const batch: TelemetryBatch = {
+      run,
+      workflow,
+      projectSnapshot: project,
+      events: [event],
+      trajectory: [event],
+    };
+
+    expect(safeEventAttributes(batch, event)['repoctopus.execution.findingKind']).toBe(expected);
+  });
+
   it('exports bounded Strategy and Binding lifecycle facts without raw digests or paths', () => {
     const workflow = workflowFixture();
     const project = projectFixture();
