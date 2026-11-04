@@ -43,15 +43,22 @@ export function assertHostSupportsWork(
   hostCapabilities: readonly string[],
   work: WorkDescriptor,
 ): void {
-  const available = new Set(
-    hostCapabilities.map((capability) => capability.trim()).filter(Boolean),
-  );
-  const missing = work.capabilities.filter((capability) => !available.has(capability));
+  const missing = missingHostCapabilities(hostCapabilities, work);
   if (missing.length > 0) {
     throw new Error(
       `External Work Execution Host cannot claim ${work.workId}; missing ${missing.join(', ')}`,
     );
   }
+}
+
+export function missingHostCapabilities(
+  hostCapabilities: readonly string[],
+  work: WorkDescriptor,
+): readonly string[] {
+  const available = new Set(
+    hostCapabilities.map((capability) => capability.trim()).filter(Boolean),
+  );
+  return work.capabilities.filter((capability) => !available.has(capability));
 }
 
 function createChangeInputs(input: {
@@ -172,7 +179,36 @@ export class WorkDispatcher extends Service {
     }
     assertContributorSupportsWork(contributor, work);
     if (request.hostCapabilities !== undefined) {
-      assertHostSupportsWork(request.hostCapabilities, work);
+      const missing = missingHostCapabilities(request.hostCapabilities, work);
+      if (missing.length > 0) {
+        try {
+          await this.ctx.workExecutionAuthority.recordClaimRejected({
+            runId: request.runId,
+            work,
+            attempt: request.attempt ?? 1,
+            reasonCode: 'capability-required',
+            missingCapabilityCount: missing.length,
+          });
+        } catch {
+          // Observability must not turn a rejected claim into an accepted claim.
+        }
+        assertHostSupportsWork(request.hostCapabilities, work);
+      }
+    }
+    const attempt = request.attempt ?? 1;
+    const existing = state.workExecution;
+    if (
+      existing?.workId === work.workId &&
+      existing.attempt === attempt &&
+      existing.checkEpoch === work.checkEpoch
+    ) {
+      const resumed = await this.ctx.workExecutionAuthority.loadAuthoritativePacket(request.runId);
+      if (existing.status === 'claimed') {
+        await this.ctx.workExecutionAuthority.recordSkillFacts(resumed.packet, 'resolved');
+        await this.ctx.workExecutionAuthority.markContextDelivered(resumed.packet);
+        await this.ctx.workExecutionAuthority.recordSkillFacts(resumed.packet, 'delivered');
+      }
+      return resumed;
     }
     const executionContext = await this.ctx.workContextAssembler.assemble({
       work,
@@ -182,12 +218,12 @@ export class WorkDispatcher extends Service {
         lifecycle: state.changeLifecycle!,
         work,
       }),
-      diagnostic: work.phase === 'build' && (request.attempt ?? 1) > 1,
+      diagnostic: work.phase === 'build' && attempt > 1,
     });
     const intent = await this.ctx.actionDispatcher.claim({
       runId: request.runId,
       workId: work.workId,
-      attempt: request.attempt ?? 1,
+      attempt,
       checkEpoch: work.checkEpoch,
       inputDigest: work.inputDigest,
       composition: state.composition,

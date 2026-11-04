@@ -1,0 +1,17 @@
+{
+  "change": "recover-build-host-capability-drift",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "task_hash_policy": "task-content-v1",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "0aa7d0d5bc4bd0ecaca514bfd5dda4efd62c211b5febfff5a5ec78b2c0062f59",
+  "files": [
+    { "path": "openspec/changes/recover-build-host-capability-drift/proposal.md", "sha256": "b190bc79dbc4ab7405e0f99bdb1c48436443077f447b79f99cbb93b2eb282982" },
+    { "path": "openspec/changes/recover-build-host-capability-drift/design.md", "sha256": "6f0658f639f51d561beeb9a417f24c87862c113175899f9e96e0376cda5bf40e" },
+    { "path": "openspec/changes/recover-build-host-capability-drift/tasks.md", "sha256": "e7db53e7282e230ae4cfdbfa5afa5a99a6e1ad83b03458eae665cffbc8416222" },
+    { "path": "openspec/changes/recover-build-host-capability-drift/specs/change-lifecycle/spec.md", "sha256": "900377a86c9ae358dee6e2bf09651c96c52a6fd03571d6a62c20ac85d26964b8" },
+    { "path": "openspec/changes/recover-build-host-capability-drift/specs/development-telemetry/spec.md", "sha256": "75307e938cf5a3308ad2b6da77a51fa6c4cacb2318f3e8307fcdbad210c04d0d" },
+    { "path": "openspec/changes/recover-build-host-capability-drift/specs/managed-work-execution/spec.md", "sha256": "3077efab946fc58d6c988a40b037321d409d75d97c08f5e837ddedbd99f87721" }
+  ]
+}

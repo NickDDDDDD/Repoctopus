@@ -143,6 +143,7 @@ const OBSERVATION_NUMBER_KEYS = new Set<string>([
   'warningCount',
   'errorCount',
   'changedSkillCount',
+  'missingCapabilityCount',
   'strategyRevision',
   'bindingRevision',
   'workflowRunDurationMs',

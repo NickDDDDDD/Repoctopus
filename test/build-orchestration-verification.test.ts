@@ -42,14 +42,7 @@ describe('managed Build verification subject', () => {
     const executionBinding = createExecutionBinding({
       strategy,
       revision: 1,
-      hostId: 'verification-host',
-      hostCapabilities: [
-        'build.autonomous',
-        'process.execute',
-        'repository.read',
-        'repository.write',
-        'specification.read',
-      ],
+      coordinatorHostId: 'verification-host',
       workspaceBinding: binding,
       workspaceOwnerId: intent.workspaceId,
       localOverlayRef: 'execution-workspace:verification',
@@ -106,15 +99,15 @@ describe('managed Build verification subject', () => {
 
     expect(subject).toEqual({
       definition: 'repoctopus-change@4.7.0',
-      definitionDigest: 'sha256:8d2d951299cd9dbdc91bb7aaca960501311c1aed45123512c83dade34d19d2d1',
+      definitionDigest: 'sha256:7b3fa57d9320d05ef4e0e50c938d5685a279cc0ab7c844b8f50cb9578ad8f294',
       runId: 'change-verification-workspace-restore-runtime-build-orchestration-9fda2eb7bf05fdf5',
       blackBoxRunId: 'change-managed-blackbox-managed-blackbox-a56af5c947f984ce',
       strategyId: 'build-strategy:426031405571f2b72e439071',
       strategyDigest: 'sha256:912ec16c53070e44b5f6dc57005492e6b2d4362853a1253a149341e65cd4c50c',
-      bindingId: 'execution-binding:6ee0f764f84f455a6e68e2a8',
-      bindingStateDigest: 'sha256:ffa558252660a6dcdfff7439fc13e52310fb8855503f8c12993588dbeb3a7921',
-      planId: 'build-plan:23b7b0604af3a907ec85cd99',
-      planDigest: 'sha256:98fbc02976fe2072af3eaca1d60c0cf41f79532c23b7b0604af3a907ec85cd99',
+      bindingId: 'execution-binding:fbfc15dcbf8411a9f3a89f2b',
+      bindingStateDigest: 'sha256:691849e3d564f6f99fe3dde34ef68909e283d9cea775ca409cd22c90bc31bc09',
+      planId: 'build-plan:4cb137155e0bd881f82f4a81',
+      planDigest: 'sha256:a259ddbef061d896bdfb67867d1916b9e360ad6c4cb137155e0bd881f82f4a81',
       taskSetDigest: 'sha256:d96a472d5f9b11f299872af949d92193398bfe295dc727cd7f7eeefb6629cc2f',
     });
   });

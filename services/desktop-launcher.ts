@@ -166,7 +166,9 @@ export function desktopActivationDiagnostic(result: DesktopActivationResult): Ru
 }
 
 const executeFile = promisify(execFile);
-const DEFAULT_LAUNCH_DEADLINE_MS = 5_000;
+// Match the Desktop Host readiness window so a loaded Windows process scheduler
+// does not turn an accepted spawn into a false activation failure.
+const DEFAULT_LAUNCH_DEADLINE_MS = 15_000;
 
 function defaultProcessAdapter(
   executable: string,
@@ -185,9 +187,7 @@ async function fileExists(candidate: string): Promise<boolean> {
   }
 }
 
-function defaultWindowsRegistryQuery(
-  environment: NodeJS.ProcessEnv,
-): WindowsRegistryQuery {
+function defaultWindowsRegistryQuery(environment: NodeJS.ProcessEnv): WindowsRegistryQuery {
   return async (executable, arguments_) => {
     const result = await executeFile(executable, [...arguments_], {
       env: environment,
@@ -215,11 +215,7 @@ async function windowsAppPathExecutable(
   registryExecutable: string,
 ): Promise<string | null> {
   try {
-    const stdout = await registryQuery(registryExecutable, [
-      'query',
-      WINDOWS_APP_PATH_KEY,
-      '/ve',
-    ]);
+    const stdout = await registryQuery(registryExecutable, ['query', WINDOWS_APP_PATH_KEY, '/ve']);
     return registryStringValue(stdout);
   } catch {
     return null;

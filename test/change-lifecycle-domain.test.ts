@@ -1072,14 +1072,7 @@ describe('Change lifecycle domain', () => {
     const executionBinding = createExecutionBinding({
       strategy,
       revision: 1,
-      hostId: 'external:cli:codex-root',
-      hostCapabilities: [
-        'build.autonomous',
-        'process.execute',
-        'repository.read',
-        'repository.write',
-        'specification.read',
-      ],
+      coordinatorHostId: 'external:cli:codex-root',
       workspaceBinding: binding,
       workspaceOwnerId: intent.workspaceId,
       localOverlayRef: 'execution-workspace:test',
@@ -1181,14 +1174,7 @@ describe('Change lifecycle domain', () => {
     const executionBinding = createExecutionBinding({
       strategy,
       revision: 1,
-      hostId: 'managed-host',
-      hostCapabilities: [
-        'build.autonomous',
-        'process.execute',
-        'repository.read',
-        'repository.write',
-        'specification.read',
-      ],
+      coordinatorHostId: 'managed-host',
       workspaceBinding: binding,
       workspaceOwnerId: intent.workspaceId,
       localOverlayRef: 'execution-workspace:test',

@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "fixtureKind": "preserved-external-run",
+  "runId": "change-agent-lab-workflow-sandbox-verify-round4-status-indicator-c8c720d536eb9ea1",
+  "runStateSha256": "3c3ebad355ed17ab53a8c8e37aeda6d2f92d0321d22eba0296a57bade0ad07c1",
+  "trajectorySha256": "ca0bacc0c652406e58138ad00d5542639aa574c76ff028fe8af84fc8583954f2",
+  "failureBoundary": {
+    "phase": "build",
+    "workKind": "build.plan",
+    "executionStatus": "submitted",
+    "bindingSchemaVersion": 1,
+    "coordinatorHostId": "external:cli:codex:round4",
+    "invocationCapabilities": ["build.autonomous", "repository.read", "specification.read"],
+    "outcomeKind": "build-plan-candidate",
+    "claimPersisted": true,
+    "packetPersisted": true,
+    "invocationPersisted": true,
+    "submissionPersisted": true,
+    "planValidatorReached": false,
+    "legacyFailureClass": "cross-work-binding-capability-rebuild"
+  }
+}

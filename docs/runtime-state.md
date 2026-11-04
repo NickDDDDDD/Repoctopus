@@ -56,7 +56,7 @@ Design 返工会把现有 Build Protocol 标记为 `suspended-for-design`。该�
 
 恢复时，Project Snapshot 差异分为 `same | content | identity`。仅 HEAD/worktree 变化属于 `content`：Runtime 完整报告差异，但由 Open、Design、Build、Verify 或 Archive 各自的 authority 精确重验依赖，不设置全局 `reconciliationRequired`。仓库增删、Project/root、path、remote、branch、拓扑、diagnostics 或无法分类的变化属于 `identity`，默认继续 fail closed 并要求全局 reconciliation。唯一的 branch 例外是 Runtime 已用 rejected Build Plan 明确要求 Runner 修正受保护的精确 write-set：只有 candidate、旧 Binding、保护策略与 branch-only diff 全部吻合时，typed authorized rebind 才能在同一 Run 返回 Configure；它不会把 identity 差异伪装成 `content`。`changed` 仅供展示，不是阻断条件。
 
-claim、context delivery、Host invocation、Outcome、Validator 与 lifecycle transition 都写入同一个 Run aggregate 和追加式 trajectory。ActionStore 和 packet store 是先写的不可变内容库，不拥有 attempt 或下一步；CAS 前的孤立内容没有执行权。恢复始终按 checkpoint identity 读取原 packet，不重新读取当前 Skill、Provider 指令或 OpenSpec 文件。恢复分类遵循以下边界：未调用可重交同一 attempt；活跃 Host 返回 `wait`；未知副作用返回 `reconcile`；可证明未执行才创建下一 attempt；已有 Outcome 从 Validator 继续；Human Decision 保留原 proposal hash。旧 checkpoint 或缺失/损坏 packet 明确进入 `migration-required` 或 `content-missing-or-corrupt`，不得用当前内容重组兼容。
+claim、context delivery、Host invocation、Outcome、Validator 与 lifecycle transition 都写入同一个 Run aggregate 和追加式 trajectory。ActionStore 和 packet store 是先写的不可变内容库，不拥有 attempt 或下一步；CAS 前的孤立内容没有执行权。恢复始终按 checkpoint identity 读取原 packet，不重新读取当前 Skill、Provider 指令或 OpenSpec 文件。恢复分类遵循以下边界：未调用可重交同一 attempt；重复 pull 返回同一 claim、packet 和 invocation，只补做尚未完成的 context-delivery checkpoint；活跃 Host 返回 `wait`；未知副作用返回 `reconcile`；可证明未执行才创建下一 attempt；已有 Outcome 从 Validator 继续；Human Decision 保留原 proposal hash。旧 checkpoint 或缺失/损坏 packet 明确进入 `migration-required` 或 `content-missing-or-corrupt`，不得用当前内容重组兼容。
 
 进程外 Host 的 Outcome 必须同时匹配原 invocation ID、Host ID 和 packet digest。受保护操作还必须携带活动 session identity；跨 Run/Work、过期 session、越仓或越 scope 操作全部 fail closed。Repoctopus 不是 OS 沙箱，旁路文件变化只能成为 drift，不能形成受管 Receipt。
 
@@ -66,17 +66,19 @@ Build phase 固定执行 `Configure → Plan → Plan Evidence → Execute → C
 
 | Action        | Runtime 接受的结果                                                                                                              |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Configure     | Runner 提供的 checkout facts、Host 能力和 `current\|branch\|worktree` 隔离绑定                                                  |
+| Configure     | Runtime 观察 checkout facts、协调 Host identity 与 `current\|branch\|worktree` 隔离绑定                                         |
 | Plan          | OpenSpec Tasks 到有界 Work Packages 的执行投影，包括依赖、仓库、write scope 和验收引用                                          |
 | Plan Evidence | Task/acceptance coverage、DAG、Strategy、Binding、Host、scope、composition 和报告 owner 校验；有界高风险计划建立 Human Decision |
 | Execute       | 当前 package 的验收、测试、实现和可选受管子代理委派 Evidence                                                                    |
 | Check         | 全部 package、Task acceptance、测试、独立 standard review 和仓库事实                                                            |
 
-`BuildStrategy` 冻结经过 Design 批准的稳定语义：`autonomous|subagent-driven-development`、`tdd|direct`、standard review 与 `current|branch|worktree` 隔离意图。`ExecutionBinding` 只记录 Runtime 在 Configure 观察并验证的 Host capability、repository/branch/HEAD、ownership 和 opaque local overlay reference；绝对路径只保存在本机 overlay，不进入可移植状态或 OTLP。Configure 成功后自动进入 Plan，不建立第二次常规人工批准。
+`BuildStrategy` 冻结经过 Design 批准的稳定语义：`autonomous|subagent-driven-development`、`tdd|direct`、standard review 与 `current|branch|worktree` 隔离意图。每个不可变 `WorkDescriptor` 是当前 Action 所需 capability 的唯一权威；`WorkDispatcher` 在 claim、packet ownership 和 invocation 建立前比较 Host 的明确声明，能力不足只阻断当前 Work，并记录不含 capability 文本或 Host identity Metric label 的 `work.claim-capability-rejected`。Runtime 不会从 Work requirements 反向补齐 Host 声明。
+
+`ExecutionBinding` schema v3 只记录 Runtime 在 Configure 观察并验证的协调 Host identity、repository/branch/HEAD、ownership 和 opaque local overlay reference；它不记录 Configure invocation 的 capability list 或 digest。绝对路径只保存在本机 overlay，不进入可移植状态或 OTLP。Configure 成功后自动进入 Plan，不建立第二次常规人工批准。Plan、Execute 与 Check Outcome 只绑定原 claim/invocation/submission identity，并重新验证 Binding 自己拥有的事实；后续 Work 使用更小或不同的合法 capability 集合不会重建 Binding。旧 Binding schema 明确返回 `migration_required`，不双读旧 capability identity。
 
 隔离意图不包含 delivery target branch，也不包含逐仓 branch map。前者属于 `ChangeStartBinding`/Delivery，后者属于可重建的 `ExecutionBinding`；否则协调仓功能分支、只读仓 `main` 和不同名称的业务功能分支会被错误要求同名。Open 只验证 topology、repository identity 和隔离形态。Plan 形成精确 write scopes 后才对可写仓执行 protected-branch 检查；只读仓可以继续停留在 target branch。
 
-Runtime 本版不创建、切换或删除 checkout；Runner 先准备 checkout，再把当前事实交给 Configure。同一 Strategy 下兼容的 Host、能力、HEAD、checkout 或路径漂移会自动选择新的 Configure Work，建立新 Binding revision，并只失效依赖旧 Binding state 的 Plan/Evidence/未执行 Work。Strategy 不变时复用原 Design 决定；不兼容 Host、越界 ownership、错误 isolation 或不兼容 composition 仍然 fail closed。
+Runtime 本版不创建、切换或删除 checkout；Runner 先准备 checkout，再把当前事实交给 Configure。同一 Strategy 下协调 Host identity、checkout、ownership、isolation 或 local overlay 漂移会自动选择新的 Configure Work，建立新 Binding revision，并只失效依赖旧 Binding state 的 Plan/Evidence/未执行 Work。Strategy 不变时复用原 Design 决定。当前 Work 暂时没有兼容 Host 时保持该 Work pending；它不是 Binding drift。越界 ownership、错误 isolation 或不兼容 composition 仍然 fail closed。
 
 `tasks.md` 是需求分解与完成 claim 的语义权威。`BuildPlan` 是 Run 内的执行投影，可以把一个 Task 拆成多个 package，或把多个强耦合 Task 合为一个 package；它不会写回 OpenSpec，也不是第五类规划工件。Plan revision 只使受影响 package 的 Evidence 失效，保留摘要仍匹配的 completion。Task checkbox 一旦完成就保持完成；最新 Plan 和 Check Evidence 决定当前实现是否仍有效。
 

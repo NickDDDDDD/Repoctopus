@@ -9,11 +9,10 @@ import {
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import type { ChangeLifecycleDefinition, WorkDescriptor } from './transition.js';
 import { materializeLifecycleWorkBinding } from './work-definition.js';
-import {
-  executionBindingRequiredCapabilities,
-  type BuildActionKind,
-  type BuildExecutionMode,
-  type BuildTddMode,
+import type {
+  BuildActionKind,
+  BuildExecutionMode,
+  BuildTddMode,
 } from './build-protocol.js';
 
 function sha256(value: unknown): `sha256:${string}` {
@@ -174,12 +173,7 @@ export function createBuildActionWork(facts: {
       : facts.executionMode === 'autonomous'
         ? 'build.autonomous'
         : null;
-  const hostCapabilities =
-    facts.kind === 'build.configure' && facts.executionMode
-      ? executionBindingRequiredCapabilities(facts.executionMode)
-      : modeCapability
-        ? [modeCapability]
-        : [];
+  const hostCapabilities = modeCapability ? [modeCapability] : [];
   return {
     schemaVersion: 2,
     workId: `${facts.kind}:${inputDigest.slice('sha256:'.length, 19)}`,

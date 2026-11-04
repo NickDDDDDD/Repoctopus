@@ -42,6 +42,7 @@ const EXECUTION_DATA_KEYS = new Set([
   'replacedSkillName',
   'skillCompositionDigest',
   'changedSkillCount',
+  'missingCapabilityCount',
   'operationKind',
   'operationId',
   'waitId',
@@ -97,6 +98,7 @@ const EXECUTION_EVENTS = new Set<TrajectoryEvent['type']>([
   'work.created',
   'work.packet-stored',
   'work.packet-recovered',
+  'work.claim-capability-rejected',
   'work.claimed',
   'work.context-delivered',
   'work.host-started',
@@ -413,7 +415,7 @@ export function safeEventAttributes(batch: TelemetryBatch, event: TrajectoryEven
       if (semanticEvent) attributes['repoctopus.build.event'] = semanticEvent;
       if (
         typeof record.reasonCode === 'string' &&
-        ['host', 'capability', 'checkout', 'head', 'path', 'protected-branch-correction'].includes(
+        ['host', 'checkout', 'head', 'path', 'protected-branch-correction'].includes(
           record.reasonCode,
         )
       ) {
@@ -480,6 +482,7 @@ const BOUNDED_RESULTS = new Set([
   'not-executed',
   'executed',
   'unavailable',
+  'blocked',
 ]);
 const BOUNDED_ARTIFACT_STATUSES = new Set(['ready', 'skipped', 'missing']);
 const BOUNDED_SEVERITIES = new Set(['none', 'info', 'warning', 'error']);
@@ -490,6 +493,7 @@ const BOUNDED_REASON_CODES = new Set([
   'checkpoint-superseded',
   'open-observation-unavailable',
   'open-gate-pending',
+  'capability-required',
 ]);
 const BOUNDED_OPEN_REPAIR_SOURCES = new Set([
   'provider-artifacts',
@@ -562,6 +566,7 @@ export function executionMetricAttributes(event: TrajectoryEvent): Attributes | 
 
 export function eventSeverity(type: TrajectoryEvent['type']): number {
   return type === 'recovery.reconciled' ||
+    type === 'work.claim-capability-rejected' ||
     type === 'work.outcome-rejected' ||
     type === 'work.outcome-processing-error'
     ? 13

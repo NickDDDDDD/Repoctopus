@@ -244,18 +244,20 @@ export interface ExecutionBindingRepository {
  * opaque localOverlayRef and are never copied into this value.
  */
 export interface ExecutionBinding {
-  schemaVersion: 1;
+  schemaVersion: 3;
   bindingId: string;
   revision: number;
   strategyDigest: Digest;
-  host: {
-    hostId: string;
-    capabilityDigest: Digest;
-  };
+  coordinatorHostId: string;
   repositories: readonly ExecutionBindingRepository[];
   semanticDigest: Digest;
   stateDigest: Digest;
   localOverlayRef: string;
+}
+
+export function executionBindingRequiresMigration(binding: unknown): boolean {
+  if (!binding || typeof binding !== 'object') return true;
+  return (binding as { schemaVersion?: unknown }).schemaVersion !== 3;
 }
 
 export interface BuildWorkspaceCheckpointRepository {
@@ -370,37 +372,10 @@ export function advanceBuildWorkspaceCheckpoint(input: {
   return deepFreeze({ ...stable, digest: digest(stable) });
 }
 
-export function executionBindingRequiredCapabilities(
-  executionMode: BuildExecutionMode,
-): readonly string[] {
-  return Object.freeze(
-    [
-      executionMode === 'autonomous' ? 'build.autonomous' : 'subagent.dispatch.attested',
-      'process.execute',
-      'repository.read',
-      'repository.write',
-      'specification.read',
-    ].sort(),
-  );
-}
-
-export function missingExecutionBindingCapabilities(
-  executionMode: BuildExecutionMode,
-  hostCapabilities: readonly string[],
-): readonly string[] {
-  const available = new Set(hostCapabilities);
-  return Object.freeze(
-    executionBindingRequiredCapabilities(executionMode).filter(
-      (capability) => !available.has(capability),
-    ),
-  );
-}
-
 export function createExecutionBinding(input: {
   strategy: BuildStrategy;
   revision: number;
-  hostId: string;
-  hostCapabilities: readonly string[];
+  coordinatorHostId: string;
   workspaceBinding: ExecutionWorkspaceBinding;
   workspaceOwnerId: string;
   localOverlayRef: string;
@@ -411,20 +386,12 @@ export function createExecutionBinding(input: {
   if (input.workspaceBinding.isolation !== input.strategy.isolationIntent) {
     throw new Error('Execution Binding isolation does not match the approved Build Strategy');
   }
-  const hostCapabilities = unique(input.hostCapabilities, 'Host capabilities');
-  const missingCapabilities = missingExecutionBindingCapabilities(
-    input.strategy.executionMode,
-    hostCapabilities,
-  );
-  if (missingCapabilities.length > 0) {
-    throw new Error(`Execution Binding requires ${missingCapabilities.join(', ')}`);
-  }
   const localOverlayRef = text(input.localOverlayRef, 'Local overlay reference');
   if (isAbsolute(localOverlayRef) || /^[a-z]:[\\/]/iu.test(localOverlayRef)) {
     throw new Error('Local overlay reference must be opaque, not an absolute path');
   }
   const workspaceOwnerId = text(input.workspaceOwnerId, 'Workspace owner identity');
-  const capabilityDigest = digest(hostCapabilities);
+  const coordinatorHostId = text(input.coordinatorHostId, 'Coordinator Host identity');
   const repositories = input.workspaceBinding.repositories.map((repository) => ({
     repositoryId: repository.repositoryId,
     branchRef: repository.branch,
@@ -434,9 +401,9 @@ export function createExecutionBinding(input: {
     worktreeId: repository.worktreeId,
   }));
   const portableSemantics = {
-    schemaVersion: 1 as const,
+    schemaVersion: 3 as const,
     strategyDigest: input.strategy.semanticDigest,
-    capabilityDigest,
+    coordinatorHostId,
     repositories: repositories.map((repository) => ({
       repositoryId: repository.repositoryId,
       branchRef: repository.branchRef,
@@ -448,18 +415,14 @@ export function createExecutionBinding(input: {
   const semanticDigest = digest(portableSemantics);
   const stateDigest = digest({
     ...portableSemantics,
-    hostId: text(input.hostId, 'Host identity'),
     repositories,
   });
   return deepFreeze({
-    schemaVersion: 1 as const,
+    schemaVersion: 3 as const,
     bindingId: `execution-binding:${digest({ semanticDigest, stateDigest, revision: input.revision }).slice(-24)}`,
     revision: input.revision,
     strategyDigest: input.strategy.semanticDigest,
-    host: {
-      hostId: text(input.hostId, 'Host identity'),
-      capabilityDigest,
-    },
+    coordinatorHostId,
     repositories,
     semanticDigest,
     stateDigest,
@@ -1235,7 +1198,6 @@ export interface PlanEvidence {
   strategyDigest: Digest;
   bindingId: string;
   bindingStateDigest: Digest;
-  hostCapabilityDigest: Digest;
   taskSetDigest: Digest;
   compositionCheckpointDigest: Digest;
   reportOwnerId: string;
@@ -1388,7 +1350,6 @@ export function createPlanEvidence(input: {
     strategyDigest: input.strategy.semanticDigest,
     bindingId: input.binding.bindingId,
     bindingStateDigest: input.binding.stateDigest,
-    hostCapabilityDigest: input.binding.host.capabilityDigest,
     protectedBranchPolicyDigest,
     taskSetDigest: input.plan.taskSetDigest,
     compositionCheckpointDigest: input.compositionCheckpointDigest,

@@ -531,17 +531,32 @@ Telemetry Provider MUST 从持久事件派生重复批准率、Build Protocol �
 
 ### Requirement: Build 策略绑定与人工等待必须可观测
 
-Repoctopus MUST 分别记录 BuildStrategy proposed/approved/reused/invalidated、ExecutionBinding validated/drifted、Human Decision created/reused/superseded 和 Plan preflight finding，并保留 phase、Build action、strategy/binding revision、独立 composition identity、reason class 与 duration 关联。Composition identity MUST 只用于兼容性、执行和 Evidence 关联，不得成为 Strategy approval semantic digest。相同 Strategy semantic digest 的恢复、兼容 adoption 或返工 MUST 产生 decision reused 而不是新的 approval request；Metric labels MUST 只使用有界策略、结果和原因枚举。
+Repoctopus MUST分别记录BuildStrategy proposed/approved/reused/invalidated、ExecutionBinding validated/drifted、Work claim capability accepted/rejected、executor availability blocked、Human Decision created/reused/superseded和Plan preflight finding。Telemetry MUST区分Work-scoped capability rejection与真正的Binding-owned identity drift；它不得从Plan、Execute或Check invocation的capability list推断Binding变化。Metric labels MUST只使用有界phase、action、result和reason枚举，Host、Work、claim和digest只作为Trace/Event关联身份。
+
+#### Scenario: 当前Work能力不足
+
+- **WHEN** Host缺少当前Work的required capability并在claim前被拒绝
+- **THEN** Trace记录`work.claim-capability-rejected`和有界missing-capability class，claim/invocation计数不增加，binding drift计数不增加
 
 #### Scenario: Configure 自动重验 binding
 
-- **WHEN** Host 或 checkout 变化但批准 Strategy 语义未变，Runtime 接受新 ExecutionBinding
-- **THEN** Trace 表示 binding revision 和受影响 Evidence invalidation，approval count 不增加且不导出 checkout 路径
+- **WHEN** coordinator Host identity或checkout变化但批准Strategy语义未变，Runtime接受新ExecutionBinding
+- **THEN** Trace表示binding revision和受影响Evidence invalidation，approval count不增加且不导出checkout路径
 
 #### Scenario: Plan 提前阻断越界写入
 
-- **WHEN** Plan Evidence 发现 package write scope 超出任务或仓库边界
-- **THEN** Trace 在 Execute 前记录有界 planning finding，使团队可计算 preflight catch rate，Metric 不使用路径文本作为 label
+- **WHEN** Plan Evidence发现package write scope超出任务或仓库边界
+- **THEN** Trace在Execute前记录有界planning finding，使团队可计算preflight catch rate，Metric不使用路径文本作为label
+
+#### Scenario: 不同Work使用不同能力集合
+
+- **WHEN** 同一coordinator Host成功领取Plan和Execute且两次声明的能力集合不同
+- **THEN** Trace分别记录两个合法Work claim；Dashboard和聚合不得显示ExecutionBinding漂移或Configure重试
+
+#### Scenario: 外部执行结果未知
+
+- **WHEN** 已claim Work的外部结果无法判定并进入reconcile
+- **THEN** Trace保留原claim/invocation关联并记录unknown/reconcile outcome，不把恢复投影为新Work成功或Binding重建
 
 ### Requirement: 候选度量必须声明可信来源和覆盖状态
 
