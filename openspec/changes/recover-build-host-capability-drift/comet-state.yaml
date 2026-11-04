@@ -1,30 +1,374 @@
 # comet-execution: managed-run
-change_id: recover-build-host-capability-drift
+change_id: ff1b3b07-5b3f-4850-a012-ea553c5f2736
 workflow: full
 language: zh-CN
-phase: open
+phase: design
 context_compression: off
-build_mode: autonomous
+build_mode: null
 build_pause: null
 subagent_dispatch: null
-tdd_mode: tdd
+tdd_mode: null
 review_mode: thorough
 isolation: current
 verify_mode: null
-auto_transition: false
-base_ref: 6eb336bfab2efc7caf9b163c61b51ad91f36d08e
-design_doc: openspec/changes/recover-build-host-capability-drift/design.md
+auto_transition: true
+base_ref: 33c0b44996a5ac30bee22f47fe7e70f9386def6b
+design_doc: null
 plan: null
-verify_result: null
+verify_result: pending
 verify_failures: 0
 verification_report: null
-branch_status: public
+branch_status: pending
 created_at: 2026-11-04
 verified_at: null
 archive_confirmation: null
 archived: false
 bound_branch: codex/recover-build-host-capability-drift
-direct_override: false
+direct_override: null
+handoff_context: null
+handoff_hash: null
 classic_profile: null
 classic_migration: null
-check_epoch: 0
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: 06aaa4e23ef1b812659968dab626c8457b2e006eda27de46087bcad5fd330f1c
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: recover-build-host-capability-drift
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: 23ac49ce4cf32544912f3fa54b96282251393d78ca4d658b48136059275e3587
+    input:
+      change: recover-build-host-capability-drift
+      changeDir: openspec/changes/recover-build-host-capability-drift
+      workspaceBaseline:
+        ref: 333b71e2-9050-4490-9788-a65938ba6acf
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: 33c0b44996a5ac30bee22f47fe7e70f9386def6b
+      boundBranch: codex/recover-build-host-capability-drift
+      branchStatus: pending
+      buildMode: null
+      buildPause: null
+      checkEpoch: 1
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-04
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: current
+      language: zh-CN
+      phase: design
+      plan: null
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: null
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: running
+    sequence: 5
+    actions:
+      - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-b1ed197a74a0c9c1955ed76e3c76c231b45332fe55e75725df99e84b8acff445
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-build-host-capability-drift:1
+        input:
+          input:
+            change: recover-build-host-capability-drift
+            changeDir: openspec/changes/recover-build-host-capability-drift
+            workspaceBaseline:
+              ref: 333b71e2-9050-4490-9788-a65938ba6acf
+          outputs: {}
+        inputHash: 6a4e36093214802e7f2f702b04b06649b6e06e6a48bae4fcef319cdbc3017671
+        outcome:
+          actionId: recover-build-host-capability-drift:1
+          attempt: 1
+          claimToken: portable-b1ed197a74a0c9c1955ed76e3c76c231b45332fe55e75725df99e84b8acff445
+          inputHash: 6a4e36093214802e7f2f702b04b06649b6e06e6a48bae4fcef319cdbc3017671
+          outcomeId: 2eef46c9-e0df-498f-a8f5-ddf2489939f2
+          output:
+            event: open-complete
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: bc97cd747a1a926fb41d893b56c19140ad8d2dc7bb1dd2b9c616a5f66b790903
+            outcomeId: 2eef46c9-e0df-498f-a8f5-ddf2489939f2
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-build-host-capability-drift
+        status: succeeded
+        stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-2013b7f9c41f7b9b499e0a1b53a1311a55c11915c4aef0da319f5db9d73bf333
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: recover-build-host-capability-drift:4
+        input:
+          input:
+            change: recover-build-host-capability-drift
+            changeDir: openspec/changes/recover-build-host-capability-drift
+            workspaceBaseline:
+              ref: 333b71e2-9050-4490-9788-a65938ba6acf
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: recover-build-host-capability-drift
+                  changeDir: openspec/changes/recover-build-host-capability-drift
+                  workspaceBaseline:
+                    ref: 333b71e2-9050-4490-9788-a65938ba6acf
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+                    ref: openspec/changes/recover-build-host-capability-drift
+            full.open.evidence:
+              contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+              ref: openspec/changes/recover-build-host-capability-drift
+        inputHash: 71e17963b07048cb59816509f7402a5fdb4edee1d85f5ab6285ba5c5ff2bcbeb
+        outcome:
+          actionId: recover-build-host-capability-drift:4
+          attempt: 1
+          claimToken: portable-2013b7f9c41f7b9b499e0a1b53a1311a55c11915c4aef0da319f5db9d73bf333
+          inputHash: 71e17963b07048cb59816509f7402a5fdb4edee1d85f5ab6285ba5c5ff2bcbeb
+          outcomeId: recover-build-host-capability-drift:4:1:executor-result
+          output:
+            contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: a25f045a1c657e7cdec5515a9ae097d635aea39a599753dbcf2d59f1c8547895
+            outcomeId: recover-build-host-capability-drift:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-build-host-capability-drift
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        id: recover-build-host-capability-drift:5
+        input:
+          input:
+            change: recover-build-host-capability-drift
+            changeDir: openspec/changes/recover-build-host-capability-drift
+            workspaceBaseline:
+              ref: 333b71e2-9050-4490-9788-a65938ba6acf
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: recover-build-host-capability-drift
+                  changeDir: openspec/changes/recover-build-host-capability-drift
+                  workspaceBaseline:
+                    ref: 333b71e2-9050-4490-9788-a65938ba6acf
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+                    ref: openspec/changes/recover-build-host-capability-drift
+            full.open.evidence:
+              contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+              ref: openspec/changes/recover-build-host-capability-drift
+            full.open.revalidate:
+              contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+        inputHash: b1b86a2ac289e12dd8c1ffc2e0cc47e3bc5c4deae089763a9fef44534878b1ff
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: recover-build-host-capability-drift
+        status: pending
+        stepId: full.design.handoff
+        type: invoke_skill
+    actionContexts:
+      recover-build-host-capability-drift:1:
+        results: {}
+        sequence: 1
+      recover-build-host-capability-drift:4:
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: recover-build-host-capability-drift
+                  changeDir: openspec/changes/recover-build-host-capability-drift
+                  workspaceBaseline:
+                    ref: 333b71e2-9050-4490-9788-a65938ba6acf
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+                    ref: openspec/changes/recover-build-host-capability-drift
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+              ref: openspec/changes/recover-build-host-capability-drift
+        sequence: 4
+      recover-build-host-capability-drift:5:
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: recover-build-host-capability-drift
+                  changeDir: openspec/changes/recover-build-host-capability-drift
+                  workspaceBaseline:
+                    ref: 333b71e2-9050-4490-9788-a65938ba6acf
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+                    ref: openspec/changes/recover-build-host-capability-drift
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+              ref: openspec/changes/recover-build-host-capability-drift
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+        sequence: 5
+    waits:
+      - id: recover-build-host-capability-drift:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: recover-build-host-capability-drift
+            changeDir: openspec/changes/recover-build-host-capability-drift
+            workspaceBaseline:
+              ref: 333b71e2-9050-4490-9788-a65938ba6acf
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+              ref: openspec/changes/recover-build-host-capability-drift
+        proposalHash: 67bcde37ced48dad0dd47280b141593a51a0af68c28826b07ea5418045b26300
+        choices:
+          - approved
+          - rejected
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+              ref: openspec/changes/recover-build-host-capability-drift
+        decision:
+          id: classic-open-16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+          choice: approved
+          proposalHash: 67bcde37ced48dad0dd47280b141593a51a0af68c28826b07ea5418045b26300
+    evidenceWaits:
+      - id: recover-build-host-capability-drift:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+        receipt:
+          ref: openspec/changes/recover-build-host-capability-drift
+          contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+          submissionId: 0a8cc997-82c3-4828-9416-a57309a15c9b
+    ready: []
+    joins: {}
+    outputs:
+      full.open:
+        sequence: 1
+        value:
+          event: open-complete
+      full.open.confirm:
+        sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: recover-build-host-capability-drift
+              changeDir: openspec/changes/recover-build-host-capability-drift
+              workspaceBaseline:
+                ref: 333b71e2-9050-4490-9788-a65938ba6acf
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+                ref: openspec/changes/recover-build-host-capability-drift
+      full.open.evidence:
+        sequence: 2
+        value:
+          contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+          ref: openspec/changes/recover-build-host-capability-drift
+      full.open.revalidate:
+        sequence: 4
+        value:
+          contentHash: 16256dcac64cc1067476d6febd9500d209f116b32cdb2eac6a79a91a2bf5ee35
+    children: []
+    lineage: []
+  sourceRevision: 7
+  sourceHash: 1d8016ce56fc57973588231ba9aacaa834fb7a55393e1dd91c123d6c15eb3f71
+check_epoch: 1
