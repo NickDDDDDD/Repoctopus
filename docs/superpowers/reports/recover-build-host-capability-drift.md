@@ -1,6 +1,6 @@
 ---
 change: recover-build-host-capability-drift
-status: build-verification-in-progress
+status: verified
 ---
 
 # Recover Build Host capability drift verification
@@ -63,5 +63,7 @@ Completed during Build:
 - existing managed single-/multi-repository Build E2E variants
 - fresh external Host single-/multi-repository vertical E2E
 
-Final `npm run verify`, strict OpenSpec, generated, architecture and provenance results are added
-after the final commit is fixed.
+Final verification passed 182 test files and 850 tests with 2 explicit skips. Generated, brand,
+architecture, provenance, Dashboard salvage and all 18 strict OpenSpec items passed. The
+reproducible packaged-product boundary and package digest are recorded in
+`verification/recover-build-host-capability-drift/verification-report.md`.
