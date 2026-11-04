@@ -430,6 +430,61 @@ export class WorkExecutionAuthority extends Service {
     await this.flushTelemetry(runId);
   }
 
+  async recordClaimRejected(input: {
+    runId: string;
+    work: WorkDescriptor;
+    attempt: number;
+    reasonCode: 'capability-required';
+    missingCapabilityCount: number;
+  }): Promise<void> {
+    await this.ctx.runStore.commitGuarded(input.runId, ({ state, trajectory }) => {
+      if (
+        state.status !== 'running' ||
+        state.changeLifecycle?.currentWork?.workId !== input.work.workId ||
+        state.changeLifecycle.currentWork.inputDigest !== input.work.inputDigest
+      ) {
+        throw new Error('Rejected claim does not belong to the Runtime-selected current Work');
+      }
+      const eventId = digest(
+        input.runId,
+        'work.claim-rejected',
+        input.work.workId,
+        String(input.attempt),
+        input.reasonCode,
+      );
+      if (trajectory.some((event) => event.eventId === eventId)) return { value: undefined };
+      const timestamp = new Date().toISOString();
+      const nextState: RunState = {
+        ...state,
+        stateVersion: state.stateVersion + 1,
+        updatedAt: timestamp,
+      };
+      return {
+        state: nextState,
+        event: executionEvent({
+          state: nextState,
+          sequence: trajectory.length + 1,
+          timestamp,
+          type: 'work.claim-rejected',
+          identity: [input.work.workId, String(input.attempt), input.reasonCode],
+          data: {
+            phase: input.work.phase,
+            workId: input.work.workId,
+            workKind: input.work.kind,
+            attempt: input.attempt,
+            checkEpoch: input.work.checkEpoch,
+            result: 'blocked',
+            reasonCode: input.reasonCode,
+            missingCapabilityCount: input.missingCapabilityCount,
+            ...buildTelemetryFields(state, input.work),
+          },
+        }),
+        value: undefined,
+      };
+    });
+    await this.flushTelemetry(input.runId);
+  }
+
   async recordSkillComposition(
     runId: string,
     composition: EffectiveSkillComposition,

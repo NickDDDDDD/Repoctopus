@@ -615,14 +615,7 @@ describe('Repoctopus runtime', () => {
     const executionBinding = createExecutionBinding({
       strategy,
       revision: 1,
-      hostId: 'external:cli:test',
-      hostCapabilities: [
-        'build.autonomous',
-        'process.execute',
-        'repository.read',
-        'repository.write',
-        'specification.read',
-      ],
+      coordinatorHostId: 'external:cli:test',
       workspaceBinding: binding,
       workspaceOwnerId: intent.workspaceId,
       localOverlayRef: 'execution-workspace:test',

@@ -467,7 +467,6 @@ export type ChangeLifecycleObservation =
       kind: 'build-binding-revalidation-required';
       reasonCode:
         | 'host'
-        | 'capability'
         | 'checkout'
         | 'head'
         | 'path'

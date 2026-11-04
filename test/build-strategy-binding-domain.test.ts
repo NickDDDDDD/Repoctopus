@@ -54,14 +54,7 @@ describe('Build Strategy and Execution Binding', () => {
     const first = createExecutionBinding({
       strategy,
       revision: 1,
-      hostId: 'runner-1',
-      hostCapabilities: [
-        'build.autonomous',
-        'process.execute',
-        'repository.read',
-        'repository.write',
-        'specification.read',
-      ],
+      coordinatorHostId: 'runner-1',
       workspaceBinding: firstWorkspace.binding,
       workspaceOwnerId: firstWorkspace.intent.workspaceId,
       localOverlayRef: 'local-overlay:runner-1',
@@ -69,14 +62,7 @@ describe('Build Strategy and Execution Binding', () => {
     const second = createExecutionBinding({
       strategy,
       revision: 2,
-      hostId: 'runner-2',
-      hostCapabilities: [
-        'repository.write',
-        'process.execute',
-        'build.autonomous',
-        'repository.read',
-        'specification.read',
-      ],
+      coordinatorHostId: 'runner-2',
       workspaceBinding: secondWorkspace.binding,
       workspaceOwnerId: secondWorkspace.intent.workspaceId,
       localOverlayRef: 'local-overlay:runner-2',
@@ -84,7 +70,7 @@ describe('Build Strategy and Execution Binding', () => {
 
     expect(first.strategyDigest).toBe(strategy.semanticDigest);
     expect(second.strategyDigest).toBe(strategy.semanticDigest);
-    expect(second.semanticDigest).toBe(first.semanticDigest);
+    expect(second.semanticDigest).not.toBe(first.semanticDigest);
     expect(second.stateDigest).not.toBe(first.stateDigest);
     expect(second.bindingId).not.toBe(first.bindingId);
     expect(JSON.stringify(first)).not.toContain('C:\\work');
@@ -122,7 +108,7 @@ describe('Build Strategy and Execution Binding', () => {
     expect(changed.strategyId).not.toBe(base.strategyId);
   });
 
-  it('fails closed when the Host cannot execute the approved Strategy', () => {
+  it('keeps capability attestation in Work claims instead of Execution Binding', () => {
     const strategy = createBuildStrategy({
       runId: 'run-strategy-binding',
       revision: 1,
@@ -133,21 +119,18 @@ describe('Build Strategy and Execution Binding', () => {
     });
     const workspace = workspaceBinding({ isolation: 'current' });
 
-    expect(() =>
-      createExecutionBinding({
-        strategy,
-        revision: 1,
-        hostId: 'runner-without-dispatch',
-        hostCapabilities: [
-          'process.execute',
-          'repository.read',
-          'repository.write',
-          'specification.read',
-        ],
-        workspaceBinding: workspace.binding,
-        workspaceOwnerId: workspace.intent.workspaceId,
-        localOverlayRef: 'local-overlay:runner-without-dispatch',
-      }),
-    ).toThrow(/subagent\.dispatch\.attested/iu);
+    const binding = createExecutionBinding({
+      strategy,
+      revision: 1,
+      coordinatorHostId: 'runner-without-dispatch',
+      workspaceBinding: workspace.binding,
+      workspaceOwnerId: workspace.intent.workspaceId,
+      localOverlayRef: 'local-overlay:runner-without-dispatch',
+    });
+    expect(binding).toMatchObject({
+      schemaVersion: 3,
+      coordinatorHostId: 'runner-without-dispatch',
+    });
+    expect(JSON.stringify(binding)).not.toContain('capabilit');
   });
 });

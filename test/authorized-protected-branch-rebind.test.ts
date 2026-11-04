@@ -5,7 +5,6 @@ import {
   createExecutionBinding,
   createExecutionWorkspaceBinding,
   createExecutionWorkspaceIntent,
-  executionBindingRequiredCapabilities,
 } from '../domains/change-lifecycle/build-protocol.js';
 import { createProjectSnapshot } from '../domains/project/snapshot.js';
 import { classifyProtectedBranchRebind } from '../domains/runtime/authorized-rebind.js';
@@ -47,8 +46,7 @@ const workspaceBinding = createExecutionWorkspaceBinding({
 const binding = createExecutionBinding({
   strategy,
   revision: 1,
-  hostId: 'host-1',
-  hostCapabilities: executionBindingRequiredCapabilities('autonomous'),
+  coordinatorHostId: 'host-1',
   workspaceBinding,
   workspaceOwnerId: 'workspace-1',
   localOverlayRef: 'overlay:one',

@@ -148,6 +148,7 @@ export const OBSERVATION_ATTRIBUTE_KEYS = [
   'contractConflict',
   'reasonCode',
   'changedSkillCount',
+  'missingCapabilityCount',
   'strategyRevision',
   'bindingRevision',
   'decisionStatus',
@@ -403,7 +404,7 @@ function attributes(event: TrajectoryEvent, context: ObservationContext) {
   const reasonClass = scalar(observation?.reasonCode);
   if (
     typeof reasonClass === 'string' &&
-    ['host', 'capability', 'checkout', 'head', 'path', 'checkpoint-migration'].includes(reasonClass)
+    ['host', 'checkout', 'head', 'path', 'checkpoint-migration'].includes(reasonClass)
   ) {
     result.reasonClass = reasonClass;
   }

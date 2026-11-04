@@ -74,19 +74,15 @@ describe('Build Work policy', () => {
     ['autonomous', 'build.autonomous'],
     ['subagent-driven-development', 'subagent.dispatch.attested'],
   ] as const)(
-    'declares the complete %s Execution Binding capability contract before Configure claim',
+    'declares only the current %s Configure capability contract before claim',
     (executionMode, modeCapability) => {
       const work = configureWork(executionMode);
 
       expect(work.capabilities).toEqual(
-        [
-          modeCapability,
-          'process.execute',
-          'repository.read',
-          'repository.write',
-          'specification.read',
-        ].sort(),
+        [modeCapability, 'repository.read', 'specification.read'].sort(),
       );
+      expect(work.capabilities).not.toContain('process.execute');
+      expect(work.capabilities).not.toContain('repository.write');
       expect(work.sideEffectClass).toBe('none');
       expect(work.writeScopes).toEqual([]);
     },

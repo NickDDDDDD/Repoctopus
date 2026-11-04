@@ -42,14 +42,7 @@ describe('managed Build verification subject', () => {
     const executionBinding = createExecutionBinding({
       strategy,
       revision: 1,
-      hostId: 'verification-host',
-      hostCapabilities: [
-        'build.autonomous',
-        'process.execute',
-        'repository.read',
-        'repository.write',
-        'specification.read',
-      ],
+      coordinatorHostId: 'verification-host',
       workspaceBinding: binding,
       workspaceOwnerId: intent.workspaceId,
       localOverlayRef: 'execution-workspace:verification',

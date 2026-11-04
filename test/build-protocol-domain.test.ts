@@ -13,8 +13,6 @@ import {
   createBuildProtocolState,
   createExecutionWorkspaceBinding,
   createExecutionWorkspaceIntent,
-  executionBindingRequiredCapabilities,
-  missingExecutionBindingCapabilities,
   createPackageCompletionEvidence,
   createPlanEvidence as createPlanEvidenceV2,
   revalidateSuspendedBuildProtocol,
@@ -22,44 +20,6 @@ import {
   validateBuildPlan as validateBuildPlanV2,
 } from '../domains/change-lifecycle/build-protocol.js';
 import { parseSpecificationTasks } from '../domains/specification/tasks.js';
-
-describe('Execution Binding capability contract', () => {
-  it.each([
-    [
-      'autonomous',
-      [
-        'build.autonomous',
-        'process.execute',
-        'repository.read',
-        'repository.write',
-        'specification.read',
-      ],
-      ['process.execute', 'repository.write', 'specification.read'],
-    ],
-    [
-      'subagent-driven-development',
-      [
-        'process.execute',
-        'repository.read',
-        'repository.write',
-        'specification.read',
-        'subagent.dispatch.attested',
-      ],
-      ['process.execute', 'repository.write', 'specification.read'],
-    ],
-  ] as const)(
-    'uses one complete %s capability set for preflight and checkpoint recovery',
-    (executionMode, required, missing) => {
-      expect(executionBindingRequiredCapabilities(executionMode)).toEqual(required);
-      expect(
-        missingExecutionBindingCapabilities(executionMode, [
-          executionMode === 'autonomous' ? 'build.autonomous' : 'subagent.dispatch.attested',
-          'repository.read',
-        ]),
-      ).toEqual(missing);
-    },
-  );
-});
 
 describe('Build workspace checkpoint', () => {
   it('separates immutable Binding identity from authorized repository progress', () => {
@@ -183,14 +143,7 @@ function approvedConfiguration(
   const executionBinding = createExecutionBinding({
     strategy,
     revision: 1,
-    hostId: 'codex-local',
-    hostCapabilities: [
-      executionMode === 'autonomous' ? 'build.autonomous' : 'subagent.dispatch.attested',
-      'process.execute',
-      'repository.read',
-      'repository.write',
-      'specification.read',
-    ],
+    coordinatorHostId: 'codex-local',
     workspaceBinding: binding,
     workspaceOwnerId: intent.workspaceId,
     localOverlayRef: 'execution-workspace:test',
@@ -302,14 +255,7 @@ describe('Build protocol domain', () => {
     const binding = createExecutionBinding({
       strategy,
       revision: 1,
-      hostId: 'codex-local',
-      hostCapabilities: [
-        'build.autonomous',
-        'process.execute',
-        'repository.read',
-        'repository.write',
-        'specification.read',
-      ],
+      coordinatorHostId: 'codex-local',
       workspaceBinding,
       workspaceOwnerId: intent.workspaceId,
       localOverlayRef: 'execution-workspace:protected-write-set',
@@ -356,14 +302,7 @@ describe('Build protocol domain', () => {
     const sourceBinding = createExecutionBinding({
       strategy,
       revision: 2,
-      hostId: 'codex-local',
-      hostCapabilities: [
-        'build.autonomous',
-        'process.execute',
-        'repository.read',
-        'repository.write',
-        'specification.read',
-      ],
+      coordinatorHostId: 'codex-local',
       workspaceBinding: createExecutionWorkspaceBinding({
         intent,
         repositories: [
@@ -712,7 +651,7 @@ describe('Build protocol domain', () => {
     expect(afterCommit.stateDigest).not.toBe(before.stateDigest);
   });
 
-  it('rejects unsupported profiles and a Host without the selected mode capability', () => {
+  it('rejects unsupported profiles while keeping Host capabilities out of Binding identity', () => {
     const intent = createExecutionWorkspaceIntent({
       workspaceId: 'team',
       changeId: 'invalid',
@@ -740,22 +679,19 @@ describe('Build protocol domain', () => {
       reviewMode: 'standard',
       isolationIntent: 'current',
     });
-    expect(() =>
-      createExecutionBinding({
-        strategy,
-        revision: 1,
-        hostId: 'plain-host',
-        hostCapabilities: [
-          'process.execute',
-          'repository.read',
-          'repository.write',
-          'specification.read',
-        ],
-        workspaceBinding: binding,
-        workspaceOwnerId: intent.workspaceId,
-        localOverlayRef: 'execution-workspace:test',
-      }),
-    ).toThrow(/subagent\.dispatch\.attested/u);
+    const executionBinding = createExecutionBinding({
+      strategy,
+      revision: 1,
+      coordinatorHostId: 'plain-host',
+      workspaceBinding: binding,
+      workspaceOwnerId: intent.workspaceId,
+      localOverlayRef: 'execution-workspace:test',
+    });
+    expect(executionBinding).toMatchObject({
+      schemaVersion: 3,
+      coordinatorHostId: 'plain-host',
+    });
+    expect(JSON.stringify(executionBinding)).not.toContain('capabilit');
   });
 
   it('builds a canonical DAG projection that covers every OpenSpec Task', () => {
@@ -902,7 +838,6 @@ describe('Build protocol domain', () => {
     const validation = validateBuildPlan({ plan, configuration, tasks });
     const evidence = createPlanEvidence({ plan, configuration, validation });
     expect(evidence).toMatchObject({
-      hostCapabilityDigest: configuration.binding.host.capabilityDigest,
       taskIds: ['1.1'],
       validatorProfiles: ['build.package-valid'],
       reviewMode: 'standard',

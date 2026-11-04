@@ -70,7 +70,6 @@ import {
   createBuildPlan,
   createBuildProtocolState,
   createExecutionWorkspaceIntent,
-  missingExecutionBindingCapabilities,
   createPlanEvidence,
   createPackageCompletionEvidence,
   advanceBuildWorkspaceCheckpoint,
@@ -1348,17 +1347,6 @@ export class WorkflowRuns extends Service {
     };
   }
 
-  private assertBuildHostCapabilities(
-    strategy: BuildStrategy,
-    invocationHost: WorkExecutionHostIdentity,
-  ): void {
-    const required =
-      strategy.executionMode === 'autonomous' ? 'build.autonomous' : 'subagent.dispatch.attested';
-    if (!invocationHost.capabilities.includes(required)) {
-      throw new Error(`Build Host does not support the approved Strategy capability ${required}`);
-    }
-  }
-
   private async bindExecutionWorkspaceIntent(
     state: RunState,
     intent: ExecutionWorkspaceIntent,
@@ -1403,13 +1391,12 @@ export class WorkflowRuns extends Service {
     projectSnapshot: ProjectSnapshot,
     executionBinding: ExecutionBinding,
     invocationHost: WorkExecutionHostIdentity,
-  ): Promise<'host' | 'capability' | 'checkout' | 'path' | null> {
+  ): Promise<'host' | 'checkout' | 'path' | null> {
     const observed = await this.bindExecutionWorkspace(state, lifecycle, projectSnapshot);
     const candidate = createExecutionBinding({
       strategy: lifecycle.buildProtocol!.strategy,
       revision: executionBinding.revision + 1,
-      hostId: invocationHost.id,
-      hostCapabilities: invocationHost.capabilities,
+      coordinatorHostId: invocationHost.id,
       workspaceBinding: observed,
       workspaceOwnerId: lifecycle.workspaceIntent!.workspaceId,
       localOverlayRef: `execution-workspace:${observed.localDigest.slice(-24)}`,
@@ -1426,10 +1413,7 @@ export class WorkflowRuns extends Service {
       return 'checkout';
     }
     if (candidate.localOverlayRef !== executionBinding.localOverlayRef) return 'path';
-    if (candidate.host.hostId !== executionBinding.host.hostId) return 'host';
-    if (candidate.host.capabilityDigest !== executionBinding.host.capabilityDigest) {
-      return 'capability';
-    }
+    if (candidate.coordinatorHostId !== executionBinding.coordinatorHostId) return 'host';
     return null;
   }
 
@@ -1635,7 +1619,6 @@ export class WorkflowRuns extends Service {
     workspaceRepositoryId: string;
     reasonCode:
       | 'host'
-      | 'capability'
       | 'checkout'
       | 'head'
       | 'path'
@@ -2451,6 +2434,33 @@ export class WorkflowRuns extends Service {
           const legacyBuildProtocol = lifecycle.buildProtocol;
           if (
             lifecycle.phase === 'build' &&
+            legacyBuildProtocol?.binding &&
+            Number(
+              (legacyBuildProtocol.binding as unknown as { schemaVersion?: unknown }).schemaVersion,
+            ) !== 3
+          ) {
+            const reason =
+              'Pre-release Execution Binding schema is not compatible with Work-scoped Host capabilities';
+            const migrated = await this.coordinator.acceptChangeObservation(runId, {
+              kind: 'work-execution-migration-required',
+              reason,
+              evidenceIds: [legacyBuildProtocol.binding.bindingId],
+            });
+            return {
+              ...migrated,
+              value: await this.coordinator.status(runId),
+              diagnostics: [
+                ...migrated.diagnostics,
+                {
+                  level: 'error' as const,
+                  code: 'change.execution-binding-migration-required',
+                  message: reason,
+                },
+              ],
+            };
+          }
+          if (
+            lifecycle.phase === 'build' &&
             legacyBuildProtocol?.workspaceCheckpoint === undefined &&
             legacyBuildProtocol?.binding
           ) {
@@ -2748,73 +2758,6 @@ export class WorkflowRuns extends Service {
               if (bindingCandidate.strategyDigest !== strategy.semanticDigest) {
                 throw new Error('Build Configure candidate does not bind the approved Strategy');
               }
-              const missingCapabilities = missingExecutionBindingCapabilities(
-                strategy.executionMode,
-                invocationHost.capabilities,
-              );
-              if (missingCapabilities.length > 0) {
-                const projectConfigDigest = current.trigger?.facts.projectConfigDigest;
-                const specificationRoot = current.trigger?.facts.specificationRoot as
-                  | { repositoryId?: unknown }
-                  | undefined;
-                if (
-                  typeof projectConfigDigest !== 'string' ||
-                  !/^sha256:[a-f0-9]{64}$/u.test(projectConfigDigest) ||
-                  typeof specificationRoot?.repositoryId !== 'string'
-                ) {
-                  throw new Error('Build Configure retry trigger identities are missing');
-                }
-                const skills = await this.resolveLifecycleWorkSkills(
-                  'build.configure',
-                  signal,
-                  [],
-                  runId,
-                );
-                const retryWork = createBuildActionWork({
-                  runId,
-                  checkEpoch: lifecycle.checkEpoch + 1,
-                  definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
-                  kind: 'build.configure',
-                  actionSkill: skills.actionSkill,
-                  augmentationSkills: skills.augmentationSkills,
-                  skillComposition: skills.skillComposition,
-                  compositionDigest: current.composition.compositionDigest,
-                  projectConfigDigest: projectConfigDigest as `sha256:${string}`,
-                  projectSnapshotDigest: current.projectSnapshotDigest,
-                  workspaceRepositoryId: specificationRoot.repositoryId,
-                  repositoryIds: projectSnapshot.repositories.map((repository) => repository.id),
-                  strategyId: strategy.strategyId,
-                  executionMode: strategy.executionMode,
-                  tddMode: strategy.tddMode,
-                  stableInput: {
-                    reason: 'execution-binding-host-capability-missing',
-                    priorWorkId: lifecycle.currentWork.workId,
-                    executionMode: strategy.executionMode,
-                    missingCapabilities,
-                  },
-                });
-                for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
-                  await this.coordinator.bindSkill(runId, skill);
-                }
-                const retried = await this.coordinator.acceptChangeObservation(runId, {
-                  kind: 'build-binding-retry-required',
-                  reason: `Configure Host did not attest ${missingCapabilities.join(', ')}`,
-                  work: retryWork,
-                });
-                await this.ctx.workExecutionAuthority.recordWorkCreated(runId, retryWork);
-                return {
-                  ...retried,
-                  value: await this.coordinator.status(runId),
-                  diagnostics: [
-                    ...retried.diagnostics,
-                    {
-                      level: 'warning',
-                      code: 'change.build-binding-host-capability-retry',
-                      message: `Build Configure will retry with a Host that attests ${missingCapabilities.join(', ')}`,
-                    },
-                  ],
-                };
-              }
               let binding: ExecutionWorkspaceBinding;
               try {
                 binding = await this.bindExecutionWorkspace(current, lifecycle, projectSnapshot);
@@ -2872,8 +2815,7 @@ export class WorkflowRuns extends Service {
               const executionBinding = createExecutionBinding({
                 strategy,
                 revision: lifecycle.buildProtocol.bindingHistory.length + 1,
-                hostId: invocationHost.id,
-                hostCapabilities: invocationHost.capabilities,
+                coordinatorHostId: invocationHost.id,
                 workspaceBinding: binding,
                 workspaceOwnerId: lifecycle.workspaceIntent.workspaceId,
                 localOverlayRef: `execution-workspace:${binding.localDigest.slice(-24)}`,
@@ -2961,7 +2903,6 @@ export class WorkflowRuns extends Service {
               if (!invocationHost || invocationHost.id !== hostOutcome.hostId) {
                 throw new Error('Build Plan Host does not match the persisted invocation');
               }
-              this.assertBuildHostCapabilities(strategy, invocationHost);
               const bindingDrift = await this.executionBindingDrift(
                 current,
                 lifecycle,
@@ -3249,7 +3190,6 @@ export class WorkflowRuns extends Service {
               if (!protocol.workspaceCheckpoint) {
                 throw new Error('Build Execute requires a Runtime-owned workspace checkpoint');
               }
-              this.assertBuildHostCapabilities(strategy, invocationHost);
               const bindingDrift = await this.executionBindingDrift(
                 current,
                 lifecycle,
@@ -3522,7 +3462,6 @@ export class WorkflowRuns extends Service {
               if (!invocationHost || invocationHost.id !== hostOutcome.hostId) {
                 throw new Error('Build Check Host does not match the persisted invocation');
               }
-              this.assertBuildHostCapabilities(strategy, invocationHost);
               const bindingDrift = await this.executionBindingDrift(
                 current,
                 lifecycle,

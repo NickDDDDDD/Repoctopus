@@ -400,7 +400,11 @@ describe('Managed Work Executor Build contract', () => {
   });
 
   it('rejects an under-capable external Runner before persisting the Work claim', async () => {
-    const claim = vi.fn();
+    const claim = vi
+      .fn()
+      .mockRejectedValue(
+        new Error('External Work Execution Host cannot claim work-plan; missing specification.read'),
+      );
     const markHostStarted = vi.fn();
     const service = Object.create(ManagedWorkExecutor.prototype) as ManagedWorkExecutor;
     Object.defineProperty(service, 'ctx', {
@@ -416,7 +420,7 @@ describe('Managed Work Executor Build contract', () => {
                 capabilities: ['build.autonomous', 'repository.read', 'specification.read'],
               },
               buildProtocol: {
-                binding: { host: { hostId: 'external:cli:codex-root' } },
+                binding: { coordinatorHostId: 'external:cli:codex-root' },
               },
             },
           }),
@@ -437,7 +441,7 @@ describe('Managed Work Executor Build contract', () => {
         },
       }),
     ).rejects.toThrow(/missing specification\.read/u);
-    expect(claim).not.toHaveBeenCalled();
+    expect(claim).toHaveBeenCalledOnce();
     expect(markHostStarted).not.toHaveBeenCalled();
   });
 
@@ -461,7 +465,7 @@ describe('Managed Work Executor Build contract', () => {
                 capabilities: ['repository.read', 'specification.read'],
               },
               buildProtocol: {
-                binding: { host: { hostId: 'external:cli:codex-root' } },
+                binding: { coordinatorHostId: 'external:cli:codex-root' },
               },
             },
           }),

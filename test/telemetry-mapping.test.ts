@@ -746,6 +746,63 @@ describe('telemetry mapping', () => {
     expect(JSON.stringify(metric)).not.toMatch(/submission-private|sha256:|Private Task|C:\//u);
   });
 
+  it('distinguishes a capability claim rejection without capability or Host identity labels', () => {
+    const workflow = workflowFixture();
+    const project = projectFixture();
+    const run = startRun({
+      workflow,
+      runId: 'run-capability-rejection',
+      projectSnapshotDigest: project.digest,
+      composition: compositionFixture(),
+      timestamp: '2026-01-01T00:00:00.000Z',
+      traceId: '6'.repeat(32),
+    });
+    const event: TrajectoryEvent = {
+      schemaVersion: 1,
+      sequence: 2,
+      eventId: 'claim-rejected-1',
+      timestamp: '2026-01-01T00:00:01.000Z',
+      type: 'work.claim-rejected',
+      runId: run.runId,
+      stateVersion: 2,
+      compositionDigest: run.composition.compositionDigest,
+      data: {
+        phase: 'build',
+        buildAction: 'execute',
+        workId: 'build.execute:private-work-id',
+        workKind: 'build.execute',
+        attempt: 1,
+        result: 'blocked',
+        reasonCode: 'capability-required',
+        missingCapabilityCount: 2,
+        hostId: 'private-host-identity',
+        missingCapabilities: ['repository.write', 'process.execute'],
+      },
+    };
+    const batch: TelemetryBatch = {
+      run,
+      workflow,
+      projectSnapshot: project,
+      events: [event],
+      trajectory: [event],
+    };
+
+    expect(safeEventAttributes(batch, event)).toMatchObject({
+      'repoctopus.execution.result': 'blocked',
+      'repoctopus.execution.reasonCode': 'capability-required',
+      'repoctopus.execution.missingCapabilityCount': 2,
+    });
+    const metric = executionMetricAttributes(event);
+    expect(metric).toMatchObject({
+      'repoctopus.execution.event.type': 'work.claim-rejected',
+      'repoctopus.execution.result': 'blocked',
+      'repoctopus.execution.reason.code': 'capability-required',
+    });
+    expect(JSON.stringify(metric)).not.toMatch(
+      /private-host|private-work-id|repository\.write|process\.execute/u,
+    );
+  });
+
   it('exports bounded workspace intent recovery facts without high-cardinality Metric labels', () => {
     const workflow = workflowFixture();
     const project = projectFixture();

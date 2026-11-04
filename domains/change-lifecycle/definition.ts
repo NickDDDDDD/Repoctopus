@@ -165,7 +165,7 @@ export const BUILTIN_CHANGE_LIFECYCLE_DEFINITION: ChangeLifecycleDefinition = {
       actionSkill: { name: 'repoctopus-build-configure' },
       augmentationSkills: [],
       methodProfile: BUILTIN_METHOD_PROFILE_REGISTRY.snapshot('repoctopus.build', '1.0.0'),
-      capabilities: ['repository.read'],
+      capabilities: ['repository.read', 'specification.read'],
       sideEffectClass: 'none',
       writeScopes: [],
       outputContract: { artifactKinds: [], trackerPublish: false },
