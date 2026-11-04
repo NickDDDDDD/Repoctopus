@@ -71,10 +71,10 @@ npm run test:package-e2e
 
 npm run verify
   TypeScript, Desktop TypeScript, ESLint, CLI/Desktop production builds passed
-  complete Vitest matrix passed: 182 files, 860 tests; 2 explicitly skipped
+  complete Vitest matrix passed: 182 files, 861 tests; 2 explicitly skipped
   generated, brand, architecture, provenance, and Dashboard salvage passed
   strict OpenSpec passed: 18 items, 0 failed
-  the pre-report freshness gate correctly requested this report
+  managed execution report reproduced the package identity
 ```
 
 The first complete verification pass found one deterministic composition digest snapshot after the
