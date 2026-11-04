@@ -13,22 +13,22 @@
 
 ## 2. Runtime 恢复 Inspector
 
-- [ ] 2.1 定义规范化Recovery Observation、Authority Diff、Recovery Decision与失效集合，并用schema测试拒绝Host选择phase或恢复动作 <!-- comet-task:e7054d0d-52d7-4dd5-a646-ed0efaa177fe -->
+- [x] 2.1 定义规范化Recovery Observation、Authority Diff、Recovery Decision与失效集合，并用schema测试拒绝Host选择phase或恢复动作 <!-- comet-task:e7054d0d-52d7-4dd5-a646-ed0efaa177fe -->
   **Blocked by:** 1.2
   **Acceptance:** 领域类型只能表达有界事实和Runtime decision；含targetPhase或recovery action的Host payload被拒绝
   **Requirements:** Host 只能报告发现而不能选择阶段, Finding 必须先验证再形成恢复处置
 
-- [ ] 2.2 实现权威专属Inspector与薄Recovery Coordinator，并用表驱动测试验证planning、plan、work、evidence的固定优先级 <!-- comet-task:ffe993f0-b318-40c2-b970-97dca399e9b7 -->
+- [x] 2.2 实现权威专属Inspector与薄Recovery Coordinator，并用表驱动测试验证planning、plan、work、evidence的固定优先级 <!-- comet-task:ffe993f0-b318-40c2-b970-97dca399e9b7 -->
   **Blocked by:** 2.1
   **Acceptance:** 同时发生多层漂移时只返回最高层处置；仅Plan变化保持Build；仅Evidence变化不失效Plan
   **Requirements:** 恢复分类只选择最高受影响权威, 失败分类必须决定真实返工路径
 
-- [ ] 2.3 扩展Runtime identity graph计算保留与失效闭包，并用性质测试验证失效只向下游传播且结果顺序稳定 <!-- comet-task:749e689c-ea08-4d4b-b171-ce48277a7e38 -->
+- [x] 2.3 扩展Runtime identity graph计算保留与失效闭包，并用性质测试验证失效只向下游传播且结果顺序稳定 <!-- comet-task:749e689c-ea08-4d4b-b171-ce48277a7e38 -->
   **Blocked by:** 2.2
   **Acceptance:** 任意identity输入顺序得到相同闭包；publication provenance和Task checkbox不会单独失效planning semantic
   **Requirements:** 恢复分类只选择最高受影响权威, Evidence 失效必须按声明输入面传播
 
-- [ ] 2.4 为decision应用增加expected revision、checkEpoch和observation identity CAS保护，并用并发测试验证重复提交只建立一个checkpoint <!-- comet-task:8101fce2-f5f2-445a-a904-475fdd912bf1 -->
+- [x] 2.4 为decision应用增加expected revision、checkEpoch和observation identity CAS保护，并用并发测试验证重复提交只建立一个checkpoint <!-- comet-task:8101fce2-f5f2-445a-a904-475fdd912bf1 -->
   **Blocked by:** 2.3
   **Acceptance:** 两个并发Runner中只有一个提交新checkpoint；另一个返回相同checkpoint或明确revision conflict
   **Requirements:** 恢复重放必须收敛到同一 checkpoint

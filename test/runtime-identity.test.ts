@@ -15,7 +15,7 @@ describe('Runtime identity basis', () => {
     expect(second).toEqual(first);
     expect(first).toMatchObject({ owner: 'specification-planning' });
     expect(IDENTITY_DEPENDENCIES['execution-checkpoint']).toEqual([
-      'build-plan',
+      'package-completion',
       'execution-binding',
       'composition',
     ]);

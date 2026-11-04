@@ -51,6 +51,13 @@ export interface RecoveryDecision {
   invalidatedIdentities: RuntimeIdentityKind[];
 }
 
+export interface RecoveryAuthorityDiff {
+  authority: RecoveryAuthority;
+  action: RecoveryAction;
+  reasonCode: string;
+  changedIdentities: RuntimeIdentityKind[];
+}
+
 const TOP_LEVEL_FIELDS = new Set([
   'schemaVersion',
   'runId',
@@ -161,36 +168,66 @@ export function parseRecoveryObservation(value: unknown): RecoveryObservation {
   });
 }
 
-function selectedDecision(observation: RecoveryObservation): {
-  authority: RecoveryAuthority;
-  action: RecoveryAction;
-  layer: RecoveryLayerObservation<string>;
-} | null {
+type RecoveryInspector = (observation: RecoveryObservation) => RecoveryAuthorityDiff | null;
+
+function diff(
+  authority: RecoveryAuthority,
+  action: RecoveryAction,
+  layer: RecoveryLayerObservation<string>,
+): RecoveryAuthorityDiff {
+  return {
+    authority,
+    action,
+    reasonCode: layer.reasonCode as string,
+    changedIdentities: [...new Set(layer.changedIdentities)].sort(),
+  };
+}
+
+const inspectPlanning: RecoveryInspector = (observation) => {
   if (observation.planning.status === 'drift') {
-    return { authority: 'planning', action: 'revise-design', layer: observation.planning };
+    return diff('planning', 'revise-design', observation.planning);
   }
+  return null;
+};
+
+const inspectPlan: RecoveryInspector = (observation) => {
   if (observation.plan.status === 'drift') {
-    return { authority: 'plan', action: 'revise-plan', layer: observation.plan };
+    return diff('plan', 'revise-plan', observation.plan);
   }
+  return null;
+};
+
+const inspectWork: RecoveryInspector = (observation) => {
   if (observation.work.status === 'retryable') {
-    return { authority: 'work', action: 'continue-build', layer: observation.work };
+    return diff('work', 'continue-build', observation.work);
   }
   if (observation.work.status === 'external-result-unknown') {
-    return { authority: 'work', action: 'reconcile-external', layer: observation.work };
+    return diff('work', 'reconcile-external', observation.work);
   }
+  return null;
+};
+
+const inspectEvidence: RecoveryInspector = (observation) => {
   if (observation.evidence.status === 'drift') {
-    return {
-      authority: 'evidence',
-      action: 'invalidate-evidence',
-      layer: observation.evidence,
-    };
+    return diff('evidence', 'invalidate-evidence', observation.evidence);
   }
   if (observation.evidence.status === 'unavailable') {
-    return {
-      authority: 'evidence',
-      action: 'retry-infrastructure',
-      layer: observation.evidence,
-    };
+    return diff('evidence', 'retry-infrastructure', observation.evidence);
+  }
+  return null;
+};
+
+const ORDERED_INSPECTORS: readonly RecoveryInspector[] = [
+  inspectPlanning,
+  inspectPlan,
+  inspectWork,
+  inspectEvidence,
+];
+
+function selectedDecision(observation: RecoveryObservation): RecoveryAuthorityDiff | null {
+  for (const inspector of ORDERED_INSPECTORS) {
+    const authorityDiff = inspector(observation);
+    if (authorityDiff) return authorityDiff;
   }
   return null;
 }
@@ -200,9 +237,9 @@ export function classifyRecoveryObservation(value: unknown): RecoveryDecision | 
   const selected = selectedDecision(observation);
   if (!selected) return null;
 
-  const changedIdentities = [...new Set(selected.layer.changedIdentities)].sort();
+  const changedIdentities = selected.changedIdentities;
   const scope = runtimeInvalidationScope(changedIdentities);
-  const reasonCode = selected.layer.reasonCode as string;
+  const reasonCode = selected.reasonCode;
   const identityMaterial = {
     schemaVersion: 1,
     runId: observation.runId,
