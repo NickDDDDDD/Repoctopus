@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -329,6 +331,31 @@ describe('committed lifecycle continuation projector', () => {
       checkEpoch: 2,
     });
     expect(projectLifecycleNextActions(lifecycle)).toEqual([]);
+  });
+
+  it('replays the frozen round5 terminal fixture as terminal only', () => {
+    const fixture = JSON.parse(
+      readFileSync(
+        new URL('./fixtures/archive-publication-round5-terminal.json', import.meta.url),
+        'utf8',
+      ),
+    ) as { checkpoint: Checkpoint; trajectory: TrajectoryEvent[] };
+
+    const continuation = projectCommittedContinuation(fixture.checkpoint, fixture.trajectory);
+    expect(continuation).toEqual({
+      schemaVersion: 2,
+      continuation: 'done',
+      reason: 'terminal',
+      workId: null,
+      attempt: null,
+      checkEpoch: 8,
+    });
+    expect(
+      projectLifecycleNextActions({
+        ...fixture.checkpoint.changeLifecycle!,
+        status: 'completed',
+      }),
+    ).toEqual([]);
   });
 
   it('does not replay an older null-Work selection into a newer non-terminal checkpoint', () => {
