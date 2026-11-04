@@ -1,94 +1,171 @@
+---
+comet_change: recover-build-host-capability-drift
+role: technical-design
+canonical_spec: openspec
+status: draft
+---
+
 # Design
+
+## Bottom Line
+
+Repoctopus 必须使用一套能力权威：Work 描述所声明的 required capabilities。`ExecutionBinding` 不再把 Configure invocation 的完整 capability digest 当作所有后续 Work 的身份。Runtime 在 claim 前验证当前 Work，在 Outcome 时验证原 claim，在外部结果未知时恢复原 claim；只有 Workspace、Host coordination identity 或 repository binding 真正变化时才重建 Binding。
 
 ## Context
 
-Execution Binding 冻结了 Host ID、完整 capability digest 和多仓 checkout identity。Build Plan Work 自身只需要 `build.autonomous`、`repository.read` 与 `specification.read`，因此同一 Runner 可以合法领取 Plan packet，即使本次 claim 只声明了这个窄能力集合。现有 `claimExternal()` 只核对 Host ID 与当前 Work 能力，Plan submission 得以持久化。
+当前实现同时维护三种能力判断：
 
-恢复时，`workflow-runs.ts` 的 Plan/Execute/Check 分支先调用 `assertBuildHostCapabilities()`，再调用 `executionBindingDrift()`。窄能力集合因此在漂移分类前抛错；同时 `executionBindingDrift()` 内部先构造新 Binding，而 `createExecutionBinding()` 对缺能力同样抛错。Runtime 无法到达已有的 `dispatchExecutionBindingRevalidation()`，留下不可覆盖的权威 claim/submission。
+1. `createExecutionBinding()` 要求 Configure Host 同时具备 execution mode、`process.execute`、`repository.read`、`repository.write` 和 `specification.read`；
+2. `claimExternal()` 只验证本次 Host 声明覆盖当前 Work capabilities；
+3. Plan、Execute 和 Check 在处理已提交 Outcome 时，用本次 invocation capabilities 重建 Execution Binding并比较 Configure 时的 capability digest。
 
-## Goals / Non-Goals
+`stabilize-external-host-capabilities` 正确修复了第 2 条，但没有更新第 1、3 条。结果是 Plan claim 可以合法建立，Plan submission 也可以持久化；`executionBindingDrift()` 随后把只读 Plan invocation 传给要求完整 Build 能力的 `createExecutionBinding()`，在它返回 `capability` 分类之前先抛异常。
 
-**Goals:**
+`repair-build-plan-validation-retry` 无法覆盖该路径。它只在 Work result validator 判断 candidate 可纠正时记录 rejected submission；当前异常发生在 validator 之前。`separate-build-strategy-and-execution-binding` 的自动 revalidation 也无法覆盖，因为 classifier 本身依赖会抛异常的 Binding constructor。
 
-- 把 capability 缺失和 capability digest 变化变成有界 `capability` drift，而不是未处理异常。
-- 对 Plan、Execute、Check 使用同一先分类、后断言顺序。
-- 在同一 Run 保留旧 claim、packet、invocation 和 submission，并派发唯一 Configure revalidation Work。
-- 重绑定后精确失效旧 Plan/Evidence/未完成 Work，保留 Design approval、Build Strategy、OpenSpec Tasks 和审计历史。
-- 证明重复 pull、进程重启和 composition 重建不会重复接受 submission 或执行副作用。
+## Comet Boundary
 
-**Non-Goals:**
+固定 Comet 0.5.1 不持久化一份跨 Action 的完整 executor capability digest：
 
-- 让 capability 不足的 Host 执行 repository/process 副作用。
-- 把新能力集合静默写入既有 Binding。
-- 通过 CLI 默认能力掩盖 Runtime 身份错误。
-- 为当前预发布状态增加旧 schema 双读或长期迁移层。
+- 每个 Runtime Action 声明 `requiredCapabilities`；
+- claim 先计算候选状态并执行 capability/executor preflight，成功后才写入 Run；
+- claim 保存 executor、session 和 token，Outcome 以 Action、attempt、input hash 和 token 返回；
+- executor 抛错或返回结果未知时，Runtime 保留原 Action ownership并要求 reconcile；
+- 后续 Action 重新执行自己的 capability preflight，不用前一 Action 的能力集合判定漂移。
+
+Repoctopus 需要额外保留多仓 `ExecutionBinding`，但该差异不要求把 capability snapshot 放进 Binding 语义。Binding 负责“在哪里、以哪个协调身份工作”，Work 负责“当前动作需要什么能力”。
+
+## Goals
+
+1. 让 claim、Host invocation、Outcome acceptance 和 recovery 使用同一个 Work capability contract。
+2. 保留 Build Strategy 与多仓 Execution Binding，但删除跨 Work 的全局 capability identity。
+3. 保留 claim、packet、invocation、submission 和未知执行事实，不用 Configure 回退掩盖合法 claim。
+4. 用真实外部 Host 纵向测试证明 Configure、Plan、Execute 和 Check 的入口对称。
+5. 在预发布阶段破坏性切换错误 schema，不留下双读、兼容 adapter 或隐式 fallback。
+
+## Non-Goals
+
+- 不改变 Build Strategy 的 execution/TDD/review/isolation 语义。
+- 不允许能力不足的 Host 领取 Work或执行工具副作用。
+- 不让 Plan Host 静默更新 Workspace Binding或协调 Host identity。
+- 不保证任意时刻都存在能够领取下一 Work 的 Host；无兼容 Host 是合法 blocked 状态。
+- 不在本 Change 中实现 Host 调度市场或后台 daemon。
 
 ## Decisions
 
-### 1. 漂移分类必须是 total function
+### 1. Work capability contract 是唯一能力权威
 
-`executionBindingDrift()` 在构造候选 Binding 前依次比较：
+每个不可变 `WorkDescriptor` 继续声明完整的 `capabilities`。Runtime 必须在创建 authoritative claim 前比较 Host 明确声明的能力与当前 Work requirements：
 
-1. Host ID；
-2. 当前 Strategy 所需能力是否完整；
-3. 完整 capability digest 是否等于冻结 Binding；
-4. checkout、path/local overlay 与其余 Binding identity。
+- 完整覆盖：持久化 claim、packet 和 invocation；
+- 缺失能力：不持久化 claim或 invocation，返回 `executor-required`/`capability-required` continuation；
+- 重复请求：对同一 current Work 和同一 claim identity 幂等；
+- 调用方不得通过省略 `hostCapabilities` 让 Runtime从 Work requirements 推断 Host 实际能力。
 
-Host 能力不完整或 digest 不同都返回 `capability`，不得让 `createExecutionBinding()` 的前置条件异常逃逸。只有已证明 Host 满足 Binding 基本能力后，才构造候选 Binding 比较其余身份。
+Configure、Plan、Execute 和 Check 使用同一个 preflight helper。任何入口绕过该 helper 都是架构测试失败。
 
-### 2. Outcome 接受边界先恢复 Binding，再验证完整 Build Host
+### 2. ExecutionBinding 不拥有 capability snapshot
 
-Build Plan、Execute 和 Check 的 processing 分支统一执行：
+`ExecutionBinding` 的下一 schema 保存：
 
-1. 核对 Outcome 来自持久 invocation；
-2. 调用 total drift classifier；
-3. 若有 drift，调用既有 `dispatchExecutionBindingRevalidation()`；
-4. 若无 drift，再执行 `assertBuildHostCapabilities()` 作为防御性不变量；
-5. 最后才解析 candidate、接受 Outcome 或推进 package/check。
+```ts
+interface ExecutionBinding {
+  schemaVersion: 3;
+  bindingId: string;
+  revision: number;
+  strategyDigest: string;
+  coordinatorHostId: string;
+  repositories: ExecutionBindingRepository[];
+  semanticDigest: string;
+  stateDigest: string;
+  localOverlayRef: string;
+}
+```
 
-这样当前 Plan Host 可以报告一个只读 candidate，但 Runtime 不会把它绑定到已漂移的 Execution Binding。Execute/Check 仍由 Work capability preflight 阻止能力不足 Host 取得副作用权限；若历史或并发状态仍产生 Outcome，同一恢复边界继续 fail closed。
+`semanticDigest` 和 `stateDigest` 不包含 invocation capability list或其 digest。Configure 可以记录一次有界的 capability preflight Evidence，用于证明 Configure Work 本身合法，但该 Evidence 不是 Binding identity，也不能使未来 Work claim 自动合法或失效。
 
-### 3. Capability drift 复用既有 Configure revalidation
+`coordinatorHostId` 只在当前 execution mode 需要同一协调 Host 持续拥有 Build 时约束 Host identity。若未来支持 Action 级不同 executor，必须通过独立 Change 修改 coordination policy，不能把 capability digest重新塞回 Binding。
 
-不新增 repair phase、特殊 Work 或第二套恢复状态。命中后复用现有 `build.binding-revalidation-required` lifecycle observation：提升 check epoch、退役不再匹配的 current execution、保留历史事实，并创建一个 `build.configure` Work。Configure 用实际 Host 完整 capability 集合建立新 Binding；随后 Runtime 重新派发 Plan。
+### 3. Configure 只绑定当前可验证事实
 
-若新 Host 本身不满足批准 Strategy，Configure validator 保持当前 Build 并返回结构化诊断，不静默降级 execution/TDD/review/isolation。
+`build.configure` Work 声明它真正需要的能力：读取 Strategy、Specification和 Workspace facts，并具备对应 execution mode 的协调能力。它不再因为未来 Execute 可能写仓库而要求当前 Configure claim 声明 `repository.write` 或 `process.execute`。
 
-### 4. claim 门禁只验证当前 Work，不冒充 Binding 接受
+Configure Validator 验证：
 
-`claimExternal()` 继续要求 Host 满足当前 Work capabilities，并要求 Build 中非 Configure Work 使用同一 Host ID。它不把窄 Plan capability 集合视为新 Binding，也不在 claim 前修改 lifecycle。Binding 的接受权仍属于 Configure，capability drift 的恢复权属于 Runtime outcome/checkpoint processing。
+1. Strategy digest 与当前 Design approval；
+2. coordinator Host identity；
+3. repository topology、branch/worktree ownership、isolation和本地 overlay；
+4. 当前 Configure Work capability preflight；
+5. 当前 composition compatibility。
 
-这一区分避免两种错误：过早拒绝只读 Plan Work导致 Runtime没有可观察漂移证据；以及在 claim 时静默更新 Binding 绕过 Configure。
+未来 Execute/Check 的能力由各自 Work 在 claim 时验证。Configure 不预测 Host availability，也不产生虚假的长期能力保证。
 
-### 5. 回归使用真实卡死形态
+### 4. Outcome acceptance 只验证原 claim identity
 
-测试必须构造完整生产序列：完整能力 Host 完成 Configure → 相同 Host ID 以 Plan 最小能力领取并提交 candidate → `run next`。RED 结果应是当前未处理异常；GREEN 结果必须是同一 Run 进入唯一 Configure revalidation，旧 submission 保留且没有 Plan Evidence/Execute Work。
+Plan、Execute 和 Check submission 必须匹配原始 `runId + workId + attempt + checkEpoch + claimToken + packetDigest + invocationId + submissionId`。Runtime 不再用 invocation capability list重建 Binding，也不比较 Configure invocation capability digest。
 
-还要覆盖：
+合法的只读 Plan submission直接进入 Plan candidate validator。它不会返回 Configure，也不会生成新的 Plan Work。Execute 或 Check submission同样按自己的 claim合同验收；若 Host在 claim 后能力发生外部变化，Runtime只能根据受保护工具失败、Host Outcome或未知执行事实处理，不能事后改写 claim历史。
 
-- 相同完整 capability digest 正常接受 Plan；
-- 不同 Host ID 继续 fail closed；
-- capability superset、subset 和同元素不同顺序的规范化；
-- Execute/Check 三个处理分支共享顺序；
-- 重复 `next`、进程重启和并发 pull 的幂等；
-- Configure 后新 Plan revision 使用新 Binding，旧 candidate 不被自动重放。
+### 5. Binding revalidation 只处理 Binding-owned facts
+
+以下变化可以派发 `build.configure` revalidation：
+
+- coordinator Host identity改变；
+- repository identity、topology、branch/worktree ownership或isolation改变；
+- local overlay/path binding改变；
+- Strategy或composition compatibility要求重新绑定。
+
+当前 Work capability list与Configure invocation不同，不是 Binding drift。下一 Work暂时没有兼容 Host也不是 Binding drift；Runtime保持 Work pending并返回结构化 blocked continuation。
+
+### 6. 未知执行恢复原 Work
+
+Host invocation已持久化但结果未知时，Runtime保留原 claim、packet和invocation：
+
+- Host具有 reconcile能力：查询原 invocation并提交原 Outcome；
+- 权威证据证明未执行：原 Work可以按受控 retry规则建立下一 attempt；
+- 无法判定：保持 unknown/blocked，不派发Configure、不建立新Work、不重放副作用。
+
+candidate校验拒绝继续使用现有correction协议：保留同一claim/attempt/invocation，使用新的submission identity提交修正版。它与unknown execution是两个不同恢复状态。
+
+### 7. 破坏性 schema切换
+
+本项目仍处于预发布阶段。实现删除 `ExecutionBinding.host.capabilityDigest`、`hostCapabilityDigest` Plan Evidence输入以及相应capability drift分支，不保留双写或从旧字段猜测新Binding。
+
+检测到旧Binding schema的活动Run返回结构化 `migration_required`。round4 Run保留原Store与trajectory作为回归fixture；修复验证使用相同仓库拓扑和Change重新启动，不编辑旧Store。
+
+### 8. 测试必须跨越所有合同边界
+
+同一fixture必须执行以下生产序列：
+
+1. 外部Host以Configure最小能力领取并建立Binding；
+2. 相同coordinator Host ID以Plan最小只读能力领取并提交candidate；
+3. Runtime接受Plan并派发Execute；
+4. 缺少写能力的Host无法claim Execute，且Run保持未claim；
+5. 兼容Host领取Execute并提交completion；
+6. Check使用自己的最小能力完成；
+7. 进程在claim、invocation、submission和unknown边界重启后仍恢复相同事实。
+
+测试必须使用公共CLI/service协议，不能直接写Store。嵌入式Host超集能力测试保留，但不能代替外部Host最小能力矩阵。
 
 ## Module Boundaries
 
-- `domains/change-lifecycle/build-protocol.ts`：Strategy 所需能力与稳定 capability identity 的纯规则。
-- `services/workflow-runs.ts`：收集 invocation/Binding/project facts，统一漂移优先顺序并派发 revalidation。
-- `services/managed-work-executor.ts`：当前 Work claim/Host invocation 边界，不拥有 lifecycle transition。
-- `domains/runtime`：current execution 退役和同一 Run CAS，不解析 CLI 参数。
-- `test/**`：领域、服务和生产协议恢复矩阵。
+- `domains/change-lifecycle/build-protocol.ts`：Strategy、Binding schema和Binding-owned identity；不保存Work capability snapshot。
+- `domains/change-lifecycle/build-work.ts`：每个Build Work的完整required capabilities。
+- `services/work-dispatcher.ts`：唯一pre-claim capability validator。
+- `services/managed-work-executor.ts`：外部Host明确能力、claim和invocation边界。
+- `services/workflow-runs.ts`：Outcome validator和Binding-owned revalidation，不重新解释claim能力。
+- `services/work-execution-authority.ts`：claim、submission、unknown和retry的CAS/trajectory事实。
+- `platform/telemetry`：投影claim rejection、blocked、unknown/reconcile和真正Binding drift。
 
 ## Verification
 
-- 先用现有失败序列写 RED：Plan submission 后 `run next` 抛出缺少 `process.execute`、`repository.write`。
-- GREEN：同一输入产生 `build.configure` revalidation，保留 claim/submission，未接受 Plan Evidence。
-- 定向运行 Build protocol、managed executor、workflow runs、managed Change E2E 和 runtime invalidation 测试。
-- 运行 TypeScript、Lint、生产构建、strict OpenSpec、architecture/provenance/generated 检查与完整 `npm run verify`。
-- 用修复产品恢复 round4 Run；恢复成功后继续两包纵向 TDD，恢复不兼容时保留诊断并重启同场景。
+- RED必须同时证明：当前代码接受Plan claim/submission，但`run next`在validator前抛出完整Binding能力异常。
+- GREEN必须证明：同一Plan submission被正常验证和接受，不创建Configure Work或第二个Plan Work。
+- 负例必须证明：能力不足在claim前失败，claim/invocation计数保持零；unknown外部结果不被重放。
+- 入口对称测试必须覆盖Plan、Execute和Check，不允许三个分支保留独立能力顺序。
+- 架构搜索必须证明生产代码不再读取`ExecutionBinding.host.capabilityDigest`或Plan Evidence的`hostCapabilityDigest`。
+- 运行strict OpenSpec、类型检查、lint、相关Vitest、打包产品E2E和完整`npm run verify`。
 
 ## Rollback
 
-若修复使 capability 不足 Host 获得副作用权限、丢失旧 submission、重复创建 Configure Work，或让 Host capability 变化静默覆盖 Binding，则停止合入。不得回退为捕获错误后忽略、Store 手改或 CLI 伪造完整能力。
+若实现需要重新引入全局capability digest、让能力不足Host先claim后失败、丢失原claim/unknown事实，或通过Configure重放已提交Work，则停止合入。不得用CLI补齐虚假能力、捕获异常后忽略或Store手术作为回退。
