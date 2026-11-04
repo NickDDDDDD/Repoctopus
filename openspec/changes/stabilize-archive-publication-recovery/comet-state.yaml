@@ -2,7 +2,7 @@
 change_id: 6a975a9b-2c20-4db9-8695-122359409546
 workflow: full
 language: zh-CN
-phase: open
+phase: design
 context_compression: off
 build_mode: null
 build_pause: null
@@ -25,13 +25,13 @@ archive_confirmation: null
 archived: false
 bound_branch: codex/stabilize-archive-publication-recovery
 direct_override: null
-handoff_context: null
-handoff_hash: null
+handoff_context: openspec/changes/stabilize-archive-publication-recovery/.comet/handoff/design-context.json
+handoff_hash: f14618d810380089eb99b634b99dec1cde8d46d02583c7ba387ed7b7d7e6f95c
 classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: 2fb49b995589c14bffcef7e40c4671f289aa8c84fd8aa720105275057c76955b
+  hash: a448929f3e1132477d43bb6ae811fef23be8d77117346b3f9ddf98b475343b69
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -58,17 +58,18 @@ run_checkpoint:
       branchStatus: pending
       buildMode: null
       buildPause: null
+      checkEpoch: 1
       classicMigration: null
       classicProfile: null
       contextCompression: off
       createdAt: 2026-11-04
       designDoc: null
       directOverride: null
-      handoffContext: null
-      handoffHash: null
+      handoffContext: openspec/changes/stabilize-archive-publication-recovery/.comet/handoff/design-context.json
+      handoffHash: f14618d810380089eb99b634b99dec1cde8d46d02583c7ba387ed7b7d7e6f95c
       isolation: current
       language: zh-CN
-      phase: open
+      phase: design
       plan: null
       reviewMode: thorough
       subagentDispatch: null
@@ -79,10 +80,18 @@ run_checkpoint:
       verifyMode: null
       verifyResult: pending
       workflow: full
-    status: running
-    sequence: 1
+    status: waiting
+    sequence: 6
     actions:
       - attempt: 1
+        claim:
+          executorId: comet-classic-guard
+          token: portable-09e717cf325b0e27a75649732b20774427c752959806745c5bb4c1d03076c331
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: stabilize-archive-publication-recovery:1
         input:
           input:
@@ -92,25 +101,414 @@ run_checkpoint:
               ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
           outputs: {}
         inputHash: 64e9de1c798c74bee16ad0300b83a8300c445298066259280112bcc1057c136b
+        outcome:
+          actionId: stabilize-archive-publication-recovery:1
+          attempt: 1
+          claimToken: portable-09e717cf325b0e27a75649732b20774427c752959806745c5bb4c1d03076c331
+          inputHash: 64e9de1c798c74bee16ad0300b83a8300c445298066259280112bcc1057c136b
+          outcomeId: 85663ef0-a285-4f49-ba66-65f753a971c6
+          output:
+            event: open-complete
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: a036200c1aa0c394f9927360e80337cf6d67890ce10a5ba73d9322c1fe8ddd56
+            outcomeId: 85663ef0-a285-4f49-ba66-65f753a971c6
         reconciliations: []
         ref: comet-open
         requiredCapabilities: []
         retry: manual
         runId: stabilize-archive-publication-recovery
-        status: pending
+        status: succeeded
         stepId: full.open
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-open-revalidate
+          token: portable-7215e8424b3dc6e2f09735478edbd41e5dd8cc94455204f5b97a0901f80fbbe4
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-archive-publication-recovery:4
+        input:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-archive-publication-recovery
+                  changeDir: openspec/changes/stabilize-archive-publication-recovery
+                  workspaceBaseline:
+                    ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+                    ref: openspec/changes/stabilize-archive-publication-recovery
+            full.open.evidence:
+              contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+              ref: openspec/changes/stabilize-archive-publication-recovery
+        inputHash: 47bbf20a06b76a83f154bc772b342072ad3b76c8f466b1997762b961c993e049
+        outcome:
+          actionId: stabilize-archive-publication-recovery:4
+          attempt: 1
+          claimToken: portable-7215e8424b3dc6e2f09735478edbd41e5dd8cc94455204f5b97a0901f80fbbe4
+          inputHash: 47bbf20a06b76a83f154bc772b342072ad3b76c8f466b1997762b961c993e049
+          outcomeId: stabilize-archive-publication-recovery:4:1:executor-result
+          output:
+            contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 5a7da48f231acfa3a46c6123409fd8f29cb7732006e1d69256ca8777f8202f94
+            outcomeId: stabilize-archive-publication-recovery:4:1:executor-result
+        reconciliations: []
+        ref: classic-open-revalidate
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-archive-publication-recovery
+        status: succeeded
+        stepId: full.open.revalidate
+        type: call_tool
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-93b52bd6f9c2b58465f74c266fcfc5f8d5811800456344175af2541d7153e1d2
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-archive-publication-recovery:5
+        input:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-archive-publication-recovery
+                  changeDir: openspec/changes/stabilize-archive-publication-recovery
+                  workspaceBaseline:
+                    ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+                    ref: openspec/changes/stabilize-archive-publication-recovery
+            full.open.evidence:
+              contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+              ref: openspec/changes/stabilize-archive-publication-recovery
+            full.open.revalidate:
+              contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+        inputHash: 35f4ce4690e5a2d6ab327a75b55a1ccb278380d91cc26aab110075008eb2c04b
+        outcome:
+          actionId: stabilize-archive-publication-recovery:5
+          attempt: 1
+          claimToken: portable-93b52bd6f9c2b58465f74c266fcfc5f8d5811800456344175af2541d7153e1d2
+          inputHash: 35f4ce4690e5a2d6ab327a75b55a1ccb278380d91cc26aab110075008eb2c04b
+          outcomeId: 6731dc8c-a38d-4cbd-a27d-7d15b903e893
+          output:
+            handoffContext: openspec/changes/stabilize-archive-publication-recovery/.comet/handoff/design-context.json
+            handoffHash: f14618d810380089eb99b634b99dec1cde8d46d02583c7ba387ed7b7d7e6f95c
+            proposal: 采用单一外部执行确定性合同：GitHub 4xx 明确拒绝映射为 not-applied，5xx、传输中断、2xx
+              解析失败和创建后核验失败映射为 unknown；Delivery 以 PublicationNotAppliedError 与
+              PublicationResultUnknownError 分流，Journal 对 not-applied 原子回到同一
+              stable intent 的 pushed checkpoint 且仅允许下一次显式 pull 最多再 create 一次，对
+              unknown 永久保持 observation-only；WorkflowRuns 只把 unknown 投影为
+              external-result-unknown。completed Run 的 done/terminal 在 trajectory
+              replay 前短路，非终态历史 selection 必须精确匹配当前 revision、epoch、work 和
+              attempt。验证采用失败注入、Journal 重启恢复、打包 CLI 和第五轮 terminal
+              fixture，不访问真实平台、不新增 daemon/webhook/auto-merge/compat layer。
+            requirementsEvidence:
+              contentHash: 4f1d7fc6e8115cf0af2a5c9282c34f361a8dfaeb51d1fef38feb5253fd02ffbf
+              ref: openspec/changes/stabilize-archive-publication-recovery
+            sourceEvidence:
+              contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+              ref: openspec/changes/stabilize-archive-publication-recovery
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 5208ca6f04693e67260f8ff84174b1e2dd556d2bc1eb7afd8b1093d201b10ba5
+            outcomeId: 6731dc8c-a38d-4cbd-a27d-7d15b903e893
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-archive-publication-recovery
+        status: succeeded
+        stepId: full.design.handoff
         type: invoke_skill
     actionContexts:
       stabilize-archive-publication-recovery:1:
         results: {}
         sequence: 1
-    waits: []
+      stabilize-archive-publication-recovery:4:
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-archive-publication-recovery
+                  changeDir: openspec/changes/stabilize-archive-publication-recovery
+                  workspaceBaseline:
+                    ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+                    ref: openspec/changes/stabilize-archive-publication-recovery
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+              ref: openspec/changes/stabilize-archive-publication-recovery
+        sequence: 4
+      stabilize-archive-publication-recovery:5:
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-archive-publication-recovery
+                  changeDir: openspec/changes/stabilize-archive-publication-recovery
+                  workspaceBaseline:
+                    ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+                    ref: openspec/changes/stabilize-archive-publication-recovery
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+              ref: openspec/changes/stabilize-archive-publication-recovery
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+        sequence: 5
+    waits:
+      - id: stabilize-archive-publication-recovery:3
+        stepId: full.open.confirm
+        sequence: 3
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs:
+            full.open:
+              event: open-complete
+            full.open.evidence:
+              contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+              ref: openspec/changes/stabilize-archive-publication-recovery
+        proposalHash: c9a7d5766941839e8fc6b65901ba8715badf3cf0cd670bf8c6ebd2968a05049c
+        choices:
+          - approved
+          - rejected
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+              ref: openspec/changes/stabilize-archive-publication-recovery
+        decision:
+          id: classic-open-5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+          choice: approved
+          proposalHash: c9a7d5766941839e8fc6b65901ba8715badf3cf0cd670bf8c6ebd2968a05049c
+      - id: stabilize-archive-publication-recovery:6
+        stepId: full.design.confirm
+        sequence: 6
+        status: pending
+        proposal:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-archive-publication-recovery/.comet/handoff/design-context.json
+              handoffHash: f14618d810380089eb99b634b99dec1cde8d46d02583c7ba387ed7b7d7e6f95c
+              proposal: 采用单一外部执行确定性合同：GitHub 4xx 明确拒绝映射为 not-applied，5xx、传输中断、2xx
+                解析失败和创建后核验失败映射为 unknown；Delivery 以 PublicationNotAppliedError 与
+                PublicationResultUnknownError 分流，Journal 对 not-applied 原子回到同一
+                stable intent 的 pushed checkpoint 且仅允许下一次显式 pull 最多再 create 一次，对
+                unknown 永久保持 observation-only；WorkflowRuns 只把 unknown 投影为
+                external-result-unknown。completed Run 的 done/terminal 在
+                trajectory replay 前短路，非终态历史 selection 必须精确匹配当前
+                revision、epoch、work 和 attempt。验证采用失败注入、Journal 重启恢复、打包 CLI 和第五轮
+                terminal fixture，不访问真实平台、不新增 daemon/webhook/auto-merge/compat
+                layer。
+              requirementsEvidence:
+                contentHash: 4f1d7fc6e8115cf0af2a5c9282c34f361a8dfaeb51d1fef38feb5253fd02ffbf
+                ref: openspec/changes/stabilize-archive-publication-recovery
+              sourceEvidence:
+                contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+                ref: openspec/changes/stabilize-archive-publication-recovery
+        proposalHash: dbca0e872c5aeaab91dc62d5896f35b11f917ac25886528ee46c45b40c0d55b7
+        choices:
+          - approved
+          - rejected
+        results:
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/stabilize-archive-publication-recovery/.comet/handoff/design-context.json
+              handoffHash: f14618d810380089eb99b634b99dec1cde8d46d02583c7ba387ed7b7d7e6f95c
+              proposal: 采用单一外部执行确定性合同：GitHub 4xx 明确拒绝映射为 not-applied，5xx、传输中断、2xx
+                解析失败和创建后核验失败映射为 unknown；Delivery 以 PublicationNotAppliedError 与
+                PublicationResultUnknownError 分流，Journal 对 not-applied 原子回到同一
+                stable intent 的 pushed checkpoint 且仅允许下一次显式 pull 最多再 create 一次，对
+                unknown 永久保持 observation-only；WorkflowRuns 只把 unknown 投影为
+                external-result-unknown。completed Run 的 done/terminal 在
+                trajectory replay 前短路，非终态历史 selection 必须精确匹配当前
+                revision、epoch、work 和 attempt。验证采用失败注入、Journal 重启恢复、打包 CLI 和第五轮
+                terminal fixture，不访问真实平台、不新增 daemon/webhook/auto-merge/compat
+                layer。
+              requirementsEvidence:
+                contentHash: 4f1d7fc6e8115cf0af2a5c9282c34f361a8dfaeb51d1fef38feb5253fd02ffbf
+                ref: openspec/changes/stabilize-archive-publication-recovery
+              sourceEvidence:
+                contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+                ref: openspec/changes/stabilize-archive-publication-recovery
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-archive-publication-recovery
+                  changeDir: openspec/changes/stabilize-archive-publication-recovery
+                  workspaceBaseline:
+                    ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+                    ref: openspec/changes/stabilize-archive-publication-recovery
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+              ref: openspec/changes/stabilize-archive-publication-recovery
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+    evidenceWaits:
+      - id: stabilize-archive-publication-recovery:2
+        stepId: full.open.evidence
+        sequence: 2
+        kind: classic-open-artifacts
+        status: resolved
+        results:
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+        receipt:
+          ref: openspec/changes/stabilize-archive-publication-recovery
+          contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+          submissionId: e6399641-9d94-4df6-acba-2c38a5661582
     ready: []
     joins: {}
-    outputs: {}
+    outputs:
+      full.design.handoff:
+        sequence: 5
+        value:
+          handoffContext: openspec/changes/stabilize-archive-publication-recovery/.comet/handoff/design-context.json
+          handoffHash: f14618d810380089eb99b634b99dec1cde8d46d02583c7ba387ed7b7d7e6f95c
+          proposal: 采用单一外部执行确定性合同：GitHub 4xx 明确拒绝映射为 not-applied，5xx、传输中断、2xx
+            解析失败和创建后核验失败映射为 unknown；Delivery 以 PublicationNotAppliedError 与
+            PublicationResultUnknownError 分流，Journal 对 not-applied 原子回到同一 stable
+            intent 的 pushed checkpoint 且仅允许下一次显式 pull 最多再 create 一次，对 unknown
+            永久保持 observation-only；WorkflowRuns 只把 unknown 投影为
+            external-result-unknown。completed Run 的 done/terminal 在 trajectory
+            replay 前短路，非终态历史 selection 必须精确匹配当前 revision、epoch、work 和
+            attempt。验证采用失败注入、Journal 重启恢复、打包 CLI 和第五轮 terminal
+            fixture，不访问真实平台、不新增 daemon/webhook/auto-merge/compat layer。
+          requirementsEvidence:
+            contentHash: 4f1d7fc6e8115cf0af2a5c9282c34f361a8dfaeb51d1fef38feb5253fd02ffbf
+            ref: openspec/changes/stabilize-archive-publication-recovery
+          sourceEvidence:
+            contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+            ref: openspec/changes/stabilize-archive-publication-recovery
+      full.open:
+        sequence: 1
+        value:
+          event: open-complete
+      full.open.confirm:
+        sequence: 3
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: stabilize-archive-publication-recovery
+              changeDir: openspec/changes/stabilize-archive-publication-recovery
+              workspaceBaseline:
+                ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+            outputs:
+              full.open:
+                event: open-complete
+              full.open.evidence:
+                contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+                ref: openspec/changes/stabilize-archive-publication-recovery
+      full.open.evidence:
+        sequence: 2
+        value:
+          contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
+          ref: openspec/changes/stabilize-archive-publication-recovery
+      full.open.revalidate:
+        sequence: 4
+        value:
+          contentHash: 5256cf99a62190f21e7d0c64481165f08a593a18dabfa8348fe1a61846597cd9
     children: []
     lineage: []
-  sourceRevision: 1
-  sourceHash: 2d5d6db9e38fb01d924041d6625285661faa1e97b0f6e365f45ea537b6b34ed6
+  sourceRevision: 9
+  sourceHash: 013872ae4a1e03f5251091fca54c40d7a388fd01cad6d5089df7abe3a87b38fb
+check_epoch: 1
