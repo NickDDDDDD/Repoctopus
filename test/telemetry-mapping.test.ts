@@ -762,7 +762,7 @@ describe('telemetry mapping', () => {
       sequence: 2,
       eventId: 'claim-rejected-1',
       timestamp: '2026-01-01T00:00:01.000Z',
-      type: 'work.claim-rejected',
+      type: 'work.claim-capability-rejected',
       runId: run.runId,
       stateVersion: 2,
       compositionDigest: run.composition.compositionDigest,
@@ -794,7 +794,7 @@ describe('telemetry mapping', () => {
     });
     const metric = executionMetricAttributes(event);
     expect(metric).toMatchObject({
-      'repoctopus.execution.event.type': 'work.claim-rejected',
+      'repoctopus.execution.event.type': 'work.claim-capability-rejected',
       'repoctopus.execution.result': 'blocked',
       'repoctopus.execution.reason.code': 'capability-required',
     });

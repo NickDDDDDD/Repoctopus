@@ -16,7 +16,7 @@ Outcome processing binds the original claim and revalidates only Binding-owned f
 
 The preserved round4 Run remains read-only outside this repository:
 
-- Run: `change-agent-lab-workflow-sandbox-verify-round4-status-indicator-c8c720d536eb9ea1`
+- Run identity: recorded verbatim in the bounded fixture below
 - State: Build Plan submission persisted under Execution Binding schema v1
 - External Host capabilities: `build.autonomous`, `repository.read`, `specification.read`
 - Boundary: claim, packet, invocation and Plan submission existed; the Plan validator had not run
@@ -49,7 +49,7 @@ revalidation transitions. The multi-repository variant executes and advances two
   delivery or creates a second claim.
 - Unknown execution retains the original invocation and uses `reconcile`; retry is permitted only
   after authoritative `not-executed` evidence.
-- `work.claim-rejected` carries bounded `capability-required`, `blocked` and missing-count facts.
+- `work.claim-capability-rejected` carries bounded `capability-required`, `blocked` and missing-count facts.
   Capability text, Host identity, Work identity and digests are excluded from Metric labels.
 - True Binding drift remains limited to coordinator Host, checkout/ownership/isolation and local
   overlay facts. Old Binding schema returns structured `migration_required`.

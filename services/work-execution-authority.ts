@@ -447,7 +447,7 @@ export class WorkExecutionAuthority extends Service {
       }
       const eventId = digest(
         input.runId,
-        'work.claim-rejected',
+        'work.claim-capability-rejected',
         input.work.workId,
         String(input.attempt),
         input.reasonCode,
@@ -465,7 +465,7 @@ export class WorkExecutionAuthority extends Service {
           state: nextState,
           sequence: trajectory.length + 1,
           timestamp,
-          type: 'work.claim-rejected',
+          type: 'work.claim-capability-rejected',
           identity: [input.work.workId, String(input.attempt), input.reasonCode],
           data: {
             phase: input.work.phase,

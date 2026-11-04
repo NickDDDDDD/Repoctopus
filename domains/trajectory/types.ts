@@ -25,7 +25,7 @@ export type TrajectoryEventType =
   | 'work.created'
   | 'work.packet-stored'
   | 'work.packet-recovered'
-  | 'work.claim-rejected'
+  | 'work.claim-capability-rejected'
   | 'work.claimed'
   | 'work.context-delivered'
   | 'work.host-started'

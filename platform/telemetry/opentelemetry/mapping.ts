@@ -98,7 +98,7 @@ const EXECUTION_EVENTS = new Set<TrajectoryEvent['type']>([
   'work.created',
   'work.packet-stored',
   'work.packet-recovered',
-  'work.claim-rejected',
+  'work.claim-capability-rejected',
   'work.claimed',
   'work.context-delivered',
   'work.host-started',
@@ -566,7 +566,7 @@ export function executionMetricAttributes(event: TrajectoryEvent): Attributes | 
 
 export function eventSeverity(type: TrajectoryEvent['type']): number {
   return type === 'recovery.reconciled' ||
-    type === 'work.claim-rejected' ||
+    type === 'work.claim-capability-rejected' ||
     type === 'work.outcome-rejected' ||
     type === 'work.outcome-processing-error'
     ? 13

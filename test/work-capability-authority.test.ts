@@ -166,7 +166,7 @@ describe('Work-scoped Host capability authority', () => {
       value: {
         runStore: {
           commitGuarded: vi.fn(
-            async <T>(
+            <T>(
               _runId: string,
               reduce: (input: { state: RunState; trajectory: TrajectoryEvent[] }) => {
                 state?: RunState;
@@ -177,7 +177,7 @@ describe('Work-scoped Host capability authority', () => {
               const result = reduce({ state, trajectory });
               if (result.state) state = result.state;
               if (result.event) trajectory.push(result.event);
-              return result.value;
+              return Promise.resolve(result.value);
             },
           ),
         },
@@ -198,7 +198,7 @@ describe('Work-scoped Host capability authority', () => {
     expect(state.workExecution).toBeUndefined();
     expect(trajectory).toHaveLength(1);
     expect(trajectory[0]).toMatchObject({
-      type: 'work.claim-rejected',
+      type: 'work.claim-capability-rejected',
       data: {
         workKind: 'build.execute',
         result: 'blocked',

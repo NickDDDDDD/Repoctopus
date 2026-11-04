@@ -8,10 +8,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { bootProjectComposition } from '../app/boot/bootstrap.js';
 import type { RuntimeResult, RunStatusView } from '../domains/runtime/types.js';
 import type { SpecificationApprovalState } from '../domains/specification/types.js';
-import type {
-  WorkExecutionPacket,
-  WorkExecutionResult,
-} from '../domains/work-execution/types.js';
+import type { WorkExecutionPacket, WorkExecutionResult } from '../domains/work-execution/types.js';
 import type { ExternalWorkClaimResult } from '../services/managed-work-executor.js';
 import {
   createGitRepository,
@@ -100,12 +97,7 @@ describe('external Build Host Work-scoped capabilities', () => {
         workspace,
         'external-capability',
       );
-      const changeRoot = path.join(
-        workspace,
-        'openspec',
-        'changes',
-        'external-capability',
-      );
+      const changeRoot = path.join(workspace, 'openspec', 'changes', 'external-capability');
       await mkdir(path.join(changeRoot, 'specs', 'external-capability'), { recursive: true });
       await writeFile(path.join(workspace, '.gitignore'), '.repoctopus/\n');
       await writeFile(
@@ -220,15 +212,14 @@ describe('external Build Host Work-scoped capabilities', () => {
       });
       let planningHostActive = true;
       const next = () =>
-        application.context.commandRouter.execute<
-          { runId: string },
-          RuntimeResult<RunStatusView>
-        >('run.next', { runId });
-      const status = () =>
-        application.context.commandRouter.execute<{ runId: string }, RunStatusView>(
-          'run.status',
+        application.context.commandRouter.execute<{ runId: string }, RuntimeResult<RunStatusView>>(
+          'run.next',
           { runId },
         );
+      const status = () =>
+        application.context.commandRouter.execute<{ runId: string }, RunStatusView>('run.status', {
+          runId,
+        });
       const advanceUntil = async (
         predicate: (view: RunStatusView) => boolean,
         label: string,
@@ -311,11 +302,7 @@ describe('external Build Host Work-scoped capabilities', () => {
         planningHost.dispose();
         planningHostActive = false;
 
-        const configureCapabilities = [
-          'build.autonomous',
-          'repository.read',
-          'specification.read',
-        ];
+        const configureCapabilities = ['build.autonomous', 'repository.read', 'specification.read'];
         expect((await status()).changeLifecycle?.currentWork?.capabilities).toEqual(
           configureCapabilities,
         );
@@ -331,11 +318,7 @@ describe('external Build Host Work-scoped capabilities', () => {
           'Build Plan',
         );
 
-        const planCapabilities = [
-          'build.autonomous',
-          'repository.read',
-          'specification.read',
-        ];
+        const planCapabilities = ['build.autonomous', 'repository.read', 'specification.read'];
         expect((await status()).changeLifecycle?.currentWork?.capabilities).toEqual(
           planCapabilities,
         );
@@ -421,9 +404,13 @@ describe('external Build Host Work-scoped capabilities', () => {
             `external package ${currentPackage.packageId}\n`,
           );
           await execFileAsync('git', ['add', 'src'], { cwd: checkout });
-          await execFileAsync('git', ['commit', '-m', `feat: complete ${currentPackage.packageId}`], {
-            cwd: checkout,
-          });
+          await execFileAsync(
+            'git',
+            ['commit', '-m', `feat: complete ${currentPackage.packageId}`],
+            {
+              cwd: checkout,
+            },
+          );
           await execFileAsync('git', ['push'], { cwd: checkout });
           await submit(execution, `execute:${currentPackage.packageId}`, {
             schemaVersion: 1,
@@ -484,7 +471,7 @@ describe('external Build Host Work-scoped capabilities', () => {
           ),
         ).toHaveLength(0);
         expect(
-          inspection.trajectory.filter((event) => event.type === 'work.claim-rejected'),
+          inspection.trajectory.filter((event) => event.type === 'work.claim-capability-rejected'),
         ).toHaveLength(1);
       } finally {
         if (planningHostActive) planningHost.dispose();

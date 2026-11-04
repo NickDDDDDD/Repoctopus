@@ -534,7 +534,7 @@ Repoctopus MUST 分别持久化可移植 `BuildStrategy` 和本机可重建 `Exe
 
 Runtime MUST 在 Build Plan 给出精确 write scopes 后、接受 Plan Evidence 或创建任何 Execute Work 前，把可写 repository 集合与冻结的 Execution Binding 和 protected branch policy 联合校验。匹配 protected pattern 的可写仓 MUST 被拒绝；只读仓 MUST NOT 因停留在 target/protected branch 被无关阻断。Runner 负责准备并公开 source branch/worktree，Runtime 不执行 Git branch 副作用。
 
-当 Plan 因 protected branch finding 被拒绝后，Runtime MUST 把 rejected `build-plan-candidate`、精确 write scopes、旧 Execution Binding、protected policy 与 project snapshot 作为修正授权证据。Runner 完成对应 branch-only 修正后，无论通过 `run next` 还是进程重启后的 `run resume` 拉取，Runtime MUST 使用同一 classifier 建立新 Binding revision、精确失效旧 Plan checkpoint 并在同一 Run 重新派发 Build Configure。只有授权集合内仓库的 attached branch 变化可以走该路径；任何无关 branch、path、remote、topology、repository add/remove、worktree ownership、Host 或 capability 变化 MUST 继续进入通用 reconciliation 并 fail closed。
+当 Plan 因 protected branch finding 被拒绝后，Runtime MUST 使用冻结的 Plan、Binding、policy 与 project snapshot 作为唯一修正授权证据。授权范围与 fail-closed 边界由以下场景定义。
 
 #### Scenario: 可写业务仓仍绑定 main
 
