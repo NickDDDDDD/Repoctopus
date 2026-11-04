@@ -26,6 +26,30 @@ Repoctopus MUST 使用版本化 Repository Input Policy 与仓库角色把输入
 - **WHEN** Specification Provider确认Task稳定ID、正文、依赖、Acceptance和Requirement mappings未变，只有合法Work导致checkbox状态和协调仓commit变化
 - **THEN** planning semantic identity保持不变，未声明读取checkbox或commit的实现与验证Evidence不得失效
 
+### Requirement: 控制面输入分类必须 fail-closed
+
+Repository Input Policy MUST 只把未跟踪、未打包、位于仓库根内且满足版本化精确规则的外部本地执行输入分类为控制面输入。Git tracked 产品路径 MUST 保持产品输入；注册的Specification Authority仓库或路径中的官方规划工件即使被Git跟踪，也 MUST 作为planning semantic输入处理，不得仅因tracked状态被重分类为产品输入或控制面输入。只有external-exclusive路径进入产品面、规则重叠、类型不符、路径逃逸、竞态或无法稳定读取才 MUST 阻断指纹采集。
+
+#### Scenario: 双用途 Host 路径被团队版本化
+
+- **WHEN** 团队把允许版本化的 `AGENTS.md`、Skill 或其他双用途路径提交到 HEAD、index 或 tracked modification
+- **THEN** Runtime 把它作为产品 tree 或 dirty 输入取指纹，不再按本地 control-plane rule 排除
+
+#### Scenario: 外部独占路径被提交到产品 tree
+
+- **WHEN** policy 声明为 external-exclusive 的旧 Host 安装路径出现在 HEAD、index 或 tracked modification
+- **THEN** Runtime 报告产品与控制面所有权冲突并拒绝 Evidence
+
+#### Scenario: 控制面符号链接逃逸仓库
+
+- **WHEN** 登记路径解析到仓库根外、在读取期间改变对象身份或使用不允许的文件类型
+- **THEN** 指纹采集 fail-closed，且诊断不读取或泄露仓库外内容
+
+#### Scenario: 输入枚举顺序不同
+
+- **WHEN** 两次采集观察到相同产品内容、控制面内容和策略，仅 Git 或文件系统返回顺序不同
+- **THEN** 规范排序后的 product、control-plane 和最终 Evidence digest 完全相同
+
 ## ADDED Requirements
 
 ### Requirement: Evidence 失效必须按声明输入面传播

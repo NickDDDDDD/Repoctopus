@@ -2,7 +2,7 @@
 change_id: e315e531-2e33-49a0-869c-32e6abbf8fa6
 workflow: full
 language: zh-CN
-phase: design
+phase: build
 context_compression: off
 build_mode: null
 build_pause: null
@@ -13,7 +13,7 @@ isolation: current
 verify_mode: null
 auto_transition: true
 base_ref: a0493aec962b52af96bb73aa2aef69fefb95e074
-design_doc: null
+design_doc: openspec/changes/stabilize-incremental-workflow-recovery/design.md
 plan: null
 verify_result: pending
 verify_failures: 0
@@ -26,12 +26,12 @@ archived: false
 bound_branch: codex/stabilize-incremental-workflow-recovery
 direct_override: null
 handoff_context: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
-handoff_hash: dda980701ac0667f17be86088f02d9509f626fc0355808262bde5319bc2d4175
+handoff_hash: 35488e0610e8ff3f474e0c1e32022f012fd1ea00e68ea06c377b04943c43439a
 classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v1
-  hash: 594412c4229e2da1817f727ca6d768a02dcc5b4d2eed1b04e8ac2e544d1f5004
+  hash: bbbc0b95396f660a40c78652e997bf1fc61f166f00d082a2ae1b728815ee6041
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -58,18 +58,18 @@ run_checkpoint:
       branchStatus: pending
       buildMode: null
       buildPause: null
-      checkEpoch: 1
+      checkEpoch: 2
       classicMigration: null
       classicProfile: null
       contextCompression: off
       createdAt: 2026-11-04
-      designDoc: null
+      designDoc: openspec/changes/stabilize-incremental-workflow-recovery/design.md
       directOverride: null
       handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
-      handoffHash: dda980701ac0667f17be86088f02d9509f626fc0355808262bde5319bc2d4175
+      handoffHash: 35488e0610e8ff3f474e0c1e32022f012fd1ea00e68ea06c377b04943c43439a
       isolation: current
       language: zh-CN
-      phase: design
+      phase: build
       plan: null
       reviewMode: thorough
       subagentDispatch: null
@@ -80,8 +80,8 @@ run_checkpoint:
       verifyMode: null
       verifyResult: pending
       workflow: full
-    status: waiting
-    sequence: 6
+    status: running
+    sequence: 11
     actions:
       - attempt: 1
         claim:
@@ -255,10 +255,429 @@ run_checkpoint:
         status: succeeded
         stepId: full.design.handoff
         type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-dad9817d9cd49fbcd250905c6b1ec9da71cec0c02eaf104506b68e2018d31b7a
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-incremental-workflow-recovery:7
+        input:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs:
+            full.design.confirm:
+              choice: rejected
+              proposal:
+                input:
+                  change: stabilize-incremental-workflow-recovery
+                  changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+                  workspaceBaseline:
+                    ref: 23af2b75-8232-4850-83c2-57806b1476e2
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+                    handoffHash: dda980701ac0667f17be86088f02d9509f626fc0355808262bde5319bc2d4175
+                    proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+                      Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+                      revision、稳定decision identity并由Runtime
+                      CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+                      Evidence前置验证TDD Package闭包与授权包络，Specification
+                      Provider前置验证Requirement映射和Capability
+                      Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+                      SDK。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制；本轮无Spec
+                      Patch。
+                    requirementsEvidence:
+                      contentHash: c90b57697f3ea8326577a34150cc24df86f0cea51107bcdfe6b8ed856450e4af
+                      ref: openspec/changes/stabilize-incremental-workflow-recovery
+                    sourceEvidence:
+                      contentHash: c958fb24bd5dac90fe8bd4b34ec8c81530f6d84e26bf46c3c98508a0c86c7fbf
+                      ref: openspec/changes/stabilize-incremental-workflow-recovery
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+              handoffHash: dda980701ac0667f17be86088f02d9509f626fc0355808262bde5319bc2d4175
+              proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+                Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+                revision、稳定decision identity并由Runtime
+                CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+                Evidence前置验证TDD Package闭包与授权包络，Specification
+                Provider前置验证Requirement映射和Capability
+                Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+                SDK。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制；本轮无Spec Patch。
+              requirementsEvidence:
+                contentHash: c90b57697f3ea8326577a34150cc24df86f0cea51107bcdfe6b8ed856450e4af
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+              sourceEvidence:
+                contentHash: c958fb24bd5dac90fe8bd4b34ec8c81530f6d84e26bf46c3c98508a0c86c7fbf
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-incremental-workflow-recovery
+                  changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+                  workspaceBaseline:
+                    ref: 23af2b75-8232-4850-83c2-57806b1476e2
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+                    ref: openspec/changes/stabilize-incremental-workflow-recovery
+            full.open.evidence:
+              contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+              ref: openspec/changes/stabilize-incremental-workflow-recovery
+            full.open.revalidate:
+              contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+        inputHash: df9b03ffb327f394aec346b790516928486b861254f9a8b578033868edeea7cb
+        outcome:
+          actionId: stabilize-incremental-workflow-recovery:7
+          attempt: 1
+          claimToken: portable-dad9817d9cd49fbcd250905c6b1ec9da71cec0c02eaf104506b68e2018d31b7a
+          inputHash: df9b03ffb327f394aec346b790516928486b861254f9a8b578033868edeea7cb
+          outcomeId: 689f696b-a821-43cd-b541-c8c232b2d99a
+          output:
+            handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+            handoffHash: 35488e0610e8ff3f474e0c1e32022f012fd1ea00e68ea06c377b04943c43439a
+            proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+              Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+              revision、稳定decision identity并由Runtime
+              CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+              Evidence前置验证TDD Package闭包与授权包络，Specification
+              Provider前置验证Requirement映射和Capability
+              Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+              SDK。已批准的Spec Patch明确三类输入边界：普通Git tracked产品路径保持产品输入；注册Specification
+              Authority中的官方规划工件即使tracked也属于planning
+              semantic输入；只有符合策略的外部本地执行输入属于control-plane。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制。
+            requirementsEvidence:
+              contentHash: edec0240ca27d05848c0c135c4818608a126057bcfaab7e2e98551ad9ec711e6
+              ref: openspec/changes/stabilize-incremental-workflow-recovery
+            sourceEvidence:
+              contentHash: 75759071ef5be84180b53f968f6cdfc93ca5c7e2561969b30ee2301a2df010de
+              ref: openspec/changes/stabilize-incremental-workflow-recovery
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: 32d225f9825072b1790489e7dba3695667ca7f90a217f3e40d8d8bcf40858c93
+            outcomeId: 689f696b-a821-43cd-b541-c8c232b2d99a
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-incremental-workflow-recovery
+        status: succeeded
+        stepId: full.design.handoff
+        type: invoke_skill
+      - attempt: 1
+        claim:
+          executorId: comet-classic-state
+          token: portable-4beb09f33cded435462a16740532872ab989b71cd70b86712071f2a42dccf3c0
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
+        id: stabilize-incremental-workflow-recovery:9
+        input:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs:
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-incremental-workflow-recovery
+                  changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+                  workspaceBaseline:
+                    ref: 23af2b75-8232-4850-83c2-57806b1476e2
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+                    handoffHash: 35488e0610e8ff3f474e0c1e32022f012fd1ea00e68ea06c377b04943c43439a
+                    proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+                      Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+                      revision、稳定decision identity并由Runtime
+                      CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+                      Evidence前置验证TDD Package闭包与授权包络，Specification
+                      Provider前置验证Requirement映射和Capability
+                      Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+                      SDK。已批准的Spec Patch明确三类输入边界：普通Git
+                      tracked产品路径保持产品输入；注册Specification
+                      Authority中的官方规划工件即使tracked也属于planning
+                      semantic输入；只有符合策略的外部本地执行输入属于control-plane。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制。
+                    requirementsEvidence:
+                      contentHash: edec0240ca27d05848c0c135c4818608a126057bcfaab7e2e98551ad9ec711e6
+                      ref: openspec/changes/stabilize-incremental-workflow-recovery
+                    sourceEvidence:
+                      contentHash: 75759071ef5be84180b53f968f6cdfc93ca5c7e2561969b30ee2301a2df010de
+                      ref: openspec/changes/stabilize-incremental-workflow-recovery
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+              handoffHash: 35488e0610e8ff3f474e0c1e32022f012fd1ea00e68ea06c377b04943c43439a
+              proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+                Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+                revision、稳定decision identity并由Runtime
+                CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+                Evidence前置验证TDD Package闭包与授权包络，Specification
+                Provider前置验证Requirement映射和Capability
+                Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+                SDK。已批准的Spec Patch明确三类输入边界：普通Git
+                tracked产品路径保持产品输入；注册Specification
+                Authority中的官方规划工件即使tracked也属于planning
+                semantic输入；只有符合策略的外部本地执行输入属于control-plane。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制。
+              requirementsEvidence:
+                contentHash: edec0240ca27d05848c0c135c4818608a126057bcfaab7e2e98551ad9ec711e6
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+              sourceEvidence:
+                contentHash: 75759071ef5be84180b53f968f6cdfc93ca5c7e2561969b30ee2301a2df010de
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-incremental-workflow-recovery
+                  changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+                  workspaceBaseline:
+                    ref: 23af2b75-8232-4850-83c2-57806b1476e2
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+                    ref: openspec/changes/stabilize-incremental-workflow-recovery
+            full.open.evidence:
+              contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+              ref: openspec/changes/stabilize-incremental-workflow-recovery
+            full.open.revalidate:
+              contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+        inputHash: 5a33e51687980c41afc20057d7c5ac924a89ad4d86adb13b6e8298826418a176
+        outcome:
+          actionId: stabilize-incremental-workflow-recovery:9
+          attempt: 1
+          claimToken: portable-4beb09f33cded435462a16740532872ab989b71cd70b86712071f2a42dccf3c0
+          inputHash: 5a33e51687980c41afc20057d7c5ac924a89ad4d86adb13b6e8298826418a176
+          outcomeId: 66e326e1-6afa-4826-8098-55d41e99a3d9
+          output:
+            designDoc: openspec/changes/stabilize-incremental-workflow-recovery/design.md
+          status: succeeded
+        protocolVersion: 1
+        receipts:
+          - hash: b42c05268ebf6caf2bea5ea64dbf95174c8a11cf1f905468f028575e709b5ab7
+            outcomeId: 66e326e1-6afa-4826-8098-55d41e99a3d9
+        reconciliations: []
+        ref: comet-design
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-incremental-workflow-recovery
+        status: succeeded
+        stepId: full.design.document
+        type: invoke_skill
+      - attempt: 1
+        id: stabilize-incremental-workflow-recovery:11
+        input:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs:
+            full.design.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-incremental-workflow-recovery
+                  changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+                  workspaceBaseline:
+                    ref: 23af2b75-8232-4850-83c2-57806b1476e2
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+                    handoffHash: 35488e0610e8ff3f474e0c1e32022f012fd1ea00e68ea06c377b04943c43439a
+                    proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+                      Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+                      revision、稳定decision identity并由Runtime
+                      CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+                      Evidence前置验证TDD Package闭包与授权包络，Specification
+                      Provider前置验证Requirement映射和Capability
+                      Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+                      SDK。已批准的Spec Patch明确三类输入边界：普通Git
+                      tracked产品路径保持产品输入；注册Specification
+                      Authority中的官方规划工件即使tracked也属于planning
+                      semantic输入；只有符合策略的外部本地执行输入属于control-plane。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制。
+                    requirementsEvidence:
+                      contentHash: edec0240ca27d05848c0c135c4818608a126057bcfaab7e2e98551ad9ec711e6
+                      ref: openspec/changes/stabilize-incremental-workflow-recovery
+                    sourceEvidence:
+                      contentHash: 75759071ef5be84180b53f968f6cdfc93ca5c7e2561969b30ee2301a2df010de
+                      ref: openspec/changes/stabilize-incremental-workflow-recovery
+            full.design.document:
+              designDoc: openspec/changes/stabilize-incremental-workflow-recovery/design.md
+            full.design.evidence:
+              contentHash: c6b926a9d7a3ba0d5a0b288fd8ab5ead85f830267d8e0d9d4ee32de78eddd83f
+              ref: openspec/changes/stabilize-incremental-workflow-recovery/design.md
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+              handoffHash: 35488e0610e8ff3f474e0c1e32022f012fd1ea00e68ea06c377b04943c43439a
+              proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+                Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+                revision、稳定decision identity并由Runtime
+                CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+                Evidence前置验证TDD Package闭包与授权包络，Specification
+                Provider前置验证Requirement映射和Capability
+                Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+                SDK。已批准的Spec Patch明确三类输入边界：普通Git
+                tracked产品路径保持产品输入；注册Specification
+                Authority中的官方规划工件即使tracked也属于planning
+                semantic输入；只有符合策略的外部本地执行输入属于control-plane。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制。
+              requirementsEvidence:
+                contentHash: edec0240ca27d05848c0c135c4818608a126057bcfaab7e2e98551ad9ec711e6
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+              sourceEvidence:
+                contentHash: 75759071ef5be84180b53f968f6cdfc93ca5c7e2561969b30ee2301a2df010de
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+            full.open:
+              event: open-complete
+            full.open.confirm:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-incremental-workflow-recovery
+                  changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+                  workspaceBaseline:
+                    ref: 23af2b75-8232-4850-83c2-57806b1476e2
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+                    ref: openspec/changes/stabilize-incremental-workflow-recovery
+            full.open.evidence:
+              contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+              ref: openspec/changes/stabilize-incremental-workflow-recovery
+            full.open.revalidate:
+              contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+        inputHash: 4a842af5320125dd05c450d0851b93f28bec7ae439922281cc2cfb4cd9f1fad5
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-build
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-incremental-workflow-recovery
+        status: pending
+        stepId: full.build.configure
+        type: invoke_skill
     actionContexts:
       stabilize-incremental-workflow-recovery:1:
         results: {}
         sequence: 1
+      stabilize-incremental-workflow-recovery:11:
+        results:
+          full.design.confirm:
+            sequence: 8
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-incremental-workflow-recovery
+                  changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+                  workspaceBaseline:
+                    ref: 23af2b75-8232-4850-83c2-57806b1476e2
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+                    handoffHash: 35488e0610e8ff3f474e0c1e32022f012fd1ea00e68ea06c377b04943c43439a
+                    proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+                      Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+                      revision、稳定decision identity并由Runtime
+                      CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+                      Evidence前置验证TDD Package闭包与授权包络，Specification
+                      Provider前置验证Requirement映射和Capability
+                      Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+                      SDK。已批准的Spec Patch明确三类输入边界：普通Git
+                      tracked产品路径保持产品输入；注册Specification
+                      Authority中的官方规划工件即使tracked也属于planning
+                      semantic输入；只有符合策略的外部本地执行输入属于control-plane。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制。
+                    requirementsEvidence:
+                      contentHash: edec0240ca27d05848c0c135c4818608a126057bcfaab7e2e98551ad9ec711e6
+                      ref: openspec/changes/stabilize-incremental-workflow-recovery
+                    sourceEvidence:
+                      contentHash: 75759071ef5be84180b53f968f6cdfc93ca5c7e2561969b30ee2301a2df010de
+                      ref: openspec/changes/stabilize-incremental-workflow-recovery
+          full.design.document:
+            sequence: 9
+            value:
+              designDoc: openspec/changes/stabilize-incremental-workflow-recovery/design.md
+          full.design.evidence:
+            sequence: 10
+            value:
+              contentHash: c6b926a9d7a3ba0d5a0b288fd8ab5ead85f830267d8e0d9d4ee32de78eddd83f
+              ref: openspec/changes/stabilize-incremental-workflow-recovery/design.md
+          full.design.handoff:
+            sequence: 7
+            value:
+              handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+              handoffHash: 35488e0610e8ff3f474e0c1e32022f012fd1ea00e68ea06c377b04943c43439a
+              proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+                Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+                revision、稳定decision identity并由Runtime
+                CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+                Evidence前置验证TDD Package闭包与授权包络，Specification
+                Provider前置验证Requirement映射和Capability
+                Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+                SDK。已批准的Spec Patch明确三类输入边界：普通Git
+                tracked产品路径保持产品输入；注册Specification
+                Authority中的官方规划工件即使tracked也属于planning
+                semantic输入；只有符合策略的外部本地执行输入属于control-plane。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制。
+              requirementsEvidence:
+                contentHash: edec0240ca27d05848c0c135c4818608a126057bcfaab7e2e98551ad9ec711e6
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+              sourceEvidence:
+                contentHash: 75759071ef5be84180b53f968f6cdfc93ca5c7e2561969b30ee2301a2df010de
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-incremental-workflow-recovery
+                  changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+                  workspaceBaseline:
+                    ref: 23af2b75-8232-4850-83c2-57806b1476e2
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+                    ref: openspec/changes/stabilize-incremental-workflow-recovery
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+              ref: openspec/changes/stabilize-incremental-workflow-recovery
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+        sequence: 11
       stabilize-incremental-workflow-recovery:4:
         results:
           full.open:
@@ -319,6 +738,171 @@ run_checkpoint:
             value:
               contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
         sequence: 5
+      stabilize-incremental-workflow-recovery:7:
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: rejected
+              proposal:
+                input:
+                  change: stabilize-incremental-workflow-recovery
+                  changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+                  workspaceBaseline:
+                    ref: 23af2b75-8232-4850-83c2-57806b1476e2
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+                    handoffHash: dda980701ac0667f17be86088f02d9509f626fc0355808262bde5319bc2d4175
+                    proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+                      Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+                      revision、稳定decision identity并由Runtime
+                      CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+                      Evidence前置验证TDD Package闭包与授权包络，Specification
+                      Provider前置验证Requirement映射和Capability
+                      Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+                      SDK。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制；本轮无Spec
+                      Patch。
+                    requirementsEvidence:
+                      contentHash: c90b57697f3ea8326577a34150cc24df86f0cea51107bcdfe6b8ed856450e4af
+                      ref: openspec/changes/stabilize-incremental-workflow-recovery
+                    sourceEvidence:
+                      contentHash: c958fb24bd5dac90fe8bd4b34ec8c81530f6d84e26bf46c3c98508a0c86c7fbf
+                      ref: openspec/changes/stabilize-incremental-workflow-recovery
+          full.design.handoff:
+            sequence: 5
+            value:
+              handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+              handoffHash: dda980701ac0667f17be86088f02d9509f626fc0355808262bde5319bc2d4175
+              proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+                Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+                revision、稳定decision identity并由Runtime
+                CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+                Evidence前置验证TDD Package闭包与授权包络，Specification
+                Provider前置验证Requirement映射和Capability
+                Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+                SDK。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制；本轮无Spec Patch。
+              requirementsEvidence:
+                contentHash: c90b57697f3ea8326577a34150cc24df86f0cea51107bcdfe6b8ed856450e4af
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+              sourceEvidence:
+                contentHash: c958fb24bd5dac90fe8bd4b34ec8c81530f6d84e26bf46c3c98508a0c86c7fbf
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-incremental-workflow-recovery
+                  changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+                  workspaceBaseline:
+                    ref: 23af2b75-8232-4850-83c2-57806b1476e2
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+                    ref: openspec/changes/stabilize-incremental-workflow-recovery
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+              ref: openspec/changes/stabilize-incremental-workflow-recovery
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+        sequence: 7
+      stabilize-incremental-workflow-recovery:9:
+        results:
+          full.design.confirm:
+            sequence: 8
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-incremental-workflow-recovery
+                  changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+                  workspaceBaseline:
+                    ref: 23af2b75-8232-4850-83c2-57806b1476e2
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+                    handoffHash: 35488e0610e8ff3f474e0c1e32022f012fd1ea00e68ea06c377b04943c43439a
+                    proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+                      Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+                      revision、稳定decision identity并由Runtime
+                      CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+                      Evidence前置验证TDD Package闭包与授权包络，Specification
+                      Provider前置验证Requirement映射和Capability
+                      Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+                      SDK。已批准的Spec Patch明确三类输入边界：普通Git
+                      tracked产品路径保持产品输入；注册Specification
+                      Authority中的官方规划工件即使tracked也属于planning
+                      semantic输入；只有符合策略的外部本地执行输入属于control-plane。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制。
+                    requirementsEvidence:
+                      contentHash: edec0240ca27d05848c0c135c4818608a126057bcfaab7e2e98551ad9ec711e6
+                      ref: openspec/changes/stabilize-incremental-workflow-recovery
+                    sourceEvidence:
+                      contentHash: 75759071ef5be84180b53f968f6cdfc93ca5c7e2561969b30ee2301a2df010de
+                      ref: openspec/changes/stabilize-incremental-workflow-recovery
+          full.design.handoff:
+            sequence: 7
+            value:
+              handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+              handoffHash: 35488e0610e8ff3f474e0c1e32022f012fd1ea00e68ea06c377b04943c43439a
+              proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+                Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+                revision、稳定decision identity并由Runtime
+                CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+                Evidence前置验证TDD Package闭包与授权包络，Specification
+                Provider前置验证Requirement映射和Capability
+                Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+                SDK。已批准的Spec Patch明确三类输入边界：普通Git
+                tracked产品路径保持产品输入；注册Specification
+                Authority中的官方规划工件即使tracked也属于planning
+                semantic输入；只有符合策略的外部本地执行输入属于control-plane。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制。
+              requirementsEvidence:
+                contentHash: edec0240ca27d05848c0c135c4818608a126057bcfaab7e2e98551ad9ec711e6
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+              sourceEvidence:
+                contentHash: 75759071ef5be84180b53f968f6cdfc93ca5c7e2561969b30ee2301a2df010de
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-incremental-workflow-recovery
+                  changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+                  workspaceBaseline:
+                    ref: 23af2b75-8232-4850-83c2-57806b1476e2
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+                    ref: openspec/changes/stabilize-incremental-workflow-recovery
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+              ref: openspec/changes/stabilize-incremental-workflow-recovery
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+        sequence: 9
     waits:
       - id: stabilize-incremental-workflow-recovery:3
         stepId: full.open.confirm
@@ -357,7 +941,7 @@ run_checkpoint:
       - id: stabilize-incremental-workflow-recovery:6
         stepId: full.design.confirm
         sequence: 6
-        status: pending
+        status: resolved
         proposal:
           input:
             change: stabilize-incremental-workflow-recovery
@@ -435,6 +1019,130 @@ run_checkpoint:
             sequence: 4
             value:
               contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+        decision:
+          id: classic-design-7110582f4258256d4f524b4a451f50fa647eee182f49994047db95214fa8d215-rejected
+          choice: rejected
+          proposalHash: 7110582f4258256d4f524b4a451f50fa647eee182f49994047db95214fa8d215
+      - id: stabilize-incremental-workflow-recovery:8
+        stepId: full.design.confirm
+        sequence: 8
+        status: resolved
+        proposal:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs:
+            full.design.handoff:
+              handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+              handoffHash: 35488e0610e8ff3f474e0c1e32022f012fd1ea00e68ea06c377b04943c43439a
+              proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+                Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+                revision、稳定decision identity并由Runtime
+                CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+                Evidence前置验证TDD Package闭包与授权包络，Specification
+                Provider前置验证Requirement映射和Capability
+                Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+                SDK。已批准的Spec Patch明确三类输入边界：普通Git
+                tracked产品路径保持产品输入；注册Specification
+                Authority中的官方规划工件即使tracked也属于planning
+                semantic输入；只有符合策略的外部本地执行输入属于control-plane。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制。
+              requirementsEvidence:
+                contentHash: edec0240ca27d05848c0c135c4818608a126057bcfaab7e2e98551ad9ec711e6
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+              sourceEvidence:
+                contentHash: 75759071ef5be84180b53f968f6cdfc93ca5c7e2561969b30ee2301a2df010de
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+        proposalHash: d56116a9637dc5886116c742c89888d34128e5825b4e66cab82b9f6562eaa04e
+        choices:
+          - approved
+          - rejected
+        results:
+          full.design.confirm:
+            sequence: 6
+            value:
+              choice: rejected
+              proposal:
+                input:
+                  change: stabilize-incremental-workflow-recovery
+                  changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+                  workspaceBaseline:
+                    ref: 23af2b75-8232-4850-83c2-57806b1476e2
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+                    handoffHash: dda980701ac0667f17be86088f02d9509f626fc0355808262bde5319bc2d4175
+                    proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+                      Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+                      revision、稳定decision identity并由Runtime
+                      CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+                      Evidence前置验证TDD Package闭包与授权包络，Specification
+                      Provider前置验证Requirement映射和Capability
+                      Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+                      SDK。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制；本轮无Spec
+                      Patch。
+                    requirementsEvidence:
+                      contentHash: c90b57697f3ea8326577a34150cc24df86f0cea51107bcdfe6b8ed856450e4af
+                      ref: openspec/changes/stabilize-incremental-workflow-recovery
+                    sourceEvidence:
+                      contentHash: c958fb24bd5dac90fe8bd4b34ec8c81530f6d84e26bf46c3c98508a0c86c7fbf
+                      ref: openspec/changes/stabilize-incremental-workflow-recovery
+          full.design.handoff:
+            sequence: 7
+            value:
+              handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+              handoffHash: 35488e0610e8ff3f474e0c1e32022f012fd1ea00e68ea06c377b04943c43439a
+              proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+                Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+                revision、稳定decision identity并由Runtime
+                CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+                Evidence前置验证TDD Package闭包与授权包络，Specification
+                Provider前置验证Requirement映射和Capability
+                Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+                SDK。已批准的Spec Patch明确三类输入边界：普通Git
+                tracked产品路径保持产品输入；注册Specification
+                Authority中的官方规划工件即使tracked也属于planning
+                semantic输入；只有符合策略的外部本地执行输入属于control-plane。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制。
+              requirementsEvidence:
+                contentHash: edec0240ca27d05848c0c135c4818608a126057bcfaab7e2e98551ad9ec711e6
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+              sourceEvidence:
+                contentHash: 75759071ef5be84180b53f968f6cdfc93ca5c7e2561969b30ee2301a2df010de
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-incremental-workflow-recovery
+                  changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+                  workspaceBaseline:
+                    ref: 23af2b75-8232-4850-83c2-57806b1476e2
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+                    ref: openspec/changes/stabilize-incremental-workflow-recovery
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+              ref: openspec/changes/stabilize-incremental-workflow-recovery
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+        decision:
+          id: classic-design-d56116a9637dc5886116c742c89888d34128e5825b4e66cab82b9f6562eaa04e-approved
+          choice: approved
+          proposalHash: d56116a9637dc5886116c742c89888d34128e5825b4e66cab82b9f6562eaa04e
     evidenceWaits:
       - id: stabilize-incremental-workflow-recovery:2
         stepId: full.open.evidence
@@ -450,14 +1158,150 @@ run_checkpoint:
           ref: openspec/changes/stabilize-incremental-workflow-recovery
           contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
           submissionId: e3846add-0a0f-4cba-98d6-973ee40b0a84
+      - id: stabilize-incremental-workflow-recovery:10
+        stepId: full.design.evidence
+        sequence: 10
+        kind: classic-design-document
+        status: resolved
+        results:
+          full.design.confirm:
+            sequence: 8
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-incremental-workflow-recovery
+                  changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+                  workspaceBaseline:
+                    ref: 23af2b75-8232-4850-83c2-57806b1476e2
+                outputs:
+                  full.design.handoff:
+                    handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+                    handoffHash: 35488e0610e8ff3f474e0c1e32022f012fd1ea00e68ea06c377b04943c43439a
+                    proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+                      Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+                      revision、稳定decision identity并由Runtime
+                      CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+                      Evidence前置验证TDD Package闭包与授权包络，Specification
+                      Provider前置验证Requirement映射和Capability
+                      Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+                      SDK。已批准的Spec Patch明确三类输入边界：普通Git
+                      tracked产品路径保持产品输入；注册Specification
+                      Authority中的官方规划工件即使tracked也属于planning
+                      semantic输入；只有符合策略的外部本地执行输入属于control-plane。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制。
+                    requirementsEvidence:
+                      contentHash: edec0240ca27d05848c0c135c4818608a126057bcfaab7e2e98551ad9ec711e6
+                      ref: openspec/changes/stabilize-incremental-workflow-recovery
+                    sourceEvidence:
+                      contentHash: 75759071ef5be84180b53f968f6cdfc93ca5c7e2561969b30ee2301a2df010de
+                      ref: openspec/changes/stabilize-incremental-workflow-recovery
+          full.design.document:
+            sequence: 9
+            value:
+              designDoc: openspec/changes/stabilize-incremental-workflow-recovery/design.md
+          full.design.handoff:
+            sequence: 7
+            value:
+              handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+              handoffHash: 35488e0610e8ff3f474e0c1e32022f012fd1ea00e68ea06c377b04943c43439a
+              proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+                Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+                revision、稳定decision identity并由Runtime
+                CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+                Evidence前置验证TDD Package闭包与授权包络，Specification
+                Provider前置验证Requirement映射和Capability
+                Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+                SDK。已批准的Spec Patch明确三类输入边界：普通Git
+                tracked产品路径保持产品输入；注册Specification
+                Authority中的官方规划工件即使tracked也属于planning
+                semantic输入；只有符合策略的外部本地执行输入属于control-plane。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制。
+              requirementsEvidence:
+                contentHash: edec0240ca27d05848c0c135c4818608a126057bcfaab7e2e98551ad9ec711e6
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+              sourceEvidence:
+                contentHash: 75759071ef5be84180b53f968f6cdfc93ca5c7e2561969b30ee2301a2df010de
+                ref: openspec/changes/stabilize-incremental-workflow-recovery
+          full.open:
+            sequence: 1
+            value:
+              event: open-complete
+          full.open.confirm:
+            sequence: 3
+            value:
+              choice: approved
+              proposal:
+                input:
+                  change: stabilize-incremental-workflow-recovery
+                  changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+                  workspaceBaseline:
+                    ref: 23af2b75-8232-4850-83c2-57806b1476e2
+                outputs:
+                  full.open:
+                    event: open-complete
+                  full.open.evidence:
+                    contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+                    ref: openspec/changes/stabilize-incremental-workflow-recovery
+          full.open.evidence:
+            sequence: 2
+            value:
+              contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+              ref: openspec/changes/stabilize-incremental-workflow-recovery
+          full.open.revalidate:
+            sequence: 4
+            value:
+              contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
+        receipt:
+          ref: openspec/changes/stabilize-incremental-workflow-recovery/design.md
+          contentHash: c6b926a9d7a3ba0d5a0b288fd8ab5ead85f830267d8e0d9d4ee32de78eddd83f
+          submissionId: 92de8c12-d384-453a-879b-a9ea45a39a1b
     ready: []
     joins: {}
     outputs:
+      full.design.confirm:
+        sequence: 8
+        value:
+          choice: approved
+          proposal:
+            input:
+              change: stabilize-incremental-workflow-recovery
+              changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+              workspaceBaseline:
+                ref: 23af2b75-8232-4850-83c2-57806b1476e2
+            outputs:
+              full.design.handoff:
+                handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
+                handoffHash: 35488e0610e8ff3f474e0c1e32022f012fd1ea00e68ea06c377b04943c43439a
+                proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
+                  Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
+                  revision、稳定decision identity并由Runtime
+                  CAS原子应用。Host只报告经引用校验的事实，Lifecycle清退旧Build到Design提案Wait。Plan
+                  Evidence前置验证TDD Package闭包与授权包络，Specification
+                  Provider前置验证Requirement映射和Capability
+                  Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
+                  SDK。已批准的Spec Patch明确三类输入边界：普通Git
+                  tracked产品路径保持产品输入；注册Specification
+                  Authority中的官方规划工件即使tracked也属于planning
+                  semantic输入；只有符合策略的外部本地执行输入属于control-plane。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制。
+                requirementsEvidence:
+                  contentHash: edec0240ca27d05848c0c135c4818608a126057bcfaab7e2e98551ad9ec711e6
+                  ref: openspec/changes/stabilize-incremental-workflow-recovery
+                sourceEvidence:
+                  contentHash: 75759071ef5be84180b53f968f6cdfc93ca5c7e2561969b30ee2301a2df010de
+                  ref: openspec/changes/stabilize-incremental-workflow-recovery
+      full.design.document:
+        sequence: 9
+        value:
+          designDoc: openspec/changes/stabilize-incremental-workflow-recovery/design.md
+      full.design.evidence:
+        sequence: 10
+        value:
+          contentHash: c6b926a9d7a3ba0d5a0b288fd8ab5ead85f830267d8e0d9d4ee32de78eddd83f
+          ref: openspec/changes/stabilize-incremental-workflow-recovery/design.md
       full.design.handoff:
-        sequence: 5
+        sequence: 7
         value:
           handoffContext: openspec/changes/stabilize-incremental-workflow-recovery/.comet/handoff/design-context.json
-          handoffHash: dda980701ac0667f17be86088f02d9509f626fc0355808262bde5319bc2d4175
+          handoffHash: 35488e0610e8ff3f474e0c1e32022f012fd1ea00e68ea06c377b04943c43439a
           proposal: 采用Comet 0.5.1式有序恢复：Requirements/Design
             Inspector优先，其次Plan、当前Work和Evidence；第一处漂移产生唯一revise-design、revise-plan、continue-build或invalidate-evidence处置。每个处置绑定expected
             revision、稳定decision identity并由Runtime
@@ -465,12 +1309,14 @@ run_checkpoint:
             Evidence前置验证TDD Package闭包与授权包络，Specification
             Provider前置验证Requirement映射和Capability
             Purpose，Evidence按声明输入面精确失效。保留Repoctopus多仓、OpenSpec、Work/Host、Cordis与OTLP架构，不引入Comet
-            SDK。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制；本轮无Spec Patch。
+            SDK。已批准的Spec Patch明确三类输入边界：普通Git tracked产品路径保持产品输入；注册Specification
+            Authority中的官方规划工件即使tracked也属于planning
+            semantic输入；只有符合策略的外部本地执行输入属于control-plane。主要风险是Inspector顺序或输入面遗漏，使用组合测试、变异测试和真实多仓轨迹重放控制。
           requirementsEvidence:
-            contentHash: c90b57697f3ea8326577a34150cc24df86f0cea51107bcdfe6b8ed856450e4af
+            contentHash: edec0240ca27d05848c0c135c4818608a126057bcfaab7e2e98551ad9ec711e6
             ref: openspec/changes/stabilize-incremental-workflow-recovery
           sourceEvidence:
-            contentHash: c958fb24bd5dac90fe8bd4b34ec8c81530f6d84e26bf46c3c98508a0c86c7fbf
+            contentHash: 75759071ef5be84180b53f968f6cdfc93ca5c7e2561969b30ee2301a2df010de
             ref: openspec/changes/stabilize-incremental-workflow-recovery
       full.open:
         sequence: 1
@@ -503,6 +1349,6 @@ run_checkpoint:
           contentHash: 8322e82f3c9ecd3779aa12e7e50a763f9938c71421b61be644700ce8a74e5484
     children: []
     lineage: []
-  sourceRevision: 9
-  sourceHash: e8b175e3876c94610fe5124c4d695d878b29d68d9fa324a256998f6db3361a84
-check_epoch: 1
+  sourceRevision: 16
+  sourceHash: 0a4dfe8951d76f876c8a016ebaee942700afb24a5557db1082b1faf0ee405610
+check_epoch: 2

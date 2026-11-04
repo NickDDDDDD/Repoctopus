@@ -1,3 +1,9 @@
+---
+comet_change: stabilize-incremental-workflow-recovery
+role: technical-design
+canonical_spec: openspec
+---
+
 # Design
 
 ## Context
@@ -10,7 +16,7 @@
 
 **Goals:**
 
-- 建立唯一、纯领域的恢复分类器，使Runtime而非Host选择恢复动作。
+- 建立唯一、纯领域的恢复决策管线，由有序权威Inspector与薄Coordinator使Runtime而非Host选择恢复动作。
 - 让恢复只回到最小且正确的权威checkpoint，并保持CAS幂等、历史可审计和依赖精确失效。
 - 在Open/Design与Plan Evidence边界发现可静态判定的Requirement映射、Purpose和TDD包闭包错误。
 - 让规划语义、实现内容、执行控制面与publication provenance使用不同身份，避免无关提交使批准和Evidence失效。
@@ -91,7 +97,7 @@ Provider在Open/Design严格校验中计算不产生副作用的closure prefligh
 
 ### 8. Evidence使用显式依赖清单而不是仓库级粗指纹
 
-Verification Input保留完整审计身份，但每个Evidence节点声明实际消费的产品内容、planning semantic、control-plane、工具、环境和可选Git identity。Specification仓中的规划文件由Provider语义投影参与验证；合法checkbox变化只更新完成投影，不改变planning semantic。实现文件仍按真实内容指纹，未知输入继续fail closed。
+Verification Input保留完整审计身份，但每个Evidence节点声明实际消费的产品内容、planning semantic、control-plane、工具、环境和可选Git identity。Specification Authority仓库或路径中的官方规划工件即使被Git跟踪，也属于独立的planning semantic分区：它们既不因tracked状态退化为普通产品输入，也不属于外部本地control-plane。Specification仓中的规划文件由Provider语义投影参与验证；合法checkbox变化只更新完成投影，不改变planning semantic。普通tracked实现与产品文件仍按真实内容指纹，未知输入继续fail closed。
 
 `invalidate-evidence`沿依赖图只失效受影响Receipt及其下游Bundle/Gate。Evidence Provider不可用保持当前节点blocked/retry，不通过`revise-plan`或`revise-design`隐藏基础设施错误。
 
