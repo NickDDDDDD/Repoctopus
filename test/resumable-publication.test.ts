@@ -9,6 +9,7 @@ import {
   type PublicationJournalStore,
 } from '../domains/delivery/publication-journal.js';
 import { PublicationResultUnknownError } from '../domains/delivery/publication-result-unknown.js';
+import { PublicationNotAppliedError } from '../domains/delivery/publication-not-applied.js';
 import type { PublicationReceiptItem } from '../domains/delivery/publication-receipt.js';
 
 class MemoryStore implements PublicationJournalStore {
@@ -181,8 +182,56 @@ describe('resumable multi-repository publication', () => {
         store,
         adapter({ remoteOids, mergeRequests, createMergeRequest: forbiddenCreate }),
       ).publish({ changeId: 'unknown-mr', runId: 'run-unknown-mr', items: [item] }),
-    ).resolves.toMatchObject({ items: [{ status: 'published', result: { provenance: 'recovered' } }] });
+    ).resolves.toMatchObject({
+      items: [{ status: 'published', result: { provenance: 'recovered' } }],
+    });
     expect(forbiddenCreate).not.toHaveBeenCalled();
+  });
+
+  it('returns a rejected merge-request creation to pushed for the next explicit pull', async () => {
+    const item = intent('app', 'app', 'business');
+    const store = new MemoryStore();
+    const remoteOids = new Map([[item.publicationId, item.expectedOid]]);
+    const mergeRequests = new Map<string, PublicationReceiptItem>();
+    const rejectedCreate = vi
+      .fn<PublicationItemExecutor['createMergeRequest']>()
+      .mockRejectedValue(
+        new PublicationNotAppliedError(
+          item.publicationId,
+          'merge-request',
+          'permission',
+          'Merge request creation was rejected',
+        ),
+      );
+
+    await expect(
+      new ResumablePublicationExecutor(
+        store,
+        adapter({ remoteOids, mergeRequests, createMergeRequest: rejectedCreate }),
+      ).publish({ changeId: 'rejected-mr', runId: 'run-rejected-mr', items: [item] }),
+    ).rejects.toBeInstanceOf(PublicationNotAppliedError);
+    expect(rejectedCreate).toHaveBeenCalledOnce();
+    expect(store.journal?.items[0]).toMatchObject({
+      status: 'pushed',
+      attempts: 1,
+      diagnostic: 'merge-request:not-applied:permission',
+    });
+    const operationId = store.journal?.items[0]?.operationId;
+
+    const retryCreate = vi.fn<PublicationItemExecutor['createMergeRequest']>((candidate) => {
+      const receipt = result(candidate);
+      mergeRequests.set(candidate.publicationId, receipt);
+      return Promise.resolve(receipt);
+    });
+    await expect(
+      new ResumablePublicationExecutor(
+        store,
+        adapter({ remoteOids, mergeRequests, createMergeRequest: retryCreate }),
+      ).publish({ changeId: 'rejected-mr', runId: 'run-rejected-mr', items: [item] }),
+    ).resolves.toMatchObject({ items: [{ status: 'published' }] });
+    expect(retryCreate).toHaveBeenCalledOnce();
+    expect(store.journal?.items[0]?.attempts).toBe(2);
+    expect(store.journal?.items[0]?.operationId).toBe(operationId);
   });
 
   it('rejects duplicate stable identities and exposes no destructive publication operation', () => {

@@ -40,11 +40,27 @@ function matchesCurrentCheckpoint(
   checkpoint: Checkpoint,
   workId: string | null,
 ): boolean {
-  if (event.type !== 'continuation.selected' || event.stateVersion > checkpoint.stateVersion) {
+  if (
+    event.type !== 'continuation.selected' ||
+    event.runId !== checkpoint.runId ||
+    event.stateVersion !== checkpoint.stateVersion
+  ) {
     return false;
   }
   const selectedWorkId = typeof event.data.workId === 'string' ? event.data.workId : null;
-  return selectedWorkId === workId;
+  const selectedAttempt =
+    typeof event.data.attempt === 'number' && Number.isSafeInteger(event.data.attempt)
+      ? event.data.attempt
+      : null;
+  const selectedCheckEpoch =
+    typeof event.data.checkEpoch === 'number' && Number.isSafeInteger(event.data.checkEpoch)
+      ? event.data.checkEpoch
+      : null;
+  return (
+    selectedWorkId === workId &&
+    selectedAttempt === (checkpoint.workExecution?.attempt ?? null) &&
+    selectedCheckEpoch === (checkpoint.changeLifecycle?.checkEpoch ?? null)
+  );
 }
 
 export interface WorkContinuationClassificationInput {
@@ -150,6 +166,9 @@ export function projectCommittedContinuation(
     lifecycle,
     ...(checkpoint.workExecution ? { execution: checkpoint.workExecution } : {}),
   });
+  if (classified.continuation === 'done' && classified.reason === 'terminal') {
+    return classified;
+  }
   const workId = classified.workId;
   const result = (
     continuation: WorkExecutionRecovery['continuation'],

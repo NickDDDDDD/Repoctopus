@@ -148,12 +148,14 @@ describe('GitHub merge request adapter', () => {
   });
 
   it.each([
-    [401, 'authentication'],
-    [403, 'permission'],
-    [404, 'not_found'],
-    [429, 'rate_limited'],
-    [500, 'temporary'],
-  ] as const)('maps HTTP %s without retaining the response body', async (status, code) => {
+    [401, 'authentication', 'not-applied'],
+    [403, 'permission', 'not-applied'],
+    [404, 'not_found', 'not-applied'],
+    [409, 'invalid_response', 'not-applied'],
+    [422, 'invalid_response', 'not-applied'],
+    [429, 'rate_limited', 'not-applied'],
+    [500, 'temporary', 'unknown'],
+  ] as const)('maps HTTP %s without retaining the response body', async (status, code, effect) => {
     const adapter = new GitHubMergeRequestAdapter(
       { token: () => Promise.resolve('secret') },
       'https://api.github.test',
@@ -162,8 +164,30 @@ describe('GitHub merge request adapter', () => {
     const error = await adapter.find(input).catch((caught: unknown) => caught);
     expect(error).toBeInstanceOf(PlatformRequestError);
     expect((error as PlatformRequestError).code).toBe(code);
+    expect((error as PlatformRequestError).effect).toBe(effect);
     expect(String(error)).not.toContain('private body');
     expect(String(error)).not.toContain('secret');
+  });
+
+  it('classifies transport failure and successful invalid JSON as unknown effects', async () => {
+    const transport = new GitHubMergeRequestAdapter(
+      { token: () => Promise.resolve('secret') },
+      'https://api.github.test',
+      () => Promise.reject(new Error('socket closed with secret response')),
+    );
+    const transportError = await transport.create(input).catch((caught: unknown) => caught);
+    expect(transportError).toBeInstanceOf(PlatformRequestError);
+    expect(transportError).toMatchObject({ code: 'temporary', effect: 'unknown' });
+    expect(String(transportError)).not.toContain('secret response');
+
+    const invalidJson = new GitHubMergeRequestAdapter(
+      { token: () => Promise.resolve('secret') },
+      'https://api.github.test',
+      () => Promise.resolve(new Response('not-json', { status: 200 })),
+    );
+    const invalidJsonError = await invalidJson.create(input).catch((caught: unknown) => caught);
+    expect(invalidJsonError).toBeInstanceOf(PlatformRequestError);
+    expect(invalidJsonError).toMatchObject({ code: 'invalid_response', effect: 'unknown' });
   });
 
   it('reports unsupported branch protection as a non-blocking capability diagnostic', async () => {

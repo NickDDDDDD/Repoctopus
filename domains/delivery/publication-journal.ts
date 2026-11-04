@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { canonicalJson } from '../workflow-contract/canonical.js';
 import type { PublicationReceiptItem, PublicationRole } from './publication-receipt.js';
 import { PublicationResultUnknownError } from './publication-result-unknown.js';
+import { PublicationNotAppliedError } from './publication-not-applied.js';
 
 export type PublicationJournalItemStatus =
   | 'pending'
@@ -57,9 +58,7 @@ export interface PublicationJournalStore {
 export interface PublicationItemExecutor {
   observePush(intent: PublicationJournalItemIntent): Promise<string | null>;
   push(intent: PublicationJournalItemIntent): Promise<string>;
-  observeMergeRequest(
-    intent: PublicationJournalItemIntent,
-  ): Promise<PublicationReceiptItem | null>;
+  observeMergeRequest(intent: PublicationJournalItemIntent): Promise<PublicationReceiptItem | null>;
   createMergeRequest(intent: PublicationJournalItemIntent): Promise<PublicationReceiptItem>;
 }
 
@@ -299,7 +298,9 @@ export class ResumablePublicationExecutor {
       new PublicationResultUnknownError(
         item.intent.publicationId,
         stage,
-        `Publication result is unknown at ${stage}: ${item.intent.publicationId}`,
+        stage === 'merge-request'
+          ? 'Merge request creation result is unknown; observe or adopt the exact MR, or reconcile with authoritative not-executed evidence'
+          : 'Push result is unknown; observe the exact remote OID or reconcile with authoritative not-executed evidence',
         cause === undefined ? {} : { cause },
       );
 
@@ -426,6 +427,14 @@ export class ResumablePublicationExecutor {
           try {
             result = await this.adapter.createMergeRequest(invoking.intent);
           } catch (error) {
+            if (error instanceof PublicationNotAppliedError) {
+              await persist(operationId, (candidate) => ({
+                ...candidate,
+                status: 'pushed',
+                diagnostic: `merge-request:not-applied:${error.reason}`,
+              }));
+              throw error;
+            }
             let recovered: PublicationReceiptItem | null = null;
             try {
               recovered = await this.adapter.observeMergeRequest(invoking.intent);

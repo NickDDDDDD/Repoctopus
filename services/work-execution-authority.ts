@@ -6,6 +6,8 @@ import type { ActionIntent, ActionReceipt, ClaimedActionOutcome } from '../domai
 import type { RunState } from '../domains/engine/types.js';
 import type { WorkDescriptor } from '../domains/change-lifecycle/transition.js';
 import { classifyWorkContinuation } from '../domains/change-lifecycle/continuation.js';
+import type { PublicationNotAppliedReason } from '../domains/delivery/publication-not-applied.js';
+import type { PublicationSideEffectStage } from '../domains/delivery/publication-result-unknown.js';
 import type { EffectiveSkillComposition } from '../domains/skill/composition.js';
 import type {
   SpecificationArtifact,
@@ -933,7 +935,7 @@ export class WorkExecutionAuthority extends Service {
 
   async markExternalSideEffectUnknown(
     intent: ActionIntent,
-    summary: string,
+    stage: PublicationSideEffectStage,
   ): Promise<WorkExecutionCheckpoint> {
     return this.transition(
       intent.runId,
@@ -945,10 +947,39 @@ export class WorkExecutionAuthority extends Service {
       {
         workId: intent.workId,
         attempt: intent.attempt,
-        reason: summary,
+        phase: 'archive',
+        workKind: 'delivery.publish',
+        effectStage: stage,
+        effectCertainty: 'unknown',
+        effectResult: 'reconcile',
         uncertainty: 'external-side-effect',
       },
       { unknownKind: 'external-side-effect' },
+    );
+  }
+
+  async recordExternalSideEffectNotApplied(
+    intent: ActionIntent,
+    stage: PublicationSideEffectStage,
+    reason: PublicationNotAppliedReason,
+  ): Promise<void> {
+    await this.recordEvent(
+      intent.runId,
+      intent.intentId,
+      'reconcile.completed',
+      {
+        phase: 'archive',
+        workId: intent.workId,
+        workKind: 'delivery.publish',
+        attempt: intent.attempt,
+        checkEpoch: intent.checkEpoch,
+        effectStage: stage,
+        effectCertainty: 'not-applied',
+        effectResult: 'retryable',
+        reasonCode: reason,
+        result: 'not-executed',
+      },
+      [stage, 'not-applied', reason],
     );
   }
 

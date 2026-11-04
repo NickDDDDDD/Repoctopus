@@ -104,4 +104,41 @@ describe('Change Run CLI projection', () => {
     expect(output).toContain('Build packages: 1/2 (current work-package:789)');
     expect(output).not.toMatch(/[A-Z]:\\|checkoutPath/u);
   });
+
+  it('renders a terminal Archive projection without a stale next action', () => {
+    const lifecycle = projectChangeRun(
+      {
+        ...createChangeLifecycleSnapshot({
+          identity: {
+            workspaceId: 'team',
+            changeId: 'completed-change',
+            runId: 'change-team-completed-change',
+          },
+        }),
+        phase: 'archive',
+        status: 'completed',
+        currentWork: null,
+      },
+      {
+        taskProgress: { total: 2, completed: 2, currentTaskId: null },
+        evidence: {
+          gateStatus: 'satisfied',
+          acceptedBundleIds: ['bundle-completed'],
+          latestAttemptId: 'attempt-completed',
+        },
+        nextActions: [],
+        freshness: {
+          stateVersion: 12,
+          trajectoryOffset: 20,
+          observedAt: '2026-11-04T00:00:00.000Z',
+        },
+      },
+    );
+
+    const output = renderChangeProjection(lifecycle).join('\n');
+    expect(output).toContain('Phase: archive');
+    expect(output).toContain('Status: completed');
+    expect(output).toContain('Work: -');
+    expect(output).not.toContain('Lifecycle next actions:');
+  });
 });

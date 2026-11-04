@@ -1,6 +1,11 @@
 import type { MergeRequestInput, MergeRequestPort } from './ports.js';
 import type { PublicationProvenance } from './publication-receipt.js';
 import { PublicationResultUnknownError } from './publication-result-unknown.js';
+import {
+  externalEffectCertainty,
+  PublicationNotAppliedError,
+  publicationNotAppliedReason,
+} from './publication-not-applied.js';
 import type { MergeRequestIdentity, MergeRequestStatus } from './types.js';
 
 export interface StablePublicationIdentity {
@@ -85,6 +90,32 @@ export async function observeOrCreateMergeRequest(input: {
   let created: MergeRequestIdentity;
   try {
     created = await input.port.create(input.request);
+  } catch (error) {
+    if (externalEffectCertainty(error) === 'not-applied') {
+      const reason = publicationNotAppliedReason(error);
+      throw new PublicationNotAppliedError(
+        `merge-request:${input.identity.repositoryId}`,
+        'merge-request',
+        reason,
+        `Merge request create was not applied (${reason}); correct the platform rejection and pull the same Archive Work again`,
+        { cause: error },
+      );
+    }
+    try {
+      const recovered = await observeMergeRequest(input);
+      if (recovered) return { ...recovered, provenance: 'recovered' };
+    } catch {
+      // The caller persists the unknown boundary before it may attempt reconciliation.
+    }
+    throw new PublicationResultUnknownError(
+      `merge-request:${input.identity.repositoryId}`,
+      'merge-request',
+      'Merge request creation result is unknown; observe or adopt the exact MR, or reconcile with authoritative not-executed evidence',
+      { cause: error },
+    );
+  }
+
+  try {
     const status = await input.port.status(created);
     assertExactStatus(status, input.identity);
     return { identity: created, status, provenance: 'runtime-created' };
@@ -98,7 +129,7 @@ export async function observeOrCreateMergeRequest(input: {
     throw new PublicationResultUnknownError(
       `merge-request:${input.identity.repositoryId}`,
       'merge-request',
-      `Merge request publication result is unknown: ${input.identity.repositoryId}`,
+      'Merge request creation result is unknown; observe or adopt the exact MR, or reconcile with authoritative not-executed evidence',
       { cause: error },
     );
   }

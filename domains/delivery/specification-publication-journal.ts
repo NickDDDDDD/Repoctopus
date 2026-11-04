@@ -216,7 +216,7 @@ function advance(
     'push-invoking': ['push-unknown', 'pushed'],
     'push-unknown': ['pushed'],
     pushed: ['mr-invoking', 'completed'],
-    'mr-invoking': ['mr-unknown', 'completed'],
+    'mr-invoking': ['pushed', 'mr-unknown', 'completed'],
     'mr-unknown': ['completed'],
     completed: [],
   };
@@ -287,6 +287,13 @@ export function recordSpecificationMergeRequestUnknown(
 ): SpecificationPublicationJournal {
   if (!current.publishedOid) throw new Error('Specification publication has no pushed OID');
   return advance(current, 'mr-unknown', { publishedOid: current.publishedOid });
+}
+
+export function recordSpecificationMergeRequestNotApplied(
+  current: SpecificationPublicationJournal,
+): SpecificationPublicationJournal {
+  if (!current.publishedOid) throw new Error('Specification publication has no pushed OID');
+  return advance(current, 'pushed', { publishedOid: current.publishedOid });
 }
 
 export function recordSpecificationPublicationCompletion(

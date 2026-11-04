@@ -11,6 +11,7 @@ import type {
 } from '../domains/delivery/specification-publication.js';
 import type { MergeRequestIdentity } from '../domains/delivery/types.js';
 import { PublicationResultUnknownError } from '../domains/delivery/publication-result-unknown.js';
+import { PublicationNotAppliedError } from '../domains/delivery/publication-not-applied.js';
 import type { SpecificationClosureResult } from '../domains/specification/types.js';
 import {
   SpecificationPublicationAdapter,
@@ -233,6 +234,32 @@ describe('Specification publication adapter', () => {
     );
     await expectPublished(setup, recovered, 'recovered');
     expect(create).toHaveBeenCalledOnce();
+  });
+
+  it('retries the same stable Specification intent after a definite create rejection', async () => {
+    const setup = await fixture();
+    const successfulCreate = setup.mergeRequests.create.bind(setup.mergeRequests);
+    const create = vi
+      .fn<MergeRequestPort['create']>()
+      .mockRejectedValueOnce(
+        Object.assign(new Error('request rejected'), {
+          effect: 'not-applied' as const,
+          code: 'permission',
+        }),
+      )
+      .mockImplementation(successfulCreate);
+    setup.mergeRequests.create = create;
+
+    await expect(
+      new SpecificationPublicationAdapter(setup.mergeRequests).publish(setup.request),
+    ).rejects.toBeInstanceOf(PublicationNotAppliedError);
+    expect(create).toHaveBeenCalledOnce();
+
+    const recovered = await new SpecificationPublicationAdapter(setup.mergeRequests).publish(
+      setup.request,
+    );
+    await expectPublished(setup, recovered);
+    expect(create).toHaveBeenCalledTimes(2);
   });
 
   it('publishes the isolated archive candidate without mutating the developer branch', async () => {
