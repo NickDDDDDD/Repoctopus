@@ -1,0 +1,116 @@
+# comet-execution: managed-run
+change_id: 6a975a9b-2c20-4db9-8695-122359409546
+workflow: full
+language: zh-CN
+phase: open
+context_compression: off
+build_mode: null
+build_pause: null
+subagent_dispatch: null
+tdd_mode: null
+review_mode: thorough
+isolation: current
+verify_mode: null
+auto_transition: true
+base_ref: c4022afc5fa96f153fef9dfd59c31c0d82d30c3a
+design_doc: null
+plan: null
+verify_result: pending
+verify_failures: 0
+verification_report: null
+branch_status: pending
+created_at: 2026-11-04
+verified_at: null
+archive_confirmation: null
+archived: false
+bound_branch: codex/stabilize-archive-publication-recovery
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: 2fb49b995589c14bffcef7e40c4671f289aa8c84fd8aa720105275057c76955b
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: stabilize-archive-publication-recovery
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: ed0b02f7c18964eceffad9b0224573dc38ba65da6b05b9cc9e48e63c6c4f8941
+    input:
+      change: stabilize-archive-publication-recovery
+      changeDir: openspec/changes/stabilize-archive-publication-recovery
+      workspaceBaseline:
+        ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: c4022afc5fa96f153fef9dfd59c31c0d82d30c3a
+      boundBranch: codex/stabilize-archive-publication-recovery
+      branchStatus: pending
+      buildMode: null
+      buildPause: null
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-04
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: current
+      language: zh-CN
+      phase: open
+      plan: null
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: null
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: running
+    sequence: 1
+    actions:
+      - attempt: 1
+        id: stabilize-archive-publication-recovery:1
+        input:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs: {}
+        inputHash: 64e9de1c798c74bee16ad0300b83a8300c445298066259280112bcc1057c136b
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-archive-publication-recovery
+        status: pending
+        stepId: full.open
+        type: invoke_skill
+    actionContexts:
+      stabilize-archive-publication-recovery:1:
+        results: {}
+        sequence: 1
+    waits: []
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 1
+  sourceHash: 2d5d6db9e38fb01d924041d6625285661faa1e97b0f6e365f45ea537b6b34ed6
