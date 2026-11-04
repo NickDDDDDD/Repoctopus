@@ -121,6 +121,10 @@ import { deliveryPolicyDigest } from '../domains/delivery/snapshot.js';
 import { normalizeProtectedBranchPatterns } from '../domains/delivery/branch-policy.js';
 import type { ActionIntent, ActionReceipt, WorkExecutorIdentity } from '../domains/action/types.js';
 import type { WorkExecutionHostIdentity } from '../domains/work-execution/types.js';
+import {
+  assertWorkExecutionFindingReferences,
+  normalizeWorkExecutionFindings,
+} from '../domains/work-execution/findings.js';
 import type { ArchivePublicationResult } from '../domains/delivery/service-v3.js';
 import { PublicationResultUnknownError } from '../domains/delivery/publication-result-unknown.js';
 import { PublicationNotAppliedError } from '../domains/delivery/publication-not-applied.js';
@@ -2190,39 +2194,6 @@ export class WorkflowRuns extends Service {
               ],
             };
           }
-          const designFinding = execution?.hostOutcome?.findings?.find(
-            (finding) =>
-              finding.kind === 'design_assumption_invalid' ||
-              finding.kind === 'planning_semantics_changed',
-          );
-          if (
-            state.changeLifecycle.phase === 'build' &&
-            work &&
-            execution?.workId === work.workId &&
-            execution.actionOutcome?.status === 'failed' &&
-            designFinding
-          ) {
-            const proposalDigest = `sha256:${createHash('sha256')
-              .update(
-                canonicalJson({
-                  kind: designFinding.kind,
-                  runId,
-                  workId: work.workId,
-                  checkEpoch: work.checkEpoch,
-                  taskIds: designFinding.taskIds ?? [],
-                  requirementIds: designFinding.requirementIds ?? [],
-                }),
-              )
-              .digest('hex')}` as const;
-            const requested = await this.coordinator.acceptChangeObservation(runId, {
-              kind: 'build-design-revision-required',
-              requestId: `build-design:${proposalDigest.slice(-24)}`,
-              proposalDigest,
-              reason: designFinding.summary,
-              evidenceIds: [execution.receiptId ?? work.inputDigest],
-            });
-            return { ...requested, value: await this.coordinator.status(runId) };
-          }
           if (
             state.changeLifecycle.phase === 'build' &&
             work &&
@@ -3575,46 +3546,63 @@ export class WorkflowRuns extends Service {
               }
               let checkEvidence: ReturnType<typeof createBuildCheckEvidence>;
               try {
-                const knownTaskIds = new Set((lifecycle.tasks ?? []).map((task) => task.taskId));
-                const knownRequirementRefs = new Set(
-                  (lifecycle.tasks ?? []).flatMap((task) => task.requirementRefs),
+                const normalizedFindings = normalizeWorkExecutionFindings(hostOutcome);
+                const knownTaskIds = (lifecycle.tasks ?? []).map((task) => task.taskId);
+                const knownRequirementRefs = (lifecycle.tasks ?? []).flatMap(
+                  (task) => task.requirementRefs,
                 );
-                const findings = (hostOutcome.findings ?? []).map((finding) => {
+                const knownPackageIds = plan.packages.map((entry) => entry.packageId);
+                const knownEvidenceIds = [
+                  ...(protocol.planEvidence ? [protocol.planEvidence.evidenceId] : []),
+                  ...protocol.packageCompletions.flatMap((completion) => [
+                    completion.completionId,
+                    ...completion.acceptanceEvidenceIds,
+                    ...completion.testEvidenceIds,
+                  ]),
+                  ...result.testEvidenceIds,
+                ];
+                assertWorkExecutionFindingReferences(normalizedFindings, {
+                  requirementIds: knownRequirementRefs,
+                  taskIds: knownTaskIds,
+                  packageIds: knownPackageIds,
+                  evidenceIds: knownEvidenceIds,
+                });
+                if (
+                  normalizedFindings.some((finding) =>
+                    [
+                      'authority_conflict',
+                      'evidence_mismatch',
+                      'evidence_unavailable',
+                      'external_result_unknown',
+                    ].includes(finding.kind),
+                  )
+                ) {
+                  throw new Error(
+                    'Build finding requires Runtime recovery classification before lifecycle application',
+                  );
+                }
+                const findings = normalizedFindings.map((finding) => {
                   const classification =
                     finding.kind === 'implementation_failure'
                       ? ('implementation' as const)
-                      : finding.kind === 'design_assumption_invalid' ||
-                          finding.kind === 'planning_semantics_changed'
+                      : finding.kind === 'plan_constraint'
                         ? ('planning' as const)
-                        : finding.kind === 'evidence_unavailable'
-                          ? ('evidence-infrastructure' as const)
-                          : ('unknown' as const);
-                  const taskIds = [...new Set(finding.taskIds ?? [])].sort();
-                  const requirementRefs = [...new Set(finding.requirementIds ?? [])].sort();
-                  if (taskIds.some((taskId) => !knownTaskIds.has(taskId))) {
-                    throw new Error('Build finding references an unknown Task');
-                  }
-                  if (
-                    requirementRefs.some(
-                      (requirementRef) => !knownRequirementRefs.has(requirementRef),
-                    )
-                  ) {
-                    throw new Error('Build finding references an unknown requirement');
-                  }
-                  const packageIds = plan.packages
-                    .filter((entry) => entry.taskIds.some((taskId) => taskIds.includes(taskId)))
-                    .map((entry) => entry.packageId)
-                    .sort();
-                  const findingId = `finding:${createHash('sha256')
-                    .update(canonicalJson({ finding, packageIds }))
-                    .digest('hex')
-                    .slice(0, 24)}`;
+                        : ('unknown' as const);
+                  const packageIds =
+                    finding.packageIds.length > 0
+                      ? finding.packageIds
+                      : plan.packages
+                          .filter((entry) =>
+                            entry.taskIds.some((taskId) => finding.taskIds.includes(taskId)),
+                          )
+                          .map((entry) => entry.packageId)
+                          .sort();
                   return {
-                    findingId,
+                    findingId: finding.identity,
                     classification,
                     blocking: true,
-                    requirementRefs,
-                    taskIds,
+                    requirementRefs: finding.requirementIds,
+                    taskIds: finding.taskIds,
                     packageIds,
                     summary: finding.summary,
                   };
@@ -3682,22 +3670,6 @@ export class WorkflowRuns extends Service {
                 });
               }
               if (!checkEvidence.accepted) {
-                const planningFinding = checkEvidence.findings.find(
-                  (finding) => finding.classification === 'planning',
-                );
-                if (planningFinding) {
-                  const proposalDigest = `sha256:${createHash('sha256')
-                    .update(canonicalJson({ plan: plan.digest, finding: planningFinding }))
-                    .digest('hex')}` as const;
-                  const requested = await this.coordinator.acceptChangeObservation(runId, {
-                    kind: 'build-design-revision-required',
-                    requestId: `build-design:${proposalDigest.slice(-24)}`,
-                    proposalDigest,
-                    reason: planningFinding.summary,
-                    evidenceIds: [checkEvidence.evidenceId],
-                  });
-                  return { ...requested, value: await this.coordinator.status(runId) };
-                }
                 const affectedPackageIds = [
                   ...new Set(checkEvidence.findings.flatMap((finding) => finding.packageIds)),
                 ];

@@ -183,6 +183,7 @@ function externalReplayHarness() {
     findings: [
       {
         kind: 'implementation_failure',
+        code: 'implementation-failed',
         summary: 'A bounded finding remains stable across transport retries.',
         taskIds: ['6.1'],
       },
@@ -403,7 +404,9 @@ describe('Managed Work Executor Build contract', () => {
     const claim = vi
       .fn()
       .mockRejectedValue(
-        new Error('External Work Execution Host cannot claim work-plan; missing specification.read'),
+        new Error(
+          'External Work Execution Host cannot claim work-plan; missing specification.read',
+        ),
       );
     const markHostStarted = vi.fn();
     const service = Object.create(ManagedWorkExecutor.prototype) as ManagedWorkExecutor;

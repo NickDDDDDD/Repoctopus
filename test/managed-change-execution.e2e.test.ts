@@ -1484,6 +1484,7 @@ describe('managed Change execution production composition', () => {
                 findings: [
                   {
                     kind: 'implementation_failure',
+                    code: 'implementation-failed',
                     summary: 'retry the bounded package without revising Design',
                     taskIds: ['1.2'],
                     requirementIds: ['managed-demo#managed-execution'],

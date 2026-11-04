@@ -218,16 +218,20 @@ export interface DelegationReceipt {
 
 export type WorkExecutionFindingKind =
   | 'implementation_failure'
-  | 'design_assumption_invalid'
-  | 'planning_semantics_changed'
+  | 'authority_conflict'
+  | 'plan_constraint'
+  | 'evidence_mismatch'
   | 'evidence_unavailable'
   | 'external_result_unknown';
 
 export interface WorkExecutionFinding {
   kind: WorkExecutionFindingKind;
+  code: string;
   summary: string;
   requirementIds?: readonly string[];
   taskIds?: readonly string[];
+  packageIds?: readonly string[];
+  evidenceIds?: readonly string[];
 }
 
 export type WorkExecutionHostReconciliation =
