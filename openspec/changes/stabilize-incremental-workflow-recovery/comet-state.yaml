@@ -1,0 +1,116 @@
+# comet-execution: managed-run
+change_id: e315e531-2e33-49a0-869c-32e6abbf8fa6
+workflow: full
+language: zh-CN
+phase: open
+context_compression: off
+build_mode: null
+build_pause: null
+subagent_dispatch: null
+tdd_mode: null
+review_mode: thorough
+isolation: current
+verify_mode: null
+auto_transition: true
+base_ref: a0493aec962b52af96bb73aa2aef69fefb95e074
+design_doc: null
+plan: null
+verify_result: pending
+verify_failures: 0
+verification_report: null
+branch_status: pending
+created_at: 2026-11-04
+verified_at: null
+archive_confirmation: null
+archived: false
+bound_branch: codex/stabilize-incremental-workflow-recovery
+direct_override: null
+handoff_context: null
+handoff_hash: null
+classic_profile: null
+classic_migration: null
+run_checkpoint:
+  schema: comet.workflow-run-checkpoint.v1
+  hash: c4ec8f848053fe4cc090610f75fd079c7b80dcab78584ba2e8e05a16d9f164c2
+  run:
+    protocolVersion: 1
+    schemaVersion: 1
+    runId: stabilize-incremental-workflow-recovery
+    revision: 1
+    workflow:
+      id: comet-classic-full
+      version: "1"
+      hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    definitionHashes:
+      '["comet-classic-full","1"]': ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+    initialStateHash: cf992c2d22eb37ed927a2582a25941c6612810fe728f9a885ac5f647043060c9
+    input:
+      change: stabilize-incremental-workflow-recovery
+      changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+      workspaceBaseline:
+        ref: 23af2b75-8232-4850-83c2-57806b1476e2
+    state:
+      archiveConfirmation: null
+      archived: false
+      autoTransition: true
+      baseRef: a0493aec962b52af96bb73aa2aef69fefb95e074
+      boundBranch: codex/stabilize-incremental-workflow-recovery
+      branchStatus: pending
+      buildMode: null
+      buildPause: null
+      classicMigration: null
+      classicProfile: null
+      contextCompression: off
+      createdAt: 2026-11-04
+      designDoc: null
+      directOverride: null
+      handoffContext: null
+      handoffHash: null
+      isolation: current
+      language: zh-CN
+      phase: open
+      plan: null
+      reviewMode: thorough
+      subagentDispatch: null
+      tddMode: null
+      verificationReport: null
+      verifiedAt: null
+      verifyFailures: 0
+      verifyMode: null
+      verifyResult: pending
+      workflow: full
+    status: running
+    sequence: 1
+    actions:
+      - attempt: 1
+        id: stabilize-incremental-workflow-recovery:1
+        input:
+          input:
+            change: stabilize-incremental-workflow-recovery
+            changeDir: openspec/changes/stabilize-incremental-workflow-recovery
+            workspaceBaseline:
+              ref: 23af2b75-8232-4850-83c2-57806b1476e2
+          outputs: {}
+        inputHash: e49d85b78a1ad7119d488d748f8ff63c1b9d3ebe842c2d4478812a23a41b47a4
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-open
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-incremental-workflow-recovery
+        status: pending
+        stepId: full.open
+        type: invoke_skill
+    actionContexts:
+      stabilize-incremental-workflow-recovery:1:
+        results: {}
+        sequence: 1
+    waits: []
+    ready: []
+    joins: {}
+    outputs: {}
+    children: []
+    lineage: []
+  sourceRevision: 1
+  sourceHash: 7b050fa859c795852bb6a8580e341521325d14483e7dbe26e85bbeb416aa1611
