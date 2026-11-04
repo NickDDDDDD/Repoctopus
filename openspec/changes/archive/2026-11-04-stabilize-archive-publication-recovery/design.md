@@ -2,6 +2,8 @@
 comet_change: stabilize-archive-publication-recovery
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-11-04-stabilize-archive-publication-recovery
+status: final
 ---
 
 # Design

@@ -2,6 +2,7 @@
 change: stabilize-archive-publication-recovery
 design-doc: openspec/changes/stabilize-archive-publication-recovery/design.md
 base-ref: c4022afc5fa96f153fef9dfd59c31c0d82d30c3a
+archived-with: 2026-11-04-stabilize-archive-publication-recovery
 ---
 
 # Stabilize archive publication recovery implementation plan
