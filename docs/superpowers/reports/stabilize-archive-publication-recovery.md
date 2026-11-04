@@ -15,6 +15,9 @@
 已测试实现提交同时是打包产品和冻结验收 fixture 的边界。它之后的提交只包含
 OpenSpec、Comet 状态或验证证据。`check:managed-execution-report` 会独立重建 npm
 归档，并拒绝该边界之后的产品代码变化或语义包漂移。
+机器可读的包摘要权威保存在
+`verification/stabilize-archive-publication-recovery/verification-report.md`；本报告是 Comet
+生命周期使用的中文审查入口，两者引用同一个实现提交和包摘要。
 
 ## 已证明的 Runtime 不变量
 
