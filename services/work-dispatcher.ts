@@ -195,6 +195,21 @@ export class WorkDispatcher extends Service {
         assertHostSupportsWork(request.hostCapabilities, work);
       }
     }
+    const attempt = request.attempt ?? 1;
+    const existing = state.workExecution;
+    if (
+      existing?.workId === work.workId &&
+      existing.attempt === attempt &&
+      existing.checkEpoch === work.checkEpoch
+    ) {
+      const resumed = await this.ctx.workExecutionAuthority.loadAuthoritativePacket(request.runId);
+      if (existing.status === 'claimed') {
+        await this.ctx.workExecutionAuthority.recordSkillFacts(resumed.packet, 'resolved');
+        await this.ctx.workExecutionAuthority.markContextDelivered(resumed.packet);
+        await this.ctx.workExecutionAuthority.recordSkillFacts(resumed.packet, 'delivered');
+      }
+      return resumed;
+    }
     const executionContext = await this.ctx.workContextAssembler.assemble({
       work,
       changeId: state.changeLifecycle!.identity.changeId,
@@ -203,12 +218,12 @@ export class WorkDispatcher extends Service {
         lifecycle: state.changeLifecycle!,
         work,
       }),
-      diagnostic: work.phase === 'build' && (request.attempt ?? 1) > 1,
+      diagnostic: work.phase === 'build' && attempt > 1,
     });
     const intent = await this.ctx.actionDispatcher.claim({
       runId: request.runId,
       workId: work.workId,
-      attempt: request.attempt ?? 1,
+      attempt,
       checkEpoch: work.checkEpoch,
       inputDigest: work.inputDigest,
       composition: state.composition,
