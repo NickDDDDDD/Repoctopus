@@ -62,15 +62,15 @@
 
 ## 5. Verify and deliver
 
-- [ ] 5.1 运行领域、Service、CLI、单仓/多仓E2E、重启与架构测试，并执行strict OpenSpec、typecheck、lint、generated、provenance和完整`npm run verify`。 <!-- comet-task:3cdbf292-6c52-45b3-847b-2a8ac24a18c3 -->
+- [x] 5.1 运行领域、Service、CLI、单仓/多仓E2E、重启与架构测试，并执行strict OpenSpec、typecheck、lint、generated、provenance和完整`npm run verify`。 <!-- comet-task:3cdbf292-6c52-45b3-847b-2a8ac24a18c3 -->
       **Blocked by:** 4.3
       **Acceptance:** 所有门禁通过；定向搜索证明没有全局Binding capability identity或三个入口的重复能力顺序
       **Requirements:** managed-work-execution#host-capability-必须以当前-work-为作用域
-- [ ] 5.2 保留round4旧Run和错误输出作为正式失败fixture，用修复后的打包产品启动相同两包TDD多仓验收。 <!-- comet-task:8d4294ba-4368-4fcf-9840-99a8c335b820 -->
+- [x] 5.2 保留round4旧Run和错误输出作为正式失败fixture，用修复后的打包产品启动相同两包TDD多仓验收。 <!-- comet-task:8d4294ba-4368-4fcf-9840-99a8c335b820 -->
       **Blocked by:** 5.1
       **Acceptance:** 不编辑旧Store；新Run完成Configure→Plan并能正确阻断/接受Execute Host，最终继续到Check
       **Requirements:** change-lifecycle#build-configuration-只允许受支持的固定策略
-- [ ] 5.3 更新运行时文档和正式验证报告，提交、推送并清理临时日志、JSON与scratch输出。 <!-- comet-task:71cbf4a9-a53c-43a3-b1ea-994682579485 -->
+- [x] 5.3 更新运行时文档和正式验证报告，提交、推送并清理临时日志、JSON与scratch输出。 <!-- comet-task:71cbf4a9-a53c-43a3-b1ea-994682579485 -->
       **Blocked by:** 5.2
       **Acceptance:** 文档说明Work capability、Binding和unknown recovery的唯一owner；验证报告绑定最终commit和命令结果，工作树干净且远端同步
       **Requirements:** development-telemetry#build-策略绑定与人工等待必须可观测
