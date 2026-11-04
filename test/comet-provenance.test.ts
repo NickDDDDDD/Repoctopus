@@ -36,6 +36,12 @@ const validManifest = {
       sourceSha256: 'd'.repeat(64),
       adoption: 'behavioral-reference',
     },
+    {
+      role: 'action-retry-policy',
+      source: 'domains/engine/runtime-action.ts',
+      sourceSha256: 'e'.repeat(64),
+      adoption: 'behavioral-reference',
+    },
   ],
 };
 
@@ -53,7 +59,9 @@ describe('Comet provenance contract', () => {
   it('rejects an incomplete reference set and a packaged Comet dependency', () => {
     const manifest = {
       ...validManifest,
-      references: validManifest.references.slice(0, 3),
+      references: validManifest.references.filter(
+        (reference) => reference.role !== 'evidence-invalidation',
+      ),
     };
 
     expect(

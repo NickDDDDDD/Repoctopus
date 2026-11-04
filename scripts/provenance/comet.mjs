@@ -3,6 +3,7 @@ const REQUIRED_REFERENCES = new Map([
   ['revision-command', 'domains/comet-classic/classic-sdk-revision.ts'],
   ['revision-application', 'domains/comet-classic/classic-sdk-revision-application.ts'],
   ['evidence-invalidation', 'domains/engine/runtime-service.ts'],
+  ['action-retry-policy', 'domains/engine/runtime-action.ts'],
 ]);
 
 function dependencyEntries(packageJson) {

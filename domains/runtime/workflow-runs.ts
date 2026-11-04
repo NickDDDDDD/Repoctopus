@@ -173,6 +173,11 @@ function retireMismatchedExecution(
   ) {
     return { state, fact: null };
   }
+  if (['invoking', 'submitted', 'unknown'].includes(execution.status)) {
+    throw new Error(
+      'Lifecycle cannot replace an unresolved Work execution; reconcile the authoritative invocation first',
+    );
+  }
   const stateWithoutExecution = structuredClone(state);
   delete stateWithoutExecution.workExecution;
   return {

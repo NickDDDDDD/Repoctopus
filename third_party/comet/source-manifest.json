@@ -30,6 +30,12 @@
       "source": "domains/engine/runtime-service.ts",
       "sourceSha256": "69c903f5492087bdea6bfb0bd2ce31df594f42d910c0d3bbd721a2ede73fc44e",
       "adoption": "behavioral-reference"
+    },
+    {
+      "role": "action-retry-policy",
+      "source": "domains/engine/runtime-action.ts",
+      "sourceSha256": "da3771d559025fac4442cffdc34d53c47c5ce69ac4c7054ec785676004c21cf4",
+      "adoption": "behavioral-reference"
     }
   ],
   "files": [
@@ -156,7 +162,7 @@
       "source": "domains/comet-classic/classic-guard.ts",
       "sourceSha256": "9d34982be2edce5a1ceb067310b4e82610beb6a874cd1ddbfa0fb5898ac36108",
       "target": "domains/runtime/workflow-runs.ts",
-      "sha256": "a7200559e2627a6cd074987ee23fd17fde1adf20bb96c13a25b89387f4dac74e",
+      "sha256": "8ba0da7397f42c1189fa1ac1ef10df47aad9373276f0a9814dca40070dfbe8e9",
       "adoption": "modified"
     },
     {

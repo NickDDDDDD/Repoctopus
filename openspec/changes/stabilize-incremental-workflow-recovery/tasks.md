@@ -35,17 +35,17 @@
 
 ## 3. Host Finding 与 Continue Build
 
-- [ ] 3.1 以事实分类替换design_assumption_invalid和planning_semantics_changed，并用合同测试验证Requirement、Task、Package和Evidence引用边界 <!-- comet-task:0af000c7-725e-4af6-a42b-64d006f51c59 -->
+- [x] 3.1 以事实分类替换design_assumption_invalid和planning_semantics_changed，并用合同测试验证Requirement、Task、Package和Evidence引用边界 <!-- comet-task:0af000c7-725e-4af6-a42b-64d006f51c59 -->
   **Blocked by:** 2.2
   **Acceptance:** 旧finding不再被schema接受或映射生命周期；未知与越界引用使当前submission可纠正地失败
   **Requirements:** Host 只能报告发现而不能选择阶段, Finding 必须先验证再形成恢复处置
 
-- [ ] 3.2 实现finding规范化与稳定identity，并用测试验证自由文本摘要不参与低基数分类或恢复动作选择 <!-- comet-task:8284985e-4ff2-47e1-bc0f-d54ec1f13df5 -->
+- [x] 3.2 实现finding规范化与稳定identity，并用测试验证自由文本摘要不参与低基数分类或恢复动作选择 <!-- comet-task:8284985e-4ff2-47e1-bc0f-d54ec1f13df5 -->
   **Blocked by:** 3.1
   **Acceptance:** 相同结构化事实产生相同identity；只有摘要变化不会改变authority diff或直接选择Design
   **Requirements:** Finding 必须先验证再形成恢复处置
 
-- [ ] 3.3 实现continue-build的attempt恢复与结果未知分流，并用重启测试证明claim、packet、invocation、submission和rejection历史被保留 <!-- comet-task:320bf9ce-6559-41d2-9de5-3c77bcfdb786 -->
+- [x] 3.3 实现continue-build的attempt恢复与结果未知分流，并用重启测试证明claim、packet、invocation、submission和rejection历史被保留 <!-- comet-task:320bf9ce-6559-41d2-9de5-3c77bcfdb786 -->
   **Blocked by:** 2.4, 3.2
   **Acceptance:** 可安全重试的Work继续同一执行链；未知外部副作用进入reconciliation且旧candidate不会被重放
   **Requirements:** Continue Build 保留当前执行身份, 恢复重放必须收敛到同一 checkpoint

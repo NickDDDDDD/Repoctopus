@@ -5,6 +5,7 @@ import type { WorkExecutionContext } from '../change-lifecycle/work-context.js';
 import type { WorkDescriptor } from '../change-lifecycle/transition.js';
 import type { WorkPackageCandidate } from '../change-lifecycle/build-protocol.js';
 import { canonicalJson } from '../workflow-contract/canonical.js';
+import type { WorkExecutionRetryPolicy } from './retry-policy.js';
 
 export type WorkContinuationKind =
   | 'execute'
@@ -36,6 +37,8 @@ export interface WorkExecutionRecovery {
     | 'outcome-processing-error'
     | 'validator-pending'
     | 'checkpoint-superseded'
+    | 'checkpoint-superseded-unresolved'
+    | 'retry-policy-blocked'
     | 'transition-pending'
     | 'open-gate-pending'
     | 'content-missing-or-corrupt'
@@ -254,7 +257,7 @@ export interface ExternalWorkExecutionOutcome {
   delegationReceipts?: readonly DelegationReceipt[];
 }
 
-export interface WorkExecutionCheckpoint {
+export interface WorkExecutionAttemptSnapshot {
   schemaVersion: 3;
   workId: string;
   attempt: number;
@@ -262,6 +265,8 @@ export interface WorkExecutionCheckpoint {
   intentId: string;
   claimToken: `sha256:${string}`;
   inputDigest: `sha256:${string}`;
+  executionChainId?: `execution-chain:sha256:${string}`;
+  retryPolicy?: WorkExecutionRetryPolicy;
   packet: WorkExecutionPacketIdentity;
   status:
     | 'claimed'
@@ -283,6 +288,10 @@ export interface WorkExecutionCheckpoint {
   validatorId?: string;
   continuation: WorkContinuationKind;
   updatedAt: string;
+}
+
+export interface WorkExecutionCheckpoint extends WorkExecutionAttemptSnapshot {
+  attemptHistory?: readonly WorkExecutionAttemptSnapshot[];
 }
 
 export interface WorkExecutionHostPreflight {

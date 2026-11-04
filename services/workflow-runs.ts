@@ -120,7 +120,11 @@ import type { DeliveryIntentV3, DeliveryPolicy } from '../domains/delivery/types
 import { deliveryPolicyDigest } from '../domains/delivery/snapshot.js';
 import { normalizeProtectedBranchPatterns } from '../domains/delivery/branch-policy.js';
 import type { ActionIntent, ActionReceipt, WorkExecutorIdentity } from '../domains/action/types.js';
-import type { WorkExecutionHostIdentity } from '../domains/work-execution/types.js';
+import type {
+  WorkExecutionCheckpoint,
+  WorkExecutionHostIdentity,
+  WorkExecutionRecovery,
+} from '../domains/work-execution/types.js';
 import {
   assertWorkExecutionFindingReferences,
   normalizeWorkExecutionFindings,
@@ -229,6 +233,19 @@ function deliveryBranchRoute(branch: DeliveryIntentV3['changeBranch']) {
     sourceBranch: branch.sourceBranch,
     targetBranch: branch.targetBranch,
   };
+}
+
+export function claimAttemptForContinuation(
+  reason: WorkExecutionRecovery['reason'],
+  execution: Pick<WorkExecutionCheckpoint, 'workId' | 'attempt'> | undefined,
+  work: Pick<WorkDescriptor, 'workId'>,
+): number | undefined {
+  if (!execution || execution.workId !== work.workId) return undefined;
+  if (reason === 'claim-redelivery') return execution.attempt;
+  if (reason === 'host-not-executed' || reason === 'work-failed') {
+    return execution.attempt + 1;
+  }
+  return undefined;
 }
 
 export class WorkflowRuns extends Service {
@@ -2263,10 +2280,15 @@ export class WorkflowRuns extends Service {
                   : work.capabilities.includes('specification.write')
                     ? 'specification'
                     : 'manual';
+            const claimAttempt = claimAttemptForContinuation(
+              classifiedContinuation.reason,
+              execution,
+              work,
+            );
             const dispatched = await this.ctx.managedWorkExecutor.execute({
               runId,
               adapter,
-              ...(execution?.workId === work.workId ? { attempt: execution.attempt + 1 } : {}),
+              ...(claimAttempt === undefined ? {} : { attempt: claimAttempt }),
               executor: {
                 actorId: 'repoctopus-runtime',
                 runnerId: `runtime:${runId}`,

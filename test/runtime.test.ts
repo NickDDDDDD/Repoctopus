@@ -63,7 +63,7 @@ describe('Repoctopus runtime', () => {
     return createWorkflowPackage(definition);
   }
 
-  it('atomically retires the rejected Open execution when repair Work becomes authoritative', async () => {
+  it('blocks unresolved execution replacement and retires it only after a known outcome', async () => {
     const workspace = await temporaryDirectory('repoctopus-open-repair-runtime-');
     cleanup.push(workspace);
     const store = new FileRuntimeStore(workspace);
@@ -127,8 +127,8 @@ describe('Repoctopus runtime', () => {
         packetDigest: `sha256:${'6'.repeat(64)}`,
         contextDigest: `sha256:${'7'.repeat(64)}`,
       },
-      status: 'outcome',
-      continuation: 'execute',
+      status: 'invoking',
+      continuation: 'wait',
       updatedAt: '2026-11-01T00:00:00.000Z',
     };
     await store.commitGuarded(runId, ({ state, trajectory }) => ({
@@ -152,7 +152,7 @@ describe('Repoctopus runtime', () => {
       value: undefined,
     }));
 
-    const accepted = await runtime.acceptChangeObservation(runId, {
+    const repairObservation = {
       kind: 'open-repair-required',
       expectedRevision: 0,
       source: 'strict-validation',
@@ -160,7 +160,40 @@ describe('Repoctopus runtime', () => {
       evidenceIds: [`sha256:${'8'.repeat(64)}`],
       inputDigest: repairWork.inputDigest,
       work: repairWork,
+    } as const;
+
+    await expect(runtime.acceptChangeObservation(runId, repairObservation)).rejects.toThrow(
+      /cannot replace an unresolved Work execution/u,
+    );
+    expect(await store.loadRun(runId)).toMatchObject({
+      workExecution: { status: 'invoking', workId: originalWork.workId },
+      changeLifecycle: { checkEpoch: 0, currentWork: { workId: originalWork.workId } },
     });
+    await store.commitGuarded(runId, ({ state, trajectory }) => {
+      const nextState = {
+        ...state,
+        workExecution: { ...state.workExecution!, status: 'outcome' as const },
+        stateVersion: state.stateVersion + 1,
+        updatedAt: '2026-11-01T00:01:00.000Z',
+      };
+      return {
+        state: nextState,
+        event: {
+          schemaVersion: 1,
+          sequence: trajectory.length + 1,
+          eventId: 'seed-open-known-outcome',
+          timestamp: nextState.updatedAt,
+          type: 'work.completed',
+          runId,
+          stateVersion: nextState.stateVersion,
+          compositionDigest: nextState.composition.compositionDigest,
+          data: { workId: originalWork.workId, result: 'known' },
+        },
+        value: undefined,
+      };
+    });
+
+    const accepted = await runtime.acceptChangeObservation(runId, repairObservation);
 
     expect(accepted.value.state).not.toHaveProperty('workExecution');
     expect(accepted.value.state.changeLifecycle?.openApprovalInvalidated).toBe(true);
