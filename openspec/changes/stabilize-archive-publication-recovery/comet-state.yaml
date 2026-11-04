@@ -2,7 +2,7 @@
 change_id: 6a975a9b-2c20-4db9-8695-122359409546
 workflow: full
 language: zh-CN
-phase: build
+phase: verify
 context_compression: off
 build_mode: autonomous
 build_pause: null
@@ -15,7 +15,7 @@ auto_transition: true
 base_ref: c4022afc5fa96f153fef9dfd59c31c0d82d30c3a
 design_doc: openspec/changes/stabilize-archive-publication-recovery/design.md
 plan: docs/superpowers/plans/2026-11-04-stabilize-archive-publication-recovery.md
-verify_result: fail
+verify_result: pending
 verify_failures: 1
 verification_report: docs/superpowers/reports/stabilize-archive-publication-recovery.md
 branch_status: pending
@@ -31,7 +31,7 @@ classic_profile: null
 classic_migration: null
 run_checkpoint:
   schema: comet.workflow-run-checkpoint.v2
-  hash: 2a6dcf5388cb0e27738019015845d06b1ad38ab7c672c4d8b4fd37f30cc5f2f4
+  hash: a37f76b19714ec3f3c7bfd0ac75b5994d697ff1635912a9a5a9e8505d11be042
   run:
     protocolVersion: 1
     schemaVersion: 1
@@ -58,7 +58,7 @@ run_checkpoint:
       branchStatus: pending
       buildMode: autonomous
       buildPause: null
-      checkEpoch: 4
+      checkEpoch: 5
       classicMigration: null
       classicProfile: null
       contextCompression: off
@@ -69,7 +69,7 @@ run_checkpoint:
       handoffHash: f14618d810380089eb99b634b99dec1cde8d46d02583c7ba387ed7b7d7e6f95c
       isolation: current
       language: zh-CN
-      phase: build
+      phase: verify
       plan: docs/superpowers/plans/2026-11-04-stabilize-archive-publication-recovery.md
       reviewMode: thorough
       subagentDispatch: null
@@ -78,10 +78,10 @@ run_checkpoint:
       verifiedAt: null
       verifyFailures: 1
       verifyMode: null
-      verifyResult: fail
+      verifyResult: pending
       workflow: full
     status: running
-    sequence: 22
+    sequence: 24
     actions:
       - attempt: 1
         claim:
@@ -630,6 +630,14 @@ run_checkpoint:
         stepId: full.build.execute
         type: invoke_skill
       - attempt: 1
+        claim:
+          executorId: comet-classic-check
+          token: portable-58af42c837f63d06db770a4185bd3fd062f4e213892127d5c3d9e2c33936cfec
+        executionOrigin:
+          workflow:
+            hash: ee198afdb53add0c23f98202aae8cdbe4079b9f4ebf7a62ed4ab8411ed591db5
+            id: comet-classic-full
+            version: "1"
         id: stabilize-archive-publication-recovery:22
         input:
           input:
@@ -639,16 +647,66 @@ run_checkpoint:
               ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
           outputs: {}
         inputHash: dae0160b2686a694f3168d6be0563c10d7ca08bcbb31bf035323457ac6c43f8a
+        outcome:
+          actionId: stabilize-archive-publication-recovery:22
+          attempt: 1
+          claimToken: portable-58af42c837f63d06db770a4185bd3fd062f4e213892127d5c3d9e2c33936cfec
+          inputHash: dae0160b2686a694f3168d6be0563c10d7ca08bcbb31bf035323457ac6c43f8a
+          outcomeId: 4f8ae4d4-8551-492b-b3d0-29dd8a2809f7
+          output:
+            argv:
+              - npm.cmd
+              - run
+              - verify
+            changedDuringExecution: []
+            checkEpoch: 4
+            contentHash: 08c0d8bce8effdf0e2897ca0712fa7bee67a03aa185f335c50e2483e953b0a41
+            cwd: .
+            environment: 21506b3ae68782caf52f445b7be3a94a0a053c729c0d5e045468b4e86704d659
+            exitCode: 0
+            inputAfter: d32d6981ecadad999b29a9db7aeb9b7ecef9529de61fd529174805281a67709c
+            inputBefore: d32d6981ecadad999b29a9db7aeb9b7ecef9529de61fd529174805281a67709c
+            manifestHash: 26505f545bc81b314d6f20203cfdc008c77c20f09a165fd16a520f09e7777a24
+            manifestRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/ef008eee-41a1-403f-8224-7c91088c9a06.manifest
+            receiptRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/476bba13-1644-4b0a-a205-8246077a38fa.log
+            reusable: false
+            reused: false
+            scope: build
+            tier: full
+            timeoutMs: 900000
+          status: succeeded
         protocolVersion: 1
-        receipts: []
+        receipts:
+          - hash: 6aa821d7780b64403c49d62b4b30858c67425411130d76d3f75f9f1c2de6038c
+            outcomeId: 4f8ae4d4-8551-492b-b3d0-29dd8a2809f7
         reconciliations: []
         ref: classic-check
         requiredCapabilities: []
         retry: manual
         runId: stabilize-archive-publication-recovery
-        status: pending
+        status: succeeded
         stepId: full.build.check
         type: call_tool
+      - attempt: 1
+        id: stabilize-archive-publication-recovery:24
+        input:
+          input:
+            change: stabilize-archive-publication-recovery
+            changeDir: openspec/changes/stabilize-archive-publication-recovery
+            workspaceBaseline:
+              ref: 1b6ded1f-d29c-4f32-a1b3-32352043ac04
+          outputs: {}
+        inputHash: 98e0c77ada1ff9265a666c2f72be6c07cea82b928543bfbe4ff7dde26954a5f9
+        protocolVersion: 1
+        receipts: []
+        reconciliations: []
+        ref: comet-verify
+        requiredCapabilities: []
+        retry: manual
+        runId: stabilize-archive-publication-recovery
+        status: pending
+        stepId: full.verify.run
+        type: invoke_skill
     actionContexts:
       stabilize-archive-publication-recovery:1:
         results: {}
@@ -677,6 +735,9 @@ run_checkpoint:
       stabilize-archive-publication-recovery:22:
         results: {}
         sequence: 22
+      stabilize-archive-publication-recovery:24:
+        results: {}
+        sequence: 24
       stabilize-archive-publication-recovery:4:
         results: {}
         sequence: 4
@@ -843,13 +904,23 @@ run_checkpoint:
           ref: docs/superpowers/plans/2026-11-04-stabilize-archive-publication-recovery.md
           contentHash: ea401cfafa06261c825f8b4d3183192e9fc4fe7d20870c2f77d327c83fde846e
           submissionId: edb865c4-5fa5-466b-8c93-f05b062fe203
+      - id: stabilize-archive-publication-recovery:23
+        stepId: full.build.check.evidence
+        sequence: 23
+        kind: classic-build-check
+        status: resolved
+        results: {}
+        receipt:
+          ref: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/476bba13-1644-4b0a-a205-8246077a38fa.log
+          contentHash: 08c0d8bce8effdf0e2897ca0712fa7bee67a03aa185f335c50e2483e953b0a41
+          submissionId: 4f1d64aa-0443-4649-aa63-64b892d96480
     ready: []
     joins: {}
     outputs: {}
     children: []
     lineage: []
-  sourceRevision: 34
-  sourceHash: 9d8a532219ddd8f43cf0b4d57b687c591875b6f689b18a6ba299bd829380d3f7
+  sourceRevision: 37
+  sourceHash: 7ae1c7865dd56281101df351aeb69c8f375498d60d3596f15165a24a2d388b3d
   pool:
     version: 3
     values:
@@ -998,6 +1069,28 @@ run_checkpoint:
         scope: verify
         tier: full
         timeoutMs: 900000
+      - argv:
+          - npm.cmd
+          - run
+          - verify
+        changedDuringExecution: []
+        checkEpoch: 4
+        contentHash: 08c0d8bce8effdf0e2897ca0712fa7bee67a03aa185f335c50e2483e953b0a41
+        cwd: .
+        environment: 21506b3ae68782caf52f445b7be3a94a0a053c729c0d5e045468b4e86704d659
+        exitCode: 0
+        inputAfter: d32d6981ecadad999b29a9db7aeb9b7ecef9529de61fd529174805281a67709c
+        inputBefore: d32d6981ecadad999b29a9db7aeb9b7ecef9529de61fd529174805281a67709c
+        manifestHash: 26505f545bc81b314d6f20203cfdc008c77c20f09a165fd16a520f09e7777a24
+        manifestRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/ef008eee-41a1-403f-8224-7c91088c9a06.manifest
+        receiptRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/476bba13-1644-4b0a-a205-8246077a38fa.log
+        reusable: false
+        reused: false
+        scope: build
+        tier: full
+        timeoutMs: 900000
+      - contentHash: 08c0d8bce8effdf0e2897ca0712fa7bee67a03aa185f335c50e2483e953b0a41
+        ref: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/476bba13-1644-4b0a-a205-8246077a38fa.log
       - sequence: 9
         value:
           boundBranch: codex/stabilize-archive-publication-recovery
@@ -1196,6 +1289,32 @@ run_checkpoint:
       - sequence: 21
         value:
           event: build-complete
+      - sequence: 22
+        value:
+          argv:
+            - npm.cmd
+            - run
+            - verify
+          changedDuringExecution: []
+          checkEpoch: 4
+          contentHash: 08c0d8bce8effdf0e2897ca0712fa7bee67a03aa185f335c50e2483e953b0a41
+          cwd: .
+          environment: 21506b3ae68782caf52f445b7be3a94a0a053c729c0d5e045468b4e86704d659
+          exitCode: 0
+          inputAfter: d32d6981ecadad999b29a9db7aeb9b7ecef9529de61fd529174805281a67709c
+          inputBefore: d32d6981ecadad999b29a9db7aeb9b7ecef9529de61fd529174805281a67709c
+          manifestHash: 26505f545bc81b314d6f20203cfdc008c77c20f09a165fd16a520f09e7777a24
+          manifestRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/ef008eee-41a1-403f-8224-7c91088c9a06.manifest
+          receiptRef: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/476bba13-1644-4b0a-a205-8246077a38fa.log
+          reusable: false
+          reused: false
+          scope: build
+          tier: full
+          timeoutMs: 900000
+      - sequence: 23
+        value:
+          contentHash: 08c0d8bce8effdf0e2897ca0712fa7bee67a03aa185f335c50e2483e953b0a41
+          ref: .comet/runtime/classic-sdk-checks/704a396bf1b582e7e9b336ce3f2ec94a42126b9041b920f42c374f8c73b5f98f/476bba13-1644-4b0a-a205-8246077a38fa.log
     nodes:
       - key: full.open
         value: 0
@@ -1442,575 +1561,660 @@ run_checkpoint:
         left: 36
         right: 47
         height: 5
-      - key: full.build.configure
+      - key: full.build.check
         value: 18
         left: null
         right: null
         height: 1
-      - key: full.design.confirm
+      - key: full.build.check.evidence
+        value: 19
+        left: 49
+        right: 33
+        height: 2
+      - key: full.build.confirm
+        value: 9
+        left: 50
+        right: 27
+        height: 3
+      - key: full.build.plan
+        value: 10
+        left: 51
+        right: 29
+        height: 4
+      - key: full.design.document
+        value: 6
+        left: 52
+        right: 47
+        height: 5
+      - key: full.build.configure
         value: 20
         left: null
         right: null
         height: 1
-      - key: full.build.confirm
-        value: 19
-        left: 49
-        right: 50
-        height: 2
-      - key: full.design.evidence
+      - key: full.design.confirm
         value: 22
         left: null
         right: null
         height: 1
-      - key: full.open
+      - key: full.build.confirm
+        value: 21
+        left: 54
+        right: 55
+        height: 2
+      - key: full.design.evidence
         value: 24
         left: null
         right: null
         height: 1
+      - key: full.open
+        value: 26
+        left: null
+        right: null
+        height: 1
       - key: full.design.handoff
-        value: 23
-        left: 52
-        right: 53
+        value: 25
+        left: 57
+        right: 58
         height: 2
       - key: full.open.revalidate
-        value: 27
+        value: 29
         left: null
         right: null
         height: 1
       - key: full.open.evidence
-        value: 26
-        left: null
-        right: 55
-        height: 2
-      - key: full.open.confirm
-        value: 25
-        left: 54
-        right: 56
-        height: 3
-      - key: full.design.document
-        value: 21
-        left: 51
-        right: 57
-        height: 4
-      - key: full.build.plan
         value: 28
         left: null
-        right: null
-        height: 1
-      - key: full.design.confirm
-        value: 20
-        left: null
-        right: null
-        height: 1
-      - key: full.build.plan.evidence
-        value: 29
-        left: 59
         right: 60
         height: 2
-      - key: full.build.confirm
-        value: 19
-        left: 49
+      - key: full.open.confirm
+        value: 27
+        left: 59
         right: 61
         height: 3
       - key: full.design.document
-        value: 21
-        left: 62
-        right: 57
+        value: 23
+        left: 56
+        right: 62
         height: 4
-      - key: full.build.execute
+      - key: full.build.plan
         value: 30
         left: null
         right: null
         height: 1
-      - key: full.build.confirm
-        value: 19
-        left: 49
-        right: 64
-        height: 2
-      - key: full.build.plan.evidence
-        value: 29
+      - key: full.design.confirm
+        value: 22
         left: null
-        right: 60
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 31
+        left: 64
+        right: 65
         height: 2
-      - key: full.build.plan
-        value: 28
-        left: 65
+      - key: full.build.confirm
+        value: 21
+        left: 54
         right: 66
         height: 3
       - key: full.design.document
-        value: 21
+        value: 23
         left: 67
-        right: 57
+        right: 62
+        height: 4
+      - key: full.build.execute
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 21
+        left: 54
+        right: 69
+        height: 2
+      - key: full.build.plan.evidence
+        value: 31
+        left: null
+        right: 65
+        height: 2
+      - key: full.build.plan
+        value: 30
+        left: 70
+        right: 71
+        height: 3
+      - key: full.design.document
+        value: 23
+        left: 72
+        right: 62
         height: 4
       - key: full.build.check
-        value: 31
+        value: 33
         left: null
         right: null
         height: 1
       - key: full.build.configure
-        value: 18
+        value: 20
         left: null
         right: null
         height: 1
       - key: full.build.check.evidence
-        value: 32
-        left: 69
-        right: 70
+        value: 34
+        left: 74
+        right: 75
         height: 2
       - key: full.build.confirm
-        value: 19
-        left: 71
-        right: 64
+        value: 21
+        left: 76
+        right: 69
         height: 3
       - key: full.build.plan
-        value: 28
-        left: 72
-        right: 66
+        value: 30
+        left: 77
+        right: 71
         height: 4
       - key: full.design.document
-        value: 21
-        left: 73
-        right: 57
+        value: 23
+        left: 78
+        right: 62
         height: 5
       - key: full.open.evidence
-        value: 26
+        value: 28
         left: null
         right: null
         height: 1
       - key: full.verify.run
-        value: 34
+        value: 36
         left: null
         right: null
         height: 1
       - key: full.verify.report.evidence
-        value: 33
-        left: null
-        right: 76
-        height: 2
-      - key: full.open.revalidate
-        value: 27
-        left: 75
-        right: 77
-        height: 3
-      - key: full.open.confirm
-        value: 25
-        left: 54
-        right: 78
-        height: 4
-      - key: full.design.document
-        value: 21
-        left: 73
-        right: 79
-        height: 5
-      - key: full.verify.check
         value: 35
         left: null
-        right: null
-        height: 1
-      - key: full.verify.report.evidence
-        value: 33
-        left: 81
-        right: 76
+        right: 81
         height: 2
       - key: full.open.revalidate
-        value: 27
-        left: 75
+        value: 29
+        left: 80
         right: 82
         height: 3
       - key: full.open.confirm
-        value: 25
-        left: 54
+        value: 27
+        left: 59
         right: 83
         height: 4
       - key: full.design.document
-        value: 21
-        left: 73
+        value: 23
+        left: 78
         right: 84
         height: 5
-      - key: full.build.plan.evidence
+      - key: full.verify.check
         value: 37
         left: null
-        right: 60
-        height: 2
-      - key: full.build.plan
-        value: 36
-        left: 72
-        right: 86
-        height: 4
-      - key: full.design.document
-        value: 21
-        left: 87
-        right: 84
-        height: 5
-      - key: full.build.execute
-        value: 38
-        left: null
         right: null
         height: 1
-      - key: full.build.confirm
-        value: 19
-        left: 71
-        right: 89
-        height: 3
-      - key: full.build.plan
-        value: 36
-        left: 90
-        right: 86
-        height: 4
-      - key: full.design.document
-        value: 21
-        left: 91
-        right: 84
-        height: 5
-      - key: full.open
-        value: 24
-        left: null
-        right: null
-        height: 1
-      - key: full.open.evidence
-        value: 26
-        left: null
-        right: null
-        height: 1
-      - key: full.open.confirm
-        value: 25
-        left: 93
-        right: 94
+      - key: full.verify.report.evidence
+        value: 35
+        left: 86
+        right: 81
         height: 2
       - key: full.open.revalidate
-        value: 27
-        left: null
-        right: null
-        height: 1
-      - key: full.open.evidence
-        value: 26
-        left: null
-        right: 96
-        height: 2
-      - key: full.open.confirm
-        value: 25
-        left: 93
-        right: 97
-        height: 3
-      - key: full.design.confirm
-        value: 20
-        left: null
-        right: null
-        height: 1
-      - key: full.open
-        value: 24
-        left: null
-        right: null
-        height: 1
-      - key: full.design.handoff
-        value: 23
-        left: 99
-        right: 100
-        height: 2
-      - key: full.open.confirm
-        value: 25
-        left: 101
-        right: 97
-        height: 3
-      - key: full.design.confirm
-        value: 20
-        left: null
-        right: null
-        height: 1
-      - key: full.design.evidence
-        value: 22
-        left: null
-        right: null
-        height: 1
-      - key: full.design.document
-        value: 21
-        left: 103
-        right: 104
-        height: 2
-      - key: full.design.handoff
-        value: 23
-        left: 105
-        right: 100
-        height: 3
-      - key: full.open.confirm
-        value: 25
-        left: 106
-        right: 97
-        height: 4
-      - key: full.open.evidence
-        value: 26
-        left: null
-        right: null
-        height: 1
-      - key: full.open
-        value: 24
-        left: null
-        right: 108
-        height: 2
-      - key: full.design.handoff
-        value: 23
-        left: null
-        right: null
-        height: 1
-      - key: full.open.confirm
-        value: 25
-        left: null
-        right: null
-        height: 1
-      - key: full.open.revalidate
-        value: 27
-        left: null
-        right: null
-        height: 1
-      - key: full.open.evidence
-        value: 26
-        left: 111
-        right: 112
-        height: 2
-      - key: full.open
-        value: 24
-        left: 110
-        right: 113
-        height: 3
-      - key: full.build.configure
-        value: 18
-        left: null
-        right: null
-        height: 1
-      - key: full.design.document
-        value: 21
-        left: null
-        right: null
-        height: 1
-      - key: full.design.handoff
-        value: 23
-        left: null
-        right: null
-        height: 1
-      - key: full.design.evidence
-        value: 22
-        left: 116
-        right: 117
-        height: 2
-      - key: full.design.confirm
-        value: 20
-        left: 115
-        right: 118
-        height: 3
-      - key: full.open
-        value: 24
-        left: 119
-        right: 113
-        height: 4
-      - key: full.open
-        value: 24
-        left: null
-        right: null
-        height: 1
-      - key: full.design.confirm
-        value: 20
-        left: null
-        right: null
-        height: 1
-      - key: full.design.handoff
-        value: 23
-        left: null
-        right: null
-        height: 1
-      - key: full.design.document
-        value: 21
-        left: 122
-        right: 123
-        height: 2
-      - key: full.open.confirm
-        value: 25
-        left: null
-        right: null
-        height: 1
-      - key: full.open.revalidate
-        value: 27
-        left: null
-        right: null
-        height: 1
-      - key: full.open.evidence
-        value: 26
-        left: 125
-        right: 126
-        height: 2
-      - key: full.open
-        value: 24
-        left: 124
-        right: 127
-        height: 3
-      - key: full.build.configure
-        value: 18
-        left: null
-        right: null
-        height: 1
-      - key: full.build.plan
-        value: 28
-        left: null
-        right: null
-        height: 1
-      - key: full.build.confirm
-        value: 19
-        left: 129
-        right: 130
-        height: 2
-      - key: full.design.document
-        value: 21
-        left: null
-        right: null
-        height: 1
-      - key: full.design.handoff
-        value: 23
-        left: null
-        right: null
-        height: 1
-      - key: full.design.evidence
-        value: 22
-        left: 132
-        right: 133
-        height: 2
-      - key: full.design.confirm
-        value: 20
-        left: 131
-        right: 134
-        height: 3
-      - key: full.open
-        value: 24
-        left: 135
-        right: 127
-        height: 4
-      - key: full.build.check
-        value: 31
-        left: null
-        right: null
-        height: 1
-      - key: full.build.configure
-        value: 18
-        left: 137
-        right: null
-        height: 2
-      - key: full.build.execute
-        value: 30
-        left: null
-        right: null
-        height: 1
-      - key: full.build.plan.evidence
         value: 29
-        left: null
-        right: null
-        height: 1
-      - key: full.build.plan
-        value: 28
-        left: 139
-        right: 140
-        height: 2
-      - key: full.build.confirm
-        value: 19
-        left: 138
-        right: 141
+        left: 80
+        right: 87
         height: 3
-      - key: full.open
-        value: 24
-        left: 134
-        right: 127
-        height: 3
-      - key: full.design.confirm
-        value: 20
-        left: 142
-        right: 143
+      - key: full.open.confirm
+        value: 27
+        left: 59
+        right: 88
         height: 4
-      - key: full.build.check
-        value: 31
+      - key: full.design.document
+        value: 23
+        left: 78
+        right: 89
+        height: 5
+      - key: full.build.plan.evidence
+        value: 39
+        left: null
+        right: 65
+        height: 2
+      - key: full.build.plan
+        value: 38
+        left: 77
+        right: 91
+        height: 4
+      - key: full.design.document
+        value: 23
+        left: 92
+        right: 89
+        height: 5
+      - key: full.build.execute
+        value: 40
         left: null
         right: null
         height: 1
-      - key: full.build.configure
-        value: 18
+      - key: full.build.confirm
+        value: 21
+        left: 76
+        right: 94
+        height: 3
+      - key: full.build.plan
+        value: 38
+        left: 95
+        right: 91
+        height: 4
+      - key: full.design.document
+        value: 23
+        left: 96
+        right: 89
+        height: 5
+      - key: full.build.check
+        value: 41
         left: null
         right: null
         height: 1
       - key: full.build.check.evidence
-        value: 32
-        left: 145
-        right: 146
+        value: 42
+        left: 98
+        right: 75
         height: 2
       - key: full.build.confirm
-        value: 19
-        left: 147
-        right: 141
+        value: 21
+        left: 99
+        right: 94
         height: 3
-      - key: full.verify.run
-        value: 34
+      - key: full.build.plan
+        value: 38
+        left: 100
+        right: 91
+        height: 4
+      - key: full.design.document
+        value: 23
+        left: 101
+        right: 89
+        height: 5
+      - key: full.open
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 27
+        left: 103
+        right: 104
+        height: 2
+      - key: full.open.revalidate
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 28
+        left: null
+        right: 106
+        height: 2
+      - key: full.open.confirm
+        value: 27
+        left: 103
+        right: 107
+        height: 3
+      - key: full.design.confirm
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 26
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 25
+        left: 109
+        right: 110
+        height: 2
+      - key: full.open.confirm
+        value: 27
+        left: 111
+        right: 107
+        height: 3
+      - key: full.design.confirm
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 24
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 23
+        left: 113
+        right: 114
+        height: 2
+      - key: full.design.handoff
+        value: 25
+        left: 115
+        right: 110
+        height: 3
+      - key: full.open.confirm
+        value: 27
+        left: 116
+        right: 107
+        height: 4
+      - key: full.open.evidence
+        value: 28
+        left: null
+        right: null
+        height: 1
+      - key: full.open
+        value: 26
+        left: null
+        right: 118
+        height: 2
+      - key: full.design.handoff
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.open.confirm
+        value: 27
         left: null
         right: null
         height: 1
       - key: full.open.revalidate
-        value: 27
+        value: 29
         left: null
-        right: 149
-        height: 2
+        right: null
+        height: 1
       - key: full.open.evidence
+        value: 28
+        left: 121
+        right: 122
+        height: 2
+      - key: full.open
         value: 26
+        left: 120
+        right: 123
+        height: 3
+      - key: full.build.configure
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 23
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 24
+        left: 126
+        right: 127
+        height: 2
+      - key: full.design.confirm
+        value: 22
         left: 125
-        right: 150
+        right: 128
         height: 3
       - key: full.open
-        value: 24
-        left: 134
-        right: 151
+        value: 26
+        left: 129
+        right: 123
         height: 4
+      - key: full.open
+        value: 26
+        left: null
+        right: null
+        height: 1
       - key: full.design.confirm
+        value: 22
+        left: null
+        right: null
+        height: 1
+      - key: full.design.handoff
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.document
+        value: 23
+        left: 132
+        right: 133
+        height: 2
+      - key: full.open.confirm
+        value: 27
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 28
+        left: 135
+        right: 136
+        height: 2
+      - key: full.open
+        value: 26
+        left: 134
+        right: 137
+        height: 3
+      - key: full.build.configure
         value: 20
-        left: 148
-        right: 152
-        height: 5
+        left: null
+        right: null
+        height: 1
       - key: full.build.plan
-        value: 36
+        value: 30
+        left: null
+        right: null
+        height: 1
+      - key: full.build.confirm
+        value: 21
         left: 139
         right: 140
         height: 2
-      - key: full.build.confirm
-        value: 19
-        left: 147
-        right: 154
-        height: 3
-      - key: full.open.revalidate
-        value: 27
+      - key: full.design.document
+        value: 23
         left: null
         right: null
         height: 1
-      - key: full.open.evidence
-        value: 26
-        left: 125
-        right: 156
+      - key: full.design.handoff
+        value: 25
+        left: null
+        right: null
+        height: 1
+      - key: full.design.evidence
+        value: 24
+        left: 142
+        right: 143
         height: 2
-      - key: full.verify.report.evidence
+      - key: full.design.confirm
+        value: 22
+        left: 141
+        right: 144
+        height: 3
+      - key: full.open
+        value: 26
+        left: 145
+        right: 137
+        height: 4
+      - key: full.build.check
         value: 33
         left: null
         right: null
         height: 1
-      - key: full.verify.run
+      - key: full.build.configure
+        value: 20
+        left: 147
+        right: null
+        height: 2
+      - key: full.build.execute
+        value: 32
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 31
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 30
+        left: 149
+        right: 150
+        height: 2
+      - key: full.build.confirm
+        value: 21
+        left: 148
+        right: 151
+        height: 3
+      - key: full.open
+        value: 26
+        left: 144
+        right: 137
+        height: 3
+      - key: full.design.confirm
+        value: 22
+        left: 152
+        right: 153
+        height: 4
+      - key: full.build.check
+        value: 33
+        left: null
+        right: null
+        height: 1
+      - key: full.build.configure
+        value: 20
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
         value: 34
+        left: 155
+        right: 156
+        height: 2
+      - key: full.build.confirm
+        value: 21
+        left: 157
+        right: 151
+        height: 3
+      - key: full.verify.run
+        value: 36
+        left: null
+        right: null
+        height: 1
+      - key: full.open.revalidate
+        value: 29
+        left: null
+        right: 159
+        height: 2
+      - key: full.open.evidence
+        value: 28
+        left: 135
+        right: 160
+        height: 3
+      - key: full.open
+        value: 26
+        left: 144
+        right: 161
+        height: 4
+      - key: full.design.confirm
+        value: 22
         left: 158
+        right: 162
+        height: 5
+      - key: full.build.plan
+        value: 38
+        left: 149
+        right: 150
+        height: 2
+      - key: full.build.confirm
+        value: 21
+        left: 157
+        right: 164
+        height: 3
+      - key: full.open.revalidate
+        value: 29
+        left: null
+        right: null
+        height: 1
+      - key: full.open.evidence
+        value: 28
+        left: 135
+        right: 166
+        height: 2
+      - key: full.verify.report.evidence
+        value: 35
+        left: null
+        right: null
+        height: 1
+      - key: full.verify.run
+        value: 36
+        left: 168
         right: null
         height: 2
       - key: full.verify.check
-        value: 35
-        left: 157
-        right: 159
+        value: 37
+        left: 167
+        right: 169
         height: 3
       - key: full.open
-        value: 24
-        left: 134
-        right: 160
+        value: 26
+        left: 144
+        right: 170
         height: 4
       - key: full.design.confirm
-        value: 20
-        left: 155
-        right: 161
+        value: 22
+        left: 165
+        right: 171
+        height: 5
+      - key: full.build.check
+        value: 41
+        left: null
+        right: null
+        height: 1
+      - key: full.build.check.evidence
+        value: 34
+        left: 173
+        right: 156
+        height: 2
+      - key: full.build.execute
+        value: 40
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan.evidence
+        value: 39
+        left: null
+        right: null
+        height: 1
+      - key: full.build.plan
+        value: 38
+        left: 175
+        right: 176
+        height: 2
+      - key: full.build.confirm
+        value: 21
+        left: 174
+        right: 177
+        height: 3
+      - key: full.design.confirm
+        value: 22
+        left: 178
+        right: 171
         height: 5
     maps:
       - null
@@ -2024,27 +2228,30 @@ run_checkpoint:
       - 37
       - 43
       - 48
-      - 58
+      - 53
       - 63
       - 68
-      - 74
-      - 80
+      - 73
+      - 79
       - 85
-      - 88
-      - 92
-      - 95
-      - 98
+      - 90
+      - 93
+      - 97
       - 102
-      - 107
-      - 109
-      - 114
-      - 120
-      - 121
-      - 128
-      - 136
-      - 144
-      - 153
-      - 162
+      - 105
+      - 108
+      - 112
+      - 117
+      - 119
+      - 124
+      - 130
+      - 131
+      - 138
+      - 146
+      - 154
+      - 163
+      - 172
+      - 179
     bindings:
       - path:
           - actions
@@ -2125,6 +2332,12 @@ run_checkpoint:
           - outputs
         map: 10
       - path:
+          - actions
+          - "13"
+          - input
+          - outputs
+        map: 11
+      - path:
           - actionContexts
           - stabilize-archive-publication-recovery:1
           - results
@@ -2133,109 +2346,119 @@ run_checkpoint:
           - actionContexts
           - stabilize-archive-publication-recovery:11
           - results
-        map: 11
+        map: 12
       - path:
           - actionContexts
           - stabilize-archive-publication-recovery:13
           - results
-        map: 12
+        map: 13
       - path:
           - actionContexts
           - stabilize-archive-publication-recovery:14
           - results
-        map: 13
+        map: 14
       - path:
           - actionContexts
           - stabilize-archive-publication-recovery:16
           - results
-        map: 14
+        map: 15
       - path:
           - actionContexts
           - stabilize-archive-publication-recovery:18
           - results
-        map: 15
+        map: 16
       - path:
           - actionContexts
           - stabilize-archive-publication-recovery:19
           - results
-        map: 16
+        map: 17
       - path:
           - actionContexts
           - stabilize-archive-publication-recovery:21
           - results
-        map: 17
+        map: 18
       - path:
           - actionContexts
           - stabilize-archive-publication-recovery:22
           - results
-        map: 18
-      - path:
-          - actionContexts
-          - stabilize-archive-publication-recovery:4
-          - results
         map: 19
       - path:
           - actionContexts
-          - stabilize-archive-publication-recovery:5
+          - stabilize-archive-publication-recovery:24
           - results
         map: 20
       - path:
           - actionContexts
-          - stabilize-archive-publication-recovery:7
+          - stabilize-archive-publication-recovery:4
           - results
         map: 21
       - path:
           - actionContexts
-          - stabilize-archive-publication-recovery:9
+          - stabilize-archive-publication-recovery:5
           - results
         map: 22
       - path:
-          - outputs
-        map: 18
-      - path:
-          - waits
-          - "0"
+          - actionContexts
+          - stabilize-archive-publication-recovery:7
           - results
         map: 23
       - path:
-          - waits
-          - "1"
+          - actionContexts
+          - stabilize-archive-publication-recovery:9
           - results
         map: 24
       - path:
+          - outputs
+        map: 20
+      - path:
           - waits
-          - "2"
+          - "0"
           - results
         map: 25
       - path:
-          - evidenceWaits
-          - "0"
+          - waits
+          - "1"
           - results
         map: 26
       - path:
-          - evidenceWaits
-          - "1"
+          - waits
+          - "2"
           - results
         map: 27
       - path:
           - evidenceWaits
-          - "2"
+          - "0"
           - results
         map: 28
       - path:
           - evidenceWaits
-          - "3"
+          - "1"
           - results
         map: 29
       - path:
           - evidenceWaits
-          - "4"
+          - "2"
           - results
         map: 30
       - path:
           - evidenceWaits
-          - "5"
+          - "3"
           - results
         map: 31
-  storageHash: 18ed23feb444ffffde0694f89aeba8fa07bd43cbb7e101cc32a6b28499f12147
-check_epoch: 4
+      - path:
+          - evidenceWaits
+          - "4"
+          - results
+        map: 32
+      - path:
+          - evidenceWaits
+          - "5"
+          - results
+        map: 33
+      - path:
+          - evidenceWaits
+          - "6"
+          - results
+        map: 34
+  storageHash: 59d9b5ed47f9fefaf4cd8bdc69474560de4482665db97adf2bc736fa30af68a6
+check_epoch: 5
