@@ -1,4 +1,4 @@
-import type { RecoveryDecision } from './recovery.js';
+import { assertRecoveryDecision, type RecoveryDecision } from './recovery.js';
 
 export interface RecoveryDecisionCheckpoint {
   runId: string;
@@ -9,12 +9,7 @@ export interface RecoveryDecisionCheckpoint {
 
 export interface RecoveryDecisionStorePort {
   read(runId: string): Promise<RecoveryDecisionCheckpoint>;
-  compareAndSwap(input: {
-    runId: string;
-    expectedRevision: number;
-    expectedCheckEpoch: number;
-    decisionId: string;
-  }): Promise<boolean>;
+  compareAndSwap(input: { decision: RecoveryDecision }): Promise<boolean>;
 }
 
 export type RecoveryDecisionApplication =
@@ -59,6 +54,7 @@ export async function applyRecoveryDecision(
   store: RecoveryDecisionStorePort,
   decision: RecoveryDecision,
 ): Promise<RecoveryDecisionApplication> {
+  assertRecoveryDecision(decision);
   const current = await store.read(decision.runId);
   if (current.appliedDecisionIds.includes(decision.decisionId)) {
     return result('already-applied', decision, current);
@@ -67,12 +63,7 @@ export async function applyRecoveryDecision(
     return result('revision-conflict', decision, current);
   }
 
-  const applied = await store.compareAndSwap({
-    runId: decision.runId,
-    expectedRevision: decision.expectedRevision,
-    expectedCheckEpoch: decision.checkEpoch,
-    decisionId: decision.decisionId,
-  });
+  const applied = await store.compareAndSwap({ decision });
   const settled = await store.read(decision.runId);
   if (applied) return result('applied', decision, settled);
   if (settled.appliedDecisionIds.includes(decision.decisionId)) {

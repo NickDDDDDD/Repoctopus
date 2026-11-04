@@ -140,4 +140,47 @@ describe('Runtime recovery decision', () => {
       /cannot select.*recovery action/iu,
     );
   });
+
+  it('rejects high-cardinality reason text and authority identity mismatches', () => {
+    expect(() =>
+      classifyRecoveryObservation(
+        observation({
+          planning: {
+            status: 'drift',
+            reasonCode: 'C:/private/team/repository/design.md changed',
+            changedIdentities: ['planning-semantic'],
+          },
+        }),
+      ),
+    ).toThrow(/reasonCode/iu);
+    expect(() =>
+      classifyRecoveryObservation(
+        observation({
+          planning: {
+            status: 'drift',
+            reasonCode: 'design-changed',
+            changedIdentities: ['publication-provenance'],
+          },
+        }),
+      ),
+    ).toThrow(/planning.*identity/iu);
+  });
+
+  it('returns a deeply immutable decision bound to its invalidation arrays', () => {
+    const decision = classifyRecoveryObservation(
+      observation({
+        planning: {
+          status: 'drift',
+          reasonCode: 'design-changed',
+          changedIdentities: ['planning-semantic'],
+        },
+      }),
+    );
+    if (!decision) throw new Error('expected a recovery decision');
+
+    expect(() =>
+      (decision.invalidatedIdentities as string[]).push('publication-provenance'),
+    ).toThrow();
+    expect(decision.invalidatedIdentities).not.toContain('publication-provenance');
+  });
 });

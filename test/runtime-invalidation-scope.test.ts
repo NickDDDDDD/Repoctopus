@@ -91,4 +91,15 @@ describe('Runtime invalidation dependency closure', () => {
       runtimeInvalidationScope(['work-input', 'evidence-dependency']),
     );
   });
+
+  it('invalidates the approved Plan and execution when approval authority changes', () => {
+    expect(runtimeInvalidationScope(['approval-authority']).invalidatedIdentities).toEqual([
+      'approval-authority',
+      'build-plan',
+      'execution-checkpoint',
+      'package-completion',
+      'verification-input',
+      'work-input',
+    ]);
+  });
 });

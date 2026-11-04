@@ -57,13 +57,48 @@ describe('Comet provenance contract', () => {
     };
 
     expect(
-      validateCometProvenance(manifest, {
-        dependencies: { '@rpamis/comet': '0.5.1' },
-      }),
+      validateCometProvenance(
+        manifest,
+        { dependencies: { engine: 'npm:@rpamis/comet@0.5.1' } },
+        {
+          packages: {
+            'node_modules/engine': { name: '@rpamis/comet', version: '0.5.1' },
+          },
+        },
+      ),
     ).toEqual(
       expect.arrayContaining([
         expect.stringMatching(/evidence-invalidation/iu),
         expect.stringMatching(/runtime dependency/iu),
+      ]),
+    );
+  });
+
+  it('binds every role to its exact upstream source and release identity', () => {
+    const swappedReferences = validManifest.references.map((reference, index, all) => ({
+      ...reference,
+      source: all[(index + 1) % all.length]!.source,
+    }));
+
+    expect(
+      validateCometProvenance(
+        {
+          ...validManifest,
+          upstream: {
+            ...validManifest.upstream,
+            repository: 'https://example.com/comet.git',
+            version: 'main',
+          },
+          references: swappedReferences,
+        },
+        { dependencies: {} },
+        { packages: {} },
+      ),
+    ).toEqual(
+      expect.arrayContaining([
+        expect.stringMatching(/repository/iu),
+        expect.stringMatching(/version/iu),
+        expect.stringMatching(/source/iu),
       ]),
     );
   });

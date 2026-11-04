@@ -8,6 +8,8 @@ import {
 import { classifyRecoveryObservation, type RecoveryDecision } from '../domains/runtime/recovery.js';
 
 class InMemoryRecoveryDecisionStore implements RecoveryDecisionStorePort {
+  appliedDecisions: RecoveryDecision[] = [];
+
   checkpoint: RecoveryDecisionCheckpoint = {
     runId: 'run-1',
     revision: 7,
@@ -19,24 +21,20 @@ class InMemoryRecoveryDecisionStore implements RecoveryDecisionStorePort {
     return Promise.resolve(structuredClone(this.checkpoint));
   }
 
-  async compareAndSwap(input: {
-    runId: string;
-    expectedRevision: number;
-    expectedCheckEpoch: number;
-    decisionId: string;
-  }): Promise<boolean> {
+  async compareAndSwap(input: { decision: RecoveryDecision }): Promise<boolean> {
     await Promise.resolve();
     if (
-      input.runId !== this.checkpoint.runId ||
-      input.expectedRevision !== this.checkpoint.revision ||
-      input.expectedCheckEpoch !== this.checkpoint.checkEpoch
+      input.decision.runId !== this.checkpoint.runId ||
+      input.decision.expectedRevision !== this.checkpoint.revision ||
+      input.decision.checkEpoch !== this.checkpoint.checkEpoch
     ) {
       return false;
     }
+    this.appliedDecisions.push(input.decision);
     this.checkpoint = {
       ...this.checkpoint,
       revision: this.checkpoint.revision + 1,
-      appliedDecisionIds: [...this.checkpoint.appliedDecisionIds, input.decisionId],
+      appliedDecisionIds: [...this.checkpoint.appliedDecisionIds, input.decision.decisionId],
     };
     return true;
   }
@@ -77,6 +75,7 @@ describe('Recovery decision application', () => {
       revision: 8,
       appliedDecisionIds: [recoveryDecision.decisionId],
     });
+    expect(store.appliedDecisions).toEqual([recoveryDecision]);
   });
 
   it('returns a revision conflict for a different stale decision', async () => {
@@ -90,5 +89,17 @@ describe('Recovery decision application', () => {
       currentRevision: 8,
       currentCheckEpoch: 3,
     });
+  });
+
+  it('rejects a fabricated decision whose content does not match its identity', async () => {
+    const store = new InMemoryRecoveryDecisionStore();
+    const recoveryDecision = decision();
+    const fabricated = {
+      ...recoveryDecision,
+      reasonCode: 'design-changed',
+    };
+
+    await expect(applyRecoveryDecision(store, fabricated)).rejects.toThrow(/decision identity/iu);
+    expect(store.appliedDecisions).toEqual([]);
   });
 });

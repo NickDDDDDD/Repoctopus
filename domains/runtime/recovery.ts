@@ -21,7 +21,7 @@ type EvidenceStatus = 'current' | 'drift' | 'unavailable';
 export interface RecoveryLayerObservation<Status extends string> {
   status: Status;
   reasonCode?: string;
-  changedIdentities: RuntimeIdentityKind[];
+  changedIdentities: readonly RuntimeIdentityKind[];
 }
 
 export interface RecoveryObservation {
@@ -46,16 +46,16 @@ export interface RecoveryDecision {
   authority: RecoveryAuthority;
   action: RecoveryAction;
   reasonCode: string;
-  changedIdentities: RuntimeIdentityKind[];
-  retainedIdentities: RuntimeIdentityKind[];
-  invalidatedIdentities: RuntimeIdentityKind[];
+  changedIdentities: readonly RuntimeIdentityKind[];
+  retainedIdentities: readonly RuntimeIdentityKind[];
+  invalidatedIdentities: readonly RuntimeIdentityKind[];
 }
 
 export interface RecoveryAuthorityDiff {
   authority: RecoveryAuthority;
   action: RecoveryAction;
   reasonCode: string;
-  changedIdentities: RuntimeIdentityKind[];
+  changedIdentities: readonly RuntimeIdentityKind[];
 }
 
 const TOP_LEVEL_FIELDS = new Set([
@@ -72,6 +72,82 @@ const TOP_LEVEL_FIELDS = new Set([
 const LAYER_FIELDS = new Set(['status', 'reasonCode', 'changedIdentities']);
 const IDENTITY_KINDS = new Set<string>(RUNTIME_IDENTITY_KINDS);
 
+const ACTION_CONTRACTS = {
+  'revise-design': {
+    authority: 'planning',
+    reasons: new Set([
+      'requirements-changed',
+      'design-changed',
+      'tasks-changed',
+      'approval-authority-changed',
+      'validation-observation-changed',
+    ]),
+    identities: new Set<RuntimeIdentityKind>([
+      'planning-semantic',
+      'validation-observation',
+      'approval-authority',
+    ]),
+    requiresIdentity: true,
+  },
+  'revise-plan': {
+    authority: 'plan',
+    reasons: new Set([
+      'package-not-completable',
+      'plan-constraint-changed',
+      'authorization-envelope-expanded',
+      'command-shape-changed',
+    ]),
+    identities: new Set<RuntimeIdentityKind>([
+      'composition',
+      'build-strategy',
+      'execution-binding',
+      'build-plan',
+    ]),
+    requiresIdentity: true,
+  },
+  'continue-build': {
+    authority: 'work',
+    reasons: new Set(['implementation-failed', 'outcome-rejected', 'execution-interrupted']),
+    identities: new Set<RuntimeIdentityKind>([
+      'work-input',
+      'package-completion',
+      'execution-checkpoint',
+    ]),
+    requiresIdentity: false,
+  },
+  'reconcile-external': {
+    authority: 'work',
+    reasons: new Set(['external-result-unknown']),
+    identities: new Set<RuntimeIdentityKind>([
+      'work-input',
+      'package-completion',
+      'execution-checkpoint',
+      'publication-provenance',
+    ]),
+    requiresIdentity: false,
+  },
+  'invalidate-evidence': {
+    authority: 'evidence',
+    reasons: new Set(['declared-input-changed', 'receipt-input-changed']),
+    identities: new Set<RuntimeIdentityKind>(['evidence-dependency', 'verification-input']),
+    requiresIdentity: true,
+  },
+  'retry-infrastructure': {
+    authority: 'evidence',
+    reasons: new Set(['evidence-provider-unavailable']),
+    identities: new Set<RuntimeIdentityKind>([]),
+    requiresIdentity: false,
+  },
+} as const satisfies Record<
+  RecoveryAction,
+  {
+    authority: RecoveryAuthority;
+    reasons: ReadonlySet<string>;
+    identities: ReadonlySet<RuntimeIdentityKind>;
+    requiresIdentity: boolean;
+  }
+>;
+
 const STATUS_BY_AUTHORITY = {
   planning: new Set<PlanningStatus>(['current', 'drift']),
   plan: new Set<PlanStatus>(['current', 'drift']),
@@ -82,6 +158,39 @@ const STATUS_BY_AUTHORITY = {
 function assertIdentifier(value: unknown, name: string): asserts value is string {
   if (typeof value !== 'string' || !value.trim() || value.length > 256) {
     throw new Error(`Recovery observation ${name} is invalid`);
+  }
+}
+
+function actionForStatus(authority: RecoveryAuthority, status: string): RecoveryAction | null {
+  if (authority === 'planning' && status === 'drift') return 'revise-design';
+  if (authority === 'plan' && status === 'drift') return 'revise-plan';
+  if (authority === 'work' && status === 'retryable') return 'continue-build';
+  if (authority === 'work' && status === 'external-result-unknown') {
+    return 'reconcile-external';
+  }
+  if (authority === 'evidence' && status === 'drift') return 'invalidate-evidence';
+  if (authority === 'evidence' && status === 'unavailable') return 'retry-infrastructure';
+  return null;
+}
+
+function assertDiffContract(
+  authority: RecoveryAuthority,
+  action: RecoveryAction,
+  reasonCode: string,
+  changedIdentities: readonly RuntimeIdentityKind[],
+): void {
+  const contract = ACTION_CONTRACTS[action];
+  if (contract.authority !== authority) {
+    throw new Error(`Recovery ${action} authority is invalid`);
+  }
+  if (!contract.reasons.has(reasonCode)) {
+    throw new Error(`Recovery observation ${authority} reasonCode is invalid`);
+  }
+  if (
+    (contract.requiresIdentity && changedIdentities.length === 0) ||
+    changedIdentities.some((identity) => !contract.identities.has(identity))
+  ) {
+    throw new Error(`Recovery observation ${authority} identity set is invalid`);
   }
 }
 
@@ -120,14 +229,19 @@ function parseLayer(
   });
   if (layer.status !== 'current') {
     assertIdentifier(layer.reasonCode, `${authority} reasonCode`);
+    const action = actionForStatus(authority, layer.status);
+    if (!action) throw new Error(`Recovery observation ${authority} status is invalid`);
+    assertDiffContract(authority, action, layer.reasonCode, changedIdentities);
   } else if (layer.reasonCode !== undefined) {
     throw new Error(`Recovery observation ${authority} current facts cannot have a reasonCode`);
+  } else if (changedIdentities.length > 0) {
+    throw new Error(`Recovery observation ${authority} current facts cannot change identities`);
   }
-  return {
+  return Object.freeze({
     status: layer.status,
     ...(layer.reasonCode === undefined ? {} : { reasonCode: layer.reasonCode }),
-    changedIdentities: changedIdentities.sort(),
-  };
+    changedIdentities: Object.freeze(changedIdentities.sort()),
+  });
 }
 
 export function parseRecoveryObservation(value: unknown): RecoveryObservation {
@@ -175,12 +289,12 @@ function diff(
   action: RecoveryAction,
   layer: RecoveryLayerObservation<string>,
 ): RecoveryAuthorityDiff {
-  return {
+  return Object.freeze({
     authority,
     action,
     reasonCode: layer.reasonCode as string,
-    changedIdentities: [...new Set(layer.changedIdentities)].sort(),
-  };
+    changedIdentities: Object.freeze([...new Set(layer.changedIdentities)].sort()),
+  });
 }
 
 const inspectPlanning: RecoveryInspector = (observation) => {
@@ -264,8 +378,49 @@ export function classifyRecoveryObservation(value: unknown): RecoveryDecision | 
     authority: selected.authority,
     action: selected.action,
     reasonCode,
-    changedIdentities,
-    retainedIdentities: scope.retainedIdentities,
-    invalidatedIdentities: scope.invalidatedIdentities,
+    changedIdentities: Object.freeze([...changedIdentities]),
+    retainedIdentities: Object.freeze([...scope.retainedIdentities]),
+    invalidatedIdentities: Object.freeze([...scope.invalidatedIdentities]),
   });
+}
+
+export function assertRecoveryDecision(decision: RecoveryDecision): void {
+  assertIdentifier(decision.runId, 'decision runId');
+  assertIdentifier(decision.observationId, 'decision observationId');
+  if (!Number.isSafeInteger(decision.expectedRevision) || decision.expectedRevision < 0) {
+    throw new Error('Recovery decision expectedRevision is invalid');
+  }
+  if (!Number.isSafeInteger(decision.checkEpoch) || decision.checkEpoch < 0) {
+    throw new Error('Recovery decision checkEpoch is invalid');
+  }
+  const changedIdentities = [...new Set(decision.changedIdentities)].sort();
+  if (changedIdentities.length !== decision.changedIdentities.length) {
+    throw new Error('Recovery decision changed identities are not canonical');
+  }
+  assertDiffContract(decision.authority, decision.action, decision.reasonCode, changedIdentities);
+  const scope = runtimeInvalidationScope(changedIdentities);
+  if (
+    canonicalJson(decision.retainedIdentities) !== canonicalJson(scope.retainedIdentities) ||
+    canonicalJson(decision.invalidatedIdentities) !== canonicalJson(scope.invalidatedIdentities)
+  ) {
+    throw new Error('Recovery decision invalidation closure is invalid');
+  }
+  const identityMaterial = {
+    schemaVersion: 1,
+    runId: decision.runId,
+    expectedRevision: decision.expectedRevision,
+    checkEpoch: decision.checkEpoch,
+    observationId: decision.observationId,
+    authority: decision.authority,
+    action: decision.action,
+    reasonCode: decision.reasonCode,
+    changedIdentities,
+    invalidatedIdentities: scope.invalidatedIdentities,
+  };
+  const expectedId = `recovery:sha256:${createHash('sha256')
+    .update(canonicalJson(identityMaterial))
+    .digest('hex')}`;
+  if (decision.decisionId !== expectedId) {
+    throw new Error('Recovery decision identity does not match its content');
+  }
 }

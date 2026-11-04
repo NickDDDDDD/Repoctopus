@@ -10,7 +10,8 @@ const findings = [];
 const manifestPath = path.join(root, 'third_party', 'comet', 'source-manifest.json');
 const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
 const packageJson = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'));
-findings.push(...validateCometProvenance(manifest, packageJson));
+const packageLock = JSON.parse(await readFile(path.join(root, 'package-lock.json'), 'utf8'));
+findings.push(...validateCometProvenance(manifest, packageJson, packageLock));
 for (const entry of manifest.files ?? []) {
   if (
     typeof entry.source !== 'string' ||
@@ -286,7 +287,6 @@ if (
 ) {
   findings.push('Invalid third_party/dsh-adoption.json');
 }
-const packageLock = JSON.parse(await readFile(path.join(root, 'package-lock.json'), 'utf8'));
 for (const entry of dshAdoption.npmPackages ?? []) {
   if (typeof entry.name !== 'string' || typeof entry.version !== 'string') {
     findings.push(`Invalid DSH package entry: ${entry.name ?? '(missing name)'}`);
