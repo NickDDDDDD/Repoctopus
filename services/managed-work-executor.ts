@@ -19,6 +19,7 @@ import type {
 import { assertManagedDelegation } from '../domains/work-execution/delegation.js';
 import { assertBoundedWorkExecutionFindings } from '../domains/work-execution/findings.js';
 import { canonicalJson } from '../domains/workflow-contract/canonical.js';
+import { isBuildWorkKind } from '../domains/work-execution/acceptance.js';
 
 function assertBoundedExecutionResult(outcome: WorkExecutionHostOutcome): void {
   if (outcome.result && canonicalJson(outcome.result).length > 1024 * 1024) {
@@ -183,26 +184,6 @@ export class ManagedWorkExecutor extends Service {
     );
   }
 
-  private async rejectInvalidConfigureResult(input: {
-    intent: WorkClaimResult['intent'];
-    workKind: WorkClaimResult['packet']['work']['kind'];
-    outcome: WorkExecutionHostOutcome;
-  }): Promise<boolean> {
-    if (
-      input.workKind !== 'build.configure' ||
-      input.outcome.status !== 'succeeded' ||
-      input.outcome.result?.kind === 'execution-binding-candidate'
-    ) {
-      return false;
-    }
-    await this.ctx.workExecutionAuthority.rejectHostSubmission({
-      intent: input.intent,
-      reasonCode: 'output-invalid',
-      diagnostic: 'Build Configure Host must return a structured execution-binding-candidate',
-    });
-    return true;
-  }
-
   async execute(request: WorkClaimRequest): Promise<ManagedWorkExecutionResult> {
     const claim = await this.ctx.workDispatcher.claim(request);
     const host = this.ctx.workExecutionHosts.select(claim.packet);
@@ -280,22 +261,12 @@ export class ManagedWorkExecutor extends Service {
       hostOutcome.consumedLayerDigests,
       hostOutcome.invocationId,
     );
-    if (
-      await this.rejectInvalidConfigureResult({
-        intent: claim.intent,
-        workKind: claim.packet.work.kind,
-        outcome: hostOutcome,
-      })
-    ) {
-      return { executionAcquired: true, invocation, hostOutcome, acceptance: null };
-    }
     if (hostOutcome.status === 'unknown') {
       await this.ctx.workExecutionAuthority.markHostUnknown(claim.intent, hostOutcome.summary);
       return { executionAcquired: true, invocation, hostOutcome, acceptance: null };
     }
     if (
-      (['build.plan', 'build.check'].includes(claim.packet.work.kind) &&
-        hostOutcome.status === 'succeeded') ||
+      (isBuildWorkKind(claim.packet.work.kind) && hostOutcome.status === 'succeeded') ||
       submission.status === 'outcome'
     ) {
       return { executionAcquired: true, invocation, hostOutcome, acceptance: null };
@@ -404,22 +375,12 @@ export class ManagedWorkExecutor extends Service {
       hostOutcome.consumedLayerDigests,
       hostOutcome.invocationId,
     );
-    if (
-      await this.rejectInvalidConfigureResult({
-        intent,
-        workKind: packet.packet.work.kind,
-        outcome: hostOutcome,
-      })
-    ) {
-      return { executionAcquired: true, invocation, hostOutcome, acceptance: null };
-    }
     if (hostOutcome.status === 'unknown') {
       await this.ctx.workExecutionAuthority.markHostUnknown(intent, input.summary);
       return { executionAcquired: true, invocation, hostOutcome, acceptance: null };
     }
     if (
-      (['build.plan', 'build.check'].includes(packet.packet.work.kind) &&
-        hostOutcome.status === 'succeeded') ||
+      (isBuildWorkKind(packet.packet.work.kind) && hostOutcome.status === 'succeeded') ||
       submission.status === 'outcome'
     ) {
       return { executionAcquired: true, invocation, hostOutcome, acceptance: null };
@@ -479,8 +440,7 @@ export class ManagedWorkExecutor extends Service {
       outcome.invocationId,
     );
     if (
-      (['build.plan', 'build.check'].includes(packet.packet.work.kind) &&
-        outcome.status === 'succeeded') ||
+      (isBuildWorkKind(packet.packet.work.kind) && outcome.status === 'succeeded') ||
       submission.status === 'outcome'
     ) {
       return { executionAcquired: true, invocation, hostOutcome: outcome, acceptance: null };

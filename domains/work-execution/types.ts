@@ -173,6 +173,18 @@ export interface RejectedWorkExecutionSubmission extends WorkExecutionSubmission
   };
 }
 
+export interface WorkOutcomeValidationRecord {
+  schemaVersion: 1;
+  workKind: 'build.configure' | 'build.plan' | 'build.execute' | 'build.check';
+  validatorId: string;
+  submissionId: string;
+  submissionDigest: `sha256:${string}`;
+  candidateDigest: `sha256:${string}`;
+  stableInputDigest: `sha256:${string}`;
+  decision: 'accepted';
+  validationDigest: `sha256:${string}`;
+}
+
 export type WorkExecutionResult =
   | {
       schemaVersion: 1;
@@ -286,6 +298,7 @@ export interface WorkExecutionAttemptSnapshot {
   actionOutcome?: ClaimedActionOutcome;
   receiptId?: string;
   validatorId?: string;
+  validationRecord?: WorkOutcomeValidationRecord;
   continuation: WorkContinuationKind;
   updatedAt: string;
 }

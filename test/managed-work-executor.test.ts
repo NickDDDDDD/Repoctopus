@@ -344,7 +344,7 @@ describe('Managed Work Executor Build contract', () => {
     expect(result.hostOutcome).toBe(persistedOutcome);
     expect(result.hostOutcome.completedAt).toBe('2026-10-28T00:00:00.000Z');
     expect(markHostCompleted).not.toHaveBeenCalled();
-    expect(acceptOutcome).toHaveBeenCalledOnce();
+    expect(acceptOutcome).not.toHaveBeenCalled();
   });
 
   it('persists exactly the external Runner capabilities declared independently of one Work', async () => {

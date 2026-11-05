@@ -1450,7 +1450,7 @@ describe('managed Change execution production composition', () => {
         let afterAllPackages: RuntimeResult<RunStatusView>;
         if (!multiRepository && executionMode === 'autonomous') {
           const successAcceptanceInterruption = vi
-            .spyOn(application.context.workDispatcher, 'acceptOutcome')
+            .spyOn(application.context.workDispatcher, 'acceptValidatedOutcome')
             .mockRejectedValueOnce(
               new Error('simulated interruption after external package submission'),
             );
@@ -2301,11 +2301,19 @@ describe('managed Change execution production composition', () => {
         (view) => view.changeLifecycle?.currentWork?.kind === 'build.configure',
       );
       const configureWorkId = configure.changeLifecycle!.currentWork!.workId;
+      expect(configureWorkId).toMatch(/^build\.configure:/u);
       await next();
-      expect((await status()).state.workExecution).toMatchObject({
-        workId: configureWorkId,
-        status: 'outcome',
+      const intentRevision = await status();
+      expect(intentRevision.changeLifecycle).toMatchObject({
+        phase: 'open',
+        status: 'waiting',
+        currentWork: null,
+        waitCondition: {
+          kind: 'human-decision',
+          workspaceIntentRevision: { errorCode: 'current-linked-worktree' },
+        },
       });
+      expect(intentRevision.state.workExecution).toBeUndefined();
       capture.dispose();
       await application.close();
 

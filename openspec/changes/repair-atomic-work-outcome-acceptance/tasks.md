@@ -8,12 +8,12 @@
 
 ## 2. 建立统一候选处理协议
 
-- [ ] 2.1 在领域层定义封闭的 accepted、correctable rejection、processing error disposition 及稳定 validation record；运行 `npm run typecheck` 验证所有分支穷尽处理。 <!-- comet-task:ab441f6d-96e8-4eb6-94d8-0bf4a3a8474c -->
-- [ ] 2.2 为 Build Work 建立按权威 `WorkDescriptor.kind` 解析的处理器注册表，未注册 Build Work fail closed；运行对应领域单元测试验证四种 Work 均已注册且未知 kind 被拒绝。 <!-- comet-task:d7cda0b9-7959-4739-a422-e8d432c3bd3f -->
-- [ ] 2.3 实现统一 acceptance coordinator，按身份/协议、schema、领域、lifecycle validator、transition feasibility 的顺序处理 pending submission；运行 coordinator 单元测试验证任一前置失败都不会调用 terminal bind。 <!-- comet-task:02ecb5ed-c02b-40fe-9e64-747ee14673df -->
-- [ ] 2.4 扩展 `WorkExecutionAuthority` 的 guarded terminal commit，使其重新核对 Work、claim、attempt、checkEpoch、invocation、submission、candidate 与稳定输入 digest；运行 `npx vitest run test/work-execution-submission.test.ts` 验证漂移 fail closed、合法记录一次性绑定。 <!-- comet-task:23e3a1ff-fffb-49bd-a80e-19bd7ddf1dd9 -->
-- [ ] 2.5 将 processing error 与 correctable rejection 分离：前者保留 pending，后者进入 `awaiting-correction` 并追加有界历史；运行 submission/recovery 单元测试验证两者状态、history 与 continuation 不混用。 <!-- comet-task:10b26d88-387a-4408-85ce-258ef456698a -->
-- [ ] 2.6 验证相同 submission ID + 相同 digest 幂等、同 ID + 不同 digest 冲突、新 ID 可纠正；运行 `npx vitest run test/work-execution-submission.test.ts test/work-execution-recovery.test.ts` 通过。 <!-- comet-task:b903de32-95dd-499e-962a-d4cff603d0f9 -->
+- [x] 2.1 在领域层定义封闭的 accepted、correctable rejection、processing error disposition 及稳定 validation record；运行 `npm run typecheck` 验证所有分支穷尽处理。 <!-- comet-task:ab441f6d-96e8-4eb6-94d8-0bf4a3a8474c -->
+- [x] 2.2 为 Build Work 建立按权威 `WorkDescriptor.kind` 解析的处理器注册表，未注册 Build Work fail closed；运行对应领域单元测试验证四种 Work 均已注册且未知 kind 被拒绝。 <!-- comet-task:d7cda0b9-7959-4739-a422-e8d432c3bd3f -->
+- [x] 2.3 实现统一 acceptance coordinator，按身份/协议、schema、领域、lifecycle validator、transition feasibility 的顺序处理 pending submission；运行 coordinator 单元测试验证任一前置失败都不会调用 terminal bind。 <!-- comet-task:02ecb5ed-c02b-40fe-9e64-747ee14673df -->
+- [x] 2.4 扩展 `WorkExecutionAuthority` 的 guarded terminal commit，使其重新核对 Work、claim、attempt、checkEpoch、invocation、submission、candidate 与稳定输入 digest；运行 `npx vitest run test/work-execution-submission.test.ts` 验证漂移 fail closed、合法记录一次性绑定。 <!-- comet-task:23e3a1ff-fffb-49bd-a80e-19bd7ddf1dd9 -->
+- [x] 2.5 将 processing error 与 correctable rejection 分离：前者保留 pending，后者进入 `awaiting-correction` 并追加有界历史；运行 submission/recovery 单元测试验证两者状态、history 与 continuation 不混用。 <!-- comet-task:10b26d88-387a-4408-85ce-258ef456698a -->
+- [x] 2.6 验证相同 submission ID + 相同 digest 幂等、同 ID + 不同 digest 冲突、新 ID 可纠正；运行 `npx vitest run test/work-execution-submission.test.ts test/work-execution-recovery.test.ts` 通过。 <!-- comet-task:b903de32-95dd-499e-962a-d4cff603d0f9 -->
 
 ## 3. 交付 Configure 垂直切片
 

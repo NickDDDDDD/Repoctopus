@@ -178,14 +178,18 @@ function retireMismatchedExecution(
     return { state, fact: null };
   }
   const rejectedCorrectionCanBeRetired =
-    options.authorizedRejectedCorrection === true &&
     execution.status === 'invoking' &&
     execution.continuation === 'awaiting-correction' &&
     execution.pendingSubmission === null &&
     execution.rejectedSubmissions?.some(
       (submission) =>
         submission.rejection.reasonCode === 'outcome-rejected' &&
-        submission.outcome.result?.kind === 'build-plan-candidate',
+        ((options.authorizedRejectedCorrection === true &&
+          submission.outcome.result?.kind === 'build-plan-candidate') ||
+          (['workspace-intent-revision-required', 'workspace-intent-revised'].includes(
+            observationKind,
+          ) &&
+            submission.outcome.result?.kind === 'execution-binding-candidate')),
     ) === true;
   if (
     ['invoking', 'submitted', 'unknown'].includes(execution.status) &&

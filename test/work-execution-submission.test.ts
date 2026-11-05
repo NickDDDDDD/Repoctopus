@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import {
   appendRejectedWorkExecutionSubmission,
@@ -7,9 +7,12 @@ import {
   MAX_REJECTED_WORK_EXECUTION_SUBMISSIONS,
 } from '../domains/work-execution/submission.js';
 import type { WorkExecutionHostOutcome } from '../domains/work-execution/types.js';
+import type { ActionIntent, ActionReceipt, ClaimedActionOutcome } from '../domains/action/types.js';
 import type { RunState } from '../domains/engine/types.js';
 import type { TrajectoryEvent } from '../domains/trajectory/types.js';
 import { WorkExecutionAuthority } from '../services/work-execution-authority.js';
+import { createAcceptedBuildWorkOutcome } from '../domains/work-execution/acceptance.js';
+import type { WorkDescriptor } from '../domains/change-lifecycle/transition.js';
 
 const digest = (character: string) => `sha256:${character.repeat(64)}` as const;
 
@@ -32,6 +35,219 @@ function outcome(summary = 'candidate', completedAt = '2026-10-30T00:00:00.000Z'
 }
 
 describe('Work execution Host submission identity', () => {
+  function validatedAcceptanceHarness() {
+    const intent = {
+      schemaVersion: 3,
+      runId: 'run-validated',
+      workId: 'build.configure:validated',
+      attempt: 1,
+      checkEpoch: 12,
+      intentId: 'intent-validated',
+      claimToken: digest('4'),
+      inputDigest: digest('5'),
+    } as ActionIntent;
+    const hostOutcome = {
+      ...outcome(),
+      result: {
+        schemaVersion: 1,
+        kind: 'execution-binding-candidate',
+        strategyDigest: digest('9'),
+      },
+    } satisfies WorkExecutionHostOutcome;
+    const submission = createWorkExecutionSubmission('submission-validated', hostOutcome);
+    const work = {
+      workId: intent.workId,
+      checkEpoch: intent.checkEpoch,
+      kind: 'build.configure',
+      inputDigest: intent.inputDigest,
+      validatorProfile: { id: 'build.binding-valid' },
+    } as WorkDescriptor;
+    let state = {
+      runId: intent.runId,
+      status: 'running',
+      stateVersion: 1,
+      updatedAt: '2026-11-05T00:00:00.000Z',
+      composition: { compositionDigest: digest('6') },
+      changeLifecycle: { checkEpoch: intent.checkEpoch, currentWork: work },
+      workExecution: {
+        schemaVersion: 3,
+        workId: intent.workId,
+        attempt: intent.attempt,
+        checkEpoch: intent.checkEpoch,
+        intentId: intent.intentId,
+        claimToken: intent.claimToken,
+        inputDigest: intent.inputDigest,
+        packet: {
+          schemaVersion: 1,
+          packetId: digest('7'),
+          packetDigest: hostOutcome.packetDigest,
+          contextDigest: digest('8'),
+        },
+        status: 'submitted',
+        continuation: 'execute',
+        hostInvocation: {
+          schemaVersion: 1,
+          invocationId: hostOutcome.invocationId,
+          host: { id: hostOutcome.hostId },
+          packet: { packetDigest: hostOutcome.packetDigest },
+          startedAt: '2026-11-05T00:00:00.000Z',
+        },
+        pendingSubmission: submission,
+        updatedAt: '2026-11-05T00:00:00.000Z',
+      },
+    } as unknown as RunState;
+    let trajectory: TrajectoryEvent[] = [];
+    const authority = Object.create(WorkExecutionAuthority.prototype) as WorkExecutionAuthority;
+    Object.defineProperty(authority, 'ctx', {
+      value: {
+        runStore: {
+          commitGuarded: <T>(
+            _runId: string,
+            reduce: (input: { state: RunState; trajectory: TrajectoryEvent[] }) => {
+              state?: RunState;
+              event?: TrajectoryEvent;
+              value: T;
+            },
+          ) => {
+            const reduced = reduce({ state, trajectory });
+            if (reduced.state) state = reduced.state;
+            if (reduced.event) trajectory = [...trajectory, reduced.event];
+            return Promise.resolve(reduced.value);
+          },
+        },
+      },
+    });
+    Object.defineProperties(authority, {
+      recordEvent: { value: vi.fn().mockResolvedValue(undefined) },
+      loadAuthoritativePacket: {
+        value: vi.fn().mockResolvedValue({ packet: { context: { layers: [] } } }),
+      },
+      recordSkillOutcomeFacts: { value: vi.fn().mockResolvedValue(undefined) },
+      flushTelemetry: { value: vi.fn().mockResolvedValue(undefined) },
+    });
+    const disposition = createAcceptedBuildWorkOutcome({
+      work,
+      submission,
+      validatorId: work.validatorProfile.id,
+    });
+    if (disposition.kind !== 'accepted') throw new Error('Expected accepted validation');
+    const actionOutcome = {
+      schemaVersion: 2,
+      outcomeId: 'outcome-validated',
+      runId: intent.runId,
+      workId: intent.workId,
+      attempt: intent.attempt,
+      checkEpoch: intent.checkEpoch,
+      claimToken: intent.claimToken,
+      inputDigest: intent.inputDigest,
+      status: 'succeeded',
+      summary: 'validated candidate',
+    } satisfies ClaimedActionOutcome;
+    const receipt = {
+      schemaVersion: 3,
+      receiptId: 'receipt-validated',
+      intentId: intent.intentId,
+      idempotencyKey: 'idempotency-validated',
+      runId: intent.runId,
+      workId: intent.workId,
+      attempt: intent.attempt,
+      checkEpoch: intent.checkEpoch,
+      claimToken: intent.claimToken,
+      inputDigest: intent.inputDigest,
+      outcomeId: actionOutcome.outcomeId,
+      compositionDigest: digest('6'),
+      actionId: 'action-validated',
+      adapter: 'manual',
+      outcome: 'succeeded',
+      summary: actionOutcome.summary,
+      completedAt: '2026-11-05T00:00:01.000Z',
+    } satisfies ActionReceipt;
+    return {
+      actionOutcome,
+      authority,
+      getState: () => state,
+      intent,
+      receipt,
+      validation: disposition.validation,
+    };
+  }
+
+  it('binds validated submission, Host Outcome, Action Outcome, Receipt and validation atomically', async () => {
+    const fixture = validatedAcceptanceHarness();
+    const accepted = await fixture.authority.bindValidatedOutcome({
+      intent: fixture.intent,
+      outcome: fixture.actionOutcome,
+      receipt: fixture.receipt,
+      validation: fixture.validation,
+    });
+
+    expect(accepted).toMatchObject({
+      status: 'validated',
+      continuation: 'execute',
+      pendingSubmission: null,
+      acceptedSubmission: { submissionId: fixture.validation.submissionId },
+      hostOutcome: { invocationId: digest('1') },
+      actionOutcome: { outcomeId: fixture.actionOutcome.outcomeId },
+      receiptId: fixture.receipt.receiptId,
+      validatorId: fixture.validation.validatorId,
+      validationRecord: { validationDigest: fixture.validation.validationDigest },
+    });
+  });
+
+  it('fails closed when stable Work input drifts before validated terminal commit', async () => {
+    const fixture = validatedAcceptanceHarness();
+    fixture.getState().changeLifecycle!.currentWork = {
+      ...fixture.getState().changeLifecycle!.currentWork!,
+      inputDigest: digest('0'),
+    };
+
+    await expect(
+      fixture.authority.bindValidatedOutcome({
+        intent: fixture.intent,
+        outcome: fixture.actionOutcome,
+        receipt: fixture.receipt,
+        validation: fixture.validation,
+      }),
+    ).rejects.toThrow(/stable inputs changed/u);
+    expect(fixture.getState().workExecution).toMatchObject({
+      status: 'submitted',
+      pendingSubmission: { submissionId: fixture.validation.submissionId },
+    });
+    expect(fixture.getState().workExecution?.acceptedSubmission).toBeUndefined();
+    expect(fixture.getState().workExecution?.actionOutcome).toBeUndefined();
+    expect(fixture.getState().workExecution?.receiptId).toBeUndefined();
+  });
+
+  it('fails closed when the pending candidate changes after validation', async () => {
+    const fixture = validatedAcceptanceHarness();
+    const pendingOutcome = fixture.getState().workExecution!.pendingSubmission!.outcome as {
+      result: {
+        schemaVersion: 1;
+        kind: 'execution-binding-candidate';
+        strategyDigest: `sha256:${string}`;
+      };
+    };
+    pendingOutcome.result = {
+      schemaVersion: 1,
+      kind: 'execution-binding-candidate',
+      strategyDigest: digest('0'),
+    };
+
+    await expect(
+      fixture.authority.bindValidatedOutcome({
+        intent: fixture.intent,
+        outcome: fixture.actionOutcome,
+        receipt: fixture.receipt,
+        validation: fixture.validation,
+      }),
+    ).rejects.toThrow(/candidate identity changed/u);
+    expect(fixture.getState().workExecution).toMatchObject({
+      status: 'submitted',
+      pendingSubmission: { submissionId: fixture.validation.submissionId },
+    });
+    expect(fixture.getState().workExecution?.acceptedSubmission).toBeUndefined();
+  });
+
   it('uses a Runtime submission identity and a payload digest independent of receipt time', () => {
     const first = createWorkExecutionSubmission('submission-1', outcome());
     const replay = createWorkExecutionSubmission(
