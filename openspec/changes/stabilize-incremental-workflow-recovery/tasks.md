@@ -57,7 +57,7 @@
   **Acceptance:** 生产源码与状态定义不再包含旧transition或旧finding；所有核心恢复入口仍可从run next到达
   **Requirements:** 失败分类必须决定真实返工路径, Host 只能报告发现而不能选择阶段
 
-- [ ] 4.2 让Lifecycle原子物化revise-design与revise-plan，并用领域测试验证前者建立Design Work、后者保持Build和未受影响completion <!-- comet-task:e6a5e937-ba0f-4a43-a5b4-ea6fc65d7eac -->
+- [x] 4.2 让Lifecycle原子物化revise-design与revise-plan，并用领域测试验证前者建立Design Work、后者保持Build和未受影响completion <!-- comet-task:e6a5e937-ba0f-4a43-a5b4-ea6fc65d7eac -->
   **Blocked by:** 2.4, 4.1
   **Acceptance:** revise-design一次提交phase、Work、epoch与失效闭包；revise-plan只递增Plan revision并保留合法completion
   **Requirements:** 失败分类必须决定真实返工路径, 恢复分类只选择最高受影响权威

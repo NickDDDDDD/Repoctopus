@@ -35,6 +35,8 @@ import {
   validateBuildPlan,
 } from '../domains/change-lifecycle/build-protocol.js';
 import { parseSpecificationTasks } from '../domains/specification/tasks.js';
+import { applyLifecycleRecoveryDecision } from '../domains/change-lifecycle/recovery.js';
+import { classifyRecoveryObservation } from '../domains/runtime/recovery.js';
 
 const digest = (value: string): `sha256:${string}` => {
   const hex = Buffer.from(value).toString('hex') || '0';
@@ -312,6 +314,246 @@ function verificationInput(checkEpoch: number, value: string): VerificationInput
 }
 
 describe('Change lifecycle domain', () => {
+  it('atomically materializes revise-design from a Runtime recovery decision', () => {
+    const intent = createExecutionWorkspaceIntent({
+      workspaceId: initialSnapshot().identity.workspaceId,
+      changeId: initialSnapshot().identity.changeId,
+      isolation: 'current',
+    });
+    const protocol = createBuildProtocolState({
+      runId: initialSnapshot().identity.runId,
+      planningDigest: digest('approved-plan'),
+      strategy: createBuildStrategy({
+        runId: initialSnapshot().identity.runId,
+        revision: 1,
+        executionMode: 'autonomous',
+        tddMode: 'tdd',
+        reviewMode: 'standard',
+        isolationIntent: intent.isolation,
+      }),
+    });
+    const current = builtinSnapshot({
+      revision: 7,
+      checkEpoch: 3,
+      phase: 'build',
+      currentWork: phaseWork('build', 'build.configure', 3, digest('configure')),
+      planningDigest: digest('approved-plan'),
+      workspaceIntent: intent,
+      buildProtocol: protocol,
+    });
+    const decision = classifyRecoveryObservation({
+      schemaVersion: 1,
+      runId: current.identity.runId,
+      expectedRevision: current.revision,
+      checkEpoch: current.checkEpoch,
+      observationId: 'planning-observation-1',
+      planning: {
+        status: 'drift',
+        reasonCode: 'requirements-changed',
+        changedIdentities: ['planning-semantic'],
+      },
+      plan: { status: 'current', changedIdentities: [] },
+      work: { status: 'current', changedIdentities: [] },
+      evidence: { status: 'current', changedIdentities: [] },
+    });
+    if (!decision) throw new Error('expected revise-design decision');
+    const designWork = phaseWork('design', 'specification.plan', 4, digest('observed-plan'));
+
+    const applied = applyLifecycleRecoveryDecision({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current,
+      decision,
+      materialization: {
+        work: designWork,
+        inputDigest: designWork.inputDigest,
+        evidenceIds: ['planning:observation-1'],
+      },
+    });
+
+    expect(applied.snapshot).toMatchObject({
+      revision: 8,
+      checkEpoch: 4,
+      phase: 'design',
+      status: 'running',
+      currentWork: { workId: designWork.workId, kind: 'specification.plan' },
+      buildProtocol: { status: 'suspended-for-design', currentAction: null },
+    });
+    expect(applied.snapshot.planningDigest).toBeUndefined();
+    expect(applied.fact).toMatchObject({
+      recovery: {
+        decisionId: decision.decisionId,
+        action: 'revise-design',
+        authority: 'planning',
+        invalidatedIdentities: decision.invalidatedIdentities,
+      },
+    });
+  });
+
+  it('atomically materializes revise-plan while retaining unaffected completion', () => {
+    const tasks = parseSpecificationTasks(
+      'recovery-plan',
+      '- [ ] 1.1 Change package A.\n  **Acceptance:** Package A passes.\n- [ ] 1.2 Keep package B.\n  **Acceptance:** Package B passes.\n',
+    );
+    const intent = createExecutionWorkspaceIntent({
+      workspaceId: initialSnapshot().identity.workspaceId,
+      changeId: initialSnapshot().identity.changeId,
+      isolation: 'current',
+    });
+    const workspaceBinding = createExecutionWorkspaceBinding({
+      intent,
+      repositories: [
+        {
+          repositoryId: 'workspace',
+          checkoutPath: 'C:\\workspace',
+          branch: 'main',
+          head: '1'.repeat(40),
+          worktreeId: null,
+          workspaceOwned: true,
+        },
+      ],
+    });
+    const strategy = createBuildStrategy({
+      runId: initialSnapshot().identity.runId,
+      revision: 1,
+      executionMode: 'autonomous',
+      tddMode: 'direct',
+      reviewMode: 'standard',
+      isolationIntent: intent.isolation,
+    });
+    const binding = createExecutionBinding({
+      strategy,
+      revision: 1,
+      coordinatorHostId: 'runtime-host',
+      workspaceBinding,
+      workspaceOwnerId: intent.workspaceId,
+      localOverlayRef: 'execution-workspace:recovery',
+    });
+    const plan = createBuildPlan({
+      runId: initialSnapshot().identity.runId,
+      revision: 1,
+      strategy,
+      binding,
+      planningDigest: tasks.digest,
+      tasks,
+      candidate: {
+        packages: tasks.tasks.map((task, index) => ({
+          packageKey: `package-${index + 1}`,
+          taskIds: [task.taskId],
+          repositoryIds: ['workspace'],
+          writeScopes: [{ repositoryId: 'workspace', paths: [`src/${index + 1}/**`] }],
+          acceptanceRefs: task.acceptanceCriteria.map((criterion) => criterion.acceptanceId),
+          expectedOutcomes: [`package-${index + 1}-passes`],
+          validatorProfile: 'build.package-valid',
+          dependsOn: [],
+        })),
+      },
+    });
+    let protocol = createBuildProtocolState({
+      runId: initialSnapshot().identity.runId,
+      planningDigest: tasks.digest,
+      strategy,
+    });
+    protocol = advanceBuildProtocol(protocol, { kind: 'binding-accepted', binding });
+    protocol = advanceBuildProtocol(protocol, {
+      kind: 'plan-accepted',
+      plan,
+      workspaceCheckpoint: nextWorkspaceCheckpoint(protocol),
+    });
+    const planEvidence = createPlanEvidence({
+      plan,
+      strategy,
+      binding,
+      validation: validateBuildPlan({
+        plan,
+        strategy,
+        binding,
+        tasks,
+        protectedBranches: [],
+      }),
+      protectedBranches: [],
+      compositionCheckpointDigest: digest('composition'),
+      reportOwnerId: 'team-platform',
+    });
+    protocol = advanceBuildProtocol(protocol, { kind: 'plan-evidence-accepted', evidence: planEvidence });
+    for (const [index, workPackage] of plan.packages.entries()) {
+      const checkpoint = advanceBuildWorkspaceCheckpoint({
+        current: protocol.workspaceCheckpoint!,
+        observed: protocol.workspaceCheckpoint!.repositories,
+        writableRepositoryIds: ['workspace'],
+        relations: { workspace: 'unchanged' },
+      });
+      protocol = advanceBuildProtocol(protocol, {
+        kind: 'package-completed',
+        completion: createPackageCompletionEvidence({
+          workPackage,
+          executionId: `execution-${index + 1}`,
+          acceptanceEvidenceIds: [`acceptance-${index + 1}`],
+          testEvidenceIds: [`test-${index + 1}`],
+          tddMode: 'direct',
+          workspaceCheckpointDigest: checkpoint.digest,
+          implementationDigest: digest(`implementation-${index + 1}`),
+        }),
+        workspaceCheckpoint: checkpoint,
+      });
+    }
+    const invalidation = createBuildInvalidation({
+      source: 'build-check',
+      plan,
+      classification: 'planning',
+      affectedPackageIds: [plan.packages[0]!.packageId],
+      packageCompletions: protocol.packageCompletions,
+      reason: 'Package A is not independently completable.',
+    });
+    const current = builtinSnapshot({
+      revision: 11,
+      checkEpoch: 9,
+      phase: 'build',
+      currentWork: phaseWork('build', 'build.check', 9, digest('check')),
+      planningDigest: tasks.digest,
+      workspaceIntent: intent,
+      buildProtocol: protocol,
+    });
+    const decision = classifyRecoveryObservation({
+      schemaVersion: 1,
+      runId: current.identity.runId,
+      expectedRevision: current.revision,
+      checkEpoch: current.checkEpoch,
+      observationId: 'plan-observation-1',
+      planning: { status: 'current', changedIdentities: [] },
+      plan: {
+        status: 'drift',
+        reasonCode: 'package-not-completable',
+        changedIdentities: ['build-plan'],
+      },
+      work: { status: 'current', changedIdentities: [] },
+      evidence: { status: 'current', changedIdentities: [] },
+    });
+    if (!decision) throw new Error('expected revise-plan decision');
+    const planWork = phaseWork('build', 'build.plan', 10, invalidation.digest);
+
+    const applied = applyLifecycleRecoveryDecision({
+      definition: BUILTIN_CHANGE_LIFECYCLE_DEFINITION,
+      current,
+      decision,
+      materialization: { work: planWork, invalidation, evidenceIds: [] },
+    });
+
+    expect(applied.snapshot).toMatchObject({
+      revision: 12,
+      checkEpoch: 10,
+      phase: 'build',
+      status: 'running',
+      currentWork: { workId: planWork.workId, kind: 'build.plan' },
+      buildProtocol: { currentAction: 'plan', status: 'active', plan: { planId: plan.planId } },
+    });
+    expect(applied.snapshot.buildProtocol?.packageCompletions.map((entry) => entry.packageId)).toEqual([
+      plan.packages[1]!.packageId,
+    ]);
+    expect(applied.fact).toMatchObject({
+      recovery: { decisionId: decision.decisionId, action: 'revise-plan', authority: 'plan' },
+    });
+  });
+
   it('atomically replaces a rejected Open checkpoint with one revision-bound repair Work', () => {
     const current: ChangeLifecycleSnapshot = {
       ...createChangeLifecycleSnapshot({ identity: initialSnapshot().identity }),

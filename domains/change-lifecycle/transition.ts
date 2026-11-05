@@ -26,6 +26,7 @@ import type {
 } from './build-protocol.js';
 import { advanceBuildProtocol, suspendBuildProtocolForDesign } from './build-protocol.js';
 import { runtimeInvalidationScope } from '../runtime/invalidation.js';
+import type { RecoveryAction, RecoveryAuthority } from '../runtime/recovery.js';
 
 export const CHANGE_PHASES = ['open', 'design', 'build', 'verify', 'archive'] as const;
 export type ChangePhase = (typeof CHANGE_PHASES)[number];
@@ -390,6 +391,15 @@ export interface ChangeLifecycleTransitionFact {
     previousCheckEpoch: number;
     nextCheckEpoch: number;
     evidenceIds: readonly string[];
+  };
+  recovery?: {
+    decisionId: `recovery:sha256:${string}`;
+    observationId: string;
+    action: RecoveryAction;
+    authority: RecoveryAuthority;
+    reasonCode: string;
+    retainedIdentities: readonly string[];
+    invalidatedIdentities: readonly string[];
   };
 }
 
