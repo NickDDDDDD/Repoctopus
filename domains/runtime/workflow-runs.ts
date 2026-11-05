@@ -169,6 +169,7 @@ function retireMismatchedExecution(
   state: RunState,
   snapshot: ChangeLifecycleSnapshot,
   observationKind: string,
+  options: { authorizedRejectedCorrection?: boolean } = {},
 ): { state: RunState; fact: WorkExecutionRetirementFact | null } {
   const execution = state.workExecution;
   if (
@@ -178,7 +179,20 @@ function retireMismatchedExecution(
   ) {
     return { state, fact: null };
   }
-  if (['invoking', 'submitted', 'unknown'].includes(execution.status)) {
+  const rejectedCorrectionCanBeRetired =
+    options.authorizedRejectedCorrection === true &&
+    execution.status === 'invoking' &&
+    execution.continuation === 'awaiting-correction' &&
+    execution.pendingSubmission === null &&
+    execution.rejectedSubmissions?.some(
+      (submission) =>
+        submission.rejection.reasonCode === 'outcome-rejected' &&
+        submission.outcome.result?.kind === 'build-plan-candidate',
+    ) === true;
+  if (
+    ['invoking', 'submitted', 'unknown'].includes(execution.status) &&
+    !rejectedCorrectionCanBeRetired
+  ) {
     throw new Error(
       'Lifecycle cannot replace an unresolved Work execution; reconcile the authoritative invocation first',
     );
@@ -497,6 +511,22 @@ export class WorkflowRunCoordinator {
         ) {
           throw new Error('Authorized branch rebind evidence is stale');
         }
+        const execution = state.workExecution;
+        if (
+          !execution ||
+          execution.workId !== state.changeLifecycle.currentWork.workId ||
+          execution.checkEpoch !== state.changeLifecycle.checkEpoch ||
+          execution.status !== 'invoking' ||
+          execution.continuation !== 'awaiting-correction' ||
+          execution.pendingSubmission !== null ||
+          execution.rejectedSubmissions?.some(
+            (submission) =>
+              submission.rejection.reasonCode === 'outcome-rejected' &&
+              submission.outcome.result?.kind === 'build-plan-candidate',
+          ) !== true
+        ) {
+          throw new Error('Authorized branch rebind does not match a rejected Plan checkpoint');
+        }
       }
       if (
         (observation.kind === 'verify-gate-satisfied' ||
@@ -517,7 +547,9 @@ export class WorkflowRunCoordinator {
       if (!reduced.fact) return { value: undefined };
       const timestamp = this.clock().toISOString();
       const { status, ...changeLifecycle } = reduced.snapshot;
-      const retirement = retireMismatchedExecution(state, reduced.snapshot, observation.kind);
+      const retirement = retireMismatchedExecution(state, reduced.snapshot, observation.kind, {
+        authorizedRejectedCorrection: Boolean(authorizedRebind),
+      });
       const nextState: RunState = {
         ...retirement.state,
         status,
