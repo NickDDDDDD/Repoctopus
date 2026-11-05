@@ -1,13 +1,13 @@
-# CLI Distribution Gate Verification Report
+# CLI Distribution and Cross-Platform Verification Report
 
 ## Reproducible subject
 
-- Change: `stabilize-cli-distribution-gate`
-- Tested implementation commit: `37163b82be9b0d214d57f8f9ac2d3703bee4aa09`
+- Changes: `stabilize-cli-distribution-gate`, `stabilize-cross-platform-verification`
+- Tested implementation commit: `327731bbb20869e1585460869d47201c04f99daa`
 - Package: `repoctopus@0.1.0`
-- Package content SHA-256: `d1fb98082adf33c2930be46023d4f123fe8343c697ee22d74740dff79b5b561e`
+- Package content SHA-256: `632cbf85078ed5ac81cfe7c54e4fa555a612e5d4f17839a9a659824c88fe194d`
 - Package files: `456`
-- Package content bytes: `5538199`
+- Package content bytes: `5538528`
 - Controller: `@rpamis/comet@0.5.1`
 - Platform: Windows x64
 - Node.js: `24.21.0`
@@ -81,10 +81,10 @@ git status --short
 
 npm run verify
   typecheck, Desktop typecheck, lint, and CLI/Desktop builds passed
-  complete Vitest matrix passed: 190 files
-  942 tests passed; 2 explicitly skipped (944 total)
+  complete Vitest matrix passed: 191 files; 1 POSIX-only file skipped on Windows (192 total)
+  946 tests passed; 3 explicitly skipped (949 total)
   generated, brand, architecture, provenance, and Dashboard salvage passed
-  strict OpenSpec passed: 18 items, 0 failed
+  strict OpenSpec passed: 19 items, 0 failed
   managed execution report reproduced the package identity
 
 comet check run stabilize-cli-distribution-gate build -- npm.cmd run verify
@@ -112,17 +112,38 @@ checks above.
 
 ## OpenSpec verification scorecard
 
-| Dimension    | Status                                                                  |
-| ------------ | ----------------------------------------------------------------------- |
-| Completeness | 9/9 tasks complete; 5/5 added requirements mapped                       |
-| Correctness  | 5/5 requirements implemented; 14/14 scenarios covered by tests/evidence |
-| Coherence    | Approved Design followed; no scope or project-pattern divergence        |
+| Dimension    | Status                                                                                                  |
+| ------------ | ------------------------------------------------------------------------------------------------------- |
+| Completeness | Distribution 9/9 complete; cross-platform repair 12/13 pending external evidence                        |
+| Correctness  | Distribution 5/5 requirements implemented; repair declares `skip_specs` and preserves behavior contract |
+| Coherence    | Approved revised Design followed; no new Runtime protocol or second recovery algorithm                  |
 
-The independent delta review of the repaired inputs found 0 CRITICAL, 0 IMPORTANT, and 0 WARNING
-issues. It confirmed the standalone build lifecycle, task 3.1 baseline wording, job-level permission
-rejection, direct-source freshness wording, and absence of Runtime, Cordis, launcher, or protocol
-scope drift. The only suggestion was to refresh the lifecycle wording in this verdict; that evidence
-correction is included below.
+The first independent delta review of the distribution repair found 0 CRITICAL, 0 IMPORTANT, and 0
+WARNING issues. It confirmed the standalone build lifecycle, task 3.1 baseline wording, job-level
+permission rejection, direct-source freshness wording, and absence of Runtime, Cordis, launcher, or
+protocol scope drift.
+
+## Cross-platform Verify repair and second controlled re-entry
+
+A later independent integration review found one IMPORTANT process-recovery gap: recovered POSIX
+termination authorized `SIGKILL` with the leader creation identity, but then treated disappearance of
+that leader PID as proof that its complete process group had stopped. A descendant could therefore
+survive while the Runtime returned `terminated`. Comet recorded the failed Verify and returned the
+same Run to Design; the revised proposal
+`f08b444b5119b5b9b53b1fe69273c2fb4596735c4331d5bef329597b277fecab` was approved.
+
+The repair retains creation identity solely as the pre-signal destructive-action authorization and
+reuses the existing bounded process-group probe after the signal. `terminated` now requires
+`kill(-pgid, 0)` to report `ESRCH`; group survival, permission ambiguity, and timeout remain
+conservative `unknown` results. A deterministic fake-timer regression reproduced the old false
+success, and a Comet-style detached parent/descendant fixture was added for real Linux execution.
+
+The first complete Windows rerun correctly failed because the modified Comet-derived target digest
+had not yet been refreshed. That provenance failure also caused the runtime-tracer E2E to reject the
+same target digest. The single target entry in `third_party/comet/source-manifest.json` was updated;
+`check:provenance` and the focused provenance/runtime-tracer set then passed 13/13, followed by the
+complete Windows result recorded above. No source snapshot, upstream identity, or adoption class was
+changed.
 
 The first complete verification attempt ran from a new worktree whose local `node_modules` held
 only Vite caches while Node resolved most dependencies from the parent repository. The Desktop E2E
@@ -148,10 +169,10 @@ This is the pre-existing-baseline exception already declared in the approved Bui
 
 ## External evidence boundary
 
-The branch is public and the workflow contract is locally validated. A GitHub-hosted
-`Continuous integration / verify` result has not yet been observed for the final branch commit and
-is therefore not claimed here. Whether that check is configured as required must be verified from
-GitHub branch rules by a repository administrator.
+The branch is public and the workflow contract is locally validated. The final GitHub-hosted Linux
+result and independent post-repair review are recorded only after they complete for the exact report
+commit; a previous successful run is not reused as proof for this repaired input. Whether the stable
+check is configured as required remains an independently administered repository-rule fact.
 
 ## Cleanup
 
@@ -164,7 +185,7 @@ GitHub branch rules by a repository administrator.
 ## Verdict
 
 The packaged implementation establishes a clean-checkout CI contract and a deterministic CLI
-consumer boundary without changing Repoctopus Runtime semantics. Build Check and independent Verify
-review are complete with no unresolved issue. The remaining lifecycle work is to bind this report to
-the Runtime Verify Guard, observe the first GitHub-hosted check when a pull request runs, and archive
-the OpenSpec change after delivery confirmation.
+consumer boundary. The cross-platform repair removes the known false-success path without changing
+the Repoctopus Runtime protocol. Local Windows verification is complete; the current report commit
+still requires an exact-HEAD GitHub Linux result and independent post-repair review before the change
+can claim final Verify success or enter Archive.
