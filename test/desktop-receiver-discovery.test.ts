@@ -80,15 +80,18 @@ describe('desktop receiver discovery', () => {
     expect(
       resolveDesktopReceiverDiscoveryRoot({
         LOCALAPPDATA: 'C:\\ignored',
-        REPOCTOPUS_DESKTOP_DISCOVERY_ROOT: 'D:\\Repoctopus\\receiver',
+        REPOCTOPUS_DESKTOP_DISCOVERY_ROOT: 'D:\\Repoctopus\\..\\receiver\\.',
       }),
-    ).toBe('D:\\Repoctopus\\receiver');
+    ).toBe('D:\\receiver');
     expect(() =>
       resolveDesktopReceiverDiscoveryRoot({
         LOCALAPPDATA: 'C:\\Users\\worker\\AppData\\Local',
         REPOCTOPUS_DESKTOP_DISCOVERY_ROOT: 'relative',
       }),
     ).toThrow('REPOCTOPUS_DESKTOP_DISCOVERY_ROOT must be an absolute path');
+    expect(() => resolveDesktopReceiverDiscoveryRoot({ LOCALAPPDATA: 'relative' })).toThrow(
+      'LOCALAPPDATA is required for Windows Desktop discovery',
+    );
   });
 
   it('exposes a credential only after owner, freshness, process and port checks', async () => {

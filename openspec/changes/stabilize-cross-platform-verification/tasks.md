@@ -7,8 +7,8 @@
 
 ## 2. Windows Desktop discovery 路径语义
 
-- [ ] 2.1 以现有 Windows 路径用例作为回归基线，补充 override 规范化与非绝对路径拒绝断言，并确认未修实现会在非 Windows `node:path` 语义下失败 <!-- comet-task:c500e361-c794-462a-a256-7d0fd42c8d1b -->
-- [ ] 2.2 将 discovery root 计算限定为 `path.win32`，并用 `vitest run test/desktop-receiver-discovery.test.ts` 验证 `LOCALAPPDATA`、override 和拒绝分支 <!-- comet-task:85e0f1e4-0652-4e4b-b325-47d193164c56 -->
+- [x] 2.1 以现有 Windows 路径用例作为回归基线，补充 override 规范化与非绝对路径拒绝断言，并确认未修实现会在非 Windows `node:path` 语义下失败 <!-- comet-task:c500e361-c794-462a-a256-7d0fd42c8d1b -->
+- [x] 2.2 将 discovery root 计算限定为 `path.win32`，并用 `vitest run test/desktop-receiver-discovery.test.ts` 验证 `LOCALAPPDATA`、override 和拒绝分支 <!-- comet-task:85e0f1e4-0652-4e4b-b325-47d193164c56 -->
 
 ## 3. POSIX recovered termination 确认
 
