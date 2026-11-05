@@ -76,6 +76,7 @@ function executor(
   invokeError?: Error,
   workKind = 'build.execute',
   consumedLayerDigests: readonly `sha256:${string}`[] = [digest('1'), digest('2')],
+  hostOutcomeOverride?: (outcome: WorkExecutionHostOutcome) => unknown,
 ) {
   const packet = frozenPacket(workKind);
   const intent = {
@@ -102,7 +103,7 @@ function executor(
   };
   const invoke = vi.fn((_packet: WorkExecutionPacket, session: WorkExecutionSessionIdentity) => {
     if (invokeError) return Promise.reject(invokeError);
-    return Promise.resolve({
+    const outcome = {
       schemaVersion: 1 as const,
       invocationId: session.invocationId,
       hostId: 'coordinator-1',
@@ -137,7 +138,10 @@ function executor(
         },
       ],
       completedAt: '2026-10-28T00:00:00.000Z',
-    } satisfies WorkExecutionHostOutcome);
+    } satisfies WorkExecutionHostOutcome;
+    return Promise.resolve(
+      (hostOutcomeOverride ? hostOutcomeOverride(outcome) : outcome) as WorkExecutionHostOutcome,
+    );
   });
   const host: WorkExecutionHost = {
     identity: {
@@ -176,7 +180,7 @@ function executor(
   return { service, authority, host, invoke, workDispatcher };
 }
 
-function externalReplayHarness() {
+function externalReplayHarness(persisted = true) {
   const packet = frozenPacket();
   const persistedOutcome: WorkExecutionHostOutcome = {
     schemaVersion: 1,
@@ -217,7 +221,8 @@ function externalReplayHarness() {
     ],
     completedAt: '2026-10-28T00:00:00.000Z',
   };
-  const markHostCompleted = vi.fn();
+  const markHostCompleted = vi.fn().mockResolvedValue({ status: 'submitted' });
+  const rejectHostSubmission = vi.fn().mockResolvedValue({ status: 'invoking' });
   const acceptOutcome = vi.fn().mockResolvedValue({ accepted: true });
   const service = Object.create(ManagedWorkExecutor.prototype) as ManagedWorkExecutor;
   Object.defineProperty(service, 'ctx', {
@@ -239,14 +244,14 @@ function externalReplayHarness() {
               packet: { packetDigest: persistedOutcome.packetDigest },
             },
             packet: { packetDigest: persistedOutcome.packetDigest },
-            hostOutcome: persistedOutcome,
+            ...(persisted ? { hostOutcome: persistedOutcome } : {}),
           },
         }),
       },
       workExecutionAuthority: {
         loadIntent: vi.fn().mockResolvedValue({}),
         markHostCompleted,
-        rejectHostSubmission: vi.fn().mockResolvedValue({ status: 'rejected' }),
+        rejectHostSubmission,
         recordDelegationFacts: vi.fn(),
         recordSkillFacts: vi.fn(),
       },
@@ -271,7 +276,14 @@ function externalReplayHarness() {
     result: persistedOutcome.result!,
     delegationReceipts: persistedOutcome.delegationReceipts!,
   };
-  return { acceptOutcome, input, markHostCompleted, persistedOutcome, service };
+  return {
+    acceptOutcome,
+    input,
+    markHostCompleted,
+    persistedOutcome,
+    rejectHostSubmission,
+    service,
+  };
 }
 
 describe('Managed Work Executor Build contract', () => {
@@ -348,6 +360,23 @@ describe('Managed Work Executor Build contract', () => {
     expect(result.hostOutcome.completedAt).toBe('2026-10-28T00:00:00.000Z');
     expect(markHostCompleted).not.toHaveBeenCalled();
     expect(acceptOutcome).not.toHaveBeenCalled();
+  });
+
+  it('audits an invalid external Host envelope before rejecting it', async () => {
+    const { input, markHostCompleted, rejectHostSubmission, service } =
+      externalReplayHarness(false);
+    const malformed = { ...input, consumedLayerDigests: null } as unknown as ExternalWorkExecutionOutcome;
+
+    await expect(service.acceptExternalOutcome(malformed)).resolves.toMatchObject({
+      hostOutcome: { status: 'failed' },
+      acceptance: null,
+    });
+    expect(markHostCompleted).toHaveBeenCalledOnce();
+    const completion = markHostCompleted.mock.calls[0] as unknown as readonly unknown[];
+    expect(completion[3]).toEqual(malformed);
+    expect(rejectHostSubmission).toHaveBeenCalledWith(
+      expect.objectContaining({ reasonCode: 'output-invalid' }),
+    );
   });
 
   it('persists exactly the external Runner capabilities declared independently of one Work', async () => {
@@ -760,6 +789,46 @@ describe('Managed Work Executor Build contract', () => {
     expect(rejection.diagnostic).toMatch(/no Build Work Outcome processor is registered/iu);
     expect(workDispatcher.acceptOutcome).not.toHaveBeenCalled();
   });
+
+  it.each([
+    [
+      'status',
+      (outcome: WorkExecutionHostOutcome) => ({ ...outcome, status: 'pending' }),
+      /status is invalid/u,
+    ],
+    [
+      'consumedLayerDigests',
+      (outcome: WorkExecutionHostOutcome) => ({ ...outcome, consumedLayerDigests: null }),
+      /bounded digest array/u,
+    ],
+  ] as const)(
+    'persists and rejects a bounded Host Outcome with an invalid outer %s',
+    async (_field, mutate, diagnostic) => {
+      const { service, authority, workDispatcher } = executor(
+        undefined,
+        undefined,
+        undefined,
+        'build.execute',
+        [digest('1'), digest('2')],
+        mutate,
+      );
+
+      await expect(service.execute({} as never)).resolves.toMatchObject({
+        hostOutcome: { status: 'failed' },
+        acceptance: null,
+      });
+      expect(authority.markHostCompleted).toHaveBeenCalledOnce();
+      const completion = authority.markHostCompleted.mock.calls[0] as unknown as readonly unknown[];
+      expect(completion[3]).toBeDefined();
+      const rejection = authority.rejectHostSubmission.mock.calls[0]?.[0] as unknown as {
+        reasonCode: string;
+        diagnostic: string;
+      };
+      expect(rejection.reasonCode).toBe('output-invalid');
+      expect(rejection.diagnostic).toMatch(diagnostic);
+      expect(workDispatcher.acceptOutcome).not.toHaveBeenCalled();
+    },
+  );
 
   it('fails closed when a subagent response is lost before an attested receipt exists', async () => {
     const missingReceipt = executor(undefined, []);

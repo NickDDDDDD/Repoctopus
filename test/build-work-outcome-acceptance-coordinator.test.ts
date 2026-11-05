@@ -4,6 +4,7 @@ import type { ActionIntent } from '../domains/action/types.js';
 import type { WorkDescriptor } from '../domains/change-lifecycle/transition.js';
 import type { RunState } from '../domains/engine/types.js';
 import { createWorkExecutionSubmission } from '../domains/work-execution/submission.js';
+import { StaleWorkOutcomeValidationError } from '../domains/work-execution/acceptance.js';
 import type {
   WorkExecutionCheckpoint,
   WorkExecutionHostOutcome,
@@ -122,6 +123,7 @@ function harness(workKind: BuildWorkKind, validShape = true) {
     loadIntent,
     outcomeFactory,
     rejectHostSubmission,
+    runState,
     work,
   };
 }
@@ -175,7 +177,9 @@ describe('Build Work Outcome acceptance coordinator', () => {
       runId: 'run-1',
       candidate: inspected,
       validatorId: 'build.binding-valid',
+      validationBase: fixture.runState,
       validationInput: { strategyDigest: digest('4') },
+      reobserveValidationInput: () => Promise.resolve({ strategyDigest: digest('4') }),
       transition: { kind: 'build-binding-accepted' },
       assertTransitionFeasible: vi.fn(),
     });
@@ -212,19 +216,29 @@ describe('Build Work Outcome acceptance coordinator', () => {
     });
     if (!inspected || inspected.kind !== 'candidate') throw new Error('Expected candidate');
     fixture.acceptValidatedOutcome
-      .mockRejectedValueOnce(new Error('Run state changed after Action Receipt save'))
+      .mockRejectedValueOnce(
+        new StaleWorkOutcomeValidationError('Run state changed after Action Receipt save'),
+      )
       .mockResolvedValueOnce({ validation: 'accepted' });
     const input = {
       runId: 'run-1',
       candidate: inspected,
       validatorId: 'build.binding-valid',
+      validationBase: fixture.runState,
       validationInput: { strategyDigest: digest('4') },
+      reobserveValidationInput: () => Promise.resolve({ strategyDigest: digest('4') }),
       transition: { kind: 'build-binding-accepted' },
       assertTransitionFeasible: vi.fn(),
     };
 
-    await expect(fixture.coordinator.accept(input)).rejects.toThrow(/Receipt save/u);
-    await expect(fixture.coordinator.accept(input)).resolves.toMatchObject({
+    const firstAttempt = await fixture.coordinator.accept(input);
+    expect(firstAttempt.kind).toBe('processing-error');
+    if (firstAttempt.kind !== 'processing-error') throw new Error('Expected processing error');
+    expect(firstAttempt.diagnostic).toMatch(/Receipt save/u);
+    fixture.runState.stateVersion += 1;
+    await expect(
+      fixture.coordinator.accept({ ...input, validationBase: fixture.runState }),
+    ).resolves.toMatchObject({
       kind: 'accepted',
       acceptance: { validation: 'accepted' },
     });
@@ -236,8 +250,60 @@ describe('Build Work Outcome acceptance coordinator', () => {
     const first = fixture.acceptValidatedOutcome.mock.calls[0]?.[0] as unknown as AcceptanceCall;
     const retry = fixture.acceptValidatedOutcome.mock.calls[1]?.[0] as unknown as AcceptanceCall;
     expect(retry.outcome.outcomeId).toBe(first.outcome.outcomeId);
-    expect(retry.validation.validationDigest).toBe(first.validation.validationDigest);
+    expect(retry.validation.validationDigest).not.toBe(first.validation.validationDigest);
     expect(retry.validation.outcomeId).toBe(first.validation.outcomeId);
+  });
+
+  it('retains the pending candidate when the validation base changes before acceptance', async () => {
+    const fixture = harness('build.plan');
+    const inspected = fixture.coordinator.inspect({
+      work: fixture.work,
+      execution: fixture.execution,
+    });
+    if (!inspected || inspected.kind !== 'candidate') throw new Error('Expected candidate');
+    const validationBase = structuredClone(fixture.runState);
+    fixture.runState.stateVersion += 1;
+
+    await expect(
+      fixture.coordinator.accept({
+        runId: 'run-1',
+        candidate: inspected,
+        validatorId: fixture.work.validatorProfile.id,
+        validationBase,
+        validationInput: { taskSetDigest: digest('7') },
+        reobserveValidationInput: () => Promise.resolve({ taskSetDigest: digest('7') }),
+        transition: { kind: 'build-plan-accepted' },
+        assertTransitionFeasible: vi.fn(),
+      }),
+    ).resolves.toMatchObject({ kind: 'processing-error' });
+    expect(fixture.acceptValidatedOutcome).not.toHaveBeenCalled();
+    expect(fixture.rejectHostSubmission).toHaveBeenCalledWith(
+      expect.objectContaining({ reasonCode: 'outcome-processing-error' }),
+    );
+  });
+
+  it('retains the pending candidate when final external fact observation drifts', async () => {
+    const fixture = harness('build.check');
+    const inspected = fixture.coordinator.inspect({
+      work: fixture.work,
+      execution: fixture.execution,
+    });
+    if (!inspected || inspected.kind !== 'candidate') throw new Error('Expected candidate');
+
+    const result = await fixture.coordinator.accept({
+      runId: 'run-1',
+      candidate: inspected,
+      validatorId: fixture.work.validatorProfile.id,
+      validationBase: fixture.runState,
+      validationInput: { workspaceHead: digest('7') },
+      reobserveValidationInput: () => Promise.resolve({ workspaceHead: digest('8') }),
+      transition: { kind: 'build-check-accepted' },
+      assertTransitionFeasible: vi.fn(),
+    });
+    expect(result.kind).toBe('processing-error');
+    if (result.kind !== 'processing-error') throw new Error('Expected processing error');
+    expect(result.diagnostic).toMatch(/facts changed/u);
+    expect(fixture.acceptValidatedOutcome).not.toHaveBeenCalled();
   });
 
   it.each(Object.keys(candidates) as BuildWorkKind[])(
@@ -255,7 +321,9 @@ describe('Build Work Outcome acceptance coordinator', () => {
           runId: 'run-1',
           candidate: inspected,
           validatorId: fixture.work.validatorProfile.id,
+          validationBase: fixture.runState,
           validationInput: { workKind },
+          reobserveValidationInput: () => Promise.resolve({ workKind }),
           transition: { kind: 'test-transition' },
           assertTransitionFeasible: () => {
             throw new Error('transition infeasible');

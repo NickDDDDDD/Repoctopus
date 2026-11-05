@@ -2941,11 +2941,35 @@ export class WorkflowRuns extends Service {
                   runId,
                   candidate: configureCandidate,
                   validatorId: configureCandidate.work.validatorProfile.id,
+                  validationBase: current,
                   validationInput: {
                     strategyDigest: strategy.semanticDigest,
                     bindingStateDigest: executionBinding.stateDigest,
                     projectConfigDigest,
                     projectSnapshotDigest: current.projectSnapshotDigest,
+                  },
+                  reobserveValidationInput: async () => {
+                    const refreshedProjectSnapshot =
+                      await this.ctx.runStore.loadProjectSnapshot(runId);
+                    const refreshedWorkspaceBinding = await this.bindExecutionWorkspace(
+                      current,
+                      lifecycle,
+                      refreshedProjectSnapshot,
+                    );
+                    const refreshedBinding = createExecutionBinding({
+                      strategy,
+                      revision: lifecycle.buildProtocol!.bindingHistory.length + 1,
+                      coordinatorHostId: invocationHost.id,
+                      workspaceBinding: refreshedWorkspaceBinding,
+                      workspaceOwnerId: lifecycle.workspaceIntent!.workspaceId,
+                      localOverlayRef: `execution-workspace:${refreshedWorkspaceBinding.localDigest.slice(-24)}`,
+                    });
+                    return {
+                      strategyDigest: strategy.semanticDigest,
+                      bindingStateDigest: refreshedBinding.stateDigest,
+                      projectConfigDigest,
+                      projectSnapshotDigest: refreshedProjectSnapshot.digest,
+                    };
                   },
                   transition: bindingObservation,
                   assertTransitionFeasible: (state) =>
@@ -3161,12 +3185,33 @@ export class WorkflowRuns extends Service {
                   runId,
                   candidate: planCandidate,
                   validatorId: lifecycle.currentWork.validatorProfile.id,
+                  validationBase: current,
                   validationInput: {
                     taskSetDigest: taskSet.digest,
                     planDigest: plan.digest,
                     workspaceCheckpointDigest: planWorkspaceCheckpoint.digest,
                     bindingStateDigest: binding.stateDigest,
                     projectSnapshotDigest: current.projectSnapshotDigest,
+                  },
+                  reobserveValidationInput: async () => {
+                    const [refreshedTaskSet, refreshedProjectSnapshot] = await Promise.all([
+                      this.ctx.specification.tasks(lifecycle.identity.changeId, signal),
+                      this.ctx.runStore.loadProjectSnapshot(runId),
+                    ]);
+                    const refreshedWorkspaceCheckpoint = await this.advanceBuildWorkspaceProgress(
+                      current,
+                      lifecycle,
+                      refreshedProjectSnapshot,
+                      protocol.workspaceCheckpoint!,
+                      [workspaceRepositoryId],
+                    );
+                    return {
+                      taskSetDigest: refreshedTaskSet.digest,
+                      planDigest: plan.digest,
+                      workspaceCheckpointDigest: refreshedWorkspaceCheckpoint.digest,
+                      bindingStateDigest: binding.stateDigest,
+                      projectSnapshotDigest: refreshedProjectSnapshot.digest,
+                    };
                   },
                   transition: planObservation,
                   assertTransitionFeasible: (state) =>
@@ -3514,7 +3559,12 @@ export class WorkflowRuns extends Service {
                 ...protocol.packageCompletions.map((entry) => entry.packageId),
                 completion.packageId,
               ]);
-              for (const task of lifecycle.tasks ?? []) {
+              const taskSetBeforeCompletion = await this.ctx.specification.tasks(
+                lifecycle.identity.changeId,
+                signal,
+              );
+              const taskIdsToComplete: string[] = [];
+              for (const task of taskSetBeforeCompletion.tasks) {
                 const required = plan.packages.filter((entry) =>
                   entry.taskIds.includes(task.taskId),
                 );
@@ -3523,18 +3573,20 @@ export class WorkflowRuns extends Service {
                   required.length > 0 &&
                   required.every((entry) => completedIds.has(entry.packageId))
                 ) {
-                  await this.ctx.specification.completeTask({
-                    changeId: lifecycle.identity.changeId,
-                    taskId: task.taskId,
-                    taskRevision: task.taskRevision,
-                    workId: lifecycle.currentWork.workId,
-                    ...(signal ? { signal } : {}),
-                  });
+                  taskIdsToComplete.push(task.taskId);
                 }
               }
-              const projectedTasks = await this.ctx.specification.tasks(
-                lifecycle.identity.changeId,
-                signal,
+              const projectedTaskValues = taskSetBeforeCompletion.tasks.map((task) =>
+                taskIdsToComplete.includes(task.taskId)
+                  ? {
+                      ...task,
+                      status: 'completed' as const,
+                      completion: {
+                        source: 'runtime-work' as const,
+                        workId: lifecycle.currentWork!.workId,
+                      },
+                    }
+                  : task,
               );
               const nextPackage = plan.packages.find(
                 (candidate) =>
@@ -3602,7 +3654,7 @@ export class WorkflowRuns extends Service {
                 completion,
                 workspaceCheckpoint,
                 work: nextWork,
-                tasks: projectedTasks.tasks,
+                tasks: projectedTaskValues,
               } as const;
               if (executeExecution?.status === 'submitted') {
                 if (executeCandidate?.kind !== 'candidate') {
@@ -3612,12 +3664,35 @@ export class WorkflowRuns extends Service {
                   runId,
                   candidate: executeCandidate,
                   validatorId: lifecycle.currentWork.validatorProfile.id,
+                  validationBase: current,
                   validationInput: {
                     completion,
                     workspaceCheckpoint,
-                    tasks: projectedTasks.tasks,
+                    taskSetBeforeCompletion,
+                    taskIdsToComplete,
                     planDigest: plan.digest,
                     projectSnapshotDigest: current.projectSnapshotDigest,
+                  },
+                  reobserveValidationInput: async () => {
+                    const [refreshedTasks, refreshedProjectSnapshot] = await Promise.all([
+                      this.ctx.specification.tasks(lifecycle.identity.changeId, signal),
+                      this.ctx.runStore.loadProjectSnapshot(runId),
+                    ]);
+                    const refreshedWorkspaceCheckpoint = await this.advanceBuildWorkspaceProgress(
+                      current,
+                      lifecycle,
+                      refreshedProjectSnapshot,
+                      protocol.workspaceCheckpoint!,
+                      workPackage.writeScopes.map((scope) => scope.repositoryId),
+                    );
+                    return {
+                      completion,
+                      workspaceCheckpoint: refreshedWorkspaceCheckpoint,
+                      taskSetBeforeCompletion: refreshedTasks,
+                      taskIdsToComplete,
+                      planDigest: plan.digest,
+                      projectSnapshotDigest: refreshedProjectSnapshot.digest,
+                    };
                   },
                   transition: packageObservation,
                   assertTransitionFeasible: (state) =>
@@ -3637,6 +3712,27 @@ export class WorkflowRuns extends Service {
                 }
               } else {
                 this.coordinator.assertChangeObservationFeasible(current, packageObservation);
+              }
+              for (const taskId of taskIdsToComplete) {
+                const task = taskSetBeforeCompletion.tasks.find(
+                  (candidate) => candidate.taskId === taskId,
+                )!;
+                await this.ctx.specification.completeTask({
+                  changeId: lifecycle.identity.changeId,
+                  taskId,
+                  taskRevision: task.taskRevision,
+                  workId: lifecycle.currentWork.workId,
+                  ...(signal ? { signal } : {}),
+                });
+              }
+              const completedTaskSet = await this.ctx.specification.tasks(
+                lifecycle.identity.changeId,
+                signal,
+              );
+              if (canonicalJson(completedTaskSet.tasks) !== canonicalJson(projectedTaskValues)) {
+                throw new Error(
+                  'Specification Task completion did not match the validated lifecycle projection',
+                );
               }
               for (const skill of [skills.actionSkill, ...skills.augmentationSkills]) {
                 await this.coordinator.bindSkill(runId, skill);
@@ -4032,11 +4128,28 @@ export class WorkflowRuns extends Service {
                         runId,
                         candidate: checkCandidate,
                         validatorId: lifecycle.currentWork!.validatorProfile.id,
+                        validationBase: current,
                         validationInput: {
                           checkEvidence,
                           invalidation,
                           planDigest: plan.digest,
                           projectSnapshotDigest: current.projectSnapshotDigest,
+                        },
+                        reobserveValidationInput: async () => {
+                          const refreshedProjectSnapshot =
+                            await this.ctx.runStore.loadProjectSnapshot(runId);
+                          await this.assertBuildWorkspaceCheckpointCurrent(
+                            current,
+                            lifecycle,
+                            refreshedProjectSnapshot,
+                            protocol.workspaceCheckpoint!,
+                          );
+                          return {
+                            checkEvidence,
+                            invalidation,
+                            planDigest: plan.digest,
+                            projectSnapshotDigest: refreshedProjectSnapshot.digest,
+                          };
                         },
                         transition: { decision, materialization },
                         assertTransitionFeasible: (state) =>
@@ -4131,12 +4244,43 @@ export class WorkflowRuns extends Service {
                   runId,
                   candidate: checkCandidate,
                   validatorId: lifecycle.currentWork.validatorProfile.id,
+                  validationBase: current,
                   validationInput: {
                     checkEvidence,
                     verificationInput,
                     evidenceFingerprint: evidencePlan.fingerprint,
                     planDigest: plan.digest,
                     projectSnapshotDigest: current.projectSnapshotDigest,
+                  },
+                  reobserveValidationInput: async () => {
+                    const refreshedProjectSnapshot =
+                      await this.ctx.runStore.loadProjectSnapshot(runId);
+                    await this.assertBuildWorkspaceCheckpointCurrent(
+                      current,
+                      lifecycle,
+                      refreshedProjectSnapshot,
+                      protocol.workspaceCheckpoint!,
+                    );
+                    const refreshedEvidencePlan = await this.ctx.evidenceCoordinator.plan(
+                      profileId,
+                    );
+                    const refreshedVerificationInput = createVerificationInput({
+                      runId,
+                      checkEpoch: lifecycle.checkEpoch + 1,
+                      tasks: lifecycle.tasks ?? [],
+                      fingerprint: refreshedEvidencePlan.fingerprint,
+                      plan: refreshedEvidencePlan.plan,
+                      projectConfigDigest,
+                      compositionDigest: current.composition.compositionDigest,
+                      skills: boundSkills,
+                    });
+                    return {
+                      checkEvidence,
+                      verificationInput: refreshedVerificationInput,
+                      evidenceFingerprint: refreshedEvidencePlan.fingerprint,
+                      planDigest: plan.digest,
+                      projectSnapshotDigest: refreshedProjectSnapshot.digest,
+                    };
                   },
                   transition: checkObservation,
                   assertTransitionFeasible: (state) =>

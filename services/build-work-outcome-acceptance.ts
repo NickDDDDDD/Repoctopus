@@ -84,7 +84,9 @@ export class BuildWorkOutcomeAcceptanceCoordinator {
     runId: string;
     candidate: PendingBuildWorkCandidate;
     validatorId: string;
+    validationBase: RunState;
     validationInput: unknown;
+    reobserveValidationInput: () => Promise<unknown>;
     transition: unknown;
     assertTransitionFeasible: (state: RunState) => void;
   }): Promise<
@@ -94,26 +96,51 @@ export class BuildWorkOutcomeAcceptanceCoordinator {
     if (input.candidate.terminalized) {
       throw new Error('Build Work Outcome candidate is already terminalized');
     }
-    const state = await this.dependencies.loadRun(input.runId);
-    input.assertTransitionFeasible(state);
-    const lifecycleDigest = `sha256:${createHash('sha256')
-      .update(canonicalJson(state.changeLifecycle ?? null))
+    const baseLifecycleDigest = `sha256:${createHash('sha256')
+      .update(canonicalJson(input.validationBase.changeLifecycle ?? null))
       .digest('hex')}` as const;
-    const disposition = createAcceptedBuildWorkOutcome({
-      work: input.candidate.work,
-      submission: input.candidate.submission,
-      validatorId: input.validatorId,
-      expectedStateVersion: state.stateVersion,
-      lifecycleDigest,
-      projectSnapshotDigest: state.projectSnapshotDigest,
-      validationInput: input.validationInput,
-      transition: input.transition,
-    });
-    if (disposition.kind !== 'accepted') {
-      throw new Error(`Build Work Outcome cannot be accepted: ${disposition.diagnostic}`);
-    }
     const intent = await this.dependencies.workExecutionAuthority.loadIntent(input.runId);
     try {
+      const state = await this.dependencies.loadRun(input.runId);
+      const currentLifecycleDigest = `sha256:${createHash('sha256')
+        .update(canonicalJson(state.changeLifecycle ?? null))
+        .digest('hex')}` as const;
+      if (
+        state.stateVersion !== input.validationBase.stateVersion ||
+        state.projectSnapshotDigest !== input.validationBase.projectSnapshotDigest ||
+        currentLifecycleDigest !== baseLifecycleDigest
+      ) {
+        throw new StaleWorkOutcomeValidationError(
+          'Build Work validation base changed before final observation',
+        );
+      }
+      input.assertTransitionFeasible(state);
+      let observedValidationInput: unknown;
+      try {
+        observedValidationInput = await input.reobserveValidationInput();
+      } catch (error) {
+        throw new StaleWorkOutcomeValidationError(
+          `Build Work validation facts could not be re-observed: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+      if (canonicalJson(observedValidationInput) !== canonicalJson(input.validationInput)) {
+        throw new StaleWorkOutcomeValidationError(
+          'Build Work validation facts changed before terminal acceptance',
+        );
+      }
+      const disposition = createAcceptedBuildWorkOutcome({
+        work: input.candidate.work,
+        submission: input.candidate.submission,
+        validatorId: input.validatorId,
+        expectedStateVersion: input.validationBase.stateVersion,
+        lifecycleDigest: baseLifecycleDigest,
+        projectSnapshotDigest: input.validationBase.projectSnapshotDigest,
+        validationInput: input.validationInput,
+        transition: input.transition,
+      });
+      if (disposition.kind !== 'accepted') {
+        throw new Error(`Build Work Outcome cannot be accepted: ${disposition.diagnostic}`);
+      }
       return {
         kind: 'accepted',
         acceptance: await this.dependencies.workDispatcher.acceptValidatedOutcome({

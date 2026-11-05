@@ -71,10 +71,20 @@ export function buildWorkValidationDigest(
   return sha256(record);
 }
 
-export function buildValidatedOutcomeId(
-  validationDigest: WorkOutcomeValidationRecord['validationDigest'],
-): `sha256:${string}` {
-  return sha256({ kind: 'validated-build-work-outcome', validationDigest });
+export function buildValidatedOutcomeId(input: {
+  work: Pick<WorkDescriptor, 'workId' | 'checkEpoch' | 'inputDigest'>;
+  submission: Pick<WorkExecutionSubmission, 'submissionId' | 'payloadDigest'>;
+  candidateDigest: `sha256:${string}`;
+}): `sha256:${string}` {
+  return sha256({
+    kind: 'validated-build-work-outcome',
+    workId: input.work.workId,
+    checkEpoch: input.work.checkEpoch,
+    stableInputDigest: input.work.inputDigest,
+    submissionId: input.submission.submissionId,
+    submissionDigest: input.submission.payloadDigest,
+    candidateDigest: input.candidateDigest,
+  });
 }
 
 export function resolveBuildWorkOutcomeProcessor(kind: string): BuildWorkOutcomeProcessor {
@@ -154,7 +164,11 @@ export function createAcceptedBuildWorkOutcome(input: {
     validation: {
       ...recordWithoutDigest,
       validationDigest,
-      outcomeId: buildValidatedOutcomeId(validationDigest),
+      outcomeId: buildValidatedOutcomeId({
+        work: input.work,
+        submission: input.submission,
+        candidateDigest,
+      }),
     },
   };
 }

@@ -162,6 +162,7 @@ export interface WorkExecutionSubmission {
   submissionId: string;
   payloadDigest: `sha256:${string}`;
   outcome: WorkExecutionHostOutcome;
+  rawPayload?: unknown;
   submittedAt: string;
 }
 

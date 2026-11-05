@@ -1105,8 +1105,9 @@ export class WorkExecutionAuthority extends Service {
     intent: ActionIntent,
     outcome: WorkExecutionHostOutcome,
     submissionId: string,
+    rawPayload?: unknown,
   ): Promise<WorkExecutionCheckpoint> {
-    const candidate = createWorkExecutionSubmission(submissionId, outcome);
+    const candidate = createWorkExecutionSubmission(submissionId, outcome, rawPayload);
     const result = await this.ctx.runStore.commitGuarded(intent.runId, ({ state, trajectory }) => {
       const current = state.workExecution;
       if (!current || current.intentId !== intent.intentId) {
@@ -1426,10 +1427,7 @@ export class WorkExecutionAuthority extends Service {
         const current = state.workExecution;
         const work = state.changeLifecycle?.currentWork;
         const { validationDigest, outcomeId, ...validationIdentity } = input.validation;
-        if (
-          buildWorkValidationDigest(validationIdentity) !== validationDigest ||
-          buildValidatedOutcomeId(validationDigest) !== outcomeId
-        ) {
+        if (buildWorkValidationDigest(validationIdentity) !== validationDigest) {
           throw new Error('Validated Work acceptance validation record is corrupt');
         }
         if (!current || current.intentId !== input.intent.intentId) {
@@ -1466,6 +1464,16 @@ export class WorkExecutionAuthority extends Service {
           throw new StaleWorkOutcomeValidationError();
         }
         const acceptedSubmission = current.pendingSubmission;
+        if (
+          !work ||
+          buildValidatedOutcomeId({
+            work,
+            submission: acceptedSubmission,
+            candidateDigest: input.validation.candidateDigest,
+          }) !== outcomeId
+        ) {
+          throw new Error('Validated Work acceptance Outcome identity is corrupt');
+        }
         if (
           acceptedSubmission.submissionId !== input.validation.submissionId ||
           acceptedSubmission.payloadDigest !== input.validation.submissionDigest ||

@@ -74,9 +74,9 @@ Comet 可以在单个 Runtime mutation 中完成 validator 与 transition；Repo
 
 如果锁外校验期间任一稳定输入变化，commit 返回可分类的 stale-validation，不接受旧候选；Runtime 重新观察而不是使用过期结果。外部系统写入或 Host 副作用不在 guarded commit 中发生。
 
-独立 thorough review 进一步收紧这一边界：validation record 采用 schema v2，同时绑定 Run `stateVersion`、完整 lifecycle digest、Project Snapshot digest、Work-specific validation input digest 与待应用 transition digest。guarded commit 重新核对 Run/lifecycle/Project Snapshot、pending submission、candidate、Action Outcome 和 Receipt 的完整身份；任何一项漂移都保留 pending candidate 并返回 typed stale-validation。外部 Task、workspace head 等事实以不可变观察值进入 validation/transition digest，后续 observation 仍按既有 drift/invalidation 协议重新观察，不能假装跨 Store 与 Git 存在单事务。
+独立 thorough review 进一步收紧这一边界：validation record 采用 schema v2，同时绑定**领域校验开始前捕获的** Run `stateVersion`、完整 lifecycle digest、Project Snapshot digest、Work-specific validation input digest 与待应用 transition digest。领域校验不能以完成后新读到的 Run 作为 CAS 基线。terminal acceptance 前必须再次观察 Specification Task、workspace head、Evidence fingerprint 等外部事实并与 validation input 精确比较；随后 guarded commit 重新核对 Run/lifecycle/Project Snapshot、pending submission、candidate、Action Outcome 和 Receipt 的完整身份。任何一项漂移都保留 pending candidate 并返回 typed stale-validation。后续 observation 仍按既有 drift/invalidation 协议重新观察，不能假装跨 Store 与 Git 存在单事务。
 
-Action Outcome identity 由 validation digest 确定性派生。若进程在 Action Receipt 持久化后、Run guarded commit 前退出，重试会请求同一个 Outcome/Receipt identity，Action Store 返回原 Receipt，再尝试唯一的 Run 绑定；不得生成新的随机 Outcome 并遗留第二条终态链。
+Action Outcome identity 由不随 CAS 重试变化的 Work + submission + candidate identity 确定性派生，不能包含 `stateVersion` 等易变校验元数据。若进程在 Action Receipt 持久化后、Run guarded commit 前退出，即使 stale-validation 使 Run 版本递增，重试仍会请求同一个 Outcome/Receipt identity，Action Store 返回原 Receipt，再尝试唯一的 Run 绑定；不得生成新的随机 Outcome 并遗留第二条终态链。
 
 **备选方案：**把完整 Build 领域校验下沉到 `WorkExecutionAuthority`。这会让 Store authority 依赖 Specification、Project Snapshot 和 Build orchestration，破坏领域边界，故拒绝。
 

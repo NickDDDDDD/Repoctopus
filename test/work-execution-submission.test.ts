@@ -377,6 +377,29 @@ describe('Work execution Host submission identity', () => {
     );
   });
 
+  it('retains the exact bounded raw Host payload when its outer envelope is invalid', () => {
+    const rawPayload = {
+      schemaVersion: 1,
+      invocationId: digest('1'),
+      hostId: 'host-1',
+      packetDigest: digest('2'),
+      status: 'pending',
+      summary: 'invalid status',
+      consumedLayerDigests: null,
+      completedAt: '2026-10-30T00:00:00.000Z',
+    };
+    const submission = createWorkExecutionSubmission(
+      'submission-invalid-envelope',
+      outcome('invalid Host envelope'),
+      rawPayload,
+    );
+
+    expect(submission.rawPayload).toEqual(rawPayload);
+    expect(submission.payloadDigest).toBe(
+      `sha256:${createHash('sha256').update(canonicalJson(rawPayload)).digest('hex')}`,
+    );
+  });
+
   it('rejects changed content under an existing submission identity', () => {
     const first = createWorkExecutionSubmission('submission-1', outcome());
     const changed = createWorkExecutionSubmission('submission-1', outcome('changed candidate'));
