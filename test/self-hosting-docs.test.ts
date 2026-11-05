@@ -11,6 +11,26 @@ const repositoryRoot = path.resolve(import.meta.dirname, '..');
 const cleanup: string[] = [];
 afterEach(async () => Promise.all(cleanup.splice(0).map(removeTemporaryDirectory)));
 
+function markdownSection(documentation: string, heading: string): string {
+  const marker = `### ${heading}`;
+  const start = documentation.indexOf(marker);
+  if (start === -1) return '';
+
+  const contentStart = start + marker.length;
+  const remaining = documentation.slice(contentStart);
+  const nextHeading = remaining.search(/^###\s/mu);
+  return nextHeading === -1 ? remaining : remaining.slice(0, nextHeading);
+}
+
+function expectCommandsInOrder(section: string, commands: string[]): void {
+  let previous = -1;
+  for (const command of commands) {
+    const position = section.indexOf(command);
+    expect(position, `missing command: ${command}`).toBeGreaterThan(previous);
+    previous = position;
+  }
+}
+
 describe('self-hosting documentation', () => {
   it('keeps local links and the short-lived project configuration valid', async () => {
     const documentationPath = path.join(repositoryRoot, 'docs', 'self-hosting.md');
@@ -49,5 +69,38 @@ describe('self-hosting documentation', () => {
       args: ['change', 'reconcile', '--workspace', workspace],
     });
     expect(result).toMatchObject({ ok: true, command: 'change reconcile', result: { checked: 0 } });
+  });
+
+  it('makes isolated packages the acceptance default and guards direct-source diagnostics', async () => {
+    const documentation = await readFile(
+      path.join(repositoryRoot, 'docs', 'self-hosting.md'),
+      'utf8',
+    );
+    const packageFirstHeading = '多仓验收默认：隔离安装包';
+    const directSourceHeading = '诊断例外：直接运行源码';
+    const packageFirst = markdownSection(documentation, packageFirstHeading);
+    const directSource = markdownSection(documentation, directSourceHeading);
+
+    expect(packageFirst).not.toBe('');
+    expect(directSource).not.toBe('');
+    expect(documentation.indexOf(packageFirstHeading)).toBeLessThan(
+      documentation.indexOf(directSourceHeading),
+    );
+    expectCommandsInOrder(packageFirst, [
+      'npm run build',
+      'npm pack --json --pack-destination',
+      'npm install --ignore-scripts --omit=dev --prefix',
+      'node (Join-Path $consumerDirectory',
+    ]);
+    expectCommandsInOrder(directSource, [
+      'npm run build',
+      'node scripts/build.mjs --check',
+      'node bin/repoctopus.js',
+    ]);
+    expect(directSource).toContain('每次切换、拉取或合入源码后');
+    expect(directSource).toContain('历史 `dist/`');
+    expect(directSource).toContain('不能作为验证证据');
+    expect(documentation).toContain('Continuous integration / verify');
+    expect(documentation).toContain('required check');
   });
 });
