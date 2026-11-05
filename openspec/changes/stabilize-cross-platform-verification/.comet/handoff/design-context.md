@@ -3,7 +3,7 @@
 - Change: stabilize-cross-platform-verification
 - Phase: design
 - Mode: compact
-- Context hash: b32b914fd864f9ae5667803680d51be2c125f3c7148b07c9a11cee38f6659d4b
+- Context hash: 2c021a6d233679c7374952ee39c39fb4b142b60e755c5ac5d45e1e6efce06bae
 
 Generated-by: comet-handoff.sh
 Task hash policy: task-content-v1. Read tasks.md for live completion; excerpts are design-time context.
@@ -53,8 +53,10 @@ PR #66 首次在 GitHub Linux 干净 checkout 中执行完整验证时暴露 39 
 ## openspec/changes/stabilize-cross-platform-verification/design.md
 
 - Source: openspec/changes/stabilize-cross-platform-verification/design.md
-- Lines: 1-80
-- SHA256: 73b325edc58df9596436e89c576a4d5059ec3a4edee1d5cc78f7f5c35432bd8f
+- Lines: 1-83
+- SHA256: 8d077d26b09d97656ee95911a43f95c035bf71d2d76d6e4170173bdd18f3a656
+
+[TRUNCATED]
 
 ```md
 ---
@@ -105,6 +107,8 @@ canonical_spec: openspec
 
 该逻辑留在 `platform/process` 适配器中，领域和 Cordis Service 只消费稳定结果，不感知信号、PID 或轮询。备选方案是仅让测试等待；这会掩盖产品 API “已终止”的虚假确定性，因此不采用。
 
+验证同时使用两层证据：确定性 fake-timer 测试精确构造“leader 已消失但 group 仍存在”的竞态；Linux 集成测试借鉴 Comet `test/platform/process/owned-command-termination.test.ts` 的真实 detached parent/descendant fixture，证明成功结果不会留下仍存活后代。单纯 mock 不能替代真实内核 process-group 行为，单纯集成测试也难以稳定复现 leader 与 descendant 的退出次序。
+
 ### 4. 验证证据分层
 
 - 相关 Vitest 用例提供快速 RED/GREEN 回归证据。
@@ -125,6 +129,7 @@ canonical_spec: openspec
 - [风险] 批量替换路径夹具时改变测试所表达的仓库拓扑 → 使用统一路径工厂只替换根路径表示，保留 repository ID、branch、HEAD 和相对层级断言。
 - [风险] POSIX zombie/reap 时序使单次 `kill(pid, 0)` 仍报告存在 → 使用条件轮询和固定截止时间，不使用任意长 sleep，也不把超时解释为成功。
 - [风险] leader 比 descendant 更早退出造成虚假成功 → 终止前用 leader identity 授权，终止后只用 process-group absence 证明整棵树退出。
+- [风险] mock 与真实 POSIX 行为不一致 → 同时保留精确竞态单测和 Comet 式真实父子进程集成测试，finally 路径强制清理所有 PID。
 - [风险] npm archive mode 随宿主变化导致报告摘要漂移 → mode 只作格式校验，内容身份保留路径、类型、字节和链接目标约束。
 - [风险] `path.win32` 修复被误解为跨平台 Desktop 支持 → 测试和文档明确这是从任意 CI 宿主验证 Windows 路径契约，正式支持范围保持 Windows x64。
 - [取舍] 完整 GitHub 验证耗时约数分钟 → 相关测试先快速运行，只有本地全量转绿后才推送触发远端权威检查。
@@ -134,17 +139,16 @@ canonical_spec: openspec
 1. 先以 Linux CI 失败日志和新增/调整后的跨平台断言保留失败基线。
 2. 分别修复测试路径工厂、Windows discovery 路径适配和 POSIX 终止确认。
 3. 运行相关测试、完整本地验证并推送当前 PR 分支。
-4. 仅在 GitHub Linux `verify` 对新 HEAD 转绿后合入 PR #66。
-
-变更不涉及持久数据或 schema 迁移。若远端验证仍失败，保留 PR 与 change，回退本 change 的实现提交即可；不得绕过失败检查合入。
 
 ```
+
+Full source: openspec/changes/stabilize-cross-platform-verification/design.md
 
 ## openspec/changes/stabilize-cross-platform-verification/tasks.md
 
 - Source: openspec/changes/stabilize-cross-platform-verification/tasks.md
 - Lines: 1-34
-- SHA256: f9443a751e16bd8a97e3cfc4cdeb58d169f0da64d2a02fcfd7c50bc73073a575
+- SHA256: 26ff7855411ad5a17d44a8a454e02747f67908a2bd9a1ab110060ecd073dc642
 
 ```md
 # Tasks
@@ -172,7 +176,7 @@ canonical_spec: openspec
 
 ## 5. Verify 返工：完整进程组确认与门禁身份
 
-- [ ] 5.1 增加“leader PID 已消失但 process group 仍存在”的 recovered termination 回归测试，确认旧实现会错误返回 `terminated` <!-- comet-task:5edabe42-b883-4815-8bbd-828163024c6b -->
+- [ ] 5.1 增加“leader PID 已消失但 process group 仍存在”的确定性回归测试，并借鉴 Comet owned-command termination fixture 增加真实 POSIX parent/descendant 集成验收；确认旧实现会错误返回 `terminated` 或无法证明后代已停止 <!-- comet-task:5edabe42-b883-4815-8bbd-828163024c6b -->
 - [ ] 5.2 让 POSIX recovered termination 复用完整 process-group 退出确认，只有 `kill(-pgid, 0)` 返回 `ESRCH` 才返回 `terminated`，并运行相关进程恢复测试 <!-- comet-task:37bfa264-8dc2-4395-8cac-e809ebb5338e -->
 - [ ] 5.3 将 CI full-history ancestry 与 package-content v2 的跨宿主身份决定写入 canonical Design，并核对 package digest 测试仍绑定路径、类型、字节与链接目标 <!-- comet-task:5e7b7c57-9a0a-4c6f-b79b-c3f0abcbc0e1 -->
 - [ ] 5.4 更新正式验证报告，重新执行 Windows 全量验证、GitHub Linux 精确 HEAD 验证与独立最终集成审查 <!-- comet-task:61a2e937-51f7-45fa-b16c-2f764af14f92 -->

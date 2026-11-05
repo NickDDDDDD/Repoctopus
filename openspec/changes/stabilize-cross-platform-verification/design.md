@@ -46,6 +46,8 @@ canonical_spec: openspec
 
 该逻辑留在 `platform/process` 适配器中，领域和 Cordis Service 只消费稳定结果，不感知信号、PID 或轮询。备选方案是仅让测试等待；这会掩盖产品 API “已终止”的虚假确定性，因此不采用。
 
+验证同时使用两层证据：确定性 fake-timer 测试精确构造“leader 已消失但 group 仍存在”的竞态；Linux 集成测试借鉴 Comet `test/platform/process/owned-command-termination.test.ts` 的真实 detached parent/descendant fixture，证明成功结果不会留下仍存活后代。单纯 mock 不能替代真实内核 process-group 行为，单纯集成测试也难以稳定复现 leader 与 descendant 的退出次序。
+
 ### 4. 验证证据分层
 
 - 相关 Vitest 用例提供快速 RED/GREEN 回归证据。
@@ -66,6 +68,7 @@ canonical_spec: openspec
 - [风险] 批量替换路径夹具时改变测试所表达的仓库拓扑 → 使用统一路径工厂只替换根路径表示，保留 repository ID、branch、HEAD 和相对层级断言。
 - [风险] POSIX zombie/reap 时序使单次 `kill(pid, 0)` 仍报告存在 → 使用条件轮询和固定截止时间，不使用任意长 sleep，也不把超时解释为成功。
 - [风险] leader 比 descendant 更早退出造成虚假成功 → 终止前用 leader identity 授权，终止后只用 process-group absence 证明整棵树退出。
+- [风险] mock 与真实 POSIX 行为不一致 → 同时保留精确竞态单测和 Comet 式真实父子进程集成测试，finally 路径强制清理所有 PID。
 - [风险] npm archive mode 随宿主变化导致报告摘要漂移 → mode 只作格式校验，内容身份保留路径、类型、字节和链接目标约束。
 - [风险] `path.win32` 修复被误解为跨平台 Desktop 支持 → 测试和文档明确这是从任意 CI 宿主验证 Windows 路径契约，正式支持范围保持 Windows x64。
 - [取舍] 完整 GitHub 验证耗时约数分钟 → 相关测试先快速运行，只有本地全量转绿后才推送触发远端权威检查。

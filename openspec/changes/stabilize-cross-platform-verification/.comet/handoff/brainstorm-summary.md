@@ -61,6 +61,12 @@ Linux Runner 会接受实际不可访问的 Windows checkout，削弱本地 Bind
 - CI 使用完整 Git 历史完成报告 commit ancestry 校验。
 - package-content v2 排除 host-derived tar mode，但继续绑定 path、type、file size/content digest 与 link target；不新增公共 API 或规格能力。
 
+### Comet 当前实现与测试复核
+
+- 固定 Comet 0.5.1 与当前上游 HEAD 的 `platform/process/terminate-process-tree.ts` 都提供相同的 `waitForPosixGroupExit()` 原语，但没有 Repoctopus 的 recovered-process API；因此不能声称直接复制了完整 recovered 修复。
+- 当前 Comet 的 `test/platform/process/owned-command-termination.test.ts` 使用真实 detached parent/descendant、孤儿后代与超时清理场景，能够补足纯 mock 对内核 process-group 行为覆盖不足。
+- 修订候选同时采用确定性竞态单测与 Comet 式真实 POSIX 集成验收；二者分别证明分类边界和真实后代清理，不能互相替代。
+
 ## 当前状态
 
-原方案已由用户确认；上述 Verify finding 修订是当前候选，仍需新的 Design Wait 绑定精确 proposal hash。没有待决的 Spec Patch。
+原方案已由用户确认；第一版 Verify finding 提案因未明确采用 Comet 的真实 process-tree 测试而被拒绝。补齐双层测试后的方案是当前候选，仍需新的 Design Wait 绑定精确 proposal hash。没有待决的 Spec Patch。

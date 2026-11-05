@@ -5,11 +5,11 @@
   "canonical_spec": "openspec",
   "task_hash_policy": "task-content-v1",
   "generated_by": "comet-handoff.sh",
-  "context_hash": "b32b914fd864f9ae5667803680d51be2c125f3c7148b07c9a11cee38f6659d4b",
+  "context_hash": "2c021a6d233679c7374952ee39c39fb4b142b60e755c5ac5d45e1e6efce06bae",
   "files": [
     { "path": "openspec/changes/stabilize-cross-platform-verification/proposal.md", "sha256": "360f69c39cce56dede2abb60aefa90d2bb720034a7aa65c43ba95a8e7854eaec" },
-    { "path": "openspec/changes/stabilize-cross-platform-verification/design.md", "sha256": "73b325edc58df9596436e89c576a4d5059ec3a4edee1d5cc78f7f5c35432bd8f" },
-    { "path": "openspec/changes/stabilize-cross-platform-verification/tasks.md", "sha256": "f9443a751e16bd8a97e3cfc4cdeb58d169f0da64d2a02fcfd7c50bc73073a575" },
+    { "path": "openspec/changes/stabilize-cross-platform-verification/design.md", "sha256": "8d077d26b09d97656ee95911a43f95c035bf71d2d76d6e4170173bdd18f3a656" },
+    { "path": "openspec/changes/stabilize-cross-platform-verification/tasks.md", "sha256": "26ff7855411ad5a17d44a8a454e02747f67908a2bd9a1ab110060ecd073dc642" },
     { "path": "openspec/changes/stabilize-cross-platform-verification/.openspec.yaml", "sha256": "33aa04d9a957ff55fa34f28d70076b6c9fe609779912961844af9ee5b854ea65" }
   ]
 }

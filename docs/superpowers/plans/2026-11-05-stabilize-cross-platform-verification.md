@@ -98,9 +98,9 @@ RED：现有固定 Windows 路径在非 Windows 宿主被生产校验拒绝。GR
 
 <!-- comet-task-ref:5edabe42-b883-4815-8bbd-828163024c6b -->
 
-扩展 `test/terminate-process-tree.test.ts`，让前置 ownership 匹配、发送 group `SIGKILL` 成功，随后 leader ownership 已是 `not_running`，但 `kill(-pgid, 0)` 在整个截止期仍证明 process group 存在。旧实现必须错误返回 `terminated`，形成针对独立审查 finding 的真实 RED。
+扩展 `test/terminate-process-tree.test.ts`，让前置 ownership 匹配、发送 group `SIGKILL` 成功，随后 leader ownership 已是 `not_running`，但 `kill(-pgid, 0)` 在整个截止期仍证明 process group 存在。旧实现必须错误返回 `terminated`，形成针对独立审查 finding 的确定性 RED。
 
-测试用 fake timers 和按 signal 分类的 `process.kill` stub，不创建真实残留进程；同时保留 group 最终返回 `ESRCH` 的成功分支。
+测试用 fake timers 和按 signal 分类的 `process.kill` stub，不创建真实残留进程；同时保留 group 最终返回 `ESRCH` 的成功分支。另在 POSIX 平台借鉴 Comet `test/platform/process/owned-command-termination.test.ts` 的 fixture，启动 detached parent 及其 descendant，核对任何 `terminated` 成功结果都对应 parent 与 descendant 实际停止。该集成测试必须在 `finally` 中按 PID 清理，Windows 只验证既有 `taskkill` 契约，不伪装 POSIX 场景。
 
 ## 11. 统一 recovered 与普通 POSIX group 退出确认
 
@@ -108,7 +108,7 @@ RED：现有固定 Windows 路径在非 Windows 宿主被生产校验拒绝。GR
 
 删除 recovered 路径按 leader ownership 判断终止成功的并行算法，复用模块已有 `waitForPosixGroupExit(pid)`。creation identity 继续只在破坏性信号之前授权；发送后以 group probe 的 `ESRCH` 作为唯一 `terminated` 证明，超时和 `EPERM` 保持 `unknown`。
 
-运行 `npx vitest run test/terminate-process-tree.test.ts test/service-recovery.test.ts`，并核对 Windows `taskkill` 分支未改变。
+运行 `npx vitest run test/terminate-process-tree.test.ts test/service-recovery.test.ts`；GitHub Linux 必须执行真实 parent/descendant 验收，Windows 核对 `taskkill` 分支未改变。
 
 ## 12. 收敛 canonical Design 与 package identity 契约
 
