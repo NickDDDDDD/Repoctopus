@@ -157,7 +157,7 @@
       **Acceptance:** 没有无依据的Build到Design或关闭前双回退；每次恢复与保留事实都能从trajectory和OTLP解释
       **Requirements:** 失败分类必须决定真实返工路径, Evidence 失效必须按声明输入面传播
 
-- [ ] 9.4 执行OpenSpec严格校验、类型检查、lint和完整测试套件，并核对旧恢复信号在生产源码、规格与遥测中均已清退 <!-- comet-task:e45dcb55-677b-4280-b31a-8a9903a82ad2 -->
+- [x] 9.4 执行OpenSpec严格校验、类型检查、lint和完整测试套件，并核对旧恢复信号在生产源码、规格与遥测中均已清退 <!-- comet-task:e45dcb55-677b-4280-b31a-8a9903a82ad2 -->
       **Blocked by:** 9.3
       **Acceptance:** 所有项目检查通过；旧finding与transition只允许出现在迁移拒绝fixture或历史归档中；当前change产物严格校验通过
       **Requirements:** 失败分类必须决定真实返工路径, Host 只能报告发现而不能选择阶段
