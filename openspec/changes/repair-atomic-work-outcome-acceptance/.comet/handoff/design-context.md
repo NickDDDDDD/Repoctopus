@@ -3,7 +3,7 @@
 - Change: repair-atomic-work-outcome-acceptance
 - Phase: design
 - Mode: compact
-- Context hash: 98a1406197d52ee716464b17a4d8eb2cf546ac67f80391bc1332d7c3ddf7df18
+- Context hash: 024119658210f7edd1f86ce0f836939cec10f5e9d264cb1d7eb228711d3a0876
 
 Generated-by: comet-handoff.sh
 Task hash policy: task-content-v1. Read tasks.md for live completion; excerpts are design-time context.
@@ -61,8 +61,8 @@ OpenSpec remains the canonical capability spec. This handoff is a deterministic,
 ## openspec/changes/repair-atomic-work-outcome-acceptance/design.md
 
 - Source: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
-- Lines: 1-164
-- SHA256: 16e2f7d1bf5b96ef9282e0ba3bb6e9fde32356cf5dc191d27eaa1489d5047615
+- Lines: 1-174
+- SHA256: 41ac4eae1ae2250792809ea6c343678be666110a0b39afe0cd3d4a72b484a86b
 
 [TRUNCATED]
 
@@ -143,9 +143,9 @@ Comet 可以在单个 Runtime mutation 中完成 validator 与 transition；Repo
 
 如果锁外校验期间任一稳定输入变化，commit 返回可分类的 stale-validation，不接受旧候选；Runtime 重新观察而不是使用过期结果。外部系统写入或 Host 副作用不在 guarded commit 中发生。
 
-**备选方案：**把完整 Build 领域校验下沉到 `WorkExecutionAuthority`。这会让 Store authority 依赖 Specification、Project Snapshot 和 Build orchestration，破坏领域边界，故拒绝。
+独立 thorough review 进一步收紧这一边界：validation record 采用 schema v2，同时绑定**领域校验开始前捕获的** Run `stateVersion`、完整 lifecycle digest、Project Snapshot digest、Work-specific validation input digest 与待应用 transition digest。领域校验不能以完成后新读到的 Run 作为 CAS 基线。terminal acceptance 前必须再次观察 Specification Task、workspace head、Evidence fingerprint 等外部事实并与 validation input 精确比较；随后 guarded commit 重新核对 Run/lifecycle/Project Snapshot、pending submission、candidate、Action Outcome 和 Receipt 的完整身份。任何一项漂移都保留 pending candidate 并返回 typed stale-validation。后续 observation 仍按既有 drift/invalidation 协议重新观察，不能假装跨 Store 与 Git 存在单事务。
 
-### 3. Work-specific 处理器拥有完整接受条件
+Action Outcome identity 由不随 CAS 重试变化的 Work + submission + candidate identity 确定性派生，不能包含 `stateVersion` 等易变校验元数据。若进程在 Action Receipt 持久化后、Run guarded commit 前退出，即使 stale-validation 使 Run 版本递增，重试仍会请求同一个 Outcome/Receipt identity，Action Store 返回原 Receipt，再尝试唯一的 Run 绑定；不得生成新的随机 Outcome 并遗留第二条终态链。
 
 
 ```
@@ -178,36 +178,36 @@ Full source: openspec/changes/repair-atomic-work-outcome-acceptance/design.md
 
 ## 3. 交付 Configure 垂直切片
 
-- [ ] 3.1 实现 Configure 处理器，对 `execution-binding-candidate` 的 schema、Strategy identity/digest、仓库集合和 Binding 构造约束做完整校验；运行 Configure 领域测试覆盖结构错误与语义错误。 <!-- comet-task:0a5a1863-1c9d-4bc3-afd4-e03157f1c3a1 -->
-- [ ] 3.2 将内嵌与外部 Configure submission 接到统一 coordinator，删除 `rejectInvalidConfigureResult()` 和 Configure 的早期 `acceptOutcome()`；运行 `rg -n "rejectInvalidConfigureResult" services` 无结果且 executor 单元测试通过。 <!-- comet-task:2d837b06-5f0c-4c0e-93a8-c546e8e11b52 -->
-- [ ] 3.3 让 Round 8 错 digest 候选返回结构化 `awaiting-correction`，保持同一 Work/claim/attempt/checkEpoch/invocation/packet；运行新增 E2E 验证全部 identity 未变化。 <!-- comet-task:a4824a9d-3ab9-48a3-ac74-9091f20643d1 -->
-- [ ] 3.4 使用新 submission ID 提交修正版 Configure candidate，并验证它被接受后只创建一个 Binding、一个 Plan Work；运行 `npx vitest run test/managed-change-execution.e2e.test.ts` 通过。 <!-- comet-task:85d81440-31df-4e60-aa6e-b1c27edb4b14 -->
-- [ ] 3.5 覆盖 terminal commit 前中断和接受后、lifecycle observation 前中断的冷启动恢复；运行 `npx vitest run test/work-execution-recovery.test.ts test/managed-change-execution.e2e.test.ts` 验证不重调 Host、不新增 Work/attempt。 <!-- comet-task:3ca04124-3601-493f-8978-8dd5f3cdbc52 -->
+- [x] 3.1 实现 Configure 处理器，对 `execution-binding-candidate` 的 schema、Strategy identity/digest、仓库集合和 Binding 构造约束做完整校验；运行 Configure 领域测试覆盖结构错误与语义错误。 <!-- comet-task:0a5a1863-1c9d-4bc3-afd4-e03157f1c3a1 -->
+- [x] 3.2 将内嵌与外部 Configure submission 接到统一 coordinator，删除 `rejectInvalidConfigureResult()` 和 Configure 的早期 `acceptOutcome()`；运行 `rg -n "rejectInvalidConfigureResult" services` 无结果且 executor 单元测试通过。 <!-- comet-task:2d837b06-5f0c-4c0e-93a8-c546e8e11b52 -->
+- [x] 3.3 让 Round 8 错 digest 候选返回结构化 `awaiting-correction`，保持同一 Work/claim/attempt/checkEpoch/invocation/packet；运行新增 E2E 验证全部 identity 未变化。 <!-- comet-task:a4824a9d-3ab9-48a3-ac74-9091f20643d1 -->
+- [x] 3.4 使用新 submission ID 提交修正版 Configure candidate，并验证它被接受后只创建一个 Binding、一个 Plan Work；运行 `npx vitest run test/managed-change-execution.e2e.test.ts` 通过。 <!-- comet-task:85d81440-31df-4e60-aa6e-b1c27edb4b14 -->
+- [x] 3.5 覆盖 terminal commit 前中断和接受后、lifecycle observation 前中断的冷启动恢复；运行 `npx vitest run test/work-execution-recovery.test.ts test/managed-change-execution.e2e.test.ts` 验证不重调 Host、不新增 Work/attempt。 <!-- comet-task:3ca04124-3601-493f-8978-8dd5f3cdbc52 -->
 
 ## 4. 统一其余 Build Work
 
-- [ ] 4.1 将 Plan 的 candidate 构造、Plan Evidence、领域校验与 lifecycle validator 接到统一处理器，并删除 executor 的 Plan 延迟名单分支；运行 Plan rejection/correction 与受保护分支 E2E 通过。 <!-- comet-task:36fc536f-cbb7-4fe2-afa6-784a48a4649a -->
-- [ ] 4.2 将 Execute package completion 接到统一处理器，同时保留 workspace checkpoint 和外部副作用 journal 的两阶段消费；运行 Execute 中断点与恢复测试验证不会重复提交或重复 Host 副作用。 <!-- comet-task:604296b0-f4c2-45bb-8897-19cbaf5d4f6e -->
-- [ ] 4.3 将 Check candidate/evidence 接到统一处理器，并删除 executor 的 Check 延迟名单分支；运行 Check rejection/correction 与 Verify 输入测试通过。 <!-- comet-task:10d9ff1b-2853-4ce9-ba69-43fe8b5f1693 -->
-- [ ] 4.4 对 Configure、Plan、Execute、Check 增加 schema、语义、validator、transition infeasible 矩阵测试；运行相关 Build protocol 与 managed execution 测试，验证所有拒绝均发生在 terminal acceptance 前。 <!-- comet-task:0f8560bc-e38f-47e5-b680-920305c3f88a -->
-- [ ] 4.5 删除所有按 Work kind 决定“立即/延迟 accept”的生产条件，改为注册表穷尽检查；运行 `rg -n "build\.plan.*build\.check|build\.check.*build\.plan" services/managed-work-executor.ts` 无旧名单结果并通过 `npm run typecheck`。 <!-- comet-task:346693b7-c742-455b-acd0-32fcd0a3b38a -->
+- [x] 4.1 将 Plan 的 candidate 构造、Plan Evidence、领域校验与 lifecycle validator 接到统一处理器，并删除 executor 的 Plan 延迟名单分支；运行 Plan rejection/correction 与受保护分支 E2E 通过。 <!-- comet-task:36fc536f-cbb7-4fe2-afa6-784a48a4649a -->
+- [x] 4.2 将 Execute package completion 接到统一处理器，同时保留 workspace checkpoint 和外部副作用 journal 的两阶段消费；运行 Execute 中断点与恢复测试验证不会重复提交或重复 Host 副作用。 <!-- comet-task:604296b0-f4c2-45bb-8897-19cbaf5d4f6e -->
+- [x] 4.3 将 Check candidate/evidence 接到统一处理器，并删除 executor 的 Check 延迟名单分支；运行 Check rejection/correction 与 Verify 输入测试通过。 <!-- comet-task:10d9ff1b-2853-4ce9-ba69-43fe8b5f1693 -->
+- [x] 4.4 对 Configure、Plan、Execute、Check 增加 schema、语义、validator、transition infeasible 矩阵测试；运行相关 Build protocol 与 managed execution 测试，验证所有拒绝均发生在 terminal acceptance 前。 <!-- comet-task:0f8560bc-e38f-47e5-b680-920305c3f88a -->
+- [x] 4.5 删除所有按 Work kind 决定“立即/延迟 accept”的生产条件，改为注册表穷尽检查；运行 `rg -n "build\.plan.*build\.check|build\.check.*build\.plan" services/managed-work-executor.ts` 无旧名单结果并通过 `npm run typecheck`。 <!-- comet-task:346693b7-c742-455b-acd0-32fcd0a3b38a -->
 
 ## 5. 入口、恢复与遥测一致性
 
-- [ ] 5.1 让内嵌 Host、外部 `work-outcome` 和已知 candidate 的恢复入口共享同一 coordinator；运行外部 CLI 与 managed execution E2E 验证 disposition、diagnostic 和 identity 一致。 <!-- comet-task:d4cd08b5-1622-4d46-af30-d119df92d3d0 -->
-- [ ] 5.2 验证 pending/rejected candidate 不会进入 `not-executed` reconciliation，只有未知执行结果使用 reconciliation；运行 `npx vitest run test/work-execution-recovery.test.ts` 通过。 <!-- comet-task:8e1feeef-c6fb-434c-8351-4145260e64cb -->
-- [ ] 5.3 为 accepted、rejected、processing error、validator 和 continuation 补齐一次性 OpenTelemetry 断言，禁止 payload/自由文本成为 label；运行 `npx vitest run test/telemetry-mapping.test.ts` 通过。 <!-- comet-task:e49aeb06-6b69-41a7-ab16-e9a2d0d0e9ce -->
-- [ ] 5.4 验证多仓 Project Snapshot、Strategy、Binding、Plan 和 workspace checkpoint digest 在恢复前后保持绑定；运行多仓 managed execution E2E 通过。 <!-- comet-task:b6480ce8-12b7-49fb-a14a-bae722d75d9b -->
-- [ ] 5.5 更新正式 Runtime/Host 协议文档，说明统一接受顺序、纠正 identity 与 processing/reconciliation 区别；运行 `npm run check:managed-execution-report` 和文档内命令验证通过。 <!-- comet-task:83f2fd84-791f-404a-ae5d-48e55d753c5a -->
+- [x] 5.1 让内嵌 Host、外部 `work-outcome` 和已知 candidate 的恢复入口共享同一 coordinator；运行外部 CLI 与 managed execution E2E 验证 disposition、diagnostic 和 identity 一致。 <!-- comet-task:d4cd08b5-1622-4d46-af30-d119df92d3d0 -->
+- [x] 5.2 验证 pending/rejected candidate 不会进入 `not-executed` reconciliation，只有未知执行结果使用 reconciliation；运行 `npx vitest run test/work-execution-recovery.test.ts` 通过。 <!-- comet-task:8e1feeef-c6fb-434c-8351-4145260e64cb -->
+- [x] 5.3 为 accepted、rejected、processing error、validator 和 continuation 补齐一次性 OpenTelemetry 断言，禁止 payload/自由文本成为 label；运行 `npx vitest run test/telemetry-mapping.test.ts` 通过。 <!-- comet-task:e49aeb06-6b69-41a7-ab16-e9a2d0d0e9ce -->
+- [x] 5.4 验证多仓 Project Snapshot、Strategy、Binding、Plan 和 workspace checkpoint digest 在恢复前后保持绑定；运行多仓 managed execution E2E 通过。 <!-- comet-task:b6480ce8-12b7-49fb-a14a-bae722d75d9b -->
+- [x] 5.5 更新正式 Runtime/Host 协议文档，说明统一接受顺序、纠正 identity 与 processing/reconciliation 区别；运行 `npm run check:managed-execution-report` 和文档内命令验证通过。 <!-- comet-task:83f2fd84-791f-404a-ae5d-48e55d753c5a -->
 
 ## 6. 综合验收
 
-- [ ] 6.1 运行定向回归 `npx vitest run test/work-execution-submission.test.ts test/managed-work-executor.test.ts test/work-execution-recovery.test.ts test/managed-change-execution.e2e.test.ts test/telemetry-mapping.test.ts` 并记录 Evidence。 <!-- comet-task:c351caf8-aefe-468a-8c3d-eeefd7e36e93 -->
-- [ ] 6.2 运行 `npm run typecheck && npm run lint && npm run check:architecture && npm run check:provenance`，确认领域、Service、Engine 与平台适配器边界无违规。 <!-- comet-task:2763104c-fc1d-4ee9-b831-8f54e69496f7 -->
-- [ ] 6.3 运行 `npm run verify`，确认全量测试、生成物、品牌、架构、来源、OpenSpec 与报告检查全部通过。 <!-- comet-task:657897f5-6ef0-47f0-9d71-764748fc6679 -->
-- [ ] 6.4 使用新的多仓 acceptance Run 重放 Round 8 场景，验证错误 Configure candidate 可在同一 invocation 纠正并继续至 Archive；保存 Run/Work/submission/Evidence/phase 遥测，旧卡住 Run 保持未修改。 <!-- comet-task:4fa9a8d2-91fc-44cf-a0c9-a1de20ecb525 -->
-- [ ] 6.5 对照 Comet 0.5.1 固定源码复核 Outcome identity、拒绝与恢复语义，并运行 `npm run check:upstream`；若权威资料冲突则停止交付并回到 Design。 <!-- comet-task:ef8a4b65-0a61-47c4-8253-f17a83b3ed61 -->
-- [ ] 6.6 完成独立 thorough review，修复高优先级 finding 后重新运行受影响测试，并将最终结论写入正式验证报告。 <!-- comet-task:2d22d4cc-6da9-45d6-9c03-127b3df9a852 -->
+- [x] 6.1 运行定向回归 `npx vitest run test/work-execution-submission.test.ts test/managed-work-executor.test.ts test/work-execution-recovery.test.ts test/managed-change-execution.e2e.test.ts test/telemetry-mapping.test.ts` 并记录 Evidence。 <!-- comet-task:c351caf8-aefe-468a-8c3d-eeefd7e36e93 -->
+- [x] 6.2 运行 `npm run typecheck && npm run lint && npm run check:architecture && npm run check:provenance`，确认领域、Service、Engine 与平台适配器边界无违规。 <!-- comet-task:2763104c-fc1d-4ee9-b831-8f54e69496f7 -->
+- [x] 6.3 运行 `npm run verify`，确认全量测试、生成物、品牌、架构、来源、OpenSpec 与报告检查全部通过。 <!-- comet-task:657897f5-6ef0-47f0-9d71-764748fc6679 -->
+- [x] 6.4 使用新的多仓 acceptance Run 重放 Round 8 场景，验证错误 Configure candidate 可在同一 invocation 纠正并继续至 Archive；保存 Run/Work/submission/Evidence/phase 遥测，旧卡住 Run 保持未修改。 <!-- comet-task:4fa9a8d2-91fc-44cf-a0c9-a1de20ecb525 -->
+- [x] 6.5 对照 Comet 0.5.1 固定源码复核 Outcome identity、拒绝与恢复语义，并运行 `npm run check:upstream`；若权威资料冲突则停止交付并回到 Design。 <!-- comet-task:ef8a4b65-0a61-47c4-8253-f17a83b3ed61 -->
+- [x] 6.6 完成独立 thorough review，修复高优先级 finding 后重新运行受影响测试，并将最终结论写入正式验证报告。 <!-- comet-task:2d22d4cc-6da9-45d6-9c03-127b3df9a852 -->
 
 ## Workflow follow-up
 

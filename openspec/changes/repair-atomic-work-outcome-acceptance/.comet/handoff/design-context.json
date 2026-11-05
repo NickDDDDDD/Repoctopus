@@ -5,10 +5,10 @@
   "canonical_spec": "openspec",
   "task_hash_policy": "task-content-v1",
   "generated_by": "comet-handoff.sh",
-  "context_hash": "98a1406197d52ee716464b17a4d8eb2cf546ac67f80391bc1332d7c3ddf7df18",
+  "context_hash": "024119658210f7edd1f86ce0f836939cec10f5e9d264cb1d7eb228711d3a0876",
   "files": [
     { "path": "openspec/changes/repair-atomic-work-outcome-acceptance/proposal.md", "sha256": "938ddcb862e9be60e61e3e328b39645c63b68966331a76465a5d0151ae09b549" },
-    { "path": "openspec/changes/repair-atomic-work-outcome-acceptance/design.md", "sha256": "16e2f7d1bf5b96ef9282e0ba3bb6e9fde32356cf5dc191d27eaa1489d5047615" },
+    { "path": "openspec/changes/repair-atomic-work-outcome-acceptance/design.md", "sha256": "41ac4eae1ae2250792809ea6c343678be666110a0b39afe0cd3d4a72b484a86b" },
     { "path": "openspec/changes/repair-atomic-work-outcome-acceptance/tasks.md", "sha256": "f9cb1a031c23d350a48fdaa2382180d8bebbb380d64332caa7bed598fa52c691" },
     { "path": "openspec/changes/repair-atomic-work-outcome-acceptance/.openspec.yaml", "sha256": "33aa04d9a957ff55fa34f28d70076b6c9fe609779912961844af9ee5b854ea65" }
   ]
