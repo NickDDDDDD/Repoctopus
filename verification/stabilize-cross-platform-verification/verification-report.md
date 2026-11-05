@@ -114,10 +114,11 @@ metadata from the package boundary. The next exact-HEAD Linux run remains the GR
 
 ## External Linux evidence boundary
 
-The branch is public and every implementation commit was pushed immediately. GitHub Linux `verify`
-for PR #66 must now succeed against the exact full-history workflow/report HEAD before task 4.3 or
-this change can be considered complete. A local Windows result does not substitute for that clean
-checkout, and a successful workflow is reported separately from repository required-check policy.
+The branch is public and every implementation commit was pushed immediately. GitHub Actions run
+`41996999496` verified exact HEAD `f5a2d09d4ffc6864d55fe442010d39114ef00ee4` for PR #66 on Linux:
+the `verify` job completed successfully in 5m37s, including the v2 managed-execution package report
+gate. A local Windows result did not substitute for that clean checkout; this successful workflow
+is reported separately from repository required-check policy.
 
 ## Cleanup
 
@@ -129,6 +130,4 @@ checkout, and a successful workflow is reported separately from repository requi
 ## Verdict
 
 The implementation satisfies the approved cross-platform design and passes all local product,
-architecture, provenance, and specification checks up to the expected report-freshness gate. The
-remaining evidence is to reproduce this package identity with the report present and observe the
-GitHub Linux `verify` check on the exact pushed HEAD.
+architecture, provenance, specification, package identity, and cross-platform verification gates.
